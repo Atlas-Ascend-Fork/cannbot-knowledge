@@ -1,0 +1,222 @@
+quality:
+  min_recall_at_k: 1.0
+  min_mrr: 1.0
+  max_p95_ms: 1000
+
+synthetic_cards:
+  - path: knowledge/ops/ascendc/apis/synthetic_warp_copy.md
+    metadata:
+      type: API
+      title: SyntheticWarpCopy exact contract
+      description: Exact target for deterministic ranking and platform filtering.
+      tags: [task.lookup, topic.data_movement]
+      status: stable
+      sources:
+        - resource: https://example.com/reference/synthetic-warp-copy
+          role: primary
+      created_at: "2026-08-18T00:00:00Z"
+      updated_at: "2026-08-18T00:00:00Z"
+      platforms: [a2]
+    body: |
+      # SyntheticWarpCopy exact contract
+
+      This synthetic card is the exact API contract expected at rank one.
+  - path: knowledge/ops/ascendc/concepts/synthetic_copy_overview.md
+    metadata:
+      type: Concept
+      title: Synthetic copy contract overview
+      description: A weaker same-platform candidate used to exercise ranking.
+      tags: [task.lookup, topic.data_movement]
+      status: stable
+      sources:
+        - resource: https://example.com/reference/synthetic-copy-overview
+          role: primary
+      created_at: "2026-08-18T00:00:00Z"
+      updated_at: "2026-08-18T00:00:00Z"
+      platforms: [a2]
+    body: |
+      # Synthetic copy contract overview
+
+      SyntheticWarpCopy is mentioned as one generic data-movement example.
+  - path: knowledge/ops/triton/apis/synthetic_warp_copy.md
+    metadata:
+      type: API
+      title: SyntheticWarpCopy exact contract
+      description: Cross-DSL candidate that must not leak into Ascend C results.
+      tags: [task.lookup, topic.data_movement]
+      status: stable
+      sources:
+        - resource: https://example.com/reference/triton-synthetic-warp-copy
+          role: primary
+      created_at: "2026-08-18T00:00:00Z"
+      updated_at: "2026-08-18T00:00:00Z"
+      platforms: [a2]
+    body: |
+      # SyntheticWarpCopy exact contract
+
+      This fixture belongs only to the Triton route.
+  - path: knowledge/ops/ascendc/apis/synthetic_warp_copy_a3.md
+    metadata:
+      type: API
+      title: SyntheticWarpCopy exact contract
+      description: Wrong-platform candidate that must not leak into A2 results.
+      tags: [task.lookup, topic.data_movement]
+      status: stable
+      sources:
+        - resource: https://example.com/reference/a3-synthetic-warp-copy
+          role: primary
+      created_at: "2026-08-18T00:00:00Z"
+      updated_at: "2026-08-18T00:00:00Z"
+      platforms: [a3]
+    body: |
+      # SyntheticWarpCopy exact contract
+
+      This fixture belongs only to the A3 platform.
+  - path: knowledge/ops/ascendc/apis/synthetic_warp_copy_draft.md
+    metadata:
+      type: API
+      title: SyntheticWarpCopy exact contract
+      description: Draft candidate that must not leak into stable results.
+      tags: [task.lookup, topic.data_movement]
+      status: draft
+      sources: []
+      created_at: "2026-08-18T00:00:00Z"
+      updated_at: "2026-08-18T00:00:00Z"
+      platforms: [a2]
+    body: |
+      # SyntheticWarpCopy exact contract
+
+      This fixture verifies the default stable lifecycle boundary.
+  - path: knowledge/ops/shared/concepts/shared_alignment_boundary.md
+    metadata:
+      type: Concept
+      title: SharedAlignmentBoundary contract
+      description: Shared fixture returned only when shared expansion is explicit.
+      tags: [task.lookup, topic.alignment]
+      status: stable
+      sources:
+        - resource: https://example.com/reference/shared-alignment-boundary
+          role: primary
+      created_at: "2026-08-18T00:00:00Z"
+      updated_at: "2026-08-18T00:00:00Z"
+      platforms: [a2]
+    body: |
+      # SharedAlignmentBoundary contract
+
+      This fixture is intentionally independent of a single operator DSL.
+
+cases:
+  - id: synthetic_rank_and_scope
+    corpus: synthetic
+    query: SyntheticWarpCopy exact contract
+    filters:
+      technology: ascendc
+      platform: a2
+      status: stable
+    expected:
+      - ops/ascendc/apis/synthetic_warp_copy
+    excluded:
+      - ops/triton/apis/synthetic_warp_copy
+      - ops/ascendc/apis/synthetic_warp_copy_a3
+      - ops/ascendc/apis/synthetic_warp_copy_draft
+    expected_count: 2
+    expected_fields: [rank, card_sha256, card_lines, trust_tier, local_path]
+  - id: synthetic_cross_dsl_target
+    corpus: synthetic
+    query: SyntheticWarpCopy exact contract
+    filters:
+      technology: triton
+      platform: a2
+      status: stable
+    expected:
+      - ops/triton/apis/synthetic_warp_copy
+    excluded:
+      - ops/ascendc/apis/synthetic_warp_copy
+    expected_count: 1
+  - id: synthetic_explicit_shared
+    corpus: synthetic
+    query: SharedAlignmentBoundary
+    filters:
+      technology: ascendc
+      platform: a2
+      include_shared: true
+      status: stable
+    expected:
+      - ops/shared/concepts/shared_alignment_boundary
+    expected_count: 1
+  - id: empty_ascendc_search
+    query: target API
+    filters:
+      technology: ascendc
+      platform: a2
+      status: stable
+    expected_count: 0
+  - id: empty_triton_concepts_search
+    query: programming model
+    filters:
+      technology: triton
+      type: concepts
+      platform: a2
+      status: stable
+    expected_count: 0
+  - id: empty_common_planned_route_search
+    query: platform mapping
+    filters:
+      domain: common
+      technology: platforms
+      type: concepts
+      platform: a2
+      status: stable
+    expected_count: 0
+  - id: empty_model_scope_search
+    query: model inference
+    filters:
+      domain: model
+      technology: inference
+      platform: a2
+      status: stable
+    expected_count: 0
+  - id: reject_unknown_domain
+    query: target API
+    filters:
+      domain: unknown
+    expected_error: "unknown domain: unknown"
+  - id: reject_unknown_technology
+    query: target API
+    filters:
+      technology: unknown
+    expected_error: "unknown technology or scope: unknown"
+  - id: reject_unknown_platform
+    query: target API
+    filters:
+      platform: unknown
+    expected_error: "unknown platforms: unknown"
+  - id: reject_unknown_tag
+    query: target API
+    filters:
+      tag: topic.unknown
+    expected_error: "unknown tags: topic.unknown"
+  - id: reject_unknown_source_technology
+    query: technology mapping
+    filters:
+      source_technology: unknown
+    expected_error: "unknown source technology: unknown"
+  - id: reject_missing_platform
+    query: target API
+    filters:
+      technology: ascendc
+    expected_error: "platform is required"
+  - id: reject_unlocated_stable
+    query: technology mapping
+    filters:
+      technology: shared
+      include_unlocated: true
+      status: stable
+    expected_error: "--include-unlocated requires --status draft or all"
+  - id: reject_shared_without_concrete_technology
+    query: shared behavior
+    filters:
+      domain: ops
+      platform: a2
+      include_shared: true
+    expected_error: "--include-shared requires a concrete technology"

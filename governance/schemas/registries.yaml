@@ -1,0 +1,135 @@
+domains:
+  common:
+    description: 跨领域公共知识
+    direct_types: [glossaries]
+  ops:
+    description: 算子语义、设计、实现、调试与优化
+    direct_types: []
+    precreate_routes: true
+  graph:
+    description: 图编译和图优化
+    direct_types: []
+  model:
+    description: 模型训练与推理
+    direct_types: []
+    precreate_routes: true
+  runtime:
+    description: CANN Runtime、API 与故障诊断
+    direct_types: [concepts, apis, runbooks]
+
+technologies:
+  ascendc:
+    type: language
+    description: Ascend C 算子编程语言与 API
+    domains: [ops]
+  triton:
+    type: dsl
+    description: Triton 算子编程 DSL
+    domains: [ops]
+  tilelang:
+    type: dsl
+    description: TileLang 算子编程 DSL
+    domains: [ops]
+  pypto:
+    type: dsl
+    description: PyPTO 算子编程 DSL
+    domains: [ops]
+  torch_compile:
+    type: framework
+    description: PyTorch torch.compile 图编译技术栈
+    domains: [graph]
+  ge:
+    type: engine
+    description: Graph Engine 图执行与优化技术栈
+    domains: [graph]
+
+scopes:
+  shared:
+    description: 同一领域内不依赖具体技术栈的知识
+    domains: [ops, graph, model]
+  platforms:
+    description: 产品、芯片、NPU 架构和兼容关系
+    domains: [common]
+  toolchains:
+    description: CANN 环境、构建和工具链
+    domains: [common]
+  observability:
+    description: Profiling、日志和指标
+    domains: [common]
+  inference:
+    description: 模型推理知识
+    domains: [model]
+  training:
+    description: 模型训练知识
+    domains: [model]
+
+paths:
+  operator_families: [math, nn, transformers]
+  operator_categories: [activations, conversions, convolutions, normalizations, quantizations]
+  runbook_areas: [compilation, runtime, precision, performance, validations]
+
+platforms:
+  a2:
+    description: Atlas A2 系列
+  a3:
+    description: Atlas A3 系列
+  "950":
+    description: Ascend 950 系列
+  agnostic:
+    description: 结论按定义与硬件平台无关，不会随平台注册表扩张而改变含义
+
+tags:
+  task.design:
+    dimension: task
+    description: 设计语义、算法、切分或数据流
+  task.implementation:
+    dimension: task
+    description: 编写或集成实现
+  task.debugging:
+    dimension: task
+    description: 定位构建、运行时、精度或性能问题
+  task.optimization:
+    dimension: task
+    description: 优化时延、吞吐或资源使用
+  task.testing:
+    dimension: task
+    description: 设计验证和测试
+  task.migration:
+    dimension: task
+    description: 跨版本、平台或技术迁移
+  task.lookup:
+    dimension: task
+    description: 查询术语、接口或规范事实
+  topic.activation:
+    dimension: topic
+    description: 激活函数与实现
+  topic.alignment:
+    dimension: topic
+    description: 地址、长度和数据块对齐
+  topic.compilation:
+    dimension: topic
+    description: 编译、构建和接口签名
+  topic.data_movement:
+    dimension: topic
+    description: 存储层级间的数据搬运
+  topic.memory:
+    dimension: topic
+    description: 存储层级、容量和生命周期
+  topic.precision:
+    dimension: topic
+    description: 数值精度与误差
+  topic.terminology:
+    dimension: topic
+    description: 受控术语和定义
+  topic.architecture:
+    dimension: topic
+    description: NPU、执行引擎和软件栈架构
+  topic.programming_model:
+    dimension: topic
+    description: 并行执行和算子编程模型
+  topic.tiling:
+    dimension: topic
+    description: 张量切分、核间划分和片上资源适配
+  paradigm.elementwise:
+    dimension: paradigm
+    description: 逐元素计算范式

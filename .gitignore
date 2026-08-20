@@ -1,0 +1,8 @@
+artifacts/indexes/
+artifacts/graphs/
+.build/
+.venv/
+.ruff_cache/
+__pycache__/
+*.pyc
+*.tmp
