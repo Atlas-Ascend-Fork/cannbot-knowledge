@@ -6,7 +6,8 @@
 
 - `knowledge/` 是唯一知识正文根，也是唯一 OKF Bundle root。不要在其他目录保存 CANN、DSL、API、算子、调试或优化事实，也不要在知识树内创建嵌套 Bundle。
 - `knowledge/` 中除 `index.md` 外的 Markdown 都是 OKF Concept document；Frontmatter `type` 是其 OKF 类型。目录中的 `concepts/`、`apis/`、`runbooks/` 等名称是路径 Profile，两者不能混用。
-- `.agents/skills/`、`governance/`、`evals/`、`logs/` 和可重建的 `artifacts/` 是生产、消费与治理设施，不属于 OKF Bundle。
+- `.agents/skills/`、`governance/`、`evals/`、`logs/` 和可重建的 `artifacts/` 是生产、消费与治理设施，`docs/` 与 `recipes/` 是说明和实践文档；它们都不属于 OKF Bundle。
+- `docs/` 只解释设计原则和使用方式，`recipes/` 只提供场景化最佳实践。不要在两者中保存 CANN、DSL、API、算子、调试或优化事实，也不要把 Recipe 写成新的强制规则。
 - 只修改当前任务需要的文件。开始前检查工作区，保留用户已有修改；不要顺手格式化或重写无关内容。
 - 未经用户明确要求，不执行 commit、push、merge、tag、release、发布或修改用户全局环境。
 
@@ -55,6 +56,8 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 - 新字段、新注册值和新规则必须有稳定语义、实际消费者以及至少一个接受案例和一个拒绝案例，不能只为当前样例或未来占位而增加。
 - 五份治理 Spec 分别负责 OKF、路径、Frontmatter、机器契约和 Skill。内容能并入现有职责时不要新建碎片化 Spec。
 - 仓库级文档只描述当前仓库的定位、能力、语义和边界，不记录其他仓库的迁移过程，也不宣称尚未实现的能力。
+- 根 `README.md` 直接维护 `docs/` 和 `recipes/` 的文档导航；`index.md` 仍然只用于 `knowledge/`。新增、删除或移动文档时同步根入口。
+- Recipe 使用任务式名称，包含适用范围、预期产物、验证方式和失败/停止条件；它可以引用规则和 Skill，但不能复制规则定义或 Skill 内部接口。
 - Skill 的脚本、参数和内部运行方式只写在对应 `SKILL.md` 或 `references/`；README、贡献指南和治理 Spec 只说明 Skill 本身及其输入输出边界。
 - 实质治理或 Skill 契约变更按“日志”一节记录；纯排版和错别字修复不记日志。
 

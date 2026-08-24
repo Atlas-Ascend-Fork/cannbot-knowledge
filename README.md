@@ -87,6 +87,8 @@ knowledge/ops/ascendc/apis/example_api.md
 | `governance/specs/` | 对治理规则的完整文字说明 |
 | `governance/contracts/` | Ingest、Query、Lint 和图谱共同使用的校验实现 |
 | `.agents/skills/` | 三个基础 Skill 的规范源 |
+| `docs/` | 知识库设计原则和用户指南 |
+| `recipes/` | 面向具体任务的知识库最佳实践 |
 | `evals/` | 检索、治理、文档和安装回归 |
 | `init.sh` | 把 Skill 安装到目标项目 |
 | `check.sh` | 运行仓库完整质量检查 |
@@ -103,6 +105,12 @@ knowledge/ops/ascendc/apis/example_api.md
 - “使用 `knowledge-lint` 检查本次知识修改。”
 
 查询结果只是候选知识。形成技术结论前，Agent 仍需读取知识卡正文，核对适用平台、版本、信任层级和来源。
+
+进一步了解知识库的设计和使用方式：
+
+- [设计原则](docs/design_principles.md)：知识根、治理分层、范围隔离、证据和失败关闭等关键取舍。
+- [用户指南](docs/user_guide.md)：consumer 与 contributor 的使用方式，以及如何理解查询结果。
+- [形成可追溯回答](recipes/answer_with_evidence.md)和[贡献知识](recipes/contribute_knowledge.md)：面向具体任务的场景化实践。
 
 ## 环境准备
 
