@@ -1,0 +1,72 @@
+name: "Knowledge-Report|知识问题反馈"
+description: "反馈知识卡中的错误、过时内容、证据问题、范围不清或重复知识。"
+title: "[Knowledge-Report|知识问题反馈]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您帮助改进 CANNBot 知识库。请提供可核验的信息；不要粘贴密钥、Token、内网地址、私有路径或不可公开数据。
+
+  - type: input
+    id: knowledge-location
+    attributes:
+      label: Knowledge location / 知识位置
+      description: 请填写知识卡路径、Concept ID 或仓库链接。
+      placeholder: knowledge/ops/ascendc/apis/example_api.md
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue type / 问题类型
+      description: 请选择最符合当前情况的一项。
+      options:
+        - 技术结论错误或与来源不一致
+        - 内容过时或版本范围不准确
+        - 平台、版本或失效边界不清
+        - 来源失效或证据不足
+        - 知识重复、冲突或路由不合理
+        - 链接、导航或 Frontmatter 问题
+        - 其他知识质量问题
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-problem
+    attributes:
+      label: Current problem / 当前问题
+      description: 请指出有问题的原文或字段，并说明为什么存在问题。
+      placeholder: 请引用必要的短片段，避免大段复制原文。
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-content
+    attributes:
+      label: Expected content / 预期内容
+      description: 请说明建议的正确结论、适用条件和失效边界。
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / 来源与验证证据
+      description: 请提供官方文档、固定提交源码、测试或可复现实验，并注明相关平台和版本；暂时没有时请明确说明。
+      placeholder: |
+        - 来源链接或 40 位 Git commit：
+        - 平台与版本：
+        - 验证过程与结果：
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Checklists / 提交确认
+      options:
+        - label: 我已搜索现有 Issue，确认没有内容相同的问题。
+          required: true
+        - label: 我提供的信息不包含敏感或不可公开数据。
+          required: true

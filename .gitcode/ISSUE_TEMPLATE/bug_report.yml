@@ -1,0 +1,83 @@
+name: "Bug-Report|工具与 Skill 缺陷反馈"
+description: "反馈 Knowledge Skill、安装器、质量门禁、图谱构建或 CI 的可复现缺陷。"
+title: "[Bug-Report|缺陷反馈]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        本模板用于仓库工具和 Skill 缺陷；知识内容错误请使用“Knowledge-Report|知识问题反馈”。提交日志前请移除敏感信息。
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component / 受影响组件
+      options:
+        - knowledge-query
+        - knowledge-ingest
+        - knowledge-lint
+        - init.sh 或安装流程
+        - check.sh 或质量门禁
+        - 图谱或检索索引构建
+        - CI / Workflow
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 问题描述
+      description: 请描述实际行为、错误信息及影响。
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 环境信息
+      description: 请填写仓库 commit、操作系统、Python、Agent/客户端及其他相关版本。
+      placeholder: |
+        - cannbot-knowledge commit：
+        - 操作系统：
+        - Python：
+        - Agent/客户端：
+        - 安装模式（consumer/contributor，如适用）：
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction / 复现步骤
+      description: 请提供最小、完整且可重复执行的步骤或命令。
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior / 预期行为
+      description: 请说明正常情况下应得到的结果。
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / 日志与补充材料
+      description: 请粘贴必要的错误日志或截图；较长内容可使用附件。
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Checklists / 提交确认
+      options:
+        - label: 我已搜索现有 Issue，确认这是一个新问题。
+          required: true
+        - label: 我已使用当前版本复现，或已说明无法使用当前版本验证的原因。
+          required: true
+        - label: 我已从日志和附件中移除密钥、Token、内网地址、私有路径及其他敏感信息。
+          required: true
