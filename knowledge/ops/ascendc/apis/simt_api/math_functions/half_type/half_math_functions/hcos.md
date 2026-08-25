@@ -24,3 +24,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BFloat16数学函数hcos](../../bfloat16_type/bfloat16_math_functions/hcos.md)（`related`）：BFloat16数学函数hcos 与《Half数学函数hcos》的实质衔接是：bfloat16 hcos 与同类型 hsin 共享输入输出宽度，half hcos 提供相同余弦任务的另一精度契约。
+- [Half数学函数hsin](hsin.md)（`related`）：hcos 与 hsin 是同一 half 输入的余弦/正弦配对，旋转、相位和 sincos 类计算常同时消费两者。
+<!-- cannbot:related:end -->

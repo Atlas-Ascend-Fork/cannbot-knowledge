@@ -23,3 +23,10 @@ platforms: ['950']
 支持数据类型：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [数据压缩](../../../c_api/reg/data_compress/data_compress.md)（`related`）：Unsqueeze 与《数据压缩》的实质衔接是：AscUnsqueeze 是 Unsqueeze 的 C Reg 对应入口；数据压缩说明给出它与压缩寄存器数据布局之间的使用位置，而非仅列目录成员。
+- [AscUnsqueeze](../../../c_api/reg/data_compress/asc_unsqueeze.md)（`same_topic`）：AscUnsqueeze 与《Unsqueeze》的实质衔接是：AscUnsqueeze 按 mask 逆展开压缩数据，Unsqueeze 是对应基础入口，Squeeze/AscSqueeze 是生成压缩流和 mask 的逆向前置操作。
+<!-- cannbot:related:end -->

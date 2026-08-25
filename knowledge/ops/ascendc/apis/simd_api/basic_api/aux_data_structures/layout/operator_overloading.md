@@ -16,3 +16,9 @@ platforms: [a2, a3]
 # Layout运算符重载
 
 Layout支持operator==运算符重载，用于判断两个Layout是否相等。比较shape、stride和format等所有属性，全部相同则返回true。用于在运算前验证输入输出Tensor的Layout一致性。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Layout简介](layout_intro.md)（`same_topic`）：“运算符重载”处理重载运算符\(\)，内部实现为调用Crd2Idx接口，将多维坐标（Coordinate）通过布局（Layout）转换为内存位置索引（Index）。；“Layout简介”明确Layout数据结构是描述多维张量内存布局的基础模板类，通过编译时的形状（Shape）和步长（Stride）信息，实现逻辑坐标空间到一维内存地址空间的映射，为复杂张量操作和硬件优化提供基础支持。借助模板元编程技术，该类在编译时完成计算和代码生成，从而降低运行时开销。。实质衔接：operator== 比较 Layout 的 shape、stride、format；Layout 简介定义这些属性及其内存布局语义。
+<!-- cannbot:related:end -->

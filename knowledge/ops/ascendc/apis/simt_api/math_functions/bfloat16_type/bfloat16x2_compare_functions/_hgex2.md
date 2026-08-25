@@ -25,3 +25,15 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hleux2](_hleux2.md)（`related`）：__hgex2 与《__hleux2》的实质衔接是：__hgex2 返回 bfloat16x2 两个 lane 的 ordered ≥ 结果；mask 版本、half 对应入口及 unordered ≥/≤ 用于区分返回形态和 NaN 行为。
+- [__hbgex2](_hbgex2.md)（`same_topic`）：__hbgex2：__hbgex2返回“两分量均>=”的 bool；half2同名卡核对类型变体，__hbgeux2核对 unordered NaN语义，__hgex2则对照逐分量向量结果而非 bool 汇总。 目标卡《__hgex2》补充：比较两个bfloat16x2_t类型数据的两个分量，如果分量满足第一个数大于或等于第二个数，则对应比较结果为1.0，否则为0.0。
+- [__hgeux2](_hgeux2.md)（`same_topic`）：__hgex2 与《__hgeux2》的实质衔接是：__hgex2 返回 bfloat16x2 两个 lane 的 ordered ≥ 结果；mask 版本、half 对应入口及 unordered ≥/≤ 用于区分返回形态和 NaN 行为。
+- [__hgeux2_mask](_hgeux2_mask.md)（`same_topic`）：__hgex2 与《__hgeux2_mask》的实质衔接是：__hgex2 返回 bfloat16x2 两个 lane 的 ordered ≥ 结果；mask 版本、half 对应入口及 unordered ≥/≤ 用于区分返回形态和 NaN 行为。
+- [__hgex2](../../half_type/half2_compare_functions/_hgex2.md)（`same_topic`）：__hgex2 与《__hgex2》的实质衔接是：__hgex2 返回 bfloat16x2 两个 lane 的 ordered ≥ 结果；mask 版本、half 对应入口及 unordered ≥/≤ 用于区分返回形态和 NaN 行为。
+- [__hgex2_mask](_hgex2_mask.md)（`same_topic`）：__hgex2 与《__hgex2_mask》的实质衔接是：__hgex2 返回 bfloat16x2 两个 lane 的 ordered ≥ 结果；mask 版本、half 对应入口及 unordered ≥/≤ 用于区分返回形态和 NaN 行为。
+- [__hgtux2_mask](_hgtux2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hgex2》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+<!-- cannbot:related:end -->

@@ -22,3 +22,9 @@ platforms: ['950', a2, a3]
 接口参数：output输出归一化结果；outputMean/outputVariance输出均值和方差；inputX输入（shape [B,S,H]，S*H需32B对齐，支持与output地址重叠）；gamm/beta输入缩放和平移系数（shape [B]，32B对齐）；sharedTmpBuffer临时缓存；epsilon防除零系数；tiling切分信息。TPosition支持VECIN/VECCALC/VECOUT。
 
 约束：仅支持ND格式；S*H需32B对齐；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BatchNorm Tiling](batch_norm_tiling.md)（`same_topic`）：《BatchNorm Tiling》的任务是“获取BatchNorm kernel计算时所需的Tiling参数，包括通过GetBatchNormMaxMinTmpSize获取最大最小临时空间大小和GetBatchNormNDTilingInfo获取tiling参数。”。《BatchNorm》具体提供“对每一层输入做规范化处理，在batch维度上计算均值和方差进行归一化，再通过缩放和平移参数调整分布，加速训练并提升泛化能力。”，它直接用于BatchNorm Tiling 所依赖的 Welford 统计量和数据格式约束。
+<!-- cannbot:related:end -->

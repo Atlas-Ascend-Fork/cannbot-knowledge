@@ -27,3 +27,12 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Atlas 推理系列产品AI Core, Atlas 训练系列产品。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MrgSort4（排序与合并）](mrg_sort4.md)（`related`）：RpSort16 先把每组 16 个 proposal 按 score 排序，MrgSort4 再把最多四条已排序队列合并，是候选框排序流水的直接下游。
+- [ProposalConcat](proposal_concat.md)（`related`）：RpSort16 假定每个 Region Proposal 采用 8 元素结构；ProposalConcat 可把分离字段组装成该结构，作为排序前的数据准备。
+- [ProposalExtract](proposal_extract.md)（`related`）：排序后若需要连续读取 score/index 等单字段，ProposalExtract 可从 16 个 RP 中抽取并重排，是 RpSort16 结果的常见后处理。
+- [Sort32](sort32.md)（`related`）：Sort32 面向 score+index 的 32 元素排序，而 RpSort16 面向 8 字段 Region Proposal；二者的输入布局与后续归并链不同，可用于选型。
+<!-- cannbot:related:end -->

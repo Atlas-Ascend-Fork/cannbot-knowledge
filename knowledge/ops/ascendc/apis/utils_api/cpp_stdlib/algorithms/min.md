@@ -24,3 +24,10 @@ platforms: ['950', a2, a3]
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
 约束：两个源操作数的数据类型必须相同。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__aicore__ 内 std::min/max 编译失败](../../../../runbooks/compilation/aicore_avoid_host_std_minmax.md)（`exemplifies`）：Runbook 复现了 bisheng `-xasc` 在 `__aicore__` 内无法解析 host `std::min` 两参数重载的精确诊断；Utils `min` 卡给出 device 可见的 `__host__ __aicore__` 二元比较接口及同类型实参合同，可用于区分“host std 重载不可见”和“设备侧 min 能力不存在”。
+- [Utils APImax](max.md)（`related`）：Utils APImin 与《Utils APImax》的实质衔接是：Utils min 与 Utils max 是同一比较模板的成对边界：输入类型约束相同，只把返回选择从较小值切换为较大值；未将算法目录中的所有成员相连。
+<!-- cannbot:related:end -->

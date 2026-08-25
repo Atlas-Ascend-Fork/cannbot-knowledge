@@ -18,3 +18,10 @@ Lock 接口根据 MutexID 获取 Mutex，若已被锁定则阻塞后续指定流
 TPipe-TQue 框架编程范式下 MutexID 通过 AllocMutexID/ReleaseMutexID 申请释放；静态 Tensor 编程范式下由开发者自行管理，建议使用 0-27，28-31 为系统预留。
 相比 SetFlag/WaitFlag 同步机制，Lock/Unlock 接口内聚性更强、与其他流水线解耦、可简化反向同步，且支持更多同步信号量。
 仅 Ascend 950PR/950DT 支持，接口标注为 ISASI 类别，不保证跨硬件版本兼容。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Lock](lock.md)（`same_topic`）：Lock 与《Mutex(ISASI)》的实质衔接是：Lock 必须用 AllocMutexID 得到 mutex，并与 Unlock、ReleaseMutexID 成对；C Lock/Unlock 和核内同步概述共享同一阻塞流水契约。
+- [ReleaseMutexID](release_mutex_id_isasi.md)（`same_topic`）：ReleaseMutexID 与《Mutex(ISASI)》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
+<!-- cannbot:related:end -->

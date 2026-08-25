@@ -39,3 +39,12 @@ Atlas 训练系列产品
 无
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [直调共享库加载未定义平台符号—补齐CANN链接依赖](../../../runbooks/compilation/platform_manager_shared_library_link_dependencies.md)（`exemplifies`）：PlatformAscendCManager 正文明确要求包含 platform_ascendc.h 并链接 tiling_api、platform 动态库，正是 Runbook 处理的未定义符号依赖契约。
+- [AddPlatformInfo](../tiling_tuning/context_builder/add_platform_info.md)（`related`）：AddPlatformInfo 与《PlatformAscendCManager》的实质衔接是：AddPlatformInfo 把 PlatformInfo 注入 ContextBuilder，随后 BuildTiling/KernelRunContext 消费；PlatformAscendC/Manager 是平台能力信息的来源。
+- [PlatformAscendC](platform_ascend_c/platform_ascend_c.md)（`related`）：《PlatformAscendCManager》明确“Kernel直调场景下获取硬件平台信息的单例管理类，通过GetInstance获取PlatformAscendC指针以访问核数等平台信息。”；它与《PlatformAscendC》的“PlatformAscendC平台信息查询接口索引。”在实际调用参数、数据流或结果校验上直接衔接。
+- [PlatformAscendC简介](platform_ascend_c/platform_ascend_c_intro.md)（`related`）：《PlatformAscendC简介》的任务是“在实现Host侧的Tiling函数时，可能需要获取一些硬件平台的信息，来支撑Tiling的计算，比如获取硬件平台的核数等信息。PlatformAscendC类提供获取这些平台信息的功能。”。《PlatformAscendCManager》具体提供“Kernel直调场景下获取硬件平台信息的单例管理类，通过GetInstance获取PlatformAscendC指针以访问核数等平台信息。”，它直接用于PlatformAscendC 的获取入口、兼容性和链接/SoC 枚举故障。
+<!-- cannbot:related:end -->

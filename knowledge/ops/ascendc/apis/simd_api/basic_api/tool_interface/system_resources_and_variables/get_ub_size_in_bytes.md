@@ -18,3 +18,10 @@ platforms: ['950']
 获取UB空间的大小，单位为Byte。开发者根据UB的大小来计算循环次数等参数值。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [独立 TBuf.Get 返回重叠 UB 地址 dav-2201](../../../../../runbooks/compilation/tbuf_get_ub_dav_2201.md)（`exemplifies`）：需先核算 UB 总量排除容量不足，再检查实际地址重叠；GetUBSizeInBytes 提供容量探针。
+- [GetRuntimeUBSize](get_runtime_ub_size.md)（`same_topic`）：两接口都返回当前核可用 UB 字节数；GetRuntimeUBSize 强调运行时查询，GetUBSizeInBytes 提供同一资源量的另一入口。
+<!-- cannbot:related:end -->

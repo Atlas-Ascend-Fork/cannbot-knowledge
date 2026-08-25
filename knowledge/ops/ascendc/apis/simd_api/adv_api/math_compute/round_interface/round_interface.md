@@ -29,3 +29,12 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Lroundf](../../../../simt_api/math_functions/float_math_functions/lroundf.md)（`related`）：Lroundf 与《Round接口》的实质衔接是：Lroundf 与 llroundf/roundf 及高阶/C API Round 共享舍入任务，RoundMode 解释 ties 与返回整数宽度的选择。
+- [舍入模式与饱和模式](../../../c_api/reg/data_type_convert/rounding_mode.md)（`related`）：Round接口说明按元素四舍五入到最接近的整数，并提供临时空间大小获取接口。
+- [GetRoundTmpBufferFactorSize](get_round_tmp_buffer_factor_size.md)（`same_topic`）：Round接口说明按元素四舍五入到最接近的整数，并提供临时空间大小获取接口。
+- [Round](round.md)（`same_topic`）：Round：Round 的 kernel 调用直接依赖同名临时空间接口；AscRound/Roundf提供不同编程模型下相同 ties-to-even 语义的对照。 目标卡《Round接口》补充：按元素四舍五入到最接近的整数，并提供临时空间大小获取接口。
+<!-- cannbot:related:end -->

@@ -27,3 +27,9 @@ platforms: [agnostic]
 OpDef算子定义，OpDef请参考OpDef。
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Format（OpParamDef）](format.md)（`same_topic`）：《Format（OpParamDef）》明确“定义算子参数数据格式。”；它与《UnknownShapeFormat》的“已废弃接口，设置未知Shape情况下的Format默认值，请统一使用Format接口替代。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

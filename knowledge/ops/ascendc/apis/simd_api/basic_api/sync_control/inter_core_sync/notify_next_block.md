@@ -26,3 +26,10 @@ WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合
 - gmWorkspace申请的空间最少要求为：GetBlockNum()*32Bytes，ubWorkspace申请的空间最少要求为：GetBlockNum()*32+32Bytes。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [InitDetermineComputeWorkspace](init_determine_compute_workspace.md)（`same_topic`）：InitDetermineComputeWorkspace：InitDetermineComputeWorkspace初始化确定性核间顺序执行所需GM空间，随后每核严格调用WaitPreBlock/NotifyNextBlock；workspace指南说明共享区的申请与传入。 目标卡《NotifyNextBlock》补充：通过写全局内存通知后序核当前核已执行完成，与WaitPreBlock和InitDetermineComputeWorkspace配合实现AIV核按blockIdx升序执行的确定性计算。
+- [WaitPreBlock](wait_pre_block.md)（`same_topic`）：WaitPreBlock 与《NotifyNextBlock》的实质衔接是：WaitPreBlock 必须与 NotifyNextBlock 等次数配对并先初始化 workspace；GetBlockNum 决定 GM/UB workspace 下限，关键特性说明其按 blockIdx 串行的确定性语义。
+<!-- cannbot:related:end -->

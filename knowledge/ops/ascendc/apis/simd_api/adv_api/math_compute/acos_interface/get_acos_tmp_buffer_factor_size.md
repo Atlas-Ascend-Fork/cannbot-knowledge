@@ -22,3 +22,12 @@ platforms: ['950', a2, a3]
 - typeSize（输入）：输入的数据类型大小，单位为字节。比如输入的数据类型为half，此处应传入2。
 - maxLiveNodeCount（输出）：最大存活节点数，表示临时空间是单次计算数据量所占空间的多少倍。
 - extraBuffer（输出）：使用的额外临时空间大小，单位为字节。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Acos](acos.md)（`related`）：当已有固定临时空间预算时，GetAcosTmpBufferFactorSize 可反推 Acos 单次可处理元素量，补足容量受限时的 tiling 决策。
+- [Acos接口](acos_interface.md)（`related`）：Acos接口 负责“提供Acos反余弦计算接口及其Tiling临时空间大小查询接口，包含Acos、GetAcosMaxMinTmpSize等”；GetAcosTmpBufferFactorSize 负责“获取Acos接口的maxLiveNodeCount和extraBuf，用于推算固定空间下单次最大计算元素数”。
+- [GetAcosMaxMinTmpSize](get_acos_max_min_tmp_size.md)（`related`）：GetAcosMaxMinTmpSize 与《GetAcosTmpBufferFactorSize》的实质衔接是：Acos 的 host 临时空间查询必须与 kernel Acos、接口封装及 factor-size 推算使用同一 shape/typeSize/复用策略。
+- [更多样例（数学计算）](../more_examples.md)（`related`）：样例三需分别计算 Asin、Acos 的单次最大元素数并取较小值，目标接口提供 Acos 这一半的 factor 参数。
+<!-- cannbot:related:end -->

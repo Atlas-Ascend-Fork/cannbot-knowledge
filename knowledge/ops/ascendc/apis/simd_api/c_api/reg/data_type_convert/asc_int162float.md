@@ -24,3 +24,10 @@ platforms: ['950']
 约束：mask控制源操作数是否参与计算，源操作数不参与计算的元素在输出对应位置置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscInt162float](../../vector_compute/asc_int162float.md)（`related`）：两卡都定义 int16→float 转换；Reg 版本还要求按奇偶半区处理 1:2 位宽展开，UB 版本提供 count 型连续转换，可据布局选择路径。
+- [AscInt642Float](asc_int642float.md)（`same_topic`）：AscInt642Float 与《AscInt162Float》的实质衔接是：AscInt64ToFloat 的 Vector 对应入口、反向 FloatToInt64、其他整数宽度和 Int64ToInt32 共同解释 2:1 lane 分布及窄化/扩宽边界。
+<!-- cannbot:related:end -->

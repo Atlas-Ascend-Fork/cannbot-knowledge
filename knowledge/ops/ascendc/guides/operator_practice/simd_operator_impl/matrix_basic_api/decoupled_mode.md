@@ -32,3 +32,10 @@ Ascend C Matmul算子设计规格
 核函数中，算子类的Init函数，完成内存初始化相关工作，Process函数完成算子实现的核心逻辑。核函数在开始时调用AscendC::InitSocState()初始化硬件状态，结束时调用AscendC::PipeBarrier()等待所有指令完成。
 ## 算子类实现
 在分离模式中，一个Matmul矩阵乘算子的实现分为以下四步流水。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SIMD算子实现耦合模式](coupled_mode.md)（`same_topic`）：《SIMD算子实现耦合模式》说明>本节内容为针对耦合模式，使用基础API进行矩阵乘法的编程指导。；《SIMD算子实现分离模式》说明>本节内容为针对分离模式，使用基础API进行矩阵乘法的编程指导。。二者在耦合Cube范式的CopyIn/Split/Compute/CopyOut直接由DataCopy、LoadData、Mmad和TQue交接实现上存在可执行的直接衔接。
+- [算子实现](../matrix_advanced_api/operator_impl.md)（`same_topic`）：算子实现 与《SIMD算子实现分离模式》的实质衔接是：该指南的核心是 host tiling→kernel Matmul 对象→Set A/B→Iterate/IterateAll→End；耦合模式、异步迭代与 CUBE_ONLY 故障直接约束实现选择。
+<!-- cannbot:related:end -->

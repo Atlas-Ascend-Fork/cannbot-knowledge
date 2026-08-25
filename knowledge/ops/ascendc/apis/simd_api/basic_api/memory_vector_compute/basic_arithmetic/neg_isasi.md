@@ -20,3 +20,10 @@ platforms: ['950']
 支持 int8_t、int16_t、half、int32_t、float、int64_t 数据类型。
 约束：操作数地址对齐与重叠约束参考通用约束文档。
 针对 Ascend 950PR/950DT，该接口为软仿接口，通过 VF 调用 Reg 矢量计算 API 实现兼容。仅 Ascend 950PR/950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscNeg](../../../c_api/reg/arithmetic_compute/asc_neg.md)（`related`）：AscNeg 与《Neg》的实质衔接是：AscNeg 的 C++/Vector 入口执行算术取负，AscNot 是按位取反的近名反例，可防止把数值负号与 bitwise NOT 混用。
+- [Neg](../../reg_vector_compute/basic_arithmetic/neg.md)（`related`）：“Neg”处理根据mask对源操作数srcReg逐元素取相反数，将结果写入目的操作数dstReg。；“Neg”明确单目矢量计算接口，对输入tensor按元素取相反数。。实质衔接：Reg C++ Neg 与 AscNeg 共享 mask/寄存器逐元素取反契约，Memory Neg 则给出 Tensor 路径的等价选择。
+<!-- cannbot:related:end -->

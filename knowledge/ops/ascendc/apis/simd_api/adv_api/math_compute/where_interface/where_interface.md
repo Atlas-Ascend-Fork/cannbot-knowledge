@@ -29,3 +29,9 @@ platforms: ['950']
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Where（数学计算）](where.md)（`same_topic`）：《Where接口》明确“根据条件从两个源操作数中选择元素生成目标操作数，并提供临时空间大小获取接口。”；它与《Where（数学计算）》的“根据指定的条件，从两个源操作数中选择元素，生成目标操作数。两个源操作数均可以是LocalTensor或标量。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

@@ -42,3 +42,10 @@ platforms: [a2]
 ## 验证优化方案性能收益
 -   将AI Core中的AIC和AIV启动比例设置为1:2后，执行总耗时从218.1us下降为154.2us。指令流水图显示Cube计算间等待变小。
 -   如上图所示，Vector计算已经不处于bound状态，但Cube和Vector计算都有间隙，未被充分利用（上述两个箭头的位置）。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Matmul高阶API开启IBShare模板共享B矩阵数据](matmul_tuning_cases/matmul_ibshare_b.md)（`related`）：Matmul高阶API开启IBShare模板共享B矩阵数据 与《GroupedMatmul算子性能调优案例》的实质衔接是：IBShare 的 B-only 配置受 MatmulConfig、tiling 策略、preload/MDL 和 kernel Iterate 契约共同约束，直接影响 L1 复用。
+- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`related`）：GroupedMatmul 调优案例采用 AIC:AIV=1:2 和双 AIV 协作；该构建卡定位同一 1:2 模式下 subBlock/flag 不匹配导致同步失败，补足可执行同步约束。
+<!-- cannbot:related:end -->

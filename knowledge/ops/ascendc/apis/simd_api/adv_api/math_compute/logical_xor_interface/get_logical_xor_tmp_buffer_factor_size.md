@@ -22,3 +22,11 @@ platforms: ['950']
 参数：ascendcPlatform为平台信息；typeSize为输入数据类型字节数（half传2）；maxLivedNodeCount输出最大存活节点数；extraBuf输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuf) / maxLivedNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLivedNodeCount可能为0，计算时需判断避免除零错误。
 
 约束：当反推出的currentShapeSize * typeSize < 256B时，currentShapeSize按256B/typeSize向上取整。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LogicalXor接口](logical_xor_interface.md)（`related`）：factor 查询提供另一种 LogicalXor workspace 计算方式，可按 tiling 形态选择。
+- [GetLogicalXorMaxMinTmpSize](get_logical_xor_max_min_tmp_size.md)（`same_topic`）：GetLogicalXorTmpBufferFactorSize 与《GetLogicalXorMaxMinTmpSize》的实质衔接是：factor 查询与 GetLogicalXorMaxMinTmpSize 是同一 LogicalXor 临时空间的两种 Host 侧规划方式，LogicalXor 接口页和算子卡说明该空间由逐元素逻辑异或直接消费。
+- [LogicalXor](logical_xor.md)（`same_topic`）：GetLogicalXorTmpBufferFactorSize 与《LogicalXor》的实质衔接是：factor 查询与 GetLogicalXorMaxMinTmpSize 是同一 LogicalXor 临时空间的两种 Host 侧规划方式，LogicalXor 接口页和算子卡说明该空间由逐元素逻辑异或直接消费。
+<!-- cannbot:related:end -->

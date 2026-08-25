@@ -23,3 +23,10 @@ platforms: ['950', a2, a3]
 参数：countValue: 指定要查找的比特值，取值为0或1。；valueIn(输入): 被查找的二进制数字。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [asc_ffs（标量计算）](../../c_api/scalar_compute/asc_ffs.md)（`same_topic`）：《GetSFFValue》说明查找uint64_t数值二进制表示中从最低有效位开始的首个指定比特值位置，未找到则返回-1。；《asc_ffs（标量计算）》说明FindFirstSet接口，输入数据的二进制表示中从最低位向最高位查找第一个值为1的位，并返回其位置，如果没找到则返回-1。。二者在GetSFFValue按countValue查最低位首个0或1，asc_ffs与asc_ffz分别对应这两个可执行分支上存在可执行的直接衔接。
+- [asc_ffz（标量计算）](../../c_api/scalar_compute/asc_ffz.md)（`same_topic`）：《GetSFFValue》说明查找uint64_t数值二进制表示中从最低有效位开始的首个指定比特值位置，未找到则返回-1。；《asc_ffz（标量计算）》说明获取一个uint64_t类型数字的二进制表示中从最低有效位开始的第一个0出现的位置，如果没找到则返回-1。。二者在GetSFFValue按countValue查最低位首个0或1，asc_ffs与asc_ffz分别对应这两个可执行分支上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

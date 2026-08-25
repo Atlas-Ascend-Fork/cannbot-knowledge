@@ -20,3 +20,9 @@ host侧Tiling接口，用于获取Normalize kernel计算所需的Tiling参数，
 GetNormalizeMaxMinTmpSize参数：ascendcPlatform平台信息；srcShape输入shape；typeSize数据类型字节数；isReuseSource预留传false；maxValue/minValue输出临时空间范围。
 
 GetNormalizeNDTilingInfo参数：ascendcPlatform平台信息；输入shape各维度(A,R)；typeSize数据类型字节数；maxTmpSize可用临时空间；tiling输出NormalizeTiling结构体。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Normalize](normalize.md)（`same_topic`）：Normalize 与《Normalize Tiling》的实质衔接是：Normalize 依赖 tiling、归约统计和 Rsqrt，所选卡片覆盖 padding、NaN/rstd 与同步故障。
+<!-- cannbot:related:end -->

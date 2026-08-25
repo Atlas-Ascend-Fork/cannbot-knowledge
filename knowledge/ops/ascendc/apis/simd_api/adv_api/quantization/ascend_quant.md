@@ -22,3 +22,12 @@ platforms: ['950', a2, a3]
 提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持不同量化场景和舍入模式配置。临时空间大小通过GetAscendQuantMaxMinTmpSize获取。接口参数包含dstTensor输出、srcTensor输入、scale/offset量化系数、sharedTmpBuffer临时缓存、params参数信息。TPosition支持VECIN/VECCALC/VECOUT。
 
 约束：最多支持二维输入；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscendAntiQuant](ascend_anti_quant.md)（`related`）：AscendAntiQuant 与《AscendQuant》的实质衔接是：AscendAntiQuant 依赖两种空间查询，generic AntiQuant 是同任务入口，AscendQuant 是逆过程；scale 错配卡直接约束分组反量化。
+- [GetAscendQuantMaxMinTmpSize](get_ascend_quant_max_min_tmp_size.md)（`same_topic`）：该接口给出 AscendQuant 可用 workspace 上下界，是调用旧接口前的直接 Tiling 配套。
+- [GetAscendQuantTmpBufferFactorSize](get_ascend_quant_tmp_buffer_factor_size.md)（`same_topic`）：factor-size 依据固定空间反推 AscendQuant 单次处理量，与 max/min 查询共同完成分片设计。
+- [Quantize](quantize.md)（`same_topic`）：文档明确推荐用 Quantize 替代 AscendQuant；新接口保留量化任务并扩展 PER_GROUP 与舍入配置。
+<!-- cannbot:related:end -->

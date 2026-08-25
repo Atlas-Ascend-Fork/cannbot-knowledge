@@ -24,3 +24,9 @@ platforms: ['950', a2, a3]
 - 该指令执行前不会对GM的数据做清零操作，开发者需在需要时手动添加清零操作。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscSetAtomicNone](../simd_atomic/asc_set_atomic_none.md)（`related`）：设置原子加状态后需用 asc_set_atomic_none 关闭原子模式，避免后续搬运继续累加。
+<!-- cannbot:related:end -->

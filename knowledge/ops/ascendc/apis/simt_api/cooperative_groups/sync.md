@@ -18,3 +18,12 @@ platforms: ['950']
 函数原型：void sync(const GroupType& g)
 约束：对于grid_group，该接口仅支持SIMT编程场景，不支持SIMD与SIMT混合编程场景。；必须保证协作组内所有线程都能执行到同一个sync(g)调用，否则是未定义行为。
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CoalescedGroup协作组sync](coalesced_group/sync.md)（`same_topic`）：coalesced_group 版本同步当前收敛线程集合；分支发散后的组成员语义与静态 tile 不同。
+- [Grid协作组sync](grid_group/sync.md)（`same_topic`）：sync（协作组）说明同步指定协作组内的所有线程，功能等价于调用该协作组对象的成员函数sync()。
+- [ThreadBlockTile协作组sync](thread_block_tile/sync.md)（`same_topic`）：thread_block_tile 版本只同步 tile 子组，适合固定小线程协作范围。
+- [ThreadBlock协作组sync](thread_block/sync.md)（`same_topic`）：对 thread_block 调用时同步范围收缩到当前线程块，避免不必要的跨块等待。
+<!-- cannbot:related:end -->

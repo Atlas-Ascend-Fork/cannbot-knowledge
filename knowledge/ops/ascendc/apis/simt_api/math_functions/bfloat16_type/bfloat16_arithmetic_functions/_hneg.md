@@ -18,3 +18,11 @@ platforms: ['950']
 函数原型：bfloat16_t __hneg(const bfloat16_t x)
 返回值：输入数据的负值。本接口不受全局饱和模式影响，特殊值如下：
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hnegx2](../../half_type/half2_arithmetic_functions/_hnegx2.md)（`related`）：《__hnegx2》处理“获取输入half2类型数据各分量的负值。”。《__hneg》明确提供“获取输入bfloat16类型数据的负值。”，其参数、调用或验证步骤直接接入half2 逐 lane 取负与 bfloat16x2/scalar half 对应实现。
+- [__hneg](../../half_type/half_arithmetic_functions/_hneg.md)（`same_topic`）：bfloat16 版本执行同一取负，源精度不同。
+- [__hnegx2](../bfloat16x2_arithmetic_functions/_hnegx2.md)（`same_topic`）：__hneg 与 __hnegx2 都对 bfloat16 数据逐分量取负，x2 版本只是把同一操作打包到两个 lane。
+<!-- cannbot:related:end -->

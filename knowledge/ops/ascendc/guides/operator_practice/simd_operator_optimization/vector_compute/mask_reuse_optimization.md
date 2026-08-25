@@ -33,3 +33,16 @@ platforms: [a2, a3]
 **图1**  代码优化
 
 理论分析：SetMaskCount、SetMask、ResetMask、SetMaskNorm四个接口，每个接口调用耗时1cycle，连续调用180次Adds计算接口，共节省4×180 = 720cycles。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscSetMaskCount](../../../../apis/simd_api/c_api/vector_compute/asc_set_mask_count.md)（`explains`）：计数模式可把一次 mask 配置跨多指令复用。
+- [MaskReg](../../../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/mask_reg.md)（`explains`）：MaskReg 与《基于全局掩码复用的计算性能优化》的实质衔接是：MaskReg 定义有效 lane，直接被 Load/Store、MaskGen 与 MaskReg 计算消费；C 创建/更新接口、merge mode、复用指南和两个编译故障明确其构造约束。
+- [Mask接口汇总（附录）](../../../../apis/appendix/mask_interface_summary.md)（`explains`）：Mask 支持矩阵界定哪些接口可复用全局 mask。
+- [SetMaskNorm](../../../../apis/simd_api/basic_api/memory_vector_compute/mask_operations/set_mask_norm.md)（`explains`）：SetMaskNorm 与《基于全局掩码复用的计算性能优化》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [VfFusionOptimization](vf_optimization/vf_fusion_optimization.md)（`related`）：VF fusion 可减少重复 mask 设置，但需保持 mask 生命周期。
+- [arch35 Select VSEL_CMPMASK_SPR 每 64 元素复用](../../../../runbooks/precision/arch35_select_vsel_cmpmask_spr_mask_reuse_count_over_64.md)（`related`）：该卡证明错误跨 repeat 复用 cmpmask 会污染后续元素，给出复用边界。
+- [中级性能优化](../../typical_operator_cases/simd_operator_impl/add_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《基于全局掩码复用的计算性能优化》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
+- [指令双发优化](vf_optimization/dual_issue_optimization.md)（`related`）：指令双发优化 与《基于全局掩码复用的计算性能优化》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+<!-- cannbot:related:end -->

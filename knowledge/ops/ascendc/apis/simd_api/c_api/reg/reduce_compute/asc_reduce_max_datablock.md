@@ -25,3 +25,12 @@ platforms: ['950']
 - 仅输出最值，不输出索引下标。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscDatablockReduceMax](../../vector_compute/asc_datablock_reduce_max.md)（`related`）：两卡都对每个 32B DataBlock 求最大值；Memory C API 从 UB 输入，Reg API 在 mask 下把各块最大值连续写到 dst 低位并明确全 mask 块为 -inf。
+- [AscReduceSumDatablock](asc_reduce_sum_datablock.md)（`related`）：Max/Min/Sum Datablock 共享粒度但聚合运算不同。
+- [AscReduceMax](asc_reduce_max.md)（`same_topic`）：AscReduceMax 与《AscReduceMaxDatablock》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+- [AscReduceMinDatablock](asc_reduce_min_datablock.md)（`same_topic`）：AscReduceMinDatablock 与《AscReduceMaxDatablock》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+<!-- cannbot:related:end -->

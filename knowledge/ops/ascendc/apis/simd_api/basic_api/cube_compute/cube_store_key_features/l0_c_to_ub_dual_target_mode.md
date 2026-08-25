@@ -62,3 +62,11 @@ M方向切分：
 **图2** NZ2ND参数双搬入模式设置示意图
 
 完整样例可参考fixpipe_l0c2ub。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [L0C Buffer到Unified Buffer双目标模式](../../cube_compute_tensor_api/cube_store_key_features/l0c_to_ub_dual_dst.md)（`related`）：TensorAPI 卡描述相同 L0C→双 UB 拆分能力，可对照 ISASI 与 TensorAPI 的配置入口。
+- [DataCopy（L0C Buffer到UB数据搬运）](../cube_compute_store/data_copy_l0_c_to_ub.md)（`same_topic`）：DataCopy（L0C Buffer到UB数据搬运） 与《L0C Buffer到UB双目标模式》的实质衔接是：L0C 到 UB 搬出依赖 L0C 布局、Copy/Fixpipe、双目标模式和对齐/stride 约束。
+- [FixpipeL0CToUB](../cube_compute_store/fixpipe_l0_c_to_ub.md)（`same_topic`）：FixpipeL0CToUB 与《L0C Buffer到UB双目标模式》的实质衔接是：Fixpipe L0C→UB 的搬出依赖 L0C 布局、Fixpipe 配置/地址、clip/quant 标志及双目标模式，所选卡均直接改变这条搬运。
+<!-- cannbot:related:end -->

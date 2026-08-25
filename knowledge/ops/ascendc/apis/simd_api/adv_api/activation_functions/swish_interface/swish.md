@@ -33,3 +33,12 @@ __aicore__ inline void Swish(const LocalTensor<T>& dstLocal, const LocalTensor<T
 - 当前仅支持ND格式的输入，不支持其他格式。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Sigmoid](../sigmoid_interface/sigmoid.md)（`related`）：Swish 与《Sigmoid》的实质衔接是：Swish kernel 与临时空间查询直接配套；SiLU 是 beta=1 的同公式变体，Sigmoid 是门控项。
+- [GetSwishTmpSize](get_swish_tmp_size.md)（`same_topic`）：Swish 与《GetSwishTmpSize》的实质衔接是：Swish kernel 与临时空间查询直接配套；SiLU 是 beta=1 的同公式变体，Sigmoid 是门控项。
+- [Silu](../silu_interface/silu.md)（`same_topic`）：Swish 与《Silu》的实质衔接是：Swish kernel 与临时空间查询直接配套；SiLU 是 beta=1 的同公式变体，Sigmoid 是门控项。
+- [Swish接口](swish_interface.md)（`same_topic`）：Swish 与《Swish接口》的实质衔接是：Swish kernel 与临时空间查询直接配套；SiLU 是 beta=1 的同公式变体，Sigmoid 是门控项。
+<!-- cannbot:related:end -->

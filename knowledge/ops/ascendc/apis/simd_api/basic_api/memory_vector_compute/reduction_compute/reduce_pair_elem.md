@@ -27,3 +27,12 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ResetMask](../mask_operations/reset_mask.md)（`related`）：手动设置 mask 后必须 ResetMask，避免 SPR 状态污染后续 Vector 指令；这是 focal 明确要求的调用后清理动作。
+- [SetMaskCount](../mask_operations/set_mask_count.md)（`related`）：计数模式 ReducePairElem 需要先由 SetMaskCount 配置 mask 计数语义，否则 repeat 解释会与预期不一致。
+- [SetMaskNorm](../mask_operations/set_mask_norm.md)（`related`）：ReducePairElem 在 isSetMask=false 时要求调用者预先设置连续模式 mask，SetMaskNorm 正是建立该模式的前置步骤。
+- [PairReduceElem](../../reg_vector_compute/reduction_compute/pair_reduce_elem.md)（`same_topic`）：《PairReduceElem》处理“将源寄存器中相邻两个数值相加，结果保存在目的寄存器的低位位置。”。《ReducePairElem》明确提供“对相邻两个元素进行归约求和操作，结果按顺序写入目标地址。”，其参数、调用或验证步骤直接接入PairReduceElem 的寄存器规约语义、C 层等价入口和跨 chunk 正确性。
+<!-- cannbot:related:end -->

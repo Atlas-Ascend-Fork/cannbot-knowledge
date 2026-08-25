@@ -22,3 +22,9 @@ platforms: [agnostic]
 OpHostCPUDef算子定义，OpHostCPUDef请参考OpHostCPUDef。
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FlagAsync](../op_aicpu_def/flag_async.md)（`same_topic`）：FlagAsync 与《FlagAsync》的实质衔接是：FlagAsync 是 OpAICPUDef 的预留注册属性且必须固定 false；HostCPU 同名字段、FlagPartial 和类定义用于避免把它误解为运行时异步同步开关。
+<!-- cannbot:related:end -->

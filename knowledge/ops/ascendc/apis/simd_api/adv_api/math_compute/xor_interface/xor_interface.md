@@ -29,3 +29,11 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetXorMaxMinTmpSize](get_xor_max_min_tmp_size.md)（`related`）：This host query supplies the minimum and maximum workspace for invoking Xor.
+- [AscXor](../../../c_api/reg/logic_compute/asc_xor.md)（`same_topic`）：AscXor 与《Xor接口》的实质衔接是：高阶 Xor、基础 Reg Xor 和 AscXor 完成同一逐元素异或，差异在 LocalTensor/RegTensor/C Reg 入口和工作区管理。
+- [GetXorTmpBufferFactorSize](get_xor_tmp_buffer_factor_size.md)（`same_topic`）：《Xor接口》明确“按元素执行异或（Xor）运算，并提供临时空间大小获取接口。”；它与《GetXorTmpBufferFactorSize》的“获取maxLiveNodeCount和extraBuf，用于推算Xor接口在固定临时空间下单次最大计算元素数量。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

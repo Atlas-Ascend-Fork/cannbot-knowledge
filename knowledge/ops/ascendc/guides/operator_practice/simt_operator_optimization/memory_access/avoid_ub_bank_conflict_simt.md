@@ -26,3 +26,9 @@ SIMT编程方式下，bank冲突为更细粒度的subbank冲突，主要有以�
 【反例】矩阵转置使用UB做中转，转置读阶段产生较严重bank冲突。
 上述实现通过UB中转保证了GM读写连续，这里的UB中的tile数组表示用于暂存32×32矩阵块的二维UB数组。tile数组的数据在UB中的排布为32×32。每行32个float，共128B，恰好跨越4个bank。转置写回时，同一个Warp的线程会读取UB中的一列元素，即访问tile[tx][ty]。由于行跨度固定为32个float，32个线程读取同一列时，访问地址会集中落到两个bank group的subbank 0，属于读读冲突场景。
 下图展示了UB中的tile数组前12行元素按照行优先存储的排布，其中蓝色标记表示每行的第一个元素。按照地址低位交织规则，tile数组的第1行覆盖bank0到bank3，第2行覆盖bank4到bank7，第3行覆盖bank8到bank11，其余行依次类推。在32×32的UB tile中，同一个Warp的32个线程读取同一列时，会集中访问两个bank group的subbank 0。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [避免bank冲突（NPU架构版本3510）](../../simd_operator_optimization/memory_access/avoid_ub_bank_conflict/avoid_bank_conflict_npu_arch_3510.md)（`related`）：两张卡都处理 3510 UB bank 冲突；SIMT 卡强调线程/warp 访问，SIMD 卡给出 bank group、subbank 及连续/离散访存冲突模型，可互补定位同一硬件瓶颈。
+<!-- cannbot:related:end -->

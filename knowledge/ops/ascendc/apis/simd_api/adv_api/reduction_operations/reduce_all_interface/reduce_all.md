@@ -24,3 +24,11 @@ platforms: ['950', a2, a3]
 接口参数：dstTensor输出；srcTensor输入；sharedTmpBuffer临时缓存；srcShape输入shape数组；srcInnerPad指示内轴是否已补齐。TPosition支持VECIN/VECCALC/VECOUT。
 
 约束：遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ReduceAny](../reduce_any_interface/reduce_any.md)（`related`）：ReduceAny 与 ReduceAll 仅逻辑谓词不同，是判断“全部为真”还是“至少一个为真”的直接接口选型。
+- [GetReduceAllMaxMinTmpSize](get_reduce_all_max_min_tmp_size.md)（`same_topic`）：焦点处理ReduceAll 临时空间上下界与 ReduceAll 执行接口；ReduceAll正文说明“对一个多维向量在指定的维度求逻辑与。 定义指定计算的维度（Reduce轴）为R轴，非指定维度（Normal轴）为A轴。如下图所示，对shape为\(2, 3\)的二维矩阵进行运算，指定在第一维求逻辑与，输出结果为\[1, 0, 0\]；指定在第二维求逻辑与，输出结果为\[0, 0”。候选消费该查询结果或定义同一 ReduceAll workspace 契约。
+- [ReduceAll接口](reduce_all_interface.md)（`same_topic`）：ReduceAll说明对一个多维向量在指定的维度求逻辑与。 定义指定计算的维度（Reduce轴）为R轴，非指定维度（Normal轴）为A轴。如下图所示，对shape为\(2, 3\)的二维矩阵进行运算，指定在第一维求逻辑与，输出结果为\[1, 0, 0\]；指定在第二维求逻辑与，输出结果为\[0, 0\]。 图1 ReduceAll按第一个维度计算示例 ! 图2 ReduceAll按最后一个维度计算示例 !。
+<!-- cannbot:related:end -->

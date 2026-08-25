@@ -25,3 +25,9 @@ platforms: [agnostic]
 OpAICoreConfig类，请参考OpAICoreConfig。
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SetCheckSupport](../op_ai_core_def/set_check_support.md)（`related`）：NeedCheckSupportFlag=true 只会在已通过 SetCheckSupport 注册回调时触发 dtype/shape 校验；二者必须配套。
+<!-- cannbot:related:end -->

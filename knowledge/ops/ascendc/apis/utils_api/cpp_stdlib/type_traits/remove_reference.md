@@ -23,3 +23,11 @@ platforms: ['950', a2, a3]
 返回值：remove_reference是一个结构体，其提供一个嵌套类型type，表示移除引用限定符后的类型。通过remove_reference::type来访问该类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [add_lvalue_reference](add_lvalue_reference.md)（`related`）：add_lvalue_reference 与 remove_reference 对同一左值引用限定做添加和消除，是模板参数规范化后的逆向变换。
+- [is_reference](is_reference.md)（`related`）：is_reference 先判定 Tp 是否为 T&/T&&，remove_reference 再把引用类型规范化为底层类型，是泛型分派中的检测—变换链。
+- [add_rvalue_reference](add_rvalue_reference.md)（`same_topic`）：remove_reference 是添加引用的逆变换，可恢复基础类型后继续类型判断。
+<!-- cannbot:related:end -->

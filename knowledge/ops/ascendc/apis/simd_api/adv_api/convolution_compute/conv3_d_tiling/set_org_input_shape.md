@@ -23,3 +23,9 @@ platforms: [a2, a3]
 - orgDi（输入）：原始Input D维度大小。
 - orgHi（输入）：原始Input H维度大小。
 - orgWi（输入）：原始Input W维度大小。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Conv3D Tiling使用说明](conv3_d_tiling_usage.md)（`related`）：The Conv3D tiling flow requires original input shape alongside type, weight/output shapes, padding, stride, and dilation before GetTiling.
+<!-- cannbot:related:end -->

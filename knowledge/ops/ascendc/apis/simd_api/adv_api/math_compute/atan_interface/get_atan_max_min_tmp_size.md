@@ -25,3 +25,11 @@ kernel侧Atan接口的计算需要开发者预留 申请临时空间，本接口
 - isReuseSource（输入）：是否复用源操作数输入的空间，与Atan接口一致。
 - maxValue（输出）：Atan接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。
 - minValue（输出）：Atan接口能完成计算所需最小临时空间大小。为保证功能正确，接口计算时预留 申请的临时空间不能小于该数值。最小空间大小为0表示计算不需要临时空间。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Atan](atan.md)（`related`）：GetAtanMaxMinTmpSize 在 Host 侧给出 Atan Kernel 的临时空间上下界，结果直接决定 sharedTmpBuffer 分配。
+- [Atan接口](atan_interface.md)（`same_topic`）：《Atan接口》处理“提供Atan反正切计算接口及其Tiling临时空间大小查询接口，包含Atan、GetAtanMaxMinTmpSize等。”。《GetAtanMaxMinTmpSize》明确提供“在host侧获取Atan接口预留临时空间的最大和最小值，用于Tiling参数选择”，其参数、调用或验证步骤直接接入Atan Kernel 调用、临时空间查询和 SIMT 对应实现。
+- [GetAtanTmpBufferFactorSize](get_atan_tmp_buffer_factor_size.md)（`same_topic`）：两者分别以形状上下界和线性因子描述同一个 Atan 临时空间需求，可结合可用 UB 选择 tiling 空间。
+<!-- cannbot:related:end -->

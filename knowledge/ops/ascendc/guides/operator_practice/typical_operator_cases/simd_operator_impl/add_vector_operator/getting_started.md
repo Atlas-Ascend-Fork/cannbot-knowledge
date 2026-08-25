@@ -32,3 +32,12 @@ Add算子的计算逻辑遵循"搬入-计算-搬出"三段式流水结构：
 - DataCopy：用于在GM和UB之间搬运数据的API。
 - PipeBarrier：流水线同步屏障，确保数据搬运完成后再执行后续操作。
 - block_idx：通过GetBlockIdx()获取当前核编号，用于多核并行时的数据分片。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Add算子快速入门](../../../../getting_started/quick_start/simd_programming/add_op_quick_start.md)（`related`）：快速入门覆盖 C/C++ Device kernel、Host 分配/launch/同步全流程，而本卡深入 TQue 和分块 Kernel 类；两者互补建立端到端与 Device 细节。
+- [基础矢量算子](../../../simd_operator_impl/vector_programming/basic_vector_operator.md)（`related`）：《基础矢量算子》说明基于Ascend C方式实现基础矢量算子核函数的流程如下图所示。；《入门功能落地》说明本节以Add（向量加法）算子为例，介绍基于Ascend C编程模型实现向量算子的基本方法，帮助开发者快速入门SIMD算子开发。。二者在基础矢量实现把多核切分、TBuf/TQue、双缓冲、非对齐CopyIn和Add计算串成可执行流程上存在可执行的直接衔接。
+- [中级性能优化](intermediate_optimization.md)（`same_topic`）：中级性能优化 与《入门功能落地》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
+- [高阶性能打磨](advanced_optimization.md)（`same_topic`）：高级篇继续消费同一 Add 案例的已优化基线，属于从功能正确到性能打磨的后续阶段。
+<!-- cannbot:related:end -->

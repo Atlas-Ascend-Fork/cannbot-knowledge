@@ -38,3 +38,11 @@ aiv_mte2_ratio：0.005：0.973：0.961
 - 向量指令耗时从12.846μs降至6.954μs，接近Atlas A2训练系列48核理论vector耗时5.904μs
 - Case 6的读写混合带宽达到2.3456 TB/s，接近硬件带宽上限
 最终结论：Add算子经过入门→中级→高阶三级优化，端到端性能提升6711倍。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SetL2CacheHint](../../../../../apis/simd_api/basic_api/data_structures/global_tensor/set_l2_cache_hint.md)（`explains`）：该优化用 SetL2CacheHint(CACHE_MODE_DISABLE) 绕过只读一次输入的 L2，给出 28.9% 搬运耗时下降的具体选型证据。
+- [中级性能优化](intermediate_optimization.md)（`same_topic`）：中级性能优化 与《高阶性能打磨》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
+- [入门功能落地](getting_started.md)（`same_topic`）：高级篇继续消费同一 Add 案例的已优化基线，属于从功能正确到性能打磨的后续阶段。
+<!-- cannbot:related:end -->

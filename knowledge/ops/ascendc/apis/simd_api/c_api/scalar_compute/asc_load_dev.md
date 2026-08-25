@@ -19,3 +19,10 @@ platforms: ['950']
 返回值：从GM读取的数据，返回值的数据类型与addr指向的数据类型一致。
 约束：仅支持整型数据，不支持浮点类型。
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 训练系列产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscStoreDev](asc_store_dev.md)（`related`）：AscLoadDev 绕过 DCache 读 GM，AscStoreDev 绕过 DCache 写 GM；多核共享非 Cache-Line 对齐字段时两者形成无缓存的读写对。
+- [ReadGmByPassDCache](../../basic_api/scalar_compute/read_gm_by_pass_d_cache_isasi.md)（`related`）：“ReadGmByPassDCache”处理不经过DCache从GM地址读取数据。；“AscLoadDev”明确不经过DCache直接从Global Memory地址读取整型数据，避免多核操作未对齐Cache Line时的数据覆盖问题。。实质衔接：ReadGmByPassDCache 与 AscLoadDev 是同一旁路读取语义，配套写接口决定双向 GM 访问是否绕过 DCache。
+<!-- cannbot:related:end -->

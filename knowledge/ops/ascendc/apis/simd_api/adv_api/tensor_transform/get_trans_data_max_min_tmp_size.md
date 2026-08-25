@@ -19,3 +19,9 @@ host侧Tiling接口，用于获取TransData接口所需的最大和最小临时�
 函数原型：void GetTransDataMaxMinTmpSize(const AscendC::TensorShape& srcShape, const uint32_t typeSize, const bool isReuseSource, uint32_t& maxValue, uint32_t& minValue)
 
 参数：srcShape为输入shape；typeSize为数据类型字节数；isReuseSource预留传false；maxValue/minValue输出临时空间范围。在minValue到maxValue范围内临时空间越大性能越好。约束：无。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [TransData](trans_data.md)（`related`）：TransData is the kernel transform whose temporary-space bounds the focal host query calculates.
+<!-- cannbot:related:end -->

@@ -25,3 +25,11 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [IsNan接口](../../../../simd_api/adv_api/math_compute/is_nan_interface/is_nan_interface.md)（`related`）：《IsNan接口》处理“按元素判断浮点数是否为NaN，并提供临时空间大小获取接口。”。《__hisnan》提供“判断浮点数是否为nan。”，其具体合同或探针直接接入IsNan 的 Kernel/Tiling 合同、跨 dtype 谓词与 Cast 保留 NaN 的前置条件。
+- [__heq](_heq.md)（`related`）：IsNaN 可显式验证 Eq/Equ 的 NaN 分支。
+- [__isnanx2](../half2_compare_functions/_isnanx2.md)（`related`）：标量 half NaN 判定可作为 __isnanx2 每个分量的验证 oracle。
+<!-- cannbot:related:end -->

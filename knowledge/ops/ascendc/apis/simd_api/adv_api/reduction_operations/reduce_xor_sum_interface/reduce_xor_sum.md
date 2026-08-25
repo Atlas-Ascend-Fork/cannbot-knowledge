@@ -22,3 +22,11 @@ platforms: ['950', a2, a3]
 接口参数：dstTensor输出；srcTensor输入；sharedTmpBuffer临时缓存；srcShape输入shape数组；srcInnerPad指示内轴是否已补齐。TPosition支持VECIN/VECCALC/VECOUT。
 
 约束：遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Sum](../sum_interface/sum.md)（`related`）：XorSum 聚合代数不同，不能替代算术求和。
+- [GetReduceXorSumMaxMinTmpSize](get_reduce_xor_sum_max_min_tmp_size.md)（`same_topic`）：GetReduceXorSumMaxMinTmpSize 与《ReduceXorSum》的实质衔接是：GetReduceXorSumMaxMinTmpSize 是 ReduceXorSum 的 host 侧空间查询，结果直接作为该接口 kernel tiling 的临时缓冲预算。
+- [ReduceXorSum接口](reduce_xor_sum_interface.md)（`same_topic`）：函数页给出 ReduceXorSum 实际参数和输出 shape。
+<!-- cannbot:related:end -->

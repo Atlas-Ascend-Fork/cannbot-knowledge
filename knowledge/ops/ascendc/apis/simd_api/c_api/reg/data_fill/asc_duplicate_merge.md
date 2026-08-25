@@ -20,3 +20,15 @@ merge模式下，将src的最低位元素广播到dst中被mask筛选的位置�
 支持数据类型：bfloat16_t、float、fp8_e4m3fn_t、fp8_e5m2_t、fp8_e8m0_t、half、int16_t、int32_t、int8_t、uint16_t、uint32_t、uint8_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Duplicate 广播枚举与模板顺序不兼容](../../../../../runbooks/compilation/reg_duplicate_highlow_precedes_merge_mode.md)（`exemplifies`）：该卡给出 high/low 和 MergeMode 模板次序的构建诊断。
+- [AscDuplicate](asc_duplicate.md)（`same_topic`）：Merge 版本保留未命中 mask 的目的值，而普通版本执行 zeroing。
+- [AscDuplicateHighest](asc_duplicate_highest.md)（`same_topic`）：AscDuplicateHighest 与《AscDuplicateMerge》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [AscDuplicateHighestMerge](asc_duplicate_highest_merge.md)（`same_topic`）：HighestMerge 广播高位元素并合并未命中 lane。
+- [AscDuplicateScalar](asc_duplicate_scalar.md)（`same_topic`）：AscDuplicateScalar 与《AscDuplicateMerge》的实质衔接是：AscDuplicateScalar 把一个 scalar 广播到 RegTensor；Merge/Highest/普通 Duplicate 改变未选中 lane 或来源，标量运算和错例直接约束广播范围与消费方式。
+- [AscDuplicateScalarMerge](asc_duplicate_scalar_merge.md)（`same_topic`）：ScalarMerge 使用标量源，按源形态选择。
+- [数据填充](data_fill.md)（`same_topic`）：Merge 版本保留未命中 mask 的旧值。
+<!-- cannbot:related:end -->

@@ -19,3 +19,16 @@ platforms: [a2, a3]
 函数原型：void asc_repeat_reduce_sum(__ubuf__ half* dst, __ubuf__ half* src, uint32_t count)
 约束：操作数地址重叠约束请参考通用地址重叠约束。；dst的起始地址，输入类型为half时需要2字节对齐，输入类型为float时需要4字节对齐。；src的起始地址需要32字节对齐。
 支持平台：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Ascend 950PR/Ascend 950DT, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscDatablockReduceSum](asc_datablock_reduce_sum.md)（`related`）：AscDatablockReduceSum 使用相同二叉树和 half 65504 中间饱和规则，但按 32B DataBlock 而非整 Repeat 输出和。
+- [AscPairReduceSum](asc_pair_reduce_sum.md)（`related`）：AscPairReduceSum 只合并相邻奇偶元素，可作为多级归约中的局部一步；AscRepeatReduceSum 则在 Repeat 内完成完整树形求和。
+- [AscReduceSumDatablock](../reg/reduce_compute/asc_reduce_sum_datablock.md)（`related`）：RepeatReduceSum 跨 repeat 聚合，范围大于单 DataBlock。
+- [AscRepeatReduceMax](asc_repeat_reduce_max.md)（`related`）：AscRepeatReduceMax 与 Sum 在相同 Repeat 粒度上使用树形归约，但 Max 额外返回首个极值索引，可用于选择归约种类。
+- [AscRepeatReduceMin](asc_repeat_reduce_min.md)（`related`）：AscRepeatReduceMin 与 Sum 共享每 Repeat 独立归约的执行粒度，Min 则返回首个最小值索引。
+- [GetReduceRepeatSumSpr](../../basic_api/memory_vector_compute/reduction_compute_aux_config/get_reduce_repeat_sum_spr_isasi.md)（`related`）：GetReduceRepeatSumSpr 与《AscRepeatReduceSum》的实质衔接是：GetReduceRepeatSumSpr 只读取前 n 连续 ReduceSum 的全局结果；ReduceSum 调用、临时空间和逐行/多 bundle 归约故障直接约束其使用。
+- [ReduceSum](../../basic_api/memory_vector_compute/reduction_compute/reduce_sum.md)（`related`）：Memory 基础 API ReduceSum 对整个输入做求和并提供 mask 管理，适合与 C API 的逐 Repeat 归约比较接口层和聚合范围。
+- [ReduceRepeat](../../basic_api/memory_vector_compute/reduction_compute/reduce_repeat.md)（`same_topic`）：ReduceRepeat 的 SUM 模式与 AscRepeatReduceSum 都对每个 Repeat 内的数据做二叉树求和；前者是可选 SUM/MAX/MIN 的基础 API，后者是 C API 的求和专用入口。
+<!-- cannbot:related:end -->

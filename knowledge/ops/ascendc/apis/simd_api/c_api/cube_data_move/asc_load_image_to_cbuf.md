@@ -21,3 +21,9 @@ platforms: [a2, a3]
 - 操作数地址重叠约束
 
 仅 Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LoadImageToLocal](../../basic_api/cube_compute/cube_load_aux_config/load_image_to_local.md)（`related`）：LoadImageToLocal 与《AscLoadImageToCbuf》的实质衔接是：LoadImageToLocal 的 AIPP 配置由边界填充、重复、尺寸和 fmatrix 参数共同决定，C/C++ 入口消费同一搬入契约。
+<!-- cannbot:related:end -->

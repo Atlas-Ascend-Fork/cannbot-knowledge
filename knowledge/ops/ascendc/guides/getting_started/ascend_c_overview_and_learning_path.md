@@ -26,3 +26,11 @@ CANN基于分层架构设计，实现了上层应用与底层硬件的无缝衔�
 - 高阶API：对单核常见算法进行抽象与封装，提供开箱即用的公共算法实现。
 - 算子模板库：基于模板提供算子的完整实现参考，降低Tiling开发复杂度，支持用户自定义扩展。
 - Python前端PyAsc：基于Python原生接口（参见 PyAsc），提供芯片底层完备编程能力，并将逐步引入Layout化Tensor编程、SIMT编程等，实现用Python开发高性能算子。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend C多层级编程接口选择参考](../asc_how_to_choose_api.md)（`related`）：Ascend C多层级编程接口选择参考 与《Ascend C概述》的实质衔接是：概述/快速开始解释学习入口，TPipe/TQue 原理与范式对应 choice guide 的易编程层，兼容性策略说明跨代选择接口层时的稳定性成本。
+- [环境准备](environment_setup.md)（`related`）：学习路径把环境安装置于 SIMD/SIMT 快速开始之前。
+- [异构系统与编程模型](quick_start/heterogeneous_system_and_programming_model.md)（`same_topic`）：异构系统与编程模型 与《Ascend C概述》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
+<!-- cannbot:related:end -->

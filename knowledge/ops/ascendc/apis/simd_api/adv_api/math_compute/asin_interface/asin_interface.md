@@ -29,3 +29,9 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Kirin X90。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetAsinMaxMinTmpSize](get_asin_max_min_tmp_size.md)（`same_topic`）：《Asin接口》明确“提供Asin反正弦计算接口及其Tiling临时空间大小查询接口，包含Asin、GetAsinMaxMinTmpSize等。”；它与《GetAsinMaxMinTmpSize》的“在host侧获取Asin接口预留临时空间的最大和最小值，用于Tiling参数选择”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

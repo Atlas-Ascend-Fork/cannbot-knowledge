@@ -35,3 +35,12 @@ __aicore__ inline void Asinh(const LocalTensor<T>& dstTensor, const LocalTensor<
 - 操作数地址对齐要求请参见通用地址对齐约束。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetAsinhTmpBufferFactorSize](get_asinh_tmp_buffer_factor_size.md)（`related`）：The factor query supports deriving the maximum Asinh tile size from a fixed available workspace.
+- [Asinhf](../../../../simt_api/math_functions/float_math_functions/asinhf.md)（`same_topic`）：高阶 Tensor Asinh 与 SIMT asinhf 完成同一反双曲正弦。
+- [Asinh接口](asinh_interface.md)（`same_topic`）：《Asinh》明确“按元素做反双曲正弦函数计算，输入值域需在-65504到65504范围内”；它与《Asinh接口》的“提供Asinh反双曲正弦计算接口及其Tiling临时空间大小查询接口，包含Asinh、GetAsinhMaxMinTmpSize等。”在实际调用参数、数据流或结果校验上直接衔接。
+- [GetAsinhMaxMinTmpSize](get_asinh_max_min_tmp_size.md)（`same_topic`）：《GetAsinhMaxMinTmpSize》的任务是“在host侧获取Asinh接口预留临时空间的最大和最小值，用于Tiling参数选择”。《Asinh》具体提供“按元素做反双曲正弦函数计算，输入值域需在-65504到65504范围内”，它直接用于Asinh workspace 上下界和 factor 到 Kernel 的同一空间合同。
+<!-- cannbot:related:end -->

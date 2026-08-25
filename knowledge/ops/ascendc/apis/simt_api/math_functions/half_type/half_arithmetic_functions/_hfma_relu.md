@@ -25,3 +25,13 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hfma](../../bfloat16_type/bfloat16_arithmetic_functions/_hfma.md)（`same_topic`）：__hfma_relu 与《__hfma》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
+- [__hfma](_hfma.md)（`same_topic`）：__hfma_relu 与《__hfma》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
+- [__hfma_relu](../../bfloat16_type/bfloat16_arithmetic_functions/_hfma_relu.md)（`same_topic`）：__hfma_relu 与《__hfma_relu》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
+- [__hfmax2_relu](../../bfloat16_type/bfloat16x2_arithmetic_functions/_hfmax2_relu.md)（`same_topic`）：__hfma_relu 与《__hfmax2_relu》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
+- [__hfmax2_relu](../half2_arithmetic_functions/_hfmax2_relu.md)（`same_topic`）：__hfma_relu 与《__hfmax2_relu》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
+<!-- cannbot:related:end -->

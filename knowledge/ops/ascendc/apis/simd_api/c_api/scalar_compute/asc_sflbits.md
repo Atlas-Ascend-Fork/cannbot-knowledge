@@ -19,3 +19,9 @@ platforms: ['950', a2, a3]
 返回值：返回从最高数值位开始和符号位相同的连续比特位的个数，数据类型为int64_t。
 约束：当输入是-1（比特位全1）或者0（比特位全0）时，返回-1。
 支持平台：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core, Atlas 推理系列产品Vector Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [asc_clz（标量计算）](asc_clz.md)（`related`）：AscSflbits 统计有符号数除符号位外的连续符号扩展位，asc_clz 统计 uint64 的前导零；对正数可用于位宽判断，但负数及 0/-1 的返回约定不同。
+<!-- cannbot:related:end -->

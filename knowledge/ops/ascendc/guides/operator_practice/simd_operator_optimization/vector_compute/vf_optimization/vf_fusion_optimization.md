@@ -28,3 +28,15 @@ VF内自动同步：编译器会精准地插入必要的同步指令，删除冗
 -   连续计算API：支持Tensor前n个数据计算。针对源操作数的连续n个数据进行计算并连续写入目的操作数，解决一维tensor的连续计算问题。
 -   高维切分API：支持Repeat和Stride。功能灵活的计算API，提供与Builtin API完全对等的编程能力，充分发挥硬件优势，支持对每个操作数的DataBlock Stride，Repeat Stride，Mask等参数的操作。
 在VF融合优化中，推荐使用基础API的连续计算模式编写算子，可以充分发挥出VF融合优化的能力，与高维切分API相比，连续计算API使得编译器能更好地分析VF融合优化，更加容易满足VF融合优化的条件，使用基础API的连续计算模式能写出性能更优的算子。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [VF调用](../../../../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`explains`）：VF 融合优化指南说明何时把相邻 VF 合并以减少启动和 UB 往返，可直接用于评估多次 asc_vf_call 的调度开销与融合条件。
+- [VfLoopOptimization](vf_loop_optimization.md)（`related`）：VF Fusion 依赖可融合的 Hardware Loop；Loop 指南给出 uint16_t 计数、0 起步、步长 1、循环内无跳转等可识别条件。
+- [中级性能优化](../../../typical_operator_cases/simd_operator_impl/gelu_reg_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《VfFusionOptimization》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [双 VF 融合输出非预期 先排 CopyOut slot 勿用 PRINTF](../../../../../runbooks/precision/vf_fusion_output_unexpected_check_copyout_slot_not_printf.md)（`related`）：优化指南给出 VF 融合以减少中间 UB 和同步的目标，Runbook 则提供融合输出异常时先查 CopyOut slot、参数和观测手段的验证流程。
+- [基于全局掩码复用的计算性能优化](../mask_reuse_optimization.md)（`related`）：VF fusion 可减少重复 mask 设置，但需保持 mask 生命周期。
+- [指令双发优化](dual_issue_optimization.md)（`related`）：指令双发优化 与《VfFusionOptimization》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [通过Unified Buffer融合实现连续vector计算](../ub_fusion_vector_compute.md)（`related`）：UB 连续 vector 融合依赖把多个 vector 操作组织进同一流水；VfFusionOptimization 给出 VF 级融合的具体调用组织与收益条件。
+<!-- cannbot:related:end -->

@@ -25,3 +25,16 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__float22half2_ro](_float22half2_ro.md)（`same_topic`）：__float22half2_ro 与《__float2half_ro》的实质衔接是：__float22half2_ro 与 RO-sat、RD/RN/RNA/RU/RZ 变体共享 float2→half2 双 lane 窄化，只改变舍入或饱和；scalar RO 和反向 half2→float2 明确向量封装及转换方向。
+- [__float2half](_float2half.md)（`same_topic`）：焦点处理float→half 的默认与显式舍入模式；__float2half_ro正文界定“遵循CAST_ODD模式，将浮点数转换为半精度浮点数，返回转换后的值”。候选保持 float→half 类型对，只改变舍入方向或高阶/标量 API 入口。
+- [__float2half_rd](_float2half_rd.md)（`same_topic`）：ro 提供 round-to-odd，针对保持低位信息的场景与 floor 模式形成直接选型。
+- [__float2half_rn](_float2half_rn.md)（`same_topic`）：焦点处理float→half RINT 转换及显式舍入/饱和变体；__float2half_ro正文说明“遵循CAST_ODD模式，将浮点数转换为半精度浮点数，返回转换后的值”。候选保持 float→half 类型对，只改变 RINT/ROUND/FLOOR/CEIL/TRUNC/ODD 与饱和模式。
+- [__float2half_rna](_float2half_rna.md)（`same_topic`）：__float2half_ro说明遵循CAST_ODD模式，将浮点数转换为半精度浮点数，返回转换后的值。
+- [__float2half_ro_sat](_float2half_ro_sat.md)（`same_topic`）：__float2half_ro说明遵循CAST_ODD模式，将浮点数转换为半精度浮点数，返回转换后的值。
+- [__float2half_ru](_float2half_ru.md)（`same_topic`）：__float2half_ru：所选接口保持 float→half 类型对不变，只切换 RU 的饱和版或 RD/RN/RNA/RO/RZ舍入，可直接比较特殊值和边界输出。 目标卡《__float2half_ro》补充：遵循CAST_ODD模式，将浮点数转换为半精度浮点数，返回转换后的值。
+- [__float2half_rz](_float2half_rz.md)（`same_topic`）：__float2half_ro说明遵循CAST_ODD模式，将浮点数转换为半精度浮点数，返回转换后的值。
+<!-- cannbot:related:end -->

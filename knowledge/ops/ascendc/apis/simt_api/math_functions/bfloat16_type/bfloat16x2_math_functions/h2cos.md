@@ -24,3 +24,9 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [H2Cos](../../half_type/half2_math_functions/h2cos.md)（`related`）：bfloat16x2 H2Cos 与 half2 版本均逐分量求余弦，跨 dtype 迁移时对照饱和与特殊值。
+<!-- cannbot:related:end -->

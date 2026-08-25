@@ -35,3 +35,11 @@ __aicore__ inline void Asin(const LocalTensor<T>& dstTensor, const LocalTensor<T
 - 操作数地址对齐要求请参见通用地址对齐约束。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Asinf](../../../../simt_api/math_functions/float_math_functions/asinf.md)（`related`）：Asinf 是 SIMT 标量 float 入口，Asin 是 LocalTensor 高阶向量入口并要求 sharedTmpBuffer；二者都实现反正弦且共享 [-1,1] 有效值域。
+- [GetAsinMaxMinTmpSize](get_asin_max_min_tmp_size.md)（`related`）：Asin 的 sharedTmpBuffer 不能与输入输出重叠且大小必须满足 GetAsinMaxMinTmpSize 返回的下界，二者构成直接 host/kernel 合同。
+- [GetAsinTmpBufferFactorSize](get_asin_tmp_buffer_factor_size.md)（`related`）：固定 UB 空间时，GetAsinTmpBufferFactorSize 的 maxLiveNodeCount/extraBuffer 用于反算 Asin 单次 calCount，直接决定分块大小。
+<!-- cannbot:related:end -->

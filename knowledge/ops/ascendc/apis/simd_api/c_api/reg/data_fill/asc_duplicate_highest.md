@@ -20,3 +20,18 @@ platforms: ['950']
 支持数据类型：bfloat16_t、float、fp8_e4m3fn_t、fp8_e5m2_t、fp8_e8m0_t、half、int16_t、int32_t、int8_t、uint16_t、uint32_t、uint8_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Duplicate 广播枚举与模板顺序不兼容](../../../../../runbooks/compilation/reg_duplicate_highlow_precedes_merge_mode.md)（`exemplifies`）：AscDuplicateHighest 与《Duplicate 广播枚举与模板顺序不兼容》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差](../../../../../runbooks/precision/reduce_lane0_must_be_broadcast_before_vector_normalization.md)（`exemplifies`）：AscDuplicateHighest 与《Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [AscDuplicate](asc_duplicate.md)（`same_topic`）：AscDuplicateHighest 与《AscDuplicate》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [AscDuplicate](../../vector_compute/asc_duplicate.md)（`same_topic`）：AscDuplicateHighest 与《AscDuplicate》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [AscDuplicateHighestMerge](asc_duplicate_highest_merge.md)（`same_topic`）：AscDuplicateHighest 与《AscDuplicateHighestMerge》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [AscDuplicateMerge](asc_duplicate_merge.md)（`same_topic`）：AscDuplicateHighest 与《AscDuplicateMerge》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [AscDuplicateScalar](asc_duplicate_scalar.md)（`same_topic`）：AscDuplicateHighest 与《AscDuplicateScalar》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [AscDuplicateScalarMerge](asc_duplicate_scalar_merge.md)（`same_topic`）：AscDuplicateHighest 与《AscDuplicateScalarMerge》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [Duplicate](../../../basic_api/memory_vector_compute/data_padding/duplicate.md)（`same_topic`）：AscDuplicateHighest 与《Duplicate》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [Duplicate](../../../basic_api/reg_vector_compute/data_padding/duplicate.md)（`same_topic`）：AscDuplicateHighest 与《Duplicate》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+<!-- cannbot:related:end -->

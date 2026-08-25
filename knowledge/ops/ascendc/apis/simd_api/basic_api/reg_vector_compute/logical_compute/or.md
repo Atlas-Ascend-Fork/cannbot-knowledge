@@ -27,3 +27,10 @@ platforms: ['950']
 支持数据类型：bool、int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [And](and.md)（`related`）：And/Or 是位表达式的互补操作。
+- [Or](../../memory_vector_compute/logical_compute/or.md)（`same_topic`）：Or 与《Or》的衔接是：Or 在手动 mask 模式必须先用 SetMaskCount/SetMaskNorm 建立掩码并在结束后 ResetMask；Ors 和 Reg Or 是标量/Reg 形态的直接语义变体。
+<!-- cannbot:related:end -->

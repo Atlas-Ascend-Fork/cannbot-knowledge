@@ -24,3 +24,11 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hmax](_hmax.md)（`related`）：__hmax is the complementary extrema selector and differs from __hmin in both comparison direction and some NaN/zero tie outcomes.
+- [__hmin](../../bfloat16_type/bfloat16_compare_functions/_hmin.md)（`related`）：half __hmin 保持相同二元最小值接口但输入/返回类型为 half，可用于跨 half/bfloat16 实现迁移时核对类型差异。
+- [__hmin_nan](_hmin_nan.md)（`same_topic`）：《__hmin》明确“获取两个输入数据中的最小值。”；它与《__hmin_nan》的“获取两个输入数据中的最小值。任一输入为nan时结果为nan。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

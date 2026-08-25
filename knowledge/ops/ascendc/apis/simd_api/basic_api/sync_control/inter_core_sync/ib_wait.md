@@ -26,3 +26,10 @@ platforms: ['950', a2, a3]
 - 使用该接口进行多核控制时，算子调用时指定的逻辑AI Core核数numBlocks必须保证不大于实际运行该算子的AI处理器核数，否则框架进行多轮调度时会插入异常同步，导致Kernel“卡死”现象。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Atlas 训练系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [核间同步能力概述](inter_core_sync_overview.md)（`related`）：核间同步能力概述说明核间同步的使用场景通常是：一个核计算所依赖的数据，需要等待其他相关核的计算全部完成后才能获取。
+- [IBSet](ib_set.md)（`same_topic`）：IBSet说明核间存在全局内存数据依赖时插入同步语句，被等待核通过写全局内存通知等待核，与IBWait成对使用实现核间同步。
+<!-- cannbot:related:end -->

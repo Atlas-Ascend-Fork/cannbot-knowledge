@@ -35,3 +35,12 @@ platforms: [agnostic]
 单线程多数据：64：58.583
 单线程单数据：1024：78.289
 根据Task Duration数据，处理相同的数据量时，采用一个线程处理多个数据写法，并将线程块数量从1024减少到64后，执行耗时从78.289us下降到58.583us，下降约25.2%，整体性能提升约1.34倍。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DimThreads](../../../../apis/simt_api/cooperative_groups/thread_block/dim_threads.md)（`explains`）：线程块数量配置优化说明SIMT算子线程块数量应结合物理核数与数据规模设置，大数据量匹配物理核数，小数据量需实测最优值。
+- [合理配置线程数避免寄存器溢出](thread_count_register_overflow.md)（`related`）：《线程块数量配置优化》明确“SIMT算子线程块数量应结合物理核数与数据规模设置，大数据量匹配物理核数，小数据量需实测最优值。”；它与《合理配置线程数避免寄存器溢出》的“【描述】在SIMT编程的程序中应合理配置线程数避免寄存器溢出。SIMT编程模式下，核函数通过__launch_bounds__指定的最大线程数决定每个线程可用的寄存器数量。最大线程数越大，每个线程可分配的寄存器越少，二者的对应关系如下：”在实际调用参数、数据流或结果校验上直接衔接。
+- [算子实现（SIMT算子实现）](../../simt_operator_impl/operator_impl.md)（`related`）：《线程块数量配置优化》明确“SIMT算子线程块数量应结合物理核数与数据规模设置，大数据量匹配物理核数，小数据量需实测最优值。”；它与《算子实现（SIMT算子实现）》的“本章节将以Gather类算子为例，介绍SIMT算子实现的基本流程，如下图所示：”在实际调用参数、数据流或结果校验上直接衔接。
+- [线程块数量配置优化](../../simd_simt_hybrid_optimization/execution_control/thread_block_config.md)（`same_topic`）：两张指南处理同一个线程块数量决策：大数据量让 block 数匹配物理 Vector Core，小数据量因固定调度开销需实测较小最优值，并通过 `aclrtGetDeviceInfo` 获取物理核数；区别只是混合编程与纯 SIMT 章节切面。
+<!-- cannbot:related:end -->

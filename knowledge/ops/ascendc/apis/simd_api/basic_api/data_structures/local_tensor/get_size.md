@@ -23,3 +23,11 @@ platforms: ['950', a2, a3]
 返回值：当前LocalTensor Size大小。单位为元素。
 
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetSize](../global_tensor/get_size.md)（`related`）：GlobalTensor 也暴露元素个数查询，可在 GM/Local 搬运两端核对 element count，但其存储域和初始化方式不同。
+- [GetLength](get_length.md)（`same_topic`）：GetLength 返回 LocalTensor 占用字节数，而 GetSize 返回元素个数；二者共同界定同一张量容量并防止单位误用。
+- [SetSize](set_size.md)（`same_topic`）：SetSize 与 GetSize 读写同一个 LocalTensor 元素计数属性，重用 tensor 并改变有效长度后可用 GetSize 复核。
+<!-- cannbot:related:end -->

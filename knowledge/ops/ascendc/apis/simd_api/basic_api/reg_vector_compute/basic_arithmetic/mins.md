@@ -29,3 +29,12 @@ RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Le
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [exp 输入 clamp 上界用 threshold 用户参数致溢出](../../../../../runbooks/precision/exp_clamp_upper_bound_must_decouple_from_user_threshold.md)（`exemplifies`）：exp 输入 clamp 上界用 threshold 用户参数致溢出 与《Mins》的实质衔接是：故障由用户 threshold 充当 Exp 安全上界导致；Exp、Clamp/Mins、Sigmoid 公式及溢出/FTZ/Softplus 分支案例共同限定固定上界和极值验收。
+- [Maxs](maxs.md)（`related`）：Mins 与 Maxs 都是 RegTensor 对标量的逐元素边界运算，可组合实现上下界截断。
+- [Min](min.md)（`related`）：《Min》说明根据mask对源操作数srcReg0、srcReg1按元素求最小值，将结果写入目的操作数dstReg。；《Mins》说明根据mask对源操作数srcReg按元素与标量比较取较小值，将结果写入目的操作数dstReg。。二者在Reg Min与Max、标量Mins及Memory/C/SIMT等价接口的操作数形态不同，Clamp则直接组合最小/最大边界上存在可执行的直接衔接。
+- [Mins](../../memory_vector_compute/basic_arithmetic/mins.md)（`related`）：Memory Vector 的 Mins 实现同一标量最小值语义，但数据位于 LocalTensor，便于在两种编程模型间选型。
+<!-- cannbot:related:end -->

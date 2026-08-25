@@ -31,3 +31,12 @@ platforms: [agnostic]
 -   _ParseParamByOpFunc_：函数名称，用户自定义。
 -   op_src：ONNX框架定义的Operator类对象，包含ONNX模型中自定义的算子属性信息，定义来源于ONNX框架的原始模型文件。
 -   op_dest：CANN算子数据结构，保存算子信息。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [运行时加载机制](../../aclnn_operator_development/invocation/runtime_loading_mechanism.md)（`related`）：插件 so 通过环境路径进入运行时发现链，加载机制解释文件布局和查找时机。
+- [高级编程概述](../overview.md)（`related`）：高级编程概述：该概述的任务就是把自定义算子接入 AI 框架；PyTorch、TensorFlow和 ONNX 插件/调用卡分别展开正文点名的三条适配流程。 目标卡《适配插件开发》补充：>针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，暂不支持ONNX框架算子调用。
+- [高级编程调用样例](call_examples.md)（`related`）：调用样例验证 REGISTER_CUSTOM_OP 映射、插件 so 加载和 ONNX 模型执行是否闭环。
+- [如何开发动态输入算子](../../../appendix/common_operations/develop_dynamic_input_operator.md)（`same_topic`）：如何开发动态输入算子 与《适配插件开发》的实质衔接是：动态输入必须在原型侧声明动态 Input，在 host/kernel 间用 ListTensorDesc/TensorDesc 与 TensorList 传递；动态编译和 InferShape/optional input 案例限定完整开发链。
+<!-- cannbot:related:end -->

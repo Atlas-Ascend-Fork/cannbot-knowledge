@@ -21,3 +21,12 @@ NPU架构版本2002不支持Generic Addressing通用寻址（针对UB、stack、
 在O0下支持constexpr全局变量小规模类型（整型、浮点型）数据的引用，支持数组取元素。
 -   不支持场景
 对于使用constexpr之外的全局参数将报错。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetCurNpuArch](../../../../../apis/utils_api/platform_info/platform_ascend_c/get_cur_npu_arch.md)（`explains`）：NPU架构版本2002 与《GetCurNpuArch》的实质衔接是：2002 architecture spec给出硬件组成，constraints给出 Generic Addressing/全局变量限制；GetCurNpuArch和 SoC 查证链用于确认当前目标确实落在2002。
+- [Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa](../../../../../runbooks/compilation/arch_variant_lookup_chain_soc_ini_npuarch_dispatcher.md)（`related`）：NPU架构版本2002 与《Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa》的实质衔接是：2002 architecture spec给出硬件组成，constraints给出 Generic Addressing/全局变量限制；GetCurNpuArch和 SoC 查证链用于确认当前目标确实落在2002。
+- [基本架构（硬件实现）](../basic_architecture.md)（`related`）：NPU架构版本2002 与《基本架构（硬件实现）》的实质衔接是：2002 architecture spec给出硬件组成，constraints给出 Generic Addressing/全局变量限制；GetCurNpuArch和 SoC 查证链用于确认当前目标确实落在2002。
+- [NPU架构版本2002](../architecture_spec/npu_arch_2002.md)（`same_topic`）：NPU架构版本2002 与《NPU架构版本2002》的实质衔接是：2002 architecture spec给出硬件组成，constraints给出 Generic Addressing/全局变量限制；GetCurNpuArch和 SoC 查证链用于确认当前目标确实落在2002。
+<!-- cannbot:related:end -->

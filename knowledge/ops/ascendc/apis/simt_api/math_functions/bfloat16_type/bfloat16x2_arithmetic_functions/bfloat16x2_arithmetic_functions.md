@@ -14,4 +14,10 @@ platforms: ['950']
 
 # bfloat16x2类型算术函数
 
-提供 bfloat16x2 双分量向量类型的算术运算，包括加减乘除（__haddx2、__hsubx2、__hmulx2、__hdivx2）、绝对值（__habsx2）、取负（__hnegx2）、最大值（__hfmax2）及带 ReLU 的变体（__hfmax2_relu）。还包含复数乘加 __hcmadd，支持在单条指令中完成两个 bfloat16 分量的并行运算。
+提供 bfloat16x2 双分量向量类型的算术运算，包括加减乘除（__haddx2、__hsubx2、__hmulx2、__hdivx2）、绝对值（__habsx2）、取负（__hnegx2）、逐分量乘加（__hfmax2，可按 `__hfma` + `x2` 理解）及带 ReLU 的变体（__hfmax2_relu）。还包含复数乘加 __hcmadd，支持在单条指令中完成两个 bfloat16 分量的并行运算。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hdivx2](_hdivx2.md)（`same_topic`）：bfloat16x2 算术函数汇总明确收录 __hdivx2，并把它与 packed 加减乘、FMA 和 ReLU 变体放在同一 API 族。
+<!-- cannbot:related:end -->

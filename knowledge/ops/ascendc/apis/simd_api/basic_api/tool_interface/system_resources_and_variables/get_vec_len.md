@@ -18,3 +18,9 @@ platforms: ['950']
 获取RegTensor位宽VL（Vector Length）的大小。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetVecRegLen](../../../../utils_api/platform_info/platform_ascend_c/get_vec_reg_len.md)（`related`）：GetVecLen 在 Device 侧读取 RegTensor VL，GetVecRegLen 在 Host 平台信息侧查询向量寄存器位宽；Host Tiling 与 Kernel 循环需保持一致。
+<!-- cannbot:related:end -->

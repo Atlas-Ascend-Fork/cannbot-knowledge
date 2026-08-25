@@ -27,3 +27,24 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [基于全局掩码复用的计算性能优化](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/mask_reuse_optimization.md)（`explains`）：SetMaskNorm 与《基于全局掩码复用的计算性能优化》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [如何使用掩码操作API](../../../../../guides/programming_guide/library_api/basic_api/quick_reference/how_to_use_mask_api.md)（`explains`）：SetMaskNorm 与《如何使用掩码操作API》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [AscGetMaskSpr](../../../c_api/reg/reg_data_types/asc_get_mask_spr.md)（`related`）：AscGetMaskSpr 读取当前 mask SPR，SetMaskNorm 是写入 normal mask 状态的直接来源，可用读取结果核验设置是否生效。
+- [Or](../logical_compute/or.md)（`related`）：Or 与《SetMaskNorm》的衔接是：Or 在手动 mask 模式必须先用 SetMaskCount/SetMaskNorm 建立掩码并在结束后 ResetMask；Ors 和 Reg Or 是标量/Reg 形态的直接语义变体。
+- [ReducePairElem](../reduction_compute/reduce_pair_elem.md)（`related`）：ReducePairElem 在 isSetMask=false 时要求调用者预先设置连续模式 mask，SetMaskNorm 正是建立该模式的前置步骤。
+- [SubRelu](../composite_compute/sub_relu.md)（`related`）：SubRelu 与《SetMaskNorm》的实质衔接是：SubRelu 的手工 mask 路径要求先设置 Normal mask，调用后 ResetMask；SubReluCast 和 AscSubRelu 分别补充窄化输出与 C API 对应入口。
+- [Ands](../logical_compute/ands.md)（`same_topic`）：Ands：Ands在 isSetMask=false时依赖SetMaskCount/Norm/VectorMask并要求ResetMask；And的tensor与Reg版本帮助区分标量按位与和双tensor按位与。 目标卡《SetMaskNorm》补充：设置Mask模式为Normal模式（系统默认），支持开发者配置迭代次数和掩码。
+- [AscSetMaskNorm](../../../c_api/vector_compute/asc_set_mask_norm.md)（`same_topic`）：SetMaskNorm 与《AscSetMaskNorm》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [AscSetVectorMask](../../../c_api/vector_compute/asc_set_vector_mask.md)（`same_topic`）：SetMaskNorm 与《AscSetVectorMask》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [Copy](../data_move/copy_ub_to_ub_mask_highdim_split.md)（`same_topic`）：Copy 与《SetMaskNorm》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
+- [Mask接口汇总（附录）](../../../../appendix/mask_interface_summary.md)（`same_topic`）：SetMaskNorm 与《Mask接口汇总（附录）》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [ResetMask](reset_mask.md)（`same_topic`）：SetMaskNorm 与《ResetMask》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [SIMD计算掩码](../simd_compute/mask.md)（`same_topic`）：SetMaskNorm 与《SIMD计算掩码》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [SetMaskCount](set_mask_count.md)（`same_topic`）：SetMaskNorm 与《SetMaskCount》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [SetVectorMask](set_vector_mask.md)（`same_topic`）：SetMaskNorm 与《SetVectorMask》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [掩码操作](mask_operations.md)（`same_topic`）：SetMaskNorm 与《掩码操作》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+<!-- cannbot:related:end -->

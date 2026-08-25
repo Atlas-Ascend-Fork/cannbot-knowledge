@@ -26,3 +26,10 @@ platforms: ['950', a2, a3]
 -   false：Tp不是浮点类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [EnableIf](enable_if.md)（`related`）：is_floating_point 的编译期 value 可直接作为 enable_if 条件，为浮点专用函数模板或特化启用路径。
+- [is_integral](is_integral.md)（`related`）：is_floating_point 与 is_integral 是数值模板分派的互补判据，可避免把整数和浮点实现落入同一精度/指令路径。
+<!-- cannbot:related:end -->

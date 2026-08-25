@@ -23,3 +23,9 @@ platforms: [a2, a3]
 返回值：返回TensorDesc在ListTensorDesc中对应的索引值。
 
 支持的硬件型号：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Atlas 推理系列产品Vector Core。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetDataObj](get_data_obj.md)（`related`）：GetIndex说明获取TensorDesc在ListTensorDesc中对应的索引值；对GetDataObj而言，GetDataObj 返回的对象需按 TensorDesc 的 data pointer 与 index 契约解释，不能把描述对象当作裸数据地址。
+<!-- cannbot:related:end -->

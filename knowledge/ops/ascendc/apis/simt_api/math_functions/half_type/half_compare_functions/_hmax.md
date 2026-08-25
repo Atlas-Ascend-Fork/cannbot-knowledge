@@ -24,3 +24,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hmin](_hmin.md)（`related`）：__hmax is the complementary extrema selector and differs from __hmin in both comparison direction and some NaN/zero tie outcomes.
+- [__hmax_nan](_hmax_nan.md)（`same_topic`）：《__hmax_nan》明确“获取两个输入数据中的最大值。任一输入为nan时结果为nan。”；它与《__hmax》的“获取两个输入数据中的最大值。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

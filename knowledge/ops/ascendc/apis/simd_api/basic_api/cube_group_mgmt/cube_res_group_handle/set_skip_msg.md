@@ -18,3 +18,9 @@ platforms: ['950', a2]
 AIC 跳过指定个数的假消息处理，仅在回调函数中调用。配合 PostFakeMsg 实现消息合并机制。
 
 原型：`__aicore__ inline void SetSkipMsg(uint8_t skipCnt)`。参数 skipCnt 为跳过的假消息个数。支持 950/a2。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [PostFakeMsg](post_fake_msg.md)（`related`）：AIV PostFakeMsg 通知后，AIC 通过 SetSkipMsg 跳过对应重复消息，构成发送与消费控制链。
+<!-- cannbot:related:end -->

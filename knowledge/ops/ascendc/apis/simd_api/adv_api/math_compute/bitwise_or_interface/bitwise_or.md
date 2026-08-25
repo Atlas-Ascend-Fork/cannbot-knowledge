@@ -32,3 +32,10 @@ __aicore__ inline void BitwiseOr(const LocalTensor<T>& dst, const LocalTensor<T>
 - 操作数地址偏移对齐要求请参见通用说明和约束。
 
 支持：Ascend 950PR/Ascend 950DT。不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetBitwiseOrMaxMinTmpSize](get_bitwise_or_max_min_tmp_size.md)（`same_topic`）：GetBitwiseOrMaxMinTmpSize 与《BitwiseOr》的实质衔接是：该查询只给出 BitwiseOr/MaxMin 类算子的 sharedTmpBuffer 大小，factor 参数与实际 BitwiseOr kernel 调用是分配空间所必需的两端。
+- [GetBitwiseOrTmpBufferFactorSize](get_bitwise_or_tmp_buffer_factor_size.md)（`same_topic`）：GetBitwiseOrTmpBufferFactorSize 与《BitwiseOr》的实质衔接是：factor 查询与 GetBitwiseOrMaxMinTmpSize、BitwiseOr Kernel 是同一 sharedTmpBuffer 契约的固定空间反推、空间边界和实际消费三端。
+<!-- cannbot:related:end -->

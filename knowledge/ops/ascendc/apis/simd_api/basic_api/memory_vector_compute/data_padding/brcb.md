@@ -23,3 +23,14 @@ Brcb接口对输入数据，每一次取输入张量中的8个数进行填充操
 参数说明：T：操作数数据类型。；dst：输出 目的操作数，类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。  LocalTensor的起始地址需要按照32字节对齐。；src：输入 源操作数，类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。  需要按照32字节对齐。  注：每一次迭代读取src中的8个元素，所以src的元素个数不小于8 * repeatTime。；repeatTime：输入 指令迭代次数，每次迭代完成8个DataBlock的数据收集，取值范围：repeatTime∈[0,255]。；repeatParams：输入 用于控制指令迭代的相关参数，类型为BrcbRepeatParms。  BrcbRepeatParams参数说明请参考[表3 BrcbRepeatParams结构体参数说明](#table3)。
 
 约束：操作数地址对齐要求请参见通用地址对齐约束。；不支持源操作数与目的操作数使用同一块内存地址。；BrcbRepeatParams结构体内参数dstBlkStride不支持设置为0，若设置成0可能产生未定义行为。；针对Atlas 推理系列产品AI Core，使用时需要预留8KB的Unified Buffer空间，作为接口的临时数据存放区。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscBrcb](../../../c_api/vector_compute/asc_brcb.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscBrcb正文说明“给定一个输入矢量，每一次取输入矢量中的8个数填充到结果矢量的8个datablock（32Bytes）中去，每个数对应一个datablock”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
+- [AscLoadalignBrcDatablock](../../../c_api/reg/reg_load/asc_loadalign_brc_datablock.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscLoadalignBrcDatablock正文说明“从UB对齐搬入一个DataBlock（32B）并广播到VL”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
+- [AscLoadalignBrcDatablockPostupdate](../../../c_api/reg/reg_load/asc_loadalign_brc_datablock_postupdate.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscLoadalignBrcDatablockPostupdate正文说明“从UB对齐搬入一个DataBlock（32B）并广播到VL，调用后自动更新源地址”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
+- [AscLoadalignBrcElem2datablock](../../../c_api/reg/reg_load/asc_loadalign_brc_elem2datablock.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscLoadalignBrcElem2datablock正文说明“从UB加载多个元素并将每个元素广播到一个DataBlock（32B）中”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
+- [AscLoadalignBrcElem2datablockPostupdate](../../../c_api/reg/reg_load/asc_loadalign_brc_elem2datablock_postupdate.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscLoadalignBrcElem2datablockPostupdate正文说明“从UB加载多个元素并将每个元素广播到一个DataBlock（32B）中，调用后自动更新源地址”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
+- [Duplicate](duplicate.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；Duplicate正文说明“将变量或立即数复制多次并填充到向量中，支持前n个数据计算和高维切分计算两种方式”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
+<!-- cannbot:related:end -->

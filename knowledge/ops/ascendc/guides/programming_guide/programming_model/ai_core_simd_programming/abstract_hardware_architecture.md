@@ -34,3 +34,23 @@ DMA（Direct Memory Access）搬运单元负责数据搬运，包括Global Memor
 ## 执行流程与同步机制
 理解抽象硬件架构时，还需要关注不同单元如何协同完成一次数据块处理。可以从异步指令流、同步信号流、计算数据流三个视角理解：
 -   异步指令流：表示Scalar计算单元对其他执行单元的任务发射关系，而不是完整指令执行流程。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AI Core SIMD编程模型概述](overview.md)（`related`）：AI Core SIMD编程模型概述 与《抽象硬件架构（AI Core SIMD编程）》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
+- [CppTensorProgrammingOverview](cpp_tensor_programming/cpp_tensor_programming_overview.md)（`related`）：CppTensorProgrammingOverview 与《抽象硬件架构（AI Core SIMD编程）》的实质衔接是：C++ Tensor 编程用 Global/Local/RegTensor 覆盖 GM、UB/L1/L0、Register；静态 Tensor、Memory/Reg/Cube、kernel 与 TPipe 材料展开同一对象化数据流。
+- [Cube矩阵计算编程](c_pointer_programming/cube_matrix_computation.md)（`related`）：Cube矩阵计算编程 与《抽象硬件架构（AI Core SIMD编程）》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
+- [Cube矩阵计算编程](cpp_tensor_programming/cube_matrix_computation.md)（`related`）：《Cube矩阵计算编程》说明本文介绍如何在Ascend C中使用C++ Tensor编程API编写基于L1 Buffer、L0A Buffer等片上存储的矩阵计算代码。；《抽象硬件架构（AI Core SIMD编程）》说明AI Core是AI处理器的计算核心，AI处理器内部有多个AI Core。本章节将介绍AI Core的并行计算架构抽象，该抽象架构屏蔽了不同硬件之间的差异。使用Ascend C进行编程时，基于抽象硬件架构，可以简化硬件细节，显著降低开发门槛。如需了解更详细的硬件架构信息或者原理，请参考硬件实现。。二者在C++ Tensor Cube编程把GM到L1/L0搬入、分形布局、Mmad计算和L0C搬出连接为完整矩阵流水上存在可执行的直接衔接。
+- [Reg矢量计算编程（C++ Tensor编程）](cpp_tensor_programming/reg_vector_computation.md)（`related`）：Reg矢量计算编程（C++ Tensor编程） 与《抽象硬件架构（AI Core SIMD编程）》的实质衔接是：Reg C++ 编程仍遵循 asc_vf_call→__simd_vf__→Load/Compute/Store；C API 对照、性能/边界/merge/精度表和 helper 编译卡直接约束这一调用模型。
+- [静态Tensor编程](cpp_tensor_programming/static_tensor_programming.md)（`related`）：《静态Tensor编程》说明在基于Pipe进行算子开发的方式中，由Pipe（TPipe类）统一管理Device端内存等资源，开发者无需感知内存管理、DoubleBuffer流水、同步等处理，只需要按照计算流编写算子即可，但由此也带来了一些运行时开销（如TPipe创建、InitBuffer等）。；《抽象硬件架构（AI Core SIMD编程）》说明AI Core是AI处理器的计算核心，AI处理器内部有多个AI Core。本章节将介绍AI Core的并行计算架构抽象，该抽象架构屏蔽了不同硬件之间的差异。使用Ascend C进行编程时，基于抽象硬件架构，可以简化硬件细节，显著降低开发门槛。如需了解更详细的硬件架构信息或者原理，请参考硬件实现。。二者在静态Tensor通过LocalMemAllocator或固定地址直接管理片上内存，并自行处理流水同步，与TPipe初始化模式形成明确取舍上存在可执行的直接衔接。
+- [MemoryVectorComputation](cpp_tensor_programming/memory_vector_computation.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《MemoryVectorComputation》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+- [Memory矢量计算编程](c_pointer_programming/memory_vector_computation.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《Memory矢量计算编程》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+- [Reg矢量计算编程（C指针编程）](c_pointer_programming/reg_vector_computation.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《Reg矢量计算编程（C指针编程）》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+- [TPipe-TQue编程原理介绍](tpipe_tque_programming/tpipe_tque_principles.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《TPipe-TQue编程原理介绍》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+- [TPipe和TQue编程范式](tpipe_tque_programming/tpipe_tque_paradigm.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《TPipe和TQue编程范式》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+- [基本架构（硬件实现）](../../advanced_programming/hardware_implementation/basic_architecture.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《基本架构（硬件实现）》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+- [抽象硬件架构（AI Core SIMT编程）](../ai_core_simt_programming/abstract_hardware_architecture.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《抽象硬件架构（AI Core SIMT编程）》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+- [抽象硬件架构（SIMD与SIMT混合编程）](../../advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/abstract_hardware_architecture.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《抽象硬件架构（SIMD与SIMT混合编程）》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+- [核函数（AI Core SIMD编程）](kernel_function.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《核函数（AI Core SIMD编程）》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+<!-- cannbot:related:end -->

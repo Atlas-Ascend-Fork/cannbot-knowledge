@@ -33,3 +33,12 @@ __aicore__ inline void Select(const LocalTensor<T>& dst, const LocalTensor<T>& s
 - maskTensor尾轴元素个数和源操作数尾轴元素个数不同的情况下， maskTensor的数据有可能被接口改写。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GE图模式263: 自定义VF Select被禁](../../../../runbooks/compilation/ge_263_vf_select.md)（`exemplifies`）：正式 Select 接口页给出支持模式和参数约束，可验证 VF 调用是否落在文档契约内。
+- [Select](../../basic_api/memory_vector_compute/compare_and_select/select.md)（`related`）：基础 Select 提供更底层的 UB 选择路径，并具有不同的 mask 模式和尾块约束，适合在高阶接口之外做实现选型。
+- [Select](../../basic_api/reg_vector_compute/compare_and_select/select.md)（`related`）：Reg Select 将条件选择留在寄存器链中，补充高阶 Tensor Select 之外避免中间 UB 往返的实现路线。
+- [GetSelectMaxMinTmpSize](get_select_max_min_tmp_size.md)（`same_topic`）：该 Host 接口给出高阶 Select 执行所需 workspace 上下界，是调用 Select 前完成 Tiling 资源分配的直接配套契约。
+<!-- cannbot:related:end -->

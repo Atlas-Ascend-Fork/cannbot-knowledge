@@ -22,3 +22,11 @@ platforms: ['950', a2, a3]
 模板参数isReuseSource预留，传入false即可；config为TanhConfig类型，其中algo指定算法：INTRINSIC（默认，直接按公式计算，性能更好）或SUBSECTION_COMPENSATION（误差补偿实现，精度更高）。接口参数：dstTensor为输出操作数；srcTensor为输入操作数，TPosition支持VECIN/VECCALC/VECOUT，数据类型需与dstTensor一致；sharedTmpBuffer为临时缓存；calCount为参与计算元素个数。
 
 约束：不支持源操作数与目的操作数地址重叠；不支持sharedTmpBuffer与源/目的操作数地址重叠；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend950 Reg 命名空间无 Erf/Tanh 封装](../../../../../runbooks/compilation/ascend950_reg_erf_tanh.md)（`exemplifies`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《Tanh》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
+- [GetTanhMaxMinTmpSize](get_tanh_max_min_tmp_size.md)（`related`）：Tanh 调用所需 sharedTmpBuffer 的合法区间由 GetTanhMaxMinTmpSize 在 host 侧给出，二者共享 isReuseSource 与输入 shape 合同。
+- [GetTanhTmpBufferFactorSize](get_tanh_tmp_buffer_factor_size.md)（`related`）：GetTanhTmpBufferFactorSize 提供 Tanh 的存活节点倍数和额外空间，供已有 UB 容量反算 calCount，直接决定 Tanh 分块。
+<!-- cannbot:related:end -->

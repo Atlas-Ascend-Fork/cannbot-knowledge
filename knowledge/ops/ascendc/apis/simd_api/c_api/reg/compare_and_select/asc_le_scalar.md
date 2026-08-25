@@ -22,3 +22,12 @@ platforms: ['950']
 约束：dst中未被mask筛选的位置被置为0。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscLeScalar](../../vector_compute/asc_le_scalar.md)（`related`）：AscLeScalar 与《AscLeScalar》的实质衔接是：Reg 与 Vector C API 及 ComparesFlexibleScalar 都实现 vector≤scalar，区别在结果载体与编程层级。
+- [Compares](../../../basic_api/reg_vector_compute/compare_and_select/compares.md)（`related`）：C++ Reg Compares 提供相同 tensor-scalar 谓词族，可在 C/C++ 接口间对照模式枚举和 mask。
+- [AscEqScalar](../../vector_compute/asc_eq_scalar.md)（`same_topic`）：AscEqScalar 与《AscLeScalar》的实质衔接是：AscEqScalar 与其他标量比较共享 scalar 广播和 mask 输出契约；vector-vector Eq、灵活标量 Compare/Select 说明比较源形态及结果消费方式。
+- [AscLe](asc_le.md)（`same_topic`）：焦点处理AscLe 的向量小于等于 mask 与标量/选择接口衔接；AscLeScalar正文说明“根据mask将源操作数src中元素逐个与标量value比较是否小于等于，比较结果写入dst对应比特位，成立为1，不成立为0”。候选生成同类比较 mask，或直接消费该 mask 完成 Select。
+<!-- cannbot:related:end -->

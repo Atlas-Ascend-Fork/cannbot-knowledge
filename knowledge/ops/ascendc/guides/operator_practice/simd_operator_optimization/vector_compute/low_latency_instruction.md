@@ -39,3 +39,12 @@ platforms: [agnostic]
 下文给出了上面三种方式的核心代码片段和性能数据对比。完整样例请参考ReduceCustom。
 【性能数据】
 输入shape为256，数据类型为float。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetSystemCycle](../../../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_system_cycle_isasi.md)（`explains`）：指南的 cycle 对比通过 GetSystemCycle 测量，接口卡提供复现 ReduceRepeat/ReduceDataBlock 选择所需的计时原语。
+- [ReduceDataBlock](../../../../apis/simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_data_block.md)（`explains`）：指南比较两次 ReduceRepeat、三次 ReduceDataBlock 和二者组合，结论是先 ReduceDataBlock 再 ReduceRepeat 在 shape=256 的实测更优。
+- [ReduceRepeat](../../../../apis/simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_repeat.md)（`explains`）：指南的二分累加方案在数据缩到一个 repeat 后用 ReduceRepeat 收尾，并给出其相对 Add 和 ReduceSum 的延迟位置。
+- [如何使用归约计算API](../../../programming_guide/library_api/basic_api/quick_reference/how_to_use_reduction_api.md)（`related`）：如何使用归约计算API 与《选择低延迟指令，优化归约操作性能》的实质衔接是：该指南解释 ReduceMax/Min/Sum、Repeat、DataBlock、PairElem 的粒度以及 mask/repeat 参数；基础/Reg 总览、辅助配置和 padding/count 故障直接影响选型与结果正确性。
+<!-- cannbot:related:end -->

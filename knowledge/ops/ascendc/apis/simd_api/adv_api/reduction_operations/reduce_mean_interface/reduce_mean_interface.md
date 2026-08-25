@@ -29,3 +29,11 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Mean接口](../mean_interface/mean_interface.md)（`related`）：ReduceMean接口说明对多维向量在指定维度求平均值，并提供临时空间大小获取接口；对Mean接口而言，Mean 的末轴二维约束与 ReduceMean 的多维 AR/RA 模式不同；两组 workspace 查询决定各自的 Tiling 空间。
+- [GetReduceMeanMaxMinTmpSize](get_reduce_mean_max_min_tmp_size.md)（`same_topic`）：GetReduceMeanMaxMinTmpSize：该 host估算的shape/typeSize/isReuseSource必须与 ReduceMean kernel调用一致；ReduceMean接口页汇总同一 sharedTmpBuffer契约。 目标卡《ReduceMean接口》补充：对多维向量在指定维度求平均值，并提供临时空间大小获取接口。
+- [ReduceMean](reduce_mean.md)（`same_topic`）：ReduceMean说明对多维向量按指定维度求平均值，通过pattern参数指定Reduce轴和Normal轴，当前支持AR和RA两种模式。
+<!-- cannbot:related:end -->

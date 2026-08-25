@@ -29,3 +29,10 @@ SoftmaxFlash增强版本，对应Softmax PASA算法。将输入tensor[m0, m1, ..
 - srcTensor和dstTensor的Tensor的空间可以复用，meanTensor和inMeanTensor的空间可以复用，maxTensor和inMaxTensor的空间可以复用，expSumTensor和inExpSumTensor的空间可以复用。
 
 适用平台：Ascend 950PR/Ascend 950DT、Atlas A2 系列、Atlas A3 系列。未列出的产品形态不在本卡已确认范围内；详细支持矩阵以固定来源的“产品支持情况”为准。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SoftmaxFlashV2](softmax_flash_v2.md)（`related`）：V2 与 V3 都承载可复用 sum/max 的在线 Softmax；V2 还支持 NZ，而 V3 收紧为 ND 和特定 n/m 对齐条件，二者可用于按格式与约束选型。
+- [SoftmaxFlashV3 Tiling接口](softmax_flash_v3_tiling_interface.md)（`same_topic`）：《SoftmaxFlashV3 Tiling接口》处理“用于获取SoftmaxFlashV3接口所需的Tiling参数。”。《SoftmaxFlashV3》明确“SoftmaxFlash增强版本，对应Softmax PASA算法。对输入tensor尾轴切分并按update模式计算softmax的均值、最大值和指数和，仅支持ND格式输入。”，可直接用于核对SoftmaxFlashV3 的 Kernel 参数、专用 Tiling、update 状态与在线 softmax 数值依赖。
+<!-- cannbot:related:end -->

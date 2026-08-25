@@ -35,3 +35,10 @@ A矩阵和B矩阵均未开启IBShare时，数据需要根据K轴、M轴或N轴�
 优化后执行多次的平均耗时：22.44us，较优化前有较大提升。
 ## 总结
 融合算子场景下，Matmul A矩阵和B矩阵同时开启IBShare，以Cube核视角分核，可以有效减少Cube侧的Scalar开销，提升性能。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetIBShareNormConfig](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_ib_share_norm_config.md)（`explains`）：该案例覆盖 A/B 同时共享的融合算子形态，可据输入复用关系选择单边或双边 IBShare。
+- [Matmul高阶API开启IBShare模板共享B矩阵数据](matmul_ibshare_b.md)（`same_topic`）：两篇 Matmul 案例都以 IBShare 复用 L1 数据：B-only 卡给出适用条件和 MTE2 收益，A+B 卡在同一决策上改为同时共享并验证 Scalar/Cube 收益，构成同一 IBShare 选型主题。
+<!-- cannbot:related:end -->

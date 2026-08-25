@@ -25,3 +25,13 @@ platforms: ['950']
 - 输入为-0时结果为-0。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt](../../../../../runbooks/compilation/device_sqrt_uses_vector_api.md)（`exemplifies`）：该 runbook 记录 device 侧 sqrtf 被 Bisheng 拒绝时改用向量 Sqrt，直接展示接口路线替换。
+- [dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数](../../../../../runbooks/precision/rsqrt_fast_approximation_use_sqrt_reciprocal.md)（`exemplifies`）：Rsqrt 快速近似精度不足时以 Sqrt 后取倒数替代，说明 Sqrt 精度模式在验证链中的作用。
+- [Sqrt](../../memory_vector_compute/basic_arithmetic/sqrt.md)（`related`）：Memory 矢量 Sqrt 与 Reg Sqrt 实现相同逐元素数学操作，但前者以 LocalTensor/count 工作，适用于不同执行路径选型。
+- [sqrt（数学函数）](../../../../utils_api/cpp_stdlib/math_functions/sqrt.md)（`related`）：Sqrt说明根据mask对源操作数srcReg逐元素做平方根运算，将结果写入目的操作数dstReg。
+- [AscSqrt](../../../c_api/reg/arithmetic_compute/asc_sqrt.md)（`same_topic`）：AscSqrt 与《Sqrt》的实质衔接是：Reg C API AscSqrt、Vector C API、Memory API 与 Reg C++ Sqrt 都按元素开方；device sqrtf 构建故障给出改用向量 Sqrt 的可执行修复，Rsqrt 精度卡验证 Sqrt 加倒数的精度路线。
+<!-- cannbot:related:end -->

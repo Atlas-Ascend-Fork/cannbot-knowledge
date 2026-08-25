@@ -25,3 +25,11 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hgtux2_mask](_hgtux2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hgtx2_mask》的实质衔接是：half2 unordered greater-than mask 与 ordered mask、反向 less-than、bool/boolean-all 返回及 isnan 共同界定逐 lane 位图和 NaN 为 true 的语义。
+- [__hgtx2](_hgtx2.md)（`same_topic`）：__hgtx2 与《__hgtx2_mask》的实质衔接是：__hgtx2 返回 half2 ordered > 的逐 lane 0/1；mask、boolean-all、unordered >、反向 < 与 isnan 入口用于核对返回形态和 NaN=false。
+- [__hgtx2_mask](../../bfloat16_type/bfloat16x2_compare_functions/_hgtx2_mask.md)（`same_topic`）：half2 版本执行同一逐 lane 大于 mask，源精度不同。
+<!-- cannbot:related:end -->

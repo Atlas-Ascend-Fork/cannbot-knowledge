@@ -19,3 +19,9 @@ platforms: ['950', a2, a3]
 返回值：执行计算得到的结果（uint64_t类型）。
 约束：当idx > 63或者idx < 0时，计算逻辑是：(idx % 64 + 64) % 64，得到结果位，设置结果位为1。
 支持平台：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core, Atlas 推理系列产品Vector Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscClearNthbit](asc_clear_nthbit.md)（`related`）：SetNthBit 与 ClearNthBit 对同一 bit 做相反更新，可组成状态位写入与清理。
+<!-- cannbot:related:end -->

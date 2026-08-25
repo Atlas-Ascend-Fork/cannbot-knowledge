@@ -24,3 +24,12 @@ platforms: ['950']
 约束：本接口只能在VF函数外调用，命名空间为AscendC，函数标记符为__aicore__。如果需要在VF内调用，命名空间为AscendC::Reg，函数标记符为__simd_callee__，具体
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ClearSpr](../reg_vector_compute/system_variable_access/clear_spr.md)（`related`）：两个 ClearSpr 分别面向 Reg VF 与普通 AI Core 调用域，文档明确需要按调用位置选择命名空间和函数标记。
+- [GetSpr](get_spr.md)（`same_topic`）：焦点处理特殊寄存器 ClearSpr 的清零/读取配套操作；GetSpr正文界定“获取指定特殊寄存器的值，当前支持AR寄存器”。候选是另一 API 层的 ClearSpr、配套 GetSpr 或废弃清理接口，操作同一 SPR 状态。
+- [asc_clear_ar_spr](../../c_api/reg/system_variables_access/asc_clear_ar_spr_deprecated.md)（`same_topic`）：焦点处理特殊寄存器 ClearSpr 的清零/读取配套操作；asc_clear_ar_spr正文界定“该接口已废弃，请使用asc_squeeze_and_storeunalign_init替代。用于对AR特殊寄存器清零，配合asc_squeeze_with_status记录有效元素字节数”。候选是另一 API 层的 ClearSpr、配套 GetSpr 或废弃清理接口，操作同一 SPR 状态。
+- [系统变量访问](../reg_vector_compute/system_variable_access/system_variable_access.md)（`same_topic`）：系统变量访问 与《ClearSpr》的实质衔接是：本页的实际能力是 ClearSpr 清零 AR 特殊寄存器；GetSpr 读取同一 AR，而 Reg Squeeze 会把有效元素字节数写入 AR，因此它们形成明确的生产、读取和复位契约。
+<!-- cannbot:related:end -->

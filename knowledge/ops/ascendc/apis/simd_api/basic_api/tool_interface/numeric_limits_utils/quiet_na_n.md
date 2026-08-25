@@ -24,3 +24,9 @@ platforms: ['950']
 约束：标量接口无约束，矢量接口使用duplicate填充前count个元素赋安静NaN值，参照Memory矢量计算下的数据填充接口duplicate约束。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SignalingNaN](signaling_na_n.md)（`related`）：《QuietNaN》明确“返回指定数据类型的安静NaN值，支持标量和矢量两种接口，矢量接口为dstLocal前count个元素赋安静NaN值。”；它与《SignalingNaN》的“返回指定数据类型的发信NaN值（浮点尾数最高位为0），提供标量和矢量两种接口。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

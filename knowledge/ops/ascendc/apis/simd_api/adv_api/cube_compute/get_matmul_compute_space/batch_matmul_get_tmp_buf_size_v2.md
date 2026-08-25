@@ -23,3 +23,11 @@ BatchMatmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结�
 - bufSize（输出）：根据TCubeTiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。 SysTilingTempBufSize结构定义如下方代码所示。
 
 返回值：-1表示获取失败； 0表示获取成功。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Batch Matmul基础功能](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/batch_matmul_basics.md)（`explains`）：Batch Matmul基础功能 与《BatchMatmulGetTmpBufSizeV2》的实质衔接是：Batch Matmul 直接使用 Batch tmp 查询、IterateBatch/NBatch、batch shape/输出与 batch 数配置；workspace 和精度卡约束真实使用。
+- [GetTiling](../matmul_tiling/get_tiling.md)（`related`）：BatchMatmulGetTmpBufSizeV2 的输入必须先由 Tiling 对象 GetTiling 成功生成，返回 -1 的 tiling 不能用于空间查询。
+- [BatchMatmulGetTmpBufSize](batch_matmul_get_tmp_buf_size.md)（`same_topic`）：《BatchMatmulGetTmpBufSize》处理“BatchMatmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”。《BatchMatmulGetTmpBufSizeV2》明确“BatchMatmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”，可直接用于核对BatchMatmul 临时空间估算与 Matmul Tiling 对象、TCubeTiling 结果之间的调用合同。
+<!-- cannbot:related:end -->

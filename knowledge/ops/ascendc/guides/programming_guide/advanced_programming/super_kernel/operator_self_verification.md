@@ -29,3 +29,11 @@ npugraph_ex后端开启SuperKernel融合时，编译后端需使用"npugraph_ex"
 ### 关键点说明
 - torch.npu.super_kernel_scope_begin(scope_name)/torch.npu.super_kernel_scope_end(scope_name)：成对出现，配对的scope_name必须一致。相同的scope_name代表相同的融合范围，由用户控制。若传入None，则该范围内的算子不进行SuperKernel融合。
 - torch.compile(model, backend="npugraph_ex", options={...}, dynamic=False)：通过npugraph_ex后端下发图，仅支持静态图（dynamic=False）。super_kernel_optimize=True是开启SuperKernel融合优化的必要开关；其他融合优化与调试参数（如super_kernel_optimize_options、super_kernel_debug_options等）请参见SuperKernel功能。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SuperKernel原理介绍](principles.md)（`related`）：自验证确认任务命中、输出和同步，防止只看图编译成功。
+- [核函数直调算子额外适配说明](kernel_direct_call_adaptation.md)（`related`）：对使用 >> 的直调算子，自验证前还需增加 __sk__ 入口、参数结构体与 SK_BIND，并保持 Kernel Type；否则测试失败不能归因于融合计算本身。
+- [算子适配说明](operator_adaptation.md)（`related`）：自验证应在算子满足 SuperKernel 全核同步、MIX 比例和 DCache 一致性约束后执行；适配卡给出验证失败时应回查的具体前置契约。
+<!-- cannbot:related:end -->

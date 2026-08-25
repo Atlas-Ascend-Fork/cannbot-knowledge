@@ -45,3 +45,14 @@ mkdir -p build
 cd build
 cmake ../src -DCMAKE_SKIP_RPATH=TRUE
 3.  执行如下命令，生成可执行文件。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AI Core编译基本用法](../../compilation_and_execution/operator_compilation/ai_core_operator_compilation.md)（`related`）：图中 AI Core 节点需先生成可加载 kernel binary，是图编译阶段的底层依赖。
+- [开启Tiling下沉](enable_tiling_sink.md)（`related`）：启用 tiling sink 会改变 tiling 在图编译/执行阶段的生成与下发位置，是该流程的关键优化分支。
+- [异步执行（编译与执行）](../../compilation_and_execution/async_execution.md)（`related`）：图执行可异步提交，完成性与资源生命周期需按异步执行契约处理。
+- [高级编程调用样例](../ai_framework_adaptation/onnx_framework/call_examples.md)（`related`）：图编译和图执行说明本节通过单算子模型执行的样例来介绍图模式下图编译和图执行流程。单算子模型执行是指基于图IR执行算子，先编译算子（例如，使用ATC工具将Ascend IR定义的单算子描述文件编译成算子om模型文件），再调用acl接口加载算子模型，最后调用acl接口执行算子。
+- [基本开发流程](basic_development_flow.md)（`same_topic`）：基础流程给出建图、编译、加载、执行顺序，编译执行页展开其中后半段。
+- [高级编程概述](overview.md)（`same_topic`）：高级编程概述 与《图编译和图执行》的实质衔接是：图高级编程概述由基本开发流程展开，并以图编译执行和 tiling 下沉说明 GE 从构图到下发的生命周期；编译部署流程是产物落点。
+<!-- cannbot:related:end -->

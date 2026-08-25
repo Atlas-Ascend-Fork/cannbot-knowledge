@@ -24,3 +24,9 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Asin](../../../simd_api/adv_api/math_compute/asin_interface/asin.md)（`related`）：Asinf 是 SIMT 标量 float 入口，Asin 是 LocalTensor 高阶向量入口并要求 sharedTmpBuffer；二者都实现反正弦且共享 [-1,1] 有效值域。
+<!-- cannbot:related:end -->

@@ -27,3 +27,10 @@ platforms: ['950']
 支持数据类型：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float、int64_t、uint64_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [And](and.md)（`related`）：Not 可构造掩码反转并与 And 组合。
+- [Not](../../memory_vector_compute/logical_compute/not.md)（`same_topic`）：Memory Not 与 Reg Not 都执行逐位取反；前者使用 LocalTensor，后者使用 RegTensor/MaskReg 且要求 ZEROING，便于按执行模型选择实现。
+<!-- cannbot:related:end -->

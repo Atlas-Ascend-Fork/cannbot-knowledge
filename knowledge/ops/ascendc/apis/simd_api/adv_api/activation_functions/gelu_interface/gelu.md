@@ -34,3 +34,17 @@ __aicore__ inline void Gelu(const LocalTensor<T>& dstLocal, const LocalTensor<T>
 - 仅支持输入shape为ND格式。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend950 Reg 命名空间无 Erf/Tanh 封装](../../../../../runbooks/compilation/ascend950_reg_erf_tanh.md)（`exemplifies`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《Gelu》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
+- [AscendC GELU 三系数 erfc 在大值域 fp32 精度不足](../../../../../runbooks/precision/gelu_erfc_polynomial_precision_budget.md)（`exemplifies`）：Gelu 与《AscendC GELU 三系数 erfc 在大值域 fp32 精度不足》的实质衔接是：Gelu 接口、快速近似变体和空间查询共同定义高精度/高性能调用；GeGLU 直接以 GELU 为门控，两个 runbook 给出 erfc 近似与负尾相消的可执行精度边界。
+- [GELU 负尾部用 erfc 形态避免大数相消](../../../../../runbooks/precision/gelu_negative_tail_erfc_avoids_cancellation.md)（`exemplifies`）：Gelu 与《GELU 负尾部用 erfc 形态避免大数相消》的实质衔接是：Gelu 接口、快速近似变体和空间查询共同定义高精度/高性能调用；GeGLU 直接以 GELU 为门控，两个 runbook 给出 erfc 近似与负尾相消的可执行精度边界。
+- [中级性能优化](../../../../../guides/operator_practice/typical_operator_cases/simd_operator_impl/gelu_reg_vector_operator/intermediate_optimization.md)（`explains`）：中级性能优化 与《Gelu》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [FasterGeluV2](faster_gelu_v2.md)（`related`）：需要标准 GELU 数值语义时应使用 Gelu 而非更快近似。
+- [GeGLU](../ge_glu_interface/ge_glu.md)（`related`）：Gelu 与《GeGLU》的实质衔接是：Gelu 接口、快速近似变体和空间查询共同定义高精度/高性能调用；GeGLU 直接以 GELU 为门控，两个 runbook 给出 erfc 近似与负尾相消的可执行精度边界。
+- [FasterGelu](faster_gelu.md)（`same_topic`）：Gelu 与《FasterGelu》的实质衔接是：Gelu 接口、快速近似变体和空间查询共同定义高精度/高性能调用；GeGLU 直接以 GELU 为门控，两个 runbook 给出 erfc 近似与负尾相消的可执行精度边界。
+- [Gelu接口](gelu_interface.md)（`same_topic`）：Gelu 与《Gelu接口》的实质衔接是：Gelu 接口、快速近似变体和空间查询共同定义高精度/高性能调用；GeGLU 直接以 GELU 为门控，两个 runbook 给出 erfc 近似与负尾相消的可执行精度边界。
+- [GetGeluMaxMinTmpSize](get_gelu_max_min_tmp_size.md)（`same_topic`）：Gelu 与《GetGeluMaxMinTmpSize》的实质衔接是：Gelu 接口、快速近似变体和空间查询共同定义高精度/高性能调用；GeGLU 直接以 GELU 为门控，两个 runbook 给出 erfc 近似与负尾相消的可执行精度边界。
+<!-- cannbot:related:end -->

@@ -24,3 +24,11 @@ platforms: ['950']
 约束：本接口支持的输入数据各元素范围为x大于等于0，否则返回值为nan。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [H2Rsqrt](h2rsqrt.md)（`related`）：H2Sqrt 返回平方根，H2Rsqrt 返回平方根倒数；同一 half2 输入在归一化等场景可选择直接 rsqrt 或 sqrt 后求倒数，特殊值结果不同。
+- [H2Sqrt](../../bfloat16_type/bfloat16x2_math_functions/h2sqrt.md)（`related`）：half2 H2Sqrt 与 BF16x2 H2Sqrt 具有相同逐分量开方语义，可按低精度 dtype 迁移。
+- [Hsqrt](../half_math_functions/hsqrt.md)（`related`）：两卡都计算 half 平方根，分别处理 half2 两 lane 与 half 标量；数据是否可成对处理决定接口选择。
+<!-- cannbot:related:end -->

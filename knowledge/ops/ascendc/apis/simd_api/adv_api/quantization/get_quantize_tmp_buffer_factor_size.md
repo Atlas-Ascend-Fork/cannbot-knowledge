@@ -22,3 +22,10 @@ platforms: ['950']
 参数：typeSize为输入数据类型字节数（half传2）；maxLiveNodeCount输出最大存活节点数；extraBuf输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。
 
 约束：当反推出的currentShapeSize * typeSize < 256B时，currentShapeSize按256B/typeSize向上取整。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetQuantizeMaxMinTmpSize](get_quantize_max_min_tmp_size.md)（`same_topic`）：GetQuantizeTmpBufferFactorSize 与《GetQuantizeMaxMinTmpSize》的实质衔接是：GetQuantizeTmpBufferFactorSize 用可用 UB 反推 Quantize 的单次元素数，GetQuantizeMaxMinTmpSize 给出另一种 Host 侧空间选择，Quantize kernel 是两类查询结果的直接消费方。
+- [Quantize](quantize.md)（`same_topic`）：GetQuantizeTmpBufferFactorSize 与《Quantize》的实质衔接是：GetQuantizeTmpBufferFactorSize 用可用 UB 反推 Quantize 的单次元素数，GetQuantizeMaxMinTmpSize 给出另一种 Host 侧空间选择，Quantize kernel 是两类查询结果的直接消费方。
+<!-- cannbot:related:end -->

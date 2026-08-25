@@ -18,3 +18,9 @@ platforms: ['950']
 函数原型：bfloat16_t __float2bfloat16_rz(const float x)
 返回值：输入遵循CAST_TRUNC模式转换成的bfloat16类型数据。本接口受全局饱和模式影响，特殊值如下：
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__float2bfloat16_rz_sat](_float2bfloat16_rz_sat.md)（`same_topic`）：两接口都按 RZ 将 float 转为 bfloat16；sat 版本只改变饱和与特殊值映射，可作为同方向转换的直接选择。
+<!-- cannbot:related:end -->

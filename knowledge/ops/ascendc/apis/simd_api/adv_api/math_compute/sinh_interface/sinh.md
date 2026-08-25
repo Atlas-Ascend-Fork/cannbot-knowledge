@@ -22,3 +22,11 @@ platforms: ['950', a2, a3]
 模板参数isReuseSource预留，传入false即可。接口参数：dstTensor为输出操作数；srcTensor为输入操作数，TPosition支持VECIN/VECCALC/VECOUT，数据类型需与dstTensor一致；sharedTmpBuffer为临时缓存；calCount为参与计算元素个数。
 
 约束：不支持源操作数与目的操作数地址重叠；不支持sharedTmpBuffer与源/目的操作数地址重叠；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetSinhMaxMinTmpSize](get_sinh_max_min_tmp_size.md)（`related`）：Sinh 的显式临时空间重载依赖对应 MaxMin 接口预算，且 calCount 只改变参与元素数，不取消 buffer 约束。
+- [GetSinhTmpBufferFactorSize](get_sinh_tmp_buffer_factor_size.md)（`same_topic`）：GetSinhTmpBufferFactorSize 与《Sinh》的实质衔接是：该因子查询服务 Sinh 高阶接口，必须结合最大最小空间查询把 host 侧预算转换成 kernel 单次处理量。
+- [Sinh接口](sinh_interface.md)（`same_topic`）：函数页给出高阶 Sinh 的参数和支持类型。
+<!-- cannbot:related:end -->

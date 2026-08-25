@@ -37,3 +37,12 @@ if控制流可使用if constexpr或者for(1)替换。if constexpr在编译时已
 减少Loop循环内非索引相关语句。for循环中存在与索引无关的语句可以提出for循环外来减少指令数。
 ## 循环内地址管理优化
 在VF循环中，当使用搬运指令时，需要计算搬入和搬出的地址偏移量，由此会引入较多的标量计算开销。在Ascend 950PR/Ascend 950DT中，通过引入地址寄存器，可有效优化地址偏移量的计算。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [VF调用](../../../../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`explains`）：VF 循环优化指南讨论将循环组织到 VF 内的收益和边界，补足 asc_vf_call 调用粒度与循环应由 wrapper 还是 VF 承担的决策。
+- [VfFusionOptimization](vf_fusion_optimization.md)（`related`）：VF Fusion 依赖可融合的 Hardware Loop；Loop 指南给出 uint16_t 计数、0 起步、步长 1、循环内无跳转等可识别条件。
+- [中级性能优化](../../../typical_operator_cases/simd_operator_impl/add_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《VfLoopOptimization》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
+- [指令双发优化](dual_issue_optimization.md)（`related`）：指令双发优化 与《VfLoopOptimization》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+<!-- cannbot:related:end -->

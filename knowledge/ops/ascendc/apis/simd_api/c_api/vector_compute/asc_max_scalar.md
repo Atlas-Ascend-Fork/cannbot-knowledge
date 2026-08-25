@@ -18,3 +18,13 @@ platforms: [a2, a3]
 函数原型：void asc_max_scalar(__ubuf__ int16_t* dst, __ubuf__ int16_t* src, int16_t value, uint32_t count)
 约束：操作数地址重叠约束请参考通用地址重叠约束。；dst、src的起始地址需要32字节对齐。
 支持平台：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Ascend 950PR/Ascend 950DT, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscMax](asc_max.md)（`related`）：AscMaxScalar 将第二个 Tensor 改为标量，适合根据广播需求在二元 Tensor Max 与标量 Max 间选型。
+- [AscMaxScalar](../reg/arithmetic_compute/asc_max_scalar.md)（`related`）：AscMaxScalar 与《AscMaxScalar》的实质衔接是：Reg 与基础 MaxScalar 操作同一 vector-scalar 最大值，MinScalar 给出相反选择边界。
+- [AscMinScalar](../reg/arithmetic_compute/asc_min_scalar.md)（`related`）：AscMaxScalar 与《AscMinScalar》的实质衔接是：Reg 与基础 MaxScalar 操作同一 vector-scalar 最大值，MinScalar 给出相反选择边界。
+- [AscMinScalar](asc_min_scalar.md)（`related`）：AscMaxScalar 是同一 Vector 标量比较模型的取大对偶，可据 clamp 上界或下界选择。
+- [Maxs（灵活标量位置）](../../basic_api/memory_vector_compute/basic_arithmetic/maxs_flexible_scalar.md)（`related`）：AscMaxScalar 与《Maxs（灵活标量位置）》的实质衔接是：Reg 与基础 MaxScalar 操作同一 vector-scalar 最大值，MinScalar 给出相反选择边界。
+<!-- cannbot:related:end -->

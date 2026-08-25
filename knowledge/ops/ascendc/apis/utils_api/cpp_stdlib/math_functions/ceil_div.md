@@ -28,3 +28,9 @@ platforms: ['950']
 约束：- T和U必须为整型，支持的数据类型：int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t。
 - 当b为0时，结果为0。
 - 对于有符号输入，调用方需确保a >= 0且b > 0。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CeilDivision](../../../simd_api/basic_api/scalar_compute/ceil_division.md)（`same_topic`）：CeilDivision 与 ceil_div 都对两个正整数执行向上整除，且除数为零时返回 0；后者额外允许 Host 调用并支持混合整型模板，核心结果合同相同。
+<!-- cannbot:related:end -->

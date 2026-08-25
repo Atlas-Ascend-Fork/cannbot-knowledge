@@ -19,3 +19,10 @@ platforms: ['950', a2, a3]
 支持 mask 连续模式与逐 bit 模式，通过 repeatMode 参数控制 src0 的每个 DataBlock 与 src1 的对应关系。
 仅支持 half 数据类型。Ascend 950PR/950DT 无需临时空间，Atlas A2 与 A3 需分配 src0.GetSize()*32 + src1.GetSize()*32 字节。
 支持 Ascend 950PR/950DT、Atlas A2 与 Atlas A3 系列产品以及 Atlas 推理系列产品 AI Core。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Add](add.md)（`related`）：双线性插值需合并四邻域加权结果，Add 是下游组合步骤而非完整插值接口。
+- [Mul](mul.md)（`related`）：双线性插值由若干权重乘法和加法组成，Mul 是其基础计算构件但不包含坐标/权重契约。
+<!-- cannbot:related:end -->

@@ -36,3 +36,11 @@ IPC：-：1.20：1.25
 - 当前IPC为1.25，距离理论极限2.0仍有空间，主要受限于GELU 8条指令的依赖链长度
 进一步提升IPC的方向：将过长的loop循环切分为多个短循环，在长latency指令（如Exp、Div）结束点进行拆分，使每组依赖链更短，双发效率更高。本样例loop循环较短，不适用于该优化项。
 详细内容请参见Gelu性能调优样例 Case 2。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [中级性能优化](intermediate_optimization.md)（`same_topic`）：中级性能优化 与《高阶极限打磨》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [入门功能落地](getting_started.md)（`same_topic`）：极限篇继续消费同一 GELU 基线并验证更深的指令调度与流水优化，是功能落地后的后续阶段。
+- [指令双发优化](../../../simd_operator_optimization/vector_compute/vf_optimization/dual_issue_optimization.md)（`same_topic`）：GELU 卡通过展开多组依赖链提升双发机会，双发优化指南提供其指令依赖和调度原理。
+<!-- cannbot:related:end -->

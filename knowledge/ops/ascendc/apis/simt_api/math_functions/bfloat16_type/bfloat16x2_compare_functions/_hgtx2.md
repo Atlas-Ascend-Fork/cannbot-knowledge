@@ -25,3 +25,14 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hbgtx2](_hbgtx2.md)（`related`）：__hbgtx2 把两个 ordered > lane 聚合成单 bool，只有两 lane 都成立才为 true；focal 保留逐 lane 1.0/0.0。
+- [__hlex2](_hlex2.md)（`related`）：> 是相反方向谓词，可用于条件反转诊断。
+- [__hltx2](_hltx2.md)（`related`）：__hltx2 与《__hgtx2》的实质衔接是：bfloat16x2 小于比较的数值/掩码返回形式、无序比较及 half2 同名接口决定 NaN 和两个 lane 的判读。
+- [__hgtux2](_hgtux2.md)（`same_topic`）：__hgtux2 与 focal 都返回逐 lane bfloat16 结果，但 unordered 版本在 NaN lane 返回 1.0，ordered 版本返回 0.0。
+- [__hgtux2_mask](_hgtux2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hgtx2》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hgtx2_mask](_hgtx2_mask.md)（`same_topic`）：两卡执行相同 ordered 大于比较；focal 返回 bfloat16x2 的 1.0/0.0，mask 版本返回两个 FFFF/0000 半字，决定后续数值计算还是位选择。
+<!-- cannbot:related:end -->

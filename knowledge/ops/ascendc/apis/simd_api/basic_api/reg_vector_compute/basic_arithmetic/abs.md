@@ -29,3 +29,11 @@ RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Le
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Abs](../../memory_vector_compute/basic_arithmetic/abs.md)（`same_topic`）：Abs 与《Abs》的衔接是：这些卡分别给出 Abs 在 Reg、C Reg、C Vector 路径上的同一绝对值语义；原地覆盖时符号位丢失案例是该操作的直接别名风险。
+- [AscAbs](../../../c_api/reg/arithmetic_compute/asc_abs.md)（`same_topic`）：AscAbs 是 C API 寄存器侧的同一绝对值操作，补充 C/C++ 接口映射和 mask 契约。
+- [AscAbs](../../../c_api/vector_compute/asc_abs.md)（`same_topic`）：Abs说明对srcReg中有效元素逐个取绝对值并写入dstReg，复数类型取模。
+<!-- cannbot:related:end -->

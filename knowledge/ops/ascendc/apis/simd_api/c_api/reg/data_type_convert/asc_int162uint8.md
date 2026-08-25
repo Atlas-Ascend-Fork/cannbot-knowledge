@@ -24,3 +24,10 @@ platforms: ['950']
 约束：mask控制源操作数是否参与计算，源操作数不参与计算的元素在输出对应位置置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscUint162uint8](asc_uint162uint8.md)（`related`）：“AscUint162uint8”处理将uint16_t类型数据转换为uint8_t类型，支持饱和与非饱和模式。；“AscInt162Uint8”明确将src中int16_t类型元素转换为uint8_t类型并写入dst，支持饱和与非饱和模式，位宽比为2:1。。实质衔接：保留的窄化接口保持目标 uint8 不变而改变输入符号或位宽，可用于选择正确转换并识别已废弃的 u32 路径。
+- [AscInt82int16](asc_int82int16.md)（`same_topic`）：AscInt82int16 与《AscInt162Uint8》的实质衔接是：AscInt8ToInt16 是有符号扩宽，Int16ToUint8 与 Uint8ToUint16 对照方向和符号；Reg int8 pack 故障说明 lane 分布不能按普通连续布局假设。
+<!-- cannbot:related:end -->

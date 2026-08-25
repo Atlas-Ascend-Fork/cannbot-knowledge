@@ -21,3 +21,10 @@ platforms: ['950', a2, a3]
 模板参数isReuseSource预留，传false；config为FmodConfig类型，其中algo指定算法：NORMAL（默认，普通模式，支持half/float）或ITERATION_COMPENSATION（迭代补偿高精度模式，仅支持float）；iterationNum为迭代补偿轮次（仅ITERATION_COMPENSATION模式生效，范围1-11，默认11，轮次越多精度越高但性能越低，src0Tensor与src1Tensor指数位差异不应超过24*iterationNum）。接口参数：dstTensor输出；src0Tensor、src1Tensor输入（TPosition支持VECIN/VECCALC/VECOUT，类型需与dst一致）；sharedTmpBuffer临时缓存；calCount参与计算元素个数。
 
 约束：针对Atlas 推理系列产品AI Core输入数据限制在[-2147483647.0, 2147483647.0]；src0Tensor与src1Tensor数据长度必须一致；Ascend 950PR/950DT上ITERATION_COMPENSATION模式仅支持float；不支持源操作数与目的操作数地址重叠；不支持sharedTmpBuffer与源/目的操作数地址重叠；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetFmodMaxMinTmpSize](get_fmod_max_min_tmp_size.md)（`related`）：Fmod 的 sharedTmpBuffer 必须落在 GetFmodMaxMinTmpSize 返回的最小/最大范围内，否则无法保证计算正确或有效利用 UB。
+- [GetFmodTmpBufferFactorSize](get_fmod_tmp_buffer_factor_size.md)（`related`）：GetFmodTmpBufferFactorSize 与《Fmod》的实质衔接是：Fmod 的 factor-size、max/min 临时空间、kernel 接口和标量实现共同决定固定 UB 下单次元素数及除零保护。
+<!-- cannbot:related:end -->

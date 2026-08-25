@@ -27,3 +27,9 @@ Atlas A3 训练系列产品/Atlas A3 推理系列产品，分离模式，返回V
 Ascend 950PR/Ascend 950DT，分离模式，返回Vector Core的核数
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetCoreNumAic](get_core_num_aic.md)（`related`）：分离架构下 GetCoreNum 返回 Vector 核数；需要 Cube 分核时必须改用 GetCoreNumAic，避免 numBlocks 取错执行单元。
+<!-- cannbot:related:end -->

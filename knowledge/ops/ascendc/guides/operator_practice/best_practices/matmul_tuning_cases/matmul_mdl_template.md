@@ -34,3 +34,11 @@ Tiling参数如下：
 ## 分析主要瓶颈点
 -   优化前的Profiling数据如下，Matmul默认为Norm模板。从C列的aic_time数据可以看出，多个核中最大算子执行耗时为83.68us。从C列的aic_time、L列的aic_mte2_time和M列的aic_mte2_ratio几组数据来看，MTE2平均耗时75.64us，耗时占比达到92%以上，因此需要优化MTE2流水的耗时。
 -   优化前的流水图如下，MTE2分多次从Global Memory搬运基本块到L1 Buffer（A1/B1）。由于输入的矩阵Shape较大，MTE2循环搬运的次数多，但每次只搬运1个基本块，导致带宽利用率低，整体的MTE2搬运耗时长。进而影响后续的MTE1和MMAD流水，导致流水之间同步等待时间偏长。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetMDLConfig](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_mdl_config.md)（`explains`）：指南给出 MDL 适用于 MTE2 搬运次数多的大 shape，并通过 preload/L1 复用减少流水空隙；GetMDLConfig 提供 `doMTE2Preload`、L1/UB 复用等 MDL 专用参数和返回 MatmulConfig 的调用入口，是该优化机制的可执行配置衔接。
+- [MatmulConfig](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_config.md)（`explains`）：指南解释大 shape、MTE2 循环搬运占比高时为何选择 MDL，并给出通过 L1 缓存多个基本块减少搬运的机制；MatmulConfig 卡则把该选择落到 `CFG_MDL` 模板参数合同，二者构成选型理由到配置入口的直接链路。
+- [TCubeTiling结构体](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/t_cube_tiling_struct.md)（`explains`）：指南列出 MDL 的 singleCoreM/N/K、baseM/N/K、stepM/N/Ka/Kb 和 depthA1/B1，并要求同时满足 TCubeTiling 与 MDL 补充约束；TCubeTiling 卡承载 Kernel 切块、搬运和计算参数，是指南配置可执行性的直接数据合同。
+<!-- cannbot:related:end -->

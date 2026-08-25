@@ -30,3 +30,13 @@ ShiftLefts指令根据mask对源操作数srcReg，按照scalarValue进行左移�
 - scalarValue不支持设置为负数，负数行为未定义。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ShiftRights](shift_rights.md)（`related`）：《ShiftRights》明确“根据mask对srcReg按标量scalarValue进行右移操作并写入dstReg，无符号类型执行逻辑右移，有符号类型执行算术右移。”；它与《ShiftLefts》的“根据mask对srcReg按标量scalarValue进行左移操作并写入dstReg，无符号类型执行逻辑左移，有符号类型执行算术左移。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscShiftLeftScalar](../../../c_api/reg/logic_compute/asc_shiftleft_scalar.md)（`same_topic`）：《AscShiftLeftScalar》明确“根据mask对源操作数src执行左移，左移位数由标量参数value决定，结果写入dst。”；它与《ShiftLefts》的“根据mask对srcReg按标量scalarValue进行左移操作并写入dstReg，无符号类型执行逻辑左移，有符号类型执行算术左移。”在实际调用参数、数据流或结果校验上直接衔接。
+- [ShiftLeft](../../memory_vector_compute/logical_compute/shift_left.md)（`same_topic`）：ShiftLefts 明确表达 RegTensor 加标量位移量，与本页标量形态最直接对应。
+- [ShiftLeft](../../memory_vector_compute/logical_compute/shift_left_shift_amount_tensor.md)（`same_topic`）：ShiftLeft 与《ShiftLefts》的实质衔接是：这些接口覆盖 tensor/标量移位量、Memory/Reg/C 路径及左右移方向，直接用于核对 ShiftLeft 的移位量来源与有符号/无符号语义。
+- [ShiftLeft](shift_left.md)（`same_topic`）：《ShiftLeft》明确“根据mask对srcReg0按srcReg1对应元素进行左移操作并写入dstReg，无符号类型执行逻辑左移，有符号类型执行算术左移。”；它与《ShiftLefts》的“根据mask对srcReg按标量scalarValue进行左移操作并写入dstReg，无符号类型执行逻辑左移，有符号类型执行算术左移。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

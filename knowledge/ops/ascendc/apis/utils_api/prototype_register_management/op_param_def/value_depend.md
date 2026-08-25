@@ -26,3 +26,11 @@ OpParamDef算子定义，OpParamDef请参考OpParamDef。
 1. 输入的参数数据类型配置全为DT_FLOAT，对应生成的输出类型aclFloatArray（aclnn数据类型）。
 2. 输入的参数数据类型配置全为DT_BOOL，对应生成的输出类型aclBoolArray（aclnn数据类型）。
 3. 输入的参数数据类型配置全为整数类型，即DT_INT64/DT_UINT64/DT_INT32/DT_UINT32/DT_INT16/DT_UINT16/DT_INT8/DT_UINT8，对应生成的输出类型aclIntArray（aclnn数据类型）。当数据类型配置含有DT_INT64以外的数据类型时，需要增加一组DT_INT64对应的输入/输出数据类型组合。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [TilingFunc 未声明依赖读 axes 致 segfault](../../../../runbooks/compilation/tilingfunc_axes_segfault.md)（`exemplifies`）：API 明确 ValueDepend 会把 Const 输入值下发到 host，TilingContext 才能通过 GetInputTensor 读取，直接解释本卡未声明时 axes 数据不可安全解引用。
+- [ValueDepend(REQUIRED) 让 axes 走 host 端](../../../../runbooks/compilation/opdef_value_depend_required_for_axes_host_read.md)（`exemplifies`）：《ValueDepend》给出“标识该输入是否为“数据依赖输入”，数据依赖输入是指在Tiling/InferShape等函数实现时依赖该输入的具体数据。该输入数据为host侧数据，开发者在Tiling函数/InferShape函数中可以通过TilingContext类的GetInputTensor/InferShapeContext类的GetInputTensor获取这个输入数据。”；该约束/探针可直接复现、解释或前置验证《ValueDepend(REQUIRED) 让 axes 走 host 端》中的“reduce 类算子的 axes Input 在 OpDef 注册时加 .ValueDepend(REQUIRED)，框架会把 device 数据拷到 host 供 TilingFunc 读取，并生成 aclnnXxxGetWorkspaceSize(aclIntArray*) 与 aclnnXxxTensorGetWorkspaceSize(aclTensor*) 两个 API 变体。”。
+- [开启Tiling下沉](../../../../guides/programming_guide/advanced_programming/operator_graph_development/enable_tiling_sink.md)（`explains`）：开启 Tiling 下沉明确要求非 Const 输入配置 Tiling 值依赖；ValueDepend 卡给出 scope=TILING 的注册语义，使数据只在 Tiling 阶段可取并支持下沉。
+<!-- cannbot:related:end -->

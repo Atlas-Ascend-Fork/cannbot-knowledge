@@ -29,3 +29,12 @@ RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Le
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscDiv](../../../c_api/reg/arithmetic_compute/asc_div.md)（`same_topic`）：Div 与《AscDiv》的实质衔接是：这些入口执行相同逐元素除法，分别位于 Reg、Memory、C Reg/C Vector 层；Divs 补充一个操作数为标量时的调用契约。
+- [AscDiv](../../../c_api/vector_compute/asc_div.md)（`same_topic`）：AscDiv 与《Div》的实质衔接是：这些是 AscDiv 在 C Vector、C Reg、memory 与 Reg 执行层的同一逐元素除法；64 位 div/mod 后端错误卡限定不可扩展的数据位宽。
+- [Div](../../memory_vector_compute/basic_arithmetic/div.md)（`same_topic`）：Div 与《Div》的实质衔接是：这些入口执行同一逐元素除法语义，分别落在 memory、Reg、C Reg/C Vector 层；灵活标量 Divs 补充标量位于任一操作数时的调用选择。
+- [Divs（灵活标量位置）](../../memory_vector_compute/basic_arithmetic/divs_flexible_scalar.md)（`same_topic`）：Div 与《Divs（灵活标量位置）》的实质衔接是：这些入口执行相同逐元素除法，分别位于 Reg、Memory、C Reg/C Vector 层；Divs 补充一个操作数为标量时的调用契约。
+<!-- cannbot:related:end -->

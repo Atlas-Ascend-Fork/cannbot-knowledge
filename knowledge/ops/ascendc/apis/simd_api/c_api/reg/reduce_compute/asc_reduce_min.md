@@ -24,3 +24,15 @@ platforms: ['950']
 - 如果输入数据中存在nan，则将nan写入dst的第0个元素，并将第一个nan的索引写入dst的第1个元素。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [A5 循环内 ReduceMin 取索引致 vector core 异常](../../../../../runbooks/precision/a5_reducemin_vector_core.md)（`exemplifies`）：该卡给出 ReduceMin 向量核异常的复现与平台边界，可用于调用后的故障验证。
+- [AscReduceMax](asc_reduce_max.md)（`related`）：AscReduceMax 与《AscReduceMin》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+- [ReduceMin](../../../adv_api/reduction_operations/reduce_min_interface/reduce_min.md)（`related`）：高阶 ReduceMin 封装 shape/workspace，适合整 tensor；Reg API 适合 VF 内显式寄存器归约。
+- [ReduceMin](../../../basic_api/memory_vector_compute/reduction_compute/reduce_min.md)（`related`）：Memory Tensor 基础 API 提供 LocalTensor 路径，和 Reg API 的数据驻留、mask 契约不同。
+- [ReduceMin接口](../../../adv_api/reduction_operations/reduce_min_interface/reduce_min_interface.md)（`related`）：Reg C API 的 asc_reduce_min 在寄存器编程路径完成相同最小值归约，适合与高阶 Tensor API 按数据驻留位置选型。
+- [AscReduceMinDatablock](asc_reduce_min_datablock.md)（`same_topic`）：AscReduceMinDatablock 与《AscReduceMin》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [asc_reduce_min](../../../../simt_api/warp_functions/warp_reduce_functions/asc_reduce_min.md)（`same_topic`）：asc_reduce_min 与《AscReduceMin》的实质衔接是：asc_reduce_min 在同一 warp 的活跃线程间广播最小值；add/max 和 C API 对应入口共享 active-lane 契约，warp reduce 总览补充调用范围。
+<!-- cannbot:related:end -->

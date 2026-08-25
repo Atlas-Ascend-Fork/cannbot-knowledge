@@ -29,3 +29,13 @@ platforms: ['950', a2, a3]
 返回值：MatmulConfig结构体。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Kirin X90。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core、Atlas 训练系列产品、Kirin 9030。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`related`）：GetMatmulApiTiling 与《GetSpecialMDLConfig》的实质衔接是：host 侧 GetMatmulApiTiling 把模板参数、MatmulConfig 与基础配置落成 tiling，随后决定 kernel Matmul 的注册、临时空间和精度/性能策略。
+- [SetMatmulConfigParams](../matmul_tiling/set_matmul_config_params.md)（`related`）：Host tiling 的 MatmulConfig 参数必须与 Kernel 侧 SpecialMDL 配置保持一致，连接模板选择与 tiling 生成。
+- [GetMDLConfig](get_mdl_config.md)（`same_topic`）：GetMDLConfig 与《GetSpecialMDLConfig》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [GetNormalConfig](get_normal_config.md)（`same_topic`）：GetNormalConfig 与《GetSpecialMDLConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
+- [MatmulConfig](matmul_config.md)（`same_topic`）：GetSpecialMDLConfig 返回 MatmulConfig，该对象定义 intrinsicsCheck、batch、预加载与量化等字段的统一配置语义。
+<!-- cannbot:related:end -->

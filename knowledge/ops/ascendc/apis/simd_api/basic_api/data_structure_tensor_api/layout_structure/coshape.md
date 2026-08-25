@@ -23,3 +23,12 @@ platforms: ['950']
 约束：Is...必须为有效范围内的索引。
 
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Capacity（基础API）](capacity.md)（`related`）：Capacity 用布局的 stride/shape 评估存储容量，可与 Coshape 检查非紧凑布局是否存在空洞。
+- [GetShape](get_shape.md)（`related`）：GetShape 返回逻辑定义域 shape，Coshape 返回映射后的陪域 shape，二者区分逻辑维度和物理索引范围。
+- [Shape（基础API）](shape.md)（`related`）：CoShape 表示与 shape 对偶的坐标/余形结构，适合布局变换而非替代普通 Shape。
+- [Cosize（基础API）](cosize.md)（`same_topic`）：Coshape说明表示Layout陪域区间的标量大小，即逻辑坐标映射到一维索引后所有可能的索引值构成的区间大小。
+<!-- cannbot:related:end -->

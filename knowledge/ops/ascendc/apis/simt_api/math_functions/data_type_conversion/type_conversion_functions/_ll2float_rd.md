@@ -25,3 +25,14 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/device_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscInt642float](../../../../simd_api/c_api/vector_compute/asc_int642float.md)（`related`）：__ll2float_rd 是同一 FLOOR int64→float 的 SIMT 标量形式，提供 2^24/2^53 邻近整数的舍入例子，可作为线程标量实现和数值验证对照。
+- [__ll2float_rn](_ll2float_rn.md)（`same_topic`）：__ll2float_rd说明遵循CAST_FLOOR模式，将int64类型数据转换为浮点数，返回转换后的值。
+- [__ll2float_rna](_ll2float_rna.md)（`same_topic`）：__ll2float_rna：所选转换保持ll→float或RNA语义，只切换有符号性、源位宽和RD/RN/RU/RZ舍入，能直接核对大整数不可精确表示时的方向。 目标卡《__ll2float_rd》补充：遵循CAST_FLOOR模式，将int64类型数据转换为浮点数，返回转换后的值。
+- [__ll2float_ru](_ll2float_ru.md)（`same_topic`）：rd 与 ru 对同一 int64→float 转换提供向下/向上取整边界。
+- [__ll2float_rz](_ll2float_rz.md)（`same_topic`）：__ll2float_rd说明遵循CAST_FLOOR模式，将int64类型数据转换为浮点数，返回转换后的值。
+- [__ull2float_rd](_ull2float_rd.md)（`same_topic`）：__ull2float_rd 与《__ll2float_rd》的实质衔接是：这些转换保持 ull 到 float 的源目类型并改变舍入模式；ll/uint 的 rd 入口用于核对有符号性和源位宽对向下舍入结果的影响。
+<!-- cannbot:related:end -->

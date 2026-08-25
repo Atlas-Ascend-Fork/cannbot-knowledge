@@ -25,3 +25,21 @@ platforms: ['950']
 - 仅输出最值，不输出index下标。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [A5 循环内 ReduceMin 取索引致 vector core 异常](../../../../../runbooks/precision/a5_reducemin_vector_core.md)（`exemplifies`）：AscReduceMinDatablock 与《A5 循环内 ReduceMin 取索引致 vector core 异常》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [GetDataBlockSizeInBytes](../../../basic_api/tool_interface/system_resources_and_variables/get_data_block_size_in_bytes.md)（`related`）：AscReduceMinDatablock 与《GetDataBlockSizeInBytes》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [AscDatablockReduceMin](../../vector_compute/asc_datablock_reduce_min.md)（`same_topic`）：AscReduceMinDatablock 与《AscDatablockReduceMin》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [AscGetReduceMinCnt](../../vector_compute/asc_get_reduce_min_cnt.md)（`same_topic`）：AscReduceMinDatablock 与《AscGetReduceMinCnt》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [AscReduceMaxDatablock](asc_reduce_max_datablock.md)（`same_topic`）：AscReduceMinDatablock 与《AscReduceMaxDatablock》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [AscReduceMin](asc_reduce_min.md)（`same_topic`）：AscReduceMinDatablock 与《AscReduceMin》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [AscReduceSumDatablock](asc_reduce_sum_datablock.md)（`same_topic`）：AscReduceMinDatablock 与《AscReduceSumDatablock》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [AscRepeatReduceMin](../../vector_compute/asc_repeat_reduce_min.md)（`same_topic`）：AscReduceMinDatablock 与《AscRepeatReduceMin》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [ReduceDataBlock](../../../basic_api/memory_vector_compute/reduction_compute/reduce_data_block.md)（`same_topic`）：AscReduceMinDatablock 与《ReduceDataBlock》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [ReduceDataBlock](../../../basic_api/reg_vector_compute/reduction_compute/reduce_data_block.md)（`same_topic`）：AscReduceMinDatablock 与《ReduceDataBlock》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [ReduceMin](../../../adv_api/reduction_operations/reduce_min_interface/reduce_min.md)（`same_topic`）：AscReduceMinDatablock 与《ReduceMin》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [ReduceMin](../../../basic_api/memory_vector_compute/reduction_compute/reduce_min.md)（`same_topic`）：AscReduceMinDatablock 与《ReduceMin》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+- [asc_reduce_min](../../../../simt_api/warp_functions/warp_reduce_functions/asc_reduce_min.md)（`same_topic`）：AscReduceMinDatablock 与《asc_reduce_min》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
+<!-- cannbot:related:end -->

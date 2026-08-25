@@ -19,3 +19,10 @@ platforms: ['950']
 - 需在asc_mmad执行前调用。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscEnableHif8](asc_enable_hif8.md)（`related`）：AscEnableFp8 与 AscEnableHif8 互斥选择 8bit Mmad 前的数据解释方式，直接提供 FP8 与 HiF8 模式选型。
+- [fp8数据类型简介（FP8类型）](../../../simt_api/math_functions/fp8_type/fp8_data_type_intro.md)（`related`）：FP8 类型说明给出 e4m3/e5m2/HiF8 的数值范围，支撑开启 FP8 模式前选择与输入编码相符的格式。
+<!-- cannbot:related:end -->

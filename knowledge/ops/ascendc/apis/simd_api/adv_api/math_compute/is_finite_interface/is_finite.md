@@ -21,3 +21,9 @@ platforms: ['950']
 模板参数T为源操作数数据类型（支持half/bfloat16_t/float）；U为目的操作数数据类型（支持bool/half/bfloat16_t/float）。接口参数：dst为输出操作数，TPosition支持VECIN/VECCALC/VECOUT；src为输入操作数；calCount为参与计算元素个数。
 
 支持的输入输出数据类型组合：half-half/bool、float-float/bool、bfloat16_t-bfloat16_t/bool（dst类型与src一致或为bool）。约束：不支持源操作数与目的操作数地址重叠；遵循通用地址偏移对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Isfinite](../../../../simt_api/math_functions/float_math_functions/isfinite.md)（`same_topic`）：高阶 IsFinite 与 SIMT isfinite 都判断 float 是否非 NaN 且非 ±Inf，分别输出 tensor 布尔/数值结果与标量 bool。
+<!-- cannbot:related:end -->

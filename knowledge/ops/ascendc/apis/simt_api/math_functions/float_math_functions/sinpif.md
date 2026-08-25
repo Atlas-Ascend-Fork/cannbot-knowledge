@@ -24,3 +24,9 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Sincospif](sincospif.md)（`same_topic`）：Sinpif 是 Sincospif 的第一个输出；后者在同一输入上同时计算 sin(pi*x) 与 cos(pi*x)，可直接复用特殊值和 π 缩放验证。
+<!-- cannbot:related:end -->

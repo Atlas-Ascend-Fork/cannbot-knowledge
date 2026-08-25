@@ -42,3 +42,16 @@ thread_block表示当前线程所在的线程块，通过this_thread_block()获�
 thread_block提供线程块级别的信息查询和同步能力，例如：
 - thread_rank()：获取当前线程在线程块内的线性rank。
 - thread_index()：获取当前线程在线程块内的三维索引。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CoalescedGroup](../../../apis/simt_api/cooperative_groups/coalesced_group/coalesced_group.md)（`explains`）：CoalescedGroup 与《SIMT协作组简介（高级编程）》的实质衔接是：CoalescedGroup 表示分支发散后当前 warp 的活跃子集；构造/简介、协作组总览、未 coalesce 故障和分支优化指南共同界定成员身份与适用场景。
+- [GridGroup](../../../apis/simt_api/cooperative_groups/grid_group/grid_group.md)（`explains`）：焦点处理grid_group 与 thread_block 协作范围的选择；SIMT协作组简介（高级编程）正文说明“协作组（cooperative_groups）是Ascend C SIMT编程模型的扩展，用于组织协作线程组。协作组使开发者能够控制线程协作的粒度，实现更丰富、更高效的并行处理逻辑”。候选解释 grid 级和 block 级协作对象的不同同步/查询范围，避免选错作用域。
+- [Grid协作组sync](../../../apis/simt_api/cooperative_groups/grid_group/sync.md)（`explains`）：SIMT协作组简介（高级编程）说明协作组（cooperative_groups）是Ascend C SIMT编程模型的扩展，用于组织协作线程组。协作组使开发者能够控制线程协作的粒度，实现更丰富、更高效的并行处理逻辑。
+- [ThreadBlockTile协作组sync](../../../apis/simt_api/cooperative_groups/thread_block_tile/sync.md)（`explains`）：ThreadBlockTile协作组sync 与《SIMT协作组简介（高级编程）》的实质衔接是：thread_block_tile::sync 依赖 tiled_partition 形成的 tile；tile 构造、线程秩与通用 cooperative-group sync 明确参与者和内存可见性边界。
+- [ThreadRank](../../../apis/simt_api/cooperative_groups/coalesced_group/thread_rank.md)（`explains`）：“ThreadRank”处理获取当前线程在coalesced_group组内的排名，排名从0开始。；“SIMT协作组简介（高级编程）”明确协作组（cooperative_groups）是Ascend C SIMT编程模型的扩展，用于组织协作线程组。协作组使开发者能够控制线程协作的粒度，实现更丰富、更高效的并行处理逻辑。。实质衔接：ThreadRank 的返回范围由 coalesced_group 活跃线程集合和 num_threads 决定，构造函数给出对象来源，指南解释发散后的分组语义。
+- [grid_group简介](../../../apis/simt_api/cooperative_groups/grid_group/grid_group_intro.md)（`explains`）：SIMT协作组简介（高级编程）说明协作组（cooperative_groups）是Ascend C SIMT编程模型的扩展，用于组织协作线程组。协作组使开发者能够控制线程协作的粒度，实现更丰富、更高效的并行处理逻辑。
+- [协作组](../../../apis/simt_api/cooperative_groups/cooperative_groups.md)（`explains`）：高级编程指南给出协作组在线程划分、组内同步和 Warp 分支场景中的使用方式，补全接口汇总页之外的编程流程。
+- [协作组简介](../../../apis/simt_api/cooperative_groups/cooperative_groups_intro.md)（`explains`）：高级指南给出隐式/显式组、作用域选择和使用方法；API 简介补齐 tiled_partition/binary_partition 及通用 sync，是同一 cooperative_groups 模型的接口入口。
+<!-- cannbot:related:end -->

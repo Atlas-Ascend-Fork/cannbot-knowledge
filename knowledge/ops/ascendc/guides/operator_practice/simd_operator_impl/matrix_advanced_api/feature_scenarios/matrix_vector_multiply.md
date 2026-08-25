@@ -28,3 +28,15 @@ platforms: [agnostic]
 -   GEMV场景下，左矩阵A不支持转置。
 -   GEMV场景下，Global Memory上的左矩阵数据需要保证16字节对齐。
 -   MxMatmul场景计算矩阵向量乘时，左矩阵A和左量化系数矩阵scaleA仅支持内存逻辑位置为TPosition::GM。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscL13dFmatrixConfig](../../../../../apis/simd_api/c_api/struct/asc_l13d_fmatrix_config.md)（`explains`）：矩阵向量乘 与《AscL13dFmatrixConfig》的实质衔接是：矩阵向量乘法通过 Matmul/MxMatmul 配置、fmatrix/LoadData 搬入与 GEMV 原语实现，所选材料对应高层接口和底层数据通路。
+- [Cube计算(ISASI)GEMV](../../../../../apis/simd_api/basic_api/cube_compute/mmad_compute_key_features/gemv.md)（`explains`）：矩阵向量乘 与《Cube计算(ISASI)GEMV》的实质衔接是：矩阵向量乘法通过 Matmul/MxMatmul 配置、fmatrix/LoadData 搬入与 GEMV 原语实现，所选材料对应高层接口和底层数据通路。
+- [SetFmatrix](../../../../../apis/simd_api/basic_api/cube_compute/cube_load_aux_config/set_fmatrix.md)（`explains`）：矩阵向量乘 与《SetFmatrix》的实质衔接是：矩阵向量乘法通过 Matmul/MxMatmul 配置、fmatrix/LoadData 搬入与 GEMV 原语实现，所选材料对应高层接口和底层数据通路。
+- [SetFmatrixBitMode](../../../../../apis/simd_api/basic_api/cube_compute/cube_load_aux_config/set_fmatrix_bit_mode.md)（`explains`）：矩阵向量乘 与《SetFmatrixBitMode》的实质衔接是：矩阵向量乘法通过 Matmul/MxMatmul 配置、fmatrix/LoadData 搬入与 GEMV 原语实现，所选材料对应高层接口和底层数据通路。
+- [基础APIGEMV](../../../../../apis/simd_api/basic_api/cube_compute_tensor_api/mmad_compute_key_features/gemv.md)（`explains`）：《基础APIGEMV》处理“GEMV的核心功能体现为：当矩阵A的维度M取值为1时，接口可以手动启用GEMV功能，该操作退化为1×K维度的行向量与K×N维度矩阵之间的乘法运算。”。《矩阵向量乘》明确提供“M=1的矩阵乘场景，通过配置A矩阵数据格式为VECTOR开启GEMV模式，减少搬运数据量提升性能。”，其参数、调用或验证步骤直接接入GEMV 的 Mmad 形状、行主序布局、对齐、Tiling 和结果验证。
+- [Matmul特性介绍](matmul_features.md)（`same_topic`）：矩阵向量乘 与《Matmul特性介绍》的实质衔接是：矩阵向量乘法通过 Matmul/MxMatmul 配置、fmatrix/LoadData 搬入与 GEMV 原语实现，所选材料对应高层接口和底层数据通路。
+- [MxMatmul场景](mx_matmul_scenario.md)（`same_topic`）：矩阵向量乘 与《MxMatmul场景》的实质衔接是：矩阵向量乘法通过 Matmul/MxMatmul 配置、fmatrix/LoadData 搬入与 GEMV 原语实现，所选材料对应高层接口和底层数据通路。
+<!-- cannbot:related:end -->

@@ -35,3 +35,18 @@ platforms: [agnostic]
 使用msOpProf工具获取算子仿真流水图和上板Profiling数据。因为UnitFlag功能主要优化MMAD和FIXPIPE流水串行问题，所以获取性能数据后重点分析Cube、FIXPIPE的流水情况。
 ## 分析主要瓶颈点
 -   优化前的流水图如下。如下图中红框所示，每一轮MMAD计算流水和FIXPIPE数据搬出流水之间都是串行执行的，完成MMAD计算后才开始FIXPIPE数据搬出，考虑实现MMAD与FIXPIPE之间流水并行来优化算子性能。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Iterate](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/iterate.md)（`explains`）：Iterate 与《Matmul高阶API开启UnitFlag》的实质衔接是：Iterate 每次推进一块 baseM×baseN 并管理 L0C；Init/SetTensor 后需按同步模式配对 GetTensorC/Wait，IterateAll/NBatch/Batch 与异步指南给出替代执行契约。
+- [Mmad计算关键特性说明](../../../../apis/simd_api/basic_api/cube_compute_tensor_api/mmad_compute_key_features/mmad_compute_key_features.md)（`explains`）：关键特性页只概述 UnitFlag；案例给出 enUnitFlag 开关、支持模板、与 L0C 累加/搬出组合的限制及适用瓶颈，能直接指导落地。
+- [SetMMColumnMajor/SetMMRowMajor](../../../../apis/simd_api/basic_api/cube_compute/mmad_compute_aux_config/set_mm_column_major_set_mm_row_major.md)（`explains`）：SetMMColumnMajor/SetMMRowMajor 与《Matmul高阶API开启UnitFlag》的实质衔接是：SetMMColumnMajor/RowMajor 直接控制 Mmad/MmadWithSparse 生成方向；开启 unitFlag 且 Fixpipe 做 NZ2ND/ChannelMerge 时，方向选择还必须和搬出配置、UnitFlag 调优保持一致。
+- [SetMatmulConfigParams](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_matmul_config_params.md)（`explains`）：《SetMatmulConfigParams》明确“在计算Tiling时，用于自定义设置表1中的MatmulConfig参数。本接口中配置的参数对应的功能在Tiling与Kernel中需要保持一致，所以本接口中的参数取值，需要与Kernel侧对应的MatmulConfig参数值保持一致，详细MatmulConfig参数请见表2。”；它与《Matmul高阶API开启UnitFlag》的“开启UnitFlag为MMAD与FIXPIPE提供512B细粒度同步，实现计算与搬出流水并行，提升算子性能。”在实际调用参数、数据流或结果校验上直接衔接。
+- [UnitFlag](../../../../apis/simd_api/basic_api/cube_compute/mmad_compute_key_features/unit_flag.md)（`explains`）：《UnitFlag》给出“unitFlag的核心功能体现为：Mmad和FixPipe接口引入了单元标志（unit-flag）机制，通过以内存块为粒度实现精细化的数据同步，从而有效降低同步延迟，提升系统整体性能。当UnitFlag开关打开后，对于L0C Buffer中的每个内存块（512B），提供一个单元标志位，用于指示该块是否可读或可写。”；该约束/探针可直接复现、解释或前置验证《Matmul高阶API开启UnitFlag》中的“开启UnitFlag为MMAD与FIXPIPE提供512B细粒度同步，实现计算与搬出流水并行，提升算子性能。”。
+- [UnitFlag](../../../../apis/simd_api/basic_api/cube_compute_tensor_api/mmad_compute_key_features/unit_flag.md)（`explains`）：《UnitFlag》处理“unitFlag的核心功能体现为：Mmad和Copy接口引入了单元标志（unit-flag）机制，通过以内存块为粒度实现精细化的数据同步，从而有效降低同步延迟，提升系统整体性能。当UnitFlag开关打开后，对于L0C Buffer中的每个内存块（512B），提供一个单元标志位，用于指示该块是否可读或可写。”。《Matmul高阶API开启UnitFlag》提供“开启UnitFlag为MMAD与FIXPIPE提供512B细粒度同步，实现计算与搬出流水并行，提升算子性能。”，其具体合同或探针直接接入UnitFlag 在 Mmad 产出与 L0C 搬出之间的 512B 细粒度同步和方向配置。
+- [中级性能优化](../../typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《Matmul高阶API开启UnitFlag》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [中级性能优化](../../typical_operator_cases/simd_operator_impl/matmul_matrix_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《Matmul高阶API开启UnitFlag》的实质衔接是：Matmul 中级优化直接使用 GM/L1/L0 搬入、LoadData、Mmad 和 UnitFlag，前后阶段及 UnitFlag 指南支撑同一流水。
+- [高级极限打磨](../../typical_operator_cases/simd_operator_impl/matmul_matrix_operator/advanced_extreme_optimization.md)（`related`）：高级步骤 8 依赖 UnitFlag 重叠 MMAD 与 FIXPIPE，专项指南提供开关、依赖和验证细节。
+- [高阶极限打磨](../../typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/extreme_optimization.md)（`related`）：高阶 Case 8 用 UnitFlag 让 MMAD 与 FIXPIPE 细粒度并行，专项指南展开其配置和验证方法。
+<!-- cannbot:related:end -->

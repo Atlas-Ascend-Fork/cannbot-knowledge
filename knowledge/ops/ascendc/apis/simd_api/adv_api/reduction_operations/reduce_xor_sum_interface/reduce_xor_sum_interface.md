@@ -29,3 +29,12 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetReduceXorSumMaxMinTmpSize](get_reduce_xor_sum_max_min_tmp_size.md)（`related`）：高阶 XOR-sum 归约前需按 shape 获取 workspace。
+- [ReduceSum接口](../reduce_sum_interface/reduce_sum_interface.md)（`related`）：普通 ReduceSum 做算术加法，XorSum 的聚合代数不同，不能互换。
+- [Sum接口](../sum_interface/sum_interface.md)（`related`）：Sum 的轴/输出契约与 ReduceXorSum 不同，按所需归约语义选用。
+- [ReduceXorSum](reduce_xor_sum.md)（`same_topic`）：函数页给出 ReduceXorSum 实际参数和输出 shape。
+<!-- cannbot:related:end -->

@@ -22,3 +22,9 @@ platforms: [agnostic]
 OpAICoreConfig类，请参考OpAICoreConfig。
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SetOpSelectFormat](../op_ai_core_def/set_op_select_format.md)（`same_topic`）：DynamicFormatFlag=true 只是启用动态格式推导；必须由 SetOpSelectFormat 注册回调，框架才有函数可调用来生成 dtype/format。
+<!-- cannbot:related:end -->

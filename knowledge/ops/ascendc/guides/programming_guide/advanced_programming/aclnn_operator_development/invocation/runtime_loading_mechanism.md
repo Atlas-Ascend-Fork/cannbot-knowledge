@@ -42,3 +42,19 @@ binary查找的优先级顺序：
 ### 影响编译产物形态的写法
 #### TilingKey / Kernel模板的分支数量
 算子有两种分支策略可选：数字TilingKey或命名Kernel模板参数，两者互斥。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ACLNN 361001 — tilingKey 与 funcEntry 映射失](../../../../../runbooks/compilation/aclnn_361001_tilingkey_funcentry_sel_position.md)（`related`）：ACLNN 361001 — tilingKey 与 funcEntry 映射失 与《运行时加载机制》的实质衔接是：361001 由 host tilingKey 与 kernel funcEntry/SEL 位置不一致造成；key 宏、TPL 注册、struct include、运行时加载和相邻路由案例直接用于探测及修复。
+- [ACLNN 507035 — opType 与内置 ops_legacy 同名碰](../../../../../runbooks/compilation/aclnn_optype_collision_built_in_ops_legacy_507035.md)（`related`）：ACLNN 507035 — opType 与内置 ops_legacy 同名碰 与《运行时加载机制》的实质衔接是：507035 此例由自定义 opType 与内置符号同名触发；OpDef/注册/launcher/kernel/CMake 六处改名及同名碰撞 runbook 共同构成完整修复链。
+- [Aclnn算子工程化开发快速入门](../aclnn_quick_start.md)（`related`）：aclnn 快速入门把原型、Host Tiling、Kernel、编译部署和 API 调用串成端到端流程，可定位运行时加载所在阶段。
+- [CMake函数参考（附录）](../appendix/cmake_function_reference.md)（`related`）：CMake函数参考（附录） 与《运行时加载机制》的实质衔接是：CMake 函数参考中的工程函数由算子开发、编译选项、编译脚本、库编译和 UT 指南实际消费；FAQ 卡验证其构建阶段失败信号。
+- [extern 预编译 kernel 自定义包致 aclnn 161001](../../../../../runbooks/compilation/extern_kernel_aclnn_161001.md)（`related`）：extern 预编译 kernel 自定义包致 aclnn 161001 与《运行时加载机制》的衔接是：该打包故障的验证链是 ACLNN 错误→检查 binary.json/二进制入口→探测符号→确认运行时加载；候选正好覆盖各个可执行检查点。
+- [单算子API调用](single_operator_api_call.md)（`related`）：单算子 API 调用给出 aclnnXxxGetWorkspaceSize/aclnnXxx 二段式调用代码，是运行时加载机制最终暴露给应用的执行入口。
+- [多算子包组织](../compilation_and_deployment/multi_operator_package.md)（`related`）：多算子包组织影响注册信息、库拆分和加载顺序，可解释多个 op 同包时运行时如何定位正确实现。
+- [算子动态库和静态库编译](../compilation_and_deployment/dynamic_static_lib_compilation.md)（`related`）：《算子动态库和静态库编译》说明介绍将自定义算子工程编译为动态库或静态库的方法，支持应用直接链接或集成到其他工程中。；《运行时加载机制》说明本文是扩展内容，介绍算子开发完成后，编译产物如何被加载和执行，以及开发时的设计决策如何影响运行表现。本文从算子开发者视角梳理运行时调用的基本模型和代码写法对运行行为的影响。。二者在SHARED/STATIC产物通过npu_op_package与CMake生成，并分别进入直接链接、运行时加载和常规部署流程上存在可执行的直接衔接。
+- [编译与部署基本流程](../compilation_and_deployment/basic_process.md)（`related`）：编译与部署基本流程决定 .so、算子包和配置文件的落盘位置，直接影响运行时按路径发现并加载算子实现。
+- [适配插件开发](../../ai_framework_adaptation/onnx_framework/adaptation_plugin_development.md)（`related`）：插件 so 通过环境路径进入运行时发现链，加载机制解释文件布局和查找时机。
+- [高级编程交叉编译](../compilation_and_deployment/cross_compilation.md)（`same_topic`）：高级编程交叉编译 与《运行时加载机制》的实质衔接是：交叉编译需先生成本机 tiling 库再构建目标包；基本编译、CMake、runtime、compiler/RTC/compile-log 接口共同支撑配置和诊断。
+<!-- cannbot:related:end -->

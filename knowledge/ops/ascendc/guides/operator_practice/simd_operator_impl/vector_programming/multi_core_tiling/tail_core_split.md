@@ -28,3 +28,14 @@ platforms: [agnostic]
 Tiling结构体定义如下：
 Host侧Tiling沿用尾块均分中的DataBlock对齐、主块分配和基础尾块计算，得到：按DataBlock均分后仍无法均分到每个核的剩余元素数量remainingTailLength、每个核分配到的DataBlock数量tailBlockNumEachCore、每个核基础尾块的元素数量baseLastTileLength、每个核已分配的基础元素数量baseLength，以及对应的主块数量baseTileNum。当remainingTailLength不为0时，尾块均分分支不成立，继续执行以下步骤：
 1. remainingTailLength对应的剩余数据无法均分到每个核，只能分配给前formerNum个整核。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DoubleBuffer场景](../double_buffer_scenario.md)（`related`）：DoubleBuffer场景 与《TailCoreSplit》的实质衔接是：DoubleBuffer 将主块拆为两份并通过 InitBuffer(...,2,...) 让搬入、计算、搬出重叠；主尾块切分材料说明尾块例外，UB 预算和 TQue/TBuf 重载故障直接约束 bufferNum 与长度配置。
+- [SIMD算子实现概述](overview.md)（`related`）：尾核切分适合把余量集中到特定核，和均分策略在负载平衡与实现复杂度间取舍。
+- [基础矢量算子](../basic_vector_operator.md)（`related`）：《基础矢量算子》说明基于Ascend C方式实现基础矢量算子核函数的流程如下图所示。；《TailCoreSplit》说明主块均分后剩余数据无法以DataBlock均匀分配到每个核时，将额外DataBlock分配给前几个整核，其余为尾核，分别处理不同数据量。。二者在基础矢量实现把多核切分、TBuf/TQue、双缓冲、非对齐CopyIn和Add计算串成可执行流程上存在可执行的直接衔接。
+- [SIMD算子实现主块均分](main_block_even_split.md)（`same_topic`）：《SIMD算子实现主块均分》说明长度为totalLength的输入数据可以按参与计算的核数和主块长度mainTileLength均匀切分，主块均分后无剩余数据。各核处理的数据量相同，每个核处理tileNum个主块，核内只包含主块。；《TailCoreSplit》说明主块均分后剩余数据无法以DataBlock均匀分配到每个核时，将额外DataBlock分配给前几个整核，其余为尾核，分别处理不同数据量。。二者在主块均分与三种尾块策略共同覆盖多核切分分支；Kernel用GetBlockIdx定位GM段，numBlocks塌缩故障验证Host切核结果上存在可执行的直接衔接。
+- [SIMD算子实现尾块均分](tail_block_even_split.md)（`same_topic`）：“SIMD算子实现尾块均分”处理该场景中，完成主块分配后仍有剩余数据，但剩余数据无法继续按主块均匀分配到每个核。为了均衡利用多核计算能力，继续以DataBlock为最小单位将主块均分后剩余数据mainTileRemainder均衡分配到每个核，每个核分配到tailBlockN…；“TailCoreSplit”明确主块均分后剩余数据无法以DataBlock均匀分配到每个核时，将额外DataBlock分配给前几个整核，其余为尾核，分别处理不同数据量。。实质衔接：主块均分、尾块均分、尾核切分按 remainder 是否存在及能否按 DataBlock 均分构成同一可执行分支决策。
+- [TailCoreTailBlockSplit](tail_core_tail_block_split.md)（`same_topic`）：尾核切分与尾核尾块切分都把额外 DataBlock 分给前 formerNum 个整核；区别是后者每个尾核还拥有基础尾块并需 tailLastTileLength。
+<!-- cannbot:related:end -->

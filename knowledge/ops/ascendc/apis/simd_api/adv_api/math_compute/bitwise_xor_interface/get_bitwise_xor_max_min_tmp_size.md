@@ -25,3 +25,10 @@ Kernel侧BitwiseXor接口的计算需要开发者预留 申请临时空间，本
 - typeSize（输入）：输入的数据类型大小，单位为字节。比如输入的数据类型为uint16_t，此处应传入2。
 - isReuseSource（输入）：该参数预留，传入默认值false即可。
 - maxValue（输出）：BitwiseXor接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，Kernel侧接口计算性能会有一定程度的优化提升。。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BitwiseXor](bitwise_xor.md)（`same_topic`）：GetBitwiseXorMaxMinTmpSize 与《BitwiseXor》的实质衔接是：GetBitwiseXorMaxMinTmpSize 给出 BitwiseXor 可用临时空间范围，factor 查询在固定空间下反推元素数，Kernel 是该空间的实际消费方。
+- [GetBitwiseXorTmpBufferFactorSize](get_bitwise_xor_tmp_buffer_factor_size.md)（`same_topic`）：GetBitwiseXorMaxMinTmpSize 与《GetBitwiseXorTmpBufferFactorSize》的实质衔接是：GetBitwiseXorMaxMinTmpSize 给出 BitwiseXor 可用临时空间范围，factor 查询在固定空间下反推元素数，Kernel 是该空间的实际消费方。
+<!-- cannbot:related:end -->

@@ -25,3 +25,13 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hgtx2_mask](_hgtx2_mask.md)（`related`）：小于是相反方向谓词。
+- [__hltux2_mask](_hltux2_mask.md)（`related`）：__hltx2_mask 与 __hltux2_mask 返回相同 2×16-bit mask 编码，但 ordered 版遇 NaN 为 0，unordered 版为 0xFFFF。
+- [__hltx2](_hltx2.md)（`related`）：__hltx2 与《__hltx2_mask》的实质衔接是：bfloat16x2 小于比较的数值/掩码返回形式、无序比较及 half2 同名接口决定 NaN 和两个 lane 的判读。
+- [__hbltx2](_hbltx2.md)（`same_topic`）：__hbltx2 与《__hltx2_mask》的衔接是：hbltx2 是 bfloat16x2 的逐 lane 小于比较；half2、unordered 版本以及向量/掩码结果接口明确区分 NaN 处理与返回形态。
+- [__hltx2_mask](../../half_type/half2_compare_functions/_hltx2_mask.md)（`same_topic`）：《__hltx2_mask》说明比较两个half2类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量满足第一个数小于第二个数，则对应16位掩码为0xFFFF，否则为0x0。；《__hltx2_mask》说明比较两个bfloat16x2_t类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量满足第一个数小于第二个数，则对应16位掩码为0xFFFF，否则为0x0。。二者在该接口是half2有序小于的mask编码；数值返回版、bfloat16x2对应版及unordered版直接核对dtype、NaN和返回编码差异上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

@@ -26,3 +26,10 @@ srcReg数据类型为half时
 - 源操作数类型为half时，Vector计算单元一次计算只处理最多64个元素，mask的有效情况以输入数据类型为准，只有偶数位有效，有效位共128bit，参考下图
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscExpSub](../../../c_api/reg/compound_compute/asc_exp_sub_deprecated.md)（`related`）：废弃 C Reg 接口保持同一复合运算语义，可用于迁移旧 C 指针代码到 C++ Reg ExpSub。
+- [ExpSub](../../memory_vector_compute/composite_compute/exp_sub_isasi.md)（`related`）：ExpSub 与《ExpSub》的实质衔接是：Reg 与 C API 的 ExpSub 实现同一 exp(src)-scalar 复合运算，可用于接口迁移和语义核对。
+<!-- cannbot:related:end -->

@@ -34,3 +34,15 @@ __aicore__ inline void SetTensorB(const LocalTensor<SrcBT>& rightMatrix, bool is
 - bScalar 支持的数据类型：Ascend 950PR/Ascend 950DT、Atlas A3 系列和 Atlas A2 系列均支持 half 与 float。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Matmul使用说明](matmul_usage.md)（`related`）：SetTensorB 与《Matmul使用说明》的衔接是：SetTensorB 的地址范围和转置解释同时受 SetOrgShape、Tiling侧 SetBType/ISTRANS 约束；Matmul 使用流程还要求与 SetTensorA 成对准备输入。
+- [SetBType](../matmul_tiling/set_b_type.md)（`related`）：SetTensorB 与《SetBType》的衔接是：SetTensorB 的地址范围和转置解释同时受 SetOrgShape、Tiling侧 SetBType/ISTRANS 约束；Matmul 使用流程还要求与 SetTensorA 成对准备输入。
+- [SetOrgShape](set_org_shape.md)（`related`）：SetTensorB 与《SetOrgShape》的衔接是：SetTensorB 的地址范围和转置解释同时受 SetOrgShape、Tiling侧 SetBType/ISTRANS 约束；Matmul 使用流程还要求与 SetTensorA 成对准备输入。
+- [SetSelfDefineData](set_self_define_data.md)（`related`）：SetSelfDefineData：SetSelfDefineData 只为 MatmulCallBackFunc 提供每次复用可更新的数据指针，模板声明决定回调契约，且正文明确要求它先于 SetTensorA/SetTensorB。 目标卡《SetTensorB》补充：设置矩阵乘的右矩阵B。
+- [SetTensorA](set_tensor_a.md)（`related`）：SetTensorB 与《SetTensorA》的衔接是：SetTensorB 的地址范围和转置解释同时受 SetOrgShape、Tiling侧 SetBType/ISTRANS 约束；Matmul 使用流程还要求与 SetTensorA 成对准备输入。
+- [SetTensorScaleB](set_tensor_scale_b.md)（`related`）：SetTensorB 绑定右矩阵数据，而 SetTensorScaleB 绑定其量化系数；二者共同决定 B 路径的输入和缩放。
+- [Matmul Kernel侧接口](matmul_kernel.md)（`same_topic`）：“Matmul Kernel侧接口”处理提供Matmul矩阵乘的Kernel侧接口，包含模板参数、配置类、Init、SetTensorA/B、Iterate等方法及使用说明。；“SetTensorB”明确设置矩阵乘的右矩阵B。。实质衔接：Kernel 侧总览额外给出了注册对象、Init、设置 A/B、Iterate、GetTensorC 的最小调用顺序；只连接这条正文明确的主路径。
+<!-- cannbot:related:end -->

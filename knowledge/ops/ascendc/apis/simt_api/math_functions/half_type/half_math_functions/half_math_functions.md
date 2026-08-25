@@ -15,3 +15,9 @@ platforms: ['950']
 # half类型数学库函数
 
 提供 half 类型的标量数学运算，以 `h` 前缀标识，涵盖指数（hexp、hexp2、hexp10）、对数（hlog、hlog2、hlog10）、三角（hcos、hsin）、双曲（htanh）、开方（hsqrt、hrsqrt）、倒数（hrcp）和取整（hrint、hfloor、hceil、htrunc）等常用函数。适用于 AICore 上 SIMT 编程模型的低精度计算。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Hrint](../../bfloat16_type/bfloat16_math_functions/hrint.md)（`related`）：Hrint 与《half类型数学库函数》的实质衔接是：bfloat16 Hrint 与 half/float rint 及高层 Rint 临时空间接口共享 ties-to-even 任务，类型总览用于对照特殊值和返回精度。
+<!-- cannbot:related:end -->

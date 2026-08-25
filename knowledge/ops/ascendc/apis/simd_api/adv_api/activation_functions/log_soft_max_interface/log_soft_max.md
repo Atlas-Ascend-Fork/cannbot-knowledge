@@ -36,3 +36,9 @@ __aicore__ inline void LogSoftMax(const LocalTensor<T>& dst, const LocalTensor<T
 - 当参数softmaxShapeInfo中srcM != oriSrcM或者srcK != oriSrcK时，开发者需要对GM上的原始输入(oriSrcM, oriSrcK)在M或K方向补齐数据到(srcM, srcK)，补齐的数据会参与部分运算，在输入输出复用的场景下，API的计算结果会覆盖srcTensor中补齐的原始数据，在输入输出不复用的场景下，API的计算结果会覆盖dstTensor中对应srcTensor补齐位置的数据。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LogSoftMaxTiling](log_soft_max_tiling.md)（`related`）：LogSoftMax 计算接口要求由 LogSoftMaxTiling 生成 kernel 所需 tiling 参数；前者的执行约束与后者的 host 侧参数产出构成同一次调用链。
+<!-- cannbot:related:end -->

@@ -21,3 +21,9 @@ platforms: [a2, a3]
 数据类型：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double，源和目的类型一致。
 
 约束：不支持 950；支持 a2/a3、Kirin X90/9030。连续搬运场景推荐使用 DataCopy（L1ToGM 连续搬运）。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DataCopyL1ToGMContinuous](data_copy_l1_to_gm_continuous.md)（`related`）：HighdimSplit 用 blockCount/blockLen/gap 做非连续 L1→GM，连续版用于无 gap 的整段搬出；正文明确连续场景优先后者。
+<!-- cannbot:related:end -->

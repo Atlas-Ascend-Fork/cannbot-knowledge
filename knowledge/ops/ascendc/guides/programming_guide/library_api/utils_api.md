@@ -21,3 +21,9 @@ Ascend C开发提供了丰富的通用工具类，涵盖标准库、平台信息
 -   RTC API：Ascend C运行时编译库，通过aclrtc接口，在程序运行时，将中间代码动态编译成目标机器码，提升程序运行性能。
 -   log API：提供Host侧打印Log的功能。开发者可以在算子的TilingFunc代码中使用ASC_CPU_LOG_XXX接口来输出相关内容。
 -   调测接口：面向调试场景提供相关接口，支持SIMD、SIMT等各类场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [通用工具](../../../apis/utils_api/cpp_stdlib/general_utils/general_utils.md)（`explains`）：焦点处理通用工具在 Utils API 导航中的开发入口；Utils API（库API）正文界定“Ascend C开发提供了丰富的通用工具类，涵盖标准库、平台信息获取、上下文构建、运行时编译及日志输出等功能，支持开发者高效实现算子开发与性能优化”。候选指南说明这组通用工具在库 API 中的实际使用位置；成员导航由 part_of 覆盖，不重复连边。
+<!-- cannbot:related:end -->

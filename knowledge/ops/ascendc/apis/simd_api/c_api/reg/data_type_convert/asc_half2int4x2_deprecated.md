@@ -24,3 +24,11 @@ platforms: ['950']
 约束：- 开启饱和模式和非饱和模式时，需配置ctrl寄存器，ctrl寄存器
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscHalf2int4](../../vector_compute/asc_half2int4.md)（`related`）：asc_half2int4x2 (废弃) 与《AscHalf2int4》的实质衔接是：废弃 half→int4x2 转换需对照 int4 逆转换、当前 half 整数转换和舍入/饱和语义迁移。
+- [asc_int4x22half (废弃)](asc_int4x22half_deprecated.md)（`same_topic`）：asc_int4x22half (废弃) 与《asc_half2int4x2 (废弃)》的实质衔接是：该废弃接口把 packed int4x2 转 half；同源 bfloat16/int16、逆向转换、废弃接口表及当前 AscInt4ToHalf 用于迁移并核对 packed lane。
+- [舍入模式与饱和模式](rounding_mode.md)（`same_topic`）：asc_half2int4x2 (废弃) 与《舍入模式与饱和模式》的实质衔接是：废弃 half→int4x2 转换需对照 int4 逆转换、当前 half 整数转换和舍入/饱和语义迁移。
+<!-- cannbot:related:end -->

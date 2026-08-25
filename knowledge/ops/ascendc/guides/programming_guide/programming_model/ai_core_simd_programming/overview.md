@@ -31,3 +31,19 @@ AI Core是昇腾NPU的基础核心计算单元，采用「控制单元\+异构�
 ### 基于硬件单元的三类标准算子
 根据算子核心计算逻辑对硬件单元的依赖差异，AI Core算子可划分为三大标准类型，通过专属修饰符标准化硬件资源调度规则，统一全域算子开发规范：
 - 矢量类算子：核心计算逻辑完全由Vector计算单元承载，无矩阵密集运算，以元素级、逻辑类、数据重组类计算为主，适配访存密集、灵活度要求高的场景。核函数通过__vector__修饰。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CppTensorProgrammingOverview](cpp_tensor_programming/cpp_tensor_programming_overview.md)（`related`）：AI Core SIMD编程模型概述 与《CppTensorProgrammingOverview》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
+- [Cube矩阵计算编程](c_pointer_programming/cube_matrix_computation.md)（`related`）：Cube矩阵计算编程 与《AI Core SIMD编程模型概述》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
+- [C语言编程概述](c_pointer_programming/c_programming_overview.md)（`related`）：AI Core SIMD编程模型概述 与《C语言编程概述》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
+- [Memory矢量计算编程](c_pointer_programming/memory_vector_computation.md)（`related`）：AI Core SIMD编程模型概述 与《Memory矢量计算编程》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
+- [Reg矢量计算编程（C++ Tensor编程）](cpp_tensor_programming/reg_vector_computation.md)（`related`）：Reg矢量计算编程（C++ Tensor编程） 与《AI Core SIMD编程模型概述》的实质衔接是：Reg C++ 编程仍遵循 asc_vf_call→__simd_vf__→Load/Compute/Store；C API 对照、性能/边界/merge/精度表和 helper 编译卡直接约束这一调用模型。
+- [SIMD算子实现概述](../../../operator_practice/simd_operator_impl/overview.md)（`related`）：SIMD算子实现概述 与《AI Core SIMD编程模型概述》的实质衔接是：该概述区分 Host tiling 与 Device kernel，并落到 SIMD 基础与 Matmul 实现；候选中的同名概述和 SIMD 模型是同一流程的展开而非成员枚举。
+- [TPipe和TQue编程范式](tpipe_tque_programming/tpipe_tque_paradigm.md)（`related`）：《TPipe和TQue编程范式》说明上一章阐述了TPipe‑TQue编程模型的底层设计原理：基于经典C/C++队列管道（Queue Pipeline）思想，将算子任务拆分为多级流水Stage，依靠TQue队列解决写后读数据依赖、依靠AllocTensor/FreeTensor解决读后写内存复用冲突，通过底层同步指令实现多单元异步并行的时序安全。；《AI Core SIMD编程模型概述》说明SIMD并行机制是AI Core的核心算力支撑，承担了整机90%以上的计算吞吐量。因此，本章将以SIMD编程模型为核心主线，遵循「宏观架构—硬件调度—代码落地」的递进逻辑，完整覆盖SIMD算子开发全链路：阐述多AI Core集群的并行任务分发机制，拆解单AI Core内部异构计算单元的任务调度逻辑，并逐层讲解如何基于差异化的C/C++编程接口，完成算子Kernel计算逻辑的开发。。二者在TPipe/TQue范式用InitBuffer和Alloc/EnQue/DeQue/FreeTensor表达内存所有权与Stage同步，相关FAQ和故障直接验证生命周期约束上存在可执行的直接衔接。
+- [抽象硬件架构（AI Core SIMD编程）](abstract_hardware_architecture.md)（`related`）：AI Core SIMD编程模型概述 与《抽象硬件架构（AI Core SIMD编程）》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
+- [核函数（AI Core SIMD编程）](kernel_function.md)（`related`）：AI Core SIMD编程模型概述 与《核函数（AI Core SIMD编程）》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
+- [SIMD与SIMT混合编程概述](../../advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/overview.md)（`same_topic`）：AI Core SIMD编程模型概述 与《SIMD与SIMT混合编程概述》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
+- [编程模型概述](../programming_model_overview.md)（`same_topic`）：AI Core SIMD编程模型概述 与《编程模型概述》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
+<!-- cannbot:related:end -->

@@ -28,3 +28,10 @@ void GetSelectWithBytesMaskMaxMinTmpSize(const AscendC::TensorShape& src0Shape, 
 - maskTypeSize（输入）：输入maskTensor的数据类型大小，比如数据类型为bool，此处应传入1。
 
 返回值：GetSelectMinTmpSize返回Select接口能完成计算所需最小临时空间大小。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Select dst==src 别名破坏张量输入值](../../../../runbooks/precision/select_dst_src.md)（`exemplifies`）：Runbook 记录 Select 目的与源别名破坏输入的实测，补充空间查询之外的地址重叠正确性边界。
+- [Select](select.md)（`same_topic`）：该 Host 接口给出高阶 Select 执行所需 workspace 上下界，是调用 Select 前完成 Tiling 资源分配的直接配套契约。
+<!-- cannbot:related:end -->

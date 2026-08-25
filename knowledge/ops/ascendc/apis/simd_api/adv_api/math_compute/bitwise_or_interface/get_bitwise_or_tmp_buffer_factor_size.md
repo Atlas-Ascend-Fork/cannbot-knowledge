@@ -23,3 +23,10 @@ platforms: ['950']
 - typeSize（输入）：输入的数据类型大小，单位为字节。
 - maxLivedNodeCount（输出）：最大存活节点数，表示临时空间是单次计算数据量所占空间的多少倍。
 - extraBuf（输出）：使用的额外临时空间大小，单位为字节。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BitwiseOr](bitwise_or.md)（`same_topic`）：GetBitwiseOrTmpBufferFactorSize 与《BitwiseOr》的实质衔接是：factor 查询与 GetBitwiseOrMaxMinTmpSize、BitwiseOr Kernel 是同一 sharedTmpBuffer 契约的固定空间反推、空间边界和实际消费三端。
+- [GetBitwiseOrMaxMinTmpSize](get_bitwise_or_max_min_tmp_size.md)（`same_topic`）：GetBitwiseOrTmpBufferFactorSize 与《GetBitwiseOrMaxMinTmpSize》的实质衔接是：factor 查询与 GetBitwiseOrMaxMinTmpSize、BitwiseOr Kernel 是同一 sharedTmpBuffer 契约的固定空间反推、空间边界和实际消费三端。
+<!-- cannbot:related:end -->

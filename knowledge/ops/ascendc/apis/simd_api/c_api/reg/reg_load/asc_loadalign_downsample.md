@@ -17,3 +17,10 @@ platforms: ['950']
 对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现2倍下采样搬入模式：加载2倍VL的数据，数据每隔一个保留，支持数据类型为b8/b16。
 函数原型：void asc_loadalign_downsample(vector_int8_t& dst, __ubuf__ int8_t* src)
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscLoadalignUpsample](asc_loadalign_upsample.md)（`related`）：Downsample 是相反的数据分布变换：读取 2×VL 并隔元素保留；与 Upsample 配合可判断要扩展输入还是抽取输入。
+- [AscLoadalignDownsamplePostupdate](asc_loadalign_downsample_postupdate.md)（`same_topic`）：《AscLoadalignDownsample》明确“从UB对齐搬入2倍VL数据并实现2倍下采样，每隔一个元素保留。”；它与《AscLoadalignDownsamplePostupdate》的“从UB对齐搬入2倍VL数据并实现2倍下采样，调用后自动更新源地址。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

@@ -25,3 +25,17 @@ platforms: [agnostic]
 -   C矩阵的数据类型为float。
 -   C矩阵的内存逻辑位置为Global Memory。
 -   矩阵乘结果L0C Buffer（CO1）数据类型为float。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscSetMmadDirectionM](../../../../../apis/simd_api/c_api/cube_compute/asc_set_mmad_direction_m.md)（`explains`）：《AscSetMmadDirectionM》说明设置矩阵乘加计算（Mmad）时逐列生成结果分形，只改变L0C Buffer上分形生成顺序，不改变计算结果。适用于UnitFlag场景下与搬出顺序一致以提升性能。；《矩阵乘输出的Channel拆分》说明将NZ格式float类型C矩阵的分形从16x16切分为16x8，使内轴满足32字节对齐便于后续矢量计算。。二者在M/N方向配置改变Mmad输入分形与行列主序，必须在AscMmad/Mmad调用和输出Channel拆分前保持一致上存在可执行的直接衔接。
+- [AscSetMmadDirectionN](../../../../../apis/simd_api/c_api/cube_compute/asc_set_mmad_direction_n.md)（`explains`）：矩阵乘输出的Channel拆分 与《AscSetMmadDirectionN》的实质衔接是：Channel split 的高低通道接口、Int8 merge、Fixpipe 地址、NZ2ND 与 M/N 方向设置共同实现 Matmul 输出拆分和恢复。
+- [F32 Channel Split](../../../../../apis/simd_api/basic_api/cube_compute/cube_store_key_features/f32_channel_split.md)（`explains`）：矩阵乘输出的Channel拆分 与《F32 Channel Split》的实质衔接是：Channel split 的高低通道接口、Int8 merge、Fixpipe 地址、NZ2ND 与 M/N 方向设置共同实现 Matmul 输出拆分和恢复。
+- [F32 Channel Split](../../../../../apis/simd_api/basic_api/cube_compute_tensor_api/cube_store_key_features/f32_channel_split.md)（`explains`）：矩阵乘输出的Channel拆分 与《F32 Channel Split》的实质衔接是：Channel split 的高低通道接口、Int8 merge、Fixpipe 地址、NZ2ND 与 M/N 方向设置共同实现 Matmul 输出拆分和恢复。
+- [Int8 Channel Merge](../../../../../apis/simd_api/basic_api/cube_compute/cube_store_key_features/int8_channel_merge.md)（`explains`）：矩阵乘输出的Channel拆分 与《Int8 Channel Merge》的实质衔接是：Channel split 的高低通道接口、Int8 merge、Fixpipe 地址、NZ2ND 与 M/N 方向设置共同实现 Matmul 输出拆分和恢复。
+- [Int8 Channel Merge](../../../../../apis/simd_api/basic_api/cube_compute_tensor_api/cube_store_key_features/int8_channel_merge.md)（`explains`）：矩阵乘输出的Channel拆分 与《Int8 Channel Merge》的实质衔接是：Channel split 的高低通道接口、Int8 merge、Fixpipe 地址、NZ2ND 与 M/N 方向设置共同实现 Matmul 输出拆分和恢复。
+- [NZ2ND](../../../../../apis/simd_api/basic_api/cube_compute/cube_store_key_features/nz2_nd.md)（`explains`）：矩阵乘输出的Channel拆分 与《NZ2ND》的实质衔接是：Channel split 的高低通道接口、Int8 merge、Fixpipe 地址、NZ2ND 与 M/N 方向设置共同实现 Matmul 输出拆分和恢复。
+- [SetFixPipeAddr](../../../../../apis/simd_api/basic_api/cube_compute/cube_store_aux_config/set_fix_pipe_addr.md)（`explains`）：《SetFixPipeAddr》说明DataCopy数据搬运（L0C Buffer->GM）过程中进行随路量化后，通过调用该接口设置Elementwise操作时LocalTensor的地址。；《矩阵乘输出的Channel拆分》说明将NZ格式float类型C矩阵的分形从16x16切分为16x8，使内轴满足32字节对齐便于后续矢量计算。。二者在SetFixPipeAddr为L0C搬出随路Elementwise步骤提供LocalTensor地址，需与Fixpipe路径、量化/ReLU和Channel处理配置配套上存在可执行的直接衔接。
+- [多核对齐切分](multi_core_aligned_split.md)（`same_topic`）：多核对齐切分 与《矩阵乘输出的Channel拆分》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
+<!-- cannbot:related:end -->

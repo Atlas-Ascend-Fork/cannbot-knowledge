@@ -20,3 +20,13 @@ platforms: [agnostic]
 算子无需使用ShapeInfo，但未对ShapeInfo大小进行限制（使用默认值8），导致浪费K_MAX_SHAPE_DIM * sizeof(uint32_t) * 2 * 4字节的栈空间。2表示有shape和originalShape两个数组，4表示该样例中使用了GlobalTensor和LocalTensor共4个Tensor。
 【正例】
 算子无需使用ShapeInfo，设置#define K_MAX_SHAPE_DIM 0，有效缩减了K_MAX_SHAPE_DIM * sizeof(uint32_t) * 2 * 4大小的栈空间。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetShapeInfo](../../../../apis/simd_api/basic_api/data_structures/global_tensor/get_shape_info.md)（`explains`）：ReduceShapeInfoOptimizeStack 与《GetShapeInfo》的实质衔接是：该优化通过 K_MAX_SHAPE_DIM 缩减 GlobalTensor/LocalTensor 的 ShapeInfo；Get/SetShapeInfo 与 ShapeInfo结构是确认是否真的需要这些栈字段的直接依据。
+- [GetShapeInfo](../../../../apis/simd_api/basic_api/data_structures/local_tensor/get_shape_info.md)（`explains`）：ReduceShapeInfoOptimizeStack 与《GetShapeInfo》的实质衔接是：该优化通过 K_MAX_SHAPE_DIM 缩减 GlobalTensor/LocalTensor 的 ShapeInfo；Get/SetShapeInfo 与 ShapeInfo结构是确认是否真的需要这些栈字段的直接依据。
+- [SetShapeInfo](../../../../apis/simd_api/basic_api/data_structures/global_tensor/set_shape_info.md)（`explains`）：ReduceShapeInfoOptimizeStack 与《SetShapeInfo》的实质衔接是：该优化通过 K_MAX_SHAPE_DIM 缩减 GlobalTensor/LocalTensor 的 ShapeInfo；Get/SetShapeInfo 与 ShapeInfo结构是确认是否真的需要这些栈字段的直接依据。
+- [SetShapeInfo](../../../../apis/simd_api/basic_api/data_structures/local_tensor/set_shape_info.md)（`explains`）：ReduceShapeInfoOptimizeStack 与《SetShapeInfo》的实质衔接是：该优化通过 K_MAX_SHAPE_DIM 缩减 GlobalTensor/LocalTensor 的 ShapeInfo；Get/SetShapeInfo 与 ShapeInfo结构是确认是否真的需要这些栈字段的直接依据。
+- [ShapeInfo（辅助数据结构）](../../../../apis/simd_api/basic_api/aux_data_structures/shape_info.md)（`explains`）：ReduceShapeInfoOptimizeStack 与《ShapeInfo（辅助数据结构）》的实质衔接是：该优化通过 K_MAX_SHAPE_DIM 缩减 GlobalTensor/LocalTensor 的 ShapeInfo；Get/SetShapeInfo 与 ShapeInfo结构是确认是否真的需要这些栈字段的直接依据。
+<!-- cannbot:related:end -->

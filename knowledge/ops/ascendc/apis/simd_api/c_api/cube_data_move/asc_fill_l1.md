@@ -22,3 +22,10 @@ platforms: ['950', a2, a3]
 - 若dst和value的数据类型不相同，则需要根据dst的数据类型对value的值进行转换，具体
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscFillL0b](asc_fill_l0b.md)（`related`）：《AscFillL1》明确“将标量值赋值给目的操作数，对L1 Buffer进行初始化。”；它与《AscFillL0b》的“将标量值赋值给目的操作数，对L0B Buffer进行初始化。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscFillValueConfig](../struct/asc_fill_value_config.md)（`related`）：《AscFillL1》明确“将标量值赋值给目的操作数，对L1 Buffer进行初始化。”；它与《AscFillValueConfig》的“fill_value的初始化参数结构体，包含fill_l0a、fill_l0b和fill_l1接口需要配置的初始化参数。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

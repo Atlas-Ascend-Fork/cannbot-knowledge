@@ -21,3 +21,11 @@ platforms: ['950', a2, a3]
 参数：typeSize为输入数据类型字节数（half传2）；maxLiveNodeCount输出最大存活节点数；extraBuffer输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。
 
 约束：当反推出的currentShapeSize * typeSize < 256B时，currentShapeSize按256B/typeSize向上取整。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Erf](erf.md)（`same_topic`）：factor-size 允许在固定临时空间下反推 Erf 单次最大元素数，与 MaxMin 查询互补。
+- [Erf接口](erf_interface.md)（`same_topic`）：GetErfTmpBufferFactorSize说明获取Erf接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量。
+- [GetErfMaxMinTmpSize](get_erf_max_min_tmp_size.md)（`same_topic`）：GetErfMaxMinTmpSize 与《GetErfTmpBufferFactorSize》的衔接是：Erf 临时空间查询以 ErfMaxMinTmpSize 的计算因子和接口约束为依据，查询结果直接决定 Erf 调用可安全使用的 tmpBuffer 大小。
+<!-- cannbot:related:end -->

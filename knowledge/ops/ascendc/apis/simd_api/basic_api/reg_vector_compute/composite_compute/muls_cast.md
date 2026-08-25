@@ -25,3 +25,9 @@ platforms: ['950']
 - Cast计算按照CAST_ROUND模式舍入。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MulsCast](../../memory_vector_compute/composite_compute/muls_cast_isasi.md)（`same_topic`）：Reg MulsCast 与本 Memory MulsCast 执行相同的标量乘加精度转换链，可据存储位置与是否保留寄存器链选择接口。
+<!-- cannbot:related:end -->

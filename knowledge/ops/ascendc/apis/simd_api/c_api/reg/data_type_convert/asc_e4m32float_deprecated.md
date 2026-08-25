@@ -22,3 +22,9 @@ platforms: ['950']
 支持数据类型：float、fp8_e4m3fn_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [asc_float2e4m3 (废弃)](asc_float2e4m3_deprecated.md)（`related`）：《asc_float2e4m3 (废弃)》明确“将float类型转化为fp8_e4m3fn_t类型，支持RINT舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式。 由于源操作数与目的操作数类型位宽比为4:1，写入数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。”；它与《asc_e4m32float (废弃)》的“将fp8_e4m3fn_t类型转化为float类型。 由于源操作数与目的操作数类型位宽比为1:4，读取数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

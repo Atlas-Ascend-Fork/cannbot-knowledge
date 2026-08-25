@@ -17,3 +17,10 @@ platforms: ['950']
 同步接口用于 SIMT 编程中 Thread Block 内的阶段同步，当前提供 asc_syncthreads。该接口阻塞当前 Thread Block 内所有 Thread，直到全部到达同步点，并保证同步点前的内存操作对块内所有 Thread 可见，常用于块内数据共享、分阶段计算和并行归约场景。
 约束：Thread Block 内所有 Thread 必须都执行到同步点，否则会导致死锁；避免在分支或循环次数不一致的情况下调用，除非能确保块内所有 Thread 都进入该分支。
 asc_syncthreads 仅同步当前 Thread Block，不能用于跨 Thread Block 的全局同步。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [同步机制（AI Core SIMT编程）](../../../../guides/programming_guide/programming_model/ai_core_simt_programming/synchronization.md)（`explains`）：焦点处理AI Core SIMT 的线程/块同步与内存栅栏；同步接口正文说明“提供块内线程同步接口”。候选提供线程块同步、grid 同步和 threadfence 的不同可见性边界。
+- [AscSyncthreads](asc_syncthreads.md)（`same_topic`）：《AscSyncthreads》处理“阻塞当前线程块内所有线程直到所有线程到达同步点，确保同步点前的内存操作对块内所有线程可见，常用于数据共享和并行归约。”。《同步接口》明确“提供块内线程同步接口。”，可直接用于核对SIMT block 内同步、thread fence 可见性和线程组规模合同。
+<!-- cannbot:related:end -->

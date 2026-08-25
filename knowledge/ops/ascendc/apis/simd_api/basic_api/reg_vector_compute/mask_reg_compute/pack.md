@@ -20,3 +20,10 @@ platforms: ['950']
 参数：part: 枚举类型，低位模式或高位模式。 &bull; LOWEST低位模式； &bull; HIGHEST高位模式。；dst: 目的操作数，类型为MaskReg。；src: 源操作数，类型为MaskReg。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MaskReg](../register_data_types/mask_reg.md)（`related`）：《MaskReg》给出“MaskReg寄存器用于指示在计算过程中哪些元素参与计算，宽度为RegTensor的八分之一。”；该约束/探针可直接复现、解释或前置验证《Pack》中的“根据低位或高位模式，将源操作数src的偶数位bit提取到dst的低半部分或高半部分。”。
+- [UnPack](un_pack.md)（`same_topic`）：《UnPack》明确“根据低位或高位模式，将src的低半部分或高半部分展开到dst，每bit展开为2bit。”；它与《Pack》的“根据低位或高位模式，将源操作数src的偶数位bit提取到dst的低半部分或高半部分。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

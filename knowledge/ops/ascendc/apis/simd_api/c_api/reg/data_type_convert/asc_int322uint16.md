@@ -24,3 +24,12 @@ platforms: ['950']
 - mask掩码位为0时，dst对应元素置0。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscInt322Int16](asc_int322int16.md)（`related`）：AscInt322Uint16 共享 32→16 位压缩和饱和边界，但目的有符号性不同，适合明确负数处理。
+- [AscUint322int16](asc_uint322int16.md)（`related`）：AscInt322Uint16 与本接口保持 32→16 位窄化不变、同时交换源与目的的有符号性，可用于区分位宽窄化和符号解释各自的转换约束。
+- [AscUint322uint16](asc_uint322uint16.md)（`related`）：AscInt322Uint16 与 focal 具有相同目标 uint16，但源端有符号性不同，可对照判断负数和溢出处理。
+- [AscInt322int16](../../vector_compute/asc_int322int16.md)（`same_topic`）：AscInt322Uint16 与《AscInt322int16》的实质衔接是：AscInt322Uint16 是 32→16 位窄化并带饱和/奇偶 lane 布局；uint32→uint16 与 int32→int16 对照可分离符号解释和位宽布局。
+<!-- cannbot:related:end -->

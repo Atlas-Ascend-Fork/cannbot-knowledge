@@ -24,3 +24,17 @@ Reg矢量计算宏函数内不同流水线之间的同步指令。该同步指�
 约束：读写依赖的场景下，如果读指令和写指令使用的寄存器相同，会触发寄存器保序，指令将会按照代码顺序执行，无需额外插入同步指令。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [arch35 __aicore__ 调 LocalMemBar 报 507035](../../../../../runbooks/compilation/arch35_aicore_localmembar_507035.md)（`exemplifies`）：《arch35 __aicore__ 调 LocalMemBar 报 507035》处理“Ascend950PR (arch35/dav_c310) 上 Reg::LocalMemBar<VEC_STORE,VEC_LOAD> 是 __simd_callee__ 函数，须在 __simd_vf__ (VF) 调用上下文内使用；从常规 __aicore__ kernel 函数直接调用触发运行时 507035 (AIV 错误)。本 trace 两次独立调用（旧 4-buffer 代码、新 5-buffer 重排代码）均 507035。作为 count-based Compare→Select mask 隐患的最小 sync 修复手段 banned。”。《LocalMemBar》明确提供“Reg矢量计算宏函数内不同流水线之间的同步指令，目的流水线等待源流水线上所有指令完成才执行。”，其参数、调用或验证步骤直接接入LocalMemBar 507035 的 Compare/Select 调用触发、屏障约束和可执行替代。
+- [arch35 count Compare Select 异步VF 存读 RAW](../../../../../runbooks/precision/arch35_count_compare_select_vf_raw.md)（`exemplifies`）：arch35 count Compare Select 异步VF 存读 RAW 与《LocalMemBar》的实质衔接是：该故障是 count Compare 将 packed mask 异步写 UB、随后 Select 重新 Load 的 VEC_STORE→VEC_LOAD RAW；GetValue 探针、LocalMemBar/pipe 同步边界和准确 Compare/Select 接口共同支持确诊与修复。
+- [CheckLocalMemoryIA](../../debug_interface/exception_detection/check_local_memory_ia_isasi.md)（`related`）：LocalMemBar 与《CheckLocalMemoryIA》的实质衔接是：LocalMemBar 只解决本地内存可见性，AscMemBar/核内同步材料给出作用域；RAW 故障与 arch35 编译卡分别验证缺 barrier 和错误执行域的后果。
+- [SetFlag/WaitFlag](../../sync_control/intra_core_sync/set_flag_wait_flag.md)（`related`）：LocalMemBar 与《SetFlag/WaitFlag》的实质衔接是：LocalMemBar 只解决本地内存可见性，AscMemBar/核内同步材料给出作用域；RAW 故障与 arch35 编译卡分别验证缺 barrier 和错误执行域的后果。
+- [同步控制](../../../c_api/reg/sync_control/sync_control.md)（`related`）：LocalMemBar 与《同步控制》的实质衔接是：LocalMemBar 只解决本地内存可见性，AscMemBar/核内同步材料给出作用域；RAW 故障与 arch35 编译卡分别验证缺 barrier 和错误执行域的后果。
+- [核内同步](../../sync_control/intra_core_sync/intra_core_sync.md)（`related`）：LocalMemBar 与《核内同步》的实质衔接是：LocalMemBar 只解决本地内存可见性，AscMemBar/核内同步材料给出作用域；RAW 故障与 arch35 编译卡分别验证缺 barrier 和错误执行域的后果。
+- [核内同步能力概述](../../sync_control/intra_core_sync/intra_core_sync_overview.md)（`related`）：LocalMemBar 与《核内同步能力概述》的实质衔接是：LocalMemBar 只解决本地内存可见性，AscMemBar/核内同步材料给出作用域；RAW 故障与 arch35 编译卡分别验证缺 barrier 和错误执行域的后果。
+- [AscMemBar](../../../c_api/reg/sync_control/asc_mem_bar.md)（`same_topic`）：LocalMemBar 是 C++ Reg 路线的同类流水同步接口，可与 AscMemBar 对照源/目的流水依赖。
+- [同步控制](sync_control.md)（`same_topic`）：《同步控制》说明Reg矢量计算同步控制接口索引页，包含LocalMemBar。；《LocalMemBar》说明Reg矢量计算宏函数内不同流水线之间的同步指令，目的流水线等待源流水线上所有指令完成才执行。。二者在Reg同步页的核心是LocalMemBar；C API AscMemBar和架构故障卡给出同一内存可见性合同与非法调用边界上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

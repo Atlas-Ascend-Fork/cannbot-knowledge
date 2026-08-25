@@ -22,3 +22,12 @@ platforms: ['950', a2, a3]
 接口参数因模式而异，通常包含：output归一化结果；outputMean/outputVariance/outputRstd输出统计量；inputX输入；gamma/beta缩放平移系数；sharedTmpBuffer临时缓存；epsilon防除零系数；tiling切分信息。TPosition支持VECIN/VECCALC/VECOUT。
 
 约束：仅支持ND格式；H/R轴需满足32B对齐；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LayerNorm Tiling](layer_norm_tiling.md)（`related`）：Host 侧先查询临时空间并生成 LayerNormTiling，Kernel 侧 LayerNorm 直接消费该结构；H/R 对齐、isReuseSource、isBasicBlock 必须一致。
+- [Normalize](normalize.md)（`related`）：当均值和方差已经由上游计算时，Normalize 可跳过 LayerNorm 的统计归约，只完成 rstd 与仿射归一化，是同一公式的可复用下游阶段。
+- [WelfordFinalize](welford_finalize.md)（`related`）：WelfordFinalize 消费分块 Update 的中间态得到最终均值/方差，使大 Reduce 轴的分块统计重新接回 LayerNorm 归一化。
+- [WelfordUpdate](welford_update.md)（`related`）：Reduce 轴过大时可按块调用 WelfordUpdate 累积均值和方差中间态，替代一次性 LayerNorm 统计阶段。
+<!-- cannbot:related:end -->

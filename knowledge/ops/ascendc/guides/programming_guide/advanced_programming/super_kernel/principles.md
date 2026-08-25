@@ -32,3 +32,13 @@ CANN包发布的主流模型常用算子已支持SuperKernel融合。用户自�
 - 算子适配说明：算子要融合进SuperKernel需要满足的通用约束（与具体的开启方式无关）。
 - 算子自验证说明：在两种PyTorch图模式下分别对单个算子进行SuperKernel融合验证的样例。
 - 核函数直调算子额外适配说明：对于使用>>方式开发的Ascend C算子，进入SuperKernel前需要进行的额外适配工作。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SK_BIND（SuperKernel）](../../../../apis/utils_api/super_kernel/sk_bind.md)（`explains`）：SK_BIND（SuperKernel） 与《SuperKernel原理介绍》的实质衔接是：SK_BIND 绑定 SuperKernel 子任务，需结合 kernel 类型/tiling、前后任务同步和 runtime context。
+- [WaitPreTaskEnd](../../../../apis/simd_api/basic_api/sync_control/inter_task_sync/wait_pre_task_end.md)（`explains`）：WaitPreTaskEnd 与《SuperKernel原理介绍》的实质衔接是：WaitPreTaskEnd 与 SetNextTaskStart 构成前后任务的早启动握手；任务间同步和 SuperKernel 卡解释该握手在绑定任务调度中的生效条件。
+- [核函数直调算子额外适配说明](kernel_direct_call_adaptation.md)（`related`）：原理页解释直调如何消除 host launch 并用任务绑定维持执行顺序。
+- [算子自验证说明](operator_self_verification.md)（`related`）：自验证确认任务命中、输出和同步，防止只看图编译成功。
+- [算子适配说明](operator_adaptation.md)（`same_topic`）：算子适配说明 与《SuperKernel原理介绍》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+<!-- cannbot:related:end -->

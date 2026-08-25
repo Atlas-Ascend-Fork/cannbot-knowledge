@@ -22,3 +22,13 @@ platforms: ['950', a2, a3]
 约束：SPM Buffer供解决UB空间不足的特殊场景使用，性能较差，一般不推荐使用。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Atlas 训练系列产品、Kirin X90、Kirin 9030 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetTPipePtr](../get_t_pipe_ptr.md)（`related`）：InitSpmBuffer 与《GetTPipePtr》的实质衔接是：InitSpmBuffer 创建 GM 上的 SPM 溢出区，Read/WriteSpmBuffer 与 TPipe 生命周期共同构成初始化、访问和销毁链。
+- [ReadSpmBuffer](read_spm_buffer.md)（`related`）：InitSpmBuffer 与《ReadSpmBuffer》的实质衔接是：InitSpmBuffer 创建 GM 上的 SPM 溢出区，Read/WriteSpmBuffer 与 TPipe 生命周期共同构成初始化、访问和销毁链。
+- [TPipe](t_pipe.md)（`related`）：InitSpmBuffer 与《TPipe》的实质衔接是：InitSpmBuffer 创建 GM 上的 SPM 溢出区，Read/WriteSpmBuffer 与 TPipe 生命周期共同构成初始化、访问和销毁链。
+- [TPipe简介](t_pipe_intro.md)（`related`）：InitSpmBuffer 与《TPipe简介》的实质衔接是：InitSpmBuffer 创建 GM 上的 SPM 溢出区，Read/WriteSpmBuffer 与 TPipe 生命周期共同构成初始化、访问和销毁链。
+- [WriteSpmBuffer](write_spm_buffer.md)（`related`）：InitSpmBuffer 与《WriteSpmBuffer》的实质衔接是：InitSpmBuffer 创建 GM 上的 SPM 溢出区，Read/WriteSpmBuffer 与 TPipe 生命周期共同构成初始化、访问和销毁链。
+<!-- cannbot:related:end -->

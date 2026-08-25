@@ -42,3 +42,18 @@ ccache安装及查找路径命令如下：
 ### 分布式缓存（ccache + Redis）
 适用于多机共享缓存场景：机器A编译后将结果推送至Redis，机器B在相同源码、相同编译选项和相同工具链版本下可从Redis命中缓存，减少重复编译。
 分布式场景下，ccache以各机器本地缓存作为一级缓存，Redis作为共享二级缓存。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CMake arch 子目录隔离 dav-3510 专属 API](../../../../../runbooks/compilation/cmake_arch_dav_3510_api.md)（`related`）：CMake arch 子目录隔离 dav-3510 专属 API 与《高级编程编译加速》的实质衔接是：该故障由根目录 dav-3510 专属源码被 dav-2201 全量编译造成；架构查证/迁移、CMake/编译加速、arch 文档与同类 include/arch 错配卡共同验证源码隔离。
+- [算子动态库和静态库编译](dynamic_static_lib_compilation.md)（`related`）：《算子动态库和静态库编译》说明介绍将自定义算子工程编译为动态库或静态库的方法，支持应用直接链接或集成到其他工程中。；《高级编程编译加速》说明本文是扩展内容，介绍如何降低算子工程的编译耗时。算子工程编译耗时主要来自Kernel侧代码的逐芯片、逐TilingKey编译；本文从缓存复用、选择性编译、并行度和增量构建四个维度给出加速方案。。二者在SHARED/STATIC产物通过npu_op_package与CMake生成，并分别进入直接链接、运行时加载和常规部署流程上存在可执行的直接衔接。
+- [AI Core编译基本用法](../../../compilation_and_execution/operator_compilation/ai_core_operator_compilation.md)（`same_topic`）：高级编程编译加速 与《AI Core编译基本用法》的实质衔接是：编译加速围绕 ccache、选择性编译、并行度和增量构建；编译/交叉编译/库/CMake/AOT/BiSheng 与 arch 源隔离材料对应这些可执行构建阶段。
+- [AOT编译优化（高级编程）](../../aot_compilation_optimization.md)（`same_topic`）：AOT编译优化（高级编程）：AOT把典型Tiling常量化并在host按配置选择特化kernel；编译加速页给构建上下文，多分支策略承接运行时选择，Matmul优化页对应正文点名示例。 目标卡《高级编程编译加速》补充：本文是扩展内容，介绍如何降低算子工程的编译耗时。算子工程编译耗时主要来自Kernel侧代码的逐芯片、逐TilingKey编译；本文从缓存复用、选择性编译、并行度和增量构建四个维度给出加速方案。
+- [CMake函数参考（附录）](../appendix/cmake_function_reference.md)（`same_topic`）：高级编程编译加速 与《CMake函数参考（附录）》的实质衔接是：编译加速围绕 ccache、选择性编译、并行度和增量构建；编译/交叉编译/库/CMake/AOT/BiSheng 与 arch 源隔离材料对应这些可执行构建阶段。
+- [多算子包组织](multi_operator_package.md)（`same_topic`）：高级编程编译加速 与《多算子包组织》的实质衔接是：编译加速围绕 ccache、选择性编译、并行度和增量构建；编译/交叉编译/库/CMake/AOT/BiSheng 与 arch 源隔离材料对应这些可执行构建阶段。
+- [毕昇编译器简介](../../../compilation_and_execution/operator_compilation/bisheng_compiler.md)（`same_topic`）：高级编程编译加速 与《毕昇编译器简介》的实质衔接是：编译加速围绕 ccache、选择性编译、并行度和增量构建；编译/交叉编译/库/CMake/AOT/BiSheng 与 arch 源隔离材料对应这些可执行构建阶段。
+- [编译与部署基本流程](basic_process.md)（`same_topic`）：高级编程编译加速 与《编译与部署基本流程》的实质衔接是：编译加速围绕 ccache、选择性编译、并行度和增量构建；编译/交叉编译/库/CMake/AOT/BiSheng 与 arch 源隔离材料对应这些可执行构建阶段。
+- [编译过程调试](compilation_debug.md)（`same_topic`）：高级编程编译加速 与《编译过程调试》的实质衔接是：编译加速围绕 ccache、选择性编译、并行度和增量构建；编译/交叉编译/库/CMake/AOT/BiSheng 与 arch 源隔离材料对应这些可执行构建阶段。
+- [高级编程交叉编译](cross_compilation.md)（`same_topic`）：高级编程编译加速 与《高级编程交叉编译》的实质衔接是：编译加速围绕 ccache、选择性编译、并行度和增量构建；编译/交叉编译/库/CMake/AOT/BiSheng 与 arch 源隔离材料对应这些可执行构建阶段。
+<!-- cannbot:related:end -->

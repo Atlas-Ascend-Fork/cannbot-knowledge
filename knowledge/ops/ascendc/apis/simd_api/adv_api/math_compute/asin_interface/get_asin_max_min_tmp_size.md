@@ -25,3 +25,12 @@ kernel侧Asin接口的计算需要开发者预留 申请临时空间，本接口
 - isReuseSource（输入）：是否复用源操作数输入的空间，与Asin接口一致。
 - maxValue（输出）：Asin接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。
 - minValue（输出）：Asin接口能完成计算所需最小临时空间大小。为保证功能正确，接口计算时预留 申请的临时空间不能小于该数值。最小空间大小为0表示计算不需要临时空间。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Asin](asin.md)（`related`）：Asin 的 sharedTmpBuffer 不能与输入输出重叠且大小必须满足 GetAsinMaxMinTmpSize 返回的下界，二者构成直接 host/kernel 合同。
+- [GetAsinTmpBufferFactorSize](get_asin_tmp_buffer_factor_size.md)（`related`）：GetAsinMaxMinTmpSize 先界定合法缓存范围，factor 查询再在实际选定缓存上推算元素数；二者组成同一 Asin tiling 流程。
+- [更多样例（数学计算）](../more_examples.md)（`related`）：样例一明确在 Host 侧用 GetXxxMaxMinTmpSize 为 Asin 取得 maxValue/minValue，再把选定 tmpSize 写入 TilingData；目标卡正是该 Asin 专用接口。
+- [Asin接口](asin_interface.md)（`same_topic`）：《Asin接口》明确“提供Asin反正弦计算接口及其Tiling临时空间大小查询接口，包含Asin、GetAsinMaxMinTmpSize等。”；它与《GetAsinMaxMinTmpSize》的“在host侧获取Asin接口预留临时空间的最大和最小值，用于Tiling参数选择”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

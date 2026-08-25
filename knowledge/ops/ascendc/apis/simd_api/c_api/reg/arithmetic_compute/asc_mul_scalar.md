@@ -22,3 +22,13 @@ platforms: ['950']
 约束：mask对应位置为0的元素不参与计算，且在输出中置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscMul](../../vector_compute/asc_mul.md)（`related`）：AscMulScalar 与《AscMul》的实质衔接是：Reg AscMulScalar 与 Vector/Reg tensor-tensor/Muls 入口共享逐 lane 乘法；cyclic-repeat scale 故障直接约束标量分组广播的计算范围。
+- [AscMulScalar](../../vector_compute/asc_mul_scalar.md)（`related`）：AscMulScalar 与《AscMulScalar》的实质衔接是：Reg AscMulScalar 与 Vector/Reg tensor-tensor/Muls 入口共享逐 lane 乘法；cyclic-repeat scale 故障直接约束标量分组广播的计算范围。
+- [Muls](../../../basic_api/reg_vector_compute/basic_arithmetic/muls.md)（`related`）：AscMulScalar 是 C Reg API 的对应标量乘接口，可用于从 C++ Reg::Muls 迁移。
+- [AscMul](asc_mul.md)（`same_topic`）：AscMulScalar 与《AscMul》的实质衔接是：Reg AscMulScalar 与 Vector/Reg tensor-tensor/Muls 入口共享逐 lane 乘法；cyclic-repeat scale 故障直接约束标量分组广播的计算范围。
+- [AscMuls](asc_muls_deprecated.md)（`same_topic`）：AscMulScalar 与《AscMuls》的实质衔接是：Reg AscMulScalar 与 Vector/Reg tensor-tensor/Muls 入口共享逐 lane 乘法；cyclic-repeat scale 故障直接约束标量分组广播的计算范围。
+<!-- cannbot:related:end -->

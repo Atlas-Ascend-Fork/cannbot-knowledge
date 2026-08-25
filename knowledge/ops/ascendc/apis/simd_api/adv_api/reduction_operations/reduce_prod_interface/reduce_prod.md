@@ -24,3 +24,10 @@ platforms: ['950', a2, a3]
 接口参数：dstTensor输出；srcTensor输入；sharedTmpBuffer临时缓存；srcShape输入shape数组；srcInnerPad指示内轴是否已补齐。TPosition支持VECIN/VECCALC/VECOUT。
 
 约束：遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetReduceProdMaxMinTmpSize](get_reduce_prod_max_min_tmp_size.md)（`same_topic`）：GetReduceProdMaxMinTmpSize 与《ReduceProd》的实质衔接是：GetReduceProdMaxMinTmpSize 的 max/min 结果直接约束 ReduceProd 的 sharedTmpBuffer，isReuseSource 也必须与实际 ReduceProd 调用保持一致。
+- [ReduceProd接口](reduce_prod_interface.md)（`same_topic`）：函数页给出 ReduceProd 的 shape、dtype 和调用参数，是总览页对应的实际乘积归约。
+<!-- cannbot:related:end -->

@@ -24,3 +24,9 @@ platforms: ['950']
 约束：针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Hexp2](../bfloat16_type/bfloat16_math_functions/hexp2.md)（`related`）：Hexp2 与《Exp2f》的实质衔接是：bfloat16 Hexp2 与 half、float 及双 lane Exp2 入口计算同一 2^x 任务，类型总览和各精度特殊值帮助选择返回宽度。
+<!-- cannbot:related:end -->

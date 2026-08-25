@@ -32,3 +32,12 @@ quant_pre_mode量化模式参数支持的枚举值
 约束：- 各存储单元的空间大小和对齐要求
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscCopyL0c2Gm](../asc_copy_l0c2gm/asc_copy_l0c2gm_arch_3510.md)（`related`）：两接口共享 L0C 搬出与随路处理，但目的存储分别为 GM 与 L1，构成下一阶段消费位置驱动的直接选型。
+- [AscCopyL0c2L1](asc_copy_l0c2l1.md)（`same_topic`）：AscCopyL0c2L1说明将矩阵计算结果从L0C Buffer搬运至L1 Buffer，搬运过程中支持随路量化、ReLU、格式转换等能力。
+- [AscCopyL0c2L1](asc_copy_l0c2l1_arch_2201.md)（`same_topic`）：AscCopyL0c2L1：AscCopyL0c2L1的2201/3510卡核对同一搬运原型，DataCopyL0CToL1提供C++对应语义，AscSetL0cCopyParams配置该L0C搬出的通用参数。 目标卡《AscCopyL0c2L1》补充：将矩阵计算结果从L0C Buffer搬运至L1 Buffer，搬运过程中支持随路量化、ReLU、格式转换等能力。
+- [AscSetL0c2gmQuantPost](../../sys_var/asc_set_l0c2gm_quant_post.md)（`same_topic`）：焦点处理L0C2GM QUANT_POST 寄存器与 Fixpipe 量化搬出配置；AscCopyL0c2L1正文说明“将矩阵计算结果从L0C Buffer搬运至L1 Buffer，搬运过程中支持随路量化、ReLU、格式转换等能力”。候选设置 Fixpipe 的量化参数并由 L0C 搬出接口实际消费。
+<!-- cannbot:related:end -->

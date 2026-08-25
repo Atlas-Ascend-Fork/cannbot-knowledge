@@ -18,3 +18,11 @@ platforms: ['950']
 函数原型：bfloat16_t __float2bfloat16_rn(const float x)
 返回值：输入遵循CAST_RINT模式转换成的bfloat16类型数据。本接口受全局饱和模式影响，特殊值如下：
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__float2bfloat162_rn](_float2bfloat162_rn.md)（`related`）：__float2bfloat162_rn 与《__float2bfloat16_rn》的实质衔接是：单个 float 填充 bf16x2 的 RNE 转换与双 float、双标量打包、标量转换和反向解包共享分量顺序与舍入契约。
+- [__float2bfloat16](_float2bfloat16.md)（`same_topic`）：__float2bfloat16 的核心契约是“遵循CAST_RINT模式，将浮点数转换为bfloat16精度，返回转换后的值”；__float2bfloat16_rn 补充“遵循CAST_RINT模式，将浮点数转换为bfloat16精度，返回转换后的值”。
+- [__float2bfloat16_rn_sat](_float2bfloat16_rn_sat.md)（`same_topic`）：两接口均按 RN 把 float 转为 bfloat16，sat 版本只增加饱和模式和对应特殊值映射，便于直接选择。
+<!-- cannbot:related:end -->

@@ -29,3 +29,13 @@ platforms: [agnostic]
 3.  算子入图（GE图）开发。算子入图场景下，需要提供shape推导等算子入图适配函数的实现。
 4.  编译部署。通过工程编译脚本完成算子的编译部署，分为算子包编译和算子动态库编译两种方式。
 5.  图编译和图执行：基于图IR执行算子，比如IR构图的方式调用自定义算子。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [基本开发流程](basic_development_flow.md)（`related`）：基本开发流程 与《高级编程概述》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
+- [图编译和图执行](graph_compilation_and_execution.md)（`same_topic`）：高级编程概述 与《图编译和图执行》的实质衔接是：图高级编程概述由基本开发流程展开，并以图编译执行和 tiling 下沉说明 GE 从构图到下发的生命周期；编译部署流程是产物落点。
+- [开启Tiling下沉](enable_tiling_sink.md)（`same_topic`）：高级编程概述 与《开启Tiling下沉》的实质衔接是：图高级编程概述由基本开发流程展开，并以图编译执行和 tiling 下沉说明 GE 从构图到下发的生命周期；编译部署流程是产物落点。
+- [算子适配说明](../super_kernel/operator_adaptation.md)（`same_topic`）：算子适配说明 与《高级编程概述》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [编译与部署基本流程](../aclnn_operator_development/compilation_and_deployment/basic_process.md)（`same_topic`）：高级编程概述 与《编译与部署基本流程》的实质衔接是：图高级编程概述由基本开发流程展开，并以图编译执行和 tiling 下沉说明 GE 从构图到下发的生命周期；编译部署流程是产物落点。
+<!-- cannbot:related:end -->

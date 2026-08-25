@@ -20,3 +20,11 @@ platforms: [agnostic]
 2.  完成host侧tiling开发时，设置的numBlocks代表的是AI Core和Vector Core的总数，比如用户在host侧设置numBlocks为10，则会启动总数为10的AI Core和Vector Core；为保证启动Vector Core，设置数值应大于AI Core的核数。您可以通过GetCoreNumAic接口获取AI Core的核数，GetCoreNumVector接口获取Vector Core的核数。如下代码片段，分别为使用kernel直调工程和自定义算子工程时的设置样例，此处设置为AI Core和Vector Core的总和，表示所有AI Core和Vector Core都启动。
 -   kernel直调工程
 -   自定义算子工程
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetCoreNumAic](../../../../apis/utils_api/platform_info/platform_ascend_c/get_core_num_aic.md)（`explains`）：启用 Vector Core 时 numBlocks 需超过 AI Core 数并通常取 AIC+AIV，GetCoreNumAic 提供判定阈值和总数中的 AIC 部分。
+- [GetCoreNumVector](../../../../apis/utils_api/platform_info/platform_ascend_c/get_core_num_vector.md)（`explains`）：EnableVectorCore 明确要求 Host 把 numBlocks 设为 AI Core 与 Vector Core 总数，GetCoreNumVector 提供 Vector 部分的计数。
+- [block 数应覆盖可用 Vector 核](../../../../runbooks/performance/block_count_uses_all_available_vector_cores.md)（`related`）：性能卡实测固定 block 上限低于可用 Vector 核会留下并行度；它把指南的 numBlocks 规则落到探针值、正确性回归和配对性能验证。
+<!-- cannbot:related:end -->

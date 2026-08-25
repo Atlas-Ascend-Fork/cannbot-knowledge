@@ -19,3 +19,13 @@ platforms: ['950']
 返回值：协作组内当前线程向后偏移delta的线程输入的var值。若偏移后超出组范围，返回当前线程输入的var值。
 约束：仅支持thread_block_tile的模板参数Size小于等于32的场景，即仅支持单Warp内线程子组。
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ShflDown](../coalesced_group/shfl_down.md)（`related`）：ThreadBlockTile 的 ShflDown 具有相似位移语义，但作用域是静态 tile 而不是活动线程形成的 coalesced group。
+- [ShflUp](shfl_up.md)（`related`）：ShflUp 沿相反方向取 lane，扫描/归约算法按方向选。
+- [AscShflDown](../../warp_functions/warp_shfl_functions/asc_shfl_down.md)（`same_topic`）：AscShflDown 与《ShflDown》的实质衔接是：AscShflDown 从较高 lane 读取值；general/up/xor 与 cooperative-group ShflDown 对照偏移方向和 warp/group 作用域。
+- [ThreadBlockTile](thread_block_tile.md)（`same_topic`）：tile 对象界定 shfl_down 的宽度和合法 lane。
+- [ThreadBlockTile协作组shfl](shfl.md)（`same_topic`）：Shfl 从绝对 src_rank 取值，ShflDown 从当前 rank 加 delta 取值；两者对应广播指定 lane 与向下邻域交换两类通信模式。
+<!-- cannbot:related:end -->

@@ -24,3 +24,11 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hneg](_hneg.md)（`related`）：HNeg 改符号，HAbs 清除数值符号；负零/NaN 语义需分别验证。
+- [half类型算术函数](half_arithmetic_functions.md)（`related`）：半精度算术总页给出 HAbs 的支持平台、NaN 和舍入约束，是函数使用语境。
+- [__habs](../../bfloat16_type/bfloat16_arithmetic_functions/_habs.md)（`same_topic`）：half 与 bfloat16 标量 Abs 完成相同绝对值运算，源精度不同。
+<!-- cannbot:related:end -->

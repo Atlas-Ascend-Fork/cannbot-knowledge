@@ -20,3 +20,15 @@ TSCM表示L1 Buffer空间对应的逻辑内存，L1 Buffer相关内容见存储�
 用户需要自定义数据搬入到TSCM及自定义管理的场景，即需要自定义实现数据搬入功能，如非连续搬入或对搬入数据进行预处理等。用户通过自定义管理TSCM可灵活配置MTE2流水，实现跨Matmul对象的全局DoubleBuffer，MTE2相关内容见搬运单元。
 ## 约束说明
 设置为TSCM输入的矩阵必须在TSCM中全载，全载即全部的矩阵数据同时搬入及保持在TSCM中。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AllocTensor](../../../../../apis/simd_api/basic_api/resource_management/tscm/alloc_tensor.md)（`explains`）：指南实现需先从 TSCM 分配输入 tensor，再写入并交给 Matmul；AllocTensor 定义这块片上缓冲的取得方式。
+- [DeQue](../../../../../apis/simd_api/basic_api/resource_management/tscm/de_que.md)（`explains`）：Cube/Matmul 消费前用 DeQue 取得已发布 tensor，闭合 TSCM 生产者到矩阵乘输入的同步链。
+- [EnQue](../../../../../apis/simd_api/basic_api/resource_management/tscm/en_que.md)（`explains`）：Vector 侧写完 TSCM tensor 后需 EnQue 发布，才能让 Cube 侧按队列同步消费。
+- [SetTensorA](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_tensor_a.md)（`explains`）：TSCM输入的矩阵乘说明用户自行管理TSCM内存空间，Matmul直接使用传入的TSCM地址，不进行GM到TSCM的数据搬入。
+- [TSCM](../../../../../apis/simd_api/basic_api/resource_management/tscm/tscm.md)（`explains`）：TSCM 与《TSCM输入的矩阵乘》的实质衔接是：TSCM 的 Queue/Buffer 生命周期需要成对 Alloc/Free、EnQue/DeQue 与所有权交接；所选故障卡分别覆盖空取、早释、重取和跨流水复用。
+- [TSCM简介](../../../../../apis/simd_api/basic_api/resource_management/tscm/tscm_intro.md)（`explains`）：TSCM简介 与《TSCM输入的矩阵乘》的实质衔接是：TSCM 用 Queue 在 Vector/Cube 间交接 tensor；Alloc/Free、EnQue/DeQue 和矩阵乘示例共同闭合资源与所有权生命周期。
+- [950 Matmul高阶API选型先查内置源](../../../../../runbooks/compilation/950_matmul_api.md)（`related`）：Runbook 从内置源确认 950 A/B 使用 TSCM+NZ，目标指南说明 TSCM 输入 Matmul 的 L1 驻留、类型配置和数据准备，是该选型的直接实现参考。
+<!-- cannbot:related:end -->

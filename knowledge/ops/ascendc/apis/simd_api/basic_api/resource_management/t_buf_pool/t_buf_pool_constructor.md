@@ -18,3 +18,12 @@ platforms: ['950', a2, a3]
 创建TBufPool对象时，初始化数据成员。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Atlas 训练系列产品、Kirin X90、Kirin 9030 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [自定义TBufPool](../custom_t_buf_pool/custom_t_buf_pool.md)（`related`）：CustomTBufPool 仅在需要外部地址/手动布局时替代普通池。
+- [InitBufPool](init_buf_pool.md)（`same_topic`）：构造后需 InitBufPool 绑定物理范围才可分配。
+- [InitBuffer](init_buffer.md)（`same_topic`）：构造池对象后必须 InitBufPool/InitBuffer 才有可用容量。
+- [TBufPool](t_buf_pool.md)（`same_topic`）：类型页定义构造函数产生的池对象和容量成员。
+<!-- cannbot:related:end -->

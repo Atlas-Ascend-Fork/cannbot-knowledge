@@ -25,3 +25,11 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__habs](_habs.md)（`related`）：HNeg 改符号，HAbs 清除数值符号；负零/NaN 语义需分别验证。
+- [__hsub](_hsub.md)（`related`）：取负常用于 x-y = x+(-y)，但直接 HSub 的舍入链不同。
+- [__hneg](../../bfloat16_type/bfloat16_arithmetic_functions/_hneg.md)（`same_topic`）：bfloat16 版本执行同一取负，源精度不同。
+<!-- cannbot:related:end -->

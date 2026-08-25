@@ -41,3 +41,12 @@ platforms: [agnostic]
 Cmake命令语法说明
 简化的编译流程图如下图所示：将算子核函数源文件编译生成kernel侧的库文件（*.so或*.a库文件）；工程框架自动生成核函数调用接口声明头文件；编译main.cpp（算子调用应用程序）时依赖上述头文件，将编译应用程序生成的目标文件和kernel侧的库文件进行链接，生成最终的可执行文件。
 编译安装结束后在CMAKE_INSTALL_PREFIX目录下生成的编译产物示例如下；最终的可执行文件会生成在cmake命令的执行目录下。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GM_ADDR 标量不可解引用为 tiling 结构体指针](../../../runbooks/compilation/gm_addr_tiling.md)（`related`）：GM_ADDR 标量不可解引用为 tiling 结构体指针 与《基于样例工程完成Kernel直调》的实质衔接是：GM_ADDR 在该入口是 __gm__ uint8_t 标量而非结构体指针；typed __gm__ tiling 指针、Kernel Tiling/GET_TILING_DATA 和地址空间案例给出正确入口与强转边界。
+- [SIMT 核类型推导失败 — 补 __vector__](../../../runbooks/compilation/direct_launch_kernel_requires_vector_qualifier.md)（`related`）：The runbook resolves a direct-launch kernel-type inference failure by adding the required __vector__ qualifier to the kernel shown by this guide.
+- [直调不可用 GET_TILING_DATA_WITH_STRUCT 宏](../../../runbooks/compilation/direct_invoke_unavailable_get_tiling_data_with_struct.md)（`related`）：The runbook shows that direct-invoke builds cannot rely on GET_TILING_DATA_WITH_STRUCT and must decode the tiling pointer explicitly.
+- [核函数直调算子额外适配说明](../advanced_programming/super_kernel/kernel_direct_call_adaptation.md)（`same_topic`）：样例给出 direct call 的声明、绑定和构建写法，可用于适配验证。
+<!-- cannbot:related:end -->

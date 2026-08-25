@@ -23,3 +23,11 @@ platforms: ['950', a2, a3]
 本节以Atlas A2 训练系列产品/Atlas A2 推理系列产品或Atlas A3 训练系列产品/Atlas A3 推理系列产品上一个形状为 [6144, 512]的half类型输入进行GM到UB搬运这一种场景为例，说明如何通过调整数据访问顺序规避同地址访问冲突，该场景使用48个核参与搬运，即numBlocks=48。
 为了体现同地址冲突的影响，上述场景关闭L2Cache hint。输入每行数据大小为1024字节（512个half），Tile为 ([128, 64])，通过DataCopyPad完成GM到UB搬运。每个核都会完整载入一遍输入矩阵，N方向按64列切分，单次搬运数据量为128 * 64 * 2字节。原始实现中，所有核按相同的mBlockIdx顺序访问同一输入矩阵，容易在同一时刻访问相同的GM地址段；优化实现中，每个核按 ((mBlockIdx + blockIdx) \% numBlocks)在块组内轮转访问顺序，降低同地址访问冲突概率。
 下文示意图中，M0-M47表示输入矩阵沿M方向切分后的48个分块，T0-T47表示时间轴上的48个搬运时刻。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GM地址尽量512B对齐](gm_address_512b_alignment.md)（`related`）：GM地址尽量512B对齐说明【描述】由于AI处理器内部设计约束，从GM向Local Memory搬运数据时，保证GM地址512B对齐可以最有效的发挥出带宽的效率。如下图示例，展示了在512B对齐以及32B对齐情况下单核的带宽效率：搬运同等数据量，带宽差距最大的情况，32B对齐场景只能达到512B对齐场景的70%。
+- [避免bank冲突（NPU架构版本2201）](avoid_ub_bank_conflict/avoid_bank_conflict_npu_arch_2201.md)（`related`）：避免bank冲突（NPU架构版本2201）：2201与3510卡解释不同 UB bank组织，2201架构约束给出硬件前提；同地址访问是正文读写冲突的直接特例，迁移卡说明跨代调整边界。 目标卡《避免同地址访问》补充：>该性能优化指导适用于如下产品型号：
+- [MemoryAccessMerge](../../simt_operator_optimization/memory_access/memory_access_merge.md)（`same_topic`）：《MemoryAccessMerge》处理“SIMT编程模式下让同一Warp内相邻线程访问连续GM地址以实现访存合并，提高GM带宽利用率。”。《避免同地址访问》提供“>该性能优化指导适用于如下产品型号：”，其具体合同或探针直接接入Warp 连续 GM 访问的短向量、类型对齐、步长搬运和 Gather 示例验证。
+<!-- cannbot:related:end -->

@@ -24,3 +24,19 @@ platforms: ['950']
 - 如果输入数据中存在nan，则将nan写入dst的第0个元素，并将第一个nan的索引写入dst的第1个元素。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Reg::Reduce 跨 chunk 覆写导致规约失真](../../../../../runbooks/precision/reg_reduce_per_chunk_result_must_accumulate_explicitly.md)（`exemplifies`）：AscReduceMax 与《Reg::Reduce 跨 chunk 覆写导致规约失真》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+- [AscReduceMin](asc_reduce_min.md)（`related`）：AscReduceMax 与《AscReduceMin》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+- [ReduceMax接口](../../../adv_api/reduction_operations/reduce_max_interface/reduce_max_interface.md)（`related`）：AscReduceMax说明根据mask对源操作数进行归约最大值操作，将最大值及其索引写入目的操作数。
+- [asc_reduce_max](../../../../simt_api/warp_functions/warp_reduce_functions/asc_reduce_max.md)（`related`）：asc_reduce_max 与《AscReduceMax》的实质衔接是：Warp reduce max 与 min/add、C API 对应入口共享 warp 归约契约；padding 元素故障直接约束有效参与数。
+- [AscDatablockReduceMax](../../vector_compute/asc_datablock_reduce_max.md)（`same_topic`）：AscReduceMax 与《AscDatablockReduceMax》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+- [AscGetReduceMaxCnt](../../vector_compute/asc_get_reduce_max_cnt.md)（`same_topic`）：AscReduceMax 与《AscGetReduceMaxCnt》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+- [AscReduceMaxDatablock](asc_reduce_max_datablock.md)（`same_topic`）：AscReduceMax 与《AscReduceMaxDatablock》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+- [AscRepeatReduceMax](../../vector_compute/asc_repeat_reduce_max.md)（`same_topic`）：AscReduceMax 与《AscRepeatReduceMax》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+- [GetReduceMaxMaxMinTmpSize](../../../adv_api/reduction_operations/reduce_max_interface/get_reduce_max_max_min_tmp_size.md)（`same_topic`）：AscReduceMax 与《GetReduceMaxMaxMinTmpSize》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+- [ReduceMax](../../../adv_api/reduction_operations/reduce_max_interface/reduce_max.md)（`same_topic`）：AscReduceMax 与《ReduceMax》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+- [ReduceMax](../../../basic_api/memory_vector_compute/reduction_compute/reduce_max.md)（`same_topic`）：AscReduceMax 与《ReduceMax》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
+<!-- cannbot:related:end -->

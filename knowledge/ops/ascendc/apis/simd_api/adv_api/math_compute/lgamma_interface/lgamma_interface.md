@@ -29,3 +29,11 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetLgammaMaxMinTmpSize](get_lgamma_max_min_tmp_size.md)（`related`）：Lgamma 的显式 sharedTmpBuffer 需按该 Host 查询的最小/最大空间范围分配。
+- [GetLgammaTmpBufferFactorSize](get_lgamma_tmp_buffer_factor_size.md)（`related`）：因子查询把固定 workspace 换算成 Lgamma 单次最大处理元素数，补足分块 tiling 决策。
+- [Lgamma](lgamma.md)（`same_topic`）：《Lgamma》处理“按元素计算x的gamma函数的绝对值并求自然对数”。《Lgamma接口》明确“按元素计算x的gamma函数绝对值的自然对数，并提供临时空间大小获取接口。”，可直接用于核对Lgamma Kernel、临时空间查询与标量 lgammaf 的同一计算合同。
+<!-- cannbot:related:end -->

@@ -42,3 +42,24 @@ Case 1：RegBase API + VF融合：寄存器级计算减少中间Load/Store，利
 - Scenario 1融合后总耗时2606.91μs，与Matmul单独执行时间基本一致
 这表明采用CV融合方式编写时，AIV的Vector计算时间基本被AIC的Cube计算时间完全覆盖，实现了高效的流水并行。
 详细内容请参见Matmul+Gelu中级性能优化。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LeakyRelu](../../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/leaky_relu.md)（`explains`）：中级性能优化 与《LeakyRelu》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [LeakyRelu](../../../../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/leaky_relu.md)（`explains`）：LeakyRelu 与《中级性能优化》的实质衔接是：Reg LeakyRelu 与 Memory/C Reg/C Vector 入口实现同一负半轴 slope 计算，Matmul-LeakyRelu 案例给出该接口在融合算子中的真实落点。
+- [Load](../../../../../apis/simd_api/basic_api/reg_vector_compute/reg_data_load/load.md)（`explains`）：中级性能优化 与《Load》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [LoadData](../../../../../apis/simd_api/basic_api/cube_compute/cube_compute_load/load_data_2_d.md)（`explains`）：中级性能优化 与《LoadData》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [Mmad](../../../../../apis/simd_api/basic_api/cube_compute/mmad_compute/mmad.md)（`explains`）：中级性能优化 与《Mmad》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [PipeBarrier](../../../../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)（`explains`）：中级性能优化 与《PipeBarrier》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [SetFlag/WaitFlag](../../../../../apis/simd_api/basic_api/sync_control/intra_core_sync/set_flag_wait_flag.md)（`explains`）：中级性能优化 与《SetFlag/WaitFlag》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [Store](../../../../../apis/simd_api/basic_api/reg_vector_compute/reg_data_store/store.md)（`explains`）：中级性能优化 与《Store》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [AIC和AIV独立运行机制](../../../simd_operator_impl/matrix_advanced_api/feature_scenarios/aic_aiv_independent_execution.md)（`related`）：中级性能优化 与《AIC和AIV独立运行机制》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [Matmul高阶API开启UnitFlag](../../../best_practices/matmul_tuning_cases/matmul_unit_flag.md)（`related`）：中级性能优化 与《Matmul高阶API开启UnitFlag》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [PipeBarrier 的 PIPE_V 是全局枚举](../../../../../runbooks/compilation/pipebarrier_pipe_v_uses_global_enum.md)（`related`）：中级性能优化 与《PipeBarrier 的 PIPE_V 是全局枚举》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线](../../../../../runbooks/compilation/pipebarrier_pipe_s_is_not_supported.md)（`related`）：中级性能优化 与《PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [Reg 固定地址跨块累加需逐 VF PipeBarrier](../../../../../runbooks/precision/fixed_address_vf_accumulator_needs_per_call_barrier.md)（`related`）：中级性能优化 与《Reg 固定地址跨块累加需逐 VF PipeBarrier》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [融合算子编程基础知识](../../../simd_operator_impl/fusion_operator_programming/cv_fusion/basics.md)（`related`）：中级性能优化 与《融合算子编程基础知识》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [入门功能落地](getting_started.md)（`same_topic`）：中级性能优化 与《入门功能落地》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [高阶极限打磨](extreme_optimization.md)（`same_topic`）：中级性能优化 与《高阶极限打磨》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+<!-- cannbot:related:end -->

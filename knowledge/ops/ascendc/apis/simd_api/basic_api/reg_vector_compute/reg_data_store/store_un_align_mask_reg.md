@@ -25,3 +25,15 @@ StoreUnAlign能够实现数据从MaskReg连续搬运至非对齐Unified Buffer�
 - 数据类型为b32时，位于Unified Buffer的地址必须8字节对齐，搬运完成后UB地址按8B偏移量更新，不需要手动更新地址。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscSqueezeAndStoreunalignInit](../../../c_api/reg/system_variables_access/asc_squeeze_and_storeunalign_init.md)（`related`）：StoreUnAlignMaskReg 与《AscSqueezeAndStoreunalignInit》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
+- [AscStoreUnalign](../../../c_api/reg/reg_store/asc_storeunalign.md)（`related`）：StoreUnAlignMaskReg 与《AscStoreUnalign》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
+- [UnalignRegForLoadAndUnalignRegForStore](../register_data_types/unalign_reg_for_load_unalign_reg_for_store.md)（`related`）：UnalignRegForLoadAndUnalignRegForStore 与《StoreUnAlignMaskReg》的实质衔接是：非对齐寄存器是 LoadUnAlign Pre→Load 与 Store→Post 协议的临时状态，所选 C/C++ 接口、连续优化和 Init/Postupdate 共同闭合搬入搬出流程。
+- [LoadUnAlign](../reg_data_load/load_un_align_continuous.md)（`same_topic`）：StoreUnAlignMaskReg 与《LoadUnAlign》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
+- [MaskGenWithRegTensor](../reg_data_load/mask_gen_with_reg_tensor_mask_reg.md)（`same_topic`）：StoreUnAlignMaskReg 与《MaskGenWithRegTensor》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
+- [MaskReg](../register_data_types/mask_reg.md)（`same_topic`）：MaskReg 与《StoreUnAlignMaskReg》的实质衔接是：MaskReg 定义有效 lane，直接被 Load/Store、MaskGen 与 MaskReg 计算消费；C 创建/更新接口、merge mode、复用指南和两个编译故障明确其构造约束。
+- [StoreAlignMaskReg](store_align_mask_reg.md)（`same_topic`）：StoreUnAlignMaskReg 与《StoreAlignMaskReg》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
+<!-- cannbot:related:end -->

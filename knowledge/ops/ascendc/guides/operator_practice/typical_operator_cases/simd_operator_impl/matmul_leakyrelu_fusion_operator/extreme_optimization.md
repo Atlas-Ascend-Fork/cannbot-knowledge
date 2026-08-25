@@ -35,3 +35,12 @@ AIV侧实现：UB → GELU → geluOutUB → GM（无需DataCopy GM→UB）
 - Scenario 2融合后总耗时2573.584μs，相比Scenario 1的2606.91μs进一步减少约33μs
 - Scenario 2中aiv_mte2_time仅为0.005μs，相比Scenario 1的57.145μs几乎降为零
 详细内容请参见Matmul+Gelu高阶极限打磨。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LeakyRelu](../../../../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/leaky_relu.md)（`explains`）：LeakyRelu 与《高阶极限打磨》的实质衔接是：Reg LeakyRelu 与 Memory/C Reg/C Vector 入口实现同一负半轴 slope 计算，Matmul-LeakyRelu 案例给出该接口在融合算子中的真实落点。
+- [Matmul高阶API开启UnitFlag](../../../best_practices/matmul_tuning_cases/matmul_unit_flag.md)（`related`）：高阶 Case 8 用 UnitFlag 让 MMAD 与 FIXPIPE 细粒度并行，专项指南展开其配置和验证方法。
+- [中级性能优化](intermediate_optimization.md)（`same_topic`）：中级性能优化 与《高阶极限打磨》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [入门功能落地](getting_started.md)（`same_topic`）：高阶章节在中级结果上继续做极限优化，覆盖入门卡末尾列出的 RegBase/VF 融合和搬运优化方向。
+<!-- cannbot:related:end -->

@@ -22,3 +22,11 @@ platforms: ['950']
 支持数据类型：half、float。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscPrelu](../../../c_api/reg/arithmetic_compute/asc_prelu.md)（`related`）：AscPrelu 与 Reg Tensor Prelu 都以逐 lane 的 src0 正负分支选择 src0 或 src0*src1；前者是 C 指针/寄存器接口，后者是 C++ RegTensor 接口。
+- [Prelu](../../memory_vector_compute/basic_arithmetic/prelu_isasi.md)（`same_topic`）：《Prelu》明确“实现PReLU激活函数，源操作数srcReg0大于0的元素直接写入目的操作数，否则与srcReg1对应元素相乘后写入。”；它与《Prelu》的“双目矢量计算接口，src0非负时直接输出，否则输出src0与src1的乘积。”在实际调用参数、数据流或结果校验上直接衔接。
+- [Relu](relu.md)（`same_topic`）：焦点处理Reg Relu 的负值清零及跨 API 实现；Prelu正文界定“实现PReLU激活函数，源操作数srcReg0大于0的元素直接写入目的操作数，否则与srcReg1对应元素相乘后写入”。候选保持 ReLU/PReLU/LeakyReLU 语义或给出同一算子骨架，只改变 API 层或负半轴策略。
+<!-- cannbot:related:end -->

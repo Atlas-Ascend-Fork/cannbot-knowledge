@@ -25,3 +25,10 @@ platforms: [agnostic]
 -   Chrome浏览器
 在Chrome浏览器中输入chrome://tracing地址，并将通过msopprof simulator生成指令流水图文件（trace.json）拖到空白处打开，键盘上输入快捷键（W：放大，S：缩小，A：左移，D：右移）可进行查看。
 -   指令流水图支持MindStudio Insight可视化呈现，MindStudio Insight工具以时序图方式为用户提供指令在昇腾AI处理器上的运行情况，用户可通过分析时序图中的指令详情、指令执行时间、指令关联代码的调用栈及指令/流水间同步连线等信息，识别微观指令的时序优化点。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [分析性能数据（性能分析）](analyze_performance_data.md)（`related`）：采集页产生 op_summary、流水图等数据，分析页紧接着用理论带宽/算力、流水利用率和实际耗时定位瓶颈；构成采集到决策的上下游。
+- [性能调优（调试与调优）](../../programming_guide/debug_and_tuning/performance_tuning.md)（`related`）：性能调优指南中的 msOpProf 上板和 simulator 流程需要先采集稳定数据；采集页给出命令入口和 trace 可视化方式。
+<!-- cannbot:related:end -->

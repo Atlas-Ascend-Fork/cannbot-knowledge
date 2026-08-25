@@ -35,3 +35,12 @@ __aicore__ inline void Atanh(const LocalTensor<T>& dstTensor, const LocalTensor<
 - 操作数地址对齐要求请参见通用地址对齐约束。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Atanhf](../../../../simt_api/math_functions/float_math_functions/atanhf.md)（`same_topic`）：《Atanh》处理“按元素做反双曲正切函数计算，输入值域需在指定区间内”。《Atanhf》提供“获取输入数据的反双曲正切值。”，其具体合同或探针直接接入Atanh Kernel 调用、临时空间推导和 SIMT 对应实现。
+- [Atanh接口](atanh_interface.md)（`same_topic`）：《Atanh》处理“按元素做反双曲正切函数计算，输入值域需在指定区间内”。《Atanh接口》提供“提供Atanh反双曲正切计算接口及其Tiling临时空间大小查询接口，包含Atanh、GetAtanhMaxMinTmpSize等。”，其具体合同或探针直接接入Atanh Kernel 调用、临时空间推导和 SIMT 对应实现。
+- [GetAtanhMaxMinTmpSize](get_atanh_max_min_tmp_size.md)（`same_topic`）：《Atanh》处理“按元素做反双曲正切函数计算，输入值域需在指定区间内”。《GetAtanhMaxMinTmpSize》提供“在host侧获取Atanh接口预留临时空间的最大和最小值，用于Tiling参数选择”，其具体合同或探针直接接入Atanh Kernel 调用、临时空间推导和 SIMT 对应实现。
+- [GetAtanhTmpBufferFactorSize](get_atanh_tmp_buffer_factor_size.md)（`same_topic`）：《Atanh》处理“按元素做反双曲正切函数计算，输入值域需在指定区间内”。《GetAtanhTmpBufferFactorSize》提供“获取Atanh接口的maxLiveNodeCount和extraBuffer，用于推算固定空间下单次最大计算元素数”，其具体合同或探针直接接入Atanh Kernel 调用、临时空间推导和 SIMT 对应实现。
+<!-- cannbot:related:end -->

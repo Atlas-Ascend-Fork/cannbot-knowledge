@@ -32,3 +32,12 @@ AllGatherMatmul算子实现了AllGather通信和Matmul矩阵乘法的融合。�
 4.  确定算子实现所需接口。
 -   算子涉及AllGather通信，查看Ascend C  API参考中的通信相关接口，需要使用Hccl高阶API来实现AllGather通信。
 -   算子涉及Matmul左右矩阵在外部存储和内部存储间的数据搬运，查看Ascend C  API参考中的数据搬运接口，需要使用DataCopy来实现数据搬运。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AIC和AIV独立运行机制](../../matrix_advanced_api/feature_scenarios/aic_aiv_independent_execution.md)（`related`）：通用融合算子实现 与《AIC和AIV独立运行机制》的实质衔接是：通用融合实现依赖 AIC/AIV 分工、异步、耦合/分离、多核尾块和 double buffer 场景。
+- [异步场景处理](../../matrix_advanced_api/feature_scenarios/async_scenario.md)（`related`）：通用融合算子实现 与《异步场景处理》的实质衔接是：通用融合实现依赖 AIC/AIV 分工、异步、耦合/分离、多核尾块和 double buffer 场景。
+- [通用融合基础知识](basics.md)（`same_topic`）：通用融合算子实现 与《通用融合基础知识》的实质衔接是：通用融合实现依赖 AIC/AIV 分工、异步、耦合/分离、多核尾块和 double buffer 场景。
+- [通用融合特性场景](unnamed.md)（`same_topic`）：通用融合算子实现 与《通用融合特性场景》的实质衔接是：通用融合实现依赖 AIC/AIV 分工、异步、耦合/分离、多核尾块和 double buffer 场景。
+<!-- cannbot:related:end -->

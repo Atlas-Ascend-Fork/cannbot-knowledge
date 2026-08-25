@@ -24,3 +24,10 @@ platforms: ['950']
 约束：- mask控制源操作数是否参与计算，源操作数不参与计算的元素在输出对应位置置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscInt82half](asc_int82half.md)（`related`）：无符号版本保持目标 half 不变，但输入范围改为 uint8；读取原始字节时必须先确定符号解释。
+- [AscUint82half](../../vector_compute/asc_uint82half.md)（`related`）：Vector C API 提供同一 uint8→half 转换，但数据载体与分片方式不同，可对照 Reg 版本的 1:2 位宽处理。
+<!-- cannbot:related:end -->

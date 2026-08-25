@@ -22,3 +22,9 @@ platforms: [agnostic]
 返回对拷贝结果对象的引用
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [OpAICoreConfig构造函数](op_ai_core_config_constructor.md)（`related`）：赋值运算符把已有 OpAICoreConfig 的输入、输出和动态能力配置复制到已构造对象；构造函数定义目标对象初始状态。
+<!-- cannbot:related:end -->

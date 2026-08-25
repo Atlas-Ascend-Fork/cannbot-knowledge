@@ -20,3 +20,13 @@ platforms: ['950']
 参数：T: 待获取Tensor的数据类型，支持的类型请见LocalTensor相关描述。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [TSCM输入的矩阵乘](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/tscm_input_matmul.md)（`explains`）：指南实现需先从 TSCM 分配输入 tensor，再写入并交给 Matmul；AllocTensor 定义这块片上缓冲的取得方式。
+- [DeQue](de_que.md)（`related`）：DeQue 取回由 EnQue 发布的 TSCM Tensor，并与最终 FreeTensor 构成消费者侧所有权链。
+- [EnQue](en_que.md)（`related`）：AllocTensor 后通过 EnQue 发布 TSCM Tensor，明确随机初始内容不能在入队前被当作零值使用。
+- [FreeTensor](free_tensor.md)（`same_topic`）：TSCM FreeTensor 与 AllocTensor 必须成对管理同一 Tensor 资源，闭合分配生命周期。
+- [TSCM简介](tscm_intro.md)（`same_topic`）：TSCM简介 与《AllocTensor》的实质衔接是：TSCM 用 Queue 在 Vector/Cube 间交接 tensor；Alloc/Free、EnQue/DeQue 和矩阵乘示例共同闭合资源与所有权生命周期。
+<!-- cannbot:related:end -->

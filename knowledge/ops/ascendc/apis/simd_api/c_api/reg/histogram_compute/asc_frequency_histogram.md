@@ -37,3 +37,10 @@ platforms: ['950']
 - dst的数据类型为uint16_t，最大值为65535，使用时需注意累加溢出问题。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscCumulativeHistogram](asc_cumulative_histogram.md)（`related`）：“AscCumulativeHistogram”定义：对直方图数据进行累计统计，支持低位和高位两种模式，统计结果在目的寄存器原始数据基础上累加。；“AscFrequencyHistogram”定义：对输入数据进行频率统计生成直方图，支持低位和高位两种模式，结果在dst原有数据基础上累加。。实质衔接：Histograms/AscCumulativeHistogram 都在原 dst 上累加累计统计；FrequencyHistogram 改为频率统计，接口总览明确两种模式选择。
+- [Histograms](../../../basic_api/reg_vector_compute/histogram_compute/histograms.md)（`related`）：C++ Reg Histograms 提供相同 8-bit 输入到 16-bit bin 的批量统计，可与 C API 按语言路线选型。
+<!-- cannbot:related:end -->

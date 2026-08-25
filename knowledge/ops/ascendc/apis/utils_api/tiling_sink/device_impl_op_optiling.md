@@ -24,3 +24,10 @@ Tiling成员函数参数说明
 无
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [开启Tiling下沉](../../../guides/programming_guide/advanced_programming/operator_graph_development/enable_tiling_sink.md)（`explains`）：DEVICE_IMPL_OP_OPTILING 生成设备侧 Tiling 注册类，指南给出开启 Tiling 下沉并接入图编译的完整流程。
+- [Tiling下沉](tiling_sink.md)（`same_topic`）：Tiling下沉卡正文唯一具体能力就是 DEVICE_IMPL_OP_OPTILING；目标卡给出该宏生成注册类及 Tiling(func) 注册函数的完整契约。
+<!-- cannbot:related:end -->

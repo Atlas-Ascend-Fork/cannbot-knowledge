@@ -25,3 +25,9 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hne](_hne.md)（`same_topic`）：《__hne》的任务是“比较两个half类型数据是否不相等，不相等时返回true。”。《__hneu》具体提供“比较两个half类型数据是否不相等，不相等时返回true。若任一输入为nan，返回true。”，它直接用于half 不等比较的有序/无序语义和 bfloat16 对应实现。
+<!-- cannbot:related:end -->

@@ -26,3 +26,10 @@ is_base_of是定义于头文件的一个类型特征工具，它能够在程序�
 -   false：Base类型不是Derived类型的基类。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [EnableIf](enable_if.md)（`related`）：is_base_of 产出的编译期 bool 可直接作为 enable_if 条件，以基类关系启用或禁用模板重载。
+- [is_convertible](is_convertible.md)（`related`）：继承关系与隐式可转换性是模板约束中互补但不等价的判据；组合阅读可避免把私有继承或用户转换误当成 is_base_of。
+<!-- cannbot:related:end -->

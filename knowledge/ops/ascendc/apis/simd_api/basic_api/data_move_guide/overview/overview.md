@@ -29,3 +29,13 @@ platforms: [agnostic]
 - **数据通路**
 
 - **总体约束说明**
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GmUbDataMove](../gm_ub_data_move.md)（`related`）：GmUbDataMove 与《概览》的实质衔接是：GM↔UB 总览按连续、高维、切片、ND2NZ/NZ2ND、NDDMA 和 DataCopyPad 选择通路；所选 NDDMA 卡逐一约束 padding、维度和 stride。
+- [L1OrL0CUbDataMove](../l1_or_l0_c_ub_data_move.md)（`related`）：《L1OrL0CUbDataMove》说明提供L1 Buffer及L0C Buffer与Unified Buffer间数据搬运接口概述，涵盖连续搬运、高维切分、格式转换及随路量化激活等场景。；《概览》说明数据搬运导览，介绍AI Core分层存储架构中的数据通路、TPosition映射、搬运功能分类及通用约束等核心概念。。二者在L1/L0C到UB路径需要结合数据通路约束选择DataCopy或Fixpipe接口，并分别落实L1到UB和L0C到UB的搬运合同上存在可执行的直接衔接。
+- [总体约束说明（概述）](overall_constraints.md)（`same_topic`）：总体约束页给出概览强调的地址对齐、32B DataBlock 和目的地址重叠同步规则，是所有搬运路径的共同门槛。
+- [数据搬运概念（概述）](data_move_concept.md)（`same_topic`）：数据搬运概念页把概览中的能力划分为连续、高维切分、格式转换、非对齐、NDDMA 等类别，并映射到 DataCopy/DataCopyPad/Copy/LoadData。
+- [数据通路（概述）](data_path.md)（`same_topic`）：“数据通路（概述）”处理AI Core是昇腾处理器的核心计算单元，以NPU架构版本2201为例，其内部分层存储架构如图1所示，主要包含以下组成部分：；“概览”明确数据搬运导览，介绍AI Core分层存储架构中的数据通路、TPosition映射、搬运功能分类及通用约束等核心概念。。实质衔接：数据搬运概览把这里的 GM/L1/L0/UB/Fixpipe 硬件通路组织成入口，正文用于解释路径选择，而不是连接每个具体搬运成员。
+<!-- cannbot:related:end -->

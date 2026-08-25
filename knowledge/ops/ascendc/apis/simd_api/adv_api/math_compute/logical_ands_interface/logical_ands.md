@@ -21,3 +21,12 @@ platforms: ['950']
 模板参数config为LogicalAndsConfig类型，含isReuseSource（预留，传false）和scalarTensorIndex（标量为LocalTensor单点元素时指定其作为左操作数(0)或右操作数(1，默认)）；T为目的操作数数据类型（仅支持bool）；U、S为LocalTensor或标量类型，根据src0/src1自动推导，支持bool/int8_t/uint8_t/int16_t/uint16_t/half/bfloat16_t/int32_t/uint32_t/float/int64_t/uint64_t。接口参数：dst为输出操作数，TPosition支持VECIN/VECCALC/VECOUT；src0、src1为源操作数（标量或LocalTensor矢量/单点元素）；count为参与计算元素个数。
 
 约束：左右操作数必须有一个为矢量，不支持同时为标量；传入LocalTensor单点数据作为标量时scalarTensorIndex需为编译期常量（或constexpr）；不支持源操作数与目的操作数地址重叠；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetLogicalAndsTmpBufferFactorSize](get_logical_ands_tmp_buffer_factor_size.md)（`related`）：LogicalAnds 设备接口实际消费按 factor-size 计算并经 Tiling 传入的临时空间。
+- [LogicalAnd](../logical_and_interface/logical_and.md)（`related`）：LogicalAnds 与《LogicalAnd》的实质衔接是：LogicalAnds 的 scalar 逻辑与接口、两种临时空间查询直接配套；LogicalAnd 是 tensor-tensor 对应形态。
+- [GetLogicalAndsMaxMinTmpSize](get_logical_ands_max_min_tmp_size.md)（`same_topic`）：LogicalAnds 与《GetLogicalAndsMaxMinTmpSize》的实质衔接是：LogicalAnds 的 scalar 逻辑与接口、两种临时空间查询直接配套；LogicalAnd 是 tensor-tensor 对应形态。
+- [LogicalAnds接口](logical_ands_interface.md)（`same_topic`）：LogicalAnds 与《LogicalAnds接口》的实质衔接是：LogicalAnds 的 scalar 逻辑与接口、两种临时空间查询直接配套；LogicalAnd 是 tensor-tensor 对应形态。
+<!-- cannbot:related:end -->

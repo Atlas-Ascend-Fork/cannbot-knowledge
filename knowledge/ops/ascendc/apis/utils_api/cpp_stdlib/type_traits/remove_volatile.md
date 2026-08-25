@@ -23,3 +23,11 @@ platforms: ['950', a2, a3]
 返回值：remove_volatile是一个结构体，其提供一个嵌套类型type，表示移除volatile限定符后的类型。通过remove_volatile::type来访问该类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [is_same](is_same.md)（`related`）：配合 IsSame 验证移除后类型。
+- [add_volatile](add_volatile.md)（`same_topic`）：remove_volatile说明在程序编译时，对传入的模板参数类型移除volatile限定符，可以用于在编译时进行类型转换。
+- [remove_cv](remove_cv.md)（`same_topic`）：RemoveCV 同时移除 const/volatile；只需去 volatile 时本接口更窄。
+<!-- cannbot:related:end -->

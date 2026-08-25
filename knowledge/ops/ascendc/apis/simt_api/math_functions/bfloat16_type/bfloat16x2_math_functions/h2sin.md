@@ -24,3 +24,9 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [H2Sin](../../half_type/half2_math_functions/h2sin.md)（`same_topic`）：H2Sin 与《H2Sin》的实质衔接是：bfloat16x2 H2Sin执行同一双 lane 正弦，H2Cos给出配套三角函数；可直接核对 half2 特殊值与全局饱和寄存器影响。
+<!-- cannbot:related:end -->

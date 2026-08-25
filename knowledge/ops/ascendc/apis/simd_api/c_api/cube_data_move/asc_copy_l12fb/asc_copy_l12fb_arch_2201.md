@@ -22,3 +22,10 @@ platforms: [a2, a3]
 - 当采用前n个数据搬运接口时，搬运数据大小要求32字节对齐。
 
 仅 Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscCopyL12Fb](asc_copy_l12fb.md)（`same_topic`）：AscCopyL12Fb 与《asc_copy_l12fb》的实质衔接是：两张架构实现卡是 AscCopyL12Fb 集合实际可调用的入口，分别给出 2201/3510 的参数和对齐契约。
+- [asc_copy_l12fb](asc_copy_l12fb_arch_3510.md)（`same_topic`）：两卡是同一 L1→Fixpipe Buffer 量化参数搬运接口的 2201/3510 版本；3510 将 len_burst/dst_gap 改为 64B 口径，必须在迁移时对照。
+<!-- cannbot:related:end -->

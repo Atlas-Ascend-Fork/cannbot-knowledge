@@ -29,3 +29,14 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Kirin X90。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscendC GELU 三系数 erfc 在大值域 fp32 精度不足](../../../../../runbooks/precision/gelu_erfc_polynomial_precision_budget.md)（`exemplifies`）：Erfc接口 与《AscendC GELU 三系数 erfc 在大值域 fp32 精度不足》的实质衔接是：Erfc 接口组由实际 Erfc、工作区上限/下限查询和 factor 查询组成；SIMT Erfcf提供标量对照，两张 GELU 卡直接讨论以 erfc 逼近实现时的精度与负尾相消。
+- [GELU 负尾部用 erfc 形态避免大数相消](../../../../../runbooks/precision/gelu_negative_tail_erfc_avoids_cancellation.md)（`exemplifies`）：《Erfc接口》明确“按元素计算x的互补误差函数，并提供临时空间大小获取接口。”；它与《GELU 负尾部用 erfc 形态避免大数相消》的“fp32 exact GELU 用 0.5x 加减近等幅项会在负大值尾部相消；直接计算 max(x,0)-0.5|x|erfc(|x|/sqrt(2)) 后 20/20。”在实际调用参数、数据流或结果校验上直接衔接。
+- [Erfc](erfc.md)（`same_topic`）：Erfc接口 与《Erfc》的实质衔接是：Erfc 接口组由实际 Erfc、工作区上限/下限查询和 factor 查询组成；SIMT Erfcf提供标量对照，两张 GELU 卡直接讨论以 erfc 逼近实现时的精度与负尾相消。
+- [Erfcf](../../../../simt_api/math_functions/float_math_functions/erfcf.md)（`same_topic`）：高阶 Erfc 对 LocalTensor 批量计算互补误差函数，SIMT erfc 对线程标量计算相同数学函数；两卡描述同一 erfc 数值语义，只是执行粒度不同。
+- [GetErfcMaxMinTmpSize](get_erfc_max_min_tmp_size.md)（`same_topic`）：Erfc接口 与《GetErfcMaxMinTmpSize》的实质衔接是：Erfc 接口组由实际 Erfc、工作区上限/下限查询和 factor 查询组成；SIMT Erfcf提供标量对照，两张 GELU 卡直接讨论以 erfc 逼近实现时的精度与负尾相消。
+- [GetErfcTmpBufferFactorSize](get_erfc_tmp_buffer_factor_size.md)（`same_topic`）：Erfc接口 与《GetErfcTmpBufferFactorSize》的实质衔接是：Erfc 接口组由实际 Erfc、工作区上限/下限查询和 factor 查询组成；SIMT Erfcf提供标量对照，两张 GELU 卡直接讨论以 erfc 逼近实现时的精度与负尾相消。
+<!-- cannbot:related:end -->

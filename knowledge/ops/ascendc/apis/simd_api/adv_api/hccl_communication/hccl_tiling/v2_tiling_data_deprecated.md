@@ -26,3 +26,17 @@ AI CPU启动下发通信任务前，需获取固定的通信配置，如[表1](#
 约束：
 - 如果需要使用v2版本的Tiling结构体，必须设置Tiling结构体的第一个参数version=2。
 - 算子的Tiling Data结构需要完整包含v2版本HCCL TilingData参数，其中各参数需要严格按照对应参数的结构来定义。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetTiling](get_tiling.md)（`same_topic`）：v2版本TilingData（废弃） 与《GetTiling》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [HCCL Tiling使用说明](hccl_tiling_usage.md)（`same_topic`）：v2版本TilingData（废弃） 与《HCCL Tiling使用说明》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [HCCL Tiling侧接口](hccl_tiling.md)（`same_topic`）：v2版本TilingData（废弃） 与《HCCL Tiling侧接口》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [HCCL Tiling构造函数](hccl_tiling_constructor.md)（`same_topic`）：v2版本TilingData（废弃） 与《HCCL Tiling构造函数》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [HcclTilingData](tiling_data_struct.md)（`same_topic`）：v2版本TilingData（废弃） 与《HcclTilingData》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [Init（废弃）](../hccl_kernel/init_deprecated.md)（`same_topic`）：v2版本TilingData（废弃） 与《Init（废弃）》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [SetCcTilingV2](../hccl_kernel/set_cc_tiling_v2.md)（`same_topic`）：v2版本TilingData（废弃） 与《SetCcTilingV2》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [SetCcTiling（废弃）](../hccl_kernel/set_cc_tiling_deprecated.md)（`same_topic`）：v2版本TilingData（废弃） 与《SetCcTiling（废弃）》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [v1版本TilingData（废弃）](v1_tiling_data_deprecated.md)（`same_topic`）：v2版本TilingData（废弃） 与《v1版本TilingData（废弃）》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+<!-- cannbot:related:end -->

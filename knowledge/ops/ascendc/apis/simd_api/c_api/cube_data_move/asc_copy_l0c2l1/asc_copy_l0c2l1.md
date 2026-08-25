@@ -25,3 +25,12 @@ platforms: [agnostic]
 支持的硬件型号：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscSetL0c2gmLreluAlpha](../asc_set_l0c2gm_lrelu_alpha.md)（`related`）：同一 alpha 配置也作用于文档列出的 AscCopyL0c2L1 随路 LeakyReLU 路径，调用顺序必须先设 alpha 再搬运。
+- [AscCopyL0c2L1](asc_copy_l0c2l1_arch_2201.md)（`same_topic`）：AscCopyL0c2L1：AscCopyL0c2L1的2201/3510卡核对同一搬运原型，DataCopyL0CToL1提供C++对应语义，AscSetL0cCopyParams配置该L0C搬出的通用参数。 目标卡《AscCopyL0c2L1》补充：将数据从L0C搬运到L1 Buffer的接口，包含不同架构版本的具体实现。
+- [AscCopyL0c2L1](asc_copy_l0c2l1_arch_3510.md)（`same_topic`）：AscCopyL0c2L1说明将矩阵计算结果从L0C Buffer搬运至L1 Buffer，搬运过程中支持随路量化、ReLU、格式转换等能力。
+- [AscSetL0c2gmQuantPost](../../sys_var/asc_set_l0c2gm_quant_post.md)（`same_topic`）：焦点处理L0C2GM QUANT_POST 寄存器与 Fixpipe 量化搬出配置；AscCopyL0c2L1正文说明“将数据从L0C搬运到L1 Buffer的接口，包含不同架构版本的具体实现”。候选设置 Fixpipe 的量化参数并由 L0C 搬出接口实际消费。
+<!-- cannbot:related:end -->

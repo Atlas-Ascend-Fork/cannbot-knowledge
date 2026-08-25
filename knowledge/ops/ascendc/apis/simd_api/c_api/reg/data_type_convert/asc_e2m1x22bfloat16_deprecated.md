@@ -22,3 +22,10 @@ platforms: ['950']
 支持数据类型：bfloat16_t、fp4x2_e2m1_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [asc_bfloat162e1m2x2 (废弃)](asc_bfloat162e1m2x2_deprecated.md)（`related`）：asc_bfloat162e1m2x2 (废弃) 与《asc_e2m1x22bfloat16 (废弃)》的实质衔接是：该废弃转换与 E1M2/E2M1 逆转换、现行 BF16 转换及舍入/饱和规则共享明确的位宽压缩与迁移契约。
+- [asc_bfloat162e2m1x2 (废弃)](asc_bfloat162e2m1x2_deprecated.md)（`related`）：两张废弃接口分别执行 bfloat16→E2M1x2 压缩与 E2M1x2→bfloat16 扩展，索引 0..3 共同描述 4:1 lane 打包协议。
+<!-- cannbot:related:end -->

@@ -22,3 +22,9 @@ platforms: [agnostic]
 OpAICoreConfig类，请参考OpAICoreConfig。
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [OpAICoreConfig](op_ai_core_config.md)（`same_topic`）：PrecisionReduceFlag 与《OpAICoreConfig》的实质衔接是：PrecisionReduceFlag 是 OpAICoreConfig 字段，只有在该配置对象及 allow_mix_precision 条件下才生效。
+<!-- cannbot:related:end -->

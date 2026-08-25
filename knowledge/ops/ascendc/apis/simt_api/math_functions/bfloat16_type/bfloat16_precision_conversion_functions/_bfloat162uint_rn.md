@@ -18,3 +18,12 @@ platforms: ['950']
 函数原型：unsigned int __bfloat162uint_rn(const bfloat16_t x)
 返回值：输入遵循CAST_RINT模式转换成的无符号整数。特别场景说明如下：
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__bfloat162uint_rd](_bfloat162uint_rd.md)（`same_topic`）：__bfloat162uint_rd 与《__bfloat162uint_rn》的衔接是：这些接口都把浮点半精度值转为无符号整数，候选分别对比源类型及 rn/rd/ru/rz 舍入方向，可直接核对边界输入的转换结果。
+- [__bfloat162uint_rna](_bfloat162uint_rna.md)（`same_topic`）：rn 与 rna 都把 bfloat16 转 uint，但 tie 规则不同；需要按 golden 的半值舍入契约选择。
+- [__bfloat162uint_ru](_bfloat162uint_ru.md)（`same_topic`）：__bfloat162uint_ru 与《__bfloat162uint_rn》的实质衔接是：候选覆盖相同 bfloat16→uint 的 rd/rn/rna/rz 舍入和相同 ru 下的 float/half/signed int 对照，可直接核对 CEIL 边界结果。
+- [__bfloat162uint_rz](_bfloat162uint_rz.md)（`same_topic`）：两卡具有相同 bfloat16→uint32 契约，仅分别采用 nearest-even 与 trunc；负数或分数截断语义需显式选型。
+<!-- cannbot:related:end -->

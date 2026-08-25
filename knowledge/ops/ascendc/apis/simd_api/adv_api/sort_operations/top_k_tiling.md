@@ -19,3 +19,10 @@ host侧Tiling接口，用于获取TopK kernel计算所需的Tiling参数，分�
 GetTopKMaxMinTmpSize参数：ascendcPlatform平台信息；srcShape输入shape；typeSize数据类型字节数；isReuseSource预留传false；maxValue/minValue输出临时空间范围。
 
 GetTopKNDTilingInfo参数：ascendcPlatform平台信息；输入shape各维度；typeSize数据类型字节数；maxTmpSize可用临时空间；tiling输出TopKParams结构体。约束：需保证内轴满足32B对齐。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [TopK BF16 tie 索引顺序与 CPU 不一致](../../../../runbooks/precision/topk_bf16_tie_cpu.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《TopKTiling》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
+- [TopK](top_k.md)（`related`）：TopKTiling 先计算 TopK 所需临时空间与 TopKParams，kernel 侧 TopK 直接消费这组参数完成排序选择。
+<!-- cannbot:related:end -->

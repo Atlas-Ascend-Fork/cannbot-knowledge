@@ -23,3 +23,13 @@ platforms: ['950']
 - 浮点数据类型比较，涉及nan时比较结果为0。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscGtScalar](../../vector_compute/asc_gt_scalar.md)（`related`）：The Reg form implements the same elementwise greater-than-scalar predicate but returns a MaskReg under an explicit input mask.
+- [AscLtScalar](asc_lt_scalar.md)（`related`）：AscLtScalar说明根据mask将源操作数src中元素逐个与标量value比较是否小于，比较结果写入dst对应比特位，成立为1，不成立为0；对AscGtScalar而言，AscGtScalar 的标量右操作数语义需与 AscGt 的双 Tensor、AscLtScalar 的反向比较以及 Compare 的通用模式区分。
+- [Compare](../../../basic_api/memory_vector_compute/compare_and_select/compare.md)（`related`）：Compare说明逐元素比较两个tensor大小，结果为真的对应比特位为1，否则为0，支持LT、GT、GE、EQ、NE、LE六种比较模式；对AscGtScalar而言，AscGtScalar 的标量右操作数语义需与 AscGt 的双 Tensor、AscLtScalar 的反向比较以及 Compare 的通用模式区分。
+- [AscEqScalar](../../vector_compute/asc_eq_scalar.md)（`same_topic`）：AscEqScalar 与《AscGtScalar》的实质衔接是：AscEqScalar 与其他标量比较共享 scalar 广播和 mask 输出契约；vector-vector Eq、灵活标量 Compare/Select 说明比较源形态及结果消费方式。
+- [AscGt](asc_gt.md)（`same_topic`）：AscGtScalar 将第二个 RegTensor 操作数替换为标量，仍输出同一大于比较 mask，是同一比较契约的标量变体。
+<!-- cannbot:related:end -->

@@ -25,3 +25,14 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscBfloat162Half](../../../../simd_api/c_api/reg/data_type_convert/asc_bfloat162half.md)（`related`）：__bfloat162half_rn 与《AscBfloat162Half》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
+- [__bfloat162half_rd](_bfloat162half_rd.md)（`same_topic`）：__bfloat162half_rn 与《__bfloat162half_rd》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
+- [__bfloat162half_rn_sat](_bfloat162half_rn_sat.md)（`same_topic`）：__bfloat162half_rn 与《__bfloat162half_rn_sat》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
+- [__bfloat162half_rna](_bfloat162half_rna.md)（`same_topic`）：__bfloat162half_rn 与《__bfloat162half_rna》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
+- [__bfloat162half_ru](_bfloat162half_ru.md)（`same_topic`）：__bfloat162half_rn 与《__bfloat162half_ru》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
+- [__bfloat162half_rz](_bfloat162half_rz.md)（`same_topic`）：__bfloat162half_rn 与《__bfloat162half_rz》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
+<!-- cannbot:related:end -->

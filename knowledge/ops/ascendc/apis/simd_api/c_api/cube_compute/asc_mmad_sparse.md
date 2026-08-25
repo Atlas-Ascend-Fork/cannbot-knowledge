@@ -21,3 +21,13 @@ platforms: [a2, a3]
 - 当m、k、n中的任意一个值为0时，该指令不会被执行。
 
 仅 Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [4:2稀疏矩阵乘](../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/4_2_sparse_matmul.md)（`explains`）：4:2稀疏矩阵乘 与《AscMmadSparse》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
+- [AscCopyL12l0bSparse](../cube_data_move/asc_copy_l12l0b_sparse.md)（`related`）：AscCopyL12l0bSparse 装入稠密 A 并同步加载由稀疏 B 稠密化产生的索引，AscMmadSparse 直接消费这组 A/index 与 B 完成稀疏矩阵乘加。
+- [LoadDataWithSparse](../../basic_api/cube_compute/cube_compute_load/load_data_with_sparse.md)（`related`）：LoadDataWithSparse 把稠密化权重与索引搬入 L0B/专用 buffer，随后由 AscMmadSparse 执行矩阵乘。
+- [SetSparseIndex](../../adv_api/cube_compute/matmul_kernel/set_sparse_index.md)（`related`）：AscMmadSparse 消费稀疏权重的索引矩阵，SetSparseIndex 负责在 Matmul 对象中绑定该索引。
+- [MmadWithSparse](../../basic_api/cube_compute/mmad_compute/mmad_with_sparse.md)（`same_topic`）：AscMmadSparse说明完成稀疏矩阵乘加计算，左矩阵A为稠密矩阵、右矩阵B为稀疏矩阵，B在输入前按稠密算法完成稠密化并生成索引矩阵用于A的稠密化。
+<!-- cannbot:related:end -->

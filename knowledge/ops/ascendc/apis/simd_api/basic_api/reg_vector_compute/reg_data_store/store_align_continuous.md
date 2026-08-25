@@ -36,3 +36,17 @@ RegTensor的模板参数regTrait支持RegTraitNumOne及RegTraitNumTwo。
 - 当RegTensor模板参数RegTrait为RegTraitNumOne和RegTraitNumTwo时，支持情况
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ACLNN 561000 非连续张量需 AutoContiguous](../../../../../runbooks/compilation/aclnn_561000_autocontiguous.md)（`exemplifies`）：ACLNN 561000 非连续张量需 AutoContiguous 与《StoreAlignContinuous》的实质衔接是：561000 来自 OpParamDef 未声明连续性策略；AutoContiguous/IgnoreContiguous、Input/OpDef 和非连续 Load/Store/Slice/Transpose 卡共同决定转换还是保留 strides。
+- [特定 b16 load-cast-store 组合失真时在 LocalTensor 边界转换](../../../../../runbooks/precision/b16_reg_cast_layout_should_convert_at_localtensor_boundary.md)（`exemplifies`）：失真组合的写回端直接调用 Reg《StoreAlignContinuous》语义的 StoreAlign，把 Cast 后寄存器按指定 StoreDist 写入 FP32 UB 中间缓冲。
+- [AscStoreAlign](../../../c_api/reg/reg_store/asc_storealign_v4_deprecated.md)（`related`）：《AscStoreAlign》说明已废弃接口。从矢量数据寄存器或掩码寄存器连续对齐搬出到UB，支持NORM、FIRST、PACK、PACKV2等多种搬出模式，通过int32_t传入偏移并由硬件自动Post Update目的地址。；《StoreAlignContinuous》说明将数据从RegTensor连续搬运至Unified Buffer，支持单搬出和双搬出模式。。二者在废弃StoreAlign重载需迁移到现行或PostUpdate形式；连续、MaskReg、非连续搬出和原子配置决定地址推进与写语义上存在可执行的直接衔接。
+- [LoadAlign](../reg_data_load/load_align_continuous.md)（`related`）：LoadAlignContinuous 是该连续对齐 Store 的生产侧对偶，二者共享分布模式和单/双寄存器布局，便于构造完整 Reg 搬运链。
+- [StoreUnAlignContinuous](store_un_align_continuous.md)（`related`）：StoreAlignContinuous 是目的 UB 32B 对齐时的替代路径；两者的选择由地址对齐和跨边界暂存需求决定。
+- [AscStoreAlign](../../../c_api/reg/reg_store/asc_storealign_v3_deprecated.md)（`same_topic`）：AscStoreAlign 与《StoreAlignContinuous》的实质衔接是：该 int32-offset AscStoreAlign 已废弃；当前 AscStorealign/StoreAlignContinuous 承接连续对齐搬出，Postupdate 版本自动推进地址，PACKV2 场景按正文应改用 PackQuarter，废弃表给出迁移边界。
+- [AscStorealign](../../../c_api/reg/reg_store/asc_storealign.md)（`same_topic`）：AscStorealign 与《StoreAlignContinuous》的实质衔接是：AscStorealign 在 VF 内把 Reg/MaskReg 对齐写回 UB；postupdate、unalign、C++ StoreAlign 变体和 LoadDist/StoreDist 故障直接约束地址推进、分布枚举与对齐。
+- [AscStorealignIntlv](../../../c_api/reg/reg_store/asc_storealign_intlv.md)（`same_topic`）：AscStorealignIntlv 与《StoreAlignContinuous》的实质衔接是：AscStorealignIntlv 忽略 mask，将两路 Reg lane 交错写 UB；普通 StoreAlign、C++ Store 和 DeIntlv 反向操作及 B16 交错故障直接核对偶奇 lane。
+- [StoreAlignNoncontinuous](store_align_noncontinuous.md)（`same_topic`）：StoreAlignNoncontinuous 与《StoreAlignContinuous》的实质衔接是：StoreAlignNoncontinuous 按 DataBlock stride 将 RegTensor 写回 UB；连续/非对齐变体、LoadAlign 反向分布和非连续搬运指南共同决定布局、地址推进与搬运选择。
+<!-- cannbot:related:end -->

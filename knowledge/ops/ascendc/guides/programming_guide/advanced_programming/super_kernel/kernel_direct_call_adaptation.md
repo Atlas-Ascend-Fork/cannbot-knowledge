@@ -48,3 +48,14 @@ platforms: [agnostic]
 > - 用户需要根据实际情况修改原代码中的AscendC::GetBlockNum()调用：
 >   - 直接使用sysArgs->skNumBlocks访问成员变量。
 >   - 或者使用sysArgs->SkGetNumBlocks()接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SK_BIND（SuperKernel）](../../../../apis/utils_api/super_kernel/sk_bind.md)（`explains`）：SKBind 是把任务/算子绑定进 SuperKernel 的实际注册接口。
+- [SIMT 核类型推导失败 — 补 __vector__](../../../../runbooks/compilation/direct_launch_kernel_requires_vector_qualifier.md)（`related`）：该卡说明 direct-launch device 入口缺 vector qualifier 的编译失败，补充适配边界。
+- [SuperKernel原理介绍](principles.md)（`related`）：原理页解释直调如何消除 host launch 并用任务绑定维持执行顺序。
+- [算子自验证说明](operator_self_verification.md)（`related`）：对使用 >> 的直调算子，自验证前还需增加 __sk__ 入口、参数结构体与 SK_BIND，并保持 Kernel Type；否则测试失败不能归因于融合计算本身。
+- [算子适配说明](operator_adaptation.md)（`related`）：调用方 kernel 改造后，被调算子也需满足 direct-call 入口和资源约束。
+- [基于样例工程完成Kernel直调](../../appendix/kernel_direct_call_from_sample.md)（`same_topic`）：样例给出 direct call 的声明、绑定和构建写法，可用于适配验证。
+<!-- cannbot:related:end -->

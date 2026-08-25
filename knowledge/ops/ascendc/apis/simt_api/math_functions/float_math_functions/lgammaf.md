@@ -24,3 +24,11 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Digamma](../../../simd_api/adv_api/math_compute/digamma_interface/digamma.md)（`related`）：Lgammaf 与《Digamma》的实质衔接是：Lgammaf 与向量 Lgamma 是同一 log-gamma 任务，Tgamma 给出非对数对应量，Digamma 则给出其导数语义。
+- [Tgammaf](tgammaf.md)（`related`）：lgammaf 返回 log|Gamma(x)|，可在 tgammaf 易溢出时用于范围稳定计算，但输出语义不同。
+- [Lgamma](../../../simd_api/adv_api/math_compute/lgamma_interface/lgamma.md)（`same_topic`）：《Lgamma》处理“按元素计算x的gamma函数的绝对值并求自然对数”。《Lgammaf》明确“获取输入数据x伽马值的绝对值并求自然对数。”，可直接用于核对Lgamma Kernel、临时空间查询与标量 lgammaf 的同一计算合同。
+<!-- cannbot:related:end -->

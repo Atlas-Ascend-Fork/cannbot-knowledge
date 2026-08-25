@@ -24,3 +24,11 @@ platforms: ['950']
 约束：针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：本接口内部实现使用到了除法运算符，由于除法运算符不支持Subnormal场景，当所有输入均为Subnormal数据时，本接口最终返回nan。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Hypot](../../../simd_api/adv_api/math_compute/hypot_interface/hypot.md)（`related`）：Hypotf 与《Hypot》的实质衔接是：rhypotf 是 hypotf 的倒数形式，高阶 Hypot 是张量级等价运算，二者直接支撑算法替换和接口选型。
+- [Hypot接口](../../../simd_api/adv_api/math_compute/hypot_interface/hypot_interface.md)（`related`）：《Hypotf》明确“获取输入数据x、y平方和的平方根。”；它与《Hypot接口》的“按元素计算两个浮点数平方和的平方根，并提供临时空间大小获取接口。”在实际调用参数、数据流或结果校验上直接衔接。
+- [Rhypotf](rhypotf.md)（`same_topic`）：Hypotf 与《Rhypotf》的实质衔接是：rhypotf 是 hypotf 的倒数形式，高阶 Hypot 是张量级等价运算，二者直接支撑算法替换和接口选型。
+<!-- cannbot:related:end -->

@@ -38,3 +38,11 @@ MTE2的搬运效率还可以通过查看其带宽利用率进行验证，如下�
 2.  基于自定义的MatmulConfig模板参数，创建Matmul对象。
 ## 验证优化方案性能收益
 算子Tiling参数不变，优化后的Profiling数据（PipeUtilization.csv）如下所示。可以看到，MTE2耗时显著降低，MTE2的平均耗时从90us降低到69.87us，最大耗时从91.94us降低到75.82us。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MatmulConfig](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_config.md)（`explains`）：K 轴错峰的实际开关 enableKdimReorderLoad 属于 MatmulConfig，且案例要求 MDL 模板；配置卡是将性能诊断落实到模板参数的直接接口桥梁。
+- [Matmul高阶API开启多核切K](matmul_multi_core_split_k.md)（`same_topic`）：《Matmul高阶API开启多核K轴错峰访问内存》明确“多核执行Matmul时开启K轴错峰访问内存，使不同核从不同起始地址访问数据，缓解地址冲突。”；它与《Matmul高阶API开启多核切K》的“当M、N轴较小无法有效切分时，开启多核切K功能实现K轴切分，使算子多核并行执行。”在实际调用参数、数据流或结果校验上直接衔接。
+- [多核对齐切分](../../simd_operator_impl/matrix_advanced_api/feature_scenarios/multi_core_aligned_split.md)（`same_topic`）：多核对齐切分 与《Matmul高阶API开启多核K轴错峰访问内存》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
+<!-- cannbot:related:end -->

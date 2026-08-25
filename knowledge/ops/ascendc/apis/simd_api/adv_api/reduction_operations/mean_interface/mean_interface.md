@@ -29,3 +29,12 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ReduceMean接口](../reduce_mean_interface/reduce_mean_interface.md)（`related`）：ReduceMean接口说明对多维向量在指定维度求平均值，并提供临时空间大小获取接口；对Mean接口而言，Mean 的末轴二维约束与 ReduceMean 的多维 AR/RA 模式不同；两组 workspace 查询决定各自的 Tiling 空间。
+- [GetMeanMaxMinTmpSize](get_mean_max_min_tmp_size.md)（`same_topic`）：GetMeanMaxMinTmpSize说明在host侧获取Mean接口计算所需最大和最小临时空间大小，供Tiling参数选择；对Mean接口而言，Mean 的末轴二维约束与 ReduceMean 的多维 AR/RA 模式不同；两组 workspace 查询决定各自的 Tiling 空间。
+- [GetMeanTmpBufferFactorSize](get_mean_tmp_buffer_factor_size.md)（`same_topic`）：GetMeanTmpBufferFactorSize说明获取maxLiveNodeCnt和extraBuf，用于推算Mean接口在固定临时空间下单次最大计算元素数量；对Mean接口而言，Mean 的末轴二维约束与 ReduceMean 的多维 AR/RA 模式不同；两组 workspace 查询决定各自的 Tiling 空间。
+- [Mean](mean.md)（`same_topic`）：Mean说明沿最后一轴对输入元素求平均值，最多支持二维输入；对Mean接口而言，Mean 的末轴二维约束与 ReduceMean 的多维 AR/RA 模式不同；两组 workspace 查询决定各自的 Tiling 空间。
+<!-- cannbot:related:end -->

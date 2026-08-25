@@ -29,3 +29,14 @@ platforms: ['950']
 
 -   算子使用* __gm__的方式改写GM内存，或者调用GlobalTensor.SetValue函数时，正确的使用DataCacheCleanAndInvalid接口，手动将数据从DCache中回刷到GM上，保证Cache的一致性。不依赖编译框架自动插入DCCI指令来保证一致性。
 -   算子不包含使用* __gm__的方式改写GM内存，或者调用GlobalTensor.SetValue函数的代码。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscDcci](../../../../apis/simd_api/c_api/cache_ctrl/asc_dcci.md)（`explains`）：AscDcci 与《设置DCI编译选项来减少算子尾开销》的实质衔接是：AscDcci 的 single/entire 变体与 C++ DataCacheCleanAndInvalid 操作同一 DCache；缓存概述、L2 驱逐故障和编译选项提供验证与尾开销决策。
+- [DataCacheCleanAndInvalid](../../../../apis/simd_api/basic_api/cache_control/data_cache_clean_and_invalid.md)（`explains`）：开启 --cce-no-dcache-flush 后编译器不再用尾部 DCCI 兜底，所有 *GM/SetValue 写必须自行 DataCacheCleanAndInvalid 回刷；API 卡给出该显式一致性动作。
+- [asc_dci（缓存控制）](../../../../apis/simd_api/c_api/cache_ctrl/asc_dci.md)（`explains`）：指南把 DCI 缓存失效用于减少算子尾部维护开销，并说明编译选项和适用条件。
+- [缓存控制](../../../../apis/simd_api/c_api/cache_ctrl/cache_control.md)（`explains`）：缓存控制 与《设置DCI编译选项来减少算子尾开销》的实质衔接是：C 缓存控制页覆盖 DCache/ICache 预取与失效；系统缓存、缓存一致性、DCI 优化和无参清理编译失败补充作用域、目标对象及使用边界。
+- [DataCacheCleanAndInvalid 无参调用导致编译失败](../../../../runbooks/compilation/datacache_clean_requires_tensor_target.md)（`related`）：指南要求显式 DataCacheCleanAndInvalid，Runbook 进一步以编译器重载证明该接口必须带 LocalTensor/GlobalTensor 目标，不能臆造无参全缓存调用。
+- [指令双发优化](../vector_compute/vf_optimization/dual_issue_optimization.md)（`related`）：指令双发优化 与《设置DCI编译选项来减少算子尾开销》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+<!-- cannbot:related:end -->

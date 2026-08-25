@@ -30,3 +30,12 @@ platforms: ['950']
 - value不支持设置为负数，负数行为未定义。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscShiftLeftScalar](asc_shiftleft_scalar.md)（`related`）：对应的标量左移用于相反方向的位运算，迁移时需显式区分符号与方向。
+- [AscShiftRight](asc_shiftright.md)（`same_topic`）：asc_shiftright 使用寄存器位移量，而 scalar 版本使用统一标量；两者按位移量来源选型。
+- [AscShiftright](../../vector_compute/asc_shiftright.md)（`same_topic`）：AscShiftRightScalar 与 AscShiftright 都用一个标量位数右移向量元素，并按有符号/无符号选择算术或逻辑右移；执行载体和越界约束不同。
+- [ShiftRights](../../../basic_api/reg_vector_compute/logical_compute/shift_rights.md)（`same_topic`）：C++ Reg ShiftRights 与 C API AscShiftRightScalar 共享标量右移语义，可用于语言接口映射。
+<!-- cannbot:related:end -->

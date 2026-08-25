@@ -24,3 +24,12 @@ platforms: ['950']
 - 本接口不修改全局寄存器的值。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscAxpy](../../../c_api/reg/compound_compute/asc_axpy.md)（`same_topic`）：AscAxpy 与《Axpy》的衔接是：AscAxpy 的 C Vector、基础及高阶 Axpy 入口实现同一 alpha*x+y 数据流，差异集中在张量形态、临时空间和调度层级。
+- [Axpy](../../memory_vector_compute/composite_compute/axpy.md)（`same_topic`）：Axpy说明计算向量和标量的乘积，并将乘积结果逐元素加到的输出向量上。
+- [MulAddDst](mul_add_dst.md)（`same_topic`）：MulAddDst说明将两个源操作数逐元素相乘再加到目的操作数上，结果写回目的操作数。
+- [MulDstAdd](mul_dst_add.md)（`same_topic`）：MulDstAdd说明将目的操作数与源操作数逐元素相乘再加另一个源操作数，结果写回目的操作数。
+<!-- cannbot:related:end -->

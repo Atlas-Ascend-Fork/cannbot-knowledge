@@ -25,3 +25,11 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Fmodf](fmodf.md)（`related`）：焦点处理remquof 的余数、最近偶数商与 quo 输出语义；Fmodf正文说明“同为浮点余数，但商向零截断；与 Remquof 的最近偶数商构成关键选择边界”。候选与 remquof 共享余数公式或给出其函数族入口，并明确商取整规则的差异。
+- [Remainderf](remainderf.md)（`same_topic`）：焦点处理remquof 的余数、最近偶数商与 quo 输出语义；Remainderf正文说明“使用最近整数且平局取偶的同一余数公式，但不额外输出商”。候选与 remquof 共享余数公式或给出其函数族入口，并明确商取整规则的差异。
+- [float类型数学库函数](float_math_functions.md)（`same_topic`）：焦点处理remquof 的余数、最近偶数商与 quo 输出语义；float类型数学库函数正文说明“提供 float 数学函数族入口，并在列表中明确收录 Remquof”。候选与 remquof 共享余数公式或给出其函数族入口，并明确商取整规则的差异。
+<!-- cannbot:related:end -->

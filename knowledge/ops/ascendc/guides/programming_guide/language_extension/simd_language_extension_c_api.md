@@ -25,3 +25,11 @@ C API开放芯片完备编程能力，支持以数组形式分配内存，一般
 -   前n个数据计算：该类型API在计算时采用“紧密排布”的数据读取方式，即从起始位置开始，按顺序连续获取所需数据。例如，若需处理N个数据，则从源操作数的第0个位置开始，依次取至第N-1个位置。
 -   高维切分计算：该类型API按照设定的规则“跳过部分数据”。适合处理需要间隔采样的场景，灵活度高，但需要额外配置相关参数。
 -   同步计算：该类型API内部自动插入同步操作，易用性更强。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h](../../../runbooks/compilation/asc_simd_umbrella_header_for_c_api_symbols.md)（`related`）：Runbook 证明直引 vector_compute.h 会缺 ASC_VDEQ_SIZE 等公共符号，必须使用 asc_simd.h umbrella；它补充了 C API 入口头的正确包含边界。
+- [C-API asc_simd.h 编译缺 include 根](../../../runbooks/compilation/c_api_asc_simd_h_include.md)（`related`）：C-API asc_simd.h 编译缺 include 根 与《SIMD语言扩展层C API》的实质衔接是：深层 impl 头实际存在，失败源于 CMake 只加 asc/include 而未加 asc/impl/c_api；C API 入口、官方编译/CMake材料和相邻 include 误用卡用于核对正确头链。
+- [SIMT语言扩展层C API](simt_language_extension_c_api.md)（`related`）：SIMT C API 面向线程/warp、原子与标量访存，SIMD C API 面向流水与向量寄存器；混合算子需按执行模型选择。
+<!-- cannbot:related:end -->

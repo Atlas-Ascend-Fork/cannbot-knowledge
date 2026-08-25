@@ -19,3 +19,9 @@ platforms: ['950', a2, a3]
 数据填充支持 4 种模式：模式 0 常量填充（仅左右 padding，每通道可设不同常数）、模式 1 行列填充（取最邻近源图数据）、模式 2 块填充（从源图拷贝数据块）、模式 3 镜像块填充（拷贝数据块镜像）。色域转换支持 RGB↔YUV 等。通道交换可配置输出通道顺序。
 
 支持 950/a2/a3/Atlas 200I/500 A2/Atlas 推理 AI Core，不支持 Vector Core 和 Atlas 训练系列。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LoadImageToLocal](load_image_to_local.md)（`related`）：SetAippFunctions 配置的裁剪、填充与色彩转换参数由 LoadImageToLocal 在图像搬入时消费，二者构成配置到执行的直接链路。
+<!-- cannbot:related:end -->

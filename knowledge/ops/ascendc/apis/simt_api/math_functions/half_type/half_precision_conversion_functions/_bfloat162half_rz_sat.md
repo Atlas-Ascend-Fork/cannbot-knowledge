@@ -25,3 +25,13 @@ platforms: ['950']
 约束：使用此接口前需将CTRL[60]寄存器设置为0，否则饱和模式不生效。设置方式请参见控制饱和行为的方式。 SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__bfloat162half_rd_sat](_bfloat162half_rd_sat.md)（`same_topic`）：RD_SAT 为同一饱和转换提供向下舍入，与 RZ 在负值上边界不同。
+- [__bfloat162half_rn_sat](_bfloat162half_rn_sat.md)（`same_topic`）：RN_SAT 保持饱和转换，仅改为最近偶数舍入，供与 RZ_SAT 比较普通边界值。
+- [__bfloat162half_rna_sat](_bfloat162half_rna_sat.md)（`same_topic`）：__bfloat162half_rna_sat 与《__bfloat162half_rz_sat》的实质衔接是：这些接口都把 bfloat16 按 RNA 窄化到 half；non-SAT、其他舍入的 SAT 变体和 AscBfloat162Half 直接对照饱和及特殊值。
+- [__bfloat162half_ru_sat](_bfloat162half_ru_sat.md)（`same_topic`）：RU_SAT 为同一饱和转换提供向上舍入，与 RZ_SAT 形成上下界选型。
+- [__bfloat162half_rz](_bfloat162half_rz.md)（`same_topic`）：__bfloat162half_rz 与《__bfloat162half_rz_sat》的实质衔接是：这些接口都把 bfloat16 窄化为 half，RZ 的 SAT/non-SAT、RD/RN/RNA/RU 和 AscBfloat162Half 直接对照舍入及特殊值。
+<!-- cannbot:related:end -->

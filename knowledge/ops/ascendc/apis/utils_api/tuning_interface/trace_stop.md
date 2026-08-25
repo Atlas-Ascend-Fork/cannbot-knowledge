@@ -32,3 +32,9 @@ SIMD场景下，通过仿真器进行算子性能仿真时，可对算子任意�
 约束：-   TRACE_START/TRACE_STOP需配套使用，若Trace图上未显示打点，则说明两者没有配对。
 -   不支持跨核使用，例如TRACE_START在AI Cube打点，则TRACE_STOP打点也需要在AI Cube上，不能在AI Vector上。
 -   宏支持所有的产品型号，但实际调用时需与调测工具支持的型号保持一致。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [TraceStart](trace_start.md)（`same_topic`）：TraceStop 与《TraceStart》的衔接是：TraceStop 必须与同 apid、pipe、core 上的 TraceStart 成对出现；TraceStart 是完成该闭合区间不可替代的另一端。
+<!-- cannbot:related:end -->

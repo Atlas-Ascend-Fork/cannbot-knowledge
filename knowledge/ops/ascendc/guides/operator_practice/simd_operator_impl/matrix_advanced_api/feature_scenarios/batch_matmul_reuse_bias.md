@@ -21,3 +21,10 @@ platforms: [agnostic]
 Batch Matmul中每个Batch的Matmul计算可以使用相同的Bias矩阵。
 ## 约束说明
 A、B、C矩阵的Layout类型都为NORMAL时，不支持batchMode参数设为SINGLE_LARGE_THAN_L1，即Bias复用场景下，单Batch的A、B矩阵数据总和不得超过L1 Buffer的大小。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SetBias](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_bias.md)（`explains`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；Batch Matmul复用Bias矩阵正文说明“Batch Matmul场景中各Batch使用相同Bias时，设置isBiasBatch为false复用单个不带Batch轴的Bias矩阵”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
+- [Batch Matmul基础功能](batch_matmul_basics.md)（`related`）：Bias 复用建立在 Batch Matmul 基本 shape/batch 配置上，只在各 batch 使用同一 Bias 时将 isBiasBatch 设 false。
+<!-- cannbot:related:end -->

@@ -18,3 +18,9 @@ platforms: [a2, a3]
 函数原型：void asc_set_ffts_base_addr(uint64_t config)
 约束：在使用asc_sync_block_wait和asc_sync_block_arrive之前必须使用本接口设置基地址。
 支持平台：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Ascend 950PR/Ascend 950DT, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscGetFftsBaseAddr](asc_get_ffts_base_addr.md)（`same_topic`）：AscGetFftsBaseAddr 与《AscSetFftsBaseAddr》的实质衔接是：AscGetFftsBaseAddr 读取 Host 获取后经 AscSetFftsBaseAddr 写入的同一核间同步寄存器基地址。
+<!-- cannbot:related:end -->

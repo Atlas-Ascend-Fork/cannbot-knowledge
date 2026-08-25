@@ -22,3 +22,13 @@ platforms: ['950']
 提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetQuantizeMaxMinTmpSize获取。模板参数包含DstT目的类型、SrcT源类型、ScaleT/OffsetT系数类型。接口参数包含dstTensor输出、srcTensor输入、scale/offset量化系数、sharedTmpBuffer临时缓存、params参数信息（含量化策略、shape、groupSize、舍入模式等）。
 
 约束：最多支持二维输入；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Dequantize](dequantize.md)（`related`）：Dequantize 是将低精度结果恢复为高精度的逆向能力，常与 Quantize 构成压缩与恢复链。
+- [GetQuantizeMaxMinTmpSize](get_quantize_max_min_tmp_size.md)（`related`）：Quantize 的 sharedTmpBuffer 大小需由 Host 侧 max/min 查询按 shape 和 dtype 预算。
+- [AscendQuant](ascend_quant.md)（`same_topic`）：文档明确推荐用 Quantize 替代 AscendQuant；新接口保留量化任务并扩展 PER_GROUP 与舍入配置。
+- [GetDequantizeMaxMinTmpSize](get_dequantize_max_min_tmp_size.md)（`same_topic`）：GetDequantizeMaxMinTmpSize 与《Quantize》的实质衔接是：GetDequantizeMaxMinTmpSize 与 factor 查询共同选择 kernel 临时空间，Dequantize/CastDequant 是消费端，Quantize 是逆过程，SetDequantType 决定输出模式。
+- [GetQuantizeTmpBufferFactorSize](get_quantize_tmp_buffer_factor_size.md)（`same_topic`）：GetQuantizeTmpBufferFactorSize 与《Quantize》的实质衔接是：GetQuantizeTmpBufferFactorSize 用可用 UB 反推 Quantize 的单次元素数，GetQuantizeMaxMinTmpSize 给出另一种 Host 侧空间选择，Quantize kernel 是两类查询结果的直接消费方。
+<!-- cannbot:related:end -->

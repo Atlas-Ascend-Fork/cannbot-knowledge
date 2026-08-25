@@ -22,3 +22,11 @@ Kernel侧接口的内部实现一般涉及复杂的数学计算，需要额外�
 -   在最小临时空间-最大临时空间范围内，随着临时空间增大，Kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。
 以下以Asin接口为例，示例使用AscendC::TensorShape描述输入数据的Tensor形状：
 另外，多数高阶API中提供了GetxxxTmpBufferFactorSize接口，该接口用于获取maxLiveNodeCnt和extraBuf，maxLiveNodeCnt表示临时空间是单次计算数据量所占空间的多少倍；extraBuf表示Kernel侧接口所需的临时空间大小的字节数。在固定空间大小的情况下，通过maxLiveNodeCnt和extraBuf可以推算算子单次最大计算元素数量。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [更多样例（数学计算）](../../../../../apis/simd_api/adv_api/math_compute/more_examples.md)（`explains`）：临时空间指南系统解释 sharedTmpBuffer、框架代申请、GetXxxMaxMinTmpSize 与 factor-size 两套计算方式，正好覆盖四个样例共同采用的内存流程。
+- [如何使用workspace](../../../appendix/common_operations/how_to_use_workspace.md)（`related`）：Kernel 临时空间的 sharedTmpBuffer/框架预留属于片上计算暂存，workspace 指南处理跨 Kernel 或更大 GM 工作区；两者共同完成内存预算分层。
+- [库API概述](../overview.md)（`related`）：库API概述 与《如何使用Kernel侧临时空间》的实质衔接是：高阶 API 与基础 API 的层级选择、kernel 临时空间和 host tiling 头文件是该概述明确展开的开发契约。
+<!-- cannbot:related:end -->

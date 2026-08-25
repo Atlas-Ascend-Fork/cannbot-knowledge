@@ -28,3 +28,14 @@ platforms: ['950', a2, a3]
 约束：支持的数据类型组合及对应支持的RoundMode
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Reg CastTrait RoundMode 命名空间编译失败](../../../../runbooks/compilation/casttrait_roundmode_is_in_ascendc.md)（`exemplifies`）：《CastFloatToHalfInt32》说明将float类型标量数据转换为half或int32_t类型标量数据，支持多种舍入模式。；《Reg CastTrait RoundMode 命名空间编译失败》说明dav-3510 Reg CastTrait 的 RoundMode 枚举不在 Reg 子命名空间；按编译器声明位置改用 AscendC::RoundMode 后恢复构建。。二者在标量float窄化依赖目标类型和RoundMode；同方向转换及命名空间故障卡直接说明其调用边界上存在可执行的直接衔接。
+- [CastFloatToBfloat16](cast_float_to_bfloat16.md)（`related`）：《CastFloatToHalfInt32》说明将float类型标量数据转换为half或int32_t类型标量数据，支持多种舍入模式。；《CastFloatToBfloat16》说明将float类型标量数据转换为bfloat16_t类型标量数据。。二者在标量float窄化依赖目标类型和RoundMode；同方向转换及命名空间故障卡直接说明其调用边界上存在可执行的直接衔接。
+- [CastMultiTypeToFloat](cast_multi_type_to_float.md)（`related`）：《CastFloatToHalfInt32》说明将float类型标量数据转换为half或int32_t类型标量数据，支持多种舍入模式。；《CastMultiTypeToFloat》说明将bfloat16_t、fp8、fp4等多种类型标量数据转换为float类型。。二者在标量float窄化依赖目标类型和RoundMode；同方向转换及命名空间故障卡直接说明其调用边界上存在可执行的直接衔接。
+- [RoundMode](../reg_vector_compute/aux_data_types/round_mode.md)（`related`）：《CastFloatToHalfInt32》说明将float类型标量数据转换为half或int32_t类型标量数据，支持多种舍入模式。；《RoundMode》说明枚举类型，用于设置精度转换时的舍入模式，支持向偶数舍入、向下、向上、四舍五入、截断等多种模式。。二者在标量float窄化依赖目标类型和RoundMode；同方向转换及命名空间故障卡直接说明其调用边界上存在可执行的直接衔接。
+- [标量计算](scalar_compute.md)（`related`）：《CastFloatToHalfInt32》说明将float类型标量数据转换为half或int32_t类型标量数据，支持多种舍入模式。；《标量计算》说明标量计算接口索引页，汇总GetBitCount、CountLeadingZero、Cast类型转换及Gm旁路DCache读写(ISASI)等。。二者在标量float窄化依赖目标类型和RoundMode；同方向转换及命名空间故障卡直接说明其调用边界上存在可执行的直接衔接。
+- [AscFloat2Int32](../../c_api/scalar_compute/asc_float2int32.md)（`same_topic`）：《CastFloatToHalfInt32》说明将float类型标量数据转换为half或int32_t类型标量数据，支持多种舍入模式。；《AscFloat2Int32》说明将float类型转换为int32_t类型，支持RINT、ROUND、FLOOR、CEIL四种舍入模式。。二者在标量float窄化依赖目标类型和RoundMode；同方向转换及命名空间故障卡直接说明其调用边界上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

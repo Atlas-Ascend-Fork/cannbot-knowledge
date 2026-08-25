@@ -24,3 +24,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hmaxx2_nan](../half2_compare_functions/_hmaxx2_nan.md)（`related`）：“__hmaxx2_nan”处理获取两个half2类型数据中各分量的最大值。任一分量为nan时对应结果为nan。；“__hmax_nan”明确获取两个输入数据中的最大值。任一输入为nan时结果为nan。。实质衔接：这些函数分别去掉 NaN 传播、切换 max/min、缩为标量或显式检测 NaN，直接刻画 half2 最大值的边界语义。
+- [__hmax](_hmax.md)（`same_topic`）：《__hmax_nan》明确“获取两个输入数据中的最大值。任一输入为nan时结果为nan。”；它与《__hmax》的“获取两个输入数据中的最大值。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

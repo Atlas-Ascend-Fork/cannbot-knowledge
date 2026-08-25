@@ -30,3 +30,12 @@ platforms: ['950', a2, a3]
 - Atlas 训练系列产品：DAV_1001
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [bisheng 拒绝大写 --npu-arch=DAV2201 须用小写 dav](../../../../runbooks/compilation/bisheng_npu_arch_requires_lowercase_dav_2201.md)（`exemplifies`）：bisheng 拒绝大写 --npu-arch=DAV2201 须用小写 dav 与《GetCurNpuArch》的实质衔接是：故障根因是把 DAV_2201 内部名误写成 bisheng 参数；架构查证链、GetCurNpuArch、dav-3510 同类 CMake 隔离、编译器/迁移文档和 CMake 参考共同确认 token 映射与全量重配。
+- [NPU架构版本2002](../../../../guides/programming_guide/advanced_programming/hardware_implementation/hardware_constraints/npu_arch_2002.md)（`explains`）：NPU架构版本2002 与《GetCurNpuArch》的实质衔接是：2002 architecture spec给出硬件组成，constraints给出 Generic Addressing/全局变量限制；GetCurNpuArch和 SoC 查证链用于确认当前目标确实落在2002。
+- [NPU架构版本2201](../../../../guides/programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_2201.md)（`explains`）：GetCurNpuArch说明获取当前硬件平台芯片架构版本号。
+- [NPU架构版本3002](../../../../guides/programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_3002.md)（`explains`）：NPU架构版本3002 与《GetCurNpuArch》的衔接是：arch3002 卡给出该架构的核结构与存储约束；基础架构说明、运行时架构查询和 SoC→ini→NpuArch 查证链用于确认实际编译/运行落到该变体。
+<!-- cannbot:related:end -->

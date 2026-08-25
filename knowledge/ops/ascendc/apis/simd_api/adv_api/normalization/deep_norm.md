@@ -22,3 +22,9 @@ platforms: ['950', a2, a3]
 接口参数：dstLocal输出归一化结果；meanLocal/rstdLocal输出均值和标准差倒数；srcLocal输入（shape [B,S,H]）；gxLocal输入SubLayer结果；betaLocal/gammaLocal平移和缩放系数；sharedTmpBuffer临时缓存；alpha残差缩放系数；epsilon防除零系数；tiling切分信息。
 
 约束：仅支持ND格式；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepNorm Tiling](deep_norm_tiling.md)（`related`）：DeepNormTiling 在 Host 侧根据输入形状生成 DeepNorm Kernel 所需 tiling，输出结构随后传入焦点计算接口。
+<!-- cannbot:related:end -->

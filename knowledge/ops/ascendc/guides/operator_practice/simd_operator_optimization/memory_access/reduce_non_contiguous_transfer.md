@@ -27,3 +27,15 @@ platforms: ['950']
 【正例】使用多维数据搬运
 DataCopy接口在Ascend 950PR/Ascend 950DT上支持多维数据的搬运，具体可参考DataCopy（GMToUB多维数据搬运NDDMA）。以2D场景的搬运为例，代码如下：
 【总结】使用多维数据搬运在部分场景下能够减少搬运指令的条数，从而提升性能。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [StoreAlignNoncontinuous](../../../../apis/simd_api/basic_api/reg_vector_compute/reg_data_store/store_align_noncontinuous.md)（`explains`）：StoreAlignNoncontinuous 与《非连续搬运场景减少搬运次数》的实质衔接是：StoreAlignNoncontinuous 按 DataBlock stride 将 RegTensor 写回 UB；连续/非对齐变体、LoadAlign 反向分布和非连续搬运指南共同决定布局、地址推进与搬运选择。
+- [MulPreferContiguous 稀疏广播拦截失败且慢于 304](../../../../runbooks/performance/mulprefercontiguous_304.md)（`related`）：《MulPreferContiguous 稀疏广播拦截失败且慢于 304》处理“B 类稀疏广播（首轴稀疏、stride 大）触发 MulPreferContiguous 拦截转连续，baseline GetWorkspaceSize 返回 -1.0（schMode 空）或性能慢于 fixed 直接走 304 nddma_transpose_noLoop。”。《非连续搬运场景减少搬运次数》提供“>该性能优化建议适用于如下产品型号：”，其具体合同或探针直接接入稀疏广播输入的 contiguous 拦截、304 路由和非连续 shape/stride 合同。
+- [尽量一次搬运较大的数据块](transfer_larger_data_blocks.md)（`related`）：先减少非连续片段再放大每次 block，二者共同降低 DMA 次数和启动开销。
+- [跨行子块误作连续 slab 导致分块结果错](../../../../runbooks/precision/noncontiguous_row_subtiles_require_per_row_copy.md)（`related`）：指南提供非连续搬运的合并/二维 DMA 优化，但本卡给出跨行子块何时不能错误合并，二者共同限定优化安全边界。
+- [非对齐场景减少无效数据的搬运](reduce_invalid_data_transfer.md)（`related`）：focal 用 Compact 减少非 32B 块的 padding 字节，目标用 Loop/NDDMA 减少非连续块的指令次数；两者分别优化搬运量和搬运次数，可按瓶颈组合。
+- [EfficientTransferApi](efficient_transfer_api.md)（`same_topic`）：两篇指南都要求把非连续数据搬运编码为单次 DataCopy 参数，而非逐块循环调用；一篇给出 blockCount/blockLen/stride 原则，另一篇给出 DataCopyPad Loop 与 NDDMA 实例。
+- [MemoryAccessMerge](../../simt_operator_optimization/memory_access/memory_access_merge.md)（`same_topic`）：《MemoryAccessMerge》处理“SIMT编程模式下让同一Warp内相邻线程访问连续GM地址以实现访存合并，提高GM带宽利用率。”。《非连续搬运场景减少搬运次数》提供“>该性能优化建议适用于如下产品型号：”，其具体合同或探针直接接入Warp 连续 GM 访问的短向量、类型对齐、步长搬运和 Gather 示例验证。
+<!-- cannbot:related:end -->

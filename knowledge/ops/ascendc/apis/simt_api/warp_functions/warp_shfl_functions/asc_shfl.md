@@ -42,3 +42,15 @@ Warp Shfl类接口主要实现Warp级数据交换，能够实现直接读取某�
 -   若入参width不是2的倍数或超出32，返回值异常。
 需包含头文件 "simt_api/device_warp_functions.h"。
 支持 SIMT 与 SIMD/SIMT 混合编程场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [同一Warp内避免分支跳转](../../../../guides/operator_practice/simt_operator_optimization/control_flow/avoid_warp_branch.md)（`explains`）：AscShfl 与《同一Warp内避免分支跳转》的实质衔接是：AscShfl 与 up/down/xor 变体及 cooperative-group 对应入口共享 warp lane 交换契约，分支优化卡直接使用该类 warp 通信。
+- [CoalescedGroup协作组shfl](../../cooperative_groups/coalesced_group/shfl.md)（`related`）：《CoalescedGroup协作组shfl》说明coalesced_group组内线程的数据交换接口，不通过共享内存实现直接读取组内指定线程的寄存器中的值。；《AscShfl》说明Warp级数据交换接口，按分组宽度获取指定线程持有的变量值，支持数据分发与动态交换场景。二者在coalesced_group shfl直接读取组内目标线程寄存器，up/down、Warp shfl及切分后coalesce合同决定lane映射上存在可执行的直接衔接。
+- [ThreadBlockTile协作组shfl](../../cooperative_groups/thread_block_tile/shfl.md)（`related`）：AscShfl 与《ThreadBlockTile协作组shfl》的实质衔接是：AscShfl 与 up/down/xor 变体及 cooperative-group 对应入口共享 warp lane 交换契约，分支优化卡直接使用该类 warp 通信。
+- [AscShflDown](asc_shfl_down.md)（`same_topic`）：AscShflDown 与《AscShfl》的实质衔接是：AscShflDown 从较高 lane 读取值；general/up/xor 与 cooperative-group ShflDown 对照偏移方向和 warp/group 作用域。
+- [AscShflUp](asc_shfl_up.md)（`same_topic`）：AscShfl 与《AscShflUp》的实质衔接是：AscShfl 与 up/down/xor 变体及 cooperative-group 对应入口共享 warp lane 交换契约，分支优化卡直接使用该类 warp 通信。
+- [AscShflXor](asc_shfl_xor.md)（`same_topic`）：AscShflXor 与《AscShfl》的实质衔接是：AscShflXor 与 up/down/general 及 ShflXor 入口共享 warp lane 交换契约；同 warp 避免分支指南直接使用此类 shuffle 做数据重排。
+- [Warp Shfl类函数](warp_shfl_functions.md)（`same_topic`）：AscShfl 与《Warp Shfl类函数》的实质衔接是：AscShfl 与 up/down/xor 变体及 cooperative-group 对应入口共享 warp lane 交换契约，分支优化卡直接使用该类 warp 通信。
+<!-- cannbot:related:end -->

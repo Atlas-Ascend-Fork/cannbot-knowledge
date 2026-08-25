@@ -23,3 +23,10 @@ kernel侧SwiGLU接口的计算需要开发者预留 申请临时空间，最大�
 - typeSize（输入）：输入的数据类型大小，单位为字节。比如输入的数据类型为half，此处应传入2。
 - maxLiveNodeCount（输出）：最大存活节点数，最大临时空间是输入所占空间的多少倍。
 - extraBuffer（输出）：使用的额外临时空间大小，单位为byte。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetSwiGLUMaxMinTmpSize](get_swi_glu_max_min_tmp_size.md)（`same_topic`）：两者是 SwiGLU Host 侧临时空间预算的互补查询：本接口给出合法上下界，FactorSize 接口用 live-node/factor 模型估算可处理规模。
+- [SwiGLU](swi_glu.md)（`same_topic`）：SwiGLU 与《GetSwiGLUTmpBufferFactorSize》的实质衔接是：SwiGLU 的 kernel、两种临时空间查询与非 32B slice 精度故障共同约束调用和缓冲区分配。
+<!-- cannbot:related:end -->

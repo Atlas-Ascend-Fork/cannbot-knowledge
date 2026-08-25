@@ -36,3 +36,11 @@ __aicore__ inline void ReGlu(const LocalTensor<T>& dstTensor, const LocalTensor<
 - 支持的数据类型 Ascend 950PR/Ascend 950DT，支持的数据类型为：half、bfloat16_t、float。 Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、bfloat16_t、float。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetReGluMaxMinTmpSize](get_re_glu_max_min_tmp_size.md)（`related`）：GetReGluMaxMinTmpSize 与《ReGlu》的实质衔接是：host 侧临时空间上下限必须与 ReGlu kernel 的 sharedTmpBuffer 和复用源空间参数一致，接口页给出实际调用端。
+- [Relu](../../../basic_api/memory_vector_compute/basic_arithmetic/relu.md)（`related`）：ReGlu 的门控分支使用 ReLU 激活；基础 Relu 明确 dst=max(0,src)，可用于拆解和验证 ReGlu 的激活部分。
+- [ReGlu接口](re_glu_interface.md)（`same_topic`）：《ReGlu》明确“ReGlu是一种GLU变体，使用Relu作为激活函数。”；它与《ReGlu接口》的“提供ReGlu激活函数接口及GetReGluMaxMinTmpSize等Tiling临时空间大小查询接口。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

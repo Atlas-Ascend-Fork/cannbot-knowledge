@@ -17,3 +17,9 @@ platforms: ['950']
 从矢量数据寄存器搬出第一个元素到UB的接口，忽略mask，向dst_align32b中搬运src第一个元素，支持数据类型为b8、b16、b32。
 函数原型：void asc_storealign_1st(__ubuf__ int8_t* dst_align32b, vector_int8_t src)
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscStorealign1stPostupdate](asc_storealign_1st_postupdate.md)（`same_topic`）：AscStorealign1stPostupdate 与《AscStorealign1st》的实质衔接是：AscStorealign1stPostupdate 在仅写首元素后更新地址，非 postupdate/通用 Store 与 AscUpdateAddrReg 明确写回粒度和地址推进两部分契约。
+<!-- cannbot:related:end -->

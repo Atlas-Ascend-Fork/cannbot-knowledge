@@ -37,3 +37,12 @@ SparseMatmulType类型参数说明
 -   通过SetSparseIndex接口传入的索引矩阵只支持int8数据类型和NZ数据排布格式。
 -   原始稀疏矩阵B中每4个元素中应保证最多2个非零元素（即最少2个零元素），如果存在3个或更多非零元素，则仅使用前2个非零元素。
 -   M、K、N中的任意一个值不能为0。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscMmadSparse](../../../../../apis/simd_api/c_api/cube_compute/asc_mmad_sparse.md)（`explains`）：4:2稀疏矩阵乘 与《AscMmadSparse》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
+- [MmadWithSparse](../../../../../apis/simd_api/basic_api/cube_compute/mmad_compute/mmad_with_sparse.md)（`explains`）：4:2稀疏矩阵乘 与《MmadWithSparse》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
+- [SetSparse](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_sparse.md)（`explains`）：4:2稀疏矩阵乘 与《SetSparse》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
+- [SetSparseIndex](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_sparse_index.md)（`explains`）：4:2稀疏矩阵乘 与《SetSparseIndex》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
+<!-- cannbot:related:end -->

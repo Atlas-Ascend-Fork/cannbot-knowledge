@@ -19,3 +19,9 @@ platforms: [agnostic]
 参数：src 为 GlobalTensor（索引表地址，2B 对齐，长度须 512B 整数倍，最大 32KB）；numOfIndexTabEntry 为加载的索引表个数（须大于 0）。模板参数 T 须为 int8_t。
 
 仅 Atlas 推理系列产品 AI Core 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LoadDataUnzip](load_data_unzip.md)（`related`）：LoadUnzipIndex 必须先加载与压缩数据对应的索引表，LoadDataUnzip 才能按序消费并完成解压搬入。
+<!-- cannbot:related:end -->

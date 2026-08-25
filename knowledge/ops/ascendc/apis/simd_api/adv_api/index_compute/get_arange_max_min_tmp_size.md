@@ -24,3 +24,11 @@ void GetArithProgressionMaxMinTmpSize(uint32_t& maxValue, uint32_t& minValue)
 参数：
 - maxValue（输出）：Arange接口能完成计算所需最大临时空间大小。 说明：maxValue仅作为参考值，有可能大于Unified Buffer剩余空间的大小，该场景下，开发者需要根据Unified Buffer剩余空间的大小来选取合适的临时空间大小。
 - minValue（输出）：Arange接口能完成计算所需最小临时空间大小。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Arange](../../basic_api/reg_vector_compute/index_operations/arange.md)（`related`）：Reg Arange 是不依赖高阶 workspace 的寄存器路径。
+- [Arange（索引计算）](arange.md)（`related`）：Arange 的 sharedTmpBuffer 必须由 Host sizing 接口按 firstValue、diff、count 和 dtype 给出合法上下界，最小值是正确性门槛。
+- [GetAntiQuantizeMaxMinTmpSize](../quantization/get_anti_quantize_max_min_tmp_size.md)（`related`）：AntiQuantize 是不同算子，workspace 公式不能因返回类型相同复用。
+<!-- cannbot:related:end -->

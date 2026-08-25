@@ -27,3 +27,12 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscAnd](../../../c_api/reg/logic_compute/asc_and.md)（`related`）：And说明对LocalTensor中的元素做按位与运算，支持整个tensor、前n个数据连续计算和高维切分计算三种调用方式。
+- [And](../../reg_vector_compute/logical_compute/and.md)（`same_topic`）：And说明根据mask对两个RegTensor或MaskReg执行按位与操作，将结果写入目的操作数，支持ZEROING模式。
+- [Ands](ands.md)（`same_topic`）：Ands：Ands在 isSetMask=false时依赖SetMaskCount/Norm/VectorMask并要求ResetMask；And的tensor与Reg版本帮助区分标量按位与和双tensor按位与。 目标卡《And》补充：对LocalTensor中的元素做按位与运算，支持整个tensor、前n个数据连续计算和高维切分计算三种调用方式。
+- [AscAnd](../../../c_api/vector_compute/asc_and.md)（`same_topic`）：AscAnd：C Vector AscAnd、C Reg AscAnd及两套基础And都是逐元素按位与，关系用于核对操作数容器、mask与数据类型约束。 目标卡《And》补充：对LocalTensor中的元素做按位与运算，支持整个tensor、前n个数据连续计算和高维切分计算三种调用方式。
+<!-- cannbot:related:end -->

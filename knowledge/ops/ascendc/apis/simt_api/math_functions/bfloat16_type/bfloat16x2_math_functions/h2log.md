@@ -24,3 +24,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [H2Log10](h2log10.md)（`related`）：H2Log10 与 H2Log 共享 bfloat16x2 饱和和特殊值处理，仅对数底分别为 10 与 e；并读可按公式底数选型。
+- [H2Log](../../half_type/half2_math_functions/h2log.md)（`same_topic`）：H2Log：H2Log、H2Log2、H2Log10分别计算e/2/10底对数，bfloat16x2同名接口提供类型变体；这些关系直接防止底数或数据类型选错。 目标卡《H2Log》补充：获取以e为底，输入数据各元素的对数。
+<!-- cannbot:related:end -->

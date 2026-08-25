@@ -27,3 +27,11 @@ platforms: ['950']
 - 开启饱和模式和非饱和模式时，需配置ctrl寄存器，ctrl寄存器
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscInt322Int16](asc_int322int16.md)（`related`）：AscInt322Int16 与本接口目标同为 int16 且宽度流相同，源有无符号决定数值解释。
+- [AscInt322Uint16](asc_int322uint16.md)（`related`）：AscInt322Uint16 与本接口保持 32→16 位窄化不变、同时交换源与目的的有符号性，可用于区分位宽窄化和符号解释各自的转换约束。
+- [AscUint322uint16](asc_uint322uint16.md)（`related`）：AscUint322int16 与 focal 具有相同 uint32 源和 16 位目标宽度，但目标符号性不同，适合对照饱和或截断边界。
+<!-- cannbot:related:end -->

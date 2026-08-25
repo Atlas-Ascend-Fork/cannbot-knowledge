@@ -27,3 +27,10 @@ platforms: ['950']
 - 整型dtype（int8_t、int16_t、int32_t）结果在超出该dtype可表示范围时回绕（wrap-around），不触发异常。例如int8_t取value=127时，序列前128个元素依次为127、−128、−127、…、-2；value=−128时，序列前128个元素依次为−128、−127、…、−1。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Arange](../../../basic_api/reg_vector_compute/index_operations/arange.md)（`same_topic`）：AscArange：AscArange、Reg Arange 与高级 Arange 都生成等差索引序列，差异在寄存器、LocalTensor和临时空间调用契约，适合实现路线互查。 目标卡《Arange》补充：以传入标量值为起始或终止值，生成递增或递减的索引序列并保存在目的寄存器中。
+- [Arange（索引计算）](../../../adv_api/index_compute/arange.md)（`same_topic`）：AscArange：AscArange、Reg Arange 与高级 Arange 都生成等差索引序列，差异在寄存器、LocalTensor和临时空间调用契约，适合实现路线互查。 目标卡《Arange（索引计算）》补充：给定起始值，等差值和长度，返回一个等差数列。
+<!-- cannbot:related:end -->

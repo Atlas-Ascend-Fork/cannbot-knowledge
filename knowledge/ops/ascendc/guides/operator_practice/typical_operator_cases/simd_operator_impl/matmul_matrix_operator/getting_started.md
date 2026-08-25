@@ -33,3 +33,10 @@ Fixpipe与Cube串行：L0C 写回必须等Mmad全部完成后才开始，写回�
 B矩阵搬运顺序：A、B数据依次等量搬运，较大的矩阵场景下B数据到位晚可能成为流水线瓶颈：优先搬运B矩阵，缓解数据紧张
 L2Cache未充分利用：当前实现中B矩阵每次均从GM读取，多核反复访问GM导致MTE2带宽压力大；L2Cache纯读带宽约3~4倍于GM，但当前实现未能利用这一特性：沿M方向切分A矩阵，使B矩阵跨轮驻留L2Cache，减少GM访问次数，有效降低MTE2耗时
 > 以上各优化方向的详细实现方案，请参见中级性能优化和高级极限打磨。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [中级性能优化](intermediate_optimization.md)（`related`）：中级篇直接承接入门 Matmul 实现，引入 L1/L0 双缓冲、细粒度同步和多核切分，形成可复现的下一阶段优化路径。
+- [高级极限打磨](advanced_extreme_optimization.md)（`related`）：高级篇在中级实现上继续加入大包搬运、LoadData3D、常量 Tiling、UnitFlag 和 L2Cache，是入门到极限优化链的后续验证目标。
+<!-- cannbot:related:end -->

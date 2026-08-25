@@ -20,3 +20,12 @@ merge模式下，将标量值value广播到dst中被mask筛选的位置，dst中
 支持数据类型：bfloat16_t、float、fp8_e4m3fn_t、fp8_e5m2_t、fp8_e8m0_t、half、int16_t、int32_t、int8_t、uint16_t、uint32_t、uint8_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Muls（灵活标量位置）](../../../basic_api/memory_vector_compute/basic_arithmetic/muls_flexible_scalar.md)（`related`）：Muls（灵活标量位置） 与《AscDuplicateScalarMerge》的实质衔接是：灵活标量 Muls 的 scalarTensorIndex、LocalTensor 单点标量和 cyclic-repeat 语义会直接影响广播乘法、量化 scale 与标量位置。
+- [AscDuplicateHighest](asc_duplicate_highest.md)（`same_topic`）：AscDuplicateHighest 与《AscDuplicateScalarMerge》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
+- [AscDuplicateMerge](asc_duplicate_merge.md)（`same_topic`）：ScalarMerge 使用标量源，按源形态选择。
+- [AscDuplicateScalar](asc_duplicate_scalar.md)（`same_topic`）：AscDuplicateScalar 与《AscDuplicateScalarMerge》的实质衔接是：AscDuplicateScalar 把一个 scalar 广播到 RegTensor；Merge/Highest/普通 Duplicate 改变未选中 lane 或来源，标量运算和错例直接约束广播范围与消费方式。
+<!-- cannbot:related:end -->

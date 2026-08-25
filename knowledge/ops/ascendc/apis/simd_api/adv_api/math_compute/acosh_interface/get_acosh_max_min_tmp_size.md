@@ -25,3 +25,11 @@ kernel侧Acosh接口的计算需要开发者预留 申请临时空间，本接�
 - isReuseSource（输入）：是否复用源操作数输入的空间，与Acosh接口一致。
 - maxValue（输出）：Acosh接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。
 - minValue（输出）：Acosh接口能完成计算所需最小临时空间大小。为保证功能正确，接口计算时预留 申请的临时空间不能小于该数值。最小空间大小为0表示计算不需要临时空间。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Acosh](acosh.md)（`same_topic`）：Acosh 的 sharedTmpBuffer 明确引用本 Host 查询；查询的 minValue 是正确性下限，maxValue 以上空间不再被使用。
+- [Acoshf](../../../../simt_api/math_functions/float_math_functions/acoshf.md)（`same_topic`）：Acoshf 与《GetAcoshMaxMinTmpSize》的实质衔接是：Acoshf 是标量双曲反余弦；Acosh 高阶接口及空间查询是 tensor 版本，Coshf 是其反函数，可用于定义域和往返验证。
+- [GetAcoshTmpBufferFactorSize](get_acosh_tmp_buffer_factor_size.md)（`same_topic`）：《GetAcoshMaxMinTmpSize》明确“在host侧获取Acosh接口预留临时空间的最大和最小值，用于Tiling参数选择”；它与《GetAcoshTmpBufferFactorSize》的“获取Acosh接口的maxLiveNodeCount和extraBuffer，用于推算固定空间下单次最大计算元素数”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

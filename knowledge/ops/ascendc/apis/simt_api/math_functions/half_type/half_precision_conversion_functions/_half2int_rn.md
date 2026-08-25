@@ -25,3 +25,16 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscHalf2Int32](../../../../simd_api/c_api/reg/data_type_convert/asc_half2int32.md)（`related`）：SIMT __half2int_rn 是标量 half→int32 的 ties-to-even 路径，和 Reg RINT 版本可按标量线程与寄存器向量执行模型选择。
+- [AscHalf2int16](../../../../simd_api/c_api/vector_compute/asc_half2int16.md)（`related`）：《AscHalf2int16》的任务是“将half类型数据转换为int16_t，并支持多种舍入模式。 - RINT舍入模式：四舍六入五成双舍入 - ROUND舍入模式：四舍五入舍入 - FLOOR舍入模式：向负无穷舍入 - CEIL舍入模式：向正无穷舍入 - TRUNC舍入模式：向零舍入”。《__half2int_rn》具体提供“遵循CAST_RINT模式，将half类型数据转换为int类型数据，返回转换后的值。”，它直接用于half→int16 的同源同目标实现及五种舍入模式。
+- [AscHalf2int8](../../../../simd_api/c_api/vector_compute/asc_half2int8.md)（`related`）：《AscHalf2int8》处理“将half类型转化为int8_t类型，并支持多种舍入模式。 - RINT舍入模式：四舍六入五成双舍入 - ROUND舍入模式：四舍五入舍入 - FLOOR舍入模式：向负无穷舍入 - CEIL舍入模式：向正无穷舍入 - TRUNC舍入模式：向零舍入”。《__half2int_rn》明确提供“遵循CAST_RINT模式，将half类型数据转换为int类型数据，返回转换后的值。”，其参数、调用或验证步骤直接接入half 到 int8 的同源同目标转换和 rounding/saturation 模式。
+- [AscMulCastHalf2int8](../../../../simd_api/c_api/vector_compute/asc_mul_cast_half2int8.md)（`same_topic`）：AscMulCastHalf2int8 与《__half2int_rn》的实质衔接是：AscMulCastHalf2int8 融合 half 乘法、RINT 和 int8 饱和；MulCast、纯 Mul、Half2Int8 与 Rint 入口分别核对融合、目标宽度和舍入。
+- [__half2int_rd](_half2int_rd.md)（`same_topic`）：__half2int_rd 与《__half2int_rn》的实质衔接是：这些卡保持 half 到整数转换并切换 rd/rn/rna/ru/rz 或目标有无符号；C 的 half2int16/32 入口说明向量执行层的目标位宽选择。
+- [__half2int_rna](_half2int_rna.md)（`same_topic`）：两卡都是 half→int，rn 使用 nearest-even，rna 在中点远离零。
+- [__half2int_ru](_half2int_ru.md)（`same_topic`）：__half2int_ru 与《__half2int_rn》的实质衔接是：__half2int_ru 保持 half→int 并切换 rd/rn/rna/rz，或保持 ceil 改变源/目标类型；C half2int16/32 入口明确向量目标位宽。
+- [__half2int_rz](_half2int_rz.md)（`same_topic`）：两卡都是 half→int，rn 取最近，rz 向零截断。
+<!-- cannbot:related:end -->

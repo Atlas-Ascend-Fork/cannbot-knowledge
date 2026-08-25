@@ -19,3 +19,9 @@ platforms: ['950']
 返回值：返回对应发射队列当前的空闲槽位数量，数据类型为uint8_t。
 约束：使用本接口前，需要包含头文件，头文件路径为：c_api/experimental/asc_get_pipe_idle_slot_count.h。；使用前需要增加编译选项-DCANN_ASC_USE_EXPERIMENTAL开启试验特性。；各接口仅支持表1 接口、流水线与最大值对应关系所列的AI Core类型。在不支持的AI Core类型上调用时，接口返回0。此时无法区分发射队列没有空闲槽位和当前AI Core类型不支持该接口这两种情况。
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [系统变量](system_variables.md)（`related`）：《指令发射队列空闲槽位查询》说明本接口为试验接口，在后续版本中可能会调整或改进，不保证后续兼容性；《系统变量》说明SIMD C API系统变量类接口汇总，提供架构版本、核编号、循环计数器、CTRL寄存器等系统变量的查询与设置。。二者在该试验接口查询指令发射队列余量，系统变量索引是其能力边界和兼容性入口上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

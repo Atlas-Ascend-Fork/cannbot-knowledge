@@ -30,3 +30,12 @@ platforms: ['950', a3]
 - 一个通信域内，所有Prepare接口和InterHcclGroupSync接口的总调用次数不能超过63。
 
 适用平台：Ascend 950PR/Ascend 950DT、Atlas A3 系列。未列出的产品形态不在本卡已确认范围内；详细支持矩阵以固定来源的“产品支持情况”为准。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AlltoAll](allto_all.md)（`related`）：《AlltoAll》说明集合通信AlltoAll的任务下发接口，返回该任务的标识handleId给用户。AlltoAll的功能为：每张卡向通信域内所有卡发送相同数据量的数据，并从所有卡接收相同数据量的数据。结合原型中的参数，描述接口功能，具体为，第j张卡接收到来自第i张卡的sendBuf中第j块数据，并将该数据存放到本卡recvBuf中第i块的位置。；《AlltoAllV》说明集合通信AlltoAllV任务下发接口，支持通信域内各卡定制收发数据量和内存偏移，返回任务标识handleId。。二者在AlltoAll任务下发返回的handle必须进入HCCL的Commit、Query/Wait和Finalize执行链，且通信域rank布局决定收发分块上存在可执行的直接衔接。
+- [Commit（HCCL集合通信）](commit.md)（`related`）：commit=false 的 AlltoAllV 只 Prepare 并返回 handle，需 Commit 通知服务端实际执行。
+- [HCCL集合通信Wait](wait.md)（`related`）：Wait 按 Prepare 顺序等待 AlltoAllV handle 完成，避免在变长收发结果就绪前消费 recvBuf。
+- [SetStepSize](../hccl_tiling/set_step_size.md)（`same_topic`）：SetStepSize 与《AlltoAllV》的实质衔接是：SetStepSize 把细粒度通信一次推进的算法步数写入 HcclTilingData，并与算法、通信块、引擎、队列配置一起驱动 Iterate/Commit/Wait 的 AlltoAllV 流程。
+<!-- cannbot:related:end -->

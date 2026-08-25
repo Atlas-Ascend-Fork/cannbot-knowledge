@@ -21,3 +21,10 @@ platforms: ['950', a2, a3]
 -   拷贝的内存不要超出初始化的SPM Buffer大小，否则会存在溢出踩踏等问题。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Atlas 训练系列产品、Kirin X90、Kirin 9030 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [InitSpmBuffer](init_spm_buffer.md)（`related`）：InitSpmBuffer 与《WriteSpmBuffer》的实质衔接是：InitSpmBuffer 创建 GM 上的 SPM 溢出区，Read/WriteSpmBuffer 与 TPipe 生命周期共同构成初始化、访问和销毁链。
+- [ReadSpmBuffer](read_spm_buffer.md)（`same_topic`）：WriteSpmBuffer 把 UB 溢出写入 SPM，ReadSpmBuffer 再读回 local；二者组成暂存往返并共享 size/offset 对齐与边界。
+<!-- cannbot:related:end -->

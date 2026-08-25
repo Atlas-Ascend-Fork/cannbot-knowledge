@@ -25,3 +25,14 @@ platforms: ['950']
 约束：使用此接口前需将CTRL[60]寄存器设置为0，否则饱和模式不生效。设置方式请参见控制饱和行为的方式。 SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__float22half2_rd_sat](_float22half2_rd_sat.md)（`related`）：RD sat 在饱和边界内向负无穷取整，和 RNA sat 构成明确的方向舍入选项。
+- [__float22half2_rn_sat](_float22half2_rn_sat.md)（`same_topic`）：__float22half2_rn_sat 与《__float22half2_rna_sat》的实质衔接是：float2→half2 RN 饱和接口与非饱和/其他舍入、双 float 拼装和反向 half2→float2 共享双 lane 窄化契约。
+- [__float22half2_rna](_float22half2_rna.md)（`same_topic`）：《__float22half2_rna》说明将float2类型数据的两个分量遵循CAST_ROUND模式转换为半精度浮点数，返回转换后的half2类型数据。；《__float22half2_rna_sat》说明将float2类型数据的两个分量遵循CAST_ROUND模式转换为半精度浮点数，返回转换后的half2类型数据。。二者在float2到half2的rna与饱和开关、rn/rd/ro/ru/rz舍入变体共享同一输入输出合同上存在可执行的直接衔接。
+- [__float22half2_ro_sat](_float22half2_ro_sat.md)（`same_topic`）：《__float22half2_ro_sat》说明饱和模式下，将float2类型数据的两个分量遵循CAST_ODD模式转换为半精度浮点数，返回转换后的half2类型数据。；《__float22half2_rna_sat》说明将float2类型数据的两个分量遵循CAST_ROUND模式转换为半精度浮点数，返回转换后的half2类型数据。。二者在float2到half2的CAST_ODD饱和转换必须与同舍入非饱和版以及其他舍入模式的饱和/非饱和变体按CTRL与特殊值选择上存在可执行的直接衔接。
+- [__float22half2_ru_sat](_float22half2_ru_sat.md)（`same_topic`）：“__float22half2_ru_sat”处理将float2类型数据的两个分量遵循CAST_CEIL模式转换为半精度浮点数，返回转换后的half2类型数据。；“__float22half2_rna_sat”明确将float2类型数据的两个分量遵循CAST_ROUND模式转换为半精度浮点数，返回转换后的half2类型数据。。实质衔接：这些接口保持 float2→half2 转换不变，仅切换饱和、标量/向量和舍入模式，可直接确认 ru_sat 的邻接选择。
+- [__float22half2_rz_sat](_float22half2_rz_sat.md)（`same_topic`）：__float22half2_rna_sat 采用 CAST_ROUND 的饱和 packed 转换，补充 focal 的向零舍入方案。
+<!-- cannbot:related:end -->

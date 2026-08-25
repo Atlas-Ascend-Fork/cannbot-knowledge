@@ -24,3 +24,11 @@ platforms: ['950']
 约束：针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：本接口内部实现使用到了除法运算符，由于除法运算符不支持Subnormal场景，当输入x为Subnormal数据时，会导致本接口最终结果为±inf。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BFloat16数学函数hrcp](../bfloat16_math_functions/hrcp.md)（`related`）：H2Rcp 是两个 bfloat16 lane 的并行倒数，Hrcp 是标量入口；两者用于按数据是否 packed 选型。
+- [H2Rcp](../../half_type/half2_math_functions/h2rcp.md)（`same_topic`）：H2Rcp 与《H2Rcp》的衔接是：bfloat16 的倒数入口与 H2Rcp 执行同一 reciprocal 操作，可直接对比 half 特殊值在饱和模式下的处理。
+- [H2Rsqrt](h2rsqrt.md)（`same_topic`）：H2Rsqrt 与《H2Rcp》的实质衔接是：H2Rsqrt 与 sqrt/rcp、half/float Rsqrt 及精度替代卡共同界定倒数平方根实现。
+<!-- cannbot:related:end -->

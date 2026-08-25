@@ -22,3 +22,11 @@ platforms: ['950', a2, a3]
 - typeSize（输入）：输入的数据类型大小，单位为字节。比如输入的数据类型为half，此处应传入2。
 - maxLiveNodeCount（输出）：最大存活节点数，表示临时空间是单次计算数据量所占空间的多少倍。
 - extraBuf（输出）：使用的额外临时空间大小，单位为字节。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Axpy](axpy.md)（`related`）：该因子接口可从固定临时空间反推 Axpy 单次最大处理元素数，用于决定 calCount 分块。
+- [Axpy接口](axpy_interface.md)（`related`）：该接口提供 Axpy 的 maxLiveNodeCount/extraBuf，可反推单次最大处理量并指导切块，是 Axpy Tiling 的直接输入。
+- [GetAxpyMaxMinTmpSize](get_axpy_max_min_tmp_size.md)（`same_topic`）：GetAxpyMaxMinTmpSize 与《GetAxpyTmpBufferFactorSize》的实质衔接是：Axpy 的 max-min/factor 查询直接服务 Axpy kernel 与 SIMD/C API 实现。
+<!-- cannbot:related:end -->

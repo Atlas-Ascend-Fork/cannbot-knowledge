@@ -35,3 +35,13 @@ __aicore__ inline void GeGLU(const LocalTensor<T>& dstTensor, const LocalTensor<
 - 不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Erf](../../math_compute/erf_interface/erf.md)（`related`）：GeGLU 与《Erf》的实质衔接是：GeGLU 直接调用 GELU 门控语义并要求独立临时缓冲；接口页和两种空间查询决定 tiling，GELU/Erf 卡解释其激活公式。
+- [Gelu](../gelu_interface/gelu.md)（`related`）：Gelu 与《GeGLU》的实质衔接是：Gelu 接口、快速近似变体和空间查询共同定义高精度/高性能调用；GeGLU 直接以 GELU 为门控，两个 runbook 给出 erfc 近似与负尾相消的可执行精度边界。
+- [GeGLU接口](ge_glu_interface.md)（`same_topic`）：GeGLU 与《GeGLU接口》的实质衔接是：GeGLU 直接调用 GELU 门控语义并要求独立临时缓冲；接口页和两种空间查询决定 tiling，GELU/Erf 卡解释其激活公式。
+- [GetGeGLUMaxMinTmpSize](get_ge_glu_max_min_tmp_size.md)（`same_topic`）：GeGLU 与《GetGeGLUMaxMinTmpSize》的实质衔接是：GeGLU 直接调用 GELU 门控语义并要求独立临时缓冲；接口页和两种空间查询决定 tiling，GELU/Erf 卡解释其激活公式。
+- [GetGeGLUTmpBufferFactorSize](get_ge_glu_tmp_buffer_factor_size.md)（`same_topic`）：GetGeGLUTmpBufferFactorSize 与《GeGLU》的实质衔接是：该 factor 查询把 GeGLU 的 maxLiveNodeCount/extraBuf 与最大最小临时空间合并，直接推导 GeGLU 固定 UB 下的单次处理量。
+<!-- cannbot:related:end -->

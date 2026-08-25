@@ -34,3 +34,13 @@ Cube侧：
 4：Vector核VF融合：当前使用MemBase API，中间结果需写回UB：使用RegBase+asc_vf_call进行VF融合，中间计算在寄存器完成
 5：大包搬运：当前仅搬运单块baseM×baseN数据：增大singleCoreM/singleCoreN，减少搬运次数
 6：GM中转优化：Cube核结果需经GM中转给Vector核（L0C→GM→UB）：Ascend 950PR支持Fixpipe直接写入UB（L0C→UB），省去GM中转开销
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LeakyRelu](../../../../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/leaky_relu.md)（`explains`）：LeakyRelu 与《入门功能落地》的实质衔接是：Reg LeakyRelu 与 Memory/C Reg/C Vector 入口实现同一负半轴 slope 计算，Matmul-LeakyRelu 案例给出该接口在融合算子中的真实落点。
+- [融合算子编程基础知识](../../../simd_operator_impl/fusion_operator_programming/cv_fusion/basics.md)（`related`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《入门功能落地》明确“本节以Matmul+LeakyRelu融合算子为例，介绍基于Ascend C编程模型实现Cube-Vector融合计算的基本方法，帮助开发者快速入门融合算子开发。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
+- [中级性能优化](intermediate_optimization.md)（`same_topic`）：中级性能优化 与《入门功能落地》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
+- [融合算子编程算子实现](../../../simd_operator_impl/fusion_operator_programming/cv_fusion/operator_impl.md)（`same_topic`）：两卡都以 Matmul+LeakyRelu 实现 Cube-Vector 融合；候选进一步给出 __mix__(1,2)、核间同步和后续优化入口。
+- [高阶极限打磨](extreme_optimization.md)（`same_topic`）：高阶章节在中级结果上继续做极限优化，覆盖入门卡末尾列出的 RegBase/VF 融合和搬运优化方向。
+<!-- cannbot:related:end -->

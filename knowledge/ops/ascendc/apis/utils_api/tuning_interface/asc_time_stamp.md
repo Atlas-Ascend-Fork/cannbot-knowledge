@@ -39,3 +39,12 @@ SIMD场景下，提供时间戳打点功能，用于在算子Kernel代码中标�
 -   暂不支持算子入图场景的打印。
 
 -   单次调用本接口打印的数据总量不可超过1MB（还包括少量框架需要的头尾信息，通常可忽略）。使用时应注意，如果超出这个限制，则数据不会被打印。在使用自定义算子工程进行工程化算子开发时，一个算子所有使用Dump功能的接口在每个核上Dump的数据总量不可超过1MB。请开发者自行控制待打印的内容数据量，超出则不会打印。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscGetSystemCycle](../../simd_api/c_api/sys_var/asc_get_system_cycle.md)（`related`）：“AscGetSystemCycle”处理读取当前系统cycle计数器，用于性能统计与耗时测量。；“AscTimeStamp”明确SIMD场景下提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点，便于调试和性能分析。。实质衔接：AscGetSystemCycle 提供原始 cycle；GetSystemCycle 是同义层接口，PrintTimeStamp/AscTimeStamp 是直接消费该计数器的打点能力。
+- [Clock](clock.md)（`related`）：Clock 返回从程序启动到当前时刻的周期数，可与 AscTimeStamp 的流水打点按是否需要直接取值或离线分析选型。
+- [PrintTimeStamp](../../simd_api/basic_api/debug_interface/onboard_print/print_time_stamp.md)（`related`）：AscTimeStamp 记录关键点时间戳用于分析，PrintTimeStamp 进一步把当前 cycle 打印出来，适合现场核对打点顺序。
+- [asc_mark_stamp](asc_mark_stamp.md)（`related`）：asc_time_stamp 记录时间而 mark_stamp 标注路径位置，二者组合可定位热点并估计阶段耗时。
+<!-- cannbot:related:end -->

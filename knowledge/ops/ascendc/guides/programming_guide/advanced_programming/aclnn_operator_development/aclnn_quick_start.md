@@ -47,3 +47,17 @@ msOpGen是CANN软件包提供的算子工程生成工具。加载CANN环境变�
 ### 查看目录结构
 msOpGen生成的工程目录结构如下：
 需要修改的文件已用[需修改]标注，后续步骤将逐一修改这些文件。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [PyTorch框架](../ai_framework_adaptation/pytorch_framework.md)（`related`）：PyTorch 自定义算子适配的一条主要落地路线是 ACLNN 工程化；快速入门把工程创建、实现、部署和单算子调用验证串成闭环。
+- [算子功能设计](design_and_implementation/operator_function_design.md)（`related`）：《算子功能设计》说明本文属于基础内容，介绍在编写自定义算子代码前需要完成的功能设计，包括将计算语义转换为工程实现，以及明确需要编写的工程文件。；《Aclnn算子工程化开发快速入门》说明本文是基础内容，通过一个完整的AddCustom算子示例，帮助您在5分钟内跑通从创建工程、补充算子实现、编译部署到单算子API调用验证的端到端流程。。二者在功能设计明确拆成原型、Host Tiling和Kernel三类代码，后续章节分别落实属性、多分支、输出shape、编译部署与快速入门上存在可执行的直接衔接。
+- [算子动态库和静态库编译](compilation_and_deployment/dynamic_static_lib_compilation.md)（`related`）：《算子动态库和静态库编译》说明介绍将自定义算子工程编译为动态库或静态库的方法，支持应用直接链接或集成到其他工程中。；《Aclnn算子工程化开发快速入门》说明本文是基础内容，通过一个完整的AddCustom算子示例，帮助您在5分钟内跑通从创建工程、补充算子实现、编译部署到单算子API调用验证的端到端流程。。二者在SHARED/STATIC产物通过npu_op_package与CMake生成，并分别进入直接链接、运行时加载和常规部署流程上存在可执行的直接衔接。
+- [缓存一致性](../memory_model/cache_coherence.md)（`related`）：aclnn Host/Kernel 调用边界涉及数据生产和消费时机，一致性指南可用于判断同步和 cache 维护位置。
+- [编译与部署基本流程](compilation_and_deployment/basic_process.md)（`related`）：编译与部署基本流程 与《Aclnn算子工程化开发快速入门》的实质衔接是：编译部署流程直接分支到动态/静态库、交叉编译、调试、加速、多算子包、CMake 和运行时加载；arch 子目录故障验证 SoC 专属源码必须在构建期隔离。
+- [运行时加载机制](invocation/runtime_loading_mechanism.md)（`related`）：aclnn 快速入门把原型、Host Tiling、Kernel、编译部署和 API 调用串成端到端流程，可定位运行时加载所在阶段。
+- [高级编程基本流程](design_and_implementation/kernel_operator_implementation.md)（`related`）：《高级编程基本流程》说明本文属于基础内容，介绍aclnn工程化算子开发方式中Kernel侧的基本接入流程，重点说明Kernel入口函数格式、参数顺序、TilingData处理和编译期信息获取方式。Global Memory地址绑定、UB管理、数据搬运、计算和同步等Kernel核心实现方法，请参考核函数。；《Aclnn算子工程化开发快速入门》说明本文是基础内容，通过一个完整的AddCustom算子示例，帮助您在5分钟内跑通从创建工程、补充算子实现、编译部署到单算子API调用验证的端到端流程。。二者在Kernel侧基本接入的参数顺序、TilingData和编译期信息必须与原型、Host Tiling、编译部署及动态输入设计一致上存在可执行的直接衔接。
+- [高级编程概述](overview.md)（`related`）：概述明确把跑通 AddCustom 快速入门作为进入工程化开发的第一验证门槛，二者形成推荐执行顺序。
+- [单算子API调用](invocation/single_operator_api_call.md)（`same_topic`）：焦点处理aclnn 两段式单算子调用的编译、部署和运行流程；Aclnn算子工程化开发快速入门正文界定“本文是基础内容，通过一个完整的AddCustom算子示例，帮助您在5分钟内跑通从创建工程、补充算子实现、编译部署到单算子API调用验证的端到端流程”。候选覆盖单算子调用前的编译部署、动态加载、调用样例、stream 缓存一致性和延迟回调生命周期。
+<!-- cannbot:related:end -->

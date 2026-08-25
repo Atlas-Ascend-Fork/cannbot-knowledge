@@ -22,3 +22,10 @@ host侧Tiling接口，用于获取ReduceXorSum接口所需的最大和最小临�
 参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource与ReduceXorSum接口保持一致；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。
 
 在minValue到maxValue范围内，临时空间越大性能越好。约束：无。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ReduceXorSum接口](reduce_xor_sum_interface.md)（`related`）：高阶 XOR-sum 归约前需按 shape 获取 workspace。
+- [ReduceXorSum](reduce_xor_sum.md)（`same_topic`）：GetReduceXorSumMaxMinTmpSize 与《ReduceXorSum》的实质衔接是：GetReduceXorSumMaxMinTmpSize 是 ReduceXorSum 的 host 侧空间查询，结果直接作为该接口 kernel tiling 的临时缓冲预算。
+<!-- cannbot:related:end -->

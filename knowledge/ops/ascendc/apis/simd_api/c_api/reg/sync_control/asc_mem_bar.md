@@ -18,3 +18,10 @@ Reg计算宏函数内不同流水线之间的同步指令。该同步指令指�
 函数原型：void asc_mem_bar(MEM_TYPE mem_type)
 约束：读写依赖的场景下，如果读指令和写指令使用的寄存器相同，会触发寄存器保序，指令将会按照代码顺序执行，无需额外插入同步指令。；冗余的同步指令会导致性能下降，可以通过外提出循环或者循环切分避免多次调用同步指令。；当UB数据存在依赖时，才需要插入同步，判断是否有依赖取决于指令读写的内存是否有重叠。部分搬运指令读写内存的模式如下：
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LocalMemBar](../../../basic_api/reg_vector_compute/sync_control/local_mem_bar.md)（`same_topic`）：LocalMemBar 是 C++ Reg 路线的同类流水同步接口，可与 AscMemBar 对照源/目的流水依赖。
+- [同步控制](../../../basic_api/reg_vector_compute/sync_control/sync_control.md)（`same_topic`）：《同步控制》说明Reg矢量计算同步控制接口索引页，包含LocalMemBar。；《AscMemBar》说明Reg计算宏函数内不同流水线之间的同步指令，目的流水线等待源流水线所有指令完成后执行。。二者在Reg同步页的核心是LocalMemBar；C API AscMemBar和架构故障卡给出同一内存可见性合同与非法调用边界上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

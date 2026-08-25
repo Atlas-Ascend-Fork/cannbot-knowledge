@@ -33,3 +33,17 @@ __aicore__ inline void SetTensorA(const LocalTensor<SrcAT>& leftMatrix, bool isT
 - aScalar 支持的数据类型：Ascend 950PR/Ascend 950DT、Atlas A3 系列和 Atlas A2 系列均支持 half 与 float。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [TSCM输入的矩阵乘](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/tscm_input_matmul.md)（`explains`）：TSCM输入的矩阵乘说明用户自行管理TSCM内存空间，Matmul直接使用传入的TSCM地址，不进行GM到TSCM的数据搬入。
+- [SetAType](../matmul_tiling/set_a_type.md)（`related`）：SetAType 与《SetTensorA》的实质衔接是：SetB/SetA 类型、MatmulTiling 构造与 kernel 的 SetTensorA 共同约束矩阵位置、格式、dtype、转置在 host/kernel 两侧一致。
+- [SetSelfDefineData](set_self_define_data.md)（`related`）：SetSelfDefineData：SetSelfDefineData 只为 MatmulCallBackFunc 提供每次复用可更新的数据指针，模板声明决定回调契约，且正文明确要求它先于 SetTensorA/SetTensorB。 目标卡《SetTensorA》补充：设置矩阵乘的左矩阵A。
+- [SetTensorB](set_tensor_b.md)（`related`）：SetTensorB 与《SetTensorA》的衔接是：SetTensorB 的地址范围和转置解释同时受 SetOrgShape、Tiling侧 SetBType/ISTRANS 约束；Matmul 使用流程还要求与 SetTensorA 成对准备输入。
+- [SetTensorScaleA](set_tensor_scale_a.md)（`related`）：SetTensorScaleA 为左矩阵 A 提供量化系数，且其 singleCoreM*singleCoreK 容量与 SetTensorA 的 singleM*singleK 数据域相对应；实现量化 MxMatmul 时需要成对设置。
+- [Init](init.md)（`same_topic`）：Init说明对Matmul对象的Tiling数据进行初始化，根据Tiling参数进行资源划分。Tiling参数可变场景下可多次调用。
+- [Iterate](iterate.md)（`same_topic`）：Iterate说明每调用一次计算一块baseM*baseN的C矩阵，内部维护迭代进度并偏移A、B矩阵首地址。
+- [Matmul Kernel侧接口](matmul_kernel.md)（`same_topic`）：“Matmul Kernel侧接口”处理提供Matmul矩阵乘的Kernel侧接口，包含模板参数、配置类、Init、SetTensorA/B、Iterate等方法及使用说明。；“SetTensorA”明确设置矩阵乘的左矩阵A。。实质衔接：Kernel 侧总览额外给出了注册对象、Init、设置 A/B、Iterate、GetTensorC 的最小调用顺序；只连接这条正文明确的主路径。
+- [Matmul使用说明](matmul_usage.md)（`same_topic`）：焦点处理Matmul 高阶 API 的对象配置、迭代与取结果调用顺序；SetTensorA正文界定“设置矩阵乘的左矩阵A”。候选是用法正文明确需要的注册、Init、SetTensor、Iterate、GetTensorC、Wait/End 阶段；只保留这条执行路径。
+<!-- cannbot:related:end -->

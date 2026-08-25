@@ -23,3 +23,9 @@ platforms: ['950', a2, a3]
 返回值：LocalTensor数据长度，单位为字节。
 
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetSize](get_size.md)（`same_topic`）：GetLength 返回 LocalTensor 占用字节数，而 GetSize 返回元素个数；二者共同界定同一张量容量并防止单位误用。
+<!-- cannbot:related:end -->

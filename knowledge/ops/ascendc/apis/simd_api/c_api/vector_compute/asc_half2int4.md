@@ -19,3 +19,10 @@ platforms: [a2, a3]
 函数原型：void asc_half2int4(__ubuf__ int4b_t* dst, __ubuf__ half* src, uint32_t count)
 约束：dst、src的起始地址需要32字节对齐。；操作数地址重叠约束请参考通用地址重叠约束。；当dst为int4b_t时，前n个数据计算接口的count必须为偶数。
 支持平台：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Ascend 950PR/Ascend 950DT, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscInt42half](asc_int42half.md)（`related`）：两接口提供 int4↔half 的相反方向转换，可用于构建量化输入解包与输出重新量化链。
+- [asc_half2int4x2 (废弃)](../reg/data_type_convert/asc_half2int4x2_deprecated.md)（`related`）：asc_half2int4x2 (废弃) 与《AscHalf2int4》的实质衔接是：废弃 half→int4x2 转换需对照 int4 逆转换、当前 half 整数转换和舍入/饱和语义迁移。
+<!-- cannbot:related:end -->

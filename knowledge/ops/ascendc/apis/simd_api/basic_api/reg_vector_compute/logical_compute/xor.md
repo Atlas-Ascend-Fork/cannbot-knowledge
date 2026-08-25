@@ -27,3 +27,10 @@ platforms: ['950']
 支持数据类型：bool、int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Xor](../../../adv_api/math_compute/xor_interface/xor.md)（`related`）：高阶 Xor 负责 LocalTensor 及临时空间管理，Reg Xor 提供寄存器 mask 下的同一逐元素按位异或，可用于实现层选型。
+- [AscXor](../../../c_api/reg/logic_compute/asc_xor.md)（`same_topic`）：AscXor 与《Xor》的实质衔接是：高阶 Xor、基础 Reg Xor 和 AscXor 完成同一逐元素异或，差异在 LocalTensor/RegTensor/C Reg 入口和工作区管理。
+<!-- cannbot:related:end -->

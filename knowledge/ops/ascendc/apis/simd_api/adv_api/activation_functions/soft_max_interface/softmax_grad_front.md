@@ -29,3 +29,10 @@ platforms: ['950', a2, a3]
 - 当参数softmaxShapeInfo中srcM != oriSrcM或者srcK != oriSrcK时，开发者需要对GM上的原始输入(oriSrcM, oriSrcK\)在M或K方向补齐数据到\(srcM, srcK\)，补齐的数据会参与部分运算，在输入输出复用的场景下，API的计算结果会覆盖srcTensor中补齐的原始数据，在输入输出不复用的场景下，API的计算结果会覆盖dstTensor中对应srcTensor补齐位置的数据。
 
 适用平台：Ascend 950PR/Ascend 950DT、Atlas A2 系列、Atlas A3 系列。未列出的产品形态不在本卡已确认范围内；详细支持矩阵以固定来源的“产品支持情况”为准。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SoftmaxGrad](softmax_grad.md)（`same_topic`）：SoftmaxGrad 的 isFront=true 只计算前半结果，正对应 SoftmaxGradFront 单独暴露的前半计算；两者是同一梯度核心对象的整接口与前半接口。
+- [SoftmaxGrad Tiling接口](softmax_grad_tiling_interface.md)（`same_topic`）：SoftmaxGrad Tiling接口 与《SoftmaxGradFront》的实质衔接是：SoftmaxGrad tiling 直接驱动反向 kernel，并与 forward/adjust/basic-block、rank 校验和 tiling 默认项配套。
+<!-- cannbot:related:end -->

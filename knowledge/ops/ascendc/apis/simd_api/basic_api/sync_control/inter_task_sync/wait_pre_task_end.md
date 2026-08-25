@@ -26,3 +26,12 @@ platforms: ['950', a2, a3]
 - 若子Kernel某个TilingKey分支调用了此接口，则开发者需要保证当前算子可能会运行的所有TilingKey均调用了此接口，否则会出现因同步指令数量不匹配而卡住的现象。
 
 仅 Ascend 950PR/Ascend 950DT，该接口生效、Atlas A3 训练系列产品/Atlas A3 推理系列产品，该接口生效、Atlas A2 训练系列产品/Atlas A2 推理系列产品，仅保证编译兼容，实际功能不生效。、Atlas 200I/500 A2 推理产品，仅保证编译兼容，实际功能不生效。、Atlas 推理系列产品AI Core，仅保证编译兼容，实际功能不生效。、Atlas 推理系列产品Vector Core，仅保证编译兼容，实际功能不生效。、Atlas 训练系列产品，仅保证编译兼容，实际功能不生效。、Kirin X90，仅保证编译兼容，实际功能不生效。、Kirin 9030，仅保证编译兼容，实际功能不生效。 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SuperKernel原理介绍](../../../../../guides/programming_guide/advanced_programming/super_kernel/principles.md)（`explains`）：WaitPreTaskEnd 与《SuperKernel原理介绍》的实质衔接是：WaitPreTaskEnd 与 SetNextTaskStart 构成前后任务的早启动握手；任务间同步和 SuperKernel 卡解释该握手在绑定任务调度中的生效条件。
+- [SK_BIND（SuperKernel）](../../../../utils_api/super_kernel/sk_bind.md)（`related`）：SK_BIND（SuperKernel） 与《WaitPreTaskEnd》的实质衔接是：SK_BIND 绑定 SuperKernel 子任务，需结合 kernel 类型/tiling、前后任务同步和 runtime context。
+- [SetNextTaskStart](set_next_task_start.md)（`same_topic`）：WaitPreTaskEnd 与《SetNextTaskStart》的实质衔接是：WaitPreTaskEnd 与 SetNextTaskStart 构成前后任务的早启动握手；任务间同步和 SuperKernel 卡解释该握手在绑定任务调度中的生效条件。
+- [任务间同步](inter_task_sync.md)（`same_topic`）：WaitPreTaskEnd 与《任务间同步》的实质衔接是：WaitPreTaskEnd 与 SetNextTaskStart 构成前后任务的早启动握手；任务间同步和 SuperKernel 卡解释该握手在绑定任务调度中的生效条件。
+<!-- cannbot:related:end -->

@@ -22,3 +22,10 @@ host侧Tiling接口，用于获取Sin接口所需的最大和最小临时空间�
 参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource与Sin接口保持一致，仅float支持开启，half不支持；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。
 
 在minValue到maxValue范围内，临时空间越大性能越好。约束：无。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetSinTmpBufferFactorSize](get_sin_tmp_buffer_factor_size.md)（`same_topic`）：MaxMin 给出 Sin 临时空间区间，FactorSize 在固定 buffer 下按 maxLiveNodeCount/extraBuf 反推 count；两者还要求 SinConfig 保持一致。
+- [Sin](sin.md)（`same_topic`）：Sin 与《GetSinMaxMinTmpSize》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
+<!-- cannbot:related:end -->

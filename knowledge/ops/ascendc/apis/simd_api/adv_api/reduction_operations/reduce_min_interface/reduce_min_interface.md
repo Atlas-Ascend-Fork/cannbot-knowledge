@@ -27,3 +27,13 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [A5 循环内 ReduceMin 取索引致 vector core 异常](../../../../../runbooks/precision/a5_reducemin_vector_core.md)（`exemplifies`）：该故障卡把 ReduceMin 在特定向量核路径的异常及复现边界具体化，能指导接口调用后的诊断验证。
+- [AscReduceMin](../../../c_api/reg/reduce_compute/asc_reduce_min.md)（`related`）：Reg C API 的 asc_reduce_min 在寄存器编程路径完成相同最小值归约，适合与高阶 Tensor API 按数据驻留位置选型。
+- [ReduceMin](../../../basic_api/memory_vector_compute/reduction_compute/reduce_min.md)（`related`）：基础 Tensor ReduceMin 提供更低层的归约实现路径，可据 shape、mask 和临时空间需求与高阶接口选型。
+- [GetReduceMinMaxMinTmpSize](get_reduce_min_max_min_tmp_size.md)（`same_topic`）：GetReduceMinMaxMinTmpSize 与《ReduceMin接口》的衔接是：ReduceMinMax 临时空间查询为 ReduceMin/ReduceMax 归约接口计算最小与最大工作区，属于调用前必须完成的资源契约。
+- [ReduceMin](reduce_min.md)（`same_topic`）：函数页给出 ReduceMin 的参数、shape 和调用约束，是接口总览对应的实际高阶归约操作。
+<!-- cannbot:related:end -->

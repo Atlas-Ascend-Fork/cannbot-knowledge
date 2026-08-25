@@ -20,3 +20,12 @@ platforms: ['950']
 支持数据类型：float、half、int16_t、int32_t、int8_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscNot](../logic_compute/asc_not.md)（`related`）：AscNeg 与《AscNot》的实质衔接是：AscNeg 的 C++/Vector 入口执行算术取负，AscNot 是按位取反的近名反例，可防止把数值负号与 bitwise NOT 混用。
+- [AscNot](../../vector_compute/asc_not.md)（`related`）：AscNeg 与《AscNot》的实质衔接是：AscNeg 的 C++/Vector 入口执行算术取负，AscNot 是按位取反的近名反例，可防止把数值负号与 bitwise NOT 混用。
+- [Neg](../../../basic_api/memory_vector_compute/basic_arithmetic/neg_isasi.md)（`related`）：AscNeg 与《Neg》的实质衔接是：AscNeg 的 C++/Vector 入口执行算术取负，AscNot 是按位取反的近名反例，可防止把数值负号与 bitwise NOT 混用。
+- [Neg](../../../basic_api/reg_vector_compute/basic_arithmetic/neg.md)（`related`）：AscNeg 与《Neg》的实质衔接是：AscNeg 的 C++/Vector 入口执行算术取负，AscNot 是按位取反的近名反例，可防止把数值负号与 bitwise NOT 混用。
+<!-- cannbot:related:end -->

@@ -50,3 +50,13 @@ Reg矢量执行单元、DMA单元和Aux Scalar虽属于不同的硬件执行单�
 Warp内线程共享同一条指令流，各线程维护独立的线程索引、寄存器和栈等执行状态。硬件根据线程活跃掩码发射指令：当Warp内线程控制流一致时，可保持较高执行效率；发生分支发散时，硬件会按不同分支路径分批执行活跃线程，有效并行度随之下降。
 
 **图4** SIMT线程架构示意图
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SIMD与SIMT混合算子性能优化概述](../../../../operator_practice/simd_simt_hybrid_optimization/overview.md)（`related`）：SIMD与SIMT混合算子性能优化概述说明AI Core上SIMD与SIMT混合编程结合了SIMD多数据并行计算能力与SIMT离散访存、复杂分支处理能力，可以在同一算子中以Vector Function（VF）为基本调度单位灵活组织SIMD和SIMT执行逻辑。SIMD编程适合处理连续、规整的向量或矩阵计算，SIMT编程适合处理分支判断、索引映射、离散访存等不规则逻辑，在程序中结合使用两种编程方式，可以兼顾硬件高吞吐和编程灵活性；对抽象硬件架构（SIMD与SIMT混合编程）而言，混合编程概述定义 SIMD/SIMT 分工，性能章节给出分支与访存选择，SIMT 分支实现卡提供落地接口。
+- [SIMD与SIMT混合编程概述](overview.md)（`related`）：SIMD与SIMT混合编程概述说明为提升向量计算在复杂控制流、离散访存等场景下的编程灵活性，在SIMD与SIMT深度融合的混合编程架构中：矩阵计算单元延续SIMD设计，向量计算单元则在SIMD基础上引入SIMT能力。这一设计确立了以SIMD为主、SIMT为辅的混合编程模型；对抽象硬件架构（SIMD与SIMT混合编程）而言，混合编程概述定义 SIMD/SIMT 分工，性能章节给出分支与访存选择，SIMT 分支实现卡提供落地接口。
+- [通过SIMT实现分支判断](../../../../operator_practice/simd_simt_hybrid_optimization/compute_optimization/simt_branch_judgment.md)（`related`）：通过SIMT实现分支判断说明>该性能优化建议适用于如下型号：；对抽象硬件架构（SIMD与SIMT混合编程）而言，混合编程概述定义 SIMD/SIMT 分工，性能章节给出分支与访存选择，SIMT 分支实现卡提供落地接口。
+- [基本架构（硬件实现）](../../hardware_implementation/basic_architecture.md)（`same_topic`）：混合编程架构页在同一 AI Core 上展开 SIMD/SIMT 单元与调度关系，是基础架构的具体编程视角。
+- [抽象硬件架构（AI Core SIMD编程）](../../../programming_model/ai_core_simd_programming/abstract_hardware_architecture.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《抽象硬件架构（SIMD与SIMT混合编程）》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+<!-- cannbot:related:end -->

@@ -28,3 +28,10 @@ void LogSoftMaxTilingFunc(const AscendC::TensorShape srcShape, const uint32_t da
 - dataTypeSize（输入）：输入的数据类型大小，单位为字节。比如输入的数据类型为half，此处应传入2。
 
 返回值：GetLogSoftMaxMaxTmpSize/GetLogSoftMaxMinTmpSize接口返回值为最大 最小临时空间。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LogSoftMax](log_soft_max.md)（`related`）：LogSoftMax 计算接口要求由 LogSoftMaxTiling 生成 kernel 所需 tiling 参数；前者的执行约束与后者的 host 侧参数产出构成同一次调用链。
+- [LogSoftMax接口](log_soft_max_interface.md)（`same_topic`）：LogSoftMaxTiling 的核心契约是“用于在host侧获取LogSoftMax接口所需的最大最小临时空间大小，并计算Tiling参数传递到kernel侧使用”；LogSoftMax接口 补充“提供LogSoftMax激活函数接口及其Tiling接口，用于在Kernel侧完成LogSoftMax计算”。
+<!-- cannbot:related:end -->

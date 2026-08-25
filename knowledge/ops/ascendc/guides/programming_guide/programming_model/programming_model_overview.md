@@ -35,3 +35,13 @@ SIMD核函数Kernel编程四步法：SIMD编程遵循SPMD模型（Single Program
 4. 数据搬出：调用SIMD专用API，将本地缓存中完成计算的结果，搬运回Device Memory，供后续任务使用。
 ### SIMT（单指令多线程）
 核心概念：SIMT（Single Instruction Multiple Threads）是一种 线程并行 模型，核心逻辑是：一条指令同时驱动多个独立线程，每个线程仅处理一个数据元素；指令同步下发，但线程可根据代码分支（如if-else）独立执行，灵活性更高。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ProgrammingModel](../../../apis/simt_api/simd_simt_hybrid_programming_intro/programming_model.md)（`explains`）：混合 API 模型说明 SIMD 批处理与 SIMT 控制流如何在同一 Kernel/VF 体系协作。
+- [SIMT编程简介](../../../apis/simt_api/simt_programming_intro/simt_programming_intro.md)（`explains`）：SIMT 接口入口补充概述未展开的 API 边界和平台支持。
+- [编程模型](../../../apis/simt_api/simt_programming_intro/programming_model.md)（`explains`）：SIMT API 模型把概述中的 Grid/Block/Thread 选择落到具体执行配置和内置变量。
+- [AI Core SIMD编程模型概述](ai_core_simd_programming/overview.md)（`same_topic`）：AI Core SIMD编程模型概述 与《编程模型概述》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
+- [异构系统与编程模型](../../getting_started/quick_start/heterogeneous_system_and_programming_model.md)（`same_topic`）：异构系统与编程模型 与《编程模型概述》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
+<!-- cannbot:related:end -->

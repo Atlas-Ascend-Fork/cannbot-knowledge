@@ -24,3 +24,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Hexp2](hexp2.md)（`related`）：Hexp 与 Hexp2 对同一 half 标量分别计算 e^x 和 2^x，特殊值和全局饱和行为存在差异；用于按指数底数选型。
+- [BFloat16数学函数hexp](../../bfloat16_type/bfloat16_math_functions/hexp.md)（`same_topic`）：BFloat16数学函数hexp 与《Half数学函数hexp》的实质衔接是：hexp 计算 bfloat16 标量 e^x；exp2/exp10、half、packed bfloat16x2、float exp/expm1 入口直接区分底数、类型宽度和稳定公式。
+<!-- cannbot:related:end -->

@@ -24,3 +24,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Rcbrtf](rcbrtf.md)（`related`）：Cbrtf 与《Rcbrtf》的实质衔接是：Cbrtf 与 Rcbrtf 是立方根/倒立方根成对数学语义，float 数学函数页给出头文件与标量调用边界。
+- [float类型数学库函数](float_math_functions.md)（`related`）：Cbrtf 与《float类型数学库函数》的实质衔接是：Cbrtf 与 Rcbrtf 是立方根/倒立方根成对数学语义，float 数学函数页给出头文件与标量调用边界。
+<!-- cannbot:related:end -->

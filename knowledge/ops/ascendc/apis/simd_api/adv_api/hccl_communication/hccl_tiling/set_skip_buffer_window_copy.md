@@ -20,3 +20,9 @@ platforms: ['950', a2, a3]
 - skipBufferWindowCopy（输入）：表示通信算法获取输入数据的位置，uint8_t类型。
 
 返回值：- 0表示设置成功。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SetSkipLocalRankCopy](set_skip_local_rank_copy.md)（`related`）：两个 skip 开关分别控制本地 rank copy 和 buffer-window copy，需按算法数据路径独立配置。
+<!-- cannbot:related:end -->

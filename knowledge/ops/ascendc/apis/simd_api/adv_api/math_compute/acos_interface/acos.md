@@ -35,3 +35,11 @@ __aicore__ inline void Acos(const LocalTensor<T>& dstTensor, const LocalTensor<T
 - 操作数地址对齐要求请参见通用地址对齐约束。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetAcosMaxMinTmpSize](get_acos_max_min_tmp_size.md)（`related`）：GetAcosMaxMinTmpSize 与《Acos》的实质衔接是：Acos 的 host 临时空间查询必须与 kernel Acos、接口封装及 factor-size 推算使用同一 shape/typeSize/复用策略。
+- [GetAcosTmpBufferFactorSize](get_acos_tmp_buffer_factor_size.md)（`related`）：当已有固定临时空间预算时，GetAcosTmpBufferFactorSize 可反推 Acos 单次可处理元素量，补足容量受限时的 tiling 决策。
+- [Acos接口](acos_interface.md)（`same_topic`）：Acos接口 的核心契约是“提供Acos反余弦计算接口及其Tiling临时空间大小查询接口，包含Acos、GetAcosMaxMinTmpSize等”；Acos 补充“按元素做反余弦函数计算，输入值域需在-1到1范围内”。
+<!-- cannbot:related:end -->

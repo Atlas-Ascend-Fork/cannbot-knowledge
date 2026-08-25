@@ -27,3 +27,11 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MulsCast](muls_cast_isasi.md)（`related`）：MulCast 用第二个 Tensor 替代标量完成乘法后再转换，适合判断 MulsCast 的标量约束何时需要升级为逐元素 scale。
+- [AscMulCastHalf2int8](../../../c_api/vector_compute/asc_mul_cast_half2int8.md)（`same_topic`）：AscMulCastHalf2int8 与《MulCast》的实质衔接是：AscMulCastHalf2int8 融合 half 乘法、RINT 和 int8 饱和；MulCast、纯 Mul、Half2Int8 与 Rint 入口分别核对融合、目标宽度和舍入。
+- [AscMulCastHalf2uint8](../../../c_api/vector_compute/asc_mul_cast_half2uint8.md)（`same_topic`）：通用 MulCast 的 half→uint8 组合在 C API 中对应 AscMulCastHalf2uint8。
+<!-- cannbot:related:end -->

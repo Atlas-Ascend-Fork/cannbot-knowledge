@@ -26,3 +26,12 @@ platforms: ['950', a2, a3]
 约束：该接口属于PIPE_S流水，若需要测试其他流水的指令时间，需要在调用该接口前通过PipeBarrier插入对应流水的同步，具体
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [选择低延迟指令，优化归约操作性能](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md)（`explains`）：指南的 cycle 对比通过 GetSystemCycle 测量，接口卡提供复现 ReduceRepeat/ReduceDataBlock 选择所需的计时原语。
+- [PipeBarrier](../../sync_control/intra_core_sync/pipe_barrier_isasi.md)（`related`）：GetSystemCycle 正文要求测量 Vector/MTE 等异步流水前先做对应同步，否则时间戳只反映 Scalar 发射而非工作完成；PipeBarrier 提供这一前置完成性约束。
+- [PrintTimeStamp](../../debug_interface/onboard_print/print_time_stamp.md)（`related`）：“PrintTimeStamp”处理提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点并打印当前系统cycle数。；“GetSystemCycle”明确获取系统计数器当前的cycle值，通过前后差值可计算代码段执行时间。。实质衔接：PrintTimeStamp 以系统 cycle 为时间基准；AscTimeStamp 是同一打点能力，MarkStamp 是流水标记替代，GetSystemCycle 提供换算基准。
+- [AscGetSystemCycle](../../../c_api/sys_var/asc_get_system_cycle.md)（`same_topic`）：GetSystemCycle 与 AscGetSystemCycle 都读取同一个系统 cycle 计数器，并以两次读数差计算耗时；它们是 Basic API 与 C API 的直接对应。
+<!-- cannbot:related:end -->

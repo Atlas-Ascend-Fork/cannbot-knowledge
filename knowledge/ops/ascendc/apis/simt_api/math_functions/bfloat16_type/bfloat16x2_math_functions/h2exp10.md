@@ -24,3 +24,10 @@ platforms: ['950']
 约束：针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Hexp10](../bfloat16_math_functions/hexp10.md)（`related`）：H2Exp10 对两个 bfloat16 lane 计算 10 的幂，Hexp10 是同 dtype 的标量版本，连接 packed 与 scalar 实现。
+- [H2Exp10](../../half_type/half2_math_functions/h2exp10.md)（`same_topic`）：H2Exp10：H2Exp10 的 bfloat16x2同名接口和 half/float标量 exp10保持底数10，H2Exp/H2Exp2则直接帮助避免把 e^x、2^x 与10^x混用。 目标卡《H2Exp10》补充：指定输入x，对x的各元素，获取10的该元素次方。
+<!-- cannbot:related:end -->

@@ -37,3 +37,12 @@ platforms: ['950', a2, a3]
     - Ascend 950PR/Ascend 950DT：支持。
 需包含头文件 "utils/debug/asc_assert.h"。
 支持 SIMT 与 SIMD/SIMT 混合编程场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [assert（AI CPU API）](../../ai_cpu_api/assert.md)（`related`）：Utils 调测断言覆盖 SIMD/SIMT 融合编译场景，而 AI CPU assert 覆盖 AI CPU Kernel；二者形成按执行域选择断言接口的边界。
+- [AscendcAssert](../../simd_api/basic_api/debug_interface/exception_detection/ascendc_assert.md)（`same_topic`）：AscendcAssert说明CPU/NPU域断言接口，当断言条件不满足时输出断言信息并格式化打印，主要用于调试阶段。
+- [Assert](../../simd_api/basic_api/debug_interface/exception_detection/assert.md)（`same_topic`）：Assert说明CPU/NPU域assert断言接口，条件判断不为真时输出断言条件并格式化打印，主要用于调试阶段。
+- [__trap](_trap.md)（`same_topic`）：__trap说明在SIMT代码中调用此接口会中断算子的运行，适用于Kernel侧异常场景的调试。
+<!-- cannbot:related:end -->

@@ -19,3 +19,10 @@ platforms: ['950']
 函数原型：unsigned int __umul24(unsigned int x, unsigned int y)
 
 参数 x、y 为源操作数。返回低 24 位乘积的低 32 位结果。仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/device_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__mul24（整数数学函数）](_mul24.md)（`related`）：__umul24 是 __mul24 的无符号对应接口，两者都忽略输入高 8 位并返回低 32 位乘积。
+- [__umulhi](_umulhi.md)（`related`）：__umulhi 返回完整 32×32 乘积的高 32 位，focal 返回低 24×24 乘积的低 32 位，二者输出部分不同。
+<!-- cannbot:related:end -->

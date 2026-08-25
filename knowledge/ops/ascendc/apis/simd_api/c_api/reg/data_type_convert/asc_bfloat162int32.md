@@ -26,3 +26,14 @@ platforms: ['950']
 - 开启饱和模式和非饱和模式时，需配置ctrl寄存器，ctrl寄存器
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__bfloat162int_rd](../../../../simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162int_rd.md)（`related`）：AscBfloat162Int32说明将bfloat16_t类型数据转换为int32_t，支持多种舍入模式和饱和/非饱和模式，源操作数与目的操作数位宽比为1:2。
+- [__bfloat162int_rn](../../../../simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162int_rn.md)（`related`）：“__bfloat162int_rn”定义：遵循CAST_RINT模式，将bfloat16类型数据转换为有符号整数，返回转换后的值。；“AscBfloat162Int32”定义：将bfloat16_t类型数据转换为int32_t，支持多种舍入模式和饱和/非饱和模式，源操作数与目的操作数位宽比为1:2。。实质衔接：这些接口保持 bfloat16→有符号整数任务，仅分别选择 ties-to-even、round-away 与 truncate；Reg C API 提供同目标类型的可配置舍入/饱和路径。
+- [__bfloat162int_rna](../../../../simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162int_rna.md)（`related`）：C Reg 版本可批量执行相同 bfloat16→int32 转换，适合寄存器向量路径。
+- [__bfloat162int_ru](../../../../simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162int_ru.md)（`related`）：AscBfloat162Int32说明将bfloat16_t类型数据转换为int32_t，支持多种舍入模式和饱和/非饱和模式，源操作数与目的操作数位宽比为1:2。
+- [AscBfloat162int32](../../vector_compute/asc_bfloat162int32.md)（`same_topic`）：AscBfloat162int32 与《AscBfloat162Int32》的衔接是：C Vector bfloat16 到 int32 的 rn 接口明确支持多种舍入模式；Reg 对应入口及 SIMT 的 rn/rd/ru/rz 变体用于逐模式核对结果。
+- [__bfloat162int_rz](../../../../simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162int_rz.md)（`same_topic`）：__bfloat162int_rz：这些转换保持 bfloat16→int32 目标不变，只改变舍入模式或编程接口，能直接验证 rz 与 rd/rn/rna/ru 以及 C API 的行为差异。 目标卡《AscBfloat162Int32》补充：将bfloat16_t类型数据转换为int32_t，支持多种舍入模式和饱和/非饱和模式，源操作数与目的操作数位宽比为1:2。
+<!-- cannbot:related:end -->

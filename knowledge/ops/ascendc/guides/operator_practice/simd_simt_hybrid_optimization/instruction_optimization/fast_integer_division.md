@@ -32,3 +32,10 @@ SIMT线程层次结构为：
 对于uint32类型整数除法，可作如下变形，将除法计算转换为乘法和移位操作：
 
 其中 $n$ 为被除数，$d$ 为除数，$m = \frac{2^s}{d}$。$n$ 除以 $2^s$ 可通过右移 $s$ 位实现。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CeilDivision](../../../../apis/simd_api/basic_api/scalar_compute/ceil_division.md)（`explains`）：CeilDivision 与《整数除法的快速算法》的实质衔接是：CeilDivision 与 CeilDiv 执行整数向上整除，快速除法与 SIMT divide 接口提供实现和舍入边界，标量计算页说明 device 使用域。
+- [编程示例（SIMD与SIMT混合编程）](../../../programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/programming_examples.md)（`related`）：The hybrid example shows device-side index arithmetic in a complete kernel, providing an integration point for replacing expensive integer division by the focal helper.
+<!-- cannbot:related:end -->

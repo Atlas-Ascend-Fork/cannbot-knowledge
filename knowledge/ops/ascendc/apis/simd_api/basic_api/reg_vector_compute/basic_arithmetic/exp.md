@@ -29,3 +29,12 @@ RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Le
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend950 向量管 FTZ 刷新次正规 exp 为零](../../../../../runbooks/precision/ascend950_ftz_exp.md)（`exemplifies`）：该精度卡用实测说明 Ascend950 Exp 对 subnormal 输入输出的 FTZ 边界，直接补充 Reg Exp 特殊值验证与误差判读。
+- [Exp](../../../adv_api/math_compute/exp_interface/exp.md)（`related`）：高阶 Exp 可选泰勒展开并管理临时空间，和基础 Reg Exp 的显式寄存器实现形成抽象层与 workspace 的选型边界。
+- [Exp](../../memory_vector_compute/basic_arithmetic/exp.md)（`related`）：Memory Exp 与 Reg Exp 都计算自然指数，但前者直接操作 LocalTensor、后者显式管理 RegTensor 和 mask，可据编程模型选择实现。
+- [AscExp](../../../c_api/reg/arithmetic_compute/asc_exp.md)（`same_topic`）：AscExp 与《Exp》的实质衔接是：这些入口都执行逐元素自然指数；高阶/Memory/Reg/C Vector 对应接口给出不同数据承载方式，FTZ 与 sigmoid 溢出卡直接验证次正规和大指数边界。
+<!-- cannbot:related:end -->

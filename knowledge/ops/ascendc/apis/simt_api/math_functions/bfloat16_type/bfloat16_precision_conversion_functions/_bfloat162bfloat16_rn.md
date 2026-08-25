@@ -18,3 +18,12 @@ platforms: ['950']
 函数原型：bfloat16_t __bfloat162bfloat16_rn(const bfloat16_t x)
 返回值：输入遵循CAST_RINT模式取整后的bfloat16_t类型数据。本接口受全局饱和模式影响，特殊值如下：
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__bfloat162bfloat16_rd](_bfloat162bfloat16_rd.md)（`same_topic`）：焦点处理bfloat16 自身取整的舍入模式族；__bfloat162bfloat16_rd正文界定“将bfloat16_t数据遵循CAST_FLOOR模式取整”。候选保持 bfloat16 输入输出，仅改变 FLOOR/RINT/ROUND/CEIL/TRUNC 舍入方向。
+- [__bfloat162bfloat16_rna](_bfloat162bfloat16_rna.md)（`same_topic`）：焦点处理bfloat16 自身取整的舍入模式族；__bfloat162bfloat16_rna正文界定“将bfloat16_t数据遵循CAST_ROUND模式取整”。候选保持 bfloat16 输入输出，仅改变 FLOOR/RINT/ROUND/CEIL/TRUNC 舍入方向。
+- [__bfloat162bfloat16_ru](_bfloat162bfloat16_ru.md)（`same_topic`）：__bfloat162bfloat16_rn说明将bfloat16_t数据遵循CAST_RINT模式取整；对__bfloat162bfloat16_ru而言，四个同源同目的转换只改变 floor、nearest、nearest-away 与 trunc 舍入决策，需并列选择而不能默认等价。
+- [__bfloat162bfloat16_rz](_bfloat162bfloat16_rz.md)（`same_topic`）：焦点处理bfloat16 自身取整的舍入模式族；__bfloat162bfloat16_rz正文界定“将bfloat16_t数据遵循CAST_TRUNC模式取整”。候选保持 bfloat16 输入输出，仅改变 FLOOR/RINT/ROUND/CEIL/TRUNC 舍入方向。
+<!-- cannbot:related:end -->

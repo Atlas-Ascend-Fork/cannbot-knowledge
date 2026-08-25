@@ -27,3 +27,11 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差](../../../../../runbooks/precision/muladddst_fma_golden_mul_add.md)（`exemplifies`）：MulAddRelu 与《MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差》的实质衔接是：MulAddRelu 的 C API 和 MulAddDst 共享乘加复合语义；FMA 舍入卡说明合并乘加与分步 golden 的可见差异。
+- [AscMulAddRelu](../../../c_api/vector_compute/asc_mul_add_relu.md)（`related`）：AscMulAddRelu 与《MulAddRelu》的实质衔接是：AscMulAddRelu 融合 dst*src0+src1 与 ReLU；MulAdd/AddRelu 对应入口拆解同一计算，FMA 舍入卡和随路量化+ReLU材料给出精度与融合边界。
+- [MulAddDst](mul_add_dst.md)（`same_topic`）：MulAddRelu 与《MulAddDst》的实质衔接是：MulAddRelu 的 C API 和 MulAddDst 共享乘加复合语义；FMA 舍入卡说明合并乘加与分步 golden 的可见差异。
+<!-- cannbot:related:end -->

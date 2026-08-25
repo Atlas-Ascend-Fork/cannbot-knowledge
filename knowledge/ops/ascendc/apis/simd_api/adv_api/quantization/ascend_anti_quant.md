@@ -22,3 +22,12 @@ platforms: ['950', a2, a3]
 接口参数包含dstTensor输出、srcTensor输入（shape [m,n]）、scale/offset量化系数（shape因策略而异）、sharedTmpBuffer临时缓存、params参数信息。TPosition支持VECIN/VECCALC/VECOUT。
 
 约束：最多支持二维输入；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscendQuant](ascend_quant.md)（`related`）：AscendAntiQuant 与《AscendQuant》的实质衔接是：AscendAntiQuant 依赖两种空间查询，generic AntiQuant 是同任务入口，AscendQuant 是逆过程；scale 错配卡直接约束分组反量化。
+- [AntiQuantize](anti_quantize.md)（`same_topic`）：AscendAntiQuant 与《AntiQuantize》的实质衔接是：AscendAntiQuant 依赖两种空间查询，generic AntiQuant 是同任务入口，AscendQuant 是逆过程；scale 错配卡直接约束分组反量化。
+- [GetAscendAntiQuantMaxMinTmpSize](get_ascend_anti_quant_max_min_tmp_size.md)（`same_topic`）：GetAscendAntiQuantMaxMinTmpSize 与《AscendAntiQuant》的实质衔接是：GetAscendAntiQuantMaxMinTmpSize 与 factor 查询、AscendAntiQuant kernel 成对使用；分组 scale 错配卡直接验证该反量化任务的输入契约。
+- [GetAscendAntiQuantTmpBufferFactorSize](get_ascend_anti_quant_tmp_buffer_factor_size.md)（`same_topic`）：GetAscendAntiQuantTmpBufferFactorSize 与《AscendAntiQuant》的实质衔接是：AscendAntiQuant 的 MaxMin/factor 查询共同决定临时空间和单次处理量；分组 scale 的 cyclic-repeat 故障直接验证反量化系数布局。
+<!-- cannbot:related:end -->

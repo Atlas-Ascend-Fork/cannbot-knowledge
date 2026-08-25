@@ -25,3 +25,14 @@ platforms: ['950']
 - 开启饱和模式和非饱和模式时，需配置ctrl寄存器，ctrl寄存器
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__bfloat162half_rd_sat](../../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_bfloat162half_rd_sat.md)（`related`）：__bfloat162half_rd_sat 与《AscBfloat162Half》的实质衔接是：bfloat16→half 的 RD 饱和/非饱和及其他舍入饱和变体共享同一窄化契约，C API 是张量级对应入口。
+- [__bfloat162half_rn](../../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_bfloat162half_rn.md)（`related`）：__bfloat162half_rn 与《AscBfloat162Half》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
+- [__bfloat162half_rna](../../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_bfloat162half_rna.md)（`related`）：__bfloat162half_rna 与《AscBfloat162Half》的实质衔接是：bfloat16 到 half 的各舍入/饱和变体共享同一窄化目标，互相对照可确定边界值与溢出行为。
+- [__bfloat162half_rna_sat](../../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_bfloat162half_rna_sat.md)（`related`）：__bfloat162half_rna_sat 与《AscBfloat162Half》的实质衔接是：这些接口都把 bfloat16 按 RNA 窄化到 half；non-SAT、其他舍入的 SAT 变体和 AscBfloat162Half 直接对照饱和及特殊值。
+- [__bfloat162half_ru_sat](../../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_bfloat162half_ru_sat.md)（`related`）：__bfloat162half_ru_sat 与《AscBfloat162Half》的实质衔接是：bfloat16→half RU 饱和/非饱和及其他舍入饱和变体共享同一窄化任务，AscBfloat16ToHalf 是 Reg 层对应入口；重点对照 CTRL 饱和失效时的结果。
+- [__bfloat162half_rz](../../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_bfloat162half_rz.md)（`related`）：__bfloat162half_rz 与《AscBfloat162Half》的实质衔接是：这些接口都把 bfloat16 窄化为 half，RZ 的 SAT/non-SAT、RD/RN/RNA/RU 和 AscBfloat162Half 直接对照舍入及特殊值。
+<!-- cannbot:related:end -->

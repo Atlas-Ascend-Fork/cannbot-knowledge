@@ -20,3 +20,11 @@ platforms: ['950']
 支持数据类型：int32_t、uint32_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [基础算术](arithmetic_compute.md)（`related`）：《AscMull》说明根据mask对源操作数src0、src1按元素相乘，将乘法结果的低位部分写入dst0，高位（溢出）部分写入dst1。；《基础算术》说明寄存器侧基础算术类接口汇总，提供abs、add、sub、mul、div、exp、ln、sqrt、relu等逐元素矢量计算能力。。二者在AscMull同时产生乘积高低位，只有同样保留溢出位的Mull接口可视为同一运算合同上存在可执行的直接衔接。
+- [Mull](../../../basic_api/memory_vector_compute/basic_arithmetic/mull_isasi.md)（`same_topic`）：《AscMull》说明根据mask对源操作数src0、src1按元素相乘，将乘法结果的低位部分写入dst0，高位（溢出）部分写入dst1。；《Mull》说明双目矢量计算接口，对前count个数据按元素相乘，结果写入dst0，溢出部分写入dst1。。二者在AscMull同时产生乘积高低位，只有同样保留溢出位的Mull接口可视为同一运算合同上存在可执行的直接衔接。
+- [Mull](../../../basic_api/reg_vector_compute/basic_arithmetic/mull.md)（`same_topic`）：《Mull》说明根据mask对源操作数srcReg0、srcReg1按元素相乘，将乘法结果的低位部分写入dstReg0，溢出（高位）部分写入dstReg1。；《AscMull》说明根据mask对源操作数src0、src1按元素相乘，将乘法结果的低位部分写入dst0，高位（溢出）部分写入dst1。。二者在Mull在Memory、Reg C接口中都产生双字宽乘积，普通Mul用于核对仅保留原字宽的不同结果合同上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

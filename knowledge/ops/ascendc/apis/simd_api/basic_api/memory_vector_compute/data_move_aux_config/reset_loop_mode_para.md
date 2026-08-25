@@ -27,3 +27,10 @@ DataCopy、DataCopyPad过程中通过该接口使能loop mode并且设置loop mo
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [数据搬运辅助配置接口](data_move_aux_config.md)（`related`）：ResetLoopModePara 清除循环搬运配置，是 DataMoveAuxConfig 管理状态的复位操作。
+- [SetLoopModePara](set_loop_mode_para.md)（`same_topic`）：焦点处理DataCopy loop mode 的状态复位；SetLoopModePara正文界定“使能并设置DataCopy/DataCopyPad的loop mode参数，支持GM与UB之间的双向数据搬运循环模式”。候选是 ResetLoopModePara 对应的 SetLoopModePara，构成唯一状态配对。
+<!-- cannbot:related:end -->

@@ -35,3 +35,12 @@ __aicore__ inline void Acosh(const LocalTensor<T>& dstTensor, const LocalTensor<
 - 操作数地址对齐要求请参见通用地址对齐约束。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetAcoshTmpBufferFactorSize](get_acosh_tmp_buffer_factor_size.md)（`related`）：《GetAcoshTmpBufferFactorSize》明确“获取Acosh接口的maxLiveNodeCount和extraBuffer，用于推算固定空间下单次最大计算元素数”；它与《Acosh》的“按元素做双曲反余弦函数计算，输入值域需在1到65504范围内”在实际调用参数、数据流或结果校验上直接衔接。
+- [Acoshf](../../../../simt_api/math_functions/float_math_functions/acoshf.md)（`same_topic`）：《Acoshf》明确“获取输入数据的双曲反余弦值。”；它与《Acosh》的“按元素做双曲反余弦函数计算，输入值域需在1到65504范围内”在实际调用参数、数据流或结果校验上直接衔接。
+- [Acosh接口](acosh_interface.md)（`same_topic`）：《Acosh接口》明确“提供Acosh反双曲余弦计算接口及其Tiling临时空间大小查询接口，包含Acosh、GetAcoshMaxMinTmpSize等。”；它与《Acosh》的“按元素做双曲反余弦函数计算，输入值域需在1到65504范围内”在实际调用参数、数据流或结果校验上直接衔接。
+- [GetAcoshMaxMinTmpSize](get_acosh_max_min_tmp_size.md)（`same_topic`）：Acosh 的 sharedTmpBuffer 明确引用本 Host 查询；查询的 minValue 是正确性下限，maxValue 以上空间不再被使用。
+<!-- cannbot:related:end -->

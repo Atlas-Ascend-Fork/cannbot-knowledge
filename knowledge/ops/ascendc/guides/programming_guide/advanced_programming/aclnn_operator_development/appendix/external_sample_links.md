@@ -70,3 +70,9 @@ platforms: [agnostic]
 
 - [图引擎开发指南](https://www.hiascend.com/document/redirect/CannCommunityGraphguide)。
   - 说明：Ascend Graph图开发的完整指南，适用于算子入图场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [附录](appendix.md)（`related`）：外部样例汇总提供各开发步骤对应的完整代码落点，用于从规则查阅转入可运行示例。
+<!-- cannbot:related:end -->

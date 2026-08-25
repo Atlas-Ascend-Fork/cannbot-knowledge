@@ -29,3 +29,9 @@ SwiGLU是采用Swish作为激活函数的GLU变体。其中Swish激活函数的�
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Kirin X90。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SwiGLU](swi_glu.md)（`same_topic`）：SwiGLU 与《SwiGLU接口》的实质衔接是：SwiGLU 的 kernel、两种临时空间查询与非 32B slice 精度故障共同约束调用和缓冲区分配。
+<!-- cannbot:related:end -->

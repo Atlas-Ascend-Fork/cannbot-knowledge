@@ -21,3 +21,12 @@ platforms: ['950']
 - 操作数地址重叠约束
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscCopyL12L0bTrans](../asc_copy_l12l0b_trans/asc_copy_l12l0b_trans_arch_3510.md)（`related`）：3510 通用 asc_copy_l12l0b 同时覆盖非转置、转置和 3D 搬运；与专用 Trans 接口对照可据 m_step/k_step 约束选择入口。
+- [AscCopyL12l0bMx](../asc_copy_l12l0b_mx.md)（`related`）：MX 量化 B 路径需要专用格式/scale 搬运。
+- [AscCopyL12L0b](asc_copy_l12l0b.md)（`same_topic`）：总页定义 L1→L0B 搬运，3510 页给出架构签名。
+- [asc_copy_l12l0b](asc_copy_l12l0b_arch_2201.md)（`same_topic`）：两卡执行同一 L1→L0B 512B 矩阵搬运；3510 版本增加 2D 转置并改用 M/K 起点与步长参数，2201 版本则无转置，迁移时必须按架构重建参数。
+<!-- cannbot:related:end -->

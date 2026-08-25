@@ -25,3 +25,12 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hmaxx2_nan](_hmaxx2_nan.md)（`related`）：__hmaxx2_nan 与 focal 使用相同 half2 双分量和 NaN 传播策略，但一个取最大值、一个取最小值，适合成对实现上下界钳制。
+- [__hminx2_nan](../../bfloat16_type/bfloat16x2_compare_functions/_hminx2_nan.md)（`related`）：bfloat16x2 的同名 __hminx2_nan 保留逐分量最小值和 NaN 传播语义，但输入输出类型与头文件不同，可防止按名称误用 half2 重载。
+- [__hminx2](_hminx2.md)（`same_topic`）：__hminx2 与 focal 都逐分量返回 half2 最小值；唯一关键决策是普通版本遇到 NaN 返回 0，而 _nan 版本传播 NaN。
+- [half2类型比较函数](half2_compare_functions.md)（`same_topic`）：half2 比较函数入口把 __hminx2_nan 与普通 min、max、NaN 判断和有序/无序比较组织在同一选择表中，可定位 focal 的 NaN 传播版本。
+<!-- cannbot:related:end -->

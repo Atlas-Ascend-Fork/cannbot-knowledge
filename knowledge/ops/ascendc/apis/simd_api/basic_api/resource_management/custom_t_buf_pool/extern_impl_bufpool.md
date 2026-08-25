@@ -24,3 +24,14 @@ TBufPool类切分的内存块都是连续的，开发者可能有一些自定义
 -   自定义TBufPool需要开发者自行实现对TQue/TBuf内存块的分配、初始化、释放等操作。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Atlas 训练系列产品、Kirin X90、Kirin 9030 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetCurBufSize](get_cur_buf_size.md)（`related`）：自定义分配实现需要读取当前剩余/可用区大小，避免跨越池边界。
+- [Init](init.md)（`related`）：自定义池必须实现 Init 并在 TPipe::InitBufPool 后绑定可管理的 UB/L1 范围。
+- [Reset](reset.md)（`related`）：Reset 是自定义 TBufPool 生命周期的释放/复位阶段，与宏要求实现初始化和释放相呼应。
+- [SetCurAddr](set_cur_addr.md)（`related`）：不连续内存块或跨 TQue 共享时需显式更新当前地址，正是 ExternImplBufpool 允许自定义的核心能力。
+- [GetCurAddr](get_cur_addr.md)（`same_topic`）：焦点处理自定义 TBufPool 当前地址游标的读取、设置与生命周期；ExternImplBufpool正文说明“辅助开发者自定义TBufPool以管理Unified Buffer和L1 Buffer内存的宏，支持不连续内存块和跨TQue共享等自定义分配需求”。候选读写同一个 pool 游标/块计数，或决定这些值何时初始化、复位和失效。
+- [TBufPool简介](../t_buf_pool/t_buf_pool_intro.md)（`same_topic`）：TBufPool简介 与《ExternImplBufpool》的实质衔接是：TBufPool 在 TPipe 下手工复用 UB/L1，必须依次 InitBufPool、分配/取址、Reset 或 Destroy；所连容量和 TPipe 初始化案例直接约束资源预算与生命周期。
+<!-- cannbot:related:end -->

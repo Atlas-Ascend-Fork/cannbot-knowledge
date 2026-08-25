@@ -24,3 +24,11 @@ platforms: ['950', a2, a3]
 - d：输入B矩阵Layout的D轴信息
 
 返回值：-1表示设置失败； 0表示设置成功。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SetALayout](set_a_layout.md)（`related`）：《SetALayout》明确“设置A矩阵的Layout轴信息，包括B、S、N、G、D轴。对于BSNGD、SBNGD、BNGS1S2 Layout格式，调用IterateBatch接口之前，需要在Host侧Tiling实现中通过本接口设置A矩阵的Layout轴信息。”；它与《SetBLayout》的“设置B矩阵的Layout轴信息，包括B、S、N、G、D轴。对于BSNGD、SBNGD、BNGS1S2 Layout格式，调用IterateBatch接口之前，需要在Host侧Tiling实现中通过本接口设置B矩阵的Layout轴信息。”在实际调用参数、数据流或结果校验上直接衔接。
+- [SetBType](set_b_type.md)（`related`）：《SetBType》明确“设置B矩阵的位置，数据格式，数据类型，是否转置等信息，这些信息需要和kernel侧的设置保持一致。”；它与《SetBLayout》的“设置B矩阵的Layout轴信息，包括B、S、N、G、D轴。对于BSNGD、SBNGD、BNGS1S2 Layout格式，调用IterateBatch接口之前，需要在Host侧Tiling实现中通过本接口设置B矩阵的Layout轴信息。”在实际调用参数、数据流或结果校验上直接衔接。
+- [SetCLayout](set_c_layout.md)（`related`）：《SetCLayout》明确“设置C矩阵的Layout轴信息，包括B、S、N、G、D轴。对于BSNGD、SBNGD、BNGS1S2 Layout格式，调用IterateBatch接口之前，需要在Host侧Tiling实现中通过本接口设置C矩阵的Layout轴信息。”；它与《SetBLayout》的“设置B矩阵的Layout轴信息，包括B、S、N、G、D轴。对于BSNGD、SBNGD、BNGS1S2 Layout格式，调用IterateBatch接口之前，需要在Host侧Tiling实现中通过本接口设置B矩阵的Layout轴信息。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

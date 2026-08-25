@@ -25,3 +25,13 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/device_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__ll2float_rd](_ll2float_rd.md)（`same_topic`）：rd 与 ru 对同一 int64→float 转换提供向下/向上取整边界。
+- [__ll2float_rn](_ll2float_rn.md)（`same_topic`）：__ll2float_ru说明遵循CAST_CEIL模式，将int64类型数据转换为浮点数，返回转换后的值。
+- [__ll2float_rna](_ll2float_rna.md)（`same_topic`）：__ll2float_rna：所选转换保持ll→float或RNA语义，只切换有符号性、源位宽和RD/RN/RU/RZ舍入，能直接核对大整数不可精确表示时的方向。 目标卡《__ll2float_ru》补充：遵循CAST_CEIL模式，将int64类型数据转换为浮点数，返回转换后的值。
+- [__ll2float_rz](_ll2float_rz.md)（`same_topic`）：__ll2float_ru说明遵循CAST_CEIL模式，将int64类型数据转换为浮点数，返回转换后的值。
+- [__ull2float_ru](_ull2float_ru.md)（`same_topic`）：__ull2float_ru 与《__ll2float_ru》的实质衔接是：这些接口以 ull→float 为核心并切换舍入方向，ll/uint 入口验证源有无符号和位宽，ull→half/bfloat16 则保持 CAST_CEIL 但改变目标精度。
+<!-- cannbot:related:end -->

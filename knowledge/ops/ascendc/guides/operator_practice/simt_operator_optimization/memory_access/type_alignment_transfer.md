@@ -27,3 +27,12 @@ Task Duration(us)：aiv_total_cycles
 Task Duration(us)：aiv_total_cycles
 27889.33：46005213.32
 Align4将alignof从1B提升到4B，编译器可以选用32-bit档位完成单元素搬运，aiv_total_cycles和Task Duration都显著减小。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GM地址尽量512B对齐](../../simd_operator_optimization/memory_access/gm_address_512b_alignment.md)（`related`）：GM 基址 512B 对齐关注事务起点，SIMT 类型对齐关注单次访问宽度；两者共同减少非合并/低效 GM 事务。
+- [MemoryAccessMerge](memory_access_merge.md)（`related`）：类型对齐提高单线程访问位宽，访存合并则要求同一 Warp 相邻线程地址连续；两者必须同时满足才能把宽访问合并成高带宽 GM 事务。
+- [ShortVectorEfficiency](short_vector_efficiency.md)（`related`）：ShortVector 用 half2 等短向量把 Warp 单次有效宽度扩到 128B Cache Line，与 alignas 扩大结构体访问位宽属于同一事务宽度优化链。
+- [尽量一次搬运较大的数据块](../../simd_operator_optimization/memory_access/transfer_larger_data_blocks.md)（`related`）：扩大 block 前必须满足类型和地址对齐，否则更大单次搬运会越界或降级。
+<!-- cannbot:related:end -->

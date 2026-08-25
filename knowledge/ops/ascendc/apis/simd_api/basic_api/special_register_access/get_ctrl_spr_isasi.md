@@ -26,3 +26,13 @@ platforms: ['950', a2, a3]
 - 各比特位的说明
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscGetCtrl](../../c_api/sys_var/asc_get_ctrl.md)（`related`）：AscGetCtrl 与《GetCtrlSpr》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
+- [AscSetCtrl](../../c_api/sys_var/asc_set_ctrl.md)（`related`）：AscSetCtrl 是 C API 配置 CTRL 的对应入口，便于在 C 路线复现 Set/Get 验证。
+- [GetSpr](get_spr.md)（`same_topic`）：焦点处理特殊寄存器读取与配套清零、CTRL 位设置/复位；GetCtrlSpr正文说明“读取CTRL寄存器特定比特位上的值”。候选操作同一 SPR/CTRL 状态，明确读前设置、读后清理与位域复位。
+- [ResetCtrlSpr](reset_ctrl_spr_isasi.md)（`same_topic`）：ResetCtrlSpr 恢复 CTRL 位段，避免临时控制配置泄漏到后续计算。
+- [SetCtrlSpr](set_ctrl_spr_isasi.md)（`same_topic`）：SetCtrlSpr 与 GetCtrlSpr 读写 CTRL 的同一 bit 区间，可形成写后读回验证。
+<!-- cannbot:related:end -->

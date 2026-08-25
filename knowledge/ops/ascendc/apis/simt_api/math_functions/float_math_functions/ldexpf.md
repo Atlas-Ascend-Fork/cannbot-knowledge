@@ -24,3 +24,9 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Frexpf](frexpf.md)（`related`）：frexpf 把 x 分解为尾数和二进制指数，ldexpf 计算 mantissa*2^exp，可用于重构并验证分解结果。
+<!-- cannbot:related:end -->

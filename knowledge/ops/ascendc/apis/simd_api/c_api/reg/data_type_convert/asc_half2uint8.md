@@ -28,3 +28,11 @@ platforms: ['950']
 - 开启饱和模式和非饱和模式时，需配置ctrl寄存器，ctrl寄存器
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscHalf2uint8](../../vector_compute/asc_half2uint8.md)（`related`）：两者都做 half→uint8 和多种舍入；Reg 版输出奇/偶 lane 并依赖 ctrl 饱和状态，Memory Vector 版作用 UB 且要求地址对齐。
+- [AscUint82half](../../vector_compute/asc_uint82half.md)（`related`）：half→uint8 是反向量化/转换路径，舍入和饱和语义需与 uint8→half 往返需求配套验证。
+- [舍入模式与饱和模式](rounding_mode.md)（`related`）：接口后缀的 RINT/ROUND/FLOOR/CEIL/TRUNC 以及 SAT/NO_SAT 语义由该卡定义，直接决定边界值结果。
+<!-- cannbot:related:end -->

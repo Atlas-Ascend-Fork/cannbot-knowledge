@@ -22,3 +22,13 @@ platforms: ['950']
 支持数据类型：int16_t、uint16_t、half、int32_t、uint32_t、float、complex32、int64_t、uint64_t、complex64。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscMulScalar](../../../c_api/reg/arithmetic_compute/asc_mul_scalar.md)（`related`）：AscMulScalar 是 C Reg API 的对应标量乘接口，可用于从 C++ Reg::Muls 迁移。
+- [AscMuls](../../../c_api/reg/arithmetic_compute/asc_muls_deprecated.md)（`related`）：废弃 C AscMuls 的目标能力由 Reg C++ Muls 表达：按 mask 将 RegTensor 与标量相乘，避免继续依赖废弃接口。
+- [Mul](mul.md)（`related`）：Mul 的第二操作数是 RegTensor，而 Muls 的第二操作数是 scalar，应按参数形态选择。
+- [Muls（灵活标量位置）](../../memory_vector_compute/basic_arithmetic/muls_flexible_scalar.md)（`related`）：Muls（灵活标量位置） 与《Muls》的实质衔接是：灵活标量 Muls 的 scalarTensorIndex、LocalTensor 单点标量和 cyclic-repeat 语义会直接影响广播乘法、量化 scale 与标量位置。
+- [Muls](../../memory_vector_compute/basic_arithmetic/muls.md)（`same_topic`）：Muls 的核心契约是“双目矢量标量计算接口，将矢量tensor每个元素与标量求积”；Muls 补充“根据mask对源操作数srcReg每个元素与标量scalarValue求积，将结果写入目的操作数dstReg”。
+<!-- cannbot:related:end -->

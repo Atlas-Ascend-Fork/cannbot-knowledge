@@ -28,3 +28,12 @@ Carry flag（进位/借位标志）用于表示加法进位或者减法无借位
 - 运算输出完整计算结果（包含进位位），不受asc_set_ctrl影响，硬件不会对输出进行饱和或截断。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscSubc](asc_subc.md)（`related`）：AscAddc 与 AscSubc 都显式消费和产生 carry mask，可组合实现多字宽加减。
+- [AddC](../../../basic_api/reg_vector_compute/basic_arithmetic/add_c.md)（`same_topic`）：AddC 与《AscAddc》的实质衔接是：AddC 在逐 lane 加法中消费输入 carry 并产生输出 carry；Add/SubC 与 AscAddc/AscAdd 用同一 carry 寄存器契约界定普通加法和带进位运算的差别。
+- [AscAdd](asc_add.md)（`same_topic`）：AscAdd 与《AscAddc》的实质衔接是：Reg、Vector 和 scalar 三种 AscAdd 入口实现相同加法，区别在操作数载体、mask 与结果位置。
+- [SubC](../../../basic_api/reg_vector_compute/basic_arithmetic/sub_c.md)（`same_topic`）：焦点处理SubC 的带借位减法、carry 输入输出和对应加法；AscAddc正文说明“根据mask对源操作数src0、src1及输入进位carry_src按元素求和，将结果写入dst，同时将进位结果写入carry寄存器”。候选与 SubC 共享 carry 寄存器契约，分别覆盖普通减法、带借位减法和带进位加法。
+<!-- cannbot:related:end -->

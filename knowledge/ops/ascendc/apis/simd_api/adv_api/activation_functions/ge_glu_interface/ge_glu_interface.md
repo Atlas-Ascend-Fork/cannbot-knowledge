@@ -29,3 +29,11 @@ GeGLU是采用GELU作为激活函数的GLU变体。其中GELU激活函数的计�
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Kirin X90。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GeGLU](ge_glu.md)（`same_topic`）：GeGLU 与《GeGLU接口》的实质衔接是：GeGLU 直接调用 GELU 门控语义并要求独立临时缓冲；接口页和两种空间查询决定 tiling，GELU/Erf 卡解释其激活公式。
+- [GetGeGLUMaxMinTmpSize](get_ge_glu_max_min_tmp_size.md)（`same_topic`）：总页定义 GeGLU、workspace 查询和 factor-size 的完整调用流程。
+- [GetGeGLUTmpBufferFactorSize](get_ge_glu_tmp_buffer_factor_size.md)（`same_topic`）：GetGeGLUTmpBufferFactorSize 与《GeGLU接口》的实质衔接是：该 factor 查询把 GeGLU 的 maxLiveNodeCount/extraBuf 与最大最小临时空间合并，直接推导 GeGLU 固定 UB 下的单次处理量。
+<!-- cannbot:related:end -->

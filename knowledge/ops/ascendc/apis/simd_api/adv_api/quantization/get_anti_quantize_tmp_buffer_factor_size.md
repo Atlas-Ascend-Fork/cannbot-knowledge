@@ -22,3 +22,10 @@ platforms: ['950']
 参数：typeSize为输入数据类型字节数（half传2）；maxLiveNodeCount输出最大存活节点数；extraBuf输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。
 
 约束：当反推出的currentShapeSize * typeSize < 256B时，currentShapeSize按256B/typeSize向上取整。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AntiQuantize](anti_quantize.md)（`same_topic`）：factor-size 依据元素数计算 AntiQuantize 临时空间，与 max/min 查询构成可选的两套 Tiling 配置方法。
+- [GetAntiQuantizeMaxMinTmpSize](get_anti_quantize_max_min_tmp_size.md)（`same_topic`）：GetAntiQuantizeMaxMinTmpSize 与《GetAntiQuantizeTmpBufferFactorSize》的实质衔接是：GetAntiQuantizeMaxMinTmpSize 给 AntiQuantize 划定可用临时空间范围，factor 查询在固定空间下反推单次处理元素数。
+<!-- cannbot:related:end -->

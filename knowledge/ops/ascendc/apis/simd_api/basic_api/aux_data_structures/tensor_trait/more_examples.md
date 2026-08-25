@@ -16,3 +16,10 @@ platforms: ['950', a2, a3]
 # TensorTrait更多样例
 
 TensorTrait使用样例，展示如何创建、查询和修改TensorTrait，以及与TensorDesc、Layout配合使用的典型场景。包含构造TensorTrait、获取Layout信息、设置Layout、比较TensorTrait等操作示例。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MakeTensorTrait](make_tensor_trait.md)（`related`）：样例中的 TensorTrait 实例由 MakeTensorTrait 从 Layout 生成，是示例调用成立的构造前提。
+- [TensorTrait构造函数](tensor_trait_constructor.md)（`related`）：构造函数提供直接从 Layout 实例化 TensorTrait 的另一入口，解释样例中编译期布局如何进入算术 API。
+<!-- cannbot:related:end -->

@@ -21,3 +21,10 @@ platforms: ['950']
 支持数据类型：float、half。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ExpSub](../../../basic_api/memory_vector_compute/composite_compute/exp_sub_isasi.md)（`related`）：ExpSub 与《AscExpSub》的实质衔接是：Reg 与 C API 的 ExpSub 实现同一 exp(src)-scalar 复合运算，可用于接口迁移和语义核对。
+- [ExpSub](../../../basic_api/reg_vector_compute/composite_compute/exp_sub.md)（`related`）：废弃 C Reg 接口保持同一复合运算语义，可用于迁移旧 C 指针代码到 C++ Reg ExpSub。
+<!-- cannbot:related:end -->

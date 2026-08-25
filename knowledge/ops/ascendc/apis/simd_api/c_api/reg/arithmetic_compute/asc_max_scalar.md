@@ -23,3 +23,11 @@ platforms: ['950']
 - mask未筛选的元素在输出中置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscMaxScalar](../../vector_compute/asc_max_scalar.md)（`related`）：AscMaxScalar 与《AscMaxScalar》的实质衔接是：Reg 与基础 MaxScalar 操作同一 vector-scalar 最大值，MinScalar 给出相反选择边界。
+- [AscMinScalar](asc_min_scalar.md)（`related`）：AscMinScalar 与 AscMaxScalar 共享输入、mask 和标量契约并提供相反钳位方向，便于实现上下界 clamp。
+- [AscMax](asc_max.md)（`same_topic`）：AscMax 与《AscMaxScalar》的实质衔接是：AscMax 在 Reg 上按 mask 逐 lane 取大；Vector 对应入口、scalar 变体和 AscMin 对照分别界定内存层、操作数形态与相反比较方向。
+<!-- cannbot:related:end -->

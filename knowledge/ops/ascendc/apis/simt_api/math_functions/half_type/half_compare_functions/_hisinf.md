@@ -25,3 +25,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Isinf](../../float_math_functions/isinf.md)（`related`）：Isinf 与《__hisinf》的实质衔接是：SIMT Isinf 与张量 IsInf、half/bfloat16 __hisinf 执行同一无穷判定，可按数据载体切换并核对返回语义。
+- [__hisinf](../../bfloat16_type/bfloat16_compare_functions/_hisinf.md)（`same_topic`）：《__hisinf》处理“判断bfloat16类型浮点数是否为无穷，输入为inf或-inf时返回true。”。《__hisinf》明确“判断浮点数是否为无穷。”，可直接用于核对half isinf 谓词与 IsInf 高阶/SIMT 实现及临时空间合同。
+<!-- cannbot:related:end -->

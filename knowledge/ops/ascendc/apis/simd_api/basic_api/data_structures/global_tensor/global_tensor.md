@@ -15,3 +15,9 @@ platforms: [agnostic]
 # GlobalTensor
 
 GlobalTensor 用于管理 GM（Global Memory）侧的全局张量，提供 SetGlobalBuffer 绑定物理缓冲区，GetValue/SetValue/operator[]/operator() 进行元素读写，GetSize/SetShapeInfo/GetShapeInfo 管理形状与大小，GetPhyAddr 获取物理地址。ReinterpretCast 支持类型重解释，SetL2CacheHint 可设置 L2 Cache 访问提示以优化搬运性能。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetShapeInfo](get_shape_info.md)（`related`）：GetShapeInfo 与《GlobalTensor》的实质衔接是：GetShapeInfo 只有在对应 GlobalTensor 已 SetShapeInfo 后才有效；ShapeInfo、SetGlobalBuffer 与 tensor 子视图共同约束 shape 元数据生命周期。
+<!-- cannbot:related:end -->

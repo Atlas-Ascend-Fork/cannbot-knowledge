@@ -19,3 +19,18 @@ platforms: ['950']
 返回值为 Layout 的有效元素个数，连续排列时与 Capacity 相等。
 约束：索引 Is 必须在有效维度范围内。
 本接口为试验接口，后续版本可能调整，不保证兼容性。仅 Ascend 950PR/950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Capacity（基础API）](capacity.md)（`related`）：基础APISize说明返回 Layout 的有效元素数量，并支持通过模板索引选择要统计的维度；对Capacity（基础API）而言，Capacity 是 Layout 可寻址元素容量，需用 Cosize/Size 的计算口径和 Layout 的 Shape/Stride 定义辨清含 padding 的内存范围。
+- [Cosize（基础API）](cosize.md)（`same_topic`）：基础APISize 与《Cosize（基础API）》的实质衔接是：Size 从 Layout 的 Shape 与 Stride 计算逻辑元素数；Capacity、Cosize、Rank 及层次化表述用于区分逻辑大小、物理跨度和布局构造结果。
+- [GetShape](get_shape.md)（`same_topic`）：基础APISize 与《GetShape》的实质衔接是：Size 从 Layout 的 Shape 与 Stride 计算逻辑元素数；Capacity、Cosize、Rank 及层次化表述用于区分逻辑大小、物理跨度和布局构造结果。
+- [GetStride](get_stride.md)（`same_topic`）：基础APISize 与《GetStride》的实质衔接是：Size 从 Layout 的 Shape 与 Stride 计算逻辑元素数；Capacity、Cosize、Rank 及层次化表述用于区分逻辑大小、物理跨度和布局构造结果。
+- [Layout](layout.md)（`same_topic`）：基础APISize 与《Layout》的实质衔接是：Size 从 Layout 的 Shape 与 Stride 计算逻辑元素数；Capacity、Cosize、Rank 及层次化表述用于区分逻辑大小、物理跨度和布局构造结果。
+- [Layout和层次化表述法](layout_hierarchical_representation.md)（`same_topic`）：基础APISize 与《Layout和层次化表述法》的实质衔接是：Size 从 Layout 的 Shape 与 Stride 计算逻辑元素数；Capacity、Cosize、Rank 及层次化表述用于区分逻辑大小、物理跨度和布局构造结果。
+- [MakeLayout](make_layout.md)（`same_topic`）：基础APISize 与《MakeLayout》的实质衔接是：Size 从 Layout 的 Shape 与 Stride 计算逻辑元素数；Capacity、Cosize、Rank 及层次化表述用于区分逻辑大小、物理跨度和布局构造结果。
+- [Shape（基础API）](shape.md)（`same_topic`）：基础APISize 与《Shape（基础API）》的实质衔接是：Size 从 Layout 的 Shape 与 Stride 计算逻辑元素数；Capacity、Cosize、Rank 及层次化表述用于区分逻辑大小、物理跨度和布局构造结果。
+- [Stride（基础API）](stride.md)（`same_topic`）：基础APISize 与《Stride（基础API）》的实质衔接是：Size 从 Layout 的 Shape 与 Stride 计算逻辑元素数；Capacity、Cosize、Rank 及层次化表述用于区分逻辑大小、物理跨度和布局构造结果。
+- [基础APIRank](rank.md)（`same_topic`）：基础APISize 与《基础APIRank》的实质衔接是：Size 从 Layout 的 Shape 与 Stride 计算逻辑元素数；Capacity、Cosize、Rank 及层次化表述用于区分逻辑大小、物理跨度和布局构造结果。
+<!-- cannbot:related:end -->

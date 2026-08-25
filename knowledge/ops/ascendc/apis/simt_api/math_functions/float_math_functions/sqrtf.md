@@ -24,3 +24,11 @@ platforms: ['950']
 约束：本接口支持的输入数据范围为x大于等于0，否则返回值为nan。 针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt](../../../../runbooks/compilation/device_sqrt_uses_vector_api.md)（`exemplifies`）：Runbook 记录在 __aicore__ 普通 device 路径直接调用 libc sqrtf 的 bisheng 失败，并以 32B LocalTensor 上 AscendC::Sqrt、显式同步和全量精度通过收敛，为 SIMT sqrtf 卡补充编程域边界。
+- [Rsqrtf](rsqrtf.md)（`related`）：Rsqrtf 返回 1/sqrt(x)，Sqrtf 返回 sqrt(x)，二者是同一输入域的正向与倒数路径。
+- [Hsqrt](../bfloat16_type/bfloat16_math_functions/hsqrt.md)（`same_topic`）：Hsqrt 与《Sqrtf》的实质衔接是：bfloat16 Hsqrt 与同类型 Hrsqrt 分别执行 sqrt 和 reciprocal-sqrt；bfloat16x2、half 与 float 的 sqrt 入口保持数学任务一致，但返回宽度、次正规数和特殊值契约不同。
+<!-- cannbot:related:end -->

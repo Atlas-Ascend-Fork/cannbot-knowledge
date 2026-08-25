@@ -25,3 +25,13 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__isnanx2](_isnanx2.md)（`related`）：__hequx2 与《__isnanx2》的实质衔接是：half2 unordered equality 的 bool/mask 形式与 ordered equality、isnan 共同界定逐 lane 返回和 NaN 行为。
+- [__hequx2](../../bfloat16_type/bfloat16x2_compare_functions/_hequx2.md)（`same_topic`）：__hequx2 与《__hequx2》的实质衔接是：hequx2 是 unordered equality（NaN 也为真）；mask、half2、ordered equality 与 unordered not-equal 入口直接界定返回形态和 NaN 分支。
+- [__hequx2_mask](_hequx2_mask.md)（`same_topic`）：__hequx2 与《__hequx2_mask》的实质衔接是：half2 unordered equality 的 bool/mask 形式与 ordered equality、isnan 共同界定逐 lane 返回和 NaN 行为。
+- [__heqx2](_heqx2.md)（`same_topic`）：__hequx2 与《__heqx2》的实质衔接是：half2 unordered equality 的 bool/mask 形式与 ordered equality、isnan 共同界定逐 lane 返回和 NaN 行为。
+- [__heqx2_mask](_heqx2_mask.md)（`same_topic`）：__hequx2 与《__heqx2_mask》的实质衔接是：half2 unordered equality 的 bool/mask 形式与 ordered equality、isnan 共同界定逐 lane 返回和 NaN 行为。
+<!-- cannbot:related:end -->

@@ -26,3 +26,13 @@ Carry flag（进位/借位标志）用于表示加法进位或者减法无借位
 支持数据类型：int32_t、uint32_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Add](add.md)（`same_topic`）：焦点处理SubC 的带借位减法、carry 输入输出和对应加法；Add正文说明“对srcReg0和srcReg1按元素求和，结果写入dstReg，可选保留进位”。候选与 SubC 共享 carry 寄存器契约，分别覆盖普通减法、带借位减法和带进位加法。
+- [AddC](add_c.md)（`same_topic`）：焦点处理SubC 的带借位减法、carry 输入输出和对应加法；AddC正文说明“对srcReg0、srcReg1及输入进位按元素求和，结果写入dstReg和carry”。候选与 SubC 共享 carry 寄存器契约，分别覆盖普通减法、带借位减法和带进位加法。
+- [AscAddc](../../../c_api/reg/arithmetic_compute/asc_addc.md)（`same_topic`）：焦点处理SubC 的带借位减法、carry 输入输出和对应加法；AscAddc正文说明“根据mask对源操作数src0、src1及输入进位carry_src按元素求和，将结果写入dst，同时将进位结果写入carry寄存器”。候选与 SubC 共享 carry 寄存器契约，分别覆盖普通减法、带借位减法和带进位加法。
+- [AscSubc](../../../c_api/reg/arithmetic_compute/asc_subc.md)（`same_topic`）：焦点处理SubC 的带借位减法、carry 输入输出和对应加法；AscSubc正文说明“根据mask对源操作数src0、src1及输入进位carry_src按元素求差，将结果写入dst，同时将进位结果写入carry寄存器”。候选与 SubC 共享 carry 寄存器契约，分别覆盖普通减法、带借位减法和带进位加法。
+- [Sub](sub.md)（`same_topic`）：焦点处理SubC 的带借位减法、carry 输入输出和对应加法；Sub正文说明“根据mask对源操作数srcReg0、srcReg1按元素求差，将结果写入目的操作数dstReg。可选保留进位到carry寄存器”。候选与 SubC 共享 carry 寄存器契约，分别覆盖普通减法、带借位减法和带进位加法。
+<!-- cannbot:related:end -->

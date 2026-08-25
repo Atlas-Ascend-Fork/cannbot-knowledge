@@ -22,3 +22,11 @@ platforms: [agnostic]
 OpAICPUDef算子定义，OpAICPUDef请参考OpAICPUDef。
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [KernelSo](kernel_so.md)（`related`）：AICPU 原型注册时 Engine 选择执行引擎，KernelSo 同时指定承载实现的共享库，两字段共同定位运行时实现。
+- [Engine（原型注册管理）](../op_host_cpu_def/engine.md)（`same_topic`）：Engine（原型注册管理）说明配置算子调用的引擎，入参固定为“DNN_VM_AICPU”。
+- [OpkernelLib](opkernel_lib.md)（`same_topic`）：OpkernelLib 与《Engine（原型注册管理）》的实质衔接是：OpkernelLib 在 OpAICPUDef 固定 CUSTAICPUKernel，必须与 KernelSo、Engine、FunctionName 和 AICPU OpDef/launcher 生成链一致。
+<!-- cannbot:related:end -->

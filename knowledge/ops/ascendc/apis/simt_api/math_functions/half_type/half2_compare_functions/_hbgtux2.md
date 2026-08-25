@@ -25,3 +25,13 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hbgeux2](_hbgeux2.md)（`related`）：__hbgeux2 将严格大于扩展为大于等于，同时保持 unordered NaN 语义；等值边界决定接口选型。
+- [__hbgtux2](../../bfloat16_type/bfloat16x2_compare_functions/_hbgtux2.md)（`related`）：bfloat16x2 版本保持 unordered、两个 lane 全大于才为 true 的谓词，可用于 half2 与 bfloat16x2 路径对应。
+- [__hgtux2](_hgtux2.md)（`related`）：Hbgtux2 将两个 lane 的 unordered greater-than 再做全真归约返回 bool，适合组级分支而非逐 lane 结果。
+- [__hgtux2_mask](_hgtux2_mask.md)（`related`）：__hgtux2_mask 与《__hbgtux2》的实质衔接是：half2 unordered greater-than mask 与 ordered mask、反向 less-than、bool/boolean-all 返回及 isnan 共同界定逐 lane 位图和 NaN 为 true 的语义。
+- [__hbgtx2](_hbgtx2.md)（`same_topic`）：两接口都要求两个 half2 lane 均满足 x>y 才返回 bool，差异是 NaN 时 unordered 版本视该 lane 为 true、ordered 版本为 false。
+<!-- cannbot:related:end -->

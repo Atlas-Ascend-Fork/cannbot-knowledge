@@ -25,3 +25,12 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hmax_nan](../half_compare_functions/_hmax_nan.md)（`related`）：“__hmaxx2_nan”处理获取两个half2类型数据中各分量的最大值。任一分量为nan时对应结果为nan。；“__hmax_nan”明确获取两个输入数据中的最大值。任一输入为nan时结果为nan。。实质衔接：这些函数分别去掉 NaN 传播、切换 max/min、缩为标量或显式检测 NaN，直接刻画 half2 最大值的边界语义。
+- [__hminx2_nan](_hminx2_nan.md)（`related`）：__hmaxx2_nan 与 focal 使用相同 half2 双分量和 NaN 传播策略，但一个取最大值、一个取最小值，适合成对实现上下界钳制。
+- [__isnanx2](_isnanx2.md)（`related`）：“__hmaxx2_nan”处理获取两个half2类型数据中各分量的最大值。任一分量为nan时对应结果为nan。；“__isnanx2”明确判断half2类型数据的两个分量是否为nan。。实质衔接：这些函数分别去掉 NaN 传播、切换 max/min、缩为标量或显式检测 NaN，直接刻画 half2 最大值的边界语义。
+- [__hmaxx2](_hmaxx2.md)（`same_topic`）：“__hmaxx2_nan”处理获取两个half2类型数据中各分量的最大值。任一分量为nan时对应结果为nan。；“__hmaxx2”明确获取两个half2类型数据各分量的最大值。。实质衔接：这些函数分别去掉 NaN 传播、切换 max/min、缩为标量或显式检测 NaN，直接刻画 half2 最大值的边界语义。
+<!-- cannbot:related:end -->

@@ -18,3 +18,9 @@ platforms: [a2, a3]
 函数原型：void asc_or(__ubuf__ int16_t* dst, __ubuf__ int16_t* src0, __ubuf__ int16_t* src1, uint32_t count)
 约束：操作数地址重叠约束请参考通用地址重叠约束。；dst、src的起始地址需要32字节对齐。
 支持平台：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Ascend 950PR/Ascend 950DT, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscOr](../reg/logic_compute/asc_or.md)（`same_topic`）：《AscOr》说明每对元素按位或运算，；《AscOr》说明根据mask对源操作数src0、src1执行按位或操作，结果写入dst，支持矢量数据寄存器和掩码寄存器。。二者在Vector AscOr与Reg AscOr实现同一逐元素按位或，仅操作数所在层级不同上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

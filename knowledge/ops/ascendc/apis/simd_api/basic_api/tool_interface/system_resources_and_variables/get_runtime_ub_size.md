@@ -18,3 +18,9 @@ platforms: ['950']
 获取运行时UB空间的大小，单位为Byte。开发者根据UB的大小来计算循环次数等参数值。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetUBSizeInBytes](get_ub_size_in_bytes.md)（`same_topic`）：两接口都返回当前核可用 UB 字节数；GetRuntimeUBSize 强调运行时查询，GetUBSizeInBytes 提供同一资源量的另一入口。
+<!-- cannbot:related:end -->

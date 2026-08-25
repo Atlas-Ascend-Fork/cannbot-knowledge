@@ -25,3 +25,12 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hfmax2_relu](../../bfloat16_type/bfloat16x2_arithmetic_functions/_hfmax2_relu.md)（`related`）：half2 同名接口提供相同的双分量运算与 ReLU 后处理，但输入数据类型不同。
+- [__hfma_relu](../half_arithmetic_functions/_hfma_relu.md)（`same_topic`）：__hfma_relu 与《__hfmax2_relu》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
+- [__hfmax2](../../bfloat16_type/bfloat16x2_arithmetic_functions/_hfmax2.md)（`same_topic`）：焦点处理half/bfloat16 x2 融合乘加与 ReLU 变体；__hfmax2_relu正文界定“计算输入half2类型数据各分量的乘加的结果（前两个输入相乘后与第三个输入相加），并遵循CAST_RINT模式对结果进行舍入。负数结果置为0”。候选保持 x2 乘加语义，只改变 half/bfloat16、scalar 或 ReLU 融合形态。
+- [__hfmax2](_hfmax2.md)（`same_topic`）：《__hfmax2》的任务是“计算输入half2类型数据各分量的乘加的结果（前两个输入相乘后与第三个输入相加），并遵循CAST_RINT模式对结果进行舍入。”。《__hfmax2_relu》具体提供“计算输入half2类型数据各分量的乘加的结果（前两个输入相乘后与第三个输入相加），并遵循CAST_RINT模式对结果进行舍入。负数结果置为0。”，它直接用于三输入 FMA 舍入、融合 ReLU 及 bfloat16x2 对应合同。
+<!-- cannbot:related:end -->

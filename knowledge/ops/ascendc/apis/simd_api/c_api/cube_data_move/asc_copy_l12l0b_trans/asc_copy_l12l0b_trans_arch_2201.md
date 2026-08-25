@@ -30,3 +30,11 @@ platforms: [a2, a3]
 - 开发者需要保证目的操作数转置后的分形没有重叠。
 
 仅 Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscSetL13dRpt](../asc_set_l13d_rpt.md)（`related`）：《AscSetL13dRpt》处理“设置Load3Dv2接口的repeat参数。”。《AscCopyL12L0bTrans》明确提供“实现带转置的2D格式数据从L1 Buffer到L0B Buffer的加载，支持多种数据类型和分形处理。”，其参数、调用或验证步骤直接接入3D L1 到 L0 搬运的 Fmatrix、尺寸、padding、repeat 和配置接口。
+- [AscCopyL12L0bTrans](asc_copy_l12l0b_trans.md)（`same_topic`）：总页与 2201 变体共同定义转置 B 搬运。
+- [AscCopyL12L0bTrans](asc_copy_l12l0b_trans_arch_3510.md)（`same_topic`）：两张卡是 AscCopyL12L0bTrans 在 2201 与 3510 架构下的同名实现，均完成 L1→L0B 并转置，但参数和支持约束需按架构选择。
+<!-- cannbot:related:end -->

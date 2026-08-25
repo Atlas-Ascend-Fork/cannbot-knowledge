@@ -21,3 +21,10 @@ host侧Tiling接口，用于获取LogicalAnd接口所需的最大和最小临时
 参数：ascendcPlatform为平台信息；srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource预留，传false；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。
 
 在minValue到maxValue范围内，临时空间越大性能越好。约束：无。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LogicalAnd](logical_and.md)（`related`）：LogicalAnd 不允许输入输出地址重叠并需要临时空间；该 host 接口给出可正确执行所需的最小/最大 workspace。
+- [GetLogicalAndTmpBufferFactorSize](get_logical_and_tmp_buffer_factor_size.md)（`same_topic`）：GetLogicalAndMaxMinTmpSize 与《GetLogicalAndTmpBufferFactorSize》的实质衔接是：LogicalAnd 的 MaxMin 查询须与 factor 查询及 kernel 接口配套，才能确定临时空间与实际调用。
+<!-- cannbot:related:end -->

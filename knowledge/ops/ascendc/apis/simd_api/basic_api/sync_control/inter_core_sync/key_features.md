@@ -27,3 +27,14 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`exemplifies`）：关键特性说明 与《双AIV CrossCoreFlag 的 subBlock 契约缺陷》的衔接是：CrossCoreSet/CrossCoreWait 是该四种跨核同步模式的实际发信与等待原语；AIV/AIC 配对 runbook 给出同一计数契约失配时的可执行排查。
+- [WaitPreBlock](wait_pre_block.md)（`related`）：WaitPreBlock 与《关键特性说明》的实质衔接是：WaitPreBlock 必须与 NotifyNextBlock 等次数配对并先初始化 workspace；GetBlockNum 决定 GM/UB workspace 下限，关键特性说明其按 blockIdx 串行的确定性语义。
+- [关键特性说明](../intra_core_sync/key_features.md)（`related`）：核间同步特性作用于不同核，不能用核内机制替代。
+- [CrossCoreSetFlag](cross_core_set_flag_isasi.md)（`same_topic`）：关键特性说明 与《CrossCoreSetFlag》的衔接是：CrossCoreSet/CrossCoreWait 是该四种跨核同步模式的实际发信与等待原语；AIV/AIC 配对 runbook 给出同一计数契约失配时的可执行排查。
+- [CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)（`same_topic`）：关键特性说明 与《CrossCoreWaitFlag》的衔接是：CrossCoreSet/CrossCoreWait 是该四种跨核同步模式的实际发信与等待原语；AIV/AIC 配对 runbook 给出同一计数契约失配时的可执行排查。
+- [核间同步能力概述](inter_core_sync_overview.md)（`same_topic`）：关键特性说明 与《核间同步能力概述》的衔接是：CrossCoreSet/CrossCoreWait 是该四种跨核同步模式的实际发信与等待原语；AIV/AIC 配对 runbook 给出同一计数契约失配时的可执行排查。
+<!-- cannbot:related:end -->

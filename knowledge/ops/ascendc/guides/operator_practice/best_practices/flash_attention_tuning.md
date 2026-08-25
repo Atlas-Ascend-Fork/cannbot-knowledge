@@ -34,3 +34,12 @@ platforms: [a2]
 通过观察分析流水图和Profiling数据，结合优化经验来判断性能瓶颈点。在优化过程中不同阶段可能会出现不同的瓶颈点，需要不断优化以达到最佳性能。
 -   根据优化经验，循环间会存在一些不必要的性能开销，循环越多性能可能越差；满足UB最大空间限制的情况下，UB切分的基本块越大，循环越少。算子中通过InitBuffer接口分配UB buffer大小。
 如上代码所示，InitBuffer接口的第二个参数表示buffer占用的大小，所有buffer大小的和即为占用的总空间。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Matmul高阶API开启MTE2 Preload](matmul_tuning_cases/matmul_mte2_preload.md)（`related`）：Attention 中 QK/PV Matmul 可复用 MTE2 preload 原则。
+- [Mix合图包入 V2 致任务数减半 E2E 劣化](../../../runbooks/performance/mix_v2_e2e.md)（`related`）：该卡用端到端 profile 验证 FlashAttention MIX 调度收益。
+- [PyPTO F40005 UB 越界：scope 扩展压满 UB](../../../runbooks/compilation/pypto_f40005_ub_scope_ub.md)（`related`）：FlashAttention 变换若造成 UB scope 错误需先修构建，再评性能。
+- [unroll s2 内层循环破坏 flash 在线 softmax 循环态](../../../runbooks/precision/unroll_s2_flash_softmax.md)（`related`）：S2 unroll 会改变 softmax 规约顺序和精度，调优需同时验证。
+<!-- cannbot:related:end -->

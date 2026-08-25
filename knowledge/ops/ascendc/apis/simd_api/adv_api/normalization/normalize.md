@@ -22,3 +22,12 @@ platforms: ['950', a2, a3]
 接口参数：output归一化结果；outputRstd标准差倒数；inputMean/inputVariance输入均值和方差（float类型）；inputX输入数据；gamma/beta缩放平移系数；sharedTmpBuffer临时缓存；epsilon防除零系数；para参数信息。TPosition支持VECIN/VECCALC/VECOUT。
 
 约束：仅支持ND格式；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LayerNorm](layer_norm.md)（`related`）：当均值和方差已经由上游计算时，Normalize 可跳过 LayerNorm 的统计归约，只完成 rstd 与仿射归一化，是同一公式的可复用下游阶段。
+- [Normalize Tiling](normalize_tiling.md)（`same_topic`）：Normalize 与《Normalize Tiling》的实质衔接是：Normalize 依赖 tiling、归约统计和 Rsqrt，所选卡片覆盖 padding、NaN/rstd 与同步故障。
+- [WelfordFinalize](welford_finalize.md)（`same_topic`）：Normalize 与《WelfordFinalize》的实质衔接是：Normalize 依赖 tiling、归约统计和 Rsqrt，所选卡片覆盖 padding、NaN/rstd 与同步故障。
+- [WelfordUpdate](welford_update.md)（`same_topic`）：Normalize 与《WelfordUpdate》的实质衔接是：Normalize 依赖 tiling、归约统计和 Rsqrt，所选卡片覆盖 padding、NaN/rstd 与同步故障。
+<!-- cannbot:related:end -->

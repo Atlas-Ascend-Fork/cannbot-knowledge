@@ -25,3 +25,11 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hequx2](_hequx2.md)（`same_topic`）：__hequx2 与《__hequx2_mask》的实质衔接是：half2 unordered equality 的 bool/mask 形式与 ordered equality、isnan 共同界定逐 lane 返回和 NaN 行为。
+- [__heqx2_mask](_heqx2_mask.md)（`same_topic`）：__heqx2_mask 与《__hequx2_mask》的实质衔接是：ordered equality 的 mask、bool 与 unordered 形态围绕 half2 的逐 lane 返回及 NaN 规则互补。
+- [__hneux2_mask](_hneux2_mask.md)（`same_topic`）：hequx2_mask 是同一 unordered 比较族的相等谓词，与 hneux2_mask 形成互补条件。
+<!-- cannbot:related:end -->

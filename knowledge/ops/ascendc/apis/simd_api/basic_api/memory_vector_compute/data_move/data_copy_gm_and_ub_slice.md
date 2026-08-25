@@ -34,3 +34,11 @@ platforms: ['950', a2, a3]
 参数说明：T：源操作数或者目的操作数的数据类型。支持的数据类型请参考[数据类型](#zh-cn_topic_0000002565968945_section4219135304818)。；dst：输出 目的操作数。 •类型为LocalTensor时，存储位置为Unified Buffer，目的地址需要32字节对齐。 •类型为GlobalTensor时，存储位置为Global Memory，目的地址需要1字节对齐。；src：输入 源操作数。 •类型为GlobalTensor时，存储位置为Global Memory，源地址需要1字节对齐。 •类型为LocalTensor时，存储位置为Unified Buffer，源地址需要32字节对齐。；dstSliceInfo：输入 目的操作数切片信息，类型为SliceInfo。通过该参数可以配置切片的起始和终止元素个数、间隔、长度等信息。 SliceInfo参数说明请参考[表3](#table_slice_3)。；srcSliceInfo：输入 源操作数切片信息，类型为SliceInfo。通过该参数可以配置切片的起始和终止元素个数、间隔、长度等信息。 具体定义请参考`${INSTALL_DIR}/asc/include/basic_api/kernel_struct_data_copy.h`，`${INSTALL_DIR}`请替换为CANN软件安装后文件存储路径。 SliceInfo参数说明请参考[表3](#table_slice_3)。
 
 约束：该接口为软仿接口，从易用性角度出发进行设计。；位于Global Memory的地址必须1字节对齐，位于Unified Buffer的地址必须32字节对齐。；burstLen，仅在dimValue = 1时生效，超出1维的情况下，必须配置为1，不支持配置成其他值。；切片数据搬运中的横向burstLen大小设置，需要用户自己通过计算：横向切片元素个数* sizeof(T)/32字节。横向切片元素个数* sizeof(T)的大小必须是32字节的倍数。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DataCopy](data_copy_gm_and_ub_continuous.md)（`related`）：《DataCopy》说明软仿接口，支持数据的切片搬运，提取多维Tensor数据的子集进行搬运。；《DataCopy》说明支持GM与UB之间的连续数据搬运，数据传输过程中保持原始格式和内容不变。。二者在切片DataCopy是高维分块搬运的具体重载，连续搬运和数据搬运总览用于界定它的适用边界上存在可执行的直接衔接。
+- [数据搬运](data_move.md)（`related`）：《DataCopy》说明软仿接口，支持数据的切片搬运，提取多维Tensor数据的子集进行搬运。；《数据搬运》说明矢量数据搬运接口集，涵盖 DataCopy、DataCopyPad、Copy 等 GM/UB 间连续、高维切分、非对齐搬运接口。。二者在切片DataCopy是高维分块搬运的具体重载，连续搬运和数据搬运总览用于界定它的适用边界上存在可执行的直接衔接。
+- [DataCopy](data_copy_gm_and_ub_highdim_split.md)（`same_topic`）：《DataCopy》说明软仿接口，支持数据的切片搬运，提取多维Tensor数据的子集进行搬运。；《DataCopy》说明支持GM与UB之间的高维切分数据搬运，支持非连续和连续的数据搬运。。二者在切片DataCopy是高维分块搬运的具体重载，连续搬运和数据搬运总览用于界定它的适用边界上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

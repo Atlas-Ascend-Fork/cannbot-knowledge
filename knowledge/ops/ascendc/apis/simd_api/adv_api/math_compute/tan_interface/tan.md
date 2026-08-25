@@ -22,3 +22,13 @@ platforms: ['950', a2, a3]
 模板参数isReuseSource预留，传入false即可。接口参数：dstTensor为输出操作数；srcTensor为输入操作数，TPosition支持VECIN/VECCALC/VECOUT，数据类型需与dstTensor一致；sharedTmpBuffer为临时缓存；calCount为参与计算元素个数。
 
 约束：输入数据限制在(-65504.0, 65504.0)范围内；不支持源操作数与目的操作数地址重叠；不支持sharedTmpBuffer与源/目的操作数地址重叠；遵循通用地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Cos](../cos_interface/cos.md)（`related`）：自写 tan=sin/cos 时还需处理 cos 近零和误差放大；标准 Tan 是独立基线。
+- [GetTanMaxMinTmpSize](get_tan_max_min_tmp_size.md)（`related`）：调用 Tan 前据 shape 计算 workspace。
+- [GetTanTmpBufferFactorSize](get_tan_tmp_buffer_factor_size.md)（`related`）：Tan 的 sharedTmpBuffer 重载需要 Host 为 tile 预留足够空间；FactorSize 可在 UB 预算确定时反推出安全 calCount。
+- [Sin](../sin_interface/sin.md)（`related`）：Sin/Cos 组合可做公式 A/B，但不能忽略极点边界。
+- [Tan接口](tan_interface.md)（`same_topic`）：Tan接口 与《Tan》的实质衔接是：Tan 接口由 Tan 和两种临时空间查询组成；Atan 是反函数，Sin/Cos 卡解释 tan=sin/cos 的输入值域与验证关系。
+<!-- cannbot:related:end -->

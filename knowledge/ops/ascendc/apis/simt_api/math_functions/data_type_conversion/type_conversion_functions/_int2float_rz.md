@@ -25,3 +25,12 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/device_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__int2float_rd](_int2float_rd.md)（`same_topic`）：__int2float_rd说明遵循CAST_FLOOR模式，将int32类型数据转换为浮点数，返回转换后的值。
+- [__int2float_rn](_int2float_rn.md)（`same_topic`）：__int2float_rn说明遵循CAST_RINT模式，将int32类型数据转换为浮点数，返回转换后的值。
+- [__int2float_rna](_int2float_rna.md)（`same_topic`）：__int2float_rna说明遵循CAST_ROUND模式，将int32类型数据转换为浮点数，返回转换后的值。
+- [__int2float_ru](_int2float_ru.md)（`same_topic`）：__int2float_ru说明遵循CAST_CEIL模式，将int32类型数据转换为浮点数，返回转换后的值。
+<!-- cannbot:related:end -->

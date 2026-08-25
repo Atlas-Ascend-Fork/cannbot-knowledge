@@ -27,3 +27,9 @@ platforms: ['950', a2, a3]
 - minValue（输出）：输出DropOut接口所需的tiling信息（最小临时空间大小）。
 
 返回值：GetDropOutMaxTmpSize返回DropOut接口能完成计算所需最大临时空间大小。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DropOut](drop_out.md)（`same_topic`）：GetDropOutMaxMinTmpSize 与《DropOut》的实质衔接是：GetDropOutMaxMinTmpSize 给 DropOut kernel 分配可用临时空间，两者必须以相同 shape/type 契约调用。
+<!-- cannbot:related:end -->

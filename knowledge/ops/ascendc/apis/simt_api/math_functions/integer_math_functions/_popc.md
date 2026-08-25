@@ -19,3 +19,9 @@ platforms: ['950']
 函数原型（重载）：int __popc(unsigned int x)、int __popc(unsigned long long x)、int __popc(unsigned long x)
 
 参数 x 为源操作数。返回二进制中 1 的位数。仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/device_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [asc_popc（标量计算）](../../../simd_api/c_api/scalar_compute/asc_popc.md)（`same_topic`）：焦点处理popc 位计数在 SIMT 与 C 标量 API 的等价入口；asc_popc（标量计算）正文说明“获取一个uint64_t类型数字的二进制中1的个数”。候选执行同样的置位比特计数，只改变 API 层和输入位宽。
+<!-- cannbot:related:end -->

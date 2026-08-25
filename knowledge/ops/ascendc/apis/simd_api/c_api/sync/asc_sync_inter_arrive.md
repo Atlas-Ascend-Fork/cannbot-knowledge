@@ -18,3 +18,9 @@ platforms: ['950', a2, a3]
 函数原型：void asc_sync_inter_arrive(pipe_t pipe, int64_t flag_id)
 约束：不建议开发者同时使用该接口和Matmul高阶API，否则会有flag_id冲突的风险。；同一flag_id的计数器最多设置15次。；必须保证配套使用asc_sync_inter_arrive和asc_sync_inter_wait，否则会出现未定义行为。
 支持平台：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core, Atlas 推理系列产品Vector Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscSyncInterWait](asc_sync_inter_wait.md)（`same_topic`）：asc_sync_inter_wait 必须由另一 group 的 asc_sync_inter_arrive 使用同一 flag_id 发出信号；两者是不可拆分的跨 group 同步握手。
+<!-- cannbot:related:end -->

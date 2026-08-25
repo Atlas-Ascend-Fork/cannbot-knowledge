@@ -21,3 +21,14 @@ platforms: ['950']
 支持数据类型：int16_t、int32_t、int8_t、uint16_t、uint32_t、uint8_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscPackToHigh](asc_pack_to_high.md)（`same_topic`）：AscUnsqueeze 与《AscPackToHigh》的实质衔接是：AscUnsqueeze 按 mask 逆展开压缩数据，Unsqueeze 是对应基础入口，Squeeze/AscSqueeze 是生成压缩流和 mask 的逆向前置操作。
+- [AscPackToLow](asc_pack_to_low.md)（`same_topic`）：AscUnsqueeze 与《AscPackToLow》的实质衔接是：AscUnsqueeze 按 mask 逆展开压缩数据，Unsqueeze 是对应基础入口，Squeeze/AscSqueeze 是生成压缩流和 mask 的逆向前置操作。
+- [AscSqueeze](../compare_and_select/asc_squeeze.md)（`same_topic`）：AscUnsqueeze 与《AscSqueeze》的实质衔接是：AscUnsqueeze 按 mask 逆展开压缩数据，Unsqueeze 是对应基础入口，Squeeze/AscSqueeze 是生成压缩流和 mask 的逆向前置操作。
+- [AscUnpack](asc_unpack.md)（`same_topic`）：AscUnsqueeze 与《AscUnpack》的实质衔接是：AscUnsqueeze 按 mask 逆展开压缩数据，Unsqueeze 是对应基础入口，Squeeze/AscSqueeze 是生成压缩流和 mask 的逆向前置操作。
+- [Squeeze](../../../basic_api/data_structure_tensor_api/layout_structure/squeeze.md)（`same_topic`）：AscUnsqueeze 与《Squeeze》的实质衔接是：AscUnsqueeze 按 mask 逆展开压缩数据，Unsqueeze 是对应基础入口，Squeeze/AscSqueeze 是生成压缩流和 mask 的逆向前置操作。
+- [Unsqueeze](../../../basic_api/reg_vector_compute/data_compression/unsqueeze.md)（`same_topic`）：AscUnsqueeze 与《Unsqueeze》的实质衔接是：AscUnsqueeze 按 mask 逆展开压缩数据，Unsqueeze 是对应基础入口，Squeeze/AscSqueeze 是生成压缩流和 mask 的逆向前置操作。
+<!-- cannbot:related:end -->

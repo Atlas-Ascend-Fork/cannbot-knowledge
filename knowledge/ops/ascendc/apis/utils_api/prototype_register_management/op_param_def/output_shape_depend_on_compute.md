@@ -24,3 +24,9 @@ OpParamDef算子定义，OpParamDef请参考OpParamDef。
 ## 约束说明
 -   只能用于标识算子输出。
 -   基于旧版本CANN包（不支持OutputShapeDependOnCompute特性）生成的自定义算子工程，无法兼容OutputShapeDependOnCompute接口。在使用非当前版本CANN包生成的自定义算子工程时，需特别注意兼容性问题。您可以通过查看自定义算子工程下cmake/util/ascendc_impl_build.py中有无output_shape_depend_on_compute字段来确认当前工程是否支持该特性，如果未找到该字段，则需要重新生成自定义算子工程以启用OutputShapeDependOnCompute特性。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [输出shape依赖计算](../../../../guides/programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/kernel_output_shape_computation.md)（`explains`）：OutputShapeDependOnCompute 只完成原型标记，目标指南给出 kernel 写实际 shape、框架读取并管理输出内存的完整实现合同。
+<!-- cannbot:related:end -->

@@ -23,3 +23,10 @@ platforms: ['950']
 - typeSize（输入）：输入的数据类型大小，单位为字节。
 - maxLivedNodeCount（输出）：最大存活节点数，表示临时空间是单次计算数据量所占空间的多少倍。
 - extraBuf（输出）：使用的额外临时空间大小，单位为字节。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BitwiseXor](bitwise_xor.md)（`related`）：factor 接口给出 maxLivedNodeCount 与 extraBuf，可由已分配空间反算 BitwiseXor 单次 count，补足分块 tiling 公式。
+- [GetBitwiseXorMaxMinTmpSize](get_bitwise_xor_max_min_tmp_size.md)（`same_topic`）：GetBitwiseXorMaxMinTmpSize 与《GetBitwiseXorTmpBufferFactorSize》的实质衔接是：GetBitwiseXorMaxMinTmpSize 给出 BitwiseXor 可用临时空间范围，factor 查询在固定空间下反推元素数，Kernel 是该空间的实际消费方。
+<!-- cannbot:related:end -->

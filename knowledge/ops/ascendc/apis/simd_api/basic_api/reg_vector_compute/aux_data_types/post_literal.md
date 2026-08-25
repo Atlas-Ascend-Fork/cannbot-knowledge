@@ -21,3 +21,9 @@ platforms: [agnostic]
 # PostLiteral | 参数名 | 描述 | | :-- | :-- | | PostLiteral | 用于控制是否开启UB地址自动更新功能（post update）。 enum class PostLiteral { POST_MODE_NORMAL, POST_MODE_UPDATE }; • POST_MODE_NORMAL：POST_MODE_NORMAL场景使用，UB操作数地址不更新。连续非对齐搬入（LoadUnAlign）不支持POST_MODE_NORMAL模式； • POST_MODE_UPDATE：POST_MODE_UPDATE场景使用，UB地址同时作为输入和输出，每次调用会更新。 |
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LoadUnAlign](../reg_data_load/load_un_align_continuous.md)（`related`）：LoadUnAlign 不支持 NORMAL，必须使用 PostLiteral::POST_MODE_UPDATE 自动推进 UB 地址。
+<!-- cannbot:related:end -->

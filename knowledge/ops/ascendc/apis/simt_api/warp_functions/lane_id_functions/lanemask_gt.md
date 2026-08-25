@@ -27,3 +27,13 @@ platforms: ['950']
 仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。
 需包含头文件 "simt_api/device_functions.h"。
 支持 SIMT 与 SIMD/SIMT 混合编程场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Laneid](laneid.md)（`related`）：Laneid 返回当前线程的 Lane ID；LanemaskGt 正是以该 ID 为边界，将所有严格更大 Lane 的位设为 1，因此前者给出后者掩码边界的标量坐标。
+- [LanemaskEq](lanemask_eq.md)（`related`）：LanemaskGt 与《LanemaskEq》的实质衔接是：Laneid 与四种相对 lane mask 共同定义严格大于、大小于等于和相等的位掩码边界。
+- [LanemaskLt](lanemask_lt.md)（`related`）：LanemaskGt 生成严格大于当前 Lane 的后缀掩码，与 LanemaskLt 的前缀掩码互补。
+- [LanemaskGe](lanemask_ge.md)（`same_topic`）：LanemaskGt 与《LanemaskGe》的实质衔接是：Laneid 与四种相对 lane mask 共同定义严格大于、大小于等于和相等的位掩码边界。
+- [LanemaskLe](lanemask_le.md)（`same_topic`）：LanemaskGt 与《LanemaskLe》的实质衔接是：Laneid 与四种相对 lane mask 共同定义严格大于、大小于等于和相等的位掩码边界。
+<!-- cannbot:related:end -->

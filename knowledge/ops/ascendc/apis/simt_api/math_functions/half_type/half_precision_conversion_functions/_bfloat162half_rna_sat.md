@@ -25,3 +25,15 @@ platforms: ['950']
 约束：SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscBfloat162Half](../../../../simd_api/c_api/reg/data_type_convert/asc_bfloat162half.md)（`related`）：__bfloat162half_rna_sat 与《AscBfloat162Half》的实质衔接是：这些接口都把 bfloat16 按 RNA 窄化到 half；non-SAT、其他舍入的 SAT 变体和 AscBfloat162Half 直接对照饱和及特殊值。
+- [__bfloat162half_rd_sat](_bfloat162half_rd_sat.md)（`same_topic`）：__bfloat162half_rna_sat 与《__bfloat162half_rd_sat》的实质衔接是：这些接口都把 bfloat16 按 RNA 窄化到 half；non-SAT、其他舍入的 SAT 变体和 AscBfloat162Half 直接对照饱和及特殊值。
+- [__bfloat162half_rn_sat](_bfloat162half_rn_sat.md)（`same_topic`）：__bfloat162half_rna_sat 与《__bfloat162half_rn_sat》的实质衔接是：这些接口都把 bfloat16 按 RNA 窄化到 half；non-SAT、其他舍入的 SAT 变体和 AscBfloat162Half 直接对照饱和及特殊值。
+- [__bfloat162half_rna](_bfloat162half_rna.md)（`same_topic`）：__bfloat162half_rna_sat 与《__bfloat162half_rna》的实质衔接是：这些接口都把 bfloat16 按 RNA 窄化到 half；non-SAT、其他舍入的 SAT 变体和 AscBfloat162Half 直接对照饱和及特殊值。
+- [__bfloat162half_ru_sat](_bfloat162half_ru_sat.md)（`same_topic`）：__bfloat162half_rna_sat 与《__bfloat162half_ru_sat》的实质衔接是：这些接口都把 bfloat16 按 RNA 窄化到 half；non-SAT、其他舍入的 SAT 变体和 AscBfloat162Half 直接对照饱和及特殊值。
+- [__bfloat162half_rz_sat](_bfloat162half_rz_sat.md)（`same_topic`）：__bfloat162half_rna_sat 与《__bfloat162half_rz_sat》的实质衔接是：这些接口都把 bfloat16 按 RNA 窄化到 half；non-SAT、其他舍入的 SAT 变体和 AscBfloat162Half 直接对照饱和及特殊值。
+- [__half2half_rna](_half2half_rna.md)（`same_topic`）：__half2half_rna 与《__bfloat162half_rna_sat》的实质衔接是：同类型 rd/rn/ru/rz 与 bfloat16/float 输入的 rna/sat 变体共同界定 CAST_ROUND 的 tie-away 和饱和特殊值行为。
+<!-- cannbot:related:end -->

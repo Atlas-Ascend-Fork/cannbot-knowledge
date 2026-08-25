@@ -18,3 +18,9 @@ platforms: ['950', a2, a3]
 将Unified Buffer中的连续数据搬运到L1 Buffer，数据格式不变。用于从Vector侧向Cube侧传递数据。
 
 函数原型通过模板参数指定数据类型。参数包含dstTensor（L1目的）、srcTensor（UB源）、dataCopyParams。约束：遵循Cube计算地址对齐约束。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DataCopy](data_copy_ub_to_l1_highdim_split.md)（`related`）：两者数据路径同为 UB 到 L1；连续版用于一段连续矩阵，高维切分版增加分段与 stride 描述，提供按布局选择搬运重载的边界。
+<!-- cannbot:related:end -->

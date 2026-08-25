@@ -27,3 +27,14 @@ Tiling下沉仅适用于存在Tiling值依赖（即当InferShape不依赖输入�
 -   算子核函数实现
 当前Tiling下沉仅支持融合算子，为了模拟融合算子场景，通过KERNEL_TASK_TYPE_DEFAULT接口强制指定算子在AIC、AIV混合场景运行。
 -   修改op_host目录下的编译脚本CMakeLists.txt，添加Tiling下沉编译命令。具体代码如下所示：
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DEVICE_IMPL_OP_OPTILING](../../../../apis/utils_api/tiling_sink/device_impl_op_optiling.md)（`explains`）：DEVICE_IMPL_OP_OPTILING 生成设备侧 Tiling 注册类，指南给出开启 Tiling 下沉并接入图编译的完整流程。
+- [Tiling下沉](../../../../apis/utils_api/tiling_sink/tiling_sink.md)（`explains`）：该指南解释何时把 Host Tiling 下沉到 AI CPU、如何开启图模式流程，补足索引卡只有注册宏而缺少的使用决策和端到端步骤。
+- [ValueDepend](../../../../apis/utils_api/prototype_register_management/op_param_def/value_depend.md)（`explains`）：开启 Tiling 下沉明确要求非 Const 输入配置 Tiling 值依赖；ValueDepend 卡给出 scope=TILING 的注册语义，使数据只在 Tiling 阶段可取并支持下沉。
+- [图编译和图执行](graph_compilation_and_execution.md)（`related`）：启用 tiling sink 会改变 tiling 在图编译/执行阶段的生成与下发位置，是该流程的关键优化分支。
+- [基本开发流程](basic_development_flow.md)（`related`）：基本开发流程 与《开启Tiling下沉》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
+- [高级编程概述](overview.md)（`same_topic`）：高级编程概述 与《开启Tiling下沉》的实质衔接是：图高级编程概述由基本开发流程展开，并以图编译执行和 tiling 下沉说明 GE 从构图到下发的生命周期；编译部署流程是产物落点。
+<!-- cannbot:related:end -->

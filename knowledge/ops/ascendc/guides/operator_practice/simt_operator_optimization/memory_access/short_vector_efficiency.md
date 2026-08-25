@@ -23,3 +23,11 @@ Task Duration(μs)：aiv_time(μs)：aiv_total_cycles：aiv_vec_time(μs)：aiv_
 86.478：86.217：8832432：85.735：0.995：0.47：0.005：0：0.493：7.77：6.24
 从性能数据可以看出，读带宽为7.77 GB/s，写带宽为6.24 GB/s。
 【正例】使用half2类型计算，提升带宽利用率。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DCacheAccess](dcache_access.md)（`related`）：短向量能让一次搬运覆盖更多连续字节/Cache Line，与 DCache 策略组合可减少事务数并提升热点访问吞吐。
+- [通过类型对齐提升搬运效率](type_alignment_transfer.md)（`related`）：ShortVector 用 half2 等短向量把 Warp 单次有效宽度扩到 128B Cache Line，与 alignas 扩大结构体访问位宽属于同一事务宽度优化链。
+- [MemoryAccessMerge](memory_access_merge.md)（`same_topic`）：《MemoryAccessMerge》处理“SIMT编程模式下让同一Warp内相邻线程访问连续GM地址以实现访存合并，提高GM带宽利用率。”。《ShortVectorEfficiency》提供“SIMT编程模式下使用短向量类型替代普通数据类型进行数据搬运和计算，覆盖整个Cache Line，提升访存效率。”，其具体合同或探针直接接入Warp 连续 GM 访问的短向量、类型对齐、步长搬运和 Gather 示例验证。
+<!-- cannbot:related:end -->

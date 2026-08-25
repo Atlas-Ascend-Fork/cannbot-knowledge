@@ -32,3 +32,10 @@ __aicore__ inline void BitwiseXor(const LocalTensor<T>& dst, const LocalTensor<T
 - 操作数地址偏移对齐要求请参见通用说明和约束。
 
 支持：Ascend 950PR/Ascend 950DT。不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetBitwiseXorTmpBufferFactorSize](get_bitwise_xor_tmp_buffer_factor_size.md)（`related`）：factor 接口给出 maxLivedNodeCount 与 extraBuf，可由已分配空间反算 BitwiseXor 单次 count，补足分块 tiling 公式。
+- [GetBitwiseXorMaxMinTmpSize](get_bitwise_xor_max_min_tmp_size.md)（`same_topic`）：GetBitwiseXorMaxMinTmpSize 与《BitwiseXor》的实质衔接是：GetBitwiseXorMaxMinTmpSize 给出 BitwiseXor 可用临时空间范围，factor 查询在固定空间下反推元素数，Kernel 是该空间的实际消费方。
+<!-- cannbot:related:end -->

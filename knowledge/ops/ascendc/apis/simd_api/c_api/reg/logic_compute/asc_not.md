@@ -20,3 +20,10 @@ platforms: ['950']
 支持数据类型：float、half、int16_t、int32_t、int8_t、uint16_t、uint32_t、uint8_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscNeg](../arithmetic_compute/asc_neg.md)（`related`）：AscNeg 与《AscNot》的实质衔接是：AscNeg 的 C++/Vector 入口执行算术取负，AscNot 是按位取反的近名反例，可防止把数值负号与 bitwise NOT 混用。
+- [AscNot](../../vector_compute/asc_not.md)（`same_topic`）：两个 AscNot 都执行逐元素按位取反；Reg 入口以寄存器 mask 控制 lane，Memory Vector 入口从 UB 按 count 处理。
+<!-- cannbot:related:end -->

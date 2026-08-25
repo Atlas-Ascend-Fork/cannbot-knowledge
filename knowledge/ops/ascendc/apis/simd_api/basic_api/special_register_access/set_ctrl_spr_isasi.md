@@ -35,3 +35,14 @@ platforms: ['950', a2, a3]
   - SetAtomicMin
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscGetCtrl](../../c_api/sys_var/asc_get_ctrl.md)（`related`）：AscGetCtrl 与《SetCtrlSpr》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
+- [AscSetCtrl](../../c_api/sys_var/asc_set_ctrl.md)（`related`）：SetCtrlSpr 以模板位段方式写 CTRL 寄存器，AscSetCtrl 则写入读取并修改后的整体寄存器值，是同一控制寄存器的两种配置入口。
+- [SetSaturationFlag](set_saturation_flag_isasi.md)（`related`）：“SetSaturationFlag”定义：设置饱和开关的标志位，控制计算或精度转换时饱和模式的开启与关闭。；“SetCtrlSpr”定义：对CTRL寄存器的特定比特位进行设置，通过模板参数指定比特位范围并写入对应值。。实质衔接：SetSaturationFlag 修改饱和状态，Get 用于验证当前值；通用 CTRL SPR set/reset 提供底层控制位管理和恢复默认值的契约。
+- [GetCtrlSpr](get_ctrl_spr_isasi.md)（`same_topic`）：SetCtrlSpr 与 GetCtrlSpr 读写 CTRL 的同一 bit 区间，可形成写后读回验证。
+- [GetSpr](get_spr.md)（`same_topic`）：焦点处理特殊寄存器读取与配套清零、CTRL 位设置/复位；SetCtrlSpr正文说明“对CTRL寄存器的特定比特位进行设置，通过模板参数指定比特位范围并写入对应值”。候选操作同一 SPR/CTRL 状态，明确读前设置、读后清理与位域复位。
+- [ResetCtrlSpr](reset_ctrl_spr_isasi.md)（`same_topic`）：SetCtrlSpr 临时修改 CTRL 位段，ResetCtrlSpr 是对应的收尾接口。
+<!-- cannbot:related:end -->

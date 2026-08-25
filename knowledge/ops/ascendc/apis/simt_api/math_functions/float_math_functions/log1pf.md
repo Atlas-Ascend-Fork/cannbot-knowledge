@@ -24,3 +24,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [数学函数logf](logf.md)（`related`）：《数学函数logf》说明获取以e为底，输入数据的对数。；《Log1pf》说明计算ln(1+x)，在x接近0时比直接log(1+x)保持更高精度。。二者在logf是直接自然对数，而log1pf在x接近0时实现同一数学量的稳定形式上存在可执行的直接衔接。
+- [Expm1f](expm1f.md)（`same_topic`）：Log1pf 与《Expm1f》的实质衔接是：Log1pf 计算 ln(1+x) 并保留 x 近零精度；logf 是直接但近零易损的等价表达，expm1f 是配套的稳定逆向公式。
+<!-- cannbot:related:end -->

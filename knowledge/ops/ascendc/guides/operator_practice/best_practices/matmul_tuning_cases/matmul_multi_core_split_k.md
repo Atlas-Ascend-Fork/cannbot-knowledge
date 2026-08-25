@@ -36,3 +36,12 @@ platforms: [agnostic]
 ## 设计优化方案
 开启多核切K后，矩阵的K方向数据可以进行切分。如下图所示，C矩阵中的R矩阵块，是通过A1*B1+A2*B2+A3*B3累加得到的，其中，A1*B1、A2*B2、A3*B3可在多个核上并行计算。
 开启多核切K功能的方式为：在GetTiling接口前调用EnableMultiCoreSplitK接口，开启多核切K，并在Kernel实现中，对C矩阵的Global Memory地址清零后开启AtomicAdd。开启多核切K的完整样例请参考多核切K场景的算子样例。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [EnableMultiCoreSplitK](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/enable_multi_core_split_k.md)（`explains`）：指南给出 EnableMultiCoreSplitK 的适用 shape、调用时点和完整 Kernel 配套：C 只写 GM、首次写前清零并用 AtomicAdd、禁止 Bias，同时说明为何 K 大而 M/N 小时能提升并行度。
+- [SetSplitK](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_split_k.md)（`explains`）：SetSplitK 与《Matmul高阶API开启多核切K》的实质衔接是：SplitK 必须与 multi-core split、split range、single range/shape、core 数和 AtomicAdd 汇合配置一致。
+- [Matmul高阶API开启多核K轴错峰访问内存](matmul_multi_core_k_stagger.md)（`same_topic`）：《Matmul高阶API开启多核K轴错峰访问内存》明确“多核执行Matmul时开启K轴错峰访问内存，使不同核从不同起始地址访问数据，缓解地址冲突。”；它与《Matmul高阶API开启多核切K》的“当M、N轴较小无法有效切分时，开启多核切K功能实现K轴切分，使算子多核并行执行。”在实际调用参数、数据流或结果校验上直接衔接。
+- [多核对齐切分](../../simd_operator_impl/matrix_advanced_api/feature_scenarios/multi_core_aligned_split.md)（`same_topic`）：多核对齐切分 与《Matmul高阶API开启多核切K》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
+<!-- cannbot:related:end -->

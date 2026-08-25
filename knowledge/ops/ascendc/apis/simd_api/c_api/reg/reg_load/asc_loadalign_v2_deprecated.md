@@ -18,3 +18,11 @@ platforms: ['950']
 函数原型：void asc_loadalign(vector_fp4x2_e1m2_t& dst, __ubuf__ fp4x2_e1m2_t* src, addr_reg offset)
 约束：该接口中的src需要32B对齐。
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscLoadalignBrcDatablock](asc_loadalign_brc_datablock.md)（`related`）：废弃通用接口的 BRC DataBlock 模式应迁移到该专用接口，后者明确读取 32B 并广播到 VL。
+- [AscLoadalignBrcElem2datablock](asc_loadalign_brc_elem2datablock.md)（`related`）：废弃接口按元素到 DataBlock 广播的能力由该专用接口承接，明确 16/32bit 元素各自广播为 32B。
+- [AscLoadalignUnpack4](asc_loadalign_unpack4.md)（`related`）：废弃接口的 UNPACK4 模式由该专用接口承接，规定 VL/4 u8 搬入并扩成 VL u32。
+<!-- cannbot:related:end -->

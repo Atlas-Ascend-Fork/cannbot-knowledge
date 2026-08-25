@@ -25,3 +25,9 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__high2half](_high2half.md)（`related`）：__high2half2 duplicates the high lane into a half2, while __high2half extracts that lane as a scalar half.
+<!-- cannbot:related:end -->

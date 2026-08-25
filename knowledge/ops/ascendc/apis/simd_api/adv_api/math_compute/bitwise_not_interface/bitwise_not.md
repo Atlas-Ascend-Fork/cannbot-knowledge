@@ -32,3 +32,12 @@ __aicore__ inline void BitwiseNot(const LocalTensor<T>& dst, const LocalTensor<T
 - 操作数地址偏移对齐要求请参见通用说明和约束。
 
 支持：Ascend 950PR/Ascend 950DT。不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetBitwiseNotMaxMinTmpSize](get_bitwise_not_max_min_tmp_size.md)（`related`）：BitwiseNot 是该尺寸查询所服务的设备侧计算；尺寸结果需随 Tiling 传给它使用。
+- [BitwiseNot接口](bitwise_not_interface.md)（`same_topic`）：BitwiseNot 与《BitwiseNot接口》的实质衔接是：BitwiseNot kernel 与 MaxMin/factor 两种空间查询共同决定实际调用和 sharedTmpBuffer 分配。
+- [GetBitwiseNotTmpBufferFactorSize](get_bitwise_not_tmp_buffer_factor_size.md)（`same_topic`）：GetBitwiseNotTmpBufferFactorSize 与《BitwiseNot》的实质衔接是：BitwiseNot 的 factor 查询与 MaxMin 查询及 kernel 调用配套，才能确定 sharedTmpBuffer 大小。
+- [LogicalNot](../logical_not_interface/logical_not.md)（`same_topic`）：LogicalNot 与《BitwiseNot》的实质衔接是：LogicalNot 的 Host MaxMin/factor 查询为 Kernel 分配临时空间；BitwiseNot 对照明确逻辑真假取反与逐 bit 取反不是同一语义。
+<!-- cannbot:related:end -->

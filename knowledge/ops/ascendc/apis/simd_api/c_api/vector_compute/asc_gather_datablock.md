@@ -18,3 +18,10 @@ platforms: [a2, a3]
 函数原型：void asc_gather_datablock(__ubuf__ uint16_t* dst, __ubuf__ uint16_t* src, __ubuf__ uint32_t* src_offset, uint16_t dst_repeat_stride, uint8_t dst_block_stride, uint8_t repeat)
 约束：src_offset取值应保证src元素类型位宽对齐。；src加上src_offset偏移后的地址不能超出Unified Buffer (UB)大小数据的范围。；dst、src的起始地址需要32字节对齐。
 支持平台：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Ascend 950PR/Ascend 950DT, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscGather](asc_gather.md)（`related`）：AscGather 按元素偏移收集，AscGatherDatablock 按 32B 块收集；数据离散粒度决定应选哪一个接口。
+- [AscGatherDatablock](../reg/reg_load/asc_gather_datablock.md)（`same_topic`）：《AscGatherDatablock》明确“给定一个输入的矢量和一个地址偏移矢量，根据偏移地址按照DataBlock的粒度将输入矢量收集到目的矢量中。”；它与《AscGatherDatablock》的“根据索引将UB中的源操作数按32B的DataBlock收集到目的操作数中。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

@@ -32,3 +32,17 @@ Warp调度机制：
 - 计算单元：AIV核内的向量计算单元，负责执行各类向量运算指令。同一Warp内的32个线程执行相同指令，但对不同数据地址进行操作，实现单指令多线程并行计算。
 - 寄存器文件：每个线程拥有独立的寄存器空间，用于存储局部变量和计算中间结果。寄存器数量受线程块内线程数量影响，线程数量越多，每个线程可用的寄存器数量越少。
 - 共享内存：线程块内所有线程共享的内存空间，位于AIV核内部，具有高带宽、低延迟特性，可作为用户管理的高速缓存，支持线程间数据交互。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SIMT编程简介](../../../../apis/simt_api/simt_programming_intro/simt_programming_intro.md)（`explains`）：SIMT API 入口说明接口能力和使用边界，指南提供从场景选型到 Kernel 落地的完整推理链。
+- [编程模型](../../../../apis/simt_api/simt_programming_intro/programming_model.md)（`explains`）：SIMT API 编程模型给出 Grid/Block/Thread 内置变量和执行约束，指南进一步解释线程调度与硬件资源。
+- [per-core zero-out 经 grid-stride ZeroOutS](../../../../runbooks/precision/per_core_zero_out_grid_stride_zeroout_simt_overshoot.md)（`related`）：per-core zero-out 经 grid-stride ZeroOutS 与《AiCoreSimtProgrammingOverview》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
+- [原子操作（AI Core SIMT编程）](atomic_operations.md)（`related`）：SIMT 总览提供 Grid-Block-Thread 并发和 Warp 调度背景，定位原子操作所解决的数据竞争来源。
+- [同一Warp内避免分支跳转](../../../operator_practice/simt_operator_optimization/control_flow/avoid_warp_branch.md)（`related`）：《同一Warp内避免分支跳转》的任务是“同一Warp内线程应避免分支跳转以防止分支发散，减少掩码屏蔽等待，提升SIMT算子执行效率。”。《AiCoreSimtProgrammingOverview》具体提供“SIMT编程模型适用于离散数据访问和复杂控制流场景，基于Grid-Block-Thread三级线程层级在AIV核上实现线程级并行计算。”，它直接用于Warp divergence 的线程架构、谓词/协作改写和优化总览。
+- [Gather算子快速入门](../../../getting_started/quick_start/simt_programming/gather_op_quick_start.md)（`same_topic`）：Gather算子快速入门 与《AiCoreSimtProgrammingOverview》的实质衔接是：Gather 快速入门覆盖 SIMT kernel、host launch 和构建；所连 Gather API、维度/步长/地址空间错例和 SIMT 入口约束都直接作用于该示例的实现或验证。
+- [异构系统与编程模型](../../../getting_started/quick_start/heterogeneous_system_and_programming_model.md)（`same_topic`）：异构系统与编程模型 与《AiCoreSimtProgrammingOverview》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
+- [抽象硬件架构（AI Core SIMT编程）](abstract_hardware_architecture.md)（`same_topic`）：“抽象硬件架构（AI Core SIMT编程）”处理AI Core上的SIMT（Single Instruction Multiple Thread，单指令多线程）编程允许指令对数据进行独立寻址，从而支持线程级并行计算。这种方式特别适用于离散访问和复杂控制逻辑等场景。SIMT编程能够有效简化复杂…；“AiCoreSimtProgrammingOverview”明确SIMT编程模型适用于离散数据访问和复杂控制流场景，基于Grid-Block-Thread三级线程层级在AIV核上实现线程级并行计算。。实质衔接：正文明确把 SIMT 抽象建立在线程层级和内存层级上，并指向底层 AI Core 架构；只连接理解资源分配所必需的章节。
+- [核函数（AI Core SIMT编程）](kernel_function.md)（`same_topic`）：SIMT 编程模型概述把核函数、线程架构、内存层级、同步和原子操作组织在同一模型中。
+<!-- cannbot:related:end -->

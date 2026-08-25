@@ -34,3 +34,9 @@ Atlas 训练系列产品
 其中，id为设备id，通过npu-smi info -l命令查出的NPU ID即为设备id，命令中表示为`。
 ## 约束说明
 为了满足算子二进制复用，使用Atlas A3 训练系列产品/Atlas A3 推理系列产品时，调用GetSocVersion接口返回的枚举值与Atlas A2 训练系列产品/Atlas A2 推理系列产品相同；如果需要区分，可使用接口aclrtGetSocName接口。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Conv3DBackpropFilter Tiling构造函数](../../../simd_api/adv_api/convolution_compute/conv3_d_backprop_filter_tiling/conv3_d_backprop_filter_tiling_constructor.md)（`related`）：《Conv3DBackpropFilter Tiling构造函数》说明用于创建一个Conv3DBackpropFilter单核Tiling对象。；《GetSocVersion》说明获取当前硬件平台版本型号。。二者在构造函数接收的平台对象、SoC版本和各级存储容量必须与后续GetTiling生成的反向滤波Tiling结构一致上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

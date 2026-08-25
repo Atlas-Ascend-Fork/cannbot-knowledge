@@ -25,3 +25,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hleux2_mask](_hleux2_mask.md)（`same_topic`）：__hlex2_mask 与 __hleux2_mask 都返回 bfloat16x2 的 ≤ 掩码，差别集中在 NaN 时采用 ordered 还是 unordered 判定。
+- [__hlex2](_hlex2.md)（`same_topic`）：Mask 版本输出逐 lane 条件 mask。
+<!-- cannbot:related:end -->

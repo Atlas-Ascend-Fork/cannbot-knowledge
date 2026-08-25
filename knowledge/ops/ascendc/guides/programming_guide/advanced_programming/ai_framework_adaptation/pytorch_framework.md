@@ -34,3 +34,12 @@ Pybind适用于快速将C++函数暴露给Python，实现高效接口绑定。�
 PyTorch提供TORCH_LIBRARY宏作为自定义算子注册的核心接口，用于创建并初始化自定义算子库，注册后在Python侧可以通过torch.ops.namespace.op_name方式进行调用。TORCH_LIBRARY_IMPL用于将算子逻辑绑定到特定的DispatchKey（PyTorch设备调度标识），针对NPU设备，需要将算子实现注册到PrivateUse1这一专属的DispatchKey上。
 4.  编译生成算子动态库。
 5.  使用Python测试脚本进行测试。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [507035 — aten 与自定义命名空间路径对照](../../../../runbooks/compilation/507035_aten_dispatch.md)（`related`）：PyTorch 适配指南给出 TORCH_LIBRARY/自定义算子接入路径，可用于核对 A/B 测试改变了哪层注册和调用契约。
+- [Aclnn算子工程化开发快速入门](../aclnn_operator_development/aclnn_quick_start.md)（`related`）：PyTorch 自定义算子适配的一条主要落地路线是 ACLNN 工程化；快速入门把工程创建、实现、部署和单算子调用验证串成闭环。
+- [白盒pytest走aten内置绕过自定义aclnn](../../../../runbooks/compilation/pytest_aten_aclnn.md)（`related`）：PyTorch 指南说明自定义算子必须通过 torch.library/Pybind 或单算子 API 适配注册到明确 namespace；Runbook 用 aten 内置与 torch.ops.ascend 自定义 namespace 对照识别“假绿”。
+- [高级编程概述](overview.md)（`related`）：高级编程概述：该概述的任务就是把自定义算子接入 AI 框架；PyTorch、TensorFlow和 ONNX 插件/调用卡分别展开正文点名的三条适配流程。 目标卡《PyTorch框架》补充：通过PyTorch框架进行模型的训练、推理时，会调用很多算子进行计算。开发者开发的自定义算子如果需要集成部署到PyTorch框架，有如下几种方式：
+<!-- cannbot:related:end -->

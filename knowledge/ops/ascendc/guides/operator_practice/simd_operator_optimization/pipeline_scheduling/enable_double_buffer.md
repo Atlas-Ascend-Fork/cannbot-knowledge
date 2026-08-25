@@ -27,3 +27,15 @@ platforms: [agnostic]
 因此，DoubleBuffer的使用需综合考虑Vector算力、数据量大小、搬运与计算时间占比等多种因素。
 【反例】
 【正例】
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DoubleBuffer](../../../technical_appendix/concepts_and_terms/performance_optimization/double_buffer.md)（`related`）：概念卡解释流水并行基础，EnableDoubleBuffer 给出通过队列深度与 tiling 开启搬入/计算重叠的落地方法。
+- [FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR](../../../../runbooks/compilation/fp16_double_buffer_ub_budget_queue_vs_tbuf_multiplier.md)（`related`）：FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR 与《开启DoubleBuffer》的实质衔接是：focal 的漏乘项正是 TQue/TBuf 数量×double-buffer depth×dtype字节数；DoubleBuffer文档、InitBuffer、GetCoreMemSize和按dtype分配案例共同完成预算与验证。
+- [HardSwish 逐元素 kernel 的 TQue 双缓冲实现配方](../../../../runbooks/compilation/elementwise_tque_double_buffer_inplace_recipe.md)（`related`）：HardSwish 配方给出已验证的两个 TQue、BUFFER_NUM=2、in-place Compute 与单 tile 快路径，提供 DoubleBuffer 在逐元素 kernel 中的具体实现和 UB 算式。
+- [SIMD算子实现概述](../../simd_operator_impl/vector_programming/overview.md)（`related`）：焦点处理SIMD 算子实现总览中的双缓冲和计算模型；开启DoubleBuffer正文界定“【描述】执行于AI Core上的指令队列主要包括如下几类，Vector指令队列（V）、Cube指令队列（M）、Scalar指令队列（S）和搬运指令队列（MTE1/MTE2/MTE3）。不同指令队列间的相互独立性和可并行执行特性，是Doubl”。候选只保留与总览正文直接展开的 SIMD 计算、DoubleBuffer 机制及其重复说明。
+- [启用Iterate或IterateAll异步接口避免AIC/AIV同步依赖](enable_iterate_avoid_sync.md)（`related`）：异步 Iterate 减少 Cube/Vector 等待，双缓冲用于覆盖搬运与计算，常组合使用。
+- [DoubleBuffer场景](../../simd_operator_impl/vector_programming/double_buffer_scenario.md)（`same_topic`）：DoubleBuffer场景 与《开启DoubleBuffer》的实质衔接是：DoubleBuffer 将主块拆为两份并通过 InitBuffer(...,2,...) 让搬入、计算、搬出重叠；主尾块切分材料说明尾块例外，UB 预算和 TQue/TBuf 重载故障直接约束 bufferNum 与长度配置。
+- [核间负载均衡](../tiling_strategy/inter_core_load_balance.md)（`same_topic`）：核间负载均衡 与《开启DoubleBuffer》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+<!-- cannbot:related:end -->

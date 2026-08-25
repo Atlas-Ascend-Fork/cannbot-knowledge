@@ -22,3 +22,10 @@ platforms: ['950']
 - 由于此接口实现了Cube核与Vector核间的数据搬运，所以如果核函数调用了该接口，则不能使用__cube__或__vector__的执行空间修饰符，否则会导致执行失败。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscCopyL12gm](asc_copy_l12gm.md)（`related`）：AscCopyL12gm 与《AscCopyL12ub》的实质衔接是：AscCopyL12gm 是 L1 到 GM 的数据路径；L1 到 UB、L0C 到 UB/GM 接口提供相邻存储层的可执行搬运组合，迁移指导则明确 3510 删除该直达路径后的替代方案。
+- [矩阵数据搬运](cube_data_move.md)（`related`）：AscCopyL12ub 与《矩阵数据搬运》的实质衔接是：AscCopyL12ub 是矩阵搬运通路的一环；矩阵数据搬运说明提供其源/目的存储层级和参数语境。
+<!-- cannbot:related:end -->

@@ -25,3 +25,10 @@ Kernel侧BitwiseAnd接口的计算需要开发者预留 申请临时空间，本
 - typeSize（输入）：输入的数据类型大小，单位为字节。比如输入的数据类型为uint16_t，此处应传入2。
 - isReuseSource（输入）：该参数预留，传入默认值false即可。
 - maxValue（输出）：BitwiseAnd接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，Kernel侧接口计算性能会有一定程度的优化提升。。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BitwiseAnd](bitwise_and.md)（`related`）：该 Host 查询产生的空间下界和上界直接约束 Kernel BitwiseAnd 的 sharedTmpBuffer。
+- [GetBitwiseAndTmpBufferFactorSize](get_bitwise_and_tmp_buffer_factor_size.md)（`same_topic`）：MaxMin 与 FactorSize 分别给出 BitwiseAnd 临时空间范围和规模估算模型，是同一 Host Tiling 预算的互补查询。
+<!-- cannbot:related:end -->

@@ -38,3 +38,10 @@ platforms: [agnostic]
 从昇腾镜像仓库拉取已预集成CANN镜像：
 3. 运行Docker
 拉取镜像后，需要以特定参数启动，以便容器内能访问宿主机的NPU设备。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend C多层级编程接口选择参考](asc_how_to_choose_api.md)（`related`）：Ascend C多层级编程接口选择参考 与《快速开始》的实质衔接是：概述/快速开始解释学习入口，TPipe/TQue 原理与范式对应 choice guide 的易编程层，兼容性策略说明跨代选择接口层时的稳定性成本。
+- [Hello World](getting_started/quick_start/simd_programming/hello_world.md)（`related`）：快速开始总页给出 HelloWorld 所处的学习顺序和前置环境。
+<!-- cannbot:related:end -->

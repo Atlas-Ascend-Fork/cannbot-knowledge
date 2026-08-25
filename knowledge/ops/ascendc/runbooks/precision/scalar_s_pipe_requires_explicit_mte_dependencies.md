@@ -1,0 +1,286 @@
+---
+type: "Runbook"
+title: "标量 S pipe 误用 TQue 导致输出全常数"
+description: "标量 C++ 直接访问 UB 时，TQue 的 V-pipe 事件不能覆盖 S pipe；改用 TBuf 与 PIPE_ALL 串行化 DMA、标量计算和写回。"
+tags: ["task.debugging", "topic.implementation.synchronization", "topic.implementation.pipeline", "topic.precision"]
+status: stable
+sources: []
+created_at: "2026-08-14T03:13:06Z"
+updated_at: "2026-08-24T00:00:00Z"
+platforms: ["950"]
+---
+
+# 标量 S pipe 误用 TQue 导致输出全常数
+
+## 现象
+
+在 Ascend C kernel 直调工程中，先用远端 helper 构建 `cummin.asc`，再执行完整 NPU pytest。源码已成功编译，接口测试也通过，但第一个 fp16 末轴前缀扫描用例报：
+
+```text
+AssertionError: cummin values mismatch ... max diff=11.84765625
+```
+
+设备结果的每个位置都是同一错误常量，而不是随前缀推进变化。失败时，`KernelCummin<T>::ProcessPathA` 用 `TQue::EnQue/DeQue` 包围 `DataCopyPad`，随后让标量 C++ 循环通过 `__ubuf__` 指针读输入并写输出。
+
+## 适用场景
+
+- 工程形态：Ascend C kernel 直调；DMA 把 GM 数据搬入 UB，标量 C++ 在 UB 上做顺序递推，再由 DMA 写回 GM；
+- API 路径：`TPipe`、`TQue`/`TBuf`、`DataCopyPad`、`PipeBarrier<PIPE_ALL>()` 与 `__ubuf__` 指针；
+- 验证过的平台与 CANN 版本：950 / CANN 9.0.1；与 frontmatter `platforms` 一致；
+- 适用粒度：`operator_family`，适用于所有由标量 S pipe 直接消费 MTE2 结果或生产 MTE3 输入的 kernel；
+- 路线优先级：`safety_fallback`；**这是 fallback，性能不是最优，追求性能请用另一路线（见 ## 相关）。** 当前草稿不建相关链接，精细 HardEvent/向量化路线待 curator 对齐；
+- 明确不适用：计算完全位于 Vector pipe 且由 TQue 正确管理的向量流水；未验证 Cube pipe、跨核同步和异步多 buffer 流水。
+
+## 根因
+
+`TQue::EnQue/DeQue` 建立的事件面向 Vector pipe，不能替代标量 S pipe 与 MTE2/MTE3 之间的跨管依赖，导致标量读取未完成的 UB load 或 MTE3 读取尚未完成的标量写入。 机制链为： 1. `DataCopyPad` 在 MTE2 发起 GM→UB load； 2. 标量 C++ 循环在 S pipe 读取同一 UB； 3. `TQue` 的 V-pipe 事件没有为 `MTE2 → S` 建立等待； 4. 标量循环在 S pipe 写输出 UB； 5. MTE3 随后从输出 UB 发起 store，但原实现没有 `S → MTE3` 依赖； 6. 因此 kernel 可正常编译和退出，却把陈旧 UB 内容复制为整段常量。
+
+## 解决配方
+
+将 DMA 输入、标量输出和累加器改为 `TBuf`，用三道 `PipeBarrier<PIPE_ALL>()` 显式串行化 `MTE2(load) → S(scalar) → MTE3(store) → buffer reuse`。以下代码均为事件流真实写入的完整函数，未做语法改写。
+
+### before
+
+path: `operators/cummin/cummin.asc`；symbol: `KernelCummin<T>::Init`；修复前完整写入行 115–143。
+
+```cpp
+    __aicore__ inline void Init(GM_ADDR x, GM_ADDR values, GM_ADDR indices,
+                               int64_t totalLines, int64_t L, int64_t innerCount,
+                               int64_t numBlocks)
+    {
+        xGm_.SetGlobalBuffer((__gm__ T *)x);
+        valuesGm_.SetGlobalBuffer((__gm__ T *)values);
+        indicesGm_.SetGlobalBuffer((__gm__ int64_t *)indices);
+
+        totalLines_ = totalLines;
+        L_ = L;
+        innerCount_ = innerCount;
+        numBlocks_ = numBlocks;
+        blockIdx_ = AscendC::GetBlockIdx();
+
+        // Per-core contiguous scan-line range (flattened li = outer*innerCount + inner)
+        lineStart_ = (blockIdx_ * totalLines) / numBlocks;
+        lineEnd_ = ((blockIdx_ + 1) * totalLines) / numBlocks;
+
+        // Buffers sized to MAX_TILE elements (all dtypes fit UB, see design doc §3).
+        // Path A (innerCount==1): step/valOut/idxOut as tile buffers; acc single scalar.
+        // Path B: step(valOut/idxOut) tile buffers via TQue; accVal/accIdx TBuf (MAX_TILE).
+        pipe_.InitBuffer(inQ_, PIPELINE_DEPTH, MAX_TILE * sizeof(T));
+        pipe_.InitBuffer(outVQ_, PIPELINE_DEPTH, MAX_TILE * sizeof(T));
+        pipe_.InitBuffer(outIQ_, PIPELINE_DEPTH, MAX_TILE * sizeof(int64_t));
+        if constexpr (true) {
+            pipe_.InitBuffer(accValBuf_, MAX_TILE * sizeof(CT));
+            pipe_.InitBuffer(accIdxBuf_, MAX_TILE * sizeof(int64_t));
+        }
+    }
+```
+
+path: `operators/cummin/cummin.asc`；symbol: `KernelCummin<T>::ProcessPathA`；修复前完整写入行 157–210。
+
+```cpp
+    __aicore__ inline void ProcessPathA()
+    {
+        CT accVal;
+        int64_t accIdx = 0;
+        for (int64_t li = lineStart_; li < lineEnd_; ++li) {
+            int64_t base = li * L_;          // contiguous line start (element offset)
+            accVal = CT(0);                  // set on first element below
+            bool inited = false;
+            int64_t remaining = L_;
+            int64_t off = 0;
+            while (remaining > 0) {
+                uint32_t cnt = static_cast<uint32_t>(remaining < MAX_TILE ? remaining : MAX_TILE);
+                AscendC::DataCopyExtParams cp{1, cnt * (uint32_t)sizeof(T), 0, 0, 0};
+                AscendC::DataCopyPadExtParams<T> pad{false, 0, 0, 0};
+
+                auto inLocal = inQ_.template AllocTensor<T>();
+                AscendC::DataCopyPad(inLocal, xGm_[base + off], cp, pad);
+                inQ_.EnQue(inLocal);
+                auto step = inQ_.template DeQue<T>();
+                __ubuf__ T *sp = (__ubuf__ T *)step.GetPhyAddr();
+
+                auto vOut = outVQ_.template AllocTensor<T>();
+                auto iOut = outIQ_.template AllocTensor<int64_t>();
+                __ubuf__ T *vp = (__ubuf__ T *)vOut.GetPhyAddr();
+                __ubuf__ int64_t *ip = (__ubuf__ int64_t *)iOut.GetPhyAddr();
+
+                for (uint32_t i = 0; i < cnt; ++i) {
+                    T raw = sp[i];
+                    CT b = ToCompute<T>(raw);
+                    if (!inited) {
+                        accVal = b; accIdx = off + i; inited = true;
+                    } else if (CumminTake<CT>(accVal, b)) {
+                        accVal = b; accIdx = off + i;
+                    }
+                    vp[i] = FromCompute<T>(accVal);
+                    ip[i] = accIdx;
+                }
+                inQ_.FreeTensor(step);
+
+                outVQ_.EnQue(vOut);
+                outIQ_.EnQue(iOut);
+                auto vS = outVQ_.template DeQue<T>();
+                auto iS = outIQ_.template DeQue<int64_t>();
+                AscendC::DataCopyPad(valuesGm_[base + off], vS, cp);
+                AscendC::DataCopyPad(indicesGm_[base + off], iS,
+                                     AscendC::DataCopyExtParams{1, cnt * (uint32_t)sizeof(int64_t), 0, 0, 0});
+                outVQ_.FreeTensor(vS);
+                outIQ_.FreeTensor(iS);
+
+                off += cnt;
+                remaining -= cnt;
+            }
+        }
+    }
+```
+
+### after
+
+path: `operators/cummin/cummin.asc`；symbol: `KernelCummin<T>::Init`；修复后工作区完整函数。
+
+```cpp
+    __aicore__ inline void Init(GM_ADDR x, GM_ADDR values, GM_ADDR indices,
+                               int64_t totalLines, int64_t L, int64_t innerCount,
+                               int64_t numBlocks)
+    {
+        xGm_.SetGlobalBuffer((__gm__ T *)x);
+        valuesGm_.SetGlobalBuffer((__gm__ T *)values);
+        indicesGm_.SetGlobalBuffer((__gm__ int64_t *)indices);
+
+        totalLines_ = totalLines;
+        L_ = L;
+        innerCount_ = innerCount;
+        numBlocks_ = numBlocks;
+        blockIdx_ = AscendC::GetBlockIdx();
+
+        // Per-core contiguous scan-line range (flattened li = outer*innerCount + inner)
+        lineStart_ = (blockIdx_ * totalLines) / numBlocks;
+        lineEnd_ = ((blockIdx_ + 1) * totalLines) / numBlocks;
+
+        // Buffers sized to MAX_TILE elements (all dtypes fit UB, see design doc §3).
+        // Single-buffered TBuf + DataCopyPad + PipeBarrier<PIPE_ALL> (scalar runs on the S
+        // pipe, which TQue's V-only EnQue/DeQue does not sync; PIPE_ALL serializes
+        // MTE2(load)->S(scalar)->MTE3(store) correctly — baseline correctness-first).
+        pipe_.InitBuffer(stepBuf_, MAX_TILE * sizeof(T));
+        pipe_.InitBuffer(valOutBuf_, MAX_TILE * sizeof(T));
+        pipe_.InitBuffer(idxOutBuf_, MAX_TILE * sizeof(int64_t));
+        pipe_.InitBuffer(accValBuf_, MAX_TILE * sizeof(CT));
+        pipe_.InitBuffer(accIdxBuf_, MAX_TILE * sizeof(int64_t));
+    }
+```
+
+path: `operators/cummin/cummin.asc`；symbols: `KernelCummin<T>::StoreOut`、`KernelCummin<T>::ProcessPathA`；修复后构建并上板验证的完整函数。
+
+```cpp
+    __aicore__ inline void StoreOut(int64_t off, uint32_t cnt)
+    {
+        AscendC::DataCopyExtParams cpv{1, cnt * (uint32_t)sizeof(T), 0, 0, 0};
+        AscendC::DataCopyExtParams cpi{1, cnt * (uint32_t)sizeof(int64_t), 0, 0, 0};
+        AscendC::PipeBarrier<PIPE_ALL>();                 // S(scalar) writes done -> MTE3
+        AscendC::DataCopyPad(valuesGm_[off], valOutBuf_.Get<T>(), cpv);
+        AscendC::DataCopyPad(indicesGm_[off], idxOutBuf_.Get<int64_t>(), cpi);
+        AscendC::PipeBarrier<PIPE_ALL>();                 // MTE3(store) done -> reuse buffers
+    }
+
+    // ----- Path A: contiguous line (dim is last axis) -----
+    __aicore__ inline void ProcessPathA()
+    {
+        CT accVal;
+        int64_t accIdx = 0;
+        for (int64_t li = lineStart_; li < lineEnd_; ++li) {
+            int64_t base = li * L_;          // contiguous line start (element offset)
+            bool inited = false;
+            int64_t remaining = L_;
+            int64_t off = 0;
+            while (remaining > 0) {
+                uint32_t cnt = static_cast<uint32_t>(remaining < MAX_TILE ? remaining : MAX_TILE);
+                AscendC::DataCopyExtParams cp{1, cnt * (uint32_t)sizeof(T), 0, 0, 0};
+                AscendC::DataCopyPadExtParams<T> pad{false, 0, 0, 0};
+                AscendC::DataCopyPad(stepBuf_.Get<T>(), xGm_[base + off], cp, pad);
+                AscendC::PipeBarrier<PIPE_ALL>();   // MTE2(load) done -> S(scalar)
+
+                __ubuf__ T *sp = (__ubuf__ T *)stepBuf_.Get<T>().GetPhyAddr();
+                __ubuf__ T *vp = (__ubuf__ T *)valOutBuf_.Get<T>().GetPhyAddr();
+                __ubuf__ int64_t *ip = (__ubuf__ int64_t *)idxOutBuf_.Get<int64_t>().GetPhyAddr();
+                for (uint32_t i = 0; i < cnt; ++i) {
+                    T raw = sp[i];
+                    CT b = ToCompute<T>(raw);
+                    if (!inited) {
+                        accVal = b; accIdx = off + i; inited = true;
+                    } else if (CumminTake<CT>(accVal, b)) {
+                        accVal = b; accIdx = off + i;
+                    }
+                    vp[i] = FromCompute<T>(accVal);
+                    ip[i] = accIdx;
+                }
+                StoreOut(base + off, cnt);
+                off += cnt;
+                remaining -= cnt;
+            }
+        }
+    }
+```
+
+## 设计决策
+
+- 选择 `TBuf + PIPE_ALL`：它直接覆盖 MTE2、S、MTE3 的顺序关系，能用最小机制变更确认根因并恢复正确性；
+- 放弃继续依赖 `TQue`：TQue 适合 Vector pipe 消费/生产，本例标量循环不在它覆盖的执行管；
+- 未采用的候选：用 `HardEvent` 分别建立 `MTE2→S`、`S→MTE3` 与复用依赖，预计同步范围更窄，但本轨迹没有实现或实测；
+- 当前方案属于 `safety_fallback`：以全管屏障换取正确性，不能视为性能最优路线。
+
+## 系统信息
+
+- 目标：Ascend950PR_957b / dav-3510；
+- 工具链：CANN 9.0.1，bisheng；
+- 工程文件：`operators/cummin/cummin.asc`、`operators/cummin/test_cummin.py`、`operators/cummin/CMakeLists.txt`；
+- 验证入口：远端 helper build、NPU pytest、cann-bench eval。
+
+## 性能影响
+
+修复后的标量 + `PIPE_ALL` 路线在 950 上，相对 cann-bench 参考路线平均约为 `0.04x`（参照路线：cann-bench 内置 baseline；证据等级: tool_observed）。这说明该方案只适合作为正确性 fallback，后续应以精细事件同步或向量化路线替代。
+
+## 预防
+
+- 看到 `DataCopyPad → __ubuf__ 标量读` 时，必须检查 `MTE2→S` 依赖；
+- 看到 `__ubuf__ 标量写 → DataCopyPad store` 时，必须检查 `S→MTE3` 依赖；
+- 不要因为使用了 TQue 就默认所有执行管都已同步，先确认真正消费/生产 UB 的 pipe；
+- 首次验证若出现“编译成功、无 runtime error、整段输出同一常量”，先查跨管同步和 buffer 复用，不先改数值公式。
+
+## 验证信号
+
+本知识来自一次 Ascend C 前缀扫描 kernel 的首次上板失败与同步修复：同一源码在替换 buffer/sync 路径前后连续构建和复验。
+
+- 修复前首个 NPU 数据用例失败，结果全为同一错误常量且 `max diff=11.84765625`（950，证据等级: tool_observed）；
+- 修复后完整 NPU pytest `40/40` 通过（950，证据等级: tool_observed）；
+- 干净重建后再次得到 `40 passed`（950，证据等级: tool_observed）；
+- 最终 cann-bench `20/20` 通过，浮点 values 误差为 0，整数 values 与全部 indices 精确匹配（950，证据等级: tool_observed）。
+
+- 独立复现 R1：在标量读取前增加 MTE2→S 的 PIPE_ALL、标量写后增加 S→MTE3 的 PIPE_ALL 后，n=5/8/64/1024 四组 1D+d1 探针均 ok=True、det=True（950，tool_observed）。
+- 独立复现 R2：补齐 Scalar pipe 与 MTE 的显式依赖后，修后 NPU pytest 40/40 通过（950，tool_observed）。
+
+## 失效边界
+
+- `PIPE_ALL` 会过度串行化，吞吐敏感或可流水的 kernel 不应直接把它当最终方案；
+- 完全由 Vector pipe 完成的 TQue 流水不需要套用本卡结论；
+- A2、A3 与其他 CANN 版本未验证，推断同类 pipe 依赖可迁移，但属于“未验证，推断可迁移”。
+
+## 坏实践
+
+- 把 `EnQue/DeQue` 当成覆盖所有执行管的通用 fence；
+- 在输出全常数时先修改比较、Cast 或容差，而不检查 DMA 与标量 UB 访问的先后关系；
+- 为了“先通过”而放宽测试精度阈值；该轨迹没有这样做，正确修复发生在 kernel 同步层。
+
+## 误诊
+
+整段同一常量容易被误认为“最终累加值被广播”或“数值公式错误”；本例的判别点是计算逻辑未改、只修复跨管同步后全部精度用例恢复。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [PipeBarrier](../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)（`exemplifies`）：该卡证明 V-pipe barrier 不会自动覆盖 S 与 MTE 的依赖。
+- [MTE2跨流水未建依赖导致UB读到上次调用残值](direct_mte_slot_reuse_needs_bidirectional_hard_events.md)（`related`）：目标卡给出复用固定 UB 槽时 MTE2→计算和计算→MTE3 的双向 HardEvent；本卡说明标量 S pipe 不受 TQue 的 V 事件覆盖，需同样显式表达这两段依赖。
+- [PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线](../compilation/pipebarrier_pipe_s_is_not_supported.md)（`related`）：若原意是让标量访问 UB 与 DMA 保序，正确做法是 TBuf+PIPE_ALL 显式串行 MTE/S 数据依赖，而不是不支持的 PipeBarrier<PIPE_S>。
+- [TBuf 跨 MTE2 与 Vector 须队列交接](tbuf_mte2_to_vector_requires_queue_handoff.md)（`related`）：TBuf→Vector 卡证明裸 TBuf 不自动建立 MTE2→V 依赖；本卡把同一对象管理边界延伸到 MTE2→S 与 S→MTE3，并解释为何 V-only TQue 事件仍不足。
+- [TPipe-TQue编程原理介绍](../../guides/programming_guide/programming_model/ai_core_simd_programming/tpipe_tque_programming/tpipe_tque_principles.md)（`related`）：TPipe-TQue 原理说明 EnQue/DeQue 建立生产者消费者事件；本卡提供其边界反例：事件面向 Vector 消费者，不能替代标量 S pipe 依赖。
+- [arch35 小 per-channel 输出读旧值判别与规避](../compilation/arch35_per_channel.md)（`same_topic`）：《arch35 小 per-channel 输出读旧值判别与规避》处理“arch35 上 DCCI 缓存不一致使 DataCopyPad 对小 per-channel [C] 输出不可靠、TQue GetValue(MTE2→scalar) 读到旧值；判别方法为先 V-launder(Duplicate 0.0f+Add) 到 TBuf 再 GetValue，并用 GlobalTensor::SetValue 直写 GM per-channel 结果。”。《标量 S pipe 误用 TQue 导致输出全常数》提供“标量 C++ 直接访问 UB 时，TQue 的 V-pipe 事件不能覆盖 S pipe；改用 TBuf 与 PIPE_ALL 串行化 DMA、标量计算和写回。”，其具体合同或探针直接接入arch35 小 per-channel 的 DCCI/Scalar 旧值机制、V-launder 与 SetValue 验证。
+<!-- cannbot:related:end -->

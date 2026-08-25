@@ -29,3 +29,12 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Kirin X90。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetLogMaxMinTmpSize](get_log_max_min_tmp_size.md)（`related`）：Log 的 sharedTmpBuffer 可由该 Host 查询取得最大/最小边界，再作为 Tiling 依据。
+- [GetLogTmpBufferFactorSize](get_log_tmp_buffer_factor_size.md)（`related`）：Factor 查询把固定空间换算为 Log/Log2/Log10 单次最大元素数，补齐切块决策。
+- [Log](../../../basic_api/reg_vector_compute/basic_arithmetic/log.md)（`related`）：高阶 Log 作用于 LocalTensor 并管理临时空间，Reg Log 直接作用寄存器并用 mask；同为自然对数时可按编程层级和融合需求选择。
+- [Log](log.md)（`same_topic`）：总览中的 e/2/10 底数选择、LocalTensor 与 sharedTmpBuffer 约束由 Log 具体接口实现。
+<!-- cannbot:related:end -->

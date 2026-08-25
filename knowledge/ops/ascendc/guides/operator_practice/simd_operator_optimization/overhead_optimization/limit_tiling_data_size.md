@@ -30,3 +30,13 @@ Tiling变量无冗余，变量数据类型最小化。
 如下的示例中TilingData结构不合理：由于AI处理器访存需要8字节对齐，在用户定义TilingData结构后，Ascend C工程框架会按照8字节对齐的方式对字节进行补齐，并保证整体TilingData结构满足8字节对齐要求。如下TilingData结构formerNum和tailNum变量都会补充3个字节，整体TilingData结构会因为8字节对齐再补充4个字节，该TilingData结构共计补充10个字节。
 【正例】
 如下的示例中，对Tiling参数的排布进行了调整，字节排布合理，只需要补充2个字节，达到了减小TilingData结构的目的。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [TilingData结构定义](../../../../apis/utils_api/tiling_data_structure_register/tiling_data_struct_definition.md)（`explains`）：字段类型和排布在结构定义处决定总字节数，是优化落点。
+- [Tiling数据结构注册](../../../../apis/utils_api/tiling_data_structure_register/tiling_data_structure_register.md)（`explains`）：Tiling数据结构注册 与《限制TilingData结构大小》的实质衔接是：TilingData 定义、注册、读取宏、尺寸限制与三张冲突/截断故障卡共同覆盖 host→kernel 数据契约。
+- [Host 缺 SetDataSize 致 TilingData 截断](../../../../runbooks/precision/host_setdatasize_tilingdata.md)（`related`）：精简结构后仍需 SetDataSize 与实际序列化长度一致，否则 Kernel 读取残缺。
+- [TilingData 追加数据超额致 INVALID_TILING](../../../../runbooks/compilation/tilingdata_invalid_tiling.md)（`related`）：focal 的 INVALID_TILING 由 SetDataSize 超过默认 capacity 触发；指南给出精简字段、缩窄类型和排布以控制 TilingData 总大小的直接修复方向。
+- [核函数内删除Workspace相关冗余操作](remove_workspace_redundancy.md)（`related`）：精简 tiling data 与去冗余 workspace 都降低固定搬运/初始化开销。
+<!-- cannbot:related:end -->

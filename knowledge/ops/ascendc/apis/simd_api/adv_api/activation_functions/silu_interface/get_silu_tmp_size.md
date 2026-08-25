@@ -25,3 +25,10 @@ platforms: ['950', a2, a3]
 - isReuseSource（输入）：是否复用源操作数输入的空间，与kernel侧接口一致。
 - maxValue（输出）：Silu接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。
 - minValue（输出）：Silu接口能完成计算所需最小临时空间大小。为保证功能正确，接口计算时预留 申请的临时空间不能小于该数值。最小空间大小为0表示计算不需要临时空间。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Silu](silu.md)（`related`）：GetSiluTmpSize 根据 shape、typeSize 和 isReuseSource 返回 Silu 的合法临时空间范围，kernel 侧 Silu 必须使用同一组条件预留缓存。
+- [Silu接口](silu_interface.md)（`related`）：《GetSiluTmpSize》明确“用于获取Silu Tiling参数：Silu接口能完成计算所需最大临时空间大小和最小临时空间大小。”；它与《Silu接口》的“提供Silu激活函数接口及GetSiluTmpSize等Tiling临时空间大小查询接口。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

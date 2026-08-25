@@ -24,3 +24,13 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [H2Log10](../bfloat16_type/bfloat16x2_math_functions/h2log10.md)（`related`）：Log10f 与《H2Log10》的实质衔接是：Log10f 与 Reg、bfloat16、half 和 half2 的 log10 入口执行同一以 10 为底的对数，区别在执行模型和返回精度。
+- [H2Log10](../half_type/half2_math_functions/h2log10.md)（`related`）：Log10f 与《H2Log10》的实质衔接是：Log10f 与 Reg、bfloat16、half 和 half2 的 log10 入口执行同一以 10 为底的对数，区别在执行模型和返回精度。
+- [Hlog10](../bfloat16_type/bfloat16_math_functions/hlog10.md)（`related`）：Log10f 与《Hlog10》的实质衔接是：Log10f 与 Reg、bfloat16、half 和 half2 的 log10 入口执行同一以 10 为底的对数，区别在执行模型和返回精度。
+- [Hlog10](../half_type/half_math_functions/hlog10.md)（`related`）：Log10f 与《Hlog10》的实质衔接是：Log10f 与 Reg、bfloat16、half 和 half2 的 log10 入口执行同一以 10 为底的对数，区别在执行模型和返回精度。
+- [Log10](../../../simd_api/basic_api/reg_vector_compute/basic_arithmetic/log10.md)（`related`）：Log10 与《Log10f》的实质衔接是：Reg Log10 与 bfloat16/half/half2/float 的 log10 入口执行同一以 10 为底的对数任务，区别在执行模型和返回精度。
+<!-- cannbot:related:end -->

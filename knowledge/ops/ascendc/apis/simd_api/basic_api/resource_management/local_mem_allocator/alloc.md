@@ -22,3 +22,11 @@ platforms: ['950', a2, a3]
 - 当前暂不支持与L1 Buffer, L0A Buffer, L0B Buffer, L0C Buffer, BiasTable静态数组混用。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LocalMemAllocatorConstructor](local_mem_allocator_constructor.md)（`related`）：Alloc 前必须以物理位置和起始地址构造 LocalMemAllocator；构造状态决定后续 LocalTensor 的实际地址域。
+- [GetCurAddr](get_cur_addr.md)（`same_topic`）：每次 Alloc 从当前空闲地址切分空间并推进游标，GetCurAddr 可在连续分配前核对下一地址。
+- [LocalMemAllocator简介](local_mem_allocator_intro.md)（`same_topic`）：Alloc说明根据用户指定的逻辑位置、数据类型、数据长度返回对应的LocalTensor对象。
+<!-- cannbot:related:end -->

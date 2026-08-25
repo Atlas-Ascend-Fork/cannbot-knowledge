@@ -30,3 +30,12 @@ platforms: ['950']
 - src1不支持设置为负数，负数行为未定义。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscShiftRightScalar](asc_shiftright_scalar.md)（`same_topic`）：asc_shiftright 使用寄存器位移量，而 scalar 版本使用统一标量；两者按位移量来源选型。
+- [AscShiftright](../../vector_compute/asc_shiftright.md)（`same_topic`）：AscShiftright：所选接口都执行右移，区别是 Memory/Reg/C API、逐元素 shift tensor 或 scalar shift；它们可直接核对位宽和移位量契约。 目标卡《AscShiftRight》补充：根据mask对输入数据src0按照src1对应元素进行右移操作，结果写入dst。
+- [ShiftLeft](../../../basic_api/memory_vector_compute/logical_compute/shift_left_shift_amount_tensor.md)（`same_topic`）：ShiftLeft 与《AscShiftRight》的实质衔接是：这些接口覆盖 tensor/标量移位量、Memory/Reg/C 路径及左右移方向，直接用于核对 ShiftLeft 的移位量来源与有符号/无符号语义。
+- [ShiftRight](../../../basic_api/memory_vector_compute/logical_compute/shift_right_shift_amount_tensor.md)（`same_topic`）：C Reg API 提供寄存器逐元素位移量版本，适合 RegBase 路径。
+<!-- cannbot:related:end -->

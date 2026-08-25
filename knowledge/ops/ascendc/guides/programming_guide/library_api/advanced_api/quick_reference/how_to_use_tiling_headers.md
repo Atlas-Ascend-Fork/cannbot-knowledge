@@ -19,3 +19,9 @@ platforms: [agnostic]
 这种方式需要引入依赖的头文件如下。所有高阶API的Tiling结构体定义在AscendC::tiling命名空间下，因此需要通过AscendC::tiling访问具体API的Tiling结构体。
 -   使用TILING_DATA_DEF宏定义Tiling结构体
 这种方式需要引入依赖的头文件如下。所有高阶API的Tiling结构体和Tiling函数定义在optiling命名空间下。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [库API概述](../overview.md)（`related`）：库API概述 与《如何使用Tiling依赖的头文件》的实质衔接是：高阶 API 与基础 API 的层级选择、kernel 临时空间和 host tiling 头文件是该概述明确展开的开发契约。
+<!-- cannbot:related:end -->

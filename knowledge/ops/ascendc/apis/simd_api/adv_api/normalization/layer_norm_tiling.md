@@ -20,3 +20,9 @@ host侧Tiling接口，用于获取LayerNorm kernel计算所需的Tiling参数，
 GetLayerNormMaxMinTmpSize参数：ascendcPlatform平台信息；srcShape输入shape；typeSize数据类型字节数；isReuseSource是否复用源操作数；isOutputRstd输出是否含rstd；maxValue/minValue输出临时空间范围。
 
 GetLayerNormNDTilingInfo参数：ascendcPlatform平台信息；输入shape各维度(B,S,H)或(A,R)；typeSize数据类型字节数；isBasicBlock是否基本块；maxTmpSize可用临时空间；tiling输出LayerNormTiling结构体。约束：需保证各维度大于0且H/R满足32B对齐。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LayerNorm](layer_norm.md)（`related`）：Host 侧先查询临时空间并生成 LayerNormTiling，Kernel 侧 LayerNorm 直接消费该结构；H/R 对齐、isReuseSource、isBasicBlock 必须一致。
+<!-- cannbot:related:end -->

@@ -19,3 +19,9 @@ platforms: ['950']
 - **GetBitwiseAndMaxMinTmpSize**
 
 - **GetBitwiseAndTmpBufferFactorSize**
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BitwiseAnd](bitwise_and.md)（`same_topic`）：接口总览定义的 dtype、地址和临时空间契约由 BitwiseAnd 计算调用直接实现。
+<!-- cannbot:related:end -->

@@ -25,3 +25,11 @@ platforms: [agnostic]
 算子属性定义，OpAttrDef请参考OpAttrDef。
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Comment](../op_def/comment.md)（`related`）：OpAttrDef::Comment 为单个算子属性生成注释，focal OpDef::Comment 则描述整个算子及分组；二者共同组成原型文档。
+- [Comment](../op_param_def/comment.md)（`related`）：OpParamDef 的 Comment 为输入输出参数生成注释，而本接口为属性生成注释，需按元数据对象选用。
+- [OpAttrDef](op_attr_def.md)（`same_topic`）：OpAttrDef 与《Comment（原型注册管理）》的实质衔接是：OpAttrDef 定义属性名、类型、OPTIONAL/REQUIRED、默认值和 Version；Comment 生成原型注释，OpDef::Attr 挂载属性，Host TilingData 传递与缓存故障说明 runtime 属性进入 kernel 时的后续契约。
+<!-- cannbot:related:end -->

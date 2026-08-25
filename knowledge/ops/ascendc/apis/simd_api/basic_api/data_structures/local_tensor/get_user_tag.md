@@ -23,3 +23,11 @@ platforms: ['950', a2, a3]
 返回值：指定Tensor块的Tag信息。TTagType定义如下：
 
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LocalTensor构造函数](local_tensor_constructor.md)（`related`）：《GetUserTag》处理“获取指定Tensor块的Tag信息，用户可以根据Tag信息对Tensor进行不同操作。”。《LocalTensor构造函数》提供“LocalTensor构造函数。”，其具体合同或探针直接接入GetUserTag 与 SetUserTag 及 LocalTensor 所有权的读写合同。
+- [LocalTensor简介](local_tensor_intro.md)（`related`）：《GetUserTag》处理“获取指定Tensor块的Tag信息，用户可以根据Tag信息对Tensor进行不同操作。”。《LocalTensor简介》提供“LocalTensor表达AI Core中Local Memory（内部存储）内的L1/L0A/L0B/L0C Buffer及Unified Buffer中的数据。”，其具体合同或探针直接接入GetUserTag 与 SetUserTag 及 LocalTensor 所有权的读写合同。
+- [SetUserTag](set_user_tag.md)（`same_topic`）：《GetUserTag》处理“获取指定Tensor块的Tag信息，用户可以根据Tag信息对Tensor进行不同操作。”。《SetUserTag》提供“为Tensor添加用户自定义信息，用户可以根据需要设置对应的Tag。后续可通过GetUserTag获取指定Tensor的Tag信息，并根据Tag信息对Tensor进行相应操作。”，其具体合同或探针直接接入GetUserTag 与 SetUserTag 及 LocalTensor 所有权的读写合同。
+<!-- cannbot:related:end -->

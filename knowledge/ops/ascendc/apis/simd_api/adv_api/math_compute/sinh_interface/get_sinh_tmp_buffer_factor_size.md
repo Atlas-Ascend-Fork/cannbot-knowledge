@@ -22,3 +22,11 @@ platforms: ['950', a2, a3]
 参数：typeSize为输入数据类型字节数（half传2）；maxLiveNodeCount输出最大存活节点数；extraBuf输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。
 
 约束：当反推出的currentShapeSize * typeSize < 256B时，currentShapeSize按256B/typeSize向上取整。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetSinhMaxMinTmpSize](get_sinh_max_min_tmp_size.md)（`same_topic`）：GetSinhTmpBufferFactorSize 与《GetSinhMaxMinTmpSize》的实质衔接是：该因子查询服务 Sinh 高阶接口，必须结合最大最小空间查询把 host 侧预算转换成 kernel 单次处理量。
+- [Sinh](sinh.md)（`same_topic`）：GetSinhTmpBufferFactorSize 与《Sinh》的实质衔接是：该因子查询服务 Sinh 高阶接口，必须结合最大最小空间查询把 host 侧预算转换成 kernel 单次处理量。
+- [Sinh接口](sinh_interface.md)（`same_topic`）：GetSinhTmpBufferFactorSize 与《Sinh接口》的实质衔接是：该因子查询服务 Sinh 高阶接口，必须结合最大最小空间查询把 host 侧预算转换成 kernel 单次处理量。
+<!-- cannbot:related:end -->

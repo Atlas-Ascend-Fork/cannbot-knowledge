@@ -24,3 +24,10 @@ platforms: ['950', a2, a3]
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
 约束：两个源操作数的数据类型必须相同。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__aicore__ 内 std::min/max 编译失败](../../../../runbooks/compilation/aicore_avoid_host_std_minmax.md)（`exemplifies`）：Runbook 记录 `__aicore__` 中 `std::max(32KB,D*sizeof(float))` 只暴露 initializer_list 候选而编译失败；Utils `max` 卡定义了 device 可调用的二元最大值接口和同类型限制，直接补足该故障的受支持接口边界。
+- [Utils APImin](min.md)（`related`）：Utils APImin 与《Utils APImax》的实质衔接是：Utils min 与 Utils max 是同一比较模板的成对边界：输入类型约束相同，只把返回选择从较小值切换为较大值；未将算法目录中的所有成员相连。
+<!-- cannbot:related:end -->

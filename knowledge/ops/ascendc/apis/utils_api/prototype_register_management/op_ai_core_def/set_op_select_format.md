@@ -24,3 +24,9 @@ platforms: [agnostic]
 OpAICoreDef算子定义，OpAICoreDef请参考OpAICoreDef。
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DynamicFormatFlag](../op_ai_core_config/dynamic_format_flag.md)（`same_topic`）：DynamicFormatFlag=true 只是启用动态格式推导；必须由 SetOpSelectFormat 注册回调，框架才有函数可调用来生成 dtype/format。
+<!-- cannbot:related:end -->

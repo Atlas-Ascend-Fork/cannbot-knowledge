@@ -20,3 +20,9 @@ host侧Tiling接口，用于获取DeepNorm kernel计算所需的Tiling参数，�
 GetDeepNormMaxMinTmpSize参数：ascendcPlatform平台信息；srcShape输入shape；typeSize数据类型字节数；isReuseSrc是否复用源操作数；maxValue/minValue输出临时空间范围。
 
 GetDeepNormNDTilingInfo参数：ascendcPlatform平台信息；srcShape(B,S,H)输入shape；typeSize数据类型字节数；isBasicBlock是否基本块；maxTmpSize可用临时空间；tiling输出DeepNormTiling结构体。约束：需保证B、S、H均大于0且H满足32B对齐。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepNorm](deep_norm.md)（`related`）：DeepNormTiling 在 Host 侧根据输入形状生成 DeepNorm Kernel 所需 tiling，输出结构随后传入焦点计算接口。
+<!-- cannbot:related:end -->

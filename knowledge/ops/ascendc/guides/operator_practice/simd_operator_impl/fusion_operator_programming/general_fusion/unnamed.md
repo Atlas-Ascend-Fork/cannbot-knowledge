@@ -27,3 +27,10 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品不支持通算融合算�
 -   算子编译时，配置编译宏AICORE_EXCEPTION_RESTART，如下所示。具体的编译宏配置阶段和方式请参考支持自定义编译选项。
 -   配置HCCL重执行环境变量HCCL_OP_RETRY_ENABLE，开启重执行的检测和上报能力，该环境变量的说明请参考HCCL_OP_RETRY_ENABLE。请在算子执行前设置该环境变量，具体配置如下：
 注意，开启重执行后，若AI Core第一次下发通信任务后通信中断，默认只重执行一次。若需修改重执行次数或重传间隔时间，请参考HCCL_OP_RETRY_PARAMS。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [通用融合基础知识](basics.md)（`same_topic`）：场景页展开通用融合支持的计算通信组合和边界，用于在基础页的强/弱依赖判定后选择可落地场景。
+- [通用融合算子实现](operator_impl.md)（`same_topic`）：通用融合算子实现 与《通用融合特性场景》的实质衔接是：通用融合实现依赖 AIC/AIV 分工、异步、耦合/分离、多核尾块和 double buffer 场景。
+<!-- cannbot:related:end -->

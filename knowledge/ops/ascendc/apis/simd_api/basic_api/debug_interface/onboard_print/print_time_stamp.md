@@ -27,3 +27,13 @@ SIMD场景下，提供时间戳打点功能，用于在算子Kernel代码中标�
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscGetSystemCycle](../../../c_api/sys_var/asc_get_system_cycle.md)（`related`）：“AscGetSystemCycle”处理读取当前系统cycle计数器，用于性能统计与耗时测量。；“PrintTimeStamp”明确提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点并打印当前系统cycle数。。实质衔接：AscGetSystemCycle 提供原始 cycle；GetSystemCycle 是同义层接口，PrintTimeStamp/AscTimeStamp 是直接消费该计数器的打点能力。
+- [AscTimeStamp](../../../../utils_api/tuning_interface/asc_time_stamp.md)（`related`）：AscTimeStamp 记录关键点时间戳用于分析，PrintTimeStamp 进一步把当前 cycle 打印出来，适合现场核对打点顺序。
+- [GetSystemCycle](../../tool_interface/system_resources_and_variables/get_system_cycle_isasi.md)（`related`）：“PrintTimeStamp”处理提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点并打印当前系统cycle数。；“GetSystemCycle”明确获取系统计数器当前的cycle值，通过前后差值可计算代码段执行时间。。实质衔接：PrintTimeStamp 以系统 cycle 为时间基准；AscTimeStamp 是同一打点能力，MarkStamp 是流水标记替代，GetSystemCycle 提供换算基准。
+- [MarkStamp](../performance_stats/mark_stamp.md)（`related`）：“PrintTimeStamp”处理提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点并打印当前系统cycle数。；“MarkStamp”明确推荐使用asc_mark_stamp接口进行特定位置的标记，该接口同时适用于C语言和C++语言编程。 用户通过调用接口，用于在算子执行过程中标记特定位置，便于后期通过流水图分析代码执行路径与性能热点。。实质衔接：PrintTimeStamp 以系统 cycle 为时间基准；AscTimeStamp 是同一打点能力，MarkStamp 是流水标记替代，GetSystemCycle 提供换算基准。
+- [上板打印](onboard_print.md)（`related`）：PrintTimeStamp 用于输出时间戳，和数据打印组合可定位性能或执行顺序问题。
+<!-- cannbot:related:end -->

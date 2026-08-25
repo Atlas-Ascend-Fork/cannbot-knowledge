@@ -26,3 +26,12 @@ platforms: ['950', a2, a3]
 - 当开启MixDualMaster（双主模式）场景时，即模板参数enableMixDualMaster设置为true，不支持使用该接口。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Kirin X90。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Matmul使用说明](matmul_usage.md)（`related`）：SetUserDefInfo 与《Matmul使用说明》的实质衔接是：SetUserDefInfo 只在 MatmulCallBackFunc 使用 tilingPtr 时需要；SetSelfDefineData承载回调的可变数据，模板参数和使用说明决定回调是否启用。
+- [MatmulCallBackFunc](matmul_call_back_func.md)（`same_topic`）：SetUserDefInfo 与《MatmulCallBackFunc》的实质衔接是：SetUserDefInfo 只在 MatmulCallBackFunc 使用 tilingPtr 时需要；SetSelfDefineData承载回调的可变数据，模板参数和使用说明决定回调是否启用。
+- [MatmulTemplateParams](matmul_template_params.md)（`same_topic`）：SetUserDefInfo 与《MatmulTemplateParams》的实质衔接是：SetUserDefInfo 只在 MatmulCallBackFunc 使用 tilingPtr 时需要；SetSelfDefineData承载回调的可变数据，模板参数和使用说明决定回调是否启用。
+- [SetSelfDefineData](set_self_define_data.md)（`same_topic`）：SetUserDefInfo 与《SetSelfDefineData》的实质衔接是：SetUserDefInfo 只在 MatmulCallBackFunc 使用 tilingPtr 时需要；SetSelfDefineData承载回调的可变数据，模板参数和使用说明决定回调是否启用。
+<!-- cannbot:related:end -->

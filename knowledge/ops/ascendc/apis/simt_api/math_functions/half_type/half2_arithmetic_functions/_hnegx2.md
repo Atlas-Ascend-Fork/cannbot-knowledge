@@ -25,3 +25,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hneg](../../bfloat16_type/bfloat16_arithmetic_functions/_hneg.md)（`related`）：《__hnegx2》处理“获取输入half2类型数据各分量的负值。”。《__hneg》明确提供“获取输入bfloat16类型数据的负值。”，其参数、调用或验证步骤直接接入half2 逐 lane 取负与 bfloat16x2/scalar half 对应实现。
+- [__hnegx2](../../bfloat16_type/bfloat16x2_arithmetic_functions/_hnegx2.md)（`same_topic`）：《__hnegx2》处理“获取输入half2类型数据各分量的负值。”。《__hnegx2》明确提供“获取输入bfloat16x2_t类型数据各分量的负值。”，其参数、调用或验证步骤直接接入half2 逐 lane 取负与 bfloat16x2/scalar half 对应实现。
+<!-- cannbot:related:end -->

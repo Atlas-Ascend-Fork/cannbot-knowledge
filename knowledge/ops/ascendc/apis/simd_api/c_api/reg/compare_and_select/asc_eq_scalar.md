@@ -22,3 +22,12 @@ platforms: ['950']
 约束：dst中未被mask筛选的位置被置为0。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscEq](asc_eq.md)（`related`）：AscEq 是同一 Reg 比较族的向量-向量等值接口，AscEqScalar 则把第二操作数收缩为标量。
+- [Compares](../../../basic_api/reg_vector_compute/compare_and_select/compares.md)（`related`）：C++ Reg CompareScalar 与 C API AscEqScalar 提供同一标量比较任务的两种语言接口，可用于签名映射。
+- [比较与选择](../../../basic_api/reg_vector_compute/compare_and_select/compare_and_select.md)（`related`）：CompareAndSelect 总览定位 Reg 比较、掩码和选择流水，说明 AscEqScalar 的输出如何进入后续 Select。
+- [AscEqScalar](../../vector_compute/asc_eq_scalar.md)（`same_topic`）：AscEqScalar 与《AscEqScalar》的实质衔接是：AscEqScalar 与其他标量比较共享 scalar 广播和 mask 输出契约；vector-vector Eq、灵活标量 Compare/Select 说明比较源形态及结果消费方式。
+<!-- cannbot:related:end -->

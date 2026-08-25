@@ -20,3 +20,9 @@ platforms: ['950']
 参数：count(输入): 延迟count个cycle。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [asc_nop（内存访问函数）](../../../simt_api/memory_access_functions/asc_nop.md)（`related`）：SIMT asc_nop 与 Scalar Nop 都插入延迟，但调用空间和线程执行模型不同。
+<!-- cannbot:related:end -->

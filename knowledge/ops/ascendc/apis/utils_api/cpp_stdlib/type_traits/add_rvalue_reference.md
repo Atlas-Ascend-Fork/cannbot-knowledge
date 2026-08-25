@@ -23,3 +23,10 @@ platforms: ['950', a2, a3]
 返回值：add_rvalue_reference是一个结构体，其提供一个嵌套类型type，表示添加右值引用限定符后的类型。通过add_rvalue_reference::type来访问该类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [add_lvalue_reference](add_lvalue_reference.md)（`same_topic`）：add_lvalue_reference 与 add_rvalue_reference 为同一类型分别添加左值/右值引用，是引用类别驱动的直接选择。
+- [remove_reference](remove_reference.md)（`same_topic`）：remove_reference 是添加引用的逆变换，可恢复基础类型后继续类型判断。
+<!-- cannbot:related:end -->

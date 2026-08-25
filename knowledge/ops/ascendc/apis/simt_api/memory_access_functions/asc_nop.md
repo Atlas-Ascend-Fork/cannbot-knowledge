@@ -19,3 +19,9 @@ platforms: ['950']
 函数原型：inline void asc_nop()
 
 无参数，无返回值。仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/device_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Nop](../../simd_api/basic_api/scalar_compute/nop.md)（`related`）：SIMT asc_nop 与 Scalar Nop 都插入延迟，但调用空间和线程执行模型不同。
+<!-- cannbot:related:end -->

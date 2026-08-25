@@ -25,3 +25,10 @@ gt（greater than），该接口用于逐元素比较两个源操作数大小，
 - 当源操作数为浮点数据类型时，+0与-0视为相等。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscGt](../../vector_compute/asc_gt.md)（`related`）：Vector C API 的 AscGt 在 UB 数据上完成同类比较，可与 Reg 版本按数据位置和执行模型选型。
+- [AscGtScalar](asc_gt_scalar.md)（`same_topic`）：AscGtScalar 将第二个 RegTensor 操作数替换为标量，仍输出同一大于比较 mask，是同一比较契约的标量变体。
+<!-- cannbot:related:end -->

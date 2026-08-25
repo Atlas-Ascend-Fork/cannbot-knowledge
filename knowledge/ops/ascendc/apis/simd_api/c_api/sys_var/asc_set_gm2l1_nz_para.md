@@ -17,3 +17,10 @@ platforms: ['950']
 对MTE2_NZ_PARA寄存器中的值进行设置，可以在调用asc_copy_gm2l1_dn2nz和asc_copy_gm2l1_nd2nz前设置相关参数。 MTE2_NZ_PARA是一个64bit的寄存器，其中各bit含义如下： 表1 MTE2_NZ_PARA寄存器比特位说明
 函数原型：void asc_set_gm2l1_nz_para(uint64_t config)
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscCopyGm2l1Dn2nz](../cube_data_move/asc_copy_gm2l1_dn2nz.md)（`related`）：AscSetGm2l1NzPara 明确在 asc_copy_gm2l1_dn2nz 前配置 MTE2_NZ_PARA，是寄存器设置的直接消费者。
+- [asc_copy_gm2l1_nd2nz](../cube_data_move/asc_copy_gm2l1_nd2nz/asc_copy_gm2l1_nd2nz_arch_3510.md)（`related`）：ND2NZ 搬运同样读取 MTE2_NZ_PARA；该卡给出 3510 路径的矩阵尺寸与 stride 契约。
+<!-- cannbot:related:end -->

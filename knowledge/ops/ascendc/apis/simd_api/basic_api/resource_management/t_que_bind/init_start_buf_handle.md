@@ -23,3 +23,10 @@ platforms: ['950', a2, a3]
 -   当使用TBuf对象调用该接口时，入参num必须为1。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 训练系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetBufHandle](../custom_t_buf_pool/get_buf_handle.md)（`same_topic`）：InitStartBufHandle 与《GetBufHandle》的实质衔接是：InitStartBufHandle 与 InitBufHandle/GetBufHandle 围绕同一 TQueBind 缓冲句柄起点和获取流程。
+- [InitBufHandle](init_buf_handle.md)（`same_topic`）：InitStartBufHandle 与《InitBufHandle》的实质衔接是：InitStartBufHandle 与 InitBufHandle/GetBufHandle 围绕同一 TQueBind 缓冲句柄起点和获取流程。
+<!-- cannbot:related:end -->

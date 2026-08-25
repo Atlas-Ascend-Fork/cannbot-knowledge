@@ -25,3 +25,13 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hbeqx2](_hbeqx2.md)（`related`）：hbeqx2 执行相反的相等判断，可用于核对分支反转或构造不等掩码的验证对照。
+- [__hbnex2](../../half_type/half2_compare_functions/_hbnex2.md)（`related`）：bfloat16x2 __hbnex2 保持“两个分量均不等才为 true”的归约规则，仅替换数值格式。
+- [__hbneux2](_hbneux2.md)（`same_topic`）：__hbneux2 与 __hbnex2 都在两个 lane 均不等时返回 bool，唯一关键差异是 unordered 版本把 NaN 分量判为不等，而 ordered 版本含 NaN 返回 false。
+- [__hnex2](_hnex2.md)（`same_topic`）：hnex2 是对应的 half2/packed 比较入口，便于按输入表示映射同一逐 lane 不等判定。
+- [__hnex2_mask](_hnex2_mask.md)（`same_topic`）：mask 版本把逐 lane 比较结果编码为掩码，适合后续分支/选择而非直接 packed 布尔结果。
+<!-- cannbot:related:end -->

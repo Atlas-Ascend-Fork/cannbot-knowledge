@@ -25,3 +25,11 @@ platforms: ['950']
 - 开启饱和模式和非饱和模式时，需配置ctrl寄存器，ctrl寄存器
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscInt322Float](asc_int322float.md)（`related`）：AscInt322Float 与《AscFloat2Int32》的实质衔接是：AscInt322Float 的 Vector 对应入口执行同一 int32→float 转换，AscFloat2Int32 则提供反向路径，用于核对舍入和 mask 置零契约。
+- [AscFloat2Int32](../../scalar_compute/asc_float2int32.md)（`same_topic`）：AscFloat2Int32 与《AscFloat2Int32》的实质衔接是：AscFloat2Int32 的四种舍入模式对应 Rint/Round/Floor/Ceil，相关 float/half/bfloat16 转换卡用于保持目标位宽、源类型和逆转换契约。
+- [AscFloat2int32](../../vector_compute/asc_float2int32.md)（`same_topic`）：两张 AscFloat2Int32 卡都执行 float→int32 转换，分别作用于 UB vector 与寄存器向量，并共享舍入模式选择。
+<!-- cannbot:related:end -->

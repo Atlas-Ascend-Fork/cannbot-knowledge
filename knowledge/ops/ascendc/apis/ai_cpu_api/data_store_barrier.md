@@ -21,3 +21,10 @@ platforms: ['950', a2, a3]
 - 该接口仅支持通过>>调用，并在异构编译场景使用。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AI CPU算子编译](../../guides/programming_guide/compilation_and_execution/operator_compilation/ai_cpu_operator_compilation.md)（`explains`）：DataStoreBarrier 只能通过 >> 在异构编译场景调用；AI CPU 算子编译说明补齐 .aicpu/.asc 双文件、libaicpu_api 链接和 >> 调用的构建契约。
+- [AI CPU编程（编程模型）](../../guides/programming_guide/programming_model/ai_cpu_programming.md)（`explains`）：AI CPU 编程指南说明 AI CPU 与 AI Core 共享 Device 内存访问能力以及 >> 核函数调用模型，解释了 DataStoreBarrier 跨两类核保证写可见性的运行环境。
+<!-- cannbot:related:end -->

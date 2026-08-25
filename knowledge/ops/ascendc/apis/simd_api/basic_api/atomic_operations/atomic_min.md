@@ -20,3 +20,12 @@ platforms: ['950']
 函数原型通过模板参数T指定数据类型（支持int32_t/uint32_t/int64_t/uint64_t/float等）。接口参数：address为GM地址指针；value为输入标量值。返回值为修改前的旧值。
 
 约束：仅支持标量操作；遵循通用地址对齐约束。头文件：basic_api/kernel_operator_atomic_intf.h。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscAtomicMin](../../c_api/scalar_compute/asc_atomic_min.md)（`related`）：基础 AtomicMin 与 C Scalar AscAtomicMin 都在 GM 做原子取小并返回旧值；目标卡补充模板 dtype 范围，focal 补充 DCache 一致性和 MTE 手工同步要求。
+- [AscSetAtomicMin](../../c_api/simd_atomic/asc_set_atomic_min.md)（`related`）：AscSetAtomicMin 与《AtomicMin》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
+- [SetAtomicMin](set_atomic_min_isasi.md)（`related`）：SetAtomicMin 控制后续 DMA 搬出，AtomicMin 则立即对地址执行标量原子最小；两者用于按数据通路选型。
+- [asc_atomic_min](../../../simt_api/atomic_operations/asc_atomic_min.md)（`related`）：asc_atomic_min 与《AtomicMin》的实质衔接是：SIMT、C scalar 与基础 API AtomicMin 操作同一原子最小值；AtomicMax 和 SetAtomicMin 给出相反操作与 Store 配置路径。
+<!-- cannbot:related:end -->

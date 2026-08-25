@@ -30,3 +30,12 @@ platforms: ['950', a2, a3]
 - inSumTensor和inMaxTensor的数据类型需要保持一致。
 
 适用平台：Ascend 950PR/Ascend 950DT、Atlas A2 系列、Atlas A3 系列。未列出的产品形态不在本卡已确认范围内；详细支持矩阵以固定来源的“产品支持情况”为准。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [IsBasicBlockInSoftMax](is_basic_block_in_soft_max.md)（`related`）：《IsBasicBlockInSoftMax》明确“用于判断SoftMaxTiling结构是否符合基本块特征。”；它与《SimpleSoftMax》的“使用预先计算好的sum和max数据对输入tensor按行做Softmax计算，内部不含reduce过程。”在实际调用参数、数据流或结果校验上直接衔接。
+- [SoftMax/SimpleSoftMax Tiling](soft_max_simple_soft_max_tiling.md)（`related`）：《SoftMax/SimpleSoftMax Tiling》明确“用于获取SoftMax/SimpleSoftMax Tiling参数。”；它与《SimpleSoftMax》的“使用预先计算好的sum和max数据对输入tensor按行做Softmax计算，内部不含reduce过程。”在实际调用参数、数据流或结果校验上直接衔接。
+- [SoftMax](soft_max.md)（`same_topic`）：《SoftMax》的任务是“对输入tensor按行做Softmax计算，内部包含reducemax、exp、reducesum和div过程，可输出sum和max中间结果，支持ND和NZ格式。”。《SimpleSoftMax》具体提供“使用预先计算好的sum和max数据对输入tensor按行做Softmax计算，内部不含reduce过程。”，它直接用于SoftMax 的 Tiling、输出规整、跨 VL 规约状态和尾块同步闭环。
+- [SoftMax Tiling使用说明](soft_max_tiling_usage.md)（`same_topic`）：《SoftMax Tiling使用说明》处理“Ascend C提供一组SoftMax Tiling API，方便用户获取SoftMax kernel计算时所需的Tiling参数。”。《SimpleSoftMax》明确提供“使用预先计算好的sum和max数据对输入tensor按行做Softmax计算，内部不含reduce过程。”，其参数、调用或验证步骤直接接入SoftMax 的 Tiling 结构、临时空间、跨 VL 归约和 Kernel 参数合同。
+<!-- cannbot:related:end -->

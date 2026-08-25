@@ -25,3 +25,9 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hminx2_nan](_hminx2_nan.md)（`same_topic`）：《__hminx2》明确“获取两个bfloat16x2_t类型数据各分量的最小值。”；它与《__hminx2_nan》的“获取两个bfloat16x2_t类型数据各分量的最小值。任一分量为nan时，对应分量的计算结果为nan。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

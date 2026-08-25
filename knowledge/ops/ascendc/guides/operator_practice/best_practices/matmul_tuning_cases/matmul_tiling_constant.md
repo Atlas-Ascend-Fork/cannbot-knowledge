@@ -34,3 +34,9 @@ Tiling参数如下：
 -   L1相关Tiling参数：stepM=1，stepN=1，stepKa=4，stepKb=4，depthA1=8，depthB1=8。
 ## 获取性能数据
 使用msOpProf工具获取算子仿真流水图和上板Profiling数据。相较于基础场景，Tiling常量化在编译期期间将部分或全部Tiling参数由变量转化为常数值，在算子执行时直接使用常量化的Tiling参数，可以减少Scalar性能开销，所以重点分析Scalar流水。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetMatmulApiTiling](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_matmul_api_tiling.md)（`explains`）：GetMatmulApiTiling 与《Matmul高阶API开启Tiling全量常量化》的实质衔接是：host 侧 GetMatmulApiTiling 把模板参数、MatmulConfig 与基础配置落成 tiling，随后决定 kernel Matmul 的注册、临时空间和精度/性能策略。
+<!-- cannbot:related:end -->

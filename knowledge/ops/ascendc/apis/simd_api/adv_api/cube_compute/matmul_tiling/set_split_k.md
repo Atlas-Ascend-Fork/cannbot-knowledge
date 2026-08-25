@@ -25,3 +25,11 @@ EnableMultiCoreSplitK接口功能与该接口相同，建议使用EnableMultiCor
 约束：
 - 如果在算子中使用该接口，获取C矩阵结果时仅支持输出到Global Memory。
 - 如果在算子中使用该接口，需在Kernel侧代码中首次将C矩阵分片的结果写入Global Memory之前，先清零Global Memory，随后在获取C矩阵分片的结果时，再开启AtomicAdd累加。如果不预先清零Global Memory，可能会因为累加Global Memory中原始的无效数据而产生精度问题。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Matmul开启AtomicAdd选项](../../../../../guides/operator_practice/simd_operator_optimization/matrix_compute/matmul_atomic_add.md)（`explains`）：SetSplitK 与《Matmul开启AtomicAdd选项》的实质衔接是：SplitK 必须与 multi-core split、split range、single range/shape、core 数和 AtomicAdd 汇合配置一致。
+- [Matmul高阶API开启多核切K](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_multi_core_split_k.md)（`explains`）：SetSplitK 与《Matmul高阶API开启多核切K》的实质衔接是：SplitK 必须与 multi-core split、split range、single range/shape、core 数和 AtomicAdd 汇合配置一致。
+- [EnableMultiCoreSplitK](enable_multi_core_split_k.md)（`same_topic`）：SetSplitK 与《EnableMultiCoreSplitK》的实质衔接是：SplitK 必须与 multi-core split、split range、single range/shape、core 数和 AtomicAdd 汇合配置一致。
+<!-- cannbot:related:end -->

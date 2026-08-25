@@ -23,3 +23,12 @@ platforms: ['950']
 - typeSize（输入）：输入的数据类型大小，单位为字节。
 - maxLivedNodeCount（输出）：最大存活节点数，表示临时空间是单次计算数据量所占空间的多少倍。
 - extraBuf（输出）：使用的额外临时空间大小，单位为字节。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BitwiseNot接口](bitwise_not_interface.md)（`related`）：FactorSize 用 live-node/extraBuf 模型补充 BitwiseNot 固定 UB 下的 calCount 规划。
+- [BitwiseNot](bitwise_not.md)（`same_topic`）：GetBitwiseNotTmpBufferFactorSize 与《BitwiseNot》的实质衔接是：BitwiseNot 的 factor 查询与 MaxMin 查询及 kernel 调用配套，才能确定 sharedTmpBuffer 大小。
+- [GetBitwiseNotMaxMinTmpSize](get_bitwise_not_max_min_tmp_size.md)（`same_topic`）：GetBitwiseNotTmpBufferFactorSize 与《GetBitwiseNotMaxMinTmpSize》的实质衔接是：BitwiseNot 的 factor 查询与 MaxMin 查询及 kernel 调用配套，才能确定 sharedTmpBuffer 大小。
+- [LogicalNot](../logical_not_interface/logical_not.md)（`same_topic`）：LogicalNot 与《GetBitwiseNotTmpBufferFactorSize》的实质衔接是：LogicalNot 的 Host MaxMin/factor 查询为 Kernel 分配临时空间；BitwiseNot 对照明确逻辑真假取反与逐 bit 取反不是同一语义。
+<!-- cannbot:related:end -->

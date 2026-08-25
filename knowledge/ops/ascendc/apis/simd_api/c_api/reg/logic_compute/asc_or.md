@@ -34,3 +34,9 @@ platforms: ['950']
 - mask比特位为0时，dst对应比特位写0。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscOr](../../vector_compute/asc_or.md)（`same_topic`）：《AscOr》说明每对元素按位或运算，；《AscOr》说明根据mask对源操作数src0、src1执行按位或操作，结果写入dst，支持矢量数据寄存器和掩码寄存器。。二者在Vector AscOr与Reg AscOr实现同一逐元素按位或，仅操作数所在层级不同上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

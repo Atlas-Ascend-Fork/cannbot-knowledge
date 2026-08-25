@@ -30,3 +30,10 @@ GELU算子采用RegBase编程方式实现——通过asc_vf_call调用VF函数�
 2：循环展开优化：VF函数内循环为简单for循环，编译器无法充分调度指令级并行：使用#pragma unroll N展开循环，提高指令发射并行度和IPC，在VF融合基础上向量指令耗时可进一步减少约4.6%
 3：流水线串行执行：搬入、计算、搬出三个阶段严格串行执行，各硬件单元（MTE2/V/MTE3）无法同时工作：采用多缓冲机制，使搬入、计算、搬出可并行执行，提升硬件利用率
 4：核数固定：固定使用2个核，未根据实际可用核数动态分配：动态获取可用核数，充分利用多核并行能力
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [中级性能优化](intermediate_optimization.md)（`same_topic`）：中级性能优化 与《入门功能落地》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [高阶极限打磨](extreme_optimization.md)（`same_topic`）：极限篇继续消费同一 GELU 基线并验证更深的指令调度与流水优化，是功能落地后的后续阶段。
+<!-- cannbot:related:end -->

@@ -20,3 +20,13 @@ platforms: [a2, a3]
 参数：mask1（输入）：Normal模式：高位mask值。 Counter模式：需要置0，本入参不生效。；mask0（输入）：Normal模式：低位mask值。 Counter模式：整个矢量计算过程中，参与计算的元素个数。
 约束：需先调用asc_set_mask_count或asc_set_mask_norm设置Mask模式。
 支持平台：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Ascend 950PR/Ascend 950DT, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [如何使用掩码操作API](../../../../guides/programming_guide/library_api/basic_api/quick_reference/how_to_use_mask_api.md)（`explains`）：掩码快速参考给出 Counter/Normal 配置顺序和尾块示例。
+- [SetVectorMask](../../basic_api/memory_vector_compute/mask_operations/set_vector_mask.md)（`related`）：C++ Memory API 的 SetVectorMask 提供同类全局 mask 配置，可在 C/C++ 路线间对照。
+- [AscSetMaskCount](asc_set_mask_count.md)（`same_topic`）：Counter 模式启用后必须由 AscSetVectorMask 传入实际计算数量，硬件据此推断迭代和尾块。
+- [AscSetMaskNorm](asc_set_mask_norm.md)（`same_topic`）：AscSetVectorMask说明为矢量计算接口设置参与计算的数据 Mask；调用前需通过 asc_set_mask_count 和 asc_set_mask_norm 选择 Mask 模式。
+- [SetMaskNorm](../../basic_api/memory_vector_compute/mask_operations/set_mask_norm.md)（`same_topic`）：SetMaskNorm 与《AscSetVectorMask》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+<!-- cannbot:related:end -->

@@ -29,3 +29,11 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetPowerMaxMinTmpSize](get_power_max_min_tmp_size.md)（`same_topic`）：GetPowerMaxMinTmpSize说明在host侧获取Power接口所需的最大和最小临时空间大小，根据输入shape自动适配不同Power调用形式；对Power接口而言，Power 计算卡定义三类幂运算重载，而两个临时空间查询接口分别支持动态 shape 和固定空间的分块选择。
+- [GetPowerTmpBufferFactorSize](get_power_tmp_buffer_factor_size.md)（`same_topic`）：GetPowerTmpBufferFactorSize说明获取Power接口所需的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量；对Power接口而言，Power 计算卡定义三类幂运算重载，而两个临时空间查询接口分别支持动态 shape 和固定空间的分块选择。
+- [Power（数学计算）](power.md)（`same_topic`）：Power（数学计算）说明实现按元素做幂运算功能，提供3类接口，处理逻辑如下： ! !；对Power接口而言，Power 计算卡定义三类幂运算重载，而两个临时空间查询接口分别支持动态 shape 和固定空间的分块选择。
+<!-- cannbot:related:end -->

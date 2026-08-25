@@ -24,3 +24,10 @@ platforms: [agnostic]
 OpAICoreDef请参考OpAICoreDef。
 ## 约束说明
 无
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AICore（OpDef）](../op_def/ai_core.md)（`related`）：SetCheckSupport 为 AICore 配置能力检查回调，决定当前输入规格是否可走 AI Core。
+- [NeedCheckSupportFlag](../op_ai_core_config/need_check_support_flag.md)（`related`）：NeedCheckSupportFlag=true 只会在已通过 SetCheckSupport 注册回调时触发 dtype/shape 校验；二者必须配套。
+<!-- cannbot:related:end -->

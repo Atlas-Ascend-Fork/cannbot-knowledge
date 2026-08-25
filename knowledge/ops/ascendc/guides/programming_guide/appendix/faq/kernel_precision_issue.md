@@ -32,3 +32,13 @@ Ascend C提供孪生调试的功能，通过CPU域的功能验证、gdb单步调
 5.  查看具体层的堆栈信息，打印具体变量的值。本示例中，打印了tileLength为1024，该程序中表示需要处理1024个half类型的数，大小为1024*sizeof(half)=2048字节；输入Tensor xLocal的值，其中dataLen表示LocalTensor的size大小为1024字节，只能计算1024字节的数据。可以看出两者的长度不匹配，由此可以定位问题。
 3.  printf打印。在合适的位置增加变量打印。样例代码如下：
 可以看到有如下打屏日志输出，打印了tileLength为1024，该程序中表示需要处理1024个half类型的数；输入Tensor xLocal的size大小，为512，表示只能计算512个half类型的数。可以看出两者的长度不匹配，由此可以定位问题。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Printf](../../../../apis/utils_api/tuning_interface/printf.md)（`explains`）：FAQ 明确把 printf 数值打印作为定位 tileLength、LocalTensor 大小和中间值的手段；目标卡给出可调用接口。
+- [Reg矢量计算接口精度标准汇总](../../../../apis/appendix/reg_vector_compute_interface_precision_standard_summary.md)（`explains`）：核函数运行验证时算子存在精度问题说明在进行算子NPU域的运行验证时，实际数据和真值数据不一致，算子存在精度问题。
+- [SIMT接口精度标准汇总](../../../../apis/appendix/simt_interface_precision_standard_summary.md)（`explains`）：FAQ 给出误差定位、容差与指令替换流程，可将汇总表中的标准用于 kernel 验证。
+- [half类型精度转换函数](../../../../apis/simt_api/math_functions/half_type/half_precision_conversion_functions/half_precision_conversion_functions.md)（`explains`）：《half类型精度转换函数》说明提供half类型与float、bfloat16、整型等数据类型间的精度转换接口。；《核函数运行验证时算子存在精度问题》说明在进行算子NPU域的运行验证时，实际数据和真值数据不一致，算子存在精度问题。。二者在half精度转换总览与通用SIMT转换、bfloat16总览、精度标准和精度FAQ共同提供选择与验收边界上存在可执行的直接衔接。
+- [NPU域上板调试（功能调试）](../../debug_and_tuning/functional_debug/npu_board_debug.md)（`same_topic`）：《NPU域上板调试（功能调试）》处理“NPU域上板调试手段主要包含上板数据打印、msSanitizer内存异常检测和msDebug单步调试等功能，数据打印包括printf、DumpTensor两种方式，其中，DumpTensor是SIMD编程独有功能，用于打印指定Tensor的数据。”。《核函数运行验证时算子存在精度问题》提供“在进行算子NPU域的运行验证时，实际数据和真值数据不一致，算子存在精度问题。”，其具体合同或探针直接接入NPU 上板打印、异常定位、Tiling 调试、精度对比和离线解析流程。
+<!-- cannbot:related:end -->

@@ -32,3 +32,14 @@ platforms: ['950']
 -   width不是2的倍数或者超出32，返回值异常。
 需包含头文件 "simt_api/device_warp_functions.h"。
 支持 SIMT 与 SIMD/SIMT 混合编程场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscShfl](asc_shfl.md)（`same_topic`）：AscShflDown 与《AscShfl》的实质衔接是：AscShflDown 从较高 lane 读取值；general/up/xor 与 cooperative-group ShflDown 对照偏移方向和 warp/group 作用域。
+- [AscShflUp](asc_shfl_up.md)（`same_topic`）：AscShflDown 与《AscShflUp》的实质衔接是：AscShflDown 从较高 lane 读取值；general/up/xor 与 cooperative-group ShflDown 对照偏移方向和 warp/group 作用域。
+- [AscShflXor](asc_shfl_xor.md)（`same_topic`）：AscShflXor 与《AscShflDown》的实质衔接是：AscShflXor 与 up/down/general 及 ShflXor 入口共享 warp lane 交换契约；同 warp 避免分支指南直接使用此类 shuffle 做数据重排。
+- [ShflDown](../../cooperative_groups/coalesced_group/shfl_down.md)（`same_topic`）：AscShflDown 与《ShflDown》的实质衔接是：AscShflDown 从较高 lane 读取值；general/up/xor 与 cooperative-group ShflDown 对照偏移方向和 warp/group 作用域。
+- [ShflDown](../../cooperative_groups/thread_block_tile/shfl_down.md)（`same_topic`）：AscShflDown 与《ShflDown》的实质衔接是：AscShflDown 从较高 lane 读取值；general/up/xor 与 cooperative-group ShflDown 对照偏移方向和 warp/group 作用域。
+- [Warp Shfl类函数](warp_shfl_functions.md)（`same_topic`）：AscShflDown 与《Warp Shfl类函数》的实质衔接是：AscShflDown 从较高 lane 读取值；general/up/xor 与 cooperative-group ShflDown 对照偏移方向和 warp/group 作用域。
+<!-- cannbot:related:end -->

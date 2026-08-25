@@ -27,3 +27,9 @@ Compare、Compares称之为比较接口，用于逐元素比较Tensor或Scalar�
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SelectFlexibleScalar](select_flexible_scalar.md)（`related`）：《SelectFlexibleScalar》处理“提供灵活标量位置的Select接口，支持标量在前和标量在后两种场景，标量可配置为LocalTensor单点元素。”。《比较与选择概述》提供“Compare、Compares称之为比较接口，用于逐元素比较Tensor或Scalar的大小，并根据比较结果生成掩码。Select、GatherMask称之为选择接口，用于根据掩码条件从源操作数中选取元素输出到目的操作数。推荐使用场景如下：”，其具体合同或探针直接接入灵活标量 Select 的标量来源、Compare mask 生产和别名安全。
+<!-- cannbot:related:end -->

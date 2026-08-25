@@ -18,3 +18,9 @@ reg数据搬运接口，适用于从UB搬入MaskReg。
 函数原型：void asc_loadalign(vector_bool& dst, __ubuf__ uint32_t* src)
 约束：offset在缺省时默认偏移值offset=0。；用户可以通过自增基地址或者偏移的方式传入offset参数。
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscLoadalign](asc_loadalign.md)（`same_topic`）：asc_loadalign (废弃) 与《AscLoadalign》的实质衔接是：AscLoadalign 是废弃 MaskReg 搬入重载的现行入口，承担同一 UB→Reg 对齐搬入任务。
+<!-- cannbot:related:end -->

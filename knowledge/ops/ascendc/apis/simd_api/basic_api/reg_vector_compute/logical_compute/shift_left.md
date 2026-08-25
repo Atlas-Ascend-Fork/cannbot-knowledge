@@ -30,3 +30,13 @@ ShiftLeft指令根据mask对源操作数srcReg0，按照srcReg1对应元素进�
 - srcReg1不支持设置为负数，负数行为未定义。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscShiftLeft](../../../c_api/reg/logic_compute/asc_shiftleft.md)（`same_topic`）：ShiftLeft说明根据mask对srcReg0按srcReg1对应元素进行左移操作并写入dstReg，无符号类型执行逻辑左移，有符号类型执行算术左移。
+- [AscShiftLeftScalar](../../../c_api/reg/logic_compute/asc_shiftleft_scalar.md)（`same_topic`）：AscShiftLeftScalar 与《ShiftLeft》的衔接是：标量左移与张量左移、C Vector 标量版本以及右移对应接口共同界定移位量来源、方向和 Reg/Memory 执行契约。
+- [ShiftLeft](../../memory_vector_compute/logical_compute/shift_left.md)（`same_topic`）：RegTensor ShiftLeft 与 LocalTensor 版本执行相同左移语义，可按数据驻留与编程模型对应。
+- [ShiftLeft](../../memory_vector_compute/logical_compute/shift_left_shift_amount_tensor.md)（`same_topic`）：ShiftLeft 与《ShiftLeft》的实质衔接是：这些接口覆盖 tensor/标量移位量、Memory/Reg/C 路径及左右移方向，直接用于核对 ShiftLeft 的移位量来源与有符号/无符号语义。
+- [ShiftLefts](shift_lefts.md)（`same_topic`）：《ShiftLeft》明确“根据mask对srcReg0按srcReg1对应元素进行左移操作并写入dstReg，无符号类型执行逻辑左移，有符号类型执行算术左移。”；它与《ShiftLefts》的“根据mask对srcReg按标量scalarValue进行左移操作并写入dstReg，无符号类型执行逻辑左移，有符号类型执行算术左移。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

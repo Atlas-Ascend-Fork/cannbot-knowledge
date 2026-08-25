@@ -30,3 +30,15 @@ platforms: ['950', a2, a3]
 - 对于BSNGD、SBNGD、BNGS1S2 Layout格式，输入A、B矩阵按分形对齐后的多Batch数据总和应小于L1 Buffer的大小；对于NORMAL  Layout格式没有这种限制，但需通过MatmulConfig配置输入A、B矩阵多Batch数据大小与L1 Buffer的大小关系；
 
 适用平台：Ascend 950PR/Ascend 950DT、Atlas A2 系列、Atlas A3 系列。未列出的产品形态不在本卡已确认范围内；详细支持矩阵以固定来源的“产品支持情况”为准。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Batch Matmul基础功能](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/batch_matmul_basics.md)（`explains`）：Batch Matmul基础功能 与《IterateBatch》的实质衔接是：Batch Matmul 直接使用 Batch tmp 查询、IterateBatch/NBatch、batch shape/输出与 batch 数配置；workspace 和精度卡约束真实使用。
+- [SetBatchNum](set_batch_num.md)（`related`）：IterateBatch说明批量处理Matmul的接口，调用一次可计算出多个singleCoreM*singleCoreN大小的C矩阵；对SetBatchNum而言，Batch 数配置决定 IterateBatch/IterateNBatch 的输入布局与循环次数；异步批处理还必须由 WaitIterateBatch 闭合生命周期。
+- [SetCLayout](../matmul_tiling/set_c_layout.md)（`related`）：SetCLayout 文档明确要求 BSNGD、SBNGD、BNGS1S2 布局在调用 IterateBatch 前设置 C 的 B/S/N/G/D 轴信息。
+- [WaitIterateBatch](wait_iterate_batch.md)（`related`）：IterateBatch 的异步模板参数 waitIterateBatch=true 明确要求用 WaitIterateBatch 等待批量 Matmul 完成；目标卡是该等待动作的直接生产端。
+- [GetBatchC](get_batch_c.md)（`same_topic`）：GetBatchC 与《IterateBatch》的实质衔接是：GetBatchC 在 Batch Matmul 的 IterateBatch/NBatch 与等待流程后取回结果；Tensor 版本、batch 数配置和使用指南解释同一输出契约。
+- [Iterate](iterate.md)（`same_topic`）：Iterate 与《IterateBatch》的实质衔接是：Iterate 每次推进一块 baseM×baseN 并管理 L0C；Init/SetTensor 后需按同步模式配对 GetTensorC/Wait，IterateAll/NBatch/Batch 与异步指南给出替代执行契约。
+- [IterateNBatch](iterate_n_batch.md)（`same_topic`）：IterateNBatch 与《IterateBatch》的实质衔接是：IterateNBatch 必须先开启 MatmulConfig::isNBatch、配置 Host 侧 batch 信息并申请 workspace；同步/异步结果分别经 WaitIterateBatch 或 GetBatchTensorC/GetBatchC 获取，使用说明给出完整调用顺序。
+<!-- cannbot:related:end -->

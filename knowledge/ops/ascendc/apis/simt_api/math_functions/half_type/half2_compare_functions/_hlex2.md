@@ -25,3 +25,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hlex2](../../bfloat16_type/bfloat16x2_compare_functions/_hlex2.md)（`related`）：bfloat16x2 版本保持相同逐 lane <= 语义，用于跨两种 16bit 浮点输入实现对照。
+- [__hlex2_mask](_hlex2_mask.md)（`same_topic`）：__hlex2 与 __hlex2_mask 都对 half2 执行逐 lane ordered ≤；一个返回 half2 的 1/0，另一个返回每 lane 16-bit 掩码。
+<!-- cannbot:related:end -->

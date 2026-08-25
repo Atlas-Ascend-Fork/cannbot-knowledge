@@ -18,3 +18,11 @@ platforms: [a2, a3]
 函数原型：void asc_mul_cast_half2uint8(__ubuf__ uint8_t* dst, __ubuf__ half* src0, __ubuf__ half* src1, uint32_t count)
 约束：dst、src0、src1的起始地址需要32字节对齐。；操作数地址重叠约束请参考通用地址重叠约束。
 支持平台：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Ascend 950PR/Ascend 950DT, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscMul](../reg/arithmetic_compute/asc_mul.md)（`related`）：MulCast 在乘法后直接压缩到 uint8，而 Reg AscMul 仅保留乘积；需要融合量化输出时应选前者。
+- [AscMulCastHalf2int8](asc_mul_cast_half2int8.md)（`same_topic`）：AscMulCastHalf2int8 与《AscMulCastHalf2uint8》的实质衔接是：AscMulCastHalf2int8 融合 half 乘法、RINT 和 int8 饱和；MulCast、纯 Mul、Half2Int8 与 Rint 入口分别核对融合、目标宽度和舍入。
+- [MulCast](../../basic_api/memory_vector_compute/composite_compute/mul_cast.md)（`same_topic`）：通用 MulCast 的 half→uint8 组合在 C API 中对应 AscMulCastHalf2uint8。
+<!-- cannbot:related:end -->

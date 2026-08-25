@@ -39,3 +39,14 @@ integral_constant提供了多个常用的特化版本，具体如下：
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
 约束：-   Int类型是integral_constant数值结构的别名简写，数值类型必须是size_t类型。
 -   模板参数Tp不支持float等浮点数类型，因为模板参数需在编译期确定，而浮点数的精度问题可能导致编译期无法准确表示。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [is_const](is_const.md)（`related`）：is_const 的结果以 integral_constant 风格暴露 value/type，理解该基类有助于在 enable_if 中消费判定结果。
+- [Conditional](conditional.md)（`same_topic`）：Conditional：Conditional按编译期bool选择类型，EnableIf据条件启用模板而IntegralConstant承载编译期常量；三者可共同实现可验证的类型分发。 目标卡《IntegralConstant》补充：封装编译时常量整数值的模板结构体，是类型特性和编译时计算的基础组件，支持隐式转换和函数调用运算符。
+- [EnableIf](enable_if.md)（`same_topic`）：EnableIf说明编译时模板元编程工具，根据布尔条件启用或禁用特定的函数模板、类模板或模板特化。
+- [is_integral](is_integral.md)（`same_topic`）：is_integral 的 value/type 通过 integral_constant 形式暴露，是在模板条件中消费结果的基础。
+- [is_same](is_same.md)（`same_topic`）：is_same 的布尔结果通过 integral_constant 形式暴露，供模板条件消费。
+- [is_void](is_void.md)（`same_topic`）：is_void 与《IntegralConstant》的实质衔接是：is_void 常与 integral_constant/is_same 表达编译期结果，并通过 Conditional/EnableIf 选择仅对 void 或非 void 有效的模板实现。
+<!-- cannbot:related:end -->

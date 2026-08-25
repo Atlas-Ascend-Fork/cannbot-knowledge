@@ -25,3 +25,9 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__low2bfloat162](_low2bfloat162.md)（`same_topic`）：__low2bfloat162 与《__low2bfloat16》的实质衔接是：low/high 与单输入复制、双输入拼装接口共同定义 bfloat16x2 的分量选择和装配顺序。
+<!-- cannbot:related:end -->

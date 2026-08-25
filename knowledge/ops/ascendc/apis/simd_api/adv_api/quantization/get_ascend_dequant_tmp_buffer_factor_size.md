@@ -22,3 +22,11 @@ platforms: ['950', a2, a3]
 参数：typeSize为输入数据类型字节数（half传2）；maxLiveNodeCount输出最大存活节点数；extraBuf输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。
 
 约束：当反推出的currentShapeSize * typeSize < 256B时，currentShapeSize按256B/typeSize向上取整。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SetDequantType](../cube_compute/matmul_tiling/set_dequant_type.md)（`related`）：GetAscendDequantTmpBufferFactorSize 与《SetDequantType》的实质衔接是：factor 查询与 GetAscendDequantMaxMinTmpSize 共同换算临时空间和单次元素数，AscendDequant 是结果消费方，SetDequantType 控制输出模式。
+- [AscendDequant](ascend_dequant.md)（`same_topic`）：GetAscendDequantTmpBufferFactorSize 与《AscendDequant》的实质衔接是：factor 查询与 GetAscendDequantMaxMinTmpSize 共同换算临时空间和单次元素数，AscendDequant 是结果消费方，SetDequantType 控制输出模式。
+- [GetAscendDequantMaxMinTmpSize](get_ascend_dequant_max_min_tmp_size.md)（`same_topic`）：GetAscendDequantTmpBufferFactorSize 与《GetAscendDequantMaxMinTmpSize》的实质衔接是：factor 查询与 GetAscendDequantMaxMinTmpSize 共同换算临时空间和单次元素数，AscendDequant 是结果消费方，SetDequantType 控制输出模式。
+<!-- cannbot:related:end -->

@@ -29,3 +29,19 @@ platforms: [agnostic]
 出于性能考虑，SuperKernel场景下Cache刷新机制如下：
 - 如果开发者调用GlobalTensor的GetValue和SetValue接口对GM进行标量读写，在GE入图及npugraph_ex后端aclnn调用场景，SuperKernel编译时会自动在两个接口内部插入DataCacheCleanAndInvalid指令刷新单个Cache Line，保证一定的数据缓存一致性。不会在子Kernel调用前后插入DataCacheCleanAndInvalid。
 - 如果开发者通过GlobalTensor的()运算符接口来获取值（读值时会插入DataCacheCleanAndInvalid指令刷新单个Cache Line保证数据缓存一致性），但通过该接口直接改写了GlobalTensor对应位置的值时，则不会自动插入DataCacheCleanAndInvalid指令，开发者需要自行保证数据缓存一致性。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CrossCoreSetFlag](../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)（`explains`）：算子适配说明 与《CrossCoreSetFlag》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [CrossCoreWaitFlag](../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)（`explains`）：算子适配说明 与《CrossCoreWaitFlag》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [SK_BIND（SuperKernel）](../../../../apis/utils_api/super_kernel/sk_bind.md)（`explains`）：算子适配说明 与《SK_BIND（SuperKernel）》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [A5 mix(1,2) mode=2 漏 AIV1 flag 致全零](../../../../runbooks/precision/a5_mix_1_2_mode_2_aiv1_flag.md)（`related`）：算子适配说明 与《A5 mix(1,2) mode=2 漏 AIV1 flag 致全零》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [核函数直调算子额外适配说明](kernel_direct_call_adaptation.md)（`related`）：调用方 kernel 改造后，被调算子也需满足 direct-call 入口和资源约束。
+- [算子自验证说明](operator_self_verification.md)（`related`）：自验证应在算子满足 SuperKernel 全核同步、MIX 比例和 DCache 一致性约束后执行；适配卡给出验证失败时应回查的具体前置契约。
+- [SuperKernel原理介绍](principles.md)（`same_topic`）：算子适配说明 与《SuperKernel原理介绍》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [缓存一致性](../memory_model/cache_coherence.md)（`same_topic`）：算子适配说明 与《缓存一致性》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [高级编程基本流程](../aclnn_operator_development/design_and_implementation/host_tiling_implementation.md)（`same_topic`）：算子适配说明 与《高级编程基本流程》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [高级编程基本流程](../aclnn_operator_development/design_and_implementation/kernel_operator_implementation.md)（`same_topic`）：算子适配说明 与《高级编程基本流程》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [高级编程概述](../operator_graph_development/overview.md)（`same_topic`）：算子适配说明 与《高级编程概述》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+<!-- cannbot:related:end -->

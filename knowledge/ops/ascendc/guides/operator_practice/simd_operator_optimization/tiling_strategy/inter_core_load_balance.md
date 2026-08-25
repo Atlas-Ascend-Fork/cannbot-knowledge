@@ -29,3 +29,17 @@ platforms: [agnostic]
 针对上述切分策略，调整拖尾核的位置后可以达到全局负载最优，如[图2](#fig133658471154)所示。完成所有计算时，1到10核多一次数据块的计算，可以实现全局负载最优。
 
 **图2**  核间负载均衡示意图
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [核间同步](../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/inter_core_sync.md)（`explains`）：核间负载均衡 与《核间同步》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+- [核间同步能力概述](../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/inter_core_sync_overview.md)（`explains`）：核间负载均衡 与《核间同步能力概述》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+- [多核 numPerCore 须对齐 Philox group 4](../../../../runbooks/precision/numpercore_philox_group_4.md)（`related`）：核间负载均衡 与《多核 numPerCore 须对齐 Philox group 4》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+- [Matmul算子优化Tiling策略](../../best_practices/matmul_tuning_cases/matmul_tiling_strategy.md)（`same_topic`）：核间负载均衡 与《Matmul算子优化Tiling策略》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+- [SIMD算子优化概述](../memory_access/avoid_ub_bank_conflict/overview.md)（`same_topic`）：核间负载均衡 与《SIMD算子优化概述》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+- [优化建议总览表（SIMD算子优化）](../optimization_summary.md)（`same_topic`）：核间负载均衡 与《优化建议总览表（SIMD算子优化）》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+- [启用Iterate或IterateAll异步接口避免AIC/AIV同步依赖](../pipeline_scheduling/enable_iterate_avoid_sync.md)（`same_topic`）：核间负载均衡 与《启用Iterate或IterateAll异步接口避免AIC/AIV同步依赖》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+- [开启DoubleBuffer](../pipeline_scheduling/enable_double_buffer.md)（`same_topic`）：核间负载均衡 与《开启DoubleBuffer》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+- [设置合适的核数和算子Kernel类型](../overhead_optimization/core_count_kernel_type.md)（`same_topic`）：核间负载均衡 与《设置合适的核数和算子Kernel类型》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+<!-- cannbot:related:end -->

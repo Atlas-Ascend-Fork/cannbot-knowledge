@@ -22,3 +22,12 @@ platforms: ['950']
 约束：mask未筛选的元素在输出中置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Adds（灵活标量位置）](../../../basic_api/memory_vector_compute/basic_arithmetic/adds_flexible_scalar.md)（`same_topic`）：Adds（灵活标量位置） 与《AscAddScalar》的实质衔接是：灵活标量 Adds 与普通 Adds、C Reg/C Vector add-scalar 执行同一 tensor+scalar 运算；RegTensor 误用 Adds 的案例明确区分标量加与张量逐元素 Add。
+- [AscAdd](asc_add.md)（`same_topic`）：AscAdd 与《AscAddScalar》的实质衔接是：Reg、Vector 和 scalar 三种 AscAdd 入口实现相同加法，区别在操作数载体、mask 与结果位置。
+- [AscAdd](../../vector_compute/asc_add.md)（`same_topic`）：AscAdd：Reg AscAdd/AscAddScalar和 Vector AscAddRelu/Scalar是同一逐元素加法的寄存器、标量和融合变体，能直接辅助选择正确原型。 目标卡《AscAddScalar》补充：执行矢量和标量的加法运算，将结果写入目的操作数dst。
+- [AscAddScalar](../../vector_compute/asc_add_scalar.md)（`same_topic`）：Reg 与 Vector C API 都执行逐元素加标量，可据数据载体和 mask/repeat 模型迁移。
+<!-- cannbot:related:end -->

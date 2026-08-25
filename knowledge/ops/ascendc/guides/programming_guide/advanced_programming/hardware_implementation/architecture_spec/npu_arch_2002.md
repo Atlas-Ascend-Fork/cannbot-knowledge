@@ -45,3 +45,10 @@ Cube计算单元
 ## 同步控制
 核内同步
 由于AI Core内部的执行单元（如MTE2搬运单元、Vector计算单元等）以异步并行的方式运行，在读写Local Memory（如Unified Buffer）时可能存在数据依赖关系。为确保数据一致性及计算正确性，需通过同步控制协调操作时序。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [基本架构（硬件实现）](../basic_architecture.md)（`related`）：基本架构说明 AI Core、存储与流水抽象，为理解 2002 规格中的具体单元提供公共模型。
+- [NPU架构版本2002](../hardware_constraints/npu_arch_2002.md)（`same_topic`）：NPU架构版本2002 与《NPU架构版本2002》的实质衔接是：2002 architecture spec给出硬件组成，constraints给出 Generic Addressing/全局变量限制；GetCurNpuArch和 SoC 查证链用于确认当前目标确实落在2002。
+<!-- cannbot:related:end -->

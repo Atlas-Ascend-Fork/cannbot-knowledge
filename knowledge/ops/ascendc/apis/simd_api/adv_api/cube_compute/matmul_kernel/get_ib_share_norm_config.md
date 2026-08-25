@@ -29,3 +29,13 @@ platforms: ['950', a2, a3]
 返回值：MatmulConfig结构体。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core、Atlas 训练系列产品、Kirin X90、Kirin 9030。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Matmul高阶API开启IBShare模板共享A和B矩阵数据](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_ibshare_ab.md)（`explains`）：该案例覆盖 A/B 同时共享的融合算子形态，可据输入复用关系选择单边或双边 IBShare。
+- [Matmul高阶API开启IBShare模板共享B矩阵数据](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_ibshare_b.md)（`explains`）：Matmul高阶API开启IBShare模板共享B矩阵数据 与《GetIBShareNormConfig》的实质衔接是：IBShare 的 B-only 配置受 MatmulConfig、tiling 策略、preload/MDL 和 kernel Iterate 契约共同约束，直接影响 L1 复用。
+- [GetMDLConfig](get_mdl_config.md)（`same_topic`）：GetMDLConfig 与《GetIBShareNormConfig》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [GetNormalConfig](get_normal_config.md)（`same_topic`）：GetNormalConfig 与《GetIBShareNormConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
+- [MatmulConfig](matmul_config.md)（`same_topic`）：MatmulConfig 定义 GetIBShareNormConfig 返回对象中的 intrinsicsCheck、batchMode、double-cache 与 UnitFlag 等字段。
+<!-- cannbot:related:end -->

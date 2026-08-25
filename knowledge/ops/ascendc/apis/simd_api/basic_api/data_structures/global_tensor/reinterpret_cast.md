@@ -25,3 +25,9 @@ platforms: ['950']
 约束：当数据类型发生转换后，元素个数可能无法取整，例如3个int4b_t类型转换为uint32_t，则转换后调用GetSize接口，只能获取向下取整的整数值，这种场景在CPU状态运行时，会有对应的提示告警信息。
 
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ReinterpretCast](../local_tensor/reinterpret_cast.md)（`related`）：LocalTensor 与 GlobalTensor 的 ReinterpretCast 都保持地址、字节数和内容不变，只改变元素类型解释；可按存储层级映射。
+<!-- cannbot:related:end -->

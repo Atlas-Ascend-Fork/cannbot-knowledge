@@ -42,3 +42,21 @@ VF并不是写的越长，把所有运算都放在一个for循环内就好，需
 在同一个VF中，读写寄存器UnalignRegForLoad、UnalignRegForStore的数量上限均为4个，若实际使用超过4个UnalignRegForLoad或UnalignRegForStore会直接导致编译失败。
 优化方案：
 -   使用布尔代数运算。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AddrReg](../../../../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/addr_reg.md)（`explains`）：指令双发优化 与《AddrReg》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [Reg矢量计算接口指令单双发汇总](../../../../../apis/appendix/reg_vector_compute_interface_instruction_single_dual_issue_summary.md)（`explains`）：指令双发优化 与《Reg矢量计算接口指令单双发汇总》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [AOT编译优化（高级编程）](../../../../programming_guide/advanced_programming/aot_compilation_optimization.md)（`related`）：指令双发优化 与《AOT编译优化（高级编程）》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [SIMD算子优化概述](../../memory_access/avoid_ub_bank_conflict/overview.md)（`related`）：指令双发优化 与《SIMD算子优化概述》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [VfFusionOptimization](vf_fusion_optimization.md)（`related`）：指令双发优化 与《VfFusionOptimization》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [VfLoopOptimization](vf_loop_optimization.md)（`related`）：指令双发优化 与《VfLoopOptimization》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [中级性能优化](../../../typical_operator_cases/simd_operator_impl/add_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《指令双发优化》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
+- [中级性能优化](../../../typical_operator_cases/simd_operator_impl/gelu_reg_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《指令双发优化》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [优化建议总览表（SIMD算子优化）](../../optimization_summary.md)（`related`）：指令双发优化 与《优化建议总览表（SIMD算子优化）》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [原子操作指令优化](../../../simt_operator_optimization/instruction_optimization/atomic_instruction_optimization.md)（`related`）：指令双发优化 与《原子操作指令优化》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [基于全局掩码复用的计算性能优化](../mask_reuse_optimization.md)（`related`）：指令双发优化 与《基于全局掩码复用的计算性能优化》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [设置DCI编译选项来减少算子尾开销](../../overhead_optimization/dci_compile_option.md)（`related`）：指令双发优化 与《设置DCI编译选项来减少算子尾开销》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [高阶极限打磨](../../../typical_operator_cases/simd_operator_impl/gelu_reg_vector_operator/extreme_optimization.md)（`same_topic`）：GELU 卡通过展开多组依赖链提升双发机会，双发优化指南提供其指令依赖和调度原理。
+<!-- cannbot:related:end -->

@@ -30,3 +30,12 @@ platforms: ['950', a2, a3]
 - 操作数地址对齐要求请参见通用地址对齐约束。
 
 适用平台：Ascend 950PR/Ascend 950DT、Atlas A2 系列、Atlas A3 系列。未列出的产品形态不在本卡已确认范围内；详细支持矩阵以固定来源的“产品支持情况”为准。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SoftmaxFlash Tiling接口](softmax_flash_tiling_interface.md)（`related`）：该 Host 侧 tiling 函数生成的 SoftMaxTiling 正是同名 SoftmaxFlash kernel 的输入；两侧 isUpdate/isReuseSource 配置必须一致。
+- [SoftmaxFlashV2 Tiling接口](softmax_flash_v2_tiling_interface.md)（`related`）：迁移到 SoftmaxFlashV2 后必须同步改用 V2 tiling 接口；旧 tiling 结构不能替代 V2 的 Host 配置。
+- [SoftmaxFlashV3 Tiling接口](softmax_flash_v3_tiling_interface.md)（`related`）：《SoftmaxFlashV3 Tiling接口》处理“用于获取SoftmaxFlashV3接口所需的Tiling参数。”。《SoftmaxFlash》明确“Softmax增强版本，可根据上一次Softmax计算的sum和max更新本次结果，适用于last轴切轴场景，不开启update时等同于SoftMax。即将废弃，建议使用SoftmaxFlashV2。”，可直接用于核对SoftmaxFlashV3 的 Kernel 参数、专用 Tiling、update 状态与在线 softmax 数值依赖。
+- [SoftmaxFlashV2](softmax_flash_v2.md)（`same_topic`）：《SoftmaxFlashV2》处理“SoftmaxFlash增强版本，对应FlashAttention-2算法，支持通过isUpdate参数控制是否根据前一次的sum和max更新当前结果，支持ND和NZ格式。”。《SoftmaxFlash》提供“Softmax增强版本，可根据上一次Softmax计算的sum和max更新本次结果，适用于last轴切轴场景，不开启update时等同于SoftMax。即将废弃，建议使用SoftmaxFlashV2。”，其具体合同或探针直接接入Flash softmax 的 update 状态、专用 Tiling 与在线 mi/li 依赖。
+<!-- cannbot:related:end -->

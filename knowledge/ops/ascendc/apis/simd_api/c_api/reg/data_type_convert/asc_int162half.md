@@ -22,3 +22,9 @@ platforms: ['950']
 约束：mask控制源操作数是否参与计算，源操作数不参与计算的元素在输出对应位置置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscInt162half](../../vector_compute/asc_int162half.md)（`same_topic`）：《AscInt162half》处理“将int16_t类型数据转换为half类型，支持多种舍入模式： - 不指定舍入模式：无舍入。 - RINT舍入模式：四舍六入五成双舍入。 - ROUND舍入模式：四舍五入舍入。 - FLOOR舍入模式：向负无穷舍入。 - CEIL舍入模式：向正无穷舍入。 - TRUNC舍入模式：向零舍入。”。《AscInt162Half》提供“将src中int16_t类型的元素转换为half类型（16位浮点数），并将结果写入dst。源操作数和目的操作数位宽相同，转换后元素数量不变。支持5种舍入模式，关于舍入模式的详细说明请参见舍入模式与饱和模式。”，其具体合同或探针直接接入int16 到 half 的 C 与 C++ 等价转换合同。
+<!-- cannbot:related:end -->

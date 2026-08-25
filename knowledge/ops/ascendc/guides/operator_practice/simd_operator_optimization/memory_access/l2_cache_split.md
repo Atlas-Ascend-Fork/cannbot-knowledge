@@ -21,3 +21,14 @@ platforms: [agnostic]
 【正例】
 假设输入数据大小为InputTotalSize，L2 Cache大小为L2CacheSize，InputTotalSize = L2CacheSize * 2，能使用的总核数为20个核，输入数据均等切分成2份数据，则整体分两次进行计算，每次的计算量为L2CacheSize，第一次20个核先计算前L2CacheSize个数据，第二次20个核计算后L2CacheSize个数据。每次计算前读取的数据能够命中L2 Cache，提升算子性能。
 更多完整样例请参考L2 Cache切分的算子样例。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscLoadL2CacheMode](../../../../apis/simd_api/c_api/enum/asc_load_l2_cache_mode.md)（`explains`）：L2CacheSplit 与《AscLoadL2CacheMode》的衔接是：大数据 L2CacheSplit 的分块策略由 Matmul L2 split 案例落地，L2 hint 与 load/store cache mode 决定分块数据是否按预期进入和复用 L2。
+- [AscStoreL2CacheMode](../../../../apis/simd_api/c_api/enum/asc_store_l2_cache_mode.md)（`explains`）：L2CacheSplit 与《AscStoreL2CacheMode》的衔接是：大数据 L2CacheSplit 的分块策略由 Matmul L2 split 案例落地，L2 hint 与 load/store cache mode 决定分块数据是否按预期进入和复用 L2。
+- [SetL2CacheHint](../../../../apis/simd_api/basic_api/data_structures/global_tensor/set_l2_cache_hint.md)（`explains`）：L2CacheSplit 与《SetL2CacheHint》的衔接是：大数据 L2CacheSplit 的分块策略由 Matmul L2 split 案例落地，L2 hint 与 load/store cache mode 决定分块数据是否按预期进入和复用 L2。
+- [asc_ldcg（内存访问函数）](../../../../apis/simt_api/memory_access_functions/asc_ldcg.md)（`explains`）：asc_ldcg（内存访问函数） 与《L2CacheSplit》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
+- [Matmul高阶API开启L2 Cache切分](../../best_practices/matmul_tuning_cases/matmul_l2_cache_split.md)（`related`）：L2CacheSplit 与《Matmul高阶API开启L2 Cache切分》的衔接是：大数据 L2CacheSplit 的分块策略由 Matmul L2 split 案例落地，L2 hint 与 load/store cache mode 决定分块数据是否按预期进入和复用 L2。
+- [设置合理的L2 CacheMode](l2_cache_mode_config.md)（`related`）：L2CacheSplit 与《设置合理的L2 CacheMode》的衔接是：大数据 L2CacheSplit 的分块策略由 Matmul L2 split 案例落地，L2 hint 与 load/store cache mode 决定分块数据是否按预期进入和复用 L2。
+<!-- cannbot:related:end -->

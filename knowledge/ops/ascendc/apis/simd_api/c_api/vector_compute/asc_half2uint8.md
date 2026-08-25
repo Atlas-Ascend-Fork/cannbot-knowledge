@@ -19,3 +19,9 @@ platforms: [a2, a3]
 函数原型：void asc_half2uint8(__ubuf__ uint8_t* dst, __ubuf__ half* src, uint32_t count)
 约束：操作数地址重叠约束请参考通用地址重叠约束。；dst、src的起始地址需要32字节对齐。
 支持平台：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Ascend 950PR/Ascend 950DT, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscHalf2Uint8](../reg/data_type_convert/asc_half2uint8.md)（`related`）：两者都做 half→uint8 和多种舍入；Reg 版输出奇/偶 lane 并依赖 ctrl 饱和状态，Memory Vector 版作用 UB 且要求地址对齐。
+<!-- cannbot:related:end -->

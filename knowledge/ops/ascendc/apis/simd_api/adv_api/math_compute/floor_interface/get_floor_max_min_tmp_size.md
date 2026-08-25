@@ -21,3 +21,11 @@ host侧Tiling接口，用于获取Floor接口所需的最大和最小临时空�
 参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource与Floor接口保持一致；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。
 
 在minValue到maxValue范围内，临时空间越大性能越好。约束：无。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Floor接口](floor_interface.md)（`related`）：Floor 调用前用该接口计算 workspace 上下界。
+- [Floor](floor.md)（`same_topic`）：GetFloorMaxMinTmpSize 与《Floor》的实质衔接是：该 host 查询给 Floor 高阶接口分配最大/最小临时空间，factor 查询再把选定空间换算为 kernel 单次处理量。
+- [GetFloorTmpBufferFactorSize](get_floor_tmp_buffer_factor_size.md)（`same_topic`）：GetFloorMaxMinTmpSize 与《GetFloorTmpBufferFactorSize》的实质衔接是：该 host 查询给 Floor 高阶接口分配最大/最小临时空间，factor 查询再把选定空间换算为 kernel 单次处理量。
+<!-- cannbot:related:end -->

@@ -33,3 +33,12 @@ __aicore__ inline void SwiGLU(LocalTensor<T>& dstTensor, const LocalTensor<T>& s
 - 不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SwiGLU 高级 API 在非32B对齐 slice 上精度失败](../../../../../runbooks/precision/swiglu_adv_api_fails_non_32b_aligned_slice.md)（`exemplifies`）：Runbook 对 SwiGLU API 做了对齐/非对齐 slice A/B：32B 对齐 case 通过，非对齐 case 出现大错和 65504，回退手写链后 20/20；这是接口卡未写出的已验证输入边界。
+- [GetSwiGLUMaxMinTmpSize](get_swi_glu_max_min_tmp_size.md)（`same_topic`）：SwiGLU 与《GetSwiGLUMaxMinTmpSize》的实质衔接是：SwiGLU 的 kernel、两种临时空间查询与非 32B slice 精度故障共同约束调用和缓冲区分配。
+- [GetSwiGLUTmpBufferFactorSize](get_swi_glu_tmp_buffer_factor_size.md)（`same_topic`）：SwiGLU 与《GetSwiGLUTmpBufferFactorSize》的实质衔接是：SwiGLU 的 kernel、两种临时空间查询与非 32B slice 精度故障共同约束调用和缓冲区分配。
+- [SwiGLU接口](swi_glu_interface.md)（`same_topic`）：SwiGLU 与《SwiGLU接口》的实质衔接是：SwiGLU 的 kernel、两种临时空间查询与非 32B slice 精度故障共同约束调用和缓冲区分配。
+<!-- cannbot:related:end -->

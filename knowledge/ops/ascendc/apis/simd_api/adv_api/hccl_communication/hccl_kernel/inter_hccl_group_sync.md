@@ -28,3 +28,11 @@ platforms: [a3]
 - 一个通信域内，所有Prepare接口和InterHcclGroupSync接口的总调用次数不能超过63。
 
 支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品。不支持：Ascend 950PR/Ascend 950DT、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Commit（HCCL集合通信）](commit.md)（`related`）：Commit（HCCL集合通信）说明非细粒度通信时，每调用一次本接口，则通知服务端可以执行handleId对应的任务一次。细粒度通信时，每调用一次本接口，则通知服务端可以执行handleId对应的步长长度的子通信任务。
+- [HCCL使用说明](hccl_usage.md)（`related`）：HCCL使用说明说明Ascend C提供一组HCCL通信类高阶API，方便算子Kernel开发用户在AI Core侧灵活管理通算融合算子中计算与通信任务的执行顺序。
+- [HCCL集合通信Wait](wait.md)（`related`）：HCCL集合通信Wait说明阻塞AI Core，非细粒度通信时，等待handleId对应的通信任务完成，细粒度通信时，等待handleId对应的步长长度的子通信任务完成。handleId调用Wait接口的顺序，须和Prepare接口一致。该接口默认在所有核上工作，用户也可以在调用前通过GetBlockIdx指定其在某一个核上运行。
+<!-- cannbot:related:end -->

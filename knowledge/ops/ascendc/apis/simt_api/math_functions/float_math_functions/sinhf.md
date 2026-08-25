@@ -24,3 +24,11 @@ platforms: ['950']
 约束：本接口支持的输入数据为[-89.4, 89.4]范围内的数据。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Asinhf](asinhf.md)（`related`）：Sinh 是反函数，可在有限域做往返验证。
+- [GetSinhMaxMinTmpSize](../../../simd_api/adv_api/math_compute/sinh_interface/get_sinh_max_min_tmp_size.md)（`related`）：选择高阶 Tensor Sinh 时需先据元素数获取 workspace 上下界，补充 SIMT 标量调用没有的缓冲契约。
+- [Sinh接口](../../../simd_api/adv_api/math_compute/sinh_interface/sinh_interface.md)（`same_topic`）：高阶 Sinh 总页定义 LocalTensor 版本及临时空间获取流程，与 SIMT sinhf 完成相同双曲正弦任务。
+<!-- cannbot:related:end -->

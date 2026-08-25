@@ -17,3 +17,13 @@ platforms: ['950']
 该接口已废弃。其中asc_storealign_pack_v2请使用asc_storealign_pack_quarter实现此功能。 reg计算数据搬运接口，适用于从矢量数据寄存器或掩码寄存器连续对齐搬出到UB的场景，并支持多种搬出模式，接口通过地址寄存器传入偏移，用户可以选择更新偏移或者更新目的操作数的地址。
 函数原型：void asc_storealign(__ubuf__  int8_t* dst_align32b, vector_int8_t src, addr_reg offset, vector_bool mask)
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscStoreAlignPackQuarter](asc_storealign_pack_quarter.md)（`related`）：废弃说明明确 asc_storealign_pack_v2 应迁移为 asc_storealign_pack_quarter，后者是对应的替代接口。
+- [AscStorealign](asc_storealign.md)（`related`）：通用 AscStoreAlign 保留连续对齐搬出能力，可用于不依赖旧 v2 特殊签名的迁移。
+- [AscStoreAlign](asc_storealign_v1_deprecated.md)（`same_topic`）：《AscStoreAlign》说明已废弃接口。从矢量数据寄存器或掩码寄存器连续对齐搬出到UB，支持NORM、FIRST、PACK、PACKV2、INTLV等多种搬出模式，不传入偏移，由用户自行更新目的地址。；《AscStoreAlign》说明已废弃接口。从矢量数据寄存器或掩码寄存器连续对齐搬出到UB，支持NORM、FIRST、PACK、PACKV2、INTLV等多种搬出模式，通过地址寄存器传入偏移。。二者在废弃StoreAlign与现行StoreAlign、PostUpdate和原子配置的差异决定UB连续搬出地址及写语义上存在可执行的直接衔接。
+- [AscStoreAlign](asc_storealign_v3_deprecated.md)（`same_topic`）：AscStoreAlign 与《AscStoreAlign》的实质衔接是：该 int32-offset AscStoreAlign 已废弃；当前 AscStorealign/StoreAlignContinuous 承接连续对齐搬出，Postupdate 版本自动推进地址，PACKV2 场景按正文应改用 PackQuarter，废弃表给出迁移边界。
+- [AscStoreAlign](asc_storealign_v4_deprecated.md)（`same_topic`）：《AscStoreAlign》说明已废弃接口。从矢量数据寄存器或掩码寄存器连续对齐搬出到UB，支持NORM、FIRST、PACK、PACKV2等多种搬出模式，通过int32_t传入偏移并由硬件自动Post Update目的地址。；《AscStoreAlign》说明已废弃接口。从矢量数据寄存器或掩码寄存器连续对齐搬出到UB，支持NORM、FIRST、PACK、PACKV2、INTLV等多种搬出模式，通过地址寄存器传入偏移。。二者在废弃StoreAlign重载需迁移到现行或PostUpdate形式；连续、MaskReg、非连续搬出和原子配置决定地址推进与写语义上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

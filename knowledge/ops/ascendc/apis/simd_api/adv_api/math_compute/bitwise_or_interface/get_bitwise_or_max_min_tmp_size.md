@@ -25,3 +25,10 @@ Kernel侧BitwiseOr接口的计算需要开发者预留 申请临时空间，本�
 - typeSize（输入）：输入的数据类型大小，单位为字节。比如输入的数据类型为uint16_t，此处应传入2。
 - isReuseSource（输入）：该参数预留，传入默认值false即可。
 - maxValue（输出）：BitwiseOr接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，Kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BitwiseOr](bitwise_or.md)（`same_topic`）：GetBitwiseOrMaxMinTmpSize 与《BitwiseOr》的实质衔接是：该查询只给出 BitwiseOr/MaxMin 类算子的 sharedTmpBuffer 大小，factor 参数与实际 BitwiseOr kernel 调用是分配空间所必需的两端。
+- [GetBitwiseOrTmpBufferFactorSize](get_bitwise_or_tmp_buffer_factor_size.md)（`same_topic`）：GetBitwiseOrTmpBufferFactorSize 与《GetBitwiseOrMaxMinTmpSize》的实质衔接是：factor 查询与 GetBitwiseOrMaxMinTmpSize、BitwiseOr Kernel 是同一 sharedTmpBuffer 契约的固定空间反推、空间边界和实际消费三端。
+<!-- cannbot:related:end -->

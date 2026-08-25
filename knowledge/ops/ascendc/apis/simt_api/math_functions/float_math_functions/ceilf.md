@@ -25,3 +25,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscCeil](../../../simd_api/c_api/reg/data_type_convert/asc_ceil.md)（`same_topic`）：AscCeil 将向正无穷取整映射到带 mask 的 Reg C API，结果仍保持浮点类型，与标量 ceilf 语义一致。
+- [Ceil接口](../../../simd_api/adv_api/math_compute/ceil_interface/ceil_interface.md)（`same_topic`）：Ceilf 是 float 标量 SIMT 入口，Ceil 高阶接口对 LocalTensor 逐元素向正无穷取整并定义临时空间合同。
+<!-- cannbot:related:end -->

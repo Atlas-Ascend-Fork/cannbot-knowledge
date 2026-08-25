@@ -22,3 +22,11 @@ platforms: ['950']
 支持数据类型：b8、b16、b32。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeInterleave](de_interleave.md)（`related`）：Reg DeInterleave 拆分两路 mask，Interleave 执行逆向交织；二者可组成相同位宽分组的往返布局验证。
+- [Interleave](../data_reorder/interleave.md)（`related`）：MaskReg 版本操作掩码位布局，不等同于数值 RegTensor 交织。
+- [AscIntlv](../../../c_api/reg/data_rearrange/asc_intlv.md)（`same_topic`）：Reg Interleave 提供同一交错语义的 C++ Reg API，而 AscIntlv 是 C API；对照可完成 RegTensor/MaskReg 参数迁移。
+<!-- cannbot:related:end -->

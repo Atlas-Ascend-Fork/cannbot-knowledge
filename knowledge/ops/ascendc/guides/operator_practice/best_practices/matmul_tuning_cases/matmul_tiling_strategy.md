@@ -30,3 +30,12 @@ platforms: [a2]
 ## 设计优化方案
 -   优化点一：优化分核逻辑
 由Profiling数据看出分核数为4，启动更多的核同时计算，可以提高计算并行度。当前案例使用的AI处理器共20个核，每个核中包含1个Cube Core和2个Vector Core。NPU调用程序中设置numBlocks为实际使用的核数20。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetMatmulApiTiling](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_matmul_api_tiling.md)（`explains`）：GetMatmulApiTiling 与《Matmul算子优化Tiling策略》的实质衔接是：host 侧 GetMatmulApiTiling 把模板参数、MatmulConfig 与基础配置落成 tiling，随后决定 kernel Matmul 的注册、临时空间和精度/性能策略。
+- [Matmul Tiling类](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/matmul_tiling.md)（`explains`）：调优页说明如何据 shape/资源选择切分策略。
+- [Matmul高阶API开启IBShare模板共享B矩阵数据](matmul_ibshare_b.md)（`related`）：Matmul高阶API开启IBShare模板共享B矩阵数据 与《Matmul算子优化Tiling策略》的实质衔接是：IBShare 的 B-only 配置受 MatmulConfig、tiling 策略、preload/MDL 和 kernel Iterate 契约共同约束，直接影响 L1 复用。
+- [核间负载均衡](../../simd_operator_optimization/tiling_strategy/inter_core_load_balance.md)（`same_topic`）：核间负载均衡 与《Matmul算子优化Tiling策略》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+<!-- cannbot:related:end -->

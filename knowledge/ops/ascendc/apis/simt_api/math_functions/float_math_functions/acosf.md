@@ -24,3 +24,11 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetAcosMaxMinTmpSize](../../../simd_api/adv_api/math_compute/acos_interface/get_acos_max_min_tmp_size.md)（`related`）：GetAcosMaxMinTmpSize 与《Acosf》的实质衔接是：Acos 的 host 临时空间查询必须与 kernel Acos、接口封装及 factor-size 推算使用同一 shape/typeSize/复用策略。
+- [Sincosf](sincosf.md)（`related`）：Acos 输入域外的处理不能用 sincos 替代；可在合法域做 cos(acos(x)) 验证。
+- [Acos接口](../../../simd_api/adv_api/math_compute/acos_interface/acos_interface.md)（`same_topic`）：高阶 Tensor Acos 与 SIMT acosf 完成同一反余弦任务。
+<!-- cannbot:related:end -->

@@ -25,3 +25,22 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hgtux2_mask](../../half_type/half2_compare_functions/_hgtux2_mask.md)（`related`）：__hgtux2_mask 与《__hgtux2_mask》的实质衔接是：half2 unordered greater-than mask 与 ordered mask、反向 less-than、bool/boolean-all 返回及 isnan 共同界定逐 lane 位图和 NaN 为 true 的语义。
+- [__hequx2_mask](_hequx2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hequx2_mask》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hgeux2](_hgeux2.md)（`same_topic`）：__hgtux2_mask 与《__hgeux2》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hgeux2_mask](_hgeux2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hgeux2_mask》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hgex2](_hgex2.md)（`same_topic`）：__hgtux2_mask 与《__hgex2》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hgex2_mask](_hgex2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hgex2_mask》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hgtux2](_hgtux2.md)（`same_topic`）：__hgtux2_mask 与《__hgtux2》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hgtx2](_hgtx2.md)（`same_topic`）：__hgtux2_mask 与《__hgtx2》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hgtx2_mask](_hgtx2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hgtx2_mask》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hleux2](_hleux2.md)（`same_topic`）：__hgtux2_mask 与《__hleux2》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hleux2_mask](_hleux2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hleux2_mask》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hltux2_mask](_hltux2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hltux2_mask》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__hneux2_mask](_hneux2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hneux2_mask》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+- [__isnanx2](_isnanx2.md)（`same_topic`）：__hgtux2_mask 与《__isnanx2》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
+<!-- cannbot:related:end -->

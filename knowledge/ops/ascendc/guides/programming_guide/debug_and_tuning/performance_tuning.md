@@ -36,3 +36,15 @@ dav-后为NPU架构版本号，请根据实际情况进行替换，各产品型�
 -   灵活控制不同的target是否开启仿真编译。修改CMakeList，使用target_link_libraries与target_link_directories手动配置链接库与路径：
 其中仿真库所在目录与NPU架构版本号之间的关系如下，目录名使用下划线连接“dav”和架构版本号。
 其中仿真编译所依赖的库介绍如下，开启仿真编译时，需要优先链接，确保优先使用仿真库的符号，防止出现运行时coredump等异常情况。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MarkStamp](../../../apis/simd_api/basic_api/debug_interface/performance_stats/mark_stamp.md)（`explains`）：性能调优指南说明如何采集并读取流水图定位热点；MarkStamp 写入的 idx 标记正是在该分析流程中把图上位置映射回 Kernel 代码。
+- [MetricsProfStart](../../../apis/simd_api/basic_api/debug_interface/performance_stats/metrics_prof_start.md)（`explains`）：性能调优指南给出 msOpProf 上板与 simulator 的采集分析流程，说明在什么调优任务中用 MetricsProfStart/Stop 限定 Kernel 代码段。
+- [MetricsProfStop](../../../apis/simd_api/basic_api/debug_interface/performance_stats/metrics_prof_stop.md)（`explains`）：焦点处理MetricsProfStop 标定性能采集区间；性能调优（调试与调优）正文界定“通过毕昇编译器编译生成可执行程序后，使用msOpProf工具采集Ascend C算子在AI处理器上执行的性能数据，进行性能精细调优”。候选是采集区间的 Start/Stop 对或 msOpProf 调优流程，直接决定采集窗口。
+- [性能统计](../../../apis/simd_api/basic_api/debug_interface/performance_stats/performance_stats.md)（`explains`）：性能调优指南说明如何把 kernel 侧采集标记接入上板测量和瓶颈分析。
+- [分析性能数据（性能分析）](../../operator_practice/performance_analysis/analyze_performance_data.md)（`related`）：调优不是只跑 profiler；分析页把采集结果与理论带宽/算力、最长流水及利用率对照，形成选择优化方向的判据。
+- [获取性能数据（性能分析）](../../operator_practice/performance_analysis/collect_performance_data.md)（`related`）：性能调优指南中的 msOpProf 上板和 simulator 流程需要先采集稳定数据；采集页给出命令入口和 trace 可视化方式。
+- [调试与调优概述](overview.md)（`related`）：总览在功能正确后引导进入 msOpProf 性能调优，子指南给出上板与仿真路径差异。
+<!-- cannbot:related:end -->

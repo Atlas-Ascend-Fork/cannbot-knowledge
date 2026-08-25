@@ -33,3 +33,13 @@ quant_pre_mode量化模式参数支持的枚举值
 约束：- 各存储单元的空间大小和对齐要求
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscCopyL0c2L1](../asc_copy_l0c2l1/asc_copy_l0c2l1_arch_3510.md)（`related`）：两接口共享 L0C 搬出与随路处理，但目的存储分别为 GM 与 L1，构成下一阶段消费位置驱动的直接选型。
+- [AscCopyL12gm](../asc_copy_l12gm.md)（`related`）：AscCopyL12gm 与《AscCopyL0c2Gm》的实质衔接是：AscCopyL12gm 是 L1 到 GM 的数据路径；L1 到 UB、L0C 到 UB/GM 接口提供相邻存储层的可执行搬运组合，迁移指导则明确 3510 删除该直达路径后的替代方案。
+- [AscSetL0c2gmChannelPara](../../sys_var/asc_set_l0c2gm_channel_para.md)（`related`）：AscCopyL0c2Gm说明将矩阵计算结果从L0C Buffer搬运至GM，搬运过程中支持随路量化、ReLU、格式转换、通道拆分等能力；对AscSetL0c2gmChannelPara而言，ChannelPara 只在 NZ2DN 的 L0C 搬运前生效；Channel Split 的格式限制和 AscCopyL0c2Gm 的参数共同界定有效调用。
+- [AscCopyL0c2Gm](asc_copy_l0c2gm.md)（`same_topic`）：AscCopyL0c2Gm说明将矩阵计算结果从L0C Buffer搬运至GM，搬运过程中支持随路量化、ReLU、格式转换、通道拆分等能力。
+- [AscCopyL0c2Gm](asc_copy_l0c2gm_arch_2201.md)（`same_topic`）：AscCopyL0c2Gm：这些卡共同约束同一 L0C→GM fixpipe 搬运：架构变体核对原型，SetL0cCopyParams/Prequant/ChannelPara配置随路转换，NZ2ND与Fixpipe页解释输出布局。 目标卡《AscCopyL0c2Gm》补充：将矩阵计算结果从L0C Buffer搬运至GM，搬运过程中支持随路量化、ReLU、格式转换、通道拆分等能力。
+<!-- cannbot:related:end -->

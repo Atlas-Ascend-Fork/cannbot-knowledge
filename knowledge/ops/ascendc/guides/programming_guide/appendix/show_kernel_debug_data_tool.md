@@ -34,3 +34,11 @@ platforms: ['950', a2, a3]
 调用示例参考如下代码。
 ## 产物说明
 工具解析结果文件目录结构如下。其中，dump_data目录是对DumpTensor、PrintTimeStamp接口解析的结果，index0对应DumpTensor接口中第二个参数desc=0时的打印，loop0表示切分后首个分块的数据打印。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DumpTensor](../../../apis/simd_api/basic_api/debug_interface/onboard_print/dump_tensor.md)（`explains`）：《DumpTensor》说明打印Tensor内容并支持自定义标签，可选传入Shape信息按指定维度排列展示数据。；《ShowKernelDebugData工具》说明提供Ascend C算子Kernel调测信息的离线解析能力，将导出的bin文件解析为可读格式。。二者在DumpTensor/asc_dump、checkpoint、开关和上板调试工具构成设备张量观测链；VF和精度卡给出不可用PRINTF时的替代证据路径上存在可执行的直接衔接。
+- [调用算子时出现无法打开config.ini的报错](faq/config_ini_open_error.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《ShowKernelDebugData工具》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
+- [NPU域上板调试（功能调试）](../debug_and_tuning/functional_debug/npu_board_debug.md)（`same_topic`）：《NPU域上板调试（功能调试）》处理“NPU域上板调试手段主要包含上板数据打印、msSanitizer内存异常检测和msDebug单步调试等功能，数据打印包括printf、DumpTensor两种方式，其中，DumpTensor是SIMD编程独有功能，用于打印指定Tensor的数据。”。《ShowKernelDebugData工具》提供“提供Ascend C算子Kernel调测信息的离线解析能力，将导出的bin文件解析为可读格式。”，其具体合同或探针直接接入NPU 上板打印、异常定位、Tiling 调试、精度对比和离线解析流程。
+<!-- cannbot:related:end -->

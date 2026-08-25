@@ -30,3 +30,10 @@ Tensor原地操作（inplace接口）是一种优化技术，全局申请、保�
 - AllocTensor和DeQue区分non-inplace和inplace接口，详情请参考AllocTensor、DeQue。
 - FreeTensor和EnQue不区分non-inplace和inplace接口。
 ## 示例代码
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [HardSwish 逐元素 kernel 的 TQue 双缓冲实现配方](../../../../runbooks/compilation/elementwise_tque_double_buffer_inplace_recipe.md)（`related`）：原地操作性能指南给出原则，该配方把原则落实为 elementwise kernel 的 TQue 双缓冲和安全 inplace 读写顺序。
+- [TQue tensor 所有权只能 DeQue 一次](../../../../runbooks/compilation/tque_tensor_ownership_single_dequeue.md)（`related`）：Tensor inplace 复用若重复 DeQue 同一队列对象会破坏所有权；该卡给出一次 DeQue 后沿流水传递 Tensor 的约束。
+<!-- cannbot:related:end -->

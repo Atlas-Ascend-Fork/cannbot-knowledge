@@ -24,3 +24,9 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Logbf](logbf.md)（`same_topic`）：Logbf 与《Ilogbf》的实质衔接是：Logbf 返回浮点形式的二进制指数，Ilogbf 返回整数形式的同一指数任务，两者特殊值契约可直接对照。
+<!-- cannbot:related:end -->

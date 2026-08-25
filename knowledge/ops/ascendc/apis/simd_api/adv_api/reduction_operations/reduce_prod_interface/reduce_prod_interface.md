@@ -29,3 +29,12 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ReduceAll接口](../reduce_all_interface/reduce_all_interface.md)（`related`）：布尔全真归约不应以数值乘积替代，ReduceAll 提供明确布尔语义和 dtype 契约。
+- [ReduceSum接口](../reduce_sum_interface/reduce_sum_interface.md)（`related`）：ReduceSum 与 ReduceProd 共享高阶归约框架但聚合运算不同，可按所需代数操作选型。
+- [GetReduceProdMaxMinTmpSize](get_reduce_prod_max_min_tmp_size.md)（`same_topic`）：GetReduceProdMaxMinTmpSize 与《ReduceProd接口》的实质衔接是：GetReduceProdMaxMinTmpSize 的 max/min 结果直接约束 ReduceProd 的 sharedTmpBuffer，isReuseSource 也必须与实际 ReduceProd 调用保持一致。
+- [ReduceProd](reduce_prod.md)（`same_topic`）：函数页给出 ReduceProd 的 shape、dtype 和调用参数，是总览页对应的实际乘积归约。
+<!-- cannbot:related:end -->

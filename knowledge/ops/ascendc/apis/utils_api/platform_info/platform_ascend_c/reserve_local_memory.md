@@ -23,3 +23,10 @@ platforms: [agnostic]
 无
 ## 约束说明
 多次调用该函数时，仅保留最后一次调用的结果。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CheckLocalMemoryIA](../../../simd_api/basic_api/debug_interface/exception_detection/check_local_memory_ia_isasi.md)（`related`）：CheckLocalMemoryIA 与《ReserveLocalMemory》的实质衔接是：CheckLocalMemoryIA 通过保留的 UB 地址范围触发异常，需结合 LocalMemAllocator、地址空间转换与 ASCENDC_DUMP 调试开关定位本地内存越界。
+- [GetCoreMemSize](get_core_mem_size.md)（`related`）：GetCoreMemSize 与《ReserveLocalMemory》的实质衔接是：GetCoreMemSize 为 host tiling 提供各层容量；ReserveLocalMemory 会改变可用 UB，Matmul 空间查询与 UB 预算故障直接消费该值。
+<!-- cannbot:related:end -->

@@ -23,3 +23,10 @@ platforms: ['950']
 - typeSize（输入）：输入的数据类型大小，单位为字节。比如输入的数据类型为uint16_t，此处应传入2。
 - maxLivedNodeCount（输出）：最大存活节点数，表示临时空间是单次计算数据量所占空间的多少倍。
 - extraBuf（输出）：使用的额外临时空间大小，单位为字节。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BitwiseAnd](bitwise_and.md)（`related`）：本卡返回 maxLivedNodeCount/extraBuf 以推算 BitwiseAnd 单次处理量，BitwiseAnd 正文定义实际逐比特计算；前者的结果直接决定后者在固定 workspace 下的分块。
+- [GetBitwiseAndMaxMinTmpSize](get_bitwise_and_max_min_tmp_size.md)（`same_topic`）：MaxMin 与 FactorSize 分别给出 BitwiseAnd 临时空间范围和规模估算模型，是同一 Host Tiling 预算的互补查询。
+<!-- cannbot:related:end -->

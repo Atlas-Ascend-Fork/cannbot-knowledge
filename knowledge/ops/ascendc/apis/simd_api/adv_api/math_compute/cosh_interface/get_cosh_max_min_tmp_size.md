@@ -21,3 +21,11 @@ host侧Tiling接口，用于获取Cosh接口所需的最大和最小临时空间
 参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource为是否允许修改源操作数；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。
 
 在minValue到maxValue范围内，临时空间越大性能越好。约束：无。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Cosh](cosh.md)（`same_topic`）：GetCoshMaxMinTmpSize说明在host侧获取Cosh接口预留或申请临时空间的最大和最小值，用于Tiling参数传递；对Cosh而言，Cosh 的 Host Tiling 必须在最大/最小临时空间与 factor 参数之间选择，才能推算 Kernel 单次处理量。
+- [Cosh接口](cosh_interface.md)（`same_topic`）：焦点处理Cosh 高阶 API 的计算接口与临时空间计算；GetCoshMaxMinTmpSize正文说明“在host侧获取Cosh接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”。候选分别承担 Cosh 实际计算、workspace 上下界和固定空间容量推算。
+- [GetCoshTmpBufferFactorSize](get_cosh_tmp_buffer_factor_size.md)（`same_topic`）：GetCoshMaxMinTmpSize说明在host侧获取Cosh接口预留或申请临时空间的最大和最小值，用于Tiling参数传递。
+<!-- cannbot:related:end -->

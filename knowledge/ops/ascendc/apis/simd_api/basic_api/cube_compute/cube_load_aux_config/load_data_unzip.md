@@ -19,3 +19,9 @@ platforms: [agnostic]
 参数：dst 为 LocalTensor（TPosition A1/B1 时 32B 对齐，B2 时 512B 对齐）；src 为 GlobalTensor，数据类型与 dst 一致。仅支持 int8_t 数据类型。
 
 仅 Atlas 推理系列产品 AI Core 支持，其他型号不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LoadUnzipIndex](load_unzip_index.md)（`related`）：LoadUnzipIndex 必须先加载与压缩数据对应的索引表，LoadDataUnzip 才能按序消费并完成解压搬入。
+<!-- cannbot:related:end -->

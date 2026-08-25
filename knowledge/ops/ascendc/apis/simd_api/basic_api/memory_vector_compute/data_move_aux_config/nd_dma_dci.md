@@ -27,3 +27,10 @@ platforms: ['950']
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [数据搬运辅助配置接口](data_move_aux_config.md)（`related`）：NdDmaDci 配置 NDDMA 的数据压缩信息，是 DataMoveAuxConfig 下的具体搬运控制项。
+- [DataCopy](../data_move/data_copy_gm_to_ub_nddma.md)（`same_topic`）：DataCopy 与《NdDmaDci》的实质衔接是：该 DataCopy 是 GM→UB NDDMA，多维 shape/stride、NdDmaDci 与非对齐 padding 是直接契约；所选故障卡覆盖漏维、stride=0 和 cache 刷新边界。
+<!-- cannbot:related:end -->

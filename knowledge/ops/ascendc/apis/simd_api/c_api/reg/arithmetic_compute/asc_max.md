@@ -24,3 +24,11 @@ platforms: ['950']
 - max(-0, +0) = +0。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscMax](../../vector_compute/asc_max.md)（`same_topic`）：AscMax 与《AscMax》的实质衔接是：AscMax 在 Reg 上按 mask 逐 lane 取大；Vector 对应入口、scalar 变体和 AscMin 对照分别界定内存层、操作数形态与相反比较方向。
+- [AscMaxScalar](asc_max_scalar.md)（`same_topic`）：AscMax 与《AscMaxScalar》的实质衔接是：AscMax 在 Reg 上按 mask 逐 lane 取大；Vector 对应入口、scalar 变体和 AscMin 对照分别界定内存层、操作数形态与相反比较方向。
+- [AscMin](asc_min.md)（`same_topic`）：AscMin 与《AscMax》的实质衔接是：AscMin 的 Reg/Vector/C++入口共享逐 lane 最小值与 mask 置零契约；scalar 变体、AscMax 对照和非标量广播故障明确操作数形态边界。
+<!-- cannbot:related:end -->

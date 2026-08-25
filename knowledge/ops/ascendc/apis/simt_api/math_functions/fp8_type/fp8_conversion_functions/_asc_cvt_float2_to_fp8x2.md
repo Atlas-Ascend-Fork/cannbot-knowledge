@@ -25,3 +25,11 @@ platforms: ['950']
 约束：使用此接口前需将CTRL[60]寄存器设置为0，否则饱和模式不生效。设置方式请参见控制饱和行为的方式。 SIMT编程场景当前不支持使用该接口。需包含头文件 simt_api/asc_fp8.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__e4m3x22float2](_e4m3x22float2.md)（`related`）：通用 float2→FP8x2 转换可选择 E4M3 格式，__e4m3x22float2 是对应的逆向解包；二者构成该格式的量化—反量化验证链。
+- [__e5m2x22float2](_e5m2x22float2.md)（`same_topic`）：__e5m2x22float2 与《__asc_cvt_float2_to_fp8x2》的实质衔接是：该接口把 packed E5M2 两 lane 解码成 float2；E4M3/HIF8/half2 解码、FP8 类型说明和反向编码入口共同限定格式选择与 round/saturation。
+- [fp8数据转换函数](fp8_conversion_functions.md)（`same_topic`）：《__asc_cvt_float2_to_fp8x2》明确“将float2的两个分量按CAST_RINT模式转换为FP8类型（e4m3或e5m2）的8位浮点数，支持饱和与非饱和溢出处理，结果以位级打包存储。”；它与《fp8数据转换函数》的“提供float2、half2与FP8类型（e4m3、e5m2、hifloat8）之间的数据转换函数列表。”在实际调用参数、数据流或结果校验上直接衔接。
+<!-- cannbot:related:end -->

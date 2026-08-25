@@ -22,3 +22,10 @@ platforms: ['950']
 约束：mask未筛选的元素在输出中置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AbsSub](../../../basic_api/memory_vector_compute/composite_compute/abs_sub_isasi.md)（`related`）：asc_abs_sub 提供同一减后取绝对值的 C Reg 接口及 mask 语义，是从 C++ Memory AbsSub 下沉到 C API Reg 编程的直接对应。
+- [AbsSub](../../../basic_api/reg_vector_compute/composite_compute/abs_sub.md)（`related`）：AscAbsSub 是同一 Reg 硬件语义的 C API 入口，便于在 C 指针与 C++ RegTensor 路线间对照签名。
+<!-- cannbot:related:end -->

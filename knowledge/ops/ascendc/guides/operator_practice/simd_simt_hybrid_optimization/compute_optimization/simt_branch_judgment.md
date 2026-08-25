@@ -31,3 +31,12 @@ SIMT线程层次结构为：
 场景1：SIMD Reg矢量计算：64：525.736：509.987：0.989：217.341：0.421
 场景3：SIMT连续访问UB：64：463.179：301.474：0.668：437.055：0.968
 相比场景1，场景3使用SIMT直接表达floor_mod中的分支判断逻辑，aiv_vec_time从509.987μs降低至301.474μs，下降约40.9%，说明Vector计算侧耗时明显降低。端到端Task Duration从525.736μs降低至463.179μs，下降约11.9%，场景3的aiv_mte2_ratio达到0.968，主要瓶颈已转为MTE2 Bound，即算子性能的最大影响转变为GM到UB的搬运效率。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SimdSimtHybridProgrammingIntro](../../../../apis/simt_api/simd_simt_hybrid_programming_intro/simd_simt_hybrid_programming_intro.md)（`explains`）：《SimdSimtHybridProgrammingIntro》明确“SIMD与SIMT混合编程简介，包含编程模型、扩展语法和API列表导航。”；它与《通过SIMT实现分支判断》的“>该性能优化建议适用于如下型号：”在实际调用参数、数据流或结果校验上直接衔接。
+- [SIMD与SIMT混合编程概述](../../../programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/overview.md)（`related`）：通过SIMT实现分支判断说明>该性能优化建议适用于如下型号：。
+- [同一Warp内避免分支跳转](../../simt_operator_optimization/control_flow/avoid_warp_branch.md)（`related`）：《同一Warp内避免分支跳转》的任务是“同一Warp内线程应避免分支跳转以防止分支发散，减少掩码屏蔽等待，提升SIMT算子执行效率。”。《通过SIMT实现分支判断》具体提供“>该性能优化建议适用于如下型号：”，它直接用于Warp divergence 的线程架构、谓词/协作改写和优化总览。
+- [抽象硬件架构（SIMD与SIMT混合编程）](../../../programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/abstract_hardware_architecture.md)（`related`）：通过SIMT实现分支判断说明>该性能优化建议适用于如下型号：；对抽象硬件架构（SIMD与SIMT混合编程）而言，混合编程概述定义 SIMD/SIMT 分工，性能章节给出分支与访存选择，SIMT 分支实现卡提供落地接口。
+<!-- cannbot:related:end -->

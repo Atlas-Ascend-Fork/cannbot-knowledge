@@ -24,3 +24,12 @@ platforms: ['950']
 约束：对于int8_t/int16_t/int32_t/int64_t，当索引超过该数据类型的边界值时会翻转为负数，如对于int8_t，127之后为-128、-127，以此类推。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetArangeMaxMinTmpSize](../../../adv_api/index_compute/get_arange_max_min_tmp_size.md)（`related`）：Reg Arange 是不依赖高阶 workspace 的寄存器路径。
+- [SetSplitRange](../../../adv_api/cube_compute/matmul_tiling/set_split_range.md)（`related`）：Arange 常用于构造索引，而 SetSplitRange 定义 Matmul 切分区间；仅在生成切分索引时衔接。
+- [Arange（索引计算）](../../../adv_api/index_compute/arange.md)（`same_topic`）：高阶 LocalTensor Arange 提供同任务的 workspace 路径。
+- [AscArange](../../../c_api/reg/index_operate/asc_arange.md)（`same_topic`）：AscArange：AscArange、Reg Arange 与高级 Arange 都生成等差索引序列，差异在寄存器、LocalTensor和临时空间调用契约，适合实现路线互查。 目标卡《Arange》补充：以传入标量值为起始或终止值，生成递增或递减的索引序列并保存在目的寄存器中。
+<!-- cannbot:related:end -->

@@ -29,3 +29,18 @@ platforms: ['950', a2, a3]
     - 对于Vector和Cube混合场景（模式2和模式4），需根据AI Core中AIC和AIV的比例灵活配置Kernel类型，不同模式支持的函数修饰符和Kernel类型请参照表3。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [A5 mix(1,2) mode=2 漏 AIV1 flag 致全零](../../../../../runbooks/precision/a5_mix_1_2_mode_2_aiv1_flag.md)（`exemplifies`）：A5 mix(1,2) mode=2 漏 AIV1 flag 致全零说明DAV_3510 (Ascend 950) 上 __mix__(1,2) 双 AIV kernel 若沿用 A2/A3 的 CrossCoreSetFlag mode=2，AIC 发出的 flag 只路由到 AIV0，AIV1 永不收到，AIC↔AIV1 同步链断裂致输出全零。判别要点是查 mode 模板参数与 AIV1 flagId+16 偏移。
+- [CrossCore 反压 flag 方向错致通算流水死锁](../../../../../runbooks/compilation/crosscore_flag.md)（`exemplifies`）：CrossCore 反压 flag 方向错致通算流水死锁 与《CrossCoreSetFlag》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
+- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`exemplifies`）：故障卡的 AIC 向 V0/V1 分段发 flag 正是 CrossCoreSetFlag 上报完成契约；接口文档补充 mode、Kernel 类型、pipe 与 flagId 的合法范围。
+- [算子适配说明](../../../../../guides/programming_guide/advanced_programming/super_kernel/operator_adaptation.md)（`explains`）：算子适配说明 与《CrossCoreSetFlag》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [DataSyncBarrier](../intra_core_sync/data_sync_barrier_isasi.md)（`related`）：CrossCore flag 作用于不同核，不是 DataSyncBarrier 的核内替代；同步域需严格区分。
+- [SetFlag/WaitFlag](../intra_core_sync/set_flag_wait_flag_isasi.md)（`related`）：CrossCore 作用于不同核，不能替代核内流水 event。
+- [SetNextTaskStart](../inter_task_sync/set_next_task_start.md)（`related`）：CrossCoreSetFlag 是核间信号而非 task 间依赖；需要跨核时应切换到对应 wait flag 机制。
+- [核间同步能力概述](inter_core_sync_overview.md)（`related`）：核间同步能力概述说明核间同步的使用场景通常是：一个核计算所依赖的数据，需要等待其他相关核的计算全部完成后才能获取。
+- [CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)（`same_topic`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《CrossCoreSetFlag》补充：核间同步场景中向调度模块上报本核前置pipe流水任务已完成，与CrossCoreWaitFlag配对使用，通过flagId控制核间同步。
+- [关键特性说明](key_features.md)（`same_topic`）：关键特性说明 与《CrossCoreSetFlag》的衔接是：CrossCoreSet/CrossCoreWait 是该四种跨核同步模式的实际发信与等待原语；AIV/AIC 配对 runbook 给出同一计数契约失配时的可执行排查。
+<!-- cannbot:related:end -->

@@ -25,3 +25,13 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hbnex2](_hbnex2.md)（`same_topic`）：mask 版本把逐 lane 比较结果编码为掩码，适合后续分支/选择而非直接 packed 布尔结果。
+- [__heqx2_mask](_heqx2_mask.md)（`same_topic`）：__heqx2_mask 与《__hnex2_mask》的实质衔接是：这些 bfloat16x2 比较入口共享双 lane 掩码契约；ne、无序 eq、值返回 eq 与 isnan 用于区分 NaN 时的 ordered/unordered 结果。
+- [__hneux2_mask](_hneux2_mask.md)（`same_topic`）：__hnex2_mask 与 __hneux2_mask 都返回两 lane 的不等掩码，差异集中在 NaN 时 ordered/unordered 的 0x0000/0xFFFF 结果。
+- [__hnex2](_hnex2.md)（`same_topic`）：《__hnex2_mask》明确“比较两个bfloat16x2_t类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量不相等，则对应16位掩码为0xFFFF，否则为0x0。”；它与《__hnex2》的“比较两个bfloat16x2_t类型数据的两个分量，如果分量不相等，则对应比较结果为1.0，否则为0.0。”在实际调用参数、数据流或结果校验上直接衔接。
+- [__hnex2_mask](../../half_type/half2_compare_functions/_hnex2_mask.md)（`same_topic`）：焦点处理half2 not-equal mask 的 ordered/unordered 与 bool/数值返回形态；__hnex2_mask正文说明“比较两个bfloat16x2_t类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量不相等，则对应16位掩码为0xFFFF，否则为0x0”。候选只改变 NaN unordered 规则或结果编码形式，能指导选择正确比较契约。
+<!-- cannbot:related:end -->

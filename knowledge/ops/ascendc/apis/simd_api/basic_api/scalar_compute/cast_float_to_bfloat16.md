@@ -25,3 +25,9 @@ float类型标量数据转换成bfloat16_t类型标量数据。
 - 输入参数为立即数时，需要使用显式类型转换后输入，例如
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CastFloatToHalfInt32](cast_float_to_half_int32.md)（`related`）：《CastFloatToHalfInt32》说明将float类型标量数据转换为half或int32_t类型标量数据，支持多种舍入模式。；《CastFloatToBfloat16》说明将float类型标量数据转换为bfloat16_t类型标量数据。。二者在标量float窄化依赖目标类型和RoundMode；同方向转换及命名空间故障卡直接说明其调用边界上存在可执行的直接衔接。
+<!-- cannbot:related:end -->

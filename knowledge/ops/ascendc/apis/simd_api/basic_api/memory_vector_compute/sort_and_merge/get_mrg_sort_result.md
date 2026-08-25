@@ -27,3 +27,14 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscMrgsort4](../../../c_api/vector_compute/asc_mrgsort4.md)（`related`）：AscMrgsort4 与《GetMrgSortResult》的实质衔接是：AscMrgsort4 的 Reg/C++ 入口、状态寄存器与结果读取必须配套，高层 MergeSort 说明同一四路归并任务如何落到该原语。
+- [MrgSort](../../../adv_api/sort_operations/mrg_sort.md)（`related`）：《GetMrgSortResult》明确“与MrgSort接口配合使用，在队列耗尽停止后获取4个队列已处理的Region Proposal个数。”；它与《MrgSort》的“将已排好序的最多4条队列合并排列成1条队列，结果按照score域由大到小排序。”在实际调用参数、数据流或结果校验上直接衔接。
+- [MrgSort](mrg_sort.md)（`related`）：《MrgSort》的任务是“将已排序的最多4条队列合并为1条队列，结果按score域由大到小排序，通常处理Sort32预处理的数据。”。《GetMrgSortResult》具体提供“与MrgSort接口配合使用，在队列耗尽停止后获取4个队列已处理的Region Proposal个数。”，它直接用于Sort32 预排序、MrgSort 合并和 proposal 提取结果的流水。
+- [MrgSort4（排序与合并）](mrg_sort4.md)（`related`）：MrgSort4 在某个输入队列耗尽时停止；GetMrgSortResult 用于读取四个队列已消费的 Region Proposal 数，以便推进剩余合并。
+- [ProposalConcat](proposal_concat.md)（`related`）：《ProposalConcat》处理“将连续元素合入Region Proposal内对应位置，每次迭代会将16个连续元素合入到16个Region Proposals的对应位置里。 Region Proposal说明： 目前仅支持两种数据类型：half、float。 每个Region Proposal占用连续8个half/float类型的元素，约定其格式：”。《GetMrgSortResult》明确提供“与MrgSort接口配合使用，在队列耗尽停止后获取4个队列已处理的Region Proposal个数。”，其参数、调用或验证步骤直接接入ProposalConcat 与 ProposalExtract、Sort32、MrgSort 组成的 proposal 流水。
+- [Sort32](sort32.md)（`same_topic`）：《Sort32》处理“一次迭代内对32个数按score域降序排列，结果以score和index的结构存储在目的张量中。”。《GetMrgSortResult》提供“与MrgSort接口配合使用，在队列耗尽停止后获取4个队列已处理的Region Proposal个数。”，其具体合同或探针直接接入Sort32 的 proposal 预处理、排序、合并和字段拆装流水。
+<!-- cannbot:related:end -->

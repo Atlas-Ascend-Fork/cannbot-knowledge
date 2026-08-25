@@ -35,3 +35,10 @@ SIMT能够通过大量线程的并发执行实现高效处理大批数据，但�
 例如，图中线程0和线程256处理的key发生了哈希冲突，计算出的位置索引均为3。此时，应确保仅有一个线程能获得桶bucket[3]的写入权限，而另一个线程则通过开放寻址法寻找下一个可用的桶。
 程序实现时，在Bucket结构体中添加一个标记位”flag”，用于标记当前桶的写入权限，线程通过原子指令asc_atomic_cas修改flag来获取桶的写权限。
 asc_atomic_cas接口用于对指定地址上的数据进行原子比较赋值操作，如果address上的数值等于指定数值compare，则将address赋值为指定的val值，否则address的数值不变。该接口确保在多个线程并发修改同一地址的值时，只有1个线程能修改成功。通过该接口修改桶的flag值，修改成功的线程获得桶的写权限，可直接写入数据；修改失败的线程则按照开放寻址法寻找下一个可用的桶。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscAtomicCas](../../../apis/simd_api/c_api/scalar_compute/asc_atomic_cas.md)（`explains`）：SIMT实现InsertHashTable算子案例说明本案例介绍InsertHashTable算子，展示基于SIMT实现的大规模线程并发访问Global Memory内存的算子实践。
+- [asc_atomic_cas](../../../apis/simt_api/atomic_operations/asc_atomic_cas.md)（`explains`）：哈希表插入指南的抢占槽位逻辑依赖 compare-and-swap；asc_atomic_cas 给出“地址等于 compare 才写 val”及最多一个线程成功的原子契约。
+<!-- cannbot:related:end -->

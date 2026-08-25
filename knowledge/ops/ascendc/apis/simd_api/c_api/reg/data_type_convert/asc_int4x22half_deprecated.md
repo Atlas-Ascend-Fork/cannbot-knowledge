@@ -20,3 +20,13 @@ platforms: ['950']
 支持数据类型：half、int4x2_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscInt42half](../../vector_compute/asc_int42half.md)（`same_topic`）：asc_int4x22half (废弃) 与《AscInt42half》的实质衔接是：该废弃接口把 packed int4x2 转 half；同源 bfloat16/int16、逆向转换、废弃接口表及当前 AscInt4ToHalf 用于迁移并核对 packed lane。
+- [asc_half2int4x2 (废弃)](asc_half2int4x2_deprecated.md)（`same_topic`）：asc_int4x22half (废弃) 与《asc_half2int4x2 (废弃)》的实质衔接是：该废弃接口把 packed int4x2 转 half；同源 bfloat16/int16、逆向转换、废弃接口表及当前 AscInt4ToHalf 用于迁移并核对 packed lane。
+- [asc_int4x22bfloat16 (废弃)](asc_int4x22bfloat16_deprecated.md)（`same_topic`）：asc_int4x22half (废弃) 与《asc_int4x22bfloat16 (废弃)》的实质衔接是：该废弃接口把 packed int4x2 转 half；同源 bfloat16/int16、逆向转换、废弃接口表及当前 AscInt4ToHalf 用于迁移并核对 packed lane。
+- [asc_int4x22int16 (废弃)](asc_int4x22int16_deprecated.md)（`same_topic`）：asc_int4x22half (废弃) 与《asc_int4x22int16 (废弃)》的实质衔接是：该废弃接口把 packed int4x2 转 half；同源 bfloat16/int16、逆向转换、废弃接口表及当前 AscInt4ToHalf 用于迁移并核对 packed lane。
+- [废弃接口](../../deprecated_interface/deprecated_interface.md)（`same_topic`）：asc_int4x22half (废弃) 与《废弃接口》的实质衔接是：该废弃接口把 packed int4x2 转 half；同源 bfloat16/int16、逆向转换、废弃接口表及当前 AscInt4ToHalf 用于迁移并核对 packed lane。
+<!-- cannbot:related:end -->

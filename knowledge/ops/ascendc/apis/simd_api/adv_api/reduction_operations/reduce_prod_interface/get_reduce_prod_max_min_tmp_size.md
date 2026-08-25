@@ -22,3 +22,10 @@ host侧Tiling接口，用于获取ReduceProd接口所需的最大和最小临时
 参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource与ReduceProd接口保持一致；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。
 
 在minValue到maxValue范围内，临时空间越大性能越好。约束：无。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ReduceProd](reduce_prod.md)（`same_topic`）：GetReduceProdMaxMinTmpSize 与《ReduceProd》的实质衔接是：GetReduceProdMaxMinTmpSize 的 max/min 结果直接约束 ReduceProd 的 sharedTmpBuffer，isReuseSource 也必须与实际 ReduceProd 调用保持一致。
+- [ReduceProd接口](reduce_prod_interface.md)（`same_topic`）：GetReduceProdMaxMinTmpSize 与《ReduceProd接口》的实质衔接是：GetReduceProdMaxMinTmpSize 的 max/min 结果直接约束 ReduceProd 的 sharedTmpBuffer，isReuseSource 也必须与实际 ReduceProd 调用保持一致。
+<!-- cannbot:related:end -->

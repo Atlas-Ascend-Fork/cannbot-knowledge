@@ -15,3 +15,9 @@ platforms: ['950', a2, a3]
 # Ln
 
 单目矢量计算接口，按元素计算自然对数。头文件 `basic_api/kernel_operator_vec_unary_intf.h`。计算公式 dst_i = ln(src_i)。支持 950/a2/a3。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Exp](exp.md)（`related`）：Ln 是 Exp 的反函数，可在有限正常数范围构造往返精度测试。
+<!-- cannbot:related:end -->

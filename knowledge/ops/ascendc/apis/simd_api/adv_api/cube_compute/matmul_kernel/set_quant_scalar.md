@@ -23,3 +23,11 @@ platforms: ['950', a2, a3]
 - quantScalar（输入）：量化或反量化系数。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Kirin X90。不支持：Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [矩阵乘输出的量化/反量化](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_quant_dequant.md)（`explains`）：PER_TENSOR 模式要求 Iterate 前用 SetQuantScalar 设置整张 C 矩阵共享的系数。
+- [Iterate](iterate.md)（`related`）：SetQuantScalar 明确要求在 Iterate 前调用，量化系数由后续 Matmul 搬出阶段消费。
+- [SetQuantVector](set_quant_vector.md)（`same_topic`）：SetQuantVector 为 C 矩阵提供逐行/逐通道量化参数，而 Scalar 对全矩阵只用 shape=[1] 系数，是直接选型对。
+<!-- cannbot:related:end -->

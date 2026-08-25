@@ -29,3 +29,10 @@ RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Le
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Log2](log2.md)（`related`）：《Log2》说明根据mask对源操作数逐元素求以2为底的对数，将结果写入目的操作数。；《Ln》说明根据mask逐元素对源操作数求自然对数，将结果写入目的操作数。。二者在Reg Log2与Ln、Log/Log10共享对数语义但底数不同，选择时必须区分结果定义上存在可执行的直接衔接。
+- [Log](log.md)（`same_topic`）：Ln 与《Log》的实质衔接是：Ln 与 Log 都在 RegTensor 上按 mask 求自然对数；Log 采用标准库命名，是正文明确的等价入口，而 Log10/Log2 底数不同。
+<!-- cannbot:related:end -->

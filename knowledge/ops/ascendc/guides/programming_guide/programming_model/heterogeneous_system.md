@@ -26,3 +26,12 @@ platforms: [agnostic]
 **图1**  Kernel调度示意图
 
 > 关于Task/Stream等Runtime运行时管理的详细介绍，请参考[《Runtime运行时API》](https://hiascend.com/document/redirect/CannCommunityRuntimeApi)。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AI CPU编程（编程模型）](ai_cpu_programming.md)（`related`）：异构系统（编程模型）说明一个基于昇腾处理器的异构系统通常包含CPU与昇腾NPU。其中，CPU及其内存称为Host与Host Memory；NPU及其内存称为Device与Device Memory。
+- [内存层级（AI Core SIMT编程）](ai_core_simt_programming/memory_hierarchy.md)（`related`）：焦点处理SIMT 内存层级与地址空间、同步可见性；异构系统（编程模型）正文界定“一个基于昇腾处理器的异构系统通常包含CPU与昇腾NPU。其中，CPU及其内存称为Host与Host Memory；NPU及其内存称为Device与Device Memory”。候选给出 SIMT 线程/硬件层级、地址空间限定符和 fence/sync 的可见性边界。
+- [异构系统与编程模型](../../getting_started/quick_start/heterogeneous_system_and_programming_model.md)（`same_topic`）：“异构系统（编程模型）”定义：一个基于昇腾处理器的异构系统通常包含CPU与昇腾NPU。其中，CPU及其内存称为Host与Host Memory；NPU及其内存称为Device与Device Memory。；“异构系统与编程模型”定义：> 本文作为算子编程快速入门章节，将从昇腾异构系统基础入手，逐步拆解编程模型核心要素，帮助您快速建立昇腾算子编程的整体认知，为后续实操开发奠定基础。。实质衔接：三者都区分 Host CPU/内存与 Device NPU/内存；快速入门建立模型，算子实践进一步给出 Host/Device 代码与数据流。
+- [异构计算（算子实践）](../../operator_practice/heterogeneous_computing.md)（`same_topic`）：两篇指南都建立 Host CPU/Memory 与 Device NPU/Memory 的异构模型；编程模型页给出 Runtime 调度和数据传输，算子实践页把同一模型落实为 Host Tiling 与 Device Kernel 分工。
+<!-- cannbot:related:end -->

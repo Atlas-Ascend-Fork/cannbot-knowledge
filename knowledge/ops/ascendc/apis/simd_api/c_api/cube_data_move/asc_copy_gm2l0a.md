@@ -21,3 +21,12 @@ platforms: [a2, a3]
 - 操作数地址重叠约束
 
 仅 Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscCopyGm2l0b](asc_copy_gm2l0b.md)（`related`）：AscCopyGm2l0a 与 AscCopyGm2l0b 分别把 Matmul 左、右操作数从 GM 直接加载到 L0A/L0B，block 与 stride 契约对称。
+- [AscCopyL12L0a](asc_copy_l12l0a/asc_copy_l12l0a.md)（`related`）：AscCopyL12L0A 提供先 GM→L1 再 L1→L0A 的分级加载替代路径，可据存储位置选择与直接 GM→L0A 的接口。
+- [AscSetL13dRpt](asc_set_l13d_rpt.md)（`related`）：《AscSetL13dRpt》处理“设置Load3Dv2接口的repeat参数。”。《AscCopyGm2l0a》明确提供“将数据从GM搬运到L0A Buffer。”，其参数、调用或验证步骤直接接入3D L1 到 L0 搬运的 Fmatrix、尺寸、padding、repeat 和配置接口。
+- [asc_copy_l12l0a](asc_copy_l12l0a/asc_copy_l12l0a_arch_3510.md)（`related`）：asc_copy_l12l0a 与《AscCopyGm2l0a》的实质衔接是：该 3510 接口把 512B L1 矩阵搬到 L0A；架构变体、转置/MX 入口及 GM→L1 上游构成实际 Cube 搬运链，迁移卡限定不同架构可用路径。
+<!-- cannbot:related:end -->

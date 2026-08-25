@@ -30,3 +30,14 @@ platforms: ['950']
 约束：如果目标线程是非活跃状态，获取到寄存器中未初始化的值。
 需包含头文件 "simt_api/device_warp_functions.h"。
 支持 SIMT 与 SIMD/SIMT 混合编程场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [同一Warp内避免分支跳转](../../../../guides/operator_practice/simt_operator_optimization/control_flow/avoid_warp_branch.md)（`explains`）：AscShflXor 与《同一Warp内避免分支跳转》的实质衔接是：AscShflXor 与 up/down/general 及 ShflXor 入口共享 warp lane 交换契约；同 warp 避免分支指南直接使用此类 shuffle 做数据重排。
+- [AscShflUp](asc_shfl_up.md)（`related`）：AscShflXor 按 laneMask 配对交换，适合蝶形归约；AscShflUp 的有向偏移更适合扫描，二者给出算法选型。
+- [ShflXor](../../cooperative_groups/thread_block_tile/shfl_xor.md)（`related`）：AscShflXor 与《ShflXor》的实质衔接是：AscShflXor 与 up/down/general 及 ShflXor 入口共享 warp lane 交换契约；同 warp 避免分支指南直接使用此类 shuffle 做数据重排。
+- [Warp Shfl类函数](warp_shfl_functions.md)（`related`）：AscShflXor 与《Warp Shfl类函数》的实质衔接是：AscShflXor 与 up/down/general 及 ShflXor 入口共享 warp lane 交换契约；同 warp 避免分支指南直接使用此类 shuffle 做数据重排。
+- [AscShfl](asc_shfl.md)（`same_topic`）：AscShflXor 与《AscShfl》的实质衔接是：AscShflXor 与 up/down/general 及 ShflXor 入口共享 warp lane 交换契约；同 warp 避免分支指南直接使用此类 shuffle 做数据重排。
+- [AscShflDown](asc_shfl_down.md)（`same_topic`）：AscShflXor 与《AscShflDown》的实质衔接是：AscShflXor 与 up/down/general 及 ShflXor 入口共享 warp lane 交换契约；同 warp 避免分支指南直接使用此类 shuffle 做数据重排。
+<!-- cannbot:related:end -->

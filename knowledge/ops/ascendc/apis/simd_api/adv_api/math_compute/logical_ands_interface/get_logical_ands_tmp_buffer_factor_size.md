@@ -22,3 +22,10 @@ platforms: ['950']
 参数：ascendcPlatform为平台信息；typeSize为输入数据类型字节数（half传2）；maxLivedNodeCount输出最大存活节点数；extraBuf输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuf) / maxLivedNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLivedNodeCount可能为0，计算时需判断避免除零错误。
 
 约束：当反推出的currentShapeSize * typeSize < 256B时，currentShapeSize按256B/typeSize向上取整。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LogicalAnds](logical_ands.md)（`related`）：LogicalAnds 设备接口实际消费按 factor-size 计算并经 Tiling 传入的临时空间。
+- [GetLogicalAndsMaxMinTmpSize](get_logical_ands_max_min_tmp_size.md)（`same_topic`）：max/min 与 factor-size 是 LogicalAnds 同一 workspace 契约的两种查询方式，且多 API 共用空间时都需按最小值规则合并。
+<!-- cannbot:related:end -->

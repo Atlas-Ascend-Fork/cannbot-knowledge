@@ -45,3 +45,11 @@ Cube计算单元
 Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配合Cube计算单元完成随路计算，主要功能如下：
 -   量化反量化：包括S322FP16、S322S32、S322S4、S322S8、S322S16、FP322FP16、FP322BF16、FP322S8、FP322S4、FP322FP32。
 -   Relu功能，包括ReLu、PReLu和Leaky ReLu等典型的激活函数。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetCurNpuArch](../../../../../apis/utils_api/platform_info/platform_ascend_c/get_cur_npu_arch.md)（`explains`）：NPU架构版本3002 与《GetCurNpuArch》的衔接是：arch3002 卡给出该架构的核结构与存储约束；基础架构说明、运行时架构查询和 SoC→ini→NpuArch 查证链用于确认实际编译/运行落到该变体。
+- [Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa](../../../../../runbooks/compilation/arch_variant_lookup_chain_soc_ini_npuarch_dispatcher.md)（`related`）：NPU架构版本3002 与《Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa》的衔接是：arch3002 卡给出该架构的核结构与存储约束；基础架构说明、运行时架构查询和 SoC→ini→NpuArch 查证链用于确认实际编译/运行落到该变体。
+- [基本架构（硬件实现）](../basic_architecture.md)（`related`）：NPU架构版本3002 与《基本架构（硬件实现）》的衔接是：arch3002 卡给出该架构的核结构与存储约束；基础架构说明、运行时架构查询和 SoC→ini→NpuArch 查证链用于确认实际编译/运行落到该变体。
+<!-- cannbot:related:end -->

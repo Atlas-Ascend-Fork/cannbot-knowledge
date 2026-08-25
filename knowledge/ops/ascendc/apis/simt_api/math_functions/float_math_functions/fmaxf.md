@@ -24,3 +24,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Fdimf](fdimf.md)（`related`）：《Fdimf》处理“获取两个输入数据的差值，差值小于0时返回0。”。《Fmaxf》提供“获取两个输入数据中的最大值。”，其具体合同或探针直接接入Fdimf 的 max(x-y,0) 定义与 Fmaxf 组成关系。
+- [Fminf](fminf.md)（`related`）：fmaxf 与 fminf 分别返回两输入最大/最小值，是标量浮点上下界选择的成对接口。
+<!-- cannbot:related:end -->

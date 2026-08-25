@@ -39,3 +39,20 @@ OpParamDef算子定义，OpParamDef请参考OpParamDef。
 3、x : DT_FLOAT16, FORMAT_ND    y : DT_INT16, FORMAT_ND
 4、x : DT_INT16, FORMAT_ND    y : DT_INT16, FORMAT_NC
 此时发现，新集合1与原集合3一致，新集合2、新集合3与原集合1一致。设置生效。新集合4不属于原集合，设置失效。此时会按照原本的集合4进行编译。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [算子原型定义](../../../../guides/programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/operator_prototype_definition.md)（`explains`）：DataTypeForBinQuery 与《算子原型定义》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [DataTypeList](data_type_list.md)（`same_topic`）：DataTypeForBinQuery 与《DataTypeList》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [DataType（OpParamDef）](data_type.md)（`same_topic`）：DataTypeForBinQuery 与《DataType（OpParamDef）》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [FormatForBinQuery](format_for_bin_query.md)（`same_topic`）：DataTypeForBinQuery 与《FormatForBinQuery》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [FormatList](format_list.md)（`same_topic`）：DataTypeForBinQuery 与《FormatList》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [Input（OpDef）](../op_def/input.md)（`same_topic`）：DataTypeForBinQuery 与《Input（OpDef）》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [Input（原型注册管理）](../op_ai_core_config/input.md)（`same_topic`）：DataTypeForBinQuery 与《Input（原型注册管理）》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [OpParamDef](op_param_def.md)（`same_topic`）：DataTypeForBinQuery 与《OpParamDef》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [SetInferDataType](../op_def/set_infer_data_type.md)（`same_topic`）：DataTypeForBinQuery 与《SetInferDataType》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [TensorDataType](../../../simd_api/adv_api/data_structures/tensor_data_type.md)（`same_topic`）：DataTypeForBinQuery 与《TensorDataType》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [Version](version.md)（`same_topic`）：DataTypeForBinQuery 与《Version》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+- [构造&拷贝构造函数（OpParamDef）](constructor_and_copy_constructor.md)（`same_topic`）：DataTypeForBinQuery 与《构造&拷贝构造函数（OpParamDef）》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
+<!-- cannbot:related:end -->

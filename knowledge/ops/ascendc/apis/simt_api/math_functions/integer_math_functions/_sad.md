@@ -19,3 +19,9 @@ platforms: ['950']
 函数原型：unsigned int __sad(int x, int y, unsigned int z)
 
 参数 x、y 为源操作数（int32_t），z 为源操作数（uint32_t）。返回 |x - y| + z。仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/device_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__usad（整数数学函数）](_usad.md)（`same_topic`）：__usad（整数数学函数）说明对输入数据x、y、z，计算 x - y + z的结果，即前两个输入作差的绝对值与第三个输入的和。
+<!-- cannbot:related:end -->

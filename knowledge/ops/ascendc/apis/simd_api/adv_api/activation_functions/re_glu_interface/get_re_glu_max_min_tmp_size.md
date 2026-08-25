@@ -25,3 +25,10 @@ kernel侧ReGlu接口的计算需要开发者预留 申请临时空间，本接�
 - isReuseSource（输入）：是否复用源操作数输入的空间，与kernel侧接口一致。
 - maxValue（输出）：ReGlu接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。
 - minValue（输出）：ReGlu接口能完成计算所需最小临时空间大小。为保证功能正确，接口计算时预留 申请的临时空间不能小于该数值。最小空间大小为0表示计算不需要临时空间。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ReGlu](re_glu.md)（`related`）：GetReGluMaxMinTmpSize 与《ReGlu》的实质衔接是：host 侧临时空间上下限必须与 ReGlu kernel 的 sharedTmpBuffer 和复用源空间参数一致，接口页给出实际调用端。
+- [ReGlu接口](re_glu_interface.md)（`related`）：GetReGluMaxMinTmpSize 与《ReGlu接口》的实质衔接是：host 侧临时空间上下限必须与 ReGlu kernel 的 sharedTmpBuffer 和复用源空间参数一致，接口页给出实际调用端。
+<!-- cannbot:related:end -->

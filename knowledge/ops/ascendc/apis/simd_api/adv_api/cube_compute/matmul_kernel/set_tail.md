@@ -24,3 +24,10 @@ platforms: ['950', a2, a3]
 - tailK（输入）：重新设置的singleCoreK值
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Kirin X90。不支持：Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [多核非对齐切分](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/multi_core_unaligned_split.md)（`explains`）：多核 M/N/K 不能整除 singleCoreM/N/K 时产生尾块；指南解释何时需要 SetTail/SetSingleShape 重设本次计算范围。
+- [SetSingleShape](set_single_shape.md)（`same_topic`）：两接口都在不重做 Tiling 时重设 singleCoreM/N/K；SetSingleShape 正文明确说明与 SetTail 功能一致并推荐使用前者。
+<!-- cannbot:related:end -->

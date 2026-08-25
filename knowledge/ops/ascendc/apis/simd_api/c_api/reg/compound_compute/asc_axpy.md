@@ -22,3 +22,13 @@ platforms: ['950']
 约束：mask未筛选的元素在输出中置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscAxpy](../../vector_compute/asc_axpy.md)（`same_topic`）：AscAxpy 与《AscAxpy》的衔接是：AscAxpy 的 C Vector、基础及高阶 Axpy 入口实现同一 alpha*x+y 数据流，差异集中在张量形态、临时空间和调度层级。
+- [Axpy](../../../adv_api/math_compute/axpy_interface/axpy.md)（`same_topic`）：AscAxpy 与《Axpy》的衔接是：AscAxpy 的 C Vector、基础及高阶 Axpy 入口实现同一 alpha*x+y 数据流，差异集中在张量形态、临时空间和调度层级。
+- [Axpy](../../../basic_api/memory_vector_compute/composite_compute/axpy.md)（`same_topic`）：AscAxpy 与《Axpy》的衔接是：AscAxpy 的 C Vector、基础及高阶 Axpy 入口实现同一 alpha*x+y 数据流，差异集中在张量形态、临时空间和调度层级。
+- [Axpy](../../../basic_api/reg_vector_compute/composite_compute/axpy.md)（`same_topic`）：AscAxpy 与《Axpy》的衔接是：AscAxpy 的 C Vector、基础及高阶 Axpy 入口实现同一 alpha*x+y 数据流，差异集中在张量形态、临时空间和调度层级。
+- [Axpy接口](../../../adv_api/math_compute/axpy_interface/axpy_interface.md)（`same_topic`）：AscAxpy 与《Axpy接口》的衔接是：AscAxpy 的 C Vector、基础及高阶 Axpy 入口实现同一 alpha*x+y 数据流，差异集中在张量形态、临时空间和调度层级。
+<!-- cannbot:related:end -->

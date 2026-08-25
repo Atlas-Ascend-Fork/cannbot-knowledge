@@ -22,3 +22,26 @@ platforms: ['950']
 - dst（L0B Buffer的地址）的数据类型支持fp4x2_e2m1_t、fp4x2_e1m2_t、fp8_e5m2_t、fp8_e4m3fn_t，src的数据类型支持fp8_e8m0_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscMmadMx](../cube_compute/asc_mmad_mx.md)（`related`）：《AscMmadMx》说明完成带量化系数的矩阵乘加计算（MmadMx），左矩阵A和右矩阵B分别配有量化系数矩阵ScaleA和ScaleB，按K维度每32个元素共享一个量化系数。；《AscCopyL12l0bMx》说明将Mx scale矩阵从L1 Buffer搬运到L0B Buffer。。二者在AscMmadMx消费A/B量化系数矩阵；Mx搬入、SetTensorScaleA/B和MxMatmul场景构成完整数据合同上存在可执行的直接衔接。
+- [asc_copy_l12l0b](asc_copy_l12l0b/asc_copy_l12l0b_arch_3510.md)（`related`）：MX 量化 B 路径需要专用格式/scale 搬运。
+- [AscCopyGm2l0b](asc_copy_gm2l0b.md)（`same_topic`）：AscCopyL12l0bMx 与《AscCopyGm2l0b》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscCopyGm2l1Align](asc_copy_gm2l1_align.md)（`same_topic`）：AscCopyL12l0bMx 与《AscCopyGm2l1Align》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscCopyGm2l1Dn2nz](asc_copy_gm2l1_dn2nz.md)（`same_topic`）：AscCopyL12l0bMx 与《AscCopyGm2l1Dn2nz》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscCopyL12L0b](asc_copy_l12l0b/asc_copy_l12l0b.md)（`same_topic`）：AscCopyL12l0bMx 与《AscCopyL12L0b》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscCopyL12l0aMx](asc_copy_l12l0a_mx.md)（`same_topic`）：AscCopyL12l0bMx 与《AscCopyL12l0aMx》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscCopyL12l0bSparse](asc_copy_l12l0b_sparse.md)（`same_topic`）：AscCopyL12l0bMx 与《AscCopyL12l0bSparse》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscSetGm2l1Loop1Stride](asc_set_gm2l1_loop1_stride.md)（`same_topic`）：AscCopyL12l0bMx 与《AscSetGm2l1Loop1Stride》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscSetGm2l1Loop2Stride](asc_set_gm2l1_loop2_stride.md)（`same_topic`）：AscCopyL12l0bMx 与《AscSetGm2l1Loop2Stride》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscSetGm2l1LoopSize](asc_set_gm2l1_loop_size.md)（`same_topic`）：AscCopyL12l0bMx 与《AscSetGm2l1LoopSize》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscSetGm2l1Pad](asc_set_gm2l1_pad.md)（`same_topic`）：AscCopyL12l0bMx 与《AscSetGm2l1Pad》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscSetL13dFmatrix](asc_set_l13d_fmatrix.md)（`same_topic`）：AscCopyL12l0bMx 与《AscSetL13dFmatrix》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscSetL13dFmatrixB](asc_set_l13d_fmatrix_b.md)（`same_topic`）：AscCopyL12l0bMx 与《AscSetL13dFmatrixB》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [AscSetL13dSize](asc_set_l13d_size.md)（`same_topic`）：AscCopyL12l0bMx 与《AscSetL13dSize》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [asc_copy_gm2l1](asc_copy_gm2l1/asc_copy_gm2l1_arch_3510.md)（`same_topic`）：AscCopyL12l0bMx 与《asc_copy_gm2l1》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [asc_copy_l12l0b](asc_copy_l12l0b/asc_copy_l12l0b_arch_2201.md)（`same_topic`）：AscCopyL12l0bMx 与《asc_copy_l12l0b》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+- [矩阵数据搬运](cube_data_move.md)（`same_topic`）：AscCopyL12l0bMx 与《矩阵数据搬运》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
+<!-- cannbot:related:end -->

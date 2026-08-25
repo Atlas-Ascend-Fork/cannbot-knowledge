@@ -35,3 +35,9 @@ __aicore__ inline void DropOut(const LocalTensor<T>& dstLocal, const LocalTensor
 - maskLocal含有脏数据的场景，maskLocal中的数据可能会被修改，脏数据可能会被舍弃。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetDropOutMaxMinTmpSize](get_drop_out_max_min_tmp_size.md)（`same_topic`）：GetDropOutMaxMinTmpSize 与《DropOut》的实质衔接是：GetDropOutMaxMinTmpSize 给 DropOut kernel 分配可用临时空间，两者必须以相同 shape/type 契约调用。
+<!-- cannbot:related:end -->

@@ -27,3 +27,9 @@ format：输入：格式控制字符串，包含两种类型：普通字符和�
 无
 ## 约束说明
 Tiling下沉场景下，若使用旧版本CANN包（不支持ASC_CPU_LOG接口）生成的自定义算子工程，需特别注意兼容性问题，此时调用该接口无法输出日志。您可以通过查看自定义算子工程下cmake/device_task.cmake中有无DEVICE_OP_LOG_BY_DUMP字段来确认当前工程是否支持日志Dump功能，如果未找到该字段，则需要重新生成自定义算子工程。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [log](log.md)（`same_topic`）：AscCpuLog 是 Log 工具的具体 Host/CPU 输出入口。
+<!-- cannbot:related:end -->

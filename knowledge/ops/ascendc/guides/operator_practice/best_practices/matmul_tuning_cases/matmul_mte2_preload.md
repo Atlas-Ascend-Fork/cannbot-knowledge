@@ -41,3 +41,11 @@ MTE2流水间隙较大，且M或N数值较大时。
 -   优化后的Profiling数据如下，aic_time平均耗时28.50us，较优化前的30.88us有所下降。
 ## 总结
 当MTE2流水间隙较大，且M或N数值较大时，可以考虑开启MTE2 Preload功能，提前加载A矩阵或B矩阵数据。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MatmulConfig](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_config.md)（`explains`）：MTE2 Preload 案例通过 MatmulConfig::doMTE2Preload 开关启用预加载，并受 MDL、K 全载和 DoubleBuffer 约束；目标卡定义该配置入口。
+- [FlashAttention算子性能调优案例](../flash_attention_tuning.md)（`related`）：Attention 中 QK/PV Matmul 可复用 MTE2 preload 原则。
+- [Matmul高阶API开启IBShare模板共享B矩阵数据](matmul_ibshare_b.md)（`related`）：Matmul高阶API开启IBShare模板共享B矩阵数据 与《Matmul高阶API开启MTE2 Preload》的实质衔接是：IBShare 的 B-only 配置受 MatmulConfig、tiling 策略、preload/MDL 和 kernel Iterate 契约共同约束，直接影响 L1 复用。
+<!-- cannbot:related:end -->

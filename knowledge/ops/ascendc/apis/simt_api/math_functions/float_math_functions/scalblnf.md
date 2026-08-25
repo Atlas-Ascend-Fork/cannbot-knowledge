@@ -24,3 +24,9 @@ platforms: ['950']
 约束：针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：本接口内部实现使用到了除法运算符，由于除法运算符不支持Subnormal场景，在极少数场景下内部计算的除法结果为Subnormal数据，导致本接口最终结果为0。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Scalbnf](scalbnf.md)（`same_topic`）：Scalbnf：Scalbnf与Scalblnf都按2的整数次幂缩放float，差别仅指数参数宽度，能直接帮助选择不会截断指数的原型。 目标卡《Scalblnf》补充：获取输入数据x与2的n次方的乘积。
+<!-- cannbot:related:end -->

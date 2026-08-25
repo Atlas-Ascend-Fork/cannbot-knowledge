@@ -29,3 +29,11 @@ RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Le
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [RegTensor 累加须用 Add 而非 Adds](../../../../../runbooks/compilation/regtensor_add_uses_add_not_adds.md)（`exemplifies`）：Adds 的第三数据参数是 C++ 标量，正是误把 Reduce 结果 RegTensor 传入后触发 vadds 类型断言的接口契约。
+- [Add](add.md)（`related`）：Add 的第二输入是 RegTensor；需要累加寄存器结果而非标量常量时必须由 Adds 切换到 Add。
+- [Adds](../../memory_vector_compute/basic_arithmetic/adds.md)（`same_topic`）：Reg Adds 与 Memory Tensor Adds 完成相同逐元素标量加法，可按数据驻留在 RegTensor 或 LocalTensor 选择。
+<!-- cannbot:related:end -->

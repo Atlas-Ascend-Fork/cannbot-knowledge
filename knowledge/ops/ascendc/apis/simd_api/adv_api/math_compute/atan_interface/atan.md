@@ -33,3 +33,11 @@ __aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T
 - 操作数地址对齐要求请参见通用地址对齐约束。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GetAtanMaxMinTmpSize](get_atan_max_min_tmp_size.md)（`related`）：GetAtanMaxMinTmpSize 在 Host 侧给出 Atan Kernel 的临时空间上下界，结果直接决定 sharedTmpBuffer 分配。
+- [GetAtanTmpBufferFactorSize](get_atan_tmp_buffer_factor_size.md)（`related`）：factor 查询返回的 maxLiveNodeCount/extraBuf 用于按已分配临时空间推算 Atan 单次 calCount，直接决定 Kernel 侧 Atan 的分块规模。
+- [Atan接口](atan_interface.md)（`same_topic`）：《Atan接口》处理“提供Atan反正切计算接口及其Tiling临时空间大小查询接口，包含Atan、GetAtanMaxMinTmpSize等。”。《Atan》明确提供“按元素做反正切运算，支持泰勒展开和多项式逼近两种算法配置”，其参数、调用或验证步骤直接接入Atan Kernel 调用、临时空间查询和 SIMT 对应实现。
+<!-- cannbot:related:end -->

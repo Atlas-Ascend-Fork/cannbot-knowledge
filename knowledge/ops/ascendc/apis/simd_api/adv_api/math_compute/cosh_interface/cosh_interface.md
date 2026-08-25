@@ -29,3 +29,11 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Kirin X90。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Cosh](cosh.md)（`same_topic`）：焦点处理Cosh 高阶 API 的计算接口与临时空间计算；Cosh正文说明“按元素做双曲余弦函数计算”。候选分别承担 Cosh 实际计算、workspace 上下界和固定空间容量推算。
+- [GetCoshMaxMinTmpSize](get_cosh_max_min_tmp_size.md)（`same_topic`）：焦点处理Cosh 高阶 API 的计算接口与临时空间计算；GetCoshMaxMinTmpSize正文说明“在host侧获取Cosh接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”。候选分别承担 Cosh 实际计算、workspace 上下界和固定空间容量推算。
+- [GetCoshTmpBufferFactorSize](get_cosh_tmp_buffer_factor_size.md)（`same_topic`）：焦点处理Cosh 高阶 API 的计算接口与临时空间计算；GetCoshTmpBufferFactorSize正文说明“获取Cosh接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量”。候选分别承担 Cosh 实际计算、workspace 上下界和固定空间容量推算。
+<!-- cannbot:related:end -->

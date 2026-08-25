@@ -26,3 +26,12 @@ platforms: ['950', a2, a3]
 -   false：Tp不是void类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Conditional](conditional.md)（`same_topic`）：is_void 与《Conditional》的实质衔接是：is_void 常与 integral_constant/is_same 表达编译期结果，并通过 Conditional/EnableIf 选择仅对 void 或非 void 有效的模板实现。
+- [EnableIf](enable_if.md)（`same_topic`）：is_void 与《EnableIf》的实质衔接是：is_void 常与 integral_constant/is_same 表达编译期结果，并通过 Conditional/EnableIf 选择仅对 void 或非 void 有效的模板实现。
+- [IntegralConstant](integral_constant.md)（`same_topic`）：is_void 与《IntegralConstant》的实质衔接是：is_void 常与 integral_constant/is_same 表达编译期结果，并通过 Conditional/EnableIf 选择仅对 void 或非 void 有效的模板实现。
+- [is_same](is_same.md)（`same_topic`）：is_void 与《is_same》的实质衔接是：is_void 常与 integral_constant/is_same 表达编译期结果，并通过 Conditional/EnableIf 选择仅对 void 或非 void 有效的模板实现。
+<!-- cannbot:related:end -->

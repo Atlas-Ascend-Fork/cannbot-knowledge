@@ -27,3 +27,11 @@ ReduceRepeat接口用于对每个repeat内所有数据进行归约操作，根�
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ReduceRepeat](../reduction_compute/reduce_repeat.md)（`related`）：GetReduceRepeatMaxMinSpr 负责“获取ReduceRepeat或ReduceMax/ReduceMin计算的最值及索引，结果以全局变量形式存储”；ReduceRepeat 负责“对每个repeat内所有数据进行归约操作，支持求和、求最大值和求最小值，可返回最值索引”。
+- [GetReduceRepeatSumSpr](get_reduce_repeat_sum_spr_isasi.md)（`same_topic`）：GetReduceRepeatMaxMinSpr 的核心契约是“获取ReduceRepeat或ReduceMax/ReduceMin计算的最值及索引，结果以全局变量形式存储”；GetReduceRepeatSumSpr 补充“获取ReduceSum接口前n个数据连续计算的结果，以全局变量形式存储”。
+- [ReduceMin](../reduction_compute/reduce_min.md)（`same_topic`）：ReduceMin 与《GetReduceRepeatMaxMinSpr》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
+<!-- cannbot:related:end -->

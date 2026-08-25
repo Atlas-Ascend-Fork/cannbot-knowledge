@@ -35,3 +35,11 @@ MC2算子收益 = (融合前算子串行耗时 - 融合后MC2算子耗时) / 融
 数据切分前，Matmul执行时间为200us，将Matmul的输入均匀切分为两块，假设切分后，每块数据的Matmul执行时间都是100us，通过计算的并行执行，下图实际性能收益为100us。
 -   发生一般程度的膨胀：
 数据切分前，Matmul执行时间为200us，将Matmul的输入均匀切分为两块，假设切分后，每块数据的Matmul执行时间都是150us，通过计算的并行执行，下图实际性能收益为50us。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MC2（OpDef）](../../../apis/utils_api/prototype_register_management/op_def/mc2.md)（`explains`）：《MC²算子性能调优案例》的任务是“MC2通算融合算子性能调优案例，通过数据切分实现计算与通信流水掩盖，介绍切分策略制定与优化方法。”。《MC2（OpDef）》具体提供“注册该算子是通算融合算子，调用该接口后会返回一个OpMC2Def结构，后续可通过该结构配置通信域名称。”，它直接用于MC2 通算融合的 Matmul 性能入口和 MC2 原型配置。
+- [OpMC2Def](../../../apis/utils_api/prototype_register_management/op_mc2_def/op_mc2_def.md)（`explains`）：《MC²算子性能调优案例》的任务是“MC2通算融合算子性能调优案例，通过数据切分实现计算与通信流水掩盖，介绍切分策略制定与优化方法。”。《OpMC2Def》具体提供“OpMC2Def算子定义接口索引。”，它直接用于MC2 通算融合的 Matmul 性能入口和 MC2 原型配置。
+- [Matmul性能优化策略总览](matmul_tuning_cases/matmul_optimization_overview.md)（`related`）：《MC²算子性能调优案例》的任务是“MC2通算融合算子性能调优案例，通过数据切分实现计算与通信流水掩盖，介绍切分策略制定与优化方法。”。《Matmul性能优化策略总览》具体提供“本节提供了一系列包含Matmul计算的算子性能调优案例，开发者可根据实际应用场景，参考相关案例中的优化方法和思路，应用于具体实践中。案例分为如下五类，各分类的简介请参见如下表格，详细内容请阅读后续章节。”，它直接用于MC2 通算融合的 Matmul 性能入口和 MC2 原型配置。
+<!-- cannbot:related:end -->

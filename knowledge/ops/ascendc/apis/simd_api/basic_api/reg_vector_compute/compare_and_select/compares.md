@@ -22,3 +22,15 @@ platforms: ['950']
 约束：通过mask参数控制的未选中元素在目的操作数中被置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscEqScalar](../../../c_api/reg/compare_and_select/asc_eq_scalar.md)（`related`）：C++ Reg CompareScalar 与 C API AscEqScalar 提供同一标量比较任务的两种语言接口，可用于签名映射。
+- [AscLeScalar](../../../c_api/reg/compare_and_select/asc_le_scalar.md)（`related`）：C++ Reg Compares 提供相同 tensor-scalar 谓词族，可在 C/C++ 接口间对照模式枚举和 mask。
+- [AscLtScalar](../../../c_api/reg/compare_and_select/asc_lt_scalar.md)（`related`）：“Compares”定义：逐元素比较RegTensor中每个元素与标量的大小关系，结果为真则MaskReg对应比特位置1。；“AscLtScalar”定义：根据mask将源操作数src中元素逐个与标量value比较是否小于，比较结果写入dst对应比特位，成立为1，不成立为0。。实质衔接：Reg Compares 生成 MaskReg；Compare 区分 tensor-tensor，Select 消费该 mask，AscLtScalar 展示 C API 的具体标量谓词映射。
+- [Select](select.md)（`related`）：“Compares”定义：逐元素比较RegTensor中每个元素与标量的大小关系，结果为真则MaskReg对应比特位置1。；“Select”定义：根据mask比特位值从两个源操作数中选取元素，比特位为1选srcReg0，为0选srcReg1。。实质衔接：Reg Compares 生成 MaskReg；Compare 区分 tensor-tensor，Select 消费该 mask，AscLtScalar 展示 C API 的具体标量谓词映射。
+- [AscGeScalar](../../../c_api/reg/compare_and_select/asc_ge_scalar.md)（`same_topic`）：焦点处理AscGeScalar 的标量比较 mask 及 Select 消费路径；Compares正文界定“逐元素比较RegTensor中每个元素与标量的大小关系，结果为真则MaskReg对应比特位置1”。候选生成相同 GE mask、提供标量 Compares，或由 Select/AscSelect 直接消费比较结果。
+- [Compare](compare.md)（`same_topic`）：Compares 把第二个 RegTensor 换成标量，仍按 EQ/GT/LT/GE/NE/LE 生成 MaskReg。
+- [Compares](../../memory_vector_compute/compare_and_select/compares.md)（`same_topic`）：《Compares》的任务是“逐元素比较一个tensor中的元素和另一个标量的大小，结果为真的对应比特位为1，否则为0。”。《Compares》具体提供“逐元素比较RegTensor中每个元素与标量的大小关系，结果为真则MaskReg对应比特位置1。”，它直接用于Compares 生成标量比较 mask 并由 Select/SetCmpMask/GetCmpMask 消费的链路。
+<!-- cannbot:related:end -->

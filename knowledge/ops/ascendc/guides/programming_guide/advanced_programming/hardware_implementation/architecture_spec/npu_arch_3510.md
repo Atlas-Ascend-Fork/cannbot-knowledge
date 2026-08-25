@@ -41,3 +41,11 @@ Scalar单元
 ## 存储单元
 获取存储单元的内存空间大小
 开发者可以通过平台信息获取接口查询各存储单元的内存空间大小。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CMake arch 子目录隔离 dav-3510 专属 API](../../../../../runbooks/compilation/cmake_arch_dav_3510_api.md)（`related`）：CMake arch 子目录隔离 dav-3510 专属 API 与《NPU架构版本3510》的实质衔接是：该故障由根目录 dav-3510 专属源码被 dav-2201 全量编译造成；架构查证/迁移、CMake/编译加速、arch 文档与同类 include/arch 错配卡共同验证源码隔离。
+- [基本架构（硬件实现）](../basic_architecture.md)（`related`）：3510 规格给出 Ascend950 的具体硬件资源，是判断架构差异和可用 API 的依据。
+- [2201到3510架构变更](../../../../cross_gen_migration_guide/3510_arch_migration/2201_to_3510_arch_changes.md)（`same_topic`）：架构卡列出 3510 的 AIC/AIV、Regbase 与新增/删除数据通路，迁移卡逐项说明这些变化对 DataCopy、LoadData、Fixpipe 等 API 的影响，是同一 3510 架构对象的实现与迁移切面。
+<!-- cannbot:related:end -->

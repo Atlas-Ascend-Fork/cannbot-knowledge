@@ -25,3 +25,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__habs](../bfloat16_arithmetic_functions/_habs.md)（`related`）：标量 bfloat16 版本只处理一个分量，可按是否需要成对并行选择。
+- [__habsx2](../../half_type/half2_arithmetic_functions/_habsx2.md)（`related`）：half2 版本计算相同双分量绝对值，但输入格式是 half2 而非 bfloat16x2。
+<!-- cannbot:related:end -->

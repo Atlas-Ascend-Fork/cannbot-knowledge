@@ -23,3 +23,13 @@ src 中的每个元素逐个与标量 value 比较是否不相等，如果 src_i
 - 浮点数据类型比较，涉及nan时比较结果为1。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscNeScalar](../../vector_compute/asc_ne_scalar.md)（`related`）：Reg 版本执行相同 vector-scalar 不等比较，但输入输出驻留寄存器；Memory 版本操作 UB 指针。
+- [Compare](../../../basic_api/memory_vector_compute/compare_and_select/compare.md)（`related`）：Compare说明逐元素比较两个tensor大小，结果为真的对应比特位为1，否则为0，支持LT、GT、GE、EQ、NE、LE六种比较模式。
+- [AscEqScalar](../../vector_compute/asc_eq_scalar.md)（`same_topic`）：AscEqScalar 与《AscNeScalar》的实质衔接是：AscEqScalar 与其他标量比较共享 scalar 广播和 mask 输出契约；vector-vector Eq、灵活标量 Compare/Select 说明比较源形态及结果消费方式。
+- [AscNe](asc_ne.md)（`same_topic`）：AscNe说明逐元素比较两个源操作数是否不相等，比较结果写入目的操作数对应比特位，为真则置1，否则置0。
+- [ComparesFlexibleScalar](../../../basic_api/memory_vector_compute/compare_and_select/compares_flexible_scalar.md)（`same_topic`）：ComparesFlexibleScalar说明提供灵活标量位置的Compares接口，支持标量在前和标量在后两种场景，标量可配置为LocalTensor单点元素。
+<!-- cannbot:related:end -->

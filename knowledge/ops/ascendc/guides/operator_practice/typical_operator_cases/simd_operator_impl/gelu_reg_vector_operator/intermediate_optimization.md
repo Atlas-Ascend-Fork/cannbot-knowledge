@@ -42,3 +42,22 @@ aiv_scalar_time(μs)：9.513：3.03：68.2%
 IPC：-：1.20：-
 > 本样例为MTE2 bound，数据搬运占比超过90%，因此端到端收益不明显，但向量计算耗时的优化效果显著。
 详细内容请参见Gelu性能调优样例 Case 1。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Gelu](../../../../../apis/simd_api/adv_api/activation_functions/gelu_interface/gelu.md)（`explains`）：中级性能优化 与《Gelu》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [Load](../../../../../apis/simd_api/basic_api/reg_vector_compute/reg_data_load/load.md)（`explains`）：中级性能优化 与《Load》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [PipeBarrier](../../../../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)（`explains`）：中级性能优化 与《PipeBarrier》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [Store](../../../../../apis/simd_api/basic_api/reg_vector_compute/reg_data_store/store.md)（`explains`）：中级性能优化 与《Store》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [AscendC GELU 三系数 erfc 在大值域 fp32 精度不足](../../../../../runbooks/precision/gelu_erfc_polynomial_precision_budget.md)（`related`）：中级性能优化 与《AscendC GELU 三系数 erfc 在大值域 fp32 精度不足》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [GELU 负尾部用 erfc 形态避免大数相消](../../../../../runbooks/precision/gelu_negative_tail_erfc_avoids_cancellation.md)（`related`）：中级性能优化 与《GELU 负尾部用 erfc 形态避免大数相消》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [PipeBarrier 的 PIPE_V 是全局枚举](../../../../../runbooks/compilation/pipebarrier_pipe_v_uses_global_enum.md)（`related`）：中级性能优化 与《PipeBarrier 的 PIPE_V 是全局枚举》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线](../../../../../runbooks/compilation/pipebarrier_pipe_s_is_not_supported.md)（`related`）：中级性能优化 与《PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [Reg LoadAlign 不接受 const __ubuf__ 指针](../../../../../runbooks/compilation/reg_loadalign_requires_nonconst_ubuf_pointer.md)（`related`）：中级性能优化 与《Reg LoadAlign 不接受 const __ubuf__ 指针》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [Reg 固定地址跨块累加需逐 VF PipeBarrier](../../../../../runbooks/precision/fixed_address_vf_accumulator_needs_per_call_barrier.md)（`related`）：中级性能优化 与《Reg 固定地址跨块累加需逐 VF PipeBarrier》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [VfFusionOptimization](../../../simd_operator_optimization/vector_compute/vf_optimization/vf_fusion_optimization.md)（`related`）：中级性能优化 与《VfFusionOptimization》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [指令双发优化](../../../simd_operator_optimization/vector_compute/vf_optimization/dual_issue_optimization.md)（`related`）：中级性能优化 与《指令双发优化》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [入门功能落地](getting_started.md)（`same_topic`）：中级性能优化 与《入门功能落地》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+- [高阶极限打磨](extreme_optimization.md)（`same_topic`）：中级性能优化 与《高阶极限打磨》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
+<!-- cannbot:related:end -->

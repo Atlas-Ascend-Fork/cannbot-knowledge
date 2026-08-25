@@ -45,3 +45,12 @@ AIV是AI Core内用于矢量计算的核，核内参与Reg矢量计算的硬件�
 - DMA单元：用于执行Reg矢量搬运，负责在寄存器和UB之间搬运数据。
 - Aux Scalar：处理Reg矢量执行单元和Reg搬运单元所需的标量计算（例如地址计算）。
 Reg矢量执行单元、DMA单元和Aux Scalar虽属于不同的硬件执行单元，但是在实际执行时都归属PIPE_V流水。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [C-API-Reg矢量计算接口理论性能汇总](../../../../../apis/appendix/c_api_reg_vector_compute_theoretical_perf_summary.md)（`explains`）：C 指针 Reg 编程指南说明如何组织 VF、mask 和同步，才能把单接口理论周期转化为可测 kernel。
+- [Reg矢量计算](../../../../../apis/simd_api/basic_api/reg_vector_compute/reg_vector_compute.md)（`explains`）：Reg矢量计算 与《Reg矢量计算编程（C指针编程）》的实质衔接是：Reg 矢量计算必须在 VF 内完成 Load→寄存器计算→Store；C/C++ 编程指南和边界、精度、性能、MergeMode 表直接约束该执行模型。
+- [Reg矢量计算编程（C++ Tensor编程）](../cpp_tensor_programming/reg_vector_computation.md)（`same_topic`）：两篇 Reg 矢量编程指南明确描述同一套寄存器硬件、VF 执行域和 Load→Compute→Store 流程；差别仅是语言扩展 C 指针接口与 C++ Tensor 模板接口的表达。
+- [抽象硬件架构（AI Core SIMD编程）](../abstract_hardware_architecture.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《Reg矢量计算编程（C指针编程）》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
+<!-- cannbot:related:end -->

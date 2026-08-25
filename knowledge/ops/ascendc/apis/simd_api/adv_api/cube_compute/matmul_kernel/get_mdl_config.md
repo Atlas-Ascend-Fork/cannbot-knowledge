@@ -29,3 +29,20 @@ platforms: ['950', a2, a3]
 返回值：MatmulConfig结构体。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品、Kirin 9030。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Matmul高阶API开启MDL模板](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_mdl_template.md)（`explains`）：指南给出 MDL 适用于 MTE2 搬运次数多的大 shape，并通过 preload/L1 复用减少流水空隙；GetMDLConfig 提供 `doMTE2Preload`、L1/UB 复用等 MDL 专用参数和返回 MatmulConfig 的调用入口，是该优化机制的可执行配置衔接。
+- [GetBasicConfig](get_basic_config.md)（`same_topic`）：GetMDLConfig 与《GetBasicConfig》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [GetIBShareNormConfig](get_ib_share_norm_config.md)（`same_topic`）：GetMDLConfig 与《GetIBShareNormConfig》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [GetMMConfig](get_mm_config.md)（`same_topic`）：GetMDLConfig 与《GetMMConfig》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`same_topic`）：GetMDLConfig 与《GetMatmulApiTiling》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [GetNormalConfig](get_normal_config.md)（`same_topic`）：GetNormalConfig 与《GetMDLConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
+- [GetSpecialMDLConfig](get_special_mdl_config.md)（`same_topic`）：GetMDLConfig 与《GetSpecialMDLConfig》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [IterateNBatch](iterate_n_batch.md)（`same_topic`）：GetMDLConfig 与《IterateNBatch》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [MatmulConfig](matmul_config.md)（`same_topic`）：GetMDLConfig 与《MatmulConfig》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [MatmulTemplateParams](matmul_template_params.md)（`same_topic`）：GetMDLConfig 与《MatmulTemplateParams》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [SetLocalWorkspace](set_local_workspace.md)（`same_topic`）：GetMDLConfig 与《SetLocalWorkspace》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+- [SetMatmulConfigParams](../matmul_tiling/set_matmul_config_params.md)（`same_topic`）：GetMDLConfig 与《SetMatmulConfigParams》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
+<!-- cannbot:related:end -->

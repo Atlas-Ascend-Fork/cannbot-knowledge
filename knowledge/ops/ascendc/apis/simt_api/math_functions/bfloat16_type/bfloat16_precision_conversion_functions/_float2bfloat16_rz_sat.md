@@ -19,3 +19,10 @@ platforms: ['950']
 返回值：饱和模式下将输入遵循CAST_TRUNC模式转换成的bfloat16类型数据。特殊值如下：
 约束：使用此接口前需将CTRL[60]寄存器设置为0，否则饱和模式不生效。设置方式请参见控制饱和行为的方式。；SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效。
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__float22bfloat162_rz_sat](_float22bfloat162_rz_sat.md)（`related`）：The packed variant applies the same saturated RZ conversion to both components of float2.
+- [__float2bfloat16_rz](_float2bfloat16_rz.md)（`same_topic`）：两接口都按 RZ 将 float 转为 bfloat16；sat 版本只改变饱和与特殊值映射，可作为同方向转换的直接选择。
+<!-- cannbot:related:end -->

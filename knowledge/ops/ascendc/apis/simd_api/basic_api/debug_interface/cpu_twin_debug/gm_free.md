@@ -29,3 +29,10 @@ CPU侧运行验证时释放通过GmAlloc申请的共享内存。
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CPU域孪生调试（功能调试）](../../../../../guides/programming_guide/debug_and_tuning/functional_debug/cpu_twin_debug.md)（`explains`）：GmFree 与《CPU域孪生调试（功能调试）》的实质衔接是：GmFree 只释放 GmAlloc 在 CPU 孪生调试中创建的共享映射，调试指南给出这对接口的执行边界。
+- [GmAlloc](gm_alloc.md)（`same_topic`）：GmAlloc 与《GmFree》的实质衔接是：GmAlloc 与 GmFree 配对管理 CPU 调试 GM，IcpuRunKf/孪生调试指南说明其只在调试执行链中的分配释放边界。
+<!-- cannbot:related:end -->

@@ -21,3 +21,11 @@ host侧Tiling接口，用于获取Erf接口所需的最大和最小临时空间�
 参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource为是否允许修改源操作数；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。
 
 在minValue到maxValue范围内，临时空间越大性能越好。约束：无。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Erf](erf.md)（`same_topic`）：GetErfMaxMinTmpSize 与《Erf》的衔接是：Erf 临时空间查询以 ErfMaxMinTmpSize 的计算因子和接口约束为依据，查询结果直接决定 Erf 调用可安全使用的 tmpBuffer 大小。
+- [Erf接口](erf_interface.md)（`same_topic`）：GetErfMaxMinTmpSize 与《Erf接口》的衔接是：Erf 临时空间查询以 ErfMaxMinTmpSize 的计算因子和接口约束为依据，查询结果直接决定 Erf 调用可安全使用的 tmpBuffer 大小。
+- [GetErfTmpBufferFactorSize](get_erf_tmp_buffer_factor_size.md)（`same_topic`）：GetErfMaxMinTmpSize 与《GetErfTmpBufferFactorSize》的衔接是：Erf 临时空间查询以 ErfMaxMinTmpSize 的计算因子和接口约束为依据，查询结果直接决定 Erf 调用可安全使用的 tmpBuffer 大小。
+<!-- cannbot:related:end -->

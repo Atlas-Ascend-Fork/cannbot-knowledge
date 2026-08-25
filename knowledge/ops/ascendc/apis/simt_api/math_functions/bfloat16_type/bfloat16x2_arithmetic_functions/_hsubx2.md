@@ -25,3 +25,10 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [__hsubx2](../../half_type/half2_arithmetic_functions/_hsubx2.md)（`related`）：half2 同名函数与 bfloat16x2 版本均逐分量相减，跨 dtype 迁移时需对照舍入与特殊值。
+- [__hsub](../../half_type/half_arithmetic_functions/_hsub.md)（`same_topic`）：__hsub 与《__hsubx2》的实质衔接是：__hsub 与 half/bfloat16/half2 的减法入口共享 RINT 差值语义；add/mul/fma 用于区分相邻算术操作而不能作为等价替换。
+<!-- cannbot:related:end -->

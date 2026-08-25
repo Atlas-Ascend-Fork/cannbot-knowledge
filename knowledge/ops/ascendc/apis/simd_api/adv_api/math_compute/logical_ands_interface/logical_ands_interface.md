@@ -19,3 +19,9 @@ platforms: ['950']
 -   **GetLogicalAndsMaxMinTmpSize**
 
 -   **GetLogicalAndsTmpBufferFactorSize**
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LogicalAnds](logical_ands.md)（`same_topic`）：LogicalAnds 与《LogicalAnds接口》的实质衔接是：LogicalAnds 的 scalar 逻辑与接口、两种临时空间查询直接配套；LogicalAnd 是 tensor-tensor 对应形态。
+<!-- cannbot:related:end -->

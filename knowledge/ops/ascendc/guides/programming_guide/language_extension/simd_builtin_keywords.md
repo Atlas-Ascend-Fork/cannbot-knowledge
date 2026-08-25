@@ -32,3 +32,11 @@ ASCEND_IS_AIV和ASCEND_IS_AIC是通过C++宏实现的条件判断语句，用于
 -   ASCENDC_CUBE_ONLY
 ASCENDC_CUBE_ONLY是通过C++宏实现的条件判断语句，用于在__aicore__修饰的函数中实现代码的条件编译。
 基于分离模式开发非融合算子时，在只有矩阵计算的算子场景下，可以通过设置ASCENDC_CUBE_ONLY，开启纯Cube模式完成Matmul计算，减少消息通信的性能开销，提升算子性能。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa](../../../runbooks/compilation/arch_variant_lookup_chain_soc_ini_npuarch_dispatcher.md)（`related`）：Runbook 将 __NPU_ARCH__ 从 SoC ini 的 NpuArch 一直追到 dispatcher 与 dav_c* 变体，给出 BuiltIn 宏用于源码分支之外的可执行查证链。
+- [__simd_vf__ if constexpr 致 hoisted 报错](../../../runbooks/compilation/simd_vf_if_constexpr_lowering_banned_exit_70.md)（`related`）：《__simd_vf__ if constexpr 致 hoisted 报错》说明dav-3510 上某 Reg __simd_vf__ 实现使用 if constexpr 与 constexpr trait 时，bisheng 后端报 Unsupported Inst must be hoisted 并退出 70；记录源码定位与编译边界，不提供未完成的 fallback 实现。；《SIMD BuiltIn关键字》说明如其他语言一样，会提供一些内置的宏方便用户编写程序。预定义宏一节着重介绍一些用户在做异构编程时会经常用到的宏，以及宏的解释。。二者在该编译失败锁定__simd_vf__中的if constexpr/trait lowering，同类模板隔离、helper/VF边界与后端崩溃用于交叉验证上存在可执行的直接衔接。
+- [SIMD&SIMT BuiltIn关键字](simd_simt_hybrid_builtin_keywords.md)（`same_topic`）：SIMD&SIMT BuiltIn关键字 与《SIMD BuiltIn关键字》的实质衔接是：混合 BuiltIn 关键字需结合执行/地址限定、kernel/VF、内置变量和混合编程故障使用。
+<!-- cannbot:related:end -->

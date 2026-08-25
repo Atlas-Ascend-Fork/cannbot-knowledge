@@ -34,3 +34,12 @@ __aicore__ inline void FasterGeluV2(const LocalTensor<T>& dstLocal, const LocalT
 - 不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Gelu](gelu.md)（`related`）：需要标准 GELU 数值语义时应使用 Gelu 而非更快近似。
+- [GetGeluMaxMinTmpSize](get_gelu_max_min_tmp_size.md)（`related`）：V2 计算仍需按接口要求配置临时空间，不能沿用零 workspace 假设。
+- [FasterGelu](faster_gelu.md)（`same_topic`）：FasterGelu 与 V2 共享相同 Tensor、临时空间、精度/性能模板开关和地址约束，但实现的是两套不同 FastGELU 化简式；选型时需按目标公式确认版本。
+- [Gelu接口](gelu_interface.md)（`same_topic`）：总页给出精确 Gelu、FasterGelu 和 V2 的选型及 workspace 流程。
+<!-- cannbot:related:end -->

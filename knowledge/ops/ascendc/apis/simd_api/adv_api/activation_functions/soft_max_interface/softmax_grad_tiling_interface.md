@@ -28,3 +28,11 @@ void SoftMaxGradTilingFunc(const AscendC::TensorShape& srcShape, const uint32_t 
 - srcShape（输入）：输入srcTensor的shape信息，参数类型为AscendC::TensorShape。
 
 返回值：GetSoftMaxGradMinTmpSize返回SoftmaxGrad接口能完成计算所需最小临时空间大小，单位为Byte。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SoftMax Tiling使用说明](soft_max_tiling_usage.md)（`same_topic`）：SoftmaxGrad Tiling接口 与《SoftMax Tiling使用说明》的实质衔接是：SoftmaxGrad tiling 直接驱动反向 kernel，并与 forward/adjust/basic-block、rank 校验和 tiling 默认项配套。
+- [SoftmaxGrad](softmax_grad.md)（`same_topic`）：SoftmaxGrad Tiling接口 与《SoftmaxGrad》的实质衔接是：SoftmaxGrad tiling 直接驱动反向 kernel，并与 forward/adjust/basic-block、rank 校验和 tiling 默认项配套。
+- [SoftmaxGradFront](softmax_grad_front.md)（`same_topic`）：SoftmaxGrad Tiling接口 与《SoftmaxGradFront》的实质衔接是：SoftmaxGrad tiling 直接驱动反向 kernel，并与 forward/adjust/basic-block、rank 校验和 tiling 默认项配套。
+<!-- cannbot:related:end -->

@@ -30,3 +30,11 @@ ShiftRights指令根据mask对源操作数srcReg，按照scalarValue进行右移
 - scalarValue不支持设置为负数，负数行为未定义。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ShiftLefts](shift_lefts.md)（`related`）：《ShiftRights》明确“根据mask对srcReg按标量scalarValue进行右移操作并写入dstReg，无符号类型执行逻辑右移，有符号类型执行算术右移。”；它与《ShiftLefts》的“根据mask对srcReg按标量scalarValue进行左移操作并写入dstReg，无符号类型执行逻辑左移，有符号类型执行算术左移。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscShiftRightScalar](../../../c_api/reg/logic_compute/asc_shiftright_scalar.md)（`same_topic`）：C++ Reg ShiftRights 与 C API AscShiftRightScalar 共享标量右移语义，可用于语言接口映射。
+- [AscShiftright](../../../c_api/vector_compute/asc_shiftright.md)（`same_topic`）：AscShiftright：所选接口都执行右移，区别是 Memory/Reg/C API、逐元素 shift tensor 或 scalar shift；它们可直接核对位宽和移位量契约。 目标卡《ShiftRights》补充：根据mask对srcReg按标量scalarValue进行右移操作并写入dstReg，无符号类型执行逻辑右移，有符号类型执行算术右移。
+<!-- cannbot:related:end -->
