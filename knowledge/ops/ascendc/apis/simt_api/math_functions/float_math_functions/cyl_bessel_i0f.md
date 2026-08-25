@@ -1,0 +1,26 @@
+---
+type: API
+title: cyl_bessel_i0f
+description: 获取输入数据x的0阶常规修正圆柱贝塞尔函数的值。
+tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.math_function]
+status: stable
+sources:
+- resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/cyl_bessel_i0f.md
+  role: primary
+created_at: '2026-08-18T14:51:00Z'
+updated_at: '2026-08-18T14:51:00Z'
+platforms: ['950']
+---
+# cyl_bessel_i0f
+
+功能：获取输入数据x的0阶常规修正圆柱贝塞尔函数的值。
+
+函数原型：float cyl_bessel_i0f(float x)
+
+参数：x（输入）源操作数。
+
+返回值：输入数据的0阶常规修正圆柱贝塞尔函数的值。特殊值：0→1；inf→inf；-inf→inf；nan→nan。
+
+约束：无。需包含头文件 simt_api/math_functions.h。
+
+支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。

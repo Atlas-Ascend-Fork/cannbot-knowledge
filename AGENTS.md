@@ -13,7 +13,7 @@
 
 ## 维护本文件
 
-- 每次修改仓库定位、目录结构、机器契约、知识生产/消费流程、质量门禁或 Skill 发布关系后，都要在交付前重新检查本文件。若现有指令已过时，必须在同一变更中同步更新。
+- 每次修改仓库定位、目录结构、机器契约、知识生产/消费流程、质量门禁或 Skill 契约后，都要在交付前重新检查本文件。若现有指令已过时，必须在同一变更中同步更新。
 - 本文件只保留跨任务、可长期执行的仓库约束。一次性状态、具体 Skill 脚本命令和容易变化的实现细节应分别进入当天日志、对应 `SKILL.md` 或 `references/`，不要在这里堆积。
 
 ## 规则从哪里读取
@@ -24,8 +24,8 @@
 |---|---|
 | 字段白名单、数据类型、数组形状和基础枚举 | `governance/schemas/frontmatter.schema.json` |
 | 八个公共必选字段、路径 Profile 到 OKF `type` 的映射、Profile 字段组合 | `governance/schemas/profiles.yaml` |
-| domain、route、platform、tag 和受控附加路径值 | `governance/schemas/registries.yaml` |
-| 路径推导、跨字段/文件关系、索引、链接和 Skill 镜像关系 | `governance/contracts/` |
+| domain、route、platform、tag、受控附加路径值和固定归档本地来源 | `governance/schemas/registries.yaml` |
+| 路径推导、跨字段/文件关系、索引和链接 | `governance/contracts/` |
 
 `governance/specs/` 解释这些规则的语义和边界：修改知识卡重点阅读 `paths.md` 与 `frontmatter.md`；修改机器规则阅读 `schemas.md`；修改 Bundle/OKF 行为阅读 `okf.md`；修改 Skill 阅读 `skills.md`。目标目录的 `index.md` 提供当前内容导航。
 
@@ -36,7 +36,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 1. 先用 `knowledge-query` 搜索同一主题，阅读候选卡和来源，再明确采用 create、update、merge、split、deprecate 或 defer。不要只因标题不同就新建卡片，也不要自动覆盖已有卡片。
 2. 按 `governance/specs/paths.md` 选择 domain、technology/scope 和路径 Profile。算子知识必须区分 DSL；只有真正不依赖单一技术实现的结论才能进入 `shared/`，跨技术映射进入同领域的 `shared/interoperability/`。
 3. 按 `governance/specs/frontmatter.md` 填写字段。不要重复写可从路径推导的 domain、route、Profile 或 Concept ID，也不要为单张卡临时增加字段、标签或注册值。
-4. `draft` 的 `sources` 可以为空，非 Glossary 的 `platforms` 也可以为空，但这些必选字段不能省略；`stable` 和 `deprecated` 必须有可核验来源，非 Glossary 还必须有明确平台范围。已知 Git 托管来源必须固定到 40 位 commit。
+4. `draft` 的 `sources` 可以为空，非 Glossary 的 `platforms` 也可以为空，但这些必选字段不能省略；`stable` 和 `deprecated` 必须有可核验来源，非 Glossary 还必须有明确平台范围。已知 Git 托管来源必须固定到 40 位 commit；本地来源必须位于 Registry 登记根目录，固定归档获取脚本必须存在且可执行。
 5. `status` 表示生命周期，`verified` 表示真实发生的复核事件，两者相互独立。不要因来源固定、Lint 通过或卡片进入 `stable` 而伪造 `verified`；`replaced_by` 只允许出现在 `deprecated` 卡片中，用于指向当前替代 Concept。
 6. 正文应蒸馏可复用结论，并说明适用条件、失效边界和验证方式。不要大段复制来源，也不要把搜索摘要、聊天记录或模型记忆作为唯一技术证据。
 7. 新增、删除或移动卡片时同步受影响的每一级 `knowledge/**/index.md` 和正文链接。移动会改变 Concept ID，还必须同步所有 `replaced_by` 引用。
@@ -45,10 +45,10 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 ## 目录与导航
 
 - 文件名使用小写 `snake_case`，集合目录使用复数。五个 domain 根目录必须保留 `index.md`；只有 `ops` 和 `model` 预建注册 route，其他领域的下一层目录随首张真实知识创建。
-- Operator 和 Runbook 只能使用 Registry 中声明的附加层级；其他路径 Profile 默认直接放卡片。
+- Operator 和 Runbook 只能使用 Registry 中声明的附加层级；`concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可增加小写 `snake_case` 主题层级，其他路径 Profile 默认直接放卡片。
 - `index.md` 只存在于 `knowledge/`。每个目录都必须有一个索引，完整且无重复地列出直接子目录和直接知识卡，并为每项提供摘要；domain 根和 `ops`/`model` 预建 route 可只有 index，且不表示已有知识覆盖。
 - 只有 `knowledge/index.md` 声明 `okf_version: "0.2"`，其他索引不带 Frontmatter，所有索引均不参与知识检索。
-- 图谱只从通过 Contract 的知识卡及显式 Markdown 链接本地重建。不要手工维护关系边，也不要提交 `artifacts/` 生成物。
+- 知识卡和索引中的本地 Markdown 链接必须解析到 `knowledge/` Bundle 内的现有文件；图谱只从通过 Contract 的知识卡及显式 Markdown 链接本地重建。不要手工维护关系边，也不要提交 `artifacts/` 生成物。
 
 ## 修改治理和文档
 
@@ -64,10 +64,10 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 ## 修改 Skill
 
 - 当前只维护 `knowledge-ingest`、`knowledge-query` 和 `knowledge-lint`。除非现有三项职责无法承载且已完成架构评审，否则不要新增 Skill。
-- `.agents/skills/` 是完整规范源；配套能力仓 `plugins-community/cannbot-knowledge/skills/` 是发布镜像。只在规范源开发，完成后同步完整文件集合，禁止镜像独立演进。
+- `.agents/skills/` 是本仓 Skill 的规范源。Skill 的实现、说明、参考资料和测试都在本仓维护与验证。
 - Skill 保存生产、查询和治理知识的工作流、工具及必要的小型参考资料；可被复用的技术事实必须写入 `knowledge/`。
 - `consumer` 和 `contributor` 是安装模式，不是路径 Profile、OKF `type` 或知识分类。
-- 修改 Skill 时同步其 `SKILL.md`、`references/`、确定性实现和测试，并检查规范源与发布镜像内容一致。规范源保持 Agent 平台中立，不在 Skill 内保存 `agents/openai.yaml` 等单一客户端元数据；客户端适配由安装器或发布仓在 Skill 外处理。
+- 修改 Skill 时同步更新其 `SKILL.md`、`references/`、确定性实现和测试。规范源保持 Agent 平台中立，不在 Skill 内保存 `agents/openai.yaml` 等单一客户端元数据；客户端适配由本仓安装器在 Skill 外处理。
 
 ## 日志
 
@@ -80,6 +80,6 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 - 知识变更至少完成全库 Lint，并用一个与目标场景一致的查询验证召回；新增、删除或移动卡片不能只做单卡检查。
 - 治理规则变更必须覆盖接受与拒绝行为；Query 行为变更必须覆盖过滤、排序或失败关闭语义。
-- Skill 变更必须验证结构、正常路径、错误路径、权限边界和发布镜像一致性。
-- 所有变更在交付前运行 `bash check.sh`。涉及配套能力仓中的 Skill 镜像时，将镜像路径传给统一质量门禁并确认比较通过。
+- Skill 变更必须验证结构、正常路径、错误路径和权限边界。
+- 所有变更在交付前运行 `bash check.sh`。
 - 最终说明实际修改的文件、关键语义变化、运行过的检查及结果；未执行或失败的检查要明确说明原因。

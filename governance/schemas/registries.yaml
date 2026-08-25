@@ -63,6 +63,13 @@ scopes:
     description: 模型训练知识
     domains: [model]
 
+local_sources:
+  cann_docs_raw:
+    description: 按固定归档校验和恢复的 Ascend C 官方文档
+    root: cann-docs-raw
+    fetch_script: fetch-cann-docs.sh
+    archive_sha256: 9bc4341ac90740121a20b0ab9d30c6020784bd5969a119e77ab9402a4e6b68c4
+
 paths:
   operator_families: [math, nn, transformers]
   operator_categories: [activations, conversions, convolutions, normalizations, quantizations]
@@ -130,6 +137,150 @@ tags:
   topic.tiling:
     dimension: topic
     description: 张量切分、核间划分和片上资源适配
+  topic.compute.composite:
+    dimension: topic
+    description: 由多个计算阶段组合而成的复合计算
+  topic.compute.elementwise.activation:
+    dimension: topic
+    description: 逐元素激活计算
+  topic.compute.elementwise.arithmetic:
+    dimension: topic
+    description: 逐元素算术计算
+  topic.compute.elementwise.comparison_logic:
+    dimension: topic
+    description: 逐元素比较与逻辑计算
+  topic.compute.elementwise.math_function:
+    dimension: topic
+    description: 逐元素数学函数
+  topic.compute.elementwise.type_conversion:
+    dimension: topic
+    description: 逐元素类型转换
+  topic.compute.indexing:
+    dimension: topic
+    description: 索引、选取与散布计算
+  topic.compute.neighborhood.convolution:
+    dimension: topic
+    description: 邻域卷积计算
+  topic.compute.normalization:
+    dimension: topic
+    description: 归一化计算
+  topic.compute.ordering:
+    dimension: topic
+    description: 排序与选择计算
+  topic.compute.quantization:
+    dimension: topic
+    description: 量化与反量化计算
+  topic.compute.random_sampling:
+    dimension: topic
+    description: 随机数与采样计算
+  topic.compute.reduction:
+    dimension: topic
+    description: 归约计算
+  topic.data_movement.communication.collective_communication:
+    dimension: topic
+    description: 集合通信数据移动
+  topic.data_movement.data_copy:
+    dimension: topic
+    description: 存储层级间的数据复制
+  topic.data_movement.layout_transform:
+    dimension: topic
+    description: 数据布局转换
+  topic.data_movement.memory_access:
+    dimension: topic
+    description: 内存访问语义与约束
+  topic.implementation:
+    dimension: topic
+    description: 实现方法与工程约束
+  topic.implementation.api_layer:
+    dimension: topic
+    description: API 分层与接口职责
+  topic.implementation.api_layer.aicpu_api:
+    dimension: topic
+    description: AI CPU API
+  topic.implementation.api_layer.basic_api:
+    dimension: topic
+    description: 基础 API
+  topic.implementation.api_layer.c_api:
+    dimension: topic
+    description: C API
+  topic.implementation.api_layer.high_level_api:
+    dimension: topic
+    description: 高阶 API
+  topic.implementation.api_layer.simt_api:
+    dimension: topic
+    description: SIMT API
+  topic.implementation.api_layer.utils_api:
+    dimension: topic
+    description: 工具类 API
+  topic.implementation.atomic:
+    dimension: topic
+    description: 原子操作与原子写入
+  topic.implementation.debugging:
+    dimension: topic
+    description: 实现阶段的调试方法
+  topic.implementation.masking:
+    dimension: topic
+    description: 掩码控制与条件执行
+  topic.implementation.memory_management:
+    dimension: topic
+    description: 内存申请、复用与释放
+  topic.implementation.operator_registration:
+    dimension: topic
+    description: 算子注册与工程接入
+  topic.implementation.pipeline:
+    dimension: topic
+    description: 流水并行与阶段组织
+  topic.implementation.synchronization:
+    dimension: topic
+    description: 同步原语与执行顺序
+  topic.implementation.tiling:
+    dimension: topic
+    description: Tiling 实现接口与工程流程
+  topic.performance.analysis:
+    dimension: topic
+    description: 性能分析与瓶颈定位
+  topic.performance.optimization.optimization_overview:
+    dimension: topic
+    description: 优化方法总览
+  topic.programming_model.cooperative_groups:
+    dimension: topic
+    description: 协作组编程模型
+  topic.programming_model.development_mode.hybrid_programming:
+    dimension: topic
+    description: 混合编程开发模式
+  topic.programming_model.development_mode.tensor_programming:
+    dimension: topic
+    description: 张量编程开发模式
+  topic.programming_model.execution_model.simd:
+    dimension: topic
+    description: SIMD 执行模型
+  topic.programming_model.execution_model.simt:
+    dimension: topic
+    description: SIMT 执行模型
+  topic.programming_model.execution_unit:
+    dimension: topic
+    description: 执行单元与职责划分
+  topic.programming_model.execution_unit.cube:
+    dimension: topic
+    description: Cube 计算单元
+  topic.programming_model.execution_unit.scalar:
+    dimension: topic
+    description: Scalar 计算单元
+  topic.programming_model.execution_unit.vector:
+    dimension: topic
+    description: Vector 计算单元
+  topic.programming_model.language_extension:
+    dimension: topic
+    description: 编程语言扩展
+  topic.programming_model.system_variable:
+    dimension: topic
+    description: 编程模型系统变量
+  topic.quality.compatibility.deprecation:
+    dimension: topic
+    description: 弃用与兼容性边界
+  topic.quality.compatibility.version_migration:
+    dimension: topic
+    description: 版本迁移与兼容性变化
   paradigm.elementwise:
     dimension: paradigm
     description: 逐元素计算范式

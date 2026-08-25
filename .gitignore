@@ -6,3 +6,4 @@ artifacts/graphs/
 __pycache__/
 *.pyc
 *.tmp
+cann-docs-raw/

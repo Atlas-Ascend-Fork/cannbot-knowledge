@@ -1,0 +1,62 @@
+# 类型转换
+
+- [asc_bfloat162e1m2x2 (废弃)](asc_bfloat162e1m2x2_deprecated.md)：将bfloat16_t类型转化为fp4x2_e1m2_t类型，并支持多种舍入模式。 关于舍入模式的详细说明，请参见舍入模式。 由于源操作数与目的操作数类型位宽比为4:1，写入数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [asc_bfloat162e2m1x2 (废弃)](asc_bfloat162e2m1x2_deprecated.md)：将bfloat16_t类型转化为fp4x2_e2m1_t类型，并支持多种舍入模式。 关于舍入模式的详细说明，请参见舍入模式。 由于源操作数与目的操作数类型位宽比为4:1，写入数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [AscBfloat162Float](asc_bfloat162float.md)：将bfloat16_t类型转化为float类型，无舍入模式。 由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个VL大小的数据分为两部分，根据不同接口选择输入数据索引为奇数的位置或偶数的位置。
+- [AscBfloat162Half](asc_bfloat162half.md)：将bfloat16_t类型转化为half类型，并支持多种舍入模式、饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。
+- [AscBfloat162Int32](asc_bfloat162int32.md)：将bfloat16_t类型数据转换为int32_t，支持多种舍入模式和饱和/非饱和模式，源操作数与目的操作数位宽比为1:2。
+- [AscCeil](asc_ceil.md)：将src中的浮点数元素按照CEIL（向正无穷方向舍入）舍入模式截断到整数值，结果仍保持原浮点数据类型写入dst。未被mask筛选的元素置零。
+- [asc_e1m2x22bfloat16 (废弃)](asc_e1m2x22bfloat16_deprecated.md)：将fp4x2_e1m2_t类型转化为bfloat16_t类型。 由于源操作数与目的操作数类型位宽比为1:4，读取数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [asc_e2m1x22bfloat16 (废弃)](asc_e2m1x22bfloat16_deprecated.md)：将fp4x2_e2m1_t类型转化为bfloat16_t类型。 由于源操作数与目的操作数类型位宽比为1:4，读取数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [asc_e4m32float (废弃)](asc_e4m32float_deprecated.md)：将fp8_e4m3fn_t类型转化为float类型。 由于源操作数与目的操作数类型位宽比为1:4，读取数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [asc_e5m22float (废弃)](asc_e5m22float_deprecated.md)：将vector_fp8_e5m2_t类型的源操作数以256B为单位分为四部分，读取其中一部分元素，将其转换成vector_float类型并写入目的操作数。 - asc_e5m22float：读取第一部分。 - asc_e5m22float_v2：读取第二部分。 - asc_e5m22float...
+- [AscFloat2Bfloat16](asc_float2bfloat16.md)：根据mask将src中的float类型数据转换为bfloat16_t类型，支持多种舍入模式与饱和模式，结果写入dst，位宽比为2:1。
+- [asc_float2e4m3 (废弃)](asc_float2e4m3_deprecated.md)：将float类型转化为fp8_e4m3fn_t类型，支持RINT舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式。 由于源操作数与目的操作数类型位宽比为4:1，写入数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [asc_float2e5m2 (废弃)](asc_float2e5m2_deprecated.md)：将float类型数据转换为fp8_e5m2类型，支持RINT舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式。
+- [AscFloat2Half](asc_float2half.md)：将float类型数据转换成half类型，并支持多种舍入模式与饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。 由于源操作数与目的操作数类型位宽比为2:1，写入数据时需要将一个VL大小的数据分为两部分，根据不同接口选择数据写入索引为奇数的位置或偶数的位置。
+- [asc_float2hif8 (废弃)](asc_float2hif8_deprecated.md)：将float类型转化为hifloat8_t类型，并支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式。 由于源操作数与目的操作数类型位宽比为4:1，写入数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [AscFloat2Int16](asc_float2int16.md)：将float类型数据转化为int16_t类型，并支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。 由于源操作数与目的操作数类型位宽比为2:1，写入数据时需要将一个VL大小的数据分为两部分，根据不同接口选择数据写入索引为奇数的位置或偶数的位置。
+- [AscFloat2Int32](asc_float2int32.md)：将float类型数据转化为int32_t类型，并支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。
+- [AscFloat2Int64](asc_float2int64.md)：将float类型数据转化为int64_t类型，并支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。 由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个VL大小的数据分为两部分，根据不同接口选择输入数据索引为奇数的位置或偶数的位置。
+- [AscFloor](asc_floor.md)：将src中的浮点数元素按照FLOOR（向负无穷方向舍入）舍入模式截断到整数值，结果仍保持原浮点数据类型写入dst。未被mask筛选的元素置零。
+- [AscHalf2Bfloat16](asc_half2bfloat16.md)：将half类型数据转为bfloat16类型，并支持多种舍入模式。 关于舍入模式的详细说明，请参见舍入模式。
+- [AscHalf2Float](asc_half2float.md)：将half类型数据转换为float类型，无舍入模式。 由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个VL大小的数据分为两部分，根据不同接口选择输入数据索引为奇数的位置或偶数的位置。
+- [AscHalf2Hif8](asc_half2hif8.md)：将half类型转化为hifloat8_t类型，支持多种舍入模式和饱和/非饱和模式，源操作数与目的操作数位宽比为2:1。
+- [AscHalf2Int16](asc_half2int16.md)：将half类型数据转换为int16_t，并支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。
+- [AscHalf2Int32](asc_half2int32.md)：将half类型数据转为int32_t类型，支持多种舍入模式，源操作数与目的操作数位宽比为1:2。
+- [asc_half2int4x2 (废弃)](asc_half2int4x2_deprecated.md)：将half类型数据转为int4x2类型，并支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式。
+- [AscHalf2Int8](asc_half2int8.md)：将half类型转化为int8_t类型，并支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。 由于源操作数与目的操作数类型位宽比为2:1，写入数据时需要将一个VL大小的数据分为两部分，根据不同接口选择数据写入索引为奇数的位置或偶数的位置。
+- [AscHalf2Uint8](asc_half2uint8.md)：将half类型数据转换为uint8类型，支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。 由于源操作数与目的操作数类型位宽比为2:1，写入数据时需要将一个VL大小的数据分为两部分，根据不同接口选择数据写入索引为奇数的位置或偶数的位置。
+- [asc_hif82float (废弃)](asc_hif82float_deprecated.md)：将hifloat8_t类型数据转换为float类型。 由于源操作数与目的操作数类型位宽比为1:4，读取数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [AscHif82Half](asc_hif82half.md)：将src中hifloat8_t数据类型的元素转换为half数据类型，并将结果写入dst。 由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个VL大小的数据分为两部分，根据不同接口选择输入数据索引为奇数的位置或偶数的位置。
+- [AscInt162Float](asc_int162float.md)：将src中int16_t类型的元素转换为float类型，并将结果写入dst。 由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个VL大小的数据分为两部分，根据不同接口选择输入数据索引为奇数的位置或偶数的位置。
+- [AscInt162Half](asc_int162half.md)：将src中int16_t类型的元素转换为half类型（16位浮点数），并将结果写入dst。源操作数和目的操作数位宽相同，转换后元素数量不变。支持5种舍入模式，关于舍入模式的详细说明请参见舍入模式与饱和模式。
+- [AscInt162Int32](asc_int162int32.md)：将src中int16_t类型的元素转换为int32_t类型，并将结果写入dst。 由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个VL大小的数据分为两部分，根据不同接口选择输入数据索引为奇数的位置或偶数的位置。
+- [AscInt162Uint32](asc_int162uint32.md)：将src中int16_t类型元素转换为uint32_t类型并写入dst，源操作数与目的操作数位宽比为1:2。
+- [AscInt162Uint8](asc_int162uint8.md)：将src中int16_t类型元素转换为uint8_t类型并写入dst，支持饱和与非饱和模式，位宽比为2:1。
+- [AscInt322Float](asc_int322float.md)：根据mask将src中的int32_t类型数据转换为float类型，支持多种舍入模式，结果写入dst。
+- [AscInt322Int16](asc_int322int16.md)：根据mask将src中的int32_t类型元素转换为int16_t类型，支持饱和/非饱和模式，结果写入dst，位宽比为2:1。
+- [AscInt322Int64](asc_int322int64.md)：根据mask将src中的int32_t类型元素转换为int64_t类型，结果写入dst，位宽比为1:2。
+- [AscInt322Uint16](asc_int322uint16.md)：根据mask将src中的int32_t类型元素转换为uint16_t类型，支持饱和模式，结果写入dst，位宽比为2:1。
+- [asc_int322uint8 (废弃)](asc_int322uint8_deprecated.md)：将int32_t类型转化为uint8_t类型，支持饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。 由于源操作数与目的操作数类型位宽比为4:1，写入数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [asc_int4x22bfloat16 (废弃)](asc_int4x22bfloat16_deprecated.md)：将int4x2_t类型转化为bfloat16_t类型，无舍入模式。
+- [asc_int4x22half (废弃)](asc_int4x22half_deprecated.md)：将int4x2类型数据转换为half类型。
+- [asc_int4x22int16 (废弃)](asc_int4x22int16_deprecated.md)：将int4x2_t类型转化为int16_t类型。 由于源操作数与目的操作数类型位宽比为1:4，读取数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [AscInt642Float](asc_int642float.md)：将int64_t类型数据转换为float，支持多种舍入模式，源操作数与目的操作数位宽比为2:1。
+- [AscInt642int32](asc_int642int32.md)：将int64_t类型源操作数转换为int32_t类型，支持饱和与非饱和模式。
+- [AscInt82half](asc_int82half.md)：将int8_t类型数据转换为half类型。
+- [AscInt82int16](asc_int82int16.md)：将int8类型数据转换为int16类型。
+- [asc_int82int32 (废弃)](asc_int82int32_deprecated.md)：将int8_t类型转化为int32_t类型。 由于源操作数与目的操作数类型位宽比为1:4，读取数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [AscRint](asc_rint.md)：将浮点数按RINT（四舍六入五成双）舍入为整数值，结果保持原浮点类型。
+- [AscRound](asc_round.md)：将浮点数按ROUND（四舍五入）舍入为整数值，结果保持原浮点类型。
+- [AscTrunc](asc_trunc.md)：将浮点数按TRUNC（向零方向截断）截断为整数值，结果保持原浮点类型。
+- [AscUint162uint32](asc_uint162uint32.md)：将uint16_t类型数据转换为uint32_t类型。
+- [AscUint162uint8](asc_uint162uint8.md)：将uint16_t类型数据转换为uint8_t类型，支持饱和与非饱和模式。
+- [AscUint322int16](asc_uint322int16.md)：将uint32_t类型数据转换为int16_t类型，支持饱和与非饱和模式。
+- [AscUint322uint16](asc_uint322uint16.md)：将uint32_t类型数据转换为uint16_t类型，支持饱和与非饱和模式。
+- [asc_uint322uint8 (废弃)](asc_uint322uint8_deprecated.md)：将uint32_t类型数据转换为uint8_t类型，支持饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。 由于源操作数与目的操作数类型位宽比为4:1，写入数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [AscUint82half](asc_uint82half.md)：将uint8_t类型数据转换为half类型。
+- [AscUint82uint16](asc_uint82uint16.md)：根据mask将uint8_t类型元素转换为uint16_t类型并写入dst。
+- [asc_uint82uint32 (废弃)](asc_uint82uint32_deprecated.md)：将uint8_t类型转化为uint32_t类型。 由于源操作数与目的操作数类型位宽比为1:4，读取数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。
+- [类型转换](data_type_convert.md)：寄存器侧类型转换类接口汇总，覆盖bfloat16、half、float、int等数据类型间的相互转换及取整操作。
+- [舍入模式与饱和模式](rounding_mode.md)：在进行数据类型转换时，Ascend C API支持多种舍入模式和饱和模式。这些模式决定了当源数据类型转换为不同精度或范围的目标数据类型时，如何处理数值的舍入和溢出问题。

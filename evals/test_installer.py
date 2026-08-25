@@ -133,7 +133,7 @@ class InstallerTests(unittest.TestCase):
             self.assertFalse((project / ".cannbot/knowledge.env").exists())
             self.assertEqual(prompt.read_text(encoding="utf-8"), original)
 
-    def test_installed_config_supports_a_copied_skill_with_empty_corpus(self) -> None:
+    def test_installed_config_supports_a_copied_skill(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             result = self.run_installer(project, "agents", "consumer")
@@ -147,7 +147,7 @@ class InstallerTests(unittest.TestCase):
                     str(project / QUERY_RELATIVE),
                     "search",
                     "--query",
-                    "missing API",
+                    "definitely_absent_cannbot_probe_9f6a",
                     "--technology",
                     "ascendc",
                     "--platform",

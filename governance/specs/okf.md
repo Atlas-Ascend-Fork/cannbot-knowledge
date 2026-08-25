@@ -32,6 +32,8 @@ OKF 规定通用交换格式；CANNBot Profile 规定本仓允许哪些路径、
 
 例如 `knowledge/ops/ascendc/apis/datacopypad_gm_to_ub.md` 的 Concept ID 是 `ops/ascendc/apis/datacopypad_gm_to_ub`。
 
+本地 Markdown 链接必须解析到同一 `knowledge/` Bundle；指向 Bundle 外材料时使用 HTTP(S) 来源，不用仓库相对路径把 Concept 绑定到治理设施。
+
 `knowledge/` 本身可以按 OKF 格式浏览或分发；使用 CANNBot 的 Query、Ingest 和 Lint 时，还需要配套版本的 Skill 与仓库根目录 `governance/`。这些运行设施位于 Bundle 外，不改变 Bundle 边界。
 
 如果未来需要按领域或 DSL 单独交付，应从这个规范源生成独立发布 Bundle，并处理 shared/common 依赖；不要在当前知识树内声明互相嵌套的 Bundle。
@@ -42,7 +44,7 @@ OKF 规定通用交换格式；CANNBot Profile 规定本仓允许哪些路径、
 |---|---|
 | Concept 必须有非空 `type` | 路径 Profile 为每类知识确定唯一 `type`，Contract 检查两者一致 |
 | `title`、`description`、`tags` 可选 | 为保证检索和可读性，本仓全部设为必填 |
-| `sources[].resource` 表达 provenance | 保留字段名和语义，将资源收紧为 HTTP(S)，允许可选 `role` 扩展 |
+| `sources[].resource` 表达 provenance | 保留字段名和语义，接受 HTTP(S) 或安全的仓库相对资源，并允许可选 `role` 扩展 |
 | 生命周期使用 `draft`、`stable`、`deprecated` | 使用相同值，并要求每张卡显式填写 |
 | `verified` 记录 actor 和时间 | 支持一个或多个事件，Query 据此派生信任层级 |
 | Concept ID 是 Bundle 内路径 | Query、图谱和 `replaced_by` 使用同一种 Bundle 相对 ID |
@@ -66,6 +68,6 @@ OKF 通用 consumer 应容忍未知 `type`、扩展字段、断链和缺失索�
 
 ## 规范演进
 
-变更 OKF 核心字段、Concept ID、根索引或链接解析时，必须同时更新机器声明、Contract、三个 Skill、知识卡、Plugin 镜像和 conformance 回归。
+变更 OKF 核心字段、Concept ID、根索引或链接解析时，必须同时更新本仓机器声明、Contract、三个 Skill、知识卡和 conformance 回归。
 
 OKF 上游仍在演进。本仓只对上述固定 commit 做过审核；更新参考版本时必须重新检查 required 字段、保留文件、provenance、trust、lifecycle、link 和 consumer conformance，不能静默跟随 `main`。

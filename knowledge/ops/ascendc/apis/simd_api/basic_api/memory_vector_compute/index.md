@@ -1,0 +1,21 @@
+# Memory矢量计算
+
+- [基础算术](basic_arithmetic/index.md)：单目矢量计算接口，对输入tensor按元素取绝对值。
+- [比较与选择](compare_and_select/index.md)：逐元素比较两个tensor大小，结果为真的对应比特位为1，否则为0，支持LT、GT、GE、EQ、NE、LE六种比较模式。
+- [复合计算](composite_compute/index.md)：将src0与src1相减再求绝对值，并将计算结果写入dst。
+- [数据排布转换](data_layout_conversion/index.md)：矢量数据排布转换接口集，包含 Transpose、TransDataTo5HD 等数据布局转换接口。
+- [数据搬运](data_move/index.md)：支持UB之间的连续数据搬运，数据搬运时格式和内容保持不变。
+- [数据搬运辅助配置接口](data_move_aux_config/index.md)：矢量数据搬运辅助配置接口集，包含 NdDmaDci、SetPadValue(ISASI)、SetLoopModePara、ResetLoopModePara 等。
+- [数据填充](data_padding/index.md)：数据填充接口，每次取输入张量8个数，将每个数填充到结果张量一个DataBlock（32字节）中。
+- [data rearrange](data_rearrange/index.md)：Memory矢量计算ISASI数据重排接口索引页，包含Interleave与DeInterleave。
+- [逻辑计算](logical_compute/index.md)：对LocalTensor中的元素做按位与运算，支持整个tensor、前n个数据连续计算和高维切分计算三种调用方式。
+- [掩码操作](mask_operations/index.md)：Memory矢量计算掩码操作接口索引页，包含SetMaskCount、SetMaskNorm、SetVectorMask与ResetMask。
+- [Memory矢量计算](memory_vector_compute.md)：Memory矢量计算API总览，涵盖Vector逻辑架构、SIMD计算说明及算术、逻辑、转换、归约、搬运等子模块。
+- [归约计算](reduction_compute/index.md)：概述 Tensor 归约计算及 ReduceSum、ReduceMax、ReduceMin、ReducePairElem 等接口能力。
+- [归约计算辅助配置接口](reduction_compute_aux_config/index.md)：获取ReduceRepeat或ReduceMax/ReduceMin计算的最值及索引，结果以全局变量形式存储。
+- [离散与聚合](scatter_gather/index.md)：根据基地址和地址偏移张量确定索引，将输入张量中对应元素收集到结果张量中，支持前n个数据和高维切分计算。
+- [SIMD计算说明](simd_compute/index.md)：连续计算API，支持Tensor前n个数据计算。针对源操作数的连续n个数据进行计算并连续写入目的操作数，解决一维Tensor的连续计算问题。
+- [sort and merge](sort_and_merge/index.md)：与MrgSort接口配合使用，在队列耗尽停止后获取4个队列已处理的Region Proposal个数。
+- [类型转换](type_conversion/index.md)：根据源操作数和目的操作数的数据类型进行精度转换，支持多种舍入模式。
+- [类型转换辅助配置接口](type_conversion_aux_config/index.md)：设置DEQSCALE寄存器的值，用于Vector计算单元上的量化计算，支持不同场景的量化参数配置。
+- [Vector逻辑架构](vector_logical_arch/index.md)：Vector计算单元专用于执行向量计算。如下图所示，高亮部分展示了Vector计算单元及其关联的存储单元。

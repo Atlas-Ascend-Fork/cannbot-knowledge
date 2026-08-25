@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the signed retrieval smoke cases against knowledge-query."""
+"""Run auditable retrieval smoke cases against knowledge-query."""
 
 from __future__ import annotations
 
@@ -22,8 +22,8 @@ CASES = ROOT / "evals/retrieval_cases.yaml"
 
 
 def build_synthetic_root(data: dict[str, object], target: Path) -> None:
-    shutil.copytree(ROOT / "knowledge", target / "knowledge")
     shutil.copytree(ROOT / "governance", target / "governance")
+    (target / "knowledge").mkdir(parents=True)
     for fixture in data.get("synthetic_cards", []):
         if not isinstance(fixture, dict):
             raise ValueError("synthetic_cards entries must be objects")

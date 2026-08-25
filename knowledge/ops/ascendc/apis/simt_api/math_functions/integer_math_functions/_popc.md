@@ -1,0 +1,21 @@
+---
+type: API
+title: __popc（整数数学函数）
+description: 统计输入数据从二进制的高位到低位比特位为1的数量。
+tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.arithmetic]
+status: stable
+sources:
+- resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__popc.md
+  role: primary
+created_at: '2026-08-18T14:51:00Z'
+updated_at: '2026-08-21T07:32:01Z'
+platforms: ['950']
+---
+
+# __popc
+
+位计数函数（population count）。统计输入数据二进制中比特位为 1 的数量。
+
+函数原型（重载）：int __popc(unsigned int x)、int __popc(unsigned long long x)、int __popc(unsigned long x)
+
+参数 x 为源操作数。返回二进制中 1 的位数。仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/device_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。

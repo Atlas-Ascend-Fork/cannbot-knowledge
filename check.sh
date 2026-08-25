@@ -4,13 +4,10 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$repo_root"
 
-mirror_args=()
-if [[ -n "${CANNBOT_SKILL_MIRROR:-}" ]]; then
-  mirror_args=(--skill-mirror "$CANNBOT_SKILL_MIRROR")
-fi
-
 python3 .agents/skills/knowledge-lint/scripts/knowledge_lint.py \
-  --knowledge-root . "${mirror_args[@]}"
+  --knowledge-root . --strict-navigation
+python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py \
+  --knowledge-root . sync-indexes --check
 python3 .agents/skills/knowledge-query/scripts/knowledge_index.py \
   --knowledge-root . build
 python3 .agents/skills/knowledge-query/scripts/knowledge_index.py \
@@ -19,8 +16,9 @@ python3 evals/run_retrieval.py
 python3 -m unittest discover -s evals -p 'test_*.py'
 python3 -m unittest discover -s .agents/skills/knowledge-ingest/tests -p 'test_*.py'
 ruff check .agents/skills governance evals
-bash -n init.sh check.sh
-python3 .agents/skills/knowledge-ingest/scripts/build_graph.py --knowledge-root .
+bash -n init.sh check.sh fetch-cann-docs.sh
+python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py \
+  --knowledge-root . build-graph
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   git diff --check

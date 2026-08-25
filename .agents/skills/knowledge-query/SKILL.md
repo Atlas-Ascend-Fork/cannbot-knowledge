@@ -28,7 +28,7 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 
 单 API、错误码或窄概念问答使用轻量路径：一条高信息密度 query，读取少量候选，报告结论、证据、冲突/缺口和必要验证。
 
-复杂实现、故障、性能优化、多 decision 或交接任务按[查询与证据工作流](references/query-workflows.md)执行。每个 decision 单独查询并保存不可覆盖 receipt；冻结 state 后验证并生成 ready receipt，工程验证结束后再校验 outcome manifest。
+复杂实现、故障、性能优化、多 decision 或交接任务按[查询与证据工作流](references/query-workflows.md)执行。每个 decision 单独查询并保存不可覆盖 receipt；冻结 state 后以完全相同的目标平台重放每条查询并生成 ready receipt，工程验证结束后再校验 outcome manifest。
 
 按问题侧面选择内部模式：[算子实现](modes/operator-implementation/MODE.md)、[API 选择](modes/api-selection/MODE.md)、[故障诊断](modes/failure-diagnosis/MODE.md)、[性能优化](modes/performance-optimization/MODE.md)或[技术问答](modes/operator-qa/MODE.md)。这些是 Query 的渐进式参考，不是额外 Skill。
 
@@ -41,6 +41,7 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 - shared 只在显式 `--include-shared` 时附加到目标 technology；其他 DSL 不因关键词相似自动成为证据。
 - 显式 CANN 版本只命中声明该版本的卡；字段缺失不表示兼容任意版本。
 - 零命中只表示当前条件下未召回，不证明能力不存在。
+- `literal` 优先精确标题，再依次考虑标题片段、摘要和正文；`cannbot:related` 管理区块不参与检索。
 - 读取命中的 `local_path`，核对正文、平台、版本、失效边界和完整 sources；需要强证据时继续打开固定来源。
 
 保持只读。除调用方明确指定的新 search/ready/outcome receipt 外，不写索引、知识卡或仓库状态。

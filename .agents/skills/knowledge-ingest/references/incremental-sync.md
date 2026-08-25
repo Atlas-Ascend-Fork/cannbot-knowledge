@@ -1,6 +1,6 @@
 # 增量同步
 
-适用于已接入上游在同一 ref 上从旧 commit 推进到新 commit。首次接入走新来源流程，ref 或大版本切换走版本升级流程。
+仅适用于已接入 Git 上游在同一 ref 上从旧 commit 推进到新 commit。首次接入走新来源流程，ref 或大版本切换走版本升级流程。固定归档不走本流程；archive SHA-256 发生变化时由当前 producer 明确 defer。
 
 ## 流程
 

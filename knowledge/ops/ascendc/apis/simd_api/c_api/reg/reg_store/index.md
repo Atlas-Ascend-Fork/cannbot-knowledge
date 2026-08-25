@@ -1,0 +1,28 @@
+# reg数据搬出
+
+- [AscScatter](asc_scatter.md)：根据索引值index将源操作数src中的元素分散存储到目的操作数dst中。
+- [asc_scatter](asc_scatter_deprecated.md)：该接口已废弃。请使用asc_scatter实现此功能。 该指令会根据索引值index将源操作数src中的元素分散到目的操作数dst中。分散过程如下图所示： !scatter功能说明
+- [AscSqueezeAndStoreunalign](asc_squeeze_and_storeunalign.md)：从矢量数据寄存器中筛选有效元素后按非32B对齐地址连续搬出到UB，通过AR寄存器累加偏移实现自动地址管理。
+- [AscSqueezeAndStoreunalignFinalize](asc_squeeze_and_storeunalign_finalize.md)：配合asc_squeeze_and_storeunalign接口，将暂存于非对齐寄存器的尾块数据搬出到UB，完成非对齐搬出收尾。
+- [AscStore](asc_store.md)：从矢量数据寄存器搬出数据到UB，不区分是否对齐，对齐场景推荐使用asc_storealign接口。
+- [AscStorealign](asc_storealign.md)：将矢量数据寄存器或掩码寄存器中的数据以32B对齐方式搬出到UB，支持连续、偏移、非连续等多种搬出模式。
+- [AscStorealign1st](asc_storealign_1st.md)：从矢量数据寄存器搬出第一个元素到UB，忽略mask，支持立即数或地址寄存器偏移。
+- [AscStorealign1stPostupdate](asc_storealign_1st_postupdate.md)：从矢量数据寄存器搬出第一个元素到UB，忽略mask，接口调用后自动更新目的操作数地址。
+- [AscStorealignIntlv](asc_storealign_intlv.md)：从两个矢量数据寄存器交错搬出元素到UB，将src0、src1的元素交错存储于dst中，存储长度为VL*2。
+- [AscStorealignPack](asc_storealign_pack.md)：从矢量数据寄存器压缩搬出到UB，根据mask将src中有效元素的低半部分bit数据连续存储于dst中。
+- [AscStorealignPackPostupdate](asc_storealign_pack_postupdate.md)：从矢量或掩码寄存器压缩搬出到UB，根据mask将有效元素低半部分bit数据连续存储于dst，调用后自动更新目的地址。
+- [AscStoreAlignPackQuarter](asc_storealign_pack_quarter.md)：从矢量数据寄存器压缩搬出到UB，根据mask将src有效元素的低8bits数据连续存储于dst_align32b中，支持b32类型。支持Post Update模式，调用后自动更新目的操作数地址。
+- [AscStoreAlignPackQuarterPostupdate](asc_storealign_pack_quarter_postupdate.md)：从矢量数据寄存器压缩搬出到UB，根据mask将src有效元素的低8bits数据连续存储于dst_align32b中，支持b32类型，调用后自动更新目的操作数地址。
+- [AscStoreAlignPostupdate](asc_storealign_postupdate.md)：将矢量数据寄存器或掩码寄存器中的数据连续对齐搬出到UB，启用Post Update模式在搬出后自动累加目的地址指针，便于硬件循环内连续调用。
+- [AscStoreAlign](asc_storealign_v1_deprecated.md)：已废弃接口。从矢量数据寄存器或掩码寄存器连续对齐搬出到UB，支持NORM、FIRST、PACK、PACKV2、INTLV等多种搬出模式，不传入偏移，由用户自行更新目的地址。
+- [AscStoreAlign](asc_storealign_v2_deprecated.md)：已废弃接口。从矢量数据寄存器或掩码寄存器连续对齐搬出到UB，支持NORM、FIRST、PACK、PACKV2、INTLV等多种搬出模式，通过地址寄存器传入偏移。
+- [AscStoreAlign](asc_storealign_v3_deprecated.md)：已废弃接口。从矢量数据寄存器或掩码寄存器连续对齐搬出到UB，支持NORM、FIRST、PACK、PACKV2、INTLV等多种搬出模式，通过int32_t传入偏移。
+- [AscStoreAlign](asc_storealign_v4_deprecated.md)：已废弃接口。从矢量数据寄存器或掩码寄存器连续对齐搬出到UB，支持NORM、FIRST、PACK、PACKV2等多种搬出模式，通过int32_t传入偏移并由硬件自动Post Update目的地址。
+- [asc_storealign (废弃)](asc_storealign_v5_deprecated.md)：该接口已废弃，请使用asc_storealign_postupdate实现此功能。 reg计算数据搬运接口，适用于从矢量数据寄存器连续对齐搬出到UB的场景，接口使用repeat stride模式。
+- [AscStoreUnalign](asc_storeunalign.md)：从矢量数据寄存器连续非32B对齐搬出到UB，使用uint32_t作为存储偏移量，不改变源操作数地址，每次循环需用户手动更新目的地址。
+- [AscStoreUnalignPost](asc_storeunalign_post.md)：从矢量数据寄存器连续非32B对齐搬出到UB的尾块场景，将非对齐寄存器中暂存的尾块搬出到UB，需在asc_storeunalign或asc_storeunalign_postupdate之后调用。
+- [AscStoreUnalignPost](asc_storeunalign_post_deprecated.md)：已废弃接口。从矢量数据寄存器连续非32B对齐搬出到UB的尾块场景，不指定偏移量，将非对齐寄存器中暂存的尾块搬出到UB。请使用asc_squeeze_and_storeunalign_finalize替代。
+- [asc_storeunalign_post_postupdate](asc_storeunalign_post_postupdate.md)：从矢量数据寄存器连续非32B对齐搬出到UB的尾块场景，每调用一次自动更新目的地址，将非对齐寄存器中暂存的尾块搬出到UB，需在asc_storeunalign_postupdate之后调用。
+- [AscStoreUnalignPostupdate](asc_storeunalign_postupdate.md)：从矢量数据寄存器或掩码寄存器连续非32B对齐搬出到UB，每调用一次自动更新目的地址，支持uint32_t或addr_reg作为存储偏移量。
+- [asc_storeunalign_postupdate](asc_storeunalign_postupdate_deprecated.md)：该接口已废弃。请使用asc_squeeze_and_storeunalign实现此功能。 reg计算数据搬运接口，适用于从矢量数据寄存器或掩码寄存器连续非32B对齐的起始地址连续搬出到UB的场景。 该接口每调用一次接口会更新目的操作数在UB上的地址。
+- [reg数据搬出](reg_store.md)：寄存器侧数据搬出类接口汇总，提供scatter、store、storealign等从矢量数据寄存器到UB的搬运能力。

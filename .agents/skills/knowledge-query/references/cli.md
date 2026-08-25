@@ -15,7 +15,7 @@ python3 <skill-dir>/scripts/knowledge_index.py --knowledge-root <repo> build
 python3 <skill-dir>/scripts/knowledge_index.py --knowledge-root <repo> verify --level full
 ```
 
-Query 只读索引；普通调用执行 quick stale check，写 search receipt 和校验 retrieval state 时执行完整内容指纹检查。缺失、损坏、卡片集合/时间戳变化或治理指纹变化都失败关闭，不退回逐文件搜索。
+Query 只读索引；索引构建通过统一 Contract 拒绝重复 YAML key 等不合法卡片。普通调用执行 quick stale check，写 search receipt 和校验 retrieval state 时还会把 SQLite document/posting 行逐项绑定到知识卡，并继续使用已校验的同一只读连接。缺失、损坏、卡片集合/时间戳变化、治理指纹变化或查询表不一致都失败关闭，不退回逐文件搜索。
 
 ## Discover
 
@@ -46,12 +46,12 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 - domain、route、platform、tag 和跨技术端点必须注册；Profile 必须受支持。
 - 普通搜索至少传一个 platform。`--technology platforms` 可在映射产品平台时不传；未定位 draft 使用 `--include-unlocated --status draft|all`，且不能同时传 platform。
 - `--include-shared` 只与具体 technology 一起使用，并只附加同领域 shared。
-- `text` 对 title、description、tags/aliases 和正文加权；`literal` 要求完整查询串出现在这些字段中。
+- `text` 对 title、description、tags/aliases 和正文加权；`literal` 要求完整查询串出现在这些字段中，并按精确标题、标题片段、摘要、正文的顺序降权。由 `cannbot:related` 标记的管理型导航区块不进入索引。
 - 默认 status 为 `stable`，limit 必须大于零。
 
 ### Receipt
 
-`--receipt` 原子写入 schema、完整请求、canonical 请求指纹、知识仓状态、索引版本、语料/治理指纹、命中卡片指纹和原始结果。目标必须不存在。审计流程的 `--decision` 使用稳定 ID，并把文件放在调用方实验目录。State 校验会重新计算请求指纹，核对 receipt/result/request/index/hits 一致性；ready receipt 绑定每个 search receipt 的文件 SHA-256，outcome 校验会再次确认这些文件未变化。
+`--receipt` 原子写入 schema、完整请求、canonical 请求指纹、知识仓状态、索引版本、语料/治理指纹、命中卡片指纹和原始结果。目标必须不存在。审计流程的 `--decision` 使用稳定 ID，并把文件放在调用方实验目录。State 校验会重新计算请求指纹，要求每条 receipt 的平台集合与 state 目标完全相同，核对完整当前索引 provenance，并按原请求重放过滤、评分、排序和命中；ready receipt 绑定每个 search receipt 的文件 SHA-256，outcome 校验会再次确认这些文件未变化。
 
 每个命中包含 rank、score、Concept ID、绝对 `local_path`、正文行数、OKF type、Profile、trust tier、范围、生命周期、卡片 SHA-256 及最多两个 source。顶层 `results` 是规范字段，`hits` 是迁移兼容别名。退出码 `0` 包括零命中；非法过滤、索引陈旧、知识根不可用或 receipt 已存在时退出码为 `2`。
 

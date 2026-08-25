@@ -1,0 +1,9 @@
+# 矩阵搬出关键特性说明
+
+- [BatchCopy](batch_copy.md)：L0C Buffer到GM或UB搬运在矩阵最外层增加Batch维度的能力，用于一次完成多块矩阵计算结果的搬运。
+- [矩阵搬出关键特性说明](cube_store_key_features.md)：矩阵搬出关键特性说明，包含随路量化、随路 Relu、F32 Channel Split、Int8 Channel Merge、batch 搬运等。
+- [F32 Channel Split](f32_channel_split.md)：F32 Channel Split是矩阵计算结果搬出过程中的通道拆分能力。当源类型和目的类型均为float、目的格式为NZ，且CopyL0C2GMTrait::enableChannelSplit或CopyL0C2UBTrait::enableChannelSplit设置为true时，硬件会将...
+- [Int8 Channel Merge](int8_channel_merge.md)：Channel Merge是矩阵计算结果搬出过程中的硬件自动合并能力，仅在目的格式NZ的输出场景生效，用户无需也不能通过参数手动配置。
+- [L0C Buffer到Unified Buffer双目标模式](l0c_to_ub_dual_dst.md)：L0C Buffer到Unified Buffer双目标模式用于将同一AI Core内L0C Buffer的矩阵结果拆分后，同时写入两个Vector Core各自的Unified Buffer。一个AI Core内包含一个Cube Core和两个Vector Core，启用双目标模式后，源矩阵...
+- [基础API随路量化](quant_pre.md)：随路量化是矩阵计算结果从L0C Buffer搬出到Global Memory或Unified Buffer过程中的数据转换能力。L0C Buffer到Global Memory/Unified Buffer搬运根据是否传入quant参数自动选择不量化、直接cast、scalar量化或tenso...
+- [随路Relu](relu_pre.md)：enableRelu默认值为false，表示不使能随路Relu。设置为true时，搬出过程中对输出数据执行Normal Relu激活。

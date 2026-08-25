@@ -13,7 +13,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from retrieval.index import load_cards, open_index  # noqa: E402
+from retrieval.index import load_cards, load_contract, open_index  # noqa: E402
 from retrieval.root import (  # noqa: E402
     atomic_create_json,
     canonical_json_sha256,
@@ -21,6 +21,7 @@ from retrieval.root import (  # noqa: E402
     resolve_root,
     sha256_file,
 )
+from knowledge_query import search_args_from_request, search_payload  # noqa: E402
 
 
 sys.dont_write_bytecode = True
@@ -30,18 +31,34 @@ READY_SCHEMA = "cannbot-retrieval-ready.v1"
 RECEIPT_SCHEMA = "cannbot-knowledge-search.v2"
 SEARCH_SCHEMA = "knowledge-search.v4"
 DECISION_STATUSES = {"covered", "conflicting", "insufficient", "gap"}
+CURRENT_INDEX_FIELDS = (
+    "schema_version",
+    "index_version",
+    "content_fingerprint",
+    "governance_fingerprint",
+    "card_count",
+    "posting_count",
+)
+REPLAY_FIELDS = (
+    "schema_version",
+    "request_sha256",
+    "request",
+    "query",
+    "match",
+    "filters",
+    "limit",
+    "count",
+    "results",
+    "hits",
+)
 
 
 class Audit:
     def __init__(self) -> None:
         self.errors: list[dict[str, str]] = []
-        self.warnings: list[dict[str, str]] = []
 
     def error(self, code: str, location: str, message: str) -> None:
         self.errors.append({"code": code, "location": location, "message": message})
-
-    def warning(self, code: str, location: str, message: str) -> None:
-        self.warnings.append({"code": code, "location": location, "message": message})
 
 
 def read_json(path: Path, audit: Audit, location: str) -> dict[str, Any]:
@@ -89,10 +106,8 @@ def validate_state(
     audit = Audit()
     state = read_json(state_path, audit, "state")
     connection, index_metadata = open_index(root, full=True)
-    try:
-        cards = {card.path: card for card in load_cards(connection)}
-    finally:
-        connection.close()
+    indexed_cards = load_cards(connection)
+    cards = {card.path: card for card in indexed_cards}
     if state.get("schema_version") != STATE_SCHEMA:
         audit.error("state.schema", "state.schema_version", f"expected {STATE_SCHEMA}")
 
@@ -102,7 +117,8 @@ def validate_state(
         target = {}
     string(target.get("entity"), audit, "state.target.entity")
     platforms = string_list(target.get("platforms"), audit, "state.target.platforms")
-    known_platforms = set(load_contract(root).platforms)
+    contract, _ = load_contract(root)
+    known_platforms = set(contract.platforms)
     unknown = sorted(set(platforms) - known_platforms)
     if unknown:
         audit.error(
@@ -169,6 +185,17 @@ def validate_state(
                     receipt_location,
                     "receipt request.decision must equal the decision id",
                 )
+            search_args = None
+            try:
+                search_args = search_args_from_request(request)
+            except ValueError as exc:
+                audit.error("receipt.request_shape", receipt_location + ".request", str(exc))
+            if search_args is not None and set(search_args.platform) != set(platforms):
+                audit.error(
+                    "receipt.platform",
+                    receipt_location + ".request.platforms",
+                    "receipt target platforms must equal state.target.platforms",
+                )
             if receipt.get("knowledge_root") != str(root):
                 audit.error(
                     "receipt.root",
@@ -179,13 +206,21 @@ def validate_state(
             if not isinstance(index_value, dict):
                 audit.error("receipt.index", receipt_location, "receipt index provenance is missing")
             else:
-                for field in ("content_fingerprint", "governance_fingerprint"):
+                for field in CURRENT_INDEX_FIELDS:
                     if index_value.get(field) != index_metadata.get(field):
                         audit.error(
                             "receipt.stale",
                             receipt_location + ".index." + field,
                             "receipt does not match the current prepared index",
                         )
+                if index_value.get("built_repository_state") != index_metadata.get(
+                    "repository_state"
+                ):
+                    audit.error(
+                        "receipt.stale",
+                        receipt_location + ".index.built_repository_state",
+                        "receipt does not match the index build repository state",
+                    )
             result = receipt.get("result")
             if not isinstance(result, dict):
                 audit.error("receipt.result", receipt_location + ".result", "must be an object")
@@ -231,6 +266,26 @@ def validate_state(
                     receipt_location + ".result.count",
                     "does not match the number of results",
                 )
+            if search_args is not None:
+                try:
+                    replayed = search_payload(
+                        root,
+                        indexed_cards,
+                        index_metadata,
+                        connection,
+                        search_args,
+                        include_current_repository=False,
+                    )
+                except ValueError as exc:
+                    audit.error("receipt.replay", receipt_location + ".result", str(exc))
+                else:
+                    for field in REPLAY_FIELDS:
+                        if result.get(field) != replayed.get(field):
+                            audit.error(
+                                "receipt.replay",
+                                receipt_location + ".result." + field,
+                                "does not match a deterministic replay against the current index",
+                            )
             for hit in results:
                 if isinstance(hit, dict) and isinstance(hit.get("path"), str):
                     receipt_evidence[hit["path"]] = str(hit.get("card_sha256", ""))
@@ -286,22 +341,14 @@ def validate_state(
         "state_sha256": state_sha256,
         "decision_statuses": decision_statuses,
         "index": {
-            "content_fingerprint": index_metadata["content_fingerprint"],
-            "governance_fingerprint": index_metadata["governance_fingerprint"],
-            "index_version": index_metadata["index_version"],
+            **{field: index_metadata[field] for field in CURRENT_INDEX_FIELDS},
+            "built_repository_state": index_metadata.get("repository_state"),
         },
         "review_sha256": sha256_file(review_path) if review_path and review_path.is_file() else None,
         "receipt_sha256s": dict(sorted(receipt_sha256s.items())),
     }
+    connection.close()
     return state, details, audit, ready
-
-
-def load_contract(root: Path):
-    if str(root) not in sys.path:
-        sys.path.insert(0, str(root))
-    from governance.contracts.knowledge import Contract
-
-    return Contract(root)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -345,7 +392,7 @@ def main(argv: list[str] | None = None) -> int:
             "ok": not audit.errors,
             "ready": ready and not audit.errors,
             "errors": audit.errors,
-            "warnings": audit.warnings,
+            "warnings": [],
             **details,
         }
         print(json.dumps(payload, ensure_ascii=False, indent=2))

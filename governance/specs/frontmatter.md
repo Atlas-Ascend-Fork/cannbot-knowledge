@@ -42,6 +42,7 @@ platforms: []
 | `concepts` | `Concept` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
 | `apis` | `API` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
 | `examples` | `Example` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
+| `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
 | `operators` | `Operator` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
 | `optimizations` | `Optimization` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
 | `runbooks` | `Runbook` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
@@ -86,12 +87,21 @@ sources:
     role: primary
 ```
 
+仓库也可以引用由固定校验和获取、但不提交到 Git 的本地官方资料：
+
+```yaml
+sources:
+  - resource: cann-docs-raw/asc-devkit/docs/zh/api/AI-CPU-API/assert.md
+    role: primary
+```
+
 机器约束：
 
 - `stable` 和 `deprecated` 至少有一项来源，只有 `draft` 可以使用 `sources: []`；
-- `resource` 当前只接受 HTTP(S)；
-- GitCode、GitHub、Gitee 和 GitLab 上的仓库来源必须使用 `blob`、`tree` 或 `raw` 路径，并固定到 40 位 commit；已知 raw 域名同样必须固定到 commit，分支名和裸仓库首页不通过；
-- Lint 只检查形状和固定格式，不联网，也不判断来源是否支持结论。
+- `resource` 接受 HTTP(S) URL 或已登记的本地来源；本地路径必须位于 Registry 登记的顶层根目录中，不得是绝对路径、包含 `..`、反斜杠、查询参数或 fragment；
+- GitCode、GitHub、Gitee、GitLab、Bitbucket 和 Codeberg 上的仓库来源必须使用各自可识别的文件或树路径，并固定到 40 位 commit；已知 raw 域名同样必须固定到 commit，分支名和裸仓库首页不通过；
+- 本地来源必须由仓库记录的可复现获取流程提供；全库 Lint 要求获取脚本存在且可执行。当前 `cann-docs-raw/` 由 `fetch-cann-docs.sh` 按固定归档 URL 和 SHA-256 恢复，并保持 Git 忽略；本地根存在时，Lint 还检查 `.complete` 中的归档摘要与被引用文件；
+- Lint 不联网，也不判断来源是否支持结论；本地根尚未恢复时只检查注册路径形状。
 
 | `role` | 用途 |
 |---|---|
@@ -112,7 +122,7 @@ sources:
 | 维度 | 要求 | 示例含义 |
 |---|---|---|
 | `task.*` | 至少一个 | 设计、实现、调试、优化、测试、迁移、事实查询 |
-| `topic.*` | 至少一个 | Tiling、数据搬运、内存、精度、编译、架构 |
+| `topic.*` | 至少一个 | Tiling、数据搬运、内存、精度、编译、架构；可使用 Registry 中更精确的多段层级 ID |
 | `paradigm.*` | 可选 | 卡片明确讨论的计算范式 |
 
 每张卡选择 2–6 个来自 Registry 的最小充分标签集合，例如：

@@ -1,0 +1,30 @@
+# sys var
+
+- [asc_get_ar_spr (废弃)](asc_get_ar_spr_deprecated.md)：该接口已废弃，请使用asc_get_squeeze_status实现此功能。 读取指定特殊寄存器的值。
+- [AscGetArchVer](asc_get_arch_ver.md)：获取当前AI处理器架构版本号。
+- [AscGetBlockIdx](asc_get_block_idx.md)：获取当前运行核的索引。
+- [AscGetBlockNum](asc_get_block_num.md)：获取当前任务配置的核数，用于多核逻辑控制。
+- [asc_get_core_id](asc_get_core_id.md)：获取当前核的编号。
+- [AscGetCtrl](asc_get_ctrl.md)：读取CTRL寄存器特定比特位上的值。
+- [AscGetFftsBaseAddr](asc_get_ffts_base_addr.md)：获取核间同步寄存器的基地址。
+- [AscGetPhyBufAddr](asc_get_phy_buf_addr.md)：基于偏移量获取片上实际物理地址。
+- [AscGetPhyStackBase](asc_get_phy_stack_base.md)：获取物理堆栈基地址。
+- [指令发射队列空闲槽位查询](asc_get_pipe_idle_slot_count.md)：本接口为试验接口，在后续版本中可能会调整或改进，不保证后续兼容性
+- [AscGetProgramCounter](asc_get_program_counter.md)：获取程序计数器的指针，用于记录当前程序执行位置。
+- [AscGetSmmuTagVersion](asc_get_smmu_tag_version.md)：获取SMMU版本信息。
+- [AscGetSqueezeStatus](asc_get_squeeze_status.md)：读取squeeze操作后保存的有效数据长度值。
+- [asc_get_status](asc_get_status.md)：获取当前核的状态寄存器信息，返回int64_t类型的状态值，各比特位反映浮点溢出、下溢、NaN/INF输入及CUBE累加溢出等异常情况，供开发者进行错误检测。
+- [AscGetSubBlockId](asc_get_sub_block_id.md)：获取AI Core上Vector核的ID。
+- [AscGetSubBlockNum](asc_get_sub_block_num.md)：分离模式下获取一个AI Core上Cube或Vector核的数量。
+- [AscGetSysVirtualBase](asc_get_sys_virtual_base.md)：获取系统虚拟基地址。
+- [AscGetSystemCycle](asc_get_system_cycle.md)：读取当前系统cycle计数器，用于性能统计与耗时测量。
+- [AscGetVfLen](asc_get_vf_len.md)：获取Tensor位宽VL的大小。
+- [AscSetCtrl](asc_set_ctrl.md)：对CTRL寄存器特定比特位进行设置。
+- [AscSetFftsBaseAddr](asc_set_ffts_base_addr.md)：设置核间同步寄存器的基地址。
+- [AscSetGm2l1NzPara](asc_set_gm2l1_nz_para.md)：设置MTE2_NZ_PARA寄存器值，用于DN2NZ搬运前配置参数。
+- [AscSetL0c2gmChannelPara](asc_set_l0c2gm_channel_para.md)：设置通道步长寄存器比特位，配合L0C搬运接口使用。
+- [AscSetL0c2gmQuantPost](asc_set_l0c2gm_quant_post.md)：设置QUANT_POST寄存器值，存储Fixpipe后处理阶段量化信息。
+- [AscSetL0c2gmReluAlpha](asc_set_l0c2gm_relu_alpha.md)：设置RELU_ALPHA寄存器值，存储Scalar ReLU使用的alpha值。
+- [AscSetL12l0PaddingVal](asc_set_l12l0_padding_val.md)：设置PADDING_B寄存器值，存储搬运过程中的padding值。
+- [AscSetL3dRptB](asc_set_l3d_rpt_b.md)：设置asc_copy_l12l0a/l0b的2D格式搬运repeat参数。
+- [系统变量](system_variables.md)：SIMD C API系统变量类接口汇总，提供架构版本、核编号、循环计数器、CTRL寄存器等系统变量的查询与设置。

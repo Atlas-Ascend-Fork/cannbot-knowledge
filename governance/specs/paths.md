@@ -7,8 +7,8 @@
 知识卡只采用两种路径：
 
 ```text
-knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
-knowledge/<domain>/<direct-profile>/<slug>.md
+knowledge/<domain>/<technology-or-scope>/<profile>/[<section>/...]<slug>.md
+knowledge/<domain>/<direct-profile>/[<section>/...]<slug>.md
 ```
 
 第一种经过 technology 或 scope 路由；第二种只用于 Registry 明确允许由领域直接承载的 Profile。算子知识必须声明 DSL 或使用 `shared`，不能省略这一层。
@@ -43,6 +43,7 @@ Registry 允许某种组合，只表示工具能够识别它，不表示仓库�
 | `concepts/` | 稳定概念、职责边界、执行模型、编程模型 | 单个 API 参数表、故障处置步骤 |
 | `apis/` | 接口签名、语义、约束和适用范围 | 完整算子实现 |
 | `examples/` | 能说明输入、输出和验证方式的最小样例 | 缺少上下文的代码片段 |
+| `guides/` | 围绕一个开发任务组织的原理、步骤、约束和验证入口 | 单个 API 参数表或按症状处置的 Runbook |
 | `operators/` | 完整算子的语义、设计、Tiling、Kernel 和工程职责 | 跨算子的通用原理 |
 | `optimizations/` | 可复用的优化方法、触发条件、收益来源和失效边界 | 未归因的单次性能数据 |
 | `runbooks/` | 按症状或任务组织的诊断、验证和处置步骤 | 只有背景概念、没有操作闭环的说明 |
@@ -53,9 +54,11 @@ Registry 允许某种组合，只表示工具能够识别它，不表示仓库�
 
 不单设 `patterns/`：原理进入 `concepts/`，完整算子进入 `operators/`，性能方法进入 `optimizations/`，处置步骤进入 `runbooks/`。版本差异由适用范围和生命周期表达，不建立 `migrations/` Profile。
 
-## 受控附加层级
+## Profile 附加层级
 
-通常 Profile 目录下直接放卡片。只有 Operator 和 Runbook 可以增加受控层级。
+`concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可以按真实主题增加任意深度的小写 `snake_case` section，用来保持大型官方参考集可浏览。section 只是导航，不是新的 domain、route 或 Profile，也不进入 Frontmatter；每一级都必须有完整的 `index.md`。禁止使用来源批次、日期或发布版本作为 section。
+
+Operator 和 Runbook 的附加层级仍是受控值：
 
 ```text
 knowledge/ops/<technology>/operators/<family>/<category>/<operator>.md
@@ -84,6 +87,8 @@ knowledge/runtime/runbooks/<area>/<runbook>.md
 ```text
 knowledge/common/platforms/concepts/ai_core_execution_architecture.md
 knowledge/ops/ascendc/operators/nn/activations/gelu.md
+knowledge/ops/ascendc/apis/basic_api/data_copy/datacopy.md
+knowledge/ops/ascendc/guides/programming_guide/kernel_call.md
 knowledge/ops/triton/runbooks/compilation/missing_symbol.md
 knowledge/ops/shared/interoperability/triton_to_ascendc_tiling.md
 knowledge/runtime/runbooks/runtime/device_reset.md
@@ -96,5 +101,6 @@ knowledge/ops/apis/data_copy.md                     # 缺少 technology/scope
 knowledge/common/platforms/chip.md                  # 缺少路径 Profile
 knowledge/ops/ascendc/patterns/double_buffer.md     # 未注册 Profile
 knowledge/ops/ascendc/runbooks/timeout.md           # 缺少 area
+knowledge/ops/ascendc/glossaries/source/api.md       # Glossary 不允许附加 section
 knowledge/graph/ascendc/concepts/kernel.md           # route 不属于 graph
 ```

@@ -18,6 +18,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from retrieval.index import (  # noqa: E402
     IndexedCard,
+    literal_scores,
     load_cards,
     open_index,
     phrase_matches,
@@ -36,6 +37,20 @@ from retrieval.root import (  # noqa: E402
 sys.dont_write_bytecode = True
 SEARCH_SCHEMA = "knowledge-search.v4"
 RECEIPT_SCHEMA = "cannbot-knowledge-search.v2"
+FILTER_FIELDS = (
+    "domain",
+    "technology",
+    "profile",
+    "task",
+    "tags",
+    "platforms",
+    "include_unlocated",
+    "cann_versions",
+    "include_shared",
+    "source_technology",
+    "target_technology",
+    "status",
+)
 
 
 def load_governance(root: Path) -> tuple[dict[str, object], set[str]]:
@@ -256,13 +271,94 @@ def request_payload(args: argparse.Namespace, mapped_task: str | None) -> dict[s
     }
 
 
-def search(
+def search_args_from_request(request: dict[str, Any]) -> argparse.Namespace:
+    """Reconstruct strict search arguments from an audit receipt request."""
+    filters = request.get("filters")
+    if not isinstance(filters, dict):
+        raise ValueError("receipt request.filters must be an object")
+    missing = [
+        field
+        for field in ("query", "decision", "match", "limit", *FILTER_FIELDS)
+        if field not in request
+    ]
+    missing_filters = [field for field in FILTER_FIELDS if field not in filters]
+    if missing or missing_filters:
+        names = [*(f"request.{field}" for field in missing), *(f"filters.{field}" for field in missing_filters)]
+        raise ValueError("receipt request is missing fields: " + ", ".join(names))
+    for field in FILTER_FIELDS:
+        if request.get(field) != filters.get(field):
+            raise ValueError(f"receipt request.{field} must equal request.filters.{field}")
+
+    query = request.get("query")
+    if not isinstance(query, str) or not query.strip():
+        raise ValueError("receipt request.query must be a non-empty string")
+    decision = request.get("decision")
+    if decision is not None and (not isinstance(decision, str) or not decision.strip()):
+        raise ValueError("receipt request.decision must be null or a non-empty string")
+    match = request.get("match")
+    if match not in {"text", "literal"}:
+        raise ValueError("receipt request.match must be text or literal")
+    status = filters.get("status")
+    if status not in {"stable", "draft", "deprecated", "all"}:
+        raise ValueError("receipt request.status is invalid")
+    limit = request.get("limit")
+    if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+        raise ValueError("receipt request.limit must be a positive integer")
+
+    optional_fields = (
+        "domain",
+        "technology",
+        "profile",
+        "task",
+        "source_technology",
+        "target_technology",
+    )
+    for field in optional_fields:
+        value = filters.get(field)
+        if value is not None and not isinstance(value, str):
+            raise ValueError(f"receipt request.{field} must be a string or null")
+    list_fields = ("tags", "platforms", "cann_versions")
+    for field in list_fields:
+        value = filters.get(field)
+        if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+            raise ValueError(f"receipt request.{field} must be a string list")
+    for field in ("include_unlocated", "include_shared"):
+        if not isinstance(filters.get(field), bool):
+            raise ValueError(f"receipt request.{field} must be boolean")
+
+    return argparse.Namespace(
+        command="search",
+        query=query,
+        decision=decision,
+        domain=filters["domain"],
+        technology=filters["technology"],
+        card_type=filters["profile"],
+        task=filters["task"],
+        tag=list(filters["tags"]),
+        platform=list(filters["platforms"]),
+        include_unlocated=filters["include_unlocated"],
+        cann_version=list(filters["cann_versions"]),
+        include_shared=filters["include_shared"],
+        source_technology=filters["source_technology"],
+        target_technology=filters["target_technology"],
+        status=status,
+        match=match,
+        limit=limit,
+        json=True,
+        text=False,
+        receipt=None,
+    )
+
+
+def search_payload(
     root: Path,
     cards: list[IndexedCard],
     index_metadata: dict[str, Any],
     connection,
     args: argparse.Namespace,
-) -> int:
+    *,
+    include_current_repository: bool,
+) -> dict[str, Any]:
     registries, profiles = load_governance(root)
     if args.card_type and args.card_type not in profiles:
         raise ValueError(f"unknown knowledge type: {args.card_type}")
@@ -285,10 +381,10 @@ def search(
     normalized_query = args.query.lower().strip()
     if not normalized_query:
         raise ValueError("--query must not be empty")
-    phrase_ids = phrase_matches(connection, normalized_query)
     if args.match == "literal":
-        raw_scores = {doc_id: 1.0 for doc_id in phrase_ids}
+        raw_scores = literal_scores(connection, normalized_query)
     else:
+        phrase_ids = phrase_matches(connection, normalized_query)
         raw_scores = posting_scores(connection, query_tokens(args.query))
         for doc_id in phrase_ids:
             raw_scores[doc_id] = raw_scores.get(doc_id, 0.0) + 4.0
@@ -349,7 +445,7 @@ def search(
     provenance = index_provenance(
         index_metadata,
         root,
-        include_current_repository=bool(args.receipt),
+        include_current_repository=include_current_repository,
     )
     payload = {
         "schema_version": SEARCH_SCHEMA,
@@ -364,6 +460,28 @@ def search(
         "results": results,
         "hits": results,
     }
+    return payload
+
+
+def search(
+    root: Path,
+    cards: list[IndexedCard],
+    index_metadata: dict[str, Any],
+    connection,
+    args: argparse.Namespace,
+) -> int:
+    payload = search_payload(
+        root,
+        cards,
+        index_metadata,
+        connection,
+        args,
+        include_current_repository=bool(args.receipt),
+    )
+    request = payload["request"]
+    request_sha256 = payload["request_sha256"]
+    provenance = payload["index"]
+    results = payload["results"]
     if args.receipt:
         receipt = {
             "schema_version": RECEIPT_SCHEMA,

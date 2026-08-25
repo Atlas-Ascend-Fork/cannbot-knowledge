@@ -17,13 +17,21 @@ CANNBot 通过本仓提供的 Skill 生产、检索和检查这些知识，从�
 
 ## 当前知识状态
 
-目前 `knowledge/` 尚无知识卡，只保留协作所需的基础骨架：
+目前 `knowledge/` 除协作骨架外，已摄入一批 Ascend C 官方参考知识：
 
-- 五个 domain 根：`common`、`ops`、`graph`、`model`、`runtime`；
-- `ops` 的已注册 route：`ascendc`、`triton`、`tilelang`、`pypto`、`shared`；
-- `model` 的已注册 route：`inference`、`training`、`shared`。
+- 2,810 张 API 卡；
+- 270 张 Guide 卡；
+- 来源均指向可由固定归档和 SHA-256 恢复的 `cann-docs-raw/` 官方资料。
 
 五个 domain 根目录始终保留；`ops` 和 `model` 额外预建已注册 route，其他领域的下一层路径由领域维护者在首批真实知识落库时创建。只有 `index.md` 的结构入口不算正式知识卡，也不会出现在 Query 的实际覆盖统计中。“存在目录”不表示“已有知识”，实际内容以 [`knowledge/index.md`](knowledge/index.md) 和 Query `discover` 为准。
+
+本地来源不提交到 Git。需要核对卡片证据时，在仓库根执行：
+
+```bash
+bash fetch-cann-docs.sh
+```
+
+脚本校验固定归档 SHA-256 后恢复到 `cann-docs-raw/`；带有匹配完成标记的目标会直接复用，其他已有目标会失败关闭。怀疑本地内容被修改时，应先检查并移走该目录，再重新获取固定归档。
 
 ## 这个仓库如何工作
 
@@ -50,7 +58,7 @@ CANNBot 通过本仓提供的 Skill 生产、检索和检查这些知识，从�
 |---|---|---|
 | `knowledge-query` | 查看实际知识覆盖，检索知识卡，并可保存不可覆盖的审计 receipt | 除指定 receipt 外只读 |
 | `knowledge-ingest` | 统一路由新来源、增量、版本升级和通用建卡，并可重建本地图谱 | 可以创建候选卡和本地产物，但不覆盖已有知识卡、不提交 |
-| `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航、日志和 Skill 镜像；整理 Issue 材料 | 否 |
+| `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航和日志；整理 Issue 材料 | 否 |
 
 ## 知识如何组织
 
@@ -60,10 +68,10 @@ CANNBot 通过本仓提供的 Skill 生产、检索和检查这些知识，从�
 knowledge/<领域>/<技术或作用域>/<路径 Profile>/<知识卡>.md
 ```
 
-例如，未来的 API 卡可以采用：
+例如，当前 API 卡可以采用分层主题目录：
 
 ```text
-knowledge/ops/ascendc/apis/example_api.md
+knowledge/ops/ascendc/apis/basic_api/data_copy/datacopy.md
 ```
 
 其中：
@@ -71,7 +79,8 @@ knowledge/ops/ascendc/apis/example_api.md
 - `ops` 表示算子领域；
 - `ascendc` 表示这条知识只适用于 Ascend C；
 - `apis` 是路径 Profile，表示它是一张 API 知识卡；
-- bundle 内的 `ops/ascendc/apis/example_api` 是 OKF Concept ID；移动卡片会改变该标识；
+- `basic_api/data_copy` 是便于浏览的主题 section；
+- bundle 内的 `ops/ascendc/apis/basic_api/data_copy/datacopy` 是 OKF Concept ID；移动卡片会改变该标识；
 - Frontmatter `type: API` 是路径 Profile 的确定性投影，供 OKF consumer 读取。
 
 不同 DSL 的专属知识分开保存。只有确实不依赖某个 DSL 的结论才能进入 `shared/`；两种技术之间哪些内容可以复用、哪些必须重新推导，则写入 `shared/interoperability/`。
@@ -137,7 +146,7 @@ bash init.sh agents /path/to/project contributor
 
 支持 `agents`、`codex`、`claude`、`opencode`、`trae`、`cursor` 和 `copilot`。安装器始终在目标项目的 `.agents/skills/` 创建规范链接，再按客户端创建适配链接；同时验证或构建只读检索索引、把知识根和安装 profile 写入项目级 `.cannbot/knowledge.env`，并向 `AGENTS.md` 或 `CLAUDE.md` 注入可卸载的托管使用入口。所有已知路径冲突和托管 marker 异常都在写入前失败，不复制知识正文，也不修改用户全局配置。
 
-只刷新或移除托管入口时使用 `--prompt-action reinstall|uninstall`。`reinstall` 默认复用 `.cannbot/knowledge.env` 中记录的 profile；旧安装没有该字段时根据已安装的三个规范 Skill 推导，也可以显式传 `consumer|contributor` 覆盖。通过 `cannbot-skills` Marketplace 复制安装 Skill 时，仍需在项目配置 `CANNBOT_KNOWLEDGE_ROOT` 或 `.cannbot/knowledge.env` 指向独立知识仓；Query 不在业务项目复制知识正文。
+只刷新或移除托管入口时使用 `--prompt-action reinstall|uninstall`。`reinstall` 默认复用 `.cannbot/knowledge.env` 中记录的 profile；旧安装没有该字段时根据已安装的三个规范 Skill 推导，也可以显式传 `consumer|contributor` 覆盖。复制安装 Skill 时，仍需在项目配置 `CANNBOT_KNOWLEDGE_ROOT` 或 `.cannbot/knowledge.env` 指向独立知识仓；Query 不在业务项目复制知识正文。
 
 ## 贡献和检查
 
@@ -149,7 +158,7 @@ bash init.sh agents /path/to/project contributor
 bash check.sh
 ```
 
-该入口覆盖知识 Lint、检索回归、单元测试、Ruff、Shell 语法、图谱重建和 `git diff --check`。需要同时验证 Plugin 发布镜像时，设置 `CANNBOT_SKILL_MIRROR` 后运行同一入口。
+该入口覆盖本仓知识 Lint（含严格 Git 来源导航）、检索回归、单元测试、Ruff、Shell 语法、图谱重建和 `git diff --check`。
 
 ## 治理规范
 
@@ -157,6 +166,6 @@ bash check.sh
 - [知识路径](governance/specs/paths.md)：domain、technology/scope、路径 Profile、Concept ID 和索引规则。
 - [Frontmatter 与证据](governance/specs/frontmatter.md)：字段组合、生命周期、来源、标签、平台和版本。
 - [Schema、Registry 与 Contract](governance/specs/schemas.md)：机器事实源、受控词表和规则执行关系。
-- [Knowledge Skills](governance/specs/skills.md)：Query、Ingest、Lint、安装模式和发布镜像边界。
+- [Knowledge Skills](governance/specs/skills.md)：Query、Ingest、Lint 和安装模式。
 
 本仓采用 [CANN Open Software License Agreement 2.0](LICENSE)。

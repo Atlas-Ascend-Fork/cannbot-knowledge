@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import dataclass
 from datetime import datetime
@@ -12,16 +13,69 @@ from urllib.parse import unquote, urlparse
 
 import yaml
 from jsonschema import Draft202012Validator, FormatChecker
+from yaml.constructor import ConstructorError
+from yaml.nodes import MappingNode
 
 
 ID_RE = re.compile(r"^[a-z0-9_]+$")
 RFC3339_UTC_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 COMMIT_RE = re.compile(r"^[0-9a-fA-F]{40}$")
 ACTOR_RE = re.compile(r"^(?:human:[^\s/:]+|process:[^\s/:]+|[^\s/:]+/[^\s/]+)$")
-LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
-GIT_VIEW_HOSTS = {"gitcode.com", "github.com", "gitee.com", "gitlab.com"}
+INLINE_LINK_RE = re.compile(r"(!?)\[[^\]\n]*\]\(([^)\n]+)\)")
+REFERENCE_LINK_RE = re.compile(r"(!?)\[([^\]\n]*)\]\[([^\]\n]*)\]")
+REFERENCE_DEFINITION_RE = re.compile(
+    r"(?m)^[ \t]{0,3}\[([^\]\n]+)\]:[ \t]*(?:<([^>\n]+)>|(\S+))"
+)
+GIT_VIEW_HOSTS = {
+    "bitbucket.org",
+    "codeberg.org",
+    "gitcode.com",
+    "github.com",
+    "gitee.com",
+    "gitlab.com",
+}
 RAW_GIT_HOSTS = {"raw.gitcode.com", "raw.githubusercontent.com"}
 OKF_VERSION = "0.2"
+FREELY_NESTED_PROFILES = {"apis", "concepts", "examples", "guides", "optimizations"}
+
+
+class UniqueKeySafeLoader(yaml.SafeLoader):
+    """Safe YAML loader that rejects duplicate mapping keys."""
+
+    def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[Any, Any]:
+        if not isinstance(node, MappingNode):
+            raise ConstructorError(
+                None,
+                None,
+                f"expected a mapping node, but found {node.id}",
+                node.start_mark,
+            )
+        self.flatten_mapping(node)
+        mapping: dict[Any, Any] = {}
+        for key_node, value_node in node.value:
+            key = self.construct_object(key_node, deep=deep)
+            try:
+                duplicate = key in mapping
+            except TypeError as exc:
+                raise ConstructorError(
+                    "while constructing a mapping",
+                    node.start_mark,
+                    "found an unhashable key",
+                    key_node.start_mark,
+                ) from exc
+            if duplicate:
+                raise ConstructorError(
+                    "while constructing a mapping",
+                    node.start_mark,
+                    f"found duplicate key: {key}",
+                    key_node.start_mark,
+                )
+            mapping[key] = self.construct_object(value_node, deep=deep)
+        return mapping
+
+
+def _yaml_load(text: str) -> Any:
+    return yaml.load(text, Loader=UniqueKeySafeLoader)
 
 
 @dataclass(frozen=True)
@@ -39,7 +93,7 @@ class PathInfo:
 
 
 def _mapping(path: Path) -> dict[str, Any]:
-    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    data = _yaml_load(path.read_text(encoding="utf-8")) or {}
     if not isinstance(data, dict):
         raise ValueError(f"{path} must contain a mapping")
     return data
@@ -53,7 +107,7 @@ def split_frontmatter(text: str) -> tuple[dict[str, Any] | None, str]:
         end = next(index for index in range(1, len(lines)) if lines[index].strip() == "---")
     except StopIteration as exc:
         raise ValueError("unterminated frontmatter") from exc
-    metadata = yaml.safe_load("\n".join(lines[1:end])) or {}
+    metadata = _yaml_load("\n".join(lines[1:end])) or {}
     if not isinstance(metadata, dict):
         raise ValueError("frontmatter must be a mapping")
     return metadata, "\n".join(lines[end + 1 :]).strip()
@@ -80,6 +134,7 @@ class Contract:
         self.scopes = self._section("scopes")
         self.platforms = self._section("platforms")
         self.tags = self._section("tags")
+        self.local_sources = self._section("local_sources")
         self.path_values = self._section("paths")
         self.routes = set(self.technologies) | set(self.scopes)
         self.operator_families = self._string_set("operator_families")
@@ -140,6 +195,47 @@ class Contract:
         for category in self.operator_categories:
             if not ID_RE.fullmatch(category) or not category.endswith("s"):
                 raise ValueError(f"operator category must use a plural snake_case ID: {category}")
+        for source_id, source in self.local_sources.items():
+            if not isinstance(source_id, str) or not ID_RE.fullmatch(source_id):
+                raise ValueError(f"invalid local_sources ID: {source_id}")
+            if not isinstance(source, dict) or not str(source.get("description", "")).strip():
+                raise ValueError(f"local_sources.{source_id} requires a description")
+            root = source.get("root")
+            if (
+                not isinstance(root, str)
+                or Path(root).parts != (root,)
+                or root in {"", ".", ".."}
+                or "\\" in root
+            ):
+                raise ValueError(f"local_sources.{source_id}.root must be a top-level relative path")
+            fetch_script = source.get("fetch_script")
+            if (
+                not isinstance(fetch_script, str)
+                or not self._safe_repository_path(fetch_script).is_absolute()
+            ):
+                raise ValueError(
+                    f"local_sources.{source_id}.fetch_script must be a safe repository path"
+                )
+            archive_sha256 = source.get("archive_sha256")
+            if not isinstance(archive_sha256, str) or not re.fullmatch(
+                r"[0-9a-f]{64}", archive_sha256
+            ):
+                raise ValueError(
+                    f"local_sources.{source_id}.archive_sha256 must be lowercase SHA-256"
+                )
+
+    def _safe_repository_path(self, value: str) -> Path:
+        if value != value.strip() or "\\" in value:
+            return Path()
+        relative = Path(value)
+        if relative.is_absolute() or not relative.parts or ".." in relative.parts:
+            return Path()
+        try:
+            resolved = (self.root / relative).resolve()
+            resolved.relative_to(self.root)
+        except ValueError:
+            return Path()
+        return resolved
 
     def route_domains(self, route: str) -> set[str]:
         value = self.technologies.get(route) or self.scopes.get(route)
@@ -197,6 +293,9 @@ class Contract:
             if len(suffix) != 1 or suffix[0] not in self.runbook_areas:
                 allowed = "|".join(sorted(self.runbook_areas))
                 raise ValueError(f"runbook path must be runbooks/<{allowed}>/<runbook>.md")
+        elif card_type in FREELY_NESTED_PROFILES:
+            if any(not ID_RE.fullmatch(part) for part in suffix):
+                raise ValueError(f"{card_type} subdirectories must use lowercase snake_case")
         elif suffix:
             raise ValueError(f"{card_type} cards cannot add unregistered subdirectories")
         if card_type == "interoperability" and route != "shared":
@@ -265,6 +364,9 @@ class Contract:
         elif card_type == "runbooks":
             if len(tail) > 1 or (tail and tail[0] not in self.runbook_areas):
                 return [Issue("index.runbook", "runbook index must stop at a registered area")]
+        elif card_type in FREELY_NESTED_PROFILES:
+            if any(not ID_RE.fullmatch(part) for part in tail):
+                return [Issue("index.depth", f"{card_type} subdirectories must use lowercase snake_case")]
         elif tail:
             return [Issue("index.depth", f"{card_type} index has an unregistered subdirectory")]
         if card_type == "interoperability" and route != "shared":
@@ -348,17 +450,51 @@ class Contract:
             if not isinstance(source, dict):
                 continue
             resource = source.get("resource")
-            if not isinstance(resource, str) or not re.match(r"^https?://", resource):
+            if not isinstance(resource, str) or not resource.strip():
                 issues.append(
-                    Issue("source.resource", f"sources[{index}].resource must be an HTTP(S) URL")
+                    Issue("source.resource", f"sources[{index}].resource must be non-empty")
                 )
-            elif not _git_url_is_pinned(resource):
+            elif re.match(r"^https?://", resource):
+                parsed = urlparse(resource)
+                if not parsed.netloc or parsed.username is not None or parsed.password is not None:
+                    issues.append(
+                        Issue(
+                            "source.resource",
+                            f"sources[{index}].resource is not a canonical HTTP(S) URL",
+                        )
+                    )
+                elif not _git_url_is_pinned(resource):
+                    issues.append(
+                        Issue(
+                            "source.pin",
+                            f"sources[{index}] Git resource is not pinned to a 40-hex commit",
+                        )
+                    )
+            elif not self._is_safe_local_resource(resource):
                 issues.append(
                     Issue(
-                        "source.pin",
-                        f"sources[{index}] Git resource is not pinned to a 40-hex commit",
+                        "source.resource",
+                        f"sources[{index}].resource must be an HTTP(S) URL or registered local source",
                     )
                 )
+
+    def _is_safe_local_resource(self, resource: str) -> bool:
+        if resource != resource.strip() or "\\" in resource:
+            return False
+        parsed = urlparse(resource)
+        if parsed.scheme or parsed.netloc or parsed.query or parsed.fragment:
+            return False
+        relative = Path(resource)
+        if relative.is_absolute() or not relative.parts or ".." in relative.parts:
+            return False
+        if relative.as_posix() != resource or len(relative.parts) < 2:
+            return False
+        try:
+            (self.root / relative).resolve().relative_to(self.root.resolve())
+        except ValueError:
+            return False
+        registered_roots = {str(source["root"]) for source in self.local_sources.values()}
+        return relative.parts[0] in registered_roots
 
     def _validate_times(self, metadata: dict[str, Any], issues: list[Issue]) -> None:
         parsed: dict[str, datetime] = {}
@@ -367,7 +503,10 @@ class Contract:
             if not isinstance(value, str) or not RFC3339_UTC_RE.fullmatch(value):
                 issues.append(Issue("frontmatter.time", f"{field} must use UTC RFC3339 seconds ending in Z"))
                 continue
-            parsed[field] = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+            try:
+                parsed[field] = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+            except ValueError:
+                issues.append(Issue("frontmatter.time", f"{field} is not a valid UTC calendar time"))
         if len(parsed) == 2 and parsed["updated_at"] < parsed["created_at"]:
             issues.append(Issue("frontmatter.time_order", "updated_at is earlier than created_at"))
 
@@ -483,6 +622,34 @@ class Contract:
             results.extend((root_index, issue) for issue in self._validate_index_links(root_index))
         return results
 
+    def validate_repository_infrastructure(self) -> list[tuple[Path, Issue]]:
+        """Validate repository files required by registered local-source workflows."""
+        results: list[tuple[Path, Issue]] = []
+        for source_id, definition in self.local_sources.items():
+            fetch_script = self._safe_repository_path(str(definition["fetch_script"]))
+            if not fetch_script.is_file():
+                results.append(
+                    (
+                        self.root / "governance/schemas/registries.yaml",
+                        Issue(
+                            "source.fetch_script_missing",
+                            f"local source {source_id} fetch script does not exist: "
+                            f"{fetch_script.relative_to(self.root)}",
+                        ),
+                    )
+                )
+            elif not os.access(fetch_script, os.X_OK):
+                results.append(
+                    (
+                        fetch_script,
+                        Issue(
+                            "source.fetch_script_mode",
+                            f"local source {source_id} fetch script must be executable",
+                        ),
+                    )
+                )
+        return results
+
     def structural_directories(self) -> set[Path]:
         """Return domain roots and routes predeclared by their domain Registry policy."""
         result = {Path("knowledge") / domain for domain in self.domains}
@@ -509,8 +676,7 @@ class Contract:
 
         actual: list[Path] = []
         issues: list[Issue] = []
-        for raw in LINK_RE.findall(text):
-            target_text = raw.split()[0].strip("<>")
+        for target_text, _ in markdown_targets(text):
             if not target_text or target_text.startswith(("http://", "https://", "#", "mailto:")):
                 continue
             clean = unquote(target_text.split("#", 1)[0])
@@ -532,13 +698,23 @@ class Contract:
 
 def _git_url_is_pinned(url: str) -> bool:
     parsed = urlparse(url)
-    host = parsed.netloc.lower()
+    host = (parsed.hostname or "").lower()
     parts = [part for part in parsed.path.split("/") if part]
     if host in GIT_VIEW_HOSTS:
         for marker in ("blob", "tree", "raw"):
             if marker in parts:
                 index = parts.index(marker)
                 return index + 1 < len(parts) and bool(COMMIT_RE.fullmatch(parts[index + 1]))
+        if host == "bitbucket.org" and "src" in parts:
+            index = parts.index("src")
+            return index + 1 < len(parts) and bool(COMMIT_RE.fullmatch(parts[index + 1]))
+        if host == "codeberg.org" and "src" in parts:
+            index = parts.index("src")
+            return (
+                index + 2 < len(parts)
+                and parts[index + 1] == "commit"
+                and bool(COMMIT_RE.fullmatch(parts[index + 2]))
+            )
         return False
     if host == "raw.gitcode.com" and "raw" in parts:
         index = parts.index("raw")
@@ -548,10 +724,35 @@ def _git_url_is_pinned(url: str) -> bool:
     return host not in RAW_GIT_HOSTS
 
 
+def _reference_label(value: str) -> str:
+    return re.sub(r"\s+", " ", value).strip().casefold()
+
+
+def _markdown_destination(value: str) -> str:
+    return value.split()[0].strip("<>")
+
+
+def markdown_targets(text: str) -> list[tuple[str, bool]]:
+    """Return Markdown destinations as ``(target, is_image)`` pairs."""
+    results = [
+        (_markdown_destination(match.group(2)), bool(match.group(1)))
+        for match in INLINE_LINK_RE.finditer(text)
+    ]
+    definitions = {
+        _reference_label(match.group(1)): (match.group(2) or match.group(3))
+        for match in REFERENCE_DEFINITION_RE.finditer(text)
+    }
+    for match in REFERENCE_LINK_RE.finditer(text):
+        label = _reference_label(match.group(3) or match.group(2))
+        target = definitions.get(label)
+        if target:
+            results.append((_markdown_destination(target), bool(match.group(1))))
+    return [(target, is_image) for target, is_image in results if target]
+
+
 def relative_markdown_links(path: Path, bundle_root: Path | None = None) -> list[tuple[str, Path]]:
     results: list[tuple[str, Path]] = []
-    for raw in LINK_RE.findall(path.read_text(encoding="utf-8")):
-        target_text = raw.split()[0].strip("<>")
+    for target_text, _ in markdown_targets(path.read_text(encoding="utf-8")):
         if not target_text or target_text.startswith(("http://", "https://", "#", "mailto:")):
             continue
         clean = unquote(target_text.split("#", 1)[0])
@@ -562,29 +763,6 @@ def relative_markdown_links(path: Path, bundle_root: Path | None = None) -> list
                 target = (path.parent / clean).resolve()
             results.append((target_text, target))
     return results
-
-
-def compare_trees(source: Path, mirror: Path) -> list[Issue]:
-    def inventory(root: Path) -> dict[str, bytes]:
-        if not root.is_dir():
-            raise ValueError(f"skill tree does not exist: {root}")
-        return {
-            path.relative_to(root).as_posix(): path.read_bytes()
-            for path in sorted(root.rglob("*"))
-            if path.is_file() and "__pycache__" not in path.parts
-        }
-
-    source_files = inventory(source)
-    mirror_files = inventory(mirror)
-    issues: list[Issue] = []
-    for name in sorted(set(source_files) - set(mirror_files)):
-        issues.append(Issue("mirror.missing", f"mirror is missing: {name}"))
-    for name in sorted(set(mirror_files) - set(source_files)):
-        issues.append(Issue("mirror.extra", f"mirror has extra file: {name}"))
-    for name in sorted(set(source_files) & set(mirror_files)):
-        if source_files[name] != mirror_files[name]:
-            issues.append(Issue("mirror.different", f"mirror content differs: {name}"))
-    return issues
 
 
 def _deduplicate(issues: list[Issue]) -> list[Issue]:

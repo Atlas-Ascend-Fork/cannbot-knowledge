@@ -54,7 +54,7 @@ Schema、Profile、Registry 和 Contract 共同构成机器规则，Spec 是解�
 knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 ```
 
-部分 domain 允许直辖 Profile；Operator 和 Runbook 还存在受控附加层级。完整 domain-route 矩阵、Profile 说明和合法示例见[知识路径](governance/specs/paths.md)。
+部分 domain 允许直辖 Profile；内容型 Profile 可以增加主题 section，Operator 和 Runbook 则使用受控附加层级。完整 domain-route 矩阵、Profile 说明和合法示例见[知识路径](governance/specs/paths.md)。
 
 选择路径时遵守：
 
@@ -63,7 +63,8 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 - 五个 domain 根目录由 Contract 统一维护；只有 `ops` 和 `model` 预建注册 route。其他下一层路径随首张真实知识创建，不要提前铺设空 route/Profile；
 - `operators/` 使用受控 family/category；
 - `runbooks/` 使用受控问题域；
-- 稳定原理进入 `concepts/`，接口事实进入 `apis/`，完整算子进入 `operators/`，性能方法进入 `optimizations/`，处置流程进入 `runbooks/`。
+- `concepts/`、`apis/`、`examples/`、`guides/` 和 `optimizations/` 的主题 section 使用小写 `snake_case`，并逐层维护索引；
+- 稳定原理进入 `concepts/`，接口事实进入 `apis/`，任务型教程进入 `guides/`，完整算子进入 `operators/`，性能方法进入 `optimizations/`，处置流程进入 `runbooks/`。
 
 ### 3.3 区分 shared、技术专属和 interoperability
 
@@ -80,7 +81,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 
 ### 3.4 准备来源
 
-每张卡都必须填写 `sources`。非 `draft` 卡至少有一个精确 `resource`；Git 来源固定到提交，文档来源优先使用稳定版本页。性能、精度、平台限制、默认行为和经验性结论必须有与结论强度相匹配的证据。
+每张卡都必须填写 `sources`。非 `draft` 卡至少有一个精确 `resource`；Git 来源固定到提交，文档来源优先使用稳定版本页。仓库相对来源必须位于 Registry 登记的本地来源根目录，并由固定 URL 与归档校验和的获取流程恢复；不能指向未登记根目录、工作区外部或包含路径穿越。性能、精度、平台限制、默认行为和经验性结论必须有与结论强度相匹配的证据。
 
 搜索摘要、PR 标题、聊天记录或模型记忆不能单独作为技术来源。来源角色、固定格式和人工审阅要求见 [Frontmatter 与证据](governance/specs/frontmatter.md)。
 
@@ -117,7 +118,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 
 - `index.md` 只用于 `knowledge/`，且只列所在目录的直接子项；bundle 根索引声明 `okf_version: "0.2"`；
 - 新增、删除或移动卡片时，同步受影响的每一级 `index.md`；
-- 卡片移动时在同一变更中更新正文链接；
+- 卡片移动时在同一变更中更新正文链接；本地链接必须留在 `knowledge/` Bundle 内；
 - 实质知识或治理变更记录到当天 `logs/`，纯排版和错别字修复不记录；
 - 图谱从正文链接本地重建，不手工维护关系边或签入生成物。
 
@@ -131,7 +132,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 - [ ] sources 能定位到支持正文结论的证据。
 - [ ] 平台和版本没有超出证据范围；`verified` 如存在，actor 与时间真实可核验。
 - [ ] 正文说明结论、适用条件和失效边界。
-- [ ] `index.md`、相对链接和当天日志已按需更新。
+- [ ] `index.md`、Bundle 内相对链接和当天日志已按需更新。
 - [ ] `knowledge-lint` 通过，目标查询能够召回新知识。
 - [ ] `bash check.sh` 通过。
 
@@ -145,7 +146,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 | domain/technology/scope/platform/tag | Registry、路径或字段测试、Query 回归、Schema 文档 |
 | 路径 Profile 或层级 | Profile、Registry/Contract、路径文档、样板卡、导航 |
 | Query/Ingest/Lint 行为 | 对应 Skill、Skill 文档、测试和平台中立的触发契约 |
-| 安装或发布契约 | 安装器、Plugin manifest、Marketplace、Skill 文档和用户文档 |
+| 安装契约 | 本仓安装器、Skill 文档和用户文档 |
 | OKF 对应关系 | OKF、Frontmatter、Path 文档和 conformance 回归 |
 
 仓库级文档描述能力、输入输出语义和边界；Skill 内部脚本、命令和参数只在对应 `SKILL.md` 或 `references/` 中说明。修改文档时检查所有本地链接，并确认示例描述的是已实现行为。
@@ -154,16 +155,14 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 
 当前只维护 `knowledge-ingest`、`knowledge-query` 和 `knowledge-lint`。新增其他 Skill 需要先证明现有三项能力无法合理承载，并完成架构和发布评审。
 
-规范源位于 `cannbot-knowledge/.agents/skills/`，完整发布镜像位于 `cannbot-skills/plugins-community/cannbot-knowledge/skills/`。规范源优先，发布镜像不得独立演进；两边应包含相同的 `SKILL.md`、`references/`、`scripts/`、测试及其他运行所需资源。规范源不包含 `agents/openai.yaml` 等单一客户端元数据。
+本仓 Skill 的规范源位于 `.agents/skills/`，其中维护完整的 `SKILL.md`、`references/`、`scripts/`、测试及其他运行所需资源。规范源不包含 `agents/openai.yaml` 等单一客户端元数据。
 
 Skill 贡献流程：
 
 1. 修改知识仓中的规范源；
 2. 更新该 Skill 的内部说明、Frontmatter 触发描述和测试；
 3. 验证触发条件、正常路径、错误路径和权限边界；
-4. 运行仓库统一质量门禁；
-5. 完整同步 Plugin 发布镜像并比较内容；
-6. 在两个仓库的 PR 中互相引用并说明兼容性影响。
+4. 运行仓库统一质量门禁。
 
 Skill 中只保存完成工作所需的流程、工具和小型参考资料。可被多个 Skill 消费的 CANN、DSL、API、算子、调试和优化知识必须进入 `knowledge/`。
 
@@ -176,8 +175,7 @@ Skill 中只保存完成工作所需的流程、工具和小型参考资料。�
 - 新增、更新、合并、拆分、废弃或延后的决定；
 - 实际完成的检查和结果；
 - 对检索、Schema、链接/图谱、安装或兼容性的影响；
-- 需要 reviewer 重点判断的风险；
-- 涉及 Skill 时，配套能力仓的对应 PR 或 commit。
+- 需要 reviewer 重点判断的风险。
 
 ## 7. 不接受的贡献
 
@@ -187,5 +185,4 @@ Skill 中只保存完成工作所需的流程、工具和小型参考资料。�
 - 把单一技术实现过度泛化为 shared；
 - 把一个 DSL 的行为写成另一个 DSL 的事实；
 - 静默删除仍需要解释的错误或过时知识；
-- 只修改规范源或只修改发布镜像的单边 Skill 变更；
 - 自动提交、推送、发布或修改用户全局环境的行为。

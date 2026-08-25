@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import shutil
 import subprocess
@@ -14,13 +15,13 @@ sys.path.insert(0, str(ROOT))
 
 from governance.contracts.knowledge import (  # noqa: E402
     Contract,
-    compare_trees,
     relative_markdown_links,
 )
 
 
 INGEST = ROOT / ".agents/skills/knowledge-ingest/scripts/knowledge_ingest.py"
 QUERY = ROOT / ".agents/skills/knowledge-query/scripts/knowledge_query.py"
+INDEX = ROOT / ".agents/skills/knowledge-query/scripts/knowledge_index.py"
 LINT = ROOT / ".agents/skills/knowledge-lint/scripts/knowledge_lint.py"
 PINNED_SOURCE = (
     "https://gitcode.com/cann/asc-devkit/blob/"
@@ -39,6 +40,15 @@ SYNTHETIC_API_METADATA = {
 }
 
 
+def load_lint_module():
+    spec = importlib.util.spec_from_file_location("knowledge_lint_test", LINT)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {LINT}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 class RouteContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -50,6 +60,8 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/common/toolchains/runbooks/compilation/environment.md": ("common", "toolchains"),
             "knowledge/graph/torch_compile/concepts/capture.md": ("graph", "torch_compile"),
             "knowledge/graph/ge/apis/graph_api.md": ("graph", "ge"),
+            "knowledge/ops/ascendc/apis/basic_api/data_copy/example.md": ("ops", "ascendc"),
+            "knowledge/ops/ascendc/guides/programming_guide/example.md": ("ops", "ascendc"),
             "knowledge/model/inference/concepts/serving.md": ("model", "inference"),
             "knowledge/model/training/runbooks/runtime/oom.md": ("model", "training"),
             "knowledge/ops/triton/runbooks/compilation/missing_symbol.md": (
@@ -70,6 +82,7 @@ class RouteContractTests(unittest.TestCase):
             "concepts": "Concept",
             "apis": "API",
             "examples": "Example",
+            "guides": "Guide",
             "operators": "Operator",
             "optimizations": "Optimization",
             "runbooks": "Runbook",
@@ -82,7 +95,7 @@ class RouteContractTests(unittest.TestCase):
         cases = (
             "knowledge/ops/apis/no_dsl.md",
             "knowledge/graph/ascendc/apis/wrong_domain.md",
-            "knowledge/ops/ascendc/apis/unplanned/nested.md",
+            "knowledge/ops/ascendc/glossaries/unplanned/nested.md",
             "knowledge/ops/ascendc/operators/nn/activation/singular.md",
             "knowledge/ops/ascendc/interoperability/not_shared.md",
             "knowledge/common/platforms/chip.md",
@@ -125,36 +138,17 @@ class RouteContractTests(unittest.TestCase):
         }
         self.assertTrue(all(not (ROOT / path).exists() for path in not_precreated))
 
-    def test_repository_contains_only_the_empty_skeleton(self) -> None:
-        expected_directories = {
-            "knowledge",
-            "knowledge/common",
-            "knowledge/graph",
-            "knowledge/model",
-            "knowledge/model/inference",
-            "knowledge/model/shared",
-            "knowledge/model/training",
-            "knowledge/ops",
-            "knowledge/ops/ascendc",
-            "knowledge/ops/pypto",
-            "knowledge/ops/shared",
-            "knowledge/ops/tilelang",
-            "knowledge/ops/triton",
-            "knowledge/runtime",
-        }
-        actual_directories = {
-            path.relative_to(ROOT).as_posix()
-            for path in (ROOT / "knowledge").rglob("*")
-            if path.is_dir()
-        } | {"knowledge"}
+    def test_repository_contains_ascendc_reference_corpus(self) -> None:
         cards = [
-            path.relative_to(ROOT).as_posix()
+            path.relative_to(ROOT)
             for path in (ROOT / "knowledge").rglob("*.md")
             if path.name != "index.md"
         ]
-        self.assertEqual(expected_directories, actual_directories)
-        self.assertEqual([], cards)
-        self.assertFalse(any(path.name == "concepts" for path in (ROOT / "knowledge").rglob("*")))
+        apis = [path for path in cards if "apis" in path.parts]
+        guides = [path for path in cards if "guides" in path.parts]
+        self.assertGreaterEqual(len(apis), 2810)
+        self.assertGreaterEqual(len(guides), 270)
+        self.assertTrue(all(path.parts[1:3] == ("ops", "ascendc") for path in cards))
 
     def test_precreated_route_policy_is_declared_by_domain(self) -> None:
         enabled = {
@@ -182,6 +176,51 @@ class RouteContractTests(unittest.TestCase):
         issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
         self.assertIn("frontmatter.type", {issue.code for issue in issues})
 
+    def test_hierarchical_tag_and_local_source_are_accepted(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/basic_api/data_copy/synthetic_api.md")
+        metadata = dict(SYNTHETIC_API_METADATA)
+        metadata["tags"] = ["task.lookup", "topic.implementation.api_layer.basic_api"]
+        metadata["sources"] = [
+            {
+                "resource": "cann-docs-raw/any/fixed-archive/path.md",
+                "role": "primary",
+            }
+        ]
+        self.assertEqual([], self.contract.validate_card(relative, metadata, "# Synthetic API\n"))
+
+    def test_unregistered_local_source_is_rejected(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        metadata = dict(SYNTHETIC_API_METADATA)
+        metadata["sources"] = [
+            {"resource": "unregistered-source/definitely/missing/source.md", "role": "primary"}
+        ]
+        issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
+        self.assertIn("source.resource", {issue.code for issue in issues})
+
+    def test_unsafe_local_sources_are_rejected(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        for resource in (
+            "../outside.md",
+            "/tmp/outside.md",
+            "cann-docs-raw\\outside.md",
+            "cann-docs-raw",
+            "cann-docs-raw//outside.md",
+            "https:///missing-host.md",
+            "https://user:secret@example.com/source.md",
+        ):
+            with self.subTest(resource=resource):
+                metadata = dict(SYNTHETIC_API_METADATA)
+                metadata["sources"] = [{"resource": resource}]
+                issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
+                self.assertIn("source.resource", {issue.code for issue in issues})
+
+    def test_unknown_hierarchical_tag_is_rejected(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        metadata = dict(SYNTHETIC_API_METADATA)
+        metadata["tags"] = ["task.lookup", "topic.implementation.not_registered"]
+        issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
+        self.assertIn("tag.unknown", {issue.code for issue in issues})
+
     def test_bundle_absolute_markdown_link_resolves_from_bundle_root(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "source.md"
@@ -200,18 +239,6 @@ class RouteContractTests(unittest.TestCase):
             (root / "knowledge/index.md").write_text("# Knowledge\n", encoding="utf-8")
             issues = Contract(root).validate_index_tree()
             self.assertIn("index.missing", {issue.code for _, issue in issues})
-
-    def test_skill_mirror_difference_is_reported(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            source = root / "source"
-            mirror = root / "mirror"
-            source.mkdir()
-            mirror.mkdir()
-            (source / "SKILL.md").write_text("source", encoding="utf-8")
-            (mirror / "SKILL.md").write_text("mirror", encoding="utf-8")
-            self.assertEqual([issue.code for issue in compare_trees(source, mirror)], ["mirror.different"])
-
 
 class IngestContractTests(unittest.TestCase):
     def run_ingest(
@@ -255,6 +282,50 @@ class IngestContractTests(unittest.TestCase):
         self.assertIn("type: Concept", result.stdout)
         self.assertIn("title: Contract probe", result.stdout)
         self.assertIn("resource: https://gitcode.com/", result.stdout)
+
+    def test_target_contract_is_compared_without_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "knowledge").mkdir()
+            (root / "governance/contracts").mkdir(parents=True)
+            marker = root / "import-executed"
+            (root / "governance/contracts/knowledge.py").write_text(
+                "from pathlib import Path\n"
+                f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n",
+                encoding="utf-8",
+            )
+            body = root / "body.md"
+            body.write_text("# Candidate\n", encoding="utf-8")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(INGEST),
+                    "--knowledge-root",
+                    str(root),
+                    "create",
+                    "--path",
+                    "knowledge/common/glossaries/probe.md",
+                    "--title",
+                    "Probe",
+                    "--description",
+                    "Probe",
+                    "--tag",
+                    "task.lookup",
+                    "--tag",
+                    "topic.terminology",
+                    "--body-file",
+                    str(body),
+                    "--dry-run",
+                ],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            executed = marker.exists()
+        self.assertEqual(2, result.returncode)
+        self.assertIn("does not match", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertFalse(executed)
 
     def test_profile_violations_are_rejected(self) -> None:
         cases = {
@@ -319,6 +390,8 @@ class IngestContractTests(unittest.TestCase):
             f"https://gitlab.com/example/project/-/raw/{commit}/README.md",
             f"https://raw.githubusercontent.com/example/project/{commit}/README.md",
             f"https://raw.gitcode.com/example/project/raw/{commit}/README.md",
+            f"https://bitbucket.org/example/project/src/{commit}/README.md",
+            f"https://codeberg.org/example/project/src/commit/{commit}/README.md",
         )
         for url in urls:
             with self.subTest(url=url):
@@ -326,18 +399,356 @@ class IngestContractTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
 
 
+class LintBehaviorTests(unittest.TestCase):
+    def make_root(self, temporary: str) -> Path:
+        root = Path(temporary)
+        shutil.copytree(ROOT / "governance", root / "governance")
+        (root / "knowledge").mkdir()
+        return root
+
+    def render_card(
+        self,
+        *,
+        sources: str = "  - resource: https://example.com/source\n    role: primary",
+        body: str = "Probe body.",
+        created_at: str = "2026-08-22T00:00:00Z",
+        title_lines: str = "title: Synthetic API",
+    ) -> str:
+        return f'''---
+type: API
+{title_lines}
+description: Deterministic lint probe.
+tags: [task.lookup, topic.compilation]
+status: stable
+sources:
+{sources}
+created_at: "{created_at}"
+updated_at: "2026-08-22T00:00:00Z"
+platforms: [a2]
+---
+
+# Synthetic API
+
+{body}
+'''
+
+    def run_lint(
+        self,
+        root: Path,
+        text: str,
+        *flags: str,
+    ) -> subprocess.CompletedProcess[str]:
+        card = root / "knowledge/ops/ascendc/apis/synthetic.md"
+        card.parent.mkdir(parents=True, exist_ok=True)
+        card.write_text(text, encoding="utf-8")
+        return subprocess.run(
+            [
+                sys.executable,
+                str(LINT),
+                "--knowledge-root",
+                str(root),
+                "--card",
+                "knowledge/ops/ascendc/apis/synthetic.md",
+                *flags,
+            ],
+            check=False,
+            text=True,
+            capture_output=True,
+        )
+
+    def test_invalid_calendar_time_is_a_card_error(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            result = self.run_lint(
+                root,
+                self.render_card(created_at="2026-02-30T00:00:00Z"),
+                "--json",
+            )
+        self.assertEqual(1, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn("frontmatter.time", {error["code"] for error in payload["errors"]})
+
+    def test_duplicate_frontmatter_key_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            result = self.run_lint(
+                root,
+                self.render_card(title_lines="title: First\ntitle: Second"),
+            )
+        self.assertEqual(1, result.returncode)
+        self.assertIn("frontmatter.parse", result.stdout)
+        self.assertIn("duplicate key", result.stdout)
+
+    def test_reference_links_images_and_html_images_are_checked(self) -> None:
+        body = """[Missing document][missing-doc]
+
+![Missing diagram][missing-image]
+
+<img src="also-missing.png" alt="missing">
+
+[missing-doc]: missing.md
+[missing-image]: missing.png"""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            result = self.run_lint(root, self.render_card(body=body))
+        self.assertEqual(1, result.returncode)
+        self.assertIn("body.embedded_image", result.stdout)
+        self.assertIn("link.missing", result.stdout)
+
+    def test_local_link_cannot_leave_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            (root / "README.md").write_text("# Outside\n", encoding="utf-8")
+            result = self.run_lint(
+                root,
+                self.render_card(body="[Outside](../../../../README.md)"),
+            )
+        self.assertEqual(1, result.returncode)
+        self.assertIn("link.outside_bundle", result.stdout)
+
+    def test_local_link_must_target_a_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            directory = root / "knowledge/ops/ascendc/apis/directory_target"
+            directory.mkdir(parents=True)
+            result = self.run_lint(
+                root,
+                self.render_card(body="[Directory](directory_target)"),
+            )
+        self.assertEqual(1, result.returncode)
+        self.assertIn("link.not_file", result.stdout)
+
+    def test_strict_navigation_requires_same_repository(self) -> None:
+        commit = "54beb3b1f2f32067ac026202546011cd1b03977f"
+        tree = f"https://gitcode.com/cann/repo-a/tree/{commit}/src/"
+        unrelated = f"https://github.com/unrelated/repo-b/blob/{commit}/README.md"
+        same_repo = f"https://gitcode.com/cann/repo-a/blob/{commit}/src/file.cpp"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            rejected = self.run_lint(
+                root,
+                self.render_card(
+                    sources=(
+                        f"  - resource: {tree}\n"
+                        "    role: primary\n"
+                        f"  - resource: {unrelated}\n"
+                        "    role: supporting"
+                    )
+                ),
+                "--strict-navigation",
+            )
+            accepted = self.run_lint(
+                root,
+                self.render_card(
+                    sources=f"  - resource: {tree}\n    role: primary",
+                    body=f"[Exact implementation]({same_repo})",
+                ),
+                "--strict-navigation",
+            )
+        self.assertEqual(1, rejected.returncode)
+        self.assertIn("source.navigation", rejected.stdout)
+        self.assertEqual(0, accepted.returncode, accepted.stdout)
+
+    def test_existing_local_source_root_checks_marker_and_file(self) -> None:
+        source_yaml = "  - resource: cann-docs-raw/source.md\n    role: primary"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            absent = self.run_lint(root, self.render_card(sources=source_yaml))
+        self.assertEqual(0, absent.returncode, absent.stdout)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            source_root = root / "cann-docs-raw"
+            source_root.mkdir()
+            archive_sha256 = Contract(root).local_sources["cann_docs_raw"]["archive_sha256"]
+            (source_root / ".complete").write_text(
+                f"archive_sha256={archive_sha256}\n",
+                encoding="utf-8",
+            )
+            (source_root / "source.md").write_text("# Source\n", encoding="utf-8")
+            valid = self.run_lint(root, self.render_card(sources=source_yaml))
+        self.assertEqual(0, valid.returncode, valid.stdout)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            source_root = root / "cann-docs-raw"
+            source_root.mkdir()
+            (source_root / ".complete").write_text(
+                "archive_sha256=wrong\n",
+                encoding="utf-8",
+            )
+            result = self.run_lint(
+                root,
+                self.render_card(
+                    sources=(
+                        "  - resource: cann-docs-raw/missing.md\n"
+                        "    role: primary"
+                    )
+                ),
+            )
+        self.assertEqual(1, result.returncode)
+        self.assertIn("source.archive_marker", result.stdout)
+        self.assertIn("source.local_missing", result.stdout)
+
+    def test_full_lint_requires_an_executable_local_source_fetch_script(self) -> None:
+        module = load_lint_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            missing = module.Linter(root, False)
+            missing.validate_full_tree()
+            missing_codes = {error["code"] for error in missing.errors}
+
+            fetch_script = root / "fetch-cann-docs.sh"
+            fetch_script.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+            fetch_script.chmod(0o644)
+            non_executable = module.Linter(root, False)
+            non_executable.validate_full_tree()
+            mode_codes = {error["code"] for error in non_executable.errors}
+        self.assertIn("source.fetch_script_missing", missing_codes)
+        self.assertIn("source.fetch_script_mode", mode_codes)
+
+    def test_log_entries_require_summary_and_details(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            (root / "logs").mkdir()
+            (root / "logs/2026-08-22.md").write_text(
+                "# 2026-08-22\n\n## [08:00] governance | Missing sections\n",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [sys.executable, str(LINT), "--knowledge-root", str(root)],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+        self.assertEqual(1, result.returncode)
+        self.assertIn("log.sections", result.stdout)
+
+    def test_target_contract_is_compared_without_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "knowledge").mkdir()
+            (root / "governance/schemas").mkdir(parents=True)
+            (root / "governance/contracts").mkdir(parents=True)
+            (root / "governance/schemas/registries.yaml").write_text("{}\n", encoding="utf-8")
+            marker = root / "import-executed"
+            (root / "governance/contracts/knowledge.py").write_text(
+                "from pathlib import Path\n"
+                f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [sys.executable, str(LINT), "--knowledge-root", str(root), "--sample", "1"],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            executed = marker.exists()
+        self.assertEqual(2, result.returncode)
+        self.assertIn("does not match", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertFalse(executed)
+
+    def test_invalid_schema_returns_operational_error_without_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            schema_path = root / "governance/schemas/frontmatter.schema.json"
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            schema["type"] = "invalid-json-schema-type"
+            schema_path.write_text(json.dumps(schema), encoding="utf-8")
+            result = subprocess.run(
+                [sys.executable, str(LINT), "--knowledge-root", str(root), "--sample", "1"],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+        self.assertEqual(2, result.returncode)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_bitbucket_branch_source_is_not_considered_pinned(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            result = self.run_lint(
+                root,
+                self.render_card(
+                    sources=(
+                        "  - resource: https://bitbucket.org/example/project/src/main/README.md\n"
+                        "    role: primary"
+                    )
+                ),
+            )
+        self.assertEqual(1, result.returncode)
+        self.assertIn("source.pin", result.stdout)
+
+
 class MigratedSkillContractTests(unittest.TestCase):
+    def test_lint_rejects_truncated_description_and_body(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(ROOT / "governance", root / "governance")
+            card = root / "knowledge/ops/ascendc/apis/synthetic.md"
+            card.parent.mkdir(parents=True)
+            metadata = dict(SYNTHETIC_API_METADATA)
+            metadata["description"] = "表1 An incomplete summary..."
+            card.write_text(
+                "---\n"
+                + "\n".join(
+                    [
+                        f"type: {metadata['type']}",
+                        f"title: {metadata['title']}",
+                        f"description: {metadata['description']}",
+                        "tags: [task.lookup, topic.compilation]",
+                        "status: stable",
+                        "sources:",
+                        "  - resource: https://example.com/cann/synthetic-api",
+                        'created_at: "2026-08-18T00:00:00Z"',
+                        'updated_at: "2026-08-18T00:00:00Z"',
+                        "platforms: [a2]",
+                    ]
+                )
+                + "\n---\n\n# Synthetic\n\nThis field was cut...；next field.\n",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(LINT),
+                    "--knowledge-root",
+                    str(root),
+                    "--card",
+                    "knowledge/ops/ascendc/apis/synthetic.md",
+                ],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(1, result.returncode)
+            self.assertIn("body.truncated", result.stdout)
+            self.assertIn("frontmatter.truncated", result.stdout)
+            self.assertIn("frontmatter.description_placeholder", result.stdout)
+
     def test_query_receipt_is_versioned_and_never_overwritten(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            receipt = Path(temporary) / "search.json"
+            work = Path(temporary)
+            root = work / "repository"
+            shutil.copytree(ROOT / "governance", root / "governance")
+            (root / "knowledge").mkdir(parents=True)
+            built = subprocess.run(
+                [sys.executable, str(INDEX), "--knowledge-root", str(root), "build"],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(0, built.returncode, built.stderr)
+            receipt = work / "search.json"
             command = [
                 sys.executable,
                 str(QUERY),
                 "--knowledge-root",
-                str(ROOT),
+                str(root),
                 "search",
                 "--query",
-                "missing API",
+                "definitely_absent_cannbot_probe_9f6a",
                 "--technology",
                 "ascendc",
                 "--platform",

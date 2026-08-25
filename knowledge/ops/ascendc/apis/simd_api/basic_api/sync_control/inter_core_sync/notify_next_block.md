@@ -1,0 +1,28 @@
+---
+type: API
+title: NotifyNextBlock
+description: 通过写全局内存通知后序核当前核已执行完成，与WaitPreBlock和InitDetermineComputeWorkspace配合实现AIV核按blockIdx升序执行的确定性计算。
+tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.implementation.synchronization]
+status: stable
+sources:
+- resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_core_sync/NotifyNextBlock.md
+  role: primary
+created_at: '2026-08-18T14:51:00Z'
+updated_at: '2026-08-21T07:32:01Z'
+platforms: ['950', a2, a3]
+---
+# NotifyNextBlock
+
+头文件路径为："basic_api/kernel_operator_determine_compute_sync_intf.h"。
+
+WaitPreBlock和NotifyNextBlock是核间同步控制接口。NotifyNextBlock通过写全局内存来通知其他核当前核已执行完成，其他核可以继续往下执行；WaitPreBlock通过读取全局内存，判断当前核是否可以继续往下执行。
+
+WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合使用，这三个接口组合使用能够确保多个AIV核严格按照blockIdx的升序执行，适用于要求确定性计算的场景，确定性计算的具体含义
+
+参数：gmWorkspace(输入): 临时空间，通过写gmWorkspace通知其他核当前核已执行完成，其他核可以继续往下执行，类型为GlobalTensor。；ubWorkspace(输入): 临时空间，用于操作gmWorkspace，类型为LocalTensor。
+
+约束：- 要实现确定性计算，需要保证每个核调用NotifyNextBlock/WaitPreBlock接口的次数相同。如果调用了NotifyNextBlock没有与之配对的WaitPreBlock，会导致非确定性计算、输出结果可能不符合预期；如果调用了WaitPreBlock没有与之配对的NotifyNextBlock，会导致程序卡死。
+- 使用接口前，请确保已经调用InitDetermineComputeWorkspace接口，初始化共享内存。
+- gmWorkspace申请的空间最少要求为：GetBlockNum()*32Bytes，ubWorkspace申请的空间最少要求为：GetBlockNum()*32+32Bytes。
+
+仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core 支持。

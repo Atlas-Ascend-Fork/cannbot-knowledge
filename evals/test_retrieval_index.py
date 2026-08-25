@@ -4,6 +4,7 @@ import hashlib
 import io
 import json
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -42,10 +43,14 @@ repository knowledge cards.
 
 
 def make_root(target: Path) -> None:
-    shutil.copytree(ROOT / "knowledge", target / "knowledge")
     shutil.copytree(ROOT / "governance", target / "governance")
     api_root = target / "knowledge/ops/ascendc/apis"
-    api_root.mkdir()
+    api_root.mkdir(parents=True)
+    (target / "knowledge/index.md").write_text(
+        '---\nokf_version: "0.2"\n---\n\n# Test knowledge\n',
+        encoding="utf-8",
+    )
+    (target / "knowledge/ops/index.md").write_text("# Test ops\n", encoding="utf-8")
     (target / "knowledge/ops/ascendc/index.md").write_text(
         "# Ascend C 算子知识\n\n- [API](apis/index.md)：测试夹具中的 API 知识。\n",
         encoding="utf-8",
@@ -143,6 +148,52 @@ class RetrievalIndexTests(unittest.TestCase):
             self.assertEqual(governance_stale.returncode, 2)
             self.assertIn("governance changed", governance_stale.stderr)
 
+    def test_full_verify_rejects_tampered_query_tables(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            build = run_index(root, "build")
+            self.assertEqual(build.returncode, 0, build.stderr)
+            database = root / "artifacts/indexes/knowledge.sqlite3"
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    "UPDATE documents SET title = ?, search_text = ?",
+                    ("Forged index title", "forged index title"),
+                )
+                connection.commit()
+
+            verified = run_index(root, "verify", "--level", "full")
+            self.assertEqual(verified.returncode, 2)
+            self.assertIn("document differs from governed card", verified.stderr)
+
+            rebuild = run_index(root, "build")
+            self.assertEqual(rebuild.returncode, 0, rebuild.stderr)
+            with sqlite3.connect(database) as connection:
+                connection.execute(
+                    "UPDATE postings SET title_tf = title_tf + 1 "
+                    "WHERE (term, doc_id) = (SELECT term, doc_id FROM postings LIMIT 1)"
+                )
+                connection.commit()
+            postings_verified = run_index(root, "verify", "--level", "full")
+            self.assertEqual(postings_verified.returncode, 2)
+            self.assertIn("postings differ from governed card", postings_verified.stderr)
+
+    def test_target_contract_is_compared_without_execution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            marker = root / "target-contract-executed"
+            (root / "governance/contracts/knowledge.py").write_text(
+                "from pathlib import Path\n"
+                f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n",
+                encoding="utf-8",
+            )
+            build = run_index(root, "build")
+            executed = marker.exists()
+        self.assertEqual(build.returncode, 2)
+        self.assertIn("does not match", build.stderr)
+        self.assertFalse(executed)
+
     def test_query_contract_and_cli_compatibility(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -182,11 +233,157 @@ class RetrievalIndexTests(unittest.TestCase):
             self.assertEqual(missing_platform.returncode, 2)
             self.assertIn("platform is required", missing_platform.stderr)
 
+    def test_literal_search_prioritizes_title_and_ignores_managed_related_block(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            api_root = root / "knowledge/ops/ascendc/apis"
+            target = SYNTHETIC_CARD.replace(
+                "Synthetic API contract", "GetCurNpuArch"
+            ).replace(
+                "This fixture verifies indexed API lookup and audit behavior without depending on\n"
+                "repository knowledge cards.",
+                "Returns the current NPU architecture.",
+            )
+            (api_root / "get_cur_npu_arch.md").write_text(target, encoding="utf-8")
+            usage = SYNTHETIC_CARD.replace(
+                "Synthetic API contract", "Platform API usage"
+            ).replace(
+                "This fixture verifies indexed API lookup and audit behavior without depending on\n"
+                "repository knowledge cards.",
+                "Call GetCurNpuArch when selecting an architecture-specific implementation.",
+            )
+            (api_root / "platform_usage.md").write_text(usage, encoding="utf-8")
+            related = SYNTHETIC_CARD.replace(
+                "Synthetic API contract", "Related navigation only"
+            ).replace(
+                "This fixture verifies indexed API lookup and audit behavior without depending on\n"
+                "repository knowledge cards.",
+                "<!-- cannbot:related:start -->\n\n"
+                "# Related\n\n- [GetCurNpuArch](get_cur_npu_arch.md)\n\n"
+                "<!-- cannbot:related:end -->",
+            )
+            (api_root / "related_navigation.md").write_text(related, encoding="utf-8")
+
+            build = run_index(root, "build")
+            self.assertEqual(build.returncode, 0, build.stderr)
+            query = subprocess.run(
+                [
+                    sys.executable,
+                    str(QUERY),
+                    "--knowledge-root",
+                    str(root),
+                    "search",
+                    "--query",
+                    "GetCurNpuArch",
+                    "--technology",
+                    "ascendc",
+                    "--platform",
+                    "a2",
+                    "--match",
+                    "literal",
+                ],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(query.returncode, 0, query.stderr)
+            results = json.loads(query.stdout)["results"]
+            self.assertEqual("GetCurNpuArch", results[0]["title"])
+            self.assertEqual("Platform API usage", results[1]["title"])
+            self.assertNotIn("Related navigation only", [item["title"] for item in results])
+
 
 class RetrievalAuditTests(unittest.TestCase):
     @staticmethod
     def sha256(path: Path) -> str:
         return hashlib.sha256(path.read_bytes()).hexdigest()
+
+    def create_search_receipt(
+        self,
+        root: Path,
+        path: Path,
+        *,
+        platform: str,
+    ) -> dict[str, object]:
+        query = subprocess.run(
+            [
+                sys.executable,
+                str(QUERY),
+                "--knowledge-root",
+                str(root),
+                "search",
+                "--query",
+                "Synthetic API",
+                "--decision",
+                "api-contract",
+                "--technology",
+                "ascendc",
+                "--platform",
+                platform,
+                "--receipt",
+                str(path),
+            ],
+            check=False,
+            text=True,
+            capture_output=True,
+        )
+        self.assertEqual(query.returncode, 0, query.stderr)
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    @staticmethod
+    def write_state(
+        path: Path,
+        receipt_path: Path,
+        receipt: dict[str, object],
+        *,
+        platform: str,
+    ) -> None:
+        result = receipt["result"]
+        assert isinstance(result, dict)
+        hits = result["results"]
+        assert isinstance(hits, list) and hits and isinstance(hits[0], dict)
+        hit = hits[0]
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "cannbot-retrieval-state.v1",
+                    "target": {"entity": "Synthetic API", "platforms": [platform]},
+                    "decisions": [
+                        {
+                            "id": "api-contract",
+                            "question": "Which API contract applies?",
+                            "status": "covered",
+                            "receipts": [str(receipt_path)],
+                            "evidence": [
+                                {
+                                    "path": hit["path"],
+                                    "card_sha256": hit["card_sha256"],
+                                }
+                            ],
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+    @staticmethod
+    def validate_state(root: Path, state: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable,
+                str(STATE),
+                str(state),
+                "--knowledge-root",
+                str(root),
+                "--require-ready",
+            ],
+            check=False,
+            text=True,
+            capture_output=True,
+        )
 
     def test_ready_state_and_outcome_chain(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -411,6 +608,80 @@ class RetrievalAuditTests(unittest.TestCase):
             error_codes = {item["code"] for item in json.loads(checked.stdout)["errors"]}
             self.assertIn("receipt.request_hash", error_codes)
             self.assertIn("receipt.result_request", error_codes)
+
+    def test_state_rejects_receipt_for_another_platform(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            work = Path(temporary)
+            root = work / "repository"
+            make_root(root)
+            card = root / "knowledge/ops/ascendc/apis/synthetic_api.md"
+            card.write_text(
+                card.read_text(encoding="utf-8").replace("platforms: [a2]", "platforms: [a3]"),
+                encoding="utf-8",
+            )
+            build = run_index(root, "build")
+            self.assertEqual(build.returncode, 0, build.stderr)
+            receipt_path = work / "search.json"
+            receipt = self.create_search_receipt(root, receipt_path, platform="a3")
+            state_path = work / "state.json"
+            self.write_state(state_path, receipt_path, receipt, platform="a2")
+
+            checked = self.validate_state(root, state_path)
+            payload = json.loads(checked.stdout)
+        self.assertEqual(checked.returncode, 1)
+        self.assertFalse(payload["ready"])
+        self.assertIn("receipt.platform", {item["code"] for item in payload["errors"]})
+
+    def test_state_rejects_wrong_current_index_provenance(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            work = Path(temporary)
+            root = work / "repository"
+            make_root(root)
+            build = run_index(root, "build")
+            self.assertEqual(build.returncode, 0, build.stderr)
+            receipt_path = work / "search.json"
+            receipt = self.create_search_receipt(root, receipt_path, platform="a2")
+            result = receipt["result"]
+            assert isinstance(result, dict)
+            receipt_index = receipt["index"]
+            result_index = result["index"]
+            assert isinstance(receipt_index, dict) and isinstance(result_index, dict)
+            receipt_index["index_version"] = 999999
+            result_index["index_version"] = 999999
+            receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+            state_path = work / "state.json"
+            self.write_state(state_path, receipt_path, receipt, platform="a2")
+
+            checked = self.validate_state(root, state_path)
+            payload = json.loads(checked.stdout)
+        self.assertEqual(checked.returncode, 1)
+        self.assertFalse(payload["ready"])
+        self.assertIn("receipt.stale", {item["code"] for item in payload["errors"]})
+
+    def test_state_replays_and_rejects_forged_hits(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            work = Path(temporary)
+            root = work / "repository"
+            make_root(root)
+            build = run_index(root, "build")
+            self.assertEqual(build.returncode, 0, build.stderr)
+            receipt_path = work / "search.json"
+            receipt = self.create_search_receipt(root, receipt_path, platform="a2")
+            result = receipt["result"]
+            assert isinstance(result, dict)
+            results = result["results"]
+            assert isinstance(results, list) and results and isinstance(results[0], dict)
+            results[0]["title"] = "Forged receipt title"
+            result["hits"] = results
+            receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+            state_path = work / "state.json"
+            self.write_state(state_path, receipt_path, receipt, platform="a2")
+
+            checked = self.validate_state(root, state_path)
+            payload = json.loads(checked.stdout)
+        self.assertEqual(checked.returncode, 1)
+        self.assertFalse(payload["ready"])
+        self.assertIn("receipt.replay", {item["code"] for item in payload["errors"]})
 
 
 if __name__ == "__main__":

@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 import importlib.util
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 import unittest
 from argparse import ArgumentParser, _SubParsersAction
 from pathlib import Path
@@ -13,7 +16,7 @@ import yaml
 
 
 LINK_RE = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
-TAG_RE = re.compile(r"\b(?:task|topic|paradigm)\.[a-z][a-z0-9_]*\b")
+TAG_RE = re.compile(r"\b(?:task|topic|paradigm)(?:\.[a-z][a-z0-9_]*)+\b")
 
 
 class DocumentationContractTests(unittest.TestCase):
@@ -172,6 +175,36 @@ class DocumentationContractTests(unittest.TestCase):
                     failures.append(f"{skill.name}: {target}")
         self.assertEqual([], failures)
 
+    def test_skill_frontmatter_contract(self) -> None:
+        failures: list[str] = []
+        for skill in sorted((self.root / ".agents/skills").iterdir()):
+            if not skill.is_dir():
+                continue
+            text = (skill / "SKILL.md").read_text(encoding="utf-8")
+            parts = text.split("---", 2)
+            if len(parts) != 3 or parts[0].strip():
+                failures.append(f"{skill.name}: invalid frontmatter delimiters")
+                continue
+            node = yaml.compose(parts[1])
+            if not isinstance(node, yaml.MappingNode):
+                failures.append(f"{skill.name}: frontmatter is not a mapping")
+                continue
+            keys = [key.value for key, _ in node.value]
+            if len(keys) != len(set(keys)):
+                failures.append(f"{skill.name}: duplicate frontmatter key")
+                continue
+            metadata = yaml.safe_load(parts[1])
+            if not isinstance(metadata, dict) or set(metadata) != {"name", "description"}:
+                failures.append(f"{skill.name}: frontmatter requires only name and description")
+                continue
+            if metadata["name"] != skill.name or not str(metadata["description"]).strip():
+                failures.append(f"{skill.name}: invalid name or description")
+        self.assertEqual([], failures)
+
+    def test_unified_gate_enables_strict_source_navigation(self) -> None:
+        check = (self.root / "check.sh").read_text(encoding="utf-8")
+        self.assertIn("--strict-navigation", check)
+
     def test_skill_sources_do_not_contain_agent_vendor_metadata(self) -> None:
         vendor_metadata = sorted(
             path.relative_to(self.root).as_posix()
@@ -225,6 +258,86 @@ class DocumentationContractTests(unittest.TestCase):
                 if token in text:
                     failures.append(f"{document.relative_to(self.root)}: {token}")
         self.assertEqual([], failures)
+
+    def test_local_source_fetch_uses_fixed_archive_and_is_ignored(self) -> None:
+        script = (self.root / "fetch-cann-docs.sh").read_text(encoding="utf-8")
+        ignored = (self.root / ".gitignore").read_text(encoding="utf-8").splitlines()
+        self.assertIn("cann-docs-raw/", ignored)
+        self.assertIn('${BASH_SOURCE[0]}', script)
+        self.assertIn("mktemp -d", script)
+        self.assertIn("EXPECTED_SHA256=", script)
+        self.assertIn('sha256sum "$TMP_TAR"', script)
+        self.assertIn('archive_sha256=$EXPECTED_SHA256', script)
+        self.assertIn("Refusing to overwrite incomplete source directory", script)
+
+    def test_local_source_fetch_reuses_only_matching_archive_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copy2(self.root / "fetch-cann-docs.sh", root / "fetch-cann-docs.sh")
+            source = root / "cann-docs-raw/docs/example.md"
+            source.parent.mkdir(parents=True)
+            source.write_text("fixed source\n", encoding="utf-8")
+            archive_sha256 = "9bc4341ac90740121a20b0ab9d30c6020784bd5969a119e77ab9402a4e6b68c4"
+            (source.parents[1] / ".complete").write_text(
+                f"archive_sha256={archive_sha256}\n",
+                encoding="utf-8",
+            )
+            registries = root / "governance/schemas/registries.yaml"
+            registries.parent.mkdir(parents=True)
+            registries.write_text(
+                "local_sources:\n"
+                "  cann_docs_raw:\n"
+                f"    archive_sha256: {archive_sha256}\n",
+                encoding="utf-8",
+            )
+
+            verified = subprocess.run(
+                ["bash", str(root / "fetch-cann-docs.sh")],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(0, verified.returncode, verified.stderr)
+            marker = (root / "cann-docs-raw/.complete").read_text(encoding="utf-8")
+            self.assertIn("archive_sha256=", marker)
+
+            (root / "cann-docs-raw/.complete").write_text(
+                "archive_sha256=" + "0" * 64 + "\n",
+                encoding="utf-8",
+            )
+            mismatched = subprocess.run(
+                ["bash", str(root / "fetch-cann-docs.sh")],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertNotEqual(0, mismatched.returncode)
+            self.assertIn("Refusing to overwrite incomplete source directory", mismatched.stderr)
+
+    def test_ingest_distinguishes_git_and_fixed_archive_reference(self) -> None:
+        skill = (
+            self.root / ".agents/skills/knowledge-ingest/SKILL.md"
+        ).read_text(encoding="utf-8")
+        onboarding = (
+            self.root / ".agents/skills/knowledge-ingest/references/source-onboarding.md"
+        ).read_text(encoding="utf-8")
+        reference = (
+            self.root / ".agents/skills/knowledge-ingest/references/official-reference-ingest.md"
+        ).read_text(encoding="utf-8")
+        incremental = (
+            self.root / ".agents/skills/knowledge-ingest/references/incremental-sync.md"
+        ).read_text(encoding="utf-8")
+        version = (
+            self.root / ".agents/skills/knowledge-ingest/references/version-upgrade.md"
+        ).read_text(encoding="utf-8")
+        spec = (self.root / "governance/specs/skills.md").read_text(encoding="utf-8")
+
+        self.assertIn("Git Reference 批次", skill)
+        self.assertIn("固定归档批次不生成 inventory、ledger 或 verification receipt", onboarding)
+        self.assertIn("固定归档批次不生成 inventory、ledger 或 verification receipt", reference)
+        self.assertIn("固定归档不走本流程", incremental)
+        self.assertIn("固定归档的 archive SHA-256 切换当前尚未实现", version)
+        self.assertIn("固定归档批次以 Registry 中的 archive SHA-256 固定来源", spec)
 
     def test_documented_tags_are_registered(self) -> None:
         registered = set(self.registries["tags"])

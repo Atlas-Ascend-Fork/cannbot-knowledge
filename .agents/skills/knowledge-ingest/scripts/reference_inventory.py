@@ -18,6 +18,12 @@ from urllib.parse import unquote
 
 import yaml
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from knowledge_ingest import contract_module, load_contract  # noqa: E402
+
 
 SCHEMA = "cannbot-reference-inventory.v1"
 LEDGER_SCHEMA = "cannbot-reference-ledger.v1"
@@ -267,14 +273,10 @@ def valid_target(value: object) -> bool:
 
 def target_contract(value: str):
     root = Path(value).resolve()
-    contract_path = root / "governance/contracts/knowledge.py"
-    if not contract_path.is_file():
+    if not (root / "knowledge").is_dir():
         raise ValueError(f"not a cannbot-knowledge root: {root}")
-    if str(root) not in sys.path:
-        sys.path.insert(0, str(root))
-    from governance.contracts.knowledge import Contract, split_frontmatter
-
-    return root, Contract(root), split_frontmatter
+    contract = load_contract(root)
+    return root, contract, contract_module().split_frontmatter
 
 
 def source_binds_entry(resource: object, inventory: dict[str, Any], path: str) -> bool:

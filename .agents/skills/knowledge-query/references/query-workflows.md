@@ -9,7 +9,7 @@
 3. 为每个 decision 运行窄查询，保存独立 receipt。互不依赖的 decision 可以并行，但 receipt 路径不能复用。
 4. 选择性读取少量候选卡和固定来源，只记录来源事实、适用边界、negative evidence、conflict 和 gap。
 5. 主任务将 decision 标为 `covered`、`conflicting`、`insufficient` 或 `gap`。只对未解决项补搜；补搜应从实体转向错误信号、从机制转向 API 契约或从现象转向验证过的修复路径。
-6. 无新增证据或达到预算时停止。把 target、decision、receipt 和采用的卡片路径/指纹冻结为 `cannbot-retrieval-state.v1`；全部 covered 后运行 `retrieval_state.py --require-ready --receipt`。生成的 ready receipt 会绑定全部 search receipt 的 SHA-256。
+6. 无新增证据或达到预算时停止。把 target、decision、receipt 和采用的卡片路径/指纹冻结为 `cannbot-retrieval-state.v1`；每条 receipt 必须使用与 target 完全相同的平台集合。全部 covered 后运行 `retrieval_state.py --require-ready --receipt`，它会核对完整索引 provenance 并重放过滤、评分、排序和命中；生成的 ready receipt 会绑定全部 search receipt 的 SHA-256。
 7. 实现后的正确性、性能和平台实验写入 `cannbot-retrieval-outcome.v1`，绑定 state、ready receipt 和真实产物 SHA-256，再运行 `retrieval_outcome.py --require-complete --receipt`。不得修改原始 search receipt；任何改动都会使 outcome 链失效。
 
 最小 state：

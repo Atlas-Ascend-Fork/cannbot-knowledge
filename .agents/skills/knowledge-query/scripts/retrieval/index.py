@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 import re
 import sqlite3
+import sys
 import tempfile
 from collections import Counter
 from dataclasses import dataclass
@@ -16,10 +18,13 @@ from typing import Any, Iterable
 from .root import repository_state, sha256_file
 
 
-INDEX_VERSION = 1
+INDEX_VERSION = 2
 INDEX_SCHEMA = "cannbot-knowledge-index.v1"
 INDEX_RELATIVE_PATH = Path("artifacts/indexes/knowledge.sqlite3")
 TOKEN_RE = re.compile(r"[a-zA-Z0-9_+./:-]+|[\u4e00-\u9fff]{2,}")
+MANAGED_RELATED_RE = re.compile(
+    r"(?ms)^<!-- cannbot:related:start -->.*?^<!-- cannbot:related:end -->\s*"
+)
 GOVERNANCE_INPUTS = (
     "governance/contracts/knowledge.py",
     "governance/schemas/frontmatter.schema.json",
@@ -87,14 +92,31 @@ def query_tokens(value: str) -> list[str]:
     return list(token_counts(value))
 
 
-def _load_contract(root: Path):
-    import sys
+def searchable_body(body: str) -> str:
+    """Exclude generated navigation blocks from knowledge search."""
+    return MANAGED_RELATED_RE.sub("", body).strip()
 
-    if str(root) not in sys.path:
-        sys.path.insert(0, str(root))
-    from governance.contracts.knowledge import Contract, split_frontmatter
 
-    return Contract(root), split_frontmatter
+def load_contract(root: Path):
+    """Load this Skill's Contract after comparing the target copy without executing it."""
+    source = Path(__file__).resolve().parents[5] / "governance/contracts/knowledge.py"
+    target = root / "governance/contracts/knowledge.py"
+    if not target.is_file():
+        raise ValueError(f"not a governed cannbot-knowledge root: {root}")
+    if source.resolve() != target.resolve() and source.read_bytes() != target.read_bytes():
+        raise ValueError(
+            "target governance contract does not match this knowledge-query version"
+        )
+    module_name = "_cannbot_knowledge_query_contract"
+    module = sys.modules.get(module_name)
+    if module is None:
+        spec = importlib.util.spec_from_file_location(module_name, source)
+        if spec is None or spec.loader is None:
+            raise ValueError(f"cannot load governance contract: {source}")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+    return module.Contract(root), module.split_frontmatter
 
 
 def _card_files(root: Path) -> list[Path]:
@@ -159,7 +181,7 @@ def _create_schema(connection: sqlite3.Connection) -> None:
 
 def build_index(root: Path) -> dict[str, Any]:
     root = root.resolve()
-    contract, split_frontmatter = _load_contract(root)
+    contract, split_frontmatter = load_contract(root)
     destination = index_path(root)
     destination.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_value = tempfile.mkstemp(
@@ -211,7 +233,10 @@ def build_index(root: Path) -> dict[str, Any]:
                 description = str(metadata.get("description", ""))
                 tags = " ".join(str(value) for value in metadata.get("tags", []))
                 aliases = " ".join(str(value) for value in metadata.get("aliases", []))
-                search_text = "\n".join((title, description, tags, aliases, body)).lower()
+                indexed_body = searchable_body(body)
+                search_text = "\n".join(
+                    (title, description, tags, aliases, indexed_body)
+                ).lower()
                 fingerprint = card_fingerprint(metadata, body)
                 connection.execute(
                     """
@@ -240,7 +265,7 @@ def build_index(root: Path) -> dict[str, Any]:
                     token_counts(description),
                     token_counts(tags),
                     token_counts(aliases),
-                    token_counts(body),
+                    token_counts(indexed_body),
                 )
                 all_terms = set().union(*(set(field) for field in fields))
                 connection.executemany(
@@ -295,15 +320,119 @@ def _connect_readonly(path: Path) -> sqlite3.Connection:
     return connection
 
 
-def verify_index(root: Path, *, full: bool = False) -> dict[str, Any]:
-    root = root.resolve()
-    path = index_path(root)
-    if not path.is_file():
-        raise ValueError(f"knowledge index is missing: {path}; run knowledge_index.py build")
-    try:
-        connection = _connect_readonly(path)
-    except sqlite3.Error as exc:
-        raise ValueError(f"cannot open knowledge index {path}: {exc}") from exc
+def _verify_query_tables(
+    connection: sqlite3.Connection,
+    root: Path,
+    current_paths: dict[str, Path],
+    metadata: dict[str, Any],
+) -> None:
+    """Bind the query-facing SQLite rows to the governed source cards."""
+    contract, split_frontmatter = load_contract(root)
+    document_count = int(connection.execute("SELECT COUNT(*) FROM documents").fetchone()[0])
+    if document_count != len(current_paths):
+        raise ValueError("knowledge index document count is inconsistent; rebuild the index")
+
+    expected_posting_count = 0
+    for expected_doc_id, (relative, card_path) in enumerate(current_paths.items(), start=1):
+        raw = card_path.read_bytes()
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValueError(f"knowledge card is not UTF-8: {card_path}") from exc
+        card_metadata, body = split_frontmatter(text)
+        if card_metadata is None:
+            raise ValueError(f"invalid card {card_path}: missing frontmatter")
+        path_info = contract.derive_card_path(Path(relative))
+        issues = contract.validate_card(Path(relative), card_metadata, body)
+        if issues:
+            detail = "; ".join(f"{item.code}: {item.message}" for item in issues)
+            raise ValueError(f"invalid card {card_path}: {detail}")
+
+        title = str(card_metadata.get("title", ""))
+        description = str(card_metadata.get("description", ""))
+        tags = " ".join(str(value) for value in card_metadata.get("tags", []))
+        aliases = " ".join(str(value) for value in card_metadata.get("aliases", []))
+        indexed_body = searchable_body(body)
+        search_text = "\n".join((title, description, tags, aliases, indexed_body)).lower()
+        expected_document = (
+            expected_doc_id,
+            path_info.doc_id,
+            relative,
+            path_info.domain,
+            path_info.route,
+            path_info.card_type,
+            str(card_metadata.get("type", "")),
+            str(card_metadata.get("status", "")),
+            title,
+            description,
+            body,
+            search_text,
+            _canonical_json(card_metadata),
+            len(text.splitlines()),
+            card_fingerprint(card_metadata, body),
+        )
+        row = connection.execute(
+            """
+            SELECT doc_id, concept_id, relative_path, domain, technology, profile,
+                   okf_type, status, title, description, body, search_text,
+                   metadata_json, card_lines, card_sha256
+            FROM documents WHERE relative_path = ?
+            """,
+            (relative,),
+        ).fetchone()
+        if row is None or tuple(row) != expected_document:
+            raise ValueError(
+                f"knowledge index document differs from governed card: {relative}; rebuild the index"
+            )
+
+        fields = (
+            token_counts(title),
+            token_counts(description),
+            token_counts(tags),
+            token_counts(aliases),
+            token_counts(indexed_body),
+        )
+        all_terms = set().union(*(set(field) for field in fields))
+        expected_postings = {
+            term: tuple(field.get(term, 0) for field in fields) for term in all_terms
+        }
+        actual_postings = {
+            str(posting["term"]): (
+                int(posting["title_tf"]),
+                int(posting["description_tf"]),
+                int(posting["tags_tf"]),
+                int(posting["aliases_tf"]),
+                int(posting["body_tf"]),
+            )
+            for posting in connection.execute(
+                """
+                SELECT term, title_tf, description_tf, tags_tf, aliases_tf, body_tf
+                FROM postings WHERE doc_id = ?
+                """,
+                (expected_doc_id,),
+            )
+        }
+        if actual_postings != expected_postings:
+            raise ValueError(
+                f"knowledge index postings differ from governed card: {relative}; rebuild the index"
+            )
+        expected_posting_count += len(expected_postings)
+
+    actual_posting_count = int(connection.execute("SELECT COUNT(*) FROM postings").fetchone()[0])
+    if (
+        actual_posting_count != expected_posting_count
+        or metadata.get("posting_count") != expected_posting_count
+    ):
+        raise ValueError("knowledge index posting count is inconsistent; rebuild the index")
+
+
+def _verify_connection(
+    root: Path,
+    path: Path,
+    connection: sqlite3.Connection,
+    *,
+    full: bool,
+) -> dict[str, Any]:
     try:
         check = connection.execute("PRAGMA quick_check").fetchone()[0]
         if check != "ok":
@@ -323,7 +452,7 @@ def verify_index(root: Path, *, full: bool = False) -> dict[str, Any]:
             )
         }
         current_paths = {
-            path.relative_to(root).as_posix(): path for path in _card_files(root)
+            card.relative_to(root).as_posix(): card for card in _card_files(root)
         }
         if set(manifest) != set(current_paths):
             raise ValueError("knowledge card set changed after index build; rebuild the index")
@@ -343,11 +472,38 @@ def verify_index(root: Path, *, full: bool = False) -> dict[str, Any]:
             raise ValueError("knowledge content fingerprint is stale; rebuild the index")
         if metadata.get("card_count") != len(manifest):
             raise ValueError("knowledge index card count is inconsistent; rebuild the index")
+        if full:
+            _verify_query_tables(connection, root, current_paths, metadata)
         return metadata
     except sqlite3.Error as exc:
         raise ValueError(f"invalid knowledge index {path}: {exc}") from exc
-    finally:
+
+
+def _open_verified_index(
+    root: Path,
+    *,
+    full: bool,
+) -> tuple[sqlite3.Connection, dict[str, Any]]:
+    root = root.resolve()
+    path = index_path(root)
+    if not path.is_file():
+        raise ValueError(f"knowledge index is missing: {path}; run knowledge_index.py build")
+    try:
+        connection = _connect_readonly(path)
+    except sqlite3.Error as exc:
+        raise ValueError(f"cannot open knowledge index {path}: {exc}") from exc
+    try:
+        metadata = _verify_connection(root, path, connection, full=full)
+    except Exception:
         connection.close()
+        raise
+    return connection, metadata
+
+
+def verify_index(root: Path, *, full: bool = False) -> dict[str, Any]:
+    connection, metadata = _open_verified_index(root, full=full)
+    connection.close()
+    return metadata
 
 
 def open_index(
@@ -355,8 +511,7 @@ def open_index(
     *,
     full: bool = False,
 ) -> tuple[sqlite3.Connection, dict[str, Any]]:
-    metadata = verify_index(root, full=full)
-    return _connect_readonly(index_path(root)), metadata
+    return _open_verified_index(root, full=full)
 
 
 def load_cards(connection: sqlite3.Connection) -> list[IndexedCard]:
@@ -396,6 +551,29 @@ def posting_scores(connection: sqlite3.Connection, terms: list[str]) -> dict[int
         FROM postings WHERE term IN ({placeholders}) GROUP BY doc_id
         """,
         terms,
+    )
+    return {int(row["doc_id"]): float(row["score"]) for row in rows}
+
+
+def literal_scores(connection: sqlite3.Connection, phrase: str) -> dict[int, float]:
+    """Rank literal hits by the field that contains the complete phrase."""
+    if not phrase:
+        return {}
+    normalized = phrase.lower()
+    rows = connection.execute(
+        """
+        SELECT doc_id,
+               CASE
+                   WHEN lower(title) = ? THEN 12.0
+                   WHEN instr(lower(title), ?) > 0 THEN 8.0
+                   WHEN instr(lower(description), ?) > 0 THEN 4.0
+                   WHEN instr(lower(body), ?) > 0 THEN 1.0
+                   ELSE 0.5
+               END AS score
+        FROM documents
+        WHERE instr(search_text, ?) > 0
+        """,
+        (normalized, normalized, normalized, normalized, normalized),
     )
     return {int(row["doc_id"]): float(row["score"]) for row in rows}
 

@@ -3,7 +3,7 @@
 需要浏览知识关系时，运行：
 
 ```bash
-python3 <skill-dir>/scripts/build_graph.py --knowledge-root <repo>
+python3 <skill-dir>/scripts/knowledge_ingest.py --knowledge-root <repo> build-graph
 ```
 
 `<skill-dir>` 是 `knowledge-ingest/SKILL.md` 所在目录，应先解析为实际路径；命令不依赖调用者的当前工作目录。

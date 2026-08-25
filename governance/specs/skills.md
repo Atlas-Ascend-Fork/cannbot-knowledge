@@ -9,14 +9,14 @@
 | Skill | 输入 | 输出 | 写入边界 |
 |---|---|---|---|
 | `knowledge-query` | 技术问题、decision、目标平台和可选范围条件 | 实际覆盖、候选 OKF Concept 或 search/ready/outcome receipt | 只读；只在调用方指定路径创建新审计产物 |
-| `knowledge-ingest` | 固定来源、变化类型、目标路径和待表达结论 | 路由决策、候选 Concept、来源账本；可重建本地图谱 | 可以创建候选卡和 ignored 产物，不覆盖已有知识卡、不提交、不发布 |
-| `knowledge-lint` | 单卡、完整知识仓、Skill 镜像或问题材料 | 确定性错误报告或可复现 Issue 草稿 | 只读 |
+| `knowledge-ingest` | 固定来源、变化类型、目标路径和待表达结论 | 路由决策、候选 Concept、Git 来源账本；可重建本地图谱 | 可以创建候选卡和 ignored 产物，不覆盖已有知识卡、不提交、不发布 |
+| `knowledge-lint` | 单卡、完整知识仓或问题材料 | 确定性错误报告或可复现 Issue 草稿 | 只读 |
 
 典型贡献流程是先 Query 查重，再由 Ingest 形成候选卡，随后执行全库 Lint，最后用目标条件验证新卡可以被 Query 召回。只读问答不需要执行完整流程；人工编辑已有卡也可以不用创建能力，但仍应查重、Lint 和验证召回。
 
 ## Query
 
-Query 是 CANNBot Profile 的专用、确定性、只读 consumer。索引构建器先按统一 Contract 校验全部 Concept，再把卡片、词项、行数和指纹原子写入 ignored 的 `artifacts/indexes/`。日常 Query 只消费经过校验的持久化索引，并对卡片集合、时间戳和治理指纹执行 stale check；索引缺失、损坏或陈旧时失败关闭，不临时扫描全库或静默重建。
+Query 是 CANNBot Profile 的专用、确定性、只读 consumer。索引构建器先按统一 Contract 校验全部 Concept，再把卡片、词项、行数和指纹原子写入 ignored 的 `artifacts/indexes/`。日常 Query 只消费经过校验的持久化索引，并对卡片集合、时间戳和治理指纹执行 stale check；完整校验还会从知识卡重新推导 document/posting 行，并继续使用同一只读连接。索引缺失、损坏、查询表不一致或内容陈旧时失败关闭，不临时扫描全库或静默重建。
 
 它提供两类能力：
 
@@ -45,20 +45,22 @@ Profile 过滤使用目录 ID，例如 `apis`；结果同时返回 OKF `type: AP
 
 较低信任层级会降权，但不构成访问控制。结果中的摘要和最多两个来源只是选择线索；调用方必须打开 `local_path` 阅读正文、范围和完整来源。零命中只说明当前条件下未召回，不证明技术能力不存在。
 
-搜索输出绑定 schema、完整请求、canonical 请求指纹、语料/治理指纹、仓库状态、行数和卡片 SHA-256。复杂任务按 decision 原子保存不可覆盖 search receipt；随后冻结 retrieval state，重新校验 receipt 内外结构、请求指纹、证据和当前索引，在全部 decision covered 后生成绑定每个 search receipt 文件 SHA-256 的 ready receipt，并用 outcome manifest 将未被修改的检索链、目标平台实验及产物 SHA-256 绑定到原 decision。
+搜索输出绑定 schema、完整请求、canonical 请求指纹、语料/治理指纹、仓库状态、行数和卡片 SHA-256。复杂任务按 decision 原子保存不可覆盖 search receipt；随后冻结 retrieval state，要求每条 receipt 与 state 使用完全相同的目标平台集合，核对完整索引 provenance，并按原请求重放过滤、评分、排序和命中。在全部 decision covered 后生成绑定每个 search receipt 文件 SHA-256 的 ready receipt，并用 outcome manifest 将未被修改的检索链、目标平台实验及产物 SHA-256 绑定到原 decision。
 
 ## Ingest
 
 Ingest 是所有摄入请求的唯一入口，把可核验材料蒸馏成候选 Concept，不批量镜像上游内容，不保存中间推理。
 
-1. 先按首次接入、同 ref 增量或版本升级路由，再按来源类型选择已迁移 producer；未迁移 producer 明确 defer。
+1. 先区分 Git 与 Registry 登记的固定归档；Git 再按首次接入、同 ref 增量或版本升级路由，固定归档直接读取恢复后的来源；未迁移 producer 明确 defer。
 2. Query 查重，决定 create、update、merge、split、deprecate 或 defer。
 3. 选择 domain、technology/scope 和路径 Profile；Profile 自动决定 OKF `type` 和允许字段。
 4. 固定并完整读取来源，区分来源事实、合理推导和待验证假设。
 5. 将结论、适用范围、失败边界和验证方法写入正文，不复制大段上游内容。
 6. 新卡默认 `draft`；只有来源、范围和正文满足消费门槛后才使用 `stable`。
-7. 写入前调用统一 Contract，并拒绝覆盖已有卡。
+7. 写入前调用统一 Contract，并用排他原子创建拒绝覆盖已有卡。
 8. 创建后由贡献者更新索引和当天日志，再执行全库 Lint 与目标 Query。
+
+Git Reference 批次使用 inventory、ledger 和不可覆盖 receipt；固定归档批次以 Registry 中的 archive SHA-256 固定来源，直接执行查重、蒸馏和建卡，不生成这三类批次产物。固定归档切换到新 archive SHA-256 的流程尚未实现，必须 defer。
 
 `verified` 只在掌握真实 actor 和时间时填写。固定来源或创建成功不自动产生验证事件。Interoperability 必须位于同领域 `shared`，并声明两个不同的已注册技术端点。
 
@@ -70,15 +72,14 @@ Lint 是离线、只读、确定性的作者门禁，比 OKF 最小 conformance 
 
 | 范围 | 检查内容 |
 |---|---|
-| OKF/CANNBot Profile | 根版本、非空 `type`、路径 Profile 映射、JSON Schema 和字段白名单 |
+| OKF/CANNBot Profile | 根版本、YAML mapping 唯一 key、非空 `type`、路径 Profile 映射、JSON Schema 和字段白名单 |
 | 路径与受控值 | domain-route、附加层级、文件名、platform、Tag、技术端点 |
-| 生命周期与来源 | `status`、时间、`verified` actor、`replaced_by`、来源形状和 Git commit 固定格式 |
-| 导航、正文与日志 | domain 根和 `ops`/`model` route 骨架完整；每层索引列出直接子项；Markdown 目标存在；正文无冲突/图片/占位；日志格式与倒序正确 |
-| Skill 镜像 | 规范源与指定 Plugin 镜像的文件集合和内容一致 |
+| 生命周期与来源 | `status`、有效日历时间、`verified` actor、`replaced_by`、来源形状、Git commit 固定格式；本地来源获取脚本存在且可执行，已恢复来源的归档标记和在用文件存在 |
+| 导航、正文与日志 | domain 根和 `ops`/`model` route 骨架完整；每层索引列出直接子项；行内/显式引用式 Markdown 目标是 Bundle 内的现有文件；正文无冲突/图片/占位；日志格式、必需 section 与倒序正确 |
 
-单卡检查不覆盖父级索引和完整目录树；新增、删除或移动文件后必须执行全库检查。Lint 只确认链接目标存在，不验证 Markdown 锚点。
+单卡检查不覆盖父级索引和完整目录树；新增、删除或移动文件后必须执行全库检查。统一门禁启用严格来源导航，要求宽 Git tree 来源由同仓库、同 revision 的 blob 来源或正文链接定位。Lint 只确认链接目标和 Bundle 边界，不验证 Markdown 锚点。
 
-Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、实验能否复现、shared 泛化是否合理或跨 DSL 是否等价。结构通过不等于结论正确。知识内容、检索、图谱、编译、治理或下游使用问题的材料整理也由 Lint 承载；它只生成本地 Issue 草稿和 `needs-info`，不会自行向外部系统提交。
+Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、实验能否复现、shared 泛化是否合理或跨 DSL 是否等价。Registry 本地来源根不存在时不要求联网恢复；存在时才核对 archive SHA-256 完成标记和被引用文件。Lint 固定执行自身版本的 Contract，目标根 Contract 不一致时失败，不导入目标根 Python。结构通过不等于结论正确。知识内容、检索、图谱、编译、治理或下游使用问题的材料整理也由 Lint 承载；它只生成本地 Issue 草稿和 `needs-info`，不会自行向外部系统提交。
 
 ## 共同约束
 
@@ -88,15 +89,13 @@ Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、�
 - CANN、DSL、API、算子、调试和优化事实进入 `knowledge/`，不埋在 Skill 指令中。
 - 官方 reference 来源盘点与摄入路由属于 Ingest，Issue 材料整理属于 Lint；它们不增加公开 Skill。其他专用 ingest producer 通过后续 PR 逐项接入统一路由。
 
-## 安装模式与发布镜像
+## 安装模式
 
 | 安装模式 | Skill | 场景 |
 |---|---|---|
 | `consumer` | `knowledge-query` | 只读查阅和技术问答 |
 | `contributor` | 全部三个 Skill | 贡献知识、治理规则或 Skill |
 
-知识仓安装入口始终把平台中立的规范源链接到目标项目 `.agents/skills/`，再在 Skill 目录之外创建客户端适配链接；同时准备索引、写项目级知识根配置并维护 Agent 提示词入口。Marketplace 从 Plugin 仓提供 consumer、contributor 和 Team 套件；复制式安装必须另行配置知识根。两种方式都要求知识仓独立可用，不复制 `knowledge/` 正文或修改用户全局配置。
+知识仓安装入口把平台中立的规范源链接到目标项目 `.agents/skills/`，再在 Skill 目录之外创建客户端适配链接；同时准备索引、写项目级知识根配置并维护 Agent 提示词入口。复制式安装必须另行配置知识根。两种方式都要求知识仓独立可用，不复制 `knowledge/` 正文或修改用户全局配置。
 
-`.agents/skills/` 是规范源，`cannbot-skills/plugins-community/cannbot-knowledge/skills/` 是完整发布镜像。Skill 先在规范源修改和验证，再完整同步镜像；镜像不得独立演进。
-
-知识正文、机器规则、Contract 和 Skill 规范源以知识仓 Git commit 标识；Marketplace 套件和 Team Plugin 使用自己的 SemVer。知识变化不自动等于 Plugin 破坏性变更；只有 Skill 接口、安装入口或套件内容不再兼容时，才按 Plugin 规则提升相应主版本。正式发布应记录配套的知识 commit 与 Plugin 版本，并在两个仓库的 PR、tag 或 release notes 中互相引用。
+知识正文、机器规则、Contract 和 Skill 规范源都以本仓 Git commit 标识。

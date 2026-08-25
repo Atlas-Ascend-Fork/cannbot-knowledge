@@ -145,12 +145,55 @@ cases:
       - ops/shared/concepts/shared_alignment_boundary
     expected_count: 1
   - id: empty_ascendc_search
-    query: target API
+    query: definitely_absent_cannbot_probe_9f6a
     filters:
       technology: ascendc
       platform: a2
       status: stable
     expected_count: 0
+  - id: repository_ascendc_assert
+    query: assert AI CPU 断言
+    filters:
+      technology: ascendc
+      type: apis
+      platform: a2
+      status: stable
+      k: 3
+    expected:
+      - ops/ascendc/apis/ai_cpu_api/assert
+  - id: repository_tiling_key_exact_title
+    query: GET_TPL_TILING_KEY
+    filters:
+      technology: ascendc
+      type: apis
+      platform: a2
+      status: stable
+      match: literal
+      k: 3
+    expected:
+      - ops/ascendc/apis/utils_api/tiling_template_programming/get_tpl_tiling_key
+  - id: repository_rtc_create_program_exact_title
+    query: aclrtcCreateProg
+    filters:
+      technology: ascendc
+      type: apis
+      platform: a2
+      status: stable
+      match: literal
+      k: 3
+    expected:
+      - ops/ascendc/apis/utils_api/rtc/aclrtc_create_prog
+  - id: repository_mc2_tuning_guide
+    query: MC²算子性能调优案例
+    filters:
+      technology: ascendc
+      type: guides
+      platform: a2
+      status: stable
+      match: literal
+      k: 3
+    expected:
+      - ops/ascendc/guides/operator_practice/best_practices/mc_operator_tuning
   - id: empty_triton_concepts_search
     query: programming model
     filters:

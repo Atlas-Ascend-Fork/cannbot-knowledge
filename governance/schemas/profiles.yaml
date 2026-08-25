@@ -21,6 +21,10 @@ profiles:
     okf_type: Example
     required: [platforms]
     optional: [cann_versions, verified, replaced_by]
+  guides:
+    okf_type: Guide
+    required: [platforms]
+    optional: [cann_versions, aliases, verified, replaced_by]
   operators:
     okf_type: Operator
     required: [platforms]

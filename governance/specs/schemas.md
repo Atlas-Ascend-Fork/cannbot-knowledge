@@ -1,6 +1,6 @@
 # Schema、Registry 与 Contract
 
-`governance/schemas/` 保存声明式机器规则，`governance/contracts/` 负责组合和执行这些规则。Spec 解释语义和贡献边界，但不是另一套机器事实源。
+`governance/schemas/` 保存声明式机器规则，`governance/contracts/` 负责组合和执行这些规则。所有 YAML mapping 拒绝重复 key，避免解析时静默覆盖规则或卡片字段。Spec 解释语义和贡献边界，但不是另一套机器事实源。
 
 ## 唯一职责
 
@@ -8,8 +8,8 @@
 |---|---|---|
 | `schemas/frontmatter.schema.json` | OKF 与扩展字段白名单、数据类型、数组形状和基础枚举 | 不按路径 Profile 选择字段，不保存平台或标签词表 |
 | `schemas/profiles.yaml` | 八个公共必选字段、Profile 到 OKF `type` 的映射、各 Profile 字段组合 | 不定义字段数据类型，不判断路径是否合法 |
-| `schemas/registries.yaml` | domain、route、platform、标签和受控附加路径值 | 不保存知识正文、来源列表、发布版本或变更历史 |
-| `contracts/knowledge.py` | 路径推导、声明组合、跨字段/文件关系、导航和 Skill 镜像比较 | 不复制平行枚举，不判断技术结论是否正确 |
+| `schemas/registries.yaml` | domain、route、platform、标签、受控附加路径值和固定归档本地来源 | 不保存知识正文、逐卡来源、发布版本或变更历史 |
+| `contracts/knowledge.py` | 路径推导、声明组合、跨字段/文件关系和导航 | 不复制平行枚举，不判断技术结论是否正确 |
 
 同一规则只能有一个机器事实源：字段形状归 JSON Schema，字段组合和 `okf_type` 归 Profile，受控值归 Registry，依赖路径、其他字段或其他文件的关系归 Contract。
 
@@ -63,9 +63,9 @@ JSON Schema 只能检查单个对象的形状，不能独立完成：
 - 要求 `tags` 同时覆盖 task 和 topic；
 - 限制 `agnostic` 与具体平台混用；
 - 比较 `created_at` 与 `updated_at`；
-- 判断已知 Git URL 是否固定到 commit；
+- 判断来源位于已登记本地根目录或使用 HTTP(S)，并判断识别出的 Git URL 是否固定到 commit；
 - 校验 `verified` actor、`replaced_by` 和跨技术端点；
-- 校验 Bundle 根版本、必需协作骨架、逐层索引、Markdown 链接和 Skill 镜像。
+- 校验 Bundle 根版本、必需协作骨架、逐层索引和 Bundle 内 Markdown 链接。
 
 这些规则统一放在 Contract，不通过某个 Skill 的局部例外实现。
 
@@ -89,6 +89,6 @@ JSON Schema 只能检查单个对象的形状，不能独立完成：
 | 路径 Profile | Profile、路径深度或特殊规则、路径/Frontmatter 文档、检索回归 |
 | domain、technology 或 scope | Registry、路径接受/拒绝测试、Query 过滤、导航 |
 | platform、标签或附加路径值 | Registry、真实消费卡、Lint/Query 回归、相关文档 |
-| 删除、重命名或收紧规则 | 全部知识卡、evals、三个 Skill、Plugin 镜像和兼容性说明 |
+| 删除、重命名或收紧规则 | 全部知识卡、evals、三个 Skill 和兼容性说明 |
 
-修改后运行仓库统一质量检查；涉及 Skill 时同时指定 Plugin 发布镜像。新增规则必须覆盖至少一个接受案例和一个拒绝案例，不能只修改声明让当前样例通过。
+修改后运行仓库统一质量检查。新增规则必须覆盖至少一个接受案例和一个拒绝案例，不能只修改声明让当前样例通过。

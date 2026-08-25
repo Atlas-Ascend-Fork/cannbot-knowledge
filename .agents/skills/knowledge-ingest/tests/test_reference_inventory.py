@@ -40,6 +40,23 @@ class ReferenceInventoryTests(unittest.TestCase):
         self.assertEqual(module.classify("src/api.cpp"), "implementation")
         self.assertEqual(module.classify("tests/test_api.py"), "test")
 
+    def test_target_contract_is_compared_without_execution(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "knowledge").mkdir()
+            (root / "governance/contracts").mkdir(parents=True)
+            marker = root / "target-contract-executed"
+            (root / "governance/contracts/knowledge.py").write_text(
+                "from pathlib import Path\n"
+                f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "does not match"):
+                module.target_contract(str(root))
+            executed = marker.exists()
+        self.assertFalse(executed)
+
     def test_inventory_ledger_and_produced_card_are_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             work = Path(temporary)

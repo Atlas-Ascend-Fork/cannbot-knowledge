@@ -1,0 +1,104 @@
+# vector compute
+
+- [AscAbs](asc_abs.md)：asc_abs（矢量计算）
+- [AscAdd](asc_add.md)：asc_add（矢量计算）
+- [AscAddRelu](asc_add_relu.md)：按元素求和，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。
+- [AscAddScalar](asc_add_scalar.md)：执行矢量与标量的加法运算，支持连续数据计算、高维切分计算和同步计算模式。
+- [AscAnd](asc_and.md)：asc_and（矢量计算）
+- [AscAxpy](asc_axpy.md)：源操作数src中每个元素与标量value求积后和目的操作数dst中的对应元素相加
+- [AscBfloat162float](asc_bfloat162float.md)：将bfloat16_t类型数据转为float，无舍入模式。
+- [AscBfloat162int32](asc_bfloat162int32.md)：将bfloat16_t类型数据转换为int32_t类型，并支持多种舍入模式： - RINT舍入模式：四舍六入五成双舍入 - ROUND舍入模式：四舍五入舍入 - FLOOR舍入模式：向负无穷舍入 - CEIL舍入模式：向正无穷舍入 - TRUNC舍入模式：向零舍入
+- [AscBitsort](asc_bitsort.md)：位图排序函数，一次迭代可以完成32个元素的排序，数据按如下描述结构进行保存： Score和Index分别存储在src0和src1中，按Score进行排序（Score大的元素排前面），排序后的Score与其对应的Index一起以（Score，Index）的结构存储在dst中。
+- [AscBrcb](asc_brcb.md)：给定一个输入矢量，每一次取输入矢量中的8个数填充到结果矢量的8个datablock（32Bytes）中去，每个数对应一个datablock。
+- [AscCopy](asc_copy.md)：将数据从Unified Buffer搬运到Unified Buffer。支持高维切分。
+- [AscDatablockReduceMax](asc_datablock_reduce_max.md)：执行数据块内的求最大值规约（Reduce Max）操作。
+- [AscDatablockReduceMin](asc_datablock_reduce_min.md)：执行数据块内的求最小值规约（Reduce Min）操作。
+- [AscDatablockReduceSum](asc_datablock_reduce_sum.md)：对每个DataBlock内所有元素求和。 源操作数相加采用二叉树的方式，两两相加。以128个half类型数据求和为例，每个DataBlock可以计算16个half类型数据，分成8个DataBlock计算；每个DataBlock内，通过二叉树的方式，两两相加。 需要注意的是，两两相加计算过程中，...
+- [AscDeqInt162b8](asc_deq_int162b8.md)：将int16_t类型转换为int8_t或uint8_t类型，并将数据存放在每个DataBlock的高半块或低半块。使用该接口前需要调用asc_set_deq_scale接口设置量化参数。 - asc_deq_int162b8_h：将数据存放在每个DataBlock的高半块。 - asc_deq...
+- [AscDeqInt322half](asc_deq_int322half.md)：对输入的int32_t类型的数据按元素做量化并转换为half类型。
+- [AscDiv](asc_div.md)：asc_div（矢量计算）
+- [AscDuplicate](asc_duplicate.md)：执行矢量复制（Duplicate）操作，将标量值复制填充到矢量中。
+- [AscEq](asc_eq.md)：比较src0与src1在对应索引位置的元素大小。若比较结果为真，则输出结果的对应比特位设为1，否则设为0。
+- [AscEqScalar](asc_eq_scalar.md)：按元素判断src = value是否成立，若成立则输出结果的对应比特位为1，否则为0。
+- [AscExp](asc_exp.md)：asc_exp（矢量计算）
+- [AscFloat2bfloat16](asc_float2bfloat16.md)：将float类型数据转换为bfloat16_t类型，并支持多种舍入模式： - RINT舍入模式：四舍六入五成双舍入 - ROUND舍入模式：四舍五入舍入 - FLOOR舍入模式：向负无穷舍入 - CEIL舍入模式：向正无穷舍入 - TRUNC舍入模式：向零舍入
+- [AscFloat2float](asc_float2float.md)：对float类型数据进行精度转换处理,支持多种舍入模式： - RINT舍入模式：四舍六入五成双舍入 - ROUND舍入模式：四舍五入舍入 - FLOOR舍入模式：向负无穷舍入 - CEIL舍入模式：向正无穷舍入 - TRUNC舍入模式：向零舍入
+- [AscFloat2half](asc_float2half.md)：将float类型数据转换为half类型，支持多种舍入模式： - RINT舍入模式：四舍六入五成双舍入。 - ROUND舍入模式：四舍五入舍入。 - FLOOR舍入模式：向负无穷舍入。 - CEIL舍入模式：向正无穷舍入。 - TRUNC舍入模式：向零舍入。 - ODD舍入模式：Von Neum...
+- [AscFloat2int16](asc_float2int16.md)：将float类型数据转换为int16_t类型，支持多种舍入模式： - RINT舍入模式：四舍六入五成双舍入。 - ROUND舍入模式：四舍五入舍入。 - FLOOR舍入模式：向负无穷舍入。 - CEIL舍入模式：向正无穷舍入。 - TRUNC舍入模式：向零舍入。
+- [AscFloat2int32](asc_float2int32.md)：将float类型转化为int32_t类型，并支持多种舍入模式： * RINT舍入模式：四舍六入五成双舍入 * ROUND舍入模式：四舍五入舍入 * FLOOR舍入模式：向负无穷舍入 * CEIL舍入模式：向正无穷舍入 * TRUNC舍入模式：向零舍入
+- [AscFloat2int64](asc_float2int64.md)：将float类型转化为int64_t类型，并支持多种舍入模式： * RINT舍入模式：四舍六入五成双舍入 * ROUND舍入模式：四舍五入舍入 * FLOOR舍入模式：向负无穷舍入 * CEIL舍入模式：向正无穷舍入 * TRUNC舍入模式：向零舍入
+- [AscFma](asc_fma.md)：按元素将src0和src1相乘并和dst相加，将最终结果存放进dst中，
+- [AscGather](asc_gather.md)：将src按照src_offset给定的偏移按元素收集到dst中。
+- [AscGatherDatablock](asc_gather_datablock.md)：给定一个输入的矢量和一个地址偏移矢量，根据偏移地址按照DataBlock的粒度将输入矢量收集到目的矢量中。
+- [AscGe](asc_ge.md)：Ge（greater than or equal to），逐元素比较src0 >= src1是否成立，成立则输出结果为1，否则输出结果为0，每个元素的比较结果占一个bit。
+- [AscGeScalar](asc_ge_scalar.md)：按元素判断src >= value是否成立，若成立则输出结果为1，否则为0。每个元素的比较结果占1个bit。
+- [AscGetCmpMask](asc_get_cmp_mask.md)：此接口用于获取Compare操作的比较结果。
+- [AscGetReduceMaxCnt](asc_get_reduce_max_cnt.md)：此接口用于获取执行asc_repeat_reduce_max操作后的最大值，以及第一个最大值时的索引。
+- [AscGetReduceMinCnt](asc_get_reduce_min_cnt.md)：此接口用于获取执行asc_repeat_reduce_min操作后的最小值，以及第一个最小值时的索引。
+- [AscGetRsvdCount](asc_get_rsvd_count.md)：此接口用于获取执行asc_reduce操作后剩余的元素数量。
+- [AscGetVms4Sr](asc_get_vms4_sr.md)：此接口用于获取执行asc_mrgsort4操作后的4个队列中，每个队列已经理过的Region Proposal个数。使用时，需要将asc_mrgsort4中的if_exhausted_suspension参数配置为true，该配置模式下某条队列耗尽后，MrgSort4指令停止。
+- [AscGt](asc_gt.md)：按元素比较两个矢量的大小关系，若比较后的结果为真，则输出结果的对应比特位为1，否则为0。
+- [AscGtScalar](asc_gt_scalar.md)：src中的每个元素逐个与标量value比较大小，如果某个位置上的元素大于value，则输出结果dst上的对应比特位为1，否则为0。
+- [AscHalf2float](asc_half2float.md)：将half类型转化为float类型，无舍入模式。
+- [AscHalf2int16](asc_half2int16.md)：将half类型数据转换为int16_t，并支持多种舍入模式。 - RINT舍入模式：四舍六入五成双舍入 - ROUND舍入模式：四舍五入舍入 - FLOOR舍入模式：向负无穷舍入 - CEIL舍入模式：向正无穷舍入 - TRUNC舍入模式：向零舍入
+- [AscHalf2int32](asc_half2int32.md)：将half类型转化为int32_t类型，并支持多种舍入模式： * RINT舍入模式：四舍六入五成双舍入 * ROUND舍入模式：四舍五入舍入 * FLOOR舍入模式：向负无穷舍入 * CEIL舍入模式：向正无穷舍入 * TRUNC舍入模式：向零舍入
+- [AscHalf2int4](asc_half2int4.md)：将half类型数据转换为int4类型，支持多种舍入模式： - RINT舍入模式：四舍六入五成双舍入 - ROUND舍入模式：四舍五入舍入 - FLOOR舍入模式：向负无穷舍入 - CEIL舍入模式：向正无穷舍入 - TRUNC舍入模式：向零舍入
+- [AscHalf2int8](asc_half2int8.md)：将half类型转化为int8_t类型，并支持多种舍入模式。 - RINT舍入模式：四舍六入五成双舍入 - ROUND舍入模式：四舍五入舍入 - FLOOR舍入模式：向负无穷舍入 - CEIL舍入模式：向正无穷舍入 - TRUNC舍入模式：向零舍入
+- [AscHalf2uint8](asc_half2uint8.md)：将half类型数据转换为uint8_t类型，支持多种舍入模式： - NONE舍入模式：在转换有精度损失时表示RINT舍入模式，不涉及精度损失时代表不舍入 - RINT舍入模式：四舍六入五成双舍入 - ROUND舍入模式：四舍五入舍入 - FLOOR舍入模式：向负无穷舍入 - CEIL舍入模式：...
+- [AscInt162float](asc_int162float.md)：将int16_t类型数据转换为float类型。
+- [AscInt162half](asc_int162half.md)：将int16_t类型数据转换为half类型，支持多种舍入模式： - 不指定舍入模式：无舍入。 - RINT舍入模式：四舍六入五成双舍入。 - ROUND舍入模式：四舍五入舍入。 - FLOOR舍入模式：向负无穷舍入。 - CEIL舍入模式：向正无穷舍入。 - TRUNC舍入模式：向零舍入。
+- [AscInt322float](asc_int322float.md)：将int32_t类型数据转换为float类型，支持多种舍入模式： - RINT舍入模式：四舍六入五成双舍入。 - ROUND舍入模式：四舍五入舍入。 - FLOOR舍入模式：向负无穷舍入。 - CEIL舍入模式：向正无穷舍入。 - TRUNC舍入模式：向零舍入。
+- [AscInt322int16](asc_int322int16.md)：将int32_t类型数据转换为int16_t类型。
+- [AscInt322int64](asc_int322int64.md)：将int32_t类型数据转换为int64_t类型。
+- [AscInt42half](asc_int42half.md)：将int4_t类型数据转换为half类型。
+- [AscInt642float](asc_int642float.md)：将int64_t类型数据转换为float类型。
+- [AscInt642int32](asc_int642int32.md)：将int64_t类型数据转换为int32_t类型。
+- [AscInt82half](asc_int82half.md)：将int8_t类型数据转换为half类型。
+- [AscLe](asc_le.md)：按元素判断src0 <= src1是否成立，若成立则输出结果为1，否则为0。每个元素的比较结果占1个bit。 当结果输出到寄存器中时，可在计算完成后调用asc_get_cmp_mask获取比较结果。
+- [AscLeScalar](asc_le_scalar.md)：按元素判断src <= value是否成立，若成立则输出结果为1，否则为0。每个元素的比较结果占1个bit。
+- [AscLeakyrelu](asc_leakyrelu.md)：执行矢量Leaky Relu运算。
+- [AscLog](asc_log.md)：asc_log（矢量计算）
+- [AscLt](asc_lt.md)：按元素判断src0 < src1是否成立，若成立则输出结果dst上的对应比特位为1，否则为0。
+- [AscLtScalar](asc_lt_scalar.md)：执行矢量中每个位置和标量比较，如果值小于标量值则为1，否则为0，结果为每个bit位按小端序排布。
+- [AscMax](asc_max.md)：执行逐元素取最大值运算，
+- [AscMaxScalar](asc_max_scalar.md)：矢量src的逐个元素与标量value比较大小，接着按照对应的比特位将最大值存入dst中。
+- [AscMin](asc_min.md)：asc_min（矢量计算）
+- [AscMinScalar](asc_min_scalar.md)：源操作数矢量逐元素与标量相比，如果比标量值大，则取标量值，比标量值小，则取源操作数值。
+- [AscMrgsort4](asc_mrgsort4.md)：将已经排好序的最多4条队列，合并排列成1条队列，结果按照score域由大到小排序。 asc_mrgsort4处理的数据一般是经过asc_bitsort指令处理后的数据，也就是asc_bitsort指令的输出，队列的结构Region Proposal如下所示： - 数据类型为float，每个结构...
+- [AscMul](asc_mul.md)：asc_mul（矢量计算）
+- [AscMulAdd](asc_mul_add.md)：执行矢量的乘加运算。
+- [AscMulAddRelu](asc_mul_add_relu.md)：按元素将src0和dst相乘并加上src1，再进行Relu计算（结果和0对比取较大值），最终结果存放进dst中。
+- [AscMulCastHalf2int8](asc_mul_cast_half2int8.md)：按元素求积，并将结果转换为int8_t类型。
+- [AscMulCastHalf2uint8](asc_mul_cast_half2uint8.md)：按元素求积，并将结果转换为uint8_t类型。
+- [AscMulScalar](asc_mul_scalar.md)：执行矢量与标量的乘法运算。
+- [AscNe](asc_ne.md)：按元素判断src0 != src1是否成立，若成立则输出结果为1，否则为0。每个元素的比较结果占1个bit。 当结果输出到寄存器中时，可在计算完成后调用asc_get_cmp_mask获取比较结果。
+- [AscNeScalar](asc_ne_scalar.md)：src中的每个元素逐个与标量value比较大小，如果某个位置上的元素不等于value，则输出结果dst对应比特位为1，否则为0。
+- [AscNot](asc_not.md)：asc_not（矢量计算）
+- [AscOr](asc_or.md)：每对元素按位或运算，
+- [AscPairReduceSum](asc_pair_reduce_sum.md)：对输入数据做归约操作，得到数据总和。相邻两个（奇偶）元素求和，例如（a1，a2，a3，a4，a5，a6…），相邻两个数据求和为（a1+a2，a3+a4，a5+a6…）。
+- [AscRcp](asc_rcp.md)：执行矢量的取倒数运算。
+- [AscReduce](asc_reduce.md)：以内置固定模式对应的二进制或者用户自定义输入的数值对应的gather mask（数据收集的掩码），从源操作数中选取元素写入目的操作数中。
+- [AscRelu](asc_relu.md)：按元素做线性整流Relu，
+- [AscRepeatReduceMax](asc_repeat_reduce_max.md)：对每个Repeat内所有元素求最大值，以及Repeat内的首个最大值元素在当前Repeat中的索引index。一次Repeat计算256字节。 index_value接口：表示index位于低半部，返回结果存储顺序为[index, value]。输入数据类型为half时，index数据类型为u...
+- [AscRepeatReduceMin](asc_repeat_reduce_min.md)：对每个Repeat内所有元素求最小值，以及Repeat内的首个最小值元素在当前Repeat中的索引index。一次Repeat计算256字节。 index_value接口：表示index位于低半部，返回结果存储顺序为[index, value]。输入数据类型为half时，index数据类型为u...
+- [AscRepeatReduceSum](asc_repeat_reduce_sum.md)：对每个Repeat内所有元素求和。 源操作数相加采用二叉树的方式，两两相加。以256个half类型数据求和为例，每个Repeat可以计算128个half类型数据，分成2个Repeat计算；每个Repeat内，通过二叉树的方式，两两相加。 需要注意的是，两两相加计算过程中，计算结果大于65504...
+- [AscRsqrt](asc_rsqrt.md)：按元素进行开方后取倒数的计算，
+- [AscSelect](asc_select.md)：执行矢量选择操作，给定两个源操作数src0和src1，根据条件选择元素，得到目的操作数dst。此接口配合asc_set_cmp_mask(sel_mask)设置，规则为：当sel_mask的比特位是1时，从src0选取；当比特位是0时，从src1选择。
+- [AscSetCmpMask](asc_set_cmp_mask.md)：为asc_select操作设置作用于选择的Mask掩码。
+- [AscSetDeqScale](asc_set_deq_scale.md)：设置DEQSCALE（量化参数）寄存器的值。
+- [AscSetMaskCount](asc_set_mask_count.md)：设置Mask模式为Counter模式。该模式下，不需要开发者去感知迭代次数、处理非对齐的尾块等操作，可直接传入数据计算数量，实际迭代次数由Vector计算单元自动推断。在前n个数据计算类的接口内部会自动设置该模式，不需要自行设置。
+- [AscSetMaskNorm](asc_set_mask_norm.md)：设置Mask模式为Normal模式，该模式为系统默认模式。该模式下，Mask参数可控制高维切分计算过程中单次迭代内参与计算的元素。
+- [AscSetVaReg](asc_set_va_reg.md)：用于设置transpose的16个DataBlock地址，将操作数地址序列与地址寄存器关联，接口要求前8个和后8个地址序列与地址寄存器分别关联。
+- [AscSetVectorMask](asc_set_vector_mask.md)：某些矢量计算接口需要提前设置Mask，提示哪些数据需要参与计算。 该API用于设置Mask，使用前需要先调用asc_set_mask_count和asc_set_mask_norm设置Mask模式。在不同的模式下Mask的含义如下： - Normal模式用于高维切分计算类API。该模式下，Ma...
+- [AscShiftleft](asc_shiftleft.md)：将所有元素左移distance位。
+- [AscShiftright](asc_shiftright.md)：对src中的每个元素执行右移，右移大小为value。 - 对于int16_t/int32_t，做算术右移（去掉最低位，最高位复制符号位）。 - 对于uint16_t/uint32_t，做逻辑右移（去掉最低位，最高位填充为0）。
+- [AscSqrt](asc_sqrt.md)：asc_sqrt（矢量计算）
+- [AscSqueeze](asc_squeeze.md)：通过比较掩码src1，将src0中的向量压缩成更短的向量，存储到dst中。
+- [AscSub](asc_sub.md)：asc_sub（矢量计算）
+- [AscSubRelu](asc_sub_relu.md)：按元素求差，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。
+- [AscSubScalar](asc_sub_scalar.md)：执行矢量和标量的减法运算。
+- [AscTranspose](asc_transpose.md)：用于实现16*16的二维矩阵数据块转置。
+- [AscTransto5hd](asc_transto5hd.md)：数据格式转换，一般用于将NCHW格式转换成NC1HWC0格式。特别的，也可以用于二维矩阵数据块的转置。本接口单次Repeat内可处理512Byte的数据（16个DataBlock），根据数据类型不同，支持不同shape的矩阵转置（比如数据类型为half时，单次Repeat可完成16*16大小的...
+- [AscUint82half](asc_uint82half.md)：将uint8_t类型数据转换为half类型。
+- [AscVdeqInt162b8](asc_vdeq_int162b8.md)：将int16_t类型转化为int8_t或uint8_t类型，并将数据存放在每个DataBlock的上半块或下半块。使用该接口前需要调用asc_set_deq_scale设置量化参数。 - asc_vdeq_int162b8_h：将数据存放在每个DataBlock的上半块。 - asc_vdeq...
+- [Memory矢量计算](memory_vector_compute.md)：Memory矢量计算类接口汇总，覆盖算术、逻辑、比较、归约、类型转换、数据搬运等基于内存操作的矢量计算能力。
