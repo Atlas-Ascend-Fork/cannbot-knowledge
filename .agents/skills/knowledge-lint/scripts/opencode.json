@@ -1,0 +1,36 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "share": "disabled",
+  "snapshot": false,
+  "autoupdate": false,
+  "provider": {
+    "content-review": {
+      "npm": "@ai-sdk/anthropic",
+      "name": "Content Review",
+      "options": {
+        "baseURL": "{env:BASE_URL}/v1",
+        "authToken": "{env:AUTH_TOKEN}"
+      },
+      "models": {
+        "content-check": {
+          "id": "{env:MODEL}",
+          "name": "Content Check",
+          "reasoning": true,
+          "tool_call": true,
+          "variants": {
+            "medium": {
+              "effort": "medium"
+            }
+          }
+        }
+      }
+    }
+  },
+  "permission": {
+    "*": "deny",
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "webfetch": "deny"
+  }
+}

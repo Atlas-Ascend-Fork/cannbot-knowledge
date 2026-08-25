@@ -1,6 +1,6 @@
 ---
 name: knowledge-lint
-description: 确定性校验 cannbot-knowledge 的路径、Profile、标签、平台、来源、时间、正文、导航和日志，并把知识内容、检索、图谱、编译或治理失败整理成可复现 Issue 材料。创建、导入或修改知识与基础 Skill 后、提交前门禁或用户要反馈知识库问题时使用；只读报告，不自动修复或提交。
+description: 确定性校验 cannbot-knowledge 的路径、Profile、标签、平台、来源、时间、正文、导航和日志，并把知识内容、检索、图谱、编译或治理失败整理成可复现 Issue 材料。创建、导入或修改知识与基础 Skill 后、提交前门禁或用户要反馈知识库问题时使用；仅当用户明确要求内容审阅并指定页面时委派独立 reviewer。只读报告，不自动修复或提交。
 ---
 
 # Knowledge Lint
@@ -17,15 +17,47 @@ python3 <skill-dir>/scripts/knowledge_lint.py --knowledge-root <repo> \
 python3 <skill-dir>/scripts/knowledge_lint.py --knowledge-root <repo> --sample 10 --json
 ```
 
-检查项、模式和错误边界见 [checks](references/checks.md)。退出码 `0` 表示无错误，`1` 表示存在治理错误，`2` 表示命令或仓库不可用。
+检查项、等级、模式和错误边界见 [checks](references/checks.md)。退出码 `0` 表示完整执行且没有 P0，`1` 表示至少存在一个 P0，`2` 表示命令、规则或仓库不可用；P1/P2 完整报告但不阻断。
 
-## 工作流
+### 工作流
 
 1. 改动卡先用 `--card` 检查 Profile、tag、source、平台、正文和时间；有代码来源的新卡或实质更新卡同时使用 `--strict-navigation`。
 2. 全库运行以检查 domain 根、`ops`/`model` route 骨架、逐层导航、Bundle 内链接和日志；统一 `check.sh` 会启用严格来源导航。`--sample` 只做确定性抽样，不代替全库门禁。
 3. 执行目标 query，确认新卡可召回、draft 不进入默认结果。
 4. 修改 Skill 时运行 skill-creator 的 quick validation、相关回归和本仓统一质量门禁。
 5. 用户要提交或整理问题时，按 [Issue 报告](references/issue-report.md)收集原始材料；关键材料缺失则输出 `needs-info`，不凭记忆补齐。
+
+## 页面内容检查
+
+仅当用户明确要求内容或语义检查并指定页面时使用；普通 Lint 和 Issue 工作流仍只执行确定性检查。
+
+1. 完整读取 [Content 检查协议](references/content_check.md)、[Content 策略](references/content_check.toml) 和 [Content prompt](references/content_check_prompt.md)，不复制其中的检查项。
+2. 为每个指定页面启动一个独立、只读 reviewer，工作目录设为仓库根；一个 reviewer 只检查一页并完成全部启用项，不得继续派生 reviewer，也不修改、执行、提交或发布文件。
+3. reviewer 只返回 prompt 规定的页面 JSON。未完成或协议不合法时标记该页未完成，不当作空结果；汇总时把页面级未完成与仓库级运行故障分开。
+4. 最终向用户返回下列 Markdown；Finding 按 P0、P1、P2、页面路径和行号排序。没有 Finding、未完成页面或运行错误时，省略相应区块。
+
+```markdown
+## ContentCheck · <✅ 通过 | ❌ 未通过 | ⚠️ 检查未完成>
+
+- 已检查：`N` 页；未完成：`N` 页
+- Findings：`N`（P0 `N` · P1 `N` · P2 `N`）
+
+| 等级 | 检查 | 文件 | 说明 |
+|---|---|---|---|
+| P1 | `check_id` | `knowledge/example.md:17` | 面向作者的问题说明和修改方向 |
+
+### 未完成页面
+
+| 页面 | 原因 |
+|---|---|
+| `knowledge/example.md` | 未返回有效检查结果 |
+
+### 运行错误
+
+- <仓库级运行故障；没有则省略>
+```
+
+任一页面未完成或存在仓库级运行故障时为 `⚠️ 检查未完成`；否则存在 P0 时为 `❌ 未通过`，其余情况为 `✅ 通过`。P1/P2 完整报告但不改变通过状态。只有用户明确要求机器可读结果时，才在 Markdown 后附加汇总 JSON。
 
 ## 边界
 

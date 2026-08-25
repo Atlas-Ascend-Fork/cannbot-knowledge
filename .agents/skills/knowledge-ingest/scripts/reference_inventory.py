@@ -327,7 +327,7 @@ def validate_produced_cards(
         if metadata is None:
             errors.append(f"{target_value}: produced card is missing frontmatter")
             continue
-        issues = contract.validate_card(relative, metadata, body, check_replacement=True)
+        issues = contract.validate_card(relative, metadata, body)
         for issue in issues:
             errors.append(f"{target_value}: {issue.code}: {issue.message}")
 

@@ -10,7 +10,7 @@
 |---|---|---|---|
 | `knowledge-query` | 技术问题、decision、目标平台和可选范围条件 | 实际覆盖、候选 OKF Concept 或 search/ready/outcome receipt | 只读；只在调用方指定路径创建新审计产物 |
 | `knowledge-ingest` | 固定来源、变化类型、目标路径和待表达结论 | 路由决策、候选 Concept、Git 来源账本；可重建本地图谱 | 可以创建候选卡和 ignored 产物，不覆盖已有知识卡、不提交、不发布 |
-| `knowledge-lint` | 单卡、完整知识仓或问题材料 | 确定性错误报告或可复现 Issue 草稿 | 只读 |
+| `knowledge-lint` | 单卡、完整知识仓或问题材料 | 分级确定性 Finding 报告或可复现 Issue 草稿 | 只读 |
 
 典型贡献流程是先 Query 查重，再由 Ingest 形成候选卡，随后执行全库 Lint，最后用目标条件验证新卡可以被 Query 召回。只读问答不需要执行完整流程；人工编辑已有卡也可以不用创建能力，但仍应查重、Lint 和验证召回。
 
@@ -75,7 +75,7 @@ Lint 是离线、只读、确定性的作者门禁，比 OKF 最小 conformance 
 | OKF/CANNBot Profile | 根版本、YAML mapping 唯一 key、非空 `type`、路径 Profile 映射、JSON Schema 和字段白名单 |
 | 路径与受控值 | domain-route、附加层级、文件名、platform、Tag、技术端点 |
 | 生命周期与来源 | `status`、有效日历时间、`verified` actor、`replaced_by`、来源形状、Git commit 固定格式；本地来源获取脚本存在且可执行，已恢复来源的归档标记和在用文件存在 |
-| 导航、正文与日志 | domain 根和 `ops`/`model` route 骨架完整；每层索引列出直接子项；行内/显式引用式 Markdown 目标是 Bundle 内的现有文件；正文无冲突/图片/占位；日志格式、必需 section 与倒序正确 |
+| 导航、正文与日志 | domain 根和 `ops`/`model` route 骨架完整；每层索引列出直接子项；行内/显式引用式 Markdown 目标是 Bundle 内的现有文件；正文无冲突/占位；日志格式、必需 section 与倒序正确 |
 
 单卡检查不覆盖父级索引和完整目录树；新增、删除或移动文件后必须执行全库检查。统一门禁启用严格来源导航，要求宽 Git tree 来源由同仓库、同 revision 的 blob 来源或正文链接定位。Lint 只确认链接目标和 Bundle 边界，不验证 Markdown 锚点。
 

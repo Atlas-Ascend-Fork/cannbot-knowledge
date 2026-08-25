@@ -9,21 +9,22 @@ concurrency:
     events: [mr_id]
 
 on:
-  workflow_dispatch:
   pull_request_comment:
     types: [created]
     branches: [ '*' ]
-    comments: [ '^(?:\/)?compile*' ]
-  pr_comment:
-    types: [ created ]
-    keyword: '^(?:\/)?compile*'
+    comments: ['^(?:\/)?compile*']
+
+permissions:
+  repository: read
 
 env:
   org_name: ${{ vars.ORG_NAME }}
-  repo_name: ${{ atomgit.event.repository.name}}
+  repo_name: ${{ atomgit.event.repository.name }}
   MERGE_ID: ${{ atomgit.event.pull_request.number }}
   TARGET_BRANCH: ${{ atomgit.base_ref }}
   SOURCE_BRANCH: ${{ atomgit.head_ref }}
+  CHECKED_REPO: ${{ atomgit.repository }}
+  MERGE_SHA: ${{ atomgit.event.pull_request.merge_commit_sha }}
   obs_path: "${{ env.org_name }}/${{ env.repo_name }}/ci/package/${{ env.MERGE_ID }}"
   online: ${{ vars.APPLY_LABEL }}
 
@@ -31,41 +32,166 @@ stages:
   stage1:
     name: PreBuild
     jobs:
-      JOB_image:
-        name: Test_image
-        steps:
-          - name: revise_image
-            identifier: revise_image
-            uses: cann/.gitcode/actions/revise-img@master
-            with:
-              repo_name: ${{ env.repo_name }}
-              target_branch: ${{ env.TARGET_BRANCH }}
-              repo_url: ${{ vars.CI_PATH }}
-        runs-on: ['self-hosted', 'arch=x64', 'spec=small']
-        container:
-          image: swr.cn-north-4.myhuaweicloud.com/ci_cann/ubuntu20.04.05_x86:k8s_v1.1006
       JOB_pre:
         name: Test_PreBuild
+        # Retained for CANN PR association and ci-pipeline-* label lifecycle.
         uses: cann/.gitcode/.gitcode/workflows/pre_action.yml@master
     pre:
-    - type: auto
-    fail-fast: true
-  stage2:
-    name: CodeCheck
-    jobs:
-      JOB_codecheck:
-        name: CodeCheck
-        uses: cann/.gitcode/.gitcode/workflows/codecheck_action.yml@master
-        with:
-          precommit_image_version: ${{ jobs.JOB_image.outputs.precommit }}
-          codecheck_image_version: ${{ jobs.JOB_image.outputs.codecheck }}
-    pre:
-    - type: auto
+      - type: auto
     fail-fast: false
-  
+
+  stage2:
+    name: KnowledgeCheck
+    jobs:
+      JOB_format:
+        name: FormatCheck
+        runs-on: ['self-hosted', 'arch=arm64', 'spec=large']
+        container:
+          image: swr.cn-north-4.myhuaweicloud.com/ci_cann/ubuntu24.04_arm:lv6_v1.1114
+        steps:
+          - name: Checkout pull request snapshot
+            uses: checkout
+            with:
+              ref: ${{ env.MERGE_SHA }}
+              token: ${{ secrets.GIT_TOKEN }}
+              fetch-depth: 2
+              persist-credentials: false
+          - name: Prepare trusted evaluation snapshot
+            run: |
+              set -euo pipefail
+              if git ls-tree -r "$MERGE_SHA" -- knowledge | \
+                awk '$1 == "160000" { found = 1 } END { exit !found }'; then
+                echo "error: knowledge/ must not contain gitlinks" >&2
+                exit 2
+              fi
+              git clean -ffdx
+              git read-tree --reset -u "$MERGE_SHA^1"
+              git clean -ffdx
+              git restore --source="$MERGE_SHA" --staged --worktree -- knowledge
+          - name: Run FormatCheck
+            env:
+              RESULT_DIR: ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/format
+            run: |
+              bash .gitcode/scripts/knowledge_check.sh \
+                .gitcode/scripts/format_check.py \
+                --output "$RESULT_DIR/format-check.json" \
+                --source-repo "$CHECKED_REPO" \
+                --source-sha "$MERGE_SHA"
+          - name: upload
+            uses: obs-upload
+            with:
+              endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+              bucket: "ascend-ci"
+              access-key: ${{ secrets.AK }}
+              secret-key: ${{ secrets.SK }}
+              artifact-path: |
+                ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/format/format-check.json
+              object-prefix: ${{ env.obs_path }}/knowledge-check/${{ atomgit.workflow_run_id }}/format/
+            if: "${{ always() }}"
+            continue-on-error: true
+
+      JOB_graph:
+        name: GraphCheck
+        runs-on: ['self-hosted', 'arch=arm64', 'spec=large']
+        container:
+          image: swr.cn-north-4.myhuaweicloud.com/ci_cann/ubuntu24.04_arm:lv6_v1.1114
+        steps:
+          - name: Checkout pull request snapshot
+            uses: checkout
+            with:
+              ref: ${{ env.MERGE_SHA }}
+              token: ${{ secrets.GIT_TOKEN }}
+              fetch-depth: 2
+              persist-credentials: false
+          - name: Prepare trusted evaluation snapshot
+            run: |
+              set -euo pipefail
+              if git ls-tree -r "$MERGE_SHA" -- knowledge | \
+                awk '$1 == "160000" { found = 1 } END { exit !found }'; then
+                echo "error: knowledge/ must not contain gitlinks" >&2
+                exit 2
+              fi
+              git clean -ffdx
+              git read-tree --reset -u "$MERGE_SHA^1"
+              git clean -ffdx
+              git restore --source="$MERGE_SHA" --staged --worktree -- knowledge
+          - name: Run GraphCheck
+            env:
+              RESULT_DIR: ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/graph
+            run: |
+              bash .gitcode/scripts/knowledge_check.sh \
+                .gitcode/scripts/graph_check.py \
+                --output "$RESULT_DIR/graph.json"
+          - name: upload
+            uses: obs-upload
+            with:
+              endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+              bucket: "ascend-ci"
+              access-key: ${{ secrets.AK }}
+              secret-key: ${{ secrets.SK }}
+              artifact-path: |
+                ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/graph/graph.json
+              object-prefix: ${{ env.obs_path }}/knowledge-check/${{ atomgit.workflow_run_id }}/graph/
+            continue-on-error: true
+
+      JOB_content:
+        name: ContentCheck
+        continue-on-error: true
+        runs-on: ['self-hosted', 'arch=arm64', 'spec=large']
+        container:
+          image: swr.cn-north-4.myhuaweicloud.com/ci_cann/ubuntu24.04_arm:opencode_ai_check_v1.1001
+        steps:
+          - name: Checkout pull request snapshot
+            uses: checkout
+            with:
+              ref: ${{ env.MERGE_SHA }}
+              token: ${{ secrets.GIT_TOKEN }}
+              fetch-depth: 2
+              persist-credentials: false
+          - name: Prepare trusted evaluation snapshot
+            run: |
+              set -euo pipefail
+              if git ls-tree -r "$MERGE_SHA" -- knowledge | \
+                awk '$1 == "160000" { found = 1 } END { exit !found }'; then
+                echo "error: knowledge/ must not contain gitlinks" >&2
+                exit 2
+              fi
+              git clean -ffdx
+              git read-tree --reset -u "$MERGE_SHA^1"
+              git clean -ffdx
+              git restore --source="$MERGE_SHA" --staged --worktree -- knowledge
+          - name: Run ContentCheck
+            env:
+              RESULT_DIR: ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/content
+              BASE_URL: ${{ secrets.BASE_URL }}
+              AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+              MODEL: ${{ secrets.MODEL }}
+            run: |
+              bash .gitcode/scripts/knowledge_check.sh \
+                .gitcode/scripts/content_check.py \
+                --command cannbot \
+                --output "$RESULT_DIR/content-check.json" \
+                --source-repo "$CHECKED_REPO" \
+                --source-sha "$MERGE_SHA"
+          - name: upload
+            uses: obs-upload
+            with:
+              endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+              bucket: "ascend-ci"
+              access-key: ${{ secrets.AK }}
+              secret-key: ${{ secrets.SK }}
+              artifact-path: |
+                ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/content/content-check.json
+              object-prefix: ${{ env.obs_path }}/knowledge-check/${{ atomgit.workflow_run_id }}/content/
+            continue-on-error: true
+
+    pre:
+      - type: auto
+    fail-fast: false
 
 post:
-  jobs: 
-    job_post: 
+  jobs:
+    JOB_post:
       name: Test_post
+      # Retained for CANN PR status and ci-pipeline-* label convergence.
       uses: cann/.gitcode/.gitcode/workflows/post_action.yml@master

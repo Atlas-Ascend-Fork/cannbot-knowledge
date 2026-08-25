@@ -164,11 +164,18 @@ class BuildGraphTests(unittest.TestCase):
             )
             (cards / "source.md").write_text(
                 f"---\ntitle: Source\n{common}---\n\n# Source\n\n[Target][target]\n\n"
+                "![Image](decoy.md)\n\n"
+                "`[Inline code](decoy.md)`\n\n"
+                "```markdown\n[Fenced](decoy.md)\n```\n\n"
                 "[target]: target.md\n",
                 encoding="utf-8",
             )
             (cards / "target.md").write_text(
                 f"---\ntitle: Target\n{common}---\n\n# Target\n",
+                encoding="utf-8",
+            )
+            (cards / "decoy.md").write_text(
+                f"---\ntitle: Decoy\n{common}---\n\n# Decoy\n",
                 encoding="utf-8",
             )
             result = subprocess.run(
@@ -197,6 +204,35 @@ class BuildGraphTests(unittest.TestCase):
             ],
             graph["edges"],
         )
+
+    def test_graph_data_accepts_an_aliased_repository_root(self) -> None:
+        module = load_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "repository"
+            shutil.copytree(REPOSITORY_ROOT / "governance", root / "governance")
+            cards = root / "knowledge/common/glossaries"
+            cards.mkdir(parents=True)
+            (cards / "card.md").write_text(
+                "---\n"
+                "type: Glossary\n"
+                "title: Card\n"
+                "description: A complete glossary description.\n"
+                "tags: [task.lookup, topic.terminology]\n"
+                "status: draft\n"
+                "sources: []\n"
+                "created_at: '2026-08-22T00:00:00Z'\n"
+                "updated_at: '2026-08-22T00:00:00Z'\n"
+                "---\n\n# Card\n",
+                encoding="utf-8",
+            )
+            alias = base / "repository-alias"
+            alias.symlink_to(root, target_is_directory=True)
+            nodes, edges = module.graph_data(alias)
+
+        self.assertEqual(1, len(nodes))
+        self.assertEqual("common/glossaries/card", nodes[0]["id"])
+        self.assertEqual([], edges)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib
 import importlib.util
 import json
 import os
@@ -26,7 +27,6 @@ MANAGED_RELATED_RE = re.compile(
     r"(?ms)^<!-- cannbot:related:start -->.*?^<!-- cannbot:related:end -->\s*"
 )
 GOVERNANCE_INPUTS = (
-    "governance/contracts/knowledge.py",
     "governance/schemas/frontmatter.schema.json",
     "governance/schemas/profiles.yaml",
     "governance/schemas/registries.yaml",
@@ -65,9 +65,11 @@ def _fingerprint(entries: Iterable[tuple[str, str]]) -> str:
 
 
 def governance_fingerprint(root: Path) -> str:
+    contracts = sorted((root / "governance/contracts").rglob("*.py"))
+    paths = [root / relative for relative in GOVERNANCE_INPUTS] + contracts
     entries = []
-    for relative in GOVERNANCE_INPUTS:
-        path = root / relative
+    for path in paths:
+        relative = path.relative_to(root).as_posix()
         if not path.is_file():
             raise ValueError(f"missing index governance input: {relative}")
         entries.append((relative, sha256_file(path)))
@@ -75,7 +77,9 @@ def governance_fingerprint(root: Path) -> str:
 
 
 def card_fingerprint(metadata: dict[str, Any], body: str) -> str:
-    return hashlib.sha256(f"{_canonical_json(metadata)}\n{body}".encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        f"{_canonical_json(metadata)}\n{body}".encode("utf-8")
+    ).hexdigest()
 
 
 def token_counts(value: str) -> Counter[str]:
@@ -99,31 +103,43 @@ def searchable_body(body: str) -> str:
 
 def load_contract(root: Path):
     """Load this Skill's Contract after comparing the target copy without executing it."""
-    source = Path(__file__).resolve().parents[5] / "governance/contracts/knowledge.py"
-    target = root / "governance/contracts/knowledge.py"
-    if not target.is_file():
+    source = Path(__file__).resolve().parents[5] / "governance/contracts"
+    target = root / "governance/contracts"
+    if not (target / "knowledge.py").is_file():
         raise ValueError(f"not a governed cannbot-knowledge root: {root}")
-    if source.resolve() != target.resolve() and source.read_bytes() != target.read_bytes():
-        raise ValueError(
-            "target governance contract does not match this knowledge-query version"
+    if source.resolve() != target.resolve():
+        for source_file in sorted(source.rglob("*.py")):
+            target_file = target / source_file.relative_to(source)
+            if (
+                not target_file.is_file()
+                or source_file.read_bytes() != target_file.read_bytes()
+            ):
+                raise ValueError(
+                    "target governance contract does not match this knowledge-query version"
+                )
+    package_name = "_cannbot_knowledge_query_contracts"
+    package = sys.modules.get(package_name)
+    package_file = source / "__init__.py"
+    if package is None:
+        spec = importlib.util.spec_from_file_location(
+            package_name,
+            package_file,
+            submodule_search_locations=[str(source)],
         )
-    module_name = "_cannbot_knowledge_query_contract"
-    module = sys.modules.get(module_name)
-    if module is None:
-        spec = importlib.util.spec_from_file_location(module_name, source)
         if spec is None or spec.loader is None:
             raise ValueError(f"cannot load governance contract: {source}")
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = module
-        spec.loader.exec_module(module)
+        package = importlib.util.module_from_spec(spec)
+        sys.modules[package_name] = package
+        spec.loader.exec_module(package)
+    elif Path(package.__file__).resolve() != package_file.resolve():
+        raise ValueError("governance contract source changed in the current process")
+    module = importlib.import_module(f"{package_name}.knowledge")
     return module.Contract(root), module.split_frontmatter
 
 
 def _card_files(root: Path) -> list[Path]:
     return sorted(
-        path
-        for path in (root / "knowledge").rglob("*.md")
-        if path.name != "index.md"
+        path for path in (root / "knowledge").rglob("*.md") if path.name != "index.md"
     )
 
 
@@ -218,7 +234,9 @@ def build_index(root: Path) -> dict[str, Any]:
                 path_info = contract.derive_card_path(relative)
                 issues = contract.validate_card(relative, metadata, body)
                 if issues:
-                    detail = "; ".join(f"{item.code}: {item.message}" for item in issues)
+                    detail = "; ".join(
+                        f"{item.code}: {item.message}" for item in issues
+                    )
                     raise ValueError(f"invalid card {path}: {detail}")
 
                 relative_text = relative.as_posix()
@@ -289,7 +307,10 @@ def build_index(root: Path) -> dict[str, Any]:
             }
             connection.executemany(
                 "INSERT INTO meta VALUES (?, ?)",
-                ((key, _canonical_json(value)) for key, value in sorted(metadata.items())),
+                (
+                    (key, _canonical_json(value))
+                    for key, value in sorted(metadata.items())
+                ),
             )
             connection.commit()
         finally:
@@ -311,7 +332,10 @@ def build_index(root: Path) -> dict[str, Any]:
 
 
 def _read_meta(connection: sqlite3.Connection) -> dict[str, Any]:
-    return {key: json.loads(value) for key, value in connection.execute("SELECT key, value FROM meta")}
+    return {
+        key: json.loads(value)
+        for key, value in connection.execute("SELECT key, value FROM meta")
+    }
 
 
 def _connect_readonly(path: Path) -> sqlite3.Connection:
@@ -328,12 +352,18 @@ def _verify_query_tables(
 ) -> None:
     """Bind the query-facing SQLite rows to the governed source cards."""
     contract, split_frontmatter = load_contract(root)
-    document_count = int(connection.execute("SELECT COUNT(*) FROM documents").fetchone()[0])
+    document_count = int(
+        connection.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
+    )
     if document_count != len(current_paths):
-        raise ValueError("knowledge index document count is inconsistent; rebuild the index")
+        raise ValueError(
+            "knowledge index document count is inconsistent; rebuild the index"
+        )
 
     expected_posting_count = 0
-    for expected_doc_id, (relative, card_path) in enumerate(current_paths.items(), start=1):
+    for expected_doc_id, (relative, card_path) in enumerate(
+        current_paths.items(), start=1
+    ):
         raw = card_path.read_bytes()
         try:
             text = raw.decode("utf-8")
@@ -353,7 +383,9 @@ def _verify_query_tables(
         tags = " ".join(str(value) for value in card_metadata.get("tags", []))
         aliases = " ".join(str(value) for value in card_metadata.get("aliases", []))
         indexed_body = searchable_body(body)
-        search_text = "\n".join((title, description, tags, aliases, indexed_body)).lower()
+        search_text = "\n".join(
+            (title, description, tags, aliases, indexed_body)
+        ).lower()
         expected_document = (
             expected_doc_id,
             path_info.doc_id,
@@ -418,12 +450,16 @@ def _verify_query_tables(
             )
         expected_posting_count += len(expected_postings)
 
-    actual_posting_count = int(connection.execute("SELECT COUNT(*) FROM postings").fetchone()[0])
+    actual_posting_count = int(
+        connection.execute("SELECT COUNT(*) FROM postings").fetchone()[0]
+    )
     if (
         actual_posting_count != expected_posting_count
         or metadata.get("posting_count") != expected_posting_count
     ):
-        raise ValueError("knowledge index posting count is inconsistent; rebuild the index")
+        raise ValueError(
+            "knowledge index posting count is inconsistent; rebuild the index"
+        )
 
 
 def _verify_connection(
@@ -444,7 +480,9 @@ def _verify_connection(
             raise ValueError("knowledge index version is stale; rebuild the index")
         current_governance = governance_fingerprint(root)
         if metadata.get("governance_fingerprint") != current_governance:
-            raise ValueError("knowledge governance changed after index build; rebuild the index")
+            raise ValueError(
+                "knowledge governance changed after index build; rebuild the index"
+            )
         manifest = {
             row["relative_path"]: row
             for row in connection.execute(
@@ -455,23 +493,38 @@ def _verify_connection(
             card.relative_to(root).as_posix(): card for card in _card_files(root)
         }
         if set(manifest) != set(current_paths):
-            raise ValueError("knowledge card set changed after index build; rebuild the index")
+            raise ValueError(
+                "knowledge card set changed after index build; rebuild the index"
+            )
         content_entries: list[tuple[str, str]] = []
         for relative, card_path in current_paths.items():
             stat = card_path.stat()
             expected = manifest[relative]
-            if stat.st_size != expected["size"] or stat.st_mtime_ns != expected["mtime_ns"]:
-                raise ValueError(f"knowledge card changed after index build: {relative}")
+            if (
+                stat.st_size != expected["size"]
+                or stat.st_mtime_ns != expected["mtime_ns"]
+            ):
+                raise ValueError(
+                    f"knowledge card changed after index build: {relative}"
+                )
             file_sha256 = expected["file_sha256"]
             if full:
                 file_sha256 = sha256_file(card_path)
                 if file_sha256 != expected["file_sha256"]:
-                    raise ValueError(f"knowledge card content changed after index build: {relative}")
+                    raise ValueError(
+                        f"knowledge card content changed after index build: {relative}"
+                    )
             content_entries.append((relative, file_sha256))
-        if full and metadata.get("content_fingerprint") != _fingerprint(content_entries):
-            raise ValueError("knowledge content fingerprint is stale; rebuild the index")
+        if full and metadata.get("content_fingerprint") != _fingerprint(
+            content_entries
+        ):
+            raise ValueError(
+                "knowledge content fingerprint is stale; rebuild the index"
+            )
         if metadata.get("card_count") != len(manifest):
-            raise ValueError("knowledge index card count is inconsistent; rebuild the index")
+            raise ValueError(
+                "knowledge index card count is inconsistent; rebuild the index"
+            )
         if full:
             _verify_query_tables(connection, root, current_paths, metadata)
         return metadata
@@ -487,7 +540,9 @@ def _open_verified_index(
     root = root.resolve()
     path = index_path(root)
     if not path.is_file():
-        raise ValueError(f"knowledge index is missing: {path}; run knowledge_index.py build")
+        raise ValueError(
+            f"knowledge index is missing: {path}; run knowledge_index.py build"
+        )
     try:
         connection = _connect_readonly(path)
     except sqlite3.Error as exc:
@@ -539,7 +594,9 @@ def load_cards(connection: sqlite3.Connection) -> list[IndexedCard]:
     return result
 
 
-def posting_scores(connection: sqlite3.Connection, terms: list[str]) -> dict[int, float]:
+def posting_scores(
+    connection: sqlite3.Connection, terms: list[str]
+) -> dict[int, float]:
     if not terms:
         return {}
     placeholders = ",".join("?" for _ in terms)

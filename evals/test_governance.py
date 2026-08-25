@@ -176,6 +176,129 @@ class RouteContractTests(unittest.TestCase):
         issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
         self.assertIn("frontmatter.type", {issue.code for issue in issues})
 
+    def test_profile_is_the_only_top_level_required_source(self) -> None:
+        self.assertNotIn("required", self.contract.schema)
+        self.assertEqual(
+            {
+                "type",
+                "title",
+                "description",
+                "tags",
+                "status",
+                "sources",
+                "created_at",
+                "updated_at",
+            },
+            self.contract.common_fields,
+        )
+        self.assertEqual(
+            ["resource"],
+            self.contract.schema["properties"]["sources"]["items"]["required"],
+        )
+
+    def test_missing_required_fields_are_not_reported_twice(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        for field in SYNTHETIC_API_METADATA:
+            with self.subTest(field=field):
+                metadata = dict(SYNTHETIC_API_METADATA)
+                metadata.pop(field)
+                issues = self.contract.validate_card(
+                    relative,
+                    metadata,
+                    "# Synthetic API\n",
+                )
+                self.assertEqual(
+                    ["frontmatter.required"],
+                    [issue.code for issue in issues],
+                )
+
+    def test_blank_text_and_wrong_type_have_distinct_findings(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        for field in ("title", "description"):
+            for value in ("", "   "):
+                with self.subTest(field=field, value=value):
+                    metadata = dict(SYNTHETIC_API_METADATA)
+                    metadata[field] = value
+                    issues = self.contract.validate_card(
+                        relative,
+                        metadata,
+                        "# Synthetic API\n",
+                    )
+                    self.assertEqual(
+                        ["frontmatter.text"],
+                        [issue.code for issue in issues],
+                    )
+
+        metadata = dict(SYNTHETIC_API_METADATA)
+        metadata["title"] = 7
+        issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
+        self.assertEqual(["frontmatter.schema"], [issue.code for issue in issues])
+
+    def test_missing_interoperability_endpoint_only_reports_required(self) -> None:
+        relative = Path("knowledge/ops/shared/interoperability/synthetic.md")
+        metadata = {
+            **SYNTHETIC_API_METADATA,
+            "type": "Interoperability",
+            "source_technology": "ascendc",
+            "target_technology": "triton",
+        }
+        for field in ("source_technology", "target_technology"):
+            with self.subTest(field=field):
+                candidate = dict(metadata)
+                candidate.pop(field)
+                issues = self.contract.validate_card(
+                    relative,
+                    candidate,
+                    "# Synthetic interoperability\n",
+                )
+                self.assertEqual(
+                    ["frontmatter.required"],
+                    [issue.code for issue in issues],
+                )
+
+        invalid = dict(metadata)
+        invalid["source_technology"] = []
+        issues = self.contract.validate_card(
+            relative,
+            invalid,
+            "# Synthetic interoperability\n",
+        )
+        self.assertEqual(["frontmatter.schema"], [issue.code for issue in issues])
+
+    def test_missing_status_defers_dependent_checks(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        metadata = {
+            **SYNTHETIC_API_METADATA,
+            "sources": [],
+            "platforms": [],
+            "replaced_by": "ops/ascendc/apis/replacement",
+        }
+        metadata.pop("status")
+        issues = self.contract.validate_card(
+            relative,
+            metadata,
+            "# Synthetic API\n",
+        )
+        self.assertEqual(
+            ["frontmatter.required"],
+            [issue.code for issue in issues],
+        )
+
+    def test_missing_replacement_is_always_rejected(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        metadata = {
+            **SYNTHETIC_API_METADATA,
+            "status": "deprecated",
+            "replaced_by": "ops/ascendc/apis/definitely_missing",
+        }
+        issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
+        self.assertTrue(
+            any(
+                issue.message.startswith("replacement card does not exist:")
+                for issue in issues
+            )
+        )
+
     def test_hierarchical_tag_and_local_source_are_accepted(self) -> None:
         relative = Path("knowledge/ops/ascendc/apis/basic_api/data_copy/synthetic_api.md")
         metadata = dict(SYNTHETIC_API_METADATA)
@@ -466,7 +589,61 @@ platforms: [a2]
             )
         self.assertEqual(1, result.returncode, result.stderr)
         payload = json.loads(result.stdout)
-        self.assertIn("frontmatter.time", {error["code"] for error in payload["errors"]})
+        self.assertIn(
+            "frontmatter.time",
+            {finding["code"] for finding in payload["findings"]},
+        )
+
+    def test_index_entry_without_summary_is_a_nonblocking_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            (root / "knowledge/common").mkdir()
+            (root / "knowledge/common/index.md").write_text(
+                "# Common\n", encoding="utf-8"
+            )
+            (root / "knowledge/example.md").write_text(
+                "# Example\n", encoding="utf-8"
+            )
+            (root / "knowledge/index.md").write_text(
+                '---\nokf_version: "0.2"\n---\n\n# Knowledge\n\n'
+                "- [Common](common/index.md)\n\n"
+                "- [External](https://example.com)\n\n"
+                "```markdown\n- [Example](example.md)\n```\n\n"
+                "    - [Indented](example.md)\n\n"
+                "- [Inline summary](example.md)：`DataCopy`\n\n"
+                "```markdown\n- [Unclosed](example.md)\n",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(LINT),
+                    "--knowledge-root",
+                    str(root),
+                    "--card",
+                    "knowledge/index.md",
+                    "--json",
+                ],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual(
+            [
+                {
+                    "check": "index_entry_description",
+                    "tier": "P1",
+                    "path": "knowledge/index.md",
+                    "line": 7,
+                    "code": "index.entry_description",
+                    "message": "index entry requires a summary",
+                    "details": "- [Common](common/index.md)",
+                }
+            ],
+            payload["findings"],
+        )
 
     def test_duplicate_frontmatter_key_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -479,7 +656,7 @@ platforms: [a2]
         self.assertIn("frontmatter.parse", result.stdout)
         self.assertIn("duplicate key", result.stdout)
 
-    def test_reference_links_images_and_html_images_are_checked(self) -> None:
+    def test_reference_links_are_checked_but_images_are_allowed(self) -> None:
         body = """[Missing document][missing-doc]
 
 ![Missing diagram][missing-image]
@@ -492,8 +669,94 @@ platforms: [a2]
             root = self.make_root(temporary)
             result = self.run_lint(root, self.render_card(body=body))
         self.assertEqual(1, result.returncode)
-        self.assertIn("body.embedded_image", result.stdout)
+        self.assertNotIn("body.embedded_image", result.stdout)
         self.assertIn("link.missing", result.stdout)
+
+    def test_embedded_images_are_allowed(self) -> None:
+        body = """![Missing diagram](missing-image.png)
+
+<img src="also-missing.png" alt="missing">"""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            result = self.run_lint(root, self.render_card(body=body))
+        self.assertEqual(0, result.returncode, result.stdout)
+        self.assertNotIn("body.embedded_image", result.stdout)
+
+    def test_links_ignore_code_and_images_and_report_locations(self) -> None:
+        body = """[Inline](missing-inline.md)
+`[Inline code](missing-code.md)`
+![Image](missing-image.md)
+```markdown
+[Fenced](missing-fenced.md)
+```
+[Reference][missing-reference]
+[missing-reference]: missing-reference.md
+[Outside](../../../../README.md)
+[Directory](directory_target)"""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            (root / "README.md").write_text("# Outside\n", encoding="utf-8")
+            (root / "knowledge/ops/ascendc/apis/directory_target").mkdir(
+                parents=True
+            )
+            result = self.run_lint(root, self.render_card(body=body), "--json")
+        self.assertEqual(1, result.returncode, result.stderr)
+        findings = [
+            finding
+            for finding in json.loads(result.stdout)["findings"]
+            if finding["check"] == "links"
+        ]
+        self.assertEqual(
+            [
+                ("link.missing", 17, "missing-inline.md"),
+                ("link.missing", 23, "missing-reference.md"),
+                ("link.outside_bundle", 25, "../../../../README.md"),
+                ("link.not_file", 26, "directory_target"),
+            ],
+            [
+                (finding["code"], finding["line"], finding["details"])
+                for finding in findings
+            ],
+        )
+
+    def test_index_empty_requires_a_valid_direct_child(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            common = root / "knowledge/common"
+            glossaries = common / "glossaries"
+            invalid_child = glossaries / "nested"
+            invalid_child.mkdir(parents=True)
+            (common / "index.md").write_text("# Common\n", encoding="utf-8")
+            (glossaries / "index.md").write_text(
+                "# Glossaries\n",
+                encoding="utf-8",
+            )
+            (glossaries / "README.txt").write_text("junk\n", encoding="utf-8")
+            (glossaries / "Bad-Name.md").write_text("# Invalid\n", encoding="utf-8")
+            (invalid_child / "index.md").write_text(
+                "# Invalid child\n",
+                encoding="utf-8",
+            )
+            contract = Contract(root)
+
+            empty_paths = {
+                path.resolve().relative_to(root.resolve()).as_posix()
+                for path, issue in contract.validate_index_tree()
+                if issue.code == "index.empty"
+            }
+            self.assertIn("knowledge/common/glossaries", empty_paths)
+            self.assertNotIn("knowledge/common", empty_paths)
+
+            (glossaries / "valid_card.md").write_text(
+                "# Valid path\n",
+                encoding="utf-8",
+            )
+            populated_paths = {
+                path.resolve().relative_to(root.resolve()).as_posix()
+                for path, issue in contract.validate_index_tree()
+                if issue.code == "index.empty"
+            }
+        self.assertNotIn("knowledge/common/glossaries", populated_paths)
 
     def test_local_link_cannot_leave_bundle(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -596,14 +859,16 @@ platforms: [a2]
             root = self.make_root(temporary)
             missing = module.Linter(root, False)
             missing.validate_full_tree()
-            missing_codes = {error["code"] for error in missing.errors}
+            missing_codes = {finding["code"] for finding in missing.findings}
 
             fetch_script = root / "fetch-cann-docs.sh"
             fetch_script.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
             fetch_script.chmod(0o644)
             non_executable = module.Linter(root, False)
             non_executable.validate_full_tree()
-            mode_codes = {error["code"] for error in non_executable.errors}
+            mode_codes = {
+                finding["code"] for finding in non_executable.findings
+            }
         self.assertIn("source.fetch_script_missing", missing_codes)
         self.assertIn("source.fetch_script_mode", mode_codes)
 

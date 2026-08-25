@@ -9,9 +9,13 @@
 | `schemas/frontmatter.schema.json` | OKF 与扩展字段白名单、数据类型、数组形状和基础枚举 | 不按路径 Profile 选择字段，不保存平台或标签词表 |
 | `schemas/profiles.yaml` | 八个公共必选字段、Profile 到 OKF `type` 的映射、各 Profile 字段组合 | 不定义字段数据类型，不判断路径是否合法 |
 | `schemas/registries.yaml` | domain、route、platform、标签、受控附加路径值和固定归档本地来源 | 不保存知识正文、逐卡来源、发布版本或变更历史 |
-| `contracts/knowledge.py` | 路径推导、声明组合、跨字段/文件关系和导航 | 不复制平行枚举，不判断技术结论是否正确 |
+| `contracts/knowledge.py` | 加载声明并为 Ingest、Query 等消费者保留统一兼容门面 | 不重复实现各检查类别 |
+| `contracts/checks/*.py` | 按路径、Profile、来源、导航等类别实现确定性检查；`__init__.py` 静态注册检查及 P0–P2 等级 | 不保存 Schema、Profile 或 Registry 的平行枚举 |
+| `contracts/indexes.py` | 生成并比较直接子项索引，供 Ingest 与 Lint 共用 | 不写文件，不决定 CI 展示 |
 
 同一规则只能有一个机器事实源：字段形状归 JSON Schema，字段组合和 `okf_type` 归 Profile，受控值归 Registry，依赖路径、其他字段或其他文件的关系归 Contract。
+
+顶层字段是否必选只由 `profiles.yaml` 的 `common_required` 与各 Profile `required` 声明；Frontmatter Schema 不重复顶层 `required`，但仍负责 `sources[].resource`、`verified.by/at` 等嵌套对象的必选字段。`title` 和 `description` 的字符串类型归 Schema，非空文本语义归 Profile 检查。Contract 直接消费这些声明，只保留现有的可加载性和 `okf_type` 基础检查，不增加 required/optional 重复、交叉或 Schema 字段名单等 Profile 声明自校验层。
 
 ## Registry 分区
 
@@ -39,7 +43,7 @@ technology 与 scope 的 ID 不得重叠；每个 route 必须声明允许出现
                                       │
                                       ▼
                             governance Contract
-                     组合路径、字段、引用与导航规则
+                knowledge.py 门面 + checks 分类实现 + indexes 生成
                                       │
                     ┌─────────────────┼─────────────────┐
                     ▼                 ▼                 ▼

@@ -6,6 +6,8 @@ Frontmatter 保存检索、适用范围、生命周期和来源等结构化信�
 
 每张非 `index.md` 知识卡必须填写八个公共字段。
 
+公共与 Profile 附加必选字段以 `profiles.yaml` 为唯一机器事实源：缺少字段报告 `frontmatter.required`；已填写但 `title` 或 `description` 为空白文本时报告 `frontmatter.text`。Schema 负责字段类型与形状，不重复顶层必选或这两个字段的非空语义。
+
 | 字段 | 用途 | 约束 |
 |---|---|---|
 | `type` | OKF 交换类型 | 非空，且等于路径 Profile 的 `okf_type` |

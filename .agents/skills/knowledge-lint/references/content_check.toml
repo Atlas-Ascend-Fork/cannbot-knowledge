@@ -1,0 +1,68 @@
+[runner]
+command = "opencode"
+model = "content-review/content-check"
+variant = "medium"
+model_env = ["BASE_URL", "AUTH_TOKEN", "MODEL"]
+max_concurrency = 3
+timeout_s = 600
+max_attempts = 2
+# 长页面检查期间定期输出存活进度，避免 Job 日志长时间无更新。
+progress_interval_s = 30
+# 仅限制 --changed-files 自动选页；--pages 显式页不受限。
+max_changed_pages = 12
+prompt = "content_check_prompt.md"
+opencode_config = "../scripts/opencode.json"
+
+[[checks]]
+id = "claim_evidence_consistency"
+title = "技术结论与证据不一致"
+details = """
+核对焦点卡中影响行为、使用方式、参数、性能、精度、推荐或废弃状态、限制的具体技术结论，是否得到 `sources[].resource` 或卡内可复核实验支持。只在来源直接反驳结论，或定量、绝对化强断言缺少与其强度相称的可核验证据时报告；`draft` 或 `sources: []` 本身不构成违反，证据不足无法确认时保持空数组。说明焦点卡中的具体陈述及支持判断的来源或实验位置。
+"""
+tier = "P1"
+enabled = true
+
+[[checks]]
+id = "applicability_scope_consistency"
+title = "适用范围与证据不一致"
+details = """
+核对卡片实际表达的适用范围，以及来源或实验证据中会改变结论成立范围但被正文遗漏的关键限制。frontmatter 的 `platforms`、`cann_versions` 表示卡片整体范围；局部 overload、模式或场景可以具有更窄范围，但正文必须明确。只报告有证据确认的漏标、错标、过度外推或条件取值错误；字段是否必填、允许为空及取值是否合法由 FormatCheck 负责，不重复报告，也不得从路径、标题或关键词猜测范围。
+"""
+tier = "P1"
+enabled = true
+
+[[checks]]
+id = "profile_content_fit"
+title = "正文与路径职责不一致"
+details = """
+依据当前路径 Profile 核对正文的主要职责：concepts 解释稳定概念和边界，apis 解释签名、语义和约束，examples 给出输入输出与验证，operators 覆盖完整算子工程职责，optimizations 说明触发条件、收益来源和失效边界，runbooks 形成诊断或验证闭环，interoperability 区分可复用与须重推导内容，glossaries 只承载术语定义。只在正文主体实际属于另一 Profile，或 `stable` 卡缺失其职责所需的核心语义而无法消费时报告；不因章节名、写作风格或 `draft` 尚待补充而报告。
+"""
+tier = "P1"
+enabled = true
+
+[[checks]]
+id = "shared_interoperability_boundary"
+title = "共享或跨技术结论越界"
+details = """
+仅检查 `knowledge/<domain>/shared/**`。shared 结论必须真正不依赖单一技术实现并写清复用条件；interoperability 必须区分可保留的设计意图与需在目标技术重新推导或验证的部分。只在卡片把单一 DSL、平台或实验结论泛化为共享事实，或把一种技术的行为直接断言为另一技术的等价行为时报告；技术专属路径不适用。
+"""
+tier = "P2"
+enabled = true
+
+[[checks]]
+id = "cross_page_contradiction"
+title = "相关知识卡结论冲突"
+details = """
+核对最多 5 张最相关现有卡，只在两页讨论同一事实、平台版本与条件范围重叠、形成实质冲突，并有足够来源判断时报告；适用范围不同、路径 Profile 职责不同或仅措辞不同不算违反。说明两处冲突陈述及支持判定的来源。
+"""
+tier = "P1"
+enabled = true
+
+[[checks]]
+id = "description_consistency"
+title = "摘要与正文不一致"
+details = """
+`description` 应能独立、如实概括正文核心结论和主要适用范围。只报告与正文直接矛盾或足以误导检索消费的摘要；字段缺失或为空由 FormatCheck 负责，不以风格偏好或未覆盖次要细节报告。
+"""
+tier = "P1"
+enabled = true

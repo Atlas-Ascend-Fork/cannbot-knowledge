@@ -4,24 +4,16 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import importlib.util
 import json
 import os
-import re
 import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
-
-
-DIRECT_ENTRY_RE = re.compile(r"^- \[[^]]+\]\(([^)#]+)(?:#[^)]*)?\)(?:：.*)?$")
-REFERENCE_ENTRY_RE = re.compile(r"^- \[([^]]+)\]\[([^]]*)\](?:：.*)?$")
-REFERENCE_DEFINITION_LINE_RE = re.compile(r"^[ \t]{0,3}\[[^]\n]+\]:")
-WEAK_SUMMARY_RE = re.compile(
-    r"^(?:本文件为文档发布时所需的索引文件。|> \[![^]]+]|表\s*\d+|以下内容针对如下型号生效)"
-)
 
 
 def resolve_root(value: str | None) -> Path:
@@ -36,14 +28,23 @@ def resolve_root(value: str | None) -> Path:
     return root
 
 
-def contract_module():
-    """Load this Skill's Contract without executing Python from a target root."""
-    module_name = "_cannbot_knowledge_ingest_contract"
+def contract_package():
+    """Load this Skill's trusted Contract package."""
+    module_name = "_cannbot_knowledge_ingest_contracts"
     loaded = sys.modules.get(module_name)
+    source = Path(__file__).resolve().parents[4] / "governance/contracts"
+    package_file = source / "__init__.py"
     if loaded is not None:
+        if Path(loaded.__file__).resolve() != package_file.resolve():
+            raise ValueError(
+                "governance contract source changed in the current process"
+            )
         return loaded
-    source = Path(__file__).resolve().parents[4] / "governance/contracts/knowledge.py"
-    spec = importlib.util.spec_from_file_location(module_name, source)
+    spec = importlib.util.spec_from_file_location(
+        module_name,
+        package_file,
+        submodule_search_locations=[str(source)],
+    )
     if spec is None or spec.loader is None:
         raise ValueError(f"cannot load governance contract: {source}")
     module = importlib.util.module_from_spec(spec)
@@ -52,20 +53,41 @@ def contract_module():
     return module
 
 
+def contract_module():
+    package = contract_package()
+    return importlib.import_module(f"{package.__name__}.knowledge")
+
+
+def indexes_module():
+    package = contract_package()
+    return importlib.import_module(f"{package.__name__}.indexes")
+
+
 def load_contract(root: Path):
-    source = Path(__file__).resolve().parents[4] / "governance/contracts/knowledge.py"
-    target = root / "governance/contracts/knowledge.py"
-    if not target.is_file():
+    source = Path(__file__).resolve().parents[4] / "governance/contracts"
+    target = root / "governance/contracts"
+    if not (target / "knowledge.py").is_file():
         raise ValueError(f"not a governed cannbot-knowledge root: {root}")
-    if source.resolve() != target.resolve() and source.read_bytes() != target.read_bytes():
-        raise ValueError(
-            "target governance contract does not match this knowledge-ingest version"
-        )
+    if source.resolve() != target.resolve():
+        for source_file in sorted(source.rglob("*.py")):
+            target_file = target / source_file.relative_to(source)
+            if (
+                not target_file.is_file()
+                or source_file.read_bytes() != target_file.read_bytes()
+            ):
+                raise ValueError(
+                    "target governance contract does not match this knowledge-ingest version"
+                )
     return contract_module().Contract(root)
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return (
+        datetime.now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def source_objects(urls: list[str]) -> list[dict[str, str]]:
@@ -91,7 +113,9 @@ def atomic_create(path: Path, content: str) -> None:
         try:
             os.link(temporary, path)
         except FileExistsError as exc:
-            raise FileExistsError(f"refusing to overwrite existing card: {path}") from exc
+            raise FileExistsError(
+                f"refusing to overwrite existing card: {path}"
+            ) from exc
     finally:
         temporary.unlink(missing_ok=True)
 
@@ -141,12 +165,18 @@ def create(args: argparse.Namespace) -> int:
     if args.replaced_by:
         metadata["replaced_by"] = args.replaced_by
 
-    issues = contract.validate_card(relative, metadata, body, check_replacement=True)
+    issues = contract.validate_card(relative, metadata, body)
     if issues:
         details = "; ".join(f"{issue.code}: {issue.message}" for issue in issues)
         raise ValueError(details)
 
-    rendered = "---\n" + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False).rstrip() + "\n---\n\n" + body + "\n"
+    rendered = (
+        "---\n"
+        + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False).rstrip()
+        + "\n---\n\n"
+        + body
+        + "\n"
+    )
     if args.dry_run:
         sys.stdout.write(rendered)
         return 0
@@ -154,148 +184,6 @@ def create(args: argparse.Namespace) -> int:
     atomic_create(target, rendered)
     print(target)
     return 0
-
-
-def read_card_description(card_path: Path) -> tuple[str, str]:
-    """Return the governed title and complete description of one card."""
-    metadata, _ = contract_module().split_frontmatter(
-        card_path.read_text(encoding="utf-8")
-    )
-    if metadata is None:
-        raise ValueError(f"knowledge card is missing frontmatter: {card_path}")
-    title = str(metadata.get("title", "")).strip()
-    description = " ".join(str(metadata.get("description", "")).split())
-    if not title or not description:
-        raise ValueError(f"knowledge card requires title and description: {card_path}")
-    return title, description
-
-
-def summarize_subdir(directory: Path) -> str:
-    """Use a direct card, then a descendant card, as a section summary."""
-    direct_cards = sorted(
-        path for path in directory.glob("*.md") if path.name != "index.md"
-    )
-    candidates = direct_cards or sorted(
-        path for path in directory.rglob("*.md") if path.name != "index.md"
-    )
-    if candidates:
-        return read_card_description(candidates[0])[1]
-    return f"{directory.name.replace('_', ' ')} 导航。"
-
-
-def section_title(directory: Path) -> str:
-    summary_card = directory / f"{directory.name}.md"
-    if summary_card.is_file():
-        return read_card_description(summary_card)[0]
-    return directory.name.replace("_", " ")
-
-
-def desired_entries(directory: Path) -> list[tuple[str, str]]:
-    result: list[tuple[str, str]] = []
-    for item in sorted(directory.iterdir()):
-        if item.name == "index.md":
-            continue
-        if item.is_dir() and (
-            (item / "index.md").is_file()
-            or any(path.suffix == ".md" for path in item.rglob("*.md"))
-        ):
-            target = f"{item.name}/index.md"
-            result.append(
-                (target, f"- [{section_title(item)}]({target})：{summarize_subdir(item)}")
-            )
-        elif item.is_file() and item.suffix == ".md":
-            title, description = read_card_description(item)
-            result.append((item.name, f"- [{title}]({item.name})：{description}"))
-    return result
-
-
-def direct_entry_target(line: str, reference_definitions: str = "") -> str | None:
-    match = DIRECT_ENTRY_RE.fullmatch(line)
-    target = match.group(1) if match is not None else None
-    if target is None and REFERENCE_ENTRY_RE.fullmatch(line):
-        targets = contract_module().markdown_targets(line + "\n" + reference_definitions)
-        if len(targets) == 1 and not targets[0][1]:
-            target = targets[0][0].split("#", 1)[0]
-    if target is None:
-        return None
-    path = Path(target)
-    if (
-        len(path.parts) == 1
-        and path.suffix == ".md"
-        or len(path.parts) == 2
-        and path.parts[1] == "index.md"
-    ):
-        return target
-    return None
-
-
-def refreshed_entry(existing: str, generated: str) -> str:
-    if "：" not in existing or "：" not in generated:
-        return existing
-    summary = existing.split("：", 1)[1].strip()
-    if not WEAK_SUMMARY_RE.match(summary) and "> [!" not in summary:
-        return existing
-    return existing.split("：", 1)[0] + "：" + generated.split("：", 1)[1]
-
-
-def initial_index(directory: Path, knowledge_root: Path) -> str:
-    relative = directory.relative_to(knowledge_root)
-    if directory == knowledge_root:
-        return '---\nokf_version: "0.2"\n---\n\n# 知识正文\n\nDomain 入口保持完整。\n'
-    if relative.parts == ("ops",):
-        return (
-            "# 算子知识\n\n"
-            "按 DSL 隔离语言、API、编译器和实现约束；只有真正不依赖单一 DSL 的结论进入 shared。\n"
-        )
-    if relative.parts == ("ops", "ascendc"):
-        return "# Ascend C 算子知识\n\nAscend C 的 API 参考、开发指南、算子实践和调试调优。\n"
-    if relative.parts == ("ops", "ascendc", "apis"):
-        return "# Ascend C API\n"
-    if relative.parts == ("ops", "ascendc", "guides"):
-        return "# Ascend C 开发指南\n"
-    return f"# {section_title(directory)}\n"
-
-
-def synchronized_index(directory: Path, knowledge_root: Path) -> str:
-    index = directory / "index.md"
-    existing = (
-        index.read_text(encoding="utf-8")
-        if index.is_file() and index.read_text(encoding="utf-8").strip()
-        else initial_index(directory, knowledge_root)
-    )
-    entries = desired_entries(directory)
-    desired = dict(entries)
-    lines = existing.rstrip().splitlines()
-    reference_definitions = "\n".join(
-        line for line in lines if REFERENCE_DEFINITION_LINE_RE.match(line)
-    )
-    preserved: list[str] = []
-    seen: set[str] = set()
-    first_navigation: int | None = None
-    after_navigation: int | None = None
-    for line in lines:
-        target = direct_entry_target(line, reference_definitions)
-        if target is None:
-            preserved.append(line)
-            continue
-        if first_navigation is None:
-            first_navigation = len(preserved)
-        if target in desired and target not in seen:
-            preserved.append(refreshed_entry(line, desired[target]))
-            seen.add(target)
-            after_navigation = len(preserved)
-
-    missing = [line for target, line in entries if target not in seen]
-    if missing:
-        insert_at = after_navigation
-        if insert_at is None:
-            insert_at = first_navigation if first_navigation is not None else len(preserved)
-        if insert_at and preserved[insert_at - 1].strip():
-            missing.insert(0, "")
-        if insert_at < len(preserved) and preserved[insert_at].strip():
-            missing.append("")
-        preserved[insert_at:insert_at] = missing
-    return "\n".join(preserved).rstrip() + "\n"
 
 
 def atomic_write(path: Path, content: str) -> None:
@@ -314,28 +202,17 @@ def atomic_write(path: Path, content: str) -> None:
 
 def sync_indexes(args: argparse.Namespace) -> int:
     root = resolve_root(args.knowledge_root)
-    knowledge_root = (root / "knowledge").resolve()
-    directories = [
-        knowledge_root,
-        *sorted(path for path in knowledge_root.rglob("*") if path.is_dir()),
-    ]
-    stale: list[tuple[Path, str]] = []
-    for directory in directories:
-        expected = synchronized_index(directory, knowledge_root)
-        index = directory / "index.md"
-        actual = index.read_text(encoding="utf-8") if index.is_file() else None
-        if actual != expected:
-            stale.append((index, expected))
+    total, stale = indexes_module().index_updates(root)
 
     if args.check:
-        for index, _ in stale:
-            print(f"stale index: {index.relative_to(root)}")
-        print(f"Checked {len(directories)} indexes, stale {len(stale)}")
+        for update in stale:
+            print(f"stale index: {update.path.relative_to(root)}")
+        print(f"Checked {total} indexes, stale {len(stale)}")
         return 1 if stale else 0
 
-    for index, content in stale:
-        atomic_write(index, content)
-    print(f"Synchronized {len(stale)} indexes, unchanged {len(directories) - len(stale)}")
+    for update in stale:
+        atomic_write(update.path, update.content)
+    print(f"Synchronized {len(stale)} indexes, unchanged {total - len(stale)}")
     return 0
 
 
@@ -346,7 +223,7 @@ def doc_id(root: Path, path: Path) -> str:
 def graph_data(root: Path) -> tuple[list[dict[str, object]], list[dict[str, str]]]:
     contract = load_contract(root)
     module = contract_module()
-    knowledge_root = (root / "knowledge").resolve()
+    knowledge_root = contract.root / "knowledge"
     nodes: list[dict[str, object]] = []
     edge_keys: set[tuple[str, str]] = set()
     for path in sorted(knowledge_root.rglob("*.md")):
@@ -355,16 +232,18 @@ def graph_data(root: Path) -> tuple[list[dict[str, object]], list[dict[str, str]
         metadata, body = module.split_frontmatter(path.read_text(encoding="utf-8"))
         if metadata is None:
             raise ValueError(f"missing frontmatter: {path}")
-        issues = contract.validate_card(path.relative_to(root), metadata, body)
+        issues = contract.validate_card(path.relative_to(contract.root), metadata, body)
         if issues:
             details = "; ".join(f"{issue.code}: {issue.message}" for issue in issues)
             raise ValueError(f"invalid card {path}: {details}")
-        source_id = doc_id(root, path)
+        source_id = doc_id(contract.root, path)
         nodes.append(
             {
                 "id": source_id,
                 "type": metadata.get("type"),
-                "profile": contract.derive_card_path(path.relative_to(root)).card_type,
+                "profile": contract.derive_card_path(
+                    path.relative_to(contract.root)
+                ).card_type,
                 "title": metadata.get("title"),
                 "status": metadata.get("status"),
                 "tags": metadata.get("tags", []),
@@ -375,8 +254,12 @@ def graph_data(root: Path) -> tuple[list[dict[str, object]], list[dict[str, str]
                 target.relative_to(knowledge_root)
             except ValueError:
                 continue
-            if target.is_file() and target.suffix == ".md" and target.name != "index.md":
-                edge_keys.add((source_id, doc_id(root, target)))
+            if (
+                target.is_file()
+                and target.suffix == ".md"
+                and target.name != "index.md"
+            ):
+                edge_keys.add((source_id, doc_id(contract.root, target)))
     edges = [
         {"source": source, "relation": "links_to", "target": target}
         for source, target in sorted(edge_keys)
@@ -390,7 +273,6 @@ def build_graph(args: argparse.Namespace) -> int:
     output = root / "artifacts/graphs/graph.json"
     payload = {
         "schema_version": 1,
-        "generated_from": "explicit relative Markdown links under knowledge/",
         "nodes": nodes,
         "edges": edges,
     }
@@ -408,7 +290,9 @@ def parser() -> argparse.ArgumentParser:
     command.add_argument("--title", required=True)
     command.add_argument("--description", required=True)
     command.add_argument("--tag", action="append", required=True)
-    command.add_argument("--status", choices=["draft", "stable", "deprecated"], default="draft")
+    command.add_argument(
+        "--status", choices=["draft", "stable", "deprecated"], default="draft"
+    )
     command.add_argument("--source", action="append", default=[])
     command.add_argument("--platform", action="append", default=[])
     command.add_argument("--verified-by")
