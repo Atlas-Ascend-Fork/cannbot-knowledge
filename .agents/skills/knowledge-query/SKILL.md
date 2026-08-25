@@ -10,7 +10,7 @@ description: 检索 cannbot-knowledge 中受治理的 CANN、算子、图、模�
 ## 前置定位
 
 1. 明确目标实体和当前要回答的一个 decision。
-2. 确认 domain、technology、路径 Profile、CANN 版本和目标 platform。只有芯片型号、SocVersion 或 NPU 架构时，先读[平台识别](references/platform-identification.md)；无法安全映射就向用户确认。
+2. 确认 domain、technology、路径 Profile 和目标 platform。只有芯片型号、SocVersion 或 NPU 架构时，先读[平台识别](references/platform-identification.md)；无法安全映射就向用户确认。CANN 版本用于命中后核对正文适用范围，不作为搜索过滤条件。
 3. 先用 `discover` 区分实际卡片覆盖与只有 Registry/占位目录的规划范围。
 
 Query 只消费已经准备且未过期的索引。缺失或陈旧时停止，并让知识仓维护者或项目安装器执行索引构建；日常查询不临时扫描全库或静默重建。
@@ -39,7 +39,7 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 - 未定位平台的 draft 只在显式 `--include-unlocated --status draft|all` 时返回，不能与 `--platform` 混用。
 - 没有 `verified` 是 unverified；非 human event 是 machine-confirmed；至少一个 `human:` event 是 human-reviewed。信任层级影响排序，不等于正确性证明。
 - shared 只在显式 `--include-shared` 时附加到目标 technology；其他 DSL 不因关键词相似自动成为证据。
-- 显式 CANN 版本只命中声明该版本的卡；字段缺失不表示兼容任意版本。
+- Query 当前不按 CANN 版本过滤；读取命中卡的正文和 `cann_versions`（若有）后，由调用方判断版本边界。
 - 零命中只表示当前条件下未召回，不证明能力不存在。
 - `literal` 优先精确标题，再依次考虑标题片段、摘要和正文；`cannbot:related` 管理区块不参与检索。
 - 读取命中的 `local_path`，核对正文、平台、版本、失效边界和完整 sources；需要强证据时继续打开固定来源。

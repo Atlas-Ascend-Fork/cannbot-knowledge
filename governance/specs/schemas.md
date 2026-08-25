@@ -54,7 +54,7 @@ technology 与 scope 的 ID 不得重叠；每个 route 必须声明允许出现
                               本地图谱构建前校验
 ```
 
-图谱不是第四套规则解释器；它只从通过同一 Contract 的 Concept 和显式链接生成本地产物。
+图谱不是第四套规则解释器；它只接收通过同一 Contract 的 Concept/Index、可解析人工链接和通过当前语料指纹校验的 ignored 本地关系判定缓存，在 `artifacts/graphs/` 生成本地图谱产物，并向知识卡同步可提交的 `cannbot:related` 受管导航块。
 
 ## 为什么需要 Contract
 

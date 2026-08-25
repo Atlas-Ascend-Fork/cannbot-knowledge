@@ -17,8 +17,12 @@ python3 -m unittest discover -s evals -p 'test_*.py'
 python3 -m unittest discover -s .agents/skills/knowledge-ingest/tests -p 'test_*.py'
 ruff check .agents/skills governance evals
 bash -n init.sh check.sh fetch-cann-docs.sh
-python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py \
-  --knowledge-root . build-graph
+if [[ -f artifacts/graphs/edge_judgments.json ]]; then
+  python3 .agents/skills/knowledge-ingest/scripts/knowledge_graph.py \
+    --knowledge-root . build
+  python3 .agents/skills/knowledge-ingest/scripts/knowledge_graph.py \
+    --knowledge-root . verify
+fi
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   git diff --check

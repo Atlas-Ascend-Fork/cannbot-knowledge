@@ -57,7 +57,7 @@ bash fetch-cann-docs.sh
 | Skill | 作用 | 是否修改知识仓 |
 |---|---|---|
 | `knowledge-query` | 查看实际知识覆盖，检索知识卡，并可保存不可覆盖的审计 receipt | 除指定 receipt 外只读 |
-| `knowledge-ingest` | 统一路由新来源、增量、版本升级和通用建卡，并可重建本地图谱 | 可以创建候选卡和本地产物，但不覆盖已有知识卡、不提交 |
+| `knowledge-ingest` | 统一路由新来源、增量、版本升级、通用建卡和图谱完整生命周期 | 可以创建候选卡并同步可提交的受管关系块；图谱 JSON 等产物始终 ignored |
 | `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航和日志；整理 Issue 材料 | 否 |
 
 ## 知识如何组织

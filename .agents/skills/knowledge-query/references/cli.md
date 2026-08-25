@@ -31,7 +31,7 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> discover 
 python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
   --query <text> [--domain ops] [--technology ascendc] [--type apis] \
   [--task implementation] [--tag topic.data_movement] \
-  --platform a2 [--cann-version 9.1.0] [--include-shared] \
+  --platform a2 [--include-shared] \
   [--source-technology triton] [--target-technology ascendc] \
   [--status stable|draft|deprecated|all] [--match text|literal] \
   [--decision <id>] [-k 10] [--json|--text] [--receipt <new-json>]
@@ -41,11 +41,12 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 
 ### 过滤与匹配
 
-- 重复的 tag、platform 和 CANN version 使用 AND。
+- 重复的 tag 和 platform 使用 AND。
 - task 自动规范为 `task.*` 并校验 task 维度。
 - domain、route、platform、tag 和跨技术端点必须注册；Profile 必须受支持。
 - 普通搜索至少传一个 platform。`--technology platforms` 可在映射产品平台时不传；未定位 draft 使用 `--include-unlocated --status draft|all`，且不能同时传 platform。
 - `--include-shared` 只与具体 technology 一起使用，并只附加同领域 shared。
+- Search 当前不提供 CANN 版本过滤；版本字段仍可随命中返回，具体适用边界由正文核对。
 - `text` 对 title、description、tags/aliases 和正文加权；`literal` 要求完整查询串出现在这些字段中，并按精确标题、标题片段、摘要、正文的顺序降权。由 `cannbot:related` 标记的管理型导航区块不进入索引。
 - 默认 status 为 `stable`，limit 必须大于零。
 

@@ -9,12 +9,15 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import yaml
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from governance.contracts.knowledge import (  # noqa: E402
     Contract,
+    markdown_targets,
     relative_markdown_links,
 )
 
@@ -148,7 +151,26 @@ class RouteContractTests(unittest.TestCase):
         guides = [path for path in cards if "guides" in path.parts]
         self.assertGreaterEqual(len(apis), 2810)
         self.assertGreaterEqual(len(guides), 270)
-        self.assertTrue(all(path.parts[1:3] == ("ops", "ascendc") for path in cards))
+        self.assertTrue(
+            all(path.parts[1:3] == ("ops", "ascendc") for path in [*apis, *guides])
+        )
+        self.assertNotIn(
+            Path("knowledge/common/platforms/concepts/ascend_910b3_atlas_a2.md"),
+            cards,
+        )
+        self.assertFalse((ROOT / "knowledge/common/platforms").exists())
+
+    def test_ascend910b3_runbooks_are_not_scoped_to_a3(self) -> None:
+        conflicts: list[str] = []
+        runbooks = ROOT / "knowledge/ops/ascendc/runbooks"
+        for card in sorted(runbooks.glob("*/*.md")):
+            if card.name == "index.md":
+                continue
+            text = card.read_text(encoding="utf-8")
+            metadata = yaml.safe_load(text.split("---", 2)[1])
+            if "Ascend910B3" in text and "a3" in metadata.get("platforms", []):
+                conflicts.append(card.relative_to(ROOT).as_posix())
+        self.assertEqual([], conflicts)
 
     def test_precreated_route_policy_is_declared_by_domain(self) -> None:
         enabled = {
@@ -311,6 +333,26 @@ class RouteContractTests(unittest.TestCase):
         ]
         self.assertEqual([], self.contract.validate_card(relative, metadata, "# Synthetic API\n"))
 
+    def test_stable_runbook_can_use_empty_sources(self) -> None:
+        relative = Path("knowledge/ops/ascendc/runbooks/compilation/trajectory_finding.md")
+        metadata = dict(SYNTHETIC_API_METADATA)
+        metadata.update(
+            {
+                "type": "Runbook",
+                "title": "Trajectory finding",
+                "status": "stable",
+                "sources": [],
+            }
+        )
+        self.assertEqual([], self.contract.validate_card(relative, metadata, "# Trajectory finding\n"))
+
+    def test_stable_non_runbook_still_requires_source(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        metadata = dict(SYNTHETIC_API_METADATA)
+        metadata["sources"] = []
+        issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
+        self.assertIn("source.required", {issue.code for issue in issues})
+
     def test_unregistered_local_source_is_rejected(self) -> None:
         relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
         metadata = dict(SYNTHETIC_API_METADATA)
@@ -353,6 +395,16 @@ class RouteContractTests(unittest.TestCase):
             [("/ops/ascendc/apis/synthetic_api.md", ROOT / "knowledge/ops/ascendc/apis/synthetic_api.md")],
             links,
         )
+
+    def test_markdown_targets_ignore_inline_and_fenced_code(self) -> None:
+        text = """[real](target.md) and `[interval, end)`.
+
+```cpp
+auto fn = [](int value) { return value; };
+[fake](inside_fence.md)
+```
+"""
+        self.assertEqual([("target.md", False)], markdown_targets(text))
 
     def test_missing_index_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1027,7 +1079,7 @@ class MigratedSkillContractTests(unittest.TestCase):
             first = subprocess.run(command, check=False, text=True, capture_output=True)
             self.assertEqual(first.returncode, 0, first.stderr)
             payload = json.loads(receipt.read_text(encoding="utf-8"))
-            self.assertEqual(payload["schema_version"], "cannbot-knowledge-search.v2")
+            self.assertEqual(payload["schema_version"], "cannbot-knowledge-search.v3")
             self.assertEqual(payload["request"]["platforms"], ["a2"])
             self.assertTrue(payload["request_sha256"])
             self.assertTrue(payload["index"]["content_fingerprint"])

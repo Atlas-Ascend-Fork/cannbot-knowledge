@@ -4,7 +4,7 @@
 
 ## 查询路线
 
-1. 用准确 API 名、参数名或报错短语查询目标 technology 的 `apis`，始终绑定 platform 和已知 CANN version。
+1. 用准确 API 名、参数名或报错短语查询目标 technology 的 `apis`，始终绑定 platform；命中后再按正文核对已知 CANN version。
 2. 需要调用形态时补查同 technology 的 `examples`；需要工程职责时补查 `concepts` 或 `runbooks`。
 3. 比较签名、参数单位、dtype/layout、内存位置、同步语义、平台版本和失效边界，不因名称相似合并接口。
 4. 正文未展开准确契约时沿固定 source 定向核验，不先全盘搜索本地 SDK。

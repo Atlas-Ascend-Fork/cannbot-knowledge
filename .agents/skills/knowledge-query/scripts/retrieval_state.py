@@ -28,8 +28,8 @@ sys.dont_write_bytecode = True
 STATE_SCHEMA = "cannbot-retrieval-state.v1"
 REVIEW_SCHEMA = "cannbot-retrieval-review.v1"
 READY_SCHEMA = "cannbot-retrieval-ready.v1"
-RECEIPT_SCHEMA = "cannbot-knowledge-search.v2"
-SEARCH_SCHEMA = "knowledge-search.v4"
+RECEIPT_SCHEMA = "cannbot-knowledge-search.v3"
+SEARCH_SCHEMA = "knowledge-search.v5"
 DECISION_STATUSES = {"covered", "conflicting", "insufficient", "gap"}
 CURRENT_INDEX_FIELDS = (
     "schema_version",

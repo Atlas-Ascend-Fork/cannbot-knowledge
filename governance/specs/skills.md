@@ -9,7 +9,7 @@
 | Skill | 输入 | 输出 | 写入边界 |
 |---|---|---|---|
 | `knowledge-query` | 技术问题、decision、目标平台和可选范围条件 | 实际覆盖、候选 OKF Concept 或 search/ready/outcome receipt | 只读；只在调用方指定路径创建新审计产物 |
-| `knowledge-ingest` | 固定来源、变化类型、目标路径和待表达结论 | 路由决策、候选 Concept、Git 来源账本；可重建本地图谱 | 可以创建候选卡和 ignored 产物，不覆盖已有知识卡、不提交、不发布 |
+| `knowledge-ingest` | 固定来源、变化类型、目标路径、待表达结论和当前知识语料 | 路由决策、候选 Concept、Git 来源账本；可提交的受管关系块；ignored 的关系候选、判定缓存和本地图谱 | 可以创建候选卡并同步受管关系块；图谱 JSON 等产物不提交、不发布 |
 | `knowledge-lint` | 单卡、完整知识仓或问题材料 | 分级确定性 Finding 报告或可复现 Issue 草稿 | 只读 |
 
 典型贡献流程是先 Query 查重，再由 Ingest 形成候选卡，随后执行全库 Lint，最后用目标条件验证新卡可以被 Query 召回。只读问答不需要执行完整流程；人工编辑已有卡也可以不用创建能力，但仍应查重、Lint 和验证召回。
@@ -32,10 +32,11 @@ Query 是 CANNBot Profile 的专用、确定性、只读 consumer。索引构建
 | technology/scope | 默认只匹配所选 route 的专属卡 |
 | shared | 只有显式要求时附加所选技术同领域的 shared 卡，不放宽到其他 DSL |
 | platform | 普通搜索必须显式提供并包含全部目标平台；`agnostic` 卡可匹配任一已注册目标平台 |
-| CANN version | 必须显式声明目标版本；字段缺失不代表全版本兼容 |
 | source/target technology | 精确匹配 `Interoperability` 端点 |
 
 Profile 过滤使用目录 ID，例如 `apis`；结果同时返回 OKF `type: API` 和 `profile: apis`。`platforms: []` 不能满足平台过滤；只有显式未定位 draft 查询才能返回。Glossary 不携带平台字段，按平台中立术语处理。平台识别可在 `platforms` scope 中暂不传目标平台，其他搜索不得通过省略平台扩大范围。
+
+Query 当前不按 CANN 版本执行结构化过滤。卡片仍可记录 `cann_versions`，搜索结果仍可返回该字段；调用方读取正文后自行核对版本边界。
 
 文本评分按标题、摘要、`tags`/`aliases` 和正文递减加权，并使用 `verified` 事件派生信任层级：
 
@@ -58,13 +59,17 @@ Ingest 是所有摄入请求的唯一入口，把可核验材料蒸馏成候选 
 5. 将结论、适用范围、失败边界和验证方法写入正文，不复制大段上游内容。
 6. 新卡默认 `draft`；只有来源、范围和正文满足消费门槛后才使用 `stable`。
 7. 写入前调用统一 Contract，并用排他原子创建拒绝覆盖已有卡。
-8. 创建后由贡献者更新索引和当天日志，再执行全库 Lint 与目标 Query。
+8. 创建后由贡献者更新索引和当天日志。
+9. 知识批次完成后执行多通道宽候选召回和稳定分片，由多个独立 subagent 阅读 focal 与 shortlist 候选的完整正文后判定关系；shortlist 只减少无效阅读，Agent 可以用目标卡指纹明确提交正文中发现的候选外关系。聚合器只消费完整 Agent review，不以词法规则、分数阈值或节点度数自动定边；Agent 对同一 pair 的关系类型冲突必须交给一个或多个 Agent 阅读全文裁决，多个裁决分片必须互不重叠且合并后完整覆盖冲突集。
+10. 将接受关系同步为知识卡中可提交的 `cannbot:related` 受管导航块，再执行全库 Lint，重建 Query 索引并运行目标 Query；候选、review、裁决、判定缓存、完整图谱和可视化始终留在 ignored 的 `artifacts/graphs/`，Query 不索引受管关系块。
 
 Git Reference 批次使用 inventory、ledger 和不可覆盖 receipt；固定归档批次以 Registry 中的 archive SHA-256 固定来源，直接执行查重、蒸馏和建卡，不生成这三类批次产物。固定归档切换到新 archive SHA-256 的流程尚未实现，必须 defer。
 
 `verified` 只在掌握真实 actor 和时间时填写。固定来源或创建成功不自动产生验证事件。Interoperability 必须位于同领域 `shared`，并声明两个不同的已注册技术端点。
 
-本地图谱从通过 Contract 的 Concept 及其显式链接生成到 ignored 的 `artifacts/graphs/`。它可以随时重建，不是仓库真值。
+本地图谱包含通过 Contract 的 Concept 与 Index、由目录派生的 `part_of`、人工正文的 `links_to`，以及 Agent 判定缓存接受的 `exemplifies`、`explains`、`same_topic` 和 `related`。候选、review 分片、冲突裁决、已接受关系及其卡片指纹、理由、Agent 身份、强度、置信度、证据、完整图谱和可视化全部写入 ignored 的 `artifacts/graphs/`。受管关系块是这些判定在知识卡中的可提交导航投影，不是人工正文或技术事实源；技术回答仍以卡片正文和来源为准。
+
+图谱候选、判定缓存、构建和可视化产物不提交，也不是独立知识真值。候选分数和召回通道只能帮助 subagent 定位阅读顺序；版本和平台用于 Agent 判断适用边界，不作为候选过滤器。判定缓存必须由至少两个 subagent 覆盖当前全部 focal，并通过语料、分片和卡片指纹校验。Ingest 只能改写受管关系块，且必须保证注入幂等、链接可解析、块外人工正文不变。
 
 ## Lint
 

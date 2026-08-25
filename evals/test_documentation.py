@@ -15,8 +15,12 @@ from urllib.parse import unquote
 import yaml
 
 
-LINK_RE = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
 TAG_RE = re.compile(r"\b(?:task|topic|paradigm)(?:\.[a-z][a-z0-9_]*)+\b")
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from governance.contracts.knowledge import markdown_targets  # noqa: E402
 
 
 class DocumentationContractTests(unittest.TestCase):
@@ -67,16 +71,16 @@ class DocumentationContractTests(unittest.TestCase):
         failures: list[str] = []
         for document in self.documentation_files():
             text = document.read_text(encoding="utf-8")
-            for match in LINK_RE.finditer(text):
-                raw = match.group(1).strip()
-                target = raw[1 : raw.index(">")] if raw.startswith("<") and ">" in raw else raw.split()[0]
+            for raw, is_image in markdown_targets(text):
+                if is_image:
+                    continue
+                target = raw.strip()
                 if not target or target.startswith(("#", "http://", "https://", "mailto:")):
                     continue
                 relative = unquote(target.split("#", 1)[0])
                 resolved = (document.parent / relative).resolve()
                 if not resolved.exists():
-                    line = text.count("\n", 0, match.start()) + 1
-                    failures.append(f"{document.relative_to(self.root)}:{line}: {target}")
+                    failures.append(f"{document.relative_to(self.root)}: {target}")
         self.assertEqual([], failures)
 
     def test_readme_links_every_governance_spec(self) -> None:
@@ -150,6 +154,60 @@ class DocumentationContractTests(unittest.TestCase):
             for source in metadata.get("sources", []):
                 if "resource" not in source or "url" in source:
                     failures.append(f"{card.relative_to(self.root)}: invalid source shape")
+        self.assertEqual([], failures)
+
+    def test_ascendc_runbooks_do_not_use_intermediate_repository_sources(self) -> None:
+        forbidden_origin = "npu_code_agent/NPU-Kernel-Wiki"
+        failures: list[str] = []
+        runbooks = self.root / "knowledge/ops/ascendc/runbooks"
+        for card in sorted(runbooks.glob("*/*.md")):
+            if card.name == "index.md":
+                continue
+            text = card.read_text(encoding="utf-8")
+            metadata = yaml.safe_load(text.split("---", 2)[1])
+            for source in metadata.get("sources", []):
+                if forbidden_origin in str(source.get("resource", "")):
+                    failures.append(card.relative_to(self.root).as_posix())
+            if forbidden_origin in text:
+                failures.append(card.relative_to(self.root).as_posix())
+        self.assertEqual([], failures)
+
+    def test_knowledge_cards_only_use_well_formed_managed_related_blocks(self) -> None:
+        managed = re.compile(
+            r"(?ms)^<!-- cannbot:related:start -->\n"
+            r"## 相关\n.*?"
+            r"^<!-- cannbot:related:end -->\s*"
+        )
+        failures: list[str] = []
+        for card in sorted((self.root / "knowledge").rglob("*.md")):
+            if card.name == "index.md":
+                continue
+            text = card.read_text(encoding="utf-8")
+            blocks = managed.findall(text)
+            marker_count = text.count("<!-- cannbot:related:start -->") + text.count(
+                "<!-- cannbot:related:end -->"
+            )
+            if len(blocks) > 1 or marker_count != 2 * len(blocks):
+                failures.append(f"{card.relative_to(self.root)}: malformed managed block")
+        self.assertEqual([], failures)
+
+    def test_ascendc_runbooks_do_not_use_legacy_or_unmanaged_related_sections(self) -> None:
+        managed = re.compile(
+            r"(?ms)^<!-- cannbot:related:start -->\n"
+            r"## 相关\n.*?"
+            r"^<!-- cannbot:related:end -->\s*"
+        )
+        failures: list[str] = []
+        runbooks = self.root / "knowledge/ops/ascendc/runbooks"
+        for card in sorted(runbooks.glob("*/*.md")):
+            if card.name == "index.md":
+                continue
+            text = card.read_text(encoding="utf-8")
+            if re.search(r"(?m)^## 遗留问题\s*$", text):
+                failures.append(f"{card.relative_to(self.root)}: ## 遗留问题")
+            outside = managed.sub("", text)
+            if re.search(r"(?m)^## 相关\s*$", outside) or "cannbot:related" in outside:
+                failures.append(f"{card.relative_to(self.root)}: unmanaged related section")
         self.assertEqual([], failures)
 
     def test_knowledge_index_entries_have_descriptions(self) -> None:
@@ -441,6 +499,10 @@ class DocumentationContractTests(unittest.TestCase):
                 (
                     (
                         self.root / ".agents/skills/knowledge-ingest/scripts/knowledge_ingest.py",
+                        "parser",
+                    ),
+                    (
+                        self.root / ".agents/skills/knowledge-ingest/scripts/knowledge_graph.py",
                         "parser",
                     ),
                     (

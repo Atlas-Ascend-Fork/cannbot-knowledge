@@ -1,6 +1,6 @@
 ---
 name: knowledge-ingest
-description: 将所有 cannbot-knowledge 摄入请求统一路由，并把官方文档、固定版本源码或人工材料蒸馏为符合 OKF v0.2 与 CANNBot Profile 的候选卡。接入 Git 或固定归档来源、按 commit 增量同步、升级来源版本、创建或更新知识、整理错误经验或重建本地图谱时使用；当前内置通用建卡、Git Reference 批次和固定归档直接摄入流程，未迁移 producer 明确 defer。
+description: 将所有 cannbot-knowledge 摄入请求统一路由，并把官方文档、固定版本源码或人工材料蒸馏为符合 OKF v0.2 与 CANNBot Profile 的候选卡。接入 Git 或固定归档来源、按 commit 增量同步、升级来源版本、创建或更新知识、整理错误经验，或执行关系候选召回、判定聚合、关系块注入、本地图谱合成和校验时使用；当前内置通用建卡、官方 Reference 和本地图谱完整流程，未接入 producer 明确 defer。
 ---
 
 # Knowledge Ingest
@@ -15,7 +15,7 @@ description: 将所有 cannbot-knowledge 摄入请求统一路由，并把官方
    - 已经蒸馏好的人工材料或单张候选：使用本 Skill 的 `create` 流程。
    - 完整样例分析、VV/CV 算子编译、开发轨迹进化、Issue/PR 证据编译：当前尚未迁移，记录 `defer` 原因并等待对应 producer 通过后续 PR 接入。
 3. 所有 producer 共同遵守[质量与证据约束](references/quality-constraints.md)和[路径 Profile](references/frontmatter-profiles.md)。
-4. 最后统一更新逐层导航与当天日志，运行全库 lint、目标 query，并按需重建[本地图谱](references/local-graphs.md)。
+4. 最后统一更新逐层导航与当天日志，按[本地图谱](references/local-graphs.md)执行宽候选召回，并把稳定分片交给多个独立 subagent 阅读全文判定；聚合完成后同步知识卡的受管关系块，并在 ignored 的 `artifacts/graphs/` 合成、可视化和校验本地图谱，最后运行全库 lint、重建 Query 索引并执行目标 query。只读问答不触发这一写入流程。
 
 ## 通用建卡
 
@@ -36,12 +36,12 @@ python3 <skill-dir>/scripts/knowledge_ingest.py --knowledge-root <repo> create \
 - 更新目标目录到 Bundle 根的全部 `index.md`；可运行 `scripts/knowledge_ingest.py --knowledge-root <repo> sync-indexes` 同步直接子项并保留已有说明及行内/显式引用式导航，再用 `--check` 确认没有陈旧导航。domain 根和 `ops`/`model` 预建 route 保留自己的 index，但不冒充实际覆盖。其他领域不为未来分类提前建空目录。
 - 使用系统时间在 `logs/YYYY-MM-DD.md` 顶部记录操作、来源 revision、created/updated/deferred 数和关键裁决。
 - Git Reference 批次先生成不可覆盖的 verification receipt；固定归档批次只在日志记录 source ID、归档 SHA-256 和 created/updated/deferred 数。两类批次随后都运行全库 `knowledge-lint`，并以目标 platform/technology 执行 `knowledge-query`。
-- 需要关系视图时运行 `knowledge_ingest.py --knowledge-root <repo> build-graph`；产物只写 ignored 的 `artifacts/graphs/`。
+- 图谱没有确定性 judge 或自动 `full` 捷径。知识批次完成后依次运行 `candidates`、`make-shards`，由多个 subagent 覆盖全部 focal，主 Agent 使用 `aggregate` 聚合全部 review，再运行 `finalize`。召回分数只帮助定位候选，不决定是否成边；不得用规则输出冒充 Agent 语义判定。关系类型冲突可以拆给多个 subagent 并行裁决，但裁决分片必须互不重叠且合并后恰好覆盖完整冲突集。
 
 ## 边界
 
 - 不自动 commit、push、提 PR 或发布 Skill。
 - 对独立知识根只执行本 Skill 自带的 Contract；目标根 Contract 与当前版本不一致时失败，不导入目标根 Python。
-- 更新前完整读取原卡并做增量融合；不整体覆盖，不按上游文件一对一复制知识卡。
+- 更新前完整读取原卡并做增量融合；不整体覆盖，不按上游文件一对一复制知识卡。图谱流程只能改写 `cannbot:related` 受管区块，不得改动其他正文；这些区块作为卡片导航提交，候选、review、冲突裁决、判定缓存、JSON 和 HTML 则都只保存在 ignored 的 `artifacts/graphs/`，不得提交。
 - 不把固定来源、脚本成功或 lint 通过等同于人工复核。
 - 未迁移 producer 必须 defer；不要用通用建卡脚本声称完成其专用语义分析。

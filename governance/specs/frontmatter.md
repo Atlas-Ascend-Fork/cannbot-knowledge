@@ -15,7 +15,7 @@ Frontmatter 保存检索、适用范围、生命周期和来源等结构化信�
 | `description` | 不打开正文也能理解的摘要 | 非空 |
 | `tags` | 工程任务和讨论主题 | 2–6 个、不可重复，至少一个 `task.*` 和一个 `topic.*` |
 | `status` | 生命周期和默认查询可见性 | `draft`、`stable` 或 `deprecated` |
-| `sources` | 可回到原文或证据的入口 | 数组；非 `draft` 至少一项 |
+| `sources` | 可回到原文或证据的入口 | 数组；轨迹型 `Runbook` 可为空，其它非 `draft` 卡至少一项 |
 | `created_at` | 卡片首次形成时间 | UTC RFC 3339 秒精度，以 `Z` 结尾 |
 | `updated_at` | 最近一次实质变更时间 | 同上，且不得早于 `created_at` |
 
@@ -99,7 +99,8 @@ sources:
 
 机器约束：
 
-- `stable` 和 `deprecated` 至少有一项来源，只有 `draft` 可以使用 `sources: []`；
+- 轨迹沉淀的 `Runbook` 可以使用 `sources: []`：正文中的触发、探针、原始观测和验证信号就是可消费证据，不把中间整理仓或会话轨迹伪装成权威 resource；
+- 除 `Runbook` 外，`stable` 和 `deprecated` 至少有一项来源，`draft` 可以使用 `sources: []`；
 - `resource` 接受 HTTP(S) URL 或已登记的本地来源；本地路径必须位于 Registry 登记的顶层根目录中，不得是绝对路径、包含 `..`、反斜杠、查询参数或 fragment；
 - GitCode、GitHub、Gitee、GitLab、Bitbucket 和 Codeberg 上的仓库来源必须使用各自可识别的文件或树路径，并固定到 40 位 commit；已知 raw 域名同样必须固定到 commit，分支名和裸仓库首页不通过；
 - 本地来源必须由仓库记录的可复现获取流程提供；全库 Lint 要求获取脚本存在且可执行。当前 `cann-docs-raw/` 由 `fetch-cann-docs.sh` 按固定归档 URL 和 SHA-256 恢复，并保持 Git 忽略；本地根存在时，Lint 还检查 `.complete` 中的归档摘要与被引用文件；

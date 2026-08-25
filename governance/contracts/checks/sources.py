@@ -31,9 +31,16 @@ def check(contract: Contract, document, context) -> list[Issue]:
         return []
 
     issues: list[Issue] = []
-    if metadata.get("status") in {"stable", "deprecated"} and not sources:
+    if (
+        metadata.get("status") in {"stable", "deprecated"}
+        and not sources
+        and metadata.get("type") != "Runbook"
+    ):
         issues.append(
-            Issue("source.required", "non-draft card requires at least one source")
+            Issue(
+                "source.required",
+                "non-draft cards other than Runbook require at least one source",
+            )
         )
     for index, source in enumerate(sources):
         if not isinstance(source, dict):

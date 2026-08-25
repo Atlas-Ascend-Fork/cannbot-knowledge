@@ -218,11 +218,22 @@ class RetrievalIndexTests(unittest.TestCase):
             result = subprocess.run(command, check=False, text=True, capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             payload = json.loads(result.stdout)
-            self.assertEqual(payload["schema_version"], "knowledge-search.v4")
+            self.assertEqual(payload["schema_version"], "knowledge-search.v5")
             self.assertEqual(payload["results"], payload["hits"])
             self.assertEqual(payload["results"][0]["rank"], 1)
             self.assertGreater(payload["results"][0]["card_lines"], 0)
             self.assertTrue(payload["index"]["content_fingerprint"])
+            self.assertNotIn("cann_versions", payload["request"])
+            self.assertNotIn("cann_versions", payload["filters"])
+
+            version_filter = subprocess.run(
+                [*command, "--cann-version", "9.1.0"],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(version_filter.returncode, 2)
+            self.assertIn("unrecognized arguments: --cann-version", version_filter.stderr)
 
             missing_platform_command = command.copy()
             platform_index = missing_platform_command.index("--platform")

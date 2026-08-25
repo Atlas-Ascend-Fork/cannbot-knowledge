@@ -35,8 +35,8 @@ from retrieval.root import (  # noqa: E402
 
 
 sys.dont_write_bytecode = True
-SEARCH_SCHEMA = "knowledge-search.v4"
-RECEIPT_SCHEMA = "cannbot-knowledge-search.v2"
+SEARCH_SCHEMA = "knowledge-search.v5"
+RECEIPT_SCHEMA = "cannbot-knowledge-search.v3"
 FILTER_FIELDS = (
     "domain",
     "technology",
@@ -45,7 +45,6 @@ FILTER_FIELDS = (
     "tags",
     "platforms",
     "include_unlocated",
-    "cann_versions",
     "include_shared",
     "source_technology",
     "target_technology",
@@ -179,10 +178,6 @@ def matches(
         platforms = set(metadata.get("platforms") or [])
         if "agnostic" not in platforms and not set(args.platform).issubset(platforms):
             return False
-    if args.cann_version:
-        versions = set(metadata.get("cann_versions") or [])
-        if not set(args.cann_version).issubset(versions):
-            return False
     if args.source_technology and metadata.get("source_technology") != args.source_technology:
         return False
     if args.target_technology and metadata.get("target_technology") != args.target_technology:
@@ -255,7 +250,6 @@ def request_payload(args: argparse.Namespace, mapped_task: str | None) -> dict[s
         "tags": args.tag,
         "platforms": args.platform,
         "include_unlocated": args.include_unlocated,
-        "cann_versions": args.cann_version,
         "include_shared": args.include_shared,
         "source_technology": args.source_technology,
         "target_technology": args.target_technology,
@@ -317,7 +311,7 @@ def search_args_from_request(request: dict[str, Any]) -> argparse.Namespace:
         value = filters.get(field)
         if value is not None and not isinstance(value, str):
             raise ValueError(f"receipt request.{field} must be a string or null")
-    list_fields = ("tags", "platforms", "cann_versions")
+    list_fields = ("tags", "platforms")
     for field in list_fields:
         value = filters.get(field)
         if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
@@ -337,7 +331,6 @@ def search_args_from_request(request: dict[str, Any]) -> argparse.Namespace:
         tag=list(filters["tags"]),
         platform=list(filters["platforms"]),
         include_unlocated=filters["include_unlocated"],
-        cann_version=list(filters["cann_versions"]),
         include_shared=filters["include_shared"],
         source_technology=filters["source_technology"],
         target_technology=filters["target_technology"],
@@ -531,7 +524,6 @@ def build_parser() -> argparse.ArgumentParser:
     search_cmd.add_argument("--tag", action="append", default=[])
     search_cmd.add_argument("--platform", action="append", default=[])
     search_cmd.add_argument("--include-unlocated", action="store_true")
-    search_cmd.add_argument("--cann-version", action="append", default=[])
     search_cmd.add_argument("--include-shared", action="store_true")
     search_cmd.add_argument("--source-technology")
     search_cmd.add_argument("--target-technology")

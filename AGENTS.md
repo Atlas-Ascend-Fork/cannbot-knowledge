@@ -36,7 +36,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 1. 先用 `knowledge-query` 搜索同一主题，阅读候选卡和来源，再明确采用 create、update、merge、split、deprecate 或 defer。不要只因标题不同就新建卡片，也不要自动覆盖已有卡片。
 2. 按 `governance/specs/paths.md` 选择 domain、technology/scope 和路径 Profile。算子知识必须区分 DSL；只有真正不依赖单一技术实现的结论才能进入 `shared/`，跨技术映射进入同领域的 `shared/interoperability/`。
 3. 按 `governance/specs/frontmatter.md` 填写字段。不要重复写可从路径推导的 domain、route、Profile 或 Concept ID，也不要为单张卡临时增加字段、标签或注册值。
-4. `draft` 的 `sources` 可以为空，非 Glossary 的 `platforms` 也可以为空，但这些必选字段不能省略；`stable` 和 `deprecated` 必须有可核验来源，非 Glossary 还必须有明确平台范围。已知 Git 托管来源必须固定到 40 位 commit；本地来源必须位于 Registry 登记根目录，固定归档获取脚本必须存在且可执行。
+4. `draft` 的 `sources` 可以为空，非 Glossary 的 `platforms` 也可以为空，但这些必选字段不能省略；轨迹沉淀的 `Runbook` 可使用 `sources: []`，但正文必须保留与结论强度相匹配的触发、探针、原始观测和验证信号；其他 `stable` 和 `deprecated` 必须有可核验来源。非 Glossary 还必须有明确平台范围。已知 Git 托管来源必须固定到 40 位 commit；本地来源必须位于 Registry 登记根目录，固定归档获取脚本必须存在且可执行。
 5. `status` 表示生命周期，`verified` 表示真实发生的复核事件，两者相互独立。不要因来源固定、Lint 通过或卡片进入 `stable` 而伪造 `verified`；`replaced_by` 只允许出现在 `deprecated` 卡片中，用于指向当前替代 Concept。
 6. 正文应蒸馏可复用结论，并说明适用条件、失效边界和验证方式。不要大段复制来源，也不要把搜索摘要、聊天记录或模型记忆作为唯一技术证据。
 7. 新增、删除或移动卡片时同步受影响的每一级 `knowledge/**/index.md` 和正文链接。移动会改变 Concept ID，还必须同步所有 `replaced_by` 引用。
@@ -48,7 +48,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 - Operator 和 Runbook 只能使用 Registry 中声明的附加层级；`concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可增加小写 `snake_case` 主题层级，其他路径 Profile 默认直接放卡片。
 - `index.md` 只存在于 `knowledge/`。每个目录都必须有一个索引，完整且无重复地列出直接子目录和直接知识卡，并为每项提供摘要；domain 根和 `ops`/`model` 预建 route 可只有 index，且不表示已有知识覆盖。
 - 只有 `knowledge/index.md` 声明 `okf_version: "0.2"`，其他索引不带 Frontmatter，所有索引均不参与知识检索。
-- 知识卡和索引中的本地 Markdown 链接必须解析到 `knowledge/` Bundle 内的现有文件；图谱只从通过 Contract 的知识卡及显式 Markdown 链接本地重建。不要手工维护关系边，也不要提交 `artifacts/` 生成物。
+- 知识卡和索引中的本地 Markdown 链接必须解析到 `knowledge/` Bundle 内的现有文件。图谱从通过 Contract 的卡片、逐层 Index、人工链接和本地 Agent 判定状态构建；候选召回不能直接成边，词法规则和节点度数也不能代替 Agent 判定。全量关系构建必须由多个 subagent 分片阅读正文，聚合器只做覆盖、指纹、类型和一致性校验。候选、review、冲突裁决、判定缓存、完整图谱和可视化全部保存在 ignored 的 `artifacts/graphs/`，不得提交；知识卡内由判定缓存派生的 `cannbot:related` 受管导航块可以提交，但不是技术事实源，也不进入 Query 语料。
 
 ## 修改治理和文档
 
@@ -65,7 +65,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 - 当前只维护 `knowledge-ingest`、`knowledge-query` 和 `knowledge-lint`。除非现有三项职责无法承载且已完成架构评审，否则不要新增 Skill。
 - `.agents/skills/` 是本仓 Skill 的规范源。Skill 的实现、说明、参考资料和测试都在本仓维护与验证。
-- Skill 保存生产、查询和治理知识的工作流、工具及必要的小型参考资料；可被复用的技术事实必须写入 `knowledge/`。
+- Skill 保存生产、查询和治理知识的工作流、工具及必要的小型参考资料；可被复用的技术事实必须写入 `knowledge/`。Ingest 图谱流程只能同步明确标记的受管关系块，不得改动其他人工正文。
 - `consumer` 和 `contributor` 是安装模式，不是路径 Profile、OKF `type` 或知识分类。
 - 修改 Skill 时同步更新其 `SKILL.md`、`references/`、确定性实现和测试。规范源保持 Agent 平台中立，不在 Skill 内保存 `agents/openai.yaml` 等单一客户端元数据；客户端适配由本仓安装器在 Skill 外处理。
 
@@ -80,6 +80,6 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 - 知识变更至少完成全库 Lint，并用一个与目标场景一致的查询验证召回；新增、删除或移动卡片不能只做单卡检查。
 - 治理规则变更必须覆盖接受与拒绝行为；Query 行为变更必须覆盖过滤、排序或失败关闭语义。
-- Skill 变更必须验证结构、正常路径、错误路径和权限边界。
+- Skill 变更必须验证结构、正常路径、错误路径和权限边界。图谱流程还必须验证多个 Agent review 完整覆盖、重复运行幂等、缓存 stale 失败关闭、未声明或指纹不匹配的候选外关系拒绝、Agent 显式发现可接入、无图谱 degree 上限、边端点/类型、父索引闭包、受管关系块与缓存一致且注入幂等，以及除关系块外的人工正文不变和全部图谱产物位于 ignored 目录。
 - 所有变更在交付前运行 `bash check.sh`。
 - 最终说明实际修改的文件、关键语义变化、运行过的检查及结果；未执行或失败的检查要明确说明原因。
