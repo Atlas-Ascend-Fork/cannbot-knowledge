@@ -10,7 +10,7 @@ domains:
     description: 图编译和图优化
     direct_types: []
   model:
-    description: 模型训练与推理
+    description: 模型推理、训练、空间智能与具身智能
     direct_types: []
     precreate_routes: true
   runtime:
@@ -46,7 +46,7 @@ technologies:
 scopes:
   shared:
     description: 同一领域内不依赖具体技术栈的知识
-    domains: [ops, graph, model]
+    domains: [ops, graph]
   platforms:
     description: 产品、芯片、NPU 架构和兼容关系
     domains: [common]
@@ -61,6 +61,12 @@ scopes:
     domains: [model]
   training:
     description: 模型训练知识
+    domains: [model]
+  spatial:
+    description: 空间智能模型与算法知识
+    domains: [model]
+  embodied:
+    description: 具身智能模型与系统知识
     domains: [model]
 
 local_sources:
@@ -86,6 +92,12 @@ platforms:
     description: Atlas A3 系列
   "950":
     description: Ascend 950 系列
+  a5:
+    description: Atlas A5 系列
+  "310p":
+    description: Ascend 310P 系列
+  "910":
+    description: 早期 Ascend 910 系列
   agnostic:
     description: 结论按定义与硬件平台无关，不会随平台注册表扩张而改变含义
 
@@ -135,6 +147,60 @@ tags:
   topic.architecture:
     dimension: topic
     description: NPU、执行引擎和软件栈架构
+  topic.model_architecture:
+    dimension: topic
+    description: 模型、网络模块与端到端结构
+  topic.attention:
+    dimension: topic
+    description: Attention 结构、算子路径与缓存语义
+  topic.mixture_of_experts:
+    dimension: topic
+    description: MoE 路由、专家布局与执行机制
+  topic.parallelism:
+    dimension: topic
+    description: 模型训练或推理的并行与切分策略
+  topic.kv_cache:
+    dimension: topic
+    description: KV Cache 布局、管理、传输与复用
+  topic.graph_execution:
+    dimension: topic
+    description: 模型图捕获、编译、缓存与执行
+  topic.speculative_decoding:
+    dimension: topic
+    description: 投机解码、草稿模型与接受策略
+  topic.model_serving:
+    dimension: topic
+    description: 在线服务、调度、部署与请求处理
+  topic.reinforcement_learning:
+    dimension: topic
+    description: 强化学习、rollout、奖励与策略更新
+  topic.checkpointing:
+    dimension: topic
+    description: Checkpoint 保存、恢复、切分与重计算
+  topic.multimodal:
+    dimension: topic
+    description: 多模态模型、输入与跨模态处理
+  topic.diffusion:
+    dimension: topic
+    description: 扩散模型、采样与生成过程
+  topic.data_pipeline:
+    dimension: topic
+    description: 数据加载、预处理、打包与流水组织
+  topic.three_dimensional_reconstruction:
+    dimension: topic
+    description: 三维重建、点云、深度与 Gaussian Splatting
+  topic.rendering:
+    dimension: topic
+    description: 投影、光栅化、可见性与图像合成
+  topic.long_context:
+    dimension: topic
+    description: 长序列上下文建模与处理
+  topic.optimizer:
+    dimension: topic
+    description: 训练优化器、状态表示与更新机制
+  topic.model_adaptation:
+    dimension: topic
+    description: 继续预训练、监督微调、LoRA 与量化感知适配
   topic.programming_model:
     dimension: topic
     description: 并行执行和算子编程模型

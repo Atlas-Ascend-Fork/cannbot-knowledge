@@ -10,9 +10,10 @@
 |---|---|---|
 | `path` | P0 | domain-route、Profile、内容型 section、Operator/Runbook 附加层级和小写 snake_case 卡名合法 |
 | `profile` | P0 | YAML mapping 无重复 key；JSON Schema、公共/Profile 必选字段、非空标题摘要和路径到 OKF type 的映射一致；缺失与空白分别报告 |
-| `body` | P0 | 正文、摘要、冲突标记、占位和疑似截断点合法 |
+| `body` | P0 | 正文非空、摘要不含发布占位，正文无 Git 冲突标记 |
+| `images` | P0 | Markdown/HTML 图片使用含 40 位 commit 和具体文件路径的 HTTPS Git raw URL，忽略代码中的伪图片 |
 | `tags` | P0 | 标签受控、无重复，且至少包含一个 task 和一个 topic |
-| `sources` | P0 | 非 draft 有来源；资源安全；识别出的 Git 来源固定到 40 位 commit |
+| `sources` | P0 | 非 draft 有来源；资源安全；Git 文件和目录固定到 40 位 commit，GitCode/GitHub PR/Issue 使用规范工作项 URL |
 | `time` | P0 | 时间为有效 UTC 秒精度，且 `updated_at >= created_at` |
 | `trust` | P0 | `verified` actor 合法 |
 | `platforms` | P0 | 平台受控，`agnostic` 不混用，非 draft 范围非空 |

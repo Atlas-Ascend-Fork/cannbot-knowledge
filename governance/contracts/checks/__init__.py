@@ -10,6 +10,7 @@ from typing import Any, Literal
 from ..knowledge import Contract, Issue, PathInfo
 from . import (
     body,
+    images,
     index_entry_description,
     index_sync,
     interoperability,
@@ -95,6 +96,7 @@ CHECKS: tuple[Check, ...] = (
     Check("path", "P0", document=path.check, card=path.check),
     Check("profile", "P0", document=profile.check, card=profile.check),
     Check("body", "P0", document=body.check, card=body.check_card),
+    Check("images", "P0", document=images.check, card=images.check),
     Check("tags", "P0", document=tags.check, card=tags.check),
     Check("sources", "P0", document=sources.check, card=sources.check),
     Check("time", "P0", document=time.check, card=time.check),

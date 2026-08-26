@@ -34,6 +34,8 @@ OKF 规定通用交换格式；CANNBot Profile 规定本仓允许哪些路径、
 
 本地 Markdown 链接必须解析到同一 `knowledge/` Bundle；指向 Bundle 外材料时使用 HTTP(S) 来源，不用仓库相对路径把 Concept 绑定到治理设施。
 
+正文图片不形成 Concept Link 或图谱边，必须使用带 40 位 commit 和具体文件路径的 HTTPS Git raw URL；Lint 仅离线校验 URL 形状。
+
 `knowledge/` 本身可以按 OKF 格式浏览或分发；使用 CANNBot 的 Query、Ingest 和 Lint 时，还需要配套版本的 Skill 与仓库根目录 `governance/`。这些运行设施位于 Bundle 外，不改变 Bundle 边界。
 
 如果未来需要按领域或 DSL 单独交付，应从这个规范源生成独立发布 Bundle，并处理 shared/common 依赖；不要在当前知识树内声明互相嵌套的 Bundle。

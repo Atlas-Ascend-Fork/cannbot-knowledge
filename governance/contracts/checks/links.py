@@ -149,6 +149,16 @@ def markdown_targets(text: str) -> list[tuple[str, bool]]:
     ]
 
 
+def markdown_image_targets(text: str) -> list[tuple[str, int]]:
+    """Return Markdown image destinations and source lines outside code."""
+
+    return [
+        (target, line)
+        for target, is_image, line in _targets_with_lines(text)
+        if is_image
+    ]
+
+
 def links_in_text(
     text: str,
     path: Path,

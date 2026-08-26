@@ -69,6 +69,8 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/ops/ascendc/operators/direct/transformer/gmm/grouped_matmul.md": ("ops", "ascendc"),
             "knowledge/model/inference/concepts/serving.md": ("model", "inference"),
             "knowledge/model/training/runbooks/runtime/oom.md": ("model", "training"),
+            "knowledge/model/spatial/concepts/vggt.md": ("model", "spatial"),
+            "knowledge/model/embodied/concepts/pi0.md": ("model", "embodied"),
             "knowledge/ops/triton/runbooks/compilation/missing_symbol.md": (
                 "ops",
                 "triton",
@@ -107,6 +109,7 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/ops/ascendc/operators/aclnn/cv/mc2/family_category_mismatch.md",
             "knowledge/ops/ascendc/interoperability/not_shared.md",
             "knowledge/common/platforms/chip.md",
+            "knowledge/model/shared/concepts/cross_scope.md",
             "knowledge/ops/ascendc/runbooks/timeout.md",
         )
         for value in cases:
@@ -123,7 +126,8 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/model",
             "knowledge/model/inference",
             "knowledge/model/training",
-            "knowledge/model/shared",
+            "knowledge/model/spatial",
+            "knowledge/model/embodied",
             "knowledge/ops",
             "knowledge/ops/tilelang",
             "knowledge/ops/pypto",
@@ -557,13 +561,16 @@ class IngestContractTests(unittest.TestCase):
         self.assertIn("must be provided together", incomplete.stderr)
 
     def test_unpinned_stable_git_source_is_rejected(self) -> None:
-        result = self.run_ingest(
-            ["--status", "stable", "--source", "https://github.com/triton-lang/triton-ascend/tree/main"]
-        )
-        self.assertEqual(result.returncode, 2, result.stdout)
-        self.assertIn("source.pin", result.stderr)
+        for url in (
+            "https://github.com/triton-lang/triton-ascend/tree/main",
+            "https://gitcode.com/cann/cann-recipes-infer/pull/418/files",
+        ):
+            with self.subTest(url=url):
+                result = self.run_ingest(["--status", "stable", "--source", url])
+                self.assertEqual(result.returncode, 2, result.stdout)
+                self.assertIn("source.pin", result.stderr)
 
-    def test_pinned_raw_git_sources_are_accepted(self) -> None:
+    def test_pinned_git_and_work_item_sources_are_accepted(self) -> None:
         commit = "c846650eec121f41bd0efa472fc5c84594b8208d"
         urls = (
             f"https://gitee.com/example/project/raw/{commit}/README.md",
@@ -572,12 +579,13 @@ class IngestContractTests(unittest.TestCase):
             f"https://raw.gitcode.com/example/project/raw/{commit}/README.md",
             f"https://bitbucket.org/example/project/src/{commit}/README.md",
             f"https://codeberg.org/example/project/src/commit/{commit}/README.md",
+            "https://gitcode.com/cann/cann-recipes-infer/merge_requests/418",
+            "https://github.com/vllm-project/vllm-ascend/issues/972",
         )
         for url in urls:
             with self.subTest(url=url):
                 result = self.run_ingest(["--status", "stable", "--source", url])
                 self.assertEqual(result.returncode, 0, result.stderr)
-
 
 class LintBehaviorTests(unittest.TestCase):
     def make_root(self, temporary: str) -> Path:
@@ -713,12 +721,12 @@ platforms: [a2]
         self.assertIn("frontmatter.parse", result.stdout)
         self.assertIn("duplicate key", result.stdout)
 
-    def test_reference_links_are_checked_but_images_are_allowed(self) -> None:
+    def test_reference_links_and_image_pins_are_checked(self) -> None:
         body = """[Missing document][missing-doc]
 
 ![Missing diagram][missing-image]
 
-<img src="also-missing.png" alt="missing">
+<img data-src="missing-image.png">
 
 [missing-doc]: missing.md
 [missing-image]: missing.png"""
@@ -726,18 +734,30 @@ platforms: [a2]
             root = self.make_root(temporary)
             result = self.run_lint(root, self.render_card(body=body))
         self.assertEqual(1, result.returncode)
-        self.assertNotIn("body.embedded_image", result.stdout)
+        self.assertIn("image.pin", result.stdout)
+        self.assertIn("image.syntax", result.stdout)
         self.assertIn("link.missing", result.stdout)
 
-    def test_embedded_images_are_allowed(self) -> None:
-        body = """![Missing diagram](missing-image.png)
+    def test_pinned_markdown_and_html_images_are_allowed(self) -> None:
+        commit = "c846650eec121f41bd0efa472fc5c84594b8208d"
+        markdown = (
+            "https://raw.gitcode.com/cann/example/raw/"
+            f"{commit}/docs/diagram.png"
+        )
+        html = (
+            "https://raw.gitcode.com/cann/example/raw/"
+            f"{commit}/docs/architecture.jpg"
+        )
+        body = f"""![Diagram]({markdown})
 
-<img src="also-missing.png" alt="missing">"""
+![Reference][diagram]
+[diagram]: {markdown}
+
+<img src="{html}" alt="Architecture" width="55%">"""
         with tempfile.TemporaryDirectory() as temporary:
             root = self.make_root(temporary)
             result = self.run_lint(root, self.render_card(body=body))
         self.assertEqual(0, result.returncode, result.stdout)
-        self.assertNotIn("body.embedded_image", result.stdout)
 
     def test_links_ignore_code_and_images_and_report_locations(self) -> None:
         body = """[Inline](missing-inline.md)
@@ -1004,14 +1024,14 @@ platforms: [a2]
 
 
 class MigratedSkillContractTests(unittest.TestCase):
-    def test_lint_rejects_truncated_description_and_body(self) -> None:
+    def test_lint_rejects_description_placeholder(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             shutil.copytree(ROOT / "governance", root / "governance")
             card = root / "knowledge/ops/ascendc/apis/synthetic.md"
             card.parent.mkdir(parents=True)
             metadata = dict(SYNTHETIC_API_METADATA)
-            metadata["description"] = "表1 An incomplete summary..."
+            metadata["description"] = "表1 Summary"
             card.write_text(
                 "---\n"
                 + "\n".join(
@@ -1028,7 +1048,7 @@ class MigratedSkillContractTests(unittest.TestCase):
                         "platforms: [a2]",
                     ]
                 )
-                + "\n---\n\n# Synthetic\n\nThis field was cut...；next field.\n",
+                + "\n---\n\n# Synthetic\n\nComplete body.\n",
                 encoding="utf-8",
             )
             result = subprocess.run(
@@ -1045,8 +1065,6 @@ class MigratedSkillContractTests(unittest.TestCase):
                 capture_output=True,
             )
             self.assertEqual(1, result.returncode)
-            self.assertIn("body.truncated", result.stdout)
-            self.assertIn("frontmatter.truncated", result.stdout)
             self.assertIn("frontmatter.description_placeholder", result.stdout)
 
     def test_query_receipt_is_versioned_and_never_overwritten(self) -> None:

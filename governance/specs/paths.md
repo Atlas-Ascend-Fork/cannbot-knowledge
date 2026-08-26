@@ -27,7 +27,7 @@ route 是 technology 或 scope 的统称。当前允许的组合如下：
 | `common` | `platforms`, `toolchains`, `observability` | `glossaries` |
 | `ops` | `ascendc`, `triton`, `tilelang`, `pypto`, `shared` | 无 |
 | `graph` | `torch_compile`, `ge`, `shared` | 无 |
-| `model` | `inference`, `training`, `shared` | 无 |
+| `model` | `inference`, `training`, `spatial`, `embodied` | 无 |
 | `runtime` | 无 | `concepts`, `apis`, `runbooks` |
 
 route 后必须出现路径 Profile，例如 `knowledge/common/platforms/concepts/`。`interoperability` 只能放在同一 domain 的 `shared/` 下。

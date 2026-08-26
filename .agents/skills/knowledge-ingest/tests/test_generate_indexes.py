@@ -182,7 +182,8 @@ class BuildGraphTests(unittest.TestCase):
             )
             (cards / "source.md").write_text(
                 f"---\ntitle: Source\n{common}---\n\n# Source\n\n[Target][target]\n\n"
-                "![Image](decoy.md)\n\n"
+                "![Image](https://raw.gitcode.com/cann/example/raw/"
+                "c846650eec121f41bd0efa472fc5c84594b8208d/docs/decoy.png)\n\n"
                 "`[Inline code](decoy.md)`\n\n"
                 "```markdown\n[Fenced](decoy.md)\n```\n\n"
                 "[target]: target.md\n",

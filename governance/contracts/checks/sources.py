@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from ..knowledge import Contract, Issue
 
@@ -63,6 +63,8 @@ def check(contract: Contract, document, context) -> list[Issue]:
                         f"sources[{index}].resource is not a canonical HTTP(S) URL",
                     )
                 )
+            elif git_work_item_url_is_stable(resource):
+                continue
             elif not git_url_is_pinned(resource):
                 issues.append(
                     Issue(
@@ -131,3 +133,64 @@ def git_url_is_pinned(url: str) -> bool:
     if host == "raw.githubusercontent.com" and len(parts) >= 3:
         return bool(COMMIT_RE.fullmatch(parts[2]))
     return host not in RAW_GIT_HOSTS
+
+
+def git_work_item_url_is_stable(url: str) -> bool:
+    """Return whether URL names one repository PR or issue."""
+
+    parsed = urlparse(url)
+    if (
+        parsed.scheme != "https"
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.query
+        or parsed.fragment
+        or parsed.path.endswith("/")
+    ):
+        return False
+    host = (parsed.hostname or "").lower()
+    parts = [part for part in parsed.path.split("/") if part]
+    if len(parts) != 4 or not re.fullmatch(r"[1-9][0-9]*", parts[3]):
+        return False
+    if host == "gitcode.com":
+        return parts[2] in {"pull", "merge_requests", "issues"}
+    if host == "github.com":
+        return parts[2] in {"pull", "issues"}
+    return False
+
+
+def git_raw_file_url_is_pinned(url: str) -> bool:
+    """Return whether URL directly serves a Git file at a 40-hex commit."""
+
+    parsed = urlparse(url)
+    if (
+        parsed.scheme != "https"
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.query
+        or parsed.fragment
+    ):
+        return False
+    host = (parsed.hostname or "").lower()
+    parts = _canonical_path_parts(parsed.path)
+    if parts is None:
+        return False
+    if host == "raw.gitcode.com":
+        return (
+            len(parts) >= 5
+            and parts[2] == "raw"
+            and bool(COMMIT_RE.fullmatch(parts[3]))
+        )
+    if host == "raw.githubusercontent.com":
+        return len(parts) >= 4 and bool(COMMIT_RE.fullmatch(parts[2]))
+    return False
+
+
+def _canonical_path_parts(path: str) -> list[str] | None:
+    decoded = unquote(path)
+    if not decoded.startswith("/") or "\\" in decoded:
+        return None
+    parts = decoded.split("/")[1:]
+    if any(part in {"", ".", ".."} for part in parts):
+        return None
+    return parts
