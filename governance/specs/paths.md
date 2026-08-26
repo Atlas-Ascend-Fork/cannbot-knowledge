@@ -61,13 +61,21 @@ Registry 允许某种组合，只表示工具能够识别它，不表示仓库�
 Operator 和 Runbook 的附加层级仍是受控值：
 
 ```text
-knowledge/ops/<technology>/operators/<family>/<category>/<operator>.md
+knowledge/ops/<technology>/operators/<call-mode>/<family>/<category>/<operator>.md
 knowledge/<domain>/<technology-or-scope>/runbooks/<area>/<runbook>.md
 knowledge/runtime/runbooks/<area>/<runbook>.md
 ```
 
-- Operator `family`：`math`、`nn`、`transformers`。
-- Operator `category`：`activations`、`conversions`、`convolutions`、`normalizations`、`quantizations`。
+- Operator `call-mode`：`aclnn` 保存公开 ACLNN/API 到 Host、Tiling、Kernel 的完整链路；`direct` 保存独立 Direct Invoke 路线。
+- Operator `family`：`cv`、`math`、`nn`、`transformer`，对应四个 CANN 官方算子仓。
+- Operator `category`：按官方算子仓一级源码目录登记，且由 family 约束：
+
+  | family | category |
+  |---|---|
+  | `cv` | `image`, `objdetect` |
+  | `math` | `conversion`, `math`, `random` |
+  | `nn` | `activation`, `conv`, `foreach`, `index`, `loss`, `matmul`, `norm`, `optim`, `pooling`, `quant`, `rnn`, `vfusion` |
+  | `transformer` | `attention`, `ffn`, `gmm`, `mc2`, `mhc`, `moe`, `posembedding` |
 - Runbook `area`：`compilation`、`runtime`、`precision`、`performance`、`validations`。
 
 这些值来自 `registries.yaml` 的 `paths` 分区，不使用未注册的近义目录。
@@ -86,7 +94,7 @@ knowledge/runtime/runbooks/<area>/<runbook>.md
 
 ```text
 knowledge/common/platforms/concepts/ai_core_execution_architecture.md
-knowledge/ops/ascendc/operators/nn/activations/gelu.md
+knowledge/ops/ascendc/operators/aclnn/nn/activation/gelu.md
 knowledge/ops/ascendc/apis/basic_api/data_copy/datacopy.md
 knowledge/ops/ascendc/guides/programming_guide/kernel_call.md
 knowledge/ops/triton/runbooks/compilation/missing_symbol.md

@@ -48,7 +48,7 @@ def summarize_subdir(directory: Path) -> str:
 
 def section_title(directory: Path) -> str:
     summary_card = directory / f"{directory.name}.md"
-    if summary_card.is_file():
+    if summary_card.name != "index.md" and summary_card.is_file():
         return read_card_description(summary_card)[0]
     return directory.name.replace("_", " ")
 

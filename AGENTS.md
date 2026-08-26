@@ -44,7 +44,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 ## 目录与导航
 
-- 文件名使用小写 `snake_case`，集合目录使用复数。五个 domain 根目录必须保留 `index.md`；只有 `ops` 和 `model` 预建注册 route，其他领域的下一层目录随首张真实知识创建。
+- 文件名使用小写 `snake_case`，自由主题的集合目录使用复数；Registry 控制的 Operator 源码分类保持其注册 ID。五个 domain 根目录必须保留 `index.md`；只有 `ops` 和 `model` 预建注册 route，其他领域的下一层目录随首张真实知识创建。
 - Operator 和 Runbook 只能使用 Registry 中声明的附加层级；`concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可增加小写 `snake_case` 主题层级，其他路径 Profile 默认直接放卡片。
 - `index.md` 只存在于 `knowledge/`。每个目录都必须有一个索引，完整且无重复地列出直接子目录和直接知识卡，并为每项提供摘要；domain 根和 `ops`/`model` 预建 route 可只有 index，且不表示已有知识覆盖。
 - 只有 `knowledge/index.md` 声明 `okf_version: "0.2"`，其他索引不带 Frontmatter，所有索引均不参与知识检索。
@@ -52,7 +52,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 ## 修改治理和文档
 
-- 先修改规则所属的唯一机器事实源，再同步受影响的 Contract、知识卡、三个 Skill、Spec、正反测试和检索回归；不要在某个消费者里增加局部例外。
+- 先修改规则所属的唯一机器事实源，再同步受影响的 Contract、知识卡、Skill、Spec、正反测试和检索回归；不要在某个消费者里增加局部例外。
 - 新字段、新注册值和新规则必须有稳定语义、实际消费者以及至少一个接受案例和一个拒绝案例，不能只为当前样例或未来占位而增加。
 - 五份治理 Spec 分别负责 OKF、路径、Frontmatter、机器契约和 Skill。内容能并入现有职责时不要新建碎片化 Spec。
 - 仓库级文档只描述当前仓库的定位、能力、语义和边界，不记录其他仓库的迁移过程，也不宣称尚未实现的能力。
@@ -63,7 +63,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 ## 修改 Skill
 
-- 当前只维护 `knowledge-ingest`、`knowledge-query` 和 `knowledge-lint`。除非现有三项职责无法承载且已完成架构评审，否则不要新增 Skill。
+- 当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill，以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。新增其他 Skill 仍需证明现有职责无法承载并完成架构评审。
 - `.agents/skills/` 是本仓 Skill 的规范源。Skill 的实现、说明、参考资料和测试都在本仓维护与验证。
 - Skill 保存生产、查询和治理知识的工作流、工具及必要的小型参考资料；可被复用的技术事实必须写入 `knowledge/`。Ingest 图谱流程只能同步明确标记的受管关系块，不得改动其他人工正文。
 - `consumer` 和 `contributor` 是安装模式，不是路径 Profile、OKF `type` 或知识分类。

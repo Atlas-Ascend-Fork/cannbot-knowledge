@@ -7,7 +7,7 @@
 | 你要做什么 | 使用模式 | 可用 Skill |
 |---|---|---|
 | 查询知识、回答技术问题 | `consumer` | `knowledge-query` |
-| 新增或修改知识 | `contributor` | `knowledge-query`、`knowledge-ingest`、`knowledge-lint` |
+| 新增或修改知识 | `contributor` | 三项基础 Skill，以及源码级算子使用的 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` |
 
 使用模式只决定安装哪些 Skill，不会改变知识卡的内容或可信程度。
 

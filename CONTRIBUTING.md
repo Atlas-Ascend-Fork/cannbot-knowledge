@@ -153,7 +153,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 
 ## 5. 贡献 Skill
 
-当前只维护 `knowledge-ingest`、`knowledge-query` 和 `knowledge-lint`。新增其他 Skill 需要先证明现有三项能力无法合理承载，并完成架构和发布评审。
+当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill，以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。VV 用于全部可达 Device 节点均不含 Cube/AIC 或 MIX_CV 的算子，CV 用于至少存在一个可达 Cube/AIC 或 MIX_CV 节点的算子；两者都由任务决定 ACLNN、Host/Tiling 或 Direct Invoke 入口。新增其他 Skill 需要先证明现有职责无法合理承载，并完成架构和发布评审。
 
 本仓 Skill 的规范源位于 `.agents/skills/`，其中维护完整的 `SKILL.md`、`references/`、`scripts/`、测试及其他运行所需资源。规范源不包含 `agents/openai.yaml` 等单一客户端元数据。
 

@@ -26,7 +26,7 @@
 | `domains` | 顶层领域、允许直辖的 `direct_types` 及是否 `precreate_routes` | 路径校验、domain 过滤、协作骨架 |
 | `technologies` | DSL、语言、框架或引擎及允许的 domain | route、technology 和跨技术端点校验 |
 | `scopes` | `shared`、平台、工具链、推理/训练等非技术 route | route、scope 和 shared 过滤 |
-| `paths` | Operator family/category 和 Runbook area | 受控附加层级校验 |
+| `paths` | Operator call mode、family→category 映射和 Runbook area | 受控附加层级校验 |
 | `platforms` | 卡片适用平台 ID | Frontmatter 校验和 platform 过滤 |
 | `tags` | task、topic、paradigm 三个维度的规范标签 | 标签校验、任务映射、过滤和召回 |
 
@@ -93,6 +93,6 @@ JSON Schema 只能检查单个对象的形状，不能独立完成：
 | 路径 Profile | Profile、路径深度或特殊规则、路径/Frontmatter 文档、检索回归 |
 | domain、technology 或 scope | Registry、路径接受/拒绝测试、Query 过滤、导航 |
 | platform、标签或附加路径值 | Registry、真实消费卡、Lint/Query 回归、相关文档 |
-| 删除、重命名或收紧规则 | 全部知识卡、evals、三个 Skill 和兼容性说明 |
+| 删除、重命名或收紧规则 | 全部知识卡、evals、受影响的 Skill 和兼容性说明 |
 
 修改后运行仓库统一质量检查。新增规则必须覆盖至少一个接受案例和一个拒绝案例，不能只修改声明让当前样例通过。

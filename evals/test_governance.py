@@ -65,6 +65,8 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/graph/ge/apis/graph_api.md": ("graph", "ge"),
             "knowledge/ops/ascendc/apis/basic_api/data_copy/example.md": ("ops", "ascendc"),
             "knowledge/ops/ascendc/guides/programming_guide/example.md": ("ops", "ascendc"),
+            "knowledge/ops/ascendc/operators/aclnn/nn/activation/gelu.md": ("ops", "ascendc"),
+            "knowledge/ops/ascendc/operators/direct/transformer/gmm/grouped_matmul.md": ("ops", "ascendc"),
             "knowledge/model/inference/concepts/serving.md": ("model", "inference"),
             "knowledge/model/training/runbooks/runtime/oom.md": ("model", "training"),
             "knowledge/ops/triton/runbooks/compilation/missing_symbol.md": (
@@ -99,7 +101,10 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/ops/apis/no_dsl.md",
             "knowledge/graph/ascendc/apis/wrong_domain.md",
             "knowledge/ops/ascendc/glossaries/unplanned/nested.md",
-            "knowledge/ops/ascendc/operators/nn/activation/singular.md",
+            "knowledge/ops/ascendc/operators/internal/nn/activation/unregistered_mode.md",
+            "knowledge/ops/ascendc/operators/aclnn/nn/activations/unregistered_category.md",
+            "knowledge/ops/ascendc/operators/aclnn/runtime/activation/unregistered_family.md",
+            "knowledge/ops/ascendc/operators/aclnn/cv/mc2/family_category_mismatch.md",
             "knowledge/ops/ascendc/interoperability/not_shared.md",
             "knowledge/common/platforms/chip.md",
             "knowledge/ops/ascendc/runbooks/timeout.md",
@@ -1095,7 +1100,7 @@ class MigratedSkillContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             shutil.copytree(ROOT / "governance", root / "governance")
-            card = root / "knowledge/ops/ascendc/operators/nn/activations/synthetic.md"
+            card = root / "knowledge/ops/ascendc/operators/aclnn/nn/activation/synthetic.md"
             card.parent.mkdir(parents=True)
             card.write_text(
                 """---
@@ -1125,7 +1130,7 @@ This isolated fixture verifies strict source navigation.
                     "--knowledge-root",
                     str(root),
                     "--card",
-                    "knowledge/ops/ascendc/operators/nn/activations/synthetic.md",
+                    "knowledge/ops/ascendc/operators/aclnn/nn/activation/synthetic.md",
                     "--strict-navigation",
                 ],
                 check=False,

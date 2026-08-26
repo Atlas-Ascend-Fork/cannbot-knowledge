@@ -18,7 +18,7 @@ Usage:
 
 Profiles:
   consumer       Install knowledge-query only (default).
-  contributor    Install knowledge-query, knowledge-ingest, and knowledge-lint.
+  contributor    Install the three base skills and both operator ingest skills.
 
 Options:
   --prompt-action <uninstall|reinstall>
@@ -258,9 +258,9 @@ EOF
 
 1. 新增、更新、拆分、合并或升级知识前，先用 `knowledge-query` 查重并打开相邻卡，明确本次
    decision 是 create、update、merge、split、deprecate 还是 defer。
-2. 所有新来源、官方 reference、增量同步、版本升级和单卡生产都统一加载 `knowledge-ingest`
-   路由；不要绕过入口直接调用尚未发布的 Ingest producer。Ingest 只生成或更新候选，不自动
-   覆盖冲突内容，也不执行 commit、push、merge 或发布。
+2. 通用新来源、官方 reference、增量同步和版本升级使用 `knowledge-ingest`；从固定源码提取完整
+   Operator 卡时，全部可达节点不含 Cube/AIC 或 MIX_CV 使用 `ops-knowledge-vv-ingest`，否则使用
+   `ops-knowledge-cv-ingest`。producer 一次只处理一个逻辑算子，只写任务指定的最终卡。
 3. 生产后使用 `knowledge-lint` 检查目标卡及受影响导航，再运行全库检查。需要形成 Issue 材料
    时使用 Lint 内置的 issue-report 工作流，不新增独立 Skill，也不由 Lint 自动创建外部 Issue。
 4. 知识和治理变更完成后，通过仓库统一质量入口重建并验证持久索引；不要手工编辑 SQLite
@@ -451,7 +451,7 @@ if [[ "$prompt_action" == "reinstall" && "$profile_explicit" == "false" ]]; then
 fi
 case "$profile" in
   consumer) skills=(knowledge-query) ;;
-  contributor) skills=(knowledge-ingest knowledge-query knowledge-lint) ;;
+  contributor) skills=(knowledge-ingest knowledge-query knowledge-lint ops-knowledge-vv-ingest ops-knowledge-cv-ingest) ;;
   *) fail "unknown profile: $profile" ;;
 esac
 

@@ -469,8 +469,18 @@ class DocumentationContractTests(unittest.TestCase):
             [],
             [profile for profile in profiles["profiles"] if f"`{profile}" not in path_spec],
         )
+        path_values: list[str] = []
         for values in self.registries["paths"].values():
-            self.assertEqual([], [value for value in values if f"`{value}`" not in path_spec])
+            if isinstance(values, dict):
+                path_values.extend(values)
+                path_values.extend(
+                    value for nested in values.values() for value in nested
+                )
+            else:
+                path_values.extend(values)
+        self.assertEqual(
+            [], [value for value in path_values if f"`{value}`" not in path_spec]
+        )
 
     @staticmethod
     def load_module(path: Path, name: str):

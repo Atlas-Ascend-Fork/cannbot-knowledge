@@ -1,6 +1,6 @@
 # Knowledge Skills
 
-本仓只维护 `knowledge-query`、`knowledge-ingest` 和 `knowledge-lint` 三项基础 Skill。技术事实始终属于 `knowledge/`；Skill 保存生产、消费和治理这些事实的方法，不保存另一份领域知识。
+本仓维护 `knowledge-query`、`knowledge-ingest`、`knowledge-lint` 三项基础 Skill，以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。技术事实始终属于 `knowledge/`；Skill 保存生产、消费和治理这些事实的方法，不保存另一份领域知识。
 
 具体执行接口只在各 Skill 自身的 `SKILL.md` 和 `references/` 中维护，本页只定义仓库级行为与协作边界。
 
@@ -11,8 +11,10 @@
 | `knowledge-query` | 技术问题、decision、目标平台和可选范围条件 | 实际覆盖、候选 OKF Concept 或 search/ready/outcome receipt | 只读；只在调用方指定路径创建新审计产物 |
 | `knowledge-ingest` | 固定来源、变化类型、目标路径、待表达结论和当前知识语料 | 路由决策、候选 Concept、Git 来源账本；可提交的受管关系块；ignored 的关系候选、判定缓存和本地图谱 | 可以创建候选卡并同步受管关系块；图谱 JSON 等产物不提交、不发布 |
 | `knowledge-lint` | 单卡、完整知识仓或问题材料 | 分级确定性 Finding 报告或可复现 Issue 草稿 | 只读 |
+| `ops-knowledge-vv-ingest` | 固定版本源码、唯一逻辑算子、入口、平台和独占目标文件 | 不含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 | 只写任务指定的最终卡 |
+| `ops-knowledge-cv-ingest` | 固定版本源码、唯一逻辑算子、入口、平台和独占目标文件 | 含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 | 只写任务指定的最终卡 |
 
-典型贡献流程是先 Query 查重，再由 Ingest 形成候选卡，随后执行全库 Lint，最后用目标条件验证新卡可以被 Query 召回。只读问答不需要执行完整流程；人工编辑已有卡也可以不用创建能力，但仍应查重、Lint 和验证召回。
+典型贡献流程是先 Query 查重；通用来源由 Ingest 形成候选卡，源码级完整算子由 VV/CV 中唯一匹配执行族边界的 producer 直接写目标卡；随后执行全库 Lint，最后用目标条件验证新卡可以被 Query 召回。只读问答不需要执行完整流程；人工编辑已有卡也可以不用创建能力，但仍应查重、Lint 和验证召回。
 
 ## Query
 
@@ -71,6 +73,14 @@ Git Reference 批次使用 inventory、ledger 和不可覆盖 receipt；固定�
 
 图谱候选、判定缓存、构建和可视化产物不提交，也不是独立知识真值。候选分数和召回通道只能帮助 subagent 定位阅读顺序；版本和平台用于 Agent 判断适用边界，不作为候选过滤器。判定缓存必须由至少两个 subagent 覆盖当前全部 focal，并通过语料、分片和卡片指纹校验。Ingest 只能改写受管关系块，且必须保证注入幂等、链接可解析、块外人工正文不变。
 
+## Operator producer
+
+两项 Operator producer 处理通用 Ingest 无法用固定模板闭合的源码级 API/Host/Tiling/Kernel 事实。任务必须先冻结唯一逻辑算子、固定 Git Commit、入口类型、平台和目标文件；入口可以是公开 ACLNN/API、官方 Host/Tiling 或 Direct Invoke，Skill 不自行改变调用层。
+
+分流只看 Host/launcher 可达的 Device 节点：全部节点都不含 Cube/AIC 或 MIX_CV 时使用 VV；至少一个节点含 Cube/AIC 或 MIX_CV 时使用 CV。SIMT、NDDMA、通信、Hybrid 和多 Kernel 本身不触发 CV。两项 Skill 都必须闭合公开入口或 launcher、Host selector、Tiling/POD、逐 Route Kernel、内存、同步、构建接线和固定来源；闭包或公开平台证据不足时停止写正式卡。
+
+producer 一次只处理一个逻辑算子并只写任务指定的最终卡，不写 index、Registry、日志、图谱或中间账本，不执行编译、真机、数值或性能测试。外层贡献流程负责查重、导航、日志、Lint、索引和目标 Query。两项 producer 的固定标题、Frontmatter 和正文结构由各自模板定义。
+
 ## Lint
 
 Lint 是离线、只读、确定性的作者门禁，比 OKF 最小 conformance 更严格。
@@ -88,18 +98,18 @@ Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、�
 
 ## 共同约束
 
-- 三项 Skill 共同使用 `governance/schemas/` 和 `governance/contracts/`，不复制字段、路径或注册值。
-- 三项 Skill 的可移植合同由 `SKILL.md` 的 `name`、`description` 和正文，以及按需加载的 `references/`、`scripts/` 等资源组成。规范源不保存 `agents/openai.yaml` 或其他单一 Agent 平台元数据。
+- 五项 Skill 共同遵守 `governance/schemas/` 和 `governance/contracts/`，不复制或放宽字段、路径和注册值。
+- 五项 Skill 的可移植合同由 `SKILL.md` 的 `name`、`description` 和正文，以及按需加载的 `references/`、`templates/`、`scripts/` 等资源组成。规范源不保存 `agents/openai.yaml` 或其他单一 Agent 平台元数据。
 - Query 和 Lint 始终只读；Ingest 不自动 commit、push、合并或发布。
 - CANN、DSL、API、算子、调试和优化事实进入 `knowledge/`，不埋在 Skill 指令中。
-- 官方 reference 来源盘点与摄入路由属于 Ingest，Issue 材料整理属于 Lint；它们不增加公开 Skill。其他专用 ingest producer 通过后续 PR 逐项接入统一路由。
+- 官方 reference 来源盘点与通用摄入路由属于 Ingest，源码级完整算子生产属于 VV/CV，Issue 材料整理属于 Lint。其他专用 producer 需要单独完成架构和发布评审。
 
 ## 安装模式
 
 | 安装模式 | Skill | 场景 |
 |---|---|---|
 | `consumer` | `knowledge-query` | 只读查阅和技术问答 |
-| `contributor` | 全部三个 Skill | 贡献知识、治理规则或 Skill |
+| `contributor` | 全部五项 Skill | 贡献知识、治理规则或 Skill |
 
 知识仓安装入口把平台中立的规范源链接到目标项目 `.agents/skills/`，再在 Skill 目录之外创建客户端适配链接；同时准备索引、写项目级知识根配置并维护 Agent 提示词入口。复制式安装必须另行配置知识根。两种方式都要求知识仓独立可用，不复制 `knowledge/` 正文或修改用户全局配置。
 

@@ -135,6 +135,24 @@ description: A complete example description.
             clean = self.run_script(root, "--check")
         self.assertEqual(0, clean.returncode, clean.stderr)
 
+    def test_directory_named_index_does_not_masquerade_as_a_summary_card(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(Path(temporary))
+            category = root / "knowledge/section/index"
+            category.mkdir()
+            (category / "card.md").write_text(
+                "---\ntitle: Indexed card\n"
+                "description: A card below a category named index.\n---\n\n"
+                "# Indexed card\n",
+                encoding="utf-8",
+            )
+            result = self.run_script(root)
+            section = (root / "knowledge/section/index.md").read_text(
+                encoding="utf-8"
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("[index](index/index.md)", section)
+
     def test_atomic_create_never_replaces_an_existing_file(self) -> None:
         module = load_module()
         with tempfile.TemporaryDirectory() as temporary:

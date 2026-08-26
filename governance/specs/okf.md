@@ -68,6 +68,6 @@ OKF 通用 consumer 应容忍未知 `type`、扩展字段、断链和缺失索�
 
 ## 规范演进
 
-变更 OKF 核心字段、Concept ID、根索引或链接解析时，必须同时更新本仓机器声明、Contract、三个 Skill、知识卡和 conformance 回归。
+变更 OKF 核心字段、Concept ID、根索引或链接解析时，必须同时更新本仓机器声明、Contract、受影响的 Skill、知识卡和 conformance 回归。
 
 OKF 上游仍在演进。本仓只对上述固定 commit 做过审核；更新参考版本时必须重新检查 required 字段、保留文件、provenance、trust、lifecycle、link 和 consumer conformance，不能静默跟随 `main`。

@@ -21,7 +21,8 @@ CANNBot 通过本仓提供的 Skill 生产、检索和检查这些知识，从�
 
 - 2,810 张 API 卡；
 - 270 张 Guide 卡；
-- 来源均指向可由固定归档和 SHA-256 恢复的 `cann-docs-raw/` 官方资料。
+- 612 张 Operator 卡，其中 559 张 ACLNN 全链路卡、53 张 Direct Invoke 卡；
+- API/Guide 来源指向可由固定归档和 SHA-256 恢复的 `cann-docs-raw/` 官方资料；Operator 来源固定到 CANN 官方 Git 仓 40 位 Commit 和具体文件。
 
 五个 domain 根目录始终保留；`ops` 和 `model` 额外预建已注册 route，其他领域的下一层路径由领域维护者在首批真实知识落库时创建。只有 `index.md` 的结构入口不算正式知识卡，也不会出现在 Query 的实际覆盖统计中。“存在目录”不表示“已有知识”，实际内容以 [`knowledge/index.md`](knowledge/index.md) 和 Query `discover` 为准。
 
@@ -39,7 +40,7 @@ bash fetch-cann-docs.sh
 官方文档 / 固定版本源码 / 可复现实验
                     │
                     ▼
-            knowledge-ingest
+       knowledge-ingest / VV / CV
                     │
                     ▼
                Markdown 知识卡
@@ -52,13 +53,15 @@ bash fetch-cann-docs.sh
           CANNBot 读取正文并核对来源
 ```
 
-三个 Skill 的分工是：
+五项 Skill 的分工是：
 
 | Skill | 作用 | 是否修改知识仓 |
 |---|---|---|
 | `knowledge-query` | 查看实际知识覆盖，检索知识卡，并可保存不可覆盖的审计 receipt | 除指定 receipt 外只读 |
 | `knowledge-ingest` | 统一路由新来源、增量、版本升级、通用建卡和图谱完整生命周期 | 可以创建候选卡并同步可提交的受管关系块；图谱 JSON 等产物始终 ignored |
 | `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航和日志；整理 Issue 材料 | 否 |
+| `ops-knowledge-vv-ingest` | 从固定版本源码提取不含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
+| `ops-knowledge-cv-ingest` | 从固定版本源码提取含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
 
 ## 知识如何组织
 
@@ -85,6 +88,8 @@ knowledge/ops/ascendc/apis/basic_api/data_copy/datacopy.md
 
 不同 DSL 的专属知识分开保存。只有确实不依赖某个 DSL 的结论才能进入 `shared/`；两种技术之间哪些内容可以复用、哪些必须重新推导，则写入 `shared/interoperability/`。
 
+Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<operator>.md` 组织；`aclnn` 保存公开 ACLNN/API 到 Kernel 的完整链路，`direct` 保存独立 Direct Invoke 路线，category 沿用 Registry 登记的官方源码一级分类。
+
 每张知识卡的正文解释结论、适用条件和失效边界；文件开头的 Frontmatter 保存检索、平台、版本、生命周期和来源等结构化信息。详细规则见[治理规范](#治理规范)。
 
 ## 仓库目录
@@ -95,7 +100,7 @@ knowledge/ops/ascendc/apis/basic_api/data_copy/datacopy.md
 | `governance/schemas/` | 机器可读的字段、路径 Profile 和受控值规则 |
 | `governance/specs/` | 对治理规则的完整文字说明 |
 | `governance/contracts/` | Ingest、Query、Lint 和图谱共同使用的校验实现 |
-| `.agents/skills/` | 三个基础 Skill 的规范源 |
+| `.agents/skills/` | 三项基础 Skill 与两项源码级 Operator producer 的规范源 |
 | `docs/` | 知识库设计原则和用户指南 |
 | `recipes/` | 面向具体任务的知识库最佳实践 |
 | `evals/` | 检索、治理、文档和安装回归 |
@@ -111,6 +116,8 @@ knowledge/ops/ascendc/apis/basic_api/data_copy/datacopy.md
 - “使用 `knowledge-query` 查看当前知识库包含哪些内容。”
 - “使用 `knowledge-query` 检索目标平台上的某项 CANN API；零命中时明确报告当前知识缺口。”
 - “使用 `knowledge-ingest` 把这份固定版本文档整理成候选知识卡。”
+- “使用 `ops-knowledge-vv-ingest` 从固定源码提取非 Cube Operator 卡。”
+- “使用 `ops-knowledge-cv-ingest` 从固定源码提取含 Cube/MIX_CV 的 Operator 卡。”
 - “使用 `knowledge-lint` 检查本次知识修改。”
 
 查询结果只是候选知识。形成技术结论前，Agent 仍需读取知识卡正文，核对适用平台、版本、信任层级和来源。
@@ -137,7 +144,7 @@ python3 -m pip install -r requirements-dev.txt
 
 ## 安装到项目
 
-使用知识仓根目录的 `init.sh` 时，目标项目必须已经存在。`consumer` 只安装查询 Skill，`contributor` 安装全部三个 Skill：
+使用知识仓根目录的 `init.sh` 时，目标项目必须已经存在。`consumer` 只安装查询 Skill，`contributor` 安装全部五项 Skill：
 
 ```bash
 bash init.sh claude /path/to/project consumer
@@ -146,7 +153,7 @@ bash init.sh agents /path/to/project contributor
 
 支持 `agents`、`codex`、`claude`、`opencode`、`trae`、`cursor` 和 `copilot`。安装器始终在目标项目的 `.agents/skills/` 创建规范链接，再按客户端创建适配链接；同时验证或构建只读检索索引、把知识根和安装 profile 写入项目级 `.cannbot/knowledge.env`，并向 `AGENTS.md` 或 `CLAUDE.md` 注入可卸载的托管使用入口。所有已知路径冲突和托管 marker 异常都在写入前失败，不复制知识正文，也不修改用户全局配置。
 
-只刷新或移除托管入口时使用 `--prompt-action reinstall|uninstall`。`reinstall` 默认复用 `.cannbot/knowledge.env` 中记录的 profile；旧安装没有该字段时根据已安装的三个规范 Skill 推导，也可以显式传 `consumer|contributor` 覆盖。复制安装 Skill 时，仍需在项目配置 `CANNBOT_KNOWLEDGE_ROOT` 或 `.cannbot/knowledge.env` 指向独立知识仓；Query 不在业务项目复制知识正文。
+只刷新或移除托管入口时使用 `--prompt-action reinstall|uninstall`。`reinstall` 默认复用 `.cannbot/knowledge.env` 中记录的 profile；旧安装没有该字段时根据已安装的基础贡献 Skill 推导，也可以显式传 `consumer|contributor` 覆盖。复制安装 Skill 时，仍需在项目配置 `CANNBOT_KNOWLEDGE_ROOT` 或 `.cannbot/knowledge.env` 指向独立知识仓；Query 不在业务项目复制知识正文。
 
 ## 贡献和检查
 
@@ -166,6 +173,6 @@ bash check.sh
 - [知识路径](governance/specs/paths.md)：domain、technology/scope、路径 Profile、Concept ID 和索引规则。
 - [Frontmatter 与证据](governance/specs/frontmatter.md)：字段组合、生命周期、来源、标签、平台和版本。
 - [Schema、Registry 与 Contract](governance/specs/schemas.md)：机器事实源、受控词表和规则执行关系。
-- [Knowledge Skills](governance/specs/skills.md)：Query、Ingest、Lint 和安装模式。
+- [Knowledge Skills](governance/specs/skills.md)：Query、通用 Ingest、Operator producer、Lint 和安装模式。
 
 本仓采用 [CANN Open Software License Agreement 2.0](LICENSE)。

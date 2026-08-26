@@ -124,8 +124,9 @@ class Contract:
         self.local_sources = self._section("local_sources")
         self.path_values = self._section("paths")
         self.routes = set(self.technologies) | set(self.scopes)
-        self.operator_families = self._string_set("operator_families")
-        self.operator_categories = self._string_set("operator_categories")
+        self.operator_call_modes = self._string_set("operator_call_modes")
+        self.operator_categories = self._operator_family_mapping()
+        self.operator_families = set(self.operator_categories)
         self.runbook_areas = self._string_set("runbook_areas")
         self._validate_registry_contract()
 
@@ -146,6 +147,27 @@ class Contract:
         if len(value) != len(set(value)):
             raise ValueError(f"registries paths.{name} contains duplicates")
         return set(value)
+
+    def _operator_family_mapping(self) -> dict[str, set[str]]:
+        value = self.path_values.get("operator_categories")
+        if not isinstance(value, dict) or not value:
+            raise ValueError("registries paths.operator_categories must be a mapping")
+        result: dict[str, set[str]] = {}
+        for family, categories in value.items():
+            if not isinstance(family, str) or not ID_RE.fullmatch(family):
+                raise ValueError(f"invalid operator family ID: {family}")
+            if (
+                not isinstance(categories, list)
+                or not categories
+                or not all(isinstance(item, str) for item in categories)
+                or len(categories) != len(set(categories))
+            ):
+                raise ValueError(
+                    f"registries paths.operator_categories.{family} must be a "
+                    "non-empty unique string list"
+                )
+            result[family] = set(categories)
+        return result
 
     def _validate_registry_contract(self) -> None:
         if set(self.technologies) & set(self.scopes):
@@ -201,11 +223,20 @@ class Contract:
                 )
             if not str(tag.get("description", "")).strip():
                 raise ValueError(f"tags.{tag_id} requires a description")
-        for category in self.operator_categories:
-            if not ID_RE.fullmatch(category) or not category.endswith("s"):
-                raise ValueError(
-                    f"operator category must use a plural snake_case ID: {category}"
-                )
+        for value_name, values in (
+            ("operator call mode", self.operator_call_modes),
+            ("operator family", self.operator_families),
+        ):
+            for value in values:
+                if not ID_RE.fullmatch(value):
+                    raise ValueError(f"{value_name} must use a snake_case ID: {value}")
+        for family, categories in self.operator_categories.items():
+            for category in categories:
+                if not ID_RE.fullmatch(category):
+                    raise ValueError(
+                        "operator category must use a snake_case ID: "
+                        f"{family}.{category}"
+                    )
         for source_id, source in self.local_sources.items():
             if not isinstance(source_id, str) or not ID_RE.fullmatch(source_id):
                 raise ValueError(f"invalid local_sources ID: {source_id}")

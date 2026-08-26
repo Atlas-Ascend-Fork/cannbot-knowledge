@@ -71,8 +71,12 @@ local_sources:
     archive_sha256: 9bc4341ac90740121a20b0ab9d30c6020784bd5969a119e77ab9402a4e6b68c4
 
 paths:
-  operator_families: [math, nn, transformers]
-  operator_categories: [activations, conversions, convolutions, normalizations, quantizations]
+  operator_call_modes: [aclnn, direct]
+  operator_categories:
+    cv: [image, objdetect]
+    math: [conversion, math, random]
+    nn: [activation, conv, foreach, index, loss, matmul, norm, optim, pooling, quant, rnn, vfusion]
+    transformer: [attention, ffn, gmm, mc2, mhc, moe, posembedding]
   runbook_areas: [compilation, runtime, precision, performance, validations]
 
 platforms:

@@ -94,22 +94,36 @@ def validate_index_path(contract: Contract, relative: Path) -> list[Issue]:
         tail = parts[4:]
 
     if card_type == "operators":
-        if len(tail) > 2:
-            return [
-                Issue("index.operator", "operator index is deeper than family/category")
-            ]
-        if tail and tail[0] not in contract.operator_families:
+        if len(tail) > 3:
             return [
                 Issue(
                     "index.operator",
-                    f"unregistered operator family: {tail[0]}",
+                    "operator index is deeper than call-mode/family/category",
                 )
             ]
-        if len(tail) == 2 and tail[1] not in contract.operator_categories:
+        if tail and tail[0] not in contract.operator_call_modes:
             return [
                 Issue(
                     "index.operator",
-                    f"unregistered operator category: {tail[1]}",
+                    f"unregistered operator call mode: {tail[0]}",
+                )
+            ]
+        if len(tail) >= 2 and tail[1] not in contract.operator_families:
+            return [
+                Issue(
+                    "index.operator",
+                    f"unregistered operator family: {tail[1]}",
+                )
+            ]
+        if (
+            len(tail) == 3
+            and tail[1] in contract.operator_families
+            and tail[2] not in contract.operator_categories[tail[1]]
+        ):
+            return [
+                Issue(
+                    "index.operator",
+                    f"unregistered operator category for {tail[1]}: {tail[2]}",
                 )
             ]
     elif card_type == "runbooks":

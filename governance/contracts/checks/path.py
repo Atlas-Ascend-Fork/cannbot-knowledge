@@ -64,13 +64,21 @@ def derive_card_path(contract: Contract, relative: Path) -> PathInfo:
 
     suffix = parts[type_index + 1 : -1]
     if card_type == "operators":
-        if len(suffix) != 2 or suffix[0] not in contract.operator_families:
+        if len(suffix) != 3 or suffix[0] not in contract.operator_call_modes:
+            allowed = "|".join(sorted(contract.operator_call_modes))
+            raise ValueError(
+                "operator path must be "
+                f"operators/<{allowed}>/<family>/<category>/<operator>.md"
+            )
+        if suffix[1] not in contract.operator_families:
             allowed = "|".join(sorted(contract.operator_families))
             raise ValueError(
-                f"operator path must be operators/<{allowed}>/<category>/<operator>.md"
+                f"unregistered operator family: {suffix[1]}; expected <{allowed}>"
             )
-        if suffix[1] not in contract.operator_categories:
-            raise ValueError(f"unregistered operator category: {suffix[1]}")
+        if suffix[2] not in contract.operator_categories[suffix[1]]:
+            raise ValueError(
+                f"unregistered operator category for {suffix[1]}: {suffix[2]}"
+            )
     elif card_type == "runbooks":
         if len(suffix) != 1 or suffix[0] not in contract.runbook_areas:
             allowed = "|".join(sorted(contract.runbook_areas))

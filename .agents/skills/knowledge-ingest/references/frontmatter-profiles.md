@@ -38,9 +38,9 @@ Actor 使用 `human:<id>`、`process:<id>` 或 `<producer>/<version>`。不得�
 - 卡片正文和索引中的本地 Markdown 链接只能指向同一 `knowledge/` Bundle。
 - `interoperability` 只能位于同领域 `shared`，并声明不同的 source/target technology。
 - `concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可以增加小写 `snake_case` 主题 section。
-- operator 使用 `operators/<family>/<category>/<operator>.md`。
+- operator 使用 `operators/<call-mode>/<family>/<category>/<operator>.md`；`call-mode` 当前为 `aclnn` 或 `direct`。
 - runbook 使用 `runbooks/<area>/<runbook>.md`。
-- family、category 和 area 的合法值从 `registries.yaml` 的 `paths` 分区读取。
+- call mode、family、family 下的 category 和 area 的合法值从 `registries.yaml` 的 `paths` 分区读取。
 
 ## 创建脚本行为
 

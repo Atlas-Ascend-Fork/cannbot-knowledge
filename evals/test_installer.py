@@ -34,13 +34,24 @@ class InstallerTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             installed = {path.name for path in (project / ".agents/skills").iterdir() if path.is_symlink()}
-            self.assertEqual(installed, {"knowledge-ingest", "knowledge-query", "knowledge-lint"})
+            self.assertEqual(
+                installed,
+                {
+                    "knowledge-ingest",
+                    "knowledge-query",
+                    "knowledge-lint",
+                    "ops-knowledge-vv-ingest",
+                    "ops-knowledge-cv-ingest",
+                },
+            )
             env = (project / ".cannbot/knowledge.env").read_text(encoding="utf-8")
             self.assertIn(f"export CANNBOT_KNOWLEDGE_ROOT={ROOT}", env)
             self.assertIn("export CANNBOT_KNOWLEDGE_PROFILE=contributor", env)
             prompt = (project / "AGENTS.md").read_text(encoding="utf-8")
             self.assertIn("<!-- cannbot-knowledge:start -->", prompt)
             self.assertIn("knowledge-ingest", prompt)
+            self.assertIn("ops-knowledge-vv-ingest", prompt)
+            self.assertIn("ops-knowledge-cv-ingest", prompt)
             self.assertIn("### 贡献者附加流程", prompt)
 
     def test_consumer_prompt_preserves_query_execution_contract(self) -> None:
