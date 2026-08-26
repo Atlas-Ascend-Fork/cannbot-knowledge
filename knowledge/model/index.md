@@ -1,7 +1,6 @@
 # 模型知识
 
-保存模型推理、训练和两者可复用的公共知识；结构入口不表示已有实际知识覆盖。
-
-- [模型推理](inference/index.md)：模型推理与服务知识入口。
-- [模型训练](training/index.md)：模型训练知识入口。
-- [模型公共知识](shared/index.md)：推理与训练共同适用的知识入口。
+- [具身智能](embodied/index.md)：具身智能知识导航。
+- [模型推理](inference/index.md)：模型推理知识导航。
+- [空间智能](spatial/index.md)：空间智能知识导航。
+- [模型训练](training/index.md)：模型训练知识导航。

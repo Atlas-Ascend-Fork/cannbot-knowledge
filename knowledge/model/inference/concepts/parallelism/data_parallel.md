@@ -1,0 +1,75 @@
+---
+type: Concept
+title: Data Parallel
+description: 将不同的请求/batch 分配到不同的模型副本上并行推理的策略，用于提升推理吞吐量。在推理场景中通常以 DP 通信域的形式与 TP/EP 配合使用。
+tags:
+- task.design
+- topic.parallelism
+- topic.attention
+- topic.mixture_of_experts
+status: stable
+sources:
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/README.md
+  role: primary
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/deepseek_r1_prefill_optimization.md
+  role: supporting
+created_at: '2026-04-14T00:00:00Z'
+updated_at: '2026-06-27T00:00:00Z'
+platforms:
+- a3
+---
+
+# Data Parallel
+
+## Summary
+
+将不同的请求/batch 分配到不同的模型副本上并行推理的策略，用于提升推理吞吐量。在推理场景中通常以 DP 通信域的形式与 TP/EP 配合使用。
+
+## Mechanism
+
+- 每个 DP Rank 持有完整的模型副本（或 TP 切片后的副本）
+- 不同请求路由到不同 DP Rank 独立推理
+- 在 SGLang 等框架中，DP 通信域还可被 CP 复用
+
+## Applicable Scenarios
+
+- 高吞吐需求场景，单副本无法满足 QPS 要求
+- 多节点部署时通过 DP 扩展吞吐
+
+## Configuration
+
+- DP size = 总卡数 / (TP size * EP size)
+- 在 PD 分离部署中，Prefill 和 Decode 可使用不同的 DP 配置
+
+## Constraints
+
+- 每个 DP 副本需占用完整的模型内存
+- 不减少单请求延迟
+
+## Evidence
+
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — 多个模型部署中使用 DP 提升吞吐
+
+## Known Deployments
+
+- **Qwen3-Next PD 混部**：`--enable-dp-attention --dp-size 8 --tp 16`，DP 通信域在 Attention 层独立。CP 场景下 DP 通信域被 [context-parallel](context_parallel.md) 复用，因此 CP 与 DP 互斥（README 约束 5）。
+- **DeepSeek-R1 Prefill / Decode**（[deepseek-r1](../models/deepseek_r1.md)）：主流部署走 **纯 DP MLA**（`attn_tp_size=1`），每卡部署完整 MLA 权重，KVCache 按本卡请求独占、无冗余。该策略在请求量大或 KVCache 占用高的场景下最大化吞吐，但短序列混合批次下存在计算负载不均、请求数不足时 TTFT 拉长的问题——此时改用 [sp-tp-sp](sp_tp_sp.md)。128 卡 Decode 大 EP 部署即为 DP128 + EP128。MLA-DP 切分下 prefill 通信几乎全部来自 MoE 阶段的 AlltoAll（dispatch/combine），故 MLA-DP + MoE-[expert-parallel](expert_parallel.md) 场景用 micro-batch 双流把计算与 AlltoAll 并行起来、以计算掩盖 dispatch/combine 通信耗时（Atlas A3 16 卡实测 MLA-DP32 + MoE-EP32 由 5237 提升至 6522 tokens/卡/s，+25%）。
+
+ DeepSeek-R1 Prefill MLA 纯 DP 切分原貌（请求按卡独立、KV-Cache 无冗余）：
+
+ ![DeepSeek-R1 Attention DP 切分](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-r1/figures/image_attention_dp.png)
+ *来源：[`docs/models/deepseek-r1/figures/image_attention_dp.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-r1/figures/image_attention_dp.png)（cann-recipes-infer @ 2f82d10）*
+
+## Links
+
+- [tensor-parallel](tensor_parallel.md)
+- [expert-parallel](expert_parallel.md)
+- [context-parallel](context_parallel.md)
+- [atlas-a3](../platforms/atlas_a3.md)
+- [qwen3-next](../models/qwen3_next.md)
+- [deepseek-r1](../models/deepseek_r1.md)
+- [sp-tp-sp](sp_tp_sp.md)
+- [deepseek-v4](../models/deepseek_v4.md)（Decode Attention 用 DP，配合 MoE EP + LM_head TP）
+- [gemma4-26b-a4b](../models/gemma4_26b_a4b.md)（`attn_tp=1` → DP=8；full 层 N_kv=2 致 TP 上限 2，故全用 DP 最大化吞吐）
+- [hy3-preview](../models/hy3_preview.md)（16 die `attn_tp_size=4` → Attention DP 体现在 attn_tp 之外的部署面；框架派生 `attn_dp_size=world_size//(attn_tp_size·cp_size)`）
+- [fsdp](../../../training/concepts/parallelism/fsdp.md)（跨域·训练：FSDP2 全分片数据并行（ZeRO-3 同源））

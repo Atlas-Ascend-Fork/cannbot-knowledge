@@ -211,14 +211,6 @@ cases:
       platform: a2
       status: stable
     expected_count: 0
-  - id: empty_model_scope_search
-    query: model inference
-    filters:
-      domain: model
-      technology: inference
-      platform: a2
-      status: stable
-    expected_count: 0
   - id: reject_unknown_domain
     query: target API
     filters:

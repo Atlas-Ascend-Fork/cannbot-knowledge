@@ -156,8 +156,11 @@ class RouteContractTests(unittest.TestCase):
             for path in (ROOT / "knowledge").rglob("*.md")
             if path.name != "index.md"
         ]
-        apis = [path for path in cards if "apis" in path.parts]
-        guides = [path for path in cards if "guides" in path.parts]
+        ascendc_cards = [
+            path for path in cards if path.parts[1:3] == ("ops", "ascendc")
+        ]
+        apis = [path for path in ascendc_cards if "apis" in path.parts]
+        guides = [path for path in ascendc_cards if "guides" in path.parts]
         self.assertGreaterEqual(len(apis), 2810)
         self.assertGreaterEqual(len(guides), 270)
         self.assertTrue(
