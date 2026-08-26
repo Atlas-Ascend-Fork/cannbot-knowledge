@@ -126,7 +126,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 
 - [设计原则](docs/design_principles.md)：知识根、治理分层、范围隔离、证据和失败关闭等关键取舍。
 - [用户指南](docs/user_guide.md)：consumer 与 contributor 的使用方式，以及如何理解查询结果。
-- [形成可追溯回答](recipes/answer_with_evidence.md)和[贡献知识](recipes/contribute_knowledge.md)：面向具体任务的场景化实践。
+- [形成可追溯回答](recipes/answer_with_evidence.md)、[贡献知识](recipes/contribute_knowledge.md)和[使用知识库查询 API](recipes/api_search.md)：面向具体任务的场景化实践。
 
 ## 环境准备
 

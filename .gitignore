@@ -1,5 +1,5 @@
-artifacts/indexes/
-artifacts/graphs/
+artifacts/
+.DS_Store
 .build/
 .venv/
 .ruff_cache/

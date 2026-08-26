@@ -92,4 +92,5 @@
 - [设计原则](design_principles.md)
 - [形成可追溯回答](../recipes/answer_with_evidence.md)
 - [贡献知识](../recipes/contribute_knowledge.md)
+- [使用知识库查询 API](../recipes/api_search.md)
 - [治理规范](../README.md#治理规范)
