@@ -15,6 +15,7 @@ python3 .agents/skills/knowledge-query/scripts/knowledge_index.py \
 python3 evals/run_retrieval.py
 python3 -m unittest discover -s evals -p 'test_*.py'
 python3 -m unittest discover -s .agents/skills/knowledge-ingest/tests -p 'test_*.py'
+python3 -m unittest discover -s .agents/skills/ops-knowledge-trace-ingest/scripts -p 'test_*.py'
 ruff check .agents/skills governance evals
 bash -n init.sh check.sh fetch-cann-docs.sh
 if [[ -f artifacts/graphs/edge_judgments.json ]]; then

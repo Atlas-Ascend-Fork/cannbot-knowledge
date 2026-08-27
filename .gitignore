@@ -1,5 +1,6 @@
 artifacts/
 .DS_Store
+
 .build/
 .venv/
 .ruff_cache/
@@ -7,3 +8,5 @@ __pycache__/
 *.pyc
 *.tmp
 cann-docs-raw/
+.DS_Store
+**/.DS_Store # 递归忽略子目录中的
