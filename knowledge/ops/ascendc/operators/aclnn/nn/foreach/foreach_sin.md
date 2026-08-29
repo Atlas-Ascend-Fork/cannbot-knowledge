@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:20:33Z"
-updated_at: "2026-08-25T16:20:33Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -526,9 +526,9 @@ PipeBarrier<PIPE_V>();
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；`ascend910b` | 支持；`ascend910_93` | 支持，但使用独立 `_a5` 卡 |
+| 支持状态 | 支持；`ascend910b` | 支持；`ascend910_93` | 支持，但使用独立 `_950` 卡 |
 | Host/Launcher | 共用 arch22 `ForeachCommonTiling` | 共用 arch22 | arch35 独立 SIMT Tiling |
 | Kernel/资源 | 共用 AIV Vector + Queue | 共用 AIV Vector + Queue | SIMT 直接 GM、无这些 Queue |
 
@@ -571,3 +571,9 @@ PipeBarrier<PIPE_V>();
 | 同步 | Queue 生命周期与 V barrier | Cast/Sin/Cast 和复用顺序 | `InnerComputer::Compute` |
 | 精度与尾块 | FP16/FP32原精度；BF16 FP32 opmath+RINT | tail exact-byte、有效长度、round mode | `ComputePerCast`、`CopyIn/CopyOut` |
 | 失败边界 | Host校验失败不启动；unknown key无写出 | 不得把 unknown key 当 fallback | `CheckOpInfo`、`foreach_sin` router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachSin 950 ACLNN 算子知识](foreach_sin_950.md)（`same_topic`）：分核只以列表中最大Tensor的元素数 `M` 为依据，不按Tensor总元素数求和。；令 `E=sum_i tensorDataCountList［i］`，`s=sizeof(dtype)`，`e32=32/s`。两卡均实现 aclnnForeachSin TensorList 逐元素正弦，但 950 按最大成员组织 SIMT grid，A2/A3 按列表总元素组织 Vector 分核，适合跨平台迁移核验。
+<!-- cannbot:related:end -->

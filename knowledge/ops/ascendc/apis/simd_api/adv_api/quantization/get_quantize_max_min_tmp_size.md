@@ -26,6 +26,5 @@ host侧Tiling接口，用于获取Quantize接口所需的最大和最小临时�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Quantize](quantize.md)（`related`）：Quantize 的 sharedTmpBuffer 大小需由 Host 侧 max/min 查询按 shape 和 dtype 预算。
-- [GetQuantizeTmpBufferFactorSize](get_quantize_tmp_buffer_factor_size.md)（`same_topic`）：GetQuantizeTmpBufferFactorSize 与《GetQuantizeMaxMinTmpSize》的实质衔接是：GetQuantizeTmpBufferFactorSize 用可用 UB 反推 Quantize 的单次元素数，GetQuantizeMaxMinTmpSize 给出另一种 Host 侧空间选择，Quantize kernel 是两类查询结果的直接消费方。
+- [Quantize](quantize.md)（`related`）：host侧Tiling接口，用于获取Quantize接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetQuantizeMaxMinTmpSize获取。。前者计算 Quantize 所需的临时空间上下界，后者明确 Quantize 的 sharedTmpBuffer 重载依赖该 helper，二者闭合 Host Tiling 选空间与 kernel 量化调用的任务链。
 <!-- cannbot:related:end -->

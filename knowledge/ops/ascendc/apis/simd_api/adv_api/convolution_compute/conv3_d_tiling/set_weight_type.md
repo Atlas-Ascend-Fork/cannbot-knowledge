@@ -26,11 +26,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Conv3D Tiling使用说明](conv3_d_tiling_usage.md)（`related`）：SetWeightType 是 Conv3D Host tiling 初始化流程中的必需类型配置；使用说明明确它需与 Input/Bias/Output 类型及形状、stride/padding 等一起在 GetTiling 前设置。
-- [SetOrgWeightShape](set_org_weight_shape.md)（`related`）：权重类型与原始 Co/Kd/Kh/Kw 形状共同构成 Conv3D tiling 对 Weight 的完整描述，缺一不能可靠生成切分参数。
-- [SetOutputType](set_output_type.md)（`related`）：《SetOutputType》的任务是“设置结果矩阵Output在内存上的位置、数据格式和数据类型。”。《SetWeightType》具体提供“设置Weight在内存上的位置、数据格式和数据类型。”，它直接用于Conv3D 输出位置/格式/dtype 在 Tiling 与 Kernel 间的一致性。
-- [SetWeight](../conv3_d_kernel/set_weight.md)（`related`）：Host SetWeightType 固定 Weight 为 GM/FRACTAL_Z_3D/FLOAT16 或 BF16，必须与 Kernel SetWeight 绑定的 GlobalTensor 类型和布局一致。
-- [Conv3D模板参数](../conv3_d_kernel/conv3_d_template_params.md)（`same_topic`）：Conv3D模板参数 与《SetWeightType》的实质衔接是：Conv3D 模板参数决定 Input/Weight/Output/Bias 的位置、格式与类型，必须和 Kernel 构造、Init、Tiling 结构及 Set*Type/SetGroups 配置保持一致。
-- [SetSingleWeightShape](set_single_weight_shape.md)（`same_topic`）：《SetSingleWeightShape》处理“设置单核上权重矩阵Weight的形状。”。《SetWeightType》明确提供“设置Weight在内存上的位置、数据格式和数据类型。”，其参数、调用或验证步骤直接接入Matmul 原始 weight 形状与 Tiling 类、结构体和 Kernel 设置接口的一致性。
-- [SetWeightType](../conv3_d_backprop_filter_tiling/set_weight_type.md)（`same_topic`）：焦点处理Conv3DBackpropFilter Tiling 中 Weight 的位置、格式和数据类型契约；SetWeightType正文界定“设置Weight在内存上的位置、数据格式和数据类型”。候选设置同一 Conv3DBackpropFilter Tiling 对象的 Weight 形状/类型，或把该配置传入 GetTiling 与 Kernel SetWeight。
+- [Conv3D Tiling使用说明](conv3_d_tiling_usage.md)（`related`）：设置Weight在内存上的位置、数据格式和数据类型；设置Input、Weight、Bias、Output的参数类型信息以及Shape信息；使用说明把 SetWeightType 放入生成 Conv3D 单核 tiling 的完整配置步骤。
 <!-- cannbot:related:end -->

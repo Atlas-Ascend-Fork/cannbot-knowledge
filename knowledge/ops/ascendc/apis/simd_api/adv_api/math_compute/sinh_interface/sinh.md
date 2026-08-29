@@ -26,7 +26,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetSinhMaxMinTmpSize](get_sinh_max_min_tmp_size.md)（`related`）：Sinh 的显式临时空间重载依赖对应 MaxMin 接口预算，且 calCount 只改变参与元素数，不取消 buffer 约束。
-- [GetSinhTmpBufferFactorSize](get_sinh_tmp_buffer_factor_size.md)（`same_topic`）：GetSinhTmpBufferFactorSize 与《Sinh》的实质衔接是：该因子查询服务 Sinh 高阶接口，必须结合最大最小空间查询把 host 侧预算转换成 kernel 单次处理量。
-- [Sinh接口](sinh_interface.md)（`same_topic`）：函数页给出高阶 Sinh 的参数和支持类型。
+- [GetSinhMaxMinTmpSize](get_sinh_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Sinh接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetSinhMaxMinTmpSize获取。；Sinh 正文明确把该 Tiling 接口作为临时空间大小来源，构成 Host 选参到 kernel 重载的直接合同。
+- [GetSinhTmpBufferFactorSize](get_sinh_tmp_buffer_factor_size.md)（`related`）：“临时空间大小通过GetSinhMaxMinTmpSize获取”给出容量范围入口，“currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize”进一步把固定容量换算为单次计算元素数，二者共同完成 Tiling。
 <!-- cannbot:related:end -->

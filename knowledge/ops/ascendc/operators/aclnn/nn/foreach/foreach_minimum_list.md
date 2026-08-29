@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_list/op_host/config/ascend910_93/foreach_minimum_list_binary.json
     role: implementation
 created_at: "2026-08-25T15:46:43Z"
-updated_at: "2026-08-25T15:46:43Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -514,9 +514,9 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor, RoundMode::CAST_RINT, da
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；公开文档与 `ascend910b` 注册/config 一致 | 支持；公开文档与 `ascend910_93` 注册/config 一致 | 支持，但使用独立 arch35 SIMT 实现，见 `_a5` 卡。 |
+| 支持状态 | 支持；公开文档与 `ascend910b` 注册/config 一致 | 支持；公开文档与 `ascend910_93` 注册/config 一致 | 支持，但使用独立 arch35 SIMT 实现，见 `_950` 卡。 |
 | Host/Launcher | arch22 `ForeachCommonTiling` | 与 A2 共用 arch22 | arch35 自定义 Tiling，POD/分核公式不同。 |
 | Kernel/资源 | 通用 AIV_VECTOR Queue kernel | 与 A2 同一源码与 key | 512-thread SIMT VF，无显式 Queue/workspace。 |
 
@@ -562,3 +562,9 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor, RoundMode::CAST_RINT, da
 | 同步 | Queue 管 MTE/V 顺序，Compute 内用 `PIPE_V` barrier | BF16 原地 scratch 的四阶段 barrier 不可删除 | `InnerComputer::Compute/ComputePerCast` |
 | 精度与尾块 | 直接 T `Min`；BF16 升 FP32、RINT 回写；tail 用 Pad DMA | 不得把 BF16 降为原精度 Min；只写 valid 元素 | `InnerComputer`、`CopyIn/CopyOut` |
 | 失败边界 | Host 拒绝 shape/dtype/list 不一致；无 fallback | `tensorNum<=50` 须由复用方显式保证；未知 key 不可达 | `CheckOpInfo`、entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachMinimumList 950 ACLNN 算子知识](foreach_minimum_list_950.md)（`same_topic`）：单 Kernel、单 AIV_VECTOR 节点；R-001 直接 `Min`，R-002 BF16→FP32→`Min`→BF16。；单 Device 节点；AIV 外层按串联元素域分块，每个重叠 Tensor 片段用 512-thread SIMT VF 计算，执行族记为 SIMT。；两卡描述同一 ACLNN 算子在 A2/A3 与 950 的完整平台实现，可直接用于迁移时比较 Vector 与 SIMT 路线。
+<!-- cannbot:related:end -->

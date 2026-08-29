@@ -44,7 +44,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/config/ascend910_93/moe_finalize_routing_v2_grad_binary.json
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:27:04Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -89,7 +89,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定 Commit 中同一反散射梯度语义仅公开 `MoeFinalizeRoutingV2Grad`，没有更高版本 ACLNN；因此它是 A2/A3 的实际最新公开入口。API 文档与 README 同时公开支持 A2、A3 和 Ascend 950；本文件是 Prompt 唯一指定的无后缀卡，按知识库规则只承载 A2/A3 的 Membase 实现。A5 使用 `ascend950`/`moe_finalize_routing_v2_grad_apt` RegBase 路线，应进入独立 `_a5` 卡，本次未生成。
+固定 Commit 中同一反散射梯度语义仅公开 `MoeFinalizeRoutingV2Grad`，没有更高版本 ACLNN；因此它是 A2/A3 的实际最新公开入口。API 文档与 README 同时公开支持 A2、A3 和 Ascend 950；本文件是 Prompt 唯一指定的无后缀卡，按知识库规则只承载 A2/A3 的 Membase 实现。950 使用 `ascend950`/`moe_finalize_routing_v2_grad_apt` RegBase 路线，应进入独立 `_950` 卡，本次未生成。
 
 ## Host/Launcher 执行流程
 
@@ -169,7 +169,7 @@ entry 对 20001/20002 再以 bias GM 指针是否为空选择实际 body
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台族 | `!IsRegbaseSocVersion(context_)` | 本卡 entry/body 是 Membase AIV 实现 | 全部 | RegBase 由 A5 模板处理，不进入本卡 | `MoeFinalizeRoutingV2GradMembase::IsCapable` |
+| 平台族 | `!IsRegbaseSocVersion(context_)` | 本卡 entry/body 是 Membase AIV 实现 | 全部 | RegBase 由 950 模板处理，不进入本卡 | `MoeFinalizeRoutingV2GradMembase::IsCapable` |
 | 平台资源 | `aivNum>0 && ubSize>0` | 产生 blockDim 与 P 上界 | 全部 | `GRAPH_FAILED` | `GetPlatformInfo` / `TilingPrepare4...` |
 | UB tile | `hiddenPrePart>0` | 每个 Route 至少容纳一个 H 元素及固定标量块 | 全部 | `GRAPH_FAILED` | `CalcTilingKey` |
 | 32 B 对齐 | `P*s` 经公式下对齐到 32 B | `InitBuffer` 容量与 DMA block 对齐 | 全部 | 选择更小 P；P≤0 失败 | `CalcTilingKey*` |
@@ -895,15 +895,15 @@ __aicore__ inline void MoeFinalizeRoutingV2GradBase<T1, T2>::ReduceCalc(
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | README/API公开支持；本卡覆盖 | README/API公开支持；本卡覆盖 | README/API公开支持；本次目标未包含 `_a5` 卡 |
+| 支持状态 | README/API公开支持；本卡覆盖 | README/API公开支持；本卡覆盖 | README/API公开支持；本次目标未包含 `_950` 卡 |
 | Host/Launcher | `ascend910b` Membase config | `ascend910_93` Membase config | `ascend950` RegBase selector、不同dtype组合与 `_apt` entry |
 | Kernel/资源 | key10001/10002/20001/20002，AIV-only | 与A2共用同一Membase body | key扩展到20011/20021/20012/20022；不应混入本卡 |
 
 ## 限制与失败边界
 
-- A2/A3 的 `scales`、`expandedX`、`bias`、`gradExpandedX` 与 `gradY` 必须同 dtype；A5允许 scales dtype独立，但不属于本卡。
+- A2/A3 的 `scales`、`expandedX`、`bias`、`gradExpandedX` 与 `gradY` 必须同 dtype；950允许 scales dtype独立，但不属于本卡。
 - Tiling检查shape/dtype与可选依赖，不扫描 `expandedRowIdx`/`expertIdx` 的GM值；索引范围与去重是调用方公开前提。Device只对 row 做边界保护，bias Route会直接用 `expertIdx` 寻址。
 - `hiddenPrePart<=0`、AIV数/UB不可用、shape/dtype/属性不符均 `GRAPH_FAILED`；未知 key 的 Kernel直接返回且不写输出。
 - `dropPadMode=1` 依赖 `SetScheduleMode(1)+SyncAll` 完成清零→scatter顺序；dropless 不预清零，正确性依赖公开的索引覆盖/不重复约束。
@@ -918,7 +918,7 @@ __aicore__ inline void MoeFinalizeRoutingV2GradBase<T1, T2>::ReduceCalc(
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口约束 | `moe/moe_finalize_routing_v2_grad/README.md` | 产品支持表/公式 | A2/A3/A5公开支持与逻辑语义 |
+| 入口约束 | `moe/moe_finalize_routing_v2_grad/README.md` | 产品支持表/公式 | A2/A3/950公开支持与逻辑语义 |
 | 入口约束 | `moe/moe_finalize_routing_v2_grad/docs/aclnnMoeFinalizeRoutingV2Grad.md` | 两段式原型/参数表 | 公开API、shape/dtype/错误语义 |
 | 入口声明 | `moe/moe_finalize_routing_v2_grad/op_host/op_api/aclnn_moe_finalize_routing_v2_grad.h` | 两个ACLNN符号 | C ABI参数顺序 |
 | 入口实现 | `moe/moe_finalize_routing_v2_grad/op_host/op_api/aclnn_moe_finalize_routing_v2_grad.cpp` | `CheckParams`/两段式函数 | Contiguous、L0、ViewCopy、executor |
@@ -947,4 +947,4 @@ __aicore__ inline void MoeFinalizeRoutingV2GradBase<T1, T2>::ReduceCalc(
 | workspace/内存 | Kernel workspace为0消费；UB按Route公式 | depth=1仍计完整容量；FP16/BF16前后半区重叠协议 | `GetWorkspaceSize`、各`InitBuffer` |
 | 同步 | Queue与四类硬事件可复用 | MTE2/V/MTE3依赖和drop `scheduleMode=1` | `Mte3ToMte2/WaitMte2ToVec/MTE3ToVSync/VToMTE3Sync` |
 | 精度与尾块 | FP16/BF16升FP32，最终`CAST_RINT`；切H仅末尾一次写gradScale | 不得逐tile提前降精度或漏掉 `H%P` | `ComputeGradExpandedX/ReduceCalc/CopyOutGradScales` |
-| 失败边界 | row guard、P/平台资源失败、unknown key return | expertIdx值域仍是调用方前提；A5不能套用Membase卡 | `CheckParams/CalcTilingKey/entry` |
+| 失败边界 | row guard、P/平台资源失败、unknown key return | expertIdx值域仍是调用方前提；950不能套用Membase卡 | `CheckParams/CalcTilingKey/entry` |

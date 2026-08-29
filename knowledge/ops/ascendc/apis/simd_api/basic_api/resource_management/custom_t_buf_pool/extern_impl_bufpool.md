@@ -28,10 +28,6 @@ TBufPool类切分的内存块都是连续的，开发者可能有一些自定义
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetCurBufSize](get_cur_buf_size.md)（`related`）：自定义分配实现需要读取当前剩余/可用区大小，避免跨越池边界。
-- [Init](init.md)（`related`）：自定义池必须实现 Init 并在 TPipe::InitBufPool 后绑定可管理的 UB/L1 范围。
-- [Reset](reset.md)（`related`）：Reset 是自定义 TBufPool 生命周期的释放/复位阶段，与宏要求实现初始化和释放相呼应。
-- [SetCurAddr](set_cur_addr.md)（`related`）：不连续内存块或跨 TQue 共享时需显式更新当前地址，正是 ExternImplBufpool 允许自定义的核心能力。
-- [GetCurAddr](get_cur_addr.md)（`same_topic`）：焦点处理自定义 TBufPool 当前地址游标的读取、设置与生命周期；ExternImplBufpool正文说明“辅助开发者自定义TBufPool以管理Unified Buffer和L1 Buffer内存的宏，支持不连续内存块和跨TQue共享等自定义分配需求”。候选读写同一个 pool 游标/块计数，或决定这些值何时初始化、复位和失效。
-- [TBufPool简介](../t_buf_pool/t_buf_pool_intro.md)（`same_topic`）：TBufPool简介 与《ExternImplBufpool》的实质衔接是：TBufPool 在 TPipe 下手工复用 UB/L1，必须依次 InitBufPool、分配/取址、Reset 或 Destroy；所连容量和 TPipe 初始化案例直接约束资源预算与生命周期。
+- [GetBufHandle](get_buf_handle.md)（`related`）：焦点接口“根据offset取出自定义TBufPool中管理的内存块。”，候选宏则“提供EXTERN_IMPL_BUFPOOL宏来辅助用户自定义TBufPool。”；宏建立自定义池实现，GetBufHandle 按 offset 取得该实现管理的块，两者构成定义与访问合同。
+- [InitBufPool](../t_pipe/init_buf_pool.md)（`related`）：焦点卡规定“自定义TBufPool之前，必须通过TPipe::InitBufPool接口进行TBufPool内存资源池初始化”，候选卡说明初始化后“在整体内存资源中划分出一块子资源池”；该调用是使用自定义宏前不可省略的资源准备步骤。
 <!-- cannbot:related:end -->

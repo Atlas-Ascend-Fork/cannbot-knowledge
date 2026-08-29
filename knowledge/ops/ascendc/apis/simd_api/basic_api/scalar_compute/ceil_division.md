@@ -25,9 +25,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [整数除法的快速算法](../../../../guides/operator_practice/simd_simt_hybrid_optimization/instruction_optimization/fast_integer_division.md)（`explains`）：CeilDivision 与《整数除法的快速算法》的实质衔接是：CeilDivision 与 CeilDiv 执行整数向上整除，快速除法与 SIMT divide 接口提供实现和舍入边界，标量计算页说明 device 使用域。
-- [Fdividef](../../../simt_api/math_functions/float_math_functions/fdividef.md)（`related`）：CeilDivision 与《Fdividef》的实质衔接是：CeilDivision 与 CeilDiv 执行整数向上整除，快速除法与 SIMT divide 接口提供实现和舍入边界，标量计算页说明 device 使用域。
-- [__fdividef](../../../simt_api/math_functions/float_math_functions/_fdividef.md)（`related`）：CeilDivision 与《__fdividef》的实质衔接是：CeilDivision 与 CeilDiv 执行整数向上整除，快速除法与 SIMT divide 接口提供实现和舍入边界，标量计算页说明 device 使用域。
-- [CeilDiv](../../../utils_api/cpp_stdlib/math_functions/ceil_div.md)（`same_topic`）：CeilDivision 与 ceil_div 都对两个正整数执行向上整除，且除数为零时返回 0；后者额外允许 Host 调用并支持混合整型模板，核心结果合同相同。
-- [标量计算](scalar_compute.md)（`same_topic`）：CeilDivision 与《标量计算》的实质衔接是：CeilDivision 与 CeilDiv 执行整数向上整除，快速除法与 SIMT divide 接口提供实现和舍入边界，标量计算页说明 device 使用域。
+- [Select VSEL_CMPMASK_SPR count>64 掩码错位判别](../../../../runbooks/precision/select_vsel_cmpmask_spr_count_64.md)（`exemplifies`）：“计算两个整数num1和num2相除后向上取整结果。”给出 CeilDivision 的整数合同；“repeatTime = CeilDivision(calCount, 64)”展示 Select 故障判读中如何用它计算 repeat 数，Runbook 的错误复现与源码解释直接依赖该 API。
+- [CeilDiv](../../../utils_api/cpp_stdlib/math_functions/ceil_div.md)（`same_topic`）：“计算两个整数a和b相除后向上取整的结果。该接口可在Host侧和AI Core侧使用。”与“计算两个整数num1和num2相除后向上取整结果。”提供双方正文证据。两端定义同一整数除法向上取整语义，分别服务 utils C++ 标准库接口和 SIMD 基础标量接口，适合按调用层选择。
 <!-- cannbot:related:end -->

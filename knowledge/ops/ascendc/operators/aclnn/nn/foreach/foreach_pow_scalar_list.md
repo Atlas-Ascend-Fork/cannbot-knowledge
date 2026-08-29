@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar_list/op_host/config/ascend950/foreach_pow_scalar_list_binary.json
     role: implementation
 created_at: "2026-08-25T16:03:55Z"
-updated_at: "2026-08-25T16:03:55Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -636,7 +636,7 @@ Host 不把多个 Tensor 物化为一块连续数据，而只在 POD 中描述�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持；`ascend910b` binary/config | 公开支持；`ascend910_93` binary/config | 公开 README 与 ACLNN 文档明确不支持；虽有 `ascend950` OpDef/config/CMake 接线，构成发布冲突，未生成正式卡 |
 | Host/Launcher | 共用 `ForeachCommonTiling`、key 1–4、POD 与最多 50 核 | 同 A2 | 内部接线仍指向同 Host，但不得据此宣称公开 ACLNN 支持 |
@@ -651,7 +651,7 @@ Host 不把多个 Tensor 物化为一块连续数据，而只在 POD 中描述�
 - INT32 路线把 INT64 exponent 窄化到 INT32；公开值域保证幅值可表示，但负指数、整数 Power 溢出和特殊底数没有算子自定义处理，最终数值边界取决于固定仓外的 `Power<int,false>` primitive。
 - FP16 先把 FP32 exponent 窄化为 half；BF16 保持 FP32 计算并以 `CAST_RINT` 回写。`Power` primitive 内部算法、临时 UB 的精确布局、特殊值和误差界属于 AscendC 库边界，固定仓不可见。
 - 自动生成 ACLNN bridge、连续化节点、executor/launcher、32 B 保留 workspace 的框架用途及 launch 错误包装固定仓不可见。
-- A5 公开文档明确“不支持”，不得因 `ascend950` 实现接线存在而发布 `_a5` 卡。
+- 950 公开文档明确“不支持”，不得因 `ascend950` 实现接线存在而发布 `_950` 卡。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -660,7 +660,7 @@ Host 不把多个 Tensor 物化为一块连续数据，而只在 POD 中描述�
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `foreach/foreach_pow_scalar_list/docs/aclnnForeachPowScalarList.md` | 两段式原型、产品支持表、参数/错误表 | 公开 API、A2/A3 支持、A5 不支持、dtype/shape/连续性约束 |
+| 入口声明/约束 | `foreach/foreach_pow_scalar_list/docs/aclnnForeachPowScalarList.md` | 两段式原型、产品支持表、参数/错误表 | 公开 API、A2/A3 支持、950 不支持、dtype/shape/连续性约束 |
 | 入口声明/约束 | `foreach/foreach_pow_scalar_list/README.md` | 产品支持、公式、参数表 | 语义和第二份平台冲突证据 |
 | 入口实现 | `foreach/foreach_pow_scalar_list/op_host/foreach_pow_scalar_list_def.cpp` | `ForeachPowScalarList`、`OP_ADD` | dtype 映射、AutoContiguous、平台注册 |
 | Host/Tiling/Launcher | `foreach/foreach_utils/op_host/foreach_infershape.cpp` | `InferShape4ForeachCommon/InferDataType4ForeachCommon` | 图推导的输出 shape/dtype |
@@ -674,7 +674,7 @@ Host 不把多个 Tensor 物化为一块连续数据，而只在 POD 中描述�
 | 构建接线 | `foreach/foreach_pow_scalar_list/op_host/CMakeLists.txt` | `add_modules_sources(... ACLNNTYPE aclnn ...)` | Host/ACLNN 生成接线与 foreach_utils 依赖 |
 | 构建接线 | `foreach/foreach_pow_scalar_list/op_host/config/ascend910b/foreach_pow_scalar_list_binary.json` | `op_list` | A2 四个 dtype binary |
 | 构建接线 | `foreach/foreach_pow_scalar_list/op_host/config/ascend910_93/foreach_pow_scalar_list_binary.json` | `op_list` | A3 四个 dtype binary |
-| 构建接线 | `foreach/foreach_pow_scalar_list/op_host/config/ascend950/foreach_pow_scalar_list_binary.json` | `op_list` | A5 内部四 dtype binary 信号；与公开不支持结论冲突，不能用于发布 |
+| 构建接线 | `foreach/foreach_pow_scalar_list/op_host/config/ascend950/foreach_pow_scalar_list_binary.json` | `op_list` | 950 内部四 dtype binary 信号；与公开不支持结论冲突，不能用于发布 |
 
 ### 实现复用检查
 
@@ -685,4 +685,11 @@ Host 不把多个 Tensor 物化为一块连续数据，而只在 POD 中描述�
 | workspace/内存 | workspace 固定保留 32 B 且 body 不用；非 BF16 4U，BF16 40U | Queue depth=2、BF16 slot=9U、Power reserve 和 Host 对齐不能漏算 | `RunBigKernelTiling/DivideUbMemory6/Init` |
 | 同步 | 跨 MTE/Vector 依赖 Queue；BF16 Vector 链另有 `PIPE_V` barrier | tensor/slot 在消费和 `FreeTensor` 前不可覆盖 | `CopyIn/ComputeAndCopyOut/CopyPerCast/ComputerPerCast` |
 | 精度与尾块 | FP16/FP32/INT32 直接 Power；BF16 升 FP32、RINT 回写；两层 remainder | exponent cast、有效 `dataCount`、tail exact-byte copy 不得改变 | `InnerComputer/CopyIn/ComputeAndCopyOut` |
-| 失败边界 | Host 校验失败返回 `GRAPH_FAILED`；未知 key 无 body；A5 冲突不发布 | 不得把未知 key、零 U 或 A5 内部接线当成可用 fallback | `CheckOpInfo`、entry router、公开产品支持表 |
+| 失败边界 | Host 校验失败返回 `GRAPH_FAILED`；未知 key 无 body；950 冲突不发布 | 不得把未知 key、零 U 或 950 内部接线当成可用 fallback | `CheckOpInfo`、entry router、公开产品支持表 |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Power（数学计算）](../../../../apis/simd_api/adv_api/math_compute/power_interface/power.md)（`related`）：ForeachPowScalarList 的 Device 语义是“Kernel 调用 `Power<T,false>` 计算 `y_i［j］=x_i［j］^{e_i}`。”；Power 页定义“按元素做幂运算（dst = src0 ^ src1）”并提供 Tensor+标量重载，后者是每个列表元素 tile 的直接计算原语。
+- [ScalarList](../../../../apis/utils_api/prototype_register_management/op_param_def/scalar_list.md)（`related`）：ForeachPowScalarList 的 ABI 写明“`scalars` 为与列表等长的 `FLOAT32/INT64` ScalarList”；ScalarList 页定义“配置该参数后，自动生成的单算子API（aclnnxxx）接口中，输入类型为aclScalarList类型。”，后者解释 ACLNN bridge 如何暴露前者指数列表输入。
+<!-- cannbot:related:end -->

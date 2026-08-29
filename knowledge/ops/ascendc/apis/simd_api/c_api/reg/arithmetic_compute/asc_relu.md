@@ -26,6 +26,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscRelu](../../vector_compute/asc_relu.md)（`related`）：Reg AscRelu 对寄存器数据执行相同激活，而 Vector AscRelu 直接处理 UB，按数据驻留位置选型。
-- [Relu](../../../basic_api/reg_vector_compute/basic_arithmetic/relu.md)（`same_topic`）：焦点处理Reg Relu 的负值清零及跨 API 实现；AscRelu正文界定“根据mask对源操作数src按元素进行relu操作，将结果写入目的操作数dst”。候选保持 ReLU/PReLU/LeakyReLU 语义或给出同一算子骨架，只改变 API 层或负半轴策略。
+- [AscRelu](../../vector_compute/asc_relu.md)（`same_topic`）：按元素做线性整流Relu，计算公式如下：；根据mask对源操作数src进行按元素relu操作，将结果写入目的操作数dst。两页实现相同逐元素 ReLU 任务，分别描述 LocalTensor 向量接口与 Reg mask 接口，能直接支撑编程形态选型。
 <!-- cannbot:related:end -->

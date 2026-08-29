@@ -22,9 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__bfloat162bfloat16_rd](_bfloat162bfloat16_rd.md)（`related`）：__float2bfloat16_rd 与 focal 都采用 CAST_FLOOR 并受全局饱和模式影响，前者完成 float 降精度，后者在 bfloat16 域执行同模式取整。
-- [__float2bfloat16_rna](_float2bfloat16_rna.md)（`related`）：rna 使用 CAST_ROUND，与 rd 的向下取整在边界值上结果不同。
-- [__float2bfloat16_ru](_float2bfloat16_ru.md)（`related`）：ru 使用 CAST_CEIL，与 rd 的 CAST_FLOOR 直接给出向上/向下包围值。
-- [__float2bfloat16](_float2bfloat16.md)（`same_topic`）：__float2bfloat16 的核心契约是“遵循CAST_RINT模式，将浮点数转换为bfloat16精度，返回转换后的值”；__float2bfloat16_rd 补充“遵循CAST_FLOOR模式，将浮点数转换为bfloat16精度，返回转换后的值”。
-- [__float2bfloat16_rd_sat](_float2bfloat16_rd_sat.md)（`same_topic`）：《__float2bfloat16_rd》明确“遵循CAST_FLOOR模式，将浮点数转换为bfloat16精度，返回转换后的值。”；它与《__float2bfloat16_rd_sat》的“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_FLOOR模式，返回转换后的值。”在实际调用参数、数据流或结果校验上直接衔接。
+- [__float2bfloat16_rd_sat](_float2bfloat16_rd_sat.md)（`same_topic`）：“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_FLOOR模式，返回转换后的值。”与“遵循CAST_FLOOR模式，将浮点数转换为bfloat16精度，返回转换后的值。”提供双方正文证据。两端均是 float 到 bfloat16 的向下取整转换，rd_sat 仅增加饱和处理；并列阅读可确认溢出时是否需要饱和而不改变基本舍入方向。
 <!-- cannbot:related:end -->

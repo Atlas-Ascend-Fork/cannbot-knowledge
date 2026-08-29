@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__bfloat162half_rd_sat](_bfloat162half_rd_sat.md)（`same_topic`）：RD_SAT 为同一饱和转换提供向下舍入，与 RZ 在负值上边界不同。
-- [__bfloat162half_rn_sat](_bfloat162half_rn_sat.md)（`same_topic`）：RN_SAT 保持饱和转换，仅改为最近偶数舍入，供与 RZ_SAT 比较普通边界值。
-- [__bfloat162half_rna_sat](_bfloat162half_rna_sat.md)（`same_topic`）：__bfloat162half_rna_sat 与《__bfloat162half_rz_sat》的实质衔接是：这些接口都把 bfloat16 按 RNA 窄化到 half；non-SAT、其他舍入的 SAT 变体和 AscBfloat162Half 直接对照饱和及特殊值。
-- [__bfloat162half_ru_sat](_bfloat162half_ru_sat.md)（`same_topic`）：RU_SAT 为同一饱和转换提供向上舍入，与 RZ_SAT 形成上下界选型。
-- [__bfloat162half_rz](_bfloat162half_rz.md)（`same_topic`）：__bfloat162half_rz 与《__bfloat162half_rz_sat》的实质衔接是：这些接口都把 bfloat16 窄化为 half，RZ 的 SAT/non-SAT、RD/RN/RNA/RU 和 AscBfloat162Half 直接对照舍入及特殊值。
+- [__bfloat162half_rz](_bfloat162half_rz.md)（`same_topic`）：函数原型：half __bfloat162half_rz(const bfloat16_t x)；函数原型：half __bfloat162half_rz_sat(const bfloat16_t x)。两接口具有相同 bfloat16_t 输入、half 输出和 rz 舍入核心，右侧仅增加饱和边界处理，是同一精度转换操作的模式变体。
 <!-- cannbot:related:end -->

@@ -27,13 +27,3 @@ platforms: ['950']
 - 多流水同步
 
     在TPipe-TQue框架编程范式下，框架能够自动插入部分多流水同步，以解决写后读（WAR,Write‑After‑Read）和读后写（RAW,Read‑After‑Write）两类数据依赖，具体原理参考TPipe-TQue框架数据依赖与同步机制。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataSyncBarrier](data_sync_barrier_isasi.md)（`related`）：需要更广数据可见性时使用 DataSyncBarrier，代价和范围均更大。
-- [PipeBarrier](pipe_barrier_isasi.md)（`related`）：同流水排空使用 PipeBarrier，不应误用跨流水 event。
-- [SetFlag/WaitFlag](set_flag_wait_flag_isasi.md)（`related`）：明确 producer/consumer 流水时 flag/wait 建立定向依赖。
-- [关键特性说明](../inter_core_sync/key_features.md)（`related`）：核间同步特性作用于不同核，不能用核内机制替代。
-- [核内同步能力概述](intra_core_sync_overview.md)（`same_topic`）：概览解释 key features 中 event、barrier、mutex 的同步域和适用条件。
-<!-- cannbot:related:end -->

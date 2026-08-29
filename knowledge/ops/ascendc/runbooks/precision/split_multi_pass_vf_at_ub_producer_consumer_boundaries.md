@@ -457,15 +457,10 @@ buffer 初始化也必须同步改变；slot 按完整 vector load 的访问宽�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [VF调用](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`exemplifies`）：分阶段 VF 在同一 wrapper 回读 UB 会产生尺寸相关漂移，案例要求在 UB producer/consumer 边界拆分多次 asc_vf_call。
-- [ACL 507035 — 完整 a0 统计缓冲超过 UB](../compilation/ub_slices_reduction_axis_scratch_buffers_507035.md)（`related`）：完整 scratch 改多 pass 后需显式保存中间统计并同步 producer/consumer。
-- [AR 跨块循环放在 __simd_vf__ 只执行首块](simd_vf_chunk_loop_must_be_driven_by_aicore_wrapper.md)（`related`）：wrapper 拆分还必须覆盖 VF 间的 UB producer/consumer RAW 边界；该卡给出拆 wrapper 并在调用间加 PIPE_V barrier 的验证证据。
-- [AR 输出张量未初始化导致 Softmax 部分用例错](softmax_ar_output_buffer_must_be_initialized_from_input.md)（`related`）：拆分 source/destination helper 后，跨 pass 的 UB 写后读必须通过独立 wrapper 和 PIPE_V 边界完成，避免把另一个 RAW 故障误判为未初始化输出。
-- [MTE2跨流水未建依赖导致UB读到上次调用残值](direct_mte_slot_reuse_needs_bidirectional_hard_events.md)（`related`）：多 VF pass 复用固定 UB 状态时，每个 producer/consumer 边界都要完成，hard event 是跨 MTE 的具体实现。
-- [Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差](reduce_lane0_must_be_broadcast_before_vector_normalization.md)（`related`）：多阶段 VF 写回并读 UB 时应拆分 wrapper 并加 PIPE_V barrier，与本卡 max/sum 两次 slot 交接的隔离策略一致。
-- [Reg 固定地址跨块累加需逐 VF PipeBarrier](fixed_address_vf_accumulator_needs_per_call_barrier.md)（`same_topic`）：多次 VF 调用复用固定 UB 累加槽时，每次 call 之间需 barrier，否则前后 pass 会发生读写竞争。
-- [Reg::Reduce 跨 chunk 覆写导致规约失真](reg_reduce_per_chunk_result_must_accumulate_explicitly.md)（`same_topic`）：拆成多 chunk 后每段归约结果必须显式累加，否则只保留最后一段；是 producer/consumer 边界的数据语义。
-- [RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽](regtensor_cross_chunk_state_should_persist_in_ub_slot.md)（`same_topic`）：跨 chunk 状态不能依赖 RegTensor 跨 VF 调用存活，必须落到 UB slot；该卡给出状态持久化机制。
-- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`same_topic`）：VF 归约落 UB 后 GetValue 读取陈旧标量 与《Reg 同 wrapper 回读 UB 引发尺寸相关漂移》的实质衔接是：Reg Reduce 经 StoreAlign 落 UB 后，PIPE_V 不保证 Scalar GetValue 可见；相关跨 VF 累加、barrier、GetValue 陈旧和 SoftMax 卡共同支持把归约与 lane0 广播保留在同一 VF。
-- [分块 wrapper 与 VF callee 不可重复叠加 offset](wrapper_and_vf_callee_must_not_double_apply_chunk_offset.md)（`same_topic`）：wrapper 与 VF 若都推进 chunk offset 会重复偏移；该卡明确拆分后地址所有权只能有一处。
+- [AR 跨块循环放在 __simd_vf__ 只执行首块](simd_vf_chunk_loop_must_be_driven_by_aicore_wrapper.md)（`related`）：把三次 pass 拆成三个完整的 `__simd_vf__` 函数和三个独立的 `asc_vf_call` wrapper。；将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。；两卡共同要求用 AICore wrapper 提供 VF pass 与 chunk 的显式提交边界。
+- [Reg 固定地址跨块累加需逐 VF PipeBarrier](fixed_address_vf_accumulator_needs_per_call_barrier.md)（`related`）：调用之间由 `PipeBarrier<PIPE_V>` 建立可见性；把“一个 VF 内循环所有 chunk”改成“一个 VF 只处理一个 chunk”；在 `__aicore__` 的 chunk 循环中，每次调用后执行 `PipeBarrier<PIPE_V>()`，再进入下一块。；目标卡把焦点的 pass 间 barrier 规则具体化为固定 UB 累加地址的逐 chunk 调用边界。
+- [Reg::Reduce 跨 chunk 覆写导致规约失真](reg_reduce_per_chunk_result_must_accumulate_explicitly.md)（`related`）：审查多 pass Reg kernel 时，画出每个 `asc_vf_call` 的 UB 读写集合；每个 chunk 先 Reduce 到临时寄存器 `tmp` 的 lane 0，再用仅 lane 0 有效的 `scalarMask` 对运行累加器执行 `Max` 或 `Add`。；目标卡补足焦点审查流程中每个 chunk 的规约结果必须显式合并这一数值合同。
+- [RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽](regtensor_cross_chunk_state_should_persist_in_ub_slot.md)（`related`）：跨 wrapper 只传小标量时，使用 VL 大小的 UB slot，避免 `LoadAlign` 越过分配范围。；running max/sum 每个 VL 都 `LoadAlign(slot) → Reduce → Max/Add → StoreAlign(slot)`；目标卡细化焦点跨 wrapper 标量槽为逐 chunk 持久状态的生产消费协议。
+- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`related`）：`PipeBarrier<PIPE_V>` 只约束 Vector pipe 内部顺序；vector store 尚未排空时 load 可能读到旧 UB 数据。前者定位 V→UB→Scalar 的可见性缺口并要求避免 GetValue 交接，后者定位同一 wrapper 内 VEC_STORE→VEC_LOAD 的排空缺口并通过拆分 wrapper 插入 barrier；两卡共同界定 barrier 必须放在可表达的生产者消费者边界。
+- [分块 wrapper 与 VF callee 不可重复叠加 offset](wrapper_and_vf_callee_must_not_double_apply_chunk_offset.md)（`related`）：第三个 pass 重新计算 `exp(x-max)`，不再回读第二个 pass 写出的整行指数 UB。；固定单一寻址责任：wrapper 传已按 chunk 前移的 `fAddr`/`xAddr`；callee 删除 `offset` 参数，对收到的指针直接 `LoadAlign`。；拆分 wrapper 后，目标卡给出每块地址只前移一次的必要寻址合同。
 <!-- cannbot:related:end -->

@@ -22,9 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [废弃接口](../../../appendix/deprecated_interface.md)（`related`）：asc_get_ar_spr (废弃) 与《废弃接口》的实质衔接是：asc_get_ar_spr 已明确由 AscGetSqueezeStatus 替代；clear AR、旧 SqueezeWithStatus/SqueezeV2 和废弃接口表解释该特殊寄存器状态的生产、清理与迁移。
-- [AscGetSqueezeStatus](asc_get_squeeze_status.md)（`same_topic`）：废弃 asc_get_ar_spr 卡明确要求改用 AscGetSqueezeStatus；两者都读取 squeeze 操作写入 AR 的有效数据长度，后者是当前接口。
-- [AscSqueezeV2](../reg/compare_and_select/asc_squeeze_deprecated.md)（`same_topic`）：asc_get_ar_spr (废弃) 与《AscSqueezeV2》的实质衔接是：asc_get_ar_spr 已明确由 AscGetSqueezeStatus 替代；clear AR、旧 SqueezeWithStatus/SqueezeV2 和废弃接口表解释该特殊寄存器状态的生产、清理与迁移。
-- [AscSqueezeWithStatus](../reg/compare_and_select/asc_squeeze_with_status_deprecated.md)（`same_topic`）：asc_get_ar_spr (废弃) 与《AscSqueezeWithStatus》的实质衔接是：asc_get_ar_spr 已明确由 AscGetSqueezeStatus 替代；clear AR、旧 SqueezeWithStatus/SqueezeV2 和废弃接口表解释该特殊寄存器状态的生产、清理与迁移。
-- [asc_clear_ar_spr](../reg/system_variables_access/asc_clear_ar_spr_deprecated.md)（`same_topic`）：asc_get_ar_spr (废弃) 与《asc_clear_ar_spr》的实质衔接是：asc_get_ar_spr 已明确由 AscGetSqueezeStatus 替代；clear AR、旧 SqueezeWithStatus/SqueezeV2 和废弃接口表解释该特殊寄存器状态的生产、清理与迁移。
+- [AscGetSqueezeStatus](asc_get_squeeze_status.md)（`related`）：该接口已废弃，请使用asc_get_squeeze_status实现此功能。 读取指定特殊寄存器的值。；读取squeeze操作后保存至AR特殊寄存器的有效数据长度值，用于配合asc_squeeze_and_storeunalign接口获取已连续搬出的有效数据量。；废弃接口明确把 AscGetSqueezeStatus 指定为替代实现；新接口给出其读取 squeeze 有效数据长度的现行合同。
 <!-- cannbot:related:end -->

@@ -22,10 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [kernel 源码改动未生效因 binary 缓存](../../../../runbooks/compilation/kernel_binary_cache_printf_hash_toggle.md)（`exemplifies`）：该卡处理 kernel binary 缓存旧代码而非 ICache 指令预取；二者可按“重启后是否仍旧 binary”分流。
-- [删 smalle slim TU 致 e≤32 decode icache 税](../../../../runbooks/performance/smalle_slim_tu_e_32_decode_icache.md)（`exemplifies`）：该性能卡用 TU 规模 A/B 和 profile 判断 ICache 压力，能验证预加载是否解决真实前端瓶颈。
-- [AscGetIcachePreloadStatus](../../c_api/cache_ctrl/asc_get_icache_preload_status.md)（`related`）：ICachePreLoad 是 Basic API 侧对应的预加载发起接口，与状态查询组成另一套完整调用链。
-- [AscIcachePreload](../../c_api/cache_ctrl/asc_icache_preload.md)（`same_topic`）：C API asc_icache_preload 与 C++ ICachePreLoad 提供相同指令缓存预取能力。
-- [GetICachePreloadStatus](get_i_cache_preload_status_isasi.md)（`same_topic`）：发起 ICachePreLoad 后用 GetICachePreloadStatus 查询完成状态，二者构成异步预加载闭环。
-- [系统缓存概述（缓存控制）](system_cache_overview.md)（`same_topic`）：系统缓存概述（缓存控制） 与《ICachePreLoad》的实质衔接是：系统缓存由 DCache/ICache 预取、DCache 清理失效、L2 hint 与 DCCI 共同控制；一致性错误卡给出清理接口必须指定目标 tensor 的调用约束。
+- [GetICachePreloadStatus](get_i_cache_preload_status_isasi.md)（`related`）：“获取Instruction Cache预加载状态，查询当前指令Cache的预加载配置是否生效。”与“约束：与GetICachePreloadStatus配合使用。头文件：basic_api/kernel_operator_cache_intf.h。”分别给出两端正文事实；ICachePreLoad 发起指令预加载，GetICachePreloadStatus 查询该配置是否生效，构成同一预加载操作的提交与状态确认链。
 <!-- cannbot:related:end -->

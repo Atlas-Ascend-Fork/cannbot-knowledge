@@ -26,11 +26,3 @@ platforms: ['950', a2, a3]
 -   false：Tp不是数组类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [EnableIf](enable_if.md)（`related`）：enable_if 可直接消费 is_integral 结果约束模板重载，连接判定与编译期分派。
-- [is_floating_point](is_floating_point.md)（`related`）：is_floating_point 与 is_integral 是数值模板分派的互补判据，可避免把整数和浮点实现落入同一精度/指令路径。
-- [IntegralConstant](integral_constant.md)（`same_topic`）：is_integral 的 value/type 通过 integral_constant 形式暴露，是在模板条件中消费结果的基础。
-<!-- cannbot:related:end -->

@@ -192,13 +192,3 @@ std::tuple<int64_t, int64_t, int64_t> calc_softmax_tiling_params(
 ## 误诊
 
 “UB padding 未清零”是一个可检验但被上板结果否定的假设：清零后失败数和坏值模式不变。真正有区分度的改动是只改变 host tiling 的非尾 32B 对齐，随后所有原失败用例稳定通过。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopy尾chunk非32B对齐触发ERR99999](../compilation/datacopy_chunk_32b_err99999.md)（`related`）：《DataCopy尾chunk非32B对齐触发ERR99999》说明Ascend C DataCopy 在 UB↔GM 方向要求 count*sizeof(T) 为 32 字节对齐，否则搬运量对 32B 向下取整。当纯搬运算子尾 chunk 的实际元素数不满足 32B 对齐时，UB→GM 写方向触发 ERR99999、GM→UB 读方向静默丢尾部数据。判别方法：尾部元素数*sizeof(T)%32!=0 即命中。；《多核非对齐 DataCopyPad 写回边界互相覆盖》说明相邻核以非 32B 对齐列块执行 DataCopyPad GM 写回时，尾块 RMW 可覆盖邻核边界数据；按 dtype 的 32B 粒度对齐非尾 colTile 可消除竞态。。二者在DataCopy尾chunk错误由有效字节数非32B倍数触发，DataCopyPad的逐行、stride、padding和最小DMA卡给出修复边界上存在可执行的直接衔接。
-- [合并尾块的非 32B 行导致 PathB 数据损坏](datacopypad_rows_must_keep_32_byte_block_length.md)（`related`）：两卡都定位到非 32B 行/列块边界破坏：本卡是多核相邻 GM RMW 覆盖，目标卡是合并尾块破坏行的块长度；共同修复原则是保持物理 32B 边界。
-- [多块 DataCopyPad dst 基址非 32B 对齐崩溃](../compilation/datacopypad_dst_32b.md)（`related`）：单核每块 dst 基址对齐解决 MTE 崩溃，多核非对齐写回还需避免相邻核 RMW 边界覆盖。
-- [多核非对齐切分](../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/multi_core_unaligned_split.md)（`related`）：指南给出多核非对齐切分时首尾和核间边界的分配方式，直接解释如何避免相邻核共享一个 32B GM 写回块。
-- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](repeated_overwrite_updates_need_ordered_ub_merge.md)（`related`）：候选展示多核 RMW 在共享边界互相覆盖，本卡展示重复随机写 winner 不稳定。
-<!-- cannbot:related:end -->

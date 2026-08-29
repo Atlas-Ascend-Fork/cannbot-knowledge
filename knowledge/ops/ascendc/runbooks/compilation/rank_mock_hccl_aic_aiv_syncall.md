@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.synchronization"]
 status: stable
 sources: []
 created_at: "2026-08-18T07:36:25Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 ---
 
@@ -61,13 +61,5 @@ atcoss `all_gather_quant_matmul` kernel 是 `KERNEL_TYPE_MIX_AIC_1_2`（1 AIC : 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [HCCL Context](../../apis/simd_api/adv_api/hccl_communication/hccl_context/hccl_context.md)（`exemplifies`）：单 rank mock HCCL 致 AIC+AIV SyncAll 死锁 与《HCCL Context》的实质衔接是：单 rank mock 未提供真实 HCCL 参与者，SyncAll 无法闭合；HCCL context/commit/wait 和核间同步共同支持判别。
-- [HCCL Kernel侧接口](../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/hccl_kernel.md)（`exemplifies`）：焦点处理HCCL Kernel 的初始化、任务提交查询等待和资源回收；单 rank mock HCCL 致 AIC+AIV SyncAll 死锁正文界定“atcoss BlockPrologueAllGather 等 AIC+AIV 通算融合 kernel 在单 rank mock HCCL context 下执行超时，mock 不提供 SyncAll 跨核配对所需的状态标志写入流程致 Re”。候选承担 HCCL 使用正文中的 Init、Iterate、Commit/Query/Wait、Finalize 或 context 设置，runbook 则复现同一 HCCL 同步失效。
-- [HCCL使用说明](../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/hccl_usage.md)（`exemplifies`）：单 rank mock HCCL 致 AIC+AIV SyncAll 死锁 与《HCCL使用说明》的实质衔接是：单 rank mock 未提供真实 HCCL 参与者，SyncAll 无法闭合；HCCL context/commit/wait 和核间同步共同支持判别。
-- [HCCL通信类](../../apis/simd_api/adv_api/hccl_communication/hccl_communication.md)（`exemplifies`）：HCCL通信类 与《单 rank mock HCCL 致 AIC+AIV SyncAll 死锁》的实质衔接是：HCCL 通信类的上下文、kernel/host tiling、使用流程与 mock 死锁诊断共同界定通信对象从配置到执行的契约。
-- [SetHcclContext](../../apis/simd_api/adv_api/hccl_communication/hccl_context/set_hccl_context.md)（`exemplifies`）：单 rank mock HCCL 致 AIC+AIV SyncAll 死锁 与《SetHcclContext》的实质衔接是：单 rank mock 未提供真实 HCCL 参与者，SyncAll 无法闭合；HCCL context/commit/wait 和核间同步共同支持判别。
-- [SyncAll](../../apis/simd_api/basic_api/sync_control/inter_core_sync/sync_all.md)（`exemplifies`）：单 rank mock HCCL 致 AIC+AIV SyncAll 死锁 与《SyncAll》的实质衔接是：单 rank mock 未提供真实 HCCL 参与者，SyncAll 无法闭合；HCCL context/commit/wait 和核间同步共同支持判别。
-- [核间同步能力概述](../../apis/simd_api/basic_api/sync_control/inter_core_sync/inter_core_sync_overview.md)（`exemplifies`）：单 rank mock HCCL 致 AIC+AIV SyncAll 死锁说明atcoss BlockPrologueAllGather 等 AIC+AIV 通算融合 kernel 在单 rank mock HCCL context 下执行超时，mock 不提供 SyncAll 跨核配对所需的状态标志写入流程致 ReadStatus/SyncAll 死锁；该 mock 路线 banned，分布式融合 kernel 须用真实多卡 HCCL。
-- [A5 mix(1,2) mode=2 漏 AIV1 flag 致全零](../precision/a5_mix_1_2_mode_2_aiv1_flag.md)（`related`）：A5 mix(1,2) mode=2 漏 AIV1 flag 致全零 与《单 rank mock HCCL 致 AIC+AIV SyncAll 死锁》的实质衔接是：mix(1,2) 的 AIC/AIV flag 路由依赖 CrossCoreSet/Wait、kernel type 与组间同步契约；所选卡覆盖同一断链和死锁机制。
-- [AIC和AIV独立运行机制](../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/aic_aiv_independent_execution.md)（`related`）：单 rank mock HCCL 致 AIC+AIV SyncAll 死锁 与《AIC和AIV独立运行机制》的实质衔接是：单 rank mock 未提供真实 HCCL 参与者，SyncAll 无法闭合；HCCL context/commit/wait 和核间同步共同支持判别。
+- [SyncAll](../../apis/simd_api/basic_api/sync_control/inter_core_sync/sync_all.md)（`exemplifies`）：“kernel 内 AIC 核走 `Run()` 的 matmul 路径、AIV 核走 prologue 路径，两者的 `SyncAll<true>()` 需要所有核都到达配对。”；“- 融合算子的全核同步，一次性实现三个核间同步能力（参考CrossCoreSetFlag的关键特性说明）：首先完成单个AI Core内，AIC与所有AIV同步（AIC等AIV）；接着完成多个AI Core间，所有AIC的同步；最后完成单个AI Core内，所有AIV与AIC同步（AIV等AIC）。”。runbook 的单 rank mock 死锁正由 SyncAll 的 AIC/AIV 全核到达和三阶段配对合同解释。
 <!-- cannbot:related:end -->

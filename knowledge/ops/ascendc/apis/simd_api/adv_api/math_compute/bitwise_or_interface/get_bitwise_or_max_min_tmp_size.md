@@ -29,6 +29,6 @@ Kernel侧BitwiseOr接口的计算需要开发者预留 申请临时空间，本�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BitwiseOr](bitwise_or.md)（`same_topic`）：GetBitwiseOrMaxMinTmpSize 与《BitwiseOr》的实质衔接是：该查询只给出 BitwiseOr/MaxMin 类算子的 sharedTmpBuffer 大小，factor 参数与实际 BitwiseOr kernel 调用是分配空间所必需的两端。
-- [GetBitwiseOrTmpBufferFactorSize](get_bitwise_or_tmp_buffer_factor_size.md)（`same_topic`）：GetBitwiseOrTmpBufferFactorSize 与《GetBitwiseOrMaxMinTmpSize》的实质衔接是：factor 查询与 GetBitwiseOrMaxMinTmpSize、BitwiseOr Kernel 是同一 sharedTmpBuffer 契约的固定空间反推、空间边界和实际消费三端。
+- [BitwiseOr](bitwise_or.md)（`related`）：“Kernel侧BitwiseOr接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用。”明确 Host 到 Kernel 的空间参数链；“逐比特对两个输入进行或操作。”定义实际消费该空间的 BitwiseOr 计算。
+- [GetBitwiseOrTmpBufferFactorSize](get_bitwise_or_tmp_buffer_factor_size.md)（`same_topic`）：该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。Kernel侧BitwiseOr接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用。两端分别从已知空间反推元素量与从 shape 求空间范围，共同闭合 BitwiseOr 的 Host Tiling 临时空间规划。
 <!-- cannbot:related:end -->

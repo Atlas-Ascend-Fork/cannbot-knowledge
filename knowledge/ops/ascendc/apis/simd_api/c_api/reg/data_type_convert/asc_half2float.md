@@ -28,8 +28,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscHalf2float](../../vector_compute/asc_half2float.md)（`related`）：两者都将 half 转 float；focal 在 Reg API 中按 VL 的奇偶半段布局展开，vector 版本直接处理内存矢量，适合按数据驻留位置选型。
-- [__low2float](../../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_low2float.md)（`related`）：AscHalf2Float 提供 Reg C API 的 half→float 向量转换，而 __low2float 是 SIMT packed 值的低 lane 标量提取，二者是迁移执行模型时的互补路径。
-- [__half22float2](../../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_half22float2.md)（`same_topic`）：AscHalf2Float说明将half类型数据转换为float类型，无舍入模式。 由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个VL大小的数据分为两部分，根据不同接口选择输入数据索引为奇数的位置或偶数的位置。
-- [__half2float](../../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_half2float.md)（`same_topic`）：AscHalf2Float 与 __half2float 都执行无舍入的 half→float 扩展；前者按 mask 处理 Reg 向量，后者处理单个 SIMT 标量。
+- [AscHalf2float](../../vector_compute/asc_half2float.md)（`same_topic`）：将half类型转化为float类型，无舍入模式。；将half类型数据转换为float类型，无舍入模式。。两卡核心转换均为 half 到 float 且无舍入模式，分别覆盖 A2/A3 的 UB 向量接口与 950 的寄存器接口。
+- [__half2float](../../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_half2float.md)（`same_topic`）：将half类型数据转换为float类型，无舍入模式。；功能：将half类型数据转换为浮点数，返回转换后的值。两页定义相同 half 到 float 转换语义，分别提供 Reg C API 与 SIMT 函数形式，便于按编程模型选接口。
 <!-- cannbot:related:end -->

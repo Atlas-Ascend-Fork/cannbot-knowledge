@@ -90,3 +90,11 @@ Pi0 是面向通用机器人控制的视觉-语言-动作（VLA）模型：基�
 - 离线部署范式 / 平台：[om-atc-offline](../techniques/om_atc_offline.md)、[ascend-310p](../platforms/ascend_310p.md)
 - 跨域：[npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)、[torchair](../../../inference/concepts/frameworks/torchair.md)、[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Flow-Matching Action Expert（流匹配动作专家）](../modules/flow_matching_action_expert.md)（`related`）：架构是「慢系统 VLM 主干（PaliGemma）+ 快系统流匹配动作专家（Gemma）」双流结构，VLM 一次提取多模态前缀 KV cache，动作专家在其上**多步去噪**（默认 `num_steps=10`）输出动作块。；两段在推理流上**解耦**：VLM 计算 image/language prefix KV cache，action expert 在其上多步 denoise。；Pi0 模型页给出慢系统产生 KV cache、快系统执行十步去噪的实例，模块页把同一分界抽象成共享架构合同，二者直接衔接模型理解与实现验证。
+- [OM/ATC 离线静态图推理（310P 部署范式）](../techniques/om_atc_offline.md)（`related`）：**两段 OM 切分**：part1 VLM（`modeling_pi0_vlm.py`，输出 `past_kv_tensor` + `prefix_pad_masks`）+ part2 action expert（`modeling_pi0_action_expert.py`，10 步去噪，循环调用），`run_om_e2e.py` 端到端串联。；Pi0/Pi0.5 不一次性导出完整图，而是拆成 **VLM（part1）** 与 **action expert（part2）** 两段 OM（`docs/manipulation/pi0/infer_with_om/README.md` §2）：；Pi0 模型页给出两段 OM 的具体脚本和中间张量，部署范式页解释相同切分的转换、精度对齐与运行顺序，组成同一 310P 离线部署任务链。
+- [梯度检查点精细化（disable outer suffix checkpoint）](../techniques/gradient_checkpoint_refine.md)（`related`）：机制下放：disable-outer-suffix-checkpoint（单项收益最大）见 ［gradient-checkpoint-refine］(../techniques/gradient_checkpoint_refine.md)；NPU fusion attention 的 Pi0 局部接法（`_repeat_kv_heads` + `_npu_fusion_attention_forward`，实例级 `use_npu_fusion_attention` 开关，不全局 monkey-patch Gemma）同见该页。；关闭这层「外包式」大 checkpoint 后，显存策略仍可控（模型内部细粒度 checkpoint 仍在），但反向计算明显变快——因此是当前收益最直接的一项。；Pi0 模型页把 disable outer suffix checkpoint 列为已验证训练开关，优化页解释关闭外层重复重算而保留细粒度 checkpoint 的机制，连接配置、根因与吞吐复现。
+<!-- cannbot:related:end -->

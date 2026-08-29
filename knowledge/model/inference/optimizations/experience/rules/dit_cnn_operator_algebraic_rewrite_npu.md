@@ -60,3 +60,9 @@ DiT block 内 γ/β 恒为初始 1/0 的 LayerNorm 若紧跟 adaLN 调制（scal
 - `diff 事实`（@4b572b9）：1×1 conv2d 改 matmul；时序 conv 换末轴 + 权重 permute 一次性（维护者 review）。
 - `diff 事实`（@2c45117）：DiT block γ/β=1/0 的 LN+adaLN 折进单次 `npu_layer_norm_eval`，仅 γβ 固定时成立。
 - 溯源下探：[cann-recipes-infer-pr-322-feat-add-sana-video-sample](https://gitcode.com/cann/cann-recipes-infer/merge_requests/322)、[cann-recipes-infer-pr-49-feat-add-wan2-2-i2v-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/49)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [在 NPU 上对含 1×1 卷积的 DiT 做 MXFP 低比特量化 — 卷积当线性算·加载期模块替换 + a4w4 混合精度部分回退 a8w8](dit_mxfp_lowbit_quant_conv_as_linear.md)（`same_topic`）：kernel_size 为 (1,1) 的 conv2d **等价改写为 matmul 比走原生卷积更高效**；把卷积的量化**下沉到加载期的模块替换**：在模型加载时把 `nn.Conv2d(1×1)` 整体换成一个"卷积当线性算"的量化模块；基础规则给出 1×1 卷积到 matmul 的数学等价快路，MXFP 规则补充量化开启后必须在加载期替换模块并关闭 BF16 运行时快路。
+<!-- cannbot:related:end -->

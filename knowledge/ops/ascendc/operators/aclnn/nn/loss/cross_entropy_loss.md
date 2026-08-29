@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:14:13Z"
-updated_at: "2026-08-25T17:14:13Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -73,13 +73,13 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定 Commit 只有一个公开 `aclnnCrossEntropyLoss` 版本。产品表明确支持 Atlas A2/A3，OpDef 为 `ascend910b` 与 `ascend910_93` 注册 AICore 配置，两份 binary config 各提供 BF16/FP32/FP16 key 1000/1001/1002 实例。公开文档虽然列 target INT32/INT64，但非 RegBase OpDef、`CheckInputDtype` 和 Device `GlobalTensor<int64_t>` 三层证据均只接入 INT64；因此本文按实际实现收窄，不把 A5 INT32 支持外推到 A2/A3。
+固定 Commit 只有一个公开 `aclnnCrossEntropyLoss` 版本。产品表明确支持 Atlas A2/A3，OpDef 为 `ascend910b` 与 `ascend910_93` 注册 AICore 配置，两份 binary config 各提供 BF16/FP32/FP16 key 1000/1001/1002 实例。公开文档虽然列 target INT32/INT64，但非 RegBase OpDef、`CheckInputDtype` 和 Device `GlobalTensor<int64_t>` 三层证据均只接入 INT64；因此本文按实际实现收窄，不把 950 INT32 支持外推到 A2/A3。
 
 ## Host/Launcher 执行流程
 
 ### 参数校验与前处理
 
-公开第一段接口负责必需指针、dtype、shape、reduction 与 label smoothing 错误；固定仓未包含自动生成的 ACLNN C++ bridge，其参数连续化和 executor 壳按框架边界标注。算子 Host 的 `Tiling4CrossEntropyLoss` 先用 `IsRegbaseSocVersion` 排除 A5，随后按 `GetTilingAttr`→`CheckInputDtype`→`CheckInputShape`→`GetTilingData`：dtype key 由 input 产生；reduction 非法或 smoothing 越界失败；input 限 FP16/BF16/FP32、target 限 INT64、weight 限 FP32；target 第 0 维必须等于 N，可选 weight 第 0 维必须等于 C。shape rank 的 `[N,C]/[N]/[C]` 检查位于 inference/ACLNN 框架层。
+公开第一段接口负责必需指针、dtype、shape、reduction 与 label smoothing 错误；固定仓未包含自动生成的 ACLNN C++ bridge，其参数连续化和 executor 壳按框架边界标注。算子 Host 的 `Tiling4CrossEntropyLoss` 先用 `IsRegbaseSocVersion` 排除 950，随后按 `GetTilingAttr`→`CheckInputDtype`→`CheckInputShape`→`GetTilingData`：dtype key 由 input 产生；reduction 非法或 smoothing 越界失败；input 限 FP16/BF16/FP32、target 限 INT64、weight 限 FP32；target 第 0 维必须等于 N，可选 weight 第 0 维必须等于 C。shape rank 的 `[N,C]/[N]/[C]` 检查位于 inference/ACLNN 框架层。
 
 ### 参数、Workspace 与生命周期
 
@@ -446,9 +446,9 @@ FP32 直接让 input queue 同时承担计算与输出源，省去 FP16/BF16 所
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持但见独立 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持但见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`，公共非 RegBase Tiling | `ascend910_93`，同 Host/POD | RegBase selector、tuple key与不同 POD |
 | Kernel/资源 | 公共 A2/A3 body/binary | 公共 A2/A3 body/binary | empty/full-load/big-C MicroAPI body，target 支持 INT32/INT64 |
 
@@ -489,3 +489,9 @@ FP32 直接让 input queue 同时承担计算与输出源，省去 FP16/BF16 所
 | 同步 | MTE/V events、PIPE_V、SyncAll | FP32 同区复用必须保留 MTE3_MTE2 | `CopyIn/CopyOut/GetMeanLoss` |
 | 精度与尾块 | FP32中间、16-bit CAST_RINT、DataCopyPad | 有效 len、8192/4096 reduce split | `GetReduce*/cross_entropy_loss_fp32.h` |
 | 失败边界 | Host gate先于 launch | target INT64、未知 key无输出、zloss不写 | `CheckInputDtype/cross_entropy_loss` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CrossEntropyLoss 950 ACLNN 算子知识](cross_entropy_loss_950.md)（`same_topic`）：对每行 logits 做稳定 `log_softmax`，按 class-index target、可选 FP32 weight、`ignoreIndex` 和 label smoothing 产生 loss；同时输出完整 `logProbOut`。公开 zloss 参数/输出当前不生效。；稳定 log-softmax + class-index cross entropy；支持 weight、ignoreIndex、label smoothing 和 none/mean/sum，同时写完整 logProb；公开 zloss 功能当前不支持。。两卡闭合同一 ACLNN CrossEntropyLoss 的稳定 log-softmax、class-index、weight、ignoreIndex、label smoothing 与 logProb 语义，分别给出 A2/A3 和 950 的 Host/Kernel 路线。
+<!-- cannbot:related:end -->

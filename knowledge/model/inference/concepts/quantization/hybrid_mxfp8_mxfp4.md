@@ -11,7 +11,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - '950'
 ---
@@ -88,7 +88,7 @@ MXFP4 路径实现于 `module/quantization/mxfp4.py`：
 
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_inference_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md)「量化策略 / Ascend 950PR/DT / Hybrid MXFP8-MXFP4」（逐模块矩阵 L248-269）+「Benchmark / 950DT」（Flash/Pro 表 L341-370）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`module/quantization/mxfp4.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/module/quantization/mxfp4.py)（已代码核对：`W4A8MxFp4MoEGMMMethod` / `UpGateW4A4DownW4A8MxFp4MoEGMMMethod` / `float4_e2m1fn_x2` / `npu_dynamic_mx_quant`）、[`models/deepseek-v4/utils/mx_quantize.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/utils/mx_quantize.py)（`quantize_mx` L375）、[`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py)（`quant_mode` 注释 L494、`update_kv_quant_settings` 950 float8 分支 L1786-1796）、[`models/deepseek-v4/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/README.md)（`--quant_type w4a8-mx` L140）
-- 溯源（@2c45117）：`5df82b1` support deepseek v4（MR!366，引入 MXFP4 量化路径）；`5ba7598` a5 combine quant
+- 溯源（@2c45117）：`5df82b1` support deepseek v4（MR!366，引入 MXFP4 量化路径）；`5ba7598` 950 combine quant
 
 ## Links
 
@@ -100,3 +100,11 @@ MXFP4 路径实现于 `module/quantization/mxfp4.py`：
 - [compressor](../kernels/compressor.md)
 - [ascend-950](../platforms/ascend_950.md)（原生 FP8 / MXFP4 浮点算力的硬件平台来路）
 - [sana-video](../models/sana_video.md)（MXFP4 `float4_e2m1fn_x2` 的另一用途：SANA DiT 的 `quant_type=a4w4`，`QuantLinear.forward_a4w4`，部分层回退 a8w8；与本页 DeepSeek-V4 MoE W4A8 MXFP4 为不同模型场景）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [EPLB 专家重映射漏搬独立 scale 张量：per-expert 参数清单缺 scale 致权重/scale 失配、静默掉精度](../../runbooks/precision/eplb_remap_drops_independent_scale_tensor.md)（`related`）：专家权重采用**独立 scale 量化布局**：反量化时需要「量化权重张量」与其**独立存放的 scale 张量**成对使用，缺一不可。；｜ MoE ｜ 路由专家 Linear **W4A8（MXFP4）** ｜ 共享专家 Linear W8A8 ｜ — ｜ — ｜；前者规定 EPLB 搬运必须覆盖独立 scale，后者界定 DeepSeek-V4 950 上 MXFP4 路由专家这一具体适用量化域。
+- [Int8 / Hybrid INT8-INT4 (DeepSeek-V4 Atlas A3 Pod)](int8_int4_hybrid.md)（`related`）：二者均区别于 Atlas A3 Pod 的整数路径（见 ［int8-int4-hybrid］(int8_int4_hybrid.md)）：A3 走 Int8/W4A8 整数 + KV C16；950 走 FP8/MXFP8 浮点 + KV C8。；DeepSeek-V4 在 ［atlas-a3］(../platforms/atlas_a3.md) Pod 平台上的两档整数量化方案，二者均以原生 Hybrid FP8-MXFP4 权重为转换起点：。两卡共同完成 DeepSeek-V4 从同一原生权重出发、按 950 与 A3 平台选择浮点或整数量化路线的部署决策。
+- [W4A8C8 (MoE W4A8 + Attention W8A8C8)](w4a8c8.md)（`related`）：焦点卡写明“950PR/DT 的 Hybrid MXFP8-MXFP4 走 **MXFP4 浮点变体**的 W4A8”，候选卡写明“路由专家 Linear **W4A8（MXFP4）**”。焦点指出 950 的 W4A8 是 MXFP4 浮点变体，候选给出路由专家与共享专家的位宽分工，可防止误当整数 INT4。
+<!-- cannbot:related:end -->

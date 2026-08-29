@@ -8,7 +8,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/reduction_operations/ReduceMin_interface/GetReduceMinMaxMinTmpSize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ['950', a2, a3]
 ---
 
@@ -26,7 +26,5 @@ host侧Tiling接口，用于获取ReduceMin接口所需的最大和最小临时�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ReduceMin](reduce_min.md)（`same_topic`）：GetReduceMinMaxMinTmpSize 与《ReduceMin》的衔接是：ReduceMinMax 临时空间查询为 ReduceMin/ReduceMax 归约接口计算最小与最大工作区，属于调用前必须完成的资源契约。
-- [ReduceMin](../../../basic_api/memory_vector_compute/reduction_compute/reduce_min.md)（`same_topic`）：ReduceMin 与《GetReduceMinMaxMinTmpSize》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [ReduceMin接口](reduce_min_interface.md)（`same_topic`）：GetReduceMinMaxMinTmpSize 与《ReduceMin接口》的衔接是：ReduceMinMax 临时空间查询为 ReduceMin/ReduceMax 归约接口计算最小与最大工作区，属于调用前必须完成的资源契约。
+- [ReduceMin](reduce_min.md)（`related`）：“host侧Tiling接口，用于获取ReduceMin接口所需的最大和最小临时空间大小”给出焦点端事实；“临时空间大小通过GetReduceMinMaxMinTmpSize获取。”给出候选端事实。GetReduceMinMaxMinTmpSize 卡定义 Host 侧临时空间预算，ReduceMin 卡明确消费该预算，二者形成 Tiling 计算到 Kernel 调用的参数链。
 <!-- cannbot:related:end -->

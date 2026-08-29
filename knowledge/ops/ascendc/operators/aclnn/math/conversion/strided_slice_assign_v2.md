@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/config/ascend950/strided_slice_assign_v2_binary.json
     role: implementation
 created_at: "2026-08-25T09:33:46Z"
-updated_at: "2026-08-25T09:33:46Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -93,7 +93,7 @@ V[begin[0] + k0*strides[0], ..., begin[r-2] + k(r-2)*strides[r-2], begin[r-1] + 
 
 固定 Commit 只公开 `aclnnStridedSliceAssignV2GetWorkspaceSize` 与 `aclnnStridedSliceAssignV2` 这一版本族。公开产品表明确支持 Atlas A2、A3，且 `ascend910b`、`ascend910_93` 的 OpDef 与 binary config 均有接线；两个 config 对七种数据 dtype 给出相同的专用 binary 列表。`op_host/CMakeLists.txt` 以 `ACLNNTYPE aclnn` 注册 OpDef，仓级 `add_modules_sources` 将其接到 ACLNN OpDef 对象；具体生成的 C API bridge 源文件不在固定仓，按框架边界处理。
 
-公开 ACLNN 文档明确将 Ascend 950PR/950DT 标为不支持，而 README、OpDef 和 `ascend950` binary config 又存在支持信号；依 VV Skill 的平台冲突规则，本卡不覆盖 A5，也不生成 `_a5` 正式卡。
+公开 ACLNN 文档明确将 Ascend 950PR/950DT 标为不支持，而 README、OpDef 和 `ascend950` binary config 又存在支持信号；依 VV Skill 的平台冲突规则，本卡不覆盖 950，也不生成 `_950` 正式卡。
 
 ## Host/Launcher 执行流程
 
@@ -496,7 +496,7 @@ Host 对最后一维 stride 的强制条件把每个外层坐标转化为一段�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开 ACLNN 文档支持；`ascend910b` config 接线 | 公开 ACLNN 文档支持；`ascend910_93` config 接线 | 公开 ACLNN 文档明确不支持；README/OpDef/`ascend950` config 却有实现信号，构成发布冲突，未建卡 |
 | Host/Launcher | 与 A3 共用同一 Tiling/OpDef；对应 binary JSON 内容相同 | 与 A2 共用同一 Tiling/OpDef；对应 binary JSON 内容相同 | 实现目录存在同一 Host/config，但公开 ACLNN gate 阻断发布 |
@@ -504,7 +504,7 @@ Host 对最后一维 stride 的强制条件把每个外层坐标转化为一段�
 
 ## 限制与失败边界
 
-- 公开 ACLNN 只支持 A2/A3；A5 公开文档与实现接线冲突，因此没有 `_a5` 正式卡。
+- 公开 ACLNN 只支持 A2/A3；950 公开文档与实现接线冲突，因此没有 `_950` 正式卡。
 - 自动生成的 ACLNN C API bridge、`AutoContiguous` 的真实物化/回写节点、ACLNN workspace 总公式、`varRef` 到 `var_out` 的原地别名和精确 launcher 符号在固定仓不可见；不可据此推断额外 Kernel。
 - Host 读取平台 UB 大小却不参与 `ubFactor`，Kernel 固定申请 195584 bytes；源码没有 `ubSize>=195584` guard 或低 UB fallback。
 - 公开契约要求所有 stride 为正，但算子 Tiling 仅显式校验最后一维等于 1；非末维零/负 stride 在进入 `CeilDiv` 前没有本地防护，依赖 ACLNN 前置校验，生成式校验源码固定仓不可见。
@@ -522,10 +522,10 @@ Host 对最后一维 stride 的强制条件把每个外层坐标转化为一段�
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `conversion/strided_slice_assign_v2/docs/aclnnStridedSliceAssignV2.md` | 两段式原型、产品支持表、参数/约束 | ACLNN 公开入口、A2/A3 支持、A5 不支持、dtype/rank/stride/确定性 |
+| 入口声明/约束 | `conversion/strided_slice_assign_v2/docs/aclnnStridedSliceAssignV2.md` | 两段式原型、产品支持表、参数/约束 | ACLNN 公开入口、A2/A3 支持、950 不支持、dtype/rank/stride/确定性 |
 | 入口声明/约束 | `docs/zh/context/两段式接口.md` | 两段式接口说明 | workspace/executor 顺序与 executor 不可重复执行 |
-| 入口声明/约束 | `conversion/strided_slice_assign_v2/README.md` | 产品支持与语义 | 算子层 A5 支持信号，与 ACLNN 文档形成冲突 |
-| 入口实现 | `conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_def.cpp` | `ops::StridedSliceAssignV2` | 输入输出、ValueDepend、AutoContiguous、A2/A3/A5 compute-unit 接线 |
+| 入口声明/约束 | `conversion/strided_slice_assign_v2/README.md` | 产品支持与语义 | 算子层 950 支持信号，与 ACLNN 文档形成冲突 |
+| 入口实现 | `conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_def.cpp` | `ops::StridedSliceAssignV2` | 输入输出、ValueDepend、AutoContiguous、A2/A3/950 compute-unit 接线 |
 | 入口实现 | `conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_infershape.cpp` | `InferShape4Elewise`、`InferDataType4SameAsInput` | 输出 shape/dtype 继承 var |
 | Host/Tiling/Launcher | `conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_tiling.h` | `StridedSliceAssignV2TilingData`、compile info | POD 字段与 AIV/UB compile info |
 | Host/Tiling/Launcher | `conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_tiling.cpp` | `Adjust*`、`CheckInputShape`、`Tiling4*`、`TilingPrepare4*` | 索引归一化、校验、分核、key、POD、workspace |
@@ -537,7 +537,7 @@ Host 对最后一维 stride 的强制条件把每个外层坐标转化为一段�
 | POD 生成 | `scripts/util/tiling_data_def_build.py` | `gen_tiling` | packed Device POD、字段顺序和 `GET_TILING_DATA` 生成 |
 | 构建接线 | `conversion/strided_slice_assign_v2/op_host/config/ascend910b/strided_slice_assign_v2_binary.json` | `op_list` | A2 七种 dtype binary |
 | 构建接线 | `conversion/strided_slice_assign_v2/op_host/config/ascend910_93/strided_slice_assign_v2_binary.json` | `op_list` | A3 七种 dtype binary |
-| 构建接线 | `conversion/strided_slice_assign_v2/op_host/config/ascend950/strided_slice_assign_v2_binary.json` | `op_list` | A5 实现接线冲突信号，不作为公开支持证明 |
+| 构建接线 | `conversion/strided_slice_assign_v2/op_host/config/ascend950/strided_slice_assign_v2_binary.json` | `op_list` | 950 实现接线冲突信号，不作为公开支持证明 |
 
 ### 实现复用检查
 
@@ -549,3 +549,9 @@ Host 对最后一维 stride 的强制条件把每个外层坐标转化为一段�
 | 同步 | 每 chunk 严格 MTE2→MTE3、MTE3→下一 MTE2 | 单缓冲未等写出完成不得覆盖；无跨核共享/atomic | `KernelStridedSliceAssignV2::Process` |
 | 精度与尾块 | 所有 dtype 都是等字节复制；64-bit 用 int32 视图；尾部按实际 bytes | 64-bit GM offset 必须乘 2，blockLen 必须仍为 `copyNum*8`；不得引入 cast/round | `KernelStridedSliceAssignV2::Init/Process` |
 | 失败边界 | rank/shape/last-stride/core/UB-positive 失败均阻断 launch；未知 key 无输出 | 不得假设非末维 stride、axes 范围、空 Tensor 或低 UB fallback 已在本地实现 | `Tiling4*`、`TilingPrepare4*`、entry key guard |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ValueDepend](../../../../apis/utils_api/prototype_register_management/op_param_def/value_depend.md)（`related`）：OpDef 对所有输入、输出标记 `AutoContiguous()`；`begin/end/strides/axes` 同时标记 `ValueDepend(REQUIRED)`，使 Tiling 在 Host 侧取得常量值。；标识该输入是否为“数据依赖输入”，数据依赖输入是指在Tiling/InferShape等函数实现时依赖该输入的具体数据。该输入数据为host侧数据，开发者在Tiling函数/InferShape函数中可以通过TilingContext类的GetInputTensor/InferShapeContext类的GetInputTensor获取这个输入数据。。算子卡实际把 begin/end/strides/axes 声明为 ValueDepend(REQUIRED)，API 卡解释该声明使 Host Tiling/InferShape 能读取输入具体值，形成注册到 Host 消费的合同。
+<!-- cannbot:related:end -->

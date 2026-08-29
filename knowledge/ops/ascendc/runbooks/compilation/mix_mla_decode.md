@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.pipeline", "topic.programming_mod
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 aliases: ["mix_kernel"]
 ---
@@ -15,16 +15,16 @@ aliases: ["mix_kernel"]
 
 ## 现象
 
-在 Ascend950 (A5/DAV_3510) CANN 9.1.0 上对 `mla_prolog_quant_d` (DeepSeek V3.2 MLA Prolog decode 非量化) 算子按 Mix合图 (CV 融合) 流程优化：用 `pypto.set_pass_options(sg_set_scope=5001)` 与 `sg_set_scope=-1` 包裹 `mla_prolog_quant_compute` 循环体（Matmul_qa(C) → RmsNorm_qa(V) → Matmul_qb(C) → RoPE(V) 等多次 CV 交替），运行编译。默认 timeout 编译被 shell 终止；放宽门槛重试仍未完成。随后做 4 次系统性降复杂度实验，全部超时。
+在 Ascend950 (950/DAV_3510) CANN 9.1.0 上对 `mla_prolog_quant_d` (DeepSeek V3.2 MLA Prolog decode 非量化) 算子按 Mix合图 (CV 融合) 流程优化：用 `pypto.set_pass_options(sg_set_scope=5001)` 与 `sg_set_scope=-1` 包裹 `mla_prolog_quant_compute` 循环体（Matmul_qa(C) → RmsNorm_qa(V) → Matmul_qb(C) → RoPE(V) 等多次 CV 交替），运行编译。默认 timeout 编译被 shell 终止；放宽门槛重试仍未完成。随后做 4 次系统性降复杂度实验，全部超时。
 
 ## 适用场景
 
 - **工程形态**：kernel 直调（PyPTO `@pypto.frontend.jit` 算子，通过 `pypto.set_pass_options(sg_set_scope=...)` 触发 Mix合图 pass）。
 - **API 路径**：`pypto.set_pass_options(sg_set_scope=<正整数>)` 开启 CV 融合 scope，`sg_set_scope=-1` 关闭；配合 `cube_nbuffer_setting`/`vec_nbuffer_setting` 调 nbuffer=1 降低并发缓冲，配合 `unroll_list` 减少代码路径。
-- **验证过的平台与 CANN 版本**：Ascend950 (A5/DAV_3510)，CANN 9.1.0（来源平台：950）。
+- **验证过的平台与 CANN 版本**：Ascend950 (950/DAV_3510)，CANN 9.1.0（来源平台：950）。
 - **适用粒度**：`operator_family`（含 rms_norm 归约 + NZ 格式 matmul 的 CV 交替段算子，如 MLA/attention 类）。
 - **路线优先级**：`banned`（对本算子族 Mix合图不可应用，单 mix kernel 即超编译门槛）。
-- **不适用/未验证场景**：不含 rms_norm 归约或 NZ 格式 matmul 的简单 CV 交替算子未在本 trace 验证；其他平台 (a3/a2) 未验证，本限制与 A5 mix 编译器 pass 相关，跨平台不可直接外推。
+- **不适用/未验证场景**：不含 rms_norm 归约或 NZ 格式 matmul 的简单 CV 交替算子未在本 trace 验证；其他平台 (a3/a2) 未验证，本限制与 950 mix 编译器 pass 相关，跨平台不可直接外推。
 
 ## 失败路线
 
@@ -54,13 +54,11 @@ banned：Mix合图 (sg_set_scope) 对 `mla_prolog_quant_d` decode 算子不可�
 ## 失效边界
 
 - 已验证不可应用：Ascend950/DAV_3510 + CANN 9.1.0 + `mla_prolog_quant_d` decode (含 rms_norm + NZ matmul)。
-- 未验证，推断可迁移：其他含 rms_norm 归约 + NZ 格式 matmul 的 A5 decode 算子（如 MLA/attention 族）大概率命中同一编译复杂度问题，未实测。
-- 未验证：非 A5 平台 (a3/a2) 的 mix 编译器 pass 行为不同，本限制不可直接外推。
+- 未验证，推断可迁移：其他含 rms_norm 归约 + NZ 格式 matmul 的 950 decode 算子（如 MLA/attention 族）大概率命中同一编译复杂度问题，未实测。
+- 未验证：非 950 平台 (a3/a2) 的 mix 编译器 pass 行为不同，本限制不可直接外推。
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MLA Prolog decode A5 tile 调优配方](../performance/mla_prolog_decode_a5_tile_tuning_recipe.md)（`related`）：After Mix compilation times out even at minimal scope, the MLA-specific recipe supplies the verified alternative: tune pre-quant/Cube/vector tiles and stitch threshold with precision checks.
-- [Mix合图包入 V2 致任务数减半 E2E 劣化](../performance/mix_v2_e2e.md)（`related`）：mla_prolog decode 的最小 Mix scope 仍编译超时，提供另一种合图不可行信号；与 focal 的 E2E 反退化一起说明 Mix 是否可用必须按算子结构实测。
-- [C1 Cube FP32 输出阻断 A5 Mix合图 CV 通路](c1_cube_fp32_a5_mix_cv.md)（`same_topic`）：C1 Cube FP32 输出阻断 A5 Mix合图 CV 通路 与《Mix合图编译超时致 MLA decode 不可用》的实质衔接是：该卡的核心是 A5 Mix 合图中 FP32 C1 输出截断 CV 通路；所选卡直接覆盖同算子的 scope/workspace、mix 编译/flag 与 AIV 拓扑后果。
+- [MLA Prolog decode 950 tile 调优配方](../performance/mla_prolog_decode_950_tile_tuning_recipe.md)（`related`）：- **路线优先级**：`banned`（对本算子族 Mix合图不可应用，单 mix kernel 即超编译门槛）。；6. **当前方案属 recommended_fastpath**：tile shape 调优是本算子在 950 上最直接有效的路线；Mix合图/vf_options/sg_set_tunevf_mode/ooo_sched_mode 等 pass 选项路线均 banned 或回归。。编译 runbook 明确禁止 MLA decode 的 Mix 合图路线，性能 runbook 给出同一算子的已验证替代路线：保留 tile-shape fastpath。
 <!-- cannbot:related:end -->

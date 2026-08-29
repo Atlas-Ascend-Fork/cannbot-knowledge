@@ -29,7 +29,6 @@ kernel侧Atan接口的计算需要开发者预留 申请临时空间，本接口
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Atan](atan.md)（`related`）：GetAtanMaxMinTmpSize 在 Host 侧给出 Atan Kernel 的临时空间上下界，结果直接决定 sharedTmpBuffer 分配。
-- [Atan接口](atan_interface.md)（`same_topic`）：《Atan接口》处理“提供Atan反正切计算接口及其Tiling临时空间大小查询接口，包含Atan、GetAtanMaxMinTmpSize等。”。《GetAtanMaxMinTmpSize》明确提供“在host侧获取Atan接口预留临时空间的最大和最小值，用于Tiling参数选择”，其参数、调用或验证步骤直接接入Atan Kernel 调用、临时空间查询和 SIMT 对应实现。
-- [GetAtanTmpBufferFactorSize](get_atan_tmp_buffer_factor_size.md)（`same_topic`）：两者分别以形状上下界和线性因子描述同一个 Atan 临时空间需求，可结合可用 UB 选择 tiling 空间。
+- [Atan](atan.md)（`related`）：不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。；kernel侧Atan接口的计算需要开发者预留 申请临时空间。左卡的 Atan Kernel 需要独立 sharedTmpBuffer，右卡在 Host 侧按 shape、dtype 与复用配置给出其合法空间范围；右卡结果直接决定左卡缓冲区的申请大小。
+- [GetAtanTmpBufferFactorSize](get_atan_tmp_buffer_factor_size.md)（`same_topic`）：“预留 申请的临时空间大小不能小于最小临时空间大小”与“通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量”分别给出容量下界和固定空间下的 tile 推导。
 <!-- cannbot:related:end -->

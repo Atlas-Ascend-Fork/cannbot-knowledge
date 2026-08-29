@@ -22,8 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__half2bfloat16_rz](_half2bfloat16_rz.md)（`related`）：《__half2bfloat16_rz》明确“遵循CAST_TRUNC模式，将half类型数据转换为bfloat16类型，返回转换后的值。”；它与《__half2bfloat16_rna》的“遵循CAST_ROUND模式，将half类型数据转换为bfloat16类型，返回转换后的值。”在实际调用参数、数据流或结果校验上直接衔接。
-- [__half2bfloat16_rd](_half2bfloat16_rd.md)（`same_topic`）：《__half2bfloat16_rd》的任务是“遵循CAST_FLOOR模式，将half类型数据转换为bfloat16类型，返回转换后的值。”。《__half2bfloat16_rna》具体提供“遵循CAST_ROUND模式，将half类型数据转换为bfloat16类型，返回转换后的值。”，它直接用于half→bfloat16 的同源同目标舍入模式选择。
-- [__half2bfloat16_rn](_half2bfloat16_rn.md)（`same_topic`）：《__half2bfloat16_rn》明确“遵循CAST_RINT模式，将half类型数据转换为bfloat16类型，返回转换后的值。”；它与《__half2bfloat16_rna》的“遵循CAST_ROUND模式，将half类型数据转换为bfloat16类型，返回转换后的值。”在实际调用参数、数据流或结果校验上直接衔接。
-- [__half2bfloat16_ru](_half2bfloat16_ru.md)（`same_topic`）：《__half2bfloat16_ru》处理“遵循CAST_CEIL模式，将half类型数据转换为bfloat16类型，返回转换后的值。”。《__half2bfloat16_rna》明确提供“遵循CAST_ROUND模式，将half类型数据转换为bfloat16类型，返回转换后的值。”，其参数、调用或验证步骤直接接入half 到 bfloat16 的同源同目标不同舍入模式。
+- [__half2bfloat16_rn](_half2bfloat16_rn.md)（`same_topic`）：遵循CAST_RINT模式，将half类型数据转换为bfloat16类型，返回转换后的值。；遵循CAST_ROUND模式，将half类型数据转换为bfloat16类型，返回转换后的值。。两端具有相同 half 到 bfloat16 转换合同，只在 CAST_RINT 与 CAST_ROUND 舍入规则上分流，互读可按数值舍入要求选择入口。
 <!-- cannbot:related:end -->

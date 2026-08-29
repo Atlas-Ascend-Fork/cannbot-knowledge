@@ -22,7 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscInt642Float](../reg/data_type_convert/asc_int642float.md)（`related`）：AscInt642Float 与《AscInt642int32》的实质衔接是：AscInt64ToFloat 的 Vector 对应入口、反向 FloatToInt64、其他整数宽度和 Int64ToInt32 共同解释 2:1 lane 分布及窄化/扩宽边界。
-- [AscInt322int64](asc_int322int64.md)（`same_topic`）：《AscInt322int64》处理“将int32_t类型数据转换为int64_t类型。”。《AscInt642int32》明确“将int64_t类型数据转换为int32_t类型。”，可直接用于核对Reg int32/int64 双向转换及按目的 lane 宽度驱动 Cast 的正确性约束。
-- [AscInt642int32](../reg/data_type_convert/asc_int642int32.md)（`same_topic`）：两个 AscInt642Int32 入口都把 int64_t 转为 int32_t；Reg 版本用 mask 和饱和控制，Memory Vector 版本用 UB count 调用。
+- [AscInt642int32](../reg/data_type_convert/asc_int642int32.md)（`same_topic`）：将int64_t类型的源操作数转换成int32_t类型，并支持不同的饱和模式；将int64_t类型数据转换为int32_t类型。两端定义相同的 int64_t 到 int32_t 转换，分别给出 register 与 vector C API 形态。
 <!-- cannbot:related:end -->

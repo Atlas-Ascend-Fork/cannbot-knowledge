@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.operator_registration", "topic.im
 status: stable
 sources: []
 created_at: "2026-08-14T03:54:37Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["a3"]
 aliases: ["shared_library"]
 ---
@@ -76,10 +76,5 @@ grep -n "fp16 reduce\|launch_acc\|acc.to\|dataC.to" scatter.asc |
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LoadTilingLibrary](../../apis/utils_api/tiling_tuning/op_tiling_registry/load_tiling_library.md)（`exemplifies`）：专用 kernel 路径输出不变时先核对共享库是否真的包含目标符号说明Host 源码已有专用 launch 分支但 targeted 输出仍保持输入值时，用 nm 同时核对共享库专用符号与通用实例，先判别目标 kernel 是否被产入二进制；对LoadTilingLibrary而言，LoadTilingLibrary 完成共享库装载后由 GetTilingFunc 取函数；链接缺符号和产物不含目标符号是两个可操作的验证分支。
-- [561103 同名算子签名冲突链接绑内置版](../compilation/561103.md)（`related`）：两卡都要求越过 Host 源码文本，直接检查实际加载制品中的符号：focal 用 nm 发现 specialization 缺失，目标用 ldd/nm 发现同名符号优先绑定内置库。
-- [extern 预编译 kernel 自定义包致 aclnn 161001](../compilation/extern_kernel_aclnn_161001.md)（`related`）：extern 预编译 kernel 自定义包致 aclnn 161001 与《专用 kernel 路径输出不变时先核对共享库是否真的包含目标符号》的衔接是：该打包故障的验证链是 ACLNN 错误→检查 binary.json/二进制入口→探测符号→确认运行时加载；候选正好覆盖各个可执行检查点。
-- [kernel 源码改动未生效因 binary 缓存](../compilation/kernel_binary_cache_printf_hash_toggle.md)（`related`）：focal 的 source-present/artifact-absent 判别与目标的 source-changed/runtime-old-binary 判别都要求核对实际 device binary；后者提供 PRINTF hash A/B 与全量清缓存复编以进一步区分旧制品。
-- [kernel 输出=输入：binary 不随源码变化即守卫吞体](kernel_binary.md)（`related`）：《专用 kernel 路径输出不变时先核对共享库是否真的包含目标符号》明确“Host 源码已有专用 launch 分支但 targeted 输出仍保持输入值时，用 nm 同时核对共享库专用符号与通用实例，先判别目标 kernel 是否被产入二进制。”；它与《kernel 输出=输入：binary 不随源码变化即守卫吞体》的“A5（Ascend950, arch 3510）上 kernel 被 launch 但输出与输入逐字节一致、用例全 FAIL，且 device binary 体积异常小。判别=改 kernel 体源码后重编比较 .o 体积/sha256：若多次改动 hash 始终不变，说明 #if __CCE_AICORE__==<arch> 守卫不匹配新架构把整个 kernel 体条件编译排除，编出空壳 binary。移除守卫后 binary 变大、V1 全 PASS。”在实际调用参数、数据流或结果校验上直接衔接。
-- [msobjdump工具](../../guides/programming_guide/appendix/msobjdump_tool.md)（`related`）：msobjdump 面向算子 ELF 解析 device 信息、文件与符号表；专用 kernel 符号探针则在源码已有 launch 分支但输出未变化时，用实际加载共享库的符号存在性判别 specialization 是否进入二进制。二者组成从制品解析到目标符号核验的直接诊断链。
+- [kernel 源码改动未生效因 binary 缓存](../compilation/kernel_binary_cache_printf_hash_toggle.md)（`related`）：当 source 分支存在而目标专用 symbol 不在实际共享库中时，这个二进制至少没有提供按该名称期望的 specialization。；在 Ascend950 上调试 ApplyCamePart2 Branch-0 fp32 Kernel 时，多次出现「改了 kernel 源码、`build.sh` 重编成功、`run.sh` 重跑，但输出与改动前**逐字节一致**」的现象。；目标 runbook 提供源码已改但实际加载制品仍旧时的另一条 artifact 新鲜度探针。
 <!-- cannbot:related:end -->

@@ -10,7 +10,7 @@ sources:
 - resource: https://gitcode.com/cann/hccl/blob/cda1ba007461dc54732744b5228e63a0847a79b6/examples/04_custom_ops_p2p/README.md
   role: primary
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:33:02Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - a3
 ---
@@ -25,7 +25,7 @@ Atlas A3 是昇腾训练与推理产品系列之一。固定版本 HCCL 样例�
 
 - 本页不声明峰值算力、内存容量、节点卡数或互联拓扑；这些参数应引用对应产品规格。
 - 模型是否支持 A3，以该模型卡的 `platforms` 和固定来源为准。
-- 与 A2、Ascend 950 或 A5 的差异，只保留在具有直接证据的专题卡中。
+- 与 A2、Ascend 950 或 950 的差异，只保留在具有直接证据的专题卡中。
 
 ## Evidence
 
@@ -68,3 +68,9 @@ Atlas A3 是昇腾训练与推理产品系列之一。固定版本 HCCL 样例�
 - [qwen3-rl](../../../training/guides/recipes/qwen3_rl.md)（跨域·训练：Qwen3 235B/32B RL on A3）
 - [atlas-a2](../../../spatial/concepts/platforms/atlas_a2.md)（跨域·空间智能：空间智能样例目标平台 Atlas A2，同属昇腾 Atlas 系列）
 - 跨域·具身：[cosmos-transfer2.5](../../../embodied/concepts/world_models/cosmos_transfer2_5.md)、[cosmos-predict2.5](../../../embodied/concepts/world_models/cosmos_predict2_5.md)、[isaac-gr00t](../../../embodied/concepts/manipulation/isaac_gr00t.md)、[ascend-310p](../../../embodied/concepts/platforms/ascend_310p.md)、[ddp-static-graph](../../../embodied/concepts/techniques/ddp_static_graph.md)、[gradient-checkpoint-refine](../../../embodied/concepts/techniques/gradient_checkpoint_refine.md)（具身样例在 Atlas A3 的训练 / 推理）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 950 (950PR / 950DT)](ascend_950.md)（`related`）：“## 与 Atlas A3 的代际架构对照”给出焦点端事实；“与 A2、Ascend 950 或 950 的差异，只保留在具有直接证据的专题卡中。”给出候选端事实。Ascend 950 卡提供两代平台的逐维对照，而 Atlas A3 卡明确把代际差异交给具备直接证据的专题卡，二者共同确定平台选型时可采用的证据边界。
+<!-- cannbot:related:end -->

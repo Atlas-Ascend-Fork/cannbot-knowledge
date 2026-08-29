@@ -21,9 +21,3 @@ Reg矢量计算关键特性说明，涵盖HardwareLoop硬件循环、指令双�
 本接口属于 Reg 矢量计算接口，操作 RegTensor 寄存器数据。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend 950PR/Ascend 950DT新增特性导航](../../../../../guides/asc_950_feature_guide.md)（`explains`）：RegBase 关键特性页说明 3510 上寄存器编程能力，是 Ascend950 特性指南中的具体编程模型落点。
-<!-- cannbot:related:end -->

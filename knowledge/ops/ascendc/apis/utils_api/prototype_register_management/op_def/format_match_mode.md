@@ -26,5 +26,5 @@ OpDef算子定义，OpDef请参考OpDef。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [OpDef FORMAT_NCHW 致 5D 报 161002](../../../../runbooks/compilation/opdef_format_nchw_5d_161002.md)（`exemplifies`）：该 runbook 记录 OpDef 使用 FORMAT_NCHW 匹配 5D 输入触发 161002，直接体现 FormatMatchMode 默认格式规整规则的故障边界。
+- [OpDef FORMAT_NCHW 致 5D 报 161002](../../../../runbooks/compilation/opdef_format_nchw_5d_161002.md)（`exemplifies`）：“不调用该接口的情况下，默认将NCHW/NHWC/DHWCN/NCDHW/NCL格式的输入输出转成ND格式进行处理。”说明 OpDef 的默认匹配行为；“把 OpDef 的输入格式从 `FORMAT_ND` 改为 `FORMAT_NCHW`”记录偏离默认后使 5D 输入在 tiling 前被框架拒绝的具体故障。
 <!-- cannbot:related:end -->

@@ -72,11 +72,3 @@ grep ACLNNTYPE op_host/CMakeLists.txt
 
 - 链接错误 `multiple definition of 'aclnnSoftplusGradGetWorkspaceSize'` 与 `multiple definition of 'aclnnSoftplusGrad'` 在 `bash build.sh --pkg --ops=softplus_grad --soc=ascend950` 构建输出中观测到，两个翻译单元分别来自 `build/autogen/aclnn_softplus_grad.cpp.o` 与 `op_api/aclnn_softplus_grad.cpp.o`（来源平台:950；证据等级:tool_observed）
 - `mv op_api/aclnn_softplus_grad.cpp op_api/aclnn_softplus_grad.cpp.bak` 后重建 `bash build.sh --pkg` 链接通过，产出安装包 `cann-ops-nn-softplus_grad_nn_linux-x86_64.run`（来源平台:950；证据等级:tool_observed）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [561103 同名算子签名冲突链接绑内置版](561103.md)（`related`）：561103 同名算子签名冲突链接绑内置版 与《ACLNNTYPE aclnn autogen 与手写同名符号冲突》的实质衔接是：同名签名冲突的核心是运行时绑定到错误或被自动生成覆盖的符号；符号探测、opType 碰撞、pytest 绕过和 exclude 覆盖案例给出可执行鉴别，其他 561103 卡用于排除属性与 tiling 路由根因。
-- [ACLNN 507035 — opType 与内置 ops_legacy 同名碰](aclnn_optype_collision_built_in_ops_legacy_507035.md)（`related`）：ACLNN 507035 — opType 与内置 ops_legacy 同名碰 与《ACLNNTYPE aclnn autogen 与手写同名符号冲突》的实质衔接是：507035 此例由自定义 opType 与内置符号同名触发；OpDef/注册/launcher/kernel/CMake 六处改名及同名碰撞 runbook 共同构成完整修复链。
-- [aclnn_exclude 头文件自动生成覆盖源码致签名不符](aclnn_exclude.md)（`related`）：两卡围绕 ACLNNTYPE 的相反路径：aclnn 生成同名实现可与手写文件重复定义，aclnn_exclude 则可能生成安装头并与手写签名错配，能据构建开关分流诊断。
-<!-- cannbot:related:end -->

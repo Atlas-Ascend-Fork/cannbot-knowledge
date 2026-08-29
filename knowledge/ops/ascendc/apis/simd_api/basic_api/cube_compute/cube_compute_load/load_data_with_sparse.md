@@ -22,8 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMmadSparse](../../../c_api/cube_compute/asc_mmad_sparse.md)（`related`）：LoadDataWithSparse 把稠密化权重与索引搬入 L0B/专用 buffer，随后由 AscMmadSparse 执行矩阵乘。
-- [MmadWithSparse](../mmad_compute/mmad_with_sparse.md)（`related`）：LoadDataWithSparse 把稀疏 B 矩阵及索引搬入 L0B，正是 MmadWithSparse 随后进行稀疏矩阵乘所消费的输入。
-- [SetSparseIndex](../../../adv_api/cube_compute/matmul_kernel/set_sparse_index.md)（`same_topic`）：LoadDataWithSparse说明从L1 Buffer搬运稠密权重矩阵到L0B Buffer，同时搬运索引矩阵到专用buffer空间，供后续MmadWithSparse接口读取。
-- [矩阵计算输入搬运约束](cube_compute_input_move_constraint.md)（`same_topic`）：矩阵计算输入搬运约束 与《LoadDataWithSparse》的实质衔接是：输入搬运约束把 GM/L1/L0A/L0B 的格式、K 对齐和地址对齐落实到 LoadData、CopyGmToL1、CopyL1ToL0A/B 及 sparse/stride/transpose 变体。
+- [MmadWithSparse](../mmad_compute/mmad_with_sparse.md)（`related`）：将稀疏矩阵数据从L1 Buffer搬运到L0A或L0B Buffer，支持稀疏数据的压缩搬运。；B 矩阵需通过 LoadDataWithSparse 载入并同时加载索引矩阵（uint8，分形(32,16)，每个元素含 4 个 uint2 索引）。。前者提供稀疏数据从 L1 到 L0A/L0B 的解压搬运，后者把 LoadDataWithSparse 明确规定为 MmadWithSparse 的 B 矩阵与索引矩阵装载前置，组成稀疏矩阵乘的直接数据通路。
 <!-- cannbot:related:end -->

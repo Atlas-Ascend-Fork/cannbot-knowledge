@@ -16,9 +16,10 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/348
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a2
+- 310p
 ---
 
 # 是否/何时启用图模式：按 host 下发占比与 profiling 决策（freetime / host gap / 动态 shape）
@@ -60,3 +61,9 @@ platforms:
 - diff 事实 + 维护者确认（Wan2.2-I2V 昇腾适配）：`set_compile_mode(jit_compile=False)` 以 eager 运行、不使能图模式；freetime 0.1%(720P)/0.5%(480P) 为 RFC 作者自报（doc 披露、无独立复现）。溯源下探 [cann-recipes-infer-issue-33-rfc-wan2-2-i2v-model-inference-support](https://gitcode.com/cann/cann-recipes-infer/issues/33)
 - diff 事实（docstring @2c45117）+ 维护者确认：double-routing 只支持 eager；动态 shape 入图不治下发 bound、只加图融合；prefill 入图靠 profiling / 序列不短时不入图。溯源下探 [cann-recipes-infer-issue-11-question-prefill-moe-moe-infer-double-routing](https://gitcode.com/cann/cann-recipes-infer/issues/11)
 - diff 事实（结构）+ 仓自报数值（@8fd8db72）：NgramEmbedding device <5% 却 ~11 ms host dispatch，入图后 A2 18.5→7.14 ms；"device profiler <5% ≠ 非热点"结论来自 optimization_report。溯源下探 [cann-recipes-infer-pr-348-feat-add-longcat-flash-lite-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NPU 图模式（ge_graph / npugraph_ex）](../../../concepts/techniques/npu_graph_mode.md)（`related`）：图模式该不该上，永远回到"这个 workload / 模块 / 阶段的 host 下发占比是多少"这一 profile 结果：freetime/host gap 高 → 值得付图适配成本（decode 密集 LLM、host-bound 多小 op 模块）；freetime 低（计算密集 DiT）/ 纯动态 shape → eager + 融合算子 + 并行更划算。图模式通过 `torch.compile` 把前向逻辑捕获成图、交给 NPU 后端编译执行，**减少 Host 下发开销，允许后端在更大范围做融合、内存复用、调度优化**，显著降低 decode 时延。决策卡用 wall-clock host gap 判定是否值得付适配成本，概念卡说明图模式实际消除的下发开销及编译收益；先用前者选 workload，再按后者的模型接入条件实施与验证。
+<!-- cannbot:related:end -->

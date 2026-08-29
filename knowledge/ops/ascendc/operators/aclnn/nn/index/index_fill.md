@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/index_fill/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:39:39Z"
-updated_at: "2026-08-25T16:39:39Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -112,7 +112,7 @@ Tiling 把输入折叠为 `[P,N,Q]`。`indicesProcessMode=(N<coreNum*32)?0:1`：
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 Front-Q | key 0 | `(axis!=rank-1 || rank==1)` 且 `Q>=1024`；或同一轴域中 dtype 为 INT64/BOOL（源码也含 A5-only UINT8 override） | 否则继续 key1/key2；尾轴去 key3/key4 |
+| 1 | R-001 Front-Q | key 0 | `(axis!=rank-1 || rank==1)` 且 `Q>=1024`；或同一轴域中 dtype 为 INT64/BOOL（源码也含 950-only UINT8 override） | 否则继续 key1/key2；尾轴去 key3/key4 |
 | 2 | R-002 Front-N | key 1 | 前/单轴，dtype 非 INT64/BOOL，`Q<1024 && (N>=64 || Q>=64)` | R-003 |
 | 3 | R-003 Front-P | key 2 | 前/单轴，dtype 非 INT64/BOOL，`N<64 && Q<64` | 无 |
 | 4 | R-004 Tail-N | key 3 | `rank>1 && axis==rank-1 && N>=coreNum*256`；ACLNN 的 INT64/BOOL 尾轴已转置，故公开路径仅 2B/4B dtype 可达 | R-005 |
@@ -693,9 +693,9 @@ value 在进入 `(p,n)` 循环前已扩成可 DMA 的连续块；命中索引时
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持（Atlas A2 训练/推理） | 支持（Atlas A3 训练/推理） | 另见 `_a5` 卡 |
+| 支持状态 | 支持（Atlas A2 训练/推理） | 支持（Atlas A3 训练/推理） | 另见 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch32，共用同一决策树 | `ascend910_93`→arch32，共用同一决策树 | arch35 优先级模板 |
 | Kernel/资源 | `index_fill.cpp`，5 个 AIV body | 同 A2 | 不在本卡展开 |
 
@@ -741,3 +741,9 @@ value 在进入 `(p,n)` 循环前已扩成可 DMA 的连续块；命中索引时
 | 同步 | event + `SyncAll` + GM flags | 位图完成前不得覆盖/读取输出阶段数据 | `InitCoreSys/WaitForIndicesTask` |
 | 精度与尾块 | 同宽位模式复制，Select 仅选值 | 负索引只加一次 N、越界跳过、有效长度搬运 | 五个 Route body |
 | 失败边界 | API 校验和 launcher 返回可传播 | 不得把空 self/index 当 Kernel 路线，不得接受未知 key | `ExecIndexFillGetWorkspaceSize`, `index_fill` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [IndexFill 950 ACLNN 算子知识](index_fill_950.md)（`same_topic`）：“｜ 实际入口 ｜ `aclnnIndexFillGetWorkspaceSize` + `aclnnIndexFill`，公开、非原地 ACLNN ｜”与“固定仓仅有公开 `aclnnIndexFill` 两段式入口；第一段固定以 `isInplace=false` 进入 `l0op::IndexFill`，不触达任何 Inplace 或 Tensor-value 变体。”分别给出两端正文事实；两卡描述同一公开非原地 aclnnIndexFill 契约，分别闭合 A2/A3 arch32 与 950 arch35 的 route、workspace 和同步实现，适合做平台迁移对照。
+<!-- cannbot:related:end -->

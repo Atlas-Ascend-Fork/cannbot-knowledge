@@ -26,6 +26,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscendAntiQuant](ascend_anti_quant.md)（`same_topic`）：GetAscendAntiQuantTmpBufferFactorSize 与《AscendAntiQuant》的实质衔接是：AscendAntiQuant 的 MaxMin/factor 查询共同决定临时空间和单次处理量；分组 scale 的 cyclic-repeat 故障直接验证反量化系数布局。
-- [GetAscendAntiQuantMaxMinTmpSize](get_ascend_anti_quant_max_min_tmp_size.md)（`same_topic`）：GetAscendAntiQuantMaxMinTmpSize 与《GetAscendAntiQuantTmpBufferFactorSize》的实质衔接是：GetAscendAntiQuantMaxMinTmpSize 与 factor 查询、AscendAntiQuant kernel 成对使用；分组 scale 错配卡直接验证该反量化任务的输入契约。
+- [AscendAntiQuant](ascend_anti_quant.md)（`related`）：“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。”；“接口参数包含dstTensor输出、srcTensor输入（shape ［m,n］）、scale/offset量化系数（shape因策略而异）、sharedTmpBuffer临时缓存、params参数信息。”。factor 接口把可用缓冲换算为 currentShapeSize，AscendAntiQuant 计算接口实际消费 sharedTmpBuffer。
+- [GetAscendAntiQuantMaxMinTmpSize](get_ascend_anti_quant_max_min_tmp_size.md)（`related`）：“调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。”；“isReuseSource与AscendAntiQuant接口保持一致；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。”。两张卡是同一 AscendAntiQuant Tiling 中 factor 反推和 max/min 容量边界的互补接口。
 <!-- cannbot:related:end -->

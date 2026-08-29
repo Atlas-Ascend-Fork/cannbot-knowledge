@@ -34,11 +34,3 @@ platforms: ['950']
 - mask比特位为0时，dst对应比特位写0。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [And](../../../basic_api/memory_vector_compute/logical_compute/and.md)（`related`）：And说明对LocalTensor中的元素做按位与运算，支持整个tensor、前n个数据连续计算和高维切分计算三种调用方式。
-- [And](../../../basic_api/reg_vector_compute/logical_compute/and.md)（`same_topic`）：C Reg API 是同一 And 的语言映射。
-- [AscAnd](../../vector_compute/asc_and.md)（`same_topic`）：AscAnd：C Vector AscAnd、C Reg AscAnd及两套基础And都是逐元素按位与，关系用于核对操作数容器、mask与数据类型约束。 目标卡《AscAnd》补充：根据mask对源操作数src0、src1执行按位与操作，结果写入dst，支持矢量数据寄存器和掩码寄存器。
-<!-- cannbot:related:end -->

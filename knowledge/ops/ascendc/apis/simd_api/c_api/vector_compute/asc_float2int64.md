@@ -23,6 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscFloat2Int32](../scalar_compute/asc_float2int32.md)（`same_topic`）：AscFloat2Int32 与《AscFloat2int64》的实质衔接是：AscFloat2Int32 的四种舍入模式对应 Rint/Round/Floor/Ceil，相关 float/half/bfloat16 转换卡用于保持目标位宽、源类型和逆转换契约。
-- [AscFloat2Int64](../reg/data_type_convert/asc_float2int64.md)（`same_topic`）：两者都完成 float→int64 并支持舍入选择；Reg 版本增加显式 RegTensor、mask、饱和和高低 lane 控制，可用于迁移计算路径。
+- [AscFloat2Int64](../reg/data_type_convert/asc_float2int64.md)（`same_topic`）：将float类型转化为int64_t类型，并支持多种舍入模式： RINT舍入模式：四舍六入五成双舍入 ROUND舍入模式：四舍五入舍入；将float类型数据转化为int64_t类型，并支持多种舍入模式，饱和/非饱和模式。。两卡围绕同一 float 到 int64 转换及舍入契约，Reg 版本进一步明确饱和模式。
 <!-- cannbot:related:end -->

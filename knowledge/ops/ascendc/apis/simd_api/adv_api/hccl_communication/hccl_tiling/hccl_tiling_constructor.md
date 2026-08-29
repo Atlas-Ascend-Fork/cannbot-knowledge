@@ -26,13 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetTiling](get_tiling.md)（`related`）：HCCL Tiling构造函数 与《GetTiling》的衔接是：构造函数把通信域、算子类型、算法、归约类型和目的数据类型写入 HcclTilingData，这些字段随后由 GetTiling 生成 Kernel 侧通信配置。
-- [HCCL Tiling使用说明](hccl_tiling_usage.md)（`related`）：HCCL Tiling构造函数 与《HCCL Tiling使用说明》的衔接是：构造函数把通信域、算子类型、算法、归约类型和目的数据类型写入 HcclTilingData，这些字段随后由 GetTiling 生成 Kernel 侧通信配置。
-- [HcclTilingData](tiling_data_struct.md)（`related`）：HCCL Tiling构造函数 与《HcclTilingData》的衔接是：构造函数把通信域、算子类型、算法、归约类型和目的数据类型写入 HcclTilingData，这些字段随后由 GetTiling 生成 Kernel 侧通信配置。
-- [SetAlgConfig](set_alg_config.md)（`related`）：HCCL Tiling构造函数 与《SetAlgConfig》的衔接是：构造函数把通信域、算子类型、算法、归约类型和目的数据类型写入 HcclTilingData，这些字段随后由 GetTiling 生成 Kernel 侧通信配置。
-- [SetGroupName](set_group_name.md)（`related`）：SetGroupName 与《HCCL Tiling构造函数》的实质衔接是：SetGroupName 将通信域名称写入 HcclTilingData，再由 GetTiling 生成并通过 HcclContext 传入核侧；OpMC2Def 的 HcclGroup 是同一通信域契约的原型侧声明。
-- [SetOpType](set_op_type.md)（`related`）：HCCL Tiling构造函数 与《SetOpType》的衔接是：构造函数把通信域、算子类型、算法、归约类型和目的数据类型写入 HcclTilingData，这些字段随后由 GetTiling 生成 Kernel 侧通信配置。
-- [SetReduceType](set_reduce_type.md)（`related`）：HCCL Tiling构造函数 与《SetReduceType》的衔接是：构造函数把通信域、算子类型、算法、归约类型和目的数据类型写入 HcclTilingData，这些字段随后由 GetTiling 生成 Kernel 侧通信配置。
-- [SetStepSize](set_step_size.md)（`same_topic`）：SetStepSize 与《HCCL Tiling构造函数》的实质衔接是：SetStepSize 把细粒度通信一次推进的算法步数写入 HcclTilingData，并与算法、通信块、引擎、队列配置一起驱动 Iterate/Commit/Wait 的 AlltoAllV 流程。
-- [v2版本TilingData（废弃）](v2_tiling_data_deprecated.md)（`same_topic`）：v2版本TilingData（废弃） 与《HCCL Tiling构造函数》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [HCCL Tiling使用说明](hccl_tiling_usage.md)（`related`）：用于创建一个Mc2CcTilingConfig对象；Mc2CcTiling为具体每个通信任务的参数配置；连接对象构造与 GetTiling/Kernel 消费。
 <!-- cannbot:related:end -->

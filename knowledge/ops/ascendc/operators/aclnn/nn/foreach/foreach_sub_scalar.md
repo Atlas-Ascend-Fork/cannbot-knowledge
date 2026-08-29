@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sub_scalar/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:22:25Z"
-updated_at: "2026-08-25T16:22:25Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -584,9 +584,9 @@ for (uint32_t i = 0; i < repeatBatchCnt; i++) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2 公开支持 | V2 公开支持 | V2 公开支持，但见独立 `_a5` 卡 |
+| 支持状态 | V2 公开支持 | V2 公开支持 | V2 公开支持，但见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 | `ascend910_93`→arch22 | arch35 独立 tiling |
 | Kernel/资源 | 共用 AIV Vector body | 共用 AIV Vector body | SIMT body，无 AIV Queue |
 

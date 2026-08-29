@@ -31,9 +31,5 @@ dataBlockStride是指同一迭代内不同datablock的地址步长。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Copy](../../../../../apis/simd_api/basic_api/memory_vector_compute/data_move/copy_ub_to_ub_mask_highdim_split.md)（`explains`）：Copy 与《高维切分API》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [DataCopy](../../../../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_and_ub_highdim_split.md)（`explains`）：DataCopy 与《高维切分API》的实质衔接是：该 DataCopy 用 DataCopyParams 做 GM/UB 高维切分；slice/continuous 对照、高维 API 分类和 blockLen 窄化故障共同说明何时选用及参数类型边界。
-- [高维切分（SIMD计算）](../../../../../apis/simd_api/basic_api/memory_vector_compute/simd_compute/high_dim_split.md)（`explains`）：The high-dimension split guide explains how GetDim/SetDim/GetShape/UpdateShape are composed to partition a high-dimensional tensor safely.
-- [FindSplitAxis 误传 total_slots 致 slot 翻倍](../../../../../runbooks/precision/findsplitaxis_total_slots_slot.md)（`related`）：FindSplitAxis 误传 total_slots 致 slot 翻倍 与《高维切分API》的实质衔接是：FindSplitAxis 第四参要求 phys_nodes，传入已乘 DB 的 total_slots 会再次乘二；per-buffer UB 预算、rank/split、TilingData 和 Broadcast 卡用于核对内外切分量一致。
-- [连续计算API](continuous_compute_api.md)（`same_topic`）：连续计算API 与《高维切分API》的实质衔接是：连续计算 API 与高维切分的选择取决于布局连续性，非对齐优化给出连续但未对齐时的可执行分支。
+- [高维切分（SIMD计算）](../../../../../apis/simd_api/basic_api/memory_vector_compute/simd_compute/high_dim_split.md)（`explains`）：“支持开发者控制指令的迭代执行和操作数的地址间隔”由“高维切分API，支持repeatTime、stride和mask参数”落实为 repeat、步长和掩码三个接口控制维度。
 <!-- cannbot:related:end -->

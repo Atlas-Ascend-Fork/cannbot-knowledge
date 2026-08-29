@@ -24,16 +24,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [L2CacheSplit](../../../guides/operator_practice/simd_operator_optimization/memory_access/l2_cache_split.md)（`explains`）：asc_ldcg（内存访问函数） 与《L2CacheSplit》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
-- [Scalar读写数据](../../../guides/technical_appendix/concepts_and_terms/memory_access/scalar_read_write.md)（`explains`）：asc_ldcg（内存访问函数） 与《Scalar读写数据》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
-- [设置合理的L2 CacheMode](../../../guides/operator_practice/simd_operator_optimization/memory_access/l2_cache_mode_config.md)（`explains`）：asc_ldcg（内存访问函数） 与《设置合理的L2 CacheMode》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
-- [asc_dcci_entire](asc_dcci_entire.md)（`related`）：asc_dcci_entire 与《asc_ldcg（内存访问函数）》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_stcg（内存访问函数）](asc_stcg.md)（`related`）：Ldcg 是对应缓存加载路径，组成 cache-aware 读写。
-- [AscDcci](../../simd_api/c_api/cache_ctrl/asc_dcci.md)（`same_topic`）：asc_ldcg（内存访问函数） 与《AscDcci》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
-- [AscLdca](asc_ldca.md)（`same_topic`）：Ldca 与 Ldcg 都加载 GM 数据，但 cache 层级策略不同。
-- [AscLoadL2CacheMode](../../simd_api/c_api/enum/asc_load_l2_cache_mode.md)（`same_topic`）：asc_ldcg（内存访问函数） 与《AscLoadL2CacheMode》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
-- [asc_dcci_single](asc_dcci_single.md)（`same_topic`）：asc_ldcg（内存访问函数） 与《asc_dcci_single》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
-- [asc_stwt（内存访问函数）](asc_stwt.md)（`same_topic`）：asc_stwt（内存访问函数） 与《asc_ldcg（内存访问函数）》的实质衔接是：asc_stwt 把数据写入 GM 并缓存到 DCache/L2；stcg/ldcg、缓存模式和 DCCI 共同决定写策略、后续读取及显式失效时机。
-- [访存函数](memory_access_functions.md)（`same_topic`）：asc_ldcg（内存访问函数） 与《访存函数》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
-- [访存函数简介（内存访问函数）](memory_access_functions_intro.md)（`same_topic`）：asc_ldcg（内存访问函数） 与《访存函数简介（内存访问函数）》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
+- [AscLdca](asc_ldca.md)（`related`）：从 Data Cache 加载数据的函数。优先从 Data Cache 读取，未命中则尝试 L2 Cache，均未命中则从 Global Memory 读取并缓存到 L2 Cache 和 Data Cache。L2 Cache 与 Global Memory 间一致性由硬件保证，Data Cache 与 Global Memory 间不保证。默认访存底层实现与本接口等价（dst［idx］ = src［idx］ 等价于 dst［idx］ = asc_ldca(src + idx)）。；从 L2 Cache 加载数据的函数。若 L2 Cache 命中则直接返回，未命中则从 Global Memory 读取并缓存到 L2 Cache。L2 Cache 与 Global Memory 间一致性由硬件保证。不会写入 Data Cache。两页给出 SIMT 加载在 Data Cache 与仅 L2 Cache 间的直接策略选择，一致性与缓存污染差异影响访存实现。
 <!-- cannbot:related:end -->

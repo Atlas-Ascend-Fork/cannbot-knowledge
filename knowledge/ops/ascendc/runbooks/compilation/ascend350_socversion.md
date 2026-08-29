@@ -48,6 +48,5 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [PlatformAscendC简介](../../apis/utils_api/platform_info/platform_ascend_c/platform_ascend_c_intro.md)（`exemplifies`）：《PlatformAscendC简介》的任务是“在实现Host侧的Tiling函数时，可能需要获取一些硬件平台的信息，来支撑Tiling的计算，比如获取硬件平台的核数等信息。PlatformAscendC类提供获取这些平台信息的功能。”。《ASCEND350 非 SocVersion 枚举成员致编译失败》具体提供“把 build.sh 的 SOC 别名 ascend350 当 C++ 枚举名 platform_ascendc::SocVersion::ASCEND350 写进 tiling 代码会编译报错；该枚举只有 ASCEND950，build.sh 中 ascend350 与 ascend950 同映射 arch 3510 但 C++ 侧无 ASCEND350 成员。判别=grep platform_ascendc.h 的 SocVersion 枚举确认合法成员名，build.sh SOC 别名不能直接当 C++ 枚举名用。”，它直接用于PlatformAscendC 的获取入口、兼容性和链接/SoC 枚举故障。
-- [Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa](arch_variant_lookup_chain_soc_ini_npuarch_dispatcher.md)（`related`）：两卡共同区分 SoC 字符串、NpuArch/3510 与编译期枚举/宏：一个处理 SocVersion 编译错误，一个给出 ini→dispatcher 查证链。
+- [GetSocVersion](../../apis/utils_api/platform_info/platform_ascend_c/get_soc_version.md)（`exemplifies`）：观测（tool_observed）：`platform_ascendc::SocVersion` 枚举的合法成员含 `ASCEND950`，无 `ASCEND350`；`build.sh` 的 `SOC_TO_ARCH` 把 `ascend350` 与 `ascend950` 都映射到同一个 arch 字符串 `3510`（运行时落到同一 SoC），但 C++ 侧枚举没有 `ASCEND350` 这个成员。；获取当前硬件平台版本型号。runbook 的编译排障必须以平台接口返回的实际 SocVersion 枚举合同为准，不能把构建别名当枚举。
 <!-- cannbot:related:end -->

@@ -31,6 +31,5 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品不支持通算融合算�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [通用融合基础知识](basics.md)（`same_topic`）：场景页展开通用融合支持的计算通信组合和边界，用于在基础页的强/弱依赖判定后选择可落地场景。
-- [通用融合算子实现](operator_impl.md)（`same_topic`）：通用融合算子实现 与《通用融合特性场景》的实质衔接是：通用融合实现依赖 AIC/AIV 分工、异步、耦合/分离、多核尾块和 double buffer 场景。
+- [通用融合算子实现](operator_impl.md)（`related`）：“当前通算融合算子暂不支持Kernel直调和入图（GE图）开发，仅支持单算子API调用。”限定通算融合的开发入口；“算子编译时，配置编译宏AICORE_EXCEPTION_RESTART”补充同类算子在支持平台启用通信重执行的构建条件。
 <!-- cannbot:related:end -->

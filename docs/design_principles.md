@@ -70,17 +70,18 @@ Query 会先按平台和技术范围过滤，再返回最相关的知识卡。�
 
 ## 7. 查询、写入和检查分开处理
 
-仓库维护三项基础 Skill 和两项源码级 Operator producer：
+仓库维护三项基础 Skill、一项仓内 trace producer 和两项源码级 Operator producer：
 
 | Skill | 用途 |
 |---|---|
 | `knowledge-query` | 查看覆盖情况、搜索知识卡 |
 | `knowledge-ingest` | 根据来源创建候选知识卡 |
 | `knowledge-lint` | 检查知识卡、导航、链接和日志 |
+| `ops-knowledge-trace-ingest` | 从算子开发 trace 生产 Runbook，只在本知识仓使用 |
 | `ops-knowledge-vv-ingest` | 提取不含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 |
 | `ops-knowledge-cv-ingest` | 提取含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 |
 
-Query 和 Lint 保持只读。Ingest 可以创建候选卡；VV/CV 只写任务指定的最终 Operator 卡。三类生产能力都不会自动提交或发布。完整边界见 [Knowledge Skills](../governance/specs/skills.md)。
+Query 和 Lint 保持只读。Ingest 可以创建候选卡；trace producer 只在本仓生产 Runbook；VV/CV 只写任务指定的最终 Operator 卡。三类生产能力都不会自动提交或发布。完整边界见 [Knowledge Skills](../governance/specs/skills.md)。
 
 ## 8. 索引和图谱都可以重新生成
 

@@ -25,10 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__haddx2](../../bfloat16_type/bfloat16x2_arithmetic_functions/_haddx2.md)（`related`）：“__haddx2”处理计算两个bfloat16x2_t类型数据各分量的相加结果，并遵循CAST_RINT模式对结果进行舍入。；“__haddx2”明确计算两个half2类型数据各分量的相加结果，并遵循CAST_RINT模式对结果进行舍入。。实质衔接：bfloat16x2 加法与标量 bfloat16 加法区分向量宽度，half2 版本保持 x2 操作不变而改变数据类型。
-- [__hadd](../half_arithmetic_functions/_hadd.md)（`same_topic`）：__hadd 与《__haddx2》的实质衔接是：__hadd 与 half/bfloat16/half2 的加法入口共享加法与 RINT 语义；sub、mul、fma 用于区分运算符而避免把算术族名称当作等价替换。
-<!-- cannbot:related:end -->

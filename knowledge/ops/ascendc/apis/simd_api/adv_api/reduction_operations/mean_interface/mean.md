@@ -26,8 +26,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ReduceMean](../reduce_mean_interface/reduce_mean.md)（`related`）：ReduceMean 面向更一般的归约参数，而 Mean 固定沿末轴、最多二维；二者的差异直接用于接口选型。
-- [GetMeanMaxMinTmpSize](get_mean_max_min_tmp_size.md)（`same_topic`）：Mean 显式 sharedTmpBuffer 重载要求先由 GetMeanMaxMinTmpSize 根据 shape、dtype 和基本块模式取得空间边界，查询结果直接决定调用能否成立。
-- [GetMeanTmpBufferFactorSize](get_mean_tmp_buffer_factor_size.md)（`same_topic`）：焦点处理Mean 的 workspace factor 推算；Mean正文界定“沿最后一轴对输入元素求平均值，最多支持二维输入”。候选是 Mean 计算、接口页和 max/min 查询，直接消费 factor 结果。
-- [Mean接口](mean_interface.md)（`same_topic`）：Mean说明沿最后一轴对输入元素求平均值，最多支持二维输入；对Mean接口而言，Mean 的末轴二维约束与 ReduceMean 的多维 AR/RA 模式不同；两组 workspace 查询决定各自的 Tiling 空间。
+- [GetMeanMaxMinTmpSize](get_mean_max_min_tmp_size.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetMeanMaxMinTmpSize获取。；host侧Tiling接口，用于获取Mean接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。Mean 明确要求用该 Host 查询选择临时空间，二者闭合执行前容量规划。
+- [GetMeanTmpBufferFactorSize](get_mean_tmp_buffer_factor_size.md)（`related`）：获取Mean接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetMeanMaxMinTmpSize获取。。factor 查询把固定缓冲换算为 Mean 单次元素数，Mean 接口选择显式缓冲或框架申请，闭合 Kernel 侧空间规划。
 <!-- cannbot:related:end -->

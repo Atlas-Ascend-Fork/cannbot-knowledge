@@ -19,9 +19,3 @@ platforms: ['950', a2, a3]
 参数：dst（输出）：目的地址寄存器。；src（输入）：源地址寄存器。；repeat（输入）：重复迭代次数， repeat∈[0,255]。 注意事项： &bull;当repeat为1时，目的操作数/源操作数的有效起始位置为dst/src序列输入的起始位置加上dst_stride/src_stride。如果要让目的操作数/源操作数的有效起始位置为dst/src序列输入的起始位置，需要将dst_stride/src_stride置为0。 &bull;当repeat大于1时，第一次repeat中目的操作数/源操作数的有效起始位置为dst/src序列输入的起始位置，第二次会加上dst_stride/src_stride。以此类推。；dst_stride（输入）：相邻迭代间，目的操作数相同DataBlock地址Stride，单位：DataBlock。
 约束：操作数地址对齐约束请参考存储单元说明。；操作数地址重叠约束请参考通用地址重叠约束。；进行NCHW格式到NC1HWC0格式的转换时，一般用法是将src/dst中的每个元素配置为每个HW平面的起点。
 支持平台：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core, Atlas 推理系列产品Vector Core等
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TransDataTo5HD](../../basic_api/memory_vector_compute/data_layout_conversion/trans_data_to5_hd.md)（`related`）：两卡均执行 NCHW→NC1HWC0/5HD 转换；C 接口补充 512B repeat 和 stride 规则，基础 API 提供 LocalTensor 入口。
-<!-- cannbot:related:end -->

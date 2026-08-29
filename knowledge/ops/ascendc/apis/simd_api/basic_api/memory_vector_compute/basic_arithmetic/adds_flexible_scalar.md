@@ -19,8 +19,5 @@ Adds 的灵活标量位置变体，支持标量操作数在 src0 或 src1 位置
 <!-- cannbot:related:start -->
 ## 相关
 
-- [RegTensor 累加须用 Add 而非 Adds](../../../../../runbooks/compilation/regtensor_add_uses_add_not_adds.md)（`exemplifies`）：Adds（灵活标量位置） 与《RegTensor 累加须用 Add 而非 Adds》的实质衔接是：灵活标量 Adds 与普通 Adds、C Reg/C Vector add-scalar 执行同一 tensor+scalar 运算；RegTensor 误用 Adds 的案例明确区分标量加与张量逐元素 Add。
-- [Adds](adds.md)（`same_topic`）：Adds（灵活标量位置） 与《Adds》的实质衔接是：灵活标量 Adds 与普通 Adds、C Reg/C Vector add-scalar 执行同一 tensor+scalar 运算；RegTensor 误用 Adds 的案例明确区分标量加与张量逐元素 Add。
-- [AscAddScalar](../../../c_api/reg/arithmetic_compute/asc_add_scalar.md)（`same_topic`）：Adds（灵活标量位置） 与《AscAddScalar》的实质衔接是：灵活标量 Adds 与普通 Adds、C Reg/C Vector add-scalar 执行同一 tensor+scalar 运算；RegTensor 误用 Adds 的案例明确区分标量加与张量逐元素 Add。
-- [AscAddScalar](../../../c_api/vector_compute/asc_add_scalar.md)（`same_topic`）：Adds（灵活标量位置） 与《AscAddScalar》的实质衔接是：灵活标量 Adds 与普通 Adds、C Reg/C Vector add-scalar 执行同一 tensor+scalar 运算；RegTensor 误用 Adds 的案例明确区分标量加与张量逐元素 Add。
+- [Adds](adds.md)（`same_topic`）：Adds 的灵活标量位置变体，支持标量操作数在 src0 或 src1 位置灵活配置；计算公式 dst_i = src_i + scalarValue。前者是 Adds 对标量位置的 950 扩展，后者给出基础逐元素加标量语义，属于同一计算操作的通用版与变体。
 <!-- cannbot:related:end -->

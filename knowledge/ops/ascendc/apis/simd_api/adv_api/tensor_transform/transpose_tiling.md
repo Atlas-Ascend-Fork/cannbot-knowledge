@@ -23,6 +23,5 @@ GetTransposeNDTilingInfo参数：ascendcPlatform平台信息；输入shape各维
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscTranspose](../../c_api/vector_compute/asc_transpose.md)（`same_topic`）：AscTranspose 与《Transpose Tiling》的衔接是：AscTranspose 与基础/高阶 Transpose 共享转置数据布局；LoadDataWithTranspose 可作为上游搬运转置，tiling 与 noTrans 布局案例说明方向参数必须一致。
-- [Transpose](transpose.md)（`same_topic`）：《Transpose》处理“对输入数据进行数据排布及Reshape操作，支持NZ与ND格式间的多种轴互换和转置场景。”。《Transpose Tiling》明确提供“用于获取Transpose Tiling参数。”，其参数、调用或验证步骤直接接入Transpose 的 Tiling、转置搬运、布局转换和轴顺序验证。
+- [Transpose](transpose.md)（`related`）：Tiling参数通过Transpose Tiling获取。；host侧Tiling接口，用于获取Transpose kernel计算所需的Tiling参数，分两步：通过GetTransposeMaxMinTmpSize获取最大和最小临时空间大小；通过GetTransposeNDTilingInfo获取kernel侧所需tiling参数。。Kernel 侧 Transpose 明确消费 Transpose Tiling，目标页给出 Host 侧临时空间查询与 tiling 参数生成的完整前置链。
 <!-- cannbot:related:end -->

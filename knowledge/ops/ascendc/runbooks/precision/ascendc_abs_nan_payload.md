@@ -99,11 +99,3 @@ def diagnose(output_path, golden_path):
 
 - **逐位一致验收强加于 NaN payload**：用 `np.array_equal(output, golden)` 要求全部元素（含 NaN）逐位一致，会把硬件正确的规范化 NaN 误报为精度失败，诱导后续 agent 去「修 kernel」（kernel 本无错）或放松容差（掩盖真因）。
 - **误诊为「精度不达标」而放宽容差**：若把 T5 失败当作精度问题去调 `rtol/atol`，既掩盖了「硬件行为符合语义」的真因，又留下隐患——本卡探针已证位差恒为 511 且全在 NaN 组，应优先走 NaN 感知判别而非放容差。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Abs](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/abs.md)（`exemplifies`）：Abs API 是实测规范化 FP16 NaN payload 的直接执行接口；非 NaN 逐位一致而 NaN 只需验证仍为 NaN 且清符号位。
-- [AscAbs](../../apis/simd_api/c_api/vector_compute/asc_abs.md)（`exemplifies`）：AscendC::Abs 规范化 NaN payload 致逐位验收误报说明硬件 AscendC::Abs 把 FP16 NaN 规范化为全 1 payload（0x7fff），numpy.abs 保留原 payload（0x7e00），逐位一致验收误报失败；用位差 511 与 NaN 感知探针判别。
-- [b16 running 经 fp32 回转会改写 NaN payload](bit_exact_b16_nan_payload_needs_original_dtype_running_value.md)（`related`）：两卡都用位模式而非 isnan 判定 payload 是否被规范化；Abs 卡说明何时 payload 变化是允许的算子语义，focal 则说明返回原输入值的 scan 必须逐位保留。
-<!-- cannbot:related:end -->

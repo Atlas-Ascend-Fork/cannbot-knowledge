@@ -23,10 +23,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCacheCleanAndInvalid 无参调用导致编译失败](../../../../../runbooks/compilation/datacache_clean_requires_tensor_target.md)（`exemplifies`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《SetL2CacheHint》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
-- [L2CacheSplit](../../../../../guides/operator_practice/simd_operator_optimization/memory_access/l2_cache_split.md)（`explains`）：L2CacheSplit 与《SetL2CacheHint》的衔接是：大数据 L2CacheSplit 的分块策略由 Matmul L2 split 案例落地，L2 hint 与 load/store cache mode 决定分块数据是否按预期进入和复用 L2。
-- [设置合理的L2 CacheMode](../../../../../guides/operator_practice/simd_operator_optimization/memory_access/l2_cache_mode_config.md)（`explains`）：The guide explains why one-shot tensors may disable L2 while reused tensors should remain cached, and shows SetL2CacheHint as the control point.
-- [高阶性能打磨](../../../../../guides/operator_practice/typical_operator_cases/simd_operator_impl/add_vector_operator/advanced_optimization.md)（`explains`）：该优化用 SetL2CacheHint(CACHE_MODE_DISABLE) 绕过只读一次输入的 L2，给出 28.9% 搬运耗时下降的具体选型证据。
-- [SetValue](set_value.md)（`related`）：《SetValue》的任务是“设置GlobalTensor指定偏移位置的元素值，操作先写入DCache，需配合DataCacheCleanAndInvalid确保一致性。”。《SetL2CacheHint》具体提供“设置GlobalTensor是否启用L2 Cache，默认启用L2 Cache。”，它直接用于GlobalTensor 标量写入后的 DCache 可见性与 GetValue 验证。
-- [系统缓存概述（缓存控制）](../../cache_control/system_cache_overview.md)（`same_topic`）：系统缓存概述（缓存控制） 与《SetL2CacheHint》的实质衔接是：系统缓存由 DCache/ICache 预取、DCache 清理失效、L2 hint 与 DCCI 共同控制；一致性错误卡给出清理接口必须指定目标 tensor 的调用约束。
+- [设置合理的L2 CacheMode](../../../../../guides/operator_practice/simd_operator_optimization/memory_access/l2_cache_mode_config.md)（`explains`）：当特定 GlobalTensor 启用 L2 Cache 后性能反而下降时可手动禁用，例如仅对单次读取的 Tensor 关闭缓存以避免额外搬运开销。；开发者可以针对访问的数据设置其CacheMode，对于只访问一次的Global Memory数据设置其访问状态为不进入L2 Cache，这样可以更加高效的利用L2 Cache缓存需要重复读取的数据，避免一次性访问的数据替换有效数据。。API 卡给出禁用入口，指南解释一次性数据污染缓存并替换有效数据的性能机制。
+- [高阶性能打磨](../../../../../guides/operator_practice/typical_operator_cases/simd_operator_impl/add_vector_operator/advanced_optimization.md)（`explains`）：“原理：L2 Cache是AI Core和HBM之间的缓存层，适合需要重复访问的数据。对于Add算子这种流式访问场景（输入数据只读取一次），数据经过L2 Cache反而会占用Cache空间（Cache污染），增加搬运延时。通过SetL2CacheHint设置CACHE_MODE_DISABLE，让数据绕过L2 Cache直接从GM载入UB。”给出 Add 单次读取输入发生 L2 污染时的实测优化调用；“当特定 GlobalTensor 启用 L2 Cache 后性能反而下降时可手动禁用，例如仅对单次读取的 Tensor 关闭缓存以避免额外搬运开销。”定义该 API 正适用于只访问一次的 GlobalTensor。两端把性能症状、选型条件和具体 CACHE_MODE_DISABLE 接口连成可复用步骤。
 <!-- cannbot:related:end -->

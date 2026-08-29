@@ -128,13 +128,3 @@ grep -i "tilingKey\|SmoothL1\|smooth_l1" tilingkey_logs/plog-*.log
 ## 误诊
 
 - 主 agent 口述"修复后 TilingKey 从全未命中变为全部命中（fp32/fp16/bf16 均命中），用例全 PASS"。该结论为 `agent_reported`：修复后 pytest 输出与 plog grep 结果被 markdown_transcript 适配器截断（`_see below_`），归一化事件流中未保留 tool_observed 原文，故不进 `## 验证信号`。下个 agent 若要据此确认修复有效，需在真实 NPU 上重跑白盒 pytest + plog grep 复现。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [561103 同名算子签名冲突链接绑内置版](561103.md)（`related`）：561103 同名算子签名冲突链接绑内置版 与《白盒pytest走aten内置绕过自定义aclnn》的实质衔接是：同名签名冲突的核心是运行时绑定到错误或被自动生成覆盖的符号；符号探测、opType 碰撞、pytest 绕过和 exclude 覆盖案例给出可执行鉴别，其他 561103 卡用于排除属性与 tiling 路由根因。
-- [ACLNN 507035 — opType 与内置 ops_legacy 同名碰](aclnn_optype_collision_built_in_ops_legacy_507035.md)（`related`）：ACLNN 507035 — opType 与内置 ops_legacy 同名碰 与《白盒pytest走aten内置绕过自定义aclnn》的实质衔接是：507035 此例由自定义 opType 与内置符号同名触发；OpDef/注册/launcher/kernel/CMake 六处改名及同名碰撞 runbook 共同构成完整修复链。
-- [PyTorch框架](../../guides/programming_guide/advanced_programming/ai_framework_adaptation/pytorch_framework.md)（`related`）：PyTorch 指南说明自定义算子必须通过 torch.library/Pybind 或单算子 API 适配注册到明确 namespace；Runbook 用 aten 内置与 torch.ops.ascend 自定义 namespace 对照识别“假绿”。
-- [507035 — aten 与自定义命名空间路径对照](507035_aten_dispatch.md)（`same_topic`）：两卡共同验证 aten 与自定义 aclnn/namespace 的 dispatch 命中差异；pytest 卡给出避免“用例通过但未命中自定义 kernel”的计数方法。
-- [aclnn 黑盒 numel 不符：输出取自 CSV y 不被算子覆盖](../precision/aclnn_numel_csv_y.md)（`same_topic`）：aclnn 黑盒 numel 不符：输出取自 CSV y 不被算子覆盖 与《白盒pytest走aten内置绕过自定义aclnn》的实质衔接是：该 ACLNN numel 误判来自输出 shape/测试数据来源；L0 shape、白盒绕过、identity InferShape、OP_PROTO_LIB 和 output view 卡提供同层判别。
-<!-- cannbot:related:end -->

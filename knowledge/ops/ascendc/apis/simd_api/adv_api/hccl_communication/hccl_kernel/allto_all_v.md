@@ -34,8 +34,6 @@ platforms: ['950', a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AlltoAll](allto_all.md)（`related`）：《AlltoAll》说明集合通信AlltoAll的任务下发接口，返回该任务的标识handleId给用户。AlltoAll的功能为：每张卡向通信域内所有卡发送相同数据量的数据，并从所有卡接收相同数据量的数据。结合原型中的参数，描述接口功能，具体为，第j张卡接收到来自第i张卡的sendBuf中第j块数据，并将该数据存放到本卡recvBuf中第i块的位置。；《AlltoAllV》说明集合通信AlltoAllV任务下发接口，支持通信域内各卡定制收发数据量和内存偏移，返回任务标识handleId。。二者在AlltoAll任务下发返回的handle必须进入HCCL的Commit、Query/Wait和Finalize执行链，且通信域rank布局决定收发分块上存在可执行的直接衔接。
-- [Commit（HCCL集合通信）](commit.md)（`related`）：commit=false 的 AlltoAllV 只 Prepare 并返回 handle，需 Commit 通知服务端实际执行。
-- [HCCL集合通信Wait](wait.md)（`related`）：Wait 按 Prepare 顺序等待 AlltoAllV handle 完成，避免在变长收发结果就绪前消费 recvBuf。
-- [SetStepSize](../hccl_tiling/set_step_size.md)（`same_topic`）：SetStepSize 与《AlltoAllV》的实质衔接是：SetStepSize 把细粒度通信一次推进的算法步数写入 HcclTilingData，并与算法、通信块、引擎、队列配置一起驱动 Iterate/Commit/Wait 的 AlltoAllV 流程。
+- [AlltoAll](allto_all.md)（`related`）：焦点卡写明“每张卡向通信域内所有卡发送相同数据量的数据，并从所有卡接收相同数据量的数据”，候选卡写明“AlltoAll要求所有卡的收发数据量相同，AlltoAllV则不需要数据量相同”。两卡给出等量与逐 rank 变长收发契约，可决定是否传 counts/displacements。
+- [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)（`related`）：焦点算子说明“MIX AIV 侧再以 `Hccl<HCCL_SERVER_TYPE_AICPU>` 提交 AllToAllV/AllGather command”，候选 API 定义“定制每张卡给其它卡发送的数据量和从其它卡接收的数据量，以及定制发送和接收的数据在内存中的偏移。”；该合同对应算子 EP 域分片通信的计数与位移参数。
 <!-- cannbot:related:end -->

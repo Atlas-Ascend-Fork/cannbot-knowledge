@@ -33,9 +33,6 @@ __aicore__ inline void SetSelfDefineData(T dataPtr)
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MatmulCallBackFunc](matmul_call_back_func.md)（`related`）：《MatmulCallBackFunc》说明模板参数，支持用户定制化Matmul的A、B、C矩阵搬入搬出功能，传入自定义回调函数指针替换默认搬运函数。；《SetSelfDefineData》说明启用模板参数MatmulCallBackFunc（自定义回调函数）时，设置需要的计算数据或在GM上存储的数据地址等信息，用于回调函数使用。复用同一个Matmul对象时，可以多次调用本接口重新设置对应数据信息。。二者在回调类型由Matmul模板参数、配置与Policy实例化，并经注册宏和用户自定义信息进入Kernel侧Matmul对象上存在可执行的直接衔接。
-- [SetTensorA](set_tensor_a.md)（`related`）：SetSelfDefineData：SetSelfDefineData 只为 MatmulCallBackFunc 提供每次复用可更新的数据指针，模板声明决定回调契约，且正文明确要求它先于 SetTensorA/SetTensorB。 目标卡《SetTensorA》补充：设置矩阵乘的左矩阵A。
-- [SetTensorB](set_tensor_b.md)（`related`）：SetSelfDefineData：SetSelfDefineData 只为 MatmulCallBackFunc 提供每次复用可更新的数据指针，模板声明决定回调契约，且正文明确要求它先于 SetTensorA/SetTensorB。 目标卡《SetTensorB》补充：设置矩阵乘的右矩阵B。
-- [MatmulTemplateParams](matmul_template_params.md)（`same_topic`）：SetSelfDefineData：SetSelfDefineData 只为 MatmulCallBackFunc 提供每次复用可更新的数据指针，模板声明决定回调契约，且正文明确要求它先于 SetTensorA/SetTensorB。 目标卡《MatmulTemplateParams》补充：创建Matmul对象时需要传入的模板参数，包括A/B/C/Bias类型信息、MatmulConfig、MatmulCallBackFunc和MatmulPolicy。
-- [SetUserDefInfo](set_user_def_info.md)（`same_topic`）：SetUserDefInfo 与《SetSelfDefineData》的实质衔接是：SetUserDefInfo 只在 MatmulCallBackFunc 使用 tilingPtr 时需要；SetSelfDefineData承载回调的可变数据，模板参数和使用说明决定回调是否启用。
+- [MatmulCallBackFunc](matmul_call_back_func.md)（`related`）：“用户可配置3个函数指针”定义回调入口，“设置需要的计算数据或在GM上存储的数据地址等信息，用于回调函数使用”说明回调依赖自定义运行数据时如何注入。
+- [MatmulTemplateParams](matmul_template_params.md)（`related`）：“class MM_CB = MatmulCallBackFunc<nullptr, nullptr, nullptr>”在创建 Matmul 对象时声明回调模板参数；“启用模板参数［MatmulCallBackFunc］(matmul_template_params.md#matmul-callback-func)（自定义回调函数）时”说明 SetSelfDefineData 是向该回调注入计算数据或 GM 地址的运行期入口。
 <!-- cannbot:related:end -->

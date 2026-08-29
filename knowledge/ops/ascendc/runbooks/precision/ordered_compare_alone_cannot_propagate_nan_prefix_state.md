@@ -275,11 +275,5 @@ constexpr bool kNanAwareV = std::is_same_v<X, half> || std::is_same_v<X, float>;
 <!-- cannbot:related:start -->
 ## 相关
 
-- [IsNan](../../apis/simd_api/adv_api/math_compute/is_nan_interface/is_nan.md)（`exemplifies`）：累计极值扫描需要显式识别 current/running NaN 后再合成 Select 掩码；IsNan 提供的逐元素布尔结果正是该诊断与修复链的必要信号。
-- [Select](../../apis/simd_api/basic_api/reg_vector_compute/mask_reg_compute/select.md)（`exemplifies`）：《Select》的任务是“根据mask的比特位值从src0或src1中选取元素，bit为1选src0，bit为0选src1。”。《累计极值 NaN 语义须用 self-NE 合成选择掩码》具体提供“累计极值 Vector scan 在有限值全部正确、全 NaN 输入却同时出现 NaN 位置和索引失配时，用显式 is-current-NaN、is-running-NaN 与有限 LE 合成选择掩码。”，它直接用于Reg Select 的 mask 来源、CMPMASK 生命周期、偏移、别名和跨调用污染。
-- [A3 RMSNorm 不要用分母正值保护吞掉 NaN 传播](rmsnorm_nan_propagation_not_positive_guard.md)（`related`）：两卡利用同一 IEEE ordered-compare 边界：NaN 与有限值比较为 false；RMSNorm 的 `denom>0` 因此把 NaN 错送入零分支，累计极值则需显式 self-NE 识别 NaN。
-- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`related`）：cummin/argmin 同时更新值与索引时还需统一 B32 lane 宽度，否则即使 NaN mask 逻辑正确也会驱动错索引半区。
-- [BF16 标量 cast 后端失败—改用位序键](../compilation/bf16_scalar_compare_by_raw_bits.md)（`related`）：BF16 标量 cast 后端失败—改用位序键 与《累计极值 NaN 语义须用 self-NE 合成选择掩码》的实质衔接是：位序键是 BF16 标量 cast 失败的直接替代；所选卡补充同一后端限制、B16→B32 比较宽度及 NaN 显式选择。
-- [b16 running 经 fp32 回转会改写 NaN payload](bit_exact_b16_nan_payload_needs_original_dtype_running_value.md)（`related`）：该卡构造 NaN-safe take_current mask，focal 要求用同一 mask 同步更新原 dtype value carry 和 fp32 compare carry；两者组成累计极值的谓词与位保持状态链。
-- [跨批首行漏比较—续批从 row 0 扫描](prefix_scan_continuation_batch_must_compare_first_row.md)（`related`）：跨批前缀扫描还必须让续批 row0 参与比较；该状态边界与 NaN 传播规则共同决定 running extremum。
+- [b16 running 经 fp32 回转会改写 NaN payload](bit_exact_b16_nan_payload_needs_original_dtype_running_value.md)（`related`）：“NaN 验证同时检查 `isnan`、原始位模式与索引，不能只做数值等价；”规定 payload 修复后的三项验收；“value 与 index 必须使用同一个最终选择掩码，否则值正确时索引仍可能漂移。”补足 NaN 前缀状态机中 values/indices 共享谓词的前置。
 <!-- cannbot:related:end -->

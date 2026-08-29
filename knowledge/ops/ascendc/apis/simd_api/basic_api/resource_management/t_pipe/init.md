@@ -25,8 +25,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Destroy](destroy.md)（`related`）：TPipe Init 建立资源状态，Destroy 释放同一对象的资源；重复复用 TPipe 时二者构成明确的初始化/清理生命周期。
-- [GetBaseAddr](get_base_addr.md)（`related`）：GetBaseAddr 只能在初始化后的逻辑内存池上查询。
-- [Reset](reset.md)（`related`）：Reset 释放资源并恢复 eventId 等初始化状态；Init 定义该初始状态及缓冲配置，因此两者构成 TPipe 重新配置前的直接状态转换。
-- [TPipe](t_pipe_constructor.md)（`related`）：TPipe 构造函数已经完成默认初始化；Init 卡说明额外 Init 的重置语义，二者共同防止构造后无条件再次初始化。
+- [Destroy](destroy.md)（`related`）：Tpipe对象复用时，要与Destroy接口成对使用，每次复用需要先Destroy释放资源，再调用init重新初始化。；约束：用于重复申请释放tpipe，创建tpipe对象后，可调用Destroy手动释放资源。。Init 明确规定复用前先 Destroy，Destroy 则提供手工释放资源的对应动作，两者共同定义 TPipe 重复申请释放的生命周期。
+- [Reset](reset.md)（`related`）：完成资源的释放与eventId等变量的初始化操作，恢复到TPipe的初始化状态。；用于内存和同步流水事件EventID的初始化。；Reset 释放当前资源并恢复 Init 建立的内存与 EventID 状态，两接口构成 TPipe 资源生命周期。
 <!-- cannbot:related:end -->

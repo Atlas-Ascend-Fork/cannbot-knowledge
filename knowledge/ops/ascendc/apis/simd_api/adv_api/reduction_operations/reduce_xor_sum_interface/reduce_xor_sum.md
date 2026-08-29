@@ -26,7 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Sum](../sum_interface/sum.md)（`related`）：XorSum 聚合代数不同，不能替代算术求和。
-- [GetReduceXorSumMaxMinTmpSize](get_reduce_xor_sum_max_min_tmp_size.md)（`same_topic`）：GetReduceXorSumMaxMinTmpSize 与《ReduceXorSum》的实质衔接是：GetReduceXorSumMaxMinTmpSize 是 ReduceXorSum 的 host 侧空间查询，结果直接作为该接口 kernel tiling 的临时缓冲预算。
-- [ReduceXorSum接口](reduce_xor_sum_interface.md)（`same_topic`）：函数页给出 ReduceXorSum 实际参数和输出 shape。
+- [GetReduceXorSumMaxMinTmpSize](get_reduce_xor_sum_max_min_tmp_size.md)（`related`）：焦点卡要求“isReuseSource与ReduceXorSum接口保持一致”，候选卡定义“对多维向量按指定维度进行异或求和归约。”；Host 侧临时空间计算的复用参数必须与 Kernel 侧 ReduceXorSum 调用一致。
 <!-- cannbot:related:end -->

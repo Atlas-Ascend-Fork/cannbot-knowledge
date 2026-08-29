@@ -29,6 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hlex2](../../bfloat16_type/bfloat16x2_compare_functions/_hlex2.md)（`related`）：bfloat16x2 版本保持相同逐 lane <= 语义，用于跨两种 16bit 浮点输入实现对照。
-- [__hlex2_mask](_hlex2_mask.md)（`same_topic`）：__hlex2 与 __hlex2_mask 都对 half2 执行逐 lane ordered ≤；一个返回 half2 的 1/0，另一个返回每 lane 16-bit 掩码。
+- [__hlex2_mask](_hlex2_mask.md)（`same_topic`）：功能：比较两个half2类型数据的两个分量，如果分量满足第一个数小于或等于第二个数，则对应比较结果为1.0，否则为0.0。；功能：比较两个half2类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量满足第一个数小于或等于第二个数，则对应16位掩码为0xFFFF，否则为0x0。。两端执行相同的有序 half2 逐分量小于等于比较，分别返回 half2 数值 1/0 与 packed uint mask；互读可按下游消费格式选择接口。
 <!-- cannbot:related:end -->

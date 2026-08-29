@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:30:20Z"
-updated_at: "2026-08-25T18:30:20Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -674,9 +674,9 @@ out_empty.release();
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V1 公开支持 | V1 公开支持 | V2 为最新；见 `_a5` 卡 |
+| 支持状态 | V1 公开支持 | V1 公开支持 | V2 为最新；见 `_950` 卡 |
 | Host/Launcher | `ascend910b`，DAV_2201，共用五 key | `ascend910_93`，DAV_2201，共用五 key | DAV_3510 强制 key4/6 |
 | Kernel/资源 | `flat_quant.cpp`，AIV:AIC softsync | 同左 | `flat_quant_apt.cpp` + SSBUF/CMCT |
 
@@ -718,3 +718,9 @@ out_empty.release();
 | 同步 | flags 4/0/5/6 + DEvent ping/pong | AIV:AIC=2:1、轮次 | `Process`、`DEvent` |
 | 精度与尾块 | FP32 MMAD/scale、T handoff、RINT | cast 次序、real M/N/K | `Quant`、`ProcessSplit*` |
 | 失败边界 | Host 校验/selector；unknown key无输出 | 不补设备 fallback | `CheckParams`、`flat_quant` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FlatQuant 950 ACLNN 算子知识](flat_quant_950.md)（`same_topic`）：“｜ 计算语义 ｜ 对每个 batch `k` 计算 `z_k = P1 @ (x_k @ P2)`，再按该 `M×N` token 的绝对值最大值做 INT4 per-token 量化 ｜”与“｜ 计算语义 ｜ `z_k=P1@(x_k@P2)`（per-group 允许 P2 为空），随后做 INT4 per-token 或 FLOAT4_E2M1、32 元素一组的 MX 量化；V2 新增 `dstTypeMax` ｜”分别给出两端正文事实；两卡共享 FlatQuant 的双 Kronecker 投影核心对象，A2/A3 卡给出 V1 INT4，950 卡给出 V2 的 INT4/FP4 扩展，联合阅读可完成版本与平台选型。
+<!-- cannbot:related:end -->

@@ -30,12 +30,3 @@ platforms: ['950']
 - index仅前8个元素有效。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscGather](../../../c_api/vector_compute/asc_gather.md)（`related`）：AscGather 与《GatherB》的实质衔接是：AscGather 的 offset 是逐元素收集地址；Reg/Memory Gather 与各错位 runbook 直接解释偏移、基址、维序和非轴步长的正确构造。
-- [AscGatherDatablock](../../../c_api/reg/reg_load/asc_gather_datablock.md)（`related`）：两接口都按偏移寄存器离散收集 8 个 32B datablock，分别是 ISASI/Reg 与 C API 表面，可用于同一 gather-block 需求迁移。
-- [Gather](gather_discrete.md)（`related`）：GatherBDiscrete 将同类离散搬入从元素粒度改为 32B DataBlock 粒度且只使用前 8 个索引；与 focal 的元素级 Gather 构成粒度选型。
-- [Gatherb](../../memory_vector_compute/scatter_gather/gatherb_isasi.md)（`same_topic`）：Gatherb 与 Reg GatherB 都按 DataBlock 偏移从 UB 收集数据；一张描述 Memory 接口组，一张给出寄存器离散加载入口。
-<!-- cannbot:related:end -->

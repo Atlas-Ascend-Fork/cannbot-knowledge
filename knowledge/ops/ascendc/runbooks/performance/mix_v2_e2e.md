@@ -6,7 +6,7 @@ tags: ["task.optimization", "topic.implementation.pipeline", "topic.performance.
 status: stable
 sources: []
 created_at: "2026-08-18T08:41:27Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 aliases: ["sparse_flash_attention_quant_d_950"]
 ---
@@ -51,9 +51,5 @@ aliases: ["sparse_flash_attention_quant_d_950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [C1 Cube FP32 输出阻断 A5 Mix合图 CV 通路](../compilation/c1_cube_fp32_a5_mix_cv.md)（`related`）：同一 sparse_flash_attention_quant 优化中，C1 FP32 输出阻断 CV 通路，扩展 Mix 到 V1+C2 也实测退化；与 focal 共同界定不能盲目扩大融合域。
-- [FlashAttention算子性能调优案例](../../guides/operator_practice/best_practices/flash_attention_tuning.md)（`related`）：该卡用端到端 profile 验证 FlashAttention MIX 调度收益。
-- [Mix合图编译超时致 MLA decode 不可用](../compilation/mix_mla_decode.md)（`related`）：mla_prolog decode 的最小 Mix scope 仍编译超时，提供另一种合图不可行信号；与 focal 的 E2E 反退化一起说明 Mix 是否可用必须按算子结构实测。
-- [PyPTO F40005 UB 越界：scope 扩展压满 UB](../compilation/pypto_f40005_ub_scope_ub.md)（`related`）：两卡都围绕扩大 sg_set_scope/Mix 合图边界；focal 暴露任务数下降的 E2E 退化，候选暴露 scope 扩展导致 UB 超额 F40005，构成性能与可构建性双门禁。
-- [PyPTO loop_unroll 串行 s2 循环诊断](pypto_loop_unroll_s2.md)（`related`）：在 focal 禁止把 V2 并入 Mix 后，no_flash s2 循环的串行迭代链是可独立诊断的性能瓶颈，候选给出 bubble 日志与 unroll_list 定位方法。
+- [SparseFlashAttention 950 Direct Invoke 算子知识](../../operators/direct/transformer/attention/sparse_flash_attention_950.md)（`related`）：“｜ 执行类型 ｜ 多 Kernel 图：0至3个 `AIV_VECTOR` pack/fill/index 节点 → 1个 `MIX_CV` attention 节点（AIC_CUBE QK/PV，两枚 AIV 做 gather/online-softmax/update）→ 可选 `AIV_VECTOR` unpack。 ｜”与“**边界**：利用率提升看似收益，实为任务数下降的副作用——当合图导致任务数下降时，利用率提升来自分母（时间）变大而非有用工作量增加。结论绑定本 SFA 算子 V2 段（division+cast，计算量小、依赖重）的结构；若 V2 段计算量大或与前置段存在大量中间张量复用，包入 Mix合图可能反而有益，结论不适用。”。Direct 实现包含 MIX_CV attention，Runbook 实测同类 SFA 将 V2 并入 Mix scope 会劣化 E2E。
 <!-- cannbot:related:end -->

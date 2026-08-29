@@ -547,12 +547,7 @@ CumminTilingData calc_cummin_tiling(int64_t M, int64_t R, int64_t N,
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCreateMask](../../apis/simd_api/c_api/reg/reg_data_types/asc_create_mask.md)（`exemplifies`）：AscCreateMask 与《半精度索引错位—拆分双 int32 掩码》的实质衔接是：AscCreateMask 根据数据位宽和 pat_mode 生成 MaskReg，随后由 UpdateMask/GetMaskSpr、Load/Store 和 MergeMode 消费；两个编译错例限定模板类型与可写引用。
-- [MaskReg计算](../../apis/simd_api/basic_api/reg_vector_compute/mask_reg_compute/mask_reg_compute.md)（`exemplifies`）：本卡维护 valueMask、idxMaskLo、idxMaskHi；MaskReg 文档给出这些掩码转换与组合的接口范围。
-- [Select](../../apis/simd_api/basic_api/reg_vector_compute/mask_reg_compute/select.md)（`exemplifies`）：本卡用低、高 MaskReg 分别更新两个 int32 RegTensor；Reg Select 是索引锁步更新的执行点。
-- [UnPack](../../apis/simd_api/basic_api/reg_vector_compute/mask_reg_compute/un_pack.md)（`exemplifies`）：本卡明确用 UnPack<LOWEST/HIGHEST> 把 value mask 拆为低、高两半；接口定义该拆分行为。
-- [Reg int32→int64 Cast 源目 VL 错配留空索引](int32_to_int64_reg_cast_must_respect_destination_lane_width.md)（`related`）：候选在 int32→int64 Cast 中展示目标 lane 变窄导致后半索引空缺，本卡是 B16 value 配 int32 index 的同类宽度不等。
-- [b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane](compute_lane_count_must_follow_promoted_fp32_width.md)（`related`）：若保留 B16 value 的 128-lane 比较域，索引侧必须拆成两组 64-lane mask；它与 focal 的统一 B32 计算是解决同一 lane 数不匹配的另一实现契约。
-- [Ascend950 Reg 扫描按 256B 锁定 lane](dav3510_vector_register_width_is_256_bytes.md)（`same_topic`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《半精度索引错位—拆分双 int32 掩码》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`same_topic`）：两卡针对同一 128 个 B16 value lane 与 64 个 int32 index lane 的锁步失败；候选统一升 B32，本卡保留 B16 并拆两组 index/mask。
+- [UnPack](../../apis/simd_api/basic_api/reg_vector_compute/mask_reg_compute/un_pack.md)（`exemplifies`）：“用 `UnPack<LOWEST/HIGHEST>` 得到两组 int32 store mask”与“将源操作数src的低半部分或高半部分，展开到目的操作数dst”把双 index mask 配方连接到 UnPack 的低半/高半接口语义。
+- [Cummin 950 Direct Invoke 算子知识](../../operators/direct/math/math/cummin_950.md)（`related`）：索引在 Vector UB 中用 `int32` 计算，输出前在同一 argmin buffer 内 cast 为 `int64`；SIMT Route 直接写 `int64` GM。一个 256B 的 fp16/bf16 寄存器有 128 个 value lane，而一个 int32 寄存器只有 64 个 index lane，单个 int32 RegTensor 与单个未拆分 MaskReg 无法覆盖同一批 128 个逻辑元素。算子卡的低精度 value 与 int32 工作索引形成二比一 lane 宽度；精度卡给出双寄存器和双 mask 的具体实现与验证合同。
+- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`same_topic`）：“每个 value register iteration 必须加载两组 int32 寄存器”与“修复把 half/bfloat16/float 的计算类型统一为 float，int32 保持 int32”是同一 B16 value/B32 index lane 错配的两条已验证修复路线，可直接用于快路与安全回退选型。
 <!-- cannbot:related:end -->

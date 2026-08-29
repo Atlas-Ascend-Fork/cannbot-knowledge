@@ -25,11 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Llrintf](llrintf.md)（`related`）：llrintf 把最近整数结果写为 long long，适合需要更宽整数范围而非保持 float 的场景。
-- [Lrintf](lrintf.md)（`related`）：lrintf 采用相同最近整数规则但把结果转换为 long，返回类型决定后续溢出和存储语义。
-- [Rintf](rintf.md)（`same_topic`）：nearbyintf 与 rintf 都按 ties-to-even 返回最接近的浮点整数值；两卡给出的输入、返回类型和舍入规则相同。
-<!-- cannbot:related:end -->

@@ -27,6 +27,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BitwiseXor](bitwise_xor.md)（`related`）：factor 接口给出 maxLivedNodeCount 与 extraBuf，可由已分配空间反算 BitwiseXor 单次 count，补足分块 tiling 公式。
-- [GetBitwiseXorMaxMinTmpSize](get_bitwise_xor_max_min_tmp_size.md)（`same_topic`）：GetBitwiseXorMaxMinTmpSize 与《GetBitwiseXorTmpBufferFactorSize》的实质衔接是：GetBitwiseXorMaxMinTmpSize 给出 BitwiseXor 可用临时空间范围，factor 查询在固定空间下反推元素数，Kernel 是该空间的实际消费方。
+- [BitwiseXor](bitwise_xor.md)（`related`）：该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的多少倍；extraBuf表示使用的额外临时空间大小。 推算示例如下： - 算子实现需要调用BitwiseXor接口，开发者为其预留currBuff大小的空间，利用GetBitwiseXorTmpBufferFactorSize接口得到maxLivedNodeCount、extraBuf输出值，可推导算子单次最大计算元素数量为：；逐比特对两个输入进行异或操作。；因算子实现实际调用 BitwiseXor，factor 查询返回的 maxLivedNodeCount 与 extraBuf 正是规划该计算每次处理量和临时空间的 Host 侧依据。
 <!-- cannbot:related:end -->

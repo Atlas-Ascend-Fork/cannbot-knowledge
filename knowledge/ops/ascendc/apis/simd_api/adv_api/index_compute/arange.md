@@ -37,7 +37,5 @@ __aicore__ inline void Arange(const LocalTensor<T>& dst, const T firstValue, con
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetArangeMaxMinTmpSize](get_arange_max_min_tmp_size.md)（`related`）：Arange 的 sharedTmpBuffer 必须由 Host sizing 接口按 firstValue、diff、count 和 dtype 给出合法上下界，最小值是正确性门槛。
-- [Arange](../../basic_api/reg_vector_compute/index_operations/arange.md)（`same_topic`）：高阶 LocalTensor Arange 提供同任务的 workspace 路径。
-- [AscArange](../../c_api/reg/index_operate/asc_arange.md)（`same_topic`）：AscArange：AscArange、Reg Arange 与高级 Arange 都生成等差索引序列，差异在寄存器、LocalTensor和临时空间调用契约，适合实现路线互查。 目标卡《Arange（索引计算）》补充：给定起始值，等差值和长度，返回一个等差数列。
+- [GetArangeMaxMinTmpSize](get_arange_max_min_tmp_size.md)（`related`）：由于Arange接口内部不需要用到临时空间，max和min均返回0。；给定起始值，等差值和长度，返回一个等差数列。。临时空间查询卡给出调用 Arange 生成等差数列前的 workspace 选取结果，二者组成 Host 侧容量查询到 Kernel 接口调用的直接链路。
 <!-- cannbot:related:end -->

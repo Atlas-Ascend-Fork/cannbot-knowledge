@@ -181,11 +181,3 @@ constexpr float VELTKAMP_K = 4097.0f;  // 2^12 + 1 for fp32 (24-bit mantissa) sp
 ## 误诊
 
 若朴素 CPU fp32 不能复现，或 mismatch 分布广泛而非集中在近零结果，应优先排查 kernel 的布局、广播、搬运和未初始化问题，而不是直接套用补偿算术。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [fp32 窄化舍入模式不一致触发稀疏 MARE 越线](fp32_to_fp16_cast_matches_rne_oracle.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《fp32 乘积相消 MARE 超阈值 — 用补偿乘积保留低位》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [numpy legacy 标量提升致 lr_adj 1-ULP 偏差](numpy_legacy_lr_adj_1_ulp.md)（`related`）：numpy legacy 标量提升致 lr_adj 1-ULP 偏差 与《fp32 乘积相消 MARE 超阈值 — 用补偿乘积保留低位》的实质衔接是：该稳定 1-ULP 差异来自 numpy 1.26 将 Python float 与 np.float32 标量提升到 FP64 后再降回 FP32；stringstream 标量截断和补偿乘积卡是需要用探针排除的另外两类稳定低位误差。
-- [GELU 负尾部用 erfc 形态避免大数相消](gelu_negative_tail_erfc_avoids_cancellation.md)（`same_topic`）：《fp32 乘积相消 MARE 超阈值 — 用补偿乘积保留低位》明确“两个大幅值 fp32 乘积先各自舍入再相减会放大近零结果的相对误差；对 fp32 路径使用 Split/TwoProduct 补偿后恢复精度。”；它与《GELU 负尾部用 erfc 形态避免大数相消》的“fp32 exact GELU 用 0.5x 加减近等幅项会在负大值尾部相消；直接计算 max(x,0)-0.5|x|erfc(|x|/sqrt(2)) 后 20/20。”在实际调用参数、数据流或结果校验上直接衔接。
-<!-- cannbot:related:end -->

@@ -56,3 +56,11 @@ platforms:
 - `diff 事实` + `维护者确认`（@3242bd8b0a9d，DeepSeek-R1）：`init_cache` 增可选 `num_hidden_layers` 入参、runner 按 `is_mtp` 分流（draft 传 `next_n`、主模型走缺省）、循环内 `past_key_values[next_index]` 按步取用；维护者确认「主模型也会按 next_n 初始化 kv cache，需外传入以区分主/副」「需在进入循环前初始化，默认初始化只生成一份共用 cache」。
 - `diff 事实`（@874b41df5de8，Qwen3-Next）：verify 分支按 `num_accepted_tokens` 推进，投机中间态（conv window / ssm）verify 后按有效索引写回 `conv_states` / `ssm_states`；图模式 / PD 分离互斥、依赖 GDN 融合算子为仓级约束披露。
 - 溯源下探：[cann-recipes-infer-pr-156-feat-adapt-mtp3](https://gitcode.com/cann/cann-recipes-infer/merge_requests/156)、[cann-recipes-infer-pr-235-feat-support-qwen-next](https://gitcode.com/cann/cann-recipes-infer/merge_requests/235)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MTP Speculative Decoding](../../../concepts/techniques/mtp_speculative_decoding.md)（`related`）：焦点卡的状态机要求“按 n 选择性回写”，候选卡将同一正确性合同细化为“只把前 `num_accepted_tokens` 个对应的状态写回持久 `conv_state` / `ssm_state`”；两卡围绕 MTP 接受前缀与缓存推进这一核心决策分别给出总机制和结构化排障规则。
+- [给新模型接入 MTP 推测解码：draft 模型构造 / 权重共享 / prev_hidden_states / 三元组注册 / 无损 verify](../../../guides/experience/interventions/mtp_speculative_decode_model_onboarding.md)（`related`）：draft 的 KV / 递归状态缓存分配另有结构相关的正确性坑（单层 draft 需 `next_n` 层 KV、SSM 递归状态按接收数推进）；draft 的缓存正确性随注意力结构分两类处理，接入前先对号入座。。接入指南明确把缓存分配和推进留给该规则，规则则补齐不同注意力结构下 draft 状态正确性的后续步骤。
+- [MTP 投机解码的两个记账约束：KV cache 按预测层数(非草稿步数)分配 + 与分片 prefill 共存时延后补跑 draft 步](mtp_cache_and_microbatch_prefill_bookkeeping.md)（`same_topic`）：遇到 cache 份数争议时，先用“cache 层数取 `num_nextn_predict_layers`（KV cache 与 ［offload cache］(../../../concepts/techniques/kvcache_offload.md) 同口径）”核对 checkpoint 是否真的有多预测层，再用“单层 draft 跑 `next_n` 步时**每一步各需一层 KV cache**：第 `k` 步取 `past_key_values［k］`。”核对单层 draft 是否以 past_key_values［k］ 分步取用，避免把两种结构的规则互相套用。
+<!-- cannbot:related:end -->

@@ -153,9 +153,5 @@ __simd_vf__ inline void reduce_sq_vf(__ubuf__ float *sumSqAddr, __ubuf__ float *
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Add](../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/add.md)（`exemplifies`）：Add 的第三数据参数是 RegTensor，符合 Reduce 产生的 lane0 寄存器结果，是本卡经构建验证的替换接口。
-- [Adds](../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/adds.md)（`exemplifies`）：Adds 的第三数据参数是 C++ 标量，正是误把 Reduce 结果 RegTensor 传入后触发 vadds 类型断言的接口契约。
-- [Adds（灵活标量位置）](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/adds_flexible_scalar.md)（`exemplifies`）：Adds（灵活标量位置） 与《RegTensor 累加须用 Add 而非 Adds》的实质衔接是：灵活标量 Adds 与普通 Adds、C Reg/C Vector add-scalar 执行同一 tensor+scalar 运算；RegTensor 误用 Adds 的案例明确区分标量加与张量逐元素 Add。
-- [RegTensor](../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/reg_tensor.md)（`exemplifies`）：RegTensor 与《RegTensor 累加须用 Add 而非 Adds》的实质衔接是：RegTensor 是 256B VL 的 VF 内基本单元；MaskReg/AddrReg/非对齐状态、内置类型和跨 VF/错误类型案例直接限定 lane、寿命和模板参数。
-- [Reg 尾块 masked Add 清零跨块累加器](../precision/reg_tail_mask_zeroing_clears_cross_chunk_accumulator.md)（`related`）：Reg 尾块 masked Add 清零跨块累加器 与《RegTensor 累加须用 Add 而非 Adds》的实质衔接是：尾块 Mul 用 tail mask 把无效临时 lane 置零，但跨块 Add 必须用 full mask；MaskMergeMode 定义 ZEROING/MERGING，Add/Mul 是实际指令，UpdateMask、Reduce 与跨块状态卡验证该修复不会清空历史 accumulator。
+- [RegTensor](../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/reg_tensor.md)（`exemplifies`）：RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Length），长度为256B。b64或complex32类型下，支持通过RegTrait模板参数扩展存储2VL用于复杂计算。；`Adds` 是向量加标量接口，其第三个数据参数是 `scalarValue`。把 `RegTensor<float>` 传入后，模板会尝试把整个寄存器类型当成标量，随后触发 SupportType、可转换性和底层 `vadds` 重载检查。。API 卡定义 RegTensor 是寄存器操作数，runbook 用编译失败证明不能把它当 Adds 的标量参数。
 <!-- cannbot:related:end -->

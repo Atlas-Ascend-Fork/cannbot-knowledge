@@ -30,10 +30,3 @@ platforms: ['950']
 - 允许源操作数和目的操作数为同一个矢量数据寄存器或掩码寄存器，例如asc_intlv(src0, src1, src0, src1)。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscDeintlv](asc_deintlv.md)（`related`）：AscDeintlv 将交织数据拆成两路，AscIntlv 执行逆向合并；二者可组成数据重排的往返验证链。
-- [Interleave](../../../basic_api/reg_vector_compute/mask_reg_compute/interleave.md)（`same_topic`）：Reg Interleave 提供同一交错语义的 C++ Reg API，而 AscIntlv 是 C API；对照可完成 RegTensor/MaskReg 参数迁移。
-<!-- cannbot:related:end -->

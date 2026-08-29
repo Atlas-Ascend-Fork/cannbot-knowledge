@@ -76,7 +76,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/inplace_matmul_all_reduce_add_rms_norm/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T20:14:35Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -918,12 +918,12 @@ Host 依据所有 main/tail segment 的累计跨度判断通信 window 是否容
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持（公开文档称 A2；配置为 Ascend 910B） | 不支持 | Ascend 950 支持表明确不支持 |
 | Host/Launcher | arch22 inplace alias + quant/ARN；AICPU KFC attached stream | 无入口闭包 | 无入口闭包 |
 | Kernel/资源 | arch22 `KERNEL_TYPE_MIX_AIC_1_2`，Cube+Vector+HCCL | 无 | 无 |
-| 正式卡结论 | 本文件为无后缀 A2 卡，CANN 9.1 固定仓最新支持版本 | 不发布 | 不发布 `_a5` 卡 |
+| 正式卡结论 | 本文件为无后缀 A2 卡，CANN 9.1 固定仓最新支持版本 | 不发布 | 不发布 `_950` 卡 |
 
 ## 限制与失败边界
 
@@ -991,4 +991,4 @@ Host 依据所有 main/tail segment 的累计跨度判断通信 window 是否容
 | communication | AllReduce SUM、commOrder=1、completion count | wait 前不得复用 segment | `MatmulAllReduceBase` / ARN router |
 | precision | FP16 与 BF16 specialization | 不得重排 dequant/add/RINT/RMS | `BmmDequant*` / ARN modes |
 | tail | QBMM 与 ARN 均独立 tiling | main key 不能替代 tail key | fused `DoOpTiling` / Process |
-| platform | ascend910b/arch22 | 不得套用其他算子的 A3/A5 实现 | OpDef/README/binary/CMake |
+| platform | ascend910b/arch22 | 不得套用其他算子的 A3/950 实现 | OpDef/README/binary/CMake |

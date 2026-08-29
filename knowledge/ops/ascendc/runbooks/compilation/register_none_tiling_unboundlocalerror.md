@@ -79,8 +79,6 @@ op-compile 的 dfx 段生成器在 `REGISTER_NONE_TILING` 路径下（`generate_
 <!-- cannbot:related:start -->
 ## 相关
 
-- [REGISTER_TILING_DEFAULT](../../apis/simd_api/basic_api/kernel_tiling/register_tiling_default.md)（`exemplifies`）：接口卡定义 REGISTER_TILING_DEFAULT 注册具体 TilingData 的契约，正是绕过 REGISTER_NONE_TILING dfx 未初始化路径所采用的替代入口。
-- [RegisterNoneTiling](../../apis/simd_api/basic_api/kernel_tiling/register_none_tiling.md)（`exemplifies`）：RegisterNoneTiling：RegisterNoneTiling 与 GET_TILING_DATA 系列共同完成未注册 C++ struct 的 kernel 解码；两个 runbook分别覆盖该宏在生成器与 RESERVED workspace 场景的实际失败，直调限制卡界定不可用边界。 目标卡《REGISTER_NONE_TILING 致 UnboundLocalError》补充：按 DESIGN 规范在模板化 TilingData 的 kernel 入口写 REGISTER_NONE_TILING 时，CANN 9.1.0 op-compile 的 dfx 生成器在 _generate_binary_for_tiling_without_register 抛 UnboundLocalError；判别后改用 REGISTER_TILING_DEFAULT(具体模板实例化) 规避。
-- [REGISTER_TILING_DEFAULT 取小档致 NaN](register_tiling_default_nan.md)（`related`）：该卡用 opParaSize 实测证明多档 TilingData 的 default 必须取最大 struct，直接支撑本卡以最大模板实例规避截断的选择。
-- [REGISTER_TILING_DEFAULT 多 struct 冲突](register_tiling_default_struct.md)（`related`）：该卡说明 default 注册全算子只能有一个 struct，补充本卡选择一个最大模板实例而不能每档各注册的原因。
+- [RegisterNoneTiling](../../apis/simd_api/basic_api/kernel_tiling/register_none_tiling.md)（`exemplifies`）：Kernel侧使用标准C++语法定义TilingData时，告知框架使用未注册结构体，配套GET_TILING_DATA系列接口获取TilingData。；op-compile 在 `REGISTER_NONE_TILING` 下抛 `UnboundLocalError: cannot access local variable 'tiling_struct_size'`（ascendc_compile_dfx.py:239 `_generate_binary_for_tiling_without_register`）（来源平台：950；证据等级: tool_observed）；API 给出未注册结构体模式，runbook 提供模板化 TilingData 在 CANN 9.1.0 上的构建失败与替代注册方式。
+- [REGISTER_TILING_DEFAULT 取小档致 NaN](register_tiling_default_nan.md)（`related`）：修复后 kernel 入口文件 `op_kernel/softplus_v2_grad_kernel.cpp` 使用 `REGISTER_TILING_DEFAULT(SoftplusV2GradTilingData<8>);`（来源平台：950；证据等级: artifact_verified）；机制验证探针：取大档 struct 作 default 后 `opParaSize=228`（=220+8），足以容纳大档 struct，闭合"default struct 尺寸+8"推导（来源平台:950；证据等级:tool_observed）。。前卡要求改用具体 default，后卡进一步要求选择最大档覆盖 opParaSize，形成连续修复链。
 <!-- cannbot:related:end -->

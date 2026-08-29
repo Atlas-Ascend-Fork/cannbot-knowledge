@@ -28,9 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差](../../../../../runbooks/precision/muladddst_fma_golden_mul_add.md)（`exemplifies`）：Runbook 的根因正是该 Reg MulAddDst 对 src0*src1+dst 执行融合乘加、只做一次舍入；API 卡给出实际操作数和 mask 契约。
-- [MulAddDst](../../memory_vector_compute/composite_compute/mul_add_dst.md)（`related`）：Reg MulAddDst 与 Memory API 都实现 dst=src0*src1+dst；前者揭示寄存器级 FMA 路径，后者在 UB Tensor 上暴露 mask/repeat 约束。
-- [AscMulAdd](../../../c_api/vector_compute/asc_mul_add.md)（`same_topic`）：AscMulAdd说明执行矢量的乘加运算。
-- [Axpy](axpy.md)（`same_topic`）：MulAddDst说明将两个源操作数逐元素相乘再加到目的操作数上，结果写回目的操作数。
-- [MulDstAdd](mul_dst_add.md)（`same_topic`）：MulDstAdd 与《MulAddDst》的衔接是：MulDstAdd 与 MulAddDst 共享乘加写回但目标操作数位置不同；ZEROING trait 是 focal 明确允许的掩码模式，错误沿用累加式 mask 会改变写回结果。
+- [MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差](../../../../../runbooks/precision/muladddst_fma_golden_mul_add.md)（`exemplifies`）：Phase 2 用 VF 函数 `MulAddDstVF`（`__simd_vf__` + `asc_vf_call`，内部 `AscendC::Reg::MulAddDst`）计算 `y = addend + x * multiplier`。golden（C++ 独立参考）用 `multiplier * x` 再 `+ addend` 两次独立 fp32 舍入。；该接口按元素将srcReg0与srcReg1相乘再加上dstReg，根据mask将计算结果写入dstReg。。运行手册在 VF 中实际调用 MulAddDst，并因该融合乘加与 golden 的分离双舍入不同而出现 ULP 偏差；API 卡定义乘积加回 dstReg 的运算契约，可用于定位为何要改成 Mul 与 Add 两步。
 <!-- cannbot:related:end -->

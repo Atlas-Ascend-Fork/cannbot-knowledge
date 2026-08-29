@@ -26,10 +26,6 @@ Welford算法的后处理接口，用于在线计算均值和方差的最终结�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BatchNorm Tiling](batch_norm_tiling.md)（`related`）：《BatchNorm Tiling》的任务是“获取BatchNorm kernel计算时所需的Tiling参数，包括通过GetBatchNormMaxMinTmpSize获取最大最小临时空间大小和GetBatchNormNDTilingInfo获取tiling参数。”。《WelfordFinalize》具体提供“Welford算法的后处理接口，用于在线计算均值和方差的最终结果。LayerNorm中Reduce轴较大时可切分Reduce轴，联合WelfordUpdate实现等效计算LayerNorm。”，它直接用于BatchNorm Tiling 所依赖的 Welford 统计量和数据格式约束。
-- [GroupNorm](group_norm.md)（`related`）：《GroupNorm》处理“对shape为[N,C,H,W]的输入，将每个[C,H,W]在C维度上分为groupNum组并对每一组进行标准化，再通过可训练的缩放参数γ和平移参数β进行调整。”。《WelfordFinalize》明确提供“Welford算法的后处理接口，用于在线计算均值和方差的最终结果。LayerNorm中Reduce轴较大时可切分Reduce轴，联合WelfordUpdate实现等效计算LayerNorm。”，其参数、调用或验证步骤直接接入GroupNorm 的分组统计、Welford 计算、Tiling 与格式约束。
-- [LayerNorm](layer_norm.md)（`related`）：WelfordFinalize 消费分块 Update 的中间态得到最终均值/方差，使大 Reduce 轴的分块统计重新接回 LayerNorm 归一化。
-- [WelfordFinalize Tiling](welford_finalize_tiling.md)（`related`）：WelfordFinalize Tiling 生成该 kernel 的临时空间与 WelfordFinalizeTiling 参数；kernel 正文是这些参数的直接消费者。
-- [Normalize](normalize.md)（`same_topic`）：Normalize 与《WelfordFinalize》的实质衔接是：Normalize 依赖 tiling、归约统计和 Rsqrt，所选卡片覆盖 padding、NaN/rstd 与同步故障。
-- [WelfordUpdate](welford_update.md)（`same_topic`）：WelfordUpdate 与《WelfordFinalize》的实质衔接是：WelfordUpdate tiling 生成 Update 参数，Update 的统计量再由 Finalize 及其 tiling 完成归一化输出。
+- [WelfordFinalize Tiling](welford_finalize_tiling.md)（`same_topic`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过WelfordFinalize Tiling获取。接口接收WelfordUpdate输出的均值和方差中间结果，计算最终的均值和方差。”与“host侧Tiling接口，用于获取WelfordFinalize kernel计算所需的Tiling参数，分两步：通过GetWelfordFinalizeMaxMinTmpSize获取最大和最小临时空间大小；通过GetWelfordFinalizeNDTilingInfo获取kernel侧所需tiling参数。”提供双方正文证据。Finalize kernel 明确消费 WelfordFinalize Tiling，目标卡给出临时空间与 ND tiling 的两步 Host 生成流程。
+- [WelfordUpdate](welford_update.md)（`same_topic`）：“Welford算法的后处理接口，用于在线计算均值和方差的最终结果。与WelfordUpdate配合使用，通过切分Reduce轴实现等效LayerNorm计算。”与“Welford算法的前处理接口，用于在线逐步计算均值和方差的中间结果。与WelfordFinalize配合使用，通过切分Reduce轴实现等效LayerNorm计算。分n次调用本接口，每次处理切分后的一块数据［1,k］，逐步累加计算前i块数据的均值和方差中间结果。第一次调用时Meant_0和M_0需为全0数据。模板参数T支持half/float。”提供双方正文证据。Update 分块产生逐步均值和方差中间量，Finalize 消费这些中间量生成最终统计量，两端组成切分 Reduce 轴的同一 Welford/LayerNorm 计算链。
 <!-- cannbot:related:end -->

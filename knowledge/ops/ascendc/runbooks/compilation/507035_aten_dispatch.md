@@ -52,11 +52,3 @@ platforms: []
 
 - 只看 507035 消失，不确认自定义 kernel 是否真正命中。
 - 把相关性直接写成 tensor format 内部机制结论。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ACLNN 507035 — opType 与内置 ops_legacy 同名碰](aclnn_optype_collision_built_in_ops_legacy_507035.md)（`related`）：ACLNN 507035 — opType 与内置 ops_legacy 同名碰 与《507035 — aten 与自定义命名空间路径对照》的实质衔接是：507035 此例由自定义 opType 与内置符号同名触发；OpDef/注册/launcher/kernel/CMake 六处改名及同名碰撞 runbook 共同构成完整修复链。
-- [PyTorch框架](../../guides/programming_guide/advanced_programming/ai_framework_adaptation/pytorch_framework.md)（`related`）：PyTorch 适配指南给出 TORCH_LIBRARY/自定义算子接入路径，可用于核对 A/B 测试改变了哪层注册和调用契约。
-- [白盒pytest走aten内置绕过自定义aclnn](pytest_aten_aclnn.md)（`same_topic`）：两卡共同验证 aten 与自定义 aclnn/namespace 的 dispatch 命中差异；pytest 卡给出避免“用例通过但未命中自定义 kernel”的计数方法。
-<!-- cannbot:related:end -->

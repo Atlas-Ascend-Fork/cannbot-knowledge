@@ -22,8 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ExternImplBufpool](extern_impl_bufpool.md)（`related`）：不连续内存块或跨 TQue 共享时需显式更新当前地址，正是 ExternImplBufpool 允许自定义的核心能力。
-- [GetCurBufSize](get_cur_buf_size.md)（`related`）：地址游标需与已分配块数共同更新，否则池状态会出现重叠或漏记。
-- [GetCurAddr](get_cur_addr.md)（`same_topic`）：焦点处理自定义 TBufPool 当前地址游标的读取、设置与生命周期；SetCurAddr正文说明“设置自定义TBufPool已分配完的地址，保证后续内存块从指定地址开始分配”。候选读写同一个 pool 游标/块计数，或决定这些值何时初始化、复位和失效。
-- [GetCurAddr](../local_mem_allocator/get_cur_addr.md)（`same_topic`）：SetCurAddr说明设置自定义TBufPool已分配完的地址，保证后续内存块从指定地址开始分配。
+- [GetCurAddr](get_cur_addr.md)（`related`）：SetCurAddr“设置自定义TBufPool已经被分配完的地址”；GetCurAddr“获取当前已经被自定义TBufPool分配的地址，用户可以从该地址值开始向后分配内存块。”。两者管理同一自定义池的分配游标。
 <!-- cannbot:related:end -->

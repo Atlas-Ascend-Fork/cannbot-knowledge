@@ -86,11 +86,3 @@ Test empty_r_multi_a            FAILED  [§2.5: 多 A 轴 aTotal=2*3=6, aUbFacto
 
 - 空 tensor 归约分支的 tiling 复用 normal 路径的 `min(aTotal, maxUb)` 直觉，而不对齐 DESIGN 的 `SetBlockDim(max(usedCoreNum,1))` 与"按核均摊"公式。
 - 把 empty-branch UT 的 `MISMATCH` 行误判为 oracle 错误（公共 `test_tiling` 的 empty-case oracle 曾匹配 buggy `SetBlockDim(0)`，把 stub 阶段的 buggy 输出当 red-baseline 固化）——oracle 必须按 DESIGN 公式生成期望值。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetBlockIdx](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_idx.md)（`exemplifies`）：《GetBlockIdx》处理“获取当前逻辑AI Core的索引，用于多核逻辑控制及偏移量计算等。”。《empty分支SetBlockDim(0)与aUbFactor误式判别》明确提供“空 tensor 归约算子（EMPTY_A/EMPTY_R 分支）的 empty-branch TilingUT 0/14 全 FAILED；按 MISMATCH 字段分流——仅 blockDim mismatch 指向 EMPTY_A 的 SetBlockDim(0)（应为 max(usedCoreNum,1)=1），aLoopCntTotal/aUbFactor/usedCoreNum 全 mismatch 指向 EMPTY_R 的 aUbFactor=min(aTotal,maxSingleUb)（应为 min(maxSingleUb,CeilDiv(aTotal,coreNum))）；修正后 14/14。”，其参数、调用或验证步骤直接接入GetBlockIdx/GetBlockNum 与 Tiling 切核、尾核边界和多核验证的合同。
-- [StorageShape scalar GetShapeSize 返回 1](gert_storage_shape_scalar_getshapesize_returns_one.md)（`related`）：空 axes 常表示 rank-0 scalar tensor，但 GetShapeSize 返回 1；该边界会把 empty 分支错误路由到非空 tiling，与 focal 的 EMPTY_A/EMPTY_R 判别直接衔接。
-- [低 rank 零填充致 count=0 用 td_->rank 非 RANK](../precision/rank_count_0_td_rank_rank.md)（`same_topic`）：低 rank 零填充致 count=0 用 td_->rank 非 RANK 与《empty分支SetBlockDim(0)与aUbFactor误式判别》的实质衔接是：实际 rank 必须来自 tiling 而非模板容量；低 rank padding、NDDMA维度、shape/axes 和 blockDim 卡共同验证零填充维被误纳入循环后 count=0 的机制。
-<!-- cannbot:related:end -->

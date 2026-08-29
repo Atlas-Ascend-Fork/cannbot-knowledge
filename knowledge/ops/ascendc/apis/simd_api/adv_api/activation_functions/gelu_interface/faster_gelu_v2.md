@@ -38,8 +38,5 @@ __aicore__ inline void FasterGeluV2(const LocalTensor<T>& dstLocal, const LocalT
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Gelu](gelu.md)（`related`）：需要标准 GELU 数值语义时应使用 Gelu 而非更快近似。
-- [GetGeluMaxMinTmpSize](get_gelu_max_min_tmp_size.md)（`related`）：V2 计算仍需按接口要求配置临时空间，不能沿用零 workspace 假设。
-- [FasterGelu](faster_gelu.md)（`same_topic`）：FasterGelu 与 V2 共享相同 Tensor、临时空间、精度/性能模板开关和地址约束，但实现的是两套不同 FastGELU 化简式；选型时需按目标公式确认版本。
-- [Gelu接口](gelu_interface.md)（`same_topic`）：总页给出精确 Gelu、FasterGelu 和 V2 的选型及 workspace 流程。
+- [GetGeluMaxMinTmpSize](get_gelu_max_min_tmp_size.md)（`related`）：不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。；kernel侧Gelu、FasterGelu、FasterGeluV2接口的计算需要开发者预留 申请临时空间；FasterGeluV2 的 Kernel 调用既要为 sharedTmpBuffer 分配独立地址，又要用 Host 查询得到的上下界确定容量，二者合起来形成可执行的临时空间合同。
 <!-- cannbot:related:end -->

@@ -22,9 +22,7 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSetAtomicMin](asc_set_atomic_min.md)（`related`）：AscSetAtomicMin 与《AscSetStoreAtomicConfigV1》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [AscSetAtomicNone](asc_set_atomic_none.md)（`related`）：AscSetStoreAtomicConfigV1 打开并选择随路原子类型后，文档明确要求用 AscSetAtomicNone 清空状态，避免污染后续 GM 搬运。
-- [SetStoreAtomicConfig](../../basic_api/atomic_operations/set_store_atomic_config_isasi.md)（`related`）：SetStoreAtomicConfig 与《AscSetStoreAtomicConfigV1》的实质衔接是：SetStoreAtomicConfig 与 Get 配对，C API setter/getter 和配置结构体操作同一 Store 原子状态。
-- [AscGetStoreAtomicConfig](asc_get_store_atomic_config.md)（`same_topic`）：Get 与 Set 构成配置读写闭环。
-- [AscStoreAtomicConfig](../struct/asc_store_atomic_config.md)（`same_topic`）：《AscStoreAtomicConfig》的任务是“原子操作配置结构体，包含原子操作启用位与操作类型，用于asc_get_store_atomic_config接口使用。”。《AscSetStoreAtomicConfigV1》具体提供“设置原子操作启用位与原子操作类型的值。”，它直接用于AscStoreAtomicConfig 的 get/set 生命周期与原子配置语义。
+- [AscGetStoreAtomicConfig](asc_get_store_atomic_config.md)（`related`）：设置原子操作启用位与原子操作类型的值。；获取原子操作启用位与原子操作类型的值，可用于校验asc_set_store_atomic_config_v1和asc_set_store_atomic_config_v2（废弃）设置的原子操作启用位和原子操作类型的值是否符合预期。 Ascend 950PR/Ascend 950DT产品上该接口已废弃。原子加操作可以直接使用asc_atomic_add实现。无需再对原子操作启用位和原子操作类型的值进行配置和校验。；前者写配置，后者读取并核验配置，同时给出 950 上的废弃迁移边界。
+- [AscSetAtomicNone](asc_set_atomic_none.md)（`related`）：约束：使用完成后，建议通过asc_set_atomic_none清空原子操作的状态，以免影响后续相关指令功能。；该指令执行前不会对GM的数据做清零操作，开发者需在需要时手动添加清零操作。；清空原子操作的状态。一般和asc_set_atomic_add，asc_set_atomic_max，asc_set_atomic_min接口配合使用，用于在完成原子操作后关闭原子操作，避免影响后续功能。；焦点要求使用结束后清状态，目标提供关闭动作，形成原子配置生命周期。
+- [asc_set_store_atomic_config_v2（废弃）](asc_set_store_atomic_config_v2_deprecated.md)（`same_topic`）：设置原子操作启用位与原子操作类型的值；使用完成后，建议通过asc_set_atomic_none清空原子操作的状态，以免影响后续相关指令功能。两卡围绕 store atomic 配置的同一核心状态；v1 补充 A2/A3 清理状态和 GM 预清零合同，v2 记录 950 接口已废弃。
 <!-- cannbot:related:end -->

@@ -146,8 +146,5 @@ supports: `rowStart * A0_` 进入 GM 起点，允许每次 gather 读取当前 c
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ARA 多 group 共用 max/sum 污染后续输出](ara_group_statistics_must_reset_per_group.md)（`related`）：ARA 分块后每个 pass 还必须把 rowStart 传入 CopyIn；否则即使 per-group 统计已重置，也会重复首块并产生错误统计。
-- [DataCopy 不自动按 tile 推进须显式元素 offset](datacopy_setglobalbuffer_no_auto_advance_tileoffset.md)（`related`）：ARA 分块重复首块：CopyIn 传递 rowStart 与《DataCopy 不自动按 tile 推进须显式元素 offset》的实质衔接是：ARA 分块必须把 rowStart 传给 CopyIn；group 状态、跨段读取、wrapper offset 与显式 DataCopy offset 卡覆盖同一重复首块机制。
-- [分块 wrapper 与 VF callee 不可重复叠加 offset](wrapper_and_vf_callee_must_not_double_apply_chunk_offset.md)（`related`）：ARA 分块重复首块：CopyIn 传递 rowStart 与《分块 wrapper 与 VF callee 不可重复叠加 offset》的实质衔接是：ARA 分块必须把 rowStart 传给 CopyIn；group 状态、跨段读取、wrapper offset 与显式 DataCopy offset 卡覆盖同一重复首块机制。
-- [广播 CopyIn tile 跨段越界读判别](copyin_tile.md)（`same_topic`）：ARA 分块重复首块：CopyIn 传递 rowStart 与《广播 CopyIn tile 跨段越界读判别》的实质衔接是：ARA 分块必须把 rowStart 传给 CopyIn；group 状态、跨段读取、wrapper offset 与显式 DataCopy offset 卡覆盖同一重复首块机制。
+- [ARA 多 group 共用 max/sum 污染后续输出](ara_group_statistics_must_reset_per_group.md)（`related`）：把 group 循环提到最外层；进入每个 group 时将 `maxBuf` 重新置为 `-inf`、`sumBuf` 重新置零，然后仅为该 group 完成 max、sum、output 三趟；给 gather helper 增加 `rowStart` 参数，并把 GM 起点写成 `a1Base + rowStart * A0_ + a0Start`。前者修复同一 ARA 三趟流程的跨 group 状态污染，后者修复分块三趟的输入地址推进；多 group、跨 chunk 精度排障需分别核对状态生命周期与 GM 起点。
 <!-- cannbot:related:end -->

@@ -27,12 +27,3 @@ platforms: ['950']
 支持数据类型：int16_t、int32_t、uint16_t、uint32_t、uint8_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscUnpack](asc_unpack.md)（`related`）：AscUnpack 执行 Pack 的逆向扩展，可用于验证高/低半区选择是否保持布局。
-- [废弃接口](../../../../appendix/deprecated_interface.md)（`related`）：废弃接口汇总提供 asc_pack 的版本状态和推荐替代项，是迁移判断的权威入口。
-- [AscPackToHigh](asc_pack_to_high.md)（`same_topic`）：废弃 asc_pack 的高半区行为由 AscPackToHigh 显式替代，迁移时应选择该明确接口。
-- [AscPackToLow](asc_pack_to_low.md)（`same_topic`）：废弃 asc_pack 的低半区行为由 AscPackToLow 显式替代，消除旧接口的隐式目标选择。
-<!-- cannbot:related:end -->

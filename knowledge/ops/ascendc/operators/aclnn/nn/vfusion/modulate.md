@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/modulate/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:38:02Z"
-updated_at: "2026-08-25T18:38:02Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1059,9 +1059,9 @@ if (this->tilingData.inputB * this->tilingData.inputL < this->coreNum) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` config/OpDef/CMake闭合 | 公开支持；`ascend910_93` config/OpDef/CMake闭合 | 公开支持；另见 `_a5` 卡 |
+| 支持状态 | 公开支持；`ascend910b` config/OpDef/CMake闭合 | 公开支持；`ascend910_93` config/OpDef/CMake闭合 | 公开支持；另见 `_950` 卡 |
 | Host/Launcher | 共用非 regbase `ModulateTilingOp` | 共用非 regbase `ModulateTilingOp` | 使用 `ModulateTilingForRegbase`，optional 进入模板 key |
 | Kernel/资源 | 共用 `op_kernel/modulate.cpp` AIV_VECTOR | 共用该 Kernel | 独立 arch35 MicroAPI AIV_VECTOR body |
 
@@ -1089,10 +1089,10 @@ if (this->tilingData.inputB * this->tilingData.inputL < this->coreNum) {
 | Host/Tiling | `vfusion/modulate/op_host/modulate_tiling.h` | `ModulateTilingData` | POD 字段与 CompileInfo |
 | Host/Tiling | `vfusion/modulate/op_host/modulate_tiling.cpp` | `ModulateTilingOp`, `ModulateTilingFunc` | 平台分支、策略、分核、UB/workspace、key |
 | Kernel entry/body | `vfusion/modulate/op_kernel/modulate.cpp` | `modulate`, `ModulateBase/B/L/D` | router、Queue、搬运、Vector、精度、tail |
-| 平台注册 | `vfusion/modulate/op_host/modulate_def.cpp` | `ops::Modulate` | A2/A3/A5 OpDef 与 dtype |
+| 平台注册 | `vfusion/modulate/op_host/modulate_def.cpp` | `ops::Modulate` | A2/A3/950 OpDef 与 dtype |
 | binary config | `vfusion/modulate/op_host/config/ascend910b/modulate_binary.json` | `Modulate` op_list | A2 三 dtype 二进制接线 |
 | binary config | `vfusion/modulate/op_host/config/ascend910_93/modulate_binary.json` | `Modulate` op_list | A3 三 dtype二进制接线 |
-| 构建接线 | `vfusion/modulate/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3 共用 Kernel、A5 独立 arch35 源 |
+| 构建接线 | `vfusion/modulate/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3 共用 Kernel、950 独立 arch35 源 |
 
 ### 实现复用检查
 
@@ -1104,3 +1104,10 @@ if (this->tilingData.inputB * this->tilingData.inputL < this->coreNum) {
 | 同步 | Queue 生命周期+PIPE_V barrier | scale原地+1、Mul/Add、BF16 cast之间不得重排 | `PreProcess`, `Compute*` |
 | 精度与尾块 | BF16 FP32计算并RINT；其余原dtype；DataCopyPad有效字节写 | 多行仅完整D；D/行组/核尾长度必须保持 | `Compute*`, `CopyIn/CopyOut` |
 | 失败边界 | 参数检查失败阻断任务；unknown key不写 | optional null解引用缺陷不可隐藏；不得假设fallback | `CheckShape`, `modulate` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ModulateBackward A2/A3 ACLNN 算子知识](modulate_backward.md)（`related`）：“｜ 计算语义 ｜ 对 `［B,L,D］` 的 `grad_output`：`grad_input=grad_output*scale［:,None,:］`（无 scale 时源码复制 `grad_output`）；可选地沿 `L` 归约得到 `grad_scale=sum(input*grad_output)`、`grad_shift=sum(grad_output)` ｜”与“｜ 计算语义 ｜ `out［b,l,d］ = self［b,l,d］ * (1 + scale［b,d］) + shift［b,d］`；缺少 scale 时省略乘法，缺少 shift 时省略加法 ｜”是双方正文中的具体合同。反向卡给出 grad_input、grad_scale、grad_shift 的梯度合同，前向卡给出被求导的广播调制公式；两端构成同一训练算子链的前向与反向语义。
+- [Modulate 950 ACLNN 算子知识](modulate_950.md)（`same_topic`）：“scale/shift 沿 L 广播，实际 Kernel 对存在的 scale 先加 1，再乘 self；存在 shift 时再加 shift。”与“令 `self∈R［B,L,D］`，scale/shift 在 L 维广播。公开文档和 Kernel 实体均实现 `self * (1 + scale) + shift`。”提供双方正文证据。两端核心公式、L 维广播和可选 scale/shift 语义一致，分别覆盖 950 与 A2/A3 的同一 Modulate 算子合同。
+<!-- cannbot:related:end -->

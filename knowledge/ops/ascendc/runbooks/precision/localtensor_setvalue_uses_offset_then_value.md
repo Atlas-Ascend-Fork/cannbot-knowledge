@@ -207,8 +207,6 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGather](../../apis/simd_api/c_api/vector_compute/asc_gather.md)（`exemplifies`）：AscGather 与《LocalTensor SetValue 参数颠倒导致索引错乱》的实质衔接是：AscGather 的 offset 是逐元素收集地址；Reg/Memory Gather 与各错位 runbook 直接解释偏移、基址、维序和非轴步长的正确构造。
-- [LocalTensor](../../apis/simd_api/basic_api/data_structures/local_tensor/local_tensor.md)（`exemplifies`）：该故障卡验证 SetValue 参数顺序是 offset 后 value，颠倒会直接破坏 Reg Gather 索引表；补充了 LocalTensor 标量写接口的可执行诊断。
-- [SetValue](../../apis/simd_api/basic_api/data_structures/local_tensor/set_value.md)（`exemplifies`）：Runbook 的编译错误来自把 SetValue 参数写成 value, offset；API 卡明确签名语义为 offset 在前、value 在后。
-- [operator](../../apis/simd_api/basic_api/data_structures/local_tensor/operator_call.md)（`exemplifies`）：operator 与《LocalTensor SetValue 参数颠倒导致索引错乱》的实质衔接是：LocalTensor operator 生成子视图，必须与地址/size/shape 属性和 Get/SetValue、offset 故障共同理解。
+- [LocalTensor简介](../../apis/simd_api/basic_api/data_structures/local_tensor/local_tensor_intro.md)（`exemplifies`）：核心方法：GetValue/SetValue 元素读写，GetShapeInfo/SetShapeInfo 形状管理，GetSize/GetLength 大小获取，GetPhyAddr 物理地址，ReinterpretCast 类型重解释，operator［］/operator() 下标访问，SetBufferLen/SetAddrWithOffset 地址管理，Print 调试打印，ToFile 数据导出。；`LocalTensor::SetValue` 的真实契约是 `SetValue(offset, value)`，而出错代码按 `SetValue(value, offset)` 调用。概览列出 SetValue 能力，runbook 给出其参数次序错误、精度症状和验证修法，能直接推进 LocalTensor 标量写入排障。
+- [SetValue](../../apis/simd_api/basic_api/data_structures/local_tensor/set_value.md)（`exemplifies`）：`LocalTensor::SetValue` 的真实契约是 `SetValue(offset, value)`，而出错代码按 `SetValue(value, offset)` 调用。；设置 LocalTensor 指定索引的元素值。仅在 TPosition 为 VECIN/VECCALC/VECOUT 时支持。参数 offset 为索引偏移，value 为设置的值。支持 950/a2/a3。。故障卡中的参数顺序错误由 SetValue API 的 offset 索引优先、value 值次之合同直接解释。
 <!-- cannbot:related:end -->

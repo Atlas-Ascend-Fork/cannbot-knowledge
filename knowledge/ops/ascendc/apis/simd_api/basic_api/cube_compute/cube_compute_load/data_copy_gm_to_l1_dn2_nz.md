@@ -22,6 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCopyGm2l1Dn2nz](../../../c_api/cube_data_move/asc_copy_gm2l1_dn2nz.md)（`same_topic`）：两张卡都描述 GM 到 L1 的 DN2NZ 搬运与同一格式转换方向，一张是 C++ Basic API，另一张是 C API 对应入口。
-- [DataCopy](data_copy_gm_to_l1_nd2_nz.md)（`same_topic`）：DataCopy 的核心契约是“将矩阵从Global Memory搬运至L1 Buffer，并在搬运过程中完成ND到NZ格式的转换”；DataCopy 补充“随路格式转换数据搬运，将数据从Global Memory搬运至L1 Buffer（TPosition为A1/B1），搬运过程中完成DN到NZ格式转换”。
+- [AscCopyGm2l1Dn2nz](../../../c_api/cube_data_move/asc_copy_gm2l1_dn2nz.md)（`same_topic`）：将矩阵数据从Global Memory搬运到L1 Buffer，在此过程中执行DN->NZ/NCHW->NC1HWC0/NCHW->C1HWNC0操作。若D未对齐C0的大小，将会在L1 Buffer的最内层维度填充0值。GM中的数据以DN类型存储；L1中的数据以NZ形式存储。；将Global Memory中的DN格式数据搬运到L1 Buffer并转换为NZ格式。用于矩阵计算输入的随路格式转换搬入。。两卡描述同一 GM 到 L1 的 DN→NZ 搬运，在 C API 与 Basic API 中提供不同调用表面。
 <!-- cannbot:related:end -->

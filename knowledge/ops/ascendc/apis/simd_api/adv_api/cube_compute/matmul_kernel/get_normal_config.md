@@ -33,18 +33,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AIV核上的ND2NZ格式转换](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/aiv_nd2nz_conversion.md)（`explains`）：GetNormalConfig 与《AIV核上的ND2NZ格式转换》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`related`）：GetNormalConfig 与《GetMatmulApiTiling》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [MatmulTemplateParams](matmul_template_params.md)（`related`）：GetNormalConfig 与《MatmulTemplateParams》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [Matmul使用说明](matmul_usage.md)（`related`）：GetNormalConfig 与《Matmul使用说明》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [REGIST_MATMUL_OBJ](regist_matmul_obj.md)（`related`）：GetNormalConfig 与《REGIST_MATMUL_OBJ》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [SetLocalWorkspace](set_local_workspace.md)（`related`）：GetNormalConfig 与《SetLocalWorkspace》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [SetMatmulConfigParams](../matmul_tiling/set_matmul_config_params.md)（`related`）：GetNormalConfig 与《SetMatmulConfigParams》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [GetBasicConfig](get_basic_config.md)（`same_topic`）：GetNormalConfig 与《GetBasicConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [GetIBShareNormConfig](get_ib_share_norm_config.md)（`same_topic`）：GetNormalConfig 与《GetIBShareNormConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [GetMDLConfig](get_mdl_config.md)（`same_topic`）：GetNormalConfig 与《GetMDLConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [GetMMConfig](get_mm_config.md)（`same_topic`）：GetNormalConfig 与《GetMMConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [GetSpecialMDLConfig](get_special_mdl_config.md)（`same_topic`）：GetNormalConfig 与《GetSpecialMDLConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [IterateNBatch](iterate_n_batch.md)（`same_topic`）：GetNormalConfig 与《IterateNBatch》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [MatmulConfig](matmul_config.md)（`same_topic`）：GetNormalConfig 返回 Matmul 当前 Normal 配置，MatmulConfig 卡定义该配置对象及字段；前者是后者在 Matmul 对象上的读取入口。
+- [GetMDLConfig](get_mdl_config.md)（`same_topic`）：用于配置Norm模板的参数，获取自定义Norm模板；用于配置MDL模板的参数，获取自定义MDL模板。两端是同一 Matmul Kernel 模板工厂中的 Norm 与 MDL 配置入口，对照可在普通模板和 MDL 模板之间选择正确的 config 构造函数，避免把模板参数交给错误入口。
 <!-- cannbot:related:end -->

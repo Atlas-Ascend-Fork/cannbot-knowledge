@@ -34,15 +34,5 @@ MxMatmul的计算公式为：C = (scaleA ⊗ A) * (scaleB ⊗ B) + Bias，“⊗
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMmadMx](../../../../../apis/simd_api/c_api/cube_compute/asc_mmad_mx.md)（`explains`）：《AscMmadMx》说明完成带量化系数的矩阵乘加计算（MmadMx），左矩阵A和右矩阵B分别配有量化系数矩阵ScaleA和ScaleB，按K维度每32个元素共享一个量化系数。；《MxMatmul场景》说明带有量化系数的矩阵乘法，左右矩阵分别配有scaleA和scaleB量化系数矩阵，支持MXFP8、MXFP4等低位宽数据类型。。二者在AscMmadMx消费A/B量化系数矩阵；Mx搬入、SetTensorScaleA/B和MxMatmul场景构成完整数据合同上存在可执行的直接衔接。
-- [MmadMx](../../../../../apis/simd_api/basic_api/cube_compute/mmad_compute/mmad_mx.md)（`explains`）：MxMatmul场景 与《MmadMx》的实质衔接是：MxMatmul 需要 MmadMx/AscMmadMx、scaleA/scaleB 及类型/Mad 配置共同实现 C=(scaleA*A)*(scaleB*B)+Bias，量化输出材料补充缩放矩阵契约。
-- [SetMadType](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_mad_type.md)（`explains`）：《SetMadType》处理“设置是否开启HF32模式。当前版本暂不支持。 对于Ascend 950PR/Ascend 950DT，本接口可用于设置是否开启HF32模式（当前版本暂不支持）、设置是否开启MxMatmul场景。在MxMatmul场景，必须调用该接口并配置为开启MxMatmul场景，从而保证该场景下正确计算并返回Tiling参数。”。《MxMatmul场景》明确提供“带有量化系数的矩阵乘法，左右矩阵分别配有scaleA和scaleB量化系数矩阵，支持MXFP8、MXFP4等低位宽数据类型。”，其参数、调用或验证步骤直接接入Matmul 的 madType 配置、HF32/MxMatmul 模式及最终 Tiling 字段。
-- [SetScaleAType](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_scale_a_type.md)（`explains`）：《SetScaleAType》处理“MxMatmul场景，设置scaleA矩阵的位置、数据格式、是否转置等信息，这些信息需要和Kernel侧的设置保持一致。如果不调用本接口，scaleA矩阵的信息将与SetAType中设置的A矩阵的信息保持一致。”。《MxMatmul场景》提供“带有量化系数的矩阵乘法，左右矩阵分别配有scaleA和scaleB量化系数矩阵，支持MXFP8、MXFP4等低位宽数据类型。”，其具体合同或探针直接接入MxMatmul 的 scaleA 位置/格式、Kernel scale 张量、搬运和 Mx 模式启用合同。
-- [SetScaleBType](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_scale_b_type.md)（`explains`）：MxMatmul场景 与《SetScaleBType》的实质衔接是：MxMatmul 需要 MmadMx/AscMmadMx、scaleA/scaleB 及类型/Mad 配置共同实现 C=(scaleA*A)*(scaleB*B)+Bias，量化输出材料补充缩放矩阵契约。
-- [SetSingleShape](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_single_shape.md)（`explains`）：MxMatmul场景 与《SetSingleShape》的实质衔接是：MxMatmul 需要 MmadMx/AscMmadMx、scaleA/scaleB 及类型/Mad 配置共同实现 C=(scaleA*A)*(scaleB*B)+Bias，量化输出材料补充缩放矩阵契约。
-- [SetTensorScaleA](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_tensor_scale_a.md)（`explains`）：MxMatmul场景 与《SetTensorScaleA》的实质衔接是：MxMatmul 需要 MmadMx/AscMmadMx、scaleA/scaleB 及类型/Mad 配置共同实现 C=(scaleA*A)*(scaleB*B)+Bias，量化输出材料补充缩放矩阵契约。
-- [SetTensorScaleB](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_tensor_scale_b.md)（`explains`）：MxMatmul场景 与《SetTensorScaleB》的实质衔接是：MxMatmul 需要 MmadMx/AscMmadMx、scaleA/scaleB 及类型/Mad 配置共同实现 C=(scaleA*A)*(scaleB*B)+Bias，量化输出材料补充缩放矩阵契约。
-- [Matmul特性介绍](matmul_features.md)（`same_topic`）：MxMatmul场景 与《Matmul特性介绍》的实质衔接是：MxMatmul 需要 MmadMx/AscMmadMx、scaleA/scaleB 及类型/Mad 配置共同实现 C=(scaleA*A)*(scaleB*B)+Bias，量化输出材料补充缩放矩阵契约。
-- [矩阵乘输出的量化/反量化](matmul_output_quant_dequant.md)（`same_topic`）：MxMatmul场景 与《矩阵乘输出的量化/反量化》的实质衔接是：MxMatmul 需要 MmadMx/AscMmadMx、scaleA/scaleB 及类型/Mad 配置共同实现 C=(scaleA*A)*(scaleB*B)+Bias，量化输出材料补充缩放矩阵契约。
-- [矩阵向量乘](matrix_vector_multiply.md)（`same_topic`）：矩阵向量乘 与《MxMatmul场景》的实质衔接是：矩阵向量乘法通过 Matmul/MxMatmul 配置、fmatrix/LoadData 搬入与 GEMV 原语实现，所选材料对应高层接口和底层数据通路。
+- [SetMadType](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_mad_type.md)（`explains`）：MxMatmul（全称Microscaling Matmul）为带有量化系数的矩阵乘法；在MxMatmul场景，必须调用该接口并配置为开启MxMatmul场景。场景卡定义带 scaleA/scaleB 的 MxMatmul 语义，SetMadType 卡给出该场景生成正确 Tiling 的强制开关；实现 MxMatmul 时必须把场景识别落实到该 Host Tiling 调用。
 <!-- cannbot:related:end -->

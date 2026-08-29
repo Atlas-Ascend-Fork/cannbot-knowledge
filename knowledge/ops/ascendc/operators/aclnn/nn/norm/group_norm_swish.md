@@ -40,7 +40,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:56:05Z"
-updated_at: "2026-08-25T17:56:05Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1238,9 +1238,9 @@ if (copyNum % elementsPerBlockT1 == 0) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` config | 公开支持；`ascend910_93` config | 公开支持；见独立 `_a5` 卡 |
+| 支持状态 | 公开支持；`ascend910b` config | 公开支持；`ascend910_93` config | 公开支持；见独立 `_950` 卡 |
 | Host/Launcher | 共用 Tiling/OpDef，16 MiB system workspace | 同 A2 | 共用 Host，OpDef 指向 `_apt` entry |
 | Kernel/资源 | 非 arch35 body | 同一非 arch35 body | arch35 body；算法/分配相同，编译 guard 文本不同 |
 
@@ -1290,3 +1290,11 @@ if (copyNum % elementsPerBlockT1 == 0) {
 | 同步 | Queue、PIPE_V/ALL、V_S | scalar 读取前等待；复用前 FreeTensor | base 与各 body |
 | 精度与尾块 | FP32 stats/affine、T1 输出 cast、Pad/atomic tail | RoundMode 编译 guard、实际 tail 长度 | `GetRoundMode`, `CopyOutWithOutPad*` |
 | 失败边界 | invalid input `GRAPH_FAILED`；Large 是资源 fallback | 未知 key 不写；不可绕过 ACLNN 约束 | `Check*`, `SetTilingKey`, router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GroupNormSiluQuant A2/A3 ACLNN 算子知识](group_norm_silu_quant.md)（`related`）：｜ 计算语义 ｜ 对 `［N,C,...］` 的每个 `(n, group)` 域做 GroupNorm，按通道应用 `gamma/beta`，执行 SiLU，再以标量或逐通道 `quantScale` 量化为 INT8；另输出 `mean/rstd` ｜；｜ 计算语义 ｜ 对 NCHW 的每个 `(n,g)` 在 `D=(C/numGroups)·∏shape［2:］` 个元素上求 mean/variance，做 affine；`activateSwish=true` 时再做 `z/(1+exp(-swishScale·z))`。 ｜两页共享 GroupNorm 加 SiLU/Swish 激活链，但一页继续量化 INT8、另一页保留浮点并支持 swishScale，构成融合算子选型的实质对照。
+- [GroupNormSwishGrad A2/A3 ACLNN 算子知识](group_norm_swish_grad.md)（`related`）：｜ `mean`, `rstd` ｜ ND `［N,G］` ｜ 同 `dy` ｜ 必选、非空，shape 必须相同 ｜；输出 `mean［n,g］=μ`、`rstd［n,g］=rstd`；激活关闭时 `y=z`，开启时 `y=z/(1+exp(-swishScale·z))`。Grad、Silu、Quant 和原地语义不属于本卡。；前向卡生产反向卡必选的 mean/rstd，并共享同一 GroupNorm+Swish 定义。
+- [GroupNormSwish 950 ACLNN 算子知识](group_norm_swish_950.md)（`same_topic`）：R-001…R-012；key 与 A2/A3 相同，router 为 `_apt`，body 全在 `arch35/`。；R-001…R-012：四个 shape family（HW1/Small/Norm/Large）× FP16/BF16 同型、16-bit+FP32 affine、FP32。；两卡描述同一 GroupNormSwish ACLNN 算子的同一十二 Route 合同，分别闭合 950 arch35 与 A2/A3 实现。
+<!-- cannbot:related:end -->

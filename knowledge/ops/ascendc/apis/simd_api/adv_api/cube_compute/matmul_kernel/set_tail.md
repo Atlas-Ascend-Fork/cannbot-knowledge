@@ -28,6 +28,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [多核非对齐切分](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/multi_core_unaligned_split.md)（`explains`）：多核 M/N/K 不能整除 singleCoreM/N/K 时产生尾块；指南解释何时需要 SetTail/SetSingleShape 重设本次计算范围。
-- [SetSingleShape](set_single_shape.md)（`same_topic`）：两接口都在不重做 Tiling 时重设 singleCoreM/N/K；SetSingleShape 正文明确说明与 SetTail 功能一致并推荐使用前者。
+- [多核非对齐切分](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/multi_core_unaligned_split.md)（`explains`）：调用SetTail接口重新设置本次计算的singleCoreM/singleCoreN/singleCoreK，在处理尾块的时候按照设置的值也就是tailM/tailN/tailK进行搬运和计算。；在不改变Tiling的情况下，重新设置本次计算的singleCoreM/singleCoreN/singleCoreK，以元素为单位。；Guide 的非对齐尾块步骤直接调用该 API 合同。
+- [SetSingleShape](set_single_shape.md)（`same_topic`）：设置Matmul单核计算的形状singleCoreM、singleCoreN、singleCoreK，单位为元素。用于运行时修改shape，比如复用Matmul对象来处理尾块。与SetTail接口功能一致，建议使用本接口。；在不改变Tiling的情况下，重新设置本次计算的singleCoreM/singleCoreN/singleCoreK，以元素为单位。；两接口调整同一 Matmul 对象的单核 M/N/K 形状；SetSingleShape 正文明示与 SetTail 功能一致并给出推荐替代。
 <!-- cannbot:related:end -->

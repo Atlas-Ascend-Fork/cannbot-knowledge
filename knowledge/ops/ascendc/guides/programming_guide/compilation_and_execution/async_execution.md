@@ -36,7 +36,5 @@ CANN Runtime内置默认计算流，所有未显式指定计算流的运算操�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [at::zeros 异步零初始化跨 stream 覆盖 kernel 写出](../../../runbooks/precision/at_zeros_stream_kernel.md)（`related`）：《at::zeros 异步零初始化跨 stream 覆盖 kernel 写出》说明kernel 直调算子的 host 层用 allocate_xpu_zeros_like（at::zeros）在 torch 默认 stream 异步零初始化输出 tensor，kernel launch 走 XpuRuntimeManager::get_ins<aclrtStream> 的 xpu_ops stream，两 stream 无同步；批量高负载下零初始化在 kernel 写入之后完成，整段 GM 写入覆盖 kv_a_out new 区。判别=BUGDIAG 按 region 分桶报 hist_zr=0 new_zr 非零 + 源码审查命中 allocate_xpu_zeros_like 且 kernel 在异 stream。；《异步执行（编译与执行）》说明当开发者完成一个Kernel核函数的编写后，需要通过特定的下发/启动语法将其提交到指定的Stream（计算流）上执行。例如：。二者在at::zeros和直调kernel位于不同stream且无依赖，设备同步或同stream staging是防止零初始化覆盖写出的直接修复上存在可执行的直接衔接。
-- [半精度 shadow 跨流竞态 — 转换与 kernel 两侧做设备同步](../../../runbooks/precision/torch_npu_async_temporaries_need_completion_before_raw_kernel.md)（`related`）：《半精度 shadow 跨流竞态 — 转换与 kernel 两侧做设备同步》给出“fp16/bf16 提升到 fp32 shadow 后，aten cast 与 aclStream kernel 未保序导致顺序相关错误。”；该约束/探针可直接复现、解释或前置验证《异步执行（编译与执行）》中的“当开发者完成一个Kernel核函数的编写后，需要通过特定的下发/启动语法将其提交到指定的Stream（计算流）上执行。例如：”。
-- [图编译和图执行](../advanced_programming/operator_graph_development/graph_compilation_and_execution.md)（`related`）：图执行可异步提交，完成性与资源生命周期需按异步执行契约处理。
+- [aclrtMemcpyAsync 局部源生命周期缺陷](../../../runbooks/compilation/aclrtmemcpyasync_use_after_free.md)（`related`）：绑定在指定计算流内的API接口调用、核函数下发操作，相对于主机CPU线程均为异步执行。；`aclrtMemcpyAsync` 返回时并不保证拷贝完成，而 `p1` 在函数返回时析构，因此源码缺少“host 源存活到拷贝完成”的保证，这是独立且可确认的生命周期缺陷。；候选给出异步执行合同下 Host 源生命周期失配的具体诊断。
 <!-- cannbot:related:end -->

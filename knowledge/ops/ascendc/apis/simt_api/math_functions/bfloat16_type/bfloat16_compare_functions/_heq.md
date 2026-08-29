@@ -22,8 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__heq](../../half_type/half_compare_functions/_heq.md)（`related`）：《__heq》处理“比较两个bfloat16类型数据是否相等，相等时返回true。”。《__heq》明确提供“比较两个half类型数据是否相等，相等时返回true。”，其参数、调用或验证步骤直接接入bfloat16x2 相等比较的有序/无序语义、互补关系和 half2 对应实现。
-- [__hne](_hne.md)（`related`）：《__heq》处理“比较两个bfloat16类型数据是否相等，相等时返回true。”。《__hne》明确提供“比较两个bfloat16类型数据是否不相等，不相等时返回true。”，其参数、调用或验证步骤直接接入bfloat16x2 相等比较的有序/无序语义、互补关系和 half2 对应实现。
-- [__hneu](_hneu.md)（`related`）：《__heq》处理“比较两个bfloat16类型数据是否相等，相等时返回true。”。《__hneu》明确提供“比较两个bfloat16类型数据是否不相等，不相等时返回true。若任一输入为nan，返回true。”，其参数、调用或验证步骤直接接入bfloat16x2 相等比较的有序/无序语义、互补关系和 half2 对应实现。
-- [__hequ](_hequ.md)（`same_topic`）：《__heq》处理“比较两个bfloat16类型数据是否相等，相等时返回true。”。《__hequ》明确提供“比较两个bfloat16类型数据是否相等，相等时返回true。若任一输入为nan，返回true。”，其参数、调用或验证步骤直接接入bfloat16x2 相等比较的有序/无序语义、互补关系和 half2 对应实现。
+- [__hequ](_hequ.md)（`same_topic`）：比较两个bfloat16类型数据是否相等，相等时返回true。；比较两个bfloat16类型数据是否相等，相等时返回true。若任一输入为nan，返回true。。两者都是 bfloat16 标量相等比较，差别在有序版本遇 NaN 为 false、无序版本遇 NaN 为 true，是同一决策点的语义变体。
 <!-- cannbot:related:end -->

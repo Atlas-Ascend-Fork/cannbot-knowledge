@@ -29,8 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__ll2half_rd](_ll2half_rd.md)（`same_topic`）：《__ll2half_rn》处理“遵循CAST_RINT模式，将int64类型数据转换为half类型数据，返回转换后的值。”。《__ll2half_rd》明确“遵循CAST_FLOOR模式，将int64类型数据转换为half类型数据，返回转换后的值。”，可直接用于核对int64 到 half 转换的四种舍入方向选择合同。
-- [__ll2half_rna](_ll2half_rna.md)（`same_topic`）：《__ll2half_rn》处理“遵循CAST_RINT模式，将int64类型数据转换为half类型数据，返回转换后的值。”。《__ll2half_rna》明确“遵循CAST_ROUND模式，将int64类型数据转换为half类型数据，返回转换后的值。”，可直接用于核对int64 到 half 转换的四种舍入方向选择合同。
-- [__ll2half_ru](_ll2half_ru.md)（`same_topic`）：《__ll2half_rn》处理“遵循CAST_RINT模式，将int64类型数据转换为half类型数据，返回转换后的值。”。《__ll2half_ru》明确“遵循CAST_CEIL模式，将int64类型数据转换为half类型数据，返回转换后的值。”，可直接用于核对int64 到 half 转换的四种舍入方向选择合同。
-- [__ll2half_rz](_ll2half_rz.md)（`same_topic`）：《__ll2half_rn》处理“遵循CAST_RINT模式，将int64类型数据转换为half类型数据，返回转换后的值。”。《__ll2half_rz》明确“遵循CAST_TRUNC模式，将int64类型数据转换为half类型数据，返回转换后的值。”，可直接用于核对int64 到 half 转换的四种舍入方向选择合同。
+- [__ll2half_rd](_ll2half_rd.md)（`same_topic`）：功能：遵循CAST_FLOOR模式，将int64类型数据转换为half类型数据，返回转换后的值。；功能：遵循CAST_RINT模式，将int64类型数据转换为half类型数据，返回转换后的值。。两接口转换相同 int64 输入到 half，核心差异是向下取整与就近取整模式，联合阅读可选择正确舍入契约。
 <!-- cannbot:related:end -->

@@ -30,8 +30,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Matmul使用说明](matmul_usage.md)（`related`）：SetUserDefInfo 与《Matmul使用说明》的实质衔接是：SetUserDefInfo 只在 MatmulCallBackFunc 使用 tilingPtr 时需要；SetSelfDefineData承载回调的可变数据，模板参数和使用说明决定回调是否启用。
-- [MatmulCallBackFunc](matmul_call_back_func.md)（`same_topic`）：SetUserDefInfo 与《MatmulCallBackFunc》的实质衔接是：SetUserDefInfo 只在 MatmulCallBackFunc 使用 tilingPtr 时需要；SetSelfDefineData承载回调的可变数据，模板参数和使用说明决定回调是否启用。
-- [MatmulTemplateParams](matmul_template_params.md)（`same_topic`）：SetUserDefInfo 与《MatmulTemplateParams》的实质衔接是：SetUserDefInfo 只在 MatmulCallBackFunc 使用 tilingPtr 时需要；SetSelfDefineData承载回调的可变数据，模板参数和使用说明决定回调是否启用。
-- [SetSelfDefineData](set_self_define_data.md)（`same_topic`）：SetUserDefInfo 与《SetSelfDefineData》的实质衔接是：SetUserDefInfo 只在 MatmulCallBackFunc 使用 tilingPtr 时需要；SetSelfDefineData承载回调的可变数据，模板参数和使用说明决定回调是否启用。
+- [MatmulCallBackFunc](matmul_call_back_func.md)（`related`）：“用户可配置3个函数指针”定义 Matmul 回调，“设置算子tiling地址，用于回调函数使用”说明回调读取 tiling 信息时的配套初始化接口。
 <!-- cannbot:related:end -->

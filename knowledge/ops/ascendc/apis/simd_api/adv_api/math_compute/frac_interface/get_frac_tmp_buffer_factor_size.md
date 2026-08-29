@@ -25,6 +25,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Frac](frac.md)（`related`）：固定 UB 预算时，Factor 查询用 maxLiveNodeCount 和 extraBuf 反推 Frac 单次最大元素数，并规定不足 256B 时向上取整。
-- [Frac接口](frac_interface.md)（`related`）：《GetFracTmpBufferFactorSize》明确“获取Frac接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量”；它与《Frac接口》的“按元素取小数部分，并提供临时空间大小获取接口。”在实际调用参数、数据流或结果校验上直接衔接。
+- [GetFracMaxMinTmpSize](get_frac_max_min_tmp_size.md)（`related`）：获取Frac接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；host侧Tiling接口，用于获取Frac接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两接口围绕同一 Frac 临时空间合同工作：前者由既定空间反推单次处理量，后者在 Host Tiling 侧给出可选空间上下界，可连续用于空间预算和 tile 大小求解。
 <!-- cannbot:related:end -->

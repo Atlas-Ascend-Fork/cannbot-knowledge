@@ -81,3 +81,11 @@ MoE 结构 = 路由专家 + 共享专家，做 decode 低时延优化时。共�
 - decode 共享专家切独立 stream 与 dispatch/GMM/combine 重叠、从 combine `shared_expert_x` 解耦 + `torch.npu.Event` 串联两处顺序依赖：diff 事实 @22f2f847833a；性能收益为机制推断（源无 benchmark），prefill 多流推迟。溯源下探 [cann-recipes-infer-pr-487-enable-qmm2-and-combine-parallel](https://gitcode.com/cann/cann-recipes-infer/merge_requests/487)。
 - eager 双流同步骨架（旁路 stream 单例 + `wait_stream` + `with torch.npu.stream(...)`）掩盖 deepep 路由专家开销：diff 事实 @874b41df5de8；收益未量化。溯源下探 [cann-recipes-infer-pr-235-feat-support-qwen-next](https://gitcode.com/cann/cann-recipes-infer/merge_requests/235)。
 - 共享输出作 `skip1` 融进 `npu_moe_finalize_routing`、NPU 分支去掉 Python 层单独加法（不重叠时省一次 add）：diff 事实 @8cd85a87af03 + 维护者确认。溯源下探 [cann-recipes-infer-pr-284-feat-llada2-x-sglang-ascend](https://gitcode.com/cann/cann-recipes-infer/merge_requests/284)。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoE Multi-Stream](../../../concepts/techniques/moe_multi_stream.md)（`related`）：“主流跑路由专家主路径（gate/topk → dispatch → GMM → combine），副流跑共享专家前向，汇合点再同步、相加。仅在 decode（`not is_prefill`）启用。”与“将共享专家（shared expert）与路由专家（routed expert）的 `dispatch`、`gate_up_proj`、`act_fn`、`down_proj` 分别绑定到主 NPU stream 与独立 shared_expert stream，重叠 shared-expert 的计算与路由专家的 AllToAll dispatch/combine 通信，隐藏 EP 通信时延。”是双方正文中的具体合同。规则卡给出 decode 主副流与汇合点，技术卡展开 routed dispatch/combine 和 shared-expert 计算重叠，二者共同闭合实现顺序与性能机制。
+- [NPU 多流优化(Multi-Stream)](../../../concepts/techniques/multi_stream.md)（`related`）：要使能多 Stream 并行，需要计算图中存在满足并行条件的结构：当多个算子的输入都依赖于同一前驱算子的输出、彼此之间没有数据依赖时，这些算子在拓扑上即可并发执行。如下图，前置算子 A 的输出同时被 B 与 C 两条分支消费；B、C 之间无数据依赖，可分别承载于两条 Stream 并行，最终在汇合算子 D 合并。；主流跑路由专家主路径（gate/topk → dispatch → GMM → combine），副流跑共享专家前向，汇合点再同步、相加。仅在 decode（`not is_prefill`）启用。。通用卡给出分叉并发后在汇合点合并的骨架，优化卡把它落实为路由专家主流与共享专家副流并在相加前同步。
+- [多流并行后还要分核：limit_core_num 给两条重路径流配不同 Cube/Vector 核数、让时长趋近](../cases/moe_multi_stream_limit_core_num.md)（`related`）：分核是同卡多流方案内部的再平衡，不是无脑加。；**多流之后往往还要分核**（给两条流按 `limit_core_num` 配不同 Cube/Vector 核数）才稳定获益；候选把分核原则落到共享专家与路由专家双流的具体使用时机。
+<!-- cannbot:related:end -->

@@ -23,7 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ShflDown](shfl_down.md)（`related`）：ShflUp 沿相反方向取 lane，扫描/归约算法按方向选。
-- [AscShflUp](../../warp_functions/warp_shfl_functions/asc_shfl_up.md)（`same_topic`）：thread_block_tile::ShflUp 与 AscShflUp 都从较低 lane 读取值；前者受 tile Size 约束，后者直接以 warp 为作用域。
-- [ShflUp](../coalesced_group/shfl_up.md)（`same_topic`）：ShflUp 与《ShflUp》的实质衔接是：coalesced_group::shfl_up 在当前活跃线程子组内读取前 delta lane；组的构造与简介限定发散后的成员集合，generic shfl、shfl_down、thread_block_tile 和 Warp C API 给出索引方向及作用域对照。
+- [tiled_partition](../tiled_partition.md)（`related`）：获取thread_block_tile组内当前线程向前偏移delta的线程的数据。；tiled_partition API用于将一个线程组划分为多个更小、固定大小的子组，以便线程在以更精细的粒度上进行协作。。tiled_partition 先创建固定大小的 thread_block_tile，shfl_up 再在该组内按 delta 读取前方线程数据，形成分组到组内通信的使用链。
 <!-- cannbot:related:end -->

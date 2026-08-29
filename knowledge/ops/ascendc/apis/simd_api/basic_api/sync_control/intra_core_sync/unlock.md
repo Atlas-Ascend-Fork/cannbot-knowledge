@@ -27,7 +27,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AllocMutexID](alloc_mutex_id_isasi.md)（`related`）：Unlock 必须与先前 Lock 使用相同 pipe 和 MutexID，而该 ID 在 TPipe-TQue 范式来自 AllocMutexID；它补齐分配后锁的释放动作。
-- [Lock](lock.md)（`same_topic`）：Lock 与《Unlock》的实质衔接是：Lock 必须用 AllocMutexID 得到 mutex，并与 Unlock、ReleaseMutexID 成对；C Lock/Unlock 和核内同步概述共享同一阻塞流水契约。
-- [ReleaseMutexID](release_mutex_id_isasi.md)（`same_topic`）：ReleaseMutexID 与《Unlock》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
+- [Lock](lock.md)（`related`）：根据MutexID获取Mutex，若Mutex已被锁定，将阻塞后续指定流水指令队列，直到当前流水的前序指令中对应MutexID的Mutex被Unlock。；直到当前流水的前序指令执行完成后，根据MutexID释放对应Mutex。。Lock 的阻塞条件以同 MutexID 的 Unlock 为解除点，Unlock 又要求前序流水完成后释放，二者共同定义成对互斥协议。
 <!-- cannbot:related:end -->

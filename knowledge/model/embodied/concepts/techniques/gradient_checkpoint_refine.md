@@ -80,3 +80,10 @@ LEROBOT_PI0_DISABLE_OUTER_SUFFIX_CHECKPOINT=1
 - 训练平台：[atlas-a2](../../../spatial/concepts/platforms/atlas_a2.md)（Pi0/Pi0.5 多卡训练实际平台）；[ascend-310p](../platforms/ascend_310p.md) / [atlas-a3](../../../inference/concepts/platforms/atlas_a3.md)（family 对照）
 - 跨域 attention 融合 canonical：[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Pi0.5（π0.5 · 开放世界泛化 VLA · 昇腾训练/在线推理/OM 离线三链路）](../manipulation/pi05.md)（`related`）：｜ `--disable-outer-suffix-checkpoint` ｜ 推荐显式开 ｜ 关闭外层 suffix 大 checkpoint，避免反向整段重算 ｜ **当前单项收益最大** ｜；Pi0 / Pi0.5 在昇腾 **Atlas A2** 多卡 DDP 训练上**收益最大的单项性能优化**：关闭位置不合适的外层 suffix checkpoint，避免反向阶段整段后缀被重复重算。；模型页给出推荐开关和收益排序，技术卡解释双层 checkpoint 引发的反向重算机制，可用于复现吞吐优化。
+- [Pi0（π0 · VLA 流匹配模型 · 昇腾训练/在线推理/OM 离线三链路）](../manipulation/pi0.md)（`related`）：机制下放：disable-outer-suffix-checkpoint（单项收益最大）见 ［gradient-checkpoint-refine］(../techniques/gradient_checkpoint_refine.md)；NPU fusion attention 的 Pi0 局部接法（`_repeat_kv_heads` + `_npu_fusion_attention_forward`，实例级 `use_npu_fusion_attention` 开关，不全局 monkey-patch Gemma）同见该页。；关闭这层「外包式」大 checkpoint 后，显存策略仍可控（模型内部细粒度 checkpoint 仍在），但反向计算明显变快——因此是当前收益最直接的一项。；Pi0 模型页把 disable outer suffix checkpoint 列为已验证训练开关，优化页解释关闭外层重复重算而保留细粒度 checkpoint 的机制，连接配置、根因与吞吐复现。
+<!-- cannbot:related:end -->

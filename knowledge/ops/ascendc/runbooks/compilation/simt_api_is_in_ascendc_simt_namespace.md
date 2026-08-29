@@ -234,14 +234,3 @@ __simt_vf__ __aicore__ LAUNCH_BOUND(GATHER_LAUNCH_BOUND) inline void GatherSimt(
 ## 误诊
 
 轨迹没有实际执行过其他误诊性修复；“缺少头文件”只是常见可能性，不能作为本次事实。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendC:: 前缀致全局符号编译失败](ascendc.md)（`related`）：该卡提供相反边界：SIMT API 属于 AscendC::Simt，说明命名空间不能按统一加/删前缀处理，必须按声明位置分类。
-- [CANN 9.0.1 SIMT 入口类型无法派生—改混合 VF](mixed_simt_requires_vector_shell_and_simt_vf.md)（`related`）：命名空间修复后，混合 SIMT 实现仍需满足 Vector 外壳与 __simt_vf__ 的结构约束，二者常在同一 Gather Kernel 中连续出现。
-- [Gather算子快速入门](../../guides/getting_started/quick_start/simt_programming/gather_op_quick_start.md)（`related`）：Gather算子快速入门 与《SIMT API 未进入 AscendC 命名空间导致编译失败》的实质衔接是：Gather 快速入门覆盖 SIMT kernel、host launch 和构建；所连 Gather API、维度/步长/地址空间错例和 SIMT 入口约束都直接作用于该示例的实现或验证。
-- [SIMT helper 误标 __simt_vf__ 导致编译失败](simt_vf_helpers_use_simt_callee.md)（`related`）：helper 改为 __simt_callee__ 解决调用属性，API 仍需从 AscendC::Simt 命名空间解析，二者是独立编译条件。
-- [纯 SIMT kernel 形参 __gm__ 导致编译失败](pure_simt_parameters_do_not_use_gm_qualifier.md)（`related`）：该卡补充纯 SIMT 函数参数的地址空间写法，避免命名空间修复后继续因 __gm__ 形参语法失败。
-- [随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM](../performance/random_gather_per_element_dma_should_switch_to_simt_direct_gm.md)（`related`）：两张卡来自 Gather 的同一路线：先用 SIMT 直访 GM 替代逐元素 DMA，再按 AscendC::Simt 限定设备 API。
-<!-- cannbot:related:end -->

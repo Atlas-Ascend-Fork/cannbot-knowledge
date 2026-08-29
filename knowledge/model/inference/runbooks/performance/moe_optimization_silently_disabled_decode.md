@@ -65,3 +65,10 @@ platforms:
 - `.get("enable_superkernel", False)` 键名不匹配静默回落 + decode-only `superkernel_scope` 门控：diff 事实 @699396c6be87。溯源下探 [cann-recipes-infer-pr-262-fix-fix-longcat-config-yaml](https://gitcode.com/cann/cann-recipes-infer/merge_requests/262)。
 - 间接层 `self.moe_ffn` 绑定但 forward 两处调用点写死 `self.experts` → 新 int4 分支从不被调用 → 两处切 `self.moe_ffn`：diff 事实 @6857a2062f66 + 维护者确认（报告死代码 + 复审确认接入两条路径）。溯源下探 [cann-recipes-infer-pr-410-feat-w4a8int4](https://gitcode.com/cann/cann-recipes-infer/merge_requests/410)。
 - dense-MLP TP 门控误挂 `is_prefill` → decode 不切分、去 `is_prefill` + all-gather 布局改沿 batch 维 + `world_size % dense_tp_size` 整除校验：diff 事实 @29f28af1e40c + reviewer 要求补校验。溯源下探 [cann-recipes-infer-pr-26-bugfix-support-dense-mlp-tp](https://gitcode.com/cann/cann-recipes-infer/merge_requests/26)。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SuperKernel](../../concepts/techniques/superkernel.md)（`related`）：Runbook 的信号是“运行时却**看不到预期的 overlap / 加速 / 切分**，而且**不报错、不告警**。”；SuperKernel 卡定义“**按用户声明的 scope 将计算子图整体融合为单个大 kernel**”。前者可用后者的 scope 是否出现来验证开关传播。
+- [序列并行(FlashComm V1)分支用只查环境变量的窄谓词门控：漏掉 shared_expert_dp 单开的 SP 强制耦合、静默走非 SP 布局致精度回归](../precision/sp_gate_narrow_env_predicate_misses_shared_expert_dp.md)（`related`）：通用 Runbook要求核查“门控条件（有没有误混 `is_prefill`）”；SP Runbook给出具体发散：“广义 `enable_sp(...)` 返回 True，窄 `enable_flash_comm_v1()` 返回 False。”。后者是门控谓词选错导致静默失效并进一步产生精度回归的可复现分支。
+<!-- cannbot:related:end -->

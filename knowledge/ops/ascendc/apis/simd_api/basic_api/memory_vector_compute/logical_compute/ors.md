@@ -31,5 +31,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Or](or.md)（`same_topic`）：Or 与《Ors》的衔接是：Or 在手动 mask 模式必须先用 SetMaskCount/SetMaskNorm 建立掩码并在结束后 ResetMask；Ors 和 Reg Or 是标量/Reg 形态的直接语义变体。
+- [ResetMask](../mask_operations/reset_mask.md)（`related`）：约束：该接口仅在矢量计算API的isSetMask模板参数为false时生效，使用完成后需要使用ResetMask将mask恢复为默认值。；恢复mask值为默认值（全1），表示矢量计算中每次迭代内所有元素都参与运算。。Ors 的手工 mask 路径明确要求结束后调用 ResetMask，后者定义恢复后的全 1 状态。
 <!-- cannbot:related:end -->

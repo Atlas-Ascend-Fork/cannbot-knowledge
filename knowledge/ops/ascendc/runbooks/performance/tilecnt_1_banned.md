@@ -89,6 +89,5 @@ tileCnt 越大越慢，与"流水掩盖收益"的预期完全相反。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [逐 rank 通信路径的 MTE2 主导诊断](rank_flag_mte2.md)（`related`）：《逐 rank 通信路径的 MTE2 主导诊断》处理“ReduceScatter 远程读采用逐 rank DataCopy 与同步时，msprof 显示 aiv_mte2_time 主导 T_comm；三段注释法可排除 vec/reduce，但现有证据未单独验证 flag 是带宽缺口的唯一原因。”。《通算流水 tileCnt>1 性能反降 banned》明确“matmul_reducescatter 通算流水 tileCnt>1 即使精度通过、死锁解除，端到端耗时随 tileCnt 反增；根因为 fixpipe 固定开销随 Blaze 调用次数线性累积 + Pattern B 依赖链限制流水窗口。tileCnt>1 路线 banned。”，可直接用于核对ReduceScatter 逐 rank 搬运的 MTE2 计时、HBM 解释、同步必要性与成对 profile。
-- [CrossCore 反压 flag 方向错致通算流水死锁](../compilation/crosscore_flag.md)（`same_topic`）：CrossCore 反压 flag 方向错致通算流水死锁 与《通算流水 tileCnt>1 性能反降 banned》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
+- [MatmulReduceScatter 950 ACLNN 算子知识](../../operators/aclnn/transformer/mc2/matmul_reduce_scatter_950.md)（`related`）：各 rank 的完整结果按 `sum` 归约后沿 M 轴等分，本 rank 输出 `y:［M/rankSize,N］`。；tileCnt=1（无流水，单次 batch matmul）是基线参照路线；后者以同一 MatMul 后 ReduceScatter 链验证多 tile 流水性能反降并给出回退基线。
 <!-- cannbot:related:end -->

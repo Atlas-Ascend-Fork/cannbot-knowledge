@@ -84,9 +84,5 @@ platforms: ["a2"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [RmsNorm Tiling](../../apis/simd_api/adv_api/normalization/rms_norm_tiling.md)（`exemplifies`）：RmsNorm Tiling 与《golden BF16 rstd 归约误取 post-BF16 量化值》的实质衔接是：RmsNorm host tiling 直接生成 RmsNorm kernel 参数；同名结构体冲突、NaN/Rsqrt 与 UB 预算卡都作用于这套 tiling/kernel 契约。
-- [bf16 多 matmul 链累积漂移判别](bf16_matmul.md)（`related`）：两卡都要求先对齐 golden 与 NPU 的 BF16 中间张量边界：多 Matmul 链每步返回 BF16，而 rstd 卡的 kernel 使用 pre-BF16 FP32 和，边界不同都会形成伪精度归因。
-- [dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数](rsqrt_fast_approximation_use_sqrt_reciprocal.md)（`related`）：候选区分 golden rstd 的量化阶段，本卡用 fp32 固定输入确认设备 Rsqrt 的量化误差。
-- [大归约维 fp32 golden 顺序累加致假精度失败](fp32_golden.md)（`related`）：The fp32-golden runbook covers a different oracle artifact—host reduction order—providing the next differential check when BF16 input quantization alone does not close rstd mismatch.
-- [bf16 边缘失败用 fair-oracle 探针判 oracle 不公](bf16_fair_oracle_oracle.md)（`same_topic`）：Both runbooks prevent false BF16 failures by making the CPU oracle consume values quantized at the same boundary as the device; the focal card specializes this to rstd reduction.
+- [AddRmsNormCast A2/A3 ACLNN 算子知识](../../operators/aclnn/nn/norm/add_rms_norm_cast.md)（`related`）：算子卡规定“每行先求和 `x=x1+x2`，再计算 `rstd=1/sqrt(sum(x_fp32^2)/N+epsilon)`”；Runbook 的失败信号是“rstd 输出（FP32，`rsqrt(mean(x²)+eps)`）在两个小 numCol 用例上超出 FP32 容差”。算子内部 pre-BF16 FP32 归约顺序用于修正 golden 的 post-BF16 取值点。
 <!-- cannbot:related:end -->

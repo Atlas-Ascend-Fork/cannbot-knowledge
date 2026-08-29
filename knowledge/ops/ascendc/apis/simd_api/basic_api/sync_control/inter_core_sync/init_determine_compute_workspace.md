@@ -28,9 +28,6 @@ InitDetermineComputeWorkspace是基于核间顺序执行的确定性计算的初
 <!-- cannbot:related:start -->
 ## 相关
 
-- [如何使用workspace](../../../../../guides/programming_guide/appendix/common_operations/how_to_use_workspace.md)（`explains`）：确定性核间同步需专用 GM workspace 并按参与核初始化。
-- [核函数内删除Workspace相关冗余操作](../../../../../guides/operator_practice/simd_operator_optimization/overhead_optimization/remove_workspace_redundancy.md)（`explains`）：核函数内删除Workspace相关冗余操作 与《InitDetermineComputeWorkspace》的实质衔接是：workspace 已直接是用户 Workspace 时不应再 SetSysWorkSpace/GetUserWorkspace；Workspace API、使用指南和 RESERVED/预偏移案例界定何时仍需系统区与局部区。
-- [CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)（`related`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《InitDetermineComputeWorkspace》补充：基于核间顺序执行的确定性计算初始化接口，初始化GM共享内存后才能调用WaitPreBlock和NotifyNextBlock完成核间顺序执行。
-- [NotifyNextBlock](notify_next_block.md)（`same_topic`）：InitDetermineComputeWorkspace：InitDetermineComputeWorkspace初始化确定性核间顺序执行所需GM空间，随后每核严格调用WaitPreBlock/NotifyNextBlock；workspace指南说明共享区的申请与传入。 目标卡《NotifyNextBlock》补充：通过写全局内存通知后序核当前核已执行完成，与WaitPreBlock和InitDetermineComputeWorkspace配合实现AIV核按blockIdx升序执行的确定性计算。
-- [WaitPreBlock](wait_pre_block.md)（`same_topic`）：InitDetermineComputeWorkspace：InitDetermineComputeWorkspace初始化确定性核间顺序执行所需GM空间，随后每核严格调用WaitPreBlock/NotifyNextBlock；workspace指南说明共享区的申请与传入。 目标卡《WaitPreBlock》补充：通过读取全局内存判断前序核是否完成，阻塞当前核直至前序核通过NotifyNextBlock通知，与InitDetermineComputeWorkspace配合实现确定性计算。
+- [NotifyNextBlock](notify_next_block.md)（`related`）：“完成初始化后才可以调用WaitPreBlock和NotifyNextBlock”明确初始化前置；“WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合使用”从通知接口侧确认三者必须组合，构成升序核执行的完整调用合同。
+- [WaitPreBlock](wait_pre_block.md)（`related`）：“完成初始化后才可以调用WaitPreBlock和NotifyNextBlock”规定 Wait 的初始化依赖；“WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合使用”从等待接口侧确认三接口共同维持 blockIdx 升序。
 <!-- cannbot:related:end -->

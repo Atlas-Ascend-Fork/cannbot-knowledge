@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/sana-video/SANA-Video_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - a2
 - a3
@@ -163,7 +163,7 @@ DiT Linear 层（`block.attn.qkv/proj`、`block.cross_attn.q_linear/kv_linear/pr
 
 ### 性能
 
-README「性能数据」分两表，量化对比表标注于 **Atlas A5**（Atlas A2/A3 表仅列 BF16：480p81f 单步 2.75 s / Diffusion sampling 132 s，无量化行）：
+README「性能数据」分两表，量化对比表标注于 **Atlas 950**（Atlas A2/A3 表仅列 BF16：480p81f 单步 2.75 s / Diffusion sampling 132 s，无量化行）：
 
 | 量化方式 | 规格 | 单步时延(s) | Diffusion sampling(s) | 整网耗时(s) |
 | ---- | ---- | ---- | ---- | ---- |
@@ -171,7 +171,7 @@ README「性能数据」分两表，量化对比表标注于 **Atlas A5**（Atla
 | 8bit (a8w8) | 480p81f | 1.46 | 73 | 79.38 |
 | 4bit (a4w4) | 480p81f | 1.43 | 71.5 | 77.92 |
 
-> 性能数值带平台前提（Atlas A5、单卡 480p 81f）；A2/A3 表无量化行（gap）。
+> 性能数值带平台前提（Atlas 950、单卡 480p 81f）；A2/A3 表无量化行（gap）。
 
 ## Evidence
 
@@ -179,7 +179,7 @@ README「性能数据」分两表，量化对比表标注于 **Atlas A5**（Atla
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/sana-video/patches/npu_patches.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/patches/npu_patches.py)
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/sana-video/patches/quant_module.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/patches/quant_module.py)（`QuantLinear` / `QuantConv1x1AsLinear` / `QuantConv2d` / `replace_quant_module`、`LINEAR_MODES={a8w8,a4w4}`、`npu_dynamic_mx_quant` + `npu_quant_matmul`；MR!400 `ecbc110` Add SanaVideo 4bit/8bit quant）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/sana-video/patches/__init__.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/patches/__init__.py)（`VALID_QUANT_TYPES={bf16,a8w8,a4w4}`、`apply_all` `enable_quant`）、[`models/sana-video/inference_video_scripts/inference_sana_video.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/inference_video_scripts/inference_sana_video.py)（L555-556 `replace_quant_module`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/sana-video/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/README.md)（`quant_type` bf16/a8w8/a4w4、Atlas A5 量化性能表、a4w4 部分回退 a8w8）、[`config/2b_480p_single_a8w8.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/config/2b_480p_single_a8w8.yaml) / [`config/2b_480p_single_a4w4.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/config/2b_480p_single_a4w4.yaml)
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/sana-video/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/README.md)（`quant_type` bf16/a8w8/a4w4、Atlas 950 量化性能表、a4w4 部分回退 a8w8）、[`config/2b_480p_single_a8w8.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/config/2b_480p_single_a8w8.yaml) / [`config/2b_480p_single_a4w4.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/config/2b_480p_single_a4w4.yaml)
 
 ## Links
 
@@ -196,3 +196,9 @@ README「性能数据」分两表，量化对比表标注于 **Atlas A5**（Atla
 
 - **gap**：源文档未提供 benchmark / 精度数据；shipped config 均单卡（`world_size: 1`），但 README 说明可将 `world_size` 调大切单机多卡 DP（`mm_function.sh` 自动转为 `accelerate --num_processes`），SP / CFG 等并行优化未涉及
 - **gap**：`GLUMBConvTemp` 的语义与 SANA 原始结构关系在源中未展开
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [在 NPU 上对含 1×1 卷积的 DiT 做 MXFP 低比特量化 — 卷积当线性算·加载期模块替换 + a4w4 混合精度部分回退 a8w8](../../optimizations/experience/rules/dit_mxfp_lowbit_quant_conv_as_linear.md)（`related`）：“把卷积的量化**下沉到加载期的模块替换**”与“上节 1×1 conv2d → matmul 的量化延伸是 `QuantConv1x1AsLinear`”共同闭合 Sana-Video 在加载期把 1×1 Conv 替换为量化 Linear 的实施链。
+<!-- cannbot:related:end -->

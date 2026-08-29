@@ -27,9 +27,6 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetDataObj](get_data_obj.md)（`same_topic`）：GetDataPtr 返回 TensorDesc 的裸数据地址，GetDataObj 用同一地址构造 GlobalTensor 访问对象；两者围绕同一 TensorDesc 地址载体提供裸指针与张量封装两种访问合同。
-- [ListTensorDesc](../list_tensor_desc.md)（`same_topic`）：焦点处理TensorDesc 数据地址读取和 GlobalTensor 包装；ListTensorDesc正文说明“ListTensorDesc用来解析符合以下内存排布格式的数据，并在kernel侧根据索引获取储存对应数据的地址及shape信息。 !”。候选说明该裸地址如何由 TensorDesc 取得并封装成可访问的 GlobalTensor。
-- [TensorDesc](tensor_desc.md)（`same_topic`）：焦点处理TensorDesc 数据地址读取和 GlobalTensor 包装；TensorDesc正文说明“TensorDesc 辅助数据结构用于描述张量描述信息，提供 SetShapeAddr、GetDim、GetShape、GetDataPtr 等接口”。候选说明该裸地址如何由 TensorDesc 取得并封装成可访问的 GlobalTensor。
-- [TensorDesc简介](tensor_desc_intro.md)（`same_topic`）：焦点处理TensorDesc 数据地址读取和 GlobalTensor 包装；TensorDesc简介正文说明“TensorDesc用于储存ListTensorDesc.GetDesc\(\)中根据index获取对应的Tensor描述信息”。候选说明该裸地址如何由 TensorDesc 取得并封装成可访问的 GlobalTensor。
-- [构造和析构函数](constructor_and_destructor.md)（`same_topic`）：焦点处理TensorDesc 数据地址读取和 GlobalTensor 包装；构造和析构函数正文说明“创建与释放TensorDesc对象”。候选说明该裸地址如何由 TensorDesc 取得并封装成可访问的 GlobalTensor。
+- [ForeachTan 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)（`related`）：“xPtr=xList.GetDataPtr<float>(i); yPtr=yList.GetDataPtr<float>(i)”给出 FP32 route 从列表描述符取 GM 地址的实际调用；“获取储存Tensor数据地址。”定义 GetDataPtr 返回的数据。
+- [GetDataObj](get_data_obj.md)（`related`）：获取储存Tensor数据地址。；将数据指针置于 GlobalTensor 中并返回该 GlobalTensor。；两接口都在 TensorDesc 与底层 Tensor 数据之间建立访问入口；前者返回原始地址，后者把相同数据指针封装成后续搬运或计算可消费的 GlobalTensor。
 <!-- cannbot:related:end -->

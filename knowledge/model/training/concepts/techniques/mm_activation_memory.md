@@ -161,3 +161,11 @@ Chunk-MBS 必须是最外层包装，保证 batch 切片在数据进入重计算
 - [mindspeed](../frameworks/mindspeed.md)（MindSpeed-MM 的训练加速底座；激活/优化器侧 Host 卸载思路同源）
 - [swap-attention](swap_attention.md)（Megatron 路线的注意力激活换出，与本页 FSDP2 异步激活 offload 互为对照）
 - [chunk-loss](chunk_loss.md)（同套 FSDP2 特性里的 lm_head 损失分块，沿 vocab/序列维切块降末层激活峰值，机理与 Chunk-MBS 呼应）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Swap Attention（激活换出 Host + SmartSwap + 自适应内存）](swap_attention.md)（`related`）：换出的最小单位是 `SwapTensor`：每个持一份 `pin_memory=True` 的 CPU 副本，用四个状态 `device → d2h → host → h2d` 流转；搬运统一走 `SwapPrefetch` 持有的、独立于主计算流的 `prefetch_stream`。；［mindspeed-mm］(../frameworks/mindspeed_mm.md) 的 FSDP2 训练后端为多模态长序列场景提供两个互补的激活显存优化：**异步激活 Offload**（`enable_activation_offload`）用 PyTorch `saved_tensors_hooks` 把前向保存的 layer 入口激活在独立 copy 流上异步换出 Host pinned 内存、反向时按需预取换回，把激活从 device 峰值里搬走；**Chunk-MBS**（`enable_chunk_mbs`）在一次 FSDP Unshard 之后把单个 micro-batch 沿 batch 维切成多个微块串行前反向，使动态激活峰值被压到「单个微块」量级。；两张卡都给出激活 Host offload 的异步 D2H/H2D 与预取机制，可用于 Megatron 和 FSDP2 实现迁移对照。
+- [VLM 多模态训练适配（DenseMaskSDPA）](../modules/vlm_multimodal_training.md)（`related`）：开 CP 时 `shift_labels` 与 per-sample 的 `alpha` 都经 `split_forward_gather_backward_with_cp` 沿序列切给各 rank。该 loss 在 `TrainEngine.set_loss_func` 处把 `loss_type` 编译成闭包挂到 `model.loss_function`；开 `enable_chunk_loss` 时按 `chunk_size` 沿序列分块算以省 logits 显存，与 ［mm-activation-memory］(../techniques/mm_activation_memory.md) 的 ChunkLoss 同源。；［mindspeed-mm］(../frameworks/mindspeed_mm.md) 的 FSDP2 训练后端为多模态长序列场景提供两个互补的激活显存优化：**异步激活 Offload**（`enable_activation_offload`）用 PyTorch `saved_tensors_hooks` 把前向保存的 layer 入口激活在独立 copy 流上异步换出 Host pinned 内存、反向时按需预取换回，把激活从 device 峰值里搬走；**Chunk-MBS**（`enable_chunk_mbs`）在一次 FSDP Unshard 之后把单个 micro-batch 沿 batch 维切成多个微块串行前反向，使动态激活峰值被压到「单个微块」量级。。VLM 卡把 chunk loss 定位为多模态训练显存开关，显存卡提供同一后端的激活 offload 与 micro-batch 分块边界。
+- [重计算（Recomputation：选择性/全量 + 激活函数/Norm 细粒度 + 按 PP rank 层数）](recomputation.md)（`related`）：重计算（activation checkpointing / rematerialization）用算力换显存：前向只保留少量关键张量，把中间激活在反向需要时按保存的输入重新算一遍，从而压低激活显存峰值。；二者建立在重计算之上：开了 Chunk-MBS 的 module 必须同时开 offload 与 recompute。。通用重计算卡定义丢弃与反向重算语义，MindSpeed-MM 卡把 recompute 作为 Offload 与 Chunk-MBS 组合的硬前置并给出固定包装顺序。
+<!-- cannbot:related:end -->

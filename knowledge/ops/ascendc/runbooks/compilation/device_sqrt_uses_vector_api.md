@@ -356,12 +356,6 @@ __global__ __aicore__ void rms_norm_kernel(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSqrt](../../apis/simd_api/c_api/reg/arithmetic_compute/asc_sqrt.md)（`exemplifies`）：AscSqrt 与《bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt》的实质衔接是：Reg C API AscSqrt、Vector C API、Memory API 与 Reg C++ Sqrt 都按元素开方；device sqrtf 构建故障给出改用向量 Sqrt 的可执行修复，Rsqrt 精度卡验证 Sqrt 加倒数的精度路线。
-- [AscSqrt](../../apis/simd_api/c_api/vector_compute/asc_sqrt.md)（`exemplifies`）：该 runbook 记录 device 标量 sqrtf 不可编译时改用 32B 对齐 Vector Sqrt 并显式同步，给出 AscSqrt 路线的实际选择依据。
-- [PipeBarrier](../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)（`exemplifies`）：“bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt”定义：device kernel 中直接调用 sqrtf 导致 bisheng 编译失败；改为 32B 对齐的向量 Sqrt 链并显式同步。；“PipeBarrier”定义：完成同一流水线内的同步控制，保证前序指令中所有数据的读写工作全部完成后，后序指令才能执行。。实质衔接：device sqrtf 编译失败时改用对齐 LocalTensor 的 Vector Sqrt；数值 runbook给出该替换在 Rsqrt 精度修复中的实例，PipeBarrier闭合向量结果消费。
-- [Sqrt](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/sqrt.md)（`exemplifies`）：“bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt”定义：device kernel 中直接调用 sqrtf 导致 bisheng 编译失败；改为 32B 对齐的向量 Sqrt 链并显式同步。；“Sqrt”定义：单目矢量计算接口，对输入tensor按元素做开方。。实质衔接：device sqrtf 编译失败时改用对齐 LocalTensor 的 Vector Sqrt；数值 runbook给出该替换在 Rsqrt 精度修复中的实例，PipeBarrier闭合向量结果消费。
-- [Sqrt](../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/sqrt.md)（`exemplifies`）：该 runbook 记录 device 侧 sqrtf 被 Bisheng 拒绝时改用向量 Sqrt，直接展示接口路线替换。
-- [Sqrtf](../../apis/simt_api/math_functions/float_math_functions/sqrtf.md)（`exemplifies`）：Runbook 记录在 __aicore__ 普通 device 路径直接调用 libc sqrtf 的 bisheng 失败，并以 32B LocalTensor 上 AscendC::Sqrt、显式同步和全量精度通过收敛，为 SIMT sqrtf 卡补充编程域边界。
-- [sqrt（数学函数）](../../apis/utils_api/cpp_stdlib/math_functions/sqrt.md)（`exemplifies`）：bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt说明device kernel 中直接调用 sqrtf 导致 bisheng 编译失败；改为 32B 对齐的向量 Sqrt 链并显式同步。
-- [dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数](../precision/rsqrt_fast_approximation_use_sqrt_reciprocal.md)（`related`）：“bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt”定义：device kernel 中直接调用 sqrtf 导致 bisheng 编译失败；改为 32B 对齐的向量 Sqrt 链并显式同步。；“dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数”定义：RmsNorm 的 fp32 rstd 使用不带 config 的 Rsqrt 后呈现约 2^-9 量化偏差；改为 Sqrt、标量读回与 1.0f/s 后恢复 fp32 精度。。实质衔接：device sqrtf 编译失败时改用对齐 LocalTensor 的 Vector Sqrt；数值 runbook给出该替换在 Rsqrt 精度修复中的实例，PipeBarrier闭合向量结果消费。
+- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](../precision/mte2_barrier_must_precede_vector_cast.md)（`related`）：sqrtf 编译修复卡的验证路径明确“归约结果经 `AscendC::Sqrt`、`PipeBarrier<PIPE_ALL>`、`LocalTensor::GetValue` 转成标量倒数。”；同一 950 RMSNorm 低精度链的同步卡规定“低精度分支顺序固定为 `DataCopyPad → PipeBarrier → Cast`”，两卡分别闭合 gamma 搬入和归约开方两处 producer→consumer 同步，可顺序用于同一实现。
+- [模板内 float→float Cast 使 fp32 分支全错](../precision/templated_float_input_must_bypass_same_type_cast.md)（`related`）：sqrtf 修复后的 dtype 路径要“把 `mean+epsilon` 写入 LocalTensor，通过 Ascend C Vector API 完成开方。”；同一模板化 RMSNorm 卡指出“模板把“低精度升 fp32”错误泛化到了已经是 fp32 的分支。”，后者防止在进入前者 fp32 Vector 开方链前用同类型 Cast 破坏数据。
 <!-- cannbot:related:end -->

@@ -23,7 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetTransDataMaxMinTmpSize](get_trans_data_max_min_tmp_size.md)（`related`）：TransData is the kernel transform whose temporary-space bounds the focal host query calculates.
-- [TransDataTo5HD](../../basic_api/memory_vector_compute/data_layout_conversion/trans_data_to5_hd.md)（`related`）：TransData 描述通用布局转换能力，TransDataTo5HD 是把输入专门转换到 5HD 的低层路径；选择 5HD 目标布局时后者落实前者的一种转换方向。
-- [Transpose](transpose.md)（`same_topic`）：《Transpose》处理“对输入数据进行数据排布及Reshape操作，支持NZ与ND格式间的多种轴互换和转置场景。”。《TransData》明确提供“将输入数据的排布格式转换为目标排布格式，支持NCDHW与NDC1HWC0、FRACTAL_Z_3D之间的转换。”，其参数、调用或验证步骤直接接入Transpose 的 Tiling、转置搬运、布局转换和轴顺序验证。
+- [GetTransDataMaxMinTmpSize](get_trans_data_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取TransData接口所需的最大和最小临时空间大小。；提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetTransDataMaxMinTmpSize获取。。Host 接口产出的临时空间区间直接满足 TransData 两种重载的 sharedTmpBuffer 预算契约。
 <!-- cannbot:related:end -->

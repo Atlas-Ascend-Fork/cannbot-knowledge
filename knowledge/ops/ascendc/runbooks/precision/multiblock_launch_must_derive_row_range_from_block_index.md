@@ -98,9 +98,5 @@ __global__ __aicore__ __vector__ void cummin_kernel(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetBlockIdx](../../apis/simd_api/c_api/sys_var/asc_get_block_idx.md)（`exemplifies`）：AscGetBlockIdx 与《多核共享首段行区间导致部分输出未写》的实质衔接是：AscGetBlockIdx 与 block 数 API、系统变量共同定义多核索引；所选故障/性能卡直接用 blockIdx 解释错误切分、串行启动和尾核边界。
-- [BlockIndex](../../apis/simt_api/cooperative_groups/grid_group/block_index.md)（`exemplifies`）：焦点处理SIMT grid 中 block 索引及 grid_group 查询；多核共享首段行区间导致部分输出未写正文界定“host 把首个行区间传给所有 block，多个核重复处理同一段；kernel 用 GetBlockIdx 推导本核区间后恢复覆盖”。候选把线性 block 排名映射到 grid_group/GroupIndex，并用多核漏写案例验证索引分片。
-- [GetBlockIdx](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_idx.md)（`exemplifies`）：《GetBlockIdx》处理“获取当前逻辑AI Core的索引，用于多核逻辑控制及偏移量计算等。”。《多核共享首段行区间导致部分输出未写》明确提供“host 把首个行区间传给所有 block，多个核重复处理同一段；kernel 用 GetBlockIdx 推导本核区间后恢复覆盖。”，其参数、调用或验证步骤直接接入GetBlockIdx/GetBlockNum 与 Tiling 切核、尾核边界和多核验证的合同。
-- [多核 ceil 尾块为负 — 每核按 remaining 截断](ceil_partition_each_core_must_clamp_remaining.md)（`same_topic`）：多核共享首段行区间导致部分输出未写 与《多核 ceil 尾块为负 — 每核按 remaining 截断》的实质衔接是：多核 kernel 必须从 block index 推导独立行区间；核数、主尾块切分和 block 同步卡直接支持修复。
-- [跨批首行漏比较—续批从 row 0 扫描](prefix_scan_continuation_batch_must_compare_first_row.md)（`same_topic`）：跨批首行漏比较—续批从 row 0 扫描 与《多核共享首段行区间导致部分输出未写》的实质衔接是：续批 carry 已独立保存，因此当前 row0 必须参与比较；批行回绕、多核行区间、cummin 维度切分和 NaN carry 语义是同一前缀扫描状态契约的判别点。
+- [BlockIndex](../../apis/simt_api/cooperative_groups/grid_group/block_index.md)（`exemplifies`）：正确映射是 `mStart = blockIdx * rowsPerCore`，`mEnd = min(mStart + rowsPerCore, M)`；这里 `rowsPerCore = ceil(M / numBlocks)`。；获取当前线程所属线程块在Grid中的三维索引。。运行手册用 blockIdx 推导每个线程块负责的行区间并修复多块重复计算，BlockIndex 卡给出该索引在 Grid 中的语义，是索引 API 驱动任务划分的具体实例。
 <!-- cannbot:related:end -->

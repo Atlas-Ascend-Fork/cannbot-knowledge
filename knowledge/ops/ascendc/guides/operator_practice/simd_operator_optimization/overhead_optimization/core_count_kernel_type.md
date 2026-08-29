@@ -35,12 +35,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SK_BIND（SuperKernel）](../../../../apis/utils_api/super_kernel/sk_bind.md)（`explains`）：设置合适的核数和算子Kernel类型 与《SK_BIND（SuperKernel）》的实质衔接是：核数、kernel 类型和 workspace 都会影响启动/头尾开销；SetKernelMode、负载均衡与 SK_BIND 卡给出 host 配置和核侧绑定的执行落点。
-- [SetKernelMode](../../../../apis/simd_api/basic_api/debug_interface/cpu_twin_debug/set_kernel_mode.md)（`explains`）：设置合适的核数和算子Kernel类型 与《SetKernelMode》的实质衔接是：核数、kernel 类型和 workspace 都会影响启动/头尾开销；SetKernelMode、负载均衡与 SK_BIND 卡给出 host 配置和核侧绑定的执行落点。
-- [设置Kernel类型](../../../../apis/simd_api/basic_api/kernel_tiling/set_kernel_type.md)（`explains`）：设置Kernel类型：SetKernelType的目标是只启动需要的 AIC/AIV核；优化指南解释选型，kernel_type runbook证明裸字段赋值无效，GetCoreNumAic/Vector提供合法核数输入。 目标卡《设置合适的核数和算子Kernel类型》补充：在算子执行过程中，可能会因为以下几个原因产生额外的启动开销或者头开销：
-- [SIMD算子优化概述](../memory_access/avoid_ub_bank_conflict/overview.md)（`related`）：设置合适的核数和算子Kernel类型 与《SIMD算子优化概述》的实质衔接是：核数、kernel 类型和 workspace 都会影响启动/头尾开销；SetKernelMode、负载均衡与 SK_BIND 卡给出 host 配置和核侧绑定的执行落点。
-- [优化建议总览表（SIMD算子优化）](../optimization_summary.md)（`related`）：设置合适的核数和算子Kernel类型 与《优化建议总览表（SIMD算子优化）》的实质衔接是：核数、kernel 类型和 workspace 都会影响启动/头尾开销；SetKernelMode、负载均衡与 SK_BIND 卡给出 host 配置和核侧绑定的执行落点。
-- [直调 kernel-type 裸赋值标记无效](../../../../runbooks/compilation/kernel_type.md)（`related`）：设置合适的核数和算子Kernel类型 与《直调 kernel-type 裸赋值标记无效》的实质衔接是：核数、kernel 类型和 workspace 都会影响启动/头尾开销；SetKernelMode、负载均衡与 SK_BIND 卡给出 host 配置和核侧绑定的执行落点。
-- [核函数内删除Workspace相关冗余操作](remove_workspace_redundancy.md)（`same_topic`）：设置合适的核数和算子Kernel类型 与《核函数内删除Workspace相关冗余操作》的实质衔接是：核数、kernel 类型和 workspace 都会影响启动/头尾开销；SetKernelMode、负载均衡与 SK_BIND 卡给出 host 配置和核侧绑定的执行落点。
-- [核间负载均衡](../tiling_strategy/inter_core_load_balance.md)（`same_topic`）：核间负载均衡 与《设置合适的核数和算子Kernel类型》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+- [设置Kernel类型](../../../../apis/simd_api/basic_api/kernel_tiling/set_kernel_type.md)（`explains`）：所以推荐用户手动设置算子的Kernel类型。具体设置方法请参考设置Kernel类型。；用于用户自定义设置kernel类型，控制算子执行时只启动该类型的核，避免启动不需要工作的核，缩短核启动开销。。指南解释了自动识别可能失效及错误混合启动的头开销，API 卡给出手动限制启动核类型的具体入口，直接支撑该优化动作。
 <!-- cannbot:related:end -->

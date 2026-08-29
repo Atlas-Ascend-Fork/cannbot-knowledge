@@ -36,6 +36,6 @@ __aicore__ inline void BitwiseOr(const LocalTensor<T>& dst, const LocalTensor<T>
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetBitwiseOrMaxMinTmpSize](get_bitwise_or_max_min_tmp_size.md)（`same_topic`）：GetBitwiseOrMaxMinTmpSize 与《BitwiseOr》的实质衔接是：该查询只给出 BitwiseOr/MaxMin 类算子的 sharedTmpBuffer 大小，factor 参数与实际 BitwiseOr kernel 调用是分配空间所必需的两端。
-- [GetBitwiseOrTmpBufferFactorSize](get_bitwise_or_tmp_buffer_factor_size.md)（`same_topic`）：GetBitwiseOrTmpBufferFactorSize 与《BitwiseOr》的实质衔接是：factor 查询与 GetBitwiseOrMaxMinTmpSize、BitwiseOr Kernel 是同一 sharedTmpBuffer 契约的固定空间反推、空间边界和实际消费三端。
+- [BitwiseOrTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)（`related`）：核心 `BitwiseOr`/BOOL `LogicalOr` 均为单 AIV Kernel；逐比特对两个输入进行或操作；算子整数 Route 直接依赖 BitwiseOr primitive。
+- [GetBitwiseOrMaxMinTmpSize](get_bitwise_or_max_min_tmp_size.md)（`related`）：“Kernel侧BitwiseOr接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用。”明确 Host 到 Kernel 的空间参数链；“逐比特对两个输入进行或操作。”定义实际消费该空间的 BitwiseOr 计算。
 <!-- cannbot:related:end -->

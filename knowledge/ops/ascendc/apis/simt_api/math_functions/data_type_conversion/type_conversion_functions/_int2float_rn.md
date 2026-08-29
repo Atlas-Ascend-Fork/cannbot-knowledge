@@ -25,12 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/device_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__int2float_rna](_int2float_rna.md)（`related`）：“__int2float_rna”定义：遵循CAST_ROUND模式，将int32类型数据转换为浮点数，返回转换后的值。；“__int2float_rn”定义：遵循CAST_RINT模式，将int32类型数据转换为浮点数，返回转换后的值。。实质衔接：四张卡保持 int32→float，仅改变 RINT/CEIL/TRUNC/FLOOR；与焦点 RNA 的差异直接决定不可精确表示整数的舍入方向。
-- [__int2float_rd](_int2float_rd.md)（`same_topic`）：rn 提供最近舍入，可与 floor 模式在不可精确表示整数上做精度选型。
-- [__int2float_ru](_int2float_ru.md)（`same_topic`）：rn 提供最近舍入，可减少相对 floor/ceil 的绝对误差。
-- [__int2float_rz](_int2float_rz.md)（`same_topic`）：__int2float_rn说明遵循CAST_RINT模式，将int32类型数据转换为浮点数，返回转换后的值。
-<!-- cannbot:related:end -->

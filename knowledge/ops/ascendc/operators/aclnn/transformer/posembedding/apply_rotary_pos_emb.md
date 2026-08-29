@@ -44,7 +44,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/cmake/level2_ops_list
     role: implementation
 created_at: "2026-08-24T16:30:02Z"
-updated_at: "2026-08-24T19:40:20Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -944,10 +944,10 @@ Q/K、cos、sin先以 `CAST_NONE` 升到 FP32，half交换、负号、两次 Mul
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 V2；ascend910b 配置 | 支持 V2；ascend910_93 配置 | 支持 V2，但使用独立 `_a5` 卡 |
-| Host/Launcher | 共用旧 Tiling：layout 1/4、half、非空、D为64/128 | 与A2共用同一源码、POD、key 1/3/4 | arch35 Tiling支持四种layout、三种mode和D至1024，POD/key完全不同；A5公开文档称支持空Tensor，但固定源码会拒绝非正维，详见独立卡 |
+| 支持状态 | 支持 V2；ascend910b 配置 | 支持 V2；ascend910_93 配置 | 支持 V2，但使用独立 `_950` 卡 |
+| Host/Launcher | 共用旧 Tiling：layout 1/4、half、非空、D为64/128 | 与A2共用同一源码、POD、key 1/3/4 | arch35 Tiling支持四种layout、三种mode和D至1024，POD/key完全不同；950公开文档称支持空Tensor，但固定源码会拒绝非正维，详见独立卡 |
 | Kernel/资源 | `apply_rotary_pos_emb.cpp`，AIV_ONLY，TQue/TBuf Vector API | 与A2相同 | `apply_rotary_pos_emb_apt.cpp`与RegBase MicroAPI；不得复用本卡ABI/UB公式 |
 
 ## 限制与失败边界
@@ -968,7 +968,7 @@ Q/K、cos、sin先以 `CAST_NONE` 升到 FP32，half交换、负号、两次 Mul
 |---|---|---|---|
 | 入口声明/约束 | posembedding/apply_rotary_pos_emb/op_host/op_api/aclnn_apply_rotary_pos_emb_v2.h | `aclnnApplyRotaryPosEmbV2GetWorkspaceSize/aclnnApplyRotaryPosEmbV2` | 两段式公开签名 |
 | 入口实现 | posembedding/apply_rotary_pos_emb/op_host/op_api/aclnn_apply_rotary_pos_emb_v2.cpp | 两个 V2 wrapper | 参数原样转发至inner |
-| 公开说明 | posembedding/apply_rotary_pos_emb/README.md | 产品支持、计算公式和A2/A3约束 | A2/A3/A5平台边界、half语义和公开UB公式 |
+| 公开说明 | posembedding/apply_rotary_pos_emb/README.md | 产品支持、计算公式和A2/A3约束 | A2/A3/950平台边界、half语义和公开UB公式 |
 | 公开约束 | posembedding/apply_rotary_pos_emb/docs/aclnnApplyRotaryPosEmbV2.md | 产品支持、参数与失败表 | A2/A3 layout/mode/shape与原地语义 |
 | Host schema | posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_def.cpp | `ApplyRotaryPosEmb/OP_ADD` | dtype、AutoContiguous、属性和SoC kernel文件 |
 | Shape | posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_infershape.cpp | `ApplyRotaryPosEmbInferShape` | 输出shape广播推导 |
@@ -998,3 +998,10 @@ Q/K、cos、sin先以 `CAST_NONE` 升到 FP32，half交换、负号、两次 Mul
 | 同步 | TQue EnQue/DeQue/FreeTensor模式可复用 | depth1/depth2、输入消费后释放、输出写回后释放顺序不可改 | `CopyInQK/CopyIn/CopyOut` |
 | 精度与尾块 | FP16/FP32保持dtype，BF16升FP32后CAST_ROUND | mask、repeat stride、half交换、partial只写前缀不可跨route套用 | `ComputeTotary/ComputeBF16/CTotaryBF16` |
 | 失败边界 | Host检查和Kernel早退事实可复用 | 非half校验、alias建图、aclnnStatus映射固定仓不可见；不能自行补齐 | `CheckParams/ComputeAB`、V2 wrappers、entry guards |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [按序列位缓存 cos/sin 并让 q/k 共享搬运](../../../../runbooks/performance/cache_position_coefficients_across_shared_inputs.md)（`related`）：把 `cosFullF/sinFullF` 留在 TBuf 中，以 `cachedS_` 只在 `s` 变化时重载，并在同一行循环中先后计算 q/k，可同时消除跨 head 与 q/k 的冗余系数事务。；对 query、key 的前 `D_r=cos.shape［-1］` 个元素执行 half RoPE：`y=x*cos+rotate_half(x)*sin`，结果原地更新；A2/A3 公开约束仅允许 `rotaryMode="half"`。性能运行手册针对同一 half RoPE 的 query/key 共享 cos/sin 数据流，把算子契约落实为按序列位缓存系数的搬运优化。
+- [ApplyRotaryPosEmb 950 ACLNN 算子知识](apply_rotary_pos_emb_950.md)（`same_topic`）：A2/A3 只接受 half 模式。；half按两半成对：`(-x1,x0)`；quarter按四段成对：`(-x1,x0,-x3,x2)`；interleave按偶奇对：`(-odd,even)`。；两张卡闭合同一 ApplyRotaryPosEmb V2 入口和 RoPE 语义，前者限定 A2/A3 的 half Vector 路线，后者展开 950 的三模式 RegBase 路线及 key 缺陷，适合平台迁移与失败定位。
+<!-- cannbot:related:end -->

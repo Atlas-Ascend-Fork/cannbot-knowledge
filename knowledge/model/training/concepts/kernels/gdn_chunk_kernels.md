@@ -125,3 +125,10 @@ GDN 模块整体结构语义见跨域 [gated-deltanet](../../../inference/concep
 - [deltanet-pretrain](../../guides/recipes/deltanet_pretrain.md)（同域：训练侧 DeltaNet 线性注意力样例，Triton 算子在 NPU 上的前/反向性能对照）
 - [mindspeed](https://gitcode.com/ascend/MindSpeed) — MindSpeed core @1432cb0 / MindSpeed-LLM @183e02c（`ops/triton` GDN chunk 核源与 autograd 封装）
 - [gated-deltanet-train](../modules/gated_deltanet_train.md)（调用这组 chunk 算子的 GDN 训练模块：三套后端、autograd 编排、GDN CP）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Gated DeltaNet 训练（Chunk 并行 / Flash 递归 / GDN 上下文并行）](../modules/gated_deltanet_train.md)（`related`）：上层由 MindSpeed-LLM 的 `ChunkGatedDeltaRuleFunction`（`torch.autograd.Function`）按固定顺序把这些核串成正反向。；chunk 算子的逐阶段实现细节链 ［gdn-chunk-kernels］(../kernels/gdn_chunk_kernels.md)。。算子卡闭合 ChunkGatedDeltaRuleFunction 的正反向 kernel 链，模块卡明确把该算子卡作为训练 GDN 的逐阶段实现细节，因此可从模块任务直接下钻到各 chunk kernel。
+- [Triton-on-Ascend（昇腾 Triton 算子后端）](../frameworks/triton_on_ascend.md)（`related`）：“核心 `mindspeed/ops/triton/`（GDN delta-rule chunk 内核族）”；“这套分解由 MindSpeed core `mindspeed/ops/triton/` 下一族 Triton 核承载，经 ［triton-on-ascend］(../frameworks/triton_on_ascend.md) 后端降级到昇腾 Cube/Vector”。框架卡定位承载目录，kernel 卡确认同一目录的 GDN 算子族经该后端降级执行。
+<!-- cannbot:related:end -->

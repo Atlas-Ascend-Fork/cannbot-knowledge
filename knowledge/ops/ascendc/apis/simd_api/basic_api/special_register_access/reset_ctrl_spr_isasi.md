@@ -28,9 +28,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetCtrl](../../c_api/sys_var/asc_get_ctrl.md)（`related`）：AscGetCtrl 与《ResetCtrlSpr》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
-- [SetSaturationFlag](set_saturation_flag_isasi.md)（`related`）：“SetSaturationFlag”定义：设置饱和开关的标志位，控制计算或精度转换时饱和模式的开启与关闭。；“ResetCtrlSpr”定义：对CTRL寄存器的特定比特位做重置，恢复为默认值。。实质衔接：SetSaturationFlag 修改饱和状态，Get 用于验证当前值；通用 CTRL SPR set/reset 提供底层控制位管理和恢复默认值的契约。
-- [GetCtrlSpr](get_ctrl_spr_isasi.md)（`same_topic`）：ResetCtrlSpr 恢复 CTRL 位段，避免临时控制配置泄漏到后续计算。
-- [GetSpr](get_spr.md)（`same_topic`）：焦点处理特殊寄存器读取与配套清零、CTRL 位设置/复位；ResetCtrlSpr正文说明“对CTRL寄存器的特定比特位做重置，恢复为默认值”。候选操作同一 SPR/CTRL 状态，明确读前设置、读后清理与位域复位。
-- [SetCtrlSpr](set_ctrl_spr_isasi.md)（`same_topic`）：SetCtrlSpr 临时修改 CTRL 位段，ResetCtrlSpr 是对应的收尾接口。
+- [GetCtrlSpr](get_ctrl_spr_isasi.md)（`related`）：“读取CTRL寄存器（控制寄存器）特定比特位上的值。”；“对CTRL寄存器（控制寄存器）的特定比特位做重置。由模板参数［startBit, endBit］指定的比特位重置为默认值，默认值参考表 常用CTRL寄存器比特位说明。”。Reset 后可用 GetCtrlSpr 对同一 bit range 回读默认值，闭合临时控制位的恢复验证。
+- [SetCtrlSpr](set_ctrl_spr_isasi.md)（`same_topic`）：“对CTRL寄存器（控制寄存器）的特定比特位做重置。由模板参数［startBit, endBit］指定的比特位重置为默认值，默认值参考表 常用CTRL寄存器比特位说明。”与“对CTRL寄存器（控制寄存器）的特定比特位进行设置。通过模板参数startBit和endBit指定目标比特位范围，将运行参数value（超出比特位范围会出现编译报错）写入CTRL寄存器对应位置。”提供双方正文证据。SetCtrlSpr 写指定 CTRL 位段，ResetCtrlSpr 将同一位段恢复默认值，构成控制寄存器配置与清理的生命周期闭环。
 <!-- cannbot:related:end -->

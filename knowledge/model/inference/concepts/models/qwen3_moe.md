@@ -14,9 +14,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/qwen3-moe/qwen3_moe_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # Qwen3-MoE
@@ -65,13 +65,20 @@ flowchart TD
 
 ### 自研 executor 路径支持的规格
 
-| 配置文件 | world_size | 并行策略 | 备注 | | ---- | ---- | ---- | ---- | | `qwen3_235b_16tp.yaml` | 16 (1 机 16 卡) | `attn_tp=16`、`moe_tp=16` | 纯 TP 路径，`moe_infer_tp` 走 `npu_swiglu` | | `qwen3_235b_1tp_16ep.yaml` | 16 | `attn_tp=1`（DP16）、`moe_tp=1`（EP16） | DP Attention + EP MoE | | `qwen3_235b_128ep.yaml` | 128 | `attn_tp=1`、`moe_tp=1`（EP128） | 大 EP，`ge_graph`，benchmark 主用 | | `qwen3_235b_attn4tp8dp.yaml` | 32 | `attn_tp=4`（DP8）、`moe_tp=1`（EP32） | 混合 DP/TP Attention，eager 调试 |
+| 配置文件 | world_size | 并行策略 | 备注 |
+| ---- | ---- | ---- | ---- |
+| `qwen3_235b_16tp.yaml` | 16 (1 机 16 卡) | `attn_tp=16`、`moe_tp=16` | 纯 TP 路径，`moe_infer_tp` 走 `npu_swiglu` |
+| `qwen3_235b_1tp_16ep.yaml` | 16 | `attn_tp=1`（DP16）、`moe_tp=1`（EP16） | DP Attention + EP MoE |
+| `qwen3_235b_128ep.yaml` | 128 | `attn_tp=1`、`moe_tp=1`（EP128） | 大 EP，`ge_graph`，benchmark 主用 |
+| `qwen3_235b_attn4tp8dp.yaml` | 32 | `attn_tp=4`（DP8）、`moe_tp=1`（EP32） | 混合 DP/TP Attention，eager 调试 |
 
 > `attn_tp_size` 必须整除 `num_heads`；`num_key_value_heads_per_rank = max(num_key_value_heads // attn_tp_size, 1)` 确保 GQA 场景每卡至少 1 个 KV head。
 
 ### SGLang 路径 Benchmark 规格
 
-| 基础模型 | 机器型号 | GBS | dp_size | tp_size | ep_size | max_prompt_length | max_response_length | 纯模型时延（ms） | | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | | Qwen3-235B-A22B | Atlas A3 32 卡 | 256 | 16 | 4 | 64 | 5120 | 500 | **30** |
+| 基础模型 | 机器型号 | GBS | dp_size | tp_size | ep_size | max_prompt_length | max_response_length | 纯模型时延（ms） |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| Qwen3-235B-A22B | Atlas A3 32 卡 | 256 | 16 | 4 | 64 | 5120 | 500 | **30** |
 
 > 使能优化点 `--enable-superkernel` + `--perfect-eplb` + `--enable-cache-compile`；W8A8 量化（`msmodelslim` + `drop_offset.py`）。
 
@@ -174,7 +181,17 @@ export HCCL_OP_EXPANSION_MODE=AIV
 
 ### SGLang 路径独有优化（patches/）
 
-| patch | 作用 | | ---- | ---- | | `0001-feat-basic-modification-for-qwen3-moe.diff` | deepep 模块替换、atb 算子替换、Qwen3MoE MTP 模型适配、MTP 场景下 GQA attention 分支适配、dp+tp 混合并行场景 bug 修复、w8a8 场景 bug 修复、matmul 类算子使能 NZ | | `0002-feat-support-qwen3-moe-forced-eplb.diff` | 专家强制均衡（`--perfect-eplb`） | | `0003-feat-npu-profiler.diff` | NPU profiler | | `0004-feat-npu-support-main-model-ge-graph.diff` | 主模型 ge 图模式（`NPUGraphRunner`） | | `0005-feat-mtp1-support-ge-graph.diff` | MTP1 第一个投的 ge 图模式（`EAGLEDraftExtendNpuGraphRunner`） | | `0006-feat-mtp2-support-ge-graph.diff` | MTP2 其他投的 ge 图模式（`EAGLEDraftNpuGraphRunner`） | | `0007-feat-modify-mtp-lm-head-load-method.diff` | EAGLE 场景下 MTP 权重判断共享 lm_head | | `0008-fix-GQA-FIA-pd-disaggregation-bug.diff` | PD 分离场景 FIA 分支 kv items len 精度 bug | | `0009-feat-support-superkernel.diff` | [superkernel](../techniques/superkernel.md) 使能 |
+| patch | 作用 |
+| ---- | ---- |
+| `0001-feat-basic-modification-for-qwen3-moe.diff` | deepep 模块替换、atb 算子替换、Qwen3MoE MTP 模型适配、MTP 场景下 GQA attention 分支适配、dp+tp 混合并行场景 bug 修复、w8a8 场景 bug 修复、matmul 类算子使能 NZ |
+| `0002-feat-support-qwen3-moe-forced-eplb.diff` | 专家强制均衡（`--perfect-eplb`） |
+| `0003-feat-npu-profiler.diff` | NPU profiler |
+| `0004-feat-npu-support-main-model-ge-graph.diff` | 主模型 ge 图模式（`NPUGraphRunner`） |
+| `0005-feat-mtp1-support-ge-graph.diff` | MTP1 第一个投的 ge 图模式（`EAGLEDraftExtendNpuGraphRunner`） |
+| `0006-feat-mtp2-support-ge-graph.diff` | MTP2 其他投的 ge 图模式（`EAGLEDraftNpuGraphRunner`） |
+| `0007-feat-modify-mtp-lm-head-load-method.diff` | EAGLE 场景下 MTP 权重判断共享 lm_head |
+| `0008-fix-GQA-FIA-pd-disaggregation-bug.diff` | PD 分离场景 FIA 分支 kv items len 精度 bug |
+| `0009-feat-support-superkernel.diff` | [superkernel](../techniques/superkernel.md) 使能 |
 
 见 [sglang](../frameworks/sglang.md)、[mtp-speculative-decoding](../techniques/mtp_speculative_decoding.md)。
 
@@ -250,3 +267,11 @@ flowchart TD
 - [mtp-speculative-decoding](../techniques/mtp_speculative_decoding.md)
 - [w8a8c8](../quantization/w8a8c8.md)
 - [qwen3-rl](../../../training/guides/recipes/qwen3_rl.md)（跨域·训练：Qwen3-235B-A22B RL 后训练）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Hy3-preview](hy3_preview.md)（`related`）：以“Qwen3-MoE 是经典 Attention + MoE（无 shared expert、无 linear attention），**不共享代码路径**。”固定参考实现的结构基线，再用“仓库内最接近的参考实现是 ［qwen3-moe］(qwen3_moe.md)（同为 GQA + MoE + per-head QK Norm）。”定位 Hy3-preview 的复用点，部署者可直接核对哪些模块能沿用、哪些必须改写。
+- [MoE Dispatch/Combine V2（一体化融合算子）](../techniques/moe_dispatch_combine_v2.md)（`related`）：从“后者使用一体化融合算子 `npu_moe_distribute_dispatch_v2`/`combine_v2`（`:365/:387`），两条 EP 路径的中间专家计算均走 `npu_grouped_matmul`；见 ［moe-dispatch-combine-v2］(../techniques/moe_dispatch_combine_v2.md)。”进入 Qwen3-MoE 的 decode 路线后，按“**dispatch_v2**：把每个 token 按路由结果（`expert_ids`/`topk_idx`）分发到所选专家所在 rank（All-to-All 分发），并在算子内部完成按专家重排”检查 expand_x、assist_info_for_combine 和 recv counts，即可闭合模型分支到融合算子参数的调用链。
+- [Qwen3.5-MoE](qwen3_5_moe.md)（`related`）：“相对经典的 ［qwen3-moe］(qwen3_moe.md)（纯 Softmax Attention + 无 shared expert MoE），Qwen3.5-MoE 多了 linear attention 层、shared expert 与显著更多的专家。”；“- **与 Qwen3-Next / Qwen3.5-MoE 的对比**：Qwen3-Next 与 ［qwen3-5-moe］(qwen3_5_moe.md) 都是混合注意力（full/Gated Attention + GDN）+ MoE（含 shared expert）；Qwen3-MoE 是经典 Attention + MoE（无 shared expert、无 linear attention），**不共享代码路径**。见 ［qwen3-next］(qwen3_next.md)。”。双方从相反方向给出同一架构差异，直接支撑经典 Qwen3-MoE 与 Qwen3.5-MoE 的选型和迁移边界。
+<!-- cannbot:related:end -->

@@ -23,10 +23,3 @@ platforms: ['950']
 - mask掩码位为0时，dst对应元素置0。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscInt82int16](asc_int82int16.md)（`same_topic`）：AscInt82int16 与《AscUint82uint16》的实质衔接是：AscInt8ToInt16 是有符号扩宽，Int16ToUint8 与 Uint8ToUint16 对照方向和符号；Reg int8 pack 故障说明 lane 分布不能按普通连续布局假设。
-- [asc_uint82uint32 (废弃)](asc_uint82uint32_deprecated.md)（`same_topic`）：焦点处理废弃 uint8→uint32 转换的分级扩宽替代路径；AscUint82uint16正文说明“根据mask将uint8_t类型元素转换为uint16_t类型并写入dst”。候选提供 uint8→uint16→uint32 的可用扩宽链，并用逆向/有符号旧接口说明布局差异。
-<!-- cannbot:related:end -->

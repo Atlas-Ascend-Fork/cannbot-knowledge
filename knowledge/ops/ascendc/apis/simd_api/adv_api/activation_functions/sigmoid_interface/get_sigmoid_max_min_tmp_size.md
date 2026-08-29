@@ -29,7 +29,5 @@ kernel侧Sigmoid接口的计算需要开发者预留 申请临时空间，本接
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Reciprocal 低精度致 sigmoid 比对失败](../../../../../runbooks/precision/reciprocal_sigmoid.md)（`exemplifies`）：《Reciprocal 低精度致 sigmoid 比对失败》说明AscendC::Reciprocal 为低精度查表近似指令（相对误差约 1e-3），sigmoid 的 1/(1+exp(-x)) 用其求倒数会让 verify_result.py 报 max_diff≈0.00179、16384/16384 全 mismatch；判别方法：把最后一步 Reciprocal 换成 Duplicate+Div 高精度除法后 max_diff 降为 0，即可单点归因到 Reciprocal 的低精度近似。；《GetSigmoidMaxMinTmpSize》说明用于在host侧获取Sigmoid接口所需的最大最小临时空间大小，作为Tiling参数传递到kernel侧使用。。二者在该失败由Reciprocal近似误差进入sigmoid末步；高精度Div替换及Exp溢出/FTZ变体用于单点归因上存在可执行的直接衔接。
-- [Sigmoid](sigmoid.md)（`related`）：GetSigmoidMaxMinTmpSize 在 host 侧返回 Sigmoid sharedTmpBuffer 的合法范围；Sigmoid 的 isReuseSource、shape 和实际预留空间必须与该结果一致。
-- [Sigmoid接口](sigmoid_interface.md)（`related`）：《GetSigmoidMaxMinTmpSize》明确“用于在host侧获取Sigmoid接口所需的最大最小临时空间大小，作为Tiling参数传递到kernel侧使用。”；它与《Sigmoid接口》的“提供Sigmoid激活函数接口及GetSigmoidMaxMinTmpSize等Tiling临时空间大小查询接口。”在实际调用参数、数据流或结果校验上直接衔接。
+- [Sigmoid](sigmoid.md)（`related`）：sharedTmpBuffer（输入）：临时缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 用于Sigmoid内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetSigmoidMaxMinTmpSize。；kernel侧Sigmoid接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；Host 侧容量查询直接为 Kernel 侧 Sigmoid 的 sharedTmpBuffer 选取合法大小，构成同一次调用的 Tiling 与执行链。
 <!-- cannbot:related:end -->

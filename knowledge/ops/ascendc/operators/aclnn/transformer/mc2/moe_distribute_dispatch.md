@@ -44,7 +44,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v3/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T18:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -750,11 +750,11 @@ Host key 只表达 hierarchy；Device 再据实际数据面选择 AIV WQE/RDMA �
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | V4 最新 | V5 最新 | 本卡不覆盖；V5 README 明确不支持 |
-| Host/Launcher | group 字符串、A2 Tiling | context+cclBufferSize、V3 wrapper | 见 `_a5` 卡 V4 |
-| Kernel/资源 | A2 fullmesh/hierarchy，17MiB | V2/fullmesh body，16MiB+512*AIV² | 见 `_a5` 卡 |
+| Host/Launcher | group 字符串、A2 Tiling | context+cclBufferSize、V3 wrapper | 见 `_950` 卡 V4 |
+| Kernel/资源 | A2 fullmesh/hierarchy，17MiB | V2/fullmesh body，16MiB+512*AIV² | 见 `_950` 卡 |
 
 ## 限制与失败边界
 
@@ -798,3 +798,10 @@ Host key 只表达 hierarchy；Device 再据实际数据面选择 AIV WQE/RDMA �
 | 同步 | 均基于通信 window | status、embedded、IPC flag 不可混用 | wait helpers |
 | 精度与尾块 | dynamic quant 模板复用 | FP32 scale→INT8次序和有效count | quant helpers |
 | 失败边界 | Host guard 早退 | 未知dataplane、V5 hierarchy、v2 TP无fallback | guards |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoeDistributeCombine A2/A3 ACLNN 算子知识](moe_distribute_combine.md)（`related`）：Dispatch 卡指出“目标端压紧为 `expandX` 和 `assistInfoForCombine`。”；Combine 卡规定“按 Dispatch 产生的 rank/token/top-k 辅助信息收回专家输出，以 `expertScales` 加权并恢复 `［BS,H］` token 顺序”，构成 Dispatch 产生元数据、专家计算后 Combine 消费元数据恢复 token 的完整任务链。
+- [MoeDistributeDispatch 950 ACLNN 算子知识](moe_distribute_dispatch_950.md)（`same_topic`）：A2/A3 卡说明“按 `expertIds［BS,K］` 扩展、可选动态量化 token，经 EP AllToAllV 分发；A3 可追加 TP AllGatherV”；950 卡说明“按专家路由扩展 token，可选多种低精度/动态量化，经 EP AllToAllV 分发并生成 combine 元数据”，两者描述同一 MoeDistributeDispatch 核心对象在不同平台/版本的实现。
+<!-- cannbot:related:end -->

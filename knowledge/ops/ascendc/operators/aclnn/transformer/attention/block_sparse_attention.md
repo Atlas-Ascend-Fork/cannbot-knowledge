@@ -52,7 +52,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:38:11Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -498,7 +498,7 @@ QK/softmax先推进两个stack，PV/rescale再以同一`%3`追赶；flags1/2/3�
 
 - 适用：单launch、1AIC:2AIV、GM中转的注意力流水。
 - 前提：保持stage offset、dtype、flag轮次和反向事件。
-- 失效：A5片上交接路线；stage数或dtype改变时重算workspace。
+- 失效：950片上交接路线；stage数或dtype改变时重算workspace。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -561,9 +561,9 @@ AIV以128×64 tile、双buffer把稠密块mask转为紧凑Y下标；QK/PV的GM�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2文档支持 | V2文档支持 | 支持，见`_a5`卡 |
+| 支持状态 | V2文档支持 | V2文档支持 | 支持，见`_950`卡 |
 | Host/Launcher | 与A3共用非950分支 | 与A2共用 | 950专用Tiling，precise4 |
 | Kernel/资源 | arch22，GM中间，TND/BNSD，FP16/BF16 | 固定仓未给独立A3 body | arch35片上交接，FP8/BSND |
 
@@ -620,3 +620,9 @@ AIV以128×64 tile、双buffer把稠密块mask转为紧凑Y下标；QK/PV的GM�
 | 同步 | flags1/2/3与pipe events | 配对核与轮次 | ready flags |
 | 精度与尾块 | 三路线、两layout、actual M/N/K | BF16禁low；cast顺序 | router/epilogues |
 | 失败边界 | 12 key、无公开fallback | 不把编译期else当runtime fallback | router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [BlockSparseAttention 950 ACLNN 算子知识](block_sparse_attention_950.md)（`same_topic`）：“｜ 计算语义 ｜ 对 `blockSparseMask［b,n,x,y］ >= 1` 选中的 KV 块计算 `Softmax(scaleValue·QKᵀ)·V`，跨 KV tile 维护在线 max/sum；`softmaxLseFlag=1` 时输出 `log(sum(exp))+max`。 ｜”与“｜ 计算语义 ｜ 稀疏 gather 的 `Softmax(scale·QKᵀ)·V`；FP8 路线把 Q×K scale 合并进 QK Fixpipe、把 V scale 注入 PV Fixpipe，并用 FP8 P。 ｜”是双方正文中的具体合同。两端都对稀疏选择的 KV 执行 Softmax-QK 与 V 聚合，A2/A3 卡强调 mask 和在线归约，950 卡补充 FP8 Fixpipe 缩放路线，互读能核对核心语义和平台差异。
+<!-- cannbot:related:end -->

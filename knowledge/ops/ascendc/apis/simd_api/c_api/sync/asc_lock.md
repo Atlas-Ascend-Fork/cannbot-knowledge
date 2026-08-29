@@ -22,8 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscUnlock](asc_unlock.md)（`related`）：AscUnlock 必须在相同 mutex_id/mode 的 AscLock 之后，二者共同形成互斥同步区间。
-- [ReleaseMutexID](../../basic_api/sync_control/intra_core_sync/release_mutex_id_isasi.md)（`related`）：《ReleaseMutexID》明确“从框架释放一个MutexID，与AllocMutexID配合使用，防止MutexID耗尽。”；它与《AscLock》的“用于AI Core内部异步流水线之间的同步，根据mutex_id获取Mutex，可按需阻塞指定流水线的执行。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AllocMutexID](../../basic_api/sync_control/intra_core_sync/alloc_mutex_id_isasi.md)（`same_topic`）：《AllocMutexID》给出“从框架获取并占用一个MutexID，与ReleaseMutexID配合使用，获取的MutexID可传入Mutex::Lock/Unlock接口用于流水同步。”；该约束/探针可直接复现、解释或前置验证《AscLock》中的“用于AI Core内部异步流水线之间的同步，根据mutex_id获取Mutex，可按需阻塞指定流水线的执行。”。
-- [Lock](../../basic_api/sync_control/intra_core_sync/lock.md)（`same_topic`）：《Lock》明确“根据MutexID获取Mutex锁，若Mutex已被锁定则阻塞后续指定流水指令队列，直到对应MutexID的Mutex被Unlock，需与Unlock严格成对使用。”；它与《AscLock》的“用于AI Core内部异步流水线之间的同步，根据mutex_id获取Mutex，可按需阻塞指定流水线的执行。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscUnlock](asc_unlock.md)（`related`）：asc_lock与asc_unlock必须严格成对使用，并使用相同的mutex_id与mode。；必须与asc_lock搭配使用，且需要使用相同的mutex_id与mode。。两端相互声明同一 mutex_id/mode 的成对协议：asc_lock 获取并阻塞流水，asc_unlock 在前序指令完成后释放；联合阅读才能确定合法同步序列。
 <!-- cannbot:related:end -->

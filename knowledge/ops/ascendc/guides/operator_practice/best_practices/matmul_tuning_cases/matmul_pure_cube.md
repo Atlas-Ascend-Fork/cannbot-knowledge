@@ -43,7 +43,5 @@ Tiling参数如下：
 <!-- cannbot:related:start -->
 ## 相关
 
-- [REGIST_MATMUL_OBJ](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/regist_matmul_obj.md)（`explains`）：《REGIST_MATMUL_OBJ》明确“初始化Matmul对象。”；它与《Matmul高阶API开启纯Cube模式》的“本案例呈现了在矩阵乘算子场景中，开启Matmul高阶API的纯Cube模式对算子性能的提升效果。如下图所示，Matmul API默认使用MIX模式，即用户从AIV侧发起消息，通过消息通信框架中转消息后，在AIC侧执行Matmul计算。这套消息处理机制会带来额外的Scalar性能开销。相较于MIX模式，纯Cube模式可以直接跳过消息通信框架，完成Matmul计算，提升算子性能。”在实际调用参数、数据流或结果校验上直接衔接。
-- [SetDim](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_dim.md)（`explains`）：《SetDim》给出“设置多核Matmul参与运算的核数，区分纯Cube模式和MIX模式的分离与耦合场景”；该约束/探针可直接复现、解释或前置验证《Matmul高阶API开启纯Cube模式》中的“本案例呈现了在矩阵乘算子场景中，开启Matmul高阶API的纯Cube模式对算子性能的提升效果。如下图所示，Matmul API默认使用MIX模式，即用户从AIV侧发起消息，通过消息通信框架中转消息后，在AIC侧执行Matmul计算。这套消息处理机制会带来额外的Scalar性能开销。相较于MIX模式，纯Cube模式可以直接跳过消息通信框架，完成Matmul计算，提升算子性能。”。
-- [950 Matmul高阶API选型先查内置源](../../../../runbooks/compilation/950_matmul_api.md)（`related`）：Runbook 的核心选择是 950 上不盲用 MIX、优先同核顺序执行；纯 Cube 指南给出 Matmul 高阶 API 的执行模式配置与适用边界，可核对是否真的需要 Vector/Cube 分核。
+- [REGIST_MATMUL_OBJ](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/regist_matmul_obj.md)（`explains`）：纯 Cube 指南说明“用户使用Matmul高阶API编写算子代码时，可以使用REGIST_MATMUL_OBJ宏，无需区分AIV和AIC”，并据此对比 MIX 消息开销；接口卡则明确“初始化Matmul对象。”，把指南中的宏落到对象初始化及其 tiling/同步资源合同。
 <!-- cannbot:related:end -->

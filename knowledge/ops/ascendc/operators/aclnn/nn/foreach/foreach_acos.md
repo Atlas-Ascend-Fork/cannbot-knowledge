@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_acos/op_host/config/ascend910_93/foreach_acos_binary.json
     role: implementation
 created_at: "2026-08-25T15:28:42Z"
-updated_at: "2026-08-25T15:28:42Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -503,9 +503,9 @@ BF16 tile 可以大于 FP32 工作区：`maxDataCount=9S/2`，内部按 `maxCast
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持；见 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持；见 `_950` 卡 |
 | Host/Launcher | arch22 公共 `ForeachCommonTiling` | 同 A2 | arch35 前缀和专用 Tiling |
 | Kernel/资源 | AIV_VECTOR，双 Queue | 同 A2 | SIMT，512 threads，无显式 UB |
 

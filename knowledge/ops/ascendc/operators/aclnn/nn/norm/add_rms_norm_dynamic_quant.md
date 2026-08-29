@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_dynamic_quant/op_host/config/ascend910b/add_rms_norm_dynamic_quant_binary.json
     role: implementation
 created_at: "2026-08-25T17:48:13Z"
-updated_at: "2026-08-25T17:48:13Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -569,9 +569,9 @@ tmpOutQue.FreeTensor(xFp32);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 V2 支持 | 公开 V2 支持 | 支持，但见 `_a5` 独立卡 |
+| 支持状态 | 公开 V2 支持 | 公开 V2 支持 | 支持，但见 `_950` 独立卡 |
 | Host/Launcher | 共用 legacy Tiling key 1/2/3 | 同 A2 | RegBase key 100～103；ACLNN 禁用 outputMask |
 | Kernel/资源 | AIV Vector，normal/single/slice-D | 同 A2 | MicroAPI RegBase；split Route workspace 公式不同 |
 
@@ -613,3 +613,9 @@ tmpOutQue.FreeTensor(xFp32);
 | 同步 | Queue + PIPE/event | scalar/vector 与 MTE store/load 依赖不可删 | helper/Route event 方法 |
 | 精度与尾块 | FP32 主计算、RINT→pack | BF16 xOut round、D 有效域、INT4 半字节搬运 | `RoundFloat2IntQuant`、`DataCopyEx` |
 | 失败边界 | normal→single→slice | shape/dtype/mask/epsilon 失败不得静默 fallback | `DoUbTiling`、`CheckParams` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AddRmsNormDynamicQuant 950 ACLNN 算子知识](add_rms_norm_dynamic_quant_950.md)（`same_topic`）：`x=x1+x2`，逐最后一维做 RMSNorm，可选 `beta`，再按 `outputMask` 对一路或两路结果做 INT8/INT4 对称动态量化；`x=x1+x2`，逐最后一维 RMSNorm，可选 beta；一路必做动态量化，smooth1+smooth2 同时存在时做第二路。两卡是同一 V2 融合算子的 A2/A3 与 950 实现，归一化主链一致，同时明确 outputMask 和输出 dtype 的平台分歧。
+<!-- cannbot:related:end -->

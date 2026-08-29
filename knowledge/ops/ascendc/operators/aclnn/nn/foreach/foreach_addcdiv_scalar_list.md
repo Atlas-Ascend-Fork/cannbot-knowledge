@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcdiv_scalar_list/op_host/config/ascend910_93/foreach_addcdiv_scalar_list_binary.json
     role: implementation
 created_at: "2026-08-25T15:30:32Z"
-updated_at: "2026-08-25T15:30:32Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -148,7 +148,7 @@ else: key=0 -> router 无分支（公开入口应先失败）
 | 核数上限 | `needCoreNum<=50` | POD 每核数组为 50 项 | 全部 | 截断到 50 核 | `RunBigKernelTiling` |
 | UB 分配 | FP32 `U=floor((UB-P)/8,32B)`；FP16/BF16 再先除 10，按 64 B 对齐 | 4 个双缓冲 Queue；BF16 还有扩展槽与 FP32 Queue | 全部，尤其 R-003 | 没有替代 Route；过小 `U` 的显式失败固定仓不可见 |
 | BF16 编译 guard | `__CCE_AICORE__>=220 && arch!=3003/3113` | 需要 BF16/FP32 Cast 特化 | R-003 | router 不编译 key 4 body |
-| 空域 | `needCoreNum` 至少 1 | Host 保证可 launch；A5 有显式 skip，arch22 无全空专门分支 | 全部 | 全列表为空时 POD 零初始化会令核 0 的首尾均为 0，源码未证明安全的一元素访问规避 |
+| 空域 | `needCoreNum` 至少 1 | Host 保证可 launch；950 有显式 skip，arch22 无全空专门分支 | 全部 | 全列表为空时 POD 零初始化会令核 0 的首尾均为 0，源码未证明安全的一元素访问规避 |
 | 尾 DMA | `valid_bytes % 32 != 0` | 普通 `DataCopy` 要求 block 对齐 | 全部 | 输入/输出改用 `DataCopyPad`; adapter 内部复制按元素向 32 B 上取整 |
 
 ### POD/ABI
@@ -576,9 +576,9 @@ workspace_total = 32 B requested, 0 B consumed
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 公共 `ForeachCommonTiling` | `ascend910_93`→同一 arch22 路径 | arch35 独立 Tiling；最多 256 Tensor；workspace 0 |
 | Kernel/资源 | 默认 AIV Kernel，POD 每 tensor/core 50 项 | 与 A2 相同 | 独立 SIMT-VF Kernel，512 threads；无 AIV Queue |
 
@@ -623,3 +623,9 @@ workspace_total = 32 B requested, 0 B consumed
 | 同步 | Queue ownership + PIPE_V | 不能删除依赖 barrier 或提前 Free | `Compute`; adapter |
 | 精度与尾块 | FP16/FP32 原生；BF16 FP32 中间 RINT；GM tail 精确 | BF16 固定三分区和 Cast 顺序；内部 32 B 对齐 copy | `InnerComputer`; `CopyIn/CopyOut` |
 | 失败边界 | Host 校验阻断 launch | 列表>50、全空域与生成式 ACLNN bridge 不得推测补齐 | `CheckOpInfo`; `Init`; ACLNN 文档 |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachAddcdivScalarList 950 ACLNN 算子知识](foreach_addcdiv_scalar_list_950.md)（`same_topic`）：`y_i［j］ = x1_i［j］ + scalars［i］ * (x2_i［j］ / x3_i［j］)`；对列表下标 `i` 与张量元素 `j` 计算 `y_i［j］ = x1_i［j］ + (x2_i［j］ / x3_i［j］) * scalars［i］`。两个公式仅交换标量乘法的书写顺序，均定义列表逐项 addcdiv 并使用每张量独立 scalars［i］，两卡是同一 ForeachAddcdivScalarList 算子的 950 与 A2/A3 实现。
+<!-- cannbot:related:end -->

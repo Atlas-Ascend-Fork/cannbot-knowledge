@@ -24,7 +24,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T17:55:27Z"
-updated_at: "2026-08-25T17:55:27Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -495,9 +495,9 @@ workspace_total=公共公式; dynamic_ub=N/A
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持（ascend910b） | 支持（ascend910_93） | 支持，见 `_a5` 卡 |
+| 支持状态 | 支持（ascend910b） | 支持（ascend910_93） | 支持，见 `_950` 卡 |
 | Host/Launcher | 共用 Tiling；N>2 时由 context deterministic 决定 | 同 A2 | N>2 默认 deterministic |
 | Kernel/资源 | legacy Vector body | 同 A2 | arch35 VF/MicroAPI，Kahan stage-2 |
 
@@ -533,3 +533,10 @@ workspace_total=公共公式; dynamic_ub=N/A
 | 同步 | event+pipe+Atomic | Atomic 前后 flag 与 `SetAtomicNone` | `fp32_dgamma_dbeta2GM` |
 | 精度与尾块 | lowp→FP32→lowp | `CAST_NONE/CAST_ROUND`，count/tailCastNum | copy helpers/stage-2 |
 | 失败边界 | 三 mode 有序 fallback | mode2 capacity=0/unknown key 不得推测补齐 | `CalStage1TilingInfo`/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GroupNormSwish A2/A3 ACLNN 算子知识](group_norm_swish.md)（`related`）：｜ `mean`, `rstd` ｜ ND `［N,G］` ｜ 同 `dy` ｜ 必选、非空，shape 必须相同 ｜；输出 `mean［n,g］=μ`、`rstd［n,g］=rstd`；激活关闭时 `y=z`，开启时 `y=z/(1+exp(-swishScale·z))`。Grad、Silu、Quant 和原地语义不属于本卡。；前向卡生产反向卡必选的 mean/rstd，并共享同一 GroupNorm+Swish 定义。
+- [GroupNormSwishGrad 950 ACLNN 算子知识](group_norm_swish_grad_950.md)（`same_topic`）：固定仓只公开该无版本后缀 API，未发现更新版本。文档明确支持 Atlas A2/A3 训练/推理；`GroupNormSwishGrad` OpDef 注册 `ascend910b` 和 `ascend910_93`，两份 binary config 均提供 FP32/FP16/BF16。；固定仓只有无版本后缀的公开 API，文档明确 Ascend 950PR/950DT 支持且默认确定性。；两卡闭合同一无版本 GroupNormSwishGrad 逻辑算子在 A2/A3 与 950 的平台实现。
+<!-- cannbot:related:end -->

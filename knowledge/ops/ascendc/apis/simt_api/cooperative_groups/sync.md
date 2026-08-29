@@ -22,8 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CoalescedGroup协作组sync](coalesced_group/sync.md)（`same_topic`）：coalesced_group 版本同步当前收敛线程集合；分支发散后的组成员语义与静态 tile 不同。
-- [Grid协作组sync](grid_group/sync.md)（`same_topic`）：sync（协作组）说明同步指定协作组内的所有线程，功能等价于调用该协作组对象的成员函数sync()。
-- [ThreadBlockTile协作组sync](thread_block_tile/sync.md)（`same_topic`）：thread_block_tile 版本只同步 tile 子组，适合固定小线程协作范围。
-- [ThreadBlock协作组sync](thread_block/sync.md)（`same_topic`）：对 thread_block 调用时同步范围收缩到当前线程块，避免不必要的跨块等待。
+- [Grid协作组sync](grid_group/sync.md)（`same_topic`）：同步指定协作组内的所有线程，功能等价于调用该协作组对象的成员函数sync()。；同步当前Grid内所有SIMT线程。所有线程块中的所有线程都执行到该同步点位置后，Grid内线程才能继续执行。。自由函数 sync 明确等价于协作组对象的成员 sync，GridGroup 成员卡给出 Grid 内全部 SIMT 线程到达屏障后的继续条件，二者是同一 Grid 协作组同步合同的两种调用形式。
 <!-- cannbot:related:end -->

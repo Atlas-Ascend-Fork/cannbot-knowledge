@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/config/ascend910_93/foreach_log_binary.json
     role: implementation
 created_at: "2026-08-25T15:45:22Z"
-updated_at: "2026-08-25T15:45:22Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -516,15 +516,15 @@ PipeBarrier<PIPE_V>();
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持；详见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持；详见 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 common Tiling | `ascend910_93`→同一 arch22 Tiling | 独立 arch35 Tiling，最多 256 Tensor，0 B 算子 workspace |
 | Kernel/资源 | 公共 AIV Vector body | 同 A2 | SIMT 1024 threads/block，无显式 UB Queue |
 
 ## 限制与失败边界
 
-- A2/A3 公共 POD 只有 50 个 Tensor 和 50 个 core 槽；源码对 `>50` TensorList 没有显式失败检查，因此不能外推支持，且不得把 A5 的 256 项上限套到本实现。
+- A2/A3 公共 POD 只有 50 个 Tensor 和 50 个 core 槽；源码对 `>50` TensorList 没有显式失败检查，因此不能外推支持，且不得把 950 的 256 项上限套到本实现。
 - `U<=P+1024` 或整除后 `S==0` 没有显式 Guard/fallback；这是固定源码未防护的资源边界。
 - 全零元素域仍设置至少 1 核；多个空 Tensor 在 `AssignDataToEachCore` 中的核区间推进没有单独空域路线，空 Tensor 组合的安全性未由固定源码闭合。
 - ACLNN 生成 bridge、最终 workspace 合计、tiling 宏最终 ABI、AscendC `Log` primitive 内部近似/临时布局为固定仓不可见边界。
@@ -562,3 +562,9 @@ PipeBarrier<PIPE_V>();
 | 同步 | Queue 加 V/MTE3/MTE2；BF16 四个 V barrier | 原地槽不得提前覆盖 | `ForeachImplictOutput::Compute/ComputePerCast` |
 | 精度与尾块 | FP 原生；BF16→FP32 Log→CAST_RINT；tail 按真实字节 | cast 顺序、chunk 上限和有效元素数 | `InnerComputer`; `CopyIn` |
 | 失败边界 | Host 失败阻断；未知 key 无输出 | 不得发明 fallback 或扩大 50 项上限 | `CheckOpInfo`; `foreach_log` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachLog 950 ACLNN 算子知识](foreach_log_950.md)（`same_topic`）：对 TensorList 的每个有效元素计算自然对数；对 TensorList 中每个张量逐元素计算 `y_i［j］ = ln(x_i［j］)`。两张算子卡公开同一 aclnnForeachLog 与逐元素自然对数语义，分别闭合 950 SIMT 和 A2/A3 Vector 实现，可直接按平台选型。
+<!-- cannbot:related:end -->

@@ -24,8 +24,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [4:2稀疏矩阵乘](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/4_2_sparse_matmul.md)（`explains`）：4:2稀疏矩阵乘 与《SetSparse》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
-- [GetTiling](get_tiling.md)（`related`）：SetSparse 只写入稀疏配置，最终由 GetTiling 消费配置并求解 TCubeTiling；这是设置到求解的直接工作流。
-- [MmadWithSparse](../../../basic_api/cube_compute/mmad_compute/mmad_with_sparse.md)（`same_topic`）：SetSparse说明设置Matmul的使用场景是否为Sparse Matmul场景。
-- [SetSparseIndex](../matmul_kernel/set_sparse_index.md)（`same_topic`）：SetSparse说明设置Matmul的使用场景是否为Sparse Matmul场景。
+- [4:2稀疏矩阵乘](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/4_2_sparse_matmul.md)（`explains`）：在Host侧，获取Tiling前需要通过SetSparse接口设置Sparse Matmul场景。；设置Matmul的使用场景是否为Sparse Matmul场景。。实践指南明确在获取 Tiling 前调用 SetSparse，把接口的布尔场景开关放入 Host 侧稀疏 Matmul 配置顺序。
 <!-- cannbot:related:end -->

@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
     role: implementation
 created_at: "2026-08-25T15:47:27Z"
-updated_at: "2026-08-25T15:47:27Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -157,7 +157,7 @@ priority 10000 ForeachNonFiniteCheckAndUnscaleMembaseTiling
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| NPU 族 | `!IsRegbaseSocVersion(context_)` | membase body 使用传统 Vector API | R-001/R-002 | regbase template（A5 卡） | `ForeachNonFiniteCheckAndUnscaleMembaseTiling::IsCapable` |
+| NPU 族 | `!IsRegbaseSocVersion(context_)` | membase body 使用传统 Vector API | R-001/R-002 | regbase template（950 卡） | `ForeachNonFiniteCheckAndUnscaleMembaseTiling::IsCapable` |
 | 列表与空域 | `0<totalTensorCount<=256` 且每个 `n_i!=0` | POD 数组固定 256；membase 分核要求至少一个 block | 两 Route | `GRAPH_FAILED` | `ForeachNonFiniteCheckAndUnscaleTiling::Init` |
 | 32 B 分核 | `a_i=ceil(n_i/e)*e` | DMA block 与 core 边界不切出小于 32 B 的分区 | 两 Route | 无其他 Route | `AssignDataToEachCore` |
 | UB 上界 | `coefficient*S+R<=C` | depth 2 后实际总 UB 不超过 `U-P` | 两 Route | `GRAPH_FAILED` | `DivideUbMemory` |
@@ -483,9 +483,9 @@ copyInQueue.FreeTensor(copyInLT);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_950` 卡 |
 | Host/Launcher | 共用非 regbase priority 10000 Tiling | 共用非 regbase priority 10000 Tiling | regbase priority 30000；POD core 数组扩至 80 |
 | Kernel/资源 | membase AIV body | membase AIV body | arch35 MicroAPI body，另有 max/min TBuf 与 cache flush |
 
@@ -507,7 +507,7 @@ copyInQueue.FreeTensor(copyInLT);
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `foreach/.../docs/aclnnForeachNonFiniteCheckAndUnscale.md` | 两段式函数原型 | ACLNN 参数、错误与公开平台 |
-| 平台/语义 | `foreach/.../README.md` | 产品表/公式 | A2/A3/A5 支持和算子语义 |
+| 平台/语义 | `foreach/.../README.md` | 产品表/公式 | A2/A3/950 支持和算子语义 |
 | Host OpDef | `foreach/.../op_host/foreach_non_finite_check_and_unscale_def.cpp` | `ops::ForeachNonFiniteCheckAndUnscale` | dtype/format/AutoContiguous/平台注册 |
 | Host 入口 | `foreach/.../op_host/foreach_non_finite_check_and_unscale_base_tiling.cpp` | `Tiling4ForeachNonFiniteCheckAndUnscale` | Tiling registry 入口 |
 | Host/Tiling/POD | `foreach/.../op_host/foreach_non_finite_check_and_unscale_tiling.h` | 两个 TilingData 定义 | POD 字段与容量 |
@@ -528,3 +528,9 @@ copyInQueue.FreeTensor(copyInLT);
 | 同步 | Queue 生命周期与 Reduce 后 V→S | 标量读取前必须等待 Vector | `Compute` |
 | 精度与尾块 | 低精度在 FP32 计算，`CAST_RINT` 返回；尾块补 0 | CopyOut 只能写实际元素数 | `CastToFloat/CastToOriginalType/CopyOut` |
 | 失败边界 | selector fallthrough 与 `GRAPH_FAILED` | 不得把 unknown key、空 workspace 当成功计算 | selector/entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachNonFiniteCheckAndUnscale 950 ACLNN 算子知识](foreach_non_finite_check_and_unscale_950.md)（`same_topic`）：若任一原值为 Inf/NaN，则只把 `foundInf［0］` 置为 `1.0f`；检查所有 `scaledGrads` 原值中的 Inf/NaN。两卡实现相同 ACLNN 原地反缩放与非有限值检测契约，分别闭合 A2/A3 与 950 的 Tiling、队列和寄存器路线，可直接用于平台迁移选型。
+<!-- cannbot:related:end -->

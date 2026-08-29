@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log10/op_host/config/ascend910_93/foreach_log10_binary.json
     role: implementation
 created_at: "2026-08-25T15:45:37Z"
-updated_at: "2026-08-25T15:45:37Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -434,9 +434,9 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见独立 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 公共 Tiling | `ascend910_93`→同一 arch22 Tiling | arch35 专用 Tiling，workspace 0 |
 | Kernel/资源 | 默认 `op_kernel/foreach_log10.cpp` AIV；POD 最多 50 张量 | 与 A2 共用 | arch35 SIMT；最多 256 张量；不使用 AIV Queue |
 
@@ -456,7 +456,7 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `foreach/foreach_log10/docs/aclnnForeachLog10.md` | `aclnnForeachLog10GetWorkspaceSize`; `aclnnForeachLog10` | 公开原型、约束、错误码、两段式生命周期 |
-| 平台/语义 | `foreach/foreach_log10/README.md` | 产品支持表、公式 | A2/A3/A5 公开支持与语义 |
+| 平台/语义 | `foreach/foreach_log10/README.md` | 产品支持表、公式 | A2/A3/950 公开支持与语义 |
 | OpDef | `foreach/foreach_log10/op_host/foreach_log10_def.cpp` | `ForeachLog10` | dtype/layout、AutoContiguous、平台注册 |
 | infer | `foreach/foreach_utils/op_host/foreach_infershape.cpp` | `InferShape4ForeachCommon`; `InferDataType4ForeachCommon`; ForeachLog10 注册 | 输出数量/shape/dtype |
 | Host wrapper | `foreach/foreach_log10/op_host/arch22/foreach_log10_tiling_arch22.cpp` | `Tiling4ForeachLog10Tiling` | SOLO_LOG 公共 Tiling 入口 |
@@ -481,3 +481,9 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 | 同步 | Queue + V_MTE3 + MTE3_MTE2；BF16 PIPE_V | 不能提前复用 slot/scratch | `ForeachImplictOutput::Compute`; `ComputePerCast` |
 | 精度与尾块 | 原生 dtype 或 BF16→FP32→RINT；GM 尾按字节 | cast 顺序、round mode、有效字节数 | `InnerComputer`; `CopyIn`; `Compute` |
 | 失败边界 | dtype/shape/维数/UB/TensorList 上限 | 不得给无源码 fallback；>50 不得视为闭合 | `CheckOpInfo`; `ForeachCommonTiling::Init` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachLog10 950 ACLNN 算子知识](foreach_log10_950.md)（`same_topic`）：｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `y_i［j］ = log10(x_i［j］)` ｜；｜ 执行类型 ｜ 单 Kernel，`AIV_VECTOR` ｜。两卡覆盖同一 aclnnForeachLog10 公开语义；950 采用 SIMT outer entry，而 A2/A3 卡明确采用 AIV_VECTOR，构成跨代际实现对照。
+<!-- cannbot:related:end -->

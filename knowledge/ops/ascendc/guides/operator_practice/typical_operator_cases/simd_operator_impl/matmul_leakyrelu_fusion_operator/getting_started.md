@@ -38,9 +38,6 @@ Cube侧：
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LeakyRelu](../../../../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/leaky_relu.md)（`explains`）：LeakyRelu 与《入门功能落地》的实质衔接是：Reg LeakyRelu 与 Memory/C Reg/C Vector 入口实现同一负半轴 slope 计算，Matmul-LeakyRelu 案例给出该接口在融合算子中的真实落点。
-- [融合算子编程基础知识](../../../simd_operator_impl/fusion_operator_programming/cv_fusion/basics.md)（`related`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《入门功能落地》明确“本节以Matmul+LeakyRelu融合算子为例，介绍基于Ascend C编程模型实现Cube-Vector融合计算的基本方法，帮助开发者快速入门融合算子开发。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
-- [中级性能优化](intermediate_optimization.md)（`same_topic`）：中级性能优化 与《入门功能落地》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
-- [融合算子编程算子实现](../../../simd_operator_impl/fusion_operator_programming/cv_fusion/operator_impl.md)（`same_topic`）：两卡都以 Matmul+LeakyRelu 实现 Cube-Vector 融合；候选进一步给出 __mix__(1,2)、核间同步和后续优化入口。
-- [高阶极限打磨](extreme_optimization.md)（`same_topic`）：高阶章节在中级结果上继续做极限优化，覆盖入门卡末尾列出的 RegBase/VF 融合和搬运优化方向。
+- [中级性能优化](intermediate_optimization.md)（`related`）：“## 可优化方向分析”明确给出左端事实；“本节在入门功能落地的基础上，介绍Matmul融合算子的中级性能优化方法。”明确给出右端事实。入门页列出 L1/L0 双缓冲、细粒度同步、VF 融合等瓶颈；中级页把这些方向展开为 Matmul+Gelu 的具体优化案例和性能数据。
+- [融合算子编程算子实现](../../../simd_operator_impl/fusion_operator_programming/cv_fusion/operator_impl.md)（`same_topic`）：下文将以Matmul+LeakyRelu融合算子的实现为例，介绍Mix融合算子的设计和实现流程。；本样例基于C++ Tensor编程模式实现Matmul和LeakyRelu融合计算，展示Cube单元（矩阵计算单元）和Vector单元（向量计算单元）协同计算的编程模式。；两页围绕同一个 Matmul+LeakyRelu Mix 算子，前者给出设计流程，后者给出可执行入门实现。
 <!-- cannbot:related:end -->

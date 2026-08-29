@@ -48,7 +48,7 @@ description: 从固定版本官方源码提取不含可达 Cube/AIC 或 MIX_CV �
 2. `SUPPORT_COMPUTE_UNIT`、OpDef、平台注册与 binary config；
 3. Host selector、POD producer、Kernel body 和活动构建/CI 接线。
 
-公开文档明确写“不支持”而实现接线写“支持”时，记录为发布冲突，不创建或覆盖该平台正式卡。`arch35`、`_apt`、`ascend950` 路径只表示实现信号，不单独证明 A5 公开支持。
+公开文档明确写“不支持”而实现接线写“支持”时，记录为发布冲突，不创建或覆盖该平台正式卡。`arch35`、`_apt`、`ascend950` 路径只表示实现信号，不单独证明 Ascend 950 公开支持。
 
 同一平台存在多个 API 版本时，只提取实际支持的最新公开版本；新版本复用旧 body 时追到真实实现。Grad、原地、量化及其它不同数学语义必须是独立逻辑算子。
 
@@ -102,10 +102,10 @@ description: 从固定版本官方源码提取不含可达 Cube/AIC 或 MIX_CV �
 | 实际入口 | Prompt 指定的 ACLNN/API、Host/Tiling 或 Direct Invoke 符号 |
 | 版本族 | 同一平台实际支持的最新版本，以及旧版本 body 的复用关系 |
 | 公开性 | README/API 文档是否公开，是否存在“文档不支持、实现接线支持”的冲突 |
-| 平台 | A2、A3、A5 分别由哪些公开文档、OpDef/config、Host/Kernel/构建事实支撑 |
+| 平台 | A2、A3、Ascend 950 分别由哪些公开文档、OpDef/config、Host/Kernel/构建事实支撑 |
 | 执行族 | 逐个 Host/launcher 可达 Device 节点标记 `AIV_VECTOR`/SIMT/NDDMA/非 Cube 通信/Hybrid，并确认不含 Cube/AIC 或 MIX_CV |
 | 启动拓扑 | 单 Kernel 或多 Kernel；多 Kernel 时列出节点、边、workspace、ordering 和 lifetime |
-| 目标文件 | 无后缀卡和 `_a5` 卡分别覆盖哪个平台，不得扩大 Prompt 文件集 |
+| 目标文件 | 无后缀卡和 `_950` 卡分别覆盖哪个平台，不得扩大 Prompt 文件集 |
 
 平台取证顺序固定为：
 

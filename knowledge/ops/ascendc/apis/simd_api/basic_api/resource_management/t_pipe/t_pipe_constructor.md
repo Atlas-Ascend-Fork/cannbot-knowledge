@@ -25,7 +25,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DestroyWithoutPipeAll](destroy_without_pipe_all.md)（`related`）：《DestroyWithoutPipeAll》明确“释放TPipe资源，用于重复申请释放TPipe。内部未设置PIPE_ALL同步，需开发者自行保证同步流水正确。”；它与《TPipe》的“构造用来管理内存和同步的TPipe对象。”在实际调用参数、数据流或结果校验上直接衔接。
-- [Init](init.md)（`related`）：TPipe 构造函数已经完成默认初始化；Init 卡说明额外 Init 的重置语义，二者共同防止构造后无条件再次初始化。
-- [TPipe简介](t_pipe_intro.md)（`same_topic`）：《TPipe简介》明确“TPipe用于统一管理Device端内存等资源，一个Kernel函数必须且只能初始化一个TPipe对象。其主要功能包括：”；它与《TPipe》的“构造用来管理内存和同步的TPipe对象。”在实际调用参数、数据流或结果校验上直接衔接。
+- [Destroy](destroy.md)（`related`）：如果需要使用多个TPipe时，请先调用Destroy接口释放前一个TPipe；创建tpipe对象后，可调用Destroy手动释放资源。构造卡明确同一时刻只能有一个 TPipe，并把再次创建前的释放指向 Destroy；Destroy 卡给出对应资源回收操作，形成直接生命周期合同。
 <!-- cannbot:related:end -->

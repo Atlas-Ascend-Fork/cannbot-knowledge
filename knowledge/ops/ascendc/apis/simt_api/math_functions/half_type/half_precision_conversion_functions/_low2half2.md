@@ -25,10 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__low2half](_low2half.md)（`same_topic`）：__low2half2 与《__low2half》的实质衔接是：low2half 与 lows2half2 分别说明低 half 的标量提取、复制和双输入拼装语义。
-- [__lows2half2](_lows2half2.md)（`same_topic`）：__low2half2 与《__lows2half2》的实质衔接是：low2half 与 lows2half2 分别说明低 half 的标量提取、复制和双输入拼装语义。
-<!-- cannbot:related:end -->

@@ -31,6 +31,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [数据搬运辅助配置接口](data_move_aux_config.md)（`related`）：NdDmaDci 配置 NDDMA 的数据压缩信息，是 DataMoveAuxConfig 下的具体搬运控制项。
-- [DataCopy](../data_move/data_copy_gm_to_ub_nddma.md)（`same_topic`）：DataCopy 与《NdDmaDci》的实质衔接是：该 DataCopy 是 GM→UB NDDMA，多维 shape/stride、NdDmaDci 与非对齐 padding 是直接契约；所选故障卡覆盖漏维、stride=0 和 cache 刷新边界。
+- [DataCopy](../data_move/data_copy_gm_to_ub_nddma.md)（`related`）：“刷新NDDMA DataCache，确保多核场景下DataCopy多维搬运前缓存数据为最新状态。”定义 NdDmaDci 是多核 DataCopy 前的缓存刷新动作；“该接口通过NDDMA进行数据搬运，对应的NDDMA Cache大小为32KB，在使用DataCopy接口进行数据搬运前，需要使用NdDmaDci接口刷新缓存，否则多核场景下读写同一块Global Memory地址可能会导致部分核读取数据错误。”在 GM→UB NDDMA 搬运页给出不刷新会读旧 GM 数据的失败条件。两端构成必须先 flush 再 DataCopy 的顺序合同。
 <!-- cannbot:related:end -->

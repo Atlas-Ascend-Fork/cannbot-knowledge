@@ -60,9 +60,3 @@ if (denom > 0) {
 - Ascend950 / CANN 9.2.0 实测；A3/A2 未验证，推断可迁移（IEEE 754 NaN 语义跨平台一致）——未验证，推断可迁移。
 - 上层 aclnn 接口若未来增加 `N<=correction` 主动拦截返回 NaN，tiling 的 NaN 兜底分支仍作为防御性兜底无害保留。
 - `Muls` 对 NaN 输入的行为依赖 RegBase `Muls` 实现；本卡未独立验证其他 AscendC `Muls` 实现下 NaN 的传播。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TilingKey 缓存 correction 致 tilingdata 复用](../compilation/ge_tilingkey_cache_reuse_per_call_attr_pollution.md)（`related`）：“除零兜底 cof=0.0f 致 var=0 而非 NaN”定义：ReduceStdV2Update tiling 在 N-correction<=0 时防御性写 cof=0.0f，使 var=sq_sum*0=0，与 oracle torch.var(N=1,correction=1) 输出 NaN 不一致；判别触发为除零用例 actual=0.0 vs golden=NaN。；“TilingKey 缓存 correction 致 tilingdata 复用”定义：归约族算子把 per-call 属性 correction 经 tilingdata 下发却未纳入 TilingKey 时，GE 按 TilingKey 缓存 tilingdata，致同 TilingKey 第二次调用复用首次 cof 产生错误结果；判别为进程内失败、隔离通过，止血用子进程隔离，治本为属性纳 TilingKey。。实质衔接：correction 是逐调用属性；候选证明未纳入缓存键的 TilingData 会复用旧 cof，而焦点又把非法 N-correction 防御写成 0，二者共同解释批跑中 0/NaN 错配。
-<!-- cannbot:related:end -->

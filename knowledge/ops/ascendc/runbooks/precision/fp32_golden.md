@@ -90,13 +90,3 @@ grep -n 'acc\[\|vector<float>\|double\|float acc\|std::vector<float> acc\|+= xv'
 
 - a2 与 a3 平台未在本例实测；ReduceSum 的树形归约语义在 CANN 跨平台一致，`double` golden 修正与平台无关，**未验证，推断可迁移**。若目标平台 ReduceSum 实现退化（非树形），则"kernel 比 golden 准"的前提不成立，需重新核验。
 - 归约维 N 小到 `N × eps(fp32) × |max| < tol` 时（本例约 4e4 元素以下），顺序 fp32 golden 不会假失败，无需升级；临界 N 取决于 `|max|` 与容差，不要把本卡当"所有归约 ST 都必须 double"。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetReduceSumMaxMinTmpSize](../../apis/simd_api/adv_api/reduction_operations/reduce_sum_interface/get_reduce_sum_max_min_tmp_size.md)（`exemplifies`）：GetReduceSumMaxMinTmpSize 与《大归约维 fp32 golden 顺序累加致假精度失败》的实质衔接是：该查询返回 ReduceSum 高阶实现所需的最大/最小临时空间；ReduceSum 入口消费这一预算，而多行、累加顺序和 binary_equal 案例给出实际归约验证边界。
-- [FP16 scatter 归约逐次回写放大相消误差](low_precision_scatter_reduction_needs_fp32_accumulator.md)（`related`）：判断 FP32 accumulator 修复是否正确前，golden 自身不能用大 N 顺序 fp32 累加；候选给出 double/pairwise 基线以避免把参考误差误判为 kernel 回归。
-- [bf16 边缘失败用 fair-oracle 探针判 oracle 不公](bf16_fair_oracle_oracle.md)（`related`）：该卡展示归约顺序较差的 fp32 golden 会制造假失败；与 focal 的输入量化域问题共同构成先验证 oracle 公平性、再判断 kernel 精度的诊断流程。
-- [golden BF16 rstd 归约误取 post-BF16 量化值](golden_bf16_rstd_post_bf16.md)（`related`）：The fp32-golden runbook covers a different oracle artifact—host reduction order—providing the next differential check when BF16 input quantization alone does not close rstd mismatch.
-- [int32 fp32累加reduce binary_equal不可达](int32_fp32_reduce_binary_equal.md)（`related`）：《int32 fp32累加reduce binary_equal不可达》的任务是“int32 输入的 reduce 类算子内部 cast 到 fp32 累加，kernel 的 ReduceSum+bisection cache tree 与 golden 的 pairwise 折半是两棵不同 reduce 树；sum 超过 fp32 精确整数范围 2^24 时舍入路径不同致 1 ULP 差，cast 回 int32 后 bitwise 不一致，binary_equal 永不可达。”。《大归约维 fp32 golden 顺序累加致假精度失败》具体提供“顺序 fp32 累加 golden 误差 O(N×eps) 大于 kernel ReduceSum 树形归约 O(log N×eps)，大归约维下 golden 偏离 kernel 触发假精度失败；golden 须用 double/pairwise。”，它直接用于int32→fp32 ReduceSum 的规约树、有效 count 和 2^24 舍入边界。
-<!-- cannbot:related:end -->

@@ -22,5 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscInt162Float](../reg/data_type_convert/asc_int162float.md)（`related`）：两卡都定义 int16→float 转换；Reg 版本还要求按奇偶半区处理 1:2 位宽展开，UB 版本提供 count 型连续转换，可据布局选择路径。
+- [AscInt162Float](../reg/data_type_convert/asc_int162float.md)（`same_topic`）：将src中int16_t类型的元素转换为float类型，并将结果写入dst。；将int16_t类型数据转换为float类型。。两接口执行相同 dtype 转换，分别使用寄存器 mask 路线和 UB count 路线。
 <!-- cannbot:related:end -->

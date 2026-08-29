@@ -19,5 +19,5 @@ GlobalTensor 默认构造函数，创建空的 GlobalTensor 对象，后续通�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GlobalTensor简介](global_tensor_intro.md)（`same_topic`）：《GlobalTensor构造函数》明确“GlobalTensor构造函数。”；它与《GlobalTensor简介》的“GlobalTensor用来存放Global Memory（外部存储）的全局数据。”在实际调用参数、数据流或结果校验上直接衔接。
+- [SetGlobalBuffer](set_global_buffer.md)（`related`）：GlobalTensor 默认构造函数，创建空的 GlobalTensor 对象，后续通过 SetGlobalBuffer 设置 GM 地址和大小。模板参数 T 为数据类型。支持 950/a2/a3。；传入 GM 全局数据地址和大小，初始化 GlobalTensor。参数：buffer 为 GlobalTensor 源操作数（GM 地址），bufferSize 为元素个数。支持 950/a2/a3。。构造函数只产生空对象并明确指定后接 SetGlobalBuffer，目标接口负责绑定 GM 地址和元素数，二者组成 GlobalTensor 从空对象到可访问全局内存视图的初始化顺序。
 <!-- cannbot:related:end -->

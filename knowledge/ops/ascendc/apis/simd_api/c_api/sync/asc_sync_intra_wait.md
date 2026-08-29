@@ -22,6 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSyncInterWait](asc_sync_inter_wait.md)（`related`）：IntraWait 与 InterWait 都是阻塞等待，但作用域分别为 block 内不同 Core 与不同 group；可用作用域差异避免把 inter 同步误用于核内流水。
-- [AscSyncIntraArrive](asc_sync_intra_arrive.md)（`same_topic`）：《AscSyncIntraArrive》处理“与asc_sync_intra_wait配合使用，用于block内不同Core的流水线同步，向同步寄存器发送同步信号。”。《AscSyncIntraWait》明确“与asc_sync_intra_arrive配合使用，等待block内其他Core发送同步信号后解除阻塞。”，可直接用于核对核内 arrive/wait 配对、可见性范围及双 AIV flag 路由缺陷。
+- [AscSyncIntraArrive](asc_sync_intra_arrive.md)（`related`）：asc_sync_intra_arrive指令后其他Core对应的计数器增加1；执行asc_sync_intra_wait时如果对应的计数器数值为0则阻塞不执行；如果对应的计数器大于0，则计数器减一，同时后续指令开始执行。；asc_sync_intra_arrive指令后其他CORE对应的计数器增加1；执行asc_sync_intra_wait时如果对应的计数器数值为0则阻塞不执行；如果对应的计数器大于0，则计数器减一，同时后续指令开始执行。；arrive 负责增加另一 Core 的 sync_id 计数，wait 依据同一计数阻塞或消费一次信号，两端共同定义 block 内流水同步的成对调用协议。
 <!-- cannbot:related:end -->

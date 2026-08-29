@@ -48,3 +48,10 @@ platforms:
 
 - diff 事实 + doc 披露（@0640521a8170）：cache_compile ge_cache 降冷启动、MTP 独立缓存条目；SuperKernel 仅 decode ge_graph 生效、acl_graph 暂不支持、CANN 8.5.0.alpha002 部分算子未完全融合（仓自报）。溯源下探 [cann-recipes-infer-pr-124-feat-support-longcat-flash-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/124)
 - diff 事实 + 作者陈述机制（@086bbb1c49c0）：中间 `reshape` 从公共路径移出下沉 KVP 分支、尾部 permute→transpose，使 `kvp_size==1` 路径 bmm 与 transpose 相邻恢复融合条件；无 benchmark 数字。溯源下探 [cann-recipes-infer-pr-332-fix-modify-fused-infer-attention-score-for-longcat-to-fix-superkernel-sc](https://gitcode.com/cann/cann-recipes-infer/merge_requests/332)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SuperKernel](../../../concepts/techniques/superkernel.md)（`related`）：TorchAir `ge_graph`（max-autotune）图模式下，**按用户声明的 scope 将计算子图整体融合为单个大 kernel** 的优化能力。；SuperKernel **仅在 decode 启用 ge_graph 图模式时生效**（eager 无效）；**当前暂不支持 acl_graph**，静态图路径走 ge_graph。前者定义能力，后者把它落实为 decode 路径、后端限制和融合相邻性检查，直接推进启用与失效排查。
+- [torchair cache_compile 图编译缓存落盘复用：调用约定、缓存失效与后端/版本约束](torchair_cache_compile_persisted_graph.md)（`related`）：SuperKernel **仅在 decode 启用 ge_graph 图模式时生效**（eager 无效）；**当前暂不支持 acl_graph**，静态图路径走 ge_graph。；**ge_graph**：cache_compile / `ge_cache=True` 是 GE 图专属能力，成熟可用。。SuperKernel 规则明确优化依赖 decode 的 ge_graph 静态图，缓存规则确认 cache_compile 是同一 GE 图路径的持久化能力，构成图融合启用后的部署运行链。
+<!-- cannbot:related:end -->

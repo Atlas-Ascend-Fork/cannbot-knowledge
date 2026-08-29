@@ -25,16 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162half_rna](_bfloat162half_rna.md)（`same_topic`）：__half2half_rna 与《__bfloat162half_rna》的实质衔接是：同类型 rd/rn/ru/rz 与 bfloat16/float 输入的 rna/sat 变体共同界定 CAST_ROUND 的 tie-away 和饱和特殊值行为。
-- [__bfloat162half_rna_sat](_bfloat162half_rna_sat.md)（`same_topic`）：__half2half_rna 与《__bfloat162half_rna_sat》的实质衔接是：同类型 rd/rn/ru/rz 与 bfloat16/float 输入的 rna/sat 变体共同界定 CAST_ROUND 的 tie-away 和饱和特殊值行为。
-- [__float2half_rna](_float2half_rna.md)（`same_topic`）：__half2half_rna 与《__float2half_rna》的实质衔接是：同类型 rd/rn/ru/rz 与 bfloat16/float 输入的 rna/sat 变体共同界定 CAST_ROUND 的 tie-away 和饱和特殊值行为。
-- [__float2half_rna_sat](_float2half_rna_sat.md)（`same_topic`）：__half2half_rna 与《__float2half_rna_sat》的实质衔接是：同类型 rd/rn/ru/rz 与 bfloat16/float 输入的 rna/sat 变体共同界定 CAST_ROUND 的 tie-away 和饱和特殊值行为。
-- [__half2half_rd](_half2half_rd.md)（`same_topic`）：__half2half_rna 与《__half2half_rd》的实质衔接是：同类型 rd/rn/ru/rz 与 bfloat16/float 输入的 rna/sat 变体共同界定 CAST_ROUND 的 tie-away 和饱和特殊值行为。
-- [__half2half_rn](_half2half_rn.md)（`same_topic`）：__half2half_rna 与《__half2half_rn》的实质衔接是：同类型 rd/rn/ru/rz 与 bfloat16/float 输入的 rna/sat 变体共同界定 CAST_ROUND 的 tie-away 和饱和特殊值行为。
-- [__half2half_ru](_half2half_ru.md)（`same_topic`）：__half2half_rna 与《__half2half_ru》的实质衔接是：同类型 rd/rn/ru/rz 与 bfloat16/float 输入的 rna/sat 变体共同界定 CAST_ROUND 的 tie-away 和饱和特殊值行为。
-- [__half2half_rz](_half2half_rz.md)（`same_topic`）：__half2half_rna 与《__half2half_rz》的实质衔接是：同类型 rd/rn/ru/rz 与 bfloat16/float 输入的 rna/sat 变体共同界定 CAST_ROUND 的 tie-away 和饱和特殊值行为。
-<!-- cannbot:related:end -->

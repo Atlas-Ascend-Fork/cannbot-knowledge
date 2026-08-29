@@ -30,6 +30,5 @@ srcReg数据类型为half时
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscExpSub](../../../c_api/reg/compound_compute/asc_exp_sub_deprecated.md)（`related`）：废弃 C Reg 接口保持同一复合运算语义，可用于迁移旧 C 指针代码到 C++ Reg ExpSub。
-- [ExpSub](../../memory_vector_compute/composite_compute/exp_sub_isasi.md)（`related`）：ExpSub 与《ExpSub》的实质衔接是：Reg 与 C API 的 ExpSub 实现同一 exp(src)-scalar 复合运算，可用于接口迁移和语义核对。
+- [AscExpSub](../../../c_api/reg/compound_compute/asc_exp_sub_deprecated.md)（`related`）：将src0与src1相减，差值作为e的指数计算，i为元素索引。- 当src0和src1为float类型时；srcReg0与srcReg1相减，差值作为e的指数计算，根据mask将计算结果写入dstReg。。两端执行相同的寄存器 ExpSub 复合运算，候选卡提供非 deprecated 的 RegTensor 参数、layout 与 mask 合同。
 <!-- cannbot:related:end -->

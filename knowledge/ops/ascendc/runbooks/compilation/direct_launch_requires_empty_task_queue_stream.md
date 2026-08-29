@@ -251,12 +251,3 @@ at::Tensor gather(const at::Tensor &x, const at::Tensor &index, int64_t dim)
 ## 误诊
 
 kernel 内 `PipeBarrier` 数量不是这次 507035 的已证根因：额外 barrier 的实测既没有解除异常，还引入了精度错误；真正通过两连复现、完整 suite 和正式正确性验证的变化位于 host 流获取处。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclrtMemcpyAsync 局部源生命周期缺陷](aclrtmemcpyasync_use_after_free.md)（`related`）：《连续直调异常可用 stream(true) 做同环境 A/B》明确“本次 A3 会话中，stream(false) 的第二次连续直调触发 507035；只改为 stream(true) 后定向与完整测试通过，该结果不外推为 API 规范。”；它与《aclrtMemcpyAsync 局部源生命周期缺陷》的“直调算子把局部 std::vector 的 data 指针交给 aclrtMemcpyAsync 后立即返回，源码上无法保证 host 源存活到异步拷贝完成；该缺陷需独立修正，但现有 trace 未证明它是后续 507035 的唯一根因。”在实际调用参数、数据流或结果校验上直接衔接。
-- [dav-3510 GM_ADDR static_cast 编译失败](gm_addr_cast_from_void_uses_toolchain_cast.md)（`related`）：指针转换修复后 direct launch 仍需满足 stream/task queue 条件。
-- [torch_npu 只保留一族 ACL 头文件](torch_npu_uses_single_acl_header_family.md)（`related`）：direct-launch 卡给出 torch_npu stream 与任务队列的实际启动约束，补足编译头文件统一后的 launch 验证。
-- [RunOpApi 延迟回调需按值捕获局部 launch vector](runopapi_callbacks_capture_launch_state_by_value.md)（`same_topic`）：RunOpApi 延迟回调需按值捕获局部 launch vector 与《连续直调异常可用 stream(true) 做同环境 A/B》的实质衔接是：RunOpApi 延迟执行要求 launch vectors 按值捕获并保持底层 storage；同步缺失卡和同环境 stream A/B 是同一 host 异步提交链的直接诊断。
-<!-- cannbot:related:end -->

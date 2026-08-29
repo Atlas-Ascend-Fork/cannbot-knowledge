@@ -22,12 +22,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSetAtomicMax](../../c_api/simd_atomic/asc_set_atomic_max.md)（`related`）：SetAtomicMax 与《AscSetAtomicMax》的实质衔接是：SetAtomicMax 与 C API 配置、AtomicMax 消费、SetAtomicMin 对照及状态清理构成同一随路原子配置生命周期。
-- [AscSetAtomicNone](../../c_api/simd_atomic/asc_set_atomic_none.md)（`related`）：SetAtomicMax 与《AscSetAtomicNone》的实质衔接是：SetAtomicMax 与 C API 配置、AtomicMax 消费、SetAtomicMin 对照及状态清理构成同一随路原子配置生命周期。
-- [DisableDmaAtomic](disable_dma_atomic.md)（`related`）：SetAtomicMax 开启随路取大，DisableDmaAtomic 结束该状态，否则后续 DataCopy 会继续原子合并。
-- [AscAtomicMax](../../c_api/scalar_compute/asc_atomic_max.md)（`same_topic`）：AscAtomicMax 与《SetAtomicMax》的衔接是：AscAtomicMax 是原子最大值更新；SIMT/basic AtomicMax 提供同一竞争更新语义，SetAtomicMax/AscSetAtomicMax 则配置后续搬运执行该原子操作。
-- [AtomicMax](atomic_max.md)（`same_topic`）：SetAtomicMax 与《AtomicMax》的实质衔接是：SetAtomicMax 与 C API 配置、AtomicMax 消费、SetAtomicMin 对照及状态清理构成同一随路原子配置生命周期。
-- [SetAtomicMin](set_atomic_min_isasi.md)（`same_topic`）：SetAtomicMax 与《SetAtomicMin》的实质衔接是：SetAtomicMax 与 C API 配置、AtomicMax 消费、SetAtomicMin 对照及状态清理构成同一随路原子配置生命周期。
-- [SetAtomicType](set_atomic_type.md)（`same_topic`）：SetAtomicMax 对应 SetAtomicType 可选的 MAX 模式，补充专用接口及其数据类型边界。
-- [asc_set_atomic_max_int（废弃）](../../c_api/simd_atomic/asc_set_atomic_max_int_deprecated.md)（`same_topic`）：asc_set_atomic_max_int（废弃） 的核心契约是“该接口已废弃，请使用asc_set_atomic_max_int32替代。 头文件路径："c_api/atomic/atomic.h"。 设置计算结果以原子比较的方式传输到GM。在拷贝前，将待传输的int32_t数据与GM中已有数据进行逐元素比较，并将最大值写入GM”；SetAtomicMax 补充“对后续搬运到GM的数据开启原子取大，将拷贝内容与GM已有值比较后写入最大值”。
+- [DisableDmaAtomic](disable_dma_atomic.md)（`related`）：设置DMA搬运时的随路原子操作为取最大值。调用后，后续从UB/L0C/L1到GM的DataCopy搬运将对目标GM地址执行原子取最大值（旧值和新值中的最大值）。；函数原型：__aicore__ inline void DisableDmaAtomic()。参数：无。约束：与SetAtomicAdd/SetAtomicMax等配合使用，成对调用。头文件：basic_api/kernel_operator_atomic_intf.h。；焦点开启后续 DMA AtomicMax 状态，目标接口是合同要求的配对关闭动作。
+- [DynamicQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/quant/dynamic_quant_950.md)（`related`）：“｜ partial extrema ｜ `SetAtomicMax/Min<float>` ｜ M-block cores ｜ GM workspace ｜ FP32 extrema ｜ conflicts on same b,n ｜”记录 DynamicQuant split-M 的并发归约动作；“设置DMA搬运时的随路原子操作为取最大值。调用后，后续从UB/L0C/L1到GM的DataCopy搬运将对目标GM地址执行原子取最大值（旧值和新值中的最大值）。”给出 SetAtomicMax 的搬运合同，可直接核验 phase-1 extrema 合并。
 <!-- cannbot:related:end -->

@@ -28,9 +28,3 @@ platforms: [agnostic]
 OpParamDef算子定义，OpParamDef请参考OpParamDef。
 ## 约束说明
 无
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Scalar（OpParamDef）](scalar.md)（`related`）：To binds a declared OpParamDef Scalar to its runtime scalar value, completing the parameter-definition contract.
-<!-- cannbot:related:end -->

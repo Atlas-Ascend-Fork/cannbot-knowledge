@@ -19,10 +19,3 @@ platforms: ['950']
 支持 half、float、int64_t 等数据类型，其中 complex32、int64_t、uint64_t、complex64 仅支持前 n 个数据计算接口。
 约束：左右操作数必须有一个为矢量；LocalTensor 单点元素作为标量时 idx 需为编译期常量；源操作数为单点元素时不支持与目的操作数地址重叠。
 针对 Ascend 950PR/950DT，该接口通过 VF 调用 Reg 矢量计算 API 实现兼容，高维切分计算占用 8KB Unified Buffer。仅 Ascend 950PR/950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Div](div.md)（`related`）：Div 与《Divs（灵活标量位置）》的实质衔接是：这些入口执行同一逐元素除法语义，分别落在 memory、Reg、C Reg/C Vector 层；灵活标量 Divs 补充标量位于任一操作数时的调用选择。
-- [Div](../../reg_vector_compute/basic_arithmetic/div.md)（`same_topic`）：Div 与《Divs（灵活标量位置）》的实质衔接是：这些入口执行相同逐元素除法，分别位于 Reg、Memory、C Reg/C Vector 层；Divs 补充一个操作数为标量时的调用契约。
-<!-- cannbot:related:end -->

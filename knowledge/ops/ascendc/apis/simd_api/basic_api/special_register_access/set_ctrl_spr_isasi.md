@@ -39,10 +39,8 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetCtrl](../../c_api/sys_var/asc_get_ctrl.md)（`related`）：AscGetCtrl 与《SetCtrlSpr》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
-- [AscSetCtrl](../../c_api/sys_var/asc_set_ctrl.md)（`related`）：SetCtrlSpr 以模板位段方式写 CTRL 寄存器，AscSetCtrl 则写入读取并修改后的整体寄存器值，是同一控制寄存器的两种配置入口。
-- [SetSaturationFlag](set_saturation_flag_isasi.md)（`related`）：“SetSaturationFlag”定义：设置饱和开关的标志位，控制计算或精度转换时饱和模式的开启与关闭。；“SetCtrlSpr”定义：对CTRL寄存器的特定比特位进行设置，通过模板参数指定比特位范围并写入对应值。。实质衔接：SetSaturationFlag 修改饱和状态，Get 用于验证当前值；通用 CTRL SPR set/reset 提供底层控制位管理和恢复默认值的契约。
-- [GetCtrlSpr](get_ctrl_spr_isasi.md)（`same_topic`）：SetCtrlSpr 与 GetCtrlSpr 读写 CTRL 的同一 bit 区间，可形成写后读回验证。
-- [GetSpr](get_spr.md)（`same_topic`）：焦点处理特殊寄存器读取与配套清零、CTRL 位设置/复位；SetCtrlSpr正文说明“对CTRL寄存器的特定比特位进行设置，通过模板参数指定比特位范围并写入对应值”。候选操作同一 SPR/CTRL 状态，明确读前设置、读后清理与位域复位。
-- [ResetCtrlSpr](reset_ctrl_spr_isasi.md)（`same_topic`）：SetCtrlSpr 临时修改 CTRL 位段，ResetCtrlSpr 是对应的收尾接口。
+- [GetCtrlSpr](get_ctrl_spr_isasi.md)（`related`）：“读取CTRL寄存器（控制寄存器）特定比特位上的值。”；“对CTRL寄存器（控制寄存器）的特定比特位进行设置。通过模板参数startBit和endBit指定目标比特位范围，将运行参数value（超出比特位范围会出现编译报错）写入CTRL寄存器对应位置。”。两接口以相同 bit range 形成 CTRL 配置写入与回读核验链。
+- [InplacePowTensorScalar 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_pow_tensor_scalar_950.md)（`related`）：e==2/3 -> SAT bit60=0; masked multiply (u8/s8 widen to 16-bit); restore bit60=1；Ascend 950PR/Ascend 950DT仅支持CTRL［8:6］、CTRL［10:9］、CTRL［45］、CTRL［48］、CTRL［50］、CTRL［53］、CTRL［59］、CTRL［60］比特位。；候选为平方和立方专用 helper 的 CTRL［60］ 保存恢复提供接口边界。
+- [Reset](../resource_management/t_pipe/reset.md)（`related`）：针对Ascend 950PR/Ascend 950DT，调用该接口后，CTRL［48］保持原值，CTRL［60］复位为1。CTRL寄存器比特位说明请见SetCtrlSpr。；对CTRL寄存器（控制寄存器）的特定比特位进行设置。通过模板参数startBit和endBit指定目标比特位范围，将运行参数value（超出比特位范围会出现编译报错）写入CTRL寄存器对应位置。；焦点给出 Reset 对 CTRL 位的副作用，目标提供这些位的显式读取边界与恢复设置入口。
+- [ResetCtrlSpr](reset_ctrl_spr_isasi.md)（`same_topic`）：“对CTRL寄存器（控制寄存器）的特定比特位做重置。由模板参数［startBit, endBit］指定的比特位重置为默认值，默认值参考表 常用CTRL寄存器比特位说明。”与“对CTRL寄存器（控制寄存器）的特定比特位进行设置。通过模板参数startBit和endBit指定目标比特位范围，将运行参数value（超出比特位范围会出现编译报错）写入CTRL寄存器对应位置。”提供双方正文证据。SetCtrlSpr 写指定 CTRL 位段，ResetCtrlSpr 将同一位段恢复默认值，构成控制寄存器配置与清理的生命周期闭环。
 <!-- cannbot:related:end -->

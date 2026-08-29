@@ -26,7 +26,6 @@ host侧Tiling接口，用于获取Round接口所需的最大和最小临时空�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Lroundf](../../../../simt_api/math_functions/float_math_functions/lroundf.md)（`related`）：Lroundf 与《GetRoundMaxMinTmpSize》的实质衔接是：Lroundf 与 llroundf/roundf 及高阶/C API Round 共享舍入任务，RoundMode 解释 ties 与返回整数宽度的选择。
-- [GetRoundTmpBufferFactorSize](get_round_tmp_buffer_factor_size.md)（`same_topic`）：GetRoundMaxMinTmpSize说明在host侧获取Round接口预留或申请临时空间的最大和最小值，用于Tiling参数传递。
-- [Round](round.md)（`same_topic`）：Round 的临时空间需在 Host 侧用 GetRoundMaxMinTmpSize 计算并随 tiling 传入。
+- [Round](round.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetRoundMaxMinTmpSize获取。；host侧Tiling接口，用于获取Round接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；目标产生 Round 所需 workspace 上下界，焦点消费该 Tiling 结果配置临时空间。
+- [GetRoundTmpBufferFactorSize](get_round_tmp_buffer_factor_size.md)（`same_topic`）：host侧Tiling接口，用于获取Round接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。 获取Round接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。 一个从 shape 求空间区间，一个从固定空间预算反推处理规模，是 Round Host Tiling 的两种互补容量计算。
 <!-- cannbot:related:end -->

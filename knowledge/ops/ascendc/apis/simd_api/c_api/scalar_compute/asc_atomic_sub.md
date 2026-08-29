@@ -23,9 +23,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscDcci](../cache_ctrl/asc_dcci.md)（`related`）：AscAtomicSub 与《AscDcci》的实质衔接是：SIMT asc_atomic_sub 是同一 GM 原子减；原子加提供逆操作对照，绕过 DCache 的读写和 AscDcci 共同落实 focal 明示的缓存一致性要求。
-- [ReadGmByPassDCache](../../basic_api/scalar_compute/read_gm_by_pass_d_cache_isasi.md)（`related`）：AscAtomicSub 与《ReadGmByPassDCache》的实质衔接是：SIMT asc_atomic_sub 是同一 GM 原子减；原子加提供逆操作对照，绕过 DCache 的读写和 AscDcci 共同落实 focal 明示的缓存一致性要求。
-- [WriteGmByPassDCache](../../basic_api/scalar_compute/write_gm_by_pass_d_cache_isasi.md)（`related`）：AscAtomicSub 与《WriteGmByPassDCache》的实质衔接是：SIMT asc_atomic_sub 是同一 GM 原子减；原子加提供逆操作对照，绕过 DCache 的读写和 AscDcci 共同落实 focal 明示的缓存一致性要求。
-- [AscAtomicAdd](asc_atomic_add.md)（`same_topic`）：AscAtomicSub 与《AscAtomicAdd》的实质衔接是：SIMT asc_atomic_sub 是同一 GM 原子减；原子加提供逆操作对照，绕过 DCache 的读写和 AscDcci 共同落实 focal 明示的缓存一致性要求。
-- [asc_atomic_sub](../../../simt_api/atomic_operations/asc_atomic_sub.md)（`same_topic`）：AscAtomicSub 与《asc_atomic_sub》的实质衔接是：SIMT asc_atomic_sub 是同一 GM 原子减；原子加提供逆操作对照，绕过 DCache 的读写和 AscDcci 共同落实 focal 明示的缓存一致性要求。
+- [AscDcci](../cache_ctrl/asc_dcci.md)（`related`）：Scalar原子操作会绕过DCache，需要调用asc_dcci接口确保GM与DCache的一致性。；该接口用来刷新Cache，保证Cache的一致性；AscAtomicSub 明确产生绕过 DCache 的 GM 更新，AscDcci 提供后续缓存一致性动作，二者构成原子写后的必要维护链。
+- [asc_atomic_sub](../../../simt_api/atomic_operations/asc_atomic_sub.md)（`same_topic`）：“对Unified Buffer或Global Memory上的数据与指定数据执行原子减操作，即在这些内存区域的数据中减去指定数据。”与“对Global Memory中的数据与指定数据执行原子减操作，即将val从address指向的数据元素上减去。”提供双方正文证据。二者共享对 address 执行原子减并返回旧值的核心契约；SIMT API 允许 UB 或 GM，而 C scalar API 仅声明 GM，互读能直接确认地址空间边界。
 <!-- cannbot:related:end -->

@@ -2,45 +2,45 @@
 
 本目录保存激活函数相关的 ACLNN 算子知识。
 
-- [Celu A5](celu_a5.md)：用于执行 Celu 相关计算。
+- [Celu 950](celu_950.md)：用于执行 Celu 相关计算。
 - [ClippedSwiglu A2/A3](clipped_swiglu.md)：用于执行 ClippedSwiglu 相关计算。
-- [ClippedSwiglu A5](clipped_swiglu_a5.md)：用于执行 ClippedSwiglu 相关计算。
-- [FastGelu A5](fast_gelu_a5.md)：用于执行 FastGelu 相关计算。
+- [ClippedSwiglu 950](clipped_swiglu_950.md)：用于执行 ClippedSwiglu 相关计算。
+- [FastGelu 950](fast_gelu_950.md)：用于执行 FastGelu 相关计算。
 - [FatreluMul A2/A3](fatrelu_mul.md)：用于执行 FatreluMul 相关计算。
 - [GeGlu A2/A3](ge_glu.md)：用于执行 GeGlu 相关计算。
-- [GeGlu A5](ge_glu_a5.md)：用于执行 GeGlu 相关计算。
+- [GeGlu 950](ge_glu_950.md)：用于执行 GeGlu 相关计算。
 - [GeGluBackward A2/A3](ge_glu_backward.md)：用于执行 GeGluBackward 相关计算。
-- [GeGluBackward A5](ge_glu_backward_a5.md)：用于执行 GeGluBackward 相关计算。
+- [GeGluBackward 950](ge_glu_backward_950.md)：用于执行 GeGluBackward 相关计算。
 - [GeluMul A2/A3](gelu_mul.md)：用于执行 GeluMul 相关计算。
-- [GeluMul A5](gelu_mul_a5.md)：用于执行 GeluMul 相关计算。
-- [GeluQuant A5](gelu_quant_a5.md)：用于执行 GeluQuant 相关计算。
-- [HardshrinkBackward A5](hardshrink_backward_a5.md)：用于执行 HardshrinkBackward 相关计算。
-- [HardsigmoidBackward A5](hardsigmoid_backward_a5.md)：用于执行 HardsigmoidBackward 相关计算。
-- [Hardswish A5](hardswish_a5.md)：用于执行 Hardswish 相关计算。
-- [HardswishBackward A5](hardswish_backward_a5.md)：用于执行 HardswishBackward 相关计算。
+- [GeluMul 950](gelu_mul_950.md)：用于执行 GeluMul 相关计算。
+- [GeluQuant 950](gelu_quant_950.md)：用于执行 GeluQuant 相关计算。
+- [HardshrinkBackward 950](hardshrink_backward_950.md)：用于执行 HardshrinkBackward 相关计算。
+- [HardsigmoidBackward 950](hardsigmoid_backward_950.md)：用于执行 HardsigmoidBackward 相关计算。
+- [Hardswish 950](hardswish_950.md)：用于执行 Hardswish 相关计算。
+- [HardswishBackward 950](hardswish_backward_950.md)：用于执行 HardswishBackward 相关计算。
 - [HardswishBackwardV2 A2/A3](hardswish_backward_v2.md)：用于执行 HardswishBackwardV2 相关计算。
-- [HardswishBackwardV2 A5](hardswish_backward_v2_a5.md)：用于执行 HardswishBackwardV2 相关计算。
-- [HardtanhBackward A5](hardtanh_backward_a5.md)：用于执行 HardtanhBackward 相关计算。
+- [HardswishBackwardV2 950](hardswish_backward_v2_950.md)：用于执行 HardswishBackwardV2 相关计算。
+- [HardtanhBackward 950](hardtanh_backward_950.md)：用于执行 HardtanhBackward 相关计算。
 - [Heaviside A2/A3](heaviside.md)：用于执行 Heaviside 相关计算。
-- [InplaceCelu A5](inplace_celu_a5.md)：用于执行 InplaceCelu 相关计算。
-- [InplaceHardswish A5](inplace_hardswish_a5.md)：用于执行 InplaceHardswish 相关计算。
+- [InplaceCelu 950](inplace_celu_950.md)：用于执行 InplaceCelu 相关计算。
+- [InplaceHardswish 950](inplace_hardswish_950.md)：用于执行 InplaceHardswish 相关计算。
 - [InplaceSigmoid A2](inplace_sigmoid.md)：用于执行 InplaceSigmoid A2 相关计算。
-- [LogSoftmaxBackward A5](log_softmax_backward_a5.md)：用于执行 LogSoftmaxBackward 相关计算。
+- [LogSoftmaxBackward 950](log_softmax_backward_950.md)：用于执行 LogSoftmaxBackward 相关计算。
 - [MishBackward A2/A3](mish_backward.md)：用于执行 MishBackward 相关计算。
 - [Prelu A2](prelu.md)：用于执行 Prelu A2 相关计算。
-- [Prelu A5](prelu_a5.md)：用于执行 Prelu 相关计算。
+- [Prelu 950](prelu_950.md)：用于执行 Prelu 相关计算。
 - [Relu A2](relu.md)：用于执行 Relu A2 相关计算。
 - [Sigmoid A2](sigmoid.md)：用于执行 Sigmoid A2 相关计算。
-- [SoftmaxBackward A5](softmax_backward_a5.md)：用于执行 SoftmaxBackward 相关计算。
-- [SoftmaxCrossEntropyWithLogits A5](softmax_cross_entropy_with_logits_a5.md)：用于执行 SoftmaxCrossEntropyWithLogits 相关计算。
+- [SoftmaxBackward 950](softmax_backward_950.md)：用于执行 SoftmaxBackward 相关计算。
+- [SoftmaxCrossEntropyWithLogits 950](softmax_cross_entropy_with_logits_950.md)：用于执行 SoftmaxCrossEntropyWithLogits 相关计算。
 - [SquaredRelu A2/A3](squared_relu.md)：用于执行 SquaredRelu 相关计算。
-- [SquaredRelu A5](squared_relu_a5.md)：用于执行 SquaredRelu 相关计算。
+- [SquaredRelu 950](squared_relu_950.md)：用于执行 SquaredRelu 相关计算。
 - [SwiGlu A2/A3](swi_glu.md)：用于执行 SwiGlu 相关计算。
-- [SwiGlu A5](swi_glu_a5.md)：用于执行 SwiGlu 相关计算。
+- [SwiGlu 950](swi_glu_950.md)：用于执行 SwiGlu 相关计算。
 - [SwiGluGrad A2/A3](swi_glu_grad.md)：用于执行 SwiGluGrad 相关计算。
-- [SwiGluGrad A5](swi_glu_grad_a5.md)：用于执行 SwiGluGrad 相关计算。
-- [SwigluGroupQuant A5](swiglu_group_quant_a5.md)：用于执行 SwigluGroupQuant 相关计算。
-- [SwigluGroupQuantGrad A5](swiglu_group_quant_grad_a5.md)：用于执行 SwigluGroupQuantGrad 相关计算。
+- [SwiGluGrad 950](swi_glu_grad_950.md)：用于执行 SwiGluGrad 相关计算。
+- [SwigluGroupQuant 950](swiglu_group_quant_950.md)：用于执行 SwigluGroupQuant 相关计算。
+- [SwigluGroupQuantGrad 950](swiglu_group_quant_grad_950.md)：用于执行 SwigluGroupQuantGrad 相关计算。
 - [Swish A2](swish.md)：用于执行 Swish A2 相关计算。
-- [SwishBackward A5](swish_backward_a5.md)：用于执行 SwishBackward 相关计算。
-- [Threshold A5](threshold_a5.md)：用于执行 Threshold 相关计算。
+- [SwishBackward 950](swish_backward_950.md)：用于执行 SwishBackward 相关计算。
+- [Threshold 950](threshold_950.md)：用于执行 Threshold 相关计算。

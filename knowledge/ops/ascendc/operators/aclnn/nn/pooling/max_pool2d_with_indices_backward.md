@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_grad_with_argmax/op_host/max_pool3d_grad_with_argmax_def.cpp
     role: implementation
 created_at: "2026-08-25T18:18:22Z"
-updated_at: "2026-08-25T18:18:22Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -68,7 +68,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定仓公开版本只有上述无版本后缀 ACLNN；A2/A3 由公开产品表、`DAV_2201` dtype 分支、`ascend910b/ascend910_93` OpDef 与 binary config 共同闭合。`IsRegbase=false` 时入口调用 `ExecMaxPool3dWithIndicesBackwardGetWorkspaceSize`，而不是 A5 的 V3 body。
+固定仓公开版本只有上述无版本后缀 ACLNN；A2/A3 由公开产品表、`DAV_2201` dtype 分支、`ascend910b/ascend910_93` OpDef 与 binary config 共同闭合。`IsRegbase=false` 时入口调用 `ExecMaxPool3dWithIndicesBackwardGetWorkspaceSize`，而不是 950 的 V3 body。
 
 ## Host/Launcher 执行流程
 
@@ -542,9 +542,9 @@ argmax 与 grad 先转成 pooled-position-major × NC 的连续布局，窗口�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，见 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，见 `_950` 卡 |
 | Host/Launcher | 共用 2D→NCDHW adapter | 同 A2 | `IsRegbase` 走 V3，不走本卡 body |
 | Kernel/资源 | ascend910b/910_93 Vector normal/scatter | 同一实现族 | SIMT + RegBase Vector routes |
 

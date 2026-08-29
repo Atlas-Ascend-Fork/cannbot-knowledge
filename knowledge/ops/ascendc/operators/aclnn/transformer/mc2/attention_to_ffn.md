@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/config/ascend910_93/attention_to_ffn_binary.json
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T19:27:07Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1088,7 +1088,7 @@ mask 先转 HALF 再 Sum，只需要在 token 量化前短暂使用 scratch。�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | README/API 明确不支持 | 唯一公开支持平台 | Ascend 950PR/950DT 明确不支持 |
 | Host/Launcher | 无正式 route | `ascend910_93` OpDef、A3 三布尔 key、MTE server type | 无正式 route |
@@ -1144,4 +1144,10 @@ mask 先转 HALF 再 Sum，只需要在 token 量化前短暂使用 scratch。�
 | workspace/内存 | 异步 bitmap `A*align128(F*4)`；window info 512B 对齐 | row stride、remote packet stride、owner/lifetime | `SetWorkSpace/Init/SetFlagToFFN` |
 | 同步 | `SyncFunc` event pair、旧 flag 自旋、`PIPE_ALL+SyncAll` | auto-sync 关闭；不可省略显式依赖 | `mc2_kernel_utils.h/CheckFlagAndSetTableGM/Process` |
 | 精度与尾块 | FP16/BF16 原样或 FP32→INT8+reciprocal；副本余数均分 | cast 顺序、scale offset、mask true-prefix | `QuantProcess/SplitToCore/ActiveMaskCalCnt` |
-| 失败边界 | Host/Tiling 失败、window 容量、无 key fallback、远端自旋 | 不得将 A2/A5、static quant、任意 mask 或无效专家表静默降级 | `CheckInputAndSetTilingData/CalWinSize/FindExpertRank` |
+| 失败边界 | Host/Tiling 失败、window 容量、无 key fallback、远端自旋 | 不得将 A2/950、static quant、任意 mask 或无效专家表静默降级 | `CheckInputAndSetTilingData/CalWinSize/FindExpertRank` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FfnToAttention A3 ACLNN 算子知识](ffn_to_attention.md)（`related`）：焦点算子让 Attention worker“写入对端 HCOM window，并发布 token 状态与批次 flag”，候选反向算子则“把 `x［y, 0:H］` 写入目标 rank 的 HCCL window 数据表，并在对应 token-info 槽写 `int32(1)`”；两者构成 Attention 与 FFN worker 间双向 token window 发布协议的两半。
+<!-- cannbot:related:end -->

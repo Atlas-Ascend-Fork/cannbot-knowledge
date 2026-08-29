@@ -181,9 +181,7 @@ aliases: ["row_dma"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopyPad 尾块改逐行一维搬入](datacopypad_partial_2d_blocks_use_per_row_copy.md)（`related`）：DataCopyPad 尾块改逐行一维搬入 与《跨行子块误作连续 slab 导致分块结果错》的衔接是：这些候选直接解释 DataCopy/DataCopyPad 的 blockCount、行跨度、32B/256B 粒度、padding 与地址偏移；它们可用于判断短二维行何时必须退化为逐行复制。
-- [窄尾 tile 行距错位：补齐 UB gap](datacopypad_narrow_tile_needs_explicit_ub_row_gap.md)（`related`）：目标卡从 GM 物理行 pitch 证明部分列子块不是连续 slab；本卡进一步保证用 2D stride gather 后 UB 侧仍按完整 tile 行距排布。
-- [非连续搬运场景减少搬运次数](../../guides/operator_practice/simd_operator_optimization/memory_access/reduce_non_contiguous_transfer.md)（`related`）：指南提供非连续搬运的合并/二维 DMA 优化，但本卡给出跨行子块何时不能错误合并，二者共同限定优化安全边界。
-- [DataCopyPad stride 表示 block 间隙](datacopypad_stride_is_inter_block_gap.md)（`same_topic`）：DataCopyPad stride 表示 block 间隙 与《跨行子块误作连续 slab 导致分块结果错》的实质衔接是：这些卡都直接解释 DataCopyPad 的 stride 是有效 block 后的 gap，并覆盖32B单位、窄尾padding、逐行复制、非连续子块、NDDMA stride及官方GM→L1参数契约。
-- [广播 CopyIn tile 跨段越界读判别](copyin_tile.md)（`same_topic`）：两卡的核心判据相同：tile 起点位于逻辑行/广播段内部时，后续元素在 GM 中并非一段连续 slab，单次 1D DMA 会跨过本段边界读入错误数据。
+- [DataCopyPad 尾块改逐行一维搬入](datacopypad_partial_2d_blocks_use_per_row_copy.md)（`related`）：焦点卡写明“当 `nCur < N` 时相邻目标行首地址相差 `N` 个元素”，候选卡写明“改成每个 `r` 单独一次 `blockCount=1` 的一维搬入后”。焦点从 GM 行跨度证明部分列不能连续 slab，候选以逐行搬入消除 stride 与 UB 行落点歧义。
+- [非连续搬运场景减少搬运次数](../../guides/operator_practice/simd_operator_optimization/memory_access/reduce_non_contiguous_transfer.md)（`related`）：在非连续搬运场景可以使用DataCopyPad接口的Loop模式和DataCopy的多维数据搬运接口来减少搬运次数，优化搬运性能。；- `nCur < N_` 改用逐行 DMA，放弃未核实字段语义的 2D `srcStride` 一次搬运，优先保证正确性；指南给出非连续二维块在已核实参数下减少搬运指令的优化路径，运行手册给出行宽小于物理步长时先按行搬运的正确性基线，二者共同指导先证明 stride 合同再选择批量搬运。
+- [广播 CopyIn tile 跨段越界读判别](copyin_tile.md)（`same_topic`）：3. 反查 `CopyInOne` 广播分支：若用单次 1D `DataCopyPad(ub, gm［srcOff］, blockLen=tileLen)` 且 `tileLen > innerContig - (offset % innerContig)`，则 `gm［srcOff .. srcOff+tileLen)` 必然读出广播输入 GM 缓冲边界（广播输入在 GM 里只有 innerContig 个元素）之外的内存——越界读成立。；- 每次把二维/三维子块压成一次 DMA 前，写出相邻行地址差：若 `row_stride != copied_row_width`，它就不是连续块；两条 runbook 都裁定逻辑子块带物理间隔时单次连续 1D DMA 会越过当前行或广播段，修复决策是按真实连续边界切 tile 或逐行搬运后再验证。
 <!-- cannbot:related:end -->

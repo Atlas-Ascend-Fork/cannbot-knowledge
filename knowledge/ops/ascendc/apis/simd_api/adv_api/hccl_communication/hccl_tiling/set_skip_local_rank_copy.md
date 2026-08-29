@@ -20,12 +20,3 @@ platforms: ['950', a2, a3]
 - skipLocalRankCopy（输入）：本卡的通信算法的计算结果是否输出到recvBuf（目的数据buffer地址）。
 
 返回值：- 0表示设置成功。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTiling](get_tiling.md)（`related`）：skip 决策经 GetTiling 固化后才传给通信 Kernel。
-- [HCCL Tiling使用说明](hccl_tiling_usage.md)（`related`）：使用页说明 skip 开关、算法和通信引擎的调用顺序及适用场景。
-- [SetAlgConfig](set_alg_config.md)（`related`）：只有算法本身不依赖本地 rank copy 时才能跳过；须与 AlgConfig 配套。
-- [SetSkipBufferWindowCopy](set_skip_buffer_window_copy.md)（`related`）：两个 skip 开关分别控制本地 rank copy 和 buffer-window copy，需按算法数据路径独立配置。
-<!-- cannbot:related:end -->

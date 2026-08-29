@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_bilinear2d_aa_backward/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T20:55:08Z"
-updated_at: "2026-08-24T20:55:08Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -533,7 +533,7 @@ if (!needResizeH) {
 
 - 适用：权重可分离、每轴影响窗口有界、能够用 GM-ND Matmul 表达的一维 resize 反向。
 - 前提：A2/A3 AIC Cube；FP32 ACLNN 内部 dtype；`realScale>=0.02`；workspace 足以保存必要的中间矩阵和逐核 radio。
-- 失效：权重不可分离时不能复用；全同尺寸应走 Host 旁路；A5 使用 AIV-only SIMT/搬运实现而不是本模板。
+- 失效：权重不可分离时不能复用；全同尺寸应走 Host 旁路；950 使用 AIV-only SIMT/搬运实现而不是本模板。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -554,7 +554,7 @@ if (!needResizeH) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持 | 公开支持 | 公开支持，但本卡不覆盖 |
 | Host/Launcher | 非 RegBase Tiling，`GetCoreNumAic`，Key=1 | 同 A2 | RegBase selector、AIV 核、模板 key `(schId,isInt32,isDetermine)` |

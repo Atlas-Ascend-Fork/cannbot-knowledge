@@ -92,6 +92,13 @@ class DocumentationContractTests(unittest.TestCase):
         ]
         self.assertEqual([], missing)
 
+    def test_api_search_recipe_uses_query_cli_contract(self) -> None:
+        recipe = (self.root / "recipes/api_search.md").read_text(encoding="utf-8")
+        self.assertIn("--technology ascendc", recipe)
+        self.assertIn("--type apis", recipe)
+        self.assertNotIn("--scope", recipe)
+        self.assertNotIn("内容重合率", recipe)
+
     def test_governance_specs_keep_five_focused_entries(self) -> None:
         expected = {"okf.md", "paths.md", "frontmatter.md", "schemas.md", "skills.md"}
         actual = {path.name for path in (self.root / "governance/specs").glob("*.md")}
@@ -262,6 +269,91 @@ class DocumentationContractTests(unittest.TestCase):
     def test_unified_gate_enables_strict_source_navigation(self) -> None:
         check = (self.root / "check.sh").read_text(encoding="utf-8")
         self.assertIn("--strict-navigation", check)
+
+    def test_unified_gate_runs_trace_runbook_contract(self) -> None:
+        check = (self.root / "check.sh").read_text(encoding="utf-8")
+        self.assertIn("ops-knowledge-trace-ingest/scripts/field_notes_lint.py", check)
+
+    def test_skill_inventory_and_install_scope_are_explicit(self) -> None:
+        expected = {
+            "knowledge-ingest",
+            "knowledge-query",
+            "knowledge-lint",
+            "ops-knowledge-trace-ingest",
+            "ops-knowledge-vv-ingest",
+            "ops-knowledge-cv-ingest",
+        }
+        actual = {path.name for path in (self.root / ".agents/skills").iterdir() if path.is_dir()}
+        self.assertEqual(expected, actual)
+        for relative in (
+            "README.md",
+            "AGENTS.md",
+            "CONTRIBUTING.md",
+            "docs/design_principles.md",
+            "docs/user_guide.md",
+            "governance/specs/skills.md",
+        ):
+            text = (self.root / relative).read_text(encoding="utf-8")
+            self.assertIn("ops-knowledge-trace-ingest", text, relative)
+        skills_spec = (self.root / "governance/specs/skills.md").read_text(encoding="utf-8")
+        self.assertIn("仓内 trace producer", skills_spec)
+
+    def test_trace_ingest_uses_current_repository_contracts(self) -> None:
+        root = self.root / ".agents/skills/ops-knowledge-trace-ingest"
+        text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted(root.rglob("*"))
+            if path.is_file() and path.suffix in {".md", ".py"}
+        )
+        for forbidden in (
+            "build_graph.py",
+            "okf:related",
+            "graph/edge_judgments.json",
+            "--aggregate-only",
+            "origin okf",
+            "log/README.md",
+            "| `verified` | bool |",
+            "reference/",
+            "图谱增量",
+            "补反链",
+            "双侧显式标注",
+            "trace.curated-review.v1",
+            "deprecated: true",
+            "* slug.md — description",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, text)
+        self.assertIn("knowledge_graph.py", text)
+        self.assertIn("cannbot:related", text)
+        self.assertIn("object/object[]", text)
+        self.assertIn("trace.curated-review.v2", text)
+        self.assertIn("--pre-review", text)
+        self.assertIn("--staged-card", text)
+        self.assertIn("staged-cards", text)
+        self.assertIn("target_path", text)
+        self.assertIn("publish_reviewed_cards.py", text)
+        self.assertIn("agent-runtime-message", text)
+        self.assertIn("sync-indexes", text)
+        self.assertNotIn("per-dir materialize already done", text)
+        materialize = (
+            root / "scripts/materialize_trace_contract.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "--verified requires --ledger, --receipt, and --cards-root",
+            materialize,
+        )
+
+    def test_knowledge_does_not_refer_to_retired_a5_card_suffix(self) -> None:
+        stale = re.compile(
+            r"(?:见[^\n]*_a5|_a5[^\n]*(?:卡|文件|目标)|"
+            r"(?:生成|创建|没有)[^\n]*_a5|_a5[^\n]*正式卡)"
+        )
+        failures: list[str] = []
+        for card in sorted((self.root / "knowledge").rglob("*.md")):
+            for number, line in enumerate(card.read_text(encoding="utf-8").splitlines(), start=1):
+                if stale.search(line):
+                    failures.append(f"{card.relative_to(self.root)}:{number}")
+        self.assertEqual([], failures)
 
     def test_skill_sources_do_not_contain_agent_vendor_metadata(self) -> None:
         vendor_metadata = sorted(

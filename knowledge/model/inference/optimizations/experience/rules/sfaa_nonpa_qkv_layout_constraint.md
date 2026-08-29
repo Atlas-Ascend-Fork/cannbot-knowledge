@@ -57,3 +57,9 @@ platforms:
 - `diff 事实`（cann-recipes-infer，`@b9058045ec2d`）：host tiling 三处校验（`GetKvLayout` 的 `kvLayout != PA_BSND && qLayout != kvLayout` 约束与错误文案、`CheckSingleParaKey` 的 `{3,4}` 维数列表、`GetS2SizeForBatchContinuous` 的 `TND` 按 T 轴分支）均在合入代码中逐条对上；PR 已 merged，满足「代码 accept = 读过实际 diff」。
 - 边界：适用面按证据限定到本仓 SFAA 算子（`sparse_flash_attention_antiquant`），未升为整个昇腾栈通用律；陈述的是 host 校验当前接受/拒绝的布局组合（有校验代码支撑），非对算子合约的外推。源未给性能/精度数字。
 - 溯源下探：[cann-recipes-infer-pr-60-feat-sparse-flash-attention-antiquant-pa](https://gitcode.com/cann/cann-recipes-infer/merge_requests/60)。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Sparse Flash Attention Kernel](../../../concepts/kernels/sparse_flash_attention.md)（`related`）：约束落在本仓 SFAA 算子（`sparse_flash_attention_antiquant`，［sparse-flash-attention］(../../../concepts/kernels/sparse_flash_attention.md) 的 antiquant 变体，AscendC 实现）的 host 侧 tiling（`op_host/sparse_flash_attention_antiquant_tiling.cpp`，解析类 `SFAAInfoParser` / 校验类 `SFAATilingCheck`）：；`SparseFlashAttention` 是 DeepSeek-V3.2-Exp **DSA** 的主 Attention 算子 —— 在 ［lightning-indexer］(lightning_indexer.md) 产出的 TopK index 基础上，`Gather` 出稀疏 KV 子集并执行 Flash Attention 计算。。规则明确把受布局校验约束的 SFAA 标为 SparseFlashAttention 的 antiquant 变体，Kernel 卡则定义该稀疏注意力主算子的计算对象，二者共同界定变体的 host 布局入口与上层算子语义。
+<!-- cannbot:related:end -->

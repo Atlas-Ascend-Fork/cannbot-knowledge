@@ -179,10 +179,5 @@ before 中“Vector 写 LocalTensor 后立即 `DataCopyPad` 到 GM”的路径�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DeQue](../../apis/simd_api/basic_api/resource_management/tscm/de_que.md)（`exemplifies`）：DeQue 与《Vector 结果搬出前须经 VECOUT 队列》的实质衔接是：TSCM DeQue 必须与 EnQue、Alloc/Free 和所有权交接配套；所选故障卡直接覆盖空队列、重复 DeQue、早释和跨流水交接。
-- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](mte2_barrier_must_precede_vector_cast.md)（`related`）：裸 TBuf 路径至少需显式 MTE2 barrier；队列则编码依赖。
-- [TBuf 跨 MTE2 与 Vector 须队列交接](tbuf_mte2_to_vector_requires_queue_handoff.md)（`related`）：反向 Vector→MTE3 需 VecOut 队列交接，和本卡组成 copy-in/compute/copy-out 两端的流水所有权。
-- [TQue 输入未释放导致循环 AllocTensor 卡死](../compilation/tque_dequeue_must_end_with_freetensor.md)（`related`）：VecOut 队列消费完成后必须 FreeTensor，避免正确交接后队列耗尽。
-- [TQue MTE2→MTE3 缺 MTE3_MTE2 fence 致回读错位](../compilation/tque_mte2_mte3_mte3_mte2_fence.md)（`same_topic`）：该卡给出 Vector→MTE3 必须经 VecOut 队列的所有权与同步，正是本 fence 的一半。
-- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](repeated_overwrite_updates_need_ordered_ub_merge.md)（`same_topic`）：UB 合并完成后必须通过 VecOut 把所有权交给 MTE3。
+- [TBuf 跨 MTE2 与 Vector 须队列交接](tbuf_mte2_to_vector_requires_queue_handoff.md)（`related`）：形成完整所有权与事件链：为本轮输出分配 VECOUT tensor，在 Vector 流水写入后 `EnQue`，由搬出侧 `DeQue` 后再 `DataCopyPad`，最后 `FreeTensor`；改为 VECIN TQue 的 EnQue/DeQue 交接后，各轨迹的定向或完整测试均闭合。焦点给出 Vector→MTE3 的 VECOUT 交接，候选给出 MTE2→Vector 的 VECIN 交接；二者从相反方向覆盖 DMA 与 Vector 之间的标准 Queue 生命周期。
 <!-- cannbot:related:end -->

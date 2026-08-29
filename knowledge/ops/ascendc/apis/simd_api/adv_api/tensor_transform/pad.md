@@ -23,7 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [UnPad Tiling](un_pad_tiling.md)（`related`）：《UnPad Tiling》明确“用于获取UnPad Tiling参数。”；它与《Pad》的“对二维Tensor在width方向上pad到32B对齐，或对已对齐但含冗余数据的列填充设定值。”在实际调用参数、数据流或结果校验上直接衔接。
-- [UnPad（张量变换）](un_pad.md)（`related`）：《UnPad（张量变换）》明确“对height \ width的二维Tensor在width方向上进行unpad，如果Tensor的width非32B对齐，则不支持调用本接口unpad。本接口具体功能场景如下：Tensor的width已32B对齐，以half为例，如16\16，进行UnPad，变成16\15。”；它与《Pad》的“对二维Tensor在width方向上pad到32B对齐，或对已对齐但含冗余数据的列填充设定值。”在实际调用参数、数据流或结果校验上直接衔接。
-- [Pad Tiling](pad_tiling.md)（`same_topic`）：《Pad Tiling》的任务是“用于获取Pad Tiling参数。”。《Pad》具体提供“对二维Tensor在width方向上pad到32B对齐，或对已对齐但含冗余数据的列填充设定值。”，它直接用于Pad Kernel 所需 Tiling 参数。
+- [Pad Tiling](pad_tiling.md)（`related`）：提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。Tiling参数通过Pad Tiling获取。；host侧Tiling接口，用于获取Pad kernel计算所需的Tiling参数，分两步：通过GetPadMaxMinTmpSize获取最大和最小临时空间大小；通过GetPadNDTilingInfo获取kernel侧所需tiling参数。。Pad Kernel 明确从 Pad Tiling 获取参数，Host Tiling 页给出先预算临时空间再生成 PadTiling 结构体的两步调用链。
 <!-- cannbot:related:end -->

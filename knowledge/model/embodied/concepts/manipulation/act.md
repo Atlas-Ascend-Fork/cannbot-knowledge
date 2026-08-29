@@ -90,3 +90,9 @@ OM 输出 action 要正确落回环境动作空间、OM 输入 observation 要�
 - 结构思想：[action-chunking](../modules/action_chunking.md)；对照另一种动作生成范式 [diffusion-policy](diffusion_policy.md)（扩散动作）与 [flow-matching-action-expert](../modules/flow_matching_action_expert.md)（Pi0/Pi0.5 流匹配）。
 - 离线部署：[om-atc-offline](../techniques/om_atc_offline.md)、[ascend-310p](../platforms/ascend_310p.md)。
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Action Chunking（动作分块 / ACT Transformer）](../modules/action_chunking.md)（`related`）：VLA 模仿学习策略的核心结构思想：**一次性预测一段连续动作序列（动作块，action chunk）**，而不是逐步预测，从而缓解逐步预测带来的误差累积。；ACT 是论文 *Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware*（arXiv:2304.13705）提出的基于 **Transformer** 的模仿学习控制策略。核心思想是**动作分块（Action Chunking）**：一次性预测一段连续动作序列（action chunk），从而缓解逐步预测的误差累积，在多个双臂精细操作任务上验证有效。；概念卡定义动作分块的通用结构与动机，ACT 模型卡把它落实为 Transformer 策略及动作张量合同，可用于模型选型、训练和部署验证。
+<!-- cannbot:related:end -->

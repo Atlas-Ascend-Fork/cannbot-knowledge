@@ -28,6 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscInt162float](../../vector_compute/asc_int162float.md)（`related`）：两卡都定义 int16→float 转换；Reg 版本还要求按奇偶半区处理 1:2 位宽展开，UB 版本提供 count 型连续转换，可据布局选择路径。
-- [AscInt642Float](asc_int642float.md)（`same_topic`）：AscInt642Float 与《AscInt162Float》的实质衔接是：AscInt64ToFloat 的 Vector 对应入口、反向 FloatToInt64、其他整数宽度和 Int64ToInt32 共同解释 2:1 lane 分布及窄化/扩宽边界。
+- [AscInt162float](../../vector_compute/asc_int162float.md)（`same_topic`）：将src中int16_t类型的元素转换为float类型，并将结果写入dst。；将int16_t类型数据转换为float类型。。两接口执行相同 dtype 转换，分别使用寄存器 mask 路线和 UB count 路线。
 <!-- cannbot:related:end -->

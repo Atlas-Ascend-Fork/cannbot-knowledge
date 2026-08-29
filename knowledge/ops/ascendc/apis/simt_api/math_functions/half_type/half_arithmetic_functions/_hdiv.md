@@ -25,9 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hdiv](../../bfloat16_type/bfloat16_arithmetic_functions/_hdiv.md)（`related`）：两卡都提供标量低精度 __hdiv，但分别以 half 与 bfloat16 为输入输出；数据精度和头文件决定入口选择。
-<!-- cannbot:related:end -->

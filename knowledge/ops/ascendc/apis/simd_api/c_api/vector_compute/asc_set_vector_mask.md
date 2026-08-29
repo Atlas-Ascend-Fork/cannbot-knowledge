@@ -24,9 +24,6 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [如何使用掩码操作API](../../../../guides/programming_guide/library_api/basic_api/quick_reference/how_to_use_mask_api.md)（`explains`）：掩码快速参考给出 Counter/Normal 配置顺序和尾块示例。
-- [SetVectorMask](../../basic_api/memory_vector_compute/mask_operations/set_vector_mask.md)（`related`）：C++ Memory API 的 SetVectorMask 提供同类全局 mask 配置，可在 C/C++ 路线间对照。
-- [AscSetMaskCount](asc_set_mask_count.md)（`same_topic`）：Counter 模式启用后必须由 AscSetVectorMask 传入实际计算数量，硬件据此推断迭代和尾块。
-- [AscSetMaskNorm](asc_set_mask_norm.md)（`same_topic`）：AscSetVectorMask说明为矢量计算接口设置参与计算的数据 Mask；调用前需通过 asc_set_mask_count 和 asc_set_mask_norm 选择 Mask 模式。
-- [SetMaskNorm](../../basic_api/memory_vector_compute/mask_operations/set_mask_norm.md)（`same_topic`）：SetMaskNorm 与《AscSetVectorMask》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
+- [AscSetMaskCount](asc_set_mask_count.md)（`related`）：约束：该API需和asc_set_vector_mask配合使用。；该API用于设置Mask，使用前需要先调用asc_set_mask_count和asc_set_mask_norm设置Mask模式。。焦点接口先选择 Counter 模式，候选接口随后用 mask0 传入总参与元素数，构成必须按顺序调用的 Mask 配置链。
+- [AscSetMaskNorm](asc_set_mask_norm.md)（`same_topic`）：AscSetMaskNorm 明确“约束：该API需和asc_set_vector_mask配合使用。”；AscSetVectorMask 同时要求“约束：需先调用asc_set_mask_count或asc_set_mask_norm设置Mask模式。”，双方定义的是同一 Vector Mask 配置序列中的模式选择与 mask 值设置合同。
 <!-- cannbot:related:end -->

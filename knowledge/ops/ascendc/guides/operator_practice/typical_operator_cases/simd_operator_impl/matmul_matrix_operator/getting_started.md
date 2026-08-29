@@ -37,6 +37,5 @@ L2Cache未充分利用：当前实现中B矩阵每次均从GM读取，多核反�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [中级性能优化](intermediate_optimization.md)（`related`）：中级篇直接承接入门 Matmul 实现，引入 L1/L0 双缓冲、细粒度同步和多核切分，形成可复现的下一阶段优化路径。
-- [高级极限打磨](advanced_extreme_optimization.md)（`related`）：高级篇在中级实现上继续加入大包搬运、LoadData3D、常量 Tiling、UnitFlag 和 L2Cache，是入门到极限优化链的后续验证目标。
+- [中级性能优化](intermediate_optimization.md)（`related`）：以上各优化方向的详细实现方案，请参见中级性能优化和高级极限打磨。；本节基于C++ Tensor编程范式，介绍Matmul基础API算子的性能调优方法，通过4个渐进式优化步骤（L1/L0双缓冲机制、细粒度流水同步、多核并行切分、DataCopyIn优先搬运B矩阵），展示从基础实现到高性能优化的完整调优路径。。入门指南在完成基础 Matmul 后把优化方向明确交给中级与高级章节，中级指南随即展开双缓冲、细粒度同步、多核切分和 B 矩阵优先搬运四步，因此二者是同一案例的连续实践阶段。
 <!-- cannbot:related:end -->

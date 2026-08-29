@@ -42,3 +42,9 @@ platforms:
 ## Evidence
 
 - 「GMM 集中在 cube 核 / 执行中同时调用 vector 核 / swigluquant 在 vector 核 / 两者未占满 vector 核 → 可并行」：维护者确认（官方在 issue 讨论区逐字答复，该 issue 标 Accepted）。该事件无关联 PR / 无 diff，不适用「读实际 diff」核门；「未占满 vector 核」为维护者技术判断、未独立 profile 复测。溯源下探 [cann-recipes-infer-issue-189-bug-report-deepseekv4](https://gitcode.com/cann/cann-recipes-infer/issues/189)。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SwiGluQuant A2/A3 ACLNN 算子知识](../../../../../ops/ascendc/operators/aclnn/nn/quant/swi_glu_quant.md)（`related`）：“单 Kernel `swi_glu_quant`，全部 Host 可达 body 均为 `AIV_VECTOR`；无 Cube/AIC、MIX_CV、SIMT、NDDMA 或 AICPU。”与“swigluquant（SwiGLU 激活 + 量化，纯 vector 算子）在 vector 核；”分别给出双端正文事实；算子卡确认 SwiGluQuant 的全部可达 body 为纯 AIV_VECTOR，优化规则利用这一核类型与 cube 主导 GMM 的剩余 vector 容量判断双流并行，连接实现资源属性与调度决策。
+<!-- cannbot:related:end -->

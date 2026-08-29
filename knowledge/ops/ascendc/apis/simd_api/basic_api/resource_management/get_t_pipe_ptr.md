@@ -22,10 +22,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetTPipePtr 错加 AscendC 命名空间导致编译失败](../../../../runbooks/compilation/gettpipeptr_is_global_function.md)（`exemplifies`）：GetTPipePtr：GetTPipePtr 返回当前 TPipe，全局命名空间 runbook直接修复其调用错误；TPipe与资源管理页解释返回对象及其生命周期。 目标卡《GetTPipePtr 错加 AscendC 命名空间导致编译失败》补充：Ascend C 事件 ID 初始化时，GetTPipePtr 是返回 AscendC::TPipe 指针的全局函数；误写为 AscendC::GetTPipePtr 会触发成员查找失败。
-- [InitSpmBuffer](t_pipe/init_spm_buffer.md)（`related`）：InitSpmBuffer 与《GetTPipePtr》的实质衔接是：InitSpmBuffer 创建 GM 上的 SPM 溢出区，Read/WriteSpmBuffer 与 TPipe 生命周期共同构成初始化、访问和销毁链。
-- [TPipe](t_pipe/t_pipe.md)（`related`）：GetTPipePtr：GetTPipePtr 返回当前 TPipe，全局命名空间 runbook直接修复其调用错误；TPipe与资源管理页解释返回对象及其生命周期。 目标卡《TPipe》补充：TPipe接口索引页，包含简介、构造函数、Init/Destroy、InitBuffer、事件ID管理及SpmBuffer读写等。
-- [TPipe简介](t_pipe/t_pipe_intro.md)（`related`）：GetTPipePtr：GetTPipePtr 返回当前 TPipe，全局命名空间 runbook直接修复其调用错误；TPipe与资源管理页解释返回对象及其生命周期。 目标卡《TPipe简介》补充：TPipe用于统一管理Device端内存等资源，一个Kernel函数必须且只能初始化一个TPipe对象。其主要功能包括：
-- [资源管理](resource_management.md)（`related`）：GetTPipePtr：GetTPipePtr 返回当前 TPipe，全局命名空间 runbook直接修复其调用错误；TPipe与资源管理页解释返回对象及其生命周期。 目标卡《资源管理》补充：资源管理API总览，涵盖TPipe、TBuf、TBufPool、TQue、TQueBind、TSCM、LocalMemAllocator及workspace等。
-- [DestroyWithoutPipeAll](t_pipe/destroy_without_pipe_all.md)（`same_topic`）：DestroyWithoutPipeAll 与《GetTPipePtr》的实质衔接是：DestroyWithoutPipeAll 释放 TPipe 但不插入 PIPE_ALL，调用前需自行完成事件/流水同步；Destroy、EventID 释放和 TPipe 范式给出完整销毁顺序。
+- [GetTPipePtr 错加 AscendC 命名空间导致编译失败](../../../../runbooks/compilation/gettpipeptr_is_global_function.md)（`exemplifies`）：“`GetTPipePtr` 的函数标识符声明在全局命名空间，只有返回类型是 `AscendC::TPipe*`，因此给函数名添加 `AscendC::` 会在该命名空间内查找一个不存在的成员。”给出编译失败的命名空间根因；“创建TPipe对象时，对象初始化会设置全局唯一的TPipe指针。”提供对应 API 的全局指针合同。
+- [DequantBias A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/quant/dequant_bias.md)（`related`）：“event_t eventMTE2V = static_cast<event_t>(GetTPipePtr()->FetchEventID(HardEvent::MTE2_V));”显示 DequantBias 通过全局 TPipe 指针取事件；“本接口用于获取该指针，获取该指针后，可进行TPipe相关的操作。”说明 GetTPipePtr 的返回用途。
 <!-- cannbot:related:end -->

@@ -11,6 +11,7 @@ import json
 import math
 import os
 import re
+import shutil
 import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -89,6 +90,32 @@ ALLOWED_RELATIONS = {
 DEFAULT_CANDIDATES_PER_CARD = 30
 DEFAULT_SHARD_COUNT = 90
 REVIEW_EXCERPT_CHARS = 1000
+REVIEW_REASON_MIN_CHARS = 24
+REVIEW_EVIDENCE_MIN_CHARS = 8
+REVIEW_REASON_BANNED_FRAGMENTS = {
+    "Agent read both complete cards",
+    "agent read both complete cards",
+    "共同组成闭环",
+    "共享某词",
+    "可交叉核对",
+    "可直接核对该问题",
+    "能够补齐该处",
+    "todo",
+    "tbd",
+    "待补充",
+    "占位",
+}
+REVIEW_BRIDGE_NEGATIONS = {
+    "两卡无关",
+    "两者无关",
+    "不相关",
+    "不存在语义衔接",
+    "没有直接关系",
+    "no semantic connection",
+    "not related",
+    "unrelated",
+}
+REVIEW_TERMINAL_TRUNCATION_RE = re.compile(r"(?:\.\.\.|\u2026)\s*$")
 
 
 @dataclass(frozen=True)
@@ -115,6 +142,84 @@ def canonical_json(value: object) -> str:
 
 def sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def validate_agent_evidence(
+    reason: object,
+    evidence: object,
+    endpoints: tuple[str, str],
+    context: object,
+    *,
+    allow_negative_bridge: bool = False,
+    card_bodies: dict[str, str] | None = None,
+) -> tuple[str, dict[str, object]]:
+    """Validate an Agent decision's audit shape without deciding if the edge is true."""
+    if not isinstance(reason, str):
+        raise ValueError(f"Agent decision reason must be a string for {context}")
+    normalized_reason = " ".join(reason.split())
+    if len(normalized_reason) < REVIEW_REASON_MIN_CHARS:
+        raise ValueError(f"Agent decision reason is too short for {context}")
+    if REVIEW_TERMINAL_TRUNCATION_RE.search(normalized_reason):
+        raise ValueError(f"Agent decision reason is truncated for {context}")
+    if "；；" in normalized_reason or ";;" in normalized_reason:
+        raise ValueError(f"Agent decision reason is malformed for {context}")
+    folded_reason = normalized_reason.casefold()
+    for fragment in REVIEW_REASON_BANNED_FRAGMENTS:
+        if fragment.casefold() in folded_reason:
+            raise ValueError(f"Agent decision reason uses a forbidden template for {context}")
+    if not isinstance(evidence, dict):
+        raise ValueError(f"Agent decision evidence must be an object for {context}")
+    anchors = evidence.get("anchors")
+    if not isinstance(anchors, dict) or set(anchors) != set(endpoints):
+        raise ValueError(f"Agent decision evidence must anchor both endpoints for {context}")
+    normalized_anchors: dict[str, str] = {}
+    for endpoint in endpoints:
+        anchor = anchors.get(endpoint)
+        if not isinstance(anchor, str):
+            raise ValueError(f"Agent decision anchor must be a string for {context}")
+        normalized = " ".join(anchor.split())
+        if len(normalized) < REVIEW_EVIDENCE_MIN_CHARS or normalized == endpoint:
+            raise ValueError(f"Agent decision anchor is not specific for {context}")
+        if card_bodies is not None:
+            body = card_bodies.get(endpoint)
+            if not isinstance(body, str) or normalized not in " ".join(body.split()):
+                raise ValueError(
+                    f"Agent decision anchor is not present in endpoint body for {context}"
+                )
+        normalized_anchors[endpoint] = normalized
+    if len(set(normalized_anchors.values())) != 2:
+        raise ValueError(f"Agent decision anchors must state distinct endpoint facts for {context}")
+    bridge = evidence.get("bridge")
+    scope_note = evidence.get("scope_note")
+    if not isinstance(bridge, str) or not isinstance(scope_note, str):
+        raise ValueError(f"Agent decision bridge and scope_note must be strings for {context}")
+    normalized_bridge = " ".join(bridge.split())
+    normalized_scope = " ".join(scope_note.split())
+    if len(normalized_scope) < REVIEW_EVIDENCE_MIN_CHARS:
+        raise ValueError(f"Agent decision scope_note is too short for {context}")
+    for value, field in ((normalized_bridge, "bridge"), (normalized_scope, "scope_note")):
+        if REVIEW_TERMINAL_TRUNCATION_RE.search(value):
+            raise ValueError(f"Agent decision evidence.{field} is truncated for {context}")
+    folded_bridge = normalized_bridge.casefold()
+    for fragment in REVIEW_REASON_BANNED_FRAGMENTS:
+        if fragment.casefold() in folded_bridge:
+            raise ValueError(f"Agent decision bridge uses a forbidden template for {context}")
+    if not allow_negative_bridge and any(
+        fragment.casefold() in folded_bridge for fragment in REVIEW_BRIDGE_NEGATIONS
+    ):
+        raise ValueError(f"Agent decision bridge explicitly denies the relation for {context}")
+    bridge_remainder = normalized_bridge
+    for anchor in normalized_anchors.values():
+        if anchor not in normalized_reason or anchor not in normalized_bridge:
+            raise ValueError(f"Agent decision reason and bridge must include both anchors for {context}")
+        bridge_remainder = bridge_remainder.replace(anchor, "", 1)
+    if len("".join(bridge_remainder.split())) < REVIEW_EVIDENCE_MIN_CHARS:
+        raise ValueError(f"Agent decision bridge does not explain the connection for {context}")
+    return normalized_reason, {
+        "anchors": normalized_anchors,
+        "bridge": normalized_bridge,
+        "scope_note": normalized_scope,
+    }
 
 
 def strip_managed(text: str) -> str:
@@ -448,6 +553,31 @@ def candidates_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def reset_command(args: argparse.Namespace) -> int:
+    """Remove only ignored, reproducible graph artifacts before a full rebuild."""
+    root = ingest.resolve_root(args.knowledge_root)
+    graph_root = root / "artifacts/graphs"
+    targets = [
+        graph_root / "adjudication",
+        graph_root / "judgment_shards",
+        graph_root / "reviews",
+        graph_root / "candidates.json",
+        graph_root / "edge_judgments.json",
+        graph_root / "graph.json",
+        graph_root / "graph.html",
+    ]
+    removed = 0
+    for target in targets:
+        if target.is_dir():
+            shutil.rmtree(target)
+            removed += 1
+        elif target.is_file():
+            target.unlink()
+            removed += 1
+    print(f"graph_root={graph_root} removed_targets={removed}")
+    return 0
+
+
 def load_candidates(root: Path, cards: dict[str, Card]) -> dict[str, object]:
     path = root / "artifacts/graphs/candidates.json"
     if not path.is_file():
@@ -520,7 +650,9 @@ def make_shards_command(args: argparse.Namespace) -> int:
     for index, doc_id in enumerate(sorted(cards)):
         buckets[index % shard_count].append(doc_id)
     output_root = shard_root(root)
+    output_root.mkdir(parents=True, exist_ok=True)
     manifest_shards: list[dict[str, object]] = []
+    expected_outputs: set[Path] = set()
     for index, focal_ids in enumerate(buckets):
         shard_id = f"shard-{index:03d}"
         focals: list[dict[str, object]] = []
@@ -570,6 +702,10 @@ def make_shards_command(args: argparse.Namespace) -> int:
                 "Recall hints only locate candidates. Read each focal and shortlisted candidate "
                 "file in full, excluding the managed related block, then keep only relations "
                 "that materially help understand, use, diagnose, or verify the focal knowledge. "
+                "Every kept or explicit rejected decision must provide evidence.anchors keyed "
+                "by both Concept IDs and quoted verbatim from each authored card body, a bridge "
+                "containing both anchors, and a scope_note. Omission means abstain; use rejected "
+                "only after reading both complete cards. "
                 "The shortlist is not a closed graph boundary: when the focal text reveals a "
                 "material relation to another current card, submit it as an explicit "
                 "fingerprinted agent_discovered decision."
@@ -579,6 +715,7 @@ def make_shards_command(args: argparse.Namespace) -> int:
         shard_fp = sha256_text(canonical_json(payload))
         payload["shard_fingerprint"] = shard_fp
         output = output_root / f"{shard_id}.json"
+        expected_outputs.add(output)
         ingest.atomic_write(output, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
         manifest_shards.append(
             {
@@ -596,6 +733,9 @@ def make_shards_command(args: argparse.Namespace) -> int:
     }
     output = output_root / "manifest.json"
     ingest.atomic_write(output, json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+    for stale in output_root.glob("shard-*.json"):
+        if stale not in expected_outputs:
+            stale.unlink()
     print(
         f"output={output} shards={shard_count} focals={len(cards)} "
         f"directed_candidates={sum(len(items) for items in candidates['candidates'].values())}"
@@ -613,6 +753,10 @@ def load_shard_manifest(root: Path) -> dict[str, object]:
 def aggregate_command(args: argparse.Namespace) -> int:
     """Build the semantic cache exclusively from complete Agent review outputs."""
     root = ingest.resolve_root(args.knowledge_root)
+    # A failed aggregation must not leave a same-corpus cache available to finalize.
+    judgment_path(root).unlink(missing_ok=True)
+    conflict_path = root / "artifacts/graphs/adjudication/conflicts.json"
+    conflict_path.unlink(missing_ok=True)
     cards = load_cards(root)
     candidates = load_candidates(root, cards)
     manifest = load_shard_manifest(root)
@@ -626,10 +770,13 @@ def aggregate_command(args: argparse.Namespace) -> int:
     seen_shards: set[str] = set()
     agent_judges: set[str] = set()
     pair_reviews: dict[tuple[str, str], list[dict[str, object]]] = defaultdict(list)
+    pair_rejections: dict[tuple[str, str], list[dict[str, object]]] = defaultdict(list)
     reviewed_focals: set[str] = set()
     for value in args.input:
         source_path = Path(value).resolve()
         payload = json.loads(source_path.read_text(encoding="utf-8"))
+        if payload.get("schema_version") != 2:
+            raise ValueError(f"unsupported review output schema: {source_path}")
         shard_id = str(payload.get("shard_id", ""))
         expected = expected_shards.get(shard_id)
         if expected is None or shard_id in seen_shards:
@@ -656,7 +803,10 @@ def aggregate_command(args: argparse.Namespace) -> int:
             focal_packet = packet_focals[focal_id]
             if result.get("candidate_set_fingerprint") != focal_packet["candidate_set_fingerprint"]:
                 raise ValueError(f"reviewed focal candidate set is stale: {focal_id}")
-            if result.get("needs_adjudication"):
+            needs_adjudication = result.get("needs_adjudication")
+            if not isinstance(needs_adjudication, list):
+                raise ValueError(f"reviewed focal needs_adjudication must be a list: {focal_id}")
+            if needs_adjudication:
                 raise ValueError(f"reviewed focal still needs adjudication: {focal_id}")
             allowed_targets = {
                 str(item["id"]): item for item in focal_packet["candidates"]
@@ -664,8 +814,15 @@ def aggregate_command(args: argparse.Namespace) -> int:
             kept = result.get("kept", [])
             if not isinstance(kept, list):
                 raise ValueError(f"reviewed focal kept must be a list: {focal_id}")
+            rejected = result.get("rejected", [])
+            if not isinstance(rejected, list):
+                raise ValueError(f"reviewed focal rejected must be a list: {focal_id}")
+            decided_targets: set[str] = set()
             for decision in kept:
                 target_id = str(decision.get("target_id", ""))
+                if target_id in decided_targets:
+                    raise ValueError(f"reviewed focal repeats a target decision: {(focal_id, target_id)}")
+                decided_targets.add(target_id)
                 candidate_item = allowed_targets.get(target_id)
                 if candidate_item is None:
                     discovered = decision.get("agent_discovered") is True
@@ -684,18 +841,30 @@ def aggregate_command(args: argparse.Namespace) -> int:
                         "recall_score": None,
                         "recall_hints": {"channels": ["agent_discovered"]},
                     }
+                elif decision.get("agent_discovered") is True:
+                    raise ValueError(
+                        "agent_discovered is only valid outside the current candidate set: "
+                        f"{(focal_id, target_id)}"
+                    )
                 requested = str(decision.get("relation", ""))
                 source, relation, target = normalize_agent_relation(
                     cards, focal_id, target_id, requested
                 )
-                reason = str(decision.get("reason", "")).strip()
+                reason, evidence = validate_agent_evidence(
+                    decision.get("reason", ""),
+                    decision.get("evidence"),
+                    tuple(sorted((focal_id, target_id))),
+                    (focal_id, target_id),
+                    card_bodies={
+                        focal_id: cards[focal_id].body,
+                        target_id: cards[target_id].body,
+                    },
+                )
                 decision_judge = str(decision.get("judge", judge)).strip()
                 if not decision_judge or "deterministic" in decision_judge.lower():
                     raise ValueError(
                         f"Agent decision requires a non-deterministic judge: {(focal_id, target_id)}"
                     )
-                if not reason:
-                    raise ValueError(f"Agent accepted relation without a reason: {(focal_id, target_id)}")
                 confidence = str(decision.get("confidence", "medium"))
                 strength = str(decision.get("strength", "supporting"))
                 if confidence not in {"high", "medium", "low"}:
@@ -711,10 +880,42 @@ def aggregate_command(args: argparse.Namespace) -> int:
                         "judge": decision_judge,
                         "confidence": confidence,
                         "strength": strength,
-                        "evidence": decision.get("evidence", {}),
+                        "evidence": evidence,
                         "recall_score": candidate_item["recall_score"],
                         "recall_hints": candidate_item["recall_hints"],
                         "reviewed_from": focal_id,
+                    }
+                )
+            for decision in rejected:
+                target_id = str(decision.get("target_id", ""))
+                if target_id in decided_targets:
+                    raise ValueError(f"reviewed focal repeats a target decision: {(focal_id, target_id)}")
+                decided_targets.add(target_id)
+                if target_id not in allowed_targets:
+                    raise ValueError(
+                        f"Agent rejected a target outside the current candidate set: {(focal_id, target_id)}"
+                    )
+                pair = tuple(sorted((focal_id, target_id)))
+                reason, evidence = validate_agent_evidence(
+                    decision.get("reason", ""),
+                    decision.get("evidence"),
+                    pair,
+                    (focal_id, target_id, "rejected"),
+                    allow_negative_bridge=True,
+                    card_bodies={endpoint: cards[endpoint].body for endpoint in pair},
+                )
+                decision_judge = str(decision.get("judge", judge)).strip()
+                if not decision_judge or "deterministic" in decision_judge.lower():
+                    raise ValueError(
+                        f"Agent rejection requires a non-deterministic judge: {(focal_id, target_id)}"
+                    )
+                pair_rejections[pair].append(
+                    {
+                        "focal": focal_id,
+                        "target": target_id,
+                        "reason": reason,
+                        "judge": decision_judge,
+                        "evidence": evidence,
                     }
                 )
             reviewed_focals.add(focal_id)
@@ -725,46 +926,60 @@ def aggregate_command(args: argparse.Namespace) -> int:
     if len(cards) > 1 and len(agent_judges) < 2:
         raise ValueError("full relationship review requires at least two independent Agent judges")
 
-    conflicting_pairs = {
-        pair: reviews
+    relation_conflicts = {
+        pair
         for pair, reviews in pair_reviews.items()
         if len({str(review["relation"]) for review in reviews}) > 1
     }
+    existence_conflicts = set(pair_reviews) & set(pair_rejections)
+    conflicting_pairs = relation_conflicts | existence_conflicts
     adjudications: dict[tuple[str, str], dict[str, object]] = {}
     if conflicting_pairs:
         conflict_packet: dict[str, object] = {
             "schema_version": 2,
             "corpus_fingerprint": current_corpus,
             "instructions": (
-                "Read both complete cards for every pair. Choose same_topic only when both cards "
-                "share one core object, contract, or troubleshooting decision; otherwise choose "
-                "related. Recall hints and prior votes are context, not evidence."
+                "Read both complete cards for every pair and decide accept true or false. When "
+                "accepted, choose same_topic only when both cards share one core object, contract, "
+                "or troubleshooting decision; otherwise choose related. Prior decisions and recall "
+                "hints are context, not evidence. Every decision must use bilateral anchors, a "
+                "bridge containing both anchors, and a scope_note. The adjudicator must not have "
+                "judged this pair."
             ),
             "conflicts": [
                 {
                     "pair": list(pair),
+                    "kind": (
+                        "existence_and_relation_type"
+                        if pair in existence_conflicts and pair in relation_conflicts
+                        else "existence"
+                        if pair in existence_conflicts
+                        else "relation_type"
+                    ),
                     "left": review_card_payload(root, cards[pair[0]]),
                     "right": review_card_payload(root, cards[pair[1]]),
-                    "reviews": reviews,
+                    "reviews": pair_reviews[pair],
+                    "rejections": pair_rejections.get(pair, []),
                 }
-                for pair, reviews in sorted(conflicting_pairs.items())
+                for pair in sorted(conflicting_pairs)
             ],
         }
         conflict_fp = sha256_text(canonical_json(conflict_packet))
         conflict_packet["conflict_fingerprint"] = conflict_fp
-        conflict_path = root / "artifacts/graphs/adjudication/conflicts.json"
         ingest.atomic_write(
             conflict_path,
             json.dumps(conflict_packet, ensure_ascii=False, indent=2) + "\n",
         )
         if not args.adjudication:
             raise ValueError(
-                f"{len(conflicting_pairs)} relation-type conflicts require Agent adjudication; "
+                f"{len(conflicting_pairs)} Agent decision conflicts require adjudication; "
                 f"packet={conflict_path}"
             )
         for value in args.adjudication:
             adjudication_path = Path(value).resolve()
             adjudication = json.loads(adjudication_path.read_text(encoding="utf-8"))
+            if adjudication.get("schema_version") != 2:
+                raise ValueError("unsupported conflict adjudication schema")
             if adjudication.get("conflict_fingerprint") != conflict_fp:
                 raise ValueError("Agent adjudication does not match the current conflict packet")
             adjudicator = str(adjudication.get("judge", "")).strip()
@@ -779,51 +994,73 @@ def aggregate_command(args: argparse.Namespace) -> int:
                 )
                 if pair not in conflicting_pairs or pair in adjudications:
                     raise ValueError(f"unexpected or duplicate conflict adjudication: {pair}")
-                source, relation, target = normalize_agent_relation(
-                    cards, pair[0], pair[1], str(decision.get("relation", ""))
+                original_judges = {
+                    str(item["judge"])
+                    for item in pair_reviews[pair] + pair_rejections.get(pair, [])
+                }
+                if adjudicator in original_judges:
+                    raise ValueError(f"conflict adjudicator must be independent for pair: {pair}")
+                accept = decision.get("accept")
+                if not isinstance(accept, bool):
+                    raise ValueError(f"conflict adjudication requires boolean accept: {pair}")
+                reason, evidence = validate_agent_evidence(
+                    decision.get("reason", ""),
+                    decision.get("evidence"),
+                    pair,
+                    (pair, "adjudication"),
+                    allow_negative_bridge=not accept,
+                    card_bodies={endpoint: cards[endpoint].body for endpoint in pair},
                 )
-                reason = str(decision.get("reason", "")).strip()
                 confidence = str(decision.get("confidence", "medium"))
                 strength = str(decision.get("strength", "supporting"))
-                if not reason:
-                    raise ValueError(f"conflict adjudication requires a reason: {pair}")
                 if confidence not in {"high", "medium", "low"}:
                     raise ValueError(f"invalid adjudication confidence: {pair}")
                 if strength not in {"direct", "supporting", "contextual"}:
                     raise ValueError(f"invalid adjudication strength: {pair}")
-                adjudications[pair] = {
-                    "source": source,
-                    "relation": relation,
-                    "target": target,
+                adjudicated: dict[str, object] = {
+                    "accept": accept,
                     "reason": reason,
                     "judge": adjudicator,
                     "confidence": confidence,
                     "strength": strength,
-                    "evidence": decision.get("evidence", {}),
+                    "evidence": evidence,
                 }
+                if accept:
+                    source, relation, target = normalize_agent_relation(
+                        cards, pair[0], pair[1], str(decision.get("relation", ""))
+                    )
+                    adjudicated.update(
+                        {"source": source, "relation": relation, "target": target}
+                    )
+                adjudications[pair] = adjudicated
         if set(adjudications) != set(conflicting_pairs):
             raise ValueError("conflict adjudication does not cover every conflicting pair exactly once")
     elif args.adjudication:
-        raise ValueError("conflict adjudication was supplied but no relation-type conflicts exist")
+        raise ValueError("conflict adjudication was supplied but no Agent decision conflicts exist")
 
     judgments: list[dict[str, object]] = []
     confidence_rank = {"low": 0, "medium": 1, "high": 2}
     strength_rank = {"contextual": 0, "supporting": 1, "direct": 2}
     for pair, reviews in sorted(pair_reviews.items()):
+        if pair in adjudications and adjudications[pair]["accept"] is False:
+            continue
         relations = {str(review["relation"]) for review in reviews}
-        if len(relations) == 1:
+        if pair not in adjudications:
             selected = dict(
-                max(
+                min(
                     reviews,
                     key=lambda review: (
-                        confidence_rank[str(review["confidence"])],
-                        strength_rank[str(review["strength"])],
-                        len(str(review["reason"])),
+                        -confidence_rank[str(review["confidence"])],
+                        -strength_rank[str(review["strength"])],
+                        str(review["judge"]),
+                        str(review["reviewed_from"]),
+                        str(review["reason"]),
                     ),
                 )
             )
         else:
             selected = dict(adjudications[pair])
+            selected.pop("accept", None)
             recall_scores = [
                 float(review["recall_score"])
                 for review in reviews
@@ -845,7 +1082,7 @@ def aggregate_command(args: argparse.Namespace) -> int:
         judgments.append(selected)
     cache = {
         "schema_version": 2,
-        "generated_by": "multi-subagent-semantic-review-v1",
+        "generated_by": "multi-subagent-semantic-review-v2",
         "corpus_fingerprint": current_corpus,
         "candidate_fingerprint": candidate_fp,
         "card_fingerprints": {
@@ -870,10 +1107,13 @@ def validate_judgments(root: Path, cards: dict[str, Card]) -> dict[str, object]:
     if not path.is_file():
         raise ValueError("edge judgment cache is missing; run Agent review and aggregate first")
     payload = json.loads(path.read_text(encoding="utf-8"))
-    if payload.get("generated_by") != "multi-subagent-semantic-review-v1":
+    if payload.get("generated_by") != "multi-subagent-semantic-review-v2":
         raise ValueError("edge judgment cache was not produced by multi-subagent review")
     if payload.get("corpus_fingerprint") != corpus_fingerprint(cards):
         raise ValueError("edge judgment cache is stale for the current corpus")
+    candidates = load_candidates(root, cards)
+    if payload.get("candidate_fingerprint") != sha256_text(canonical_json(candidates)):
+        raise ValueError("edge judgment cache is stale for the current candidates")
     expected_fingerprints = {
         doc_id: card.fingerprint for doc_id, card in sorted(cards.items())
     }
@@ -917,8 +1157,13 @@ def validate_judgments(root: Path, cards: dict[str, Card]) -> dict[str, object]:
             or any(not isinstance(judge, str) or not judge.strip() for judge in judges)
         ):
             raise ValueError(f"judged relation requires Agent identities: {key}")
-        if not str(item.get("reason", "")).strip():
-            raise ValueError(f"judged relation requires a reason: {key}")
+        validate_agent_evidence(
+            item.get("reason", ""),
+            item.get("evidence"),
+            pair,
+            key,
+            card_bodies={endpoint: cards[endpoint].body for endpoint in pair},
+        )
         seen.add(key)
         seen_pairs.add(pair)
     return payload
@@ -938,7 +1183,15 @@ def related_lines(card: Card, cards: dict[str, Card], judgments: dict[str, objec
     for relation, other, reason in items:
         relative = os.path.relpath(other.path, card.path.parent).replace(os.sep, "/")
         href = quote(relative, safe="/._-")
-        lines.append(f"- [{other.title}]({href})（`{relation}`）：{reason}")
+        # Review reasons are evidence text, not authored navigation.  A reviewer may
+        # quote Markdown links or table rows from either endpoint; preserving that
+        # syntax would resolve links relative to the receiving card or make the
+        # single-line navigation item look like a collapsed Markdown table.  Keep
+        # the evidence readable while rendering it as single-line plain text.
+        rendered_reason = " ".join(reason.split()).translate(
+            str.maketrans({"[": "［", "]": "］", "|": "｜"})
+        )
+        lines.append(f"- [{other.title}]({href})（`{relation}`）：{rendered_reason}")
     return lines
 
 
@@ -1089,12 +1342,7 @@ def build_command(args: argparse.Namespace) -> int:
     return 0
 
 
-def viz_command(args: argparse.Namespace) -> int:
-    root = ingest.resolve_root(args.knowledge_root)
-    graph_path = root / "artifacts/graphs/graph.json"
-    if not graph_path.is_file():
-        raise ValueError("graph artifact is missing; run build first")
-    graph = json.loads(graph_path.read_text(encoding="utf-8"))
+def render_graph_html(graph: dict[str, object]) -> str:
     rows = []
     for edge in graph["edges"]:
         rows.append(
@@ -1104,7 +1352,7 @@ def viz_command(args: argparse.Namespace) -> int:
             f"<td>{html.escape(str(edge['target']))}</td>"
             "</tr>"
         )
-    page = """<!doctype html>
+    return """<!doctype html>
 <meta charset="utf-8">
 <title>CANNBot Knowledge Graph</title>
 <style>
@@ -1117,6 +1365,15 @@ table{border-collapse:collapse;width:100%%;margin-top:1rem}th,td{padding:.45rem;
 <table><thead><tr><th>Source</th><th>Relation</th><th>Target</th></tr></thead><tbody>%s</tbody></table>
 <script>q.oninput=()=>{for(const r of document.querySelectorAll('tbody tr'))r.hidden=!r.innerText.toLowerCase().includes(q.value.toLowerCase())}</script>
 """ % (len(graph["nodes"]), len(graph["edges"]), "".join(rows))
+
+
+def viz_command(args: argparse.Namespace) -> int:
+    root = ingest.resolve_root(args.knowledge_root)
+    graph_path = root / "artifacts/graphs/graph.json"
+    if not graph_path.is_file():
+        raise ValueError("graph artifact is missing; run build first")
+    graph = json.loads(graph_path.read_text(encoding="utf-8"))
+    page = render_graph_html(graph)
     output = root / "artifacts/graphs/graph.html"
     ingest.atomic_write(output, page)
     print(f"output={output}")
@@ -1134,6 +1391,11 @@ def verify_command(args: argparse.Namespace) -> int:
     actual = json.loads(graph_path.read_text(encoding="utf-8"))
     if actual != expected:
         raise ValueError("graph artifact is stale or non-deterministic")
+    html_path = root / "artifacts/graphs/graph.html"
+    if not html_path.is_file():
+        raise ValueError("graph visualization is missing; run viz first")
+    if html_path.read_text(encoding="utf-8") != render_graph_html(actual):
+        raise ValueError("graph visualization is stale or non-deterministic")
     node_ids = {str(node["id"]) for node in actual["nodes"]}
     for edge in actual["edges"]:
         if edge["source"] not in node_ids or edge["target"] not in node_ids:
@@ -1186,9 +1448,10 @@ def explain_command(args: argparse.Namespace) -> int:
 
 
 def finalize_command(args: argparse.Namespace) -> int:
-    inject_command(args)
+    # Validate and render ignored artifacts before mutating any tracked knowledge card.
     build_command(args)
     viz_command(args)
+    inject_command(args)
     return verify_command(args)
 
 
@@ -1199,6 +1462,8 @@ def parser() -> argparse.ArgumentParser:
     candidates = sub.add_parser("candidates", help="recall bounded semantic edge candidates")
     candidates.add_argument("--limit", type=int, default=DEFAULT_CANDIDATES_PER_CARD)
     candidates.set_defaults(handler=candidates_command)
+    reset = sub.add_parser("reset", help="remove ignored graph artifacts before full rebuild")
+    reset.set_defaults(handler=reset_command)
     shards = sub.add_parser("make-shards", help="build stable focal packets for Agent review")
     shards.add_argument("--count", type=int, default=DEFAULT_SHARD_COUNT)
     shards.set_defaults(handler=make_shards_command)
@@ -1222,7 +1487,7 @@ def parser() -> argparse.ArgumentParser:
     explain.add_argument("left")
     explain.add_argument("right")
     explain.set_defaults(handler=explain_command)
-    finalize = sub.add_parser("finalize", help="inject, build, visualize, and verify Agent edges")
+    finalize = sub.add_parser("finalize", help="build, visualize, inject, and verify Agent edges")
     finalize.set_defaults(handler=finalize_command, check=False)
     return result
 

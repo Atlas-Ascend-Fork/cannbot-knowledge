@@ -22,8 +22,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SIMT协作组简介（高级编程）](../../../../guides/programming_guide/advanced_programming/simt_cooperative_groups.md)（`explains`）：SIMT协作组简介（高级编程）说明协作组（cooperative_groups）是Ascend C SIMT编程模型的扩展，用于组织协作线程组。协作组使开发者能够控制线程协作的粒度，实现更丰富、更高效的并行处理逻辑。
-- [GridGroupConstructor](grid_group_constructor.md)（`related`）：GridGroupConstructor 返回的对象是 grid 级 sync 的调用主体，形成获取对象到跨块同步的使用链。
-- [IsValid](is_valid.md)（`same_topic`）：IsValid 专门回答该对象能否调用 sync；当前实现固定 true，随后可执行跨块同步。
-- [sync（协作组）](../sync.md)（`same_topic`）：sync（协作组）说明同步指定协作组内的所有线程，功能等价于调用该协作组对象的成员函数sync()。
+- [IsValid](is_valid.md)（`related`）：判断当前grid_group是否可使用sync()接口进行跨线程块同步。grid_group默认支持同步功能，因此接口固定返回true。；同步当前Grid内所有SIMT线程。所有线程块中的所有线程都执行到该同步点位置后，Grid内线程才能继续执行。。IsValid 查询的能力对象就是 grid_group 的 sync 跨线程块同步，sync 卡进一步给出所有线程到达同步点的执行语义与约束，因此查询与被查询操作属于同一调用决策链。
+- [sync（协作组）](../sync.md)（`same_topic`）：同步指定协作组内的所有线程，功能等价于调用该协作组对象的成员函数sync()。；同步当前Grid内所有SIMT线程。所有线程块中的所有线程都执行到该同步点位置后，Grid内线程才能继续执行。。自由函数 sync 明确等价于协作组对象的成员 sync，GridGroup 成员卡给出 Grid 内全部 SIMT 线程到达屏障后的继续条件，二者是同一 Grid 协作组同步合同的两种调用形式。
 <!-- cannbot:related:end -->

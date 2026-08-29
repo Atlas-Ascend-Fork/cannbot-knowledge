@@ -103,11 +103,5 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ASCENDC_TPL_SEL_PARAM](../../apis/utils_api/tiling_template_programming/ascendc_tpl_sel_param.md)（`exemplifies`）：bisheng 动态 shape 编译段错误 — extern C + DTYPE 与《ASCENDC_TPL_SEL_PARAM》的实质衔接是：该动态 shape 崩溃与 extern C+DTYPE、动态声明和 TPL 选择形态直接相关，所选卡覆盖符号、flag 与模板入口对照。
-- [DynamicRankSupportFlag](../../apis/utils_api/prototype_register_management/op_ai_core_config/dynamic_rank_support_flag.md)（`exemplifies`）：bisheng 动态 shape 编译段错误 — extern C + DTYPE 与《DynamicRankSupportFlag》的实质衔接是：该动态 shape 崩溃与 extern C+DTYPE、动态声明和 TPL 选择形态直接相关，所选卡覆盖符号、flag 与模板入口对照。
-- [DynamicShapeSupportFlag](../../apis/utils_api/prototype_register_management/op_ai_core_config/dynamic_shape_support_flag.md)（`exemplifies`）：bisheng 动态 shape 编译段错误 — extern C + DTYPE 与《DynamicShapeSupportFlag》的实质衔接是：该动态 shape 崩溃与 extern C+DTYPE、动态声明和 TPL 选择形态直接相关，所选卡覆盖符号、flag 与模板入口对照。
-- [bisheng 单模板跨字宽分支 segfault 判别](bisheng_segfault.md)（`related`）：该卡记录 extern C+DTYPE 动态 shape 重编译的另一类 bisheng segfault，可用触发阶段和拆类探针对前端崩溃做分流。
-- [如何开发动态输入算子](../../guides/programming_guide/appendix/common_operations/develop_dynamic_input_operator.md)（`related`）：如何开发动态输入算子 与《bisheng 动态 shape 编译段错误 — extern C + DTYPE》的实质衔接是：动态输入必须在原型侧声明动态 Input，在 host/kernel 间用 ListTensorDesc/TensorDesc 与 TensorList 传递；动态编译和 InferShape/optional input 案例限定完整开发链。
-- [__global__ 核函数 extern C 失效致符号未定义](global_vector_stub_ignores_extern_c_mangled_name.md)（`same_topic`）：bisheng 动态 shape 编译段错误 — extern C + DTYPE 与《__global__ 核函数 extern C 失效致符号未定义》的实质衔接是：该动态 shape 崩溃与 extern C+DTYPE、动态声明和 TPL 选择形态直接相关，所选卡覆盖符号、flag 与模板入口对照。
-- [缺 ASCENDC_TPL_SEL 致运行时分发静默 no-op 跳过](ascendc_tpl_sel_no_op.md)（`same_topic`）：bisheng 动态 shape 编译段错误 — extern C + DTYPE 与《缺 ASCENDC_TPL_SEL 致运行时分发静默 no-op 跳过》的实质衔接是：该动态 shape 崩溃与 extern C+DTYPE、动态声明和 TPL 选择形态直接相关，所选卡覆盖符号、flag 与模板入口对照。
+- [DynamicShapeSupportFlag](../../apis/utils_api/prototype_register_management/op_ai_core_config/dynamic_shape_support_flag.md)（`exemplifies`）：算子 def.cpp 设 `DynamicRankSupportFlag(true)` + `DynamicShapeSupportFlag(true)`，kernel 入口为 `extern "C"`（非 template），kernel 内用 `DTYPE_*` 宏区分 dtype；GEIR 用动态 shape（`-1`/`-2`）调 `RunGraph` 触发 TBE 重编译。；用于标识该算子是否支持入图时的动态Shape场景。。运行手册以 DynamicShapeSupportFlag 开启后的动态 shape TBE 重编译崩溃为实例，接口卡界定该标志声明的入图能力。
 <!-- cannbot:related:end -->

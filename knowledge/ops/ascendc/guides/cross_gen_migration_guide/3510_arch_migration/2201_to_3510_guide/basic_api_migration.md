@@ -41,14 +41,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCopyL12gm](../../../../apis/simd_api/c_api/cube_data_move/asc_copy_l12gm.md)（`explains`）：AscCopyL12gm 在 2201 上提供 L1→GM 直达搬运，而《基础API迁移指导》明确 3510 不再支持该路径并要求改为 L1→UB→GM；这是迁移该调用所必需的替代契约。
-- [SetLoadDataBoundary](../../../../apis/simd_api/basic_api/cube_compute/cube_load_aux_config/set_load_data_boundary.md)（`explains`）：基础API迁移指导 与《SetLoadDataBoundary》的实质衔接是：基础 API 迁移与架构变化、兼容策略及编译/高阶迁移共同组成 2201 到 3510 的改造流程；所连具体卡验证被删除接口、硬件约束和替代调用。
-- [2201到3510架构变更](../2201_to_3510_arch_changes.md)（`related`）：架构变更卡列出删除/新增数据通路、Regbase 和 Subnormal 差异；基础 API 迁移卡把这些变化落实为 DataCopy、LoadData、SetLoadDataBoundary 等替代方案。
-- [Ascend C API兼容性策略](../../ascend_c_api_compatibility.md)（`related`）：兼容性总览先判定接口状态，基础 API 迁移页再给出具体 2201→3510 替换。
-- [NPU架构版本2201](../../../programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_2201.md)（`related`）：基础API迁移指导 与《NPU架构版本2201》的实质衔接是：基础 API 迁移与架构变化、兼容策略及编译/高阶迁移共同组成 2201 到 3510 的改造流程；所连具体卡验证被删除接口、硬件约束和替代调用。
-- [NPU架构版本2201](../../../programming_guide/advanced_programming/hardware_implementation/hardware_constraints/npu_arch_2201.md)（`related`）：基础API迁移指导 与《NPU架构版本2201》的实质衔接是：基础 API 迁移与架构变化、兼容策略及编译/高阶迁移共同组成 2201 到 3510 的改造流程；所连具体卡验证被删除接口、硬件约束和替代调用。
-- [dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数](../../../../runbooks/precision/rsqrt_fast_approximation_use_sqrt_reciprocal.md)（`related`）：基础API迁移指导 与《dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数》的实质衔接是：基础 API 迁移与架构变化、兼容策略及编译/高阶迁移共同组成 2201 到 3510 的改造流程；所连具体卡验证被删除接口、硬件约束和替代调用。
-- [算子编译迁移指导](op_compilation_migration.md)（`related`）：基础API迁移指导 与《算子编译迁移指导》的实质衔接是：基础 API 迁移与架构变化、兼容策略及编译/高阶迁移共同组成 2201 到 3510 的改造流程；所连具体卡验证被删除接口、硬件约束和替代调用。
-- [跨代迁移指南概述](../../overview.md)（`related`）：基础API迁移指导 与《跨代迁移指南概述》的实质衔接是：基础 API 迁移与架构变化、兼容策略及编译/高阶迁移共同组成 2201 到 3510 的改造流程；所连具体卡验证被删除接口、硬件约束和替代调用。
-- [高阶API迁移指导](advanced_api_migration.md)（`related`）：高级 API 与基础 API 迁移分别处理封装层和底层签名；混合实现需同时执行两份检查。
+- [SetLoadDataBoundary](../../../../apis/simd_api/basic_api/cube_compute/cube_load_aux_config/set_load_data_boundary.md)（`explains`）：不支持SetLoadDataBoundary接口。；设置 LoadData（卷积数据搬运）接口的 L1 Buffer（A1/B1）边界值。源操作数在 L1 Buffer 上的地址超出边界时，从起始地址开始读取（环绕）。迁移指南给出 3510 不支持结论，API 卡解释被移除能力的具体边界语义。
 <!-- cannbot:related:end -->

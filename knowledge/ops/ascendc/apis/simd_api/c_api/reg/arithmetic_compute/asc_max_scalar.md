@@ -27,7 +27,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMaxScalar](../../vector_compute/asc_max_scalar.md)（`related`）：AscMaxScalar 与《AscMaxScalar》的实质衔接是：Reg 与基础 MaxScalar 操作同一 vector-scalar 最大值，MinScalar 给出相反选择边界。
-- [AscMinScalar](asc_min_scalar.md)（`related`）：AscMinScalar 与 AscMaxScalar 共享输入、mask 和标量契约并提供相反钳位方向，便于实现上下界 clamp。
-- [AscMax](asc_max.md)（`same_topic`）：AscMax 与《AscMaxScalar》的实质衔接是：AscMax 在 Reg 上按 mask 逐 lane 取大；Vector 对应入口、scalar 变体和 AscMin 对照分别界定内存层、操作数形态与相反比较方向。
+- [AscMax](asc_max.md)（`same_topic`）：“矢量src的逐个元素与标量value比较大小，接着按照对应的比特位将最大值存入dst中。”与“该接口根据mask，对源操作数src0、src1进行按元素求最大值操作，将结果写入目的操作数dst。”是双方正文中的具体合同。两端都按 mask 执行逐元素最大值，差别是第二操作数为标量 value 或矢量 src1，互读能选择正确重载并核对广播语义。
+- [AscMaxScalar](../../vector_compute/asc_max_scalar.md)（`same_topic`）：矢量src的逐个元素与标量value比较大小，接着按照对应的比特位将最大值存入dst中。计算公式如下：；矢量src的逐个元素与标量value比较大小，接着按照对应的比特位将最大值存入dst中。两卡核心运算完全一致，分别承载 A2/A3 UB 指针接口与 950 寄存器加 mask 接口的跨代迁移契约。
 <!-- cannbot:related:end -->

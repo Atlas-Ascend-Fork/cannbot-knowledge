@@ -24,7 +24,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_host/config/ascend910_93/dequant_swiglu_quant_binary.json
     role: implementation
 created_at: "2026-08-25T00:00:00Z"
-updated_at: "2026-08-25T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -468,9 +468,9 @@ FP32 奇偶元素地址间隔为 8 B；`ArithProgression(0,8)` 在 group 处理�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2 公开支持 | V2 公开支持 | 公开支持；见 `_a5` 卡 |
+| 支持状态 | V2 公开支持 | V2 公开支持 | 公开支持；见 `_950` 卡 |
 | Host/Launcher | `ascend910b` config，非-regbase group 模板 | `ascend910_93` config，共用本卡 Host/Tiling | regbase 两模板、更多 dtype/axis/round route |
 | Kernel/资源 | `dequant_swiglu_quant.cpp` AIV body | 同源 AIV body | `_apt` + arch35 MicroAPI，支持 FP4/FP8/HIFLOAT8 和非尾轴 |
 
@@ -509,3 +509,10 @@ FP32 奇偶元素地址间隔为 8 B；`ArithProgression(0,8)` 在 group 处理�
 | 同步 | Queue 负责 DMA/Vector，PIPE_V 负责 Vector 依赖 | Free 前不得覆盖 | `CopyInXAct`, `Compute*`, `CopyOut` |
 | 精度与尾块 | FP32 激活/量化中间，固定 INT8 cast 顺序 | dynamic reduce 逐行、末 UB loop n 截短 | `DynamicQuant`, `CastFloatToInt8` |
 | 失败边界 | Host 校验失败阻断 launch | workspace null/unknown key 不写输出 | entry 与 Tiling checks |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [复用共享融合算子/量化方法到不同结构模型时的静默规格失配（MoE 默认 SiLU 遇 GEGLU、钳位 SwiGLU 需专用算子、mxfp8 Linear 丢 dense 的 bias）](../../../../../../model/inference/runbooks/runtime/shared_fused_op_default_spec_mismatch.md)（`related`）：带钳位 SwiGLU（clamped/bounded gated activation，gpt-oss 式）的量化 MoE 共享专家，用普通融合算子 `npu_dequant_swiglu_quant` / `npu_swiglu` 时静默丢掉模型规格要求的激活上界。`swigluMode=1` 时按偶/奇通道 gather，计算 `min(x_glu,L)/(1+exp(-alpha*min(x_glu,L))) * (clamp(x_linear,-L,L)+beta)`。故障信号要求保留的上界、alpha 与 beta 语义由 A2/A3 V2 的模式 1 公式直接承接，可据此替换普通融合路径并验证钳位结果。
+- [DequantSwigluQuant 950 ACLNN 算子知识](dequant_swiglu_quant_950.md)（`same_topic`）：`swigluMode=1` 时按偶/奇通道 gather，计算 `min(x_glu,L)/(1+exp(-alpha*min(x_glu,L))) * (clamp(x_linear,-L,L)+beta)`。950 V2 只使用普通 SwiGLU：`swish(A)*B=A/(1+exp(-A))*B`，`activateLeft` 决定 A/B。两端均描述 DequantSwigluQuant V2 的反量化、门控激活与再量化合同，但平台允许的激活公式不同；迁移时必须据此重新选择属性、Tiling 与 Kernel 路由。
+<!-- cannbot:related:end -->

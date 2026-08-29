@@ -33,6 +33,5 @@ SoftmaxFlash增强版本，对应Softmax PASA算法。将输入tensor[m0, m1, ..
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SoftmaxFlashV2](softmax_flash_v2.md)（`related`）：V2 与 V3 都承载可复用 sum/max 的在线 Softmax；V2 还支持 NZ，而 V3 收紧为 ND 和特定 n/m 对齐条件，二者可用于按格式与约束选型。
-- [SoftmaxFlashV3 Tiling接口](softmax_flash_v3_tiling_interface.md)（`same_topic`）：《SoftmaxFlashV3 Tiling接口》处理“用于获取SoftmaxFlashV3接口所需的Tiling参数。”。《SoftmaxFlashV3》明确“SoftmaxFlash增强版本，对应Softmax PASA算法。对输入tensor尾轴切分并按update模式计算softmax的均值、最大值和指数和，仅支持ND格式输入。”，可直接用于核对SoftmaxFlashV3 的 Kernel 参数、专用 Tiling、update 状态与在线 softmax 数值依赖。
+- [SoftmaxFlashV3 Tiling接口](softmax_flash_v3_tiling_interface.md)（`related`）：对输入tensor x的尾轴进行切分，分块个数为splitMeanCnt；用于获取SoftmaxFlashV3接口所需的Tiling参数。右卡在 Host 侧按 srcShape、dtype 与 update/basic-block 配置生成临时空间和 Tiling 参数，左卡在 Device 侧消费这些配置执行 PASA 分块计算；两端是参数生产到 Kernel 消费的互补任务链。
 <!-- cannbot:related:end -->

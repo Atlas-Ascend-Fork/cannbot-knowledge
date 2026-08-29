@@ -26,10 +26,3 @@ platforms: ['950', a2, a3]
 -   false：Tp不是数组类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Conditional](conditional.md)（`related`）：is_array 与《Conditional》的衔接是：is_array 的布尔 trait 结果可直接作为 Conditional/EnableIf 的编译期条件，用于对数组类型启用或选择实现。
-- [EnableIf](enable_if.md)（`related`）：is_array 与《EnableIf》的衔接是：is_array 的布尔 trait 结果可直接作为 Conditional/EnableIf 的编译期条件，用于对数组类型启用或选择实现。
-<!-- cannbot:related:end -->

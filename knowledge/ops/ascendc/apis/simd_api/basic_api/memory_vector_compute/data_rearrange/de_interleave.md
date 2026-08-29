@@ -27,11 +27,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [B16 交错 DINTLV 成对归零 — 转 fp32 后重排](../../../../../runbooks/precision/b16_interleave_compute_should_promote_to_b32_layout.md)（`exemplifies`）：DeInterleave：DeInterleave 的双输出偶/奇 lane 契约可由另一编程接口和逆操作 Interleave 对照，dst0 偶 lane runbook直接验证最易写反的输出约定，b16卡限定重排位宽风险。 目标卡《B16 交错 DINTLV 成对归零 — 转 fp32 后重排》补充：B16 直接解交错经 Cast 后 lane 对不齐；先转连续 fp32 UB 再走 DINTLV_B32。
-- [DeInterleave 两路写反——按偶索引到 dst0 修正](../../../../../runbooks/precision/deinterleave_dst0_is_even_lane_output.md)（`exemplifies`）：DeInterleave：DeInterleave 的双输出偶/奇 lane 契约可由另一编程接口和逆操作 Interleave 对照，dst0 偶 lane runbook直接验证最易写反的输出约定，b16卡限定重排位宽风险。 目标卡《DeInterleave 两路写反——按偶索引到 dst0 修正》补充：Reg 交织拆分把 dst0/dst1 接反会让 interleaved 路线整行错；按 dst0=偶索引、dst1=奇索引接线。
-- [AscDeintlv](../../../c_api/reg/data_rearrange/asc_deintlv.md)（`related`）：DeInterleave：DeInterleave 的双输出偶/奇 lane 契约可由另一编程接口和逆操作 Interleave 对照，dst0 偶 lane runbook直接验证最易写反的输出约定，b16卡限定重排位宽风险。 目标卡《AscDeintlv》补充：将src0和src1中的元素解交织存入dst0和dst1，提供矢量数据解交织和掩码解交织两种模式，仅在AIV上生效。
-- [AscLoadalignDeintlvPostupdate](../../../c_api/reg/reg_load/asc_loadalign_deintlv_postupdate.md)（`related`）：《AscLoadalignDeintlvPostupdate》的任务是“从UB读取连续2×VL长度数据并在Load过程中完成解交织，分别写入两个目的矢量寄存器，调用后自动更新源地址。”。《DeInterleave》具体提供“将两个源操作数中的元素解交织存入两个结果操作数中，支持双输入和单输入两种模式。”，它直接用于解交织 Load 的地址 post-update、DeInterleave 结果顺序和等价入口。
-- [Interleave](interleave.md)（`related`）：Interleave 将两路数据交错合并，DeInterleave 按偶/奇 lane 还原两路，是可逆排布链的正反操作。
-- [DeInterleave](../../reg_vector_compute/data_reorder/de_interleave.md)（`same_topic`）：DeInterleave：DeInterleave 的双输出偶/奇 lane 契约可由另一编程接口和逆操作 Interleave 对照，dst0 偶 lane runbook直接验证最易写反的输出约定，b16卡限定重排位宽风险。 目标卡《DeInterleave》补充：对寄存器源操作数srcReg0和srcReg1中的元素进行解交织，存入结果寄存器dstReg0和dstReg1中。
-- [DeInterleave](../../reg_vector_compute/mask_reg_compute/de_interleave.md)（`same_topic`）：DeInterleave：DeInterleave 的双输出偶/奇 lane 契约可由另一编程接口和逆操作 Interleave 对照，dst0 偶 lane runbook直接验证最易写反的输出约定，b16卡限定重排位宽风险。 目标卡《DeInterleave》补充：将源操作数src0和src1中的元素解交织存入目的操作数dst0和dst1中。
+- [DeInterleave 两路写反——按偶索引到 dst0 修正](../../../../../runbooks/precision/deinterleave_dst0_is_even_lane_output.md)（`exemplifies`）：“在变量命名与 API 目标顺序之间建立一一对应：`qE` 必须放在 `dst0`，`qO` 必须放在 `dst1`。以下为轨迹逐字恢复的完整 `ProcessOneTile` before/after；唯一语义修复是 `DeInterleave` 两个目标的顺序。”与“将两个源操作数中的元素解交织存入两个结果操作数中，支持双输入和单输入两种模式。”提供双方正文证据。精度 runbook 通过调整 DeInterleave 的 dst0/dst1 顺序修复偶奇流接反，API 卡定义该接口可按单输入或双输入解交织到两路输出。
+- [Interleave](interleave.md)（`related`）：将两个源操作数中的元素解交织存入两个结果操作数中，支持双输入和单输入两种模式。；将两个源操作数中的元素交织存入两个结果操作数中，要求元素个数为偶数。。DeInterleave 把交织输入拆成两路，Interleave 把两路重新交织；二者在成对数据重排流水中互为拆分与重组步骤，数据顺序合同直接衔接。
 <!-- cannbot:related:end -->

@@ -37,8 +37,5 @@ __aicore__ inline void Swish(const LocalTensor<T>& dstLocal, const LocalTensor<T
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Sigmoid](../sigmoid_interface/sigmoid.md)（`related`）：Swish 与《Sigmoid》的实质衔接是：Swish kernel 与临时空间查询直接配套；SiLU 是 beta=1 的同公式变体，Sigmoid 是门控项。
-- [GetSwishTmpSize](get_swish_tmp_size.md)（`same_topic`）：Swish 与《GetSwishTmpSize》的实质衔接是：Swish kernel 与临时空间查询直接配套；SiLU 是 beta=1 的同公式变体，Sigmoid 是门控项。
-- [Silu](../silu_interface/silu.md)（`same_topic`）：Swish 与《Silu》的实质衔接是：Swish kernel 与临时空间查询直接配套；SiLU 是 beta=1 的同公式变体，Sigmoid 是门控项。
-- [Swish接口](swish_interface.md)（`same_topic`）：Swish 与《Swish接口》的实质衔接是：Swish kernel 与临时空间查询直接配套；SiLU 是 beta=1 的同公式变体，Sigmoid 是门控项。
+- [GetSwishTmpSize](get_swish_tmp_size.md)（`same_topic`）：“在神经网络中，Swish是一个重要的激活函数。”；“用于获取Swish Tiling参数：Swish接口能完成计算所需最大临时空间大小和最小临时空间大小。”。目标接口为焦点 Swish 计算提供 Host 侧临时空间定额。
 <!-- cannbot:related:end -->

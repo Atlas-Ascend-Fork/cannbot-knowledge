@@ -237,9 +237,3 @@ kernel 实现遗漏了 du2 的存储与回代贡献：① 前向消元 swap 分�
 ## 误诊
 
 无。CP3 验收直接定位到 du2 缺失，未走放宽容差/改测试等捷径。`agent_reported` 的"69 通过"叙述已与报告产物及 reasoning 交叉核对，未单独采信。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [带主元 Thomas 求解器 SIMT 直访 GM kernel](../compilation/gtsv2_partial_pivoting_thomas_simt_direct_gm_kernel.md)（`same_topic`）：《带主元 Thomas 求解器 SIMT 直访 GM kernel》给出“串行前向消元有行间数据依赖的求解器在昇腾 SIMT 上用"每线程一列 RHS + grid-stride + 中间量直写 GM workspace（d'd+du'd+du2' 三段）"模式实现；不用 AIV/UB，不依赖 math 库。”；该约束/探针可直接复现、解释或前置验证《gtsv2 回代缺 du2 第二上对角线 fill-in 致主元交换用例全错》中的“带 partial pivoting 的 Thomas 算子 kernel 遗漏行交换产生的第二上对角线 fill-in (du2)，回代公式缺 -du2[i]*x[i+2] 项，导致所有触发非末步主元交换的用例仅 x[0] 错、其余行正确。”。
-<!-- cannbot:related:end -->

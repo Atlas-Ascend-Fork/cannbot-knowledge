@@ -26,6 +26,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Conv3D Tiling使用说明](conv3_d_tiling_usage.md)（`related`）：The usage flow places SetDilation in the required Conv3D tiling initialization sequence before GetTiling.
-- [SetDilation](../conv3_d_backprop_filter_tiling/set_dilation.md)（`related`）：《SetDilation》说明设置Dilation信息，即卷积核Depth/Height/Width方向的扩张大小。；《SetDilation》说明设置Dilation信息。。二者在Dilation是Conv3D反向滤波Tiling的卷积几何参数，必须在GetTiling前写入并与同语义的前向/反向输入配置区分上存在可执行的直接衔接。
+- [Conv3D Tiling使用说明](conv3_d_tiling_usage.md)（`related`）：接口卡给出“函数原型：void SetDilation(int64_t dilationD, int64_t dilationH, int64_t dilationW)”；使用说明要求“如果存在Padding、Stride、Dilation参数，通过SetPadding、SetStride、SetDilation接口进行相关设置。”，把三个 dilation 维度参数放入 Conv3D Tiling 的调用顺序。
 <!-- cannbot:related:end -->

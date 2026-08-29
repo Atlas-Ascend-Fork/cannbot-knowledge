@@ -59,3 +59,12 @@ GR00T N1.6 由 **慢系统 + 快系统** 两部分串行组成（源 doc）：
 - 同走 torch 在线 + 昇腾算子化路线：[spirit-v1.5](spirit_v1_5.md)、[openvla](openvla.md)
 - cann-infer 复用概念：[dit](../../../inference/concepts/modules/dit.md)、[npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)、[torchair](../../../inference/concepts/frameworks/torchair.md)、[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Diffusion Transformer (DiT)](../../../inference/concepts/modules/dit.md)（`related`）：“扩散 Transformer（DiT）”标识 GR00T 快系统的动作生成主干，“把 U-Net 替换为 Transformer，把 latent（图像/视频 VAE 编码后）当作 token 序列”补充 DiT 的通用去噪结构。
+- [NPU 图模式（ge_graph / npugraph_ex）](../../../inference/concepts/techniques/npu_graph_mode.md)（`related`）：“图模式使能（torchair）”记录 GR00T 只编译 action head 的落地选择，“图模式通过 `torch.compile` 把前向逻辑捕获成图”解释该选择降低 Host 下发开销的机制，二者组成部署与机制的直接链路。
+- [TorchAir](../../../inference/concepts/frameworks/torchair.md)（`related`）：“图模式使能（torchair）”点名 GR00T 的编译入口，“提供昇腾设备亲和的 `torch.compile` 后端”给出该入口在昇腾上的职责，能直接支撑后端配置与排障。
+- [npu_fused_infer_attention_score (v1 / v2)](../../../inference/concepts/kernels/fused_infer_attention_score.md)（`related`）：“FA 融合算子替换”是 GR00T 视觉侧的具体优化，“昇腾推理侧的通用 FlashAttention 融合算子”给出被替换目标的计算和入参边界，能继续核对 attention 适配。
+<!-- cannbot:related:end -->

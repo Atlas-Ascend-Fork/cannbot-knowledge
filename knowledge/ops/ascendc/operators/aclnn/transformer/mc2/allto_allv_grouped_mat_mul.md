@@ -50,7 +50,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_allv_grouped_mat_mul/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T19:58:55Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -214,7 +214,7 @@ entry 设置 system workspace、读取 POD并实例化 `HcclA2avOp<DTYPE_GMM_X,t
 |---|---|---|---|---|
 | API | `op_api/...v2.cpp` | `CheckAndHandleCommMode` | 非DAV_3510只接受`ai_cpu` | comm enum=1，否则失败 |
 | Host | `...tiling.cpp` | `GetTilingKey` | 两个effective transpose bool + AICPU | 四个tuple之一 |
-| Launch task | `op_graph/...gen_task_training.cpp` | `CalcParamFunc/GenTaskFunc` | 非A5平台 | AICPU KFC server/stream任务 |
+| Launch task | `op_graph/...gen_task_training.cpp` | `CalcParamFunc/GenTaskFunc` | 非950平台 | AICPU KFC server/stream任务 |
 | Router | `op_kernel/...cpp` | entry模板 | tuple编译实例 | scheduler；无unknown fallback |
 
 #### Device 数据流
@@ -446,9 +446,9 @@ HCCL wait与AIV barrier先保证commOut可见，再用PIPE_V→PIPE_MTE2 flag交
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开文档明确不支持 | 本卡：支持 | 支持，独立`_a5`卡 |
+| 支持状态 | 公开文档明确不支持 | 本卡：支持 | 支持，独立`_950`卡 |
 | Host/Launcher | N/A | ascend910_93/arch22；仅ai_cpu；P={8,16,32,64,128} | arch35；ai_cpu/ccu；公开P={2,4,8,16,32,64} |
 | Kernel/资源 | N/A | sync mode2，subblock flag offset0；AICPU | mode4，flags 8/24；CCU或AICPU |
 
@@ -467,7 +467,7 @@ HCCL wait与AIV barrier先保证commOut可见，再用PIPE_V→PIPE_MTE2 flag交
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `mc2/allto_allv_grouped_mat_mul/docs/aclnnAlltoAllvGroupedMatMulV2.md` | V2原型/产品表 | 最新入口、平台、shape |
-| 目录公开约束 | `mc2/allto_allv_grouped_mat_mul/README.md` | 产品表/约束说明 | A3/A5支持、`e<=32`与`eP<=256`安全边界 |
+| 目录公开约束 | `mc2/allto_allv_grouped_mat_mul/README.md` | 产品表/约束说明 | A3/950支持、`e<=32`与`eP<=256`安全边界 |
 | 入口实现 | `mc2/allto_allv_grouped_mat_mul/op_api/aclnn_allto_allv_grouped_mat_mul_v2.cpp` | API checks/V2函数 | 校验、server选择 |
 | OpDef | `mc2/allto_allv_grouped_mat_mul/op_host/allto_allv_grouped_mat_mul_def.cpp` | `AlltoAllvGroupedMatMul` | IO/attr/平台注册 |
 | Host/Tiling | `mc2/allto_allv_grouped_mat_mul/op_host/op_tiling/allto_allv_grouped_mat_mul_tiling.cpp` | `CalcExpertNum`,`RunFusionKernelTiling`,`PostTiling` | selector/workspace/POD/key |
@@ -499,3 +499,9 @@ HCCL wait与AIV barrier先保证commOut可见，再用PIPE_V→PIPE_MTE2 flag交
 | 同步 | A3 mode2 flag8及MTE events | auto-sync关闭时保留显式协议 | scheduler/permute/CMake |
 | 精度与尾块 | 非量化FP16/BF16、expert/Matmul/permute tail | 不推断外部Matmul round | GMM/permute bodies |
 | 失败边界 | 仅ai_cpu、P集合、shape/count/resource | unknown key/空workspace不fallback | API/tiling/entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AlltoAllvGroupedMatMul 950 ACLNN 算子知识](allto_allv_grouped_mat_mul_950.md)（`same_topic`）：｜ 计算语义 ｜ `ataOut=AlltoAllv(gmmX)`；`gmmY=GroupedMatMul(ataOut,gmmWeight)`；可选 `mmY=mmX×mmWeight`，可选输出 expert-first `permuteOut` ｜；｜ 执行类型 ｜ `MIX_CV` + runtime HCCL CCU/AICPU service task；单个 AscendC kernel 使用 `KERNEL_TYPE_MIX_AIC_1_2` ｜。两卡实现同一 AlltoAllv 后 GroupedMatMul 公开任务；A3 仅闭合 AICPU 服务任务，950 还闭合 CCU 路线。
+<!-- cannbot:related:end -->

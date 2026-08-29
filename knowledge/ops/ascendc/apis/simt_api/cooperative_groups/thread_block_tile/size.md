@@ -22,6 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Ballot](ballot.md)（`same_topic`）：Ballot 与《ThreadBlockTile协作组size》的实质衔接是：Ballot 把 thread_block_tile 各线程谓词压成位图；all/any、size、sync 与 tile 构造定义参与线程，warp vote 和分支优化说明结果的实际用途。
-- [NumThreads](num_threads.md)（`same_topic`）：NumThreads 与《ThreadBlockTile协作组size》的实质衔接是：NumThreads 返回当前 thread_block_tile 的规模；tile 构造、size、rank、ballot 和 partition 决定成员集合，其他 group 的同名接口不能混用对象作用域。
+- [NumThreads](num_threads.md)（`same_topic`）：获取协作组内线程的总数，功能与num_threads函数一致。；获取当前线程所属的thread_block_tile组内的线程总数。。size 文档直接声明与 num_threads 功能一致，两者是同一 thread_block_tile 线程总数查询的别名入口。
 <!-- cannbot:related:end -->

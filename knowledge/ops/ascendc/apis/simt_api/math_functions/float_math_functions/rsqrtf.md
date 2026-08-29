@@ -28,8 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数](../../../../runbooks/precision/rsqrt_fast_approximation_use_sqrt_reciprocal.md)（`exemplifies`）：该 runbook 以实测约 2^-9 误差说明快速 Rsqrt 的精度边界，并验证 Sqrt 后标量倒数可恢复 fp32 精度。
-- [Hrsqrt](../bfloat16_type/bfloat16_math_functions/hrsqrt.md)（`related`）：《Hrsqrt》说明计算bfloat16_t输入数据x的平方根的倒数。；《Rsqrtf》说明获取输入数据x的平方根的倒数。。二者在Hrsqrt等价于平方根后取倒数，跨half/bfloat16x2/float/Vector实现及精度故障可直接验证结果与误差边界上存在可执行的直接衔接。
-- [Sqrtf](sqrtf.md)（`related`）：Rsqrtf 返回 1/sqrt(x)，Sqrtf 返回 sqrt(x)，二者是同一输入域的正向与倒数路径。
-- [AscRsqrt](../../../simd_api/c_api/vector_compute/asc_rsqrt.md)（`same_topic`）：焦点处理逐元素 Rsqrt 的类型变体与精度回退；Rsqrtf正文界定“获取输入数据x的平方根的倒数”。候选保持 sqrt-reciprocal 数学语义，覆盖 dtype 变体、AscRcp 组合及已验证精度回退。
+- [Sqrtf](sqrtf.md)（`related`）：本接口内部实现使用到了sqrtf，由于sqrtf不支持Subnormal场景，当输入x为Subnormal数据时，会导致本接口最终结果为+inf；处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。Rsqrtf 正文明示内部调用 Sqrtf，候选给出 Sqrtf 对 Subnormal 的 flush-to-zero 行为，直接解释 Rsqrtf 在同域返回正无穷的机制。
 <!-- cannbot:related:end -->

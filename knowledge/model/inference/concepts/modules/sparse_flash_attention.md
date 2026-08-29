@@ -44,7 +44,10 @@ $$
 
 ### 与 Full FA 的 Shape 对比（1 batch × 64K）
 
-| | BMM1 (Q·K^T) | BMM2 (P·V) | | ---- | ---- | ---- | | Full Attention | `(batch, Sq, d, Sk)` 全 KV | `(batch, Sq, Sk, d)` 全 KV | | SFA | `(batch*Sq, G, d, TopK)` 稀疏 | `(batch*Sq, G, TopK, d)` 稀疏 |
+| | BMM1 (Q·K^T) | BMM2 (P·V) |
+| ---- | ---- | ---- |
+| Full Attention | `(batch, Sq, d, Sk)` 全 KV | `(batch, Sq, Sk, d)` 全 KV |
+| SFA | `(batch*Sq, G, d, TopK)` 稀疏 | `(batch*Sq, G, TopK, d)` 稀疏 |
 
 TopK=2048 vs Sk=64K → 计算量降 32×；但引入**离散访存**（非连续 KV Gather），单次访存量小、指令下发阻塞成为新的瓶颈（见 [sparse-flash-attention](../kernels/sparse_flash_attention.md) 的访存优化）。
 
@@ -101,7 +104,10 @@ KVCache Int8 存储、BF16 计算。入口切换到 `npu_kv_quant_sparse_flash_a
 
 DSA 下 MTP 在 SFA 上**难以加速**。SFA 每个 q token 单独选 TopK=2048 个 KV，MTP1 场景 KV 搬运量翻倍：
 
-| | KV 搬运量 (MB) | Cube 计算量 (GFlops) | QK^T 搬运量 (MB) | | ---- | ---- | ---- | ---- | | 非 MTP | 4.5 | 0.60 | 1 | | MTP1 | **9** | 1.21 | 2 |
+| | KV 搬运量 (MB) | Cube 计算量 (GFlops) | QK^T 搬运量 (MB) |
+| ---- | ---- | ---- | ---- |
+| 非 MTP | 4.5 | 0.60 | 1 |
+| MTP1 | **9** | 1.21 | 2 |
 
 相比之下 MLA 非 MTP 和 MTP1 的 KV 搬运量都是 144 MB（DSA 下 MLA 为 Full KVCache Absorb），MTP 能提高计算访存比。
 
@@ -129,3 +135,10 @@ Prefill CP 场景下，因果注意力按 rank 切片会导致首 rank 轻、尾
 - [zigzag-cp](../parallelism/zigzag_cp.md)
 - [context-parallel](../parallelism/context_parallel.md)
 - [dsa](dsa.md)（SFA 是 DSA 稀疏注意力路径的计算/kernel 形态）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Lightning Indexer (LI)](lightning_indexer.md)（`related`）：在由 ［lightning-indexer］(lightning_indexer.md) 选出 TopK 个相关 KV token 之后，SFA 仅在这部分稀疏子集上执行注意力计算，将复杂度从 O(N²) 降到 O(N·TopK)，配合 Flash Attention 的块级 online softmax 思想。；Lightning Indexer 是 DeepSeek-V3.2-Exp **DSA 架构**的前置稀疏选择模块 —— 对每个 query token，在长达数十万的上下文中**准确地**（非近似）选出 TopK（一般 2048）个相关 KV token 的 index，喂给后续 ［sparse-flash-attention］(sparse_flash_attention.md)。。LI 产生 TopK index，SFA 消费该 index 计算稀疏 KV 子集，构成同一 DSA 前向链。
+- [Sparse Flash Attention Kernel](../kernels/sparse_flash_attention.md)（`same_topic`）：SFA 作为架构概念是 DSA 的一部分；具体算子实现（AscendC / PyPTO / TileLang）见 ［sparse-flash-attention］(../kernels/sparse_flash_attention.md)。；`SparseFlashAttention` 是 DeepSeek-V3.2-Exp **DSA** 的主 Attention 算子 —— 在 ［lightning-indexer］(lightning_indexer.md) 产出的 TopK index 基础上，`Gather` 出稀疏 KV 子集并执行 Flash Attention 计算。。模块卡定义 SFA 架构语义，kernel 卡落实同一 SFA 的稀疏 KV 与 Flash Attention 实现。
+<!-- cannbot:related:end -->

@@ -23,8 +23,5 @@ host侧Tiling接口，用于获取Sort接口所需的最大和最小临时空间
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetSortLen](get_sort_len.md)（`related`）：GetSortMaxMinTmpSize 负责“在host侧获取带SortConfig模板参数的Sort接口计算所需的最大和最小临时空间大小”；GetSortLen 负责“根据元素数量，获取Sort数据的大小（单位为字节）”。
-- [GetSortOffset](get_sort_offset.md)（`related`）：GetSortOffset 与《GetSortMaxMinTmpSize》的实质衔接是：SortOffset 是 Sort 中间数据布局的字节偏移；SortLen、临时空间、Concat/Extract 和 Sort 调用必须采用同一 repeat 布局。
-- [GetSortTmpSize](get_sort_tmp_size.md)（`related`）：GetSortMaxMinTmpSize 负责“在host侧获取带SortConfig模板参数的Sort接口计算所需的最大和最小临时空间大小”；GetSortTmpSize 负责“获取Sort接口所需的临时空间大小”。
-- [Sort](sort.md)（`related`）：Sort 支持框架申请或外部 sharedTmpBuffer 两种重载，外部缓存的合法大小由 GetSortMaxMinTmpSize 明确给出。
+- [Sort](sort.md)（`related`）：host侧Tiling接口，用于获取Sort接口所需的最大和最小临时空间大小。；提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetSortMaxMinTmpSize获取。。Sort 明确把显式 sharedTmpBuffer 的容量查询委托给 GetSortMaxMinTmpSize，二者是直接的 Host Tiling 与 Kernel 调用合同。
 <!-- cannbot:related:end -->

@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/custom_kernel.cmake
     role: implementation
 created_at: "2026-08-25T18:10:28Z"
-updated_at: "2026-08-25T18:10:28Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -99,7 +99,7 @@ p_new = p - lr * g_final
 
 ### 入口与版本
 
-公开入口声明位于 `op_api/aclnn_fused_sgd.h`，实现位于 `op_api/aclnn_fused_sgd.cpp`。固定仓只存在无后缀 `aclnnFusedSgd`，未发现 V2 或其它同语义新版本，因此它是 A2/A3 实际支持的最新公开版本。README 与 ACLNN 文档的产品表同时标记 Atlas A2、Atlas A3 支持；OpDef 配置 `ascend910b`、`ascend910_93`，两份 binary JSON 内容一致。公开产品表明确 Ascend 950PR/950DT 不支持，故本卡不覆盖 A5。
+公开入口声明位于 `op_api/aclnn_fused_sgd.h`，实现位于 `op_api/aclnn_fused_sgd.cpp`。固定仓只存在无后缀 `aclnnFusedSgd`，未发现 V2 或其它同语义新版本，因此它是 A2/A3 实际支持的最新公开版本。README 与 ACLNN 文档的产品表同时标记 Atlas A2、Atlas A3 支持；OpDef 配置 `ascend910b`、`ascend910_93`，两份 binary JSON 内容一致。公开产品表明确 Ascend 950PR/950DT 不支持，故本卡不覆盖 950。
 
 ## Host/Launcher 执行流程
 
@@ -200,7 +200,7 @@ F16/BF16: N = floor((U - 64) / 60 / 16) * 16  elements
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台公开支持 | 产品为 Atlas A2/A3，且 OpDef config 为 `ascend910b`/`ascend910_93` | 只有两平台 binary 与构建接线 | 全部 | A5/其它产品不发布、不 launch | `README.md` 产品表；`FusedSgd::FusedSgd` |
+| 平台公开支持 | 产品为 Atlas A2/A3，且 OpDef config 为 `ascend910b`/`ascend910_93` | 只有两平台 binary 与构建接线 | 全部 | 950/其它产品不发布、不 launch | `README.md` 产品表；`FusedSgd::FusedSgd` |
 | UB 非零 | `coreNum_!=0 && ubSize_!=0` | 必须产生 blockDim 与 tile 容量 | 全部 | Tiling `GRAPH_FAILED` | `FusedSgdTiling::GetPlatformInfo` |
 | tile 容量 | F32 `N=floor((U-64)/48/8)*8`；16-bit `N=floor((U-64)/60/16)*16` | `InitBuffer` 的真实 depth 与三分区容量 | R-001/R-002 | 固定代码无 fallback；`N==0` 会令 `ceil(elementCount/N)` 无效 | `CalculateOutputInfo`、两个 `Init` |
 | DMA blockLen 窄化 | `dataCount*sizeof(T) <= UINT16_MAX` | `DataCopyParams.blockLen` 被显式 cast 到 `uint16_t`，单位为字节 | 全部 | 固定代码无运行时检查/fallback | 两个 `Compute` 的 `copyParams` |
@@ -625,9 +625,9 @@ Host 不使用固定元素 tile，而是把 Queue depth、三路 slice、低精�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；OpDef `ascend910b`；有 binary config | 公开支持；OpDef `ascend910_93`；有 binary config | 公开 README/API 文档明确不支持；不生成 `_a5` 卡。 |
+| 支持状态 | 公开支持；OpDef `ascend910b`；有 binary config | 公开支持；OpDef `ascend910_93`；有 binary config | 公开 README/API 文档明确不支持；不生成 `_950` 卡。 |
 | Host/Launcher | 共用 ACLNN、L0、Tiling；运行时读取 AIV core/UB/系统 workspace | 同左 | API dtype helper 含 `DAV_3510` 分支，但无 OpDef `ascend950`、无 binary config，且与公开不支持结论冲突，不能据此发布。 |
 | Kernel/资源 | 两 Route 共用源码，容量由实际平台 UB 动态产生 | 同左；两份 binary JSON 与 A2 内容逐字相同 | 无公开可达 Kernel 构建链。 |
 
@@ -651,7 +651,7 @@ Host 不使用固定元素 tile，而是把 Queue depth、三路 slice、低精�
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `optim/fused_sgd/docs/aclnnFusedSgd.md` | 产品支持表、函数原型、参数与错误约束 | A2/A3 公开、A5 不支持、公式与正式调用域。 |
+| 入口声明/约束 | `optim/fused_sgd/docs/aclnnFusedSgd.md` | 产品支持表、函数原型、参数与错误约束 | A2/A3 公开、950 不支持、公式与正式调用域。 |
 | 入口声明/约束 | `optim/fused_sgd/op_api/aclnn_fused_sgd.h` | `aclnnFusedSgdGetWorkspaceSize`、`aclnnFusedSgd` | C ABI、参数顺序与两段式入口。 |
 | 入口实现 | `optim/fused_sgd/op_api/aclnn_fused_sgd.cpp` | `Check*`、`MakeContiguousTensorList`、`FlattenDims`、两段式实现 | API 校验、框架前后处理、workspace/executor、失败传播。 |
 | 入口实现 | `optim/fused_sgd/op_api/fused_sgd.cpp` | `l0op::FusedSgd` | optional momentum 占位、AICore launcher、输出别名。 |
@@ -676,4 +676,4 @@ Host 不使用固定元素 tile，而是把 Queue depth、三路 slice、低精�
 | workspace/内存 | F32 `48N`、16-bit `60N`；N 从 `UB-64` 向下对齐 | depth=2、三 slice、raw/FP32 offset、workspace owner/lifetime | `CalculateOutputInfo`、两个 `Init` |
 | 同步 | MTE2→V、V→MTE3、必要的 MTE3→V/下一 tile MTE3→MTE2 | 原地/复用 slice 不能跨 hard event 或 Vector barrier 提前覆盖 | `PipeSync`、两个 `Compute` |
 | 精度与尾块 | F32 直算；低精度先升 FP32，写回 `CAST_RINT`；DataCopyPad 精确 valid bytes | 不得让后续优化器步骤重新使用已降精度 grads；保留 tail 的 `dataCount` | `FusedSgdF16Bf16::Compute`、两个 `Process` |
-| 失败边界 | Host/API 拒绝 dtype/shape/attr/资源错误，无 Device fallback | 不补造 A5、零 UB、小 UB、DMA 窄化或 grad scale 零值 fallback | `CheckParams`、`Tiling4FusedSgd`、`fused_sgd` |
+| 失败边界 | Host/API 拒绝 dtype/shape/attr/资源错误，无 Device fallback | 不补造 950、零 UB、小 UB、DMA 窄化或 grad scale 零值 fallback | `CheckParams`、`Tiling4FusedSgd`、`fused_sgd` |

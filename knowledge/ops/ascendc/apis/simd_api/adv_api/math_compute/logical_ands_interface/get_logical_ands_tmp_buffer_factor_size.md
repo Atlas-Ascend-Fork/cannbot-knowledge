@@ -26,6 +26,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LogicalAnds](logical_ands.md)（`related`）：LogicalAnds 设备接口实际消费按 factor-size 计算并经 Tiling 传入的临时空间。
-- [GetLogicalAndsMaxMinTmpSize](get_logical_ands_max_min_tmp_size.md)（`same_topic`）：max/min 与 factor-size 是 LogicalAnds 同一 workspace 契约的两种查询方式，且多 API 共用空间时都需按最小值规则合并。
+- [GetLogicalAndsMaxMinTmpSize](get_logical_ands_max_min_tmp_size.md)（`related`）：获取LogicalAnds接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；host侧Tiling接口，用于获取LogicalAnds接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；factor 接口按固定临时空间反推单次元素数，max/min 接口给出可选临时空间区间，二者共同闭合 Host Tiling 容量计算。
+- [LogicalAnds](logical_ands.md)（`related`）：输入矢量每个元素与标量进行逻辑与操作。当数据类型不是bool时，零视为False，非零视为True。；获取LogicalAnds接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。后者把固定缓冲预算换算为前者一次可处理的元素量。
 <!-- cannbot:related:end -->

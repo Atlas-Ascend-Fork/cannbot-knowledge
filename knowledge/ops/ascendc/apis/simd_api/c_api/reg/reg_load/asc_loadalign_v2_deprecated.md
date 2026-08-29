@@ -22,7 +22,7 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalignBrcDatablock](asc_loadalign_brc_datablock.md)（`related`）：废弃通用接口的 BRC DataBlock 模式应迁移到该专用接口，后者明确读取 32B 并广播到 VL。
-- [AscLoadalignBrcElem2datablock](asc_loadalign_brc_elem2datablock.md)（`related`）：废弃接口按元素到 DataBlock 广播的能力由该专用接口承接，明确 16/32bit 元素各自广播为 32B。
-- [AscLoadalignUnpack4](asc_loadalign_unpack4.md)（`related`）：废弃接口的 UNPACK4 模式由该专用接口承接，规定 VL/4 u8 搬入并扩成 VL u32。
+- [AscLoadalignBrcDatablock](asc_loadalign_brc_datablock.md)（`related`）：“该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。 对齐数据搬运接口，从UB连续对齐搬入目的操作数，支持多种搬入模式，接口通过地址寄存器传入偏移，用户可以选择更新偏移或者更新源操作数的地址。”列出该废弃族的三条明确替换映射；“对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现DataBlock广播搬入模式：读取一个DataBlock（32B），并广播到VL。”验证当前目标承载的具体广播或解压语义。两端共同支持按旧模式迁移，而不是只凭同名选择新 API。
+- [AscLoadalignBrcElem2datablock](asc_loadalign_brc_elem2datablock.md)（`related`）：“该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。 对齐数据搬运接口，从UB连续对齐搬入目的操作数，支持多种搬入模式，接口通过地址寄存器传入偏移，用户可以选择更新偏移或者更新源操作数的地址。”列出该废弃族的三条明确替换映射；“对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现元素到DataBlock广播搬入模式：加载（VL/DataBlock）个元素的数据，并将每个元素（16bit/32bit）广播到一个DataBlock（32B）中。”验证当前目标承载的具体广播或解压语义。两端共同支持按旧模式迁移，而不是只凭同名选择新 API。
+- [AscLoadalignUnpack4](asc_loadalign_unpack4.md)（`related`）：“该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。 对齐数据搬运接口，从UB连续对齐搬入目的操作数，支持多种搬入模式，接口通过地址寄存器传入偏移，用户可以选择更新偏移或者更新源操作数的地址。”列出该废弃族的三条明确替换映射；“对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现UNPACK4搬入模式：解压缩模式，按无符号整型u8加载VL/4长度数据，unpack到VL长度u32类型，中间位置补0。”验证当前目标承载的具体广播或解压语义。两端共同支持按旧模式迁移，而不是只凭同名选择新 API。
 <!-- cannbot:related:end -->

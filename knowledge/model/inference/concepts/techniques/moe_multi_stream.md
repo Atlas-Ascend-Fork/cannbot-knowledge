@@ -304,3 +304,13 @@ with torch.npu.stream(self.share_mlp_stream):
 - [multi-stream](multi_stream.md)（多流编排/控核方法论总纲；MoE 多流为其子场景）
 - [vllm-ascend](../../../training/concepts/frameworks/vllm_ascend.md)（跨域·训练：vLLM-Ascend rollout 的 MLA/MoE 多流）
 - [deepseek-v4](../models/deepseek_v4.md)（DeepSeek-V4 MoE 共享/路由专家多流，Int8/MXFP8 量化场景掩盖共享专家）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NPU 多流优化(Multi-Stream)](multi_stream.md)（`related`）：焦点卡以“把 MoE 层内部可并行的子计算/通信段分配到多条 stream，让它们在时间轴上重叠”给出 MoE 专用拓扑，候选卡明确把“MoE 子场景（共享专家双流、ScMoE 控核变体）的拓扑细节”下钻到焦点卡；通用规划、执行模式与 profiling 方法可直接用于审查该专用拓扑。
+- [torchair 图模式 multistream MoE 的两处静默错配：mc2_mask 漏切致 shape mismatch + isinstance 打在非-torchair 基类致 overlap 恒失效](../../runbooks/runtime/torchair_multistream_moe_tp_mask_and_isinstance_gating.md)（`related`）：开了 `multistream_moe` + W8A8Dynamic + `FusedMoEState.MC2`，却**观测不到**预期的量化/路由 overlap 收益；无异常、无精度问题，就是优化像没开。；MoE 层上的多 NPU stream 并行是 cann-recipes-infer 在多个模型里反复使用的优化手段，共同思想是 **把 MoE 层内部可并行的子计算/通信段分配到多条 stream，让它们在时间轴上重叠**，隐藏 AllToAll、GroupedMatMul 或专家计算的时延。；概念页说明 MoE 多流用于重叠通信与专家计算，运行手册处理该优化已配置却因门控未生效的诊断链。
+- [图模式多流并行的跨流同步：ge_graph 控制边 vs aclgraph tagged-event 及 API 选型](../../guides/experience/interventions/graph_mode_multi_stream_cross_stream_sync_api.md)（`related`）：焦点卡指出“两个变体都依赖 NPU 多 stream 调度与 stream 间 event 同步”，候选卡规定“不要把 Ascend IR 图内 API（`npu_wait_tensor`）与 aclgraph 显式 event API 混写到同一实现”；该后端分流合同是落地 MoE 多流时避免错误同步的必要补充。
+- [多流并行后还要分核：limit_core_num 给两条重路径流配不同 Cube/Vector 核数、让时长趋近](../../optimizations/experience/cases/moe_multi_stream_limit_core_num.md)（`related`）：焦点卡要求“通过控制多流上的 ai core 和 vector core 核数，使得双流的计算时间接近”，候选卡把触发信号收敛为“多流之后还要分核”；后者提供 profile 驱动的核数再平衡步骤，直接补齐 LongCat-Flash 变体的调优闭环。
+- [带共享专家的 MoE decode 双流重叠：共享专家副流掩盖路由专家 dispatch/GMM/combine](../../optimizations/experience/rules/moe_shared_expert_decode_dual_stream.md)（`related`）：“主流跑路由专家主路径（gate/topk → dispatch → GMM → combine），副流跑共享专家前向，汇合点再同步、相加。仅在 decode（`not is_prefill`）启用。”与“将共享专家（shared expert）与路由专家（routed expert）的 `dispatch`、`gate_up_proj`、`act_fn`、`down_proj` 分别绑定到主 NPU stream 与独立 shared_expert stream，重叠 shared-expert 的计算与路由专家的 AllToAll dispatch/combine 通信，隐藏 EP 通信时延。”是双方正文中的具体合同。规则卡给出 decode 主副流与汇合点，技术卡展开 routed dispatch/combine 和 shared-expert 计算重叠，二者共同闭合实现顺序与性能机制。
+<!-- cannbot:related:end -->

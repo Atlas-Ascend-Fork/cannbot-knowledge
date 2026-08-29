@@ -1,7 +1,7 @@
 ---
 type: Guide
-title: DeepSeek-V3 裁剪模型 MXFP8/HiF8 低精度预训练（MindSpeed · Atlas A5 950DT · 8K）
-description: cann-recipes-train 在 Atlas A5 950DT 上跑通的 8-bit 混合精度预训练：基于 mindspeed 框架（MindSpeed Core + MindSpeed-LLM 组件，底座对接 NVIDIA Megatron-LM core_v0.12.1），用一个 DeepSeek-V3 裁剪模型（2 层：1 dense + 1 MoE，hidden 7168、256 专家、MLA），在 8 卡 A5（950DT，单卡 486 TFLOPS）、序列长 8K、GBS=64 下，分别用 HiF8 与 MXFP8（E4M3） 两种低精度格式量化整网的 MatMul（MM）/ Grouped MatMul（GMM） 算子，与 BF16 混合精度做长稳精度对齐与性能对比。HiF8/MXFP8 损失与梯度范数都基本对齐 BF16，HiF8 端到端提速 29.5%、MXFP8 提速 14.05%、HiF8 相对 MXFP8 再快 11.3%。
+title: DeepSeek-V3 裁剪模型 MXFP8/HiF8 低精度预训练（MindSpeed · Atlas 950 950DT · 8K）
+description: cann-recipes-train 在 Atlas 950 950DT 上跑通的 8-bit 混合精度预训练：基于 mindspeed 框架（MindSpeed Core + MindSpeed-LLM 组件，底座对接 NVIDIA Megatron-LM core_v0.12.1），用一个 DeepSeek-V3 裁剪模型（2 层：1 dense + 1 MoE，hidden 7168、256 专家、MLA），在 8 卡 950（950DT，单卡 486 TFLOPS）、序列长 8K、GBS=64 下，分别用 HiF8 与 MXFP8（E4M3） 两种低精度格式量化整网的 MatMul（MM）/ Grouped MatMul（GMM） 算子，与 BF16 混合精度做长稳精度对齐与性能对比。HiF8/MXFP8 损失与梯度范数都基本对齐 BF16，HiF8 端到端提速 29.5%、MXFP8 提速 14.05%、HiF8 相对 MXFP8 再快 11.3%。
 tags:
 - task.implementation
 - topic.precision
@@ -12,17 +12,16 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v3_pre_train_hifp8_mxfp8.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - '950'
-- a5
 ---
 
-# DeepSeek-V3 裁剪模型 MXFP8/HiF8 低精度预训练（MindSpeed · Atlas A5 950DT · 8K）
+# DeepSeek-V3 裁剪模型 MXFP8/HiF8 低精度预训练（MindSpeed · Atlas 950 950DT · 8K）
 
 ## Summary
 
-cann-recipes-train 在 **Atlas A5 950DT** 上跑通的 **8-bit 混合精度预训练**：基于 [mindspeed](../../concepts/frameworks/mindspeed.md) 框架（MindSpeed Core + **MindSpeed-LLM** 组件，底座对接 NVIDIA **Megatron-LM core_v0.12.1**），用一个 DeepSeek-V3 **裁剪模型**（2 层：1 dense + 1 MoE，hidden 7168、256 专家、MLA），在 **8 卡 A5（950DT，单卡 486 TFLOPS）**、序列长 8K、GBS=64 下，分别用 **HiF8** 与 **MXFP8（E4M3）** 两种低精度格式量化整网的 **MatMul（MM）/ Grouped MatMul（GMM）** 算子，与 BF16 混合精度做长稳精度对齐与性能对比。HiF8/MXFP8 损失与梯度范数都基本对齐 BF16，HiF8 端到端提速 **29.5%**、MXFP8 提速 **14.05%**、HiF8 相对 MXFP8 再快 **11.3%**。
+cann-recipes-train 在 **Atlas 950 950DT** 上跑通的 **8-bit 混合精度预训练**：基于 [mindspeed](../../concepts/frameworks/mindspeed.md) 框架（MindSpeed Core + **MindSpeed-LLM** 组件，底座对接 NVIDIA **Megatron-LM core_v0.12.1**），用一个 DeepSeek-V3 **裁剪模型**（2 层：1 dense + 1 MoE，hidden 7168、256 专家、MLA），在 **8 卡 950（950DT，单卡 486 TFLOPS）**、序列长 8K、GBS=64 下，分别用 **HiF8** 与 **MXFP8（E4M3）** 两种低精度格式量化整网的 **MatMul（MM）/ Grouped MatMul（GMM）** 算子，与 BF16 混合精度做长稳精度对齐与性能对比。HiF8/MXFP8 损失与梯度范数都基本对齐 BF16，HiF8 端到端提速 **29.5%**、MXFP8 提速 **14.05%**、HiF8 相对 MXFP8 再快 **11.3%**。
 
 低精度格式本身（HiF8 编码模式、Denormal、Per-tensor vs Per-block、Current/Delayed Scaling 等量化原理）的完整推导见 [hif8](../../concepts/quantization/hif8.md)，落到**真实拉起脚本与 recipe 配置**上即下文。它与 [deepseek-v32-pretrain](deepseek_v32_pretrain.md)（TorchTitan 671B 全量 / DSA 路线）并列——MindSpeed + 裁剪模型 + 低精度是另一条预训练路线。
 
@@ -35,7 +34,7 @@ cann-recipes-train 在 **Atlas A5 950DT** 上跑通的 **8-bit 混合精度预�
 | 框架 | MindSpeed + MindSpeed-LLM（`--transformer-impl transformer_engine`），Megatron-LM core_v0.12.1 | README |
 | 并行 | TP1 · PP1 · **EP8** · CP1（`ulysses_cp_algo`）· `--expert-tensor-parallel-size 1` · `--sequence-parallel` | run_pretrain 脚本 |
 | 精度 | BF16 AMP 主路（`--bf16`），MM/GMM 走 HiF8 或 MXFP8 低精度路径 | 文档第五章 |
-| 平台 | Atlas A5 **950DT**，单卡 486 TFLOPS | README / 文档 5.1 |
+| 平台 | Atlas 950 **950DT**，单卡 486 TFLOPS | README / 文档 5.1 |
 | 卡数 | 8 卡（`NPUS_PER_NODE=8`，单节点） | run_pretrain 脚本 |
 | 序列/批 | `SEQ_LEN=8192`、`MBS=1`、`GBS=64` | run_pretrain 脚本 |
 
@@ -184,7 +183,7 @@ HiF8 相对 MXFP8 的额外收益来自**量化粒度与缩放元数据开销**�
 ## Evidence
 
 - [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_pretrain/deepseek-v3_pre_train_hifp8_mxfp8.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v3_pre_train_hifp8_mxfp8.md)（第四章 MindSpeed/TE 量化框架 + 表 5 格式/算子组合、3.2 Current/Delayed Scaling、第五章 HiF8/MXFP8 实验、第六章收益分析（MM/GMM >1.8× + GMM profiling）、第七章推荐配置）
-- [`llm_pretrain/DeepSeekV3/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_pretrain/DeepSeekV3/README.md) — 概述（A5 8 卡 8K MXFP8/HiF8）、构建环境（MindSpeed/MindSpeed-LLM master + Megatron-LM core_v0.12.1）、数据集 enwiki、权重 hf2mcore 转换、pretrain 执行（HCCL 超节点拓扑 + bash run 脚本）
+- [`llm_pretrain/DeepSeekV3/README.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_pretrain/DeepSeekV3/README.md) — 概述（950 8 卡 8K MXFP8/HiF8）、构建环境（MindSpeed/MindSpeed-LLM master + Megatron-LM core_v0.12.1）、数据集 enwiki、权重 hf2mcore 转换、pretrain 执行（HCCL 超节点拓扑 + bash run 脚本）
 - [`llm_pretrain/DeepSeekV3/run_pretrain_dsk3_A5_8P_hif8.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_pretrain/DeepSeekV3/run_pretrain_dsk3_A5_8P_hif8.sh) — HiF8 `FP8` 块（`--fp8-format hif8 --fp8-recipe delayed --fp8-interval 10`）、TP1/PP1/EP8/CP1、MLA/MoE/RoPE 入参、`pretrain_gpt.py` 拉起
 - [`llm_pretrain/DeepSeekV3/run_pretrain_dsk3_A5_8P_mxfp8.sh`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_pretrain/DeepSeekV3/run_pretrain_dsk3_A5_8P_mxfp8.sh) — MXFP8 `FP8` 块（`--fp8-format e4m3 --fp8-recipe mxfp8`，无 `--fp8-interval`），其余与 hif8 脚本完全一致
 
@@ -196,3 +195,12 @@ HiF8 相对 MXFP8 的额外收益来自**量化粒度与缩放元数据开销**�
 - [mxfp8-a8w8](../../../inference/concepts/quantization/mxfp8_a8w8.md)（跨域：推理侧 MXFP8（DiT Linear）A8W8，Per-group/E8M0 scale，与此处训练 MXFP8 Per-block 路径对照）
 - [ascend-950](../../../inference/concepts/platforms/ascend_950.md)（跨域：950PR/950DT 代际特性，本配置训练用 950DT 单卡 486 TFLOPS）
 - [deltanet-pretrain](deltanet_pretrain.md)（同域并列预训练：DeltaNet 线性注意力 NLP 样例）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 950 (950PR / 950DT)](../../../inference/concepts/platforms/ascend_950.md)（`related`）：cann-recipes-train 在 **Atlas 950 950DT** 上跑通的 **8-bit 混合精度预训练**：基于 ［mindspeed］(../../concepts/frameworks/mindspeed.md) 框架（MindSpeed Core + **MindSpeed-LLM** 组件，底座对接 NVIDIA **Megatron-LM core_v0.12.1**），用一个 DeepSeek-V3 **裁剪模型**（2 层：1 dense + 1 MoE，hidden 7168、256 专家、MLA），在 **8 卡 950（950DT，单卡 486 TFLOPS）**、序列长 8K、GBS=64 下，分别用 **HiF8** 与 **MXFP8（E4M3）** 两种低精度格式量化整网的 **MatMul（MM）/ Grouped MatMul（GMM）** 算子，与 BF16 混合精度做长稳精度对齐与性能对比。；`950PR` 与 `950DT` 是部署侧的两类标识：`950PR` 偏 Prefill 部署、`950DT` 偏 Decode 部署。。recipe 明确在 8 卡 Atlas 950DT 上验证低精度训练，平台页提供 950PR/950DT 标识与代际算力、内存边界，帮助约束硬件适用范围。
+- [DeepSeek-V3.2 TorchTitan 32K 长序列预训练](deepseek_v32_pretrain.md)（`related`）：它与 ［deepseek-v32-pretrain］(deepseek_v32_pretrain.md)（TorchTitan 671B 全量 / DSA 路线）并列——MindSpeed + 裁剪模型 + 低精度是另一条预训练路线。；基于 ［torchtitan］(../../concepts/frameworks/torchtitan.md) + `torchtitan-npu` 插件（样例版本 `v0.2.2`），在 **64 卡 Atlas A3** 集群上完成 **DeepSeek-V3.2**（671B / 61 层，DSA 稀疏注意力）**32K 长序列预训练 / CPT** 的全链路优化适配，A3 64 卡极致显存场景达成 **148 TPS/卡**。。两张 recipe 是显式并列的 DeepSeek 预训练路线：一条是 MindSpeed 裁剪 V3 的 950 低精度实验，另一条是 TorchTitan V3.2 全量 DSA 长序列训练。
+- [HiF8（HiFloat8）8-bit 浮点格式与 V3 低精度预训练量化方案](../../concepts/quantization/hif8.md)（`related`）：这一动态范围优势使 HiF8 能采用**粗粒度 Per-Tensor 量化 + 周期较长的 Delayed Scaling**，从而比需要 Per-Block 细粒度 scaling 的 MXFP8 省下大量缩放元数据访存与控制开销。；分别用 **HiF8** 与 **MXFP8（E4M3）** 两种低精度格式量化整网的 **MatMul（MM）/ Grouped MatMul（GMM）** 算子，与 BF16 混合精度做长稳精度对齐与性能对比。。概念卡解释 HiF8 的 Per-Tensor 与 Delayed Scaling 机制及相对 MXFP8 的开销差异，Recipe 将这两种格式用于 MM/GMM 并与 BF16 做稳定性和性能验证，形成量化原理到训练实验的实施链。
+- [MindSpeed（昇腾大模型训练加速框架 + 低精度训练）](../../concepts/frameworks/mindspeed.md)（`related`）：cann-recipes-train 在 **Atlas 950 950DT** 上跑通的 **8-bit 混合精度预训练**：基于 ［mindspeed］(../../concepts/frameworks/mindspeed.md) 框架（MindSpeed Core + **MindSpeed-LLM** 组件，底座对接 NVIDIA **Megatron-LM core_v0.12.1**），用一个 DeepSeek-V3 **裁剪模型**（2 层：1 dense + 1 MoE，hidden 7168、256 专家、MLA），在 **8 卡 950（950DT，单卡 486 TFLOPS）**、序列长 8K、GBS=64 下，分别用 **HiF8** 与 **MXFP8（E4M3）** 两种低精度格式量化整网的 **MatMul（MM）/ Grouped MatMul（GMM）** 算子，与 BF16 混合精度做长稳精度对齐与性能对比。；MindSpeed（**MindSpeed Core**）是面向华为昇腾设备的大模型加速库，把大模型训练/推理任务高效迁移到昇腾平台并提供昇腾专有优化能力。。recipe 的 950 低精度训练以 MindSpeed Core、MindSpeed-LLM 和 Megatron-LM 组栈，框架页解释其 TE 量化及补丁式接管机制。
+<!-- cannbot:related:end -->

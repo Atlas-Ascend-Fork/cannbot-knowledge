@@ -40,7 +40,6 @@ IPC：-：1.20：1.25
 <!-- cannbot:related:start -->
 ## 相关
 
-- [中级性能优化](intermediate_optimization.md)（`same_topic`）：中级性能优化 与《高阶极限打磨》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
-- [入门功能落地](getting_started.md)（`same_topic`）：极限篇继续消费同一 GELU 基线并验证更深的指令调度与流水优化，是功能落地后的后续阶段。
-- [指令双发优化](../../../simd_operator_optimization/vector_compute/vf_optimization/dual_issue_optimization.md)（`same_topic`）：GELU 卡通过展开多组依赖链提升双发机会，双发优化指南提供其指令依赖和调度原理。
+- [中级性能优化](intermediate_optimization.md)（`related`）：本节在中级性能优化的基础上，介绍GELU算子的高阶极限打磨方法。；本节在入门功能落地的基础上，介绍GELU算子的中级性能优化方法。。中级页以 RegBase+VF 融合建立优化基线，高阶页在该基线上用循环展开继续提高 ILP，构成同一 GELU 调优阶段链。
+- [入门功能落地](getting_started.md)（`related`）：本节以GELU（高斯误差线性单元）激活函数为例，介绍基于Ascend C RegBase编程模型实现向量算子的基本方法，帮助开发者快速入门Reg矢量算子开发。；本节在中级性能优化的基础上，介绍GELU算子的高阶极限打磨方法。。入门卡定义同一 GELU RegBase 实现对象，极限卡说明其依赖中级阶段继续打磨的进阶链。
 <!-- cannbot:related:end -->

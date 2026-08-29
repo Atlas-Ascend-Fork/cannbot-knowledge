@@ -53,3 +53,11 @@ platforms:
 
 - `diff 事实`（@73ed847）：`model-optimize` skill 规定三阶段（KVCache 静态化+FA → torch_npu 融合算子替换 → GE 图模式仅 Decode）、每阶段精度+性能 gate、按序不可跳过/并行。
 - 溯源下探：[cann-recipes-infer-pr-328-feat-add-agent-optimization-skills-and-evaluation-reports](https://gitcode.com/cann/cann-recipes-infer/merge_requests/328)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [KVCache 静态化 + FA / FIA 融合算子替换的精度陷阱](../../../runbooks/precision/precision_kvcache_fa_fusion_pitfalls.md)（`related`）：# 单卡 NPU 推理优化的三阶段固定流程：KVCache 静态化+FA 替换 → torch_npu 融合算子替换 → GE 图模式(仅 decode)，每阶段精度+性能 gate；把手写 attention 换成 ［npu_fused_infer_attention_score］(../../concepts/kernels/fused_infer_attention_score.md)(FA/FIA) 融合算子 + 静态 KVCache 后，Prefill 对但 Decode 偏、输出全重复 token / 乱码、多 batch 部分样本错、量化模式偏差放大。这类精度问题几乎都出在 **FA 入参与 layout 约定、KVCache 写入位置、KV 长度语义**上，而非注意力数学本身。按症状对号入座定位。。三阶段流程把静态 KVCache 与 FA 替换列为第一阶段，精度 Runbook 给出替换后 Decode 偏差、重复 token 等症状及其入参、layout 和写入位置根因，构成该阶段精度 gate 的排障依据。
+- [NPU LLM 图模式启用骨架：decode-only 编译 + ge_graph / acl_graph / npugraph_ex 后端编译入口与配置约束](graph_mode_decode_only_compile_backends.md)（`related`）：# 单卡 NPU 推理优化的三阶段固定流程：KVCache 静态化+FA 替换 → torch_npu 融合算子替换 → GE 图模式(仅 decode)，每阶段精度+性能 gate；实现上把 prefill / decode 的 forward 拆成不同方法，**只对 decode 方法** `torch.compile(...)`，prefill 保持 eager。前置条件：decode 侧须为静态 shape——KV cache 预分配为连续张量、batch 定形填充、前向用就地写（`scatter_update_` 等）更新 KV。连续 KV + 定形 batch 是图捕获的前提。。三阶段流程把 GE 图模式限定在 Decode，候选进一步给出拆分 forward、仅编译 Decode 及连续 KV 与定形 batch 的捕获前置条件，可直接落实第三阶段。
+- [把注意力映射到昇腾 FIA：attention sink / 滑窗 / 全窗的 sparse_mode 选择 + 推理 FIA vs 训练 FA + GQA 头数](attention_to_fia_sparse_mode_sink_window.md)（`related`）：# 单卡 NPU 推理优化的三阶段固定流程：KVCache 静态化+FA 替换 → torch_npu 融合算子替换 → GE 图模式(仅 decode)，每阶段精度+性能 gate；在昇腾上把各类注意力（含 attention sink、滑动窗口、全窗因果）落到融合算子时，优先整段映射到 ［FIA］(../../../concepts/kernels/fused_infer_attention_score.md)（`npu_fused_infer_attention_score` / `_v2`），用 `sparse_mode` + 入参承接各种注意力变体，而不是在 softmax 前后手拼逻辑。。三阶段流程要求先替换 FA/FIA 融合算子，候选给出 attention sink、滑窗和全窗因果映射到 FIA 时的 sparse_mode 与入参承接原则，补充第一阶段的具体算子落地。
+<!-- cannbot:related:end -->

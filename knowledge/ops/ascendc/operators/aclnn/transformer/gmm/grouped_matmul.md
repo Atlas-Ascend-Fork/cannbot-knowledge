@@ -54,7 +54,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T17:00:00Z"
-updated_at: "2026-08-24T19:33:50Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -555,9 +555,9 @@ Host 用一个并取全部布尔条件的 selector 把专用 `grouped_matmul_fix
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V5 支持 | V5 支持 | V5 支持，但使用 arch35 独立实现，见 `_a5` 卡 |
+| 支持状态 | V5 支持 | V5 支持 | V5 支持，但使用 arch35 独立实现，见 `_950` 卡 |
 | Host/Launcher | 共用 V5 ACLNN 与非 arch35 `GMMTiling` | 共用 | arch35 tiling template family |
 | Kernel/资源 | `__CCE_AICORE__==220` 路线 | `__NPU_ARCH__==3003/3113` 复用对应模板分支 | `grouped_matmul_apt.cpp`，POD/body 不可与本卡替换 |
 
@@ -600,3 +600,10 @@ Host 用一个并取全部布尔条件的 selector 把专用 `grouped_matmul_fix
 | 同步 | Cube 内部 event、MIX cross-core flag 协议 | producer 写完前 consumer 不得读取；slot 回收不得提前 | `GMMQuantMixCoreCompute::PostCompute` |
 | 精度与尾块 | INT8×INT8→INT32→FP32 scale→目标 cast | scale/bias/per-token/activation 顺序及 curM/curN mask | `Dequant/ActivationCompute/DataCopyOut` |
 | 失败边界 | API/tiling 无 specialization 时失败 | 不得猜测 fallback、扩大 group 数或忽略空组 | `CheckFunctionParams/GMMSetTplTilingKey` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GroupedMatmul算子性能调优案例](../../../../guides/operator_practice/best_practices/grouped_matmul_tuning.md)（`related`）：“AIC_CUBE、MIX_CV”给出焦点端事实；“将AI Core中的AIC核和AIV核启动比例设置为1:2”给出候选端事实。算子卡确认 GroupedMatmul 存在 Cube 与 MIX_CV 路线，调优指南给出 Vector Bound 场景按 AIC:AIV=1:2 启动并行反量化与激活的具体做法。
+- [GroupedMatmul 950 ACLNN 算子知识](grouped_matmul_950.md)（`same_topic`）：“R-001 基础 Cube 与 transpose-X 空域辅助；R-002 A8W8 O16 MIX/固定轴特化；R-003 低比特量化/伪量化 CV 子实现族”给出焦点端事实；“R-001 非量化 ASWT；R-002 全量化 ASW/CV/CGMCT；R-003 weight-quant basic/resplit CV”给出候选端事实。两卡共享 aclnnGroupedMatmulV5 与分组矩阵乘核心合同，同时分别列出 A2/A3 与 950 的完整 Route 家族，直接支持平台路由和量化实现选型。
+<!-- cannbot:related:end -->

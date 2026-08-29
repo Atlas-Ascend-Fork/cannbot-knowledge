@@ -22,8 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMaxScalar](asc_max_scalar.md)（`related`）：AscMaxScalar 是同一 Vector 标量比较模型的取大对偶，可据 clamp 上界或下界选择。
-- [AscMin](asc_min.md)（`same_topic`）：AscMin 与《AscMinScalar》的实质衔接是：AscMin 是两个同长 UB 向量逐元素取小；Reg/C++ 对应入口和 scalar 变体用于区分 mask/operand 形态，广播故障明确 src1 不能只给一个标量。
-- [AscMinScalar](../reg/arithmetic_compute/asc_min_scalar.md)（`same_topic`）：AscMinScalar 与《AscMinScalar》的实质衔接是：AscMinScalar 在 Reg 上比较 vector 与 scalar；Vector 对应入口、tensor-tensor Min、MaxScalar 和灵活 Mins 分别界定执行层、操作数形态与相反边界。
-- [Mins（灵活标量位置）](../../basic_api/memory_vector_compute/basic_arithmetic/mins_flexible_scalar.md)（`same_topic`）：MinsFlexibleScalar 提供 C++ Memory API 映射，并允许 scalar 来自 LocalTensor 单点或位于任一操作数位置。
+- [AscMinScalar](../reg/arithmetic_compute/asc_min_scalar.md)（`same_topic`）：源操作数矢量逐元素与标量相比，如果比标量值大，则取标量值，比标量值小，则取源操作数值。；根据mask将源操作数src按元素与标量value进行比较，将最小值写入目的操作数dst。两卡核心对象都是 vector-scalar 逐元素最小值，分别覆盖 A2/A3 UB 指针接口与 950 寄存器掩码接口。
 <!-- cannbot:related:end -->

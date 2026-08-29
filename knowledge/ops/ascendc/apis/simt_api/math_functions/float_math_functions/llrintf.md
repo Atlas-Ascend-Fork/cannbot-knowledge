@@ -25,13 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Hrint](../bfloat16_type/bfloat16_math_functions/hrint.md)（`related`）：Hrint 与《Llrintf》的实质衔接是：bfloat16 Hrint 与 half/float rint 及高层 Rint 临时空间接口共享 ties-to-even 任务，类型总览用于对照特殊值和返回精度。
-- [Nearbyintf](nearbyintf.md)（`related`）：llrintf 把最近整数结果写为 long long，适合需要更宽整数范围而非保持 float 的场景。
-- [AscRint](../../../simd_api/c_api/reg/data_type_convert/asc_rint.md)（`same_topic`）：Llrintf 与《AscRint》的实质衔接是：Llrintf 按当前 rounding mode 返回 long long；Lrintf、Rintf/Nearbyintf 和 AscRint分别对照返回宽度、异常行为和 Tensor 入口。
-- [Lrintf](lrintf.md)（`same_topic`）：Llrintf 与《Lrintf》的实质衔接是：Llrintf 按当前 rounding mode 返回 long long；Lrintf、Rintf/Nearbyintf 和 AscRint分别对照返回宽度、异常行为和 Tensor 入口。
-- [Rintf](rintf.md)（`same_topic`）：Llrintf 与《Rintf》的实质衔接是：Llrintf 按当前 rounding mode 返回 long long；Lrintf、Rintf/Nearbyintf 和 AscRint分别对照返回宽度、异常行为和 Tensor 入口。
-<!-- cannbot:related:end -->

@@ -26,6 +26,5 @@ host侧Tiling接口，用于获取ReduceAny接口所需的最大和最小临时�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ReduceAny接口](reduce_any_interface.md)（`related`）：“GetReduceAnyMaxMinTmpSize”定义：在host侧获取ReduceAny接口计算所需的最大和最小临时空间大小，用于选择合适的空间作为Tiling参数传递到kernel侧。；“ReduceAny接口”定义：对多维向量在指定维度求逻辑或，并提供临时空间大小获取接口。。实质衔接：该 Host 查询结果只服务 ReduceAny 的逻辑或归约和其 A/R 轴 Tiling；其他 Reduce 临时空间接口数值不可互换。
-- [ReduceAny](reduce_any.md)（`same_topic`）：ReduceAny 使用该接口规划逻辑 OR 归约的临时空间。
+- [ReduceAny](reduce_any.md)（`related`）：“host侧Tiling接口，用于获取ReduceAny接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”明确给出左端事实；“对多维向量按指定维度进行逻辑或归约。定义指定计算维度为R轴，非指定维度为A轴。模板参数T支持half/float，pattern指定reduce模式。”明确给出右端事实。Host 查询接口给出 ReduceAny 的临时空间上下界，计算接口明确 sharedTmpBuffer 与归约轴语义，形成空间选择到逻辑或归约的调用链。
 <!-- cannbot:related:end -->

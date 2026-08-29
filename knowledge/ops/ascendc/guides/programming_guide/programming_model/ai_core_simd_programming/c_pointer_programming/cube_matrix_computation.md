@@ -36,26 +36,3 @@ Cube单元采用分块计算逻辑，硬件最小计算粒度为分形块，可�
 ### 关键分形格式详解
 矩阵分形格式用于定义多维张量在内存中的排布规则。受硬件读取逻辑影响，不同产品型号对矩阵乘法 C = A × B 的格式要求存在差异：
 - 针对NPU架构版本2201，矩阵乘法C = A × B要求：左矩阵A使用Zz格式，右矩阵B使用Zn格式，结果矩阵C使用Nz格式。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscMmad](../../../../../apis/simd_api/c_api/cube_compute/asc_mmad.md)（`explains`）：Cube矩阵计算编程 与《AscMmad》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [GmL1OrL0DataMove](../../../../../apis/simd_api/basic_api/data_move_guide/gm_l1_or_l0_data_move.md)（`explains`）：Cube矩阵计算编程 与《GmL1OrL0DataMove》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [L1与L0数据搬运](../../../../../apis/simd_api/basic_api/data_move_guide/l1_l0_data_move.md)（`explains`）：L1与L0数据搬运 与《Cube矩阵计算编程》的实质衔接是：该概述限定 L1→L0A/L0B 的 LoadData 与 L0C→L1 的 DataCopy/Fixpipe 路径，并给出 512B 分形和对齐约束；矩阵搬入约束、普通矩阵流程与 Cube 编程材料解释这些路径在 Mmad 前后的角色。
-- [Mmad](../../../../../apis/simd_api/basic_api/cube_compute/mmad_compute/mmad.md)（`explains`）：Cube矩阵计算编程 与《Mmad》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [Mmad接口边界值汇总](../../../../../apis/appendix/mmad_interface_boundary_value_summary.md)（`explains`）：Cube矩阵计算编程 与《Mmad接口边界值汇总》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [Mmad计算关键特性说明](../../../../../apis/simd_api/basic_api/cube_compute/mmad_compute_key_features/mmad_compute_key_features.md)（`explains`）：Cube矩阵计算编程 与《Mmad计算关键特性说明》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [Mmad辅助配置说明](../../../../../apis/simd_api/basic_api/cube_compute/mmad_compute_aux_config/mmad_compute_aux_config.md)（`explains`）：Cube矩阵计算编程 与《Mmad辅助配置说明》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [SetFmatrix](../../../../../apis/simd_api/basic_api/cube_compute/cube_load_aux_config/set_fmatrix.md)（`explains`）：Cube矩阵计算编程 与《SetFmatrix》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [SetFmatrixBitMode](../../../../../apis/simd_api/basic_api/cube_compute/cube_load_aux_config/set_fmatrix_bit_mode.md)（`explains`）：Cube矩阵计算编程 与《SetFmatrixBitMode》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [普通矩阵计算流程（概述）](../../../../../apis/simd_api/basic_api/cube_compute/overview/cube_compute_flow.md)（`explains`）：Cube矩阵计算编程 与《普通矩阵计算流程（概述）》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [矩阵计算分形介绍](../../../../../apis/simd_api/basic_api/cube_compute/cube_compute_fractal_intro/cube_compute_fractal_intro.md)（`explains`）：矩阵计算分形介绍 与《Cube矩阵计算编程》的实质衔接是：分形介绍定义 Cube 输入、权重和输出在 L1/L0A/L0B/L0C 的分块布局；详细分形、搬入约束和普通计算流程直接使用这些布局。
-- [矩阵计算单元（概述）](../../../../../apis/simd_api/basic_api/cube_compute/overview/cube_compute_unit.md)（`explains`）：Cube矩阵计算编程 与《矩阵计算单元（概述）》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [AI Core SIMD编程模型概述](../overview.md)（`related`）：Cube矩阵计算编程 与《AI Core SIMD编程模型概述》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [Cube tile k/n 超 L1/L0 上限报 INVALID_TILE](../../../../../runbooks/compilation/cube_tile_k_n_l1_l0_invalid_tile.md)（`related`）：Cube矩阵计算编程 与《Cube tile k/n 超 L1/L0 上限报 INVALID_TILE》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [抽象硬件架构（AI Core SIMD编程）](../abstract_hardware_architecture.md)（`related`）：Cube矩阵计算编程 与《抽象硬件架构（AI Core SIMD编程）》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [核函数（AI Core SIMD编程）](../kernel_function.md)（`related`）：Cube矩阵计算编程 与《核函数（AI Core SIMD编程）》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [Cube矩阵计算编程](../cpp_tensor_programming/cube_matrix_computation.md)（`same_topic`）：《Cube矩阵计算编程》说明本文介绍如何在Ascend C中使用C++ Tensor编程API编写基于L1 Buffer、L0A Buffer等片上存储的矩阵计算代码。；《Cube矩阵计算编程》说明本文介绍基于Ascend C语言扩展API，依托L1 Buffer、L0系列片上缓存实现矩阵计算的开发方法，该方式是Ascend C中最基础、通用的矩阵编程方案。AI Core中的Cube单元部署在AIC核，负责矩阵计算，拥有专属片上缓存：L0A Buffer存放左矩阵、L0B Buffer存放右矩阵、L0C Buffer用于保存初始累加值与矩阵运算结果。。二者在C++ Tensor Cube编程把GM到L1/L0搬入、分形布局、Mmad计算和L0C搬出连接为完整矩阵流水上存在可执行的直接衔接。
-- [C语言编程概述](c_programming_overview.md)（`same_topic`）：Cube矩阵计算编程 与《C语言编程概述》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-<!-- cannbot:related:end -->

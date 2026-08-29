@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/index_fill/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:55:07Z"
-updated_at: "2026-08-25T16:55:07Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -76,7 +76,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-公开产品表明确 A2/A3 支持。固定仓无版本后缀 API；在非 Regbase 平台，`ExecIndexFillGetWorkspaceSize(...,isInplace=true)` 刻意登记 `l0op::IndexFill` 而非 A5 专用 `InplaceIndexFill`，随后复制回 `selfRef`。这是 `aclnnInplaceIndexFill` 的内部实现路径；本文不发布或描述 `aclnnIndexFill` 作为独立逻辑算子，也不处理 Tensor-value 变体。
+公开产品表明确 A2/A3 支持。固定仓无版本后缀 API；在非 Regbase 平台，`ExecIndexFillGetWorkspaceSize(...,isInplace=true)` 刻意登记 `l0op::IndexFill` 而非 950 专用 `InplaceIndexFill`，随后复制回 `selfRef`。这是 `aclnnInplaceIndexFill` 的内部实现路径；本文不发布或描述 `aclnnIndexFill` 作为独立逻辑算子，也不处理 Tensor-value 变体。
 
 ## Host/Launcher 执行流程
 
@@ -681,9 +681,9 @@ if (update) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，见 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，见 `_950` 卡 |
 | Host/Launcher | 910B→arch32；原地 API 用 IndexFill+ViewCopy | 910_93→arch32；同 A2 | Regbase 直接 InplaceIndexFill |
 | Kernel/资源 | 五 key AIV Vector | 与 A2 共用 | 三模板 SIMT/Sort，N-byte mask |
 
@@ -729,3 +729,9 @@ if (update) {
 | 同步 | flag=133 软件屏障 | 全 blockDim 核参加，MTE 完成后写 flag | `WriteFlagToGm/WaitForIndicesTask` |
 | 精度与尾块 | marker half；x 按 1/2/4/8B 位宽搬运 | INT64/BOOL frontQ；left loops | router/body |
 | 失败边界 | ACLNN 空域短路和空指针返回 | 不从 direct Host 绕过这些约束 | `ExecIndexFillGetWorkspaceSize` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [InplaceIndexFill 950 ACLNN 算子知识](inplace_index_fill_950.md)（`same_topic`）：“｜ Kernel/资源 ｜ arch32 AIV Vector、5 keys ｜ 同 A2 ｜ arch35 SIMT/Sort+Unique 三模板、N-byte mask ｜”；“｜ Kernel/资源 ｜ 五 key AIV Vector ｜ 与 A2 共用 ｜ 三模板 SIMT/Sort，N-byte mask ｜”。两卡覆盖同一 aclnnInplaceIndexFill 语义并明确 A2/A3 与 950 的 route 替换，便于跨平台迁移 selector、mask 和 workspace。
+<!-- cannbot:related:end -->

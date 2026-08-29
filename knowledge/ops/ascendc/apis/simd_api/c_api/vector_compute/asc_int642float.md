@@ -22,6 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscInt642Float](../reg/data_type_convert/asc_int642float.md)（`related`）：AscInt642Float 与《AscInt642float》的实质衔接是：AscInt64ToFloat 的 Vector 对应入口、反向 FloatToInt64、其他整数宽度和 Int64ToInt32 共同解释 2:1 lane 分布及窄化/扩宽边界。
-- [__ll2float_rd](../../../simt_api/math_functions/data_type_conversion/type_conversion_functions/_ll2float_rd.md)（`related`）：__ll2float_rd 是同一 FLOOR int64→float 的 SIMT 标量形式，提供 2^24/2^53 邻近整数的舍入例子，可作为线程标量实现和数值验证对照。
+- [AscInt642Float](../reg/data_type_convert/asc_int642float.md)（`same_topic`）：将int64_t类型数据转换为float，并支持多种舍入模式；将int64_t类型数据转换为float类型。两端定义相同的 int64_t 到 float 转换，分别给出 register 与 vector C API 形态。
 <!-- cannbot:related:end -->

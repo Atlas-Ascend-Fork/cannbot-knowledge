@@ -22,17 +22,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAtomicMin](../scalar_compute/asc_atomic_min.md)（`related`）：AscSetAtomicMin 与《AscAtomicMin》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [AscGetStoreAtomicConfig](asc_get_store_atomic_config.md)（`related`）：AscSetAtomicMin 与《AscGetStoreAtomicConfig》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [AscSetAtomicMax](asc_set_atomic_max.md)（`related`）：AscSetAtomicMin 与《AscSetAtomicMax》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [AscSetAtomicNone](asc_set_atomic_none.md)（`related`）：AscSetAtomicMin 与《AscSetAtomicNone》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [AscSetStoreAtomicConfigV1](asc_set_store_atomic_config_v1.md)（`related`）：AscSetAtomicMin 与《AscSetStoreAtomicConfigV1》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [AtomicMin](../../basic_api/atomic_operations/atomic_min.md)（`related`）：AscSetAtomicMin 与《AtomicMin》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [SetAtomicMin](../../basic_api/atomic_operations/set_atomic_min_isasi.md)（`related`）：AscSetAtomicMin 与《SetAtomicMin》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [asc_atomic_min](../../../simt_api/atomic_operations/asc_atomic_min.md)（`related`）：AscSetAtomicMin 与《asc_atomic_min》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [asc_set_atomic_min_int（废弃）](asc_set_atomic_min_int_deprecated.md)（`related`）：AscSetAtomicMin 与《asc_set_atomic_min_int（废弃）》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [关键特性说明（SIMD原子操作）](key_features.md)（`related`）：AscSetAtomicMin 与《关键特性说明（SIMD原子操作）》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [原子操作](../../basic_api/atomic_operations/atomic_operations.md)（`related`）：AscSetAtomicMin 与《原子操作》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [原子操作](atomic_operations.md)（`related`）：AscSetAtomicMin 与《原子操作》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [原子操作概述（SIMD原子操作）](atomic_operations_overview.md)（`related`）：AscSetAtomicMin 与《原子操作概述（SIMD原子操作）》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
+- [AscSetAtomicNone](asc_set_atomic_none.md)（`related`）：约束：使用结束后，建议通过asc_set_atomic_none关闭原子最小操作，以免影响后续相关指令功能。；一般和asc_set_atomic_add，asc_set_atomic_max，asc_set_atomic_min接口配合使用，用于在完成原子操作后关闭原子操作，避免影响后续功能。。asc_set_atomic_min 开启的原子最小状态需要由 asc_set_atomic_none 清除，但 none 也服务 add 和 max，故两者是启用与清理的任务链而非单一 min 接口的同义面。
+- [asc_set_atomic_min_int（废弃）](asc_set_atomic_min_int_deprecated.md)（`same_topic`）：该接口已废弃，请使用asc_set_atomic_min_int32替代。 设置对后续的从Unified Buffer/L0C Buffer/L1 Buffer到GM的数据传输开启原子比较取小操作。 废弃页给出迁移方向，当前接口族保留后续搬运比较取小的数据合同，支撑旧调用迁移。
 <!-- cannbot:related:end -->

@@ -21,9 +21,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscUpdateAddrReg](../reg_data_types/asc_update_addr_reg.md)（`related`）：AscStorealign1stPostupdate 与《AscUpdateAddrReg》的实质衔接是：AscStorealign1stPostupdate 在仅写首元素后更新地址，非 postupdate/通用 Store 与 AscUpdateAddrReg 明确写回粒度和地址推进两部分契约。
-- [reg数据搬出](reg_store.md)（`related`）：AscStorealign1stPostupdate 与《reg数据搬出》的实质衔接是：AscStorealign1stPostupdate 在仅写首元素后更新地址，非 postupdate/通用 Store 与 AscUpdateAddrReg 明确写回粒度和地址推进两部分契约。
-- [AscStore](asc_store.md)（`same_topic`）：AscStorealign1stPostupdate 与《AscStore》的实质衔接是：AscStorealign1stPostupdate 在仅写首元素后更新地址，非 postupdate/通用 Store 与 AscUpdateAddrReg 明确写回粒度和地址推进两部分契约。
-- [AscStoreAlignPostupdate](asc_storealign_postupdate.md)（`same_topic`）：AscStoreAlignPostupdate 与《AscStorealign1stPostupdate》的实质衔接是：StoreAlignPostupdate 在对齐写回后推进地址，pack/first/non-post 变体、Load postupdate、reg 搬出和 AscUpdateAddrReg 拆解数据分布与地址更新。
-- [AscStorealign1st](asc_storealign_1st.md)（`same_topic`）：AscStorealign1stPostupdate 与《AscStorealign1st》的实质衔接是：AscStorealign1stPostupdate 在仅写首元素后更新地址，非 postupdate/通用 Store 与 AscUpdateAddrReg 明确写回粒度和地址推进两部分契约。
+- [AscStorealign1st](asc_storealign_1st.md)（`related`）：“从矢量数据寄存器搬出第一个元素到UB的接口，忽略mask”给出焦点端事实；“接口调用后自动更新目的操作数地址。”给出候选端事实。基础接口定义首元素对齐存储，postupdate 变体在相同搬运语义上增加目的地址自动更新；二者直接支持调用变体选择。
 <!-- cannbot:related:end -->

@@ -32,7 +32,5 @@ Carry flag（进位/借位标志）用于表示加法进位或者减法无借位
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAddc](asc_addc.md)（`related`）：AscAddc 与 AscSubc 都显式消费和产生 carry mask，可组合实现多字宽加减。
-- [AscSub](asc_sub.md)（`same_topic`）：AscSub 不接收输入 carry，而 AscSubc 接收 carry_src 并输出 carry，按是否需要多字宽借位链选型。
-- [SubC](../../../basic_api/reg_vector_compute/basic_arithmetic/sub_c.md)（`same_topic`）：焦点处理SubC 的带借位减法、carry 输入输出和对应加法；AscSubc正文说明“根据mask对源操作数src0、src1及输入进位carry_src按元素求差，将结果写入dst，同时将进位结果写入carry寄存器”。候选与 SubC 共享 carry 寄存器契约，分别覆盖普通减法、带借位减法和带进位加法。
+- [SubC](../../../basic_api/reg_vector_compute/basic_arithmetic/sub_c.md)（`same_topic`）：该接口根据mask，对源操作数src0、src1及输入进位carry_src进行按元素求差操作，减法运算在硬件底层通过补码加法实现，将结果写入目的操作数dst，同时将每个元素的进位结果写入carry（存放进位的掩码寄存器）。；该接口根据mask，对源操作数srcReg0、srcReg1及输入进位carrySrc进行按元素求差操作，减法运算在硬件底层通过补码加法实现，将结果写入目的操作数dstReg，同时将每个元素的进位结果写入carry（存放进位的MaskReg寄存器）。。两卡描述同一 Reg 按掩码带进位减法语义，仅分别采用 C API 操作数名与基础 API RegTensor/MaskReg 名称。
 <!-- cannbot:related:end -->

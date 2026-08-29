@@ -73,3 +73,9 @@ platforms:
 - [gemma4-26b-a4b](../models/gemma4_26b_a4b.md)（`attn_tp=1` → DP=8；full 层 N_kv=2 致 TP 上限 2，故全用 DP 最大化吞吐）
 - [hy3-preview](../models/hy3_preview.md)（16 die `attn_tp_size=4` → Attention DP 体现在 attn_tp 之外的部署面；框架派生 `attn_dp_size=world_size//(attn_tp_size·cp_size)`）
 - [fsdp](../../../training/concepts/parallelism/fsdp.md)（跨域·训练：FSDP2 全分片数据并行（ZeRO-3 同源））
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Prefill MLA 并行选型：大请求量走纯 DP、少 / 长请求走 SP-TP-SP（RS+AG 保持层间序列切分）](../../optimizations/experience/rules/prefill_mla_dp_vs_sp_tp_sp_parallel.md)（`related`）：将不同的请求/batch 分配到不同的模型副本上并行推理的策略，用于提升推理吞吐量。在推理场景中通常以 DP 通信域的形式与 TP/EP 配合使用。；MLA prefill 有两条互补路线——纯 ［DP］(../../../concepts/parallelism/data_parallel.md) 面向吞吐，［SP-TP-SP］(../../../concepts/parallelism/sp_tp_sp.md) 混合切分面向时延与负载均衡。。概念卡定义推理 DP，规则卡把它落实为 MLA Prefill 吞吐路线并与 SP-TP-SP 比较。
+<!-- cannbot:related:end -->

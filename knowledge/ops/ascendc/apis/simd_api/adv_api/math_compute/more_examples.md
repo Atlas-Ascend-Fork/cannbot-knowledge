@@ -27,10 +27,6 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [如何使用Kernel侧临时空间](../../../../guides/programming_guide/library_api/advanced_api/quick_reference/how_to_use_kernel_temp_space.md)（`explains`）：临时空间指南系统解释 sharedTmpBuffer、框架代申请、GetXxxMaxMinTmpSize 与 factor-size 两套计算方式，正好覆盖四个样例共同采用的内存流程。
-- [Exp](exp_interface/exp.md)（`related`）：样例四直接以 Exp 展示 isReuseSource=false/true 对源 Tensor 保留与复用的差异；Exp 卡给出这一模板参数和临时空间重载的完整契约。
-- [GetAcosTmpBufferFactorSize](acos_interface/get_acos_tmp_buffer_factor_size.md)（`related`）：样例三需分别计算 Asin、Acos 的单次最大元素数并取较小值，目标接口提供 Acos 这一半的 factor 参数。
-- [GetAsinMaxMinTmpSize](asin_interface/get_asin_max_min_tmp_size.md)（`related`）：样例一明确在 Host 侧用 GetXxxMaxMinTmpSize 为 Asin 取得 maxValue/minValue，再把选定 tmpSize 写入 TilingData；目标卡正是该 Asin 专用接口。
-- [GetAsinTmpBufferFactorSize](asin_interface/get_asin_tmp_buffer_factor_size.md)（`related`）：样例三正是用 Asin 的 maxLiveNodeCount 与 extraBuf 反推 currentShapeSize；目标接口给出这两个量的定义和参数类型。
-- [GetCoreMemSize](../../../utils_api/platform_info/platform_ascend_c/get_core_mem_size.md)（`related`）：样例一、二都要在预留后查询实际可用 UB，再据此选择 tmpSize 或最大 Shape；GetCoreMemSize 是该预算步骤的直接输入。
+- [Asin](asin_interface/asin.md)（`related`）：样例一：展示GetXxxMaxMinTmpSize Tiling接口与kernel侧API配套使用。Host侧通过AscendC::TensorShape描述输入shape，调用GetXxxMaxMinTmpSize获取maxValue/minValue，结合PlatformAscendC获取UB剩余空间，选取合适的tmpSize写入tiling data；kernel侧读取tiling data分配临时空间并调用高阶API（以Asin为例）。；sharedTmpBuffer（输入）：临时缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 用于Asin内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAsinMaxMinTmpSize。；API 页提供样例所消费的 Asin 临时空间参数合同。
+- [ReserveLocalMemory](../../../utils_api/platform_info/platform_ascend_c/reserve_local_memory.md)（`related`）：样例二：展示PlatformAscendC::ReserveLocalMemory与kernel侧API配合使用。；该函数用于在Unified Buffer中预留指定大小的内存空间。调用该接口后，使用GetCoreMemSize可以获取实际可用的剩余Unified Buffer空间大小。；接口页具体定义样例二用于计算可用 UB 的预留和查询合同。
 <!-- cannbot:related:end -->

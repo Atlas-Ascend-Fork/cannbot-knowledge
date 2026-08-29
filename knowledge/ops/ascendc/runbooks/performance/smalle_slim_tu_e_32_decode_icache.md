@@ -100,10 +100,3 @@ bash scripts/_cannsim_stage4b.sh                          # VLOOPv2 复验（ful
 ```
 
 产物归档于 `docs/perf/round_050_stage4b/`（`summary.md` + `verdict.csv` + `samples_*.csv` + `run_full.log` + `cannsim/` + `raw/` + `syms/`）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscIcachePreload](../../apis/simd_api/c_api/cache_ctrl/asc_icache_preload.md)（`exemplifies`）：AscIcachePreload 与《删 smalle slim TU 致 e≤32 decode icache 税》的实质衔接是：Icache preload 的 C/C++ 入口和状态查询成对使用；slim TU 实测卡验证 I-cache 取指压力的性能后果。
-- [ICachePreLoad](../../apis/simd_api/basic_api/cache_control/i_cache_pre_load_isasi.md)（`exemplifies`）：该性能卡用 TU 规模 A/B 和 profile 判断 ICache 压力，能验证预加载是否解决真实前端瓶颈。
-<!-- cannbot:related:end -->

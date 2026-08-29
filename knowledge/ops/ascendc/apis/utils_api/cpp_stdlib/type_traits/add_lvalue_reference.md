@@ -23,11 +23,3 @@ platforms: ['950', a2, a3]
 返回值：add_lvalue_reference是一个结构体，其提供一个嵌套类型type，表示添加左值引用限定符后的类型。通过add_lvalue_reference::type来访问该类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [is_reference](is_reference.md)（`related`）：add_lvalue_reference 构造 T&，is_reference 可验证构造后的类型是否落入引用分支；二者用于编译期引用限定的生成与检查。
-- [remove_reference](remove_reference.md)（`related`）：add_lvalue_reference 与 remove_reference 对同一左值引用限定做添加和消除，是模板参数规范化后的逆向变换。
-- [add_rvalue_reference](add_rvalue_reference.md)（`same_topic`）：add_lvalue_reference 与 add_rvalue_reference 为同一类型分别添加左值/右值引用，是引用类别驱动的直接选择。
-<!-- cannbot:related:end -->

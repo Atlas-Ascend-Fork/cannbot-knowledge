@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_zero_inplace/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:22:12Z"
-updated_at: "2026-08-25T16:22:12Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -490,7 +490,7 @@ __aicore__ inline void ForeachZeroInplaceND<T>::ComputeAndCopyOut(uint16_t index
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持；`ascend910b` 接线 | 公开支持；`ascend910_93` 接线 | 公开 README 与 ACLNN 文档明确不支持；虽存在 `ascend950` OpDef/config/CMake，实现与发布文档冲突，不发布正式卡 |
 | Host/Launcher | 共用 `ForeachCommonTiling`，最多 50 核 | 同 A2 | 实现信号共用当前 Tiling，但不能覆盖公开“不支持”结论 |
@@ -504,7 +504,7 @@ __aicore__ inline void ForeachZeroInplaceND<T>::ComputeAndCopyOut(uint16_t index
 - `Q==0` 时 Device 的 tile 除法会除零；固定 Host 没有显式 guard，要求平台 `U` 足以容纳 POD 和至少一个对齐的双缓冲槽。
 - Host 报告 32 B workspace，但 Kernel 丢弃该指针；不能让复用实现依赖这 32 B 保存跨核状态。
 - unknown key 没有显式 error/fallback 分支，entry 直接结束且不会置零；入口/OpDef 的 dtype 校验必须先阻断。
-- A5 存在公开不支持与实现接线冲突，依据发布 gate 未生成 `foreach_zero_inplace_a5.md`。
+- 950 存在公开不支持与实现接线冲突，依据发布 gate 未生成 `foreach_zero_inplace_950.md`。
 - 固定仓未提供生成式 ACLNN bridge 的 C++ 实现、Tiling 序列化宏最终 ABI 布局和运行时 stream launch 代码；这些仅作为明确框架边界，不推测具体实现。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
@@ -514,9 +514,9 @@ __aicore__ inline void ForeachZeroInplaceND<T>::ComputeAndCopyOut(uint16_t index
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `foreach/foreach_zero_inplace/docs/aclnnForeachZeroInplace.md` | `aclnnForeachZeroInplaceGetWorkspaceSize`、`aclnnForeachZeroInplace` | 两段式原型、参数、dtype/shape、错误与 A2/A3/A5 公开支持表 |
+| 入口声明/约束 | `foreach/foreach_zero_inplace/docs/aclnnForeachZeroInplace.md` | `aclnnForeachZeroInplaceGetWorkspaceSize`、`aclnnForeachZeroInplace` | 两段式原型、参数、dtype/shape、错误与 A2/A3/950 公开支持表 |
 | 入口声明/约束 | `foreach/foreach_zero_inplace/README.md` | `ForeachZeroInplace` 产品表与公式 | 原地语义、连续约束、产品支持交叉证据 |
-| Host 注册 | `foreach/foreach_zero_inplace/op_host/foreach_zero_inplace_def.cpp` | `ops::ForeachZeroInplace` | 动态输入 dtype/format、AutoContiguous、A2/A3/A5 实现注册 |
+| Host 注册 | `foreach/foreach_zero_inplace/op_host/foreach_zero_inplace_def.cpp` | `ops::ForeachZeroInplace` | 动态输入 dtype/format、AutoContiguous、A2/A3/950 实现注册 |
 | Host/Tiling | `foreach/foreach_utils/op_host/foreach_tiling_func.cpp` | `Tiling4ForeachZeroInplaceTiling`、`IMPL_OP_OPTILING` | ZERO/TYPE_TENSORS/TYPE_INPLACE 初始化和 Tiling 注册 |
 | Host/Tiling | `foreach/foreach_utils/op_host/foreach_tiling_class.h` | `ForeachCommonTiling` | 校验、分核、UB、POD、blockDim、workspace 全部 producer |
 | POD | `foreach/foreach_utils/op_host/foreach_tiling_def.h` | `ForeachCommonTilingData` | 六个字段、数组上限和算子 POD 注册 |
@@ -534,4 +534,4 @@ __aicore__ inline void ForeachZeroInplaceND<T>::ComputeAndCopyOut(uint16_t index
 | workspace/内存 | 双槽 Queue；32 B workspace 只保留 | Q 字节而非元素；depth=2 必须计入；不得把保留 workspace 当算法区 | `DivideUbMemory1`；`Init` |
 | 同步 | Duplicate 后 V_MTE3，搬运后 MTE3_MTE2 | 两个等待都在 FreeTensor/复用之前 | `ComputeAndCopyOut` |
 | 精度与尾块 | 直接按 T 生成零；full 对齐 copy、tail 有效字节 copy | 不引入无证据 cast；tail 不可越过 Tensor 末端 | `ComputeAndCopyOut` |
-| 失败边界 | Host 校验 dtype/维数/列表一致性；unknown key 无 body | 必须阻断非法 dtype、Q=0、超 50 Tensor 与 A5 发布冲突 | `CheckOpInfo`；`GetTilingKeyByDtypeOnly`；router |
+| 失败边界 | Host 校验 dtype/维数/列表一致性；unknown key 无 body | 必须阻断非法 dtype、Q=0、超 50 Tensor 与 950 发布冲突 | `CheckOpInfo`；`GetTilingKeyByDtypeOnly`；router |

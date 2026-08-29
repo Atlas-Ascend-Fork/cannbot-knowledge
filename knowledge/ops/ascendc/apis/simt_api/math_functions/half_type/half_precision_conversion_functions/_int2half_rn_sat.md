@@ -29,7 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__int2half_rn](_int2half_rn.md)（`same_topic`）：《__int2half_rn》的任务是“遵循CAST_RINT模式，将int32类型数据转换为half类型数据，返回转换后的值。”。《__int2half_rn_sat》具体提供“将int32类型数据按照CAST_RINT模式转换为half类型数据，返回转换后的值。”，它直接用于int32→half 的舍入与饱和组合选择。
-- [__int2half_rna_sat](_int2half_rna_sat.md)（`same_topic`）：《__int2half_rna_sat》处理“将int32类型数据转换为half类型数据，并遵循CAST_ROUND模式，返回转换后的值。”。《__int2half_rn_sat》明确提供“将int32类型数据按照CAST_RINT模式转换为half类型数据，返回转换后的值。”，其参数、调用或验证步骤直接接入int32 到 half 的舍入与 saturation 组合选择。
-- [__int2half_rz](_int2half_rz.md)（`same_topic`）：《__int2half_rz》处理“遵循CAST_TRUNC模式，将int32类型数据转换为half类型数据，返回转换后的值。”。《__int2half_rn_sat》提供“将int32类型数据按照CAST_RINT模式转换为half类型数据，返回转换后的值。”，其具体合同或探针直接接入int32 到 half 的 TRUNC 与其他舍入/饱和组合选择。
+- [__int2half_rn](_int2half_rn.md)（`same_topic`）：功能：将int32类型数据按照CAST_RINT模式转换为half类型数据，返回转换后的值。；功能：遵循CAST_RINT模式，将int32类型数据转换为half类型数据，返回转换后的值。。两端共享 int32 到 half 的 CAST_RINT 转换；sat 变体还披露 SIMT 场景无法设置 CTRL、饱和模式不生效，互读可核对所谓饱和入口的实际行为。
 <!-- cannbot:related:end -->

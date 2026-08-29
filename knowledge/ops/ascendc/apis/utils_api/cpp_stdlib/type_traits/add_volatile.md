@@ -23,13 +23,3 @@ platforms: ['950', a2, a3]
 返回值：add_volatile是一个结构体，其提供一个嵌套类型type，表示添加volatile限定符后的类型。通过add_volatile::type来访问该类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [add_const](add_const.md)（`same_topic`）：add_const说明在程序编译时，为指定类型添加const限定符，可以用于在编译时进行类型转换。
-- [add_cv](add_cv.md)（`same_topic`）：add_cv说明在程序编译时，为指定类型添加const和volatile限定符，可以用于在编译时进行类型转换。
-- [is_const](is_const.md)（`same_topic`）：is_const说明在程序编译时，检测一个类型是否为const限定的类型，可以用于在编译时进行类型检查和条件处理。
-- [remove_cv](remove_cv.md)（`same_topic`）：remove_cv说明在程序编译时，对传入的模板参数类型移除const限定符或volatile限定符，或同时移除这两种限定符，可以用于在编译时进行类型转换。
-- [remove_volatile](remove_volatile.md)（`same_topic`）：remove_volatile说明在程序编译时，对传入的模板参数类型移除volatile限定符，可以用于在编译时进行类型转换。
-<!-- cannbot:related:end -->

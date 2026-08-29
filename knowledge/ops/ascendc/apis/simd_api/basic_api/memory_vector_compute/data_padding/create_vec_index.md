@@ -19,10 +19,3 @@ platforms: ['950', a2, a3]
 高维切分计算支持 mask 连续模式与逐 bit 模式，通过 dstBlkStride 与 dstRepStride 控制数据写入步长。
 参数 firstValue 为索引起始值，数据类型需与 dst 中元素类型一致；dst 的 TPosition 支持 VECIN、VECCALC、VECOUT，起始地址需 32 字节对齐。
 支持 Ascend 950PR/950DT、Atlas A2、Atlas A3、Atlas 200I/500 A2 推理产品以及 Atlas 推理系列产品 AI Core。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Gather](../scatter_gather/gather.md)（`related`）：CreateVecIndex 生成从 firstValue 递增的索引 Tensor，可直接作为 Gather 的索引输入。
-- [Scatter](../scatter_gather/scatter_isasi.md)（`related`）：同一索引向量也可驱动 Scatter 写入，形成索引生产到离散存储的任务链。
-<!-- cannbot:related:end -->

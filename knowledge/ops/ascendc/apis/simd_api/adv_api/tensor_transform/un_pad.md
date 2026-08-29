@@ -23,6 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Pad](pad.md)（`related`）：《UnPad（张量变换）》明确“对height \ width的二维Tensor在width方向上进行unpad，如果Tensor的width非32B对齐，则不支持调用本接口unpad。本接口具体功能场景如下：Tensor的width已32B对齐，以half为例，如16\16，进行UnPad，变成16\15。”；它与《Pad》的“对二维Tensor在width方向上pad到32B对齐，或对已对齐但含冗余数据的列填充设定值。”在实际调用参数、数据流或结果校验上直接衔接。
-- [UnPad Tiling](un_pad_tiling.md)（`same_topic`）：《UnPad Tiling》处理“用于获取UnPad Tiling参数。”。《UnPad（张量变换）》提供“对height \ width的二维Tensor在width方向上进行unpad，如果Tensor的width非32B对齐，则不支持调用本接口unpad。本接口具体功能场景如下：Tensor的width已32B对齐，以half为例，如16\16，进行UnPad，变成16\15。”，其具体合同或探针直接接入UnPad 与其逆向 Pad 的宽度对齐和 Tiling 参数合同。
+- [UnPad Tiling](un_pad_tiling.md)（`related`）：Tiling 卡规定“host侧Tiling接口，用于获取UnPad kernel计算所需的Tiling参数”；UnPad 卡明确“Tiling参数通过UnPad Tiling获取。”，形成 Host 计算并向 Kernel 传递 UnPadTiling 的直接调用合同。
 <!-- cannbot:related:end -->

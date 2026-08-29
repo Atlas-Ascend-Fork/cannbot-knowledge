@@ -28,5 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Scalbnf](scalbnf.md)（`same_topic`）：Scalbnf：Scalbnf与Scalblnf都按2的整数次幂缩放float，差别仅指数参数宽度，能直接帮助选择不会截断指数的原型。 目标卡《Scalblnf》补充：获取输入数据x与2的n次方的乘积。
+- [Scalbnf](scalbnf.md)（`same_topic`）：函数原型：float scalblnf(float x, int64_t n)；函数原型：float scalbnf(float x, int32_t n)。两接口都计算 x 与 2 的 n 次幂乘积，核心差异是指数 n 的 int64_t 与 int32_t 位宽，直接支撑按指数范围选择入口。
 <!-- cannbot:related:end -->

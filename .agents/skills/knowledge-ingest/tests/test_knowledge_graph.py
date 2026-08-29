@@ -85,6 +85,24 @@ class KnowledgeGraphTests(unittest.TestCase):
             capture_output=True,
         )
 
+    def decision_evidence(
+        self, left: dict[str, object], right: dict[str, object]
+    ) -> tuple[str, dict[str, object]]:
+        left_anchor = str(left["description"])
+        right_anchor = str(right["description"])
+        bridge = (
+            f"{left_anchor}; the first documented task depends on the boundary defined by "
+            f"the second endpoint; {right_anchor}"
+        )
+        return bridge, {
+            "anchors": {
+                str(left["id"]): left_anchor,
+                str(right["id"]): right_anchor,
+            },
+            "bridge": bridge,
+            "scope_note": "This judgment is limited to the documented mock workflow and contract.",
+        }
+
     def prepare_reviews(
         self, root: Path, accept_all_api_candidates: bool = False
     ) -> list[Path]:
@@ -110,17 +128,15 @@ class KnowledgeGraphTests(unittest.TestCase):
                         and focal["profile"] == candidate["profile"] == "apis"
                     )
                     if accept:
+                        reason, evidence = self.decision_evidence(focal, candidate)
                         kept.append(
                             {
                                 "target_id": candidate["id"],
                                 "relation": candidate["provisional_relation"],
-                                "reason": (
-                                    "Agent read both complete cards and found that the practical "
-                                    "failure boundary directly depends on the interface contract."
-                                ),
+                                "reason": reason,
                                 "confidence": "high",
                                 "strength": "direct",
-                                "evidence": {"bridge": "shared executable contract"},
+                                "evidence": evidence,
                             }
                         )
                 results.append(
@@ -157,6 +173,27 @@ class KnowledgeGraphTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = self.make_root(Path(temporary))
             reviews = self.prepare_reviews(root)
+            updated_reason = False
+            for review in reviews:
+                payload = json.loads(review.read_text(encoding="utf-8"))
+                review_changed = False
+                for result in payload["results"]:
+                    if result["kept"]:
+                        decision = result["kept"][0]
+                        anchors = list(decision["evidence"]["anchors"].values())
+                        reason_with_foreign_link = (
+                            f"{anchors[0]}; the failure depends on "
+                            "[a contract quoted from the other card]"
+                            "(../missing-in-this-directory.md); "
+                            f"| field | value |; {anchors[1]}"
+                        )
+                        decision["reason"] = reason_with_foreign_link
+                        decision["evidence"]["bridge"] = reason_with_foreign_link
+                        updated_reason = True
+                        review_changed = True
+                if review_changed:
+                    review.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertTrue(updated_reason)
             runbook = root / "knowledge/ops/ascendc/runbooks/compilation/get_tiling_data_failure.md"
             original_text = runbook.read_text(encoding="utf-8")
             aggregated = self.aggregate(root, reviews)
@@ -166,6 +203,11 @@ class KnowledgeGraphTests(unittest.TestCase):
             first_text = runbook.read_text(encoding="utf-8")
             self.assertIn("<!-- cannbot:related:start -->", first_text)
             self.assertIn("get_tiling_data_0.md", first_text)
+            self.assertIn(
+                "［a contract quoted from the other card］(../missing-in-this-directory.md)",
+                first_text,
+            )
+            self.assertIn("｜ field ｜ value ｜", first_text)
             authored_text = first_text.split("<!-- cannbot:related:start -->", 1)[0].rstrip() + "\n"
             self.assertEqual(original_text, authored_text)
 
@@ -197,6 +239,20 @@ class KnowledgeGraphTests(unittest.TestCase):
             verified = self.run_graph(root, "verify")
         self.assertEqual(2, verified.returncode)
         self.assertIn("edge judgment cache is stale", verified.stderr)
+
+    def test_verify_fails_closed_when_candidates_change(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(Path(temporary))
+            reviews = self.prepare_reviews(root)
+            self.assertEqual(0, self.aggregate(root, reviews).returncode)
+            self.assertEqual(0, self.run_graph(root, "finalize").returncode)
+            candidate_path = root / "artifacts/graphs/candidates.json"
+            candidates = json.loads(candidate_path.read_text(encoding="utf-8"))
+            candidates["lexical_limit_per_card"] += 1
+            candidate_path.write_text(json.dumps(candidates), encoding="utf-8")
+            verified = self.run_graph(root, "verify")
+        self.assertEqual(2, verified.returncode)
+        self.assertIn("edge judgment cache is stale for the current candidates", verified.stderr)
 
     def test_agent_edges_are_not_limited_to_four_per_card(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -325,6 +381,12 @@ class KnowledgeGraphTests(unittest.TestCase):
                     focal_id = item["focal"]["id"]
                     kept = []
                     if focal_id == left:
+                        left_anchor = str(item["focal"]["description"])
+                        right_anchor = "GET_TILING_DATA SharedContract interface contract variant 0."
+                        bridge = (
+                            f"{left_anchor} The failure is repaired by applying the contract; "
+                            f"{right_anchor}"
+                        )
                         kept.append(
                             {
                                 "target_id": right,
@@ -332,13 +394,17 @@ class KnowledgeGraphTests(unittest.TestCase):
                                 "target_fingerprint": candidates["card_fingerprints"][right],
                                 "relation": "exemplifies",
                                 "judge": "subagent:targeted-auditor",
-                                "reason": (
-                                    "The Agent read both complete cards and found the failure "
-                                    "depends directly on this interface contract."
-                                ),
+                                "reason": bridge,
                                 "confidence": "high",
                                 "strength": "direct",
-                                "evidence": {"bridge": "failure to interface contract"},
+                                "evidence": {
+                                    "anchors": {
+                                        left: left_anchor,
+                                        right: right_anchor,
+                                    },
+                                    "bridge": bridge,
+                                    "scope_note": "This relation is limited to the documented macro failure path.",
+                                },
                             }
                         )
                     results.append(
@@ -379,6 +445,30 @@ class KnowledgeGraphTests(unittest.TestCase):
             and {item["source"], item["target"]} == {left, right}
         )
         self.assertIn("subagent:targeted-auditor", accepted["judge"])
+
+    def test_agent_discovered_flag_is_rejected_for_an_existing_candidate(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(Path(temporary))
+            reviews = self.prepare_reviews(root)
+            candidates = json.loads(
+                (root / "artifacts/graphs/candidates.json").read_text(encoding="utf-8")
+            )
+            changed = False
+            for review in reviews:
+                payload = json.loads(review.read_text(encoding="utf-8"))
+                for result in payload["results"]:
+                    if result["kept"] and not changed:
+                        decision = result["kept"][0]
+                        decision["agent_discovered"] = True
+                        decision["target_fingerprint"] = candidates["card_fingerprints"][
+                            decision["target_id"]
+                        ]
+                        changed = True
+                review.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertTrue(changed)
+            aggregated = self.aggregate(root, reviews)
+        self.assertEqual(2, aggregated.returncode)
+        self.assertIn("only valid outside the current candidate set", aggregated.stderr)
 
     def test_aggregate_requires_multiple_agent_identities(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -425,7 +515,7 @@ class KnowledgeGraphTests(unittest.TestCase):
             self.assertEqual(conflict_pairs, changed)
             conflicted = self.aggregate(root, reviews)
             self.assertEqual(2, conflicted.returncode)
-            self.assertIn("require Agent adjudication", conflicted.stderr)
+            self.assertIn("require adjudication", conflicted.stderr)
             conflict_packet = json.loads(
                 (root / "artifacts/graphs/adjudication/conflicts.json").read_text(
                     encoding="utf-8"
@@ -434,6 +524,12 @@ class KnowledgeGraphTests(unittest.TestCase):
             self.assertEqual(2, len(conflict_packet["conflicts"]))
             adjudications = []
             for index, conflict in enumerate(conflict_packet["conflicts"]):
+                left_anchor = conflict["left"]["description"]
+                right_anchor = conflict["right"]["description"]
+                bridge = (
+                    f"{left_anchor}; both variants participate in one workflow but retain "
+                    f"different contracts; {right_anchor}"
+                )
                 adjudication = root / f"adjudication-{index}.json"
                 adjudication.write_text(
                     json.dumps(
@@ -447,16 +543,18 @@ class KnowledgeGraphTests(unittest.TestCase):
                                 {
                                     "left": conflict["pair"][0],
                                     "right": conflict["pair"][1],
+                                    "accept": True,
                                     "relation": "related",
-                                    "reason": (
-                                        "After reading both complete cards, the Agent found "
-                                        "distinct variants in one workflow rather than one "
-                                        "identical contract."
-                                    ),
+                                    "reason": bridge,
                                     "confidence": "high",
                                     "strength": "supporting",
                                     "evidence": {
-                                        "bridge": "shared workflow, distinct variants"
+                                        "anchors": {
+                                            conflict["pair"][0]: left_anchor,
+                                            conflict["pair"][1]: right_anchor,
+                                        },
+                                        "bridge": bridge,
+                                        "scope_note": "The variants are related only within the documented mock workflow.",
                                     },
                                 }
                             ],
@@ -492,6 +590,227 @@ class KnowledgeGraphTests(unittest.TestCase):
             incomplete = self.aggregate(root, reviews[:1])
         self.assertEqual(2, incomplete.returncode)
         self.assertIn("missing Agent review shards", incomplete.stderr)
+
+    def test_aggregate_rejects_template_or_truncated_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(Path(temporary))
+            reviews = self.prepare_reviews(root)
+            payload = json.loads(reviews[0].read_text(encoding="utf-8"))
+            decision = next(
+                decision
+                for result in payload["results"]
+                for decision in result["kept"]
+            )
+            decision["reason"] += "..."
+            reviews[0].write_text(json.dumps(payload), encoding="utf-8")
+            rejected = self.aggregate(root, reviews)
+        self.assertEqual(2, rejected.returncode)
+        self.assertIn("reason is truncated", rejected.stderr)
+
+    def test_aggregate_requires_verbatim_endpoint_anchors(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(Path(temporary))
+            reviews = self.prepare_reviews(root)
+            payload = json.loads(reviews[0].read_text(encoding="utf-8"))
+            decision = next(
+                decision
+                for result in payload["results"]
+                for decision in result["kept"]
+            )
+            endpoint = next(iter(decision["evidence"]["anchors"]))
+            old_anchor = decision["evidence"]["anchors"][endpoint]
+            fabricated = "This plausible endpoint statement is not present in the card body."
+            decision["evidence"]["anchors"][endpoint] = fabricated
+            decision["reason"] = decision["reason"].replace(old_anchor, fabricated)
+            decision["evidence"]["bridge"] = decision["evidence"]["bridge"].replace(
+                old_anchor, fabricated
+            )
+            reviews[0].write_text(json.dumps(payload), encoding="utf-8")
+            rejected = self.aggregate(root, reviews)
+        self.assertEqual(2, rejected.returncode)
+        self.assertIn("anchor is not present in endpoint body", rejected.stderr)
+
+    def test_aggregate_allows_nonterminal_ellipsis_in_reason(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(Path(temporary))
+            reviews = self.prepare_reviews(root)
+            payload = json.loads(reviews[0].read_text(encoding="utf-8"))
+            decision = next(
+                decision
+                for result in payload["results"]
+                for decision in result["kept"]
+            )
+            decision["reason"] = decision["reason"].replace(
+                "the first documented task", "the first ... documented task"
+            )
+            decision["evidence"]["bridge"] = decision["evidence"]["bridge"].replace(
+                "the first documented task", "the first ... documented task"
+            )
+            reviews[0].write_text(json.dumps(payload), encoding="utf-8")
+            accepted = self.aggregate(root, reviews)
+        self.assertEqual(0, accepted.returncode, accepted.stderr)
+
+    def test_explicit_keep_reject_conflict_requires_independent_adjudication(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(Path(temporary))
+            reviews = self.prepare_reviews(root)
+            self.assertEqual(0, self.aggregate(root, reviews).returncode)
+            cache_path = root / "artifacts/graphs/edge_judgments.json"
+            self.assertTrue(cache_path.is_file())
+
+            payloads = [json.loads(path.read_text(encoding="utf-8")) for path in reviews]
+            source_result = next(
+                result
+                for payload in payloads
+                for result in payload["results"]
+                if result["kept"]
+            )
+            source = source_result["focal_id"]
+            target = source_result["kept"][0]["target_id"]
+            reverse_result = next(
+                result
+                for payload in payloads
+                for result in payload["results"]
+                if result["focal_id"] == target
+            )
+            reverse_decision = next(
+                decision
+                for decision in reverse_result["kept"]
+                if decision["target_id"] == source
+            )
+            reverse_result["kept"].remove(reverse_decision)
+            anchors = reverse_decision["evidence"]["anchors"]
+            anchor_values = list(anchors.values())
+            rejection_bridge = (
+                f"{anchor_values[0]}; the two endpoint facts are not related within this "
+                f"documented scope; {anchor_values[1]}"
+            )
+            reverse_result["rejected"] = [
+                {
+                    "target_id": source,
+                    "reason": rejection_bridge,
+                    "evidence": {
+                        "anchors": anchors,
+                        "bridge": rejection_bridge,
+                        "scope_note": "The rejection applies only to this mock candidate pair.",
+                    },
+                }
+            ]
+            for path, payload in zip(reviews, payloads, strict=True):
+                path.write_text(json.dumps(payload), encoding="utf-8")
+
+            conflicted = self.aggregate(root, reviews)
+            self.assertEqual(2, conflicted.returncode)
+            self.assertIn("Agent decision conflicts require adjudication", conflicted.stderr)
+            self.assertFalse(cache_path.exists())
+            conflict_packet = json.loads(
+                (root / "artifacts/graphs/adjudication/conflicts.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual("existence", conflict_packet["conflicts"][0]["kind"])
+
+            pair = conflict_packet["conflicts"][0]["pair"]
+            left_anchor = conflict_packet["conflicts"][0]["left"]["description"]
+            right_anchor = conflict_packet["conflicts"][0]["right"]["description"]
+            rejection_bridge = (
+                f"{left_anchor}; these documented facts have no semantic connection in the "
+                f"mock workflow; {right_anchor}"
+            )
+            adjudication = root / "adjudication-reject.json"
+            adjudication.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 2,
+                        "conflict_fingerprint": conflict_packet["conflict_fingerprint"],
+                        "judge": "subagent:independent-adjudicator",
+                        "decisions": [
+                            {
+                                "left": pair[0],
+                                "right": pair[1],
+                                "accept": False,
+                                "reason": rejection_bridge,
+                                "confidence": "high",
+                                "strength": "direct",
+                                "evidence": {
+                                    "anchors": {
+                                        pair[0]: left_anchor,
+                                        pair[1]: right_anchor,
+                                    },
+                                    "bridge": rejection_bridge,
+                                    "scope_note": "The rejection applies only to this mock candidate pair.",
+                                },
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            arguments = ["aggregate"]
+            for review in reviews:
+                arguments.extend(("--input", str(review)))
+            arguments.extend(("--adjudication", str(adjudication)))
+            aggregated = self.run_graph(root, *arguments)
+            self.assertEqual(0, aggregated.returncode, aggregated.stderr)
+            cache = json.loads(cache_path.read_text(encoding="utf-8"))
+        self.assertFalse(
+            any({item["source"], item["target"]} == set(pair) for item in cache["judgments"])
+        )
+
+    def test_validate_rechecks_evidence_and_verify_checks_html(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(Path(temporary))
+            reviews = self.prepare_reviews(root)
+            self.assertEqual(0, self.aggregate(root, reviews).returncode)
+            finalized = self.run_graph(root, "finalize")
+            self.assertEqual(0, finalized.returncode, finalized.stderr)
+            html_path = root / "artifacts/graphs/graph.html"
+            html_path.write_text(html_path.read_text(encoding="utf-8") + "stale", encoding="utf-8")
+            stale_html = self.run_graph(root, "verify")
+            self.assertEqual(2, stale_html.returncode)
+            self.assertIn("graph visualization is stale", stale_html.stderr)
+
+            self.assertEqual(0, self.run_graph(root, "viz").returncode)
+            cache_path = root / "artifacts/graphs/edge_judgments.json"
+            cache = json.loads(cache_path.read_text(encoding="utf-8"))
+            cache["judgments"][0]["evidence"] = {}
+            cache_path.write_text(json.dumps(cache), encoding="utf-8")
+            invalid_cache = self.run_graph(root, "verify")
+        self.assertEqual(2, invalid_cache.returncode)
+        self.assertIn("anchor both endpoints", invalid_cache.stderr)
+
+    def test_reset_only_removes_reproducible_graph_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(Path(temporary))
+            self.assertEqual(0, self.run_graph(root, "candidates").returncode)
+            self.assertEqual(0, self.run_graph(root, "make-shards", "--count", "2").returncode)
+            marker = root / ".gitcode/keep.txt"
+            marker.parent.mkdir(parents=True)
+            marker.write_text("preserve", encoding="utf-8")
+            card = root / "knowledge/ops/ascendc/apis/get_tiling_data_0.md"
+            card_before = card.read_bytes()
+            reset = self.run_graph(root, "reset")
+            self.assertEqual(0, reset.returncode, reset.stderr)
+            self.assertEqual("preserve", marker.read_text(encoding="utf-8"))
+            self.assertEqual(card_before, card.read_bytes())
+            self.assertFalse((root / "artifacts/graphs/candidates.json").exists())
+            self.assertFalse((root / "artifacts/graphs/judgment_shards").exists())
+
+    def test_finalize_validates_cache_before_mutating_cards(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(Path(temporary))
+            reviews = self.prepare_reviews(root)
+            self.assertEqual(0, self.aggregate(root, reviews).returncode)
+            card = root / "knowledge/ops/ascendc/runbooks/compilation/get_tiling_data_failure.md"
+            before = card.read_bytes()
+            cache_path = root / "artifacts/graphs/edge_judgments.json"
+            cache = json.loads(cache_path.read_text(encoding="utf-8"))
+            cache["judgments"][0]["reason"] += "..."
+            cache_path.write_text(json.dumps(cache), encoding="utf-8")
+            finalized = self.run_graph(root, "finalize")
+            self.assertEqual(2, finalized.returncode)
+            self.assertIn("reason is truncated", finalized.stderr)
+            self.assertEqual(before, card.read_bytes())
 
 
 if __name__ == "__main__":

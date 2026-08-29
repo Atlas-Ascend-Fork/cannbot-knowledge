@@ -18,10 +18,3 @@ platforms: ['950']
 通过统一Copy接口将L1 Buffer中ScaleA数据搬运到L0AScale Buffer，用于MX矩阵计算中Scale系数输入。搬运参数由Tensor Layout自动推导。仅Ascend 950PR/950DT支持。试验接口。
 
 函数原型通过模板参数指定AtomType、DstTensor和SrcTensor类型。约束：遵循Cube计算地址对齐约束。头文件：tensor_api/tensor.h。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetTensorScaleA](../../../adv_api/cube_compute/matmul_kernel/set_tensor_scale_a.md)（`related`）：CopyL1ToL0ScaleA 把 A 的量化 scale 搬入 L0ScaleA，而 SetTensorScaleA 绑定该 scale 张量；绑定必须先于迭代中的 scale 搬运。
-- [SetScaleAType](../../../adv_api/cube_compute/matmul_tiling/set_scale_a_type.md)（`same_topic`）：《SetScaleAType》处理“MxMatmul场景，设置scaleA矩阵的位置、数据格式、是否转置等信息，这些信息需要和Kernel侧的设置保持一致。如果不调用本接口，scaleA矩阵的信息将与SetAType中设置的A矩阵的信息保持一致。”。《CopyL1ToL0ScaleA》提供“通过Tensor API的Copy接口将L1 Buffer中的左矩阵缩放数据搬运到L0ScaleA Buffer，数据类型固定为fp8_e8m0_t。”，其具体合同或探针直接接入MxMatmul 的 scaleA 位置/格式、Kernel scale 张量、搬运和 Mx 模式启用合同。
-<!-- cannbot:related:end -->

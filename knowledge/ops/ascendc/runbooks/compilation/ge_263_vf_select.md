@@ -85,12 +85,5 @@ asc_vf_call<MaskedFillSelectVF<DT>>(/* ... */);
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGe](../../apis/simd_api/c_api/vector_compute/asc_ge.md)（`exemplifies`）：《GE图模式263: 自定义VF Select被禁》给出“MaskedFill kernel 用 __simd_vf__/asc_vf_call 自定义 VF 实现 Select，aclnn 预编译全绿但 GE 图模式 TBE 动态编译生成坏 binary 触发 AI Core error 263（aivec）；须跑图模式的 regbase kernel 中自定义 VF 路线 banned。”；该约束/探针可直接复现、解释或前置验证《AscGe》中的“Ge（greater than or equal to），逐元素比较src0 >= src1是否成立，成立则输出结果为1，否则输出结果为0，每个元素的比较结果占一个bit。”。
-- [Select](../../apis/simd_api/adv_api/data_filter/select.md)（`exemplifies`）：正式 Select 接口页给出支持模式和参数约束，可验证 VF 调用是否落在文档契约内。
-- [Select](../../apis/simd_api/basic_api/reg_vector_compute/compare_and_select/select.md)（`exemplifies`）：GE图模式263: 自定义VF Select被禁说明MaskedFill kernel 用 __simd_vf__/asc_vf_call 自定义 VF 实现 Select，aclnn 预编译全绿但 GE 图模式 TBE 动态编译生成坏 binary 触发 AI Core error 263（aivec）；须跑图模式的 regbase kernel 中自定义 VF 路线 banned。
-- [aclnn 全绿但 GE 图模式 error 263 分层判别](aclnn_ge_error_263.md)（`related`）：总诊断卡的 GE-only error 263 分支之一就是自定义 VF Select 在图模式被禁止；目标卡提供对应日志签名和替换动作。
-- [arch35 Select 异步SIMT同步失效致分支错选](../precision/arch35_select_simt.md)（`related`）：SIMT Select 路径提供替代实现与 A/B，可区分 VF lowering 故障和算法语义错误。
-- [arch35 __aicore__ 调 LocalMemBar 报 507035](arch35_aicore_localmembar_507035.md)（`related`）：《arch35 __aicore__ 调 LocalMemBar 报 507035》处理“Ascend950PR (arch35/dav_c310) 上 Reg::LocalMemBar<VEC_STORE,VEC_LOAD> 是 __simd_callee__ 函数，须在 __simd_vf__ (VF) 调用上下文内使用；从常规 __aicore__ kernel 函数直接调用触发运行时 507035 (AIV 错误)。本 trace 两次独立调用（旧 4-buffer 代码、新 5-buffer 重排代码）均 507035。作为 count-based Compare→Select mask 隐患的最小 sync 修复手段 banned。”。《GE图模式263: 自定义VF Select被禁》明确提供“MaskedFill kernel 用 __simd_vf__/asc_vf_call 自定义 VF 实现 Select，aclnn 预编译全绿但 GE 图模式 TBE 动态编译生成坏 binary 触发 AI Core error 263（aivec）；须跑图模式的 regbase kernel 中自定义 VF 路线 banned。”，其参数、调用或验证步骤直接接入LocalMemBar 507035 的 Compare/Select 调用触发、屏障约束和可执行替代。
-- [arch35 count Compare Select 异步VF 存读 RAW](../precision/arch35_count_compare_select_vf_raw.md)（`related`）：raw VF 案例给出 Compare+Select 的 mask 生成和消费细节，可核对 Select 代码本身而非把 263 仅归因于 GE。
-- [arch35 分块 Select 掩码偏移非 32B 对齐崩溃 507035](arch35_select_32b_507035.md)（`related`）：该卡说明 Select mask 地址对齐会在运行期报 507035，与本卡编译/图阶段 263 不同，帮助按阶段分流。
+- [aclnn 全绿但 GE 图模式 error 263 分层判别](aclnn_ge_error_263.md)（`same_topic`）：分层判别卡把该路径定位为“探针 5 命中 VF → 先按自定义 VF 在 TBE 动态编译下被禁的失败路线修复；改普通 API 后 aclnn 仍绿但 GE 仍崩 → 根因不在 VF/API 选型，在 TBE 生成 binary 的向量指令执行期（本 trace 终态，未追到机制层）。”；专项卡则明确“**banned 路线：在须跑 GE 图模式的 regbase arch35 kernel 中用 `__simd_vf__`/`asc_vf_call` 自定义 VF 实现 Select。**”，两端针对同一次 MaskedFill GE 263 排障中的同一 VF 路线与后续未闭合根因。
 <!-- cannbot:related:end -->

@@ -13,9 +13,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/a12e98a866f5f9ef51053e47f5e8151ac703caf3/docs/design/multi_stream_principles.md
   role: supporting
 created_at: '2026-06-04T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a2
 ---
 
 # NPU 多流优化(Multi-Stream)
@@ -574,3 +574,17 @@ block-beta
 - [hunyuan3d](../../../spatial/concepts/models/hunyuan3d.md)（跨域·空间智能：Hunyuan3D TaylorSeer offload 用 copy/cal 双流重叠）
 - 跨域·具身：[cosmos-transfer2.5](../../../embodied/concepts/world_models/cosmos_transfer2_5.md)（Cosmos 多流重叠）
 - [deepseek-v4](../models/deepseek_v4.md)（DeepSeek-V4 Attention 多流：MLAProlog‖q_rms_norm、LI‖CSA-Compressor 经 CV 控核掩盖）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [KV cache 卸载到 Host 内存：设备单层 temp + 专用流 D2H 重叠 + 逐层异步搬算掩盖](../../guides/experience/interventions/kvcache_offload_host_swap.md)（`related`）：焦点卡要求“用「专用流 + event 依赖」把卸载与计算重叠、又保证共享的单层缓冲不被提前覆盖”；多流卡定义“**Event** 是跨 Stream 的同步原语：Stream A 上的 `record_event` 在执行流上标记一个时间点，Stream B 上的 `wait_event` 在该时间点完成后才继续（不同执行模式接口不同）。”，直接补足这一读写边界的同步语义。
+- [MoE Multi-Stream](moe_multi_stream.md)（`related`）：焦点卡以“把 MoE 层内部可并行的子计算/通信段分配到多条 stream，让它们在时间轴上重叠”给出 MoE 专用拓扑，候选卡明确把“MoE 子场景（共享专家双流、ScMoE 控核变体）的拓扑细节”下钻到焦点卡；通用规划、执行模式与 profiling 方法可直接用于审查该专用拓扑。
+- [Prefill 用 micro-batch 双流把 MoE dispatch/combine 通信藏进计算](../../guides/experience/interventions/prefill_micro_batch_dual_stream_moe_overlap.md)（`related`）：要使能多 Stream 并行，需要计算图中存在满足并行条件的结构：当多个算子的输入都依赖于同一前驱算子的输出、彼此之间没有数据依赖时，这些算子在拓扑上即可并发执行。如下图，前置算子 A 的输出同时被 B 与 C 两条分支消费；B、C 之间无数据依赖，可分别承载于两条 Stream 并行，最终在汇合算子 D 合并。；把每层 prefill 计算划成 6 段：`atten`（MLA + o_proj）、`init_routing`、`dispatch`（token 分发 AllToAll）、`mlp`（路由专家 + 共享专家）、`combine`（token 回收 AllToAll）、`finalize_routing`。核心是让一路的计算与另一 micro-batch 的 dispatch/combine 通信重叠。。通用卡的无依赖分支并发条件在该方案中具体化为不同 micro-batch 的计算与 dispatch/combine 通信重叠。
+- [decode 多流并行 overlap：模块级双流控核平衡 + 前处理子链切流](../../optimizations/experience/rules/decode_multi_stream_overlap_core_balance.md)（`related`）：要使能多 Stream 并行，需要计算图中存在满足并行条件的结构：当多个算子的输入都依赖于同一前驱算子的输出、彼此之间没有数据依赖时，这些算子在拓扑上即可并发执行。如下图，前置算子 A 的输出同时被 B 与 C 两条分支消费；B、C 之间无数据依赖，可分别承载于两条 Stream 并行，最终在汇合算子 D 合并。；**控核平衡是关键**：多流下单流独占全部 AI core 会压低另一流的算子并行度 → 用 `limit_core_num` 给主流/副流各分一段 core，使两流计算时间对齐、消除拖尾。判断依据是「让并发两流的计算时间对齐」，不是照搬固定常量。。通用卡确定分支具备并发拓扑，优化卡补上实际并发时避免单流独占核心并校准拖尾的资源约束。
+- [图模式多流并行的跨流同步：ge_graph 控制边 vs aclgraph tagged-event 及 API 选型](../../guides/experience/interventions/graph_mode_multi_stream_cross_stream_sync_api.md)（`related`）：要使能多 Stream 并行，需要计算图中存在满足并行条件的结构：当多个算子的输入都依赖于同一前驱算子的输出、彼此之间没有数据依赖时，这些算子在拓扑上即可并发执行。如下图，前置算子 A 的输出同时被 B 与 C 两条分支消费；B、C 之间无数据依赖，可分别承载于两条 Stream 并行，最终在汇合算子 D 合并。；在图模式 decode 下用多流（［multi-stream］(../../../concepts/techniques/multi_stream.md) / ［moe-multi-stream］(../../../concepts/techniques/moe_multi_stream.md)）让互不依赖的计算 overlap 掉时延（典型：MoE 共享专家计算掩盖路由专家 TP 通信、indexer prolog 的 q/kv 侧流）。。通用卡先判定可并行的无依赖分支，图模式卡继续规定这些分支进入图后端后的跨流依赖表达。
+- [图模式多流跨流同步的失败签名：漏配同步/守卫不一致/重复创建 event/流未转发](../../runbooks/runtime/graph_mode_multi_stream_sync_failures.md)（`related`）：要使能多 Stream 并行，需要计算图中存在满足并行条件的结构：当多个算子的输入都依赖于同一前驱算子的输出、彼此之间没有数据依赖时，这些算子在拓扑上即可并发执行。如下图，前置算子 A 的输出同时被 B 与 C 两条分支消费；B、C 之间无数据依赖，可分别承载于两条 Stream 并行，最终在汇合算子 D 合并。；在图模式多流路径上改动后，出现"多流开关一开结果就不稳 / 图模式 + MTP 执行失败 / 重复创建 event"这类症状时对号入座。正确的跨流同步 API 与写法在 ［graph-mode-multi-stream-cross-stream-sync-api］(../../guides/experience/interventions/graph_mode_multi_stream_cross_stream_sync_api.md)；本页是那套写法**写错时的四种失败签名**。。通用卡建立可并发分支和最终汇合关系，runbook 把图模式下该关系同步不完整时的错误、失败与重复 event 信号收敛成排障入口。
+- [多流 + TP 下 MoE 无报错卡死：排查并发分支复用同名 Python 变量（路由 vs 共享专家）](../../runbooks/runtime/multistream_branch_variable_name_collision_hang.md)（`related`）：要使能多 Stream 并行，需要计算图中存在满足并行条件的结构：当多个算子的输入都依赖于同一前驱算子的输出、彼此之间没有数据依赖时，这些算子在拓扑上即可并发执行。如下图，前置算子 A 的输出同时被 B 与 C 两条分支消费；B、C 之间无数据依赖，可分别承载于两条 Stream 并行，最终在汇合算子 D 合并。；把两条并发分支复用的同名变量**解耦改名**——本例把路由专家一路的输出从 `pertoken_scale` 改为 `dynamic_scale`，与共享专家的 `pertoken_scale` 分开（`moe_args` 里的赋值源同步改名），卡死即消除：。通用卡给出两条无依赖分支的并发结构，runbook 则定位这种结构中同名变量被编译器错误串联造成卡死并给出改名验证。
+- [多流注意力主流张量被通信流消费致 NPU 内存不释放：跨流消费前 clone 副本解耦生命周期](../../runbooks/runtime/multistream_cross_stream_tensor_lifetime_clone.md)（`related`）：要使能多 Stream 并行，需要计算图中存在满足并行条件的结构：当多个算子的输入都依赖于同一前驱算子的输出、彼此之间没有数据依赖时，这些算子在拓扑上即可并发执行。如下图，前置算子 A 的输出同时被 B 与 C 两条分支消费；B、C 之间无数据依赖，可分别承载于两条 Stream 并行，最终在汇合算子 D 合并。；进入通信流消费前，先把主流张量 `.clone()` 一份到临时变量，**通信流只消费这个副本**。clone 出的副本归属消费流的生命周期，与原张量解耦；原张量在主流上不再被外部流引用，其 NPU 内存即可正常释放。。通用卡描述生产者输出被多流分支消费的拓扑，runbook 给出跨流消费者延长张量生命周期时的 clone 修复。
+- [带共享专家的 MoE decode 双流重叠：共享专家副流掩盖路由专家 dispatch/GMM/combine](../../optimizations/experience/rules/moe_shared_expert_decode_dual_stream.md)（`related`）：要使能多 Stream 并行，需要计算图中存在满足并行条件的结构：当多个算子的输入都依赖于同一前驱算子的输出、彼此之间没有数据依赖时，这些算子在拓扑上即可并发执行。如下图，前置算子 A 的输出同时被 B 与 C 两条分支消费；B、C 之间无数据依赖，可分别承载于两条 Stream 并行，最终在汇合算子 D 合并。；主流跑路由专家主路径（gate/topk → dispatch → GMM → combine），副流跑共享专家前向，汇合点再同步、相加。仅在 decode（`not is_prefill`）启用。。通用卡给出分叉并发后在汇合点合并的骨架，优化卡把它落实为路由专家主流与共享专家副流并在相加前同步。
+<!-- cannbot:related:end -->

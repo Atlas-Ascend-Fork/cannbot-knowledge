@@ -21,7 +21,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [FixpipeL0CToGM](../cube_compute_store/fixpipe_l0_c_to_gm.md)（`related`）：FixpipeL0CToGM说明将L0C Buffer中的矩阵计算结果搬运至Global Memory，支持随路量化、ReLU和格式转换的组合接口。
-- [NZ2NZ](nz2_nz.md)（`related`）：NZ2DN 面向 DN 目标排布，是同一 L0C 搬出阶段的另一布局转换。
-- [SetFixpipeNz2ndFlag](../cube_store_aux_config/set_fixpipe_nz2nd_flag.md)（`related`）：SetFixpipeNz2ndFlag说明DataCopy数据搬运（L0C Buffer->GM）过程中进行随路格式转换（NZ格式转换为ND格式）时，通过调用该接口设置格式转换的相关配置。
+- [卷积格式转换](convolution_format_conversion.md)（`related`）：特别的，针对Ascend 950PR/Ascend 950DT产品，还支持Fixpipe指令通过NZ2DN能力，将L0C Buffer上数据转为NCHW格式输出。转换示意图如下所示：；矩阵搬出时将 NZ 格式矩阵转换为 DN 格式矩阵。通过 FixpipeParamsArch3510 的 config=CFG_COLUMN_MAJOR 开启。。格式转换卡指定 950 的 NZ2DN 输出 NCHW，API 卡补齐列主序开关和 DN stride 参数。
 <!-- cannbot:related:end -->

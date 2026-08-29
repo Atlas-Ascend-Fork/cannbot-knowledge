@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/build.sh
     role: implementation
 created_at: "2026-08-25T18:33:48Z"
-updated_at: "2026-08-25T18:33:48Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -416,9 +416,9 @@ LocalTensor<int32_t> offsetInt32_ = offsetUb_.Get<int32_t>(alignedLength);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 V3，`source_closed` | 支持 V3，`source_closed` | 公开文档/OpDef/binary JSON 声称支持，但全局 AscendC 编译清单缺 `ascend950`，本次不发布 A5 卡 |
+| 支持状态 | 支持 V3，`source_closed` | 支持 V3，`source_closed` | 公开文档/OpDef/binary JSON 声称支持，但全局 AscendC 编译清单缺 `ascend950`，本次不发布 950 卡 |
 | Host/Launcher | `IsRegbase()==false`，2D scale 首维必须 1；blockDim=1 | 与 A2 相同 | API 允许 scale `(g,n)`，InferShape 还可在 1D offset 更长时取 offset shape；构建闭包不足 |
 | Kernel/资源 | arch 2201，tail 命中 `__CCE_AICORE__>200` DataCopyPad | 与 A2 相同 | 源文件有 `__NPU_ARCH__==3510` DataCopyPad 分支，但无活动 global compile unit 证据 |
 
@@ -429,7 +429,7 @@ LocalTensor<int32_t> offsetInt32_ = offsetUb_.Get<int32_t>(alignedLength);
 - Host 没有 UB 能力检查；body 主分配 131072 B，`offsetLength==1` 还会在此前对同一 TBuf 发出 64 B `InitBuffer`，重新初始化的底层回收语义在固定仓不可见。
 - entry 将 workspace 和 user workspace 为空视为静默无输出；必须传入第一段返回的 workspace。
 - `SetCopyParams(DataCopyParams params)` 按值传参，其对 `blockCount/srcStride/dstStride` 的赋值不会回写调用者；当前路径依赖外部 AscendC `DataCopyParams` 默认构造值，该类定义不在固定仓中，迁移时应显式按值构造 `{1,byteLen,0,0}`。
-- A5 的公开支持与活动构建证据冲突：`ascend950` binary JSON 存在，但 `scripts/kernel/binary_config/ascendc_config.json::TransQuantParamV2` 不含 `ascend950`，因此本次不生成 `trans_quant_param_a5.md`。
+- 950 的公开支持与活动构建证据冲突：`ascend950` binary JSON 存在，但 `scripts/kernel/binary_config/ascendc_config.json::TransQuantParamV2` 不含 `ascend950`，因此本次不生成 `trans_quant_param_950.md`。
 - 固定仓未展开 ACLNN inner executor 壳、`TPipe` allocator 和 AscendC primitive 内部，它们作为明确框架/原语边界；本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -438,11 +438,11 @@ LocalTensor<int32_t> offsetInt32_ = offsetUb_.Get<int32_t>(alignedLength);
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `quant/trans_quant_param_v2/docs/aclnnTransQuantParamV3.md` | `aclnnTransQuantParamV3*` 文档 | 公开 API、语义、shape/dtype、A2/A3/A5 支持表 |
+| 入口声明/约束 | `quant/trans_quant_param_v2/docs/aclnnTransQuantParamV3.md` | `aclnnTransQuantParamV3*` 文档 | 公开 API、语义、shape/dtype、A2/A3/950 支持表 |
 | 入口声明/约束 | `quant/trans_quant_param_v2/op_host/op_api/aclnn_trans_quant_param_v3.h` | `aclnnTransQuantParamV3GetWorkspaceSize`、`aclnnTransQuantParamV3` | C ABI 声明 |
 | 入口实现 | `quant/trans_quant_param_v2/op_host/op_api/aclnn_trans_quant_param_v2.cpp` | `CheckParams`、`aclnnTransQuantParamV3*` | 校验顺序、V3→V2 inner 复用、out dtype 统一 |
 | Host/Tiling/Launcher | `quant/trans_quant_param_v2/op_host/trans_quant_param_v2_def.cpp` | `ops::TransQuantParamV2` | I/O/attr 与平台 OpDef 注册 |
-| Host/Tiling/Launcher | `quant/trans_quant_param_v2/op_host/trans_quant_param_v2_infershape.cpp` | `InferShape4TransQuantParamV2`、`IsDavidSupported` | shape 推导与 A5 差异 |
+| Host/Tiling/Launcher | `quant/trans_quant_param_v2/op_host/trans_quant_param_v2_infershape.cpp` | `InferShape4TransQuantParamV2`、`IsDavidSupported` | shape 推导与 950 差异 |
 | Host/Tiling/Launcher | `quant/trans_quant_param_v2/op_host/trans_quant_param_v2_tiling.h` | `TransQuantParamV2TilingData` | POD 三字段 |
 | Host/Tiling/Launcher | `quant/trans_quant_param_v2/op_host/trans_quant_param_v2_tiling.cpp` | `TilingFunc` | 长度/roundMode/workspace/blockDim producer |
 | Kernel entry/body | `quant/trans_quant_param_v2/op_kernel/trans_quant_param_v2.cpp` | `trans_quant_param_v2` | workspace guard、entry、唯一 body launch |

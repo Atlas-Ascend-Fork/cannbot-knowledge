@@ -23,6 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSetAtomicMax](asc_set_atomic_max.md)（`same_topic`）：asc_set_atomic_max_int（废弃） 的核心契约是“该接口已废弃，请使用asc_set_atomic_max_int32替代。 头文件路径："c_api/atomic/atomic.h"。 设置计算结果以原子比较的方式传输到GM。在拷贝前，将待传输的int32_t数据与GM中已有数据进行逐元素比较，并将最大值写入GM”；AscSetAtomicMax 补充“对后续从UB/L0C/L1到GM的数据传输开启原子比较取大，将待拷贝内容与GM已有内容比较后取最大值写入GM”。
-- [SetAtomicMax](../../basic_api/atomic_operations/set_atomic_max_isasi.md)（`same_topic`）：asc_set_atomic_max_int（废弃） 的核心契约是“该接口已废弃，请使用asc_set_atomic_max_int32替代。 头文件路径："c_api/atomic/atomic.h"。 设置计算结果以原子比较的方式传输到GM。在拷贝前，将待传输的int32_t数据与GM中已有数据进行逐元素比较，并将最大值写入GM”；SetAtomicMax 补充“对后续搬运到GM的数据开启原子取大，将拷贝内容与GM已有值比较后写入最大值”。
+- [AscSetAtomicMax](asc_set_atomic_max.md)（`same_topic`）：设置对后续的从Unified Buffer/L0C Buffer/L1 Buffer到GM的数据传输开启原子比较取大操作。；［［deprecated("NOTICE: asc_set_atomic_max_int is deprecated. Please use asc_set_atomic_max_int32 instead.")］］。候选旧接口的弃用声明直接要求迁移到焦点卡所覆盖的按 dtype 原子取大入口。
 <!-- cannbot:related:end -->

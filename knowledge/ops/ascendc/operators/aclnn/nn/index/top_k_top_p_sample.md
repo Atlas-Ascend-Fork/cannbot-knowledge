@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/top_k_top_p_sample_v2/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:12:49Z"
-updated_at: "2026-08-25T17:12:49Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -68,7 +68,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定仓同时有 `aclnnTopKTopPSample` 与 `aclnnTopKTopPSampleV2`。V2 增加 MinP、FP32 logits、`ksMax/inputIsLogits/isNeedSampleResult` 及中间输出，且公开文档明确支持 A2/A3/A5；因此 A2/A3 取版本族中实际支持的最新 V2。两段式 ACLNN 的生成实现未在固定仓展开，文档原型和 `AutoContiguous` 作为框架边界；算子拥有的 OpDef、Tiling、POD、router 和 body 均已闭合。
+固定仓同时有 `aclnnTopKTopPSample` 与 `aclnnTopKTopPSampleV2`。V2 增加 MinP、FP32 logits、`ksMax/inputIsLogits/isNeedSampleResult` 及中间输出，且公开文档明确支持 A2/A3/950；因此 A2/A3 取版本族中实际支持的最新 V2。两段式 ACLNN 的生成实现未在固定仓展开，文档原型和 `AutoContiguous` 作为框架边界；算子拥有的 OpDef、Tiling、POD、router 和 body 均已闭合。
 
 ## Host/Launcher 执行流程
 
@@ -564,9 +564,9 @@ softmax 的第二遍直接加载 q、计算 `abs(q)+eps`、相除并做 tile Arg
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2 公开支持 | V2 公开支持 | V2 公开支持；见 `_a5` 卡 |
+| 支持状态 | V2 公开支持 | V2 公开支持 | V2 公开支持；见 `_950` 卡 |
 | Host/Launcher | ascend910b config；公共 Tiling | ascend910_93 config；公共 Tiling | ascend950 config；公共 Tiling |
 | Kernel/资源 | 同一 AIV body、三 dtype binary | 同一 AIV body、三 dtype binary | 同一 body；`__NPU_ARCH__==3510` 时行处理前 `asc_dcci_entire_out()` |
 
@@ -606,3 +606,9 @@ softmax 的第二遍直接加载 q、计算 `abs(q)+eps`、相除并做 tile Arg
 | 同步 | MTE/Vector/Scalar event 与 PipeBarrier | workspace ping-pong 前必须 MTE3→MTE2 | `SetWaitFlag`, `MrgSort4Que` |
 | 精度与尾块 | 所有计算升到 FP32；softmax 减 max | 尾有效字节与 32 元素排序补齐不可混淆 | `SoftMax*`, `SortSPartAll` |
 | 失败边界 | 校验失败阻断；unknown key return | 不可推测 fallback 输出 | `RunKernelTiling`, entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [TopKTopPSample 950 ACLNN 算子知识](top_k_top_p_sample_950.md)（`same_topic`）：“｜ 计算语义 ｜ 每行按 TopK→TopP→MinP 过滤；随后输出过滤中间量，或执行 ArgMax，或按 `probs/(abs(q)+eps)` 执行 Q-Sample 后 ArgMax ｜”与“｜ 计算语义 ｜ 每行依次进行可选 TopK、TopP、MinP，再输出中间量、ArgMax 或 `probs/(abs(q)+eps)` 的 Q-Sample ArgMax ｜”是双方正文中的具体合同。两端保持 TopK、TopP、MinP 过滤顺序及三种输出路线，互读可跨平台验证采样数学合同和 Q-Sample 归一形式。
+<!-- cannbot:related:end -->

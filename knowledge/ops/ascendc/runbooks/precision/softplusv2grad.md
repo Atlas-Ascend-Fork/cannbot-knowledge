@@ -98,9 +98,5 @@ __simd_vf__ inline void SigmoidGradVF(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Select cmpmask 不偏移致分支反转诊断](select_cmpmask.md)（`related`）：候选处理 softplus_v2_grad 非默认 threshold 公式分支，本卡处理正确 mask 被 Select 错误消费。
-- [SoftplusV2Grad VF Form B exp 溢出判别](softplusv2grad_vf_form_b_exp.md)（`related`）：两卡分别约束 SoftplusV2Grad sigmoid 分支的两个必要条件：本卡必须保留 z>threshold 的精确线性分支，目标卡要求 sigmoid 区使用不会正向 exp 溢出的 Form A。
-- [exp 下界 clamp -50 破坏 sigmoid 大负数下溢](exp_clamp_50_sigmoid.md)（`related`）：目标卡说明下界 clamp -50 会把本应下溢为 0 的大负 z 抬成可见残差；在本卡补齐 threshold 分支后，sigmoid 区仍需保留自然下溢语义。
-- [exp 输入 clamp 上界用 threshold 用户参数致溢出](exp_clamp_upper_bound_must_decouple_from_user_threshold.md)（`related`）：目标卡证明把用户 threshold 同时当 exp clamp 上界会在极端属性下失去保护；本卡要求 threshold 只参与线性区 Compare，二者共同分离算子语义阈值与数值安全边界。
-- [softplus_v2_grad 极值 inf 发散源于 aten 乘除顺序](softplus_v2_grad_inf_aten.md)（`related`）：极值乘除顺序之外，SoftplusV2Grad 还必须保留 z>threshold 的线性区分支；它覆盖同一算子的相邻语义约束。
+- [SoftplusV2Grad VF Form B exp 溢出判别](softplusv2grad_vf_form_b_exp.md)（`same_topic`）：**触发**：以 `1/(1+exp(-z))` 除法改写实现的 SoftplusGrad 族 kernel，ST 出现**分层失败**——默认 θ=20.0 用例全过（baseline PASS），仅带非默认（小/负/零）θ 的用例集中超差，且超差用例的 θ 全部落入使 `exp(-(θ+δ))` 不可忽略的区间。次级触发：超差率随 ｜θ｜ 减小而上升（θ=-9.812 时 56% 最差，θ=-2.333 时仅 358/11760）。；触发（tool_observed）：在 arch35 SoftplusV2Grad device-side VF 链（bf16/fp16 实例化）上跑 TTK 黑盒（golden_plugin 走 numpy 独立 Form A 参考），22 例 `mare` 超阈 46×–96×（相对各自 dtype 阈值），`mere<1e-7` 仅 outlier 元素超阈；均为 bf16/fp16、`threshold` 较大（9.17 / 17.67 / 18.13）或 `grad_output` 含 inf 的场景。同一 kernel 在 ST（golden 用 `torch.ops.aten.softplus_backward`）下 72/72 PASS——ST 与 TTK golden 都走 Form A，两侧在数值边界发散指向 kernel 端的 Form B。两卡诊断同一 SoftplusV2Grad VF 精度任务的两种不同失败签名：缺 threshold 线性分支与 Form B 正向 exp 溢出，联合使用可避免误归因。
 <!-- cannbot:related:end -->

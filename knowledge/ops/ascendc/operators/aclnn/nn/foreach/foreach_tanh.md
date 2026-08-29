@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tanh/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:22:14Z"
-updated_at: "2026-08-25T16:22:14Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -482,9 +482,9 @@ Host 不把可用 UB 全给输入 tile，而是先扣 POD 与 1024 bytes，再�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，但实现见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，但实现见 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 公共 Tiling | `ascend910_93`→arch22 公共 Tiling | arch35 专用 Tiling |
 | Kernel/资源 | 公共 AIV Vector body | 与 A2 共用 body；平台实际核数/UB由 Host 查询 | SIMT body，无 AIV Queue |
 
@@ -527,3 +527,9 @@ Host 不把可用 UB 全给输入 tile，而是先扣 POD 与 1024 bytes，再�
 | 同步 | Queue + `PIPE_V` barrier | Cast/Tanh/Cast 数据依赖不可重排 | `InnerComputer` |
 | 精度与尾块 | FP16/FP32直算，BF16 FP32升精度后 RINT | tail byte count、cast remainder、round mode | `CopyIn` / `CopyOut` / `ComputePerCast` |
 | 失败边界 | 校验失败或未知 key终止 | 50 项、UB、编译 guard 不能外推 | `CheckOpInfo` / `foreach_tanh` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachTanh 950 ACLNN 算子知识](foreach_tanh_950.md)（`same_topic`）：单 Kernel，唯一 Device 节点为 `AIV_VECTOR`。单 Kernel；唯一 Device 节点为 SIMT，外层 AscendC entry 内逐张量 `VF_CALL`。两端公开入口均为 aclnnForeachTanh，逐 TensorList 项计算 tanh 的合同一致，而 A2/A3 与 950 的 Device 执行单元和启动方式不同；对照两卡可完成同一算子的跨平台 route 选型与执行图核验。
+<!-- cannbot:related:end -->

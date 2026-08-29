@@ -18,9 +18,9 @@ sources:
 - resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/user-guides/quickstart.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- '950'
 ---
 
 # TorchTitan / torchtitan-npu（训练框架）
@@ -197,3 +197,11 @@ MASTER_PORT=6300                 # torchrun rendezvous 端口
 - [autofuse-train](../techniques/autofuse_train.md)（本框架 torch.compile 训练入图的 AutoFuse 落地）
 - [smla](../kernels/smla.md)（V4 SMLA converter（npu_smla））
 - [qwen3-sft-torchtitan](../../guides/recipes/qwen3_sft_torchtitan.md)（Qwen3-30B-A3B SFT 开箱配置）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepSeek-V3.2 TorchTitan 32K 长序列预训练](../../guides/recipes/deepseek_v32_pretrain.md)（`related`）：基于 ［torchtitan］(../../concepts/frameworks/torchtitan.md) + `torchtitan-npu` 插件（样例版本 `v0.2.2`），在 **64 卡 Atlas A3** 集群上完成 **DeepSeek-V3.2**（671B / 61 层，DSA 稀疏注意力）**32K 长序列预训练 / CPT** 的全链路优化适配，A3 64 卡极致显存场景达成 **148 TPS/卡**。；**TorchTitan** 是 PyTorch 社区原生的大模型训练框架，以 **DTensor** 为一等公民，把张量并行抽象为 Placement（Shard / Replicate / Partial），通过子模块的 `ParallelStyle` 声明切分方式、无需手写通信逻辑，以极低侵入成本实现 **5D 并行（FSDP2 + TP + PP + EP + CP）** 的乐高式组合。。recipe 明确以 TorchTitan/torchtitan-npu 实现 64 卡预训练，框架页解释其 DTensor 与 5D 并行抽象，是复现该 recipe 的框架机制入口。
+- [Qwen3-30B-A3B torchtitan-npu SFT（GSM8K + Ulysses CP 开箱配置）](../../guides/recipes/qwen3_sft_torchtitan.md)（`related`）：“｜ `qwen3` ｜ `sft_qwen3_30ba3b_math` / `qwen3_06b_test` ｜ Qwen3 SFT/小模型 ｜”与“MODULE=torchtitan_npu.models.qwen3 CONFIG=sft_qwen3_30ba3b_math bash scripts/run_train.sh”是双方正文中的具体合同。框架卡登记 Qwen3 SFT 配置名，recipe 给出同一配置的可执行启动入口，互读可从能力清单直接进入训练任务。
+- [VLM 多模态训练适配（DenseMaskSDPA）](../modules/vlm_multimodal_training.md)（`related`）：`torchtitan_npu.models.vlm` 把上游 `torchtitan.experiments.vlm` 的 `Llama3Siglip2Transformer`（SigLIP2 视觉编码器 + Llama3 解码器的 VLM **debug model**）适配到 NPU。这是一个**调试模型**（无真实权重，2 步 `fake_backend` 跑通），目的不是落地某个具体 VLM，而是固化一套 **VLM/多模态训练的 NPU 适配模式**：用 `DenseMaskSDPA` 替换上游 `FlexAttention`、用 dense-mask / scatter helper 处理图文混排、并约束为 FSDP/HSDP 纯数据并行。核心机制在 `torchtitan_npu/models/vlm/` 与 `models/multimodal/` 中。；**TorchTitan** 是 PyTorch 社区原生的大模型训练框架，以 **DTensor** 为一等公民，把张量并行抽象为 Placement（Shard / Replicate / Partial），通过子模块的 `ParallelStyle` 声明切分方式、无需手写通信逻辑，以极低侵入成本实现 **5D 并行（FSDP2 + TP + PP + EP + CP）** 的乐高式组合。**torchtitan-npu** 是昇腾官方维护的插件（`gitcode.com/cann/torchtitan-npu`，DeepSeek-V3.2 样例对应 `v0.2.2`），核心是一套自建的 **ModelConverter 注册框架**：在不改上游模型代码的前提下，把昇腾融合算子与图优化能力以「注册即生效」的开关接入 TorchTitan。。VLM 卡描述 torchtitan-npu 的模型适配实例，框架卡给出其 DTensor 与 ModelConverter 承载机制。
+<!-- cannbot:related:end -->

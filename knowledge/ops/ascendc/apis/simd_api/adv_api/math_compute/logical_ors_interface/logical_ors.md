@@ -26,9 +26,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetLogicalOrsMaxMinTmpSize](get_logical_ors_max_min_tmp_size.md)（`related`）：《GetLogicalOrsMaxMinTmpSize》说明在host侧获取LogicalOrs接口预留或申请临时空间的最大和最小值，用于Tiling参数传递；《LogicalOrs》说明输入矢量每个元素与标量进行或操作，非零视为真。二者在LogicalOrs的Host侧最大/最小临时空间与factor查询共同为同一个Kernel接口确定workspace预算上存在可执行的直接衔接。
-- [LogicalOr](../logical_or_interface/logical_or.md)（`related`）：LogicalOrs 与《LogicalOr》的实质衔接是：LogicalOrs 的接口页和两种临时空间查询支撑 vector-scalar 逻辑或，LogicalOr 是 vector-vector 对应形态并共享真假判定规则。
-- [LogicalOr接口](../logical_or_interface/logical_or_interface.md)（`related`）：LogicalOrs 与《LogicalOr接口》的实质衔接是：LogicalOrs 的接口页和两种临时空间查询支撑 vector-scalar 逻辑或，LogicalOr 是 vector-vector 对应形态并共享真假判定规则。
-- [GetLogicalOrsTmpBufferFactorSize](get_logical_ors_tmp_buffer_factor_size.md)（`same_topic`）：LogicalOrs 与《GetLogicalOrsTmpBufferFactorSize》的实质衔接是：LogicalOrs 的接口页和两种临时空间查询支撑 vector-scalar 逻辑或，LogicalOr 是 vector-vector 对应形态并共享真假判定规则。
-- [LogicalOrs接口](logical_ors_interface.md)（`same_topic`）：《LogicalOrs接口》说明输入矢量每个元素与标量进行逻辑或操作，并提供临时空间大小获取接口。；《LogicalOrs》说明输入矢量每个元素与标量进行或操作，非零视为真。二者在LogicalOrs是矢量与标量逻辑或，Kernel调用和两种workspace查询必须配套；LogicalOr用于区分双Tensor语义上存在可执行的直接衔接。
+- [GetLogicalOrsMaxMinTmpSize](get_logical_ors_max_min_tmp_size.md)（`related`）：输入矢量每个元素与标量进行逻辑或操作。；host侧Tiling接口，用于获取LogicalOrs接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。计算接口定义 LogicalOrs 的逐元素逻辑或语义，该 Host Tiling 接口提供执行它所需的临时空间上下界。
+- [GetLogicalOrsTmpBufferFactorSize](get_logical_ors_tmp_buffer_factor_size.md)（`related`）：输入矢量每个元素与标量进行逻辑或操作。；获取LogicalOrs接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。。计算接口定义 LogicalOrs 的逐元素逻辑或语义，固定临时空间时该接口给出反推单次处理元素数的因子。
 <!-- cannbot:related:end -->

@@ -28,5 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Frexpf](frexpf.md)（`related`）：frexpf 把 x 分解为尾数和二进制指数，ldexpf 计算 mantissa*2^exp，可用于重构并验证分解结果。
+- [Frexpf](frexpf.md)（`related`）：功能：获取输入x乘以2的exp次幂的结果。；功能：将x转换为归一化1/2, 1)的有符号数乘以2的积分幂。返回归一化的有符号数，指数存储在exp中。Ldexpf 用尾数和指数合成数值，Frexpf 把数值分解为同一表示，构成二进制指数表示的正反任务链。
 <!-- cannbot:related:end -->

@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v32_pre_train_optimization.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-06-11T00:00:00Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - a3
 ---
@@ -176,7 +176,7 @@ flowchart LR
 - [mla](../../../inference/concepts/modules/mla.md)（跨域：MLA 子图，DSA ⊇ MLA）
 - [autofuse](../../../inference/concepts/frameworks/autofuse.md)（跨域：训练入图 Future 对接）
 - [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2)
-- [deepseek-v3-low-precision-pretrain](deepseek_v3_low_precision_pretrain.md)（同域并列预训练路线：V3 低精度(MindSpeed/A5)）
+- [deepseek-v3-low-precision-pretrain](deepseek_v3_low_precision_pretrain.md)（同域并列预训练路线：V3 低精度(MindSpeed/950)）
 - [checkpoint-dcp-hf](../../concepts/techniques/checkpoint_dcp_hf.md)（DCP / HF checkpoint 断点恢复与导出）
 - [npu-fused-op-converters](../../concepts/frameworks/npu_fused_op_converters.md)（融合算子 converter benchmark 的应用 recipe：RMSNorm/Permute/GMM 等收益数据出处）
 - [training-debug-observability](../../concepts/techniques/training_debug_observability.md)（HCCL Flight Recorder / Profiling 调试可观测）
@@ -184,3 +184,14 @@ flowchart LR
 - [tilelang-rope](../../concepts/kernels/tilelang_rope.md)（本 recipe 用到的 TileLang RoPE 训练算子）
 - [tilelang-moe-token-permute](../../concepts/kernels/tilelang_moe_token_permute.md)（TileLang MoE Token Permute 算子族）
 - [tilelang-rmsnorm-swiglu](../../concepts/kernels/tilelang_rmsnorm_swiglu.md)（TileLang RMSNorm/SwiGLU 训练算子）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepSeek-V3 裁剪模型 MXFP8/HiF8 低精度预训练（MindSpeed · Atlas 950 950DT · 8K）](deepseek_v3_low_precision_pretrain.md)（`related`）：它与 ［deepseek-v32-pretrain］(deepseek_v32_pretrain.md)（TorchTitan 671B 全量 / DSA 路线）并列——MindSpeed + 裁剪模型 + 低精度是另一条预训练路线。；基于 ［torchtitan］(../../concepts/frameworks/torchtitan.md) + `torchtitan-npu` 插件（样例版本 `v0.2.2`），在 **64 卡 Atlas A3** 集群上完成 **DeepSeek-V3.2**（671B / 61 层，DSA 稀疏注意力）**32K 长序列预训练 / CPT** 的全链路优化适配，A3 64 卡极致显存场景达成 **148 TPS/卡**。。两张 recipe 是显式并列的 DeepSeek 预训练路线：一条是 MindSpeed 裁剪 V3 的 950 低精度实验，另一条是 TorchTitan V3.2 全量 DSA 长序列训练。
+- [SFAG（SparseFlashAttentionGrad，DSA 稀疏注意力反向算子）](../../concepts/kernels/sfag.md)（`related`）：基于 ［torchtitan］(../../concepts/frameworks/torchtitan.md) + `torchtitan-npu` 插件（样例版本 `v0.2.2`），在 **64 卡 Atlas A3** 集群上完成 **DeepSeek-V3.2**（671B / 61 层，DSA 稀疏注意力）**32K 长序列预训练 / CPT** 的全链路优化适配，A3 64 卡极致显存场景达成 **148 TPS/卡**。；`SparseFlashAttentionGrad`（SFAG；优化文档 Tiling/Pipeline 实现段用算子全名 `SparseFlashAttentionScoreGrad`，对齐昇腾 `FlashAttentionScoreGrad` 命名——本库及其它页用简写 `SparseFlashAttentionGrad`/SFAG 指代同一算子）是 DeepSeek-V3.2 **训练独有**的 ［sparse-flash-attention］(../../../inference/concepts/kernels/sparse_flash_attention.md) 反向融合算子，整体沿用 `FlashAttentionGrad`（FAG）计算流程，针对 DSA 稀疏 Top-k 选择带来的**离散访存**做指令缩减与搬运聚合。。recipe 的 DSA 预训练链包含稀疏 attention 反向，SFAG 页给出该训练独有节点的 FAG 流程与离散访存优化。
+- [SLIG（SparseLightningIndexerGradKLLoss，DSA 训练反向算子）](../../concepts/kernels/slig.md)（`related`）：基于 ［torchtitan］(../../concepts/frameworks/torchtitan.md) + `torchtitan-npu` 插件（样例版本 `v0.2.2`），在 **64 卡 Atlas A3** 集群上完成 **DeepSeek-V3.2**（671B / 61 层，DSA 稀疏注意力）**32K 长序列预训练 / CPT** 的全链路优化适配，A3 64 卡极致显存场景达成 **148 TPS/卡**。；`SparseLightningIndexerGradKLLoss`（SLIG）是 DeepSeek-V3.2 **训练独有**的 DSA 反向融合算子：在 Sparse Training Stage 计算每个 token Top-k 位置的 ［lightning-indexer］(../../../inference/concepts/kernels/lightning_indexer.md) 反向梯度，并**融合 KL Loss 的计算**。。recipe 覆盖 DeepSeek-V3.2 的 DSA 训练全链路，SLIG 页补充其训练独有的 indexer 反向梯度与 KL Loss 融合节点。
+- [TorchTitan / torchtitan-npu（训练框架）](../../concepts/frameworks/torchtitan.md)（`related`）：基于 ［torchtitan］(../../concepts/frameworks/torchtitan.md) + `torchtitan-npu` 插件（样例版本 `v0.2.2`），在 **64 卡 Atlas A3** 集群上完成 **DeepSeek-V3.2**（671B / 61 层，DSA 稀疏注意力）**32K 长序列预训练 / CPT** 的全链路优化适配，A3 64 卡极致显存场景达成 **148 TPS/卡**。；**TorchTitan** 是 PyTorch 社区原生的大模型训练框架，以 **DTensor** 为一等公民，把张量并行抽象为 Placement（Shard / Replicate / Partial），通过子模块的 `ParallelStyle` 声明切分方式、无需手写通信逻辑，以极低侵入成本实现 **5D 并行（FSDP2 + TP + PP + EP + CP）** 的乐高式组合。。recipe 明确以 TorchTitan/torchtitan-npu 实现 64 卡预训练，框架页解释其 DTensor 与 5D 并行抽象，是复现该 recipe 的框架机制入口。
+- [TorchTitan 5D 并行与 DTensor Sharding 优化（DeepSeek-V3.2）](../../concepts/parallelism/torchtitan_5d_parallel.md)（`related`）：基于 ［torchtitan］(../../concepts/frameworks/torchtitan.md) + `torchtitan-npu` 插件（样例版本 `v0.2.2`），在 **64 卡 Atlas A3** 集群上完成 **DeepSeek-V3.2**（671B / 61 层，DSA 稀疏注意力）**32K 长序列预训练 / CPT** 的全链路优化适配，A3 64 卡极致显存场景达成 **148 TPS/卡**。；这是 DeepSeek-V3.2 TorchTitan 预训练 recipe 的**并行原理枢纽页**：把「为什么选 TorchTitan、5D 并行如何乐高式组合、MoE 的 TP 策略为何要重排通信、DTensor 算子 sharding 默认策略为何不合理」这些原理讲清。。recipe 给出 64 卡实践结果，并行页解释同一 DeepSeek-V3.2 实践中 FSDP2、TP、PP、EP、CP 的组合和 DTensor 分片决策。
+- [自定义 CP for DSA（DeepSeek-V3.2 长序列上下文并行）](../../concepts/parallelism/custom_cp_dsa.md)（`related`）：基于 ［torchtitan］(../../concepts/frameworks/torchtitan.md) + `torchtitan-npu` 插件（样例版本 `v0.2.2`），在 **64 卡 Atlas A3** 集群上完成 **DeepSeek-V3.2**（671B / 61 层，DSA 稀疏注意力）**32K 长序列预训练 / CPT** 的全链路优化适配，A3 64 卡极致显存场景达成 **148 TPS/卡**。；长序列训练用 **Context Parallel（CP）** 沿 Sequence 维切分输入，可大幅降低激活内存。。recipe 的 32K DSA 预训练依赖长序列并行，custom CP 页提供沿 Sequence 切分及稀疏注意力通信重构的具体机制。
+<!-- cannbot:related:end -->

@@ -23,6 +23,5 @@ GetPadNDTilingInfo参数：ascendcPlatform平台信息；输入shape各维度；
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Pad](pad.md)（`same_topic`）：《Pad Tiling》的任务是“用于获取Pad Tiling参数。”。《Pad》具体提供“对二维Tensor在width方向上pad到32B对齐，或对已对齐但含冗余数据的列填充设定值。”，它直接用于Pad Kernel 所需 Tiling 参数。
-- [UnPad Tiling](un_pad_tiling.md)（`same_topic`）：《UnPad Tiling》处理“用于获取UnPad Tiling参数。”。《Pad Tiling》提供“用于获取Pad Tiling参数。”，其具体合同或探针直接接入UnPad 与其逆向 Pad 的宽度对齐和 Tiling 参数合同。
+- [Pad](pad.md)（`related`）：提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。Tiling参数通过Pad Tiling获取。；host侧Tiling接口，用于获取Pad kernel计算所需的Tiling参数，分两步：通过GetPadMaxMinTmpSize获取最大和最小临时空间大小；通过GetPadNDTilingInfo获取kernel侧所需tiling参数。。Pad Kernel 明确从 Pad Tiling 获取参数，Host Tiling 页给出先预算临时空间再生成 PadTiling 结构体的两步调用链。
 <!-- cannbot:related:end -->

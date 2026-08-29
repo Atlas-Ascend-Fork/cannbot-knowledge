@@ -18,11 +18,5 @@ OpMC2Def类用于在Host侧配置通算融合算子的通信域名称，是通�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [HCCL Context简介](../../../simd_api/adv_api/hccl_communication/hccl_context/hccl_context_intro.md)（`same_topic`）：OpMC2Def简介 与《HCCL Context简介》的实质衔接是：OpMC2Def 在 host 原型侧声明 HcclGroup 与 HcclServerType，构造后把通信域映射为核侧 HCCL Context；MC2 OpDef 是其注册入口。
-- [HcclGroup（OpMC2Def）](hccl_group.md)（`same_topic`）：OpMC2Def简介 与《HcclGroup（OpMC2Def）》的实质衔接是：OpMC2Def 在 host 原型侧声明 HcclGroup 与 HcclServerType，构造后把通信域映射为核侧 HCCL Context；MC2 OpDef 是其注册入口。
-- [HcclServerType](hccl_server_type.md)（`same_topic`）：OpMC2Def简介 与《HcclServerType》的实质衔接是：OpMC2Def 在 host 原型侧声明 HcclGroup 与 HcclServerType，构造后把通信域映射为核侧 HCCL Context；MC2 OpDef 是其注册入口。
-- [MC2（OpDef）](../op_def/mc2.md)（`same_topic`）：OpMC2Def简介 与《MC2（OpDef）》的实质衔接是：OpMC2Def 在 host 原型侧声明 HcclGroup 与 HcclServerType，构造后把通信域映射为核侧 HCCL Context；MC2 OpDef 是其注册入口。
-- [OpMC2Def](op_mc2_def.md)（`same_topic`）：OpMC2Def简介 与《OpMC2Def》的实质衔接是：OpMC2Def 在 host 原型侧声明 HcclGroup 与 HcclServerType，构造后把通信域映射为核侧 HCCL Context；MC2 OpDef 是其注册入口。
-- [OpMC2Def构造函数](op_mc2_def_constructor.md)（`same_topic`）：OpMC2Def简介 与《OpMC2Def构造函数》的实质衔接是：OpMC2Def 在 host 原型侧声明 HcclGroup 与 HcclServerType，构造后把通信域映射为核侧 HCCL Context；MC2 OpDef 是其注册入口。
-- [operator=（OpMC2Def）](operator.md)（`same_topic`）：OpMC2Def简介 与《operator=（OpMC2Def）》的实质衔接是：OpMC2Def 在 host 原型侧声明 HcclGroup 与 HcclServerType，构造后把通信域映射为核侧 HCCL Context；MC2 OpDef 是其注册入口。
+- [HcclServerType](hccl_server_type.md)（`related`）：“使用该接口前，算子需要先通过MC2接口注册该算子是通算融合算子，注册后即返回一个OpMC2Def结构。”与“OpMC2Def类用于在Host侧配置通算融合算子的通信域名称，是通算融合算子原型注册管理的重要组成部分。”分别来自双方当前正文。HcclServerType 明确要求先取得 OpMC2Def，概览卡解释该对象负责 Host 侧通信域配置，因此两卡连接 MC2 注册结果与服务端类型配置步骤。
 <!-- cannbot:related:end -->

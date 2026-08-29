@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:43:12Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -82,7 +82,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-A2/A3 最新公开版本是 V4：README 的 A2/A3 示例指向 V4，V4 产品表对 A2/A3 标为支持；V5 产品表对 A2/A3 明确标为不支持。V4 比 V3 增加 `dequantScaleQueryOptional`、`learnableSinkOptional`、`queryQuantMode` 与 ALiBi full-mask 能力。V4 API 还显式拒绝 `DAV_3510`，因此不能把 A5 V5 路线写入本卡。
+A2/A3 最新公开版本是 V4：README 的 A2/A3 示例指向 V4，V4 产品表对 A2/A3 标为支持；V5 产品表对 A2/A3 明确标为不支持。V4 比 V3 增加 `dequantScaleQueryOptional`、`learnableSinkOptional`、`queryQuantMode` 与 ALiBi full-mask 能力。V4 API 还显式拒绝 `DAV_3510`，因此不能把 950 V5 路线写入本卡。
 
 ## Host/Launcher 执行流程
 
@@ -647,7 +647,7 @@ QK/PV 使用固定 A2 MMAD policy，Vector epilogue 维持 FP32 online max/sum/O
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | V4 公开支持 | V4 公开支持 | V4 API 拒绝；使用 V5 |
 | Host/Launcher | non-DAV_3510 selector | 同 A2；无独立 A3 selector | DAV_3510 arch35 V5 |
@@ -699,3 +699,9 @@ QK/PV 使用固定 A2 MMAD policy，Vector epilogue 维持 FP32 online max/sum/O
 | 同步 | C1V1→V1C2→C2V2/FD barrier | flag rounds/batch schedule | Process stages |
 | 精度与尾块 | FP32 accum/max/sum/O | P cast/output cast/actual lengths | epilogues |
 | 失败边界 | false vs error distinction | no silent fallback | registry/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [npu_fused_infer_attention_score (v1 / v2)](../../../../../../model/inference/concepts/kernels/fused_infer_attention_score.md)（`related`）：“｜ 计算语义 ｜ `S=QK^T*scale+pse+mask`，逐行 softmax 后计算 `O=softmax(S)V`；可选 page attention、RoPE、公共前缀、量化/反量化、后量化与 `softmaxLse` ｜”从 A2/A3 源码闭包定义 FIA V4 的完整计算与可选特征；“昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算：`softmax(QKᵀ/√d)·V`，支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。在 DeepSeek-R1 decode 路径中作为 ［mla-prolog］(mla_prolog.md) 之后的主 FA 算子。”从模型侧描述同一 FIA 在 MLA decode 中的角色。两卡围绕同一融合算子，分别提供 ABI/route 与模型接线。
+<!-- cannbot:related:end -->

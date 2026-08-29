@@ -39,6 +39,5 @@ asc_atomic_cas接口用于对指定地址上的数据进行原子比较赋值操
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAtomicCas](../../../apis/simd_api/c_api/scalar_compute/asc_atomic_cas.md)（`explains`）：SIMT实现InsertHashTable算子案例说明本案例介绍InsertHashTable算子，展示基于SIMT实现的大规模线程并发访问Global Memory内存的算子实践。
-- [asc_atomic_cas](../../../apis/simt_api/atomic_operations/asc_atomic_cas.md)（`explains`）：哈希表插入指南的抢占槽位逻辑依赖 compare-and-swap；asc_atomic_cas 给出“地址等于 compare 才写 val”及最多一个线程成功的原子契约。
+- [AscAtomicCas](../../../apis/simd_api/c_api/scalar_compute/asc_atomic_cas.md)（`explains`）：案例卡说明“线程通过原子指令asc_atomic_cas修改flag来获取桶的写权限。”；接口卡给出“如果address上的数值等于指定数值compare，则对address赋值为指定数值val，否则address的数值不变。”，该 compare-and-swap 语义正是开放寻址插入时竞争桶所有权的实现原语。
 <!-- cannbot:related:end -->

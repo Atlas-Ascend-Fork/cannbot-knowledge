@@ -22,15 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCopyUb2GmAlign](../asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_2201.md)（`related`）：AscCopyGm2UbAlign 与《AscCopyUb2GmAlign》的实质衔接是：AscCopyGm2UbAlign 的 2201 入口与通用/3510 变体共享非对齐 GM→UB 契约；loop stride、loop size 和 pad 配置必须在调用前匹配，反向接口用于完整搬运闭环。
-- [AscSetCopyPadVal](../asc_set_copy_pad_val.md)（`related`）：AscSetCopyPadVal 负责“配合asc_copy_gm2ub_align或asc_copy_ub2gm_align接口，设置搬运数据块左右两侧需要填补的数据值”；AscCopyGm2UbAlign 负责“提供数据非对齐搬运功能，将数据从GM搬运到UB，支持8位/16位/32位数据类型搬运”。
-- [AscSetGm2ubLoop1Stride](../asc_set_gm2ub_loop1_stride.md)（`related`）：AscSetGm2ubLoop1Stride 与《AscCopyGm2UbAlign》的实质衔接是：Loop1Stride 必须与 Loop2/LoopSize 一起配置后由 GM→UB copy 消费；对齐变体决定这些循环步长作用的实际搬运。
-- [AscSetGm2ubLoop2Stride](../asc_set_gm2ub_loop2_stride.md)（`related`）：AscCopyGm2UbAlign 与《AscSetGm2ubLoop2Stride》的实质衔接是：AscCopyGm2UbAlign 的 2201 入口与通用/3510 变体共享非对齐 GM→UB 契约；loop stride、loop size 和 pad 配置必须在调用前匹配，反向接口用于完整搬运闭环。
-- [AscSetGm2ubLoopSize](../asc_set_gm2ub_loop_size.md)（`related`）：AscCopyGm2UbAlign 与《AscSetGm2ubLoopSize》的实质衔接是：AscCopyGm2UbAlign 的 2201 入口与通用/3510 变体共享非对齐 GM→UB 契约；loop stride、loop size 和 pad 配置必须在调用前匹配，反向接口用于完整搬运闭环。
-- [asc_set_gm2ub_pad（废弃）](../asc_set_gm2ub_pad_deprecated.md)（`related`）：AscCopyGm2UbAlign 与《asc_set_gm2ub_pad（废弃）》的实质衔接是：AscCopyGm2UbAlign 的 2201 入口与通用/3510 变体共享非对齐 GM→UB 契约；loop stride、loop size 和 pad 配置必须在调用前匹配，反向接口用于完整搬运闭环。
-- [AscCopyGm2Ub](../asc_copy_gm2ub/asc_copy_gm2ub.md)（`same_topic`）：AscCopyGm2UbAlign 与《AscCopyGm2Ub》的实质衔接是：AscCopyGm2UbAlign 的 2201 入口与通用/3510 变体共享非对齐 GM→UB 契约；loop stride、loop size 和 pad 配置必须在调用前匹配，反向接口用于完整搬运闭环。
-- [AscCopyGm2UbAlign](asc_copy_gm2ub_align.md)（`same_topic`）：AscCopyGm2UbAlign 与《AscCopyGm2UbAlign》的实质衔接是：AscCopyGm2UbAlign 的 2201 入口与通用/3510 变体共享非对齐 GM→UB 契约；loop stride、loop size 和 pad 配置必须在调用前匹配，反向接口用于完整搬运闭环。
-- [AscCopyGm2UbAlign](asc_copy_gm2ub_align_arch_3510.md)（`same_topic`）：AscCopyGm2UbAlign 与《AscCopyGm2UbAlign》的实质衔接是：AscCopyGm2UbAlign 的 2201 入口与通用/3510 变体共享非对齐 GM→UB 契约；loop stride、loop size 和 pad 配置必须在调用前匹配，反向接口用于完整搬运闭环。
-- [asc_copy_gm2ub](../asc_copy_gm2ub/asc_copy_gm2ub_arch_2201.md)（`same_topic`）：AscCopyGm2UbAlign 与《asc_copy_gm2ub》的实质衔接是：AscCopyGm2UbAlign 的 2201 入口与通用/3510 变体共享非对齐 GM→UB 契约；loop stride、loop size 和 pad 配置必须在调用前匹配，反向接口用于完整搬运闭环。
-- [asc_copy_gm2ub](../asc_copy_gm2ub/asc_copy_gm2ub_arch_3510.md)（`same_topic`）：AscCopyGm2UbAlign 与《asc_copy_gm2ub》的实质衔接是：AscCopyGm2UbAlign 的 2201 入口与通用/3510 变体共享非对齐 GM→UB 契约；loop stride、loop size 和 pad 配置必须在调用前匹配，反向接口用于完整搬运闭环。
+- [AscCopyGm2UbAlign](asc_copy_gm2ub_align_arch_3510.md)（`same_topic`）：“提供数据非对齐搬运的功能，将数据从Global Memory (GM)搬运到Unified Buffer (UB)，并支持8位/16位/32位数据类型搬运。 本接口支持以下两种数据搬运方式： 若搬运数据长度非32字节对齐，搬运数据会补齐至32字节对齐，支持以下两种填充方式：”与“提供数据非对齐搬运的功能，将数据从Global Memory (GM)搬运到Unified Buffer (UB)，并支持8位/16位/32位数据类型搬运。 本接口支持以下两种数据搬运方式： 若搬运数据长度非32字节对齐，搬运数据会补齐至32字节对齐，支持以下两种填充方式： 约束：本接口在非AIV上调用直接返回。；各存储单元的空间大小和对齐要求请参考存储单元说明。；如果本指令与其他指令的目的地址存在重叠，需要插入同步指令（asc_sync_notify和asc_sync_wait），保证多个指令的串行化，防止出现异常数据。”分别来自双方当前正文。两卡都定义非对齐 GM→UB 搬运；3510 额外规定非 AIV 返回和重叠地址通知等待，2201 则规定零长度 NOP，关系用于迁移时选择正确边界。
 <!-- cannbot:related:end -->

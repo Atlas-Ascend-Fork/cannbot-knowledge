@@ -26,12 +26,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLock](../../../c_api/sync/asc_lock.md)（`related`）：《ReleaseMutexID》明确“从框架释放一个MutexID，与AllocMutexID配合使用，防止MutexID耗尽。”；它与《AscLock》的“用于AI Core内部异步流水线之间的同步，根据mutex_id获取Mutex，可按需阻塞指定流水线的执行。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AllocMutexID](alloc_mutex_id_isasi.md)（`same_topic`）：ReleaseMutexID 与《AllocMutexID》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
-- [AscUnlock](../../../c_api/sync/asc_unlock.md)（`same_topic`）：ReleaseMutexID 与《AscUnlock》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
-- [Lock](lock.md)（`same_topic`）：ReleaseMutexID 与《Lock》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
-- [Mutex(ISASI)](mutex_isasi.md)（`same_topic`）：ReleaseMutexID 与《Mutex(ISASI)》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
-- [Unlock](unlock.md)（`same_topic`）：ReleaseMutexID 与《Unlock》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
-- [核内同步](intra_core_sync.md)（`same_topic`）：ReleaseMutexID 与《核内同步》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
-- [核内同步能力概述](intra_core_sync_overview.md)（`same_topic`）：ReleaseMutexID 与《核内同步能力概述》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
+- [AllocMutexID](alloc_mutex_id_isasi.md)（`related`）：从框架获取并占用一个MutexID，与ReleaseMutexID配合使用，管理MutexID的获取和释放。；从框架释放一个MutexID，与AllocMutexID配合使用。。前者取得并占用 MutexID，后者归还由 AllocMutexID 获得的同一资源，二者构成 MutexID 生命周期必须配对的申请与释放链。
 <!-- cannbot:related:end -->

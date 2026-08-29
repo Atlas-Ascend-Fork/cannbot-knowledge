@@ -13,9 +13,10 @@ sources:
 - resource: https://gitcode.com/Ascend/MindSpeed/blob/1432cb092818b870c31b61db0eb6d3378b7fbdad/docs/zh/features/communication-over-computation.md
   role: supporting
 created_at: '2026-06-29T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a2
+- '950'
 ---
 
 # CoC（Communication over Computation：计算通信重叠）
@@ -134,3 +135,10 @@ flowchart LR
 - [mc2](mc2.md)（同为 TP matmul-通信重叠的另一条路线：MC2 是硬件融合算子，与 `--use-ascend-coc` 互斥，二选一）
 - [tensor-parallel-2d](../parallelism/tensor_parallel_2d.md)（互斥但复用：TP-2D 与 `--use-ascend-coc` 不同开，却在 `--coc-fused-kernel` 下复用同一套 LCAL `coc_ops` 做 AG-matmul-RS 融合）
 - [mindspeed](../frameworks/mindspeed.md)（CoC 所在框架；`CoCFeature` 注册开关并 patch Megatron 的 Column/RowParallelLinear）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MC2（Matmul + Communication 算子级融合）](mc2.md)（`related`）：CoC 与 ［mc2］(mc2.md)（硬件融合算子路线）互斥；两类 MC2 都与「软件重叠」路线 ［coc］(coc.md) 显式互斥。两端从各自实现说明同一开关冲突，联合阅读可在 TP 计算通信重叠任务中完成 CoC 软件流水与 MC2 融合算子的二选一。
+- [高维张量并行 TP-2D（MindSpeed 2D Tensor Parallel）](../parallelism/tensor_parallel_2d.md)（`related`）：与 ［tensor-parallel-2d］(../parallelism/tensor_parallel_2d.md) 的 `--use-ascend-coc` 互斥（但 TP-2D 复用同一套 LCAL `coc_ops` 做自己的 AG-matmul-RS 融合）；- `--coc-fused-kernel`：调 `coc_ops.all_gather_matmul_reduce_scatter`（`TP2DConfig`）把 AG+matmul+RS 做算子级融合，依赖 ATB 加速库，与前两个开关不兼容。。前者明确 TP-2D 不能启用一维 TP 的 use-ascend-coc，后者给出 TP-2D 内部复用 coc_ops 的专用融合入口，构成具体配置边界。
+<!-- cannbot:related:end -->

@@ -88,11 +88,3 @@ tiling data 框架迁移分支只改了迁移时刻已存在的 kernel 文件，
 ## 误诊
 
 无（grep 一次定位到 `conv3d_dx_small_kernel.h` 是唯一未适配的新文件；`980b9378b` 引入的其他 3 个文件 `conv3d_backprop_input_v2_small_kernel_tiling.cpp/.h` 与 `conv3d_bp_small_kernel_func.h` 已用新 `set_` 方式或字段在新结构体中存在，无需改）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Kernel Tiling](../../apis/simd_api/basic_api/kernel_tiling/kernel_tiling.md)（`exemplifies`）：rebase 引入新 kernel 文件旧 tiling 类型致编译失败说明Conv3DBackpropInputV2/Conv3DTransposeV2/ExtendConvTranspose arch35 tiling data 框架迁移分支 rebase 上游后，新增 kernel 文件 conv3d_dx_small_kernel.h 仍引用已删除的旧 tiling 类型 conv_bp_v2_kernel::TConv3DInputV2Tiling 和旧嵌套访问 conv3DDxTiling，入口宏传新类型引用而 SmallKernel::Init 收旧类型指针，类型不匹配致编译失败；grep 可定位未适配文件。
-- [手动 tiling 头遮蔽自动生成类致 no member 判别](tiling_no_member.md)（`related`）：两类问题都会报 tiling 字段/类型不存在，但该卡补充了手写头遮蔽自动生成类这一不同根因，可用于区分 rebase 残留与 include 遮蔽。
-- [TILING_DATA_DEF 迁移 rebase 字段失配判别](tiling_data_def_rebase.md)（`same_topic`）：两卡处理同一类 TILING_DATA_DEF 迁移分支 rebase 后的契约漏同步：本卡用字段集合差定位上游新增字段，目标卡用旧类型/嵌套访问扫描定位上游新增 kernel 文件。
-<!-- cannbot:related:end -->

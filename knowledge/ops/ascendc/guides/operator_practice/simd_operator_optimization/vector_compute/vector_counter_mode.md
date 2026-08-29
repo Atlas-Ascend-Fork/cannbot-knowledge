@@ -26,10 +26,3 @@ Counter模式下，用户不需要计算迭代次数以及判断是否存在尾�
 当要处理多达15000个元素的矢量计算时，Counter模式的优势更明显，不需要反复修改主块和尾块不同的mask值，减少了指令条数以及Scalar计算量，并充分利用了指令单次执行的并发能力。
 【性能对比】
 以上性能数据是分别循环运行1000次反例和正例代码得到的Scalar和Vector执行时间。从上述两幅性能对比图和示例代码可以看到，使用Counter模式能够大幅度简化代码，易于维护，同时能够降低Scalar和Vector计算耗时，获得性能提升。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetMaskCount](../../../../apis/simd_api/basic_api/memory_vector_compute/mask_operations/set_mask_count.md)（`explains`）：优化指南把 Normal 模式的主块/尾块 repeat 与多次 mask 设置，替换为 Counter 模式的一次总元素数配置；SetMaskCount 是该方案的直接控制接口。
-- [SetVectorMask](../../../../apis/simd_api/basic_api/memory_vector_compute/mask_operations/set_vector_mask.md)（`explains`）：指南用 15000 个 half 元素对比 Normal 主尾块与 Counter 单次总 count，说明 SetVectorMask 在 Counter 模式下为何减少 Scalar 计算和指令数。
-<!-- cannbot:related:end -->

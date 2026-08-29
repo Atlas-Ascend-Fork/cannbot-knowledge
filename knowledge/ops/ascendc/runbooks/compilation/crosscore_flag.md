@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.synchronization", "topic.programm
 status: stable
 sources: []
 created_at: "2026-08-18T07:59:48Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["a2"]
 ---
 
@@ -118,15 +118,6 @@ __aicore__ inline void MatmulReduceScatterImpl<AType, BType, CType, TransA, Tran
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CrossCoreSetFlag](../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)（`exemplifies`）：CrossCore 反压 flag 方向错致通算流水死锁 与《CrossCoreSetFlag》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
-- [CrossCoreWaitFlag](../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)（`exemplifies`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《CrossCore 反压 flag 方向错致通算流水死锁》补充：MC2 通算融合算子（Pattern B 先计后通、AIC 写大容量 GM、AIV 读）从数据流反向的基底工程照搬 AIC WaitFlag(t-buf)+AIV SetFlag(t-buf) 反压，在 tileCnt>bufferSize 时形成 AIC t↔AIV t 循环等待死锁。判别=画出 t 与 t-bufferSize 的 flag 依赖图，出现 AIC t↔AIV t 互等即循环依赖。根因是反压方向与数据流不匹配，且 cG
-- [ReduceScatter](../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/reduce_scatter.md)（`exemplifies`）：CrossCore 反压 flag 方向错致通算流水死锁 与《ReduceScatter》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
-- [SetFlag/WaitFlag](../../apis/simd_api/basic_api/sync_control/intra_core_sync/set_flag_wait_flag.md)（`exemplifies`）：CrossCore 反压 flag 方向错致通算流水死锁 与《SetFlag/WaitFlag》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
-- [SetFlag/WaitFlag](../../apis/simd_api/basic_api/sync_control/intra_core_sync/set_flag_wait_flag_isasi.md)（`exemplifies`）：CrossCore 反压 flag 方向错致通算流水死锁 与《SetFlag/WaitFlag》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
-- [核间同步](../../apis/simd_api/basic_api/sync_control/inter_core_sync/inter_core_sync.md)（`exemplifies`）：核间同步总览列出 CrossCore flag 路线；该 runbook 证明 set/wait 方向和 flag 配对错误会使通算流水死锁。
-- [UDMA GET size=0 污染后续 GET 致精度失败](../precision/udma_get_size_zero_pollutes_engine_guard.md)（`related`）：跨核 flag 设计需确保无效 rank 不提交 size=0 任务，避免 guard 状态污染后续引擎。
-- [逐 rank 通信路径的 MTE2 主导诊断](../performance/rank_flag_mte2.md)（`related`）：CrossCore 反压 flag 方向错致通算流水死锁 与《逐 rank 通信路径的 MTE2 主导诊断》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
-- [A5 mix(1,2) mode=2 漏 AIV1 flag 致全零](../precision/a5_mix_1_2_mode_2_aiv1_flag.md)（`same_topic`）：A5 mix(1,2) mode=2 漏 AIV1 flag 致全零 与《CrossCore 反压 flag 方向错致通算流水死锁》的实质衔接是：mix(1,2) 的 AIC/AIV flag 路由依赖 CrossCoreSet/Wait、kernel type 与组间同步契约；所选卡覆盖同一断链和死锁机制。
-- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](aiv_crosscoreflag_subblock_507015.md)（`same_topic`）：CrossCore 反压 flag 方向错致通算流水死锁 与《双AIV CrossCoreFlag 的 subBlock 契约缺陷》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
-- [通算流水 tileCnt>1 性能反降 banned](../performance/tilecnt_1_banned.md)（`same_topic`）：CrossCore 反压 flag 方向错致通算流水死锁 与《通算流水 tileCnt>1 性能反降 banned》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
+- [CrossCoreSetFlag](../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)（`exemplifies`）：“- CrossCoreSetFlag：AI Core中的AIC/AIV在完成本核前置位的pipe流水任务后，调用该接口，向调度模块上报本核任务已完成。调度模块收集所有参与核的上报信息，作为全局完成标志。”与“为 matmul_reducescatter（MC2 通算融合，4P SHMEM ReduceScatter，Pattern B 先计后通）实现通算流水时，按改造指令给 `MatmulProcess`（AIC）和 `ReduceScatterProcess`（AIV）各加 mLoop 循环，并用 ping-pong 反压：AIC 在 `t >= bufferSize` 后 `CrossCoreWaitFlag<0x2, PIPE_FIX>(t - bufferSize)` 等 AIV 释放旧 buffer，AIV 在 reduce 后 `CrossCoreSetFlag<0x2, PIPE_MTE3>(t - bufferSize)` 通知 AIC。”提供双方正文证据。API 卡给出 SetFlag 向调度模块上报完成的正向语义；runbook 展示反压方向放错后形成循环等待的具体故障，因此后者是前者同步合同的可复现反例与排障实例。
+- [MatmulReduceScatter 950 ACLNN 算子知识](../../operators/aclnn/transformer/mc2/matmul_reduce_scatter_950.md)（`related`）：各 rank 的完整结果按 `sum` 归约后沿 M 轴等分，本 rank 输出 `y:［M/rankSize,N］`。；AIC t=2 ↔ AIV t=2 互相等待，循环依赖。；后者定位 MatMul 与 ReduceScatter 流水协作中的跨核反压死锁，可用于该算子的多 tile 同步诊断。
 <!-- cannbot:related:end -->

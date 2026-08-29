@@ -89,3 +89,10 @@ platforms:
 - `acl_graph_print` 的用法、custom-op-内约束（`cannot pass dynamo`）、版本依赖（只依赖 CANN / torch_npu 版本）与二分定位方法论，均来自 issue 讨论中维护者的说明；原语出处为其引述的合入 PR，据此推进到 MoE finalize 定位。层级为维护者确认的用法与约束。
 - `acl_graph_print` 内部实现未见 diff（issue 无 diff），本页据实到维护者确认的用法与约束，不外推其实现细节。
 - 溯源下探 [vllm-ascend-issue-4426-bug-report-vllm-server-fails-when-using-cudagraph-mode-full-decode-only](https://github.com/vllm-project/vllm-ascend/issues/4426)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [图模式多流跨流同步的失败签名：漏配同步/守卫不一致/重复创建 event/流未转发](../../../runbooks/runtime/graph_mode_multi_stream_sync_failures.md)（`related`）：焦点卡以“图内探针随 replay 执行，它是否输出直接反映 replay 是否推进到该点。”确定静默挂死的最后可达位置；排障卡要求“aclgraph 下**每条**跨流生产者→消费者边都补一对 `npu_tagged_event_record`/`npu_tagged_event_wait`”，据此可把探针夹出的跨流边进一步落实为缺失 record/wait 的检查与修复位置。
+- [多流 + TP 下 MoE 无报错卡死：排查并发分支复用同名 Python 变量（路由 vs 共享专家）](../../../runbooks/runtime/multistream_branch_variable_name_collision_hang.md)（`related`）：焦点卡通过“图内探针随 replay 执行，它是否输出直接反映 replay 是否推进到该点。”给出无栈挂死的图内二分手段；故障卡记录“前向**无报错地卡住**（stuck / hang），没有任何异常栈，就是不往下走。”这一完全匹配的多流症状，使变量覆盖根因能够进入二分定位后的定向检查清单。
+<!-- cannbot:related:end -->

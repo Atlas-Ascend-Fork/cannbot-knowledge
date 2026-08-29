@@ -113,3 +113,9 @@ flowchart LR
 - [moe-comm-overlap](moe_comm_overlap.md)（MoE 通信掩盖：层内 overlap `--moe-alltoall-overlap-comm` / `--moe-allgather-overlap-comm` 与本页 `--moe-alltoall-mc2` 互斥，同为 MoE 的 dispatch/combine 通信优化二选一）
 - [tensor-parallel-2d](../parallelism/tensor_parallel_2d.md)（同属 TP 域的通算优化；MoE-MC2 与 tp-extend-ep 互斥，二维 TP 另走 LCAL coc_ops 做 AG-matmul-RS 融合）
 - [mindspeed](../frameworks/mindspeed.md)（MC2 所在框架；`MC2Feature` / `MoEAlltoAllMC2Feature` 注册开关并 patch Megatron 的 Column/RowParallelLinear 与 MoELayer）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CoC（Communication over Computation：计算通信重叠）](coc.md)（`related`）：CoC 与 ［mc2］(mc2.md)（硬件融合算子路线）互斥；两类 MC2 都与「软件重叠」路线 ［coc］(coc.md) 显式互斥。两端从各自实现说明同一开关冲突，联合阅读可在 TP 计算通信重叠任务中完成 CoC 软件流水与 MC2 融合算子的二选一。
+<!-- cannbot:related:end -->

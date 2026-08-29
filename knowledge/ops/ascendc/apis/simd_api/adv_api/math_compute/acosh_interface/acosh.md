@@ -39,8 +39,5 @@ __aicore__ inline void Acosh(const LocalTensor<T>& dstTensor, const LocalTensor<
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetAcoshTmpBufferFactorSize](get_acosh_tmp_buffer_factor_size.md)（`related`）：《GetAcoshTmpBufferFactorSize》明确“获取Acosh接口的maxLiveNodeCount和extraBuffer，用于推算固定空间下单次最大计算元素数”；它与《Acosh》的“按元素做双曲反余弦函数计算，输入值域需在1到65504范围内”在实际调用参数、数据流或结果校验上直接衔接。
-- [Acoshf](../../../../simt_api/math_functions/float_math_functions/acoshf.md)（`same_topic`）：《Acoshf》明确“获取输入数据的双曲反余弦值。”；它与《Acosh》的“按元素做双曲反余弦函数计算，输入值域需在1到65504范围内”在实际调用参数、数据流或结果校验上直接衔接。
-- [Acosh接口](acosh_interface.md)（`same_topic`）：《Acosh接口》明确“提供Acosh反双曲余弦计算接口及其Tiling临时空间大小查询接口，包含Acosh、GetAcoshMaxMinTmpSize等。”；它与《Acosh》的“按元素做双曲反余弦函数计算，输入值域需在1到65504范围内”在实际调用参数、数据流或结果校验上直接衔接。
-- [GetAcoshMaxMinTmpSize](get_acosh_max_min_tmp_size.md)（`same_topic`）：Acosh 的 sharedTmpBuffer 明确引用本 Host 查询；查询的 minValue 是正确性下限，maxValue 以上空间不再被使用。
+- [GetAcoshMaxMinTmpSize](get_acosh_max_min_tmp_size.md)（`same_topic`）：用于Acosh内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAcoshMaxMinTmpSize。 本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。 Host helper 产生 sharedTmpBuffer 的合法容量范围，Acosh 本体在 Kernel 中直接消费该缓存。
 <!-- cannbot:related:end -->

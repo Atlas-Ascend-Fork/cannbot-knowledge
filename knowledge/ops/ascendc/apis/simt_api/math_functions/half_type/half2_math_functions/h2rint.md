@@ -25,12 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [H2Rint](../../bfloat16_type/bfloat16x2_math_functions/h2rint.md)（`related`）：两者都对 packed 两元素执行 nearest-even 整数化并受全局饱和状态影响，差别仅为 BF16x2 与 half2，可用于 dtype 迁移。
-- [H2Trunc](h2trunc.md)（`related`）：H2Trunc 与《H2Rint》的实质衔接是：这些接口执行向零取整或与之紧邻的 floor/rint 舍入；half2、bfloat16x2、标量、SIMD 与 C 版本用于在数据宽度和执行层变化时保持 trunc 语义。
-- [H2Ceil](h2ceil.md)（`same_topic`）：H2Rint 取最近偶数，H2Ceil 向正无穷取整；两者处理同一 half2 输入并受同一饱和寄存器影响，是精确的舍入语义选择。
-- [H2Floor](h2floor.md)（`same_topic`）：H2Rint 取最近偶数，H2Floor 向负无穷取整；二者直接覆盖不同方向的 half2 整数化需求。
-<!-- cannbot:related:end -->

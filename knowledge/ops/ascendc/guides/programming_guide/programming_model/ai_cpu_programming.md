@@ -33,14 +33,3 @@ AI CPU核函数的调用需要在.asc文件中进行，和AI Core的算子调用
 若需要使用模板核函数，则需要在.aicpu文件中给出模板核函数的实例化声明，参考如下：
 并在.asc文件中新增模板核函数实例化的extern声明：
 ## 更多进阶用法
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AICPU（OpDef）](../../../apis/utils_api/prototype_register_management/op_def/aicpu.md)（`explains`）：AICPU（OpDef）说明设置AI CPU的配置信息：包括算子输入输出的名称、支持的数据类型、数据格式等信息。
-- [DataStoreBarrier](../../../apis/ai_cpu_api/data_store_barrier.md)（`explains`）：AI CPU 编程指南说明 AI CPU 与 AI Core 共享 Device 内存访问能力以及 >> 核函数调用模型，解释了 DataStoreBarrier 跨两类核保证写可见性的运行环境。
-- [assert（AI CPU API）](../../../apis/ai_cpu_api/assert.md)（`explains`）：AI CPU 编程模型解释 `.aicpu` 核函数如何由 `.asc` 中的 `>>` 入口调用，补全 assert 所在的设备执行域。
-- [printf（AI CPU API）](../../../apis/ai_cpu_api/printf.md)（`explains`）：焦点处理AI CPU printf 的格式化输出、Dump 配额与异构链接约束；AI CPU编程（编程模型）正文界定“AI CPU是位于Device侧ARM64架构的处理器，其具备与AI Core相同的内存访问能力，可直接访问Device侧内存资源；也可以与Host侧的CPU一样，进行类似的数据计算，通常作为AI Core的补充，主要承担非矩阵类、逻辑比较”。候选分别给出相同打印能力在通用 Kernel、AI CPU 编译/编程和 NPU/CPU 调试中的实际调用边界。
-- [AI CPU算子编译](../compilation_and_execution/operator_compilation/ai_cpu_operator_compilation.md)（`related`）：AI CPU 编程模型给出 __aicpu__+__global__ 入口、.aicpu/-x aicpu 源文件和 Device 侧库环境；焦点编译指南把这些输入转成可运行产物。
-- [异构系统（编程模型）](heterogeneous_system.md)（`related`）：异构系统（编程模型）说明一个基于昇腾处理器的异构系统通常包含CPU与昇腾NPU。其中，CPU及其内存称为Host与Host Memory；NPU及其内存称为Device与Device Memory。
-<!-- cannbot:related:end -->

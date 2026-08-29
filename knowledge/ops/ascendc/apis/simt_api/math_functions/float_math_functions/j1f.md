@@ -24,9 +24,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [数学函数jnf](jnf.md)（`same_topic`）：数学函数jnf 与《数学函数j1f》的实质衔接是：jnf 与 ynf 都接受阶数 n，分别计算第一类和第二类 Bessel 函数；j1f 是 n=1 的直接特化，可核对阶数和 subnormal 限制。
-<!-- cannbot:related:end -->

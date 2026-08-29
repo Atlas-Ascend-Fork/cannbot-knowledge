@@ -23,6 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [NumThreads](num_threads.md)（`same_topic`）：NumThreads：grid_group 的 NumThreads 与 size共同给出网格总线程数，ThreadRank据此界定合法索引，GroupDim/NumBlocks说明总数的分解，构造函数提供对象来源。 目标卡《Grid协作组size》补充：获取当前Grid内的SIMT线程总数，与接口num_threads功能相同。
-- [ThreadRank](thread_rank.md)（`same_topic`）：ThreadRank：grid_group ThreadRank以NumThreads/size为上界，BlockRank/BlockIndex与GroupDim/NumBlocks解释全局rank分解，构造函数给出group对象来源。 目标卡《Grid协作组size》补充：获取当前Grid内的SIMT线程总数，与接口num_threads功能相同。
+- [NumThreads](num_threads.md)（`same_topic`）：获取当前Grid内的SIMT线程总数，与接口num_threads功能相同。；获取当前Grid内的SIMT线程总数。。Size 正文直接声明与 NumThreads 功能相同，两者都返回当前 Grid 的 SIMT 线程总数，是同一查询契约的两个接口名称。
 <!-- cannbot:related:end -->

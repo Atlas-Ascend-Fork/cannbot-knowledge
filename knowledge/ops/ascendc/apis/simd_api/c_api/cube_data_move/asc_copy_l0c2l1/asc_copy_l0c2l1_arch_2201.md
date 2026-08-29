@@ -36,9 +36,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSetL0cCopyParams](../asc_set_l0c_copy_params.md)（`related`）：AscCopyL0c2L1：AscCopyL0c2L1的2201/3510卡核对同一搬运原型，DataCopyL0CToL1提供C++对应语义，AscSetL0cCopyParams配置该L0C搬出的通用参数。 目标卡《AscSetL0cCopyParams》补充：设置L0C搬运随路格式转换（NZ转ND）的相关配置。
-- [AscCopyL0c2L1](asc_copy_l0c2l1.md)（`same_topic`）：AscCopyL0c2L1：AscCopyL0c2L1的2201/3510卡核对同一搬运原型，DataCopyL0CToL1提供C++对应语义，AscSetL0cCopyParams配置该L0C搬出的通用参数。 目标卡《AscCopyL0c2L1》补充：将数据从L0C搬运到L1 Buffer的接口，包含不同架构版本的具体实现。
-- [AscCopyL0c2L1](asc_copy_l0c2l1_arch_3510.md)（`same_topic`）：AscCopyL0c2L1：AscCopyL0c2L1的2201/3510卡核对同一搬运原型，DataCopyL0CToL1提供C++对应语义，AscSetL0cCopyParams配置该L0C搬出的通用参数。 目标卡《AscCopyL0c2L1》补充：将矩阵计算结果从L0C Buffer搬运至L1 Buffer，搬运过程中支持随路量化、ReLU、格式转换等能力。
-- [AscSetL0c2gmQuantPost](../../sys_var/asc_set_l0c2gm_quant_post.md)（`same_topic`）：焦点处理L0C2GM QUANT_POST 寄存器与 Fixpipe 量化搬出配置；AscCopyL0c2L1正文说明“矩阵计算完成后对结果进行量化处理，并将处理结果搬运到L1 Buffer中，支持9种量化模式”。候选设置 Fixpipe 的量化参数并由 L0C 搬出接口实际消费。
-- [DataCopyL0CToL1](../../../basic_api/cube_compute/cube_compute_store/data_copy_l0_c_to_l1.md)（`same_topic`）：AscCopyL0c2L1：AscCopyL0c2L1的2201/3510卡核对同一搬运原型，DataCopyL0CToL1提供C++对应语义，AscSetL0cCopyParams配置该L0C搬出的通用参数。 目标卡《DataCopyL0CToL1》补充：将L0C Buffer中的矩阵计算结果搬运至L1 Buffer，支持随路量化和ReLU激活。
+- [AscCopyL0c2L1](asc_copy_l0c2l1_arch_3510.md)（`same_topic`）：量化模式共分为9种；配置多种随路能力。两卡是同一 L0C→L1 搬运接口在 2201 与 3510 的实现契约，量化枚举、对齐和支持平台不同，必须按目标架构选用。
 <!-- cannbot:related:end -->

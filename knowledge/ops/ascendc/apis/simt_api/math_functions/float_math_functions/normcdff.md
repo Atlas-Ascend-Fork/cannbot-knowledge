@@ -28,5 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Normcdfinvf](normcdfinvf.md)（`related`）：Normcdff 计算标准正态 CDF，而 Normcdfinvf 计算其逆映射；二者的 0/1 与 ±inf 边界互相校验，可直接组成正向—逆向验证。
+- [Normcdfinvf](normcdfinvf.md)（`related`）：功能：获取输入数据x的标准正态分布的累积分布函数值。；功能：获取输入数据x的标准正态累积分布的逆函数。两页提供标准正态 CDF 的正向与逆向变换，是概率值和分位点互相转换的同一任务链。
 <!-- cannbot:related:end -->

@@ -29,8 +29,5 @@ kernel侧Atanh接口的计算需要开发者预留 申请临时空间，本接�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Atanhf](../../../../simt_api/math_functions/float_math_functions/atanhf.md)（`related`）：Atanhf 负责“获取输入数据的反双曲正切值”；GetAtanhMaxMinTmpSize 负责“在host侧获取Atanh接口预留临时空间的最大和最小值，用于Tiling参数选择”。
-- [Atanh接口](atanh_interface.md)（`related`）：Atanh 的临时空间需要由该 Host 查询接口按输入长度和 dtype 计算最大/最小值后分配。
-- [Atanh](atanh.md)（`same_topic`）：《Atanh》处理“按元素做反双曲正切函数计算，输入值域需在指定区间内”。《GetAtanhMaxMinTmpSize》提供“在host侧获取Atanh接口预留临时空间的最大和最小值，用于Tiling参数选择”，其具体合同或探针直接接入Atanh Kernel 调用、临时空间推导和 SIMT 对应实现。
-- [GetAtanhTmpBufferFactorSize](get_atanh_tmp_buffer_factor_size.md)（`same_topic`）：《GetAtanhTmpBufferFactorSize》处理“获取Atanh接口的maxLiveNodeCount和extraBuffer，用于推算固定空间下单次最大计算元素数”。《GetAtanhMaxMinTmpSize》明确“在host侧获取Atanh接口预留临时空间的最大和最小值，用于Tiling参数选择”，可直接用于核对Atanh 高阶 Kernel 的临时空间系数、上下界估算和对应标量实现。
+- [Atanh](atanh.md)（`related`）：kernel侧Atanh接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；用于Atanh内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAtanhMaxMinTmpSize。；Atanh 的 sharedTmpBuffer 大小明确由 Host 侧范围接口产生，形成 Tiling 参数到 kernel 临时缓存的直接合同。
 <!-- cannbot:related:end -->

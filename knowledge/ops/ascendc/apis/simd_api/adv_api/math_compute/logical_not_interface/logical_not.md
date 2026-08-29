@@ -26,9 +26,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BitwiseNot](../bitwise_not_interface/bitwise_not.md)（`same_topic`）：LogicalNot 与《BitwiseNot》的实质衔接是：LogicalNot 的 Host MaxMin/factor 查询为 Kernel 分配临时空间；BitwiseNot 对照明确逻辑真假取反与逐 bit 取反不是同一语义。
-- [GetBitwiseNotMaxMinTmpSize](../bitwise_not_interface/get_bitwise_not_max_min_tmp_size.md)（`same_topic`）：LogicalNot 与《GetBitwiseNotMaxMinTmpSize》的实质衔接是：LogicalNot 的 Host MaxMin/factor 查询为 Kernel 分配临时空间；BitwiseNot 对照明确逻辑真假取反与逐 bit 取反不是同一语义。
-- [GetBitwiseNotTmpBufferFactorSize](../bitwise_not_interface/get_bitwise_not_tmp_buffer_factor_size.md)（`same_topic`）：LogicalNot 与《GetBitwiseNotTmpBufferFactorSize》的实质衔接是：LogicalNot 的 Host MaxMin/factor 查询为 Kernel 分配临时空间；BitwiseNot 对照明确逻辑真假取反与逐 bit 取反不是同一语义。
-- [GetLogicalNotMaxMinTmpSize](get_logical_not_max_min_tmp_size.md)（`same_topic`）：LogicalNot 与《GetLogicalNotMaxMinTmpSize》的实质衔接是：LogicalNot 的 Host MaxMin/factor 查询为 Kernel 分配临时空间；BitwiseNot 对照明确逻辑真假取反与逐 bit 取反不是同一语义。
-- [GetLogicalNotTmpBufferFactorSize](get_logical_not_tmp_buffer_factor_size.md)（`same_topic`）：LogicalNot 与《GetLogicalNotTmpBufferFactorSize》的实质衔接是：LogicalNot 的 Host MaxMin/factor 查询为 Kernel 分配临时空间；BitwiseNot 对照明确逻辑真假取反与逐 bit 取反不是同一语义。
+- [GetLogicalNotMaxMinTmpSize](get_logical_not_max_min_tmp_size.md)（`related`）：Kernel 接口定义“函数原型：template <const LogicalNotConfig& config = DEFAULT_LOGICAL_NOT_CONFIG, typename T, typename U> __aicore__ inline void LogicalNot(const LocalTensor<T>& dst, const LocalTensor<U>& src, const uint32_t count)”；Host 接口是“host侧Tiling接口，用于获取LogicalNot接口所需的最大和最小临时空间大小”，从而在调用 LogicalNot 前确定 sharedTmpBuffer 的资源范围。
 <!-- cannbot:related:end -->

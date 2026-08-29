@@ -238,7 +238,6 @@ inline int32_t AxisIsReduce(int32_t dim, bool fullReduce)
 <!-- cannbot:related:start -->
 ## 相关
 
-- [TilingFunc 未声明依赖读 axes 致 segfault](../compilation/tilingfunc_axes_segfault.md)（`related`）：两卡共享同一修复前提：TilingFunc 若需真实 axes，必须先声明数据依赖；目标卡以未声明 TilingInputsDataDependency 就 GetData 导致 segfault 的 A/B 说明直接解引用的禁用边界。
-- [ValueDepend(REQUIRED) 让 axes 走 host 端](../compilation/opdef_value_depend_required_for_axes_host_read.md)（`related`）：focal 的错误是按 axes 位置奇偶猜归约维；目标卡给出正路径：在 OpDef 对 axes 配 ValueDepend(REQUIRED)，让 Host Tiling 读取真实轴值并生成对应 aclIntArray/Tensor API。
-- [低 rank 零填充致 count=0 用 td_->rank 非 RANK](rank_count_0_td_rank_rank.md)（`same_topic`）：低 rank 零填充致 count=0 用 td_->rank 非 RANK 与《tiling 按位置奇偶判 reduce 轴致非交替 axes 误减》的实质衔接是：实际 rank 必须来自 tiling 而非模板容量；低 rank padding、NDDMA维度、shape/axes 和 blockDim 卡共同验证零填充维被误纳入循环后 count=0 的机制。
+- [TilingFunc 未声明依赖读 axes 致 segfault](../compilation/tilingfunc_axes_segfault.md)（`related`）：注意：aclnn 路径下 axes 实际是 host 可读的 `aclTensor*`（经 `NnopbaseAddInput` 下发），tiling **本可以**用 `TilingInputsDataDependency({1})` + `context->GetInputTensor(1)->GetData<int64_t>()` 读到 axes 真值；当前 tiling 没声明该依赖、也没读数据，是"按 DESIGN 契约省事"的遗留。；在未声明 `TilingInputsDataDependency` 的情况下直接 `GetInputTensor(i)->GetData<T>()` 解引用数据是禁用路线。。焦点指出必须实读 axes 的正确性缺口，候选给出补读时不可绕过的数据依赖前置条件。
+- [ValueDepend(REQUIRED) 让 axes 走 host 端](../compilation/opdef_value_depend_required_for_axes_host_read.md)（`related`）：`euclidean_norm_tiling_arch35.cpp` 用**位置奇偶启发式**判定每个轴是否为 reduce 轴，而不是读 axes tensor 的实际数值。；`REQUIRED` 告诉框架：TilingFunc 必须在 host 拿到 axes 数值（编译期 / 运行期都要），框架会在 TilingFunc 调用前把 device tensor 数据拷到 host。。候选从 OpDef 层给出消除焦点奇偶猜测所需的 host 值依赖契约。
 <!-- cannbot:related:end -->

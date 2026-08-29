@@ -8,7 +8,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute/ReduceRepeat.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ['950', a2, a3]
 ---
 
@@ -31,12 +31,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [选择低延迟指令，优化归约操作性能](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md)（`explains`）：指南的二分累加方案在数据缩到一个 repeat 后用 ReduceRepeat 收尾，并给出其相对 Add 和 ReduceSum 的延迟位置。
-- [AscRepeatReduceMin](../../../c_api/vector_compute/asc_repeat_reduce_min.md)（`related`）：C++ ReduceRepeat 是同类重复规约的基础 API，补充 mask 和 repeat 语义，可与 C API 签名相互映射。
-- [GetReduceRepeatMaxMinSpr](../reduction_compute_aux_config/get_reduce_repeat_max_min_spr_isasi.md)（`related`）：GetReduceRepeatMaxMinSpr 负责“获取ReduceRepeat或ReduceMax/ReduceMin计算的最值及索引，结果以全局变量形式存储”；ReduceRepeat 负责“对每个repeat内所有数据进行归约操作，支持求和、求最大值和求最小值，可返回最值索引”。
-- [GetReduceRepeatSumSpr](../reduction_compute_aux_config/get_reduce_repeat_sum_spr_isasi.md)（`related`）：读取 Sum SPR 可核对 ReduceRepeat 的分 repeat 结果。
-- [ReduceDataBlock](reduce_data_block.md)（`related`）：DataBlock 归约粒度小于 per-repeat，按输出粒度选择。
-- [ReduceSum](reduce_sum.md)（`related`）：ReduceSum 跨有效输入求单结果，ReduceRepeat 保留每 repeat 结果。
-- [AscRepeatReduceSum](../../../c_api/vector_compute/asc_repeat_reduce_sum.md)（`same_topic`）：ReduceRepeat 的 SUM 模式与 AscRepeatReduceSum 都对每个 Repeat 内的数据做二叉树求和；前者是可选 SUM/MAX/MIN 的基础 API，后者是 C API 的求和专用入口。
-- [ReduceMin](reduce_min.md)（`same_topic`）：ReduceMin 与《ReduceRepeat》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
+- [选择低延迟指令，优化归约操作性能](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md)（`explains`）：“当二分累加后的数据量小于等于256Byte（一条指令一个Repeat的数据操作量），使用ReduceRepeat指令，一次执行得到归约结果。”；“对每个repeat内所有数据进行归约操作，支持求和、求最大值和求最小值，可返回最值索引。”。指南给出 ReduceRepeat 在二分累加尾段的具体选用条件，接口卡提供该调用的归约语义。
+- [GetReduceRepeatMaxMinSpr](../reduction_compute_aux_config/get_reduce_repeat_max_min_spr_isasi.md)（`related`）：获取ReduceRepeat或ReduceMax/ReduceMin计算的最值及索引，结果以全局变量形式存储。；对每个repeat内所有数据进行归约操作，支持求和、求最大值和求最小值，可返回最值索引。。辅助接口读取 ReduceRepeat MAX/MIN 写入全局状态的最值与内部索引，计算接口定义每个 repeat 的归约域与索引语义。
 <!-- cannbot:related:end -->

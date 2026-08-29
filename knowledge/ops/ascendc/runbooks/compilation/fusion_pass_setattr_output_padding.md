@@ -58,9 +58,3 @@ platforms: ["950"]
 ## 根因
 
 **本卡不主张机制层根因。** 曾假设的 attrs 缓存破坏链（`SetAttr 缺失 → output_padding 不入 runtime attrs → GetAttrNum()-1 偏移 1 位 → 误读 useHf32(bool) 为 ContinuousVector* → 非法指针 → attrs 缓存破坏 → GROUPS_INDEX 读错 → EZ0009`）属 agent 推断，未在 trace 内以 tool_result 验证（grep `PADDING_INDEX` / `GROUPS_INDEX` / `OUTPUT_PADDING_INDEX` 的输出未作为 tool_result 捕获，runtime attrs 布局机制未实测）。该假设被姊妹诊断（transposed 交换缺失）证伪为 groups 报错的主因，故本卡以失败路线收敛、不发布为修复。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetOutputPadding](../../apis/simd_api/adv_api/convolution_compute/conv3_d_backprop_input_tiling/set_output_padding.md)（`exemplifies`）：SetOutputPadding 与《fusion pass SetAttr output_padding 非根因》的实质衔接是：SetOutputPadding 只在 Conv3DTranspose 形状反推中生效；这些卡共同限定输入、普通 padding、tiling 结构与 GetTiling/Init 的调用链，并用同名属性非根因案例防止误诊。
-<!-- cannbot:related:end -->

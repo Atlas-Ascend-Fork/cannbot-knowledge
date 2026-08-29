@@ -26,6 +26,5 @@ host侧Tiling接口，用于获取ReduceProd接口所需的最大和最小临时
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ReduceProd](reduce_prod.md)（`same_topic`）：GetReduceProdMaxMinTmpSize 与《ReduceProd》的实质衔接是：GetReduceProdMaxMinTmpSize 的 max/min 结果直接约束 ReduceProd 的 sharedTmpBuffer，isReuseSource 也必须与实际 ReduceProd 调用保持一致。
-- [ReduceProd接口](reduce_prod_interface.md)（`same_topic`）：GetReduceProdMaxMinTmpSize 与《ReduceProd接口》的实质衔接是：GetReduceProdMaxMinTmpSize 的 max/min 结果直接约束 ReduceProd 的 sharedTmpBuffer，isReuseSource 也必须与实际 ReduceProd 调用保持一致。
+- [ReduceProd](reduce_prod.md)（`related`）：host侧Tiling接口，用于获取ReduceProd接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetReduceProdMaxMinTmpSize获取。。ReduceProd 正文明确以 GetReduceProdMaxMinTmpSize 计算 sharedTmpBuffer 容量，两卡形成 Host 容量规划到 Kernel 归约调用的直接契约。
 <!-- cannbot:related:end -->

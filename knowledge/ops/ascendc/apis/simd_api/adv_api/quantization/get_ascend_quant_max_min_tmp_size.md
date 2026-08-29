@@ -26,7 +26,5 @@ host侧Tiling接口，用于获取AscendQuant接口所需的最大和最小临�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [量化操作](quantization.md)（`related`）：《GetAscendQuantMaxMinTmpSize》说明在host侧获取AscendQuant接口计算所需的最大和最小临时空间大小，用于选择合适的空间大小作为Tiling参数传递到kernel侧。；《量化操作》说明量化操作接口导航页，涵盖AscendQuant、AscendDequant、AscendAntiQuant及Quantize系列量化与反量化接口。。二者在AscendQuant的Host侧workspace上界/下界必须与该量化Kernel及factor查询匹配上存在可执行的直接衔接。
-- [AscendQuant](ascend_quant.md)（`same_topic`）：该接口给出 AscendQuant 可用 workspace 上下界，是调用旧接口前的直接 Tiling 配套。
-- [GetAscendQuantTmpBufferFactorSize](get_ascend_quant_tmp_buffer_factor_size.md)（`same_topic`）：《GetAscendQuantMaxMinTmpSize》说明在host侧获取AscendQuant接口计算所需的最大和最小临时空间大小，用于选择合适的空间大小作为Tiling参数传递到kernel侧。；《GetAscendQuantTmpBufferFactorSize》说明获取AscendQuant接口的maxLiveNodeCount和extraBuf，在固定空间大小下推算算子单次最大计算元素数量。。二者在AscendQuant的Host侧workspace上界/下界必须与该量化Kernel及factor查询匹配上存在可执行的直接衔接。
+- [AscendQuant](ascend_quant.md)（`related`）：host侧Tiling接口，用于获取AscendQuant接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；临时空间大小通过GetAscendQuantMaxMinTmpSize获取。。前者计算 AscendQuant workspace 的上下界，后者明确用该结果配置量化计算临时空间，联合阅读可闭合 Host 规划与 Kernel 调用。
 <!-- cannbot:related:end -->

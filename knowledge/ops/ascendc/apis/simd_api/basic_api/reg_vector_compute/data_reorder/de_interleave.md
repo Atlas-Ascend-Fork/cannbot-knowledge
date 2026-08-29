@@ -28,11 +28,3 @@ platforms: ['950']
 - 数据类型为b64时，仅支持RegTraitNumTwo。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscLoadalignDeintlvPostupdate](../../../c_api/reg/reg_load/asc_loadalign_deintlv_postupdate.md)（`related`）：《AscLoadalignDeintlvPostupdate》的任务是“从UB读取连续2×VL长度数据并在Load过程中完成解交织，分别写入两个目的矢量寄存器，调用后自动更新源地址。”。《DeInterleave》具体提供“对寄存器源操作数srcReg0和srcReg1中的元素进行解交织，存入结果寄存器dstReg0和dstReg1中。”，它直接用于解交织 Load 的地址 post-update、DeInterleave 结果顺序和等价入口。
-- [Interleave](interleave.md)（`related`）：Reg DeInterleave 把两个 RegTensor 拆为交错子流，Reg Interleave 用相同寄存器布局重新组合，是成对计算前后的直接布局链。
-- [DeInterleave](../../memory_vector_compute/data_rearrange/de_interleave.md)（`same_topic`）：DeInterleave：DeInterleave 的双输出偶/奇 lane 契约可由另一编程接口和逆操作 Interleave 对照，dst0 偶 lane runbook直接验证最易写反的输出约定，b16卡限定重排位宽风险。 目标卡《DeInterleave》补充：对寄存器源操作数srcReg0和srcReg1中的元素进行解交织，存入结果寄存器dstReg0和dstReg1中。
-<!-- cannbot:related:end -->

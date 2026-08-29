@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:46:01Z"
-updated_at: "2026-08-25T17:46:01Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -504,9 +504,9 @@ Add 消费完 x2 后，gamma 直接覆盖同一 UB 子区；V→MTE2 事件防�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，另见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，另见 `_950` 卡 |
 | Host/Launcher | `ascend910b`，本卡 Tiling 决策树 | `ascend910_93`，与 A2 同实现/config 形态 | regbase Tiling，keys 100–103/199 |
 | Kernel/资源 | AIV Vector，普通 AscendC API | 同 A2 | MicroAPI、NDDMA 分支与不同 workspace |
 
@@ -546,3 +546,10 @@ Add 消费完 x2 后，gamma 直接覆盖同一 UB 子区；V→MTE2 事件防�
 | 同步 | Queue/PIPE/event 协议 | Single-N 覆盖前的 V_MTE2/MTE2_V | 各 body |
 | 精度与尾块 | FP32 rstd；y1 从 y2 升精度 | BF16 RINT、有效 N 的 DataCopy tail | Compute helpers |
 | 失败边界 | shape/epsilon 失败；未知 key 无 body | 不把 key14 dormant body当 Route | Host/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [golden BF16 rstd 归约误取 post-BF16 量化值](../../../../runbooks/precision/golden_bf16_rstd_post_bf16.md)（`related`）：算子卡规定“每行先求和 `x=x1+x2`，再计算 `rstd=1/sqrt(sum(x_fp32^2)/N+epsilon)`”；Runbook 的失败信号是“rstd 输出（FP32，`rsqrt(mean(x²)+eps)`）在两个小 numCol 用例上超出 FP32 容差”。算子内部 pre-BF16 FP32 归约顺序用于修正 golden 的 post-BF16 取值点。
+- [AddRmsNormCast 950 ACLNN 算子知识](add_rms_norm_cast_950.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnAddRmsNormCastGetWorkspaceSize` + `aclnnAddRmsNormCast`，公开两段式 ACLNN；950 使用同一无版本后缀入口的 arch35/regbase 最新公开实现。 ｜；｜ 实际入口 ｜ `aclnnAddRmsNormCastGetWorkspaceSize` + `aclnnAddRmsNormCast`，公开两段式 ACLNN；固定仓未暴露版本后缀，提取该公开入口的当前实现。 ｜；双方闭合同一无版本后缀 ACLNN 入口，分别描述 950 arch35 与 A2/A3 实现。
+<!-- cannbot:related:end -->

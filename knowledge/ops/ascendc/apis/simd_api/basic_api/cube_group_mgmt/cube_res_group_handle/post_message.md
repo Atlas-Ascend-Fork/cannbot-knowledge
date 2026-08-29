@@ -21,9 +21,5 @@ platforms: ['950', a2]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AllocMessage](alloc_message.md)（`related`）：PostMessage 的 msg 地址必须先由 AllocMessage 从深度为 4 的队列取得；这是发送前不可省略的资源分配步骤。
-- [AssignQueue](assign_queue.md)（`related`）：AssignQueue 选定 AIV 对应队列，随后 PostMessage 将 AllocMessage 填好的消息沿该队列发送给 AIC。
-- [CubeResGroupHandle](cube_res_group_handle_usage.md)（`related`）：AIV 在 AllocMessage 填好 CubeMsgType 后通过 PostMessage 提交给 AIC 回调，是 usage 中任务分发的核心交接点。
-- [Cube核间管理Wait](wait.md)（`related`）：PostMessage 返回的 offset 专供 Wait 查询 AIC 是否处理完成，二者形成发送与完成确认协议。
-- [FreeMessage](free_message.md)（`same_topic`）：FreeMessage 与《PostMessage》的实质衔接是：FreeMessage 释放由 AllocMessage 取得并经 PostMessage 流转的消息，CubeResGroupHandle 使用说明给出完整状态生命周期。
+- [PostFakeMsg](post_fake_msg.md)（`related`）：在消息合并场景中由 AIV 发送假消息，通知 AIC 跳过重复消息的读取和处理。需先通过 AllocMessage 获取消息空间地址。；通过 AllocMessage 获取消息空间地址后，构造 CubeMsgType 消息结构体并发送。两接口共享 AllocMessage 分配与 offset 协议，分别提交需跳过的假消息和需处理的真实消息，闭合消息合并生产端选择。
 <!-- cannbot:related:end -->

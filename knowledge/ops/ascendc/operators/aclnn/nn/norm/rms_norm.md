@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_host/config/ascend910_93/rms_norm_binary.json
     role: implementation
 created_at: "2026-08-25T18:05:23Z"
-updated_at: "2026-08-25T18:05:23Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -747,9 +747,9 @@ for (uint32_t jOuterIdx = 0; jOuterIdx < jOuterMax - 1; jOuterIdx++) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_950` 卡 |
 | Host/Launcher | exact 910B 可达 key2 Merge-N/性能分支 | `ASCEND910_93` 不满足 exact 910B，Host只达 0/1/3 | arch35 5000/2001 |
 | Kernel/资源 | DAV2201 Vector API，depth1队列 | 同 DAV2201 body/config | RegBase MicroAPI，关键队列 depth2 |
 
@@ -789,3 +789,9 @@ for (uint32_t jOuterIdx = 0; jOuterIdx < jOuterMax - 1; jOuterIdx++) {
 | 同步 | Queue/Pipe/V_S/S_V | scalar partial/rstd读写顺序不可删 | `SetFlag/WaitFlag` |
 | 精度与尾块 | 16-bit升FP32、FP32 reduce、最后cast | valid D、padding、BF16 rint不可改 | reduce/ComputeY helpers |
 | 失败边界 | selector按优先级下落 | A3不可凭 key2 entry声称Host可达；unknown key无输出 | Tiling/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [RmsNorm 950 ACLNN 算子知识](rms_norm_950.md)（`same_topic`）：`rstd=1/sqrt(sum(x_i^2)/D+epsilon)`；`y_i=x_i*rstd*gamma_i`。两卡闭合相同 RmsNorm 数学与 ACLNN 输入输出契约，但 A2/A3 有五条 AIV 路线，950 使用两条 RegBase 路线，能直接支撑跨平台实现选择和资源核对。
+<!-- cannbot:related:end -->

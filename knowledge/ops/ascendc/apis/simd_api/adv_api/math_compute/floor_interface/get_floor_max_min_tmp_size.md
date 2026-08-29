@@ -25,7 +25,6 @@ host侧Tiling接口，用于获取Floor接口所需的最大和最小临时空�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Floor接口](floor_interface.md)（`related`）：Floor 调用前用该接口计算 workspace 上下界。
-- [Floor](floor.md)（`same_topic`）：GetFloorMaxMinTmpSize 与《Floor》的实质衔接是：该 host 查询给 Floor 高阶接口分配最大/最小临时空间，factor 查询再把选定空间换算为 kernel 单次处理量。
-- [GetFloorTmpBufferFactorSize](get_floor_tmp_buffer_factor_size.md)（`same_topic`）：GetFloorMaxMinTmpSize 与《GetFloorTmpBufferFactorSize》的实质衔接是：该 host 查询给 Floor 高阶接口分配最大/最小临时空间，factor 查询再把选定空间换算为 kernel 单次处理量。
+- [Floor](floor.md)（`related`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetFloorMaxMinTmpSize获取。”明确 Floor 的依赖，而“host侧Tiling接口，用于获取Floor接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”定义 Host 侧生产值；二者构成 sharedTmpBuffer 从 Host 计算到 Kernel 调用的直接合同。
+- [Floor接口](floor_interface.md)（`related`）：按元素向负无穷取整，并提供临时空间大小获取接口。；host侧Tiling接口，用于获取Floor接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。接口组明确需要临时空间查询，而目标卡给出 Host 侧最大/最小值获取契约，二者共同闭合 Floor 的 Tiling 到 Kernel 使用链。
 <!-- cannbot:related:end -->

@@ -30,14 +30,3 @@ platforms: ['950']
 - value不支持设置为负，负数行为未定义。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscShiftRightScalar](asc_shiftright_scalar.md)（`related`）：对应的标量左移用于相反方向的位运算，迁移时需显式区分符号与方向。
-- [AscShiftLeft](asc_shiftleft.md)（`same_topic`）：AscShiftLeftScalar 与《AscShiftLeft》的衔接是：标量左移与张量左移、C Vector 标量版本以及右移对应接口共同界定移位量来源、方向和 Reg/Memory 执行契约。
-- [AscShiftleft](../../vector_compute/asc_shiftleft.md)（`same_topic`）：AscShiftLeftScalar 与《AscShiftleft》的衔接是：标量左移与张量左移、C Vector 标量版本以及右移对应接口共同界定移位量来源、方向和 Reg/Memory 执行契约。
-- [ShiftLeft](../../../basic_api/memory_vector_compute/logical_compute/shift_left.md)（`same_topic`）：AscShiftLeftScalar 与《ShiftLeft》的衔接是：标量左移与张量左移、C Vector 标量版本以及右移对应接口共同界定移位量来源、方向和 Reg/Memory 执行契约。
-- [ShiftLeft](../../../basic_api/reg_vector_compute/logical_compute/shift_left.md)（`same_topic`）：AscShiftLeftScalar 与《ShiftLeft》的衔接是：标量左移与张量左移、C Vector 标量版本以及右移对应接口共同界定移位量来源、方向和 Reg/Memory 执行契约。
-- [ShiftLefts](../../../basic_api/reg_vector_compute/logical_compute/shift_lefts.md)（`same_topic`）：《AscShiftLeftScalar》明确“根据mask对源操作数src执行左移，左移位数由标量参数value决定，结果写入dst。”；它与《ShiftLefts》的“根据mask对srcReg按标量scalarValue进行左移操作并写入dstReg，无符号类型执行逻辑左移，有符号类型执行算术左移。”在实际调用参数、数据流或结果校验上直接衔接。
-<!-- cannbot:related:end -->

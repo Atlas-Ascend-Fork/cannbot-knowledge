@@ -25,12 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hblex2](../../bfloat16_type/bfloat16x2_compare_functions/_hblex2.md)（`related`）：两接口执行相同的双 lane 有序 <= 归约，但数据类型分别为 half2 和 bfloat16x2。
-- [__hlex2_mask](_hlex2_mask.md)（`related`）：__hlex2_mask 与《__hblex2》的实质衔接是：half2 ordered ≤ mask 与 ordered boolean、boolean-all、unordered、反向 ≥ 和 isnan 共同界定位图返回及 NaN 为 false 的规则。
-- [__hbgex2](_hbgex2.md)（`same_topic`）：《__hbgex2》处理“比较两个half2类型数据的两个分量，仅当两个分量均满足第一个数大于或等于第二个数时返回true。”。《__hblex2》明确“比较两个half2类型数据的两个分量，仅当两个分量均满足第一个数小于或等于第二个数时返回true。”，可直接用于核对bfloat16x2 大于等于谓词的有序/无序、mask 与相反比较合同。
-- [__hbleux2](_hbleux2.md)（`same_topic`）：__hbleux2 与《__hblex2》的实质衔接是：half2 unordered LE 布尔接口需与 mask、ordered LE、isnan 和比较入口对照。
-<!-- cannbot:related:end -->

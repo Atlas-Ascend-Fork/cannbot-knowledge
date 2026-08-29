@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar_and_tensor/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:03:53Z"
-updated_at: "2026-08-25T16:03:53Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -537,11 +537,11 @@ PipeBarrier<PIPE_V>();
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；公开文档 √ | 支持；公开文档 √ | 公开 README/API 文档明确 ×；虽然 OpDef/config/CMake 有 `ascend950` 接线，构成发布冲突，本卡不声明支持。 |
 | Host/Launcher | `ascend910b` binary config；共用 `ForeachCommonTiling` | `ascend910_93` binary config；共用同一 Tiling | 实现信号存在，但不得覆盖公开“不支持”结论。 |
-| Kernel/资源 | 同一 key 1–4 entry/body，`AUTO_SYNC false` | 同一 key 1–4 entry/body，`AUTO_SYNC false` | 不在本卡闭包范围；未发布 `_a5` 卡。 |
+| Kernel/资源 | 同一 key 1–4 entry/body，`AUTO_SYNC false` | 同一 key 1–4 entry/body，`AUTO_SYNC false` | 不在本卡闭包范围；未发布 `_950` 卡。 |
 
 ## 限制与失败边界
 
@@ -552,7 +552,7 @@ PipeBarrier<PIPE_V>();
 - Kernel router 对 unknown key 没有显式错误返回或 fallback；合法公开 dtype 经 Host 只产生 1–4。
 - `Power` AscendC primitive 的内部逼近算法、临时资源和特殊值细节属于固定仓外工具链实现；本卡只承诺调用 dtype、参数顺序与 BF16 外围 cast 顺序。
 - API 文档称默认确定性实现；源码可证明各核输出区间不重叠且无 atomic，但未执行真机确定性验证。
-- A5 文档与实现接线冲突，按平台 gate 不生成正式 A5 卡。
+- 950 文档与实现接线冲突，按平台 gate 不生成正式 950 卡。
 - 本次知识提取未执行编译、单元测试、真机、数值或性能测试。
 
 ## 源码索引
@@ -561,8 +561,8 @@ PipeBarrier<PIPE_V>();
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `foreach/foreach_pow_scalar_and_tensor/docs/aclnnForeachPowScalarAndTensor.md` | 两段式函数原型、产品支持表 | 公开入口、参数、错误与 A2/A3/A5 支持结论 |
-| 入口声明/约束 | `foreach/foreach_pow_scalar_and_tensor/README.md` | 产品支持、功能、参数表 | 逻辑语义、A5 不支持冲突 gate |
+| 入口声明/约束 | `foreach/foreach_pow_scalar_and_tensor/docs/aclnnForeachPowScalarAndTensor.md` | 两段式函数原型、产品支持表 | 公开入口、参数、错误与 A2/A3/950 支持结论 |
+| 入口声明/约束 | `foreach/foreach_pow_scalar_and_tensor/README.md` | 产品支持、功能、参数表 | 逻辑语义、950 不支持冲突 gate |
 | 入口实现 | `foreach/foreach_pow_scalar_and_tensor/op_host/foreach_pow_scalar_and_tensor_def.cpp` | `ops::ForeachPowScalarAndTensor` | 内部输入顺序、dtype/layout、AutoContiguous、SoC config |
 | 入口实现 | `foreach/foreach_pow_scalar_and_tensor/op_host/foreach_pow_scalar_and_tensor_infershape.cpp` | `InferShape4...`、`InferDataType4...` | TensorList 数量、shape 与 dtype 推导 |
 | Host/Tiling/Launcher | `foreach/foreach_utils/op_host/foreach_tiling_func.cpp` | `Tiling4ForeachPowScalarAndTensorTiling` | op code 22、TYPE_SCALAR、Tiling 注册 |

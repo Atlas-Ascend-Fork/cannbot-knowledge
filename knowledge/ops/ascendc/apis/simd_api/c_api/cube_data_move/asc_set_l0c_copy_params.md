@@ -22,10 +22,5 @@ DataCopy从L0C Buffer搬运到Global Memory或L1 Buffer过程中进行随路格�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCopyL0c2Gm](asc_copy_l0c2gm/asc_copy_l0c2gm_arch_2201.md)（`related`）：AscCopyL0c2Gm：这些卡共同约束同一 L0C→GM fixpipe 搬运：架构变体核对原型，SetL0cCopyParams/Prequant/ChannelPara配置随路转换，NZ2ND与Fixpipe页解释输出布局。 目标卡《AscSetL0cCopyParams》补充：设置L0C搬运随路格式转换（NZ转ND）的相关配置。
-- [AscCopyL0c2L1](asc_copy_l0c2l1/asc_copy_l0c2l1_arch_2201.md)（`related`）：AscCopyL0c2L1：AscCopyL0c2L1的2201/3510卡核对同一搬运原型，DataCopyL0CToL1提供C++对应语义，AscSetL0cCopyParams配置该L0C搬出的通用参数。 目标卡《AscSetL0cCopyParams》补充：设置L0C搬运随路格式转换（NZ转ND）的相关配置。
-- [AscSetL0cCopyPrequant](asc_set_l0c_copy_prequant.md)（`related`）：《AscSetL0cCopyParams》明确“设置L0C搬运随路格式转换（NZ转ND）的相关配置。”；它与《AscSetL0cCopyPrequant》的“设置数据搬运随路量化流程中的标量量化参数。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscCopyL0c2ub](asc_copy_l0c2ub.md)（`same_topic`）：AscSetL0cCopyParams说明设置L0C搬运随路格式转换（NZ转ND）的相关配置。
-- [AscSetL0c2gmNz2nd](../cube_compute/asc_set_l0c2gm_nz2nd.md)（`same_topic`）：AscSetL0c2gmNz2nd 与《AscSetL0cCopyParams》的实质衔接是：AscSetL0c2gmNz2nd 为 L0C 搬出配置 NZ→ND，AscSetL0cCopyParams 与 C++ SetFixpipeNz2ndFlag 是同一配置的相邻 API 层表达；NZ2ND 概念和 MmadDirectionN 说明格式转换与搬出方向的配合。
-- [AscSetL0c2gmQuantPost](../sys_var/asc_set_l0c2gm_quant_post.md)（`same_topic`）：焦点处理L0C2GM QUANT_POST 寄存器与 Fixpipe 量化搬出配置；AscSetL0cCopyParams正文说明“设置L0C搬运随路格式转换（NZ转ND）的相关配置”。候选设置 Fixpipe 的量化参数并由 L0C 搬出接口实际消费。
+- [AscCopyL0c2Gm](asc_copy_l0c2gm/asc_copy_l0c2gm.md)（`related`）：DataCopy从L0C Buffer搬运到Global Memory或L1 Buffer过程中进行随路格式转换（NZ格式转换为ND格式）时，通过调用该接口设置格式转换的相关配置。；将矩阵计算结果从L0C Buffer搬运至GM，支持随路量化、ReLU、格式转换等能力，包含不同架构版本实现。；配置接口为 L0C 搬运的 NZ→ND 随路格式转换设置参数，asc_copy_l0c2gm 是执行同一 L0C→GM 格式转换搬运的接口族。
 <!-- cannbot:related:end -->

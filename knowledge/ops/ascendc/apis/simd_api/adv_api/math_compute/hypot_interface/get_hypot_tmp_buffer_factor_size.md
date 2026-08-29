@@ -25,7 +25,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Hypot](hypot.md)（`related`）：GetHypotTmpBufferFactorSize 的输出专门用于按现有 currBuff 反推 Hypot 单次处理元素数，随后传给 Hypot 计算。
-- [Hypot接口](hypot_interface.md)（`related`）：《GetHypotTmpBufferFactorSize》明确“获取Hypot接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量”；它与《Hypot接口》的“按元素计算两个浮点数平方和的平方根，并提供临时空间大小获取接口。”在实际调用参数、数据流或结果校验上直接衔接。
-- [GetHypotMaxMinTmpSize](get_hypot_max_min_tmp_size.md)（`same_topic`）：《GetHypotTmpBufferFactorSize》明确“获取Hypot接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量”；它与《GetHypotMaxMinTmpSize》的“在host侧获取Hypot接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”在实际调用参数、数据流或结果校验上直接衔接。
+- [GetHypotMaxMinTmpSize](get_hypot_max_min_tmp_size.md)（`related`）：获取Hypot接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；host侧Tiling接口，用于获取Hypot接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。一端把 Hypot 临时空间拆为活跃节点倍数与额外缓冲以反推单次元素量，另一端提供最大最小临时空间的 Host Tiling 入口，二者组成 Hypot workspace 预算与计算粒度选择链。
 <!-- cannbot:related:end -->

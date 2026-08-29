@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:28:47Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -86,7 +86,7 @@ Device 对第一个无效项把累加器清零，后续无效项跳过；有权�
 
 固定 Commit 只有无版本后缀的两段式 ACLNN，因此这是 A2/A3 实际支持的最新公开版本。A2/A3 的 `IsRegbase()==false`，两段接口分别进入固定仓不可见的自动生成 `aclnnInnerMoeTokenUnpermuteGetWorkspaceSize` / `aclnnInnerMoeTokenUnpermute`；生成 bridge 是框架边界，算子拥有的 OpDef、Tiling、POD 与 Kernel 已继续闭合。
 
-README/API 文档也公开 A5。`IsRegbase()` 把 `DAV_3510`/`DAV_5102` 判作 RegBase，此时入口改组装 `MoeFinalizeRoutingV2(..., READ_INDEX_BY_ROW=2, ...)`，不再使用本卡 body。按项目规则 A5 应写独立 `_a5` 文件；本任务唯一目标不含该文件，故仅在平台差异记录。
+README/API 文档也公开 950。`IsRegbase()` 把 `DAV_3510`/`DAV_5102` 判作 RegBase，此时入口改组装 `MoeFinalizeRoutingV2(..., READ_INDEX_BY_ROW=2, ...)`，不再使用本卡 body。按项目规则 950 应写独立 `_950` 文件；本任务唯一目标不含该文件，故仅在平台差异记录。
 
 ## Host/Launcher 执行流程
 
@@ -878,11 +878,11 @@ idx/P已在UB，先用标量谓词可避免无贡献项的 Hcur随机GM gather�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | README/API支持；OpDef `ascend910b`、binary config、CI存在。 | README/API支持；OpDef `ascend910_93`、binary config、CI存在。 | README/API支持，但不属于本文件平台。 |
-| Host/Launcher | 非RegBase→自动生成inner→本算子Tiling/Kernel。 | 与A2共用Host/Tiling/POD/body；两平台JSON逐字相同。 | RegBase→`MoeFinalizeRoutingV2`；应由 `_a5` 卡闭合。 |
-| Kernel/资源 | 本卡12 keys、6 Route、单AIV_VECTOR；A2/A3使用标准DataCopyPad，低精度output为RINT。 | 同A2。 | 不使用本卡body；本任务未生成A5文件。 |
+| Host/Launcher | 非RegBase→自动生成inner→本算子Tiling/Kernel。 | 与A2共用Host/Tiling/POD/body；两平台JSON逐字相同。 | RegBase→`MoeFinalizeRoutingV2`；应由 `_950` 卡闭合。 |
+| Kernel/资源 | 本卡12 keys、6 Route、单AIV_VECTOR；A2/A3使用标准DataCopyPad，低精度output为RINT。 | 同A2。 | 不使用本卡body；本任务未生成950文件。 |
 
 ## 限制与失败边界
 
@@ -893,7 +893,7 @@ idx/P已在UB，先用标量谓词可避免无贡献项的 Hcur随机GM gather�
 - A2/A3 binary JSON完全相同，但都重复列BF16 token+FP32 probs，未列BF16 token+FP16 probs；OpDef、key17与router/body却支持后者。固定仓无法证明key17预编译package接线，部署前须核对交付物；本文保留实现Route，不宣称已运行验证。
 - unknown TilingKey无错误/fallback，只是entry结束且不写输出；Host key表必须与router同步。
 - Kernel不读workspace，但ACLNN executor仍可能有框架连续化开销；必须使用第一段实际返回的大小。
-- A5公开入口改走 `MoeFinalizeRoutingV2`；任务仅允许无后缀文件，未创建 `_a5` 卡。
+- 950公开入口改走 `MoeFinalizeRoutingV2`；任务仅允许无后缀文件，未创建 `_950` 卡。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -905,7 +905,7 @@ idx/P已在UB，先用标量谓词可避免无贡献项的 Hcur随机GM gather�
 | 入口声明 | `moe/moe_token_unpermute/op_host/op_api/aclnn_moe_token_unpermute.h` | 两段ACLNN | 符号与参数。 |
 | 公开约束 | `moe/moe_token_unpermute/README.md` | 产品/参数/约束 | 平台、公式、dtype、K。 |
 | 公开约束 | `moe/moe_token_unpermute/docs/aclnnMoeTokenUnpermute.md` | API文档 | shape、确定性、错误。 |
-| 入口实现 | `moe/moe_token_unpermute/op_host/op_api/aclnn_moe_token_unpermute.cpp` | 两段实现 | RegBase分流与A5转调。 |
+| 入口实现 | `moe/moe_token_unpermute/op_host/op_api/aclnn_moe_token_unpermute.cpp` | 两段实现 | RegBase分流与950转调。 |
 | selector | `common/include/external/aclnn_kernels/aclnn_platform.h` | `IsRegbase` | DAV_3510/5102。 |
 | OpDef | `moe/moe_token_unpermute/op_host/moe_token_unpermute_def.cpp` | `MoeTokenUnpermute` | dtype、AutoContiguous、平台注册。 |
 | InferShape | `moe/moe_token_unpermute/op_host/moe_token_unpermute_infershape.cpp` | `InferShapeFor...` | 输出[N,H]。 |
@@ -929,3 +929,10 @@ idx/P已在UB，先用标量谓词可避免无贡献项的 Hcur随机GM gather�
 | 同步 | Queue与PIPE_V | Cast→Muls→Add→output/MTE3；不得提前Free | `CalMulti`/`CalToken`/`CopyOut` |
 | 精度与尾块 | FP32乘加、A2/A3 RINT、三层tail | 非FP32先升精度；Hcur有效；q/r地址 | `CalFirst/CalToken/CopyOut` |
 | 失败边界 | 显式Tiling失败与unknown key | N=0、负索引、key17 config缺口、inner不可见不得推测成功 | `InputParamCheck`/router/config |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoeTokenPermute A2/A3 ACLNN 算子知识](moe_token_permute.md)（`related`）：“用 `sortedIndices` 从 `permutedTokens` 恢复输出 token”消费逆置换，“对 `flatten(indices)` 两次 argsort 得逆置换”说明该 sortedIndices 如何由前向 permute 生成，二者构成 MoE 路由往返。
+- [MoeTokenUnpermuteGrad A2/A3 ACLNN 算子知识](moe_token_unpermute_grad.md)（`related`）：“用 `sortedIndices` 从 `permutedTokens` 恢复输出 token”是前向恢复，“按 `sortedIndices` 把 `unpermutedTokensGrad` 行散写为 `permutedTokensGrad`”是其反向路由，并补充概率梯度点积。
+<!-- cannbot:related:end -->

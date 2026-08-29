@@ -266,18 +266,3 @@ revision: `eabb69e`（轨迹保留的短提交号）；path: `operators/softmax/
 ## 误诊
 
 507035 既可能来自地址/pipe，也可能来自资源超限；本轨迹中地址对齐修复后较小 a0 已通过而大 a0 仍失败，这一差异把根因收敛到 UB 容量。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [归约计算](../../apis/simd_api/basic_api/reg_vector_compute/reduction_compute/reduction_compute.md)（`exemplifies`）：《归约计算》处理“Reg矢量计算归约接口索引页，包含Reduce、ReduceDataBlock与PairReduceElem。”。《ACL 507035 — 完整 a0 统计缓冲超过 UB》提供“ARA 按完整尾轴乘积分配 fp32 max/sum 缓冲会在大 a0 时超过 UB；须对 a0 再切 tile 并逐 tile 完成三趟归约。”，其具体合同或探针直接接入规约 count、尾部填充、并行切核和 UB 容量的直接正确性约束。
-- [ARA 多 group 共用 max/sum 污染后续输出](../precision/ara_group_statistics_must_reset_per_group.md)（`related`）：两卡属于同一 ARA 三趟统计实现：本卡约束每 group 重置 max/sum，对照卡约束大 a0 时按 tile 分配并在 tile 内完成三趟，合并后才能同时避免状态污染和 UB 越界。
-- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](../precision/split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：完整 scratch 改多 pass 后需显式保存中间统计并同步 producer/consumer。
-- [postReduceUbSize 不足致 Phase2 读破坏](euclidean_norm_group_post_reduce_ub_size_phase2_chunk.md)（`related`）：目标卡在完整 A0 统计缓冲超 UB 时引入按 A0 切片，本卡却扩大 postReduceUbSize 强制全 A 单 chunk；二者共同给出选择边界：全量缓冲能装下才可消除 chunk，否则必须设计闭环的分片三趟归约。
-- [按 dtype 分配 UB 必须匹配 tiling 预算](dtype_conditional_ub_allocation_matches_tiling_budget.md)（`related`）：目标卡展示完整归约尾轴 scratch 超 UB 后必须引入 tileA0 切片；本卡可先通过删除分支不使用缓冲恢复预算，若仍超额则转入这种按轴切片方案。
-- [507035 C 超 per_buf_elems 致 Phase1 UB 越界](datacopypad_phase1_chunk_loop_per_buf_elems_507035.md)（`same_topic`）：焦点处理Phase1 中 C 超出 per_buf_elems 导致 UB 地址越界的预算故障；ACL 507035 — 完整 a0 统计缓冲超过 UB正文说明“ARA 按完整尾轴乘积分配 fp32 max/sum 缓冲会在大 a0 时超过 UB；须对 a0 再切 tile 并逐 tile 完成三趟归约”。候选与焦点共享 UB 容量/slot 预算机制，能直接修正切分因子、物理宽度或双缓冲计数。
-- [507035 — Host 按逻辑行宽预算导致 UB 溢出](ub_budget_uses_aligned_physical_width_507035.md)（`same_topic`）：UB 预算必须使用对齐物理宽度，避免 host 低估完整 scratch。
-- [507035 — 三队列 float32 tile 超 UB](507035_float32_tile_ub.md)（`same_topic`）：507035 — 三队列 float32 tile 超 UB 与《ACL 507035 — 完整 a0 统计缓冲超过 UB》的实质衔接是：这些卡共享可复算的 UB 根因：队列/工作缓冲数量、对齐物理宽度或分块超过每核预算；TPipe InitBuffer是实际乘入 depth×bytes 的资源申请点。
-- [FindSplitAxis 误传 total_slots 致 slot 翻倍](../precision/findsplitaxis_total_slots_slot.md)（`same_topic`）：FindSplitAxis 误传 total_slots 致 slot 翻倍 与《ACL 507035 — 完整 a0 统计缓冲超过 UB》的实质衔接是：FindSplitAxis 第四参要求 phys_nodes，传入已乘 DB 的 total_slots 会再次乘二；per-buffer UB 预算、rank/split、TilingData 和 Broadcast 卡用于核对内外切分量一致。
-- [Reduce work buf 额外占 UB 致 507035](reduce_work_buf_ub_507035.md)（`same_topic`）：完整 reduction axis 的 fp32 scratch 也会随轴长线性放大并超过 UB，解决方式同样是切轴或复用阶段性闲置 Buffer。
-<!-- cannbot:related:end -->

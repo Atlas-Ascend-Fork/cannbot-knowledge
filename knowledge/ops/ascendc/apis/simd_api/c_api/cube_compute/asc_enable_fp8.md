@@ -23,6 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscEnableHif8](asc_enable_hif8.md)（`related`）：AscEnableFp8 与 AscEnableHif8 互斥选择 8bit Mmad 前的数据解释方式，直接提供 FP8 与 HiF8 模式选型。
-- [fp8数据类型简介（FP8类型）](../../../simt_api/math_functions/fp8_type/fp8_data_type_intro.md)（`related`）：FP8 类型说明给出 e4m3/e5m2/HiF8 的数值范围，支撑开启 FP8 模式前选择与输入编码相符的格式。
+- [AscEnableHif8](asc_enable_hif8.md)（`related`）：用于设置Mmad计算开启FP8模式。该接口会关闭HiF8模式（与asc_enable_hif8相反），开启该模式后L0A Buffer/L0B Buffer中的FP8数据在参与Mmad计算之前不会被转化为hifloat8_t类型数据。；用于设置Mmad计算开启HiF8模式，开启该模式后L0A Buffer/L0B Buffer中的8bit数据将在参与矩阵乘法运算前被转化为hifloat8_t类型数据。两接口控制同一 Mmad 输入解释点的互斥模式，必须一起理解才能正确选择低精度路径。
 <!-- cannbot:related:end -->

@@ -21,9 +21,3 @@ platforms: ['950', a2, a3]
 本接口属于 LocalTensor 数据结构操作接口，用于访问和修改 UB 上的 Tensor 属性。
 
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [OperatorSubscript](operator.md)（`related`）：operator[] 创建 LocalTensor 子视图后，正文建议立即 SetBufferLen，使编译器掌握子视图物理缓冲长度。
-<!-- cannbot:related:end -->

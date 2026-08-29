@@ -89,5 +89,6 @@ aliases: ["offset_packing"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [aclnnQuantMatmulV5 FP16 x2Scale 须 UINT64](aclnnquantmatmulv5_fp16_x2scale_uint64.md)（`same_topic`）：《aclnnQuantMatmulV5 L0C2out 三约束判别》明确“Ascend950/CANN 9.2.0 上 aclnnQuantMatmulV5 L0C→out 直出路径（int8 输入+uint64 scale）有三条硬约束：bias 须 int32、offset 须打包进 uint64 scale 不可单独传、offset 与 pertokenScale 互斥；传错均返回 161002，offset 打包则引入精度损失。”；它与《aclnnQuantMatmulV5 FP16 x2Scale 须 UINT64》的“Ascend950/DAV_3510 上 aclnnQuantMatmulV4/V5 的 L0C→out 直出路径对 int8 输入要求 x2Scale 为 DT_UINT64/DT_INT64，传 DT_FLOAT 返回 161002；用 ASCEND_SLOG_PRINT_TO_STDOUT 探针可定位到 CheckL0c2outOrL0c2ubPertensorPerchannel4Int8Input checker。bf16 输出走 L0C→UB 路径不受此约束。”在实际调用参数、数据流或结果校验上直接衔接。
+- [QuantMatmul 950 ACLNN 算子知识](../../operators/aclnn/nn/matmul/quant_matmul_950.md)（`related`）：`aclnnQuantMatmulV5` 的 L0C→out 直出路径（int8 输入、uint64 scale、输出 dtype 在 int8 之外）是硬件直出量化路径，其参数合同为：；｜ x2Scale ｜ 必选，标量/列/块/MX shape ｜ UINT64/INT64/FP16/BF16/FP32/FLOAT8_E8M0 ｜ INT64 view 转 UINT64；shape决定量化方式 ｜。runbook 把算子卡的多种 scale 输入收敛到 L0C 直出时必须使用的 uint64 类合同。
+- [aclnnQuantMatmulV5 FP16 x2Scale 须 UINT64](aclnnquantmatmulv5_fp16_x2scale_uint64.md)（`same_topic`）：`aclnnQuantMatmulV5` 的 L0C→out 直出路径（int8 输入、uint64 scale、输出 dtype 在 int8 之外）是硬件直出量化路径，其参数合同为：；即 V4/V5 在该芯片上对 int8 输入走 L0C→out 直出路径时，强制 x2Scale 必须为 `DT_UINT64` 或 `DT_INT64`，不接受 `DT_FLOAT`。两张 runbook 是同一 L0C 直出参数合同的互补部分。
 <!-- cannbot:related:end -->

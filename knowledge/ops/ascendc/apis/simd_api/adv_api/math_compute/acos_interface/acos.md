@@ -39,7 +39,6 @@ __aicore__ inline void Acos(const LocalTensor<T>& dstTensor, const LocalTensor<T
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetAcosMaxMinTmpSize](get_acos_max_min_tmp_size.md)（`related`）：GetAcosMaxMinTmpSize 与《Acos》的实质衔接是：Acos 的 host 临时空间查询必须与 kernel Acos、接口封装及 factor-size 推算使用同一 shape/typeSize/复用策略。
-- [GetAcosTmpBufferFactorSize](get_acos_tmp_buffer_factor_size.md)（`related`）：当已有固定临时空间预算时，GetAcosTmpBufferFactorSize 可反推 Acos 单次可处理元素量，补足容量受限时的 tiling 决策。
-- [Acos接口](acos_interface.md)（`same_topic`）：Acos接口 的核心契约是“提供Acos反余弦计算接口及其Tiling临时空间大小查询接口，包含Acos、GetAcosMaxMinTmpSize等”；Acos 补充“按元素做反余弦函数计算，输入值域需在-1到1范围内”。
+- [GetAcosMaxMinTmpSize](get_acos_max_min_tmp_size.md)（`related`）：sharedTmpBuffer（输入）：临时缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 用于Acos内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAcosMaxMinTmpSize。；为保证功能正确，预留 申请的临时空间大小不能小于最小临时空间大小。Acos 的 Kernel 调用直接依赖候选 Host 查询确定可用临时空间。
+- [GetAcosTmpBufferFactorSize](get_acos_tmp_buffer_factor_size.md)（`same_topic`）：该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。 临时空间大小BufferSize的获取方式请参考GetAcosMaxMinTmpSize。 因子接口从已有 Buffer 反推 calCount，Acos 本体消费由 Tiling 确定的 sharedTmpBuffer，二者闭合缓存与分块配置。
 <!-- cannbot:related:end -->

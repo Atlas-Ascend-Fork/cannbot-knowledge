@@ -79,3 +79,10 @@ platforms:
   - [310p-bringup-边界-不可用-mlapo-batch-matmul-transpose-定制算子-mla-sf](https://github.com/vllm-project/vllm-ascend/pull/5776)
   - [310p-上-attention-的-kv-cache-与-mask-张量须为-nz-格式-acl-format-fra](https://github.com/vllm-project/vllm-ascend/pull/5776)
   - [310p-上-torch-npu-npu-flash-attention-unpad-有精度问题-多模态-encoder](https://github.com/vllm-project/vllm-ascend/pull/5776)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 310P 不支持 Triton kernel：走 Triton 的算子须补纯 host/eager 等价路径](../../../runbooks/runtime/ascend_310p_no_triton_kernel_eager_fallback.md)（`related`）：一批在 A2/A3 上正常的算子路径与执行模式在 310P 上**不可用或未实现**；在 310P 上，凡是通用路径经由 Triton 计算的地方，都需要为 310P 提供一份纯 host（eager PyTorch / NumPy）的等价实现来绕开 Triton。候选卡把焦点卡的通用不可用算子检查落实为 Triton-free fallback 的实现与验证链。
+- [Ascend 310P 不支持图模式：aclgraph capture 抛 ACL_MODEL_RI_CAPTURE_STATUS_ACTIVE INTERNAL ASSERT，须加 --enforce-eager](../../../runbooks/runtime/ascend_310p_graph_mode_unsupported_enforce_eager.md)（`related`）：一批在 A2/A3 上正常的算子路径与执行模式在 310P 上**不可用或未实现**；在 310P 上部署时默认预期图模式不可用。前者要求 310P bringup 先排除不可用执行模式，后者把其中 aclgraph 路径收敛为必须使用 eager 的可执行处置。
+<!-- cannbot:related:end -->

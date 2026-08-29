@@ -210,16 +210,3 @@ private:
 ## 误诊
 
 报错发生在类型绑定阶段，尚未读取 shape/stride 内容；修改表中数值、元素数量或输入 dtype 都不能修复地址空间不匹配。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__cvta_generic_to_global](../../apis/simt_api/address_space_conversion_functions/_cvta_generic_to_global.md)（`exemplifies`）：《__cvta_generic_to_global》的任务是“将输入的指针转换为其指向的Global Memory内存空间的地址值并返回。”。《Device helper 必须保留 GM 地址空间》具体提供“Ascend C kernel 入口把 __gm__ int64_t* 传入 device helper 的 plain const int64_t* 时触发地址空间类型错误；参数与持久成员均保留 __gm__ 后恢复构建。”，它直接用于generic 指针转 Global 地址、反向转换和 GM 地址空间验证。
-- [__cvta_global_to_generic](../../apis/simt_api/address_space_conversion_functions/_cvta_global_to_generic.md)（`exemplifies`）：《__cvta_global_to_generic》处理“将Global Memory内存空间的地址值转换为对应的指针并返回。”。《Device helper 必须保留 GM 地址空间》明确提供“Ascend C kernel 入口把 __gm__ int64_t* 传入 device helper 的 plain const int64_t* 时触发地址空间类型错误；参数与持久成员均保留 __gm__ 后恢复构建。”，其参数、调用或验证步骤直接接入global/generic 指针互转、GM 地址空间判定与 GlobalTensor 地址帮助器。
-- [地址空间转换函数](../../apis/simt_api/address_space_conversion_functions/address_space_conversion_functions.md)（`exemplifies`）：《地址空间转换函数》处理“SIMT API地址空间转换函数汇总，提供generic与Global、UBuf、Local间指针与地址值的双向转换能力。”。《Device helper 必须保留 GM 地址空间》提供“Ascend C kernel 入口把 __gm__ int64_t* 传入 device helper 的 plain const int64_t* 时触发地址空间类型错误；参数与持久成员均保留 __gm__ 后恢复构建。”，其具体合同或探针直接接入SIMT 地址空间转换与谓词验证、helper 形参地址限定合同。
-- [GetPhyAddr const __gm__ 返回不可去 const](getphyaddr_const_gm_const.md)（`related`）：focal 保留 __gm__ 之外还需保留 const；该卡证明 GlobalTensor::GetPhyAddr 返回 const __gm__ pointer，强转为可写指针会独立触发 casts-away-qualifiers。
-- [混合 SIMT 启动边界用 GM_ADDR 承接地址空间](mixed_simt_launch_boundary_uses_gm_addr.md)（`related`）：混合 launch 边界先用 GM_ADDR 封送、进入 device 后恢复 typed __gm__；focal 则要求恢复后的 typed __gm__ 继续穿过 helper 和成员，两卡首尾衔接。
-- [纯 SIMT kernel 形参 __gm__ 导致编译失败](pure_simt_parameters_do_not_use_gm_qualifier.md)（`related`）：纯 SIMT 模式会把 __gm__ 解释成不合法 attribute，恰好给出 focal 规则的停止边界：先判编程模型，再决定 helper/入口是否使用地址空间限定。
-- [GM_ADDR 标量不可解引用为 tiling 结构体指针](gm_addr_tiling.md)（`same_topic`）：GM_ADDR 卡说明 tiling 入口必须先恢复为 typed __gm__ 结构指针，helper 卡进一步要求该 __gm__ 地址空间在调用链形参中持续保留；两者闭合同一 GM 指针类型合同。
-- [__ubuf__ 指针传普通形参导致编译失败](ubuf_pointer_preserves_address_space.md)（`same_topic`）：__ubuf__ 指针传普通形参导致编译失败 与《Device helper 必须保留 GM 地址空间》的实质衔接是：__ubuf__ 是指针类型的一部分，helper 形参、Load/Store、ReinterpretCast、地址空间转换与谓词必须保留相同 qualifier，不能隐式退化为普通 T*。
-<!-- cannbot:related:end -->

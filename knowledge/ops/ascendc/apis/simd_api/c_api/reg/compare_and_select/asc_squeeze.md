@@ -28,10 +28,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSqueezeAndStoreunalign](../reg_store/asc_squeeze_and_storeunalign.md)（`related`）：AscSqueeze 只在 Reg 中压紧且不保存有效数，Storeunalign 变体同时用 AR 累计长度并连续写 UB，适合需要跨调用非对齐搬出的路径。
-- [AscSqueeze](../../vector_compute/asc_squeeze.md)（`same_topic`）：AscSqueeze说明将src中被mask选择的有效元素依次复制到dst中，有效元素在dst中从低到高连续排列，剩余位置元素置为0。本接口不会将有效数据大小保存至AR寄存器。
-- [AscSqueezeV2](asc_squeeze_deprecated.md)（`same_topic`）：AscSqueeze说明将src中被mask选择的有效元素依次复制到dst中，有效元素在dst中从低到高连续排列，剩余位置元素置为0。本接口不会将有效数据大小保存至AR寄存器。
-- [AscSqueezeWithStatus](asc_squeeze_with_status_deprecated.md)（`same_topic`）：AscSqueezeWithStatus：该废弃接口的功能是按mask压紧并记录有效长度；推荐替代AscSqueezeAndStoreunalign的Init/执行/Finalize链同时完成压紧和非对齐搬出，GetSqueezeStatus/基础Squeeze用于核对长度语义。 目标卡《AscSqueeze》补充：将src中被mask选择的有效元素依次复制到dst中，有效元素在dst中从低到高连续排列，剩余位置元素置为0。本接口不会将有效数据大小保存至AR寄存器。
-- [AscUnsqueeze](../data_compress/asc_unsqueeze.md)（`same_topic`）：AscUnsqueeze 与《AscSqueeze》的实质衔接是：AscUnsqueeze 按 mask 逆展开压缩数据，Unsqueeze 是对应基础入口，Squeeze/AscSqueeze 是生成压缩流和 mask 的逆向前置操作。
-- [Squeeze](../../../basic_api/reg_vector_compute/compare_and_select/squeeze.md)（`same_topic`）：Squeeze：Squeeze 按 mask 压紧有效 lane，并通过 AR 字节数驱动非对齐 Store；C API、废弃替代链和 StoreUnAlign 正好覆盖同一压紧/搬出契约。 目标卡《AscSqueeze》补充：将src中被mask选择的有效元素依次复制到dst中，有效元素在dst中从低到高连续排列，剩余位置元素置为0。本接口不会将有效数据大小保存至AR寄存器。
+- [AscSqueeze](../../vector_compute/asc_squeeze.md)（`same_topic`）：通过比较掩码src1，将src0中的向量压缩成更短的向量，存储到dst中；将src中被mask选择的有效元素依次复制到dst中，有效元素在dst中从低到高连续排列，剩余位置元素置为0。两卡都按 mask 压缩有效元素；焦点是 A2/A3 UB 三地址形式，候选是 950 Reg+MaskReg 形式并明确剩余位置清零。
+- [AscSqueezeV2](asc_squeeze_deprecated.md)（`same_topic`）：将src中被mask选择的有效元素依次复制到dst中，有效元素在dst中从低到高连续排列，剩余位置元素置为0。；该接口已废弃，请使用asc_squeeze_and_storeunalign实现筛选并连续搬出有效元素的功能。。两卡都围绕 AscSqueeze 的掩码筛选与连续排列语义，目标卡记录旧接口退役和迁移入口，焦点卡保留当前不写 AR 的筛选契约，因此属于同一核心接口主题的版本演进。
 <!-- cannbot:related:end -->

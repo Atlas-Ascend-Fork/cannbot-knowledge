@@ -36,5 +36,5 @@ SIMD场景下，通过仿真器进行算子性能仿真时，可对算子任意�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [TraceStart](trace_start.md)（`same_topic`）：TraceStop 与《TraceStart》的衔接是：TraceStop 必须与同 apid、pipe、core 上的 TraceStart 成对出现；TraceStart 是完成该闭合区间不可替代的另一端。
+- [TraceStart](trace_start.md)（`related`）：“用于表示起始位置打点，一般与TRACE_STOP配套使用。”给出焦点端事实；“用于表示终止位置打点，一般与TRACE_START配套使用。”给出候选端事实。两端明确互为配套的起止打点接口，联合使用才能形成完整的调优测量区间。
 <!-- cannbot:related:end -->

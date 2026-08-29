@@ -15,9 +15,3 @@ platforms: ['950']
 # half2类型算术函数
 
 提供 half2 双分量向量类型的算术运算，包括加减乘除（__haddx2、__hsubx2、__hmulx2、__hdivx2）、绝对值（__habsx2）、取负（__hnegx2）、逐分量乘加（__hfmax2，可按 `__hfma` + `x2` 理解）及带 ReLU 的变体（__hfmax2_relu）。还包含复数乘加 __hcmadd，单条指令并行处理两个 half 分量，提升计算吞吐。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [half2类型比较函数](../half2_compare_functions/half2_compare_functions.md)（`related`）：half2 算术产生的 packed 结果常需按分量比较、取最值或检查 NaN；比较函数集提供保持 half2 布局的后续条件处理。
-<!-- cannbot:related:end -->

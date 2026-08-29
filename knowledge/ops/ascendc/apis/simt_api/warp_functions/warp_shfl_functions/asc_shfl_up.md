@@ -32,14 +32,3 @@ platforms: ['950']
 -   width不是2的倍数或者超出32，返回值异常。
 需包含头文件 "simt_api/device_warp_functions.h"。
 支持 SIMT 与 SIMD/SIMT 混合编程场景。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscShflXor](asc_shfl_xor.md)（`related`）：AscShflXor 按 laneMask 配对交换，适合蝶形归约；AscShflUp 的有向偏移更适合扫描，二者给出算法选型。
-- [AscShfl](asc_shfl.md)（`same_topic`）：AscShfl 与《AscShflUp》的实质衔接是：AscShfl 与 up/down/xor 变体及 cooperative-group 对应入口共享 warp lane 交换契约，分支优化卡直接使用该类 warp 通信。
-- [AscShflDown](asc_shfl_down.md)（`same_topic`）：AscShflDown 与《AscShflUp》的实质衔接是：AscShflDown 从较高 lane 读取值；general/up/xor 与 cooperative-group ShflDown 对照偏移方向和 warp/group 作用域。
-- [ShflUp](../../cooperative_groups/coalesced_group/shfl_up.md)（`same_topic`）：ShflUp 与《AscShflUp》的实质衔接是：coalesced_group::shfl_up 在当前活跃线程子组内读取前 delta lane；组的构造与简介限定发散后的成员集合，generic shfl、shfl_down、thread_block_tile 和 Warp C API 给出索引方向及作用域对照。
-- [ShflUp](../../cooperative_groups/thread_block_tile/shfl_up.md)（`same_topic`）：thread_block_tile::ShflUp 与 AscShflUp 都从较低 lane 读取值；前者受 tile Size 约束，后者直接以 warp 为作用域。
-- [Warp Shfl类函数](warp_shfl_functions.md)（`same_topic`）：Warp Shfl类函数 与《AscShflUp》的实质衔接是：Warp Shfl 总览覆盖 general/down/up/xor 四种 lane 交换；coalesced/tile 对应入口和分支优化指南说明作用域及真实使用。
-<!-- cannbot:related:end -->

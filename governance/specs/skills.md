@@ -1,6 +1,6 @@
 # Knowledge Skills
 
-本仓维护 `knowledge-query`、`knowledge-ingest`、`knowledge-lint` 三项基础 Skill，以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。技术事实始终属于 `knowledge/`；Skill 保存生产、消费和治理这些事实的方法，不保存另一份领域知识。
+本仓维护 `knowledge-query`、`knowledge-ingest`、`knowledge-lint` 三项基础 Skill，仓内专用的 `ops-knowledge-trace-ingest`，以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。技术事实始终属于 `knowledge/`；Skill 保存生产、消费和治理这些事实的方法，不保存另一份领域知识。
 
 具体执行接口只在各 Skill 自身的 `SKILL.md` 和 `references/` 中维护，本页只定义仓库级行为与协作边界。
 
@@ -11,10 +11,11 @@
 | `knowledge-query` | 技术问题、decision、目标平台和可选范围条件 | 实际覆盖、候选 OKF Concept 或 search/ready/outcome receipt | 只读；只在调用方指定路径创建新审计产物 |
 | `knowledge-ingest` | 固定来源、变化类型、目标路径、待表达结论和当前知识语料 | 路由决策、候选 Concept、Git 来源账本；可提交的受管关系块；ignored 的关系候选、判定缓存和本地图谱 | 可以创建候选卡并同步受管关系块；图谱 JSON 等产物不提交、不发布 |
 | `knowledge-lint` | 单卡、完整知识仓或问题材料 | 分级确定性 Finding 报告或可复现 Issue 草稿 | 只读 |
+| `ops-knowledge-trace-ingest` | 本仓可读的算子开发 trace、日志或已归一化事件流 | 经证据门禁、独立审查和全库图谱收口的 Ascend C Runbook | 只在本知识仓使用；只写经审查卡、导航和日志 |
 | `ops-knowledge-vv-ingest` | 固定版本源码、唯一逻辑算子、入口、平台和独占目标文件 | 不含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 | 只写任务指定的最终卡 |
 | `ops-knowledge-cv-ingest` | 固定版本源码、唯一逻辑算子、入口、平台和独占目标文件 | 含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 | 只写任务指定的最终卡 |
 
-典型贡献流程是先 Query 查重；通用来源由 Ingest 形成候选卡，源码级完整算子由 VV/CV 中唯一匹配执行族边界的 producer 直接写目标卡；随后执行全库 Lint，最后用目标条件验证新卡可以被 Query 召回。只读问答不需要执行完整流程；人工编辑已有卡也可以不用创建能力，但仍应查重、Lint 和验证召回。
+典型贡献流程是先 Query 查重；通用来源由 Ingest 形成候选卡，本仓内的开发 trace 由 Ingest 路由到 trace producer，源码级完整算子由 VV/CV 中唯一匹配执行族边界的 producer 直接写目标卡；随后执行全库 Lint，最后用目标条件验证新卡可以被 Query 召回。只读问答不需要执行完整流程；人工编辑已有卡也可以不用创建能力，但仍应查重、Lint 和验证召回。
 
 ## Query
 
@@ -62,7 +63,7 @@ Ingest 是所有摄入请求的唯一入口，把可核验材料蒸馏成候选 
 6. 新卡默认 `draft`；只有来源、范围和正文满足消费门槛后才使用 `stable`。
 7. 写入前调用统一 Contract，并用排他原子创建拒绝覆盖已有卡。
 8. 创建后由贡献者更新索引和当天日志。
-9. 知识批次完成后执行多通道宽候选召回和稳定分片，由多个独立 subagent 阅读 focal 与 shortlist 候选的完整正文后判定关系；shortlist 只减少无效阅读，Agent 可以用目标卡指纹明确提交正文中发现的候选外关系。聚合器只消费完整 Agent review，不以词法规则、分数阈值或节点度数自动定边；Agent 对同一 pair 的关系类型冲突必须交给一个或多个 Agent 阅读全文裁决，多个裁决分片必须互不重叠且合并后完整覆盖冲突集。
+9. 知识批次完成后执行多通道宽候选召回和稳定分片，由多个独立 subagent 以小批次阅读 focal 与 shortlist 候选的完整正文后判定关系；shortlist 只减少无效阅读，Agent 可以用目标卡指纹明确提交正文中发现的候选外关系。未明确决定表示 abstain；完整阅读后确认的近似误召回可显式拒绝。聚合器只消费完整 Agent review，不以词法规则、分数阈值或节点度数自动定边；同一 pair 的接受/显式拒绝冲突或关系类型冲突必须交给未参与原判定的 Agent 阅读全文裁决，多个裁决分片必须互不重叠且合并后完整覆盖冲突集，聚合失败不得继续复用旧缓存。
 10. 将接受关系同步为知识卡中可提交的 `cannbot:related` 受管导航块，再执行全库 Lint，重建 Query 索引并运行目标 Query；候选、review、裁决、判定缓存、完整图谱和可视化始终留在 ignored 的 `artifacts/graphs/`，Query 不索引受管关系块。
 
 Git Reference 批次使用 inventory、ledger 和不可覆盖 receipt；固定归档批次以 Registry 中的 archive SHA-256 固定来源，直接执行查重、蒸馏和建卡，不生成这三类批次产物。固定归档切换到新 archive SHA-256 的流程尚未实现，必须 defer。
@@ -71,7 +72,7 @@ Git Reference 批次使用 inventory、ledger 和不可覆盖 receipt；固定�
 
 本地图谱包含通过 Contract 的 Concept 与 Index、由目录派生的 `part_of`、人工正文的 `links_to`，以及 Agent 判定缓存接受的 `exemplifies`、`explains`、`same_topic` 和 `related`。候选、review 分片、冲突裁决、已接受关系及其卡片指纹、理由、Agent 身份、强度、置信度、证据、完整图谱和可视化全部写入 ignored 的 `artifacts/graphs/`。受管关系块是这些判定在知识卡中的可提交导航投影，不是人工正文或技术事实源；技术回答仍以卡片正文和来源为准。
 
-图谱候选、判定缓存、构建和可视化产物不提交，也不是独立知识真值。候选分数和召回通道只能帮助 subagent 定位阅读顺序；版本和平台用于 Agent 判断适用边界，不作为候选过滤器。判定缓存必须由至少两个 subagent 覆盖当前全部 focal，并通过语料、分片和卡片指纹校验。Ingest 只能改写受管关系块，且必须保证注入幂等、链接可解析、块外人工正文不变。
+图谱候选、判定缓存、构建和可视化产物不提交，也不是独立知识真值。候选分数和召回通道只能帮助 subagent 定位阅读顺序；版本和平台用于 Agent 判断适用边界，不作为候选过滤器。判定缓存必须由至少两个 subagent 覆盖当前全部 focal，并通过语料、候选产物、分片和卡片指纹校验；语料或候选产物变化后必须失败关闭。每个接受或显式拒绝判定都必须用双方 Concept ID 为键，分别从去除受管关系块后的对应卡片正文逐字摘录具体事实，并明确桥接理由和范围；模板、截断、非正文锚点或自相矛盾的证据失败关闭。Ingest 只能改写受管关系块，且必须保证注入幂等、链接可解析、块外人工正文不变，校验同时覆盖 JSON 与 HTML 图谱产物。
 
 ## Operator producer
 
@@ -90,7 +91,7 @@ Lint 是离线、只读、确定性的作者门禁，比 OKF 最小 conformance 
 | OKF/CANNBot Profile | 根版本、YAML mapping 唯一 key、非空 `type`、路径 Profile 映射、JSON Schema 和字段白名单 |
 | 路径与受控值 | domain-route、附加层级、文件名、platform、Tag、技术端点 |
 | 生命周期与来源 | `status`、有效日历时间、`verified` actor、`replaced_by`、来源形状、Git 文件 commit 固定格式与 GitCode/GitHub PR/Issue URL；本地来源获取脚本存在且可执行，已恢复来源的归档标记和在用文件存在 |
-| 导航、正文与日志 | domain 根和 `ops`/`model` route 骨架完整；每层索引列出直接子项；行内/显式引用式 Markdown 目标是 Bundle 内的现有文件；图片使用固定 commit 的 Git raw 文件 URL；正文非空且无 Git 冲突标记；日志格式、必需 section 与倒序正确 |
+| 导航、正文与日志 | domain 根和 `ops`/`model` route 骨架完整；每层索引列出直接子项；行内/显式引用式 Markdown 目标是 Bundle 内的现有文件；图片使用固定 commit 的 Git raw 文件 URL；正文非空、围栏外恰有一个 H1、无 Git 冲突标记或压平表格；日志格式、必需 section 与倒序正确 |
 
 单卡检查不覆盖父级索引和完整目录树；新增、删除或移动文件后必须执行全库检查。统一门禁启用严格来源导航，要求宽 Git tree 来源由同仓库、同 revision 的 blob 来源或正文链接定位。Lint 只确认链接目标和 Bundle 边界，不验证 Markdown 锚点。
 
@@ -98,18 +99,18 @@ Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、�
 
 ## 共同约束
 
-- 五项 Skill 共同遵守 `governance/schemas/` 和 `governance/contracts/`，不复制或放宽字段、路径和注册值。
-- 五项 Skill 的可移植合同由 `SKILL.md` 的 `name`、`description` 和正文，以及按需加载的 `references/`、`templates/`、`scripts/` 等资源组成。规范源不保存 `agents/openai.yaml` 或其他单一 Agent 平台元数据。
+- 六项 Skill 共同遵守 `governance/schemas/` 和 `governance/contracts/`，不复制或放宽字段、路径和注册值。
+- 六项 Skill 的规范合同由 `SKILL.md` 的 `name`、`description` 和正文，以及按需加载的 `references/`、`templates/`、`scripts/` 等资源组成。其中五项通用 Skill 可由安装器链接到业务项目，trace producer 保持仓内运行。规范源不保存 `agents/openai.yaml` 或其他单一 Agent 平台元数据。
 - Query 和 Lint 始终只读；Ingest 不自动 commit、push、合并或发布。
 - CANN、DSL、API、算子、调试和优化事实进入 `knowledge/`，不埋在 Skill 指令中。
-- 官方 reference 来源盘点与通用摄入路由属于 Ingest，源码级完整算子生产属于 VV/CV，Issue 材料整理属于 Lint。其他专用 producer 需要单独完成架构和发布评审。
+- 官方 reference 来源盘点与通用摄入路由属于 Ingest，仓内开发 trace 动态摄入属于 trace producer，源码级完整算子生产属于 VV/CV，Issue 材料整理属于 Lint。其他专用 producer 需要单独完成架构和发布评审。
 
 ## 安装模式
 
 | 安装模式 | Skill | 场景 |
 |---|---|---|
 | `consumer` | `knowledge-query` | 只读查阅和技术问答 |
-| `contributor` | 全部五项 Skill | 贡献知识、治理规则或 Skill |
+| `contributor` | 五项可安装 Skill（三项基础 + VV/CV） | 贡献知识、治理规则或 Skill；不包含仓内 trace producer |
 
 知识仓安装入口把平台中立的规范源链接到目标项目 `.agents/skills/`，再在 Skill 目录之外创建客户端适配链接；同时准备索引、写项目级知识根配置并维护 Agent 提示词入口。复制式安装必须另行配置知识根。两种方式都要求知识仓独立可用，不复制 `knowledge/` 正文或修改用户全局配置。
 

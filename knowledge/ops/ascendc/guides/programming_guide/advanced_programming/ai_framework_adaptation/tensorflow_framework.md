@@ -34,9 +34,3 @@ platforms: [agnostic]
 -   包含插件实现函数相关的头文件。
 register.h存储在CANN软件安装后文件存储路径的“include/register/”目录下，包含该头文件，可使用算子注册相关类，调用算子注册相关的接口。
 -   REGISTER_CUSTOM_OP：注册自定义算子，传入算子的_OpType_，需要与算子原型注册中的_OpType_保持一致。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [高级编程概述](overview.md)（`related`）：高级编程概述：该概述的任务就是把自定义算子接入 AI 框架；PyTorch、TensorFlow和 ONNX 插件/调用卡分别展开正文点名的三条适配流程。 目标卡《TensorFlow框架》补充：>针对Ascend 950PR/Ascend 950DT，暂不支持TensorFlow框架算子调用。
-<!-- cannbot:related:end -->

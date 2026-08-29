@@ -121,3 +121,11 @@ U 形要求把首尾两层合到同一张卡，权重转换分两步。先按 **
 - [pipeline-parallel-advanced](../parallelism/pipeline_parallel_advanced.md)（LDT 是 U 形 PP 变体：借 VPP 摆首尾虚拟 stage，在 without-interleaving 1F1B 调度上改成 FS-FE-BS-BE 编排）
 - [hetero-parallel](../parallelism/hetero_parallel.md)（互补对照：异构并行解同卡子模块算存失衡，LDT 解跨域数据安全；MM 侧 LDT 复用视觉编码器靠前部署的分层）
 - [mindspeed-mm](../frameworks/mindspeed_mm.md)（多模态承载套件：Qwen2.5-VL LDT 经 `model.json` patch 段使能，走 Megatron-mcore 路线）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MindSpeed 高级流水并行（VPP / Ripipe / 多参数 / Unaligned PP / 变长序列 / PP Layout）](../parallelism/pipeline_parallel_advanced.md)（`related`）：U 形拆分用 VPP 在 PP stage 0 摆下首尾两个虚拟 stage、跨域用激活/梯度 P2P 接力、配合流水编排把边云通信掩盖到计算之下，并支持边云卡数不一致的非对称 TP / DP。；PP 把模型按 decoder 层切成 `--pipeline-model-parallel-size` 个 stage 接力计算。前者是后者 PP/VPP 基线上的 U 形调度变体，需先理解 stage 切分再定位首尾共置。
+- [MindSpeed-MM（昇腾 NPU 多模态大模型训练套件）](../frameworks/mindspeed_mm.md)（`related`）：MindSpeed-MM 覆盖 Qwen2.5-VL 多模态（`model.json` 里 `"patch": {"layerwise_disaggregated_training": true}`）。；MindSpeed-MM 是昇腾 NPU 的**多模态大模型训练套件**，建在 ［mindspeed］(mindspeed.md) 训练加速底座之上，覆盖 **VLM 理解 / DiT 视频图像生成 / Omni 全模态** 三类模态。前者给出 LDT 的具体承载配置，后者定义承载套件与训练范围。
+- [异构并行（MindSpeed-MM 多模态分组并行 + 动态 DP-CP）](../parallelism/hetero_parallel.md)（`related`）：异构并行解决「同一组卡上不同子模块（编码器/主干）算存悬殊」，做法是逐子模块独立并行度 + 运行时切换 `parallel_state`；LDT 解决「边云两组物理隔离的卡之间数据不能流动」，做法是 U 形层切分 + 跨域激活/梯度接力 + 非对称 TP/DP。；MindSpeed-MM 的异构并行（hetero-parallel）通过**解耦各子模块的并行配置**——每个子模块独立设 tp/pp/cp/mbs——并在运行时按当前执行的子模块动态切换 Megatron 的全局 `parallel_state`。两端构成跨域安全切分与同卡算存均衡的明确选型对照。
+<!-- cannbot:related:end -->

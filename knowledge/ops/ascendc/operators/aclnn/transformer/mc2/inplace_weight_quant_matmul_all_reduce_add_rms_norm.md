@@ -66,7 +66,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/inplace_matmul_all_reduce_add_rms_norm/op_host/config/ascend910b/inplace_matmul_all_reduce_add_rms_norm_binary.json
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T20:05:04Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -747,7 +747,7 @@ offset在模板期决定是否执行，实际数据流是 `dst=(src+offset)*scal
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持 | 公开文档明确不支持 | 公开文档明确不支持950PR/DT |
 | Host/Launcher | ascend910b；AICPU KFC/HCCL | 不发布 | 不发布 |
@@ -770,7 +770,7 @@ offset在模板期决定是否执行，实际数据流是 `dst=(src+offset)*scal
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `mc2/inplace_matmul_all_reduce_add_rms_norm/docs/aclnnInplaceWeightQuantMatmulAllReduceAddRmsNorm.md` | 产品表/约束 | A2支持、A3/A5不支持、参数 |
+| 入口声明/约束 | `mc2/inplace_matmul_all_reduce_add_rms_norm/docs/aclnnInplaceWeightQuantMatmulAllReduceAddRmsNorm.md` | 产品表/约束 | A2支持、A3/950不支持、参数 |
 | 入口声明/约束 | `mc2/inplace_matmul_all_reduce_add_rms_norm/op_api/aclnn_inplace_weight_quant_matmul_all_reduce_add_rms_norm.h` | 两段API | 签名/deprecated |
 | 入口实现 | `mc2/inplace_matmul_all_reduce_add_rms_norm/op_api/aclnn_inplace_weight_quant_matmul_all_reduce_add_rms_norm.cpp` | 两入口 | residual绑定y |
 | 入口实现 | `mc2/matmul_all_reduce_add_rms_norm/op_api/aclnn_weight_quant_matmul_all_reduce_add_rms_norm.cpp` | 共享API | 校验/空域/错误 |

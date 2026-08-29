@@ -14,9 +14,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/hy3_preview/optimization_report.md
   role: supporting
 created_at: '2026-05-31T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # Hy3-preview
@@ -120,3 +120,9 @@ KVCache 静态化为连续缓存（BSH，`scatter_update_(axis=-2)`），非块�
 - [inference-config](../techniques/inference_config.md)
 - [cann-executor](../frameworks/cann_executor.md)
 - [kv-cache-manager](../frameworks/kv_cache_manager.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Qwen3-MoE](qwen3_moe.md)（`related`）：以“Qwen3-MoE 是经典 Attention + MoE（无 shared expert、无 linear attention），**不共享代码路径**。”固定参考实现的结构基线，再用“仓库内最接近的参考实现是 ［qwen3-moe］(qwen3_moe.md)（同为 GQA + MoE + per-head QK Norm）。”定位 Hy3-preview 的复用点，部署者可直接核对哪些模块能沿用、哪些必须改写。
+<!-- cannbot:related:end -->

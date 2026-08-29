@@ -31,10 +31,6 @@ Tiling下沉仅适用于存在Tiling值依赖（即当InferShape不依赖输入�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DEVICE_IMPL_OP_OPTILING](../../../../apis/utils_api/tiling_sink/device_impl_op_optiling.md)（`explains`）：DEVICE_IMPL_OP_OPTILING 生成设备侧 Tiling 注册类，指南给出开启 Tiling 下沉并接入图编译的完整流程。
-- [Tiling下沉](../../../../apis/utils_api/tiling_sink/tiling_sink.md)（`explains`）：该指南解释何时把 Host Tiling 下沉到 AI CPU、如何开启图模式流程，补足索引卡只有注册宏而缺少的使用决策和端到端步骤。
-- [ValueDepend](../../../../apis/utils_api/prototype_register_management/op_param_def/value_depend.md)（`explains`）：开启 Tiling 下沉明确要求非 Const 输入配置 Tiling 值依赖；ValueDepend 卡给出 scope=TILING 的注册语义，使数据只在 Tiling 阶段可取并支持下沉。
-- [图编译和图执行](graph_compilation_and_execution.md)（`related`）：启用 tiling sink 会改变 tiling 在图编译/执行阶段的生成与下发位置，是该流程的关键优化分支。
-- [基本开发流程](basic_development_flow.md)（`related`）：基本开发流程 与《开启Tiling下沉》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [高级编程概述](overview.md)（`same_topic`）：高级编程概述 与《开启Tiling下沉》的实质衔接是：图高级编程概述由基本开发流程展开，并以图编译执行和 tiling 下沉说明 GE 从构图到下发的生命周期；编译部署流程是产物落点。
+- [DEVICE_IMPL_OP_OPTILING](../../../../apis/utils_api/tiling_sink/device_impl_op_optiling.md)（`explains`）：完成下沉Tiling函数注册：包含device_op_impl_registry.h头文件，使用宏DEVICE_IMPL_OP_OPTILING进行注册。；在Tiling下沉场景中，该宏定义用于生成Tiling下沉的注册类，再通过调用注册类的成员函数来注册需要下沉的Tiling函数。。指南给出 DEVICE_IMPL_OP_OPTILING 的注册步骤，接口卡解释该宏生成注册类并绑定下沉 Tiling 函数的具体作用。
+- [ValueDepend](../../../../apis/utils_api/prototype_register_management/op_param_def/value_depend.md)（`explains`）：本示例中的输入y通过ValueDepend配置了非Const类型的Tiling值依赖。；scope：输入：ALL：指在Tiling/InferShape等函数实现时都依赖该输入的具体数据，行为与调用单参数ValueDepend重载接口一致。TILING：指仅在Tiling时依赖Tensor的值，可以支持Tiling下沉。。指南以非 Const 输入 y 示范 ValueDepend 的 TILING 数据依赖，接口卡给出 ALL 与 TILING 的精确范围以及下沉能力。
 <!-- cannbot:related:end -->

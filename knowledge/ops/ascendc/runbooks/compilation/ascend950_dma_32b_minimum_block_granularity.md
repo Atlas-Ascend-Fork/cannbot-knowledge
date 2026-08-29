@@ -147,10 +147,5 @@ static __aicore__ inline float ReadScalarFloat(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetValue](../../apis/simd_api/basic_api/data_structures/local_tensor/get_value.md)（`exemplifies`）：目标卡明确建议用 GetValue/SetValue 做单元素诊断或不满足 DMA 粒度时的标量基线；GetValue 提供不提交小块 DMA 的读取路径。
-- [SetValue](../../apis/simd_api/basic_api/data_structures/local_tensor/set_value.md)（`exemplifies`）：SetValue 与 GetValue 配合建立单元素写入基线，可区分 32B DMA 组织错误与算术错误。
-- [DataCopyPad 尾块改逐行一维搬入](../precision/datacopypad_partial_2d_blocks_use_per_row_copy.md)（`related`）：多行短块的 2D DataCopyPad 未把每行放到预期 256B UB 行首，改逐行 blockCount=1；它将 32B 块约束落实到二维短行布局。
-- [DataCopy GM→UB 需 32B 对齐，非对齐 C 统计输出全零](../precision/datacopy_gm_to_ub_non_32b_aligned_silent_zero.md)（`same_topic`）：DataCopy GM→UB 需 32B 对齐，非对齐 C 统计输出全零：本卡以C字节数非32B倍数复现GM→UB DataCopy静默全零；DataCopyPad是直接修复，32B最小粒度卡解释硬件根因，其余所选卡覆盖Pad参数、尾块初始化/逐行搬运及对向DataCopy尾丢失验证。 目标卡《Ascend950 DMA 32B 块最小传输粒度》补充：Ascend950 GM↔UB DMA 引擎最小传输单元为 32 字节（一个 block，fp32=8 元素）；单 float 标量 DMA 静默失败或报 507015，按 8 元素对齐的 DataCopy 会越界读 GM 致 Segfault。
-- [DataCopy 非32字节对齐尾块丢字节](../precision/datacopy_32.md)（`same_topic`）：DataCopy 非 32B 尾块会静默丢字节，是同一 DMA 粒度约束在精度侧的观测；与异常型越界共同覆盖两种失败表现。
-- [DataCopyPad CopyIn 小输入 32B DMA 越界](datacopypad_copyin_32b_dma.md)（`same_topic`）：《DataCopyPad CopyIn 小输入 32B DMA 越界》说明DataCopyPad CopyIn 不论 DataCopyExtParams.blockLen 写多少，底层 DMA 引擎按 32 字节（1 DataBlock）粒度读 GM；当 Host 仅按有效元素数分配 < 32B 输入、SetGlobalBuffer(ptr,N) 只声明逻辑可读范围不扩大物理分配时，DMA 实读 32B 越过已映射内存 → device error 507035 / segfault。判别：小输入（有效元素 × sizeof(T) < 32B）+ SetGlobalBuffer N < ceil(32/sizeof(T)) + Host 分配未对齐到 32B。；《Ascend950 DMA 32B 块最小传输粒度》说明Ascend950 GM↔UB DMA 引擎最小传输单元为 32 字节（一个 block，fp32=8 元素）；单 float 标量 DMA 静默失败或报 507015，按 8 元素对齐的 DataCopy 会越界读 GM 致 Segfault。。二者在小输入越界由GM物理分配小于32B DMA粒度触发；GM到UB DataCopyPad接口和SetGlobalBuffer共同界定逻辑范围与物理读取的差异上存在可执行的直接衔接。
+- [DataCopyPad CopyIn 小输入 32B DMA 越界](datacopypad_copyin_32b_dma.md)（`related`）：Ascend950 的 GM↔UB DMA 引擎以 32 字节（一个 block）为最小传输粒度，fp32 下即 8 个元素。；`DataCopyPad` 的 CopyIn 不论 `DataCopyExtParams.blockLen` 写多少，**底层 DMA 引擎以 32 字节（1 DataBlock）为最小读取粒度**访问 GM。前者给出平台级标量/数组 DMA 规则，后者给出 Host 仅分配 4B 时 CopyIn 越界并报 507035 的具体复现。
 <!-- cannbot:related:end -->

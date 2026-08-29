@@ -29,12 +29,3 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Kirin X90。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAcosMaxMinTmpSize](get_acos_max_min_tmp_size.md)（`related`）：GetAcosMaxMinTmpSize 与《Acos接口》的实质衔接是：Acos 的 host 临时空间查询必须与 kernel Acos、接口封装及 factor-size 推算使用同一 shape/typeSize/复用策略。
-- [GetAcosTmpBufferFactorSize](get_acos_tmp_buffer_factor_size.md)（`related`）：Acos接口 负责“提供Acos反余弦计算接口及其Tiling临时空间大小查询接口，包含Acos、GetAcosMaxMinTmpSize等”；GetAcosTmpBufferFactorSize 负责“获取Acos接口的maxLiveNodeCount和extraBuf，用于推算固定空间下单次最大计算元素数”。
-- [Acos](acos.md)（`same_topic`）：Acos接口 的核心契约是“提供Acos反余弦计算接口及其Tiling临时空间大小查询接口，包含Acos、GetAcosMaxMinTmpSize等”；Acos 补充“按元素做反余弦函数计算，输入值域需在-1到1范围内”。
-- [Acosf](../../../../simt_api/math_functions/float_math_functions/acosf.md)（`same_topic`）：高阶 Tensor Acos 与 SIMT acosf 完成同一反余弦任务。
-<!-- cannbot:related:end -->

@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:53:11Z"
-updated_at: "2026-08-25T17:53:11Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -87,7 +87,7 @@ Kernel 的 `oneDivD` 即 `-1.0f/D`。FP16/BF16 路线在 UB 中提升为 FP32 �
 
 公开文档只声明无版本后缀的 `aclnnDeepNormGrad`。第一段创建 executor 并返回 workspace 大小，第二段在调用者 stream 上执行。`op_host/CMakeLists.txt` 以 `OPTYPE deep_norm_grad ACLNNTYPE aclnn` 接入生成式 ACLNN 框架；固定仓未展开生成后的 inner bridge、连续化和 executor 壳，按框架边界处理，算子自有 Host/Tiling/Kernel 均可见。
 
-README 与 API 文档明确支持 Atlas A2、A3；OpDef 注册 `ascend910b` 与 `ascend910_93`，两个 binary config 都包含 FP32/FP16/BF16，未发现同平台更高 API 版本。公开文档同时明确 Ascend 950PR/950DT 不支持，故不生成 A5 卡。
+README 与 API 文档明确支持 Atlas A2、A3；OpDef 注册 `ascend910b` 与 `ascend910_93`，两个 binary config 都包含 FP32/FP16/BF16，未发现同平台更高 API 版本。公开文档同时明确 Ascend 950PR/950DT 不支持，故不生成 950 卡。
 
 ## Host/Launcher 执行流程
 
@@ -1026,7 +1026,7 @@ block 0 先清零输出并全核同步。各核在本地 FP32 累加 N 行，最
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；README/API + `ascend910b` config | 支持；README/API + `ascend910_93` config | 公开文档明确不支持 Ascend 950PR/950DT |
 | Host/Launcher | 与 A3 共用 Tiling/OpDef，三 dtype binary | 与 A2 共用 Tiling/OpDef，三 dtype binary | 不生成正式卡 |
@@ -1048,7 +1048,7 @@ block 0 先清零输出并全核同步。各核在本地 FP32 累加 N 行，最
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `norm/deep_norm_grad/docs/aclnnDeepNormGrad.md` | 两段式原型、产品表 | API、参数、A2/A3/A5 公开支持状态 |
+| 入口声明/约束 | `norm/deep_norm_grad/docs/aclnnDeepNormGrad.md` | 两段式原型、产品表 | API、参数、A2/A3/950 公开支持状态 |
 | 入口声明/约束 | `norm/deep_norm_grad/README.md` | 产品支持与公式 | 逻辑语义、公开调用方式 |
 | 入口实现 | `norm/deep_norm_grad/op_host/deep_norm_grad_def.cpp` | `DeepNormGrad` | dtype、AutoContiguous、平台 OpDef |
 | Host/Tiling | `norm/deep_norm_grad/op_host/deep_norm_grad_tiling.h` | `DeepNormGradTilingData` | POD 字段顺序与类型 |
@@ -1073,4 +1073,10 @@ block 0 先清零输出并全核同步。各核在本地 FP32 累加 N 行，最
 | workspace/内存 | Host 固定 36 MiB；C220 用硬件同步 | UB buffer 深度、A/A32/B8 对齐与 dtype 条件分配 | `SetWorkspace`、三类 `InitQueue` |
 | 同步 | Queue、PIPE_V、MTE2_S/S_V/V_S/MTE3_S、SyncAll | ordered token 只能在 Atomic DMA 完成后递增 | `CopyOut*InOrder` |
 | 精度与尾块 | FP16/BF16 升 FP32；FP16 `CAST_NONE`、BF16 `CAST_RINT` | D/merge/repeat tail 的有效元素数 | `MainComputeWithCast`、`DataCopyCustom` |
-| 失败边界 | shape/dtype 检查与三个 cut key | unknown key、A5 unsupported、文档空 Tensor 冲突 | `CheckInputOutputShape*`、router、README |
+| 失败边界 | shape/dtype 检查与三个 cut key | unknown key、950 unsupported、文档空 Tensor 冲突 | `CheckInputOutputShape*`、router、README |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepNorm A2/A3 ACLNN 算子知识](deep_norm.md)（`related`）：｜ 计算语义 ｜ 对每个归一化行先算 `x' = alpha*x + gx`，再算 `mean=Σx'/D`、`rstd=1/sqrt(Σ(x'-mean)^2/D+epsilon)`、`y=(x'-mean)*rstd*gamma+beta`。 ｜；｜ 计算语义 ｜ 将输入展平为 `［N,D］`，计算 DeepNorm 对 `x/gx/gamma/beta` 的反向梯度 `dx/dgx/dgamma/dbeta` ｜。DeepNorm 卡定义前向归一化与 mean/rstd，DeepNormGrad 卡消费该运算语义并计算 x、gx、gamma、beta 的反向梯度，是同一训练算子链的前后向节点。
+<!-- cannbot:related:end -->

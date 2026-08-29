@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:27:24Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -571,7 +571,7 @@ __aicore__ inline void KernelMoeTokenUnpermute<T1, T2, T3, PROBS>::CalToken(
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；OpDef `ascend910b`、三 dtype binary config、CI operator list 均有接线 | 支持；OpDef `ascend910_93`、三 dtype binary config、CI operator list 均有接线 | 公开 API 文档标为支持，但属于另一实现路线，不在本卡 platforms |
 | Host/Launcher | 走 native `MoeTokenPermuteGrad` inner；workspace/tiling 共用本文 producer | 与 A2 共用 Host/Tiling/POD/entry，平台提供各自 AIV 数和 UB 容量 | `IsRegbase` 分支转 `MoeInitRoutingV2Grad(activeNum=P)`，且先显式要求 `paddedMode=false` |
@@ -595,7 +595,7 @@ __aicore__ inline void KernelMoeTokenUnpermute<T1, T2, T3, PROBS>::CalToken(
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | moe/moe_token_permute_grad/op_host/op_api/aclnn_moe_token_permute_grad.h | `aclnnMoeTokenPermuteGradGetWorkspaceSize/aclnnMoeTokenPermuteGrad` | 公开两段式 ABI、workspace/executor/stream 参数顺序 |
-| 入口实现 | moe/moe_token_permute_grad/op_host/op_api/aclnn_moe_token_permute_grad.cpp | 两个公开入口、`IsRegbase` 分支 | A2/A3 native inner 与 A5 转调的入口分流、失败返回 |
+| 入口实现 | moe/moe_token_permute_grad/op_host/op_api/aclnn_moe_token_permute_grad.cpp | 两个公开入口、`IsRegbase` 分支 | A2/A3 native inner 与 950 转调的入口分流、失败返回 |
 | 接口约束 | moe/moe_token_permute_grad/docs/aclnnMoeTokenPermuteGrad.md | 参数表与约束说明 | shape、dtype、非连续、numTopk、paddedMode 和平台公开范围 |
 | Op 注册 | moe/moe_token_permute_grad/op_host/moe_token_permute_grad_def.cpp | `ops::MoeTokenPermuteGrad/OP_ADD` | 输入输出 dtype/format、属性默认值、ascend910b/ascend910_93 配置 |
 | InferShape | moe/moe_token_permute_grad/op_host/moe_token_permute_grad_infershape.cpp | `InferShapeForMoeTokenPermuteGrad/InferDataTypeForMoeTokenPermuteGrad` | 输出 `[input0.dim0/topK,H]` 与 dtype 传播 |
@@ -625,3 +625,9 @@ __aicore__ inline void KernelMoeTokenUnpermute<T1, T2, T3, PROBS>::CalToken(
 | 同步 | Queue 的 MTE2→Vector、outque 的 Vector→MTE3 和显式 `PIPE_V` 边可复用 | Free/复用顺序、Cast→Add 与 accumulator→Cast 屏障不能删除；具体 auto-sync event 不得臆造 | `CopyTokenIn`、`CalFirstToken`、`CalToken`、`CopyOut` |
 | 精度与尾块 | BF16/FP16 的 FP32 顺序累加、FP32 原生累加、former core 与两级 remain tail 可复用 | key 0/2 与 key 4 的 UB/精度路线不能合并；元素 count=`h_length` 和精确 GM 写长必须保持 | `SetTilingKey`、`Init`、`Process`、`CalSingleOutToken` |
 | 失败边界 | Host dtype/format 约束、上界无效索引跳过和未知 key 无 body 是可审计事实 | 不得把负索引、`paddedMode=true`、非正 topK、shape 不一致或 UB 零 tile 宣称为支持 | `OpDef`、`InputParamCheck`、`InferShapeForMoeTokenPermuteGrad`、`CalPartOutToken` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoeTokenPermute A2/A3 ACLNN 算子知识](moe_token_permute.md)（`related`）：“对 `flatten(indices)` 两次 argsort 得逆置换，再把第 `i` 个 token 的 `topK` 个副本散写到排序位置”生成前向置换及索引，“以每个输出 token 对应的连续 `numTopk` 个 `sortedIndices` 为索引，从 `permutedOutputGrad` gather 行并沿 top-k 维求和”消费该索引完成梯度回收。
+<!-- cannbot:related:end -->

@@ -136,3 +136,10 @@ export VLLM_ROLLOUT_EARLY_STOP_MIN_TOKENS=10000
 - [qwen3-rl](../../guides/recipes/qwen3_rl.md)（承载实践：Qwen3 GRPO/DAPO RL，patch 体系与最小可复现脚本来源、20% rollout 吞吐收益数据点）
 - [grpo-dapo](grpo_dapo.md)（本技术服务的 on-policy RL 算法，rollout 长尾问题在 GRPO/DAPO 同步采样下尤为突出）
 - [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — 长度感知重采样特性文档 + qwen3 RL recipe
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Qwen3 长序列 RL 训练实践（235B-A22B 2K 推 32K + 32B SAM 投机，veRL/MindSpeed/vLLM-Ascend，GRPO/DAPO）](../../guides/recipes/qwen3_rl.md)（`related`）：新增长序列特有问题的优化：**长尾序列负载不均**；利用**上一轮 rollout 收集到的 response 长度统计**，在下一轮 epoch 开始时对样本顺序重排；概念页提供 recipe 长尾问题的一条事前数据重排路径。
+- [Rollout Rebalance（RL On-Policy rollout 序列级均衡调度引擎）](rollout_rebalance.md)（`related`）：`LengthAwareEpochSampler` 用历史统计 + EMA 长度估计 + 分桶重排 + 稳定样本 id 回写解决长尾混排，并提供 `response_max_tokens_cap` 动态裁剪作为可选长尾保护。它与 ［rollout-rebalance］(rollout_rebalance.md)（推理引擎内动态迁移任务）互补：长度感知重采样在**数据采样侧**事前重排、Rebalance 在**vLLM 内部**事中迁移，两者都为同一个 rollout 长尾问题服务。；**Rollout Rebalance** 是 cann-recipes-train 在 ［vllm-ascend］(../frameworks/vllm_ascend.md) 推理引擎内实现的一套**序列级均衡调度引擎**：在每个推理 Step 前周期性感知全局 DP 组负载，当检测到组间负载不均满足条件时，主动把**单个请求（Sequence，含其 KVCache）**在 rank 间迁移、重排，配合 vLLM-Ascend 的**多档位编图**能力让全局尽快切换到更小 BatchSize 档位（更低 TPOT），从而提升进入长尾状态后的整体推理效率。。两卡解决同一 rollout 长尾链的不同阶段：采样器事前按历史长度组批，Rebalance 在生成过程中迁移请求和 KVCache。
+<!-- cannbot:related:end -->

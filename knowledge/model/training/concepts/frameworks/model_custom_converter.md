@@ -236,3 +236,10 @@ sequenceDiagram
 - [vlm-multimodal-training](../modules/vlm_multimodal_training.md)（npu_vlm 经声明式 converter 注册）
 - [megatron-bridge](megatron_bridge.md)（MindSpeed-Bridge HF↔Megatron 权重桥接的邻近概念）
 - [mindspeed-mm](mindspeed_mm.md)（MindSpeed-MM Canonical Model 权重转换的邻近概念）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NPU 基础融合算子 ModelConverter 家族（torchtitan-npu）](npu_fused_op_converters.md)（`related`）：“将 MoE 专家的 `w1`/`w3` 融合为 `w13` 以适配 NPU”给出模型级转换的具体 GMM 目标；“converter 的 `convert()` 遍历 `model.named_modules()`”给出融合算子 converter 实际查找和替换模块的执行入口，两者共同闭合从转换目标到注册执行。
+- [VLM 多模态训练适配（DenseMaskSDPA）](../modules/vlm_multimodal_training.md)（`related`）：`npu_vlm` 是 feature-gate converter（`converters/features/vlm.py`，`@register_model_converter("npu_vlm")`）。它**不改模型**（NPU 注意力已由 `to_npu_vlm_config` 在 config 期选定），只在 `convert` 中校验：模型是 `Llama3Siglip2TransformerNpu`、解码层与编码层的 `inner_attention` 均为 `DenseMaskSDPA`。converter 注册/装配机制见 ［model-custom-converter］(../frameworks/model_custom_converter.md)。；- ［vlm-multimodal-training］(../modules/vlm_multimodal_training.md)（npu_vlm 经声明式 converter 注册）。VLM 卡说明 npu_vlm 的注册名和校验职责，converter 卡确认该 VLM 通过声明式 converter 接入。
+<!-- cannbot:related:end -->

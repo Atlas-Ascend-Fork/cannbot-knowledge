@@ -179,3 +179,10 @@ V4 续训练里 SASG 不是孤立工作，而是和同批注入的 LI 正向、S
 - [sfag](sfag.md)（同源对应：V3.2 DSA 的 SFA 反向算子，SASG 之于 SAS 等价于 SFAG 之于 SFA）
 - [deepseek-v4-continue-pretrain](../../guides/recipes/deepseek_v4_continue_pretrain.md)（承载实践：DeepSeek-V4-Flash A3 64 卡 BF16 续训练，1100 tokens/p/s）
 - [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — [`docs/llm_pretrain/deepseek-v4_torchtitan_npu_autofuse.md`](https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v4_torchtitan_npu_autofuse.md)（高性能融合算子优化 / SparseAttnSharedkvGrad）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepSeek-V4 TorchTitan-NPU + AutoFuse 极简续训练（Flash 64 卡 / Pro 192 卡 A3）](../../guides/recipes/deepseek_v4_continue_pretrain.md)（`related`）：“SASG 把 SAS 正向五阶段反传，主流程同样可分 **5 个阶段，依次为 Gather、Cube12、Process、Cube345、Scatter**：”与“- **SparseAttnSharedkvGrad (SASG)**：SAS 反向，5 阶段 Gather / Cube12 / Process / Cube345 / Scatter，Preload 一次 Gather+Cube12 达成 CV 流水并行 → ［sasg］(../../concepts/kernels/sasg.md)。”。kernel 卡展开 SASG 五阶段，续训练指南把同一五阶段算子列为 V4 定制训练组件。
+- [SparseAttnSharedKV (SAS) Kernel](../../../inference/concepts/kernels/sparse_attn_sharedkv.md)（`related`）：“`SparseAttnSharedKV`（**SAS**）是 DeepSeek-V4 全新的**统一 Attention 融合算子**：以**一套接口**覆盖 V4 交错 Hybrid Attention 的多种计算场景 —— **Sliding Window Attention（SWA）**、**Compressed Attention** 及其上的**稀疏化（Sparse）**，以及它们的组合，并原生支持 **Attention Sink**。”；“`SparseAttnSharedkvGrad`（**SASG**）是 ［sparse-attn-sharedkv］(../../../inference/concepts/kernels/sparse_attn_sharedkv.md)（SAS，DeepSeek-V4 统一 Attention 融合算子）的**训练反向**融合算子。”。SASG 是 SAS 的训练反向，并消费正向保存量计算四路梯度，构成同一算子正反向链。
+<!-- cannbot:related:end -->

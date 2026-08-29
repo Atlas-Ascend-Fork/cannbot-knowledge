@@ -26,8 +26,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DeInterleave 两路写反——按偶索引到 dst0 修正](../../../../../runbooks/precision/deinterleave_dst0_is_even_lane_output.md)（`exemplifies`）：目标卡以可执行用例确认 DeInterleave 的 dst0 接偶索引、dst1 接奇索引，直接补充 Reg DeInterleave 图示之外的输出 oracle。
-- [AscLoadalignDeintlvPostupdate](../../../c_api/reg/reg_load/asc_loadalign_deintlv_postupdate.md)（`related`）：《AscLoadalignDeintlvPostupdate》的任务是“从UB读取连续2×VL长度数据并在Load过程中完成解交织，分别写入两个目的矢量寄存器，调用后自动更新源地址。”。《DeInterleave》具体提供“将源操作数src0和src1中的元素解交织存入目的操作数dst0和dst1中。”，它直接用于解交织 Load 的地址 post-update、DeInterleave 结果顺序和等价入口。
-- [Interleave](interleave.md)（`related`）：Reg DeInterleave 拆分两路 mask，Interleave 执行逆向交织；二者可组成相同位宽分组的往返布局验证。
-- [DeInterleave](../../memory_vector_compute/data_rearrange/de_interleave.md)（`same_topic`）：DeInterleave：DeInterleave 的双输出偶/奇 lane 契约可由另一编程接口和逆操作 Interleave 对照，dst0 偶 lane runbook直接验证最易写反的输出约定，b16卡限定重排位宽风险。 目标卡《DeInterleave》补充：将源操作数src0和src1中的元素解交织存入目的操作数dst0和dst1中。
+- [DeInterleave 两路写反——按偶索引到 dst0 修正](../../../../../runbooks/precision/deinterleave_dst0_is_even_lane_output.md)（`exemplifies`）：“将源操作数src0和src1中的元素解交织存入目的操作数dst0和dst1中。”定义基础操作；“变量语义与实际数据流相反：旋转公式把奇索引值当成 even 分量，把偶索引值当成 odd 分量”记录 dst0/dst1 误命名后的精度故障，能把接口语义落实到 lane 排障。
 <!-- cannbot:related:end -->

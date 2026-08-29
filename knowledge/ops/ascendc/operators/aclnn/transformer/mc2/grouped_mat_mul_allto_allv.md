@@ -58,7 +58,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/grouped_mat_mul_allto_allv/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T19:54:40Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -824,9 +824,9 @@ flag8 形成 AIC 屏障，flag9 建立 AIC→AIV 可见性；AIV0 异步发起 H
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | README明确不支持 | 支持 | 支持，见 `_a5` 卡 |
+| 支持状态 | README明确不支持 | 支持 | 支持，见 `_950` 卡 |
 | Host/Launcher | N/A | 仅ai_cpu；rank 8/16/32/64/128 | ai_cpu/ccu；rank 2/4/8/16/32/64 |
 | Kernel/资源 | N/A | 同一MIX entry；AICPU HCCL；编译启用异常重启 | 同entry；CCU specialization；不同编译选项 |
 
@@ -883,3 +883,9 @@ flag8 形成 AIC 屏障，flag9 建立 AIC→AIV 可见性；AIV0 异步发起 H
 | 同步 | flags8/9、AIV0单发起 | ID/PIPE_FIX/Wait/Finalize | scheduler/guard |
 | 精度与尾块 | FP16/BF16、动态TCube、last tail split | transpose地址/MNK tail | tiler/block scheduler |
 | 失败边界 | Host失败不launch；null WS返回 | 不补造fallback | API/Tiling/entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GroupedMatMulAlltoAllv 950 ACLNN 算子知识](grouped_mat_mul_allto_allv_950.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnGroupedMatMulAlltoAllvV2GetWorkspaceSize` / `aclnnGroupedMatMulAlltoAllvV2`，公开 ACLNN V2 两段式接口 ｜；｜ 实际入口 ｜ `aclnnGroupedMatMulAlltoAllvV2GetWorkspaceSize` / `aclnnGroupedMatMulAlltoAllvV2`，公开 ACLNN V2 ｜；双方闭合同一 V2 公开入口和 GroupedMatMul 到 AlltoAllV 的融合语义，分别覆盖 A3 与 950 路线。
+<!-- cannbot:related:end -->

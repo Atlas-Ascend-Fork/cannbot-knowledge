@@ -26,9 +26,5 @@ host侧Tiling接口，用于获取Sinh接口所需的最大和最小临时空间
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetAsinhMaxMinTmpSize](../asinh_interface/get_asinh_max_min_tmp_size.md)（`related`）：Asinh 是反函数且临时空间公式不同；不能因名称接近复用 Sinh 的 workspace 估算。
-- [Sinh](sinh.md)（`related`）：Sinh 的显式临时空间重载依赖对应 MaxMin 接口预算，且 calCount 只改变参与元素数，不取消 buffer 约束。
-- [Sinhf](../../../../simt_api/math_functions/float_math_functions/sinhf.md)（`related`）：选择高阶 Tensor Sinh 时需先据元素数获取 workspace 上下界，补充 SIMT 标量调用没有的缓冲契约。
-- [GetSinhTmpBufferFactorSize](get_sinh_tmp_buffer_factor_size.md)（`same_topic`）：GetSinhTmpBufferFactorSize 与《GetSinhMaxMinTmpSize》的实质衔接是：该因子查询服务 Sinh 高阶接口，必须结合最大最小空间查询把 host 侧预算转换成 kernel 单次处理量。
-- [Sinh接口](sinh_interface.md)（`same_topic`）：Sinh 总页定义该 MaxMinTmpSize 查询与 Kernel 调用的组合方式。
+- [Sinh](sinh.md)（`related`）：host侧Tiling接口，用于获取Sinh接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetSinhMaxMinTmpSize获取。；Sinh 正文明确把该 Tiling 接口作为临时空间大小来源，构成 Host 选参到 kernel 重载的直接合同。
 <!-- cannbot:related:end -->

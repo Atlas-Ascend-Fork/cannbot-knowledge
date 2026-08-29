@@ -25,7 +25,6 @@ host侧Tiling接口，用于获取Lgamma接口所需的最大和最小临时空�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Lgamma接口](lgamma_interface.md)（`related`）：Lgamma 的显式 sharedTmpBuffer 需按该 Host 查询的最小/最大空间范围分配。
-- [GetLgammaTmpBufferFactorSize](get_lgamma_tmp_buffer_factor_size.md)（`same_topic`）：Lgamma factor 查询用 maxLiveNodeCount/extraBuf 反推固定空间下的处理量，MaxMin 查询则给出同一 Lgamma 接口的可预留空间上下界，两者共同闭合 Tiling 预算。
-- [Lgamma](lgamma.md)（`same_topic`）：《Lgamma》处理“按元素计算x的gamma函数的绝对值并求自然对数”。《GetLgammaMaxMinTmpSize》明确“在host侧获取Lgamma接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”，可直接用于核对Lgamma Kernel、临时空间查询与标量 lgammaf 的同一计算合同。
+- [GetLgammaTmpBufferFactorSize](get_lgamma_tmp_buffer_factor_size.md)（`related`）：参数：typeSize为输入数据类型字节数（half传2）；maxLiveNodeCount输出最大存活节点数；extraBuffer输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。；host侧Tiling接口，用于获取Lgamma接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两接口从 shape 到空间上下界和空间到可处理 shape 两个方向闭合 Lgamma 的 Host 临时空间规划。
+- [Lgamma](lgamma.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetLgammaMaxMinTmpSize获取。；host侧Tiling接口，用于获取Lgamma接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。Lgamma 的 sharedTmpBuffer 重载消费 Host Tiling 接口给出的容量上下界，二者构成明确的临时空间生产与消费合同。
 <!-- cannbot:related:end -->

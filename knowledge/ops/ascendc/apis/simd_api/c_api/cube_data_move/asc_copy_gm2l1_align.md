@@ -25,16 +25,7 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCopyGm2L1](asc_copy_gm2l1/asc_copy_gm2l1.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；AscCopyGm2L1正文说明“GM到L1 Buffer数据搬运接口集合，包含不同架构版本asc_copy_gm2l1_arch_2201和asc_copy_gm2l1_arch_3510”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
-- [AscCopyGm2L1Nd2Nz](asc_copy_gm2l1_nd2nz/asc_copy_gm2l1_nd2nz.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；AscCopyGm2L1Nd2Nz正文说明“GM到L1 Buffer带ND2NZ格式转换的数据搬运接口集合，包含不同架构版本”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
-- [AscCopyGm2l1Dn2nz](asc_copy_gm2l1_dn2nz.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；AscCopyGm2l1Dn2nz正文说明“将矩阵数据从GM搬运到L1 Buffer，过程中执行DN到NZ格式转换并在最内层维度补0”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
-- [AscCopyL12l0bMx](asc_copy_l12l0b_mx.md)（`same_topic`）：AscCopyL12l0bMx 与《AscCopyGm2l1Align》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
-- [AscSetGm2l1Loop1Stride](asc_set_gm2l1_loop1_stride.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；AscSetGm2l1Loop1Stride正文说明“设置GM到L1搬运时内层循环中相邻迭代数据块间的间隔”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
-- [AscSetGm2l1Loop2Stride](asc_set_gm2l1_loop2_stride.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；AscSetGm2l1Loop2Stride正文说明“设置GM到L1搬运时外层循环中相邻迭代数据块间的间隔”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
-- [AscSetGm2l1LoopSize](asc_set_gm2l1_loop_size.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；AscSetGm2l1LoopSize正文说明“设置GM到L1搬运流程中的循环次数”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
-- [AscSetGm2l1Pad](asc_set_gm2l1_pad.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；AscSetGm2l1Pad正文说明“设置GM到L1非对齐搬运时数据块左右两侧需要填补的数据值”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
-- [asc_copy_gm2l1](asc_copy_gm2l1/asc_copy_gm2l1_arch_2201.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；asc_copy_gm2l1正文说明“将矩阵数据从Global Memory搬运到L1 Buffer中，并支持不同类型的pad模式”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
-- [asc_copy_gm2l1](asc_copy_gm2l1/asc_copy_gm2l1_arch_3510.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；asc_copy_gm2l1正文说明“将矩阵数据从Global Memory搬运到L1 Buffer中，支持以下两种搬运模式： - 填充模式：搬运过程中可以对数据进行填充或移除填充值。 - 2D搬运模式：支持2D矩阵数据搬运，支持压缩能力。（NPU_ARCH 220x版本不支持.）”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
-- [asc_copy_gm2l1_nd2nz](asc_copy_gm2l1_nd2nz/asc_copy_gm2l1_nd2nz_arch_2201.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；asc_copy_gm2l1_nd2nz正文说明“将数据从Global Memory (GM)搬运到Level 1 cache (L1)，支持在数据搬运时进行ND格式到NZ格式的转换”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
-- [asc_copy_gm2l1_nd2nz](asc_copy_gm2l1_nd2nz/asc_copy_gm2l1_nd2nz_arch_3510.md)（`same_topic`）：焦点处理GM→L1 对齐搬运及其 loop stride、size、padding 配置；asc_copy_gm2l1_nd2nz正文说明“将矩阵数据从Global Memory搬运到L1 Buffer，在此过程中执行ND->NZ/NHWC->NC1HWC0/NHWC->C1HWNC0操作。若D未对齐C0/type(dst)的大小，将会在L1的最内层维度填充0值。GM中的数据以ND类型存储；L1中的数据以NZ形式存储”。候选直接配置或执行同一 GM→L1 搬运，明确对齐版与格式转换版的选择。
+- [AscSetGm2l1Loop2Stride](asc_set_gm2l1_loop2_stride.md)（`related`）：“将数据从Global Memory (GM)搬运到L1 Buffer时，通过调用该接口设置外层循环中相邻迭代数据块间的间隔。”定义 loop2 stride 的搬运参数；“需要与asc_set_gm2l1_loop_size、asc_set_gm2l1_loop1_stride、asc_set_gm2l1_loop2_stride和asc_set_gm2l1_pad配合使用。”明确 AscCopyGm2l1Align 执行前需要该 setter。
+- [AscSetGm2l1Pad](asc_set_gm2l1_pad.md)（`same_topic`）：将数据从Global Memory (GM)非对齐搬运到L1 Buffer时，通过调用该接口设置连续搬运数据块左右两侧需要填补的数据值。需要与asc_set_gm2l1_loop_size、asc_set_gm2l1_loop1_stride、asc_set_gm2l1_loop2_stride和asc_set_gm2l1_pad配合使用。两端属于同一次 GM 到 L1 align 搬运调用合同：setter 先定义边界填充值，copy 接口再消费 pad 与 loop/stride 配置执行搬运。
+- [asc_copy_gm2l1](asc_copy_gm2l1/asc_copy_gm2l1_arch_3510.md)（`same_topic`）：将矩阵数据从Global Memory搬运到L1 Buffer中，支持以下两种搬运模式；对矩阵数据进行实时padding，完成padding后将数据从Global Memory搬运到L1 Buffer。需要与asc_set_gm2l1_loop_size、asc_set_gm2l1_loop1_stride、asc_set_gm2l1_loop2_stride和asc_set_gm2l1_pad配合使用。。两接口共享 GM 到 L1 的矩阵搬运对象，Align 变体把基础接口的 padding 能力具体化为实时 padding 并增加配套配置调用。
 <!-- cannbot:related:end -->

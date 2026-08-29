@@ -31,6 +31,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [数据搬运辅助配置接口](data_move_aux_config.md)（`related`）：SetLoopModePara 设置循环搬运参数，与 ResetLoopModePara 构成状态启用和复位的完整调用链。
-- [ResetLoopModePara](reset_loop_mode_para.md)（`same_topic`）：焦点处理DataCopy loop mode 的状态复位；SetLoopModePara正文界定“使能并设置DataCopy/DataCopyPad的loop mode参数，支持GM与UB之间的双向数据搬运循环模式”。候选是 ResetLoopModePara 对应的 SetLoopModePara，构成唯一状态配对。
+- [ResetLoopModePara](reset_loop_mode_para.md)（`related`）：重置loop mode参数，与SetLoopModePara搭配使用，在使能loop mode的数据搬运结束后调用。；约束：与SetLoopModePara搭配使用。在使能loop mode并完成数据搬运后，必须调用该接口重置loop mode参数，否则会影响下一次对应通路的数据搬运，引发异常。。SetLoopModePara 使能循环，ResetLoopModePara 在同次搬运后复位，构成必须配对的生命周期。
 <!-- cannbot:related:end -->

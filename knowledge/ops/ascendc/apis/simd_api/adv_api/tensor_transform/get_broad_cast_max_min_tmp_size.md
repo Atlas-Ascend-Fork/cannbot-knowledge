@@ -23,7 +23,5 @@ host侧Tiling接口，用于获取Broadcast接口所需的最大和最小临时�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscendC Muls cyclic-repeat 致分组 scale 错配](../../../../runbooks/precision/ascendc_muls_cyclic_repeat_scale.md)（`exemplifies`）：AscendC Muls cyclic-repeat 致分组 scale 错配 与《GetBroadCastMaxMinTmpSize》的实质衔接是：Muls 对短 scale 做 cyclic repeat 而分组量化需要 block repeat；Broadcast、Muls、AntiQuant、GroupedMatmul/SwiGLU 案例共同验证 scale 的连续分组映射。
-- [Broadcast场景](../../../../guides/operator_practice/simd_operator_impl/vector_programming/broadcast_scenario.md)（`explains`）：Broadcast 需要临时输出空间，Host 侧查询接口为指南中的 UB 预算和 tiling 参数提供边界。
-- [Broadcast（张量变换）](broadcast.md)（`related`）：GetBroadCastMaxMinTmpSize 返回的缓存范围专供 Broadcast kernel 使用，shape、typeSize 和 isReuseSource 必须保持一致。
+- [Broadcast（张量变换）](broadcast.md)（`related`）：临时空间大小通过GetBroadCastMaxMinTmpSize获取。；host侧Tiling接口，用于获取Broadcast接口所需的最大和最小临时空间大小。。Broadcast 直接指定右侧接口为其临时空间来源，右侧为计算接口返回可选范围；两者分别承担 Kernel 计算与 Host 资源查询，是明确的前后任务链。
 <!-- cannbot:related:end -->

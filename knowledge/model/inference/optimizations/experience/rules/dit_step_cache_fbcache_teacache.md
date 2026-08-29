@@ -72,3 +72,13 @@ platforms:
 - **代码事实**（clone `@c3782f8bfb96`）：TeaCache bug — `TeaCache.__init__` 写 `_fbcache`、`should_cache` 读未定义的 `_teacache`（全文件 `rel_l1_thresh_teacache` 仅 `should_cache` 出现一次、无赋值）；`AttributeError` 为静态确定推断、未实机执行。
 - **仓自报**（clone `@c3782f8bfb96`）：基准表出自 `hunyuan_video_optimization.md#优化总览` / `#优化背景`，无独立复测。
 - 溯源下探：[cann-recipes-infer-pr-229-feat-hunyuanvideo-support-fbcache-npu-rmsnorm-add-dit-cache-step](https://gitcode.com/cann/cann-recipes-infer/merge_requests/229)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DiT Cache (FBCache / TeaCache / TaylorSeer)](../../../concepts/techniques/dit_cache.md)（`related`）：焦点卡规定“**阈值权衡**：阈值越大跳步越多，精度损失越大”，候选卡用“**阈值语义**：越大越激进（跳更多 step）、精度损失越大”落实 FBCache/TeaCache 的运行时阈值，并补充 TeaCache 第二步属性名故障；它把概念约束推进到配置与排障。
+- [DiT 步间缓存与多卡序列并行共存（数据相关判据须跨卡取一致决策，样例默认互斥）](dit_cache_with_sequence_parallel.md)（`related`）：“**数据相关（FBCache / TeaCache）**：跳 step 的判据是逐 step 算出的**本地统计标量**”说明多卡接入前提；“第二个去噪 step 起**才走到读 `rel_l1_thresh_teacache` 的分支”指出 TeaCache 单卡实现先要修复的确定性故障。
+- [DiT 跳步缓存想更激进跳步且精度损失更小 — TaylorSeer 预测式缓存（记特征导数泰勒外推，代价：全阶导数显存需 offload + 仅单卡）](taylorseer_predictive_dit_cache.md)（`related`）：“已在用残差复用型跳步缓存（FBCache / TeaCache），但跳步一多精度就明显下滑”给出焦点端事实；“## 两种可复用键控（同一 DiT 上二选一）”给出候选端事实。焦点以复用缓存精度退化作为切换 TaylorSeer 的触发条件，候选卡给出 FBCache 与 TeaCache 的键控、阈值和故障边界，构成同一 DiT 缓存选型的前后步骤。
+- [HunyuanVideo](../../../concepts/models/hunyuan_video.md)（`related`）：“config 变体（`config/`）：`single`·`sp8`（基线，`dit_cache.method` 注释切 NoCache/FBCache/TeaCache/TaylorSeer）”；“用 **step-level 残差缓存**跳过整段 DiT block 前向可得约 **2x** DiT 加速”。候选卡直接解释该配置的键控、阈值和 TeaCache 属性名故障。
+- [step-level DiT 跳步缓存遇 CFG 串行双分支 — 缓存状态必须按 guidance 分支分槽，否则 cond/uncond 互相覆盖残差](dit_step_cache_cfg_branch_slotting.md)（`same_topic`）：“cond 与 uncond 交替进入同一首块 forward、交替调用 `should_cache` / `reuse_cache`，会互相覆盖对方的 `prev_block` / 残差”指出 CFG 串行分支的污染点；“复用时 `reuse_cache()` 返回 `previous_residual + ori_latent`，`post_cache_update` 以 `latent - ori_latent` 更新残差”给出被污染状态的生产与消费位置。
+<!-- cannbot:related:end -->

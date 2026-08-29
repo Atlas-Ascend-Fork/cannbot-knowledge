@@ -262,12 +262,5 @@ at::Tensor gather(const at::Tensor& x, const at::Tensor& index, int64_t dim)
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Gather 非 dim 维缩小时折叠步长错位](../precision/gather_non_axis_shape_shrink_requires_per_axis_source_strides.md)（`related`）：正确 GM cast 不保证地址计算正确，Gather 仍需按 axis stride 推导。
-- [Gather算子快速入门](../../guides/getting_started/quick_start/simt_programming/gather_op_quick_start.md)（`related`）：Gather算子快速入门 与《dav-3510 GM_ADDR static_cast 编译失败》的实质衔接是：Gather 快速入门覆盖 SIMT kernel、host launch 和构建；所连 Gather API、维度/步长/地址空间错例和 SIMT 入口约束都直接作用于该示例的实现或验证。
-- [GetPhyAddr const __gm__ 返回不可去 const](getphyaddr_const_gm_const.md)（`related`）：void*→__gm__ 需工具链接受的转换，同时仍必须保留目标 const。
-- [Host workspace 需先 CPU 暂存再 H2D](host_workspace_uses_cpu_staging_before_h2d.md)（`related`）：Host workspace 需先 CPU staging 再 H2D，不能把普通 void* 直接当 GM 指针。
-- [直调不可用 GET_TILING_DATA_WITH_STRUCT 宏](direct_invoke_unavailable_get_tiling_data_with_struct.md)（`related`）：本卡明确把 void* 到 GM_ADDR/typed __gm__ 的转换列为独立次要编译项；目标卡给出 dav-3510 直调 host 边界上 static_cast 被拒及工具链可接受写法。
-- [连续直调异常可用 stream(true) 做同环境 A/B](direct_launch_requires_empty_task_queue_stream.md)（`related`）：指针转换修复后 direct launch 仍需满足 stream/task queue 条件。
-- [GM_ADDR 标量不可解引用为 tiling 结构体指针](gm_addr_tiling.md)（`same_topic`）：GM_ADDR 标量不可解引用为 tiling 结构体指针 与《dav-3510 GM_ADDR static_cast 编译失败》的实质衔接是：GM_ADDR 在该入口是 __gm__ uint8_t 标量而非结构体指针；typed __gm__ tiling 指针、Kernel Tiling/GET_TILING_DATA 和地址空间案例给出正确入口与强转边界。
-- [混合 SIMT 启动边界用 GM_ADDR 承接地址空间](mixed_simt_launch_boundary_uses_gm_addr.md)（`same_topic`）：《dav-3510 GM_ADDR static_cast 编译失败》明确“dav-3510 ASC 编译器拒绝 void* 到 __gm__ 地址空间指针的 static_cast；direct-launch host 入口改用 GM_ADDR C 风格转换。”；它与《混合 SIMT 启动边界用 GM_ADDR 承接地址空间》的“混合 SIMT 的 host launch 实参先以 GM_ADDR 穿过 __global__ wrapper，再在 device 侧恢复具体 __gm__ 指针，避免地址空间类型转换失败。”在实际调用参数、数据流或结果校验上直接衔接。
+- [混合 SIMT 启动边界用 GM_ADDR 承接地址空间](mixed_simt_launch_boundary_uses_gm_addr.md)（`related`）：在 dav-3510 的 ASC 编译单元里，`GM_ADDR` 展开为带 `__gm__`/`cce_global` 地址空间限定的 `uint8_t*`，Bisheng 不接受用 C++ `static_cast` 把普通 `void*` 建立为该限定指针并据此报出 `casts away qualifiers`。混合编译的 `<<<>>>` host launch 边界按 `GM_ADDR`（`__gm__ uint8_t*`）封送地址，而 wrapper 形参提前收窄成具体 `__gm__ T*`，Bisheng 不在该边界隐式转换不同 pointee 类型的地址空间指针。两端共同限定 Host tensor 地址到混合 SIMT wrapper 的 ABI：入口先形成 GM_ADDR，wrapper 再恢复具体类型。
 <!-- cannbot:related:end -->

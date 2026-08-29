@@ -35,16 +35,9 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AllGather](all_gather.md)（`related`）：AllGather 约束要求先设置通信算法 TilingData 地址，SetCcTilingV2 正是该前置配置接口。
-- [AllReduce](all_reduce.md)（`related`）：AllReduce 与《SetCcTilingV2》的实质衔接是：AllReduce 必须在 InitV2/SetCcTilingV2 后下发，并通过 Commit、Query/Wait、Finalize 完成任务；模板、reduce 类型和使用说明约束通信执行链。
-- [AlltoAllvWrite](allto_allv_write.md)（`related`）：AlltoAllvWrite 与《SetCcTilingV2》的实质衔接是：AlltoAllvWrite 的字节偏移、大小和 window 地址依赖 rank/window 查询，且必须在 InitV2/SetCcTilingV2 后通过 Commit、Query/Wait、Finalize 完成 HCCL 任务。
-- [Finalize（HCCL集合通信）](finalize.md)（`related`）：Finalize（HCCL集合通信） 与《SetCcTilingV2》的实质衔接是：Finalize 只能在 InitV2 和 SetCcTilingV2 之后终止 HCCL 对象；普通任务需先 Commit/Wait，多个 BatchWrite 队列需逐队列 QueueBarrier，使用说明明确终止后对象不可复用。
-- [HCCL使用说明](hccl_usage.md)（`related`）：HCCL使用说明说明Ascend C提供一组HCCL通信类高阶API，方便算子Kernel开发用户在AI Core侧灵活管理通算融合算子中计算与通信任务的执行顺序。
-- [HcclTilingData](../hccl_tiling/tiling_data_struct.md)（`related`）：SetCcTilingV2 以 Mc2CcTiling 相对 Mc2InitTiling 的 offset 绑定通信算法配置；HcclTilingData 的连续布局和最多八组配置决定 offset 的含义。
-- [Query（HCCL集合通信）](query.md)（`related`）：Query 明确依赖 SetCcTilingV2 配置通信任务的 repeat 等 tiling。
-- [HCCL集合通信Wait](wait.md)（`same_topic`）：HCCL集合通信Wait：Wait消费 Prepare原语返回的 handle，必须在InitV2/SetCcTilingV2后按Commit与Prepare顺序阻塞；Query提供非阻塞完成检查，Iterate定义细粒度步数。 目标卡《SetCcTilingV2》补充：用于设置HCCL客户端中某个通信算法配置的TilingData地址。
-- [InitV2](init_v2.md)（`same_topic`）：InitV2说明HCCL客户端初始化接口。该接口默认在所有核上工作，用户也可以在调用前通过GetBlockIdx指定其在某一个核上运行。
-- [Init（废弃）](init_deprecated.md)（`same_topic`）：焦点处理废弃 HCCL Init 向 InitV2/SetCcTilingV2 迁移的生命周期；SetCcTilingV2正文说明“用于设置HCCL客户端中某个通信算法配置的TilingData地址”。候选给出旧接口的一一替代、通信配置迁移或最终资源回收步骤。
-- [SetCcTiling（废弃）](set_cc_tiling_deprecated.md)（`same_topic`）：废弃接口与 V2 都向 HCCL 客户端设置通信算法 TilingData 地址；V2 是正文给出的迁移目标。
-- [v2版本TilingData（废弃）](../hccl_tiling/v2_tiling_data_deprecated.md)（`same_topic`）：v2版本TilingData（废弃） 与《SetCcTilingV2》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [GetTiling](../hccl_tiling/get_tiling.md)（`related`）：Host Tiling 接口“获取Mc2InitTiling参数和Mc2CcTiling参数。”；Device 接口说明“Mc2CcTiling在Host侧计算得出”，因此 GetTiling 产出的 Mc2CcTiling 正是 SetCcTilingV2 在 Kernel 侧消费的配置来源。
+- [MatmulAllReduce 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_all_reduce_950.md)（`related`）：算子 POD 表注明“｜ 950 POD ｜ `mc2CcTiling` ｜ 外部结构 ｜ offset `sizeof(Mc2InitTiling)` ｜ 通信描述 ｜ AllReduce 或 AllToAll config ｜ `SetCcTilingV2` ｜ opType 随 topology ｜”；接口卡说明“用于设置HCCL客户端中某个通信算法配置的TilingData地址。”，闭合 topology 选择后的通信配置地址安装。
+- [MatmulAlltoAll A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_allto_all.md)（`related`）：`mc2CcTiling` ｜ generated POD ｜ 同上 ｜ HCCL CC 配置 ｜ 同上 ｜ `SetCcTilingV2`；Mc2CcTiling在Host侧计算得出；连接 Host 产生的通信 Tiling 与 Kernel 地址设置。
+- [ReduceScatter](reduce_scatter.md)（`related`）：调用本接口前确保已调用过InitV2和SetCcTilingV2接口。；用于设置HCCL客户端中某个通信算法配置的TilingData地址。ReduceScatter 明确要求前置调用，而 SetCcTilingV2 卡给出该前置步骤设置通信算法 TilingData 的参数和覆盖规则。
+- [SetCcTiling（废弃）](set_cc_tiling_deprecated.md)（`same_topic`）：用于设置HCCL客户端通信算法的Tiling地址。；用于设置HCCL客户端中某个通信算法配置的TilingData地址。两卡核心对象与决策都是 HCCL 通信算法 Tiling 地址设置，旧接口传 GM 指针且已废弃，V2 改为相对 Mc2InitTiling 的 offset。
 <!-- cannbot:related:end -->

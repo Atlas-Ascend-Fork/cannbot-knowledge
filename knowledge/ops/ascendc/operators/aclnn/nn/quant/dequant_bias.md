@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:22:44Z"
-updated_at: "2026-08-25T18:22:44Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -155,7 +155,7 @@ router then chooses DequantBiasImpl when N<=8192, otherwise DequantBiasMultiImpl
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台 | README 支持 A2/A3；OpDef/config 为 `ascend910b/ascend910_93` | 只构建这些平台 binary | 全部 | A5 明确不发布 | README；`DequantBias::DequantBias` |
+| 平台 | README 支持 A2/A3；OpDef/config 为 `ascend910b/ascend910_93` | 只构建这些平台 binary | 全部 | 950 明确不发布 | README；`DequantBias::DequantBias` |
 | UB 总量 | `baseIn+ws+as+bias < ubSize` | `InitBuffer` 总和必须小于平台 UB | 全部 | `GRAPH_FAILED` | `TilingGradCompute` |
 | M 上限 | `M<=25000` | 与 UB 检查同一失败分支 | 全部 | `GRAPH_FAILED` | `TilingGradCompute` |
 | 小/大 N | `N<=8192` | 小 N 整行驻留；大 N 以 8192 列片驻留 | R-001～R-010 | 另一 body | `dequant_bias` router |
@@ -1103,10 +1103,10 @@ Host 始终按 FP32 结果大小分配 `nAlign*4` 字节。低精度输入只需
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；公开文档 + `ascend910b` config | 支持；公开文档 + `ascend910_93` config | 公开 README/API 明确不支持 Ascend 950PR/950DT |
-| Host/Launcher | 共用 `DequantBiasTiling` | 共用 | 不发布、不生成 `_a5` 卡 |
+| Host/Launcher | 共用 `DequantBiasTiling` | 共用 | 不发布、不生成 `_950` 卡 |
 | Kernel/资源 | 共用 Vector entry/body 和 8 组 binary dtype 配置 | 与 A2 配置集合一致 | `ascendc_config.json` 无 `ascend950`，OpDef 无 950 config |
 
 ## 限制与失败边界
@@ -1117,7 +1117,7 @@ Host 始终按 FP32 结果大小分配 `nAlign*4` 字节。低精度输入只需
 - workspace 固定为 16 MiB，但 Kernel 不用；不得把它计作 UB 或跨 Kernel中间结果。
 - Vector 操作覆盖 64 B 对齐后的 `nAlign`，padding lane 的输入/scale可能未初始化，但 CopyOut 仅写 N；迁移时必须保持无效 lane 不影响有效 lane的逐元素性质。
 - 未知 TilingKey 和被编译 guard 排除的 10113 分支不会写输出且无 Device 错误码；只允许通过 Host 产生 key。
-- A5 公开不支持，`dequant_bias_a5.md` 未生成。
+- 950 公开不支持，`dequant_bias_950.md` 未生成。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -1126,7 +1126,7 @@ Host 始终按 FP32 结果大小分配 `nAlign*4` 字节。低精度输入只需
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `quant/dequant_bias/docs/aclnnDequantBias.md` | `aclnnDequantBiasGetWorkspaceSize/aclnnDequantBias` | 两段式 API、参数、错误、A2/A3/A5 支持 |
+| 入口声明/约束 | `quant/dequant_bias/docs/aclnnDequantBias.md` | `aclnnDequantBiasGetWorkspaceSize/aclnnDequantBias` | 两段式 API、参数、错误、A2/A3/950 支持 |
 | 入口声明/约束 | `quant/dequant_bias/README.md` | 产品支持表、公式 | 平台和三种 bias 语义 |
 | 入口实现/构建 | `quant/dequant_bias/op_host/CMakeLists.txt` | `add_modules_sources(... ACLNNTYPE aclnn)` | ACLNN 生成边界接线 |
 | OpDef | `quant/dequant_bias/op_host/dequant_bias_def.cpp` | `ops::DequantBias` | dtype 组合、A2/A3 config |
@@ -1150,4 +1150,14 @@ Host 始终按 FP32 结果大小分配 `nAlign*4` 字节。低精度输入只需
 | workspace/内存 | Kernel 不用 16 MiB workspace；UB 按真实 TBuf 求和 | double buffer 必须乘 2；低精度临时区按半区 offset | `GetWorkspaceSize/Init` |
 | 同步 | ping/pong 三阶段硬事件、低精度 DMA→Cast event、列间 PIPE_ALL | 覆盖前必须等待消费者 | `Process/DataCopyInWeightScale/DataCopyInBiasFloat` |
 | 精度与尾块 | FP32 缩放、`CAST_RINT` 输出；只输出 N/nProcess | bias 顺序、64 B nAlign、末行/末列有效长度 | `Compute*`、`CopyOut` |
-| 失败边界 | shape/dtype/UB/M/key/platform边界明确 | 不绕过 Host；不向 A5 发布；Multi 需单行前提 | `CheckParamsValidity*`、router |
+| 失败边界 | shape/dtype/UB/M/key/platform边界明确 | 不绕过 Host；不向 950 发布；Multi 需单行前提 | `CheckParamsValidity*`、router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FetchEventID](../../../../apis/simd_api/basic_api/resource_management/t_pipe/fetch_event_id.md)（`related`）：“event_t eventMTE2V = static_cast<event_t>(GetTPipePtr()->FetchEventID(HardEvent::MTE2_V));”给出 DequantBias 的 MTE2→V 临时事件取得方式；“此接口不会申请TEventID，仅提供可用的TEventID。”提示该调用不占用事件 ID，连续复用时需由实现保证安全。
+- [GET_TILING_DATA](../../../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data.md)（`related`）：“Host `SaveToBuffer` 与 Device `GET_TILING_DATA` 使用同一注册结构，字段顺序不得改变。”给出 DequantBias 的 POD ABI 闭环；“获取算子 kernel 入口函数传入的 Tiling 信息，填入注册的 TilingData 结构体。”说明 Device 宏在该闭环中的消费职责。
+- [GetCoreMemSize](../../../../apis/utils_api/platform_info/platform_ascend_c/get_core_mem_size.md)（`related`）：“平台对象产生 `aivNum=GetCoreNumAiv()` 与 `ubSize=GetCoreMemSize(UB)`。”说明 DequantBias Tiling 以平台 UB 容量计算分核和 tile；“获取硬件平台存储空间的内存大小，例如L1、L0_A、L0_B、L2等”给出平台查询接口的职责。
+- [GetTPipePtr](../../../../apis/simd_api/basic_api/resource_management/get_t_pipe_ptr.md)（`related`）：“event_t eventMTE2V = static_cast<event_t>(GetTPipePtr()->FetchEventID(HardEvent::MTE2_V));”显示 DequantBias 通过全局 TPipe 指针取事件；“本接口用于获取该指针，获取该指针后，可进行TPipe相关的操作。”说明 GetTPipePtr 的返回用途。
+- [GetWithOffset](../../../../apis/simd_api/basic_api/resource_management/t_buf/get_with_offset.md)（`related`）：“LocalTensor<WSTYPE> tmpBuf = wsBuf_.GetWithOffset<WSTYPE>(wsTypeNum, wsBufferSize_ / 2);”给出 DequantBias 将 TBuf 一分为二的实际调用；“size*sizeof(T) + bufOffset不能超过TBuf初始化时的长度。”给出该 offset 子视图的越界条件。
+<!-- cannbot:related:end -->

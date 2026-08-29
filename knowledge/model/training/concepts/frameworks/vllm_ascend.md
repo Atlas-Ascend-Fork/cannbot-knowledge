@@ -184,3 +184,11 @@ adapter 在 import vllm 后立刻打两类 patch（`from vllm_ascend.patch impor
 - [eplb](../techniques/eplb.md)（EPLB 在 vLLM-Ascend(VLLM_ENABLE_EPLB)）
 - [qwen2-code-rl-scalebox](../../guides/recipes/qwen2_code_rl_scalebox.md)（Code RL rollout 后端）
 - [qwen3-code-toolcall-rl](../../guides/recipes/qwen3_code_toolcall_rl.md)（EAGLE3/Suffix 投机在 vLLM-Ascend rollout）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepSeek-R1 veRL + MindSpeed + vLLM-Ascend 全共卡 GRPO RL 训练](../../guides/recipes/deepseek_r1_rl.md)（`related`）：rollout（generate） ｜ vLLM + vLLM-Ascend；修改主要集中在用于初始化 `vLLMRollout` 对象的 `vllm_rollout_spmd.py` 文件；连接 rollout 选型与适配入口。
+- [MindSpeed-RL](mindspeed_rl.md)（`related`）：“共用 vLLM 推理后端（［vllm-ascend］(vllm_ascend.md)）”；“它充当 ［verl］(verl.md) 框架的 **rollout（on-policy 采样生成）推理后端**”。候选卡是框架 rollout 阶段的直接执行后端并给出图模式/大 EP 边界。
+- [veRL（火山引擎开源 LLM RL 后训练框架 + 昇腾适配）](verl.md)（`related`）：按“veRL 在昇腾 NPU 上跑通靠替换它的两个可插拔引擎：训练后端 ［mindspeed］(mindspeed.md)（经 MindSpeed 使能 Megatron-LM 拿 NPU 训练性能）与 rollout 推理后端 ［vllm-ascend］(vllm_ascend.md)（vLLM 的昇腾插件，图模式 + 大 EP 推理）。”把 rollout 路由到 vLLM-Ascend 后，以“在 DeepSeek-R1 671B 的 RL 训练实践中，它充当 ［verl］(verl.md) 框架的 **rollout（on-policy 采样生成）推理后端**——即「推理生成完整问答数据（rollout/generate）→ 参考模型计算参考概率分布（ref）→ 训练模型计算 loss 并反向更新（update）」这条 RL 流水的第一阶段。”划定第一阶段的输入输出边界，便可区分 rollout 引擎问题与后续 ref/update 训练问题。
+<!-- cannbot:related:end -->

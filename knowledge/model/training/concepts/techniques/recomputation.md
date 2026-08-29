@@ -170,3 +170,11 @@ if vpp_size is None or not getattr(config, 'enable_recompute_layers_per_pp_rank'
 - [swap-attention](swap_attention.md)（互补显存路线：激活换出 Host 而非重算，常与重计算按层混用）
 - [mindspeed](../frameworks/mindspeed.md)（重计算各特性以 `MindSpeedFeature` + `MindSpeedPatchesManager` patch megatron 接入的承载框架）
 - [auto-settings](auto_settings.md)（自动搜索把重计算粒度/层数纳入联合优化）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Auto-Settings（并行/重计算/内存配置自动搜索）](auto_settings.md)（`related`）：它解决「配置怎么选」，与具体省内存机制（［recomputation］(recomputation.md)）、流水排布（［pipeline-parallel-advanced］(../parallelism/pipeline_parallel_advanced.md)）正交——搜出来的重计算层数、PP/VPP 切分最终落到那些特性上执行。；重计算（activation checkpointing / rematerialization）用算力换显存：前向只保留少量关键张量，把中间激活在反向需要时按保存的输入重新算一遍，从而压低激活显存峰值。。Auto Settings 卡明确搜索出的重计算层数由 recomputation 特性执行，机制卡说明以反向重算换取激活显存下降的具体行为，形成配置搜索到省内存执行机制的落地链。
+- [MindSpeed-MM 激活显存优化（Chunk-MBS 微批切块 + 异步激活 Offload）](mm_activation_memory.md)（`related`）：重计算（activation checkpointing / rematerialization）用算力换显存：前向只保留少量关键张量，把中间激活在反向需要时按保存的输入重新算一遍，从而压低激活显存峰值。；二者建立在重计算之上：开了 Chunk-MBS 的 module 必须同时开 offload 与 recompute。。通用重计算卡定义丢弃与反向重算语义，MindSpeed-MM 卡把 recompute 作为 Offload 与 Chunk-MBS 组合的硬前置并给出固定包装顺序。
+- [Swap Attention（激活换出 Host + SmartSwap + 自适应内存）](swap_attention.md)（`related`）：全重计算场景下用 `--swap-attention` + `--recompute-num-layers N` 替换全重计算——attention 激活由 Host 预取回来免去重算，仅对前 N 层的全连接（MLP）做重计算，相比完全重计算有性能收益。；重计算（activation checkpointing / rematerialization）用算力换显存：前向只保留少量关键张量，把中间激活在反向需要时按保存的输入重新算一遍，从而压低激活显存峰值。；焦点给出 swap-attention 与部分 MLP 重计算的组合，目标解释重计算的算力换显存基线。
+<!-- cannbot:related:end -->

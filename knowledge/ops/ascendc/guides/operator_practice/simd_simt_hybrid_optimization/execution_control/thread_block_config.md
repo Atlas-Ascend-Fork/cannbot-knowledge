@@ -34,10 +34,3 @@ platforms: ['950']
 大数据量下通过>>启动64个线程块（等于物理核数），所有线程块一次占满物理核并行执行，无需排队等待，并行度充足。代码示例如下：
 正例2：小数据量下实测最优核数且线程数量按实际元素数分配
 小数据量下通过实测性能数据得到最优核数为32。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [block 数应覆盖可用 Vector 核](../../../../runbooks/performance/block_count_uses_all_available_vector_cores.md)（`related`）：指南给出“大 workload 时 block 数等于实测物理 Vector Core、小时应降低”的选择规则；Runbook 在 A3 上把固定 32 上限改为 `min(N_out,V_measured)`，以 20/20 正确性和整体时间比 0.758 验证了同一大 workload 决策。
-- [线程块数量配置优化](../../simt_operator_optimization/execution_config/thread_block_config.md)（`same_topic`）：两张指南处理同一个线程块数量决策：大数据量让 block 数匹配物理 Vector Core，小数据量因固定调度开销需实测较小最优值，并通过 `aclrtGetDeviceInfo` 获取物理核数；区别只是混合编程与纯 SIMT 章节切面。
-<!-- cannbot:related:end -->

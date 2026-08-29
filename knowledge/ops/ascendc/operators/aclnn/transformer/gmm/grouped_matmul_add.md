@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T17:29:46Z"
-updated_at: "2026-08-24T18:30:01Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -129,7 +129,7 @@ DAV3510 -> 转 A5 advanced route
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台分流 | `!IsAdvancedNpuArch(context)`，即当前架构不在 `{DAV_3510}` | classic POD、MIX task 与 workspace 提交只用于非 advanced 路线 | R-001 | DAV3510 进入 A5 advanced Tiling | `Tiling4GroupedMatmulAdd`、`IsAdvancedNpuArch` |
+| 平台分流 | `!IsAdvancedNpuArch(context)`，即当前架构不在 `{DAV_3510}` | classic POD、MIX task 与 workspace 提交只用于非 advanced 路线 | R-001 | DAV3510 进入 950 advanced Tiling | `Tiling4GroupedMatmulAdd`、`IsAdvancedNpuArch` |
 | dtype key | FP16→0，BF16→1 | entry 仅实例化两种 A/B 元素类型，C 固定 FP32 | R-001 | ACLNN dtype 检查失败；异常 key 无 body | `CheckDtype`、`CalMmTiling`、`grouped_matmul_add` |
 | `baseK` 容量 | `floor16((L0B/2)/(256*2))` | B 的 L0 双缓冲必须容纳 `baseN*baseK` 输入元素 | R-001 | Tiling/Matmul `GetTiling` 失败，无备用 route | `CalMmTiling` |
 | `baseM` 容量 | `min((L0A/2)/(baseK*2), L0C/(256*4), ceil16(M), 256)` | 同时满足 L0A 双缓冲与 FP32 L0C tile | R-001 | Tiling 失败，无 fallback | `CalMmTiling` |
@@ -139,7 +139,7 @@ DAV3510 -> 转 A5 advanced route
 
 ### POD/ABI
 
-`GroupedMatmulAddTilingData` 依次嵌入 `GmmBaseParams` 与公共 `TCubeTiling`。四个本地字段均为 int64，逻辑布局连续；生成宏与 `TCubeTiling` 完整定义位于固定仓外，因此 outer `sizeof/alignof/offsetof` 及 `TCubeTiling` 精确偏移固定仓不可见，不能与 A5 手写 `pack(8)` POD 互换。
+`GroupedMatmulAddTilingData` 依次嵌入 `GmmBaseParams` 与公共 `TCubeTiling`。四个本地字段均为 int64，逻辑布局连续；生成宏与 `TCubeTiling` 完整定义位于固定仓外，因此 outer `sizeof/alignof/offsetof` 及 `TCubeTiling` 精确偏移固定仓不可见，不能与 950 手写 `pack(8)` POD 互换。
 
 | 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
 |---|---|---|---|---|---|---|---|
@@ -356,7 +356,7 @@ computeOp.MmCompute(lastMnConfig, blockIdx);
 
 - 适用：同样以一个 task 私有 workspace tile 和单深度 UB 暂存完成原位累加的 Matmul 流水。
 - 前提：previous tile 的 `MNConfig` 生命周期、`WaitIterateAll`、workspace offset 与最终 flush 均保持一致。
-- 失效：若改成多深度 workspace/UB、异步跨 task 消费或 A5 直接原子写 C，必须重建同步与 flush 协议。
+- 失效：若改成多深度 workspace/UB、异步跨 task 消费或 950 直接原子写 C，必须重建同步与 flush 协议。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -395,7 +395,7 @@ Matmul 先把 FP32 tile 写到 block 私有 workspace；MTE2 只取 `curSingleM�
 
 - 适用：输出为 FP32、需要保留旧值、且 Matmul C 先物化为固定行宽临时 tile 的路线。
 - 前提：workspace/UB 容量至少 `baseM*baseN*4` B，event 次序与两个 stride 单位不变。
-- 失效：非 FP32 输出、非原位覆盖、或 A5 `IterateAll(...,1)` 直接原子提交不使用此路径。
+- 失效：非 FP32 输出、非原位覆盖、或 950 `IterateAll(...,1)` 直接原子提交不使用此路径。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -416,9 +416,9 @@ Matmul 先把 FP32 tile 写到 block 私有 workspace；MTE2 只取 `curSingleM�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | OpDef `ascend910b`、README 与 CI 支持 V2 | OpDef `ascend910_93`、README 与 CI 支持 V2 | OpDef `ascend950` 与 CI 支持；见 `_a5` 卡 |
+| 支持状态 | OpDef `ascend910b`、README 与 CI 支持 V2 | OpDef `ascend910_93`、README 与 CI 支持 V2 | OpDef `ascend950` 与 CI 支持；见 `_950` 卡 |
 | Host/Launcher | 与 A3 共用 classic Tiling；`yRef.rank!=3` 只告警 | 与 A2 相同 | advanced Tiling 强制 y rank 3、y[0]==g、固定属性、groupNum 1..1024 |
 | Kernel/资源 | key 0/1，MIX 1:2，大块 FP32 workspace→UB→AtomicAdd | 同 A2 | key 10000900009000090001，AIC-only CGMCT，32B workspace，占位后 Matmul 原子直写 y |
 
@@ -454,9 +454,15 @@ Matmul 先把 FP32 tile 写到 block 私有 workspace；MTE2 只取 `curSingleM�
 
 | 检查项 | 可复用事实 | 不得改变的约束 | 源码符号 |
 |---|---|---|---|
-| ABI/POD | `GmmBaseParams` 四字段与嵌套 TCube 的 producer/consumer | 字段顺序/位宽、单位、外部 TCube ABI；不得套用 A5 POD | `GroupedMatmulAddTilingData`、`GET_TILING_DATA_MEMBER` |
+| ABI/POD | `GmmBaseParams` 四字段与嵌套 TCube 的 producer/consumer | 字段顺序/位宽、单位、外部 TCube ABI；不得套用 950 POD | `GroupedMatmulAddTilingData`、`GET_TILING_DATA_MEMBER` |
 | 调用顺序 | Check→empty→Contiguous→L0→Tiling→Kernel→ViewCopy 图 | first compute 预热、loop 后 last flush、组 offset 推进 | `GetWorkspaceSizeCommon`、`GmmAddProcess::Process` |
 | workspace/内存 | system 区 + `2*aicNum` FP32 tiles、blockIdx 地址、单深度 UB | 总字节、row stride、lifetime 与 `yBase+=M*N` | `Tiling4GroupedMatmulAdd`、`GmmAddCompute::Init/MmCompute` |
 | 同步 | Matmul wait→MTE2_MTE3 event→AtomicAdd | reader 不得越过 wait；必须恢复 AtomicNone | `GmmAddCompute::MmCompute` |
 | 精度与尾块 | FP16/BF16 输入、FP32 Matmul/UB/yRef；curM/curN 有效域 | 不得添加 cast/scale/bias；CopyPad stride 与 tail 不变 | `MmImplType`、`MmComputePrepare/MmCompute` |
 | 失败边界 | 空输入无 launch；非法 dtype/format/rank/size 失败；未知 key 无 body | 不得把未校验属性/groupList 描述为安全支持，不得发明 fallback | `CheckParams/CheckZeroShape/CalMmTiling/grouped_matmul_add` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [grouped_matmul_add 950 ACLNN 算子知识](grouped_matmul_add_950.md)（`same_topic`）：｜ 计算语义 ｜ 对每组独立原位累加：`yRef_i［M,N］ = yRef_i［M,N］ + X_i［K_i,M］^T * W_i［K_i,N］`，不是跨组求和 ｜；｜ 计算语义 ｜ 每组独立原位累加：`yRef_i［M,N］ += X_i［K_i,M］^T * W_i［K_i,N］` ｜。两卡记录同一 GroupedMatmulAdd 原位分组累加语义，并分别闭合 A2/A3 classic 与 950 DAV3510 advanced 实现。
+<!-- cannbot:related:end -->

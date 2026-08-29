@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/circular_pad_grad/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T23:49:49Z"
-updated_at: "2026-08-24T23:49:49Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -942,11 +942,11 @@ if (dPad) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持 | 支持 | 未发布：固定仓公开 README 与专用 API 文档冲突 |
 | Host/Launcher | ascend910b，arch32 | ascend910_93，arch32 | arch35/RegBase 实现信号存在，但不能越过公开冲突 |
-| Kernel/资源 | 共用 arch32 entry/body 与 192 KiB UB 常量 | 同左 | 本卡不描述；未生成 `_a5` 卡 |
+| Kernel/资源 | 共用 arch32 entry/body 与 192 KiB UB 常量 | 同左 | 本卡不描述；未生成 `_950` 卡 |
 
 ## 限制与失败边界
 
@@ -957,7 +957,7 @@ if (dPad) {
 - 负 padding 时 Device 先清零输出；若移植时删除该步骤，未被有效 rectangle 覆盖的区域会保留旧值。
 - ACLNN executor 内框架 Contiguous/ViewCopy 的具体 Kernel、workspace offset、event 和实现源码不在固定算子仓；它们按 Skill 允许的框架边界处理。
 - Tiling 宏定义来自仓外头文件，POD 的精确 `sizeof/alignof/offsetof` 固定仓不可见。
-- A5 的专用 API 文档写支持，而同目录公开 README 明确写不支持；依照平台冲突 gate 未创建/覆盖 A5 正式卡。
+- 950 的专用 API 文档写支持，而同目录公开 README 明确写不支持；依照平台冲突 gate 未创建/覆盖 950 正式卡。
 
 ## 源码索引
 
@@ -965,7 +965,7 @@ if (dPad) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `conversion/circular_pad_grad/README.md` | 产品支持情况 | A2/A3 支持与 A5 公开冲突证据 |
+| 入口声明/约束 | `conversion/circular_pad_grad/README.md` | 产品支持情况 | A2/A3 支持与 950 公开冲突证据 |
 | 入口声明/约束 | `conversion/circular_pad_grad/docs/aclnnCircularPad3dBackward.md` | public support/constraints | A2/A3 支持、接口约束 |
 | 入口声明/约束 | `conversion/circular_pad_grad/op_api/aclnn_circular_pad3d_backward.h` | 两段式声明 | 参数 ABI |
 | 入口实现 | `conversion/circular_pad_grad/op_api/aclnn_circular_pad3d_backward.cpp` | `CommonPad3dBackward` | 校验、preprocess、executor graph |
@@ -994,3 +994,9 @@ if (dPad) {
 | 同步 | queue 生命周期、MTE event、GM AtomicAdd | AtomicNone 恢复；写后读必须 wait | `MTE3ToMTE2Sync`, `Add*` |
 | 精度与尾块 | 16-bit→FP32→一次 down-cast；row/page/core tails | `CAST_NONE/CAST_ROUND` 顺序和 tail blockLen | cast/copy helpers |
 | 失败边界 | Host/Tiling guard 失败即不 launch；unknown key return | 不添加未经源码证明的 fallback | `CheckInput`, router `else` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CircularPad3d A2/A3 ACLNN 算子知识](circular_pad_3d.md)（`related`）：“对最后三维 `(D,H,W)` 做循环填充；正 padding 从维度另一端循环复制，负 padding 先裁去对应端。”给出焦点端事实；“对 3D circular pad 做反向散加：正向中映射到同一 `self［D,H,W］` 位置的 `gradOutput` 元素在 `gradInput` 中求和；负 padding 表示裁剪”给出候选端事实。前向卡定义循环复制与裁剪映射，反向卡按同一映射将 gradOutput 散加回 gradInput，二者构成同一算子的前向、反向实现链。
+<!-- cannbot:related:end -->

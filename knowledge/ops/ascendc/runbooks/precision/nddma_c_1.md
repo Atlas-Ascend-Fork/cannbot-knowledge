@@ -71,11 +71,7 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_to_ub_nddma.md)（`exemplifies`）：DataCopy 与《NDDMA 快速路径 C=1 中间轴漏维判别》的实质衔接是：该 DataCopy 是 GM→UB NDDMA，多维 shape/stride、NdDmaDci 与非对齐 padding 是直接契约；所选故障卡覆盖漏维、stride=0 和 cache 刷新边界。
-- [GmUbDataMove](../../apis/simd_api/basic_api/data_move_guide/gm_ub_data_move.md)（`exemplifies`）：GmUbDataMove 与《NDDMA 快速路径 C=1 中间轴漏维判别》的实质衔接是：GM↔UB 总览按连续、高维、切片、ND2NZ/NZ2ND、NDDMA 和 DataCopyPad 选择通路；所选 NDDMA 卡逐一约束 padding、维度和 stride。
-- [NDDMA 最内层 srcStride=0 广播读越界](nddma_srcstride_0.md)（`related`）：C=1 卡说明把广播维误判为末轴会构造错误的最内层 NDDMA stride；它是本卡 loopSrcStride[0] 检查在真实高维快路径中的上游参数生成案例。
-- [RANK大于5时NDDMA漏维只解释accum错误](rank_5_nddma_accum_var.md)（`related`）：NDDMA 快速路径 C=1 中间轴漏维判别 与《RANK大于5时NDDMA漏维只解释accum错误》的实质衔接是：这些 NDDMA 卡围绕维序、stride、padding 与高 rank 配置解释同一快速路径漏维/越界机制。
-- [低 rank 零填充致 count=0 用 td_->rank 非 RANK](rank_count_0_td_rank_rank.md)（`related`）：低 rank 零填充致 count=0 用 td_->rank 非 RANK 与《NDDMA 快速路径 C=1 中间轴漏维判别》的实质衔接是：实际 rank 必须来自 tiling 而非模板容量；低 rank padding、NDDMA维度、shape/axes 和 blockDim 卡共同验证零填充维被误纳入循环后 count=0 的机制。
-- [NDDMA多维dstStride致data搬运偏移的判别](nddma_dststride_data.md)（`same_topic`）：NDDMA 快速路径 C=1 中间轴漏维判别 与《NDDMA多维dstStride致data搬运偏移的判别》的实质衔接是：这些 NDDMA 卡围绕维序、stride、padding 与高 rank 配置解释同一快速路径漏维/越界机制。
-- [NDDMA非对齐尾轴需NdDmaConfig右填充与DataCopyPad回写](../compilation/nddma_nddmaconfig_datacopypad.md)（`same_topic`）：NDDMA 快速路径 C=1 中间轴漏维判别 与《NDDMA非对齐尾轴需NdDmaConfig右填充与DataCopyPad回写》的实质衔接是：这些 NDDMA 卡围绕维序、stride、padding 与高 rank 配置解释同一快速路径漏维/越界机制。
+- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_to_ub_nddma.md)（`exemplifies`）：“`chanStride_==1` 才是 channel 真末轴的可靠判据。”给出焦点端事实；“支持的维度为［1, 5］。”给出候选端事实。runbook 的失败来自用 C=1 误判 NDDMA 末轴布局，DataCopy NDDMA API 又把单个描述符限制为最多 5 维；两端共同约束何时能安全构造该快速搬运。
+- [EMA 公式 stat+m*(batch-stat) 在 inf 时 NaN](ema_stat_m_batch_stat_inf_nan.md)（`related`）：“bn_training_update 精度调试中，blackbox TTK 含 inf 统计量的用例（如 `(3,12)` fp16、`variance` 范围 `(inf, inf)`；`(1,15,1,2,3)` fp16、`mean` 范围 `(-inf,-inf)`）报 `runningVariance` 或 `runningMean` `GOLD: FAIL`，reason 为 `NaN/Inf mismatch`。”；“`bn_training_update` 算子精度调试会话中，blackbox TTK 用例 shape `(5,1,3,4,4)` fp16 C=1（`(C,)` 张量长度 1），`square_sum` 范围 `(0,0)`（sq=0）。”。两卡是同一 bn_training_update 黑盒精度排障树的不同输出与触发分支，可用于先区分 EMA 相消和 NDDMA 漏维。
+- [RANK大于5时NDDMA漏维只解释accum错误](rank_5_nddma_accum_var.md)（`related`）：“NDDMA 可用性需单独判 `chanStride_==1`”给出焦点端事实；“NDDMA 描述符在 arch35 上最多覆盖 5 维。”给出候选端事实。焦点卡诊断 channel 轴误判导致 NDDMA 漏搬，候选卡诊断 RANK>5 时外循环未覆盖描述符外维度；两者给出同一多维快速路径的两个独立准入条件。
 <!-- cannbot:related:end -->

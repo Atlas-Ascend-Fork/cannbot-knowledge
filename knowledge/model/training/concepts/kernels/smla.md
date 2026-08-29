@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: SMLA（Sparse Flash MLA，DeepSeek-V4 稀疏 MLA 融合算子）
-description: npu_smla converter（torchtitan-npu）：DeepSeek-V4 Sparse Flash MLA 融合算子。A5/Ascend-950 走 torch_npu SMLA 融合路径 + attention mask 接入 post_dataloading_process；非 A5 保持兼容 V4 稀疏注意力/LI/LI-loss。关键：LI-loss 计算+反向梯度融进 npu_sparse_lightning_indexer_klloss_grad，默认不显式算/打印 LI-loss、跳过 save_loss_to_tracker（区别 V3.2 DSA 显式 LI-loss），避免额外重计算；调试设 logger npu_smla=DEBUG 强制写 tracker。与 slig/sfag/sasg 同属 V4 稀疏注意力训练融合算子。
+description: npu_smla converter（torchtitan-npu）：DeepSeek-V4 Sparse Flash MLA 融合算子。950/Ascend-950 走 torch_npu SMLA 融合路径 + attention mask 接入 post_dataloading_process；非 950 保持兼容 V4 稀疏注意力/LI/LI-loss。关键：LI-loss 计算+反向梯度融进 npu_sparse_lightning_indexer_klloss_grad，默认不显式算/打印 LI-loss、跳过 save_loss_to_tracker（区别 V3.2 DSA 显式 LI-loss），避免额外重计算；调试设 logger npu_smla=DEBUG 强制写 tracker。与 slig/sfag/sasg 同属 V4 稀疏注意力训练融合算子。
 tags:
 - task.implementation
 - topic.attention
@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/npu_fused_ops.md
   role: supporting
 created_at: '2026-06-23T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - a2
 - a3
@@ -23,7 +23,7 @@ platforms:
 
 ## Summary
 
-`npu_smla` 是 [torchtitan](../frameworks/torchtitan.md)-npu 面向 **DeepSeek-V4 稀疏 MLA（Sparse Flash MLA）** 注意力路径的 NPU 融合算子 ModelConverter。它把 DeepSeek-V4 模型里的 sparse MLA 子模块替换成 NPU 亲和实现，并按硬件类型走两套**不同的替换集**（合计涉及 `LiCompute` / `InnerAttention` / `SparseAttention` / `LiLoss` 四类子模块，见「硬件分流」）：在 **A5（Ascend-950 系列）** 上走 `torch_npu` 提供的 SMLA 融合算子路径（`SparseFlashMLA` autograd），只替换 `LiCompute` / `InnerAttention`，同时把 SMLA 所需的 attention masks 接入 torchtitan 原生 `post_dataloading_process`；在**非 A5** 场景下回落到兼容原有 DeepSeek-V4 sparse attention / [lightning-indexer](../../../inference/concepts/kernels/lightning_indexer.md) / LI-loss 的 NPU 实现（基于 `build_op` 编译的自定义算子），只替换 `SparseAttention` / `LiCompute` / `LiLoss`。它与 DSA 训练算子家族 [slig](slig.md) / [sfag](sfag.md) / [sasg](sasg.md) 同属稀疏注意力反向训练件，但**关键差异**是把 LI-loss 计算融进了反向梯度算子，默认不显式记录 LI-loss（见下）。配置经 [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md) 的 `get_model_converter_config("npu_smla")` 启用。
+`npu_smla` 是 [torchtitan](../frameworks/torchtitan.md)-npu 面向 **DeepSeek-V4 稀疏 MLA（Sparse Flash MLA）** 注意力路径的 NPU 融合算子 ModelConverter。它把 DeepSeek-V4 模型里的 sparse MLA 子模块替换成 NPU 亲和实现，并按硬件类型走两套**不同的替换集**（合计涉及 `LiCompute` / `InnerAttention` / `SparseAttention` / `LiLoss` 四类子模块，见「硬件分流」）：在 **950（Ascend-950 系列）** 上走 `torch_npu` 提供的 SMLA 融合算子路径（`SparseFlashMLA` autograd），只替换 `LiCompute` / `InnerAttention`，同时把 SMLA 所需的 attention masks 接入 torchtitan 原生 `post_dataloading_process`；在**非 950** 场景下回落到兼容原有 DeepSeek-V4 sparse attention / [lightning-indexer](../../../inference/concepts/kernels/lightning_indexer.md) / LI-loss 的 NPU 实现（基于 `build_op` 编译的自定义算子），只替换 `SparseAttention` / `LiCompute` / `LiLoss`。它与 DSA 训练算子家族 [slig](slig.md) / [sfag](sfag.md) / [sasg](sasg.md) 同属稀疏注意力反向训练件，但**关键差异**是把 LI-loss 计算融进了反向梯度算子，默认不显式记录 LI-loss（见下）。配置经 [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md) 的 `get_model_converter_config("npu_smla")` 启用。
 
 ```python
 get_model_converter_config("npu_smla")
@@ -31,7 +31,7 @@ get_model_converter_config("npu_smla")
 
 注册入口为 `@register_model_converter("npu_smla")` → `NpuSMLAModelConfig`（`model_converter = NpuSMLAConverter`）。
 
-## 硬件分流（A5 vs 非 A5）
+## 硬件分流（950 vs 非 950）
 
 `NpuSMLAConverter.convert` 用 `get_npu_device_type() == "A5"` 选择两条互斥路径：
 
@@ -50,7 +50,7 @@ def convert(self, model):
 
 设备名→类型映射里 `Ascend950DT` / `Ascend950PR` / `Ascend910_95` / `Ascend950` 均归类为 `"A5"`（`torchtitan_npu/tools/device.py`）。
 
-### A5：SMLA 融合路径
+### 950：SMLA 融合路径
 
 `convert_smla_kernel` 先 `_enable_native_smla_attention_mask_building()`，把 DeepSeek-V4 伪装成 varlen-attention decoder config（重写 `DeepSeekV4Model.get_attention_masks` / `attn_type` / `layers`，并将 `DeepSeekV4Model.Config` 挂进 trainer 的 `post_dataloading_process` 全局 `Decoder.Config`），从而让 torchtitan 原生 dataloading 链路构建 SMLA masks，而非 patch trainer 代码。随后建一份 `SMLAMetadataCache`，把 `LiCompute` 替换为 `NpuLiComputeSMLA`、`InnerAttention` 替换为 `NpuInnerAttentionSMLA`，二者共享该 cache。核心融合算子（均由 `torch_npu` 提供）：
 
@@ -63,9 +63,9 @@ def convert(self, model):
 
 正反向封装在 `SparseFlashMLA(torch.autograd.Function)`：`forward` 调 `npu_sparse_attn_sharedkv`（`return_softmax_lse=True`），`backward` 先 `npu_sparse_flash_mla_grad` 出 `dq/dori_kv/dcmp_kv/dsinks` 与 `cmp_softmax_l1`，再（仅 `cmp_ratio == 4` 时）调 `npu_sparse_lightning_indexer_klloss_grad` 出 indexer 三路梯度。共享的 metadata kwargs 含 `ori_mask_mode=4`、`cmp_mask_mode=3`、`ori_win_left=127`、`ori_win_right=0`、`layout_q/kv="BSND"`。
 
-### 非 A5：兼容 NPU 实现
+### 非 950：兼容 NPU 实现
 
-非 A5 用 `build_op(...)` 把 binding 编译成自定义算子并逐 module 替换：`NpuSparseAttention` 调 `_sas_op.npu_sparse_attn_sharedkv`，`NpuLiCompute` 调 `_li_op.npu_lightning_indexer`，`NpuLiLoss` 调 `_kl_op.npu_sparse_lightning_indexer_grad_kl_loss`。三个算子惰性编译（converter 命中时才 `build_op`），保持与 DeepSeek-V4 sparse attn / Lightning-Indexer / LI-loss 行为兼容。
+非 950 用 `build_op(...)` 把 binding 编译成自定义算子并逐 module 替换：`NpuSparseAttention` 调 `_sas_op.npu_sparse_attn_sharedkv`，`NpuLiCompute` 调 `_li_op.npu_lightning_indexer`，`NpuLiLoss` 调 `_kl_op.npu_sparse_lightning_indexer_grad_kl_loss`。三个算子惰性编译（converter 命中时才 `build_op`），保持与 DeepSeek-V4 sparse attn / Lightning-Indexer / LI-loss 行为兼容。
 
 ## SMLA 与 Context Parallel
 
@@ -108,7 +108,7 @@ logging.getLogger("torchtitan_npu.converters.kernels.npu_smla").setLevel(logging
 
 ## Evidence
 
-- [torchtitan-npu](https://gitcode.com/cann/torchtitan-npu) — [`docs/feature_guides/npu_fused_ops.md`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/npu_fused_ops.md)（『SMLA (Sparse Flash MLA)』节：A5/非 A5 分流、LI-loss 融合进 `npu_sparse_lightning_indexer_klloss_grad`、默认不打印、DEBUG 强制开启）
+- [torchtitan-npu](https://gitcode.com/cann/torchtitan-npu) — [`docs/feature_guides/npu_fused_ops.md`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/npu_fused_ops.md)（『SMLA (Sparse Flash MLA)』节：950/非 950 分流、LI-loss 融合进 `npu_sparse_lightning_indexer_klloss_grad`、默认不打印、DEBUG 强制开启）
 - [`torchtitan_npu/converters/kernels/npu_smla.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/kernels/npu_smla.py)（`NpuSMLAConverter` 硬件分流、`SparseFlashMLA` autograd、`_run_lightning_indexer_klloss_grad` DEBUG 门控、`@register_model_converter("npu_smla")`）
 
 ## Links
@@ -121,3 +121,10 @@ logging.getLogger("torchtitan_npu.converters.kernels.npu_smla").setLevel(logging
 - [mla](../../../inference/concepts/modules/mla.md)（跨域：MLA 注意力模块，SMLA 是其稀疏化训练融合路径）
 - [dsa](../../../inference/concepts/modules/dsa.md)（跨域：DeepSeek Sparse Attention；V3.2 显式 LI-loss vs V4 SMLA 融合默认关）
 - [lightning-indexer](../../../inference/concepts/kernels/lightning_indexer.md)（跨域：Lightning Indexer 正向算子，SMLA 反向融其 KL-loss）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DSA（DeepSeek Sparse Attention）架构模式](../../../inference/concepts/modules/dsa.md)（`related`）：“ - ［smla］(../../../training/concepts/kernels/smla.md)（跨域·训练：V4 SMLA 是 DSA 谱系的训练融合算子）”把架构谱系明确下接到训练实现，而“`npu_smla` 是 ［torchtitan］(../frameworks/torchtitan.md)-npu 面向 **DeepSeek-V4 稀疏 MLA（Sparse Flash MLA）** 注意力路径的 NPU 融合算子 ModelConverter。”给出该实现的替换入口；联合阅读可从 DSA 架构边界定位 V4 的训练融合落点。
+- [NPU 基础融合算子 ModelConverter 家族（torchtitan-npu）](../frameworks/npu_fused_op_converters.md)（`related`）：“配置经 ［npu-fused-op-converters］(../frameworks/npu_fused_op_converters.md) 的 `get_model_converter_config("npu_smla")` 启用。”给出 SMLA 的配置名，而“所有 NPU converter 通过 `ModelConvertersContainer.Config` 的 `converters` 列表启用，每个 converter 名先经 `get_model_converter_config()` 转成 Config 对象：”给出容器装配合同；联合阅读可把 npu_smla 放入训练启动配置，而非只停留在成员导航。
+<!-- cannbot:related:end -->

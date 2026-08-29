@@ -23,6 +23,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AtomicExch](../../basic_api/atomic_operations/atomic_exch.md)（`related`）：基础 C++ AtomicExch 提供同一 GM 原子交换契约，可与 C Scalar 版本按语言接口选择。
-- [asc_atomic_exch](../../../simt_api/atomic_operations/asc_atomic_exch.md)（`related`）：asc_atomic_exch 与《AscAtomicExch》的实质衔接是：SIMT、C scalar 与基础 API 的 AtomicExch 都实现同址原子交换；SIMT 原子简介补充返回旧值和并发顺序约束。
+- [AscDcci](../cache_ctrl/asc_dcci.md)（`related`）：原子交换接口明确“Scalar原子操作会绕过DCache，需要调用asc_dcci接口确保GM与DCache的一致性。”；缓存接口解释“Scalar单元访问Global Memory，首先会访问每个核内的Data Cache，因此存在Data Cache与Global Memory的Cache一致性问题。”，给出交换前后插入 DCCI 的一致性原因。
+- [AtomicExch](../../basic_api/atomic_operations/atomic_exch.md)（`same_topic`）：在指定GM地址上进行原子交换操作。将address指向的GM地址上的旧值与输入值进行原子交换运算，将结果写回GM地址，返回修改前的旧值。仅Ascend 950PR/950DT支持。；对Global Memory中address指向的元素执行原子赋值操作，即将该元素值设置为val。两页描述同一 GM 原子交换语义，C scalar 页进一步给出流水同步与 DCache 一致性约束，能直接支撑接口选型和正确使用。
 <!-- cannbot:related:end -->

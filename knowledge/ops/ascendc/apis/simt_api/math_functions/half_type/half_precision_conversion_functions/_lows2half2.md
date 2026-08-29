@@ -25,12 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__halves2half2](_halves2half2.md)（`related`）：__halves2half2 从两个 half 标量构造 half2；lows/highs 版本则从两个 half2 抽分量，三者共同覆盖 half2 分量组装链。
-- [__lows2bfloat162](../../bfloat16_type/bfloat16_precision_conversion_functions/_lows2bfloat162.md)（`related`）：__lows2bfloat162 与《__lows2half2》的实质衔接是：lows/highs、单输入复制与双输入拼装共同定义 bfloat16x2 低高 lane 的提取和构造顺序。
-- [__highs2half2](_highs2half2.md)（`same_topic`）：__highs2half2 与 __lows2half2 分别从两个 half2 输入提取高/低 16bit lane，是成对的 lane 组装合同。
-- [__low2half2](_low2half2.md)（`same_topic`）：__low2half2 与《__lows2half2》的实质衔接是：low2half 与 lows2half2 分别说明低 half 的标量提取、复制和双输入拼装语义。
-<!-- cannbot:related:end -->

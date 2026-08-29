@@ -69,13 +69,5 @@ Ascend950 `masked_fill` 算子 Broadcast 路线（mask_predicate 范式，Regbas
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_to_ub_nddma.md)（`exemplifies`）：官方 DataCopy 多维搬运接口定义 MultiCopyParams/Stride 的调用边界，是将 runbook 的 loopSize/loopSrcStride 探针映射回实际 API 参数的入口。
-- [GetStride](../../apis/simd_api/basic_api/aux_data_structures/layout/get_stride.md)（`exemplifies`）：GetStride 与《NDDMA 最内层 srcStride=0 广播读越界》的实质衔接是：GetStride 从 Layout 读取 MakeStride 生成的维度步长，Crd2Idx 以该 stride 映射坐标；NDDMA stride=0 故障和 Layout 说明验证物理寻址边界。
-- [GmUbDataMove](../../apis/simd_api/basic_api/data_move_guide/gm_ub_data_move.md)（`exemplifies`）：GmUbDataMove 与《NDDMA 最内层 srcStride=0 广播读越界》的实质衔接是：GM↔UB 总览按连续、高维、切片、ND2NZ/NZ2ND、NDDMA 和 DataCopyPad 选择通路；所选 NDDMA 卡逐一约束 padding、维度和 stride。
-- [NDDMA 快速路径 C=1 中间轴漏维判别](nddma_c_1.md)（`related`）：C=1 卡说明把广播维误判为末轴会构造错误的最内层 NDDMA stride；它是本卡 loopSrcStride[0] 检查在真实高维快路径中的上游参数生成案例。
-- [NDDMA多维dstStride致data搬运偏移的判别](nddma_dststride_data.md)（`related`）：两卡分别定位 NDDMA 最内层 srcStride=0 被当连续读和多维 dstStride 被错误应用；对照源/目的步长探针可快速区分广播读错与 UB 写偏移。
-- [NDDMA非对齐尾轴需NdDmaConfig右填充与DataCopyPad回写](../compilation/nddma_nddmaconfig_datacopypad.md)（`related`）：srcStride 修正只能保证取数位置，非 32B 尾轴还需 loopRpSize 和字节粒度 DataCopyPad 回写；该卡补齐 NDDMA 广播修复后的对齐/搬出约束。
-- [RANK大于5时NDDMA漏维只解释accum错误](rank_5_nddma_accum_var.md)（`related`）：当 RANK>5 时描述符只能覆盖部分维度，需外层循环补齐；该卡补充本 focal 在纯标量广播且 actualRank>5 时明确提到的独立漏维边界。
-- [广播 CopyIn tile 跨段越界读判别](copyin_tile.md)（`related`）：目标卡证明广播维的 stride=0 不能直接当作 NDDMA 源广播，本卡证明 1D DataCopyPad 也不能从段内偏移连续读取广播源；二者共同要求显式按广播段循环/填充。
-- [DataCopyPad stride 表示 block 间隙](datacopypad_stride_is_inter_block_gap.md)（`same_topic`）：DataCopyPad stride 表示 block 间隙 与《NDDMA 最内层 srcStride=0 广播读越界》的实质衔接是：这些卡都直接解释 DataCopyPad 的 stride 是有效 block 后的 gap，并覆盖32B单位、窄尾padding、逐行复制、非连续子块、NDDMA stride及官方GM→L1参数契约。
+- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_to_ub_nddma.md)（`exemplifies`）：1. **检查最内层 srcStride**：打印或断言 `nddmaParams_［IN_MASK］.loopInfo.loopSrcStride［0］`，若为 0 即命中本 bug。；多维数据搬运接口，支持自由配置搬入的维度信息及对应的Stride。。该 runbook 用实际最内层 srcStride=0 广播失败验证了 DataCopy NDDMA 的维度与 Stride 配置边界，可直接指导参数探针和回退。
 <!-- cannbot:related:end -->

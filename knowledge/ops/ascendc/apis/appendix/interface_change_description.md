@@ -44,11 +44,3 @@ platforms: [agnostic]
 | WholeReduceSum / WholeReduceMax / WholeReduceMin | [ReduceRepeat](../simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_repeat.md) | 通过模板参数区分 Repeat 归约操作。 |
 | RepeatReduceSum | [ReduceRepeat](../simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_repeat.md) | 通过模板参数区分操作，调整 `mask` 与 `repeatTime` 的参数顺序，并删除无效参数 `dstBlkStride`。 |
 | PairReduceSum | [ReducePairElem](../simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_pair_elem.md) | 通过模板参数区分 Pair 元素归约操作，并调整 `mask` 与 `repeatTime` 的参数顺序。 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [C API](release_notes/cann_9_1_0.md)（`related`）：C API 与《接口变更说明（附录）》的实质衔接是：9.1.0 C API 发布说明承接 9.0.0 的初始能力，并以总 Release Notes、废弃表和接口改名表说明新增入口及签名修复在既有代码中的迁移落点。
-- [废弃接口](deprecated_interface.md)（`related`）：“废弃接口”定义：列出Ascend C中已废弃或后续版本将废弃的C API接口，并给出每个接口的推荐替代方案。；“接口变更说明（附录）”定义：为了优化API命名，使其更加清晰和易于理解，当前版本相比于CANN8.5.0及前序版本，部分API命名有变更，具体变更情况请参考以下表格：。实质衔接：三者分别提供 C API 废弃清单、接口替换变更表和发布演进记录，可从旧接口定位推荐替代而不把清单与每个成员全连接。
-- [CountLeadingZero](../simd_api/basic_api/scalar_compute/count_leading_zero.md)（`same_topic`）：focal 正文实际完整描述 CountLeadingZero 的输入、返回和支持平台，因此与独立接口卡语义重合。
-<!-- cannbot:related:end -->

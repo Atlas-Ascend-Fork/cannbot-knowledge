@@ -39,3 +39,9 @@ platforms:
 ## Evidence
 - `diff 事实`（@0640521a8170）：`modeling_longcat_flash.py` 确认 `o_proj_tp_size` 守卫下 all_to_all→本地 o_proj→reduce_scatter 链路、`gate_up_proj` 列并行合并、MLP 后 `reduce_scatter_tensor`，与优化文档 o_proj_tp / MLP TP 章节一致；收益结论为 `doc 披露`（仓自报、无独立复测）。
 - 溯源下探：[cann-recipes-infer-pr-124-feat-support-longcat-flash-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/124)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [TP+DP 非打包推理的 batch 整除约束 + DLLM paged 注意力 page_size≤block_size](../../../runbooks/runtime/tp_dp_batch_and_page_sizing_constraints.md)（`related`）：在昇腾 executor 上配 TP+DP 或调 batch/显存时，主流程直接 `ValueError` 或稀疏注意力被守护回落——症状是「配置本身被拒」，不是算子/精度问题。；此时 attention 与 MLP 并行域不同，需在边界插通信做 DP↔TP 域转换。；运行手册给出非打包 TP+DP 的 batch 整除失败条件，优化规则解释 attention DP 与 o_proj/MLP TP 之间必须显式转换并行域，二者用于配置同一混合并行链。
+<!-- cannbot:related:end -->

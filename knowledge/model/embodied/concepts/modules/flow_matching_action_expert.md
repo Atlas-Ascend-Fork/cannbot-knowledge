@@ -113,3 +113,12 @@ OM 离线部署（310P）目标不同于 torch 推理优化版：优先保证 ON
 - 跨域 canonical：[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)、[npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)、[torchair](../../../inference/concepts/frameworks/torchair.md)
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
 - 应用于：[smolvla](../manipulation/smolvla.md)（SmolVLA 同样采用 VLM 主干 + flow-matching 动作专家）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Action Chunking（动作分块 / ACT Transformer）](action_chunking.md)（`related`）：VLA 模仿学习策略的核心结构思想：**一次性预测一段连续动作序列（动作块，action chunk）**，而不是逐步预测，从而缓解逐步预测带来的误差累积。；`chunk_size` 是一次预测的机器人执行步数（动作块），动作以 action-chunking 方式整段输出而非逐步预测——这一点与 ［action-chunking］(action_chunking.md) 同源。；Action Chunking 给出整段动作预测的通用粒度，Flow-Matching Action Expert 明确以 chunk_size 整段输出动作，把该粒度接到 Pi0/Pi0.5 的多步去噪生成链。
+- [Alpamayo-R1（智驾 VLA 推理 · 昇腾 A2）](../navigation/alpamayo_r1.md)（`related`）：模型本体基于 Qwen3-VL 类多模态主干（VLM）+ 扩散式动作头（flow matching 积分），属 VLA 架构；Pi0 把机器人策略表示为一个**条件去噪扩散 / 流匹配过程**，整体拆成「慢系统」VLM 主干 + 「快系统」动作专家两段；Alpamayo-R1 的智驾轨迹头与 Pi0 动作专家都由 VLM 条件驱动流匹配生成连续动作，后者给出理解前者慢系统与快系统边界的架构参照。
+- [Pi0.5（π0.5 · 开放世界泛化 VLA · 昇腾训练/在线推理/OM 离线三链路）](../manipulation/pi05.md)（`related`）：延续 Pi0 的「VLM 主干（PaliGemma，慢系统）+ 流匹配/扩散动作专家（Gemma，快系统）」双流结构，同样基于条件去噪扩散（默认 10 步去噪），但针对视觉输入、token 长度、网络结构做了升级。；Pi0 / Pi0.5 系 VLA（Vision-Language-Action）模型的核心架构模块：**VLM 主干 + flow-matching 动作专家**双流结构。；模型页的双流描述由模块页展开为 VLM 前缀编码、KV cache 复用和动作专家去噪合同，支持架构理解与动作生成验证。
+- [Pi0（π0 · VLA 流匹配模型 · 昇腾训练/在线推理/OM 离线三链路）](../manipulation/pi0.md)（`related`）：架构是「慢系统 VLM 主干（PaliGemma）+ 快系统流匹配动作专家（Gemma）」双流结构，VLM 一次提取多模态前缀 KV cache，动作专家在其上**多步去噪**（默认 `num_steps=10`）输出动作块。；两段在推理流上**解耦**：VLM 计算 image/language prefix KV cache，action expert 在其上多步 denoise。；Pi0 模型页给出慢系统产生 KV cache、快系统执行十步去噪的实例，模块页把同一分界抽象成共享架构合同，二者直接衔接模型理解与实现验证。
+<!-- cannbot:related:end -->

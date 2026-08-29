@@ -23,9 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetTensorC](get_tensor_c.md)（`related`）：GetTensorC 取出计算结果，随后 End 释放内部资源，二者规定结果消费与销毁顺序。
-- [Iterate（卷积计算）](iterate.md)（`related`）：Iterate 发起反向输入卷积计算，完成后才进入 End 的释放阶段。
-- [Conv3DBackpropInput](conv3_d_backprop_input_usage.md)（`same_topic`）：焦点处理Conv3DBackpropInput 的初始化、输入设置、迭代和取结果调用顺序；卷积计算End正文说明“在Conv3DBackpropInput卷积反向计算完成后，必须调用一次End，以清除EventID并释放内部申请的临时内存”。候选正是该用法页按先后调用的阶段；遗漏或错序会破坏资源划分、输入绑定或结果搬出。
-- [卷积计算End](../conv3_d_kernel/end.md)（`same_topic`）：卷积计算End 与《卷积计算End》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
-- [卷积计算Init](init.md)（`same_topic`）：Init 建立 Conv3DBackpropInput 内部状态，End 必须在计算后清理同一对象的 EventID 和临时内存。
+- [Conv3DBackpropInput](conv3_d_backprop_input_usage.md)（`related`）：Ascend C提供一组Conv3DBackpropInput高阶API，便于用户快速实现卷积的反向运算，求解反向传播的误差。；在Conv3DBackpropInput卷积反向计算完成后，必须调用一次End，以清除EventID并释放内部申请的临时内存。。用法卡覆盖 Conv3DBackpropInput 任务，End 卡规定该任务完成后的必需清理步骤。
 <!-- cannbot:related:end -->

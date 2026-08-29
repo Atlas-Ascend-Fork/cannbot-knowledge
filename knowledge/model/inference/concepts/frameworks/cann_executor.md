@@ -87,7 +87,12 @@ flowchart LR
  Scheduler -->|_process_batch_output| Scheduler
 ```
 
-| 组件 | 职责 | |------|------| | **OfflineInference**（`executor/offline/`） | 用户 API 层，协调生命周期；`generate(prompts)` 驱动 `while scheduler.has_work` 循环；收集 & 解码结果。在线侧 `OnlineInference`（`executor/online/`）继承之并追加 PD 协调（`init_cpu_groups` 等） | | **Scheduler**（`executor/core/scheduler/`） | 请求队列（waiting/running/finished）管理；批处理组装（**Prefill 全部处理完再处理 Decode**）；默认**固定形状模式**对 Batch 做 padding 以保 Tensor 形状一致（性能压测友好）；请求状态 prefill→decode 转换 | | **ExecutionEngine**（`executor/core/engine/execution_engine.py`） | 环境初始化（NPU 设备 + 分布式 CommManager）；`warm_up` 跑一轮 prefill + 一轮 decode，decode 阶段触发图编译；`forward_batch` 接收 Batch 执行 + 采样；`exe_mode` 分派 | | **ModelWorker**（`executor/core/model_worker/model_worker.py`） | 单模型生命周期：`load_model` + `_process_weights_after_loading`（仅委托：`if hasattr(self.model, "process_weights_after_loading"): self.model.process_weights_after_loading()`，转置/NZ 由模型侧实现，见下） + `_init_kvcache`；`compile_model` 调用 `executor/utils/graph_utils.py:compile_model_forward`；`inference` 仅在 `not is_prefill` 且 `exe_mode in ["ge_graph", "npugraph_ex"]` 时走 `self.model_compiled(**model_inputs)` | | **Model**（各模型 `modeling_*.py`） | 接受 `InferenceConfig` + `CommManager` 初始化；通过 `ForwardMetaData` 取动态信息；必须能先在 eager 下稳定运行 |
+| 组件 | 职责 |
+|------|------| | **OfflineInference**（`executor/offline/`） | 用户 API 层，协调生命周期；`generate(prompts)` 驱动 `while scheduler.has_work` 循环；收集 & 解码结果。在线侧 `OnlineInference`（`executor/online/`）继承之并追加 PD 协调（`init_cpu_groups` 等） |
+| **Scheduler**（`executor/core/scheduler/`） | 请求队列（waiting/running/finished）管理；批处理组装（**Prefill 全部处理完再处理 Decode**）；默认**固定形状模式**对 Batch 做 padding 以保 Tensor 形状一致（性能压测友好）；请求状态 prefill→decode 转换 |
+| **ExecutionEngine**（`executor/core/engine/execution_engine.py`） | 环境初始化（NPU 设备 + 分布式 CommManager）；`warm_up` 跑一轮 prefill + 一轮 decode，decode 阶段触发图编译；`forward_batch` 接收 Batch 执行 + 采样；`exe_mode` 分派 |
+| **ModelWorker**（`executor/core/model_worker/model_worker.py`） | 单模型生命周期：`load_model` + `_process_weights_after_loading`（仅委托：`if hasattr(self.model, "process_weights_after_loading"): self.model.process_weights_after_loading()`，转置/NZ 由模型侧实现，见下） + `_init_kvcache`；`compile_model` 调用 `executor/utils/graph_utils.py:compile_model_forward`；`inference` 仅在 `not is_prefill` 且 `exe_mode in ["ge_graph", "npugraph_ex"]` 时走 `self.model_compiled(**model_inputs)` |
+| **Model**（各模型 `modeling_*.py`） | 接受 `InferenceConfig` + `CommManager` 初始化；通过 `ForwardMetaData` 取动态信息；必须能先在 eager 下稳定运行 |
 
 ### InferenceConfig 子配置
 
@@ -185,3 +190,10 @@ sequenceDiagram
 - **gap**：源文档未给出 Scheduler 的抢占 / 优先级策略，仅描述 Prefill 优先、固定形状 padding 与 PD decode 端的 retraction（见 [online-pd-inference](online_pd_inference.md)）；离线模式是否支持动态优先级未展开。
 - **ambiguity**：`npugraph_ex` 在文档中也被历史命名为 `acl_graph`，新代码统一用 `npugraph_ex`，部分老 YAML / 文档仍见 `acl_graph`。
 - **字段级演进**见 [inference-config](../techniques/inference_config.md)（仅新 `InferenceConfig` 体系；legacy `model_runner.py` 路径仍用 `runner_settings` dict + `input_max_len` + `kvp_size`）。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [InferenceConfig（统一推理配置体系）](../techniques/inference_config.md)（`related`）：`InferenceConfig` 是 ［cann-executor］(../frameworks/cann_executor.md) 的统一配置入口类，以结构化 `dataclass` 取代早期的 `runner_settings` 字典，提供类型检查、嵌套子配置与自动验证。；**统一配置入口 `InferenceConfig`**：`dataclass` 结构化替代 `runner_settings` 字典，YAML 驱动，聚合 `DataConfig` / `ModelConfig` / `ParallelConfig` / `SchedulerConfig` 四子配置，PD 分离另由启动入口注入 `DisaggConfig`。字段语义详见 ［inference-config］(../techniques/inference_config.md)。前者提供字段与推导合同，后者明确其在新执行器中的装配位置，可直接完成配置到执行框架的定位。
+- [Qwen3.5-MoE](../models/qwen3_5_moe.md)（`related`）：“cann-recipes-infer 基于 transformers 的 Qwen3.5-MoE 结构完成文本侧推理适配（HF `model_type = "qwen3_5_moe_text"`，多模态外层另有 vision config），跑在 Atlas A3 上，由仓库自研 executor（［cann-executor］(../frameworks/cann_executor.md)）驱动多卡推理。”；“｜ **新执行器路径** ｜ fallback 到 `executor/offline/infer.py` ｜ `OfflineInference` / `ExecutionEngine` / `InferenceConfig`（dataclass + YAML） ｜ deepseek_r1、qwen3_moe、qwen3_5（Qwen3.5-MoE）、gpt_oss、gemma4_26b_a4b 等（无自带 `infer.py`） ｜”。模型卡声明执行载体，框架卡把 qwen3_5 明确放入新执行器分流并给出入口和配置对象。
+<!-- cannbot:related:end -->

@@ -235,14 +235,6 @@ __aicore__ inline void ProcessOneTile(AscendC::TPipe &pipe,
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscDeintlv](../../apis/simd_api/c_api/reg/data_rearrange/asc_deintlv.md)（`exemplifies`）：该精度卡验证 DeInterleave 的 dst0 必须接收偶索引 lane、dst1 接收奇索引 lane，直接补充 AscDeintlv 输出顺序的可执行 oracle。
-- [AscLoadalignDeintlvPostupdate](../../apis/simd_api/c_api/reg/reg_load/asc_loadalign_deintlv_postupdate.md)（`exemplifies`）：《AscLoadalignDeintlvPostupdate》的任务是“从UB读取连续2×VL长度数据并在Load过程中完成解交织，分别写入两个目的矢量寄存器，调用后自动更新源地址。”。《DeInterleave 两路写反——按偶索引到 dst0 修正》具体提供“Reg 交织拆分把 dst0/dst1 接反会让 interleaved 路线整行错；按 dst0=偶索引、dst1=奇索引接线。”，它直接用于解交织 Load 的地址 post-update、DeInterleave 结果顺序和等价入口。
-- [DeInterleave](../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange/de_interleave.md)（`exemplifies`）：DeInterleave：DeInterleave 的双输出偶/奇 lane 契约可由另一编程接口和逆操作 Interleave 对照，dst0 偶 lane runbook直接验证最易写反的输出约定，b16卡限定重排位宽风险。 目标卡《DeInterleave 两路写反——按偶索引到 dst0 修正》补充：Reg 交织拆分把 dst0/dst1 接反会让 interleaved 路线整行错；按 dst0=偶索引、dst1=奇索引接线。
-- [DeInterleave](../../apis/simd_api/basic_api/reg_vector_compute/mask_reg_compute/de_interleave.md)（`exemplifies`）：目标卡以可执行用例确认 DeInterleave 的 dst0 接偶索引、dst1 接奇索引，直接补充 Reg DeInterleave 图示之外的输出 oracle。
-- [Interleave](../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange/interleave.md)（`exemplifies`）：修复链在偶/奇两路 Reg 计算后用 LocalTensor Interleave 重组成输出；它是 DeInterleave 拆分路线的直接逆向布局步骤。
-- [Interleave](../../apis/simd_api/basic_api/reg_vector_compute/data_reorder/interleave.md)（`exemplifies`）：该卡明确 DeInterleave dst0/dst1 对应偶/奇 lane，可验证交织顺序。
-- [数据重排](../../apis/simd_api/basic_api/reg_vector_compute/data_reorder/data_reorder.md)（`exemplifies`）：数据重排 与《DeInterleave 两路写反——按偶索引到 dst0 修正》的实质衔接是：Reg 数据重排与 memory/C 重排使用同一交织/解交织语义；两张排障卡分别限定 DeInterleave 偶奇输出和 B16 interleave store mask。
-- [数据重排（ISASI）](../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange/data_rearrange_overview.md)（`exemplifies`）：DeInterleave 两路写反——按偶索引到 dst0 修正说明Reg 交织拆分把 dst0/dst1 接反会让 interleaved 路线整行错；按 dst0=偶索引、dst1=奇索引接线。
-- [B16 交错 DINTLV 成对归零 — 转 fp32 后重排](b16_interleave_compute_should_promote_to_b32_layout.md)（`related`）：B32 解交错路径依赖 dst0 对应偶数 lane 的确定语义，可用于验证 interleave 计算的通道映射。
-- [RoPE DIST_INTLV_B16 store mask 致零值](rope_dist_intlv_b16_store_mask.md)（`related`）：RoPE interleaved 计算的前半链还依赖 dst0=偶 lane、dst1=奇 lane；该卡提供递增序列探针和接线契约，可先排除输入拆分写反，再定位 focal 的 B16 store 布局。
+- [DeInterleave](../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange/de_interleave.md)（`exemplifies`）：“在变量命名与 API 目标顺序之间建立一一对应：`qE` 必须放在 `dst0`，`qO` 必须放在 `dst1`。以下为轨迹逐字恢复的完整 `ProcessOneTile` before/after；唯一语义修复是 `DeInterleave` 两个目标的顺序。”与“将两个源操作数中的元素解交织存入两个结果操作数中，支持双输入和单输入两种模式。”提供双方正文证据。精度 runbook 通过调整 DeInterleave 的 dst0/dst1 顺序修复偶奇流接反，API 卡定义该接口可按单输入或双输入解交织到两路输出。
+- [DeInterleave](../../apis/simd_api/basic_api/reg_vector_compute/mask_reg_compute/de_interleave.md)（`exemplifies`）：“将源操作数src0和src1中的元素解交织存入目的操作数dst0和dst1中。”定义基础操作；“变量语义与实际数据流相反：旋转公式把奇索引值当成 even 分量，把偶索引值当成 odd 分量”记录 dst0/dst1 误命名后的精度故障，能把接口语义落实到 lane 排障。
 <!-- cannbot:related:end -->

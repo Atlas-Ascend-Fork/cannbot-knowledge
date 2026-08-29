@@ -70,3 +70,9 @@ platforms:
 - 动作生成范式参考：[action-chunking](../modules/action_chunking.md)
 - 同走 torch 在线 + 昇腾算子化路线（A3 推理）：[isaac-gr00t](isaac_gr00t.md)
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Action Chunking（动作分块 / ACT Transformer）](../modules/action_chunking.md)（`related`）：**推理：flow-matching Euler 去噪迭代。** `_sample_actions_unified` 从噪声 `x_t` 起步，`dt = -1.0/num_steps`（默认 `num_steps=10`），每步 `_denoise_step` 调 DiT 预测速度场 `v_t`、按 Euler `x_t += dt * v_t` 更新，迭代 `num_steps` 步得到去噪后的动作序列。；VLA 模仿学习策略的核心结构思想：**一次性预测一段连续动作序列（动作块，action chunk）**，而不是逐步预测，从而缓解逐步预测带来的误差累积。前者生成完整动作序列，后者说明这种序列的块级控制语义；Spirit 的多步 DiT 去噪不等于 ACT 单次前向。
+<!-- cannbot:related:end -->

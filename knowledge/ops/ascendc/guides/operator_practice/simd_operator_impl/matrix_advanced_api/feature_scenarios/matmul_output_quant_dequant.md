@@ -30,10 +30,6 @@ Matmul量化/反量化包含两种模式：同一系数的量化/反量化模式
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Dequantize](../../../../../apis/simd_api/adv_api/quantization/dequantize.md)（`explains`）：Dequantize 与《矩阵乘输出的量化/反量化》的实质衔接是：Dequantize 的 workspace 查询、scale/offset 设置、替代反量化入口及量化逆过程共同约束数据类型恢复；所选故障卡直接验证 scale 与广播边界。
-- [SetDequantType](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_dequant_type.md)（`explains`）：《矩阵乘输出的量化/反量化》给出“对于特定输入输出数据类型，Matmul支持将计算结果从L0C Buffer（CO1）搬出到Global Memory时，对输出C矩阵元素执行数据量化或反量化操作。”；该约束/探针可直接复现、解释或前置验证《SetDequantType》中的“设置Matmul量化或反量化模式，支持同一系数和向量两种量化反量化模式”。
-- [SetQuantScalar](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_quant_scalar.md)（`explains`）：PER_TENSOR 模式要求 Iterate 前用 SetQuantScalar 设置整张 C 矩阵共享的系数。
-- [SetQuantVector](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_quant_vector.md)（`explains`）：PER_CHANNEL 模式要求 Iterate 前用 SetQuantVector 设置按 C 矩阵列索引的系数向量。
-- [含有Matmul高阶API的算子精度问题](../../../../programming_guide/appendix/faq/matmul_advanced_api_precision.md)（`related`）：该 FAQ 给出 Matmul 高阶 API 精度问题的调用方式定界，可验证量化/反量化模式和参数是否按契约配置。
-- [MxMatmul场景](mx_matmul_scenario.md)（`same_topic`）：MxMatmul场景 与《矩阵乘输出的量化/反量化》的实质衔接是：MxMatmul 需要 MmadMx/AscMmadMx、scaleA/scaleB 及类型/Mad 配置共同实现 C=(scaleA*A)*(scaleB*B)+Bias，量化输出材料补充缩放矩阵契约。
+- [SetDequantType](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_dequant_type.md)（`explains`）：同一系数的量化/反量化：SetDequantType(DequantType::SCALAR)：SetQuantScalar(gmScalar)；SCALAR：表示同一系数的量化或反量化模式。/TENSOR：表示向量的量化或反量化模式。指南给出 Tiling 侧 SCALAR/TENSOR 与 Kernel 侧 SetQuantScalar/SetQuantVector 的配对，API 卡定义 dequantType 枚举语义和返回状态。
+- [SetQuantScalar](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_quant_scalar.md)（`explains`）：“整个C矩阵对应一个量化参数，量化参数的shape为［1］”与“开发者在算子Kernel侧调用接口SetQuantScalar设置量化参数”把 PER_TENSOR 的 shape 契约落实到 Kernel 调用。
 <!-- cannbot:related:end -->

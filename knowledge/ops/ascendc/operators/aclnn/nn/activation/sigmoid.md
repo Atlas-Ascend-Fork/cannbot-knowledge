@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_host/arch35/sigmoid_tiling_arch35.cpp
     role: implementation
 created_at: "2026-08-25T18:56:41Z"
-updated_at: "2026-08-25T18:56:41Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -482,7 +482,7 @@ this->inOutQueue_.template EnQue<QuePosition::VECOUT, QuePosition::GM, T>(xLocal
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；`sigmoid_v2` 文档 + `ascend910b` OpDef + experimental 构建闭合 | 不发布：experimental 与 stable ACLNN 文档声称支持，但 `sigmoid_v2` 仅注册 `ascend910b`，且 stable README 明确 A3 不支持，证据冲突 | 不发布：stable README/CMake 明确 Ascend 950 与 `arch35`，但固定仓缺少直接依赖 `ElewiseTiling` 的实现，未达 `source_closed` |
 | Host/Launcher | 自包含 `SigmoidTilingFunc` | 无对应活动平台注册可闭合 | `activation/sigmoid/op_host/arch35/SigmoidTiling`，依赖仓外 `op_common/atvoss/elewise/ElewiseTiling` |
@@ -492,7 +492,7 @@ this->inOutQueue_.template EnQue<QuePosition::VECOUT, QuePosition::GM, T>(xLocal
 
 - 仅覆盖非原地公开入口 `aclnnSigmoid`；不覆盖 `aclnnInplaceSigmoid`、Grad 或 `GluBackward`。
 - 仅 A2 发布。A3 存在公开文档与平台注册/稳定 README 冲突，不能据文档单独发布。
-- A5 的 stable Host 直接调用固定仓不可见的 `Ops::NN::Optiling::ElewiseTiling`；`innerKey`、`blockNum`、八个 POD 字段的具体公式和 UB 上界无法追溯，因此未生成 `sigmoid_a5.md`。
+- 950 的 stable Host 直接调用固定仓不可见的 `Ops::NN::Optiling::ElewiseTiling`；`innerKey`、`blockNum`、八个 POD 字段的具体公式和 UB 上界无法追溯，因此未生成 `sigmoid_950.md`。
 - API 的 `N*S`、core/tile 公式使用 `int64_t`，固定仓未见显式乘法溢出检查；DMA `blockLen` 窄化为 `uint32_t`，但单 tile 由 UB 限制。
 - `FillNormalTiling` 在 `typeLength==0` 时仅从 `void` 函数返回；该情况已由前置 dtype 闭集排除。
 - executor workspace 的框架切片、`Contiguous/ViewCopy` 实体和生成 launcher bridge 为固定仓外框架边界；没有将其推测为 0。
@@ -516,10 +516,10 @@ this->inOutQueue_.template EnQue<QuePosition::VECOUT, QuePosition::GM, T>(xLocal
 | 构建接线 | `experimental/activation/sigmoid_v2/op_host/CMakeLists.txt` | `add_modules_sources` | `OPTYPE sigmoid` experimental 活动模块 |
 | 构建总开关 | `CMakeLists.txt` | `ENABLE_EXPERIMENTAL` | experimental 模块由显式构建开关启用 |
 | 构建目录分流 | `cmake/func.cmake` | `add_category_subdirectory` | 开关为真时扫描 `experimental/<category>`，并按目录名选择 `sigmoid_v2` |
-| 平台审计 | `activation/sigmoid/README.md` | 产品支持表 | stable 声明 A5/A2 支持、A3 不支持 |
+| 平台审计 | `activation/sigmoid/README.md` | 产品支持表 | stable 声明 950/A2 支持、A3 不支持 |
 | 平台审计 | `activation/sigmoid/docs/aclnnSigmoid&aclnnInplaceSigmoid.md` | 产品支持表 | stable ACLNN 文档声明 A3 支持，形成公开证据冲突 |
 | 平台审计 | `activation/sigmoid/CMakeLists.txt` | `SUPPORT_COMPUTE_UNIT/TILING_DIR` | stable 活动实现仅 `ascend950/mc62 -> arch35` |
-| A5 缺口 | `activation/sigmoid/op_host/arch35/sigmoid_tiling_arch35.cpp` | `SigmoidTiling::DoOpTiling` | 直接调用固定仓不可见 `ElewiseTiling`，证明 A5 闭包缺口 |
+| 950 缺口 | `activation/sigmoid/op_host/arch35/sigmoid_tiling_arch35.cpp` | `SigmoidTiling::DoOpTiling` | 直接调用固定仓不可见 `ElewiseTiling`，证明 950 闭包缺口 |
 
 ### 实现复用检查
 
@@ -531,3 +531,10 @@ this->inOutQueue_.template EnQue<QuePosition::VECOUT, QuePosition::GM, T>(xLocal
 | 同步 | 绑定 Queue 的 GM→VECIN→VECOUT→GM 状态流可复用 | EnQue/DeQue/Free 次序不可改变 | `CopyInBase/CopyOutBase/ComputeBase` |
 | 精度与尾块 | FP32 原计算；16 位升 FP32 后 `CAST_RINT`；DataCopyPad 有效 tail | 不能删除两次 Cast 或以分配容量代替 `curTileLength` | 两个 `ComputeBase`、`ProcessBase` |
 | 失败边界 | 参数错误、core/UB 无效、Tiling 空指针均有显式失败 | 不得为不支持 dtype/A3 构造 fallback | `CheckParams`、`GetPlatformInfo`、`SigmoidTilingFunc` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [InplaceSigmoid A2 ACLNN 算子知识](inplace_sigmoid.md)（`related`）：“核心 Sigmoid Kernel 写 executor 分配的连续中间张量，并不直接覆盖输入；随后 `ViewCopy(tmp, selfRef)` 才完成 ACLNN 的原地语义。”；“｜ 计算语义 ｜ 逐元素 `y = 1 / (1 + exp(-x))`。 ｜”。InplaceSigmoid 复用同一 Sigmoid 计算节点，并在其后增加 ViewCopy 才形成原地 API 语义。
+- [Sigmoid 950 Direct Invoke 算子知识](../../../direct/nn/activation/sigmoid_950.md)（`same_topic`）：“｜ 实际入口 ｜ Python 动态 wrapper `cann_bench.sigmoid`，PyTorch custom op `cann_bench::sigmoid`，PrivateUse1 实现 `sigmoid_npu`，C ABI launcher `launch_sigmoid_kernel_half`、`launch_sigmoid_kernel_bfloat16`、`launch_sigmoid_kernel_float`；入口类型为 `Direct Invoke`。 ｜”定义 950 Direct route；“｜ 实际入口 ｜ `aclnnSigmoidGetWorkspaceSize` + `aclnnSigmoid`，公开 ACLNN 两段式接口；采用活动 experimental 候选 `sigmoid_v2`。 ｜”定义 A2 ACLNN route，两卡围绕同一逐元素 Sigmoid 提供可直接对照的空域、workspace、dtype 与 Kernel 实现。
+<!-- cannbot:related:end -->

@@ -29,7 +29,5 @@ ne（not equal），该接口用于逐元素比较两个源操作数大小，将
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscEq](asc_eq.md)（`related`）：“AscEq”处理逐元素比较两个源操作数是否相等，比较结果写入目的操作数对应比特位，为真则置1，否则置0。仅在AIV上生效。；“AscNe”明确逐元素比较两个源操作数是否不相等，比较结果写入目的操作数对应比特位，为真则置1，否则置0。。实质衔接：AscEq 产生相等比较 mask；标量变体改变右操作数，AscNe 改变谓词，Reg Compare 是模板层等价能力，AscSelect 消费该 mask。
-- [AscNe](../../vector_compute/asc_ne.md)（`same_topic`）：《AscNe》说明按元素判断src0 != src1是否成立，若成立则输出结果为1，否则为0。每个元素的比较结果占1个bit。 当结果输出到寄存器中时，可在计算完成后调用asc_get_cmp_mask获取比较结果。；《AscNe》说明逐元素比较两个源操作数是否不相等，比较结果写入目的操作数对应比特位，为真则置1，否则置0。。二者在AscNe生成1-bit比较结果并通过CMPMASK读取；Reg等价接口、标量变体和Eq/Gt边界用于确认谓词语义上存在可执行的直接衔接。
-- [AscNeScalar](asc_ne_scalar.md)（`same_topic`）：AscNe说明逐元素比较两个源操作数是否不相等，比较结果写入目的操作数对应比特位，为真则置1，否则置0。
+- [AscNeScalar](asc_ne_scalar.md)（`same_topic`）：ne（not equal），该接口用于逐元素比较两个源操作数大小，将比较结果（）写入目的操作数dst对应比特位，如果比较结果为真，则对应比特位为1，否则为0。；src 中的每个元素逐个与标量 value 比较是否不相等，如果 src_i != value，则输出结果 dst 对应比特位为1，否则为0，每个元素的比较结果占一个bit。。两卡都定义 Ascend 950 寄存器 C API 的逐元素不等比较并输出掩码位，区别仅在第二操作数分别为矢量寄存器与标量 value，属于同一核心比较契约的两种重载形态。
 <!-- cannbot:related:end -->

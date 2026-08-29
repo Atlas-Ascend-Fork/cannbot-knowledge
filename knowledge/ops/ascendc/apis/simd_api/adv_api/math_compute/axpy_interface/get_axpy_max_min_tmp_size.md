@@ -29,7 +29,6 @@ kernel侧Axpy接口的计算需要开发者申请临时空间，本接口用于�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Axpy接口](axpy_interface.md)（`related`）：Axpy 需要 sharedTmpBuffer 时，必须先用该接口取得满足当前 shape 的最大/最小临时空间，才能合法调用。
-- [Axpy](axpy.md)（`same_topic`）：GetAxpyMaxMinTmpSize 与《Axpy》的实质衔接是：Axpy 的 max-min/factor 查询直接服务 Axpy kernel 与 SIMD/C API 实现。
-- [GetAxpyTmpBufferFactorSize](get_axpy_tmp_buffer_factor_size.md)（`same_topic`）：GetAxpyMaxMinTmpSize 与《GetAxpyTmpBufferFactorSize》的实质衔接是：Axpy 的 max-min/factor 查询直接服务 Axpy kernel 与 SIMD/C API 实现。
+- [Axpy](axpy.md)（`related`）：源操作数(srcTensor)中每个元素与标量求积后和目的操作数(dstTensor)中的对应元素相加，计算公式如下： 该接口功能同基础API Axpy，区别在于此接口指令是通过Muls和Add组合计算，从而提供更优的精度。；kernel侧Axpy接口的计算需要开发者申请临时空间，本接口用于在host侧获取申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；Axpy 定义 kernel 运算，Host helper 给出该运算的合法临时空间区间和 Tiling 传递方式，构成资源规划任务链。
+- [Axpy接口](axpy_interface.md)（`same_topic`）：kernel侧Axpy接口的计算需要开发者申请临时空间，本接口用于在host侧获取申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。前者产生 Axpy 的空间上下界，后者规定该值如何供 Kernel 的 sharedTmpBuffer 使用。
 <!-- cannbot:related:end -->

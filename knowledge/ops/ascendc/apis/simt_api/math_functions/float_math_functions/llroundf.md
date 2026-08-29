@@ -29,6 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Roundf](roundf.md)（`related`）：Roundf 保持浮点返回值而 Llroundf 直接产生 long long，二者适合后续仍需浮点或需要整数索引的不同链路。
-- [Lroundf](lroundf.md)（`same_topic`）：Lroundf 与《Llroundf》的实质衔接是：Lroundf 与 llroundf/roundf 及高阶/C API Round 共享舍入任务，RoundMode 解释 ties 与返回整数宽度的选择。
+- [Lroundf](lroundf.md)（`same_topic`）：函数原型：long int lroundf(float x)；函数原型：long long int llroundf(float x)。两者对同一 float 执行四舍五入并返回整数，区别是 long 与 long long 返回宽度，构成调用时的直接类型选择。
 <!-- cannbot:related:end -->

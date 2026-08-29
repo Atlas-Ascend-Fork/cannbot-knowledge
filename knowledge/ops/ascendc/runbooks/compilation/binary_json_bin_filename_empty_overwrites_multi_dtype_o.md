@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.operator_registration", "topic.co
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 ---
 
@@ -113,13 +113,3 @@ after（为每个条目填 `OpType_<hash>`，hash 按 tiling_key，与 dtype 一
 
 - 发现 `binList` 全 float32 后只改 kernel json 而不改源 `binary.json`：下次 `build.sh` 会重新生成错配的 kernel json，问题复发。
 - 删 `binary.json` 源文件后再 `make binary`：`asc_opc` 报 `The input_param: .../smooth_l1_loss_grad_binary_high_performance.json_2 is not exist`，`gen_bin_scripts` 误认 target 已 built 不重新生成，需清 `tbe/.impl_timestamp` + 重新 cmake 才能恢复——比直接填字段更折腾。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ACLNN 561102 单 dtype 原型注册与 opbuild 字节约束](aclnn_561102_dtype_opbuild.md)（`related`）：两卡都会造成多 dtype 只剩部分 binary，但本卡根因是 OpDef 组合未注册，目标卡根因是 bin_filename 重名覆盖；检查 OpDef 与最终 binList 可快速区分。
-- [GMM A8W4 561000 缺 binary entry 无 JIT 回退](gmm_a8w4_561000_binary_entry_jit.md)（`related`）：bin_filename 覆盖会让多个 binary 条目指向同一产物，亦可能造成目标 entry 缺失；核对 kernel JSON 的文件名和 funcEntry 可排除该替代根因。
-- [extern 预编译 kernel 自定义包致 aclnn 161001](extern_kernel_aclnn_161001.md)（`related`）：extern 预编译 kernel 自定义包致 aclnn 161001 与《binary.json bin_filename 空致多 dtype kerne》的衔接是：该打包故障的验证链是 ACLNN 错误→检查 binary.json/二进制入口→探测符号→确认运行时加载；候选正好覆盖各个可执行检查点。
-- [kernel 源码改动未生效因 binary 缓存](kernel_binary_cache_printf_hash_toggle.md)（`related`）：两卡都会表现为源码或 dtype 变化后仍执行同一 binary；本卡查构建期 .o 被同名覆盖，对照卡查运行期缓存未换新，可作为直接的分流诊断。
-- [kernel 输出=输入：binary 不随源码变化即守卫吞体](../precision/kernel_binary.md)（`related`）：《binary.json bin_filename 空致多 dtype kerne》明确“ops-nn 算子 binary.json 的 bin_filename 字段为空字符串时，build 系统将其替换为 _high_performance，使多 dtype/多 tiling_key 的 kernel .o 全部同名互相覆盖，最终生成的 kernel json 把所有 binList 条目都标成 float32 且指向同一个 .o；修复为每个条目填 OpType_<hash> 格式的 bin_filename。”；它与《kernel 输出=输入：binary 不随源码变化即守卫吞体》的“A5（Ascend950, arch 3510）上 kernel 被 launch 但输出与输入逐字节一致、用例全 FAIL，且 device binary 体积异常小。判别=改 kernel 体源码后重编比较 .o 体积/sha256：若多次改动 hash 始终不变，说明 #if __CCE_AICORE__==<arch> 守卫不匹配新架构把整个 kernel 体条件编译排除，编出空壳 binary。移除守卫后 binary 变大、V1 全 PASS。”在实际调用参数、数据流或结果校验上直接衔接。
-<!-- cannbot:related:end -->

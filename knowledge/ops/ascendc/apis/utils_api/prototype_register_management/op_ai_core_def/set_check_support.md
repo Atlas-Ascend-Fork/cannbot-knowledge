@@ -28,6 +28,5 @@ OpAICoreDef请参考OpAICoreDef。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AICore（OpDef）](../op_def/ai_core.md)（`related`）：SetCheckSupport 为 AICore 配置能力检查回调，决定当前输入规格是否可走 AI Core。
-- [NeedCheckSupportFlag](../op_ai_core_config/need_check_support_flag.md)（`related`）：NeedCheckSupportFlag=true 只会在已通过 SetCheckSupport 注册回调时触发 dtype/shape 校验；二者必须配套。
+- [NeedCheckSupportFlag](../op_ai_core_config/need_check_support_flag.md)（`related`）：SetCheckSupport 卡要求“需要将NeedCheckSupportFlag参数配置为true”；NeedCheckSupportFlag 卡说明“框架会调用通过SetCheckSupport设置的算子参数校验函数”。回调注册和调用开关是融合阶段支持性校验的共同条件。
 <!-- cannbot:related:end -->

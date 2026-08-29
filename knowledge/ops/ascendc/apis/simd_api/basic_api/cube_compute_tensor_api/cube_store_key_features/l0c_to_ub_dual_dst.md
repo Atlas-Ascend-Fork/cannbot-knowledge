@@ -27,6 +27,5 @@ L0C Buffer到Unified Buffer双目标模式用于将同一AI Core内L0C Buffer的
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Copy](../cube_compute_store/copy_l0_c_to_ub.md)（`related`）：The tensor Copy call is the concrete L0C-to-UB transfer that can enable the dual-destination mode described by the focal page.
-- [L0C Buffer到UB双目标模式](../../cube_compute/cube_store_key_features/l0_c_to_ub_dual_target_mode.md)（`related`）：TensorAPI 卡描述相同 L0C→双 UB 拆分能力，可对照 ISASI 与 TensorAPI 的配置入口。
+- [L0C Buffer到UB双目标模式](../../cube_compute/cube_store_key_features/l0_c_to_ub_dual_target_mode.md)（`same_topic`）：双目标模式仅支持L0C Buffer到Unified Buffer通路；双目标模式仅支持在L0C Buffer到UB通路。两卡描述 Tensor API 与基础 Cube API 中同一 L0C→双 UB 拆分能力，并给出相同的通路与 M/N 切分约束；对照可核验两种编程入口的双目标行为。
 <!-- cannbot:related:end -->

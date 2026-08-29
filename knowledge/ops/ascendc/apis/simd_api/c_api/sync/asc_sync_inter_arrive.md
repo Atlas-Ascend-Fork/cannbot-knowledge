@@ -22,5 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSyncInterWait](asc_sync_inter_wait.md)（`same_topic`）：asc_sync_inter_wait 必须由另一 group 的 asc_sync_inter_arrive 使用同一 flag_id 发出信号；两者是不可拆分的跨 group 同步握手。
+- [AscSyncInterWait](asc_sync_inter_wait.md)（`related`）：必须保证配套使用asc_sync_inter_arrive和asc_sync_inter_wait，否则会出现未定义行为。；核间同步指令，与asc_sync_inter_arrive配合使用（通过flag_id关联），用于组间block的信号同步。。双方正文都把另一端规定为必需配对，并以同一 flag_id 承载组间 block 信号；arrive 发布信号而 wait 等待信号，属于有顺序的互补同步任务。
 <!-- cannbot:related:end -->

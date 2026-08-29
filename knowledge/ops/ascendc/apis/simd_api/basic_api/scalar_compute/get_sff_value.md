@@ -27,6 +27,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_ffs（标量计算）](../../c_api/scalar_compute/asc_ffs.md)（`same_topic`）：《GetSFFValue》说明查找uint64_t数值二进制表示中从最低有效位开始的首个指定比特值位置，未找到则返回-1。；《asc_ffs（标量计算）》说明FindFirstSet接口，输入数据的二进制表示中从最低位向最高位查找第一个值为1的位，并返回其位置，如果没找到则返回-1。。二者在GetSFFValue按countValue查最低位首个0或1，asc_ffs与asc_ffz分别对应这两个可执行分支上存在可执行的直接衔接。
-- [asc_ffz（标量计算）](../../c_api/scalar_compute/asc_ffz.md)（`same_topic`）：《GetSFFValue》说明查找uint64_t数值二进制表示中从最低有效位开始的首个指定比特值位置，未找到则返回-1。；《asc_ffz（标量计算）》说明获取一个uint64_t类型数字的二进制表示中从最低有效位开始的第一个0出现的位置，如果没找到则返回-1。。二者在GetSFFValue按countValue查最低位首个0或1，asc_ffs与asc_ffz分别对应这两个可执行分支上存在可执行的直接衔接。
+- [asc_ffs（标量计算）](../../c_api/scalar_compute/asc_ffs.md)（`same_topic`）：FindFirstSet接口，输入数据的二进制表示中从最低位向最高位查找第一个值为1的位，并返回其位置，如果没找到则返回-1。；查找uint64_t类型数值的二进制表示中从最低有效位开始的首个指定比特值（0或1）的位置，如果没找到则返回-1。。两张接口卡共享从低位搜索首个目标 bit 的核心契约，GetSFFValue 将 asc_ffs 的固定查 1 扩展为可指定查 0 或 1。
 <!-- cannbot:related:end -->

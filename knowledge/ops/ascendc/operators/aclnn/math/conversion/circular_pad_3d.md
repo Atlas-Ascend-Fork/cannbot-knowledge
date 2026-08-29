@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-24T23:51:11Z"
-updated_at: "2026-08-24T23:51:11Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -86,7 +86,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定仓只有无版本后缀的 `aclnnCircularPad3dGetWorkspaceSize/aclnnCircularPad3d`，没有 V2/V3，因此这是 A2/A3 的最新公开版本。公开产品表对 Atlas A2、A3 标记支持，对 Ascend 950PR/950DT 明确标记不支持；OpDef 与 binary config 只接入 `ascend910b/ascend910_93`（另有不属于本卡的 Kirin），全局 AscendC config 也没有 `ascend950`。因此本文只发布 A2/A3 卡，不发布 A5 卡。
+固定仓只有无版本后缀的 `aclnnCircularPad3dGetWorkspaceSize/aclnnCircularPad3d`，没有 V2/V3，因此这是 A2/A3 的最新公开版本。公开产品表对 Atlas A2、A3 标记支持，对 Ascend 950PR/950DT 明确标记不支持；OpDef 与 binary config 只接入 `ascend910b/ascend910_93`（另有不属于本卡的 Kirin），全局 AscendC config 也没有 `ascend950`。因此本文只发布 A2/A3 卡，不发布 950 卡。
 
 ## Host/Launcher 执行流程
 
@@ -94,7 +94,7 @@ cann_versions: ["9.1.0"]
 
 第一段先检查 `workspaceSize/executor` 公共输出指针，再检查 `self/padding/out` 非空。`CheckDtypeValid` 要求输入输出属于五种公开 dtype 且相同；`CheckFormat` 拒绝 private storage format并要求 view format 一致；`CheckShape` 要求 rank 为 4 或 5、输入输出同 rank、padding 长度为 6，并逐维核对输出 shape。
 
-若 `self` 或 `out` 为空，函数先置 `workspaceSize=0`：4D 直接返回 `ACLNN_ERR_PARAM_INVALID`；5D 输入的第 1～4 维任一为 0 也报错，否则释放空计算 executor 并成功返回。非空路径将 `self` 连续化，按完整 rank 构造常量 paddings tensor 和同 dtype 的 0 标量，然后调用 `l0op::PadV3(...,"circular",true,...)`。PadV3 infer-shape 要求 paddings 数量恰为 `2*rank`，按连续 pair 推导输出；`mode=="circular"` 无条件选择 `CircularPadAiCore`，不会落到 PadV3 AICPU 或 A5 PadV3 body。核心结果最终经 `ViewCopy` 写入用户 `out`。
+若 `self` 或 `out` 为空，函数先置 `workspaceSize=0`：4D 直接返回 `ACLNN_ERR_PARAM_INVALID`；5D 输入的第 1～4 维任一为 0 也报错，否则释放空计算 executor 并成功返回。非空路径将 `self` 连续化，按完整 rank 构造常量 paddings tensor 和同 dtype 的 0 标量，然后调用 `l0op::PadV3(...,"circular",true,...)`。PadV3 infer-shape 要求 paddings 数量恰为 `2*rank`，按连续 pair 推导输出；`mode=="circular"` 无条件选择 `CircularPadAiCore`，不会落到 PadV3 AICPU 或 950 PadV3 body。核心结果最终经 `ViewCopy` 写入用户 `out`。
 
 ### 参数、Workspace 与生命周期
 
@@ -1052,7 +1052,7 @@ if (dPad) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持；`ascend910b` config | 公开支持；`ascend910_93` config | 公开文档明确不支持，不发布卡 |
 | Host/Launcher | 共用 `CircularPadAiCore`、同一 Tiling/POD、五 dtype | 同 A2 | 尽管 `pad_v3` 另有 arch35 实现，`aclnnCircularPad3d` 的公开产品表为 ×，不能据目录存在发布 |
@@ -1067,7 +1067,7 @@ if (dPad) {
 - 空路径不启动 Kernel：4D 空输入报错；5D 只有 batch 可为 0。`out->IsEmpty()` 也进入这段逻辑，固定源码没有进一步核验输出空维是否只来自 batch。
 - `paddings` GM 参数传入 `circular_pad` 但 body 不读；真实 padding 仅来自 POD。未知 key 静默返回，无 Device 错误码或 fallback。
 - `CircularPadCommonTilingData` 宏展开的精确 `sizeof/alignof/offsetof`、`GetUserWorkspace` 的 system/user 精确偏移、executor 聚合 Contiguous/ViewCopy workspace 的细节固定仓不可见。
-- A5 公开不支持，因此 `circular_pad_3d_a5.md` 不应创建；Kirin 路线不属于目标平台。
+- 950 公开不支持，因此 `circular_pad_3d_950.md` 不应创建；Kirin 路线不属于目标平台。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -1076,7 +1076,7 @@ if (dPad) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `conversion/circular_pad/docs/aclnnCircularPad3d.md` | 产品表、原型、约束 | A2/A3支持、A5不支持、dtype/rank/width契约 |
+| 入口声明/约束 | `conversion/circular_pad/docs/aclnnCircularPad3d.md` | 产品表、原型、约束 | A2/A3支持、950不支持、dtype/rank/width契约 |
 | 入口声明/约束 | `conversion/circular_pad/op_host/op_api/aclnn_circular_pad3d.h` | 两段接口声明 | ABI 参数与公开语义 |
 | 入口实现 | `conversion/circular_pad/op_host/op_api/aclnn_circular_pad3d.cpp` | `CheckParams/GetPaddingTensor/aclnnCircularPad3d*` | 校验、空路径、Contiguous、PadV3、ViewCopy、executor |
 | Level0 selector | `conversion/pad_v3/op_api/padv3.cpp` | `PadV3/CircularPadAiCore` | circular mode无条件添加 CircularPad AICore launcher |
@@ -1106,4 +1106,10 @@ if (dPad) {
 | workspace/内存 | small完整行、big窄条；direct 路线可跳过 body workspace | system prefix、Host固定4B超配、per-core offset/extent、2×96KiB queue | `GetWorkspaceSize/Init2D/Init3D/InitBuffer` |
 | 同步 | queue生命周期与 MTE3→MTE2 event可复用 | workspace/y 从写转读前不可删除事件；volume不能跨核拆分 | `MTE3ToMTE2Sync/CircularPad3D::ProcessSmallShape/CircularPad3D::ProcessBigShape` |
 | 精度与尾块 | 所有 dtype 位拷贝，无 cast；统一行/depth tile | 32B align、`uint16_t/uint32_t` DMA字段、row/depth tail有效长度 | `CopyLines/CopyOnePage/CopyGmToGm` |
-| 失败边界 | small不适用自动到big | 单行超 UB、padding越界、unknown key无 fallback；A5公开不支持 | `CheckInput/Check* / circular_pad` |
+| 失败边界 | small不适用自动到big | 单行超 UB、padding越界、unknown key无 fallback；950公开不支持 | `CheckInput/Check* / circular_pad` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CircularPad3dBackward A2/A3 ACLNN 算子知识](circular_pad_3d_backward.md)（`related`）：“对最后三维 `(D,H,W)` 做循环填充；正 padding 从维度另一端循环复制，负 padding 先裁去对应端。”给出焦点端事实；“对 3D circular pad 做反向散加：正向中映射到同一 `self［D,H,W］` 位置的 `gradOutput` 元素在 `gradInput` 中求和；负 padding 表示裁剪”给出候选端事实。前向卡定义循环复制与裁剪映射，反向卡按同一映射将 gradOutput 散加回 gradInput，二者构成同一算子的前向、反向实现链。
+<!-- cannbot:related:end -->

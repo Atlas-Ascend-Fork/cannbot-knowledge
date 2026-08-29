@@ -67,10 +67,3 @@ demangle 该 symbol 得 `qgmm_mx_kernel<uint8_t, uint8_t, AscendC::Te::NDExtLayo
 
 - 把 `107000` + 输出全零误判为精度逻辑错误去调 kernel 算式——实际 kernel 根本没执行，应先从 runtime 日志确认 `BinaryGetFunctionByName` 是否找到 symbol。
 - 为“通过”而改用 FP8 跑 FP4 用例并宣称 FP4 已验证——属于测试侧放松，FP4 路线仍 banned。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GMM A8W4 561000 缺 binary entry 无 JIT 回退](gmm_a8w4_561000_binary_entry_jit.md)（`related`）：两卡都通过检查已加载二进制的目标符号定位“注册/入口存在但 fatbin 缺具体 kernel entry”；QGMM 表现为 BinaryGetFunctionByName 107000，GMM 表现为 561000 且无 JIT 回退。
-- [advance_step in-place kernel FATBIN wrap](fatbin_wrapper_param_count_matches_opdef_input_plus_output.md)（`related`）：QGMM 案例同样通过 FATBIN/CCEC 日志追到中间 .o 未生成，可复用“先查真正编译错误而非 ld.lld 噪声”的诊断顺序。
-<!-- cannbot:related:end -->

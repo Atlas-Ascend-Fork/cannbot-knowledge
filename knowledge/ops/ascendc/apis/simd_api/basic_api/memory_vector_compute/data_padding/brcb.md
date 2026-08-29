@@ -27,10 +27,6 @@ Brcb接口对输入数据，每一次取输入张量中的8个数进行填充操
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscBrcb](../../../c_api/vector_compute/asc_brcb.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscBrcb正文说明“给定一个输入矢量，每一次取输入矢量中的8个数填充到结果矢量的8个datablock（32Bytes）中去，每个数对应一个datablock”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
-- [AscLoadalignBrcDatablock](../../../c_api/reg/reg_load/asc_loadalign_brc_datablock.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscLoadalignBrcDatablock正文说明“从UB对齐搬入一个DataBlock（32B）并广播到VL”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
-- [AscLoadalignBrcDatablockPostupdate](../../../c_api/reg/reg_load/asc_loadalign_brc_datablock_postupdate.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscLoadalignBrcDatablockPostupdate正文说明“从UB对齐搬入一个DataBlock（32B）并广播到VL，调用后自动更新源地址”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
-- [AscLoadalignBrcElem2datablock](../../../c_api/reg/reg_load/asc_loadalign_brc_elem2datablock.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscLoadalignBrcElem2datablock正文说明“从UB加载多个元素并将每个元素广播到一个DataBlock（32B）中”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
-- [AscLoadalignBrcElem2datablockPostupdate](../../../c_api/reg/reg_load/asc_loadalign_brc_elem2datablock_postupdate.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscLoadalignBrcElem2datablockPostupdate正文说明“从UB加载多个元素并将每个元素广播到一个DataBlock（32B）中，调用后自动更新源地址”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
-- [Duplicate](duplicate.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；Duplicate正文说明“将变量或立即数复制多次并填充到向量中，支持前n个数据计算和高维切分计算两种方式”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
+- [BilinearInterpolation](../basic_arithmetic/bilinear_interpolation_isasi.md)（`related`）：BilinearInterpolation 的第二步是“通过 Brcb 广播填充 src1”；Brcb 定义“每一次取输入张量中的8个数进行填充操作，将每个数填充到结果张量的一个DataBlock（32字节）中。”，后者提供权重广播布局。
+- [AscBrcb](../../../c_api/vector_compute/asc_brcb.md)（`same_topic`）：Brcb接口对输入数据，每一次取输入张量中的8个数进行填充操作，将每个数填充到结果张量的一个DataBlock（32字节）中。；给定一个输入矢量，每一次取输入矢量中的8个数填充到结果矢量的8个datablock（32Bytes）中去，每个数对应一个datablock。。两卡定义相同的八元素逐 DataBlock 广播语义，只是接口层和平台表达不同。
 <!-- cannbot:related:end -->

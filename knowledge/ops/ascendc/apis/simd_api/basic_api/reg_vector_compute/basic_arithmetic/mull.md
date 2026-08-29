@@ -26,7 +26,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Mul](mul.md)（`related`）：《Mull》说明根据mask对源操作数srcReg0、srcReg1按元素相乘，将乘法结果的低位部分写入dstReg0，溢出（高位）部分写入dstReg1。；《Mul》说明根据mask对源操作数srcReg0、srcReg1按元素相乘，将结果写入目的操作数dstReg。。二者在Mull在Memory、Reg C接口中都产生双字宽乘积，普通Mul用于核对仅保留原字宽的不同结果合同上存在可执行的直接衔接。
-- [AscMull](../../../c_api/reg/arithmetic_compute/asc_mull.md)（`same_topic`）：《Mull》说明根据mask对源操作数srcReg0、srcReg1按元素相乘，将乘法结果的低位部分写入dstReg0，溢出（高位）部分写入dstReg1。；《AscMull》说明根据mask对源操作数src0、src1按元素相乘，将乘法结果的低位部分写入dst0，高位（溢出）部分写入dst1。。二者在Mull在Memory、Reg C接口中都产生双字宽乘积，普通Mul用于核对仅保留原字宽的不同结果合同上存在可执行的直接衔接。
-- [Mull](../../memory_vector_compute/basic_arithmetic/mull_isasi.md)（`same_topic`）：《Mull》说明根据mask对源操作数srcReg0、srcReg1按元素相乘，将乘法结果的低位部分写入dstReg0，溢出（高位）部分写入dstReg1。；《Mull》说明双目矢量计算接口，对前count个数据按元素相乘，结果写入dst0，溢出部分写入dst1。。二者在Mull在Memory、Reg C接口中都产生双字宽乘积，普通Mul用于核对仅保留原字宽的不同结果合同上存在可执行的直接衔接。
+- [AscMull](../../../c_api/reg/arithmetic_compute/asc_mull.md)（`same_topic`）：该接口根据mask对输入数据src0、src1执行按元素相乘操作，将乘法结果的低位部分写入dst0，高位（溢出）部分写入dst1。；该接口根据mask对输入数据srcReg0、srcReg1按元素相乘操作，将乘法结果的低位部分写入dstReg0，溢出（高位）部分写入dstReg1。。两端实现完全相同的带 mask 整数宽乘结果拆分，差别是 C API 矢量寄存器与基础 RegTensor API 表面，互读可完成接口层选型。
 <!-- cannbot:related:end -->

@@ -21,8 +21,7 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalign](asc_loadalign.md)（`related`）：AscLoadalignV3Deprecated 与《AscLoadalign》的实质衔接是：废弃 Loadalign V3 应迁移到当前 loadalign/postupdate/广播/解包接口，并保留地址与 UB 限定。
-- [AscLoadalignBrcDatablock](asc_loadalign_brc_datablock.md)（`same_topic`）：AscLoadalignV3Deprecated 与《AscLoadalignBrcDatablock》的实质衔接是：废弃 Loadalign V3 应迁移到当前 loadalign/postupdate/广播/解包接口，并保留地址与 UB 限定。
-- [AscLoadalignBrcElem2datablock](asc_loadalign_brc_elem2datablock.md)（`same_topic`）：AscLoadalignV3Deprecated 与《AscLoadalignBrcElem2datablock》的实质衔接是：废弃 Loadalign V3 应迁移到当前 loadalign/postupdate/广播/解包接口，并保留地址与 UB 限定。
-- [AscLoadalignUnpack4](asc_loadalign_unpack4.md)（`same_topic`）：AscLoadalignV3Deprecated 与《AscLoadalignUnpack4》的实质衔接是：废弃 Loadalign V3 应迁移到当前 loadalign/postupdate/广播/解包接口，并保留地址与 UB 限定。
+- [AscLoadalignBrcDatablock](asc_loadalign_brc_datablock.md)（`same_topic`）：该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现DataBlock广播搬入模式：读取一个DataBlock（32B），并广播到VL。。废弃页把旧 brc_v2 明确映射到新 DataBlock 广播接口。
+- [AscLoadalignBrcElem2datablock](asc_loadalign_brc_elem2datablock.md)（`same_topic`）：该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现元素到DataBlock广播搬入模式：加载（VL/DataBlock）个元素的数据，并将每个元素（16bit/32bit）广播到一个DataBlock（32B）中。。废弃页把旧 brc_v3 明确映射到逐元素广播到 DataBlock 的接口。
+- [AscLoadalignUnpack4](asc_loadalign_unpack4.md)（`same_topic`）：该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现UNPACK4搬入模式：解压缩模式，按无符号整型u8加载VL/4长度数据，unpack到VL长度u32类型，中间位置补0。。废弃页把旧 unpack_v2 明确映射到 AscLoadalignUnpack4。
 <!-- cannbot:related:end -->

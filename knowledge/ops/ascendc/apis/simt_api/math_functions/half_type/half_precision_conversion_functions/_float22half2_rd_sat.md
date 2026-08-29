@@ -29,12 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__float22bfloat162_rd_sat](../../bfloat16_type/bfloat16_precision_conversion_functions/_float22bfloat162_rd_sat.md)（`related`）：half2 目标位宽相同但格式/范围不同，不能复用 bfloat16 饱和边界。
-- [__float22half2_rna_sat](_float22half2_rna_sat.md)（`related`）：RD sat 在饱和边界内向负无穷取整，和 RNA sat 构成明确的方向舍入选项。
-- [__float2half_rd_sat](_float2half_rd_sat.md)（`related`）：《__float22half2_rd_sat》说明将float2类型数据的两个分量遵循CAST_FLOOR模式转换为半精度浮点数，返回转换后的half2类型数据。；《__float2half_rd_sat》说明将浮点数转换为half类型数据，并遵循CAST_FLOOR模式，返回转换后的值。。二者在float2到half2的向下舍入与饱和是两个独立维度，同输入输出的非饱和版和其他舍入版可直接对照上存在可执行的直接衔接。
-- [__float22half2_rd](_float22half2_rd.md)（`same_topic`）：《__float22half2_rd_sat》说明将float2类型数据的两个分量遵循CAST_FLOOR模式转换为半精度浮点数，返回转换后的half2类型数据。；《__float22half2_rd》说明将float2类型数据的两个分量遵循CAST_FLOOR模式转换为半精度浮点数，返回转换后的half2类型数据。。二者在float2到half2的向下舍入与饱和是两个独立维度，同输入输出的非饱和版和其他舍入版可直接对照上存在可执行的直接衔接。
-- [__float22half2_rn_sat](_float22half2_rn_sat.md)（`same_topic`）：《__float22half2_rd_sat》说明将float2类型数据的两个分量遵循CAST_FLOOR模式转换为半精度浮点数，返回转换后的half2类型数据。；《__float22half2_rn_sat》说明饱和模式下，将float2类型数据的两个分量遵循CAST_RINT模式转换为半精度浮点数，返回转换后的half2类型数据。。二者在float2到half2的向下舍入与饱和是两个独立维度，同输入输出的非饱和版和其他舍入版可直接对照上存在可执行的直接衔接。
-- [__float22half2_ro_sat](_float22half2_ro_sat.md)（`same_topic`）：《__float22half2_ro_sat》说明饱和模式下，将float2类型数据的两个分量遵循CAST_ODD模式转换为半精度浮点数，返回转换后的half2类型数据。；《__float22half2_rd_sat》说明将float2类型数据的两个分量遵循CAST_FLOOR模式转换为半精度浮点数，返回转换后的half2类型数据。。二者在float2到half2的CAST_ODD饱和转换必须与同舍入非饱和版以及其他舍入模式的饱和/非饱和变体按CTRL与特殊值选择上存在可执行的直接衔接。
-- [__float22half2_ru_sat](_float22half2_ru_sat.md)（`same_topic`）：“__float22half2_ru_sat”处理将float2类型数据的两个分量遵循CAST_CEIL模式转换为半精度浮点数，返回转换后的half2类型数据。；“__float22half2_rd_sat”明确将float2类型数据的两个分量遵循CAST_FLOOR模式转换为半精度浮点数，返回转换后的half2类型数据。。实质衔接：这些接口保持 float2→half2 转换不变，仅切换饱和、标量/向量和舍入模式，可直接确认 ru_sat 的邻接选择。
-- [__float22half2_rz_sat](_float22half2_rz_sat.md)（`same_topic`）：《__float22half2_rd_sat》说明将float2类型数据的两个分量遵循CAST_FLOOR模式转换为半精度浮点数，返回转换后的half2类型数据。；《__float22half2_rz_sat》说明饱和模式下，将float2类型数据的两个分量遵循CAST_TRUNC模式转换为半精度浮点数，返回转换后的half2类型数据。。二者在float2到half2的向下舍入与饱和是两个独立维度，同输入输出的非饱和版和其他舍入版可直接对照上存在可执行的直接衔接。
+- [__float22half2_rd](_float22half2_rd.md)（`same_topic`）：函数原型：half2 __float22half2_rd(const float2 x)；函数原型：half2 __float22half2_rd_sat(const float2 x)。两端接受同一 float2 并按 CAST_FLOOR 转为 half2，目标是带 `_sat` 名称的对应变体，应在选择饱和转换入口时共同核对。
 <!-- cannbot:related:end -->

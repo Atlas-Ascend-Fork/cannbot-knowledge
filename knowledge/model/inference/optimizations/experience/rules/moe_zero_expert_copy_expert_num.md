@@ -47,3 +47,9 @@ LongCat-Flash 族含零专家：建模里两处传 `"copy_expert_num": self.num_
 
 - `copy_expert_num=zero_expert_num` 传参 + 零专家 mask + `expert_num=n_routed+zero`：diff 事实 @0640521a8170；`MoE(ori_x)=ori_x` 语义为文档披露 + 传参佐证。溯源下探 [cann-recipes-infer-pr-124-feat-support-longcat-flash-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/124)。
 - `_set_mc2_kwargs` 的 `copy_expert_num=zero_expert_num`、prefill double-routing / decode MC2 分派：diff 事实 @8fd8db72；`copy_expert_num` 算子内语义据代码调用、未对 MC2 算子规格独立核。溯源下探 [cann-recipes-infer-pr-348-feat-add-longcat-flash-lite-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/348)。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LongCat-Flash-Lite](../../../concepts/models/longcat_flash_lite.md)（`related`）：“LongCat-Flash-Lite 有 128 个 zero 专家，`_set_mc2_kwargs` 取 `copy_expert_num=self.zero_expert_num`、`zero_expert_num=0`、`const_expert_num=0`，`_forward_ep_decode` 用 `dispatch_v2/combine_v2`。”与“MoE EP：256 routed expert EP 切分（EP=8 下每卡 32 个）；128 zero/identity expert 经 `copy_expert_num` **每卡持有、不参与 EP 切分**（计算 `MoE(x)=x`）。”是双方正文中的具体合同。规则卡给出 Lite 的 MC2 参数映射，模型卡解释 128 个 zero expert 通过 copy_expert_num 在每卡持有，二者闭合配置值与 EP 放置语义。
+<!-- cannbot:related:end -->

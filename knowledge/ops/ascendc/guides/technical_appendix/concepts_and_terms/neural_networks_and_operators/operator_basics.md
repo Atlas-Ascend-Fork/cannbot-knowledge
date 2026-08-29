@@ -36,11 +36,3 @@ Tensor属性信息
 例如张量数据[[[1,2],[3,4]], [[5,6],[7,8]]]，Shape为(2,2,2)，则轴0代表第一个维度的数据即[[1,2],[3,4]]与[[5,6],[7,8]]这两个矩阵，轴1代表第二个维度的数据即[1,2]、[3,4]、[5,6]、[7,8]这四个数组，轴2代表第三个维度的数据即1，2，3，4，5，6，7，8这八个数。
 轴axis可以为负数，此时表示是倒数第axis个维度。
 N维Tensor的轴有：0 , 1, 2,……，N-1。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [数据排布格式](data_layout.md)（`related`）：算子基本概念：算子名称/类型/Tensor/Shape/Layout概念是原型定义和功能设计的输入语言；数据排布卡进一步解释Tensor layout，帮助把概念落到注册与实现。 目标卡《数据排布格式》补充：数据排布格式（Data Layout Format）是深度学习中对多维Tensor在内存中存储方式的描述。
-- [算子功能设计](../../../programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/operator_function_design.md)（`related`）：算子基本概念：算子名称/类型/Tensor/Shape/Layout概念是原型定义和功能设计的输入语言；数据排布卡进一步解释Tensor layout，帮助把概念落到注册与实现。 目标卡《算子功能设计》补充：本文属于基础内容，介绍在编写自定义算子代码前需要完成的功能设计，包括将计算语义转换为工程实现，以及明确需要编写的工程文件。
-- [算子原型定义](../../../programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/operator_prototype_definition.md)（`related`）：算子基本概念：算子名称/类型/Tensor/Shape/Layout概念是原型定义和功能设计的输入语言；数据排布卡进一步解释Tensor layout，帮助把概念落到注册与实现。 目标卡《算子原型定义》补充：本文属于基础内容，介绍如何通过算子原型定义描述算子对外暴露的接口和支持范围。本文承接算子功能设计的结论，说明如何将功能设计中的输入输出、属性、dtype/format和Tiling函数关联落地为OpDef代码，并介绍图模式下的输出shape和dtype推导配置。
-<!-- cannbot:related:end -->

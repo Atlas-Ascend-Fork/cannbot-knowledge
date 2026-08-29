@@ -23,9 +23,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SIMT实现InsertHashTable算子案例](../../../../guides/operator_practice/best_practices/simt_insert_hash_table.md)（`explains`）：SIMT实现InsertHashTable算子案例说明本案例介绍InsertHashTable算子，展示基于SIMT实现的大规模线程并发访问Global Memory内存的算子实践。
-- [原子操作（AI Core SIMT编程）](../../../../guides/programming_guide/programming_model/ai_core_simt_programming/atomic_operations.md)（`explains`）：原子操作（AI Core SIMT编程）说明SIMT编程模型中，一个Grid由多个Thread Block组成，每个Thread Block又包含多个Thread。不同Thread可以并发访问同一段Global Memory或Unified Buffer。当多个线程同时对同一地址执行读-改-写操作时，如果没有同步保护，可能出现数据竞争，导致最终结果不符合预期。
-- [AscAtomicOr](asc_atomic_or.md)（`related`）：CAS 可实现带条件的复合状态更新，而 AtomicOr 只做无条件置位；需要条件更新时应切换契约。
-- [AtomicCas](../../basic_api/atomic_operations/atomic_cas.md)（`same_topic`）：AtomicCas说明对GM地址执行原子比较交换：旧值与value1相等时写入value2，否则不变，返回旧值。
-- [asc_atomic_cas](../../../simt_api/atomic_operations/asc_atomic_cas.md)（`same_topic`）：asc_atomic_cas说明对Unified Buffer或Global Memory上address的数值进行原子比较赋值操作，如果address上的数值等于指定数值compare，则对address赋值为指定数值val，否则address的数值不变。
+- [SIMT实现InsertHashTable算子案例](../../../../guides/operator_practice/best_practices/simt_insert_hash_table.md)（`explains`）：案例卡说明“线程通过原子指令asc_atomic_cas修改flag来获取桶的写权限。”；接口卡给出“如果address上的数值等于指定数值compare，则对address赋值为指定数值val，否则address的数值不变。”，该 compare-and-swap 语义正是开放寻址插入时竞争桶所有权的实现原语。
+- [asc_atomic_cas](../../../simt_api/atomic_operations/asc_atomic_cas.md)（`same_topic`）：对Global Memory中address指向的元素执行原子比较赋值操作，如果address上的数值等于指定数值compare，则对address赋值为指定数值val，否则address的数值不变。；对Unified Buffer或Global Memory上address的数值进行原子比较赋值操作，如果address上的数值等于指定数值compare，则对address赋值为指定数值val，否则address的数值不变。两卡定义同一 compare-and-swap 决策，分别给出 Scalar C API 的缓存同步合同与 SIMT 的线程竞争合同。
 <!-- cannbot:related:end -->

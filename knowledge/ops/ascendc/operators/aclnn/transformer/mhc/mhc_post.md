@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T15:10:00Z"
-updated_at: "2026-08-24T20:01:59Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -81,7 +81,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定源码只有无版本后缀的两段式入口。第一段校验并记录执行图，第二段在调用方 stream 执行。`mhc_post_def.cpp` 把 `mhc_post` 注册给 `ascend910b`（A2）和 `ascend910_93`（A3），两代共用最新 arch22 body；A5 映射到独立 `mhc_post_apt`，不属于本卡。
+固定源码只有无版本后缀的两段式入口。第一段校验并记录执行图，第二段在调用方 stream 执行。`mhc_post_def.cpp` 把 `mhc_post` 注册给 `ascend910b`（A2）和 `ascend910_93`（A3），两代共用最新 arch22 body；950 映射到独立 `mhc_post_apt`，不属于本卡。
 
 ## Host/Launcher 执行流程
 
@@ -464,9 +464,9 @@ R-001 对每个输出流 i 都为每个 j 重搬并重 Cast 一次 X；R-002 先
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持：OpDef `ascend910b` | 支持：OpDef `ascend910_93` | 支持；另见 `_a5` 卡 |
+| 支持状态 | 支持：OpDef `ascend910b` | 支持：OpDef `ascend910_93` | 支持；另见 `_950` 卡 |
 | Host/Launcher | 与 A3 共用；强制 `n=4,D%128=0,0<D<100000` | 与 A2 共用；核/UB/workspace 运行期查询 | 共用 ACLNN/Tiling，但 soc code 4 绕过上述规格检查 |
 | Kernel/资源 | arch22 `mhc_post.cpp/.h`；四输入禁用 L2 hint；R-002 有 PIPE_V barrier | 同 arch22 body | arch35 `mhc_post_apt.cpp/.h`；无 L2 hint 设置且 R-002 无显式 PIPE_V barrier |
 
@@ -486,7 +486,7 @@ R-001 对每个输出流 i 都为每个 j 重搬并重 Cast 一次 X；R-002 先
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 公开说明/平台 | mhc/mhc_post/README.md | `产品支持情况/功能说明` | A2/A3/A5 公开支持与公式 |
+| 公开说明/平台 | mhc/mhc_post/README.md | `产品支持情况/功能说明` | A2/A3/950 公开支持与公式 |
 | API 文档/约束 | mhc/mhc_post/docs/aclnnMhcPost.md | `产品支持情况/约束说明` | 两段式入口、shape/dtype 与 A2/A3 n/D 规格 |
 | 入口声明/约束 | mhc/mhc_post/op_host/op_api/aclnn_mhc_post.h | `aclnnMhcPostGetWorkspaceSize/aclnnMhcPost` | 两段式签名 |
 | 入口实现 | mhc/mhc_post/op_host/op_api/aclnn_mhc_post.cpp | `CheckParam/aclnnMhcPost*` | 校验、空域、Contiguous、executor、失败传播 |
@@ -515,3 +515,10 @@ R-001 对每个输出流 i 都为每个 j 重搬并重 Cast 一次 X；R-002 先
 | 同步 | TQue 协议可复用 | arch22 R-002 每次 Axpy 前后 PIPE_V barrier 及 output queue 交接不可删 | `ComputeCopyOutAllX`、`CopyOutTile` |
 | 精度与尾块 | FP32 累加、CAST_RINT 可复用 | hRes[j,i]、j 顺序、dTail/dTailAlign 和有效写回不可改 | `ComputeCopyOut/ComputeCopyOutAllX` |
 | 失败边界 | ACLNN/Tiling 返回链可复用 | A2/A3 n/D 规格、private format、空域和无 fallback 不可放宽 | `CheckParam/CheckSpecConstraints/CommonOpExecutorRun` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [HcPre / HcPost (mHC 融合算子)](../../../../../../model/inference/concepts/kernels/mhc_hcpre_hcpost.md)（`related`）：把 TND 的 `T` 或 BSND 的 `B*S` 统一记为 `Q`。每个 `q,i,d` 先以 FP32 标量 `hPost［q,i］` 缩放 `hOut［q,d］`，再按 `j` 顺序用 `hRes［q,j,i］` 对 `x［q,j,d］` 做 `Axpy`。索引 `j*n+i` 实现 `hRes` 转置乘法；输入先转 FP32，累加保持 FP32，最终以 `CAST_RINT` 转回 FP16/BF16，只提交真实 D 域。；**`HcPost`（一路输出 → 多路 + 残差融合）**：把子层一路输出经 Post 扩展回多路，与经 `comb` 混合的多路残差加和。融合的核心价值是**消除小算子下的内存墙**——数据不出核内 buffer（UBuffer）即完成计算，大幅减少 HBM 访存。；算子卡给出 hPost/hRes 的具体 Axpy 实现，概念卡解释其在 mHC 前后处理链中的残差融合角色和优化目的。
+- [MhcPost 950 ACLNN 算子知识](mhc_post_950.md)（`same_topic`）：`y［q,i,d］=hOut［q,d］*hPost［q,i］+sum(j=0..n-1,x［q,j,d］*hRes［q,j,i］)`；A2/A3 要求 `n=4, 0<D<100000, D%128=0`。两卡的 MhcPost 计算公式和两段式入口一致；候选给出 A2/A3 的 n/D 约束，焦点闭合 950 arch35 两条 X 缓存 Route。
+<!-- cannbot:related:end -->

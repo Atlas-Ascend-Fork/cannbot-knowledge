@@ -28,7 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Digamma](../../../simd_api/adv_api/math_compute/digamma_interface/digamma.md)（`related`）：Lgammaf 与《Digamma》的实质衔接是：Lgammaf 与向量 Lgamma 是同一 log-gamma 任务，Tgamma 给出非对数对应量，Digamma 则给出其导数语义。
-- [Tgammaf](tgammaf.md)（`related`）：lgammaf 返回 log|Gamma(x)|，可在 tgammaf 易溢出时用于范围稳定计算，但输出语义不同。
-- [Lgamma](../../../simd_api/adv_api/math_compute/lgamma_interface/lgamma.md)（`same_topic`）：《Lgamma》处理“按元素计算x的gamma函数的绝对值并求自然对数”。《Lgammaf》明确“获取输入数据x伽马值的绝对值并求自然对数。”，可直接用于核对Lgamma Kernel、临时空间查询与标量 lgammaf 的同一计算合同。
+- [Lgamma](../../../simd_api/adv_api/math_compute/lgamma_interface/lgamma.md)（`same_topic`）：功能：获取输入数据x伽马值的绝对值并求自然对数。；按元素计算x的gamma函数绝对值的自然对数（lgamma(x) = ln(｜gamma(x)｜)）。模板参数T支持half/float。两卡核心数学对象均为 lgamma，分别覆盖 SIMT 标量 float 与高阶 LocalTensor 逐元素接口。
 <!-- cannbot:related:end -->

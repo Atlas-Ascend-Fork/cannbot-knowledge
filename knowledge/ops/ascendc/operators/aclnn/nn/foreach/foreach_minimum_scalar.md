@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:48:04Z"
-updated_at: "2026-08-25T15:48:04Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -472,11 +472,11 @@ op(float32Tensor[offset], float32Tensor, scalarVal, dataCount);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | V2公开支持 | V2公开支持 | V2公开支持；旧版公开不支持 |
 | Host/Launcher | arch22公共 `ForeachCommonTiling` | 与 A2 共用 arch22 | 独立 arch35 Tiling；TensorList≤256、按总元素/1024定 blockDim |
-| Kernel/资源 | AIV Vector、双队列；BF16升 FP32 | 与 A2相同 | SIMT VF grid-stride，无 AIV Queue；见 `_a5` 卡 |
+| Kernel/资源 | AIV Vector、双队列；BF16升 FP32 | 与 A2相同 | SIMT VF grid-stride，无 AIV Queue；见 `_950` 卡 |
 
 ## 限制与失败边界
 
@@ -484,7 +484,7 @@ op(float32Tensor[offset], float32Tensor, scalarVal, dataCount);
 - V2 文档声明支持空 TensorList，但 `CheckDtypeValid` 在 `Size()==0` 分支前读取 `(*self)[0]`；固定仓不含 `aclTensorList::operator[]` 实现，空列表能否安全到达早退不可见。
 - 文档把 x 非连续标为不支持，源码仍调用 `l0op::Contiguous`。本卡按公开约束不承诺非连续 x；框架 Contiguous 的具体 workspace切片固定仓不可见。
 - `ForeachCommonTilingData` 的字段序列和位宽可见，但生成宏来自固定仓外 SDK，精确 `sizeof/alignof/offsetof` 不可见；Host与Device使用同名 schema/序列化宏。
-- A2/A3 的 `Mins` primitive内部 NaN与有符号零规则固定仓不可见，不能套用 A5自定义 `SimtMinimum` 的语义。
+- A2/A3 的 `Mins` primitive内部 NaN与有符号零规则固定仓不可见，不能套用 950自定义 `SimtMinimum` 的语义。
 - 核心 Kernel不使用 workspace，Tiling仍写 32 B；公开 API返回的是整个 executor图 workspace，二者不可互换。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 

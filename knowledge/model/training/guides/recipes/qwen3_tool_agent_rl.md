@@ -160,3 +160,11 @@ RL 阶段的多轮工具调用执行流水完全由 `asyncLLM` + `agent_loop` �
 - [verl](../../concepts/frameworks/verl.md)（承载框架：经 `git checkout 95470480`+`git am patches/*.patch` 使能 retool；SFT 后 `verl.model_merger merge --backend fsdp`，RL 由 `run_qwen3_4b_dapo_npu.sh` 拉起）
 - [grpo-dapo](../../concepts/techniques/grpo_dapo.md)（RL 算法：本 recipe RL 阶段用 DAPO + DAPO-Math-17k，奖励函数经 patch 鼓励工具调用）
 - [qwen-dense](../../../inference/concepts/models/qwen_dense.md)（跨域：基座 Qwen3-4B-Instruct-2507 属 Qwen Dense（非 MoE）模型族，结构/家族对照）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Agent RL 执行范式（asyncLLM 异步生成 + agent_loop 多轮工具调用）](../../concepts/techniques/agent_rl_loop.md)（`related`）：**Agent RL** 与朴素 RLVR 的根本区别在 rollout 阶段的执行形态：朴素 RL 一个 prompt 一次性生成完整 response 再算 reward；Agent RL 让模型在生成过程中**调用外部工具/代码沙盒**，把工具返回结果作为新一轮输入继续推理，**多轮交互**收敛后才算 reward。；整条流程使能 veRL 的 **`asyncLLM`**（异步生成）+ **`agent_loop`**（多轮工具调用）特性，这两个执行特性的机制见 ［Agent RL 执行范式］(../../concepts/techniques/agent_rl_loop.md)。。概念卡定义工具参与的多轮 rollout，Qwen3 配方以 asyncLLM 和 agent_loop 具体启用这套多轮工具调用执行形态，形成机制到训练配置的直接链。
+- [GRPO / DAPO（组相对策略优化 RL 算法）](../../concepts/techniques/grpo_dapo.md)（`related`）：｜ RL 算法 ｜ DAPO（`run_qwen3_4b_dapo_npu.sh`） ｜；DAPO（Decoupled Clip & Dynamic Sampling Policy Optimization）是 GRPO 的同族改进算法，沿用「组采样 + 去 critic 的组内相对 advantage」骨架，在 GRPO 基础上叠加四项改动以缓解长序列 RL 的熵塌缩与梯度信号稀疏。Qwen3 235B/32B RL 实践（［qwen3-rl］(../../guides/recipes/qwen3_rl.md)）按以下 DAPO 配置实测（启动脚本 `train_dapo_qwen3_{235b_128die,32b_32die}_true_weight.sh`）：recipe 的 DAPO 选型由算法页的 GRPO 同族机制与改动边界提供解释。
+- [veRL（火山引擎开源 LLM RL 后训练框架 + 昇腾适配）](../../concepts/frameworks/verl.md)（`related`）：基于 ［veRL］(../../concepts/frameworks/verl.md) `recipe/retool` 项目，在昇腾 NPU 上完成**端到端 agent RL 训练**：让 **Qwen3-4B-Instruct-2507** 学会在推理过程中**调用 Sandbox 代码工具进行 python 编程**，把代码执行结果回灌为新一轮输入，辅助自身推理思考。整条流程使能 veRL 的 **`asyncLLM`**（异步生成）+ **`agent_loop`**（多轮工具调用）特性，这两个执行特性的机制见 ［Agent RL 执行范式］(../../concepts/techniques/agent_rl_loop.md)。；veRL（［volcengine/verl］(https://github.com/volcengine/verl)）是开源 LLM 强化学习后训练框架，**结合单控制器（控制流）与多控制器（计算流）优势**，简化了 PPO / GRPO 等 RL 算法的实现。它把一次 RL 迭代抽象为多个 worker 角色——**actor**（被训练模型）/ **rollout**（推理生成）/ **reference**（参考模型）/ **reward**（奖励）——上层用 Ray 做单控制器调度、在 worker 间传递数据驱动 RL 控制流。veRL 训练后端支持 FSDP / FSDP2 / Megatron-LM，推理后端支持 vLLM / SGLang / HFTransformers，这种「训练引擎 × 推理引擎」可插拔结构正是昇腾适配的接口。recipe 是该框架在昇腾上的具体 retool 训练落地，框架页补齐其角色与可插拔后端合同。
+<!-- cannbot:related:end -->

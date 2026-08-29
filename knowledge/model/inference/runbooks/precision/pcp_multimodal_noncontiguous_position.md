@@ -94,3 +94,9 @@ CP 的输入准备原本假设「每请求的本地 token 是一段连续、单�
 
 - 根因「CP 把请求 token 切成非连续 position 且本地计数 ≠ 全局计数」「position 可能非单调，按 feature 顺序拼接会与布尔掩码升序遍历错位」对应源码内注释（`"PCP can split one request into non-contiguous token positions"`、`"Under PCP, request positions may be non-monotonic; concatenating by feature order can misalign embeddings with boolean mask traversal."`）。
 - 溯源：`[pcp-prefill-上下文并行-下多模态推理静默掉精度-多模态-embedding-prompt-embed-按连续](https://github.com/vllm-project/vllm-ascend/pull/8038)`、`[pcp-下多模态-position-非单调-同一请求多个-mm-feature-的-embedding-若按-featu](https://github.com/vllm-project/vllm-ascend/pull/8038)`（vllm-project/vllm-ascend merge sha `8ba9808c81d456d74ad91cc4ee59016ff53c403f`，`model_runner_v1.py` / `pcp_utils.py`）。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Context Parallel](../../concepts/parallelism/context_parallel.md)（`related`）：Prefill 阶段开启上下文并行（沿 Sequence 维切分请求 token 到多个 worker，`cp_size > 1`）。；将输入序列沿 Sequence 维度切分到多个 Rank 并行处理的策略，用于解决长序列场景下单卡激活值内存不足的问题。。运行手册的故障触发点正是概念页定义的 Sequence 维 Context Parallel 切分，并进一步限定到多模态 position 与 embedding 对齐。
+<!-- cannbot:related:end -->

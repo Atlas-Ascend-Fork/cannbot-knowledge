@@ -68,3 +68,12 @@ equivalent_infer_time = process_infer_time(infer_time_rec, total_tokens)
   - 溯源下探：[cann-recipes-infer-issue-37-bug-report-sparse-fa](https://gitcode.com/cann/cann-recipes-infer/issues/37)
 - diff 事实（clone `@af319f1125bd`，`models/deepseek-v3.2-exp/models/model_infer.py::obtain_mtp_stats`）：`.to(torch.int32)` 由 `torch.mean(...)` 结果处移到日志 f-string 内，`total_tokens` 改用浮点均值。「截断使等效吞吐偏低」为对代码语义的确定性推演（向下取整必不增）。
   - 溯源下探：[cann-recipes-infer-pr-243-fix-perfect-eplb](https://gitcode.com/cann/cann-recipes-infer/merge_requests/243)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MTP / 投机解码 decode 计时采集口径：累加每步全部 draft 前向、每 decode 步记一条完整耗时、分「每步」与「每 token」两指标](../../../runbooks/validations/mtp_decode_timing_collection_granularity.md)（`related`）：测量代码要和被测算法一样被审；**每个 decode 步记一条完整耗时** `infer_time_main + sum(所有 draft 步耗时)`。前者要求审计测量 harness，后者把审计落实为 main 与全部 draft 耗时合并到单步记录的采集规则。
+- [MTP / 投机解码 decode 计时：拆「每 step 时延」与「每等效 token 时延」两口径分报](../rules/mtp_decode_timing_two_metric_split.md)（`related`）：MTP 的收益恰恰体现在这个 <1 的小数接受率上，截断后系统性**低估**收益；**每等效 token 时延**（average equivalent latency of MTP-n）= `time / (累计接受数 + step 数)`。前者指出接受数截断会污染收益，后者给出直接消费累计接受数的等效 token 公式，定位同一度量链中的数据质量与指标定义。
+- [ascendc SparseFlashAttention 非 PA(无 block table)decode 路由到未优化模板、慢于 tilelang](../../../runbooks/runtime/ascendc_sparse_flash_attention_non_pa_slow.md)（`related`）：稀疏索引（`sparse_indices`）必须用「在真实 KV 长度范围内、无放回采样的互异块索引」生成；观测输入（ascendc 侧）：query `［4,1,128,512］`、key/value `［4,8192,1,512］`、sparse indices `［4,1,1,2048］`、layout `BSND`、sparse mode `3`、sparse block size `1`、block table `none`。前者规定稀疏 SFA 性能输入的代表性，后者给出非 PA 慢路径比较的具体 shape；复核该性能结论时必须把 sparse indices 的生成分布纳入验证。
+- [评估 MTP 推测解码收益：稀疏注意力(DSA)按模块分化、SFA 不吃 MTP + 等效时延度量口径](../cases/mtp_benefit_sparse_attention_and_latency_metric.md)（`same_topic`）：折算路径用**浮点**均值，int 截断只允许出现在人读日志里；**归一基数取稳态平均每 batch 接受 token 数（average accepted rate）**。前者约束接受数保留小数，后者约束接受数采用稳态 batch 均值，二者共同决定 MTP 等效时延分母的可信口径。
+<!-- cannbot:related:end -->

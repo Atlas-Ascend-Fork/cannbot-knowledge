@@ -23,5 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscHalf2Uint8](../reg/data_type_convert/asc_half2uint8.md)（`related`）：两者都做 half→uint8 和多种舍入；Reg 版输出奇/偶 lane 并依赖 ctrl 饱和状态，Memory Vector 版作用 UB 且要求地址对齐。
+- [AscHalf2Uint8](../reg/data_type_convert/asc_half2uint8.md)（`same_topic`）：将half类型数据转换为uint8类型，支持多种舍入模式，饱和/非饱和模式。；将half类型数据转换为uint8_t类型，支持多种舍入模式：。两卡处理同一 half→uint8 转换主题，但分别面向 950 寄存器操作数与 A2/A3 UB 向量地址，便于按平台和执行表面选用。
 <!-- cannbot:related:end -->

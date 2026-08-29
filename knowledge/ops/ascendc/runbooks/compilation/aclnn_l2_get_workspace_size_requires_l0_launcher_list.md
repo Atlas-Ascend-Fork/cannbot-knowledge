@@ -159,10 +159,3 @@ GetWorkspaceSize 内 Contiguous 后补齐的 L0 调用：
 ## 误诊
 
 初判怀疑 tiling 函数未执行（因 `OP_LOGI` 不在 plog），但 TilingParse 注册成功；真正未执行的是 kernel dispatch（executor 空），而非 tiling。`OP_LOGI` 不可见是 tiling 函数日志级别/路径问题，不是 tiling 未运行。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetUserWorkspace](../../apis/simd_api/basic_api/resource_management/workspace/get_user_workspace.md)（`exemplifies`）：GetUserWorkspace 与《ACLNN GetWorkspaceSize 缺 L0 调用致输出全零》的实质衔接是：GetUserWorkspace 与 SetSysWorkSpace 分离用户区和系统区；workspace 指南、Matmul workspace 设置及 host staging/偏移故障说明地址从 host 到 kernel 的使用边界。
-- [aclnn_exclude 头文件自动生成覆盖源码致签名不符](aclnn_exclude.md)（`same_topic`）：aclnn_exclude 生成链仍需 L0 launcher list，二者共同决定头文件/符号是否生成。
-<!-- cannbot:related:end -->

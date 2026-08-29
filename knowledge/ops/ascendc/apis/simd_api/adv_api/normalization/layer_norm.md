@@ -26,8 +26,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LayerNorm Tiling](layer_norm_tiling.md)（`related`）：Host 侧先查询临时空间并生成 LayerNormTiling，Kernel 侧 LayerNorm 直接消费该结构；H/R 对齐、isReuseSource、isBasicBlock 必须一致。
-- [Normalize](normalize.md)（`related`）：当均值和方差已经由上游计算时，Normalize 可跳过 LayerNorm 的统计归约，只完成 rstd 与仿射归一化，是同一公式的可复用下游阶段。
-- [WelfordFinalize](welford_finalize.md)（`related`）：WelfordFinalize 消费分块 Update 的中间态得到最终均值/方差，使大 Reduce 轴的分块统计重新接回 LayerNorm 归一化。
-- [WelfordUpdate](welford_update.md)（`related`）：Reduce 轴过大时可按块调用 WelfordUpdate 累积均值和方差中间态，替代一次性 LayerNorm 统计阶段。
+- [LayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_950.md)（`related`）：｜ 计算语义 ｜ 对末尾 `normalizedShape` 轴计算 `mean`、`rstd=1/sqrt(var+eps)` 与 `y=(x-mean)*rstd*gamma+beta`；gamma/beta 可缺省。 ｜；计算公式：y = γ*(x-μ)/sqrt(σ²+ε) + β，其中γ为缩放系数，β为平移系数，ε为防除零系数。。ACLNN 算子与 Ascend C 高阶 API 共享 LayerNorm 公式，接口卡可用于理解算子 Kernel 层所实现的归一化核心。
+- [LayerNorm Tiling](layer_norm_tiling.md)（`same_topic`）：“host侧Tiling接口，用于获取LayerNorm kernel计算所需的Tiling参数，分两步：通过GetLayerNormMaxMinTmpSize获取最大和最小临时空间大小；通过GetLayerNormNDTilingInfo（或GetLayerNormTmpBufferFactorSize）获取kernel侧所需tiling参数。”与“提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持不同输入/输出shape模式。Tiling参数通过LayerNorm Tiling获取。”分别给出双端正文事实；LayerNorm Kernel 明确消费 LayerNorm Tiling，Tiling 卡生成临时空间范围与 LayerNormTiling 结构，二者定义同一归一化接口的 Host/Device 参数交接。
 <!-- cannbot:related:end -->

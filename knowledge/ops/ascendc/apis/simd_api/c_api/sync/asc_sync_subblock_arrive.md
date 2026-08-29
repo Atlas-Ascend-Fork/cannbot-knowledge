@@ -22,10 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`exemplifies`）：AscSyncSubblockArrive 与《双AIV CrossCoreFlag 的 subBlock 契约缺陷》的实质衔接是：SubblockArrive 必须与 SubblockWait 配对并正确取得 subblock ID；双 AIV 故障卡验证了这一 flag 计数契约。
-- [AscGetSubBlockId](../sys_var/asc_get_sub_block_id.md)（`related`）：AscGetSubBlockId 与《AscSyncSubblockArrive》的实质衔接是：AscGetSubBlockId 返回分离架构 AIV 组内 ID，C++ GetSubBlockIdx 是对应查询，SubBlockNum 给出编号上界，SetSubBlockIdx 可覆盖 ID；双 AIV 故障及 arrive/wait 说明该 ID 如何选择同步 flag 段。
-- [AscGetSubBlockNum](../sys_var/asc_get_sub_block_num.md)（`related`）：《AscGetSubBlockNum》说明分离模式下获取一个AI Core上Cube或Vector核的数量。；《AscSyncSubblockArrive》说明与asc_sync_subblock_wait配合使用，通过flag_id关联，用于组内不同subblock间的信号同步。。二者在subBlock数量和编号共同定位AIV子块，SetSubBlockIdx、子块同步及CrossCoreFlag故障直接依赖这套系统变量合同上存在可执行的直接衔接。
-- [GetSubBlockIdx](../../adv_api/cube_compute/matmul_kernel/get_sub_block_idx.md)（`related`）：AscSyncSubblockArrive 与《GetSubBlockIdx》的实质衔接是：SubblockArrive 必须与 SubblockWait 配对并正确取得 subblock ID；双 AIV 故障卡验证了这一 flag 计数契约。
-- [SetSubBlockIdx](../../adv_api/cube_compute/matmul_kernel/set_sub_block_idx.md)（`related`）：AscSyncSubblockArrive 与《SetSubBlockIdx》的实质衔接是：SubblockArrive 必须与 SubblockWait 配对并正确取得 subblock ID；双 AIV 故障卡验证了这一 flag 计数契约。
-- [AscSyncSubblockWait](asc_sync_subblock_wait.md)（`same_topic`）：AscSyncSubblockArrive 与《AscSyncSubblockWait》的实质衔接是：SubblockArrive 必须与 SubblockWait 配对并正确取得 subblock ID；双 AIV 故障卡验证了这一 flag 计数契约。
+- [AscSyncSubblockWait](asc_sync_subblock_wait.md)（`same_topic`）：必须保证配套使用asc_sync_subblock_arrive和asc_sync_subblock_wait，否则会出现未定义行为。；执行asc_sync_subblock_wait时如果对应的计数器数值为0则阻塞；如果对应的计数器大于0，则计数器减一，同时后续指令开始执行。；arrive 负责递增 flag_id 计数器并明确要求与 wait 配套，wait 负责在相同计数器上阻塞和消费一次到达信号，是同一 subblock 同步握手的两端。
 <!-- cannbot:related:end -->

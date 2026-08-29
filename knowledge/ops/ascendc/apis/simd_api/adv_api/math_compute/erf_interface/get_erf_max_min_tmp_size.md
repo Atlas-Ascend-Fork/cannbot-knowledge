@@ -25,7 +25,6 @@ host侧Tiling接口，用于获取Erf接口所需的最大和最小临时空间�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Erf](erf.md)（`same_topic`）：GetErfMaxMinTmpSize 与《Erf》的衔接是：Erf 临时空间查询以 ErfMaxMinTmpSize 的计算因子和接口约束为依据，查询结果直接决定 Erf 调用可安全使用的 tmpBuffer 大小。
-- [Erf接口](erf_interface.md)（`same_topic`）：GetErfMaxMinTmpSize 与《Erf接口》的衔接是：Erf 临时空间查询以 ErfMaxMinTmpSize 的计算因子和接口约束为依据，查询结果直接决定 Erf 调用可安全使用的 tmpBuffer 大小。
-- [GetErfTmpBufferFactorSize](get_erf_tmp_buffer_factor_size.md)（`same_topic`）：GetErfMaxMinTmpSize 与《GetErfTmpBufferFactorSize》的衔接是：Erf 临时空间查询以 ErfMaxMinTmpSize 的计算因子和接口约束为依据，查询结果直接决定 Erf 调用可安全使用的 tmpBuffer 大小。
+- [Erf](erf.md)（`related`）：“host侧Tiling接口，用于获取Erf接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”与“临时空间大小通过GetErfMaxMinTmpSize获取。”是双方正文中的具体合同。Tiling 卡说明如何取得最大最小临时空间，Erf 计算卡明确把该接口作为 workspace 尺寸来源，二者组成 Host 估算到 Kernel 调用的前置链。
+- [GetErfTmpBufferFactorSize](get_erf_tmp_buffer_factor_size.md)（`related`）：“调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。”；“在minValue到maxValue范围内，临时空间越大性能越好。约束：无。”。两张卡提供 Erf 临时空间规划的两种互补合同：factor 路线反推共同 calCount，max/min 路线给出合法容量区间。
 <!-- cannbot:related:end -->

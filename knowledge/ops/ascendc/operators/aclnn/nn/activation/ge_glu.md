@@ -16,7 +16,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/ge_glu_v2_def.cpp
     role: implementation
 created_at: "2026-08-25T15:01:22Z"
-updated_at: "2026-08-25T15:01:22Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -680,9 +680,9 @@ outQueueGelu.EnQue(gelu_out);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_950` 卡 |
 | Host/Launcher | 共用 V3、同Tiling | 共用 V3、同Tiling | 同Host，`isRegbase=true` |
 | Kernel/资源 | `ge_glu_v2.cpp`、B=6144 | 同A2 | arch35 `ge_glu_v2_apt.cpp`、B=4880、输出Queue depth2、原生Erf |
 
@@ -716,3 +716,9 @@ outQueueGelu.EnQue(gelu_out);
 | 同步 | Queue生命周期与PipeBarrier | gelu copy/requeue/mul顺序 | 各 `Process/ComputeMul` |
 | 精度与尾块 | half/BF16升FP32；cast-rint；exact tail | pattern、padding、有效长度 | Base及18 body |
 | 失败边界 | 参数/Tiling失败、unknown key无输出 | 不补造fallback | `CheckParams`, router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GeGlu 950 ACLNN 算子知识](ge_glu_950.md)（`same_topic`）：V3 用 `activateLeft` 选择激活半边，另一半作为 gate；`outGelu` 保存被激活半边的 GELU，`out` 保存其与另一半的逐元素乘积。`activateLeft=true` 时 `outGelu=GELU(A), out=outGelu*B`，否则 `outGelu=GELU(B), out=A*outGelu`。两卡定义同一 aclnnGeGluV3 的门控与双输出数学合同，分别给出 A2/A3 和 950 的 Kernel/Tiling 实现，可直接支撑平台迁移时的 route 选择与双输出核验。
+<!-- cannbot:related:end -->

@@ -30,10 +30,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscFloat2Int64](asc_float2int64.md)（`related`）：AscInt642Float 与《AscFloat2Int64》的实质衔接是：AscInt64ToFloat 的 Vector 对应入口、反向 FloatToInt64、其他整数宽度和 Int64ToInt32 共同解释 2:1 lane 分布及窄化/扩宽边界。
-- [AscInt322Float](asc_int322float.md)（`related`）：AscInt642Float 与《AscInt322Float》的实质衔接是：AscInt64ToFloat 的 Vector 对应入口、反向 FloatToInt64、其他整数宽度和 Int64ToInt32 共同解释 2:1 lane 分布及窄化/扩宽边界。
-- [AscInt642float](../../vector_compute/asc_int642float.md)（`related`）：AscInt642Float 与《AscInt642float》的实质衔接是：AscInt64ToFloat 的 Vector 对应入口、反向 FloatToInt64、其他整数宽度和 Int64ToInt32 共同解释 2:1 lane 分布及窄化/扩宽边界。
-- [AscInt642int32](asc_int642int32.md)（`related`）：《AscInt642int32》说明将int64_t类型源操作数转换为int32_t类型，支持饱和与非饱和模式。；《AscInt642Float》说明将int64_t类型数据转换为float，支持多种舍入模式，源操作数与目的操作数位宽比为2:1。。二者在int64到int32窄化的饱和/非饱和语义需与反向扩宽及同源转换对照验证上存在可执行的直接衔接。
-- [AscInt642int32](../../vector_compute/asc_int642int32.md)（`related`）：AscInt642Float 与《AscInt642int32》的实质衔接是：AscInt64ToFloat 的 Vector 对应入口、反向 FloatToInt64、其他整数宽度和 Int64ToInt32 共同解释 2:1 lane 分布及窄化/扩宽边界。
-- [AscInt162Float](asc_int162float.md)（`same_topic`）：AscInt642Float 与《AscInt162Float》的实质衔接是：AscInt64ToFloat 的 Vector 对应入口、反向 FloatToInt64、其他整数宽度和 Int64ToInt32 共同解释 2:1 lane 分布及窄化/扩宽边界。
+- [AscInt642float](../../vector_compute/asc_int642float.md)（`same_topic`）：将int64_t类型数据转换为float，并支持多种舍入模式；将int64_t类型数据转换为float类型。两端定义相同的 int64_t 到 float 转换，分别给出 register 与 vector C API 形态。
 <!-- cannbot:related:end -->

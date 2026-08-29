@@ -22,7 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hge](_hge.md)（`related`）：__hge 将严格大于扩展为大于等于，帮助根据边界相等时的预期选择比较谓词。
-- [__hgt](../../half_type/half_compare_functions/_hgt.md)（`related`）：__hgt 与《__hgt》的实质衔接是：half 大于比较要与 >=、无序版本及相反的 <、<= 谓词区分；bfloat16 同名接口还要求先确认操作数类型。
-- [__hgtu](_hgtu.md)（`same_topic`）：__hgtu 与 __hgt 都判断 x>y，唯一区别是 unordered 版本在任一 NaN 时返回 true；并读可避免把 NaN 语义误当普通有序比较。
+- [__hgtu](_hgtu.md)（`related`）：比较两个bfloat16类型数据，当第一个数据大于第二个数据时，返回true。若任一输入为nan，返回true。；比较两个bfloat16类型数据，仅当第一个数据大于第二个数据时，返回true。两页是同一 bfloat16 大于比较的 unordered 与 ordered 选择，NaN 返回差异是实现正确性所需的关键决策。
 <!-- cannbot:related:end -->

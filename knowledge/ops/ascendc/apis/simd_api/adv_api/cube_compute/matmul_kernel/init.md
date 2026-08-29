@@ -38,14 +38,8 @@ __aicore__ inline void Init(const __gm__ TCubeTiling* gmCubeTiling, TPipe* tpipe
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ClearBias](clear_bias.md)（`related`）：ClearBias 明确用于覆盖 Init 时 TCubeTiling.isBias 启用的 Bias 状态，理解 Init 的资源/tiling 初始化是判断清除动作何时生效的前置。
-- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`related`）：Host/编译期生成的 Matmul tiling 参数是 Init 在 Kernel 侧划分资源的直接输入，常量化路径还能减少 Scalar 开销。
-- [GetTiling](../matmul_tiling/get_tiling.md)（`related`）：Host GetTiling 生成的 TCubeTiling 需要传给 Matmul Kernel Init，形成 Host 计算分块到 Device 初始化的接口链。
-- [Iterate](iterate.md)（`related`）：Iterate 与《Init》的实质衔接是：Iterate 每次推进一块 baseM×baseN 并管理 L0C；Init/SetTensor 后需按同步模式配对 GetTensorC/Wait，IterateAll/NBatch/Batch 与异步指南给出替代执行契约。
-- [REGIST_MATMUL_OBJ](regist_matmul_obj.md)（`related`）：Tiling 固定时应在 REGIST_MATMUL_OBJ 阶段完成初始化；只有 tiling 运行期变化时才单独反复调用 Init。
-- [矩阵计算End](end.md)（`related`）：Matmul 对象先 Init 占用计算资源；切换到另一对象前 End 释放这些资源。
-- [Matmul Kernel侧接口](matmul_kernel.md)（`same_topic`）：“Matmul Kernel侧接口”处理提供Matmul矩阵乘的Kernel侧接口，包含模板参数、配置类、Init、SetTensorA/B、Iterate等方法及使用说明。；“Init”明确对Matmul对象的Tiling数据进行初始化，根据Tiling参数进行资源划分。Tiling参数可变场景下可多次调用。。实质衔接：Kernel 侧总览额外给出了注册对象、Init、设置 A/B、Iterate、GetTensorC 的最小调用顺序；只连接这条正文明确的主路径。
-- [Matmul使用说明](matmul_usage.md)（`same_topic`）：焦点处理Matmul 高阶 API 的对象配置、迭代与取结果调用顺序；Init正文界定“对Matmul对象的Tiling数据进行初始化，根据Tiling参数进行资源划分。Tiling参数可变场景下可多次调用”。候选是用法正文明确需要的注册、Init、SetTensor、Iterate、GetTensorC、Wait/End 阶段；只保留这条执行路径。
-- [SetBias](set_bias.md)（`same_topic`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；Init正文说明“对Matmul对象的Tiling数据进行初始化，根据Tiling参数进行资源划分。Tiling参数可变场景下可多次调用”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
-- [SetTensorA](set_tensor_a.md)（`same_topic`）：Init说明对Matmul对象的Tiling数据进行初始化，根据Tiling参数进行资源划分。Tiling参数可变场景下可多次调用。
+- [ClearBias](clear_bias.md)（`related`）：Init 页说明“Init主要用于对Matmul对象中的Tiling数据进行初始化，根据Tiling参数进行资源划分”；ClearBias 页明确“如果在调用［Init］(init.md)时配置了TCubeTiling结构中的isBias参数来启用Bias，调用该接口后，会清除Bias标志位，不再启用Bias。”，后者直接修改前者初始化出的 bias 状态。
+- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`related`）：Init 的参数合同写明“Tiling参数可以通过host侧GetTiling接口获取，并传递到kernel侧使用。”；GetMatmulApiTiling 页说明“然后调用本接口，得到常量化的Matmul Tiling参数。”，构成 Host/编译期 Tiling 生产到 Kernel Init 消费的直接链。
+- [GetTiling](../matmul_tiling/get_tiling.md)（`related`）：“- tiling（输出）：Tiling结构体存储最终的tiling结果。TCubeTiling结构介绍请参考表1。/optiling::TCubeTiling：带有optiling命名空间的TCubeTiling结构体，，该结构体为Host侧定义的Matmul TilingData。”；“- cubeTiling（输入）：Matmul Tiling参数，TCubeTiling结构体定义请参见表1 TCubeTiling结构说明。 Tiling参数可以通过host侧GetTiling接口获取，并传递到kernel侧使用。”。GetTiling 的结果被 Init 直接消费以初始化 Matmul 对象资源。
+- [REGIST_MATMUL_OBJ](regist_matmul_obj.md)（`related`）：Init 页说明“开发者可以先通过［REGIST_MATMUL_OBJ］(regist_matmul_obj.md)不传入Tiling参数对单个Matmul对象进行初始化，后续通过Init接口单独传入Tiling参数”；注册页说明“当代码中只有一个Matmul对象时，本接口可以不传入tiling参数，通过Init接口单独传入tiling参数。”，双方明确给出同一注册后再初始化的调用合同。
 <!-- cannbot:related:end -->

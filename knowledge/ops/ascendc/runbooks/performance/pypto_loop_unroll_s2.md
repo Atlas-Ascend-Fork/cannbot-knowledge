@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.pipeline", "topic.performance.ana
 status: stable
 sources: []
 created_at: "2026-08-18T08:38:58Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 ---
 
@@ -14,13 +14,13 @@ platforms: ["950"]
 
 ## 现象
 
-在 Ascend950（A5 die，96 核）/ CANN 9.1.0 环境下，用 `pypto-op-perf-tune` skill 对 DeepSeek V32 `sparse_flash_attention_quant` 算子的 decode 950 路径（`sparse_flash_attention_quant_d_950`，实际执行 no_flash compute 路径）做开箱性能调优，目标 AICore E2E ≤500us。基线（`unroll_list={1}`，`device_sched_mode=1`）用 `cannbot-skills/ops/pypto-op-perf-tune/perf-analyzer/scripts/analyze_perf.py` 解析 `bubble_analysis.log`：平均核心利用率 93.25%、平均气泡率 4.05%、负载均衡度 98.61%、AICore E2E 897.45us、0 个性能瓶颈——属 compute-bound 且调度搬运已较优，但 E2E 仍超目标。该 897.45us/500us 超限为本卡诊断的触发信号（tool_observed，非 agent 推测）。
+在 Ascend950（950 die，96 核）/ CANN 9.1.0 环境下，用 `pypto-op-perf-tune` skill 对 DeepSeek V32 `sparse_flash_attention_quant` 算子的 decode 950 路径（`sparse_flash_attention_quant_d_950`，实际执行 no_flash compute 路径）做开箱性能调优，目标 AICore E2E ≤500us。基线（`unroll_list={1}`，`device_sched_mode=1`）用 `cannbot-skills/ops/pypto-op-perf-tune/perf-analyzer/scripts/analyze_perf.py` 解析 `bubble_analysis.log`：平均核心利用率 93.25%、平均气泡率 4.05%、负载均衡度 98.61%、AICore E2E 897.45us、0 个性能瓶颈——属 compute-bound 且调度搬运已较优，但 E2E 仍超目标。该 897.45us/500us 超限为本卡诊断的触发信号（tool_observed，非 agent 推测）。
 
 ## 适用场景
 
 - **工程形态**：PyPTO `@pypto.frontend.jit` 装饰的 decode 算子直调，性能调优（非 aclnn 算子仓开发）。
 - **API 路径**：`pypto.loop_unroll(start, end, step, name=, idx_name=, unroll_list=)`；`cannbot-skills/ops/pypto-op-perf-tune/perf-analyzer/scripts/analyze_perf.py`（`bubble_analysis.log` 解析）。
-- **验证过的平台与 CANN 版本**：Ascend950（A5 die），96 核，CANN 9.1.0，pypto build_out（arch32）。仅此平台实测。
+- **验证过的平台与 CANN 版本**：Ascend950（950 die），96 核，CANN 9.1.0，pypto build_out（arch32）。仅此平台实测。
 - **适用粒度**：`operator_family`——任何 PyPTO 算子中"迭代间无数据依赖"的 `pypto.loop_unroll` 循环；最窄落到 `sparse_flash_attention_quant` 的 no_flash compute s2 循环。
 - **路线优先级**：`recommended_fastpath`——高利用率 + 0 瓶颈 + compute-bound 基线上，迭代级并行是唯一有效杠杆（tile-shape 调整在本 shape 无正收益，见失效边界）。
 - **明确不适用/未验证场景**：迭代间存在数据依赖的循环（如 flash 在线 softmax 归约路径 `FLASH_LOOP_L4_s2_SA`，其 `oi_update/li_update/mi_update` 跨迭代累积）不可套用本诊断的"迭代独立可并行"前提；a2/a3 平台未实测。
@@ -80,11 +80,10 @@ PyPTO decode 算子 perf-analyze 报告 AICore E2E 超目标，且同时满足�
 - **flash 在线归约路径不可套用**：`FLASH_LOOP_L4_s2_SA` 迭代间有 `oi_update/li_update/mi_update` 累积依赖，本诊断"迭代独立可并行"前提不成立，直接套 `unroll_list={4,2,1}` 会破坏归约语义；需改用归约友好的分块并行 + 末段归约策略，本 trace 未验证。
 - **迭代数非 4 时**：`unroll_list` 集合首元素应取实际 `bn_per_batch`（如 2 次迭代用 `{2,1}`）；动态 `bn_per_batch` 场景需验证编译器能否按集合退化。
 - **tile-shape 调整不是有效杠杆**：先后尝试 `c1/c2 kL1=576`、`C2 kL0=128 nL0=512`、`s_kv_tile=2048` 均无正收益或更差/超时——在 93% 利用率的 compute-bound 基线上调 tile-shape 不是有效杠杆；但相关编辑原文被 redact，结论为 agent_reported，不作为本卡诊断证据。
-- **a2/a3 平台未实测**：PyPTO `loop_unroll` 语义应跨平台一致，但 A5 的 `device_sched_mode`/调度行为与 a2/a3 可能不同，不得据本卡直接采用——需目标平台定向 perf 验证后再用。
+- **a2/a3 平台未实测**：PyPTO `loop_unroll` 语义应跨平台一致，但 950 的 `device_sched_mode`/调度行为与 a2/a3 可能不同，不得据本卡直接采用——需目标平台定向 perf 验证后再用。
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Mix合图包入 V2 致任务数减半 E2E 劣化](mix_v2_e2e.md)（`related`）：在 focal 禁止把 V2 并入 Mix 后，no_flash s2 循环的串行迭代链是可独立诊断的性能瓶颈，候选给出 bubble 日志与 unroll_list 定位方法。
-- [unroll s2 内层循环破坏 flash 在线 softmax 循环态](../precision/unroll_s2_flash_softmax.md)（`related`）：性能卡明确区分无跨迭代依赖的 no_flash s2 循环可展开到 {4,2,1}，而在线 softmax 的 oi/li/mi 循环不可套用；它为 focal 的 banned 结论提供选型反例。
+- [unroll s2 内层循环破坏 flash 在线 softmax 循环态](../precision/unroll_s2_flash_softmax.md)（`related`）：**明确不适用/未验证场景**：迭代间存在数据依赖的循环（如 flash 在线 softmax 归约路径 `FLASH_LOOP_L4_s2_SA`，其 `oi_update/li_update/mi_update` 跨迭代累积）不可套用本诊断的"迭代独立可并行"前提；a2/a3 平台未实测。；把 flash attention 主循环 `FLASH_LOOP_L4_s2_SA` 的 `unroll_list` 由 `{1}` 改为 `{1,2}`（即把 s2 的第 2 层循环也纳入展开）。改后单测 `compare` 立即失败。性能卡给出无依赖 s2 的正向展开，精度卡用在线 softmax 的跨迭代状态验证其禁止边界。
 <!-- cannbot:related:end -->

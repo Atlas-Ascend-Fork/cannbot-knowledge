@@ -38,11 +38,3 @@ Ascend C提供一组类库API，开发者使用标准C++语法和类库API进行
 > - 基础API：不涉及
 > - 高阶API：因高阶API配套Host Tiling接口，需要链接libtiling_api.a。
 > - Utils API：不涉及
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [基础API概述](basic_api/overview.md)（`related`）：Basic API 概述展开硬件能力抽象、兼容性与 ISASI 边界，是上位接口分层中的基础层细化。
-- [库API概述](advanced_api/overview.md)（`related`）：Advanced API 概述解释算法封装、Host Tiling 链接依赖和开发效率优势，与基础层形成直接选型对照。
-- [异构系统与编程模型](../../getting_started/quick_start/heterogeneous_system_and_programming_model.md)（`same_topic`）：异构系统与编程模型 与《编程接口概述（库API）》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
-<!-- cannbot:related:end -->

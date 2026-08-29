@@ -17,9 +17,3 @@ platforms: ['950']
 试验接口。根据 LayoutPattern（排布模式）和 LayoutTrait（布局特征）计算 Shape 和 Stride，构造带类型信息的 Layout 对象。支持矩阵 Layout 和卷积 NCHW/NHWC/NC1HWC0 格式，支持 Batch 维度。头文件 `tensor_api/tensor.h`。
 
 原型：`template <typename LayoutPattern, typename TraitType, typename... Args> MakeFrameLayout(const Args&... args)`。LayoutPattern 决定分形排列方式，不同存储位置间搬运要求特定 Pattern 组合。仅 950 支持。试验接口，不保证后续兼容性。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MakePatternLayout](make_pattern_layout.md)（`same_topic`）：MakeFrameLayout 依据标准分形 Pattern/Trait 构造布局；MakePatternLayout 在已有 Shape/Stride 时显式携带同一 Pattern/Trait，是直接构造方式对照。
-<!-- cannbot:related:end -->

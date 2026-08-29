@@ -54,3 +54,9 @@ platforms:
 ## Evidence
 
 - doc 披露 / 仓自报（@938a6c2c）：README §5.2 精度表与根因分析、异常 token 现象为仓 README 自报；FP16 计算路径（多个算子输出 `ACL_FLOAT16`）为 diff 事实；因果归因为仓自报分析、非独立验证。溯源下探 [cann-recipes-infer-pr-128-feat-support-deepseekv3-on-ascend310p-20](https://gitcode.com/cann/cann-recipes-infer/merge_requests/128)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [大 MoE 昇腾部署选型：并行形态/模型变体按集群规模选 + 非默认平台(310P/950)的算子与 HCCL 适配](../../optimizations/experience/rules/ascend_deploy_parallel_variant_and_nondefault_platform.md)（`related`）：310P 这类非默认平台的整体部署选型（并行形态 / 模型变体 / 算子与 HCCL 适配）；310P 无标准 ［MLA］(../../../concepts/modules/mla.md)/［FIA］(../../../concepts/kernels/fused_infer_attention_score.md) 算子路径；部署规则页补充该精度 runbook 所在非默认平台的算子与通信适配边界。
+<!-- cannbot:related:end -->

@@ -30,8 +30,6 @@ WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetBlockNum](../../tool_interface/system_resources_and_variables/get_block_num.md)（`related`）：WaitPreBlock 与《GetBlockNum》的实质衔接是：WaitPreBlock 必须与 NotifyNextBlock 等次数配对并先初始化 workspace；GetBlockNum 决定 GM/UB workspace 下限，关键特性说明其按 blockIdx 串行的确定性语义。
-- [关键特性说明](key_features.md)（`related`）：WaitPreBlock 与《关键特性说明》的实质衔接是：WaitPreBlock 必须与 NotifyNextBlock 等次数配对并先初始化 workspace；GetBlockNum 决定 GM/UB workspace 下限，关键特性说明其按 blockIdx 串行的确定性语义。
-- [InitDetermineComputeWorkspace](init_determine_compute_workspace.md)（`same_topic`）：InitDetermineComputeWorkspace：InitDetermineComputeWorkspace初始化确定性核间顺序执行所需GM空间，随后每核严格调用WaitPreBlock/NotifyNextBlock；workspace指南说明共享区的申请与传入。 目标卡《WaitPreBlock》补充：通过读取全局内存判断前序核是否完成，阻塞当前核直至前序核通过NotifyNextBlock通知，与InitDetermineComputeWorkspace配合实现确定性计算。
-- [NotifyNextBlock](notify_next_block.md)（`same_topic`）：WaitPreBlock 与《NotifyNextBlock》的实质衔接是：WaitPreBlock 必须与 NotifyNextBlock 等次数配对并先初始化 workspace；GetBlockNum 决定 GM/UB workspace 下限，关键特性说明其按 blockIdx 串行的确定性语义。
+- [InitDetermineComputeWorkspace](init_determine_compute_workspace.md)（`related`）：“完成初始化后才可以调用WaitPreBlock和NotifyNextBlock”规定 Wait 的初始化依赖；“WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合使用”从等待接口侧确认三接口共同维持 blockIdx 升序。
+- [NotifyNextBlock](notify_next_block.md)（`related`）：按“NotifyNextBlock通过写全局内存来通知其他核当前核已执行完成，其他核可以继续往下执行；WaitPreBlock通过读取全局内存，判断当前核是否可以继续往下执行。”把每次写通知与后序核读等待组成握手，并用“如果调用了NotifyNextBlock没有与之配对的WaitPreBlock，会导致非确定性计算、输出结果可能不符合预期；如果调用了WaitPreBlock没有与之配对的NotifyNextBlock，会导致程序卡死。”检查所有核的调用次数相同，能定位漏 Notify 或漏 Wait 的具体故障。
 <!-- cannbot:related:end -->

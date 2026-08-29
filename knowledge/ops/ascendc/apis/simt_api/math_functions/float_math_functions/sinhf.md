@@ -28,7 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Asinhf](asinhf.md)（`related`）：Sinh 是反函数，可在有限域做往返验证。
-- [GetSinhMaxMinTmpSize](../../../simd_api/adv_api/math_compute/sinh_interface/get_sinh_max_min_tmp_size.md)（`related`）：选择高阶 Tensor Sinh 时需先据元素数获取 workspace 上下界，补充 SIMT 标量调用没有的缓冲契约。
-- [Sinh接口](../../../simd_api/adv_api/math_compute/sinh_interface/sinh_interface.md)（`same_topic`）：高阶 Sinh 总页定义 LocalTensor 版本及临时空间获取流程，与 SIMT sinhf 完成相同双曲正弦任务。
+- [ForeachSinh 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_sinh_950.md)（`related`）：｜ 计算语义 ｜ 对 TensorList 每个 Tensor 逐元素计算 `sinh`；SIMT body 统一以 FP32 `sinhf` 求值。 ｜；功能：获取输入数据的双曲正弦值。；950 ForeachSinh 的 SIMT body 明确把每个元素交给 FP32 sinhf，API 卡因此直接补齐该叶子调用的输入范围、特殊值与必需头文件。
 <!-- cannbot:related:end -->

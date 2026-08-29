@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
     role: implementation
 created_at: "2026-08-25T15:47:32Z"
-updated_at: "2026-08-25T15:47:32Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -681,9 +681,9 @@ GM→UB 一次可搬入 `9U` 字节 BF16 数据，而 FP32 中间区仅 `U` 字�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 V2 支持 | 公开 V2 支持 | 公开支持，见独立 `_a5` 卡 |
+| 支持状态 | 公开 V2 支持 | 公开 V2 支持 | 公开支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b` membase；key 1–4 | `ascend910_93` membase；key 1–4 | regbase priority 30000、key 10001–10004 |
 | Kernel/资源 | 公共 membase Kernel；最多 50 AIV core | 同一源码与 POD | arch35 Kernel；最多 80 core；FP16/BF16 均用 FP32 cast buffer |
 
@@ -691,7 +691,7 @@ GM→UB 一次可搬入 `9U` 字节 BF16 数据，而 FP32 中间区仅 `U` 字�
 
 - 公开 V2 API：`x/out` dtype 仅 FP16/FP32/BF16/INT32，逐项 shape 相同，维数不超过 8；scalar dtype 组合必须满足平台表。
 - POD 仅容纳 50 个 Tensor 和 50 个 core；公开文档给出最大 50 个输出 Tensor，不能把固定数组扩展为无界列表。
-- A2/A3 FP16 直接以 half 执行 `Muls`，与 A5 的 FP32 中间计算顺序不同；迁移不能只换 key。
+- A2/A3 FP16 直接以 half 执行 `Muls`，与 950 的 FP32 中间计算顺序不同；迁移不能只换 key。
 - API executor 总 workspace 的框架 `Contiguous` 部分和 launcher slice offset固定仓不可见；仅能证明 foreach Kernel 本身不读取 workspace，Tiling 固定预留 32 B。
 - 生成式 Tiling ABI 宏的确切 `sizeof/alignof/offsetof` 在固定仓依赖中不可见；字段类型、顺序和 consumer 已闭合，但不能臆造数值 offset。
 - unknown key router 没有显式错误写回；正确性依赖 Host dtype/key 和构建 binary 配置一致。
@@ -716,7 +716,7 @@ GM→UB 一次可搬入 `9U` 字节 BF16 数据，而 FP32 中间区仅 `U` 字�
 | Kernel body | `foreach/foreach_utils/op_kernel/kernel_foreach_base.h` | `KernelForeachBase` | POD 解析、TensorList 地址、BF16 tile |
 | Kernel body | `foreach/foreach_utils/op_kernel/kernel_foreach_unary.h` | `KernelForeachUnary` | Queue、循环、DMA、tail |
 | Kernel body | `foreach/foreach_utils/op_kernel/foreach_one_scalar_binary.h` | `ForeachOneScalarBinary`, `InnerComputer` | scalar load、Muls、BF16 cast |
-| 构建接线 | `foreach/foreach_mul_scalar/op_kernel/CMakeLists.txt` | `add_kernel_sources` | ascend910b/910_93 构建与 A5 分源 |
+| 构建接线 | `foreach/foreach_mul_scalar/op_kernel/CMakeLists.txt` | `add_kernel_sources` | ascend910b/910_93 构建与 950 分源 |
 | 构建接线 | `foreach/foreach_mul_scalar/op_host/config/ascend910b/foreach_mul_scalar_binary.json` | `ForeachMulScalar` op_list | A2 binary dtype 实例 |
 | 构建接线 | `foreach/foreach_mul_scalar/op_host/config/ascend910_93/foreach_mul_scalar_binary.json` | `ForeachMulScalar` op_list | A3 binary dtype 实例 |
 | Tiling框架 | `common/inc/op_host/tiling_templates_registry.h` | `TilingRegistry::DoTilingImpl` | priority从小到大遍历与param-invalid fallthrough |
@@ -732,3 +732,10 @@ GM→UB 一次可搬入 `9U` 字节 BF16 数据，而 FP32 中间区仅 `U` 字�
 | 同步 | TQue 生命周期与 Vector barrier | Queue slot Free 前不得覆盖；BF16 cast片 barrier 不可省略 | `CopyIn/Compute/CopyOut`; `ComputePerCast` |
 | 精度与尾块 | direct dtype Muls；BF16 FP32升精度/RINT；tail DataCopyPad | FP16不升精度；tail只写有效字节 | `InnerComputer`; `KernelForeachUnary::CopyOut` |
 | 失败边界 | selector 不适用返回 param invalid；校验失败阻断 | unknown key 无 Device fallback；Host/build key必须一致 | `MEMBASE_TILING::IsCapable`; router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachMulScalar 950 ACLNN 算子知识](foreach_mul_scalar_950.md)（`same_topic`）：同一语义存在 `aclnnForeachMulScalar` 与 `aclnnForeachMulScalarV2`。V2 将公开 `scalar` 入口从单元素 `aclTensor` 改为 `aclScalar`；A2、A3 和 Ascend 950 的公开产品表均支持 V2，因此按“逐架构最新公开版本”选择 V2。；V2 相对 `aclnnForeachMulScalar` 只改变公开 scalar 容器：从单元素 `aclTensor` 改为 `aclScalar`。；两卡描述同一 ACLNN 算子与 V2 合同，只因 A2/A3 和 950 平台实现拆卡。
+- [ForeachMulScalarList A2/A3 ACLNN 算子知识](foreach_mul_scalar_list.md)（`same_topic`）：对列表位置 `i` 与元素位置 `j`，`out［i］［j］ = x［i］［j］ * scalars［i］` 对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ * scalar` A2/A3 ScalarList 为每个 Tensor 提供独立标量，ForeachMulScalar 让全列表共享一个标量，直接决定参数容器与加载方式。
+<!-- cannbot:related:end -->

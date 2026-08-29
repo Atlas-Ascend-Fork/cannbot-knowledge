@@ -119,3 +119,11 @@ Precise Intersection 算子用于计算高斯球-像素块（tile）映射关系
 - 枢纽：[3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md)
 - 上游：[projection-3dgs](projection_3dgs.md)（提供 2D 投影属性）；下游：[gaussian-sort](gaussian_sort.md)、[calc-render](calc_render.md)
 - 跨域：[ascendc](../../../inference/concepts/frameworks/ascendc.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [3D Gaussian Splatting 昇腾 Atlas A2 训推优化实践](../algorithms/3d_gaussian_splatting.md)（`related`）：“3DGS 用一组 3D 高斯椭球表示场景，每个高斯球带均值 `means`、四元数 `quats`、缩放 `scales`、不透明度 `opacities`、球谐系数（`sh0`/`shN`）。渲染（光栅化）流程在 ［`rasterization/rasterizer.py`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/algorithms/gaussian_splatting/rasterization/rasterizer.py) 的 `_ascend_rasterization` 中实现，内部按顺序调用并串联各自研算子（导入自 ［`meta_gauss_render`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/meta_gauss_render/__init__.py)）：”与“Precise Intersection 算子用于计算高斯球-像素块（tile）映射关系，基于 ［FlashGS 算法］(https://arxiv.org/abs/2408.07967)实现。”分别给出双端正文事实；算法卡把光栅化组织为自研算子流水，Precise Intersection 卡负责投影后生成高斯球到 tile 的命中映射，连接整体算法与排序前的空间筛选阶段。
+- [GaussianSort —— 3DGS tile 内高斯球深度排序算子](gaussian_sort.md)（`related`）：“`flash_gaussian_build_mask(...)`（［precise-intersection］(precise_intersection.md)）输出 `tile_sums / tile_offsets / tile_depths / tile_gauss_ids`。”；“- 输出：`tile_sum`（每 tile 命中高斯数）、`tile_depths`（排序用深度）、`gauss_index`（命中高斯球 ID）。”。Precise Intersection 生产 GaussianSort 所需的 tile 计数、深度和高斯 ID。
+- [Projection-3DGS —— 3D→2D 高斯球投影融合算子（前向/反向）](projection_3dgs.md)（`related`）：“- 上游：［projection-3dgs］(projection_3dgs.md)（提供 2D 投影属性）；下游：［gaussian-sort］(gaussian_sort.md)、［calc-render］(calc_render.md)”与“- 下游：［precise-intersection］(precise_intersection.md)（消费本算子产出的 2D 投影属性 means2d/conics/covars2d 算高斯-tile 精确相交）”提供双方正文证据。双方正文明确给出 projection 的 means2d、conics、covars2d 是 precise-intersection 的上游输入，构成 3DGS 光栅流水的生产者到消费者边。
+<!-- cannbot:related:end -->

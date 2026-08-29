@@ -36,9 +36,5 @@ Ascend C提供孪生调试的功能，通过CPU域的功能验证、gdb单步调
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Printf](../../../../apis/utils_api/tuning_interface/printf.md)（`explains`）：FAQ 明确把 printf 数值打印作为定位 tileLength、LocalTensor 大小和中间值的手段；目标卡给出可调用接口。
-- [Reg矢量计算接口精度标准汇总](../../../../apis/appendix/reg_vector_compute_interface_precision_standard_summary.md)（`explains`）：核函数运行验证时算子存在精度问题说明在进行算子NPU域的运行验证时，实际数据和真值数据不一致，算子存在精度问题。
-- [SIMT接口精度标准汇总](../../../../apis/appendix/simt_interface_precision_standard_summary.md)（`explains`）：FAQ 给出误差定位、容差与指令替换流程，可将汇总表中的标准用于 kernel 验证。
-- [half类型精度转换函数](../../../../apis/simt_api/math_functions/half_type/half_precision_conversion_functions/half_precision_conversion_functions.md)（`explains`）：《half类型精度转换函数》说明提供half类型与float、bfloat16、整型等数据类型间的精度转换接口。；《核函数运行验证时算子存在精度问题》说明在进行算子NPU域的运行验证时，实际数据和真值数据不一致，算子存在精度问题。。二者在half精度转换总览与通用SIMT转换、bfloat16总览、精度标准和精度FAQ共同提供选择与验收边界上存在可执行的直接衔接。
-- [NPU域上板调试（功能调试）](../../debug_and_tuning/functional_debug/npu_board_debug.md)（`same_topic`）：《NPU域上板调试（功能调试）》处理“NPU域上板调试手段主要包含上板数据打印、msSanitizer内存异常检测和msDebug单步调试等功能，数据打印包括printf、DumpTensor两种方式，其中，DumpTensor是SIMD编程独有功能，用于打印指定Tensor的数据。”。《核函数运行验证时算子存在精度问题》提供“在进行算子NPU域的运行验证时，实际数据和真值数据不一致，算子存在精度问题。”，其具体合同或探针直接接入NPU 上板打印、异常定位、Tiling 调试、精度对比和离线解析流程。
+- [含有Matmul高阶API的算子精度问题](matmul_advanced_api_precision.md)（`related`）：Ascend C提供孪生调试的功能，通过CPU域的功能验证、gdb单步调试、printf数值打印来定位算子的实现逻辑问题。本样例仅展示了可能会出现的场景，便于演示定位步骤。实际使用过程中，请根据代码情况进行调试。；本节针对含有Matmul高阶API的算子，为排查算子精度问题是否为算子中Matmul高阶API调用方式导致，提供初步的问题定界和定位指导。如未特殊说明，下面均以Atlas A2 训练系列产品/Atlas A2 推理系列产品上的案例为例。；通用精度排障先在 CPU 孪生域定界，目标指南再把 Matmul Tiling、接口调用和 golden 逐层隔离。
 <!-- cannbot:related:end -->

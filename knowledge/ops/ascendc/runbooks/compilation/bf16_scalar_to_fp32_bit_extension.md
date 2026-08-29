@@ -391,6 +391,5 @@ CANN 9.2.0 bisheng，目标 dav-2201；相关文件为 `operators/cummin/cummin.
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BiSheng bf16 类型转换失败——隔离模板实例化](if_constexpr_excludes_unsupported_bf16_cast.md)（`related`）：当 BF16 reduce 确实必须实现时，位扩展卡给出已上板的 bf16→fp32 标量转换，补足本卡明确留下的“不能只删 specialization”分支。
-- [BF16 标量 cast 后端失败—改用位序键](bf16_scalar_compare_by_raw_bits.md)（`same_topic`）：BF16 标量 cast 后端失败—改用位序键 与《bisheng 不支持 bf16 标量强转时用位布局精确提升到 fp32》的实质衔接是：位序键是 BF16 标量 cast 失败的直接替代；所选卡补充同一后端限制、B16→B32 比较宽度及 NaN 显式选择。
+- [BF16 标量 cast 后端失败—改用位序键](bf16_scalar_compare_by_raw_bits.md)（`related`）：比较卡定位到“dav-3510 的 bisheng aicore 后端不支持在该标量 kernel 路径中实例化 `bfloat16_t` 与 `float` 的双向 `static_cast`。”；转换卡给出“该后端不支持 UB bf16 标量经 C++ cast 直接生成 fp32。bf16 的 16 位编码正好是 fp32 的高 16 位，因此对原始位 `raw` 做 `fbits = uint32_t(raw) << 16`，再按 float 重解释即可保持符号位、指数和 7 位尾数，不引入算术舍入。”，共同提供绕开 BF16 标量 cast 限制的两种位级策略。
 <!-- cannbot:related:end -->

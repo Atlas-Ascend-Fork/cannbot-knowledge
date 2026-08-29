@@ -29,14 +29,3 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Kirin X90。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Atan2f](../../../../simt_api/math_functions/float_math_functions/atan2f.md)（`related`）：《Atan接口》处理“提供Atan反正切计算接口及其Tiling临时空间大小查询接口，包含Atan、GetAtanMaxMinTmpSize等。”。《Atan2f》明确提供“获取输入数据y/x的反正切值。”，其参数、调用或验证步骤直接接入Atan Kernel 调用、临时空间查询和 SIMT 对应实现。
-- [Atanf](../../../../simt_api/math_functions/float_math_functions/atanf.md)（`related`）：《Atan接口》处理“提供Atan反正切计算接口及其Tiling临时空间大小查询接口，包含Atan、GetAtanMaxMinTmpSize等。”。《Atanf》明确提供“获取输入数据的反正切值。”，其参数、调用或验证步骤直接接入Atan Kernel 调用、临时空间查询和 SIMT 对应实现。
-- [Atan](atan.md)（`same_topic`）：《Atan接口》处理“提供Atan反正切计算接口及其Tiling临时空间大小查询接口，包含Atan、GetAtanMaxMinTmpSize等。”。《Atan》明确提供“按元素做反正切运算，支持泰勒展开和多项式逼近两种算法配置”，其参数、调用或验证步骤直接接入Atan Kernel 调用、临时空间查询和 SIMT 对应实现。
-- [GetAtanMaxMinTmpSize](get_atan_max_min_tmp_size.md)（`same_topic`）：《Atan接口》处理“提供Atan反正切计算接口及其Tiling临时空间大小查询接口，包含Atan、GetAtanMaxMinTmpSize等。”。《GetAtanMaxMinTmpSize》明确提供“在host侧获取Atan接口预留临时空间的最大和最小值，用于Tiling参数选择”，其参数、调用或验证步骤直接接入Atan Kernel 调用、临时空间查询和 SIMT 对应实现。
-- [GetAtanTmpBufferFactorSize](get_atan_tmp_buffer_factor_size.md)（`same_topic`）：《Atan接口》处理“提供Atan反正切计算接口及其Tiling临时空间大小查询接口，包含Atan、GetAtanMaxMinTmpSize等。”。《GetAtanTmpBufferFactorSize》明确提供“获取Atan接口的maxLiveNodeCount和extraBuf，用于推算固定空间下单次最大计算元素数”，其参数、调用或验证步骤直接接入Atan Kernel 调用、临时空间查询和 SIMT 对应实现。
-- [Tan接口](../tan_interface/tan_interface.md)（`same_topic`）：Tan接口 与《Atan接口》的实质衔接是：Tan 接口由 Tan 和两种临时空间查询组成；Atan 是反函数，Sin/Cos 卡解释 tan=sin/cos 的输入值域与验证关系。
-<!-- cannbot:related:end -->

@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:21:40Z"
-updated_at: "2026-08-25T16:21:40Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -744,9 +744,9 @@ PipeBarrier<PIPE_V>();
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；公开表 + `ascend910b` | 支持；公开表 + `ascend910_93` | 支持，但由独立 `_a5` 卡描述。 |
+| 支持状态 | 支持；公开表 + `ascend910b` | 支持；公开表 + `ascend910_93` | 支持，但由独立 `_950` 卡描述。 |
 | Host/Launcher | 共用 arch22 `ForeachCommonTiling` | 共用 arch22 `ForeachCommonTiling` | arch35 独立 Tiling，TensorList 上限 256、workspace 16 MiB。 |
 | Kernel/资源 | 共用 AIV Vector body，平台 UB/核数动态取值 | 共用 AIV Vector body，平台 UB/核数动态取值 | SIMT 512-thread VF，无 AIV Queue。 |
 
@@ -787,3 +787,9 @@ PipeBarrier<PIPE_V>();
 | 同步 | TQue 阶段序；转换/INT32 使用 V barrier | 临时两半不得在 consumer 前覆盖 | `ComputeAndCopyOut`、各 specialization |
 | 精度与尾块 | dtype 特化的 Cast/Sign/Clamp；尾 DMA 精确字节 | RoundMode、maxCastDataCount、tail count 不得改变 | `InnerComputer`、`CopyIn/ComputeAndCopyOut` |
 | 失败边界 | Host 校验阻断非法 dtype/shape；unknown key 无 body | 不得把超过 50 Tensor 或 S=0 当成已支持 | `CheckOpInfo`、router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachSign 950 ACLNN 算子知识](foreach_sign_950.md)（`same_topic`）：Host 按所有 Tensor 元素组成的逻辑串联域分核，但 Device 仍通过 TensorList 描述逐 Tensor 取真实 GM 地址。；Host 不按总元素数分核，而按最大单 Tensor `M` 选择 grid。；两张卡实现同一 aclnnForeachSign TensorList 语义，同时揭示 A2/A3 的总元素分核加 AIV Queue 与 950 的最大 Tensor 分核加 SIMT grid 差异，可直接支持跨平台实现选择和回归。
+<!-- cannbot:related:end -->

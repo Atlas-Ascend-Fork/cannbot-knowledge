@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -72,7 +72,7 @@ cann_versions: ["9.1.0"]
 
 固定 Commit 公开文档只声明无版本后缀的 `aclnnRasterizerGetWorkspaceSize` 与 `aclnnRasterizer`，没有更高版本族。目录 `CMakeLists.txt` 以 `add_all_modules_sources(OPTYPE rasterizer ACLNNTYPE aclnn)` 接入框架生成的 ACLNN bridge；固定仓未提供手写 bridge 源文件，因此指针空值、dtype 等通用第一段校验以公开文档为准，算子拥有的 shape/属性校验继续闭合到 `CheckParam`。
 
-公开产品表明确支持 Atlas A2 与 A3，明确不支持 Ascend 950PR/950DT；OpDef 与 binary config 分别接入 `ascend910b`、`ascend910_93`，与公开表一致。故本卡覆盖 A2/A3，不发布 A5 卡。
+公开产品表明确支持 Atlas A2 与 A3，明确不支持 Ascend 950PR/950DT；OpDef 与 binary config 分别接入 `ascend910b`、`ascend910_93`，与公开表一致。故本卡覆盖 A2/A3，不发布 950 卡。
 
 ## Host/Launcher 执行流程
 
@@ -451,9 +451,9 @@ this->reduceMinIdxLocal = this->ubufLocal[offset];
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；公开文档与 `ascend910b` config | 支持；公开文档与 `ascend910_93` config | 明确不支持；不生成 `_a5` 卡 |
+| 支持状态 | 支持；公开文档与 `ascend910b` config | 支持；公开文档与 `ascend910_93` config | 明确不支持；不生成 `_950` 卡 |
 | Host/Launcher | 共用同一 Tiling；核数运行时取 `GetCoreNumAiv()` | 共用同一 Tiling；核数运行时取 `GetCoreNumAiv()` | 无公开 Route |
 | Kernel/资源 | 同一 key 1 binary schema 与两个 AIV body | 同一 key 1 binary schema 与两个 AIV body | `ascend950` 未出现在 OpDef、binary config 或构建列表 |
 
@@ -466,7 +466,7 @@ this->reduceMinIdxLocal = this->ubufLocal[offset];
 - P2 的 `GenMaskDataInGM` 由各核分片生成 1920×3 gather mask，随后每核在 `CopyOutRslt` 读取全表；二者之间只有核内 `PipeBarrier<PIPE_ALL>`，没有显式跨核 `SyncAll`。固定仓不能证明此 GM 交接边的跨核可见性。
 - Host 将 `numFaces/numVertices` 的 shape 维度窄化为 `uint32_t`，没有显式溢出检查；`height*width` 的部分 Device 表达式先按 `int32_t/uint32_t` 计算，公开 `[1,4096]` 上界使画布元素数不超过 16777216。
 - entry 对 null user workspace 直接返回，对未知 TilingKey 无操作；固定源码没有 Device 错误回传或 fallback。
-- A5 被公开文档明确标为不支持，不能仅凭通用 AscendC 语法外推。
+- 950 被公开文档明确标为不支持，不能仅凭通用 AscendC 语法外推。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -475,7 +475,7 @@ this->reduceMinIdxLocal = this->ubufLocal[offset];
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `image/rasterizer/docs/aclnnRasterizer.md` | 两段式原型、产品表、参数与错误表 | 公开 API、A2/A3 支持、A5 不支持、接口约束 |
+| 入口声明/约束 | `image/rasterizer/docs/aclnnRasterizer.md` | 两段式原型、产品表、参数与错误表 | 公开 API、A2/A3 支持、950 不支持、接口约束 |
 | 入口实现 | `image/rasterizer/CMakeLists.txt` | `add_all_modules_sources(... ACLNNTYPE aclnn)` | ACLNN 框架生成 bridge 接线 |
 | Host/Tiling/Launcher | `image/rasterizer/op_host/rasterizer_tiling.cpp` | `CheckParam/FillTilingData/RasterizerTilingFunc` | 校验、POD、workspace、key、blockDim |
 | Host/Tiling/Launcher | `image/rasterizer/op_host/rasterizer_tiling.h` | `RasterizerTilingData` | POD 字段顺序、类型 |

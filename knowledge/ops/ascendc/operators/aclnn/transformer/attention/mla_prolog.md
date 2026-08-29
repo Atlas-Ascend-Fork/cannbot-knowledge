@@ -21,7 +21,7 @@ sources:
   - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/arch22/service_matmul.h", role: implementation}
   - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_host/CMakeLists.txt", role: implementation}
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:44:39Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -487,9 +487,9 @@ MM1 完成即唤醒 AIV，MM2 在覆盖上一 step CkvKr slice 前等待 AIV cac
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持，无 FP8/HIF8/MXFP8 | 同 A2 | 见 `_a5` |
+| 支持状态 | 支持，无 FP8/HIF8/MXFP8 | 同 A2 | 见 `_950` |
 | Host/Launcher | shared tiling, split-N | 同 A2 | DAV_3510 扩展 |
 | Kernel/资源 | arch22 | arch22 | arch35 |
 
@@ -526,4 +526,10 @@ MM1 完成即唤醒 AIV，MM2 在覆盖上一 step CkvKr slice 前等待 AIV cac
 | workspace/内存 | sequential dtype slices | alias/queryNorm/lifetime | CalcWorkSpace/WorkspaceInit |
 | 同步 | CrossCore + HardEvent | IDs/modes/pipes | comm/Process |
 | 精度与尾块 | typed MLAPType + valid tails | cast/quant order | MLAPType/UpdateStep |
-| 失败边界 | API/Tiling fail closed | no A5 dtype/splitM | checks/GenTilingKey |
+| 失败边界 | API/Tiling fail closed | no 950 dtype/splitM | checks/GenTilingKey |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MlaProlog 950 ACLNN 算子知识](mla_prolog_950.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnMlaPrologV3WeightNzGetWorkspaceSize` / `aclnnMlaPrologV3WeightNz`，公开 ACLNN V3 WeightNz ｜；｜ 实际入口 ｜ `aclnnMlaPrologV3WeightNzGetWorkspaceSize` / `aclnnMlaPrologV3WeightNz` ｜。两卡绑定完全相同的 ACLNN V3 WeightNz 入口，分别说明 A2/A3 与 950 的实现合同。
+<!-- cannbot:related:end -->

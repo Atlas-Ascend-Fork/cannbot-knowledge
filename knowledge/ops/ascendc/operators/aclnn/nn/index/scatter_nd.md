@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_nd_update/op_host/scatter_nd_update_def.cpp
     role: implementation
 created_at: "2026-08-25T17:01:37Z"
-updated_at: "2026-08-25T17:01:37Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -513,9 +513,9 @@ Host 只在 FP32 能逐整数精确表示线性地址时选择排序；Device �
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；ascend910b | 公开支持；ascend910_93 | 另见 `_a5` 卡 |
+| 支持状态 | 公开支持；ascend910b | 公开支持；ascend910_93 | 另见 `_950` 卡 |
 | Host/Launcher | 共用 arch32 Tiling | 共用 arch32 Tiling | arch35 route flags |
 | Kernel/资源 | 共用 arch32 AIV body | 共用 arch32 AIV body | AIV+SIMT、16MiB 保留 workspace |
 
@@ -557,3 +557,9 @@ Host 只在 FP32 能逐整数精确表示线性地址时选择排序；Device �
 | 同步 | event helpers + `SyncAll` | 不得提前消费 workspace 或覆盖 UB | `RunScatterAfterSync` |
 | 精度与尾块 | FP32 排序仅在 `2^24-1` 内 | INT64 大域不可窄化；只搬有效 tail 字节 | `IsSort/ComputeForSort` |
 | 失败边界 | null/shape/dtype、workspace null、unknown key | 不得推测 fallback | `CheckParams/scatter_nd_update` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ScatterNd 950 ACLNN 算子知识](scatter_nd_950.md)（`same_topic`）：“令 `K=indices.shape［-1］`、`N=prod(indices.shape［:-1］)`、`S=prod(data.shape［K:］)`。第 `r` 行索引的元素偏移为 `O［r］=sum(indices［r,d］*stride［d］)`，其更新切片覆盖 `out［O［r］:O［r］+S］`。确定性路线先以 atomic max 计算每个目标行对应的最大原始 `r`，再只提交该行更新，因此重复索引选择最后一条。非确定性路线用于框架关闭 deterministic 时，重复目标的最终值依具体路线与核间写入顺序。”与“设 `K=indices.shape［-1］`，`P=prod(indices.shape［:-1］)`，`S=prod(data.shape［K:］)`。对连续化后的 `data` 建立输出副本；对第 `p` 个索引元组 `i=(i0,...,iK-1)`，线性行号为 `L=sum(i［d］*prod(data.shape［d+1:K］))`，将 `updates［p, :］` 的 `S` 个元素覆盖到输出第 `L` 个切片。公开约束要求索引非负且不越界。R-002/R-003 按输入行顺序覆盖，重复目标最终取最后一行；R-001 对同一线性地址仅提交一个由排序结果携带的原位置，但固定仓未给出 `Sort` 对同键的稳定性契约，因此不能把其 winner 推断为最大原始位置。”是双方正文中的具体合同。两端定义同一 ScatterNd 覆盖语义与索引线性化，950 卡补充 atomic-max 确定性路线，A2/A3 卡说明排序路线的稳定性边界；互读可核对重复索引行为。
+<!-- cannbot:related:end -->

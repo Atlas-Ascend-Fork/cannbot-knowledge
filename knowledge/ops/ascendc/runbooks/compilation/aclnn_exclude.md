@@ -78,13 +78,3 @@ ReduceStdV2Update 算子 ST 测试编译报 `aclnnReduceStdV2UpdateGetWorkspaceS
 ## 坏实践
 
 - 手工覆盖 vendors 头文件后把一次编译通过当成生成链已修复；重新打包仍可能产生不一致头文件。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [OpDef](../../apis/utils_api/prototype_register_management/op_def/op_def.md)（`exemplifies`）：OpDef 属性列表是 autogen 头文件签名的源契约。
-- [561103 同名算子签名冲突链接绑内置版](561103.md)（`related`）：561103 同名算子签名冲突链接绑内置版 与《aclnn_exclude 头文件自动生成覆盖源码致签名不符》的实质衔接是：同名签名冲突的核心是运行时绑定到错误或被自动生成覆盖的符号；符号探测、opType 碰撞、pytest 绕过和 exclude 覆盖案例给出可执行鉴别，其他 561103 卡用于排除属性与 tiling 路由根因。
-- [ACLNN 507035 — opType 与内置 ops_legacy 同名碰](aclnn_optype_collision_built_in_ops_legacy_507035.md)（`related`）：生成签名正确后仍需确认运行时未绑定内置同名 binary。
-- [ACLNNTYPE aclnn autogen 与手写同名符号冲突](aclnntype_aclnn_autogen.md)（`related`）：两卡围绕 ACLNNTYPE 的相反路径：aclnn 生成同名实现可与手写文件重复定义，aclnn_exclude 则可能生成安装头并与手写签名错配，能据构建开关分流诊断。
-- [ACLNN GetWorkspaceSize 缺 L0 调用致输出全零](aclnn_l2_get_workspace_size_requires_l0_launcher_list.md)（`same_topic`）：aclnn_exclude 生成链仍需 L0 launcher list，二者共同决定头文件/符号是否生成。
-<!-- cannbot:related:end -->

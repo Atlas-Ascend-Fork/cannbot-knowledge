@@ -17,9 +17,3 @@ platforms: ['950']
 提供 Unsqueeze、Pack 和 UnPack 寄存器级数据压缩解压接口。Unsqueeze 根据 mask 对 dstReg 解压缩，首位元素置 0，后续元素根据 mask 中 1 的累计数量递增。Pack 将 srcReg 元素的低位写入 dstReg 的低半或高半部分，支持 b16/b32/b64 类型。
 
 这些接口均为寄存器级操作，仅 Ascend 950PR/Ascend 950DT 支持，需在 VF 函数内调用。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [数据压缩](../../../c_api/reg/data_compress/data_compress.md)（`same_topic`）：数据压缩 与《数据压缩》的实质衔接是：C Reg 数据压缩是同一 Pack/UnPack/Unsqueeze 能力的另一入口；B16 UnPack 后必须数值 Cast 的案例揭示压缩位布局不能直接当作 FP32 数值。
-<!-- cannbot:related:end -->

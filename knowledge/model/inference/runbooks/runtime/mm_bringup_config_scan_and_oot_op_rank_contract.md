@@ -144,3 +144,10 @@ else:                                 # 输入是 3D（rank-collapsed）
 - 信号 1（diff 事实，merge commit `40c7db65599534e92a6f17cbacf2dc784bcc20b7`，`vllm_ascend/utils.py`）：`is_moe_model` 递归化为 `_is_contain_expert` 遍历嵌套 config dict；根因由维护者兼作者 PR 描述确认（顶层扫描漏检 VL/Omni 的 `text_config` 嵌套 MoE 键、判定在模型加载前被调不能用 FusedMoE 模块判），崩点与调用链由一手 traceback 佐证。
 - 信号 2（diff 事实，merge commit `58adf7c8ac239d10fa1b9851c3d38af8930a17f3`，`vllm_ascend/ops/mm_encoder_attention.py:96,138-145`；OOT 注册见 `vllm_ascend/utils.py:697`）：入口 `is_reshaped = query.dim() == 4` + 收尾按秩分支折叠，与报错栈（`o_proj -> aclnnAddmm 161002`）对得上；维护者 PR body 明确修复目标为「保持 `AscendMMEncoderAttention` 输出形状与输入一致」。
 - 溯源下探：[vllm-ascend-pr-3897-mm-bugfix-add-moe-verification-for-multi-modal-models](https://github.com/vllm-project/vllm-ascend/pull/3897)、[vllm-ascend-issue-5297-bug-tencent-hunyuan-hunyuanocr-model-execute-failed-with-linear-op-input](https://github.com/vllm-project/vllm-ascend/issues/5297)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CUDA 原生 vLLM 多模态模型移植 vllm-ascend NPU：三处固定后端不兼容点与修法](vllm_cuda_multimodal_npu_bringup.md)（`related`）：CUDA 原生 vLLM 多模态模型移植 vllm-ascend 时的三处固定后端不兼容点（MoE 算子 / 视觉 flash_attn / 引擎图）见 ［vllm-cuda-multimodal-npu-bringup］(vllm_cuda_multimodal_npu_bringup.md)。；把上游按 CUDA 假设写好的 vLLM 多模态模型（观测实例 DeepSeek-OCR-2：视觉编码器 = SAM-ViT + Qwen2-decoder-as-encoder，语言侧含 MoE）搬到昇腾 Atlas A2 的 vllm-ascend（v0.8.5rc1 / vLLM 0.8.5）时，有三处后端不兼容会各自阻断启动，且互相独立、须同时打通：；结构失配手册把 CUDA 后端残留列为同类 bringup 的相邻检查，目标手册给出 MoE、视觉注意力和引擎图三处修法，二者可按框架结构检查与后端依赖检查推进同一次多模态拉起。
+- [昇腾编码器 packed 全注意力：两个可互换融合算子的 seq_len 语义不同（unpad 吃原始长度、fusion_attention TND 吃 cumsum）](mm_encoder_packed_attention_seqlen_semantics.md)（`related`）：同类多模态编码器 packed 全注意力里，两个可互换昇腾融合算子的 `seq_len` 语义（原始长度 vs. cumsum）不同、误用也会导致输出错位——同源于「OOT 算子契约细节被上层误当同义」，见 ［mm-encoder-packed-attention-seqlen-semantics］(mm_encoder_packed_attention_seqlen_semantics.md)。；同一段 packed 全注意力可由两个昇腾融合算子实现，但它们的「每序列长度」入参**名字和含义都不同**：；结构失配手册把 packed seq_len 表示列为相邻的 OOT 合同风险，目标手册展开原始长度与 cumsum 的算子差异，联合阅读可同时校验编码器输出秩和 packed 序列边界。
+<!-- cannbot:related:end -->

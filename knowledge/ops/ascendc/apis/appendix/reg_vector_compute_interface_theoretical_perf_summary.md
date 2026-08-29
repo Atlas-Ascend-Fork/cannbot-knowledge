@@ -23,9 +23,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Reg矢量计算编程（C++ Tensor编程）](../../guides/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/reg_vector_computation.md)（`explains`）：Reg矢量计算编程（C++ Tensor编程） 与《Reg矢量计算接口理论性能汇总》的实质衔接是：Reg C++ 编程仍遵循 asc_vf_call→__simd_vf__→Load/Compute/Store；C API 对照、性能/边界/merge/精度表和 helper 编译卡直接约束这一调用模型。
-- [C-API-Reg矢量计算接口理论性能汇总](c_api_reg_vector_compute_theoretical_perf_summary.md)（`related`）：两份表分别覆盖 C-API Reg 与 C++ Reg 接口的理论周期，可用于同一寄存器算法在语言接口间做吞吐选型。
-- [Reg矢量计算](../simd_api/basic_api/reg_vector_compute/reg_vector_compute.md)（`same_topic`）：Reg矢量计算 与《Reg矢量计算接口理论性能汇总》的实质衔接是：Reg 矢量计算必须在 VF 内完成 Load→寄存器计算→Store；C/C++ 编程指南和边界、精度、性能、MergeMode 表直接约束该执行模型。
-- [Reg矢量计算接口指令单双发汇总](reg_vector_compute_interface_instruction_single_dual_issue_summary.md)（`same_topic`）：Reg矢量计算接口指令单双发汇总：单双发汇总给出 Reg 指令吞吐的硬件读写上限；理论性能表用于核对期望 cycle，流水类型表解释能否并行，双发优化卡把这些约束转成可执行排布方法。 目标卡《Reg矢量计算接口理论性能汇总》补充：本节汇总介绍了Reg矢量计算接口的理论性能，本节内容仅针对如下型号生效：
-- [Vector指令理论性能汇总](vector_instruction_theoretical_perf_summary.md)（`same_topic`）：Vector 总表明确指出 950 上大量 Memory 矢量 API 由 Reg API 实现而不单列理论性能；Reg 总表给出这些底层单指令性能及单双发说明，是性能估算的直接下钻。
+- [Reg矢量计算接口软仿情况汇总](reg_vector_compute_interface_soft_simulation_summary.md)（`related`）：底层硬件不支持该数据类型，通过多种接口组合软仿实现；软仿实现的接口和数据类型不提供理论性能。前者标明某些 dtype 是组合接口的软件仿真实现，后者明确这些软仿条目没有单指令理论性能；做接口性能选型时必须先排除软仿项再使用吞吐表。
 <!-- cannbot:related:end -->

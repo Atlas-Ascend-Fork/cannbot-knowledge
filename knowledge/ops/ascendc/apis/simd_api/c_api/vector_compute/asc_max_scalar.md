@@ -22,9 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMax](asc_max.md)（`related`）：AscMaxScalar 将第二个 Tensor 改为标量，适合根据广播需求在二元 Tensor Max 与标量 Max 间选型。
-- [AscMaxScalar](../reg/arithmetic_compute/asc_max_scalar.md)（`related`）：AscMaxScalar 与《AscMaxScalar》的实质衔接是：Reg 与基础 MaxScalar 操作同一 vector-scalar 最大值，MinScalar 给出相反选择边界。
-- [AscMinScalar](../reg/arithmetic_compute/asc_min_scalar.md)（`related`）：AscMaxScalar 与《AscMinScalar》的实质衔接是：Reg 与基础 MaxScalar 操作同一 vector-scalar 最大值，MinScalar 给出相反选择边界。
-- [AscMinScalar](asc_min_scalar.md)（`related`）：AscMaxScalar 是同一 Vector 标量比较模型的取大对偶，可据 clamp 上界或下界选择。
-- [Maxs（灵活标量位置）](../../basic_api/memory_vector_compute/basic_arithmetic/maxs_flexible_scalar.md)（`related`）：AscMaxScalar 与《Maxs（灵活标量位置）》的实质衔接是：Reg 与基础 MaxScalar 操作同一 vector-scalar 最大值，MinScalar 给出相反选择边界。
+- [AscMaxScalar](../reg/arithmetic_compute/asc_max_scalar.md)（`same_topic`）：矢量src的逐个元素与标量value比较大小，接着按照对应的比特位将最大值存入dst中。计算公式如下：；矢量src的逐个元素与标量value比较大小，接着按照对应的比特位将最大值存入dst中。两卡核心运算完全一致，分别承载 A2/A3 UB 指针接口与 950 寄存器加 mask 接口的跨代迁移契约。
 <!-- cannbot:related:end -->

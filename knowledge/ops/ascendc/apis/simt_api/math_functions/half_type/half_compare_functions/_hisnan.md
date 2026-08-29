@@ -29,7 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [IsNan接口](../../../../simd_api/adv_api/math_compute/is_nan_interface/is_nan_interface.md)（`related`）：《IsNan接口》处理“按元素判断浮点数是否为NaN，并提供临时空间大小获取接口。”。《__hisnan》提供“判断浮点数是否为nan。”，其具体合同或探针直接接入IsNan 的 Kernel/Tiling 合同、跨 dtype 谓词与 Cast 保留 NaN 的前置条件。
-- [__heq](_heq.md)（`related`）：IsNaN 可显式验证 Eq/Equ 的 NaN 分支。
-- [__isnanx2](../half2_compare_functions/_isnanx2.md)（`related`）：标量 half NaN 判定可作为 __isnanx2 每个分量的验证 oracle。
+- [ForeachMinimumList 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_minimum_list_950.md)（`related`）：y［idx］=(__hisnan(a) ｜｜ a<b) ? a : b；功能：判断浮点数是否为nan。；950 ForeachMinimumList 的 FP16 SIMT 路线直接调用该 helper 决定 NaN 传播分支。
 <!-- cannbot:related:end -->

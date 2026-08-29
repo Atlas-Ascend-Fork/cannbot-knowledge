@@ -25,13 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/device_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscFloat2float](../../../../simd_api/c_api/vector_compute/asc_float2float.md)（`same_topic`）：AscFloat2float 与《__float2float_rna》的实质衔接是：AscFloat2float 通过舍入模式规范同类型值；SIMT 同名转换和 Rint/Round/Floor/Ceil/Trunc 卡提供每种模式的确切数学定义。
-- [__float2float_rd](_float2float_rd.md)（`same_topic`）：__float2float_rna 与《__float2float_rd》的实质衔接是：float→float 的 RNA/RN/RD/RU/RZ 变体只在舍入方向不同，边界值选择需互相对照。
-- [__float2float_rn](_float2float_rn.md)（`same_topic`）：__float2float_rna 与《__float2float_rn》的实质衔接是：float→float 的 RNA/RN/RD/RU/RZ 变体只在舍入方向不同，边界值选择需互相对照。
-- [__float2float_ru](_float2float_ru.md)（`same_topic`）：__float2float_ru 与《__float2float_rna》的实质衔接是：__float2float_ru 对 float 做向上取整；RN/RD/RNA/RZ 变体、类型转换总览和 AscFloat2float 直接对照五种舍入方向与特殊值。
-- [__float2float_rz](_float2float_rz.md)（`same_topic`）：RNA 提供半值远离零舍入，补充 RZ 之外的确定模式。
-<!-- cannbot:related:end -->

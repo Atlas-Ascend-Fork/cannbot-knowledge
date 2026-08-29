@@ -136,3 +136,10 @@ DeepSeek-V3.2 训练实测，启用上述基础融合算子相对原生实现的
 - [tilelang-moe-token-permute](../kernels/tilelang_moe_token_permute.md)（npu_permute 绑定的 npu_moe_token_permute/unpermute 的底层 TileLang 实现）
 - [tilelang-rmsnorm-swiglu](../kernels/tilelang_rmsnorm_swiglu.md)（npu_rms_norm 绑定算子的底层 TileLang 实现）
 - [megatron-bridge](megatron_bridge.md)（MindSpeed-Bridge 权重桥接的邻近概念）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SMLA（Sparse Flash MLA，DeepSeek-V4 稀疏 MLA 融合算子）](../kernels/smla.md)（`related`）：“配置经 ［npu-fused-op-converters］(../frameworks/npu_fused_op_converters.md) 的 `get_model_converter_config("npu_smla")` 启用。”给出 SMLA 的配置名，而“所有 NPU converter 通过 `ModelConvertersContainer.Config` 的 `converters` 列表启用，每个 converter 名先经 `get_model_converter_config()` 转成 Config 对象：”给出容器装配合同；联合阅读可把 npu_smla 放入训练启动配置，而非只停留在成员导航。
+- [torchtitan-npu ModelCustom 声明式转换框架](model_custom_converter.md)（`related`）：“将 MoE 专家的 `w1`/`w3` 融合为 `w13` 以适配 NPU”给出模型级转换的具体 GMM 目标；“converter 的 `convert()` 遍历 `model.named_modules()`”给出融合算子 converter 实际查找和替换模块的执行入口，两者共同闭合从转换目标到注册执行。
+<!-- cannbot:related:end -->

@@ -6,7 +6,7 @@ tags: ["task.optimization", "topic.memory", "topic.programming_model.execution_u
 status: stable
 sources: []
 created_at: "2026-08-18T08:43:30Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 ---
 
@@ -20,8 +20,8 @@ platforms: ["950"]
 
 - 工程形态：kernel 直调（pypto-gym，Cube matmul 为主的 attention）。
 - API 路径：JIT `pass_options.cube_l1_reuse_setting`（`{-1: <int>}`）。
-- 验证过的平台与 CANN 版本：Ascend950（A5）；CANN 版本未记录。
-- 适用粒度：`operator_family`（A5 上 scope=20001 部分包裹结构的 cube matmul 算子）。
+- 验证过的平台与 CANN 版本：Ascend950（950）；CANN 版本未记录。
+- 适用粒度：`operator_family`（950 上 scope=20001 部分包裹结构的 cube matmul 算子）。
 - 路线优先级：`banned`——`cube_l1_reuse_setting={-1:32}` 在本结构下未带来性能收益且略差，不得作为优化手段发布。
 - 不适用/未验证场景：scope=5001 全包裹结构下 L1 复用受 mix合图统一管理，甜点值不同；a2/a3 未验证。
 
@@ -61,5 +61,5 @@ pass_options = {
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MLA Prolog decode A5 tile 调优配方](mla_prolog_decode_a5_tile_tuning_recipe.md)（`related`）：MLA 调优配方实际 sweep 同一 cube_l1_reuse_setting，并记录 -1=8 回归与 -1=4 配置；焦点卡补充另一结构下 16→32 的非单调边界。
+- [flash在线softmax JIT重排致精度超阈](../precision/flash_softmax_jit.md)（`related`）：性能卡记录“将 `cube_l1_reuse_setting` 从 `{-1:16}` 增大到 `{-1:32}`，期望通过增加 L1 复用次数进一步减少 L1 重载。”但性能未改善；精度卡进一步规定“`cube_nbuffer_setting={-1:2}` 属禁用路线”，并解释重排在线 softmax 的 C1 任务会造成 BF16 超阈，二者共同约束同一算子的 Cube/JIT 复用调参和验证。
 <!-- cannbot:related:end -->

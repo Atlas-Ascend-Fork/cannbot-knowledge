@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log2/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:47:38Z"
-updated_at: "2026-08-25T15:47:38Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -591,9 +591,9 @@ Host/Init 让 BF16 data Queue 单槽达到 `9U`，但只分配一个 `U` 字节 
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 README/API 表支持 | 公开 README/API 表支持 | 公开表支持，但使用独立 `_a5` 卡 |
+| 支持状态 | 公开 README/API 表支持 | 公开 README/API 表支持 | 公开表支持，但使用独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`/arch22 公共 Tiling，固定仓未给营销名与 compute unit 的更细映射 | `ascend910_93`/arch22 公共 Tiling，逻辑同 A2 | arch35 独立 POD/Tiling，单 SIMT Kernel |
 | Kernel/资源 | AIV_VECTOR，双缓冲 UB，节点 workspace 32 B | 与 A2 共用源码；实际 UB/核数由平台查询 | 无显式 AIV Queue，1024 threads/block，节点 workspace 0 |
 
@@ -613,7 +613,7 @@ Host/Init 让 BF16 data Queue 单槽达到 `9U`，但只分配一个 `U` 字节 
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `foreach/foreach_log2/docs/aclnnForeachLog2.md` | `aclnnForeachLog2GetWorkspaceSize`, `aclnnForeachLog2` | 两段式原型、dtype/shape/连续性、错误语义、A2/A3/A5 支持 |
+| 入口声明/约束 | `foreach/foreach_log2/docs/aclnnForeachLog2.md` | `aclnnForeachLog2GetWorkspaceSize`, `aclnnForeachLog2` | 两段式原型、dtype/shape/连续性、错误语义、A2/A3/950 支持 |
 | 入口声明/约束 | `foreach/foreach_log2/README.md` | 产品支持表、公式 | 算子语义与平台公开性 |
 | 入口实现 | `foreach/foreach_log2/op_host/foreach_log2_def.cpp` | `ops::ForeachLog2` | 动态 TensorList、dtype/format、AutoContiguous、平台注册 |
 | Host/Tiling/Launcher | `foreach/foreach_log2/op_host/arch22/foreach_log2_tiling_arch22.cpp` | `Tiling4ForeachLog2Tiling` | 选择公共 Tiling，op code=6 |
@@ -639,3 +639,9 @@ Host/Init 让 BF16 data Queue 单槽达到 `9U`，但只分配一个 `U` 字节 
 | 同步 | Queue 管 MTE2→V，HardEvent 管 V→MTE3→MTE2 | 不得提前 Free/复用 data Queue；BF16 窗口 barrier 不可删 | `KernelForeachUnary`; `InnerComputer`; `ForeachImplictOutput` |
 | 精度与尾块 | FP16/FP32 原 dtype；BF16 FP32 计算、RINT 回写 | tail 搬运只提交 valid 字节；BF16 cast window `U/4` | `Log2Adapter`; `InnerComputer::ComputePerCast`; `CopyIn` |
 | 失败边界 | Host 正常只生成 1/2/4 | 未知 key 无 fallback；Tensor/core POD 容量 50；输出额外区域不写 | `GetTilingKeyByDtypeOnly`; `foreach_log2`; `MAX_*_CONT` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachLog2 950 ACLNN 算子知识](foreach_log2_950.md)（`same_topic`）：A2/A3 卡的“｜ Kernel 路线 ｜ R-001 FP16 原地 Vector；R-002 FP32 原地 Vector；R-003 BF16→FP32→BF16 Vector ｜”与 950 卡的“｜ Kernel 路线 ｜ R-001 FP32 SIMT；R-002 FP16→FP32 SIMT；R-003 BF16→FP32 SIMT ｜”在同一 aclnnForeachLog2 合同下给出跨平台互斥实现，迁移时必须对照 Vector Queue 与 SIMT grid-stride 路线。
+<!-- cannbot:related:end -->

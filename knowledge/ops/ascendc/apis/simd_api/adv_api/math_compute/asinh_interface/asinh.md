@@ -39,8 +39,5 @@ __aicore__ inline void Asinh(const LocalTensor<T>& dstTensor, const LocalTensor<
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetAsinhTmpBufferFactorSize](get_asinh_tmp_buffer_factor_size.md)（`related`）：The factor query supports deriving the maximum Asinh tile size from a fixed available workspace.
-- [Asinhf](../../../../simt_api/math_functions/float_math_functions/asinhf.md)（`same_topic`）：高阶 Tensor Asinh 与 SIMT asinhf 完成同一反双曲正弦。
-- [Asinh接口](asinh_interface.md)（`same_topic`）：《Asinh》明确“按元素做反双曲正弦函数计算，输入值域需在-65504到65504范围内”；它与《Asinh接口》的“提供Asinh反双曲正弦计算接口及其Tiling临时空间大小查询接口，包含Asinh、GetAsinhMaxMinTmpSize等。”在实际调用参数、数据流或结果校验上直接衔接。
-- [GetAsinhMaxMinTmpSize](get_asinh_max_min_tmp_size.md)（`same_topic`）：《GetAsinhMaxMinTmpSize》的任务是“在host侧获取Asinh接口预留临时空间的最大和最小值，用于Tiling参数选择”。《Asinh》具体提供“按元素做反双曲正弦函数计算，输入值域需在-65504到65504范围内”，它直接用于Asinh workspace 上下界和 factor 到 Kernel 的同一空间合同。
+- [GetAsinhMaxMinTmpSize](get_asinh_max_min_tmp_size.md)（`related`）：临时空间大小BufferSize的获取方式请参考GetAsinhMaxMinTmpSize；开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。Asinh Kernel 的 sharedTmpBuffer 明确要求由 Host 查询接口定容，目标卡给出最大/最小范围和下限正确性约束；两端直接闭合 buffer 申请与 Tiling 传参。
 <!-- cannbot:related:end -->

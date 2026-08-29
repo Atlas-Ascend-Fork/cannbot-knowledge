@@ -39,8 +39,5 @@ SyncAll是核间同步控制接口，根据不同的函数原型介绍其功能
 <!-- cannbot:related:start -->
 ## 相关
 
-- [per-core zero-out 经 grid-stride ZeroOutS](../../../../../runbooks/precision/per_core_zero_out_grid_stride_zeroout_simt_overshoot.md)（`exemplifies`）：per-core zero-out 经 grid-stride ZeroOutS 与《SyncAll》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-- [单 rank mock HCCL 致 AIC+AIV SyncAll 死锁](../../../../../runbooks/compilation/rank_mock_hccl_aic_aiv_syncall.md)（`exemplifies`）：单 rank mock HCCL 致 AIC+AIV SyncAll 死锁 与《SyncAll》的实质衔接是：单 rank mock 未提供真实 HCCL 参与者，SyncAll 无法闭合；HCCL context/commit/wait 和核间同步共同支持判别。
-- [核间同步](inter_core_sync.md)（`same_topic`）：核间同步接口页汇总 SyncAll 及信号式替代方案，便于按全局屏障或点对点依赖选型。
-- [核间同步能力概述](inter_core_sync_overview.md)（`same_topic`）：核间同步概览解释 SyncAll 的参与核、workspace 和阻塞语义，是正确放置全核屏障的机制背景。
+- [单 rank mock HCCL 致 AIC+AIV SyncAll 死锁](../../../../../runbooks/compilation/rank_mock_hccl_aic_aiv_syncall.md)（`exemplifies`）：“kernel 内 AIC 核走 `Run()` 的 matmul 路径、AIV 核走 prologue 路径，两者的 `SyncAll<true>()` 需要所有核都到达配对。”；“- 融合算子的全核同步，一次性实现三个核间同步能力（参考CrossCoreSetFlag的关键特性说明）：首先完成单个AI Core内，AIC与所有AIV同步（AIC等AIV）；接着完成多个AI Core间，所有AIC的同步；最后完成单个AI Core内，所有AIV与AIC同步（AIV等AIC）。”。runbook 的单 rank mock 死锁正由 SyncAll 的 AIC/AIV 全核到达和三阶段配对合同解释。
 <!-- cannbot:related:end -->

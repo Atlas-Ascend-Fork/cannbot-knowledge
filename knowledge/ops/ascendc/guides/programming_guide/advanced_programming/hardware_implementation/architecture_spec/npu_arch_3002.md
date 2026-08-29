@@ -49,7 +49,6 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetCurNpuArch](../../../../../apis/utils_api/platform_info/platform_ascend_c/get_cur_npu_arch.md)（`explains`）：NPU架构版本3002 与《GetCurNpuArch》的衔接是：arch3002 卡给出该架构的核结构与存储约束；基础架构说明、运行时架构查询和 SoC→ini→NpuArch 查证链用于确认实际编译/运行落到该变体。
-- [Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa](../../../../../runbooks/compilation/arch_variant_lookup_chain_soc_ini_npuarch_dispatcher.md)（`related`）：NPU架构版本3002 与《Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa》的衔接是：arch3002 卡给出该架构的核结构与存储约束；基础架构说明、运行时架构查询和 SoC→ini→NpuArch 查证链用于确认实际编译/运行落到该变体。
-- [基本架构（硬件实现）](../basic_architecture.md)（`related`）：NPU架构版本3002 与《基本架构（硬件实现）》的衔接是：arch3002 卡给出该架构的核结构与存储约束；基础架构说明、运行时架构查询和 SoC→ini→NpuArch 查证链用于确认实际编译/运行落到该变体。
+- [GetCurNpuArch](../../../../../apis/utils_api/platform_info/platform_ascend_c/get_cur_npu_arch.md)（`explains`）：对应的产品型号为；获取当前硬件平台芯片架构版本号；连接静态架构映射与平台查询 API。
+- [Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa](../../../../../runbooks/compilation/arch_variant_lookup_chain_soc_ini_npuarch_dispatcher.md)（`related`）：__NPU_ARCH__版本号为3002；须先确认编译期命中的变体，再读其 API 实现；连接架构编号事实与编译变体查证方法。
 <!-- cannbot:related:end -->

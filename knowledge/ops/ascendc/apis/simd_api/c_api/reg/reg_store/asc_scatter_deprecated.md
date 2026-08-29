@@ -23,10 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [FP16 scatter 归约逐次回写放大相消误差](../../../../../runbooks/precision/low_precision_scatter_reduction_needs_fp32_accumulator.md)（`exemplifies`）：asc_scatter 与《FP16 scatter 归约逐次回写放大相消误差》的实质衔接是：废弃 asc_scatter 的现行 C/基础/Reg Scatter 是迁移路径；三张故障卡直接约束 indices 形状、重复地址归约和写冲突。
-- [Scatter 非散射维可缩小，更新量须按 indices 计算](../../../../../runbooks/precision/scatter_update_count_must_follow_indices_shape.md)（`exemplifies`）：asc_scatter 与《Scatter 非散射维可缩小，更新量须按 indices 计算》的实质衔接是：废弃 asc_scatter 的现行 C/基础/Reg Scatter 是迁移路径；三张故障卡直接约束 indices 形状、重复地址归约和写冲突。
-- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](../../../../../runbooks/precision/repeated_overwrite_updates_need_ordered_ub_merge.md)（`exemplifies`）：asc_scatter 与《重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回》的实质衔接是：废弃 asc_scatter 的现行 C/基础/Reg Scatter 是迁移路径；三张故障卡直接约束 indices 形状、重复地址归约和写冲突。
-- [Scatter](../../../basic_api/memory_vector_compute/scatter_gather/scatter_isasi.md)（`related`）：asc_scatter 与《Scatter》的实质衔接是：废弃 asc_scatter 的现行 C/基础/Reg Scatter 是迁移路径；三张故障卡直接约束 indices 形状、重复地址归约和写冲突。
-- [ScatterDiscrete](../../../basic_api/reg_vector_compute/reg_data_store/scatter_discrete.md)（`related`）：ScatterDiscrete 与《asc_scatter》的实质衔接是：ScatterDiscrete 与 Gather、C/基础 Scatter 形成索引读写对偶；两张故障卡直接约束重复索引归约和 updates 形状。
-- [AscScatter](asc_scatter.md)（`same_topic`）：asc_scatter 与《AscScatter》的实质衔接是：废弃 asc_scatter 的现行 C/基础/Reg Scatter 是迁移路径；三张故障卡直接约束 indices 形状、重复地址归约和写冲突。
+- [AscScatter](asc_scatter.md)（`same_topic`）：该接口已废弃。请使用asc_scatter实现此功能。 该指令会根据索引值index将源操作数src中的元素分散到目的操作数dst中。分散过程；该指令会根据索引值index将源操作数src中的元素分散到目的操作数dst中。分散过程。废弃卡明确要求改用 asc_scatter，并描述相同的按 index 将 src 分散到 dst 的行为；目标卡就是当前替代接口及其功能合同。
 <!-- cannbot:related:end -->

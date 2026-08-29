@@ -21,8 +21,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalignUnpack4](asc_loadalign_unpack4.md)（`related`）：普通 Unpack 将 VL/2 的 u8/u16/u32 扩成双倍位宽，而 Unpack4 固定把 VL/4 u8 扩成 u32；对比可正确选择扩展倍率与目标布局。
-- [AscUnpack](../data_compress/asc_unpack.md)（`related`）：LoadAlignUnpack 把 UB 搬入与解包融合，适合读取阶段减少独立 AscUnpack。
-- [UnPack](../../../basic_api/reg_vector_compute/data_compression/un_pack.md)（`related`）：LoadAlignUnpack 把对齐搬入与 unpack 融合，适合从 UB 读取时减少独立步骤。
-- [AscLoadalignUnpackPostupdate](asc_loadalign_unpack_postupdate.md)（`same_topic`）：Postupdate 变体在完成相同 unpack 对齐加载后还更新源地址，适合循环流式读取；基础变体保持地址不变。
+- [AscLoadalignUnpack4](asc_loadalign_unpack4.md)（`same_topic`）：对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现解压缩搬入模式：按无符号整型u8/u16/u32加载VL/2长度数据，unpack到VL长度u16/u32/u64类型，中间位置补0。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现UNPACK4搬入模式：解压缩模式，按无符号整型u8加载VL/4长度数据，unpack到VL长度u32类型，中间位置补0。。两端都是 UB 对齐加载并补零扩展的 unpack 接口，分别覆盖 VL/2 通用扩展与 VL/4 的 u8 到 u32 专用模式，联合阅读可按压缩倍率和目标类型选择。
 <!-- cannbot:related:end -->

@@ -161,3 +161,12 @@ veRL 侧之所以「用 `onload_model_weight` + `init_cache_engine` 替代 vLLM 
 - [qwen3-rl](../../guides/recipes/qwen3_rl.md)（Qwen3 235B RL 训推切换）
 - [mindspeed-rl](../frameworks/mindspeed_rl.md)（MindSpeed-RL 训推共卡引擎实现训推态切换；onload/offload 范式来源——`onload_model_weight`/`init_cache_engine` 替代 `wake_up`、`offload_model_weight`/`free_cache_engine` 替代 `sleep`）
 - [vllm-ascend](../frameworks/vllm_ascend.md)（MindSpeed-RL rollout 经 vLLM-Ascend adapter 切换）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepSeek-R1 veRL + MindSpeed + vLLM-Ascend 全共卡 GRPO RL 训练](../../guides/recipes/deepseek_r1_rl.md)（`related`）：TP4EP8PP8 ↔ DP·TP2·EP128/256；每完成一次训练更新，新权重必须先**重新切分（reshard）**成推理布局再喂给 rollout；连接并行配置与 reshard/offload 机制。
+- [MindSpeed-RL](../frameworks/mindspeed_rl.md)（`related`）：“用显式的训推态切换接口与分层配置体系驱动一轮 RL 迭代”；“**同一组卡**要在「训练态」（actor update / ref log_prob，由 Megatron+MindSpeed 承载）与「推理态」（rollout/generate，由 vLLM+vLLM-Ascend 承载）之间反复交替”。候选卡解释框架核心切换接口的 reshard、offload 与 D2D 合同。
+- [Qwen3 长序列 RL 训练实践（235B-A22B 2K 推 32K + 32B SAM 投机，veRL/MindSpeed/vLLM-Ascend，GRPO/DAPO）](../../guides/recipes/qwen3_rl.md)（`related`）：同样的 veRL 全共卡 + 训推切换 + 零冗余 reshard；每完成一次训练更新，新权重必须先**重新切分（reshard）**成推理布局再喂给 rollout；概念页给出 recipe 复用的训推切换契约。
+- [Swap Optimizer（优化器状态卸载 Host 内存）](swap_optimizer.md)（`related`）：Swap Optimizer 把 AdamW 优化器状态在前向 / 反向期间**卸载到 Host（CPU pinned）内存**、仅在 `optimizer.step()` 时以 **param 为粒度的「加载 → 更新 → 卸载」切片流水**搬回 device 计算，从而压低 device 显存峰值。；`MegatronOffLoader` 用 `offload_train_optimizer` / `offload_train_grad` / `offload_train_param` 三个 `generate_config` 开关分别控制优化器状态、梯度、权重的卸载。两者在 RL 全共卡训推切换时衔接为优化器态卸载的机制选择与切换期显存释放。
+<!-- cannbot:related:end -->

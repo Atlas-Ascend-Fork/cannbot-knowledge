@@ -31,10 +31,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [And](and.md)（`same_topic`）：Ands：Ands在 isSetMask=false时依赖SetMaskCount/Norm/VectorMask并要求ResetMask；And的tensor与Reg版本帮助区分标量按位与和双tensor按位与。 目标卡《And》补充：对LocalTensor中的元素做按位与运算，支持整个tensor、前n个数据连续计算和高维切分计算三种调用方式。
-- [And](../../reg_vector_compute/logical_compute/and.md)（`same_topic`）：Ands：Ands在 isSetMask=false时依赖SetMaskCount/Norm/VectorMask并要求ResetMask；And的tensor与Reg版本帮助区分标量按位与和双tensor按位与。 目标卡《And》补充：根据mask对两个RegTensor或MaskReg执行按位与操作，将结果写入目的操作数，支持ZEROING模式。
-- [ResetMask](../mask_operations/reset_mask.md)（`same_topic`）：Ands：Ands在 isSetMask=false时依赖SetMaskCount/Norm/VectorMask并要求ResetMask；And的tensor与Reg版本帮助区分标量按位与和双tensor按位与。 目标卡《ResetMask》补充：恢复mask值为默认值（全1），表示矢量计算中每次迭代内所有元素都参与运算。
-- [SetMaskCount](../mask_operations/set_mask_count.md)（`same_topic`）：Ands：Ands在 isSetMask=false时依赖SetMaskCount/Norm/VectorMask并要求ResetMask；And的tensor与Reg版本帮助区分标量按位与和双tensor按位与。 目标卡《SetMaskCount》补充：设置Mask模式为Counter模式，直接传入计算数据量，实际迭代次数由Vector计算单元自动推断。
-- [SetMaskNorm](../mask_operations/set_mask_norm.md)（`same_topic`）：Ands：Ands在 isSetMask=false时依赖SetMaskCount/Norm/VectorMask并要求ResetMask；And的tensor与Reg版本帮助区分标量按位与和双tensor按位与。 目标卡《SetMaskNorm》补充：设置Mask模式为Normal模式（系统默认），支持开发者配置迭代次数和掩码。
-- [SetVectorMask](../mask_operations/set_vector_mask.md)（`same_topic`）：Ands：Ands在 isSetMask=false时依赖SetMaskCount/Norm/VectorMask并要求ResetMask；And的tensor与Reg版本帮助区分标量按位与和双tensor按位与。 目标卡《SetVectorMask》补充：矢量计算时设置mask，支持Normal模式控制单次迭代参与计算元素和Counter模式控制总计算元素个数。
+- [And](and.md)（`same_topic`）：矢量内每个元素和标量间做按位与操作，支持标量在前和标量在后两种场景，标量输入支持配置LocalTensor单点元素。；对LocalTensor中的元素做按位与运算，支持整个tensor、前n个数据连续计算和高维切分计算三种调用方式。。两卡的核心操作都是 LocalTensor 元素的按位与；一端覆盖 tensor 与标量的操作数形态，另一端覆盖 tensor 间及连续或高维切分的调用形态，属于同一 And API 主题的重载边界。
 <!-- cannbot:related:end -->

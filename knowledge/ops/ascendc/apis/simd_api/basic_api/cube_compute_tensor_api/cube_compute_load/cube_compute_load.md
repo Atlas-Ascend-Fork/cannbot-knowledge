@@ -31,9 +31,3 @@ platforms: ['950']
 - **Copy（L1 Buffer到BiasTable Buffer数据搬运）**
 
 - **Copy（L1 Buffer到Fixpipe Buffer数据搬运）**
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [矩阵计算分形介绍](../cube_compute_fractal_intro/cube_compute_fractal_intro.md)（`same_topic`）：矩阵计算分形介绍 与《矩阵计算的搬入》的实质衔接是：Tensor API 分形介绍决定 CopyGmToL1、CopyL1ToL0A/B、Mmad 与 Copy 搬出的 shape/layout；辅助分形和搬出关键特性解释各阶段格式转换。
-<!-- cannbot:related:end -->

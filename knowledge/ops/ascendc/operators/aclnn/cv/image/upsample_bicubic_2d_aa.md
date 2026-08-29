@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-24T20:52:23Z"
-updated_at: "2026-08-24T20:52:23Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -168,7 +168,7 @@ Tiling/entry 中 key 1（half）和 key 3（BF16）是 OpDef/direct Host 可用�
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台分流 | `IsRegbaseSocVersion(context)==false` | 选择带 `TCubeTiling` 的经典 MIX_CV POD/body | R-001~R-003 | RegBase 转 A5 Tiling，不是本卡路线 | `RunBigKernelTiling` |
+| 平台分流 | `IsRegbaseSocVersion(context)==false` | 选择带 `TCubeTiling` 的经典 MIX_CV POD/body | R-001~R-003 | RegBase 转 950 Tiling，不是本卡路线 | `RunBigKernelTiling` |
 | 缩小倍率 | `realScaleH<=50 && realScaleW<=50` | `MAX_CORE_CONT=50` 且权重 support/插值域受该公开边界约束 | 全部 | ACLNN 参数错误 | `CheckMaxScaleSupport` |
 | slice specialization | `maxScale<=5/8/20/else` -> `64/48/32/16`；任一 out axis 小于 slice 时置 16 | 控制权重矩阵 N 维、UB 和 Matmul tail 规模 | 全部 | 同 Route 的更小 slice |
 | core 数 | compile info `GetCoreNumAic()>0` | 两次 Matmul 按 AIC 核数分 slice | 全部 | Tiling failed，无 fallback | `TilingPrepare4Bicubic2DAA` |
@@ -578,7 +578,7 @@ Host 将输入、权重构造、两次 Matmul 与中间图统一为 FP32，避�
 
 - 适用：A2/A3 的公开 ACLNN FP16/BF16 调用。
 - 前提：框架 Cast、executor 临时 tensor 和 FP32 Matmul 均可用。
-- 失效：A5 RegBase 不走该 Host 分支；其 Device 直接保留原 dtype。
+- 失效：950 RegBase 不走该 Host 分支；其 Device 直接保留原 dtype。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -599,9 +599,9 @@ Host 将输入、权重构造、两次 Matmul 与中间图统一为 FP32，避�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_950` 卡 |
 | Host/Launcher | `ascend910b`，经典 Tiling，FP16/BF16 Cast FP32 | `ascend910_93`，与 A2 共用经典实现 | RegBase Tiling，不做 Host FP32 Cast |
 | Kernel/资源 | MIX_CV、Matmul、FP32 intermediate/radio、32 MiB system WS | 与 A2 相同 | AIV copy 或 SIMT，固定 16 MiB workspace；无 Cube 路径 |
 
@@ -644,3 +644,9 @@ Host 将输入、权重构造、两次 Matmul 与中间图统一为 FP32，避�
 | 同步 | queue lifecycle、Matmul End、W/H 全核 barrier | radio 覆盖和 H 读取不能提前 | `CopyRadioTensorToGm`、`Process` |
 | 精度与尾块 | FP32 cubic/Matmul；slice/row/batch tail | 权重先归一化；最后 slice 必须 `SetTail`；输出 cast 只在 wrapper | `CalculateRadioTensor`、`Calculate*Extension` |
 | 失败边界 | 空 tensor Host 短路、null workspace/unknown key 无 body | 不得把 classic key 1/3误记为公开 ACLNN 可达路线 | ACLNN entry、kernel router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [UpsampleBicubic2dAA 950 ACLNN 算子知识](upsample_bicubic_2d_aa_950.md)（`same_topic`）：对 NCHW 输入执行可分离的二维 Keys cubic 抗锯齿插值；先 W、后 H，核函数参数 `a=-0.5`；对 NCHW 输入逐输出像素执行 Keys cubic 抗锯齿插值；H/W 一维权重分别归一化后相乘，`a=-0.5`。两端实现同一 UpsampleBicubic2dAA 的 Keys cubic 抗锯齿语义，分别记录 A2/A3 的可分离两阶段路线与 950 的逐输出像素路线，可直接用于平台实现选型和结果对照。
+<!-- cannbot:related:end -->

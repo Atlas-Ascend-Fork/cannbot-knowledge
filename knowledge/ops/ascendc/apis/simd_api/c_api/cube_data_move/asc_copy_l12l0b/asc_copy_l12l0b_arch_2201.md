@@ -25,8 +25,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSetL13dSize](../asc_set_l13d_size.md)（`related`）：AscSetL13dSize 设置的 L1 三维边界由 2201 路径的 AscCopyL12L0B 三维搬运使用，前者是后者的配置前置条件。
-- [asc_copy_l12l0a](../asc_copy_l12l0a/asc_copy_l12l0a_arch_2201.md)（`related`）：L0A 和 L0B 分别承载矩阵 A/B；源同为 L1，但目标和布局需与操作数侧别一致。
-- [AscCopyL12l0bMx](../asc_copy_l12l0b_mx.md)（`same_topic`）：AscCopyL12l0bMx 与《asc_copy_l12l0b》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
-- [asc_copy_l12l0b](asc_copy_l12l0b_arch_3510.md)（`same_topic`）：两卡执行同一 L1→L0B 512B 矩阵搬运；3510 版本增加 2D 转置并改用 M/K 起点与步长参数，2201 版本则无转置，迁移时必须按架构重建参数。
+- [asc_copy_l12l0b](asc_copy_l12l0b_arch_3510.md)（`same_topic`）：用于搬运存放在L1 Buffer里的512B大小的矩阵到L0B Buffer里。包含2D格式搬运、3D格式搬运。；用于搬运存放在L1 Buffer里的512B大小的矩阵到L0B Buffer里，包含2D格式搬运、2D格式转置搬运、3D格式搬运。；两卡是同一 L1 到 L0B 512B 搬运接口的平台版本，Arch3510 增加 2D 转置路径，适合比较迁移差异。
 <!-- cannbot:related:end -->

@@ -51,3 +51,9 @@ self.enable_prefill_profiler = self.enable_profiler and (self.input_max_len <= s
 - `diff 事实`（@6a8f3c1683241161）：`runner_deepseek.py` 与 `runner_longcat_flash.py` 的 `__init__` 中 `moe_chunk_max_len`（默认 65536）、`input_max_len`（默认 2048）、`enable_prefill_profiler = enable_profiler and (input_max_len <= moe_chunk_max_len)` 三行逐字对上；两个 runner 均未覆盖 `enable_decode_profiler`，故 decode 不受门控亦为 diff 事实。仅这两个 runner 设此门控（按证据定范围，不外推其它模型）。
 - `推断`（隔离，不并入事实面）：门控与 MoE 分块挂钩暗示与长输入采集开销 / 落盘体积相关，但 diff / 描述 / 讨论均未给选此阈值的理由。
 - 溯源下探：[cann-recipes-infer-pr-301-feat-prefill-profiling](https://gitcode.com/cann/cann-recipes-infer/merge_requests/301)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoE 长序列 prefill 峰值显存 / OOM：专家负载不均 + dispatch 中间量放大；分块 / 均衡 / double-routing 处置](../performance/moe_prefill_oom_peak_memory.md)（`related`）：- 引入 `moe_chunk_max_len`：当 `num_tokens > moe_chunk_max_len` 时按 `ceil(num_tokens/moe_chunk_max_len)` 沿 token 维把 `hidden_states / topk_ids / topk_weight` 均分，逐块串行做 expert dispatch/combine，使每块 `expanded_x` / `gathered_tokens` 稳定在 `~ moe_chunk_max_len × top_k × hidden`。；`moe_chunk_max_len` 是长序列 prefill 的 MoE 分块阈值（分块串行以压峰值显存，见 ［moe-prefill-oom-peak-memory］(../performance/moe_prefill_oom_peak_memory.md)）；门控与它挂钩暗示与长输入 MoE 分块采集开销 / 落盘体积相关，但源未给出选此阈值的明确理由（设计意图为推断，不作事实断言）。；焦点的长序列分块处置与 profiler 的同一阈值门控直接相连，可避免把缺失 profile 误判为采集器故障。
+<!-- cannbot:related:end -->

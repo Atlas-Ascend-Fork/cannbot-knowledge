@@ -22,10 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AddDeqRelu](../../basic_api/memory_vector_compute/composite_compute/add_deq_relu.md)（`related`）：《AddDeqRelu》处理“依次计算按元素求和、结果进行deq量化后再进行relu计算（结果和0对比取较大值）。需与SetDeqScale接口配合使用。”。《AscAddRelu》明确“按元素求和，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。”，可直接用于核对AddDeqRelu 的加法、dequant scale、ReLU 与输出转换组合合同。
-- [AddRelu](../../basic_api/memory_vector_compute/composite_compute/add_relu.md)（`related`）：两接口都逐元素 Add 后 ReLU；基础 API 版本以 LocalTensor 表达同一复合计算。
-- [AddReluCast](../../basic_api/memory_vector_compute/composite_compute/add_relu_cast.md)（`related`）：当输出 dtype 与输入不同，AddReluCast 显式承载转换；它解释 AscAddRelu 签名中 s16→s8、f32→f16 等随路转换边界。
-- [AscMulAddRelu](asc_mul_add_relu.md)（`related`）：AscMulAddRelu 与《AscAddRelu》的实质衔接是：AscMulAddRelu 融合 dst*src0+src1 与 ReLU；MulAdd/AddRelu 对应入口拆解同一计算，FMA 舍入卡和随路量化+ReLU材料给出精度与融合边界。
-- [AscRelu](asc_relu.md)（`related`）：AscAddRelu 把加法和 ReLU 融合，适用于 ReLU 前正好需要逐元素加法的路径。
-- [AscAdd](asc_add.md)（`same_topic`）：AscAdd：Reg AscAdd/AscAddScalar和 Vector AscAddRelu/Scalar是同一逐元素加法的寄存器、标量和融合变体，能直接辅助选择正确原型。 目标卡《AscAddRelu》补充：按元素求和，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。
+- [AddRelu](../../basic_api/memory_vector_compute/composite_compute/add_relu.md)（`same_topic`）：“按元素求和，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。计算公式如下：”与“按元素求和，再进行Relu计算（结果和0对比取较大值）。”是双方正文中的具体合同。两端执行同一 add 后 ReLU 复合运算；C API 还带结果类型转换，基础接口则提供 LocalTensor mask 形态，互读可用于接口形态选型。
 <!-- cannbot:related:end -->

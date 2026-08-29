@@ -23,8 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscFloat2int32](asc_float2int32.md)（`related`）：目标 int32 范围不同，按输出 dtype 选择。
-- [AscHalf2int16](asc_half2int16.md)（`related`）：half 源版本精度/范围不同。
-- [AscFloat2Int16](../reg/data_type_convert/asc_float2int16.md)（`same_topic`）：《AscFloat2Int16》处理“将float类型数据转化为int16_t类型，并支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。 由于源操作数与目的操作数类型位宽比为2:1，写入数据时需要将一个VL大小的数据分为两部分，根据不同接口选择数据写入索引为奇数的位置或偶数的位置。”。《AscFloat2int16》明确提供“将float类型数据转换为int16_t类型，支持多种舍入模式： - RINT舍入模式：四舍六入五成双舍入。 - ROUND舍入模式：四舍五入舍入。 - FLOOR舍入模式：向负无穷舍入。 - CEIL舍入模式：向正无穷舍入。 - TRUNC舍入模式：向零舍入。”，其参数、调用或验证步骤直接接入float 到 int16 的同源同目标转换及 rounding/saturation 选择。
-- [AscFloat2Int32](../scalar_compute/asc_float2int32.md)（`same_topic`）：AscFloat2Int32 与《AscFloat2int16》的实质衔接是：AscFloat2Int32 的四种舍入模式对应 Rint/Round/Floor/Ceil，相关 float/half/bfloat16 转换卡用于保持目标位宽、源类型和逆转换契约。
+- [AscFloat2Int16](../reg/data_type_convert/asc_float2int16.md)（`same_topic`）：将float类型数据转化为int16_t类型，并支持多种舍入模式，饱和/非饱和模式。；将float类型数据转换为int16_t类型，支持多种舍入模式：。两页描述同一 float→int16 转换，但分别面向 950 Reg 寄存器接口和 A2/A3 UB Vector 接口，可用于按平台与执行模型选择等价能力。
 <!-- cannbot:related:end -->

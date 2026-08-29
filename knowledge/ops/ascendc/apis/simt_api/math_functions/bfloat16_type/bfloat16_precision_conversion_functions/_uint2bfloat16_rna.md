@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__int2bfloat16_rna](_int2bfloat16_rna.md)（`same_topic`）：__uint2bfloat16_rna 与《__int2bfloat16_rna》的实质衔接是：uint32→bfloat16 的 RNA 与 RN/RD/RU/RZ 变体共享输入输出，只改变舍入边界；int→bfloat16 RNA 提供符号输入的对应契约。
-- [__uint2bfloat16_rd](_uint2bfloat16_rd.md)（`same_topic`）：__uint2bfloat16_rd 与《__uint2bfloat16_rna》的实质衔接是：这些接口共享 uint32→bfloat16 输入输出，只改变 RD/RN/RNA/RU/RZ；有符号 int 的 RD 变体用于核对符号范围。
-- [__uint2bfloat16_rn](_uint2bfloat16_rn.md)（`same_topic`）：__uint2bfloat16_rna 与《__uint2bfloat16_rn》的实质衔接是：uint32→bfloat16 的 RNA 与 RN/RD/RU/RZ 变体共享输入输出，只改变舍入边界；int→bfloat16 RNA 提供符号输入的对应契约。
-- [__uint2bfloat16_ru](_uint2bfloat16_ru.md)（`same_topic`）：__uint2bfloat16_ru 与《__uint2bfloat16_rna》的实质衔接是：这些接口共享 uint32→bfloat16 输入输出，只改变 RU/RNA/RD/RN/RZ；signed int 与 uint64 的 RU 变体用于核对符号和输入宽度。
-- [__uint2bfloat16_rz](_uint2bfloat16_rz.md)（`same_topic`）：RNA 为同一转换提供中点远离零规则，补足 RZ 的截断行为。
+- [__uint2bfloat16_rn](_uint2bfloat16_rn.md)（`related`）：“特殊值：0→0；257→256；514→512”给出焦点端事实；“特殊值：0→0；257→258；4294967295（UINT32_MAX）→4294967296。”给出候选端事实。两端用同一输入 257 给出不同结果，直接呈现 RINT 与 ROUND 的舍入选择差异，能够用于转换接口选型和边界值验证。
 <!-- cannbot:related:end -->

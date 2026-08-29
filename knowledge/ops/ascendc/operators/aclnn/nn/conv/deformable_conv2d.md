@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T16:25:24Z"
-updated_at: "2026-08-25T16:25:24Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -489,9 +489,9 @@ int64_t groupOffset = cStart % inC_conv_group;
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 ACLNN 支持 | 公开 ACLNN 支持 | 本卡不覆盖；见 `_a5` 卡 |
+| 支持状态 | 公开 ACLNN 支持 | 公开 ACLNN 支持 | 本卡不覆盖；见 `_950` 卡 |
 | Host/Launcher | 非 DAV_3510，主节点前 FP16/BF16→FP32 | 同 A2 | 分解为 DeformableOffsets+Conv2DV2 |
 | Kernel/资源 | ascend910b 配置；key 1 Hybrid | ascend910_93 配置；同 body/POD | 不使用本卡主 kernel |
 
@@ -531,4 +531,10 @@ int64_t groupOffset = cStart % inC_conv_group;
 | workspace/内存 | user slice 即 Matmul B | 总字节、group-major offset、system/user 分界 | `RunBigKernelTiling`, `CopyOut` |
 | 同步 | MTE2/V/MTE3 event + PIPE_V | event 分配/释放和覆盖顺序 | `InitEventId`, body methods |
 | 精度与尾块 | 坐标/权重/累加 FP32；T cast_rint | OOB=0、mask 后乘、align/gather tail | `CalculateWeight`, `ProcessZero` |
-| 失败边界 | launcher/Tiling/Matmul tiling fail closed | 不能用 A5 分解路线替代 A2/A3 实现事实 | API/Tiling return paths |
+| 失败边界 | launcher/Tiling/Matmul tiling fail closed | 不能用 950 分解路线替代 A2/A3 实现事实 | API/Tiling return paths |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeformableConv2d 950 ACLNN 算子知识](deformable_conv2d_950.md)（`same_topic`）：offset 给出每个卷积采样点的 x/y 偏移与 mask；四邻域双线性插值得到 `deformOut`，再执行分组卷积并可选加 bias；AIV SIMT 计算 offset+mask 双线性采样，再以采样结果为输入执行 stride=(kH,kW) 的 `Conv2DV2`，可在卷积 Fixpipe 中加 bias。两端闭合相同 DeformableConv2d 的偏移加 mask 双线性采样再卷积语义，分别记录 A2/A3 与 950 的执行图，联合阅读可比较平台 route 与中间 deformOut 的物化方式。
+<!-- cannbot:related:end -->

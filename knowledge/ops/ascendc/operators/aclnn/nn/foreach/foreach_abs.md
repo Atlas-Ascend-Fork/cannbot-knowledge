@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/config/ascend910_93/foreach_abs_binary.json
     role: implementation
 created_at: "2026-08-25T15:28:45Z"
-updated_at: "2026-08-25T15:28:45Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -556,9 +556,9 @@ if (castTimesRemainder > 0) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_950` 卡 |
 | Host/Launcher | ascend910b→arch22 公共 Tiling | ascend910_93→arch22 公共 Tiling | arch35 专用 Tiling |
 | Kernel/资源 | 公共 AIV Vector + Queue | 与 A2 同源 | SIMT 直接 GM，无 Queue staging |
 
@@ -604,3 +604,9 @@ if (castTimesRemainder > 0) {
 | 同步 | Queue + PIPE_V | BF16 每次 cast/downcast 前后 barrier | `InnerComputer` |
 | 精度与尾块 | direct FP16/FP32；BF16 FP32 compute | CAST_NONE/CAST_RINT、validCount byte tail | `AbsAdapter`/`ComputePerCast` |
 | 失败边界 | API/Host 校验 | >50 不得静默当完整语义、unknown key 无输出 | `ForeachCommonTiling::Init`/entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachAbs 950 ACLNN 算子知识](foreach_abs_950.md)（`same_topic`）：令 `x=［x_0,...,x_(n-1)］`，输出对每个输入 storage element 执行 `y_i［j］=Abs(x_i［j］)`。FP16/FP32 直接调用对应 dtype 的 AscendC `Abs`；BF16 逐 cast tile 转 FP32，调用 FP32 `Abs`，以 `RoundMode::CAST_RINT` 转回 BF16。Kernel 只写与输入元素数相同的输出前缀；输出 storage 容量可以更大，剩余区域不写。；令 `x=［x_0,...,x_(n-1)］`、`y=［y_0,...,y_(n-1)］`，每个有效输入元素满足 `y_i［j］=abs(x_i［j］)`。950 实体用比较与减法实现：普通类型返回 `v>=0 ? v : 0-v`；BF16 先转 FP32，执行同一表达式，再转回 BF16。由此，源码对 `-0` 的行为是保留 `-0`，NaN 走 `0-NaN` 分支；固定仓没有给出 NaN payload/sign 的额外承诺。。两卡实现同一 TensorList 逐元素绝对值接口，分别给出 A2/A3 Vector/TQue 与 950 SIMT/直接 GM 的实体和数值边界。
+<!-- cannbot:related:end -->

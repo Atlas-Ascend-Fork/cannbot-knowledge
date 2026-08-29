@@ -32,11 +32,5 @@ Ascend 950PR/Ascend 950DT，分离模式，返回Cube Core的核数
 <!-- cannbot:related:start -->
 ## 相关
 
-- [EnableVectorCore](../../../../guides/programming_guide/appendix/common_operations/enable_vector_core.md)（`explains`）：启用 Vector Core 时 numBlocks 需超过 AI Core 数并通常取 AIC+AIV，GetCoreNumAic 提供判定阈值和总数中的 AIC 部分。
-- [CalcTschNumBlocks](calc_tsch_num_blocks.md)（`related`）：CalcTschNumBlocks 还需结合 Cube 核数判断 AIC:AIV 拓扑比例；GetCoreNumAic 提供该资源侧输入。
-- [GetCoreNum](../../../simd_api/adv_api/cube_compute/matmul_tiling/get_core_num.md)（`related`）：Matmul 使用 Cube 核数，应与平台 AIC 数量和 tiling 实际切分核数对照。
-- [GetCoreNum](get_core_num.md)（`related`）：分离架构下 GetCoreNum 返回 Vector 核数；需要 Cube 分核时必须改用 GetCoreNumAic，避免 numBlocks 取错执行单元。
-- [GetCoreNumAiv](get_core_num_aiv.md)（`related`）：《GetCoreNumAiv》明确“获取当前硬件平台AI Core中Vector核数。若AI Core的架构为Cube、Vector分离模式，返回Vector Core的核数；耦合模式返回AI Core的核数。”；它与《GetCoreNumAic》的“获取当前硬件平台AI Core中Cube核数。若AI Core的架构为Cube、Vector分离模式，返回Cube Core的核数；耦合模式返回AI Core的核数。”在实际调用参数、数据流或结果校验上直接衔接。
-- [设置Kernel类型](../../../simd_api/basic_api/kernel_tiling/set_kernel_type.md)（`related`）：设置Kernel类型：SetKernelType的目标是只启动需要的 AIC/AIV核；优化指南解释选型，kernel_type runbook证明裸字段赋值无效，GetCoreNumAic/Vector提供合法核数输入。 目标卡《GetCoreNumAic》补充：获取当前硬件平台AI Core中Cube核数。若AI Core的架构为Cube、Vector分离模式，返回Cube Core的核数；耦合模式返回AI Core的核数。
-- [GetCoreNumVector](get_core_num_vector.md)（`same_topic`）：《GetCoreNumVector》明确“用于获取硬件平台独立的Vector Core的核数。 该接口仅在Atlas 推理系列产品有效，其他硬件平台型号均返回0。”；它与《GetCoreNumAic》的“获取当前硬件平台AI Core中Cube核数。若AI Core的架构为Cube、Vector分离模式，返回Cube Core的核数；耦合模式返回AI Core的核数。”在实际调用参数、数据流或结果校验上直接衔接。
+- [GetCoreNum](get_core_num.md)（`related`）：获取当前硬件平台的核数。若AI Core的架构为Cube、Vector分离模式，返回Vector Core的核数；耦合模式返回AI Core的核数。；获取当前硬件平台AI Core中Cube核数。若AI Core的架构为Cube、Vector分离模式，返回Cube Core的核数；耦合模式返回AI Core的核数。。两卡共同处理耦合与 Cube/Vector 分离架构下的核数查询，但通用 GetCoreNum 在分离模式返回 Vector 数，GetCoreNumAic 返回 Cube 数，联合阅读可避免按错执行单元分核。
 <!-- cannbot:related:end -->

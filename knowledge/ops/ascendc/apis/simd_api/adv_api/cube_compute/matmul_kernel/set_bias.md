@@ -36,13 +36,6 @@ __aicore__ inline void SetBias(const LocalTensor<BiasT>& inputBias)
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Batch Matmul复用Bias矩阵](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/batch_matmul_reuse_bias.md)（`explains`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；Batch Matmul复用Bias矩阵正文说明“Batch Matmul场景中各Batch使用相同Bias时，设置isBiasBatch为false复用单个不带Batch轴的Bias矩阵”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
-- [ClearBias](clear_bias.md)（`related`）：SetBias 设置 Bias 输入，ClearBias/DisableBias 则撤销该参与标志；二者是同一 Matmul 对象 Bias 状态的相反控制动作。
-- [DisableBias](disable_bias.md)（`same_topic`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；DisableBias正文说明“清除Bias标志位，表示Matmul计算时没有Bias参与。如果在初始化时配置了TCubeTiling结构中的isBias参数来启用Bias，调用该接口后，会清除Bias标志位，不再启用Bias”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
-- [Init](init.md)（`same_topic`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；Init正文说明“对Matmul对象的Tiling数据进行初始化，根据Tiling参数进行资源划分。Tiling参数可变场景下可多次调用”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
-- [Iterate](iterate.md)（`same_topic`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；Iterate正文说明“每调用一次计算一块baseM*baseN的C矩阵，内部维护迭代进度并偏移A、B矩阵首地址”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
-- [MatmulTemplateParams](matmul_template_params.md)（`same_topic`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；MatmulTemplateParams正文说明“创建Matmul对象时需要传入的模板参数，包括A/B/C/Bias类型信息、MatmulConfig、MatmulCallBackFunc和MatmulPolicy”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
-- [Matmul使用说明](matmul_usage.md)（`same_topic`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；Matmul使用说明正文说明“Ascend C提供一组Matmul高阶API，方便用户快速实现Matmul矩阵乘法的运算操作”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
-- [SetBias](../matmul_tiling/set_bias.md)（`same_topic`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；SetBias正文说明“EnableBias接口功能与该接口相同，建议使用EnableBias。 设置Bias是否参与运算”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
-- [SetBiasType](../matmul_tiling/set_bias_type.md)（`same_topic`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；SetBiasType正文说明“设置Bias的位置，数据格式，数据类型等信息，这些信息需要和kernel侧的设置保持一致”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
+- [Batch Matmul复用Bias矩阵](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/batch_matmul_reuse_bias.md)（`explains`）：若不同Batch的计算使用的Bias数据相同，则多Batch计算可以复用同一个Bias矩阵，如下图所示，此场景中调用SetBias接口时，只需设置一个1 * singleCoreN大小的Bias矩阵。 在Matmul Tiling计算中，必须配置TCubeTiling结构中的isBias参数为1，即启用Bias后，才能调用本接口设置Bias矩阵。 指南确定复用时只传一个 N 维 Bias，API 合同补充 Tiling 必须先启用 Bias，形成完整调用配置。
+- [SetBias](../matmul_tiling/set_bias.md)（`related`）：在Matmul Tiling计算中，必须配置TCubeTiling结构中的isBias参数为1，即启用Bias后，才能调用本接口设置Bias矩阵。；EnableBias接口功能与该接口相同，建议使用EnableBias。 设置Bias是否参与运算。；Kernel 侧 SetBias 的合法调用以前置 Tiling 启用 isBias 为硬条件，Tiling 侧 SetBias 或推荐的 EnableBias 正是设置该参与标志的入口。
 <!-- cannbot:related:end -->

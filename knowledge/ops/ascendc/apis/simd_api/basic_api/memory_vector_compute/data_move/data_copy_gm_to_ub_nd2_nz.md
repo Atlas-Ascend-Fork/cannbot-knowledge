@@ -32,7 +32,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopy](data_copy_gm_and_ub_continuous.md)（`related`）：连续 DataCopy 保持布局不变，ND2NZ DataCopy 改变分形格式，二者给出普通连续搬入与格式转换边界。
-- [DataCopy](data_copy_gm_to_ub_nddma.md)（`related`）：NDDMA 处理任意多维 stride 搬入，而 ND2NZ 接口同时完成格式转换；应按目标布局是否为 NZ 选择。
-- [DataCopy](data_copy_ub_to_gm_nz2_nd.md)（`related`）：DataCopy 与《DataCopy》的实质衔接是：该软仿 DataCopy 完成 UB→GM 的 NZ2ND；NZ2ND 概念说明格式语义，GM→UB ND2NZ 是逆向软仿路径，而 L0C→GM DataCopy/Fixpipe 及其配置接口是硬件矩阵搬出的对应实现。
+- [DataCopy](data_copy_ub_to_gm_nz2_nd.md)（`same_topic`）：该接口为软仿接口，从易用性角度出发进行设计，支持在从Global Memory到Unified Buffer的数据搬运过程中进行ND到NZ格式的转换。；该接口为软仿接口，从易用性角度出发进行设计，支持在从Unified Buffer到Global Memory的数据搬运过程中进行NZ到ND格式的转换。。两端是 GM/UB 之间成对的 ND→NZ 搬入与 NZ→ND 搬出，联合阅读可闭合转换后的片上矩阵往返数据路径。
 <!-- cannbot:related:end -->

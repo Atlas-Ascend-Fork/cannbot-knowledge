@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu/op_host/relu_def.cpp
     role: implementation
 created_at: "2026-08-25T18:53:24Z"
-updated_at: "2026-08-25T18:53:24Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -74,9 +74,9 @@ mask[i / 8].bit(i % 8) = (x[i] > 0)
 
 ### 入口与版本
 
-本卡选择 A2 上公开且活动实现最新的 `aclnnReluV3`：公开文档明确 A2 支持、A3/A5 不支持；`relu_v3_def.cpp::ReluV3` 仅注册 `ascend910b`；`op_host/CMakeLists.txt` 以 `OPTYPE relu_v3 ACLNNTYPE aclnn` 接入生成式 ACLNN。固定仓没有手写 `aclnnReluV3` C++ bridge，生成代码、`Contiguous/ViewCopy` 与 executor 壳按框架边界处理，但算子拥有的 OpDef、shape/dtype 推导、Tiling、POD、entry 与 body 均闭合。
+本卡选择 A2 上公开且活动实现最新的 `aclnnReluV3`：公开文档明确 A2 支持、A3/950 不支持；`relu_v3_def.cpp::ReluV3` 仅注册 `ascend910b`；`op_host/CMakeLists.txt` 以 `OPTYPE relu_v3 ACLNNTYPE aclnn` 接入生成式 ACLNN。固定仓没有手写 `aclnnReluV3` C++ bridge，生成代码、`Contiguous/ViewCopy` 与 executor 壳按框架边界处理，但算子拥有的 OpDef、shape/dtype 推导、Tiling、POD、entry 与 body 均闭合。
 
-稳定目录 `activation/relu/` 中的 `aclnnRelu` 是 A5 的活动实现；其 A5 闭包缺失见“平台差异”和“限制与失败边界”。本卡不处理 `aclnnInplaceRelu` 或 `aclnnAddRelu`。
+稳定目录 `activation/relu/` 中的 `aclnnRelu` 是 950 的活动实现；其 950 闭包缺失见“平台差异”和“限制与失败边界”。本卡不处理 `aclnnInplaceRelu` 或 `aclnnAddRelu`。
 
 ## Host/Launcher 执行流程
 
@@ -807,9 +807,9 @@ context->SetBlockDim(block_dim);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | `aclnnReluV3` 公开支持；`ReluV3` 注册 `ascend910b`；本卡发布。 | `aclnnReluV3` 公开文档明确不支持。experimental `aclnnRelu` 文档虽写支持 A3，但其 `Relu` OpDef 只注册 `ascend910b`，构建也未声明 `ascend910_93`，形成发布冲突；不发布 A3 内容。 | `aclnnReluV3` 明确不支持；稳定 `aclnnRelu` 文档支持 A5，但本次无法达到源码闭包。 |
+| 支持状态 | `aclnnReluV3` 公开支持；`ReluV3` 注册 `ascend910b`；本卡发布。 | `aclnnReluV3` 公开文档明确不支持。experimental `aclnnRelu` 文档虽写支持 A3，但其 `Relu` OpDef 只注册 `ascend910b`，构建也未声明 `ascend910_93`，形成发布冲突；不发布 A3 内容。 | `aclnnReluV3` 明确不支持；稳定 `aclnnRelu` 文档支持 950，但本次无法达到源码闭包。 |
 | Host/Launcher | 自包含 `TilingFunc`，key 0，按 32 KiB/4 MiB 分核。 | N/A。 | 稳定 `ReluTiling::RunTiling` 调用仓内不存在的 `ElewiseBaseTiling::DoTiling`。 |
 | Kernel/资源 | 单 AIV Kernel；三双缓冲 Queue，180 KiB。 | N/A。 | 稳定 entry 调用仓内不存在的 `ElementwiseSch16B::Init/Process` 与 `Vec::*` DAG primitives；UB、POD 字段、循环和同步无法闭合。 |
 
@@ -824,7 +824,7 @@ context->SetBlockDim(block_dim);
 - Compare count 比有效元素向上到 64 或 128 元素；padding lane 的值可能参与生成逻辑 mask 末尾之后的 bits，但成功 shape 的有效 mask 只消费前 `N/8` bytes。
 - 未知 `schMode` 在 entry 中没有错误返回，只是不调用 body；Host 活动 key 恒为 0。
 - A3 未发布：V3 文档明确不支持；experimental `aclnnRelu` 文档声称支持 A3，但实际 OpDef 仅 `.AddConfig("ascend910b")`，`op_host/CMakeLists.txt` 也没有 `ascend910_93` compute-unit 接线。依照“公开支持与活动实现必须一致”的 gate，不能只凭文档发布。
-- A5 未生成 `relu_a5.md`：固定仓缺少 `op_common/atvoss/elewise/elewise_tiling.h`、`atvoss/elewise/elewise_sch_16b.h`、`atvoss/util/{dag,vec}.h` 等直接依赖的实现，无法闭合 `EleBaseTilingData16B` ABI、tile/loop、UB、Queue、同步与实际 Vector 参数。
+- 950 未生成 `relu_950.md`：固定仓缺少 `op_common/atvoss/elewise/elewise_tiling.h`、`atvoss/elewise/elewise_sch_16b.h`、`atvoss/util/{dag,vec}.h` 等直接依赖的实现，无法闭合 `EleBaseTilingData16B` ABI、tile/loop、UB、Queue、同步与实际 Vector 参数。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引

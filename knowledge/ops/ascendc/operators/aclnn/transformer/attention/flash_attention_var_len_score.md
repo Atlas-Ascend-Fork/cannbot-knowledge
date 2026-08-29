@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:27:18Z"
-updated_at: "2026-08-24T19:43:20Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -151,7 +151,7 @@ otherwise -> R-001
 
 ### POD/ABI
 
-固定仓未为整结构提供 `sizeof/alignof/offsetof` static_assert；以下每个字段独占一行，ABI布局由类声明顺序决定，实际offset不可外推，arch22与A5 POD不可互换。
+固定仓未为整结构提供 `sizeof/alignof/offsetof` static_assert；以下每个字段独占一行，ABI布局由类声明顺序决定，实际offset不可外推，arch22与950 POD不可互换。
 
 | 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
 |---|---|---|---|---|---|---|---|
@@ -653,7 +653,7 @@ Host把L1 owner交给算子body并令entry选择 `ProcessL1Carry`；同时bmm2�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | V5支持 | V5支持 | V5支持，独立卡 |
 | Host/Launcher | DAV_2201 priority90/94 | 同A2 | DAV_3510 priority81/82 |
@@ -703,4 +703,10 @@ Host把L1 owner交给算子body并令entry选择 `ProcessL1Carry`；同时bmm2�
 | workspace/内存 | coreStride、16MiB、empty100MiB | usedAIV/AIC、owner、对齐 | GetWorkspaceSize/IsEmptyInput |
 | 同步 | MIX1:2、adapter reset、三槽 | general/SameAB协议不可混用 | entry/body |
 | 精度与尾块 | FP32 score/state/PV | actualSeq、implMode、S1/S2/D tail | body/TCube POD |
-| 失败边界 | TND/key/sparse边界 | 不回退旧V或A5 ABI | IsCapable/key selector |
+| 失败边界 | TND/key/sparse边界 | 不回退旧V或950 ABI | IsCapable/key selector |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FlashAttentionVarLenScore 950 ACLNN 算子知识](flash_attention_var_len_score_950.md)（`same_topic`）：“固定仓公开 VarLen、V2、V3、V4、V5；V5 产品表明确支持 A2/A3，因此选择同平台最新 V5。”与“固定仓 `FlashAttentionVarLenScore` 版本族的最新公开变长接口为V5，产品表列 Ascend 950PR/950DT 支持；本卡仅记录950。”共同确认同一 V5 入口，随后可按平台分别读取 arch22 与 arch35 route/限制。
+<!-- cannbot:related:end -->

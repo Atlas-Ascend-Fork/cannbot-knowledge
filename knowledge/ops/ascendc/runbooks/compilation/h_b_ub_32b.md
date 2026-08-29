@@ -71,8 +71,5 @@ bf16 Cast 路径同理：对 `xLocal`（bf16 LocalTensor）做 `Cast(fp32, xLoca
 <!-- cannbot:related:start -->
 ## 相关
 
-- [bf16 多 matmul 链累积漂移判别](../precision/bf16_matmul.md)（`related`）：B/H 缓冲拆分后仍需核对 bf16 Matmul 的布局和精度。
-- [多块 DataCopyPad dst 基址非 32B 对齐崩溃](datacopypad_dst_32b.md)（`related`）：DataCopyPad 目标 UB 同样要求物理 32B 布局。
-- [Vector Sub 源 UB 非 32B 对齐触发错误 340](vector_sub_ub_32b_340.md)（`same_topic`）：Vector Sub 源 UB 非 32B 对齐触发错误 340 与《奇数 H 致 B 视图 UB 地址非 32B 对齐》的实质衔接是：Vector Sub 的每个 UB 源必须 32B 对齐，LocalTensor 非零 operator[] 偏移会破坏对齐；Sub API、GetWithOffset/TBuf 和相邻未对齐故障卡直接支持定位及对齐搬入修法。
-- [跨 slice 批量 vector 源地址非 32B 对齐触发 507035](slice_vector_32b_507035.md)（`same_topic`）：两卡都处理连续 UB 布局后按逻辑维度取第二段做 VEC 的崩溃，并把修复落到独立对齐缓冲。
+- [DequantSwigluQuant 950 Direct Invoke 算子知识](../../operators/direct/nn/quant/dequant_swiglu_quant_950.md)（`related`）：“对 `x［M,2H］` 做可选 INT32 反量化，选择左右半部形成 `Swish(act) * gate`”定义 Direct Invoke 的 2H 分半数据流；“kernel 把一行 x（长度 `twoH = 2*H`，A、B 两段各 H）整体 `DataCopyPad` 装入一个 UB 缓冲”定位同一算子奇数 H 时后半段地址未对齐的故障点。
 <!-- cannbot:related:end -->

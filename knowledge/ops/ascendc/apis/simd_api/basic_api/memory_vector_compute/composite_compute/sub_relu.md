@@ -31,10 +31,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ResetMask](../mask_operations/reset_mask.md)（`related`）：SubRelu 与《ResetMask》的实质衔接是：SubRelu 的手工 mask 路径要求先设置 Normal mask，调用后 ResetMask；SubReluCast 和 AscSubRelu 分别补充窄化输出与 C API 对应入口。
-- [SIMD计算掩码](../simd_compute/mask.md)（`related`）：SubRelu 与《SIMD计算掩码》的实质衔接是：SubRelu 的手工 mask 路径要求先设置 Normal mask，调用后 ResetMask；SubReluCast 和 AscSubRelu 分别补充窄化输出与 C API 对应入口。
-- [SetMaskNorm](../mask_operations/set_mask_norm.md)（`related`）：SubRelu 与《SetMaskNorm》的实质衔接是：SubRelu 的手工 mask 路径要求先设置 Normal mask，调用后 ResetMask；SubReluCast 和 AscSubRelu 分别补充窄化输出与 C API 对应入口。
-- [SetVectorMask](../mask_operations/set_vector_mask.md)（`related`）：SubRelu 与《SetVectorMask》的实质衔接是：SubRelu 的手工 mask 路径要求先设置 Normal mask，调用后 ResetMask；SubReluCast 和 AscSubRelu 分别补充窄化输出与 C API 对应入口。
-- [SubReluCast](sub_relu_cast.md)（`related`）：SubRelu 保留相同减法和激活但不做类型转换，可在源目 dtype 相同或需拆分 Cast 时选用。
-- [AscSubRelu](../../../c_api/vector_compute/asc_sub_relu.md)（`same_topic`）：SubRelu 与《AscSubRelu》的实质衔接是：SubRelu 的手工 mask 路径要求先设置 Normal mask，调用后 ResetMask；SubReluCast 和 AscSubRelu 分别补充窄化输出与 C API 对应入口。
+- [AscSubRelu](../../../c_api/vector_compute/asc_sub_relu.md)（`same_topic`）：“按元素求差，再进行Relu计算（结果和0对比取较大值）。”与“按元素求差，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。计算公式如下：”是双方正文中的具体合同。二者核心都是逐元素差后 ReLU；C API 版本额外提供结果类型转换，互读能判断是否需要融合转换以及对应平台接口。
 <!-- cannbot:related:end -->

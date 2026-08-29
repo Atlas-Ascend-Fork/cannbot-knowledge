@@ -297,9 +297,5 @@ __global__ __aicore__ __vector__ void cummin_kernel(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [B16 比较先升到 B32 锁定索引 lane](../precision/b16_value_and_b32_index_masks_need_common_b32_compute.md)（`related`）：BF16 标量 cast 后端失败—改用位序键 与《B16 比较先升到 B32 锁定索引 lane》的实质衔接是：位序键是 BF16 标量 cast 失败的直接替代；所选卡补充同一后端限制、B16→B32 比较宽度及 NaN 显式选择。
-- [bf16 未编译剔除触发 backend Cannot select](if_constexpr_excludes_unsupported_bf16_compare.md)（`related`）：bf16 未编译剔除触发 backend Cannot select 负责“运行时 dtype 分支仍实例化 bf16 标量比较，BiSheng backend Cannot select；用 if constexpr 编译期剔除不支持分支”；BF16 标量 cast 后端失败—改用位序键 负责“dav-3510 的 aicore 标量路径不接受 bfloat16_t 与 float 的 static_cast，可按原始 uint16 位模式比较并回写”。
-- [累计极值 NaN 语义须用 self-NE 合成选择掩码](../precision/ordered_compare_alone_cannot_propagate_nan_prefix_state.md)（`related`）：BF16 标量 cast 后端失败—改用位序键 与《累计极值 NaN 语义须用 self-NE 合成选择掩码》的实质衔接是：位序键是 BF16 标量 cast 失败的直接替代；所选卡补充同一后端限制、B16→B32 比较宽度及 NaN 显式选择。
-- [BiSheng bf16 类型转换失败——隔离模板实例化](if_constexpr_excludes_unsupported_bf16_cast.md)（`same_topic`）：BF16 标量 cast 后端失败—改用位序键 与《BiSheng bf16 类型转换失败——隔离模板实例化》的实质衔接是：位序键是 BF16 标量 cast 失败的直接替代；所选卡补充同一后端限制、B16→B32 比较宽度及 NaN 显式选择。
-- [bisheng 不支持 bf16 标量强转时用位布局精确提升到 fp32](bf16_scalar_to_fp32_bit_extension.md)（`same_topic`）：BF16 标量 cast 后端失败—改用位序键 与《bisheng 不支持 bf16 标量强转时用位布局精确提升到 fp32》的实质衔接是：位序键是 BF16 标量 cast 失败的直接替代；所选卡补充同一后端限制、B16→B32 比较宽度及 NaN 显式选择。
+- [bisheng 不支持 bf16 标量强转时用位布局精确提升到 fp32](bf16_scalar_to_fp32_bit_extension.md)（`related`）：比较卡定位到“dav-3510 的 bisheng aicore 后端不支持在该标量 kernel 路径中实例化 `bfloat16_t` 与 `float` 的双向 `static_cast`。”；转换卡给出“该后端不支持 UB bf16 标量经 C++ cast 直接生成 fp32。bf16 的 16 位编码正好是 fp32 的高 16 位，因此对原始位 `raw` 做 `fbits = uint32_t(raw) << 16`，再按 float 重解释即可保持符号位、指数和 7 位尾数，不引入算术舍入。”，共同提供绕开 BF16 标量 cast 限制的两种位级策略。
 <!-- cannbot:related:end -->

@@ -43,19 +43,3 @@ NPU是Device侧的计算核心，而 AI Core则是NPU内部的“最小计算单
 每个AI Core内部结构高度优化，专门适配并行计算需求，核心组件包括：
 - 标量处理单元：处理控制流（如分支、循环）和地址计算，类似传统CPU核心，是AI Core的“控制核心”。
 - 向量处理单元：执行向量运算，是SIMD/SIMT两种并行模型的主要载体。不同昇腾芯片架构对两种模式的支持有所差异。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ProgrammingModel](../../../apis/simt_api/simd_simt_hybrid_programming_intro/programming_model.md)（`explains`）：异构系统与编程模型 与《ProgrammingModel》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
-- [SIMT编程简介](../../../apis/simt_api/simt_programming_intro/simt_programming_intro.md)（`explains`）：异构系统与编程模型 与《SIMT编程简介》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
-- [SimdSimtHybridProgrammingIntro](../../../apis/simt_api/simd_simt_hybrid_programming_intro/simd_simt_hybrid_programming_intro.md)（`explains`）：异构系统与编程模型 与《SimdSimtHybridProgrammingIntro》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
-- [编程模型](../../../apis/simt_api/simt_programming_intro/programming_model.md)（`explains`）：异构系统与编程模型 与《编程模型》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
-- [AiCoreSimtProgrammingOverview](../../programming_guide/programming_model/ai_core_simt_programming/overview.md)（`same_topic`）：异构系统与编程模型 与《AiCoreSimtProgrammingOverview》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
-- [Ascend C概述](../ascend_c_overview_and_learning_path.md)（`same_topic`）：异构系统与编程模型 与《Ascend C概述》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
-- [Gather算子快速入门](simt_programming/gather_op_quick_start.md)（`same_topic`）：Gather算子快速入门 与《异构系统与编程模型》的实质衔接是：Gather 快速入门覆盖 SIMT kernel、host launch 和构建；所连 Gather API、维度/步长/地址空间错例和 SIMT 入口约束都直接作用于该示例的实现或验证。
-- [异构系统（编程模型）](../../programming_guide/programming_model/heterogeneous_system.md)（`same_topic`）：“异构系统（编程模型）”定义：一个基于昇腾处理器的异构系统通常包含CPU与昇腾NPU。其中，CPU及其内存称为Host与Host Memory；NPU及其内存称为Device与Device Memory。；“异构系统与编程模型”定义：> 本文作为算子编程快速入门章节，将从昇腾异构系统基础入手，逐步拆解编程模型核心要素，帮助您快速建立昇腾算子编程的整体认知，为后续实操开发奠定基础。。实质衔接：三者都区分 Host CPU/内存与 Device NPU/内存；快速入门建立模型，算子实践进一步给出 Host/Device 代码与数据流。
-- [异构计算（算子实践）](../../operator_practice/heterogeneous_computing.md)（`same_topic`）：《异构计算（算子实践）》处理“使用Ascend C进行编程时，会涉及到在两个不同的平台（Host、Device）上开发代码。本章简单介绍Host、Device之间的差异，便于开发者宏观地了解这个异构系统；同时给出算子相关的数据流，结合异构架构的特点，开发者可以进一步了解应该如何合理安排算子代码的执行位置，便于得到更好的性能。”。《异构系统与编程模型》提供“> 本文作为算子编程快速入门章节，将从昇腾异构系统基础入手，逐步拆解编程模型核心要素，帮助您快速建立昇腾算子编程的整体认知，为后续实操开发奠定基础。”，其具体合同或探针直接接入Host/Device 异构系统与算子编程模型的同一入门主题。
-- [编程接口概述（库API）](../../programming_guide/library_api/programming_interface_overview.md)（`same_topic`）：异构系统与编程模型 与《编程接口概述（库API）》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
-- [编程模型概述](../../programming_guide/programming_model/programming_model_overview.md)（`same_topic`）：异构系统与编程模型 与《编程模型概述》的实质衔接是：该快速入门从异构系统、host/device 编程模型扩展到 AI Core SIMT、SIMD/SIMT 混合和库 API；这些概述共同解释算子从 host tiling 到 device kernel 的边界。
-<!-- cannbot:related:end -->

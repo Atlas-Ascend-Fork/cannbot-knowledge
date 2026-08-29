@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_allto_all/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:41:43Z"
-updated_at: "2026-08-24T20:13:03Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -89,7 +89,7 @@ V2 头文件给出两段式 ACLNN；实现只转发 `QuantMatmulAlltoAllBaseGetW
 
 ### 参数校验与前处理
 
-`CheckAndHandleParams` 检查必选/空 tensor、二维 shape、K 与输出 shape、scale/bias shape、dtype、private format、ND 转换、axes、`transposeX1=false`、group 与 `commMode`。A2 要求输入连续；A5 专属 x2 transpose-view 重描述不启用。失败不进入 Tiling/Kernel。
+`CheckAndHandleParams` 检查必选/空 tensor、二维 shape、K 与输出 shape、scale/bias shape、dtype、private format、ND 转换、axes、`transposeX1=false`、group 与 `commMode`。A2 要求输入连续；950 专属 x2 transpose-view 重描述不启用。失败不进入 Tiling/Kernel。
 
 ### 参数、Workspace 与生命周期
 
@@ -365,7 +365,7 @@ AIC 写两份 INT32 workspace stage并置 FIX flag，AIV 等待后完成 scale/b
 
 - 适用：同样具有一对 AIC/AIV 子块和 GM workspace 交接的 A2 KC 实现。
 - 前提：workspace、flag/stage 索引与两 stage 生命周期保持一致。
-- 失效：A5 KC/MX 使用另一组 QBMM/pipeline 协议，不可直接套用。
+- 失效：950 KC/MX 使用另一组 QBMM/pipeline 协议，不可直接套用。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -400,7 +400,7 @@ epilogue 按目标 rank 写 peer window，省去本地完整 `[M,N]` 中间结�
 
 - 适用：A2 peer-window 直写路线。
 - 前提：rankSize 2/4/8、HCCL window 至少 200MiB，数据区/flag 区与 pValue 一致。
-- 失效：A5 先写 MM workspace、再转置、再提交 communicator，不是该布局。
+- 失效：950 先写 MM workspace、再转置、再提交 communicator，不是该布局。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -418,7 +418,7 @@ epilogue 按目标 rank 写 peer window，省去本地完整 `[M,N]` 中间结�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | V2 | 支持 | 不支持 | 支持 |
 | quant | INT8 KC `(3,2)` | 无 route | FP8 KC、FP8/FP4 MX |
@@ -466,3 +466,9 @@ epilogue 按目标 rank 写 peer window，省去本地完整 `[M,N]` 中间结�
 | workspace | 16MiB 与双 stage INT32 公式 | Host/QuantMatmul |
 | 精度 | INT32→F32→两 scale→bias→cast | epilogue |
 | 同步 | AIC/AIV flag 与 rank rendezvous | QuantMatmul/CommBase |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [QuantMatmulAlltoAll 950 ACLNN 算子知识](quant_matmul_allto_all_950.md)（`same_topic`）：A2 workspace 为 `16 MiB + tileM0*blockDim*2*tileN0*4` 字节；两 route 均化简为 `16 MiB + 262144*blockDim`，后项是 INT32 Cube 双 stage；workspace_total = libApiWorkspace + AlignUp(M*N*yBytes,512) * 2。两卡共享 QuantMatmulAlltoAll V2 逻辑入口，但分别给出 A2 peer-window 和 950 transpose/communicator 的资源闭包。
+<!-- cannbot:related:end -->

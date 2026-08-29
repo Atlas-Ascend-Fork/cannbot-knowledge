@@ -6,5 +6,5 @@
 - [ApplyAdamW A2/A3](apply_adam_w.md)：用于执行 ApplyAdamW 相关计算。
 - [ApplyAdamWQuant A2/A3](apply_adam_w_quant.md)：用于执行 ApplyAdamWQuant 相关计算。
 - [ApplyFusedEmaAdam A2/A3](apply_fused_ema_adam.md)：用于执行 ApplyFusedEmaAdam 相关计算。
-- [ApplyFusedEmaAdam A5](apply_fused_ema_adam_a5.md)：用于执行 ApplyFusedEmaAdam 相关计算。
+- [ApplyFusedEmaAdam 950](apply_fused_ema_adam_950.md)：用于执行 ApplyFusedEmaAdam 相关计算。
 - [FusedSgd A2/A3](fused_sgd.md)：用于执行 FusedSgd 相关计算。

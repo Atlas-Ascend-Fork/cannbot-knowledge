@@ -26,9 +26,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMul](../../vector_compute/asc_mul.md)（`related`）：AscMulScalar 与《AscMul》的实质衔接是：Reg AscMulScalar 与 Vector/Reg tensor-tensor/Muls 入口共享逐 lane 乘法；cyclic-repeat scale 故障直接约束标量分组广播的计算范围。
-- [AscMulScalar](../../vector_compute/asc_mul_scalar.md)（`related`）：AscMulScalar 与《AscMulScalar》的实质衔接是：Reg AscMulScalar 与 Vector/Reg tensor-tensor/Muls 入口共享逐 lane 乘法；cyclic-repeat scale 故障直接约束标量分组广播的计算范围。
-- [Muls](../../../basic_api/reg_vector_compute/basic_arithmetic/muls.md)（`related`）：AscMulScalar 是 C Reg API 的对应标量乘接口，可用于从 C++ Reg::Muls 迁移。
-- [AscMul](asc_mul.md)（`same_topic`）：AscMulScalar 与《AscMul》的实质衔接是：Reg AscMulScalar 与 Vector/Reg tensor-tensor/Muls 入口共享逐 lane 乘法；cyclic-repeat scale 故障直接约束标量分组广播的计算范围。
-- [AscMuls](asc_muls_deprecated.md)（`same_topic`）：AscMulScalar 与《AscMuls》的实质衔接是：Reg AscMulScalar 与 Vector/Reg tensor-tensor/Muls 入口共享逐 lane 乘法；cyclic-repeat scale 故障直接约束标量分组广播的计算范围。
+- [AscMuls](asc_muls_deprecated.md)（`same_topic`）：对源操作数src和value进行乘法运算再按照数据类型转换的ROUND舍入模式转成half类型，根据mask将结果写入目的操作数dst。；对源操作数src、value进行按元素做乘操作，将结果写入目的操作数dst。。两端都执行寄存器向量与标量的 mask 乘法；AscMuls 还固定 ROUND 后转 half 且已标废弃，AscMulScalar 是更通用的标量乘接口，互读可完成迁移时的语义核对。
 <!-- cannbot:related:end -->

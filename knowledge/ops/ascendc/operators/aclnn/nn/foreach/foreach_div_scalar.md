@@ -40,7 +40,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_div_scalar/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:31:55Z"
-updated_at: "2026-08-25T15:31:55Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -582,9 +582,9 @@ for (uint32_t i = 0; i < repeatBatchCnt; i++) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持；见 `_a5` 卡 |
+| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持；见 `_950` 卡 |
 | Host/Launcher | 共用 priority 10000 Membase Tiling、普通 key 1/2/4 | 同 A2 | priority 30000 Regbase Tiling、key 10001/10002/10004 |
 | Kernel/资源 | Level-Zero `Div`；低精度有 UB FP32 cast buffer | 同 A2 | MicroAPI 寄存器 FP32 reciprocal+`Muls`；UB 仅 input/output Queue |
 
@@ -604,7 +604,7 @@ for (uint32_t i = 0; i < repeatBatchCnt; i++) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `foreach/foreach_div_scalar/docs/aclnnForeachDivScalarV2.md` | V2 原型、产品表、参数表 | V2公开性、A2/A3/A5支持、dtype/shape/非连续约束 |
+| 入口声明/约束 | `foreach/foreach_div_scalar/docs/aclnnForeachDivScalarV2.md` | V2 原型、产品表、参数表 | V2公开性、A2/A3/950支持、dtype/shape/非连续约束 |
 | 入口实现 | `foreach/foreach_div_scalar/op_host/op_api/aclnn_foreach_div_scalar_v2.cpp` | `CheckParams`、`ExecForeachDivScalarV2GetWorkspaceSize` | 校验、Contiguous、scalar Tensor转换、executor |
 | 入口实现 | `foreach/foreach_div_scalar/op_host/op_api/foreach_div_scalar_v2.cpp` | `l0op::ForeachDivScalarV2` | 单 AICore launcher节点 |
 | Host 定义 | `foreach/foreach_div_scalar/op_host/foreach_div_scalar_def.cpp` | `ops::ForeachDivScalar` | dtype、AutoContiguous、平台注册 |
@@ -620,7 +620,7 @@ for (uint32_t i = 0; i < repeatBatchCnt; i++) {
 | Kernel body | `foreach/foreach_utils/op_kernel/kernel_foreach_base.h` | `KernelForeachBase` | POD解析、TensorList地址解引用、tile容量 |
 | binary config | `foreach/foreach_div_scalar/op_host/config/ascend910b/foreach_div_scalar_binary.json` | `op_list` | A2 FP16/FP32/BF16与scalar实例 |
 | binary config | `foreach/foreach_div_scalar/op_host/config/ascend910_93/foreach_div_scalar_binary.json` | `op_list` | A3 FP16/FP32/BF16与scalar实例 |
-| 构建接线 | `foreach/foreach_div_scalar/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3普通 Kernel与 A5 arch35分流 |
+| 构建接线 | `foreach/foreach_div_scalar/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3普通 Kernel与 950 arch35分流 |
 
 ### 实现复用检查
 
@@ -632,3 +632,9 @@ for (uint32_t i = 0; i < repeatBatchCnt; i++) {
 | 同步 | Queue协议、V barrier、V→MTE3/MTE3→MTE2事件 | 原地 FP32区和 Queue slot不得提前覆盖 | `ComputePerCast`；`CopyOut` |
 | 精度与尾块 | 低精度升 FP32 Div，RINT回写；byte tail + repeat mask | scalar dtype转换、round mode和 valid byte数不变 | `InnerComputer`；`DataCopyPad` |
 | 失败边界 | Tiling/API失败停止；unknown key无 body | 不得臆造 fallback或把实现内部 Contiguous当公开支持 | `CheckParams`；`foreach_div_scalar` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachDivScalar 950 ACLNN 算子知识](foreach_div_scalar_950.md)（`same_topic`）：｜ 计算语义 ｜ TensorList 内逐元素 `out［i］［j］ = x［i］［j］ / scalar`。 ｜；｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ / scalar`。 ｜。两卡实现同一 ForeachDivScalar V2 列表逐元素除标量契约，分别闭合 950 RegBase 与 A2/A3 Vector 路线。
+<!-- cannbot:related:end -->

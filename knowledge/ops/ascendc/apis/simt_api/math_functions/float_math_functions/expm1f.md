@@ -28,7 +28,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BFloat16数学函数hexp](../bfloat16_type/bfloat16_math_functions/hexp.md)（`same_topic`）：BFloat16数学函数hexp 与《Expm1f》的实质衔接是：hexp 计算 bfloat16 标量 e^x；exp2/exp10、half、packed bfloat16x2、float exp/expm1 入口直接区分底数、类型宽度和稳定公式。
-- [Log1pf](log1pf.md)（`same_topic`）：Log1pf 与《Expm1f》的实质衔接是：Log1pf 计算 ln(1+x) 并保留 x 近零精度；logf 是直接但近零易损的等价表达，expm1f 是配套的稳定逆向公式。
-- [数学函数expf](expf.md)（`same_topic`）：《数学函数expf》处理“根据输入x，获取e的x次方的计算结果。”。《Expm1f》明确提供“指定输入x，获取e的x次方减1。”，其参数、调用或验证步骤直接接入expf 与 Expm1 及跨 dtype 的自然指数实现之间的数值合同。
+- [Expm1 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/expm1_950.md)（`related`）：算子卡明确“对 `｜x｜ > 2` 直接采用 `expm1f(x)`”；API 卡定义“功能：指定输入x，获取e的x次方减1。”并列出 950 的 subnormal 边界，直接支撑大输入分支及其特殊值核对。
+- [InplaceExpm1 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_expm1_950.md)（`related`）：SIMT body 对每个 FP32 元素先保留库函数 `expm1f(x)` 结果。`｜x｜ <= 2` 时使用源码中的 ln2 约化、五阶系数组合及 `exp2f` 重建；`｜x｜ > 2` 时选回 `expm1f`。；函数原型：float expm1f(float x)；算子核心在大幅值分支直接消费 SIMT expm1f，API 卡提供该调用的标量合同。
 <!-- cannbot:related:end -->

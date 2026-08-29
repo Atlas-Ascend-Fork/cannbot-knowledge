@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_erfc/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:31:07Z"
-updated_at: "2026-08-25T15:31:07Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -531,9 +531,9 @@ BF16 输入只以 `maxCastDataCount=U/4` 元素为单位进入 FP32；同一 `2U
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持；见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持；见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 公共 Tiling | `ascend910_93`→arch22 公共 Tiling | arch35 独立 SIMT Tiling |
 | Kernel/资源 | 默认 AIV_VECTOR entry | 与 A2 共用默认 entry | 独立 arch35 entry，无 AIV queue，使用 SIMT VF |
 
@@ -553,7 +553,7 @@ BF16 输入只以 `maxCastDataCount=U/4` 元素为单位进入 FP32；同一 `2U
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `foreach/foreach_erfc/docs/aclnnForeachErfc.md` | `aclnnForeachErfcGetWorkspaceSize/aclnnForeachErfc` | 公开原型、平台、dtype、shape、错误语义 |
-| 入口声明/约束 | `foreach/foreach_erfc/README.md` | 产品支持表、`ForeachErfc` | A2/A3/A5 公开支持 |
+| 入口声明/约束 | `foreach/foreach_erfc/README.md` | 产品支持表、`ForeachErfc` | A2/A3/950 公开支持 |
 | 入口实现 | `foreach/foreach_erfc/op_host/foreach_erfc_def.cpp` | `ops::ForeachErfc` | ND/dtype/AutoContiguous 与平台注册 |
 | Host/Tiling/Launcher | `foreach/foreach_erfc/op_host/arch22/foreach_erfc_tiling_arch22.cpp` | `Tiling4ForeachErfcTiling` | arch22 入口与 op code |
 | Host/Tiling/Launcher | `foreach/foreach_utils/op_host/foreach_tiling_class.h` | `ForeachCommonTiling` | 校验、分核、UB、POD、workspace |
@@ -576,3 +576,9 @@ BF16 输入只以 `maxCastDataCount=U/4` 元素为单位进入 FP32；同一 `2U
 | 同步 | queue 生命周期 + `PIPE_V` barrier | BF16 三阶段间不得省略 barrier | `InnerComputer::Compute` |
 | 精度与尾块 | FP16/FP32 原生；BF16 经 FP32 与 RINT | tail 只按有效字节提交 | `ComputePerCast/CopyIn/CopyOut` |
 | 失败边界 | Host 校验阻断 launch | 不得为未知 key 自造 fallback | `CheckOpInfo/foreach_erfc` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachErfc 950 ACLNN 算子知识](foreach_erfc_950.md)（`same_topic`）：｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `y_i［j］ = erfc(x_i［j］) = 1 - erf(x_i［j］)` ｜；｜ 计算语义 ｜ TensorList 中每个元素独立计算 `erfc` ｜。两卡共享 ForeachErfc TensorList 逐元素语义和公开 ACLNN 契约，分别闭合 A2/A3 AIV 向量路线与 950 arch35 SIMT VF 路线。
+<!-- cannbot:related:end -->

@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.tiling"]
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 ---
 
@@ -14,7 +14,7 @@ platforms: ["950"]
 
 ## 现象
 
-在 Ascend950（dav-3510/A5，CANN 9.1.0）上为 `softplus_v2_grad` 算子实现 RANK_4 分支 Kernel 后跑 aclnn ST 用例：38/48 通过、10 个失败。其中 9 个是 C05 形状 `[1,1024]⊗[256,1024]`（grad 广播到 feat），覆盖全部 9 个 dtype 组合，`aclrtSynchronizeStream` 返回 **error 507035（vector core exception）**，kernel 直接崩溃，无 mismatch 输出。开发者日志把根因记为「NDDMA `loopSrcStride≥240` 平台约束致 UB 越界」（2D NDDMA split axis stride 1024 超约束 `[0,240)`），建议改用 1D `DataCopyParams` 分段搬运绕过 NDDMA stride 约束。
+在 Ascend950（dav-3510/950，CANN 9.1.0）上为 `softplus_v2_grad` 算子实现 RANK_4 分支 Kernel 后跑 aclnn ST 用例：38/48 通过、10 个失败。其中 9 个是 C05 形状 `[1,1024]⊗[256,1024]`（grad 广播到 feat），覆盖全部 9 个 dtype 组合，`aclrtSynchronizeStream` 返回 **error 507035（vector core exception）**，kernel 直接崩溃，无 mismatch 输出。开发者日志把根因记为「NDDMA `loopSrcStride≥240` 平台约束致 UB 越界」（2D NDDMA split axis stride 1024 超约束 `[0,240)`），建议改用 1D `DataCopyParams` 分段搬运绕过 NDDMA stride 约束。
 
 复调时发现该诊断 **错误**：同批次 C06 `[1,16,1,56]⊗[8,16,56,56]` 的 `loopSrcStride=3136` 反而通过——若约束真是 `stride<240`，C06 不可能过。真正根因在 host 侧 `DoTilingAndSet` 的坐标系不一致，与 NDDMA stride 无关。
 
@@ -22,7 +22,7 @@ platforms: ["950"]
 
 - **工程形态**：op_host 侧 TilingFunc 实现（aclnn 算子仓开发，ops-registry-invoke 工作流）。
 - **API 路径**：`IMPL_OP_OPTILING` → `DoTilingAndSet<kRank>` → 公共 `FindSplitAxis`/`MultiCoreSplit`，kernel 侧读 `td->split.axis` 决定 NDDMA `loopSize/loopSrcStride/loopDstStride` 与 `inner_count`。
-- **验证过的平台与 CANN 版本**：Ascend950（dav-3510/A5），CANN 9.1.0（实测 UB=253952 B，非标称 256 KB）。
+- **验证过的平台与 CANN 版本**：Ascend950（dav-3510/950），CANN 9.1.0（实测 UB=253952 B，非标称 256 KB）。
 - **适用粒度**：`operator_family`——任何走「PadAndSqueeze 压缩 → 再前补 1 填充到 R 维」的广播算子 TilingFunc 都可能踩此坑。
 - **不适用/未验证场景**：rank==R（delta=0）天然不受影响（C01/C02/C06/C07 等 rank=4 用例即因此通过）；rank<R 但 split.axis 恰好落在真实大维的偶发场景可能不崩但搬运错。a2/a3 未验证。
 
@@ -57,9 +57,5 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [FindSplitAxis 误传 total_slots 致 slot 翻倍](../precision/findsplitaxis_total_slots_slot.md)（`related`）：两卡都定位 host 侧 FindSplitAxis 输入/坐标错误：本卡漏加前补维度 delta，候选把 total_slots 错传为 slot。
-- [NDDMA多维dstStride致data搬运偏移的判别](../precision/nddma_dststride_data.md)（`related`）：本卡错误 split.axis 直接派生 NDDMA stride 与 inner_count；候选给出 dstStride 偏移错的数值判别。
-- [RANK大于5时NDDMA漏维只解释accum错误](../precision/rank_5_nddma_accum_var.md)（`related`）：候选展示高 rank 映射 NDDMA 漏维导致累积偏移错误，本卡展示低 rank padding 后轴未偏移导致 inner_count 爆涨。
-- [softplus_v2_grad tiling rank 校验拒标量广播](softplus_v2_grad_tiling_rank.md)（`related`）：focal 要求先 PadAndSqueeze 再进行 rank 对齐；该卡证明同一管线还必须把 split.axis 从压缩坐标系同步平移到补齐后的坐标系，否则合法广播会转成 UB 越界。
-- [低 rank 零填充致 count=0 用 td_->rank 非 RANK](../precision/rank_count_0_td_rank_rank.md)（`same_topic`）：低 rank 零填充致 count=0 用 td_->rank 非 RANK 与《split.axis 未随 PadAndSqueeze 偏移致 507035》的实质衔接是：实际 rank 必须来自 tiling 而非模板容量；低 rank padding、NDDMA维度、shape/axes 和 blockDim 卡共同验证零填充维被误纳入循环后 count=0 的机制。
+- [FindSplitAxis 误传 total_slots 致 slot 翻倍](../precision/findsplitaxis_total_slots_slot.md)（`related`）：“定位 `DoTilingAndSet<R>` 中对 `FindSplitAxis` 的调用，核查第 4 个实参传的是 `total_slots`”；“真正根因在 host 侧 `DoTilingAndSet` 的坐标系不一致，与 NDDMA stride 无关”。两卡覆盖同一 Broadcast Tiling 调用链的两个独立参数/坐标故障，可组成排查顺序。
 <!-- cannbot:related:end -->

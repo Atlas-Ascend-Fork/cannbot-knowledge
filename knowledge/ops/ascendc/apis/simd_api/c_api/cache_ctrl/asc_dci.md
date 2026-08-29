@@ -22,7 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [设置DCI编译选项来减少算子尾开销](../../../../guides/operator_practice/simd_operator_optimization/overhead_optimization/dci_compile_option.md)（`explains`）：指南把 DCI 缓存失效用于减少算子尾部维护开销，并说明编译选项和适用条件。
-- [AscSyncDataBarrier](../sync/asc_sync_data_barrier.md)（`related`）：asc_dci 前必须先执行 DataBarrier 等待所有内存访问结束，否则脏缓存行可能在未完成写回时被直接丢弃。
-- [asc_dcci_entire](../../../simt_api/memory_access_functions/asc_dcci_entire.md)（`same_topic`）：asc_dcci_entire 与《asc_dci（缓存控制）》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
+- [AscSyncDataBarrier](../sync/asc_sync_data_barrier.md)（`related`）：asc_dci 的硬约束是“在调用asc_dci之前，需调用asc_sync_data_barrier插入DSB_ALL指令”；barrier API执行“阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束”。该屏障必须先完成，才能安全执行数据缓存失效。
 <!-- cannbot:related:end -->

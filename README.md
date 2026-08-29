@@ -1,6 +1,6 @@
 # cannbot-knowledge
 
-`cannbot-knowledge` 是 CANNBot 使用的知识库。它不保存算子工程或模型代码，而是把经过整理、能够追溯来源的工程知识保存成 Markdown 知识卡，例如：
+`cannbot-knowledge` 是 CANNBot 使用的知识库。它不保存算子工程或模型代码，而是把经过整理、能够追溯到固定来源或卡内原始观测的工程知识保存成 Markdown 知识卡，例如：
 
 - 某个 CANN API 的语义和使用限制；
 - 某种算子 DSL 的编程模型；
@@ -17,14 +17,16 @@ CANNBot 通过本仓提供的 Skill 生产、检索和检查这些知识，从�
 
 ## 当前知识状态
 
-目前 `knowledge/` 除协作骨架外，已摄入一批 Ascend C 官方参考知识：
+当前 `knowledge/` 共有 4,495 张知识卡，覆盖 Ascend C 与模型场景：
 
 - 2,810 张 API 卡；
-- 270 张 Guide 卡；
+- 304 张 Guide 卡，其中 Ascend C 270 张、模型场景 34 张；
 - 612 张 Operator 卡，其中 559 张 ACLNN 全链路卡、53 张 Direct Invoke 卡；
-- API/Guide 来源指向可由固定归档和 SHA-256 恢复的 `cann-docs-raw/` 官方资料；Operator 来源固定到 CANN 官方 Git 仓 40 位 Commit 和具体文件。
+- 471 张 Runbook 卡，其中 Ascend C 377 张、模型场景 94 张；
+- 188 张 Concept 卡和 110 张 Optimization 卡，均位于模型各 route；
+- Ascend C API/Guide 来源指向 Registry 登记的 `cann-docs-raw/` 固定归档，恢复时必须通过 SHA-256 校验；模型 Guide 来源固定到托管仓 40 位 Commit 和具体文件，Operator 来源固定到 CANN 官方 Git 仓 40 位 Commit 和具体文件。
 
-五个 domain 根目录始终保留；`ops` 和 `model` 额外预建已注册 route，其他领域的下一层路径由领域维护者在首批真实知识落库时创建。只有 `index.md` 的结构入口不算正式知识卡，也不会出现在 Query 的实际覆盖统计中。“存在目录”不表示“已有知识”，实际内容以 [`knowledge/index.md`](knowledge/index.md) 和 Query `discover` 为准。
+上述数量是当前版本快照。五个 domain 根目录始终保留；`ops` 和 `model` 额外预建已注册 route，其他领域的下一层路径由领域维护者在首批真实知识落库时创建。只有 `index.md` 的结构入口不算正式知识卡，也不会出现在 Query 的实际覆盖统计中。“存在目录”不表示“已有知识”，实时数量以 Query `discover` 为准。
 
 本地来源不提交到 Git。需要核对卡片证据时，在仓库根执行：
 
@@ -40,7 +42,7 @@ bash fetch-cann-docs.sh
 官方文档 / 固定版本源码 / 可复现实验
                     │
                     ▼
-       knowledge-ingest / VV / CV
+    knowledge-ingest / trace / VV / CV
                     │
                     ▼
                Markdown 知识卡
@@ -53,13 +55,14 @@ bash fetch-cann-docs.sh
           CANNBot 读取正文并核对来源
 ```
 
-五项 Skill 的分工是：
+本仓维护六项 Skill：五项是可安装的通用贡献能力，`ops-knowledge-trace-ingest` 只用于本知识仓内的 trace → Runbook 生产。
 
 | Skill | 作用 | 是否修改知识仓 |
 |---|---|---|
 | `knowledge-query` | 查看实际知识覆盖，检索知识卡，并可保存不可覆盖的审计 receipt | 除指定 receipt 外只读 |
 | `knowledge-ingest` | 统一路由新来源、增量、版本升级、通用建卡和图谱完整生命周期 | 可以创建候选卡并同步可提交的受管关系块；图谱 JSON 等产物始终 ignored |
 | `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航和日志；整理 Issue 材料 | 否 |
+| `ops-knowledge-trace-ingest` | 从算子开发 trace 蒸馏 Runbook，并按当前 Schema、索引和全库图谱门禁收口 | 仓内使用；只写经审查的 Runbook、导航和日志 |
 | `ops-knowledge-vv-ingest` | 从固定版本源码提取不含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
 | `ops-knowledge-cv-ingest` | 从固定版本源码提取含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
 
@@ -100,7 +103,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 | `governance/schemas/` | 机器可读的字段、路径 Profile 和受控值规则 |
 | `governance/specs/` | 对治理规则的完整文字说明 |
 | `governance/contracts/` | Ingest、Query、Lint 和图谱共同使用的校验实现 |
-| `.agents/skills/` | 三项基础 Skill 与两项源码级 Operator producer 的规范源 |
+| `.agents/skills/` | 三项基础 Skill、仓内 trace producer 与两项源码级 Operator producer 的规范源 |
 | `docs/` | 知识库设计原则和用户指南 |
 | `recipes/` | 面向具体任务的知识库最佳实践 |
 | `evals/` | 检索、治理、文档和安装回归 |
@@ -144,7 +147,7 @@ python3 -m pip install -r requirements-dev.txt
 
 ## 安装到项目
 
-使用知识仓根目录的 `init.sh` 时，目标项目必须已经存在。`consumer` 只安装查询 Skill，`contributor` 安装全部五项 Skill：
+使用知识仓根目录的 `init.sh` 时，目标项目必须已经存在。`consumer` 只安装查询 Skill，`contributor` 安装三项基础 Skill 和两项 Operator producer，共5项。仓内专用的 `ops-knowledge-trace-ingest` 不安装到业务项目：
 
 ```bash
 bash init.sh claude /path/to/project consumer
@@ -165,7 +168,7 @@ bash init.sh agents /path/to/project contributor
 bash check.sh
 ```
 
-该入口覆盖本仓知识 Lint（含严格 Git 来源导航）、检索回归、单元测试、Ruff、Shell 语法、图谱重建和 `git diff --check`。
+该入口覆盖本仓知识 Lint（含严格 Git 来源导航）、Ascend C Runbook 正文门禁、检索回归、单元测试、Ruff、Shell 语法、基于现有 Agent 判定缓存的图谱合成/校验和 `git diff --check`。重新产生关系判定时，仍须按 Ingest 的多 Agent 全量流程执行。
 
 ## 治理规范
 
@@ -173,6 +176,6 @@ bash check.sh
 - [知识路径](governance/specs/paths.md)：domain、technology/scope、路径 Profile、Concept ID 和索引规则。
 - [Frontmatter 与证据](governance/specs/frontmatter.md)：字段组合、生命周期、来源、标签、平台和版本。
 - [Schema、Registry 与 Contract](governance/specs/schemas.md)：机器事实源、受控词表和规则执行关系。
-- [Knowledge Skills](governance/specs/skills.md)：Query、通用 Ingest、Operator producer、Lint 和安装模式。
+- [Knowledge Skills](governance/specs/skills.md)：Query、通用 Ingest、仓内 trace producer、Operator producer、Lint 和安装模式。
 
 本仓采用 [CANN Open Software License Agreement 2.0](LICENSE)。

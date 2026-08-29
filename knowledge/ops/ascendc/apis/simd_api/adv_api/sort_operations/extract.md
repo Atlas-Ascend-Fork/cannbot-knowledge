@@ -23,10 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [TopK BF16 tie 索引顺序与 CPU 不一致](../../../../runbooks/precision/topk_bf16_tie_cpu.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《Extract（排序操作）》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [noTrans extract 与 NDExtLayoutPtn 方向不匹配](../../../../runbooks/precision/notrans_extract_ndextlayoutptn.md)（`exemplifies`）：该卡说明 NoTrans Extract 需要正确 ND ExtLayoutPtn，否则输出布局错。
-- [Concat（排序操作）](concat.md)（`related`）：多段排序结果先 Concat，再 Extract 有效数据。
-- [GetSortLen](get_sort_len.md)（`related`）：有效排序长度决定 Extract 范围。
-- [GetSortOffset](get_sort_offset.md)（`related`）：GetSortOffset 与《Extract（排序操作）》的实质衔接是：SortOffset 是 Sort 中间数据布局的字节偏移；SortLen、临时空间、Concat/Extract 和 Sort 调用必须采用同一 repeat 布局。
-- [Sort](sort.md)（`related`）：Sort 输出按 score/index 组合结构排布，Extract 是文档指定的结果拆取步骤，二者构成排序后的直接处理链。
+- [Sort](sort.md)（`related`）：焦点卡把参数合同写为“sorted输入Sort的结果数据”，候选卡明确 Sort 要“配合Concat（预处理）和Extract（结果提取）使用。”；Sort 的结构化 score/index 输出正是 Extract 的直接输入。
 <!-- cannbot:related:end -->

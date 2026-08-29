@@ -25,9 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hdivx2](../../bfloat16_type/bfloat16x2_arithmetic_functions/_hdivx2.md)（`related`）：half2 版本 __hdivx2 与 focal 都做双分量并行除法和 CAST_RINT，差异在 half2 与 bfloat16x2 的精度、特殊值上界及头文件。
-<!-- cannbot:related:end -->

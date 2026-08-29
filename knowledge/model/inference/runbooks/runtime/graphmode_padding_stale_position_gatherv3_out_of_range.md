@@ -94,3 +94,9 @@ positions = self.positions[:num_input_tokens]
 - [vllm-ascend-issue-1115-v0-9-0rc2-faq-feedback](https://github.com/vllm-project/vllm-ascend/issues/1115) — issue（报错现场，维护者判断图模式下所有模型「应该」都有概率触发）；修复合并态 diff @ merge sha `bf171525f2b3709571cab393e300e0609ecb9006`（v0.9.1-dev / v0.9.1rc2，2025-06-26 合入）。
 - 核心链路（症状 = `GatherV3` 越界 / 根因 = 图模式 padding 区残留 stale position + 昇腾外部 mask 索引 / 修法 = 拷入前 `zero_()` 清零）出自合并态 diff 与 PR 描述给出的根因链；两份 issue 在不同模型上复现同一失败签名，互相印证。
 - 静态概念：图模式机制见 [npu-graph-mode](../../concepts/techniques/npu_graph_mode.md)；昇腾 split-fuse / 融合注意力算子路径见 [fused-infer-attention-score](../../concepts/kernels/fused_infer_attention_score.md)。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NPU 图模式（ge_graph / npugraph_ex）](../../concepts/techniques/npu_graph_mode.md)（`related`）：图模式为保持输入形状稳定（避免重编译），每个 batch 把 token 张量 pad 到固定长度：`num_input_tokens` 始终 ≥ 本批实际的 `total_num_scheduled_tokens`，尾段 `［total_num_scheduled_tokens:num_input_tokens］` 是 padding 区。；**KV Cache 与常驻 buffer 预分配 + 原地更新**：；故障正是固定形状 padding 与常驻 buffer 复用时未清尾段造成，图模式概念卡给出需要预分配并原地更新常驻状态的适配背景。
+<!-- cannbot:related:end -->

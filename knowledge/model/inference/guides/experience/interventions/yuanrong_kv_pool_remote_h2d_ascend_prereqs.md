@@ -138,3 +138,9 @@ hccn_tool -i <local_npu_id> -ping -g address <remote_npu_ip>
 - claim：[vllm-ascend-yuanrong-kv-pool-启用-remote-h2d-的前置-预留-2mib-huget](https://github.com/vllm-project/vllm-ascend/pull/9203)
 - 参考源（合并态）：`vllm-project/vllm-ascend@62baa5932a9b5a909d7a506c5ba32e4abdcd3733` 的 `docs/source/user_guide/feature_guide/kv_pool.md`「Remote H2D Requirements」节。
 - evidence tier：文档披露（仓内部署指引，非独立复测的 benchmark）；`20480` 大页 / `40960` MiB 共享内存为仓自报推荐值。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [KVCache Offload](../../../concepts/techniques/kvcache_offload.md)（`related`）：把 KV cache offload 到一个分布式内存后端（此处为 Yuanrong Datasystem KV-Pool），并希望**跨节点把 KV 直接搬到远端 NPU device**。；**KVCache Offload** 泛指把部分或全部 KV Cache 从设备 HBM 卸载到 Host 内存（或延后到异步 stream 上执行），以换取显存容量或计算/通信重叠。。前者把 KVCache Offload 的卸载目标扩展为分布式内存后端并补充远端 NPU 搬运前置条件，直接细化后者的卸载机制。
+<!-- cannbot:related:end -->

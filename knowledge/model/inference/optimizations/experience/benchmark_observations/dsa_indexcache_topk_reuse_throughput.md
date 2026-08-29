@@ -87,3 +87,9 @@ Concurrency 3（30 prompts）：
 
 - `doc 披露`：PR body 的 Benchmarking / Accuracy 段（vllm-project/vllm-ascend，合并 2026-05-07，merge commit `ba074eb4bf095264b2d1280447281633ab66e112`）——仓库自报、无独立复测。
 - 溯源下探：[vllm-ascend-pr-8398-feature-indexcache-support-for-dsa-models](https://github.com/vllm-project/vllm-ascend/pull/8398)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [KVCache 卸载到 Host + 稀疏 TopK-selection decode：跨 step 复用设备常驻选中块摊薄 H2D](../rules/kvcache_offload_sparse_selection_cross_step_reuse.md)（`related`）：每 N 步只重算一次、其余步复用上次缓存的 top-k 索引；跨 decode step 记录哪些选中块已设备常驻。前者通过缓存 TopK 索引减少 indexer 重算，后者基于同一 TopK 选择结果复用设备常驻 KV 块并减少 H2D；两者是 DSA decode 中相邻的两层跨步复用决策。
+<!-- cannbot:related:end -->

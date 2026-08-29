@@ -23,12 +23,3 @@ platforms: ['950', a2, a3]
 返回值：add_const是一个结构体，其提供一个嵌套类型type，表示添加const限定符后的类型。通过add_const::type来访问该类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [add_cv](add_cv.md)（`related`）：“add_const”定义：在程序编译时，为指定类型添加const限定符，可以用于在编译时进行类型转换。；“add_cv”定义：在程序编译时，为指定类型添加const和volatile限定符，可以用于在编译时进行类型转换。。实质衔接：add_const 添加限定，is_const 验证结果，remove_const 执行逆变换，add_cv 同时添加 const/volatile。
-- [is_const](is_const.md)（`related`）：“add_const”定义：在程序编译时，为指定类型添加const限定符，可以用于在编译时进行类型转换。；“is_const”定义：在程序编译时，检测一个类型是否为const限定的类型，可以用于在编译时进行类型检查和条件处理。。实质衔接：add_const 添加限定，is_const 验证结果，remove_const 执行逆变换，add_cv 同时添加 const/volatile。
-- [remove_const](remove_const.md)（`related`）：“add_const”定义：在程序编译时，为指定类型添加const限定符，可以用于在编译时进行类型转换。；“remove_const”定义：在程序编译时，对传入的模板参数类型移除const限定符，可以用于在编译时进行类型转换。。实质衔接：add_const 添加限定，is_const 验证结果，remove_const 执行逆变换，add_cv 同时添加 const/volatile。
-- [add_volatile](add_volatile.md)（`same_topic`）：add_const说明在程序编译时，为指定类型添加const限定符，可以用于在编译时进行类型转换。
-<!-- cannbot:related:end -->

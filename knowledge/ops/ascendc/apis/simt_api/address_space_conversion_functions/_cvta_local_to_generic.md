@@ -19,10 +19,3 @@ platforms: ['950']
 返回值：指向输入栈空间的指针。该接口不校验输入是否为有效栈空间地址。异常场景示例说明如下：
 约束：SIMD与SIMT混合编程场景不支持使用该接口。
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__isLocal](../address_space_predicate_functions/_is_local.md)（`related`）：local_to_generic 从栈地址值恢复指针且不校验有效性，__isLocal 可用于恢复后验证地址空间，形成双向转换的校验闭环。
-- [__cvta_generic_to_local](_cvta_generic_to_local.md)（`same_topic`）：焦点把通用指针还原为 local 栈地址值，候选把 local 地址值重新转换为通用指针，形成同一地址空间映射的相反方向。
-<!-- cannbot:related:end -->

@@ -55,3 +55,12 @@ TaylorSeer 缓存全 block 全阶导数，额外内存是 step-level 残差缓�
 - **diff 事实**（clone `@366a74296cb5`）：`module/dit_cache/cache_method.py` 的 `TaylorSeer`（`derivative_approximation` 记导数 / `taylor_formula` 泰勒展开 / `_get_step_type` 判实算 vs 预测步）、`BaseCache.taylor_formula`、`sample_video.py:main` 的 `WORLD_SIZE > 1` + 非 NoCache 互斥 raise，逐项对上。
 - **doc 披露**（clone `@366a74296cb5`）："算 1 跳 2/4""精度损失更小"为优化文档定性描述，PR diff 性能表未给 TaylorSeer speedup/精度行——未并入定量事实面。归因主语为 cann-recipes-infer 该集成，非上游模型厂商。
 - 溯源下探：[cann-recipes-infer-pr-266-feat-hunyuanvideo-support-taylorseer-offload-prefetch-vae-parallel-rolli](https://gitcode.com/cann/cann-recipes-infer/merge_requests/266)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DiT Cache (FBCache / TeaCache / TaylorSeer)](../../../concepts/techniques/dit_cache.md)（`related`）：焦点卡以“预测时 `taylor_formula` 按泰勒级数 `output += (1/i!) · 导数因子 · x^i`”定义 TaylorSeer，候选卡进一步说明“预测比复用精度损失更小，因而能支持"算 1 步跳 2 / 算 1 步跳 4"的更激进跳步”；两卡形成机制定义到选型与旋钮边界的直接链路。
+- [DiT 步间缓存与多卡序列并行共存（数据相关判据须跨卡取一致决策，样例默认互斥）](dit_cache_with_sequence_parallel.md)（`related`）：“TaylorSeer / 当前所有 DiT-Cache 与多卡互斥”给出焦点端事实；“固定 step 计划（TaylorSeer）”给出候选端事实。焦点规则记录当前样例的多卡硬互斥，候选规则说明固定 step 计划天然跨卡一致；联合阅读可区分“实现当前禁止”与“判据机制无需同步”这两个不同层次。
+- [DiT 采样步残差缓存（FBCache / TeaCache）键控、阈值权衡与 TeaCache 属性名 bug](dit_step_cache_fbcache_teacache.md)（`related`）：“已在用残差复用型跳步缓存（FBCache / TeaCache），但跳步一多精度就明显下滑”给出焦点端事实；“## 两种可复用键控（同一 DiT 上二选一）”给出候选端事实。焦点以复用缓存精度退化作为切换 TaylorSeer 的触发条件，候选卡给出 FBCache 与 TeaCache 的键控、阈值和故障边界，构成同一 DiT 缓存选型的前后步骤。
+- [视频 DiT TaylorSeer 特征缓存 NPU OOM：offload 到 Host + 预取搬算并行；Host 内存成新瓶颈](../../../guides/experience/interventions/video_dit_taylorseer_cache_offload.md)（`related`）：“`offload: true` 开启后走 offload 分支，把导数缓存从 NPU 搬到 CPU、并用独立流预取回来与计算并行”给出搬算实现；“**不开 offload 几乎必 OOM**”给出 TaylorSeer 的容量决策门槛，二者直接连接是否启用与如何实现。
+<!-- cannbot:related:end -->

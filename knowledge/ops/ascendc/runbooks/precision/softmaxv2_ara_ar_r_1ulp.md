@@ -153,11 +153,3 @@ SOFTMAX_V2_FORCE_ARA=1 \
 
 - 把两模板 1 ULP 差异当精度 bug 修：两套模板在数学上都正确（softmax 行和归一为 1.0），差异属 fp32 非结合律固有性质，不应通过改 reduce 树强行对齐某一模板（会牺牲另一模板的性能/UB 占用）。
 - 通过放宽容差让两模板输出「通过」对比：掩盖了模板间不 bit-exact 的真实特性，下游若依赖 bit 级一致会踩坑。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceSum](../../apis/simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_sum.md)（`exemplifies`）：该 API 是 AR 模板段内硬件归约所用接口；与本卡读取到的 ARA 软件二分树对照，可定位两条实现链的合并节点不同。
-- [flash在线softmax JIT重排致精度超阈](flash_softmax_jit.md)（`related`）：目标卡展示在线 softmax 的任务重排改变累加次序并产生 ULP 级误差；本卡展示 tiling 模板自身采用不同 reduce 树产生同类顺序敏感差异。
-- [int32 fp32累加reduce binary_equal不可达](int32_fp32_reduce_binary_equal.md)（`related`）：《int32 fp32累加reduce binary_equal不可达》的任务是“int32 输入的 reduce 类算子内部 cast 到 fp32 累加，kernel 的 ReduceSum+bisection cache tree 与 golden 的 pairwise 折半是两棵不同 reduce 树；sum 超过 fp32 精确整数范围 2^24 时舍入路径不同致 1 ULP 差，cast 回 int32 后 bitwise 不一致，binary_equal 永不可达。”。《SoftmaxV2 ARA与AR模板R向累加树不同致1ULP分歧》具体提供“SoftmaxV2 arch35 的 ARA 与 AR 两套 tiling 模板对同一 fused shape (a1,r,a0=1) 用不同 R 向归约树拓扑，fp32 非结合律下产生 1 ULP bit 级分歧；附环境变量强制模板选择的双跑对比判别方法。”，它直接用于int32→fp32 ReduceSum 的规约树、有效 count 和 2^24 舍入边界。
-<!-- cannbot:related:end -->

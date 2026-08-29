@@ -22,7 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscInt162Int32](../reg/data_type_convert/asc_int162int32.md)（`related`）：该接口提供相反的 int16→int32 扩宽并按奇偶输入半段读取；与 focal 的 2:1 窄化一起说明往返转换的 lane 数和数据布局变化。
-- [AscInt322Int16](../reg/data_type_convert/asc_int322int16.md)（`same_topic`）：两个 AscInt322Int16 入口都把 int32_t 转为 int16_t；Reg 版本补充 mask、奇偶 lane 写入及饱和控制，Memory Vector 版本提供 UB count 形式。
-- [AscInt322Uint16](../reg/data_type_convert/asc_int322uint16.md)（`same_topic`）：AscInt322Uint16 与《AscInt322int16》的实质衔接是：AscInt322Uint16 是 32→16 位窄化并带饱和/奇偶 lane 布局；uint32→uint16 与 int32→int16 对照可分离符号解释和位宽布局。
+- [AscInt322Int16](../reg/data_type_convert/asc_int322int16.md)（`same_topic`）：根据mask将src中的每个int32_t类型元素转化为int16_t类型，支持饱和/非饱和模式，结果写入dst；将int32_t类型数据转换为int16_t类型。两卡的核心转换都是 int32 到 int16；焦点补充 950 Reg mask、奇偶半 VL 与饱和模式，候选给出 A2/A3 UB 指针和 32B 对齐。
 <!-- cannbot:related:end -->

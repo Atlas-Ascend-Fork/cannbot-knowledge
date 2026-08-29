@@ -29,10 +29,5 @@ AddrReg应该通过CreateAddrReg API初始化，然后在循环中使用AddrReg�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [指令双发优化](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/vf_optimization/dual_issue_optimization.md)（`explains`）：指令双发优化 与《AddrReg》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
-- [LoadAlign](../reg_data_load/load_align_mask_reg.md)（`related`）：选择 AddrReg 重载时必须先创建并配置多维地址偏移，LoadAlign 再按该偏移访问 UB；AddrReg 是该寻址模式的前置对象。
-- [asc_create_iter_reg (废弃)](../../../c_api/reg/reg_data_types/asc_create_iter_reg_deprecated.md)（`related`）：废弃的 CreateIterReg 说明初始化式迭代寄存器已由 AscUpdateAddrReg 取代，有助于迁移旧 AddrReg 循环代码。
-- [AscUpdateAddrReg](../../../c_api/reg/reg_data_types/asc_update_addr_reg.md)（`same_topic`）：AddrReg 类型是 UpdateAddrReg 更新的核心对象。
-- [RegTensor](reg_tensor.md)（`same_topic`）：RegTensor 与《AddrReg》的实质衔接是：RegTensor 是 256B VL 的 VF 内基本单元；MaskReg/AddrReg/非对齐状态、内置类型和跨 VF/错误类型案例直接限定 lane、寿命和模板参数。
-- [UnalignRegForLoadAndUnalignRegForStore](unalign_reg_for_load_unalign_reg_for_store.md)（`same_topic`）：UnalignRegForLoadAndUnalignRegForStore 与《AddrReg》的实质衔接是：非对齐寄存器是 LoadUnAlign Pre→Load 与 Store→Post 协议的临时状态，所选 C/C++ 接口、连续优化和 Init/Postupdate 共同闭合搬入搬出流程。
+- [LoadAlign](../reg_data_load/load_align_mask_reg.md)（`related`）：“使用AddrReg寄存器存储偏移量场景：在每次迭代中，需要先调用CreateAddrReg手动设定地址偏移量，再调用搬运指令。”规定 MaskReg LoadAlign 的 AddrReg 重载每轮必须先设偏移；“AddrReg应该通过CreateAddrReg API初始化，然后在循环中使用AddrReg存储地址偏移量。AddrReg在每层循环中根据所设置的stride进行自增。”给出 CreateAddrReg 初始化和按 stride 自增的寄存器语义。二者共同决定多维循环中的实际 UB 地址。
 <!-- cannbot:related:end -->

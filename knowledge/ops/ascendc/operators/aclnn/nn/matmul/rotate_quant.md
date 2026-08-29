@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/rotate_quant/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:41:00Z"
-updated_at: "2026-08-25T17:41:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -548,9 +548,9 @@ Tiling 以 UB 容量选择一次处理的行数；每行最大值先落在 `scal
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，但见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，但见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 | `ascend910_93`→arch22 | arch35，MX 语义 |
 | Kernel/资源 | 与 A3 共用 MIX 1:2 + workspace | 与 A2 共用 | CMCT + UB 直交接，不复用本卡 body |
 
@@ -591,3 +591,9 @@ Tiling 以 UB 容量选择一次处理的行数；每行最大值先落在 `scal
 | 同步 | MIX C2V/V2C 协议 | flag 0x1/0x3、mode 0x2、PIPE 和轮转周期 | `AicProcess/AivProcess` |
 | 精度与尾块 | FP32 max/scale、固定 cast 序列 | Cmax、INT4 半字节、`lastUbRows` | `ComputeVector/CopyOutVector` |
 | 失败边界 | 参数/Tiling/launcher 失败向上传播 | 不得为 UB 不足虚构 fallback | ACLNN checks/`CalcMaxHandleRowsPerUb` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [RotateQuant 950 ACLNN 算子知识](rotate_quant_950.md)（`same_topic`）：“逐块计算 `x_block @ rotation［K,K］`，再逐行按最大绝对值做对称动态 INT8 或 INT4 量化。”给出焦点端事实；“按 K=32/64/128 做块旋转，可选每 32 元素 group clamp，再输出 MXFP4/MXFP8 与 E8M0 group scale。”给出候选端事实。两卡共享 aclnnRotateQuant 入口与块旋转核心对象，同时分别定义 A2/A3 的 INT8/INT4 路线和 950 的 MXFP 路线，直接支撑平台与输出格式选型。
+<!-- cannbot:related:end -->

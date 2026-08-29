@@ -47,9 +47,5 @@ vendor_name：通常只有一个。：每个包可使用不同vendor_name。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CMake函数参考（附录）](../appendix/cmake_function_reference.md)（`related`）：CMake函数参考（附录） 与《多算子包组织》的实质衔接是：CMake 函数参考中的工程函数由算子开发、编译选项、编译脚本、库编译和 UT 指南实际消费；FAQ 卡验证其构建阶段失败信号。
-- [算子动态库和静态库编译](dynamic_static_lib_compilation.md)（`related`）：《算子动态库和静态库编译》说明介绍将自定义算子工程编译为动态库或静态库的方法，支持应用直接链接或集成到其他工程中。；《多算子包组织》说明本文是扩展内容，介绍开发多个自定义算子时，如何决定这些算子的发布与部署方式——是全部放在一个算子包中，还是拆成多个算子包。。二者在SHARED/STATIC产物通过npu_op_package与CMake生成，并分别进入直接链接、运行时加载和常规部署流程上存在可执行的直接衔接。
-- [运行时加载机制](../invocation/runtime_loading_mechanism.md)（`related`）：多算子包组织影响注册信息、库拆分和加载顺序，可解释多个 op 同包时运行时如何定位正确实现。
-- [编译与部署基本流程](basic_process.md)（`same_topic`）：编译与部署基本流程 与《多算子包组织》的实质衔接是：编译部署流程直接分支到动态/静态库、交叉编译、调试、加速、多算子包、CMake 和运行时加载；arch 子目录故障验证 SoC 专属源码必须在构建期隔离。
-- [高级编程编译加速](compilation_acceleration.md)（`same_topic`）：高级编程编译加速 与《多算子包组织》的实质衔接是：编译加速围绕 ccache、选择性编译、并行度和增量构建；编译/交叉编译/库/CMake/AOT/BiSheng 与 arch 源隔离材料对应这些可执行构建阶段。
+- [算子动态库和静态库编译](dynamic_static_lib_compilation.md)（`related`）：焦点卡写明“默认建议放在同一个算子包中。”，候选卡写明“算子包：TYPE RUN：custom_opp_*.run：安装到OPP的vendors/路径，供运行环境使用。”。多算子卡决定一个或多个 RUN 包，编译卡给出 RUN 与 SHARED/STATIC 的产物差异，衔接拆包与构建选择。
 <!-- cannbot:related:end -->

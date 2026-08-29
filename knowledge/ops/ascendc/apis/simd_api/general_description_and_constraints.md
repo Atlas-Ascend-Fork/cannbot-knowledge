@@ -19,9 +19,3 @@ Ascend C基础API和高阶API均支持通过包含kernel_operator.h文件来调�
 约束：AI Core上的存储单元用于存储矢量计算、矩阵计算的源操作数和目的操作数，各类存储单元的对齐要求如下：Global Memory无对齐要求；Unified Buffer需32Byte对齐；L1 Buffer需32Byte对齐。如果接口中已明确说明操作数起始地址对齐要求，则以具体API中的说明为准。
 
 TPosition逻辑位置与物理内存映射：GM对应Global Memory，VECIN/VECCALC/VECOUT对应Unified Buffer，A1/B1对应L1 Buffer，A2对应L0A Buffer，B2对应L0B Buffer，CO1对应L0C Buffer。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [通用说明和约束（C API）](c_api/general_description_and_constraints.md)（`same_topic`）：SIMD 通用约束页定义存储层级、对齐和 TPosition 映射，C API 通用约束页在同一存储模型上补充地址重叠、repeat/stride/mask 规则；二者共同构成 C API 的全局前置合同。
-<!-- cannbot:related:end -->

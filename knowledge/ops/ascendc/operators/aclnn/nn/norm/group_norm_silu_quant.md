@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T17:54:58Z"
-updated_at: "2026-08-25T17:54:58Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -84,7 +84,7 @@ out[n,c,s] = int8(clamp(round(silu[n,c,s] / quantScale[q]), -128, 127))
 
 ### 入口与版本
 
-固定仓公开 `aclnnGroupNormSiluQuant`，无 V2 或更高版本族；因此它是 A2/A3 实际支持的最新公开入口。README 与 API 文档均明确支持 Atlas A2/A3、明确不支持 Ascend 950；OpDef 只注册 `ascend910b/ascend910_93`，两个 binary config 及全局 `ascendc_config.json` 也只接线这两个 compute unit。无 A5 发布冲突，A5 是明确不支持。
+固定仓公开 `aclnnGroupNormSiluQuant`，无 V2 或更高版本族；因此它是 A2/A3 实际支持的最新公开入口。README 与 API 文档均明确支持 Atlas A2/A3、明确不支持 Ascend 950；OpDef 只注册 `ascend910b/ascend910_93`，两个 binary config 及全局 `ascendc_config.json` 也只接线这两个 compute unit。无 950 发布冲突，950 是明确不支持。
 
 ## Host/Launcher 执行流程
 
@@ -694,7 +694,7 @@ for (int64_t dIdx = 0; dIdx < tiling->shapeD; dIdx++) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；`ascend910b` | 支持；`ascend910_93` | 公开文档明确不支持；不生成卡 |
 | Host/Launcher | 共用 Tiling、key 1031、FP16/BF16 config | 同 | 无 OpDef/config/全局 binary 接线 |
@@ -721,7 +721,7 @@ for (int64_t dIdx = 0; dIdx < tiling->shapeD; dIdx++) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `norm/group_norm_silu_quant/docs/aclnnGroupNormSiluQuant.md` | 产品支持表、两段式原型 | A2/A3 支持、A5 不支持、公开语义 |
+| 入口声明/约束 | `norm/group_norm_silu_quant/docs/aclnnGroupNormSiluQuant.md` | 产品支持表、两段式原型 | A2/A3 支持、950 不支持、公开语义 |
 | 入口实现 | `norm/group_norm_silu_quant/op_host/op_api/aclnn_group_norm_silu_quant.cpp` | `CheckParams`、`GetGamma/GetBeta`、两段式函数 | 校验、空输入、连续化、可选值、ViewCopy |
 | Launcher | `norm/group_norm_silu_quant/op_host/op_api/group_norm_silu_quant.cpp` | `l0op::GroupNormSiluQuant` | 内部输出分配与单 AICore launcher |
 | OpDef | `norm/group_norm_silu_quant/op_host/group_norm_silu_quant_def.cpp` | `ops::GroupNormSiluQuant` | dtype/layout/属性与 A2/A3 注册 |
@@ -743,4 +743,10 @@ for (int64_t dIdx = 0; dIdx < tiling->shapeD; dIdx++) {
 | workspace/内存 | 固定 P UB 加 C_a/n_a 可变区；无 user slice | Queue depth=2 必须计入；系统 workspace 必须使 entry userWS 非空 | `Init`、`Tiling4GroupNormSiluQuant` |
 | 同步 | Queue 生命周期、V barrier、单块 S2V、构建 auto_sync | buffer 覆盖必须晚于消费/FreeTensor | `CalcSilu`、`ComputeQuant`、binary config |
 | 精度与尾块 | FP32 归约/SiLU，FP16 量化中间，A2/A3 RINT；DataCopyPad tail | 不得改成直接 FP32→INT8 或越界对齐 copy | `CastFromF16ToI8`、copy helpers |
-| 失败边界 | S/C+core guard、workspace 判空、未知 key无输出 | 无 Host/Device fallback，不得虚构 A5 路线 | `SetTiling`、entry router |
+| 失败边界 | S/C+core guard、workspace 判空、未知 key无输出 | 无 Host/Device fallback，不得虚构 950 路线 | `SetTiling`、entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GroupNormSwish A2/A3 ACLNN 算子知识](group_norm_swish.md)（`related`）：｜ 计算语义 ｜ 对 `［N,C,...］` 的每个 `(n, group)` 域做 GroupNorm，按通道应用 `gamma/beta`，执行 SiLU，再以标量或逐通道 `quantScale` 量化为 INT8；另输出 `mean/rstd` ｜；｜ 计算语义 ｜ 对 NCHW 的每个 `(n,g)` 在 `D=(C/numGroups)·∏shape［2:］` 个元素上求 mean/variance，做 affine；`activateSwish=true` 时再做 `z/(1+exp(-swishScale·z))`。 ｜两页共享 GroupNorm 加 SiLU/Swish 激活链，但一页继续量化 INT8、另一页保留浮点并支持 swishScale，构成融合算子选型的实质对照。
+<!-- cannbot:related:end -->

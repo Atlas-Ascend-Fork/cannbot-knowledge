@@ -34,9 +34,5 @@ Hccl
 <!-- cannbot:related:start -->
 ## 相关
 
-- [2201到3510架构变更](../2201_to_3510_arch_changes.md)（`related`）：架构变化页解释为何某些 2201 高阶 API 在 3510 上签名、临时空间或能力发生变化。
-- [Ascend C API兼容性策略](../../ascend_c_api_compatibility.md)（`related`）：高阶 API 有独立临时空间、tiling 和签名变化，不能仅依赖基础 API 兼容结论。
-- [基础API迁移指导](basic_api_migration.md)（`related`）：高级 API 与基础 API 迁移分别处理封装层和底层签名；混合实现需同时执行两份检查。
-- [算子编译迁移指导](op_compilation_migration.md)（`related`）：接口改完后还需按 3510 编译配置、产物和注册流程迁移，构成下游工程步骤。
-- [跨代迁移指南概述](../../overview.md)（`same_topic`）：跨代迁移指南概述 与《高阶API迁移指导》的实质衔接是：迁移概述把兼容性判断、架构差异、基础/高阶 API 修改和算子编译迁移串成同一套 2201→3510 决策流程。
+- [2201到3510架构变更](../2201_to_3510_arch_changes.md)（`related`）：焦点卡写明“AIV核采用Regbase架构，与NPU架构版本2201的Membase架构相比”，候选卡写明“当前3510架构不支持卷积计算类高阶API”。架构卡解释底层代际差异，迁移卡给出高阶 API 兼容例外，把架构变化落实到接口检查。
 <!-- cannbot:related:end -->

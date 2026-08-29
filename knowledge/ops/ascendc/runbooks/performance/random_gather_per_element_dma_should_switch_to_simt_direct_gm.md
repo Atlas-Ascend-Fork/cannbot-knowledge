@@ -6,7 +6,7 @@ tags: ["task.optimization", "topic.compute.indexing", "topic.data_movement.data_
 status: stable
 sources: []
 created_at: "2026-08-15T07:07:12Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-08-28T06:56:32Z"
 platforms: ["950"]
 aliases: ["indexed_read", "simt_pure_gm", "grid_stride", "per_element_dma"]
 ---
@@ -247,7 +247,6 @@ __global__ __aicore__ __vector__ void gather_simt_kernel(
 
 - before：完整 20/20；逐元素 DMA 路线为受控 pre-signal（来源平台：950，证据等级：artifact_verified）。
 - after：完整 20/20；SIMT 路线相对 pre-signal 的平均性能指标约 14.97x（来源平台：950，证据等级：artifact_verified）。
-- 三次独立生成会话的最终实现都选择了 SIMT 直访 GM，说明该路线具备可生成性；只有其中一次形成固定同轮 A/B，因此 `reproduce_count` 按性能主张保守记为 1。
 
 ## 失效边界
 
@@ -255,6 +254,7 @@ __global__ __aicore__ __vector__ void gather_simt_kernel(
 - scatter/归约有重复目标写、原子或确定顺序问题，不能从“随机读独立”直接迁移。
 - 线程间共享源值、需要缓存复用或地址解码成本远高于访问本身时，应比较 UB cache/LUT/分块路线。
 - A2、A3 和其他 CANN 版本未验证；不能把 950 的标量 GM 行为视为跨平台事实。
+- 三次独立生成会话的最终实现都选择 SIMT 直访 GM，但只有其中一次形成固定同轮 A/B；性能主张仍只按这一次受控实验成立，不把生成会话选路当作复现信号。
 - 越界索引的错误处理属于目标算子契约；示例中的防御性 clamp 不是可迁移的公共语义。
 
 ## 坏实践
@@ -270,15 +270,9 @@ __global__ __aicore__ __vector__ void gather_simt_kernel(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGather](../../apis/simd_api/c_api/vector_compute/asc_gather.md)（`exemplifies`）：AscGather 与《随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM》的实质衔接是：AscGather 的 offset 是逐元素收集地址；Reg/Memory Gather 与各错位 runbook 直接解释偏移、基址、维序和非轴步长的正确构造。
-- [Gather 非 dim 维缩小时折叠步长错位](../precision/gather_non_axis_shape_shrink_requires_per_axis_source_strides.md)（`related`）：SIMT 直访 GM 只替换传输机制，源地址仍必须按输出坐标和逐轴 xStride 计算；该卡验证非 dim 维缩小时折叠 outer 步长会错位。
-- [Gather 非 last-dim 转置+索引换算预处理占比高](gather_last_dim.md)（`related`）：《随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM》明确“逐输出独立的随机索引读取不应为每个元素提交 GM→UB→GM DMA；优先用 SIMT grid-stride 直访 GM，保留逐元素 DMA 槽路线作安全回退。”；它与《Gather 非 last-dim 转置+索引换算预处理占比高》的“Ascend950 上 Gather 算子当 dim != last 时，plugin 端 permute+contiguous 转置与 Cast/Mul/Cast 三段索引 byte-offset 换算合计占 case 总耗时的 58-83%，kernel 本身仅占 17-41%。”在实际调用参数、数据流或结果校验上直接衔接。
-- [Gather算子快速入门](../../guides/getting_started/quick_start/simt_programming/gather_op_quick_start.md)（`related`）：快速入门给出一维 SIMT Gather 的 Device、Host、编译和运行骨架，focal 则把该机制扩展到随机多维逐轴地址解码与性能 A/B；可作为最小实现起点。
-- [MTE2跨流水未建依赖导致UB读到上次调用残值](../precision/direct_mte_slot_reuse_needs_bidirectional_hard_events.md)（`related`）：当 SIMT capability probe 失败而必须回退逐元素 DMA 槽时，该卡给出 TQue 同步 index 与 MTE2→MTE3/MTE3→MTE2 双向事件，避免槽复用读到陈旧 UB。
-- [SIMT API 未进入 AscendC 命名空间导致编译失败](../compilation/simt_api_is_in_ascendc_simt_namespace.md)（`related`）：两张卡来自 Gather 的同一路线：先用 SIMT 直访 GM 替代逐元素 DMA，再按 AscendC::Simt 限定设备 API。
-- [多维 Gather 部分 case 错 — LUT 维序反了](../precision/gather_lut_coordinate_decode_must_start_from_last_dimension.md)（`related`）：focal 的在线地址解码需要从输出线性索引恢复多维坐标；该卡证明 C-contiguous 坐标必须从末维逆序解码，并可直接用于 SIMT 在线实现。
-- [混合 SIMT 启动边界用 GM_ADDR 承接地址空间](../compilation/mixed_simt_launch_boundary_uses_gm_addr.md)（`related`）：若采用 focal 示例中的 Vector wrapper+SIMT VF，Host launch 必须先用 GM_ADDR 过 ABI 边界，再在 wrapper 内恢复 __gm__ T*；否则多 dtype 实例都会地址空间转换失败。
-- [稀疏不规则输出算子 SIMD 标量退化诊断](simd.md)（`related`）：该卡以完整 A/B 证明随机独立索引的逐元素 DMA 可改为 SIMT 直访 GM；它为本卡尚未验证的 SIMT 方向提供机制与验证模板，但不能直接宣称本算子已提速。
-- [纯 SIMT kernel 形参 __gm__ 导致编译失败](../compilation/pure_simt_parameters_do_not_use_gm_qualifier.md)（`related`）：随机 Gather 的推荐 SIMT 直访 GM 实现正是 focal 的纯 SIMT kernel 场景；使用该快路时入口形参必须用普通类型化指针，不能照搬混合编程 __gm__。
-- [逐元素 DataCopyPad 做 strided gather 输出全零](../precision/datacopypad_strided_gather.md)（`related`）：focal 证明 LocalTensor 切片加 sizeof(T) DataCopyPad 会静默全零；目标卡展示即使改成合法 32B 槽逐元素 DMA 仍被控制开销主导，并以 SIMT 直访 GM 获得约 14.97x，同属随机读取路线选择链。
+- [Gather 非 dim 维缩小时折叠步长错位](../precision/gather_non_axis_shape_shrink_requires_per_axis_source_strides.md)（`related`）：- 保留逐轴 `outShape/outStride/xStride` 地址公式：优化只替换传输机制，不改变 `torch.gather` 的输出坐标语义。；- 正确性契约：host 与 kernel 必须传递逐维源 stride 和输出 extent，并按完整坐标计算源偏移；逐元素 DMA 只是本轨迹用于验证映射的实现；目标卡给出焦点 SIMT 优化必须保持的逐轴源偏移合同。
+- [Gather 非 last-dim 转置+索引换算预处理占比高](gather_last_dim.md)（`related`）：kernel 本身只占 17-41%。1D / last-dim 的 case（gather_7/13/20 等）没有 Transpose，kernel 占比 57-99%，speedup 1.15-16.24x。；SIMT 路线把同一语义改写为一元素一线程的 grid-stride 循环：线程直接读取 `index［o］`，按逐轴 stride 计算 `x_off`，然后执行 `y［o］ = x［x_off］`。；目标卡给出消除随机逐元素 DMA 的 SIMT 直访路线，可用于焦点去转置方案的独立快路探针。
+- [GatherV2 950 ACLNN 算子知识](../../operators/aclnn/nn/index/gather_v2_950.md)（`related`）：“SIMT 按输出元素分核，并把每核量对齐 `threadNum`”说明 GatherV2 的直接 GM 路线；“SIMT 路线把同一语义改写为一元素一线程的 grid-stride 循环：线程直接读取 `index［o］`，按逐轴 stride 计算 `x_off`，然后执行 `y［o］ = x［x_off］`。”给出随机 indexed-read 从 DMA 转 SIMT 的实现与性能诊断方法，可用于理解和验证该路线选择。
+- [MTE2跨流水未建依赖导致UB读到上次调用残值](../precision/direct_mte_slot_reuse_needs_bidirectional_hard_events.md)（`related`）：- DMA 路线不删除：若目标 dtype 的 SIMT 标量 GM 访问、工具链或 direct-launch wrapper 探针失败，可以回退到已经验证的 32B 槽与双向事件路线。；修复分两层：索引缓冲使用 `TQue<VECIN>`，以 `EnQue/DeQue` 建立 MTE2→S 的生产消费关系；载荷 slot 保持对齐并在每个批次使用 `MTE2_MTE3` 事件等待搬入完成，再用 `MTE3_MTE2` 事件等待搬出完成后复用 slot。以下 before/after 是从轨迹中的完整写入和唯一命中的顺序编辑机械恢复的函数级原文。；目标卡正是焦点保留的 DMA fallback 所需双向事件同步合同。
+- [多维 Gather 部分 case 错 — LUT 维序反了](../precision/gather_lut_coordinate_decode_must_start_from_last_dimension.md)（`related`）：SIMT 路线把同一语义改写为一元素一线程的 grid-stride 循环：线程直接读取 `index［o］`，按逐轴 stride 计算 `x_off`，然后执行 `y［o］ = x［x_off］`。；C-contiguous 扁平下标的最后一维才是最低有效维，但 LUT 代码从子空间首维开始执行 `% size` / `/= size`，把首维误当成最低有效维，导致多维 `outerBase` / `innerBase` 坐标反解顺序颠倒。；目标卡补充了焦点逐轴 stride 地址计算中多维扁平坐标必须反向解码的正确性边界。
 <!-- cannbot:related:end -->

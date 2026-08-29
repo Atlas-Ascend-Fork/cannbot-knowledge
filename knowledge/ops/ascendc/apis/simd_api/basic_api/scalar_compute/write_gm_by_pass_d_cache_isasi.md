@@ -35,15 +35,3 @@ platforms: ['950', a2, a3]
 设接口调用前后的目标地址数据分别为和，则
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCacheCleanAndInvalid 无参调用导致编译失败](../../../../runbooks/compilation/datacache_clean_requires_tensor_target.md)（`exemplifies`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《WriteGmByPassDCache》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
-- [AscAtomicSub](../../c_api/scalar_compute/asc_atomic_sub.md)（`related`）：AscAtomicSub 与《WriteGmByPassDCache》的实质衔接是：SIMT asc_atomic_sub 是同一 GM 原子减；原子加提供逆操作对照，绕过 DCache 的读写和 AscDcci 共同落实 focal 明示的缓存一致性要求。
-- [AscDcci](../../c_api/cache_ctrl/asc_dcci.md)（`related`）：AscDcci 是 C API 的数据缓存清理/失效入口，可与 bypass 写对照确定是维护已有缓存行还是避免写入 DCache。
-- [DataCacheCleanAndInvalid](../cache_control/data_cache_clean_and_invalid.md)（`related`）：ByPass DCache 写 GM 会绕过普通缓存路径，需要结合 clean/invalid 决定后续观察到的数据一致性。
-- [ReadGmByPassDCache](read_gm_by_pass_d_cache_isasi.md)（`related`）：ReadGmByPassDCache 与 WriteGmByPassDCache 是绕过 Data Cache 的成对标量 GM 访问，一个读取、一个写入。
-- [标量计算](scalar_compute.md)（`related`）：标量计算总览收录 bypass DCache 的 GM 读写，并将其与转换、位操作等 Scalar 能力区分。
-- [AscStoreDev](../../c_api/scalar_compute/asc_store_dev.md)（`same_topic`）：WriteGmByPassDCache 与 AscStoreDev 都绕过 DCache 向 GM 写入单个标量，以规避多核共享 Cache Line 的覆盖；平台与地址约束不同，但核心写入语义一致。
-<!-- cannbot:related:end -->

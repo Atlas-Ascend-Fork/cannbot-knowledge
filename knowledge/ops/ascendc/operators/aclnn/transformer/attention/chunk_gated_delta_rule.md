@@ -46,7 +46,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/cmake/level2_ops_list
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:39:39Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -164,7 +164,7 @@ Run -> CommonOpExecutorRun(workspace,executor,stream)
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台 | A2/A3公开支持，A5不支持 | OpDef只接线两平台 | 两 Route | 不发布 | README/OpDef |
+| 平台 | A2/A3公开支持，950不支持 | OpDef只接线两平台 | 两 Route | 不发布 | README/OpDef |
 | dtype | BF16/INT32/FP32固定 | 模板固定 | 两 Route | ACLNN/Tiling失败 | `AnalyzeDtype` |
 | 维度 | 正维；heads≤64，dims≤128，Nv%Nk=0 | head映射和UB/Matmul上界 | 两 Route | Tiling失败 | `CheckDerivedDimConstraints` |
 | exact shape | 与接口表完全相等 | 无runtime broadcast | 两 Route | Tiling失败 | `CheckExpectedShapes` |
@@ -540,7 +540,7 @@ AIC先读旧state后发0x2；AIV写衰减state后发0x5；AIC累加新state后�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持 | 公开支持 | 950PR/DT明确不支持 |
 | Host/Launcher | `ascend910b` 使用 `aicoreConfig`，显式 `softsync.flag=true` | `ascend910_93` 以默认 config 接入，未显式附加该扩展项 | 不接入 |
@@ -599,4 +599,4 @@ AIC先读旧state后发0x2；AIV写衰减state后发0x5；AIC累加新state后�
 | workspace/内存 | 最大group复用、Device slice、stageWS复用 | stageWsAddr实际offset | DoOpTiling/CGDR::Init |
 | 同步 | 9/8/7/6/5/A、2/5/4、4/3 | PIPE、ID、core映射、轮次 | Stage1/2/3 Process |
 | 精度与尾块 | Vector FP32、RINT BF16、gCum FP32 | 不臆测Matmul累加；padding非有效输出 | GBK/QPrime/CalGCum/MaskedQKT |
-| 失败边界 | 固定校验失败关闭，g=null合法 | 不补造A5/layout/key | GetOptionalInput/Analyze*/GetTilingKey |
+| 失败边界 | 固定校验失败关闭，g=null合法 | 不补造950/layout/key | GetOptionalInput/Analyze*/GetTilingKey |

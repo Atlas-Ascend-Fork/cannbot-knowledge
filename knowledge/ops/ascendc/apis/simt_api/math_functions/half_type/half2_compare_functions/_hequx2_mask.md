@@ -29,7 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hequx2](_hequx2.md)（`same_topic`）：__hequx2 与《__hequx2_mask》的实质衔接是：half2 unordered equality 的 bool/mask 形式与 ordered equality、isnan 共同界定逐 lane 返回和 NaN 行为。
-- [__heqx2_mask](_heqx2_mask.md)（`same_topic`）：__heqx2_mask 与《__hequx2_mask》的实质衔接是：ordered equality 的 mask、bool 与 unordered 形态围绕 half2 的逐 lane 返回及 NaN 规则互补。
-- [__hneux2_mask](_hneux2_mask.md)（`same_topic`）：hequx2_mask 是同一 unordered 比较族的相等谓词，与 hneux2_mask 形成互补条件。
+- [__heqx2](_heqx2.md)（`same_topic`）：“功能：比较两个half2类型数据的两个分量，如果分量相等，则对应比较结果为1.0，否则为0.0。”与“功能：比较两个half2类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量相等，则对应16位掩码为0xFFFF，否则为0x0。若任一输入的分量为nan，对应16位掩码为0xFFFF。”提供双方正文证据。两端都逐分量判断 half2 相等，但 heqx2 返回 half2 数值 1.0/0.0，hequx2_mask 返回打包位掩码并规定 NaN 行为；这正是调用端选择结果表示的同一比较主题。
 <!-- cannbot:related:end -->

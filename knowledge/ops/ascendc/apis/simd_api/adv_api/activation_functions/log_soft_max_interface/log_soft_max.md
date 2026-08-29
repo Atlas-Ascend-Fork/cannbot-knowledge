@@ -40,5 +40,5 @@ __aicore__ inline void LogSoftMax(const LocalTensor<T>& dst, const LocalTensor<T
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LogSoftMaxTiling](log_soft_max_tiling.md)（`related`）：LogSoftMax 计算接口要求由 LogSoftMaxTiling 生成 kernel 所需 tiling 参数；前者的执行约束与后者的 host 侧参数产出构成同一次调用链。
+- [LogSoftMaxTiling](log_soft_max_tiling.md)（`same_topic`）：const LogSoftMaxTiling& tiling；kernel侧LogSoftMax接口的计算需要开发者预留 申请临时空间，以下接口用于在host侧获取预留 申请的最大最小临时空间大小；LogSoftMax Kernel 原型直接消费 LogSoftMaxTiling，Tiling 卡负责在 Host 侧选择临时空间并生成 reduceSize、splitSize 等同一调用所需参数。
 <!-- cannbot:related:end -->

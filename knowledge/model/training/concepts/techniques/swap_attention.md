@@ -129,3 +129,12 @@ flowchart LR
 - [swap-optimizer](swap_optimizer.md)（同源 Host 换出思路，对象是优化器状态而非激活）
 - [mm-activation-memory](mm_activation_memory.md)（FSDP2 路线的异步激活 offload，与本页 Megatron 路线的注意力激活换出互为对照）
 - [mindspeed](../frameworks/mindspeed.md)（三个特性所在框架，内存优化模块的「自适应 Swap」即此处机制）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DualPipeV（V 形双向流水 + Zero-Bubble dw 分离）](../parallelism/dualpipev.md)（`related`）：三者都是「显存 ↔ 算力/带宽」取舍的不同自动化程度，解决同一问题、通常择一启用（其中 swap-attention 与自适应内存有显式互斥校验，详见各节），且都与重计算特性配合或二选一。；开关为 `--schedules-method dualpipev`，约束模型层数为 `2·PP` 倍数、microbatch 数 ≥ `2·PP−1`，与 VPP/长序列 CP/异步 DDP/swap-attention/tp_2d/custom-fsdp 互斥。profiling 场景：DeepSeek-V3 671B、PP8 TP2 EP32。；目标给出 DualPipeV 与 swap-attention 的显式互斥，直接约束同一训练配置的合法组合。
+- [MindSpeed-MM 激活显存优化（Chunk-MBS 微批切块 + 异步激活 Offload）](mm_activation_memory.md)（`related`）：换出的最小单位是 `SwapTensor`：每个持一份 `pin_memory=True` 的 CPU 副本，用四个状态 `device → d2h → host → h2d` 流转；搬运统一走 `SwapPrefetch` 持有的、独立于主计算流的 `prefetch_stream`。；［mindspeed-mm］(../frameworks/mindspeed_mm.md) 的 FSDP2 训练后端为多模态长序列场景提供两个互补的激活显存优化：**异步激活 Offload**（`enable_activation_offload`）用 PyTorch `saved_tensors_hooks` 把前向保存的 layer 入口激活在独立 copy 流上异步换出 Host pinned 内存、反向时按需预取换回，把激活从 device 峰值里搬走；**Chunk-MBS**（`enable_chunk_mbs`）在一次 FSDP Unshard 之后把单个 micro-batch 沿 batch 维切成多个微块串行前反向，使动态激活峰值被压到「单个微块」量级。；两张卡都给出激活 Host offload 的异步 D2H/H2D 与预取机制，可用于 Megatron 和 FSDP2 实现迁移对照。
+- [Swap Optimizer（优化器状态卸载 Host 内存）](swap_optimizer.md)（`related`）：与 ［swap-optimizer］(swap_optimizer.md) 把**优化器状态**换出 Host 的思路同源、对象不同（激活 vs 优化器动量）。；Swap Optimizer 把 AdamW 优化器状态在前向 / 反向期间**卸载到 Host（CPU pinned）内存**、仅在 `optimizer.step()` 时以 **param 为粒度的「加载 → 更新 → 卸载」切片流水**搬回 device 计算，从而压低 device 显存峰值。；双方明确区分激活与优化器状态两种 Host offload 对象，形成显存处置选型。
+- [重计算（Recomputation：选择性/全量 + 激活函数/Norm 细粒度 + 按 PP rank 层数）](recomputation.md)（`related`）：全重计算场景下用 `--swap-attention` + `--recompute-num-layers N` 替换全重计算——attention 激活由 Host 预取回来免去重算，仅对前 N 层的全连接（MLP）做重计算，相比完全重计算有性能收益。；重计算（activation checkpointing / rematerialization）用算力换显存：前向只保留少量关键张量，把中间激活在反向需要时按保存的输入重新算一遍，从而压低激活显存峰值。；焦点给出 swap-attention 与部分 MLP 重计算的组合，目标解释重计算的算力换显存基线。
+<!-- cannbot:related:end -->

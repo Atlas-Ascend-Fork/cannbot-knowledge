@@ -21,6 +21,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalignUpsample](asc_loadalign_upsample.md)（`related`）：Downsample 是相反的数据分布变换：读取 2×VL 并隔元素保留；与 Upsample 配合可判断要扩展输入还是抽取输入。
-- [AscLoadalignDownsamplePostupdate](asc_loadalign_downsample_postupdate.md)（`same_topic`）：《AscLoadalignDownsample》明确“从UB对齐搬入2倍VL数据并实现2倍下采样，每隔一个元素保留。”；它与《AscLoadalignDownsamplePostupdate》的“从UB对齐搬入2倍VL数据并实现2倍下采样，调用后自动更新源地址。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscLoadalignDownsamplePostupdate](asc_loadalign_downsample_postupdate.md)（`same_topic`）：对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现2倍下采样搬入模式：加载2倍VL的数据，数据每隔一个保留，支持数据类型为b8/b16。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现2倍下采样搬入模式并启用Post Update，接口调用后自动更新源操作数地址。。两端共享 UB 对齐搬入和二倍下采样语义，PostUpdate 变体额外按 offset 更新源地址；联合阅读可在手工地址推进与自动推进之间选择。
 <!-- cannbot:related:end -->

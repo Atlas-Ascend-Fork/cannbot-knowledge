@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:22:21Z"
-updated_at: "2026-08-25T16:22:21Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -488,9 +488,9 @@ Host 不用固定最大 tile 挤占 Tan primitive 临时空间，而是先按 FP
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，但见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，但见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 公共 Tiling | `ascend910_93`→arch22 公共 Tiling | arch35 专用 Tiling，POD 与 key 不同 |
 | Kernel/资源 | AIV `ForeachTriangle` | 与 A2 共用源码 | SIMT 512 线程、直接 GM `tanf`，不使用 AIV Queue |
 
@@ -532,3 +532,9 @@ Host 不用固定最大 tile 挤占 Tan primitive 临时空间，而是先按 FP
 | 同步 | Queue 协议和 V barrier | Cast/Tan/复用前 barrier 与 FreeTensor 顺序 | `InnerComputer`/`KernelForeachUnary` |
 | 精度与尾块 | FP16/FP32 原生，BF16 经 FP32 | BF16 down-cast `CAST_RINT`；尾部只提交有效字节 | `ComputePerCast`/`CopyIn`/`CopyOut` |
 | 失败边界 | Host 校验失败阻断 launch | 未知 key、>50 列表、宏 ABI 不可用推测补齐 | `CheckOpInfo`/entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachTan 950 ACLNN 算子知识](foreach_tan_950.md)（`same_topic`）：“950 FP32 路线直接执行 `tanf(float)`；FP16/BF16 路线严格按 source 顺序执行低精度→FP32、`tanf`、FP32→低精度。”描述 950 的实现 route；“对每个 `i` 及 `0 <= j < numel(x_i)`，写 `y_i［j］=tan(x_i［j］)`。”给出 A2/A3 卡的同一 ACLNN 逻辑算子合同，二者共同支持按平台核验 ForeachTan。
+<!-- cannbot:related:end -->

@@ -217,10 +217,3 @@ candidate template ignored: could not match 'initializer_list<_Tp>' against 'int
 ## 误诊
 
 最初把错误解释成两个参数的整型不一致；编译器只显示 `initializer_list` 候选才是区分“类型不匹配”和“device 重载不可见”的关键信号。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Utils APImax](../../apis/utils_api/cpp_stdlib/algorithms/max.md)（`exemplifies`）：Runbook 记录 `__aicore__` 中 `std::max(32KB,D*sizeof(float))` 只暴露 initializer_list 候选而编译失败；Utils `max` 卡定义了 device 可调用的二元最大值接口和同类型限制，直接补足该故障的受支持接口边界。
-- [Utils APImin](../../apis/utils_api/cpp_stdlib/algorithms/min.md)（`exemplifies`）：Runbook 复现了 bisheng `-xasc` 在 `__aicore__` 内无法解析 host `std::min` 两参数重载的精确诊断；Utils `min` 卡给出 device 可见的 `__host__ __aicore__` 二元比较接口及同类型实参合同，可用于区分“host std 重载不可见”和“设备侧 min 能力不存在”。
-<!-- cannbot:related:end -->

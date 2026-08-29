@@ -21,7 +21,7 @@ asc_fill_value_config为fill_value的初始化参数结构体，包含asc_fill_l
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscFillL0a](../cube_data_move/asc_fill_l0a.md)（`related`）：《AscFillL0a》明确“将标量值赋值给目的操作数，对L0A Buffer进行初始化。”；它与《AscFillValueConfig》的“fill_value的初始化参数结构体，包含fill_l0a、fill_l0b和fill_l1接口需要配置的初始化参数。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscFillL0b](../cube_data_move/asc_fill_l0b.md)（`related`）：《AscFillL0b》明确“将标量值赋值给目的操作数，对L0B Buffer进行初始化。”；它与《AscFillValueConfig》的“fill_value的初始化参数结构体，包含fill_l0a、fill_l0b和fill_l1接口需要配置的初始化参数。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscFillL1](../cube_data_move/asc_fill_l1.md)（`related`）：《AscFillL1》明确“将标量值赋值给目的操作数，对L1 Buffer进行初始化。”；它与《AscFillValueConfig》的“fill_value的初始化参数结构体，包含fill_l0a、fill_l0b和fill_l1接口需要配置的初始化参数。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscFillL0a](../cube_data_move/asc_fill_l0a.md)（`related`）：“config(输入): 使用的初始化相关参数，详细说明请参考asc_fill_value_config”与“asc_fill_value_config为fill_value的初始化参数结构体”把 AscFillL0a 的 config 形参连接到 repeat、blk_num 与 dst_gap 的结构体契约。
+- [AscFillL0b](../cube_data_move/asc_fill_l0b.md)（`related`）：asc_fill_value_config为fill_value的初始化参数结构体，包含asc_fill_l0a/asc_fill_l0b/asc_fill_l1接口需要配置的各种初始化参数。；config(输入): 使用的初始化相关参数，详细说明请参考asc_fill_value_config。；结构体字段直接作为 asc_fill_l0b 初始化 L0B 的配置输入。
+- [AscFillL1](../cube_data_move/asc_fill_l1.md)（`related`）：asc_fill_value_config为fill_value的初始化参数结构体，包含asc_fill_l0a/asc_fill_l0b/asc_fill_l1接口需要配置的各种初始化参数。；config(输入): 使用的初始化相关参数，详细说明请参考asc_fill_value_config。；结构体字段直接作为 asc_fill_l1 初始化 L1 的配置输入。
 <!-- cannbot:related:end -->

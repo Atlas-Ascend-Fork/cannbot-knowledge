@@ -27,10 +27,3 @@ platforms: [agnostic]
 -   连续计算API：支持Tensor前n个数据计算。针对源操作数的连续n个数据进行计算并连续写入目的操作数，解决一维tensor的连续计算问题。
 -   高维切分API：支持Repeat和Stride。功能灵活的计算API，提供与BuiltIn API完全对等编程能力，充分发挥硬件优势，支持对每个操作数的DataBlock Stride，Repeat Stride，Mask等参数的操作。
 下图以矢量加法为例，展示了连续计算API和高维切分API的特点。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [库API概述](../advanced_api/overview.md)（`related`）：高阶 API 概述说明其由多种基础 API 封装常见算法，可据开发效率、临时空间和控制粒度在基础/高阶间选型。
-- [编程接口概述（库API）](../programming_interface_overview.md)（`related`）：Basic API 概述展开硬件能力抽象、兼容性与 ISASI 边界，是上位接口分层中的基础层细化。
-<!-- cannbot:related:end -->

@@ -30,10 +30,3 @@ platforms: ['950']
 支持数据类型：float、fp8_e5m2_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_float2e5m2 (废弃)](asc_float2e5m2_deprecated.md)（`related`）：《asc_float2e5m2 (废弃)》的任务是“将float类型数据转换为fp8_e5m2类型，支持RINT舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式。”。《asc_e5m22float (废弃)》具体提供“将vector_fp8_e5m2_t类型的源操作数以256B为单位分为四部分，读取其中一部分元素，将其转换成vector_float类型并写入目的操作数。 - asc_e5m22float：读取第一部分。 - asc_e5m22float_v2：读取第二部分。 - asc_e5m22float_v3：读取第三部分。 - asc_e5m22float_v4：读取第四部分。”，它直接用于废弃 float→e5m2 转换的反向转换、舍入饱和和迁移入口。
-- [__e5m2x22float2](../../../../simt_api/math_functions/fp8_type/fp8_conversion_functions/_e5m2x22float2.md)（`same_topic`）：__e5m2x22float2 与《asc_e5m22float (废弃)》的实质衔接是：该接口把 packed E5M2 两 lane 解码成 float2；E4M3/HIF8/half2 解码、FP8 类型说明和反向编码入口共同限定格式选择与 round/saturation。
-<!-- cannbot:related:end -->

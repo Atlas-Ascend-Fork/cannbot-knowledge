@@ -23,5 +23,5 @@ asc_loadalign_deintlv用于从UB中读取以32B对齐地址为起始位置的连
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalignDeintlvPostupdate](asc_loadalign_deintlv_postupdate.md)（`same_topic`）：《AscLoadalignDeintlvPostupdate》的任务是“从UB读取连续2×VL长度数据并在Load过程中完成解交织，分别写入两个目的矢量寄存器，调用后自动更新源地址。”。《AscLoadalignDeintlv》具体提供“从UB读取连续2×VL长度数据并在Load过程中完成解交织，分别写入两个目的矢量寄存器。”，它直接用于解交织 Load 的地址 post-update、DeInterleave 结果顺序和等价入口。
+- [AscLoadalignDeintlvPostupdate](asc_loadalign_deintlv_postupdate.md)（`same_topic`）：以“asc_loadalign_deintlv用于从UB中读取以32B对齐地址为起始位置的连续2 x VL长度数据。”保持 32B 对齐的基础访问，再按“与asc_loadalign_deintlv不同，该接口在完成数据加载后，会对源地址参数src执行后更新操作： 其中，offset的单位为元素个数，实际地址偏移字节数为：offset * sizeof(data_type)。”把手工 src 推进替换为元素单位 offset，可验证循环步长是否仍落在有效 UB 范围。
 <!-- cannbot:related:end -->

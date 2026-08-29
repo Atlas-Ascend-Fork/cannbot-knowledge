@@ -48,7 +48,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 - Operator 和 Runbook 只能使用 Registry 中声明的附加层级；`concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可增加小写 `snake_case` 主题层级，其他路径 Profile 默认直接放卡片。
 - `index.md` 只存在于 `knowledge/`。每个目录都必须有一个索引，完整且无重复地列出直接子目录和直接知识卡，并为每项提供摘要；domain 根和 `ops`/`model` 预建 route 可只有 index，且不表示已有知识覆盖。
 - 只有 `knowledge/index.md` 声明 `okf_version: "0.2"`，其他索引不带 Frontmatter，所有索引均不参与知识检索。
-- 知识卡和索引中的本地 Markdown 链接必须解析到 `knowledge/` Bundle 内的现有文件。图谱从通过 Contract 的卡片、逐层 Index、人工链接和本地 Agent 判定状态构建；候选召回不能直接成边，词法规则和节点度数也不能代替 Agent 判定。全量关系构建必须由多个 subagent 分片阅读正文，聚合器只做覆盖、指纹、类型和一致性校验。候选、review、冲突裁决、判定缓存、完整图谱和可视化全部保存在 ignored 的 `artifacts/graphs/`，不得提交；知识卡内由判定缓存派生的 `cannbot:related` 受管导航块可以提交，但不是技术事实源，也不进入 Query 语料。
+- 知识卡和索引中的本地 Markdown 链接必须解析到 `knowledge/` Bundle 内的现有文件。图谱从通过 Contract 的卡片、逐层 Index、人工链接和本地 Agent 判定状态构建；候选召回不能直接成边，词法规则和节点度数也不能代替 Agent 判定。全量关系构建必须由多个 subagent 以可审计的小批次阅读正文；每项接受或显式拒绝都要用双方 Concept ID 为键，分别从去除受管关系块后的对应卡片正文逐字锚定具体事实，再提供桥接理由和范围；模板、截断、非正文锚点或自相矛盾的证据失败关闭。未明确决定表示 abstain；接受/显式拒绝或关系类型冲突必须由未参与对应 pair 原判定的 subagent 裁决。聚合器只做覆盖、指纹、证据形状、类型和一致性校验。候选、review、冲突裁决、判定缓存、完整图谱和可视化全部保存在 ignored 的 `artifacts/graphs/`，不得提交；知识卡内由判定缓存派生的 `cannbot:related` 受管导航块可以提交，但不是技术事实源，也不进入 Query 语料。
 
 ## 修改治理和文档
 

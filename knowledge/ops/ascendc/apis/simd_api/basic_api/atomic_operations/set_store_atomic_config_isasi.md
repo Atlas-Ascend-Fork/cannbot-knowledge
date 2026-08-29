@@ -22,8 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetStoreAtomicConfig](../../c_api/simd_atomic/asc_get_store_atomic_config.md)（`related`）：SetStoreAtomicConfig 与《AscGetStoreAtomicConfig》的实质衔接是：SetStoreAtomicConfig 与 Get 配对，C API setter/getter 和配置结构体操作同一 Store 原子状态。
-- [AscSetStoreAtomicConfigV1](../../c_api/simd_atomic/asc_set_store_atomic_config_v1.md)（`related`）：SetStoreAtomicConfig 与《AscSetStoreAtomicConfigV1》的实质衔接是：SetStoreAtomicConfig 与 Get 配对，C API setter/getter 和配置结构体操作同一 Store 原子状态。
-- [AscStoreAtomicConfig](../../c_api/struct/asc_store_atomic_config.md)（`related`）：SetStoreAtomicConfig 与《AscStoreAtomicConfig》的实质衔接是：SetStoreAtomicConfig 与 Get 配对，C API setter/getter 和配置结构体操作同一 Store 原子状态。
-- [GetStoreAtomicConfig](get_store_atomic_config_isasi.md)（`same_topic`）：SetStoreAtomicConfig 与《GetStoreAtomicConfig》的实质衔接是：SetStoreAtomicConfig 与 Get 配对，C API setter/getter 和配置结构体操作同一 Store 原子状态。
+- [GetStoreAtomicConfig](get_store_atomic_config_isasi.md)（`related`）：函数原型：__aicore__ inline void SetStoreAtomicConfig(AtomicType atomicType)。参数：atomicType为原子操作类型枚举。约束：与GetStoreAtomicConfig配合使用。头文件：basic_api/kernel_operator_atomic_intf.h。；函数原型：__aicore__ inline AtomicType GetStoreAtomicConfig()。参数：无。返回值：当前原子操作类型（AtomicType枚举）。约束：与SetStoreAtomicConfig配合使用。头文件：basic_api/kernel_operator_atomic_intf.h。；前者写入 Store 原子配置，后者读取当前类型，形成显式配套的状态设置与核验链。
 <!-- cannbot:related:end -->

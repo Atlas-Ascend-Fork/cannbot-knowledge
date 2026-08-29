@@ -39,6 +39,6 @@ A矩阵和B矩阵均未开启IBShare时，数据需要根据K轴、M轴或N轴�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetIBShareNormConfig](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_ib_share_norm_config.md)（`explains`）：该案例覆盖 A/B 同时共享的融合算子形态，可据输入复用关系选择单边或双边 IBShare。
-- [Matmul高阶API开启IBShare模板共享B矩阵数据](matmul_ibshare_b.md)（`same_topic`）：两篇 Matmul 案例都以 IBShare 复用 L1 数据：B-only 卡给出适用条件和 MTE2 收益，A+B 卡在同一决策上改为同时共享并验证 Scalar/Cube 收益，构成同一 IBShare 选型主题。
+- [GetIBShareNormConfig](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_ib_share_norm_config.md)（`explains`）：用于配置IBShare模板的参数，获取自定义IBShare模板；通过设置A和B矩阵MatmulType的IBShare均为true，开启该优化。接口提供 IBShare 模板配置入口，指南展示 A/B 同时共享时的 MatmulType 设置、Cube 分核与 27.11us 到 22.44us 的验证路径。
+- [Matmul高阶API开启IBShare模板共享B矩阵数据](matmul_ibshare_b.md)（`related`）：当A矩阵和B矩阵都启用IBShare时，可以一次性加载到L1 Buffer上，省去了切分，分开搬运的过程，同时Cube计算单元完全由AIV0单核驱动，发起一次计算，计算的结果由AIV0和AIV1共享，从而减少Cube响应的次数，减少Scalar计算。；IBShare功能通过共享L1 Buffer上相同的A矩阵或B矩阵数据，减少重复的MTE2数据搬运开销，提升算子性能。该功能支持A矩阵和B矩阵其中一个矩阵开启IBShare，也支持A矩阵和B矩阵同时开启IBShare。。B-only 案例给出 IBShare 的通用共享条件与同时开启约束，AB 案例进一步展示双矩阵全载后减少 Cube 响应和 Scalar 开销的路线。
 <!-- cannbot:related:end -->

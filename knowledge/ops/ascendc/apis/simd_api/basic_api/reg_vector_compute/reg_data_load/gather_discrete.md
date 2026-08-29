@@ -30,15 +30,3 @@ platforms: ['950']
     | T0 | T1 | T2 | T3（自动推导） | T4（自动推导） | 备注 |
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Gather 双加 LocalTensor 基址导致交错旋转乱码](../../../../../runbooks/precision/localtensor_gather_base_address_not_double_counted.md)（`exemplifies`）：《Gather 双加 LocalTensor 基址导致交错旋转乱码》处理“Gather 已由 LocalTensor 提供源基址时，srcBaseAddr 再传物理地址会重复加基址；保持字节偏移并传 0 可恢复交错旋转。”。《Gather》明确提供“根据索引值index将源操作数按元素收集到目的操作数dstReg中，index中每个元素表示相对于baseAddr的元素位置，支持多种数据类型组合。”，其参数、调用或验证步骤直接接入Gather 的 base 地址、byte offset、重复偏移故障和地址计算合同。
-- [AscGather](../../../c_api/vector_compute/asc_gather.md)（`related`）：AscGather 与《Gather》的实质衔接是：AscGather 的 offset 是逐元素收集地址；Reg/Memory Gather 与各错位 runbook 直接解释偏移、基址、维序和非轴步长的正确构造。
-- [GatherB](gather_b_discrete.md)（`related`）：GatherBDiscrete 将同类离散搬入从元素粒度改为 32B DataBlock 粒度且只使用前 8 个索引；与 focal 的元素级 Gather 构成粒度选型。
-- [Reg数据搬入](reg_data_load.md)（`related`）：集合页把按索引离散搬入分流到 Gather，而连续地址使用 Load/LoadAlign/LoadUnAlign。
-- [AscGather](../../../c_api/reg/reg_load/asc_gather.md)（`same_topic`）：两者都从 UB 基址按逐元素 index 收集到寄存器；基础 Reg Gather 明确 index 单位为元素及类型组合，补足 C AscGather 的参数语义。
-- [Gather](../scatter_operations/gather.md)（`same_topic`）：《Gather》说明根据索引值将源操作数按元素收集到目的操作数中，支持b8、b16、b32数据类型。；《Gather》说明根据索引值index将源操作数按元素收集到目的操作数dstReg中，index中每个元素表示相对于baseAddr的元素位置，支持多种数据类型组合。。二者在Reg Gather的index和baseAddr寻址合同与C API等价接口、维序/步长及LocalTensor基址故障直接对应上存在可执行的直接衔接。
-- [ScatterDiscrete](../reg_data_store/scatter_discrete.md)（`same_topic`）：ScatterDiscrete 与《Gather》的实质衔接是：ScatterDiscrete 与 Gather、C/基础 Scatter 形成索引读写对偶；两张故障卡直接约束重复索引归约和 updates 形状。
-<!-- cannbot:related:end -->

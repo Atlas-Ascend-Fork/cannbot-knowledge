@@ -22,8 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscBfloat162Float](../../../../simd_api/c_api/reg/data_type_convert/asc_bfloat162float.md)（`related`）：C Reg AscBfloat162Float 与 SIMT 标量函数实现同一数值提升，可按执行模型选型。
-- [AscBfloat162float](../../../../simd_api/c_api/vector_compute/asc_bfloat162float.md)（`related`）：Vector C API 提供 UB 批量 bfloat16→float，可与 SIMT 标量版本按访存布局和并行模型选择。
-- [__bfloat1622float2](_bfloat1622float2.md)（`related`）：“__bfloat1622float2”处理将bfloat16x2的两个分量分别转换为float，并填充到float2后返回。；“__bfloat162float”明确将bfloat16类型数据转换为浮点数，返回转换后的值。。实质衔接：float2 与 bfloat16x2 的反向转换说明向量打包路径，标量 bfloat16→float 用于核对每个分量的转换语义。
-- [__low2float](_low2float.md)（`same_topic`）：__low2float 与《__bfloat162float》的实质衔接是：__low2float 从 bfloat16x2 的低 lane 解包并转 float；high lane、整包 float2、标量 bfloat16→float 和 lane 交换接口共同确定 packed lane 的提取与顺序。
+- [ForeachTan 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)（`related`）：将bfloat16类型数据转换为浮点数，返回转换后的值。；float val_f32=__bfloat162float(val)。API 卡定义单值 BF16 到 float 转换，ForeachTan 950 的 BF16 route 直接以该 intrinsic 产生 tanf 的 FP32 输入，构成实现与接口的调用关系。
 <!-- cannbot:related:end -->

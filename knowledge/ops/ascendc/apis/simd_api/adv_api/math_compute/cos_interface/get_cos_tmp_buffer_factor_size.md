@@ -25,7 +25,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Cos](cos.md)（`same_topic`）：GetCosTmpBufferFactorSize 给出 Cos 临时空间的固定因子计算方式，是另一条合法的 Host 侧 sizing 契约。
-- [Cos接口](cos_interface.md)（`same_topic`）：GetCosTmpBufferFactorSize 给出 maxLiveNodeCount 和 extraBuf，用于从固定 UB 预算反推 Cos 单次处理量，是最大/最小空间查询之外的分块计算接口。
-- [GetCosMaxMinTmpSize](get_cos_max_min_tmp_size.md)（`same_topic`）：焦点处理Cos 的 workspace 上下界查询；GetCosTmpBufferFactorSize正文界定“获取Cos接口的maxLiveNodeCount和extraBuf，用于推算固定空间下单次最大计算元素数”。候选是 Cos 计算本体、接口页和 factor 查询，三者共同确定同一个 workspace 契约。
+- [Cos](cos.md)（`related`）：“提供两种重载：一种不带config参数（使用默认CosConfig），另一种带config参数（须与Cos Kernel接口模板参数config保持一致）。”；“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。”。Host factor 查询的 config 与 Cos kernel 模板及其 sharedTmpBuffer 路线必须一致。
+- [GetCosMaxMinTmpSize](get_cos_max_min_tmp_size.md)（`related`）：“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。”；“在minValue到maxValue范围内，临时空间越大性能越好。约束：无。”。factor 接口用于从现有 buffer 反推切片，max/min 接口则给出可申请字节范围，两者共同闭合 Cos tiling 预算。
 <!-- cannbot:related:end -->

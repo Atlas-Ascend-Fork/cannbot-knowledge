@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_atan/op_host/config/ascend910_93/foreach_atan_binary.json
     role: implementation
 created_at: "2026-08-25T15:31:06Z"
-updated_at: "2026-08-25T15:31:06Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -615,9 +615,9 @@ BF16 输入先分成不超过 `U/4` 元素的子块；同一 `float32Queue` 前�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，另见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，另见 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 公共 Tiling | `ascend910_93`→arch22 公共 Tiling | arch35 独立 Tiling，最多 256 项、每核至少约 1024 元素 |
 | Kernel/资源 | 公共 AIV_VECTOR，binary 支持 FP16/FP32/BF16 | 与 A2 同实现族 | SIMT VF，1024 threads/block，直接 GM grid-stride，无 AIV Queue |
 
@@ -663,3 +663,9 @@ BF16 输入先分成不超过 `U/4` 元素的子块；同一 `float32Queue` 前�
 | 同步 | Queue 协议；Atan/Cast 周围 `PIPE_V` | 未 Free/未 barrier 前不得覆盖 | `InnerComputer`, `KernelForeachUnary` |
 | 精度与尾块 | FP16/FP32 直接；BF16 FP32 Atan + RINT；尾部精确字节 | cast 顺序、offset=`maxCastDataCount`、有效 n 不变 | `ComputePerCast`, `CopyIn/CopyOut` |
 | 失败边界 | dtype/rank/output/list一致性失败，无 fallback | 不得把 unknown key 或 >50 项补成可用 Route | `CheckOpInfo`, router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachAtan 950 ACLNN 算子知识](foreach_atan_950.md)（`same_topic`）：｜ 计算语义 ｜ 对 TensorList 中每个张量逐元素计算 `y_i［j］ = atan(x_i［j］)` ｜；｜ 计算语义 ｜ 对 TensorList 每项逐元素计算 `out_i［j］=atan(x_i［j］)` ｜。两卡覆盖同一 aclnnForeachAtan 逻辑算子，并把 A2/A3 arch22 Vector 与 950 arch35 SIMT 的启动和资源路线分开。
+<!-- cannbot:related:end -->

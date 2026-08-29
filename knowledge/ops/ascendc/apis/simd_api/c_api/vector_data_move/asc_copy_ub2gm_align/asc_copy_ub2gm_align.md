@@ -14,14 +14,3 @@ platforms: ['950', a2, a3]
 # AscCopyUb2GmAlign
 
 Unified Buffer到Global Memory对齐数据搬运接口集合，支持按指定对齐要求将数据从UB搬运到GM。相比asc_copy_ub2gm，本接口支持配置L2 Cache管理策略（通过asc_store_l2_cache_mode枚举指定），可优化后续读取场景的Cache命中率。按硬件架构版本区分：asc_copy_ub2gm_align_arch_2201适用于Atlas A2/A3系列，asc_copy_ub2gm_align_arch_3510适用于Ascend 950PR/950DT。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscCopyGm2UbAlign](../asc_copy_gm2ub_align/asc_copy_gm2ub_align.md)（`related`）：反向对齐搬入与本接口组成 copy-in/copy-out。
-- [AscCopyUb2Gm](../asc_copy_ub2gm/asc_copy_ub2gm.md)（`related`）：Align 版本的地址/尾块契约不同，按物理对齐选择。
-- [AscStoreL2CacheMode](../../enum/asc_store_l2_cache_mode.md)（`related`）：AscCopyUb2GmAlign 直接接收 asc_store_l2_cache_mode 来控制写回后的 L2 分配/淘汰，是该枚举的具体消费者。
-- [AscCopyUb2GmAlign](asc_copy_ub2gm_align_arch_2201.md)（`same_topic`）：AscCopyUb2GmAlign 与《AscCopyUb2GmAlign》的实质衔接是：UB→GM aligned 搬运与普通/2201 变体、反向 GM→UB、pad 和 loop 配置组成同一非对齐数据通路。
-- [AscCopyUb2GmAlign](asc_copy_ub2gm_align_arch_3510.md)（`same_topic`）：3510 变体给出 Ascend950 的尾块与签名。
-- [asc_copy_ub2gm](../asc_copy_ub2gm/asc_copy_ub2gm_arch_2201.md)（`same_topic`）：asc_copy_ub2gm 与《AscCopyUb2GmAlign》的实质衔接是：UB→GM 基础搬运与 aligned 变体、反向 GM→UB 组成数据通路；loop stride/size 与 pad 值必须在调用前按 2201 契约配置。
-<!-- cannbot:related:end -->

@@ -27,14 +27,3 @@ platforms: ['950']
 支持数据类型：bool、int8_t、uint8_t、int16_t、uint16_t、int32_t、uint32_t、int64_t、uint64_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Not](not.md)（`related`）：Not 可构造掩码反转并与 And 组合。
-- [Or](or.md)（`related`）：And/Or 是位表达式的互补操作。
-- [And](../../memory_vector_compute/logical_compute/and.md)（`same_topic`）：And说明根据mask对两个RegTensor或MaskReg执行按位与操作，将结果写入目的操作数，支持ZEROING模式。
-- [Ands](../../memory_vector_compute/logical_compute/ands.md)（`same_topic`）：Ands：Ands在 isSetMask=false时依赖SetMaskCount/Norm/VectorMask并要求ResetMask；And的tensor与Reg版本帮助区分标量按位与和双tensor按位与。 目标卡《And》补充：根据mask对两个RegTensor或MaskReg执行按位与操作，将结果写入目的操作数，支持ZEROING模式。
-- [AscAnd](../../../c_api/reg/logic_compute/asc_and.md)（`same_topic`）：C Reg API 是同一 And 的语言映射。
-- [AscAnd](../../../c_api/vector_compute/asc_and.md)（`same_topic`）：AscAnd：C Vector AscAnd、C Reg AscAnd及两套基础And都是逐元素按位与，关系用于核对操作数容器、mask与数据类型约束。 目标卡《And》补充：根据mask对两个RegTensor或MaskReg执行按位与操作，将结果写入目的操作数，支持ZEROING模式。
-<!-- cannbot:related:end -->

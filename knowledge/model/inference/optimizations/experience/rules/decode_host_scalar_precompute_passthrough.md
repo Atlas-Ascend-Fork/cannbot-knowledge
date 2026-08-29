@@ -16,9 +16,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/206
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a2
 ---
 
 # 消除 decode/生成热路径每步重复的 host 侧算子入参准备（scale / seq-length / 量化 scale：预算一次 + 透传/缓存复用）
@@ -56,3 +56,9 @@ platforms:
 - `diff 事实`（@6e613e759b01a7edd69b2bfbfef3766df16a981a）：`DeepseekAttention` 首个 hunk 命中「decode 复用 `actual_seq_lengths_q`、仅 prefill 现算」改法。
 - `diff 事实` + `维护者确认`（@1a16834994ef）：`is None` 守卫惰性缓存 scale、两算子分别收 1 元素 / 2 维 scale；维护者确认「per-tensor 只需 1 值、传 2 维引入多余 slice」，作者以 "no slice" 修复。
 - 溯源下探：[cann-recipes-infer-pr-305-feat-hunyuanimage-3-0-supports-moe-ep-and-the-performance-is-optimized](https://gitcode.com/cann/cann-recipes-infer/merge_requests/305)、[cann-recipes-infer-pr-110-refactor-modify-mla-prolog-cache-mode-pa-nz-convert-nz-support-fused-inf](https://gitcode.com/cann/cann-recipes-infer/merge_requests/110)、[cann-recipes-infer-pr-206-fix-ds-r1-replace-non-standard-inplace-ops-with-standard-ops](https://gitcode.com/cann/cann-recipes-infer/merge_requests/206)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [把 decode 逻辑塞进图前消除 graph break：host 同步 / host 构造张量 / 图后端不支持算子的图安全改写](../../../guides/experience/interventions/graph_break_elimination_host_sync_unsupported_ops.md)（`related`）：host 侧入参预算复用见 ［decode-host-scalar-precompute-passthrough］(../../../optimizations/experience/rules/decode_host_scalar_precompute_passthrough.md)；通用症结：**每前向重复做、但在稳态内容不变的 host 侧算子入参准备**（标量 scale、seq-length 小张量、量化 scale）是可去除的固定开销——它落在 host、每层/每步触发，造成下发中断与 H2D 强同步。。图安全指南要求移除 forward 的 host 依赖，规则页把稳态不变的 scale、seq-length 和量化 scale 上提并透传，给出该要求的性能化实现。
+<!-- cannbot:related:end -->

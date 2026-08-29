@@ -31,8 +31,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscInt322Int64](asc_int322int64.md)（`related`）：《AscInt642int32》说明将int64_t类型源操作数转换为int32_t类型，支持饱和与非饱和模式。；《AscInt322Int64》说明根据mask将src中的int32_t类型元素转换为int64_t类型，结果写入dst，位宽比为1:2。。二者在int64到int32窄化的饱和/非饱和语义需与反向扩宽及同源转换对照验证上存在可执行的直接衔接。
-- [AscInt322int64](../../vector_compute/asc_int322int64.md)（`related`）：《AscInt642int32》说明将int64_t类型源操作数转换为int32_t类型，支持饱和与非饱和模式。；《AscInt322int64》说明将int32_t类型数据转换为int64_t类型。。二者在int64到int32窄化的饱和/非饱和语义需与反向扩宽及同源转换对照验证上存在可执行的直接衔接。
-- [AscInt642Float](asc_int642float.md)（`related`）：《AscInt642int32》说明将int64_t类型源操作数转换为int32_t类型，支持饱和与非饱和模式。；《AscInt642Float》说明将int64_t类型数据转换为float，支持多种舍入模式，源操作数与目的操作数位宽比为2:1。。二者在int64到int32窄化的饱和/非饱和语义需与反向扩宽及同源转换对照验证上存在可执行的直接衔接。
-- [AscInt642int32](../../vector_compute/asc_int642int32.md)（`same_topic`）：两个 AscInt642Int32 入口都把 int64_t 转为 int32_t；Reg 版本用 mask 和饱和控制，Memory Vector 版本用 UB count 调用。
+- [AscInt642int32](../../vector_compute/asc_int642int32.md)（`same_topic`）：将int64_t类型的源操作数转换成int32_t类型，并支持不同的饱和模式；将int64_t类型数据转换为int32_t类型。两端定义相同的 int64_t 到 int32_t 转换，分别给出 register 与 vector C API 形态。
 <!-- cannbot:related:end -->

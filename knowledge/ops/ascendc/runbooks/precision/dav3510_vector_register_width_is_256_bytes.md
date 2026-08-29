@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.precision", "topic.programming_model.execution_u
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-08-28T06:56:32Z"
 platforms: ["950"]
 aliases: ["RegTensor"]
 ---
@@ -117,10 +117,10 @@ constexpr static uint32_t LANES = 64;
 
 验证来自本次 cummin 开发中对远端 Ascend950 实卡的诊断命令和测试输出，证据等级均为 `tool_observed`。
 
-- 修复前，首行首个坏 lane 为 64，高半区出现低半输入的重复值；按 128-lane 周期统计时，坏点集中在每块高半。
-- CANN 9.0.1 目标环境的实现头显示 `vlSize = 256 / dtypeSize`，另一个 dav-3510 官方实现显式定义 `VECTOR_REG_WIDTH = 256UL`。
-- 改成 64 lane 并重新构建后，同一 `r=0` 全 lane 探针报告 `bad=0`（950，tool_observed）。
-- 该修复后的完整 pytest 仍有其他 dtype/尾块失败，因此这里只把首行 lane 错位结案；后续根因由其他卡分别处理。
+- 修复前，首行首个坏 lane 为 64，高半区出现低半输入的重复值；按 128-lane 周期统计时，坏点集中在每块高半（来源平台：950；证据等级：tool_observed）。
+- CANN 9.0.1 目标环境的实现头显示 `vlSize = 256 / dtypeSize`，另一个 dav-3510 官方实现显式定义 `VECTOR_REG_WIDTH = 256UL`（来源平台：950；证据等级：artifact_verified）。
+- 改成 64 lane 并重新构建后，同一 `r=0` 全 lane 探针报告 `bad=0`（来源平台：950；证据等级：tool_observed）。
+- 该修复后的完整 pytest 仍有其他 dtype/尾块失败，因此这里只把首行 lane 错位结案；后续根因由其他卡分别处理（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
@@ -141,18 +141,8 @@ constexpr static uint32_t LANES = 64;
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LoadAlign](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_load/load_align_continuous.md)（`exemplifies`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《LoadAlign》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [LoadAlign](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_load/load_align_mask_reg.md)（`exemplifies`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《LoadAlign》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [LoadAlign](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_load/load_align_noncontinuous.md)（`exemplifies`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《LoadAlign》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [MaskGenWithRegTensor](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_load/mask_gen_with_reg_tensor_mask_reg.md)（`exemplifies`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《MaskGenWithRegTensor》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [RegTensor](../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/reg_tensor.md)（`exemplifies`）：RegTensor 与《Ascend950 Reg 扫描按 256B 锁定 lane》的实质衔接是：RegTensor 是 256B VL 的 VF 内基本单元；MaskReg/AddrReg/非对齐状态、内置类型和跨 VF/错误类型案例直接限定 lane、寿命和模板参数。
-- [VF调用](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`exemplifies`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《VF调用》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [asc_vf_call](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/asc_vf_call.md)（`exemplifies`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《asc_vf_call》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [寄存器数据类型](../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/register_data_types.md)（`exemplifies`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《寄存器数据类型》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`related`）：256B 寄存器决定 B16 为 128 lane、B32 为 64 lane，是该 mask 错配的硬件根因。
-- [RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽](regtensor_cross_chunk_state_should_persist_in_ub_slot.md)（`related`）：《RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽》说明同 dtype 标量归约的 Reg Softmax 安全回退：每 VL 一次 VF、UB 槽持久化 max/sum；不适用于同时携带 B16 值与 B32 索引的 cummin/argmin 前缀扫描。；《Ascend950 Reg 扫描按 256B 锁定 lane》说明dav-3510 上把向量寄存器误按 512B 计算会让高半 lane 重放低半数据，值与索引必须按共同的 64 lane 分块。。二者在跨VL Reduce必须由AICore wrapper逐次调用并把max/sum持久化到UB；跨chunk累加、同步、offset和RegTensor合同均直接参与修复验证上存在可执行的直接衔接。
-- [Reg int32→int64 Cast 源目 VL 错配留空索引](int32_to_int64_reg_cast_must_respect_destination_lane_width.md)（`same_topic`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《Reg int32→int64 Cast 源目 VL 错配留空索引》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [VECTOR_REG_WIDTH 只能在 Device 作用域求值](../compilation/vector_reg_width_only_in_device_context.md)（`same_topic`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《VECTOR_REG_WIDTH 只能在 Device 作用域求值》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane](compute_lane_count_must_follow_promoted_fp32_width.md)（`same_topic`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [半精度索引错位—拆分双 int32 掩码](b16_value_mask_must_split_for_two_int32_index_registers.md)（`same_topic`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《半精度索引错位—拆分双 int32 掩码》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
+- [RegTensor](../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/reg_tensor.md)（`exemplifies`）：RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Length），长度为256B。b64或complex32类型下，支持通过RegTrait模板参数扩展存储2VL用于复杂计算。；工具链头文件与算子源码探针都显示 dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。int32 寄存器实际只有 `256 / 4 = 64` 个 lane。。API 的 256B 合同由 dav-3510 高半 lane 重放故障及头文件探针具体验证。
+- [Reg int32→int64 Cast 源目 VL 错配留空索引](int32_to_int64_reg_cast_must_respect_destination_lane_width.md)（`related`）：源代码以 `VECTOR_REG_WIDTH / sizeof(int32_t)` 得到 64-lane 的循环步长，但目标 `RegTensor<int64_t>` 只有 `VECTOR_REG_WIDTH / sizeof(int64_t)=32` lanes；因此每个 64 元素步长只能实际生成/存储 32 个 int64，中间 32 个位置被留空，下一轮又从下一个 64 元素起点继续。；工具链头文件与算子源码探针都显示 dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。int32 寄存器实际只有 `256 / 4 = 64` 个 lane。。平台宽度卡确定 256B 与 int32 64 lane，Cast 卡据此解释 int64 仅 32 lane 导致 widening 写空，二者闭合 lane 预算排障。
+- [VECTOR_REG_WIDTH 只能在 Device 作用域求值](../compilation/vector_reg_width_only_in_device_context.md)（`related`）：工具包探针在设备相关头文件中观测到 `VECTOR_REG_WIDTH=256` 字节；dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。；前卡规定常量的合法求值位置，后卡给出该值驱动 64-lane 分块的精度边界。
+- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`same_topic`）：“工具链头文件与算子源码探针都显示 dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。int32 寄存器实际只有 `256 / 4 = 64` 个 lane。”与“在 256B Reg 宽度下，B16 值寄存器有 128 个 lane，int32 索引寄存器只有 64 个 lane。”提供双方正文证据。两条精度卡共同定位 dav-3510 256B Reg 下 int32 只有 64 lane；后一条继续解释 B16 128-lane mask 与 B32 index 64-lane 的语义冲突。
 <!-- cannbot:related:end -->

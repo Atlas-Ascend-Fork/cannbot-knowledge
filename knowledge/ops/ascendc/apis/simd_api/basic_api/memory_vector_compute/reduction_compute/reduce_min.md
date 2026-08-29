@@ -8,7 +8,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute/ReduceMin.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ['950', a2, a3]
 ---
 
@@ -27,23 +27,5 @@ ReduceMin接口用于从所有输入数据中找出最小值和最小值索引�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [A5 循环内 ReduceMin 取索引致 vector core 异常](../../../../../runbooks/precision/a5_reducemin_vector_core.md)（`exemplifies`）：ReduceMin 与《A5 循环内 ReduceMin 取索引致 vector core 异常》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [如何使用归约计算API](../../../../../guides/programming_guide/library_api/basic_api/quick_reference/how_to_use_reduction_api.md)（`explains`）：ReduceMin 与《如何使用归约计算API》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [AscReduceMin](../../../c_api/reg/reduce_compute/asc_reduce_min.md)（`related`）：Memory Tensor 基础 API 提供 LocalTensor 路径，和 Reg API 的数据驻留、mask 契约不同。
-- [Reduce](../../reg_vector_compute/reduction_compute/reduce.md)（`related`）：Reg::Reduce 的 MIN 与 ReduceMin 都完成最小值归约，但分别面向寄存器编程和 LocalTensor 内存向量接口。
-- [ReduceMax](reduce_max.md)（`related`）：ReduceMin 聚合方向相反，按目标极值选。
-- [ReduceMin接口](../../../adv_api/reduction_operations/reduce_min_interface/reduce_min_interface.md)（`related`）：基础 Tensor ReduceMin 提供更低层的归约实现路径，可据 shape、mask 和临时空间需求与高阶接口选型。
-- [AscDatablockReduceMin](../../../c_api/vector_compute/asc_datablock_reduce_min.md)（`same_topic`）：ReduceMin 与《AscDatablockReduceMin》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [AscGetReduceMinCnt](../../../c_api/vector_compute/asc_get_reduce_min_cnt.md)（`same_topic`）：ReduceMin 与《AscGetReduceMinCnt》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [AscReduceMinDatablock](../../../c_api/reg/reduce_compute/asc_reduce_min_datablock.md)（`same_topic`）：AscReduceMinDatablock 与《ReduceMin》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
-- [AscRepeatReduceMin](../../../c_api/vector_compute/asc_repeat_reduce_min.md)（`same_topic`）：ReduceMin 与《AscRepeatReduceMin》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [GetReduceMinMaxMinTmpSize](../../../adv_api/reduction_operations/reduce_min_interface/get_reduce_min_max_min_tmp_size.md)（`same_topic`）：ReduceMin 与《GetReduceMinMaxMinTmpSize》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [GetReduceRepeatMaxMinSpr](../reduction_compute_aux_config/get_reduce_repeat_max_min_spr_isasi.md)（`same_topic`）：ReduceMin 与《GetReduceRepeatMaxMinSpr》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [ReduceDataBlock](reduce_data_block.md)（`same_topic`）：ReduceMin 与《ReduceDataBlock》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [ReduceMin](../../../adv_api/reduction_operations/reduce_min_interface/reduce_min.md)（`same_topic`）：ReduceMin 与《ReduceMin》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [ReduceRepeat](reduce_repeat.md)（`same_topic`）：ReduceMin 与《ReduceRepeat》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [asc_reduce_min](../../../../simt_api/warp_functions/warp_reduce_functions/asc_reduce_min.md)（`same_topic`）：ReduceMin 与《asc_reduce_min》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [归约计算](reduction_compute.md)（`same_topic`）：ReduceMin 与《归约计算》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [归约计算](../../reg_vector_compute/reduction_compute/reduction_compute.md)（`same_topic`）：ReduceMin 与《归约计算》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
-- [归约计算概述](introduction.md)（`same_topic`）：ReduceMin 与《归约计算概述》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
+- [950 循环内 ReduceMin 取索引致 vector core 异常](../../../../../runbooks/precision/950_reducemin_vector_core.md)（`exemplifies`）：从所有输入数据中找出最小值，可选返回最小值索引。；触发（tool_observed）：在 950（arch 3510）上，kernel 的 `for` 循环内反复调用 `ReduceMin(dst, src, workBuf, count, calIndex=true)` + `reinterpret_cast<uint32_t*>(&tempIndex)` 取最小值索引时，plog 报 `AIV Kernel happen error, retCode=0x31`（vector core exception），对应 error code 264、subErrType 0x4（D-cache 读写 UB、总线返回非零）。同一 V2 用例、同一数据跑 10 次出现 3 PASS/7 FAIL 的非确定崩溃；`numSeqs` 越大（`ComputeInputTokens` 的 `for` 循环迭代越多、`ReduceMin` 调用越频繁）崩溃率越高。。API允许返回最小值索引，Runbook精确限定 950 循环内反复以 calIndex=true 取索引会触发非确定 vector core 异常。
 <!-- cannbot:related:end -->

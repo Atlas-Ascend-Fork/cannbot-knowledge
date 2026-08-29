@@ -44,7 +44,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sqrt/op_host/config/ascend910_93/foreach_sqrt_binary.json
     role: implementation
 created_at: "2026-08-25T16:21:34Z"
-updated_at: "2026-08-25T16:21:34Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -514,9 +514,9 @@ Host 将 BF16 input Queue slot 放大到 `9S`，但只提供 `S` bytes FP32 scra
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；ascend910b | 支持；ascend910_93 | 支持，但见独立 `_a5` 卡 |
+| 支持状态 | 支持；ascend910b | 支持；ascend910_93 | 支持，但见独立 `_950` 卡 |
 | Host/Launcher | 共用 non-regbase membase selector/POD | 同 A2 | regbase priority 30000、不同 POD/key |
 | Kernel/资源 | 共用非 arch35 implicit-output body | 同 A2 | arch35 RegBase body；独立 in/out Queue，FP16/BF16 均升精度 |
 
@@ -566,3 +566,9 @@ Host 将 BF16 input Queue slot 放大到 `9S`，但只提供 `S` bytes FP32 scra
 | 同步 | Queue + V_MTE3/MTE3_MTE2；BF16 另有 PIPE_V | GM store 完成前不得复用 slot | `ForeachImplictOutput::Compute/ComputePerCast` |
 | 精度与尾块 | FP16/FP32 direct；BF16 CAST_NONE→FP32 Sqrt→CAST_RINT | valid count 与 exact-byte tail | `InnerComputer`/`CopyIn` |
 | 失败边界 | Host 失败阻断；Device 无 unknown-key fallback | dtype/platform/shape guard 不可省略 | `CheckOpInfo`/`foreach_sqrt` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachSqrt 950 ACLNN 算子知识](foreach_sqrt_950.md)（`same_topic`）：对 TensorList 中每个输入元素计算平方根：`y_i［j］=sqrt(x_i［j］)`。；对 TensorList 中每个输入元素计算 `y_i［j］=sqrt(x_i［j］)`。；两卡描述同一个 ForeachSqrt ACLNN 入口和逐 TensorList 开方语义，分别闭合 A2/A3 AIV Vector 路线与 950 RegBase 路线。
+<!-- cannbot:related:end -->

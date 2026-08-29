@@ -25,15 +25,3 @@ platforms: ['950']
 - 操作数重叠约束：srcReg0和srcReg1可以是同一个RegTensor。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [arch35 count Compare Select 异步VF 存读 RAW](../../../../../runbooks/precision/arch35_count_compare_select_vf_raw.md)（`exemplifies`）：该 runbook 展示 Compare 结果跨异步 VF 未完成即被 Select 读取造成 RAW 错选。
-- [AscEq](../../../c_api/reg/compare_and_select/asc_eq.md)（`related`）：“AscEq”处理逐元素比较两个源操作数是否相等，比较结果写入目的操作数对应比特位，为真则置1，否则置0。仅在AIV上生效。；“Compare”明确逐元素比较两个RegTensor大小，根据比较模式将结果写入MaskReg对应比特位，支持EQ/GT/LT/GE/NE/LE模式。。实质衔接：AscEq 产生相等比较 mask；标量变体改变右操作数，AscNe 改变谓词，Reg Compare 是模板层等价能力，AscSelect 消费该 mask。
-- [AscGe](../../../c_api/reg/compare_and_select/asc_ge.md)（`related`）：Reg 基础 API Compare 以比较模式选择 GE 等谓词，是 AscGe C API 在 C++ Reg 层的对应能力。
-- [Compare](../../memory_vector_compute/compare_and_select/compare.md)（`related`）：Memory Compare 在 LocalTensor 上执行同一谓词族，可按数据位置在 Memory 与 Reg 路线间选型。
-- [Select](select.md)（`related`）：Compare 产生的 MaskReg 可直接驱动 Reg Select，组成比较后选择链。
-- [AscLe](../../../c_api/reg/compare_and_select/asc_le.md)（`same_topic`）：焦点处理AscLe 的向量小于等于 mask 与标量/选择接口衔接；Compare正文说明“逐元素比较两个RegTensor大小，根据比较模式将结果写入MaskReg对应比特位，支持EQ/GT/LT/GE/NE/LE模式”。候选生成同类比较 mask，或直接消费该 mask 完成 Select。
-- [Compares](compares.md)（`same_topic`）：Compares 把第二个 RegTensor 换成标量，仍按 EQ/GT/LT/GE/NE/LE 生成 MaskReg。
-<!-- cannbot:related:end -->

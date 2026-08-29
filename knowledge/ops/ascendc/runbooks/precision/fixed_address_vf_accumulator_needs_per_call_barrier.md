@@ -271,16 +271,7 @@ line segment: 函数全体
 <!-- cannbot:related:start -->
 ## 相关
 
-- [PipeBarrier](../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)（`exemplifies`）：focal 的修复在每次 asc_vf_call 后使用 PipeBarrier<PIPE_V>，API 卡提供该 Vector pipeline 顺序原语的调用契约。
-- [VF调用](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`exemplifies`）：固定地址跨 VF 累加卡说明每次 VF 调用之间需 PipeBarrier 才能保证上一轮 UB 写入对下一轮可见，补充了 asc_vf_call 跨调用的数据依赖约束。
-- [asc_vf_call](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/asc_vf_call.md)（`exemplifies`）：运行卡展示连续 asc_vf_call 对固定 UB 累加槽执行读改写时需要逐调用提交/同步，补足跨 VF 调用的数据依赖约束。
-- [核内同步](../../apis/simd_api/basic_api/sync_control/intra_core_sync/intra_core_sync.md)（`exemplifies`）：核内同步 与《Reg 固定地址跨块累加需逐 VF PipeBarrier》的实质衔接是：核内同步的选择取决于流水依赖：MTE 事件用 SetFlag/WaitFlag，指令流水用 PipeBarrier，mutex 用 Lock；所连案例验证错误枚举、缺失屏障和跨 VF 可见性。
-- [AR 跨块循环放在 __simd_vf__ 只执行首块](simd_vf_chunk_loop_must_be_driven_by_aicore_wrapper.md)（`related`）：当每块 VF 复用同一 UB 累加地址时，调用间必须排空前次 StoreAlign 后再 LoadAlign，补足 wrapper 循环的同步条件。
-- [BF16 gamma Cast 分阶段编排导致随机 NaN](bf16_gamma_cast_must_share_ordered_compute_stage.md)（`related`）：候选证明固定 UB 地址多次 VF 调用间需逐调用完成屏障；本卡也不能依赖函数调用顺序保证 Cast 已完成。
-- [Reg::Reduce 跨 chunk 覆写导致规约失真](reg_reduce_per_chunk_result_must_accumulate_explicitly.md)（`related`）：若跨 VF 调用通过固定 UB 槽承载累计量，还需逐次完成屏障以避免前次结果被下一次调用覆盖。
-- [中级性能优化](../../guides/operator_practice/typical_operator_cases/simd_operator_impl/gelu_reg_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《Reg 固定地址跨块累加需逐 VF PipeBarrier》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
-- [中级性能优化](../../guides/operator_practice/typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《Reg 固定地址跨块累加需逐 VF PipeBarrier》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
-- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`same_topic`）：多次 VF 调用复用固定 UB 累加槽时，每次 call 之间需 barrier，否则前后 pass 会发生读写竞争。
-- [RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽](regtensor_cross_chunk_state_should_persist_in_ub_slot.md)（`same_topic`）：两卡都定位多 VL 归约的跨 chunk 状态丢失，并把状态放在固定 UB 槽、每 VL 单独 asc_vf_call；focal 进一步证明 B16 场景调用间还需 PipeBarrier 才闭环。
-- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`same_topic`）：VF 归约落 UB 后 GetValue 读取陈旧标量 与《Reg 固定地址跨块累加需逐 VF PipeBarrier》的实质衔接是：Reg Reduce 经 StoreAlign 落 UB 后，PIPE_V 不保证 Scalar GetValue 可见；相关跨 VF 累加、barrier、GetValue 陈旧和 SoftMax 卡共同支持把归约与 lane0 广播保留在同一 VF。
+- [VF调用](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`exemplifies`）：提供 asc_vf_call 接口，用于在 SIMD 编程场景下启动 SIMD VF（Vector Function）子任务。通过模板参数 funcPtr 指定入口核函数，可变参数 Args 传递实参。；- API 路径：`asc_vf_call` 调用 `__simd_vf__`，VF 内通过固定 `accAddr` 做 `LoadAlign→计算→StoreAlign` 的跨 chunk 累加；。API提供逐次 VF 调用及 UB 指针参数合同，Runbook利用调用边界在固定 UB 累加器的多 chunk 调用间插入 PipeBarrier。
+- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：调用之间由 `PipeBarrier<PIPE_V>` 建立可见性；把“一个 VF 内循环所有 chunk”改成“一个 VF 只处理一个 chunk”；在 `__aicore__` 的 chunk 循环中，每次调用后执行 `PipeBarrier<PIPE_V>()`，再进入下一块。；目标卡把焦点的 pass 间 barrier 规则具体化为固定 UB 累加地址的逐 chunk 调用边界。
+- [AR 跨块循环放在 __simd_vf__ 只执行首块](simd_vf_chunk_loop_must_be_driven_by_aicore_wrapper.md)（`same_topic`）：“把“一个 VF 内循环所有 chunk”改成“一个 VF 只处理一个 chunk”；在 `__aicore__` 的 chunk 循环中，每次调用后执行 `PipeBarrier<PIPE_V>()`，再进入下一块。”与“将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。”描述同一跨块 Softmax 状态修复，后一张补齐症状、边界验证和 barrier 仅用于同址 RMW 的限制。
 <!-- cannbot:related:end -->

@@ -25,14 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hadd](../../bfloat16_type/bfloat16_arithmetic_functions/_hadd.md)（`same_topic`）：__hadd 与《__hadd》的实质衔接是：__hadd 与 half/bfloat16/half2 的加法入口共享加法与 RINT 语义；sub、mul、fma 用于区分运算符而避免把算术族名称当作等价替换。
-- [__haddx2](../../bfloat16_type/bfloat16x2_arithmetic_functions/_haddx2.md)（`same_topic`）：__hadd 与《__haddx2》的实质衔接是：__hadd 与 half/bfloat16/half2 的加法入口共享加法与 RINT 语义；sub、mul、fma 用于区分运算符而避免把算术族名称当作等价替换。
-- [__haddx2](../half2_arithmetic_functions/_haddx2.md)（`same_topic`）：__hadd 与《__haddx2》的实质衔接是：__hadd 与 half/bfloat16/half2 的加法入口共享加法与 RINT 语义；sub、mul、fma 用于区分运算符而避免把算术族名称当作等价替换。
-- [__hfma](_hfma.md)（`same_topic`）：__hadd 与《__hfma》的实质衔接是：__hadd 与 half/bfloat16/half2 的加法入口共享加法与 RINT 语义；sub、mul、fma 用于区分运算符而避免把算术族名称当作等价替换。
-- [__hmul](_hmul.md)（`same_topic`）：__hadd 与《__hmul》的实质衔接是：__hadd 与 half/bfloat16/half2 的加法入口共享加法与 RINT 语义；sub、mul、fma 用于区分运算符而避免把算术族名称当作等价替换。
-- [__hsub](_hsub.md)（`same_topic`）：__hadd 与《__hsub》的实质衔接是：__hadd 与 half/bfloat16/half2 的加法入口共享加法与 RINT 语义；sub、mul、fma 用于区分运算符而避免把算术族名称当作等价替换。
-<!-- cannbot:related:end -->

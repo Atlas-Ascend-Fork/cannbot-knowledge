@@ -23,7 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscDeqInt322half](asc_deq_int322half.md)（`related`）：若目标是 fp32 应用 Int32→Float 而非经 half 反量化；目标 dtype 和 scale 需求决定选型。
-- [AscFloat2Int32](../scalar_compute/asc_float2int32.md)（`same_topic`）：AscFloat2Int32 与《AscInt322float》的实质衔接是：AscFloat2Int32 的四种舍入模式对应 Rint/Round/Floor/Ceil，相关 float/half/bfloat16 转换卡用于保持目标位宽、源类型和逆转换契约。
-- [AscInt322Float](../reg/data_type_convert/asc_int322float.md)（`same_topic`）：AscInt322Float 与《AscInt322float》的实质衔接是：AscInt322Float 的 Vector 对应入口执行同一 int32→float 转换，AscFloat2Int32 则提供反向路径，用于核对舍入和 mask 置零契约。
+- [AscInt322Float](../reg/data_type_convert/asc_int322float.md)（`same_topic`）：根据mask将src中的每个int32_t类型数据转换成float类型，并支持多种舍入模式，结果写入dst；将int32_t类型数据转换为float类型，支持多种舍入模式。两卡执行相同 int32 到 float 转换；焦点是 950 Reg+mask 形态，候选是 A2/A3 UB 地址+count 形态，跨平台比较可明确编程接口差异。
 <!-- cannbot:related:end -->

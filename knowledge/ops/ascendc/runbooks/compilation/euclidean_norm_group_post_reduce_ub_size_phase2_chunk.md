@@ -107,9 +107,5 @@ branch-4 用 `CeilAlign(aTotal*dtypeSize, blockSize)` 同语义。强制 `postRe
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ACL 507035 — 完整 a0 统计缓冲超过 UB](ub_slices_reduction_axis_scratch_buffers_507035.md)（`related`）：目标卡在完整 A0 统计缓冲超 UB 时引入按 A0 切片，本卡却扩大 postReduceUbSize 强制全 A 单 chunk；二者共同给出选择边界：全量缓冲能装下才可消除 chunk，否则必须设计闭环的分片三趟归约。
-- [DataCopyPad多行stride单位误用导致非对齐行输出NaN](../precision/datacopypad_stride_fields_use_32_byte_block_units.md)（`related`）：本卡 Phase2 多 chunk 的非零 srcStride 与非 32B blockLen 组合破坏 workspace 读取；目标卡提供 stride 字段按 32B block 核算并在所有搬运点一致更新的实测判据。
-- [DataCopy尾chunk非32B对齐触发ERR99999](datacopy_chunk_32b_err99999.md)（`related`）：目标卡给出 DataCopy 非 32B 尾 chunk 的向下取整/ERR99999 判据，可辅助本卡确认 Phase2 blockLen 非 32B 是搬运边界问题而非 ReduceSum 数值错误。
-- [窄尾 tile 行距错位：补齐 UB gap](../precision/datacopypad_narrow_tile_needs_explicit_ub_row_gap.md)（`related`）：两卡都处理 DataCopyPad 实际块宽小于消费者固定物理跨度时的读错位；目标卡在 UB 行间补 gap，本卡通过扩大 postReduceUbSize 取消 Phase2 的窄 chunk。
-- [507035 C 超 per_buf_elems 致 Phase1 UB 越界](datacopypad_phase1_chunk_loop_per_buf_elems_507035.md)（`same_topic`）：焦点处理Phase1 中 C 超出 per_buf_elems 导致 UB 地址越界的预算故障；postReduceUbSize 不足致 Phase2 读破坏正文说明“branch-3/4 group 路径 postReduceUbSize 只装每 chunk A 大小，Phase 2 把 aTotal 拆多 chunk 且 srcStride 非零，blockLen 非 32B 对齐时 workspace 读破坏；修复 enlarge pos”。候选与焦点共享 UB 容量/slot 预算机制，能直接修正切分因子、物理宽度或双缓冲计数。
+- [DataCopyPad多行stride单位误用导致非对齐行输出NaN](../precision/datacopypad_stride_fields_use_32_byte_block_units.md)（`related`）：强制 `postReduceUbSize >= CeilAlign(aTotal_*dtypeSize, blockSize)` → `aUbFactorP2 = aTotal_` → `srcStride = aTotal_*4 - aTotal_*4 = 0`，Phase 2 单 chunk 连续读 workspace，消除 stride 错位。；也就是说，这些 stride 字段使用 32B block 数，而 `blockLen` 仍使用字节数。；若以后恢复 Phase 2 多 chunk，必须把相邻 workspace 行的字节间隔换算为 32B block 后填写 srcStride；现修法让该间隔和 srcStride 同时为零，正好绕开字段单位误填。
 <!-- cannbot:related:end -->

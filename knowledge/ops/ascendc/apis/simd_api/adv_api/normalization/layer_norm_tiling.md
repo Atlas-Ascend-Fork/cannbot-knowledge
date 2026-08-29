@@ -24,5 +24,5 @@ GetLayerNormNDTilingInfo参数：ascendcPlatform平台信息；输入shape各维
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LayerNorm](layer_norm.md)（`related`）：Host 侧先查询临时空间并生成 LayerNormTiling，Kernel 侧 LayerNorm 直接消费该结构；H/R 对齐、isReuseSource、isBasicBlock 必须一致。
+- [LayerNorm](layer_norm.md)（`same_topic`）：“host侧Tiling接口，用于获取LayerNorm kernel计算所需的Tiling参数，分两步：通过GetLayerNormMaxMinTmpSize获取最大和最小临时空间大小；通过GetLayerNormNDTilingInfo（或GetLayerNormTmpBufferFactorSize）获取kernel侧所需tiling参数。”与“提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持不同输入/输出shape模式。Tiling参数通过LayerNorm Tiling获取。”分别给出双端正文事实；LayerNorm Kernel 明确消费 LayerNorm Tiling，Tiling 卡生成临时空间范围与 LayerNormTiling 结构，二者定义同一归一化接口的 Host/Device 参数交接。
 <!-- cannbot:related:end -->

@@ -25,8 +25,5 @@ host侧Tiling接口，用于获取IsInf接口所需的最大和最小临时空�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [IsInf](is_inf.md)（`related`）：IsInf 需要 sharedTmpBuffer；该 Host 查询给出可分配空间上下界，直接决定 Kernel 调用时的临时缓冲规划。
-- [IsInf接口](is_inf_interface.md)（`related`）：《GetIsInfMaxMinTmpSize》明确“在host侧获取IsInf接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”；它与《IsInf接口》的“按元素判断浮点数是否为±INF，并提供临时空间大小获取接口。”在实际调用参数、数据流或结果校验上直接衔接。
-- [GetIsInfTmpBufferFactorSize](get_is_inf_tmp_buffer_factor_size.md)（`same_topic`）：《GetIsInfTmpBufferFactorSize》的任务是“获取IsInf接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量”。《GetIsInfMaxMinTmpSize》具体提供“在host侧获取IsInf接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”，它直接用于IsInf workspace factor、上下界查询与 Kernel 调用合同。
-- [__hisinf](../../../../simt_api/math_functions/bfloat16_type/bfloat16_compare_functions/_hisinf.md)（`same_topic`）：《__hisinf》处理“判断bfloat16类型浮点数是否为无穷，输入为inf或-inf时返回true。”。《GetIsInfMaxMinTmpSize》明确“在host侧获取IsInf接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”，可直接用于核对half isinf 谓词与 IsInf 高阶/SIMT 实现及临时空间合同。
+- [GetIsInfTmpBufferFactorSize](get_is_inf_tmp_buffer_factor_size.md)（`related`）：host侧Tiling接口，用于获取IsInf接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；获取IsInf接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。。两接口分别从 shape 求临时空间上下界、从固定临时空间反推单次元素量，构成 IsInf Tiling 的两种互补容量计算路径。
 <!-- cannbot:related:end -->

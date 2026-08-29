@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-24T23:50:18Z"
-updated_at: "2026-08-24T23:50:18Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -513,9 +513,9 @@ R-002 先把输出中间的 `innerH` 行写全，再直接以 `yGM_` 为源和�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；公开文档与 `ascend910b` binary/OpDef 接线一致 | 支持；公开文档与 `ascend910_93` binary/OpDef 接线一致 | 明确不支持；未生成 `_a5` 卡 |
+| 支持状态 | 支持；公开文档与 `ascend910b` binary/OpDef 接线一致 | 支持；公开文档与 `ascend910_93` binary/OpDef 接线一致 | 明确不支持；未生成 `_950` 卡 |
 | Host/Launcher | 共用 `CircularPad` Tiling，平台注册 `ascend910b` | 共用同一实现，平台注册 `ascend910_93` | 无公开 ACLNN 支持，不以其它目录信号补齐 |
 | Kernel/资源 | 同一 `circular_pad` AIV body、同一 192KiB Queue 配置 | 同左 | N/A |
 
@@ -534,7 +534,7 @@ R-002 先把输出中间的 `innerH` 行写全，再直接以 `yGM_` 为源和�
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `conversion/circular_pad/docs/aclnnCircularPad2d.md` | 两段式原型、产品支持表 | A2/A3 支持、A5 不支持、公开 dtype/shape/宽度约束 |
+| 入口声明/约束 | `conversion/circular_pad/docs/aclnnCircularPad2d.md` | 两段式原型、产品支持表 | A2/A3 支持、950 不支持、公开 dtype/shape/宽度约束 |
 | 入口声明/约束 | `conversion/circular_pad/op_host/op_api/aclnn_circular_pad2d.h` | `aclnnCircularPad2d*` | C ABI 与参数语义 |
 | 入口实现 | `conversion/circular_pad/op_host/op_api/aclnn_circular_pad2d.cpp` | `CheckParams/GetPaddingTensor/aclnnCircularPad2dGetWorkspaceSize` | 校验、连续化、padding 扩展、executor 流程 |
 | 入口实现 | `conversion/pad_v3/op_api/padv3.cpp` | `PadV3/CircularPadAiCore` | circular 特判到 `CircularPad` launcher |

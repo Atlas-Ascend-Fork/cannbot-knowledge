@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_nd_update/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:12:11Z"
-updated_at: "2026-08-25T17:12:11Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -711,9 +711,9 @@ API 用 `CreateView` 透传 stride；Device 把扁平目标行重新拆成第 0 
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b` arch32 | `ascend910_93` arch32 | arch35 RegBase |
 | Kernel/资源 | 与A3共用 arch32，实际 core/UB 来自平台 | 与A2共用 arch32 | SIMT/Vector混合、确定性 workspace mask |
 
@@ -757,3 +757,10 @@ API 用 `CreateView` 透传 stride；Device 把扁平目标行重新拆成第 0 
 | 同步 | phase边全核同步，tile边硬事件/queue | 不能仅用单核pipe event替代SyncAll | common helpers/entry |
 | 精度与尾块 | fp32 sort阈值；int64 large不窄化 | 2^24、INT32_MAX边界和exact tail | `IsSort/IsLinearIndex` |
 | 失败边界 | unknown key、null workspace无输出 | 不得静默假定fallback | entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](../../../../runbooks/precision/repeated_overwrite_updates_need_ordered_ub_merge.md)（`related`）：“重复索引最终保留后出现的 update”；“把每个连续目标块先搬入 UB 后，全部重复更新都在 UB 内按原始 `k` 顺序合并，最后只以连续 DMA 写回 GM”。Runbook 提供维护 ScatterNdUpdate last-wins 时避免随机 GM 写 winner 不确定性的安全实现。
+- [ScatterNdUpdate 950 ACLNN 算子知识](scatter_nd_update_950.md)（`same_topic`）：“`aclnnScatterNdUpdateGetWorkspaceSize` + `aclnnScatterNdUpdate`，公开两段式 ACLNN。”与“`aclnnScatterNdUpdateGetWorkspaceSize` + `aclnnScatterNdUpdate`，公开两段式 ACLNN，无更高公开版本。”共享同一入口和覆盖更新语义，两卡分别闭合 950 与 A2/A3 实现。
+<!-- cannbot:related:end -->

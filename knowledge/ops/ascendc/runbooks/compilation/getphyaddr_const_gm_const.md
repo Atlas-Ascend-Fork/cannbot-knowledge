@@ -88,10 +88,5 @@ testGm.SetGlobalBuffer(reinterpret_cast<__gm__ int32_t*>(wsBase + sysWsSize_));
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetPhyStackBase](../../apis/simd_api/c_api/sys_var/asc_get_phy_stack_base.md)（`exemplifies`）：AscGetPhyStackBase 与《GetPhyAddr const __gm__ 返回不可去 const》的实质衔接是：物理栈基地址与 Global/LocalTensor GetPhyAddr、物理 buffer 地址共同用于物理寻址；const GetPhyAddr 故障直接约束返回地址可变性。
-- [GetPhyAddr](../../apis/simd_api/basic_api/data_structures/global_tensor/get_phy_addr.md)（`exemplifies`）：正式接口明确返回 const __gm__ 指针，是该编译错误的契约依据。
-- [Device helper 必须保留 GM 地址空间](device_helper_preserves_gm_address_space.md)（`related`）：focal 保留 __gm__ 之外还需保留 const；该卡证明 GlobalTensor::GetPhyAddr 返回 const __gm__ pointer，强转为可写指针会独立触发 casts-away-qualifiers。
-- [Reg LoadAlign 不接受 const __ubuf__ 指针](reg_loadalign_requires_nonconst_ubuf_pointer.md)（`related`）：真正需要写指针的 Reg load 路径必须从可写 UB 来源取得，不能对 const GetPhyAddr 强转。
-- [dav-3510 GM_ADDR static_cast 编译失败](gm_addr_cast_from_void_uses_toolchain_cast.md)（`related`）：void*→__gm__ 需工具链接受的转换，同时仍必须保留目标 const。
-- [aicore 禁止 const char* cast 到 __gm__ T*](aicore_const_char_cast_gm_t.md)（`same_topic`）：两卡共同处理 GM 地址空间与 const 限定的强转，不能用普通 C++ cast 擦除。
+- [GetPhyAddr](../../apis/simd_api/basic_api/data_structures/global_tensor/get_phy_addr.md)（`exemplifies`）：`AscendC::GlobalTensor<T>::GetPhyAddr()` 的返回类型是 `const __gm__ PrimType*`。C++ 规则下 `reinterpret_cast` 不能 casts away qualifiers（去 const），bisheng 编译器据此拒绝把 `const __gm__ int *` 转成 `__gm__ uint8_t *`。；GlobalTensor::GetPhyAddr 接口，用于获取全局数据的物理地址，支持全平台。；Runbook 用真实编译错误复现 GetPhyAddr 返回地址的 const 限定，并给出从 GM_ADDR 捕获可写裸指针的修复，直接示范该 API 合同的排障。
 <!-- cannbot:related:end -->

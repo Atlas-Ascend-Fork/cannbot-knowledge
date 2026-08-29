@@ -41,7 +41,14 @@ cann-recipes-infer 基于 NVIDIA [recsys-examples](https://github.com/NVIDIA/rec
 
 HSTU 是生成式推荐模型，与 LLM 的核心差异：
 
-| 维度 | LLM | HSTU (GR) | | ---- | ---- | ---- | | 输入 | 文本 token 序列（固定词表） | 用户/物品/上下文的离散 ID 序列（千万~亿级词表） | | 容量主体 | dense Transformer 权重 | 稀疏 **Embedding Tables** | | 序列形态 | padded / packed token 序列 | **jagged tensor**（变长，含 `seqlen_offsets` / `num_candidates_offsets`） | | 并行侧重 | TP + EP + DP | **Embedding TP + DP** | | KV Cache | Paged Attention KV | Paged HSTU KV + 多级缓存（device + Host Offload） | | 任务 | 自回归 token 生成 | 检索 + 排序（ranking）一体 |
+| 维度 | LLM | HSTU (GR) |
+| ---- | ---- | ---- |
+| 输入 | 文本 token 序列（固定词表） | 用户/物品/上下文的离散 ID 序列（千万~亿级词表） |
+| 容量主体 | dense Transformer 权重 | 稀疏 **Embedding Tables** |
+| 序列形态 | padded / packed token 序列 | **jagged tensor**（变长，含 `seqlen_offsets` / `num_candidates_offsets`） |
+| 并行侧重 | TP + EP + DP | **Embedding TP + DP** |
+| KV Cache | Paged Attention KV | Paged HSTU KV + 多级缓存（device + Host Offload） |
+| 任务 | 自回归 token 生成 | 检索 + 排序（ranking）一体 |
 
 ```mermaid
 flowchart TD
@@ -221,3 +228,11 @@ README "优化点介绍"章节列出的额外优化：
 - [data-parallel](../parallelism/data_parallel.md)
 - [kvcache-offload](../techniques/kvcache_offload.md)（HSTU 变体）
 - [ascendc](../frameworks/ascendc.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Embedding Tensor Parallel](../parallelism/embedding_tp.md)（`related`）：“基于此，我们在推理侧引入 Embedding TP（如下图），对大表**按 vocab 维度切分**到不同 NPU 上，以减少单卡显存负担，支撑模型推理。同时，在 Embedding TP 外采用 DP 进行并行处理，Embedding 部分进行 **DP → TP → DP** 的操作。”与“基于上述稀疏容量差异，cann-recipes-infer 在推理侧引入 Embedding TP：**对大表按 vocab 维度切分到不同 NPU 上**，以减少单卡显存负担，支撑模型推理。同时，在 Embedding TP 外采用 DP 进行并行处理——Embedding 部分执行 **DP → TP → DP** 的切换。”是双方正文中的具体合同。HSTU 卡指出模型实际采用的 vocab 切表与 DP/TP 切换，Embedding TP 卡继续给出该切分的数据流和区间掩码机制，能支撑 HSTU 多卡内存布局的实现理解。
+- [KV cache 卸载到 Host 内存：设备单层 temp + 专用流 D2H 重叠 + 逐层异步搬算掩盖](../../guides/experience/interventions/kvcache_offload_host_swap.md)（`related`）：“将 KV offload 时机**前移**到每层 Attention 结束立即触发，放到另一条 NPU stream 异步执行，实现**计算链路（HSTU dense + MLP + 后处理）与通信链路（KV offload）的重叠**，显著降低流水线空泡。详见 ［kvcache-offload］(../techniques/kvcache_offload.md)（HSTU 变体）。”与“把「等 dense 全部算完再逐层串行 offload」改为「每层 Attention 结束即在独立 offload stream 上异步触发该层 KV offload」，用 NPU Event 定义计算链与通信链依赖，把 offload 通信隐藏进后续计算：”是双方正文中的具体合同。模型卡说明 HSTU 采用逐层异步 KV offload，干预卡给出独立 stream 与 NPU Event 的依赖骨架，能支撑这一优化的实现和同步验证。
+- [生成式推荐模型多卡——切超大 embedding 表（vocab-parallel + 阈值门控）](../../optimizations/experience/rules/generative_recommender_vocab_parallel_embedding.md)（`related`）：“基于此，我们在推理侧引入 Embedding TP（如下图），对大表**按 vocab 维度切分**到不同 NPU 上，以减少单卡显存负担，支撑模型推理。同时，在 Embedding TP 外采用 DP 进行并行处理，Embedding 部分进行 **DP → TP → DP** 的操作。”与“- **阈值门控（关键判断）**：不是所有表都切。用 `should_shard = (tp_size > 1) and (vocab_size >= threshold)` 门控（本仓默认阈值 1000）；小于阈值的小表整表复制到各卡，**避免小表切分后 all_gather/reduce_scatter 的通信开销 > 省下的那点显存**。给新的大稀疏 embedding 模型上多卡前，先按表规模分档再决定切/不切。”是双方正文中的具体合同。HSTU 卡给出正在使用的 vocab-parallel 路径，优化规则补充大小表阈值门控和通信/显存权衡，能直接推进该模型的切分决策。
+<!-- cannbot:related:end -->

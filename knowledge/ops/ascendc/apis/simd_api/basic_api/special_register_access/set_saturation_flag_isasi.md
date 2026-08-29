@@ -24,7 +24,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ResetCtrlSpr](reset_ctrl_spr_isasi.md)（`related`）：“SetSaturationFlag”定义：设置饱和开关的标志位，控制计算或精度转换时饱和模式的开启与关闭。；“ResetCtrlSpr”定义：对CTRL寄存器的特定比特位做重置，恢复为默认值。。实质衔接：SetSaturationFlag 修改饱和状态，Get 用于验证当前值；通用 CTRL SPR set/reset 提供底层控制位管理和恢复默认值的契约。
-- [SetCtrlSpr](set_ctrl_spr_isasi.md)（`related`）：“SetSaturationFlag”定义：设置饱和开关的标志位，控制计算或精度转换时饱和模式的开启与关闭。；“SetCtrlSpr”定义：对CTRL寄存器的特定比特位进行设置，通过模板参数指定比特位范围并写入对应值。。实质衔接：SetSaturationFlag 修改饱和状态，Get 用于验证当前值；通用 CTRL SPR set/reset 提供底层控制位管理和恢复默认值的契约。
-- [GetSaturationFlag](get_saturation_flag_isasi.md)（`same_topic`）：SetSaturationFlag说明设置饱和开关的标志位，控制计算或精度转换时饱和模式的开启与关闭；对GetSaturationFlag而言，GetSaturationFlag 读取的正是 SetSaturationFlag 写入的全局饱和状态，二者构成可验证的设置—读取闭环。
+- [GetSaturationFlag](get_saturation_flag_isasi.md)（`same_topic`）：“设置饱和开关的标志位，以控制计算/精度转换时饱和模式的开启与关闭。”；“获取计算/精度转换时饱和模式的开启状态。”。两接口分别写入和读取同一饱和模式状态，构成配置验证闭环。
 <!-- cannbot:related:end -->

@@ -33,8 +33,5 @@ LeakyRelu算子实现的完整样例请参考LINK。ONNX框架调用的完整示
 <!-- cannbot:related:start -->
 ## 相关
 
-- [图编译和图执行](../../operator_graph_development/graph_compilation_and_execution.md)（`related`）：图编译和图执行说明本节通过单算子模型执行的样例来介绍图模式下图编译和图执行流程。单算子模型执行是指基于图IR执行算子，先编译算子（例如，使用ATC工具将Ascend IR定义的单算子描述文件编译成算子om模型文件），再调用acl接口加载算子模型，最后调用acl接口执行算子。
-- [适配插件开发](adaptation_plugin_development.md)（`related`）：调用样例验证 REGISTER_CUSTOM_OP 映射、插件 so 加载和 ONNX 模型执行是否闭环。
-- [高级编程概述](../overview.md)（`related`）：高级编程概述：该概述的任务就是把自定义算子接入 AI 框架；PyTorch、TensorFlow和 ONNX 插件/调用卡分别展开正文点名的三条适配流程。 目标卡《高级编程调用样例》补充：完成了ONNX框架的适配插件开发后，即可实现从ONNX框架调用Ascend C自定义算子。下面以一个仅包含LeakyRelu算子的ONNX框架网络为例（该网络中的LeakyRelu算子通过适配插件映射为自定义的LeakyRelu算子），呈现一个使用推理工具进行推理的过程，目的在于让您快速体验推理场景下网络中自定义算子调用的过程。
-- [单算子API调用](../../aclnn_operator_development/invocation/single_operator_api_call.md)（`same_topic`）：焦点处理aclnn 两段式单算子调用的编译、部署和运行流程；高级编程调用样例正文界定“完成了ONNX框架的适配插件开发后，即可实现从ONNX框架调用Ascend C自定义算子。下面以一个仅包含LeakyRelu算子的ONNX框架网络为例（该网络中的LeakyRelu算子通过适配插件映射为自定义的LeakyRelu算子），呈现”。候选覆盖单算子调用前的编译部署、动态加载、调用样例、stream 缓存一致性和延迟回调生命周期。
+- [适配插件开发](adaptation_plugin_development.md)（`related`）：插件开发卡要求“使用REGISTER_CUSTOM_OP宏，完成CANN算子和ONNX框架的算子映射关系注册。”；调用示例说明“完成了ONNX框架的适配插件开发后，即可实现从ONNX框架调用Ascend C自定义算子。”。注册完成是后续 ONNX 推理调用样例的直接前置。
 <!-- cannbot:related:end -->

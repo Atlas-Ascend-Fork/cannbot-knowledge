@@ -25,7 +25,6 @@ host侧Tiling接口，用于获取Digamma接口所需的最大和最小临时空
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Digamma](digamma.md)（`same_topic`）：Digamma说明按元素计算x的gamma函数的对数导数。
-- [Digamma接口](digamma_interface.md)（`same_topic`）：Digamma 的 sharedTmpBuffer 必须先在 Host 侧按 shape 取得最大/最小临时空间并传入 Tiling。
-- [GetDigammaTmpBufferFactorSize](get_digamma_tmp_buffer_factor_size.md)（`same_topic`）：GetDigammaTmpBufferFactorSize：该因子接口与 Digamma计算及同名 MaxMinTmpSize共同闭合 host预算公式和 kernel sharedTmpBuffer；接口页给出两种重载与复用约束。 目标卡《GetDigammaMaxMinTmpSize》补充：在host侧获取Digamma接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
+- [Digamma](digamma.md)（`related`）：“host侧Tiling接口，用于获取Digamma接口所需的最大和最小临时空间大小”；“临时空间大小通过GetDigammaMaxMinTmpSize获取”。前者生产临时空间上下界，Digamma 的 sharedTmpBuffer 重载直接消费该规划结果。
+- [GetDigammaTmpBufferFactorSize](get_digamma_tmp_buffer_factor_size.md)（`related`）：“在minValue到maxValue范围内，临时空间越大性能越好”；“用于在固定临时空间下推算算子单次最大计算元素数量”。前者给可选空间范围，后者把实际可用空间反算为分块元素数，形成 Tiling 决策链。
 <!-- cannbot:related:end -->

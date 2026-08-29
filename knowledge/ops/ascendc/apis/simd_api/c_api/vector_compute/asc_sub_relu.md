@@ -22,8 +22,6 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSub](../reg/arithmetic_compute/asc_sub.md)（`related`）：《AscSub》说明根据mask对源操作数src0、src1按元素求差，将结果写入目的操作数dst。可选保留进位到carry寄存器。；《AscSubRelu》说明按元素求差，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。。二者在AscSub在Vector、Reg和Memory层实现同一减法，SubC/Relu融合及UB对齐故障给出结果变体和调用边界上存在可执行的直接衔接。
-- [AscSub](asc_sub.md)（`same_topic`）：AscSub：所选接口共享逐元素减法，覆盖Reg/Memory、标量和ReLU融合原型；alignment runbook直接说明Vector Sub源UB未32B对齐时的340故障与修复前置条件。 目标卡《AscSubRelu》补充：按元素求差，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。
-- [SubRelu](../../basic_api/memory_vector_compute/composite_compute/sub_relu.md)（`same_topic`）：SubRelu 与《AscSubRelu》的实质衔接是：SubRelu 的手工 mask 路径要求先设置 Normal mask，调用后 ResetMask；SubReluCast 和 AscSubRelu 分别补充窄化输出与 C API 对应入口。
-- [SubReluCast](../../basic_api/memory_vector_compute/composite_compute/sub_relu_cast.md)（`same_topic`）：AscSubRelu 是 C API 下相同的 Sub→ReLU→类型转换融合链，可直接映射支持的转换组合。
+- [AscSub](asc_sub.md)（`same_topic`）：执行矢量减法运算；按元素求差，再进行Relu计算。AscSubRelu 在与 AscSub 相同的逐元素减法基础上追加 ReLU 和可选结果类型转换，直接支持在是否需要融合激活时选择接口。
+- [SubRelu](../../basic_api/memory_vector_compute/composite_compute/sub_relu.md)（`same_topic`）：“按元素求差，再进行Relu计算（结果和0对比取较大值）。”与“按元素求差，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。计算公式如下：”是双方正文中的具体合同。二者核心都是逐元素差后 ReLU；C API 版本额外提供结果类型转换，互读能判断是否需要融合转换以及对应平台接口。
 <!-- cannbot:related:end -->

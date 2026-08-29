@@ -25,6 +25,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ReinterpretCast](reinterpret_cast.md)（`related`）：重解释保持总字节数但元素宽度变化后，逻辑元素数可能需用 SetSize 调整，避免后续接口按旧长度访问。
-- [GetSize](get_size.md)（`same_topic`）：SetSize 与 GetSize 读写同一个 LocalTensor 元素计数属性，重用 tensor 并改变有效长度后可用 GetSize 复核。
+- [GetSize](get_size.md)（`related`）：返回值：当前LocalTensor Size大小。单位为元素。；设置当前LocalTensor Size大小。单位为元素。当用户重用local tensor变量且使用长度发生变化的时候，需要使用此接口重新设置Size。。SetSize 在 LocalTensor 重用长度变化时更新元素数，GetSize 读取同一元素单位的当前值，构成 Size 属性的写后读操作。
 <!-- cannbot:related:end -->

@@ -27,8 +27,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [多核对齐切分](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/multi_core_aligned_split.md)（`explains`）：多核对齐切分 与《MultiCoreMatmulGetTmpBufSizeV2》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [BatchMatmulGetTmpBufSize](batch_matmul_get_tmp_buf_size.md)（`related`）：《BatchMatmulGetTmpBufSize》处理“BatchMatmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”。《MultiCoreMatmulGetTmpBufSizeV2》明确“多核Matmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”，可直接用于核对BatchMatmul 临时空间估算与 Matmul Tiling 对象、TCubeTiling 结果之间的调用合同。
-- [GetCoreMemSize](../../../../utils_api/platform_info/platform_ascend_c/get_core_mem_size.md)（`related`）：GetCoreMemSize 与《MultiCoreMatmulGetTmpBufSizeV2》的实质衔接是：GetCoreMemSize 为 host tiling 提供各层容量；ReserveLocalMemory 会改变可用 UB，Matmul 空间查询与 UB 预算故障直接消费该值。
-- [MultiCoreMatmulGetTmpBufSize](multi_core_matmul_get_tmp_buf_size.md)（`same_topic`）：MultiCoreMatmulGetTmpBufSizeV2 与《MultiCoreMatmulGetTmpBufSize》的实质衔接是：旧版与 V2 多核 Matmul 临时空间查询处理同一 TCubeTiling 输入，差别在命名空间结构体契约。
+- [MultiCoreMatmulGetTmpBufSize](multi_core_matmul_get_tmp_buf_size.md)（`same_topic`）：多核Matmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。；TCubeTiling为Kernel侧定义的Matmul TilingData，与入参为带AscendC::tiling命名空间的TCubeTiling结构体的GetTiling接口配合使用。。两卡描述同一多核 Matmul 临时空间查询契约，V2 进一步限定 TCubeTiling 与带 AscendC::tiling 命名空间的 GetTiling 配对。
 <!-- cannbot:related:end -->

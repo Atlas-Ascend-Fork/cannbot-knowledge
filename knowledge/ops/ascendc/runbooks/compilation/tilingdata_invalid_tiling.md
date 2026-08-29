@@ -59,9 +59,5 @@ TilingData capacity 16384 < required 65576
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Tiling数据结构注册](../../apis/utils_api/tiling_data_structure_register/tiling_data_structure_register.md)（`exemplifies`）：Tiling数据结构注册 与《TilingData 追加数据超额致 INVALID_TILING》的实质衔接是：TilingData 定义、注册、读取宏、尺寸限制与三张冲突/截断故障卡共同覆盖 host→kernel 数据契约。
-- [Host 缺 SetDataSize 致 TilingData 截断](../precision/host_setdatasize_tilingdata.md)（`related`）：SetDataSize 缺失会截断 TilingData，而 focal 是 SetDataSize 超容量；两卡共同界定 size 必须既覆盖有效负载又不超过框架 capacity。
-- [REGISTER_TILING_DEFAULT 取小档致 NaN](register_tiling_default_nan.md)（`related`）：REGISTER_TILING_DEFAULT 取小档致 NaN 与《TilingData 追加数据超额致 INVALID_TILING》的实质衔接是：REGISTER_TILING_DEFAULT 决定 opParaSize，必须覆盖最大 TilingData struct；注册宏、GET 宏、host/kernel 结构、SetDataSize 与追加越界卡描述同一 buffer 尺寸链。
-- [限制TilingData结构大小](../../guides/operator_practice/simd_operator_optimization/overhead_optimization/limit_tiling_data_size.md)（`related`）：focal 的 INVALID_TILING 由 SetDataSize 超过默认 capacity 触发；指南给出精简字段、缩窄类型和排布以控制 TilingData 总大小的直接修复方向。
-- [FindSplitAxis 误传 total_slots 致 slot 翻倍](../precision/findsplitaxis_total_slots_slot.md)（`same_topic`）：FindSplitAxis 误传 total_slots 致 slot 翻倍 与《TilingData 追加数据超额致 INVALID_TILING》的实质衔接是：FindSplitAxis 第四参要求 phys_nodes，传入已乘 DB 的 total_slots 会再次乘二；per-buffer UB 预算、rank/split、TilingData 和 Broadcast 卡用于核对内外切分量一致。
+- [GET_TILING_DATA_WITH_STRUCT](../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data_with_struct.md)（`exemplifies`）：- **工程形态**：ops-registry-invoke 自定义算子仓，host Tiling 用 `GetRawTilingData()` / `GetTilingData<T>()` 写 TilingData，并在 struct 之后追加额外数据（如全精度标量向量）；kernel 用 `GET_TILING_DATA_WITH_STRUCT` + 手动偏移读取尾区。；使用该接口指定结构体名称，可获取指定的tiling信息，并填入对应的Tiling结构体中，此函数会以宏展开的方式进行编译。与GET_TILING_DATA的区别是：GET_TILING_DATA只能获取默认注册的结构体，该接口可以根据指定的结构体名称获取对应的结构体，常用于针对不同的TilingKey注册了不同结构体的情况下。。Runbook的 kernel 先用该宏解包注册 struct，再手动读取尾区；API 卡明确宏只负责指定结构体的 tiling 信息，支撑区分 struct 与额外数据容量。
 <!-- cannbot:related:end -->

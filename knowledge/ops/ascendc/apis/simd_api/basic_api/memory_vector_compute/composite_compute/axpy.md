@@ -27,13 +27,3 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscAxpy](../../../c_api/vector_compute/asc_axpy.md)（`related`）：Axpy 与《AscAxpy》的实质衔接是：Axpy 把缩放源加到目的，需与高阶 Axpy、mask/repeat 和临时空间查询配套。
-- [Axpy](../../../adv_api/math_compute/axpy_interface/axpy.md)（`related`）：Axpy 与《Axpy》的实质衔接是：Axpy 把缩放源加到目的，需与高阶 Axpy、mask/repeat 和临时空间查询配套。
-- [Axpy接口](../../../adv_api/math_compute/axpy_interface/axpy_interface.md)（`related`）：基础 Axpy 与高阶 Axpy 都实现 y=a*x+y，但前者是直接复合矢量接口，后者显式管理临时空间并强调 Muls+Add 精度；可据空间和精度约束选层级。
-- [AscAxpy](../../../c_api/reg/compound_compute/asc_axpy.md)（`same_topic`）：AscAxpy 与《Axpy》的衔接是：AscAxpy 的 C Vector、基础及高阶 Axpy 入口实现同一 alpha*x+y 数据流，差异集中在张量形态、临时空间和调度层级。
-- [Axpy](../../reg_vector_compute/composite_compute/axpy.md)（`same_topic`）：Axpy说明计算向量和标量的乘积，并将乘积结果逐元素加到的输出向量上。
-<!-- cannbot:related:end -->

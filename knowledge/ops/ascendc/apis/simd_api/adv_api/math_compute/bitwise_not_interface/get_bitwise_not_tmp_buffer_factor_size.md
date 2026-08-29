@@ -27,8 +27,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BitwiseNot接口](bitwise_not_interface.md)（`related`）：FactorSize 用 live-node/extraBuf 模型补充 BitwiseNot 固定 UB 下的 calCount 规划。
-- [BitwiseNot](bitwise_not.md)（`same_topic`）：GetBitwiseNotTmpBufferFactorSize 与《BitwiseNot》的实质衔接是：BitwiseNot 的 factor 查询与 MaxMin 查询及 kernel 调用配套，才能确定 sharedTmpBuffer 大小。
-- [GetBitwiseNotMaxMinTmpSize](get_bitwise_not_max_min_tmp_size.md)（`same_topic`）：GetBitwiseNotTmpBufferFactorSize 与《GetBitwiseNotMaxMinTmpSize》的实质衔接是：BitwiseNot 的 factor 查询与 MaxMin 查询及 kernel 调用配套，才能确定 sharedTmpBuffer 大小。
-- [LogicalNot](../logical_not_interface/logical_not.md)（`same_topic`）：LogicalNot 与《GetBitwiseNotTmpBufferFactorSize》的实质衔接是：LogicalNot 的 Host MaxMin/factor 查询为 Kernel 分配临时空间；BitwiseNot 对照明确逻辑真假取反与逐 bit 取反不是同一语义。
+- [BitwiseNot](bitwise_not.md)（`same_topic`）：逐比特对输入进行取反。；该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。；BitwiseNot 的 count 决定单次逐比特计算规模，factor 查询把固定临时空间转换成允许的最大元素数量，可用于设计 Kernel 分块。
+- [GetBitwiseNotMaxMinTmpSize](get_bitwise_not_max_min_tmp_size.md)（`same_topic`）：“开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用”先确定 BitwiseNot 可用的临时空间；“通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量”再把选定空间换算成单次分块上限。
 <!-- cannbot:related:end -->

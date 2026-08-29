@@ -25,10 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [H2Ceil](../half2_math_functions/h2ceil.md)（`related`）：H2ceil 是 Hceil 的 two-lane half2 对应形式，连接单值与 packed 两元素处理。
-- [Hrint](hrint.md)（`related`）：Hceil 向正无穷取整，Hrint nearest-even；正负小数边界需按目标舍入选择。
-<!-- cannbot:related:end -->

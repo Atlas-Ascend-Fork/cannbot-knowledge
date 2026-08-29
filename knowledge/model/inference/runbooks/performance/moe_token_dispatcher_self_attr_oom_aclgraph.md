@@ -96,3 +96,10 @@ self.global_input_tokens_local_experts_indices = None
 - 无 before→after 峰值内存数字或独立复测，收益仅为方向性。
 - 溯源下探：
   - [vllm-ascend-pr-3158-bugfix-fix-oom-in-aclgraph](https://github.com/vllm-project/vllm-ascend/pull/3158)（mergeCommit `69509bcdd693dc6653db81648d4775af24ceb2b2`）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoE 长序列 prefill 峰值显存 / OOM：专家负载不均 + dispatch 中间量放大；分块 / 均衡 / double-routing 处置](moe_prefill_oom_peak_memory.md)（`related`）：［expert-parallel］(../../concepts/parallelism/expert_parallel.md) MoE 模型在**长序列 prefill** 阶段 device OOM（`EL0004 Failed to allocate memory` / `out of memory`），常发生在 MoE 的 `grouped_matmul` 或 dispatch 展开处；同配置换短输入 / 小序列不复现。；实例属性对张量持有强引用。当中间张量被写进 `self.<name>`，它的生命周期被绑到 dispatcher 实例的存活期，而不是随产生它的方法返回而结束。于是即便 `token_combine` 已算出最终 `hidden_states` / `final_hidden_states` / `output`、这些中间量逻辑上已无用，Python GC 也不会回收它们——引用仍挂在长寿命对象上。；两张卡分别覆盖长输入 OOM 现象与对象属性延寿机制，可用于区分真实单步峰值和图模式生命周期虚高。
+- [profile_run 峰值显存低估致运行期 OOM：profiling 未实际走一遍所有影响峰值的路径/均衡步（MC2 通信 / force_load_balance）](profile_run_peak_memory_underestimate_untraversed_path.md)（`related`）：实例属性对张量持有强引用。；profiling 阶段没有实际走一遍某条会额外吃 NPU 内存的路径、或没有触发某个会改变显存分布的均衡步，导致峰值被低估，运行期真实占用超出预留而 OOM。两卡是 aclgraph MoE OOM 排障中必须区分的两条机制：运行期中间张量滞留与 profiling 漏覆盖。
+<!-- cannbot:related:end -->

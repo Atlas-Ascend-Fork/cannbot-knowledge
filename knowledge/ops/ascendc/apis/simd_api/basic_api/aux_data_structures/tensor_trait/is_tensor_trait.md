@@ -23,9 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MakeTensorTrait](make_tensor_trait.md)（`same_topic`）：MakeTensorTrait说明生成TensorTrait实例化对象。
-- [SetLayout](set_layout.md)（`same_topic`）：is_tensorTrait说明判断输入的数据结构是否为TensorTrait数据结构，可通过检查其成员常量value的值来判断。当value为true时，表示输入的数据结构是TensorTrait类型；反之则为非TensorTrait类型。
-- [TensorTrait](tensor_trait.md)（`same_topic`）：TensorTrait 与《is_tensorTrait》的衔接是：TensorTrait 的构造、Make、is、Get 和 Set 是同一 Layout trait 对象的创建、识别与访问契约；缺任一步都会影响 Shape/Stride 布局元数据的传递。
-- [TensorTrait构造函数](tensor_trait_constructor.md)（`same_topic`）：TensorTrait构造函数说明根据输入的Layout对象，实例化TensorTrait对象。
-- [TensorTrait简介](tensor_trait_intro.md)（`same_topic`）：is_tensor_trait 用于在模板分派中判定类型是否为 TensorTrait，支撑介绍中的编译期使用方式。
+- [MakeTensorTrait](make_tensor_trait.md)（`related`）：典型用法：先通过 MakeTensorTrait 构造 TensorTrait 对象，再使用 is_tensorTrait<decltype(obj)>::value 验证；对 Shape、Stride、Layout 等非 TensorTrait 类型，value 为 false。；构造TensorTrait结构体的辅助函数。通过传入TensorDesc和Layout等信息创建TensorTrait。函数原型提供多种重载，支持不同的参数组合。返回TensorTrait结构体。用于快速创建包含Layout信息的Tensor特性描述。；MakeTensorTrait 产生 TensorTrait 对象，is_tensorTrait 随后对该对象类型做编译期识别，正文给出直接的构造—验证用法。
 <!-- cannbot:related:end -->

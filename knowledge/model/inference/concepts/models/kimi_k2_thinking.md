@@ -51,7 +51,10 @@ Atlas A3 推荐部署策略如下图所示，Prefill 使用 M 个节点部署，
 
 ### 支持的规格
 
-| 阶段 | 配置文件 | world_size | 并行 | 量化 | 备注 | | ---- | ------- | ---------- | ---- | ---- | ---- | | Prefill | `kimi_k2_thinking_rank_64_64ep_prefill_benchmark.yaml` | 64 (8 机) | **CP64** + moe_ep=64 + dense_tp=1 | MoE W4A16 / Attn BF16 | `enable_multi_streams: True`，`input_max_len: 65536`，`batch_size: 64` | | Decode | `kimi_k2_thinking_rank_128_128ep_decode_benchmark.yaml` | 128 (16 机) | **Attn-DP128** + MoE-EP128 + `oproj_tp=8` + `dense_tp=4` + `embed/lmhead_tp=16` | MoE W4A16 / Attn BF16 | `exe_mode: ge_graph`，`next_n: 0`（MTP 代码支持，benchmark 默认不开），`enable_multi_streams: True`，`input_max_len: 65536`，`batch_size: 256` |
+| 阶段 | 配置文件 | world_size | 并行 | 量化 | 备注 |
+| ---- | ------- | ---------- | ---- | ---- | ---- |
+| Prefill | `kimi_k2_thinking_rank_64_64ep_prefill_benchmark.yaml` | 64 (8 机) | **CP64** + moe_ep=64 + dense_tp=1 | MoE W4A16 / Attn BF16 | `enable_multi_streams: True`，`input_max_len: 65536`，`batch_size: 64` |
+| Decode | `kimi_k2_thinking_rank_128_128ep_decode_benchmark.yaml` | 128 (16 机) | **Attn-DP128** + MoE-EP128 + `oproj_tp=8` + `dense_tp=4` + `embed/lmhead_tp=16` | MoE W4A16 / Attn BF16 | `exe_mode: ge_graph`，`next_n: 0`（MTP 代码支持，benchmark 默认不开），`enable_multi_streams: True`，`input_max_len: 65536`，`batch_size: 256` |
 
 > Prefill YAML `cp_size: 64`、`attn_tp_size: 1`、`dense_tp_size: 1`；Decode YAML `cp_size: 128` 字段在 YAML 中保留但 decode 阶段不生效（字段标注 "only active at prefill stage"，代码约定）。
 
@@ -197,3 +200,10 @@ flowchart TD
 - [superkernel](../techniques/superkernel.md)
 - [weight-nz](../techniques/weight_nz.md)
 - [w8a8c8](../quantization/w8a8c8.md)（说明 Kimi-K2-Thinking 不支持 C8）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepSeek-R1](deepseek_r1.md)（`related`）：“基础优化点可从 ［deepseek-r1］(deepseek_r1.md) 平滑继承”明确 Kimi-K2-Thinking 的适配基线；“本实践覆盖 Prefill 与 Decode 两阶段的端到端优化”给出 R1 可继承的两阶段优化范围，联合阅读可区分共享的 DeepseekV3 思路和 Kimi 的独立 legacy 实现。
+- [MoE 专家 GMM 权重加载后处理与低比特量化调用约定：NZ 布局 / W4A8 bias 辅助矩阵 / W4A16 N-dim 重打包 / clip](../../optimizations/experience/rules/moe_expert_gmm_weight_lowbit_prep.md)（`related`）：“**MoE** GroupedMatmul 采用 W4A16（权重 Int4 静态 Per-Channel，激活 BF16）”确定 Kimi 的模型级量化入口；“GMM int4 antiquant kernel **只吃 N-dim packed** 权重”给出该入口加载后的强制重打包合同，能够直接指导权重转换和精度排障。
+<!-- cannbot:related:end -->

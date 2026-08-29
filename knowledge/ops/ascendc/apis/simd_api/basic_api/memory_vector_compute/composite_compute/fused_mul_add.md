@@ -27,9 +27,3 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MulAddDst](mul_add_dst.md)（`related`）：两接口都是乘加复合操作，但分别计算 dst=src0*dst+src1 与 dst=src0*src1+dst，可按累加操作数位置选型。
-<!-- cannbot:related:end -->

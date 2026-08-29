@@ -27,8 +27,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [FreeTensor早释使队列别名被下一轮DMA覆盖](../../../../../runbooks/precision/reinterpret_tensor_alias_must_outlive_queue_release.md)（`exemplifies`）：Runbook 验证 ReinterpretCast 产生的是共享底层存储别名，若原队列 Tensor FreeTensor 后复用 Buffer，别名会被下一轮 DMA 覆盖。
-- [__ubuf__ 指针传普通形参导致编译失败](../../../../../runbooks/compilation/ubuf_pointer_preserves_address_space.md)（`exemplifies`）：__ubuf__ 指针传普通形参导致编译失败 与《ReinterpretCast》的实质衔接是：__ubuf__ 是指针类型的一部分，helper 形参、Load/Store、ReinterpretCast、地址空间转换与谓词必须保留相同 qualifier，不能隐式退化为普通 T*。
-- [ReinterpretCast](../global_tensor/reinterpret_cast.md)（`related`）：LocalTensor 与 GlobalTensor 的 ReinterpretCast 都保持地址、字节数和内容不变，只改变元素类型解释；可按存储层级映射。
-- [SetSize](set_size.md)（`related`）：重解释保持总字节数但元素宽度变化后，逻辑元素数可能需用 SetSize 调整，避免后续接口按旧长度访问。
+- [FreeTensor早释使队列别名被下一轮DMA覆盖](../../../../../runbooks/precision/reinterpret_tensor_alias_must_outlive_queue_release.md)（`exemplifies`）：焦点 API 的核心合同是“转换后的Tensor与原Tensor地址及内容完全相同”，候选故障卡中的“`xT = xIO.ReinterpretCast<CT>()`，这里 `T` 与 `CT` 都是 fp32，`xT` 仍指向 `xIO` 的 UB”正是该别名合同导致 FreeTensor 后仍访问同一 UB 的具体失效实例。
 <!-- cannbot:related:end -->

@@ -25,11 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hgtx2](_hgtx2.md)（`related`）：__hgtx2 按分量返回 half2 的 1/0，而 __hbgtx2 将两个分量合并为单个 bool；后续需要逐 lane 掩码还是整体条件决定选择。
-- [__hbgtux2](_hbgtux2.md)（`same_topic`）：两接口都要求两个 half2 lane 均满足 x>y 才返回 bool，差异是 NaN 时 unordered 版本视该 lane 为 true、ordered 版本为 false。
-- [__hbgtx2](../../bfloat16_type/bfloat16x2_compare_functions/_hbgtx2.md)（`same_topic`）：__hbgtx2说明比较两个half2类型数据的两个分量，仅当两个分量均满足第一个数大于第二个数时返回true。
-<!-- cannbot:related:end -->

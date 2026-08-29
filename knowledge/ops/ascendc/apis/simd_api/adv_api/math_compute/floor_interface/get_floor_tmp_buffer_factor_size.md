@@ -25,7 +25,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Floor](floor.md)（`related`）：Floor 的显式 sharedTmpBuffer 重载直接消费 Host 侧预算；FactorSize 用于在 UB 已知时反推可处理规模，最终仍需满足 Floor 的不重叠和输入值域约束。
-- [Floor接口](floor_interface.md)（`related`）：固定空间时 factor-size 决定单次可处理元素数。
-- [GetFloorMaxMinTmpSize](get_floor_max_min_tmp_size.md)（`same_topic`）：GetFloorMaxMinTmpSize 与《GetFloorTmpBufferFactorSize》的实质衔接是：该 host 查询给 Floor 高阶接口分配最大/最小临时空间，factor 查询再把选定空间换算为 kernel 单次处理量。
+- [Floor](floor.md)（`related`）：“获取Floor接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。”提供固定 UB 预算反推 Floor 单次元素数的公式参数；“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetFloorMaxMinTmpSize获取。”说明 Floor 的 sharedTmpBuffer 调用入口。二者组合用于先按可用空间定 tile，再把同一预算传入 kernel 重载。
 <!-- cannbot:related:end -->

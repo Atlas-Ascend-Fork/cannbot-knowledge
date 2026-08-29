@@ -26,11 +26,3 @@ OpParamDef算子定义，OpParamDef请参考OpParamDef。
 ## 约束说明
 -   同一输入/输出不能同时设置Format和FormatList。
 -   本接口不支持和UnknownShapeFormat同时使用。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FormatForBinQuery](format_for_bin_query.md)（`related`）：参数使用 FormatList 自由组合格式时，FormatForBinQuery 仍须保持相同个数和位置；FormatList 还不能与同一参数的 Format 并用。
-- [DataTypeForBinQuery](data_type_for_bin_query.md)（`same_topic`）：DataTypeForBinQuery 与《FormatList》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
-- [Format（OpParamDef）](format.md)（`same_topic`）：FormatList 的核心契约是“定义算子参数数据格式，当某个输入/输出的格式可与其他所有输入/输出的数据类型和格式自由组合时使用，无需重复列出所有组合”；Format（OpParamDef） 补充“定义算子参数数据格式”。
-<!-- cannbot:related:end -->

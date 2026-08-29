@@ -21,7 +21,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalignV4Deprecated](asc_loadalign_v4_deprecated.md)（`related`）：废弃页明确要求 brc_postupdate_v2 迁移到 AscLoadalignBrcDatablockPostupdate。
-- [AscLoadalignBrcDatablock](asc_loadalign_brc_datablock.md)（`same_topic`）：《AscLoadalignBrcDatablockPostupdate》明确“从UB对齐搬入一个DataBlock（32B）并广播到VL，调用后自动更新源地址。”；它与《AscLoadalignBrcDatablock》的“从UB对齐搬入一个DataBlock（32B）并广播到VL。”在实际调用参数、数据流或结果校验上直接衔接。
-- [Brcb](../../../basic_api/memory_vector_compute/data_padding/brcb.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscLoadalignBrcDatablockPostupdate正文说明“从UB对齐搬入一个DataBlock（32B）并广播到VL，调用后自动更新源地址”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
+- [AscLoadalignV4Deprecated](asc_loadalign_v4_deprecated.md)（`same_topic`）：该接口已废弃。其中asc_loadalign_brc_postupdate_v2请使用asc_loadalign_brc_datablock_postupdate，asc_loadalign_brc_postupdate_v3请使用asc_loadalign_brc_elem2datablock_postupdate，asc_loadalign_unpack_postupdate_v2请使用asc_loadalign_unpack4_postupdate实现此功能。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现DataBlock广播搬入模式并启用Post Update：读取一个DataBlock（32B）并广播到VL，接口调用后自动更新源操作数地址。。废弃页把旧 brc_postupdate_v2 明确映射到新的 DataBlock Post Update 接口。
 <!-- cannbot:related:end -->

@@ -147,3 +147,10 @@ MoE 把专家分成两类：**路由专家**的输入要先过门控（router）
 - [moe-comm-overlap](moe_comm_overlap.md)（专家 All2All 跨 microbatch 前反向通信掩盖；Zero-Memory 依赖它做重通信/重算的掩盖，共享专家亦借其与路由 All2All 并行）
 - [moe-load-balance](moe_load_balance.md)（路由侧专家负载均衡；专家层优化只让计算更快，负载是否均衡由路由决定，二者互补）
 - [mindspeed](../frameworks/mindspeed.md)（四项特性所在框架；均以 features_manager patch 注入 Megatron MoE）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoE 负载均衡（Balanced-MoE 路由均衡 + 专家放置 + Router 修正）](moe_load_balance.md)（`related`）：三者均承自 ［mindspeed］(../frameworks/mindspeed.md) 的 MoE 特性模块，属 ［moe-training-optim］(moe_training_optim.md) 的负载均衡维度。；共性是都把优化压在专家层这一 MoE 训练最贵的环节：TP-Extend-EP 还专家 GEMM 一个完整权重、GMM 合多专家为一个算子、Zero-Memory 把激活换成可掩盖的重算/重通信、共享专家用并行计算与参数复用降冗余。专家负载在专家间是否均衡由路由侧的负载均衡机制决定，见 ［moe-load-balance］(moe_load_balance.md)。。负载均衡卡处理路由侧专家分配，训练优化卡处理专家层计算与内存，两者在同一 MoE 训练链上互补且明确互引。
+- [MoE 通信掩盖（Dispatch 调度 + AllToAll/AllGather Overlap + 前反向跨 MicroBatch 掩盖）](moe_comm_overlap.md)（`related`）：依赖与边界（`MoEZeroMemoryFeature`）：必须搭 `--moe-alltoall-overlap-comm` 或 `--moe-fb-overlap`；支持 `alltoall` 与 `alltoall_seq` dispatcher；`--moe-fb-overlap` 下支持 level0 但不支持 `--moe-zero-memory-num-layers`。机制上，overlap 前向把专家计算的中间激活在用完后 `untyped_storage().resize_(0)` 直接释放、把重算所需的 `weight1 / activation_func / tokens_per_expert` 等存进 ctx，反向时按 `group_list` 重新 permute + GMM 复算出激活；level1 较 level0 多复算一段从而省得更多。跨 microbatch 前反向通信掩盖的机制本体见 ［moe-comm-overlap］(moe_comm_overlap.md)。；三档可独立衡量收益也彼此约束（`moe-fb-overlap` 与 `moe-alltoall-overlap-comm` 互斥，二选一）。机制承自 MindSpeed Core 的 MoE 特性模块（见 ［mindspeed］(../frameworks/mindspeed.md)），是 ［moe-training-optim］(moe_training_optim.md) 通信维度的核心抓手。。训练优化卡的 Zero-Memory 依赖 overlap 掩盖重算与重通信，通信卡提供对应 AllToAll 层内和跨 microbatch 调度机制。
+<!-- cannbot:related:end -->

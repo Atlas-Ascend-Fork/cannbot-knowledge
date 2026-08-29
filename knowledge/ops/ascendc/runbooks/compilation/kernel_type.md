@@ -8,7 +8,7 @@ sources:
   - resource: "https://gitcode.com/cann/cann-outreach/blob/8cce8c1d7a332d3c4a0f88e0b4166781a638b8af/2026/CANN-Code-Detective/README.md"
     role: constraint
 created_at: "2026-08-18T05:06:14Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["a2"]
 ---
 
@@ -118,16 +118,3 @@ def find_kernel_type_by_source(path: str, data: str, build_mode: str) -> CodeMod
 - `platforms: [a2]` 只覆盖本 trace 实测的 Ascend910B3 + CANN 9.2.0 + dav-2201。
 - A3、Ascend950 未验证，**未验证，推断可迁移**：同一 `extract_host_stub.py` 与 `KERNEL_TASK_TYPE_DEFAULT` 宏机制在其他 build mode 下应当相近，但各自的 `STR_TO_KERNEL_TYPE_*` 词表与 `return None` 分支需复测后再扩展 `platforms`。
 - 仅适用于直调（`ops-direct-invoke`）kernel；注册算子（`ops-registry-invoke`）走 op-host/tiling 注册流程，不由此 build 工具链推导 kernel 类型，本卡不适用。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SK_BIND（SuperKernel）](../../apis/utils_api/super_kernel/sk_bind.md)（`exemplifies`）：SK_BIND（SuperKernel） 与《直调 kernel-type 裸赋值标记无效》的实质衔接是：SK_BIND 绑定 SuperKernel 子任务，需结合 kernel 类型/tiling、前后任务同步和 runtime context。
-- [SetKernelMode](../../apis/simd_api/basic_api/debug_interface/cpu_twin_debug/set_kernel_mode.md)（`exemplifies`）：SetKernelMode 与《直调 kernel-type 裸赋值标记无效》的实质衔接是：SetKernelMode 仅在 CPU 调测选择 AIV/AIC/MIX；孪生调试指南、kernel 类型设置和两个错误配置案例限定调测与生产启动的边界。
-- [设置Kernel类型](../../apis/simd_api/basic_api/kernel_tiling/set_kernel_type.md)（`exemplifies`）：设置Kernel类型：SetKernelType的目标是只启动需要的 AIC/AIV核；优化指南解释选型，kernel_type runbook证明裸字段赋值无效，GetCoreNumAic/Vector提供合法核数输入。 目标卡《直调 kernel-type 裸赋值标记无效》补充：AscendC 直调 kernel 用文件作用域裸赋值 __enable_feature_for_compile_default = KERNEL_TYPE_*; 标记 CUBE+VEC mix 类型时编译失败；该写法只被 extract_host_stub.py 的正则匹配为文本标记，不是合法 C++ 语句，属 banned 路线。
-- [arch35 kernel 上板报 507035 实为 arch 不匹配](arch35_kernel_507035_arch.md)（`related`）：《arch35 kernel 上板报 507035 实为 arch 不匹配》明确“编译通过的 ascend950（arch35）SIMT kernel 在 Ascend910_93（arch22）板上运行 L0 用例 20/22 失败、报 ACL_ERROR_RT_VECTOR_CORE_EXCEPTION（507035）；判别方法为先核对 build --soc 与 npu-smi 硬件 arch，再怀疑 kernel 逻辑。该路线在 arch22 板上 banned，只能改路线。”；它与《直调 kernel-type 裸赋值标记无效》的“AscendC 直调 kernel 用文件作用域裸赋值 __enable_feature_for_compile_default = KERNEL_TYPE_*; 标记 CUBE+VEC mix 类型时编译失败；该写法只被 extract_host_stub.py 的正则匹配为文本标记，不是合法 C++ 语句，属 banned 路线。”在实际调用参数、数据流或结果校验上直接衔接。
-- [设置合适的核数和算子Kernel类型](../../guides/operator_practice/simd_operator_optimization/overhead_optimization/core_count_kernel_type.md)（`related`）：设置合适的核数和算子Kernel类型 与《直调 kernel-type 裸赋值标记无效》的实质衔接是：核数、kernel 类型和 workspace 都会影响启动/头尾开销；SetKernelMode、负载均衡与 SK_BIND 卡给出 host 配置和核侧绑定的执行落点。
-- [A5 mix(1,2) mode=2 漏 AIV1 flag 致全零](../precision/a5_mix_1_2_mode_2_aiv1_flag.md)（`same_topic`）：A5 mix(1,2) mode=2 漏 AIV1 flag 致全零 与《直调 kernel-type 裸赋值标记无效》的实质衔接是：mix(1,2) 的 AIC/AIV flag 路由依赖 CrossCoreSet/Wait、kernel type 与组间同步契约；所选卡覆盖同一断链和死锁机制。
-- [Cube 直调 retCode=0x26：AIV 误跑 Cube API 越界](cube_retcode_0x26_aiv_cube_api.md)（`same_topic`）：《Cube 直调 retCode=0x26：AIV 误跑 Cube API 越界》说明Cube 核直调 kernel 入口 extern "C" __global__ __aicore__ 未标记核类型时 bisheng 按 MIX 模式编译，kernel 被派发到 AIV 核执行 Cube 专属 API（LoadData/Mmad/Fixpipe），AIV 核无 L0A/L0B/L0C 硬件单元，访问 AIC 内部 buffer 越界，触发 aicore exception retCode=0x26 / ErrCode=507015，plog 表现为 aivector error 而非 Cube 侧错误。判别要点：代码用 Cube API、报错却是 aivector error + fixp_error 非零 + scalar access internal buffer of AICore is out of bounds。；《直调 kernel-type 裸赋值标记无效》说明AscendC 直调 kernel 用文件作用域裸赋值 __enable_feature_for_compile_default = KERNEL_TYPE_*; 标记 CUBE+VEC mix 类型时编译失败；该写法只被 extract_host_stub.py 的正则匹配为文本标记，不是合法 C++ 语句，属 banned 路线。。二者在报错的判别核心是未标核类型导致AIV执行LoadData/Mmad等Cube专属指令，需从kernel type和Cube调用两端验证上存在可执行的直接衔接。
-- [空 Ascend C kernel 骨架需显式标注 Vector 执行类型](empty_kernel_requires_explicit_vector_type.md)（`same_topic`）：空 Ascend C kernel 骨架需显式标注 Vector 执行类型：空kernel没有设备指令导致type自动推导失败；SIMT shell与混合VF卡复现同一__vector__标注机制，kernel_type runbook说明直调中不能靠裸字段赋值替代函数限定符。 目标卡《直调 kernel-type 裸赋值标记无效》补充：AscendC 直调 kernel 用文件作用域裸赋值 __enable_feature_for_compile_default = KERNEL_TYPE_*; 标记 CUBE+VEC mix 类型时编译失败；该写法只被 extract_host_stub.py 的正则匹配为文本标记，不是合法 C++ 语句，属 banned 路线。
-<!-- cannbot:related:end -->

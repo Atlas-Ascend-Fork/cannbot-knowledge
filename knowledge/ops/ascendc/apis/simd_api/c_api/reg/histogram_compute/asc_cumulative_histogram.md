@@ -25,11 +25,3 @@ platforms: ['950']
 - dst的数据类型为uint16_t，最大值为65535，使用时需注意累加溢出问题。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscFrequencyHistogram](asc_frequency_histogram.md)（`related`）：“AscCumulativeHistogram”定义：对直方图数据进行累计统计，支持低位和高位两种模式，统计结果在目的寄存器原始数据基础上累加。；“AscFrequencyHistogram”定义：对输入数据进行频率统计生成直方图，支持低位和高位两种模式，结果在dst原有数据基础上累加。。实质衔接：Histograms/AscCumulativeHistogram 都在原 dst 上累加累计统计；FrequencyHistogram 改为频率统计，接口总览明确两种模式选择。
-- [直方图计算](histogram_compute.md)（`related`）：“AscCumulativeHistogram”定义：对直方图数据进行累计统计，支持低位和高位两种模式，统计结果在目的寄存器原始数据基础上累加。；“直方图计算”定义：寄存器侧直方图计算类接口汇总，提供累积直方图与频率直方图两种计算能力。。实质衔接：Histograms/AscCumulativeHistogram 都在原 dst 上累加累计统计；FrequencyHistogram 改为频率统计，接口总览明确两种模式选择。
-- [Histograms](../../../basic_api/reg_vector_compute/histogram_compute/histograms.md)（`same_topic`）：“AscCumulativeHistogram”定义：对直方图数据进行累计统计，支持低位和高位两种模式，统计结果在目的寄存器原始数据基础上累加。；“Histograms”定义：对直方图数据进行统计，在目的寄存器原始数据上累加源寄存器数据的频率统计或累计统计结果。。实质衔接：Histograms/AscCumulativeHistogram 都在原 dst 上累加累计统计；FrequencyHistogram 改为频率统计，接口总览明确两种模式选择。
-<!-- cannbot:related:end -->

@@ -34,6 +34,6 @@ GELU算子采用RegBase编程方式实现——通过asc_vf_call调用VF函数�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [中级性能优化](intermediate_optimization.md)（`same_topic`）：中级性能优化 与《入门功能落地》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
-- [高阶极限打磨](extreme_optimization.md)（`same_topic`）：极限篇继续消费同一 GELU 基线并验证更深的指令调度与流水优化，是功能落地后的后续阶段。
+- [中级性能优化](intermediate_optimization.md)（`related`）：本节以GELU（高斯误差线性单元）激活函数为例，介绍基于Ascend C RegBase编程模型实现向量算子的基本方法，帮助开发者快速入门Reg矢量算子开发。；本节在入门功能落地的基础上，介绍GELU算子的中级性能优化方法。。入门卡提供 GELU RegBase 基线实现，中级卡明确以该功能落地为优化起点。
+- [高阶极限打磨](extreme_optimization.md)（`related`）：本节以GELU（高斯误差线性单元）激活函数为例，介绍基于Ascend C RegBase编程模型实现向量算子的基本方法，帮助开发者快速入门Reg矢量算子开发。；本节在中级性能优化的基础上，介绍GELU算子的高阶极限打磨方法。。入门卡定义同一 GELU RegBase 实现对象，极限卡说明其依赖中级阶段继续打磨的进阶链。
 <!-- cannbot:related:end -->

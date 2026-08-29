@@ -52,7 +52,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_all_all_gather_batch_mat_mul/op_graph/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T18:38:04Z"
-updated_at: "2026-08-24T19:52:50Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -103,7 +103,7 @@ cann_versions: ["9.1.0"]
 
 固定 Commit 公开 README、文档和头文件只发布无后缀 `aclnnAlltoAllAllGatherBatchMatMul`，没有 V2/V3 公开版本。第一段依次执行 `CheckParams`、判断 `y2/y3`、用 `IsTransposeLastTwoDims` 检测 weight view；转置 view 由 `TransTensor` 交换 view shape/stride 的末两维，并把 `transposeWeight`、`isY2Out`、`isY3Out` 传入 generated `aclnnInnerAlltoAllAllGatherBatchMatMulGetWorkspaceSize`。第二段直接转发到对应 inner 执行入口。
 
-README/docs 明确 A3 支持，A2、A5 和其它列出的产品均不支持；OpDef 也只对 `ascend910_93` 添加 AICore 配置，因此本卡只覆盖 A3。
+README/docs 明确 A3 支持，A2、950 和其它列出的产品均不支持；OpDef 也只对 `ascend910_93` 添加 AICore 配置，因此本卡只覆盖 A3。
 
 ## Host/Launcher 执行流程
 
@@ -701,7 +701,7 @@ IMPL_OP(AlltoAllAllGatherBatchMatMul)
 
 - 适用：A3 上需要两个 HCCL group 的当前 MC2 task ABI。
 - 前提：保留 `groupCnt=2`、hidden HCOM 顺序、wait/AICPU/record/MIX 顺序，以及 `libccl_kernel.so::RunAicpuKfcSrvLaunch` 的 A3 选择。
-- 失效：A5 会选择 `libmc2_server.so::Mc2ServerKernel`，而 computation-only debug 会省略 server/sync tasks；两者都不能套用本卡的 A3 正常通信图。
+- 失效：950 会选择 `libmc2_server.so::Mc2ServerKernel`，而 computation-only debug 会省略 server/sync tasks；两者都不能套用本卡的 A3 正常通信图。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -722,10 +722,10 @@ IMPL_OP(AlltoAllAllGatherBatchMatMul)
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | README/docs 明确不支持 | 支持 | README/docs 明确不支持 |
-| Host/Launcher | N/A | OpDef `ascend910_93`；两个 HCCL group；attached `kfc_stream` 上 `libccl_kernel.so::RunAicpuKfcSrvLaunch` | N/A；公共回调的 A5 分支是外部迁移线索，README 明确本算子 A5 不支持 |
+| Host/Launcher | N/A | OpDef `ascend910_93`；两个 HCCL group；attached `kfc_stream` 上 `libccl_kernel.so::RunAicpuKfcSrvLaunch` | N/A；公共回调的 950 分支是外部迁移线索，README 明确本算子 950 不支持 |
 | Kernel/资源 | N/A | `arch22` entry，`KERNEL_TYPE_MIX_AIC_1_2`；`CalcTschBlockDim`；CMake `--cce-auto-sync=off` | N/A |
 
 ## 限制与失败边界
@@ -780,4 +780,11 @@ IMPL_OP(AlltoAllAllGatherBatchMatMul)
 | workspace/内存 | `commOut→transposeOut→bmmOut→16MiB` | 两 Route 的 offset/extent 不可混用；workspace 由 executor 持有到 stream 完成 | `MC2SetWorkspaceShard` / 两 `Init` |
 | 同步 | Hcom wait/record、KFC attached stream、handles、跨 group sync、MIX `SyncAll`、HardEvent | task graph 四节点顺序；EP=2 deferred commit 协议；AIV/AIC 交接前后同步 | `Mc2MoeInsertTask`；`NonLocalCommunication` / transpose/epilogue |
 | 精度与尾块 | BF16/SiLU FP32、y3 激活前、M/H/C/E tail | BMM bias 必须关闭；`CAST_ROUND` 与 optional y3 顺序；选择正确 tail POD | `CheckAddActivateUB` / `TransposeAfterBMM` |
-| 失败边界 | API校验、Tiling检查、无 Device fallback | 不能把 A2/A5、空 tensor、跨超节点或并发场景静默接入 | `CheckParams` / `TilingCheck...` / README |
+| 失败边界 | API校验、Tiling检查、无 Device fallback | 不能把 A2/950、空 tensor、跨超节点或并发场景静默接入 | `CheckParams` / `TilingCheck...` / README |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AllGather](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/all_gather.md)（`related`）：焦点算子说明“MIX AIV 侧再以 `Hccl<HCCL_SERVER_TYPE_AICPU>` 提交 AllToAllV/AllGather command”，候选 API 规定“recvBuf的数据个数等于sendCount * rank size，即sendCount * 卡数。”；该接口合同直接解释算子 TP 域 AllGather 的输出扩张和 buffer 规划。
+- [AlltoAllV](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/allto_all_v.md)（`related`）：焦点算子说明“MIX AIV 侧再以 `Hccl<HCCL_SERVER_TYPE_AICPU>` 提交 AllToAllV/AllGather command”，候选 API 定义“定制每张卡给其它卡发送的数据量和从其它卡接收的数据量，以及定制发送和接收的数据在内存中的偏移。”；该合同对应算子 EP 域分片通信的计数与位移参数。
+<!-- cannbot:related:end -->

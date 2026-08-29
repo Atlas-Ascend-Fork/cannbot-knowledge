@@ -40,7 +40,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss_v2/op_host/config/ascend910_93/mse_loss_v2_binary.json
     role: implementation
 created_at: "2026-08-25T17:21:38Z"
-updated_at: "2026-08-25T17:21:38Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -703,9 +703,9 @@ tile 内以就地二分 Add 收敛至 8 个 FP32，核内累加后写独占 32 B
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持，V2 | 支持，V2 | 支持，但走 V1/arch35，见 `_a5` 卡 |
+| 支持状态 | 支持，V2 | 支持，V2 | 支持，但走 V1/arch35，见 `_950` 卡 |
 | Host/Launcher | selector 命中 `ASCEND910B` | selector 命中 `ASCEND910_93` | selector 不命中 V2 |
 | Kernel/资源 | V2 手写 TQue/TBuf + workspace | 与 A2 同源实现 | ATVOSS Elementwise/ReduceSch，不复用 V2 POD |
 

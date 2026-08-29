@@ -124,10 +124,5 @@ Build-2 的错误出现在 `vector_compute.h` 内部，容易被误认为 CANN �
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSetDeqScale](../../apis/simd_api/c_api/vector_compute/asc_set_deq_scale.md)（`exemplifies`）：焦点处理C API DeqScale 与 dequant 计算及头文件约束；ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h正文说明“CANN 9.2.0 的 vector_compute.h 是声明源头但不是自包含用户入口；直接 include 会缺内部前置定义，改用 asc_simd.h umbrella”。候选读取 DeqScale 完成 dequant，或给出 C API 可编译的包含与配置边界。
-- [AscVdeqInt162b8](../../apis/simd_api/c_api/vector_compute/asc_vdeq_int162b8.md)（`exemplifies`）：AscVdeqInt162b8 与《ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h》的实质衔接是：AscVdeqInt162b8 调用前必须设置 deq scale；C/basic SetDeqScale 是直接前置契约，AscDeqInt162b8和头文件故障卡用于区分相关符号及正确包含方式。
-- [C-API asc_simd.h 编译缺 include 根](c_api_asc_simd_h_include.md)（`related`）：focal 解决“叶子 vector_compute.h 不是公共入口”，该卡继续解决改用 asc_simd.h 后内部 impl 头找不到：必须把 CANN asc/ 设为 include 根；二者是连续的头文件修复链。
-- [Memory矢量计算编程](../../guides/programming_guide/programming_model/ai_core_simd_programming/c_pointer_programming/memory_vector_computation.md)（`related`）：Memory矢量计算编程 与《ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [SIMD语言扩展层C API](../../guides/programming_guide/language_extension/simd_language_extension_c_api.md)（`related`）：Runbook 证明直引 vector_compute.h 会缺 ASC_VDEQ_SIZE 等公共符号，必须使用 asc_simd.h umbrella；它补充了 C API 入口头的正确包含边界。
-- [torch_npu 只保留一族 ACL 头文件](torch_npu_uses_single_acl_header_family.md)（`same_topic`）：两卡都处理头文件族一致性：设备 C API 需 asc_simd umbrella，host 侧需 torch_npu bundled ACL，避免符号缺失或重复声明。
+- [SIMD语言扩展层C API](../../guides/programming_guide/language_extension/simd_language_extension_c_api.md)（`related`）：包含asc_simd.h文件来调用C API相应接口。如无特殊说明，包含该头文件即可满足接口调用需求。；保留调用点与数据流不变，只把叶子声明头替换为 public C-API umbrella。；指南给出公共入口头，排障卡证明叶子声明头缺少 umbrella 前置定义并给出不改调用点的替换方式，形成 C API 头文件选择到编译修复的直接链路。
 <!-- cannbot:related:end -->

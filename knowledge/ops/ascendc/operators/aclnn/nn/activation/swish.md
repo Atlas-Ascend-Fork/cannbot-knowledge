@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:59:58Z"
-updated_at: "2026-08-25T18:59:58Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -75,7 +75,7 @@ Kernel 将任意 0～8 维 ND Tensor 展平成长度 `N` 的连续一维域。FP
 
 ### 入口与版本
 
-公开入口原型位于 `experimental/activation/swish_v2/op_host/op_api/aclnn_swish.h`，实现直接调用内部 `l0op::SwishV2`，不是旧 `Swish` body 的别名。该候选相较同仓 `experimental/activation/swish/` 使用显式 `SwishV2` OpType、独立 POD 和完整 dtype router，因此作为 A2 当前实际可达的最新实现。公开文档列出 A2，`SwishV2` OpDef 的活动 AICore 注册为 `ascend910b`；没有把仅文档列出的 A3/A5 误并入本卡。
+公开入口原型位于 `experimental/activation/swish_v2/op_host/op_api/aclnn_swish.h`，实现直接调用内部 `l0op::SwishV2`，不是旧 `Swish` body 的别名。该候选相较同仓 `experimental/activation/swish/` 使用显式 `SwishV2` OpType、独立 POD 和完整 dtype router，因此作为 A2 当前实际可达的最新实现。公开文档列出 A2，`SwishV2` OpDef 的活动 AICore 注册为 `ascend910b`；没有把仅文档列出的 A3/950 误并入本卡。
 
 ## Host/Launcher 执行流程
 
@@ -500,9 +500,9 @@ R-001 每元素需要 Queue 双块 `2×4 B` 加两个 FP32 TBuf `2×4 B`，合�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 本卡实现公开支持并以 `ascend910b` 活动注册 | `swish_v2` 文档声称支持，但固定仓无 `ascend910_93`/A3 注册或 config，未发布 | `swish_v2` 文档声称支持但无 A5 注册；稳定 `activation/swish` 有 A5 接线，但依赖的 atvoss POD/scheduler 源码不在固定仓，未发布 |
+| 支持状态 | 本卡实现公开支持并以 `ascend910b` 活动注册 | `swish_v2` 文档声称支持，但固定仓无 `ascend910_93`/A3 注册或 config，未发布 | `swish_v2` 文档声称支持但无 950 注册；稳定 `activation/swish` 有 950 接线，但依赖的 atvoss POD/scheduler 源码不在固定仓，未发布 |
 | Host/Launcher | `aclnnSwish`→`SwishV2` | 固定仓无法闭合实际活动实现 | 稳定入口→`Swish`，但 kernel scheduler 闭包缺失 |
 | Kernel/资源 | 本文两条 AIV Route | 固定仓不可见 | 稳定 entry 为 AIV-only，完整调度/UB/POD 不可见 |
 
@@ -512,7 +512,7 @@ R-001 每元素需要 Queue 双块 `2×4 B` 加两个 FP32 TBuf `2×4 B`，合�
 - Tiling 的 `totalLength*dtypeSize`、分核公式使用 `int64_t`，固定仓未见显式乘法溢出检查；Device DMA `blockLen` 窄化为 `uint32_t`，正常 tile 受 UB 上界限制，但没有独立静态断言。
 - `scale` 不做有限值检查；NaN/Inf 的数值行为由 FP32 primitive 决定，固定仓未声明额外语义。
 - POD 没有 `static_assert` 固化 `sizeof/alignof/offsetof`；迁移必须保持 Host/Device 相同编译 ABI。
-- A3 缺少活动 `ascend910_93` 构建/注册闭包；A5 稳定实现的 `EleBaseTilingData32B`、`ElewiseBaseTiling::DoTiling32B`、`ElementwiseSchWithScalar` 定义来自固定仓未包含的 `atvoss` 头，无法完成逐字段 POD、真实 UB/循环和同步闭包，因此未生成 `swish_a5.md`。
+- A3 缺少活动 `ascend910_93` 构建/注册闭包；950 稳定实现的 `EleBaseTilingData32B`、`ElewiseBaseTiling::DoTiling32B`、`ElementwiseSchWithScalar` 定义来自固定仓未包含的 `atvoss` 头，无法完成逐字段 POD、真实 UB/循环和同步闭包，因此未生成 `swish_950.md`。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -543,4 +543,4 @@ R-001 每元素需要 Queue 双块 `2×4 B` 加两个 FP32 TBuf `2×4 B`，合�
 | workspace/内存 | 每 Route 恰为 16 B/元素 UB 预算 | Queue buffer 数、TBuf dtype/数量、32 B 对齐 | `FillNormalTiling`、`Init/InitExtraBuffers` |
 | 同步 | Queue bind 在 GM/VECIN/VECOUT/GM 间传递同一 tensor | EnQue/DeQue/FreeTensor 次序不可改变 | `CopyIn/Compute/CopyOut` |
 | 精度与尾块 | FP32 native；16-bit FP32 计算后 RINT；尾块按有效 count | Cast 顺序、`curTileLength`、末 tile 单独处理 | `KernelSwishV2*::Compute`、`ProcessTiles` |
-| 失败边界 | 非法参数在第一段失败；空 Tensor 无 Kernel；无 Device fallback | 不得把 A3/A5 文档声明当成活动实现闭包 | `CheckParams`、`swish_v2_def.cpp` |
+| 失败边界 | 非法参数在第一段失败；空 Tensor 无 Kernel；无 Device fallback | 不得把 A3/950 文档声明当成活动实现闭包 | `CheckParams`、`swish_v2_def.cpp` |

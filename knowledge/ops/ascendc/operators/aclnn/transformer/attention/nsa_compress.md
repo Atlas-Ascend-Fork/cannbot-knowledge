@@ -62,7 +62,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T19:45:34Z"
-updated_at: "2026-08-24T19:45:34Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -119,7 +119,7 @@ Kernel 先把 input/weight 从 FP16 或 BF16 转成 FP32，FP32 乘法和树形 
 
 固定 Commit 的公开 API 总表、目录文档、头文件与实现只给出 `aclnnNsaCompressGetWorkspaceSize`/`aclnnNsaCompress`，没有同语义 V2/V3，因此无后缀版本就是 A2 实际支持的最新公开版本。第一段接口构造 executor 和 workspace 大小，第二段在指定 stream 上执行。
 
-平台按公开 ACLNN 文档优先判定：`docs/aclnnNsaCompress.md` 明确 A2 为支持、A3 为不支持、A5 为不支持。目录 `README.md` 将 A3 标成支持，OpDef/CI 也接线 `ascend910_93`，构成“公开 ACLNN 文档不支持、实现接线支持”的冲突；本卡因此只发布 A2，不据实现接线扩展到 A3。
+平台按公开 ACLNN 文档优先判定：`docs/aclnnNsaCompress.md` 明确 A2 为支持、A3 为不支持、950 为不支持。目录 `README.md` 将 A3 标成支持，OpDef/CI 也接线 `ascend910_93`，构成“公开 ACLNN 文档不支持、实现接线支持”的冲突；本卡因此只发布 A2，不据实现接线扩展到 A3。
 
 ## Host/Launcher 执行流程
 
@@ -222,7 +222,7 @@ nsa_compress
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 公开平台 | ACLNN 产品表 A2=支持 | 固定公开契约只允许发布 A2 | R-001 | A3 因文档/接线冲突不发布；A5 不支持 | `docs/aclnnNsaCompress.md` 产品支持表 |
+| 公开平台 | ACLNN 产品表 A2=支持 | 固定公开契约只允许发布 A2 | R-001 | A3 因文档/接线冲突不发布；950 不支持 | `docs/aclnnNsaCompress.md` 产品支持表 |
 | UB 固定区 | `fixedUB<=ubSize` | weight 四区、overlap ring 与 output queue 必须先常驻 | R-001 | 尝试下一个 `divHeadNum`；最终失败 | `NsaCompressTiling::GetSplitInfo` |
 | 至少一 token chunk | `(U-fixedUB)/(maxHeads*D*10)>0` | input FP16、input FP32、subResult 合计每 token/head/dim 10B | R-001 | 下一因子或失败 | `NsaCompressTiling::GetSplitInfo` |
 | chunk 上限 | `BlocksNums=min(商,L)` | 单次 UB chunk 不超过一个压缩窗口；更长序列循环搬运 | R-001 | N/A，Host 截断 | `NsaCompressTiling::GetSplitInfo` |
@@ -283,7 +283,7 @@ entry 创建每 block 私有 `TPipe`、解包 POD，并强制 `KERNEL_TYPE_AIV_O
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| API | `attention/nsa_compress/docs/aclnnNsaCompress.md` | 产品表/公开原型 | A2=支持；A3/A5=不支持；两段式 `aclnnNsaCompress` | 冻结 A2 最新公开入口 |
+| API | `attention/nsa_compress/docs/aclnnNsaCompress.md` | 产品表/公开原型 | A2=支持；A3/950=不支持；两段式 `aclnnNsaCompress` | 冻结 A2 最新公开入口 |
 | API/L0 | `attention/nsa_compress/op_host/op_api/aclnn_nsa_compress.cpp` | `aclnnNsaCompressGetWorkspaceSize` | 指针、dtype、TND、weight shape、actSeqLen/类型通过；Contiguous/L0/ViewCopy 成功 | executor 含 NsaCompress launch 节点 |
 | Host | `attention/nsa_compress/op_host/nsa_compress_tiling.cpp` | `TilingNsaCompress` | 非空且 `CheckParams==GRAPH_SUCCESS` | 进入 Tiling registry，否则失败 |
 | Tiling | `attention/nsa_compress/op_host/nsa_compress_tiling_general.cpp` | `NsaCompressTiling::GetSplitInfo/GetTilingKey/PostTiling` | 唯一模板 capable；因子搜索存在 `fixedUB<=U && BlocksNums>0` | key 0、blockDim=A、POD |
@@ -602,7 +602,7 @@ M 个 context 保存各窗口的 sample 起点、已处理长度、weight offset
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开 ACLNN 文档明确支持；本卡发布 | 公开 ACLNN 文档明确不支持，但 README、OpDef `ascend910_93` 和 CI 接线称支持，属于发布冲突；本卡不发布 A3 | README 与 ACLNN 文档均明确不支持 |
 | Host/Launcher | `ascend910b` OpDef/CI 接线；通用 Host 模板 | 实现源码共用，但不得越过公开文档冲突视为 ACLNN 支持 | 无公开 Host/ACLNN 支持 |
@@ -610,7 +610,7 @@ M 个 context 保存各窗口的 sample 起点、已处理长度、weight offset
 
 ## 限制与失败边界
 
-- 公开 ACLNN 仅闭合 A2；A3 的 README/实现接线不能覆盖 ACLNN 产品表的明确“不支持”，A5 明确不支持。
+- 公开 ACLNN 仅闭合 A2；A3 的 README/实现接线不能覆盖 ACLNN 产品表的明确“不支持”，950 明确不支持。
 - 只支持 TND、FP16/BF16、非空 input/weight、非空前缀和 actSeqLen、`actSeqLenType=0`；公开范围要求 `N<=128`、`D%16=0,D<=256`、`L%16=0,L<=128`、`d%16=0,d<=L`。
 - `CheckParams` 没有显式检查 `compressStride>0`；`d=0` 能通过“16 的倍数”和 `d<=L` 检查，随后 InferShape/`AnalyzeAttrs` 会以 `d` 作除数；负的 16 倍数也可能先通过再窄化为 uint32。调用者必须把滑窗步长落实为正数，不能依赖固定 Host 源码安全拒绝非法符号。
 - `CheckNsaCompressParam` 未检查 `layoutOptional` 指针，`AnalysisAxis` 直接将它交给 `op::ToString`；固定仓不可见该框架转换对空指针的行为，调用者必须提供有效的 `"TND"` 字符串。
@@ -669,4 +669,10 @@ M 个 context 保存各窗口的 sample 起点、已处理长度、weight offset
 | workspace/内存 | system workspace + 9 类 UB 物理区及精确总字节公式 | H padding、depth=1、M overlap、S 三份 token 区必须同时计入 | `GetWorkspaceSize`; `GetSplitInfo`; `Init/InitWeight/InitOverlapMgt` |
 | 同步 | input/output Queue ownership，Vector 阶段 PipeBarrier，输出 PIPE_ALL | Free/覆盖只能发生在 consumer 完成后；无跨核同步是因为输出不重叠 | `CopyIn/Compute/UpdateResult/CopyOut` |
 | 精度与尾块 | T→FP32 Mul/Add→`CAST_ROUND` T；D%64 mask、sample 最后 chunk 缩短 | 树形 Add 顺序、只读 current `subSeqLen`、只在 L 完成时输出 | `VecMulBlkMat/ReduceBlock/UpdateResult/CopyIn` |
-| 失败边界 | API/Tiling 失败关闭、空 core return、唯一 key 0 | 不得为 A3/A5、空输出、未知 key 或资源不足推测 fallback | `CheckParams/GetSplitInfo/nsa_compress`; ACLNN 产品表 |
+| 失败边界 | API/Tiling 失败关闭、空 core return、唯一 key 0 | 不得为 A3/950、空输出、未知 key 或资源不足推测 fallback | `CheckParams/GetSplitInfo/nsa_compress`; ACLNN 产品表 |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](nsa_compress_attention_infer.md)（`related`）：“｜ Kernel 路线 ｜ R-001：key 0 通用滑窗压缩；FP16/BF16 仅模板类型不同，启动拓扑相同 ｜”明确给出左端事实；“令压缩 KV 长度为 `Scmp`，GQA 分组 `G=numHeads/numKeyValueHeads`。AIC 先以 FP32 累加生成 `QKᵀ`；AIV 依次乘 `scaleValue`、在 `attenMaskFlag==1` 时按实际 Q/选择前 KV 长度把需要屏蔽行的最后一个压缩位置写为 `-3e38`、执行 FP32 Softmax，并同时输出 FP32 概率到 importance-score 路径和 FP16/BF16 概率到第二次 MMAD。AIC 将后者与 V 相乘、FP32 累加后转回输入 dtype。AIV 按源码权重三角窗累计 `Pslc`，再对每个 KV head 的 `G` 个 Q head 求和；边界候选写入 FP32 正无穷位型，最后 `TopK<float,...TOPK_NORMAL>` 输出 `int32` 索引。”明确给出右端事实。NsaCompress 以窗口和步长产出压缩序列，AttentionInfer 将压缩 KV 长度 Scmp 用于 QK、Softmax、PV 与选择块 TopK，前者产物进入后者的压缩注意力阶段。
+<!-- cannbot:related:end -->

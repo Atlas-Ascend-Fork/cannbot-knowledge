@@ -65,3 +65,10 @@ expert_idx = row + col * step_gap    # 全局 expert id = rank 块起点 + 局�
 - 列优先新公式 vs 行优先旧公式（专家按 rank 连续切块的 EP mc2 路径）：diff/代码事实 @af319f1125bd + 维护者确认（审查追问「跟 mc2 算子确认过分核发送逻辑了嘛」、作者答「已确保 mc2 正常」后合并）；每 rank 均摊为确定性数学推演。溯源下探 [cann-recipes-infer-pr-243-fix-perfect-eplb](https://gitcode.com/cann/cann-recipes-infer/merge_requests/243)。
 - `force_eplb` round-robin 覆盖 `topk_idx`、prefill/decode 注入时机、暴露 `num_experts`/`num_experts_per_tok` 前置：diff 事实 @b7a110bd6812；「仅 profiling 非正确性路径」为覆盖机制直接推断。溯源下探 [cann-recipes-infer-pr-326-refactor-mtp-refactor-and-r1-adaptation-framework](https://gitcode.com/cann/cann-recipes-infer/merge_requests/326)。
 - `--perfect-eplb` 入参 + `gen_cur_topk_idx` 覆盖 topk、README benchmark 在 forced eplb 下测：diff 事实 @50e41b5b8220。溯源下探 [cann-recipes-infer-pr-205-feat-support-qwen3-moe-sglang](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoE + 投机解码：draft dummy_run 误带 profile-run 语义触发强制随机专家路由，静默拉低 MTP accept rate](../../../runbooks/precision/mtp_draft_dummy_run_in_profile_run_random_experts.md)（`related`）：profiling 时要把 token 负载均摊到各 rank / 各专家、避免堆到单卡造成 OOM 或压不出真实峰值。；想知道一个 MoE + ［EP］(../../../concepts/parallelism/expert_parallel.md) 部署「在理想专家负载均衡下能跑多快」。运行手册限定真正 profile run 中随机专家负载均衡应保留，规则页说明 perfect EPLB 正是测量这种理想均衡上界的口径。
+- [MoE 长序列 prefill 峰值显存 / OOM：专家负载不均 + dispatch 中间量放大；分块 / 均衡 / double-routing 处置](../../../runbooks/performance/moe_prefill_oom_peak_memory.md)（`related`）：**专家负载不均 → 个别卡的 grouped_matmul 峰值内存爆**。；用「强制专家负载均衡」测性能上界：框架用**确定性生成、按并行度均摊到各 EP rank 的 round-robin topk 列表**覆盖真实 gate 路由的 `topk_idx`，得到完美 EPLB 负载分布。开启后 prefill 每次、decode 仅首次生成并缓存 `cur_topk_list` 注入模型，MoE block forward 里 `if force_eplb: topk_idx = cur_topk_list`。；OOM 卡定位专家负载不均，目标提供仅用于 profiling 的强制均衡探针来隔离该因素。
+<!-- cannbot:related:end -->

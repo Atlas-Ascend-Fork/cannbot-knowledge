@@ -26,8 +26,5 @@ host侧Tiling接口，用于获取SinCos接口所需的最大和最小临时空�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SinCos](sin_cos.md)（`related`）：SinCos 调用所需 workspace 上下界由该接口给出，直接约束临时缓冲分配。
-- [GetSinCosTmpBufferFactorSize](get_sin_cos_tmp_buffer_factor_size.md)（`same_topic`）：GetSinCosMaxMinTmpSize 与《GetSinCosTmpBufferFactorSize》的衔接是：SinCos 临时空间查询依赖 SinCosMaxMinTmpSizeFactor，并为 SinCos 接口分配同时产出正弦、余弦所需的工作区。
-- [SinCos接口](sin_cos_interface.md)（`same_topic`）：SinCos接口 与《GetSinCosMaxMinTmpSize》的实质衔接是：SinCos 接口组以一次调用同时产出 sin/cos，并由两级工作区查询决定 tmpBuffer；Sincosf/Sincospif提供无 π 与带 π 缩放的标量对照。
-- [Sincosf](../../../../simt_api/math_functions/float_math_functions/sincosf.md)（`same_topic`）：GetSinCosMaxMinTmpSize说明在host侧获取SinCos接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。
+- [GetSinCosTmpBufferFactorSize](get_sin_cos_tmp_buffer_factor_size.md)（`related`）：host侧Tiling接口，用于获取SinCos接口所需的最大和最小临时空间大小；currentShapeSize = (currBuff - extraBuf) / maxLivedNodeCount / typeSize。前者给出 SinCos 临时空间的合法选择范围，后者把所选 currBuff 换算为单次 shape 容量；两端共同支持 Host 侧定 buffer 并生成 Kernel 分块参数。
 <!-- cannbot:related:end -->

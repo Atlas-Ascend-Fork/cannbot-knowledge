@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_bicubic2d_aa_grad/op_host/config/ascend910_93/upsample_bicubic2d_aa_grad_binary.json
     role: implementation
 created_at: "2026-08-24T20:51:21Z"
-updated_at: "2026-08-24T20:51:21Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -574,9 +574,9 @@ WaitFlag<HardEvent::MTE3_MTE2>(eventID2);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，另见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，另见 `_950` 卡 |
 | Host/Launcher | `ascend910b`，共用非 RegBase Tiling | `ascend910_93`，共用非 RegBase Tiling | RegBase Tiling，key 由 copy/索引宽度/确定性组成 |
 | Kernel/资源 | Vector+Cube 单 Kernel、GM intermediate/radio、Matmul system workspace | 同 | AIV copy 或 SIMT；无 Cube Matmul/intermediate |
 
@@ -616,3 +616,9 @@ WaitFlag<HardEvent::MTE3_MTE2>(eventID2);
 | 同步 | Vector/MTE/Matmul 与 W/H phase 协议 | `PipeBarrier`、`MTE3_MTE2`、`SyncAll` 不可删除 | 相关 body |
 | 精度与尾块 | FP32 权重，半精度/BF16 `CAST_RINT`，Matmul `SetTail` | cast 顺序和有效 M/N/K | `calculateRadioTensor*`、`calculate*Extension` |
 | 失败边界 | API 过滤非法输入，未知 key 无输出 | 不把缺失 fallback 补造成支持 | `CheckParams`、entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [UpsampleBicubic2dAAGrad 950 ACLNN 算子知识](upsample_bicubic_2d_aa_grad_950.md)（`same_topic`）：“｜ 执行类型 ｜ 单个可达 `__aicore__` Kernel；同一 body 先由 AIV Vector 生成权重矩阵，再由 `matmul::Matmul` 执行 AIC_CUBE 宽/高方向乘法，属于单 Kernel CV 路线。 ｜”与“｜ 执行类型 ｜ R-001 为 AIV_VECTOR 数据搬运；R-002/R-003 为 SIMT。950 全部 Host 可达 Device 路线均不含 Cube/AIC 或 MIX_CV。 ｜”记录同一 ACLNN 入口在 A2/A3 与 950 的互斥实现；联合阅读才能按平台选择 Cube 或 SIMT/Vector 路线。
+<!-- cannbot:related:end -->

@@ -49,6 +49,5 @@ Cube计算单元
 <!-- cannbot:related:start -->
 ## 相关
 
-- [基本架构（硬件实现）](../basic_architecture.md)（`related`）：基本架构说明 AI Core、存储与流水抽象，为理解 2002 规格中的具体单元提供公共模型。
-- [NPU架构版本2002](../hardware_constraints/npu_arch_2002.md)（`same_topic`）：NPU架构版本2002 与《NPU架构版本2002》的实质衔接是：2002 architecture spec给出硬件组成，constraints给出 Generic Addressing/全局变量限制；GetCurNpuArch和 SoC 查证链用于确认当前目标确实落在2002。
+- [NPU架构版本2002](../hardware_constraints/npu_arch_2002.md)（`same_topic`）：NPU架构版本2002不支持Generic Addressing通用寻址（针对UB、stack、GM等地址空间），因此语言层面地址空间必须匹配。；本节介绍__NPU_ARCH__版本号为2002的硬件架构和其功能说明。；两卡以同一 NPU_ARCH 2002 为核心对象，分别给出硬件组成与由其产生的地址空间编程约束。
 <!-- cannbot:related:end -->

@@ -27,7 +27,5 @@ BatchMatmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Batch Matmul基础功能](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/batch_matmul_basics.md)（`explains`）：Batch Matmul基础功能 与《BatchMatmulGetTmpBufSizeV2》的实质衔接是：Batch Matmul 直接使用 Batch tmp 查询、IterateBatch/NBatch、batch shape/输出与 batch 数配置；workspace 和精度卡约束真实使用。
-- [GetTiling](../matmul_tiling/get_tiling.md)（`related`）：BatchMatmulGetTmpBufSizeV2 的输入必须先由 Tiling 对象 GetTiling 成功生成，返回 -1 的 tiling 不能用于空间查询。
-- [BatchMatmulGetTmpBufSize](batch_matmul_get_tmp_buf_size.md)（`same_topic`）：《BatchMatmulGetTmpBufSize》处理“BatchMatmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”。《BatchMatmulGetTmpBufSizeV2》明确“BatchMatmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”，可直接用于核对BatchMatmul 临时空间估算与 Matmul Tiling 对象、TCubeTiling 结果之间的调用合同。
+- [BatchMatmulGetTmpBufSize](batch_matmul_get_tmp_buf_size.md)（`same_topic`）：TCubeTiling为Kernel侧定义的Matmul TilingData，与入参为带AscendC::tiling命名空间的TCubeTiling结构体的GetTiling接口配合使用。；tiling（输入）：BatchMatmul Tiling的结构体，即BatchMatmulTiling对象得到的TCubeTiling结构体。；两页是同一 BatchMatmul 临时空间查询合同的 V2 与原版，V2 具体增加了命名空间限定的 tiling 配合要求。
 <!-- cannbot:related:end -->

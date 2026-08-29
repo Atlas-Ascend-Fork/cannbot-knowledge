@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/config/ascend910_93/fused_cross_entropy_loss_with_max_sum_binary.json
     role: implementation
 created_at: "2026-08-25T17:19:24Z"
-updated_at: "2026-08-25T17:19:24Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -652,9 +652,9 @@ __aicore__ inline void GMToUB(
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` config | 公开支持；`ascend910_93` config | README/ACLNN 文档明确不支持，不生成 A5 卡 |
+| 支持状态 | 公开支持；`ascend910b` config | 公开支持；`ascend910_93` config | README/ACLNN 文档明确不支持，不生成 950 卡 |
 | Host/Launcher | 共用同一 ACLNN、OpDef、Tiling；平台提供实际 AIV 核数、UB、LibApi workspace | 同左 | 无公开支持链路 |
 | Kernel/资源 | 同一 AIV body；构建列入 `ascend910b` | 同一 AIV body；构建列入 `ascend910_93` | Kernel CMake/OpDef 未接线 ascend950 |
 
@@ -675,7 +675,7 @@ __aicore__ inline void GMToUB(
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `loss/fused_cross_entropy_loss_with_max_sum/docs/aclnnFusedCrossEntropyLossWithMaxSum.md` | 两段式原型、产品支持表 | 公开性、A2/A3 支持、A5 不支持、参数约束 |
+| 入口声明/约束 | `loss/fused_cross_entropy_loss_with_max_sum/docs/aclnnFusedCrossEntropyLossWithMaxSum.md` | 两段式原型、产品支持表 | 公开性、A2/A3 支持、950 不支持、参数约束 |
 | 入口实现 | `loss/fused_cross_entropy_loss_with_max_sum/op_host/op_api/aclnn_fused_cross_entropy_loss_with_max_sum.cpp` | `CheckParams`、两段式 API | 校验、Contiguous、ViewCopy、executor |
 | 入口实现 | `loss/fused_cross_entropy_loss_with_max_sum/op_host/op_api/fused_cross_entropy_loss_with_max_sum.cpp` | `l0op::FusedCrossEntropyLossWithMaxSum` | 临时输出与 AICore launcher 参数顺序 |
 | Host/Tiling/Launcher | `loss/fused_cross_entropy_loss_with_max_sum/op_host/fused_cross_entropy_loss_with_max_sum_def.cpp` | `FusedCrossEntropyLossWithMaxSum` OpDef | dtype、ND、可选性、A2/A3 注册 |

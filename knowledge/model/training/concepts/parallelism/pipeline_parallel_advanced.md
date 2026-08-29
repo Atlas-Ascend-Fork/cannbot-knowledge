@@ -157,3 +157,11 @@ decoder 总数 `2+2+3+1=8`、MTP 1、E/L 各一次。约束：stage 数须被 PP
 - [recomputation](../techniques/recomputation.md)（被 ripipe 调度的对象：重计算定「哪些层、哪类粒度」，本页 Ripipe 定「何时触发」——气泡内/提前重算）
 - [auto-settings](../techniques/auto_settings.md)（自动搜索 PP/VPP 布局等并行配置）
 - [ldt-disaggregated-training](../techniques/ldt_disaggregated_training.md)（U 形 PP 变体：VPP 在 stage0 摆首尾虚拟 stage 做边云拆分）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Auto-Settings（并行/重计算/内存配置自动搜索）](../techniques/auto_settings.md)（`related`）：它解决「配置怎么选」，与具体省内存机制（［recomputation］(recomputation.md)）、流水排布（［pipeline-parallel-advanced］(../parallelism/pipeline_parallel_advanced.md)）正交——搜出来的重计算层数、PP/VPP 切分最终落到那些特性上执行。；MindSpeed 在 Megatron 流水并行（PP）之上叠了一组以 `MindSpeedFeature` + monkey-patch 形式注入 megatron 的高级 PP 能力。Auto Settings 卡说明搜索结果中的 PP/VPP 切分落到高级流水特性执行，流水卡定义 MindSpeed 注入 Megatron 的高级 PP 能力，形成自动选配置到具体流水排布消费者的关系。
+- [分层解耦训练 LDT（Layerwise Disaggregated Training / U 形拆分学习）](../techniques/ldt_disaggregated_training.md)（`related`）：U 形拆分用 VPP 在 PP stage 0 摆下首尾两个虚拟 stage、跨域用激活/梯度 P2P 接力、配合流水编排把边云通信掩盖到计算之下，并支持边云卡数不一致的非对称 TP / DP。；PP 把模型按 decoder 层切成 `--pipeline-model-parallel-size` 个 stage 接力计算。前者是后者 PP/VPP 基线上的 U 形调度变体，需先理解 stage 切分再定位首尾共置。
+- [异构并行（MindSpeed-MM 多模态分组并行 + 动态 DP-CP）](hetero_parallel.md)（`related`）：当骨干需要开 PP（小 mbs 大 gas、LLM 参数量大）时走异构 PP：编码器用大 DP、LLM 开 PP，且二者可用不同 mbs。；- ［hetero-parallel］(hetero_parallel.md)（MindSpeed-MM 异构 PP 调度复用高级 PP 能力集）。异构并行卡给出编码器与 LLM 分段采用不同并行度和 micro-batch 的异构 PP 场景，高级 PP 卡明确把 hetero-parallel 标为复用其调度能力集，形成配置目标到承载调度的直接链路。
+<!-- cannbot:related:end -->

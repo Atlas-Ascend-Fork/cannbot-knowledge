@@ -27,8 +27,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BatchMatmulGetTmpBufSize](batch_matmul_get_tmp_buf_size.md)（`related`）：《BatchMatmulGetTmpBufSize》处理“BatchMatmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”。《MatmulGetTmpBufSizeV2》明确“单核Matmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”，可直接用于核对BatchMatmul 临时空间估算与 Matmul Tiling 对象、TCubeTiling 结果之间的调用合同。
-- [GetMatmulApiTiling](../matmul_kernel/get_matmul_api_tiling.md)（`related`）：GetMatmulApiTiling 与《MatmulGetTmpBufSizeV2》的实质衔接是：host 侧 GetMatmulApiTiling 把模板参数、MatmulConfig 与基础配置落成 tiling，随后决定 kernel Matmul 的注册、临时空间和精度/性能策略。
-- [GetTiling](../matmul_tiling/get_tiling.md)（`related`）：MatmulGetTmpBufSizeV2 的输入必须是 Matmul Tiling 类 GetTiling 成功生成的 TCubeTiling，二者是 Host Tiling 到空间预算的直接调用链。
-- [MatmulGetTmpBufSize](matmul_get_tmp_buf_size.md)（`same_topic`）：MatmulGetTmpBufSize 与《MatmulGetTmpBufSizeV2》的实质衔接是：Matmul 临时空间查询与 V2/batch/multicore、buffer 预算、tiling 和 workspace 注册共同决定可用空间。
+- [MatmulGetTmpBufSize](matmul_get_tmp_buf_size.md)（`same_topic`）：“本接口用于在调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”与“TCubeTiling为Kernel侧定义的Matmul TilingData，与入参为带AscendC::tiling命名空间的TCubeTiling结构体的GetTiling接口配合使用。”描述同一 Matmul 临时空间查询契约，V2 明确了 kernel 侧结构和配套重载。
 <!-- cannbot:related:end -->

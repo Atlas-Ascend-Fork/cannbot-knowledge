@@ -92,9 +92,5 @@ if constexpr (W_TYPE == WQGMM_FRACTAL_NZ &&
 <!-- cannbot:related:start -->
 ## 相关
 
-- [binary.json bin_filename 空致多 dtype kerne](binary_json_bin_filename_empty_overwrites_multi_dtype_o.md)（`related`）：bin_filename 覆盖会让多个 binary 条目指向同一产物，亦可能造成目标 entry 缺失；核对 kernel JSON 的文件名和 funcEntry 可排除该替代根因。
-- [extern 预编译 kernel 自定义包致 aclnn 161001](extern_kernel_aclnn_161001.md)（`related`）：extern 预编译 kernel 自定义包致 aclnn 161001 与《GMM A8W4 561000 缺 binary entry 无 JIT 回退》的衔接是：该打包故障的验证链是 ACLNN 错误→检查 binary.json/二进制入口→探测符号→确认运行时加载；候选正好覆盖各个可执行检查点。
-- [qgmm_mx FP4 fatbin 缺失致 107000](qgmm_mx_fp4_fatbin_107000.md)（`related`）：两卡都通过检查已加载二进制的目标符号定位“注册/入口存在但 fatbin 缺具体 kernel entry”；QGMM 表现为 BinaryGetFunctionByName 107000，GMM 表现为 561000 且无 JIT 回退。
-- [sub-kernel 后缀 _N 是 tilingKey 位编码非序号](sub_kernel_n_tilingkey.md)（`related`）：sub-kernel 卡说明 binary 符号后缀来自 tilingKey 位编码而非连续序号，可用于检查 91308033 是否应存在以及区分设计性 gap 与漏编 entry。
-- [ACLNN 361001 — tilingKey 与 funcEntry 映射失](aclnn_361001_tilingkey_funcentry_sel_position.md)（`same_topic`）：GMM 卡观测 tilingKey=91308033 查不到 funcEntry；目标卡系统解释 SetTilingKey 到 binary funcEntry 注册缺口及核验方法，是同一运行时失败机制。
+- [GroupedMatmul 950 ACLNN 算子知识](../../operators/aclnn/transformer/gmm/grouped_matmul_950.md)（`related`）：- weight-quant main/tail block、workspace extent 与 VecAntiQuantConfig 是一体化协议，不得独立修改。；即 runtime 按 tiling key `91308033` 在预编译 kernel binary 里查 kernel function entry，查不到（`BinaryGetFunctionByEntry failed, funcEntry=91308033` → `aclrtBinaryGetFunctionByEntry` 返回 107000 → op_executor 报 361001 → ACLNN 层最终抛 561000 "GMM launch aicore"）。。算子卡规定 weight-quant key 与资源协议必须闭合，runbook 展示新增 A8W4 key 未进入 binary 的具体 launch 失败。
 <!-- cannbot:related:end -->

@@ -25,13 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__low2float](../../half_type/half_precision_conversion_functions/_low2float.md)（`related`）：两接口都从 packed 16 位双元素中提取低 lane 并升为 float，分别对应 half2 与 bfloat16x2。
-- [__bfloat1622float2](_bfloat1622float2.md)（`same_topic`）：__low2float 与《__bfloat1622float2》的实质衔接是：__low2float 从 bfloat16x2 的低 lane 解包并转 float；high lane、整包 float2、标量 bfloat16→float 和 lane 交换接口共同确定 packed lane 的提取与顺序。
-- [__bfloat162float](_bfloat162float.md)（`same_topic`）：__low2float 与《__bfloat162float》的实质衔接是：__low2float 从 bfloat16x2 的低 lane 解包并转 float；high lane、整包 float2、标量 bfloat16→float 和 lane 交换接口共同确定 packed lane 的提取与顺序。
-- [__high2float](_high2float.md)（`same_topic`）：__low2float 与《__high2float》的实质衔接是：__low2float 从 bfloat16x2 的低 lane 解包并转 float；high lane、整包 float2、标量 bfloat16→float 和 lane 交换接口共同确定 packed lane 的提取与顺序。
-- [__lowhigh2highlow](_lowhigh2highlow.md)（`same_topic`）：__low2float 与《__lowhigh2highlow》的实质衔接是：__low2float 从 bfloat16x2 的低 lane 解包并转 float；high lane、整包 float2、标量 bfloat16→float 和 lane 交换接口共同确定 packed lane 的提取与顺序。
-<!-- cannbot:related:end -->

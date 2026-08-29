@@ -26,11 +26,3 @@ platforms: ['950']
 约束：该接口的mode参数不支持ZEROING模式。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MaskMergeMode](../aux_data_types/mask_merge_mode.md)（`same_topic`）：Move 与《MaskMergeMode》的实质衔接是：Move 的掩码写入语义由 C API 对应接口、MaskMergeMode 和 MaskReg 计算契约共同界定。
-- [MaskReg计算](../mask_reg_compute/mask_reg_compute.md)（`same_topic`）：Move 与《MaskReg计算》的实质衔接是：Move 的掩码写入语义由 C API 对应接口、MaskMergeMode 和 MaskReg 计算契约共同界定。
-- [Move](../mask_reg_compute/move.md)（`same_topic`）：Move 与《Move》的实质衔接是：Move 的掩码写入语义由 C API 对应接口、MaskMergeMode 和 MaskReg 计算契约共同界定。
-<!-- cannbot:related:end -->

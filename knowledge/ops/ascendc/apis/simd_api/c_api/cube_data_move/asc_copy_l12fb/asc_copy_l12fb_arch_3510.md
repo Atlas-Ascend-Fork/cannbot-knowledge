@@ -21,11 +21,3 @@ platforms: ['950']
 - 操作数地址重叠约束
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_copy_l12bt](../asc_copy_l12bt/asc_copy_l12bt_arch_3510.md)（`related`）：L12BT 和 L12FB 的源同为 L1，但目标辅助 buffer 不同，决定后续 cube 单元消费路径。
-- [AscCopyL12Fb](asc_copy_l12fb.md)（`same_topic`）：AscCopyL12Fb 与《asc_copy_l12fb》的实质衔接是：两张架构实现卡是 AscCopyL12Fb 集合实际可调用的入口，分别给出 2201/3510 的参数和对齐契约。
-- [asc_copy_l12fb](asc_copy_l12fb_arch_2201.md)（`same_topic`）：两卡是同一 L1→Fixpipe Buffer 量化参数搬运接口的 2201/3510 版本；3510 将 len_burst/dst_gap 改为 64B 口径，必须在迁移时对照。
-<!-- cannbot:related:end -->

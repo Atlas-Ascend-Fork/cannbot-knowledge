@@ -30,10 +30,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [InitBufPool](../t_pipe/init_buf_pool.md)（`related`）：TPipe::InitBufPool 先划出总资源池，TBufPool::InitBufPool 再从父池创建子池，构成明确的两级内存池初始化链。
-- [InitBuffer](init_buffer.md)（`same_topic`）：InitBufPool 初始化池的地址范围，InitBuffer 再从池中为具体 TBuf/TQue 分配块，两者是分层分配链。
-- [Reset](reset.md)（`same_topic`）：Reset 与《InitBufPool》的实质衔接是：Reset 结束当前 TBufPool 事件但保留 pool/buffer，必须放在 InitBufPool/Init 与 Destroy 之间；自定义池说明给出切换资源池的生命周期。
-- [TBufPool](t_buf_pool_constructor.md)（`same_topic`）：构造后需 InitBufPool 绑定物理范围才可分配。
-- [TBufPool简介](t_buf_pool_intro.md)（`same_topic`）：TBufPool简介 与《InitBufPool》的实质衔接是：TBufPool 在 TPipe 下手工复用 UB/L1，必须依次 InitBufPool、分配/取址、Reset 或 Destroy；所连容量和 TPipe 初始化案例直接约束资源预算与生命周期。
-- [自定义TBufPool](../custom_t_buf_pool/custom_t_buf_pool.md)（`same_topic`）：焦点处理自定义 TBufPool 与基础 TBufPool 的资源池关系；InitBufPool正文界定“从Tpipe或TBufPool划分资源池，支持非共享模式和共享模式（复用已有资源池地址）”。候选说明自定义 pool 如何建立在 TBufPool 的 InitBufPool/InitBuffer/Reset 生命周期上。
+- [InitBuffer](init_buffer.md)（`related`）：调用TBufPool::InitBuffer接口为TQue/TBuf进行内存分配；整块TbufPool资源可以继续通过TBufPool::InitBufPool接口划分成小块资源；先划分子池再从子池为队列或临时缓冲分配内存，构成同一资源生命周期的相邻步骤。
 <!-- cannbot:related:end -->

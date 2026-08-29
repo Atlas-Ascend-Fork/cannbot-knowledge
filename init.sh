@@ -19,6 +19,7 @@ Usage:
 Profiles:
   consumer       Install knowledge-query only (default).
   contributor    Install the three base skills and both operator ingest skills.
+                 The repository-internal trace ingest skill is not installed.
 
 Options:
   --prompt-action <uninstall|reinstall>
@@ -179,15 +180,15 @@ generate_prompt() {
 
 ### 知识库中有什么
 
-先用 Query 的 `discover` 区分真实卡片覆盖与 Registry、`index.md` 或预建目录表示的规划范围。
-目录存在不等于其中已经有可检索知识。
+必须用 Query 的 `discover` 读取当前真实覆盖；不要从本提示词、Registry、`index.md` 或目录是否存在
+推断卡片数量。安装提示词只说明稳定分类，不嵌入会随知识合入而过期的覆盖快照。
 
-| 领域或路径 | 当前含义 | 适合支持的决策 |
+| 领域或路径 | 稳定分类 | 覆盖判定方式 |
 |---|---|---|
-| `common` | 仅保留 domain 根，当前没有下层路径或知识卡 | 由 `discover` 确认空覆盖；不要假设存在平台、工具链或术语知识 |
-| `ops` | 预建 `ascendc`、`triton`、`tilelang`、`pypto`、`shared` route，当前都没有知识卡或 Profile 目录 | 识别目标 DSL 和覆盖缺口；不要把结构入口或其他 DSL 当作证据 |
-| `model` | 预建 `inference`、`training`、`shared` route，当前没有知识卡 | 区分模型场景并明确报告空覆盖 |
-| `graph`、`runtime` | 仅保留 domain 根，下层路径随首张真实知识创建 | 没有卡片时选择固定权威来源或工程证据，不虚构知识库结论 |
+| `common` | 公共平台、工具链、可观测性和术语入口 | 查看 `discover` 的 `common` 计数；零计数表示当前无卡片 |
+| `ops` | `ascendc`、`triton`、`tilelang`、`pypto`、`shared` route | 按目标 DSL 查看对应 technology 计数，不把预建 route 当成证据 |
+| `model` | `inference`、`training`、`spatial`、`embodied` route | 按模型场景查看对应 scope 计数 |
+| `graph`、`runtime` | 图与 Runtime 领域入口 | 查看对应 domain 计数；零命中时再转向固定权威来源或工程证据 |
 
 知识卡是蒸馏后的入口，不是原始资料镜像。正文用于技术判断，人工链接和由本地 Agent 判定派生的受管关系块组成仓内导航。
 `sources` 指向固定版本的文档或代码。候选、判定缓存和完整图谱是 ignored 的本地产物，受管关系块可随卡片提交；回答仍需核对人工正文与来源。

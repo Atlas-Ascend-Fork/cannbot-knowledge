@@ -33,10 +33,3 @@ platforms: ['950', a2, a3]
 参数（区分大小写）：可选/必选：说明
 --extract-elf ，-e：必选：解压ELF文件中包含的device信息，并按解析结果落盘到输出路径下。表示待解压ELF文件路径，如/home/op_api/lib_api.so。默认路径：解压结果文件默认落盘到当前执行路径下。自定义路径：可与--out-dir配套使用，设置落盘路径。
 --out-dir ，-o：可选
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [专用 kernel 路径输出不变时先核对共享库是否真的包含目标符号](../../../runbooks/precision/specialized_npu_kernel_symbol_presence_probe.md)（`related`）：msobjdump 面向算子 ELF 解析 device 信息、文件与符号表；专用 kernel 符号探针则在源码已有 launch 分支但输出未变化时，用实际加载共享库的符号存在性判别 specialization 是否进入二进制。二者组成从制品解析到目标符号核验的直接诊断链。
-- [调用算子时出现无法打开config.ini的报错](faq/config_ini_open_error.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《msobjdump工具》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
-<!-- cannbot:related:end -->

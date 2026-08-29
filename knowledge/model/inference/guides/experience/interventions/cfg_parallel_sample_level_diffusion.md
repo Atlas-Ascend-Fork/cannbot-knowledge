@@ -14,9 +14,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/49
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a2
 ---
 
 # CFG 类生成模型用与 TP 正交的样本级并行摊平每步两次前向
@@ -53,3 +53,10 @@ CFG 组内的 all_gather / guidance 合成机制见 [cfg-parallel](../../../conc
 - `diff 事实`（HunyuanImage-3.0 @fdb79bf65a8b）：`hunyuan_image_3_pipeline.py` 去噪循环的 `cfg_factor` 塌缩 + `cfg_parallel_size>1` 分支 all_gather 互取；与优化文档「CFG并行优化」一致。溯源下探：[cann-recipes-infer-pr-218-feat-support-hunyuanimage-3-0-model-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/218)
 - `diff 事实`（Wan2.2-I2V, PR 合并 2025-10-30）：`image2video.py` 的 `get_classifier_free_guidance_world_size()==2` 分支 + `get_cfg_group().all_gather(..., separate_tensors=True)`，`parallel_mgr` 的 `use_cfg_parallel→cfg_degree=2`；「非默认、挤占 SP」取舍据 README（8 卡默认不开）。溯源下探：[cann-recipes-infer-pr-49-feat-add-wan2-2-i2v-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/49)
 - 无独立性能数字，故不写加速幅度（理论减半单步前向时延）。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CFG Parallel](../../../concepts/parallelism/cfg_parallel.md)（`related`）：CFG 只是"同一网络吃两份无依赖的输入"，因此可分到两组设备并行，且这条轴与 ［TP］(../../../concepts/parallelism/tensor_parallel.md) 正交：；CFG Parallel 把这两个样本分别放到两张卡上同时跑，每卡只做一次模型推理，最后通过 all_gather 互相拿对方的结果，端到端相当于把 DiT 每步耗时减半。。指南把概念页定义的 cond/uncond 双样本并行落实为与 TP 正交的进程组、单样本前向和 all_gather 合成步骤。
+- [DiT 步间缓存与多卡序列并行共存（数据相关判据须跨卡取一致决策，样例默认互斥）](../../../optimizations/experience/rules/dit_cache_with_sequence_parallel.md)（`related`）：CFG 只是"同一网络吃两份无依赖的输入"，因此可分到两组设备并行，且这条轴与 ［TP］(../../../concepts/parallelism/tensor_parallel.md) 正交：；数据相关缓存要与 SP 共存，各卡本地算出判据标量后，在 SP 通信组上 `all_reduce(SUM)` 再除以 `sp_world_size` 得平均值，用该平均标量比阈值——各卡拿到相同标量 → 相同决策，前向不再分叉。。前者建立 CFG 与 TP/SP 可正交组合的拓扑，后者给出其中数据相关缓存判据在 SP 组内保持一致的同步约束，二者共同决定 CFG+SP 推理链的正确执行。
+<!-- cannbot:related:end -->

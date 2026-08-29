@@ -83,9 +83,5 @@ BUILD=0
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopyPad 尾块改逐行一维搬入](datacopypad_partial_2d_blocks_use_per_row_copy.md)（`related`）：目标卡提供固定 UB 行距下逐行 blockCount=1 的正确性基线，可用于本卡把跨广播段的大搬运拆为不跨段的小搬运。
-- [NDDMA 最内层 srcStride=0 广播读越界](nddma_srcstride_0.md)（`related`）：目标卡证明广播维的 stride=0 不能直接当作 NDDMA 源广播，本卡证明 1D DataCopyPad 也不能从段内偏移连续读取广播源；二者共同要求显式按广播段循环/填充。
-- [窄尾 tile 行距错位：补齐 UB gap](datacopypad_narrow_tile_needs_explicit_ub_row_gap.md)（`related`）：两卡共同约束 DataCopyPad tile 的物理布局：本卡保证 GM 读取不越过广播段，目标卡保证窄尾 tile 在 UB 中仍匹配计算侧固定行距。
-- [ARA 分块重复首块：CopyIn 传递 rowStart](ara_split_copyin_must_include_chunk_row_start.md)（`same_topic`）：ARA 分块重复首块：CopyIn 传递 rowStart 与《广播 CopyIn tile 跨段越界读判别》的实质衔接是：ARA 分块必须把 rowStart 传给 CopyIn；group 状态、跨段读取、wrapper offset 与显式 DataCopy offset 卡覆盖同一重复首块机制。
-- [跨行子块误作连续 slab 导致分块结果错](noncontiguous_row_subtiles_require_per_row_copy.md)（`same_topic`）：两卡的核心判据相同：tile 起点位于逻辑行/广播段内部时，后续元素在 GM 中并非一段连续 slab，单次 1D DMA 会跨过本段边界读入错误数据。
+- [跨行子块误作连续 slab 导致分块结果错](noncontiguous_row_subtiles_require_per_row_copy.md)（`same_topic`）：3. 反查 `CopyInOne` 广播分支：若用单次 1D `DataCopyPad(ub, gm［srcOff］, blockLen=tileLen)` 且 `tileLen > innerContig - (offset % innerContig)`，则 `gm［srcOff .. srcOff+tileLen)` 必然读出广播输入 GM 缓冲边界（广播输入在 GM 里只有 innerContig 个元素）之外的内存——越界读成立。；- 每次把二维/三维子块压成一次 DMA 前，写出相邻行地址差：若 `row_stride != copied_row_width`，它就不是连续块；两条 runbook 都裁定逻辑子块带物理间隔时单次连续 1D DMA 会越过当前行或广播段，修复决策是按真实连续边界切 tile 或逐行搬运后再验证。
 <!-- cannbot:related:end -->

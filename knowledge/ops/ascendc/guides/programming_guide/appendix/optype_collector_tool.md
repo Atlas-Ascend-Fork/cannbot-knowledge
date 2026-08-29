@@ -49,6 +49,5 @@ optype_collector工具用于采集内置/自定义算子包中指定AI处理器�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ACLNN 507035 — opType 与内置 ops_legacy 同名碰](../../../runbooks/compilation/aclnn_optype_collision_built_in_ops_legacy_507035.md)（`related`）：ACLNN 507035 — opType 与内置 ops_legacy 同名碰 与《optype_collector工具》的实质衔接是：507035 此例由自定义 opType 与内置符号同名触发；OpDef/注册/launcher/kernel/CMake 六处改名及同名碰撞 runbook 共同构成完整修复链。
-- [调用算子时出现无法打开config.ini的报错](faq/config_ini_open_error.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《optype_collector工具》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
+- [ACLNN 507035 — opType 与内置 ops_legacy 同名碰](../../../runbooks/compilation/aclnn_optype_collision_built_in_ops_legacy_507035.md)（`related`）：检测自定义算子包与内置算子包、自定义算子包之间的OpType重名问题；built-in 路径优先于 vendor 路径。工具卡提供交付前的 OpType 重名探测，runbook 解释重名后 C++ runtime 会优先命中 built-in binary；联合可从预检结果直接判断 507035 与错误 kernel 加载的根因。
 <!-- cannbot:related:end -->

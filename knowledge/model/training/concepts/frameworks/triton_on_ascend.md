@@ -112,3 +112,13 @@ flowchart LR
 - [gdn-chunk-kernels](../kernels/gdn_chunk_kernels.md)（本后端承载的 GDN delta-rule chunk 算子族算法）
 - [mhc-train](../kernels/mhc_train.md)（本后端承载的 MHC 超连接训练算子族）
 - [mindspeed](https://gitcode.com/ascend/MindSpeed) — MindSpeed core @1432cb0（`ops/triton` 与 `lite/ops/triton` 算子源）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 310P 不支持 Triton kernel：走 Triton 的算子须补纯 host/eager 等价路径](../../../inference/runbooks/runtime/ascend_310p_no_triton_kernel_eager_fallback.md)（`related`）：“Triton-on-Ascend 让用 **Triton DSL**（`@triton.jit` + `tl.load/store` + `tl.dot` 的 SPMD 内核语法）写的融合算子直接跑在昇腾 NPU 上”；“在 **Ascend 310P（Atlas 300I 推理卡系列 / 300I Duo）** 上做 bringup / 跑推理时，凡是通用（跨平台）执行路径经由 **Triton kernel** 实现的算子，在 310P 上都不可用——310P 硬件不支持 Triton。”。后端能力卡与 310P 失败边界共同决定 Triton 算子的硬件可达性和 fallback 要求。
+- [GDN Chunk 算子（solve_tril / chunk_delta_h / chunk_o / wy_fast Triton 核）](../kernels/gdn_chunk_kernels.md)（`related`）：“核心 `mindspeed/ops/triton/`（GDN delta-rule chunk 内核族）”；“这套分解由 MindSpeed core `mindspeed/ops/triton/` 下一族 Triton 核承载，经 ［triton-on-ascend］(../frameworks/triton_on_ascend.md) 后端降级到昇腾 Cube/Vector”。框架卡定位承载目录，kernel 卡确认同一目录的 GDN 算子族经该后端降级执行。
+- [MHC 训练算子（DeepSeek-V4 Manifold-Constrained Hyper-Connections：Triton BMM + Sinkhorn）](../kernels/mhc_train.md)（`related`）：“轻量 `mindspeed/lite/ops/triton/`（MHC 超连接 bmm + Sinkhorn 路由 + MoE permute sort）”；“MindSpeed-LLM 的 `deepseek4` 模型把 DeepSeek-V4 的 **MHC（Manifold-Constrained Hyper-Connections / 流形约束超连接）** 残差结构落到一组 ［triton-on-ascend］(../frameworks/triton_on_ascend.md) 融合算子上”。框架卡定位 lite Triton 目录的 MHC 算子族，kernel 卡确认 DeepSeek-V4 MHC 训练链由该后端融合算子实现。
+- [昇腾 Triton kernel grid 首维溢出 CoreDim UINT16 上界（大批量/长序列）](../../../inference/runbooks/runtime/triton_grid_coredim_uint16_overflow.md)（`related`）：“- **少核持久化的 grid**：`chunk_fwd_o` 不按「每 chunk 一个 program」发射，而是固定 `grid=(CV_kernel_num,)=(24,)`，kernel 内用 `core_id=tl.program_id(0)`、`total_cores=tl.num_programs(0)` 把 `NT` 个 chunk **手动均分到各核**（`base_chunks_per_pid = NT // total_cores`，余数前补 1），每个 program 循环跑自己那批 chunk。”；“Triton kernel 的 **grid 第一维在昇腾上被映射为 NPU 的 CoreDim，其取值上界是 `UINT16_MAX = 65535`**。”。框架卡给出的 24 核持久化 grid 正是 runbook 所要求控制 CoreDim 并在 kernel 内循环分摊工作的安全形态。
+- [昇腾多模态 M-RoPE 优先走 triton-ascend triton_mrope，decode 吞吐优于原生 npu_mrope](../../../inference/optimizations/experience/rules/mrope_triton_ascend_vs_npu_mrope_decode.md)（`related`）：“- 若 `HAS_TRITON`（triton-ascend 构建可用）**且** `positions.ndim == 2`（二维 M-RoPE position）→ **优先走 `triton_mrope` kernel**（`forward_triton` 路径）。”；“Triton-on-Ascend 让用 **Triton DSL**（`@triton.jit` + `tl.load/store` + `tl.dot` 的 SPMD 内核语法）写的融合算子直接跑在昇腾 NPU 上”。经验卡的 triton_mrope 选型依赖后者定义的 Triton-on-Ascend 执行后端。
+<!-- cannbot:related:end -->

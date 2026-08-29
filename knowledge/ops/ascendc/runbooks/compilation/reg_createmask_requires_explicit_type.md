@@ -248,11 +248,3 @@ __simd_vf__ inline void softmax_row_vf(__ubuf__ T *xAddr, __ubuf__ T *yAddr,
 ## 误诊
 
 把该错误归因于 mask 长度、tail 数值或 UB 容量都不会解释编译器明确给出的模板参数推导失败。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscCreateMask](../../apis/simd_api/c_api/reg/reg_data_types/asc_create_mask.md)（`exemplifies`）：AscCreateMask 与《Reg CreateMask 缺类型参数导致编译失败》的实质衔接是：AscCreateMask 根据数据位宽和 pat_mode 生成 MaskReg，随后由 UpdateMask/GetMaskSpr、Load/Store 和 MergeMode 消费；两个编译错例限定模板类型与可写引用。
-- [MaskReg](../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/mask_reg.md)（`exemplifies`）：MaskReg 与《Reg CreateMask 缺类型参数导致编译失败》的实质衔接是：MaskReg 定义有效 lane，直接被 Load/Store、MaskGen 与 MaskReg 计算消费；C 创建/更新接口、merge mode、复用指南和两个编译故障明确其构造约束。
-- [如何使用掩码操作API](../../guides/programming_guide/library_api/basic_api/quick_reference/how_to_use_mask_api.md)（`related`）：如何使用掩码操作API 与《Reg CreateMask 缺类型参数导致编译失败》的实质衔接是：掩码指南直接覆盖 Move/Create/UpdateMask、Normal/Counter 设置和 Reset；两张故障卡约束模板类型与可修改参数。
-<!-- cannbot:related:end -->

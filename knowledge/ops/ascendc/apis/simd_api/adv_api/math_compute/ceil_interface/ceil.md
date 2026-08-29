@@ -39,12 +39,6 @@ __aicore__ inline void Ceil(const LocalTensor<T>& dstTensor, const LocalTensor<T
 <!-- cannbot:related:start -->
 ## 相关
 
-- [多核 ceil 尾块为负 — 每核按 remaining 截断](../../../../../runbooks/precision/ceil_partition_each_core_must_clamp_remaining.md)（`exemplifies`）：Ceil 与《多核 ceil 尾块为负 — 每核按 remaining 截断》的实质衔接是：Ceil kernel 依赖两种临时空间查询，C API 是对应入口，Floor 提供相反取整边界；多核尾块卡直接验证 remaining 计数错误。
-- [AscCeil](../../../c_api/reg/data_type_convert/asc_ceil.md)（`related`）：Ceil 与《AscCeil》的实质衔接是：Ceil kernel 依赖两种临时空间查询，C API 是对应入口，Floor 提供相反取整边界；多核尾块卡直接验证 remaining 计数错误。
-- [AscFloat2Int32](../../../c_api/scalar_compute/asc_float2int32.md)（`related`）：AscFloat2Int32 与《Ceil》的实质衔接是：AscFloat2Int32 的四种舍入模式对应 Rint/Round/Floor/Ceil，相关 float/half/bfloat16 转换卡用于保持目标位宽、源类型和逆转换契约。
-- [Floor](../floor_interface/floor.md)（`related`）：Ceil 与《Floor》的实质衔接是：Ceil kernel 依赖两种临时空间查询，C API 是对应入口，Floor 提供相反取整边界；多核尾块卡直接验证 remaining 计数错误。
-- [AscFloat2float](../../../c_api/vector_compute/asc_float2float.md)（`same_topic`）：AscFloat2float 与《Ceil》的实质衔接是：AscFloat2float 通过舍入模式规范同类型值；SIMT 同名转换和 Rint/Round/Floor/Ceil/Trunc 卡提供每种模式的确切数学定义。
-- [Ceil接口](ceil_interface.md)（`same_topic`）：《Ceil接口》说明提供Ceil向上取整计算接口及其Tiling临时空间大小查询接口，包含Ceil、GetCeilMaxMinTmpSize等。；《Ceil》说明获取大于或等于输入值的最小整数，即向正无穷方向取整。二者在Ceil计算、临时空间估算与多核尾段切分共同决定向上取整算子的正确执行上存在可执行的直接衔接。
-- [GetCeilMaxMinTmpSize](get_ceil_max_min_tmp_size.md)（`same_topic`）：Ceil 与《GetCeilMaxMinTmpSize》的实质衔接是：Ceil kernel 依赖两种临时空间查询，C API 是对应入口，Floor 提供相反取整边界；多核尾块卡直接验证 remaining 计数错误。
-- [GetCeilTmpBufferFactorSize](get_ceil_tmp_buffer_factor_size.md)（`same_topic`）：GetCeilTmpBufferFactorSize 与《Ceil》的实质衔接是：factor 查询与 GetCeilMaxMinTmpSize 共同换算 Ceil 单次元素数，Ceil/C API 是消费端；tmpBuffer 步长故障直接验证空间公式错误会造成 UB 越界。
+- [GetCeilMaxMinTmpSize](get_ceil_max_min_tmp_size.md)（`related`）：Ceil 接口直接声明“临时空间大小BufferSize的获取方式请参考GetCeilMaxMinTmpSize。”；Host 接口说明“kernel侧Ceil接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。”，两端构成 Ceil sharedTmpBuffer 的 Host 容量生产与 Kernel 消费链，但分别承担容量规划和数值计算两个主题。
+- [GetCeilTmpBufferFactorSize](get_ceil_tmp_buffer_factor_size.md)（`related`）：“该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。”给出 Ceil 临时区容量推导；“用于Ceil内部复杂计算时存储中间变量，由开发者提供。”确认 Ceil 实际消费该临时缓存，因此能直接用于实现时的 tile 上限计算。
 <!-- cannbot:related:end -->

@@ -235,14 +235,3 @@ __aicore__ inline void CallMaxSubExp(const AscendC::LocalTensor<float> &dst,
 无已验证的其他根因。归约公式、指数稳定化和容差不是本闭环的根因；它们没有形成独立失败—修复—验证链。
 
 这是 fallback，性能不是最优，追求性能请用另一路线（见 ## 相关）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AR 跨块循环放在 __simd_vf__ 只执行首块](simd_vf_chunk_loop_must_be_driven_by_aicore_wrapper.md)（`related`）：两卡位于同一 Reg Softmax 调试链：先保证多 chunk 由 wrapper 驱动，再修复每块 helper 必须从输入而非未初始化输出读取。
-- [InitOutput GM 专用，UB 清零用 Duplicate](../compilation/initoutput_gm_ub_duplicate.md)（`related`）：InitOutput GM 专用，UB 清零用 Duplicate 与《AR 输出张量未初始化导致 Softmax 部分用例错》的实质衔接是：InitOutput 只接受 GM GlobalTensor，而 UB LocalTensor 要用 Duplicate；相关 API、类型错误、TBuf 取 LocalTensor 和清零覆盖故障直接验证该边界。
-- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：拆分 source/destination helper 后，跨 pass 的 UB 写后读必须通过独立 wrapper 和 PIPE_V 边界完成，避免把另一个 RAW 故障误判为未初始化输出。
-- [Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差](reduce_lane0_must_be_broadcast_before_vector_normalization.md)（`related`）：即使输入/输出 buffer 契约正确，规约 lane0 仍需按 dtype 合法地广播后才能归一化；两者覆盖 Softmax 的相邻正确性阶段。
-- [flash在线softmax JIT重排致精度超阈](flash_softmax_jit.md)（`related`）：JIT 路径仍需正确初始化 AR 规约缓冲。
-- [DataCopyPad 未填满强制对齐缓冲 — 小维规约读入脏尾部](datacopypad_tail_must_initialize_full_reduction_extent.md)（`same_topic`）：两卡都处理归约读取了未初始化 UB：一张针对 DataCopyPad tail，一张针对 AR 输出 buffer 的初值。
-<!-- cannbot:related:end -->

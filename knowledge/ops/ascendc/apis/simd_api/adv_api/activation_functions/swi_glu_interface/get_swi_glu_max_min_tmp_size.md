@@ -29,8 +29,6 @@ kernel侧SwiGLU接口的计算需要开发者预留 申请临时空间，本接�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SwiGLU 高级 API 在非32B对齐 slice 上精度失败](../../../../../runbooks/precision/swiglu_adv_api_fails_non_32b_aligned_slice.md)（`exemplifies`）：该排障卡记录 SwiGLU 在非 32B 对齐 slice 上即使按接口准备空间仍出现边界精度失败，补充了查询契约之外的实测失效边界。
-- [GetGeGLUMaxMinTmpSize](../ge_glu_interface/get_ge_glu_max_min_tmp_size.md)（`related`）：SwiGLU 激活不同，临时空间公式不可直接复用；按门控函数选接口。
-- [GetSwiGLUTmpBufferFactorSize](get_swi_glu_tmp_buffer_factor_size.md)（`same_topic`）：两者是 SwiGLU Host 侧临时空间预算的互补查询：本接口给出合法上下界，FactorSize 接口用 live-node/factor 模型估算可处理规模。
-- [SwiGLU](swi_glu.md)（`same_topic`）：SwiGLU 与《GetSwiGLUMaxMinTmpSize》的实质衔接是：SwiGLU 的 kernel、两种临时空间查询与非 32B slice 精度故障共同约束调用和缓冲区分配。
+- [GetSwiGLUTmpBufferFactorSize](get_swi_glu_tmp_buffer_factor_size.md)（`related`）：“- maxValue（输出）：SwiGLU接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。”；“- maxLiveNodeCount（输出）：最大存活节点数，最大临时空间是输入所占空间的多少倍。”。两种 Host 查询分别给定绝对空间范围和按输入规模反推空间的因子，服务同一 SwiGLU tiling 预算。
+- [SwiGLU](swi_glu.md)（`related`）：“kernel侧SwiGLU接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。”；“__aicore__ inline void SwiGLU(LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor0, const LocalTensor<T>& srcTensor1, const float& scalarValue, const LocalTensor<uint8_t>& sharedTmpBuffer, const uint32_t calCount)”。Host 查询得到的空间范围直接决定 SwiGLU kernel 的 sharedTmpBuffer 申请。
 <!-- cannbot:related:end -->

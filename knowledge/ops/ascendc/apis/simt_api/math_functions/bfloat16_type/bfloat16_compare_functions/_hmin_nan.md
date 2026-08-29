@@ -22,8 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hmax](_hmax.md)（`same_topic`）：__hmax 与《__hmin_nan》的实质衔接是：hmax_nan 与 hmax 的差异在 NaN 选择，hmin/min_nan 提供同一极值契约的相反操作和特殊值对照。
-- [__hmax_nan](_hmax_nan.md)（`same_topic`）：__hmin_nan 与《__hmax_nan》的实质衔接是：hmin 与 hmin_nan 的核心差别是 NaN 选择，hmax_nan 及 half2 版本提供相反极值和 packed 特殊值对照。
-- [__hmin](_hmin.md)（`same_topic`）：__hmin_nan 与《__hmin》的实质衔接是：hmin 与 hmin_nan 的核心差别是 NaN 选择，hmax_nan 及 half2 版本提供相反极值和 packed 特殊值对照。
-- [__hminx2_nan](../bfloat16x2_compare_functions/_hminx2_nan.md)（`same_topic`）：__hmin_nan 与《__hminx2_nan》的实质衔接是：hmin 与 hmin_nan 的核心差别是 NaN 选择，hmax_nan 及 half2 版本提供相反极值和 packed 特殊值对照。
+- [__hmin](_hmin.md)（`same_topic`）：获取两个输入数据中的最小值。；获取两个输入数据中的最小值。任一输入为nan时，结果为nan。。两接口计算相同 bfloat16 最小值，候选显式提供 NaN 传播版本，适合按异常值契约选择。
 <!-- cannbot:related:end -->

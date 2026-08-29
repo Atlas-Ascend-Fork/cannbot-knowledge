@@ -23,11 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetMrgSortResult](../../basic_api/memory_vector_compute/sort_and_merge/get_mrg_sort_result.md)（`related`）：AscMrgsort4 与《GetMrgSortResult》的实质衔接是：AscMrgsort4 的 Reg/C++ 入口、状态寄存器与结果读取必须配套，高层 MergeSort 说明同一四路归并任务如何落到该原语。
-- [MrgSort](../../adv_api/sort_operations/mrg_sort.md)（`related`）：AscMrgsort4 与《MrgSort》的实质衔接是：AscMrgsort4 的 Reg/C++ 入口、状态寄存器与结果读取必须配套，高层 MergeSort 说明同一四路归并任务如何落到该原语。
-- [MrgSort4（排序与合并）](../../basic_api/memory_vector_compute/sort_and_merge/mrg_sort4.md)（`related`）：AscMrgsort4 与《MrgSort4（排序与合并）》的实质衔接是：AscMrgsort4 的 Reg/C++ 入口、状态寄存器与结果读取必须配套，高层 MergeSort 说明同一四路归并任务如何落到该原语。
-- [ProposalConcat](../../basic_api/memory_vector_compute/sort_and_merge/proposal_concat.md)（`related`）：《ProposalConcat》处理“将连续元素合入Region Proposal内对应位置，每次迭代会将16个连续元素合入到16个Region Proposals的对应位置里。 Region Proposal说明： 目前仅支持两种数据类型：half、float。 每个Region Proposal占用连续8个half/float类型的元素，约定其格式：”。《AscMrgsort4》明确提供“将最多 4 条已排序队列合并为 1 条队列，并按 Region Proposal 的 score 域从大到小排序。”，其参数、调用或验证步骤直接接入ProposalConcat 与 ProposalExtract、Sort32、MrgSort 组成的 proposal 流水。
-- [排序与合并概述](../../basic_api/memory_vector_compute/sort_and_merge/overview.md)（`related`）：AscMrgsort4 与《排序与合并概述》的实质衔接是：AscMrgsort4 的 Reg/C++ 入口、状态寄存器与结果读取必须配套，高层 MergeSort 说明同一四路归并任务如何落到该原语。
-- [AscGetVms4Sr](asc_get_vms4_sr.md)（`same_topic`）：《AscMrgsort4》给出“将最多 4 条已排序队列合并为 1 条队列，并按 Region Proposal 的 score 域从大到小排序。”；该约束/探针可直接复现、解释或前置验证《AscGetVms4Sr》中的“此接口用于获取执行asc_mrgsort4操作后的4个队列中，每个队列已经理过的Region Proposal个数。使用时，需要将asc_mrgsort4中的if_exhausted_suspension参数配置为true，该配置模式下某条队列耗尽后，MrgSort4指令停止。”。
-- [MrgSort](../../basic_api/memory_vector_compute/sort_and_merge/mrg_sort.md)（`same_topic`）：《MrgSort》的任务是“将已排序的最多4条队列合并为1条队列，结果按score域由大到小排序，通常处理Sort32预处理的数据。”。《AscMrgsort4》具体提供“将最多 4 条已排序队列合并为 1 条队列，并按 Region Proposal 的 score 域从大到小排序。”，它直接用于Sort32 预排序、MrgSort 合并和 proposal 提取结果的流水。
+- [AscGetVms4Sr](asc_get_vms4_sr.md)（`related`）：将已经排好序的最多4条队列，合并排列成1条队列，结果按照score域由大到小排序。；此接口用于获取执行asc_mrgsort4操作后的4个队列中，每个队列已经理过的Region Proposal个数。使用时，需要将asc_mrgsort4中的if_exhausted_suspension参数配置为true，该配置模式下某条队列耗尽后，MrgSort4指令停止。后者读取前者在 exhausted-suspension 模式下的队列消费进度，形成排序与状态查询链。
 <!-- cannbot:related:end -->

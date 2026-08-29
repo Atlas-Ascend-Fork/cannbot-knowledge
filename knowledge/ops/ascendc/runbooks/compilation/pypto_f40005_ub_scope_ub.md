@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.memory", "topic.implementation.pipeline"]
 status: stable
 sources: []
 created_at: "2026-08-18T08:41:57Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 aliases: ["sparse_flash_attention_quant_d_950"]
 ---
@@ -74,13 +74,3 @@ pypto.error.FeError: ErrCode: F40005! Enum: TensorErr::TENSOR_MEMORY_ALLOCATION.
 
 - 平台：`MEM_UB size [253952]` 为 Ascend950 实测值；a2/a3 的 UB 容量与 OoO 调度策略可能不同，未验证，推断可迁移但需独立实测。
 - 算子：诊断针对 PyPTO 前端 `OoOScheduleState` 报错形态；原生 AscendC kernel 的 UB 越界报错不同。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [C1 Cube FP32 输出阻断 A5 Mix合图 CV 通路](c1_cube_fp32_a5_mix_cv.md)（`related`）：C1 Cube FP32 输出阻断 A5 Mix合图 CV 通路 与《PyPTO F40005 UB 越界：scope 扩展压满 UB》的实质衔接是：该卡的核心是 A5 Mix 合图中 FP32 C1 输出截断 CV 通路；所选卡直接覆盖同算子的 scope/workspace、mix 编译/flag 与 AIV 拓扑后果。
-- [FlashAttention算子性能调优案例](../../guides/operator_practice/best_practices/flash_attention_tuning.md)（`related`）：FlashAttention 变换若造成 UB scope 错误需先修构建，再评性能。
-- [Mix合图包入 V2 致任务数减半 E2E 劣化](../performance/mix_v2_e2e.md)（`related`）：两卡都围绕扩大 sg_set_scope/Mix 合图边界；focal 暴露任务数下降的 E2E 退化，候选暴露 scope 扩展导致 UB 超额 F40005，构成性能与可构建性双门禁。
-- [flash在线softmax JIT重排致精度超阈](../precision/flash_softmax_jit.md)（`same_topic`）：《PyPTO F40005 UB 越界：scope 扩展压满 UB》处理“在 PyPTO 前端扩展 sg_set_scope/Mix合图覆盖段或在循环内 sg_set_scope=-1 重开、或为 V0/V1 段加 sg_set_ooo_scope 时，OoO 调度把更多算子并入同一调度域，单算子 in/output UB 占用超出 MEM_UB(253952) 即报 F40005 TENSOR_MEMORY_ALLOCATION；诊断即回退 scope/ooo 扩展到上一可运行配置。”。《flash在线softmax JIT重排致精度超阈》明确“flash 在线 softmax 的 mi/li/oi 循环依赖对执行顺序敏感；loop_unroll_list、device_sched_mode、cube_nbuffer_setting 任一调离默认值都会改变 C1 任务执行顺序，引入 BF16 ULP 级累积误差 0.00048828 超逐位置阈值，三参数对在线 softmax 算子 banned。”，可直接用于核对同一 sparse flash PyPTO scope/Mix 合图扩展对 UB、调度、精度和编译挂起的联动约束。
-- [memory-driven stitch 与显式 max_num 冲突致挂起](memory_driven_stitch_max_num.md)（`same_topic`）：《PyPTO F40005 UB 越界：scope 扩展压满 UB》处理“在 PyPTO 前端扩展 sg_set_scope/Mix合图覆盖段或在循环内 sg_set_scope=-1 重开、或为 V0/V1 段加 sg_set_ooo_scope 时，OoO 调度把更多算子并入同一调度域，单算子 in/output UB 占用超出 MEM_UB(253952) 即报 F40005 TENSOR_MEMORY_ALLOCATION；诊断即回退 scope/ooo 扩展到上一可运行配置。”。《memory-driven stitch 与显式 max_num 冲突致挂起》明确“在已启用 memory-driven stitch 自动合图的 sparse_flash_attention_quant _part 实现上，于 JIT runtime_options 显式设 stitch_function_max_num=128 试图进一步优化，运行后 5 分钟无任何输出、shell 在 300000ms 超时终止，判定为编译/运行挂起；回退该参数后恢复正常。memory-driven stitch 与显式 stitch_function_max_num 是两种互斥的合图决策路径，不可混用，banned。”，可直接用于核对同一 sparse flash PyPTO scope/Mix 合图扩展对 UB、调度、精度和编译挂起的联动约束。
-<!-- cannbot:related:end -->

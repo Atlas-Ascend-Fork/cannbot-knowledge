@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:37:57Z"
-updated_at: "2026-08-25T18:37:57Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -87,7 +87,7 @@ w11 = dx*dy
 
 ### 入口与版本
 
-公开文档和头文件只声明无版本后缀的两段式 API。第一段创建 executor、校验参数并编排通用 `Contiguous/Transpose/Cast`、自有 `MultiScaleDeformableAttentionGrad`、逆 `Transpose/Cast/ViewCopy`；第二段以调用者提供的 workspace 和 stream 执行 executor。README 与 API 文档均明确 A2、A3 支持；OpDef、binary config、Kernel CMake 和全局 binary config 对应 `ascend910b`、`ascend910_93`。固定仓没有 A5/`ascend950` 声明或接线。
+公开文档和头文件只声明无版本后缀的两段式 API。第一段创建 executor、校验参数并编排通用 `Contiguous/Transpose/Cast`、自有 `MultiScaleDeformableAttentionGrad`、逆 `Transpose/Cast/ViewCopy`；第二段以调用者提供的 workspace 和 stream 执行 executor。README 与 API 文档均明确 A2、A3 支持；OpDef、binary config、Kernel CMake 和全局 binary config 对应 `ascend910b`、`ascend910_93`。固定仓没有 950/`ascend950` 声明或接线。
 
 ## Host/Launcher 执行流程
 
@@ -175,7 +175,7 @@ core_used = min(AIV_core_count, taskNum)
 | query tile 对齐 | `maxUbNum` 向下对齐 8；尾 tile `AlignUp(tail,8)` | TBuf 分配与坐标 Vector 操作按 32 B 对齐，GM Copy 只搬有效 `thisCycleNum` | R-001 | 无独立 fallback，尾部由有效长度和 padding 隔离 | `Init`、`ScalarUpdate` |
 | 内部/边界邻点 | `hLow>=0 && wLow>=0 && hLow<h-1 && wLow<w-1` | 内部点可批量搬四邻点并共享事件；边界点必须逐邻点检查避免越界 | R-001 body 子路径 | `ComputeGradSeparate` | `GridSampleCompute` |
 | 输出清零核数 | `ClearOutput` 仅 block 0/1/2 分别清三个输出 | AtomicAdd 前必须清零，三输出各由一个 block 初始化 | R-001 | `core_used<3` 时固定仓没有替代清零路径；确定性单核尤其受影响 | `ClearOutput` |
-| 平台 | OpDef/CMake/config 仅 `ascend910b`,`ascend910_93` | 只有这两个 compute unit 有 binary 和活动构建 | R-001 | A5 不发布 | `MultiScaleDeformableAttentionGrad` OpDef、`op_kernel/CMakeLists.txt` |
+| 平台 | OpDef/CMake/config 仅 `ascend910b`,`ascend910_93` | 只有这两个 compute unit 有 binary 和活动构建 | R-001 | 950 不发布 | `MultiScaleDeformableAttentionGrad` OpDef、`op_kernel/CMakeLists.txt` |
 
 ### POD/ABI
 
@@ -457,7 +457,7 @@ if (hLow >= 0 && wLow >= 0 && hLow < h - 1 && wLow < w - 1) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；公开文档、`ascend910b` OpDef/config/CMake 接线闭合 | 支持；公开文档、`ascend910_93` OpDef/config/CMake 接线闭合 | 不支持发布：公开文档未列出，且无 `ascend950` OpDef、binary 或 Kernel 构建接线 |
 | Host/Launcher | 与 A3 共用同一源码；平台提供 AIV core 数与 UB 大小 | 与 A2 共用同一源码；平台提供 AIV core 数与 UB 大小 | 固定仓无实现 |
@@ -503,4 +503,4 @@ if (hLow >= 0 && wLow >= 0 && hLow < h - 1 && wLow < w - 1) {
 | workspace/内存 | UB 公式与 25 个 TBuf；自有 workspace 不读取 | 1024 B reserve、32 B 对齐、全部 buffer 系数、owner/lifetime | Tiling `Init`、Kernel `InitBuffer` |
 | 同步 | 清零后 SyncAll；MTE2/V/MTE3/S 事件链；gradValue AtomicAdd | 至少三核清零前提、事件 wait/set 顺序、Atomic 作用域 | `ClearOutput/Process/Compute/GridSampleCompute/ComputeGrad*` |
 | 精度与尾块 | 内部 FP32；floor/双线性；沿 D Sum；query tail 只提交有效值 | Cast 顺序、`-0.5` 坐标、W/H 链式缩放、8 元素对齐 | API Cast、`Init/ScalarUpdate/Compute` |
-| 失败边界 | 空输入无 launch；参数/节点失败立即返回；边界逐邻点 | 不得补造 shape 交叉检查、UB/core fallback、A5 支持或确定性保证 | `CheckParams`、两段式 API、`GridSampleCompute`、平台接线 |
+| 失败边界 | 空输入无 launch；参数/节点失败立即返回；边界逐邻点 | 不得补造 shape 交叉检查、UB/core fallback、950 支持或确定性保证 | `CheckParams`、两段式 API、`GridSampleCompute`、平台接线 |

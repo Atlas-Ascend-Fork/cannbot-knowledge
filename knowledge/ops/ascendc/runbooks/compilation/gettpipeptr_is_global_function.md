@@ -416,11 +416,6 @@ __global__ __aicore__ void gather_kernel(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [FetchEventID](../../apis/simd_api/basic_api/resource_management/t_pipe/fetch_event_id.md)（`exemplifies`）：GetTPipePtr 错加 AscendC 命名空间导致编译失败 与《FetchEventID》的实质衔接是：GetTPipePtr 是返回 AscendC::TPipe* 的全局函数；全局符号前缀案例和 FetchEventID/SetFlag/WaitFlag API共同说明只应去掉函数名上的 AscendC::。
-- [GetTPipePtr](../../apis/simd_api/basic_api/resource_management/get_t_pipe_ptr.md)（`exemplifies`）：GetTPipePtr：GetTPipePtr 返回当前 TPipe，全局命名空间 runbook直接修复其调用错误；TPipe与资源管理页解释返回对象及其生命周期。 目标卡《GetTPipePtr 错加 AscendC 命名空间导致编译失败》补充：Ascend C 事件 ID 初始化时，GetTPipePtr 是返回 AscendC::TPipe 指针的全局函数；误写为 AscendC::GetTPipePtr 会触发成员查找失败。
-- [SetFlag/WaitFlag](../../apis/simd_api/basic_api/sync_control/intra_core_sync/set_flag_wait_flag.md)（`exemplifies`）：GetTPipePtr 错加 AscendC 命名空间导致编译失败 与《SetFlag/WaitFlag》的实质衔接是：GetTPipePtr 是返回 AscendC::TPipe* 的全局函数；全局符号前缀案例和 FetchEventID/SetFlag/WaitFlag API共同说明只应去掉函数名上的 AscendC::。
-- [SetFlag/WaitFlag](../../apis/simd_api/basic_api/sync_control/intra_core_sync/set_flag_wait_flag_isasi.md)（`exemplifies`）：GetTPipePtr 错加 AscendC 命名空间导致编译失败 与《SetFlag/WaitFlag》的实质衔接是：GetTPipePtr 是返回 AscendC::TPipe* 的全局函数；全局符号前缀案例和 FetchEventID/SetFlag/WaitFlag API共同说明只应去掉函数名上的 AscendC::。
-- [MTE2跨流水未建依赖导致UB读到上次调用残值](../precision/direct_mte_slot_reuse_needs_bidirectional_hard_events.md)（`related`）：获取 TPipe 指针是分配 event 的前置接口；编译期入口正确不等于已经建立双向依赖。
-- [AscendC:: 前缀致全局符号编译失败](ascendc.md)（`same_topic`）：GetTPipePtr 错加 AscendC 命名空间导致编译失败 与《AscendC:: 前缀致全局符号编译失败》的实质衔接是：GetTPipePtr 是返回 AscendC::TPipe* 的全局函数；全局符号前缀案例和 FetchEventID/SetFlag/WaitFlag API共同说明只应去掉函数名上的 AscendC::。
-- [PipeBarrier 的 PIPE_V 是全局枚举](pipebarrier_pipe_v_uses_global_enum.md)（`same_topic`）：《PipeBarrier 的 PIPE_V 是全局枚举》处理“在 CANN 9.0.1/9.2 classic Ascend C 中把 PIPE_V 写成 AscendC 命名空间成员会编译失败，改用全局枚举后构建通过；已在 A3 与 Ascend950 两个平台闭环。”。《GetTPipePtr 错加 AscendC 命名空间导致编译失败》提供“Ascend C 事件 ID 初始化时，GetTPipePtr 是返回 AscendC::TPipe 指针的全局函数；误写为 AscendC::GetTPipePtr 会触发成员查找失败。”，其具体合同或探针直接接入PipeBarrier 模板与 PIPE_* 全局枚举的符号解析及同类编译诊断。
+- [FetchEventID](../../apis/simd_api/basic_api/resource_management/t_pipe/fetch_event_id.md)（`exemplifies`）：“未改 `AscendC::HardEvent`、`FetchEventID` 或同步事件种类，因为报错只指向函数名的命名空间查找；”说明修复后事件调用合同保持不变；“根据HardEvent（硬件类型的同步事件）获取相应可用的TEventID，此接口不会申请TEventID，仅提供可用的TEventID。”定义该成员调用的语义。
+- [GetTPipePtr](../../apis/simd_api/basic_api/resource_management/get_t_pipe_ptr.md)（`exemplifies`）：“`GetTPipePtr` 的函数标识符声明在全局命名空间，只有返回类型是 `AscendC::TPipe*`，因此给函数名添加 `AscendC::` 会在该命名空间内查找一个不存在的成员。”给出编译失败的命名空间根因；“创建TPipe对象时，对象初始化会设置全局唯一的TPipe指针。”提供对应 API 的全局指针合同。
 <!-- cannbot:related:end -->

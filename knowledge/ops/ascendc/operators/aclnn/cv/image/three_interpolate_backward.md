@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-24T20:50:40Z"
-updated_at: "2026-08-24T20:50:40Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -878,9 +878,9 @@ scatter 目标可重复，N 轴 Route 还可能由不同核命中同一输出。
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；公开表与 ascend910b 接线一致 | 支持；公开表与 ascend910_93 接线一致 | 公开 README/ACLNN 文档明确不支持，因此不创建 `_a5` 卡 |
+| 支持状态 | 支持；公开表与 ascend910b 接线一致 | 支持；公开表与 ascend910_93 接线一致 | 公开 README/ACLNN 文档明确不支持，因此不创建 `_950` 卡 |
 | Host/Launcher | 与 A3 共用 Tiling/entry；binary JSON 独立目录 | 与 A2 共用 Tiling/entry；binary JSON 独立目录 | N/A |
 | Kernel/资源 | 同一四 key AIV body；AIV 核数与 UB 从平台运行时查询 | 同左 | N/A |
 
@@ -902,7 +902,7 @@ scatter 目标可重复，N 轴 Route 还可能由不同核命中同一输出。
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `image/three_interpolate_backward/docs/aclnnThreeInterpolateBackward.md` | 产品表、原型、参数与约束 | A2/A3 支持、A5 不支持、语义/shape/dtype/非确定性 |
+| 入口声明/约束 | `image/three_interpolate_backward/docs/aclnnThreeInterpolateBackward.md` | 产品表、原型、参数与约束 | A2/A3 支持、950 不支持、语义/shape/dtype/非确定性 |
 | 入口声明/约束 | `image/three_interpolate_backward/op_host/op_api/aclnn_three_interpolate_backward.h` | 两段式 ACLNN 原型 | 实际公开符号与参数 ABI |
 | 入口实现 | `image/three_interpolate_backward/op_host/op_api/aclnn_three_interpolate_backward.cpp` | `CheckParams/GetWorkspaceSize/aclnnThreeInterpolateBackward` | 校验、空域、executor 节点顺序、workspace |
 | L0 Launcher | `image/three_interpolate_backward/op_host/op_api/three_interpolate_backward.cpp` | `ThreeInterpolateBackward/Aicore` | 中间 shape、AllocTensor、AICore launcher |

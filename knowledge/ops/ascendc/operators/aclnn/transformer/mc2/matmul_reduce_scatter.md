@@ -50,7 +50,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_reduce_scatter_v2/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:41:43Z"
-updated_at: "2026-08-24T20:10:30Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -550,9 +550,9 @@ Host 只为失对齐矩阵计算 slice，AIV 补零后 Catlass 按 guard 选原 
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 V2 支持 | 公开 V2 支持 | 见 `_a5` 卡 |
+| 支持状态 | 公开 V2 支持 | 公开 V2 支持 | 见 `_950` 卡 |
 | Host/Launcher | 910B，可 small-M | 910_93，`is910C=true` | 不在本卡 |
 | Kernel/资源 | `MultiPut=fullmesh`, A2 context | `ReduceScatter=fullmesh`, V2 context | 不在本卡 |
 
@@ -602,3 +602,9 @@ Host 只为失对齐矩阵计算 slice，AIV 补零后 Catlass 按 guard 选原 
 | 同步 | IDs 0/1/2+,12; 180MiB flags | mode/pipe/id/round | `CommBase`,`AIVComm` |
 | 精度与尾块 | INT32→FP32→cType；valid M/N | Fixpipe special case/cast order | `Dequant`,`FirstStepInOut` |
 | 失败边界 | invalid selector fails | no silent unsupported route | Host checks |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MatmulReduceScatter 950 ACLNN 算子知识](matmul_reduce_scatter_950.md)（`same_topic`）：｜ 计算语义 ｜ `y=ReduceScatterSUM(x1@x2+bias?)`；INT8 先 INT32 累加，再 per-channel/可选 per-token 反量化 ｜；｜ 计算语义 ｜ 先计算 `C = x1 × x2 + bias`，再在通信域对 `C` 做 `sum` ReduceScatter；本 rank 得到 `［M/rankSize, N］` ｜。两卡定义同一 MatmulReduceScatterV2 的 MatMul 加 SUM ReduceScatter 主语义，分别闭合 A2/A3 与 950 的 MIX_CV 及量化路线。
+<!-- cannbot:related:end -->

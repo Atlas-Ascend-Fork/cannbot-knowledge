@@ -28,12 +28,6 @@ asc_squeeze_v2接口搭配asc_storeunalign_postupdate接口使用时，会将有
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSqueeze](asc_squeeze.md)（`same_topic`）：AscSqueeze说明将src中被mask选择的有效元素依次复制到dst中，有效元素在dst中从低到高连续排列，剩余位置元素置为0。本接口不会将有效数据大小保存至AR寄存器。
-- [AscSqueeze](../../vector_compute/asc_squeeze.md)（`same_topic`）：AscSqueezeV2说明已废弃接口，请使用asc_squeeze_and_storeunalign。将src中被mask选择的有效元素依次复制到dst并连续排列，搭配asc_storeunalign_postupdate可将有效数据大小保存至AR寄存器。
-- [AscSqueezeAndStoreunalign](../reg_store/asc_squeeze_and_storeunalign.md)（`same_topic`）：AscSqueezeAndStoreunalign 与《AscSqueezeV2》的实质衔接是：AscSqueezeAndStoreunalign 必须先 Init 清 AR、可多次压紧并自动推进地址、最后 Finalize；旧 SqueezeWithStatus/GetSqueezeStatus 路径解释迁移前的长度状态。
-- [AscSqueezeAndStoreunalignFinalize](../reg_store/asc_squeeze_and_storeunalign_finalize.md)（`same_topic`）：AscSqueezeAndStoreunalignFinalize说明配合asc_squeeze_and_storeunalign接口，将暂存于非对齐寄存器的尾块数据搬出到UB，完成非对齐搬出收尾。
-- [AscSqueezeAndStoreunalignInit](../system_variables_access/asc_squeeze_and_storeunalign_init.md)（`same_topic`）：AscSqueezeAndStoreunalignInit说明对AR特殊寄存器清零，用于配合asc_squeeze_and_storeunalign进行地址自动偏移，首次调用前需初始化。
-- [AscSqueezeWithStatus](asc_squeeze_with_status_deprecated.md)（`same_topic`）：AscSqueezeWithStatus：该废弃接口的功能是按mask压紧并记录有效长度；推荐替代AscSqueezeAndStoreunalign的Init/执行/Finalize链同时完成压紧和非对齐搬出，GetSqueezeStatus/基础Squeeze用于核对长度语义。 目标卡《AscSqueezeV2》补充：已废弃接口，请使用asc_squeeze_and_storeunalign。将src中被mask选择的有效元素依次复制到dst并连续排列，搭配asc_storeunalign_postupdate可将有效数据大小保存至AR寄存器。
-- [Squeeze](../../../basic_api/reg_vector_compute/compare_and_select/squeeze.md)（`same_topic`）：Squeeze：Squeeze 按 mask 压紧有效 lane，并通过 AR 字节数驱动非对齐 Store；C API、废弃替代链和 StoreUnAlign 正好覆盖同一压紧/搬出契约。 目标卡《AscSqueezeV2》补充：已废弃接口，请使用asc_squeeze_and_storeunalign。将src中被mask选择的有效元素依次复制到dst并连续排列，搭配asc_storeunalign_postupdate可将有效数据大小保存至AR寄存器。
-- [asc_get_ar_spr (废弃)](../../sys_var/asc_get_ar_spr_deprecated.md)（`same_topic`）：asc_get_ar_spr (废弃) 与《AscSqueezeV2》的实质衔接是：asc_get_ar_spr 已明确由 AscGetSqueezeStatus 替代；clear AR、旧 SqueezeWithStatus/SqueezeV2 和废弃接口表解释该特殊寄存器状态的生产、清理与迁移。
+- [AscSqueezeAndStoreunalign](../reg_store/asc_squeeze_and_storeunalign.md)（`related`）：该接口已废弃，请使用asc_squeeze_and_storeunalign实现筛选并连续搬出有效元素的功能。；reg计算数据搬运接口，适用于从矢量数据寄存器中筛选出有效元素后按照连续非32B对齐的起始地址连续搬出到UB的场景。 本接口将输入矢量数据寄存器src1中被掩码squeeze_mask选择的有效元素依次复制到矢量数据寄存器dst，有效元素在dst上连续排列，dst中后续非有效元素置0。若AR寄存器（用于累加已搬出的有效数据量）中累加了前序asc_squeeze_and_storeunalign指令的有效元素总数据量，则将dst中有效数据写入dst_addr + AR寄存器数据量的地址，并将本次执行的有效数据量大小（以字节为单位）累加进AR寄存器。如调用示例所示，多次连续调用本接口时，若不清空AR寄存器，可以实现自动地址偏移，不需要手动管理地址。。废弃卡明确指定 asc_squeeze_and_storeunalign 为迁移目标，目标卡给出筛选、连续非对齐搬出和 AR 自动偏移的替代合同，因此该边直接推进旧调用迁移。
+- [AscSqueeze](asc_squeeze.md)（`same_topic`）：将src中被mask选择的有效元素依次复制到dst中，有效元素在dst中从低到高连续排列，剩余位置元素置为0。；该接口已废弃，请使用asc_squeeze_and_storeunalign实现筛选并连续搬出有效元素的功能。。两卡都围绕 AscSqueeze 的掩码筛选与连续排列语义，目标卡记录旧接口退役和迁移入口，焦点卡保留当前不写 AR 的筛选契约，因此属于同一核心接口主题的版本演进。
 <!-- cannbot:related:end -->

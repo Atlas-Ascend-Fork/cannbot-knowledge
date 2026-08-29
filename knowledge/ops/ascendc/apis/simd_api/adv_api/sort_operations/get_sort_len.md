@@ -23,8 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Extract（排序操作）](extract.md)（`related`）：有效排序长度决定 Extract 范围。
-- [GetSortMaxMinTmpSize](get_sort_max_min_tmp_size.md)（`related`）：GetSortMaxMinTmpSize 负责“在host侧获取带SortConfig模板参数的Sort接口计算所需的最大和最小临时空间大小”；GetSortLen 负责“根据元素数量，获取Sort数据的大小（单位为字节）”。
-- [GetSortOffset](get_sort_offset.md)（`related`）：GetSortOffset 与《GetSortLen》的实质衔接是：SortOffset 是 Sort 中间数据布局的字节偏移；SortLen、临时空间、Concat/Extract 和 Sort 调用必须采用同一 repeat 布局。
-- [GetSortTmpSize](get_sort_tmp_size.md)（`related`）：GetSortTmpSize 使用同一 repeatTime 计算 Sort 所需临时空间，和 GetSortLen 分别回答数据长度与 buffer 容量。
+- [Sort](sort.md)（`related`）：获取Sort接口处理的数据长度。；排序函数，按照数值大小进行降序排序。支持带和不带SortConfig模板参数两种原型。不带Config时执行标准降序排序；带Config时可配置排序参数。。GetSortLen 按 repeatTime 计算 Sort 处理长度，Sort 卡给出该长度所服务的降序 score/index 执行接口与临时空间合同。
 <!-- cannbot:related:end -->

@@ -39,5 +39,5 @@ __aicore__ inline void DropOut(const LocalTensor<T>& dstLocal, const LocalTensor
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetDropOutMaxMinTmpSize](get_drop_out_max_min_tmp_size.md)（`same_topic`）：GetDropOutMaxMinTmpSize 与《DropOut》的实质衔接是：GetDropOutMaxMinTmpSize 给 DropOut kernel 分配可用临时空间，两者必须以相同 shape/type 契约调用。
+- [GetDropOutMaxMinTmpSize](get_drop_out_max_min_tmp_size.md)（`related`）：“提供根据MaskTensor对SrcTensor（源操作数，输入Tensor）进行过滤的功能，得到DstTensor（目的操作数、输出Tensor）。仅支持输入shape为ND格式。 该过滤功能包括两种模式，字节模式和比特模式。 - 字节模式”明确给出左端事实；“用于获取DropOut Tiling参数。”明确给出右端事实。计算接口依赖 shape 和 UB 临时空间，Tiling 辅助接口返回其最大/最小临时空间，从 Host 规划直接衔接到 Kernel 调用。
 <!-- cannbot:related:end -->

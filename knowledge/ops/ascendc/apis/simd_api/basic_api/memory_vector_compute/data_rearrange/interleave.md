@@ -27,8 +27,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [B16 交错 DINTLV 成对归零 — 转 fp32 后重排](../../../../../runbooks/precision/b16_interleave_compute_should_promote_to_b32_layout.md)（`exemplifies`）：该 runbook 证明 B16 直接交错/解交错会因 DINTLV lane 布局错配成对归零，并给出提升到连续 B32 后重排的已验证边界。
-- [DeInterleave 两路写反——按偶索引到 dst0 修正](../../../../../runbooks/precision/deinterleave_dst0_is_even_lane_output.md)（`exemplifies`）：修复链在偶/奇两路 Reg 计算后用 LocalTensor Interleave 重组成输出；它是 DeInterleave 拆分路线的直接逆向布局步骤。
-- [DeInterleave](de_interleave.md)（`related`）：Interleave 将两路数据交错合并，DeInterleave 按偶/奇 lane 还原两路，是可逆排布链的正反操作。
-- [Interleave](../../reg_vector_compute/data_reorder/interleave.md)（`same_topic`）：Memory Tensor 版本完成同一交织任务，可按数据驻留选择。
+- [DeInterleave](de_interleave.md)（`related`）：将两个源操作数中的元素解交织存入两个结果操作数中，支持双输入和单输入两种模式。；将两个源操作数中的元素交织存入两个结果操作数中，要求元素个数为偶数。。DeInterleave 把交织输入拆成两路，Interleave 把两路重新交织；二者在成对数据重排流水中互为拆分与重组步骤，数据顺序合同直接衔接。
+- [GroupedDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/grouped_dynamic_mx_quant_950.md)（`related`）：“｜ Scale layout ｜ `Duplicate`+`Interleave` ｜ calcBuf ｜ mxScaleQueue ｜ 两个 32-row scale 平面 ｜ 奇数平面补零；行尾按实际 `blockCount` ｜”；“将两个源操作数中的元素交织存入两个结果操作数中，要求元素个数为偶数。”。operator 用 Interleave 把成对 E8M0 scale 平面排成 mxscale 尾维 2，奇数平面补零正好满足接口偶数约束。
 <!-- cannbot:related:end -->

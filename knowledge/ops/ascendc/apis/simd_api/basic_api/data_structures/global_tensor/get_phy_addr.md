@@ -27,8 +27,6 @@ GlobalTensor::GetPhyAddr 接口，用于获取全局数据的物理地址，支�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Gather 双加 LocalTensor 基址导致交错旋转乱码](../../../../../runbooks/precision/localtensor_gather_base_address_not_double_counted.md)（`exemplifies`）：《Gather 双加 LocalTensor 基址导致交错旋转乱码》处理“Gather 已由 LocalTensor 提供源基址时，srcBaseAddr 再传物理地址会重复加基址；保持字节偏移并传 0 可恢复交错旋转。”。《GetPhyAddr》明确提供“GlobalTensor::GetPhyAddr 接口，用于获取全局数据的物理地址，支持全平台。”，其参数、调用或验证步骤直接接入Gather 的 base 地址、byte offset、重复偏移故障和地址计算合同。
-- [GetPhyAddr const __gm__ 返回不可去 const](../../../../../runbooks/compilation/getphyaddr_const_gm_const.md)（`exemplifies`）：正式接口明确返回 const __gm__ 指针，是该编译错误的契约依据。
-- [AscGetPhyStackBase](../../../c_api/sys_var/asc_get_phy_stack_base.md)（`related`）：AscGetPhyStackBase 与《GetPhyAddr》的实质衔接是：物理栈基地址与 Global/LocalTensor GetPhyAddr、物理 buffer 地址共同用于物理寻址；const GetPhyAddr 故障直接约束返回地址可变性。
-- [GetPhyAddr](../local_tensor/get_phy_addr.md)（`same_topic`）：GetPhyAddr 的核心契约是“GlobalTensor::GetPhyAddr 接口，用于获取全局数据的物理地址，支持全平台”；GetPhyAddr 补充“返回LocalTensor的地址或指定偏移量后的地址”。
+- [GetPhyAddr const __gm__ 返回不可去 const](../../../../../runbooks/compilation/getphyaddr_const_gm_const.md)（`exemplifies`）：`AscendC::GlobalTensor<T>::GetPhyAddr()` 的返回类型是 `const __gm__ PrimType*`。C++ 规则下 `reinterpret_cast` 不能 casts away qualifiers（去 const），bisheng 编译器据此拒绝把 `const __gm__ int *` 转成 `__gm__ uint8_t *`。；GlobalTensor::GetPhyAddr 接口，用于获取全局数据的物理地址，支持全平台。；Runbook 用真实编译错误复现 GetPhyAddr 返回地址的 const 限定，并给出从 GM_ADDR 捕获可写裸指针的修复，直接示范该 API 合同的排障。
+- [aicore 禁止 const char* cast 到 __gm__ T*](../../../../../runbooks/compilation/aicore_const_char_cast_gm_t.md)（`exemplifies`）：在 aicore kernel 中访问 GM 时，始终从 `__gm__` 限定的来源（`GM_ADDR` 入参、`GlobalTensor<T>::GetPhyAddr()`）派生指针，不要用 `reinterpret_cast` 把非 `__gm__` 指针升级为 `__gm__ T*`。；GlobalTensor::GetPhyAddr 接口，用于获取全局数据的物理地址，支持全平台。。Runbook要求从 `GlobalTensor<T>::GetPhyAddr()` 派生合法 GM 指针，API 卡定义获取该全局数据物理地址的接口。
 <!-- cannbot:related:end -->

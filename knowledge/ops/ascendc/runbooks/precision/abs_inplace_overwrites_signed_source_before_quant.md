@@ -113,7 +113,5 @@ FAIL: M= 128, N=4096, dtype=torch.bfloat16       | int8_match=False, mismatch=0.
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Abs](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/abs.md)（`exemplifies`）：Abs 与《Abs 原地取绝对值后量化丢符号致 int8 坍缩》的衔接是：这些卡分别给出 Abs 在 Reg、C Reg、C Vector 路径上的同一绝对值语义；原地覆盖时符号位丢失案例是该操作的直接别名风险。
-- [AscAbs](../../apis/simd_api/c_api/vector_compute/asc_abs.md)（`exemplifies`）：Abs 原地取绝对值后量化丢符号致 int8 坍缩说明动态量化 kernel 先 Abs(yNormFp32, yNormFp32) 原地取绝对值再 Muls(1/scale) 量化，会丢失符号、量化的是绝对值，导致 int8 输出坍缩为 ±1 量级、约 50% mismatch；须把 Abs 写入独立 buffer、Muls 作用在原始带符号 tensor 上。
-- [Max/Min 逐元素非标量广播 须 Duplicate 至同长 buffer](count_based_max_min_is_element_wise_not_scalar_broadcast.md)（`related`）：本卡修复 Abs 原地覆盖后，大 N mismatch 已显著下降但小 N 仍错，并明确指向独立 clamp 根因；目标卡证明 count-based Max/Min 不会广播 32B 标量 buffer，给出剩余失败的闭环修复。
+- [Max/Min 逐元素非标量广播 须 Duplicate 至同长 buffer](count_based_max_min_is_element_wise_not_scalar_broadcast.md)（`related`）：修复后小 N 仍存的 mismatch 属 clamp 的 Max/Min 广播与 buffer 问题；count-based `Max/Min` 是逐元素、非标量广播。前者修复 in-place Abs 后把剩余小 N mismatch 明确定位到 clamp，后者说明 count-based Max/Min 误把未初始化 tensor 当标量广播的机制与修法；两卡组成连续精度排障链。
 <!-- cannbot:related:end -->

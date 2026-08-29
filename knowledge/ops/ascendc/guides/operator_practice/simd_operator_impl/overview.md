@@ -25,13 +25,3 @@ Ascend C的算子实现主要包含两个部分：
     Kernel实现即算子核函数实现，在Kernel函数内部通过解析Host侧传入的Tiling结构体获取Tiling信息，根据Tiling信息控制数据搬入搬出Local Memory的流程；通过调用计算、数据搬运、内存管理、任务同步API，实现算子逻辑。其核心逻辑基本上都为计算密集型任务，需要在NPU上执行。
 
 本章介绍矢量编程、矩阵编程、融合算子编程三种典型场景下的算子Tiling、Kernel实现，是对上文中典型编程范式的具体应用，同时也介绍了编程的更多细节、API的使用方法等。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AI Core SIMD编程模型概述](../../programming_guide/programming_model/ai_core_simd_programming/overview.md)（`related`）：SIMD算子实现概述 与《AI Core SIMD编程模型概述》的实质衔接是：该概述区分 Host tiling 与 Device kernel，并落到 SIMD 基础与 Matmul 实现；候选中的同名概述和 SIMD 模型是同一流程的展开而非成员枚举。
-- [SIMD算子实现基础知识](matrix_advanced_api/basics.md)（`related`）：SIMD算子实现概述 与《SIMD算子实现基础知识》的实质衔接是：该概述区分 Host tiling 与 Device kernel，并落到 SIMD 基础与 Matmul 实现；候选中的同名概述和 SIMD 模型是同一流程的展开而非成员枚举。
-- [SIMD算子实现概述](vector_programming/multi_core_tiling/overview.md)（`related`）：SIMD算子实现概述 与《SIMD算子实现概述》的实质衔接是：该概述区分 Host tiling 与 Device kernel，并落到 SIMD 基础与 Matmul 实现；候选中的同名概述和 SIMD 模型是同一流程的展开而非成员枚举。
-- [SIMD算子实现概述](vector_programming/overview.md)（`related`）：SIMD算子实现概述 与《SIMD算子实现概述》的实质衔接是：该概述区分 Host tiling 与 Device kernel，并落到 SIMD 基础与 Matmul 实现；候选中的同名概述和 SIMD 模型是同一流程的展开而非成员枚举。
-- [算子实现](matrix_advanced_api/operator_impl.md)（`related`）：算子实现 与《SIMD算子实现概述》的实质衔接是：该指南的核心是 host tiling→kernel Matmul 对象→Set A/B→Iterate/IterateAll→End；耦合模式、异步迭代与 CUBE_ONLY 故障直接约束实现选择。
-<!-- cannbot:related:end -->

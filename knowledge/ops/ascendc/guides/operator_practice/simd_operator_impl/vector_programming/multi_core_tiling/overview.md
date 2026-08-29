@@ -38,14 +38,3 @@ Ascend C核函数是在Device侧执行的并行函数。为了提高算子的执
 本章基于矢量计算多核Tiling切分策略样例，以两个一维Tensor相加的Add矢量算子为例，对多核Tiling切分的典型场景进行说明。样例实现文件为vector_tiling_strategy.asc。
 
 **图 2**  多核Tiling示意图
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMD算子实现主块均分](main_block_even_split.md)（`related`）：《SIMD算子实现主块均分》说明长度为totalLength的输入数据可以按参与计算的核数和主块长度mainTileLength均匀切分，主块均分后无剩余数据。各核处理的数据量相同，每个核处理tileNum个主块，核内只包含主块。；《SIMD算子实现概述》说明Ascend C核函数是在Device侧执行的并行函数。为了提高算子的执行效率，通常采用多核并行计算，将输入数据切分后分配到不同的逻辑核上处理；同时，由于单个核的Local Memory容量有限，无法一次完整容纳算子的输入和输出数据，需要分批搬运数据进行计算。这种对输入数据进行切分、分块计算的过程称为Tiling。。二者在主块均分与三种尾块策略共同覆盖多核切分分支；Kernel用GetBlockIdx定位GM段，numBlocks塌缩故障验证Host切核结果上存在可执行的直接衔接。
-- [SIMD算子实现尾块均分](tail_block_even_split.md)（`related`）：尾块均分处理总块数不能整除核数时的负载分配，补充主块策略的尾部情况。
-- [SIMD算子实现概述](../../overview.md)（`related`）：SIMD算子实现概述 与《SIMD算子实现概述》的实质衔接是：该概述区分 Host tiling 与 Device kernel，并落到 SIMD 基础与 Matmul 实现；候选中的同名概述和 SIMD 模型是同一流程的展开而非成员枚举。
-- [TailCoreSplit](tail_core_split.md)（`related`）：尾核切分适合把余量集中到特定核，和均分策略在负载平衡与实现复杂度间取舍。
-- [SIMD算子实现概述](../overview.md)（`same_topic`）：焦点处理SIMD 算子实现总览中的双缓冲和计算模型；SIMD算子实现概述正文界定“Ascend C核函数是在Device侧执行的并行函数。为了提高算子的执行效率，通常采用多核并行计算，将输入数据切分后分配到不同的逻辑核上处理；同时，由于单个核的Local Memory容量有限，无法一次完整容纳算子的输入和输出数据，需要分”。候选只保留与总览正文直接展开的 SIMD 计算、DoubleBuffer 机制及其重复说明。
-- [TailCoreTailBlockSplit](tail_core_tail_block_split.md)（`same_topic`）：多核 Tiling 概述给出 32B DataBlock 最小切分、UB 利用和负载均衡原则，是尾核尾块策略的设计约束。
-<!-- cannbot:related:end -->

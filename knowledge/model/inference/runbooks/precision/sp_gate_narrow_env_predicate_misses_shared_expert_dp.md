@@ -88,3 +88,10 @@ SP 的**真实启用条件不是**「用户是否设了 FlashComm 环境变量�
 - 门控从 `enable_flash_comm_v1()` 改回 `enable_sp(...)`（7 文件），且窄谓词函数整体删除、环境变量判断内联进 `enable_sp` 的 `_ENABLE_SP` 计算；`utils.py` 中 `enable_sp` 函数体含 `if not _ENABLE_SP and enable_shared_expert_dp: _ENABLE_SP = True` 与日志 `shared_expert_dp requires enable_sp = True`：合并态 diff 事实 + PR body 明述根因（先前一次改动误把 `enable_sp` 分支替换成 `enable_flash_comm_v1`，`enable_shared_expert_dp` 单开时导致 accuracy issues）@sha 5e24b26a543ae7ab92f7304c127ef27d43420369（state MERGED）。溯源下探 [vllm-ascend-pr-6883-bugfix-rename-enable-flash-comm-v1-back-to-enable-sp](https://github.com/vllm-project/vllm-ascend/pull/6883)。
 - 证据强度：源仅给定性判据（accuracy issues → recovered expected behavior and accuracy），未给 before→after 数值精度指标。
 - 范围限定：结论仅适用于 vllm-ascend 的 SP/FlashComm-V1 与 shared_expert_dp 门控，未外推到其它谓词或其它硬件。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoE 优化/并行在 decode 静默不生效的四类根因：硬编码 False / yaml 键名不匹配 / 漏切间接层 / 误挂 is_prefill](../performance/moe_optimization_silently_disabled_decode.md)（`related`）：通用 Runbook要求核查“门控条件（有没有误混 `is_prefill`）”；SP Runbook给出具体发散：“广义 `enable_sp(...)` 返回 True，窄 `enable_flash_comm_v1()` 返回 False。”。后者是门控谓词选错导致静默失效并进一步产生精度回归的可复现分支。
+- [SP-TP-SP Hybrid Split (Prefill MLA)](../../concepts/parallelism/sp_tp_sp.md)（`related`）：**广义谓词（反映 SP 实际是否生效）**：`enable_sp(vllm_config=None, enable_shared_expert_dp=False)`。；DeepSeek-R1 Prefill 阶段 MLA 部分针对 DP 切分在短序列混合/请求数少场景下 **计算负载不均 + TTFT 被拉长** 问题提出的混合切分策略：把 batch 与 seq_len 合轴变为 token 数，按卡数 **SP** 切 token 均匀分发；FlashAttention 计算走 **TP** 切 head；FA 结束后 AllToAll 再转回 **SP** 给 o_proj。"SP → TP（FA）→ SP" 三段式得名。。运行手册的广义谓词决定概念页所述 SP 布局是否真正启用，谓词漏判会让同一执行链部分分支采用非 SP 布局并产生精度错误。
+<!-- cannbot:related:end -->

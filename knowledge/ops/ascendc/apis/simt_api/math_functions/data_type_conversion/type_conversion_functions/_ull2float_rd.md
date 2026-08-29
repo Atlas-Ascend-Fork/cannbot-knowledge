@@ -25,15 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/device_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__half2ull_rd](../../half_type/half_precision_conversion_functions/_half2ull_rd.md)（`related`）：__half2ull_rd 与《__ull2float_rd》的实质衔接是：half→unsigned long long 的 floor 模式与同目标的 RN/RNA/RU/RZ 及同 floor 的有符号/其他源类型形成可执行舍入选择矩阵。
-- [__ll2float_rd](_ll2float_rd.md)（`same_topic`）：__ull2float_rd 与《__ll2float_rd》的实质衔接是：这些转换保持 ull 到 float 的源目类型并改变舍入模式；ll/uint 的 rd 入口用于核对有符号性和源位宽对向下舍入结果的影响。
-- [__uint2float_rd](_uint2float_rd.md)（`same_topic`）：__ull2float_rd 与《__uint2float_rd》的实质衔接是：这些转换保持 ull 到 float 的源目类型并改变舍入模式；ll/uint 的 rd 入口用于核对有符号性和源位宽对向下舍入结果的影响。
-- [__ull2float_rn](_ull2float_rn.md)（`same_topic`）：__ull2float_rd 与《__ull2float_rn》的实质衔接是：这些转换保持 ull 到 float 的源目类型并改变舍入模式；ll/uint 的 rd 入口用于核对有符号性和源位宽对向下舍入结果的影响。
-- [__ull2float_rna](_ull2float_rna.md)（`same_topic`）：__ull2float_rd 与《__ull2float_rna》的实质衔接是：这些转换保持 ull 到 float 的源目类型并改变舍入模式；ll/uint 的 rd 入口用于核对有符号性和源位宽对向下舍入结果的影响。
-- [__ull2float_ru](_ull2float_ru.md)（`same_topic`）：__ull2float_ru 与《__ull2float_rd》的实质衔接是：这些接口以 ull→float 为核心并切换舍入方向，ll/uint 入口验证源有无符号和位宽，ull→half/bfloat16 则保持 CAST_CEIL 但改变目标精度。
-- [__ull2float_rz](_ull2float_rz.md)（`same_topic`）：__ull2float_rd 与《__ull2float_rz》的实质衔接是：这些转换保持 ull 到 float 的源目类型并改变舍入模式；ll/uint 的 rd 入口用于核对有符号性和源位宽对向下舍入结果的影响。
-<!-- cannbot:related:end -->

@@ -213,13 +213,6 @@ def test_rms_norm_operator(shape, dtype):
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetCoreMemSize](../../apis/utils_api/platform_info/platform_ascend_c/get_core_mem_size.md)（`exemplifies`）：GetCoreMemSize 与《507035 — Host 按逻辑行宽预算导致 UB 溢出》的实质衔接是：GetCoreMemSize 为 host tiling 提供各层容量；ReserveLocalMemory 会改变可用 UB，Matmul 空间查询与 UB 预算故障直接消费该值。
-- [ACLNN 507015 — tiling UB 漏算 kIdxBuf 下溢](aclnn_507015_tiling_ub_kidxbuf.md)（`related`）：两卡都以 Host 预算未逐项镜像 Device InitBuffer 为根因；目标卡补充逻辑宽度必须展开为物理对齐 stride 和 tail padding，focal 补充固定 kIdxBuf/BLOCK_SIZE 与无符号下溢守卫。
-- [Reduce work buf 额外占 UB 致 507035](reduce_work_buf_ub_507035.md)（`related`）：该卡指出 Host 必须按对齐后的物理 stride 预算 UB，本卡指出还必须逐项计入 Reduce work；两者共同闭合 Host/Device 分配账本。
-- [VECTOR_REG_WIDTH 只能在 Device 作用域求值](vector_reg_width_only_in_device_context.md)（`related`）：focal 的 Host 预算需要 256B 向量宽度却不能直接引用 Device intrinsic；目标卡证明 VECTOR_REG_WIDTH 只在设备作用域可见，并要求 Host 使用独立信息来源。
-- [按 dtype 分配 UB 必须匹配 tiling 预算](dtype_conditional_ub_allocation_matches_tiling_budget.md)（`related`）：focal 修正逻辑宽度与物理宽度不一致，目标卡修正 dtype 分支下实际 live buffer 与 Host perElem 不一致；共同约束 B_live(dtype,tile) 不得超过预算。
-- [507035 C 超 per_buf_elems 致 Phase1 UB 越界](datacopypad_phase1_chunk_loop_per_buf_elems_507035.md)（`same_topic`）：焦点处理Phase1 中 C 超出 per_buf_elems 导致 UB 地址越界的预算故障；507035 — Host 按逻辑行宽预算导致 UB 溢出正文说明“Host tiling 用逻辑 D 估算 UB，而 Device 按对齐 stride 分配；统一预算公式后 20 个实测用例通过”。候选与焦点共享 UB 容量/slot 预算机制，能直接修正切分因子、物理宽度或双缓冲计数。
-- [507035 — 三队列 float32 tile 超 UB](507035_float32_tile_ub.md)（`same_topic`）：507035 — 三队列 float32 tile 超 UB 与《507035 — Host 按逻辑行宽预算导致 UB 溢出》的实质衔接是：这些卡共享可复算的 UB 根因：队列/工作缓冲数量、对齐物理宽度或分块超过每核预算；TPipe InitBuffer是实际乘入 depth×bytes 的资源申请点。
-- [ACL 507035 — 完整 a0 统计缓冲超过 UB](ub_slices_reduction_axis_scratch_buffers_507035.md)（`same_topic`）：UB 预算必须使用对齐物理宽度，避免 host 低估完整 scratch。
-- [FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR](fp16_double_buffer_ub_budget_queue_vs_tbuf_multiplier.md)（`same_topic`）：FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR 与《507035 — Host 按逻辑行宽预算导致 UB 溢出》的实质衔接是：focal 的漏乘项正是 TQue/TBuf 数量×double-buffer depth×dtype字节数；DoubleBuffer文档、InitBuffer、GetCoreMemSize和按dtype分配案例共同完成预算与验证。
+- [AscendC 融合算子 Tiling 定块与片上 Buffer 预算：核间 m 轴取舍 + L1/L0 字节账 + UB double-buffer 全计入](../../../../model/inference/optimizations/experience/cases/ascendc_attention_op_tiling_budget.md)（`related`）：tiling 阶段**不报错**（RC=0），错误延迟到 kernel 执行期才暴露；Host 旧公式用逻辑行宽计算 `perRow_old = 4*D*elementSize + 64`，Device 实际使用 `strideElems = ceil(D/VL)*VL`；两端把同一 507035/UB 溢出诊断链分别落到漏计缓冲份数与漏计物理对齐宽度。
+- [按 dtype 分配 UB 必须匹配 tiling 预算](dtype_conditional_ub_allocation_matches_tiling_budget.md)（`related`）：“kernel 的 dtype 条件分配与 tiling 的逐元素预算不一致”定位多分配的转换 TBuf，“Host 与 Device 共用同一对齐公式”处理物理 stride 低估，二者共同要求 Host 预算精确复刻 Device live-buffer。
 <!-- cannbot:related:end -->

@@ -100,20 +100,3 @@ agent 第一次命中 507035 时（kernel 含 `TBuf<VECCALC> tmpMaskFloat_` 用�
 ## 预防
 
 写多 TQue + 双缓冲 + 大固定 tile 的 elementwise Reg kernel 前，先代入 `Σ(队列数 × DEPTH × tileSize × sizeof(dtype)) ≤ 每核 UB` 选 tile；不要把 `copy_between_host_and_device_opapi`/507035 默认归因为 TBuf 生命周期或 D2H 拷贝，先用同环境已知正常算子（如 exp）排除硬件、再缩 tile 验证 UB 假设。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InitBuffer](../../apis/simd_api/basic_api/resource_management/t_pipe/init_buffer.md)（`exemplifies`）：507035 — 三队列 float32 tile 超 UB 与《InitBuffer》的实质衔接是：这些卡共享可复算的 UB 根因：队列/工作缓冲数量、对齐物理宽度或分块超过每核预算；TPipe InitBuffer是实际乘入 depth×bytes 的资源申请点。
-- [TBufPool简介](../../apis/simd_api/basic_api/resource_management/t_buf_pool/t_buf_pool_intro.md)（`exemplifies`）：TBufPool简介 与《507035 — 三队列 float32 tile 超 UB》的实质衔接是：TBufPool 在 TPipe 下手工复用 UB/L1，必须依次 InitBufPool、分配/取址、Reset 或 Destroy；所连容量和 TPipe 初始化案例直接约束资源预算与生命周期。
-- [TBuf简介](../../apis/simd_api/basic_api/resource_management/t_buf/t_buf_intro.md)（`exemplifies`）：TBuf简介 与《507035 — 三队列 float32 tile 超 UB》的实质衔接是：TBuf 的构造、InitBuffer、Get/GetWithOffset 共同定义 UB 临时缓冲的分配与类型化取用；所连案例分别验证参数签名、地址独立性、容量预算和 helper 传参约束。
-- [Cube tile k/n 超 L1/L0 上限报 INVALID_TILE](cube_tile_k_n_l1_l0_invalid_tile.md)（`related`）：该卡用缩 tile 二分定位 UB 超额，和 L1/L0 INVALID_TILE 一起提供各级片上存储容量越界的判别边界。
-- [tmpBuffer 分配步长≠访问步长触发 UB 越界 341](tmpbuffer_ub_341.md)（`related`）：tmpBuffer 分配步长≠访问步长触发 UB 越界 341 与《507035 — 三队列 float32 tile 超 UB》的衔接是：四个案例都把 UB 预算、分块或对齐计算与实际访问跨度不一致定位为越界根因，可复用‘按访问类型和对齐重算最大偏移’的验证方法。
-- [按 dtype 分配 UB 必须匹配 tiling 预算](dtype_conditional_ub_allocation_matches_tiling_budget.md)（`related`）：该卡提供缩 tile 后 507035 消失的容量探针，可在本卡计算 B_live 前快速确认错误属于 UB 超额而不是 GM 地址或同步。
-- [避免TPipe在对象内创建和初始化](../../guides/operator_practice/simd_operator_optimization/overhead_optimization/avoid_tpipe_init_in_object.md)（`related`）：把 TPipe/多队列移出对象前仍需核算 UB；该卡提供 InitBuffer 累加定位 UB 超限的方法。
-- [507035 C 超 per_buf_elems 致 Phase1 UB 越界](datacopypad_phase1_chunk_loop_per_buf_elems_507035.md)（`same_topic`）：焦点处理Phase1 中 C 超出 per_buf_elems 导致 UB 地址越界的预算故障；507035 — 三队列 float32 tile 超 UB正文说明“Ascend950/dav-3510 上多 TQue+双缓冲+大固定 tile 的 float32 Reg kernel 运行期抛 ACL 507035；用同环境对照算子+缩 tile 探针二分定位为每核 UB 超额，而非 D2H 拷贝故障”。候选与焦点共享 UB 容量/slot 预算机制，能直接修正切分因子、物理宽度或双缓冲计数。
-- [507035 — Host 按逻辑行宽预算导致 UB 溢出](ub_budget_uses_aligned_physical_width_507035.md)（`same_topic`）：507035 — 三队列 float32 tile 超 UB 与《507035 — Host 按逻辑行宽预算导致 UB 溢出》的实质衔接是：这些卡共享可复算的 UB 根因：队列/工作缓冲数量、对齐物理宽度或分块超过每核预算；TPipe InitBuffer是实际乘入 depth×bytes 的资源申请点。
-- [ACL 507035 — 完整 a0 统计缓冲超过 UB](ub_slices_reduction_axis_scratch_buffers_507035.md)（`same_topic`）：507035 — 三队列 float32 tile 超 UB 与《ACL 507035 — 完整 a0 统计缓冲超过 UB》的实质衔接是：这些卡共享可复算的 UB 根因：队列/工作缓冲数量、对齐物理宽度或分块超过每核预算；TPipe InitBuffer是实际乘入 depth×bytes 的资源申请点。
-- [ACLNN 507015 — tiling UB 漏算 kIdxBuf 下溢](aclnn_507015_tiling_ub_kidxbuf.md)（`same_topic`）：507035 — 三队列 float32 tile 超 UB 与《ACLNN 507015 — tiling UB 漏算 kIdxBuf 下溢》的实质衔接是：这些卡共享可复算的 UB 根因：队列/工作缓冲数量、对齐物理宽度或分块超过每核预算；TPipe InitBuffer是实际乘入 depth×bytes 的资源申请点。
-- [Reduce work buf 额外占 UB 致 507035](reduce_work_buf_ub_507035.md)（`same_topic`）：507035 — 三队列 float32 tile 超 UB 与《Reduce work buf 额外占 UB 致 507035》的实质衔接是：这些卡共享可复算的 UB 根因：队列/工作缓冲数量、对齐物理宽度或分块超过每核预算；TPipe InitBuffer是实际乘入 depth×bytes 的资源申请点。
-<!-- cannbot:related:end -->

@@ -46,12 +46,3 @@ Gather算子输入输出规格
 1.  设置初始gridDim。
 考虑到如果gridDim设置得比实际AIV核数少，会导致空闲核浪费，因此将初始gridDim设置为当前芯片的实际AIV核数量。AIV数量的获取方法如下所示：
 2.  计算blockDim。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [基础知识（SIMT算子实现）](basics.md)（`related`）：The implementation guide continues the focal SIMT concepts into operator analysis, grid/block sizing, host tiling, and a concrete Gather kernel.
-- [线程块数量配置优化](../simt_operator_optimization/execution_config/thread_block_config.md)（`related`）：《线程块数量配置优化》明确“SIMT算子线程块数量应结合物理核数与数据规模设置，大数据量匹配物理核数，小数据量需实测最优值。”；它与《算子实现（SIMT算子实现）》的“本章节将以Gather类算子为例，介绍SIMT算子实现的基本流程，如下图所示：”在实际调用参数、数据流或结果校验上直接衔接。
-- [Gather算子快速入门](../../getting_started/quick_start/simt_programming/gather_op_quick_start.md)（`same_topic`）：Gather算子快速入门 与《算子实现（SIMT算子实现）》的实质衔接是：Gather 快速入门覆盖 SIMT kernel、host launch 和构建；所连 Gather API、维度/步长/地址空间错例和 SIMT 入口约束都直接作用于该示例的实现或验证。
-- [MemoryAccessMerge](../simt_operator_optimization/memory_access/memory_access_merge.md)（`same_topic`）：《MemoryAccessMerge》处理“SIMT编程模式下让同一Warp内相邻线程访问连续GM地址以实现访存合并，提高GM带宽利用率。”。《算子实现（SIMT算子实现）》提供“本章节将以Gather类算子为例，介绍SIMT算子实现的基本流程，如下图所示：”，其具体合同或探针直接接入Warp 连续 GM 访问的短向量、类型对齐、步长搬运和 Gather 示例验证。
-<!-- cannbot:related:end -->

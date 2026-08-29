@@ -30,8 +30,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CrossCoreSetFlag](../inter_core_sync/cross_core_set_flag_isasi.md)（`related`）：CrossCoreSetFlag 是核间信号而非 task 间依赖；需要跨核时应切换到对应 wait flag 机制。
-- [SK_BIND（SuperKernel）](../../../../utils_api/super_kernel/sk_bind.md)（`related`）：SK_BIND（SuperKernel） 与《SetNextTaskStart》的实质衔接是：SK_BIND 绑定 SuperKernel 子任务，需结合 kernel 类型/tiling、前后任务同步和 runtime context。
-- [WaitPreTaskEnd](wait_pre_task_end.md)（`same_topic`）：WaitPreTaskEnd 与《SetNextTaskStart》的实质衔接是：WaitPreTaskEnd 与 SetNextTaskStart 构成前后任务的早启动握手；任务间同步和 SuperKernel 卡解释该握手在绑定任务调度中的生效条件。
-- [任务间同步](inter_task_sync.md)（`same_topic`）：任务间同步总页给出 set/wait 的配对顺序和适用流水，是单接口的完整契约。
+- [SuperKernel原理介绍](../../../../../guides/programming_guide/advanced_programming/super_kernel/principles.md)（`explains`）：算子间流水并行：通过SuperKernel内提供的任务间同步接口（SetNextTaskStart、WaitPreTaskEnd），可以让子Kernel之间的部分指令实现并行执行，进一步压缩端到端耗时。；在SuperKernel的子Kernel中调用，调用后的指令可以和后续其他的子Kernel实现并行，提升整体性能。；目标接口实现焦点所述的后向子 Kernel 并行起点。
+- [WaitPreTaskEnd](wait_pre_task_end.md)（`related`）：在SuperKernel的子Kernel中调用，调用后的指令可以和后续其他的子Kernel实现并行，提升整体性能。；在SuperKernel的子Kernel中调用，调用前的指令可以和前序其他的子Kernel实现并行，提升整体性能。。SetNextTaskStart 放开当前子 Kernel 尾部与后继并行，WaitPreTaskEnd 放开当前子 Kernel 头部与前序并行；二者从相邻两侧共同定义 SuperKernel Early-Start 重叠区间。
 <!-- cannbot:related:end -->

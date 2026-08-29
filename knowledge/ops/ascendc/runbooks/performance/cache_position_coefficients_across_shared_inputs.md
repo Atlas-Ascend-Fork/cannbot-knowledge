@@ -615,8 +615,5 @@ private:
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Sin](../../apis/simd_api/adv_api/math_compute/sin_interface/sin.md)（`exemplifies`）：Sin 与《按序列位缓存 cos/sin 并让 q/k 共享搬运》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
-- [Gather 双加 LocalTensor 基址导致交错旋转乱码](../precision/localtensor_gather_base_address_not_double_counted.md)（`related`）：The cached RoPE implementation uses Gather to expand interleaved cos/sin; this runbook supplies the required byte-offset plus zero-additional-base addressing contract.
-- [TBuf 跨 MTE2 与 Vector 须队列交接](../precision/tbuf_mte2_to_vector_requires_queue_handoff.md)（`related`）：The caching design loads cos/sin through an MTE2-to-Vector handoff before keeping them resident; this runbook verifies that a bare TBuf can race and that TQue EnQue/DeQue closes the dependency.
-- [fp32 窄化舍入模式不一致触发稀疏 MARE 越线](../precision/fp32_to_fp16_cast_matches_rne_oracle.md)（`related`）：The optimized RoPE path computes in fp32 then narrows with CAST_RINT; this runbook verifies why RNE is required to pass the same fp16/bf16 oracle.
+- [ApplyRotaryPosEmb A2/A3 ACLNN 算子知识](../../operators/aclnn/transformer/posembedding/apply_rotary_pos_emb.md)（`related`）：把 `cosFullF/sinFullF` 留在 TBuf 中，以 `cachedS_` 只在 `s` 变化时重载，并在同一行循环中先后计算 q/k，可同时消除跨 head 与 q/k 的冗余系数事务。；对 query、key 的前 `D_r=cos.shape［-1］` 个元素执行 half RoPE：`y=x*cos+rotate_half(x)*sin`，结果原地更新；A2/A3 公开约束仅允许 `rotaryMode="half"`。性能运行手册针对同一 half RoPE 的 query/key 共享 cos/sin 数据流，把算子契约落实为按序列位缓存系数的搬运优化。
 <!-- cannbot:related:end -->

@@ -143,19 +143,3 @@ __aicore__ inline void Init(GM_ADDR xGm, GM_ADDR yGm, GM_ADDR idxGm,
 ## 误诊
 
 曾先怀疑 b16 `Compare` 本身不可靠以及跨 chunk 队列复用竞争；固定从 lane 64 开始的错误位置最终排除了随机竞争，指向比较类型 repeat 宽度。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Compares](../../apis/simd_api/basic_api/memory_vector_compute/compare_and_select/compares.md)（`exemplifies`）：《Compares》的任务是“逐元素比较一个tensor中的元素和另一个标量的大小，结果为真的对应比特位为1，否则为0。”。《b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane》具体提供“2-byte 数据提升为 fp32 比较时，分块宽度必须按比较类型的单 repeat lane 数计算，否则后半 lane 不更新。”，它直接用于Compares 生成标量比较 mask 并由 Select/SetCmpMask/GetCmpMask 消费的链路。
-- [Select](../../apis/simd_api/basic_api/reg_vector_compute/mask_reg_compute/select.md)（`exemplifies`）：《Select》的任务是“根据mask的比特位值从src0或src1中选取元素，bit为1选src0，bit为0选src1。”。《b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane》具体提供“2-byte 数据提升为 fp32 比较时，分块宽度必须按比较类型的单 repeat lane 数计算，否则后半 lane 不更新。”，它直接用于Reg Select 的 mask 来源、CMPMASK 生命周期、偏移、别名和跨调用污染。
-- [bfloat16类型](../../apis/simt_api/math_functions/bfloat16_type/bfloat16_type.md)（`exemplifies`）：《bfloat16类型》说明bfloat16类型函数总入口，涵盖算术、比较、数学库及精度转换函数，并包含bfloat16x2类型对应函数。；《b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane》说明2-byte 数据提升为 fp32 比较时，分块宽度必须按比较类型的单 repeat lane 数计算，否则后半 lane 不更新。。二者在bfloat16类型入口的实际使用受全局类型命名、B16边界转换和提升后lane宽度约束，而非由平台或版本过滤上存在可执行的直接衔接。
-- [B16 结果大幅偏差 — UNPACK 后补 Reg Cast](b16_unpack_requires_numeric_cast_before_fp32_compute.md)（`related`）：《B16 结果大幅偏差 — UNPACK 后补 Reg Cast》说明Reg 的 B16 UNPACK/PACK 只改变寄存器布局，不替代数值格式转换；显式使用预定义 CastParam trait 完成 B16↔fp32。；《b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane》说明2-byte 数据提升为 fp32 比较时，分块宽度必须按比较类型的单 repeat lane 数计算，否则后半 lane 不更新。。二者在B16 UNPACK/PACK只改变寄存器分布，显式Reg Cast才做数值转换；Cast trait、lane宽度和边界转换卡共同验证这条链上存在可执行的直接衔接。
-- [FP16 算子 Cast 提升-计算-回退链设计](fp16_cast_up_fp32_compute_cast_down_chain.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [Reg int32→int64 Cast 源目 VL 错配留空索引](int32_to_int64_reg_cast_must_respect_destination_lane_width.md)（`related`）：int32→int64 Cast 同样证明循环步长必须按目标类型 lane 宽度重算，不能沿用源/存储类型的 VL 元素数。
-- [b16 running 经 fp32 回转会改写 NaN payload](bit_exact_b16_nan_payload_needs_original_dtype_running_value.md)（`related`）：focal 的比较状态提升为 fp32，因此 chunk 宽度必须按 fp32 repeat 而不是 B16 存储宽度计算；否则后半 lane 不更新会伪装成 payload/索引问题。
-- [半精度索引错位—拆分双 int32 掩码](b16_value_mask_must_split_for_two_int32_index_registers.md)（`related`）：若保留 B16 value 的 128-lane 比较域，索引侧必须拆成两组 64-lane mask；它与 focal 的统一 B32 计算是解决同一 lane 数不匹配的另一实现契约。
-- [Ascend950 Reg 扫描按 256B 锁定 lane](dav3510_vector_register_width_is_256_bytes.md)（`same_topic`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`same_topic`）：两卡共同要求比较计算提升到 fp32 后按 B32 的 64-lane 域组织 value、index 与 mask；否则仍按 B16 128-lane 分块会漏更新后半区。
-- [模板内 float→float Cast 使 fp32 分支全错](templated_float_input_must_bypass_same_type_cast.md)（`same_topic`）：模板内 float→float Cast 使 fp32 分支全错 与《b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane》的实质衔接是：float 到 float 不应进入窄化 Cast，应该保持原值或 Copy；同步、BF16 分阶段、native 类型、VL、舍入与 RmsNorm 案例分别说明真正需要 Cast 时的类型、时序和验证契约。
-<!-- cannbot:related:end -->

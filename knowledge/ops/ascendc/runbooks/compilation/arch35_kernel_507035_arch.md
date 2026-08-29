@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.compilation", "topic.programming_model.execution
 status: draft
 sources: []
 created_at: "2026-08-18T04:29:45Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: []
 ---
 
@@ -140,15 +140,3 @@ Innerversion=V100R001C23SPC006B220
 - arch35 SIMT kernel 在 arch22（Ascend910_93）硬件上运行 = banned，本 trace 实测必报 507035，无代码侧修复路径；只能改路线。
 - 推断可迁移：本判别方法（507035 + "全崩 + 仅快速返回用例独通过" pattern → 先查 arch 不匹配）对任何 arch35 SIMT kernel 落到 arch22 板的算子都应适用，属 `platform_wide`；但未验证于 tbsv/stbsv 以外的算子，标注"未验证，推断可迁移"。
 - arch22（Ascend910_93）不在注册平台词表 `{950, a3, a2}` 内，`platforms: []`；Ascend950 因本 trace 未在 950 板上实测通过，亦不写入 `platforms`。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ACLNN 161001 — ascend910_93 缺算子内核配置](aclnn_161001_ascend910_93.md)（`related`）：架构不匹配也可能构建通过后运行报 507035；与 161001 的加载前失败按阶段分流。
-- [Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa](arch_variant_lookup_chain_soc_ini_npuarch_dispatcher.md)（`related`）：arch 不匹配 runbook要求先确认 build 目标与板卡；lookup 配方给出 SoC→ini NpuArch/AIC_version→__NPU_ARCH__ 分支的可执行核对链，能定位实际编译变体。
-- [NPU架构版本2201](../../guides/programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_2201.md)（`related`）：arch35 kernel 上板报 507035 实为 arch 不匹配说明编译通过的 ascend950（arch35）SIMT kernel 在 Ascend910_93（arch22）板上运行 L0 用例 20/22 失败、报 ACL_ERROR_RT_VECTOR_CORE_EXCEPTION（507035）；判别方法为先核对 build --soc 与 npu-smi 硬件 arch，再怀疑 kernel 逻辑。该路线在 arch22 板上 banned，只能改路线。
-- [bisheng 拒绝大写 --npu-arch=DAV2201 须用小写 dav](bisheng_npu_arch_requires_lowercase_dav_2201.md)（`related`）：改为 arch22 路线时，BiSheng 的 --npu-arch 需要规范小写 dav-2201；该卡避免把 SoC/大写别名继续误传给编译器。
-- [kernel 输出=输入：binary 不随源码变化即守卫吞体](../precision/kernel_binary.md)（`related`）：《arch35 kernel 上板报 507035 实为 arch 不匹配》明确“编译通过的 ascend950（arch35）SIMT kernel 在 Ascend910_93（arch22）板上运行 L0 用例 20/22 失败、报 ACL_ERROR_RT_VECTOR_CORE_EXCEPTION（507035）；判别方法为先核对 build --soc 与 npu-smi 硬件 arch，再怀疑 kernel 逻辑。该路线在 arch22 板上 banned，只能改路线。”；它与《kernel 输出=输入：binary 不随源码变化即守卫吞体》的“A5（Ascend950, arch 3510）上 kernel 被 launch 但输出与输入逐字节一致、用例全 FAIL，且 device binary 体积异常小。判别=改 kernel 体源码后重编比较 .o 体积/sha256：若多次改动 hash 始终不变，说明 #if __CCE_AICORE__==<arch> 守卫不匹配新架构把整个 kernel 体条件编译排除，编出空壳 binary。移除守卫后 binary 变大、V1 全 PASS。”在实际调用参数、数据流或结果校验上直接衔接。
-- [直调 kernel-type 裸赋值标记无效](kernel_type.md)（`related`）：《arch35 kernel 上板报 507035 实为 arch 不匹配》明确“编译通过的 ascend950（arch35）SIMT kernel 在 Ascend910_93（arch22）板上运行 L0 用例 20/22 失败、报 ACL_ERROR_RT_VECTOR_CORE_EXCEPTION（507035）；判别方法为先核对 build --soc 与 npu-smi 硬件 arch，再怀疑 kernel 逻辑。该路线在 arch22 板上 banned，只能改路线。”；它与《直调 kernel-type 裸赋值标记无效》的“AscendC 直调 kernel 用文件作用域裸赋值 __enable_feature_for_compile_default = KERNEL_TYPE_*; 标记 CUBE+VEC mix 类型时编译失败；该写法只被 extract_host_stub.py 的正则匹配为文本标记，不是合法 C++ 语句，属 banned 路线。”在实际调用参数、数据流或结果校验上直接衔接。
-- [CMake arch 子目录隔离 dav-3510 专属 API](cmake_arch_dav_3510_api.md)（`same_topic`）：CMake arch 子目录隔离 dav-3510 专属 API 与《arch35 kernel 上板报 507035 实为 arch 不匹配》的实质衔接是：该故障由根目录 dav-3510 专属源码被 dav-2201 全量编译造成；架构查证/迁移、CMake/编译加速、arch 文档与同类 include/arch 错配卡共同验证源码隔离。
-<!-- cannbot:related:end -->

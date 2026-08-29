@@ -84,13 +84,5 @@ op_kernel/histogram.cpp:29:44: error: no member named 'scaleBits' in 'HistogramT
 <!-- cannbot:related:start -->
 ## 相关
 
-- [COPY_TILING_WITH_STRUCT](../../apis/simd_api/basic_api/kernel_tiling/copy_tiling_with_struct.md)（`exemplifies`）：焦点处理COPY_TILING_WITH_STRUCT 宏与 Tiling 结构注册、取数的编译契约；手动 tiling 头遮蔽自动生成类致 no member 判别正文说明“JOIN_OP_DEF True 工程里，op_host 用 BEGIN_TILING_DATA_DEF 定义 TilingData 后构建系统会自动生成 kernel 侧同名类并经 kernel_tiling/kernel_tiling.h 注入；若 kernel 又手动 #i”。候选对应宏展开所需的结构注册、TilingData 读取或已验证的编译失败边界。
-- [Kernel Tiling](../../apis/simd_api/basic_api/kernel_tiling/kernel_tiling.md)（`exemplifies`）：手动 tiling 头遮蔽自动生成类致 no member 判别说明JOIN_OP_DEF True 工程里，op_host 用 BEGIN_TILING_DATA_DEF 定义 TilingData 后构建系统会自动生成 kernel 侧同名类并经 kernel_tiling/kernel_tiling.h 注入；若 kernel 又手动 #include <op>_tiling.h 定义同名类、并 REGISTER_TILING_DEFAULT + reinterpret_cast 直接访问字段，编译报 no member named 'minBits'/'maxBits'/'scaleBits'。判别=核 kernel 是否同时存在手动 tiling 头与自动生成头、是否绕开 GET_TILING_DATA。
-- [REGISTER_TILING_DEFAULT 多 struct 冲突](register_tiling_default_struct.md)（`related`）：focal 的冲突注册来自自动生成类上再次占用 default；该卡进一步给出一个算子不同 struct 只能有一个 default、其余须按 TilingKey 注册的框架约束。
-- [RmsNormTiling 与 CANN 内置类型冲突 — 改名隔离](tiling_type_name_does_not_shadow_cann_builtin.md)（`related`）：两卡都涉及公共/自动生成 tiling 类型与本地同名定义相遇；目标卡以字段解析到错误类型的 no-member 表现，本卡以 using target 冲突和 ambiguous 表现。
-- [TILING_DATA_DEF 迁移 rebase 字段失配判别](tiling_data_def_rebase.md)（`related`）：两卡都以 kernel 所需字段不在实际注入的 TilingData 类型中为判据；目标卡补充自动生成类被手写同名类遮蔽时的 no-member 分流。
-- [rebase 引入新 kernel 文件旧 tiling 类型致编译失败](rebase_kernel_tiling.md)（`related`）：两类问题都会报 tiling 字段/类型不存在，但该卡补充了手写头遮蔽自动生成类这一不同根因，可用于区分 rebase 残留与 include 遮蔽。
-- [GET_TILING_DATA 首参传类型名致变量遮蔽类型](get_tiling_data.md)（`same_topic`）：移除手动 tiling 头与多余 REGISTER_TILING_DEFAULT 后，下一条确定错误正是 GET_TILING_DATA 首参传类型名；两卡串成同一次迁移的连续诊断链。
-- [GET_TILING_DATA_WITH_STRUCT 宏不接受模板类型](get_tiling_data_with_struct.md)（`same_topic`）：GET_TILING_DATA_WITH_STRUCT 宏不接受模板类型 与《手动 tiling 头遮蔽自动生成类致 no member 判别》的实质衔接是：GET_TILING_DATA_WITH_STRUCT 会字符串化结构体名并注册 section，模板尖括号因此解析失败；相关宏、结构注册、显式 header/别名和多 struct 冲突卡共同限定可行修法。
-- [TilingData 须 host 与 kernel 各定义一份](tilingdata_host_kernel.md)（`same_topic`）：TilingData 须 host 与 kernel 各定义一份：本故障来自host不可见kernel侧struct；TilingData定义/注册/属性传递卡给出正式契约，struct.h include与手写头遮蔽、rebase字段失配卡覆盖同一双侧类型同步链的具体失败。 目标卡《手动 tiling 头遮蔽自动生成类致 no member 判别》补充：JOIN_OP_DEF True 工程里，op_host 用 BEGIN_TILING_DATA_DEF 定义 TilingData 后构建系统会自动生成 kernel 侧同名类并经 kernel_tiling/kernel_tiling.h 注入；若 kernel 又手动 #include <op>_tiling.h 定义同名类、并 REGISTER_TILING_DEFAULT + reinterpret_cast 直接访问字段，编
+- [GET_TILING_DATA_MEMBER](../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data_member.md)（`exemplifies`）：用于获取tiling结构体的成员变量。；在 `JOIN_OP_DEF True` 工程里，kernel 侧不要手动 `#include "<op>_tiling.h"`、不要 `REGISTER_TILING_DEFAULT`；tiling 数据经自动生成的 `kernel_tiling/kernel_tiling.h` + `GET_TILING_DATA` 获取本地拷贝。。运行手册解释成员访问报错并非字段不存在，而是手写 tiling 类遮蔽生成类，最终应回到受支持的宏获取路径。
 <!-- cannbot:related:end -->

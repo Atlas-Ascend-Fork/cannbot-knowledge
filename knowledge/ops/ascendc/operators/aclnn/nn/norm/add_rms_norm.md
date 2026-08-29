@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm/op_host/config/ascend910_93/add_rms_norm_binary.json
     role: implementation
 created_at: "2026-08-25T17:44:24Z"
-updated_at: "2026-08-25T17:44:24Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -76,7 +76,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-文档明确支持 Atlas A2/A3 训练和推理产品；OpDef 注册 `ascend910b`、`ascend910_93`，两份 binary config 均含 FP16/FP32/BF16。固定仓未出现更高版本公开 API。A2/A3 使用通用 `add_rms_norm.cpp` router；A5 的 apt/regbase 实现另见 `_a5` 卡。
+文档明确支持 Atlas A2/A3 训练和推理产品；OpDef 注册 `ascend910b`、`ascend910_93`，两份 binary config 均含 FP16/FP32/BF16。固定仓未出现更高版本公开 API。A2/A3 使用通用 `add_rms_norm.cpp` router；950 的 apt/regbase 实现另见 `_950` 卡。
 
 ## Host/Launcher 执行流程
 
@@ -790,9 +790,9 @@ Host 将按 dtype 的 repeat 主体、尾长和跨行 stride 固化进 POD，Dev
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_950` 卡 |
 | Host/Launcher | 通用 selector，910b config | 同实现，910_93 config | regbase 两路线 |
 | Kernel/资源 | 5 mode 类、六个行为 Route | 同 A2 | arch35 AIV-only MicroAPI |
 
@@ -837,3 +837,11 @@ Host 将按 dtype 的 repeat 主体、尾长和跨行 stride 固化进 POD，Dev
 | 同步 | queue、PipeBarrier、hard event | Single-N 覆盖 x2 前必须 V_MTE2 | body |
 | 精度与尾块 | FP32 reduce，BF16 RINT，DataCopyCustom tail | 不得让 padding lane 写 GM/参与有效 sum | helpers/body |
 | 失败边界 | selector fallback 到 Normal | dead key、unknown key、溢出不可补推 | selector/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../transformer/mc2/matmul_all_reduce_add_rms_norm.md)（`related`）：融合算子卡明确“头文件与文档标记其计划在 2026 年 12 月之后废弃，迁移目标为 `aclnnMatmulAllReduce` + `aclnnAddRmsNorm`。”；AddRmsNorm 卡给出目标阶段的“`x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma`”语义，可用于拆分迁移时核对 residual 加法与 RMSNorm 输出。
+- [WeightQuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../transformer/mc2/weight_quant_matmul_all_reduce_add_rms_norm.md)（`related`）：替代组合是 aclnnWeightQuantMatmulAllReduce + aclnnAddRmsNorm。 `x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma` 废弃融合入口把归一化尾段迁移到 AddRmsNorm，后者定义残差 add、rstd 与 gamma 计算合同。
+- [AddRmsNorm 950 ACLNN 算子知识](add_rms_norm_950.md)（`same_topic`）：｜ 计算语义 ｜ `x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma` ｜；｜ 计算语义 ｜ `x=x1+x2`；每个归一化行 `rstd=1/sqrt(mean(x^2)+epsilon)`；`y=x*rstd*gamma` ｜。两卡共享 AddRmsNorm 三输出数学合同和同一公开 ACLNN 入口，分别闭合 A2/A3 六路 Tiling 与 950 两路 RegBase 实现。
+<!-- cannbot:related:end -->

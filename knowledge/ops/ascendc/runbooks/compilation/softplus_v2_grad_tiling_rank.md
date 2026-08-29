@@ -99,10 +99,7 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Broadcast（张量变换）](../../apis/simd_api/adv_api/tensor_transform/broadcast.md)（`exemplifies`）：该 API 正文明确输入按目标 shape 广播，直接支撑 focal 中标量与高 rank tensor 不必原始 rank 相等、而应在目标 shape 上判断可广播性的结论。
-- [Broadcast场景](../../guides/operator_practice/simd_operator_impl/vector_programming/broadcast_scenario.md)（`related`）：指南把广播所需的轴、倍数和 tiling 数据显式下发到 kernel，补足 focal 从 host 接受异 rank 输入到 device 实施广播的后续实现链。
-- [split.axis 未随 PadAndSqueeze 偏移致 507035](split_axis_padandsqueeze_507035.md)（`related`）：focal 要求先 PadAndSqueeze 再进行 rank 对齐；该卡证明同一管线还必须把 split.axis 从压缩坐标系同步平移到补齐后的坐标系，否则合法广播会转成 UB 越界。
-- [低 rank 零填充致 count=0 用 td_->rank 非 RANK](../precision/rank_count_0_td_rank_rank.md)（`related`）：host 允许低 rank 并补齐 shape 后，kernel 维度循环必须消费 td_->rank 而非模板容量 RANK；否则补齐槽会把 count 乘成 0，构成 focal 修复后的下游契约。
-- [反量化 561103 实为 CheckBroadcastShape 过严](561103_checkbroadcastshape.md)（`related`）：两卡都证明 host tiling 的广播校验比算子广播语义更严格会在 kernel 启动前拒绝合法输入；一张是 raw rank 必须相等，一张是多输入非 1 维两两相等。
-- [标量属性入 TilingData 致同 shape 跨调用陈旧](../precision/tilingdata_shape.md)（`related`）：Softplus rank 卡说明 raw rank/shape 写入 TilingData 的时机，能核对 shape 字段本身是否在缓存前就错误。
+- [561103: beta 属性按 float 读致 GRAPH_FAILED](561103_beta_float_graph_failed.md)（`related`）：“rank(gradOutput)=0 != rank(self)=2”给出焦点端事实；“GetAttrPointer<double>”给出候选端事实。两张卡都定位 softplus_v2_grad Host tiling 的 GRAPH_FAILED，但一张是 raw rank 过严校验，另一张是 beta 按错误类型读取；联合阅读提供同一 561103/GRAPH_FAILED 的分支诊断。
+- [反量化 561103 实为 CheckBroadcastShape 过严](561103_checkbroadcastshape.md)（`related`）：“正确做法是只校验“每个输入和输出都能广播到 `max_bro_shape`”，不要求各输入之间两两互兼容。”明确给出左端事实；“- **判读（interpretation，根因分析）**：raw rank 一致性校验是**冗余且自相矛盾**的插入。”明确给出右端事实。两页分别定位广播 tiling 的逐维兼容校验过严和 raw-rank 前置校验过严；排障时应先补 1 对齐，再校验每个输入能否广播到输出，而不是拒绝合法异 rank/外积广播。
+- [标量输入被赋非标量 shape 致 561002 判别](shape_561002.md)（`related`）：“根因排查发现：spec.yaml 明确规定 `w_square_sum` / `g_square_sum` / `weight_decay` / `learning_rate` 的 `role: scalar`（synthesize shape 为 `［］`/`()`/`(1,)`），但黑盒用例 gen_data 把这些标量输入赋了非标量大形状（如一维大 shape），违反 spec role:scalar，导致 host `TilingFunc`（`PadAndSqueeze`/`CheckBroadcastShape`）无法处理 → tiling 失败 → 561002 → NO_OUTPUT。”明确给出左端事实；“- **判读（interpretation，根因分析）**：raw rank 一致性校验是**冗余且自相矛盾**的插入。”明确给出右端事实。两页都要求按广播契约处理标量：一页修正测试输入必须真是 scalar，另一页删除在 PadAndSqueeze 前拒绝 scalar-vs-tensor 的 raw-rank 检查。
 <!-- cannbot:related:end -->

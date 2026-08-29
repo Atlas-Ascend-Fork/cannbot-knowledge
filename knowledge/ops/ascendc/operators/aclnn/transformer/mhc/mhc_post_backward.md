@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T17:24:07Z"
-updated_at: "2026-08-24T20:06:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -75,7 +75,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定仓只公开无版本后缀的 `aclnnMhcPostBackwardGetWorkspaceSize` 与 `aclnnMhcPostBackward`，故 CANN 9.1.0 在 A2/A3 的最新公开版本就是该入口。`MhcPostBackward` OpDef 对 `ascend910b` 与 `ascend910_93` 复用同一配置，声明 `support_aclnn`、绑定 `opFile=mhc_post_backward`；arch22 Tiling 也只注册这两个 SoC。A5 的 `mhc_post_backward_apt` 是不同架构实现，不并入本卡。
+固定仓只公开无版本后缀的 `aclnnMhcPostBackwardGetWorkspaceSize` 与 `aclnnMhcPostBackward`，故 CANN 9.1.0 在 A2/A3 的最新公开版本就是该入口。`MhcPostBackward` OpDef 对 `ascend910b` 与 `ascend910_93` 复用同一配置，声明 `support_aclnn`、绑定 `opFile=mhc_post_backward`；arch22 Tiling 也只注册这两个 SoC。950 的 `mhc_post_backward_apt` 是不同架构实现，不并入本卡。
 
 ## Host/Launcher 执行流程
 
@@ -101,7 +101,7 @@ arch22 Tiling 把 workspace slot 0 设为 `PlatformAscendC::GetLibApiWorkSpaceSi
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 arch22 AIV Vector Matmul | key 0 / `SCHMODE=0` / `AIV_ONLY` | `npuArch!=DAV_3510`，SoC 为 `ASCEND910B` 或 `ASCEND910_93`；ACLNN 全部检查通过，`n=4`、D 正数且 128 对齐；arch22 `IsCapable=true` | `DAV_3510` 转 A5 arch35；未注册 SoC 或任一检查失败终止，无 Kernel fallback |
+| 1 | R-001 arch22 AIV Vector Matmul | key 0 / `SCHMODE=0` / `AIV_ONLY` | `npuArch!=DAV_3510`，SoC 为 `ASCEND910B` 或 `ASCEND910_93`；ACLNN 全部检查通过，`n=4`、D 正数且 128 对齐；arch22 `IsCapable=true` | `DAV_3510` 转 950 arch35；未注册 SoC 或任一检查失败终止，无 Kernel fallback |
 
 ```text
 aclnnMhcPostBackwardGetWorkspaceSize
@@ -123,7 +123,7 @@ aclnnMhcPostBackwardGetWorkspaceSize
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台 registry | SoC 仅 `ASCEND910B/ASCEND910_93` 且 `npuArch!=DAV_3510` | key 0 binary 是 arch22 AIV-only specialization | R-001 | DAV_3510 转 A5；其余平台注册缺失而失败 | `Tiling4MhcPostBackward`、`REGISTER_TILING_TEMPLATE_WITH_SOCVERSION` |
+| 平台 registry | SoC 仅 `ASCEND910B/ASCEND910_93` 且 `npuArch!=DAV_3510` | key 0 binary 是 arch22 AIV-only specialization | R-001 | DAV_3510 转 950；其余平台注册缺失而失败 | `Tiling4MhcPostBackward`、`REGISTER_TILING_TEMPLATE_WITH_SOCVERSION` |
 | 固定 n | ACLNN `n==4` | `VecMatmulMknk` 逐字展开 `B[0],B[k],B[2k],B[3k]` 四行 | R-001 | 参数错误，无泛化 route | `CheckShape`、`VecMatmulMknk` |
 | D 有效域 | `0<D<=100000 && D%128==0` | 搬运长度、1024-D UB tile 与 classic Vector 调用依赖有效且对齐的 D | R-001 | 参数错误 | `CheckDimD`、`DoOpTiling` |
 | 位置分核 | `coreUsed=frontCore+tailCore`，`frontCore=P%C`（整除时 C） | 保证每个有效 AIV 核取得连续 item 区间 | R-001 | `coreId>=coreUsed` 直接 return | `DoOpTiling`、`Process` |
@@ -339,7 +339,7 @@ for (uint64_t i = startIdx; i < endIdx; i++) {
 
 - 适用：同一位置内沿长 D 轴分块、最终归约输出很小的 FP32 Vector 路线。
 - 前提：A2/A3、key 0、`n=4`、驻留缓冲总量满足 UB、事件顺序不变。
-- 失效：A5 改由 AIC Matmul 独立生成 `gradHRes`；n 扩展也不能复用固定四行 helper。
+- 失效：950 改由 AIC Matmul 独立生成 `gradHRes`；n 扩展也不能复用固定四行 helper。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -360,7 +360,7 @@ for (uint64_t i = startIdx; i < endIdx; i++) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；OpDef `ascend910b` | 支持；OpDef `ascend910_93` | 支持，另卡 |
 | Host/Launcher | arch22 SoC registry，key 0；`n=4,D%128=0` | 与 A2 共用同一 arch22 producer/body | `DAV_3510` arch35 registry，key 1 |
@@ -380,7 +380,7 @@ for (uint64_t i = startIdx; i < endIdx; i++) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 公开支持/语义 | mhc/mhc_post_backward/README.md | 产品支持情况/计算公式 | A2、A3、A5 公开支持与四项梯度语义 |
+| 公开支持/语义 | mhc/mhc_post_backward/README.md | 产品支持情况/计算公式 | A2、A3、950 公开支持与四项梯度语义 |
 | 公开入口约束 | mhc/mhc_post_backward/docs/aclnnMhcPostBackward.md | 产品支持情况/函数原型/约束说明 | 两段式 ACLNN、TND/BSND、A2/A3 的 n/D 约束 |
 | 入口声明/约束 | mhc/mhc_post_backward/op_host/op_api/aclnn_mhc_post_backward.h | `aclnnMhcPostBackwardGetWorkspaceSize/aclnnMhcPostBackward` | 公开两段式签名 |
 | 入口实现 | mhc/mhc_post_backward/op_host/op_api/aclnn_mhc_post_backward.cpp | `CheckParam/aclnnMhcPostBackwardGetWorkspaceSize/aclnnMhcPostBackward` | 完整接口检查、Contiguous、L0、ViewCopy、executor 运行 |
@@ -404,3 +404,9 @@ for (uint64_t i = startIdx; i < endIdx; i++) {
 | 同步 | MTE2/V/MTE3 的 event 顺序和 PIPE_V barrier 可复用 | flag ID 0/1/2、单缓冲防覆盖关系不得删除或虚构跨核同步 | `Process/VecMatmulMknk/VecMatmulMkkn` |
 | 精度与尾块 | T→FP32→T、FP32 累加、full/tail 共用 helper 可复用 | `CAST_NONE/CAST_ROUND`、显式四行 Mknk、tailC 搬运长度不得改变 | `Process/VecMatmulMknk` |
 | 失败边界 | A2/A3 的 n/D/空 tensor/SoC 限制可复用 | 不得扩展到 n=6/8、非 910B/910_93 或声称资源 fallback | `CheckShape/REGISTER_TILING_TEMPLATE_WITH_SOCVERSION` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MhcPostBackward 950 ACLNN 算子知识](mhc_post_backward_950.md)（`same_topic`）：对每个 T 或 B×S 位置计算 `gradX=hRes·gradOutput`、`gradHRes=x·gradOutput^T`、`gradHOut=hPost^T·gradOutput`、`gradHPost=hOut·gradOutput^T`；同时生成 `gradX,gradHRes,gradHOut,gradHPost`；AIV 负责三项，AIC Matmul 负责 `gradHRes`。两卡生成同一四路 MhcPost 梯度；A2/A3 在 AIV UB 中计算全部乘加，950 用 MIX_CV 把 gradHRes 交给 AIC Matmul，适合跨架构实现对照。
+<!-- cannbot:related:end -->

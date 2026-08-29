@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v4_torchtitan_npu_autofuse.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - a3
 ---
@@ -150,7 +150,7 @@ Flash 在 A3 64 卡上吞吐 **397 → 1100 tokens/p/s**，定制融合算子贡
 <p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/figures/deepseek_v4/Total-gain.png" width="60%"></p>
 <p align="center"><sub>图：端到端吞吐 397→1100 tokens/p/s 提升瀑布，融合算子 +90%、AutoFuse +30%（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v4_torchtitan_npu_autofuse.md">DeepSeek-V4 优化文档</a>·A3 SuperPods 64 卡性能结果）</sub></p>
 
-未来展望：按需重计算避免对 Vector 算子冗余重计算；扩大 AutoFuse 覆盖；补齐 MC2 / EP 域通算并行；面向 A5 支持 FP8、A8W4 与 MxFP8/MxFP4 低精度训练；集成 Muon 优化器。
+未来展望：按需重计算避免对 Vector 算子冗余重计算；扩大 AutoFuse 覆盖；补齐 MC2 / EP 域通算并行；面向 950 支持 FP8、A8W4 与 MxFP8/MxFP4 低精度训练；集成 Muon 优化器。
 
 ## Evidence
 
@@ -182,3 +182,11 @@ Flash 在 A3 64 卡上吞吐 **397 → 1100 tokens/p/s**，定制融合算子贡
 - [smla](../../concepts/kernels/smla.md)（V4 稀疏 MLA 训练融合算子 npu_smla）
 - [deepseek-v32-mtp-train](../../concepts/modules/deepseek_v32_mtp_train.md)（V4 续训 num_mtp_modules=1 的 MTP 训练）
 - [mhc-train](../../concepts/kernels/mhc_train.md)（跨框架：MindSpeed-LLM 用 Triton-on-Ascend 实现的同结构 mHC 训练正反向算子，与本页 torchtitan-npu npu_mhc_pre converter 路径并列）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SASG（SparseAttnSharedkvGrad，DeepSeek-V4 SAS 训练反向算子）](../../concepts/kernels/sasg.md)（`related`）：“SASG 把 SAS 正向五阶段反传，主流程同样可分 **5 个阶段，依次为 Gather、Cube12、Process、Cube345、Scatter**：”与“- **SparseAttnSharedkvGrad (SASG)**：SAS 反向，5 阶段 Gather / Cube12 / Process / Cube345 / Scatter，Preload 一次 Gather+Cube12 达成 CV 流水并行 → ［sasg］(../../concepts/kernels/sasg.md)。”。kernel 卡展开 SASG 五阶段，续训练指南把同一五阶段算子列为 V4 定制训练组件。
+- [SLIG（SparseLightningIndexerGradKLLoss，DSA 训练反向算子）](../../concepts/kernels/slig.md)（`related`）：「**定制算子**」（针对 DSA / mHC 稀疏结构的 SAS / SASG / LI / SLIG 融合算子）；真正的算子调用 `torch_npu.npu_sparse_lightning_indexer_grad_kl_loss`、三路梯度 + loss、`grad_output［0］` 缩放、loss tracker 记录，全部在 `backward`。；配方列出 SLIG，算子卡明确其反向下发与 KL loss 融合时机，直接补齐训练图实现。
+- [训练入图：torch.compile + Inductor + AutoFuse（Bypass Triton → AutoFuse）](../../concepts/techniques/autofuse_train.md)（`related`）：“使能 AutoFuse 后 DeepSeek-V4-Flash 整网吞吐收益 **31.8%**”给出焦点端事实；“## torch.compile + AutoFuse 训练入图”给出候选端事实。技术卡给出 AutoFuse 的收益与入图约束，续训指南把该机制放进 DeepSeek-V4 的真实配置和训练流程，能够把组件原理落实到部署与验证。
+<!-- cannbot:related:end -->

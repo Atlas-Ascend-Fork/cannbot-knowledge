@@ -26,14 +26,3 @@ platforms: ['950']
 - 当目的操作数的数据类型T为B64时，T、U、S、V只支持以下组合
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FP16 scatter 归约逐次回写放大相消误差](../../../../../runbooks/precision/low_precision_scatter_reduction_needs_fp32_accumulator.md)（`exemplifies`）：ScatterDiscrete 与《FP16 scatter 归约逐次回写放大相消误差》的实质衔接是：ScatterDiscrete 与 Gather、C/基础 Scatter 形成索引读写对偶；两张故障卡直接约束重复索引归约和 updates 形状。
-- [Scatter 非散射维可缩小，更新量须按 indices 计算](../../../../../runbooks/precision/scatter_update_count_must_follow_indices_shape.md)（`exemplifies`）：ScatterDiscrete 与《Scatter 非散射维可缩小，更新量须按 indices 计算》的实质衔接是：ScatterDiscrete 与 Gather、C/基础 Scatter 形成索引读写对偶；两张故障卡直接约束重复索引归约和 updates 形状。
-- [Scatter](../../memory_vector_compute/scatter_gather/scatter_isasi.md)（`related`）：ScatterDiscrete 与《Scatter》的实质衔接是：ScatterDiscrete 与 Gather、C/基础 Scatter 形成索引读写对偶；两张故障卡直接约束重复索引归约和 updates 形状。
-- [asc_scatter](../../../c_api/reg/reg_store/asc_scatter_deprecated.md)（`related`）：ScatterDiscrete 与《asc_scatter》的实质衔接是：ScatterDiscrete 与 Gather、C/基础 Scatter 形成索引读写对偶；两张故障卡直接约束重复索引归约和 updates 形状。
-- [AscScatter](../../../c_api/reg/reg_store/asc_scatter.md)（`same_topic`）：ScatterDiscrete 是 C++ Reg API 下依据唯一 index 将 RegTensor 分散写入 UB 的对应接口，包含相同的离散地址契约。
-- [Gather](../reg_data_load/gather_discrete.md)（`same_topic`）：ScatterDiscrete 与《Gather》的实质衔接是：ScatterDiscrete 与 Gather、C/基础 Scatter 形成索引读写对偶；两张故障卡直接约束重复索引归约和 updates 形状。
-<!-- cannbot:related:end -->

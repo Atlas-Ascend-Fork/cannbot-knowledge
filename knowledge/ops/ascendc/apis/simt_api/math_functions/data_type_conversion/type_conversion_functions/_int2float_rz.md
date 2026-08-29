@@ -29,8 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__int2float_rd](_int2float_rd.md)（`same_topic`）：__int2float_rd说明遵循CAST_FLOOR模式，将int32类型数据转换为浮点数，返回转换后的值。
-- [__int2float_rn](_int2float_rn.md)（`same_topic`）：__int2float_rn说明遵循CAST_RINT模式，将int32类型数据转换为浮点数，返回转换后的值。
-- [__int2float_rna](_int2float_rna.md)（`same_topic`）：__int2float_rna说明遵循CAST_ROUND模式，将int32类型数据转换为浮点数，返回转换后的值。
-- [__int2float_ru](_int2float_ru.md)（`same_topic`）：__int2float_ru说明遵循CAST_CEIL模式，将int32类型数据转换为浮点数，返回转换后的值。
+- [__int2float_ru](_int2float_ru.md)（`same_topic`）：“功能：遵循CAST_TRUNC模式，将int32类型数据转换为浮点数，返回转换后的值。”与“功能：遵循CAST_CEIL模式，将int32类型数据转换为浮点数，返回转换后的值。”提供双方正文证据。两端处理相同的 int32 到 float 转换，唯一关键选择是 CAST_TRUNC 与 CAST_CEIL 的舍入方向；互读能避免把截断和向上取整混用。
 <!-- cannbot:related:end -->

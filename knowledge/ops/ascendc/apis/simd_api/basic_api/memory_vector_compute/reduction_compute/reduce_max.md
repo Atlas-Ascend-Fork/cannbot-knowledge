@@ -27,11 +27,6 @@ ReduceMax接口用于从所有输入数据中找出最大值和最大值索引�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Reduce count 必须排除 DMA 对齐填充元素](../../../../../runbooks/precision/reduction_count_excludes_dma_padding.md)（`exemplifies`）：padding lane 必须排除，否则最大值会被未定义尾部污染。
-- [Reg::Reduce 跨 chunk 覆写导致规约失真](../../../../../runbooks/precision/reg_reduce_per_chunk_result_must_accumulate_explicitly.md)（`exemplifies`）：该卡说明分 chunk ReduceMax 结果必须显式跨块合并。
-- [Reduce](../../reg_vector_compute/reduction_compute/reduce.md)（`related`）：Reg::Reduce 的 MAX 与 ReduceMax 都完成最大值归约，但分别面向寄存器编程和 LocalTensor 内存向量接口。
-- [ReduceMax接口](../../../adv_api/reduction_operations/reduce_max_interface/reduce_max_interface.md)（`related`）：ReduceMax说明从所有输入数据中找出最大值，可选返回最大值索引。
-- [ReduceMin](reduce_min.md)（`related`）：ReduceMin 聚合方向相反，按目标极值选。
-- [AscReduceMax](../../../c_api/reg/reduce_compute/asc_reduce_max.md)（`same_topic`）：AscReduceMax 与《ReduceMax》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
-- [ReduceMax](../../../adv_api/reduction_operations/reduce_max_interface/reduce_max.md)（`same_topic`）：高阶 ReduceMax 提供同一最大值归约并封装 shape/workspace。
+- [Reduce count 必须排除 DMA 对齐填充元素](../../../../../runbooks/precision/reduction_count_excludes_dma_padding.md)（`exemplifies`）：参数说明：T：操作数数据类型。；dst：输出 目的操作数。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；src：输入 源操作数。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；sharedTmpBuffer：输入 指令执行期间存储中间结果，用于内部计算所需操作空间，需特别注意空间大小。详情请参考［关键特性说明］(#关键特性说明)。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；count：输入 参与计算的元素个数。关于该参数的具体说明请参考［连续计算］(../simd_compute/continuous_compute.md)。最大处理的数据量不能超过UB大小限制。；buffer 容量和 DMA 传输对齐长度是存储约束，不是数学归约范围。把 `alignCount` 传给 reduce 会显式要求 API 处理填充 lane；填充零在减最大值和指数后可能变成非零贡献。。ReduceMax 将 count 定义为参与计算元素数，Runbook证明 DMA 对齐填充不能混入该逻辑 count。
+- [Reduce work buf 额外占 UB 致 507035](../../../../../runbooks/compilation/reduce_work_buf_ub_507035.md)（`exemplifies`）：参数说明：T：操作数数据类型。；dst：输出 目的操作数。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；src：输入 源操作数。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；sharedTmpBuffer：输入 指令执行期间存储中间结果，用于内部计算所需操作空间，需特别注意空间大小。详情请参考［关键特性说明］(#关键特性说明)。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；count：输入 参与计算的元素个数。关于该参数的具体说明请参考［连续计算］(../simd_compute/continuous_compute.md)。最大处理的数据量不能超过UB大小限制。；**机制解释**（根因分析，属 interpretation）：UB（Unified Buffer）是 Ascend950 上的片上 SRAM，`TPipe::InitBuffer` 静态划分、不能动态扩。。ReduceMax 合同要求 sharedTmpBuffer 并受 UB 上限约束，Runbook用额外 work buffer 导致 507035 的实测闭合该资源风险。
 <!-- cannbot:related:end -->

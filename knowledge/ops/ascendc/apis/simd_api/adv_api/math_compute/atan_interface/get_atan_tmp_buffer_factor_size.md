@@ -26,7 +26,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Atan](atan.md)（`related`）：factor 查询返回的 maxLiveNodeCount/extraBuf 用于按已分配临时空间推算 Atan 单次 calCount，直接决定 Kernel 侧 Atan 的分块规模。
-- [Atan接口](atan_interface.md)（`same_topic`）：《Atan接口》处理“提供Atan反正切计算接口及其Tiling临时空间大小查询接口，包含Atan、GetAtanMaxMinTmpSize等。”。《GetAtanTmpBufferFactorSize》明确提供“获取Atan接口的maxLiveNodeCount和extraBuf，用于推算固定空间下单次最大计算元素数”，其参数、调用或验证步骤直接接入Atan Kernel 调用、临时空间查询和 SIMT 对应实现。
-- [GetAtanMaxMinTmpSize](get_atan_max_min_tmp_size.md)（`same_topic`）：两者分别以形状上下界和线性因子描述同一个 Atan 临时空间需求，可结合可用 UB 选择 tiling 空间。
+- [Atan](atan.md)（`related`）：该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。；template <typename T, bool isReuseSource = false, const AtanConfig& config = defaultAtanConfig> __aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor, const LocalTensor<uint8_t>& sharedTmpBuffer, const uint32_t calCount)；Host 侧系数用于反推单次元素上限，恰好约束带 sharedTmpBuffer 与 calCount 的 Atan 重载如何切分计算。
+- [GetAtanMaxMinTmpSize](get_atan_max_min_tmp_size.md)（`same_topic`）：“预留 申请的临时空间大小不能小于最小临时空间大小”与“通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量”分别给出容量下界和固定空间下的 tile 推导。
 <!-- cannbot:related:end -->

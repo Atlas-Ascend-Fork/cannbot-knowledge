@@ -37,9 +37,6 @@ quant_pre_mode量化模式参数支持的枚举值
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCopyL0c2L1](../asc_copy_l0c2l1/asc_copy_l0c2l1_arch_3510.md)（`related`）：两接口共享 L0C 搬出与随路处理，但目的存储分别为 GM 与 L1，构成下一阶段消费位置驱动的直接选型。
-- [AscCopyL12gm](../asc_copy_l12gm.md)（`related`）：AscCopyL12gm 与《AscCopyL0c2Gm》的实质衔接是：AscCopyL12gm 是 L1 到 GM 的数据路径；L1 到 UB、L0C 到 UB/GM 接口提供相邻存储层的可执行搬运组合，迁移指导则明确 3510 删除该直达路径后的替代方案。
-- [AscSetL0c2gmChannelPara](../../sys_var/asc_set_l0c2gm_channel_para.md)（`related`）：AscCopyL0c2Gm说明将矩阵计算结果从L0C Buffer搬运至GM，搬运过程中支持随路量化、ReLU、格式转换、通道拆分等能力；对AscSetL0c2gmChannelPara而言，ChannelPara 只在 NZ2DN 的 L0C 搬运前生效；Channel Split 的格式限制和 AscCopyL0c2Gm 的参数共同界定有效调用。
-- [AscCopyL0c2Gm](asc_copy_l0c2gm.md)（`same_topic`）：AscCopyL0c2Gm说明将矩阵计算结果从L0C Buffer搬运至GM，搬运过程中支持随路量化、ReLU、格式转换、通道拆分等能力。
-- [AscCopyL0c2Gm](asc_copy_l0c2gm_arch_2201.md)（`same_topic`）：AscCopyL0c2Gm：这些卡共同约束同一 L0C→GM fixpipe 搬运：架构变体核对原型，SetL0cCopyParams/Prequant/ChannelPara配置随路转换，NZ2ND与Fixpipe页解释输出布局。 目标卡《AscCopyL0c2Gm》补充：将矩阵计算结果从L0C Buffer搬运至GM，搬运过程中支持随路量化、ReLU、格式转换、通道拆分等能力。
+- [AscSetL0c2gmChannelPara](../../sys_var/asc_set_l0c2gm_channel_para.md)（`related`）：“对通道步长参数的专用寄存器的比特位进行设置。需要配合接口asc_copy_l0c2l1或asc_copy_l0c2gm使用。 仅当调用接口时开启NZ2DN模式时，此功能才有效。”与“该接口用于将矩阵计算的结果从L0C Buffer搬运至Global Memory（GM）中，并且在搬运过程中支持与其它接口组合使用，配置多种随路能力。”提供双方正文证据。setter 正文直接指定 asc_copy_l0c2gm 且只在 NZ2DN 模式生效，搬运卡定义 L0C 到 GM 及组合随路能力，形成配置先于搬运的调用关系。
+- [AscCopyL0c2Gm](asc_copy_l0c2gm_arch_2201.md)（`same_topic`）：该接口用于将矩阵计算的结果从L0C Buffer搬运至Global Memory（GM）中，并且在搬运过程中支持与其它接口组合使用，配置多种随路能力；矩阵计算完成后，对结果进行量化处理，之后将处理结果搬运到GM中。两卡的核心对象都是 AscCopyL0c2Gm 的 L0C 到 GM 搬运与随路量化，分别给出 3510 组合能力和 2201 九种量化模式。
 <!-- cannbot:related:end -->

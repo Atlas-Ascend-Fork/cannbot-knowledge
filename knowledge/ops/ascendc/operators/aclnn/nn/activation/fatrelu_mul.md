@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T19:06:06Z"
-updated_at: "2026-08-25T19:06:06Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -172,7 +172,7 @@ else:
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台接线 | OpDef/config 同时含 `ascend910b`、`ascend910_93` | 只有活动 binary config 中的 dtype 会生成可调用 AIV body | 全部 | A5 无接线且公开明确不支持 | `fatrelu_mul_def.cpp::FatreluMul`；`ascendc_config.json` |
+| 平台接线 | OpDef/config 同时含 `ascend910b`、`ascend910_93` | 只有活动 binary config 中的 dtype 会生成可调用 AIV body | 全部 | 950 无接线且公开明确不支持 | `fatrelu_mul_def.cpp::FatreluMul`；`ascendc_config.json` |
 | dtype key | `DT_FLOAT16→1`，`DT_FLOAT→2`，`DT_BF16→3` | entry 以 key 实例化不同精度模板 | R-001/2/3 | key 0/未知 key 无输出 | `FatreluMulTiling::GetTilingKey`；`fatrelu_mul` |
 | 小尾路径可达性 | `L<=1024 => d<=512 <= P` | `Process` 的 `d>P` 才进入 BigTail；公开路径不满足 | 全部 | `BigTailProcess` 是当前公开 A2/A3 dead route，不写为正式 Route | `RunBigKernelTiling`；`FatreluMulND::Process` |
 | 32 B 行对齐 | `dAlign=ceil(d/(32/s))*(32/s)` | `DataCopyPad` 将每行 UB 步长补齐，Vector 处理连续 padded 域 | 全部 | 同 Route padding path，无另一 key | `GetNeedCoreNum`；`SmallTailProcess` |
@@ -609,13 +609,13 @@ Host 先用 `dAlign` 和 `P=10240` 计算 `n`，使一次 iteration 的每路 pa
 | 内存总占用与复用 | 192 KiB，tmp 不额外占用 | 192 KiB | 192 KiB，tmp 不额外占用 | dtype 不改变物理 TBuf 总量 |
 | 搬运/Vector/SIMT/NDDMA/通信 API | DataCopyPad；Cast/Compare/Select/Mul | DataCopyPad；Compare/Select/Mul | DataCopyPad；Cast/Compare/Select/Mul | 全为 AIV_VECTOR，无 SIMT/NDDMA/通信 |
 | 同步、精度与 tail | FP32 计算，`CAST_NONE` 回半精度 | 全 FP32 | FP32 计算，`CAST_RINT` 回 BF16 | hard event 图相同；精度顺序不可互换 |
-| fallback/失败边界 | 未知 key/Host 约束失败 | 同左 | A2/A3 可用；Kirin guard 不可用 | A5 不支持；公开路径不进入 BigTail |
+| fallback/失败边界 | 未知 key/Host 约束失败 | 同左 | A2/A3 可用；Kirin guard 不可用 | 950 不支持；公开路径不进入 BigTail |
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；公开表 + `ascend910b` OpDef/binary config | 支持；公开表 + `ascend910_93` OpDef/binary config | 公开 README/API 明确“×”；无 `ascend950` OpDef、binary config 或活动 kernel config，因此未生成 `_a5` 卡 |
+| 支持状态 | 支持；公开表 + `ascend910b` OpDef/binary config | 支持；公开表 + `ascend910_93` OpDef/binary config | 公开 README/API 明确“×”；无 `ascend950` OpDef、binary config 或活动 kernel config，因此未生成 `_950` 卡 |
 | Host/Launcher | 与 A3 共用 Tiling/POD，AIV 核数 `C` 由平台取得 | 与 A2 共用实现，平台核数可不同 | N/A |
 | Kernel/资源 | AICore 220 guard；192 KiB TBuf、`PP=10240` | 同一 guard/body/常量 | N/A；不能凭目录或其它算子推测 |
 
@@ -638,7 +638,7 @@ Host 先用 `dAlign` 和 `P=10240` 计算 `n`，使一次 iteration 的每路 pa
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `activation/fatrelu_mul/docs/aclnnFatreluMul.md` | `aclnnFatreluMulGetWorkspaceSize/aclnnFatreluMul` | 两段式原型、A2/A3 支持、dtype/shape/空域/确定性契约 |
-| 入口声明/平台 | `activation/fatrelu_mul/README.md` | 产品支持、功能说明 | A2/A3 支持、A5 明确不支持、公开公式与参数 |
+| 入口声明/平台 | `activation/fatrelu_mul/README.md` | 产品支持、功能说明 | A2/A3 支持、950 明确不支持、公开公式与参数 |
 | Host OpDef | `activation/fatrelu_mul/op_host/fatrelu_mul_def.cpp` | `ops::FatreluMul` | dtype/ND/AutoContiguous、ascend910b/ascend910_93 注册 |
 | Shape/dtype 推导 | `activation/fatrelu_mul/op_host/fatrelu_mul_infershape.cpp` | `InferShape4FatreluMul/InferDataType4FatreluMul` | 输出尾轴减半、dtype 复制 |
 | POD | `activation/fatrelu_mul/op_host/fatrelu_mul_tiling.h` | `FatreluMulTilingData` | 三字段声明与注册 |
@@ -659,4 +659,4 @@ Host 先用 `dAlign` 和 `P=10240` 计算 `n`，使一次 iteration 的每路 pa
 | workspace/内存 | 固定 16 MiB workspace；192 KiB TBuf 双半区 | body 不消费 workspace；half base、FP32 区、tmp alias、mask offset 不得漂移 | `fatrelu_mul`；`Init/CopyIn/Compute` |
 | 同步 | event 0/1 与 ping/pong 半区绑定 | `MTE3_MTE2`、`MTE2_V`、`V_MTE3` 及 PIPE_V 顺序不可删除或换序 | `SmallTailProcess/CopyIn/Compute/CopyOut` |
 | 精度与尾块 | FP16/BF16 升 FP32；FP16 CAST_NONE、BF16 CAST_RINT；2D DMA 只写 d 列 | 严格 GT、mask 64 对齐、`dataCount=k*dAlign`、输出 blockLen `d*s` | `Compute`、`Compute<bfloat16_t>`、`CopyOut` |
-| 失败边界 | Tiling 约束失败阻断 launch；未知 key无输出；A5不支持 | 不得把 dead BigTail、Kirin 或 A5 实现信号误作本卡公开 Route | `RunBigKernelTiling`；`fatrelu_mul`；公开产品表 |
+| 失败边界 | Tiling 约束失败阻断 launch；未知 key无输出；950不支持 | 不得把 dead BigTail、Kirin 或 950 实现信号误作本卡公开 Route | `RunBigKernelTiling`；`fatrelu_mul`；公开产品表 |

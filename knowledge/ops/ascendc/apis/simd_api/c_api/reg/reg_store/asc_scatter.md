@@ -22,7 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Scatter](../../../basic_api/memory_vector_compute/scatter_gather/scatter_isasi.md)（`same_topic`）：《AscScatter》明确“根据索引值index将源操作数src中的元素分散存储到目的操作数dst中。”；它与《Scatter》的“根据目的地址偏移张量将连续输入张量的元素分散到结果张量的指定位置。”在实际调用参数、数据流或结果校验上直接衔接。
-- [ScatterDiscrete](../../../basic_api/reg_vector_compute/reg_data_store/scatter_discrete.md)（`same_topic`）：ScatterDiscrete 是 C++ Reg API 下依据唯一 index 将 RegTensor 分散写入 UB 的对应接口，包含相同的离散地址契约。
-- [asc_scatter](asc_scatter_deprecated.md)（`same_topic`）：asc_scatter 与《AscScatter》的实质衔接是：废弃 asc_scatter 的现行 C/基础/Reg Scatter 是迁移路径；三张故障卡直接约束 indices 形状、重复地址归约和写冲突。
+- [asc_scatter](asc_scatter_deprecated.md)（`same_topic`）：该接口已废弃。请使用asc_scatter实现此功能。 该指令会根据索引值index将源操作数src中的元素分散到目的操作数dst中。分散过程；该指令会根据索引值index将源操作数src中的元素分散到目的操作数dst中。分散过程。废弃卡明确要求改用 asc_scatter，并描述相同的按 index 将 src 分散到 dst 的行为；目标卡就是当前替代接口及其功能合同。
 <!-- cannbot:related:end -->

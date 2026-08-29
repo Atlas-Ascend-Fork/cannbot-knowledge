@@ -50,13 +50,3 @@ UB的地址编码格式：
 当gather/scatter数据存在同一subbank的不同起始地址时，发生冲突，可通过将数据分散到不同subbank来减少subbank冲突，避免不同起始地址的数据集中在同一subbank下。
 - 优化计算逻辑
 对一个数据类型为float，shape为(8, 64)的输入每个元素加1。通过将计算逻辑由逐列计算改为逐行计算可避免同一Repeat下的冲突问题，实现方案对比如下：
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [EnableL1BankConflictOptimise](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/enable_l1_bank_conflict_optimise.md)（`explains`）：EnableL1BankConflictOptimise 与《避免bank冲突（NPU架构版本3510）》的实质衔接是：该开关由 Matmul GetTiling 判定，随后写入 MatmulConfig 并通过新增 TilingKey 选择核侧分支；bank 规则和 key 位编码共同约束实现。
-- [asc_copy_l12l0a](../../../../../apis/simd_api/c_api/cube_data_move/asc_copy_l12l0a/asc_copy_l12l0a_arch_3510.md)（`explains`）：asc_copy_l12l0a 与《避免bank冲突（NPU架构版本3510）》的实质衔接是：该 3510 接口把 512B L1 矩阵搬到 L0A；架构变体、转置/MX 入口及 GM→L1 上游构成实际 Cube 搬运链，迁移卡限定不同架构可用路径。
-- [SIMD算子优化概述](overview.md)（`related`）：概述解释 bank 结构与并发访问为何冲突，为 3510 卡中的具体 padding/地址排布方案提供机制基础。
-- [避免UB的Bank冲突](../../../simt_operator_optimization/memory_access/avoid_ub_bank_conflict_simt.md)（`related`）：两张卡都处理 3510 UB bank 冲突；SIMT 卡强调线程/warp 访问，SIMD 卡给出 bank group、subbank 及连续/离散访存冲突模型，可互补定位同一硬件瓶颈。
-- [避免bank冲突（NPU架构版本2201）](avoid_bank_conflict_npu_arch_2201.md)（`same_topic`）：2201 与 3510 文档针对同一 UB bank conflict 优化目标给出不同架构布局策略，对照可避免照搬地址间隔。
-<!-- cannbot:related:end -->

@@ -38,7 +38,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopy](data_copy_gm_and_ub_continuous.md)（`related`）：《DataCopy》说明软仿接口，支持数据的切片搬运，提取多维Tensor数据的子集进行搬运。；《DataCopy》说明支持GM与UB之间的连续数据搬运，数据传输过程中保持原始格式和内容不变。。二者在切片DataCopy是高维分块搬运的具体重载，连续搬运和数据搬运总览用于界定它的适用边界上存在可执行的直接衔接。
-- [数据搬运](data_move.md)（`related`）：《DataCopy》说明软仿接口，支持数据的切片搬运，提取多维Tensor数据的子集进行搬运。；《数据搬运》说明矢量数据搬运接口集，涵盖 DataCopy、DataCopyPad、Copy 等 GM/UB 间连续、高维切分、非对齐搬运接口。。二者在切片DataCopy是高维分块搬运的具体重载，连续搬运和数据搬运总览用于界定它的适用边界上存在可执行的直接衔接。
-- [DataCopy](data_copy_gm_and_ub_highdim_split.md)（`same_topic`）：《DataCopy》说明软仿接口，支持数据的切片搬运，提取多维Tensor数据的子集进行搬运。；《DataCopy》说明支持GM与UB之间的高维切分数据搬运，支持非连续和连续的数据搬运。。二者在切片DataCopy是高维分块搬运的具体重载，连续搬运和数据搬运总览用于界定它的适用边界上存在可执行的直接衔接。
+- [DataCopy](data_copy_gm_and_ub_highdim_split.md)（`same_topic`）：软仿接口，支持数据的切片搬运，提取多维Tensor数据的子集进行搬运。；通过 DataCopyParams 配置 blockCount（数据块个数）、blockLen（单个数据块长度）、srcGap（源地址偏移）、dstGap（目的地址偏移），同时支持非连续和连续的数据搬运。。两端都解决 GM 与 UB 的多维非连续子集搬运；切片端以 SliceInfo 表达区间，HighDimSplit 端以块数、块长和 gap 表达相同搬运任务的另一参数化路径。
 <!-- cannbot:related:end -->

@@ -22,6 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscHalf2Float](../reg/data_type_convert/asc_half2float.md)（`related`）：两者都将 half 转 float；focal 在 Reg API 中按 VL 的奇偶半段布局展开，vector 版本直接处理内存矢量，适合按数据驻留位置选型。
-- [__half2float](../../../simt_api/math_functions/half_type/half_precision_conversion_functions/_half2float.md)（`related`）：《__half2float》明确“将half类型数据转换为浮点数，返回转换后的值。”；它与《AscHalf2float》的“将half类型转化为float类型，无舍入模式。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscHalf2Float](../reg/data_type_convert/asc_half2float.md)（`same_topic`）：将half类型转化为float类型，无舍入模式。；将half类型数据转换为float类型，无舍入模式。。两卡核心转换均为 half 到 float 且无舍入模式，分别覆盖 A2/A3 的 UB 向量接口与 950 的寄存器接口。
 <!-- cannbot:related:end -->

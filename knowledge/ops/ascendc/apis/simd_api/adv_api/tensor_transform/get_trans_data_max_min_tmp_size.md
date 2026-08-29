@@ -23,5 +23,5 @@ host侧Tiling接口，用于获取TransData接口所需的最大和最小临时�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [TransData](trans_data.md)（`related`）：TransData is the kernel transform whose temporary-space bounds the focal host query calculates.
+- [TransData](trans_data.md)（`related`）：host侧Tiling接口，用于获取TransData接口所需的最大和最小临时空间大小。；提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetTransDataMaxMinTmpSize获取。。Host 接口产出的临时空间区间直接满足 TransData 两种重载的 sharedTmpBuffer 预算契约。
 <!-- cannbot:related:end -->

@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_list/op_host/config/ascend910_93/foreach_pow_list_binary.json
     role: implementation
 created_at: "2026-08-25T15:48:00Z"
-updated_at: "2026-08-25T15:48:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -623,9 +623,9 @@ PipeBarrier<PIPE_V>();
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 ACLNN 产品表支持；`ascend910b` 接线 | 公开 ACLNN 产品表支持；`ascend910_93` 接线 | 公开 ACLNN 产品表明确不支持；尽管 OpDef/CMake/binary config 存在 `ascend950` 实现信号，按发布门禁不生成 A5 卡 |
+| 支持状态 | 公开 ACLNN 产品表支持；`ascend910b` 接线 | 公开 ACLNN 产品表支持；`ascend910_93` 接线 | 公开 ACLNN 产品表明确不支持；尽管 OpDef/CMake/binary config 存在 `ascend950` 实现信号，按发布门禁不生成 950 卡 |
 | Host/Launcher | 共用 `ForeachCommonTiling` 与四 dtype key | 同 A2 | 实现接线复用公共 Tiling，但与公开支持冲突，不作为正式知识 |
 | Kernel/资源 | 共用 `foreach_pow_list.cpp/.h`；四 Route | 共用源码；FP16 binary 文件名与 A2 有哈希差异，但固定源码 body 相同 | 文件存在不证明公开支持；不在本卡展开 |
 
@@ -638,7 +638,7 @@ PipeBarrier<PIPE_V>();
 - Host 未显式检查 `Q>0`；受支持硬件通常具有足够 UB，但固定源码没有小 UB fallback。
 - INT32 `Power<int,false>` 对负指数、溢出与特殊值的 primitive 级语义固定仓不可见；FP16/FP32 `Power` 内部算法、误差界也固定仓不可见。
 - 公开 ACLNN header、自动生成 bridge/executor、输入 Contiguous 临时区合并公式和具体 launch 错误包装固定仓不可见；这些是框架边界。算子自有 selector、POD、entry/body、内存与构建接线已闭合。
-- A5 公开文档与实现接线冲突，`foreach_pow_list_a5.md` 不创建；不得仅凭 `ascend950` config 推断公开 API 支持。
+- 950 公开文档与实现接线冲突，`foreach_pow_list_950.md` 不创建；不得仅凭 `ascend950` config 推断公开 API 支持。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -647,7 +647,7 @@ PipeBarrier<PIPE_V>();
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `foreach/foreach_pow_list/docs/aclnnForeachPowList.md` | 两段式函数原型、产品表、参数/错误约束 | ACLNN 公开性、A2/A3 支持与 A5 不支持 |
+| 入口声明/约束 | `foreach/foreach_pow_list/docs/aclnnForeachPowList.md` | 两段式函数原型、产品表、参数/错误约束 | ACLNN 公开性、A2/A3 支持与 950 不支持 |
 | 入口声明/约束 | `foreach/foreach_pow_list/README.md` | 产品支持、公式、调用方式 | 逻辑语义与公开入口 |
 | OpDef | `foreach/foreach_pow_list/op_host/foreach_pow_list_def.cpp` | `ForeachPowList` | dtype/layout/AutoContiguous与平台 config |
 | InferShape | `foreach/foreach_utils/op_host/foreach_infershape.cpp` | `InferShape4ForeachCommon`、ForeachPowList注册 | 输出数、shape/dtype传播 |
@@ -658,7 +658,7 @@ PipeBarrier<PIPE_V>();
 | Kernel entry | `foreach/foreach_pow_list/op_kernel/foreach_pow_list.cpp` | `foreach_pow_list` | key router、BF16 arch guard、workspace不使用 |
 | Kernel body | `foreach/foreach_pow_list/op_kernel/foreach_pow_list.h` | `ForeachPowList`、`InnerComputer` | Queue、循环、搬运、Power、cast、同步与 tail |
 | 构建接线 | `foreach/foreach_pow_list/op_host/CMakeLists.txt` | `add_modules_sources(...ACLNNTYPE aclnn...)` | 生成 ACLNN Host 接线及 foreach_utils依赖 |
-| 构建接线 | `foreach/foreach_pow_list/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3/A5 compute-unit源码选择信号 |
+| 构建接线 | `foreach/foreach_pow_list/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3/950 compute-unit源码选择信号 |
 | binary config | `foreach/foreach_pow_list/op_host/config/ascend910b/foreach_pow_list_binary.json` | `ForeachPowList` 四项 `op_list` | A2 四 dtype binary 发布 |
 | binary config | `foreach/foreach_pow_list/op_host/config/ascend910_93/foreach_pow_list_binary.json` | `ForeachPowList` 四项 `op_list` | A3 四 dtype binary 发布 |
 
@@ -671,4 +671,4 @@ PipeBarrier<PIPE_V>();
 | workspace/内存 | AIV Queue 字节账与 32 B reservation 可复用 | depth=2 必须计入；dtype temp factor、BF16 `9Q/3Q/3Q` 布局及 owner/lifetime不变 | `DivideUbMemory2`；`Init/GetTmpBufferUBSize` |
 | 同步 | Queue protocol；BF16三段 staging的 `PIPE_V` barrier | BF16 cast/Power/cast之间及复用前 barrier 不得删除 | `CopyIn/Compute/CopyOut`；`ComputerPerCast` |
 | 精度与尾块 | FP16/FP32/INT32直接 Power，BF16 FP32 Power后CAST_RINT | dtype模板、cast顺序、实际 `dataCount` 和 tail exact-byte搬运不变 | `InnerComputer`；`CopyIn/CopyOut` |
-| 失败边界 | Host校验失败阻断；unknown key无动作 | 不得把未知 key当作 fallback；不得发布公开文档明确不支持的 A5 | `CheckOpInfo`；`foreach_pow_list` router；公开产品表 |
+| 失败边界 | Host校验失败阻断；unknown key无动作 | 不得把未知 key当作 fallback；不得发布公开文档明确不支持的 950 | `CheckOpInfo`；`foreach_pow_list` router；公开产品表 |

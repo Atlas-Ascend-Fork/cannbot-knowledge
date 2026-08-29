@@ -21,9 +21,8 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalignUnpack](asc_loadalign_unpack.md)（`related`）：普通 Unpack 将 VL/2 的 u8/u16/u32 扩成双倍位宽，而 Unpack4 固定把 VL/4 u8 扩成 u32；对比可正确选择扩展倍率与目标布局。
-- [AscLoadalignV1Deprecated](asc_loadalign_v1_deprecated.md)（`related`）：旧 asc_loadalign_unpack_v2 的 u8→u32 四倍解包功能由 AscLoadalignUnpack4 替代。
-- [AscLoadalignV2Deprecated](asc_loadalign_v2_deprecated.md)（`related`）：废弃接口的 UNPACK4 模式由该专用接口承接，规定 VL/4 u8 搬入并扩成 VL u32。
-- [AscLoadalignUnpack4Postupdate](asc_loadalign_unpack4_postupdate.md)（`same_topic`）：《AscLoadalignUnpack4Postupdate》处理“从UB对齐搬入VL/4长度u8数据并unpack到VL长度u32类型，调用后自动更新源地址。”。《AscLoadalignUnpack4》提供“从UB对齐搬入VL/4长度u8数据并unpack到VL长度u32类型，中间位置补0。”，其具体合同或探针直接接入u8→u32 unpack4 对齐加载、post-update 地址推进和显式解包合同。
-- [AscLoadalignV3Deprecated](asc_loadalign_v3_deprecated.md)（`same_topic`）：AscLoadalignV3Deprecated 与《AscLoadalignUnpack4》的实质衔接是：废弃 Loadalign V3 应迁移到当前 loadalign/postupdate/广播/解包接口，并保留地址与 UB 限定。
+- [AscLoadalignV1Deprecated](asc_loadalign_v1_deprecated.md)（`related`）：“该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。 对齐数据搬运接口，从UB连续对齐搬入目的操作数，支持多种搬入模式，接口不传入偏移，需要由用户自行更新源操作数的地址。”逐名指定废弃入口的迁移目标；“对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现UNPACK4搬入模式：解压缩模式，按无符号整型u8加载VL/4长度数据，unpack到VL长度u32类型，中间位置补0。”给出该目标保留的具体搬入语义。组合阅读可按旧枚举选择唯一替代接口，而非泛化到同目录任意 LoadAlign。
+- [AscLoadalignV2Deprecated](asc_loadalign_v2_deprecated.md)（`related`）：“该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。 对齐数据搬运接口，从UB连续对齐搬入目的操作数，支持多种搬入模式，接口通过地址寄存器传入偏移，用户可以选择更新偏移或者更新源操作数的地址。”列出该废弃族的三条明确替换映射；“对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现UNPACK4搬入模式：解压缩模式，按无符号整型u8加载VL/4长度数据，unpack到VL长度u32类型，中间位置补0。”验证当前目标承载的具体广播或解压语义。两端共同支持按旧模式迁移，而不是只凭同名选择新 API。
+- [AscLoadalignUnpack](asc_loadalign_unpack.md)（`same_topic`）：对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现解压缩搬入模式：按无符号整型u8/u16/u32加载VL/2长度数据，unpack到VL长度u16/u32/u64类型，中间位置补0。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现UNPACK4搬入模式：解压缩模式，按无符号整型u8加载VL/4长度数据，unpack到VL长度u32类型，中间位置补0。。两端都是 UB 对齐加载并补零扩展的 unpack 接口，分别覆盖 VL/2 通用扩展与 VL/4 的 u8 到 u32 专用模式，联合阅读可按压缩倍率和目标类型选择。
+- [AscLoadalignV3Deprecated](asc_loadalign_v3_deprecated.md)（`same_topic`）：该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现UNPACK4搬入模式：解压缩模式，按无符号整型u8加载VL/4长度数据，unpack到VL长度u32类型，中间位置补0。。废弃页把旧 unpack_v2 明确映射到 AscLoadalignUnpack4。
 <!-- cannbot:related:end -->

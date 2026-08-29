@@ -38,5 +38,5 @@ Tiling参数如下：
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetMatmulApiTiling](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_matmul_api_tiling.md)（`explains`）：GetMatmulApiTiling 与《Matmul高阶API开启Tiling全量常量化》的实质衔接是：host 侧 GetMatmulApiTiling 把模板参数、MatmulConfig 与基础配置落成 tiling，随后决定 kernel Matmul 的注册、临时空间和精度/性能策略。
+- [Matmul Tiling类使用说明](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/matmul_tiling_usage.md)（`explains`）：使用MatmulApiStaticTiling参数替代TCubeTiling变量参数；调用API接口，即可获取到Init中TCubeTiling结构体中的相关参数；连接常量化替代方案与常规动态 Tiling 基线。
 <!-- cannbot:related:end -->

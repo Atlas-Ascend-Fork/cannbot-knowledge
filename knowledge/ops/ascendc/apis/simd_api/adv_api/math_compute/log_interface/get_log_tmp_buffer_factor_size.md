@@ -25,7 +25,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Log接口](log_interface.md)（`related`）：Factor 查询把固定空间换算为 Log/Log2/Log10 单次最大元素数，补齐切块决策。
-- [GetLogMaxMinTmpSize](get_log_max_min_tmp_size.md)（`same_topic`）：GetLogTmpBufferFactorSize 与《GetLogMaxMinTmpSize》的实质衔接是：Log 的 factor/max-min 查询服务 Log kernel，log2/log10 和 UB 步长故障补充实现与空间约束。
-- [Log](log.md)（`same_topic`）：GetLogTmpBufferFactorSize 与《Log》的实质衔接是：Log 的 factor/max-min 查询服务 Log kernel，log2/log10 和 UB 步长故障补充实现与空间约束。
+- [GetLogMaxMinTmpSize](get_log_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Log/Log2/Log10接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；获取Log/Log2/Log10接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。。前者从 shape 求临时空间上下界，后者从已定临时空间反推单次元素量，二者闭合 Log tiling 的正反预算。
+- [Log](log.md)（`related`）：获取Log/Log2/Log10接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；Log（以e为底）和Log10仅支持接口框架申请临时空间方式，每种区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。Log2额外支持通过sharedTmpBuffer传入临时空间。临时空间大小通过GetLogMaxMinTmpSize获取。。Factor 接口在固定临时空间下反推 Log 家族单次处理量，Log 卡说明唯一显式 sharedTmpBuffer 路径在 Log2，二者共同支撑分块预算。
 <!-- cannbot:related:end -->

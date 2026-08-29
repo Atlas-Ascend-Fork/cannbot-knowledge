@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_erf/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:31:37Z"
-updated_at: "2026-08-25T15:31:37Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -526,9 +526,9 @@ Host 不以“输入队列能放多少”直接选 tile，而先扣 POD，再按
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持，但使用独立 `_a5` 卡 |
+| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持，但使用独立 `_950` 卡 |
 | Host/Launcher | 共用 arch22 `ForeachCommonTiling` | 共用 arch22 `ForeachCommonTiling` | arch35 独立 tiling，SIMT |
 | Kernel/资源 | 共用 AIV Vector body，实际核数取平台 AIVCoreNum | 同左 | 不使用本卡 Vector body |
 
@@ -548,7 +548,7 @@ Host 不以“输入队列能放多少”直接选 tile，而先扣 POD，再按
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `foreach/foreach_erf/docs/aclnnForeachErf.md` | `aclnnForeachErfGetWorkspaceSize`; `aclnnForeachErf` | 公开原型、dtype/shape/错误与确定性 |
-| 平台/语义 | `foreach/foreach_erf/README.md` | 产品支持表；公式 | A2/A3/A5 公开支持与 erf 语义 |
+| 平台/语义 | `foreach/foreach_erf/README.md` | 产品支持表；公式 | A2/A3/950 公开支持与 erf 语义 |
 | 入口实现边界 | `foreach/foreach_erf/op_host/foreach_erf_def.cpp` | `ops::ForeachErf`; `OP_ADD` | 动态 ND、dtype、AutoContiguous、平台注册 |
 | Host/Tiling | `foreach/foreach_erf/op_host/arch22/foreach_erf_tiling_arch22.cpp` | `Tiling4ForeachErfTiling` | ForeachErf 到公共 tiling 接线 |
 | Host/Tiling | `foreach/foreach_utils/op_host/foreach_tiling_class.h` | `ForeachCommonTiling` | 校验、分核、UB、POD、workspace |
@@ -574,3 +574,10 @@ Host 不以“输入队列能放多少”直接选 tile，而先扣 POD，再按
 | 同步 | Queue 协议与 PIPE_V barrier | Cast/Erf/Cast 间次序 | `InnerComputer::Compute/ComputePerCast` |
 | 精度与尾块 | half/float 直接；BF16 升 FP32/RINT；tail 字节搬运 | dtype 模板、round mode、有效 dataCount | `InnerComputer`; `CopyIn/CopyOut` |
 | 失败边界 | 校验失败阻断 launch；无 unknown-key fallback | ≤8 维、输出容量、≤50 项可依赖范围 | `CheckOpInfo`; `foreach_erf` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Erf](../../../../apis/simd_api/adv_api/math_compute/erf_interface/erf.md)（`related`）：焦点算子路线明确为“R-002 FLOAT32 直接 `Erf<float,false>`”，候选 API 的计算合同是“按元素做误差函数计算（高斯误差函数，error function）。”；该 primitive 是 ForeachErf FLOAT32 Device 路线的直接计算节点。
+- [ForeachErf 950 ACLNN 算子知识](foreach_erf_950.md)（`same_topic`）：对 TensorList 中每个张量逐元素计算 erf；950 Device 实体采用 clamp 后的 FP32 有理式近似。；对 TensorList 中每个张量逐元素计算 `y_i［j］ = erf(x_i［j］)`。。两卡是 ForeachErf 在 950 与 A2/A3 域上的同一逐 TensorList 元素 erf 算子语义，950 卡进一步给出有理式近似实现。
+<!-- cannbot:related:end -->

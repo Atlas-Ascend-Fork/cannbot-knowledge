@@ -50,7 +50,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_add_scalar/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:30:00Z"
-updated_at: "2026-08-25T15:30:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -627,9 +627,9 @@ BF16 GM/Queue 外 tile 可达到 `9U/2` 个元素，但 FP32 临时区只需覆�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 V2 | 支持 V2 | 支持 V2；详见 `_a5` 卡 |
+| 支持状态 | 支持 V2 | 支持 V2 | 支持 V2；详见 `_950` 卡 |
 | Host/Launcher | `ascend910b` membase，key1–4，最多50核 | `ascend910_93`，与 A2 共用 membase | regbase priority 30000，key10001–10004，最多80核 |
 | Kernel/资源 | 公共 entry；FP16 direct，BF16 FP32 staging | 同 A2 | arch35 entry；FP16/BF16 都 FP32 staging，Queue depth2 |
 
@@ -684,3 +684,9 @@ BF16 GM/Queue 外 tile 可达到 `9U/2` 个元素，但 FP32 临时区只需覆�
 | 同步 | Queue 生命周期与 `PIPE_V` barrier 可复用 | BF16 每次 Cast/Adds/Cast 之间不能提前覆盖 FP32 slot | `ComputePerCast` |
 | 精度与尾块 | direct Adds 与 BF16 FP32 staging | BF16 回写必须 `CAST_RINT`；tail 必须使用有效 byte count | `InnerComputer`、`CopyIn/CopyOut` |
 | 失败边界 | API dtype/shape/format check + template platform selector | 不得把 unknown key、>50 列表或非连续输出当作已支持 fallback | check functions、`IsCapable`、router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachAddScalar 950 ACLNN 算子知识](foreach_add_scalar_950.md)（`same_topic`）：｜ 计算语义 ｜ `out［i］［j］ = x［i］［j］ + scalar`，逐 TensorList、逐线性元素。 ｜；｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ + scalar`。 ｜。两卡实现同一 aclnnForeachAddScalarV2 逐列表标量加法语义，分别给出 950 与 A2/A3 路线。
+<!-- cannbot:related:end -->

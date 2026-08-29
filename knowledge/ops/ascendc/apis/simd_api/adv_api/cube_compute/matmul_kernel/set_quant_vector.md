@@ -29,6 +29,5 @@ __aicore__ inline void SetQuantVector(const LocalTensor<uint64_t>& quantTensor)
 <!-- cannbot:related:start -->
 ## 相关
 
-- [矩阵乘输出的量化/反量化](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_quant_dequant.md)（`explains`）：PER_CHANNEL 模式要求 Iterate 前用 SetQuantVector 设置按 C 矩阵列索引的系数向量。
-- [SetQuantScalar](set_quant_scalar.md)（`same_topic`）：SetQuantVector 为 C 矩阵提供逐行/逐通道量化参数，而 Scalar 对全矩阵只用 shape=[1] 系数，是直接选型对。
+- [QuantMatmul 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/matmul/quant_matmul_950.md)（`related`）：“对于输入shape为［1, N］的参数向量，N值为Matmul矩阵计算时M/N/K中的N值”规定 SetQuantVector 的逐输出列参数合同；“MatMulASWKernel::SetQuantVector -> mm_.Iterate/GetTensorC”证明 QuantMatmul 的 packed-scale 路由按该合同在计算前消费向量。
 <!-- cannbot:related:end -->

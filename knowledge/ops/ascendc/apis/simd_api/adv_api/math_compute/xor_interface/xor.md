@@ -26,8 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetXorMaxMinTmpSize](get_xor_max_min_tmp_size.md)（`related`）：Xor 的外部 sharedTmpBuffer 大小必须落在 GetXorMaxMinTmpSize 返回区间内，host 选择值后传给 kernel。
-- [GetXorTmpBufferFactorSize](get_xor_tmp_buffer_factor_size.md)（`related`）：固定缓存下，GetXorTmpBufferFactorSize 提供 Xor 的存活节点倍数和额外空间，直接用于反算一次 calCount。
-- [Xor](../../../basic_api/reg_vector_compute/logical_compute/xor.md)（`related`）：高阶 Xor 负责 LocalTensor 及临时空间管理，Reg Xor 提供寄存器 mask 下的同一逐元素按位异或，可用于实现层选型。
-- [AscXor](../../../c_api/reg/logic_compute/asc_xor.md)（`same_topic`）：AscXor 与《Xor》的实质衔接是：高阶 Xor、基础 Reg Xor 和 AscXor 完成同一逐元素异或，差异在 LocalTensor/RegTensor/C Reg 入口和工作区管理。
+- [GetXorMaxMinTmpSize](get_xor_max_min_tmp_size.md)（`related`）：提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetXorMaxMinTmpSize获取。；host侧Tiling接口，用于获取Xor接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；Xor 计算接口消费临时空间，Host Tiling 查询接口给出可传给 Kernel 的上下界，两者构成同一临时空间配置链。
 <!-- cannbot:related:end -->

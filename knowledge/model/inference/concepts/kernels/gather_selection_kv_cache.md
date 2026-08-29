@@ -81,7 +81,10 @@ self.default_topk_indices # [batchseq, index_topk]
 
 ### Offload 整体收益
 
-| 场景 | 无 Offload | 有 Offload | | ---- | ---- | ---- | | 固定 64K 序列长度 | global batch 1024 | **2048**（翻倍） | | 固定 global batch 128 | 序列长度 256K | **384K** |
+| 场景 | 无 Offload | 有 Offload |
+| ---- | ---- | ---- |
+| 固定 64K 序列长度 | global batch 1024 | **2048**（翻倍） |
+| 固定 global batch 128 | 序列长度 256K | **384K** |
 
 > 基于 Atlas A3、W8A8C8、MTP3、perfect eplb 配置。详见 [kvcache-offload](../techniques/kvcache_offload.md)。
 
@@ -120,3 +123,10 @@ self.default_topk_indices # [batchseq, index_topk]
 - [lightning-indexer](lightning_indexer.md)
 - [ascendc](../frameworks/ascendc.md)
 - [cann-shmem](../techniques/cann_shmem.md)（在 SHMEM HBM&DDR 混合编址映射后的 Device tensor 上调用，无需感知 Host 侧排布）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [KVCache Offload](../techniques/kvcache_offload.md)（`related`）：**容量型 Offload（DeepSeek-V3.2-Exp）**：把 MLA Full KVCache 卸载到 Host 内存，设备仅留一层 cache，释放 HBM 以容纳更大的 batch 或更长的序列。Decode 阶段借助 Lightning Indexer TopK + `GatherSelectionKvCache` 算子，利用前后 Token 命中率复用设备端 cache，缓解 H2D 带宽压力。；`npu_gather_selection_kv_cache` 是 cann-recipes-infer 为 DeepSeek-V3.2-Exp **KVCache Offload** 场景新开发的 AscendC 自定义算子。算子文档定义其功能为：**通过 topk 的稀疏索引从原始 `full_kv_cache` 中 gather，拼接成一块新的连续 `selection_kv_cache`**，支撑 DeepSeek 超大 token 场景下的 kv_cache offload。其中 `full_kv_cache` 支持 **host 侧或 device 侧内存**（offload 场景常驻 Host，但接口并不限定）。在 Decode 阶段，根据 ［lightning-indexer］(lightning_indexer.md) 返回的 TopK（2048）个相关 token index 选出参与计算的 KV 并搬回设备，再喂给 ［sparse-flash-attention］(sparse_flash_attention.md)。算子约束 `TOPK ≤ 2048`、`H 当前只支持 1`。。概念卡指出 Offload decode 依赖 GatherSelectionKvCache，算子卡闭合 TopK 索引、Host/Device Full KVCache 与连续 Selection KVCache 的接口合同。
+- [KVCache 卸载到 Host + 稀疏 TopK-selection decode：跨 step 复用设备常驻选中块摊薄 H2D](../../optimizations/experience/rules/kvcache_offload_sparse_selection_cross_step_reuse.md)（`related`）：算子据此判断当前步 TopK 哪些已在设备上、哪些需从 `full_kv_cache` gather，从而实现前后 Token 的 cache 复用。；**手段**：跨 decode step 记录哪些选中块已设备常驻（per-layer 的 block-status，decode 前重置为「未驻留」）；命中的块直接复用设备缓冲、**只对未复用块做 H2D**。昇腾侧由 ［gather-selection-kv-cache］(../../../concepts/kernels/gather_selection_kv_cache.md) 算子承载该跨-step 复用（依 indexer topk 选出参与块、喂 SFA）。。前者给出 block-status 驱动的算子行为，后者把同一行为上升为 offload decode 的跨步复用规则，能直接指导状态表实现与 H2D 减量验证。
+<!-- cannbot:related:end -->

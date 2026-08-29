@@ -23,10 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [设置合理的L2 CacheMode](../../../guides/operator_practice/simd_operator_optimization/memory_access/l2_cache_mode_config.md)（`explains`）：L2 mode 指南解释 Stcg 写入 L2 的行为和适用场景。
-- [AscLdca](asc_ldca.md)（`related`）：Stcg 是对应写路径，与 Ldca 组成读取/更新链。
-- [asc_dcci_entire](asc_dcci_entire.md)（`related`）：asc_dcci_entire 与《asc_stcg（内存访问函数）》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_dcci_single](asc_dcci_single.md)（`related`）：跨代理可见性仍需 cache maintenance，Stcg 本身不等于一致性屏障。
-- [asc_ldcg（内存访问函数）](asc_ldcg.md)（`related`）：Ldcg 是对应缓存加载路径，组成 cache-aware 读写。
-- [asc_stwt（内存访问函数）](asc_stwt.md)（`same_topic`）：asc_stwt（内存访问函数） 与《asc_stcg（内存访问函数）》的实质衔接是：asc_stwt 把数据写入 GM 并缓存到 DCache/L2；stcg/ldcg、缓存模式和 DCCI 共同决定写策略、后续读取及显式失效时机。
+- [DCacheAccess](../../../guides/operator_practice/simt_operator_optimization/memory_access/dcache_access.md)（`explains`）：存储数据到 Global Memory 并缓存到 L2 Cache，但不缓存至 Data Cache。适用于写入后不需要被当前核再次读取的场景，避免污染 Data Cache。；asc_stcg：存储数据时直接写入Global Memory，不经过DCache缓存，适用于写入GM后不会再从DCache读取的数据，避免输出数据占用DCache空间影响热点数据的缓存。；优化指南把焦点接口的缓存语义落到避免输出污染 DCache 的选型场景。
 <!-- cannbot:related:end -->

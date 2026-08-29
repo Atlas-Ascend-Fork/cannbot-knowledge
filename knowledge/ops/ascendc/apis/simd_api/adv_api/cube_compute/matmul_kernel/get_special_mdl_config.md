@@ -33,9 +33,7 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`related`）：GetMatmulApiTiling 与《GetSpecialMDLConfig》的实质衔接是：host 侧 GetMatmulApiTiling 把模板参数、MatmulConfig 与基础配置落成 tiling，随后决定 kernel Matmul 的注册、临时空间和精度/性能策略。
-- [SetMatmulConfigParams](../matmul_tiling/set_matmul_config_params.md)（`related`）：Host tiling 的 MatmulConfig 参数必须与 Kernel 侧 SpecialMDL 配置保持一致，连接模板选择与 tiling 生成。
-- [GetMDLConfig](get_mdl_config.md)（`same_topic`）：GetMDLConfig 与《GetSpecialMDLConfig》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
-- [GetNormalConfig](get_normal_config.md)（`same_topic`）：GetNormalConfig 与《GetSpecialMDLConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [MatmulConfig](matmul_config.md)（`same_topic`）：GetSpecialMDLConfig 返回 MatmulConfig，该对象定义 intrinsicsCheck、batch、预加载与量化等字段的统一配置语义。
+- [MatmulConfig](matmul_config.md)（`related`）：返回值：MatmulConfig结构体。；模板参数MatmulConfig，用于配置Matmul模板信息以及相关的配置参数。；GetSpecialMDLConfig 是 MatmulConfig 自定义实例的生产接口。
+- [MatmulTemplateParams](matmul_template_params.md)（`related`）：返回值：MatmulConfig结构体。；MatmulConfig信息（可选），用于配置Matmul模板信息以及相关的配置参数。不配置默认使用Norm模板。；候选给出返回配置在创建 Matmul 对象时的消费位置与默认回退。
+- [SetMatmulConfigParams](../matmul_tiling/set_matmul_config_params.md)（`related`）：用于配置SpecialMDL模板的参数，获取自定义SpecialMDL模板。；本接口中配置的参数对应的功能在Tiling与Kernel中需要保持一致，所以本接口中的参数取值，需要与Kernel侧对应的MatmulConfig参数值保持一致，详细MatmulConfig参数请见表2。；候选给出 Host Tiling 与 Kernel 配置必须一致的配套合同。
 <!-- cannbot:related:end -->

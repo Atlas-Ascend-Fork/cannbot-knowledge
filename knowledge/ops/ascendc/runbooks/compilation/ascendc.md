@@ -79,10 +79,6 @@ AscendC::Matmul<A_TYPE, B_TYPE, C_TYPE, BIAS_TYPE, AscendC::CFG_MDL> mm_;
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Ascend 950PR/Ascend 950DT新增特性导航](../../guides/asc_950_feature_guide.md)（`related`）：该构建卡给出 Ascend950 编译链与架构宏的实际约束，可把特性指南落实到工程配置。
-- [Reg Compare 的 CMPMODE 命名空间导致编译失败](reg_compare_cmpmode_is_in_ascendc.md)（`related`）：总卡提供逐符号查声明、不能统一加 AscendC:: 的判别框架，本卡给出 Reg::Compare/CMPMODE 的相反层级实例。
-- [SIMT API 未进入 AscendC 命名空间导致编译失败](simt_api_is_in_ascendc_simt_namespace.md)（`related`）：该卡提供相反边界：SIMT API 属于 AscendC::Simt，说明命名空间不能按统一加/删前缀处理，必须按声明位置分类。
-- [AscendC 标量类型误加命名空间导致模板分发编译失败](device_half_bfloat16_types_are_global.md)（`same_topic`）：AscendC 前缀卡系统列出 half、bfloat16_t、PIPE_* 等实际位于全局命名空间的符号，本卡给出低精度 device 分发中的具体编译闭环。
-- [GetTPipePtr 错加 AscendC 命名空间导致编译失败](gettpipeptr_is_global_function.md)（`same_topic`）：GetTPipePtr 错加 AscendC 命名空间导致编译失败 与《AscendC:: 前缀致全局符号编译失败》的实质衔接是：GetTPipePtr 是返回 AscendC::TPipe* 的全局函数；全局符号前缀案例和 FetchEventID/SetFlag/WaitFlag API共同说明只应去掉函数名上的 AscendC::。
-- [PipeBarrier 的 PIPE_V 是全局枚举](pipebarrier_pipe_v_uses_global_enum.md)（`same_topic`）：《PipeBarrier 的 PIPE_V 是全局枚举》处理“在 CANN 9.0.1/9.2 classic Ascend C 中把 PIPE_V 写成 AscendC 命名空间成员会编译失败，改用全局枚举后构建通过；已在 A3 与 Ascend950 两个平台闭环。”。《AscendC:: 前缀致全局符号编译失败》提供“CANN 9.2.0/dav-2201 的 __aicore__ 代码里 bfloat16_t、PIPE_ALL/PIPE_FIX/PIPE_MTE2/PIPE_V/PIPE_MTE3、CubeFormat、CFG_MDL 属全局命名空间，加 AscendC:: 前缀触发 no member named 'X' in namespace 'AscendC'；编译器 did you mean simply 'X'? 提示即判据，去前缀后 Built target ascendc_ops。”，其具体合同或探针直接接入PipeBarrier 模板与 PIPE_* 全局枚举的符号解析及同类编译诊断。
+- [AscendC 标量类型误加命名空间导致模板分发编译失败](device_half_bfloat16_types_are_global.md)（`related`）：dav-2201 总结卡规定“`bfloat16_t`、`PIPE_ALL/PIPE_FIX/PIPE_MTE2/PIPE_V/PIPE_MTE3`、`CubeFormat`、`CFG_MDL` 属全局命名空间，不加前缀。”；950 专项卡确认“CANN 9.0.1 的 device 标量类型 `half` 与 `bfloat16_t` 位于全局作用域而不是 `AscendC` 命名空间”，可用于跨版本核对标量模板实参的同一名称解析规则。
+- [PipeBarrier 的 PIPE_V 是全局枚举](pipebarrier_pipe_v_uses_global_enum.md)（`related`）：总卡将“`bfloat16_t`、`PIPE_ALL/PIPE_FIX/PIPE_MTE2/PIPE_V/PIPE_MTE3`、`CubeFormat`、`CFG_MDL` 属全局命名空间，不加前缀。”作为批量分类；PIPE_V 专项卡解释“`PipeBarrier` 模板位于 `AscendC`，但 `PIPE_V` 由底层 intrinsic 头以全局枚举声明；模板名和枚举名不共享命名空间。”，给出最易机械误加前缀的模板实参边界。
 <!-- cannbot:related:end -->

@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm/op_host/config/ascend910b/add_layer_norm_binary.json
     role: implementation
 created_at: "2026-08-25T17:42:08Z"
-updated_at: "2026-08-25T17:42:08Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -68,7 +68,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定 Commit 的公开文档只列出这一版两段式 API。第一段负责校验、workspace 与 executor，第二段在指定 stream 执行。自动生成 ACLNN inner bridge 未落在固定仓中，作为框架边界；算子自有的 OpDef、Tiling、POD、Kernel router/body 与 binary config 均可追溯。产品表明确 A2/A3 支持；OpDef 将 `ascend910b` 与 `ascend910_93` 注册到传统 `add_layer_norm`，不走 A5 `add_layer_norm_apt`。
+固定 Commit 的公开文档只列出这一版两段式 API。第一段负责校验、workspace 与 executor，第二段在指定 stream 执行。自动生成 ACLNN inner bridge 未落在固定仓中，作为框架边界；算子自有的 OpDef、Tiling、POD、Kernel router/body 与 binary config 均可追溯。产品表明确 A2/A3 支持；OpDef 将 `ascend910b` 与 `ascend910_93` 注册到传统 `add_layer_norm`，不走 950 `add_layer_norm_apt`。
 
 ## Host/Launcher 执行流程
 
@@ -915,9 +915,9 @@ for (int32_t rowIdx = 0; rowIdx < rowMoveCnt; ++rowIdx) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_950` 卡 |
 | Host/Launcher | `Tiling4AddLayerNorm` | 与 A2 共用固定仓实现 | RegBase Tiling |
 | Kernel/资源 | 传统 Vector 模板与 key0～192 | 同 A2 | apt key8000/8100、RegTensor VF |
 
@@ -958,3 +958,9 @@ for (int32_t rowIdx = 0; rowIdx < rowMoveCnt; ++rowIdx) {
 | 同步 | Queue、PIPE_V、S_V，less 另有 MTE events | 共享 Queue 前必须等待/释放 | each Process/Compute |
 | 精度与尾块 | FP32 计算；FP16/BF16 不同 round；row/col tail | padding lane 不进 ReduceSum | compute helpers |
 | 失败边界 | shape/dtype/资源/key 均有终点 | unknown key 不得假设 fallback | Host checks/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AddLayerNorm 950 ACLNN 算子知识](add_layer_norm_950.md)（`same_topic`）：｜ 计算语义 ｜ `x=x1+x2+biasOptional`，沿 `gamma` 对应尾部维归一化，输出 `y/mean/rstd`，属性开启时输出 `x` ｜；｜ 计算语义 ｜ `x=x1+x2+biasOptional`；在 `gamma` 对应的尾部归一化域上计算 `mean`、`rstd=1/sqrt(var+epsilon)`；`y=(x-mean)*rstd*gamma+beta` ｜。两卡描述同一 AddLayerNorm 公开计算合同，分别闭合 A2/A3 和 950 的 Host selector、POD 与单 Kernel 实现。
+<!-- cannbot:related:end -->

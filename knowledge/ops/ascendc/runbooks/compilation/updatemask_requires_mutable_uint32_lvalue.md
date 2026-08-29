@@ -331,14 +331,3 @@ __simd_vf__ inline void rmsNormTileVf(__ubuf__ T *xAddr, __ubuf__ T *gammaAddr,
 ## 误诊
 
 本轨迹没有发生精度或运行期误诊。构建输出已经给出确切 candidate 签名；若把它当作 CMake、链接或 RMSNorm 数学问题处理，会偏离工具观测到的根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscCreateMask](../../apis/simd_api/c_api/reg/reg_data_types/asc_create_mask.md)（`exemplifies`）：AscCreateMask 与《UpdateMask 引用参数拒绝 const — 改用可修改左值》的实质衔接是：AscCreateMask 根据数据位宽和 pat_mode 生成 MaskReg，随后由 UpdateMask/GetMaskSpr、Load/Store 和 MergeMode 消费；两个编译错例限定模板类型与可写引用。
-- [AscUpdateMask](../../apis/simd_api/c_api/reg/reg_data_types/asc_update_mask.md)（`exemplifies`）：AscUpdateMask 的 uint32_t 引用参数必须是可修改左值；该构建卡给出 const 实参被拒的编译证据和正确声明方式。
-- [MaskReg](../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/mask_reg.md)（`exemplifies`）：MaskReg 与《UpdateMask 引用参数拒绝 const — 改用可修改左值》的实质衔接是：MaskReg 定义有效 lane，直接被 Load/Store、MaskGen 与 MaskReg 计算消费；C 创建/更新接口、merge mode、复用指南和两个编译故障明确其构造约束。
-- [Reg 尾块 masked Add 清零跨块累加器](../precision/reg_tail_mask_zeroing_clears_cross_chunk_accumulator.md)（`related`）：Reg 尾块 masked Add 清零跨块累加器 与《UpdateMask 引用参数拒绝 const — 改用可修改左值》的实质衔接是：尾块 Mul 用 tail mask 把无效临时 lane 置零，但跨块 Add 必须用 full mask；MaskMergeMode 定义 ZEROING/MERGING，Add/Mul 是实际指令，UpdateMask、Reduce 与跨块状态卡验证该修复不会清空历史 accumulator。
-- [如何使用掩码操作API](../../guides/programming_guide/library_api/basic_api/quick_reference/how_to_use_mask_api.md)（`related`）：如何使用掩码操作API 与《UpdateMask 引用参数拒绝 const — 改用可修改左值》的实质衔接是：掩码指南直接覆盖 Move/Create/UpdateMask、Normal/Counter 设置和 Reset；两张故障卡约束模板类型与可修改参数。
-- [fp32 UB 非 VL 拷贝须用带掩码 Reg](../precision/non_vl_fp32_ub_copy_needs_masked_reg_load_store.md)（`same_topic`）：fp32 UB 非 VL 拷贝须用带掩码 Reg 与《UpdateMask 引用参数拒绝 const — 改用可修改左值》的实质衔接是：非 VL fp32 UB copy 的修复正文直接调用 UpdateMask、Reg Load/Store；所选 API 与 const/mask 故障卡约束同一尾块实现。
-<!-- cannbot:related:end -->

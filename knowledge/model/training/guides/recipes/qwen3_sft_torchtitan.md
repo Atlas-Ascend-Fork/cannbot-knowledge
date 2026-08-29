@@ -130,3 +130,11 @@ checkpoint=CheckpointConfig(
 - [custom-cp-dsa](../../concepts/parallelism/custom_cp_dsa.md)（本页 `context_parallel_degree=4` 启用的 Ulysses Context Parallel 实现原理与约束）
 - [npu-fused-op-converters](../../concepts/frameworks/npu_fused_op_converters.md)（本页 `model_converters` 注入的 `npu_rms_norm`/`npu_rope`/`npu_permute`/`npu_gmm` 算子转换机制）
 - [qwen3-sft](qwen3_sft.md)（对照面：MindSpeed-LLM + Megatron mcore、Qwen3-1.7B dense、alpaca、单卡 A3 的另一条 SFT 路线——与本页 torchtitan MoE 路线区分）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DCP / HF Checkpoint（torchtitan-npu 断点恢复与权重导出）](../../concepts/techniques/checkpoint_dcp_hf.md)（`related`）：“HF safetensors 不含优化器/学习率调度器/训练步数，仅用于从预训练权重启动或训练后导出权重。”给出焦点端事实；“SFT 默认**直接从 HuggingFace 格式加载**预训练权重，无需 mcore 风格的格式互转”给出候选端事实。Checkpoint 卡界定 HF 权重只适合初始化或导出，Qwen3 SFT 指南给出直接加载 HF 预训练权重的实际入口，二者闭合格式选择与启动场景。
+- [Qwen3-1.7B MindSpeed-LLM SFT 单卡 A3 alpaca 入门样例](qwen3_sft.md)（`related`）：焦点卡以“昇腾 SFT（监督微调）最小上手样例：用 ［mindspeed］(../../concepts/frameworks/mindspeed.md) 系的 **MindSpeed-LLM**（叠加 Megatron-LM `core_v0.12.1` 的 mcore 训练栈），对 **Qwen3-1.7B**（dense）在 **alpaca** 指令数据集上跑监督微调，**单卡即可**——硬件要求为「卡数：1张A3」。”给出单卡 dense 路线；目标卡明确“与 ［qwen3-sft］(qwen3_sft.md) 是昇腾 SFT 的两条独立技术路线”，并列出 torchtitan MoE 多卡路线，形成具体选型对照。
+- [TorchTitan / torchtitan-npu（训练框架）](../../concepts/frameworks/torchtitan.md)（`related`）：“｜ `qwen3` ｜ `sft_qwen3_30ba3b_math` / `qwen3_06b_test` ｜ Qwen3 SFT/小模型 ｜”与“MODULE=torchtitan_npu.models.qwen3 CONFIG=sft_qwen3_30ba3b_math bash scripts/run_train.sh”是双方正文中的具体合同。框架卡登记 Qwen3 SFT 配置名，recipe 给出同一配置的可执行启动入口，互读可从能力清单直接进入训练任务。
+<!-- cannbot:related:end -->

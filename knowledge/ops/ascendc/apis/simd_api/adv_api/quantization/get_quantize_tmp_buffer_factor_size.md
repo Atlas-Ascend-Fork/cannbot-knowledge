@@ -26,6 +26,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetQuantizeMaxMinTmpSize](get_quantize_max_min_tmp_size.md)（`same_topic`）：GetQuantizeTmpBufferFactorSize 与《GetQuantizeMaxMinTmpSize》的实质衔接是：GetQuantizeTmpBufferFactorSize 用可用 UB 反推 Quantize 的单次元素数，GetQuantizeMaxMinTmpSize 给出另一种 Host 侧空间选择，Quantize kernel 是两类查询结果的直接消费方。
-- [Quantize](quantize.md)（`same_topic`）：GetQuantizeTmpBufferFactorSize 与《Quantize》的实质衔接是：GetQuantizeTmpBufferFactorSize 用可用 UB 反推 Quantize 的单次元素数，GetQuantizeMaxMinTmpSize 给出另一种 Host 侧空间选择，Quantize kernel 是两类查询结果的直接消费方。
+- [Quantize](quantize.md)（`related`）：“获取Quantize接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”给出固定 UB 下的容量因子，而“提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetQuantizeMaxMinTmpSize获取。”给出 Quantize 的临时缓存调用合同；组合后可安全推导量化 tile 的最大元素数。
 <!-- cannbot:related:end -->

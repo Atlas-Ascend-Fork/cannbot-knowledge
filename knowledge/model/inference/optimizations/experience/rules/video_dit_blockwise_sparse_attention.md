@@ -65,3 +65,11 @@ platforms:
 - 溯源下探：
   - [cann-recipes-infer-pr-342-feat-hunyuanvideo-support-block-wise-sparse-attention](https://gitcode.com/cann/cann-recipes-infer/merge_requests/342)
   - [cann-recipes-infer-pr-355-issue-sparse-attention-bug-readme](https://gitcode.com/cann/cann-recipes-infer/merge_requests/355)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Blockwise Sparse Attention (TopK / SVG)](../../../concepts/modules/blockwise_sparse_attention.md)（`related`）：焦点卡写明“把 `sink_frame_len + txt_len` 覆盖的块标为 must-keep”，候选卡写明“TopK 需要离线 profiling 保存 QK”。规则卡给出模型专属 must-keep，组件卡给出 TopK 离线 QK profiling，合读完成选型与配置。
+- [HunyuanVideo](../../../concepts/models/hunyuan_video.md)（`related`）：“模型专用 predictor 适配器：`HunyuanVideoTopKAdapter` / `HunyuanVideoSVGAdapter`”；“长序列视频 ［dit］(../../../concepts/modules/dit.md)（本经验覆盖 ［hunyuan-video］(../../../concepts/models/hunyuan_video.md)）”。候选卡直接给出模型专用 must-keep、TopK profiling 与 SVG 选型步骤。
+- [块稀疏 Attention 与 Ulysses 序列并行同时使能（看全序列 + 规范序重映射 + head 负载均衡）](../../../guides/experience/interventions/blockwise_sparse_attention_ulysses_integration.md)（`related`）：焦点卡写明“把 `sink_frame_len + txt_len` 覆盖的块标为 must-keep”，候选卡写明“对 img q/k/v 做 all-to-all，从**序列并行布局切到头并行布局**”。单卡规则先保全首帧与文本，多卡指南再恢复每个 head 的完整序列后选择稀疏块。
+<!-- cannbot:related:end -->

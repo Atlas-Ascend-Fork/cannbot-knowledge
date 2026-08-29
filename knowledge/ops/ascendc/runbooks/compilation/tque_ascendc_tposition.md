@@ -49,11 +49,3 @@ build 以非零退出码（Error 2）结束。
 
 - 仅 dav-3510 / CANN 9.1.0 实测；旧版 CANN 是否提供 `ASCEND_TPOSITION_*` 宏未在本 trace 验证，迁移到其他版本前以目标版本头文件为准。
 - 本卡只覆盖 TQue 位置参数命名；`TBuf<AscendC::TPosition::VECCALC>` 的位置参数是否同属该枚举未在本 trace 独立运行期验证。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetPosition](../../apis/simd_api/basic_api/data_structures/local_tensor/get_position.md)（`exemplifies`）：《GetPosition》处理“获取LocalTensor所在的TPosition逻辑位置，支持TPosition为VECIN、VECOUT、VECCALC、A1、A2、B1、B2、CO1、CO2。”。《TQue 位置参数须用 AscendC::TPosition 枚举》明确提供“dav-3510/CANN 9.1.0 上用 ASCEND_TPOSITION_VECIN/VECOUT 宏声明 TQue 模板位置参数，编译报 use of undeclared identifier；判别后改用 AscendC::TPosition::VECIN/VECOUT 作用域枚举可消除该组错误。”，其参数、调用或验证步骤直接接入GetPosition 所读取的 LocalTensor 位置、构造来源和 TPosition 故障定位。
-- [TPosition](../../apis/simd_api/basic_api/aux_data_structures/t_position.md)（`exemplifies`）：TQue 位置参数须用 AscendC::TPosition 枚举 与《TPosition》的实质衔接是：TPosition定义了TQue/LocalTensor位置枚举；L1/L0 构造案例和 GetPosition 分别给出相同位置契约的创建与读取方式。
-- [L1/L0 tensor 须用 TPosition 构造非 SetAddr](l1_l0_tensor_tposition_setaddr.md)（`same_topic`）：TQue 位置参数须用 AscendC::TPosition 枚举 与《L1/L0 tensor 须用 TPosition 构造非 SetAddr》的实质衔接是：TPosition定义了TQue/LocalTensor位置枚举；L1/L0 构造案例和 GetPosition 分别给出相同位置契约的创建与读取方式。
-<!-- cannbot:related:end -->

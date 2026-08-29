@@ -26,6 +26,5 @@ host侧Tiling接口，用于获取Tanh接口所需的最大和最小临时空间
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Tanh](tanh.md)（`related`）：Tanh 调用所需 sharedTmpBuffer 的合法区间由 GetTanhMaxMinTmpSize 在 host 侧给出，二者共享 isReuseSource 与输入 shape 合同。
-- [GetTanhTmpBufferFactorSize](get_tanh_tmp_buffer_factor_size.md)（`same_topic`）：MaxMin 按问题规模求空间范围，FactorSize 按现有 UB 反推 Tanh 处理规模；二者共同完成同一 Tanh 临时空间规划。
+- [Tanh](tanh.md)（`related`）：Host 接口说明“host侧Tiling接口，用于获取Tanh接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”；Tanh 卡明确“临时空间大小通过GetTanhMaxMinTmpSize获取。”，两端形成 Tanh sharedTmpBuffer 的容量选择与调用链，但 Host Tiling 规划和 Kernel 双曲正切计算是两个主题。
 <!-- cannbot:related:end -->

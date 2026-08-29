@@ -51,7 +51,11 @@ flowchart TD
 
 ### 关键通信策略
 
-| 操作 | 为什么需要特殊处理 | 采取策略 | | ---- | ------------------ | -------- | | 3D/2D Conv | 卷积感受野跨越 patch 边界 | 与左右/上下邻居**交换边界行列** | | Self-Attention | K/V 全局相关 | **全量 AllGather K/V** 到每张卡 | | 上采样（Interpolate） | 边界插值需邻居像素 | **扩展边界 → 计算 → 裁剪** |
+| 操作 | 为什么需要特殊处理 | 采取策略 |
+| ---- | ------------------ | -------- |
+| 3D/2D Conv | 卷积感受野跨越 patch 边界 | 与左右/上下邻居**交换边界行列** |
+| Self-Attention | K/V 全局相关 | **全量 AllGather K/V** 到每张卡 |
+| 上采样（Interpolate） | 边界插值需邻居像素 | **扩展边界 → 计算 → 裁剪** |
 
 > **适用范围**：上述 H、W 二维空间网格切分 + 三策略（conv 边界交换 / attn 全 gather / interpolate 扩裁）属于共享实现 `module/vae_patch_parallel.py`，仅 **HunyuanImage-3.0、Wan2.2-I2V** 使用。
 
@@ -108,3 +112,12 @@ HunyuanVideo 不走上面的 H/W 网格三策略，而是用 `models/hunyuan-vid
 - [hunyuan-video](../models/hunyuan_video.md)
 - [hunyuan-image-3](../models/hunyuan_image_3.md)
 - [wan2.2-i2v](../models/wan2_2_i2v.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [HunyuanVideo](../models/hunyuan_video.md)（`related`）：“VAE 并行 ｜ 提高算力 ｜ 每张卡仅处理分配给自身的序列；为卡补充相邻卡部分序列解决卷积感受野”；“**HunyuanVideo 是另一份实现**：用 `models/hunyuan-video/hyvideo/vae/vae_parallel.py` 的沿单一序列维 1D overlap-chunk decode”。模型卡的 VAE 并行由候选卡精确限定为 HunyuanVideo 专用一维重叠切分。
+- [VAE（多模态生成）](../modules/vae.md)（`related`）：共享实现 `module/vae_patch_parallel.py` 把 latent/pixel 张量沿 H、W 空间维度切分到多卡并行处理，搭配**卷积的边界交换**、**注意力的全局 K/V 聚合**、**上采样的边界扩展+裁剪** 三种针对性通信策略，使各卡局部结果最终拼接成完整输出。；**空间并行（VAE patch parallel）**：把大尺寸 latent/pixel 张量在空间维度切成 patch，分配到多卡并行计算，辅以边界交换/补充保障卷积感受野与注意力的正确性，见 ［vae-patch-parallel］(../parallelism/vae_patch_parallel.md)。。概念卡给出 VAE patch parallel 的张量切分与三类通信机制，VAE 模块卡把同一机制定位为大尺寸解码器的空间并行路线，形成模块能力到并行实现的直接说明链。
+- [Wan2.2-I2V](../models/wan2_2_i2v.md)（`related`）：“详见 ［vae-patch-parallel］(../parallelism/vae_patch_parallel.md)、［vae］(../modules/vae.md)。实现脚本：`wan/vae_patch_parallel.py`。”与“多模态生成模型的 VAE Decoder 处理大尺寸（720p/1080p，视频还叠加时间维度）pixel 输出时显存与算力消耗巨大。共享实现 `module/vae_patch_parallel.py` 把 latent/pixel 张量沿 H、W 空间维度切分到多卡并行处理，搭配**卷积的边界交换**、**注意力的全局 K/V 聚合**、**上采样的边界扩展+裁剪** 三种针对性通信策略，使各卡局部结果最终拼接成完整输出。**HunyuanImage-3.0、Wan2.2-I2V** 均复用这份共享脚本（Wan2.2-I2V `from module.vae_patch_parallel import set_vae_patch_parallel, VAE_patch_parallel`，见 `image2video.py` L35/L145；钉定版仓库中并无独立的 `wan/vae_patch_parallel.py`，wan 文档正文笔误如此，代码不是）。**HunyuanVideo 是另一份实现**：用 `models/hunyuan-video/hyvideo/vae/vae_parallel.py` 的沿单一序列维 1D overlap-chunk decode（非 H/W 二维网格、非下述三策略，详见 Mechanism）。”。模型卡把 8 卡 VAE 路径交给该并行页，后者明确 Wan2.2 复用共享脚本和空间切分策略。
+- [大分辨率 VAE encode/decode 多卡空间并行（按算子选通信 + 边界 halo/overlap 补偿）](../../guides/experience/interventions/vae_multicard_spatial_parallel.md)（`related`）：共享实现 `module/vae_patch_parallel.py` 把 latent/pixel 张量沿 H、W 空间维度切分到多卡并行处理，搭配**卷积的边界交换**、**注意力的全局 K/V 聚合**、**上采样的边界扩展+裁剪** 三种针对性通信策略，使各卡局部结果最终拼接成完整输出。；把输入沿空间维切成块分到各卡，各卡只算本块，**按算子类型选通信原语补边界**，末端 all_gather 按原空间位置重拼。。概念卡定义 H/W 切分以及卷积、注意力、上采样的通信职责，干预指南把这些职责展开为分块、按算子补边界和末端重拼的可执行部署步骤。
+<!-- cannbot:related:end -->

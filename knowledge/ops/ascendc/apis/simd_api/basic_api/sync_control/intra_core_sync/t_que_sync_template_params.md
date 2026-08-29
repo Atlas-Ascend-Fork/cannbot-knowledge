@@ -20,9 +20,3 @@ TQueSync类的模板参数用于指定源流水和目标流水，目的流水等
 参数：src(输入): 源流水。支持的流水参考硬件流水类型。；dst(输入): 目的流水。支持的流水参考硬件流水类型。
 
 仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 训练系列产品 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [核内同步能力概述](../../../c_api/sync/intra_core_sync_overview.md)（`related`）：TQueSync 将源/目的流水编码为模板参数并配合 SetFlag/WaitFlag，提供跨硬件版本兼容的依赖表达，补充 C API 原语的选型依据。
-<!-- cannbot:related:end -->

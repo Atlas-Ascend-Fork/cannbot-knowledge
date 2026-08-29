@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/func.cmake
     role: implementation
 created_at: "2026-08-25T17:14:22Z"
-updated_at: "2026-08-25T17:14:22Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -603,9 +603,9 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持，但由 `_a5` 卡覆盖。 |
+| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持，但由 `_950` 卡覆盖。 |
 | Host/Launcher | 共用同一 OpDef/Infer/Tiling；核数来自 `GetCoreNumAiv()` | 同左 | 固定源码同一 Host，平台注册为 `ascend950`。 |
 | Kernel/资源 | 同一 Kernel，CMake 第一组 compute units；编译 guard 可达 | 同左 | 同一 body，CMake 独立 `ascend950` 条目；固定 192 KiB TBuf。 |
 
@@ -636,7 +636,7 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 | Kernel entry | `loss/logit_grad/op_kernel/logit_grad.cpp` | `logit_grad` | 三 key router 与架构 guard。 |
 | Kernel body | `loss/logit_grad/op_kernel/logit_grad.h` | `LogitGradND<T>` | 完整 Vector 数据流、UB、同步、精度和 tail。 |
 | Host 构建 | `loss/logit_grad/op_host/CMakeLists.txt` | `add_modules_sources` | ACLNN OpDef 接线。 |
-| Kernel 构建 | `loss/logit_grad/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3/A5 kernel compute units 与 `AUTO_SYNC false`。 |
+| Kernel 构建 | `loss/logit_grad/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3/950 kernel compute units 与 `AUTO_SYNC false`。 |
 | A2 binary | `loss/logit_grad/op_host/config/ascend910b/logit_grad_binary.json` | `LogitGrad` op_list | 三 dtype binary 实例。 |
 | A3 binary | `loss/logit_grad/op_host/config/ascend910_93/logit_grad_binary.json` | `LogitGrad` op_list | 三 dtype binary 实例。 |
 | 公共构建依赖 | `cmake/func.cmake` | `add_modules_sources`、`add_kernel_sources` | OpDef ACLNN 目标和按 compute unit 选择 Kernel。 |
@@ -653,3 +653,9 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 | 同步 | EVENT0/1 与 ping-pong half 一一对应 | `MTE3_MTE2`、`MTE2_V`、`V_MTE3` 和 Vector barrier 不得省略/错序 | `Process`、`CopyInAndCast`、`CastAndCopyOut` |
 | 精度与尾块 | FP32 内部计算、compare 向上对齐 64、Select/DMA 只用 count | FP16 `CAST_NONE`、BF16 `CAST_RINT`、尾核公式 | `ComputeStepTwo`、`CastAndCopyOut` |
 | 失败边界 | 不支持 dtype Host 失败，空域循环 0 次 | unknown key/非目标编译值无 body；无 UB fallback | `RunBigKernelTiling`、`logit_grad`、`Process` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Logit 950 ACLNN 算子知识](logit_950.md)（`related`）：`eps>=0` 时，Device 先构造 `x==x`、`x>=eps`、`x<=1-eps` 三个 mask，依次完成上界、下界和 NaN 选择，得到 `z`；随后原地执行 `x2=-z+1`、`x1=z/x2`、`x1=ln(x1)`。`eps<0` 跳过 clamp。FP16/BF16 输入先升为 FP32，所有算术均为 FP32。；Device 对三种输入 dtype 都用 FP32 执行 `1-x`、乘、除、双边比较和选择；FP16/BF16 输入先升为 FP32，结果再降回原 dtype。公开文档另称 `eps > 1` 输出 NaN、`eps == 1` 输出 Inf，但固定 Kernel 的可见谓词是同时满足 `x >= eps && x <= 1-eps`，不满足即在 `eps >= 0` 分支选择 0；该边界存在文档与实现不一致，复用时应以目标 CANN 的实测契约确认，本文不推测消解。。Logit 950 给出前向裁剪与对数变换，LogitGrad A2/A3 给出同一 eps 边界下的导数计算和已知文档冲突，能闭合前向到反向的实现核对。
+<!-- cannbot:related:end -->

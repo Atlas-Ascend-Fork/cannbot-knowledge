@@ -19,7 +19,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BilinearInterpolation](bilinear_interpolation_isasi.md)（`related`）：双线性插值由若干权重乘法和加法组成，Mul 是其基础计算构件但不包含坐标/权重契约。
-- [AscMul](../../../c_api/vector_compute/asc_mul.md)（`same_topic`）：AscMul 与《Mul》的实质衔接是：AscMul 是 UB 向量逐元素乘法；Reg/Memory 对应入口与 scalar 变体覆盖不同承载方式，FMA 舍入和 cyclic scale 卡限定不可等价替换与广播范围。
-- [Mul](../../reg_vector_compute/basic_arithmetic/mul.md)（`same_topic`）：Mul 与《Mul》的实质衔接是：Reg Mul 的 masked 写入受 MaskMergeMode 控制；Memory Mul、Reg C API AscMul 和 Vector C API AscMul 执行同一逐元素乘法，但操作数位置、执行层与掩码接口不同。
+- [BilinearInterpolation](bilinear_interpolation_isasi.md)（`related`）：BilinearInterpolation 明确“通过 Mul 执行逐元素乘法”；Mul 页定义“计算公式 dst_i = src0_i * src1_i。”，该原语消费 Gatherb 数据与 Brcb 权重形成乘积。
 <!-- cannbot:related:end -->

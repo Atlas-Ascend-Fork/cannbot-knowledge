@@ -12,9 +12,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # Rollout Rebalance（RL On-Policy rollout 序列级均衡调度引擎）
@@ -238,3 +238,11 @@ prompt 排布调整后，BS128 配置下推理长尾大幅改善、各 DP 域负
 - [cann-recipes-train](https://gitcode.com/cann/cann-recipes-train/tree/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2) — Rollout Rebalance 特性 + Qwen3-235B 长序列 RL 优化实践
 - [eplb](eplb.md)（同属负载均衡:EPLB 专家级 vs rollout 序列级）
 - [partial-rollout](partial_rollout.md)（互补的长尾处理：partial rollout 时间维截断续跑、本页空间维带 KV 搬迁重排）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Partial Rollout（长尾 rollout 暂停续跑）](partial_rollout.md)（`related`）：**Rollout Rebalance** 是 cann-recipes-train 在 ［vllm-ascend］(../frameworks/vllm_ascend.md) 推理引擎内实现的一套**序列级均衡调度引擎**：在每个推理 Step 前周期性感知全局 DP 组负载，当检测到组间负载不均满足条件时，主动把**单个请求（Sequence，含其 KVCache）**在 rank 间迁移、重排，配合 vLLM-Ascend 的**多档位编图**能力让全局尽快切换到更小 BatchSize 档位（更低 TPOT），从而提升进入长尾状态后的整体推理效率。；**Partial Rollout** 给单步生成设一个 token 预算上限：到达上限仍未结束（未遇 eod、未触 `max_model_len` / 总 `max_tokens`）的长样本**就地暂停**，把已生成的 token 序列连同进度状态存回 ［transferdock-data-scheduling］(transferdock_data_scheduling.md)，**下一轮 rollout 把 `prompt + 已生成 token` 重新喂入续推**，可跨多轮把一条长序列分段生成完。。两者同治 rollout 长尾但分别在单轮空间维迁移带 KV 请求和跨轮时间维截断续推，可组合也不能混淆状态恢复。
+- [Qwen3 长序列 RL 训练实践（235B-A22B 2K 推 32K + 32B SAM 投机，veRL/MindSpeed/vLLM-Ascend，GRPO/DAPO）](../../guides/recipes/qwen3_rl.md)（`related`）：推理侧（切分策略/图模式/FIA 负载均衡/Rollout Rebalance/EPLB/Expert Parallelism Load Balance）；Qwen3-235B 64 卡 A3 单轮推理耗时降约 60%；概念页具体化 recipe 总览中的在线序列迁移和实测收益。
+- [长度感知重采样（Length-Aware Resampler：按历史 response 长度的 rollout 重排）](length_aware_resampler.md)（`related`）：`LengthAwareEpochSampler` 用历史统计 + EMA 长度估计 + 分桶重排 + 稳定样本 id 回写解决长尾混排，并提供 `response_max_tokens_cap` 动态裁剪作为可选长尾保护。它与 ［rollout-rebalance］(rollout_rebalance.md)（推理引擎内动态迁移任务）互补：长度感知重采样在**数据采样侧**事前重排、Rebalance 在**vLLM 内部**事中迁移，两者都为同一个 rollout 长尾问题服务。；**Rollout Rebalance** 是 cann-recipes-train 在 ［vllm-ascend］(../frameworks/vllm_ascend.md) 推理引擎内实现的一套**序列级均衡调度引擎**：在每个推理 Step 前周期性感知全局 DP 组负载，当检测到组间负载不均满足条件时，主动把**单个请求（Sequence，含其 KVCache）**在 rank 间迁移、重排，配合 vLLM-Ascend 的**多档位编图**能力让全局尽快切换到更小 BatchSize 档位（更低 TPOT），从而提升进入长尾状态后的整体推理效率。。两卡解决同一 rollout 长尾链的不同阶段：采样器事前按历史长度组批，Rebalance 在生成过程中迁移请求和 KVCache。
+<!-- cannbot:related:end -->

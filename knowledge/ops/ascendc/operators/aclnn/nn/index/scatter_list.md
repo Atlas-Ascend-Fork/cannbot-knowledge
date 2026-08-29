@@ -54,7 +54,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T16:59:55Z"
-updated_at: "2026-08-25T16:59:55Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1396,7 +1396,7 @@ selector 把同一稀疏覆盖语义分为“整 core slice 常驻”“每 batc
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开 ACLNN 文档支持；OpDef `ascend910b` 与 binary config闭合 | 公开 ACLNN 文档支持；OpDef `ascend910_93` 与 binary config闭合 | 公开 ACLNN 文档明确不支持；尽管 README/OpDef/config有实现信号，构成发布冲突，不在本卡发布 |
 | Host/Launcher | 共用 `Tiling4ScatterList`；MovePad capability | 共用 `Tiling4ScatterList`；MovePad capability | 不适用正式 ACLNN 卡 |
@@ -1409,7 +1409,7 @@ selector 把同一稀疏覆盖语义分为“整 core slice 常驻”“每 batc
 - 固定 Kernel 不检查 indice 起点、length 是否负数/越界，也不检查目的区间重叠；调用者必须满足公开原型约束。Device entry 对 null workspace/user workspace 或未知 key 静默 return。
 - shape 连乘、byte 乘法与部分 `uint32_t blockLen` 窄化没有显式溢出保护；复用时必须保持 Host 已验证范围。
 - 公开 ACLNN inner bridge、非连续 tensor 的具体 Contiguous/ViewCopy 序列、executor 内部 owner 实现固定仓不可见；已作为生成式框架边界，不推测补齐。
-- A5 公开支持表与实现接线冲突，因此不生成 `_a5` 正式卡。
+- 950 公开支持表与实现接线冲突，因此不生成 `_950` 正式卡。
 - 本次知识提取未执行编译、单元测试、真机、数值或性能测试。
 
 ## 源码索引
@@ -1418,8 +1418,8 @@ selector 把同一稀疏覆盖语义分为“整 core slice 常驻”“每 batc
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `index/scatter_list/docs/aclnnScatterList.md` | `aclnnScatterList*` | API原型、A2/A3支持、A5不支持、约束 |
-| 平台说明 | `index/scatter_list/README.md` | 产品支持表 | Host实现信号及与A5 ACLNN文档冲突 |
+| 入口声明/约束 | `index/scatter_list/docs/aclnnScatterList.md` | `aclnnScatterList*` | API原型、A2/A3支持、950不支持、约束 |
+| 平台说明 | `index/scatter_list/README.md` | 产品支持表 | Host实现信号及与950 ACLNN文档冲突 |
 | 入口实现 | `index/scatter_list/op_host/scatter_list_def.cpp` | `ScatterList::ScatterList` | dtype、A2/A3 config、support_aclnn |
 | Host/Tiling/Launcher | `index/scatter_list/op_host/scatter_list_tiling.h` | `ScatterListTilingData` | POD与key枚举 |
 | Host/Tiling/Launcher | `index/scatter_list/op_host/scatter_list_tiling.cpp` | `Tiling4ScatterList` | 校验、分核、14 Route、workspace |

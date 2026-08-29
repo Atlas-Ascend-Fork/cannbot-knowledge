@@ -29,6 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [IsNan](../../../simd_api/adv_api/math_compute/is_nan_interface/is_nan.md)（`related`）：SIMT Isnan 对单线程 float 标量判 NaN，高阶 IsNan 对 LocalTensor 批量判 NaN，可按执行模型选型。
-- [IsNan接口](../../../simd_api/adv_api/math_compute/is_nan_interface/is_nan_interface.md)（`same_topic`）：《IsNan接口》处理“按元素判断浮点数是否为NaN，并提供临时空间大小获取接口。”。《Isnan》提供“判断浮点数是否为nan。”，其具体合同或探针直接接入IsNan 的 Kernel/Tiling 合同、跨 dtype 谓词与 Cast 保留 NaN 的前置条件。
+- [Dilation2D 950 Direct Invoke 算子知识](../../../../operators/direct/nn/pooling/dilation_2d_950.md)（`related`）：isnan API 的功能是“判断浮点数是否为nan。”；Dilation2D 950 的 SIMT 规则明确“if isnan(val): return NaN”。算子实现直接调用该判定保持 NaN 传播。
 <!-- cannbot:related:end -->

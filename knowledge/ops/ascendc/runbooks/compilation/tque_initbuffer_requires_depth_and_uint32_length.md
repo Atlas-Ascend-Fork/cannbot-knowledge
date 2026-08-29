@@ -119,11 +119,5 @@ platforms: ["a3"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AllocTensor](../../apis/simd_api/basic_api/resource_management/t_que_bind/alloc_tensor.md)（`exemplifies`）：《AllocTensor》处理“从Que中分配Tensor，Tensor所占大小为InitBuffer时设置的每块内存长度。”。《TQue InitBuffer 须传深度和 uint32 长度》提供“将 TBuf 的两参数 InitBuffer 写法套到 TQue 会无匹配重载；按 queue、bufferNum、uint32 len 三参数初始化后恢复构建。”，其具体合同或探针直接接入AllocTensor/FreeTensor 与 EnQue/DeQue 的队列所有权、初始化和耗尽故障。
-- [InitBuffer](../../apis/simd_api/basic_api/resource_management/t_pipe/init_buffer.md)（`exemplifies`）：TPipe::InitBuffer API 明确列出 TQue 的 bufferNum 和 len 两个配置参数以及队列深度范围；Runbook 的编译修复正是该三参队列重载的实例。
-- [TQueBind简介](../../apis/simd_api/basic_api/resource_management/t_que_bind/t_que_bind_intro.md)（`exemplifies`）：TQueBind简介 与《TQue InitBuffer 须传深度和 uint32 长度》的实质衔接是：TQueBind 与 TQue 的差别在绑定两队列；复用、EnQue 重载和 InitBuffer 故障卡直接约束该资源生命周期。
-- [DoubleBuffer场景](../../guides/operator_practice/simd_operator_impl/vector_programming/double_buffer_scenario.md)（`related`）：DoubleBuffer场景 与《TQue InitBuffer 须传深度和 uint32 长度》的实质衔接是：DoubleBuffer 将主块拆为两份并通过 InitBuffer(...,2,...) 让搬入、计算、搬出重叠；主尾块切分材料说明尾块例外，UB 预算和 TQue/TBuf 重载故障直接约束 bufferNum 与长度配置。
-- [FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR](fp16_double_buffer_ub_budget_queue_vs_tbuf_multiplier.md)（`related`）：FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR 与《TQue InitBuffer 须传深度和 uint32 长度》的实质衔接是：focal 的漏乘项正是 TQue/TBuf 数量×double-buffer depth×dtype字节数；DoubleBuffer文档、InitBuffer、GetCoreMemSize和按dtype分配案例共同完成预算与验证。
-- [TPipe和TQue编程范式](../../guides/programming_guide/programming_model/ai_core_simd_programming/tpipe_tque_programming/tpipe_tque_paradigm.md)（`related`）：《TPipe和TQue编程范式》说明上一章阐述了TPipe‑TQue编程模型的底层设计原理：基于经典C/C++队列管道（Queue Pipeline）思想，将算子任务拆分为多级流水Stage，依靠TQue队列解决写后读数据依赖、依靠AllocTensor/FreeTensor解决读后写内存复用冲突，通过底层同步指令实现多单元异步并行的时序安全。；《TQue InitBuffer 须传深度和 uint32 长度》说明将 TBuf 的两参数 InitBuffer 写法套到 TQue 会无匹配重载；按 queue、bufferNum、uint32 len 三参数初始化后恢复构建。。二者在TPipe/TQue范式用InitBuffer和Alloc/EnQue/DeQue/FreeTensor表达内存所有权与Stage同步，相关FAQ和故障直接验证生命周期约束上存在可执行的直接衔接。
-- [TBuf 三参数 InitBuffer 触发 isTQue 静态断言](tbuf_initbuffer_uses_two_arguments.md)（`same_topic`）：两卡共同判别 TPipe::InitBuffer 重载：TBuf 只能使用 (buffer, bytes) 两参，TQue 必须使用 (queue, depth, uint32 bytes) 三参；对象类型写反会命中静态断言。
+- [TBuf 三参数 InitBuffer 触发 isTQue 静态断言](tbuf_initbuffer_uses_two_arguments.md)（`related`）：保留 `TQue` 的 `(queue, depth, bytes)` 三参数调用；仅对 `TBuf` 删除队列深度参数，改用 `(buffer, bytes)` 两参数调用。；TQue 固定写成 `InitBuffer(queue, depth, uint32_bytes)`，TBuf 再使用对应两参数形式；两张 runbook 从 TBuf 与 TQue 两侧闭合同名 InitBuffer 的重载选择。
 <!-- cannbot:related:end -->

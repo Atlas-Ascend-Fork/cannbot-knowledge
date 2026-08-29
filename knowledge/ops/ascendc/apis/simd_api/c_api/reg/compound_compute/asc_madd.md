@@ -20,9 +20,3 @@ madd（multiply-add），该接口用于完成dst与src0逐元素相乘再加src
 支持数据类型：float、half。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscFma](asc_fma.md)（`related`）：asc_madd 是非融合/不同累加语义的相邻复合操作；精度需要逐步舍入时不能与 FMA 混用。
-<!-- cannbot:related:end -->

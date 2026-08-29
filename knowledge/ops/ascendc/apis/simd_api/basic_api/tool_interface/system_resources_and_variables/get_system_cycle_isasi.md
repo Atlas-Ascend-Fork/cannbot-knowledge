@@ -30,8 +30,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [选择低延迟指令，优化归约操作性能](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md)（`explains`）：指南的 cycle 对比通过 GetSystemCycle 测量，接口卡提供复现 ReduceRepeat/ReduceDataBlock 选择所需的计时原语。
-- [PipeBarrier](../../sync_control/intra_core_sync/pipe_barrier_isasi.md)（`related`）：GetSystemCycle 正文要求测量 Vector/MTE 等异步流水前先做对应同步，否则时间戳只反映 Scalar 发射而非工作完成；PipeBarrier 提供这一前置完成性约束。
-- [PrintTimeStamp](../../debug_interface/onboard_print/print_time_stamp.md)（`related`）：“PrintTimeStamp”处理提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点并打印当前系统cycle数。；“GetSystemCycle”明确获取系统计数器当前的cycle值，通过前后差值可计算代码段执行时间。。实质衔接：PrintTimeStamp 以系统 cycle 为时间基准；AscTimeStamp 是同一打点能力，MarkStamp 是流水标记替代，GetSystemCycle 提供换算基准。
-- [AscGetSystemCycle](../../../c_api/sys_var/asc_get_system_cycle.md)（`same_topic`）：GetSystemCycle 与 AscGetSystemCycle 都读取同一个系统 cycle 计数器，并以两次读数差计算耗时；它们是 Basic API 与 C API 的直接对应。
+- [选择低延迟指令，优化归约操作性能](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md)（`explains`）：“输入shape为30000，数据类型为float时，如下示例的性能数据对比如下，数据单位为cycle，使用GetSystemCycle接口获取。”；“获取系统计数器当前的cycle值。通过计算代码段前后cycle值的差值，可得到代码段消耗的系统cycle数，再通过换算即可获得代码段的执行时间。”。GetSystemCycle 是指南中比较归约方案 cycle 的直接测量接口，并给出平台频率换算合同。
+- [AscGetSystemCycle](../../../c_api/sys_var/asc_get_system_cycle.md)（`same_topic`）：获取系统计数器当前的cycle值。通过计算代码段前后cycle值的差值，可得到代码段消耗的系统cycle数，再通过换算即可获得代码段的执行时间。；读取当前系统cycle计数器，返回int64_t类型的当前计数值。该计数器为只读系统计数器，宽度64bit，复位值为0，随系统时钟持续递增，反映硬件运行以来的累计cycle数，常用于性能统计、耗时测量与执行序的时序判断。本接口在AIC与AIV上均可调用，返回值含义一致。。两张 API 卡描述同一只读系统 cycle 计数器的 C++ 与 C 接口语义，均用于前后差值计时。
 <!-- cannbot:related:end -->

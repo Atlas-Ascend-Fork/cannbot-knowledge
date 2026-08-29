@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:31:14Z"
-updated_at: "2026-08-25T18:31:14Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -587,9 +587,9 @@ Kernel 不为每行重复加载 `[N]` smooth；它保持 `smoothIndex` 和当前
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 V2 支持；`ascend910b` | 公开 V2 支持；`ascend910_93` | 公开 V2 支持，见独立 `_a5` 卡。 |
+| 支持状态 | 公开 V2 支持；`ascend910b` | 公开 V2 支持；`ascend910_93` | 公开 V2 支持，见独立 `_950` 卡。 |
 | Host/Launcher | 与 A3 共用 Tiling，binary config 相同 | 与 A2 共用 | 共用 Host，但进入 `_apt` entry。 |
 | Kernel/资源 | 通用 `swi_glu_quant.cpp` 与非 arch35 body | 同 A2 | arch35 动态 body 在 ReduceMax 后加 `max(1e-8)`；static body等同。 |
 
@@ -611,7 +611,7 @@ Kernel 不为每行重复加载 `[N]` smooth；它保持 `smoothIndex` 和当前
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `quant/swi_glu_quant/docs/aclnnSwiGluQuantV2.md` | V2 两段式原型、产品表 | 最新公开 API、平台、shape/dtype/属性。 |
-| 入口实现 | `quant/swi_glu_quant/op_host/swi_glu_quant_def.cpp` | `SwiGluQuant::SwiGluQuant` | V2 属性、A2/A3/A5 注册。 |
+| 入口实现 | `quant/swi_glu_quant/op_host/swi_glu_quant_def.cpp` | `SwiGluQuant::SwiGluQuant` | V2 属性、A2/A3/950 注册。 |
 | shape/dtype | `quant/swi_glu_quant/op_host/swi_glu_quant_infershape.cpp` | `InferShapeForSwiGluQuant` | y/scale shape 与输出 dtype。 |
 | Host/Tiling | `quant/swi_glu_quant/op_host/swi_glu_quant_tiling.cpp` | `Tiling4SwiGluQuant` | 平台资源、POD 保存、blockDim/workspace。 |
 | Host selector | `quant/swi_glu_quant/op_host/swi_glu_quant_tiling_utils.h` | `CheckOpParams/CalculateTilingKey/CalTilingData` | 校验、key、core/tile 公式。 |
@@ -635,3 +635,10 @@ Kernel 不为每行重复加载 `[N]` smooth；它保持 `smoothIndex` 和当前
 | 同步 | Queue 生命周期、MTE2_S 和 PIPE_V barrier | group 前缀和与 Vector 依赖顺序 | `GroupCopyIn/Compute` |
 | 精度与尾块 | FP32 激活/量化、staged cast、DataCopyPad | INT4 packing、有效 N/validRows | `CastQuantOut/CopyOut` |
 | 失败边界 | unknown key/no workspace no-op | Tiling 返回未传播、无列循环 fallback | `Tiling4SwiGluQuant`、entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [判断两算子能否多流并行看 vector 核是否被占满：cube 主导的 mix 算子（GMM）只部分占用、可与纯 vector 算子（swigluquant）并行](../../../../../../model/inference/optimizations/experience/rules/gmm_swigluquant_vector_core_parallel.md)（`related`）：“单 Kernel `swi_glu_quant`，全部 Host 可达 body 均为 `AIV_VECTOR`；无 Cube/AIC、MIX_CV、SIMT、NDDMA 或 AICPU。”与“swigluquant（SwiGLU 激活 + 量化，纯 vector 算子）在 vector 核；”分别给出双端正文事实；算子卡确认 SwiGluQuant 的全部可达 body 为纯 AIV_VECTOR，优化规则利用这一核类型与 cube 主导 GMM 的剩余 vector 容量判断双流并行，连接实现资源属性与调度决策。
+- [SwiGluQuant 950 ACLNN 算子知识](swi_glu_quant_950.md)（`same_topic`）：“`aclnnSwiGluQuantV2GetWorkspaceSize` / `aclnnSwiGluQuantV2`，公开 ACLNN 两段式接口；A2/A3 实际支持的最新公开版本为 V2。”与“`aclnnSwiGluQuantV2GetWorkspaceSize` / `aclnnSwiGluQuantV2`，公开两段式 ACLNN；950 最新公开版本为 V2。”分别给出双端正文事实；两卡描述同一 V2 SwiGluQuant 公开入口与动态、静态量化语义，分别闭合 A2/A3 和 950 的 Host、Tiling、Kernel route，可用于跨平台实现选型与一致性验证。
+<!-- cannbot:related:end -->

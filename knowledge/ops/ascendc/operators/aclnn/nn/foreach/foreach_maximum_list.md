@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_maximum_list/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:45:54Z"
-updated_at: "2026-08-25T15:45:54Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -488,9 +488,9 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor, RoundMode::CAST_RINT, da
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持（Atlas A2 训练/推理；不含文档明确不支持的 200I/500 A2） | 公开支持 | 公开支持，见独立 `_a5` 卡 |
+| 支持状态 | 公开支持（Atlas A2 训练/推理；不含文档明确不支持的 200I/500 A2） | 公开支持 | 公开支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 公共 Tiling | `ascend910_93`→arch22 公共 Tiling | 独立 arch35 Tiling |
 | Kernel/资源 | AIV Queue/Vector body | 与 A2 共用 | SIMT 直接 GM body；无 AIV Queue |
 
@@ -500,7 +500,7 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor, RoundMode::CAST_RINT, da
 - 所有输入 Tensor 维数须 ≤8；两个列表长度相同、逐位置 storage shape 相同；输出 dtype 相同且 storage size 不小于输入。Kernel 只写输入长度前缀。
 - `totalDataCount` 与各 Tensor numel 使用 `int64_t` 累加，固定源码没有显式溢出检查；Host 的部分 UB 计算窄化为 `uint32_t`，也未见独立 underflow/过小 UB 错误分支。
 - BF16 必须命中 CCE≥220 且非 arch 3003/3113 的编译 guard；A2/A3 活动构建和 binary config 提供 BF16 接线。
-- R-001 调用 AscendC `Max` primitive；该 primitive 的内部 NaN/tie 规则不在固定 `ops-nn` 源码中，卡片不把 A5 SIMT 的显式 NaN 分支反推到 A2/A3。
+- R-001 调用 AscendC `Max` primitive；该 primitive 的内部 NaN/tie 规则不在固定 `ops-nn` 源码中，卡片不把 950 SIMT 的显式 NaN 分支反推到 A2/A3。
 - 公开 ACLNN 的自动生成实现、输入 Contiguous 节点的精确 workspace slice、launch wrapper 和返回码映射在固定仓不可见；这些是允许的框架边界，不应推测。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
@@ -534,3 +534,9 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor, RoundMode::CAST_RINT, da
 | 同步 | Queue 生命周期与 PIPE_V barrier 可复用 | EnQue/DeQue/FreeTensor、BF16 四段 barrier 不得删改 | `InnerComputer::Compute` |
 | 精度与尾块 | 原生类型 Max；BF16 FP32 Max+RINT | BF16 cast 顺序、实际 dataCount、tail exact-byte DMA | `ComputePerCast`、`CopyIn/CopyOut` |
 | 失败边界 | 校验失败阻断 launch | 列表/shape/dtype/output、50 项和 BF16 编译 guard | `CheckOpInfo`、entry guard |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachMaximumList 950 ACLNN 算子知识](foreach_maximum_list_950.md)（`same_topic`）：对两个等长 TensorList 的同位置 Tensor 逐元素计算 `y_i［j］ = max(x1_i［j］, x2_i［j］)`；两个等长 TensorList 的同位置 Tensor 逐元素 maximum；浮点 SIMT body 显式传播任一输入 NaN。两张算子卡共享 ForeachMaximumList 的 TensorList 对位逐元素 maximum 契约，950 卡进一步给出 SIMT 路线和 NaN 传播。
+<!-- cannbot:related:end -->

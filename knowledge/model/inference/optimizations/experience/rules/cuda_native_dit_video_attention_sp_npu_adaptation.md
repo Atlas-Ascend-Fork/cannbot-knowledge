@@ -108,3 +108,9 @@ export DISABLE_XFORMERS=1   # 让 attention 跳过 xformers 分支，回落到 N
   - [cann-recipes-infer-pr-34-feat-add-hunyuanvideo-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/34)
   - [cann-recipes-infer-pr-353-feat-hunyuanvideo-support-ulysses-parallelism-with-block-wise-sparse-att](https://gitcode.com/cann/cann-recipes-infer/merge_requests/353)
   - [cann-recipes-infer-pr-356-refactor-unified-inference-script-for-multimodal-models](https://gitcode.com/cann/cann-recipes-infer/merge_requests/356)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [上游 DiT/视频生成模型搬昇腾：运行时 monkey-patch 层替代 fork + 版本门控融合算子替换](../../../guides/experience/interventions/upstream_dit_video_monkeypatch_npu_adaptation.md)（`related`）：用一个统一 `apply_all()` 入口，在运行时把上游模块的层/算子替换成昇腾版，对上游源码**零侵入**，上游更新只需重拉源码。；侵入式改第三方库 + monkey-patch，源保留 GPU 兼容。；目标页给出 DiT 适配中可被统一入口封装的具体 monkey-patch 落点和 GPU 回退边界。
+<!-- cannbot:related:end -->

@@ -22,11 +22,3 @@ platforms: [agnostic]
 OpAICPUDef算子定义，OpAICPUDef请参考OpAICPUDef。
 ## 约束说明
 无
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FlagAsync](../op_host_cpu_def/flag_async.md)（`same_topic`）：FlagAsync 与《FlagAsync》的实质衔接是：FlagAsync 是 OpAICPUDef 的预留注册属性且必须固定 false；HostCPU 同名字段、FlagPartial 和类定义用于避免把它误解为运行时异步同步开关。
-- [FlagPartial](flag_partial.md)（`same_topic`）：FlagAsync 与 FlagPartial 都是 OpAICPUDef 中必须固定为 False 的预留字段；两卡给出的返回对象和约束完全相同，仅字段名不同。
-- [OpAICPUDef](op_aicpu_def.md)（`same_topic`）：FlagAsync 与《OpAICPUDef》的实质衔接是：FlagAsync 是 OpAICPUDef 的预留注册属性且必须固定 false；HostCPU 同名字段、FlagPartial 和类定义用于避免把它误解为运行时异步同步开关。
-<!-- cannbot:related:end -->

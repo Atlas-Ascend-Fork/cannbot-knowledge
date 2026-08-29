@@ -24,9 +24,3 @@ platforms: ['950']
 约束：mask控制源操作数是否参与计算，源操作数不参与计算的元素在输出对应位置置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscHalf2Hif8](asc_half2hif8.md)（`same_topic`）：《AscHalf2Hif8》处理“将half类型转化为hifloat8_t类型，支持多种舍入模式和饱和/非饱和模式，源操作数与目的操作数位宽比为2:1。”。《AscHif82Half》明确“将src中hifloat8_t数据类型的元素转换为half数据类型，并将结果写入dst。 由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个VL大小的数据分为两部分，根据不同接口选择输入数据索引为奇数的位置或偶数的位置。”，可直接用于核对packed half2 与 hif8x2 的双向转换、舍入和饱和模式合同。
-<!-- cannbot:related:end -->

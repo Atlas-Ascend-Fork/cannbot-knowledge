@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/util/ascendc_impl_build.py
     role: implementation
 created_at: "2026-08-25T17:39:59Z"
-updated_at: "2026-08-25T17:39:59Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -138,7 +138,7 @@ UB 计算以 `baseN` 对齐列宽；反量化源双缓冲、输出双缓冲、FP
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-001 Per-token Basic GELU_TANH | `TRANS∈{0,1,2,3}, KERNEL_TEMPLATE_TYPE=1, PERTOKEN=1, OPTION_ATTR=0, FUSED_OPTYPE=3` | `supportMmadS8S4=false && supportL0c2Out=true` 只尝试 registry priority 2；A8W8/A4W4、合法 scale/output/bias，`fusedOpType="gelu_tanh"` | selector 不满足或 basic tiling 失败即图失败；平台转到 A5 分支不属于本卡 |
+| 1 | R-001 Per-token Basic GELU_TANH | `TRANS∈{0,1,2,3}, KERNEL_TEMPLATE_TYPE=1, PERTOKEN=1, OPTION_ATTR=0, FUSED_OPTYPE=3` | `supportMmadS8S4=false && supportL0c2Out=true` 只尝试 registry priority 2；A8W8/A4W4、合法 scale/output/bias，`fusedOpType="gelu_tanh"` | selector 不满足或 basic tiling 失败即图失败；平台转到 950 分支不属于本卡 |
 | 2 | R-002 Per-token Basic GELU_ERF | 同上，仅 `FUSED_OPTYPE=4` | 与 R-001 相同，但 `fusedOpType="gelu_erf"` | 同上 |
 
 ```text
@@ -163,7 +163,7 @@ supportMmadS8S4?
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台能力 | `!supportMmadS8S4 && supportL0c2Out` | 选择 DAV 220 unary basic 和 L0C→workspace 路线 | R-001/R-002 | A5 优先级 `{1,0}` 或无可达模板 | `FusedQuantMatMulTilingFunc` |
+| 平台能力 | `!supportMmadS8S4 && supportL0c2Out` | 选择 DAV 220 unary basic 和 L0C→workspace 路线 | R-001/R-002 | 950 优先级 `{1,0}` 或无可达模板 | `FusedQuantMatMulTilingFunc` |
 | basic 强制 | `CheckUseBasicTiling()==true` | 本 entry 仅编译 BASIC/PERTOKEN/OPTION_NONE | R-001/R-002 | basic 资源计算失败即 tiling 失败 | `FusedQuantMatMulUnaryTiling::CheckUseBasicTiling`、`GetTilingKey` |
 | L0C 双缓冲 | `2*baseM*baseN*sizeof(int32)<=L0C` 且 bias/scale guard 允许 | ping/pong L0C 降低 AIC stall | R-001/R-002 | 同 route 关闭 `dbL0C` 或缩 tile | `CalcL0Tiling` |
 | L1 深度 | A/B L1 bytes 不超过扣除 bias/scale 后的半 L1 | 同时驻留 stepK 与双缓冲 A/B tile | R-001/R-002 | 调整 depth/step；不可行则失败 | `CalcL1Tiling` |
@@ -616,9 +616,9 @@ using epilogueClass = typename EpilogueTypeTraits<fusedOpType>::Type;
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；公开文档 √ | 支持；公开文档 √ | 不支持；公开文档对 Ascend 950PR/950DT 明确 ×，因此未生成 `_a5` 卡 |
+| 支持状态 | 支持；公开文档 √ | 支持；公开文档 √ | 不支持；公开文档对 Ascend 950PR/950DT 明确 ×，因此未生成 `_950` 卡 |
 | Host/Launcher | `ascend910b` AddConfig 与 binary JSON，普通 ACLNN 两段入口 | `ascend910_93` AddConfig 与 binary JSON，普通 ACLNN 两段入口 | 虽仓内有 arch35 Host/Kernel 源码，但公开 API 产品表不支持，不能发布 ACLNN 卡 |
 | Kernel/资源 | DAV 220 unary basic，`supportL0c2Out && !supportMmadS8S4` | 同一 DAV 220 路线与源码；平台核数/UB/L1/L0由 runtime parse 注入 | tiling 会走 `supportMmadS8S4` 的 priorities `{1,0}`，不属于本卡且不构成公开 ACLNN source closure |
 
@@ -628,7 +628,7 @@ using epilogueClass = typename EpilogueTypeTraits<fusedOpType>::Type;
 - 本卡只描述 `aclnnFusedQuantMatmul` 普通入口；不包含 `aclnnFusedQuantMatmulWeightNz`，即使普通入口前处理可能把 x2 转为内部 NZ storage，也不得据此合并公开 WeightNz 变体语义。
 - fixed repo 中 `TCubeTiling` 由外部 `kernel_tiling/kernel_tiling.h` 提供，精确 nested offsetof/sizeof/alignof 不可见；本卡只记录本 route 明确写入和读取的字段，不推测 ABI 数值。
 - MatmulImpl 的内部 L1→L0 数据搬运和 Mmad 实现属于 AscendC library boundary；当前实例的模板 dtype/layout、Host tile、workspace 输出与调用点均已闭合。
-- A5 公开产品表明确不支持；存在 arch35 源码不等价于公开 `aclnnFusedQuantMatmul` 支持。
+- 950 公开产品表明确不支持；存在 arch35 源码不等价于公开 `aclnnFusedQuantMatmul` 支持。
 - 未执行编译、真机、数值或性能测试；资源阈值取固定提交 Host 公式，不外推具体 SKU 容量。
 
 ## 源码索引
@@ -637,7 +637,7 @@ using epilogueClass = typename EpilogueTypeTraits<fusedOpType>::Type;
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `matmul/fused_quant_mat_mul/docs/aclnnFusedQuantMatmul.md` | 产品表、约束表 | A2/A3 支持、A5 不支持、公式与 dtype/shape |
+| 入口声明/约束 | `matmul/fused_quant_mat_mul/docs/aclnnFusedQuantMatmul.md` | 产品表、约束表 | A2/A3 支持、950 不支持、公式与 dtype/shape |
 | 入口声明/约束 | `matmul/fused_quant_mat_mul/op_host/op_api/aclnn_fused_quant_matmul.h` | ACLNN declarations | 普通两段公开 ABI |
 | 入口实现 | `matmul/fused_quant_mat_mul/op_host/op_api/aclnn_fused_quant_matmul.cpp` | `aclnnFusedQuantMatmulGetWorkspaceSize`、`aclnnFusedQuantMatmul` | 校验、前处理、executor 生命周期；WeightNz 分界 |
 | 入口实现 | `matmul/fused_quant_mat_mul/op_host/op_api/fused_quant_matmul.cpp` | `l0op::FusedQuantMatMul` | infer shape 与单 launcher 节点 |
@@ -665,4 +665,10 @@ using epilogueClass = typename EpilogueTypeTraits<fusedOpType>::Type;
 | workspace/内存 | 每核双槽 INT32 C 交接可复用 | offset=`(2*blockIdx+slot)*baseM*baseN*4`，slot ownership 不能破坏 | `BmmDequantPertokenBasic::Init` |
 | 同步 | C2V/V2C 双向反压可复用 | flags 4/5/6/7、pipe 类型、前两次免 wait与之后 wait 必须一致 | `BasicMMCVFusionCompute` |
 | 精度与尾块 | common dequant + compile-time GELU可复用 | INT32/float bias 次序、FP32 GELU、CAST_RINT、M/N有效写回不能改 | `EpilogueDequantCommon`、两种 GELU class |
-| 失败边界 | capability→priority 2→basic route链可复用 | A5、不支持 enum、mixed dtype、非零 groupSize不得静默落入此 route | `FusedQuantMatMulTilingFunc`、`AnalyzeAttrs` |
+| 失败边界 | capability→priority 2→basic route链可复用 | 950、不支持 enum、mixed dtype、非零 groupSize不得静默落入此 route | `FusedQuantMatMulTilingFunc`、`AnalyzeAttrs` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FusedQuantMatmulWeightNz A2/A3 ACLNN 算子知识](fused_quant_matmul_weight_nz.md)（`related`）：INT8×INT8 或 INT4×INT4 的 batch matmul；INT32 累加，逐 token `x1Scale` 与逐通道/逐 tensor `x2Scale` 反量化，可选 bias，随后融合 `gelu_tanh` 或 `gelu_erf`；int8/int4 矩阵乘的 int32 累加，经 `x2Scale` 与逐 token `x1Scale` 反量化，按 bias dtype 在 MM 或 Vector 侧加 bias，再执行 `gelu_tanh` 或 `gelu_erf`。两卡共享低比特矩阵乘、INT32 累加、双尺度反量化、bias 与 GELU 融合的计算链，WeightNz 版本进一步规定 x2 的 FRACTAL_NZ 物理存储和专用公开入口，适合用于权重布局选型。
+<!-- cannbot:related:end -->

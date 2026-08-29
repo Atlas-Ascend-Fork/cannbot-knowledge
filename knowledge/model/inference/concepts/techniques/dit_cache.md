@@ -104,7 +104,13 @@ def _sync_scalar_for_sp(self, value: float) -> float:
 
 HunyuanVideo（Atlas A3，单卡 baseline 3768.91 s）：
 
-| 方案 | dit (s) | e2e (s) | e2e speedup | | ---- | ------- | ------- | ----------- | | baseline（仅 FIA） | 3634.48 | 3768.91 | 1.00 | | 融合算子 | 3568.36 | 3612.30 | 1.04 | | + FBCache (thresh=0.05) | 1693.89 | 1778.28 | 2.12 | | + TeaCache (thresh=0.15) | 1737.92 | 1830.75 | 2.06 | | + TaylorSeer (1 跳 3, 三阶) | 1405.68 | 1500.17 | **2.51** |
+| 方案 | dit (s) | e2e (s) | e2e speedup |
+| ---- | ------- | ------- | ----------- |
+| baseline（仅 FIA） | 3634.48 | 3768.91 | 1.00 |
+| 融合算子 | 3568.36 | 3612.30 | 1.04 |
+| + FBCache (thresh=0.05) | 1693.89 | 1778.28 | 2.12 |
+| + TeaCache (thresh=0.15) | 1737.92 | 1830.75 | 2.06 |
+| + TaylorSeer (1 跳 3, 三阶) | 1405.68 | 1500.17 | **2.51** |
 
 Wan2.2-I2V 通过 `cache_config.json` 热切换方案，默认 NoCache：
 
@@ -134,3 +140,15 @@ Wan2.2-I2V 通过 `cache_config.json` 热切换方案，默认 NoCache：
 - [wan2.2-i2v](../models/wan2_2_i2v.md)
 - [hunyuan3d](../../../spatial/concepts/models/hunyuan3d.md)（跨域·空间智能：Hunyuan3D step-level DiT-Cache(FBCache/TeaCache/TaylorSeer) 适配）
 - [mindspeed-mm](../../../training/concepts/frameworks/mindspeed_mm.md)（跨域·训练：MindSpeed-MM 扩散生成训练相关(推理侧 DiT-Cache 对照)）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DiT 步间缓存与多卡序列并行共存（数据相关判据须跨卡取一致决策，样例默认互斥）](../../optimizations/experience/rules/dit_cache_with_sequence_parallel.md)（`related`）：焦点卡说明“多卡 SP 下，各 rank 的 l1 loss 差异会导致跳步判断不同步；需要一次 all_reduce 取均值”，候选卡把这一点收紧为“数据相关缓存要与 SP 共存，各卡本地算出判据标量后，在 SP 通信组上 `all_reduce(SUM)`”；后者补齐通信组、cache-miss 路径和失败形态。
+- [DiT 跳步缓存想更激进跳步且精度损失更小 — TaylorSeer 预测式缓存（记特征导数泰勒外推，代价：全阶导数显存需 offload + 仅单卡）](../../optimizations/experience/rules/taylorseer_predictive_dit_cache.md)（`related`）：焦点卡以“预测时 `taylor_formula` 按泰勒级数 `output += (1/i!) · 导数因子 · x^i`”定义 TaylorSeer，候选卡进一步说明“预测比复用精度损失更小，因而能支持"算 1 步跳 2 / 算 1 步跳 4"的更激进跳步”；两卡形成机制定义到选型与旋钮边界的直接链路。
+- [DiT 采样步残差缓存（FBCache / TeaCache）键控、阈值权衡与 TeaCache 属性名 bug](../../optimizations/experience/rules/dit_step_cache_fbcache_teacache.md)（`related`）：焦点卡规定“**阈值权衡**：阈值越大跳步越多，精度损失越大”，候选卡用“**阈值语义**：越大越激进（跳更多 step）、精度损失越大”落实 FBCache/TeaCache 的运行时阈值，并补充 TeaCache 第二步属性名故障；它把概念约束推进到配置与排障。
+- [HunyuanVideo](../models/hunyuan_video.md)（`related`）：“DiT 多步缓存（FBCache / TeaCache / TaylorSeer）”；“DiT-Cache 是扩散生成模型推理加速的 Step-level 缓存框架”。模型采用候选卡定义的三种 step 级复用/预测机制，后者提供阈值与验证边界。
+- [Wan2.2-I2V](../models/wan2_2_i2v.md)（`related`）：“Wan2.2-I2V 是阿里万相 2.2 的 Image-to-Video 生成模型，cann-recipes-infer 在 NPU 上提供融合算子适配、8 卡 VAE 并行、CFG 并行、Ring Attention Overlap、DiT-Cache（FBCache / TeaCache）等优化。代码入口为 `models/wan2.2-i2v/generate.py` + `run.sh`，DiT 结构位于 `models/wan2.2-i2v/wan/`。Cache 框架通过 `models/wan2.2-i2v/wan/cache/cache_config.json` 热切换。”与“DiT-Cache 是扩散生成模型推理加速的 Step-level 缓存框架：**利用相邻采样 step 间输出变化平滑的性质，复用或预测上一步的残差**，以跳过当前 step 的完整前向计算。本仓实现位于 `module/dit_cache/cache_method.py`（HunyuanVideo 使用）与 `module/dit_cache_step/cache_step.py`（Wan2.2-I2V 使用），支持三种范式：**FBCache**（First-Block L1 误差判据）、**TeaCache**（Timestep Embedding Modulated Noisy Input L1 距离 + 多项式 rescale 判据）、**TaylorSeer**（泰勒级数预测）。HunyuanVideo 上实测 FBCache 2.12×、TeaCache 2.06×、TaylorSeer 2.51× 端到端。”。模型卡给出 Wan2.2 的 cache 配置入口，技术卡解释同一 Step-level 实现及 FBCache/TeaCache 机制。
+- [step-level DiT 跳步缓存遇 CFG 串行双分支 — 缓存状态必须按 guidance 分支分槽，否则 cond/uncond 互相覆盖残差](../../optimizations/experience/rules/dit_step_cache_cfg_branch_slotting.md)（`related`）：焦点卡明确“**CFG 必须分离**：cond/uncond 共享 cache 会导致跳步判断错位”，候选卡定位到“cond 与 uncond 交替进入同一首块 forward”并要求双槽状态；它把概念约束推进到故障信号、分槽实现和复位验证。
+- [视频 DiT TaylorSeer 特征缓存 NPU OOM：offload 到 Host + 预取搬算并行；Host 内存成新瓶颈](../../guides/experience/interventions/video_dit_taylorseer_cache_offload.md)（`related`）：焦点卡的 TaylorSeer 承重配置包含“`offload: true`”，候选卡给出“不做 offload 几乎必 NPU OOM”以及 Host 预取方案；后者解释该配置为何必需并给出搬算并行与主机内存边界。
+<!-- cannbot:related:end -->

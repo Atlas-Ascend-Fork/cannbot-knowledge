@@ -32,13 +32,3 @@ platforms: ['950']
 - 允许源操作数和目的操作数为同一个矢量数据寄存器，例如asc_deintlv(src0, src1, src0, src1)。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DeInterleave 两路写反——按偶索引到 dst0 修正](../../../../../runbooks/precision/deinterleave_dst0_is_even_lane_output.md)（`exemplifies`）：该精度卡验证 DeInterleave 的 dst0 必须接收偶索引 lane、dst1 接收奇索引 lane，直接补充 AscDeintlv 输出顺序的可执行 oracle。
-- [AscIntlv](asc_intlv.md)（`related`）：AscDeintlv 将交织数据拆成两路，AscIntlv 执行逆向合并；二者可组成数据重排的往返验证链。
-- [AscLoadalignDeintlvPostupdate](../reg_load/asc_loadalign_deintlv_postupdate.md)（`related`）：《AscLoadalignDeintlvPostupdate》的任务是“从UB读取连续2×VL长度数据并在Load过程中完成解交织，分别写入两个目的矢量寄存器，调用后自动更新源地址。”。《AscDeintlv》具体提供“将src0和src1中的元素解交织存入dst0和dst1，提供矢量数据解交织和掩码解交织两种模式，仅在AIV上生效。”，它直接用于解交织 Load 的地址 post-update、DeInterleave 结果顺序和等价入口。
-- [DeInterleave](../../../basic_api/memory_vector_compute/data_rearrange/de_interleave.md)（`related`）：DeInterleave：DeInterleave 的双输出偶/奇 lane 契约可由另一编程接口和逆操作 Interleave 对照，dst0 偶 lane runbook直接验证最易写反的输出约定，b16卡限定重排位宽风险。 目标卡《AscDeintlv》补充：将src0和src1中的元素解交织存入dst0和dst1，提供矢量数据解交织和掩码解交织两种模式，仅在AIV上生效。
-- [AscStorealignIntlv](../reg_store/asc_storealign_intlv.md)（`same_topic`）：AscStorealignIntlv 与《AscDeintlv》的实质衔接是：AscStorealignIntlv 忽略 mask，将两路 Reg lane 交错写 UB；普通 StoreAlign、C++ Store 和 DeIntlv 反向操作及 B16 交错故障直接核对偶奇 lane。
-<!-- cannbot:related:end -->

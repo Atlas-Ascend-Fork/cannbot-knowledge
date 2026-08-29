@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_copy/op_host/config/ascend910b/foreach_copy_binary.json
     role: implementation
 created_at: "2026-08-25T15:31:23Z"
-updated_at: "2026-08-25T15:31:23Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -590,9 +590,9 @@ R-001 只有一个 depth-1 input queue，U 可占满扣除 POD 后的 32-byte �
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 官方公开支持；本卡平台。 | 官方 README/API 明确不支持；不得以相似硬件或目录外推。 | 官方公开支持；另见 `_a5` 卡。 |
+| 支持状态 | 官方公开支持；本卡平台。 | 官方 README/API 明确不支持；不得以相似硬件或目录外推。 | 官方公开支持；另见 `_950` 卡。 |
 | Host/Launcher | 公开 A2 支持与活动 `ascend910b -> arch22` 接线闭合，最多 50 core。 | `ascend910_93` 虽有实现接线，但与公开“不支持 A3”冲突，不能发布 A3 实现结论。 | 同一 `arch22` Tiling 和 `ForeachCommonTilingData`，仍在本实现中截断到 50 core。 |
 | Kernel/资源 | 同一 AIV source，A2 binary config 16 个 dtype pair。 | N/A。 | 同一 AIV source；`ascend950` OpDef/config/CMake 接线；无独立 arch35 body。 |
 
@@ -613,10 +613,10 @@ R-001 只有一个 depth-1 input queue，U 可占满扣除 POD 后的 32-byte �
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `foreach/foreach_copy/docs/aclnnForeachCopy.md` | 两段式函数原型、产品表、参数/错误码 | 公开 ACLNN 与 A2/A3/A5 支持边界。 |
+| 入口声明/约束 | `foreach/foreach_copy/docs/aclnnForeachCopy.md` | 两段式函数原型、产品表、参数/错误码 | 公开 ACLNN 与 A2/A3/950 支持边界。 |
 | 入口声明/约束 | `foreach/foreach_copy/README.md` | 产品支持、公式、dtype、连续性 | 语义和平台交叉证据。 |
-| 入口实现 | `foreach/foreach_copy/op_host/CMakeLists.txt` | `ACLNNTYPE aclnn`、`SUPPORT_COMPUTE_UNIT` | 生成 ACLNN bridge 到 ForeachCopy Host；A2/A5 接线。 |
-| Host/Launcher | `foreach/foreach_copy/op_host/foreach_copy_def.cpp` | `ForeachCopy::ForeachCopy` | dtype pair、AutoContiguous、A2/A5 OpDef config。 |
+| 入口实现 | `foreach/foreach_copy/op_host/CMakeLists.txt` | `ACLNNTYPE aclnn`、`SUPPORT_COMPUTE_UNIT` | 生成 ACLNN bridge 到 ForeachCopy Host；A2/950 接线。 |
+| Host/Launcher | `foreach/foreach_copy/op_host/foreach_copy_def.cpp` | `ForeachCopy::ForeachCopy` | dtype pair、AutoContiguous、A2/950 OpDef config。 |
 | Host/Launcher | `foreach/foreach_copy/op_host/arch22/foreach_copy_tiling_arch22.cpp` | `Tiling4ForeachCopyTiling` | ForeachCopy 专属 Tiling 注册入口。 |
 | Host/Launcher | `foreach/foreach_utils/op_host/foreach_tiling_class.h` | `ForeachCommonTiling` | 校验、分核、UB、POD、blockDim/workspace。 |
 | POD | `foreach/foreach_utils/op_host/foreach_tiling_def.h` | `ForeachCommonTilingData` | 六字段 ABI 声明和固定数组容量。 |
@@ -624,7 +624,7 @@ R-001 只有一个 depth-1 input queue，U 可占满扣除 POD 后的 32-byte �
 | Kernel entry/body | `foreach/foreach_copy/op_kernel/foreach_copy.cpp` | `foreach_copy` | router、模板实例、workspace 不消费。 |
 | Kernel entry/body | `foreach/foreach_copy/op_kernel/foreach_copy.h` | `ForeachCopyND<T>` | R-001 完整 body。 |
 | Kernel entry/body | `foreach/foreach_copy/op_kernel/foreach_cast.h` | `ForeachCastND<Tin,Tout>` | R-002/R-003 完整 body。 |
-| 构建接线 | `foreach/foreach_copy/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A5 Kernel 编译、`AUTO_SYNC false`。 |
+| 构建接线 | `foreach/foreach_copy/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/950 Kernel 编译、`AUTO_SYNC false`。 |
 | 构建接线 | `foreach/foreach_copy/op_host/config/ascend910b/foreach_copy_binary.json` | `ForeachCopy` 16 个 binary entry | A2 dtype pair binary 可达性。 |
 
 ### 实现复用检查
@@ -637,3 +637,9 @@ R-001 只有一个 depth-1 input queue，U 可占满扣除 POD 后的 32-byte �
 | 同步 | queue + V/MTE3 + MTE3/MTE2 | depth-1 buffer 不能在 consumer 完成前覆盖 | 两个 `ComputeAndCopyOut` |
 | 精度与尾块 | 扩展 `CAST_NONE`，窄化 `CAST_RINT`；tail 精确 blockLen | 不能互换 round mode；不能把 padding lane 写出 | `ForeachCastND::ComputeAndCopyOut/CopyIn` |
 | 失败边界 | Host 拦截 dtype/shape/list inconsistency | 不能依赖 unknown-key Device fallback；A3 不支持 | `CheckOpInfo/CheckForeachCopyDtype`；公开产品表 |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachCopy 950 ACLNN 算子知识](foreach_copy_950.md)（`same_topic`）：焦点卡写明“本卡只标记 A2”，候选卡写明“950 没有独立 arch35 body，复用活动 `arch22` Host 与公共 AIV source”。两卡覆盖同一 ForeachCopy 契约在 A2 与 950 的活动接线，950 复用 arch22 body 的事实可直接指导平台迁移与构建核查。
+<!-- cannbot:related:end -->

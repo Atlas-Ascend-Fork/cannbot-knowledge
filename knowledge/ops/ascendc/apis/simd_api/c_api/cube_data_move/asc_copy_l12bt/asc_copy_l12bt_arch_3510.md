@@ -22,12 +22,3 @@ platforms: ['950']
 - 当采用前n个数据搬运接口时，搬运数据大小要求32字节对齐。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_copy_l12fb](../asc_copy_l12fb/asc_copy_l12fb_arch_3510.md)（`related`）：L12BT 和 L12FB 的源同为 L1，但目标辅助 buffer 不同，决定后续 cube 单元消费路径。
-- [AscCopyL12Bt](asc_copy_l12bt.md)（`same_topic`）：AscCopyL12Bt 与《asc_copy_l12bt》的衔接是：AscCopyL12Bt 与架构变体及反向表搬运共同定义 L1 与 BiasTable 间的数据布局；BiasTable 指南解释目的表格式和对齐要求。
-- [L1与BiasTable Buffer数据搬运](../../../basic_api/data_move_guide/l1_bias_table_data_move.md)（`same_topic`）：《L1与BiasTable Buffer数据搬运》说明DataCopy能够实现L1 Buffer至BiasTable Buffer的连续数据搬运，数据搬运时格式和内容保持不变。；《asc_copy_l12bt》说明将MMAD指令的Bias数据从L1 Buffer搬运到BiasTable Buffer中。。二者在L1到BiasTable的连续搬运由C++/Tensor/C三层等价接口实现，并受Bias类型和数据通路约束上存在可执行的直接衔接。
-- [asc_copy_l12bt](asc_copy_l12bt_arch_2201.md)（`same_topic`）：两卡是同一 asc_copy_l12bt 的 2201 与 3510 契约，均把 L1 Bias 搬到 BiasTable，并共享 burst、gap 和 32B 对齐语义。
-<!-- cannbot:related:end -->

@@ -18,15 +18,3 @@ platforms: ['950']
 函数原型：unsigned long long int __bfloat162ull_rn(const bfloat16_t x)
 返回值：输入遵循CAST_RINT模式转换成的64位无符号整数。特别场景说明如下：
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162ll_rn](_bfloat162ll_rn.md)（`related`）：__bfloat162ull_rn 与《__bfloat162ll_rn》的实质衔接是：这些转换卡保持目标 unsigned long long 或舍入到最近的契约，仅改变 bfloat16 的舍入模式或源类型；有符号 long long 入口用于核对目标符号语义。
-- [__bfloat162ull_rd](_bfloat162ull_rd.md)（`same_topic`）：__bfloat162ull_rn 与《__bfloat162ull_rd》的实质衔接是：这些转换卡保持目标 unsigned long long 或舍入到最近的契约，仅改变 bfloat16 的舍入模式或源类型；有符号 long long 入口用于核对目标符号语义。
-- [__bfloat162ull_rna](_bfloat162ull_rna.md)（`same_topic`）：__bfloat162ull_rn 与《__bfloat162ull_rna》的实质衔接是：这些转换卡保持目标 unsigned long long 或舍入到最近的契约，仅改变 bfloat16 的舍入模式或源类型；有符号 long long 入口用于核对目标符号语义。
-- [__bfloat162ull_ru](_bfloat162ull_ru.md)（`same_topic`）：__bfloat162ull_rn 与《__bfloat162ull_ru》的实质衔接是：这些转换卡保持目标 unsigned long long 或舍入到最近的契约，仅改变 bfloat16 的舍入模式或源类型；有符号 long long 入口用于核对目标符号语义。
-- [__bfloat162ull_rz](_bfloat162ull_rz.md)（`same_topic`）：__bfloat162ull_rn 与《__bfloat162ull_rz》的实质衔接是：这些转换卡保持目标 unsigned long long 或舍入到最近的契约，仅改变 bfloat16 的舍入模式或源类型；有符号 long long 入口用于核对目标符号语义。
-- [__float2ull_rn](../../data_type_conversion/type_conversion_functions/_float2ull_rn.md)（`same_topic`）：__bfloat162ull_rn 与《__float2ull_rn》的实质衔接是：这些转换卡保持目标 unsigned long long 或舍入到最近的契约，仅改变 bfloat16 的舍入模式或源类型；有符号 long long 入口用于核对目标符号语义。
-- [__half2ull_rn](../../half_type/half_precision_conversion_functions/_half2ull_rn.md)（`same_topic`）：__bfloat162ull_rn 与《__half2ull_rn》的实质衔接是：这些转换卡保持目标 unsigned long long 或舍入到最近的契约，仅改变 bfloat16 的舍入模式或源类型；有符号 long long 入口用于核对目标符号语义。
-<!-- cannbot:related:end -->

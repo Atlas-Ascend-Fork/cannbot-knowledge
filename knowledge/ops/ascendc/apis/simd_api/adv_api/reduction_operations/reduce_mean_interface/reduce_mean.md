@@ -26,7 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Mean](../mean_interface/mean.md)（`related`）：ReduceMean 面向更一般的归约参数，而 Mean 固定沿末轴、最多二维；二者的差异直接用于接口选型。
-- [GetReduceMeanMaxMinTmpSize](get_reduce_mean_max_min_tmp_size.md)（`same_topic`）：GetReduceMeanMaxMinTmpSize：该 host估算的shape/typeSize/isReuseSource必须与 ReduceMean kernel调用一致；ReduceMean接口页汇总同一 sharedTmpBuffer契约。 目标卡《ReduceMean》补充：对多维向量按指定维度求平均值，通过pattern参数指定Reduce轴和Normal轴，当前支持AR和RA两种模式。
-- [ReduceMean接口](reduce_mean_interface.md)（`same_topic`）：ReduceMean说明对多维向量按指定维度求平均值，通过pattern参数指定Reduce轴和Normal轴，当前支持AR和RA两种模式。
+- [GetReduceMeanMaxMinTmpSize](get_reduce_mean_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取ReduceMean接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetReduceMeanMaxMinTmpSize获取。模板参数isReuseSource预留（传false）。。Host Tiling 卡给出 ReduceMean 临时空间上下界的取得方式，Kernel API 卡明确 sharedTmpBuffer 重载必须使用该结果，形成调用前预算到实际参数传递的直接契约。
 <!-- cannbot:related:end -->

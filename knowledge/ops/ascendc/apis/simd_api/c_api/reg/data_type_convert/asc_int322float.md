@@ -29,7 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscFloat2Int32](asc_float2int32.md)（`related`）：AscInt322Float 与《AscFloat2Int32》的实质衔接是：AscInt322Float 的 Vector 对应入口执行同一 int32→float 转换，AscFloat2Int32 则提供反向路径，用于核对舍入和 mask 置零契约。
-- [AscInt642Float](asc_int642float.md)（`related`）：AscInt642Float 与《AscInt322Float》的实质衔接是：AscInt64ToFloat 的 Vector 对应入口、反向 FloatToInt64、其他整数宽度和 Int64ToInt32 共同解释 2:1 lane 分布及窄化/扩宽边界。
-- [AscInt322float](../../vector_compute/asc_int322float.md)（`same_topic`）：AscInt322Float 与《AscInt322float》的实质衔接是：AscInt322Float 的 Vector 对应入口执行同一 int32→float 转换，AscFloat2Int32 则提供反向路径，用于核对舍入和 mask 置零契约。
+- [AscInt322float](../../vector_compute/asc_int322float.md)（`same_topic`）：根据mask将src中的每个int32_t类型数据转换成float类型，并支持多种舍入模式，结果写入dst；将int32_t类型数据转换为float类型，支持多种舍入模式。两卡执行相同 int32 到 float 转换；焦点是 950 Reg+mask 形态，候选是 A2/A3 UB 地址+count 形态，跨平台比较可明确编程接口差异。
 <!-- cannbot:related:end -->

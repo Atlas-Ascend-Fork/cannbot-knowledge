@@ -24,10 +24,3 @@ platforms: ['950']
 约束：mask控制源操作数是否参与计算，源操作数不参与计算的元素在输出对应位置置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscInt162Int32](asc_int162int32.md)（`related`）：AscInt162Int32 与本接口共享 16→32 位扩宽及奇/偶半 VL 选择，差别只在目的有符号性。
-- [AscUint162uint32](asc_uint162uint32.md)（`related`）：AscUint162Uint32 保持无符号扩宽，但源类型为 uint16；对照可明确本接口的有符号输入转换边界。
-<!-- cannbot:related:end -->

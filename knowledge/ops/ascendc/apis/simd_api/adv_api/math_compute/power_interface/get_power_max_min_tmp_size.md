@@ -24,7 +24,6 @@ host侧Tiling接口，用于获取Power接口所需的最大和最小临时空�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetPowerTmpBufferFactorSize](get_power_tmp_buffer_factor_size.md)（`same_topic`）：焦点处理Power 的 workspace factor 推算；GetPowerMaxMinTmpSize正文界定“在host侧获取Power接口所需的最大和最小临时空间大小，根据输入shape自动适配不同Power调用形式”。候选是 Power 计算、接口页和 max/min 查询，直接消费 factor 结果。
-- [Power接口](power_interface.md)（`same_topic`）：GetPowerMaxMinTmpSize说明在host侧获取Power接口所需的最大和最小临时空间大小，根据输入shape自动适配不同Power调用形式；对Power接口而言，Power 计算卡定义三类幂运算重载，而两个临时空间查询接口分别支持动态 shape 和固定空间的分块选择。
-- [Power（数学计算）](power.md)（`same_topic`）：Power 的三类 Tensor/Scalar 重载都在显式 sharedTmpBuffer 路径中要求用 GetPowerMaxMinTmpSize 预算空间；查询接口的两个 shape 正是用来判定所选重载。
+- [GetPowerTmpBufferFactorSize](get_power_tmp_buffer_factor_size.md)（`related`）：“currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize”解决固定空间下的最大计算量；“在minValue到maxValue范围内，临时空间越大性能越好。”解决固定计算量下的空间范围与性能取舍，两者是 Power tiling 的互补 sizing 路线。
+- [Power（数学计算）](power.md)（`related`）：“临时空间大小通过GetPowerMaxMinTmpSize获取。”在 Power 调用契约中指定 sizing 入口；“在minValue到maxValue范围内，临时空间越大性能越好。”说明该入口返回区间内的性能取舍。
 <!-- cannbot:related:end -->

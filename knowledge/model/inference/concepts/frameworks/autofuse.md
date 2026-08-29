@@ -14,9 +14,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md
   role: supporting
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # AutoFuse（Inductor NPU 自动融合编译组件）
@@ -150,3 +150,10 @@ DeepSeek-V4 的 `hc_post` 片段含多个小算子组合，适合 AutoFuse 融�
 - [torchtitan](../../../training/concepts/frameworks/torchtitan.md)（跨域·训练：TorchTitan 训练入图 Future 对接 AutoFuse）
 - [deepseek-v32-pretrain](../../../training/guides/recipes/deepseek_v32_pretrain.md)（跨域·训练：DeepSeek-V3.2 预训练（Bypass Triton → 未来 AutoFuse））
 - [autofuse-train](../../../training/concepts/techniques/autofuse_train.md)（跨域·训练：同一 CANN AutoFuse 组件在训练侧（DeepSeek-V4）的入图应用与收益）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [inductor(autofuse) 部分图编译：按图结构稳定 / 范围 / pointwise 密度选子模块 + 收益观测](../../optimizations/experience/rules/inductor_autofuse_partial_compile_scope.md)（`related`）：“优先选择含较多 Pointwise / Reduce 计算的范围，Inductor 对这类计算的融合效果好，编译代价小、收益高。”给出 AutoFuse 的选域原则；“此时**不追求 fullgraph，而是挑"编译收益/代价比"高的子模块加 `@torch.compile`**——本页给选范围的三条规则与一组收益观测。”把该原则落实为动态模型的部分图编译和收益验证。
+- [训练入图：torch.compile + Inductor + AutoFuse（Bypass Triton → AutoFuse）](../../../training/concepts/techniques/autofuse_train.md)（`same_topic`）：“两者共用同一 CANN AutoFuse 组件（继承 Inductor、Ascend C Codegen）”给出焦点端事实；“AutoFuse** 是 CANN 框架继承自 PyTorch Inductor 的**面向 NPU 的即时编译（JIT）算子自动融合组件”给出候选端事实。两端明确指向同一个 CANN AutoFuse/Inductor NPU Codegen 组件；推理卡定义通用编译链，训练卡补充反向与重计算场景的接入和运维约束。
+<!-- cannbot:related:end -->

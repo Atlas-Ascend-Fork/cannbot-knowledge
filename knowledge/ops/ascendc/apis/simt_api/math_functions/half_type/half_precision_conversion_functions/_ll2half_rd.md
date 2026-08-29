@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__ll2half_rna](_ll2half_rna.md)（`related`）：RD 向负无穷取整，是 RNA 最近值舍入的定向替代。
-- [__ll2half_ru](_ll2half_ru.md)（`related`）：与 RU 相同 int64→half，但 RD 向负无穷取整；正负边界结果方向相反。
-- [__ll2half_rn](_ll2half_rn.md)（`same_topic`）：《__ll2half_rn》处理“遵循CAST_RINT模式，将int64类型数据转换为half类型数据，返回转换后的值。”。《__ll2half_rd》明确“遵循CAST_FLOOR模式，将int64类型数据转换为half类型数据，返回转换后的值。”，可直接用于核对int64 到 half 转换的四种舍入方向选择合同。
-- [__ll2half_rz](_ll2half_rz.md)（`same_topic`）：__ll2half_rz 与《__ll2half_rd》的实质衔接是：long long 到 half 的 RZ 转换需对照舍入方向、unsigned/float 和宽度 Cast 故障。
-- [__ull2half_rd](_ull2half_rd.md)（`same_topic`）：__ull2half_rd 与《__ll2half_rd》的实质衔接是：这些接口共享 uint64→half 或相邻 signed/uint32 输入，RD/RZ/RN/RNA/RU 用于核对大整数窄化的舍入与符号边界。
+- [__ll2half_rn](_ll2half_rn.md)（`same_topic`）：功能：遵循CAST_FLOOR模式，将int64类型数据转换为half类型数据，返回转换后的值。；功能：遵循CAST_RINT模式，将int64类型数据转换为half类型数据，返回转换后的值。。两接口转换相同 int64 输入到 half，核心差异是向下取整与就近取整模式，联合阅读可选择正确舍入契约。
 <!-- cannbot:related:end -->

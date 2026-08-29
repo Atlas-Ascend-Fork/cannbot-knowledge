@@ -28,7 +28,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [H2Exp](../bfloat16_type/bfloat16x2_math_functions/h2exp.md)（`related`）：《数学函数expf》处理“根据输入x，获取e的x次方的计算结果。”。《H2Exp》明确提供“指定输入x，对x的各元素，获取e的该元素次方。”，其参数、调用或验证步骤直接接入expf 与 Expm1 及跨 dtype 的自然指数实现之间的数值合同。
-- [BFloat16数学函数hexp](../bfloat16_type/bfloat16_math_functions/hexp.md)（`same_topic`）：hexp 与 expf 都计算 e^x；一个以 bfloat16 输入输出并受饱和/FTZ 约束，另一个使用 float，适合在同一指数函数主题下选择精度入口。
-- [Expm1f](expm1f.md)（`same_topic`）：《数学函数expf》处理“根据输入x，获取e的x次方的计算结果。”。《Expm1f》明确提供“指定输入x，获取e的x次方减1。”，其参数、调用或验证步骤直接接入expf 与 Expm1 及跨 dtype 的自然指数实现之间的数值合同。
+- [ForeachExp 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_exp_950.md)（`related`）：ForeachExp950 的 R-001 路线是“FLOAT32 值直接传给 `expf`”；expf API执行“根据输入x，获取e的x次方的计算结果。”。API语义支撑每线程标量指数计算和特殊值验证。
+- [ForeachSigmoid 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_sigmoid_950.md)（`related`）：功能：根据输入x，获取e的x次方的计算结果。；`ComputeSigmoid` 无论 T 为 half、float 还是 BF16，都先转 float，按 `-x -> expf -> +1 -> reciprocal` 计算，再 cast 回 T。API 是 ForeachSigmoid 950 内部 sigmoid 标量链的核心函数。
 <!-- cannbot:related:end -->

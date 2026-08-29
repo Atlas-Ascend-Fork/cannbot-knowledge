@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T17:52:56Z"
-updated_at: "2026-08-25T17:52:56Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -591,7 +591,7 @@ for (uint32_t iInner = 0; iInner < calcRowNum; iInner++) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；公开文档、`ascend910b` OpDef/binary/config 一致 | 支持；公开文档、`ascend910_93` OpDef/binary/config 一致 | 不支持；README/API 产品表明确 `Ascend 950PR/950DT ×`，且无 ascend950 OpDef/binary/config |
 | Host/Launcher | 共用 `Tiling4GemmaRmsNorm`，平台生产 AIV core/UB | 同左 | 不生成正式卡 |
@@ -614,7 +614,7 @@ for (uint32_t iInner = 0; iInner < calcRowNum; iInner++) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `norm/gemma_rms_norm/docs/aclnnGemmaRmsNorm.md` | ACLNN 原型/产品表 | 公开性、参数、A2/A3 支持与 A5 不支持 |
+| 入口声明/约束 | `norm/gemma_rms_norm/docs/aclnnGemmaRmsNorm.md` | ACLNN 原型/产品表 | 公开性、参数、A2/A3 支持与 950 不支持 |
 | 入口实现 | `norm/gemma_rms_norm/op_graph/gemma_rms_norm_proto.h` | `REG_OP(GemmaRmsNorm)` | 语义、输入输出和属性定义 |
 | Host 注册 | `norm/gemma_rms_norm/op_host/gemma_rms_norm_def.cpp` | `GemmaRmsNorm::GemmaRmsNorm` | dtype、AutoContiguous、A2/A3 config |
 | Host/Tiling/Launcher | `norm/rms_norm/op_host/rms_norm_tiling.h` | `RMSNormTilingData` | POD 字段与 Gemma 注册 |

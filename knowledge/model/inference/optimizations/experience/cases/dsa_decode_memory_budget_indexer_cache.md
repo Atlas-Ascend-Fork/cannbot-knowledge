@@ -48,3 +48,9 @@ DSA decode 显存 = **Full MLA KVCache + Indexer Key Cache + Indexer 新增权�
 
 - `doc 披露`（@fa6892b）：`deepseek_v3.2_exp_inference_guide.md`「DeepSeek-V3.2-Exp vs V3.1」的权重内存 / KVCache 内存分析给出 Indexer Key Cache 公式、~4GB / ~0.85B 示例；`indexer.py` 存在 Lightning Indexer 实现。「仍缓存 Full MLA KVCache + 新增 Indexer Key Cache」为首方 doc 披露。
 - 溯源下探：[cann-recipes-infer-pr-3-feat-add-deepseek-v3-2-exp-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/3)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [KV cache 卸载到 Host 内存：设备单层 temp + 专用流 D2H 重叠 + 逐层异步搬算掩盖](../../../guides/experience/interventions/kvcache_offload_host_swap.md)（`related`）：DSA decode 显存 = **Full MLA KVCache + Indexer Key Cache + Indexer 新增权重**；Host 全量、设备单层。前者给出 DSA decode 的三项显存预算，后者给出把多层 KV 常驻量转移到 Host、设备只留单层缓冲的落地方案，联合后可从预算直接选择 offload 并重算设备驻留量。
+<!-- cannbot:related:end -->

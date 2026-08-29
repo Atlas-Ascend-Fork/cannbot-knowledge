@@ -59,11 +59,5 @@ aten 顺序核验与诊断佐证（来源平台：950；证据等级：tool_obse
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Exp 默认 INTRINSIC FTZ 致 subnormal 残留失配](exp_intrinsic_ftz_subnormal.md)（`related`）：当 z 落入次正规区，INTRINSIC Exp 的 FTZ 会改变 sigmoid 尾部；该卡补充 exp 实现模式对极值 oracle 的另一边界。
-- [Maxs 下限 clamp 阻止 exp 自然下溢残留](maxs_clamp_exp.md)（`related`）：下界 clamp 修复只处理 z 极负残差；正/小正 z 的极值还受 aten 先 grad*exp 后除的溢出顺序影响，该卡提供互不重叠的另一诊断分支。
-- [SoftplusV2Grad 非默认θ线性区分支缺失致超差](softplusv2grad.md)（`related`）：极值乘除顺序之外，SoftplusV2Grad 还必须保留 z>threshold 的线性区分支；它覆盖同一算子的相邻语义约束。
-- [Ascend950 向量管 FTZ 刷新次正规 exp 为零](ascend950_ftz_exp.md)（`same_topic`）：Ascend950 向量管 FTZ 刷新次正规 exp 为零 与《softplus_v2_grad 极值 inf 发散源于 aten 乘除顺序》的实质衔接是：该卡锁定 Ascend950 Exp 次正规输出 FTZ；Exp 接口、clamp/overflow/subnormal 姊妹故障和 softplus 极值用例共同验证硬件边界与可修软件因素。
-- [SoftplusV2Grad VF Form B exp 溢出判别](softplusv2grad_vf_form_b_exp.md)（`same_topic`）：两卡都定位 SoftplusV2Grad 的 Form B：先算 exp(z)，再做 grad*exp(z)/(1+exp(z))；正大 z 使 exp 溢出并产生 inf/inf 或乘除顺序发散，Form A 对照解释同一极值根因。
-- [exp 输入 clamp 上界用 threshold 用户参数致溢出](exp_clamp_upper_bound_must_decouple_from_user_threshold.md)（`same_topic`）：exp 输入 clamp 上界用 threshold 用户参数致溢出 与《softplus_v2_grad 极值 inf 发散源于 aten 乘除顺序》的实质衔接是：故障由用户 threshold 充当 Exp 安全上界导致；Exp、Clamp/Mins、Sigmoid 公式及溢出/FTZ/Softplus 分支案例共同限定固定上界和极值验收。
-- [softplus_v2_grad 极端 FLT_MAX 与 aten 不可对齐](softplus_v2_grad_flt_max_aten.md)（`same_topic`）：softplus_v2_grad 极端 FLT_MAX 与 aten 不可对齐：本卡把FLT_MAX残留定性为aten乘除顺序与V pipe FTZ的不可对齐边界；同算子inf卡和Form-B卡复现中间溢出，FTZ卡核对次正规数，threshold-clamp卡区分仍可修复的普通输入路径。 目标卡《softplus_v2_grad 极值 inf 发散源于 aten 乘除顺序》补充：softplus_v2_grad 反向在 grad≈FLT_MAX 极值用例上 golden=inf、npu=有限值(1.72e38)，根因是 aten 按 grad*exp(z)/(1+exp(z)) 顺序计算(中间 grad*exp(z) 溢出为 inf)，kernel 用安全形式 grad*(exp/(1+exp)) 不溢出，二者在极值处浮点发散。
+- [softplus_v2_grad 极端 FLT_MAX 与 aten 不可对齐](softplus_v2_grad_flt_max_aten.md)（`same_topic`）：焦点卡定位“对 `gradOutput=FLT_MAX, z>0`，`aop × exp(z)` 先溢出为 ±inf，再除 `(exp(z)+1)` 得 ±inf”；目标卡同样用“`grad*exp(z)=FLT_MAX*1.022=3.48e38 > FLT_MAX → inf`”解释 golden=inf、NPU 有限值。两卡围绕同一 softplus_v2_grad FLT_MAX/aten 运算顺序故障，只是处置结论与回归阶段不同。
 <!-- cannbot:related:end -->

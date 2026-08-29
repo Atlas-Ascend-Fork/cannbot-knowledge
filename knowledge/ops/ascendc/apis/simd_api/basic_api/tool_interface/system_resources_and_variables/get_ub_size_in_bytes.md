@@ -22,6 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [独立 TBuf.Get 返回重叠 UB 地址 dav-2201](../../../../../runbooks/compilation/tbuf_get_ub_dav_2201.md)（`exemplifies`）：需先核算 UB 总量排除容量不足，再检查实际地址重叠；GetUBSizeInBytes 提供容量探针。
-- [GetRuntimeUBSize](get_runtime_ub_size.md)（`same_topic`）：两接口都返回当前核可用 UB 字节数；GetRuntimeUBSize 强调运行时查询，GetUBSizeInBytes 提供同一资源量的另一入口。
+- [GatherV2 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/gather_v2_950.md)（`related`）：“与 R-001 的行/列搬运相同，但分核与 `ubAvailable` 在 Device 用 `GetBlockNum/GetUBSizeInBytes-128KiB` 重算，避免 PCIe 地址由 SIMT 直接解引用。”记录 UB 可用量计算；“获取UB空间的大小，单位为Byte。开发者根据UB的大小来计算循环次数等参数值。”给出 GetUBSizeInBytes 的字节单位和用途，直接支撑减去 128 KiB 后的 buffer 分配。
 <!-- cannbot:related:end -->

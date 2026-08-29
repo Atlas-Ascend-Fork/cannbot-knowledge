@@ -13,9 +13,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_inference_guide.md
   role: supporting
 created_at: '2026-06-03T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # DSA（DeepSeek Sparse Attention）架构模式
@@ -131,3 +131,13 @@ per-model 数值（`index_n_heads`、`index_head_dim`、`index_topk` 及任何 p
 - [deepseek-v32-pretrain](../../../training/guides/recipes/deepseek_v32_pretrain.md)（跨域·训练：DSA 模型预训练实践（反向 SLIG/SFAG））
 - [custom-cp-dsa](../../../training/concepts/parallelism/custom_cp_dsa.md)（跨域·训练：DSA 长序列自定义 CP）
 - [smla](../../../training/concepts/kernels/smla.md)（跨域·训练：V4 SMLA 是 DSA 谱系的训练融合算子）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepSeek-V3.2-Exp](../models/deepseek_v3_2_exp.md)（`related`）：“DeepSeek-V3.2-Exp 是 DeepSeek 2026 年发布的实验性长序列模型，在 DeepSeek-V3.1 基础上引入 **DeepSeek Sparse Attention (DSA)** —— 由 **Lightning Indexer (LI)** 与 **Sparse Flash Attention (SFA)** 两个核心模块组成 —— 通过"选前 TopK 个相关 token 再计算注意力"将长序列 Attention 从 O(S²) 降至 O(S·TopK)。DSA 的引入保留了完整 MLA KVCache，同时新增 Indexer Key Cache；MoE/MLA 主干继续沿用 V3.1 的结构。”与“｜ DeepSeek V3.2-Exp ｜ `MLA` 内 `self.indexer = Indexer(args)` ｜ `deepseek_v32` ｜ `MLA.forward` 算完 Q/KV 后调用 indexer，把 `topk_indices` 散射成加性 `-inf` mask 累加进注意力分数再 softmax ｜”提供双方正文证据。模型卡给出 DSA 的组成和复杂度收益，DSA 卡补齐 V3.2-Exp 中 indexer 产出 top-k mask 并在 softmax 前叠加的结构合同。
+- [GLM-5](../models/glm_5.md)（`related`）：“GLM-5 的注意力是 `GlmMoeDsaAttention`（`modeling_glm.py:661`），即 V3.2-Exp 同款 DSA（MLA + Lightning Indexer），算子机理见 ［dsa］(../modules/dsa.md)、［mla］(../modules/mla.md)、［lightning-indexer］(../modules/lightning_indexer.md)。”与“DSA（DeepSeek Sparse Attention）是一种**注意力架构模式**，不是单个 kernel，也不是 MLA 的替代品。”提供双方正文证据。模型卡把 GlmMoeDsaAttention 明确实现为 MLA 加 Lightning Indexer 的 DSA，DSA 卡则界定该架构模式而非单一 kernel；两者连接模型实例与架构合同。
+- [MLA/SFA decode 前处理融合算子（MLAPO）的两条硬前置：W8A8-only + 非 SFA-CP，否则 per-layer 静默回退](../../optimizations/experience/rules/mlapo_fused_preprocess_w8a8_non_cp_gate.md)（`related`）：“**场景**：你在给一个 MLA / SFA（Sparse Flash Attention，DSA 结构）注意力的 decode 路径做前处理加速，想把 decode 前那一串小算子——`fused_qkv_a_proj` matmul → split → `q_a_layernorm` → `exec_kv` → q 上投影与 K up-proj → `rope`——融成**一个** NPU 前处理算子（MLAPO），以吃掉 kernel launch 与中间张量搬运开销，并避免 q_down 的重复计算。”与“其本质是 **MLA 的 Q/K/V LoRA 计算图 + 一个并行的学习式 indexer overlay**：indexer 与 MLA 共享同一份输入 `x`（及 MLA Q 侧 LoRA 中间量 `qr`），独立打分后为**每个 query 位置**选出 `index_topk` 个最相关的 key，产出一个加性 `-inf` mask；该 mask 在 **softmax 之前**叠加到 MLA 的注意力分数上，把非 top-k 位置置零。”提供双方正文证据。优化卡作用于 DSA decode 中 MLA/SFA 前处理小算子链，架构卡说明 MLA 与 indexer 的共享输入和 mask 关系；结合后才能判断 MLAPO 门控影响的确切子图。
+- [SFA/DSA 稀疏注意力叠加 Context Parallel：跨 CP 组重建完整 KV 的 all_gather 路径](../../guides/experience/interventions/sfa_dsa_cp_cross_group_kv_allgather.md)（`related`）：当你要在 Ascend NPU 上把 **稀疏注意力（［SFA］(../../../concepts/kernels/sparse_flash_attention.md) / ［DSA］(../../../concepts/modules/dsa.md)）** 与 **［context parallel］(../../../concepts/parallelism/context_parallel.md)（PCP/DCP，序列维分片）** 叠加时，会遇到一个结构性冲突：；DSA（DeepSeek Sparse Attention）是一种**注意力架构模式**，不是单个 kernel，也不是 MLA 的替代品。其本质是 **MLA 的 Q/K/V LoRA 计算图 + 一个并行的学习式 indexer overlay**：indexer 与 MLA 共享同一份输入 `x`（及 MLA Q 侧 LoRA 中间量 `qr`），独立打分后为**每个 query 位置**选出 `index_topk` 个最相关的 key，产出一个加性 `-inf` mask；该 mask 在 **softmax 之前**叠加到 MLA 的注意力分数上，把非 top-k 位置置零。指南处理的结构性冲突来自 DSA indexer 必须在跨 CP 完整 KV 范围上产生正确 top-k 选择。
+- [SMLA（Sparse Flash MLA，DeepSeek-V4 稀疏 MLA 融合算子）](../../../training/concepts/kernels/smla.md)（`related`）：“ - ［smla］(../../../training/concepts/kernels/smla.md)（跨域·训练：V4 SMLA 是 DSA 谱系的训练融合算子）”把架构谱系明确下接到训练实现，而“`npu_smla` 是 ［torchtitan］(../frameworks/torchtitan.md)-npu 面向 **DeepSeek-V4 稀疏 MLA（Sparse Flash MLA）** 注意力路径的 NPU 融合算子 ModelConverter。”给出该实现的替换入口；联合阅读可从 DSA 架构边界定位 V4 的训练融合落点。
+<!-- cannbot:related:end -->

@@ -22,7 +22,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/clipped_swiglu/op_host/config/ascend910_93/clipped_swiglu_binary.json
     role: implementation
 created_at: "2026-08-25T14:58:02Z"
-updated_at: "2026-08-25T14:58:02Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -695,9 +695,9 @@ if (tl_->isLongH == 0) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持（`ascend910b`） | 支持（`ascend910_93`） | 支持但使用独立 `_a5` 卡 |
+| 支持状态 | 支持（`ascend910b`） | 支持（`ascend910_93`） | 支持但使用独立 `_950` 卡 |
 | Host/Launcher | 共用非 regbase Tiling，blockDim=全部 AIV core | 同 A2 | regbase 自定义 Tiling、真实核数、4 template keys |
 | Kernel/资源 | `ClippedSwigluBase<T>` + Vector API | 同 A2 | MicroAPI body、7×tile UB 模型、V_S event |
 
@@ -735,3 +735,9 @@ if (tl_->isLongH == 0) {
 | 同步 | Queue + PIPE_V | Cast/Gather/数学链依赖 | `ProcessSingleLoop`/`Compute` |
 | 精度与尾块 | FP32 中间数学、dtype-specific output cast | BF16 RINT；有效长度与 padding 分离 | `ProcessSingleLoop` |
 | 失败边界 | 非法 shape/dtype/UB 阻断 launch | key 1、workspace 非空、SoC capable | `IsCapable`/entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ClippedSwiglu 950 ACLNN 算子知识](clipped_swiglu_950.md)（`same_topic`）：｜ 计算语义 ｜ 将 `x` 沿 `dim` 合并为 `［B,2H］`；可选取 `B'=min(sum(group_index),B)`；按奇偶或前后拆为 `A,Bgate`，计算 `min(A,L)/(1+exp(-alpha*min(A,L))) * (clamp(Bgate,-L,L)+bias)`。 ｜；｜ 计算语义 ｜ 将 `x` 合并为 `［B,2H］`，可选按 `min(sum(group_index),B)` 截短 B；奇偶或前后拆 A/G，输出 `min(A,L)/(1+exp(-alpha*min(A,L)))*(clamp(G,-L,L)+bias)`。 ｜；两卡描述同一 aclnnClippedSwiglu 数学合同，分别闭合 A2/A3 与 950 的 Host、route、Kernel 和平台边界。
+<!-- cannbot:related:end -->

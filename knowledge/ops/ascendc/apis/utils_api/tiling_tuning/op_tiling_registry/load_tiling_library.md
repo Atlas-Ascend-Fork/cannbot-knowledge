@@ -29,9 +29,6 @@ true：Tiling动态库加载成功；false：Tiling动态库加载失败。具�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [专用 kernel 路径输出不变时先核对共享库是否真的包含目标符号](../../../../runbooks/precision/specialized_npu_kernel_symbol_presence_probe.md)（`exemplifies`）：专用 kernel 路径输出不变时先核对共享库是否真的包含目标符号说明Host 源码已有专用 launch 分支但 targeted 输出仍保持输入值时，用 nm 同时核对共享库专用符号与通用实例，先判别目标 kernel 是否被产入二进制；对LoadTilingLibrary而言，LoadTilingLibrary 完成共享库装载后由 GetTilingFunc 取函数；链接缺符号和产物不含目标符号是两个可操作的验证分支。
-- [直调共享库加载未定义平台符号—补齐CANN链接依赖](../../../../runbooks/compilation/platform_manager_shared_library_link_dependencies.md)（`exemplifies`）：直调共享库加载未定义平台符号—补齐CANN链接依赖说明Ascend C 直调共享库可链接却在加载时缺 PlatformAscendCManager 符号；为目标补齐 CANN 平台运行依赖集与库目录；对LoadTilingLibrary而言，LoadTilingLibrary 完成共享库装载后由 GetTilingFunc 取函数；链接缺符号和产物不含目标符号是两个可操作的验证分支。
-- [TilingDebug](../../../../guides/programming_guide/appendix/common_operations/tiling_debug.md)（`explains`）：TilingDebug 首先加载算子包的 liboptiling.so 或自定义算子动态库；LoadTilingLibrary 给出路径和成功/失败判据。
-- [构造和析构函数](constructor_and_destructor.md)（`related`）：构造和析构函数说明创建与释放OpTilingRegistry对象；对LoadTilingLibrary而言，LoadTilingLibrary 完成共享库装载后由 GetTilingFunc 取函数；链接缺符号和产物不含目标符号是两个可操作的验证分支。
-- [GetTilingFunc](get_tiling_func.md)（`same_topic`）：焦点处理OpTilingRegistry 加载动态库并取得 TilingFunc 的调测流程；LoadTilingLibrary正文界定“根据输入路径加载Tiling动态库，支持算子包编译或动态库编译方式获取的so文件，返回加载是否成功”。候选承担 Registry 加载、对象构造、opName 设置、ContextBuilder 与 GetTilingFunc 调测，runbook复现函数依赖错误。
+- [TilingDebug](../../../../guides/programming_guide/appendix/common_operations/tiling_debug.md)（`explains`）：根据输入的路径，加载对应的Tiling动态库。开发者基于工程化算子开发开发方式完成算子实现后，可通过算子包编译或算子动态库编译获取对应的Tiling动态库文件。；在工程化算子开发过程中，开发者需实现Tiling函数，该函数原型是固定的，接受TilingContext作为输入。框架负责构造TilingContext并调用Tiling函数。若需单独进行Tiling调测，开发者可通过OpTilingRegistry加载编译后的Tiling动态库，获取Tiling函数的指针并进行调用，调用时Tiling函数的TilingContext入参使用ContextBuilder构建。。加载 API 是独立调测流程的入口，指南串起加载动态库、取函数指针和 ContextBuilder 构造入参。
+- [GetTilingFunc](get_tiling_func.md)（`related`）：根据输入的路径，加载对应的Tiling动态库。开发者基于工程化算子开发开发方式完成算子实现后，可通过算子包编译或算子动态库编译获取对应的Tiling动态库文件。；典型用法：先通过 OpTilingRegistry.LoadTilingLibrary 加载算子 so 库，再调用 GetTilingFunc("AddCustom") 获取 Tiling 函数并执行。。加载接口把编译产物装入进程，GetTilingFunc 随后按算子名取得并执行其中的 Tiling 函数。
 <!-- cannbot:related:end -->

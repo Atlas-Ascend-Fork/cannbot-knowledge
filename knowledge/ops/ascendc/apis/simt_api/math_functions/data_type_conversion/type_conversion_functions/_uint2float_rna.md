@@ -25,14 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/device_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162uint_rna](../../bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162uint_rna.md)（`related`）：反向 uint→float rna 用于检查转换链的数值往返，但不能替代 bfloat16→uint 的源精度约束。
-- [__float2uint_rna](_float2uint_rna.md)（`related`）：__float2uint_rna 与《__uint2float_rna》的实质衔接是：__float2uint_rna 与 RN/RD/RU/RZ 变体保持 float→uint32 目标不变而替换舍入规则；signed int 和反向 uint→float RNA 说明符号/方向边界，类型转换总览统一特殊值契约。
-- [__uint2float_rd](_uint2float_rd.md)（`same_topic`）：__uint2float_rd 与《__uint2float_rna》的衔接是：候选覆盖 uint 到 float 的 rn/rd/ru/rz 变体及相邻整数宽度，直接用于核对 focal 的向下舍入和输入范围边界。
-- [__uint2float_rn](_uint2float_rn.md)（`same_topic`）：rn 与 rna 都做 uint→float 最近舍入，但 tie 处理不同；半值边界必须按参考契约选择。
-- [__uint2float_ru](_uint2float_ru.md)（`same_topic`）：__uint2float_ru 与《__uint2float_rna》的实质衔接是：候选覆盖 uint32→float 的其他舍入方向、signed int 与 uint64 输入；它们直接对照 2^24+1 等不可精确表示整数在 ru 下的选择。
-- [__uint2float_rz](_uint2float_rz.md)（`same_topic`）：rz 向零取整；对大整数不能精确表示时与 rna 可能产生不同 float。
-<!-- cannbot:related:end -->

@@ -70,7 +70,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_batch_matmul_v3/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:39:30Z"
-updated_at: "2026-08-25T18:03:08Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -728,9 +728,9 @@ AIC 仅在 AIV 归还对应 ping/pong 后覆盖 workspace，写完通过 PIPE_FI
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V5公开支持 | V5公开支持 | V5公开支持，见 `_a5` 卡 |
+| 支持状态 | V5公开支持 | V5公开支持 | V5公开支持，见 `_950` 卡 |
 | Host/Launcher | 共用 910B/910_93 V3/V4路径 | 同左 | DAV_3510 使用 arch35 selector/body |
 | Kernel/资源 | V3 generic + V4 MSD/perblock/pergroup | 与 A2同族，binary分别接线 | CMCT/Blaze/RegBase 与新量化类型 |
 
@@ -774,3 +774,9 @@ AIC 仅在 AIV 归还对应 ping/pong 后覆盖 workspace，写完通过 PIPE_FI
 | 同步 | SyncAll、C2V/V2C ping-pong | flag ID、轮次、AIC:AIV核比 | MSD/perblock/pergroup body |
 | 精度与尾块 | int32/float accum，FP32 epilogue，CAST_RINT | scale/bias/offset顺序与tail mask | Device body |
 | 失败边界 | checker/Tiling/key miss均终止 | 不得跨 V3/V4 猜测 fallback | API/registry/entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [QuantMatmul 950 ACLNN 算子知识](quant_matmul_950.md)（`same_topic`）：量化矩阵乘；按模式执行 `x1*x2` 后应用 per-tensor/per-channel/per-token/per-group scale，可选 offset/bias，并转换为目标 dtype；950 上的整数/FP8/HIF8/FP4 量化矩阵乘，覆盖 T-C/T-T、K-C/K-T、G-B、K-G、T-CG 与 MX。两卡都定义 QuantMatmul 的量化矩阵乘核心，目标卡是在 950 上扩展整数与多种低精度模式的架构实现，属于同一算子的跨平台知识。
+<!-- cannbot:related:end -->

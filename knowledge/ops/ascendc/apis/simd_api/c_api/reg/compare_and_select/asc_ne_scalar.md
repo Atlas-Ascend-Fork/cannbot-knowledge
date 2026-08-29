@@ -27,9 +27,5 @@ src 中的每个元素逐个与标量 value 比较是否不相等，如果 src_i
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscNeScalar](../../vector_compute/asc_ne_scalar.md)（`related`）：Reg 版本执行相同 vector-scalar 不等比较，但输入输出驻留寄存器；Memory 版本操作 UB 指针。
-- [Compare](../../../basic_api/memory_vector_compute/compare_and_select/compare.md)（`related`）：Compare说明逐元素比较两个tensor大小，结果为真的对应比特位为1，否则为0，支持LT、GT、GE、EQ、NE、LE六种比较模式。
-- [AscEqScalar](../../vector_compute/asc_eq_scalar.md)（`same_topic`）：AscEqScalar 与《AscNeScalar》的实质衔接是：AscEqScalar 与其他标量比较共享 scalar 广播和 mask 输出契约；vector-vector Eq、灵活标量 Compare/Select 说明比较源形态及结果消费方式。
-- [AscNe](asc_ne.md)（`same_topic`）：AscNe说明逐元素比较两个源操作数是否不相等，比较结果写入目的操作数对应比特位，为真则置1，否则置0。
-- [ComparesFlexibleScalar](../../../basic_api/memory_vector_compute/compare_and_select/compares_flexible_scalar.md)（`same_topic`）：ComparesFlexibleScalar说明提供灵活标量位置的Compares接口，支持标量在前和标量在后两种场景，标量可配置为LocalTensor单点元素。
+- [AscNe](asc_ne.md)（`same_topic`）：ne（not equal），该接口用于逐元素比较两个源操作数大小，将比较结果（）写入目的操作数dst对应比特位，如果比较结果为真，则对应比特位为1，否则为0。；src 中的每个元素逐个与标量 value 比较是否不相等，如果 src_i != value，则输出结果 dst 对应比特位为1，否则为0，每个元素的比较结果占一个bit。。两卡都定义 Ascend 950 寄存器 C API 的逐元素不等比较并输出掩码位，区别仅在第二操作数分别为矢量寄存器与标量 value，属于同一核心比较契约的两种重载形态。
 <!-- cannbot:related:end -->

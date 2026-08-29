@@ -164,11 +164,6 @@ AscendC GELU 的 exact 路径用 `max(x,0) - 0.5*abs(x)*erfc(abs(x)/sqrt(2))` �
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Erfc](../../apis/simd_api/adv_api/math_compute/erfc_interface/erfc.md)（`exemplifies`）：本 Runbook 的精度变量是 erfc 多项式逼近；Erfc API 卡明确该函数通常由多项式逼近实现并给出输入与临时空间契约，提供标准接口参照。
-- [Erfc接口](../../apis/simd_api/adv_api/math_compute/erfc_interface/erfc_interface.md)（`exemplifies`）：Erfc接口 与《AscendC GELU 三系数 erfc 在大值域 fp32 精度不足》的实质衔接是：Erfc 接口组由实际 Erfc、工作区上限/下限查询和 factor 查询组成；SIMT Erfcf提供标量对照，两张 GELU 卡直接讨论以 erfc 逼近实现时的精度与负尾相消。
-- [Gelu](../../apis/simd_api/adv_api/activation_functions/gelu_interface/gelu.md)（`exemplifies`）：Gelu 与《AscendC GELU 三系数 erfc 在大值域 fp32 精度不足》的实质衔接是：Gelu 接口、快速近似变体和空间查询共同定义高精度/高性能调用；GeGLU 直接以 GELU 为门控，两个 runbook 给出 erfc 近似与负尾相消的可执行精度边界。
-- [Gelu接口](../../apis/simd_api/adv_api/activation_functions/gelu_interface/gelu_interface.md)（`exemplifies`）：Gelu 总览给出精确与近似实现的选型边界；该实测卡说明 exact GELU 若为省指令把 erfc 多项式从五系数降到三系数，会在大值域 fp32 超出 MARE，直接补足精度预算依据。
-- [中级性能优化](../../guides/operator_practice/typical_operator_cases/simd_operator_impl/gelu_reg_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《AscendC GELU 三系数 erfc 在大值域 fp32 精度不足》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
-- [Ascend950 Reg 命名空间无 Erf/Tanh 封装](../compilation/ascend950_reg_erf_tanh.md)（`same_topic`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《AscendC GELU 三系数 erfc 在大值域 fp32 精度不足》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
-- [GELU 负尾部用 erfc 形态避免大数相消](gelu_negative_tail_erfc_avoids_cancellation.md)（`same_topic`）：《AscendC GELU 三系数 erfc 在大值域 fp32 精度不足》明确“GELU exact 路径为减少 Vector 指令把 erfc 改成三系数近似后，两个大值域 fp32 用例超出 MARE 阈值；恢复五系数多项式并保留无相消公式后通过全部用例。”；它与《GELU 负尾部用 erfc 形态避免大数相消》的“fp32 exact GELU 用 0.5x 加减近等幅项会在负大值尾部相消；直接计算 max(x,0)-0.5|x|erfc(|x|/sqrt(2)) 后 20/20。”在实际调用参数、数据流或结果校验上直接衔接。
+- [Ascend950 Reg 命名空间无 Erf/Tanh 封装](../compilation/ascend950_reg_erf_tanh.md)（`related`）：编译卡确认“Reg 命名空间不提供这些超越函数封装，exact 模式必须将 erf 分解为 Reg 已有操作的组合。”；精度卡在该分解上选择“保留无相消的 GELU 公式和一次 Newton 修正，只恢复 erfc 多项式的精度阶数。”，补充三系数失败后恢复五系数的验证闭环。
+- [GELU 负尾部用 erfc 形态避免大数相消](gelu_negative_tail_erfc_avoids_cancellation.md)（`related`）：三系数 Abramowitz 7.1.25 的绝对近似误差在 `erfc` 极小时被 GELU 尾部的 `0.5*abs(x)` 放大；golden 此时接近零，因而相对误差指标显著超限。；唯一根因是公式形态在负尾部发生灾难性相消。。前者诊断 erfc 多项式绝对误差在 GELU 负尾部被放大，后者诊断 erf 形态两大项相消的结构性误差；二者共同给出负尾部精度排障时先选稳定 erfc 公式、再校准多项式阶数的连续决策链。
 <!-- cannbot:related:end -->

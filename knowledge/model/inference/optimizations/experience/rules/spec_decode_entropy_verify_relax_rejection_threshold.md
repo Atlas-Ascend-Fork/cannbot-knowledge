@@ -85,3 +85,9 @@ platforms:
 - 合并 sha `77ff28652b`；溯源下探：
   - [投机解码接受率低时用熵校验-entropy-verify-放松拒绝采样阈值-threshold-min-exp-h-po](https://github.com/vllm-project/vllm-ascend/issues/9047)
   - [熵校验-magicmtp-在-deepseek-v4-flash-qwen3-5-moe-w8a8-mtp-上的自报接受](https://github.com/vllm-project/vllm-ascend/issues/9047)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MTP Speculative Decoding](../../../concepts/techniques/mtp_speculative_decoding.md)（`related`）：把标准接受判据里的均匀量 `u` 乘一个 `threshold ∈ (0,1］` 再比较，即 `target_prob/draft_prob >= threshold · u`。；平均接受率 `avg_accept_rate` ｜ `total_accept_tokens / total_spec_tokens` ｜ MTP 预测准确程度，越高表示 MTP 模型与主模型越一致。规则修改 target 对 draft token 的接受判据来提升接受率，MTP 概念卡定义 avg_accept_rate 的统计口径和收益含义，二者连接了验证阈值干预与投机解码效果度量。
+<!-- cannbot:related:end -->

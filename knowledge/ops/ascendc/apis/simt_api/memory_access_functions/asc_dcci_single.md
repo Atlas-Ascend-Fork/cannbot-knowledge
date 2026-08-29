@@ -27,11 +27,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscDcci](../../simd_api/c_api/cache_ctrl/asc_dcci.md)（`related`）：AscDcci 与《asc_dcci_single》的实质衔接是：AscDcci 的 single/entire 变体与 C++ DataCacheCleanAndInvalid 操作同一 DCache；缓存概述、L2 驱逐故障和编译选项提供验证与尾开销决策。
-- [AscLdca](asc_ldca.md)（`related`）：需要与其他代理保持可见时还需显式 cache clean/invalid，单纯 Ldca 不建立一致性。
-- [asc_stcg（内存访问函数）](asc_stcg.md)（`related`）：跨代理可见性仍需 cache maintenance，Stcg 本身不等于一致性屏障。
-- [访存函数简介（内存访问函数）](memory_access_functions_intro.md)（`related`）：数据可见性维护是 load/store 之外的关键操作。
-- [asc_dcci_entire](asc_dcci_entire.md)（`same_topic`）：asc_dcci_entire 与《asc_dcci_single》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_ldcg（内存访问函数）](asc_ldcg.md)（`same_topic`）：asc_ldcg（内存访问函数） 与《asc_dcci_single》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
-- [asc_stwt（内存访问函数）](asc_stwt.md)（`same_topic`）：asc_stwt（内存访问函数） 与《asc_dcci_single》的实质衔接是：asc_stwt 把数据写入 GM 并缓存到 DCache/L2；stcg/ldcg、缓存模式和 DCCI 共同决定写策略、后续读取及显式失效时机。
+- [asc_dcci_entire](asc_dcci_entire.md)（`related`）：entire 卡说明“刷新核内整个 Data Cache，保证后续从 Global Memory 读取数据时 Cache 一致性。”并警告整缓存代价；single 卡说明“相比 asc_dcci_entire 仅刷新单条 Cache Line，适合轮询标志位等小范围刷新场景。”，给出按一致性范围和性能代价选择的直接分支。
 <!-- cannbot:related:end -->

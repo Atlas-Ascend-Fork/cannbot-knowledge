@@ -29,7 +29,6 @@ C API开放芯片完备编程能力，支持以数组形式分配内存，一般
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h](../../../runbooks/compilation/asc_simd_umbrella_header_for_c_api_symbols.md)（`related`）：Runbook 证明直引 vector_compute.h 会缺 ASC_VDEQ_SIZE 等公共符号，必须使用 asc_simd.h umbrella；它补充了 C API 入口头的正确包含边界。
-- [C-API asc_simd.h 编译缺 include 根](../../../runbooks/compilation/c_api_asc_simd_h_include.md)（`related`）：C-API asc_simd.h 编译缺 include 根 与《SIMD语言扩展层C API》的实质衔接是：深层 impl 头实际存在，失败源于 CMake 只加 asc/include 而未加 asc/impl/c_api；C API 入口、官方编译/CMake材料和相邻 include 误用卡用于核对正确头链。
-- [SIMT语言扩展层C API](simt_language_extension_c_api.md)（`related`）：SIMT C API 面向线程/warp、原子与标量访存，SIMD C API 面向流水与向量寄存器；混合算子需按执行模型选择。
+- [ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h](../../../runbooks/compilation/asc_simd_umbrella_header_for_c_api_symbols.md)（`related`）：包含asc_simd.h文件来调用C API相应接口。如无特殊说明，包含该头文件即可满足接口调用需求。；保留调用点与数据流不变，只把叶子声明头替换为 public C-API umbrella。；指南给出公共入口头，排障卡证明叶子声明头缺少 umbrella 前置定义并给出不改调用点的替换方式，形成 C API 头文件选择到编译修复的直接链路。
+- [C-API asc_simd.h 编译缺 include 根](../../../runbooks/compilation/c_api_asc_simd_h_include.md)（`related`）：包含asc_simd.h文件来调用C API相应接口。如无特殊说明，包含该头文件即可满足接口调用需求。；include 根是 `asc/`（覆盖并列的 `include/` 与 `impl/`），**不是** `asc/include`、也**不是** `asc/impl`。；指南确定用户要包含 asc_simd.h，排障卡进一步规定 CMake 必须让该公共头及其 impl 依赖同时可解析，补齐 950 工程从 include 指令到 include 根的配置。
 <!-- cannbot:related:end -->

@@ -84,3 +84,10 @@ torch_npu/npu/graphs.py __enter__ → capture_begin → super().capture_begin(..
 - 复现环境：`vllm-ascend:v0.9.2rc1-310p` 镜像、`ascend 310p*1`、Seed-X-PPO-7B（Llama 架构）、`--dtype float16`、`--max_model_len 4096`、TP1；加 `--enforce-eager` 后解决、条目关闭。
 - 耐久性：只要 310P 系图模式未被支持，任何在 310P 上不加 `--enforce-eager` 起 vllm-ascend 的用户都会撞到同一 aclgraph capture 断言。
 - 溯源下探：[vllm-ascend-issue-2176-bug-ascend310p3-encountered-an-exception-while-running-seed-x](https://github.com/vllm-project/vllm-ascend/issues/2176)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [310P 上 dense/VL 模型 bringup：须显式规避的不可用算子路径 + KV cache/mask 的 NZ 布局约束](../../optimizations/experience/anti_patterns/ascend_310p_bringup_unusable_ops_and_nz_layout.md)（`related`）：一批在 A2/A3 上正常的算子路径与执行模式在 310P 上**不可用或未实现**；在 310P 上部署时默认预期图模式不可用。前者要求 310P bringup 先排除不可用执行模式，后者把其中 aclgraph 路径收敛为必须使用 eager 的可执行处置。
+- [Ascend 310P 不支持 Triton kernel：走 Triton 的算子须补纯 host/eager 等价路径](ascend_310p_no_triton_kernel_eager_fallback.md)（`related`）：这是与 ［310P 不支持 Triton kernel］(ascend_310p_no_triton_kernel_eager_fallback.md) 并列的另一条 310P 平台能力缺口：一个是无图模式（修法=关图模式跑 eager），一个是无 Triton（修法=补 Triton-free host 等价路径）。 该约束有两个具体信号：**(A)** GDN gating 这类 Triton 算子在 310P 上无可执行路径；**(B)** KV cache slot_mapping / block-table 计算走通用 Triton 路径在 310P 上运行时崩溃。 显式并列关系将 aclgraph capture 与 Triton 缺失的报错、根因和 fallback 分开，支撑 310P bringup 排查。
+<!-- cannbot:related:end -->

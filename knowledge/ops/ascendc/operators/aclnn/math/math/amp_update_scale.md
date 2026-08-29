@@ -24,7 +24,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T10:04:08Z"
-updated_at: "2026-08-25T10:04:08Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -450,9 +450,9 @@ if constexpr (IsSameType<T, bfloat16_t>::value) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；`ascend910b` | 支持；`ascend910_93` | 支持；详见 `_a5` 卡 |
+| 支持状态 | 支持；`ascend910b` | 支持；`ascend910_93` | 支持；详见 `_950` 卡 |
 | Host/Launcher | 共用同一 OpDef/Tiling，blockDim 1 | 同左 | 固定源码同一 Host |
 | Kernel/资源 | 三 dtype config；同一 AIV body | 三 dtype config；同一 AIV body | 独立 ascend950 config，源码 body 相同 |
 
@@ -491,3 +491,9 @@ if constexpr (IsSameType<T, bfloat16_t>::value) {
 | 同步 | MTE2_V、V_S/S_V、V_MTE3、MTE3_MTE2 | 不得在 producer 完成前读取或复用 | `SyncM2toV/SyncVtoM3/SyncM3toM2` |
 | 精度与尾块 | FP32 中间计算，BF16 RINT 回写 | 有限性按 FP32 指数域；DataCopyPad 仅提交一个元素 | `IsFinite/LoadInputData/StoreOutputData` |
 | 失败边界 | 公开 dtype/shape/interval 校验 | 不可依赖 unknown key 行为；非法 interval 不得窄化 | `Init/RunKernelTiling/amp_update_scale` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AmpUpdateScale 950 ACLNN 算子知识](amp_update_scale_950.md)（`same_topic`）：发现 Inf/NaN 时回退 scale；达到 growth interval 时在有限值保护下增长 scale；同步更新 tracker；foundInf 非零时回退 scale；成功计数达到 interval 时在有限值保护下增长 scale；更新 tracker。两端是同一 aclnnAmpUpdateScale 合约的 A2/A3 与 950 实现，语义和三条 dtype Route 对齐，平台构建接线不同。
+<!-- cannbot:related:end -->

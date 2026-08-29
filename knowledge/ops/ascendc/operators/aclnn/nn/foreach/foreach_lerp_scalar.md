@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_lerp_scalar/op_host/config/ascend910_93/foreach_lerp_scalar_binary.json
     role: implementation
 created_at: "2026-08-25T15:46:48Z"
-updated_at: "2026-08-25T15:46:48Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -457,9 +457,9 @@ FP16/BF16 输入在 FP32 临时区内完成减法与 Axpy，最后以 `CAST_RINT
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见独立 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`，membase key 1/2/4 | `ascend910_93`，同 membase | regbase key 10001/10002/10004 |
 | Kernel/资源 | classic AIV，共用 body | classic AIV，共用 body | arch35 MicroAPI + 独立输出 Queue |
 
@@ -478,7 +478,7 @@ FP16/BF16 输入在 FP32 临时区内完成减法与 Axpy，最后以 `CAST_RINT
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `foreach/foreach_lerp_scalar/docs/aclnnForeachLerpScalar.md` | 两段式原型、产品表、参数/错误码 | ACLNN 公开性与约束。 |
-| 入口声明/约束 | `foreach/foreach_lerp_scalar/README.md` | 产品支持与公式 | A2/A3/A5 支持和语义。 |
+| 入口声明/约束 | `foreach/foreach_lerp_scalar/README.md` | 产品支持与公式 | A2/A3/950 支持和语义。 |
 | 入口实现 | `foreach/foreach_lerp_scalar/op_host/foreach_lerp_scalar_def.cpp` | `ForeachLerpScalar`、`OP_ADD` | dtype/format/AutoContiguous/平台。 |
 | Host/Tiling/Launcher | `foreach/foreach_utils/op_host/foreach_tiling_func.cpp` | `Tiling4ForeachLerpScalarTiling`、membase 注册 | selector 入口与 priority。 |
 | Host/Tiling/Launcher | `foreach/foreach_utils/op_host/foreach_tiling_class.h` | `ForeachCommonTiling` | 校验、分核、UB、POD。 |
@@ -503,3 +503,9 @@ FP16/BF16 输入在 FP32 临时区内完成减法与 Axpy，最后以 `CAST_RINT
 | 同步 | Queue + V/MTE3/MTE2 event | 结果复制和 slot 复用前等待 | `ComputeAndCopyOut` |
 | 精度与尾块 | 低精度升 FP32、CAST_RINT；尾 tile pad copy | strict weight 阈值、chunk offset、实际 `blockLen` | `ComputePerCast` / `CopyIn` |
 | 失败边界 | selector 不适用继续；校验失败立即终止 | 不得把未知 key 或 BF16 guard 当 fallback | `TilingRegistry::DoTilingImpl` / entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachLerpScalar 950 ACLNN 算子知识](foreach_lerp_scalar_950.md)（`same_topic`）：对列表位置 `i`：`y_i = x1_i + weight * (x2_i - x1_i)`。；`y_i = x1_i + weight * (x2_i - x1_i)`；950 公开约束要求三列表对应 shape size 一致，列表最多 50 项。两卡描述同一 ForeachLerpScalar ACLNN 逻辑算子，分别闭合 A2/A3 classic AIV 与 950 RegBase 的 Host、Tiling 和 Kernel 路由。
+<!-- cannbot:related:end -->

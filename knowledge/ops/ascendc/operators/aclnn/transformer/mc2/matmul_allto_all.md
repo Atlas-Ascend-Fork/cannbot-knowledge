@@ -60,7 +60,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_allto_all/op_host/config/ascend910b/matmul_allto_all_binary.json
     role: implementation
 created_at: "2026-08-24T19:05:09Z"
-updated_at: "2026-08-24T20:01:32Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -480,7 +480,7 @@ Catlass 的 `ptrC` 直接指向本 rank HCCL window 的 rank-major slot，避免
 
 - 适用：可让 Cube 直接写通信 window、且 window 能覆盖双槽的先算后通信融合。
 - 前提：A2 MTE/HCCL context、1:2 MIX 核映射、200 MiB window、相同 rank-major layout。
-- 失效：A3/A5 使用显式 WS0/WS1 与 HCCL task；不能复用本协议。
+- 失效：A3/950 使用显式 WS0/WS1 与 HCCL task；不能复用本协议。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -537,9 +537,9 @@ for (uint32_t index = 0; index < taskCnt; index++) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 V2 支持 | 公开 V2 支持 | 公开 V2 支持，见 `_a5` 卡 |
+| 支持状态 | 公开 V2 支持 | 公开 V2 支持 | 公开 V2 支持，见 `_950` 卡 |
 | Host/Launcher | 910B 查表 Tiling；MTE server；拒绝空 tensor | 910_93 公式化 Tiling；AI_CPU server；拒绝空 tensor | arch35；AI_CPU/CCU；M=0 返回空 executor |
 | Kernel/资源 | Catlass→HCCL window；160 KiB UB | MatMulV3→WS0→WS1→AI_CPU HCCL | ASW MatMulV3；AICPU/CCU key |
 
@@ -591,3 +591,11 @@ for (uint32_t index = 0; index < taskCnt; index++) {
 | 同步 | A2 slot+peer flags；A3 flags8/9+SyncAll | producer完成前 consumer不可读，Commit未完成不得释放 | `CommBase`、`ProcessDefault/HcclCommunicator::End` |
 | 精度与尾块 | dtype/bias key、MatMul POD、64×256 copy tail | BF16 bias规则、B transpose layout、有效 tail | key headers、MatMul/transpose body |
 | 失败边界 | Host/API/Tiling均显式失败 | 不得把非法 rank、commMode、window、shape 静默成功 | `CheckAndHandleParams`、两平台 `DoOpTiling` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AlltoAll](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/allto_all.md)（`related`）：`Y=AlltoAll(P).view(R*BS,H2/R)`；每张卡向通信域内所有卡发送相同数据量的数据；连接融合算子的通信阶段与 HCCL 任务语义。
+- [SetCcTilingV2](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/set_cc_tiling_v2.md)（`related`）：`mc2CcTiling` ｜ generated POD ｜ 同上 ｜ HCCL CC 配置 ｜ 同上 ｜ `SetCcTilingV2`；Mc2CcTiling在Host侧计算得出；连接 Host 产生的通信 Tiling 与 Kernel 地址设置。
+- [MatmulAlltoAll 950 ACLNN 算子知识](matmul_allto_all_950.md)（`same_topic`）：｜ 计算语义 ｜ `C=X1@X2+bias`，再把 `［M,N］` 重排为 `［R,M,N/R］` 并执行 AlltoAll，输出 `［R*M,N/R］` ｜；｜ 计算语义 ｜ `C=X1@X2+bias`（bias 可空），`P=C.view(BS,R,H2/R).permute(1,0,2)`，`Y=AlltoAll(P).view(R*BS,H2/R)` ｜。两卡描述同一 MatmulAlltoAllV2 的 MatMul、重排和 AlltoAll 语义，分别闭合 950 与 A2/A3 的 MIX_CV 实现路线。
+<!-- cannbot:related:end -->

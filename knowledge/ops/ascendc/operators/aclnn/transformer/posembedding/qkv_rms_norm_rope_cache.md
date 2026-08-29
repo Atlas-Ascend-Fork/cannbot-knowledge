@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:30:02Z"
-updated_at: "2026-08-24T19:37:42Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -109,7 +109,7 @@ Q 将 `rope` 写到连续 ND `qOut[(t*Nq+h)*D+d]`。K 以 `rope`、V 以原始 `
 
 ### 入口与版本
 
-固定仓只公开 `aclnnQkvRmsNormRopeCacheGetWorkspaceSize` 与 `aclnnQkvRmsNormRopeCache`，没有 V2/V3；它就是 A2/A3 在 CANN 9.1.0 的最新入口。ACLNN 实现中的“调用v3版本的l0接口”仅是注释，实际调用符号仍是不带版本号的 `l0op::QkvRmsNormRopeCache`，固定仓没有可独立发布的 V3 API 或 body。公开文档支持 Atlas A2、A3，不支持 A5。OpDef 只注册 `ascend910b`、`ascend910_93`，两套 binary config 都列出 FP16/BF16 下 K/V 不量化、仅 K、仅 V、K/V 都量化共八个实例。
+固定仓只公开 `aclnnQkvRmsNormRopeCacheGetWorkspaceSize` 与 `aclnnQkvRmsNormRopeCache`，没有 V2/V3；它就是 A2/A3 在 CANN 9.1.0 的最新入口。ACLNN 实现中的“调用v3版本的l0接口”仅是注释，实际调用符号仍是不带版本号的 `l0op::QkvRmsNormRopeCache`，固定仓没有可独立发布的 V3 API 或 body。公开文档支持 Atlas A2、A3，不支持 950。OpDef 只注册 `ascend910b`、`ascend910_93`，两套 binary config 都列出 FP16/BF16 下 K/V 不量化、仅 K、仅 V、K/V 都量化共八个实例。
 
 公开文档“当前支持场景”写明三个 before-quant 输出不输出，但 ACLNN 签名、L0 `isOutputQkv`、InferShape 和 Kernel 都保留可达路径。本卡记录源码路径，同时将其标成公开文档未承诺边界，不扩成另一版本。
 
@@ -595,11 +595,11 @@ DataCopyExtParams copyParamsNz{/*burstNum*/ static_cast<uint16_t>(D1), // 4
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；OpDef/config为ascend910b | 支持；OpDef/config为ascend910_93 | 不支持；文档950为×且无ascend950 config |
 | Host/Launcher | 共用ACLNN、DS Tiling、key3；要求非regbase | 与A2共用源码和八个dtype组合 | 无公开launcher/config |
-| Kernel/资源 | 同一AIV-only body；核数/UB运行时取得 | 同A2，blockDim/U可随平台容量不同 | 无arch35 body，不生成A5卡 |
+| Kernel/资源 | 同一AIV-only body；核数/UB运行时取得 | 同A2，blockDim/U可随平台容量不同 | 无arch35 body，不生成950卡 |
 
 ## 限制与失败边界
 

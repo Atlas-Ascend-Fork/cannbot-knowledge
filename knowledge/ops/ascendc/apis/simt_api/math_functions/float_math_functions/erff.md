@@ -24,9 +24,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Erf接口](../../../simd_api/adv_api/math_compute/erf_interface/erf_interface.md)（`related`）：erff 提供 float 标量的 SIMT 高斯误差函数及 ±inf/NaN 边界语义；Erf 高阶接口提供 LocalTensor 逐元素计算和临时空间契约。两者计算同一数学函数，但分别服务标量 SIMT 与张量 SIMD 路径，可直接支撑实现路线选择和边界结果对照。
-<!-- cannbot:related:end -->

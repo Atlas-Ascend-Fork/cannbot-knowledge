@@ -31,5 +31,6 @@ Ascend 950PR/Ascend 950DT，分离模式，返回Vector Core的核数
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetCoreNumAic](get_core_num_aic.md)（`related`）：分离架构下 GetCoreNum 返回 Vector 核数；需要 Cube 分核时必须改用 GetCoreNumAic，避免 numBlocks 取错执行单元。
+- [GetCoreNumAic](get_core_num_aic.md)（`related`）：获取当前硬件平台的核数。若AI Core的架构为Cube、Vector分离模式，返回Vector Core的核数；耦合模式返回AI Core的核数。；获取当前硬件平台AI Core中Cube核数。若AI Core的架构为Cube、Vector分离模式，返回Cube Core的核数；耦合模式返回AI Core的核数。。两卡共同处理耦合与 Cube/Vector 分离架构下的核数查询，但通用 GetCoreNum 在分离模式返回 Vector 数，GetCoreNumAic 返回 Cube 数，联合阅读可避免按错执行单元分核。
+- [GetCoreNumAiv](get_core_num_aiv.md)（`same_topic`）：获取当前硬件平台的核数。；获取当前硬件平台AI Core中Vector核数。。两卡的产品表给出同一返回合同：分离架构返回 Vector Core 数、耦合架构返回 AI Core 数；它们是围绕同一平台核数查询决策的两个入口说明。
 <!-- cannbot:related:end -->

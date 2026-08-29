@@ -26,8 +26,7 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BatchMatmulGetTmpBufSize](batch_matmul_get_tmp_buf_size.md)（`related`）：《BatchMatmulGetTmpBufSize》处理“BatchMatmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”。《MatmulGetTmpBufSize》明确“本接口用于在调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”，可直接用于核对BatchMatmul 临时空间估算与 Matmul Tiling 对象、TCubeTiling 结果之间的调用合同。
-- [GetMatmulApiTiling](../matmul_kernel/get_matmul_api_tiling.md)（`related`）：GetMatmulApiTiling 与《MatmulGetTmpBufSize》的实质衔接是：host 侧 GetMatmulApiTiling 把模板参数、MatmulConfig 与基础配置落成 tiling，随后决定 kernel Matmul 的注册、临时空间和精度/性能策略。
-- [MatmulGetTmpBufSizeV2](matmul_get_tmp_buf_size_v2.md)（`same_topic`）：MatmulGetTmpBufSize 与《MatmulGetTmpBufSizeV2》的实质衔接是：Matmul 临时空间查询与 V2/batch/multicore、buffer 预算、tiling 和 workspace 注册共同决定可用空间。
-- [SetLocalWorkspace](../matmul_kernel/set_local_workspace.md)（`same_topic`）：MatmulGetTmpBufSize 与《SetLocalWorkspace》的实质衔接是：Matmul 临时空间查询与 V2/batch/multicore、buffer 预算、tiling 和 workspace 注册共同决定可用空间。
+- [GetTiling](../matmul_tiling/get_tiling.md)（`related`）：“- tiling（输出）：Tiling结构体存储最终的tiling结果。TCubeTiling结构介绍请参考表1。/optiling::TCubeTiling：带有optiling命名空间的TCubeTiling结构体，，该结构体为Host侧定义的Matmul TilingData。”；“本接口用于在调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”。MatmulGetTmpBufSize 明确消费 GetTiling 的结果以计算三级 Buffer 资源预算。
+- [SetLocalWorkspace](../matmul_kernel/set_local_workspace.md)（`related`）：“具体需要申请的UB（VECCALC）临时空间大小由tiling接口MatmulGetTmpBufSize给出”明确 SetLocalWorkspace 的容量来源；“本接口用于在调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”定义该容量查询的调用阶段和输出范围。
+- [MatmulGetTmpBufSizeV2](matmul_get_tmp_buf_size_v2.md)（`same_topic`）：“本接口用于在调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”与“TCubeTiling为Kernel侧定义的Matmul TilingData，与入参为带AscendC::tiling命名空间的TCubeTiling结构体的GetTiling接口配合使用。”描述同一 Matmul 临时空间查询契约，V2 明确了 kernel 侧结构和配套重载。
 <!-- cannbot:related:end -->

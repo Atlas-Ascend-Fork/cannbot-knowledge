@@ -22,5 +22,5 @@ reg数据搬运接口，适用于从UB搬入MaskReg。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalign](asc_loadalign.md)（`same_topic`）：asc_loadalign (废弃) 与《AscLoadalign》的实质衔接是：AscLoadalign 是废弃 MaskReg 搬入重载的现行入口，承担同一 UB→Reg 对齐搬入任务。
+- [AscLoadalign](asc_loadalign.md)（`same_topic`）：reg数据搬运接口，适用于从UB搬入MaskReg。；将Unified Buffer（UB）中起始地址32字节对齐的数据搬入矢量数据寄存器或掩码寄存器，搬运过程中数据格式和内容保持不变。。废弃接口与当前接口共享从 UB 对齐搬入 MaskReg 的核心能力，当前卡还覆盖矢量寄存器。
 <!-- cannbot:related:end -->

@@ -25,7 +25,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Lgamma](lgamma.md)（`related`）：factor 查询产生的临时空间容量用于决定 Lgamma kernel 单次可处理元素量，执行接口直接消费该 Tiling 决策。
-- [Lgamma接口](lgamma_interface.md)（`related`）：因子查询把固定 workspace 换算成 Lgamma 单次最大处理元素数，补足分块 tiling 决策。
-- [GetLgammaMaxMinTmpSize](get_lgamma_max_min_tmp_size.md)（`same_topic`）：Lgamma factor 查询用 maxLiveNodeCount/extraBuf 反推固定空间下的处理量，MaxMin 查询则给出同一 Lgamma 接口的可预留空间上下界，两者共同闭合 Tiling 预算。
+- [GetLgammaMaxMinTmpSize](get_lgamma_max_min_tmp_size.md)（`related`）：参数：typeSize为输入数据类型字节数（half传2）；maxLiveNodeCount输出最大存活节点数；extraBuffer输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。；host侧Tiling接口，用于获取Lgamma接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两接口从 shape 到空间上下界和空间到可处理 shape 两个方向闭合 Lgamma 的 Host 临时空间规划。
+- [Lgamma](lgamma.md)（`related`）：参数：typeSize为输入数据类型字节数（half传2）；maxLiveNodeCount输出最大存活节点数；extraBuffer输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetLgammaMaxMinTmpSize获取。。因子接口把可用 UB 反推成 Lgamma 可处理 shape，Lgamma 的手工临时空间重载正是该容量规划的消费端。
 <!-- cannbot:related:end -->

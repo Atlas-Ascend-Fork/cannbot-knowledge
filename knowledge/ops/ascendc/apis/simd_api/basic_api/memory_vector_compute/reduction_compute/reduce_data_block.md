@@ -8,7 +8,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute/ReduceDataBlock.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ['950', a2, a3]
 ---
 
@@ -31,11 +31,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [选择低延迟指令，优化归约操作性能](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md)（`explains`）：指南比较两次 ReduceRepeat、三次 ReduceDataBlock 和二者组合，结论是先 ReduceDataBlock 再 ReduceRepeat 在 shape=256 的实测更优。
-- [GetDataBlockSizeInBytes](../../tool_interface/system_resources_and_variables/get_data_block_size_in_bytes.md)（`related`）：LocalTensor 版块内归约同样以 DataBlock 为单位，GetDataBlockSizeInBytes 可用于计算 repeatTime、stride 和每块元素数量。
-- [ReduceDataBlock](../../reg_vector_compute/reduction_compute/reduce_data_block.md)（`related`）：Memory Vector ReduceDataBlock 与 Reg 版本都按每个 32B DataBlock 输出 SUM/MAX/MIN；Reg 卡补充 MaskMergeMode 和全 mask 空时的填充值，是切换编程范式的直接契约映射。
-- [ReduceRepeat](reduce_repeat.md)（`related`）：DataBlock 归约粒度小于 per-repeat，按输出粒度选择。
-- [AscDatablockReduceSum](../../../c_api/vector_compute/asc_datablock_reduce_sum.md)（`same_topic`）：AscDatablockReduceSum 与《ReduceDataBlock》的实质衔接是：AscDatablockReduceSum 与 max/min、Reg datablock、repeat 和基础 ReduceDataBlock 共享数据块归约契约；GetDataBlockSizeInBytes 决定一次数据块所覆盖的有效元素。
-- [AscReduceMinDatablock](../../../c_api/reg/reduce_compute/asc_reduce_min_datablock.md)（`same_topic`）：AscReduceMinDatablock 与《ReduceDataBlock》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
-- [ReduceMin](reduce_min.md)（`same_topic`）：ReduceMin 与《ReduceDataBlock》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
+- [选择低延迟指令，优化归约操作性能](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md)（`explains`）：“进一步测试分析可知，单指令ReduceDataBlock的执行效率优于ReduceRepeat，因此，根据不同的shape，通过不同的指令组合，可以达到更佳的执行性能。”；“对输入数据以DataBlock为单位进行归约操作，根据reduceType对每个DataBlock内数据求和、求最大值或求最小值。”。指南明确用 ReduceDataBlock 与 ReduceRepeat 的组合选择降低归约延迟，接口卡界定 DataBlock 级计算。
 <!-- cannbot:related:end -->

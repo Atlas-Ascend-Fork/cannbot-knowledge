@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:07:57Z"
-updated_at: "2026-08-25T16:07:57Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -636,9 +636,9 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持（公开产品表，`ascend910b`） | 支持（公开产品表，`ascend910_93`） | 支持，但使用独立 `_a5` 卡 |
+| 支持状态 | 支持（公开产品表，`ascend910b`） | 支持（公开产品表，`ascend910_93`） | 支持，但使用独立 `_950` 卡 |
 | Host/Launcher | 共用 arch22 `ForeachCommonTiling` | 共用 arch22 `ForeachCommonTiling` | arch35 独立 POD/tiling，最多 256 Tensor |
 | Kernel/资源 | 共用 AIV Vector + UB Queue | 共用 AIV Vector + UB Queue | SIMT、直接 GM、无 AIV Queue |
 
@@ -685,3 +685,9 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_
 | 同步 | Queue 生命周期 + Vector barrier | scratch 覆盖前必须等待前一阶段 | `InnerComputer/CopyIn/CopyOut` |
 | 精度与尾块 | BF16 分段 FP32；full/tail 两种 DMA | `CAST_NONE→Mins→CAST_RINT` 与有效 byte 数 | `ComputePerCast/SingleTensorProcess` |
 | 失败边界 | 校验失败阻断 launch；未知 key 无 body | 不得为 >50、低 UB、越界 INT64 scalar 编造 fallback | `CheckOpInfo/router` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachMinimumScalarList 950 ACLNN 算子知识](foreach_minimum_scalar_list_950.md)（`same_topic`）：｜ 计算语义 ｜ 对第 `i` 个 Tensor 的每个有效元素 `j` 计算 `y_i［j］ = min(x_i［j］, scalars［i］)`。 ｜；｜ 计算语义 ｜ `y_i［j］=min(x_i［j］,scalars［i］)`；浮点显式传播任一操作数的 NaN。 ｜。两卡定义同一 TensorList 逐项 scalar minimum，950 卡进一步闭合 SIMT 路线并明确浮点 NaN 传播规则。
+<!-- cannbot:related:end -->

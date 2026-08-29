@@ -33,9 +33,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Axpy](../../../basic_api/memory_vector_compute/composite_compute/axpy.md)（`related`）：基础 Axpy 与高阶 Axpy 都实现 y=a*x+y，但前者是直接复合矢量接口，后者显式管理临时空间并强调 Muls+Add 精度；可据空间和精度约束选层级。
-- [GetAxpyMaxMinTmpSize](get_axpy_max_min_tmp_size.md)（`related`）：Axpy 需要 sharedTmpBuffer 时，必须先用该接口取得满足当前 shape 的最大/最小临时空间，才能合法调用。
-- [GetAxpyTmpBufferFactorSize](get_axpy_tmp_buffer_factor_size.md)（`related`）：该接口提供 Axpy 的 maxLiveNodeCount/extraBuf，可反推单次最大处理量并指导切块，是 Axpy Tiling 的直接输入。
-- [AscAxpy](../../../c_api/reg/compound_compute/asc_axpy.md)（`same_topic`）：AscAxpy 与《Axpy接口》的衔接是：AscAxpy 的 C Vector、基础及高阶 Axpy 入口实现同一 alpha*x+y 数据流，差异集中在张量形态、临时空间和调度层级。
-- [Axpy](axpy.md)（`same_topic`）：该接口页定义的临时空间、地址不重叠和 y=a*x+y 契约由 Axpy 计算接口直接实现。
+- [GetAxpyMaxMinTmpSize](get_axpy_max_min_tmp_size.md)（`same_topic`）：kernel侧Axpy接口的计算需要开发者申请临时空间，本接口用于在host侧获取申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。前者产生 Axpy 的空间上下界，后者规定该值如何供 Kernel 的 sharedTmpBuffer 使用。
 <!-- cannbot:related:end -->

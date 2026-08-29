@@ -16,9 +16,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/common/mtp_model_guide.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # MTP Speculative Decoding
@@ -73,7 +73,10 @@ cann-recipes-infer 自研 executor 把 MTP 作为一个独立的 `MTPWorker` 组
 
 `MTPInfo` 封装 MTP 推测解码的状态信息，管理 draft / 主模型之间的工作流：
 
-| 字段 | 类型 | 说明 | |------|------|------| | `is_prefill` | `Optional[bool]` | 当前阶段是否为 prefill | | `spec_tokens` | `Optional[torch.Tensor]` | 累积的推测 token 序列，供主模型验证 | | `accepted_num` | `Optional[torch.Tensor]` | 当前迭代每个样本接受的 token 数量 |
+| 字段 | 类型 | 说明 |
+|------|------|------| | `is_prefill` | `Optional[bool]` | 当前阶段是否为 prefill |
+| `spec_tokens` | `Optional[torch.Tensor]` | 累积的推测 token 序列，供主模型验证 |
+| `accepted_num` | `Optional[torch.Tensor]` | 当前迭代每个样本接受的 token 数量 |
 
 在 [online-pd-inference](../frameworks/online_pd_inference.md) 的 PD 分离路径下，prefill 端算得的首批推测 token 经传输 metadata 的 `mtp_spec_tokens` 携带到 decode 端，由 `DecodeTransferQueue._commit_metadata`（提交 metadata 时，`queues.py:345-349`）物化为该请求的 `MTPInfo(spec_tokens=torch.tensor(...))`；而 `DecodePreallocQueue`（`queues.py:41-304`）只负责按 `next_n` 为首步预分配 `1+next_n` 个 token 的 KV 块（不物化 MTPInfo），衔接此处的验证流程。
 
@@ -89,11 +92,20 @@ flowchart LR
 
 **关键成员变量**：
 
-| 分类 | 变量 | 说明 | |------|------|------| | 配置 | `infer_config` / `next_n` / `exe_mode` / `prefill_mini_batch` / `batch_size_per_dp_rank` | 运行时配置 | | 模型 | `device` / `mtp_model_worker` | 计算 NPU 与封装 MTP 的 ModelWorker |
+| 分类 | 变量 | 说明 |
+|------|------|------| | 配置 | `infer_config` / `next_n` / `exe_mode` / `prefill_mini_batch` / `batch_size_per_dp_rank` | 运行时配置 |
+| 模型 | `device` / `mtp_model_worker` | 计算 NPU 与封装 MTP 的 ModelWorker |
 
 **关键方法**：
 
-| 方法 | 说明 | |------|------| | `share_weights_from_main_model(main_model)` | 从主模型共享 `lm_head` / `embed_tokens`（MTP 模型缺这些层时复用） | | `_pad_seq_len_to_size(tensor, size)` | 沿 dim=1 对 tensor padding / truncate 到指定长度 | | `get_main_model_inputs(input_ids, batch)` | 构建主模型验证窗口：拼接 `input_ids` 与 `spec_tokens`，回退 `kv_len` 到接受的前缀位置 | | `get_mtp_model_inputs(batch, main_next_tokens, model_inputs_main, prev_hidden_states)` | Prefill 分支拼接 `input_ids` + 接受 token + 存 `prev_hidden_states` + `cycle_idx`；Decode 分支用主模型位置信息 | | `mtp_model_output_postprocess(model_inputs, logits, mtp_infos)` | 处理 MTP 输出，累积 `spec_tokens` + 更新状态；Prefill 分支直接推进 `kv_len` + 翻转 `is_prefill` | | `get_next_mtp_model_inputs(...)` | 构建下一次 MTP 迭代输入，按 `accepted_num` scatter 最后一个推测 token，重塑 `prev_hidden_states` | | `inference(batch, main_next_tokens, accepted_num, model_inputs_main, prev_hidden_states)` | MTP 主入口，循环 `prefill=1` 或 `decode=next_n` 次推理 |
+| 方法 | 说明 |
+|------|------| | `share_weights_from_main_model(main_model)` | 从主模型共享 `lm_head` / `embed_tokens`（MTP 模型缺这些层时复用） |
+| `_pad_seq_len_to_size(tensor, size)` | 沿 dim=1 对 tensor padding / truncate 到指定长度 |
+| `get_main_model_inputs(input_ids, batch)` | 构建主模型验证窗口：拼接 `input_ids` 与 `spec_tokens`，回退 `kv_len` 到接受的前缀位置 |
+| `get_mtp_model_inputs(batch, main_next_tokens, model_inputs_main, prev_hidden_states)` | Prefill 分支拼接 `input_ids` + 接受 token + 存 `prev_hidden_states` + `cycle_idx`；Decode 分支用主模型位置信息 |
+| `mtp_model_output_postprocess(model_inputs, logits, mtp_infos)` | 处理 MTP 输出，累积 `spec_tokens` + 更新状态；Prefill 分支直接推进 `kv_len` + 翻转 `is_prefill` |
+| `get_next_mtp_model_inputs(...)` | 构建下一次 MTP 迭代输入，按 `accepted_num` scatter 最后一个推测 token，重塑 `prev_hidden_states` |
+| `inference(batch, main_next_tokens, accepted_num, model_inputs_main, prev_hidden_states)` | MTP 主入口，循环 `prefill=1` 或 `decode=next_n` 次推理 |
 
 ### 调度时序
 
@@ -138,7 +150,11 @@ flowchart TD
 
 checkpoint 权重名与模型参数名不一致时，在 MTP 模型的 `load_weights` 做映射：
 
-| checkpoint 名 | 模型参数名 | |--------------|-----------| | `shared_head.norm` | `shared_head_norm` | | `enorm` | `enorm` | | `hnorm` | `hnorm` | | `eh_proj` | `eh_proj` |
+| checkpoint 名 | 模型参数名 |
+|--------------|-----------| | `shared_head.norm` | `shared_head_norm` |
+| `enorm` | `enorm` |
+| `hnorm` | `hnorm` |
+| `eh_proj` | `eh_proj` |
 
 **注意**：`embed_tokens.weight` 与 `lm_head.weight` 无需加载（复用主模型），框架通过 `share_weights_from_main_model` 自动共享。
 
@@ -246,3 +262,15 @@ MTP 启用时框架统计三个核心指标，用于量化 decode 阶段的收�
 - [glm-5](../models/glm_5.md)（GLM-5 Atlas A3 部署用 MTP3，next_n=3，benchmark 平均 accept 1.44/3）
 - [sam-speculative](../../../training/concepts/techniques/sam_speculative.md)（跨域·训练：SAM 无损投机(RL rollout 加速),与 MTP 投机对照）
 - [deepseek-v32-mtp-train](../../../training/concepts/modules/deepseek_v32_mtp_train.md)（对照：训练侧 MTP 辅助 loss vs 本页推理侧 MTP 投机解码）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [KVP — 长序列 memory-bound decode 沿 S 维切 KV Cache（lse-softmax 在线归约 + 耦合配置约束）](../../guides/experience/interventions/kvp_longseq_decode.md)（`related`）：KVP 配置矩阵规定“｜ `next_n == 0` ｜ KVP 暂不支持 ［mtp-speculative-decoding］(../../../concepts/techniques/mtp_speculative_decoding.md)（MTP 投机） ｜”；MTP 卡说明“Multi-Token Prediction (MTP) 投机推理：主模型一次前向同时验证 1 个主 token + `next_n` 个 draft token（MTP1 即 `next_n`=1，即每步 1 个 draft、共验证 1+1=2 个 token），在相近的 HBM 搬运量下做更多算术运算，充分利用 Decode 阶段剩余的算力水位，降低等效 per-token 时延并提升吞吐。”，明确 `next_n` 门控为何必须关闭。
+- [MTP 投机解码接图模式的前置与坑：独立 decode 入口避免重编译 + FIA GQA 要求 + aclgraph 取舍](../../runbooks/runtime/mtp_speculative_decode_graph_mode_prereqs.md)（`related`）：焦点卡区分 R1“`ge_graph` + MTP 可同开”与 Qwen3-Next 图模式互斥，候选卡进一步限定“在 graph mode 下只支持 GQA 布局”；它为决定是否接图模式和排查重复编译/FIA 布局失败提供具体前置条件。
+- [MTP 草稿模型的缓存/状态正确性（按注意力结构）：单层 draft 需 next_n 层 KV、SSM 递归状态按接收数推进](../../optimizations/experience/rules/mtp_draft_cache_state_correctness.md)（`related`）：焦点卡的状态机要求“按 n 选择性回写”，候选卡将同一正确性合同细化为“只把前 `num_accepted_tokens` 个对应的状态写回持久 `conv_state` / `ssm_state`”；两卡围绕 MTP 接受前缀与缓存推进这一核心决策分别给出总机制和结构化排障规则。
+- [MoE + 投机解码：draft dummy_run 误带 profile-run 语义触发强制随机专家路由，静默拉低 MTP accept rate](../../runbooks/precision/mtp_draft_dummy_run_in_profile_run_random_experts.md)（`related`）：主模型路由与 draft 路由的一致性是投机命中的前提；平均接受率 `avg_accept_rate` ｜ `total_accept_tokens / total_spec_tokens`。运行手册解释随机专家如何破坏 draft 与主模型分布一致性，概念页给出受影响的接受率指标口径。
+- [recurrent_gated_delta_rule](../kernels/recurrent_gated_delta_rule.md)（`related`）：焦点卡说明融合算子“只把 `num_accepted_tokens［i］` 指向的中间 state 写回 `ssm_state`”，候选卡确认“仅把被接受的 token 对应的中间状态写回 `ssm_state`”；该 Kernel 合同是 Qwen3-Next MTP 拒绝 token 后保持递归状态正确的实现点。
+- [投机解码接受率低时用熵校验放松拒绝采样阈值：threshold = min(exp(-H·α), posterior_threshold)](../../optimizations/experience/rules/spec_decode_entropy_verify_relax_rejection_threshold.md)（`related`）：把标准接受判据里的均匀量 `u` 乘一个 `threshold ∈ (0,1］` 再比较，即 `target_prob/draft_prob >= threshold · u`。；平均接受率 `avg_accept_rate` ｜ `total_accept_tokens / total_spec_tokens` ｜ MTP 预测准确程度，越高表示 MTP 模型与主模型越一致。规则修改 target 对 draft token 的接受判据来提升接受率，MTP 概念卡定义 avg_accept_rate 的统计口径和收益含义，二者连接了验证阈值干预与投机解码效果度量。
+- [给新模型接入 MTP 推测解码：draft 模型构造 / 权重共享 / prev_hidden_states / 三元组注册 / 无损 verify](../../guides/experience/interventions/mtp_speculative_decode_model_onboarding.md)（`related`）：以 `model_config.next_n>0` 使能、`=0` 关闭回退非推测解码。；YAML `next_n: 1` 使能；`decode_r1_rank_128_128ep_a8w8c8_mtp*.yaml` 三份配置都启用。。接入指南把概念页的 next_n 使能机制落实为新模型接入的门控与回退契约。
+<!-- cannbot:related:end -->

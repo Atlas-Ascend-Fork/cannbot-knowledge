@@ -22,12 +22,3 @@ Warp 是 SIMT 线程执行和调度的基本单位，一个 Warp 包含 32 个�
 Warp 函数分类：Warp Vote 类（条件值汇总，全真/任意为真/位图/活跃掩码）、Warp Shfl 类（按 Lane ID 交换寄存器数据，邻近通信/扫描/归约）、Warp Reduce 类（求和/最大值/最小值归约）、Lane ID 类（获取 Lane ID 或生成 Lane Mask）。
 
 使用建议：Warp 函数仅在当前 Warp 内生效，不能跨 Warp 或跨 Block 同步；面向活跃线程执行，分支发散时需确认参与计算的 Lane 集合；Shfl 读取非活跃 Lane 可能得到未初始化值；Reduce 适合 Warp 内小范围归约，跨 Warp 需结合 UB/同步/原子操作；Warp 函数不等价于内存栅栏。仅 Ascend 950PR/950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Warp Reduce类函数](warp_reduce_functions/warp_reduce_functions.md)（`related`）：概述说明 Reduce 适合 Warp 内小范围归约且跨 Warp 需另行同步，专项页提供 add/max/min。
-- [Warp Vote类函数](warp_vote_functions/warp_vote_functions.md)（`related`）：概述明确 Vote 用于条件汇总和活跃掩码，专项页给出具体谓词与位图接口。
-- [Warp Shfl类函数](warp_shfl_functions/warp_shfl_functions.md)（`same_topic`）：Warp Shfl类函数 与《Warp函数》的实质衔接是：Warp Shfl 总览覆盖 general/down/up/xor 四种 lane 交换；coalesced/tile 对应入口和分支优化指南说明作用域及真实使用。
-- [Warp函数](warp_functions.md)（`same_topic`）：Warp函数 与《Warp函数》的实质衔接是：Warp API 与 Warp 分支优化围绕同一 32-lane 执行和分歧成本，overview 提供成员之间的组合方式。
-<!-- cannbot:related:end -->

@@ -26,11 +26,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscFloat2Int32](../../../c_api/scalar_compute/asc_float2int32.md)（`related`）：AscFloat2Int32 与《Rint》的实质衔接是：AscFloat2Int32 的四种舍入模式对应 Rint/Round/Floor/Ceil，相关 float/half/bfloat16 转换卡用于保持目标位宽、源类型和逆转换契约。
-- [AscRint](../../../c_api/reg/data_type_convert/asc_rint.md)（`related`）：Advanced Rint 与 AscRint 都执行 ties-to-even 且保持浮点结果，前者面向 LocalTensor，后者面向寄存器。
-- [AscFloat2float](../../../c_api/vector_compute/asc_float2float.md)（`same_topic`）：AscFloat2float 与《Rint》的实质衔接是：AscFloat2float 通过舍入模式规范同类型值；SIMT 同名转换和 Rint/Round/Floor/Ceil/Trunc 卡提供每种模式的确切数学定义。
-- [AscMulCastHalf2int8](../../../c_api/vector_compute/asc_mul_cast_half2int8.md)（`same_topic`）：AscMulCastHalf2int8 与《Rint》的实质衔接是：AscMulCastHalf2int8 融合 half 乘法、RINT 和 int8 饱和；MulCast、纯 Mul、Half2Int8 与 Rint 入口分别核对融合、目标宽度和舍入。
-- [GetRintMaxMinTmpSize](get_rint_max_min_tmp_size.md)（`same_topic`）：焦点处理Rint 临时空间上下界与 factor 的配套 Tiling 契约；Rint正文说明“获取与输入数据最接近的整数，等距时取偶数”。候选把 host 侧 max/min 查询、factor 推算与 Rint kernel 调用连成同一 Tiling 参数链。
-- [GetRintTmpBufferFactorSize](get_rint_tmp_buffer_factor_size.md)（`same_topic`）：GetRintTmpBufferFactorSize说明获取Rint接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量。
-- [Rint接口](rint_interface.md)（`same_topic`）：“Rint接口”定义：按元素取最接近的整数，同等接近时取偶数，并提供临时空间大小获取接口。；“Rint”定义：获取与输入数据最接近的整数，等距时取偶数。实质衔接：Rint 接口页汇总 kernel 操作与两种临时空间估算；AscRint 提供寄存器 C API 的同一 ties-to-even 数值语义用于实现路径对照。
+- [GetRintMaxMinTmpSize](get_rint_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Rint接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetRintMaxMinTmpSize获取。。GetRintMaxMinTmpSize 计算 Host 侧可用容量区间，Rint 的 Kernel 重载直接消费据此选择的 sharedTmpBuffer，组成容量查询到调用的完整链。
+- [GetRintTmpBufferFactorSize](get_rint_tmp_buffer_factor_size.md)（`related`）：获取Rint接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetRintMaxMinTmpSize获取。。焦点查询用于在固定 buffer 下切出候选 Rint 每次可处理的元素数。
 <!-- cannbot:related:end -->

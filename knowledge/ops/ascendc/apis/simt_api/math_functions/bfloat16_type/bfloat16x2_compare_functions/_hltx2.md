@@ -25,16 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hbleux2](_hbleux2.md)（`related`）：__hltx2 与《__hbleux2》的实质衔接是：bfloat16x2 小于比较的数值/掩码返回形式、无序比较及 half2 同名接口决定 NaN 和两个 lane 的判读。
-- [__hbltux2](_hbltux2.md)（`related`）：__hltx2 与《__hbltux2》的实质衔接是：bfloat16x2 小于比较的数值/掩码返回形式、无序比较及 half2 同名接口决定 NaN 和两个 lane 的判读。
-- [__hbltx2](_hbltx2.md)（`related`）：__hltx2 与《__hbltx2》的实质衔接是：bfloat16x2 小于比较的数值/掩码返回形式、无序比较及 half2 同名接口决定 NaN 和两个 lane 的判读。
-- [__hgtx2](_hgtx2.md)（`related`）：__hltx2 与《__hgtx2》的实质衔接是：bfloat16x2 小于比较的数值/掩码返回形式、无序比较及 half2 同名接口决定 NaN 和两个 lane 的判读。
-- [__hltux2](_hltux2.md)（`related`）：__hltx2 与《__hltux2》的实质衔接是：bfloat16x2 小于比较的数值/掩码返回形式、无序比较及 half2 同名接口决定 NaN 和两个 lane 的判读。
-- [__hltx2_mask](_hltx2_mask.md)（`related`）：__hltx2 与《__hltx2_mask》的实质衔接是：bfloat16x2 小于比较的数值/掩码返回形式、无序比较及 half2 同名接口决定 NaN 和两个 lane 的判读。
-- [bfloat16x2类型比较函数](bfloat16x2_compare_functions.md)（`related`）：__hltx2 与《bfloat16x2类型比较函数》的实质衔接是：bfloat16x2 小于比较的数值/掩码返回形式、无序比较及 half2 同名接口决定 NaN 和两个 lane 的判读。
-- [__hltx2](../../half_type/half2_compare_functions/_hltx2.md)（`same_topic`）：__hltx2 与《__hltx2》的实质衔接是：__hltx2 返回每 lane 的 0/1 half2，mask 变体返回位图、hblt 变体把两 lane 折叠为 bool；unordered 版本改变 NaN 规则，bfloat16x2 版本保持比较契约但替换元素类型。
-<!-- cannbot:related:end -->

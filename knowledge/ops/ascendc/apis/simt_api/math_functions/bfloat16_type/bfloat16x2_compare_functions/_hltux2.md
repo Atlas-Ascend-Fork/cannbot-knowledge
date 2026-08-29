@@ -29,8 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hgtux2](_hgtux2.md)（`related`）：无序小于是相反方向谓词，可用于条件方向对照。
-- [__hltx2](_hltx2.md)（`related`）：__hltx2 与《__hltux2》的实质衔接是：bfloat16x2 小于比较的数值/掩码返回形式、无序比较及 half2 同名接口决定 NaN 和两个 lane 的判读。
-- [__hbltux2](_hbltux2.md)（`same_topic`）：__hltux2说明比较两个bfloat16x2_t类型数据的两个分量，如果分量满足第一个数小于第二个数，则对应比较结果为1.0，否则为0.0。若任一输入的分量为nan，该分量的比较结果为1.0。
-- [__hltux2_mask](_hltux2_mask.md)（`same_topic`）：__hltux2 与 __hltux2_mask 具有相同的 unordered 小于及 NaN=true 语义，但分别返回 bfloat16x2 0/1 与两段 16-bit 掩码。
+- [__hltux2_mask](_hltux2_mask.md)（`same_topic`）：功能：比较两个bfloat16x2_t类型数据的两个分量，如果分量满足第一个数小于第二个数，则对应比较结果为1.0，否则为0.0。若任一输入的分量为nan，该分量的比较结果为1.0。；功能：比较两个bfloat16x2_t类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量满足第一个数小于第二个数，则对应16位掩码为0xFFFF，否则为0x0。若任一输入的分量为nan，对应16位掩码为0xFFFF。。两接口执行相同无序小于比较，差异在向量数值结果与 packed mask 表示。
 <!-- cannbot:related:end -->

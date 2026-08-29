@@ -23,6 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSetNthbit](asc_set_nthbit.md)（`related`）：SetNthBit 与 ClearNthBit 对同一 bit 做相反更新，可组成状态位写入与清理。
-- [asc_clz（标量计算）](asc_clz.md)（`related`）：ClearNthBit 需要正确位编号，AscClz 等位查询可用于构造位置和验证结果，但不执行更新。
+- [AscSetNthbit](asc_set_nthbit.md)（`related`）：计算一个uint64_t类型数字的指定二进制位置为1，其余位保持不变。；位操作函数，用于将一个uint64_t整数bits的第idx位设置为0。两页构成同一 uint64 指定位修改任务的置一与清零互补操作，能直接支撑位状态更新选择。
 <!-- cannbot:related:end -->

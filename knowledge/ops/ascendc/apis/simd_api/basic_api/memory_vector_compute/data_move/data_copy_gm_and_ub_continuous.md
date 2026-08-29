@@ -31,12 +31,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Ascend950 DataCopy 写回 L2 驱逐丢对角线](../../../../../runbooks/precision/ascend950_datacopy_l2.md)（`exemplifies`）：DataCopy 是 dense path 批量 UB→GM 写回的直接执行接口；多核写入量超过 L2 时应避免整 tile 回写并改为只写修改元素。
-- [DataCopy](data_copy_gm_and_ub_slice.md)（`related`）：《DataCopy》说明软仿接口，支持数据的切片搬运，提取多维Tensor数据的子集进行搬运。；《DataCopy》说明支持GM与UB之间的连续数据搬运，数据传输过程中保持原始格式和内容不变。。二者在切片DataCopy是高维分块搬运的具体重载，连续搬运和数据搬运总览用于界定它的适用边界上存在可执行的直接衔接。
-- [DataCopy](data_copy_gm_to_ub_nd2_nz.md)（`related`）：连续 DataCopy 保持布局不变，ND2NZ DataCopy 改变分形格式，二者给出普通连续搬入与格式转换边界。
-- [DataCopyPad](data_copy_pad_gm_to_ub.md)（`related`）：连续 DataCopy 依赖 32B 块对齐，GM 到 UB 尾块非对齐时应改 DataCopyPad 并显式填充。
-- [DataCopyPad](data_copy_pad_ub_to_gm.md)（`related`）：UB 到 GM 非对齐尾块需用 DataCopyPad 的字节长度语义，补足连续 DataCopy 无法覆盖的搬出边界。
-- [PipeBarrier](../../sync_control/intra_core_sync/pipe_barrier_isasi.md)（`related`）：多个 DataCopy 目的地址重叠时需要对应 MTE2 或 MTE3 PipeBarrier 串行化，避免前后搬运覆盖竞态。
-- [数据搬运概念（概述）](../../data_move_guide/overview/data_move_concept.md)（`related`）：基础连续搬运类别由该 DataCopy 接口直接实现，count 表达连续元素数。
-- [DataCopy](data_copy_gm_and_ub_highdim_split.md)（`same_topic`）：DataCopy 与《DataCopy》的实质衔接是：该 DataCopy 用 DataCopyParams 做 GM/UB 高维切分；slice/continuous 对照、高维 API 分类和 blockLen 窄化故障共同说明何时选用及参数类型边界。
+- [DataCopy](data_copy_gm_and_ub_highdim_split.md)（`same_topic`）：当高维参数退化为连续访问时，以“连续搬运场景推荐使用 DataCopy GM 与 UB 连续数据搬运接口以获得更好性能。”作选型触发，并用“支持GM与UB之间的连续数据搬运，数据传输过程中保持原始格式和内容不变。”确认连续接口保持格式和内容不变，从而减少不必要的高维配置开销。
 <!-- cannbot:related:end -->

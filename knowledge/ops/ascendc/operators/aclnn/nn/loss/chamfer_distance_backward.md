@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T17:13:44Z"
-updated_at: "2026-08-25T17:13:44Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -85,7 +85,7 @@ gradXyz1[b,idx2[b,j]] -= 2 * gradDist2[b,j] * (q[b,j] - p[b,idx2[b,j]])
 
 固定 Commit 只有 `aclnnChamferDistanceBackward` 这一公开版本族。第一段接口创建 executor、做参数检查、处理空 Tensor、将六个输入连续化，把四个浮点输入统一 Cast 到 FP32，再登记一个 `ChamferDistanceGrad` AICore 节点；核心输出 Cast 回 `xyz1` 的原始 dtype并通过 `ViewCopy` 写入用户输出。第二段接口调用 `CommonOpExecutorRun` 在给定 stream 上执行整个 executor。
 
-README 与 ACLNN 文档公开支持 Atlas A2、A3，明确不支持 Ascend 950PR/950DT；OpDef、binary config、Kernel CMake 和全局 `ascendc_config.json` 也只接线 `ascend910b` 与 `ascend910_93`。因此本卡覆盖 A2/A3，不存在 A5 公开版本。
+README 与 ACLNN 文档公开支持 Atlas A2、A3，明确不支持 Ascend 950PR/950DT；OpDef、binary config、Kernel CMake 和全局 `ascendc_config.json` 也只接线 `ascend910b` 与 `ascend910_93`。因此本卡覆盖 A2/A3，不存在 950 公开版本。
 
 ## Host/Launcher 执行流程
 
@@ -191,7 +191,7 @@ else:
 | Muls repeat 上限 | `max_repeat=255`, `mask=256/sizeof(T)=64` | 单次连续 Muls repeat 不超过 255 | R-001 | 外层按 `255*64` 元素切分，余 repeat 与 mask tail 单独处理 | `muls_template` |
 | 等长点集 | 实际地址公式统一使用 `num=xyz1.shape[1]` | `xyz2/idx2/gradDist2/gradXyz2` 的 GM extent 与 batch stride均按 N | R-001 | 无运行时 fallback；不满足属于调用边界 | constructor, `main_cal_func_d2` |
 | 索引值域 | `0 <= idx1,idx2 < N`，由调用方保证 | 每点直接形成 GM 坐标地址 | R-001 | 无运行时校验/fallback，越界行为不受支持 | `main_cal_func_d1`, `main_cal_func_d2` |
-| 平台 | `ascend910b` 或 `ascend910_93` | 只有这两个 binary/config/build target | R-001 | A5 不发布 | OpDef、Kernel CMake、`ascendc_config.json` |
+| 平台 | `ascend910b` 或 `ascend910_93` | 只有这两个 binary/config/build target | R-001 | 950 不发布 | OpDef、Kernel CMake、`ascendc_config.json` |
 
 ### POD/ABI
 
@@ -484,11 +484,11 @@ Host 先保留 1024 B，Device 再按 6 个 FP32 等价区计算 P 并向下对�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；`ascend910b` | 支持；`ascend910_93` | 不支持；公开文档明确标 `×`，且无 OpDef/binary/CMake 接线 |
 | Host/Launcher | 与 A3 共用同一 Host/Tiling；平台提供实际 AIV 核数和 UB | 与 A2 共用同一 Host/Tiling；平台提供实际 AIV 核数和 UB | 无公开 Route |
-| Kernel/资源 | 同一 `ChamferDistanceGrad<float>`；P 随平台 UB、blockDim 随 AIV 核数 | 同一 body，资源公式相同 | 无 Kernel 构建目标；不生成 `_a5` 卡 |
+| Kernel/资源 | 同一 `ChamferDistanceGrad<float>`；P 随平台 UB、blockDim 随 AIV 核数 | 同一 body，资源公式相同 | 无 Kernel 构建目标；不生成 `_950` 卡 |
 
 ## 限制与失败边界
 
@@ -500,7 +500,7 @@ Host 先保留 1024 B，Device 再按 6 个 FP32 等价区计算 P 并向下对�
 - Kernel unknown key 分支静默不执行 body，没有显式错误或输出初始化；正式 Host 只产生 Key 1。
 - 输出归约依赖 AtomicAdd，默认非确定性。文档称可通过 `aclrtCtxSetSysParamOpt` 开启确定性，但其替代调度/实现不在固定算子源码中，不能据此推导确定性 Kernel。
 - 核心 Tiling 固定申报 16 MiB workspace，body 不读 `workspace`；ACLNN 总 workspace 还包含框架前后处理，具体 offset、对齐、别名和清理由外部 executor 管理，固定仓不可见。
-- A5 被公开文档明确标为不支持，且无 `ascend950` 构建接线；不得由同源 Kernel 文件推测支持。
+- 950 被公开文档明确标为不支持，且无 `ascend950` 构建接线；不得由同源 Kernel 文件推测支持。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -531,4 +531,4 @@ Host 先保留 1024 B，Device 再按 6 个 FP32 等价区计算 P 并向下对�
 | workspace/内存 | 核心 UB 为 `24P+64` B；业务 body 不使用 workspace | Queue depth=1；P 按 `sizeof(float)` 与 32 元素对齐；16 MiB 系统 workspace申报不可当作业务中间量 | constructor, `RunKernelTiling` |
 | 同步 | `SyncAll` 保护初始化；HardEvent/PipeBarrier 保护 MTE2/V/MTE3/S | AtomicAdd 前后与 buffer 下一次覆盖的依赖不能删除 | constructor, `PipeSync`, d1/d2 helpers |
 | 精度与尾块 | 公开核心 FP32；grad 原地乘 2；尾 dLocal 补零 | FP16 只在 ACLNN 边界转换；Muls mask/repeat/stride与 `t_per_block` 不得错配 | ACLNN Cast, `muls_template`, tail branches |
-| 失败边界 | 空输入成功短路；非法 dtype失败；A5不支持 | 不得把 dormant Key 2、未知 Key、shape/idx 未校验或文档确定性开关推成已闭合实现 | `CheckParams`, router, platform docs/config |
+| 失败边界 | 空输入成功短路；非法 dtype失败；950不支持 | 不得把 dormant Key 2、未知 Key、shape/idx 未校验或文档确定性开关推成已闭合实现 | `CheckParams`, router, platform docs/config |

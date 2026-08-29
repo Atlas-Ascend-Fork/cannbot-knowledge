@@ -36,15 +36,7 @@ RTC是Ascend C运行时编译库，通过aclrtc接口，在程序运行时，将
 <!-- cannbot:related:start -->
 ## 相关
 
-- [RTC简介（RTC运行时编译）](../../../../apis/utils_api/rtc/rtc_intro.md)（`explains`）：RTC intro 说明头文件和链接入口，指南则给出 Create→AddName→Compile→GetBin→load/launch→Destroy 全流程，是同一运行时编译主题的概念与执行切面。
-- [aclrtcAddNameExpr](../../../../apis/utils_api/rtc/aclrtc_add_name_expr.md)（`explains`）：指南把 aclrtcAddNameExpr 定位为模板核编译前的可选步骤；接口卡明确它必须在 CompileProg 前调用。
-- [aclrtcCompileProg](../../../../apis/utils_api/rtc/aclrtc_compile_prog.md)（`explains`）：指南的核心编译步骤调用 aclrtcCompileProg，并举出 --npu-arch 等选项；接口卡给出 options 数组与句柄契约。
-- [aclrtcCreateProg](../../../../apis/utils_api/rtc/aclrtc_create_prog.md)（`explains`）：《aclrtcCreateProg》处理“通过给定的参数，创建编译程序的实例。”。《编译与执行RTC》明确提供“RTC是Ascend C运行时编译库，通过aclrtc接口，在程序运行时，将中间代码动态编译成目标机器码，提升程序运行性能。”，其参数、调用或验证步骤直接接入RTC Kernel 创建、编译、函数获取、launch 和销毁生命周期。
-- [aclrtcDestroyProg](../../../../apis/utils_api/rtc/aclrtc_destroy_prog.md)（`explains`）：RTC 指南把 DestroyProg 放在创建、可选名称注册、编译、取二进制、加载执行之后，说明正确销毁时机和完整生命周期。
-- [aclrtcGetBinData](../../../../apis/utils_api/rtc/aclrtc_get_bin_data.md)（`explains`）：指南随后取出 Device 二进制并交给 Runtime 加载；接口卡明确调用前必须先按查询大小分配空间。
-- [aclrtcGetBinDataSize](../../../../apis/utils_api/rtc/aclrtc_get_bin_data_size.md)（`explains`）：《aclrtcGetBinDataSize》处理“获取编译的二进制数据大小。用于在aclrtcGetBinData获取二进制数据时分配对应大小的内存空间。”。《编译与执行RTC》提供“RTC是Ascend C运行时编译库，通过aclrtc接口，在程序运行时，将中间代码动态编译成目标机器码，提升程序运行性能。”，其具体合同或探针直接接入RTC 二进制大小查询、数据读取和 create/compile/destroy 生命周期。
-- [aclrtcGetCompileLogSize](../../../../apis/utils_api/rtc/aclrtc_get_compile_log_size.md)（`explains`）：RTC 指南给出 create/compile/log/bin/launch 生命周期，能把孤立的日志大小 API 放入错误处理和资源释放流程。
-- [aclrtcGetLoweredName](../../../../apis/utils_api/rtc/aclrtc_get_lowered_name.md)（`explains`）：《aclrtcGetLoweredName》处理“获取已经注册的__global__函数的mangling name。”。《编译与执行RTC》明确“RTC是Ascend C运行时编译库，通过aclrtc接口，在程序运行时，将中间代码动态编译成目标机器码，提升程序运行性能。”，可直接用于核对RTC name expression 到 lowered symbol 的 create/compile/query/destroy 生命周期。
-- [高级编程交叉编译](../../advanced_programming/aclnn_operator_development/compilation_and_deployment/cross_compilation.md)（`related`）：高级编程交叉编译 与《编译与执行RTC》的实质衔接是：交叉编译需先生成本机 tiling 库再构建目标包；基本编译、CMake、runtime、compiler/RTC/compile-log 接口共同支撑配置和诊断。
-- [编译与执行约束说明](constraints.md)（`same_topic`）：《编译与执行约束说明》处理“编译与执行约束说明，包含Kernel类型推导、数据类型与字符串字面量等限制。”。《编译与执行RTC》明确提供“RTC是Ascend C运行时编译库，通过aclrtc接口，在程序运行时，将中间代码动态编译成目标机器码，提升程序运行性能。”，其参数、调用或验证步骤直接接入Ascend C 编译约束、AOT/交叉编译、模板宏和编译错误定位。
+- [aclrtcAddNameExpr](../../../../apis/utils_api/rtc/aclrtc_add_name_expr.md)（`explains`）：“aclrtcAddNameExpr（可选）：注册需要导出的核函数名表达式”描述可选导出步骤，“该接口需要在aclrtcCompileProg编译接口前使用”给出必须满足的调用顺序。
+- [aclrtcCompileProg](../../../../apis/utils_api/rtc/aclrtc_compile_prog.md)（`explains`）：“aclrtcCompileProg：编译给定的程序，支持用户自定义编译选项”定位 RTC 编译步骤，“options 为编译选项数组（默认添加 -std=c++17）”明确选项参数及默认行为。
+- [aclrtcCreateProg](../../../../apis/utils_api/rtc/aclrtc_create_prog.md)（`explains`）：“通过给定参数创建编译程序实例。函数签名为 aclError aclrtcCreateProg(aclrtcProg* prog, const char* src, const char* name, int numHeaders, const char** headers, const char** includeNames)。”定义 CreateProg 接口；“aclrtcCreateProg：根据输入参数（字符串形式表达的Ascend C源代码等）创建aclrtcProg程序实例。”把它放入完整 RTC 编译执行步骤，指南能推进该 API 的实际使用。
 <!-- cannbot:related:end -->

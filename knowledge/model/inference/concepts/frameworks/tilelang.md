@@ -57,7 +57,13 @@ cann-recipes-infer 同步对接 CANN 软件栈，在 TileLang 上完成了 DSA �
 
 ### 原语体系
 
-| 原语类型 | 典型名称 | 功能 | | ---- | ---- | ---- | | 内核原语 | `T.kernel(block_num, is_npu=True)` | 对应 AscendC kernel 调用；A2 的 cv 核默认 1:2，`cid/vid` 指定 Cube/Vector 索引 | | 内存分配 | `T.alloc_L1 / L0A / L0B / L0C / UB` | 按 shape + dtype 分配片上 buffer | | 数据搬运 | `T.copy(src, dst)` | 以 `BufferLoad` / `BufferRegion` 指定子区域 | | 计算 | `T.gemm`, `T.add`, `T.mul`, `T.reduce_max` | `T.reduce_max(dst, src, tmp, dim)`（目前只支持二维规约） | | 同步 | `T.set_flag / wait_flag / set_cross_flag / wait_cross_flag / pipe_barrier` | 跨流水/跨核同步 |
+| 原语类型 | 典型名称 | 功能 |
+| ---- | ---- | ---- |
+| 内核原语 | `T.kernel(block_num, is_npu=True)` | 对应 AscendC kernel 调用；A2 的 cv 核默认 1:2，`cid/vid` 指定 Cube/Vector 索引 |
+| 内存分配 | `T.alloc_L1 / L0A / L0B / L0C / UB` | 按 shape + dtype 分配片上 buffer |
+| 数据搬运 | `T.copy(src, dst)` | 以 `BufferLoad` / `BufferRegion` 指定子区域 |
+| 计算 | `T.gemm`, `T.add`, `T.mul`, `T.reduce_max` | `T.reduce_max(dst, src, tmp, dim)`（目前只支持二维规约） |
+| 同步 | `T.set_flag / wait_flag / set_cross_flag / wait_cross_flag / pipe_barrier` | 跨流水/跨核同步 |
 
 每个原语底层映射到一条或多条 AscendC 指令，屏蔽底层硬件差异。
 
@@ -243,3 +249,10 @@ for (i, j) in T.Parallel(v_block, d):
 - [tilelang-moe-token-permute](../../../training/concepts/kernels/tilelang_moe_token_permute.md)（跨域·训练：TileLang MoE Token Permute 算子族）
 - [tilelang-rmsnorm-swiglu](../../../training/concepts/kernels/tilelang_rmsnorm_swiglu.md)（跨域·训练：TileLang RMSNorm/SwiGLU 训练算子）
 - [triton-on-ascend](../../../training/concepts/frameworks/triton_on_ascend.md)（训练侧另一条昇腾 kernel DSL 通道：Triton DSL 经 triton_npu 后端落昇腾）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [TileLang 算子紧耦合源码编译的 tilelang-ascend 框架：版本/分支错配 → codegen / aicore 报错](../../runbooks/compilation/tilelang_op_framework_version_branch_skew.md)（`related`）：CodeGen 生成源码 → 编到 `.so` → 基于 TileLang 的 Cython 适配器对接 NPU 接口 → 集成到 Python 环境。三者都是「仓内 tilelang 核定义 ↔ 外部 tilelang-ascend 框架」的版本/分支错配，只是错配落点不同：框架卡给出 CodeGen、Cython JIT 到动态库的执行链，故障卡把缺原语、签名漂移和动态维度位宽错误分别定位到这条链的 parse、codegen 与 host wrapper 环节，可按失败阶段选择版本对齐或 wrapper 修复路径。
+- [自定义算子框架决定可用图后端：PyPTO 仅 GE 入图（无 eager/aclgraph）、tilelang 仅 aclgraph](../../optimizations/experience/rules/custom_op_framework_graph_backend_compat.md)（`related`）：**结论**：要让 tilelang(`@tilelang.jit`)自定义算子被图执行捕获（减少逐 kernel 下发调度开销），走 **aclgraph**（`torch.npu.NPUGraph` capture/replay）路径；**GE 图接入维护者称短期无规划**（roadmap，可变）。已有可运行的 tilelang + aclgraph 参考实现（RMS Norm → RoPE）。；JIT 会在运行中实时解析输入参数（维度、数据类型），同步向 CodeGen 传递，确保 NPU 算子支持动态输入；并结合 NPU 当前硬件状态优化指令分配（AI Core 利用率、内存占用）。JIT 适配步骤：CodeGen 生成源码 → 编到 `.so` → 基于 TileLang 的 Cython 适配器对接 NPU 接口 → 集成到 Python 环境。前者给出当前图捕获路线，后者闭合该 JIT kernel 的生成与加载链。
+<!-- cannbot:related:end -->

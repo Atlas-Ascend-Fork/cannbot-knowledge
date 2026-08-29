@@ -32,7 +32,5 @@ void SoftMaxGradTilingFunc(const AscendC::TensorShape& srcShape, const uint32_t 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SoftMax Tiling使用说明](soft_max_tiling_usage.md)（`same_topic`）：SoftmaxGrad Tiling接口 与《SoftMax Tiling使用说明》的实质衔接是：SoftmaxGrad tiling 直接驱动反向 kernel，并与 forward/adjust/basic-block、rank 校验和 tiling 默认项配套。
-- [SoftmaxGrad](softmax_grad.md)（`same_topic`）：SoftmaxGrad Tiling接口 与《SoftmaxGrad》的实质衔接是：SoftmaxGrad tiling 直接驱动反向 kernel，并与 forward/adjust/basic-block、rank 校验和 tiling 默认项配套。
-- [SoftmaxGradFront](softmax_grad_front.md)（`same_topic`）：SoftmaxGrad Tiling接口 与《SoftmaxGradFront》的实质衔接是：SoftmaxGrad tiling 直接驱动反向 kernel，并与 forward/adjust/basic-block、rank 校验和 tiling 默认项配套。
+- [SoftmaxGradFront](softmax_grad_front.md)（`same_topic`）：将输入tensor［m0, m1, ...mt, n］（t大于等于0）的非尾轴长度相乘的结果看作m，则输入tensor的shape看作［m, n］。对输入tensor［m,n］按行做gradfront反向计算，计算公式如下： 当输入shape为ND格式时，内部的reduce过程按last轴进行；当输入shape为NZ格式时，内部的reduce过程按照last轴和first轴进行，，reduce过程可以参考SoftMax中的图示说明。；- isFront（输入）：是否只计算，和kernel侧的SoftmaxGrad接口一致，默认false。。SoftmaxGradFront 是 kernel 侧的前段梯度计算变体，Tiling 接口用 isFront 参数选择与该变体一致的切分契约。
 <!-- cannbot:related:end -->

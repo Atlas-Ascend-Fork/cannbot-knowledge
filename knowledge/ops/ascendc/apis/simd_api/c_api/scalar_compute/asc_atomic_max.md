@@ -23,8 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_atomic_max](../../../simt_api/atomic_operations/asc_atomic_max.md)（`related`）：Scalar AscAtomicMax 与 SIMT asc_atomic_max 都对地址执行即时原子取大并返回旧值；差异在执行模型及 SIMT 版可作用 UB/GM。
-- [AscSetAtomicMax](../simd_atomic/asc_set_atomic_max.md)（`same_topic`）：AscAtomicMax 与《AscSetAtomicMax》的衔接是：AscAtomicMax 是原子最大值更新；SIMT/basic AtomicMax 提供同一竞争更新语义，SetAtomicMax/AscSetAtomicMax 则配置后续搬运执行该原子操作。
-- [AtomicMax](../../basic_api/atomic_operations/atomic_max.md)（`same_topic`）：AscAtomicMax 与《AtomicMax》的衔接是：AscAtomicMax 是原子最大值更新；SIMT/basic AtomicMax 提供同一竞争更新语义，SetAtomicMax/AscSetAtomicMax 则配置后续搬运执行该原子操作。
-- [SetAtomicMax](../../basic_api/atomic_operations/set_atomic_max_isasi.md)（`same_topic`）：AscAtomicMax 与《SetAtomicMax》的衔接是：AscAtomicMax 是原子最大值更新；SIMT/basic AtomicMax 提供同一竞争更新语义，SetAtomicMax/AscSetAtomicMax 则配置后续搬运执行该原子操作。
+- [AscDcci](../cache_ctrl/asc_dcci.md)（`related`）：需要调用asc_dcci接口确保GM与DCache的一致性；存在Data Cache与Global Memory的Cache一致性问题；连接原子操作的明确后置要求与缓存一致性契约。
 <!-- cannbot:related:end -->

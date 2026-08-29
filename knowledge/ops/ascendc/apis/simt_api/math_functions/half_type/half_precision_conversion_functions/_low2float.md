@@ -25,11 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscHalf2Float](../../../../simd_api/c_api/reg/data_type_convert/asc_half2float.md)（`related`）：AscHalf2Float 提供 Reg C API 的 half→float 向量转换，而 __low2float 是 SIMT packed 值的低 lane 标量提取，二者是迁移执行模型时的互补路径。
-- [__low2float](../../bfloat16_type/bfloat16_precision_conversion_functions/_low2float.md)（`related`）：两接口都从 packed 16 位双元素中提取低 lane 并升为 float，分别对应 half2 与 bfloat16x2。
-- [__low2half](_low2half.md)（`related`）：__low2float 同样读取 half2 低 16 位，但进行数值提升到 float；只取位域与取后转换不可混同。
-<!-- cannbot:related:end -->

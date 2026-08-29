@@ -23,7 +23,5 @@ int32 有符号平均值函数。获取 int32 类型数据 x 和 y 的平均值�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__rhadd（整数数学函数）](_rhadd.md)（`related`）：__rhadd 同样计算 int32 无溢出平均值，但在奇数和时向上取整；与 __hadd 的向下取整形成成对选择。
-- [__uhadd（整数数学函数）](_uhadd.md)（`related`）：__uhadd 保持无溢出、向下取整平均语义，将输入从 int32 改为 uint32。
-- [__urhadd](_urhadd.md)（`related`）：__urhadd 同时切换为 uint32 和向上取整，补全有/无符号与上下取整的平均值组合。
+- [__rhadd（整数数学函数）](_rhadd.md)（`related`）：int32 向上取整平均值函数。获取 int32 类型数据 x 和 y 的向上取整平均值，避免中间求和溢出。；int32 有符号平均值函数。获取 int32 类型数据 x 和 y 的平均值，计算过程避免中间求和溢出（向下取整）。。两接口都避免中间求和溢出，唯一区别是奇数和的向上或向下取整，直接支撑整数平均值舍入选型。
 <!-- cannbot:related:end -->

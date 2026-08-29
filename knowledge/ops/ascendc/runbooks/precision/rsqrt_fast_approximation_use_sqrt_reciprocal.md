@@ -174,21 +174,5 @@ RmsNorm 的 fp32 用例出现约 `1e-2` 最大输出差，而 fp16/bf16 因容�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscRsqrt](../../apis/simd_api/c_api/vector_compute/asc_rsqrt.md)（`exemplifies`）：焦点处理逐元素 Rsqrt 的类型变体与精度回退；dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数正文界定“RmsNorm 的 fp32 rstd 使用不带 config 的 Rsqrt 后呈现约 2^-9 量化偏差；改为 Sqrt、标量读回与 1.0f/s 后恢复 fp32 精度”。候选保持 sqrt-reciprocal 数学语义，覆盖 dtype 变体、AscRcp 组合及已验证精度回退。
-- [AscSqrt](../../apis/simd_api/c_api/reg/arithmetic_compute/asc_sqrt.md)（`exemplifies`）：AscSqrt 与《dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数》的实质衔接是：Reg C API AscSqrt、Vector C API、Memory API 与 Reg C++ Sqrt 都按元素开方；device sqrtf 构建故障给出改用向量 Sqrt 的可执行修复，Rsqrt 精度卡验证 Sqrt 加倒数的精度路线。
-- [H2Rsqrt](../../apis/simt_api/math_functions/bfloat16_type/bfloat16x2_math_functions/h2rsqrt.md)（`exemplifies`）：H2Rsqrt 与《dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数》的实质衔接是：H2Rsqrt 与 sqrt/rcp、half/float Rsqrt 及精度替代卡共同界定倒数平方根实现。
-- [Hrsqrt](../../apis/simt_api/math_functions/bfloat16_type/bfloat16_math_functions/hrsqrt.md)（`exemplifies`）：《Hrsqrt》说明计算bfloat16_t输入数据x的平方根的倒数。；《dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数》说明RmsNorm 的 fp32 rstd 使用不带 config 的 Rsqrt 后呈现约 2^-9 量化偏差；改为 Sqrt、标量读回与 1.0f/s 后恢复 fp32 精度。。二者在Hrsqrt等价于平方根后取倒数，跨half/bfloat16x2/float/Vector实现及精度故障可直接验证结果与误差边界上存在可执行的直接衔接。
-- [Hrsqrt](../../apis/simt_api/math_functions/half_type/half_math_functions/hrsqrt.md)（`exemplifies`）：Hrsqrt 与《dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数》的实质衔接是：Hrsqrt 可由 Hsqrt 与 Hrcp 分解；精度故障卡给出该替换在实测误差超限时的可执行验证。
-- [Reciprocal](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/reciprocal.md)（`exemplifies`）：Reciprocal 提供同类倒数接口对照；本卡最终选标量 1.0f/s，避免再次引入快速近似。
-- [RmsNorm](../../apis/simd_api/adv_api/normalization/rms_norm.md)（`exemplifies`）：本卡只替换 RmsNorm rstd 末端，规约、均值、epsilon 链不变。
-- [RmsNorm Tiling](../../apis/simd_api/adv_api/normalization/rms_norm_tiling.md)（`exemplifies`）：RmsNorm Tiling 与《dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数》的实质衔接是：RmsNorm host tiling 直接生成 RmsNorm kernel 参数；同名结构体冲突、NaN/Rsqrt 与 UB 预算卡都作用于这套 tiling/kernel 契约。
-- [Rsqrt](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/rsqrt.md)（`exemplifies`）：低精度信号来自不带 config 的 AscendC::Rsqrt<float>；接口用于核对实际重载和精度配置。
-- [Rsqrtf](../../apis/simt_api/math_functions/float_math_functions/rsqrtf.md)（`exemplifies`）：该 runbook 以实测约 2^-9 误差说明快速 Rsqrt 的精度边界，并验证 Sqrt 后标量倒数可恢复 fp32 精度。
-- [Sqrt](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/sqrt.md)（`exemplifies`）：推荐链先用 AscendC::Sqrt，再读取标量做 1.0f/s。
-- [Sqrt](../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/sqrt.md)（`exemplifies`）：Rsqrt 快速近似精度不足时以 Sqrt 后取倒数替代，说明 Sqrt 精度模式在验证链中的作用。
-- [A3 RMSNorm 不要用分母正值保护吞掉 NaN 传播](rmsnorm_nan_propagation_not_positive_guard.md)（`related`）：候选指出 s>0 保护会在 NaN 时选择 0；本卡改 Sqrt+1/s 时也明确禁止该保护。
-- [Reciprocal 低精度致 sigmoid 比对失败](reciprocal_sigmoid.md)（`related`）：《Reciprocal 低精度致 sigmoid 比对失败》说明AscendC::Reciprocal 为低精度查表近似指令（相对误差约 1e-3），sigmoid 的 1/(1+exp(-x)) 用其求倒数会让 verify_result.py 报 max_diff≈0.00179、16384/16384 全 mismatch；判别方法：把最后一步 Reciprocal 换成 Duplicate+Div 高精度除法后 max_diff 降为 0，即可单点归因到 Reciprocal 的低精度近似。；《dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数》说明RmsNorm 的 fp32 rstd 使用不带 config 的 Rsqrt 后呈现约 2^-9 量化偏差；改为 Sqrt、标量读回与 1.0f/s 后恢复 fp32 精度。。二者在该失败由Reciprocal近似误差进入sigmoid末步；高精度Div替换及Exp溢出/FTZ变体用于单点归因上存在可执行的直接衔接。
-- [bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt](../compilation/device_sqrt_uses_vector_api.md)（`related`）：“bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt”定义：device kernel 中直接调用 sqrtf 导致 bisheng 编译失败；改为 32B 对齐的向量 Sqrt 链并显式同步。；“dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数”定义：RmsNorm 的 fp32 rstd 使用不带 config 的 Rsqrt 后呈现约 2^-9 量化偏差；改为 Sqrt、标量读回与 1.0f/s 后恢复 fp32 精度。。实质衔接：device sqrtf 编译失败时改用对齐 LocalTensor 的 Vector Sqrt；数值 runbook给出该替换在 Rsqrt 精度修复中的实例，PipeBarrier闭合向量结果消费。
-- [golden BF16 rstd 归约误取 post-BF16 量化值](golden_bf16_rstd_post_bf16.md)（`related`）：候选区分 golden rstd 的量化阶段，本卡用 fp32 固定输入确认设备 Rsqrt 的量化误差。
-- [基础API迁移指导](../../guides/cross_gen_migration_guide/3510_arch_migration/2201_to_3510_guide/basic_api_migration.md)（`related`）：基础API迁移指导 与《dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数》的实质衔接是：基础 API 迁移与架构变化、兼容策略及编译/高阶迁移共同组成 2201 到 3510 的改造流程；所连具体卡验证被删除接口、硬件约束和替代调用。
+- [Rsqrt](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/rsqrt.md)（`exemplifies`）：本轨迹中不带 config 的 `Rsqrt<float>` 在 dav-2201 上产生约 9-bit 量级的快速倒数结果。；单目矢量计算接口，按元素计算平方根倒数。头文件 `basic_api/kernel_operator_vec_unary_intf.h`。计算公式 dst_i = 1/sqrt(src_i)。API 卡定义被调用的运算，runbook 给出 dav-2201 上该调用形态的精度失败信号与 Sqrt+标量倒数替代方案。
 <!-- cannbot:related:end -->

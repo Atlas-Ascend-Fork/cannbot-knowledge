@@ -16,9 +16,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/266
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a2
 ---
 
 # 大分辨率 VAE encode/decode 多卡空间并行（按算子选通信 + 边界 halo/overlap 补偿）
@@ -63,3 +63,11 @@ VAE decode 沿 latent 宽度维在各 rank 间切分：因卷积感受野，非�
 - `diff 事实`（Wan2.2-I2V, 合并 2025-10-30）：`Parallel_VAE_SP` 的 halo/all_gather/两阶段 all_gather，对上优化文档 8 卡 VAE 并行章节。溯源下探：[cann-recipes-infer-pr-49-feat-add-wan2-2-i2v-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/49)
 - `diff 事实`（HunyuanVideo @366a74296cb5，新增 `vae_parallel.py`）：`decode` 的带 overlap 分片、`up_rate=8` 去 pad、`all_gather` 拼回；`types.MethodType` monkeypatch 接线。溯源下探：[cann-recipes-infer-pr-266-feat-hunyuanvideo-support-taylorseer-offload-prefetch-vae-parallel-rolli](https://gitcode.com/cann/cann-recipes-infer/merge_requests/266)
 - 三处均无 VAE 段独立 before→after 数字。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [HunyuanVideo](../../../concepts/models/hunyuan_video.md)（`related`）：“每张卡仅处理分配给自身的序列；为卡补充相邻卡部分序列解决卷积感受野”；“VAE decode 沿 latent 宽度维在各 rank 间切分：因卷积感受野，非首片向左借 `overlap_size`、各片向右借到边界”。候选指南把模型总览中的 VAE 并行扩成可执行切分、去 pad 和 all_gather 流程。
+- [VAE Patch Parallel](../../../concepts/parallelism/vae_patch_parallel.md)（`related`）：共享实现 `module/vae_patch_parallel.py` 把 latent/pixel 张量沿 H、W 空间维度切分到多卡并行处理，搭配**卷积的边界交换**、**注意力的全局 K/V 聚合**、**上采样的边界扩展+裁剪** 三种针对性通信策略，使各卡局部结果最终拼接成完整输出。；把输入沿空间维切成块分到各卡，各卡只算本块，**按算子类型选通信原语补边界**，末端 all_gather 按原空间位置重拼。。概念卡定义 H/W 切分以及卷积、注意力、上采样的通信职责，干预指南把这些职责展开为分块、按算子补边界和末端重拼的可执行部署步骤。
+- [VAE（多模态生成）](../../../concepts/modules/vae.md)（`related`）：**空间并行（VAE patch parallel）**：把大尺寸 latent/pixel 张量在空间维度切成 patch，分配到多卡并行计算，辅以边界交换/补充保障卷积感受野与注意力的正确性，见 ［vae-patch-parallel］(../parallelism/vae_patch_parallel.md)。；图/视频生成 pipeline 里，［VAE］(../../../concepts/modules/vae.md) 在大分辨率（如 1280×720、720p 视频）encode/decode 时是**空间大张量算子密集段**，单卡慢/占显存，而 DiT 主干已在多卡序列并行。。模块卡提出 VAE patch parallel，指南给出 halo、K/V all_gather 与边界裁剪的落地方法。
+<!-- cannbot:related:end -->

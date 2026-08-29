@@ -21,7 +21,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LoadImageToLocal](load_image_to_local.md)（`related`）：LoadImageToLocal 与《SetLoadDataRepeatWithStride》的实质衔接是：LoadImageToLocal 的 AIPP 配置由边界填充、重复、尺寸和 fmatrix 参数共同决定，C/C++ 入口消费同一搬入契约。
-- [LoadDataWithStride](../cube_compute_load/load_data_with_stride.md)（`same_topic`）：SetLoadDataRepeatWithStride 配置的迭代次数、步长和 K 偏移由 LoadDataWithStride 直接消费，构成配置到搬运执行的链路。
-- [SetLoadDataRepeat](set_load_data_repeat.md)（`same_topic`）：《SetLoadDataRepeat》说明设置LoadData（卷积数据搬运）接口的repeat参数，通过一次调用完成多个迭代的数据搬运，支持配置迭代次数、步长、方向和K轴偏移。；《SetLoadDataRepeatWithStride》说明设置LoadDataWithStride接口的repeat参数，通过一次调用完成多个迭代的数据搬运，并配置输出矩阵K轴方向偏移。。二者在SetLoadDataRepeat配置的repeat、步长和方向直接控制后续LoadData搬入循环上存在可执行的直接衔接。
+- [LoadDataWithStride](../cube_compute_load/load_data_with_stride.md)（`related`）：将数据从L1 Buffer搬运到L0A或L0B Buffer，支持源侧带步长的数据搬运。；设置 LoadDataWithStride 接口的 repeat 参数，通过一次调用完成多个迭代的数据搬运，并配置输出矩阵 K 轴方向偏移。。前者执行源侧带 stride 的 L1 到 L0A/L0B 搬运，后者直接配置该接口的 repeat 次数与 K 轴偏移，组成多迭代 stride 搬运的参数设置和执行链。
+- [SetLoadDataRepeat](set_load_data_repeat.md)（`related`）：焦点卡写明“repeatStride［0,65535］相邻迭代起始地址距离”，候选卡写明“设置 LoadDataWithStride 接口的 repeat 参数”。前者服务普通 LoadData，后者服务 LoadDataWithStride，可据搬运接口选择 repeat 配置。
 <!-- cannbot:related:end -->

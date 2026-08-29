@@ -40,7 +40,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/config/ascend910_93/pad_v4_grad_binary.json
     role: implementation
 created_at: "2026-08-25T09:32:37Z"
-updated_at: "2026-08-25T09:32:37Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -757,9 +757,9 @@ workspace_total = blockNum*alignWidth*64*4 bytes
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 API 支持，PadV4Grad `ascend910b` | 公开 API 支持，PadV4Grad `ascend910_93` | 公开 API 支持，但实际改走 RegBase `PadV3Grad`，见独立 `_a5` 卡 |
+| 支持状态 | 公开 API 支持，PadV4Grad `ascend910b` | 公开 API 支持，PadV4Grad `ascend910_93` | 公开 API 支持，但实际改走 RegBase `PadV3Grad`，见独立 `_950` 卡 |
 | Host/Launcher | 共用 PadV4 selector/Tiling | 同 A2 | `IsRegBase()` 分支 |
 | Kernel/资源 | 六个 AIV body | 同 A2 | SIMT + Vector MicroAPI 五 route，不复用本 body |
 
@@ -806,3 +806,9 @@ workspace_total = blockNum*alignWidth*64*4 bytes
 | 同步 | queue 所有权 + MTE3_MTE2 hard event | workspace 写后读不可省略 wait | `pad_v4_grad_*_pad.h` |
 | 精度与尾块 | ACLNN FP16/BF16 核心 FP32，DataCopyPad 按 valid byte | 不可把 padding lane 写回 GM | `commonPad2dBackward`, `CopyOut*` |
 | 失败边界 | UB<=0、shape/padding/dtype 不合法失败 | 不得把 AICPU fallback 补为 PadV4Grad | `Tiling4PadV4Grad`, `PadV3Grad` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ReflectionPad2dBackward 950 ACLNN 算子知识](reflection_pad_2d_backward_950.md)（`same_topic`）：设前向原输入空间高宽为 `(Ho,Wo)`，`gradOutput` 高宽为 `(Hi,Wi)=(Ho+top+bottom, Wo+left+right)`。对每个输出坐标 `(h,w)`，反向结果是所有在 reflect 前向中映射到 `(h,w)` 的 padded 坐标求和：；对 collapse 后第 `d` 轴，设 padded `gradOutput` 长为 `I［d］`，原输入/结果长 `O［d］=I［d］-L［d］-R［d］`。给定输出坐标 `o［d］`，正文输入坐标是 `o［d］+L［d］`；reflect 左/右候选分别是 `L［d］-o［d］` 与 `2*O［d］-o［d］+L［d］-2`，仅在左/右 pad 区条件成立时加入。多轴取候选笛卡尔积：。两卡描述同一 ReflectionPad2DBackward 反向聚合契约，分别闭合 A2/A3 与 Ascend 950 的 Device 实现。
+<!-- cannbot:related:end -->

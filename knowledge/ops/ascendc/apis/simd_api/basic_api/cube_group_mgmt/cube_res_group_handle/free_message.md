@@ -21,8 +21,5 @@ platforms: ['950', a2]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Cube核间管理Wait](wait.md)（`related`）：Wait 确认消息处理后仍需 FreeMessage 归还消息资源，否则同步槽生命周期不闭合。
-- [AllocMessage](alloc_message.md)（`same_topic`）：《AllocMessage》处理“AIV从消息队列里申请消息空间，用于存放消息结构体，返回当前申请的消息空间的地址。消息队列的深度固定为4，申请消息空间的顺序为自上而下，然后循环。当消息队列指针指向的消息空间为FREE状态时，AllocMessage返回空间的地址，否则循环等待，直到当前空间的状态为FREE。 图1 AllocMessage示意图”。《FreeMessage》明确“在自定义的回调函数逻辑中，完成消息处理后，调用该接口，刷新消息状态为FREE；或者待消息状态为指定状态waitState时，刷新消息状态为FREE。消息状态的介绍可以参考表2中的参数msgState。”，可直接用于核对AllocMessage/PostMessage/FreeMessage 生命周期、Cube 资源组句柄和 KFC workspace 合同。
-- [CubeResGroupHandle](cube_res_group_handle.md)（`same_topic`）：FreeMessage 与《CubeResGroupHandle》的实质衔接是：FreeMessage 释放由 AllocMessage 取得并经 PostMessage 流转的消息，CubeResGroupHandle 使用说明给出完整状态生命周期。
-- [PostMessage](post_message.md)（`same_topic`）：FreeMessage 与《PostMessage》的实质衔接是：FreeMessage 释放由 AllocMessage 取得并经 PostMessage 流转的消息，CubeResGroupHandle 使用说明给出完整状态生命周期。
+- [CubeResGroupHandle](cube_res_group_handle_usage.md)（`related`）：在回调函数中完成消息处理后，刷新消息状态为 FREE。；使用流程：CreateCubeResGroup 创建资源组 → AIV 调用 AllocMessage 申请消息空间 → 构造 CubeMsgType 消息并 PostMessage 发送 → AIC 通过回调函数处理消息 → FreeMessage 释放 → AIV 调用 Wait 等待处理完成。；FreeMessage 的状态刷新只有放入 CubeResGroupHandle 的申请、发送、回调、释放和等待生命周期后才能正确使用，usage 卡提供这一额外状态机合同。
 <!-- cannbot:related:end -->

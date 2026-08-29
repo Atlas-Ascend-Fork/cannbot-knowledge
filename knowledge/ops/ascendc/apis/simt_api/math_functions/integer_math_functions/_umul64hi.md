@@ -19,12 +19,3 @@ uint64 高位乘法函数。获取输入 uint64 类型数据 x 和 y 乘积的�
 函数原型：unsigned long long __umul64hi(unsigned long long x, unsigned long long y)
 
 参数 x、y 为源操作数（乘数）。返回乘积的高 64 位。仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/device_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [整型数学库函数](integer_math_functions.md)（`related`）：整型数学库函数说明提供整型数据的位操作、乘法、绝对差与平均值等数学运算接口。
-- [__mul64hi](_mul64hi.md)（`same_topic`）：焦点处理整数乘积高半部的有符号/无符号与位宽变体；__umul64hi正文界定“获取输入uint64类型数据x和y乘积的高64位”。候选保持“乘积高半部”语义，只改变 32/64 位和有符号性。
-- [__mulhi（整数数学函数）](_mulhi.md)（`same_topic`）：__mulhi（整数数学函数）说明获取输入int32类型数据x和y乘积的高32位。
-- [__umulhi](_umulhi.md)（`same_topic`）：__umulhi：__mulhi与__umulhi只差有符号解释，64hi扩展相同高半乘积契约，__mul_i32toi64给出完整32位乘积以核对高位提取。 目标卡《__umul64hi》补充：获取输入uint64类型数据x和y乘积的高64位。
-<!-- cannbot:related:end -->

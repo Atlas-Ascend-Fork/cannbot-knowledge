@@ -205,14 +205,5 @@ GELU exact 路线的 fp32 大值域用例持续失败：多数普通范围和 fp
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Erfc](../../apis/simd_api/adv_api/math_compute/erfc_interface/erfc.md)（`exemplifies`）：该精度卡说明 GELU 负尾用 Erfc 形式规避 1+erf 的消减，给出选择 Erfc 的明确数值稳定性理由。
-- [Erfcf](../../apis/simt_api/math_functions/float_math_functions/erfcf.md)（`exemplifies`）：《GELU 负尾部用 erfc 形态避免大数相消》给出“fp32 exact GELU 用 0.5x 加减近等幅项会在负大值尾部相消；直接计算 max(x,0)-0.5|x|erfc(|x|/sqrt(2)) 后 20/20。”；该约束/探针可直接复现、解释或前置验证《Erfcf》中的“获取输入数据的互补误差函数值。”。
-- [Erfc接口](../../apis/simd_api/adv_api/math_compute/erfc_interface/erfc_interface.md)（`exemplifies`）：《Erfc接口》明确“按元素计算x的互补误差函数，并提供临时空间大小获取接口。”；它与《GELU 负尾部用 erfc 形态避免大数相消》的“fp32 exact GELU 用 0.5x 加减近等幅项会在负大值尾部相消；直接计算 max(x,0)-0.5|x|erfc(|x|/sqrt(2)) 后 20/20。”在实际调用参数、数据流或结果校验上直接衔接。
-- [Erf接口](../../apis/simd_api/adv_api/math_compute/erf_interface/erf_interface.md)（`exemplifies`）：GELU 负尾部用 erfc 形态避免大数相消说明fp32 exact GELU 用 0.5x 加减近等幅项会在负大值尾部相消；直接计算 max(x,0)-0.5|x|erfc(|x|/sqrt(2)) 后 20/20。
-- [Gelu](../../apis/simd_api/adv_api/activation_functions/gelu_interface/gelu.md)（`exemplifies`）：Gelu 与《GELU 负尾部用 erfc 形态避免大数相消》的实质衔接是：Gelu 接口、快速近似变体和空间查询共同定义高精度/高性能调用；GeGLU 直接以 GELU 为门控，两个 runbook 给出 erfc 近似与负尾相消的可执行精度边界。
-- [Gelu接口](../../apis/simd_api/adv_api/activation_functions/gelu_interface/gelu_interface.md)（`exemplifies`）：Gelu 的 exact 语义在负大值尾部接近零；该卡证明直接用 erfc 小尾部形态可避免两个大项相消，为精度敏感场景选择或复现 Gelu 提供公式级验证。
-- [中级性能优化](../../guides/operator_practice/typical_operator_cases/simd_operator_impl/gelu_reg_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《GELU 负尾部用 erfc 形态避免大数相消》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
-- [Ascend950 Reg 命名空间无 Erf/Tanh 封装](../compilation/ascend950_reg_erf_tanh.md)（`same_topic`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《GELU 负尾部用 erfc 形态避免大数相消》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
-- [AscendC GELU 三系数 erfc 在大值域 fp32 精度不足](gelu_erfc_polynomial_precision_budget.md)（`same_topic`）：《AscendC GELU 三系数 erfc 在大值域 fp32 精度不足》明确“GELU exact 路径为减少 Vector 指令把 erfc 改成三系数近似后，两个大值域 fp32 用例超出 MARE 阈值；恢复五系数多项式并保留无相消公式后通过全部用例。”；它与《GELU 负尾部用 erfc 形态避免大数相消》的“fp32 exact GELU 用 0.5x 加减近等幅项会在负大值尾部相消；直接计算 max(x,0)-0.5|x|erfc(|x|/sqrt(2)) 后 20/20。”在实际调用参数、数据流或结果校验上直接衔接。
-- [fp32 乘积相消 MARE 超阈值 — 用补偿乘积保留低位](fp32_rope_product_cancellation_two_product.md)（`same_topic`）：《fp32 乘积相消 MARE 超阈值 — 用补偿乘积保留低位》明确“两个大幅值 fp32 乘积先各自舍入再相减会放大近零结果的相对误差；对 fp32 路径使用 Split/TwoProduct 补偿后恢复精度。”；它与《GELU 负尾部用 erfc 形态避免大数相消》的“fp32 exact GELU 用 0.5x 加减近等幅项会在负大值尾部相消；直接计算 max(x,0)-0.5|x|erfc(|x|/sqrt(2)) 后 20/20。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscendC GELU 三系数 erfc 在大值域 fp32 精度不足](gelu_erfc_polynomial_precision_budget.md)（`related`）：三系数 Abramowitz 7.1.25 的绝对近似误差在 `erfc` 极小时被 GELU 尾部的 `0.5*abs(x)` 放大；golden 此时接近零，因而相对误差指标显著超限。；唯一根因是公式形态在负尾部发生灾难性相消。。前者诊断 erfc 多项式绝对误差在 GELU 负尾部被放大，后者诊断 erf 形态两大项相消的结构性误差；二者共同给出负尾部精度排障时先选稳定 erfc 公式、再校准多项式阶数的连续决策链。
 <!-- cannbot:related:end -->

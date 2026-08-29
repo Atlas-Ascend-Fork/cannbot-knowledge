@@ -24,11 +24,7 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BatchWrite](../hccl_kernel/batch_write.md)（`related`）：《BatchWrite》说明集合通信BatchWrite任务下发接口，实现点对点批量数据传输，可同时将多份数据发送到不同Global Memory地址。；《SetQueueNum》说明设置每个向服务端下发任务的核上的BatchWrite通信队列数量。。二者在BatchWrite的多目标点对点任务依赖通信队列数量，进入Commit、Query/Wait和Finalize的HCCL任务生命周期上存在可执行的直接衔接。
-- [GetTiling](get_tiling.md)（`related`）：SetQueueNum 的值经 GetTiling 序列化后才可被 Kernel GetQueueNum 读取。
-- [HCCL Tiling使用说明](hccl_tiling_usage.md)（`related`）：使用页说明 QueueNum 与算法、通信引擎等字段的调用顺序及缺省行为。
-- [QueueBarrier](../hccl_kernel/queue_barrier.md)（`related`）：SetQueueNum说明设置每个向服务端下发任务的核上的BatchWrite通信队列数量。
-- [SetCommBlockNum](set_comm_block_num.md)（`related`）：queue 数和通信 block 数共同决定任务并发与资源分配，需按算法配套设置。
-- [GetQueueNum](../hccl_kernel/get_queue_num.md)（`same_topic`）：《GetQueueNum》说明获取BatchWrite通信任务的通信队列数量。；《SetQueueNum》说明设置每个向服务端下发任务的核上的BatchWrite通信队列数量。。二者在通信队列数量的查询与设置、BatchWrite/AlltoallvWrite发任务、Commit/Wait及Finalize构成同一HCCL任务生命周期上存在可执行的直接衔接。
-- [SetStepSize](set_step_size.md)（`same_topic`）：SetStepSize 与《SetQueueNum》的实质衔接是：SetStepSize 把细粒度通信一次推进的算法步数写入 HcclTilingData，并与算法、通信块、引擎、队列配置一起驱动 Iterate/Commit/Wait 的 AlltoAllV 流程。
+- [BatchWrite](../hccl_kernel/batch_write.md)（`related`）：设置每个向服务端下发任务的核上的BatchWrite通信队列数量；queueID（输入）：指定当前通信所在的队列ID，默认值为0；配置页决定 BatchWrite 调用中 queueID 的可用队列域。
+- [GetQueueNum](../hccl_kernel/get_queue_num.md)（`related`）：焦点卡“获取BatchWrite通信任务的通信队列数量。”，候选卡“设置每个向服务端下发任务的核上的BatchWrite通信队列数量。”；Host 设置值与 Kernel 查询值构成同一 BatchWrite 队列数量合同。
+- [SetCommBlockNum](set_comm_block_num.md)（`related`）：参与通信的核数*队列数量支持设置的取值范围为［0, 40］；设置参与BatchWrite通信的核数；两接口的乘积共同决定合法 BatchWrite 队列配置。
 <!-- cannbot:related:end -->

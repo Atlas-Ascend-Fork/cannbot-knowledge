@@ -22,11 +22,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscClearNthbit](asc_clear_nthbit.md)（`related`）：ClearNthBit 需要正确位编号，AscClz 等位查询可用于构造位置和验证结果，但不执行更新。
-- [AscSflbits](asc_sflbits.md)（`related`）：AscSflbits 统计有符号数除符号位外的连续符号扩展位，asc_clz 统计 uint64 的前导零；对正数可用于位宽判断，但负数及 0/-1 的返回约定不同。
-- [AscZeroBitsCnt](asc_zero_bits_cnt.md)（`related`）：asc_clz（标量计算） 与《AscZeroBitsCnt》的实质衔接是：asc_clz、__clz 与 CountLeadingZero 都求前导零；符号位连续计数、总位数和零位计数入口给出相邻位统计语义，便于避免替换时混淆。
-- [CountBitsCntSameAsSignBit](../../basic_api/scalar_compute/count_bits_cnt_same_as_sign_bit.md)（`related`）：asc_clz（标量计算） 与《CountBitsCntSameAsSignBit》的实质衔接是：asc_clz、__clz 与 CountLeadingZero 都求前导零；符号位连续计数、总位数和零位计数入口给出相邻位统计语义，便于避免替换时混淆。
-- [GetBitCount](../../basic_api/scalar_compute/get_bit_count.md)（`related`）：asc_clz（标量计算） 与《GetBitCount》的实质衔接是：asc_clz、__clz 与 CountLeadingZero 都求前导零；符号位连续计数、总位数和零位计数入口给出相邻位统计语义，便于避免替换时混淆。
-- [__clz（整数数学函数）](../../../simt_api/math_functions/integer_math_functions/_clz.md)（`related`）：C Scalar asc_clz 提供同一前导零计数，可用于 SIMT 与 SIMD Scalar 接口之间迁移。
-- [CountLeadingZero](../../basic_api/scalar_compute/count_leading_zero.md)（`same_topic`）：CountLeadingZero 与 asc_clz 都统计 uint64_t 从最高位到首个 1 的前导零数；它们是 C++ Basic 与 C 标量入口的直接对应。
+- [CountLeadingZero](../../basic_api/scalar_compute/count_leading_zero.md)（`same_topic`）：计算一个uint64_t类型整数在二进制表示下的前导零个数；统计uint64_t类型数值的二进制表示中前导0的个数（二进制表示中最高有效位到第一个'1'的'0'的数量，输入为0时返回64）。。两页提供同一 uint64 前导零计数语义，分别是 C API 标量入口与基础 API 入口。
+- [__clz（整数数学函数）](../../../simt_api/math_functions/integer_math_functions/_clz.md)（`same_topic`）：计算一个uint64_t类型整数在二进制表示下的前导零个数；前导零计数函数。从输入数据的二进制最高有效位开始，返回连续的前导零的位数。。asc_clz 与 SIMT __clz 都从最高有效位计算连续零数，但执行模型和参数重载不同，关系可帮助按 Scalar/SIMT 路线选型。
 <!-- cannbot:related:end -->

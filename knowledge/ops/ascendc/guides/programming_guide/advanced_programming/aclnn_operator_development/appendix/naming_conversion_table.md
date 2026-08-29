@@ -42,12 +42,3 @@ TopKCustom：top_k_custom：K和Custom前分别插入下划线
 ## 特殊情况说明
 ### 连续大写字母
 连续大写字母通常表示缩写。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ACLNN 507035 — opType 与内置 ops_legacy 同名碰](../../../../../runbooks/compilation/aclnn_optype_collision_built_in_ops_legacy_507035.md)（`related`）：ACLNN 507035 — opType 与内置 ops_legacy 同名碰 与《命名转换规则对照表（附录）》的实质衔接是：507035 此例由自定义 opType 与内置符号同名触发；OpDef/注册/launcher/kernel/CMake 六处改名及同名碰撞 runbook 共同构成完整修复链。
-- [EZ3003 V2d/V2D 与 _camel_to_snake 数字拆分](../../../../../runbooks/compilation/ez3003_camel_to_snake_digit_split_op_type.md)（`related`）：命名表明确规定“大写字母前一字符为数字时插入下划线”，并给出 Conv2D→conv2_d；Runbook 的 ApplyAdagradV2D→apply_adagrad_v2_d 正是该规则与测试端 str.title 反向转换冲突的实证。
-- [附录](appendix.md)（`related`）：命名表具体展开 aclnn 接口名、OpType、文件名和 Kernel 入口之间的转换规则。
-- [算子工程编译时出现文件名过长报错](../../../appendix/faq/filename_too_long_error.md)（`same_topic`）：FAQ 指出过长 OpType 会生成过长 host/kernel 文件名；命名转换表明确构建期如何从 OpType 派生文件名，可在改名前预估最终长度。
-<!-- cannbot:related:end -->

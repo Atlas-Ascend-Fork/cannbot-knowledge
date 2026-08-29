@@ -27,12 +27,3 @@ SIMD场景下，用户通过调用接口，用于在算子执行过程中标记�
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [性能调优（调试与调优）](../../../../../guides/programming_guide/debug_and_tuning/performance_tuning.md)（`explains`）：性能调优指南说明如何采集并读取流水图定位热点；MarkStamp 写入的 idx 标记正是在该分析流程中把图上位置映射回 Kernel 代码。
-- [PrintTimeStamp](../onboard_print/print_time_stamp.md)（`related`）：“PrintTimeStamp”处理提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点并打印当前系统cycle数。；“MarkStamp”明确推荐使用asc_mark_stamp接口进行特定位置的标记，该接口同时适用于C语言和C++语言编程。 用户通过调用接口，用于在算子执行过程中标记特定位置，便于后期通过流水图分析代码执行路径与性能热点。。实质衔接：PrintTimeStamp 以系统 cycle 为时间基准；AscTimeStamp 是同一打点能力，MarkStamp 是流水标记替代，GetSystemCycle 提供换算基准。
-- [性能统计](performance_stats.md)（`related`）：PerformanceStats 提供区间统计，MarkStamp 提供离散事件标记；两者可组合定位算子时间线中的阶段边界。
-- [asc_mark_stamp](../../../../utils_api/tuning_interface/asc_mark_stamp.md)（`same_topic`）：MarkStamp 正文推荐使用 AscMarkStamp；后者给出事件标记的准确函数签名、标识范围和使用约束。
-<!-- cannbot:related:end -->

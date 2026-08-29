@@ -140,16 +140,3 @@ attempt（per-core 零化、移除 SyncAll，`Process` Phase 1 段，verbatim �
 
 - 本结论绑定 `ZeroOutSimt` 的 grid-stride idx 范式（`blockIdx.x*blockDim.x + threadIdx.x`，步长 `blockDim.x*gridDim.x`）。若改写该 VF 为纯 `threadIdx` 内核 stride，per-core 零化即可行，本 `banned` 不再适用。
 - Ascend950 arch35 实测；a2/a3 未验证，推断可迁移（SIMT grid-stride idx 语义跨平台一致），但未在 a2/a3 上跑过 UT。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscGetBlockNum](../../apis/simd_api/c_api/sys_var/asc_get_block_num.md)（`exemplifies`）：per-core zero-out 经 grid-stride ZeroOutS 与《AscGetBlockNum》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-- [GetBlockNum](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_num.md)（`exemplifies`）：per-core zero-out 经 grid-stride ZeroOutS 与《GetBlockNum》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-- [SyncAll](../../apis/simd_api/basic_api/sync_control/inter_core_sync/sync_all.md)（`exemplifies`）：per-core zero-out 经 grid-stride ZeroOutS 与《SyncAll》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-- [核间同步能力概述](../../apis/simd_api/basic_api/sync_control/inter_core_sync/inter_core_sync_overview.md)（`exemplifies`）：per-core zero-out 经 grid-stride ZeroOutS 与《核间同步能力概述》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-- [AiCoreSimtProgrammingOverview](../../guides/programming_guide/programming_model/ai_core_simt_programming/overview.md)（`related`）：per-core zero-out 经 grid-stride ZeroOutS 与《AiCoreSimtProgrammingOverview》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-- [SIMT BuiltIn关键字](../../guides/programming_guide/language_extension/simt_builtin_keywords.md)（`related`）：per-core zero-out 经 grid-stride ZeroOutS 与《SIMT BuiltIn关键字》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-- [SIMT算子优化概述](../../guides/operator_practice/simt_operator_optimization/overview.md)（`related`）：per-core zero-out 经 grid-stride ZeroOutS 与《SIMT算子优化概述》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-- [SIMT 内读块号致 Bisheng 崩溃—移到核入口](../compilation/simt_move_block_metadata_to_vector_shell.md)（`same_topic`）：per-core zero-out 经 grid-stride ZeroOutS 与《SIMT 内读块号致 Bisheng 崩溃—移到核入口》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-<!-- cannbot:related:end -->

@@ -187,12 +187,3 @@ static RmsNormTileParams calc_rms_norm_tiling_params(int64_t numRow, int64_t num
 ## 误诊
 
 第一次失败日志还同时包含局部变量 `t` 与模板 dtype 分支错误；必须在这些问题修掉后的下一次构建中读取剩余原始诊断，不能把三类独立根因合并成一张卡。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [COPY_TILING_WITH_STRUCT](../../apis/simd_api/basic_api/kernel_tiling/copy_tiling_with_struct.md)（`exemplifies`）：焦点处理COPY_TILING_WITH_STRUCT 宏与 Tiling 结构注册、取数的编译契约；RmsNormTiling 与 CANN 内置类型冲突 — 改名隔离正文说明“CANN kernel_tiling.h 已导出 RmsNormTiling，自定义同名结构体会触发声明冲突与引用歧义；给本地类型增加区分后缀可恢复编译”。候选对应宏展开所需的结构注册、TilingData 读取或已验证的编译失败边界。
-- [RmsNorm Tiling](../../apis/simd_api/adv_api/normalization/rms_norm_tiling.md)（`exemplifies`）：RmsNorm Tiling 与《RmsNormTiling 与 CANN 内置类型冲突 — 改名隔离》的实质衔接是：RmsNorm host tiling 直接生成 RmsNorm kernel 参数；同名结构体冲突、NaN/Rsqrt 与 UB 预算卡都作用于这套 tiling/kernel 契约。
-- [TilingData结构定义](../../apis/utils_api/tiling_data_structure_register/tiling_data_struct_definition.md)（`exemplifies`）：API 明确 tiling 结构体名是全局唯一标记、同名不同结构会产生未定义行为，直接支撑本卡用 op 前缀/Params 后缀避开 CANN 已导出 RmsNormTiling。
-- [手动 tiling 头遮蔽自动生成类致 no member 判别](tiling_no_member.md)（`related`）：两卡都涉及公共/自动生成 tiling 类型与本地同名定义相遇；目标卡以字段解析到错误类型的 no-member 表现，本卡以 using target 冲突和 ambiguous 表现。
-<!-- cannbot:related:end -->

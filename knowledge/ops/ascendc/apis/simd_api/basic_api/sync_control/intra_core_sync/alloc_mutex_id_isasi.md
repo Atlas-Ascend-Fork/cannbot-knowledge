@@ -24,8 +24,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Lock](lock.md)（`related`）：Lock 在 TPipe-TQue 范式中明确消费 AllocMutexID 返回的 ID，并以 pipe+ID 阻塞目标流水；这是分配结果的直接使用点。
-- [Unlock](unlock.md)（`related`）：Unlock 必须与先前 Lock 使用相同 pipe 和 MutexID，而该 ID 在 TPipe-TQue 范式来自 AllocMutexID；它补齐分配后锁的释放动作。
-- [AscLock](../../../c_api/sync/asc_lock.md)（`same_topic`）：《AllocMutexID》给出“从框架获取并占用一个MutexID，与ReleaseMutexID配合使用，获取的MutexID可传入Mutex::Lock/Unlock接口用于流水同步。”；该约束/探针可直接复现、解释或前置验证《AscLock》中的“用于AI Core内部异步流水线之间的同步，根据mutex_id获取Mutex，可按需阻塞指定流水线的执行。”。
-- [ReleaseMutexID](release_mutex_id_isasi.md)（`same_topic`）：ReleaseMutexID 与《AllocMutexID》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
+- [ReleaseMutexID](release_mutex_id_isasi.md)（`related`）：从框架获取并占用一个MutexID，与ReleaseMutexID配合使用，管理MutexID的获取和释放。；从框架释放一个MutexID，与AllocMutexID配合使用。。前者取得并占用 MutexID，后者归还由 AllocMutexID 获得的同一资源，二者构成 MutexID 生命周期必须配对的申请与释放链。
 <!-- cannbot:related:end -->

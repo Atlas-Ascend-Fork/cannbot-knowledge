@@ -422,14 +422,5 @@ at::Tensor scatter(const at::Tensor& data, int64_t dim,
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Reg矢量计算接口精度标准汇总](../../apis/appendix/reg_vector_compute_interface_precision_standard_summary.md)（`exemplifies`）：FP16 scatter 归约逐次回写放大相消误差说明已验证边界仅为 FP16 scatter-add：逐步回写 half 会累积舍入误差，须用 FP32 中间缓冲；BF16、multiply、amin、amax 需分别验证。
-- [Scatter](../../apis/simd_api/basic_api/memory_vector_compute/scatter_gather/scatter_isasi.md)（`exemplifies`）：《FP16 scatter 归约逐次回写放大相消误差》给出“已验证边界仅为 FP16 scatter-add：逐步回写 half 会累积舍入误差，须用 FP32 中间缓冲；BF16、multiply、amin、amax 需分别验证。”；该约束/探针可直接复现、解释或前置验证《Scatter》中的“根据目的地址偏移张量将连续输入张量的元素分散到结果张量的指定位置。”。
-- [ScatterDiscrete](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_store/scatter_discrete.md)（`exemplifies`）：ScatterDiscrete 与《FP16 scatter 归约逐次回写放大相消误差》的实质衔接是：ScatterDiscrete 与 Gather、C/基础 Scatter 形成索引读写对偶；两张故障卡直接约束重复索引归约和 updates 形状。
-- [asc_scatter](../../apis/simd_api/c_api/reg/reg_store/asc_scatter_deprecated.md)（`exemplifies`）：asc_scatter 与《FP16 scatter 归约逐次回写放大相消误差》的实质衔接是：废弃 asc_scatter 的现行 C/基础/Reg Scatter 是迁移路径；三张故障卡直接约束 indices 形状、重复地址归约和写冲突。
-- [Scatter 非散射维可缩小，更新量须按 indices 计算](scatter_update_count_must_follow_indices_shape.md)（`related`）：FP32 accumulator 修复只解决数值累加；更新次数和非 scatter 维 stride 仍必须由 indices/updates shape 决定，否则会越界或拒绝合法输入。
-- [fp32 窄化舍入模式不一致触发稀疏 MARE 越线](fp32_to_fp16_cast_matches_rne_oracle.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《FP16 scatter 归约逐次回写放大相消误差》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [大归约维 fp32 golden 顺序累加致假精度失败](fp32_golden.md)（`related`）：判断 FP32 accumulator 修复是否正确前，golden 自身不能用大 N 顺序 fp32 累加；候选给出 double/pairwise 基线以避免把参考误差误判为 kernel 回归。
-- [稀疏反卷积精度误差源隔离配方](cube_simt_fp32_precision_error_source_isolation.md)（`related`）：当 scatter-add 与 Cube MatMul 混合后精度超阈，隔离配方通过单核、单线程和 kIdx=0 dump 区分 scatter 累加与 Cube FP32 内积误差，避免误改 accumulator。
-- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](repeated_overwrite_updates_need_ordered_ub_merge.md)（`related`）：focal 明确 FP16 add 需 FP32 中间态，而 overwrite 不应走 accumulator；候选补充重复 overwrite 的确定次序、唯一输出所有权和事件依赖条件。
-- [半精度 shadow 跨流竞态 — 转换与 kernel 两侧做设备同步](torch_npu_async_temporaries_need_completion_before_raw_kernel.md)（`same_topic`）：低精度 Scatter 卡建立 FP16 add 必须用 fp32 accumulator/shadow 的数值基线；focal 接着解决该 shadow 的 aten cast、raw kernel、demote 分处不同 stream 时的正确性。
+- [半精度 shadow 跨流竞态 — 转换与 kernel 两侧做设备同步](torch_npu_async_temporaries_need_completion_before_raw_kernel.md)（`related`）：“修复把递推改为 FP32 中间状态： ```text a₀ = fp32(fp16(data)) aⱼ₊₁ = fp32(aⱼ + fp32(fp16(updateⱼ))) y = fp16(aₘ) ``` 这样只在最终输出时转回 FP16，避免每次随机读改写都进行半精度量化。”明确给出左端事实；“在 fp32 shadow 分支建立两道设备级边界：”明确给出右端事实。前者要求 FP16 scatter-add 用 FP32 中间状态避免逐次半精度舍入；后者补出 Host 提升、raw float kernel 与降精度之间的双侧同步，保证该 shadow accumulator 真正可用。
 <!-- cannbot:related:end -->

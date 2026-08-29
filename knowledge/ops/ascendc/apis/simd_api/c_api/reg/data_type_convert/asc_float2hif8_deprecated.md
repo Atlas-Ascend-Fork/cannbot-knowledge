@@ -26,10 +26,3 @@ platforms: ['950']
 约束：- 开启饱和模式和非饱和模式时，需配置ctrl寄存器，ctrl寄存器
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float22hif82_rna](../../../../simt_api/math_functions/fp8_type/fp8_conversion_functions/_float22hif82_rna.md)（`related`）：《__float22hif82_rna》明确“将float2类型数据的两个分量遵循CAST_ROUND模式转换为hifloat8_t精度，返回转换后的hifloat8x2_t类型数据。”；它与《asc_float2hif8 (废弃)》的“将float类型转化为hifloat8_t类型，并支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式。 由于源操作数与目的操作数类型位宽比为4:1，写入数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。”在实际调用参数、数据流或结果校验上直接衔接。
-- [asc_hif82float (废弃)](asc_hif82float_deprecated.md)（`related`）：《asc_hif82float (废弃)》明确“将hifloat8_t类型数据转换为float类型。 由于源操作数与目的操作数类型位宽比为1:4，读取数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。”；它与《asc_float2hif8 (废弃)》的“将float类型转化为hifloat8_t类型，并支持多种舍入模式，饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式。 由于源操作数与目的操作数类型位宽比为4:1，写入数据时需要将一个VL大小的数据分为四部分，根据不同接口选取索引0、索引1、索引2或者索引3。”在实际调用参数、数据流或结果校验上直接衔接。
-<!-- cannbot:related:end -->

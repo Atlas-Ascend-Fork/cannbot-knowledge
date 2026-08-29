@@ -22,6 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopyPad（GMToL1非对齐数据搬运）](data_copy_pad_gm_to_l1.md)（`related`）：《DataCopyPad（UBToL1非对齐数据搬运）》明确“将 Unified Buffer 中的数据经 Matmul workspace 搬运至 L1 Buffer，并支持非对齐数据的 Padding。”；它与《DataCopyPad（GMToL1非对齐数据搬运）》的“该接口提供从Global Memory到L1 Buffer的数据非对齐搬运功能，可以根据开发者的需要自行填充数据。”在实际调用参数、数据流或结果校验上直接衔接。
-- [矩阵计算输入搬运约束](cube_compute_input_move_constraint.md)（`same_topic`）：矩阵计算输入搬运约束 与《DataCopyPad（UBToL1非对齐数据搬运）》的实质衔接是：输入搬运约束把 GM/L1/L0A/L0B 的格式、K 对齐和地址对齐落实到 LoadData、CopyGmToL1、CopyL1ToL0A/B 及 sparse/stride/transpose 变体。
+- [DataCopy](data_copy_ub_to_l1_continuous.md)（`same_topic`）：“将Unified Buffer中的数据搬运到L1 Buffer，支持在搬运过程中对数据进行Padding。用于源数据长度不满足对齐要求时自动补齐。”与“将Unified Buffer中的连续数据搬运到L1 Buffer，数据格式不变。用于从Vector侧向Cube侧传递数据。”是双方正文中的具体合同。两端都是 UB 到 L1 的 Vector→Cube 搬运合同，差别在源长度是否需要 Padding；互读能直接决定对齐输入使用连续搬运还是带补齐搬运。
 <!-- cannbot:related:end -->

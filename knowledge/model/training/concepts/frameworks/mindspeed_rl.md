@@ -118,3 +118,16 @@ Worker 都是 Ray actor：`@ray.remote(resources={"NPU": 0.7})` 标注的 `Integ
 - [partial-rollout](../techniques/partial_rollout.md)（承载的长尾 rollout 暂停续跑机制）
 - [rule-reward-verifier](../techniques/rule_reward_verifier.md)（承载的无模型规则奖励 / Verifier）
 - [eplb](../techniques/eplb.md)（承载的 RL 训推共卡 MoE 专家负载均衡）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [EPLB（专家并行负载均衡器，MoE 专家动态负载均衡）](../techniques/eplb.md)（`related`）：焦点卡写明“EPLB **动态调整专家复制策略与分配方案**”，候选卡写明“EPLB 专家映射则在 `resharding/vllm_weight_container.py`（`eplb_map` / 冗余专家收发）”。概念卡解释动态复制与落卡，框架卡定位 eplb_map 在训推权重重组织中的集成点。
+- [GRPO / DAPO（组相对策略优化 RL 算法）](../techniques/grpo_dapo.md)（`related`）：焦点卡写明“去掉 PPO 的 critic（价值网络）”，候选卡写明“支持 GRPO / DAPO / PPO / DPO”。算法卡定义 GRPO/DAPO 与 PPO 的差异，框架卡定位这些算法在 MindSpeed-RL 共卡引擎中的承载范围。
+- [Partial Rollout（长尾 rollout 暂停续跑）](../techniques/partial_rollout.md)（`related`）：“在线重切分细节、partial-rollout、TransferDock 数据调度见 ［train-rollout-switch］(../techniques/train_rollout_switch.md)”；“**Partial Rollout** 给单步生成设一个 token 预算上限”。候选卡说明框架开关如何截断、保存并跨轮续推长尾响应。
+- [RL 训推切换（Train/Rollout Switch：reshard / offload / D2D）](../techniques/train_rollout_switch.md)（`related`）：“用显式的训推态切换接口与分层配置体系驱动一轮 RL 迭代”；“**同一组卡**要在「训练态」（actor update / ref log_prob，由 Megatron+MindSpeed 承载）与「推理态」（rollout/generate，由 vLLM+vLLM-Ascend 承载）之间反复交替”。候选卡解释框架核心切换接口的 reshard、offload 与 D2D 合同。
+- [TransferDock（RL 数据面：训推各 worker 间样本调度交换）](../techniques/transferdock_data_scheduling.md)（`related`）：“TransferDock 数据调度见 ［train-rollout-switch］(../techniques/train_rollout_switch.md)”；“TransferDock 是 ［mindspeed-rl］(../frameworks/mindspeed_rl.md) 一轮 GRPO/DAPO 迭代的**数据面**”。候选卡直接定义框架各 Ray worker 间 experience 的生产、就绪与消费合同。
+- [vLLM-Ascend（veRL RL 的 rollout 推理后端）](vllm_ascend.md)（`related`）：“共用 vLLM 推理后端（［vllm-ascend］(vllm_ascend.md)）”；“它充当 ［verl］(verl.md) 框架的 **rollout（on-policy 采样生成）推理后端**”。候选卡是框架 rollout 阶段的直接执行后端并给出图模式/大 EP 边界。
+- [veRL（火山引擎开源 LLM RL 后训练框架 + 昇腾适配）](verl.md)（`related`）：“**`verl_npu/`** —— 给上游 ［verl］(verl.md) 打昇腾 patch 的非侵入适配层”；“veRL 在昇腾 NPU 上跑通靠替换它的两个可插拔引擎”。前者是仓内适配入口，后者定义 veRL worker 与训练/推理引擎插拔边界。
+- [规则奖励 / Verifier（数学·格式校验的无模型奖励）](../techniques/rule_reward_verifier.md)（`related`）：Verifier 卡指出“MindSpeed-RL 的 `RuleReward` worker 就是这条路径的落地”；框架卡说明“Actor / Reference / Reward 三角色**分时复用同一批 NPU**”。框架部署解释规则奖励为何能由共卡 RewardWorkerBase 承载而不配置独立 reward NPU。
+<!-- cannbot:related:end -->

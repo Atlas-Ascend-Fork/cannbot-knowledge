@@ -27,7 +27,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GM地址尽量512B对齐](gm_address_512b_alignment.md)（`related`）：GM地址尽量512B对齐说明【描述】由于AI处理器内部设计约束，从GM向Local Memory搬运数据时，保证GM地址512B对齐可以最有效的发挥出带宽的效率。如下图示例，展示了在512B对齐以及32B对齐情况下单核的带宽效率：搬运同等数据量，带宽差距最大的情况，32B对齐场景只能达到512B对齐场景的70%。
-- [避免bank冲突（NPU架构版本2201）](avoid_ub_bank_conflict/avoid_bank_conflict_npu_arch_2201.md)（`related`）：避免bank冲突（NPU架构版本2201）：2201与3510卡解释不同 UB bank组织，2201架构约束给出硬件前提；同地址访问是正文读写冲突的直接特例，迁移卡说明跨代调整边界。 目标卡《避免同地址访问》补充：>该性能优化指导适用于如下产品型号：
-- [MemoryAccessMerge](../../simt_operator_optimization/memory_access/memory_access_merge.md)（`same_topic`）：《MemoryAccessMerge》处理“SIMT编程模式下让同一Warp内相邻线程访问连续GM地址以实现访存合并，提高GM带宽利用率。”。《避免同地址访问》提供“>该性能优化指导适用于如下产品型号：”，其具体合同或探针直接接入Warp 连续 GM 访问的短向量、类型对齐、步长搬运和 Gather 示例验证。
+- [asc_nop（内存访问函数）](../../../../apis/simt_api/memory_access_functions/asc_nop.md)（`explains`）：主要用于避免多个线程读写同地址时可能发生的卡死问题。；当同时访问Global Memory的数据，且地址处于连续的512字节范围内时，由于数据一致性的原因，多个请求会被串行处理，进而影响数据搬运效率。；目标页补充同地址请求的 512 字节归并和串行机制，可用于识别 asc_nop 所针对的访问形态。
 <!-- cannbot:related:end -->

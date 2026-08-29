@@ -80,10 +80,3 @@ aclnn 算子的 **L0 op（op_api 层）**与 **InferShape（op_host 层）**是�
 ## 误诊
 
 本 trace 早期用户报告"形状不匹配"被误判为完整诊断，实际 561103（L0 op shape）之后还藏着 361001（kernel 二进制未注册，为独立根因），是两个串联根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InferShape 返回 identity 致空 kernel 假通过](../precision/infershape_identity_kernel.md)（`related`）：《L0 op 须算归约后 shape（非复用输入）》明确“L0 op stub（op_api 层）若用 x->GetViewShape() 分配输出而非按 axes/keepdim 算归约后 shape，ViewCopy shape 不匹配致 561103/161002；L0 op 与 InferShape 分离须各自推导。”；它与《InferShape 返回 identity 致空 kernel 假通过》的“op_host InferShape 用 *output=*input 占位时，aclnn 框架对 identity 用例走旁路 copy，空 kernel 也有用例通过，掩盖 kernel 未输出的缺陷。”在实际调用参数、数据流或结果校验上直接衔接。
-- [aclnn 黑盒 numel 不符：输出取自 CSV y 不被算子覆盖](../precision/aclnn_numel_csv_y.md)（`same_topic`）：aclnn 黑盒 numel 不符：输出取自 CSV y 不被算子覆盖 与《L0 op 须算归约后 shape（非复用输入）》的实质衔接是：该 ACLNN numel 误判来自输出 shape/测试数据来源；L0 shape、白盒绕过、identity InferShape、OP_PROTO_LIB 和 output view 卡提供同层判别。
-<!-- cannbot:related:end -->

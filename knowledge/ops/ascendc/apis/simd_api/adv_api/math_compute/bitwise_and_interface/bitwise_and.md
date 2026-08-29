@@ -36,8 +36,6 @@ __aicore__ inline void BitwiseAnd(const LocalTensor<T>& dst, const LocalTensor<T
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetBitwiseAndMaxMinTmpSize](get_bitwise_and_max_min_tmp_size.md)（`related`）：该 Host 查询产生的空间下界和上界直接约束 Kernel BitwiseAnd 的 sharedTmpBuffer。
-- [GetBitwiseAndTmpBufferFactorSize](get_bitwise_and_tmp_buffer_factor_size.md)（`related`）：本卡返回 maxLivedNodeCount/extraBuf 以推算 BitwiseAnd 单次处理量，BitwiseAnd 正文定义实际逐比特计算；前者的结果直接决定后者在固定 workspace 下的分块。
-- [LogicalAnd](../logical_and_interface/logical_and.md)（`related`）：BitwiseAnd 对整数每一 bit 做与，LogicalAnd 把零/非零解释为布尔值；两者同名易混但语义不同，按需要位运算还是真值运算选型。
-- [BitwiseAnd接口](bitwise_and_interface.md)（`same_topic`）：接口总览定义的 dtype、地址和临时空间契约由 BitwiseAnd 计算调用直接实现。
+- [GetBitwiseAndMaxMinTmpSize](get_bitwise_and_max_min_tmp_size.md)（`related`）：__aicore__ inline void BitwiseAnd(const LocalTensor<T>& dst, const LocalTensor<T>& src0, const LocalTensor<T>& src1, const uint32_t count)；Kernel侧BitwiseAnd接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小；Kernel API 以 count 定义本次工作量，Host 查询为其底层实现提供合法临时空间范围，调用方据此同时确定分块元素数与 Tiling buffer 容量。
+- [GetBitwiseAndTmpBufferFactorSize](get_bitwise_and_tmp_buffer_factor_size.md)（`related`）：- count（输入）：参与计算的元素个数。；该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。；factor 查询把固定临时空间换算成 BitwiseAnd 单次最大元素数，该结果直接作为 Kernel count 的分块上限。
 <!-- cannbot:related:end -->

@@ -46,6 +46,5 @@ platforms: [a2]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Matmul高阶API开启IBShare模板共享B矩阵数据](matmul_tuning_cases/matmul_ibshare_b.md)（`related`）：Matmul高阶API开启IBShare模板共享B矩阵数据 与《GroupedMatmul算子性能调优案例》的实质衔接是：IBShare 的 B-only 配置受 MatmulConfig、tiling 策略、preload/MDL 和 kernel Iterate 契约共同约束，直接影响 L1 复用。
-- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`related`）：GroupedMatmul 调优案例采用 AIC:AIV=1:2 和双 AIV 协作；该构建卡定位同一 1:2 模式下 subBlock/flag 不匹配导致同步失败，补足可执行同步约束。
+- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../operators/aclnn/transformer/gmm/grouped_matmul.md)（`related`）：“AIC_CUBE、MIX_CV”给出焦点端事实；“将AI Core中的AIC核和AIV核启动比例设置为1:2”给出候选端事实。算子卡确认 GroupedMatmul 存在 Cube 与 MIX_CV 路线，调优指南给出 Vector Bound 场景按 AIC:AIV=1:2 启动并行反量化与激活的具体做法。
 <!-- cannbot:related:end -->

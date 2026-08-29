@@ -24,11 +24,5 @@ merge模式下，将src的最低位元素广播到dst中被mask筛选的位置�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Duplicate 广播枚举与模板顺序不兼容](../../../../../runbooks/compilation/reg_duplicate_highlow_precedes_merge_mode.md)（`exemplifies`）：该卡给出 high/low 和 MergeMode 模板次序的构建诊断。
-- [AscDuplicate](asc_duplicate.md)（`same_topic`）：Merge 版本保留未命中 mask 的目的值，而普通版本执行 zeroing。
-- [AscDuplicateHighest](asc_duplicate_highest.md)（`same_topic`）：AscDuplicateHighest 与《AscDuplicateMerge》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
-- [AscDuplicateHighestMerge](asc_duplicate_highest_merge.md)（`same_topic`）：HighestMerge 广播高位元素并合并未命中 lane。
-- [AscDuplicateScalar](asc_duplicate_scalar.md)（`same_topic`）：AscDuplicateScalar 与《AscDuplicateMerge》的实质衔接是：AscDuplicateScalar 把一个 scalar 广播到 RegTensor；Merge/Highest/普通 Duplicate 改变未选中 lane 或来源，标量运算和错例直接约束广播范围与消费方式。
-- [AscDuplicateScalarMerge](asc_duplicate_scalar_merge.md)（`same_topic`）：ScalarMerge 使用标量源，按源形态选择。
-- [数据填充](data_fill.md)（`same_topic`）：Merge 版本保留未命中 mask 的旧值。
+- [Duplicate 广播枚举与模板顺序不兼容](../../../../../runbooks/compilation/reg_duplicate_highlow_precedes_merge_mode.md)（`exemplifies`）：merge模式下，将src的最低位元素广播到dst中被mask筛选的位置，dst中未被mask筛选的元素保留原值。；安装头文件的真实声明表明，寄存器到寄存器重载的模板形参依次是 `T, HighLowPart pos, MaskMergeMode mode`。。API定义 merge 广播最低位并保留未命中 lane，Runbook给出 CANN 9.0.1 调用该寄存器广播重载时的模板参数次序。
 <!-- cannbot:related:end -->

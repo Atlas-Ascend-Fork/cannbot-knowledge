@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_swish_grad_v2/op_host/config/ascend910_93/hard_swish_grad_v2_binary.json
     role: implementation
 created_at: "2026-08-25T15:02:11Z"
-updated_at: "2026-08-25T15:02:11Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -406,9 +406,9 @@ Host 只需一个 key；Device 对每个 tile 按 `dataCount*sizeof(T)` 生成�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见独立 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b` config，共用 key 0 Tiling | `ascend910_93` config，共用 key 0 Tiling | `ascend950/mc62` config，Tiling 公式共用 |
 | Kernel/资源 | `hard_swish_grad_v2.cpp` 的 220 分支 | 同左 | `_apt` entry 直接实例化相同 `HardSwishGradV2220` body |
 
@@ -450,3 +450,9 @@ Host 只需一个 key；Device 对每个 tile 按 `dataCount*sizeof(T)` 生成�
 | 同步 | parity event 协议可复用 | MTE3→MTE2、MTE2→V、V→MTE3 与 PIPE_V 顺序 | 220 `Process`/helpers |
 | 精度与尾块 | FP32 中间与 DataCopyPad tail | 比较严格性、常量 0.33333334、BF16 RINT、有效 n | 220 `Compute/CastAndCopyOut` |
 | 失败边界 | API/Tiling 明确终点 | 不得把空域、非法 dtype/shape 或 U/E=0 降级成未知 Device Route | `CheckParams`; `RunBigKernelTiling` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [HardswishBackwardV2 950 ACLNN 算子知识](hardswish_backward_v2_950.md)（`same_topic`）：“｜ Kernel/资源 ｜ 通用 entry 的 220 分支 ｜ 同左 ｜ `_apt` entry 直接复用同一 220 body；U/P 取 950 平台值 ｜”；“｜ Kernel/资源 ｜ `hard_swish_grad_v2.cpp` 的 220 分支 ｜ 同左 ｜ `_apt` entry 直接实例化相同 `HardSwishGradV2220` body ｜”。两卡是同一 HardswishBackwardV2 ACLNN 语义和同一 220 body 的平台拆分，差别在 entry、binary config 与平台资源值。
+<!-- cannbot:related:end -->

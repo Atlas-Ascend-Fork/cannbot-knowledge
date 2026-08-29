@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/chunk_cat/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T23:49:48Z"
-updated_at: "2026-08-24T23:49:48Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -395,9 +395,9 @@ Trans2(ubLoopInfo, dstLocalT1_, this->srcLocal_);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持（ascend910b） | 支持（ascend910_93） | 支持，见独立 `_a5` 卡 |
+| 支持状态 | 支持（ascend910b） | 支持（ascend910_93） | 支持，见独立 `_950` 卡 |
 | Host/Launcher | 与 A3 共用 classic Tiling，`reserveUb=256` | 与 A2 共用 | `isRegBase=true`、reserve=0，入口图相同 |
 | Kernel/资源 | `__CCE_AICORE__!=310`，classic Vector/transpose | 同 A2 | `__CCE_AICORE__==310`，MicroAPI per-tensor scatter/direct |
 
@@ -427,7 +427,7 @@ Trans2(ubLoopInfo, dstLocalT1_, this->srcLocal_);
 | Kernel entry/body | `conversion/chunk_cat/op_kernel/chunk_cat.cpp` | `chunk_cat` | AIV-only entry 与模板选择 |
 | Kernel entry/body | `conversion/chunk_cat/op_kernel/chunk_cat_common.h` | `ChunkCatCommon` | 公共 GM/UB、DMA、tail |
 | Kernel entry/body | `conversion/chunk_cat/op_kernel/chunk_cat.h` | `ChunkCat` | classic route body、同步、cast、transpose |
-| 构建接线 | `conversion/chunk_cat/op_host/chunk_cat_def.cpp` | `ChunkCat::ChunkCat` | A2/A3/A5 config 与 dtype pair |
+| 构建接线 | `conversion/chunk_cat/op_host/chunk_cat_def.cpp` | `ChunkCat::ChunkCat` | A2/A3/950 config 与 dtype pair |
 | 构建接线 | `conversion/chunk_cat/op_host/config/ascend910b/chunk_cat_binary.json` | `op_list` | A2 七个 binary 实例 |
 | 构建接线 | `conversion/chunk_cat/op_host/config/ascend910_93/chunk_cat_binary.json` | `op_list` | A3 七个 binary 实例 |
 | 构建接线 | `conversion/chunk_cat/CMakeLists.txt` | `add_all_modules_sources` | API/Host 模块收集 |
@@ -442,3 +442,9 @@ Trans2(ubLoopInfo, dstLocalT1_, this->srcLocal_);
 | 同步 | V→MTE2、MTE2→V、V→MTE3、MTE3→MTE2 | 不可在 DMA/Vector consumer 完成前覆盖 TBuf | `dupToZero/Compute/CopyOut` |
 | 精度与尾块 | cross16 经 FP32+RINT，widen 直接 Cast；短 chunk 零填充 | cast 顺序、splitColAlign、有效 CopyOut 矩形不可改变 | `DoCast/DoLastRowsCopy` |
 | 失败边界 | dim/dtype/shape/Tiling/launcher 失败均停止 | 不得把 key 0 无 fallback 误写成自动降级 | `CheckParams/Tiling4ChunkCat/chunk_cat` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ChunkCat 950 ACLNN 算子知识](chunk_cat_950.md)（`same_topic`）：每个输入沿 `dim=0` 切为 `numChunks` 个上界等宽块，逐块横向拼接，短尾块补零，并转换到 `out` dtype；把每个输入沿 `dim=0` 切为 `numChunks` 个等宽上界块，逐块横向拼接并把短尾块补零，最后转换到 `out` dtype。两卡定义完全相同的 dim=0 分块、横向拼接、短尾补零与输出类型转换语义，差别是分别记录 950 与 A2/A3 实现，属于同一 ChunkCat 算子的架构分支。
+<!-- cannbot:related:end -->

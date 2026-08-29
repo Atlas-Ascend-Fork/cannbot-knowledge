@@ -23,11 +23,6 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [TilingFunc 未声明依赖读 axes 致 segfault](../../../../runbooks/compilation/tilingfunc_axes_segfault.md)（`exemplifies`）：焦点处理OpTilingRegistry 加载动态库并取得 TilingFunc 的调测流程；TilingFunc 未声明依赖读 axes 致 segfault正文界定“vendor TilingFunc 内对 axes 输入(index 1) 调 GetInputTensor(1)->GetData<int32_t>() 而 未声明 TilingInputsDataDependency({1}) 时，C+”。候选承担 Registry 加载、对象构造、opName 设置、ContextBuilder 与 GetTilingFunc 调测，runbook复现函数依赖错误。
-- [TilingDebug](../../../../guides/programming_guide/appendix/common_operations/tiling_debug.md)（`explains`）：焦点处理OpTilingRegistry 加载动态库并取得 TilingFunc 的调测流程；TilingDebug正文界定“通过OpTilingRegistry加载编译后的Tiling动态库，使用ContextBuilder构建TilingContext并获取Tiling函数指针进行单独调测”。候选承担 Registry 加载、对象构造、opName 设置、ContextBuilder 与 GetTilingFunc 调测，runbook复现函数依赖错误。
-- [ContextBuilder](../context_builder/context_builder.md)（`same_topic`）：焦点处理OpTilingRegistry 加载动态库并取得 TilingFunc 的调测流程；ContextBuilder正文界定“ContextBuilder上下文构建接口索引”。候选承担 Registry 加载、对象构造、opName 设置、ContextBuilder 与 GetTilingFunc 调测，runbook复现函数依赖错误。
-- [LoadTilingLibrary](load_tiling_library.md)（`same_topic`）：焦点处理OpTilingRegistry 加载动态库并取得 TilingFunc 的调测流程；LoadTilingLibrary正文界定“根据输入路径加载Tiling动态库，支持算子包编译或动态库编译方式获取的so文件，返回加载是否成功”。候选承担 Registry 加载、对象构造、opName 设置、ContextBuilder 与 GetTilingFunc 调测，runbook复现函数依赖错误。
-- [OpTilingRegistry](op_tiling_registry.md)（`same_topic`）：焦点处理OpTilingRegistry 加载动态库并取得 TilingFunc 的调测流程；OpTilingRegistry正文界定“OpTilingRegistry注册接口索引”。候选承担 Registry 加载、对象构造、opName 设置、ContextBuilder 与 GetTilingFunc 调测，runbook复现函数依赖错误。
-- [SetOpNameType](../context_builder/set_op_name_type.md)（`same_topic`）：焦点处理OpTilingRegistry 加载动态库并取得 TilingFunc 的调测流程；SetOpNameType正文界定“ContextBuilder &SetOpNameType(const std::string& opName, const std::string& opType)”。候选承担 Registry 加载、对象构造、opName 设置、ContextBuilder 与 GetTilingFunc 调测，runbook复现函数依赖错误。
-- [构造和析构函数](constructor_and_destructor.md)（`same_topic`）：焦点处理OpTilingRegistry 加载动态库并取得 TilingFunc 的调测流程；构造和析构函数正文界定“创建与释放OpTilingRegistry对象”。候选承担 Registry 加载、对象构造、opName 设置、ContextBuilder 与 GetTilingFunc 调测，runbook复现函数依赖错误。
+- [TilingDebug](../../../../guides/programming_guide/appendix/common_operations/tiling_debug.md)（`explains`）：通过OpTilingRegistry的LoadTilingLibrary接口加载Tiling动态库；使用GetTilingFunc接口获取Tiling函数指针。；典型用法：先通过 OpTilingRegistry.LoadTilingLibrary 加载算子 so 库，再调用 GetTilingFunc("AddCustom") 获取 Tiling 函数并执行。。候选 API 精确实现指南在加载动态库后的函数解析与调用步骤。
+- [LoadTilingLibrary](load_tiling_library.md)（`related`）：根据输入的路径，加载对应的Tiling动态库。开发者基于工程化算子开发开发方式完成算子实现后，可通过算子包编译或算子动态库编译获取对应的Tiling动态库文件。；典型用法：先通过 OpTilingRegistry.LoadTilingLibrary 加载算子 so 库，再调用 GetTilingFunc("AddCustom") 获取 Tiling 函数并执行。。加载接口把编译产物装入进程，GetTilingFunc 随后按算子名取得并执行其中的 Tiling 函数。
 <!-- cannbot:related:end -->

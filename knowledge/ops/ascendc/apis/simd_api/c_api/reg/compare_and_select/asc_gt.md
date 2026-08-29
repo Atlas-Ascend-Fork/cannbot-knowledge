@@ -29,6 +29,5 @@ gt（greater than），该接口用于逐元素比较两个源操作数大小，
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGt](../../vector_compute/asc_gt.md)（`related`）：Vector C API 的 AscGt 在 UB 数据上完成同类比较，可与 Reg 版本按数据位置和执行模型选型。
-- [AscGtScalar](asc_gt_scalar.md)（`same_topic`）：AscGtScalar 将第二个 RegTensor 操作数替换为标量，仍输出同一大于比较 mask，是同一比较契约的标量变体。
+- [AscGtScalar](asc_gt_scalar.md)（`same_topic`）：gt（greater than），该接口用于逐元素比较两个源操作数大小，将比较结果（）写入目的操作数dst对应比特位，如果比较结果为真，则对应比特位为1，否则为0。；根据mask将源操作数src按元素与标量value进行比较，若，则目的操作数对应结果位为1，否则为0。每个元素的比较结果占一个比特。。两卡实现同一 Reg 大于谓词与掩码比特输出，区别是第二操作数为矢量或标量。
 <!-- cannbot:related:end -->

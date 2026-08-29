@@ -30,11 +30,5 @@ Task Duration(us)：DCache Read GM(次)：DCache Read Vector(次)：DCache Write
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCachePreload](../../../../apis/simd_api/basic_api/cache_control/data_cache_preload.md)（`explains`）：DataCachePreload 与《DCacheAccess》的实质衔接是：DataCachePreload 是 GM 数据进入 DCache 的预取动作；清理失效、旁路读、DCCI 与一致性指南共同定义预取后可见性、失效和访问优化的完整契约。
-- [asc_dcci_entire](../../../../apis/simt_api/memory_access_functions/asc_dcci_entire.md)（`explains`）：asc_dcci_entire 与《DCacheAccess》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_stwt（内存访问函数）](../../../../apis/simt_api/memory_access_functions/asc_stwt.md)（`explains`）：asc_stwt（内存访问函数） 与《DCacheAccess》的实质衔接是：asc_stwt 把数据写入 GM 并缓存到 DCache/L2；stcg/ldcg、缓存模式和 DCCI 共同决定写策略、后续读取及显式失效时机。
-- [缓存控制](../../../../apis/simd_api/c_api/cache_ctrl/cache_control.md)（`explains`）：缓存控制 与《DCacheAccess》的实质衔接是：C 缓存控制页覆盖 DCache/ICache 预取与失效；系统缓存、缓存一致性、DCI 优化和无参清理编译失败补充作用域、目标对象及使用边界。
-- [访存函数简介（内存访问函数）](../../../../apis/simt_api/memory_access_functions/memory_access_functions_intro.md)（`explains`）：DCache 策略依赖 asc_ldcg/asc_ldca/asc_stcg 等显式加载存储函数；接口导论解释缓存路径、写回与一致性，是实施优化的 API 依据。
-- [MemoryAccessMerge](memory_access_merge.md)（`related`）：缓存驻留优化解决热点复用，访存合并解决 Warp 地址连续性；两者同时决定 GM/DCache 有效带宽，不能用其中一个代替另一个。
-- [ShortVectorEfficiency](short_vector_efficiency.md)（`related`）：短向量能让一次搬运覆盖更多连续字节/Cache Line，与 DCache 策略组合可减少事务数并提升热点访问吞吐。
+- [asc_stcg（内存访问函数）](../../../../apis/simt_api/memory_access_functions/asc_stcg.md)（`explains`）：存储数据到 Global Memory 并缓存到 L2 Cache，但不缓存至 Data Cache。适用于写入后不需要被当前核再次读取的场景，避免污染 Data Cache。；asc_stcg：存储数据时直接写入Global Memory，不经过DCache缓存，适用于写入GM后不会再从DCache读取的数据，避免输出数据占用DCache空间影响热点数据的缓存。；优化指南把焦点接口的缓存语义落到避免输出污染 DCache 的选型场景。
 <!-- cannbot:related:end -->

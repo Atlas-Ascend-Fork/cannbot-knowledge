@@ -24,11 +24,3 @@ platforms: ['950']
 约束：mask控制源操作数是否参与计算，源操作数不参与计算的元素在输出对应位置置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscHalf2Int8](asc_half2int8.md)（`related`）：AscInt82half 是该转换的反向数据类型通路，可用于核对低/高 half lane 与 int8 lane 的打包布局。
-- [AscUint82half](asc_uint82half.md)（`related`）：无符号版本保持目标 half 不变，但输入范围改为 uint8；读取原始字节时必须先确定符号解释。
-- [AscInt82half](../../vector_compute/asc_int82half.md)（`same_topic`）：两页实现相同 int8 到 half 转换的 Vector 与 Reg C API 版本，是迁移执行模型时需要对照的核心转换契约。
-<!-- cannbot:related:end -->

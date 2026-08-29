@@ -284,14 +284,5 @@ __global__ __aicore__ __vector__ void gather_kernel(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_sync（同步）](../../apis/simd_api/c_api/sync/asc_sync.md)（`exemplifies`）：《asc_sync（同步）》处理“等待所有流水线操作完成。”。《MTE2跨流水未建依赖导致UB读到上次调用残值》明确提供“仅在必须采用逐元素 DMA 槽的安全回退中，用 TQue 与双向 HardEvent 防陈旧 UB；纯随机独立读取应先探测 SIMT 直访 GM 快路。”，其参数、调用或验证步骤直接接入等待全部流水的 sync_all/pipe/barrier 入口与实际 MTE/队列 hazard 验证。
-- [BF16 gamma Cast 分阶段编排导致随机 NaN](bf16_gamma_cast_must_share_ordered_compute_stage.md)（`related`）：候选处理 MTE slot 跨流水复用缺双向依赖导致读上次残值，本卡处理两个阶段无共同完成点导致随机坏行。
-- [GetTPipePtr 错加 AscendC 命名空间导致编译失败](../compilation/gettpipeptr_is_global_function.md)（`related`）：获取 TPipe 指针是分配 event 的前置接口；编译期入口正确不等于已经建立双向依赖。
-- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：多 VF pass 复用固定 UB 状态时，每个 producer/consumer 边界都要完成，hard event 是跨 MTE 的具体实现。
-- [标量 S pipe 误用 TQue 导致输出全常数](scalar_s_pipe_requires_explicit_mte_dependencies.md)（`related`）：目标卡给出复用固定 UB 槽时 MTE2→计算和计算→MTE3 的双向 HardEvent；本卡说明标量 S pipe 不受 TQue 的 V 事件覆盖，需同样显式表达这两段依赖。
-- [随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM](../performance/random_gather_per_element_dma_should_switch_to_simt_direct_gm.md)（`related`）：当 SIMT capability probe 失败而必须回退逐元素 DMA 槽时，该卡给出 TQue 同步 index 与 MTE2→MTE3/MTE3→MTE2 双向事件，避免槽复用读到陈旧 UB。
-- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](mte2_barrier_must_precede_vector_cast.md)（`same_topic`）：单向首次消费可用 MTE2 barrier，而 slot 双向反复复用必须再保护写回到下一次搬入。
-- [TQue MTE2→MTE3 缺 MTE3_MTE2 fence 致回读错位](../compilation/tque_mte2_mte3_mte3_mte2_fence.md)（`same_topic`）：直接复用 MTE slot 时必须用双向 hard event 保护读写，等价落实本卡强调的 MTE2/MTE3 双向 fence。
-- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`same_topic`）：VF 归约落 UB 后 GetValue 读取陈旧标量 与《MTE2跨流水未建依赖导致UB读到上次调用残值》的实质衔接是：Reg Reduce 经 StoreAlign 落 UB 后，PIPE_V 不保证 Scalar GetValue 可见；相关跨 VF 累加、barrier、GetValue 陈旧和 SoftMax 卡共同支持把归约与 lane0 广播保留在同一 VF。
-- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](repeated_overwrite_updates_need_ordered_ub_merge.md)（`same_topic`）：多次更新复用同一 UB slot 时既需按序合并更新，也需 hard event 保护 MTE/Vector 读写；两卡覆盖数据和同步两面。
+- [随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM](../performance/random_gather_per_element_dma_should_switch_to_simt_direct_gm.md)（`related`）：- DMA 路线不删除：若目标 dtype 的 SIMT 标量 GM 访问、工具链或 direct-launch wrapper 探针失败，可以回退到已经验证的 32B 槽与双向事件路线。；修复分两层：索引缓冲使用 `TQue<VECIN>`，以 `EnQue/DeQue` 建立 MTE2→S 的生产消费关系；载荷 slot 保持对齐并在每个批次使用 `MTE2_MTE3` 事件等待搬入完成，再用 `MTE3_MTE2` 事件等待搬出完成后复用 slot。以下 before/after 是从轨迹中的完整写入和唯一命中的顺序编辑机械恢复的函数级原文。；目标卡正是焦点保留的 DMA fallback 所需双向事件同步合同。
 <!-- cannbot:related:end -->

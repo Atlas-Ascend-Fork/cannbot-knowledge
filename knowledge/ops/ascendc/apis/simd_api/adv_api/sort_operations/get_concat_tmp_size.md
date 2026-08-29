@@ -23,6 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Concat（排序操作）](concat.md)（`related`）：GetConcatTmpSize 返回的大小正是 Concat 排序预处理接口的临时空间输入；查询结果和 kernel 调用是一对 host/kernel 参数合同。
-- [ProposalConcat](../../basic_api/memory_vector_compute/sort_and_merge/proposal_concat.md)（`related`）：《ProposalConcat》处理“将连续元素合入Region Proposal内对应位置，每次迭代会将16个连续元素合入到16个Region Proposals的对应位置里。 Region Proposal说明： 目前仅支持两种数据类型：half、float。 每个Region Proposal占用连续8个half/float类型的元素，约定其格式：”。《GetConcatTmpSize》明确提供“获取Concat接口所需的临时空间大小，单位为字节。”，其参数、调用或验证步骤直接接入ProposalConcat 与 ProposalExtract、Sort32、MrgSort 组成的 proposal 流水。
+- [Concat（排序操作）](concat.md)（`related`）：获取Concat接口所需的临时空间大小。；对数据进行预处理，将要排序的源操作数src一一对应合入目标数据concat中，预处理完成后可进行Sort操作。。GetConcatTmpSize 给 Concat 排序预处理接口计算所需临时空间，形成 Host 资源准备到 kernel 预处理的直接合同。
 <!-- cannbot:related:end -->

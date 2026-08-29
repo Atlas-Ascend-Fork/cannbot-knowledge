@@ -26,6 +26,6 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SetBiasType](../conv3_d_tiling/set_bias_type.md)（`related`）：Conv3D kernel 的 SetBias 绑定 bias 张量，而 tiling 侧 SetBiasType 声明同一 bias 的 GM 位置、ND 格式和 dtype；两侧配置必须一致。
-- [Conv3D模板参数](conv3_d_template_params.md)（`same_topic`）：Conv3D模板参数 与《SetBias》的实质衔接是：Conv3D 模板参数决定 Input/Weight/Output/Bias 的位置、格式与类型，必须和 Kernel 构造、Init、Tiling 结构及 Set*Type/SetGroups 配置保持一致。
+- [Conv3DUsage](conv3_d_usage.md)（`related`）：bias（输入）：Bias在Global Memory上的地址。类型为GlobalTensor。偏置矩阵Bias支持的数据类型为：half、bfloat16_t。；B为Conv3D卷积的偏置矩阵Bias。 - Y为完成卷积及偏置操作之后的结果矩阵Output。。SetBias 的输入合同把 usage 中卷积偏置 B 的 GM 地址和支持 dtype 落到具体配置接口。
+- [SetBiasType](../conv3_d_tiling/set_bias_type.md)（`related`）：bias（输入）：Bias在Global Memory上的地址。类型为GlobalTensor。偏置矩阵Bias支持的数据类型为：half、bfloat16_t。；设置Bias在内存上的位置、数据格式和数据类型。。tiling 侧先声明 Bias 的位置、格式和类型，kernel 侧 SetBias 再接收相应 GM tensor，形成 Host 配置到 Device 入参的合同。
 <!-- cannbot:related:end -->

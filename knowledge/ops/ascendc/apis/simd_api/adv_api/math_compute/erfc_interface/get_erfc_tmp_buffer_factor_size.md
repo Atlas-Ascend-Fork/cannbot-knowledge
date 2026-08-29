@@ -25,7 +25,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Erfc](erfc.md)（`related`）：factor size 反推的最大元素数直接决定一次 Erfc 调用可处理的 tile。
-- [Erfc接口](erfc_interface.md)（`same_topic`）：Erfc接口 与《GetErfcTmpBufferFactorSize》的实质衔接是：Erfc 接口组由实际 Erfc、工作区上限/下限查询和 factor 查询组成；SIMT Erfcf提供标量对照，两张 GELU 卡直接讨论以 erfc 逼近实现时的精度与负尾相消。
-- [GetErfcMaxMinTmpSize](get_erfc_max_min_tmp_size.md)（`same_topic`）：MaxMin 从 shape 给出 Erfc sharedTmpBuffer 合法区间，FactorSize 从固定剩余空间反推 currentShapeSize；二者是同一临时空间的正向预算和反向容量计算。
+- [Erfc](erfc.md)（`related`）：获取Erfc接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。。FactorSize 卡把可用临时空间反推为单次 Erfc 元素数，Erfc 卡说明计算重载如何传入或申请 sharedTmpBuffer；联合阅读可在固定 UB 预算下确定分块规模。
 <!-- cannbot:related:end -->

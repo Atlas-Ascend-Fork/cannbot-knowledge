@@ -24,8 +24,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [EnQue](en_que.md)（`related`）：VacantInQue 返回 true 的用途就是决定是否可继续 EnQue；二者组成队列背压检查与入队动作。
-- [GetTensorCountInQue](get_tensor_count_in_que.md)（`related`）：《GetTensorCountInQue》的任务是“查询Que中已入队的Tensor数量，不支持Tensor原地操作场景。”。《VacantInQue》具体提供“查询队列是否已满，返回true表示可继续EnQue，返回false表示已满，不支持Tensor原地操作场景。”，它直接用于TQue 入队数量与 EnQue/DeQue/空闲状态的可观测一致性。
-- [HasIdleBuffer](has_idle_buffer.md)（`related`）：队列未满并不等同于存在可 AllocTensor 的空闲块；HasIdleBuffer 观测内存块资源，能区分入队容量与分配容量问题。
-- [VacantInQue](../t_que_bind/vacant_in_que.md)（`related`）：TQueBind 版本提供相同的满队列判断，但作用于绑定源/目的位置、支持内存复用的队列类型，便于在更换队列模型时保持背压逻辑。
+- [TQue简介](t_que_intro.md)（`related`）：查询队列是否已满。 约束：该接口不支持Tensor原地操作，即TQue的depth设置为0的场景。；队列深度与 double buffer 是不同维度：深度为 1 时仍可开启 double buffer。非 Tensor 原地操作通常建议将深度设为 1；Tensor 原地操作按接口约束将深度设为 0。；VacantInQue 的可用性取决于 depth 是否为 0，TQue 概念卡给出原地操作与 depth 取值的配置边界。
 <!-- cannbot:related:end -->

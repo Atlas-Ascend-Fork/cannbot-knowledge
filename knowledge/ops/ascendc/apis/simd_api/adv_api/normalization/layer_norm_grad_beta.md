@@ -27,7 +27,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LayerNormGrad Tiling](layer_norm_grad_tiling.md)（`related`）：《LayerNormGrad Tiling》处理“获取LayerNormGrad kernel计算时所需的Tiling参数，包括通过GetLayerNormGradMaxMinTmpSize获取最大最小临时空间大小和GetLayerNormGradNDTilingInfo获取tiling参数。”。《LayerNormGradBeta》明确“LayerNormGradBeta接口用于获取反向beta/gamma的数值，和LayerNormGrad共同输出pdx, gamma和beta： 算法公式为:”，可直接用于核对LayerNormGrad 主输出与 Beta/Gamma 梯度的配套 Tiling 合同。
-- [LayerNormGrad](layer_norm_grad.md)（`same_topic`）：《LayerNormGrad》处理“LayerNormGrad是一个函数，用于计算LayerNorm的反向传播梯度。该接口单独使用会输出x、resForGamma；也可以和LayerNormGradBeta配合使用，输出的resForGamma传递给LayerNormGradBeta， LayerNormGradBeta接口会输出gamma和beta，配合使用时就可以同时得到x、Gamma、beta。 算法公式为:”。《LayerNormGradBeta》提供“LayerNormGradBeta接口用于获取反向beta/gamma的数值，和LayerNormGrad共同输出pdx, gamma和beta： 算法公式为:”，其具体合同或探针直接接入LayerNormGrad 与 Beta/Gamma 后段及两侧 Tiling 的输出传递合同。
-- [LayerNormGradBeta Tiling](layer_norm_grad_beta_tiling.md)（`same_topic`）：LayerNormGradBetaTiling 计算的临时空间与切分参数专供 LayerNormGradBeta kernel 使用，是同一接口的 Host/Kernel 两端。
+- [LayerNormGradBeta Tiling](layer_norm_grad_beta_tiling.md)（`related`）：“host侧Tiling接口，用于获取LayerNormGradBeta kernel计算所需的Tiling参数，分两步：通过GetLayerNormGradBetaMaxMinTmpSize获取最大和最小临时空间大小；通过GetLayerNormGradBetaNDTilingInfo获取kernel侧所需tiling参数。”；“获取LayerNorm反向传播的gamma和beta梯度，与LayerNormGrad配合使用。接收LayerNormGrad输出的resForGamma和上游梯度inputDy，计算并输出pd_gamma和pd_beta。”。Host 两步 tiling产出 LayerNormGradBeta kernel 所需临时空间和切分结构，kernel 再消费 resForGamma 与 inputDy 计算梯度。
+- [LayerNormGrad](layer_norm_grad.md)（`same_topic`）：计算LayerNorm的反向传播梯度。可单独使用输出pd_x和resForGamma；也可与LayerNormGradBeta配合使用，将resForGamma传递给LayerNormGradBeta同时得到pd_x、pd_gamma和pd_beta。输入shape为［B,S,H］。模板参数T支持half/float。；获取LayerNorm反向传播的gamma和beta梯度，与LayerNormGrad配合使用。接收LayerNormGrad输出的resForGamma和上游梯度inputDy，计算并输出pd_gamma和pd_beta。模板参数T支持half/float。。前一接口产生 resForGamma，后一接口把它作为必需输入继续计算 gamma 与 beta 梯度，明确构成 LayerNorm 反向的生产者到消费者调用链。
 <!-- cannbot:related:end -->

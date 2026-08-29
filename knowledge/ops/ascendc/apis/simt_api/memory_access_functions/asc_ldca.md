@@ -23,10 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [设置合理的L2 CacheMode](../../../guides/operator_practice/simd_operator_optimization/memory_access/l2_cache_mode_config.md)（`explains`）：L2 CacheMode 指南解释 Ldca 命中顺序和 mode 对缓存分配的影响。
-- [asc_dcci_single](asc_dcci_single.md)（`related`）：需要与其他代理保持可见时还需显式 cache clean/invalid，单纯 Ldca 不建立一致性。
-- [asc_stcg（内存访问函数）](asc_stcg.md)（`related`）：Stcg 是对应写路径，与 Ldca 组成读取/更新链。
-- [访存函数简介（内存访问函数）](memory_access_functions_intro.md)（`related`）：Ldca 展示带缓存策略的加载入口。
-- [asc_ldcg（内存访问函数）](asc_ldcg.md)（`same_topic`）：Ldca 与 Ldcg 都加载 GM 数据，但 cache 层级策略不同。
-- [asc_stwt（内存访问函数）](asc_stwt.md)（`same_topic`）：asc_stwt（内存访问函数） 与《AscLdca》的实质衔接是：asc_stwt 把数据写入 GM 并缓存到 DCache/L2；stcg/ldcg、缓存模式和 DCCI 共同决定写策略、后续读取及显式失效时机。
+- [asc_ldcg（内存访问函数）](asc_ldcg.md)（`related`）：从 Data Cache 加载数据的函数。优先从 Data Cache 读取，未命中则尝试 L2 Cache，均未命中则从 Global Memory 读取并缓存到 L2 Cache 和 Data Cache。L2 Cache 与 Global Memory 间一致性由硬件保证，Data Cache 与 Global Memory 间不保证。默认访存底层实现与本接口等价（dst［idx］ = src［idx］ 等价于 dst［idx］ = asc_ldca(src + idx)）。；从 L2 Cache 加载数据的函数。若 L2 Cache 命中则直接返回，未命中则从 Global Memory 读取并缓存到 L2 Cache。L2 Cache 与 Global Memory 间一致性由硬件保证。不会写入 Data Cache。两页给出 SIMT 加载在 Data Cache 与仅 L2 Cache 间的直接策略选择，一致性与缓存污染差异影响访存实现。
 <!-- cannbot:related:end -->

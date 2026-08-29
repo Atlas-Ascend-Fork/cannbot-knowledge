@@ -87,10 +87,5 @@ platforms: []
 <!-- cannbot:related:start -->
 ## 相关
 
-- [TilingData结构定义](../../apis/utils_api/tiling_data_structure_register/tiling_data_struct_definition.md)（`exemplifies`）：API 定义了 TILING_DATA_FIELD_DEF 生成 set/get 字段和序列化长度的契约，解释为何旧 struct 新增字段必须同步声明到新 TilingData 类型。
-- [Tiling数据结构注册](../../apis/utils_api/tiling_data_structure_register/tiling_data_structure_register.md)（`exemplifies`）：Tiling数据结构注册 与《TILING_DATA_DEF 迁移 rebase 字段失配判别》的实质衔接是：TilingData 定义、注册、读取宏、尺寸限制与三张冲突/截断故障卡共同覆盖 host→kernel 数据契约。
-- [REGISTER_TILING_DEFAULT 取小档致 NaN](register_tiling_default_nan.md)（`related`）：REGISTER_TILING_DEFAULT 取小档致 NaN 与《TILING_DATA_DEF 迁移 rebase 字段失配判别》的实质衔接是：REGISTER_TILING_DEFAULT 决定 opParaSize，必须覆盖最大 TilingData struct；注册宏、GET 宏、host/kernel 结构、SetDataSize 与追加越界卡描述同一 buffer 尺寸链。
-- [手动 tiling 头遮蔽自动生成类致 no member 判别](tiling_no_member.md)（`related`）：两卡都以 kernel 所需字段不在实际注入的 TilingData 类型中为判据；目标卡补充自动生成类被手写同名类遮蔽时的 no-member 分流。
-- [TilingData 须 host 与 kernel 各定义一份](tilingdata_host_kernel.md)（`same_topic`）：TilingData 须 host 与 kernel 各定义一份：本故障来自host不可见kernel侧struct；TilingData定义/注册/属性传递卡给出正式契约，struct.h include与手写头遮蔽、rebase字段失配卡覆盖同一双侧类型同步链的具体失败。 目标卡《TILING_DATA_DEF 迁移 rebase 字段失配判别》补充：把 tiling data 从手写嵌套 struct 重构为 TILING_DATA_DEF 宏框架后 rebase 上游,上游在旧 struct 新增的 7 个字段未同步补到新类型的 TILING_DATA_FIELD_DEF,kernel 侧 tiling_-> 直读这些字段会编译失败。判别=git status 报 rebase in progress 且冲突落在 SetRunInfoTiling 区域时,diff HEAD 侧旧
-- [rebase 引入新 kernel 文件旧 tiling 类型致编译失败](rebase_kernel_tiling.md)（`same_topic`）：两卡处理同一类 TILING_DATA_DEF 迁移分支 rebase 后的契约漏同步：本卡用字段集合差定位上游新增字段，目标卡用旧类型/嵌套访问扫描定位上游新增 kernel 文件。
+- [TilingData结构定义](../../apis/utils_api/tiling_data_structure_register/tiling_data_struct_definition.md)（`exemplifies`）：焦点卡指出“任何 kernel 直读的字段都必须在 `TILING_DATA_FIELD_DEF` 中显式声明”，候选 API 说明“set_\{field_name\}接口：用于设置TilingData类的字段值”；API 的字段生成合同正是 rebase 后 host setter 与 kernel 字段集必须同步的依据。
 <!-- cannbot:related:end -->

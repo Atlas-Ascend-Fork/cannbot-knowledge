@@ -33,10 +33,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetFloorMaxMinTmpSize](get_floor_max_min_tmp_size.md)（`related`）：Floor 调用前用该接口计算 workspace 上下界。
-- [GetFloorTmpBufferFactorSize](get_floor_tmp_buffer_factor_size.md)（`related`）：固定空间时 factor-size 决定单次可处理元素数。
-- [AscFloor](../../../c_api/reg/data_type_convert/asc_floor.md)（`same_topic`）：《AscFloor》处理“将src中的浮点数元素按照FLOOR（向负无穷方向舍入）舍入模式截断到整数值，结果仍保持原浮点数据类型写入dst。未被mask筛选的元素置零。”。《Floor接口》提供“按元素向负无穷取整，并提供临时空间大小获取接口。”，其具体合同或探针直接接入Floor 的 Reg/Memory/高级/SIMT 等价运算语义。
-- [Floor](floor.md)（`same_topic`）：函数页是接口总览对应的实际 LocalTensor Floor 调用。
-- [Floorf](../../../../simt_api/math_functions/float_math_functions/floorf.md)（`same_topic`）：《Floorf》处理“获取小于或等于输入数据的最大整数值。”。《Floor接口》明确“按元素向负无穷取整，并提供临时空间大小获取接口。”，可直接用于核对float floor 与 half/half2、Reg/C API、高阶接口的同一向负无穷取整语义。
-- [Hfloor](../../../../simt_api/math_functions/half_type/half_math_functions/hfloor.md)（`same_topic`）：《Hfloor》处理“获取小于或等于输入half数据的最大整数值。”。《Floor接口》明确“按元素向负无穷取整，并提供临时空间大小获取接口。”，可直接用于核对half floor 与 float/half2、Reg/C API、高阶接口的同一取整语义。
+- [GetFloorMaxMinTmpSize](get_floor_max_min_tmp_size.md)（`related`）：按元素向负无穷取整，并提供临时空间大小获取接口。；host侧Tiling接口，用于获取Floor接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。接口组明确需要临时空间查询，而目标卡给出 Host 侧最大/最小值获取契约，二者共同闭合 Floor 的 Tiling 到 Kernel 使用链。
 <!-- cannbot:related:end -->

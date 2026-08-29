@@ -70,7 +70,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/config/ascend910_93/rotary_position_embedding_binary.json
     role: implementation
 created_at: "2026-08-24T17:02:50Z"
-updated_at: "2026-08-24T19:44:37Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -87,7 +87,7 @@ cann_versions: ["9.1.0"]
 | 执行类型 | R-001 为 MIX_CV；R-002～R-009 为 AIV 向量流水 |
 | Kernel 路线 | R-001 矩阵旋转；R-002 半区 FP32；R-003 半区升精度；R-004～R-009 相邻旋转的 S/BS/BSN 分块及各自 Pad body |
 | 核心资源 | GM、矩阵 workspace、Matmul 管理的 L1/L0A/L0B/L0C、多个独立 TQue/TBuf、向量寄存器和跨核 flag |
-| 来源闭包 | source_closed（已声明可达子域）：V2 API→Contiguous/L0→共享 priority registry→三套 Membase Tiling→key router→九条真实 Device body；A3 的 null-rotate 接线缺口与 A5 独立卡边界均已定位 |
+| 来源闭包 | source_closed（已声明可达子域）：V2 API→Contiguous/L0→共享 priority registry→三套 Membase Tiling→key router→九条真实 Device body；A3 的 null-rotate 接线缺口与 950 独立卡边界均已定位 |
 | 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
 
 ## 接口与语义
@@ -189,7 +189,7 @@ else: no valid tiling template
 |---|---|---|---|---|---|
 | Matrix API 架构门禁 | `rotate!=nullptr -> GetCurNpuArch()==DAV_2201` | 矩阵 body 仅在 `__CCE_AICORE__==220` 编译，且使用 MIX_CV/Matmul | R-001 | 第一段返回 `ACLNN_ERR_PARAM_INVALID` | `aclnnRotaryPositionEmbeddingV2GetWorkspaceSize` |
 | Registry 继续条件 | 仅 `DoTiling()==GRAPH_PARAM_INVALID`，即当前类 `IsCapable()==false` | 防止把已匹配模板内部的参数/资源错误误当作另一语义实现的 fallback | 全部 | `DoOpTiling` 的 `GRAPH_FAILED` 立即返回；不会落到低优先级模板 | `TilingBaseClass::DoTiling`、`TilingRegistry::DoTilingImpl` |
-| RegBase 前置模板 | A2/A3 的 arch 不在 `{DAV_3510,DAV_5102}` | priorities 10000/20000/25000/40000 只服务 RegBase/A5 | R-001～R-009 之前 | 各 RegBase `IsCapable` 返回 false，registry 继续到 49999 | `IsRegbaseSocVersion`、四个 RegBase `IsCapable` |
+| RegBase 前置模板 | A2/A3 的 arch 不在 `{DAV_3510,DAV_5102}` | priorities 10000/20000/25000/40000 只服务 RegBase/950 | R-001～R-009 之前 | 各 RegBase `IsCapable` 返回 false，registry 继续到 49999 | `IsRegbaseSocVersion`、四个 RegBase `IsCapable` |
 | Matrix 模板 SoC | `(soc==ASCEND910B || soc==ASCEND910_93) && rotateDesc!=nullptr` | Host 必须生成 Cube tiling 与 MIX key | R-001 | `rotate` 空才因 `IsCapable=false` 继续；非空后任一前置检查失败均立即终止 | `RopeRotateMatrixTilingClass::IsCapable`、`TilingRegistry::DoTilingImpl` |
 | 公开 D 上界 | 文档 `D<896`；Host 实现仅检查 `D>896` | 固定文档与实现边界相差一个值 | R-001～R-003 | 正式接口按更严格的 `D<896`；不把 D=896 宣称为公开支持 | `CheckShapeSupport`、V2 文档约束 |
 | Matrix tile | `baseM=min(M,128)`，`baseN=(D<128?align16(D):128)`，`baseK=min(D,128)` | Matmul specialization 固定 128 上界，N 需 16 元素对齐 | R-001 | `GetTiling==-1` 由 helper 返回失败，但 `DoRotateMatrixTiling` 未检查该返回值，仍继续生成 key，不触发 fallback | `MatmulTilingProcess`、`DoRotateMatrixTiling` |
@@ -1460,11 +1460,11 @@ offset 表用 `(i xor 1)*sizeof(float)` 把相邻 FP32 元素互换，随后 `In
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 最新公开 V2：非空 rotate 矩阵路线和空 rotate mode0/1 均有闭包 | 最新公开 V2：仅非空 rotate 的矩阵子域闭合；文档声明的 null-rotate mode0/1 在固定 Host 无模板 | 最新公开 V2；文档明确不支持辅助矩阵，发布 mode2/3；本任务未授权 `_a5` 目标，未写 A5 卡 |
+| 支持状态 | 最新公开 V2：非空 rotate 矩阵路线和空 rotate mode0/1 均有闭包 | 最新公开 V2：仅非空 rotate 的矩阵子域闭合；文档声明的 null-rotate mode0/1 在固定 Host 无模板 | 最新公开 V2；文档明确不支持辅助矩阵，发布 mode2/3；本任务未授权 `_950` 目标，未写 950 卡 |
 | Host/Launcher | ASCEND910B；Matrix（非空 rotate）或 Half/Interleaved（null rotate） | ASCEND910_93；Matrix 可达，但 Half/Interleaved 的 `IsCapable` 都拒绝 | `rotary_position_embedding_apt` 与 RegBase selector；V2 非空 rotate 在 API 层被拒绝 |
-| Kernel/资源 | MIX 矩阵或纯 AIV；配置列出 mode0/1 三 dtype | 非空 rotate 走同一 MIX；配置虽列 mode0/1，源码却没有 null-rotate 模板 | 公开源码为 AIV RegBase/MicroAPI，不属于本卡平台与 CV route；应使用 `_a5` 卡单独提取 |
+| Kernel/资源 | MIX 矩阵或纯 AIV；配置列出 mode0/1 三 dtype | 非空 rotate 走同一 MIX；配置虽列 mode0/1，源码却没有 null-rotate 模板 | 公开源码为 AIV RegBase/MicroAPI，不属于本卡平台与 CV route；应使用 `_950` 卡单独提取 |
 
 ## 限制与失败边界
 

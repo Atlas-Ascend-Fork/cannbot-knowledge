@@ -94,3 +94,10 @@ MoE 层在 **profile run** 下、且图模式为 aclgraph 时，profiling 估出
 - 溯源下探：
   - [vllm-ascend-pr-3158-bugfix-fix-oom-in-aclgraph](https://github.com/vllm-project/vllm-ascend/pull/3158)
   - [vllm-ascend-pr-4366-bugfix-moe-enable-force-load-balance-in-aclgraph](https://github.com/vllm-project/vllm-ascend/pull/4366)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoE token dispatcher 把中间张量挂 self. 属性阻止 GC：aclgraph 峰值内存虚高触发 OOM，token_combine 末尾置 None 释放](moe_token_dispatcher_self_attr_oom_aclgraph.md)（`related`）：实例属性对张量持有强引用。；profiling 阶段没有实际走一遍某条会额外吃 NPU 内存的路径、或没有触发某个会改变显存分布的均衡步，导致峰值被低估，运行期真实占用超出预留而 OOM。两卡是 aclgraph MoE OOM 排障中必须区分的两条机制：运行期中间张量滞留与 profiling 漏覆盖。
+- [MoE 长序列 prefill 峰值显存 / OOM：专家负载不均 + dispatch 中间量放大；分块 / 均衡 / double-routing 处置](moe_prefill_oom_peak_memory.md)（`related`）：［expert-parallel］(../../concepts/parallelism/expert_parallel.md) MoE 模型在**长序列 prefill** 阶段 device OOM（`EL0004 Failed to allocate memory` / `out of memory`），常发生在 MoE 的 `grouped_matmul` 或 dispatch 展开处；同配置换短输入 / 小序列不复现。；根本判据（可迁移，独立于具体框架）：**profile_run 只有把「所有会拉高真实峰值的路径和分布」都在 profiling 阶段实际跑一遍，估计值才可信**。任何「只在特定通信 / 算子路径才发生的额外 NPU 内存分配」，或「只有做了负载均衡后才呈现的真实显存分布」，若没在 profiling 里被主动触发，就会被漏计 → 峰值低估 → 运行期 OOM。下面两个具体信号是这条判据的两种表现。；焦点给出长序列 prefill 的 OOM 现象，目标说明 profile_run 漏跑高峰路径或分布会低估峰值并导致运行期 OOM。
+<!-- cannbot:related:end -->

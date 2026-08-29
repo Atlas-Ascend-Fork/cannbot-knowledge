@@ -25,9 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__ushort_as_half](../../half_type/half_precision_conversion_functions/_ushort_as_half.md)（`related`）：__ushort_as_half 与《__ushort_as_bfloat16》的实质衔接是：__ushort_as_half 是位重解释而非数值转换；bfloat16 对应入口、half 类型转换总览和 low-half 提取帮助区分相同位模式的读取方式。
-<!-- cannbot:related:end -->

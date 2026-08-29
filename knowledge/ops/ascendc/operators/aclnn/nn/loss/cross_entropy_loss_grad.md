@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:14:45Z"
-updated_at: "2026-08-25T17:14:45Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -772,9 +772,9 @@ DataCopyPad(weightMaskLocal, workspaceGm, {1, (uint32_t)(this->usedCoreNum * siz
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b` classic Tiling | `ascend910_93` 共用 classic Tiling | regbase Tiling，新增 full-load/empty route |
 | Kernel/资源 | classic Vector API，512B tile | 同 A2 | MicroAPI，VReg/UB block 平台查询，POD 不同 |
 
@@ -813,3 +813,9 @@ DataCopyPad(weightMaskLocal, workspaceGm, {1, (uint32_t)(this->usedCoreNum * siz
 | 同步 | Queue 生命周期和 mean 全核 barrier | depth 1 不得提前覆盖 | `PipeM2V/SyncAll` |
 | 精度与尾块 | 16 位输入升 fp32、末尾 RINT；DMA 只写 valid | cast 顺序、target 减法与 tail 长度 | `ComputeLog/CopyOutLog` |
 | 失败边界 | Tiling shape 失败阻断 launch | 不得把非法 reduction、A=0、越界 target 当作 fallback | `GetTilingInput/GetTilingAttr` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CrossEntropyLossGrad 950 ACLNN 算子知识](cross_entropy_loss_grad_950.md)（`same_topic`）：公开 `labelSmoothing=0` 时，令 `m_i=1［target_i!=ignoreIndex］`，`w_i=1` 或 `weight［target_i］`：；公开支持的 `labelSmoothing=0` 下，令 `m_i = 1［target_i != ignoreIndex］`，`w_i=1`（weight 缺省）或 `weight［target_i］`。。两端定义同一 CrossEntropyLossGrad 的 target mask、可选 weight 与 labelSmoothing=0 公开语义，分别闭合 950 RegBase 与 A2/A3 classic Vector 路线，可用于平台实现和边界对照。
+<!-- cannbot:related:end -->

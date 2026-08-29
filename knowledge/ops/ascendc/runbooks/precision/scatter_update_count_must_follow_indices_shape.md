@@ -260,11 +260,5 @@ at::Tensor scatter(const at::Tensor& data, int64_t dim,
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Scatter](../../apis/simd_api/basic_api/memory_vector_compute/scatter_gather/scatter_isasi.md)（`exemplifies`）：《Scatter 非散射维可缩小，更新量须按 indices 计算》给出“将 Scatter 的非散射维错误约束为与 data 等长会拒绝合法输入，并按 data 行数展开索引造成越界；应分离输出行数与更新行数。”；该约束/探针可直接复现、解释或前置验证《Scatter》中的“根据目的地址偏移张量将连续输入张量的元素分散到结果张量的指定位置。”。
-- [ScatterDiscrete](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_store/scatter_discrete.md)（`exemplifies`）：ScatterDiscrete 与《Scatter 非散射维可缩小，更新量须按 indices 计算》的实质衔接是：ScatterDiscrete 与 Gather、C/基础 Scatter 形成索引读写对偶；两张故障卡直接约束重复索引归约和 updates 形状。
-- [asc_scatter](../../apis/simd_api/c_api/reg/reg_store/asc_scatter_deprecated.md)（`exemplifies`）：asc_scatter 与《Scatter 非散射维可缩小，更新量须按 indices 计算》的实质衔接是：废弃 asc_scatter 的现行 C/基础/Reg Scatter 是迁移路径；三张故障卡直接约束 indices 形状、重复地址归约和写冲突。
-- [FP16 scatter 归约逐次回写放大相消误差](low_precision_scatter_reduction_needs_fp32_accumulator.md)（`related`）：FP32 accumulator 修复只解决数值累加；更新次数和非 scatter 维 stride 仍必须由 indices/updates shape 决定，否则会越界或拒绝合法输入。
-- [Gather 非 dim 维缩小时折叠步长错位](gather_non_axis_shape_shrink_requires_per_axis_source_strides.md)（`related`）：Scatter 与 Gather 都允许非索引轴的 index tensor extent 小于 data；两卡分别证明不能用 data 的折叠行数展开更新，也不能用 extent 相等假设推导源步长。
-- [半精度 shadow 跨流竞态 — 转换与 kernel 两侧做设备同步](torch_npu_async_temporaries_need_completion_before_raw_kernel.md)（`related`）：focal 的 host 将 indices/updates 转换为临时 carrier 后由 raw kernel 直接读 GM；该卡解释这些异步转换为何必须在 launch 前完成，避免把未就绪的零索引误判为 shape 计数错误。
-- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](repeated_overwrite_updates_need_ordered_ub_merge.md)（`related`）：focal 修正 totalUpdates 后，重复目标 overwrite 仍需保持更新顺序和唯一写所有权；该卡给出更新域正确但冲突语义仍可能丢写的下游验证。
+- [Scatter 950 Direct Invoke 算子知识](../../operators/direct/nn/index/scatter_950.md)（`related`）：故障卡要求“kernel 实际循环次数应为 `totalUpdates=indices.numel()=Midx×Ku`”；Scatter 950 实现卡则规定“`dataNum=product(dataShape)`，`updatesNum=product(indexShape)`。”，两端共同把输出域容量和更新域次数分离，可直接核查 Host tiling 是否错误地用 data 行数展开 indices/updates。
 <!-- cannbot:related:end -->

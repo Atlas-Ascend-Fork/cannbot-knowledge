@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.programming_model.execution_unit.cube", "topic.i
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["a3"]
 ---
 
@@ -34,7 +34,7 @@ The extend info: errcode:(0, 0x200000000000000, 0) errorStr: The address for the
 - **API 路径**：Cube 核 API（`DataCopy` Nd2Nz、`LoadData`/`LoadData2DParams`、`Mmad`/`MmadParams`、`Fixpipe`/`FixpipeParamsV220`），操作 L1/L0A/L0B/L0C Buffer。
 - **验证过的平台与 CANN 版本**：A3 实体卡（ascend910_93 / `--npu-arch=dav-2201`），CANN 9.1.0。与 frontmatter `platforms: [a3]` 严格一致。
 - **适用粒度**：`operator_family`（所有 Cube 核直调 kernel 入口均适用，不限 PV matmul）。
-- **不适用或未验证场景**：算子工程（msOpGen / aclnn）方式由 op_host 侧控制核类型，不在本卡范围；Ascend950（A5）仿真器见独立卡（cannsim 不支持 Cube 核直调）；A2（dav-200）未验证。
+- **不适用或未验证场景**：算子工程（msOpGen / aclnn）方式由 op_host 侧控制核类型，不在本卡范围；Ascend950（950）仿真器见独立卡（cannsim 不支持 Cube 核直调）；A2（dav-200）未验证。
 
 ## 判别方法
 
@@ -75,17 +75,11 @@ The extend info: errcode:(0, 0x200000000000000, 0) errorStr: The address for the
 ## 失效边界
 
 - CANN 9.1.0 头文件未暴露 `__cube__` 函数级标记，`KERNEL_TASK_TYPE_DEFAULT` 宏是当前唯一编译期标记途径；后续 CANN 版本若暴露 `__cube__`，做法可能变化。
-- A5（Ascend950）**仿真器**无法验证本判别是否在 A5 真实硬件上也成立——cannsim Ascend950PR 不支持 Cube 核直调 kernel 执行（见相关独立卡）；需在真实 Ascend950 卡上复验。A5 真实芯片：未验证，推断可迁移。
+- 950（Ascend950）**仿真器**无法验证本判别是否在 950 真实硬件上也成立——cannsim Ascend950PR 不支持 Cube 核直调 kernel 执行（见相关独立卡）；需在真实 Ascend950 卡上复验。950 真实芯片：未验证，推断可迁移。
 - A2（dav-200）：未验证，推断可迁移（同样有 Cube/AIV 区分）。
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMmad](../../apis/simd_api/c_api/cube_compute/asc_mmad.md)（`exemplifies`）：《Cube 直调 retCode=0x26：AIV 误跑 Cube API 越界》说明Cube 核直调 kernel 入口 extern "C" __global__ __aicore__ 未标记核类型时 bisheng 按 MIX 模式编译，kernel 被派发到 AIV 核执行 Cube 专属 API（LoadData/Mmad/Fixpipe），AIV 核无 L0A/L0B/L0C 硬件单元，访问 AIC 内部 buffer 越界，触发 aicore exception retCode=0x26 / ErrCode=507015，plog 表现为 aivector error 而非 Cube 侧错误。判别要点：代码用 Cube API、报错却是 aivector error + fixp_error 非零 + scalar access internal buffer of AICore is out of bounds。；《AscMmad》说明Ascend C矩阵乘加（Mmad）核心计算接口，封装昇腾NPU硬件矩阵乘加能力，用于全连接层、卷积层等神经网络算子开发。。二者在报错的判别核心是未标核类型导致AIV执行LoadData/Mmad等Cube专属指令，需从kernel type和Cube调用两端验证上存在可执行的直接衔接。
-- [LoadData](../../apis/simd_api/basic_api/cube_compute/cube_compute_load/load_data_3_d.md)（`exemplifies`）：《LoadData》的任务是“将NC1HWC0格式的Feature Map完成Image to Column展开后搬入L0A/L0B Buffer，也可用于2D格式数据搬运。”。《Cube 直调 retCode=0x26：AIV 误跑 Cube API 越界》具体提供“Cube 核直调 kernel 入口 extern "C" __global__ __aicore__ 未标记核类型时 bisheng 按 MIX 模式编译，kernel 被派发到 AIV 核执行 Cube 专属 API（LoadData/Mmad/Fixpipe），AIV 核无 L0A/L0B/L0C 硬件单元，访问 AIC 内部 buffer 越界，触发 aicore exception retCode=0x26 / ErrCode=507015，plog 表现为 aivector error 而非 Cube 侧错误。判别要点：代码用 Cube API、报错却是 aivector error + fixp_error 非零 + scalar access internal buffer of AICore is out of bounds。”，它直接用于3D LoadData 的 Fmatrix、repeat、boundary、padding 与 L1/L0 地址合同。
-- [LoadData](../../apis/simd_api/basic_api/cube_compute/cube_compute_load/load_data_gm_to_l1_2_dv2.md)（`exemplifies`）：《LoadData》处理“完成普通矩阵计算所需的2D格式数据搬运，以512字节的数据分形为单位从Global Memory搬运至L1 Buffer。”。《Cube 直调 retCode=0x26：AIV 误跑 Cube API 越界》明确提供“Cube 核直调 kernel 入口 extern "C" __global__ __aicore__ 未标记核类型时 bisheng 按 MIX 模式编译，kernel 被派发到 AIV 核执行 Cube 专属 API（LoadData/Mmad/Fixpipe），AIV 核无 L0A/L0B/L0C 硬件单元，访问 AIC 内部 buffer 越界，触发 aicore exception retCode=0x26 / ErrCode=507015，plog 表现为 aivector error 而非 Cube 侧错误。判别要点：代码用 Cube API、报错却是 aivector error + fixp_error 非零 + scalar access internal buffer of AICore is out of bounds。”，其参数、调用或验证步骤直接接入GM 到 L1 二维 LoadData 的 Fmatrix、repeat、边界和地址合同。
-- [Mmad](../../apis/simd_api/basic_api/cube_compute/mmad_compute/mmad.md)（`exemplifies`）：《Cube 直调 retCode=0x26：AIV 误跑 Cube API 越界》说明Cube 核直调 kernel 入口 extern "C" __global__ __aicore__ 未标记核类型时 bisheng 按 MIX 模式编译，kernel 被派发到 AIV 核执行 Cube 专属 API（LoadData/Mmad/Fixpipe），AIV 核无 L0A/L0B/L0C 硬件单元，访问 AIC 内部 buffer 越界，触发 aicore exception retCode=0x26 / ErrCode=507015，plog 表现为 aivector error 而非 Cube 侧错误。判别要点：代码用 Cube API、报错却是 aivector error + fixp_error 非零 + scalar access internal buffer of AICore is out of bounds。；《Mmad》说明矩阵乘加核心计算接口，封装昇腾NPU硬件矩阵乘加能力，实现C=A*B+C，广泛用于全连接层、卷积层等算子开发。。二者在报错的判别核心是未标核类型导致AIV执行LoadData/Mmad等Cube专属指令，需从kernel type和Cube调用两端验证上存在可执行的直接衔接。
-- [矩阵计算的搬入](../../apis/simd_api/basic_api/cube_compute/cube_compute_load/cube_compute_load.md)（`exemplifies`）：《Cube 直调 retCode=0x26：AIV 误跑 Cube API 越界》说明Cube 核直调 kernel 入口 extern "C" __global__ __aicore__ 未标记核类型时 bisheng 按 MIX 模式编译，kernel 被派发到 AIV 核执行 Cube 专属 API（LoadData/Mmad/Fixpipe），AIV 核无 L0A/L0B/L0C 硬件单元，访问 AIC 内部 buffer 越界，触发 aicore exception retCode=0x26 / ErrCode=507015，plog 表现为 aivector error 而非 Cube 侧错误。判别要点：代码用 Cube API、报错却是 aivector error + fixp_error 非零 + scalar access internal buffer of AICore is out of bounds。；《矩阵计算的搬入》说明矩阵计算 ISASI 搬入接口集，涵盖 LoadData、DataCopy 等 GM/L1/L0A/L0B 间搬运接口及输入搬运约束。。二者在报错的判别核心是未标核类型导致AIV执行LoadData/Mmad等Cube专属指令，需从kernel type和Cube调用两端验证上存在可执行的直接衔接。
-- [aclnn 全绿但 GE 图模式 error 263 分层判别](aclnn_ge_error_263.md)（`related`）：《Cube 直调 retCode=0x26：AIV 误跑 Cube API 越界》说明Cube 核直调 kernel 入口 extern "C" __global__ __aicore__ 未标记核类型时 bisheng 按 MIX 模式编译，kernel 被派发到 AIV 核执行 Cube 专属 API（LoadData/Mmad/Fixpipe），AIV 核无 L0A/L0B/L0C 硬件单元，访问 AIC 内部 buffer 越界，触发 aicore exception retCode=0x26 / ErrCode=507015，plog 表现为 aivector error 而非 Cube 侧错误。判别要点：代码用 Cube API、报错却是 aivector error + fixp_error 非零 + scalar access internal buffer of AICore is out of bounds。；《aclnn 全绿但 GE 图模式 error 263 分层判别》说明aclnn 预编译 ST 全绿但 GE 图模式 TBE 动态编译 RunGraph 触发 AI Core error 263(aivec) 时，用 plog/kernel-JSON/空张量探针区分「tiling 未传递误判」「tiling 大小未注册」「kernel 向量指令执行期崩」三类原因；arg5=0 不代表 tiling 未传递（sysParam 单独传递），空张量 RunGraph 成功即排除图基础设施。。二者在报错的判别核心是未标核类型导致AIV执行LoadData/Mmad等Cube专属指令，需从kernel type和Cube调用两端验证上存在可执行的直接衔接。
-- [直调 kernel-type 裸赋值标记无效](kernel_type.md)（`same_topic`）：《Cube 直调 retCode=0x26：AIV 误跑 Cube API 越界》说明Cube 核直调 kernel 入口 extern "C" __global__ __aicore__ 未标记核类型时 bisheng 按 MIX 模式编译，kernel 被派发到 AIV 核执行 Cube 专属 API（LoadData/Mmad/Fixpipe），AIV 核无 L0A/L0B/L0C 硬件单元，访问 AIC 内部 buffer 越界，触发 aicore exception retCode=0x26 / ErrCode=507015，plog 表现为 aivector error 而非 Cube 侧错误。判别要点：代码用 Cube API、报错却是 aivector error + fixp_error 非零 + scalar access internal buffer of AICore is out of bounds。；《直调 kernel-type 裸赋值标记无效》说明AscendC 直调 kernel 用文件作用域裸赋值 __enable_feature_for_compile_default = KERNEL_TYPE_*; 标记 CUBE+VEC mix 类型时编译失败；该写法只被 extract_host_stub.py 的正则匹配为文本标记，不是合法 C++ 语句，属 banned 路线。。二者在报错的判别核心是未标核类型导致AIV执行LoadData/Mmad等Cube专属指令，需从kernel type和Cube调用两端验证上存在可执行的直接衔接。
+- [LoadData](../../apis/simd_api/basic_api/cube_compute/cube_compute_load/load_data_2_d.md)（`exemplifies`）：函数体调用 Cube 专属 API（`AscendC::LoadData` / `AscendC::Mmad` / `AscendC::Fixpipe`）；将数据从L1 Buffer搬运到L0A或L0B Buffer的2D模式搬运接口。。运行手册把 LoadData 这类 L1→L0 Cube API 放入 AIV 核导致 0x26 的失败路线，直接展示接口所属执行单元约束在编译排障中的应用。
 <!-- cannbot:related:end -->

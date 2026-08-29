@@ -22,5 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Brcb](../../basic_api/memory_vector_compute/data_padding/brcb.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscBrcb正文说明“给定一个输入矢量，每一次取输入矢量中的8个数填充到结果矢量的8个datablock（32Bytes）中去，每个数对应一个datablock”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
+- [Brcb](../../basic_api/memory_vector_compute/data_padding/brcb.md)（`same_topic`）：Brcb接口对输入数据，每一次取输入张量中的8个数进行填充操作，将每个数填充到结果张量的一个DataBlock（32字节）中。；给定一个输入矢量，每一次取输入矢量中的8个数填充到结果矢量的8个datablock（32Bytes）中去，每个数对应一个datablock。。两卡定义相同的八元素逐 DataBlock 广播语义，只是接口层和平台表达不同。
 <!-- cannbot:related:end -->

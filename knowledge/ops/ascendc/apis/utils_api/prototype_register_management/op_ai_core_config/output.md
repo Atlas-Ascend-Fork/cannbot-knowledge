@@ -23,11 +23,3 @@ platforms: [agnostic]
 算子参数定义，OpParamDef请参考OpParamDef。
 ## 约束说明
 无
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddConfig（OpAICoreDef）](../op_ai_core_def/add_config.md)（`related`）：Output 配好 OpAICoreConfig 后由 AddConfig 连同处理器型号注册到 OpAICoreDef，形成配置到生效的链路。
-- [Input（原型注册管理）](input.md)（`related`）：Input/Output 分别为特定处理器注册差异化原型参数，并返回 OpParamDef 继续配置；共同定义处理器专属签名。
-- [OpAICoreConfig](op_ai_core_config.md)（`same_topic`）：Output 是 OpAICoreConfig 对象构建差异化输出签名的具体方法；索引页给出对象其余配置与注册入口。
-<!-- cannbot:related:end -->

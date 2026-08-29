@@ -23,6 +23,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [TopK BF16 tie 索引顺序与 CPU 不一致](../../../../runbooks/precision/topk_bf16_tie_cpu.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《TopK》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [TopKTiling](top_k_tiling.md)（`related`）：TopKTiling 先计算 TopK 所需临时空间与 TopKParams，kernel 侧 TopK 直接消费这组参数完成排序选择。
+- [TopK BF16 tie 索引顺序与 CPU 不一致](../../../../runbooks/precision/topk_bf16_tie_cpu.md)（`exemplifies`）：本算子在 plugin 层把 BF16 先 Cast 为 float32 再调 `AscendC::TopK<float>`、结果 Cast 回 BF16。；获取最后一个维度的前k个最大值或最小值及其对应的索引。输入为向量时对全部元素操作，输入为矩阵时沿最后一维对每行操作。；故障卡直接调用目标 TopK API，并围绕其 values/indices 输出诊断 BF16 tie 的索引差异。
+- [TopKTiling](top_k_tiling.md)（`related`）：提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。Tiling参数通过TopK Tiling获取。；host侧Tiling接口，用于获取TopK kernel计算所需的Tiling参数，分两步：通过GetTopKMaxMinTmpSize获取最大和最小临时空间大小；通过GetTopKNDTilingInfo获取kernel侧所需tiling参数。计算接口明确依赖后者生成临时空间与 TopKParams，形成 Host Tiling 到 Kernel 调用的直接契约。
 <!-- cannbot:related:end -->

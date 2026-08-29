@@ -26,7 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SetDequantType](../cube_compute/matmul_tiling/set_dequant_type.md)（`related`）：GetAscendDequantTmpBufferFactorSize 与《SetDequantType》的实质衔接是：factor 查询与 GetAscendDequantMaxMinTmpSize 共同换算临时空间和单次元素数，AscendDequant 是结果消费方，SetDequantType 控制输出模式。
-- [AscendDequant](ascend_dequant.md)（`same_topic`）：GetAscendDequantTmpBufferFactorSize 与《AscendDequant》的实质衔接是：factor 查询与 GetAscendDequantMaxMinTmpSize 共同换算临时空间和单次元素数，AscendDequant 是结果消费方，SetDequantType 控制输出模式。
-- [GetAscendDequantMaxMinTmpSize](get_ascend_dequant_max_min_tmp_size.md)（`same_topic`）：GetAscendDequantTmpBufferFactorSize 与《GetAscendDequantMaxMinTmpSize》的实质衔接是：factor 查询与 GetAscendDequantMaxMinTmpSize 共同换算临时空间和单次元素数，AscendDequant 是结果消费方，SetDequantType 控制输出模式。
+- [AscendDequant](ascend_dequant.md)（`related`）：选择“提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持标量/矢量scale场景。临时空间大小通过GetAscendDequantMaxMinTmpSize获取。”的显式 sharedTmpBuffer 重载后，用“获取AscendDequant接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。”的 maxLiveNodeCount 与 extraBuf 反算 currentShapeSize，并处理 maxLiveNodeCount 为零的边界。
 <!-- cannbot:related:end -->

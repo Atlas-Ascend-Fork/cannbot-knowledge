@@ -42,6 +42,5 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [反量化 561103 实为 CheckBroadcastShape 过严](561103_checkbroadcastshape.md)（`related`）：beta 属性误读也可在图 tiling 阶段报 561103；固定属性并核对 shape 是区分两者的 A/B。
-- [561103 同名算子签名冲突链接绑内置版](561103.md)（`same_topic`）：561103 同名算子签名冲突链接绑内置版 与《561103: beta 属性按 float 读致 GRAPH_FAILED》的实质衔接是：同名签名冲突的核心是运行时绑定到错误或被自动生成覆盖的符号；符号探测、opType 碰撞、pytest 绕过和 exclude 覆盖案例给出可执行鉴别，其他 561103 卡用于排除属性与 tiling 路由根因。
+- [softplus_v2_grad tiling rank 校验拒标量广播](softplus_v2_grad_tiling_rank.md)（`related`）：“rank(gradOutput)=0 != rank(self)=2”给出焦点端事实；“GetAttrPointer<double>”给出候选端事实。两张卡都定位 softplus_v2_grad Host tiling 的 GRAPH_FAILED，但一张是 raw rank 过严校验，另一张是 beta 按错误类型读取；联合阅读提供同一 561103/GRAPH_FAILED 的分支诊断。
 <!-- cannbot:related:end -->

@@ -166,3 +166,12 @@ OM/ATC 离线静态图是「图固化离线执行」路线，torchair 整图编�
 - 模型页：[pi0](../manipulation/pi0.md)、[pi05](../manipulation/pi05.md)、[act](../manipulation/act.md)
 - 跨域对照：[npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md)、[torchair](../../../inference/concepts/frameworks/torchair.md)、[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 310P（OM 离线推理目标平台）](../platforms/ascend_310p.md)（`related`）：**角色**：310P 是 OM 离线推理（PyTorch→ONNX→ATC→OM）链路的执行平台。；`cann-recipes-embodied-ai` 操作类 VLA 模型在 **Ascend 310P**（OrangePi AI Station 等边缘形态）上的离线推理部署范式：**PyTorch → ONNX → ATC → OM**，固定 shape、静态图、ACL Runtime 执行。平台卡确定执行目标，范式卡把同一链路细化为导出、ATC 编译和 ACL Runtime 验证。
+- [NPU 图模式（ge_graph / npugraph_ex）](../../../inference/concepts/techniques/npu_graph_mode.md)（`related`）：“前者把图固化为 OM 文件离线执行，后者在 torch 运行时 JIT 编译入图”与“图模式通过 `torch.compile` 把前向逻辑捕获成图、交给 NPU 后端编译执行”给出了部署时在 OM 离线固化和 torch 运行时入图之间选路的直接对照。
+- [Pi0.5（π0.5 · 开放世界泛化 VLA · 昇腾训练/在线推理/OM 离线三链路）](../manipulation/pi05.md)（`related`）：`manipulation/pi05/infer_with_om/`：PyTorch → ONNX → ATC → OM（CANN 8.0.0~8.2.RC1）。；`cann-recipes-embodied-ai` 操作类 VLA 模型在 **Ascend 310P**（OrangePi AI Station 等边缘形态）上的离线推理部署范式：**PyTorch → ONNX → ATC → OM**，固定 shape、静态图、ACL Runtime 执行。；模型页给出 Pi0.5 四阶段链路，范式页展开导出、编译、执行和逐段精度对齐，构成同一 310P 部署任务链。
+- [Pi0（π0 · VLA 流匹配模型 · 昇腾训练/在线推理/OM 离线三链路）](../manipulation/pi0.md)（`related`）：**两段 OM 切分**：part1 VLM（`modeling_pi0_vlm.py`，输出 `past_kv_tensor` + `prefix_pad_masks`）+ part2 action expert（`modeling_pi0_action_expert.py`，10 步去噪，循环调用），`run_om_e2e.py` 端到端串联。；Pi0/Pi0.5 不一次性导出完整图，而是拆成 **VLM（part1）** 与 **action expert（part2）** 两段 OM（`docs/manipulation/pi0/infer_with_om/README.md` §2）：；Pi0 模型页给出两段 OM 的具体脚本和中间张量，部署范式页解释相同切分的转换、精度对齐与运行顺序，组成同一 310P 离线部署任务链。
+<!-- cannbot:related:end -->

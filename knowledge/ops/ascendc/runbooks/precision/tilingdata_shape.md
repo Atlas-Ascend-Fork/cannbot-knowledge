@@ -121,11 +121,6 @@ ISOLATED beta=1.0 thr=-1e+38 self=1.0 grad=0.5: golden=0.5 actual=0.5
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Host 缺 SetDataSize 致 TilingData 截断](host_setdatasize_tilingdata.md)（`related`）：即使 shape/key 正确，Host 若未 SetDataSize 仍会使 Kernel 读取不完整结构；这是序列化而非缓存根因。
-- [softplus_v2_grad tiling rank 校验拒标量广播](../compilation/softplus_v2_grad_tiling_rank.md)（`related`）：Softplus rank 卡说明 raw rank/shape 写入 TilingData 的时机，能核对 shape 字段本身是否在缓存前就错误。
-- [反量化 561103 实为 CheckBroadcastShape 过严](../compilation/561103_checkbroadcastshape.md)（`related`）：广播 shape 校验在 Host tiling 入口提供前置错误信号，可区分非法 shape 与合法 shape 下复用旧 TilingData。
-- [ACLNN L2 缓存键漏 scalar 致批跑误命中](../compilation/aclnn_l2_cache_key_missing_scalar_partial_mismatch.md)（`same_topic`）：该卡给出独立进程正确、同进程顺序调用错误且 actual 对应旧 threshold 的隔离探针，直接复现 L2 cache key 漏 scalar 的部分匹配。
-- [TilingKey 缓存 correction 致 tilingdata 复用](../compilation/ge_tilingkey_cache_reuse_per_call_attr_pollution.md)（`same_topic`）：TilingKey 缓存 correction 致 tilingdata 复用 与《标量属性入 TilingData 致同 shape 跨调用陈旧》的实质衔接是：该问题由 GE 按 TilingKey 缓存 correction 造成同 shape 调用复用旧 TilingData；属性传递指南和注册/判定宏共同说明如何让变化属性进入正确 tiling 分派。
-- [aclnn TilingData 缓存致 runtime attr 陈旧](aclnn_tilingdata_runtime_attr.md)（`same_topic`）：两卡都以同 shape 不同 runtime scalar 连跑复现 TilingData 陈旧；一张是 softplus ACLNN 实例，一张提炼 shape-only 缓存根因。
-- [算子属性默认值 stringstream 截断致 FP32 标量误差](stringstream_fp32.md)（`same_topic`）：算子属性默认值 stringstream 截断致 FP32 标量误差 与《标量属性入 TilingData 致同 shape 跨调用陈旧》的实质衔接是：OpDef Attr是默认 float 字面量进入 op_build 序列化的起点，GET_TILING_DATA_WITH_STRUCT是 device 读取终点；TilingData缓存与 numpy标量提升是相同稳定ULP现象的关键差分根因。
+- [ACLNN L2 缓存键漏 scalar 致批跑误命中](../compilation/aclnn_l2_cache_key_missing_scalar_partial_mismatch.md)（`same_topic`）：**若 `DFX_IN` 遗漏了某个影响 TilingData 的 scalar（如 `beta`/`threshold`），该 scalar 不参与 cache key hash**；同 shape/dtype 不同属性的后续调用复用陈旧 `TilingData`，kernel 读到陈旧 `beta`/`threshold`，分支判定与数值均偏离 golden。。两卡都定位同一 SoftplusV2Grad 批跑陈旧 scalar 故障：左卡从 DFX_IN 缺项解释缓存键并给出补项修复，右卡用隔离/顺序探针证明同 shape 跨调用复用旧 TilingData；核心排障决策一致。
+- [aclnn TilingData 缓存致 runtime attr 陈旧](aclnn_tilingdata_runtime_attr.md)（`same_topic`）：`beta` 与 `threshold` 作为 `OP_ATTR(beta, threshold)` 进入 L0 launcher，tiling 函数以 `attrs->GetFloat(0/1)` 读出后写入 `TilingData.beta_scalar`/`threshold_scalar`，kernel 从 `td_->beta_scalar`/`td_->threshold_scalar` 取值。；本算子把 `beta`/`threshold` 这两个**每次调用都不同**的 runtime scalar 写进了 `TilingData`。。两卡描述同一 softplus_v2_grad 同 shape 跨调用复用陈旧属性的问题，候选进一步用 tiling 日志和 AbandonCache 验证机制。
 <!-- cannbot:related:end -->

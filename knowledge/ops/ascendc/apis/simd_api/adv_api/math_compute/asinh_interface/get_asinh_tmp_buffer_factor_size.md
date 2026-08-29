@@ -26,7 +26,5 @@ kernel侧Asinh接口的计算需要开发者预留 申请临时空间，最大�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Asinh](asinh.md)（`related`）：The factor query supports deriving the maximum Asinh tile size from a fixed available workspace.
-- [Asinh接口](asinh_interface.md)（`related`）：《GetAsinhTmpBufferFactorSize》明确“获取Asinh接口的maxLiveNodeCount和extraBuffer，用于推算固定空间下单次最大计算元素数”；它与《Asinh接口》的“提供Asinh反双曲正弦计算接口及其Tiling临时空间大小查询接口，包含Asinh、GetAsinhMaxMinTmpSize等。”在实际调用参数、数据流或结果校验上直接衔接。
-- [GetAsinhMaxMinTmpSize](get_asinh_max_min_tmp_size.md)（`same_topic`）：《GetAsinhMaxMinTmpSize》的任务是“在host侧获取Asinh接口预留临时空间的最大和最小值，用于Tiling参数选择”。《GetAsinhTmpBufferFactorSize》具体提供“获取Asinh接口的maxLiveNodeCount和extraBuffer，用于推算固定空间下单次最大计算元素数”，它直接用于Asinh workspace 上下界和 factor 到 Kernel 的同一空间合同。
+- [GetAsinhMaxMinTmpSize](get_asinh_max_min_tmp_size.md)（`related`）：本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用；maxTmpBuffer = maxLiveNodeCount * inputSize * typeSize + extraBuffer。前者给出 Asinh 临时空间合法范围，后者给出空间与单次输入规模的换算公式，直接服务同一 Host Tiling 预算。
 <!-- cannbot:related:end -->

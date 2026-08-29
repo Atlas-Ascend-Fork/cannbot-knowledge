@@ -41,8 +41,6 @@ SparseMatmulType类型参数说明
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMmadSparse](../../../../../apis/simd_api/c_api/cube_compute/asc_mmad_sparse.md)（`explains`）：4:2稀疏矩阵乘 与《AscMmadSparse》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
-- [MmadWithSparse](../../../../../apis/simd_api/basic_api/cube_compute/mmad_compute/mmad_with_sparse.md)（`explains`）：4:2稀疏矩阵乘 与《MmadWithSparse》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
-- [SetSparse](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_sparse.md)（`explains`）：4:2稀疏矩阵乘 与《SetSparse》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
-- [SetSparseIndex](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_sparse_index.md)（`explains`）：4:2稀疏矩阵乘 与《SetSparseIndex》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
+- [SetSparse](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_sparse.md)（`explains`）：在Host侧，获取Tiling前需要通过SetSparse接口设置Sparse Matmul场景。；设置Matmul的使用场景是否为Sparse Matmul场景。。实践指南明确在获取 Tiling 前调用 SetSparse，把接口的布尔场景开关放入 Host 侧稀疏 Matmul 配置顺序。
+- [SetSparseIndex](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_sparse_index.md)（`explains`）：通过SetSparseIndex接口传入稠密化过程中生成的索引矩阵。；设置稀疏矩阵稠密化过程生成的索引矩阵。 索引矩阵在稠密化中的作用请参考MmadWithSparse。。实践指南把 SetSparseIndex 放到 4:2 稀疏 Matmul 的索引生成与传入步骤中，说明该接口在完整 Kernel 流程中的使用位置。
 <!-- cannbot:related:end -->

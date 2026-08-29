@@ -8,7 +8,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/asc_get_reduce_min_cnt.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 ---
 
@@ -22,8 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscDatablockReduceMin](asc_datablock_reduce_min.md)（`related`）：GetReduceMinCnt 提供归约计数/辅助信息，和 DataBlockReduceMin 的最小值结果用途不同。
-- [AscReduceMinDatablock](../reg/reduce_compute/asc_reduce_min_datablock.md)（`same_topic`）：AscReduceMinDatablock 与《AscGetReduceMinCnt》的实质衔接是：AscReduceMinDatablock 在每个 DataBlock 取最小值；Reg/vector/basic 的 datablock 归约、repeat 归约及 block 大小查询共同决定输入粒度与结果位置。
-- [AscRepeatReduceMin](asc_repeat_reduce_min.md)（`same_topic`）：AscGetReduceMinCnt 在同步后取回 RepeatReduceMin 产生的最小值和索引，是结果消费链的直接下一步。
-- [ReduceMin](../../basic_api/memory_vector_compute/reduction_compute/reduce_min.md)（`same_topic`）：ReduceMin 与《AscGetReduceMinCnt》的实质衔接是：ReduceMin 的高阶、基础、Reg 和 C 入口共享最小值归约，但索引、datablock/repeat 粒度及临时空间不同；A5 错例和使用指南直接限定选择与验证。
+- [AscRepeatReduceMin](asc_repeat_reduce_min.md)（`related`）：此接口用于获取执行asc_repeat_reduce_min操作后的最小值，以及第一个最小值时的索引。；对每个Repeat内所有元素求最小值，以及Repeat内的首个最小值元素在当前Repeat中的索引index。。结果读取接口的输入正是 asc_repeat_reduce_min 产出的最小值与首个索引，计算接口说明该结果在每个 Repeat 内的生成语义，二者构成归约计算到结果解释的调用链。
 <!-- cannbot:related:end -->

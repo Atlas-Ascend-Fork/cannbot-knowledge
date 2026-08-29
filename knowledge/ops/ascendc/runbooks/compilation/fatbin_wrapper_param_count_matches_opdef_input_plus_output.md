@@ -139,8 +139,6 @@ extern "C" __global__ __aicore__ void advance_step(GM_ADDR input_tokens, GM_ADDR
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MulAddDst](../../apis/simd_api/basic_api/memory_vector_compute/composite_compute/mul_add_dst.md)（`exemplifies`）：本卡的 in-place 输出复用语义可由 MulAddDst 这类显式 dst 累加接口对照，但 wrapper 形参数仍必须保留声明的 output。
-- [ld.lld cannot open _mix_aiv 报错判别](ld_lld_cannot_open_mix_aiv.md)（`related`）：《advance_step in-place kernel FATBIN wrap》明确“ascend950 FATBIN wrapper 按声明输入+输出数量生成调用，in-place kernel 缺输出参数致 CCEC 编译失败、.o 缺失。”；它与《ld.lld cannot open _mix_aiv 报错判别》的“cube/vec 双段编译下 ld.lld 报 cannot open _mix_aiv_*.o 实为 AIV 编译阶段失败、.o 未生成，需过滤链接噪声定位真实 AIV 编译错误。”在实际调用参数、数据流或结果校验上直接衔接。
-- [optional input 未连接触发 InferShape 失败](optional_input_infershape.md)（`related`）：optional input 卡说明 OpDef 声明会改变框架生成的输入上下文；与本卡共同强调 wrapper/上下文严格服从 OpDef 参数契约。
-- [qgmm_mx FP4 fatbin 缺失致 107000](qgmm_mx_fp4_fatbin_107000.md)（`related`）：QGMM 案例同样通过 FATBIN/CCEC 日志追到中间 .o 未生成，可复用“先查真正编译错误而非 ld.lld 噪声”的诊断顺序。
+- [Output（OpDef）](../../apis/utils_api/prototype_register_management/op_def/output.md)（`exemplifies`）：ascend950 FATBIN 阶段为 kernel 自动生成一个 wrapper，wrapper 的调用实参数 = `OpDef` 声明的 input 数 + output 数 + workspace + tiling。；参数注册的顺序需要和算子kernel入口函数一致。；Output API 规定注册顺序与 Kernel 入口一致，排障实例进一步证明 wrapper 会按 input、output、workspace、tiling 机械生成实参，因此 Kernel 签名必须同时对齐 Output 数量和顺序。
+- [AdvanceStep A2/A3 ACLNN 算子知识](../../operators/aclnn/nn/optim/advance_step.md)（`related`）：FATBIN 生成的 wrapper kernel 调用 `advance_step()` 时传了 14 个实参（8 input + 4 output + workspace + tiling），但 kernel 函数只声明 10 个形参（8 input + workspace + tiling，没有 output 参数）。；四个输出通过输入 GM 原地更新；OpDef 的图输出只用于形状/类型传播。；排障卡证明 950 wrapper 即使面对原地算子也会机械传入四个 output，Operator 卡说明 AdvanceStep 的四个逻辑输出通过输入 GM 原地更新，二者共同解释实现仍须保留输出形参以满足生成 ABI。
 <!-- cannbot:related:end -->

@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:28:28Z"
-updated_at: "2026-08-25T18:28:28Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -430,9 +430,9 @@ INT32 批通过 `Cast/ReduceMin/ReduceMax` 一次检查多个元素，并以错�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开 README/API 明确不支持；虽有 `ascend950` OpDef/binary 接线，构成发布冲突，未生成 A5 正式卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开 README/API 明确不支持；虽有 `ascend950` OpDef/binary 接线，构成发布冲突，未生成 950 正式卡 |
 | Host/Launcher | `ascend910b` config，DAV_2201 ACLNN dtype 表 | `ascend910_93` config，DAV_2201 ACLNN dtype 表 | 实现信号存在但不能覆盖公开不支持结论 |
 | Kernel/资源 | 共用 Key 0 `GroupQuantBase`，32 KiB 主 TBuf 配置 | 与 A2 共用源体及 36 个 dtype binary 组合 | 不作为公开可达链路发布 |
 
@@ -443,7 +443,7 @@ INT32 批通过 `Cast/ReduceMin/ReduceMax` 一次检查多个元素，并以错�
 - POD 宏实现与生成后的 Device ABI 不在固定仓，精确 `sizeof/alignof/offsetof` 不可见；迁移时必须继续使用相同生成宏，不能手抄猜测布局。
 - `CopyInX/CopyOutY.blockCount` 窄化到 uint16，但源码的 `maxSSize<=128` 将公开路径约束在安全范围；shape 乘法和地址计算主要为 int64，`dataCount` 窄化到 uint32 前由 8192 元素上界约束。
 - 核心 32 B workspace 不承载数据；传入空 workspace 会静默 return。ACLNN 空 x 则在 Host 提前成功返回 workspace 0，不启动 Kernel。
-- A5 的公开产品表与实现接线冲突，故 `group_quant_a5.md` 不生成；不得仅据 `ascend950` 文件存在推断公开支持。
+- 950 的公开产品表与实现接线冲突，故 `group_quant_950.md` 不生成；不得仅据 `ascend950` 文件存在推断公开支持。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -452,14 +452,14 @@ INT32 批通过 `Cast/ReduceMin/ReduceMax` 一次检查多个元素，并以错�
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `quant/group_quant/docs/aclnnGroupQuant.md` | `aclnnGroupQuant*`、产品支持表 | A2/A3 公开性、A5 不支持、接口语义与限制 |
+| 入口声明/约束 | `quant/group_quant/docs/aclnnGroupQuant.md` | `aclnnGroupQuant*`、产品支持表 | A2/A3 公开性、950 不支持、接口语义与限制 |
 | 入口实现 | `quant/group_quant/op_host/op_api/aclnn_group_quant.cpp` | `CheckParams`、`Int42Int32PackedTensor`、`aclnnGroupQuant*` | 校验、Contiguous、INT32 view、executor/stream |
 | L0 launcher | `quant/group_quant/op_host/op_api/group_quant.cpp` | `l0op::GroupQuant/GroupQuantAiCore` | 临时输出与 AICore launcher 添加 |
 | Host/Tiling/POD | `quant/group_quant/op_host/group_quant_tiling.h` | `GroupQuantCompileInfo/GroupQuantTilingData/GroupQuantTiling` | POD 字段、类状态与接口 |
 | Host/Tiling/Launcher | `quant/group_quant/op_host/group_quant_tiling.cpp` | `GroupQuantTiling::*`、`Tiling4GroupQuant` | 校验、分核、Key、workspace、注册 |
 | Kernel entry | `quant/group_quant/op_kernel/group_quant.cpp` | `group_quant` | workspace guard、Key 0 router、模板实例 |
 | Kernel body | `quant/group_quant/op_kernel/group_quant_base.h` | `GroupQuantBase::*` | 完整 AIV 数据流、内存、同步、精度和 tail |
-| 平台注册 | `quant/group_quant/op_host/group_quant_def.cpp` | `ops::GroupQuant` | dtype/layout 与 A2/A3/A5 实现配置信号 |
+| 平台注册 | `quant/group_quant/op_host/group_quant_def.cpp` | `ops::GroupQuant` | dtype/layout 与 A2/A3/950 实现配置信号 |
 | A2 binary | `quant/group_quant/op_host/config/ascend910b/group_quant_binary.json` | `GroupQuant_*` 36 entries | A2 dtype 实例闭包 |
 | A3 binary | `quant/group_quant/op_host/config/ascend910_93/group_quant_binary.json` | `GroupQuant_*` 36 entries | A3 dtype 实例闭包 |
 | Kernel 全局接线 | `scripts/kernel/binary_config/ascendc_config.json` | `GroupQuant` | compute unit 与 `auto_sync:false` |

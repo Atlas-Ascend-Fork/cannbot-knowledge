@@ -24,10 +24,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BFloat16数学函数hlog](../../bfloat16_type/bfloat16_math_functions/hlog.md)（`related`）：bfloat16 Hlog 与 half Hlog 数学语义相同但精度和特殊值范围不同，可用于 dtype 路径迁移。
-- [Hlog10](hlog10.md)（`related`）：Hlog 与 Hlog10 处理相同 half 标量和相同饱和/特殊值域，但底数分别为 e 与 10；数学公式换底时必须区分。
-<!-- cannbot:related:end -->

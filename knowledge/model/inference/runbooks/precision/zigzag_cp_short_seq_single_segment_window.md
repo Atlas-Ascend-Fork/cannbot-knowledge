@@ -72,3 +72,9 @@ else:
 - **diff 事实**（clone `@b27dd963cd7b,e306e5aa82dc`，`curl` merged patch）：`models/deepseek-v4/models/modeling_deepseek.py::Attention.forward` 新增 `elif last_rank == 0` 分支（+2/-0）、`models/deepseek-v4/models/modules/attention_data.py::AttnMetaData` 新增 `elif last_rank_before_zz == 0` 分支并把 `last_kv_len` 上提为 `.item()` 标量、删除旧注释 `should be >= 1,`（+7/-4）；diff 与断言逐条对上。
 - **维护者确认**：reviewer 问「加拦截会不会一碰短序列就挂」，作者答「这个不拦截短序列」，佐证改动是**支持**短序列而非拦截，与「补分支而非 raise」的代码一致。
 - 溯源下探：[cann-recipes-infer-pr-459-fix-deepseek-v4-cp-short-sequence-window](https://gitcode.com/cann/cann-recipes-infer/merge_requests/459)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [因果稀疏注意力 CP prefill 的 zigzag 负载均衡：每 rank 两段两次调用 + 头尾因果前缀 actual_seq_lengths（qlen≠kvlen）](../../optimizations/experience/rules/causal_cp_prefill_zigzag_actual_seqlens.md)（`related`）：本页是 ［causal-cp-prefill-zigzag-actual-seqlens］(../../optimizations/experience/rules/causal_cp_prefill_zigzag_actual_seqlens.md) 头尾配对方案在**短序列单段**下的边界失效点；**短序列边界**：当序列短到有效 KV 落进单个段时，头尾配对的「借上一段」假设会失效。两卡共同闭合 zigzag-CP 正常切分规则与单段退化分支。
+<!-- cannbot:related:end -->

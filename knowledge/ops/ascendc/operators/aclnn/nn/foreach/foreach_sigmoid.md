@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_host/config/ascend910_93/foreach_sigmoid_binary.json
     role: implementation
 created_at: "2026-08-25T16:20:27Z"
-updated_at: "2026-08-25T16:20:27Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -549,9 +549,9 @@ Cast(yLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_RI
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，但实现见独立 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，但实现见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 common tiling | `ascend910_93`→同一 arch22 common tiling | arch35 自定义 SIMT tiling |
 | Kernel/资源 | 共用 AIV Vector body | 共用 AIV Vector body | SIMT grid-stride、无 AIV Queue |
 
@@ -594,3 +594,9 @@ Cast(yLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_RI
 | 同步 | TQue 管 DMA，`PIPE_V` 管 Vector/cast | FreeTensor 与 barrier 不得提前 | `ForeachTriangle::Compute` |
 | 精度与尾块 | FP16/FP32 原 dtype；BF16 经 FP32/RINT；尾部 byte copy | `valid`、`maxCastDataCount` 和 cast offset | `InnerComputer`、`CopyIn/CopyOut` |
 | 失败边界 | 校验失败不 launch；未知 key 无输出 | 不把未知 key 当 fallback | `CheckOpInfo`、`foreach_sigmoid` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachSigmoid 950 ACLNN 算子知识](foreach_sigmoid_950.md)（`same_topic`）：单节点 `SIMT`；AICore 外层 block 内对每个 Tensor 发起 512-thread VF，所有可达节点均无 Cube/AIC 或 MIX_CV；单节点 `AIV_VECTOR`；没有 Cube/AIC、MIX_CV、SIMT 或 NDDMA 节点；两卡描述同一 aclnnForeachSigmoid 接口与逐元素语义，但 950 使用 SIMT、A2/A3 使用 AIV Vector，提供平台 route 选型和资源核验。
+<!-- cannbot:related:end -->

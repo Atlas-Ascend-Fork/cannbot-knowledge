@@ -52,10 +52,8 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SK_BIND（SuperKernel）](../../../../apis/utils_api/super_kernel/sk_bind.md)（`explains`）：SKBind 是把任务/算子绑定进 SuperKernel 的实际注册接口。
-- [SIMT 核类型推导失败 — 补 __vector__](../../../../runbooks/compilation/direct_launch_kernel_requires_vector_qualifier.md)（`related`）：该卡说明 direct-launch device 入口缺 vector qualifier 的编译失败，补充适配边界。
-- [SuperKernel原理介绍](principles.md)（`related`）：原理页解释直调如何消除 host launch 并用任务绑定维持执行顺序。
-- [算子自验证说明](operator_self_verification.md)（`related`）：对使用 >> 的直调算子，自验证前还需增加 __sk__ 入口、参数结构体与 SK_BIND，并保持 Kernel Type；否则测试失败不能归因于融合计算本身。
-- [算子适配说明](operator_adaptation.md)（`related`）：调用方 kernel 改造后，被调算子也需满足 direct-call 入口和资源约束。
-- [基于样例工程完成Kernel直调](../../appendix/kernel_direct_call_from_sample.md)（`same_topic`）：样例给出 direct call 的声明、绑定和构建写法，可用于适配验证。
+- [SK_BIND（SuperKernel）](../../../../apis/utils_api/super_kernel/sk_bind.md)（`explains`）：本接口为算子SuperKernel场景提供绑定原核函数和SK子函数的能力。核函数直调算子的完整适配方法请参见核函数直调算子额外适配说明。；- 需要与普通Kernel函数通过SK_BIND宏绑定。。API 卡定义 SK_BIND 的绑定能力并指向直调适配说明，Guide 把该宏列为 SuperKernel 入口与普通 Kernel 配套的必需步骤。
+- [SuperKernel原理介绍](principles.md)（`related`）：核函数直调算子额外适配说明：对于使用>>方式开发的Ascend C算子，进入SuperKernel前需要进行的额外适配工作。；对于使用>>方式开发的Ascend C算子，除了遵循算子适配说明中的通用约束外，还需要在算子Kernel入口侧增加SuperKernel入口函数。本文档介绍具体的适配方法。；目标指南展开焦点明确列出的直调算子额外适配路径。
+- [基于样例工程完成Kernel直调](../../appendix/kernel_direct_call_from_sample.md)（`related`）：完成算子kernel侧实现；需要在算子Kernel入口侧增加SuperKernel入口函数。样例工程卡给出普通 Kernel 直调的构建、Host 调用和验证流程，适配卡说明把这类直调算子纳入 SuperKernel 时必须增加 SK 入口、参数结构和 SK_BIND 的差异步骤。
+- [算子适配说明](operator_adaptation.md)（`related`）：对于使用>>方式开发的Ascend C算子，除了遵循算子适配说明中的通用约束外，还需要在算子Kernel入口侧增加SuperKernel入口函数。本文档介绍具体的适配方法。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。这些约束与具体的开启方式（npugraph_ex后端或GE图模式）无关，大部分约束与算子启动核数（block num）以及SuperKernel启动核数之间的关系相关，需要开发者在算子设计阶段就予以关注。Kernel 直调适配明确建立在通用算子适配约束之上，并增加入口函数这一专属步骤，二者组成完整接入链。
 <!-- cannbot:related:end -->

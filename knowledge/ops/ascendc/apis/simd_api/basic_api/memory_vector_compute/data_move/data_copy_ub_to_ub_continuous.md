@@ -30,10 +30,3 @@ platforms: ['950', a2, a3]
 参数说明：T：操作数的数据类型。支持的数据类型请参考[数据类型](#section4219135304818)。；dst：输出 目的操作数。类型为LocalTensor，存储位置为Unified Buffer，目的地址需要32字节对齐。；src：输入 源操作数。类型为LocalTensor，存储位置为Unified Buffer，源地址需要32字节对齐。；count：输入 参与搬运的元素个数。 **注：count * sizeof(T)需要32字节对齐，若未对齐，搬运量会向下取整到32字节对齐。**
 
 约束：位于Unified Buffer的地址必须32字节对齐。；调用连续搬运接口时，count * sizeof(T)需要32字节对齐，若未对齐，则搬运量会向下取整到32字节对齐。；针对如下产品型号：；- Atlas A2 训练系列产品/Atlas A2 推理系列产品
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopy](data_copy_ub_to_ub_highdim_split.md)（`related`）：《DataCopy》说明支持UB之间的连续数据搬运，数据传输过程中保持原始格式和内容不变。；《DataCopy》说明支持UB之间的高维切分数据搬运，支持非连续和连续的数据搬运。。二者在两页分别给出UB到UB连续Copy与高维切分DataCopy，直接决定连续布局和切分布局下的接口选择上存在可执行的直接衔接。
-- [Copy](copy_ub_to_ub_continuous.md)（`same_topic`）：《DataCopy》说明支持UB之间的连续数据搬运，数据传输过程中保持原始格式和内容不变。；《Copy》说明支持UB之间的连续数据搬运，数据搬运时格式和内容保持不变。。二者在两页分别给出UB到UB连续Copy与高维切分DataCopy，直接决定连续布局和切分布局下的接口选择上存在可执行的直接衔接。
-<!-- cannbot:related:end -->

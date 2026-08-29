@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:31:29Z"
-updated_at: "2026-08-25T15:31:29Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -74,7 +74,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定仓同时公开 `aclnnForeachAddcmulScalar` 和 `aclnnForeachAddcmulScalarV2`；V2 的 `aclScalar` 入口是版本族最新接口，且公开产品表明确支持 Atlas A2 与 A3。V2 第一段自行校验并把 scalar 转成单元素 Tensor，随后与旧语义共享内部算子 `ForeachAddcmulScalar`。A2/A3 API dtype gate 为 `DAV_2201`，不使用 A5 的 `IsRegbase()` FP16+FP32 scalar 扩展。
+固定仓同时公开 `aclnnForeachAddcmulScalar` 和 `aclnnForeachAddcmulScalarV2`；V2 的 `aclScalar` 入口是版本族最新接口，且公开产品表明确支持 Atlas A2 与 A3。V2 第一段自行校验并把 scalar 转成单元素 Tensor，随后与旧语义共享内部算子 `ForeachAddcmulScalar`。A2/A3 API dtype gate 为 `DAV_2201`，不使用 950 的 `IsRegbase()` FP16+FP32 scalar 扩展。
 
 ## Host/Launcher 执行流程
 
@@ -475,9 +475,9 @@ adapter 把最终结果写回 `inLocal_1`，随后 Compute 直接从该 buffer �
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2 公开支持 | V2 公开支持 | 公开支持，但见 `_a5` 卡 |
+| 支持状态 | V2 公开支持 | V2 公开支持 | 公开支持，但见 `_950` 卡 |
 | Host/Launcher | 共用 membase priority 10000 | 共用 membase priority 10000 | regbase priority 30000 |
 | Kernel/资源 | key 1–4，旧 TensorList 描述符，AIV_ONLY | 同左 | key 10001–10004，ListTensorDesc+MicroAPI |
 
@@ -521,3 +521,9 @@ adapter 把最终结果写回 `inLocal_1`，随后 Compute 直接从该 buffer �
 | 同步 | V op barrier、V_MTE3、MTE3_MTE2 | 不得提前覆盖 x1/FP32 区 | `Compute` |
 | 精度与尾块 | FP16/BF16 用 FP32 中间并 RINT | cast 顺序与有效 `dataCount` | `ComputerPerCastForAddcMulScalar` |
 | 失败边界 | dtype/shape/platform/key 均无 Device fallback | 不得把 unknown key 当成功计算 | API/Tiling/router guards |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachAddcmulScalar 950 ACLNN 算子知识](foreach_addcmul_scalar_950.md)（`same_topic`）：对列表位置 `i` 与元素 `j`，`out_i［j］ = x1_i［j］ + scalar * x2_i［j］ * x3_i［j］`；`out_i［j］ = x1_i［j］ + scalar * x2_i［j］ * x3_i［j］`。两卡给出完全相同的 foreach_addcmul_scalar 逐列表逐元素公式；一端描述通用算子合同，另一端给出 950 路由与 Kernel 闭包。
+<!-- cannbot:related:end -->

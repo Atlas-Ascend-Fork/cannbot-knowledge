@@ -26,6 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscFillL0b](asc_fill_l0b.md)（`related`）：《AscFillL1》明确“将标量值赋值给目的操作数，对L1 Buffer进行初始化。”；它与《AscFillL0b》的“将标量值赋值给目的操作数，对L0B Buffer进行初始化。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscFillValueConfig](../struct/asc_fill_value_config.md)（`related`）：《AscFillL1》明确“将标量值赋值给目的操作数，对L1 Buffer进行初始化。”；它与《AscFillValueConfig》的“fill_value的初始化参数结构体，包含fill_l0a、fill_l0b和fill_l1接口需要配置的初始化参数。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscFillValueConfig](../struct/asc_fill_value_config.md)（`related`）：asc_fill_value_config为fill_value的初始化参数结构体，包含asc_fill_l0a/asc_fill_l0b/asc_fill_l1接口需要配置的各种初始化参数。；config(输入): 使用的初始化相关参数，详细说明请参考asc_fill_value_config。；结构体字段直接作为 asc_fill_l1 初始化 L1 的配置输入。
 <!-- cannbot:related:end -->

@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_quant/op_host/config/ascend910_93/ada_layer_norm_quant_binary.json
     role: implementation
 created_at: "2026-08-25T00:00:00Z"
-updated_at: "2026-08-25T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -435,9 +435,9 @@ ReduceMaxCustom(reduceFloat, yFloat, dataCount);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`，共享 Tiling | `ascend910_93`，共享 Tiling | RegBase key 11/21 |
 | Kernel/资源 | key 1 AIV；INT8 | key 1 AIV；INT8；架构 3003 的 BF16 编译 guard 需服从 binary 实例 | MicroAPI + FullLoad/Welford；支持四种 8-bit 输出 |
 
@@ -476,3 +476,9 @@ ReduceMaxCustom(reduceFloat, yFloat, dataCount);
 | 同步 | event + Vector barrier | 写读方向不可倒置 | util/base_v1 helpers |
 | 精度与尾块 | FP32 归一化、两段 INT8 cast | scale=amax/127；有效 H 写出 | `DynamicQuant` |
 | 失败边界 | key 1 与 workspace 非空 | unknown key/空 userWS 无 fallback | entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AdaLayerNormQuant 950 ACLNN 算子知识](ada_layer_norm_quant_950.md)（`same_topic`）：｜ Kernel 路线 ｜ R-001 key 11 FullLoad（`H<=6144`）；R-002 key 21 Welford 分片（`H>6144`） ｜；｜ Kernel 路线 ｜ R-001：`H<=6144` 全载入；R-002：`H>6144` 分片、workspace 暂存归一化结果；两者均为 key 1 ｜两卡实现同一 AdaLayerNormQuant 语义，但给出 950 RegBase Welford 与 A2/A3 Vector workspace 两套路线，可支持同算子跨平台迁移。
+<!-- cannbot:related:end -->

@@ -22,6 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__heq](_heq.md)（`related`）：《__heq》处理“比较两个bfloat16类型数据是否相等，相等时返回true。”。《__hneu》明确提供“比较两个bfloat16类型数据是否不相等，不相等时返回true。若任一输入为nan，返回true。”，其参数、调用或验证步骤直接接入bfloat16x2 相等比较的有序/无序语义、互补关系和 half2 对应实现。
-- [__hne](_hne.md)（`same_topic`）：__hne 与 __hneu 都判断 bfloat16 不等，唯一关键差异是 NaN 时 ordered 返回 false、unordered 返回 true。
+- [__hne](_hne.md)（`same_topic`）：比较两个bfloat16类型数据是否不相等，不相等时返回true。 比较两个bfloat16类型数据是否不相等，不相等时返回true。若任一输入为nan，返回true。 共同的 BF16 不等运算把选型差异限定到 __hneu 的 unordered NaN 为 true，特殊值测试可据此设计。
 <!-- cannbot:related:end -->

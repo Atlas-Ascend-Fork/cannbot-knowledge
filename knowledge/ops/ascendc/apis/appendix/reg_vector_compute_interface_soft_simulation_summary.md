@@ -20,7 +20,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Reg矢量计算编程（C++ Tensor编程）](../../guides/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/reg_vector_computation.md)（`explains`）：Reg矢量计算编程（C++ Tensor编程） 与《Reg矢量计算接口软仿情况汇总》的实质衔接是：Reg C++ 编程仍遵循 asc_vf_call→__simd_vf__→Load/Compute/Store；C API 对照、性能/边界/merge/精度表和 helper 编译卡直接约束这一调用模型。
-- [Reg矢量计算](../simd_api/basic_api/reg_vector_compute/reg_vector_compute.md)（`same_topic`）：Reg矢量计算 与《Reg矢量计算接口软仿情况汇总》的实质衔接是：Reg 矢量计算必须在 VF 内完成 Load→寄存器计算→Store；C/C++ 编程指南和边界、精度、性能、MergeMode 表直接约束该执行模型。
-- [SIMT接口软仿情况汇总](simt_interface_soft_simulation_summary.md)（`same_topic`）：Reg矢量计算接口软仿情况汇总 与《SIMT接口软仿情况汇总》的衔接是：两张汇总采用同一‘单指令或编译器/上层拼接软仿’判定口径，SIMT汇总可用于区分 Reg 搬入搬出双操作数软仿与另一执行模型的软仿边界。
+- [Reg矢量计算接口理论性能汇总](reg_vector_compute_interface_theoretical_perf_summary.md)（`related`）：底层硬件不支持该数据类型，通过多种接口组合软仿实现；软仿实现的接口和数据类型不提供理论性能。前者标明某些 dtype 是组合接口的软件仿真实现，后者明确这些软仿条目没有单指令理论性能；做接口性能选型时必须先排除软仿项再使用吞吐表。
 <!-- cannbot:related:end -->

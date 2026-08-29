@@ -23,6 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [NumBlocks](num_blocks.md)（`related`）：DimBlocks说明获取当前Grid的线程块维度配置。
-- [GroupDim](group_dim.md)（`same_topic`）：“GroupDim”定义：获取当前Grid的线程块维度配置，与接口dim_blocks功能相同。；“DimBlocks”定义：获取当前Grid的线程块维度配置。。实质衔接：GroupDim 与 DimBlocks 返回同一 Grid 三维块配置，NumBlocks 将三维配置折叠为总块数；grid_group 说明对象获取与作用域。
+- [GroupDim](group_dim.md)（`same_topic`）：获取当前Grid的线程块维度配置。；获取当前Grid的线程块维度配置，与接口dim_blocks功能相同。。两卡明确返回相同 Grid 线程块维度，group_dim 是 dim_blocks 的同功能接口。
 <!-- cannbot:related:end -->

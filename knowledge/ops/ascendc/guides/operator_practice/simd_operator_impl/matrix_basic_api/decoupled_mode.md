@@ -36,6 +36,6 @@ Ascend C Matmul算子设计规格
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SIMD算子实现耦合模式](coupled_mode.md)（`same_topic`）：《SIMD算子实现耦合模式》说明>本节内容为针对耦合模式，使用基础API进行矩阵乘法的编程指导。；《SIMD算子实现分离模式》说明>本节内容为针对分离模式，使用基础API进行矩阵乘法的编程指导。。二者在耦合Cube范式的CopyIn/Split/Compute/CopyOut直接由DataCopy、LoadData、Mmad和TQue交接实现上存在可执行的直接衔接。
-- [算子实现](../matrix_advanced_api/operator_impl.md)（`same_topic`）：算子实现 与《SIMD算子实现分离模式》的实质衔接是：该指南的核心是 host tiling→kernel Matmul 对象→Set A/B→Iterate/IterateAll→End；耦合模式、异步迭代与 CUBE_ONLY 故障直接约束实现选择。
+- [DataCopyPad（GMToL1非对齐数据搬运）](../../../../apis/simd_api/basic_api/cube_compute/cube_compute_load/data_copy_pad_gm_to_l1.md)（`explains`）：分离模式 Matmul 规格要求“DataCopy（GMToL1随路转换-ND2NZ搬运）：Global Memory到L1 Buffer数据搬运 + ND转NZ格式转换接口”；DataCopyPad 页定义“将Global Memory中的数据搬运到L1 Buffer，支持在搬运过程中对数据进行Padding（补齐）。”，后者是非对齐输入进入前者 GM→L1 阶段的具体实现选择。
+- [LoadData](../../../../apis/simd_api/basic_api/cube_compute/cube_compute_load/load_data_2_d.md)（`explains`）：分离模式 Matmul 规格列出“LoadData（2D矩阵搬运）：L1 Buffer到L0 Buffer数据搬运 + NZ转ZZ/ZN格式转换接口”；LoadData 页定义“将数据从L1 Buffer搬运到L0A或L0B Buffer的2D模式搬运接口。”，两端就是矩阵输入从 L1 到 L0A/L0B 的直接调用链。
 <!-- cannbot:related:end -->

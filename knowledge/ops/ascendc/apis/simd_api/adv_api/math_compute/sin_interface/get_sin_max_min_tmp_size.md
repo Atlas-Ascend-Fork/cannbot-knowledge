@@ -26,6 +26,5 @@ host侧Tiling接口，用于获取Sin接口所需的最大和最小临时空间�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetSinTmpBufferFactorSize](get_sin_tmp_buffer_factor_size.md)（`same_topic`）：MaxMin 给出 Sin 临时空间区间，FactorSize 在固定 buffer 下按 maxLiveNodeCount/extraBuf 反推 count；两者还要求 SinConfig 保持一致。
-- [Sin](sin.md)（`same_topic`）：Sin 与《GetSinMaxMinTmpSize》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
+- [GetSinTmpBufferFactorSize](get_sin_tmp_buffer_factor_size.md)（`related`）：host侧Tiling接口，用于获取Sin接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧；推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。前者给出 Sin 临时空间的合法选择区间，后者把实际可用空间换算为单次处理元素数，属于同一 Tiling 计算链。
 <!-- cannbot:related:end -->

@@ -25,6 +25,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetFmodMaxMinTmpSize](get_fmod_max_min_tmp_size.md)（`related`）：Fmod 的 sharedTmpBuffer 必须落在 GetFmodMaxMinTmpSize 返回的最小/最大范围内，否则无法保证计算正确或有效利用 UB。
-- [GetFmodTmpBufferFactorSize](get_fmod_tmp_buffer_factor_size.md)（`related`）：GetFmodTmpBufferFactorSize 与《Fmod》的实质衔接是：Fmod 的 factor-size、max/min 临时空间、kernel 接口和标量实现共同决定固定 UB 下单次元素数及除零保护。
+- [GetFmodTmpBufferFactorSize](get_fmod_tmp_buffer_factor_size.md)（`related`）：“获取Fmod接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。”明确给出左端事实；“按元素计算两个浮点数相除后的余数（dst = src0 - Trunc(src0/src1) * src1），其中Trunc为向零取整操作。模板参数T支持half/float。”明确给出右端事实。factor 接口把可用临时空间换算为单次最大元素数，Fmod 计算接口再按该分块执行余数运算，二者衔接 Host 分块规划与 Kernel 调用。
 <!-- cannbot:related:end -->

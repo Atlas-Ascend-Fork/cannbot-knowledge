@@ -69,3 +69,12 @@ platforms:
 - diff 事实 + 维护者注释（@f12bd2742493）：`DeepseekV3ModelMTP` 新增独立 `decode`，注释写明"graph modes 下 mtp 与 target 须用不同 decode 函数否则重编译"。溯源下探 [cann-recipes-infer-pr-210-fix-ds-r1-solve-recompile-bug-in-mtp-case](https://gitcode.com/cann/cann-recipes-infer/merge_requests/210)
 - diff 事实（@be33ff59ad77）：`ascend_backend.py` 新增 `tp_q_head_num == tp_k_head_num and graph_mode` → `raise ValueError`，报错文案逐字对上。溯源下探 [cann-recipes-infer-pr-270-feat-qwen3-next-rmsnormgated-gdr](https://gitcode.com/cann/cann-recipes-infer/merge_requests/270)
 - 维护者确认 + diff 佐证（@b451d3e789c2）：mtp3 场景 aclgraph 有性能问题，CI 保 `exe_mode: ge_graph`；根因未披露。溯源下探 [cann-recipes-infer-pr-288-glm-5-adapt-class-name-and-function-name-support-bf16-fix-bug-caused-by](https://gitcode.com/cann/cann-recipes-infer/merge_requests/288)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MTP Speculative Decoding](../../concepts/techniques/mtp_speculative_decoding.md)（`related`）：焦点卡区分 R1“`ge_graph` + MTP 可同开”与 Qwen3-Next 图模式互斥，候选卡进一步限定“在 graph mode 下只支持 GQA 布局”；它为决定是否接图模式和排查重复编译/FIA 布局失败提供具体前置条件。
+- [图模式多流跨流同步的失败签名：漏配同步/守卫不一致/重复创建 event/流未转发](graph_mode_multi_stream_sync_failures.md)（`related`）：“MTP 触发 tagged-event 重复创建”与“draft 模型与 target 模型交替走 decode 图”说明 MTP 的交替图执行是重复创建事件这一失败签名的具体触发场景。
+- [稀疏注意力接 aclgraph FULL_DECODE_ONLY 全图 decode：申报级别与 metadata 切片口径的两类捕获失败](sfa_dsa_aclgraph_full_decode_only_capture.md)（`related`）：MTP 的 ［FIA］(../../concepts/kernels/fused_infer_attention_score.md) 解码分支在 graph mode 下只支持 GQA 布局；在昇腾上要让某注意力后端在 `FULL_DECODE_ONLY` 图模式下**同时支持 MTP** 时，先确认该后端 `get_cudagraph_support()` 申报的是 `UNIFORM_BATCH`；接入 MTP 全图 decode 时，前者要求 FIA 路线先满足 Q/K 头布局，后者要求稀疏注意力后端覆盖多 token uniform batch，两项构成同一次图捕获上线检查的独立必备条件。
+- [稳定图模式输入张量签名（shape/stride/dtype）避免 dynamo 重编译与缓存 miss](../performance/graph_mode_stable_input_signature_recompile.md)（`related`）：焦点卡记录“decode 每步输入的 shape/dtype/stride 只要有一维不稳，dynamo 就把它当新形态触发重编译或 guard 失效。”；MTP Runbook指出“图模式按被 trace 的 **callable（函数对象）** 缓存/注册已编译图。”。前者用于固定参数签名，后者用于排除 draft 与 target 共用 callable 的另一类重编译根因。
+<!-- cannbot:related:end -->

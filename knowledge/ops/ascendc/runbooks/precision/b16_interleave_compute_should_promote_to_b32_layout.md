@@ -241,14 +241,6 @@ __aicore__ inline void ComputeRopeInterleaveFp32(const AscendC::LocalTensor<floa
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DeInterleave](../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange/de_interleave.md)（`exemplifies`）：DeInterleave：DeInterleave 的双输出偶/奇 lane 契约可由另一编程接口和逆操作 Interleave 对照，dst0 偶 lane runbook直接验证最易写反的输出约定，b16卡限定重排位宽风险。 目标卡《B16 交错 DINTLV 成对归零 — 转 fp32 后重排》补充：B16 直接解交错经 Cast 后 lane 对不齐；先转连续 fp32 UB 再走 DINTLV_B32。
-- [Interleave](../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange/interleave.md)（`exemplifies`）：该 runbook 证明 B16 直接交错/解交错会因 DINTLV lane 布局错配成对归零，并给出提升到连续 B32 后重排的已验证边界。
-- [Interleave](../../apis/simd_api/basic_api/reg_vector_compute/data_reorder/interleave.md)（`exemplifies`）：该卡实测 B16 交织布局直接计算会成对归零，给出先升 B32 的边界。
-- [数据排布转换](../../apis/simd_api/basic_api/memory_vector_compute/data_layout_conversion/data_layout_conversion.md)（`exemplifies`）：数据排布转换 与《B16 交错 DINTLV 成对归零 — 转 fp32 后重排》的实质衔接是：数据布局转换需在 TransData/Transpose 等入口之间按源目格式选择；所选精度卡直接揭示 stride、NZ 物理布局与转换边界错误。
-- [B16 结果大幅偏差 — UNPACK 后补 Reg Cast](b16_unpack_requires_numeric_cast_before_fp32_compute.md)（`related`）：《B16 结果大幅偏差 — UNPACK 后补 Reg Cast》说明Reg 的 B16 UNPACK/PACK 只改变寄存器布局，不替代数值格式转换；显式使用预定义 CastParam trait 完成 B16↔fp32。；《B16 交错 DINTLV 成对归零 — 转 fp32 后重排》说明B16 直接解交错经 Cast 后 lane 对不齐；先转连续 fp32 UB 再走 DINTLV_B32。。二者在B16 UNPACK/PACK只改变寄存器分布，显式Reg Cast才做数值转换；Cast trait、lane宽度和边界转换卡共同验证这条链上存在可执行的直接衔接。
-- [DeInterleave 两路写反——按偶索引到 dst0 修正](deinterleave_dst0_is_even_lane_output.md)（`related`）：B32 解交错路径依赖 dst0 对应偶数 lane 的确定语义，可用于验证 interleave 计算的通道映射。
-- [FP16 算子 Cast 提升-计算-回退链设计](fp16_cast_up_fp32_compute_cast_down_chain.md)（`related`）：该指南抽象出低精度升 fp32、计算、再降精度的通用链路，正是本卡采用的正确性实现形态。
-- [数据排布格式](../../guides/technical_appendix/concepts_and_terms/neural_networks_and_operators/data_layout.md)（`related`）：B16 交错 DINTLV 成对归零 — 转 fp32 后重排说明B16 直接解交错经 Cast 后 lane 对不齐；先转连续 fp32 UB 再走 DINTLV_B32。
-- [RoPE DIST_INTLV_B16 store mask 致零值](rope_dist_intlv_b16_store_mask.md)（`same_topic`）：两卡复现同一类 B16 interleave 结构性失真：直接 B16 DINTLV/INTLV 产生周期性成对零或错位，而先转连续 fp32、用 B32 重排后再窄化可闭环正确性。
-- [特定 b16 load-cast-store 组合失真时在 LocalTensor 边界转换](b16_reg_cast_layout_should_convert_at_localtensor_boundary.md)（`same_topic`）：两卡描述同一 b16 Reg 布局失真故障：B16 交错 Load/Cast/Store 会成对归零，验证过的修复是在 LocalTensor 边界先升为 B32，再以 B32 Reg 布局计算和重排。
+- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`related`）：同一 `MaskReg` 跨 B16/B32 使用会破坏 value/index 的逐 lane 对应。；唯一根因是把 `DINTLV_B16` 产生的 B16 双寄存器 lane 布局直接当作逻辑偶/奇对，再经 `Reg::Cast` 做逐 lane 运算；两张运行手册都证明 B16 lane 或 mask 不能直接按 B32 消费语义复用，并把计算提升到共同的 fp32/B32 布局作为正确性基线。
+- [RoPE DIST_INTLV_B16 store mask 致零值](rope_dist_intlv_b16_store_mask.md)（`related`）：唯一根因是把 `DINTLV_B16` 产生的 B16 双寄存器 lane 布局直接当作逻辑偶/奇对，再经 `Reg::Cast` 做逐 lane 运算；该 interleave store 的 mask 在 64 维 / 当前 UB 布局下行为异常；两张运行手册都定位 Ascend950 上 B16 interleave 路径的成对错位或零值，并分别从寄存器解交错布局与 interleave store mask 给出放弃 B16 直排的诊断依据。
 <!-- cannbot:related:end -->

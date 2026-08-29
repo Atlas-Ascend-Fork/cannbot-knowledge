@@ -22,16 +22,3 @@ platforms: [agnostic]
 比如下述场景即会导致调用算子时出现执行报错：root用户安装部署自定义算子包，HwHiAiUser属组用户调用已部署的自定义算子。
 ## 处理步骤
 联系自定义算子包安装用户修改config.ini权限为644：
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RTC错误码（RTC运行时编译）](../../../../apis/utils_api/rtc/rtc_error_code.md)（`explains`）：调用算子时出现无法打开config.ini的报错 与《RTC错误码（RTC运行时编译）》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
-- [Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa](../../../../runbooks/compilation/arch_variant_lookup_chain_soc_ini_npuarch_dispatcher.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
-- [ShowKernelDebugData工具](../show_kernel_debug_data_tool.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《ShowKernelDebugData工具》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
-- [TilingDebug](../common_operations/tiling_debug.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《TilingDebug》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
-- [def.cpp 缺 AddConfig 致 SOC_NOT_SUPPORT](../../../../runbooks/compilation/def_cpp_addconfig_soc_not_support.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《def.cpp 缺 AddConfig 致 SOC_NOT_SUPPORT》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
-- [msobjdump工具](../msobjdump_tool.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《msobjdump工具》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
-- [optype_collector工具](../optype_collector_tool.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《optype_collector工具》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
-- [算子包部署时出现权限不足报错](operator_deploy_permission_error.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《算子包部署时出现权限不足报错》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
-<!-- cannbot:related:end -->

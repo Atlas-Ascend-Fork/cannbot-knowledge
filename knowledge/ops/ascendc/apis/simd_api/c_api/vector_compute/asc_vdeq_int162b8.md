@@ -23,8 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h](../../../../runbooks/compilation/asc_simd_umbrella_header_for_c_api_symbols.md)（`exemplifies`）：AscVdeqInt162b8 与《ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h》的实质衔接是：AscVdeqInt162b8 调用前必须设置 deq scale；C/basic SetDeqScale 是直接前置契约，AscDeqInt162b8和头文件故障卡用于区分相关符号及正确包含方式。
-- [AscDeqInt162b8](asc_deq_int162b8.md)（`same_topic`）：AscVdeqInt162b8 与《AscDeqInt162b8》的实质衔接是：AscVdeqInt162b8 调用前必须设置 deq scale；C/basic SetDeqScale 是直接前置契约，AscDeqInt162b8和头文件故障卡用于区分相关符号及正确包含方式。
-- [AscSetDeqScale](asc_set_deq_scale.md)（`same_topic`）：焦点处理C API DeqScale 与 dequant 计算及头文件约束；AscVdeqInt162b8正文说明“将 int16_t 转换为 int8_t 或 uint8_t，并把结果写入每个 DataBlock 的上半块或下半块；调用前需通过 asc_set_deq_scale 设置量化参数”。候选读取 DeqScale 完成 dequant，或给出 C API 可编译的包含与配置边界。
-- [SetDeqScale](../../basic_api/memory_vector_compute/type_conversion_aux_config/set_deq_scale.md)（`same_topic`）：AscVdeqInt162b8 与《SetDeqScale》的实质衔接是：AscVdeqInt162b8 调用前必须设置 deq scale；C/basic SetDeqScale 是直接前置契约，AscDeqInt162b8和头文件故障卡用于区分相关符号及正确包含方式。
+- [AscSetDeqScale](asc_set_deq_scale.md)（`related`）：使用该接口前需要调用asc_set_deq_scale设置量化参数；设置DEQSCALE（量化参数）寄存器的值。前者明确把后者作为 int16 到 8 位反量化转换的调用前置条件，后者提供被消费的 DEQSCALE 配置。
 <!-- cannbot:related:end -->

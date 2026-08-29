@@ -146,8 +146,5 @@ after（终版，元素级 `tileOffset` 累加 + `xGm[tileOffset]`）：
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SetAddrWithOffset](../../apis/simd_api/basic_api/data_structures/local_tensor/set_addr_with_offset.md)（`exemplifies`）：SetAddrWithOffset 与《DataCopy 不自动按 tile 推进须显式元素 offset》的实质衔接是：SetAddrWithOffset 与子视图/偏移接口共享元素偏移契约，所选故障卡直接说明错误基址叠加、L1/L0 限制及 DataCopy 偏移修复。
-- [SetGlobalBuffer](../../apis/simd_api/basic_api/data_structures/global_tensor/set_global_buffer.md)（`exemplifies`）：SetGlobalBuffer 只绑定 GM 基址和可选长度，不维护 Process 循环的 tile 游标，因此每轮必须显式使用 gm[tileOffset] 子视图。
-- [ARA 分块重复首块：CopyIn 传递 rowStart](ara_split_copyin_must_include_chunk_row_start.md)（`related`）：ARA 分块重复首块：CopyIn 传递 rowStart 与《DataCopy 不自动按 tile 推进须显式元素 offset》的实质衔接是：ARA 分块必须把 rowStart 传给 CopyIn；group 状态、跨段读取、wrapper offset 与显式 DataCopy offset 卡覆盖同一重复首块机制。
-- [DAV_2201 element-wise unary kernel 骨架 多核](../compilation/dav2201_elementwise_unary_kernel_skeleton_relu.md)（`related`）：该骨架在多核 block 偏移之上继续维护 tileOffset，并对 CopyIn/CopyOut 使用元素子视图，给出 focal 修复的完整可运行范式。
+- [SetGlobalBuffer](../../apis/simd_api/basic_api/data_structures/global_tensor/set_global_buffer.md)（`exemplifies`）：“传入 GM 全局数据地址和大小，初始化 GlobalTensor。”给出焦点端事实；“GlobalTensor::SetGlobalBuffer(ptr, len)”给出候选端事实。API 卡说明 SetGlobalBuffer 只绑定 GM 地址与大小，runbook 用该调用复现多次 DataCopy 不会自动推进位置的故障，并给出显式 tileOffset 的修复边界。
 <!-- cannbot:related:end -->

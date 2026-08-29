@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_grad_v3/op_host/config/ascend910_93/layer_norm_grad_v3_binary.json
     role: implementation
 created_at: "2026-08-25T17:58:36Z"
-updated_at: "2026-08-25T17:58:36Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -82,7 +82,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定仓只公开 `aclnnLayerNormBackward` 两段式接口；没有同语义更高 ACLNN 版本。公开文档明确支持 Atlas A2/A3。`GetCurrentPlatformInfo().GetCurNpuArch()==DAV_2201` 时直接调用本目录最新融合实现 `LayerNormGradV3`；A5 另见 `_a5` 卡，旧 Atlas 产品的拆分 `LayerNormXBackpropV3 + LayerNormBetaGammaBackpropV2` 不属于本卡平台路线。
+固定仓只公开 `aclnnLayerNormBackward` 两段式接口；没有同语义更高 ACLNN 版本。公开文档明确支持 Atlas A2/A3。`GetCurrentPlatformInfo().GetCurNpuArch()==DAV_2201` 时直接调用本目录最新融合实现 `LayerNormGradV3`；950 另见 `_950` 卡，旧 Atlas 产品的拆分 `LayerNormXBackpropV3 + LayerNormBetaGammaBackpropV2` 不属于本卡平台路线。
 
 ## Host/Launcher 执行流程
 
@@ -676,9 +676,9 @@ mean/rstd 为下一个 tile 预取；dy Cast 后留在 queue3，同时用于 dbe
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_950` 卡 |
 | Host/Launcher | `DAV_2201` 融合路径；910B config | 同一 `DAV_2201` 路径；910_93 config | RegBase selector，500/600/700 |
 | Kernel/资源 | 四个 Membase Vector route | 与 A2 共用源码 body | RegBase MicroAPI 三 route |
 
@@ -725,3 +725,9 @@ mean/rstd 为下一个 tile 预取；dy Cast 后留在 queue3，同时用于 dbe
 | 同步 | queue/pipe + `SyncAll` | partial 写入先于归并 | deterministic helper |
 | 精度与尾块 | FP32 中间，BF16 round | valid N、row/core tail | Cast/tail methods |
 | 失败边界 | priority fallback | unknown key 与 UB fail 不得静默替换 | selector/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LayerNormBackward 950 ACLNN 算子知识](layer_norm_backward_950.md)（`same_topic`）：实际入口 ｜ `aclnnLayerNormBackwardGetWorkspaceSize` / `aclnnLayerNormBackward`，公开 ACLNN；A2/A3 经 `DAV_2201` 选择合一 `LayerNormGradV3`。；实际入口 ｜ `aclnnLayerNormBackwardGetWorkspaceSize` / `aclnnLayerNormBackward`，950 由 `IsRegbase(curArch)` 进入融合 `LayerNormGradV3`。。两卡共享 ACLNN 入口与融合逻辑算子，但分别闭合 A2/A3 和 950 的代际实现。
+<!-- cannbot:related:end -->

@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T19:03:29Z"
-updated_at: "2026-08-25T19:03:29Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -623,9 +623,9 @@ Mul(cLocal, cLocal, bLocal, curTileLen);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；ascend910b config | 公开支持；ascend910_93 config | 公开支持，见独立 `_a5` 卡 |
+| 支持状态 | 公开支持；ascend910b config | 公开支持；ascend910_93 config | 公开支持，见独立 `_950` 卡 |
 | Host/Launcher | 共用 `Tiling4SwiGlu` | 同左 | 共用非空 Tiling；增加显式 empty key |
 | Kernel/资源 | `swi_glu.cpp` 非 arch35 body | 同左 | `swi_glu_apt.cpp` + arch35 body；非对齐使用 Ext params |
 
@@ -633,7 +633,7 @@ Mul(cLocal, cLocal, bLocal, curTileLen);
 
 - 只覆盖普通 SwiGlu；Grad、原地、量化、GroupQuant 不属于本版本族。
 - 输入输出只支持连续 ND、FP16/FP32/BF16；公开 API 要求 rank>0、dim 合法、切分轴偶数。
-- A2/A3 Tiling 没有 A5 的显式 empty-key 分支；公开 API 所述空 Tensor 是否由生成式 ACLNN 框架提前短路在固定仓不可见，因此不得从当前 Kernel 源码推断其 launch 行为。
+- A2/A3 Tiling 没有 950 的显式 empty-key 分支；公开 API 所述空 Tensor 是否由生成式 ACLNN 框架提前短路在固定仓不可见，因此不得从当前 Kernel 源码推断其 launch 行为。
 - shape 乘积、`dim` 两次窄化及宏生成 ABI 的精确 offset/size 缺少固定仓内证明；迁移时不能扩大范围或重排字段。
 - 未知 key 或编译 guard 未实例化时 entry 没有 fallback/body；Tiling 资源或 DMA 上限失败返回失败。
 
@@ -667,3 +667,9 @@ Mul(cLocal, cLocal, bLocal, curTileLen);
 | 同步 | Queue + PIPE_V | A consumer完成后才覆盖 temp | `Compute` |
 | 精度与尾块 | half/bf16升FP32、RINT；FP32原精度 | Pad calLen与GM有效长度分离 | `Compute`, `CaclTileCopyParams` |
 | 失败边界 | 资源/DMA guard和unknown key | 不添加不存在的fallback | `CalcTiling`, `swi_glu` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SwiGlu 950 ACLNN 算子知识](swi_glu_950.md)（`same_topic`）：“公开两段式 `aclnnSwiGluGetWorkspaceSize` / `aclnnSwiGlu`；固定仓只有这一版公开 SwiGlu”与“公开两段式 `aclnnSwiGluGetWorkspaceSize` / `aclnnSwiGlu`；固定仓普通 SwiGlu 只有这一公开版本。”指向同一公开 ABI，分别给出 A2/A3 与 950 的 Host、Route 和 Kernel 实现。
+<!-- cannbot:related:end -->

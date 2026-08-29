@@ -23,7 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [原子操作指令优化](../../../../guides/operator_practice/simt_operator_optimization/instruction_optimization/atomic_instruction_optimization.md)（`explains`）：《原子操作指令优化》处理“【描述】SIMT编程模式下，多个线程更新同一个内存地址时需要使用原子操作接口保证更新结果正确。原子操作属于高开销指令，其耗时由两方面决定：一是同一地址上的原子操作只能排队依次执行，二是单条原子指令的处理开销。”。《AscAtomicInc》明确提供“对Global Memory中address指向的计数器执行原子递增操作，若值大于等于val则赋值为0，否则加1。”，其参数、调用或验证步骤直接接入原子写优化的冲突模型、AtomicAdd/Inc 实现和性能验证。
-- [AscAtomicDec](asc_atomic_dec.md)（`same_topic`）：AscAtomicDec：AscAtomicDec与SIMT asc_atomic_dec执行同一GM原子自减，AscAtomicInc提供相反更新的边界对照，便于验证返回值和上下界行为。 目标卡《AscAtomicInc》补充：对Global Memory中address指向的计数器执行原子递增操作，若值大于等于val则赋值为0，否则加1。
-- [asc_atomic_inc](../../../simt_api/atomic_operations/asc_atomic_inc.md)（`same_topic`）：asc_atomic_inc说明对Unified Buffer或Global Memory上address的数值进行原子加1操作，如果address上的数值大于等于指定数值val，则对address赋值为0，否则将address上数值加1。
+- [AscDcci](../cache_ctrl/asc_dcci.md)（`related`）：原子递增接口明确“Scalar原子操作会绕过DCache，需要调用asc_dcci接口确保GM与DCache的一致性。”；缓存接口解释“Scalar单元访问Global Memory，首先会访问每个核内的Data Cache，因此存在Data Cache与Global Memory的Cache一致性问题。”，给出原子计数器与普通 Scalar/DMA 访问混用时必须补 DCCI 的原因。
 <!-- cannbot:related:end -->

@@ -30,9 +30,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetCtrl](../../c_api/sys_var/asc_get_ctrl.md)（`related`）：AscGetCtrl 与《GetCtrlSpr》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
-- [AscSetCtrl](../../c_api/sys_var/asc_set_ctrl.md)（`related`）：AscSetCtrl 是 C API 配置 CTRL 的对应入口，便于在 C 路线复现 Set/Get 验证。
-- [GetSpr](get_spr.md)（`same_topic`）：焦点处理特殊寄存器读取与配套清零、CTRL 位设置/复位；GetCtrlSpr正文说明“读取CTRL寄存器特定比特位上的值”。候选操作同一 SPR/CTRL 状态，明确读前设置、读后清理与位域复位。
-- [ResetCtrlSpr](reset_ctrl_spr_isasi.md)（`same_topic`）：ResetCtrlSpr 恢复 CTRL 位段，避免临时控制配置泄漏到后续计算。
-- [SetCtrlSpr](set_ctrl_spr_isasi.md)（`same_topic`）：SetCtrlSpr 与 GetCtrlSpr 读写 CTRL 的同一 bit 区间，可形成写后读回验证。
+- [ResetCtrlSpr](reset_ctrl_spr_isasi.md)（`related`）：“读取CTRL寄存器（控制寄存器）特定比特位上的值。”；“对CTRL寄存器（控制寄存器）的特定比特位做重置。由模板参数［startBit, endBit］指定的比特位重置为默认值，默认值参考表 常用CTRL寄存器比特位说明。”。Reset 后可用 GetCtrlSpr 对同一 bit range 回读默认值，闭合临时控制位的恢复验证。
+- [SetCtrlSpr](set_ctrl_spr_isasi.md)（`related`）：“读取CTRL寄存器（控制寄存器）特定比特位上的值。”；“对CTRL寄存器（控制寄存器）的特定比特位进行设置。通过模板参数startBit和endBit指定目标比特位范围，将运行参数value（超出比特位范围会出现编译报错）写入CTRL寄存器对应位置。”。两接口以相同 bit range 形成 CTRL 配置写入与回读核验链。
 <!-- cannbot:related:end -->

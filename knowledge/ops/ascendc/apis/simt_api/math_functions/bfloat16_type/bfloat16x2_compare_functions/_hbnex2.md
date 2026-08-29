@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hbeqx2](_hbeqx2.md)（`related`）：hbeqx2 执行相反的相等判断，可用于核对分支反转或构造不等掩码的验证对照。
-- [__hbnex2](../../half_type/half2_compare_functions/_hbnex2.md)（`related`）：bfloat16x2 __hbnex2 保持“两个分量均不等才为 true”的归约规则，仅替换数值格式。
-- [__hbneux2](_hbneux2.md)（`same_topic`）：__hbneux2 与 __hbnex2 都在两个 lane 均不等时返回 bool，唯一关键差异是 unordered 版本把 NaN 分量判为不等，而 ordered 版本含 NaN 返回 false。
-- [__hnex2](_hnex2.md)（`same_topic`）：hnex2 是对应的 half2/packed 比较入口，便于按输入表示映射同一逐 lane 不等判定。
-- [__hnex2_mask](_hnex2_mask.md)（`same_topic`）：mask 版本把逐 lane 比较结果编码为掩码，适合后续分支/选择而非直接 packed 布尔结果。
+- [__hbneux2](_hbneux2.md)（`same_topic`）：返回值：比较输入数据各分量是否均不相等的结果。特殊值：±0→false；inf→false；-inf→false；inf→true；任一分量含nan→true（任一输入分量为nan时，该分量≠比较结果为true）。；返回值：比较输入数据各分量是否均不相等的结果。特殊值：任一分量为nan→false；±0→false；±inf→相同符号inf返回false，不同符号inf返回true。。两接口都判断 bfloat16x2 两分量是否均不相等，关键差异是 NaN 与无穷值的比较语义，选型时必须成对辨析。
 <!-- cannbot:related:end -->

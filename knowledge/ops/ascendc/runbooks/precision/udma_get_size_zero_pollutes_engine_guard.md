@@ -99,8 +99,6 @@ UDMA GET 对 size=0 的请求未在引擎层做无操作（no-op）短路，触�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetSize](../../apis/simd_api/basic_api/data_structures/global_tensor/get_size.md)（`exemplifies`）：GetSize 返回逻辑 tensor 长度，可在提交 UDMA 前做零长度 guard。
-- [SetCommEngine](../../apis/simd_api/adv_api/hccl_communication/hccl_tiling/set_comm_engine.md)（`exemplifies`）：污染的是具体通信 engine 状态，SetCommEngine 决定任务落在哪个引擎。
-- [CrossCore 反压 flag 方向错致通算流水死锁](../compilation/crosscore_flag.md)（`related`）：跨核 flag 设计需确保无效 rank 不提交 size=0 任务，避免 guard 状态污染后续引擎。
-- [逐 rank 通信路径的 MTE2 主导诊断](../performance/rank_flag_mte2.md)（`related`）：《逐 rank 通信路径的 MTE2 主导诊断》处理“ReduceScatter 远程读采用逐 rank DataCopy 与同步时，msprof 显示 aiv_mte2_time 主导 T_comm；三段注释法可排除 vec/reduce，但现有证据未单独验证 flag 是带宽缺口的唯一原因。”。《UDMA GET size=0 污染后续 GET 致精度失败》明确“matmul_reducescatter 通算流水 tileCnt=2 时 Rank 2/3 因 hasOverlap=false 致 tileSegByteSize=0，对零大小 UDMA GET 引擎异常污染后续 GET，98.9% 元素错。判别要点是 GET 前缺 size>0 守卫。”，可直接用于核对ReduceScatter 逐 rank 搬运的 MTE2 计时、HBM 解释、同步必要性与成对 profile。
+- [ReduceScatter](../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/reduce_scatter.md)（`exemplifies`）：在 matmul_reducescatter（MC2 通算融合，4P SHMEM ReduceScatter，Pattern B）实现通算流水后跑精度回归：M=2048 N=3584 K=5120、4 卡、tileCnt=2。 ReduceScatter的功能为：将所有rank的输入相加（或其他归约操作）后，再把结果按照rank编号均匀分散到各个rank的输出buffer，每个进程拿到其他进程1/ranksize份的数据进行归约操作。 按 tile/rank 实现 ReduceScatter 时会合法出现 hasOverlap=false，Runbook 要求 UDMA GET 前显式守卫零字节。
+- [MatmulReduceScatter 950 ACLNN 算子知识](../../operators/aclnn/transformer/mc2/matmul_reduce_scatter_950.md)（`related`）：各 rank 的完整结果按 `sum` 归约后沿 M 轴等分，本 rank 输出 `y:［M/rankSize,N］`。；调用方必须在 GET 前用 `if (tileSegByteSize > 0)` 守卫；后者给出按 tile 分段执行该归约时零 overlap 导致 UDMA GET 污染的具体精度保护。
 <!-- cannbot:related:end -->

@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T16:41:43Z"
-updated_at: "2026-08-24T20:07:12Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -750,11 +750,11 @@ if constexpr (!std::is_same_v<ScalesDataType, float>) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | README/API明确不支持 | 公开支持；`ascend910_93` OpDef/binary/CI | 公开支持；`ascend950` OpDef/binary/CI |
 | Host/Launcher | N/A | 共用Tiling；CMake额外 `--cce-auto-sync=off` | 共用Tiling；无该平台选项 |
-| Kernel/资源 | N/A | 共用单AIV source；资源值由A3 platform给出 | 共用单AIV source；资源值由A5 platform给出 |
+| Kernel/资源 | N/A | 共用单AIV source；资源值由A3 platform给出 | 共用单AIV source；资源值由950 platform给出 |
 
 ## 限制与失败边界
 
@@ -774,7 +774,7 @@ if constexpr (!std::is_same_v<ScalesDataType, float>) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `mc2/moe_update_expert/README.md` | 产品支持表/参数表 | A3/A5支持、A2不支持、接口约束 |
+| 入口声明/约束 | `mc2/moe_update_expert/README.md` | 产品支持表/参数表 | A3/950支持、A2不支持、接口约束 |
 | 入口声明/约束 | `mc2/moe_update_expert/docs/aclnnMoeUpdateExpert.md` | 产品表/原型/约束 | A3公开支持、API语义 |
 | 入口声明/约束 | `mc2/moe_update_expert/op_api/aclnn_moe_update_expert.h` | 两段式声明 | 参数 ABI |
 | 入口实现 | `mc2/moe_update_expert/op_api/aclnn_moe_update_expert.cpp` | 两个ACLNN函数 | null检查/inner边界 |
@@ -800,3 +800,9 @@ if constexpr (!std::is_same_v<ScalesDataType, float>) {
 | 同步 | Queue与S/MTE3、V/S、MTE2事件 | consumer完成前不得覆盖/Free | `SyncFunc/ProcessEachTokenPruning/CalculateUnroll` |
 | 精度与尾块 | scale统一FP32；Compare64输出K；映射4+rest | Cast/GE/K字节数 | pruning/CalculateRest |
 | 失败边界 | Host拒绝shape/dtype/optional非法 | 不补造Device fallback/逐值校验 | `CheckAttrs/DataType/Shape` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoeUpdateExpert 950 ACLNN 算子知识](moe_update_expert_950.md)（`same_topic`）：`source_closed`：ACLNN、OpDef/推形、Tiling/POD/key、单 Kernel entry/body、同步 helper、A3 binary/CI 接线闭合；生成的 `aclnnInner` bridge 为框架边界；`source_closed`：ACLNN、OpDef/推形、Tiling/POD/key、单 Kernel entry/body、同步 helper、950 binary/CI 接线闭合；生成的 `aclnnInner` bridge 为框架边界；两卡闭合同一 MoeUpdateExpert 算子与四条 Route，只在 A3 和 950 构建接线上分平台。
+<!-- cannbot:related:end -->

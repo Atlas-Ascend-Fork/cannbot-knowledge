@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/fused_quant_mat_mul/op_host/fused_quant_mat_mul_def.cpp
     role: implementation
 created_at: "2026-08-25T17:36:36Z"
-updated_at: "2026-08-25T17:36:36Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -159,7 +159,7 @@ TRANS = (transposeX1 << 1) | transposeX2
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 公开平台 | docs A2/A3=√，950=× | 公开支持优先于 dormant arch35 源码 | 全部 | A5 不发布 | `docs/aclnnFusedQuantMatmulWeightNz.md::产品支持情况` |
+| 公开平台 | docs A2/A3=√，950=× | 公开支持优先于 dormant arch35 源码 | 全部 | 950 不发布 | `docs/aclnnFusedQuantMatmulWeightNz.md::产品支持情况` |
 | WeightNz 物理形状 | `prod(storageShape)==prod(GetWeightNzShape(...))` | Kernel 按 NZ offset 解释 x2，无 TransData 节点 | 全部 | `ACLNN_ERR_PARAM_INVALID` | `CheckWeightNzStorageShape` |
 | 量化模式 | x1Scale 必为 `(M,)`，x2Scale 为 `(N,)` 或 `(1,)` | AIV 按行 broadcast per-token、按列读 scale | 全部 | 参数错误 | `CheckQuantScaleShape` |
 | UB 可容纳 | `needUbSize < ubSize` 且 `ubCalcM>0` | 每个 AIV 子块需同时容纳 int32、FP32 中间、scale/bias 与输出 | 全部 | tiling 失败 | `CalcUbTiling(baseN,baseM)` |
@@ -590,7 +590,7 @@ for (uint32_t mUbLoopIdx = 0; mUbLoopIdx < mUbLoops; ++mUbLoopIdx) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 官方公开支持 | 官方公开支持 | 官方文档明确不支持 |
 | Host/Launcher | 同一 WeightNz API、OpDef `ascend910b` config | 同一 API、OpDef `ascend910_93` config | 不生成正式卡 |
@@ -610,7 +610,7 @@ for (uint32_t mUbLoopIdx = 0; mUbLoopIdx < mUbLoops; ++mUbLoopIdx) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `matmul/fused_quant_mat_mul/docs/aclnnFusedQuantMatmulWeightNz.md` | 产品表/约束说明 | A2/A3 支持、A5 不支持、公开语义与 dtype/layout |
+| 入口声明/约束 | `matmul/fused_quant_mat_mul/docs/aclnnFusedQuantMatmulWeightNz.md` | 产品表/约束说明 | A2/A3 支持、950 不支持、公开语义与 dtype/layout |
 | 入口声明/约束 | `matmul/fused_quant_mat_mul/op_host/op_api/aclnn_fused_quant_matmul_weight_nz.h` | 两段式 API | 精确签名 |
 | 入口实现 | `matmul/fused_quant_mat_mul/op_host/op_api/aclnn_fused_quant_matmul.cpp` | `aclnnFusedQuantMatmulWeightNzGetWorkspaceSize/CommonProcess` | WeightNz 校验、executor 图、错误传播 |
 | 入口实现 | `matmul/quant_batch_matmul_v4/op_host/op_api/quant_matmul_common_check.cpp` | `GetWeightNzShape/SetTensorToNZFormat/PostMatmulCalcProcess` | NZ view、Contiguous 与 ViewCopy |
@@ -635,4 +635,10 @@ for (uint32_t mUbLoopIdx = 0; mUbLoopIdx < mUbLoops; ++mUbLoopIdx) {
 | workspace/内存 | 每核两个 `baseM*baseN` int32 slice | system prefix、2 倍深度、core offset 和 owner/lifetime | `GetUbDequantExtreSpace/InitGlobalBuffers` |
 | 同步 | 实际 AIC→AIV flags 6/7、AIV→AIC flags 4/5 | 第三轮 wait、End 补等待、PIPE_FIX/PIPE_MTE2；勿按常量名猜方向 | `BasicMMCVFusionCompute/End` |
 | 精度与尾块 | int32 MM；FP32 dequant/scale/bias/GELU；RINT 输出 | bias INT32 与非 INT32 的加入位置、M/N/UB tail | `DequantCompute/CopyOutToGM` |
-| 失败边界 | 无非 WeightNz 或其它 fused op fallback | A5 官方不支持；非法 NZ/资源/key 必须失败 | API checks/Tiling/router |
+| 失败边界 | 无非 WeightNz 或其它 fused op fallback | 950 官方不支持；非法 NZ/资源/key 必须失败 | API checks/Tiling/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FusedQuantMatmul A2/A3 ACLNN 算子知识](fused_quant_matmul.md)（`related`）：INT8×INT8 或 INT4×INT4 的 batch matmul；INT32 累加，逐 token `x1Scale` 与逐通道/逐 tensor `x2Scale` 反量化，可选 bias，随后融合 `gelu_tanh` 或 `gelu_erf`；int8/int4 矩阵乘的 int32 累加，经 `x2Scale` 与逐 token `x1Scale` 反量化，按 bias dtype 在 MM 或 Vector 侧加 bias，再执行 `gelu_tanh` 或 `gelu_erf`。两卡共享低比特矩阵乘、INT32 累加、双尺度反量化、bias 与 GELU 融合的计算链，WeightNz 版本进一步规定 x2 的 FRACTAL_NZ 物理存储和专用公开入口，适合用于权重布局选型。
+<!-- cannbot:related:end -->

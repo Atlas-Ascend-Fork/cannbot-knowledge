@@ -262,13 +262,5 @@ before 将 gamma 的搬入与 Cast 封装在 `LoadGamma`，随后 `CopyIn` 又�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Cast](../../apis/simd_api/basic_api/memory_vector_compute/type_conversion/cast.md)（`exemplifies`）：本卡明确用 AscendC::Cast 完成 gamma/x BF16→FP32 与输出窄化；Cast API给出类型转换和舍入契约。
-- [PipeBarrier](../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)（`exemplifies`）：本卡在相关 MTE2 搬入后和两次 Vector Cast 后建立管线屏障。
-- [RmsNorm](../../apis/simd_api/adv_api/normalization/rms_norm.md)（`exemplifies`）：本卡最终消费者是 RmsNorm<float,false>，gammaFp32 与 srcFp32 都完成后才能调用。
-- [Tgammaf](../../apis/simt_api/math_functions/float_math_functions/tgammaf.md)（`exemplifies`）：该卡说明低精度 gamma 参数 cast 与消费需要同一有序阶段，提供 gamma 类计算链的同步验证实例。
-- [MTE2跨流水未建依赖导致UB读到上次调用残值](direct_mte_slot_reuse_needs_bidirectional_hard_events.md)（`related`）：候选处理 MTE slot 跨流水复用缺双向依赖导致读上次残值，本卡处理两个阶段无共同完成点导致随机坏行。
-- [Reg 固定地址跨块累加需逐 VF PipeBarrier](fixed_address_vf_accumulator_needs_per_call_barrier.md)（`related`）：候选证明固定 UB 地址多次 VF 调用间需逐调用完成屏障；本卡也不能依赖函数调用顺序保证 Cast 已完成。
-- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](mte2_barrier_must_precede_vector_cast.md)（`same_topic`）：两卡都把 BF16 Cast 随机 NaN 定位到 MTE2 搬入未完成即被 Vector Cast 消费；本卡进一步把 gamma/x 两次 Cast 汇合到共同完成点。
-- [TBuf 跨 MTE2 与 Vector 须队列交接](tbuf_mte2_to_vector_requires_queue_handoff.md)（`same_topic`）：候选说明裸 TBuf 跨 MTE2 与 Vector 缺队列交接会读未就绪数据，本卡分阶段 gamma/x Cast 是同类边界。
-- [模板内 float→float Cast 使 fp32 分支全错](templated_float_input_must_bypass_same_type_cast.md)（`same_topic`）：模板内 float→float Cast 使 fp32 分支全错 与《BF16 gamma Cast 分阶段编排导致随机 NaN》的实质衔接是：float 到 float 不应进入窄化 Cast，应该保持原值或 Copy；同步、BF16 分阶段、native 类型、VL、舍入与 RmsNorm 案例分别说明真正需要 Cast 时的类型、时序和验证契约。
+- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](mte2_barrier_must_precede_vector_cast.md)（`related`）：`DataCopyPad` 的 GM→UB 搬运由 MTE2 异步执行，而 `Cast` 在 Vector pipeline 消费 `gammaLocal`。正确 RAW 依赖是 `MTE2 write gammaLocal → barrier/event → VEC read gammaLocal`。；after 把 gamma Cast 延后到 `Compute`：先用一个 `PIPE_MTE2` 屏障等待 gamma 和 x 的搬运，再在同一 Vector 序列中依次 Cast gamma 与 x，最后用 `PIPE_V` 确认两个 FP32 输入都完成。。前者给出 MTE2 生产者到 Vector Cast 消费者必须先同步的 RAW 根因，后者把这一纪律落实到 gamma/x 两路 BF16 Cast 共用 Compute 阶段的修复顺序，可连续用于诊断和验证归一化 NaN。
 <!-- cannbot:related:end -->

@@ -56,7 +56,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_grad_with_argmax/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:18:57Z"
-updated_at: "2026-08-25T18:18:57Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -801,7 +801,7 @@ Host 为完整输出平面分配 FP32 workspace；各 tile 先以 FP32 累加，
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持 | 公开支持 | 未发布：ACLNN 文档标支持，但同算子 README 明确标不支持，存在发布冲突 |
 | Host/Launcher | `ascend910b` config，共用 arch32 Host | `ascend910_93` config，共用 arch32 Host | 发布冲突门禁下未纳入正式知识 |
@@ -822,7 +822,7 @@ Host 为完整输出平面分配 FP32 workspace；各 tile 先以 FP32 累加，
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `pooling/max_pool3d_grad_with_argmax/README.md` | 产品支持表 | A2/A3 支持与 A5 冲突证据 |
+| 入口声明/约束 | `pooling/max_pool3d_grad_with_argmax/README.md` | 产品支持表 | A2/A3 支持与 950 冲突证据 |
 | 入口声明/约束 | `pooling/max_pool3d_grad_with_argmax/docs/aclnnMaxPool3dWithArgmaxBackward.md` | 产品表/原型/约束 | A2/A3 支持、公开语义 |
 | 入口声明/约束 | `pooling/max_pool3d_grad_with_argmax/op_api/aclnn_max_pool3d_with_argmax_backward.h` | 两段式声明 | 参数 ABI |
 | 入口实现 | `pooling/max_pool3d_grad_with_argmax/op_api/aclnn_max_pool3d_with_argmax_backward.cpp` | `CheckParams`, GetWorkspaceSize/Run | 校验与 executor 流程 |
@@ -858,3 +858,10 @@ Host 为完整输出平面分配 FP32 workspace；各 tile 先以 FP32 累加，
 | 同步 | MTE/Vector events、PIPE barriers、SyncAll | 清零、atomic/RMW、cast 的先后不可交换 | 各 Route `Process/CalcBlock` |
 | 精度与尾块 | FP32 局部/全局累加；BF16 RINT | depad 后只写 valid D/H/W，B16 只最终 cast | Normal/CutK/Scatter overlap bodies |
 | 失败边界 | selector 按 p10→p12→p16 fallback | AIC/unknown key/空 workspace 不产生输出 | registry + Kernel router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AdaptiveMaxPool3dBackward A2/A3 ACLNN 算子知识](adaptive_max_pool3d_backward.md)（`related`）：全部整除时令 `kernelSize=stride=isizes/osizes`、padding=0、dilation=1、ceilMode=false，调用 `MaxPool3DGradWithArgmax`；｜ 计算语义 ｜ 对每个 `gradOutput［n,c,od,oh,ow］`，按 `indices` 给出的展平 DHW 坐标回填到 `gradInput［n,c,:,:,:］`；同一坐标命中多次时求和，未命中位置为 0 ｜；Adaptive 的整除分支直接把等窗参数交给 MaxPool3DGradWithArgmax，后者的 indices 回填与重复命中累加合同因此就是该分支的实际 Device 语义。
+- [MaxPool3dWithArgmax A2/A3 ACLNN 算子知识](max_pool3d_with_argmax.md)（`related`）：“值是每个 NC 平面内展平 DHW 坐标”与“`indices` 是获胜坐标的 `d*H*W+h*W+w`”明确了前向输出 indices 到反向散射输入的同一坐标契约。
+<!-- cannbot:related:end -->

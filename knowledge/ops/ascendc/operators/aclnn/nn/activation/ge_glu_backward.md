@@ -20,7 +20,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_host/ge_glu_grad_v2_def.cpp
     role: implementation
 created_at: "2026-08-25T14:59:55Z"
-updated_at: "2026-08-25T14:59:55Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1086,9 +1086,9 @@ V1/V3 共用一套计算 body，`activateLeft` 只交换 x1/x2 与 dx1/dx2 的 G
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见独立 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`，共用 Tiling/entry | `ascend910_93`，共用 Tiling/entry | 共用 Tiling，`isRegbase=true` 与 apt entry |
 | Kernel/资源 | 非 arch35 AIV body | 非 arch35 AIV body | arch35 queues 全 depth2、独立 TBuf，buffer count 不同 |
 
@@ -1125,3 +1125,9 @@ V1/V3 共用一套计算 body，`activateLeft` 只交换 x1/x2 与 dx1/dx2 的 G
 | 同步 | Queue；Perf hard event+PIPE_V | temp 被 MTE2/V/MTE3 复用时不可删 event | `CopyInXPerf`,`CopyOutDXPerf` |
 | 精度与尾块 | BF16/FP16升精度链和 RINT | FP16 的前两次 Mul 仍在 FP16；GM 只写 valid | dtype `Compute*`,`DataCopyPad` |
 | 失败边界 | Host 校验、空 tensor早退、unknown key无 body | 不可绕过 shape/dtype/workspace guard | `CheckParams`, entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GeGluBackward 950 ACLNN 算子知识](ge_glu_backward_950.md)（`same_topic`）：｜ 实际入口 ｜ 最新公开 `aclnnGeGluV3BackwardGetWorkspaceSize` / `aclnnGeGluV3Backward`；V1 固定 `activateLeft=false` 复用共同实现 ｜；｜ 实际入口 ｜ `aclnnGeGluV3BackwardGetWorkspaceSize` / `aclnnGeGluV3Backward`；旧 `aclnnGeGluBackward` 固定传 `activateLeft=false` 复用同一 body ｜；两卡治理同一个 aclnnGeGluV3Backward 公开契约及共同反向语义，只按 950 与 A2/A3 平台拆分 Host 路由、Kernel 模板和资源实现。
+<!-- cannbot:related:end -->

@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_host/config/ascend910_93/group_norm_silu_binary.json
     role: implementation
 created_at: "2026-08-25T17:56:01Z"
-updated_at: "2026-08-25T17:56:01Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -82,7 +82,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-公开文档同时列出旧版与 V2；V2 增加 `activateSilu`，且 A2、A3 产品表均为支持，因此两平台取实际最新的 V2。`aclnnGroupNormSiluV2GetWorkspaceSize` 与旧版共享 `CheckParams/GetGamma/GetBeta`，差异只在传给 `l0op::GroupNormSilu` 的 `activateSilu`。A2/A3 对可选 gamma/beta 先物化 OnesLike/ZerosLike；A5 的空指针直通行为不属于本卡。`group_norm_silu_def.cpp` 将 `ascend910b` 与 `ascend910_93` 注册到同一 AICore 配置，两份 binary config 均列出 FP16、BF16、FP32、16 位输入配 FP32 gamma/beta，以及 `activate_silu=true/false`。
+公开文档同时列出旧版与 V2；V2 增加 `activateSilu`，且 A2、A3 产品表均为支持，因此两平台取实际最新的 V2。`aclnnGroupNormSiluV2GetWorkspaceSize` 与旧版共享 `CheckParams/GetGamma/GetBeta`，差异只在传给 `l0op::GroupNormSilu` 的 `activateSilu`。A2/A3 对可选 gamma/beta 先物化 OnesLike/ZerosLike；950 的空指针直通行为不属于本卡。`group_norm_silu_def.cpp` 将 `ascend910b` 与 `ascend910_93` 注册到同一 AICore 配置，两份 binary config 均列出 FP16、BF16、FP32、16 位输入配 FP32 gamma/beta，以及 `activate_silu=true/false`。
 
 ## Host/Launcher 执行流程
 
@@ -1024,9 +1024,9 @@ if (tiling->numGroups == tiling->shapeC) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；ascend910b config | 公开支持；ascend910_93 config | 公开支持，但使用独立 `_a5` 卡 |
+| 支持状态 | 公开支持；ascend910b config | 公开支持；ascend910_93 config | 公开支持，但使用独立 `_950` 卡 |
 | Host/Launcher | 共用非 RegBase Tiling，V2 | 共用非 RegBase Tiling，V2 | RegBase selector，空 gamma/beta 直通 |
 | Kernel/资源 | 经典 AIV，12 key | 同 A2 | arch35 MicroAPI、TwoPass/Welford、整 UB alias |
 
@@ -1074,3 +1074,9 @@ if (tiling->numGroups == tiling->shapeC) {
 | 同步 | Queue + S_V/MTE2_S/V_S/PipeBarrier | Scalar/Vector 与 DMA 可见性 | 各 body |
 | 精度与尾块 | B16 升 FP32、round 降精度、DataCopyPad | sum/x² 顺序、有效 tail | base/B16/G16/HW1 |
 | 失败边界 | Host 失败即不 launch；entry 空 workspace/unknown key 无输出 | 不得自行 fallback | API 与 router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GroupNormSilu 950 ACLNN 算子知识](group_norm_silu_950.md)（`same_topic`）：A2/A3 卡以“最新公开两段式 `aclnnGroupNormSiluV2GetWorkspaceSize` / `aclnnGroupNormSiluV2`”为入口；950 卡同样以“最新公开 `aclnnGroupNormSiluV2GetWorkspaceSize` / `aclnnGroupNormSiluV2`”为入口，都是同一 GroupNorm+可选 SiLU 契约的平台实现，只是 Tiling/Kernel 路线不同。
+<!-- cannbot:related:end -->

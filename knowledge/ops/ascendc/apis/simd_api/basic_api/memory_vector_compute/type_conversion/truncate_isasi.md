@@ -27,16 +27,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Cast](../../reg_vector_compute/type_conversion/cast.md)（`related`）：《Truncate》处理“将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。”。《Cast》明确“Reg矢量计算的精度转换接口，支持浮点转整数、浮点转浮点、整数转浮点和整数转整数四种类型转换。”，可直接用于核对Truncate 向零取整在 Cast round-mode、高阶/基础/SIMT 接口中的等价语义。
-- [RoundMode](../../reg_vector_compute/aux_data_types/round_mode.md)（`related`）：《Truncate》处理“将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。”。《RoundMode》明确“枚举类型，用于设置精度转换时的舍入模式，支持向偶数舍入、向下、向上、四舍五入、截断等多种模式。”，可直接用于核对Truncate 向零取整在 Cast round-mode、高阶/基础/SIMT 接口中的等价语义。
-- [Truncate](../../reg_vector_compute/type_conversion/truncate.md)（`related`）：Memory Vector Truncate 对 LocalTensor 执行相同舍入到整数值且保留浮点类型的操作，数据通路不同。
-- [__float2float_rz](../../../../simt_api/math_functions/data_type_conversion/type_conversion_functions/_float2float_rz.md)（`related`）：《Truncate》处理“将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。”。《__float2float_rz》明确“将浮点数四舍五入取整，并遵循CAST_TRUNC模式。”，可直接用于核对Truncate 向零取整在 Cast round-mode、高阶/基础/SIMT 接口中的等价语义。
-- [__float2int_rz](../../../../simt_api/math_functions/data_type_conversion/type_conversion_functions/_float2int_rz.md)（`related`）：__float2int_rz 与《Truncate》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-- [H2Trunc](../../../../simt_api/math_functions/bfloat16_type/bfloat16x2_math_functions/h2trunc.md)（`same_topic`）：《Truncate》处理“将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。”。《H2Trunc》明确“获取对输入数据各元素的浮点数截断后的整数。”，可直接用于核对Truncate 向零取整在 Cast round-mode、高阶/基础/SIMT 接口中的等价语义。
-- [H2Trunc](../../../../simt_api/math_functions/half_type/half2_math_functions/h2trunc.md)（`same_topic`）：《Truncate》处理“将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。”。《H2Trunc》明确“获取对输入数据各元素的浮点数截断后的整数。”，可直接用于核对Truncate 向零取整在 Cast round-mode、高阶/基础/SIMT 接口中的等价语义。
-- [Htrunc](../../../../simt_api/math_functions/bfloat16_type/bfloat16_math_functions/htrunc.md)（`same_topic`）：《Truncate》处理“将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。”。《Htrunc》明确“获取对输入bfloat16_t数据浮点数截断后的整数。”，可直接用于核对Truncate 向零取整在 Cast round-mode、高阶/基础/SIMT 接口中的等价语义。
-- [Htrunc](../../../../simt_api/math_functions/half_type/half_math_functions/htrunc.md)（`same_topic`）：《Truncate》处理“将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。”。《Htrunc》明确“获取对输入half数据浮点数截断后的整数。”，可直接用于核对Truncate 向零取整在 Cast round-mode、高阶/基础/SIMT 接口中的等价语义。
-- [Trunc](../../../adv_api/math_compute/trunc_interface/trunc.md)（`same_topic`）：《Truncate》处理“将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。”。《Trunc》明确“按元素做浮点数截断，即向零取整操作。”，可直接用于核对Truncate 向零取整在 Cast round-mode、高阶/基础/SIMT 接口中的等价语义。
-- [Truncf](../../../../simt_api/math_functions/float_math_functions/truncf.md)（`same_topic`）：《Truncate》处理“将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。”。《Truncf》明确“获取对输入数据的浮点数截断后的整数。”，可直接用于核对Truncate 向零取整在 Cast round-mode、高阶/基础/SIMT 接口中的等价语义。
-- [Trunc接口](../../../adv_api/math_compute/trunc_interface/trunc_interface.md)（`same_topic`）：《Truncate》处理“将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。”。《Trunc接口》明确“按元素做浮点数截断（向零取整），并提供临时空间大小获取接口。”，可直接用于核对Truncate 向零取整在 Cast round-mode、高阶/基础/SIMT 接口中的等价语义。
+- [Truncate](../../reg_vector_compute/type_conversion/truncate.md)（`same_topic`）：将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。；将源操作数中的浮点数元素截断为整数值（保留原数据类型），并存入目的操作数。两页定义相同的保留浮点 dtype 的整数化任务，分别覆盖 LocalTensor 多舍入模式与 Reg 形式。
 <!-- cannbot:related:end -->

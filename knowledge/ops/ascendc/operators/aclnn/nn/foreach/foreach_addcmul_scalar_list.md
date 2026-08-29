@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:30:28Z"
-updated_at: "2026-08-25T15:30:28Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -549,9 +549,9 @@ Base::Base::maxCastDataCount = Base::Base::inputsTensorUbSize / sizeof(float);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；ascend910b 接线 | 公开支持；ascend910_93 接线 | 公开支持，见 `_a5` 卡。 |
+| 支持状态 | 公开支持；ascend910b 接线 | 公开支持；ascend910_93 接线 | 公开支持，见 `_950` 卡。 |
 | Host/Launcher | 共用 arch22 `ForeachCommonTiling` | 共用 arch22 `ForeachCommonTiling` | arch35 专用 max-tensor Tiling。 |
 | Kernel/资源 | 共用 AIV Vector entry/body | 共用 AIV Vector entry/body | SIMT GM 直读直写，无显式 UB。 |
 
@@ -595,3 +595,9 @@ Base::Base::maxCastDataCount = Base::Base::inputsTensorUbSize / sizeof(float);
 | 同步 | queue + PIPE_V + V_MTE3/MTE3_MTE2 | 输出完成前不得覆盖 x1 slot | adapters, `Compute` |
 | 精度与尾块 | low precision FP32 slices/CAST_RINT；tail byte copy | cast 顺序、maxCastDataCount、valid bytes | `ComputerPerCast...`, `SingleTensorProcess` |
 | 失败边界 | Host checks + compile guards | >50 tensors/全空域/unknown key 无安全 fallback | `Init`, `CheckOpInfo`, router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachAddcmulScalarList 950 ACLNN 算子知识](foreach_addcmul_scalar_list_950.md)（`same_topic`）：“单 AIV_VECTOR Kernel；R-001/R-002/R-003 均无 Cube/AIC/MIX_CV。”给出焦点端事实；“Kernel 内按 tensor 顺序发起 SIMT `VF_CALL`，无 AIC/Cube/MIX_CV。”给出候选端事实。两卡实现同一个 aclnnForeachAddcmulScalarList 合同，但 A2/A3 走 AIV Vector 队列路线，950 走顺序 SIMT VF_CALL；联合阅读支持按平台选择实现与资源模型。
+<!-- cannbot:related:end -->

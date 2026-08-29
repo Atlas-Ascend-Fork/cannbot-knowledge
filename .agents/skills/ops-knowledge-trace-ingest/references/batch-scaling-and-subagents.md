@@ -10,7 +10,7 @@
 |----|------|------|
 | miner subagent | ✅ 已实现 + 单条回归（8 草稿/9 skipped） | `subagents/ops-knowledge-trace-miner.md` |
 | curator subagent | ✅ 已实现 + 单条回归（ledger：covered/defer 判定合理） | `subagents/ops-knowledge-trace-curator.md` |
-| reviewer subagent | ✅ 已实现（只读，审新增主卡+升级操作） | `subagents/ops-knowledge-trace-reviewer.md` |
+| reviewer subagent | ✅ 已实现（只读，审全部待发布新增/修改卡） | `subagents/ops-knowledge-trace-reviewer.md` |
 | 批量 normalize | ✅ 已实现（多进程/幂等/batch_manifest） | `trace_normalize.py batch` |
 | 草稿预聚类 | ✅ 已实现（跨 trace 并簇验证 14→7） | `scripts/cluster_candidates.py` |
 | SKILL.md 阶段 3/4 subagent 化 + 批量模式文档 | ✅ 已同步 | `SKILL.md` |
@@ -44,7 +44,7 @@ parsed/context/**/*.md（千级）
 .build/ops-knowledge-trace-ingest/<date>/<trace_id>/{reconstruction.json, manifest.json, DRAFT-*.md}
    │
    ▼ ④ curate 聚合（LLM：全局去重 + 落库；分域并行 + 统一收口）
-knowledge/ops/ascendc/runbooks/** + batch ledger + 图谱增量（含 judge，必做） + log
+knowledge/ops/ascendc/runbooks/** + batch ledger + 全量图谱重建（多 reviewer，必做） + log
 ```
 
 ### ① 批量 normalize（0 LLM）
@@ -81,15 +81,19 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + 图谱增量（含 judge，�
    │
    ▼ ④c 簇级门控与去重判定（LLM，curator subagent 分域并行）
    每簇：主卡选择 → 跨trace复现计数 → 对近邻库卡判定
-     new / upvote(主卡 reproduce_count+=n) / merge(补字段) / covered / reject
+     new / upvote(ledger 内部 reproduce_count+=n) / merge(补字段) / covered / reject
    门控锁在簇主卡判（价值/防作弊/代码完整/验证信号）；成员卡只做确定性检查
-   → 每域 ledger.json（.build/，不直接写库）
+   → 每域 pending ledger.json（.build/，不直接写库）
    │
-   ▼ ④d 独立审查（reviewer subagent，只读）
-   审"新增主卡最终稿 + 升级/合并操作"（不逐卡审草稿）
+   ▼ ④d 主 agent 生成 staged cards + pending validator（0 LLM）
+   materialize 当前 snapshots → staged target_path 完整覆盖 → field lint → validate --pre-review
    │
-   ▼ ④e 主 agent 单一收口（唯一写者）
-   ledger 合并 → 落盘新增/合并/升级 → index → 图谱 judge/inject（含双向反链） → log + meta
+   ▼ ④e 独立审查（reviewer subagent，只读）
+   v2 subject → 审“新增主卡最终稿 + 升级/合并操作” → runtime sender receipt
+   │
+   ▼ ④f receipt 批准 + 主 agent 单一收口（唯一写者）
+   approved validator → receipt-aware 原字节发布/check → sync indexes
+     → 图谱 candidates/review/aggregate/finalize → log + meta
 ```
 
 **④a 确定性预聚类（必须 0 LLM）**
@@ -104,19 +108,19 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + 图谱增量（含 judge，�
 
 **④c 簇级门控与去重（LLM）**
 - 簇主卡 = 证据最全/代码最完整者；门控锁（实测锚定/防作弊/价值/代码完整/验证信号禁 hearsay）在**主卡**判；
-- **批量天然含 upgrade 语义**：簇内跨 trace 复现 ≥2 且主卡上板信号 `tool_observed`/`artifact_verified` → 一次落库直接 `verified`（不放松双门槛，逐簇过证据锁）；
-- 对近邻库卡：同 nugget → upvote/merge；同现象不同根因 → 写图谱关系候选，不手写反链；
+- **批量天然含 upgrade 语义**：簇内跨 trace 复现 ≥2 且主卡上板信号 `tool_observed`/`artifact_verified` → 一次落库直接升内部 `verified` tier（不放松双门槛，逐簇过证据锁）；
+- 对近邻库卡：同 nugget → upvote/merge；同现象不同根因 → 写图谱关系候选，不手工维护受管关系块；
 - reject/defer 成员（低价值/作弊/证据不足）记 ledger reason，供用户人工复审。
 
-**④d 审查按簇不按卡**
-- reviewer 只读：新增主卡最终稿 + 簇判定记录 + ledger；UPVOTE/合并等低风险操作不逐条审；
-- 审查成本 = O(新卡数)，不是 O(草稿数)。
+**④e 审查按待发布卡，不按原始草稿**
+- reviewer 只读：逐张阅读全部 staged 最终稿（包括 new/upvote/merge/downvote 产生的新增或修改卡）+ 簇判定记录 + ledger；reject/defer 且未进入 staged root 的草稿不逐条审；
+- 审查成本 = O(staged 卡数)，不是 O(原始草稿数)。receipt 只证明字节未变，不能替代 reviewer 对每张待发布卡的实质阅读。
 
-**④e 单一收口（写库唯一入口）**
-- 分域 curator 只产出 ledger，**不直接写知识卡目录**；index 由主 agent 串行落盘，反链由后续 graph inject 统一写入；
-- 图谱增量一次（必做，非条件式）：新增卡批量 judge（一个 judge 子 agent 判全部新 focal，覆盖新卡的跨树候选：knowledge 其他树邻居）→ aggregate → inject/viz/verify；runbooks 与 knowledge 其他树的跨树链接由图谱 pipeline 产生、不手写（手写反链与 inject 幂等冲突）。
+**④f 单一收口（写库唯一入口）**
+- 分域 curator 只产出 ledger，**不直接写知识卡目录**；index 由主 agent 串行落盘，关系候选留在 ledger，受管关系块由后续 graph finalize 统一写入；
+- 图谱全量重建一次（必做，非条件式）：生成当前全库候选 → 多个 reviewer 分片覆盖全部 focal 并阅读当前正文 → aggregate（冲突时独立裁决）→ finalize/viz/verify；runbooks 与其他知识树的关系由图谱流程产生，不手写受管关系块。
 
-**规模参考（500 草稿示例）**：④a/b 确定性秒级；④c ~100-200 簇 × 每簇 5~10 近邻对 ≈ 1000-2000 对语义判定（分域 curator 并行）；④d ~50-100 新主卡。curator 判定量级约为 mine 的 1/50——**token 不限，但判定对规模收敛仍保证同 nugget 判定一致可审计**。
+**规模参考（500 草稿示例）**：④a/b 确定性秒级；④c ~100-200 簇 × 每簇 5~10 近邻对 ≈ 1000-2000 对语义判定（分域 curator 并行）；④d 生成约 50-100 张 staged 新增/修改卡，④e 逐张独立审查。curator 判定量级约为 mine 的 1/50——**token 不限，但判定对规模收敛仍保证同 nugget 判定一致可审计**。
 
 ### 规模与并行策略（token 不限）
 - 并行度只受环境并发 task 上限约束；全部 related trace 持续排队处理，无需预算分批。
@@ -143,23 +147,23 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + 图谱增量（含 judge，�
 - 输入：`clusters.json`（④a 预聚类）+ 库特征索引（④b）+ 近邻比对对清单 + 现有库根。
 - 权限：read/glob/bash + **write 仅限 `.build/`**（写 ledger）；**禁读 trace 长文**；**不直接写知识卡目录**（写库由主 agent 收口）。
 - 职责（按簇级门控，见 §2.④c）：簇主卡选择 → 跨 trace 复现计数（reproduce_count / 批量 upgrade 语义）→ 对近邻库卡判 new/upvote/merge/covered/reject → 门控锁在簇主卡判。
-- 输出：分域 `ledger.json`（每簇终态 + reason + 主卡/合并字段/相关反链建议）。
+- 输出：分域 `ledger.json`（每簇终态 + reason + 主卡/合并字段/关系候选建议）。
 
-**C. `subagents/ops-knowledge-trace-reviewer.md`（独立审查，按簇不按卡）**
-- 输入：新增主卡最终稿 + 簇判定记录 + ledger + SPEC 摘要（不给 trace、不给草稿全量）。
+**C. `subagents/ops-knowledge-trace-reviewer.md`（独立审查，按待发布卡不按原始草稿）**
+- 输入：全部 staged 新增/修改卡最终稿 + 簇判定记录 + ledger + SPEC 摘要（不给无关 trace、不给草稿全量）。
 - 权限：**read only**（edit/write deny）。
-- 职责：对照 curating.md blocker 清单输出 `{blocker|major|minor}` findings（含：无实测信号 / agent_reported 当实测 / 测试侧放松 / 低价值发布 / hearsay 验证信号 / 代码不完整）；UPVOTE/合并等低风险操作不逐条审，只审新增主卡与升级操作。
+- 职责：逐张审阅全部 staged 最终字节，对照 curating.md blocker 清单输出 `{blocker|major|minor}` findings（含：无实测信号 / agent_reported 当实测 / 测试侧放松 / 低价值发布 / hearsay 验证信号 / 代码不完整）；UPVOTE/合并/降级造成的正文修改同样必须审。
 - 输出：`findings.json`；修订后重审，blocker+major 清零才放行。
 
 ### 主 agent 角色变化
-- 单条模式：main → 门禁 subagent → miner subagent → reviewer subagent → curator subagent → 收口（图谱/索引/log）。
-- 批量模式：main → 批量 normalize（脚本）→ 门禁扇出 → mine 扇出（并行 N）→ 预聚类（脚本）→ curator（分域并行，产出 ledger）→ reviewer（审新主卡）→ **main 单一收口落库** → 图谱增量（含 judge，必做） → log。
+- 单条模式：main → 门禁 subagent → miner subagent → curator subagent（pending ledger）→ main 生成 staged cards → reviewer subagent → receipt 批准 → main 收口（发布/索引/图谱/log）。
+- 批量模式：main → 批量 normalize（脚本）→ 门禁扇出 → mine 扇出（并行 N）→ 预聚类（脚本）→ curator（分域并行，产出 pending ledger）→ main 生成 staged cards → reviewer（审新增/升级/合并卡）→ receipt 批准 → **main 单一收口发布** → 全量图谱重建（多 reviewer，必做） → log。
 - 主 agent 上下文只装：batch manifest、gates.json、clusters.json、各 subagent 结构化返回、各域 ledger。
 
 ### 与 reference 文档的关系
-- `reference/mining.md` / `reference/curating.md` 保留为**准则权威**（详细判据/词表/示例）。
+- `references/mining.md` / `references/curating.md` 保留为**准则权威**（详细判据/词表/示例）。
 - subagent 定义内联**核心纪律**（一卡一根因、价值门槛、反投机取巧、代码 verbatim、证据等级、不落库、门控锁、blocker 清单），细则按需读 reference。
-- 兼容：无 subagent 环境时主 agent 仍可按 reference 直接执行（两轨并存，subagent 优先）。
+- 兼容：无 subagent 环境时主 agent 可继续 normalize/mine/curate 并保留 draft/ledger；没有可核验独立 reviewer sender 时必须 defer，不能发布。
 
 ## 4. 落地路线（建议实现顺序）
 
@@ -171,9 +175,9 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + 图谱增量（含 judge，�
 | 4 | 全量 parsed/context/（千级）试点 + 分批策略调优 | 产出率/成本报告 |
 
 ## 5. 风险与对策
-- **并行写库冲突**：curate 库写入由主 agent 单一收口，分域 subagent 只产出 ledger，不直接写库；反链由后续 graph inject 单点写入。
+- **并行写库冲突**：curate 库写入由主 agent 单一收口，分域 subagent 只产出 ledger，不直接写库；受管关系块由后续 graph finalize 单点写入。
 - **subagent 写权限失控**：write 权限限定 `.build/`（curator 写 ledger）；落库写权限只在主 agent；reviewer 零写权限。
 - **并发稳定性**：海量并行受环境并发 task 上限与 API 限流约束——batch_manifest 状态机 + 失败重试 + 断点续跑保证可恢复；限流时降低并发 N。
 - **预聚类误并/漏并**：簇清单可抽查；漏并后果轻（同 nugget 落两次 → 下次 upgrade 合并）；误并在簇级判定时拆出。
-- **批量 verified 升级过松**：跨 trace 复现 + 上板信号双门槛不放松，逐簇过证据锁后才升 verified。
+- **批量内部 verified tier 升级过松**：跨 trace 复现 + 上板信号双门槛不放松，逐簇过证据锁后才升该 tier。
 - **质量退化**：每批 curate 后抽查（lint HARD=0 + 价值抽检 + 簇判定抽检），对照单条模式基线。

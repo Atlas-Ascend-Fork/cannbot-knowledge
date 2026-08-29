@@ -39,17 +39,3 @@ Ascend C提供融合算子的编程范式，方便开发者基于该范式表达
 4.  进行Vector矢量计算。
 5.  将输出结果搬运到Global Memory上。
 整个过程的示例代码如下（伪代码）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AIC和AIV独立运行机制](../../matrix_advanced_api/feature_scenarios/aic_aiv_independent_execution.md)（`related`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《AIC和AIV独立运行机制》明确“AIC和AIV独立运行机制，又称双主模式。在分离模式下，区别于MIX模式（包含矩阵计算和矢量计算）通过消息机制驱动AIC运行，双主模式为AIC和AIV独立运行代码，不依赖消息驱动，开启双主模式能够提高Matmul计算性能。默认情况下，双主模式不开启，需要通过MatmulConfig中的enableMixDualMaster参数开启。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
-- [SIMD算子实现基础知识](../../matrix_advanced_api/basics.md)（`related`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《SIMD算子实现基础知识》明确“>本节内容为使用高阶API进行矩阵乘法的编程指导。使用高阶API进行实际的矩阵编程时，需要通过API参考确认接口支持的产品型号。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
-- [SIMD算子实现耦合模式](../../matrix_basic_api/coupled_mode.md)（`related`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《SIMD算子实现耦合模式》明确“>本节内容为针对耦合模式，使用基础API进行矩阵乘法的编程指导。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
-- [中级性能优化](../../../typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《融合算子编程基础知识》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
-- [入门功能落地](../../../typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/getting_started.md)（`related`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《入门功能落地》明确“本节以Matmul+LeakyRelu融合算子为例，介绍基于Ascend C编程模型实现Cube-Vector融合计算的基本方法，帮助开发者快速入门融合算子开发。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
-- [异步场景处理](../../matrix_advanced_api/feature_scenarios/async_scenario.md)（`related`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《异步场景处理》明确“Matmul的Iterate和IterateAll接口在MIX场景（包含矩阵计算和矢量计算）下提供了同步和异步两种模式，纯Cube场景（只有矩阵计算）下，只支持同步模式。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
-- [算子实现](../../matrix_advanced_api/operator_impl.md)（`related`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《算子实现》明确“介绍使用Matmul高阶API实现矩阵乘算子的流程，包括Host侧Tiling参数获取与Kernel侧矩阵乘操作。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
-- [通用融合基础知识](../general_fusion/basics.md)（`related`）：CV 融合是 Cube 与 Vector 核内流水重叠，通用融合关注计算与通信重叠；二者都减少串行空泡但依赖对象不同，可用于融合类型选型。
-- [融合算子编程算子实现](operator_impl.md)（`same_topic`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《融合算子编程算子实现》明确“下文将以Matmul+LeakyRelu融合算子的实现为例，介绍Mix融合算子的设计和实现流程。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
-<!-- cannbot:related:end -->

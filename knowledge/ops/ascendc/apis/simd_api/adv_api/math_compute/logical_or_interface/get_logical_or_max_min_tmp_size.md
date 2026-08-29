@@ -26,7 +26,6 @@ host侧Tiling接口，用于获取LogicalOr接口所需的最大和最小临时�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LogicalOr](logical_or.md)（`related`）：LogicalOr 运行前需由 Host 查询最小和最大临时空间，最小值保障正确性并作为 Kernel tiling 参数。
-- [GetLogicalOrTmpBufferFactorSize](get_logical_or_tmp_buffer_factor_size.md)（`same_topic`）：GetLogicalOrMaxMinTmpSize 与《GetLogicalOrTmpBufferFactorSize》的实质衔接是：GetLogicalOrMaxMinTmpSize 与 factor 查询共同决定 LogicalOr 的 sharedTmpBuffer，接口页和 kernel 操作说明该 tiling 结果的唯一消费方。
-- [LogicalOr接口](logical_or_interface.md)（`same_topic`）：GetLogicalOrMaxMinTmpSize 与《LogicalOr接口》的实质衔接是：GetLogicalOrMaxMinTmpSize 与 factor 查询共同决定 LogicalOr 的 sharedTmpBuffer，接口页和 kernel 操作说明该 tiling 结果的唯一消费方。
+- [GetLogicalOrTmpBufferFactorSize](get_logical_or_tmp_buffer_factor_size.md)（`related`）：获取LogicalOr接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；host侧Tiling接口，用于获取LogicalOr接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两个 Host 接口面向同一 LogicalOr 临时空间预算：FactorSize 将固定空间换算为单次元素量，MaxMin 给出可选空间上下界。
+- [LogicalOr](logical_or.md)（`same_topic`）：获取LogicalOr接口所需的最大和最小临时空间大小；按元素进行逻辑或操作；连接 Host 临时空间生产与 Kernel 计算。
 <!-- cannbot:related:end -->

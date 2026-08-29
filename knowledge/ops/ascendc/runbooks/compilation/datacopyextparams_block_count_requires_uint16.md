@@ -119,12 +119,3 @@ DataCopyExtParams::blockCount 是 uint16_t；运行时 rows 为 uint32_t，列�
 
 - 依赖“运行值实际很小”来期待编译器接受列表初始化窄化；运行时范围不会改变该语言规则。
 - 看到编译器建议后无条件强转，却不证明 `rows` 的最大值；这会把编译错误变成静默截断风险。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm.md)（`exemplifies`）：该 API 消费 DataCopyExtParams，卡片中的窄化修复正发生在 UB 到 GM 的 DataCopyPad 调用边界。
-- [DataCopyPad UB→GM 四参调用导致编译失败](datacopypad_ub_to_gm_has_no_pad_params.md)（`related`）：两张构建卡分别约束 UB 到 GM 重载的参数数量和 DataCopyExtParams 字段类型，合并可避免连续两类编译错误。
-- [DataCopyExtParams blockLen 窄化编译失败](datacopyextparams_block_len_requires_uint32.md)（`same_topic`）：DataCopyExtParams blockLen 窄化编译失败 与《DataCopyExtParams 运行时块数窄化编译失败》的实质衔接是：本故障和 blockCount/rightPad 卡都发生在 AscendC 参数结构体列表初始化的精确整数宽度不匹配；DataCopyPad 是 DataCopyExtParams 的直接消费接口，其他 stride、对齐或队列故障不是同一编译根因。
-- [DataCopyPad 加载缺少 Pad 参数导致编译失败](datacopypad_gm_to_ub_requires_pad_params.md)（`same_topic`）：焦点处理DataCopyPad GM→UB 扩展重载的 Pad 参数签名；DataCopyExtParams 运行时块数窄化编译失败正文界定“DataCopyExtParams 的 blockCount 接收运行时 uint32_t 时触发列表初始化窄化错误，须在确认范围后显式转为 uint16_t”。候选是 DataCopyPad API、相反方向重载、参数窄化与 rightPad 类型的同一签名决策。
-<!-- cannbot:related:end -->

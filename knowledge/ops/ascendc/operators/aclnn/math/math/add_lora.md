@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T10:05:01Z"
-updated_at: "2026-08-25T10:05:01Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -826,11 +826,11 @@ MMAD 在 FP32 L0C 累加，Fixpipe 一次性转 FP16；AIV 在同一 UB view 原
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持；本卡覆盖 ascend910b | 公开文档明确不支持 | 公开文档明确 Ascend 950PR/950DT 不支持 |
 | Host/Launcher | `socVersionFlag=1`；key 100000/100001；blockDim=AIC core count | 无公开 Host/config | 无公开 Host/config |
-| Kernel/资源 | `MIX_AIC_1_2`，normal/single 两 body | 不发布 | 不发布 `_a5` 卡 |
+| Kernel/资源 | `MIX_AIC_1_2`，normal/single 两 body | 不发布 | 不发布 `_950` 卡 |
 
 ## 限制与失败边界
 

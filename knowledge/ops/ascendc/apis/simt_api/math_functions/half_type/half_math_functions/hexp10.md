@@ -24,11 +24,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Exp10f](../../float_math_functions/exp10f.md)（`related`）：Half Hexp10 是 Exp10f 的 FP16 标量对应接口，返回范围与 Inf/NaN 处理受 half 饱和上限约束。
-- [Hexp10](../../bfloat16_type/bfloat16_math_functions/hexp10.md)（`related`）：bfloat16 Hexp10 与 focal 数学语义相同但精度类型不同，可用于 half 与 bfloat16 计算路径选型。
-- [H2Exp10](../half2_math_functions/h2exp10.md)（`same_topic`）：H2Exp10：H2Exp10 的 bfloat16x2同名接口和 half/float标量 exp10保持底数10，H2Exp/H2Exp2则直接帮助避免把 e^x、2^x 与10^x混用。 目标卡《Hexp10》补充：计算half输入x的10的x次方。
-<!-- cannbot:related:end -->

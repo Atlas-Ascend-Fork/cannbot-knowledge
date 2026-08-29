@@ -167,3 +167,10 @@ flowchart LR
 - [pypto](../frameworks/pypto.md)
 - [int8-int4-hybrid](../quantization/int8_int4_hybrid.md)（V4 A3 Pod 量化矩阵：Compressor Linear 不量化）
 - [hybrid-mxfp8-mxfp4](../quantization/hybrid_mxfp8_mxfp4.md)（V4 950PR/DT 量化矩阵：Compressor Linear 不量化）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Lightning Indexer Kernel](lightning_indexer.md)（`related`）：“V4 Attention 部分的融合 Kernel 链为 `Compressor → CompressEpilog → (LI) → SAS`。”把 LI 放在 Compressor epilog 之后；“V4 仅在 C4A（compress_ratio=4，CSA）层、对 Compressor 压缩后的 cmp_KV 做 Top-k（V4 AscendC guide 以 **512** 为示例 K，运行时实际取 `config.index_topk`，仓内 `configuration_deepseek.py` 默认 **2048**，详见 ［deepseek-v4］(../models/deepseek_v4.md)），结果喂给 ［sparse-attn-sharedkv］(sparse_attn_sharedkv.md)（SAS）的 SCFA 路径（不同模型不同 K，并列保留）。”明确 LI 消费压缩缓存并产出 SCFA 索引，足以推进该链路的实现与参数核验。
+- [SparseAttnSharedKV (SAS) Kernel](sparse_attn_sharedkv.md)（`related`）：“V4 Attention 部分的融合 Kernel 链为 `Compressor → CompressEpilog → (LI) → SAS`。”给出 Compressor 的下游执行链；“在 V4 中 SAS 是 ［deepseek-v4］(../models/deepseek_v4.md) attention 主体（MQA / Shared-KV）的落地算子，承接 ［mla-prolog］(mla_prolog.md) 产出的 Q、［lightning-indexer］(lightning_indexer.md) 产出的稀疏 index（仅 CSA 路径），以及 ［compressor］(compressor.md) 产出的压缩 KV（`cmp_kv`）。”从 SAS 端确认压缩 KV 的生产消费合同，因此可沿边核验 cache 输入和场景选择。
+<!-- cannbot:related:end -->

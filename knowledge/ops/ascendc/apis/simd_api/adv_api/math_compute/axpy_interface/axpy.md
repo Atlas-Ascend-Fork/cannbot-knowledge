@@ -39,10 +39,6 @@ __aicore__ inline void Axpy(const LocalTensor<T>& dstTensor, const LocalTensor<U
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAxpy](../../../c_api/vector_compute/asc_axpy.md)（`related`）：高阶 Axpy 用 Muls+Add 组合并配套临时空间，适合需要高阶 tiling/精度实现的场景。
-- [Axpy](../../../basic_api/memory_vector_compute/composite_compute/axpy.md)（`related`）：Axpy 与《Axpy》的实质衔接是：Axpy 把缩放源加到目的，需与高阶 Axpy、mask/repeat 和临时空间查询配套。
-- [GetAxpyTmpBufferFactorSize](get_axpy_tmp_buffer_factor_size.md)（`related`）：该因子接口可从固定临时空间反推 Axpy 单次最大处理元素数，用于决定 calCount 分块。
-- [AscAxpy](../../../c_api/reg/compound_compute/asc_axpy.md)（`same_topic`）：AscAxpy 与《Axpy》的衔接是：AscAxpy 的 C Vector、基础及高阶 Axpy 入口实现同一 alpha*x+y 数据流，差异集中在张量形态、临时空间和调度层级。
-- [Axpy接口](axpy_interface.md)（`same_topic`）：该接口页定义的临时空间、地址不重叠和 y=a*x+y 契约由 Axpy 计算接口直接实现。
-- [GetAxpyMaxMinTmpSize](get_axpy_max_min_tmp_size.md)（`same_topic`）：GetAxpyMaxMinTmpSize 与《Axpy》的实质衔接是：Axpy 的 max-min/factor 查询直接服务 Axpy kernel 与 SIMD/C API 实现。
+- [GetAxpyMaxMinTmpSize](get_axpy_max_min_tmp_size.md)（`related`）：源操作数(srcTensor)中每个元素与标量求积后和目的操作数(dstTensor)中的对应元素相加，计算公式如下： 该接口功能同基础API Axpy，区别在于此接口指令是通过Muls和Add组合计算，从而提供更优的精度。；kernel侧Axpy接口的计算需要开发者申请临时空间，本接口用于在host侧获取申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；Axpy 定义 kernel 运算，Host helper 给出该运算的合法临时空间区间和 Tiling 传递方式，构成资源规划任务链。
+- [GetAxpyTmpBufferFactorSize](get_axpy_tmp_buffer_factor_size.md)（`related`）：源操作数(srcTensor)中每个元素与标量求积后和目的操作数(dstTensor)中的对应元素相加，计算公式如下： 该接口功能同基础API Axpy，区别在于此接口指令是通过Muls和Add组合计算，从而提供更优的精度。；该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。；Axpy 的 Tiling 需要确定 calCount，factor helper 由固定 buffer 反推单次元素数，连接 Host 分块与 Device 调用规模。
 <!-- cannbot:related:end -->

@@ -196,7 +196,5 @@ revision: 未提交工作树快照（group 隔离修复后、a0 双维 tiling �
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GroupNorm](../../apis/simd_api/adv_api/normalization/group_norm.md)（`exemplifies`）：《GroupNorm》处理“对shape为[N,C,H,W]的输入，将每个[C,H,W]在C维度上分为groupNum组并对每一组进行标准化，再通过可训练的缩放参数γ和平移参数β进行调整。”。《ARA 多 group 共用 max/sum 污染后续输出》明确提供“ARA 三趟归约缓冲若只在 group 循环外初始化，后续 group 会继承前组 max/sum；应逐 group 重置再完成三趟。”，其参数、调用或验证步骤直接接入GroupNorm 的分组统计、Welford 计算、Tiling 与格式约束。
-- [ACL 507035 — 完整 a0 统计缓冲超过 UB](../compilation/ub_slices_reduction_axis_scratch_buffers_507035.md)（`related`）：两卡属于同一 ARA 三趟统计实现：本卡约束每 group 重置 max/sum，对照卡约束大 a0 时按 tile 分配并在 tile 内完成三趟，合并后才能同时避免状态污染和 UB 越界。
-- [ARA 分块重复首块：CopyIn 传递 rowStart](ara_split_copyin_must_include_chunk_row_start.md)（`related`）：ARA 分块后每个 pass 还必须把 rowStart 传入 CopyIn；否则即使 per-group 统计已重置，也会重复首块并产生错误统计。
+- [ARA 分块重复首块：CopyIn 传递 rowStart](ara_split_copyin_must_include_chunk_row_start.md)（`related`）：把 group 循环提到最外层；进入每个 group 时将 `maxBuf` 重新置为 `-inf`、`sumBuf` 重新置零，然后仅为该 group 完成 max、sum、output 三趟；给 gather helper 增加 `rowStart` 参数，并把 GM 起点写成 `a1Base + rowStart * A0_ + a0Start`。前者修复同一 ARA 三趟流程的跨 group 状态污染，后者修复分块三趟的输入地址推进；多 group、跨 chunk 精度排障需分别核对状态生命周期与 GM 起点。
 <!-- cannbot:related:end -->

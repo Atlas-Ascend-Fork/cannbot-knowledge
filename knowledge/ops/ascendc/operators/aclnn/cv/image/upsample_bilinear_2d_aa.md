@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-24T20:55:27Z"
-updated_at: "2026-08-24T20:55:27Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -680,7 +680,7 @@ scale越大，单个输出 tile 覆盖的输入 K 越宽；源码把 N方向 sli
 
 - 适用：可分离插值、输出 tile 与输入支持宽度乘积决定局部权重容量的场景。
 - 前提：A2/A3、scale不超过50、同样的 W/H权重矩阵与Matmul数据流。
-- 失效：A5使用逐输出SIMT/纯copy路线；不能沿用这些阈值。
+- 失效：950使用逐输出SIMT/纯copy路线；不能沿用这些阈值。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -751,7 +751,7 @@ workspaces[0] = intermediate_matrix_size + radioMatrixWorkspaceSize * needCoreNu
 
 - 适用：两阶段可分离Matmul、阶段串行、权重片每核独占的场景。
 - 前提：保持512B中间矩阵对齐、Device权重offset单位和跨阶段SyncAll。
-- 失效：单轴Route不需要中间矩阵语义；A5 SIMT直接按输出聚合。
+- 失效：单轴Route不需要中间矩阵语义；950 SIMT直接按输出聚合。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -772,9 +772,9 @@ Host按未对齐 `slide*Kmax` 分配而Device按128元素stride寻址是固定�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；ascend910b接线 | 公开支持；ascend910_93接线 | 公开支持；见独立`_a5`卡 |
+| 支持状态 | 公开支持；ascend910b接线 | 公开支持；ascend910_93接线 | 公开支持；见独立`_950`卡 |
 | Host/Launcher | 非RegBase；identity bypass；FP16/BF16升FP32 | 与A2共用源码 | RegBase始终加入算子launcher，Tiling选择copy/SIMT |
 | Kernel/资源 | key1 MIX_CV，Matmul+UB+大workspace | 与A2共用实现和binary结构 | AIV-only copy或512-thread SIMT；无Cube |
 
@@ -799,7 +799,7 @@ Host按未对齐 `slide*Kmax` 分配而Device按128元素stride寻址是固定�
 | 入口实现 | `image/upsample_bilinear2d_aa/op_host/op_api/aclnn_upsample_bilinear2d_aa.cpp` | CheckParams/GetWorkspaceSize/execute | API分支、Cast、executor |
 | 入口实现 | `image/upsample_bilinear2d_aa/op_host/op_api/upsample_bilinear2d_aa.cpp` | `l0op::UpsampleBilinear2dAA` | launcher添加 |
 | 入口实现 | `common/inc/op_api/aclnn_check.h` | `IsRegBase` | DAV_3510边界 |
-| Host/Tiling/Launcher | `image/upsample_bilinear2d_aa/op_host/upsample_bilinear2d_aa_def.cpp` | OpDef | 910b/910_93/A5注册 |
+| Host/Tiling/Launcher | `image/upsample_bilinear2d_aa/op_host/upsample_bilinear2d_aa_def.cpp` | OpDef | 910b/910_93/950注册 |
 | Host/Tiling/Launcher | `image/upsample_bilinear2d_aa/op_host/upsample_bilinear2d_aa_tiling.h` | POD定义 | A2/A3 ABI字段 |
 | Host/Tiling/Launcher | `image/upsample_bilinear2d_aa/op_host/upsample_bilinear2d_aa_tiling.cpp` | `UpsampleBilinearAATiling` | selector、shape/core/workspace/TCubeTiling |
 | Kernel entry/body | `image/upsample_bilinear2d_aa/op_kernel/upsample_bilinear2d_aa.cpp` | entry/router | key/dtype/Matmul注册 |
@@ -819,3 +819,9 @@ Host按未对齐 `slide*Kmax` 分配而Device按128元素stride寻址是固定�
 | 同步 | PIPE_V、V_S、MTE3_MTE2、SyncAll | flag方向、End与覆盖顺序 | coefficient helpers/Process |
 | 精度与尾块 | ACLNN FP16/BF16→FP32→原dtype；W/H各自SetTail | 不得删除升精度或把无效lane写出 | API Cast；`SetTail` |
 | 失败边界 | API/Tiling错误、null userWS、unknown key均无fallback | 不能把静默return当成功输出 | CheckParams/entry/getTCubeTiling |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [UpsampleBilinear2dAA 950 ACLNN 算子知识](upsample_bilinear_2d_aa_950.md)（`same_topic`）：若 W 轴无需变化，H 段直接读 `X`；若 H 轴无需变化，W 段直接写 `Y`。公开 ACLNN 在 A2/A3 会先把 FP16/BF16 输入 Cast 为 FP32，算子 Kernel 因而以 `UpsampleBilinearAAND<float>` 计算，最后 Cast 回用户 dtype。；中心、权重、归一化和累加均为 FP32；赋给 `T1` 时转换为目标 dtype，具体 round mode 固定仓不可见。恒等 Route 不做算术，按原 dtype 字节复制。。两卡覆盖同一公开 UpsampleBilinear2dAA 计算契约的跨平台实现：A2/A3 使用 Vector 权重生成加 Cube Matmul，950 使用 AIV copy 或 SIMT 逐输出收集。
+<!-- cannbot:related:end -->

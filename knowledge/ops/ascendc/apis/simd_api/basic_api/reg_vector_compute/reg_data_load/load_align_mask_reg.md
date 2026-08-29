@@ -39,14 +39,5 @@ LoadAlign能够实现数据从Unified Buffer（UB）搬运至MaskReg。有三类
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Ascend950 Reg 扫描按 256B 锁定 lane](../../../../../runbooks/precision/dav3510_vector_register_width_is_256_bytes.md)（`exemplifies`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《LoadAlign》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [Reg LoadAlign 不接受 const __ubuf__ 指针](../../../../../runbooks/compilation/reg_loadalign_requires_nonconst_ubuf_pointer.md)（`exemplifies`）：Runbook 实测两参数 Reg LoadAlign 不接受 const __ubuf__ 指针，并追到 asc_vf_call 包装边界；这是调用该搬入族时的直接编译诊断。
-- [arch35 VSEL_CMPMASK_SPR 标量批跑 mask 污染](../../../../../runbooks/precision/arch35_vsel_cmpmask_spr_mask.md)（`exemplifies`）：arch35 VSEL_CMPMASK_SPR 标量批跑 mask 污染 与《LoadAlign》的实质衔接是：该卡锁定标量/小 count 的 packed mask 仅写少量字节而 Select 载入 stale padding；跨调用、超64、RAW、Compare/Select、GetValue 与同步材料提供可执行区分。
-- [AddrReg](../register_data_types/addr_reg.md)（`related`）：选择 AddrReg 重载时必须先创建并配置多维地址偏移，LoadAlign 再按该偏移访问 UB；AddrReg 是该寻址模式的前置对象。
-- [AscLoadalign](../../../c_api/reg/reg_load/asc_loadalign.md)（`related`）：AscLoadalign 的 C API 可把 32B 对齐 UB 搬入矢量寄存器或 MaskReg，并覆盖立即数、AddrReg 与非连续模式，是该基础 API 的 C 层映射。
-- [AscLoadalignPostupdate](../../../c_api/reg/reg_load/asc_loadalign_postupdate.md)（`related`）：《AscLoadalignPostupdate》处理“从UB对齐地址搬入数据到矢量数据寄存器或掩码寄存器，调用后自动更新源地址，支持立即数偏移和非连续搬入两种模式。”。《LoadAlign》明确提供“将数据从UB搬运至MaskReg，支持普通搬运、PostUpdate扩展搬运和AddrReg偏移量三种接口，可通过MaskDist配置上采样、下采样等数据分布模式。”，其参数、调用或验证步骤直接接入LoadAlign 的地址 post-update、预取/非对齐加载和地址寄存器更新。
-- [MaskGenWithRegTensor](mask_gen_with_reg_tensor_mask_reg.md)（`related`）：MaskGen 从 RegTensor 的选定数据块生成 MaskReg，LoadAlignMaskReg 从 UB 搬入 MaskReg；二者按掩码来源是寄存器数据还是内存数据选用。
-- [StoreAlignMaskReg](../reg_data_store/store_align_mask_reg.md)（`related`）：LoadAlignMaskReg 把 UB 搬入 MaskReg，StoreAlignMaskReg 按相同 MaskDist/PostUpdate/AddrReg 约束反向搬回 UB，构成 MaskReg 数据往返。
-- [LoadAlign](load_align_noncontinuous.md)（`same_topic`）：LoadAlign 与《LoadAlign》的实质衔接是：非连续 LoadAlign 依赖 mask、地址推进、Store 交接和连续/非连续布局，相关卡片直接覆盖对齐、lane 和同步故障。
-- [MaskReg](../register_data_types/mask_reg.md)（`same_topic`）：MaskReg 与《LoadAlign》的实质衔接是：MaskReg 定义有效 lane，直接被 Load/Store、MaskGen 与 MaskReg 计算消费；C 创建/更新接口、merge mode、复用指南和两个编译故障明确其构造约束。
+- [AddrReg](../register_data_types/addr_reg.md)（`related`）：“使用AddrReg寄存器存储偏移量场景：在每次迭代中，需要先调用CreateAddrReg手动设定地址偏移量，再调用搬运指令。”规定 MaskReg LoadAlign 的 AddrReg 重载每轮必须先设偏移；“AddrReg应该通过CreateAddrReg API初始化，然后在循环中使用AddrReg存储地址偏移量。AddrReg在每层循环中根据所设置的stride进行自增。”给出 CreateAddrReg 初始化和按 stride 自增的寄存器语义。二者共同决定多维循环中的实际 UB 地址。
 <!-- cannbot:related:end -->

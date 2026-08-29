@@ -25,8 +25,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetLogicalAndsTmpBufferFactorSize](get_logical_ands_tmp_buffer_factor_size.md)（`related`）：LogicalAnds 设备接口实际消费按 factor-size 计算并经 Tiling 传入的临时空间。
-- [LogicalAnd](../logical_and_interface/logical_and.md)（`related`）：LogicalAnds 与《LogicalAnd》的实质衔接是：LogicalAnds 的 scalar 逻辑与接口、两种临时空间查询直接配套；LogicalAnd 是 tensor-tensor 对应形态。
-- [GetLogicalAndsMaxMinTmpSize](get_logical_ands_max_min_tmp_size.md)（`same_topic`）：LogicalAnds 与《GetLogicalAndsMaxMinTmpSize》的实质衔接是：LogicalAnds 的 scalar 逻辑与接口、两种临时空间查询直接配套；LogicalAnd 是 tensor-tensor 对应形态。
-- [LogicalAnds接口](logical_ands_interface.md)（`same_topic`）：LogicalAnds 与《LogicalAnds接口》的实质衔接是：LogicalAnds 的 scalar 逻辑与接口、两种临时空间查询直接配套；LogicalAnd 是 tensor-tensor 对应形态。
+- [GetLogicalAndsMaxMinTmpSize](get_logical_ands_max_min_tmp_size.md)（`related`）：输入矢量每个元素与标量进行逻辑与操作。当数据类型不是bool时，零视为False，非零视为True。；host侧Tiling接口，用于获取LogicalAnds接口所需的最大和最小临时空间大小。前者定义 Kernel 计算，后者给出为该接口准备临时空间的 Host Tiling 契约。
+- [GetLogicalAndsTmpBufferFactorSize](get_logical_ands_tmp_buffer_factor_size.md)（`related`）：输入矢量每个元素与标量进行逻辑与操作。当数据类型不是bool时，零视为False，非零视为True。；获取LogicalAnds接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。后者把固定缓冲预算换算为前者一次可处理的元素量。
 <!-- cannbot:related:end -->

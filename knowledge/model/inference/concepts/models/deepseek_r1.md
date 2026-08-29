@@ -67,7 +67,15 @@ flowchart TD
 
 根据 `config/*.yaml` 实际提供的部署方案：
 
-| 阶段 | 配置文件 | world_size | 并行 | 量化 | 备注 | | ---- | ------- | ---------- | ---- | ---- | ---- | | Prefill | `prefill_r1_rank_32_32dp_32ep_a8w8.yaml` | 32 (2 机) | MLA-DP32 + MoE-EP32 | W8A8 | `micro_batch_mode: 1`（DP+EP），`moe_chunk_max_len: 65536` | | Decode | `decode_r1_rank_16_16ep_a8w8.yaml` | 16 (1 机) | MLA-DP16 + MoE-EP16 | W8A8 | `npugraph_ex`（ACL Graph 图模式），无 MTP，小规模/调试用 | | Decode | `decode_r1_rank_16_16tp_a8w8.yaml` | 16 (1 机) | MLA-TP16 + MoE-TP16 | W8A8 | `moe_tp_size > 1`，走 `moe_infer_tp` 路径 | | Decode | `decode_r1_rank_128_128ep_a8w8.yaml` | 128 (16 机) | MLA-DP128 + MoE-EP128 | W8A8 | `ge_graph`，大 EP 部署 | | Decode | `decode_r1_rank_128_128ep_a8w8c8_mtp.yaml` | 128 | DP128 + EP128 | **W8A8C8** | `next_n: 1`（MTP1）+ SuperKernel | | Decode | `decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml` | 128 | DP128 + EP128 | W8A8C8 | Benchmark 配置，`force_eplb: True`、`prefill_mini_batch: 1` | | Decode | `decode_r1_rank_128_128ep_a8w8c8_mtp_longseq.yaml` | 128 | DP128 + EP128 | W8A8C8 | 长序列专用 |
+| 阶段 | 配置文件 | world_size | 并行 | 量化 | 备注 |
+| ---- | ------- | ---------- | ---- | ---- | ---- |
+| Prefill | `prefill_r1_rank_32_32dp_32ep_a8w8.yaml` | 32 (2 机) | MLA-DP32 + MoE-EP32 | W8A8 | `micro_batch_mode: 1`（DP+EP），`moe_chunk_max_len: 65536` |
+| Decode | `decode_r1_rank_16_16ep_a8w8.yaml` | 16 (1 机) | MLA-DP16 + MoE-EP16 | W8A8 | `npugraph_ex`（ACL Graph 图模式），无 MTP，小规模/调试用 |
+| Decode | `decode_r1_rank_16_16tp_a8w8.yaml` | 16 (1 机) | MLA-TP16 + MoE-TP16 | W8A8 | `moe_tp_size > 1`，走 `moe_infer_tp` 路径 |
+| Decode | `decode_r1_rank_128_128ep_a8w8.yaml` | 128 (16 机) | MLA-DP128 + MoE-EP128 | W8A8 | `ge_graph`，大 EP 部署 |
+| Decode | `decode_r1_rank_128_128ep_a8w8c8_mtp.yaml` | 128 | DP128 + EP128 | **W8A8C8** | `next_n: 1`（MTP1）+ SuperKernel |
+| Decode | `decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml` | 128 | DP128 + EP128 | W8A8C8 | Benchmark 配置，`force_eplb: True`、`prefill_mini_batch: 1` |
+| Decode | `decode_r1_rank_128_128ep_a8w8c8_mtp_longseq.yaml` | 128 | DP128 + EP128 | W8A8C8 | 长序列专用 |
 
 > 注：`attn_tp_size / dense_tp_size / moe_tp_size = 1` 表示 MLA 与 MoE 均以 DP 方式部署每卡完整权重；`embed_tp_size / lmhead_tp_size` 控制 embedding / lm_head 的 TP 切分。
 
@@ -123,7 +131,10 @@ Attention 阶段 NTD 排布的数据布局原貌如下：
 
 Prefill 属于 compute-bound + 30% 通信占比场景。将输入拆成 2 个 micro-batch，主/副 NPU stream 上交错排布 **atten / init_routing / dispatch / mlp / combine / finalize_routing** 6 个阶段，使 dispatch 与 combine 的 AllToAll 完全被计算掩盖。开启后 A3 2 机 16 卡 64×4K 输入性能对比：
 
-| 切分策略 | 时延 (ms) | 总吞吐 (tokens/s) | 平均吞吐 (tokens/卡/s) | | ---- | ---- | ---- | ---- | | MLA-DP32 + MoE-EP32 | 3128 | 83805 | 5237 | | + micro-batch | 2512 | 104356 | **6522** |
+| 切分策略 | 时延 (ms) | 总吞吐 (tokens/s) | 平均吞吐 (tokens/卡/s) |
+| ---- | ---- | ---- | ---- |
+| MLA-DP32 + MoE-EP32 | 3128 | 83805 | 5237 |
+| + micro-batch | 2512 | 104356 | **6522** |
 
 约束：计算和通信线性度要好；非 host-bound；通信必须走默认 SDMA 模式（`HCCL_OP_EXPANSION_MODE` 若为 AIV 会与计算争硬件资源，反而变慢）。详见 [prefill-micro-batch](../techniques/prefill_micro_batch.md)。
 
@@ -236,7 +247,9 @@ if bs_qlen > self.moe_chunk_max_len: # need to chunk moe seq_len dim to avoid OO
 
 基于 Atlas A3，`config/decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml`，W8A8C8：
 
-| Quant Mode | Global Batch Size | Seq Length | Chips | TPOT (ms) | Throughput (tokens/p/s) | | ---- | ---- | ---- | ---- | ---- | ---- | | W8A8C8 | 6144 | 4096 | 128 | 44.9 | 2138 |
+| Quant Mode | Global Batch Size | Seq Length | Chips | TPOT (ms) | Throughput (tokens/p/s) |
+| ---- | ---- | ---- | ---- | ---- | ---- |
+| W8A8C8 | 6144 | 4096 | 128 | 44.9 | 2138 |
 
 > 注：性能数据基于 MTP1 与 perfect eplb 配置采集，平均 1 个 draft token 中 accept token 为 0.7 个。
 >
@@ -244,7 +257,10 @@ if bs_qlen > self.moe_chunk_max_len: # need to chunk moe seq_len dim to avoid OO
 
 Prefill benchmark（Atlas A3 2 机 16 卡，64×4K 输入，perfect eplb）：
 
-| 切分策略 | 时延 (ms) | 总吞吐 (tokens/s) | 平均吞吐 (tokens/卡/s) | | ---- | ---- | ---- | ---- | | MLA-DP32 + MoE-EP32 | 3128 | 83805 | 5237 | | + micro-batch | 2512 | 104356 | 6522 |
+| 切分策略 | 时延 (ms) | 总吞吐 (tokens/s) | 平均吞吐 (tokens/卡/s) |
+| ---- | ---- | ---- | ---- |
+| MLA-DP32 + MoE-EP32 | 3128 | 83805 | 5237 |
+| + micro-batch | 2512 | 104356 | 6522 |
 
 > 注：docs 使用 "DP32/EP32" 而 README 与 prefill YAML 为 `world_size: 32`，一致，但 prefill 环境描述为 "2 机 16 卡"——数字 16 与 32 不一致，以 DP32/EP32（32 卡）为准。源文档同段存在数字不自洽，待验证。
 
@@ -329,3 +345,9 @@ flowchart TD
 - [deepseek-r1-rl](../../../training/guides/recipes/deepseek_r1_rl.md)（跨域·训练：R1 在 A3 128 卡的 veRL+MindSpeed+vLLM-Ascend 全共卡 GRPO RL 后训练，120+ TPS/卡；本推理部署是其训练目标模型）
 - [grpo-dapo](../../../training/concepts/techniques/grpo_dapo.md)（跨域·训练：R1 RL 用 GRPO 算法）
 - [eplb](../../../training/concepts/techniques/eplb.md)（跨域·训练：EPLB(DeepSeek 提出的专家并行负载均衡器)）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Kimi-K2-Thinking](kimi_k2_thinking.md)（`related`）：“基础优化点可从 ［deepseek-r1］(deepseek_r1.md) 平滑继承”明确 Kimi-K2-Thinking 的适配基线；“本实践覆盖 Prefill 与 Decode 两阶段的端到端优化”给出 R1 可继承的两阶段优化范围，联合阅读可区分共享的 DeepseekV3 思路和 Kimi 的独立 legacy 实现。
+<!-- cannbot:related:end -->

@@ -118,3 +118,10 @@ return True                    # 全默认 / 全同一非默认流 -> 允许
 - 合并态 diff（merge sha 1402cf68…）：`GraphEXQKNormRopeFusionPass.__init__` 中 `head_size != 128 -> continue` 硬门控 + dtype ∈ {bf16,fp16} 早退，WithBias 变体与 `torch.ops.vllm.qkv_rmsnorm_rope(q_bias=..., k_bias=...)` 签名一致。溯源下探 [vllm-ascend-pr-5721-graph-fusion-add-qkvnormrope-and-qkvnormropewithbias](https://github.com/vllm-project/vllm-ascend/pull/5721)
 - 合并态 diff（merge sha 1402cf68…）：新版 `graphex_norm_quant_fusion_pass.py` replacement 直接传 `scale`、pattern 用 `vllm.quantize`；被删 `add_rms_norm_quant.py` 含 `1.0 / scale` 及「inverse of scale is required」注释。「1./scale 引入冗余算子、改直传无精度问题」为维护者 review 与作者验证回复所载。溯源下探 [vllm-ascend-pr-5721-graph-fusion-add-qkvnormrope-and-qkvnormropewithbias](https://github.com/vllm-project/vllm-ascend/pull/5721)
 - 合并态 diff（merge sha 1402cf68…）：`extra_stream_scope_check` 由内联 `_extra_stream_scope_check` 抽为公共 util，在 `graphex_norm_quant_fusion_pass.py` 与 `graphex_qknorm_rope_fusion_pass.py` 的每个 register_replacement 作为 extra_check 传入；单测覆盖与判定表一致。溯源下探 [vllm-ascend-pr-5721-graph-fusion-add-qkvnormrope-and-qkvnormropewithbias](https://github.com/vllm-project/vllm-ascend/pull/5721)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AddRmsNormQuant 950 ACLNN 算子知识](../../../../../ops/ascendc/operators/aclnn/nn/norm/add_rms_norm_quant_950.md)（`related`）：算子合同规定“`divMode=true` 时量化为 `round(r/scale+zeroPoint)`，false 时为 `round(r*scale+zeroPoint)`”；图融合守则要求“replacement 直接传 `scale`”，因此 replacement 不应预先求倒数，具体除/乘由算子的 divMode 决定。
+- [NPU 图模式（ge_graph / npugraph_ex）](../../../concepts/techniques/npu_graph_mode.md)（`related`）：三条守则各自独立，可分别核对；它们的共性是：**融合 kernel 对 shape 布局 / 标量方向 / 流归属都有硬契约，register_replacement 层要么在注册时门控、要么在 replacement 里对齐、要么用 `extra_check` 拒绝不合契约的 match**，而不是让运行时静默走进"没融合上"或"跨流误融合"。；Pytorch 默认 `eager` 模式"边解释边执行"，逐算子下发 Device，推理场景容易暴露 Host 侧下发开销（**host bound**）。图模式通过 `torch.compile` 把前向逻辑捕获成图、交给 NPU 后端编译执行，**减少 Host 下发开销，允许后端在更大范围做融合、内存复用、调度优化**，显著降低 decode 时延。；图模式提供后端融合与调度的执行语境，守则把该语境落到 register_replacement 对 shape、标量方向与流归属的具体准入合同。
+<!-- cannbot:related:end -->

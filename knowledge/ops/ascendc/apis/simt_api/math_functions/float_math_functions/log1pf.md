@@ -28,6 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [数学函数logf](logf.md)（`related`）：《数学函数logf》说明获取以e为底，输入数据的对数。；《Log1pf》说明计算ln(1+x)，在x接近0时比直接log(1+x)保持更高精度。。二者在logf是直接自然对数，而log1pf在x接近0时实现同一数学量的稳定形式上存在可执行的直接衔接。
-- [Expm1f](expm1f.md)（`same_topic`）：Log1pf 与《Expm1f》的实质衔接是：Log1pf 计算 ln(1+x) 并保留 x 近零精度；logf 是直接但近零易损的等价表达，expm1f 是配套的稳定逆向公式。
+- [ForeachLog1p 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_log1p_950.md)（`related`）：然后执行 `static_cast<T>(log1pf(static_cast<float>(x_i［j］)))`。；函数原型：float log1pf(float x)；ForeachLog1p 的统一 SIMT Route 对每个展平元素直接调用 log1pf，并在 FP16/BF16 情况下窄化回存储 dtype。
 <!-- cannbot:related:end -->

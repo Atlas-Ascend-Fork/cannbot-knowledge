@@ -28,7 +28,5 @@ void GetArithProgressionMaxMinTmpSize(uint32_t& maxValue, uint32_t& minValue)
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Arange](../../basic_api/reg_vector_compute/index_operations/arange.md)（`related`）：Reg Arange 是不依赖高阶 workspace 的寄存器路径。
-- [Arange（索引计算）](arange.md)（`related`）：Arange 的 sharedTmpBuffer 必须由 Host sizing 接口按 firstValue、diff、count 和 dtype 给出合法上下界，最小值是正确性门槛。
-- [GetAntiQuantizeMaxMinTmpSize](../quantization/get_anti_quantize_max_min_tmp_size.md)（`related`）：AntiQuantize 是不同算子，workspace 公式不能因返回类型相同复用。
+- [Arange（索引计算）](arange.md)（`related`）：由于Arange接口内部不需要用到临时空间，max和min均返回0。；给定起始值，等差值和长度，返回一个等差数列。。临时空间查询卡给出调用 Arange 生成等差数列前的 workspace 选取结果，二者组成 Host 侧容量查询到 Kernel 接口调用的直接链路。
 <!-- cannbot:related:end -->

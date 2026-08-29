@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:04:29Z"
-updated_at: "2026-08-25T18:04:29Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -72,7 +72,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定 Commit `955f8b33985b6d72989ebff341bb9c2c564a51bc` 只公开这一组两段式 `aclnnQuantizedBatchNorm`，无 V2/V3 同语义入口。公开文档明确支持 Atlas A2/A3；OpDef 注册 `ascend910b` 和 `ascend910_93`，对应 binary config 均提供 INT8、UINT8、INT32 三个输入/输出同 dtype binary，全局 `ascendc_config.json` 同时接线这两个 compute unit。A5 使用同一公开版本但独立记录于 `_a5` 卡。
+固定 Commit `955f8b33985b6d72989ebff341bb9c2c564a51bc` 只公开这一组两段式 `aclnnQuantizedBatchNorm`，无 V2/V3 同语义入口。公开文档明确支持 Atlas A2/A3；OpDef 注册 `ascend910b` 和 `ascend910_93`，对应 binary config 均提供 INT8、UINT8、INT32 三个输入/输出同 dtype binary，全局 `ascendc_config.json` 同时接线这两个 compute unit。950 使用同一公开版本但独立记录于 `_950` 卡。
 
 ## Host/Launcher 执行流程
 
@@ -768,9 +768,9 @@ Muls(varInTensor, varInTensor, inputScale / outputScale, aProcNum);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持，见 `_950` 卡 |
 | Host/Launcher | 共用 Tiling/API | 共用 Tiling/API | 固定仓共用源码 |
 | Kernel/资源 | 同一 Vector body；平台提供 AIV coreNum/UB | 同左 | 同一六 key body；平台资源值可不同 |
 
@@ -815,3 +815,9 @@ Muls(varInTensor, varInTensor, inputScale / outputScale, aProcNum);
 | 同步 | 硬事件与 PIPE_V 串联 MTE/Vector | 复用 xTensor 前必须完成 MTE3 | CopyIn/CopyOut helpers |
 | 精度与尾块 | alpha/beta FP32；round 再降整数 | I8/U8 half 中间、R0/group tail 和 pad | `DequantX/QuantX` |
 | 失败边界 | Host 检查失败；unknown key 无输出 | 不得假设 Device fallback | checks/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [QuantizedBatchNorm 950 ACLNN 算子知识](quantized_batch_norm_950.md)（`same_topic`）：逐 NCHW 元素完成反量化、使用逐 C 的统计量/仿射参数归一化，再量化回输入 dtype；所有实际 body 都是 Vector/MTE；固定源码没有 Cube API 或 MIX_CV body。两卡闭合同一 QuantizedBatchNorm 公开入口与反量化—归一化—再量化计算；候选补充 950 的单 AIV Vector/MTE 实现边界。
+<!-- cannbot:related:end -->

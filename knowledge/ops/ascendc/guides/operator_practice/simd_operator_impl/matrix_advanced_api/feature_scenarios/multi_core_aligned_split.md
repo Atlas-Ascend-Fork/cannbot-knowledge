@@ -33,17 +33,5 @@ SetDim设置当前AI处理器可用的核数，通过Tiling计算得到执行Mat
 <!-- cannbot:related:start -->
 ## 相关
 
-- [EnableMultiCoreSplitK](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/enable_multi_core_split_k.md)（`explains`）：多核对齐切分 与《EnableMultiCoreSplitK》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [MultiCoreMatmulGetTmpBufSize](../../../../../apis/simd_api/adv_api/cube_compute/get_matmul_compute_space/multi_core_matmul_get_tmp_buf_size.md)（`explains`）：多核对齐切分 与《MultiCoreMatmulGetTmpBufSize》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [MultiCoreMatmulGetTmpBufSizeV2](../../../../../apis/simd_api/adv_api/cube_compute/get_matmul_compute_space/multi_core_matmul_get_tmp_buf_size_v2.md)（`explains`）：多核对齐切分 与《MultiCoreMatmulGetTmpBufSizeV2》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [NumBlocks](../../../../../apis/simt_api/cooperative_groups/grid_group/num_blocks.md)（`explains`）：多核对齐切分 与《NumBlocks》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [SetDim](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_dim.md)（`explains`）：《SetDim》的任务是“设置多核Matmul参与运算的核数，区分纯Cube模式和MIX模式的分离与耦合场景”。《多核对齐切分》具体提供“为了实现多核并行，提升计算效率，需要将矩阵数据进行切分，分配到不同的核上进行处理。主要的切分策略有切分K轴和不切分K轴两种。”，它直接用于Matmul 核数、单核形状、split range 与最终 TCubeTiling 的一致性。
-- [FindSplitAxis 误传 total_slots 致 slot 翻倍](../../../../../runbooks/precision/findsplitaxis_total_slots_slot.md)（`related`）：FindSplitAxis 误传 total_slots 致 slot 翻倍 与《多核对齐切分》的实质衔接是：FindSplitAxis 第四参要求 phys_nodes，传入已乘 DB 的 total_slots 会再次乘二；per-buffer UB 预算、rank/split、TilingData 和 Broadcast 卡用于核对内外切分量一致。
-- [Matmul特性介绍](matmul_features.md)（`same_topic`）：多核对齐切分 与《Matmul特性介绍》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [Matmul高阶API开启多核K轴错峰访问内存](../../../best_practices/matmul_tuning_cases/matmul_multi_core_k_stagger.md)（`same_topic`）：多核对齐切分 与《Matmul高阶API开启多核K轴错峰访问内存》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [Matmul高阶API开启多核切K](../../../best_practices/matmul_tuning_cases/matmul_multi_core_split_k.md)（`same_topic`）：多核对齐切分 与《Matmul高阶API开启多核切K》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [单次矩阵乘局部输出](single_matmul_local_output.md)（`same_topic`）：多核对齐切分 与《单次矩阵乘局部输出》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [多核非对齐切分](multi_core_unaligned_split.md)（`same_topic`）：多核对齐切分 与《多核非对齐切分》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [矩阵乘输出的Channel拆分](matmul_output_channel_split.md)（`same_topic`）：多核对齐切分 与《矩阵乘输出的Channel拆分》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
-- [矩阵乘输出的N方向对齐](matmul_output_n_alignment.md)（`same_topic`）：多核对齐切分 与《矩阵乘输出的N方向对齐》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
+- [多核非对齐切分](multi_core_unaligned_split.md)（`same_topic`）：主要的切分策略有切分K轴和不切分K轴两种；若M、N、K无法整除singleCoreM 、singleCoreN、 singleCoreK时，就会出现尾块。对齐切分卡定义 M/N/K 多核分块与核数配置，非对齐卡补充不能整除时用 SetTail 在 Iterate 前重设尾块大小，形成同一 Matmul 切分决策的完整分支。
 <!-- cannbot:related:end -->

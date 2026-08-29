@@ -42,13 +42,3 @@ Matmul的计算公式为：C = A * B + bias，其示意图如下。
 在完成Matmul矩阵乘法时，主要涉及到两种分形格式ND和NZ。其它的数据格式请参考数据排布格式。
 -   ND：普通格式，N维张量。
 -   NZ：为满足AI Core中Cube计算单元高性能计算的需要，引入该特殊格式。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Matmul特性介绍](feature_scenarios/matmul_features.md)（`related`）：基础数据流之后需要按输入位置、输出布局、切分与量化需求选择 Matmul 特性；特性页承接这一设计决策。
-- [SIMD算子实现概述](../overview.md)（`related`）：SIMD算子实现概述 与《SIMD算子实现基础知识》的实质衔接是：该概述区分 Host tiling 与 Device kernel，并落到 SIMD 基础与 Matmul 实现；候选中的同名概述和 SIMD 模型是同一流程的展开而非成员枚举。
-- [SIMD算子实现耦合模式](../matrix_basic_api/coupled_mode.md)（`related`）：《SIMD算子实现耦合模式》说明>本节内容为针对耦合模式，使用基础API进行矩阵乘法的编程指导。；《SIMD算子实现基础知识》说明>本节内容为使用高阶API进行矩阵乘法的编程指导。使用高阶API进行实际的矩阵编程时，需要通过API参考确认接口支持的产品型号。。二者在耦合Cube范式的CopyIn/Split/Compute/CopyOut直接由DataCopy、LoadData、Mmad和TQue交接实现上存在可执行的直接衔接。
-- [融合算子编程基础知识](../fusion_operator_programming/cv_fusion/basics.md)（`related`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《SIMD算子实现基础知识》明确“>本节内容为使用高阶API进行矩阵乘法的编程指导。使用高阶API进行实际的矩阵编程时，需要通过API参考确认接口支持的产品型号。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
-- [算子实现](operator_impl.md)（`same_topic`）：算子实现 与《SIMD算子实现基础知识》的实质衔接是：该指南的核心是 host tiling→kernel Matmul 对象→Set A/B→Iterate/IterateAll→End；耦合模式、异步迭代与 CUBE_ONLY 故障直接约束实现选择。
-<!-- cannbot:related:end -->

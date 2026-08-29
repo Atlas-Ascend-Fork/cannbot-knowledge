@@ -25,12 +25,3 @@ lt（less than），该接口用于逐元素比较两个源操作数大小，将
 - 当源操作数为浮点数据类型时，+0与-0视为相等。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscLt](../../vector_compute/asc_lt.md)（`related`）：AscLt 与《AscLt》的实质衔接是：Reg 与 Vector AscLt 实现 vector-vector 小于比较，AscLtScalar 是标量右操作数的直接变体。
-- [AscLtScalar](asc_lt_scalar.md)（`related`）：“AscLtScalar”定义：根据mask将源操作数src中元素逐个与标量value比较是否小于，比较结果写入dst对应比特位，成立为1，不成立为0。；“AscLt”定义：逐元素比较两个源操作数是否小于，比较结果写入目的操作数对应比特位，为真则置1，否则置0。。实质衔接：Vector 版保持 src 与 scalar 的 LT 语义但输出布局不同；Reg asc_lt 则把第二操作数改为寄存器，帮助选择正确重载。
-- [Compare](../../../basic_api/memory_vector_compute/compare_and_select/compare.md)（`related`）：Compare说明逐元素比较两个tensor大小，结果为真的对应比特位为1，否则为0，支持LT、GT、GE、EQ、NE、LE六种比较模式。
-- [Select](../../../basic_api/memory_vector_compute/compare_and_select/select.md)（`related`）：Select说明根据selMask比特位值从两个源操作数中选取元素，比特位为1选src0，为0选src1，支持三种选择模式。
-<!-- cannbot:related:end -->

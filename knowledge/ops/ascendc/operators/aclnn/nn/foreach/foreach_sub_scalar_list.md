@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sub_scalar_list/op_host/config/ascend910_93/foreach_sub_scalar_list_binary.json
     role: implementation
 created_at: "2026-08-25T16:22:40Z"
-updated_at: "2026-08-25T16:22:40Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -614,9 +614,9 @@ FP32 scratch 同时是 Sub 的 src0 和 dst，避免再分配一份结果 FP32 b
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，另见 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，另见 `_950` 卡 |
 | Host/Launcher | ascend910b→arch22 common Tiling | ascend910_93→同一 arch22 Tiling | arch35专用 Tiling |
 | Kernel/资源 | 同一 AIV Vector源码/POD/Queue | 同 A2 | SIMT direct-GM/register、不同POD与0 B workspace |
 

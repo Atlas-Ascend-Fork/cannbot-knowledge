@@ -23,9 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AddrReg](../../../basic_api/reg_vector_compute/register_data_types/addr_reg.md)（`related`）：废弃的 CreateIterReg 说明初始化式迭代寄存器已由 AscUpdateAddrReg 取代，有助于迁移旧 AddrReg 循环代码。
-- [AscCreateMask](asc_create_mask.md)（`related`）：当前迭代通常由显式 AddrReg/Mask 管理，CreateMask 补充有效 lane。
-- [AscUpdateAddrReg](asc_update_addr_reg.md)（`related`）：废弃 IterReg 的地址推进可迁移为 AddrReg + UpdateAddrReg。
-- [废弃接口](../../../../appendix/deprecated_interface.md)（`related`）：废弃汇总提供替代建议和版本状态。
-- [寄存器数据类型](reg_data_types.md)（`same_topic`）：类型总页给出 IterReg 的废弃状态和当前寄存器类型。
+- [AscUpdateAddrReg](asc_update_addr_reg.md)（`same_topic`）：该接口已废弃，请使用asc_update_addr_reg实现此功能。 地址寄存器通过该接口初始化，然后在循环之中使用地址寄存器存储地址偏移量，该重载接口同步支持1-4个offset参数，并支持初始化b8/b16/b32位宽的寄存器，适配1-4维Tensor。底层在多维循环中自动计算地址偏移，消除标量地址运算开销。；>旧接口 asc_create_iter_reg_ 已废弃，请使用 asc_update_addr_reg_ 替代。旧接口返回类型 iter_reg 也已更名为 addr_reg。。两卡从旧接口和新接口两端明确声明一对一替代，并保留同一多维迭代寻址功能。
 <!-- cannbot:related:end -->

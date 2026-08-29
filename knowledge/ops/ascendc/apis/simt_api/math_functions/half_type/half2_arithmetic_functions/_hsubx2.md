@@ -25,9 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hsubx2](../../bfloat16_type/bfloat16x2_arithmetic_functions/_hsubx2.md)（`related`）：half2 同名函数与 bfloat16x2 版本均逐分量相减，跨 dtype 迁移时需对照舍入与特殊值。
-<!-- cannbot:related:end -->

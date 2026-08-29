@@ -226,8 +226,5 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [累计极值 NaN 语义须用 self-NE 合成选择掩码](ordered_compare_alone_cannot_propagate_nan_prefix_state.md)（`related`）：跨批前缀扫描还必须让续批 row0 参与比较；该状态边界与 NaN 传播规则共同决定 running extremum。
-- [cummin 非末维 batch-inner 跨步扫描 banned](../performance/cummin_batch_inner_banned.md)（`same_topic`）：跨批首行漏比较—续批从 row 0 扫描 与《cummin 非末维 batch-inner 跨步扫描 banned》的实质衔接是：续批 carry 已独立保存，因此当前 row0 必须参与比较；批行回绕、多核行区间、cummin 维度切分和 NaN carry 语义是同一前缀扫描状态契约的判别点。
-- [多核共享首段行区间导致部分输出未写](multiblock_launch_must_derive_row_range_from_block_index.md)（`same_topic`）：跨批首行漏比较—续批从 row 0 扫描 与《多核共享首段行区间导致部分输出未写》的实质衔接是：续批 carry 已独立保存，因此当前 row0 必须参与比较；批行回绕、多核行区间、cummin 维度切分和 NaN carry 语义是同一前缀扫描状态契约的判别点。
-- [批次行索引未对 M 回绕致整行置零判别](m.md)（`same_topic`）：《批次行索引未对 M 回绕致整行置零判别》处理“批次化逐元素掩码 kernel 用线性偏移 gmOffset % (M*N) 反推 (i,j)，在 chunk 循环内推进行索引时 i += newJ/N 未对 M 取模；tile 跨 batch 边界时 batch>0 的行 0 得到 i=M 而非 i=0，使 start_col=clamp(i+diagonal,0,N)=N、keep 区间为空、整行误置零。判别=只在 rank≥3 且 batch>1 的用例失败、且表现为整行置零而非逐元素错位。”。《跨批首行漏比较—续批从 row 0 扫描》提供“前缀归约续批把 row 0 当作 carry 覆盖，当前输入未参与比较；首批跳过 row 0，续批从 row 0 全量扫描。”，其具体合同或探针直接接入批次 tile 跨 M 边界的行索引回绕、AutoContiguous 排除和 rank≥3 验证。
+- [Cummin 950 Direct Invoke 算子知识](../../operators/direct/math/math/cummin_950.md)（`related`）：RN 不可装但能容纳至少两行时保持完整 N、沿 R 分批并跨批保留 carry。续批沿用“row 0 是初始 carry”的首批约定，先用前批 carry 覆盖当前 `yTensor［0］` 再只扫描 `rows - 1` 行，导致续批首个真实输入永远未与 carry 比较。算子卡的 R 分批 carry 路线正是该错误的触发结构；精度卡给出的首批与续批不同起点可直接约束 Device 循环，并以跨批首行用例验证修复。
 <!-- cannbot:related:end -->

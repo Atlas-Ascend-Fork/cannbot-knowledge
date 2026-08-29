@@ -67,16 +67,6 @@ Ascend950（dav-3510，CANN 9.0.0-beta.2）上 `bn_training_update_custom` Branc
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscFma](../../apis/simd_api/c_api/reg/compound_compute/asc_fma.md)（`exemplifies`）：该卡用抵消输入证明 FMA 一次舍入与 Mul+Add 两次舍入可相差 ULP，提供选择 asc_fma 或分离运算的验证方法。
-- [AscFma](../../apis/simd_api/c_api/vector_compute/asc_fma.md)（`exemplifies`）：AscFma 定义“按元素将src0和src1相乘并和dst相加，将最终结果存放进dst中，”；MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差 以“dav-3510 VF MulAddDst 走 FMA（a*b+c 无限精度后一次舍入），golden 的 Mul+Add 是两次独立舍入；当 addend 含 -round(a*b) 抵消项且 x==save_mean 时两者偏差 1 ULP 量级，须把 VF 改 Mul+LoadAlign(dst)+Add 分离舍入匹配 golden”给出可观测实例，可直接用于复现或验证该契约。
-- [AscMul](../../apis/simd_api/c_api/vector_compute/asc_mul.md)（`exemplifies`）：AscMul 与《MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差》的实质衔接是：AscMul 是 UB 向量逐元素乘法；Reg/Memory 对应入口与 scalar 变体覆盖不同承载方式，FMA 舍入和 cyclic scale 卡限定不可等价替换与广播范围。
-- [AscMulAdd](../../apis/simd_api/c_api/vector_compute/asc_mul_add.md)（`exemplifies`）：该卡实测说明融合乘加单次舍入与分离 Mul+Add 双舍入可差 1 ULP，直接用于判断 AscMulAdd 类融合结果与 golden 的精度偏差。
-- [AscMulAddRelu](../../apis/simd_api/c_api/vector_compute/asc_mul_add_relu.md)（`exemplifies`）：AscMulAddRelu 与《MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差》的实质衔接是：AscMulAddRelu 融合 dst*src0+src1 与 ReLU；MulAdd/AddRelu 对应入口拆解同一计算，FMA 舍入卡和随路量化+ReLU材料给出精度与融合边界。
-- [Fma](../../apis/simd_api/adv_api/math_compute/fma_interface/fma.md)（`exemplifies`）：该卡用抵消输入证明 FMA 一次舍入与 Mul+Add 两次舍入的差异。
-- [Fma接口](../../apis/simd_api/adv_api/math_compute/fma_interface/fma_interface.md)（`exemplifies`）：Fma接口 与《MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差》的实质衔接是：Fma 接口页直接包含 Fma、最大最小空间和 factor 查询，C Reg/Vector 入口执行同一融合乘加；舍入案例说明 FMA 单次舍入不能拆成 Mul+Add。
-- [GetFmaTmpBufferFactorSize](../../apis/simd_api/adv_api/math_compute/fma_interface/get_fma_tmp_buffer_factor_size.md)（`exemplifies`）：FMA 一次舍入的精度实例用于验证切分后结果。
-- [MulAddDst](../../apis/simd_api/basic_api/memory_vector_compute/composite_compute/mul_add_dst.md)（`exemplifies`）：该实测卡说明 Reg MulAddDst 采用单次舍入 FMA，而 golden 的分离 Mul+Add 是双舍入，能直接解释使用本乘加语义时的 1 ULP 误差。
-- [MulAddDst](../../apis/simd_api/basic_api/reg_vector_compute/composite_compute/mul_add_dst.md)（`exemplifies`）：Runbook 的根因正是该 Reg MulAddDst 对 src0*src1+dst 执行融合乘加、只做一次舍入；API 卡给出实际操作数和 mask 契约。
-- [MulAddRelu](../../apis/simd_api/basic_api/memory_vector_compute/composite_compute/mul_add_relu.md)（`exemplifies`）：MulAddRelu 与《MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差》的实质衔接是：MulAddRelu 的 C API 和 MulAddDst 共享乘加复合语义；FMA 舍入卡说明合并乘加与分步 golden 的可见差异。
-- [__hfma](../../apis/simt_api/math_functions/half_type/half_arithmetic_functions/_hfma.md)（`exemplifies`）：该卡用抵消输入验证一次与两次舍入的 ULP 差异。
+- [MulAddDst](../../apis/simd_api/basic_api/memory_vector_compute/composite_compute/mul_add_dst.md)（`exemplifies`）：“按元素将src0和src1相乘并和dst相加，将最终结果存放进dst中。”与“`MulAddDst` 是 FMA：`dst = src0 * src1 + dst`，乘积 `src0*src1` 在无限精度计算后与 `dst` 相加、一次性舍入到 fp32。golden 的 `Mul` + `Add` 是两次独立舍入。”提供双方正文证据。API 卡给出融合乘加语义，运行手册把它落实为单次舍入 FMA，并说明抵消型 addend 与双舍入 golden 偏 1 ULP 时应拆成 Mul 与 Add。
+- [MulAddDst](../../apis/simd_api/basic_api/reg_vector_compute/composite_compute/mul_add_dst.md)（`exemplifies`）：Phase 2 用 VF 函数 `MulAddDstVF`（`__simd_vf__` + `asc_vf_call`，内部 `AscendC::Reg::MulAddDst`）计算 `y = addend + x * multiplier`。golden（C++ 独立参考）用 `multiplier * x` 再 `+ addend` 两次独立 fp32 舍入。；该接口按元素将srcReg0与srcReg1相乘再加上dstReg，根据mask将计算结果写入dstReg。。运行手册在 VF 中实际调用 MulAddDst，并因该融合乘加与 golden 的分离双舍入不同而出现 ULP 偏差；API 卡定义乘积加回 dstReg 的运算契约，可用于定位为何要改成 Mul 与 Add 两步。
 <!-- cannbot:related:end -->

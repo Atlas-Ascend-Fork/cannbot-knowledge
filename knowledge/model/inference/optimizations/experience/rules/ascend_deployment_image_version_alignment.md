@@ -109,3 +109,11 @@ fatal error: tilefwk/tilefwk_op.h: No such file or directory
   - 溯源下探：[cann-recipes-infer-issue-169-bug-report-cann-recipes-infer-ops-pypto](https://gitcode.com/cann/cann-recipes-infer/issues/169)
 - **规则六 · 维护者确认**：转换脚本头注「`import torch_npu  # torch_npu 2.5.1 及以后版本可以不用`」；维护者确认 torch 2.5.1+ 在 NPU 环境自动导入 torch_npu、修法为转权重前先 source 环境变量（纯环境行为、无代码 diff）；torch 2.5 树外 backend autoload 机制为背景推断、不并入事实面。
   - 溯源下探：[cann-recipes-infer-issue-65-bug-report-torch-torch-npu-torch-npu-source](https://gitcode.com/cann/cann-recipes-infer/issues/65)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [昇腾 bringup 初始化/HCCL 报错的根因常在环境/驱动/平台层，顶层 ACL/HCCL 码是泛化包装](../../../runbooks/runtime/bringup_error_root_cause_env_driver_platform.md)（`related`）：“先把组件版本对齐到目标 recipe/镜像 pin 的版本，再动优化”与“先怀疑环境/驱动/平台不匹配，别急着改模型或并行代码”共同给出从版本对齐到环境根因排查的 bringup 顺序。
+- [自带（vendored）自定义算子与 CANN 库同名算子冲突：torch_npu.npu_* 解析走偏 / 接口漂移](../../../runbooks/runtime/vendored_custom_op_vs_cann_samename_op_conflict.md)（`related`）：“因为部署镜像的 CANN 包过旧、旧镜像上直接调内置版会缺算子”与“调用解析到了「错的那一份」”分别覆盖内置算子缺失和同名实现解析错误，属于升级镜像后的同一算子来源排查链。
+- [量化权重格式 / dtype 组合的可用性受 SoC 平台与 CANN 算子包版本双重约束（非量化配置 bug）](../../../runbooks/precision/quant_format_dtype_platform_cann_version_gating.md)（`related`）：“CANN 算子包版本缺口 → 升版本”把一类 dtype 报错归因到版本；“不要把其中任一组件当作可自由升级的旋钮”要求升级时保持 torch_npu、驱动和 CANN 的镜像配套。
+<!-- cannbot:related:end -->

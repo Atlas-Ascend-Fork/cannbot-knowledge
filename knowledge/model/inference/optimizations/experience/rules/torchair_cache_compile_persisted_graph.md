@@ -69,3 +69,12 @@ cached_decode = tng.inference.cache_compile(
 - diff + README（@50e41b5b8220）：缓存与"模型结构+部署方式"绑定、变更须手动删 `compile_cache/`。溯源下探 [cann-recipes-infer-pr-205-feat-support-qwen3-moe-sglang](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)
 - diff 事实 + 维护者确认（@5b2f1202c508）：ACLGraph+cache_compile 需 `mode=reduce-overhead` + `ge_cache=False`；版本地板 CANN 8.3+/PTA 7.3.0（维护者答复、doc 未写）。溯源下探 [cann-recipes-infer-pr-258-feat-dsv3-2-support-aclgraph-cache-compile](https://gitcode.com/cann/cann-recipes-infer/merge_requests/258)
 - diff 事实 + 作者说明：早期 acl_graph 下 cache_compile 未实现——init 硬 `assert not enable_aclgraph`；未完成卡点为 `clone_input` 性能 TODO。此为版本演进的前态，已被 CANN 8.3+/PTA 7.3.0 支持取代。溯源下探 [cann-recipes-infer-pr-236-fix-duplicate-creation-of-multi-stream-events-when-mtp-enable-skip-guard](https://gitcode.com/cann/cann-recipes-infer/merge_requests/236)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NPU LLM 图模式启用骨架：decode-only 编译 + ge_graph / acl_graph / npugraph_ex 后端编译入口与配置约束](graph_mode_decode_only_compile_backends.md)（`related`）：1. **只对 decode 编（prefill 不编）**：decode 固定重复 shape 适合静态图；prefill 变长收益低。见 ［graph-mode-decode-only-compile-backends］(graph_mode_decode_only_compile_backends.md)。；｜ Decode ｜ 推荐 ｜ 输入长度固定（通常为 1）、shape 稳定，适合图捕获、收益大 ｜。两卡在同一部署动作上衔接：先由阶段选择规则限定只编译 decode，再把该 callable 交给 cache_compile 持久化。
+- [cache_compile / 图缓存失败：动态构建（KV cache 初始化 / row_idx 生成）落在编译区——挪出或 @dynamo.disable 隔离](../../../runbooks/compilation/cache_compile_fail_dynamic_build_in_compile_region.md)（`related`）：`cache_compile` 以「模型结构 + 部署方式（并行/量化布局）」为隐式 key 缓存已编译图，但**缓存不感知配置变更**；症状根子不在 cache_compile 本身，而在**被编译路径里混进了只在首次/条件触发的动态构建**——它让每次进入编译区的图形态不一致，破坏 cache_compile 缓存已编译图的前提。。前者定义持久化图缓存的稳定性前提，后者给出动态构建破坏该前提时的诊断与上移隔离修法。
+- [decode ge_graph 低时延融合：SuperKernel 调度融合的启用前提、融合范围坑与冷启动缓存](superkernel_decode_ge_graph_fusion_scope.md)（`related`）：SuperKernel **仅在 decode 启用 ge_graph 图模式时生效**（eager 无效）；**当前暂不支持 acl_graph**，静态图路径走 ge_graph。；**ge_graph**：cache_compile / `ge_cache=True` 是 GE 图专属能力，成熟可用。。SuperKernel 规则明确优化依赖 decode 的 ge_graph 静态图，缓存规则确认 cache_compile 是同一 GE 图路径的持久化能力，构成图融合启用后的部署运行链。
+- [稳定图模式输入张量签名（shape/stride/dtype）避免 dynamo 重编译与缓存 miss](../../../runbooks/performance/graph_mode_stable_input_signature_recompile.md)（`related`）：焦点卡说明“图模式按输入张量的 **shape + dtype + stride 签名** 缓存/守卫（guard）已编译图”；缓存规则说明“`cache_compile` 以「模型结构 + 部署方式（并行/量化布局）」为隐式 key 缓存已编译图，但**缓存不感知配置变更**”。两端分别约束单次运行的输入签名和跨重启缓存的结构部署键，排查 cache miss 时必须分层。
+<!-- cannbot:related:end -->

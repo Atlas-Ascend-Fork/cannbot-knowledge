@@ -25,13 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162uint_ru](../../bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162uint_ru.md)（`same_topic`）：__bfloat162uint_ru 与《__half2uint_ru》的实质衔接是：候选覆盖相同 bfloat16→uint 的 rd/rn/rna/rz 舍入和相同 ru 下的 float/half/signed int 对照，可直接核对 CEIL 边界结果。
-- [__half2int_ru](_half2int_ru.md)（`same_topic`）：__half2int_ru 与《__half2uint_ru》的实质衔接是：__half2int_ru 保持 half→int 并切换 rd/rn/rna/rz，或保持 ceil 改变源/目标类型；C half2int16/32 入口明确向量目标位宽。
-- [__half2uint_rd](_half2uint_rd.md)（`same_topic`）：ru ceil 与 rd floor 给出同一 half→uint32 的上下界舍入，正非整数输入差一单位。
-- [__half2uint_rn](_half2uint_rn.md)（`same_topic`）：RU 给向上结果。
-- [__half2uint_rz](_half2uint_rz.md)（`same_topic`）：__half2uint_rz 的核心契约是“遵循CAST_TRUNC模式，将half类型数据转换为无符号整数，返回转换后的值”；__half2uint_ru 补充“遵循CAST_CEIL模式，将half类型数据转换为unsigned int类型数据，返回转换后的值”。
-<!-- cannbot:related:end -->

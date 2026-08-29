@@ -26,7 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetSinhMaxMinTmpSize](get_sinh_max_min_tmp_size.md)（`same_topic`）：GetSinhTmpBufferFactorSize 与《GetSinhMaxMinTmpSize》的实质衔接是：该因子查询服务 Sinh 高阶接口，必须结合最大最小空间查询把 host 侧预算转换成 kernel 单次处理量。
-- [Sinh](sinh.md)（`same_topic`）：GetSinhTmpBufferFactorSize 与《Sinh》的实质衔接是：该因子查询服务 Sinh 高阶接口，必须结合最大最小空间查询把 host 侧预算转换成 kernel 单次处理量。
-- [Sinh接口](sinh_interface.md)（`same_topic`）：GetSinhTmpBufferFactorSize 与《Sinh接口》的实质衔接是：该因子查询服务 Sinh 高阶接口，必须结合最大最小空间查询把 host 侧预算转换成 kernel 单次处理量。
+- [Sinh](sinh.md)（`related`）：“临时空间大小通过GetSinhMaxMinTmpSize获取”给出容量范围入口，“currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize”进一步把固定容量换算为单次计算元素数，二者共同完成 Tiling。
 <!-- cannbot:related:end -->

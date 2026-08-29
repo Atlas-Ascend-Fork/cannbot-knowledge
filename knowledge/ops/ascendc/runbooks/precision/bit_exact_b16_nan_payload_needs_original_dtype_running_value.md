@@ -233,10 +233,6 @@ __aicore__ inline void OutputChunk(int64_t mBase, int64_t r, int64_t nOff, uint3
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscendC::Abs 规范化 NaN payload 致逐位验收误报](ascendc_abs_nan_payload.md)（`related`）：两卡都用位模式而非 isnan 判定 payload 是否被规范化；Abs 卡说明何时 payload 变化是允许的算子语义，focal 则说明返回原输入值的 scan 必须逐位保留。
-- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`related`）：该卡保证 B16 value 与 int32 index 使用同一 64-lane B32 mask；focal在此基础上再分离原 dtype value 与 fp32 compare state，防止索引正确但 NaN payload 被 Cast 改写。
-- [Cast SatMode::SAT 饱和致 fp16 NaN/Inf 丢失](cast_satmode_sat_fp16_nan_inf.md)（`related`）：目标卡说明即使 NaN 仍存在，B16→FP32→B16 也会改写 payload；本卡是更强边界——SAT 在第一次 Cast 已完全丢失 NaN/Inf。
-- [b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane](compute_lane_count_must_follow_promoted_fp32_width.md)（`related`）：focal 的比较状态提升为 fp32，因此 chunk 宽度必须按 fp32 repeat 而不是 B16 存储宽度计算；否则后半 lane 不更新会伪装成 payload/索引问题。
-- [fp32 窄化舍入模式不一致触发稀疏 MARE 越线](fp32_to_fp16_cast_matches_rne_oracle.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《b16 running 经 fp32 回转会改写 NaN payload》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [累计极值 NaN 语义须用 self-NE 合成选择掩码](ordered_compare_alone_cannot_propagate_nan_prefix_state.md)（`related`）：该卡构造 NaN-safe take_current mask，focal 要求用同一 mask 同步更新原 dtype value carry 和 fp32 compare carry；两者组成累计极值的谓词与位保持状态链。
+- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`related`）：“两份 running 使用同一 mask 更新，避免值与索引、值与比较状态发生漂移；”要求原 dtype carry 与 FP32 compare carry 同步；“用 B16 `Compare` 的 mask 直接驱动 int32 `Select`，只检查 values 不检查 indices。”指出同一 cummin 链里 mask 跨 B16/B32 会破坏值与索引的 lane 对齐。
+- [累计极值 NaN 语义须用 self-NE 合成选择掩码](ordered_compare_alone_cannot_propagate_nan_prefix_state.md)（`related`）：“NaN 验证同时检查 `isnan`、原始位模式与索引，不能只做数值等价；”规定 payload 修复后的三项验收；“value 与 index 必须使用同一个最终选择掩码，否则值正确时索引仍可能漂移。”补足 NaN 前缀状态机中 values/indices 共享谓词的前置。
 <!-- cannbot:related:end -->

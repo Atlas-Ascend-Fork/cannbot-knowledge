@@ -25,6 +25,6 @@ host侧Tiling接口，用于获取Frac接口所需的最大和最小临时空间
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Frac](frac.md)（`related`）：GetFracMaxMinTmpSize 返回的 min/max 是 Frac kernel sharedTmpBuffer 的正确性和性能边界，直接用于 host tiling 选值。
-- [Frac接口](frac_interface.md)（`related`）：《GetFracMaxMinTmpSize》明确“在host侧获取Frac接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”；它与《Frac接口》的“按元素取小数部分，并提供临时空间大小获取接口。”在实际调用参数、数据流或结果校验上直接衔接。
+- [Frac](frac.md)（`related`）：host侧Tiling接口，用于获取Frac接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetFracMaxMinTmpSize获取。。Host 侧接口产出 Frac 所需临时空间上下界，Frac 计算接口明确以该结果确定 sharedTmpBuffer 容量；这是 Tiling 生产值到 Kernel 调用消费值的直接合同。
+- [GetFracTmpBufferFactorSize](get_frac_tmp_buffer_factor_size.md)（`related`）：获取Frac接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；host侧Tiling接口，用于获取Frac接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两接口围绕同一 Frac 临时空间合同工作：前者由既定空间反推单次处理量，后者在 Host Tiling 侧给出可选空间上下界，可连续用于空间预算和 tile 大小求解。
 <!-- cannbot:related:end -->

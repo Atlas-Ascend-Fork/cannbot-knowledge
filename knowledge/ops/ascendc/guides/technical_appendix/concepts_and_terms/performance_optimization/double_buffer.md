@@ -29,8 +29,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR](../../../../runbooks/compilation/fp16_double_buffer_ub_budget_queue_vs_tbuf_multiplier.md)（`related`）：开启双缓冲会让 Queue/TBuf 物理占用乘二；该 runbook 给出漏乘导致 UB 越界和 VEC_ERROR 的实测预算边界。
-- [SIMD算子实现概述](../../../operator_practice/simd_operator_impl/vector_programming/overview.md)（`related`）：焦点处理SIMD 算子实现总览中的双缓冲和计算模型；DoubleBuffer正文界定“执行于AI Core上的指令队列主要包括如下几类，即Vector指令队列、Cube指令队列和MTE指令队列。不同指令队列间的相互独立性和可并行执行性，是DoubleBuffer优化机制的基石”。候选只保留与总览正文直接展开的 SIMD 计算、DoubleBuffer 机制及其重复说明。
-- [开启DoubleBuffer](../../../operator_practice/simd_operator_optimization/pipeline_scheduling/enable_double_buffer.md)（`related`）：概念卡解释流水并行基础，EnableDoubleBuffer 给出通过队列深度与 tiling 开启搬入/计算重叠的落地方法。
-- [DoubleBuffer场景](../../../operator_practice/simd_operator_impl/vector_programming/double_buffer_scenario.md)（`same_topic`）：DoubleBuffer场景 与《DoubleBuffer》的实质衔接是：DoubleBuffer 将主块拆为两份并通过 InitBuffer(...,2,...) 让搬入、计算、搬出重叠；主尾块切分材料说明尾块例外，UB 预算和 TQue/TBuf 重载故障直接约束 bufferNum 与长度配置。
+- [开启DoubleBuffer](../../../operator_practice/simd_operator_optimization/pipeline_scheduling/enable_double_buffer.md)（`same_topic`）：“DoubleBuffer是基于MTE指令队列与Vector指令队列的独立性和可并行性，通过将数据搬运与Vector计算并行执行以隐藏数据搬运时间并降低Vector指令的等待时间”与“DoubleBuffer是基于MTE指令队列与Vector指令队列的独立性和可并行性，通过将数据搬运与Vector计算并行执行以隐藏大部分的数据搬运时间”描述同一流水机制，实践卡进一步给出队列块数为 2 和不收益边界。
 <!-- cannbot:related:end -->

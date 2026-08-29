@@ -56,17 +56,3 @@ platforms: ["950"]
 
 - 用 `TQue` 自动同步替代跨流水线 WAR 的显式 fence（大数据暴露不可靠）。该路线标记为 `banned`。
 - 在同 kernel 内靠 `pipe_->Reset()` + `SyncAll()` 保证跨 Phase GM 可见性（大数据不可见）。该路线标记为 `banned`。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](../precision/mte2_barrier_must_precede_vector_cast.md)（`related`）：MTE2→Vector 方向需在读取前建立完成性，与 Vector→MTE3 共同组成双向流水依赖。
-- [FP16 算子 Cast 提升-计算-回退链设计](../precision/fp16_cast_up_fp32_compute_cast_down_chain.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《TQue MTE2→MTE3 缺 MTE3_MTE2 fence 致回读错位》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [HardSwish 逐元素 kernel 的 TQue 双缓冲实现配方](elementwise_tque_double_buffer_inplace_recipe.md)（`related`）：双缓冲模板展示 EnQue/DeQue/FreeTensor 的标准生产消费次序，可用于核对 fence 放置。
-- [L2 读写端口独立并行 HBM 总线串行共享](../performance/l2_hbm.md)（`related`）：《L2 读写端口独立并行 HBM 总线串行共享》处理“Ascend950 L2 的 MTE2 读端口与 MTE3 写端口独立并行（吞吐可相加），HBM 总线被读写共享串行仲裁；并发读写带宽应按总数据量与实际并发时间算，不能把单路带宽相加当并发带宽。”。《TQue MTE2→MTE3 缺 MTE3_MTE2 fence 致回读错位》明确提供“rms_norm_rope_k_store_kv_cache Phase2 回读用 TQue<VECIN> 走 MTE2→MTE3 跨迭代复用同一 UB，下一轮 MTE2 覆盖 UB 时上一轮 MTE3 未读完形成 WAR，大数据(max_seq_len=65536) kv_a_out 前段错位、后段正确；判别靠 debug_full.py 逐 batch front/back match + 单核(blockDim=1)排除多核；根因为 TQue event 在该跨迭代路径不可靠且跨 Phase GM 可见性需 Host 同步。”，其参数、调用或验证步骤直接接入L2 读写路径的 cache 控制、带宽、端口争用和 fence 验证。
-- [RoPE DIST_INTLV_B16 store mask 致零值](../precision/rope_dist_intlv_b16_store_mask.md)（`related`）：focal 已用 barrier 探针排除普通流水时序；该卡给出真正的跨迭代 MTE2/MTE3 WAR 分形和双向 fence 验证，可据错误是周期性 lane 零还是前段回读错位区分布局与同步根因。
-- [TBuf 跨 MTE2 与 Vector 须队列交接](../precision/tbuf_mte2_to_vector_requires_queue_handoff.md)（`related`）：若用 TBuf 而非 TQue，MTE2→Vector 没有自动队列依赖；该卡给出需要改队列或显式 barrier 的边界。
-- [MTE2跨流水未建依赖导致UB读到上次调用残值](../precision/direct_mte_slot_reuse_needs_bidirectional_hard_events.md)（`same_topic`）：直接复用 MTE slot 时必须用双向 hard event 保护读写，等价落实本卡强调的 MTE2/MTE3 双向 fence。
-- [Vector 结果搬出前须经 VECOUT 队列](../precision/vector_results_need_vecout_queue_before_mte3.md)（`same_topic`）：该卡给出 Vector→MTE3 必须经 VecOut 队列的所有权与同步，正是本 fence 的一半。
-- [arch35 小 per-channel 输出读旧值判别与规避](arch35_per_channel.md)（`same_topic`）：《arch35 小 per-channel 输出读旧值判别与规避》处理“arch35 上 DCCI 缓存不一致使 DataCopyPad 对小 per-channel [C] 输出不可靠、TQue GetValue(MTE2→scalar) 读到旧值；判别方法为先 V-launder(Duplicate 0.0f+Add) 到 TBuf 再 GetValue，并用 GlobalTensor::SetValue 直写 GM per-channel 结果。”。《TQue MTE2→MTE3 缺 MTE3_MTE2 fence 致回读错位》提供“rms_norm_rope_k_store_kv_cache Phase2 回读用 TQue<VECIN> 走 MTE2→MTE3 跨迭代复用同一 UB，下一轮 MTE2 覆盖 UB 时上一轮 MTE3 未读完形成 WAR，大数据(max_seq_len=65536) kv_a_out 前段错位、后段正确；判别靠 debug_full.py 逐 batch front/back match + 单核(blockDim=1)排除多核；根因为 TQue event 在该跨迭代路径不可靠且跨 Phase GM 可见性需 Host 同步。”，其具体合同或探针直接接入arch35 小 per-channel 的 DCCI/Scalar 旧值机制、V-launder 与 SetValue 验证。
-<!-- cannbot:related:end -->

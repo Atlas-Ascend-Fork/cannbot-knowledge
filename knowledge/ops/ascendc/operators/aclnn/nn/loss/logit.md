@@ -24,7 +24,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:13:26Z"
-updated_at: "2026-08-25T17:13:26Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -482,9 +482,9 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b` config；共用 Tiling | `ascend910_93` config；共用 Tiling | `ascend950` config；同一 Tiling |
 | Kernel/资源 | 同一 `LogitND<T>`，CMake 目标 `ascend910b` | 同一 body，目标 `ascend910_93` | 同一 body，目标 `ascend950`；外层支持 `__CCE_AICORE__==310` |
 
@@ -521,3 +521,9 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 | 同步 | 两套 MTE event + Vector barrier | 同半区 MTE3 完成前不得覆盖 | `Process`/helpers |
 | 精度与尾块 | 窄 dtype 升 FP32，BF16 RINT | Compare 补 64、有效算术与搬运只用 n | `ComputeStepOne`/`CastAndCopyOut` |
 | 失败边界 | dtype 在 Host 失败 | unknown key 不写输出；不得假设 fallback | `RunBigKernelTiling`/`logit` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Logit 950 ACLNN 算子知识](logit_950.md)（`same_topic`）：“｜ 实际入口 ｜ `aclnnLogitGetWorkspaceSize` + `aclnnLogit`，公开 ACLNN、无 V2 版本族 ｜”与“｜ 实际入口 ｜ `aclnnLogitGetWorkspaceSize` + `aclnnLogit`，公开 ACLNN、固定仓无更高版本 ｜”锁定同一公开接口；两卡分别闭合 A2/A3 与 950 的构建和平台支持，可直接用于跨平台版本选型。
+<!-- cannbot:related:end -->

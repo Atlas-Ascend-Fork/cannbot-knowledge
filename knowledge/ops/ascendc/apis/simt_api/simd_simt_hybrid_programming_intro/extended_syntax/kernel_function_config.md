@@ -25,10 +25,6 @@ asc_vf_call：启动 SIMT VF 子任务。原型 template <auto funcPtr, typename
 <!-- cannbot:related:start -->
 ## 相关
 
-- [dim3 未声明：显式引入 SIMT 公共头](../../../../runbooks/compilation/asc_vf_call_launch_config_requires_simt_header.md)（`exemplifies`）：《dim3 未声明：显式引入 SIMT 公共头》处理“混合 SIMD/SIMT 核函数调用 asc_vf_call 时，显式包含 common_functions.h 以暴露 dim3 别名和正确重载。”。《核函数配置》明确“核函数是SIMD与SIMT混合编程的Device侧入口函数，负责协调整个算子的执行流程，包括VF的调度和调用。vector计算单元的混合编程场景下，函数定义语法为：”，可直接用于核对dim3 类型可见性、SIMT 公共头、__vector__ 入口与混合 VF 启动边界。
-- [核函数与VF函数（SIMD与SIMT混合编程）](../../../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md)（`explains`）：焦点处理混合 SIMD/SIMT 中 kernel、VF、callee 的限定符和启动边界；核函数配置正文说明“核函数是SIMD与SIMT混合编程的Device侧入口函数，负责协调整个算子的执行流程，包括VF的调度和调用。vector计算单元的混合编程场景下，函数定义语法为：”。候选明确 kernel/VF/callee 的允许调用方向、地址空间和 launch API，或给出同机制编译失败。
-- [核函数（AI Core SIMD编程）](../../../../guides/programming_guide/programming_model/ai_core_simd_programming/kernel_function.md)（`explains`）：Kernel 调用中的 numBlocks 等执行配置由配置接口展开，直接决定多份 Kernel 副本的调度。
-- [ProgrammingModel](../programming_model.md)（`related`）：《核函数配置》明确“核函数是SIMD与SIMT混合编程的Device侧入口函数，负责协调整个算子的执行流程，包括VF的调度和调用。vector计算单元的混合编程场景下，函数定义语法为：”；它与《ProgrammingModel》的“SIMD与SIMT混合编程支持根据算子特征精细化映射，规则计算用SIMD获得高吞吐，不规则计算用SIMT缓解发散。”在实际调用参数、数据流或结果校验上直接衔接。
-- [扩展语法内置变量](builtin_variables.md)（`related`）：扩展语法内置变量 与《核函数配置》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [核函数配置](../../simt_programming_intro/extended_syntax/kernel_function_config.md)（`related`）：《核函数配置》的任务是“核函数是SIMT编程的Device侧入口函数，负责协调整个算子的执行流程。函数定义语法为：”。《核函数配置》具体提供“核函数是SIMD与SIMT混合编程的Device侧入口函数，负责协调整个算子的执行流程，包括VF的调度和调用。vector计算单元的混合编程场景下，函数定义语法为：”，它直接用于SIMT Kernel 入口的执行/内存限定符、内置变量和 launch 头文件。
+- [纯 SIMT kernel 形参 __gm__ 导致编译失败](../../../../runbooks/compilation/pure_simt_parameters_do_not_use_gm_qualifier.md)（`exemplifies`）：核函数是 SIMD 与 SIMT 混合编程的 Device 侧入口函数，使用 __global__ __vector__ 修饰。返回值必须为 void，入参支持指针类型（需 __gm__ 修饰）和内置数据类型。；CANN 9.0.1 的纯 SIMT 编译前端把 `__gm__` 展开成变量级 `__attribute__((device))`，该 attribute 不能修饰 `__global__` 函数的非静态形参。；API 规定混合入口需 __gm__，runbook 给出纯 SIMT 编译模式必须移除该限定的具体编译原因。
+- [核函数配置](../../simt_programming_intro/extended_syntax/kernel_function_config.md)（`related`）：核函数是 SIMT 编程的 Device 侧入口函数，使用 __global__ 修饰符定义；核函数是 SIMD 与 SIMT 混合编程的 Device 侧入口函数，使用 __global__ __vector__ 修饰。两端给出纯 SIMT 与混合编程的 Device 入口定义，迁移执行模式时必须同时调整修饰符与 GM 指针约束。
 <!-- cannbot:related:end -->

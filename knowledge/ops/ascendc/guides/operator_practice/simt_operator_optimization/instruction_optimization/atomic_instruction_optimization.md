@@ -33,10 +33,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAtomicAdd](../../../../apis/simd_api/c_api/scalar_compute/asc_atomic_add.md)（`explains`）：《原子操作指令优化》处理“【描述】SIMT编程模式下，多个线程更新同一个内存地址时需要使用原子操作接口保证更新结果正确。原子操作属于高开销指令，其耗时由两方面决定：一是同一地址上的原子操作只能排队依次执行，二是单条原子指令的处理开销。”。《AscAtomicAdd》明确提供“对Global Memory中的数据执行原子加操作，将val累加到address指向的数据元素上，返回修改前的值。”，其参数、调用或验证步骤直接接入原子写优化的冲突模型、AtomicAdd/Inc 实现和性能验证。
-- [AscAtomicInc](../../../../apis/simd_api/c_api/scalar_compute/asc_atomic_inc.md)（`explains`）：《原子操作指令优化》处理“【描述】SIMT编程模式下，多个线程更新同一个内存地址时需要使用原子操作接口保证更新结果正确。原子操作属于高开销指令，其耗时由两方面决定：一是同一地址上的原子操作只能排队依次执行，二是单条原子指令的处理开销。”。《AscAtomicInc》明确提供“对Global Memory中address指向的计数器执行原子递增操作，若值大于等于val则赋值为0，否则加1。”，其参数、调用或验证步骤直接接入原子写优化的冲突模型、AtomicAdd/Inc 实现和性能验证。
-- [AtomicAdd](../../../../apis/simd_api/basic_api/atomic_operations/atomic_add.md)（`explains`）：《原子操作指令优化》处理“【描述】SIMT编程模式下，多个线程更新同一个内存地址时需要使用原子操作接口保证更新结果正确。原子操作属于高开销指令，其耗时由两方面决定：一是同一地址上的原子操作只能排队依次执行，二是单条原子指令的处理开销。”。《AtomicAdd》明确提供“对GM地址上的值执行原子加操作，将旧值与输入标量求和后写回，返回修改前的旧值。”，其参数、调用或验证步骤直接接入原子写优化的冲突模型、AtomicAdd/Inc 实现和性能验证。
-- [asc_atomic_add](../../../../apis/simt_api/atomic_operations/asc_atomic_add.md)（`explains`）：《原子操作指令优化》处理“【描述】SIMT编程模式下，多个线程更新同一个内存地址时需要使用原子操作接口保证更新结果正确。原子操作属于高开销指令，其耗时由两方面决定：一是同一地址上的原子操作只能排队依次执行，二是单条原子指令的处理开销。”。《asc_atomic_add》明确提供“对Unified Buffer或Global Memory中的数据与指定数据执行原子加操作，即将指定数据累加到这些内存区域的数据中。”，其参数、调用或验证步骤直接接入原子写优化的冲突模型、AtomicAdd/Inc 实现和性能验证。
-- [指令双发优化](../../simd_operator_optimization/vector_compute/vf_optimization/dual_issue_optimization.md)（`related`）：指令双发优化 与《原子操作指令优化》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
-- [SIMT算子优化概述](../overview.md)（`same_topic`）：《原子操作指令优化》处理“【描述】SIMT编程模式下，多个线程更新同一个内存地址时需要使用原子操作接口保证更新结果正确。原子操作属于高开销指令，其耗时由两方面决定：一是同一地址上的原子操作只能排队依次执行，二是单条原子指令的处理开销。”。《SIMT算子优化概述》明确提供“SIMT编程模式以线程（Thread）为基本编程单位，由开发者编写单个线程的执行逻辑，再通过>>配置将大量线程组织为线程块（线程块）与线程网格（Grid），调度到硬件的Vector Core（物理核，即AIV核）上以Warp为单位并行执行。”，其参数、调用或验证步骤直接接入原子写优化的冲突模型、AtomicAdd/Inc 实现和性能验证。
+- [asc_atomic_add](../../../../apis/simt_api/atomic_operations/asc_atomic_add.md)（`explains`）：“- asc_atomic_add接口性能对比样例：包含16个场景、归为5组对照实验，量化内存层级、原子累加组织方式、是否使用返回值、同一地址上的竞争程度与目标地址的Sector分布对原子加性能的影响。每组对照仅改变一个属性，其余配置保持一致。”与“对Unified Buffer或Global Memory中的数据与指定数据执行原子加操作，即将指定数据累加到这些内存区域的数据中。”。优化指南围绕 asc_atomic_add 的内存层级、返回值和竞争做对照，API 卡提供原子加合同。
 <!-- cannbot:related:end -->

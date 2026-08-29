@@ -22,7 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSyncBlockWait](asc_sync_block_wait.md)（`related`）：BlockWait 等待组内 block/subblock 全部到达，而 InterWait 等待不同 group 的信号；二者提供不同层级的 barrier/notification 选择。
-- [AscSyncIntraWait](asc_sync_intra_wait.md)（`related`）：IntraWait 与 InterWait 都是阻塞等待，但作用域分别为 block 内不同 Core 与不同 group；可用作用域差异避免把 inter 同步误用于核内流水。
-- [AscSyncInterArrive](asc_sync_inter_arrive.md)（`same_topic`）：asc_sync_inter_wait 必须由另一 group 的 asc_sync_inter_arrive 使用同一 flag_id 发出信号；两者是不可拆分的跨 group 同步握手。
+- [AscSyncInterArrive](asc_sync_inter_arrive.md)（`related`）：必须保证配套使用asc_sync_inter_arrive和asc_sync_inter_wait，否则会出现未定义行为。；核间同步指令，与asc_sync_inter_arrive配合使用（通过flag_id关联），用于组间block的信号同步。。双方正文都把另一端规定为必需配对，并以同一 flag_id 承载组间 block 信号；arrive 发布信号而 wait 等待信号，属于有顺序的互补同步任务。
 <!-- cannbot:related:end -->

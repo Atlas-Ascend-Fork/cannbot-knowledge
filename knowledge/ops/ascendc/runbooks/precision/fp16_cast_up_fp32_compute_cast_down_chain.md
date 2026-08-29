@@ -175,22 +175,3 @@ FP16 路径以 `CopyIn(FP16) → Cast(FP16→FP32, CAST_NONE) → VF(FP32) → C
 ## 误诊
 
 vendor 缓存陈旧导致 Cast 编译错误时，曾怀疑源仓 kernel.h 有误；实际源仓已正确带 `RoundMode::` 前缀，错误只在 vendor 部署的旧拷贝。重新编译安装 `cann-ops-nn-custom_linux-x86_64.run` 后修复。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RoundMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/round_mode.md)（`exemplifies`）：FP16 算子 Cast 提升-计算-回退链设计 与《RoundMode》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [B16 交错 DINTLV 成对归零 — 转 fp32 后重排](b16_interleave_compute_should_promote_to_b32_layout.md)（`related`）：该指南抽象出低精度升 fp32、计算、再降精度的通用链路，正是本卡采用的正确性实现形态。
-- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《B16 比较先升到 B32 锁定索引 lane》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [B16 结果大幅偏差 — UNPACK 后补 Reg Cast](b16_unpack_requires_numeric_cast_before_fp32_compute.md)（`related`）：《B16 结果大幅偏差 — UNPACK 后补 Reg Cast》说明Reg 的 B16 UNPACK/PACK 只改变寄存器布局，不替代数值格式转换；显式使用预定义 CastParam trait 完成 B16↔fp32。；《FP16 算子 Cast 提升-计算-回退链设计》说明FP16 输入算子用 Cast(FP16→FP32, CAST_NONE) 提升到 FP32 做 VF 计算、Cast(FP32→FP16, CAST_RINT) 回退输出；AscendC::Cast 在 CANN 9.0.0/Ascend950 须带 RoundMode:: 前缀。ApplyAdamV2 穿刺与 ST 全量验证。。二者在B16 UNPACK/PACK只改变寄存器分布，显式Reg Cast才做数值转换；Cast trait、lane宽度和边界转换卡共同验证这条链上存在可执行的直接衔接。
-- [BiSheng bf16 类型转换失败——隔离模板实例化](../compilation/if_constexpr_excludes_unsupported_bf16_cast.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《BiSheng bf16 类型转换失败——隔离模板实例化》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [Cast SatMode::SAT 饱和致 fp16 NaN/Inf 丢失](cast_satmode_sat_fp16_nan_inf.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《Cast SatMode::SAT 饱和致 fp16 NaN/Inf 丢失》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [FP16 half 就地覆写 x1 破坏 y_second 读依赖](fp16_half_x1_y_second.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《FP16 half 就地覆写 x1 破坏 y_second 读依赖》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [Reg CastTrait RoundMode 命名空间编译失败](../compilation/casttrait_roundmode_is_in_ascendc.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《Reg CastTrait RoundMode 命名空间编译失败》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [TQue MTE2→MTE3 缺 MTE3_MTE2 fence 致回读错位](../compilation/tque_mte2_mte3_mte3_mte2_fence.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《TQue MTE2→MTE3 缺 MTE3_MTE2 fence 致回读错位》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane](compute_lane_count_must_follow_promoted_fp32_width.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别](bf16_cast_cast_rint.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [fp32 窄化舍入模式不一致触发稀疏 MARE 越线](fp32_to_fp16_cast_matches_rne_oracle.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《fp32 窄化舍入模式不一致触发稀疏 MARE 越线》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [模板内 float→float Cast 使 fp32 分支全错](templated_float_input_must_bypass_same_type_cast.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《模板内 float→float Cast 使 fp32 分支全错》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [特定 b16 load-cast-store 组合失真时在 LocalTensor 边界转换](b16_reg_cast_layout_should_convert_at_localtensor_boundary.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《特定 b16 load-cast-store 组合失真时在 LocalTensor 边界转换》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-<!-- cannbot:related:end -->

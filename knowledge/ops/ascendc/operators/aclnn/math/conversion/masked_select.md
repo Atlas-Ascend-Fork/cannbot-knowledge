@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/masked_select_v3/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T23:56:56Z"
-updated_at: "2026-08-24T23:56:56Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -587,9 +587,9 @@ yGlobal.SetGlobalBuffer((__gm__ T*)y + ind, this->outOffset);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；ascend910b config | 支持；ascend910_93 config | 支持，见独立 `_a5` 卡 |
+| 支持状态 | 支持；ascend910b config | 支持；ascend910_93 config | 支持，见独立 `_950` 卡 |
 | Host/Launcher | 共用非 RegBase Tiling 与 API AiCore 分支 | 共用 | RegBase Tiling、schedule mode 1 |
 | Kernel/资源 | 共用 Vector GatherMask body、BUFFER_NUM=1、UB 65% | 共用 | MicroAPI ping-pong body、BUFFER_NUM=2 |
 
@@ -613,7 +613,7 @@ yGlobal.SetGlobalBuffer((__gm__ T*)y + ind, this->outOffset);
 | 入口实现 | `op_api/aclnn_masked_select.cpp` | `CheckParams`, `aclnnMaskedSelectGetWorkspaceSize` | 校验、前处理、平台分支、executor |
 | 入口实现 | `op_api/masked_select.cpp` | `MaskedSelectAiCore`, `MaskedSelectV3` | launcher、outShape |
 | 直接依赖 | `conversion/broadcast_to/op_api/broadcast_to.cpp` | `IsAiCoreSupport`, `BroadcastTo` | 广播预处理 AICORE/AICPU 分流 |
-| Host/Tiling/Launcher | `op_host/masked_select_v3_def.cpp` | `MaskedSelectV3` OpDef | dtype、A2/A3/A5 注册 |
+| Host/Tiling/Launcher | `op_host/masked_select_v3_def.cpp` | `MaskedSelectV3` OpDef | dtype、A2/A3/950 注册 |
 | Host/Tiling/Launcher | `op_host/masked_select_v3_tiling.h` | `MaskedSelectV3TilingData` | POD 字段与 compile info |
 | Host/Tiling/Launcher | `op_host/masked_select_v3_tiling.cpp` | `Init`, `RunKernelTiling` | key、tile/core、workspace |
 | Kernel entry/body | `op_kernel/masked_select_v3.cpp` | `masked_select_v3` | key router |

@@ -24,8 +24,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAtomicMin](../../c_api/scalar_compute/asc_atomic_min.md)（`related`）：基础 AtomicMin 与 C Scalar AscAtomicMin 都在 GM 做原子取小并返回旧值；目标卡补充模板 dtype 范围，focal 补充 DCache 一致性和 MTE 手工同步要求。
-- [AscSetAtomicMin](../../c_api/simd_atomic/asc_set_atomic_min.md)（`related`）：AscSetAtomicMin 与《AtomicMin》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [SetAtomicMin](set_atomic_min_isasi.md)（`related`）：SetAtomicMin 控制后续 DMA 搬出，AtomicMin 则立即对地址执行标量原子最小；两者用于按数据通路选型。
-- [asc_atomic_min](../../../simt_api/atomic_operations/asc_atomic_min.md)（`related`）：asc_atomic_min 与《AtomicMin》的实质衔接是：SIMT、C scalar 与基础 API AtomicMin 操作同一原子最小值；AtomicMax 和 SetAtomicMin 给出相反操作与 Store 配置路径。
+- [Unique 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/unique_950.md)（`related`）：在指定GM地址上进行原子取最小值操作。将address指向的GM地址上的旧值与输入值进行原子取最小值运算，将结果写回GM地址，返回修改前的旧值。仅Ascend 950PR/950DT支持。；range==1只写first［0］，否则AtomicMin(first［x-min］,i)；Unique 的稠密标记阶段直接以 AtomicMin 保留每个值首次出现的位置。
 <!-- cannbot:related:end -->

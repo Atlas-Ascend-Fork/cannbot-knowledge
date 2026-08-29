@@ -29,7 +29,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscHalf2float](../../../../simd_api/c_api/vector_compute/asc_half2float.md)（`related`）：《__half2float》明确“将half类型数据转换为浮点数，返回转换后的值。”；它与《AscHalf2float》的“将half类型转化为float类型，无舍入模式。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscHalf2Float](../../../../simd_api/c_api/reg/data_type_convert/asc_half2float.md)（`same_topic`）：AscHalf2Float 与 __half2float 都执行无舍入的 half→float 扩展；前者按 mask 处理 Reg 向量，后者处理单个 SIMT 标量。
-- [__half22float2](_half22float2.md)（`same_topic`）：__half2float 与《__half22float2》的衔接是：C Reg、C Vector 和 half2 转换入口都执行 half 到 float 的数值扩展，仅批宽与执行单元不同。
+- [ForeachTan 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)（`related`）：“float val_f32=__half2float(val)”是 FP16 route 进入 tanf 前的实际转换；“功能：将half类型数据转换为浮点数，返回转换后的值。”给出扩精度方向。
+- [AscHalf2Float](../../../../simd_api/c_api/reg/data_type_convert/asc_half2float.md)（`same_topic`）：将half类型数据转换为float类型，无舍入模式。；功能：将half类型数据转换为浮点数，返回转换后的值。两页定义相同 half 到 float 转换语义，分别提供 Reg C API 与 SIMT 函数形式，便于按编程模型选接口。
 <!-- cannbot:related:end -->

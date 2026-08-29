@@ -70,3 +70,9 @@ vllm-ascend 的处理是**把算子内层晦涩报错前移成框架层 fail-fas
 - **运行时 trace**：EZ9999 `numHeads / numKvHeads = 8, MLA only support {32, 64, 128}` 于 `CheckMlaAttrs`（`incre_flash_attention_tiling_check.cc:1218`），发生在 [FusedInferAttentionScore](../../concepts/kernels/fused_infer_attention_score.md) 的 tiling / 图 compile 阶段。
 - **边界**：`=8` 为报告者 TP 配置下每 rank 的比值，据 FAQ 该约束按「TP 切分后每 rank 比值」判定；V2-Lite 图模式支持仍为 TODO。
   - 溯源下探：[vllm-ascend-issue-972-new-model-deepseek-v2-lite-running-on-graph-mode](https://github.com/vllm-project/vllm-ascend/issues/972)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FIA 的 MLA 无量化路径硬约束 group_num ∈ {2 的幂}（否则 561002 / CheckFeatureMlaNoQuantShape 失败）](fia_mla_noquant_group_num_power_of_two.md)（`related`）：焦点卡说明“图模式下 FIA 的 tiling 校验 `CheckMlaAttrs`（`incre_flash_attention_tiling_check.cc`）只接受 `numHeads/numKvHeads ∈ {32, 64, 128}`。”，候选卡则限定另一条“group_num 为 2 的幂且落在 `{1, 2, 4, 8, 16, 32, 64, 128}`”的 CheckFeatureMlaNoQuantShape 合同；并读两卡可按错误码和支持集避免把两种 FIA/MLA 编译失败混诊。
+<!-- cannbot:related:end -->

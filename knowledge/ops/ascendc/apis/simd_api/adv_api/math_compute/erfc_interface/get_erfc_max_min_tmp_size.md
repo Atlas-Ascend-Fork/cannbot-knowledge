@@ -25,7 +25,5 @@ host侧Tiling接口，用于获取Erfc接口所需的最大和最小临时空间
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Erfc](erfc.md)（`related`）：Erfc 的 sharedTmpBuffer 需由 Host tiling 预算，GetErfcMaxMinTmpSize 给出最小/最大值并说明区间内空间越大性能越好，是计算接口的直接前置。
-- [Erfc接口](erfc_interface.md)（`same_topic`）：Erfc接口 与《GetErfcMaxMinTmpSize》的实质衔接是：Erfc 接口组由实际 Erfc、工作区上限/下限查询和 factor 查询组成；SIMT Erfcf提供标量对照，两张 GELU 卡直接讨论以 erfc 逼近实现时的精度与负尾相消。
-- [GetErfcTmpBufferFactorSize](get_erfc_tmp_buffer_factor_size.md)（`same_topic`）：MaxMin 从 shape 给出 Erfc sharedTmpBuffer 合法区间，FactorSize 从固定剩余空间反推 currentShapeSize；二者是同一临时空间的正向预算和反向容量计算。
+- [Erfc](erfc.md)（`related`）：host侧Tiling接口，用于获取Erfc接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；临时空间大小通过GetErfcMaxMinTmpSize获取。。前者给出 Erfc 的 Host 侧 workspace 上下界，后者把它指定为 Erfc 计算重载的临时空间来源，二者构成 Tiling 尺寸规划到 Kernel 调用的直接前置链。
 <!-- cannbot:related:end -->

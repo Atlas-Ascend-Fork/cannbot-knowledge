@@ -35,7 +35,10 @@ Attention-FFN Disaggregation (AFD) 是 LongCat-Flash 模型在 Decode 阶段的*
 
 **然而，对 Stage2 通过控核后，由于两条计算流在计算时只能使用部分 Cube 和 Vector 核，算子执行时会受到算力的约束。** 在 Atlas A3 环境上实测对比发现，在不控核情况下，MLAProlog / FA / MM / TBMM / QBMM 算子耗时相比控核时均有所下降：
 
-| Cube_Vector 核数 | MLAProlog (us) | FA (us) | MM (us) | TBMM (us) | QBMM1 (us) | QBMM2 (us) | | ---- | ---- | ---- | ---- | ---- | ---- | ---- | | 12C_24V | 68.1 | 118 | 18 | 19.6 | 18.7 | 20.1 | | 24C_48V | **45.2** | **91.8** | **14.2** | **12.5** | **14.6** | **16.3** |
+| Cube_Vector 核数 | MLAProlog (us) | FA (us) | MM (us) | TBMM (us) | QBMM1 (us) | QBMM2 (us) |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| 12C_24V | 68.1 | 118 | 18 | 19.6 | 18.7 | 20.1 |
+| 24C_48V | **45.2** | **91.8** | **14.2** | **12.5** | **14.6** | **16.3** |
 
 > 以上数据除了核数不同，其他都在相同的配置情况下从整网中采集拆解得到的。
 
@@ -97,7 +100,10 @@ Attention 和 MoE 独立部署后：
 
 LongCat-Flash Benchmark（W8A8，MTP2 + perfect eplb）：
 
-| Enable AFD | GBS | Seq Length | Chips | TPOT (ms) | Throughput (tokens/p/s) | | ---- | ---- | ---- | ---- | ---- | ---- | | N | 256 | 4608 | 64 | 9.95 | 402.01 | | Y | 256 | 4608 | 64 | **9.5** | **421.05** |
+| Enable AFD | GBS | Seq Length | Chips | TPOT (ms) | Throughput (tokens/p/s) |
+| ---- | ---- | ---- | ---- | ---- | ---- |
+| N | 256 | 4608 | 64 | 9.95 | 402.01 |
+| Y | 256 | 4608 | 64 | **9.5** | **421.05** |
 
 AFD 相对同配置非分离方案：TPOT −4.5%，吞吐 +4.7%。
 
@@ -208,3 +214,10 @@ dist.send(result, dst=self.global_rank + self.ffn_world_size, tag=self.send_tag)
 - [weight-prefetch](weight_prefetch.md)
 - [superkernel](superkernel.md)
 - [atlas-a3](../platforms/atlas_a3.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AFD 后 FFN 侧成新瓶颈：Attention 侧 Recv EVENT_WAIT 拖尾 → 对 FFN 侧 MoE-GMM 权重做通信间隙预取](../../runbooks/performance/afd_ffn_side_bottleneck_prefetch.md)（`related`）：相比把 Attention 与 MoE 部署在同一张卡 + 多流 + 控核方案，AFD 解除了双流共享 Cube/Vector 核数的约束，Attention 侧算子不再控核后耗时大幅下降。；解耦本身会**重排瓶颈**。AFD 让 Attention 侧解除多流控核后，MLA_Prolog/FA/MM/TBMM/QBMM 等算子耗时下降，于是 FFN 侧（Router/Dispatch/MoE-GMM/Combine）反而成为新瓶颈——一侧被优化后另一侧暴露为拖尾源，是解耦部署的通用陷阱。。前者给出 AFD 解除 Attention 控核的收益，后者承接该收益导致的 FFN 新瓶颈并提供 profiling 诊断与预取修法。
+- [Attention-FFN 解耦（AFD）部署：把 MoE/FFN 剥到独立 rank，Send/Recv over SDMA 解除同卡多流控核约束降 decode TPOT](../../optimizations/experience/cases/afd_attn_ffn_disaggregation.md)（`related`）：Attention-FFN Disaggregation (AFD) 是 LongCat-Flash 模型在 Decode 阶段的**部署级解耦**优化：将 Attention 模块与 MoE (FFN) 模块**部署在不同的节点**上，中间通过 Send/Recv 算子进行节点间的数据交互。；把 MoE/FFN 模块从整网剥离、与 Attention 分处不同 rank，两侧用点对点 Send/Recv 交互：。两卡描述同一个 LongCat-Flash AFD 部署决策：概念卡定义机制，案例卡给出 rank 拆分与 Send/Recv 落地。
+<!-- cannbot:related:end -->

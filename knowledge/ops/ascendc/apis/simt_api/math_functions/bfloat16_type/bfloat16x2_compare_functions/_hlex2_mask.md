@@ -29,6 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hleux2_mask](_hleux2_mask.md)（`same_topic`）：__hlex2_mask 与 __hleux2_mask 都返回 bfloat16x2 的 ≤ 掩码，差别集中在 NaN 时采用 ordered 还是 unordered 判定。
-- [__hlex2](_hlex2.md)（`same_topic`）：Mask 版本输出逐 lane 条件 mask。
+- [__hlex2](_hlex2.md)（`same_topic`）：功能：比较两个bfloat16x2_t类型数据的两个分量，如果分量满足第一个数小于或等于第二个数，则对应比较结果为1.0，否则为0.0。；功能：比较两个bfloat16x2_t类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量满足第一个数小于或等于第二个数，则对应16位掩码为0xFFFF，否则为0x0。。两接口执行同一 bfloat16x2 分量小于等于比较，差别是普通版返回 1.0/0.0 向量，mask 版返回打包的 0xFFFF/0x0 位掩码。
 <!-- cannbot:related:end -->

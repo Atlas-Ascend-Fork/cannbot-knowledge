@@ -34,10 +34,6 @@ HCCL客户端初始化接口。该接口默认在所有核上工作，用户也�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Finalize（HCCL集合通信）](finalize.md)（`same_topic`）：焦点处理废弃 HCCL Init 向 InitV2/SetCcTilingV2 迁移的生命周期；Finalize（HCCL集合通信）正文说明“通知服务端后续无通信任务，执行结束后退出”。候选给出旧接口的一一替代、通信配置迁移或最终资源回收步骤。
-- [HCCL使用说明](hccl_usage.md)（`same_topic`）：焦点处理废弃 HCCL Init 向 InitV2/SetCcTilingV2 迁移的生命周期；HCCL使用说明正文说明“Ascend C提供一组HCCL通信类高阶API，方便算子Kernel开发用户在AI Core侧灵活管理通算融合算子中计算与通信任务的执行顺序”。候选给出旧接口的一一替代、通信配置迁移或最终资源回收步骤。
-- [InitV2](init_v2.md)（`same_topic`）：焦点处理废弃 HCCL Init 向 InitV2/SetCcTilingV2 迁移的生命周期；InitV2正文说明“HCCL客户端初始化接口。该接口默认在所有核上工作，用户也可以在调用前通过GetBlockIdx指定其在某一个核上运行”。候选给出旧接口的一一替代、通信配置迁移或最终资源回收步骤。
-- [SetCcTilingV2](set_cc_tiling_v2.md)（`same_topic`）：焦点处理废弃 HCCL Init 向 InitV2/SetCcTilingV2 迁移的生命周期；SetCcTilingV2正文说明“用于设置HCCL客户端中某个通信算法配置的TilingData地址”。候选给出旧接口的一一替代、通信配置迁移或最终资源回收步骤。
-- [SetCcTiling（废弃）](set_cc_tiling_deprecated.md)（`same_topic`）：焦点处理废弃 HCCL Init 向 InitV2/SetCcTilingV2 迁移的生命周期；SetCcTiling（废弃）正文说明“用于设置HCCL客户端通信算法的Tiling地址”。候选给出旧接口的一一替代、通信配置迁移或最终资源回收步骤。
-- [v2版本TilingData（废弃）](../hccl_tiling/v2_tiling_data_deprecated.md)（`same_topic`）：v2版本TilingData（废弃） 与《Init（废弃）》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [SetCcTiling（废弃）](set_cc_tiling_deprecated.md)（`related`）：若调用本接口时传入initTiling参数，则必须与SetCcTiling接口配合使用。；若调用本接口，必须与传initTiling地址的Init接口配合使用，且Init接口在本接口前被调用。。Init 与 SetCcTiling 双方正文互相规定配套调用及先后顺序，组成同一 deprecated 初始化合同。
+- [InitV2](init_v2.md)（`same_topic`）：函数原型：__aicore__ inline void InitV2(GM_ADDR context, const void* initTiling)；函数原型：__aicore__ inline void Init(GM_ADDR context, __gm__ void* initTiling = nullptr)。两卡描述同一 HCCL 客户端初始化契约的新旧入口；V2 强制 initTiling 与 SetCcTilingV2，而旧入口保留可选参数和旧配套接口。
 <!-- cannbot:related:end -->

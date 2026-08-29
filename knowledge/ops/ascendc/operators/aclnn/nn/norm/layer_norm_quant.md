@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T17:58:11Z"
-updated_at: "2026-08-25T17:58:11Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -629,9 +629,9 @@ workspace_total = LibApi workspace；Kernel 自身 0
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 FP16/BF16 | 支持 FP16/BF16 | 支持，另见 `_a5` 卡 |
+| 支持状态 | 支持 FP16/BF16 | 支持 FP16/BF16 | 支持，另见 `_950` 卡 |
 | Host/Launcher | 非 RegBase Tiling | 与 A2 共用非 RegBase路径 | RegBase Tiling，另含 FP32 |
 | Kernel/资源 | `layer_norm_quant.cpp`，AIV | 同左 | `layer_norm_quant_apt.cpp` AIV-only；dtype-aware buffer |
 
@@ -676,3 +676,9 @@ workspace_total = LibApi workspace；Kernel 自身 0
 | 同步 | Queue、MTE2_V、V_S/S_V、V barriers | scalar read 与 TBuf alias 前必须等待 | body/helper |
 | 精度与尾块 | FP32统计/仿射、FP16饱和桥接 | 当前 body 实际统一调用 half/CAST_NONE 分支、有效 D/尾片长度 | cast helpers；CopyOut |
 | 失败边界 | shape/溢出/quantMode 失败 | unknown key 无 fallback，不能当成功计算 | `CheckShape`; router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LayerNormQuant 950 ACLNN 算子知识](layer_norm_quant_950.md)（`same_topic`）：｜ Kernel 路线 ｜ R-001 FP16 整载；R-002 BF16 整载；R-003 FP16 分片；R-004 BF16 分片 ｜；｜ Kernel 路线 ｜ R-001 FP16 整载；R-002 BF16 整载；R-003 FP32 整载；R-004 FP16 分片；R-005 BF16 分片；R-006 FP32 分片 ｜；两卡描述同一 LayerNormQuant ACLNN 算子，950 卡在相同整载/分片结构上增加 FP32 路线。
+<!-- cannbot:related:end -->

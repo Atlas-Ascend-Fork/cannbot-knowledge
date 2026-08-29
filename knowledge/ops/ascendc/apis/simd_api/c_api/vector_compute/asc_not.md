@@ -23,6 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscNeg](../reg/arithmetic_compute/asc_neg.md)（`related`）：AscNeg 与《AscNot》的实质衔接是：AscNeg 的 C++/Vector 入口执行算术取负，AscNot 是按位取反的近名反例，可防止把数值负号与 bitwise NOT 混用。
-- [AscNot](../reg/logic_compute/asc_not.md)（`same_topic`）：两个 AscNot 都执行逐元素按位取反；Reg 入口以寄存器 mask 控制 lane，Memory Vector 入口从 UB 按 count 处理。
+- [AscNot](../reg/logic_compute/asc_not.md)（`same_topic`）：按元素做按位取反；该接口用于对源操作数src执行按位取反操作，将结果写入目的操作数dst。。两者执行相同按位取反，前者使用 UB 地址与 count，后者使用 RegTensor 与 mask，可按 A2/A3 Vector 和 950 Reg 路线选择。
 <!-- cannbot:related:end -->

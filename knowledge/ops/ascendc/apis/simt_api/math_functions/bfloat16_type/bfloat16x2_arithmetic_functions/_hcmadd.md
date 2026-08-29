@@ -25,9 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hcmadd](../../half_type/half2_arithmetic_functions/_hcmadd.md)（`related`）：half2 __hcmadd 与 bfloat16x2 __hcmadd 执行同一复数 fused multiply-add，差异是元素类型和头文件。
-<!-- cannbot:related:end -->

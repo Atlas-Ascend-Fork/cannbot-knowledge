@@ -46,6 +46,5 @@ Leaky ReLU（带泄露线性整流函数）激活函数，是人工神经网络�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [入门功能落地](../../../typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/getting_started.md)（`same_topic`）：两卡都以 Matmul+LeakyRelu 实现 Cube-Vector 融合；候选进一步给出 __mix__(1,2)、核间同步和后续优化入口。
-- [融合算子编程基础知识](basics.md)（`same_topic`）：《融合算子编程基础知识》处理“>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。”。《融合算子编程算子实现》明确“下文将以Matmul+LeakyRelu融合算子的实现为例，介绍Mix融合算子的设计和实现流程。”，可直接用于核对CV 融合的数据依赖、Cube/AIV 协作、耦合模式与异步处理编程范式。
+- [入门功能落地](../../../typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/getting_started.md)（`same_topic`）：下文将以Matmul+LeakyRelu融合算子的实现为例，介绍Mix融合算子的设计和实现流程。；本样例基于C++ Tensor编程模式实现Matmul和LeakyRelu融合计算，展示Cube单元（矩阵计算单元）和Vector单元（向量计算单元）协同计算的编程模式。；两页围绕同一个 Matmul+LeakyRelu Mix 算子，前者给出设计流程，后者给出可执行入门实现。
 <!-- cannbot:related:end -->

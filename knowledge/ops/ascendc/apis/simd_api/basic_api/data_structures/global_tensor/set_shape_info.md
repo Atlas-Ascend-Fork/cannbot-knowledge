@@ -27,8 +27,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ReduceShapeInfoOptimizeStack](../../../../../guides/operator_practice/simd_operator_optimization/memory_access/reduce_shapeinfo_optimize_stack.md)（`explains`）：ReduceShapeInfoOptimizeStack 与《SetShapeInfo》的实质衔接是：该优化通过 K_MAX_SHAPE_DIM 缩减 GlobalTensor/LocalTensor 的 ShapeInfo；Get/SetShapeInfo 与 ShapeInfo结构是确认是否真的需要这些栈字段的直接依据。
-- [GetShapeInfo](get_shape_info.md)（`related`）：《GetShapeInfo》明确“获取GlobalTensor的shape信息。注意：Shape信息没有默认值，只有通过SetShapeInfo设置过Shape信息后，才可以调用该接口获取正确的ShapeInfo。”；它与《SetShapeInfo》的“设置GlobalTensor的shape信息。”在实际调用参数、数据流或结果校验上直接衔接。
-- [SetShapeInfo](../local_tensor/set_shape_info.md)（`related`）：《SetShapeInfo》明确“设置LocalTensor的Shape信息。”；它与《SetShapeInfo》的“设置GlobalTensor的shape信息。”在实际调用参数、数据流或结果校验上直接衔接。
-- [ShapeInfo（辅助数据结构）](../../aux_data_structures/shape_info.md)（`same_topic`）：GlobalTensor::SetShapeInfo 将 ShapeInfo 写入 GM Tensor 属性，是该结构在 GlobalTensor 上的设置入口。
+- [GetShapeInfo](get_shape_info.md)（`related`）：设置GlobalTensor的shape信息。；获取GlobalTensor的shape信息。注意：Shape信息没有默认值，只有通过SetShapeInfo设置过Shape信息后，才可以调用该接口获取正确的ShapeInfo。。GetShapeInfo 明确依赖此前由 SetShapeInfo 写入的 shape 元数据，两接口形成同一 GlobalTensor 属性的写后读契约。
 <!-- cannbot:related:end -->

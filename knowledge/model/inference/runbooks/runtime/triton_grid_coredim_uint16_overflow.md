@@ -84,3 +84,9 @@ Triton kernel 的 **grid 第一维在昇腾上被映射为 NPU 的 CoreDim，其
 
 - [vllm-ascend-issue-3548-bug-qwen3-next-has-a-runtime-bug-in-layer-norm-fwd-kernel-which-has-inva](https://github.com/vllm-project/vllm-ascend/issues/3548) — issue（closed，作者收尾确认已由对应修复 PR 解决）+ 修复 PR（state=MERGED，merge sha `534f32d27c0cc48731fbdae3701fbb6c3bb4332a`，2025-10-21，`vllm_ascend/ops/fla.py`）。
 - 核心断言（`grid = (M, ngroups)` 溢出 CoreDim / 修法为截顶 + 循环）为合并态 diff 内容；根因（CoreDim = UINT16_MAX 上界）由 issue 标题 `invalid CoreDim`、PR 测试日志异常文本 `coreDim=xxx can't be greater than UINT16_MAX`、常量 `MAX_CORES=65535` 三点互证。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Triton-on-Ascend（昇腾 Triton 算子后端）](../../../training/concepts/frameworks/triton_on_ascend.md)（`related`）：“- **少核持久化的 grid**：`chunk_fwd_o` 不按「每 chunk 一个 program」发射，而是固定 `grid=(CV_kernel_num,)=(24,)`，kernel 内用 `core_id=tl.program_id(0)`、`total_cores=tl.num_programs(0)` 把 `NT` 个 chunk **手动均分到各核**（`base_chunks_per_pid = NT // total_cores`，余数前补 1），每个 program 循环跑自己那批 chunk。”；“Triton kernel 的 **grid 第一维在昇腾上被映射为 NPU 的 CoreDim，其取值上界是 `UINT16_MAX = 65535`**。”。框架卡给出的 24 核持久化 grid 正是 runbook 所要求控制 CoreDim 并在 kernel 内循环分摊工作的安全形态。
+<!-- cannbot:related:end -->

@@ -21,5 +21,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSyncWait](asc_sync_wait.md)（`same_topic`）：AscSyncWait 与《AscSyncNotify》的实质衔接是：AscSyncWait 与 AscSyncNotify 是同一事件的等待/通知对，核内同步概述解释 event id 与流水依赖。
+- [AscSyncWait](asc_sync_wait.md)（`same_topic`）：约束：asc_sync_notify和asc_sync_wait必须成对使用。；本接口需与asc_sync_wait配对使用，配对的两条调用其pipe、tpipe、id三个参数必须完全一致。；wait 明确要求与 notify 成对，notify 进一步规定两端 pipe、tpipe 和 id 完全一致；两卡共同定义 AI Core 内流水同步握手。
 <!-- cannbot:related:end -->

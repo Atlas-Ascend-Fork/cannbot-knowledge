@@ -29,12 +29,3 @@ platforms: ['950']
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetHypotMaxMinTmpSize](get_hypot_max_min_tmp_size.md)（`related`）：《GetHypotMaxMinTmpSize》明确“在host侧获取Hypot接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”；它与《Hypot接口》的“按元素计算两个浮点数平方和的平方根，并提供临时空间大小获取接口。”在实际调用参数、数据流或结果校验上直接衔接。
-- [GetHypotTmpBufferFactorSize](get_hypot_tmp_buffer_factor_size.md)（`related`）：《GetHypotTmpBufferFactorSize》明确“获取Hypot接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量”；它与《Hypot接口》的“按元素计算两个浮点数平方和的平方根，并提供临时空间大小获取接口。”在实际调用参数、数据流或结果校验上直接衔接。
-- [Hypotf](../../../../simt_api/math_functions/float_math_functions/hypotf.md)（`related`）：《Hypotf》明确“获取输入数据x、y平方和的平方根。”；它与《Hypot接口》的“按元素计算两个浮点数平方和的平方根，并提供临时空间大小获取接口。”在实际调用参数、数据流或结果校验上直接衔接。
-- [Hypot](hypot.md)（`same_topic`）：《Hypot》明确“按元素计算两个浮点数平方和的平方根”；它与《Hypot接口》的“按元素计算两个浮点数平方和的平方根，并提供临时空间大小获取接口。”在实际调用参数、数据流或结果校验上直接衔接。
-<!-- cannbot:related:end -->

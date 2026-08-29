@@ -228,12 +228,5 @@ extern "C" __global__ __vector__ void relu_kernel(GM_ADDR x, GM_ADDR y, GM_ADDR 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetBlockIdx](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_idx.md)（`exemplifies`）：《GetBlockIdx》处理“获取当前逻辑AI Core的索引，用于多核逻辑控制及偏移量计算等。”。《DAV_2201 element-wise unary kernel 骨架 多核》明确提供“在 DAV_2201（Ascend 910B3）上用 ops-direct-invoke 实现单入单出 element-wise unary 算子（以 ReLU fp16 为例）的完整 kernel 骨架：运行时取核数→尾核 tailing→TQue 双缓冲→DataCopyPad Ext 搬运→AscendC::Relu 矢量计算→GlobalTensor 显式偏移。”，其参数、调用或验证步骤直接接入GetBlockIdx/GetBlockNum 与 Tiling 切核、尾核边界和多核验证的合同。
-- [Relu](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/relu.md)（`exemplifies`）：该 kernel 骨架的 Compute 阶段直接按元素调用 Relu；API 卡明确 dst=max(0,src) 和支持数据类型，是功能语义的最小合同。
-- [Relu](../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/relu.md)（`exemplifies`）：焦点处理Reg Relu 的负值清零及跨 API 实现；DAV_2201 element-wise unary kernel 骨架 多核正文界定“在 DAV_2201（Ascend 910B3）上用 ops-direct-invoke 实现单入单出 element-wise unary 算子（以 ReLU fp16 为例）的完整 kernel 骨架：运行时取核数→尾核 tailing”。候选保持 ReLU/PReLU/LeakyReLU 语义或给出同一算子骨架，只改变 API 层或负半轴策略。
-- [DataCopy 不自动按 tile 推进须显式元素 offset](../precision/datacopy_setglobalbuffer_no_auto_advance_tileoffset.md)（`related`）：该骨架在多核 block 偏移之上继续维护 tileOffset，并对 CopyIn/CopyOut 使用元素子视图，给出 focal 修复的完整可运行范式。
-- [DoubleBuffer场景](../../guides/operator_practice/simd_operator_impl/vector_programming/double_buffer_scenario.md)（`related`）：DoubleBuffer场景 与《DAV_2201 element-wise unary kernel 骨架 多核》的实质衔接是：DoubleBuffer 将主块拆为两份并通过 InitBuffer(...,2,...) 让搬入、计算、搬出重叠；主尾块切分材料说明尾块例外，UB 预算和 TQue/TBuf 重载故障直接约束 bufferNum 与长度配置。
-- [HardSwish 逐元素 kernel 的 TQue 双缓冲实现配方](elementwise_tque_double_buffer_inplace_recipe.md)（`related`）：HardSwish 配方与 ReLU 骨架共享 GM 分核、TQue 双缓冲、CopyIn—Compute—CopyOut 主链，提供更完整的原地逐元素队列实现参照。
-- [多核 ceil 尾块为负 — 每核按 remaining 截断](../precision/ceil_partition_each_core_must_clamp_remaining.md)（`related`）：该已验证骨架展示运行时核数、blockIdx 基址、空输入保护和尾核 tiling 的完整实现，可将 focal 的区间不变量落到 direct-invoke kernel。
-- [GM_ADDR 标量不可解引用为 tiling 结构体指针](gm_addr_tiling.md)（`same_topic`）：GM_ADDR 标量不可解引用为 tiling 结构体指针 与《DAV_2201 element-wise unary kernel 骨架 多核》的实质衔接是：GM_ADDR 在该入口是 __gm__ uint8_t 标量而非结构体指针；typed __gm__ tiling 指针、Kernel Tiling/GET_TILING_DATA 和地址空间案例给出正确入口与强转边界。
+- [bisheng 拒绝大写 --npu-arch=DAV2201 须用小写 dav](bisheng_npu_arch_requires_lowercase_dav_2201.md)（`related`）：NpuArch DAV_2201 / UB 192KB；bisheng 的 `--npu-arch` 旗标要求传**NpuArch 规范名的小写带连字符形式**。骨架卡给出目标硬件内部名 DAV_2201，编译 runbook 给出该值到 bisheng 参数 dav-2201 的必要映射；联合可避免用 DAV2201 或 SoC 枚举导致后端无架构。
 <!-- cannbot:related:end -->

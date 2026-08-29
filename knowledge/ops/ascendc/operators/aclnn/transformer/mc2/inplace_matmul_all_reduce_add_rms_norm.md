@@ -72,7 +72,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/inplace_matmul_all_reduce_add_rms_norm/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T20:06:51Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -214,7 +214,7 @@ R-001/R-002 是 MatMul 前半程轴，R-003~R-007 是 ARN 后半程轴；一次�
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台 | README A2 √、A3/A5 × | arch22+AICPU HCCL | 全部 | 不发布 | 产品表 |
+| 平台 | README A2 √、A3/950 × | arch22+AICPU HCCL | 全部 | 不发布 | 产品表 |
 | 空域/K | M/N 空时 no-op；K=0 error | 避免 0 block/除零 | 全部 | ACLNN 终点 | API GetWorkspaceSize |
 | rank/mode | rank 1/2/4/8；A2 comm_mode 缺省或 ai_cpu | HCCL 资源 | 全部 | tiling fail | `CheckRanksizePlatformSupported/CheckCommModeA2` |
 | HCCL send buffer | `tileSendOff+tailSendOff < HCCL_BUFFSIZE*MiB`，无 uint64 加法溢出，且非 K-zero/debug/nonreuse | 允许 AIC 直写本 rank window-in | R-001/R-002 | `OUTPUT` buffer | `CalcBufferTypeByWindowSize/setUseBufferType` |
@@ -996,7 +996,7 @@ AIV0 先在 `[workspaceGM, workspaceGM+biasLen)` 产生 FP32 bias，随后对保
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持 | 公开明确不支持 | API 表明确 950 不支持 |
 | Host/Launcher | ascend910b/arch22，AICPU HCCL | 不发布 | 不发布 |
@@ -1063,4 +1063,4 @@ AIV0 先在 `[workspaceGM, workspaceGM+biasLen)` 产生 FP32 bias，随后对保
 | workspace/内存 | `max(baseMc2Ws,matmulV3Ws)+256`；`rcvCnt` 位于 `biasLen` offset | bias 区与 counter 不重叠；全 MM 后才复用 Matmul workspace | fusion workspace/bias preproc |
 | 同步 | MM SyncAll→Commit；Query+DCCI→ARN；Finalize | 不得用 Host 顺序替代 Device visibility | PostProc/ComputeAddRmsNorm |
 | 精度与尾块 | FP32 RMS、BF16 RINT、独立 tile/tail ARN POD | key14 仅 FP16；SplitD 两遍 | ARN bodies |
-| 失败边界 | API empty/K0、tiling guards、unknown key | 不补造 A3/A5/quant fallback | API/README/entry |
+| 失败边界 | API empty/K0、tiling guards、unknown key | 不补造 A3/950/quant fallback | API/README/entry |

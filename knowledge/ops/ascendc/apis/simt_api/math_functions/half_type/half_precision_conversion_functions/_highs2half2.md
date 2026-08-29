@@ -29,6 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__highs2bfloat162](../../bfloat16_type/bfloat16_precision_conversion_functions/_highs2bfloat162.md)（`same_topic`）：《__highs2bfloat162》处理“分别提取两个bfloat162输入的高16位，并填充到bfloat162中，返回填充后的数据。”。《__highs2half2》明确“分别提取两个half2输入的高16位，并填充到half2中，返回填充后的数据。”，可直接用于核对packed bfloat16 高低 lane 的构造、提取、交换及 half2 对应操作。
-- [__lows2half2](_lows2half2.md)（`same_topic`）：__highs2half2 与 __lows2half2 分别从两个 half2 输入提取高/低 16bit lane，是成对的 lane 组装合同。
+- [__high2half2](_high2half2.md)（`same_topic`）：“功能：将输入数据的高16位填充到half2并返回结果。”与“功能：分别提取两个half2输入的高16位，并填充到half2中，返回填充后的数据。”是双方正文中的具体合同。两端都提取高 16 位构造 half2，单输入版本复制一个来源，高位双输入版本分别组合两个来源，互读可确认打包来源。
 <!-- cannbot:related:end -->

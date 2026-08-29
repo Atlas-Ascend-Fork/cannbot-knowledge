@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_quant_v2/op_host/config/ascend910_93/add_layer_norm_quant_v2_binary.json
     role: implementation
 created_at: "2026-08-25T17:45:32Z"
-updated_at: "2026-08-25T17:45:32Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -591,9 +591,9 @@ if (this->isPerTensor) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2 公开支持 | V2 公开支持 | V2 README 标不支持且无 ascend950 构建；本版本族在独立 A5 卡采用 V1 |
+| 支持状态 | V2 公开支持 | V2 公开支持 | V2 README 标不支持且无 ascend950 构建；本版本族在独立 950 卡采用 V1 |
 | Host/Launcher | `ascend910b`，共用 V2 membase Tiling | `ascend910_93`，共用 V2 membase Tiling | regbase selector，不属于本卡 |
 | Kernel/资源 | V2 Normal/Single/Split-D AIV | 同左 | V1 arch35 RegBase MicroAPI |
 
@@ -602,7 +602,7 @@ if (this->isPerTensor) {
 - A2/A3 V2 公开域仅 static、单路、per-tensor、`additionalOutput=false`、`divMode=false`；源码中可见的双路、dynamic 或 per-channel 分支不是本平台公开路线。
 - shape 乘积先进入 `int32_t numRow/numCol`，多个 POD 字段为 uint32，超大 shape 存在固定源码可见的窄化边界；仓内未提供额外溢出保护。
 - R-003 `workspaceSize=M*N*4` 写入 uint32 POD，同时 Host workspace 使用 `size_t`；必须避免超出可表示范围。
-- V2 README 明确 A5 不支持，尽管 V2 API 文档表格一处标为支持；同时 V2 CMake/OpDef 无 ascend950。因此不把 A5 V2 实现信号发布为正式路线。
+- V2 README 明确 950 不支持，尽管 V2 API 文档表格一处标为支持；同时 V2 CMake/OpDef 无 ascend950。因此不把 950 V2 实现信号发布为正式路线。
 - 框架 `Contiguous/ViewCopy/CommonOpExecutorRun` 内部实现是允许的框架边界；其 stream 顺序由 executor 保证，固定算子仓未展开框架源码。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
@@ -639,3 +639,9 @@ if (this->isPerTensor) {
 | 同步 | Queue/PIPE/event 模式可复用 | MTE3→MTE2/V 依赖不得删除 | 各 body `Process` |
 | 精度与尾块 | FP32 LN、RINT INT8、有效 N 写回 | BF16 RINT、slice/row tail 不得改 | `RoundFloat2Int8`,`QuantAndOut` |
 | 失败边界 | 三阶 UB fallback | 不得把非公开 dynamic/dual 路线补入 A2/A3 | `AddLayerNormQuantTilingImplV2` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AddLayerNormQuant 950 ACLNN 算子知识](add_layer_norm_quant_950.md)（`same_topic`）：｜ 计算语义 ｜ 融合 `Add + LayerNorm + 1/2 路静态或动态量化`，可选回写加法结果 `x`。 ｜；｜ 计算语义 ｜ `a=x1+x2+bias`，`ln=(a-mean(a))/sqrt(var(a)+eps)*gamma+beta`，公开 A2/A3 域执行单路静态 per-tensor 量化 `y1=round_int8(ln*scale1+zeroPoint1)`，并输出 `layernormRes=ln`。 ｜。两卡共享 AddLayerNormQuant 融合语义，分别给出 950 V1 的静态/动态多路能力与 A2/A3 V2 的单路静态边界。
+<!-- cannbot:related:end -->

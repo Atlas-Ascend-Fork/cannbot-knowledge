@@ -23,7 +23,6 @@ DisableBias接口与该接口的功能相同，建议使用DisableBias。 清除
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Init](init.md)（`related`）：ClearBias 明确用于覆盖 Init 时 TCubeTiling.isBias 启用的 Bias 状态，理解 Init 的资源/tiling 初始化是判断清除动作何时生效的前置。
-- [SetBias](set_bias.md)（`related`）：SetBias 设置 Bias 输入，ClearBias/DisableBias 则撤销该参与标志；二者是同一 Matmul 对象 Bias 状态的相反控制动作。
-- [DisableBias](disable_bias.md)（`same_topic`）：DisableBias 与《ClearBias》的实质衔接是：DisableBias、ClearBias、SetBias 和 EnableBias 改变同一 Matmul 对象的 bias 状态，适用于迭代间切换。
+- [Init](init.md)（`related`）：Init 页说明“Init主要用于对Matmul对象中的Tiling数据进行初始化，根据Tiling参数进行资源划分”；ClearBias 页明确“如果在调用［Init］(init.md)时配置了TCubeTiling结构中的isBias参数来启用Bias，调用该接口后，会清除Bias标志位，不再启用Bias。”，后者直接修改前者初始化出的 bias 状态。
+- [DisableBias](disable_bias.md)（`same_topic`）：DisableBias接口与该接口的功能相同，建议使用DisableBias。 清除Bias标志位，表示Matmul计算时没有Bias参与。；清除Bias标志位，表示Matmul计算时没有Bias参与。。焦点卡明确将同功能旧入口迁移为候选 DisableBias。
 <!-- cannbot:related:end -->

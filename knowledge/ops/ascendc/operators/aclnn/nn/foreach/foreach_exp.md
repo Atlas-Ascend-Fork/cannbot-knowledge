@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_exp/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:32:02Z"
-updated_at: "2026-08-25T15:32:02Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -474,9 +474,9 @@ workspace_total(kernel-visible) = 0 B；Tiling workspace slot = 32 B
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；`ascend910b` | 支持；`ascend910_93` | 支持，但使用独立 `_a5` 卡 |
+| 支持状态 | 支持；`ascend910b` | 支持；`ascend910_93` | 支持，但使用独立 `_950` 卡 |
 | Host/Launcher | 共用 arch22 `ForeachCommonTiling` | 共用 arch22 `ForeachCommonTiling` | arch35 自定义 Tiling，最多 256 Tensor，workspace 0 |
 | Kernel/资源 | 共用 AIV_VECTOR body | 共用 AIV_VECTOR body | SIMT，1024 threads/block，不使用 AIV Queue |
 

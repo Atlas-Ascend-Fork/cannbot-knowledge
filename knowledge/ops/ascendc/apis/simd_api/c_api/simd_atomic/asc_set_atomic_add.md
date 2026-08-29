@@ -22,7 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSetAtomicNone](asc_set_atomic_none.md)（`related`）：AscSetAtomicAdd 开启后会影响后续 GM 搬运，AscSetAtomicNone 是文档要求的状态清理动作，二者构成成对的启用/复位协议。
-- [AscAtomicAdd](../scalar_compute/asc_atomic_add.md)（`same_topic`）：AscAtomicAdd：AscAtomicAdd、SIMT asc_atomic_add 与基础 AtomicAdd执行同一 GM 原子累加；SetAtomicAdd/AscSetAtomicAdd则控制后续搬运累加，需避免混淆即时原子与搬运配置。 目标卡《AscSetAtomicAdd》补充：对后续目的地址为GM的数据搬运指令开启原子累加，将待搬运数据与GM已有数据求和后写入GM。
-- [SetAtomicAdd](../../basic_api/atomic_operations/set_atomic_add.md)（`same_topic`）：AscSetAtomicAdd 与 Basic API SetAtomicAdd 都配置后续 GM 搬运的原子加模式，是同一随路原子状态在 C/C++ 接口层的对应入口。
+- [SetAtomicAdd](../../basic_api/atomic_operations/set_atomic_add.md)（`same_topic`）：设置DMA搬运时的随路原子操作为累加。调用后，后续从UB/L0C/L1到GM的DataCopy搬运将对目标GM地址执行原子累加（旧值+新值）。；本接口对后续目的地址为GM的数据搬运指令开启原子累加。两接口在 Basic API 和 C API 中设置同一后续 GM 搬运原子累加语义。
 <!-- cannbot:related:end -->

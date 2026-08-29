@@ -28,7 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt](../../../../runbooks/compilation/device_sqrt_uses_vector_api.md)（`exemplifies`）：Runbook 记录在 __aicore__ 普通 device 路径直接调用 libc sqrtf 的 bisheng 失败，并以 32B LocalTensor 上 AscendC::Sqrt、显式同步和全量精度通过收敛，为 SIMT sqrtf 卡补充编程域边界。
-- [Rsqrtf](rsqrtf.md)（`related`）：Rsqrtf 返回 1/sqrt(x)，Sqrtf 返回 sqrt(x)，二者是同一输入域的正向与倒数路径。
-- [Hsqrt](../bfloat16_type/bfloat16_math_functions/hsqrt.md)（`same_topic`）：Hsqrt 与《Sqrtf》的实质衔接是：bfloat16 Hsqrt 与同类型 Hrsqrt 分别执行 sqrt 和 reciprocal-sqrt；bfloat16x2、half 与 float 的 sqrt 入口保持数学任务一致，但返回宽度、次正规数和特殊值契约不同。
+- [Rsqrtf](rsqrtf.md)（`related`）：本接口内部实现使用到了sqrtf，由于sqrtf不支持Subnormal场景，当输入x为Subnormal数据时，会导致本接口最终结果为+inf；处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。Rsqrtf 正文明示内部调用 Sqrtf，候选给出 Sqrtf 对 Subnormal 的 flush-to-zero 行为，直接解释 Rsqrtf 在同域返回正无穷的机制。
 <!-- cannbot:related:end -->

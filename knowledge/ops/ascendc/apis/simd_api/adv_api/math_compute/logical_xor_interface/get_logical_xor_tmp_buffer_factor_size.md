@@ -26,7 +26,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LogicalXor接口](logical_xor_interface.md)（`related`）：factor 查询提供另一种 LogicalXor workspace 计算方式，可按 tiling 形态选择。
-- [GetLogicalXorMaxMinTmpSize](get_logical_xor_max_min_tmp_size.md)（`same_topic`）：GetLogicalXorTmpBufferFactorSize 与《GetLogicalXorMaxMinTmpSize》的实质衔接是：factor 查询与 GetLogicalXorMaxMinTmpSize 是同一 LogicalXor 临时空间的两种 Host 侧规划方式，LogicalXor 接口页和算子卡说明该空间由逐元素逻辑异或直接消费。
-- [LogicalXor](logical_xor.md)（`same_topic`）：GetLogicalXorTmpBufferFactorSize 与《LogicalXor》的实质衔接是：factor 查询与 GetLogicalXorMaxMinTmpSize 是同一 LogicalXor 临时空间的两种 Host 侧规划方式，LogicalXor 接口页和算子卡说明该空间由逐元素逻辑异或直接消费。
+- [GetLogicalXorMaxMinTmpSize](get_logical_xor_max_min_tmp_size.md)（`related`）：Factor 查询卡给出“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLivedNodeCount / typeSize”；MaxMin 查询卡说明“在minValue到maxValue范围内，临时空间越大性能越好。”，两者组成先确定允许空间范围、再由实际 currBuff 反推单次元素数的 Host Tiling 链。
+- [LogicalXor](logical_xor.md)（`related`）：Factor 查询卡指出“获取LogicalXor接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”；计算卡的调用参数规定“count为参与计算元素个数。”，前者正是为后者的 count 分块提供容量上限。
 <!-- cannbot:related:end -->

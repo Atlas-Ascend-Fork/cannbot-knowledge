@@ -38,5 +38,5 @@ Atlas 训练系列产品
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Conv3DBackpropFilter Tiling构造函数](../../../simd_api/adv_api/convolution_compute/conv3_d_backprop_filter_tiling/conv3_d_backprop_filter_tiling_constructor.md)（`related`）：《Conv3DBackpropFilter Tiling构造函数》说明用于创建一个Conv3DBackpropFilter单核Tiling对象。；《GetSocVersion》说明获取当前硬件平台版本型号。。二者在构造函数接收的平台对象、SoC版本和各级存储容量必须与后续GetTiling生成的反向滤波Tiling结构一致上存在可执行的直接衔接。
+- [ASCEND350 非 SocVersion 枚举成员致编译失败](../../../../runbooks/compilation/ascend350_socversion.md)（`exemplifies`）：观测（tool_observed）：`platform_ascendc::SocVersion` 枚举的合法成员含 `ASCEND950`，无 `ASCEND350`；`build.sh` 的 `SOC_TO_ARCH` 把 `ascend350` 与 `ascend950` 都映射到同一个 arch 字符串 `3510`（运行时落到同一 SoC），但 C++ 侧枚举没有 `ASCEND350` 这个成员。；获取当前硬件平台版本型号。runbook 的编译排障必须以平台接口返回的实际 SocVersion 枚举合同为准，不能把构建别名当枚举。
 <!-- cannbot:related:end -->

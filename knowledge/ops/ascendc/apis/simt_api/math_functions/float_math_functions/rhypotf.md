@@ -28,5 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Hypotf](hypotf.md)（`same_topic`）：Hypotf 与《Rhypotf》的实质衔接是：rhypotf 是 hypotf 的倒数形式，高阶 Hypot 是张量级等价运算，二者直接支撑算法替换和接口选型。
+- [Hypotf](hypotf.md)（`same_topic`）：功能：获取输入数据x、y的平方和x^2 + y^2的平方根的倒数。；功能：获取输入数据x、y的平方和x^2 + y^2的平方根。。候选给出 hypot 值，焦点给出同一量的倒数，两者共享输入与 Subnormal 失效机制，适合在正值与 reciprocal 结果需求之间选择。
 <!-- cannbot:related:end -->

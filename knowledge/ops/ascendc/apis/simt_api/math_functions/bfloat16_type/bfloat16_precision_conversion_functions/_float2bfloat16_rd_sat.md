@@ -23,6 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__float22bfloat162_rd_sat](_float22bfloat162_rd_sat.md)（`same_topic`）：《__float22bfloat162_rd_sat》明确“饱和模式下，将float2类型数据的两个分量遵循CAST_FLOOR模式转换为bfloat16精度，返回转换后的bfloat16x2_t类型数据。”；它与《__float2bfloat16_rd_sat》的“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_FLOOR模式，返回转换后的值。”在实际调用参数、数据流或结果校验上直接衔接。
-- [__float2bfloat16_rd](_float2bfloat16_rd.md)（`same_topic`）：《__float2bfloat16_rd》明确“遵循CAST_FLOOR模式，将浮点数转换为bfloat16精度，返回转换后的值。”；它与《__float2bfloat16_rd_sat》的“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_FLOOR模式，返回转换后的值。”在实际调用参数、数据流或结果校验上直接衔接。
+- [__float2bfloat16_rd](_float2bfloat16_rd.md)（`same_topic`）：“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_FLOOR模式，返回转换后的值。”与“遵循CAST_FLOOR模式，将浮点数转换为bfloat16精度，返回转换后的值。”提供双方正文证据。两端均是 float 到 bfloat16 的向下取整转换，rd_sat 仅增加饱和处理；并列阅读可确认溢出时是否需要饱和而不改变基本舍入方向。
 <!-- cannbot:related:end -->

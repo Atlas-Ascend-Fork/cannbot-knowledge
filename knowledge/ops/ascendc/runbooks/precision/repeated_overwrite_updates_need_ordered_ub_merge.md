@@ -237,16 +237,6 @@ UB gather 的复杂度从“每核扫描一次更新流”变成“每输出 chu
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AtomicExch](../../apis/simd_api/basic_api/atomic_operations/atomic_exch.md)（`exemplifies`）：AtomicExch 是卡内列出的硬件原子替代路线之一，但原子交换本身不定义多个 k 的 winner 顺序。
-- [GetValue](../../apis/simd_api/basic_api/data_structures/global_tensor/get_value.md)（`exemplifies`）：本卡失败路线用 GlobalTensor::GetValue 逐元素读取 idx/upd；接口说明这是标量 GM 访问。
-- [PipeBarrier](../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)（`exemplifies`）：该卡用 PipeBarrier 排空 UB 更新和写回，展示正确放置。
-- [SetValue](../../apis/simd_api/basic_api/data_structures/global_tensor/set_value.md)（`exemplifies`）：不确定性直接出现在对重复目标连续调用 GlobalTensor::SetValue。
-- [asc_scatter](../../apis/simd_api/c_api/reg/reg_store/asc_scatter_deprecated.md)（`exemplifies`）：asc_scatter 与《重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回》的实质衔接是：废弃 asc_scatter 的现行 C/基础/Reg Scatter 是迁移路径；三张故障卡直接约束 indices 形状、重复地址归约和写冲突。
-- [FP16 scatter 归约逐次回写放大相消误差](low_precision_scatter_reduction_needs_fp32_accumulator.md)（`related`）：focal 明确 FP16 add 需 FP32 中间态，而 overwrite 不应走 accumulator；候选补充重复 overwrite 的确定次序、唯一输出所有权和事件依赖条件。
-- [GM SetValue 写回后 GetValue 读到旧值](gm_setvalue_getvalue_reads_stale_within_kernel.md)（`related`）：两卡都证明 GM 标量 GetValue/SetValue 不能充当 kernel 内有序共享状态：写后读旧值与重复目标 winner 不稳定是同一风险。
-- [Scatter 非散射维可缩小，更新量须按 indices 计算](scatter_update_count_must_follow_indices_shape.md)（`related`）：focal 修正 totalUpdates 后，重复目标 overwrite 仍需保持更新顺序和唯一写所有权；该卡给出更新域正确但冲突语义仍可能丢写的下游验证。
-- [多核非对齐 DataCopyPad 写回边界互相覆盖](multicore_non_aligned_datacopypad_rmw_overlap.md)（`related`）：候选展示多核 RMW 在共享边界互相覆盖，本卡展示重复随机写 winner 不稳定。
-- [稀疏不规则输出算子 SIMD 标量退化诊断](../performance/simd.md)（`related`）：候选诊断稀疏不规则输出的 SIMD 标量退化；本卡 UB chunk 重扫保证语义但属于 safety fallback。
-- [MTE2跨流水未建依赖导致UB读到上次调用残值](direct_mte_slot_reuse_needs_bidirectional_hard_events.md)（`same_topic`）：多次更新复用同一 UB slot 时既需按序合并更新，也需 hard event 保护 MTE/Vector 读写；两卡覆盖数据和同步两面。
-- [Vector 结果搬出前须经 VECOUT 队列](vector_results_need_vecout_queue_before_mte3.md)（`same_topic`）：UB 合并完成后必须通过 VecOut 把所有权交给 MTE3。
+- [TQue简介](../../apis/simd_api/basic_api/resource_management/t_que/t_que_intro.md)（`exemplifies`）：“实际代码必须保持 `AllocTensor → EnQue → DeQue → FreeTensor` 的所有权顺序”与“全部重复更新都在 UB 内按原始 `k` 顺序合并，最后只以连续 DMA 写回 GM”把 TQue 生命周期约束落实到重复更新的有序 UB 合并实现。
+- [ScatterNdUpdate A2/A3 ACLNN 算子知识](../../operators/aclnn/nn/index/scatter_nd_update.md)（`related`）：“重复索引最终保留后出现的 update”；“把每个连续目标块先搬入 UB 后，全部重复更新都在 UB 内按原始 `k` 顺序合并，最后只以连续 DMA 写回 GM”。Runbook 提供维护 ScatterNdUpdate last-wins 时避免随机 GM 写 winner 不确定性的安全实现。
 <!-- cannbot:related:end -->

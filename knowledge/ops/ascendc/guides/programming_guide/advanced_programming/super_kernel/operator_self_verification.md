@@ -33,7 +33,5 @@ npugraph_ex后端开启SuperKernel融合时，编译后端需使用"npugraph_ex"
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SuperKernel原理介绍](principles.md)（`related`）：自验证确认任务命中、输出和同步，防止只看图编译成功。
-- [核函数直调算子额外适配说明](kernel_direct_call_adaptation.md)（`related`）：对使用 >> 的直调算子，自验证前还需增加 __sk__ 入口、参数结构体与 SK_BIND，并保持 Kernel Type；否则测试失败不能归因于融合计算本身。
-- [算子适配说明](operator_adaptation.md)（`related`）：自验证应在算子满足 SuperKernel 全核同步、MIX 比例和 DCache 一致性约束后执行；适配卡给出验证失败时应回查的具体前置契约。
+- [算子适配说明](operator_adaptation.md)（`related`）：算子开发完成后，可通过本文档中的样例自行验证算子是否支持融合进SuperKernel，包括功能正确性与精度对齐。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。；适配页定义开发阶段约束，自验证页消费这些约束并检查功能与精度。
 <!-- cannbot:related:end -->

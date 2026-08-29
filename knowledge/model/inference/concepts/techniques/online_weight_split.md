@@ -45,7 +45,12 @@ $$
 
 `module/Linear.py` 定义了四种切分策略下的 Linear 类与一个 Embedding 类：
 
-| 类 | 切分轴 | 用途 | |----|--------|------| | **ReplicatedLinear** | 不切 | 不涉及 TP 切分的 Linear 模块 | | **ColumnParallelLinear** | 切 **N 轴**（列切） | TP 切分需要切权重 N 轴 | | **MergedColumnParallelLinear** | 切 **N 轴** + merge | 多个权重对同一 `input_activations` 做矩阵乘、且切 N 轴；**当前 merge 顺序为先对权重 slice 再 concat**（如 DeepSeek 的 MLP up / gate 权重） | | **RowParallelLinear** | 切 **K 轴**（行切） | TP 切分需要切权重 K 轴 | | **VocabParallelEmbedding** | 切 **vocab size** | Embedding 表按 vocab 维度切分（HSTU Embedding TP 也基于此扩展） |
+| 类 | 切分轴 | 用途 |
+|----|--------|------| | **ReplicatedLinear** | 不切 | 不涉及 TP 切分的 Linear 模块 |
+| **ColumnParallelLinear** | 切 **N 轴**（列切） | TP 切分需要切权重 N 轴 |
+| **MergedColumnParallelLinear** | 切 **N 轴** + merge | 多个权重对同一 `input_activations` 做矩阵乘、且切 N 轴；**当前 merge 顺序为先对权重 slice 再 concat**（如 DeepSeek 的 MLP up / gate 权重） |
+| **RowParallelLinear** | 切 **K 轴**（行切） | TP 切分需要切权重 K 轴 |
+| **VocabParallelEmbedding** | 切 **vocab size** | Embedding 表按 vocab 维度切分（HSTU Embedding TP 也基于此扩展） |
 
 ### FusedMoEGMM（MoE 在线切分）
 

@@ -52,7 +52,12 @@ PyPTO 源码：`ops/pypto/src/deepseek_indexer_attention/op_kernel/deepseek_inde
 
 ### 优化措施
 
-| 瓶颈 | 措施 | | ---- | ---- | | 1 | PyPTO 允许开发者**自定义 Tile Op** —— 开发一个"根据 index 直接从 GM 离散搬运到 L1 连续空间上"的 TileOp，使 Matmul 可直接消费，省去 workspace、消除冗余搬运 | | 2 | **b × s1 合轴** + 调整 Tiling，撑大 M 轴，用满 L0A，提高 Matmul 计算效率（性能倍增） | | 3 | 消除两个子图之间的 barrier —— 把两个子图充分融合，不依赖的 task 提前启动 | | 4 | Reshape 操作不改变数据排布 → 消除 reshape，原依赖 task delay 消除，减少解依赖时间 |
+| 瓶颈 | 措施 |
+| ---- | ---- |
+| 1 | PyPTO 允许开发者**自定义 Tile Op** —— 开发一个"根据 index 直接从 GM 离散搬运到 L1 连续空间上"的 TileOp，使 Matmul 可直接消费，省去 workspace、消除冗余搬运 |
+| 2 | **b × s1 合轴** + 调整 Tiling，撑大 M 轴，用满 L0A，提高 Matmul 计算效率（性能倍增） |
+| 3 | 消除两个子图之间的 barrier —— 把两个子图充分融合，不依赖的 task 提前启动 |
+| 4 | Reshape 操作不改变数据排布 → 消除 reshape，原依赖 task delay 消除，减少解依赖时间 |
 
 自定义 Gather TileOp 示意：
 
@@ -95,3 +100,12 @@ DeepSeek-V3.2-Exp 的 Future Plan 明示："MegaKernel：Decode 阶段仍然存�
 - [mla-prolog](mla_prolog.md)
 - [pypto](../frameworks/pypto.md)
 - [dsa](../modules/dsa.md)（DSA 架构模式，DIA 是其 LI+Prolog+SFA 融合的算子级实现）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Indexer Prolog Kernel](indexer_prolog.md)（`related`）：“`Deepseek Indexer Attention` (DIA) 是 cann-recipes-infer 用 **PyPTO** 实现的**大融合算子** —— 把 DSA 的 4 个相对独立子算子 MLAProlog + IndexerProlog + Lightning Indexer + Sparse Flash Attention 融合成单一 kernel，在整网范围内挖掘更大并行度、提升内存利用率。”与“`Indexer Prolog` 是 ［lightning-indexer］(lightning_indexer.md) 之前的准备算子，为 LI 计算提供输入 `q`、`weight`（及 `q_scale`）。”分别给出两端正文事实；DIA 把 IndexerProlog 纳入同一 kernel，IndexerProlog 卡则明确其为 LI 生产 q、weight 与 q_scale，二者闭合融合前处理到索引计算的输入合同。
+- [Lightning Indexer Kernel](lightning_indexer.md)（`related`）：“`Deepseek Indexer Attention` (DIA) 是 cann-recipes-infer 用 **PyPTO** 实现的**大融合算子** —— 把 DSA 的 4 个相对独立子算子 MLAProlog + IndexerProlog + Lightning Indexer + Sparse Flash Attention 融合成单一 kernel，在整网范围内挖掘更大并行度、提升内存利用率。”与“DSA 计算链路：`MLAProlog + IndexerProlog → LightningIndexer → SparseFlashAttention → MLAEpilog`。LI 的输出是 TopK index 张量，SFA 据此 Gather 稀疏 KV；在长序列场景下 LI 的 TopK 排序成为主要热点。”分别给出两端正文事实；DIA 明确融合 LightningIndexer，而 LightningIndexer 卡补齐其在融合链中产生 TopK 索引并交给 SFA 的生产消费合同，可用于拆解融合 kernel 的性能与正确性。
+- [Sparse Flash Attention Kernel](sparse_flash_attention.md)（`related`）：“`Deepseek Indexer Attention` (DIA) 是 cann-recipes-infer 用 **PyPTO** 实现的**大融合算子** —— 把 DSA 的 4 个相对独立子算子 MLAProlog + IndexerProlog + Lightning Indexer + Sparse Flash Attention 融合成单一 kernel，在整网范围内挖掘更大并行度、提升内存利用率。”与“cann-recipes-infer 提供 AscendC + TileLang 两路实现；PyPTO 侧则作为 ［deepseek-indexer-attention］(deepseek_indexer_attention.md) 大融合算子内的子流程出现。”分别给出两端正文事实；DIA 明确融合 Sparse Flash Attention，SFA 卡从另一端确认 PyPTO 实现正是 DIA 内部子流程，可据此追踪 TopK Gather 与 attention 阶段的融合边界。
+- [在昇腾用 PyPTO 落地 DSA/复杂融合注意力：分阶段拆-融合组织 + 低 bit 量化融合算子关键手段](../../optimizations/experience/rules/pypto_dsa_fused_attention_decompose_quant.md)（`related`）：DSA 大算子（［Deepseek Indexer Attention］(../../../concepts/kernels/deepseek_indexer_attention.md)）逻辑上由 ［MLA Prolog］(../../../concepts/kernels/mla_prolog.md)、［Indexer Prolog］(../../../concepts/kernels/indexer_prolog.md)、［Lightning Indexer］(../../../concepts/kernels/lightning_indexer.md)、［Sparse Flash Attention］(../../../concepts/kernels/sparse_flash_attention.md) 四个相对独立部分构成。；`Deepseek Indexer Attention` (DIA) 是 cann-recipes-infer 用 **PyPTO** 实现的**大融合算子** —— 把 DSA 的 4 个相对独立子算子 MLAProlog + IndexerProlog + Lightning Indexer + Sparse Flash Attention 融合成单一 kernel，在整网范围内挖掘更大并行度、提升内存利用率。。规则卡说明四子算子的分解与融合策略，DIA 卡给出同一四部分融合为单 kernel 的实际对象。
+<!-- cannbot:related:end -->

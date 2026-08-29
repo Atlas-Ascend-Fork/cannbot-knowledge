@@ -25,13 +25,3 @@ platforms: ['950']
 返回值：- true - 表示Tensor加入Queue成功 - false - 表示Queue已满，入队失败
 
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TSCM输入的矩阵乘](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/tscm_input_matmul.md)（`explains`）：Vector 侧写完 TSCM tensor 后需 EnQue 发布，才能让 Cube 侧按队列同步消费。
-- [AllocTensor](alloc_tensor.md)（`related`）：AllocTensor 后通过 EnQue 发布 TSCM Tensor，明确随机初始内容不能在入队前被当作零值使用。
-- [DeQue](de_que.md)（`same_topic`）：EnQue 与《DeQue》的实质衔接是：TSCM EnQue 把已分配 tensor 的所有权推入队列，DeQue 取回，AllocTensor/FreeTensor 和 TSCM 概述闭合队列容量与资源生命周期。
-- [FreeTensor](free_tensor.md)（`same_topic`）：EnQue 与《FreeTensor》的实质衔接是：TSCM EnQue 把已分配 tensor 的所有权推入队列，DeQue 取回，AllocTensor/FreeTensor 和 TSCM 概述闭合队列容量与资源生命周期。
-- [TSCM简介](tscm_intro.md)（`same_topic`）：EnQue 与《TSCM简介》的实质衔接是：TSCM EnQue 把已分配 tensor 的所有权推入队列，DeQue 取回，AllocTensor/FreeTensor 和 TSCM 概述闭合队列容量与资源生命周期。
-<!-- cannbot:related:end -->

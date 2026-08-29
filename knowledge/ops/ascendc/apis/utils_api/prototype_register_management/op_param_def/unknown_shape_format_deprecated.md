@@ -31,5 +31,5 @@ OpDef算子定义，OpDef请参考OpDef。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Format（OpParamDef）](format.md)（`same_topic`）：《Format（OpParamDef）》明确“定义算子参数数据格式。”；它与《UnknownShapeFormat》的“已废弃接口，设置未知Shape情况下的Format默认值，请统一使用Format接口替代。”在实际调用参数、数据流或结果校验上直接衔接。
+- [Format（OpParamDef）](format.md)（`same_topic`）：该接口废弃，并将在后续版本移除，请不要使用该接口。无需针对动态/静态shape单独设置format，统一使用Format接口来设置即可。定义算子参数数据格式。废弃卡明确把 UnknownShapeFormat 的职责迁移到 Format，目标卡定义承接后的参数格式设置合同；替换后还能消除 deprecated 警告在严格编译选项下升级为错误的风险。
 <!-- cannbot:related:end -->

@@ -25,8 +25,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BitwiseAnd](../bitwise_and_interface/bitwise_and.md)（`related`）：BitwiseAnd 对整数每一 bit 做与，LogicalAnd 把零/非零解释为布尔值；两者同名易混但语义不同，按需要位运算还是真值运算选型。
-- [GetLogicalAndMaxMinTmpSize](get_logical_and_max_min_tmp_size.md)（`related`）：LogicalAnd 不允许输入输出地址重叠并需要临时空间；该 host 接口给出可正确执行所需的最小/最大 workspace。
-- [GetLogicalAndTmpBufferFactorSize](get_logical_and_tmp_buffer_factor_size.md)（`related`）：FactorSize 的 maxLivedNodeCount/extraBuf 用于 Host 侧推算一次 LogicalAnd Kernel 可处理元素数。
-- [LogicalAnds](../logical_ands_interface/logical_ands.md)（`related`）：LogicalAnds 与《LogicalAnd》的实质衔接是：LogicalAnds 的 scalar 逻辑与接口、两种临时空间查询直接配套；LogicalAnd 是 tensor-tensor 对应形态。
+- [GetLogicalAndMaxMinTmpSize](get_logical_and_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取LogicalAnd接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；按元素进行逻辑与操作。当输入数据类型不是bool时，零视为False，非零视为True。仅Ascend 950PR/950DT支持。。Host 侧 tmp-size 查询为 kernel 侧 LogicalAnd 分配临时空间并选择 tiling 参数，直接支撑该逐元素逻辑与调用。
+- [GetLogicalAndTmpBufferFactorSize](get_logical_and_tmp_buffer_factor_size.md)（`related`）：按元素进行逻辑与操作。当输入数据类型不是bool时，零视为False，非零视为True。仅Ascend 950PR/950DT支持。；获取LogicalAnd接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。。LogicalAnd 是计算接口，Factor 接口直接为它在固定 sharedTmpBuffer 下反推单次处理元素数。
 <!-- cannbot:related:end -->

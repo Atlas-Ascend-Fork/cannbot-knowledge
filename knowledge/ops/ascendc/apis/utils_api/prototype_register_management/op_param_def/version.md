@@ -24,11 +24,3 @@ platforms: [agnostic]
 OpParamDef算子定义，OpParamDef请参考OpParamDef。
 ## 约束说明
 无
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ParamType（OpParamDef）](param_type.md)（`related`）：ParamType marks an input optional; Version then assigns consecutive aclnn interface versions when such optional inputs are introduced.
-- [DataTypeForBinQuery](data_type_for_bin_query.md)（`same_topic`）：DataTypeForBinQuery 与《Version》的实质衔接是：DataTypeForBinQuery 与 FormatForBinQuery 共同决定运行时二进制键；OpParamDef 的类型/格式列表、Version、Input 及 InferDataType 必须保持注册与推导一致。
-- [OpAttrDef](../op_attr_def/op_attr_def.md)（`same_topic`）：OpAttrDef 与《Version》的实质衔接是：OpAttrDef 定义属性名、类型、OPTIONAL/REQUIRED、默认值和 Version；Comment 生成原型注释，OpDef::Attr 挂载属性，Host TilingData 传递与缓存故障说明 runtime 属性进入 kernel 时的后续契约。
-<!-- cannbot:related:end -->

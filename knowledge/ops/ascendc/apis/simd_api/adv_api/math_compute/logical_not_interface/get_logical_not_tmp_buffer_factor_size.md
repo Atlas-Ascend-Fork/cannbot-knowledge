@@ -26,6 +26,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetLogicalNotMaxMinTmpSize](get_logical_not_max_min_tmp_size.md)（`same_topic`）：GetLogicalNotTmpBufferFactorSize 与《GetLogicalNotMaxMinTmpSize》的实质衔接是：LogicalNot 的临时空间 factor 查询需结合 MaxMin 同类空间协议和 LogicalNot 实际调用，才能把查询结果用于 kernel 初始化。
-- [LogicalNot](logical_not.md)（`same_topic`）：LogicalNot 与《GetLogicalNotTmpBufferFactorSize》的实质衔接是：LogicalNot 的 Host MaxMin/factor 查询为 Kernel 分配临时空间；BitwiseNot 对照明确逻辑真假取反与逐 bit 取反不是同一语义。
+- [GetLogicalNotMaxMinTmpSize](get_logical_not_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取LogicalNot接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；获取LogicalNot接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。两接口从正向空间范围与反向固定空间容量两个方向共同完成 LogicalNot Tiling 的临时空间决策。
 <!-- cannbot:related:end -->

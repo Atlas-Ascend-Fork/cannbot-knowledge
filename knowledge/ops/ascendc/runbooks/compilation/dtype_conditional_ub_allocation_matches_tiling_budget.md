@@ -147,10 +147,6 @@ SPLIT_D 的 fp32 计算直接对 `xLocal` 做平方，不使用 `xFp32Buf_`；�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [RmsNorm Tiling](../../apis/simd_api/adv_api/normalization/rms_norm_tiling.md)（`exemplifies`）：RmsNorm Tiling 与《按 dtype 分配 UB 必须匹配 tiling 预算》的实质衔接是：RmsNorm host tiling 直接生成 RmsNorm kernel 参数；同名结构体冲突、NaN/Rsqrt 与 UB 预算卡都作用于这套 tiling/kernel 契约。
-- [TBuf简介](../../apis/simd_api/basic_api/resource_management/t_buf/t_buf_intro.md)（`exemplifies`）：TBuf简介 与《按 dtype 分配 UB 必须匹配 tiling 预算》的实质衔接是：TBuf 的构造、InitBuffer、Get/GetWithOffset 共同定义 UB 临时缓冲的分配与类型化取用；所连案例分别验证参数签名、地址独立性、容量预算和 helper 传参约束。
-- [507035 — Host 按逻辑行宽预算导致 UB 溢出](ub_budget_uses_aligned_physical_width_507035.md)（`related`）：focal 修正逻辑宽度与物理宽度不一致，目标卡修正 dtype 分支下实际 live buffer 与 Host perElem 不一致；共同约束 B_live(dtype,tile) 不得超过预算。
-- [507035 — 三队列 float32 tile 超 UB](507035_float32_tile_ub.md)（`related`）：该卡提供缩 tile 后 507035 消失的容量探针，可在本卡计算 B_live 前快速确认错误属于 UB 超额而不是 GM 地址或同步。
-- [ACL 507035 — 完整 a0 统计缓冲超过 UB](ub_slices_reduction_axis_scratch_buffers_507035.md)（`related`）：目标卡展示完整归约尾轴 scratch 超 UB 后必须引入 tileA0 切片；本卡可先通过删除分支不使用缓冲恢复预算，若仍超额则转入这种按轴切片方案。
-- [FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR](fp16_double_buffer_ub_budget_queue_vs_tbuf_multiplier.md)（`same_topic`）：FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR 与《按 dtype 分配 UB 必须匹配 tiling 预算》的实质衔接是：focal 的漏乘项正是 TQue/TBuf 数量×double-buffer depth×dtype字节数；DoubleBuffer文档、InitBuffer、GetCoreMemSize和按dtype分配案例共同完成预算与验证。
+- [507035 — Host 按逻辑行宽预算导致 UB 溢出](ub_budget_uses_aligned_physical_width_507035.md)（`related`）：“kernel 的 dtype 条件分配与 tiling 的逐元素预算不一致”定位多分配的转换 TBuf，“Host 与 Device 共用同一对齐公式”处理物理 stride 低估，二者共同要求 Host 预算精确复刻 Device live-buffer。
+- [FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR](fp16_double_buffer_ub_budget_queue_vs_tbuf_multiplier.md)（`related`）：“kernel 的 dtype 条件分配与 tiling 的逐元素预算不一致”要求按 dtype 枚举 live-buffer，“Queue 部分受 double buffer 翻倍、Cast(TBuf) 部分不翻倍”进一步给出混合 Queue/TBuf 时各自倍数的核算法。
 <!-- cannbot:related:end -->

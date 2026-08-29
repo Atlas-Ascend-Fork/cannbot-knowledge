@@ -9,7 +9,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/super_kernel/operator_adaptation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [agnostic]
 ---
 
@@ -33,15 +33,7 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CrossCoreSetFlag](../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)（`explains`）：算子适配说明 与《CrossCoreSetFlag》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [CrossCoreWaitFlag](../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)（`explains`）：算子适配说明 与《CrossCoreWaitFlag》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [SK_BIND（SuperKernel）](../../../../apis/utils_api/super_kernel/sk_bind.md)（`explains`）：算子适配说明 与《SK_BIND（SuperKernel）》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [A5 mix(1,2) mode=2 漏 AIV1 flag 致全零](../../../../runbooks/precision/a5_mix_1_2_mode_2_aiv1_flag.md)（`related`）：算子适配说明 与《A5 mix(1,2) mode=2 漏 AIV1 flag 致全零》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [核函数直调算子额外适配说明](kernel_direct_call_adaptation.md)（`related`）：调用方 kernel 改造后，被调算子也需满足 direct-call 入口和资源约束。
-- [算子自验证说明](operator_self_verification.md)（`related`）：自验证应在算子满足 SuperKernel 全核同步、MIX 比例和 DCache 一致性约束后执行；适配卡给出验证失败时应回查的具体前置契约。
-- [SuperKernel原理介绍](principles.md)（`same_topic`）：算子适配说明 与《SuperKernel原理介绍》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [缓存一致性](../memory_model/cache_coherence.md)（`same_topic`）：算子适配说明 与《缓存一致性》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [高级编程基本流程](../aclnn_operator_development/design_and_implementation/host_tiling_implementation.md)（`same_topic`）：算子适配说明 与《高级编程基本流程》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [高级编程基本流程](../aclnn_operator_development/design_and_implementation/kernel_operator_implementation.md)（`same_topic`）：算子适配说明 与《高级编程基本流程》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [高级编程概述](../operator_graph_development/overview.md)（`same_topic`）：算子适配说明 与《高级编程概述》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [SuperKernel原理介绍](principles.md)（`related`）：算子适配说明：算子要融合进SuperKernel需要满足的通用约束（与具体的开启方式无关）。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。；目标指南展开焦点概述的自定义算子通用适配约束。
+- [核函数直调算子额外适配说明](kernel_direct_call_adaptation.md)（`related`）：对于使用>>方式开发的Ascend C算子，除了遵循算子适配说明中的通用约束外，还需要在算子Kernel入口侧增加SuperKernel入口函数。本文档介绍具体的适配方法。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。这些约束与具体的开启方式（npugraph_ex后端或GE图模式）无关，大部分约束与算子启动核数（block num）以及SuperKernel启动核数之间的关系相关，需要开发者在算子设计阶段就予以关注。Kernel 直调适配明确建立在通用算子适配约束之上，并增加入口函数这一专属步骤，二者组成完整接入链。
+- [算子自验证说明](operator_self_verification.md)（`related`）：算子开发完成后，可通过本文档中的样例自行验证算子是否支持融合进SuperKernel，包括功能正确性与精度对齐。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。；适配页定义开发阶段约束，自验证页消费这些约束并检查功能与精度。
 <!-- cannbot:related:end -->

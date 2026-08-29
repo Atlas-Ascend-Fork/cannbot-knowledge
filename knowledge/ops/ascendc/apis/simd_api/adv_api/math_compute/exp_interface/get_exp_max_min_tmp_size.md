@@ -25,7 +25,6 @@ host侧Tiling接口，用于获取Exp接口所需的最大和最小临时空间�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Exp](exp.md)（`same_topic`）：Exp 与《GetExpMaxMinTmpSize》的实质衔接是：这些卡直接给出 Exp 的高阶、基础、Reg 与 C 入口及其临时空间契约；所连排障卡均以 Exp 的溢出、下溢、FTZ 或 clamp 行为作为精度根因和修复对象。
-- [Exp接口](exp_interface.md)（`same_topic`）：Exp 总页定义 MaxMinTmpSize、FactorSize 与 Exp 调用的完整 workspace 流程。
-- [GetExpTmpBufferFactorSize](get_exp_tmp_buffer_factor_size.md)（`same_topic`）：GetExpTmpBufferFactorSize 与《GetExpMaxMinTmpSize》的实质衔接是：该因子查询与 Exp、Exp 接口页及最大最小临时空间查询共同定义固定 UB 容量下单次可计算元素数。
+- [Exp](exp.md)（`related`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetExpMaxMinTmpSize获取。”与“host侧Tiling接口，用于获取Exp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”。Exp 的 sharedTmpBuffer 重载需要空间预算，Host 接口给出可用最大值与不得低于的最小值。
+- [Exp接口](exp_interface.md)（`related`）：临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。；host侧Tiling接口，用于获取Exp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。前者规定 Exp kernel 的临时空间获取方式，后者正是为 Exp 计算该最大最小空间并生成 Tiling 选择依据的 Host 接口，形成调用前的容量规划链。
 <!-- cannbot:related:end -->

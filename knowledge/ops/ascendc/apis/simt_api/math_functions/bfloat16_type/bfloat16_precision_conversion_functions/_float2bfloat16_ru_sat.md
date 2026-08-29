@@ -23,7 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscFloat2Bfloat16](../../../../simd_api/c_api/reg/data_type_convert/asc_float2bfloat16.md)（`related`）：《AscFloat2Bfloat16》明确“根据mask将src中的float类型数据转换为bfloat16_t类型，支持多种舍入模式与饱和模式，结果写入dst，位宽比为2:1。”；它与《__float2bfloat16_ru_sat》的“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_CEIL模式，返回转换后的值。”在实际调用参数、数据流或结果校验上直接衔接。
-- [__float2bfloat16_rn_sat](_float2bfloat16_rn_sat.md)（`related`）：《__float2bfloat16_rn_sat》明确“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_RINT模式，返回转换后的值。”；它与《__float2bfloat16_ru_sat》的“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_CEIL模式，返回转换后的值。”在实际调用参数、数据流或结果校验上直接衔接。
-- [__float2bfloat16_ru](_float2bfloat16_ru.md)（`same_topic`）：《__float2bfloat16_ru》明确“遵循CAST_CEIL模式，将浮点数转换为bfloat16精度，返回转换后的值。”；它与《__float2bfloat16_ru_sat》的“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_CEIL模式，返回转换后的值。”在实际调用参数、数据流或结果校验上直接衔接。
+- [__float2bfloat16_ru](_float2bfloat16_ru.md)（`same_topic`）：“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_CEIL模式，返回转换后的值。”与“遵循CAST_CEIL模式，将浮点数转换为bfloat16精度，返回转换后的值。”是双方正文中的具体合同。两端共享 float 到 bfloat16 的 CAST_CEIL 舍入合同，sat 版本增加饱和处理，互读能避免把边界值行为当成普通向上舍入。
 <!-- cannbot:related:end -->

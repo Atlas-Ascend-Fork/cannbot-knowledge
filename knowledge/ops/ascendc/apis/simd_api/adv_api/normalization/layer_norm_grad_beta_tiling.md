@@ -24,7 +24,5 @@ GetLayerNormGradBetaNDTilingInfo参数：ascendcPlatform平台信息；输入sha
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LayerNormGrad](layer_norm_grad.md)（`related`）：LayerNormGrad 先产出 pdx 与 resForGamma，LayerNormGradBeta 再消费 resForGamma 得到 gamma/beta；Tiling 必须围绕这条两阶段数据契约安排。
-- [LayerNormGrad Tiling](layer_norm_grad_tiling.md)（`related`）：联合使用时 LayerNormGrad 与 LayerNormGradBeta 各有 Host Tiling，前者产出的中间张量形状和切分需要与后者的 beta/gamma 归约阶段衔接。
-- [LayerNormGradBeta](layer_norm_grad_beta.md)（`same_topic`）：LayerNormGradBetaTiling 计算的临时空间与切分参数专供 LayerNormGradBeta kernel 使用，是同一接口的 Host/Kernel 两端。
+- [LayerNormGradBeta](layer_norm_grad_beta.md)（`related`）：“host侧Tiling接口，用于获取LayerNormGradBeta kernel计算所需的Tiling参数，分两步：通过GetLayerNormGradBetaMaxMinTmpSize获取最大和最小临时空间大小；通过GetLayerNormGradBetaNDTilingInfo获取kernel侧所需tiling参数。”；“获取LayerNorm反向传播的gamma和beta梯度，与LayerNormGrad配合使用。接收LayerNormGrad输出的resForGamma和上游梯度inputDy，计算并输出pd_gamma和pd_beta。”。Host 两步 tiling产出 LayerNormGradBeta kernel 所需临时空间和切分结构，kernel 再消费 resForGamma 与 inputDy 计算梯度。
 <!-- cannbot:related:end -->

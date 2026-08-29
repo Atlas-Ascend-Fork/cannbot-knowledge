@@ -52,7 +52,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/batch_mat_mul_reduce_scatter_allto_all/op_host/config/ascend910_93/batch_mat_mul_reduce_scatter_allto_all_binary.json
     role: implementation
 created_at: "2026-08-24T16:41:43Z"
-updated_at: "2026-08-24T19:52:03Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -98,7 +98,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-README、API 文档、头文件和实现只公开这组无后缀接口；固定提交全仓符号与文件名扫描均未发现本逻辑算子的 V2/V3。README/API 明确 A3 支持、A2/A5 不支持；OpDef 仅 `AddConfig("ascend910_93")` 并声明 `support_aclnn`。因此本无后缀接口就是 A3 在该提交实际支持的最新公开版本，本卡只覆盖 A3。
+README、API 文档、头文件和实现只公开这组无后缀接口；固定提交全仓符号与文件名扫描均未发现本逻辑算子的 V2/V3。README/API 明确 A3 支持、A2/950 不支持；OpDef 仅 `AddConfig("ascend910_93")` 并声明 `support_aclnn`。因此本无后缀接口就是 A3 在该提交实际支持的最新公开版本，本卡只覆盖 A3。
 
 ## Host/Launcher 执行流程
 
@@ -664,7 +664,7 @@ bias 对 TP 归约结果只加一次，不能在每个 rank 的 BMM 中提前加
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | README/API 明确不支持 | 支持；本卡平台 | README/API 明确不支持 |
 | Host/Launcher | 无公开接线 | `ascend910_93` OpDef/binary/arch22 | 无公开接线 |

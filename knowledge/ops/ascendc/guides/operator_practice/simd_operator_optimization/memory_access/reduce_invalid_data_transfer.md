@@ -24,11 +24,3 @@ platforms: ['950']
 搬运后UB内数据如下：
 根据Compact模式搬运的示意图，最终搬运了160B大小的数据，其中包含16B的无效数据。
 【总结】通过比较可以发现，搬运多块非32B对齐数据块的场景下，使用Compact模式在可以减少搬运的无效数据量，节省带宽。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [非连续搬运场景减少搬运次数](reduce_non_contiguous_transfer.md)（`related`）：focal 用 Compact 减少非 32B 块的 padding 字节，目标用 Loop/NDDMA 减少非连续块的指令次数；两者分别优化搬运量和搬运次数，可按瓶颈组合。
-- [EfficientTransferApi](efficient_transfer_api.md)（`same_topic`）：EfficientTransferApi：指南要求用DataCopyExtParams一次表达blockCount/blockLen/stride；相邻搬运指南解释非连续与大块策略，blockLen类型runbook和NDDMA dstStride卡给出参数落地时的编译/偏移验证。 目标卡《非对齐场景减少无效数据的搬运》补充：>该性能优化建议适用于如下型号：
-- [MemoryAccessMerge](../../simt_operator_optimization/memory_access/memory_access_merge.md)（`same_topic`）：《MemoryAccessMerge》处理“SIMT编程模式下让同一Warp内相邻线程访问连续GM地址以实现访存合并，提高GM带宽利用率。”。《非对齐场景减少无效数据的搬运》提供“>该性能优化建议适用于如下型号：”，其具体合同或探针直接接入Warp 连续 GM 访问的短向量、类型对齐、步长搬运和 Gather 示例验证。
-<!-- cannbot:related:end -->

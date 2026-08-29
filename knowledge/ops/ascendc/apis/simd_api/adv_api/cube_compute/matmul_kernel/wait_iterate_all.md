@@ -27,10 +27,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [启用Iterate或IterateAll异步接口避免AIC/AIV同步依赖](../../../../../guides/operator_practice/simd_operator_optimization/pipeline_scheduling/enable_iterate_avoid_sync.md)（`explains`）：异步提交后必须在真正消费/释放前 WaitIterateAll。
-- [异步场景处理](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/async_scenario.md)（`explains`）：WaitIterateAll 是指南指定的 IterateAll 异步完成等待点，使后续消费者在结果真正就绪后继续。
-- [AsyncGetTensorC](async_get_tensor_c.md)（`related`）：WaitIterateAll 与《AsyncGetTensorC》的实质衔接是：WaitIterateAll 是 IterateAll 连续写 GM 异步路径的完成屏障；异步场景、Matmul 用法及 TensorC 获取协议说明何时等待以及等待后何时可消费输出。
-- [Matmul使用说明](matmul_usage.md)（`related`）：WaitIterateAll 与《Matmul使用说明》的实质衔接是：WaitIterateAll 是 IterateAll 连续写 GM 异步路径的完成屏障；异步场景、Matmul 用法及 TensorC 获取协议说明何时等待以及等待后何时可消费输出。
-- [WaitGetTensorC](wait_get_tensor_c.md)（`related`）：WaitIterateAll 等待 Cube 计算，而 WaitGetTensorC 等待 C 搬运；两类等待点分别保护计算完成和搬运后消费。
-- [IterateAll](iterate_all.md)（`same_topic`）：《IterateAll》说明调用一次IterateAll，会计算出singleCoreM \ singleCoreN大小的C矩阵。迭代顺序可通过tiling参数iterateOrder调整。；《WaitIterateAll》说明等待IterateAll异步接口返回，支持连续输出到Global Memory。。二者在IterateAll一次完成singleCoreM×singleCoreN，异步模式必须配WaitIterateAll并按GetTensorC/输出场景消费结果上存在可执行的直接衔接。
+- [IterateAll](iterate_all.md)（`related`）：异步：不需要同步等待IterateAll执行结束。；等待IterateAll异步接口返回，支持连续输出到Global Memory。。左卡允许 IterateAll 以 sync=false 发起异步矩阵计算，右卡负责等待该异步调用完成；两端给出发起与完成等待的直接生命周期顺序。
 <!-- cannbot:related:end -->

@@ -25,9 +25,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ReduceShapeInfoOptimizeStack](../../../../../guides/operator_practice/simd_operator_optimization/memory_access/reduce_shapeinfo_optimize_stack.md)（`explains`）：ReduceShapeInfoOptimizeStack 与《SetShapeInfo》的实质衔接是：该优化通过 K_MAX_SHAPE_DIM 缩减 GlobalTensor/LocalTensor 的 ShapeInfo；Get/SetShapeInfo 与 ShapeInfo结构是确认是否真的需要这些栈字段的直接依据。
-- [GetShapeInfo](../global_tensor/get_shape_info.md)（`related`）：GetShapeInfo 与《SetShapeInfo》的实质衔接是：GetShapeInfo 只有在对应 GlobalTensor 已 SetShapeInfo 后才有效；ShapeInfo、SetGlobalBuffer 与 tensor 子视图共同约束 shape 元数据生命周期。
-- [SetShapeInfo](../global_tensor/set_shape_info.md)（`related`）：《SetShapeInfo》明确“设置LocalTensor的Shape信息。”；它与《SetShapeInfo》的“设置GlobalTensor的shape信息。”在实际调用参数、数据流或结果校验上直接衔接。
-- [GetShapeInfo](get_shape_info.md)（`same_topic`）：GetShapeInfo 只有在同一个 LocalTensor 已通过 SetShapeInfo 设置有效 ShapeInfo 后才可读取，二者组成读写契约。
-- [ShapeInfo（辅助数据结构）](../../aux_data_structures/shape_info.md)（`same_topic`）：LocalTensor::SetShapeInfo 负责把 ShapeInfo 写入 UB Tensor 属性，与结构体的构造和维度访问能力直接配套。
+- [ReduceShapeInfoOptimizeStack](../../../../../guides/operator_practice/simd_operator_optimization/memory_access/reduce_shapeinfo_optimize_stack.md)（`explains`）：【描述】GlobalTensor和LocalTensor中通过ShapeInfo类型的成员变量来保存shape信息，SetShapeInfo/GetShapeInfo可以设置或者获取ShapeInfo，在算子实现内部用于shape信息保存和传递。默认情况下支持的最大维度为8。在不使用上述ShapeInfo功能的情况下，不需要这些信息，可以通过K_MAX_SHAPE_DIM宏将其设置为0。经实测减小K_MAX_SHAPE_DIM值，可缩减栈空间，减少scalar指令和cache miss几率，提升算子性能。；设置LocalTensor的Shape信息。；指南解释 LocalTensor 的 SetShapeInfo 所保存信息会占用栈空间，并给出未使用该能力时缩减 K_MAX_SHAPE_DIM 的优化条件，从而补充 API 使用成本与停用边界。
+- [GetShapeInfo](get_shape_info.md)（`related`）：获取LocalTensor的Shape信息。注意：Shape信息没有默认值，只有通过SetShapeInfo设置过Shape信息后，才可以调用该接口获取正确的Shape信息。；设置LocalTensor的Shape信息。。GetShapeInfo 的正确性前置条件就是先由 SetShapeInfo 写入属性，两接口构成 LocalTensor shape 元数据的写后读合同。
 <!-- cannbot:related:end -->

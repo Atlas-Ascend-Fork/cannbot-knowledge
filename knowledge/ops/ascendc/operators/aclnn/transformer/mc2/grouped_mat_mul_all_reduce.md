@@ -48,7 +48,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/grouped_mat_mul_all_reduce/op_host/config/ascend910_93/grouped_mat_mul_all_reduce_binary.json
     role: implementation
 created_at: "2026-08-24T16:41:43Z"
-updated_at: "2026-08-24T19:57:09Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -508,7 +508,7 @@ Matmul 直写 y，KFC 以 OUTPUT buffer 对同一缓冲原位 SUM，main/tail co
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | Atlas A2 训练/推理；正式 config=`ascend910b` | 公开文档不支持；`ascend910_93` 实现接线与之冲突，不发布 | 公开文档不支持 950PR/950DT |
 | Host/Launcher | `ascend910b`，`--cce-auto-sync=off` | 有 `ascend910_93` CMake/OpDef/binary 接线，但不是公开 route | N/A |
@@ -541,7 +541,7 @@ Atlas 200I/500 A2 产品表明确不支持，不能从 `platforms:[a2]` 泛化�
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | API 清单 | `docs/zh/op_api_list.md` | `aclnnGroupedMatMulAllReduce` 条目 | 唯一公开名与 deprecated 状态 |
-| 平台映射 | `docs/zh/install/compile.md` | `soc_version` 说明 | `ascend910b`=A2，`ascend910_93`=A3，`ascend950`=A5 |
+| 平台映射 | `docs/zh/install/compile.md` | `soc_version` 说明 | `ascend910b`=A2，`ascend910_93`=A3，`ascend950`=950 |
 | 公开约束 | `mc2/grouped_mat_mul_all_reduce/README.md` | 产品表/调用说明 | A2 支持、无 Kernel 直调、dtype/shape/rank |
 | 公开约束 | `mc2/grouped_mat_mul_all_reduce/docs/aclnnGroupedMatMulAllReduce.md` | 产品表/原型/约束 | A2、deprecated、dtype/shape/rank |
 | 入口声明 | `mc2/grouped_mat_mul_all_reduce/op_api/aclnn_grouped_mat_mul_all_reduce.h` | 两段入口 | ABI 签名 |

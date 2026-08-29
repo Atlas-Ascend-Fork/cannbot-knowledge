@@ -11,9 +11,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/365
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # inductor(autofuse) 部分图编译：按图结构稳定 / 范围 / pointwise 密度选子模块 + 收益观测
@@ -56,3 +56,10 @@ platforms:
 
 - diff 事实 + doc 披露（@eb1092ac074f）：五处 `@torch.compile` 装饰器与 README 选范围三规则一致；规则依据（Graph Break / Guard 叠加 / 融合收益）为 README doc 披露。溯源下探 [cann-recipes-infer-pr-365-add-add-deepseek-v4-flash-model-and-tilelang-sfa-mhc-kernel-inductoraf-a](https://gitcode.com/cann/cann-recipes-infer/merge_requests/365)
 - doc 披露（仓自报、无独立复测，@eb1092ac074f）：非 Hcom Kernel 总耗时 −20.6%/−20.4%、hc_post 片段 4x/3x；baseline 与统计口径按 README 原文保留。溯源下探 [cann-recipes-infer-pr-365-add-add-deepseek-v4-flash-model-and-tilelang-sfa-mhc-kernel-inductoraf-a](https://gitcode.com/cann/cann-recipes-infer/merge_requests/365)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AutoFuse（Inductor NPU 自动融合编译组件）](../../../concepts/frameworks/autofuse.md)（`related`）：“优先选择含较多 Pointwise / Reduce 计算的范围，Inductor 对这类计算的融合效果好，编译代价小、收益高。”给出 AutoFuse 的选域原则；“此时**不追求 fullgraph，而是挑"编译收益/代价比"高的子模块加 `@torch.compile`**——本页给选范围的三条规则与一组收益观测。”把该原则落实为动态模型的部分图编译和收益验证。
+- [稳定图模式输入张量签名（shape/stride/dtype）避免 dynamo 重编译与缓存 miss](../../../runbooks/performance/graph_mode_stable_input_signature_recompile.md)（`related`）：“据此实际加装饰的对象（观测实例落在 `Expert.forward` / `RMSNorm.forward` / `hc_head` / `hc_pre` / `hc_post` 这几个建模函数）。配套：不对输入做 padding 时，输入长度变化可能触发 dynamo 重编译（输入签名稳定见 ［graph-mode-stable-input-signature-recompile］(../../../runbooks/performance/graph_mode_stable_input_signature_recompile.md)）。”；“图模式按输入张量的 **shape + dtype + stride 签名** 缓存/守卫（guard）已编译图；decode 每步输入的 shape/dtype/stride 只要有一维不稳，dynamo 就把它当新形态触发重编译或 guard 失效。”。部分编译范围的 Guard 风险与输入签名漂移的诊断规则相接，可从选范围继续定位重编译原因。
+<!-- cannbot:related:end -->

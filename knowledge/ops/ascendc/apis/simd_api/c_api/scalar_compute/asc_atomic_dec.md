@@ -23,6 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAtomicInc](asc_atomic_inc.md)（`same_topic`）：AscAtomicDec：AscAtomicDec与SIMT asc_atomic_dec执行同一GM原子自减，AscAtomicInc提供相反更新的边界对照，便于验证返回值和上下界行为。 目标卡《AscAtomicInc》补充：对Global Memory中address指向的计数器执行原子递增操作，若值大于等于val则赋值为0，否则加1。
-- [asc_atomic_dec](../../../simt_api/atomic_operations/asc_atomic_dec.md)（`same_topic`）：AscAtomicDec：AscAtomicDec与SIMT asc_atomic_dec执行同一GM原子自减，AscAtomicInc提供相反更新的边界对照，便于验证返回值和上下界行为。 目标卡《asc_atomic_dec》补充：对Unified Buffer或Global Memory上address的数值进行原子减1操作，如果address上的数值等于0或大于指定数值val，则对address赋值为val，否则将address上数值减1。
+- [asc_atomic_dec](../../../simt_api/atomic_operations/asc_atomic_dec.md)（`same_topic`）：对Global Memory中address指向的计数器执行原子递减操作，如果address上的数值等于0或大于指定数值val，则对address赋值为val，否则将address上数值减1。；对Unified Buffer或Global Memory上address的数值进行原子减1操作，如果address上的数值等于0或大于指定数值val，则对address赋值为val，否则将address上数值减1。两卡定义同一有回绕上限的 atomic decrement，分别给出 Scalar 与 SIMT 的内存、同步和调度边界。
 <!-- cannbot:related:end -->

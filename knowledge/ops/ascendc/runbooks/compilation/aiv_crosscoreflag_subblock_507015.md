@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.synchronization", "topic.programm
 status: stable
 sources: []
 created_at: "2026-08-18T08:56:31Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 ---
 
@@ -93,19 +93,7 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetSubBlockId](../../apis/simd_api/c_api/sys_var/asc_get_sub_block_id.md)（`exemplifies`）：AscGetSubBlockId 与《双AIV CrossCoreFlag 的 subBlock 契约缺陷》的实质衔接是：AscGetSubBlockId 返回分离架构 AIV 组内 ID，C++ GetSubBlockIdx 是对应查询，SubBlockNum 给出编号上界，SetSubBlockIdx 可覆盖 ID；双 AIV 故障及 arrive/wait 说明该 ID 如何选择同步 flag 段。
-- [AscGetSubBlockNum](../../apis/simd_api/c_api/sys_var/asc_get_sub_block_num.md)（`exemplifies`）：《AscGetSubBlockNum》说明分离模式下获取一个AI Core上Cube或Vector核的数量。；《双AIV CrossCoreFlag 的 subBlock 契约缺陷》说明Ascend950 双 AIV 融合 kernel 中，AIC 为 V0/V1 设置不同 flag 段，而 AIV wait 未按 subBlock 偏移，且空分支可能不回传 flag；源码依赖图可确认同步缺陷，但单独修正后 507015 仍存在，不能把整起异常只归因于该缺陷。。二者在subBlock数量和编号共同定位AIV子块，SetSubBlockIdx、子块同步及CrossCoreFlag故障直接依赖这套系统变量合同上存在可执行的直接衔接。
-- [AscSyncIntraArrive](../../apis/simd_api/c_api/sync/asc_sync_intra_arrive.md)（`exemplifies`）：《AscSyncIntraArrive》处理“与asc_sync_intra_wait配合使用，用于block内不同Core的流水线同步，向同步寄存器发送同步信号。”。《双AIV CrossCoreFlag 的 subBlock 契约缺陷》明确“Ascend950 双 AIV 融合 kernel 中，AIC 为 V0/V1 设置不同 flag 段，而 AIV wait 未按 subBlock 偏移，且空分支可能不回传 flag；源码依赖图可确认同步缺陷，但单独修正后 507015 仍存在，不能把整起异常只归因于该缺陷。”，可直接用于核对核内 arrive/wait 配对、可见性范围及双 AIV flag 路由缺陷。
-- [AscSyncSubblockArrive](../../apis/simd_api/c_api/sync/asc_sync_subblock_arrive.md)（`exemplifies`）：AscSyncSubblockArrive 与《双AIV CrossCoreFlag 的 subBlock 契约缺陷》的实质衔接是：SubblockArrive 必须与 SubblockWait 配对并正确取得 subblock ID；双 AIV 故障卡验证了这一 flag 计数契约。
-- [AscSyncSubblockWait](../../apis/simd_api/c_api/sync/asc_sync_subblock_wait.md)（`exemplifies`）：Runbook 给出双 AIV subBlock 身份/flag 契约错误导致 507015 的实测，补充 Wait/Arrive 抽象计数器之外的分离模式排障。
-- [CrossCoreSetFlag](../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)（`exemplifies`）：故障卡的 AIC 向 V0/V1 分段发 flag 正是 CrossCoreSetFlag 上报完成契约；接口文档补充 mode、Kernel 类型、pipe 与 flagId 的合法范围。
-- [CrossCoreWaitFlag](../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)（`exemplifies`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《双AIV CrossCoreFlag 的 subBlock 契约缺陷》补充：Ascend950 双 AIV 融合 kernel 中，AIC 为 V0/V1 设置不同 flag 段，而 AIV wait 未按 subBlock 偏移，且空分支可能不回传 flag；源码依赖图可确认同步缺陷，但单独修正后 507015 仍存在，不能把整起异常只归因于该缺陷。
-- [GetSubBlockIdx](../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_sub_block_idx.md)（`exemplifies`）：GetSubBlockIdx 与《双AIV CrossCoreFlag 的 subBlock 契约缺陷》的实质衔接是：Matmul 子核 ID 在 REGIST_MATMUL_OBJ 后初始化，可由 SetSubBlockIdx 覆盖；基础/C API 的逻辑 ID 与 subBlockNum 给出分离架构编号边界，故障卡验证双 AIV 契约。
-- [GetSubBlockIdx](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_sub_block_idx_isasi.md)（`exemplifies`）：《GetSubBlockIdx》处理“在分离模式架构下，获取逻辑AI Core上AIC或AIV的逻辑索引。”。《双AIV CrossCoreFlag 的 subBlock 契约缺陷》明确“Ascend950 双 AIV 融合 kernel 中，AIC 为 V0/V1 设置不同 flag 段，而 AIV wait 未按 subBlock 偏移，且空分支可能不回传 flag；源码依赖图可确认同步缺陷，但单独修正后 507015 仍存在，不能把整起异常只归因于该缺陷。”，可直接用于核对双 AIV subBlock 索引/数量的 C/C++ 入口、显式设置和同步缺陷验证。
-- [SetSubBlockIdx](../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_sub_block_idx.md)（`exemplifies`）：SetSubBlockIdx：SetSubBlockIdx与GetSubBlockIdx是同一 AIV 子核身份的写读契约，REGIST_MATMUL_OBJ会自动设置该值；双 AIV flag runbook说明错误 subBlock 身份如何破坏跨核同步。 目标卡《双AIV CrossCoreFlag 的 subBlock 契约缺陷》补充：Ascend950 双 AIV 融合 kernel 中，AIC 为 V0/V1 设置不同 flag 段，而 AIV wait 未按 subBlock 偏移，且空分支可能不回传 flag；源码依赖图可确认同步缺陷，但单独修正后 507015 仍存在，不能把整起异常只归因于该缺陷。
-- [关键特性说明](../../apis/simd_api/basic_api/sync_control/inter_core_sync/key_features.md)（`exemplifies`）：关键特性说明 与《双AIV CrossCoreFlag 的 subBlock 契约缺陷》的衔接是：CrossCoreSet/CrossCoreWait 是该四种跨核同步模式的实际发信与等待原语；AIV/AIC 配对 runbook 给出同一计数契约失配时的可执行排查。
-- [核间同步能力概述](../../apis/simd_api/basic_api/sync_control/inter_core_sync/inter_core_sync_overview.md)（`exemplifies`）：双AIV CrossCoreFlag未按subBlock偏移致507015死锁说明Ascend950/DAV_3510 上 __mix__(1,2)=1AIC+2AIV 双 AIV 融合算子（GroupedMatmul Blaze G-B FP8）运行报 507015=ACL_ERROR_RT_AICORE_EXCEPTION，plog 呈现所有核停在同一 PC、timeout or trap、subErrType 0x4、cube error info=0（非 MMAD 越界）。判别=取 plog grep 出 sqe_type/errorStr/subErrType/PC + 按 core id 区分 AIC/AIV + 核对 gen_data.py 的 M<E 空 group 与 curM 奇数致 V1 localRows=0 + 比对 kernel AIV 侧 CrossCoreWaitFlag 是否按 GetSubBlockIdx()*FLAG_ID_MAX 偏移区分 V0/V1。根因=AIC 每 K-block set 两个 flag(8+countId 给 V0、24+countId 给 V1)但 AIV 侧 V0/V1 都 wait 同一 8+countId，AIC 只 set 1 次被 V0 消费，V1 永久阻塞；叠加 epilogue localRows<=0 early return 不发 AIV→AIC flag，AIC 也等 V1 的 flag，互锁全核 timeout。
-- [GroupedMatmul算子性能调优案例](../../guides/operator_practice/best_practices/grouped_matmul_tuning.md)（`related`）：GroupedMatmul 调优案例采用 AIC:AIV=1:2 和双 AIV 协作；该构建卡定位同一 1:2 模式下 subBlock/flag 不匹配导致同步失败，补足可执行同步约束。
-- [A5 mix(1,2) mode=2 漏 AIV1 flag 致全零](../precision/a5_mix_1_2_mode_2_aiv1_flag.md)（`same_topic`）：A5 mix(1,2) mode=2 漏 AIV1 flag 致全零 与《双AIV CrossCoreFlag 的 subBlock 契约缺陷》的实质衔接是：mix(1,2) 的 AIC/AIV flag 路由依赖 CrossCoreSet/Wait、kernel type 与组间同步契约；所选卡覆盖同一断链和死锁机制。
-- [CrossCore 反压 flag 方向错致通算流水死锁](crosscore_flag.md)（`same_topic`）：CrossCore 反压 flag 方向错致通算流水死锁 与《双AIV CrossCoreFlag 的 subBlock 契约缺陷》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
+- [CrossCoreSetFlag](../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)（`exemplifies`）：焦点卡定位到“epilogue `localRows<=0` 时仍发 `CrossCoreSetFlag` 再 return”，候选卡规定 SetFlag 会“向调度模块上报本核任务已完成”；该语义解释空分支为何也必须上报，才能解除对端等待。
+- [CrossCoreWaitFlag](../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)（`exemplifies`）：焦点卡说明“AIC 只 set 1 次 `8+countId` 被 V0 消费，V1 也 wait `8+countId` 但 AIC 不会再 set 第二次 → V1 永久阻塞”，候选卡说明“在核间同步场景中，CrossCoreSetFlag接口和CrossCoreWaitFlag接口配对工作，具体功能”；配对合同能直接解释全核同 PC timeout 的形成链。
+- [GetSubBlockIdx](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_sub_block_idx_isasi.md)（`exemplifies`）：焦点卡的修法要求“按 `GetSubBlockIdx() * FLAG_ID_MAX` 偏移区分 V0/V1”，候选卡说明 GetSubBlockIdx 可“区分同一个核上的两个不同Vector Core，取值分别为0和1”；该返回值正是选择两段 flag 池的索引。
 <!-- cannbot:related:end -->

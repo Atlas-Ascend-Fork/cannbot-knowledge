@@ -16,9 +16,3 @@ platforms: ['950']
 
 C语言Reg矢量计算接口集合，提供基于矢量数据寄存器的计算能力。包含寄存器数据类型定义、数据搬入(reg_load)/搬出(reg_store)、基础算术、复合计算、逻辑计算、比较与选择、类型转换、归约计算、数据压缩、数据填充等子模块。
 另含数据重排、直方图计算、索引操作、同步控制和系统变量访问等子模块，覆盖寄存器级矢量编程的完整能力。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscCopy](reg_load/asc_copy.md)（`related`）：AscCopy 与《Reg矢量计算》的实质衔接是：寄存器 AscCopy 在 RegTensor/MaskReg 间搬运；reg load 总览、AscLoad 和矢量 AscCopy 明确其数据域与替代路径。
-<!-- cannbot:related:end -->

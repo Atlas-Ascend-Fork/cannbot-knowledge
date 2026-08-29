@@ -22,5 +22,5 @@ AIC 跳过指定个数的假消息处理，仅在回调函数中调用。配合 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [PostFakeMsg](post_fake_msg.md)（`related`）：AIV PostFakeMsg 通知后，AIC 通过 SetSkipMsg 跳过对应重复消息，构成发送与消费控制链。
+- [PostFakeMsg](post_fake_msg.md)（`same_topic`）：“配合 PostFakeMsg 实现消息合并机制”与“AIC 侧通过 SetSkipMsg 跳过对应数量的假消息”分别给出 AIC 消费端与 AIV 生产端的假消息配对协议。
 <!-- cannbot:related:end -->

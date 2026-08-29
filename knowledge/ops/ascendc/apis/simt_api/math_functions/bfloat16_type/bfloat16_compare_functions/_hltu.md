@@ -18,10 +18,3 @@ platforms: ['950']
 函数原型：bool __hltu(bfloat16_t x, bfloat16_t y)
 返回值：比较输入的第一个数是否小于第二个数的结果。
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hltu](../../half_type/half_compare_functions/_hltu.md)（`related`）：half __hltu 保持 unordered < 的 NaN=true 语义，可在 BF16/FP16 dtype 切换时保持控制流。
-- [__hlt](_hlt.md)（`same_topic`）：__hlt 与 __hltu 都比较 bfloat16 的 a<b；前者为有序比较，后者在 NaN 时采用 unordered 语义，是同一故障边界的直接选型。
-<!-- cannbot:related:end -->

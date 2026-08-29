@@ -25,13 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/device_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float2uint_rna](_float2uint_rna.md)（`related`）：__float2uint_rna 与《__float2int_rna》的实质衔接是：__float2uint_rna 与 RN/RD/RU/RZ 变体保持 float→uint32 目标不变而替换舍入规则；signed int 和反向 uint→float RNA 说明符号/方向边界，类型转换总览统一特殊值契约。
-- [__float2int_rd](_float2int_rd.md)（`same_topic`）：__float2int_rd 与《__float2int_rna》的实质衔接是：float 转 int 的 RD/RN/RU/RZ 变体共享输入输出与溢出契约，只改变边界值的舍入方向，适合对照选择。
-- [__float2int_rn](_float2int_rn.md)（`same_topic`）：__float2int_rn 与《__float2int_rna》的实质衔接是：__float2int_rn 与 RNA/RD/RU/RZ 共享 float→int32 契约；类型转换总览和 AscFloat2int32/Cast 映射出对应舍入模式与溢出边界。
-- [__float2int_ru](_float2int_ru.md)（`same_topic`）：__float2int_ru 与《__float2int_rna》的实质衔接是：float→int 的 RU 与 RD/RN/RNA/RZ 变体共享特殊值和饱和输出，只改变边界值舍入方向；float→uint RU 对照有符号范围。
-- [__float2int_rz](_float2int_rz.md)（`same_topic`）：__float2int_rz 与《__float2int_rna》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-<!-- cannbot:related:end -->

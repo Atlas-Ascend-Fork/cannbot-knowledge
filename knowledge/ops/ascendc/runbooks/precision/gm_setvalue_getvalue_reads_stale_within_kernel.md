@@ -173,11 +173,5 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetValue](../../apis/simd_api/basic_api/data_structures/global_tensor/get_value.md)（`exemplifies`）：故障在同一 kernel 后续用 GlobalTensor::GetValue 读取刚写的中间结果时复现；目标 API 是失效读路径本身。
-- [SetValue](../../apis/simd_api/basic_api/data_structures/global_tensor/set_value.md)（`exemplifies`）：《SetValue》的任务是“设置GlobalTensor指定偏移位置的元素值，操作先写入DCache，需配合DataCacheCleanAndInvalid确保一致性。”。《GM SetValue 写回后 GetValue 读到旧值》具体提供“同一 Kernel 内用 SetValue 把中间结果写回 GM，后续 GetValue 读回的不是刚写入的新值而是更新前旧值，导致依赖该中间值的下游计算出现系统性小偏差。”，它直接用于GlobalTensor 标量写入后的 DCache 可见性与 GetValue 验证。
-- [operator](../../apis/simd_api/basic_api/data_structures/global_tensor/operator_call.md)（`exemplifies`）：The runbook demonstrates that a GM scalar write followed by a scalar read in one kernel can observe stale data, constraining operator()/SetValue/GetValue use.
-- [Scalar读写数据](../../guides/technical_appendix/concepts_and_terms/memory_access/scalar_read_write.md)（`related`）：Scalar 读写指南要求 GM 写入后处理缓存一致性；该 runbook 给出同一 Kernel 内 SetValue 后 GetValue 读旧值的具体失效信号。
-- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](repeated_overwrite_updates_need_ordered_ub_merge.md)（`related`）：两卡都证明 GM 标量 GetValue/SetValue 不能充当 kernel 内有序共享状态：写后读旧值与重复目标 winner 不稳定是同一风险。
-- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`same_topic`）：VF 归约落 UB 后 GetValue 读取陈旧标量 与《GM SetValue 写回后 GetValue 读到旧值》的实质衔接是：Reg Reduce 经 StoreAlign 落 UB 后，PIPE_V 不保证 Scalar GetValue 可见；相关跨 VF 累加、barrier、GetValue 陈旧和 SoftMax 卡共同支持把归约与 lane0 广播保留在同一 VF。
-- [arch35 小 per-channel 输出读旧值判别与规避](../compilation/arch35_per_channel.md)（`same_topic`）：《arch35 小 per-channel 输出读旧值判别与规避》处理“arch35 上 DCCI 缓存不一致使 DataCopyPad 对小 per-channel [C] 输出不可靠、TQue GetValue(MTE2→scalar) 读到旧值；判别方法为先 V-launder(Duplicate 0.0f+Add) 到 TBuf 再 GetValue，并用 GlobalTensor::SetValue 直写 GM per-channel 结果。”。《GM SetValue 写回后 GetValue 读到旧值》提供“同一 Kernel 内用 SetValue 把中间结果写回 GM，后续 GetValue 读回的不是刚写入的新值而是更新前旧值，导致依赖该中间值的下游计算出现系统性小偏差。”，其具体合同或探针直接接入arch35 小 per-channel 的 DCCI/Scalar 旧值机制、V-launder 与 SetValue 验证。
+- [SetValue](../../apis/simd_api/basic_api/data_structures/global_tensor/set_value.md)（`exemplifies`）：“关键点：ProcessR 用 `CopyOutArray(rOutLocal, rOutGm_, n_)`（即 `rOutGm_.SetValue(...)`）把 r_out 写回 GM，ProcessC 同样把 c_out 写回 GM；ProcessU 随后用 `rOutGm_.GetValue(i)` 与 `CopyInArray(cOutLocal, cOutGm_, m_)` 再从 GM 读回。读回的值并未反映本 Kernel 刚写入的更新。”复现同 Kernel 写后读旧值，而“设置 GlobalTensor 指定偏移位置的元素值。操作先写入 DCache，需配合 DataCacheCleanAndInvalid 确保数据一致性。”给出 SetValue 的 DCache 一致性合同；runbook 直接示范违反该合同的故障。
 <!-- cannbot:related:end -->

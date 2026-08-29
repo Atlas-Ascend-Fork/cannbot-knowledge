@@ -24,13 +24,3 @@ platforms: [agnostic]
 
 - 大Y（Z/N）：表示分形矩阵之间的排列顺序（Z为row major（行主序），N为column major（列主序））。
 - 小x（z/n）：表示分形矩阵内部元素的排列顺序（z为row major（行主序），n为column major（列主序））。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [数据搬运概念（概述）](../../data_move_guide/overview/data_move_concept.md)（`related`）：分形布局决定连续块如何在 GM/L1/L0 间搬运，数据搬运概念页解释物理传输单位。
-- [关键分形格式详解](key_fractal_format_details.md)（`same_topic`）：关键分形页给出 A/B/C 主矩阵的 block 布局，是地址计算的直接依据。
-- [矩阵计算分形介绍](cube_compute_fractal_intro.md)（`same_topic`）：矩阵计算分形介绍 与《背景与核心概念》的实质衔接是：分形介绍定义 Cube 输入、权重和输出在 L1/L0A/L0B/L0C 的分块布局；详细分形、搬入约束和普通计算流程直接使用这些布局。
-- [矩阵计算分形介绍](../../cube_compute_tensor_api/cube_compute_fractal_intro/cube_compute_fractal_intro.md)（`same_topic`）：矩阵计算分形介绍 与《背景与核心概念》的实质衔接是：Tensor API 分形介绍决定 CopyGmToL1、CopyL1ToL0A/B、Mmad 与 Copy 搬出的 shape/layout；辅助分形和搬出关键特性解释各阶段格式转换。
-- [辅助矩阵分形格式详解](aux_cube_fractal_format_details.md)（`same_topic`）：辅助分形页补充 bias/scale 等 buffer 格式，连接概念与辅助数据搬运。
-<!-- cannbot:related:end -->

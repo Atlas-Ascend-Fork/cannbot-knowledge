@@ -25,8 +25,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetHypotMaxMinTmpSize](get_hypot_max_min_tmp_size.md)（`related`）：The query determines the minimum and maximum temporary buffer accepted by the Hypot kernel call.
-- [GetHypotTmpBufferFactorSize](get_hypot_tmp_buffer_factor_size.md)（`related`）：GetHypotTmpBufferFactorSize 的输出专门用于按现有 currBuff 反推 Hypot 单次处理元素数，随后传给 Hypot 计算。
-- [Hypotf](../../../../simt_api/math_functions/float_math_functions/hypotf.md)（`related`）：Hypotf 与《Hypot》的实质衔接是：rhypotf 是 hypotf 的倒数形式，高阶 Hypot 是张量级等价运算，二者直接支撑算法替换和接口选型。
-- [Hypot接口](hypot_interface.md)（`same_topic`）：《Hypot》明确“按元素计算两个浮点数平方和的平方根”；它与《Hypot接口》的“按元素计算两个浮点数平方和的平方根，并提供临时空间大小获取接口。”在实际调用参数、数据流或结果校验上直接衔接。
+- [GetHypotMaxMinTmpSize](get_hypot_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Hypot接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；按元素计算两个浮点数平方和的平方根（dst = sqrt(src0^2 + src1^2)，Hypot(3.0, 4.0)=5.0）。模板参数T支持half/bfloat16_t/float。仅Ascend 950PR/950DT支持。。前者专门计算 Hypot Kernel 所需临时空间的 Tiling 上下界，后者定义实际逐元素平方和开方运算，二者连接 Host 空间预算与 Kernel 调用。
 <!-- cannbot:related:end -->

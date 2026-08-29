@@ -29,14 +29,3 @@ RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Le
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [H2Log10](../../../../simt_api/math_functions/bfloat16_type/bfloat16x2_math_functions/h2log10.md)（`related`）：Log10 与《H2Log10》的实质衔接是：Reg Log10 与 bfloat16/half/half2/float 的 log10 入口执行同一以 10 为底的对数任务，区别在执行模型和返回精度。
-- [H2Log10](../../../../simt_api/math_functions/half_type/half2_math_functions/h2log10.md)（`related`）：Log10 与《H2Log10》的实质衔接是：Reg Log10 与 bfloat16/half/half2/float 的 log10 入口执行同一以 10 为底的对数任务，区别在执行模型和返回精度。
-- [Hlog10](../../../../simt_api/math_functions/bfloat16_type/bfloat16_math_functions/hlog10.md)（`related`）：Log10 与《Hlog10》的实质衔接是：Reg Log10 与 bfloat16/half/half2/float 的 log10 入口执行同一以 10 为底的对数任务，区别在执行模型和返回精度。
-- [Hlog10](../../../../simt_api/math_functions/half_type/half_math_functions/hlog10.md)（`related`）：Log10 与《Hlog10》的实质衔接是：Reg Log10 与 bfloat16/half/half2/float 的 log10 入口执行同一以 10 为底的对数任务，区别在执行模型和返回精度。
-- [Log10f](../../../../simt_api/math_functions/float_math_functions/log10f.md)（`related`）：Log10 与《Log10f》的实质衔接是：Reg Log10 与 bfloat16/half/half2/float 的 log10 入口执行同一以 10 为底的对数任务，区别在执行模型和返回精度。
-- [Log2](log2.md)（`related`）：《Log2》说明根据mask对源操作数逐元素求以2为底的对数，将结果写入目的操作数。；《Log10》说明根据mask逐元素对源操作数求以10为底的对数，将结果写入目的操作数。。二者在Reg Log2与Ln、Log/Log10共享对数语义但底数不同，选择时必须区分结果定义上存在可执行的直接衔接。
-<!-- cannbot:related:end -->

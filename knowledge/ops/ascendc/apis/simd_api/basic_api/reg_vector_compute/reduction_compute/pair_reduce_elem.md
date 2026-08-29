@@ -29,12 +29,3 @@ platforms: ['950']
 - 求和后，dst中仅前一半元素为有效数据，后一半填充为0。搬出至UB时需要避免数据踩踏。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reg::Reduce 跨 chunk 覆写导致规约失真](../../../../../runbooks/precision/reg_reduce_per_chunk_result_must_accumulate_explicitly.md)（`exemplifies`）：《PairReduceElem》处理“将源寄存器中相邻两个数值相加，结果保存在目的寄存器的低位位置。”。《Reg::Reduce 跨 chunk 覆写导致规约失真》明确提供“dav-3510 Reg::Reduce 每次只产当前 chunk 的标量结果；循环复用 dstReg 会丢失前序 chunk，须显式折叠 lane 0。”，其参数、调用或验证步骤直接接入PairReduceElem 的寄存器规约语义、C 层等价入口和跨 chunk 正确性。
-- [AscPairReduceSum](../../../c_api/vector_compute/asc_pair_reduce_sum.md)（`related`）：PairReduceElem 是 C++ Reg API 对应的相邻元素规约能力，为从 C API 迁移提供语义等价入口。
-- [AscPairReduceSum](../../../c_api/reg/reduce_compute/asc_pair_reduce_sum.md)（`same_topic`）：《PairReduceElem》处理“将源寄存器中相邻两个数值相加，结果保存在目的寄存器的低位位置。”。《AscPairReduceSum》明确提供“将源操作数中每两个相邻数值相加，结果连续保存在目的操作数的低半部分。”，其参数、调用或验证步骤直接接入PairReduceElem 的寄存器规约语义、C 层等价入口和跨 chunk 正确性。
-- [ReducePairElem](../../memory_vector_compute/reduction_compute/reduce_pair_elem.md)（`same_topic`）：《PairReduceElem》处理“将源寄存器中相邻两个数值相加，结果保存在目的寄存器的低位位置。”。《ReducePairElem》明确提供“对相邻两个元素进行归约求和操作，结果按顺序写入目标地址。”，其参数、调用或验证步骤直接接入PairReduceElem 的寄存器规约语义、C 层等价入口和跨 chunk 正确性。
-<!-- cannbot:related:end -->

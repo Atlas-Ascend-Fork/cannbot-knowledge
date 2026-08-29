@@ -46,7 +46,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_host/arch35/sigmoid_tiling_arch35.cpp
     role: implementation
 created_at: "2026-08-25T18:57:11Z"
-updated_at: "2026-08-25T18:57:11Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -93,7 +93,7 @@ selfRef[i] = tmp[i]
 
 固定 Commit `955f8b33985b6d72989ebff341bb9c2c564a51bc` 中，`experimental/activation/sigmoid_v2` 公开同名无后缀 ACLNN 接口，并把 dtype 收敛为 FLOAT/FLOAT16/BFLOAT16。仓根 `ENABLE_EXPERIMENTAL` 与 `add_category_subdirectory` 可按目录名选择该候选；其 OpDef 只对 `ascend910b` 添加 AICore 配置，因此本卡只发布 A2。README/ACLNN 文档虽还列出 A3 和 Ascend 950，但该候选没有相应 OpDef/config/build 平台接线，不能仅凭文档扩大平台。
 
-稳定 `activation/sigmoid` 是 A5 的活动实现，但其原地 API公开允许 DOUBLE/COMPLEX64/COMPLEX128，`l0op::Sigmoid` 会将这些 dtype 分发到 `ADD_TO_LAUNCHER_LIST_AICPU`，固定仓没有对应 Sigmoid AICPU body；即使只看 AIV dtype，A5 Host 还直接调用固定仓不存在的 `Ops::NN::Optiling::ElewiseTiling` 实体。因此 A5 不满足整个公开入口的 `source_closed`，不生成 `_a5` 卡。
+稳定 `activation/sigmoid` 是 950 的活动实现，但其原地 API公开允许 DOUBLE/COMPLEX64/COMPLEX128，`l0op::Sigmoid` 会将这些 dtype 分发到 `ADD_TO_LAUNCHER_LIST_AICPU`，固定仓没有对应 Sigmoid AICPU body；即使只看 AIV dtype，950 Host 还直接调用固定仓不存在的 `Ops::NN::Optiling::ElewiseTiling` 实体。因此 950 不满足整个公开入口的 `source_closed`，不生成 `_950` 卡。
 
 ## Host/Launcher 执行流程
 
@@ -525,11 +525,11 @@ __aicore__ inline void ComputeBase(int64_t curTileLength)
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 本卡采用 `sigmoid_v2`：公开文档支持且 OpDef 注册 `ascend910b`，`source_closed` | `sigmoid_v2` 文档声称支持但无 A3 注册；稳定 README 标记不支持而稳定 ACLNN 文档标记支持，证据冲突；不发布 | 稳定实现公开支持，但 DOUBLE/COMPLEX 可达 AICPU body 缺失，AIV Tiling 依赖 `ElewiseTiling` 实体也缺失；不发布 |
 | Host/Launcher | FP32/FP16/BF16 全部直接 AICore | 固定候选无可证明活动 Host 配置 | 稳定 API有 AICore/AICPU dtype 分发，AICPU路线不闭合 |
-| Kernel/资源 | 两条 AIV_VECTOR Route，统一 12L UB 上界 | 固定候选不可证明 | A5 AIV MicroAPI body可见，但不足以覆盖完整公开入口 |
+| Kernel/资源 | 两条 AIV_VECTOR Route，统一 12L UB 上界 | 固定候选不可证明 | 950 AIV MicroAPI body可见，但不足以覆盖完整公开入口 |
 
 ## 限制与失败边界
 
@@ -537,7 +537,7 @@ __aicore__ inline void ComputeBase(int64_t curTileLength)
 - 空 Tensor 不启动 Device Kernel，固定返回 workspace 0；Kernel Tiling 的空默认 POD是内部防御路线，不应误写成公开 ACLNN Kernel Route。
 - `totalLength*dtypeSize`、多次向上取整和 `curTileLength*sizeof(T)` 没有独立溢出/32 位 blockLen 窄化检查；合法超大 Tensor 的真实上界固定仓未给出。
 - A3 的稳定 README 明确标记不支持，而稳定 ACLNN 文档标记支持；再加上 `sigmoid_v2` 无 A3 注册，存在发布冲突，本卡仅覆盖 A2。
-- A5 的公开 DOUBLE/COMPLEX AICPU body 与 AIV `ElewiseTiling` 实体均在固定仓缺失；可见的 arch35 Kernel 文件不能替代完整 ACLNN 闭包。
+- 950 的公开 DOUBLE/COMPLEX AICPU body 与 AIV `ElewiseTiling` 实体均在固定仓缺失；可见的 arch35 Kernel 文件不能替代完整 ACLNN 闭包。
 - 核心 workspace 由平台 `GetLibApiWorkSpaceSize()` 给出但 Kernel 不读取；通用 `Contiguous/ViewCopy` 的内部 workspace、Kernel 和 event 是固定源码明确允许的框架边界。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
@@ -561,12 +561,12 @@ __aicore__ inline void ComputeBase(int64_t curTileLength)
 | 构建接线 | `experimental/activation/sigmoid_v2/op_host/CMakeLists.txt` | `add_modules_sources(... OPTYPE sigmoid ...)` | Host/API模块活动构建接线 |
 | 构建总开关 | `CMakeLists.txt` | `ENABLE_EXPERIMENTAL` | experimental 模块由显式构建开关启用 |
 | 构建目录分流 | `cmake/func.cmake` | `add_category_subdirectory` | 开关为真时扫描 `experimental/<category>` 并按 `sigmoid_v2` 目录选择 |
-| 平台审计 | `activation/sigmoid/README.md` | 产品支持表 | stable 标记 A3 不支持、A5/A2 支持 |
-| 平台审计 | `activation/sigmoid/docs/aclnnSigmoid&aclnnInplaceSigmoid.md` | 产品支持表、原地 dtype | stable ACLNN 文档标记 A3/A5 支持并公开宽 dtype，形成冲突/额外路线 |
+| 平台审计 | `activation/sigmoid/README.md` | 产品支持表 | stable 标记 A3 不支持、950/A2 支持 |
+| 平台审计 | `activation/sigmoid/docs/aclnnSigmoid&aclnnInplaceSigmoid.md` | 产品支持表、原地 dtype | stable ACLNN 文档标记 A3/950 支持并公开宽 dtype，形成冲突/额外路线 |
 | 平台审计 | `activation/sigmoid/CMakeLists.txt` | `SUPPORT_COMPUTE_UNIT/TILING_DIR` | stable 活动源码接线为 `ascend950/mc62 -> arch35` |
-| A5 API缺口 | `activation/sigmoid/op_api/aclnn_sigmoid.cpp` | `GetSelfRefDtypeList`、`ExecSigmoidGetWorkspaceSize` | 原地接口允许宽 dtype 并进入 L0 Sigmoid |
-| A5 AICPU缺口 | `activation/sigmoid/op_api/sigmoid.cpp` | `IsAiCoreSupport`、`SigmoidAiCpu` | 非 FLOAT/FP16/BF16 进入固定仓无 body 的 AICPU launcher |
-| A5 Tiling缺口 | `activation/sigmoid/op_host/arch35/sigmoid_tiling_arch35.cpp` | `SigmoidTiling::DoOpTiling` | AIV路线直接依赖固定仓不可见 `ElewiseTiling` |
+| 950 API缺口 | `activation/sigmoid/op_api/aclnn_sigmoid.cpp` | `GetSelfRefDtypeList`、`ExecSigmoidGetWorkspaceSize` | 原地接口允许宽 dtype 并进入 L0 Sigmoid |
+| 950 AICPU缺口 | `activation/sigmoid/op_api/sigmoid.cpp` | `IsAiCoreSupport`、`SigmoidAiCpu` | 非 FLOAT/FP16/BF16 进入固定仓无 body 的 AICPU launcher |
+| 950 Tiling缺口 | `activation/sigmoid/op_host/arch35/sigmoid_tiling_arch35.cpp` | `SigmoidTiling::DoOpTiling` | AIV路线直接依赖固定仓不可见 `ElewiseTiling` |
 
 ### 实现复用检查
 
@@ -577,4 +577,11 @@ __aicore__ inline void ComputeBase(int64_t curTileLength)
 | workspace/内存 | 两路线统一 `UB_total=12L`；核心不读取 workspace | buffer count、dtype 字节数、12系数与 executor workspace owner 不得混淆 | `FillNormalTiling`、各 `Init` |
 | 同步 | 绑定 Queue 负责 GM/VECIN/VECOUT/GM 所有权转换 | `FreeTensor` 前不能覆盖 LocalTensor | `CopyInBase/ComputeBase/CopyOutBase` |
 | 精度与尾块 | 16 位路线 FP32 算术后 `CAST_RINT`；全部 API使用实际 `n` | Cast顺序、round mode、tail blockLen 不得改变 | `KernelSigmoidUpcast::ComputeBase`、`ProcessBase` |
-| 失败边界 | 空域成功短路；非法 dtype/rank 失败；launcher失败阻断 ViewCopy | 不得把 A3/A5 文档声明当成候选实现平台注册 | `CheckInplaceParams`、`SigmoidTilingFunc`、`l0op::Sigmoid` |
+| 失败边界 | 空域成功短路；非法 dtype/rank 失败；launcher失败阻断 ViewCopy | 不得把 A3/950 文档声明当成候选实现平台注册 | `CheckInplaceParams`、`SigmoidTilingFunc`、`l0op::Sigmoid` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Reciprocal 低精度致 sigmoid 比对失败](../../../../runbooks/precision/reciprocal_sigmoid.md)（`related`）：“｜ `tmpBufFp32_` ｜ 独立 TBuf ｜ `L*4` bytes ｜ FLOAT32 ｜ `Duplicate(1)` ｜ `Div` ｜ Kernel 实例 ｜ 每 tile 覆盖 ｜”；“判定：对照实验前后 `verify_result.py` 的 `Max diff` 从 ~1e-3 量级降到 0，即单点归因到 `Reciprocal` 的低精度近似（同一 kernel 的 `Muls/Exp/Adds` 未改）。”。焦点实现采用 Duplicate+Div，目标 runbook 用同一替换的前后对照验证其避免 Reciprocal 精度误差。
+- [Sigmoid A2 ACLNN 算子知识](sigmoid.md)（`related`）：“核心 Sigmoid Kernel 写 executor 分配的连续中间张量，并不直接覆盖输入；随后 `ViewCopy(tmp, selfRef)` 才完成 ACLNN 的原地语义。”；“｜ 计算语义 ｜ 逐元素 `y = 1 / (1 + exp(-x))`。 ｜”。InplaceSigmoid 复用同一 Sigmoid 计算节点，并在其后增加 ViewCopy 才形成原地 API 语义。
+<!-- cannbot:related:end -->

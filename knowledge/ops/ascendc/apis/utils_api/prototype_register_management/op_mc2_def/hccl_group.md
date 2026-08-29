@@ -25,12 +25,7 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetHcclContext](../../../simd_api/adv_api/hccl_communication/hccl_context/get_hccl_context.md)（`related`）：Kernel 根据组配置取得 HCCL context；组名错误会在这一消费端暴露。
-- [HCCL Context简介](../../../simd_api/adv_api/hccl_communication/hccl_context/hccl_context_intro.md)（`related`）：HCCL Context简介 与《HcclGroup（OpMC2Def）》的实质衔接是：HCCL context 需要 host HcclGroup 先声明通信域，再由 kernel Get/SetHcclContext 使用；通信类、kernel/tiling 与使用说明共同闭合地址配置到集合通信执行。
-- [SetGroupName](../../../simd_api/adv_api/hccl_communication/hccl_tiling/set_group_name.md)（`related`）：原型侧 HcclGroup 与运行时 tiling 的 SetGroupName 必须指向一致通信组，才能取得正确 context。
-- [HcclServerType](hccl_server_type.md)（`same_topic`）：HcclServerType 与《HcclGroup（OpMC2Def）》的实质衔接是：HcclServerType 是 OpMC2Def 注册中的 server 枚举；构造、HcclGroup 和 MC2 OpDef 共同决定 MC2 原型如何声明通信域与服务端角色。
-- [MC2（OpDef）](../op_def/mc2.md)（`same_topic`）：HcclGroup 是 MC2 返回对象上的直接后续配置，用于绑定通算融合的通信域名称。
-- [OpMC2Def](op_mc2_def.md)（`same_topic`）：OpMC2Def 类型承载 HcclGroup 等 MC2 注册字段，是该 setter 的所属核心对象。
-- [OpMC2Def构造函数](op_mc2_def_constructor.md)（`same_topic`）：构造函数创建可继续配置 HcclGroup/HcclServerType 的 MC2 定义。
-- [OpMC2Def简介](op_mc2_def_intro.md)（`same_topic`）：OpMC2Def简介 与《HcclGroup（OpMC2Def）》的实质衔接是：OpMC2Def 在 host 原型侧声明 HcclGroup 与 HcclServerType，构造后把通信域映射为核侧 HCCL Context；MC2 OpDef 是其注册入口。
+- [GetHcclContext](../../../simd_api/adv_api/hccl_communication/hccl_context/get_hccl_context.md)（`related`）：获取指定Index通信域的context（消息区）地址。；配置通信域名称，每个名称对应一个通信域。配置后在Kernel侧调用GetHcclContext接口可获取通信域对应的context（消息区）地址。。HcclGroup 在原型侧声明通信域名称，GetHcclContext 在 Kernel 侧按索引取得该域的 context 地址，二者是通算融合通信域从注册到运行时访问的直接链。
+- [HCCL Context简介](../../../simd_api/adv_api/hccl_communication/hccl_context/hccl_context_intro.md)（`related`）：“需要同步在host侧调用HcclGroup接口配置通信域名称后”给出焦点端事实；“配置后在Kernel侧调用GetHcclContext接口可获取通信域对应的context（消息区）地址。”给出候选端事实。简介卡要求 Host 先用 HcclGroup 配置通信域名称，HcclGroup 卡明确配置结果供 Kernel 的 GetHcclContext 取址，二者连接 Host 注册与 Device 使用。
+- [MC2（OpDef）](../op_def/mc2.md)（`related`）：HcclGroup 规定“使用该接口前，算子需要先通过MC2接口注册该算子是通算融合算子，注册后即返回一个OpMC2Def结构。”；MC2 页说明“调用该接口后会返回一个OpMC2Def结构，后续可通过该结构配置通信域名称。”，构成 MC2 注册到 HcclGroup 配置的强制调用顺序。
 <!-- cannbot:related:end -->

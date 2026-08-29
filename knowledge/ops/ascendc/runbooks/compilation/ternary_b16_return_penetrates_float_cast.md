@@ -134,6 +134,5 @@ __aicore__ inline __bf16 ApplyReduce<__bf16>(__bf16 a, __bf16 b, int32_t reduceM
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BiSheng bf16 类型转换失败——隔离模板实例化](if_constexpr_excludes_unsupported_bf16_cast.md)（`related`）：比较与 Cast 都会被运行时 dtype guard 之外的模板实例化提前触发；该卡补充必须在编译期剔除不支持 B16 设备表达式的共同约束。
-- [bf16 未编译剔除触发 backend Cannot select](if_constexpr_excludes_unsupported_bf16_compare.md)（`same_topic`）：两卡命中同一 Bisheng 后端失效链：B16 标量比较被实例化后落到不支持的 setcc；前者要求让三元返回保持 float，后者在不支持 dtype 分支上用 if constexpr 阻止实例化。
+- [bf16 未编译剔除触发 backend Cannot select](if_constexpr_excludes_unsupported_bf16_compare.md)（`related`）：换句话说：**`float` cast 在"比较 + 返回 B16"的三元里被编译器穿透失效**。；C++ 普通 `if` 只控制运行时执行，不控制模板实例化：编译器实例化 `Kernel<AccT=bfloat16_t>` 时，仍会编译 `else` 中的 `nanmax_(cur, v)`/`nanmin_(cur, v)`；helper 里的 `a != a` 被 lowering 为 unordered compare `setuo`，需要 bf16 `setcc`，而该版本 dav-3510 BiSheng 后端没有可选指令，于是以 `Cannot select` 终止。。两卡覆盖同一 950 BiSheng B16 比较后端失败链的两个入口：三元返回 B16 会穿透 float cast，运行时 if 又不能阻止不支持分支实例化；联合修法是收窄模板并用 if constexpr 剔除该路径。
 <!-- cannbot:related:end -->

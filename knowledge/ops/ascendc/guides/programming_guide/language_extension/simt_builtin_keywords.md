@@ -46,15 +46,3 @@ dim3是内置结构体类型，由3个无符号整数组成，结构体定义为
 内置全局变量，在核函数中可以直接使用，用于获取线程块中配置的线程的三维层次结构，即启动核函数时配置的dim3结构体实例值。blockDim.x，blockDim.y，blockDim.z分别表示线程块中三个维度的线程数。
 -   blockIdx
 内置全局变量，只能在核函数中使用，用于获取块索引。表示当前线程所在的线程块在整个网格中的位置坐标。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [函数执行空间限定符](../../../apis/simt_api/simt_programming_intro/extended_syntax/function_execution_space_qualifier.md)（`explains`）：API 页逐项定义 __host__、__global__、__aicore__ 的可调用空间，展开了 BuiltIn 指南中的入口与设备函数约束。
-- [扩展语法内置变量](../../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/builtin_variables.md)（`explains`）：扩展语法内置变量 与《SIMT BuiltIn关键字》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [扩展语法内置变量](../../../apis/simt_api/simt_programming_intro/extended_syntax/builtin_variables.md)（`explains`）：API 卡定义 blockDim/gridDim/blockIdx/threadIdx/warpSize，目标语言指南说明这些 BuiltIn 关键字在 kernel 中的索引用法与作用域。
-- [SIMT语言扩展层C API](simt_language_extension_c_api.md)（`related`）：调用 SIMT 原子、Warp 和访存 C API 前，需要用 SIMT 内置关键字定义 kernel/VF 与线程执行上下文。
-- [dim3 未声明：显式引入 SIMT 公共头](../../../runbooks/compilation/asc_vf_call_launch_config_requires_simt_header.md)（`related`）：《dim3 未声明：显式引入 SIMT 公共头》处理“混合 SIMD/SIMT 核函数调用 asc_vf_call 时，显式包含 common_functions.h 以暴露 dim3 别名和正确重载。”。《SIMT BuiltIn关键字》明确“函数执行空间限定符（Function Execution Space Qualifier）指示函数是在Host侧执行还是在Device侧执行，以及能被调用的空间范围。”，可直接用于核对dim3 类型可见性、SIMT 公共头、__vector__ 入口与混合 VF 启动边界。
-- [per-core zero-out 经 grid-stride ZeroOutS](../../../runbooks/precision/per_core_zero_out_grid_stride_zeroout_simt_overshoot.md)（`related`）：per-core zero-out 经 grid-stride ZeroOutS 与《SIMT BuiltIn关键字》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-- [SIMD&SIMT BuiltIn关键字](simd_simt_hybrid_builtin_keywords.md)（`same_topic`）：SIMD&SIMT BuiltIn关键字 与《SIMT BuiltIn关键字》的实质衔接是：混合 BuiltIn 关键字需结合执行/地址限定、kernel/VF、内置变量和混合编程故障使用。
-<!-- cannbot:related:end -->

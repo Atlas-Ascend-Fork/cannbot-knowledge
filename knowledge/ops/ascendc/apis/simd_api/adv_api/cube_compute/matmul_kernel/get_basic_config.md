@@ -33,12 +33,3 @@ platforms: ['950', a2, a3]
 - 本接口的参数basicM、basicN、basicK应与TCubeTiling结构体的baseM、baseN、baseK设置保持一致。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Kirin X90。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core、Atlas 训练系列产品、Kirin 9030。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`related`）：GetMatmulApiTiling 生成 GetBasicConfig 所要求一致的 TCubeTiling；两者共同约束 baseM/baseN/baseK 与单核切分的匹配。
-- [GetMDLConfig](get_mdl_config.md)（`same_topic`）：GetMDLConfig 与《GetBasicConfig》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
-- [GetNormalConfig](get_normal_config.md)（`same_topic`）：GetNormalConfig 与《GetBasicConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [MatmulConfig](matmul_config.md)（`same_topic`）：MatmulConfig 定义 GetBasicConfig 返回对象的字段和模板常量化语义，补足 base 参数及调度开关的契约。
-<!-- cannbot:related:end -->

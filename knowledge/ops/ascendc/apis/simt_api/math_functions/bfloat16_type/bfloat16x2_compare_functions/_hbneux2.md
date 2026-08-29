@@ -29,7 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hbneux2](../../half_type/half2_compare_functions/_hbneux2.md)（`related`）：两接口有相同 unordered 双 lane != 语义，分别作用于 half2 和 bfloat16x2。
-- [__hneux2](_hneux2.md)（`related`）：两者都采用 unordered not-equal 的 NaN 规则，但 focal 聚合两个 lane 为 bool，目标逐 lane 返回 1.0/0.0，覆盖分支判定与向量结果两种需求。
-- [__hbnex2](_hbnex2.md)（`same_topic`）：__hbneux2 与 __hbnex2 都在两个 lane 均不等时返回 bool，唯一关键差异是 unordered 版本把 NaN 分量判为不等，而 ordered 版本含 NaN 返回 false。
+- [__hbnex2](_hbnex2.md)（`same_topic`）：返回值：比较输入数据各分量是否均不相等的结果。特殊值：±0→false；inf→false；-inf→false；inf→true；任一分量含nan→true（任一输入分量为nan时，该分量≠比较结果为true）。；返回值：比较输入数据各分量是否均不相等的结果。特殊值：任一分量为nan→false；±0→false；±inf→相同符号inf返回false，不同符号inf返回true。。两接口都判断 bfloat16x2 两分量是否均不相等，关键差异是 NaN 与无穷值的比较语义，选型时必须成对辨析。
 <!-- cannbot:related:end -->

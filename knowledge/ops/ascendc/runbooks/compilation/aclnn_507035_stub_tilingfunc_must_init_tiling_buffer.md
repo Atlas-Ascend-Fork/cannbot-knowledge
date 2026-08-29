@@ -96,9 +96,7 @@ kernel 侧接口桩保持 `InitSocState + REGISTER_TILING_DEFAULT + GET_TILING_D
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Kernel Tiling](../../apis/simd_api/basic_api/kernel_tiling/kernel_tiling.md)（`exemplifies`）：正式 tiling API 说明 GET_TILING 前 Host 必须写入有效数据。
-- [507035 host tiling workspace 缺 RESERVED](register_none_tiling_reserved_workspace_507035.md)（`related`）：reserved workspace 偏移也可造成 stub 运行期越界，需在初始化正确后继续核对。
-- [ACLNN 507035 — opType 与内置 ops_legacy 同名碰](aclnn_optype_collision_built_in_ops_legacy_507035.md)（`related`）：若运行时命中内置同名 binary，也会用错 TilingData；先确认 kernel 命中。
-- [REGISTER_TILING_DEFAULT 取小档致 NaN](register_tiling_default_nan.md)（`related`）：REGISTER_TILING_DEFAULT 取小档致 NaN 与《ACLNN 507035 — stub kernel tiling 数据未初始化》的实质衔接是：REGISTER_TILING_DEFAULT 决定 opParaSize，必须覆盖最大 TilingData struct；注册宏、GET 宏、host/kernel 结构、SetDataSize 与追加越界卡描述同一 buffer 尺寸链。
-- [Stub tiling padding 不解 aclnn Segfault](stub_tiling_padding_aclnn_segfault.md)（`related`）：两卡共同覆盖 stub tiling 交付链：本卡证明注册容量不足只会导致 capacity 失败且 padding 不解决 host Segfault，目标卡证明 stub TilingFunc 还必须实际初始化 tiling buffer。
+- [GET_TILING_DATA](../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data.md)（`exemplifies`）：stub TilingFunc 必须调用 `context->GetTilingData<TilingDataT>()` 取得指针并写入至少一个字段（如 `totalLength`），再 `SetBlockDim`/workspace；kernel 侧保持接口桩不变。修复后 11/11 冒烟通过。；获取算子 kernel 入口函数传入的 Tiling 信息，填入注册的 TilingData 结构体。以宏展开方式编译。Host 侧需定义 TilingData 结构体并注册 Tiling 函数。返回默认注册的结构体。支持 950/a2/a3。。运行手册用 Host GetTilingData 初始化字段来消除 stub 的 507035，API 卡说明 Kernel 宏如何读取注册结构体，二者把故障修复连接到 Host 生产、Device 消费同一 TilingData 缓冲的合同。
+- [REGISTER_TILING_DEFAULT](../../apis/simd_api/basic_api/kernel_tiling/register_tiling_default.md)（`exemplifies`）：stub TilingFunc 必须调用 `context->GetTilingData<TilingDataT>()` 取得指针并写入至少一个字段（如 `totalLength`），再 `SetBlockDim`/workspace；kernel 侧保持接口桩不变。修复后 11/11 冒烟通过。；用于在kernel侧注册用户使用标准C++语法自定义的默认TilingData结构体。 注册TilingData结构体用于告知框架侧用户使用标准C++语法来定义TilingData，同时告知框架TilingData结构体类型，用于框架做tiling数据解析。。运行手册的修复要求 Host 初始化与 Kernel 接口桩保持同一 TilingDataT，REGISTER_TILING_DEFAULT 卡说明该注册向框架声明结构体类型供解析，因而支撑 507035 复现与修复中的类型注册步骤。
+- [Stub tiling padding 不解 aclnn Segfault](stub_tiling_padding_aclnn_segfault.md)（`related`）：padding 仍是必要的容量契约（否则 `GetTilingData` capacity 检查失败退化为 exit 255），但不是 Segfault 的根因修复。；stub TilingFunc 必须调用 `context->GetTilingData<TilingDataT>()` 取得指针并写入至少一个字段（如 `totalLength`），再 `SetBlockDim`/workspace；kernel 侧保持接口桩不变。修复后 11/11 冒烟通过。。两卡共同排查 stub tiling 联调：一张否定仅靠扩大容量修复 Segfault，另一张给出必须初始化 tiling buffer 的可验证修法。
 <!-- cannbot:related:end -->

@@ -29,10 +29,3 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Kirin X90。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSinTmpBufferFactorSize](get_sin_tmp_buffer_factor_size.md)（`same_topic`）：Sin 接口总页定义 FactorSize、MaxMinTmpSize 与 Sin 的组合流程。
-- [Sin](sin.md)（`same_topic`）：Sin 与《Sin接口》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
-<!-- cannbot:related:end -->

@@ -34,8 +34,5 @@ platforms: [a2]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetMatmulApiTiling](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_matmul_api_tiling.md)（`explains`）：GetMatmulApiTiling 与《Matmul算子优化Tiling策略》的实质衔接是：host 侧 GetMatmulApiTiling 把模板参数、MatmulConfig 与基础配置落成 tiling，随后决定 kernel Matmul 的注册、临时空间和精度/性能策略。
-- [Matmul Tiling类](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/matmul_tiling.md)（`explains`）：调优页说明如何据 shape/资源选择切分策略。
-- [Matmul高阶API开启IBShare模板共享B矩阵数据](matmul_ibshare_b.md)（`related`）：Matmul高阶API开启IBShare模板共享B矩阵数据 与《Matmul算子优化Tiling策略》的实质衔接是：IBShare 的 B-only 配置受 MatmulConfig、tiling 策略、preload/MDL 和 kernel Iterate 契约共同约束，直接影响 L1 复用。
-- [核间负载均衡](../../simd_operator_optimization/tiling_strategy/inter_core_load_balance.md)（`same_topic`）：核间负载均衡 与《Matmul算子优化Tiling策略》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
+- [Matmul Tiling类使用说明](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/matmul_tiling_usage.md)（`explains`）：优化基本块，选择最优的baseM、baseN、baseK参数，其中baseM、baseN、baseK为Matmul Tiling中的参数。；Ascend C提供一组Matmul Tiling API，方便用户获取Matmul kernel计算时所需的Tiling参数。用户只需要传入A/B/C矩阵的Position位置、Format格式和DType数据类型等信息，调用API接口，即可获取到Init中TCubeTiling结构体中的相关参数。。调优案例以 baseM/baseN/baseK 改善搬运效率，API 使用页给出获得 TCubeTiling 参数的入口，连接了性能选择与可执行配置步骤。
 <!-- cannbot:related:end -->

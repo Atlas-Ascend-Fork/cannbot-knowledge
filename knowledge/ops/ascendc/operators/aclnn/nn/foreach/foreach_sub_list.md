@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sub_list/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:22:53Z"
-updated_at: "2026-08-25T16:22:53Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -616,9 +616,9 @@ __aicore__ inline void ComputePerCast(
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2 公开支持 | V2 公开支持 | V2 公开支持；见 `_a5` 卡 |
+| 支持状态 | V2 公开支持 | V2 公开支持 | V2 公开支持；见 `_950` 卡 |
 | Host/Launcher | ascend910b→arch22 公共 tiling | ascend910_93→同一 arch22 公共 tiling | arch35 专用 tiling/SIMT |
 | Kernel/资源 | 相同 AIV Vector entry、最多 50 Tensor/cores | 同 A2 | 最多 256 Tensor，GM 直通，无显式 UB |
 
@@ -666,3 +666,9 @@ __aicore__ inline void ComputePerCast(
 | 同步 | Queue 生命周期 + Vector barrier | Muls→Sub、Cast→Axpy→Cast、Axpy→copy 顺序 | adapters、`InnerComputer`、`KernelForeachUnary` |
 | 精度与尾块 | FP16/INT32 原 dtype；FP32 Axpy；BF16 FP32/RINT；GM tail 精确字节 | 不得把 UB 对齐 extra lane 写回 GM；BF16 两级 remainder | `CopyIn/CopyOut`、`ComputePerCast` |
 | 失败边界 | dtype、shape、Tensor count、UB/core 上限 | key 0/编译 guard 无 fallback；TensorList 必须 `<=50` | `CheckOpInfo`、`Init`、entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachSubList 950 ACLNN 算子知识](foreach_sub_list_950.md)（`same_topic`）：设列表长度为 `n`，`E_i = numel(x1_i)`。有效域为 `0 <= i < n`、`0 <= j < E_i`：；设列表长度 `n`，第 `i` 个 Tensor 元素数为 `E_i`。在 `0<=i<n`、`0<=j<E_i` 上：；两卡随后给出相同的 y_i 等于 x1_i 减 alpha 乘 x2_i 语义与 V2 ACLNN 入口，分别实现 950 SIMT 路线和 A2/A3 AIV Vector 路线。
+<!-- cannbot:related:end -->

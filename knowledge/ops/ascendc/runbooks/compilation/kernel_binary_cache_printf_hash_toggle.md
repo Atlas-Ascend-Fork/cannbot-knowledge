@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.debugging"]
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 ---
 
@@ -109,9 +109,7 @@ PRINTF("probe sumR=%f n=%lld\n", sumR_, (long long)n_);
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ICachePreLoad](../../apis/simd_api/basic_api/cache_control/i_cache_pre_load_isasi.md)（`exemplifies`）：该卡处理 kernel binary 缓存旧代码而非 ICache 指令预取；二者可按“重启后是否仍旧 binary”分流。
-- [Printf](../../apis/utils_api/tuning_interface/printf.md)（`exemplifies`）：当源码修改未进入 device binary hash 时，加入 PRINTF 会改变 binary 并可判别运行时仍加载旧缓存，展示 Printf 的另一诊断用途。
-- [binary.json bin_filename 空致多 dtype kerne](binary_json_bin_filename_empty_overwrites_multi_dtype_o.md)（`related`）：两卡都会表现为源码或 dtype 变化后仍执行同一 binary；本卡查构建期 .o 被同名覆盖，对照卡查运行期缓存未换新，可作为直接的分流诊断。
-- [专用 kernel 路径输出不变时先核对共享库是否真的包含目标符号](../precision/specialized_npu_kernel_symbol_presence_probe.md)（`related`）：focal 的 source-present/artifact-absent 判别与目标的 source-changed/runtime-old-binary 判别都要求核对实际 device binary；后者提供 PRINTF hash A/B 与全量清缓存复编以进一步区分旧制品。
-- [kernel 输出=输入：binary 不随源码变化即守卫吞体](../precision/kernel_binary.md)（`same_topic`）：《kernel 源码改动未生效因 binary 缓存》明确“改 kernel 源码并重编后 NPU 运行时仍跑旧 binary、输出与改前逐字节一致；主机侧 volatile 变量不进 device binary hash，加 PRINTF 才能改 hash 强制加载新 binary。”；它与《kernel 输出=输入：binary 不随源码变化即守卫吞体》的“A5（Ascend950, arch 3510）上 kernel 被 launch 但输出与输入逐字节一致、用例全 FAIL，且 device binary 体积异常小。判别=改 kernel 体源码后重编比较 .o 体积/sha256：若多次改动 hash 始终不变，说明 #if __CCE_AICORE__==<arch> 守卫不匹配新架构把整个 kernel 体条件编译排除，编出空壳 binary。移除守卫后 binary 变大、V1 全 PASS。”在实际调用参数、数据流或结果校验上直接衔接。
+- [printf（AI CPU API）](../../apis/ai_cpu_api/printf.md)（`exemplifies`）：“该接口使用Dump功能，所有使用Dump功能的接口在每个核上Dump的数据总量不可超过1M。”规定 printf 探针的输出上限；“用上述 PRINTF 对照实验——加 PRINTF 后输出变化即确诊缓存未刷新。”展示该接口作为 kernel 二进制缓存生效探针的具体用法。
+- [kernel 输出=输入：binary 不随源码变化即守卫吞体](../precision/kernel_binary.md)（`related`）：“若加 PRINTF 后输出仍不变 → 排除缓存问题，改去查源码改动是否真的进入编译单元（路径/宏/CMake 源文件列表）。”与“若 binary 体积/hash 在多次 kernel 体改动后**始终不变** → 源码未进入 device binary，守卫把整个 kernel 体条件编译排除了。”分别给出两端正文事实；第一张卡把 PRINTF 作为缓存与编译单元问题的分流探针，第二张卡给出 hash 恒定时检查架构守卫吞体的下一步，二者组成同症状的确定性排障分支。
+- [专用 kernel 路径输出不变时先核对共享库是否真的包含目标符号](../precision/specialized_npu_kernel_symbol_presence_probe.md)（`related`）：当 source 分支存在而目标专用 symbol 不在实际共享库中时，这个二进制至少没有提供按该名称期望的 specialization。；在 Ascend950 上调试 ApplyCamePart2 Branch-0 fp32 Kernel 时，多次出现「改了 kernel 源码、`build.sh` 重编成功、`run.sh` 重跑，但输出与改动前**逐字节一致**」的现象。；目标 runbook 提供源码已改但实际加载制品仍旧时的另一条 artifact 新鲜度探针。
 <!-- cannbot:related:end -->

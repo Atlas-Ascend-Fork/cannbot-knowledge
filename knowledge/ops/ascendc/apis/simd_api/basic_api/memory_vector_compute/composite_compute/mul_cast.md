@@ -31,7 +31,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MulsCast](muls_cast_isasi.md)（`related`）：MulCast 用第二个 Tensor 替代标量完成乘法后再转换，适合判断 MulsCast 的标量约束何时需要升级为逐元素 scale。
-- [AscMulCastHalf2int8](../../../c_api/vector_compute/asc_mul_cast_half2int8.md)（`same_topic`）：AscMulCastHalf2int8 与《MulCast》的实质衔接是：AscMulCastHalf2int8 融合 half 乘法、RINT 和 int8 饱和；MulCast、纯 Mul、Half2Int8 与 Rint 入口分别核对融合、目标宽度和舍入。
-- [AscMulCastHalf2uint8](../../../c_api/vector_compute/asc_mul_cast_half2uint8.md)（`same_topic`）：通用 MulCast 的 half→uint8 组合在 C API 中对应 AscMulCastHalf2uint8。
+- [MulsCast](muls_cast_isasi.md)（`same_topic`）：“将矢量源操作数前count个数据与标量相乘再按CAST_ROUND模式转换成half类型，结果写入dst，支持标量在前和标量在后两种场景。”与“按元素求积，并根据源操作数和目的操作数Tensor的数据类型进行精度转换。”提供双方正文证据。两端核心契约都是乘法后立即做 dtype 转换；MulsCast 把一端约束为标量并固定 CAST_ROUND 到 half，MulCast 则是双 Tensor 逐元素版本，互读可直接完成重载选型。
 <!-- cannbot:related:end -->

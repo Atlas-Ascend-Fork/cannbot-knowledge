@@ -94,7 +94,7 @@ CV 必须执行与 VV 相同粒度的入口、平台、分发、POD、逐 Route 
 | 平台证据 | README/API → OpDef/config → Host/Kernel/CMake 的完整证据链 |
 | 执行族 | 逐 Device 节点标记 Cube/AIC、MIX_CV、AIV_VECTOR、SIMT、NDDMA、Hybrid 或非 Vector 通信执行；多 Kernel 不是执行族 |
 | 启动拓扑 | 单 Kernel 或多 Kernel；多 Kernel 时列节点和边，不用拓扑替代执行族 |
-| 目标文件 | 无后缀 A2/A3 卡和 `_a5` 卡的真实平台边界 |
+| 目标文件 | 无后缀 A2/A3 卡和 `_950` 卡的真实平台边界 |
 
 公开文档明确“不支持”时，Kernel 文件、`arch35`、`_apt`、`ascend950` 或 CI 接线不能单独证明公开支持。文档与实现冲突时停止该平台正式卡。
 

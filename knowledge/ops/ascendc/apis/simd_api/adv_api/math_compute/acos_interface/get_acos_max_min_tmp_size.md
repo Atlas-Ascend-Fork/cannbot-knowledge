@@ -29,8 +29,5 @@ kernel侧Acos接口的计算需要开发者预留 申请临时空间，本接口
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Acos](acos.md)（`related`）：GetAcosMaxMinTmpSize 与《Acos》的实质衔接是：Acos 的 host 临时空间查询必须与 kernel Acos、接口封装及 factor-size 推算使用同一 shape/typeSize/复用策略。
-- [Acosf](../../../../simt_api/math_functions/float_math_functions/acosf.md)（`related`）：GetAcosMaxMinTmpSize 与《Acosf》的实质衔接是：Acos 的 host 临时空间查询必须与 kernel Acos、接口封装及 factor-size 推算使用同一 shape/typeSize/复用策略。
-- [Acos接口](acos_interface.md)（`related`）：GetAcosMaxMinTmpSize 与《Acos接口》的实质衔接是：Acos 的 host 临时空间查询必须与 kernel Acos、接口封装及 factor-size 推算使用同一 shape/typeSize/复用策略。
-- [GetAcosTmpBufferFactorSize](get_acos_tmp_buffer_factor_size.md)（`related`）：GetAcosMaxMinTmpSize 与《GetAcosTmpBufferFactorSize》的实质衔接是：Acos 的 host 临时空间查询必须与 kernel Acos、接口封装及 factor-size 推算使用同一 shape/typeSize/复用策略。
+- [Acos](acos.md)（`related`）：sharedTmpBuffer（输入）：临时缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 用于Acos内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAcosMaxMinTmpSize。；为保证功能正确，预留 申请的临时空间大小不能小于最小临时空间大小。Acos 的 Kernel 调用直接依赖候选 Host 查询确定可用临时空间。
 <!-- cannbot:related:end -->

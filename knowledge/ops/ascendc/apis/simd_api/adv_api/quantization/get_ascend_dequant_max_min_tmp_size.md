@@ -26,6 +26,5 @@ host侧Tiling接口，用于获取AscendDequant接口所需的最大和最小临
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscendDequant](ascend_dequant.md)（`related`）：AscendDequant 是该 Host workspace 查询所服务的 Kernel 计算接口，isReuseSource 和 typeSize 必须在两侧一致。
-- [GetAscendDequantTmpBufferFactorSize](get_ascend_dequant_tmp_buffer_factor_size.md)（`same_topic`）：GetAscendDequantTmpBufferFactorSize 与《GetAscendDequantMaxMinTmpSize》的实质衔接是：factor 查询与 GetAscendDequantMaxMinTmpSize 共同换算临时空间和单次元素数，AscendDequant 是结果消费方，SetDequantType 控制输出模式。
+- [AscendDequant](ascend_dequant.md)（`related`）：先用“host侧Tiling接口，用于获取AscendDequant接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”在 max/min 范围内选择空间，再遵守“提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持标量/矢量scale场景。临时空间大小通过GetAscendDequantMaxMinTmpSize获取。”把空间交给标量或矢量 scale 重载，可直接排查临时空间和 isReuseSource 配置。
 <!-- cannbot:related:end -->

@@ -61,9 +61,3 @@ source /home/developer/Ascend/cann-9.0.0-beta.2/set_env.sh && bash build.sh --op
 
 - 任何 op_host 代码用 `aclrtMemset*` 系列 API 时，先在该 CANN 版本的 `acl/acl_rt.h` 里 `grep` 确认符号存在与签名；跨 CANN 大版本（如升到 9.x）构建旧算子仓时，把 `aclrtMemsetD32Async` 作为编译期 breaking-change 检查点。
 - 对 device 内存初始化优先用零填充（`aclrtMemsetAsync(ptr, sizeBytes, 0, sizeBytes, stream)`），与 `aclrtMemsetAsync` 语义天然一致；需要非零 32 位初值时显式 launch 写值 kernel，不依赖 memset 按字填充。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cann9ReleaseNotes](../../apis/appendix/release_notes/cann_9_0_0.md)（`exemplifies`）：该案例记录 CANN 9.x 移除 aclrtMemsetD32Async 后的编译失败与替代接口，补足版本升级时的实际兼容性判断。
-<!-- cannbot:related:end -->

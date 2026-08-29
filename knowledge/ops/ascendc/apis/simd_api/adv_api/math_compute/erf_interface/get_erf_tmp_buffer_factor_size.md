@@ -25,7 +25,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Erf](erf.md)（`same_topic`）：factor-size 允许在固定临时空间下反推 Erf 单次最大元素数，与 MaxMin 查询互补。
-- [Erf接口](erf_interface.md)（`same_topic`）：GetErfTmpBufferFactorSize说明获取Erf接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量。
-- [GetErfMaxMinTmpSize](get_erf_max_min_tmp_size.md)（`same_topic`）：GetErfMaxMinTmpSize 与《GetErfTmpBufferFactorSize》的衔接是：Erf 临时空间查询以 ErfMaxMinTmpSize 的计算因子和接口约束为依据，查询结果直接决定 Erf 调用可安全使用的 tmpBuffer 大小。
+- [Erf](erf.md)（`related`）：“推算公式：currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。”；“接口参数：dstTensor为输出操作数；srcTensor为输入操作数，TPosition支持VECIN/VECCALC/VECOUT，数据类型需与dstTensor一致；sharedTmpBuffer为临时缓存；calCount为参与计算元素个数。”。factor 接口反推可计算元素规模，Erf 接口消费 sharedTmpBuffer 和 calCount，构成 Tiling 到计算调用的直接合同。
+- [GetErfMaxMinTmpSize](get_erf_max_min_tmp_size.md)（`related`）：“调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。”；“在minValue到maxValue范围内，临时空间越大性能越好。约束：无。”。两张卡提供 Erf 临时空间规划的两种互补合同：factor 路线反推共同 calCount，max/min 路线给出合法容量区间。
 <!-- cannbot:related:end -->

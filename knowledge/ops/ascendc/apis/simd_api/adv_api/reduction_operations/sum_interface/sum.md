@@ -26,8 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetSumMaxMinTmpSize](get_sum_max_min_tmp_size.md)（`related`）：Sum 明确要求 sharedTmpBuffer，并把 GetSumMaxMinTmpSize 作为对应 Host sizing 入口；focal 的 max/min 结果直接决定最后一维归约 tile 的合法预算。
-- [ReduceSum](../reduce_sum_interface/reduce_sum.md)（`related`）：ReduceSum 与 Sum 的 shape/轴接口不同，应按所需输出契约选。
-- [ReduceXorSum](../reduce_xor_sum_interface/reduce_xor_sum.md)（`related`）：XorSum 聚合代数不同，不能替代算术求和。
-- [Sum接口](sum_interface.md)（`same_topic`）：Sum接口 与《Sum》的实质衔接是：Sum 沿最后一维求和并由 GetSumMaxMinTmpSize 分配临时空间；ReduceSum 是可指定维度的相关入口，其空间查询与调用边界不同。
+- [GetSumMaxMinTmpSize](get_sum_max_min_tmp_size.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetSumMaxMinTmpSize获取。模板参数isReuseSource预留（传false）；isBasicBlock在满足基本块要求时可提升性能；reduceDim指定reduce维度（默认-1为最后一轴）。；host侧Tiling接口，用于获取Sum接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。Sum 本体明确临时空间通过 GetSumMaxMinTmpSize 获取，目标 API 给出 host 侧最大/最小预算，形成直接调用合同。
 <!-- cannbot:related:end -->

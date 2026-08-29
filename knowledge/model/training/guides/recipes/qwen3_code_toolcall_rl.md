@@ -151,3 +151,12 @@ bash suffix_rl_run.sh    # 含 Suffix 投机解码
 - [qwen3-rl](qwen3_rl.md)（同模型族 Qwen3 的纯 RL 实践，SAM 投机在其上 +10%）
 - [qwen2-code-rl-scalebox](qwen2_code_rl_scalebox.md)（同域并列:ScaleBox Code RL）
 - [qwen-dense](../../../inference/concepts/models/qwen_dense.md)（跨域：基座 Qwen3-1.7B 属 Qwen Dense（非 MoE）模型族，结构/家族对照）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Agent RL 执行范式（asyncLLM 异步生成 + agent_loop 多轮工具调用）](../../concepts/techniques/agent_rl_loop.md)（`related`）：**Agent RL** 与朴素 RLVR 的根本区别在 rollout 阶段的执行形态：朴素 RL 一个 prompt 一次性生成完整 response 再算 reward；Agent RL 让模型在生成过程中**调用外部工具/代码沙盒**，把工具返回结果作为新一轮输入继续推理，**多轮交互**收敛后才算 reward。；训练时模型把 ScaleBox 沙盒当成「Python 工具」在推理过程中多轮调用（写代码→执行→看结果→续推），由含**工具调用奖励**的奖励信号驱动策略提升。。概念卡给出外部工具返回结果驱动下一轮推理的 Agent RL 定义，代码工具配方把它落实为 ScaleBox 中写代码、执行、观察结果并续推的多轮 rollout。
+- [ScaleBox（可扩展分布式代码执行沙盒 + veRL 融合部署）](../../concepts/frameworks/scalebox.md)（`related`）：训练时模型把 ScaleBox 沙盒当成「Python 工具」在推理过程中多轮调用（写代码→执行→看结果→续推）；**ScaleBox**（［icip-cas/ScaleBox］(https://gitcode.com/icip-cas/ScaleBox)）是一个开源的**可扩展分布式代码执行沙盒**。实践页把 ScaleBox 作为 Python 工具嵌入多轮 Code RL，框架页补齐其分布式执行、评估和奖励后端职责。
+- [veRL + ScaleBox 沙盒长上下文 Code RL（DeepSeek-R1-Distill-1.5B / Qwen3-4B / Qwen3-30B-A3B）](qwen2_code_rl_scalebox.md)（`related`）：该实践是 **单轮 Code RL**——模型一次性生成完整代码、由 ScaleBox 执行打分。；训练时模型把 ScaleBox 沙盒当成「Python 工具」在推理过程中多轮调用（写代码→执行→看结果→续推）。两张 Recipe 共享 veRL 与 ScaleBox 底座，但分别给出单轮生成执行和多轮工具交互两种 Code RL 任务链，适合做方案选择。
+- [veRL（火山引擎开源 LLM RL 后训练框架 + 昇腾适配）](../../concepts/frameworks/verl.md)（`related`）：用 ［verl］(../../concepts/frameworks/verl.md) RL 框架 + 适配昇腾的代码执行沙盒 ［ScaleBox］(../../concepts/frameworks/scalebox.md)，在 Atlas A2/A3 单机八卡上实现**长上下文多轮工具调用 Code RL** 训练；它把一次 RL 迭代抽象为多个 worker 角色——**actor**（被训练模型）/ **rollout**（推理生成）/ **reference**（参考模型）/ **reward**（奖励）。实践页是在 veRL 的 actor、rollout、reference、reward 角色链上接入多轮工具调用与沙盒奖励的具体部署。
+<!-- cannbot:related:end -->

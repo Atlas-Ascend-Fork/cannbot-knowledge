@@ -26,8 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LayerNorm](layer_norm.md)（`related`）：当均值和方差已经由上游计算时，Normalize 可跳过 LayerNorm 的统计归约，只完成 rstd 与仿射归一化，是同一公式的可复用下游阶段。
-- [Normalize Tiling](normalize_tiling.md)（`same_topic`）：Normalize 与《Normalize Tiling》的实质衔接是：Normalize 依赖 tiling、归约统计和 Rsqrt，所选卡片覆盖 padding、NaN/rstd 与同步故障。
-- [WelfordFinalize](welford_finalize.md)（`same_topic`）：Normalize 与《WelfordFinalize》的实质衔接是：Normalize 依赖 tiling、归约统计和 Rsqrt，所选卡片覆盖 padding、NaN/rstd 与同步故障。
-- [WelfordUpdate](welford_update.md)（`same_topic`）：Normalize 与《WelfordUpdate》的实质衔接是：Normalize 依赖 tiling、归约统计和 Rsqrt，所选卡片覆盖 padding、NaN/rstd 与同步故障。
+- [Normalize Tiling](normalize_tiling.md)（`related`）：Tiling参数通过Normalize Tiling获取。；host侧Tiling接口，用于获取Normalize kernel计算所需的Tiling参数，分两步：通过GetNormalizeMaxMinTmpSize获取最大和最小临时空间大小；通过GetNormalizeNDTilingInfo获取kernel侧所需tiling参数。。Normalize Kernel 明确消费 Normalize Tiling 生成的参数，右侧又完整描述临时空间和 ND Tiling 两步准备；这是 Host 参数生产到 Kernel 计算消费的互补任务链。
 <!-- cannbot:related:end -->

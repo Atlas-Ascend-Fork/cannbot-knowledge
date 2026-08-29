@@ -26,8 +26,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Hrint](../../../../simt_api/math_functions/bfloat16_type/bfloat16_math_functions/hrint.md)（`related`）：Hrint 与《GetRintTmpBufferFactorSize》的实质衔接是：bfloat16 Hrint 与 half/float rint 及高层 Rint 临时空间接口共享 ties-to-even 任务，类型总览用于对照特殊值和返回精度。
-- [Rint接口](rint_interface.md)（`related`）：“Rint接口”定义：按元素取最接近的整数，同等接近时取偶数，并提供临时空间大小获取接口。；“GetRintTmpBufferFactorSize”定义：获取Rint接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量。实质衔接：Rint 接口页汇总 kernel 操作与两种临时空间估算；AscRint 提供寄存器 C API 的同一 ties-to-even 数值语义用于实现路径对照。
-- [GetRintMaxMinTmpSize](get_rint_max_min_tmp_size.md)（`same_topic`）：焦点处理Rint 临时空间上下界与 factor 的配套 Tiling 契约；GetRintTmpBufferFactorSize正文说明“获取Rint接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量”。候选把 host 侧 max/min 查询、factor 推算与 Rint kernel 调用连成同一 Tiling 参数链。
-- [Rint](rint.md)（`same_topic`）：GetRintTmpBufferFactorSize说明获取Rint接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量。
+- [Rint](rint.md)（`related`）：获取Rint接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetRintMaxMinTmpSize获取。。焦点查询用于在固定 buffer 下切出候选 Rint 每次可处理的元素数。
 <!-- cannbot:related:end -->

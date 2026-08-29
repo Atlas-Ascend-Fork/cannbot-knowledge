@@ -23,9 +23,5 @@ thread_block_tile不提供默认构造函数，可通过tiled_partition接口从
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ThreadBlockTile协作组sync](sync.md)（`related`）：ThreadBlockTile协作组sync 与《thread_block_tile构造函数》的实质衔接是：thread_block_tile::sync 依赖 tiled_partition 形成的 tile；tile 构造、线程秩与通用 cooperative-group sync 明确参与者和内存可见性边界。
-- [Ballot](ballot.md)（`same_topic`）：Ballot 与《thread_block_tile构造函数》的实质衔接是：Ballot 把 thread_block_tile 各线程谓词压成位图；all/any、size、sync 与 tile 构造定义参与线程，warp vote 和分支优化说明结果的实际用途。
-- [NumThreads](num_threads.md)（`same_topic`）：NumThreads 与《thread_block_tile构造函数》的实质衔接是：NumThreads 返回当前 thread_block_tile 的规模；tile 构造、size、rank、ballot 和 partition 决定成员集合，其他 group 的同名接口不能混用对象作用域。
-- [thread_block_tile简介](thread_block_tile_intro.md)（`same_topic`）：《thread_block_tile简介》明确“thread_block_tile是一个模板类，用于管理指定大小的线程子组。”；它与《thread_block_tile构造函数》的“thread_block_tile不提供默认构造函数，可通过tiled_partition接口从另一个协作组中划分得到。”在实际调用参数、数据流或结果校验上直接衔接。
-- [tiled_partition](../tiled_partition.md)（`same_topic`）：《thread_block_tile构造函数》明确“thread_block_tile不提供默认构造函数，可通过tiled_partition接口从另一个协作组中划分得到。”；它与《tiled_partition》的“将线程组划分为多个更小、固定大小的子组，提供模板和非模板版本，分别用于编译时和运行时确定划分大小，模板版本支持跨Warp。”在实际调用参数、数据流或结果校验上直接衔接。
+- [tiled_partition](../tiled_partition.md)（`related`）：tiled_partition API用于将一个线程组划分为多个更小、固定大小的子组，以便线程在以更精细的粒度上进行协作。；thread_block_tile不提供默认构造函数，可通过tiled_partition接口从另一个协作组中划分得到。前者定义划分操作，后者把该操作确定为 thread_block_tile 的构造入口。
 <!-- cannbot:related:end -->

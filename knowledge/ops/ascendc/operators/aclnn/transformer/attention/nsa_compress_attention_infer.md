@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress_attention_infer/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:49:34Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -667,7 +667,7 @@ QK、缩放、mask、Softmax、importance和PV累加保持FP32；仅供PV的概�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | README/API支持；OpDef `ascend910b` | 支持；`ascend910_93` | README/API明确不支持 |
 | Host/Launcher | 共用C220 Tiling/MIX1:2 | 共用 | 无公开route |
@@ -690,7 +690,7 @@ QK、缩放、mask、Softmax、importance和PV累加保持FP32；仅供PV的概�
 
 | 阶段 | 文件 | 符号 | 支撑内容 |
 |---|---|---|---|
-| 支持/语义 | `attention/nsa_compress_attention_infer/README.md` | 产品表/公式 | A2/A3支持、A5不支持 |
+| 支持/语义 | `attention/nsa_compress_attention_infer/README.md` | 产品表/公式 | A2/A3支持、950不支持 |
 | API说明 | `attention/nsa_compress_attention_infer/docs/aclnnNsaCompressAttentionInfer.md` | 两段式原型 | 公开契约 |
 | 声明 | `attention/nsa_compress_attention_infer/op_host/op_api/aclnn_nsa_compress_attention_infer.h` | 两符号 | ABI顺序 |
 | 实现 | `attention/nsa_compress_attention_infer/op_host/op_api/aclnn_nsa_compress_attention_infer.cpp` | GetWS/Run | 校验/连续化/ViewCopy |
@@ -719,3 +719,9 @@ QK、缩放、mask、Softmax、importance和PV累加保持FP32；仅供PV的概�
 | 同步 | flag0 QK→AIV、flag1 P→AIC、HardEvent | mode2/pipe/ID/process序 | AIC/AIV Process |
 | 精度/tail | FP32主链、末端cast | BF16 RINT、FP16 NONE、真实M/N/K | Softmax/MMAD/Fixpipe |
 | 失败 | Host失败关闭、多token退化 | 不补mask内容/未知key fallback | checks/entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NsaCompress A2 ACLNN 算子知识](nsa_compress.md)（`related`）：“｜ Kernel 路线 ｜ R-001：key 0 通用滑窗压缩；FP16/BF16 仅模板类型不同，启动拓扑相同 ｜”明确给出左端事实；“令压缩 KV 长度为 `Scmp`，GQA 分组 `G=numHeads/numKeyValueHeads`。AIC 先以 FP32 累加生成 `QKᵀ`；AIV 依次乘 `scaleValue`、在 `attenMaskFlag==1` 时按实际 Q/选择前 KV 长度把需要屏蔽行的最后一个压缩位置写为 `-3e38`、执行 FP32 Softmax，并同时输出 FP32 概率到 importance-score 路径和 FP16/BF16 概率到第二次 MMAD。AIC 将后者与 V 相乘、FP32 累加后转回输入 dtype。AIV 按源码权重三角窗累计 `Pslc`，再对每个 KV head 的 `G` 个 Q head 求和；边界候选写入 FP32 正无穷位型，最后 `TopK<float,...TOPK_NORMAL>` 输出 `int32` 索引。”明确给出右端事实。NsaCompress 以窗口和步长产出压缩序列，AttentionInfer 将压缩 KV 长度 Scmp 用于 QK、Softmax、PV 与选择块 TopK，前者产物进入后者的压缩注意力阶段。
+<!-- cannbot:related:end -->

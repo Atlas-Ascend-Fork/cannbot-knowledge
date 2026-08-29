@@ -116,3 +116,11 @@ VGGT 原生仅单卡。本仓为 **Global Attention** 引入序列并行（`--en
 - 源仓：[cann-recipes-spatial-intelligence](https://gitcode.com/cann/cann-recipes-spatial-intelligence/tree/92747ee512faebff6068704f893d19d622f7282a)
 - 平台：[atlas-a2](../platforms/atlas_a2.md)
 - cann-infer 跨域共享概念：[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)、[weight-nz](../../../inference/concepts/techniques/weight_nz.md)、[w8a8c8](../../../inference/concepts/quantization/w8a8c8.md)、[ulysses](../../../inference/concepts/parallelism/ulysses.md)、[ring-attention](../../../inference/concepts/parallelism/ring_attention.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ring Attention Sequence Parallelism](../../../inference/concepts/parallelism/ring_attention.md)（`related`）：“**Ring（序列维度切分）**：`use_ring_overlap` 边通信边计算 —— 异步 allgather K/V 的同时算 local attention，等通信完成再算 cross attention，最后**用 NPU FIA 返回的 LSE（log-sum-exp）做分块结果数值稳定合并**。”；“概念上（见下方 HunyuanVideo 文档引用）以 P2P 环形逐跳传递 KV；但本仓 `module/unified_sp/core.py` 的实际实现是用一次 `all_gather_into_tensor` 把其他所有 rank 的 1/SP KV 一次性收齐，再对「本地 FA」与「其他 rank 合并 FA」共 2 路输出做 LSE（Log-Sum-Exp）合并（非逐跳 P2P、非 SP-1 串行轮）。”。目标卡补齐焦点 overlap 路径的通信与 LSE 合并机制。
+- [Ulysses Sequence Parallelism](../../../inference/concepts/parallelism/ulysses.md)（`related`）：“**Ulysses（头维度切分）**：通过 all-to-all 把 `［B, shard_s, H, D］` 与 `［B, S, shard_hc, D］` 互换 —— 每 rank 持有完整序列、部分 attention 头。”；“Ulysses 是面向**长序列多头注意力**的序列并行策略：在 attention 以外的部分沿 S（sequence）维度切分，在 attention 处通过一次 all-to-all 把切分维度从 S 换到 N（num_heads），attention 内部按 head 并行、attention 输出再 all-to-all 换回 S。”。两端给出 VGGT 实例与通用 Ulysses 数据重排合同。
+- [npu_fused_infer_attention_score (v1 / v2)](../../../inference/concepts/kernels/fused_infer_attention_score.md)（`related`）：“**Global Attention**（跨帧长序列）：切换到 `torch_npu.npu_fused_infer_attention_score`，`input_layout="BNSD"`、`pre_tokens=next_tokens=65535`、`inner_precise=0`。”；“昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算：`softmax(QKᵀ/√d)·V`，支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。”。FIA 卡补齐 VGGT Global Attention 的算子语义与参数边界。
+<!-- cannbot:related:end -->

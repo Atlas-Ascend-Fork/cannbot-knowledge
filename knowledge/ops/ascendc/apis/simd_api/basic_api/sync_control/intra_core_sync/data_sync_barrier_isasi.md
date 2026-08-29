@@ -26,10 +26,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CrossCoreSetFlag](../inter_core_sync/cross_core_set_flag_isasi.md)（`related`）：CrossCore flag 作用于不同核，不是 DataSyncBarrier 的核内替代；同步域需严格区分。
-- [PipeBarrier](pipe_barrier_isasi.md)（`related`）：PipeBarrier 只同步指定流水，而 DataSyncBarrier 建立更广的数据可见性；依赖范围决定选型。
-- [SetFlag/WaitFlag](set_flag_wait_flag_isasi.md)（`related`）：明确 producer/consumer pipeline 时 flag/wait 可替代全局数据屏障，减少无关流水等待。
-- [关键特性说明](key_features.md)（`related`）：需要更广数据可见性时使用 DataSyncBarrier，代价和范围均更大。
-- [AscSyncDataBarrier](../../../c_api/sync/asc_sync_data_barrier.md)（`same_topic`）：《AscSyncDataBarrier》处理“阻塞后续指令执行，直到所有之前的内存访问指令执行结束，用于解决Scalar的内存依赖。”。《DataSyncBarrier》提供“阻塞后续指令执行，直到所有之前的内存访问指令执行结束，可通过模板参数控制需要等待的内存位置，用于解决Scalar的内存依赖。”，其具体合同或探针直接接入Scalar 内存依赖的 data barrier、pipe barrier 选择和同步位置验证。
-- [核内同步能力概述](intra_core_sync_overview.md)（`same_topic`）：概览解释 DataSyncBarrier、PipeBarrier 和 event 的同步范围，防止用过强/过弱屏障。
+- [DepthwiseConv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/depthwise_conv_2d_950.md)（`related`）：“｜ index ｜ `DataSyncBarrier<UB>` ｜ scalar writes ｜ VF ｜ index table ｜ exact uint32 index ｜”；“阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束，用于解决Scalar的内存依赖。”。stride-2 Gather route 在 Scalar 写 index table 后用 UB barrier 再让 VF 读取，API 合同解释该依赖为何必要。
+- [GatherNd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/gather_nd_950.md)（`related`）：shape helper ｜ `DataSyncBarrier<UB>` ｜ scalar SetValue ｜ SIMD ｜ helpTBuf ｜ T3 int32/64 exact阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束，用于解决Scalar的内存依赖。GatherNd 的 shape helper 表明确实由 Scalar 写 `helpTBuf`、随后交给 SIMD 消费，接口卡定义屏障等待先前内存访问完成；在该位置插入 UB 屏障正好闭合生产者到消费者的数据依赖。
 <!-- cannbot:related:end -->

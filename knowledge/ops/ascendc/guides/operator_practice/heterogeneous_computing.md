@@ -45,10 +45,3 @@ Ascend C算子的实现主要包含两个部分：
 算子执行过程中涉及到Host和Device的数据交换。这里仅针对Tiling参数的传递，给出具体的数据流：Host侧Tiling算法根据算子具体输入输出的信息，完成Tiling参数的计算，并存放在Tiling结构体中；将Host侧的Tiling结构体发送到Device侧，Device侧的算子获取并解析Tiling结构体，基于该信息执行后续的算子计算逻辑。
 
 **图1**  算子Tiling传递数据流
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [异构系统与编程模型](../getting_started/quick_start/heterogeneous_system_and_programming_model.md)（`same_topic`）：《异构计算（算子实践）》处理“使用Ascend C进行编程时，会涉及到在两个不同的平台（Host、Device）上开发代码。本章简单介绍Host、Device之间的差异，便于开发者宏观地了解这个异构系统；同时给出算子相关的数据流，结合异构架构的特点，开发者可以进一步了解应该如何合理安排算子代码的执行位置，便于得到更好的性能。”。《异构系统与编程模型》提供“> 本文作为算子编程快速入门章节，将从昇腾异构系统基础入手，逐步拆解编程模型核心要素，帮助您快速建立昇腾算子编程的整体认知，为后续实操开发奠定基础。”，其具体合同或探针直接接入Host/Device 异构系统与算子编程模型的同一入门主题。
-- [异构系统（编程模型）](../programming_guide/programming_model/heterogeneous_system.md)（`same_topic`）：两篇指南都建立 Host CPU/Memory 与 Device NPU/Memory 的异构模型；编程模型页给出 Runtime 调度和数据传输，算子实践页把同一模型落实为 Host Tiling 与 Device Kernel 分工。
-<!-- cannbot:related:end -->

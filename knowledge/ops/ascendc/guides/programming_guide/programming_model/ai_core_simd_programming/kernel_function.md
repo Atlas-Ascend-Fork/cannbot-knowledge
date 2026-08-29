@@ -39,16 +39,3 @@ platforms: [agnostic]
 Host侧通过内核调用符>>的语法形式调用核函数，如下所示：
 >>内的参数为核函数的执行配置，由3个参数决定，详细用法请参考核函数配置：
 -   numBlocks：规定了核函数将会在几个核上执行，对于不同的硬件架构和算子类型，numBlocks的设置规则有一些区别，详见核函数配置。每个执行该核函数的核会被分配一个逻辑ID，即block_idx，可以在核函数的实现中使用内置变量block_idx获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [核函数配置](../../../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/kernel_function_config.md)（`explains`）：Kernel 调用中的 numBlocks 等执行配置由配置接口展开，直接决定多份 Kernel 副本的调度。
-- [AI Core SIMD编程模型概述](overview.md)（`related`）：AI Core SIMD编程模型概述 与《核函数（AI Core SIMD编程）》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
-- [CppTensorProgrammingOverview](cpp_tensor_programming/cpp_tensor_programming_overview.md)（`related`）：CppTensorProgrammingOverview 与《核函数（AI Core SIMD编程）》的实质衔接是：C++ Tensor 编程用 Global/Local/RegTensor 覆盖 GM、UB/L1/L0、Register；静态 Tensor、Memory/Reg/Cube、kernel 与 TPipe 材料展开同一对象化数据流。
-- [Cube矩阵计算编程](c_pointer_programming/cube_matrix_computation.md)（`related`）：Cube矩阵计算编程 与《核函数（AI Core SIMD编程）》的实质衔接是：Cube C 指针编程按 GM→L1→L0、Mmad、L0C→GM 四阶段执行；所选架构、分形、Fmatrix、搬运、Mmad 和 tile 边界材料分别约束每一阶段。
-- [核函数与VF函数（SIMD与SIMT混合编程）](../../advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md)（`related`）：混合编程指南补充 Kernel 与 VF 的调用边界，可用于含 __simt_vf__ 或 __simd_vf__ 辅助函数的实现。
-- [核函数（AI Core SIMT编程）](../ai_core_simt_programming/kernel_function.md)（`related`）：SIMT Kernel 同样由 Host 启动但使用不同执行模型，和 SIMD Kernel 的限定符、线程抽象可对照选型。
-- [Memory矢量计算编程](c_pointer_programming/memory_vector_computation.md)（`same_topic`）：Memory矢量计算编程 与《核函数（AI Core SIMD编程）》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [抽象硬件架构（AI Core SIMD编程）](abstract_hardware_architecture.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《核函数（AI Core SIMD编程）》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
-<!-- cannbot:related:end -->

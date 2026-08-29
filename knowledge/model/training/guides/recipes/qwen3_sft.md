@@ -83,3 +83,11 @@ SFT 训练由 `posttrain_gpt.py` 拉起（区别于 pretrain 入口）。关键�
 - [qwen-dense](../../../inference/concepts/models/qwen_dense.md)（跨域：Qwen2/Qwen3 dense 模型的昇腾推理部署——微调产出的 HF 权重可流向该部署路径）
 - [qwen3-sft-torchtitan](qwen3_sft_torchtitan.md)（对照：torchtitan-npu 版 Qwen3-30B-A3B SFT（vs 本 MindSpeed 1.7B dense））
 - [peft-lora](../../concepts/techniques/peft_lora.md)（参数高效微调：LoRA/CC-LoRA/QLoRA/LU-LoRA，可替代全参 SFT 省显存）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MindSpeed（昇腾大模型训练加速框架 + 低精度训练）](../../concepts/frameworks/mindspeed.md)（`related`）：焦点卡的实际栈是“训练栈走 **MindSpeed-LLM + Megatron mcore**（Megatron 风格、需要 HF↔mcore 权重格式互转）”；框架卡说明“**MindSpeed-LLM**：面向 LLM 场景的上层套件”，并给出其模型、数据与训练入口职责，为四步 SFT 脚本提供框架分层。
+- [PEFT / LoRA 家族（LoRA / CC-LoRA / QLoRA / LU-LoRA / LoRA-MoE）](../../concepts/techniques/peft_lora.md)（`related`）：焦点卡把候选定位为“SFT 全流程的入门样例”，候选卡说明 LoRA 家族“可替代全参 SFT 省显存”；Qwen3 全参四步链提供基线，PEFT 卡给出在同一训练链上替换为低秩适配的选择与参数。
+- [Qwen3-30B-A3B torchtitan-npu SFT（GSM8K + Ulysses CP 开箱配置）](qwen3_sft_torchtitan.md)（`related`）：焦点卡以“昇腾 SFT（监督微调）最小上手样例：用 ［mindspeed］(../../concepts/frameworks/mindspeed.md) 系的 **MindSpeed-LLM**（叠加 Megatron-LM `core_v0.12.1` 的 mcore 训练栈），对 **Qwen3-1.7B**（dense）在 **alpaca** 指令数据集上跑监督微调，**单卡即可**——硬件要求为「卡数：1张A3」。”给出单卡 dense 路线；目标卡明确“与 ［qwen3-sft］(qwen3_sft.md) 是昇腾 SFT 的两条独立技术路线”，并列出 torchtitan MoE 多卡路线，形成具体选型对照。
+<!-- cannbot:related:end -->

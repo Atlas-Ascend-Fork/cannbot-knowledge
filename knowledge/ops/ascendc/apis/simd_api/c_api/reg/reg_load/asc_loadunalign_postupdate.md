@@ -22,7 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadunalignPre](asc_loadunalign_pre.md)（`related`）：AscLoadunalignPostupdate 正文明示需配合 asc_loadunalign_pre；Pre 初始化非对齐搬入状态，Postupdate 才能连续加载并更新源地址。
-- [UnalignRegForLoadAndUnalignRegForStore](../../../basic_api/reg_vector_compute/register_data_types/unalign_reg_for_load_unalign_reg_for_store.md)（`related`）：UnalignRegForLoadAndUnalignRegForStore 与《AscLoadunalignPostupdate》的实质衔接是：非对齐寄存器是 LoadUnAlign Pre→Load 与 Store→Post 协议的临时状态，所选 C/C++ 接口、连续优化和 Init/Postupdate 共同闭合搬入搬出流程。
-- [AscLoadunalign](asc_loadunalign.md)（`same_topic`）：普通版本要求用户手动推进 UB 地址，Postupdate 版本把地址更新合并进调用，是同一载入的循环组织选项。
+- [AscLoadunalignPre](asc_loadunalign_pre.md)（`related`）：“数据搬运接口，适用于从UB非32B对齐地址起始连续搬入。”明确给出左端事实；“用于在进行非对齐数据搬入前的初始化，需配合asc_loadunalign接口使用。”明确给出右端事实。Pre 初始化 vector_load_unalign 状态，Postupdate 以该状态从非 32B 对齐 UB 连续搬入并更新源指针，形成成对调用契约。
 <!-- cannbot:related:end -->

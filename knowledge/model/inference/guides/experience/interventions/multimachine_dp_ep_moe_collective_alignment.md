@@ -54,3 +54,10 @@ MoE 模型多机 / 多进程 [DP](../../../concepts/parallelism/data_parallel.md
 
 - `diff 事实`（@2c45117，`contrib/vllm-pd-hybrid-dp-ep/omni_v0.5.0.patch`）：phase-hint all-reduce / dummy-batch / 分离调度 / chunk-prefill 互斥断言、`qwen3_moe` 的变长 `all_gather_v` 换 `all_reduce(MAX)` pad + two-stage all_gather 均落在合并 diff。"变长算子不支持多机"为该 patch 作者动机说明。
 - 溯源下探：[cann-recipes-infer-pr-92-support-pd-hybrid-dp-ep-on-4-a2-machines-for-vllm](https://gitcode.com/cann/cann-recipes-infer/merge_requests/92)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [多机集合通信 HCCL_BUFFSIZE too SMALL —— 调大且各 rank 一致](../../../runbooks/runtime/hccl_buffsize_too_small.md)（`related`）：多机大 EP 的 HCCL buffer 不足另见 ［hccl-buffsize-too-small］(../../../runbooks/runtime/hccl_buffsize_too_small.md)。；多机多卡集合通信（大 ［EP］(../../concepts/parallelism/expert_parallel.md) dispatch/combine、CP 等、长序列）所需 HCCL buffer 超过默认 `HCCL_BUFFSIZE`。。部署指南把多机大 EP 的通信缓冲不足明确分流到该运行手册，后者给出容量诊断与各 rank 一致配置步骤。
+- [集合通信参与方逐 rank 对齐：按本地状态决定「是否进入集合通信」导致发散型挂死/超时](../../../runbooks/runtime/collective_participation_per_rank_consistency.md)（`related`）：**凡相互做 MoE 集合通信的 DP 进程，必须在同一状态下发起集合通信**；同一进程组里做**同一次**集合通信的各 rank，参与方必须**逐 rank 完全一致**。干预指南用全局 phase、dummy 参与和定长通信落实运行手册的逐 rank 到达一致性约束。
+<!-- cannbot:related:end -->

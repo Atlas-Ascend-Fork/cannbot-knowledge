@@ -93,14 +93,6 @@ __simd_callee__ inline void Not(U& dstReg, U& srcReg, MaskReg& mask);
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Erf](../../apis/simd_api/adv_api/math_compute/erf_interface/erf.md)（`exemplifies`）：该 runbook 证明 dav-3510 Reg 命名空间没有 Erf 封装，需选用高阶 Erf 或已支持的基础运算组合，给出 API 层选择边界。
-- [Erf接口](../../apis/simd_api/adv_api/math_compute/erf_interface/erf_interface.md)（`exemplifies`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装说明Ascend950/dav-3510 的 AscendC::Reg 一元运算头文件仅声明 Abs/Relu/Exp/Sqrt/Ln/Log/Log2/Log10/Neg/Not 十种操作，不含 Erf/Tanh/Sigmoid 等超越函数；在 Reg API 策略下实现 GELU exact 模式需将 erf 分解为多项式 + Exp + Mul + Add 组合。
-- [Gelu](../../apis/simd_api/adv_api/activation_functions/gelu_interface/gelu.md)（`exemplifies`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《Gelu》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
-- [Htanh](../../apis/simt_api/math_functions/bfloat16_type/bfloat16_math_functions/htanh.md)（`exemplifies`）：《Htanh》说明计算bfloat16_t输入数据的双曲正切值。；《Ascend950 Reg 命名空间无 Erf/Tanh 封装》说明Ascend950/dav-3510 的 AscendC::Reg 一元运算头文件仅声明 Abs/Relu/Exp/Sqrt/Ln/Log/Log2/Log10/Neg/Not 十种操作，不含 Erf/Tanh/Sigmoid 等超越函数；在 Reg API 策略下实现 GELU exact 模式需将 erf 分解为多项式 + Exp + Mul + Add 组合。。二者在不同标量/双分量dtype的tanh接口共享双曲正切语义；Reg缺少Tanh封装的故障决定何时不能直接换用Reg层接口上存在可执行的直接衔接。
-- [Htanh](../../apis/simt_api/math_functions/half_type/half_math_functions/htanh.md)（`exemplifies`）：Htanh 与《Ascend950 Reg 命名空间无 Erf/Tanh 封装》的实质衔接是：half、bfloat16、half2 和 float Tanh 是同一函数的载体变体；Reg 缺少 Tanh 的故障卡明确了不能跨层照搬的边界。
-- [Reg矢量计算概述](../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/overview.md)（`exemplifies`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《Reg矢量计算概述》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
-- [Tanh](../../apis/simd_api/adv_api/math_compute/tanh_interface/tanh.md)（`exemplifies`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《Tanh》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
-- [Tanhf](../../apis/simt_api/math_functions/float_math_functions/tanhf.md)（`exemplifies`）：Tanhf 与《Ascend950 Reg 命名空间无 Erf/Tanh 封装》的实质衔接是：Tanhf 与半精度/bfloat16、SIMD Tanh 入口实现同一双曲正切语义，Atanhf 是其反函数；Reg 缺少 Tanh 封装的案例明确需要选择这些现有入口而非虚构 Reg API。
-- [AscendC GELU 三系数 erfc 在大值域 fp32 精度不足](../precision/gelu_erfc_polynomial_precision_budget.md)（`same_topic`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《AscendC GELU 三系数 erfc 在大值域 fp32 精度不足》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
-- [GELU 负尾部用 erfc 形态避免大数相消](../precision/gelu_negative_tail_erfc_avoids_cancellation.md)（`same_topic`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《GELU 负尾部用 erfc 形态避免大数相消》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
+- [AscendC GELU 三系数 erfc 在大值域 fp32 精度不足](../precision/gelu_erfc_polynomial_precision_budget.md)（`related`）：编译卡确认“Reg 命名空间不提供这些超越函数封装，exact 模式必须将 erf 分解为 Reg 已有操作的组合。”；精度卡在该分解上选择“保留无相消的 GELU 公式和一次 Newton 修正，只恢复 erfc 多项式的精度阶数。”，补充三系数失败后恢复五系数的验证闭环。
+- [Gelu 950 Direct Invoke 算子知识](../../operators/direct/nn/activation/gelu_950.md)（`related`）：编译卡指出“GELU exact 模式的 erf 必须分解为 Reg 操作组合”；950 Direct 算子记录“交付件以此为转换参考，按输出 dtype 压缩中央区近似”，展示了不依赖 Reg::Erf 的实际六路 Device 实现及其 tail/NaN 恢复边界。
 <!-- cannbot:related:end -->

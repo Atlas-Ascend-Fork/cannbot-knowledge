@@ -158,3 +158,10 @@ save_patch_enabled: bool = False
   - 离线转换：https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/scripts/checkpoint_conversion/convert_to_hf.py
   - DSV3.2 save patch：https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/models/deepseek_v32/model.py
 - 相关页：[torchtitan](../frameworks/torchtitan.md) · [swap-optimizer](swap_optimizer.md) · [deepseek-v32-pretrain](../../guides/recipes/deepseek_v32_pretrain.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Qwen3-30B-A3B torchtitan-npu SFT（GSM8K + Ulysses CP 开箱配置）](../../guides/recipes/qwen3_sft_torchtitan.md)（`related`）：“HF safetensors 不含优化器/学习率调度器/训练步数，仅用于从预训练权重启动或训练后导出权重。”给出焦点端事实；“SFT 默认**直接从 HuggingFace 格式加载**预训练权重，无需 mcore 风格的格式互转”给出候选端事实。Checkpoint 卡界定 HF 权重只适合初始化或导出，Qwen3 SFT 指南给出直接加载 HF 预训练权重的实际入口，二者闭合格式选择与启动场景。
+- [Swap Optimizer（优化器状态卸载 Host 内存）](swap_optimizer.md)（`related`）：“开启后优化器 state 仍随 DCP checkpoint 完整保存与恢复”给出焦点端事实；“checkpoint 必须从 CPU cache 出入，不能直接序列化空壳。”给出候选端事实。Checkpoint 卡承诺 swap optimizer state 的 DCP 保存恢复语义，Swap Optimizer 卡给出 CPU cache 是真实状态源的实现约束，二者闭合保存与续训合同。
+<!-- cannbot:related:end -->

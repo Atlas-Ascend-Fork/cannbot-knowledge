@@ -75,7 +75,7 @@
 - [AscNeScalar](asc_ne_scalar.md)：src中的每个元素逐个与标量value比较大小，如果某个位置上的元素不等于value，则输出结果dst对应比特位为1，否则为0。
 - [AscNot](asc_not.md)：asc_not（矢量计算）
 - [AscOr](asc_or.md)：每对元素按位或运算，
-- [AscPairReduceSum](asc_pair_reduce_sum.md)：对输入数据做归约操作，得到数据总和。相邻两个（奇偶）元素求和，例如（a1，a2，a3，a4，a5，a6…），相邻两个数据求和为（a1+a2，a3+a4，a5+a6…）。
+- [AscPairReduceSum](asc_pair_reduce_sum.md)：对输入数据做归约操作，得到数据总和。相邻两个（奇偶）元素求和，例如（a1，a2，a3，a4，950，a6…），相邻两个数据求和为（a1+a2，a3+a4，950+a6…）。
 - [AscRcp](asc_rcp.md)：执行矢量的取倒数运算。
 - [AscReduce](asc_reduce.md)：以内置固定模式对应的二进制或者用户自定义输入的数值对应的gather mask（数据收集的掩码），从源操作数中选取元素写入目的操作数中。
 - [AscRelu](asc_relu.md)：按元素做线性整流Relu，

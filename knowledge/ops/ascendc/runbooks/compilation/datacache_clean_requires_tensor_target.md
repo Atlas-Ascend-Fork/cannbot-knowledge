@@ -217,14 +217,5 @@ __simt_vf__ __aicore__ inline void scatter_simd(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCacheCleanAndInvalid](../../apis/simd_api/basic_api/cache_control/data_cache_clean_and_invalid.md)（`exemplifies`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《DataCacheCleanAndInvalid》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
-- [DataCachePreload](../../apis/simd_api/basic_api/cache_control/data_cache_preload.md)（`exemplifies`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《DataCachePreload》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
-- [SetL2CacheHint](../../apis/simd_api/basic_api/data_structures/global_tensor/set_l2_cache_hint.md)（`exemplifies`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《SetL2CacheHint》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
-- [WriteGmByPassDCache](../../apis/simd_api/basic_api/scalar_compute/write_gm_by_pass_d_cache_isasi.md)（`exemplifies`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《WriteGmByPassDCache》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
-- [asc_datacache_preload](../../apis/simd_api/c_api/cache_ctrl/asc_datacache_preload.md)（`exemplifies`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《asc_datacache_preload》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
-- [系统缓存概述（缓存控制）](../../apis/simd_api/basic_api/cache_control/system_cache_overview.md)（`exemplifies`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《系统缓存概述（缓存控制）》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
-- [缓存控制](../../apis/simd_api/basic_api/cache_control/cache_control.md)（`exemplifies`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《缓存控制》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
-- [缓存控制](../../apis/simd_api/c_api/cache_ctrl/cache_control.md)（`exemplifies`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《缓存控制》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
-- [设置DCI编译选项来减少算子尾开销](../../guides/operator_practice/simd_operator_optimization/overhead_optimization/dci_compile_option.md)（`related`）：指南要求显式 DataCacheCleanAndInvalid，Runbook 进一步以编译器重载证明该接口必须带 LocalTensor/GlobalTensor 目标，不能臆造无参全缓存调用。
-- [Ascend950 DataCopy 写回 L2 驱逐丢对角线](../precision/ascend950_datacopy_l2.md)（`same_topic`）：DataCacheCleanAndInvalid 无参调用导致编译失败 与《Ascend950 DataCopy 写回 L2 驱逐丢对角线》的实质衔接是：编译失败源于把 DataCacheCleanAndInvalid 臆造成无参全缓存调用；真实 Tensor 目标 API、preload/cache 总览、L2 hint 和 DCI 写回故障说明缓存操作必须绑定对象与执行边界。
+- [DataCacheCleanAndInvalid](../../apis/simd_api/basic_api/cache_control/data_cache_clean_and_invalid.md)（`exemplifies`）：当前 CANN 头文件暴露的是以 `LocalTensor<T>` 或 `GlobalTensor<T>` 为目标的函数重载，因此模板枚举解析和实参数量同时不满足契约。；函数原型提供基于GM地址和长度的清除方式。参数包含GM地址指针和数据长度。。运行手册的无参编译失败必须回到候选接口的显式目标范围契约，而不能臆造全缓存事件。
 <!-- cannbot:related:end -->

@@ -27,12 +27,3 @@ platforms: ['950']
 - 开启饱和模式和非饱和模式时，需配置ctrl寄存器，ctrl寄存器
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscInt322Uint16](asc_int322uint16.md)（`related`）：AscInt322Uint16 与 focal 具有相同目标 uint16，但源端有符号性不同，可对照判断负数和溢出处理。
-- [AscUint162uint32](asc_uint162uint32.md)（`related`）：AscUint162uint32 是 AscUint322uint16 的反向位宽变换，可用于核对窄化后恢复时的范围与信息损失。
-- [AscUint322int16](asc_uint322int16.md)（`related`）：AscUint322int16 与 focal 具有相同 uint32 源和 16 位目标宽度，但目标符号性不同，适合对照饱和或截断边界。
-- [asc_uint322uint8 (废弃)](asc_uint322uint8_deprecated.md)（`related`）：焦点处理废弃 uint32→uint8 转换的邻接位宽替代链；AscUint322uint16正文界定“将uint32_t类型数据转换为uint16_t类型，支持饱和与非饱和模式”。候选给出逆向转换或 uint32→uint16→uint8 邻接链，避免把无关 dtype 转换当替代。
-<!-- cannbot:related:end -->

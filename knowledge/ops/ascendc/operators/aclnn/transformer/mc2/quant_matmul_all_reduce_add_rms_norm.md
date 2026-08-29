@@ -66,7 +66,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce_add_rms_norm/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:41:43Z"
-updated_at: "2026-08-24T19:59:17Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -777,7 +777,7 @@ FP16 route 由 BmmDequant 直接形成 FP16 GM 输出；BF16 route 注册 Matmul
 
 - 适用：A2 INT8×INT8、FP16 UINT64 scale或BF16 scale。
 - 前提：outer key、binary dtype、编译宏与HCCL dtype一致。
-- 失效：per-token、INT8通信、A5或其它dtype产生其它key/body，本卡不覆盖。
+- 失效：per-token、INT8通信、950或其它dtype产生其它key/body，本卡不覆盖。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -798,7 +798,7 @@ FP16 route 由 BmmDequant 直接形成 FP16 GM 输出；BF16 route 注册 Matmul
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持，公开文档√ | 明确× | 950PR/950DT明确× |
 | Host/Launcher | ascend910b OpDef、arch22 Tiling、AICPU HCCL | 无公开路线 | 无公开路线 |
@@ -864,3 +864,9 @@ FP16 route 由 BmmDequant 直接形成 FP16 GM 输出；BF16 route 注册 Matmul
 | 同步 | batch schedule、Mc2SyncAll、DCCI、AIV SyncAll、events | 全核驻留；计数发布后才读 | PostTiling/Mc2SyncAll |
 | 精度与尾块 | FP16/BF16分离；FP32 RMS；BF16 RINT；tile/tail独立 | scale dtype、cast/round、row/col tail | BmmDequant*/ARN bodies |
 | 失败边界 | 空域短路、Host错误、unknown无body | 不得把非法key/平台改为成功输出 | ACLNN body/routers |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [QuantMatmulAllReduce A2 ACLNN 算子知识](quant_matmul_all_reduce.md)（`related`）：｜ 计算语义 ｜ `qmm=dequantScale*(x1_int8@x2_int8+bias_int32)`；`mmOut=AllReduceSum(qmm)`；`y=mmOut+residual`；`normOut=y/sqrt(mean(y²)+epsilon)*gamma` ｜；普通路径为 `Y=AllReduce(x2Scale*x1ScaleOptional*(x1@x2+bias)+x3)`。。融合算子的前半段直接复用 QuantMatmul+AllReduce SUM 任务链，随后再接 residual add 与 RMSNorm，基础算子卡帮助拆解融合节点的数据流。
+<!-- cannbot:related:end -->

@@ -29,8 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__uint2float_rd](_uint2float_rd.md)（`same_topic`）：__uint2float_rd 与《__uint2float_rz》的衔接是：候选覆盖 uint 到 float 的 rn/rd/ru/rz 变体及相邻整数宽度，直接用于核对 focal 的向下舍入和输入范围边界。
-- [__uint2float_rn](_uint2float_rn.md)（`same_topic`）：两卡均为 uint32→float，仅 rn 与 trunc 舍入不同；在不能精确表示的整数上可直接按误差方向选型。
-- [__uint2float_rna](_uint2float_rna.md)（`same_topic`）：rz 向零取整；对大整数不能精确表示时与 rna 可能产生不同 float。
-- [__uint2float_ru](_uint2float_ru.md)（`same_topic`）：__uint2float_ru 与《__uint2float_rz》的实质衔接是：候选覆盖 uint32→float 的其他舍入方向、signed int 与 uint64 输入；它们直接对照 2^24+1 等不可精确表示整数在 ru 下的选择。
+- [__uint2float_rd](_uint2float_rd.md)（`same_topic`）：“功能：遵循CAST_FLOOR模式，将uint32类型数据转换为浮点数，返回转换后的值。”与“功能：遵循CAST_TRUNC模式，将uint32类型数据转换为浮点数，返回转换后的值。”是双方正文中的具体合同。两端都将 uint32 转换为浮点数，并分别声明 CAST_FLOOR 与 CAST_TRUNC，互读可核对舍入模式和可表示边界。
 <!-- cannbot:related:end -->

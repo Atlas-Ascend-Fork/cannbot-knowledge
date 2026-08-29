@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: constraint
 created_at: "2026-08-24T16:30:02Z"
-updated_at: "2026-08-24T19:38:11Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1047,11 +1047,11 @@ pipe_->InitBufPool(postPool_, poolSize, queryPool_);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持：文档+A2 `ascend910b` OpDef/config三dtype | 支持：文档+A3 `ascend910_93` OpDef/config三dtype | 支持但在 `_a5` 卡：`ascend950` |
-| Host/Launcher | 与A3/A5共用ACLNN/Tiling，平台提供核数/UB/system workspace | 同一54-key逻辑，实际平台值不同 | 平台隔离成A5卡 |
-| Kernel/资源 | 共用纯 Vector body；核数、UB、system workspace 均由 A2 platform info 动态给出 | 同一 body/POD/key；由 A3 platform info 动态生产参数 | 同源 body；950 资源值只在 `_a5` 卡按运行时平台信息解释 |
+| 支持状态 | 支持：文档+A2 `ascend910b` OpDef/config三dtype | 支持：文档+A3 `ascend910_93` OpDef/config三dtype | 支持但在 `_950` 卡：`ascend950` |
+| Host/Launcher | 与A3/950共用ACLNN/Tiling，平台提供核数/UB/system workspace | 同一54-key逻辑，实际平台值不同 | 平台隔离成950卡 |
+| Kernel/资源 | 共用纯 Vector body；核数、UB、system workspace 均由 A2 platform info 动态给出 | 同一 body/POD/key；由 A3 platform info 动态生产参数 | 同源 body；950 资源值只在 `_950` 卡按运行时平台信息解释 |
 
 ## 限制与失败边界
 
@@ -1100,3 +1100,9 @@ pipe_->InitBufPool(postPool_, poolSize, queryPool_);
 | 同步 | queue、barrier、HardEvent、SyncAll | GM读写及block0等待边不可删 | 三HardEvent helper/Prepare/PostProcess |
 | 精度与尾块 | FP32中间与三重tail | CAST_NONE→FP32→CAST_ROUND、Sum有效D、Rope mask不可换序 | `Compute/GetSeqRange` |
 | 失败边界 | Host/Tiling校验 | optional配对、窄化、40层、avgHeads缺口不得伪造fallback | `CheckParam/CheckInput/ComputeUBTilingStrategy` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NormRopeConcatGrad 950 ACLNN 算子知识](norm_rope_concat_grad_950.md)（`same_topic`）：`source_closed`：ACLNN→L0→OpDef/InferShape→Tiling/POD→54-key entry→Vector body/helper→A2/A3 config/CMake 闭合；`source_closed`：ACLNN→L0→OpDef/InferShape→Tiling/POD→54-key entry→Vector body/helper→950 config/CMake 闭合。两卡闭合相同 aclnnNormRopeConcatBackward 与 54-key Device 链，仅构建接线和资源边界按平台拆分。
+<!-- cannbot:related:end -->

@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:37:28Z"
-updated_at: "2026-08-25T18:37:28Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -96,7 +96,7 @@ h[t]  = o[t] * tanh(c[t])
 
 ### 入口与版本
 
-入口声明和文档均只给出 `aclnnLSTMGetWorkspaceSize`/`aclnnLSTM`，固定 Commit 未出现同语义版本后缀，因此本卡取该平台实际可达的唯一、也是最新公开版本。公开产品表明确支持 Atlas A2 与 A3，`l0op::DynamicRNN` 又把当前实现限制为 `ASCEND910B` 或 `ASCEND910_93`，`DynamicRNN` OpDef 和 Kernel CMake 对这两个 compute unit 接线。公开产品表明确 Ascend 950PR/950DT 不支持，所以不生成 A5 卡。
+入口声明和文档均只给出 `aclnnLSTMGetWorkspaceSize`/`aclnnLSTM`，固定 Commit 未出现同语义版本后缀，因此本卡取该平台实际可达的唯一、也是最新公开版本。公开产品表明确支持 Atlas A2 与 A3，`l0op::DynamicRNN` 又把当前实现限制为 `ASCEND910B` 或 `ASCEND910_93`，`DynamicRNN` OpDef 和 Kernel CMake 对这两个 compute unit 接线。公开产品表明确 Ascend 950PR/950DT 不支持，所以不生成 950 卡。
 
 ## Host/Launcher 执行流程
 
@@ -686,17 +686,17 @@ Select(tanhLowTensor, tanhMaskTensor, temp2Tensor, tanhLowTensor, SELMODE::VSEL_
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开 `aclnnLSTM` 产品表支持 | 公开产品表支持 | 公开产品表明确 950PR/950DT 不支持 |
 | Host/Launcher | 与 A3 共用 ACLNN Host；底层仅接 910B/910_93 | 与 A2 共用；底层仅接 910B/910_93 | `l0op::DynamicRNN` 不接受，且无 OpDef/Kernel compute unit |
-| Kernel/资源 | 共用 `dynamic_rnn_910b.cpp`、Tiling 与 FP16/FP32 Route；具体 core/UB/L1 数由平台信息产生 | 同左 | N/A；不生成 `_a5` 卡 |
+| Kernel/资源 | 共用 `dynamic_rnn_910b.cpp`、Tiling 与 FP16/FP32 Route；具体 core/UB/L1 数由平台信息产生 | 同左 | N/A；不生成 `_950` 卡 |
 
 固定仓未在产品名与 `ASCEND910B`/`ASCEND910_93` 之间逐项标注映射，因此本卡只陈述公开 A2/A3 支持和两 compute unit 共同接线，不自行绑定产品标签到某一 SoC 枚举。
 
 ## 限制与失败边界
 
-- 只支持 FP16/FP32 ND，所有浮点输入输出 dtype 必须一致；A5、BF16 ACLNN Route 不支持。entry 中 BF16 分支没有 Host key producer，不能当成支持证据。
+- 只支持 FP16/FP32 ND，所有浮点输入输出 dtype 必须一致；950、BF16 ACLNN Route 不支持。entry 中 BF16 分支没有 Host key producer，不能当成支持证据。
 - `dropout` 文档声明不支持且 Host 不读取；`cellClip=-1`、`forgetBias=0`、`gateOrder=ifjo`、`cellDepth=1`、无 peephole/projection 是 ACLNN 到底层的固定属性。
 - 通用 Concat/Transpose/Add/Zero/Slice/mask/ViewCopy 节点在 executor 中按同 stream 排序；其 Device body 和逐节点 workspace 位于通用 ACLNN 实现边界，不可用本卡的 `DynamicRNN` workspace 公式替代整图 workspace。
 - `TCubeTiling` ABI、Matmul 内部 base/step/depth、L1/L0 字节容量和 system workspace offset 在固定仓不可见；迁移时必须由相同 CANN 9.1 Matmul tiling/runtime 生成，不能手填。
@@ -712,7 +712,7 @@ Select(tanhLowTensor, tanhMaskTensor, temp2Tensor, tanhLowTensor, SELMODE::VSEL_
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `rnn/dynamic_rnn/docs/aclnnLSTM.md` | 产品表、函数原型、参数与约束 | A2/A3 支持、A5 不支持、接口语义 |
+| 入口声明/约束 | `rnn/dynamic_rnn/docs/aclnnLSTM.md` | 产品表、函数原型、参数与约束 | A2/A3 支持、950 不支持、接口语义 |
 | 入口声明/约束 | `rnn/dynamic_rnn/op_host/op_api/aclnn_lstm.h` | `aclnnLSTMGetWorkspaceSize/aclnnLSTM` | C ABI |
 | 入口实现 | `rnn/dynamic_rnn/op_host/op_api/aclnn_lstm.cpp` | `LstmDataRun`、`LstmSingleLayerDirec`、入口 | 参数校验、组合图、层/方向、workspace executor |
 | Launcher | `rnn/dynamic_rnn/op_host/op_api/dynamic_rnn.cpp` | `l0op::DynamicRNN` | SoC guard 和 `ADD_TO_LAUNCHER_LIST_AICORE` |
@@ -737,4 +737,10 @@ Select(tanhLowTensor, tanhMaskTensor, temp2Tensor, tanhLowTensor, SELMODE::VSEL_
 | workspace/内存 | 主区固定 FP32 `[T,B,4H]` | `16TBH` 字节、time/gate offset、系统区由 runtime 管理 | `TilingWithAscendC`、`InitBuffers` |
 | 同步 | Cube/Vector 和时间递归使用 `SyncAll`；UB 用 queue/PIPE_V | 不得把同 stream Host 顺序替代 Kernel 内 barrier | 两 Route `Process` |
 | 精度与尾块 | FP16 Route FP32 中间 + RINT；FP32 保持 FP32；Matmul/Vector 各自尾块 | tanh 修正阈值/系数、pad 粒度、有效 calcN | `CopyOutput`、`TanhPartialHighPrecision`、`SetTail` |
-| 失败边界 | Host 空指针/shape/dtype、SoC guard、Tiling 失败均停止后继 | 不得启用 dormant BF16 或 A5；不假设 fallback | `CheckParams*`、`DynamicRNN`、`CalcTilingKey` |
+| 失败边界 | Host 空指针/shape/dtype、SoC guard、Tiling 失败均停止后继 | 不得启用 dormant BF16 或 950；不假设 fallback | `CheckParams*`、`DynamicRNN`、`CalcTilingKey` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LSTM 950 Direct Invoke 算子知识](../../../direct/nn/rnn/lstm_950.md)（`same_topic`）：“｜ 计算语义 ｜ 按层、按方向、按时间步计算 `i/f/g/o` 四门，更新 FP32 `c_t` 与 raw hidden；可选再做 `raw_h_t @ weight_hr^T` 投影。 ｜”与“｜ 计算语义 ｜ 按层、按方向执行 LSTM：两次矩阵乘产生四门预激活，Vector 计算 `f/i/o=sigmoid`、`j=tanh`、`c=f*c_prev+i*j`、`h=o*tanh(c)`。 ｜”是双方正文中的具体合同。两端围绕同一分层双向 LSTM 四门与 cell/hidden 更新，950 Direct 卡增加逐时间步、FP32 cell 和可选投影，A2/A3 ACLNN 卡展开门激活公式，互读能迁移数学验证。
+<!-- cannbot:related:end -->

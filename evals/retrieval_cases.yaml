@@ -194,6 +194,70 @@ cases:
       k: 3
     expected:
       - ops/ascendc/guides/operator_practice/best_practices/mc_operator_tuning
+  - id: repository_gelu_950_operator
+    query: Gelu 950 Direct Invoke 算子知识
+    filters:
+      technology: ascendc
+      type: operators
+      platform: "950"
+      status: stable
+      match: literal
+      k: 3
+    expected:
+      - ops/ascendc/operators/direct/nn/activation/gelu_950
+  - id: repository_qwen3_next_general_concept_on_310p
+    query: Qwen3-Next
+    filters:
+      technology: inference
+      type: concepts
+      platform: 310p
+      status: stable
+      match: literal
+      k: 3
+    expected:
+      - model/inference/concepts/models/qwen3_next
+  - id: repository_qwen3_next_a3_deployment_guide
+    query: Qwen3-Next Atlas A3 推理部署与优化指南
+    filters:
+      technology: inference
+      type: guides
+      platform: a3
+      status: stable
+      match: literal
+      k: 3
+    expected:
+      - model/inference/guides/models/qwen3_next_atlas_a3_deployment
+  - id: exclude_qwen3_next_a3_deployment_from_310p
+    query: Qwen3-Next Atlas A3 推理部署与优化指南
+    filters:
+      technology: inference
+      type: guides
+      platform: 310p
+      status: stable
+      match: literal
+    expected_count: 0
+  - id: repository_hif8_training_on_950
+    query: HiF8（HiFloat8）8-bit 浮点格式与 V3 低精度预训练量化方案
+    filters:
+      technology: training
+      type: concepts
+      platform: "950"
+      status: stable
+      match: literal
+      k: 3
+    expected:
+      - model/training/concepts/quantization/hif8
+  - id: repository_action_chunking_on_310p
+    query: Action Chunking（动作分块 / ACT Transformer）
+    filters:
+      technology: embodied
+      type: concepts
+      platform: 310p
+      status: stable
+      match: literal
+      k: 3
+    expected:
+      - model/embodied/concepts/modules/action_chunking
   - id: empty_triton_concepts_search
     query: programming model
     filters:
@@ -226,6 +290,11 @@ cases:
     filters:
       platform: unknown
     expected_error: "unknown platforms: unknown"
+  - id: reject_retired_a5_platform_id
+    query: target API
+    filters:
+      platform: a5
+    expected_error: "unknown platforms: a5"
   - id: reject_unknown_tag
     query: target API
     filters:

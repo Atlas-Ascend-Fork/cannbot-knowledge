@@ -37,12 +37,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSetMaskCount](../../../../apis/simd_api/c_api/vector_compute/asc_set_mask_count.md)（`explains`）：计数模式可把一次 mask 配置跨多指令复用。
-- [MaskReg](../../../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/mask_reg.md)（`explains`）：MaskReg 与《基于全局掩码复用的计算性能优化》的实质衔接是：MaskReg 定义有效 lane，直接被 Load/Store、MaskGen 与 MaskReg 计算消费；C 创建/更新接口、merge mode、复用指南和两个编译故障明确其构造约束。
-- [Mask接口汇总（附录）](../../../../apis/appendix/mask_interface_summary.md)（`explains`）：Mask 支持矩阵界定哪些接口可复用全局 mask。
-- [SetMaskNorm](../../../../apis/simd_api/basic_api/memory_vector_compute/mask_operations/set_mask_norm.md)（`explains`）：SetMaskNorm 与《基于全局掩码复用的计算性能优化》的实质衔接是：SetMaskNorm 切到 Normal 模式后由 SetVectorMask 设置参与元素，结束时 ResetMask；C 对应入口、掩码指南和复用优化共享同一全局 mask 状态契约。
-- [VfFusionOptimization](vf_optimization/vf_fusion_optimization.md)（`related`）：VF fusion 可减少重复 mask 设置，但需保持 mask 生命周期。
-- [arch35 Select VSEL_CMPMASK_SPR 每 64 元素复用](../../../../runbooks/precision/arch35_select_vsel_cmpmask_spr_mask_reuse_count_over_64.md)（`related`）：该卡证明错误跨 repeat 复用 cmpmask 会污染后续元素，给出复用边界。
-- [中级性能优化](../../typical_operator_cases/simd_operator_impl/add_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《基于全局掩码复用的计算性能优化》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
-- [指令双发优化](vf_optimization/dual_issue_optimization.md)（`related`）：指令双发优化 与《基于全局掩码复用的计算性能优化》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [SetVectorMask](../../../../apis/simd_api/basic_api/memory_vector_compute/mask_operations/set_vector_mask.md)（`explains`）：“在这些场景中，掩码配置保持不变的情况下，遵循“**一次性全局配置，后续复用**”的核心原则：在所有连续计算操作执行之前，通过调用**SetVectorMask**接口完成**全局掩码**的一次性、完整设置mask；随后，所有后续的向量计算接口调用均应将**isSetMask**参数设置为**false**，以明确指示接口跳过内部掩码设置流程，直接**复用已预置**的全局掩码状态。”与“设置 Vector Mask，控制矢量计算接口中参与计算的元素。支持 Count 模式（按元素计数）和 Norm 模式（按比特位）。头文件 `basic_api/kernel_operator_vec_intf.h`。支持 950/a2/a3。”提供双方正文证据。优化指南把 SetVectorMask 用作一次性全局配置并要求后续关闭 isSetMask，API 卡定义其 Count/Norm 掩码合同，指南解释了该 API 的复用用法。
 <!-- cannbot:related:end -->

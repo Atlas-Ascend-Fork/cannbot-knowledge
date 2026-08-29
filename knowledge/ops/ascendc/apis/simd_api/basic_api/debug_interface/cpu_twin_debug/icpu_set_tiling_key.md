@@ -31,14 +31,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [561103: isGroup=-1 哨兵致 tilingKey 路由失配](../../../../../runbooks/compilation/561103_isgroup_1_tilingkey.md)（`exemplifies`）：561103: isGroup=-1 哨兵致 tilingKey 路由失配 与《IcpuSetTilingKey》的实质衔接是：该故障是 host tiling 上下文哨兵未覆盖，使 TilingKey 路由返回 -1；key 注册/判定/获取宏和位编码案例直接用于修复并与 361001 分派缺失区分。
-- [ACLNN 361001 — tilingKey 与 funcEntry 映射失](../../../../../runbooks/compilation/aclnn_361001_tilingkey_funcentry_sel_position.md)（`exemplifies`）：ACLNN 361001 — tilingKey 与 funcEntry 映射失 与《IcpuSetTilingKey》的实质衔接是：361001 由 host tilingKey 与 kernel funcEntry/SEL 位置不一致造成；key 宏、TPL 注册、struct include、运行时加载和相邻路由案例直接用于探测及修复。
-- [TilingKey 缓存 correction 致 tilingdata 复用](../../../../../runbooks/compilation/ge_tilingkey_cache_reuse_per_call_attr_pollution.md)（`exemplifies`）：IcpuSetTilingKey 与《TilingKey 缓存 correction 致 tilingdata 复用》的实质衔接是：IcpuSetTilingKey 只在 CPU 孪生调试中选择 IcpuRunKf 的 kernel 分支；TILING_KEY 宏及路由故障卡直接约束编码、缓存和 funcEntry 映射。
-- [sub-kernel 后缀 _N 是 tilingKey 位编码非序号](../../../../../runbooks/compilation/sub_kernel_n_tilingkey.md)（`exemplifies`）：IcpuSetTilingKey 与《sub-kernel 后缀 _N 是 tilingKey 位编码非序号》的实质衔接是：IcpuSetTilingKey 只在 CPU 孪生调试中选择 IcpuRunKf 的 kernel 分支；TILING_KEY 宏及路由故障卡直接约束编码、缓存和 funcEntry 映射。
-- [tilingKey 编码与 TPL 位打包不一致致路由错误](../../../../../runbooks/compilation/tiling_key_tpl_bit_encoding_mismatch.md)（`exemplifies`）：IcpuSetTilingKey 与《tilingKey 编码与 TPL 位打包不一致致路由错误》的实质衔接是：IcpuSetTilingKey 只在 CPU 孪生调试中选择 IcpuRunKf 的 kernel 分支；TILING_KEY 宏及路由故障卡直接约束编码、缓存和 funcEntry 映射。
-- [GET_TPL_TILING_KEY](../../../../utils_api/tiling_template_programming/get_tpl_tiling_key.md)（`related`）：IcpuSetTilingKey 与《GET_TPL_TILING_KEY》的实质衔接是：IcpuSetTilingKey 只在 CPU 孪生调试中选择 IcpuRunKf 的 kernel 分支；TILING_KEY 宏及路由故障卡直接约束编码、缓存和 funcEntry 映射。
-- [IcpuRunKf](icpu_run_kf.md)（`related`）：IcpuRunKf 运行 Kernel 前由 ICPU_SET_TILING_KEY 注入当前 tiling key，才能在 CPU 孪生环境走与设备一致的模板分支。
-- [TILING_KEY_IS](../../kernel_tiling/tiling_key_is.md)（`related`）：IcpuSetTilingKey 与《TILING_KEY_IS》的实质衔接是：IcpuSetTilingKey 只在 CPU 孪生调试中选择 IcpuRunKf 的 kernel 分支；TILING_KEY 宏及路由故障卡直接约束编码、缓存和 funcEntry 映射。
-- [CPU孪生调试](cpu_twin_debug.md)（`same_topic`）：IcpuSetTilingKey 与《CPU孪生调试》的实质衔接是：IcpuSetTilingKey 只在 CPU 孪生调试中选择 IcpuRunKf 的 kernel 分支；TILING_KEY 宏及路由故障卡直接约束编码、缓存和 funcEntry 映射。
-- [TILING_KEY_LIST](../../kernel_tiling/tiling_key_list.md)（`same_topic`）：IcpuSetTilingKey说明指定本次CPU调测使用的tilingKey，调测时只执行核函数中该tilingKey对应的分支。
+- [IcpuRunKf](icpu_run_kf.md)（`related`）：调测时只执行核函数中该tilingKey对应的分支；CPU 调测总入口，完成 CPU 侧的算子程序调用；连接分支选择与 CPU 调测启动。
+- [TILING_KEY_IS](../../kernel_tiling/tiling_key_is.md)（`related`）：指定本次CPU调测使用的tilingKey；判断本次执行的 tiling_key 是否等于 host 侧设置的某个 key；连接调测 key 设置与 Kernel 分支消费。
 <!-- cannbot:related:end -->

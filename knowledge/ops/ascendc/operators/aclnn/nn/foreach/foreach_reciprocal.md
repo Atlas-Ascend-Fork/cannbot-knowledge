@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_reciprocal/op_host/config/ascend910_93/foreach_reciprocal_binary.json
     role: implementation
 created_at: "2026-08-25T15:59:54Z"
-updated_at: "2026-08-25T15:59:54Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -510,9 +510,9 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，但详见独立 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，但详见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 公共 Tiling | `ascend910_93`→同一 arch22 Tiling | arch35 独立 SIMT Tiling；max Tensor 256、workspace 16 MiB |
 | Kernel/资源 | 同一 AIV Vector body，平台 UB/core 数运行时读取 | 同一 AIV Vector body | 512-thread SIMT，GM 直访，无 AIV Queue |
 
@@ -531,7 +531,7 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `foreach/foreach_reciprocal/docs/aclnnForeachReciprocal.md` | 两段式原型、产品表、错误表 | 公开 API、dtype/shape/连续性与错误语义 |
-| 入口声明/约束 | `foreach/foreach_reciprocal/README.md` | 产品支持、功能说明 | A2/A3/A5 支持与算子公式 |
+| 入口声明/约束 | `foreach/foreach_reciprocal/README.md` | 产品支持、功能说明 | A2/A3/950 支持与算子公式 |
 | 入口实现 | `foreach/foreach_reciprocal/op_host/foreach_reciprocal_def.cpp` | `ForeachReciprocal` | OpDef、AutoContiguous、平台 config |
 | Host/Tiling/Launcher | `foreach/foreach_reciprocal/op_host/arch22/foreach_reciprocal_tiling_arch22.cpp` | `Tiling4ForeachReciprocalTiling` | opCode 与公共 Tiling 入口 |
 | Host/Tiling/Launcher | `foreach/foreach_utils/op_host/foreach_tiling_class.h` | `ForeachCommonTiling` | 检查、分核、UB、POD producer、workspace |
@@ -559,3 +559,9 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 | 同步 | Queue + V_MTE3 + MTE3_MTE2；BF16 另有 PIPE_V | 同一 slot 输出完成前不得被 MTE2 覆盖 | `ForeachImplictOutputLevelZeroApi::Compute` |
 | 精度与尾块 | FP16/FP32 原 dtype；BF16 FP32 Div 后 CAST_RINT | repeat≤255、stride `{1,0,1,8,0,8}`、tail mask 与精确 DMA bytes | `InnerComputer::Compute{PerCast}` |
 | 失败边界 | Host 检查失败关闭；无 Device fallback | 未知 key、>50 Tensor、编译 guard 不能静默放行 | `CheckOpInfo`、entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachReciprocal 950 ACLNN 算子知识](foreach_reciprocal_950.md)（`same_topic`）：“｜ 计算语义 ｜ 对 TensorList 的每个有效元素执行 `y_i［j］ = 1 / x_i［j］` ｜”与“｜ 计算语义 ｜ 对 TensorList 中每个有效元素执行 `y_i［j］=1/x_i［j］` ｜”分别来自双方当前正文。两卡实现同一 ForeachReciprocal 逻辑语义，但 A2/A3 使用 AIV Queue 与 Vector Div，950 使用 512-thread SIMT 和 GM 直访；对照可完成平台 route 与资源模型选型。
+<!-- cannbot:related:end -->

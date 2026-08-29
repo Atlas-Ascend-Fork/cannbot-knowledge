@@ -27,6 +27,6 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CheckLocalMemoryIA](../../../simd_api/basic_api/debug_interface/exception_detection/check_local_memory_ia_isasi.md)（`related`）：CheckLocalMemoryIA 与《ReserveLocalMemory》的实质衔接是：CheckLocalMemoryIA 通过保留的 UB 地址范围触发异常，需结合 LocalMemAllocator、地址空间转换与 ASCENDC_DUMP 调试开关定位本地内存越界。
-- [GetCoreMemSize](get_core_mem_size.md)（`related`）：GetCoreMemSize 与《ReserveLocalMemory》的实质衔接是：GetCoreMemSize 为 host tiling 提供各层容量；ReserveLocalMemory 会改变可用 UB，Matmul 空间查询与 UB 预算故障直接消费该值。
+- [GetCoreMemSize](get_core_mem_size.md)（`related`）：“获取硬件平台存储空间的内存大小，例如L1、L0_A、L0_B、L2等，支持的存储空间类型定义如下：”明确给出左端事实；“该函数用于在Unified Buffer中预留指定大小的内存空间。调用该接口后，使用GetCoreMemSize可以获取实际可用的剩余Unified Buffer空间大小。”明确给出右端事实。ReserveLocalMemory 改变 UB 预留量，GetCoreMemSize 随后返回剩余可用空间；两者共同确定 Tiling 可使用的本地内存预算。
+- [更多样例（数学计算）](../../../simd_api/adv_api/math_compute/more_examples.md)（`related`）：样例二：展示PlatformAscendC::ReserveLocalMemory与kernel侧API配合使用。；该函数用于在Unified Buffer中预留指定大小的内存空间。调用该接口后，使用GetCoreMemSize可以获取实际可用的剩余Unified Buffer空间大小。；接口页具体定义样例二用于计算可用 UB 的预留和查询合同。
 <!-- cannbot:related:end -->

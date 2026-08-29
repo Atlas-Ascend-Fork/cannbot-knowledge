@@ -66,3 +66,9 @@ platforms:
 - `diff 事实`（@30b4ed2）：MoE EP 按 `num_experts_per_tok` 取值、Gemma4 用 `top_k_experts` 别名需补暴露；gemma-4 offline 缺 chat_template、拷 `chat_template.jinja` 到权重目录。
 - `diff 事实`（@d7174ec）：`mm_build_args` 丢弃不加引号的布尔 false，须写 `"False"`/`"True"`。
 - 溯源下探：[cann-recipes-infer-pr-445-fix-longcat-flash-lite-gemma-4-readme-and-config-files](https://gitcode.com/cann/cann-recipes-infer/merge_requests/445)、[cann-recipes-infer-pr-356-refactor-unified-inference-script-for-multimodal-models](https://gitcode.com/cann/cann-recipes-infer/merge_requests/356)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [bringup 前置准备与缺文件误报：未内置上游建模代码 / checkpoint 拷贝不完整 + 清 ATC 缓存 / 减层跑通功能验证](bringup_preparation_missing_files_and_reduced_config.md)（`related`）：HF 权重目录里缺 chat_template；缺文件 / 文件不完整 / 环境残留。前者给出 tokenizer sidecar 缺 chat_template 的具体症状与修复，后者给出 bringup 阶段缺件误报的通用检查顺序；联合可先验证权重目录完整性再追查框架属性错误。
+<!-- cannbot:related:end -->

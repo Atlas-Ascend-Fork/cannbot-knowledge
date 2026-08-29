@@ -25,10 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__half2uint_rn](_half2uint_rn.md)（`same_topic`）：两接口都执行 half→uint32 最近值舍入；RNA 为 ties-away，RN 为 ties-to-even，适合对照半整数输入的边界结果。
-- [__half2uint_rz](_half2uint_rz.md)（`same_topic`）：__half2uint_rz 的核心契约是“遵循CAST_TRUNC模式，将half类型数据转换为无符号整数，返回转换后的值”；__half2uint_rna 补充“遵循CAST_ROUND模式，将half类型数据转换为unsigned int类型数据，返回转换后的值”。
-<!-- cannbot:related:end -->

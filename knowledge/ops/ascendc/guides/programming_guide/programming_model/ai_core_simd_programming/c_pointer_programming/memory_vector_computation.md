@@ -35,21 +35,3 @@ Memory矢量计算依托本地内存中的UB完成运算，开发者需先将输
 > 📌 stride（前一块数据头到后一块数据头的间隔）为该接口从NPU架构版本3510引入，NPU架构版本2201使用gap（前一个数据块结束地址与后一个数据块起始地址的差值）。
 非对齐搬运: 基础高维切分接口要求GM的数据长度与地址间隔均按32字节对齐，无法适配非对齐场景。例如将数据改为形状(16, 200)、类型为half的src_gm后，asc_copy_gm2ub无法实现隔行搬运。针对该场景，Ascend C提供asc_copy_gm2ub_align非对齐搬运接口，支持以字节为单位配置数据块长度与地址步长，突破32字节对齐限制。
 以上图为例，将两个数据块从GM搬运至UB，每个blockLen为54B，源操作数相邻数据块之间的间隔为1B，目的操作数相邻数据块之间的间隔为32B。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscCopyGm2Ub](../../../../../apis/simd_api/c_api/vector_data_move/asc_copy_gm2ub/asc_copy_gm2ub.md)（`explains`）：Memory矢量计算编程 与《AscCopyGm2Ub》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [AscCopyGm2UbAlign](../../../../../apis/simd_api/c_api/vector_data_move/asc_copy_gm2ub_align/asc_copy_gm2ub_align.md)（`explains`）：Memory矢量计算编程 与《AscCopyGm2UbAlign》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [Memory矢量计算](../../../../../apis/simd_api/basic_api/memory_vector_compute/memory_vector_compute.md)（`explains`）：Memory矢量计算编程 与《Memory矢量计算》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [Memory矢量计算](../../../../../apis/simd_api/c_api/vector_compute/memory_vector_compute.md)（`explains`）：Memory矢量计算编程 与《Memory矢量计算》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [Memory矢量计算接口边界值汇总](../../../../../apis/appendix/memory_vector_compute_interface_boundary_value_summary.md)（`explains`）：Memory矢量计算编程 与《Memory矢量计算接口边界值汇总》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [AI Core SIMD编程模型概述](../overview.md)（`related`）：AI Core SIMD编程模型概述 与《Memory矢量计算编程》的实质衔接是：该概述建立多核 SPMD 加单核 SIMD 的总体模型；Kernel/抽象硬件页展开 block 分发，C 与 C++ Tensor/Memory/Reg 路径展开不同 API 层，SIMD-SIMT 概述说明不规则控制流何时引入线程模型。
-- [ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h](../../../../../runbooks/compilation/asc_simd_umbrella_header_for_c_api_symbols.md)（`related`）：Memory矢量计算编程 与《ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [C语言编程概述](c_programming_overview.md)（`same_topic`）：Memory矢量计算编程 与《C语言编程概述》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [MemoryVectorComputation](../cpp_tensor_programming/memory_vector_computation.md)（`same_topic`）：Memory矢量计算编程 与《MemoryVectorComputation》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [TPipe-TQue编程原理介绍](../tpipe_tque_programming/tpipe_tque_principles.md)（`same_topic`）：Memory矢量计算编程 与《TPipe-TQue编程原理介绍》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [TPipe和TQue编程范式](../tpipe_tque_programming/tpipe_tque_paradigm.md)（`same_topic`）：Memory矢量计算编程 与《TPipe和TQue编程范式》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-- [抽象硬件架构（AI Core SIMD编程）](../abstract_hardware_architecture.md)（`same_topic`）：抽象硬件架构（AI Core SIMD编程） 与《Memory矢量计算编程》的实质衔接是：该架构页把 Scalar/Vector/Cube、Local/Global Memory 与 MTE/FixPipe 映射到 SIMD kernel；C/C++ Memory/Reg/Cube 和 TPipe 指南展开同一数据流。
-- [核函数（AI Core SIMD编程）](../kernel_function.md)（`same_topic`）：Memory矢量计算编程 与《核函数（AI Core SIMD编程）》的实质衔接是：Memory 矢量编程采用 GM→UB→计算→GM，并区分连续、非连续和非对齐搬运；SIMD 架构、TPipe、Memory API、边界表和 C include 入口展开该数据流。
-<!-- cannbot:related:end -->

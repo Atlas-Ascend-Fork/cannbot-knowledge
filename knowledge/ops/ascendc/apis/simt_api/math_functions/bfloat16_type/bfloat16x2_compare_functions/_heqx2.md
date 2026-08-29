@@ -25,13 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hbequx2](_hbequx2.md)（`same_topic`）：无序相等变体在 NaN 处理上不同；包含 NaN 的测试必须按所需谓词选择。
-- [__hbeqx2](_hbeqx2.md)（`same_topic`）：__heqx2 返回逐分量比较结果，而 __hbeqx2 把两分量合并为单 bool；二者按输出粒度选型。
-- [__hequx2](_hequx2.md)（`same_topic`）：__hequx2 与《__heqx2》的实质衔接是：hequx2 是 unordered equality（NaN 也为真）；mask、half2、ordered equality 与 unordered not-equal 入口直接界定返回形态和 NaN 分支。
-- [__heqx2](../../half_type/half2_compare_functions/_heqx2.md)（`same_topic`）：half2 版本执行相同逐 lane 相等比较，输入 dtype 不同。
-- [__heqx2_mask](_heqx2_mask.md)（`same_topic`）：__heqx2_mask 与《__heqx2》的实质衔接是：这些 bfloat16x2 比较入口共享双 lane 掩码契约；ne、无序 eq、值返回 eq 与 isnan 用于区分 NaN 时的 ordered/unordered 结果。
-<!-- cannbot:related:end -->

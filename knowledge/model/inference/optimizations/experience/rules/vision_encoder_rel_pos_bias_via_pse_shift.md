@@ -100,3 +100,9 @@ x = self.proj(x)
 
 - [fused-infer-attention-score](../../../concepts/kernels/fused_infer_attention_score.md) — `npu_prompt_flash_attention` 属 FIA 家族的 prefill 全量融合算子；本页的 `pse_shift` 偏置入参、BNSD 布局、`scale_value`/`num_heads` 调用约定同源于该算子族。
 - [mm-encoder-packed-attention-seqlen-semantics](../../../runbooks/runtime/mm_encoder_packed_attention_seqlen_semantics.md) — 同类模式：昇腾多模态编码器把原生 / SDPA 注意力替换为 npu fusion attention 算子；那页讲 packed 全注意力两个可互换融合算子的 seq_len 语义差异，与本页互为参照。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [npu_fused_infer_attention_score (v1 / v2)](../../../concepts/kernels/fused_infer_attention_score.md)（`related`）：昇腾融合 attention 算子 `npu_prompt_flash_attention`（FIA 家族的 prefill 全量融合算子，见 ［fused-infer-attention-score］(../../../concepts/kernels/fused_infer_attention_score.md)）接收一个**逐位置的 attention bias 入参 `pse_shift`**：它在 softmax 前逐元素叠加到打分矩阵上。；昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算：`softmax(QKᵀ/√d)·V`，支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。前者的 pse_shift 替换落在后者定义的 FIA 算子家族和 softmax 主体阶段。
+<!-- cannbot:related:end -->

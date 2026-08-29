@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T20:00:32Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -557,9 +557,9 @@ BF16 权重的 offset/scale 运算保留 FP32 临时结果，进入共享权重 
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 官方支持 | 官方产品表明确不支持 | 官方支持，见 `_a5` 卡 |
+| 支持状态 | 官方支持 | 官方产品表明确不支持 | 官方支持，见 `_950` 卡 |
 | Host/Launcher | ASCEND910B tiling；仅 `ai_cpu` | 无公开支持 route | DAV_3510 tiling；`ai_cpu/ccu` |
 | Kernel/资源 | 三槽 GM 反量化 cache；Custom/WeightNZ；AICPU AR | N/A | RegBase/AdaptiveSplit；direct AR 或 A2A+RS+AG |
 
@@ -577,7 +577,7 @@ BF16 权重的 offset/scale 运算保留 FP32 临时结果，进入共享权重 
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `mc2/matmul_all_reduce/docs/aclnnWeightQuantMatmulAllReduceV2.md` | 产品表/公式/约束 | A2/A3/A5支持、公开语义与限制 |
+| 入口声明/约束 | `mc2/matmul_all_reduce/docs/aclnnWeightQuantMatmulAllReduceV2.md` | 产品表/公式/约束 | A2/A3/950支持、公开语义与限制 |
 | 入口声明/约束 | `mc2/matmul_all_reduce/op_api/aclnn_weight_quant_matmul_all_reduce_v2.h` | 两段式原型 | ABI 参数顺序 |
 | 入口实现 | `mc2/matmul_all_reduce/op_api/aclnn_weight_quant_matmul_all_reduce_v2.cpp` | `CheckParams`、两段 API | 校验、CopyTensor、inner 调用、server type |
 | Host/Tiling | `mc2/matmul_all_reduce/op_host/op_tiling/arch22/weight_quant_matmul_all_reduce_tiling.cpp` | `WeightQuantMatmulAllReduceTiling` | route/key/workspace/POD/blockDim |
@@ -601,3 +601,10 @@ BF16 权重的 offset/scale 运算保留 FP32 临时结果，进入共享权重 
 | 同步 | AIV/AIC flags + all-core barrier + HCCL handle | schedule mode 1；不得跳过 reuse barrier | CustomKernel/base |
 | 精度与尾块 | BF16 FP32 intermediate + RINT；padded copies | 不得提前降精度；tail count来自 POD | `WeightCopyOut`/empty `ProcessBias` |
 | 失败边界 | Host拒绝非法 dtype/shape/layout/mode | 不得自行 fallback到未注册 key | `CheckParams/CheckInput/GetTilingKey` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [WeightQuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](weight_quant_matmul_all_reduce_add_rms_norm.md)（`related`）：替代组合是 aclnnWeightQuantMatmulAllReduce + aclnnAddRmsNorm。 `output = AllReduce(x1 @ ((x2 + antiquantOffset) * antiquantScale) + bias + x3)`；空 K 时退化为 `AllReduce(bias + x3)` 废弃融合入口明确拆到 WeightQuantMatmulAllReduce，后者闭合量化 MatMul、可选 x3 与 AllReduce 前半段。
+- [WeightQuantMatmulAllReduce 950 ACLNN 算子知识](weight_quant_matmul_all_reduce_950.md)（`same_topic`）：｜ Kernel 路线 ｜ R-001 ND CustomAntiquant；R-002 FRACTAL_NZ WeightNZ；R-003 K=0 空域 ｜；｜ Kernel 路线 ｜ R-001 RegBase+AllReduce；R-002 RegBase+TwoShot；R-003 AdaptiveSplit+AllReduce；R-004 AdaptiveSplit+TwoShot；R-005 K=0 ｜；两卡描述同一 WeightQuantMatmulAllReduce ACLNN 算子，并明确展示 A2 与 950 的不同融合路线。
+<!-- cannbot:related:end -->

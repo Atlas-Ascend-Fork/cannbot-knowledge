@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:55:21Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -669,7 +669,7 @@ bool useLoop = this->selectedBlockSize > UL_BIT_COUNT ||
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | A2 训练：README 与 ACLNN 文档均支持；A2 推理：README 不支持而 ACLNN 文档支持，存在公开冲突，本卡不覆盖 | README 与 ACLNN 文档均不支持 | ACLNN 文档对 950PR/950DT 不支持 |
 | Host/Launcher | 仅记录无冲突的 A2 训练路线；OpDef/CI 有 `ascend910b/ascend910_93` 接线 | 不发布 | 不发布 |
@@ -677,7 +677,7 @@ bool useLoop = this->selectedBlockSize > UL_BIT_COUNT ||
 
 ## 限制与失败边界
 
-- 正式平台范围只覆盖公开证据无冲突的 Atlas A2 训练产品；A2 推理支持表冲突，A3/A5 明确不支持。
+- 正式平台范围只覆盖公开证据无冲突的 Atlas A2 训练产品；A2 推理支持表冲突，A3/950 明确不支持。
 - 公共域仅 TND、FP16/BF16、`D=192`、`Dv=128`、`G<=32`、`Lb<=128` 且 16 对齐、`C∈[1,128]`、`L<8192`；Host 未复现全部文档下界、`G<=32`、`L<8192`、每 batch `S2>=L`/整块、`headNum==query.N` 与 topk 索引范围检查。
 - 两个实际序列参数虽名为 Optional，ACLNN 实际强制非空。
 - `AnalyzeAttrs` 早于 mask 判空：mask 为空也只会把合法输入 mode2 改为 0，非法 mode 不会因 mask 为空而被忽略。
@@ -696,7 +696,7 @@ bool useLoop = this->selectedBlockSize > UL_BIT_COUNT ||
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 公开约束 | `attention/nsa_selected_attention/README.md` | 产品表/约束 | A2 训练支持、A2 推理/A3 不支持、公式与公共域 |
-| 入口声明/约束 | `attention/nsa_selected_attention/docs/aclnnNsaSelectedAttention.md` | ACLNN | 签名、参数、A2 推理冲突及 A3/A5 不支持 |
+| 入口声明/约束 | `attention/nsa_selected_attention/docs/aclnnNsaSelectedAttention.md` | ACLNN | 签名、参数、A2 推理冲突及 A3/950 不支持 |
 | 入口声明 | `attention/nsa_selected_attention/op_host/op_api/aclnn_nsa_selected_attention.h` | 两段式函数 | C ABI |
 | 入口实现 | `attention/nsa_selected_attention/op_host/op_api/aclnn_nsa_selected_attention.cpp` | check/analysis/API | 校验/executor/ViewCopy |
 | L0 Launcher | `attention/nsa_selected_attention/op_host/op_api/nsa_selected_attention.cpp` | `l0op::NsaSelectedAttention` | InferShape/launcher |
@@ -725,4 +725,10 @@ bool useLoop = this->selectedBlockSize > UL_BIT_COUNT ||
 | workspace/内存 | Host 保守请求与 `C_u` 份 K/V、P/S alias 公式 | 区分 `A_p`/`C_u`；K/V 2B，P stride4B，S同base；raw/user/system 边界不可臆造 | `GetWorkspaceSize/InitWorkspace` |
 | 同步 | Matmul wait+HardEvent | 不以Host顺序代替单kernel协议 | wait/SoftMax |
 | 精度与尾块 | FP32 BMM1/SoftMax→INPUT_T | causal有限负值、大stride loop | ProcessSoftmax/Mask |
-| 失败边界 | 参数/资源失败关闭 | 不发布 keys90/92/94、A3/A5 | Tiling/entry |
+| 失败边界 | 参数/资源失败关闭 | 不发布 keys90/92/94、A3/950 | Tiling/entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NsaSelectedAttentionInfer A2/A3 ACLNN 算子知识](nsa_selected_attention_infer.md)（`related`）：对每个 query token 和 KV head 按 `topkIndices` 聚合 `C=selectedBlockCount` 个、每个长 `L_b=selectedBlockSize` 的 KV block，计算 `Softmax(mask(scale·QKᵀ))V`；用 `topkIndices` 选出逻辑 KV 区间，经 `blockTable` 映射到 paged KV cache，计算 `Softmax(scaleValue × QKᵀ) × V`。多 token 时按 query token 收缩可见 KV 尾部。。两卡都实现 NSA 的 topk 选块后 QK、Softmax、PV 注意力链；基础版本直接聚合 TND 连续 KV block，Infer 版本经 blockTable 访问 paged KV cache，联合阅读可完成训练式连续存储与推理式分页存储选型。
+<!-- cannbot:related:end -->

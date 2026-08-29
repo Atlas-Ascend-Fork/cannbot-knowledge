@@ -82,13 +82,5 @@ fp16 与 bf16 共用同一 `ProcessFp16Bf16` 实现、同一 4 buffer 布局、�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Rintf](../../apis/simt_api/math_functions/float_math_functions/rintf.md)（`exemplifies`）：bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别说明AscendC Level-2 Cast 的 RoundMode 语义按方向区分：扩精度（half/bfloat16→float，位数增加无舍入）一律 CAST_NONE；缩精度（float→half/bfloat16，位数减少须舍入）才用 CAST_RINT。把 "bf16 不支持 CAST_NONE" 这条缩精度约束误用到 bf16→fp32 扩精度方向、对 bf16 扩精度取 CAST_RINT，不产生精度漂移而直接产生符号翻转/量级错误的垃圾输出。判别=同实现下 fp16 全过、bf16 全错且为 garbage（非小 diff），唯一变量是 widenMode。
-- [RoundMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/round_mode.md)（`exemplifies`）：RoundMode 接口枚举定义 CAST_NONE、CAST_RINT 等舍入语义，本卡说明扩精度无舍入与缩精度需舍入的调用边界。
-- [B16 结果大幅偏差 — UNPACK 后补 Reg Cast](b16_unpack_requires_numeric_cast_before_fp32_compute.md)（`related`）：UNPACK 卡证明布局展开不能替代 B16→FP32 数值 Cast；本卡进一步约束该显式数值 Cast 在扩精度方向必须使用 CAST_NONE。
-- [Cast SatMode::SAT 饱和致 fp16 NaN/Inf 丢失](cast_satmode_sat_fp16_nan_inf.md)（`related`）：两卡把 B16 Cast 的两类独立配置错误分开：RoundMode 方向误用产生 garbage，SatMode::SAT 则以 65504/65536 指纹吞掉 NaN/Inf。
-- [FP16 算子 Cast 提升-计算-回退链设计](fp16_cast_up_fp32_compute_cast_down_chain.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [Reg CastTrait RoundMode 命名空间编译失败](../compilation/casttrait_roundmode_is_in_ascendc.md)（`related`）：Reg CastTrait RoundMode 命名空间编译失败 与《bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别》的实质衔接是：该故障由 CastTrait 字段 RoundMode 的错误命名空间触发；trait 存储期/NTTP、merge/sat/round 枚举和 Cast 模式故障共同约束真实模板声明。
-- [f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言](../compilation/reg_cast_f32_to_s64_uses_supported_rounding.md)（`related`）：f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言 与《bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别》的实质衔接是：这些卡都约束 Reg::Cast 的 RoundMode、MaskMergeMode、trait 存储期/命名空间及宽化 lane，是同一静态断言链上的可执行检查。
-- [fp32 窄化舍入模式不一致触发稀疏 MARE 越线](fp32_to_fp16_cast_matches_rne_oracle.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [模板内 float→float Cast 使 fp32 分支全错](templated_float_input_must_bypass_same_type_cast.md)（`same_topic`）：模板内 float→float Cast 使 fp32 分支全错 与《bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别》的实质衔接是：float 到 float 不应进入窄化 Cast，应该保持原值或 Copy；同步、BF16 分阶段、native 类型、VL、舍入与 RmsNorm 案例分别说明真正需要 Cast 时的类型、时序和验证契约。
+- [RoundMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/round_mode.md)（`exemplifies`）：枚举类型，用于设置精度转换时的舍入模式，支持向偶数舍入、向下、向上、四舍五入、截断等多种模式。；- **扩精度方向**（half/bfloat16 → float，位数增加、无信息丢失、不需要舍入）：`CAST_NONE` 合法且正确。官方 `top_k_top_p_sample.h:619` 对 `half/bfloat16 -> float32` 用 `CAST_NONE` 实证。；目标卡将焦点枚举落实到 bf16 扩精度方向的正确取值和实证验证。
 <!-- cannbot:related:end -->

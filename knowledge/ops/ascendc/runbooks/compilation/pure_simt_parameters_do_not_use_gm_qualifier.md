@@ -205,16 +205,7 @@ void gather_kernel(const T *x, const I *index, T *y,
 <!-- cannbot:related:start -->
 ## 相关
 
-- [内存空间限定符](../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/memory_space_qualifier.md)（`exemplifies`）：限定符卡规定混合编程的 __gm__/__ubuf__，而故障卡用编译器展开证明纯 SIMT kernel 形参不能照搬 __gm__，给出明确的模式边界。
-- [内存空间限定符](../../apis/simt_api/simt_programming_intro/extended_syntax/memory_space_qualifier.md)（`exemplifies`）：焦点说明 __ubuf__ 用于声明 UB 静态/动态存储；故障卡给出相邻但不同的边界：纯 SIMT kernel 形参不能照搬混合模式 __gm__，否则宏展开为非法 device attribute。
-- [函数执行空间限定符](../../apis/simt_api/simt_programming_intro/extended_syntax/function_execution_space_qualifier.md)（`exemplifies`）：函数执行空间文档说明 __global__ 是 Host 启动的 Device 入口并规定调用层级，为何纯 SIMT kernel 形参语法与 device helper 不同提供语言层边界。
-- [核函数配置](../../apis/simt_api/simt_programming_intro/extended_syntax/kernel_function_config.md)（`exemplifies`）：《核函数配置》的任务是“核函数是SIMT编程的Device侧入口函数，负责协调整个算子的执行流程。函数定义语法为：”。《纯 SIMT kernel 形参 __gm__ 导致编译失败》具体提供“CANN 9.0.1 的纯 SIMT 编译模式会把 __gm__ 展开为 device attribute；kernel 形参应使用普通类型化指针。”，它直接用于SIMT Kernel 入口的执行/内存限定符、内置变量和 launch 头文件。
-- [Device helper 必须保留 GM 地址空间](device_helper_preserves_gm_address_space.md)（`related`）：纯 SIMT 模式会把 __gm__ 解释成不合法 attribute，恰好给出 focal 规则的停止边界：先判编程模型，再决定 helper/入口是否使用地址空间限定。
-- [Gather算子快速入门](../../guides/getting_started/quick_start/simt_programming/gather_op_quick_start.md)（`related`）：Gather算子快速入门 与《纯 SIMT kernel 形参 __gm__ 导致编译失败》的实质衔接是：Gather 快速入门覆盖 SIMT kernel、host launch 和构建；所连 Gather API、维度/步长/地址空间错例和 SIMT 入口约束都直接作用于该示例的实现或验证。
-- [SIMT API 未进入 AscendC 命名空间导致编译失败](simt_api_is_in_ascendc_simt_namespace.md)（`related`）：该卡补充纯 SIMT 函数参数的地址空间写法，避免命名空间修复后继续因 __gm__ 形参语法失败。
-- [dim3 未声明：显式引入 SIMT 公共头](asc_vf_call_launch_config_requires_simt_header.md)（`related`）：《dim3 未声明：显式引入 SIMT 公共头》处理“混合 SIMD/SIMT 核函数调用 asc_vf_call 时，显式包含 common_functions.h 以暴露 dim3 别名和正确重载。”。《纯 SIMT kernel 形参 __gm__ 导致编译失败》明确“CANN 9.0.1 的纯 SIMT 编译模式会把 __gm__ 展开为 device attribute；kernel 形参应使用普通类型化指针。”，可直接用于核对dim3 类型可见性、SIMT 公共头、__vector__ 入口与混合 VF 启动边界。
-- [混合 SIMT 启动边界用 GM_ADDR 承接地址空间](mixed_simt_launch_boundary_uses_gm_addr.md)（`related`）：两卡共同划清执行模型边界：纯 SIMT 入口移除 __gm__，而混合 __global__ Vector wrapper 必须以 GM_ADDR 穿过 Host launch 后在 device 内恢复 __gm__ 指针。
-- [特性](../../guides/technical_appendix/cpp_standard_support/syntax_restrictions/features.md)（`related`）：特性 与《纯 SIMT kernel 形参 __gm__ 导致编译失败》的衔接是：不支持特性清单规定 device C++ 可用边界；语法函数说明给出允许的函数形态，GM 指针形参案例是其中一项可直接触发编译问题的具体约束。
-- [随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM](../performance/random_gather_per_element_dma_should_switch_to_simt_direct_gm.md)（`related`）：随机 Gather 的推荐 SIMT 直访 GM 实现正是 focal 的纯 SIMT kernel 场景；使用该快路时入口形参必须用普通类型化指针，不能照搬混合编程 __gm__。
-- [GM_ADDR 标量不可解引用为 tiling 结构体指针](gm_addr_tiling.md)（`same_topic`）：GM_ADDR 标量不可解引用为 tiling 结构体指针 与《纯 SIMT kernel 形参 __gm__ 导致编译失败》的实质衔接是：GM_ADDR 在该入口是 __gm__ uint8_t 标量而非结构体指针；typed __gm__ tiling 指针、Kernel Tiling/GET_TILING_DATA 和地址空间案例给出正确入口与强转边界。
+- [内存空间限定符](../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/memory_space_qualifier.md)（`exemplifies`）：SIMD 与 SIMT 混合编程使用两种内存空间限定符；保留纯 SIMT 的 `__global__` kernel 与寻址算法，只从函数形参移除 `__gm__`，让 普通 `const T *` / `T *` 承载 GM 地址。API 卡把 `__gm__` 定位于混合编程语法，运行手册给出纯 SIMT 编译前端中的相反形参写法和真实报错，形成编程模式切换时的具体边界。
+- [核函数配置](../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/kernel_function_config.md)（`exemplifies`）：核函数是 SIMD 与 SIMT 混合编程的 Device 侧入口函数，使用 __global__ __vector__ 修饰。返回值必须为 void，入参支持指针类型（需 __gm__ 修饰）和内置数据类型。；CANN 9.0.1 的纯 SIMT 编译前端把 `__gm__` 展开成变量级 `__attribute__((device))`，该 attribute 不能修饰 `__global__` 函数的非静态形参。；API 规定混合入口需 __gm__，runbook 给出纯 SIMT 编译模式必须移除该限定的具体编译原因。
+- [混合 SIMT 启动边界用 GM_ADDR 承接地址空间](mixed_simt_launch_boundary_uses_gm_addr.md)（`related`）：“纯 SIMT `__global__` kernel 形参优先用普通、类型完整的指针”给出纯模式修法；“让 host launch 和 `__global__` wrapper 的全部地址形参都保持 `GM_ADDR`；进入 device wrapper 后，再显式恢复 VF 所需的具体 `__gm__ T*` 类型。”给出混合模式相反的边界合同，联合阅读可避免跨编程模式误迁移。
 <!-- cannbot:related:end -->

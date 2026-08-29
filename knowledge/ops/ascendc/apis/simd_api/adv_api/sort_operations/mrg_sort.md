@@ -23,10 +23,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [TopK BF16 tie 索引顺序与 CPU 不一致](../../../../runbooks/precision/topk_bf16_tie_cpu.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《MrgSort》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [AscMrgsort4](../../c_api/vector_compute/asc_mrgsort4.md)（`related`）：AscMrgsort4 与《MrgSort》的实质衔接是：AscMrgsort4 的 Reg/C++ 入口、状态寄存器与结果读取必须配套，高层 MergeSort 说明同一四路归并任务如何落到该原语。
-- [GetMrgSortResult](../../basic_api/memory_vector_compute/sort_and_merge/get_mrg_sort_result.md)（`related`）：《GetMrgSortResult》明确“与MrgSort接口配合使用，在队列耗尽停止后获取4个队列已处理的Region Proposal个数。”；它与《MrgSort》的“将已排好序的最多4条队列合并排列成1条队列，结果按照score域由大到小排序。”在实际调用参数、数据流或结果校验上直接衔接。
-- [GetSortOffset](get_sort_offset.md)（`related`）：GetSortOffset 与《MrgSort》的实质衔接是：SortOffset 是 Sort 中间数据布局的字节偏移；SortLen、临时空间、Concat/Extract 和 Sort 调用必须采用同一 repeat 布局。
-- [MrgSort](../../basic_api/memory_vector_compute/sort_and_merge/mrg_sort.md)（`same_topic`）：《MrgSort》明确“将已排序的最多4条队列合并为1条队列，结果按score域由大到小排序，通常处理Sort32预处理的数据。”；它与《MrgSort》的“将已排好序的最多4条队列合并排列成1条队列，结果按照score域由大到小排序。”在实际调用参数、数据流或结果校验上直接衔接。
-- [Sort32](../../basic_api/memory_vector_compute/sort_and_merge/sort32.md)（`same_topic`）：《Sort32》处理“一次迭代内对32个数按score域降序排列，结果以score和index的结构存储在目的张量中。”。《MrgSort》提供“将已排好序的最多4条队列合并排列成1条队列，结果按照score域由大到小排序。”，其具体合同或探针直接接入Sort32 的 proposal 预处理、排序、合并和字段拆装流水。
+- [TopK BF16 tie 索引顺序与 CPU 不一致](../../../../runbooks/precision/topk_bf16_tie_cpu.md)（`exemplifies`）：将已排好序的最多4条队列合并排列成1条队列，结果按score域由大到小排序。与Sort配合使用，先对多段数据分别排序，再通过MrgSort合并。；TopK 高阶 API 对 tie 值的索引顺序未定义，其内部 Sort+MrgSort+Extract 的稳定顺序与 CPU `torch.topk` 实现不同，导致同一 tie 组内索引排列差异。这不是 kernel 计算错误，是 tie 顺序未定义语义的体现。若值集合已不等，则不是本现象，应另查真精度 bug。；焦点定义 MrgSort 的降序归并，runbook 给出它在完整 TopK 管线中遇到 tie 时的可复现验证与误诊边界。
+- [Sort](sort.md)（`related`）：将已排好序的最多4条队列合并排列成1条队列，结果按score域由大到小排序。与Sort配合使用，先对多段数据分别排序，再通过MrgSort合并。；排序函数，按照数值大小进行降序排序。支持带和不带SortConfig模板参数两种原型。不带Config时执行标准降序排序；带Config时可配置排序参数。排序后的数据排布方式因产品型号而异（950PR/950DT、A3、A2训练推理采用方式一，推理AI Core采用方式二）。模板参数T支持half/float/int16_t/uint16_t。；MrgSort 明确要求先由 Sort 产生分段已排序队列，目标给出该生产接口与结果布局边界。
 <!-- cannbot:related:end -->

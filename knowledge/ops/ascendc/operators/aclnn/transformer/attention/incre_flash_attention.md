@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/incre_flash_attention/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -680,7 +680,7 @@ AIV/Scalar 将 batch/head/S 起点和 K/blocktable 地址写成 64B 描述；双
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | V4支持 | V4支持 | V4文档不支持，wrapper在DAV_3510报错 |
 | Host/Launcher | DAV_2201 IFATiling priority90 | 共用 | V1-V4均拒绝 |
@@ -702,7 +702,7 @@ AIV/Scalar 将 batch/head/S 起点和 K/blocktable 地址写成 64B 描述；双
 |---|---|---|---|
 | 入口声明/约束 | attention/incre_flash_attention/docs/aclnnIncreFlashAttentionV4.md | 产品表/原型 | 公开域 |
 | 入口声明/约束 | attention/incre_flash_attention/op_api/aclnn_incre_flash_attention_v4.h | `aclnnIncreFlashAttentionV4*` | C ABI 原型 |
-| 入口实现 | attention/incre_flash_attention/op_api/aclnn_incre_flash_attention_v4.cpp | V4 wrappers | inner边界/A5拒绝 |
+| 入口实现 | attention/incre_flash_attention/op_api/aclnn_incre_flash_attention_v4.cpp | V4 wrappers | inner边界/950拒绝 |
 | Host/OpDef | attention/incre_flash_attention/op_host/incre_flash_attention_def.cpp | `IncreFlashAttention` | dtype/format/属性与产品配置 |
 | Host/Tiling | attention/incre_flash_attention/op_host/incre_flash_attention_tiling.h | POD | ABI |
 | Host/Tiling | attention/incre_flash_attention/op_host/incre_flash_attention_tiling_base.h | `IfaPerfMode`/常量 | Route 枚举、tile 与精度常量 |

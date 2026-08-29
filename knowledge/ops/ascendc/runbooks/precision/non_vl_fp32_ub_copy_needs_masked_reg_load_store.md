@@ -133,19 +133,3 @@ __aicore__ inline __ubuf__ float *LoadRowFp32(int64_t off)
 ## 误诊
 
 曾将 fp32 ARA 错误归因于多 slab、多核或 TQue buffer 生命周期；定向长度探针证明 a1 改变不影响结果，真正分界是 a0 是否为 VL 整倍数。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscCopy](../../apis/simd_api/c_api/vector_compute/asc_copy.md)（`exemplifies`）：AscCopy 与《fp32 UB 非 VL 拷贝须用带掩码 Reg》的实质衔接是：AscCopy 是 UB→UB 搬运；basic Copy、UB 搬运指南和 Reg Copy提供连续、高维/掩码入口，非整 VL 的 fp32 案例说明何时必须改用 masked Reg load/store。
-- [AscUpdateMask](../../apis/simd_api/c_api/reg/reg_data_types/asc_update_mask.md)（`exemplifies`）：fp32 UB 非 VL 拷贝须用带掩码 Reg 与《AscUpdateMask》的实质衔接是：非 VL fp32 UB copy 的修复正文直接调用 UpdateMask、Reg Load/Store；所选 API 与 const/mask 故障卡约束同一尾块实现。
-- [Copy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/copy_ub_to_ub_continuous.md)（`exemplifies`）：Copy 与《fp32 UB 非 VL 拷贝须用带掩码 Reg》的实质衔接是：该 Copy 是 32B 对齐的 UB 连续搬运；DataCopy 对应入口、UB-UB 搬运指南、AscCopy 与非 VL 掩码故障共同说明通路、对齐和尾块边界。
-- [Load](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_load/load.md)（`exemplifies`）：fp32 UB 非 VL 拷贝须用带掩码 Reg 与《Load》的实质衔接是：非 VL fp32 UB copy 的修复正文直接调用 UpdateMask、Reg Load/Store；所选 API 与 const/mask 故障卡约束同一尾块实现。
-- [Reg数据搬出](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_store/reg_data_store.md)（`exemplifies`）：fp32 UB 非 VL 拷贝须用带掩码 Reg 与《Reg数据搬出》的实质衔接是：非 VL fp32 UB copy 的修复正文直接调用 UpdateMask、Reg Load/Store；所选 API 与 const/mask 故障卡约束同一尾块实现。
-- [Store](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_store/store.md)（`exemplifies`）：fp32 UB 非 VL 拷贝须用带掩码 Reg 与《Store》的实质衔接是：非 VL fp32 UB copy 的修复正文直接调用 UpdateMask、Reg Load/Store；所选 API 与 const/mask 故障卡约束同一尾块实现。
-- [reg数据搬入](../../apis/simd_api/c_api/reg/reg_load/reg_load.md)（`exemplifies`）：fp32 UB 非 VL 拷贝须用带掩码 Reg 与《reg数据搬入》的实质衔接是：非 VL fp32 UB copy 的修复正文直接调用 UpdateMask、Reg Load/Store；所选 API 与 const/mask 故障卡约束同一尾块实现。
-- [reg数据搬出](../../apis/simd_api/c_api/reg/reg_store/reg_store.md)（`exemplifies`）：焦点处理Reg 数据搬出中对齐、非对齐与带 mask store 的选择；fp32 UB 非 VL 拷贝须用带掩码 Reg正文说明“fp32 UB 局部 DataCopy 在非 vector-length 元素数上产生轴相关错误；使用 UpdateMask 的 Reg load/store 复制尾块”。候选把总览中的 store 选择落到 Basic Reg 对应接口或真实非 VL/交错 mask 故障。
-- [Reg API int8 DIST_PACK_B32 交错零](reg_api_int8_dist_pack_b32.md)（`related`）：《Reg API int8 DIST_PACK_B32 交错零》说明Ascend950 Reg API 用 StoreAlign<int8_t, DIST_PACK_B32> 配 float 粒度 UpdateMask 做 fp32→int8 量化时输出每隔一字节插零；用小 shape debug 脚本打印 y[0] 与参考逐元素对照即可判别。；《fp32 UB 非 VL 拷贝须用带掩码 Reg》说明fp32 UB 局部 DataCopy 在非 vector-length 元素数上产生轴相关错误；使用 UpdateMask 的 Reg load/store 复制尾块。。二者在DIST_PACK_B32的存储分布与float到int8 Cast、UpdateMask和StoreAlign/Pack位宽必须一致，否则产生隔字节零上存在可执行的直接衔接。
-- [Reg LoadAlign 不接受 const __ubuf__ 指针](../compilation/reg_loadalign_requires_nonconst_ubuf_pointer.md)（`same_topic`）：fp32 UB 非 VL 拷贝须用带掩码 Reg 与《Reg LoadAlign 不接受 const __ubuf__ 指针》的实质衔接是：非 VL fp32 UB copy 的修复正文直接调用 UpdateMask、Reg Load/Store；所选 API 与 const/mask 故障卡约束同一尾块实现。
-- [UpdateMask 引用参数拒绝 const — 改用可修改左值](../compilation/updatemask_requires_mutable_uint32_lvalue.md)（`same_topic`）：fp32 UB 非 VL 拷贝须用带掩码 Reg 与《UpdateMask 引用参数拒绝 const — 改用可修改左值》的实质衔接是：非 VL fp32 UB copy 的修复正文直接调用 UpdateMask、Reg Load/Store；所选 API 与 const/mask 故障卡约束同一尾块实现。
-<!-- cannbot:related:end -->

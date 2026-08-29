@@ -22,9 +22,3 @@ platforms: [agnostic]
 OpAICoreDef算子定义，OpAICoreDef请参考OpAICoreDef。
 ## 约束说明
 无
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [OpAICoreDef](op_ai_core_def.md)（`same_topic`）：SetOpSpecInfo 与《OpAICoreDef》的实质衔接是：SetOpSpecInfo 是 OpAICoreDef 的专用信息配置方法，只有在该定义对象上下文中生效。
-<!-- cannbot:related:end -->

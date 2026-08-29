@@ -24,7 +24,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetCoreNumAic](../../../../apis/utils_api/platform_info/platform_ascend_c/get_core_num_aic.md)（`explains`）：启用 Vector Core 时 numBlocks 需超过 AI Core 数并通常取 AIC+AIV，GetCoreNumAic 提供判定阈值和总数中的 AIC 部分。
-- [GetCoreNumVector](../../../../apis/utils_api/platform_info/platform_ascend_c/get_core_num_vector.md)（`explains`）：EnableVectorCore 明确要求 Host 把 numBlocks 设为 AI Core 与 Vector Core 总数，GetCoreNumVector 提供 Vector 部分的计数。
-- [block 数应覆盖可用 Vector 核](../../../../runbooks/performance/block_count_uses_all_available_vector_cores.md)（`related`）：性能卡实测固定 block 上限低于可用 Vector 核会留下并行度；它把指南的 numBlocks 规则落到探针值、正确性回归和配对性能验证。
+- [block 数应覆盖可用 Vector 核](../../../../runbooks/performance/block_count_uses_all_available_vector_cores.md)（`related`）：“设置的numBlocks代表的是AI Core和Vector Core的总数”给出启用 Vector Core 时 host tiling 的计数语义；“host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`”展示固定上限如何造成实际 Vector 核闲置。
 <!-- cannbot:related:end -->

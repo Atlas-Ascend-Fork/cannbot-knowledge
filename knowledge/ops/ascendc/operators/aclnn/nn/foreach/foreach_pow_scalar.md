@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:47:57Z"
-updated_at: "2026-08-25T15:47:57Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -74,7 +74,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-版本族包括旧版 `aclnnForeachPowScalar`（`scalar` 是单元素 `aclTensor`）与 V2（`scalar` 是 `aclScalar`）。V2 文档同时公开支持 A2、A3、A5，且源码中存在完整 V2 实现，因此 A2/A3 取最新的 `aclnnForeachPowScalarV2`；其 API 把 `aclScalar` 转成 tensor 后复用内部 `ForeachPowScalar` body。旧版不进入本卡。
+版本族包括旧版 `aclnnForeachPowScalar`（`scalar` 是单元素 `aclTensor`）与 V2（`scalar` 是 `aclScalar`）。V2 文档同时公开支持 A2、A3、950，且源码中存在完整 V2 实现，因此 A2/A3 取最新的 `aclnnForeachPowScalarV2`；其 API 把 `aclScalar` 转成 tensor 后复用内部 `ForeachPowScalar` body。旧版不进入本卡。
 
 V2 文档只公开 FLOAT16/FLOAT32/BFLOAT16。ACLNN 实现的 `ASCEND910BC_TENSOR_DTYPE_DTYPE_SUPPORT_LIST` 与 Kernel router 还含 INT32，但 header/doc 未把它纳入 V2 契约；该实现信号不扩张公开 API Route。
 
@@ -549,9 +549,9 @@ BF16 tile 可以大于 FP32 临时区；实现把 tile 按 `maxCastDataCount=I/4
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2 文档支持 | V2 文档支持 | V2 文档支持，见 `_a5` 卡 |
+| 支持状态 | V2 文档支持 | V2 文档支持 | V2 文档支持，见 `_950` 卡 |
 | Host/Launcher | ascend910b→arch22 公共 Tiling | ascend910_93→arch22 公共 Tiling | arch35 独立 Tiling，最多 256 tensor |
 | Kernel/资源 | AIV Vector 公共 foreach body | 同 A2 | SIMT VF、无显式 AIV Queue |
 
@@ -599,3 +599,10 @@ BF16 tile 可以大于 FP32 临时区；实现把 tile 按 `maxCastDataCount=I/4
 | 同步 | Queue + V barrier | BF16 三阶段间 barrier 不得删除 | `InnerComputer::Compute/ComputePerCast` |
 | 精度与尾块 | BF16 FP32 Power 后 CAST_RINT；GM tail 精确字节 | scalar 转换 dtype、castCap、有效 n | `Exec...`、`ComputePerCast`、`CopyOut` |
 | 失败边界 | API 检查、Tiling null/resource检查、未知 key | 不扩张 INT32 公共契约；不忽略 50 项 ABI 上限 | `CheckParams/CheckOpInfo/foreach_pow_scalar` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Power（数学计算）](../../../../apis/simd_api/adv_api/math_compute/power_interface/power.md)（`related`）：`Power<half,false>`，公共 unary foreach；按元素做幂运算（dst = src0 ^ src1），提供三类接口：Power(dstTensor, src0Tensor, src1Tensor)两个Tensor输入、Power(dstTensor, src0Tensor, src1Scalar)Tensor+标量、Power(dstTensor, src0Scalar, src1Tensor)标量+Tensor。；候选是 A2/A3 foreach FP16/FP32 tile 的直接数学 primitive。
+- [ForeachPowScalar 950 ACLNN 算子知识](foreach_pow_scalar_950.md)（`same_topic`）：对列表中每个张量逐元素计算 `y_i［j］ = pow(x_i［j］, exponent)`；对 TensorList 的每个有效元素计算 `y_i［j］=pow(x_i［j］, exponent)`；两端是同一 aclnnForeachPowScalarV2 公开算子合同在 A2/A3 与 950 的平台实现。
+<!-- cannbot:related:end -->

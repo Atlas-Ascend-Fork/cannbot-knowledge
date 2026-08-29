@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T10:05:46Z"
-updated_at: "2026-08-25T10:05:46Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -958,9 +958,9 @@ Host 用输入 dtype 选单一 `alignNum` 分核，但输出固定为 float 时�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 ACLNN 支持；`ascend910b` 注册与 binary config 闭合 | 公开 ACLNN 支持；`ascend910_93` 注册与 binary config 闭合 | ACLNN 文档、OpDef 和 per-op binary JSON 声称支持，但活动 `ascendc_config.json` 的两处 AngleV2 compute_units 均缺 `ascend950`；平台接线冲突，未发布 `_a5` 卡 |
+| 支持状态 | 公开 ACLNN 支持；`ascend910b` 注册与 binary config 闭合 | 公开 ACLNN 支持；`ascend910_93` 注册与 binary config 闭合 | ACLNN 文档、OpDef 和 per-op binary JSON 声称支持，但活动 `ascendc_config.json` 的两处 AngleV2 compute_units 均缺 `ascend950`；平台接线冲突，未发布 `_950` 卡 |
 | Host/Launcher | 共用 Tiling；rank>8 在 ACLNN 前段失败 | 同 A2 | OpDef 增 BF16，Tiling rank>8 显式失败；因构建冲突不形成正式闭包 |
 | Kernel/资源 | `__CCE_AICORE__>=200` Vector 路径，VSEL mode2预留8KiB | 同 A2 | entry含 arch3510 BF16分支且有 ascend950 binary JSON，但缺活动全局构建接线 |
 
@@ -971,7 +971,7 @@ Host 用输入 dtype 选单一 `alignNum` 分核，但输出固定为 float 时�
 - 零元素 Tensor 没有 Device guard；源码公式可产生 `tileLength=0` 后除零。公开 ACLNN 生成前段是否额外拒绝 empty Tensor固定仓不可见，不应假设支持。
 - `repeatTimes` 在多数 Route 窄化为 `uint8_t`，Host tile 公式没有显式上限 guard。R-004 试图处理大 repeat，但 full-chunk 循环未推进目标地址，只有 `actualRepeatTimes<=509` 可从源码证明零 tile 完整初始化；固定仓没有更大 tile 的正确 fallback。
 - unknown key 不报错且不写输出；公开入口依赖 Host key 与 router 一致。
-- A5 的公开/注册/构建证据冲突，按正式发布 Gate 跳过 `angle_v2_a5.md`，不得只凭 arch3510 分支或 ascend950 目录推定闭包。
+- 950 的公开/注册/构建证据冲突，按正式发布 Gate 跳过 `angle_v2_950.md`，不得只凭 arch3510 分支或 ascend950 目录推定闭包。
 - ACLNN 自动生成 header/实现、executor 内部节点、非连续 Tensor 临时区与回写细节固定仓不可见；这些仅作为框架边界，不用于推测额外 workspace。
 
 ## 源码索引
@@ -987,13 +987,13 @@ Host 用输入 dtype 选单一 `alignNum` 分核，但输出固定为 float 时�
 | Host/Tiling | `math/angle_v2/op_host/angle_v2_tiling.cpp` | `AngleV2Tiling` | key、分核、tile、workspace、POD producer |
 | A2 binary | `math/angle_v2/op_host/config/ascend910b/angle_v2_binary.json` | `AngleV2 op_list` | A2 dtype binary接线 |
 | A3 binary | `math/angle_v2/op_host/config/ascend910_93/angle_v2_binary.json` | `AngleV2 op_list` | A3 dtype binary接线 |
-| Kernel router | `math/angle_v2/op_kernel/angle_v2.cpp` | `angle_v2` | key→模板与A5 BF16 guard |
+| Kernel router | `math/angle_v2/op_kernel/angle_v2.cpp` | `angle_v2` | key→模板与950 BF16 guard |
 | 公共 Device | `math/angle_v2/op_kernel/angle_v2_base.h` | `AngleV2Base` | block/tile、Select平台路径 |
 | float Device | `math/angle_v2/op_kernel/angle_v2.h` | `AngleV2` | FP16/FP32实现 |
 | u8 Device | `math/angle_v2/op_kernel/angle_v2_u8.h` | `AngleV2U8` | BOOL/UINT8零生成 |
 | int Device | `math/angle_v2/op_kernel/angle_v2_int.h` | `AngleV2Int` | int8/16/32/64 Cast与tail |
 | complex Device | `math/angle_v2/op_kernel/angle_v2_complex.h` | `AngleV2Complex` | atan、象限、特殊值 |
-| 全局构建接线 | `scripts/kernel/binary_config/ascendc_config.json` | 两处 `AngleV2` entry | A2/A3 compute_units与A5缺口 |
+| 全局构建接线 | `scripts/kernel/binary_config/ascendc_config.json` | 两处 `AngleV2` entry | A2/A3 compute_units与950缺口 |
 
 ### 实现复用检查
 

@@ -25,8 +25,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差](../../../../../runbooks/precision/muladddst_fma_golden_mul_add.md)（`exemplifies`）：FMA 一次舍入的精度实例用于验证切分后结果。
-- [Fma](fma.md)（`related`）：固定 workspace 下 factor-size 决定单次 Fma tile。
-- [Fma接口](fma_interface.md)（`same_topic`）：Fma接口 与《GetFmaTmpBufferFactorSize》的实质衔接是：Fma 接口页直接包含 Fma、最大最小空间和 factor 查询，C Reg/Vector 入口执行同一融合乘加；舍入案例说明 FMA 单次舍入不能拆成 Mul+Add。
-- [GetFmaMaxMinTmpSize](get_fma_max_min_tmp_size.md)（`same_topic`）：MaxMin 接口按 shape 正向求 Fma 空间上下界，FactorSize 接口按既有空间反推可处理规模，两者是同一临时空间模型的正反查询。
+- [Fma](fma.md)（`related`）：获取Fma接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。接口内部涉及精度转换，临时空间大小通过GetFmaMaxMinTmpSize获取。。factor 查询把固定临时空间换算为 Fma 单次元素上限，执行接口实际消费 sharedTmpBuffer 或框架缓冲。
+- [GetFmaMaxMinTmpSize](get_fma_max_min_tmp_size.md)（`related`）：获取Fma接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；host侧Tiling接口，用于获取Fma接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。一张卡给出固定空间的 factor/extraBuf 换算，另一张给出最大最小缓冲查询，二者共同完成 Host Tiling 容量选择。
 <!-- cannbot:related:end -->

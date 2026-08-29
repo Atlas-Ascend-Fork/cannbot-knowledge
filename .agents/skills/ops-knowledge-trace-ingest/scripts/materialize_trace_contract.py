@@ -15,10 +15,11 @@ validator requires:
     reconstruction_method/anchors/verbatim_verified) whose anchors resolve to
     a recorded source as ``<sha12>#<sequence>``.
 
-This script fills that gap deterministically (0 LLM) by reading the miner
-manifest + the normalized trace + the session manifest and emitting both the
-reconstruction patch and a per-draft trace_snapshot map.  When a ledger is
-supplied it also augments entries (trace_snapshot + correct source_drafts).
+This script fills that gap deterministically (0 LLM) by reading every supplied
+miner manifest + normalized trace + session manifest, emitting the reconstruction
+patch and per-draft trace_snapshot map, and then (when ``--ledger`` is present)
+augmenting entries with those newly materialized snapshots. Fresh ledger runs do
+not require a separate front-load invocation.
 
 Usage:
   materialize_trace_contract.py <mine_dir> --normalized-root <dir>
@@ -28,10 +29,13 @@ Usage:
 """
 
 import argparse
+import copy
 import hashlib
 import json
 import sys
 from pathlib import Path
+
+from validate_review_receipt import validate_receipt
 
 
 ROLE_SETS = {
@@ -302,16 +306,9 @@ def augment_ledger(ledger_path: Path, mine_dirs, clusters_path=None, verified=Fa
             snap[(tid, name)] = obj
 
     def snapshot_for(draft_str):
-        # draft like '.build/.../2026-08-15/<trace_id>/DRAFT-<name>.md'
+        # draft like '.build/.../<date>/<trace_id>/DRAFT-<name>.md'
         p = Path(draft_str)
-        parts = p.parts
-        tid = None
-        for i, part in enumerate(parts):
-            if part == "2026-08-15" and i + 1 < len(parts):
-                tid = parts[i + 1]
-                break
-        if tid is None and len(parts) >= 2:
-            tid = parts[-2]
+        tid = p.parent.name
         return snap.get((tid, p.name))
 
     for e in ledger.get("entries", []):
@@ -321,7 +318,7 @@ def augment_ledger(ledger_path: Path, mine_dirs, clusters_path=None, verified=Fa
             e["source_drafts"] = list(cluster_drafts[cid])
         elif not e.get("source_drafts") and e.get("draft"):
             e["source_drafts"] = [str(Path(str(e["draft"])))]
-        if e.get("operation") == "new" or e.get("status") == "published":
+        if e.get("status") in {"published", "merged"}:
             audit = e.get("evidence_audit") or {"mode": "trace_snapshot", "result": "pending"}
             audit["mode"] = "trace_snapshot"
             found = None
@@ -330,6 +327,10 @@ def augment_ledger(ledger_path: Path, mine_dirs, clusters_path=None, verified=Fa
                 if found:
                     break
             if found:
+                found = copy.deepcopy(found)
+                if verified:
+                    for artifact in found.get("mechanism_artifacts") or []:
+                        artifact["verbatim_verified"] = True
                 audit["trace_snapshot"] = found
                 # Do not claim pass here: verbatim verification of mechanism
                 # artifacts is a reviewer step, not a deterministic one.
@@ -351,32 +352,52 @@ def main():
     ap.add_argument(
         "--verified",
         action="store_true",
-        help="claim verbatim_verified/result=pass only after reviewer assertion",
+        help="apply a validated PASS receipt to reviewer-owned approval flags",
     )
+    ap.add_argument("--receipt", help="independent PASS review receipt required by --verified")
+    ap.add_argument("--cards-root", help="staged card root bound by --receipt")
     args = ap.parse_args()
     norm_root = Path(args.normalized_root)
     mine_dirs = [Path(d) for d in args.mine_dirs]
-    if args.ledger:
-        # --ledger mode: per-dir materialize already done in a prior front-load pass
-        # (trace_snapshots.json exist); only augment the ledger from those snapshots.
-        res = augment_ledger(Path(args.ledger), mine_dirs, args.clusters, verified=args.verified)
-        print(f"LEDGER: entries={res['entries']} snapshots_attached={res['snapshots_attached']}")
-        return
+    if args.verified:
+        if not args.ledger or not args.receipt or not args.cards_root:
+            ap.error("--verified requires --ledger, --receipt, and --cards-root")
+        review = validate_receipt(
+            Path(args.ledger), Path(args.cards_root), Path(args.receipt)
+        )
+        if not review.get("ok") or review.get("verdict") != "PASS":
+            print(json.dumps(review, ensure_ascii=False, indent=2), file=sys.stderr)
+            raise SystemExit("refusing --verified without a valid PASS receipt")
+    materialize_errors = 0
     for md in mine_dirs:
         if not (md / "manifest.json").is_file():
-            print(f"SKIP {md}: no manifest.json", file=sys.stderr)
+            print(f"ERROR {md}: no manifest.json", file=sys.stderr)
+            materialize_errors += 1
             continue
         try:
-            res, err = materialize(md, norm_root, verified=args.verified)
+            # Source snapshots remain pending. Reviewer-owned flags are applied
+            # only to the ledger copy after a PASS receipt is validated.
+            res, err = materialize(md, norm_root, verified=False)
         except Exception as exc:
             print(f"ERROR {md.name}: {exc}", file=sys.stderr)
+            materialize_errors += 1
             continue
         if err:
             print(f"ERROR {md.name}: {err}", file=sys.stderr)
+            materialize_errors += 1
         else:
             print(f"OK {res['trace_id']}: events={res['events']} snapshots={res['snapshots']} raw={res['raw_sha']} norm={res['norm_sha']}")
+    if materialize_errors:
+        raise SystemExit(f"materialization failed for {materialize_errors} mine dirs")
     if args.ledger:
         res = augment_ledger(Path(args.ledger), mine_dirs, args.clusters, verified=args.verified)
+        if args.verified:
+            review = validate_receipt(
+                Path(args.ledger), Path(args.cards_root), Path(args.receipt)
+            )
+            if not review.get("ok") or review.get("verdict") != "PASS":
+                print(json.dumps(review, ensure_ascii=False, indent=2), file=sys.stderr)
+                raise SystemExit("approved ledger no longer matches PASS receipt")
         print(f"LEDGER: entries={res['entries']} snapshots_attached={res['snapshots_attached']}")
 
 

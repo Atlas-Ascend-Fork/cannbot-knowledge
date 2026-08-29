@@ -26,9 +26,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCopyL12l0aTrans](asc_copy_l12l0a_trans.md)（`related`）：MX 量化路径还需专用 scale/格式处理，不由普通 Trans 隐式完成。
-- [AscMmadMx](../cube_compute/asc_mmad_mx.md)（`related`）：《AscMmadMx》说明完成带量化系数的矩阵乘加计算（MmadMx），左矩阵A和右矩阵B分别配有量化系数矩阵ScaleA和ScaleB，按K维度每32个元素共享一个量化系数。；《AscCopyL12l0aMx》说明将Mx scale矩阵从L1 Buffer搬运到L0A Buffer。。二者在AscMmadMx消费A/B量化系数矩阵；Mx搬入、SetTensorScaleA/B和MxMatmul场景构成完整数据合同上存在可执行的直接衔接。
-- [asc_copy_l12l0a](asc_copy_l12l0a/asc_copy_l12l0a_arch_2201.md)（`related`）：MX 量化矩阵路径有专用 L0A 搬运语义，不能以普通 L12L0A 代替 scale/格式处理。
-- [AscCopyL12l0bMx](asc_copy_l12l0b_mx.md)（`same_topic`）：AscCopyL12l0bMx 与《AscCopyL12l0aMx》的实质衔接是：AscCopyL12l0bMx 是 Mx scale 的 L1→L0B 路径；L0A 对应入口、普通/稀疏 L0B、GM→L1、3D 配置和 AscMmadMx 共同构成 Mx 矩阵计算链。
-- [asc_copy_l12l0a](asc_copy_l12l0a/asc_copy_l12l0a_arch_3510.md)（`same_topic`）：asc_copy_l12l0a 与《AscCopyL12l0aMx》的实质衔接是：该 3510 接口把 512B L1 矩阵搬到 L0A；架构变体、转置/MX 入口及 GM→L1 上游构成实际 Cube 搬运链，迁移卡限定不同架构可用路径。
+- [AscMmadMx](../cube_compute/asc_mmad_mx.md)（`related`）：计算接口明确要求“调用本接口前，需通过asc_copy_l12l0a_mx和asc_copy_l12l0b_mx等接口，将ScaleA和ScaleB矩阵分别搬入L0A_MX Buffer和L0B_MX Buffer。”；搬运接口负责“将Mx scale矩阵从L1 Buffer搬运到L0A Buffer。”，因此它是 AscMmadMx 读取 ScaleA 前的必要数据准备。
+- [AscCopyL12l0bMx](asc_copy_l12l0b_mx.md)（`same_topic`）：“将Mx scale矩阵从L1 Buffer搬运到L0A Buffer”与“将Mx scale矩阵从L1 Buffer搬运到L0B Buffer”是 MmadMx 左右操作数配套的 Scale 搬运接口，参数单位和分形约束可对照使用。
 <!-- cannbot:related:end -->

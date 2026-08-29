@@ -48,7 +48,11 @@ cann-recipes-infer 在 Atlas A3 集群上完成 0day BF16、1day W8A8C16 部署�
  `batch_size × kv_length × Indexer_head_dim × storage_bytes × num_layers`。每 rank 4batch × 64K、BF16 场景新增约 **4 GB**。
 - **Prefill MLA 模式选择**：Lightning Indexer 每个 q token 选出 TopK=2048 个 kv token 后，Prefill MLA 有三种方案：
 
- | 方案 | 说明 | BMM1 / BMM2 Shape | 瓶颈 | | ---- | ---- | ---- | ---- | | 1. MLA Naive + Sparse Mask | 计算完整 Attention，softmax 前屏蔽非 TopK token | `(1*128, 64K, 192, 64K)` / `(1*128, 64K, 64K, 128)` | 与 Full Attention 计算量一致，无 DSA 收益 | | 2. MLA Naive + Sparse Attention | 每 q token 仅和 TopK=2048 个 kv token 算 | `(1*64K*128, 1, 192, 2048)` / `(1*64K*128, 1, 2048, 128)` | M=1 矩阵乘效率差；HBM 访存量激增 **2048 倍** | | 3. MLA Absorb + Sparse Attention | Prefill 走 Absorb（与 Decode 一致） | `(1*64K, 128, 576, 2048)` / `(1*64K, 128, 2048, 512)` | 计算量比方案 2 多 3 倍，但 M=128 矩阵乘友好；访存比方案 2 降低几十倍 |
+ | 方案 | 说明 | BMM1 / BMM2 Shape | 瓶颈 |
+| ---- | ---- | ---- | ---- |
+| 1. MLA Naive + Sparse Mask | 计算完整 Attention，softmax 前屏蔽非 TopK token | `(1*128, 64K, 192, 64K)` / `(1*128, 64K, 64K, 128)` | 与 Full Attention 计算量一致，无 DSA 收益 |
+| 2. MLA Naive + Sparse Attention | 每 q token 仅和 TopK=2048 个 kv token 算 | `(1*64K*128, 1, 192, 2048)` / `(1*64K*128, 1, 2048, 128)` | M=1 矩阵乘效率差；HBM 访存量激增 **2048 倍** |
+| 3. MLA Absorb + Sparse Attention | Prefill 走 Absorb（与 Decode 一致） | `(1*64K, 128, 576, 2048)` / `(1*64K, 128, 2048, 512)` | 计算量比方案 2 多 3 倍，但 M=128 矩阵乘友好；访存比方案 2 降低几十倍 |
 
  本实践采用**方案三（MLA Absorb + Sparse Attention）**，Prefill 与 Decode 的 MLA 计算流归一。
 
@@ -73,7 +77,14 @@ flowchart LR
 
 ### 部署规格（config/）
 
-| 阶段 | YAML | world_size | 并行 | 量化 | 备注 | | ---- | ---- | ---- | ---- | ---- | ---- | | Prefill | `deepseek_v3.2_exp_rank_64_64ep_prefill_benchmark.yaml` | 64 | CP64 + MoE-EP64 | BF16 | `next_n: 3`、`enable_multi_streams: True` | | Prefill | `deepseek_v3.2_exp_rank_64_64ep_w8a8c8_prefill_benchmark.yaml` | 64 | CP64 + MoE-EP64 | W8A8C8 | `embed/lmhead_tp_size: 16`（单 node HCCS 内 TP） | | Decode | `deepseek_v3.2_exp_rank_128_128ep_decode_benchmark.yaml` | 128 | DP128 + MoE-EP128 | BF16 | `oproj_tp_size: 4`、`dense_tp_size: 4` | | Decode | `deepseek_v3.2_exp_rank_128_128ep_w8a8c8_decode_benchmark.yaml` | 128 | DP128 + MoE-EP128 | W8A8C8 | 主 benchmark 配置，`ge_graph` 图模式 | | Decode | `deepseek_v3.2_exp_rank_128_128ep_w8a8c8_offload_benchmark.yaml` | 128 | DP128 + MoE-EP128 | W8A8C8 | `enable_offload: True` | | Decode | `deepseek_v3.2_exp_rank_64_64ep_w8a8c8_decode_aclgraph_benchmark.yaml` | 64 | DP64 + MoE-EP64 | W8A8C8 | `acl_graph` 模式 |
+| 阶段 | YAML | world_size | 并行 | 量化 | 备注 |
+| ---- | ---- | ---- | ---- | ---- | ---- |
+| Prefill | `deepseek_v3.2_exp_rank_64_64ep_prefill_benchmark.yaml` | 64 | CP64 + MoE-EP64 | BF16 | `next_n: 3`、`enable_multi_streams: True` |
+| Prefill | `deepseek_v3.2_exp_rank_64_64ep_w8a8c8_prefill_benchmark.yaml` | 64 | CP64 + MoE-EP64 | W8A8C8 | `embed/lmhead_tp_size: 16`（单 node HCCS 内 TP） |
+| Decode | `deepseek_v3.2_exp_rank_128_128ep_decode_benchmark.yaml` | 128 | DP128 + MoE-EP128 | BF16 | `oproj_tp_size: 4`、`dense_tp_size: 4` |
+| Decode | `deepseek_v3.2_exp_rank_128_128ep_w8a8c8_decode_benchmark.yaml` | 128 | DP128 + MoE-EP128 | W8A8C8 | 主 benchmark 配置，`ge_graph` 图模式 |
+| Decode | `deepseek_v3.2_exp_rank_128_128ep_w8a8c8_offload_benchmark.yaml` | 128 | DP128 + MoE-EP128 | W8A8C8 | `enable_offload: True` |
+| Decode | `deepseek_v3.2_exp_rank_64_64ep_w8a8c8_decode_aclgraph_benchmark.yaml` | 64 | DP64 + MoE-EP64 | W8A8C8 | `acl_graph` 模式 |
 
 > `exe_mode: ge_graph / acl_graph / eager` 三选一（见 [torchair](../frameworks/torchair.md)）。`world_size = 2 × chip_num` 在 A3（两 die 一卡）。
 
@@ -130,7 +141,15 @@ DeepSeek-V3.2-Exp 沿用 V3 的 Multi-Token Prediction。但由于 DSA 结构，
 
 **64K 序列 × 4 batch 搬运量/计算量对比（源文档表）**：
 
-| | | KV 搬运量 (MB) | Cube 计算量 (GFlops) | QK^T 搬运量 (MB) | | ---- | ---- | ---- | ---- | ---- | | MLA | 非 MTP | 144 | 19.33 | 32 | | MLA | MTP1 | 144 | 38.65 | 64 | | SFA | 非 MTP | 4.5 | 0.60 | 1 | | SFA | MTP1 | **9** | 1.21 | 2 | | LI | 非 MTP | 32 | 2.15 | 16 | | LI | MTP1 | 32 | 4.29 | **32** |
+| |
+| KV 搬运量 (MB) | Cube 计算量 (GFlops) | QK^T 搬运量 (MB) |
+| ---- | ---- | ---- | ---- | ---- |
+| MLA | 非 MTP | 144 | 19.33 | 32 |
+| MLA | MTP1 | 144 | 38.65 | 64 |
+| SFA | 非 MTP | 4.5 | 0.60 | 1 |
+| SFA | MTP1 | **9** | 1.21 | 2 |
+| LI | 非 MTP | 32 | 2.15 | 16 |
+| LI | MTP1 | 32 | 4.29 | **32** |
 
 - **MLA**：KV 搬运量不变，MTP 提升计算访存比 → 算力利用率 >70%。
 - **SFA**：MTP1 下 KV 搬运量**翻倍**（每 q token 单独选 TopK=2048），反而增加离散访存代价 —— MTP 对 SFA 难以获得可观收益。
@@ -175,7 +194,11 @@ W4A8C8（MoE W4A8 + Attention W8A8C8）针对 V3.2-Exp 用基于学习的量化�
 
 **量化精度**（源表）：
 
-| 模型 | MMLU | GPQA | DROP | MGSM | | ---- | ---- | ---- | ---- | ---- | | DeepSeek-V3.2-BF16 | 90.8 | 75.85 | 87.57 | 90.9 | | DeepSeek-V3.2-Exp-W8A8C8 | 90.62 | 75.90 | 87.41 | 90.87 | | DeepSeek-V3.2-Exp-W4A8C8 | 90.66 | 76.5 | 87.68 | 91.3 |
+| 模型 | MMLU | GPQA | DROP | MGSM |
+| ---- | ---- | ---- | ---- | ---- |
+| DeepSeek-V3.2-BF16 | 90.8 | 75.85 | 87.57 | 90.9 |
+| DeepSeek-V3.2-Exp-W8A8C8 | 90.62 | 75.90 | 87.41 | 90.87 |
+| DeepSeek-V3.2-Exp-W4A8C8 | 90.66 | 76.5 | 87.68 | 91.3 |
 
 ### 多流并行优化
 
@@ -210,7 +233,12 @@ Decode YAML 默认 `enable_weight_nz: True`、`pa_block_size: 128`；见 [weight
 
 基于 Atlas A3，MTP3、perfect eplb 配置：
 
-| Global Batch Size | Seq Length | Chips | TPOT (ms) | Throughput (tokens/p/s) | | ---- | ---- | ---- | ---- | ---- | | 256 | 65536 | 64 | 19.84 | 202 | | 512 | 65536 | 64 | 22.78 | 351 | | 128 | 131072 | 64 | 18.85 | 106 | | 512 | 131072 | 64 | 25.8 | 310 |
+| Global Batch Size | Seq Length | Chips | TPOT (ms) | Throughput (tokens/p/s) |
+| ---- | ---- | ---- | ---- | ---- |
+| 256 | 65536 | 64 | 19.84 | 202 |
+| 512 | 65536 | 64 | 22.78 | 351 |
+| 128 | 131072 | 64 | 18.85 | 106 |
+| 512 | 131072 | 64 | 25.8 | 310 |
 
 > 平均 3 个 draft token 中 accept 1.44 个。
 
@@ -223,7 +251,12 @@ Decode YAML 默认 `enable_weight_nz: True`、`pa_block_size: 128`；见 [weight
 
 ### MoE W4A8 + Attention W8A8C8
 
-| MoE Quant Mode | Global Batch Size | Chips | TPOT (ms) | Throughput (tokens/p/s) | | ---- | ---- | ---- | ---- | ---- | | W8A8 | 64 | 32 | 20.81 | 96 | | W4A8 | 64 | 32 | 20.18 | 99 | | W8A8 | 32 | 16 | 24.39 | 82 | | W4A8 | 32 | 16 | 22.51 | 89 |
+| MoE Quant Mode | Global Batch Size | Chips | TPOT (ms) | Throughput (tokens/p/s) |
+| ---- | ---- | ---- | ---- | ---- |
+| W8A8 | 64 | 32 | 20.81 | 96 |
+| W4A8 | 64 | 32 | 20.18 | 99 |
+| W8A8 | 32 | 16 | 24.39 | 82 |
+| W4A8 | 32 | 16 | 22.51 | 89 |
 
 > 相同序列长度 65536，MTP 及其他配置同上。权重越大、性能提升越明显。
 
@@ -278,7 +311,27 @@ flowchart TD
 
 ### 关键参数（stock HF config）
 
-| 模块 | 参数 | 值 | | ---- | ---- | ---- | | — | n_layers | 61 | | — | hidden | 7168 | | — | vocab | 129280 | | MLA | n_heads | 128 | | MLA | q_lora_rank | 1536 | | MLA | kv_lora_rank | 512 | | MLA | qk_nope_head_dim | 128 | | MLA | qk_rope_head_dim | 64 | | MLA | v_head_dim | 128 | | Indexer | index_n_heads | 64 | | Indexer | index_head_dim | 128 | | Indexer | index_topk | 2048 | | MoE | n_routed_experts | 256 | | MoE | n_shared_experts | 1 | | MoE | top_k | 8 | | MoE | moe_intermediate | 2048 | | MoE | dense_layers | 仅第 1–3 层 | | RoPE | yarn factor | 40（`original_max_pos=4096`） | | — | max_position_embeddings | 163840 |
+| 模块 | 参数 | 值 |
+| ---- | ---- | ---- |
+| — | n_layers | 61 |
+| — | hidden | 7168 |
+| — | vocab | 129280 |
+| MLA | n_heads | 128 |
+| MLA | q_lora_rank | 1536 |
+| MLA | kv_lora_rank | 512 |
+| MLA | qk_nope_head_dim | 128 |
+| MLA | qk_rope_head_dim | 64 |
+| MLA | v_head_dim | 128 |
+| Indexer | index_n_heads | 64 |
+| Indexer | index_head_dim | 128 |
+| Indexer | index_topk | 2048 |
+| MoE | n_routed_experts | 256 |
+| MoE | n_shared_experts | 1 |
+| MoE | top_k | 8 |
+| MoE | moe_intermediate | 2048 |
+| MoE | dense_layers | 仅第 1–3 层 |
+| RoPE | yarn factor | 40（`original_max_pos=4096`） |
+| — | max_position_embeddings | 163840 |
 
 > stock HF 的 `inference/model.py` 仅有单个输出 head，`config.json` 的 `num_nextn_predict_layers=1` 在该自带推理代码中**未落地**（无 MTP/NextNPredictor 类）；而本页上文记录的 `next_n: 3`（MTP3）是 cann-recipes-infer 的 NPU 部署在自研 executor 框架下另行实现的推测解码，二者描述不同制品（stock HF 推理 vs. NPU 部署），互补而非冲突。MoE 规格（256+1、top-8、`moe_intermediate=2048`、`noaux_tc`）与 DeepSeek-V3 完全一致，区别仅在注意力身份由 `mla` 变为 `dsa`（MLA + lightning indexer），见 [deepseek-r1](deepseek_r1.md) 的 V3 谱系与 [deepseek-v4](deepseek_v4.md) 的后继 DSA/MQA 演进。
 
@@ -326,3 +379,11 @@ flowchart TD
 - [hixl](../techniques/hixl.md)（长序列 KVCache 卸载 DRAM 后 NPU↔DRAM 高性能传输经 HIXL 单边零拷贝）
 - [multi-stream](../techniques/multi_stream.md)（共享专家双流 / Indexer 前处理多流 / KVCache 异步流的方法论总纲）
 - [deepseek-v32-pretrain](../../../training/guides/recipes/deepseek_v32_pretrain.md)（跨域：训练侧 DeepSeek-V3.2 TorchTitan 32K 长序列预训练 —— DSA 反向 SLIG/SFAG、自定义 CP for DSA、FSDP2 极致显存部署）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DSA（DeepSeek Sparse Attention）架构模式](../modules/dsa.md)（`related`）：“DeepSeek-V3.2-Exp 是 DeepSeek 2026 年发布的实验性长序列模型，在 DeepSeek-V3.1 基础上引入 **DeepSeek Sparse Attention (DSA)** —— 由 **Lightning Indexer (LI)** 与 **Sparse Flash Attention (SFA)** 两个核心模块组成 —— 通过"选前 TopK 个相关 token 再计算注意力"将长序列 Attention 从 O(S²) 降至 O(S·TopK)。DSA 的引入保留了完整 MLA KVCache，同时新增 Indexer Key Cache；MoE/MLA 主干继续沿用 V3.1 的结构。”与“｜ DeepSeek V3.2-Exp ｜ `MLA` 内 `self.indexer = Indexer(args)` ｜ `deepseek_v32` ｜ `MLA.forward` 算完 Q/KV 后调用 indexer，把 `topk_indices` 散射成加性 `-inf` mask 累加进注意力分数再 softmax ｜”提供双方正文证据。模型卡给出 DSA 的组成和复杂度收益，DSA 卡补齐 V3.2-Exp 中 indexer 产出 top-k mask 并在 softmax 前叠加的结构合同。
+- [DeepSeek-V4](deepseek_v4.md)（`related`）：“DeepSeek-V3.2-Exp 是 DeepSeek 2026 年发布的实验性长序列模型，在 DeepSeek-V3.1 基础上引入 **DeepSeek Sparse Attention (DSA)** —— 由 **Lightning Indexer (LI)** 与 **Sparse Flash Attention (SFA)** 两个核心模块组成 —— 通过"选前 TopK 个相关 token 再计算注意力"将长序列 Attention 从 O(S²) 降至 O(S·TopK)。DSA 的引入保留了完整 MLA KVCache，同时新增 Indexer Key Cache；MoE/MLA 主干继续沿用 V3.1 的结构。”与“DeepSeek-V4 是 DeepSeek 发布的新一代长序列模型，包含 **DeepSeek-V4 Flash（285B）** 与 **DeepSeek-V4 Pro（1.6T）** 两种规格。在 DeepSeek-V3.2 的稀疏 Attention（DSA）基础上，V4 进一步在**层间交错**引入 **KV Cache 滑窗（Window Cache）** 与 **KV Cache 压缩（Compress）**，在保持注意力计算量/访存量低位（相对 Full Cache）的同时大幅提升长序列效率，提供长达 **1M 序列** 的高性能推理。”提供双方正文证据。V4 明确以 V3.2 的 DSA 为演进基线并增加滑窗与压缩，结合两卡可判断模型升级时注意力主体、缓存形态和长序列能力的迁移。
+- [GLM-5](glm_5.md)（`related`）：“其网络结构与 ［deepseek-v3.2-exp］(deepseek_v3_2_exp.md) **完全一致**——同款 DeepSeek Sparse Attention (DSA)：MLA 主干 + Lightning Indexer 稀疏选择；因此 cann-recipes-infer 在 GLM-5 上的**并行策略与性能优化方案均直接沿用 V3.2-Exp**（README 明述）。”与“DeepSeek-V3.2-Exp 是 DeepSeek 2026 年发布的实验性长序列模型，在 DeepSeek-V3.1 基础上引入 **DeepSeek Sparse Attention (DSA)** —— 由 **Lightning Indexer (LI)** 与 **Sparse Flash Attention (SFA)** 两个核心模块组成 —— 通过"选前 TopK 个相关 token 再计算注意力"将长序列 Attention 从 O(S²) 降至 O(S·TopK)。”提供双方正文证据。GLM-5 卡明确声明网络同构并直接复用 V3.2-Exp 的并行与优化方案；V3.2-Exp 卡给出被复用的 DSA 基线，因此后者可直接补全前者省略的机制。
+<!-- cannbot:related:end -->

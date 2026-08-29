@@ -42,15 +42,3 @@ aiv_mte3_ratio：0.002：0.378：0.183
 原理解析：采用Ping-Pong双缓冲技术，Ping缓冲区进行计算时，Pong缓冲区进行数据搬运，交替执行实现计算与搬运的流水线并行。
 代码改造点：
 性能提升：Case 3→Case 4，端到端耗时从268.5μs降至264.02μs，减少1.7%。双缓冲的收益有限，说明瓶颈在搬运速度本身。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [VfLoopOptimization](../../../simd_operator_optimization/vector_compute/vf_optimization/vf_loop_optimization.md)（`related`）：中级性能优化 与《VfLoopOptimization》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
-- [优化建议总览表（SIMD算子优化）](../../../simd_operator_optimization/optimization_summary.md)（`related`）：中级性能优化 与《优化建议总览表（SIMD算子优化）》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
-- [基于全局掩码复用的计算性能优化](../../../simd_operator_optimization/vector_compute/mask_reuse_optimization.md)（`related`）：中级性能优化 与《基于全局掩码复用的计算性能优化》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
-- [基础矢量算子](../../../simd_operator_impl/vector_programming/basic_vector_operator.md)（`related`）：《基础矢量算子》说明基于Ascend C方式实现基础矢量算子核函数的流程如下图所示。；《中级性能优化》说明本节在入门功能落地的基础上，介绍Add算子的中级性能优化方法。。二者在基础矢量实现把多核切分、TBuf/TQue、双缓冲、非对齐CopyIn和Add计算串成可执行流程上存在可执行的直接衔接。
-- [指令双发优化](../../../simd_operator_optimization/vector_compute/vf_optimization/dual_issue_optimization.md)（`related`）：中级性能优化 与《指令双发优化》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
-- [入门功能落地](getting_started.md)（`same_topic`）：中级性能优化 与《入门功能落地》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
-- [高阶性能打磨](advanced_optimization.md)（`same_topic`）：中级性能优化 与《高阶性能打磨》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
-<!-- cannbot:related:end -->

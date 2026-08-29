@@ -32,11 +32,6 @@ VF内自动同步：编译器会精准地插入必要的同步指令，删除冗
 <!-- cannbot:related:start -->
 ## 相关
 
-- [VF调用](../../../../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`explains`）：VF 融合优化指南说明何时把相邻 VF 合并以减少启动和 UB 往返，可直接用于评估多次 asc_vf_call 的调度开销与融合条件。
-- [VfLoopOptimization](vf_loop_optimization.md)（`related`）：VF Fusion 依赖可融合的 Hardware Loop；Loop 指南给出 uint16_t 计数、0 起步、步长 1、循环内无跳转等可识别条件。
-- [中级性能优化](../../../typical_operator_cases/simd_operator_impl/gelu_reg_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《VfFusionOptimization》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
-- [双 VF 融合输出非预期 先排 CopyOut slot 勿用 PRINTF](../../../../../runbooks/precision/vf_fusion_output_unexpected_check_copyout_slot_not_printf.md)（`related`）：优化指南给出 VF 融合以减少中间 UB 和同步的目标，Runbook 则提供融合输出异常时先查 CopyOut slot、参数和观测手段的验证流程。
-- [基于全局掩码复用的计算性能优化](../mask_reuse_optimization.md)（`related`）：VF fusion 可减少重复 mask 设置，但需保持 mask 生命周期。
-- [指令双发优化](dual_issue_optimization.md)（`related`）：指令双发优化 与《VfFusionOptimization》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
-- [通过Unified Buffer融合实现连续vector计算](../ub_fusion_vector_compute.md)（`related`）：UB 连续 vector 融合依赖把多个 vector 操作组织进同一流水；VfFusionOptimization 给出 VF 级融合的具体调用组织与收益条件。
+- [VfLoopOptimization](vf_loop_optimization.md)（`related`）：“如果多个VF函数的控制流等价，且满足均为Hardware Loop循环，编译器会执行VF融合优化特性。”与“当VF函数中的循环满足Hardware Loop编码规范时，会被编译器优化为Hardware Loop，提升整体执行性能；否则循环逻辑会由迭代变量和条件判断语句构成Software Loop，无法开启VF循环优化。”提供双方正文证据。融合指南把两端均为 Hardware Loop 作为自动 VF 融合条件，循环指南给出生成 Hardware Loop 的成功与回退判据，组成先规范循环再获得融合的优化链。
+- [双 VF 融合输出非预期 先排 CopyOut slot 勿用 PRINTF](../../../../../runbooks/precision/vf_fusion_output_unexpected_check_copyout_slot_not_printf.md)（`related`）：真因是 CopyOut slot 指向错误 buffer（B2 而非 B1）；编译器首先会做融合前的合法性检查。指南说明 VF 融合的合法性、收益与自动同步，Runbook 则给出融合实现输出异常时先排 CopyOut 映射和禁用 VF 内 PRINTF 的验证顺序，避免把非 VF 错误误判为融合机制缺陷。
 <!-- cannbot:related:end -->

@@ -81,3 +81,11 @@ attn_lse = torch.where(lse_mask, -torch.inf, attn_lse)   # 原有
 - 改动（合并态，5 增 1 文件）：`attention_cp.py` 在 lse 掩码前新增 `out_mask = batch_seq_mask[:,None,None].expand_as(attn_out); attn_out = torch.where(out_mask, 0, attn_out)`；相关上下文为 `_forward_decode_pcp_dcp`、`batch_seq_mask` 构造与 `_npu_attention_update` / `npu_attention_update`。
 - 合并 commit `1858f3d36ecd649257c81a8699aae2ba84ee68b8`；由维护者合并（备注 CI 因已知问题失败故手动合入），评审确认改动「correctly applying a mask to the attention output (attn_out) during the decode phase … logically sound and addresses the intended bug」。
 - 溯源下探：[vllm-ascend-pr-5340-bugfix-fix-qwen-p-d-disaggregation-accuracy-issue](https://github.com/vllm-project/vllm-ascend/pull/5340)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CP chunked-prefill 空 KV 分片返回 None 破 LSE 合并——须返零输出 + -inf LSE 占位（在线-softmax 中性元）](../runtime/cp_prefill_empty_kv_shard_none_lse_merge.md)（`related`）：在线-softmax 跨卡合并把每卡的 (out, lse) 两路一起喂给归并算子。；在线-softmax 跨分片合并要求每个分片都提供**同形状/同 dtype** 的 `(output, lse)` 两路输入，靠 lse 的相对大小决定各分片权重。。两张运行手册约束同一在线 softmax 合并协议：一张解释 mask 只能作用于 out、不能抹掉 lse，另一张规定空 KV 分片也要提供同形中性 out/lse。
+- [Context Parallel](../../concepts/parallelism/context_parallel.md)（`related`）：在线-softmax 跨卡合并把每卡的 (out, lse) 两路一起喂给归并算子。；将输入序列沿 Sequence 维度切分到多个 Rank 并行处理的策略，用于解决长序列场景下单卡激活值内存不足的问题。。运行手册处理的每卡 out/lse 合并正发生在 Context Parallel 按序列分片之后，是 CP attention 结果恢复的精度环节。
+- [npu_fused_infer_attention_score (v1 / v2)](../../concepts/kernels/fused_infer_attention_score.md)（`related`）：在线-softmax 跨卡合并把每卡的 (out, lse) 两路一起喂给归并算子。；昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算：`softmax(QKᵀ/√d)·V`，支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。。FIA 产生本地 softmax-attention 结果，运行手册说明 CP/DCP 分片后必须携带 out 与 lse 进入在线 softmax 归并，形成算子输出的跨卡正确性链。
+<!-- cannbot:related:end -->

@@ -26,7 +26,6 @@ host侧Tiling接口，用于获取Tan接口所需的最大和最小临时空间�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Tan](tan.md)（`related`）：调用 Tan 前据 shape 计算 workspace。
-- [GetTanTmpBufferFactorSize](get_tan_tmp_buffer_factor_size.md)（`same_topic`）：GetTanMaxMinTmpSize 与《GetTanTmpBufferFactorSize》的实质衔接是：该 host 查询直接服务 Tan 高阶接口，factor 查询用于把最大最小空间预算转换为实际 tiling 处理量。
-- [Tan接口](tan_interface.md)（`same_topic`）：Tan接口 与《GetTanMaxMinTmpSize》的实质衔接是：Tan 接口由 Tan 和两种临时空间查询组成；Atan 是反函数，Sin/Cos 卡解释 tan=sin/cos 的输入值域与验证关系。
+- [Tan](tan.md)（`related`）：提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetTanMaxMinTmpSize获取。；host侧Tiling接口，用于获取Tan接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；Kernel 侧重载明确把临时空间容量交给 GetTanMaxMinTmpSize，Host 侧查询再把容量作为 Tiling 参数回传，闭合 Tan 的分块与 buffer 规划。
+- [Tan接口](tan_interface.md)（`same_topic`）：临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。；host侧Tiling接口，用于获取Tan接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。前者声明 Tan 的临时空间获取方式，后者给出对应 Host 查询入口，两者闭合 sharedTmpBuffer 的准备步骤。
 <!-- cannbot:related:end -->

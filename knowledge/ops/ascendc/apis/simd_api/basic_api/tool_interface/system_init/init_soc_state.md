@@ -30,6 +30,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [系统初始化](system_init.md)（`related`）：《InitSocState》的任务是“初始化AI Core全局状态，包括AIC与AIV的公共状态及各自特有状态；不同产品实际执行的初始化项存在差异。”。《系统初始化》具体提供“系统初始化接口索引页，包含InitSocState。”，它直接用于AI Core 全局状态初始化的 C++/C 两层入口。
-- [asc_init（杂项接口）](../../../c_api/misc/asc_init.md)（`same_topic`）：《InitSocState》的任务是“初始化AI Core全局状态，包括AIC与AIV的公共状态及各自特有状态；不同产品实际执行的初始化项存在差异。”。《asc_init（杂项接口）》具体提供“本接口将当前AI Core上可能由前序算子遗留的全局状态恢复为接口约定的初始状态，避免这些状态影响当前算子的计算结果”，它直接用于AI Core 全局状态初始化的 C++/C 两层入口。
+- [950 mix(1,2) mode=2 漏 AIV1 flag 致全零](../../../../../runbooks/precision/950_mix_1_2_mode_2_aiv1_flag.md)（`exemplifies`）：在静态Tensor编程的场景中，用户必须在Kernel入口处调用此函数来初始化AI Core状态。；在 kernel 入口 `InitSocState()` 后立即 `PipeBarrier<PIPE_ALL>()`，确保所有 pipe 初始化完成再开始 wait。。该 950 双 AIV 同步 runbook 把 InitSocState 的入口初始化合同落到 CrossCore wait 前的具体调用顺序和屏障要求。
 <!-- cannbot:related:end -->

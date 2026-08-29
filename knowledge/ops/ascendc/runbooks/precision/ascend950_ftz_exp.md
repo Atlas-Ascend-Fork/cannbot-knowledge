@@ -54,19 +54,6 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscExp](../../apis/simd_api/c_api/reg/arithmetic_compute/asc_exp.md)（`exemplifies`）：Ascend950 向量管 FTZ 刷新次正规 exp 为零 与《AscExp》的实质衔接是：该卡锁定 Ascend950 Exp 次正规输出 FTZ；Exp 接口、clamp/overflow/subnormal 姊妹故障和 softplus 极值用例共同验证硬件边界与可修软件因素。
-- [AscExp](../../apis/simd_api/c_api/vector_compute/asc_exp.md)（`exemplifies`）：Ascend950 向量管 FTZ 刷新次正规 exp 为零 与《AscExp》的实质衔接是：该卡锁定 Ascend950 Exp 次正规输出 FTZ；Exp 接口、clamp/overflow/subnormal 姊妹故障和 softplus 极值用例共同验证硬件边界与可修软件因素。
-- [Exp](../../apis/simd_api/adv_api/math_compute/exp_interface/exp.md)（`exemplifies`）：Ascend950 向量管 FTZ 刷新次正规 exp 为零 与《Exp》的实质衔接是：该卡锁定 Ascend950 Exp 次正规输出 FTZ；Exp 接口、clamp/overflow/subnormal 姊妹故障和 softplus 极值用例共同验证硬件边界与可修软件因素。
-- [Exp](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/exp.md)（`exemplifies`）：该卡给出 3510 Exp 次正规输出 FTZ 的实测阈值和放大验证。
-- [Exp](../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/exp.md)（`exemplifies`）：该精度卡用实测说明 Ascend950 Exp 对 subnormal 输入输出的 FTZ 边界，直接补充 Reg Exp 特殊值验证与误差判读。
-- [Exp接口](../../apis/simd_api/adv_api/math_compute/exp_interface/exp_interface.md)（`exemplifies`）：Ascend950 向量管 FTZ 刷新次正规 exp 为零 与《Exp接口》的实质衔接是：该卡锁定 Ascend950 Exp 次正规输出 FTZ；Exp 接口、clamp/overflow/subnormal 姊妹故障和 softplus 极值用例共同验证硬件边界与可修软件因素。
-- [Ascend 950PR/Ascend 950DT新增特性导航](../../guides/asc_950_feature_guide.md)（`related`）：该卡实测 3510 Exp 的次正规数 FTZ 行为，为特性指南之外的数值边界提供验证实例。
-- [SoftplusV2Grad VF Form B exp 溢出判别](softplusv2grad_vf_form_b_exp.md)（`related`）：Ascend950 向量管 FTZ 刷新次正规 exp 为零 与《SoftplusV2Grad VF Form B exp 溢出判别》的实质衔接是：该卡锁定 Ascend950 Exp 次正规输出 FTZ；Exp 接口、clamp/overflow/subnormal 姊妹故障和 softplus 极值用例共同验证硬件边界与可修软件因素。
-- [exp 下界 clamp -50 破坏 sigmoid 大负数下溢](exp_clamp_50_sigmoid.md)（`related`）：去掉软件下界 clamp 后剩余窄带 0 才可归因于硬件 FTZ。
-- [exp 输入 clamp 上界用 threshold 用户参数致溢出](exp_clamp_upper_bound_must_decouple_from_user_threshold.md)（`related`）：Ascend950 向量管 FTZ 刷新次正规 exp 为零 与《exp 输入 clamp 上界用 threshold 用户参数致溢出》的实质衔接是：该卡锁定 Ascend950 Exp 次正规输出 FTZ；Exp 接口、clamp/overflow/subnormal 姊妹故障和 softplus 极值用例共同验证硬件边界与可修软件因素。
-- [Exp 默认 INTRINSIC FTZ 致 subnormal 残留失配](exp_intrinsic_ftz_subnormal.md)（`same_topic`）：Ascend950 向量管 FTZ 刷新次正规 exp 为零 与《Exp 默认 INTRINSIC FTZ 致 subnormal 残留失配》的实质衔接是：该卡锁定 Ascend950 Exp 次正规输出 FTZ；Exp 接口、clamp/overflow/subnormal 姊妹故障和 softplus 极值用例共同验证硬件边界与可修软件因素。
-- [Maxs 下限 clamp 阻止 exp 自然下溢残留](maxs_clamp_exp.md)（`same_topic`）：Ascend950 向量管 FTZ 刷新次正规 exp 为零 与《Maxs 下限 clamp 阻止 exp 自然下溢残留》的实质衔接是：该卡锁定 Ascend950 Exp 次正规输出 FTZ；Exp 接口、clamp/overflow/subnormal 姊妹故障和 softplus 极值用例共同验证硬件边界与可修软件因素。
-- [arch35 sigmoid 大负 z 下 exp 溢出 inf 致 sig=0](arch35_sigmoid_z_exp_inf_sig_0.md)（`same_topic`）：arch35 sigmoid 大负 z 下 exp 溢出 inf 致 sig=0 与《Ascend950 向量管 FTZ 刷新次正规 exp 为零》的实质衔接是：该 sigmoid 失败由 exp(-z) 溢出和 subnormal FTZ 共同造成；Exp/Reciprocal/Clamp 接口及同类数值故障分别提供溢出阈值、稳定式和直接除法验证边界。
-- [softplus_v2_grad 极值 inf 发散源于 aten 乘除顺序](softplus_v2_grad_inf_aten.md)（`same_topic`）：Ascend950 向量管 FTZ 刷新次正规 exp 为零 与《softplus_v2_grad 极值 inf 发散源于 aten 乘除顺序》的实质衔接是：该卡锁定 Ascend950 Exp 次正规输出 FTZ；Exp 接口、clamp/overflow/subnormal 姊妹故障和 softplus 极值用例共同验证硬件边界与可修软件因素。
-- [softplus_v2_grad 极端 FLT_MAX 与 aten 不可对齐](softplus_v2_grad_flt_max_aten.md)（`same_topic`）：softplus_v2_grad 极端 FLT_MAX 与 aten 不可对齐：本卡把FLT_MAX残留定性为aten乘除顺序与V pipe FTZ的不可对齐边界；同算子inf卡和Form-B卡复现中间溢出，FTZ卡核对次正规数，threshold-clamp卡区分仍可修复的普通输入路径。 目标卡《Ascend950 向量管 FTZ 刷新次正规 exp 为零》补充：Ascend950(dav_c310) Exp 向量指令对落入 fp32 次正规区间的输出走 FTZ 刷新为 0，CPU golden 保留次正规；grad≈FLT_MAX 时残差被放大到正常数域，3 用例稳定发散，kernel 侧不可修，banned。
+- [arch35 sigmoid 大负 z 下 exp 溢出 inf 致 sig=0](arch35_sigmoid_z_exp_inf_sig_0.md)（`related`）：“`Actual=0` 的量级与 subnormal/FTZ 签名吻合”给出单例判别，“NPU 向量管 `Exp` 指令对次正规输出执行 FTZ”把该判别收敛到 950 平台硬件边界和豁免结论。
+- [Exp 默认 INTRINSIC FTZ 致 subnormal 残留失配](exp_intrinsic_ftz_subnormal.md)（`same_topic`）：NPU 向量管 `Exp` 指令对次正规输出执行 FTZ（Flush-To-Zero）刷新为 0，`npu = FLT_MAX × 0 = 0`。；残留失败均位于 sigmoid 分支的极值区间：gradOutput≈FLT_MAX（3.4e38）、z=beta*self 落在 (-104,-87)（exp(z) 为 fp32 subnormal）。；两卡定位同一 softplus_v2_grad 极值残差：一张给出 FTZ 硬件语义，另一张保留探针区间与失败样例。
 <!-- cannbot:related:end -->

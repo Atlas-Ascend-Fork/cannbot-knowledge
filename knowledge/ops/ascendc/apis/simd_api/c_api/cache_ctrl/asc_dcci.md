@@ -31,16 +31,10 @@ Scalar单元访问Global Memory，首先会访问每个核内的Data Cache，因
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Ascend950 DataCopy 写回 L2 驱逐丢对角线](../../../../runbooks/precision/ascend950_datacopy_l2.md)（`exemplifies`）：AscDcci 与《Ascend950 DataCopy 写回 L2 驱逐丢对角线》的实质衔接是：AscDcci 的 single/entire 变体与 C++ DataCacheCleanAndInvalid 操作同一 DCache；缓存概述、L2 驱逐故障和编译选项提供验证与尾开销决策。
-- [arch35 小 per-channel 输出读旧值判别与规避](../../../../runbooks/compilation/arch35_per_channel.md)（`exemplifies`）：《arch35 小 per-channel 输出读旧值判别与规避》处理“arch35 上 DCCI 缓存不一致使 DataCopyPad 对小 per-channel [C] 输出不可靠、TQue GetValue(MTE2→scalar) 读到旧值；判别方法为先 V-launder(Duplicate 0.0f+Add) 到 TBuf 再 GetValue，并用 GlobalTensor::SetValue 直写 GM per-channel 结果。”。《AscDcci》提供“刷新Data Cache保证与GM一致性，支持单Cache Line刷新和整片刷新，用于多核数据一致性和Scalar写GM场景。”，其具体合同或探针直接接入arch35 小 per-channel 的 DCCI/Scalar 旧值机制、V-launder 与 SetValue 验证。
-- [设置DCI编译选项来减少算子尾开销](../../../../guides/operator_practice/simd_operator_optimization/overhead_optimization/dci_compile_option.md)（`explains`）：AscDcci 与《设置DCI编译选项来减少算子尾开销》的实质衔接是：AscDcci 的 single/entire 变体与 C++ DataCacheCleanAndInvalid 操作同一 DCache；缓存概述、L2 驱逐故障和编译选项提供验证与尾开销决策。
-- [AscAtomicSub](../scalar_compute/asc_atomic_sub.md)（`related`）：AscAtomicSub 与《AscDcci》的实质衔接是：SIMT asc_atomic_sub 是同一 GM 原子减；原子加提供逆操作对照，绕过 DCache 的读写和 AscDcci 共同落实 focal 明示的缓存一致性要求。
-- [DataCacheCleanAndInvalid](../../basic_api/cache_control/data_cache_clean_and_invalid.md)（`related`）：AscDcci 与《DataCacheCleanAndInvalid》的实质衔接是：AscDcci 的 single/entire 变体与 C++ DataCacheCleanAndInvalid 操作同一 DCache；缓存概述、L2 驱逐故障和编译选项提供验证与尾开销决策。
-- [DataCachePreload](../../basic_api/cache_control/data_cache_preload.md)（`related`）：DataCachePreload 与《AscDcci》的实质衔接是：DataCachePreload 是 GM 数据进入 DCache 的预取动作；清理失效、旁路读、DCCI 与一致性指南共同定义预取后可见性、失效和访问优化的完整契约。
-- [WriteGmByPassDCache](../../basic_api/scalar_compute/write_gm_by_pass_d_cache_isasi.md)（`related`）：AscDcci 是 C API 的数据缓存清理/失效入口，可与 bypass 写对照确定是维护已有缓存行还是避免写入 DCache。
-- [asc_dcci_single](../../../simt_api/memory_access_functions/asc_dcci_single.md)（`related`）：AscDcci 与《asc_dcci_single》的实质衔接是：AscDcci 的 single/entire 变体与 C++ DataCacheCleanAndInvalid 操作同一 DCache；缓存概述、L2 驱逐故障和编译选项提供验证与尾开销决策。
-- [系统缓存概述（缓存控制）](../../basic_api/cache_control/system_cache_overview.md)（`related`）：AscDcci 与《系统缓存概述（缓存控制）》的实质衔接是：AscDcci 的 single/entire 变体与 C++ DataCacheCleanAndInvalid 操作同一 DCache；缓存概述、L2 驱逐故障和编译选项提供验证与尾开销决策。
-- [asc_dcci_entire](../../../simt_api/memory_access_functions/asc_dcci_entire.md)（`same_topic`）：asc_dcci_entire 与《AscDcci》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_ldcg（内存访问函数）](../../../simt_api/memory_access_functions/asc_ldcg.md)（`same_topic`）：asc_ldcg（内存访问函数） 与《AscDcci》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
-- [asc_stwt（内存访问函数）](../../../simt_api/memory_access_functions/asc_stwt.md)（`same_topic`）：asc_stwt（内存访问函数） 与《AscDcci》的实质衔接是：asc_stwt 把数据写入 GM 并缓存到 DCache/L2；stcg/ldcg、缓存模式和 DCCI 共同决定写策略、后续读取及显式失效时机。
+- [arch35 小 per-channel 输出读旧值判别与规避](../../../../runbooks/compilation/arch35_per_channel.md)（`exemplifies`）：Runbook 的直接信号是“per-channel ［C］ 小输出经 `DataCopyPad` 写 GM 后，host/下游读到旧值或错值”；asc_dcci 的适用条件是“读取Global Memory的数据，但该数据可能在外部被其余核修改，此时需要使用asc_dcci接口，直接访问Global Memory，获取最新数据；”。API语义帮助判定该旧值现象是否属于多核缓存一致性路径。
+- [AscAtomicExch](../scalar_compute/asc_atomic_exch.md)（`related`）：原子交换接口明确“Scalar原子操作会绕过DCache，需要调用asc_dcci接口确保GM与DCache的一致性。”；缓存接口解释“Scalar单元访问Global Memory，首先会访问每个核内的Data Cache，因此存在Data Cache与Global Memory的Cache一致性问题。”，给出交换前后插入 DCCI 的一致性原因。
+- [AscAtomicInc](../scalar_compute/asc_atomic_inc.md)（`related`）：原子递增接口明确“Scalar原子操作会绕过DCache，需要调用asc_dcci接口确保GM与DCache的一致性。”；缓存接口解释“Scalar单元访问Global Memory，首先会访问每个核内的Data Cache，因此存在Data Cache与Global Memory的Cache一致性问题。”，给出原子计数器与普通 Scalar/DMA 访问混用时必须补 DCCI 的原因。
+- [AscAtomicMax](../scalar_compute/asc_atomic_max.md)（`related`）：需要调用asc_dcci接口确保GM与DCache的一致性；存在Data Cache与Global Memory的Cache一致性问题；连接原子操作的明确后置要求与缓存一致性契约。
+- [AscAtomicSub](../scalar_compute/asc_atomic_sub.md)（`related`）：Scalar原子操作会绕过DCache，需要调用asc_dcci接口确保GM与DCache的一致性。；该接口用来刷新Cache，保证Cache的一致性；AscAtomicSub 明确产生绕过 DCache 的 GM 更新，AscDcci 提供后续缓存一致性动作，二者构成原子写后的必要维护链。
+- [AscAtomicXor](../scalar_compute/asc_atomic_xor.md)（`related`）：AscAtomicXor 卡告警“Scalar原子操作会绕过DCache，需要调用asc_dcci接口确保GM与DCache的一致性。”；AscDcci 卡解释“用户通过Scalar单元写Global Memory的数据，希望立刻写出，也需要使用asc_dcci接口。”，给出原子写 GM 后刷新缓存的直接一致性合同。
 <!-- cannbot:related:end -->

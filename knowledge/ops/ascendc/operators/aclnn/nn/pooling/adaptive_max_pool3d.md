@@ -58,7 +58,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:17:47Z"
-updated_at: "2026-08-25T18:17:47Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -964,9 +964,9 @@ for (int32_t dhwLoop = 0; dhwLoop < dhwLoops; dhwLoop++) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | README/API 文档均支持；本卡发布 | README/API 文档均支持；本卡发布 | README 标记 950PR/950DT 不支持，API 文档却标记 950 支持；冲突，跳过 `_a5` 卡 |
+| 支持状态 | README/API 文档均支持；本卡发布 | README/API 文档均支持；本卡发布 | README 标记 950PR/950DT 不支持，API 文档却标记 950 支持；冲突，跳过 `_950` 卡 |
 | Host/Launcher | OpDef `ascend910b`；ACLNN 同源 | OpDef `ascend910_93`；ACLNN 同源 | OpDef/binary 有 950 接线，但不能消解公开支持表冲突 |
 | Kernel/资源 | Adaptive 与 MaxPool A2 binary 闭合；四条 AIV Route | Adaptive 与 MaxPool A3 binary 闭合；四条 AIV Route | 不发布正式 Route/资源结论 |
 
@@ -979,7 +979,7 @@ for (int32_t dhwLoop = 0; dhwLoop < dhwLoops; dhwLoop++) {
 - Adaptive 与 MaxPool Host tiling 都登记 16 MiB system workspace；R-002/R-004 body 接收 user-workspace GM 指针但公开 body 未读取它，不能据此把 ACLNN 总 workspace 推断为 0 或固定 16 MiB。
 - 首维为空形成的空 tensor 由 ACLNN 快路返回、workspace size 为 0，不启动上述四个核心 Kernel；A2/A3 的 `outputSize` 任一项为 0 会在快路前报参数错误。
 - 所有公开可达 body 均为 AIV/Vector；本算子链路未发现 Cube/AIC/MIX_CV，故适用 VV 卡而非 CV 卡。
-- A5 的公开支持表存在冲突，缺口未消除前不发布 A5 正式知识卡。
+- 950 的公开支持表存在冲突，缺口未消除前不发布 950 正式知识卡。
 
 ## 源码索引
 
@@ -987,7 +987,7 @@ for (int32_t dhwLoop = 0; dhwLoop < dhwLoops; dhwLoop++) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | [`pooling/adaptive_max_pool3d/README.md`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/README.md) | 平台支持表 | A2/A3 支持；A5 README 冲突侧证 |
+| 入口声明/约束 | [`pooling/adaptive_max_pool3d/README.md`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/README.md) | 平台支持表 | A2/A3 支持；950 README 冲突侧证 |
 | 入口声明/约束 | [`pooling/adaptive_max_pool3d/docs/aclnnAdaptiveMaxPool3d.md`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/docs/aclnnAdaptiveMaxPool3d.md) | ACLNN 约束表 | dtype、shape、平台、indices 限制 |
 | 入口实现 | [`pooling/adaptive_max_pool3d/op_api/aclnn_adaptive_max_pool3d.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/aclnn_adaptive_max_pool3d.cpp) | `GetWorkspaceSize,SelectAdaptiveMaxPool3D` | 校验、4D/5D、整除选择、executor |
 | 入口实现 | [`pooling/adaptive_max_pool3d/op_api/adaptive_max_pool3d.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/adaptive_max_pool3d.cpp) | `l0op::AdaptiveMaxPool3D` | Adaptive level-0 launcher |
@@ -1023,4 +1023,4 @@ for (int32_t dhwLoop = 0; dhwLoop < dhwLoops; dhwLoop++) {
 | workspace/内存 | R-003 复用公共转置；Big 两路复用固定分段思想 | ACLNN 总 workspace 必须使用返回值；UB 字节账/对齐不能缩写 | `GetWorkspaceSize,InitBuffer` |
 | 同步 | Queue/pipe/event 模式可按相同 body 复用 | 必须保持 producer→consumer 的 EnQue/DeQue、flag/wait 顺序 | 各 body `Process/BaseCompute` |
 | 精度与尾块 | R-003 的 FP16/BF16→FP32、其余 Route 的 BF16→FP32，以及 NaN/index 联动可复用 | R-001/R-003 BF16 `CAST_ROUND`、Big 路径 BF16 `CAST_RINT`、有效 mask、全局 DHW index 与 tail 不能改变 | `Compute*,UpdateMaxWithMask,RestoreIndex` |
-| 失败边界 | Small/NoExpand 失败都有公开 Big fallback | 不得把 Backward/2D 纳入；A5 冲突未消解前不得发布 | 各 `IsCapable`；README/API 支持表 |
+| 失败边界 | Small/NoExpand 失败都有公开 Big fallback | 不得把 Backward/2D 纳入；950 冲突未消解前不得发布 | 各 `IsCapable`；README/API 支持表 |

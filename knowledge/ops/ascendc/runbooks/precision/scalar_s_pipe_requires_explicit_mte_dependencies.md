@@ -277,10 +277,6 @@ path: `operators/cummin/cummin.asc`；symbols: `KernelCummin<T>::StoreOut`、`Ke
 <!-- cannbot:related:start -->
 ## 相关
 
-- [PipeBarrier](../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)（`exemplifies`）：该卡证明 V-pipe barrier 不会自动覆盖 S 与 MTE 的依赖。
-- [MTE2跨流水未建依赖导致UB读到上次调用残值](direct_mte_slot_reuse_needs_bidirectional_hard_events.md)（`related`）：目标卡给出复用固定 UB 槽时 MTE2→计算和计算→MTE3 的双向 HardEvent；本卡说明标量 S pipe 不受 TQue 的 V 事件覆盖，需同样显式表达这两段依赖。
-- [PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线](../compilation/pipebarrier_pipe_s_is_not_supported.md)（`related`）：若原意是让标量访问 UB 与 DMA 保序，正确做法是 TBuf+PIPE_ALL 显式串行 MTE/S 数据依赖，而不是不支持的 PipeBarrier<PIPE_S>。
-- [TBuf 跨 MTE2 与 Vector 须队列交接](tbuf_mte2_to_vector_requires_queue_handoff.md)（`related`）：TBuf→Vector 卡证明裸 TBuf 不自动建立 MTE2→V 依赖；本卡把同一对象管理边界延伸到 MTE2→S 与 S→MTE3，并解释为何 V-only TQue 事件仍不足。
-- [TPipe-TQue编程原理介绍](../../guides/programming_guide/programming_model/ai_core_simd_programming/tpipe_tque_programming/tpipe_tque_principles.md)（`related`）：TPipe-TQue 原理说明 EnQue/DeQue 建立生产者消费者事件；本卡提供其边界反例：事件面向 Vector 消费者，不能替代标量 S pipe 依赖。
-- [arch35 小 per-channel 输出读旧值判别与规避](../compilation/arch35_per_channel.md)（`same_topic`）：《arch35 小 per-channel 输出读旧值判别与规避》处理“arch35 上 DCCI 缓存不一致使 DataCopyPad 对小 per-channel [C] 输出不可靠、TQue GetValue(MTE2→scalar) 读到旧值；判别方法为先 V-launder(Duplicate 0.0f+Add) 到 TBuf 再 GetValue，并用 GlobalTensor::SetValue 直写 GM per-channel 结果。”。《标量 S pipe 误用 TQue 导致输出全常数》提供“标量 C++ 直接访问 UB 时，TQue 的 V-pipe 事件不能覆盖 S pipe；改用 TBuf 与 PIPE_ALL 串行化 DMA、标量计算和写回。”，其具体合同或探针直接接入arch35 小 per-channel 的 DCCI/Scalar 旧值机制、V-launder 与 SetValue 验证。
+- [PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线](../compilation/pipebarrier_pipe_s_is_not_supported.md)（`related`）：焦点卡采用“用三道 `PipeBarrier<PIPE_ALL>()` 显式串行化 `MTE2(load) → S(scalar) → MTE3(store) → buffer reuse`。”；编译卡指出“目标编译器对 `PipeBarrier` 的模板参数有受支持范围，`PIPE_S` 不在该范围内。”，解释为什么不能把三道 PIPE_ALL 简化为非法的 PIPE_S 屏障。
+- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`related`）：焦点卡说明“`TQue::EnQue/DeQue` 建立的事件面向 Vector pipe，不能替代标量 S pipe 与 MTE2/MTE3 之间的跨管依赖”；另一故障卡同样证明“`PipeBarrier<PIPE_V>` 只约束 Vector pipe 内部顺序，不能保证前一 VF 的 `StoreAlign` 已对 `__aicore__` 标量侧 `LocalTensor::GetValue` 可见”，共同给出队列/V 屏障不足以建立跨执行域可见性的诊断规则。
 <!-- cannbot:related:end -->

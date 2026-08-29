@@ -36,14 +36,3 @@ platforms: [agnostic]
 1.  创建Matmul对象时，定义内轴非256字节对齐的B矩阵的Format为NZ格式。
 2.  利用Vector计算单元实现ND2NZ格式转换。如下代码中MatrixBtoNZ为将B矩阵的ND格式转换为NZ格式的函数，该函数的具体实现请参考完整样例代码。
 3.  设置左矩阵A、右矩阵B、Bias，完成矩阵乘操作。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CopyGmToL1](../../../../apis/simd_api/basic_api/cube_compute_tensor_api/cube_compute_load/copy_gm_to_l1.md)（`explains`）：AIV 把 NZ 结果写入 workspace 后，Matmul 仍需把该 GM 数据搬入 L1；CopyGmToL1 的连续/格式不变路径承担这一后继步骤。
-- [DataCopy](../../../../apis/simd_api/basic_api/cube_compute/cube_compute_load/data_copy_gm_to_l1_nd2_nz.md)（`explains`）：AIV 预转置方案针对内轴不满足 256B 时 GM→L1 随路 ND2NZ 带宽偏低；该 DataCopy 卡正是被替换的随路转换基线。
-- [GetNormalConfig](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_normal_config.md)（`explains`）：GetNormalConfig 与《AIV核上的ND2NZ格式转换》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [GmUbDataMove](../../../../apis/simd_api/basic_api/data_move_guide/gm_ub_data_move.md)（`explains`）：GmUbDataMove 与《AIV核上的ND2NZ格式转换》的实质衔接是：GM↔UB 总览按连续、高维、切片、ND2NZ/NZ2ND、NDDMA 和 DataCopyPad 选择通路；所选 NDDMA 卡逐一约束 padding、维度和 stride。
-- [卷积格式转换](../../../../apis/simd_api/basic_api/cube_compute/cube_store_key_features/convolution_format_conversion.md)（`explains`）：焦点处理Cube 搬出阶段的 NZ/ND 格式转换；AIV核上的ND2NZ格式转换正文界定“矩阵乘算子中输入矩阵内轴非256字节对齐时，在AIV核上完成ND到NZ格式转换以提升随路搬运效率”。候选给出 ND2NZ 实现、Fixpipe 开关与 NZ 分形布局，能执行并验证焦点所述格式转换。
-- [数据排布转换](../../../../apis/simd_api/basic_api/memory_vector_compute/data_layout_conversion/data_layout_conversion.md)（`explains`）：数据排布转换 与《AIV核上的ND2NZ格式转换》的实质衔接是：数据布局转换需在 TransData/Transpose 等入口之间按源目格式选择；所选精度卡直接揭示 stride、NZ 物理布局与转换边界错误。
-<!-- cannbot:related:end -->

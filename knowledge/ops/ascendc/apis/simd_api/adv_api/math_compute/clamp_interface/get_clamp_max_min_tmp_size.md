@@ -25,9 +25,8 @@ host侧Tiling接口，用于获取ClampMax/ClampMin/Clamp接口所需的最大�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ClampMin](clamp_min.md)（`related`）：《ClampMin》说明将srcTensor中小于scalar的数替换为scalar，大于等于scalar的数保持不变，作为dstTensor输出。；《GetClampMaxMinTmpSize》说明在host侧获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。。二者在ClampMin与ClampMax共同定义上下界替换，workspace查询决定分块，exp下溢故障则直接验证错误下界的数值后果上存在可执行的直接衔接。
-- [Clamp接口](clamp_interface.md)（`related`）：执行 Clamp 前需在 Host 侧查询最小和最大临时空间，查询结果决定 Kernel 可用 workspace。
-- [ClampMax](clamp_max.md)（`same_topic`）：ClampMax 与《GetClampMaxMinTmpSize》的实质衔接是：ClampMax 的 kernel 临时缓存来自 MaxMin 或 factor 查询，Clamp/ClampMin 是上界、双边和下界形态；exp 上界故障直接用固定 ClampMax 阈值替代用户 threshold，验证其数值边界作用。
-- [Clamp（数学计算）](clamp.md)（`same_topic`）：《Clamp（数学计算）》说明将输入中除nan值以外大于max的数替换为max，小于min的数替换为min，小于等于max和大于等于min的数保持不变，作为输出。当min大于max时，将除nan值外所有值替换为max。min和max可以为标量或LocalTensor。；《GetClampMaxMinTmpSize》说明在host侧获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。。二者在Clamp、ClampMin/Max及workspace查询共享上下界替换合同，exp相关故障直接说明错误clamp边界对数值的影响上存在可执行的直接衔接。
-- [GetClampTmpBufferFactorSize](get_clamp_tmp_buffer_factor_size.md)（`same_topic`）：“GetClampTmpBufferFactorSize”处理获取ClampMax/ClampMin/Clamp接口所需的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；“GetClampMaxMinTmpSize”明确在host侧获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。。实质衔接：该因子函数正文明确服务于 Clamp、ClampMax、ClampMin，并与 Host 侧最大/最小临时空间查询形成两种 Tiling 预算方法。
+- [ClampMax](clamp_max.md)（`related`）：临时空间大小BufferSize的获取方式请参考GetClampMaxMinTmpSize。；host侧Tiling接口，用于获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。ClampMax 的执行需要右侧公共 Clamp 家族接口给出的临时空间范围，但该 Host 接口同时服务 ClampMin 与 Clamp，因此是直接依赖而不是仅属于 ClampMax 的单一合同。
+- [ClampMin](clamp_min.md)（`related`）：提供两种重载：通过sharedTmpBuffer入参传入临时空间（开发者自行管理，可复用，内存利用率高），或由接口框架申请临时空间（需预留空间，大小通过GetClampMaxMinTmpSize获取）。；host侧Tiling接口，用于获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。ClampMin 的框架申请重载明确使用右侧公共接口确定预留大小，但右侧还覆盖另外两个 Clamp 操作，所以保持相关关系。
+- [Clamp（数学计算）](clamp.md)（`related`）：“host侧Tiling接口，用于获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”；“将输入中除nan值以外大于max的数替换为max，小于min的数替换为min，小于等于max和大于等于min的数保持不变，作为输出。当min大于max时，将除nan值外所有值替换为max。min和max可以为标量或LocalTensor。”。焦点 Host 接口为 Clamp kernel 计算临时空间上下界，连接 kernel 语义与 workspace 选择。
+- [GetClampTmpBufferFactorSize](get_clamp_tmp_buffer_factor_size.md)（`related`）：“host侧Tiling接口，用于获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”；“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。”。焦点接口从 shape 求可用空间范围，factor 接口反向从固定缓冲求单次处理元素数，二者共同完成 Clamp workspace 与 tile 大小设计。
 <!-- cannbot:related:end -->

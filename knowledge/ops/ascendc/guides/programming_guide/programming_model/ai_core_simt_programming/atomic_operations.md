@@ -37,13 +37,5 @@ Ascend C SIMT提供`asc_atomic_add`、`asc_atomic_sub`、`asc_atomic_cas`等原�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAtomicCas](../../../../apis/simd_api/c_api/scalar_compute/asc_atomic_cas.md)（`explains`）：原子操作（AI Core SIMT编程）说明SIMT编程模型中，一个Grid由多个Thread Block组成，每个Thread Block又包含多个Thread。不同Thread可以并发访问同一段Global Memory或Unified Buffer。当多个线程同时对同一地址执行读-改-写操作时，如果没有同步保护，可能出现数据竞争，导致最终结果不符合预期。
-- [AtomicCas](../../../../apis/simd_api/basic_api/atomic_operations/atomic_cas.md)（`explains`）：该指南解释并发读改写的数据竞争以及必须使用原子的场景，为 AtomicCas 何时用于状态抢占和条件更新提供使用边界。
-- [原子操作](../../../../apis/simt_api/atomic_operations/atomic_operations.md)（`explains`）：原子操作 与《原子操作（AI Core SIMT编程）》的实质衔接是：SIMT 原子操作卡定义 GM/UB 作用域、读改写原子性以及不提供执行顺序；SIMT 指南、边界值表和 SIMD 原子概述用于选择作用域并验证边界，而不是替代同步。
-- [原子操作简介](../../../../apis/simt_api/atomic_operations/atomic_operations_intro.md)（`explains`）：指南解释 SIMT 线程并发访问 GM/UB 时为何需要原子读改写，并给出数据竞争语境。
-- [原子操作边界值汇总（附录）](../../../../apis/appendix/atomic_operations_interface_boundary_value_summary.md)（`explains`）：焦点处理原子操作在边界输入下的结果解释；原子操作（AI Core SIMT编程）正文说明“SIMT编程模型中，一个Grid由多个Thread Block组成，每个Thread Block又包含多个Thread。不同Thread可以并发访问同一段Global Memory或Unified Buffer。当多个线程同时对同一地址执行读-改-写操作时，如果没有同步保护，可能”。候选给出边界表所依赖的原子读改写或随路原子语义，能据此解释极值、NaN 和溢出结果。
-- [AiCoreSimtProgrammingOverview](overview.md)（`related`）：SIMT 总览提供 Grid-Block-Thread 并发和 Warp 调度背景，定位原子操作所解决的数据竞争来源。
-- [ThreadArchitecture](thread_architecture.md)（`related`）：Thread/Block/Grid 的独立执行与共享范围决定哪些线程可能并发更新同一地址，是选择原子作用域的前提。
-- [内存层级（AI Core SIMT编程）](memory_hierarchy.md)（`related`）：原子接口可作用于 Global Memory 或 Unified Buffer；内存层级卡给出两者的线程作用域和生命周期，决定竞争范围。
-- [同步机制（AI Core SIMT编程）](synchronization.md)（`related`）：同步指南明确 barrier/fence 不能替代并发同址读改写的原子操作，并说明跨 Thread Block 需组合 Global Memory、原子与 fence。
+- [asc_atomic_cas](../../../../apis/simt_api/atomic_operations/asc_atomic_cas.md)（`explains`）：“对Unified Buffer或Global Memory上address的数值进行原子比较赋值操作，如果address上的数值等于指定数值compare，则对address赋值为指定数值val，否则address的数值不变。”；“原子操作不保证多个线程到达该原子操作的先后顺序，也不是线程同步屏障。”。指南解释 CAS 的并发语义和不提供线程顺序/屏障的边界，直接支撑接口的正确使用。
 <!-- cannbot:related:end -->

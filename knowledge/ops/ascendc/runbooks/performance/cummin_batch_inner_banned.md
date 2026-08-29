@@ -126,5 +126,5 @@ batch-inner 相对 transpose 参照路线的成对相对代价（同算子、同
 <!-- cannbot:related:start -->
 ## 相关
 
-- [跨批首行漏比较—续批从 row 0 扫描](../precision/prefix_scan_continuation_batch_must_compare_first_row.md)（`same_topic`）：跨批首行漏比较—续批从 row 0 扫描 与《cummin 非末维 batch-inner 跨步扫描 banned》的实质衔接是：续批 carry 已独立保存，因此当前 row0 必须参与比较；批行回绕、多核行区间、cummin 维度切分和 NaN carry 语义是同一前缀扫描状态契约的判别点。
+- [Cummin 950 Direct Invoke 算子知识](../../operators/direct/math/math/cummin_950.md)（`related`）：把连续 ND 输入按 `dim` 展平为 `［M,R,N］`，对每个 `(m,n)` 沿 `r` 做 inclusive cumulative minimum，同时输出产生当前前缀最小值的位置。客观失败：batch-inner 相对 transpose 参照路线在大 dimSize case 退化 37-78×，整体评分相对 transpose 路线下降；仅 Case 14（dimSize 极小）约为 transpose 的 2×（唯一受益）。随即回退到 transpose 路线。性能卡针对同一 Cummin 前缀扫描任务给出必须排除的非末维替代路线，可用于审查搬运与 Tiling 改写是否引入实测退化。
 <!-- cannbot:related:end -->

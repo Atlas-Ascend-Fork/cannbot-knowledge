@@ -23,5 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_popc（标量计算）](../../../simd_api/c_api/scalar_compute/asc_popc.md)（`same_topic`）：焦点处理popc 位计数在 SIMT 与 C 标量 API 的等价入口；asc_popc（标量计算）正文说明“获取一个uint64_t类型数字的二进制中1的个数”。候选执行同样的置位比特计数，只改变 API 层和输入位宽。
+- [asc_popc（标量计算）](../../../simd_api/c_api/scalar_compute/asc_popc.md)（`same_topic`）：获取一个uint64_t类型数字的二进制中1的个数。；位计数函数（population count）。统计输入数据二进制中比特位为 1 的数量。两页给出同一 uint64 位计数任务的 C scalar 与 SIMT 入口，可互作接口选型参照。
 <!-- cannbot:related:end -->

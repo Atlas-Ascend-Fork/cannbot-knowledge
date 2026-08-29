@@ -31,8 +31,5 @@ AI CPU启动下发通信任务前，需获取固定的通信配置[Mc2Msg](#tabl
 <!-- cannbot:related:start -->
 ## 相关
 
-- [HCCL Tiling使用说明](hccl_tiling_usage.md)（`related`）：当前用法页给出新 HcclTiling builder 与 GetTiling 流程。
-- [HcclTilingData](tiling_data_struct.md)（`related`）：当前结构化 TilingData 替代固定字段顺序，减少版本耦合。
-- [SetCcTiling（废弃）](../hccl_kernel/set_cc_tiling_deprecated.md)（`related`）：旧 Kernel SetCcTiling 消费 V1/V2 数据，迁移时 Host 与 Kernel 两端需同时替换。
-- [v2版本TilingData（废弃）](v2_tiling_data_deprecated.md)（`same_topic`）：v2版本TilingData（废弃） 与《v1版本TilingData（废弃）》的实质衔接是：v2 废弃 TilingData 是旧 AI CPU 通信配置布局；v1、SetCcTiling/Init、当前 HcclTilingData 与 SetCcTilingV2 共同给出从旧固定顺序到现行接口的迁移链。
+- [HcclTilingData](tiling_data_struct.md)（`related`）：AI CPU启动下发通信任务前，需获取固定的通信配置［Mc2Msg］(#table4835205712588)。在算子实现中，由Tiling组装通信配置项，通过配置固定参数和固定参数顺序的Tiling Data，将通信配置信息在调用AI CPU通信接口时传递给AI CPU。；在算子实现中，由Tiling组装通信配置项，核函数实现时将Tiling配置项通过入参传递给Kernel侧通信API做通信计算。；目标卡给出废弃 v1 配置迁移到当前 Kernel 通信 API 的 TilingData 生产消费合同。
 <!-- cannbot:related:end -->

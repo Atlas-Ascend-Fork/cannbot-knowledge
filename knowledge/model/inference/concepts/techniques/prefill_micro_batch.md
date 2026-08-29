@@ -135,7 +135,10 @@ DeepSeek-R1 在 `modeling_deepseek.py`（@2c45117）的 `forward_microbatch_v1`�
 
 Atlas A3 2 机环境，输入 64 × 4K，perfect eplb：
 
-| 切分策略 | 时延 (ms) | 总吞吐 (tokens/s) | 平均吞吐 (tokens/卡/s) | 增益 | | ---- | ---- | ---- | ---- | ---- | | MLA-DP32 + MoE-EP32 | 3128 | 83805 | 5237 | — | | + micro-batch | 2512 | 104356 | **6522** | +25% |
+| 切分策略 | 时延 (ms) | 总吞吐 (tokens/s) | 平均吞吐 (tokens/卡/s) | 增益 |
+| ---- | ---- | ---- | ---- | ---- |
+| MLA-DP32 + MoE-EP32 | 3128 | 83805 | 5237 | — |
+| + micro-batch | 2512 | 104356 | **6522** | +25% |
 
 > 注：源文档描述为"2 机共 16 卡"，但切分写作 DP32/EP32，数字不自洽。YAML `prefill_r1_rank_32_32dp_32ep_a8w8.yaml` 定义 `world_size: 32`，因此应理解为 **2 机 × 16 卡 = 32 卡**，源文档的"2 机共计 16 卡"为表述笔误。
 
@@ -226,3 +229,10 @@ event_expert_combine_mb0 = cur_stream.record_event()    # :2161
 - [double-routing](double_routing.md)
 - [moe-dispatch-combine-v2](moe_dispatch_combine_v2.md)
 - [sp-tp-sp](../parallelism/sp_tp_sp.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [HCCL AIV 算子展开与 prefill micro-batch 双流互斥（A3 开 AIV、微批关 AIV、多机放宽超时）](../../optimizations/experience/rules/hccl_aiv_expansion_vs_prefill_micro_batch.md)（`related`）：焦点卡明确“因此 micro-batch 与 Decode 阶段常用的 `HCCL_OP_EXPANSION_MODE=AIV`（Decode 小通信量 + 低时延场景）**互斥**。”；规则卡给出动作“核心互斥：**prefill 开 micro-batch 双流优化时，不要设 `HCCL_OP_EXPANSION_MODE=AIV`，保持默认 SDMA 模式**。”。规则把资源冲突结论落实为环境配置。
+- [Prefill 用 micro-batch 双流把 MoE dispatch/combine 通信藏进计算](../../guides/experience/interventions/prefill_micro_batch_dual_stream_moe_overlap.md)（`related`）：焦点卡指出“把 batch 切成 2 份，可以构造两条流水，使得一路的通信与另一路的计算严格并行。”；指南要求“用一路的计算穿插另一 micro-batch 的通信，隐藏 MoE EP 的通信空洞。”。前者解释双流机制，后者把机制落成可观测通信空洞和实施步骤。
+<!-- cannbot:related:end -->

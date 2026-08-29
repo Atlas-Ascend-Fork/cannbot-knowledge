@@ -56,7 +56,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:38:39Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -89,7 +89,7 @@ cann_versions: ["9.1.0"]
 | query/keyIn/value/dy | BSH/SBH/BNSD/BSND | FP16/BF16/FP32 | 必选；Q/K/V dtype 一致，`headNum>0`；V3 文档和原型均没有 actual-sequence 参数。 |
 | attentionIn/softmaxMax/softmaxSum | 前向结果/统计量 | 主输入族/FP32 | attentionIn 必选；统计量 shape/dtype 由 API/Tiling 检查。 |
 | pseShift/dropMask/attenMask | 广播 PSE、bit/byte mask、attention mask | FP16/BF16/FP32、UINT8、BOOL/UINT8 | 可选；keepProb<1 激活 dropout 路线。 |
-| sinkIn/dsinkOut | 1-D sink | 文档支持类型；dSink 为对应梯度 | V3 新增；A2/A3 支持，A5 的 V3 暂不支持但本卡不覆盖 A5。 |
+| sinkIn/dsinkOut | 1-D sink | 文档支持类型；dSink 为对应梯度 | V3 新增；A2/A3 支持，950 的 V3 暂不支持但本卡不覆盖 950。 |
 | prefix/qStartIdx/kvStartIdx | 一维数组 | INT64 | 由 L0 转为 ND tensor并进入 Tiling dependency；不能据此把 V3 扩展为 TND/变长入口。 |
 | scale/keepProb/tokens/headNum/layout/innerPrecise/sparseMode/pseType | 标量 | double/int64/string | keepProb (0,1]；sparseMode 决定有效 S1×S2 窗。 |
 | dq/dk/dv/dpse/dsink | 对应输入/广播 shape | 主输出族/dsink 约定 | dq/dk/dv 必选；可选输出按输入启用。 |
@@ -675,16 +675,16 @@ Host 把可证明的固定 S/D 对齐编码进 key，Device 选择 L1 custom spe
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V3 公开支持 | V3 公开支持 | V3 也有入口但 A5 最新为 V4，见 `_a5` 卡 |
+| 支持状态 | V3 公开支持 | V3 公开支持 | V3 也有入口但 950 最新为 V4，见 `_950` 卡 |
 | Host/Launcher | DAV_2201 arch22 registry | 同一 DAV_2201 接线 | DAV_3510 RegBase，不由本卡外推 |
 | Kernel/资源 | MIX_AIC_1_2 arch22 | 同上 | APT/arch35，独立 POD/key |
 
 ## 限制与失败边界
 
 - A2/A3 最新公开版本是 V3；V4 文档明确不支持这两个平台。
-- V3 的 sink/dSink 是独立新增语义；不能用 V2 卡替代，也不能把 A5 的 V4 rope/seed/scale 功能倒推到本卡。
+- V3 的 sink/dSink 是独立新增语义；不能用 V2 卡替代，也不能把 950 的 V4 rope/seed/scale 功能倒推到本卡。
 - arch22 的 unpadded/TND template 是共享内部实现，但 V3 原型没有 `actualSeqQLen/actualSeqKvLen` 且公开布局不含 TND，因此不是本卡的 Host 可达 Route。
 - SameAB/general/BN2/BN/B/Basic 各有独立 capability/key/POD；本卡矩阵保留所有可达 selector，Device 不提供未知 key fallback。
 - workspace offset 为字节，double buffer 必须乘 2；逻辑元素数不能代替 GM_ALIGN 后的 FP32 容量。
@@ -733,3 +733,9 @@ Host 把可证明的固定 S/D 对齐编码进 key，Device 选择 L1 custom spe
 | 同步 | stage SyncAll + pipe/hard events | schedule mode、flag方向、复用前等待 | entry/body |
 | 精度与尾块 | FP32 Matmul/vector intermediate，post cast | 不提前 cast，不写 padding/EOD | main/Post |
 | 失败边界 | capability/key/shape/workspace fail closed | 不执行未接线模板 | registry/entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FlashAttentionScoreGrad 950 ACLNN 算子知识](flash_attention_score_grad_950.md)（`same_topic`）：V4 是固定提交中 950 最新公开 `FlashAttentionScoreGrad` 入口；产品表只把 Ascend 950PR/950DT 标为支持，A2/A3 明确不支持。；V3 文档的产品表把 A2/A3 标为支持，V4 文档把 A2/A3 明确标为不支持，因此本卡选择 A2/A3 实际支持的最新版本 V3，而不是现有旧卡曾写的 V4。。两端共同界定 FlashAttentionScoreGrad 在 950 使用 V4、在 A2/A3 使用 V3 的平台版本边界，并各自闭合同一反向核心的 Host、MIX_CV 与 workspace 路线，可直接用于版本选型。
+<!-- cannbot:related:end -->

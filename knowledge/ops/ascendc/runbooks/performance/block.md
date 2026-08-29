@@ -40,7 +40,6 @@ Ascend950（dav-3510，16 AIV 核）上优化 `AddRmsNormDynamicQuant`（Add+Rms
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetBlockIdx](../../apis/simd_api/c_api/sys_var/asc_get_block_idx.md)（`exemplifies`）：AscGetBlockIdx 与《逐 block 串行启动退化多核并行》的实质衔接是：AscGetBlockIdx 与 block 数 API、系统变量共同定义多核索引；所选故障/性能卡直接用 blockIdx 解释错误切分、串行启动和尾核边界。
-- [GetBlockIdx](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_idx.md)（`exemplifies`）：《GetBlockIdx》处理“获取当前逻辑AI Core的索引，用于多核逻辑控制及偏移量计算等。”。《逐 block 串行启动退化多核并行》明确提供“Ascend950 上按行切分多核的算子，若 launch 函数用 host 侧 for 循环逐 block 调 <<<1, nullptr, stream>>>，多核并行会退化为'启动开销 × block 数'的串行链；改单次 <<<numBlocks>>> + kernel 内 GetBlockIdx/GetBlockNum 自算行区间后，case1 耗时 42866µs→705µs（约 60× 相对）、20/20 精度不变。”，其参数、调用或验证步骤直接接入GetBlockIdx/GetBlockNum 与 Tiling 切核、尾核边界和多核验证的合同。
-- [GetCoreNumAiv](../../apis/utils_api/platform_info/platform_ascend_c/get_core_num_aiv.md)（`exemplifies`）：串行 <<<1>>> 的修复要求一次启动 numBlocks，并在实现中用 GetCoreNumAiv 限制并行块数；该 API 提供可用 Vector 核数。
+- [GetBlockNum](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_num.md)（`exemplifies`）：改单次 `<<<numBlocks, nullptr, stream>>>` + kernel 内 `GetBlockIdx/GetBlockNum` 自算 `［startRow, endRow)` 后；获取当前任务配置的逻辑AI Core的数量，用于代码内部的多核逻辑控制等。；接口合同直接支撑修复后的 kernel 内多核行区间计算。
+- [AddRmsNormDynamicQuant 950 Direct Invoke 算子知识](../../operators/direct/nn/norm/add_rms_norm_dynamic_quant_950.md)（`related`）：代码审计发现 launch 函数把多核切分写成 host 侧 `for (b = 0; b < numBlocks; ++b)` 循环；每个 block 负责连续 `mPerCore` 行，末 block 用 `mLastCore`。；该 runbook 直接诊断并修复此算子逐行分块被 host 串行 launch 的性能问题。
 <!-- cannbot:related:end -->

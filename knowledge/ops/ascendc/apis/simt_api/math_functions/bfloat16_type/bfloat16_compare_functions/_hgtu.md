@@ -22,6 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hgeu](_hgeu.md)（`related`）：__hgeu 共享 unordered NaN=true 语义，但包含相等边界；与 __hgtu 对照可精确选择 > 或 >=。
-- [__hgt](_hgt.md)（`same_topic`）：__hgtu 与 __hgt 都判断 x>y，唯一区别是 unordered 版本在任一 NaN 时返回 true；并读可避免把 NaN 语义误当普通有序比较。
+- [__hgt](_hgt.md)（`related`）：比较两个bfloat16类型数据，当第一个数据大于第二个数据时，返回true。若任一输入为nan，返回true。；比较两个bfloat16类型数据，仅当第一个数据大于第二个数据时，返回true。两页是同一 bfloat16 大于比较的 unordered 与 ordered 选择，NaN 返回差异是实现正确性所需的关键决策。
 <!-- cannbot:related:end -->

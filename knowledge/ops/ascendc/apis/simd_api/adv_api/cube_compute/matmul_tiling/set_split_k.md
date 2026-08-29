@@ -29,7 +29,5 @@ EnableMultiCoreSplitK接口功能与该接口相同，建议使用EnableMultiCor
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Matmul开启AtomicAdd选项](../../../../../guides/operator_practice/simd_operator_optimization/matrix_compute/matmul_atomic_add.md)（`explains`）：SetSplitK 与《Matmul开启AtomicAdd选项》的实质衔接是：SplitK 必须与 multi-core split、split range、single range/shape、core 数和 AtomicAdd 汇合配置一致。
-- [Matmul高阶API开启多核切K](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_multi_core_split_k.md)（`explains`）：SetSplitK 与《Matmul高阶API开启多核切K》的实质衔接是：SplitK 必须与 multi-core split、split range、single range/shape、core 数和 AtomicAdd 汇合配置一致。
-- [EnableMultiCoreSplitK](enable_multi_core_split_k.md)（`same_topic`）：SetSplitK 与《EnableMultiCoreSplitK》的实质衔接是：SplitK 必须与 multi-core split、split range、single range/shape、core 数和 AtomicAdd 汇合配置一致。
+- [EnableMultiCoreSplitK](enable_multi_core_split_k.md)（`same_topic`）：EnableMultiCoreSplitK接口功能与该接口相同，建议使用EnableMultiCoreSplitK。；多核场景，通过该接口开启切K轴。不调用该接口的情况下，默认不切K轴。在GetTiling接口调用前使用。。SetSplitK 明确指定同功能推荐接口，后者给出切 K 的调用时序与默认关闭契约。
 <!-- cannbot:related:end -->

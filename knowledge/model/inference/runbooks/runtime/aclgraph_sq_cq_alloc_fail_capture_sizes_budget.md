@@ -92,3 +92,9 @@ num_capture_sizes = (1920)              / (num_hidden_layer + 1) / (1 + pg_num *
 
 - 来源为 vllm-ascend 该 FAQ 反馈帖，维护者（gh association=collaborator）给出根因（SQ/CQ 流资源耗尽，非显存）、修法（调小 `cuda-capture-sizes`）与 A3/A2 经验公式；报错栈顶端 `[SqCqManage]Alloc sq cq fail` 对应根因。issue 无 diff，据实层级为「维护者确认」。溯源下探 [vllm-ascend-issue-2410-v0-9-1rc3-faq-feedback](https://github.com/vllm-project/vllm-ascend/issues/2410)
 - 源未给具体 before→after 数值，给出的是可行动修法（调小档位）与估档位上限的经验公式。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [稳定图模式输入张量签名（shape/stride/dtype）避免 dynamo 重编译与缓存 miss](../performance/graph_mode_stable_input_signature_recompile.md)（`related`）：图模式档位 / 输入签名与重复编译相关问题见 ［graph-mode-stable-input-signature-recompile］(../performance/graph_mode_stable_input_signature_recompile.md)。；图模式按输入张量的 **shape + dtype + stride 签名** 缓存/守卫（guard）已编译图；decode 每步输入的 shape/dtype/stride 只要有一维不稳，dynamo 就把它当新形态触发重编译或 guard 失效。三类常见漂移：；焦点卡主动把输入签名问题交给目标卡，目标卡给出签名漂移触发重编译的具体机制。
+<!-- cannbot:related:end -->

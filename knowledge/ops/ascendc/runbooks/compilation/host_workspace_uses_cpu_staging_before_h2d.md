@@ -226,14 +226,3 @@ void launch_gather(const at::Tensor &xIn, const at::Tensor &indexIn, int64_t dim
 ## 误诊
 
 该崩溃发生在 kernel 返回前；在这条轨迹中不是 index 越界、dtype 分派或数值容差导致。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetUserWorkspace](../../apis/simd_api/basic_api/resource_management/workspace/get_user_workspace.md)（`exemplifies`）：GetUserWorkspace 与《Host workspace 需先 CPU 暂存再 H2D》的实质衔接是：GetUserWorkspace 与 SetSysWorkSpace 分离用户区和系统区；workspace 指南、Matmul workspace 设置及 host staging/偏移故障说明地址从 host 到 kernel 的使用边界。
-- [UpdateKfcWorkspace](../../apis/simd_api/basic_api/cube_group_mgmt/kfc_workspace/update_kfc_workspace.md)（`exemplifies`）：UpdateKfcWorkspace 与《Host workspace 需先 CPU 暂存再 H2D》的实质衔接是：UpdateKfcWorkspace 为 KfcWorkspace/CubeResGroupHandle 推进消息区地址，构造、Get 与 workspace 系统/用户分区共同约束 GM 空间生命周期和 host 传递。
-- [RunOpApi 后缺 synchronize 致 .to 越序错](runopapi_requires_synchronize_before_tensor_ops.md)（`related`）：《RunOpApi 后缺 synchronize 致 .to 越序错》说明cummin 算子 op_plugin 在 OpCommand::RunOpApi 后、idx32.to(kInt64) 前缺 synchronize，导致 .to 在 kernel 完成前执行而产生错误输出；判别要点是 RunOpApi 后对同一输出张量的 torch 操作前须显式 sync。；《Host workspace 需先 CPU 暂存再 H2D》说明torch_npu direct-launch host 用输入张量 options 创建 workspace 时继承 NPU device，随后 CPU 代码直接写 device pointer 导致进程崩溃；以 CPU staging 填充并在当前 stream 异步复制到 NPU 后恢复。。二者在RunOpApi及异步H2D/临时张量操作只有在同一输出的后续Torch操作前建立设备完成点才安全上存在可执行的直接衔接。
-- [at::zeros 异步零初始化跨 stream 覆盖 kernel 写出](../precision/at_zeros_stream_kernel.md)（`related`）：《at::zeros 异步零初始化跨 stream 覆盖 kernel 写出》说明kernel 直调算子的 host 层用 allocate_xpu_zeros_like（at::zeros）在 torch 默认 stream 异步零初始化输出 tensor，kernel launch 走 XpuRuntimeManager::get_ins<aclrtStream> 的 xpu_ops stream，两 stream 无同步；批量高负载下零初始化在 kernel 写入之后完成，整段 GM 写入覆盖 kv_a_out new 区。判别=BUGDIAG 按 region 分桶报 hist_zr=0 new_zr 非零 + 源码审查命中 allocate_xpu_zeros_like 且 kernel 在异 stream。；《Host workspace 需先 CPU 暂存再 H2D》说明torch_npu direct-launch host 用输入张量 options 创建 workspace 时继承 NPU device，随后 CPU 代码直接写 device pointer 导致进程崩溃；以 CPU staging 填充并在当前 stream 异步复制到 NPU 后恢复。。二者在at::zeros和直调kernel位于不同stream且无依赖，设备同步或同stream staging是防止零初始化覆盖写出的直接修复上存在可执行的直接衔接。
-- [dav-3510 GM_ADDR static_cast 编译失败](gm_addr_cast_from_void_uses_toolchain_cast.md)（`related`）：Host workspace 需先 CPU staging 再 H2D，不能把普通 void* 直接当 GM 指针。
-- [半精度 shadow 跨流竞态 — 转换与 kernel 两侧做设备同步](../precision/torch_npu_async_temporaries_need_completion_before_raw_kernel.md)（`related`）：Host workspace 卡解决 CPU 暂存到设备的所有权，目标卡进一步证明异步 H2D 临时张量在 raw kernel 读取前必须完成并保活。
-<!-- cannbot:related:end -->

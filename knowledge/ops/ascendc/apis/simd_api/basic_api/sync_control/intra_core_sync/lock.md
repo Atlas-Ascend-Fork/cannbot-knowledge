@@ -31,12 +31,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AllocMutexID](alloc_mutex_id_isasi.md)（`related`）：Lock 在 TPipe-TQue 范式中明确消费 AllocMutexID 返回的 ID，并以 pipe+ID 阻塞目标流水；这是分配结果的直接使用点。
-- [AscLock](../../../c_api/sync/asc_lock.md)（`same_topic`）：《Lock》明确“根据MutexID获取Mutex锁，若Mutex已被锁定则阻塞后续指定流水指令队列，直到对应MutexID的Mutex被Unlock，需与Unlock严格成对使用。”；它与《AscLock》的“用于AI Core内部异步流水线之间的同步，根据mutex_id获取Mutex，可按需阻塞指定流水线的执行。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscUnlock](../../../c_api/sync/asc_unlock.md)（`same_topic`）：Lock 与《AscUnlock》的实质衔接是：Lock 必须用 AllocMutexID 得到 mutex，并与 Unlock、ReleaseMutexID 成对；C Lock/Unlock 和核内同步概述共享同一阻塞流水契约。
-- [Mutex(ISASI)](mutex_isasi.md)（`same_topic`）：Lock 与《Mutex(ISASI)》的实质衔接是：Lock 必须用 AllocMutexID 得到 mutex，并与 Unlock、ReleaseMutexID 成对；C Lock/Unlock 和核内同步概述共享同一阻塞流水契约。
-- [ReleaseMutexID](release_mutex_id_isasi.md)（`same_topic`）：ReleaseMutexID 与《Lock》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
-- [Unlock](unlock.md)（`same_topic`）：Lock 与《Unlock》的实质衔接是：Lock 必须用 AllocMutexID 得到 mutex，并与 Unlock、ReleaseMutexID 成对；C Lock/Unlock 和核内同步概述共享同一阻塞流水契约。
-- [核内同步](intra_core_sync.md)（`same_topic`）：Lock 与《核内同步》的实质衔接是：Lock 必须用 AllocMutexID 得到 mutex，并与 Unlock、ReleaseMutexID 成对；C Lock/Unlock 和核内同步概述共享同一阻塞流水契约。
-- [核内同步能力概述](intra_core_sync_overview.md)（`same_topic`）：Lock 与《核内同步能力概述》的实质衔接是：Lock 必须用 AllocMutexID 得到 mutex，并与 Unlock、ReleaseMutexID 成对；C Lock/Unlock 和核内同步概述共享同一阻塞流水契约。
+- [Unlock](unlock.md)（`related`）：根据MutexID获取Mutex，若Mutex已被锁定，将阻塞后续指定流水指令队列，直到当前流水的前序指令中对应MutexID的Mutex被Unlock。；直到当前流水的前序指令执行完成后，根据MutexID释放对应Mutex。。Lock 的阻塞条件以同 MutexID 的 Unlock 为解除点，Unlock 又要求前序流水完成后释放，二者共同定义成对互斥协议。
 <!-- cannbot:related:end -->

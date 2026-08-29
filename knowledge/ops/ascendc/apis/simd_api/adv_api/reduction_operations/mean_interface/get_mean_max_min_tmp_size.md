@@ -26,8 +26,5 @@ host侧Tiling接口，用于获取Mean接口所需的最大和最小临时空间
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetReduceMeanMaxMinTmpSize](../reduce_mean_interface/get_reduce_mean_max_min_tmp_size.md)（`related`）：Mean 与 ReduceMean 的 Host 临时空间查询签名近似，但对应不同归约接口；并列阅读可避免把 Mean 的 workspace 预算误传给 ReduceMean。
-- [GetMeanTmpBufferFactorSize](get_mean_tmp_buffer_factor_size.md)（`same_topic`）：焦点处理Mean 的 workspace factor 推算；GetMeanMaxMinTmpSize正文界定“在host侧获取Mean接口计算所需最大和最小临时空间大小，供Tiling参数选择”。候选是 Mean 计算、接口页和 max/min 查询，直接消费 factor 结果。
-- [Mean](mean.md)（`same_topic`）：Mean 显式 sharedTmpBuffer 重载要求先由 GetMeanMaxMinTmpSize 根据 shape、dtype 和基本块模式取得空间边界，查询结果直接决定调用能否成立。
-- [Mean接口](mean_interface.md)（`same_topic`）：GetMeanMaxMinTmpSize说明在host侧获取Mean接口计算所需最大和最小临时空间大小，供Tiling参数选择；对Mean接口而言，Mean 的末轴二维约束与 ReduceMean 的多维 AR/RA 模式不同；两组 workspace 查询决定各自的 Tiling 空间。
+- [Mean](mean.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetMeanMaxMinTmpSize获取。；host侧Tiling接口，用于获取Mean接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。Mean 明确要求用该 Host 查询选择临时空间，二者闭合执行前容量规划。
 <!-- cannbot:related:end -->

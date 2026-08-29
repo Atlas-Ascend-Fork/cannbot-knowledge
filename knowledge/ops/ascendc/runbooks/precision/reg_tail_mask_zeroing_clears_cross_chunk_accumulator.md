@@ -259,12 +259,5 @@ __simd_vf__ inline void rmsNormTileVf(__ubuf__ T *yAddr, __ubuf__ T *xAddr,
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Add](../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/add.md)（`exemplifies`）：故障发生在 masked Reg《Add》更新跨块 accReg；修复把该 Add 的 mask 从 tailMask 改为 fullMask，以 acc+0 保留历史 lane。
-- [AscUpdateMask](../../apis/simd_api/c_api/reg/reg_data_types/asc_update_mask.md)（`exemplifies`）：Reg 尾块 masked Add 清零跨块累加器 与《AscUpdateMask》的实质衔接是：尾块 Mul 用 tail mask 把无效临时 lane 置零，但跨块 Add 必须用 full mask；MaskMergeMode 定义 ZEROING/MERGING，Add/Mul 是实际指令，UpdateMask、Reduce 与跨块状态卡验证该修复不会清空历史 accumulator。
-- [MaskMergeMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/mask_merge_mode.md)（`exemplifies`）：《MaskMergeMode》给出本故障的核心硬件语义：ZEROING 清零未选 lane，MERGING 保留目标值，正好解释 tail Add 为什么破坏历史累加。
-- [Mul](../../apis/simd_api/basic_api/reg_vector_compute/basic_arithmetic/mul.md)（`exemplifies`）：修复仍让 Reg《Mul》使用 tailMask，使临时平方的无效 lane 先被置零，再由 full-mask Add 安全累加。
-- [Reg::Reduce 跨 chunk 覆写导致规约失真](reg_reduce_per_chunk_result_must_accumulate_explicitly.md)（`related`）：Reg 尾块 masked Add 清零跨块累加器 与《Reg::Reduce 跨 chunk 覆写导致规约失真》的实质衔接是：尾块 Mul 用 tail mask 把无效临时 lane 置零，但跨块 Add 必须用 full mask；MaskMergeMode 定义 ZEROING/MERGING，Add/Mul 是实际指令，UpdateMask、Reduce 与跨块状态卡验证该修复不会清空历史 accumulator。
-- [RegTensor 累加须用 Add 而非 Adds](../compilation/regtensor_add_uses_add_not_adds.md)（`related`）：Reg 尾块 masked Add 清零跨块累加器 与《RegTensor 累加须用 Add 而非 Adds》的实质衔接是：尾块 Mul 用 tail mask 把无效临时 lane 置零，但跨块 Add 必须用 full mask；MaskMergeMode 定义 ZEROING/MERGING，Add/Mul 是实际指令，UpdateMask、Reduce 与跨块状态卡验证该修复不会清空历史 accumulator。
-- [RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽](regtensor_cross_chunk_state_should_persist_in_ub_slot.md)（`related`）：Reg 尾块 masked Add 清零跨块累加器 与《RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽》的实质衔接是：尾块 Mul 用 tail mask 把无效临时 lane 置零，但跨块 Add 必须用 full mask；MaskMergeMode 定义 ZEROING/MERGING，Add/Mul 是实际指令，UpdateMask、Reduce 与跨块状态卡验证该修复不会清空历史 accumulator。
-- [UpdateMask 引用参数拒绝 const — 改用可修改左值](../compilation/updatemask_requires_mutable_uint32_lvalue.md)（`related`）：Reg 尾块 masked Add 清零跨块累加器 与《UpdateMask 引用参数拒绝 const — 改用可修改左值》的实质衔接是：尾块 Mul 用 tail mask 把无效临时 lane 置零，但跨块 Add 必须用 full mask；MaskMergeMode 定义 ZEROING/MERGING，Add/Mul 是实际指令，UpdateMask、Reduce 与跨块状态卡验证该修复不会清空历史 accumulator。
+- [RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽](regtensor_cross_chunk_state_should_persist_in_ub_slot.md)（`related`）：尾掩码 Runbook 定位到“尾块的 `Add(accReg, accReg, sqReg, tailMask)` 不只是忽略无效 lane，而是把 `accReg` 的未激活 lane 清零”；UB 槽 Runbook定位到“失败实现把跨 VL 的持久状态放在 VF 循环内的 `RegTensor acc`，只在循环开始从 UB 槽加载、循环结束再写回。”。两者给出跨 chunk 累加失效的不同根因和不同修复分支。
 <!-- cannbot:related:end -->

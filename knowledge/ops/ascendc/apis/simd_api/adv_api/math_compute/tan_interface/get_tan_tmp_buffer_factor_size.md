@@ -26,7 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Tan](tan.md)（`related`）：Tan 的 sharedTmpBuffer 重载需要 Host 为 tile 预留足够空间；FactorSize 可在 UB 预算确定时反推出安全 calCount。
-- [GetTanMaxMinTmpSize](get_tan_max_min_tmp_size.md)（`same_topic`）：GetTanMaxMinTmpSize 与《GetTanTmpBufferFactorSize》的实质衔接是：该 host 查询直接服务 Tan 高阶接口，factor 查询用于把最大最小空间预算转换为实际 tiling 处理量。
-- [Tan接口](tan_interface.md)（`same_topic`）：Tan接口 与《GetTanTmpBufferFactorSize》的实质衔接是：Tan 接口由 Tan 和两种临时空间查询组成；Atan 是反函数，Sin/Cos 卡解释 tan=sin/cos 的输入值域与验证关系。
+- [Tan](tan.md)（`related`）：获取Tan接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetTanMaxMinTmpSize获取。；factor helper 从可用空间反推 Tan 单次规模，Tan 卡给出 buffer 与 calCount 重载，二者用于同一 kernel 的 Tiling 和调用组装。
 <!-- cannbot:related:end -->

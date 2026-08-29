@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/gen_ops_info.cmake
     role: implementation
 created_at: "2026-08-25T18:52:15Z"
-updated_at: "2026-08-25T18:52:15Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -520,7 +520,7 @@ workspace_total = executor framework total；Kernel workspace 指针未读
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开 `MishGradV2` 文档支持；本卡闭合 | 公开 `MishGradV2` 文档支持；本卡闭合 | 公开支持，但本固定仓内稳定实现的 ATVOSS 调度依赖不闭合，未纳入本卡 |
 | Host/Launcher | 共用 `MishGradV2` API/Tiling；BF16 公开支持 | 共用；BF16 公开支持 | 稳定目录使用 `MishGrad` + `arch35` `ElewiseBaseTiling`，不同版本族 |
@@ -553,11 +553,11 @@ workspace_total = executor framework total；Kernel workspace 指针未读
 | Kernel entry | `experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.cpp` | `mish_grad_v2<D_T_X>` | POD 解包与 FP32/cast body 路由。 |
 | Kernel body | `experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.h` | `KernelMishGradFloat`、`KernelMishGradCast`、common helpers | GM/UB、Queue/TBuf、Vector 顺序、精度、同步和 tail。 |
 | 构建接线 | `experimental/activation/mish_grad_v2/op_host/CMakeLists.txt` | `add_modules_sources` | 活动实验构建 target 与 `DISABLE_IN_OPP` 边界。 |
-| A5 公开约束 | `activation/mish_grad/docs/aclnnMishBackward.md` | 产品支持表 | A5 公开支持。 |
-| A5 构建接线 | `activation/mish_grad/CMakeLists.txt` | `SUPPORT_COMPUTE_UNIT`、`SUPPORT_TILING_DIR` | 稳定实现只接 `ascend950/arch35`。 |
-| A5 Host/Tiling | `activation/mish_grad/op_host/arch35/mish_grad_tiling_arch35.cpp` | `MishGradTiling::RunTiling` | 委托固定仓外 `ElewiseBaseTiling::DoTiling`。 |
-| A5 Kernel entry | `activation/mish_grad/op_kernel/mish_grad_apt.cpp` | `mish_grad` | 委托固定仓外 `ElementwiseSch16B` 调度器。 |
-| A5 公共依赖接线 | `cmake/gen_ops_info.cmake` | `atvoss_src_copy` | ATVOSS 从 `${OPBASE_SOURCE_PATH}` 复制，证明实体不属于当前固定仓。 |
+| 950 公开约束 | `activation/mish_grad/docs/aclnnMishBackward.md` | 产品支持表 | 950 公开支持。 |
+| 950 构建接线 | `activation/mish_grad/CMakeLists.txt` | `SUPPORT_COMPUTE_UNIT`、`SUPPORT_TILING_DIR` | 稳定实现只接 `ascend950/arch35`。 |
+| 950 Host/Tiling | `activation/mish_grad/op_host/arch35/mish_grad_tiling_arch35.cpp` | `MishGradTiling::RunTiling` | 委托固定仓外 `ElewiseBaseTiling::DoTiling`。 |
+| 950 Kernel entry | `activation/mish_grad/op_kernel/mish_grad_apt.cpp` | `mish_grad` | 委托固定仓外 `ElementwiseSch16B` 调度器。 |
+| 950 公共依赖接线 | `cmake/gen_ops_info.cmake` | `atvoss_src_copy` | ATVOSS 从 `${OPBASE_SOURCE_PATH}` 复制，证明实体不属于当前固定仓。 |
 
 每行只写一个文件，并确保该文件存在于 Frontmatter `sources`。
 

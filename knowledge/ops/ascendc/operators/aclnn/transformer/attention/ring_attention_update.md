@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:52:27Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -507,9 +507,9 @@ workspace_total=16*1024*1024 system workspace（body不读写）
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 见 `_950` 卡 |
 | Host/Launcher | 非RegBase，910b | 非RegBase，910_93 | RegBase |
 | Kernel/资源 | key0..2/10..12，Vector API | 同实现族 | key100/110/120，MicroAPI |
 
@@ -517,7 +517,7 @@ workspace_total=16*1024*1024 system workspace（body不读写）
 
 - API 的 attention rank 日志分支未立即 return，但 Tiling 严格拒绝；不得视为支持。
 - API softmax dtype 布尔式是“任一为 FP32 即通过”，而 OpDef/Tiling/binary 要求全部 FP32；正式有效域按后者。
-- 非 RegBase SBH Tiling 用整数除法 `D=H/N`，但没有 A5 路线中的 `H%N==0` 检查；复用时必须由调用方保证整除，否则 Kernel 只覆盖截断后的 `N*D`。
+- 非 RegBase SBH Tiling 用整数除法 `D=H/N`，但没有 950 路线中的 `H%N==0` 检查；复用时必须由调用方保证整除，否则 Kernel 只覆盖截断后的 `N*D`。
 - 非 RegBase TND Tiling 没有像 SBH 路线那样逐一核对六输入和三输出的完整 shape 相等关系；公开契约要求 shape 相容，不能把缺少 Host guard 解释为支持不相容 shape。
 - actualSeq 的单调、首值0、末值T由公开契约要求，固定源码未完整校验。
 - int64 shape 乘法未见完整溢出检查；未知 key/0 tile/非法 attr 无 fallback。
@@ -550,3 +550,9 @@ workspace_total=16*1024*1024 system workspace（body不读写）
 | 同步 | Queue+PIPE_V | 原地temp依赖边 | Compute |
 | 精度与尾块 | softmax FP32，attention升FP32 | BF16 RINT/有效byte len | AttnCompute |
 | 失败边界 | 无fallback | 不能放宽0tile/非法key/attr | API/Tiling/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [RingAttentionUpdate 950 ACLNN 算子知识](ring_attention_update_950.md)（`same_topic`）：稳定归并两组 softmax max/sum，并用归一化权重归并两份 attention；FP32 RegBase MicroAPI 稳定归并 softmax 统计量并加权归并 attention。两卡均执行 RingAttentionUpdate 的稳定 softmax 统计量合并和 attention 加权归并，目标卡把相同核心契约落实为 950 FP32 RegBase MicroAPI 实现。
+<!-- cannbot:related:end -->

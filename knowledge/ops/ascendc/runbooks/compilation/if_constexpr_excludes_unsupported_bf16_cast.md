@@ -340,11 +340,6 @@ at::Tensor scatter(const at::Tensor& data, int64_t dim, const at::Tensor& indice
 <!-- cannbot:related:start -->
 ## 相关
 
-- [FP16 算子 Cast 提升-计算-回退链设计](../precision/fp16_cast_up_fp32_compute_cast_down_chain.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《BiSheng bf16 类型转换失败——隔离模板实例化》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [__simd_vf__ if constexpr 致 hoisted 报错](simd_vf_if_constexpr_lowering_banned_exit_70.md)（`related`）：《__simd_vf__ if constexpr 致 hoisted 报错》说明dav-3510 上某 Reg __simd_vf__ 实现使用 if constexpr 与 constexpr trait 时，bisheng 后端报 Unsupported Inst must be hoisted 并退出 70；记录源码定位与编译边界，不提供未完成的 fallback 实现。；《BiSheng bf16 类型转换失败——隔离模板实例化》说明运行时 guard 不能阻止通用分发宏实例化不支持的 BF16 规约模板；为更新型 dtype 使用独立模板入口。。二者在该编译失败锁定__simd_vf__中的if constexpr/trait lowering，同类模板隔离、helper/VF边界与后端崩溃用于交叉验证上存在可执行的直接衔接。
-- [bisheng 不支持 bf16 标量强转时用位布局精确提升到 fp32](bf16_scalar_to_fp32_bit_extension.md)（`related`）：当 BF16 reduce 确实必须实现时，位扩展卡给出已上板的 bf16→fp32 标量转换，补足本卡明确留下的“不能只删 specialization”分支。
-- [bisheng 单模板跨字宽分支 segfault 判别](bisheng_segfault.md)（`related`）：两卡都定位模板实例化阶段的跨 dtype 失败；该卡用独立模板入口隔离不支持 BF16 Cast，本卡进一步证明跨字宽分支需物理拆类。
-- [三元返回 B16 让 cast 失效触发 i64 setcc](ternary_b16_return_penetrates_float_cast.md)（`related`）：比较与 Cast 都会被运行时 dtype guard 之外的模板实例化提前触发；该卡补充必须在编译期剔除不支持 B16 设备表达式的共同约束。
-- [BF16 标量 cast 后端失败—改用位序键](bf16_scalar_compare_by_raw_bits.md)（`same_topic`）：BF16 标量 cast 后端失败—改用位序键 与《BiSheng bf16 类型转换失败——隔离模板实例化》的实质衔接是：位序键是 BF16 标量 cast 失败的直接替代；所选卡补充同一后端限制、B16→B32 比较宽度及 NaN 显式选择。
-- [bf16 未编译剔除触发 backend Cannot select](if_constexpr_excludes_unsupported_bf16_compare.md)（`same_topic`）：bf16 未编译剔除触发 backend Cannot select 的核心契约是“运行时 dtype 分支仍实例化 bf16 标量比较，BiSheng backend Cannot select；用 if constexpr 编译期剔除不支持分支”；BiSheng bf16 类型转换失败——隔离模板实例化 补充“运行时 guard 不能阻止通用分发宏实例化不支持的 BF16 规约模板；为更新型 dtype 使用独立模板入口”。
+- [bisheng 单模板跨字宽分支 segfault 判别](bisheng_segfault.md)（`related`）：焦点卡观测“`if constexpr(is_c8)` 两分支操作不同 `LocalTensor` element 类型：非选中分支仍进前端类型检查。”；目标卡解释“运行时的 `if (isUpdate)` 或 `TORCH_CHECK(isUpdate, ...)` 不会阻止编译器实例化宏体中已经写出的 `scatter_kernel<float, bfloat16_t, ...>` reduce 分支”，两者共同指向把不支持类型分支从翻译单元物理隔离的编译期修法。
+- [bf16 未编译剔除触发 backend Cannot select](if_constexpr_excludes_unsupported_bf16_compare.md)（`same_topic`）：选择编译期隔离，而不是继续添加运行时 guard：根因发生在模板实例化阶段，只有从源码中移除不支持的 specialization 才能阻止 BiSheng 进入 BF16 cast 后端路径。；选择 `if constexpr`，因为问题发生在模板实例化而不是运行时分支选择；普通 `if`、提前设置 `reduceMode_` 或依赖 Host 永不分发都无法阻止后端编译该表达式。。两卡针对同一 scatter BF16 模板实例化决策，分别在 Host 分发 specialization 和 Device 函数体分支两层执行编译期剔除，避免生成不支持的 cast 或 compare。
 <!-- cannbot:related:end -->

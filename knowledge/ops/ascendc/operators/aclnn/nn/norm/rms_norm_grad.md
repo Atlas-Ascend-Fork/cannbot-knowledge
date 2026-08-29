@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:06:29Z"
-updated_at: "2026-08-25T18:06:29Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -715,9 +715,9 @@ dx 和每核局部 dgamma 的 FP32 主计算完全复用；只在提交阶段选
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 见独立 `_950` 卡 |
 | Host/Launcher | 非 regbase key 1/2；`ascend910b` binary config | 非 regbase key 1/2；`ascend910_93` binary config | regbase key 7000–9010 |
 | Kernel/资源 | high-precision AIV body、确定性可 chunk | 同源码 body/config；平台资源数来自 `GetCoreNumAiv` | arch35 MicroAPI body |
 

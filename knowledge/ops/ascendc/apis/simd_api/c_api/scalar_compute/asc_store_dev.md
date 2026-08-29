@@ -21,8 +21,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadDev](asc_load_dev.md)（`related`）：AscLoadDev 绕过 DCache 读 GM，AscStoreDev 绕过 DCache 写 GM；多核共享非 Cache-Line 对齐字段时两者形成无缓存的读写对。
-- [AscStoreL2CacheMode](../enum/asc_store_l2_cache_mode.md)（`related`）：StoreDev 的 L2 cache mode 决定写是否进入 L2。
-- [ReadGmByPassDCache](../../basic_api/scalar_compute/read_gm_by_pass_d_cache_isasi.md)（`related`）：C++ bypass read 与 StoreDev 组成可见性验证。
-- [WriteGmByPassDCache](../../basic_api/scalar_compute/write_gm_by_pass_d_cache_isasi.md)（`same_topic`）：WriteGmByPassDCache 与 AscStoreDev 都绕过 DCache 向 GM 写入单个标量，以规避多核共享 Cache Line 的覆盖；平台与地址约束不同，但核心写入语义一致。
+- [AscLoadDev](asc_load_dev.md)（`related`）：不经过DCache向GM地址上写数据。 当多核操作GM地址时，如果数据无法对齐到Cache Line，经过DCache的方式下，由于按照Cache Line大小进行读写，会导致多核数据随机覆盖的问题。此时，可以采用不经过DCache直接读写GM地址的方式，从而避免上述随机覆盖的问题。；不经过DCache直接从GM地址读取整型数据。 当多核操作GM地址且数据无法对齐到Cache Line时，经过DCache读写可能引入Cache Line粒度的数据覆盖。此时，可使用本接口绕过DCache读取GM数据。；两接口闭合绕过 DCache 的 GM 写入与读取路径。
 <!-- cannbot:related:end -->

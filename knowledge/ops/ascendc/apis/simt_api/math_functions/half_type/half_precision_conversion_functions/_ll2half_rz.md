@@ -25,12 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__ll2half_ru](_ll2half_ru.md)（`related`）：RZ 向零截断，在负数上与 RU/RD 均不同；可按目标 oracle 选择。
-- [__ll2half_rd](_ll2half_rd.md)（`same_topic`）：__ll2half_rz 与《__ll2half_rd》的实质衔接是：long long 到 half 的 RZ 转换需对照舍入方向、unsigned/float 和宽度 Cast 故障。
-- [__ll2half_rn](_ll2half_rn.md)（`same_topic`）：《__ll2half_rn》处理“遵循CAST_RINT模式，将int64类型数据转换为half类型数据，返回转换后的值。”。《__ll2half_rz》明确“遵循CAST_TRUNC模式，将int64类型数据转换为half类型数据，返回转换后的值。”，可直接用于核对int64 到 half 转换的四种舍入方向选择合同。
-- [__ll2half_rna](_ll2half_rna.md)（`same_topic`）：__ll2half_rz 与《__ll2half_rna》的实质衔接是：long long 到 half 的 RZ 转换需对照舍入方向、unsigned/float 和宽度 Cast 故障。
-<!-- cannbot:related:end -->

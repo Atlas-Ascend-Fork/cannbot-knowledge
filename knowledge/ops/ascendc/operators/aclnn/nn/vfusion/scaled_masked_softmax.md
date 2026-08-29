@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_v2/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:40:32Z"
-updated_at: "2026-08-25T18:40:32Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -661,9 +661,9 @@ BF16 在所有算术前进入 FP32，避免 BF16 缩放与 mask 常量量化；F
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 ACLNN 文档支持；`ascend910b` config 闭合 | 公开 ACLNN 文档支持；`ascend910_93` config 闭合 | 当前卡不覆盖；固定公开 ACLNN 产品表未列 A5，故不发布 `_a5` 卡 |
+| 支持状态 | 公开 ACLNN 文档支持；`ascend910b` config 闭合 | 公开 ACLNN 文档支持；`ascend910_93` config 闭合 | 当前卡不覆盖；固定公开 ACLNN 产品表未列 950，故不发布 `_950` 卡 |
 | Host/Launcher | 共用非 RegBase `W<=4096`、32 KiB Host Softmax tmp 预留 | 同 A2 | 实现存在 RegBase `W<=8192`/64 KiB 线索，但公开 API 可达性不闭合 |
 | Kernel/资源 | 共用单 AIV Vector Kernel 与三 dtype Route | 同 A2 | 有 config/CMake 信号，不足以单独证明公开支持 |
 
@@ -689,7 +689,7 @@ BF16 在所有算术前进入 FP32，避免 BF16 缩放与 mask 常量量化；F
 |---|---|---|---|
 | 入口声明/约束 | `vfusion/scaled_masked_softmax_v2/docs/aclnnScaledMaskedSoftmax.md` | `aclnnScaledMaskedSoftmax*`、产品支持表 | 公开性、A2/A3、接口约束与两段式调用 |
 | 入口实现 | `vfusion/scaled_masked_softmax_v2/op_host/op_api/aclnn_scaled_masked_softmax.cpp` | `CheckParams`、两个公开入口 | 校验、RegBase width 分支、inner bridge |
-| Host/注册 | `vfusion/scaled_masked_softmax_v2/op_host/scaled_masked_softmax_v2_def.cpp` | `ScaledMaskedSoftmaxV2`、`OP_ADD` | dtype/layout、AutoContiguous、A2/A3/A5 实现配置 |
+| Host/注册 | `vfusion/scaled_masked_softmax_v2/op_host/scaled_masked_softmax_v2_def.cpp` | `ScaledMaskedSoftmaxV2`、`OP_ADD` | dtype/layout、AutoContiguous、A2/A3/950 实现配置 |
 | Host/Tiling | `vfusion/scaled_masked_softmax_v2/op_host/scaled_masked_softmax_v2_tiling.h` | `ScaledMaskedSoftmaxV2TilingData` | POD 字段顺序与类型 |
 | Host/Tiling | `vfusion/scaled_masked_softmax_v2/op_host/scaled_masked_softmax_v2_tiling.cpp` | `ScaledMaskedSoftmaxV2Tiling::*` | shape/attr/platform、A/M/L、分核、key、workspace |
 | Kernel entry/body | `vfusion/scaled_masked_softmax_v2/op_kernel/scaled_masked_softmax_v2.cpp` | `scaled_masked_softmax_v2` | key 到三种模板实例 |
@@ -708,4 +708,11 @@ BF16 在所有算术前进入 FP32，避免 BF16 缩放与 mask 常量量化；F
 | workspace/内存 | 三 depth-1 queue + FP32 bufX + shared tmp | 容量用 A/M/L 而非 W；depth 与 Sdev 分支不可遗漏 | `Init/SetUbSplitInfo` |
 | 同步 | queue 生命周期与串行 `bufShare` 复用 | Free/覆盖必须晚于消费；不能并行使用 shared tmp | `CopyXIn/CopyMaskIn/Compute/CopyOut` |
 | 精度与尾块 | FP32 Softmax、RINT 降精度、`oriK=W` | mask 常量 `-10000`、有效宽度与最后 iter 行数 | `Compute/SoftmaxX/Process` |
-| 失败边界 | API/shape/UB guards 与 unknown-key no-op | 不得把 `Init()` 失败传播或 A5 公开支持补齐 | `CheckParams/SetUbSplitInfo/TilingScaledMaskedSoftmaxV2/scaled_masked_softmax_v2` |
+| 失败边界 | API/shape/UB guards 与 unknown-key no-op | 不得把 `Init()` 失败传播或 950 公开支持补齐 | `CheckParams/SetUbSplitInfo/TilingScaledMaskedSoftmaxV2/scaled_masked_softmax_v2` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ScaledMaskedSoftmaxBackward A2/A3 ACLNN 算子知识](scaled_masked_softmax_backward.md)（`related`）：“对末轴逐行计算 `q=g*y`、`z=(q-sum_D(q)*y)*scale`，再按 bool `mask` 将真值位置清零”中的 y 是正向 Softmax 结果；“对每个 `［B,N,S1］` 行先缩放 `x`，由布尔 `mask` 在缩放值与 `-10000` 间选择，再沿末轴执行 Softmax。”给出 y 的生成合同，两卡闭合训练正反向。
+- [SoftMax/SimpleSoftMax Tiling](../../../../apis/simd_api/adv_api/activation_functions/soft_max_interface/soft_max_simple_soft_max_tiling.md)（`related`）：“`SetPaddingInfo/SetUbSplitInfo/SetSoftmaxTiling/SetTilingKey`”；“void SoftMaxTilingFunc(const AscendC::TensorShape& srcShape, const uint32_t dataTypeSize, const uint32_t localWorkSpaceSize, optiling::SoftMaxTiling& softmaxTiling)”。算子 Host Tiling 直接调用该高阶 API 生产 SoftMaxTiling POD。
+<!-- cannbot:related:end -->

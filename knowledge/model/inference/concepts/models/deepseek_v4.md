@@ -286,3 +286,9 @@ HF 配置溯源（架构图 `source_basis`，本仓不引本地路径）：`deep
 - [moe-dispatch-combine-v2](../techniques/moe_dispatch_combine_v2.md)（V4 Decode 生产路径实调的一体化融合算子 dispatch_v2/combine_v2）
 - [dsa](../modules/dsa.md)（DSA 架构模式；V4 为其思想延续，注意力主体改 MQA/Shared-KV，见上文矛盾标记）
 - [deepseek-v4-continue-pretrain](../../../training/guides/recipes/deepseek_v4_continue_pretrain.md)（跨域·训练：DeepSeek-V4 的续训(CPT)实践）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepSeek-V3.2-Exp](deepseek_v3_2_exp.md)（`related`）：“DeepSeek-V3.2-Exp 是 DeepSeek 2026 年发布的实验性长序列模型，在 DeepSeek-V3.1 基础上引入 **DeepSeek Sparse Attention (DSA)** —— 由 **Lightning Indexer (LI)** 与 **Sparse Flash Attention (SFA)** 两个核心模块组成 —— 通过"选前 TopK 个相关 token 再计算注意力"将长序列 Attention 从 O(S²) 降至 O(S·TopK)。DSA 的引入保留了完整 MLA KVCache，同时新增 Indexer Key Cache；MoE/MLA 主干继续沿用 V3.1 的结构。”与“DeepSeek-V4 是 DeepSeek 发布的新一代长序列模型，包含 **DeepSeek-V4 Flash（285B）** 与 **DeepSeek-V4 Pro（1.6T）** 两种规格。在 DeepSeek-V3.2 的稀疏 Attention（DSA）基础上，V4 进一步在**层间交错**引入 **KV Cache 滑窗（Window Cache）** 与 **KV Cache 压缩（Compress）**，在保持注意力计算量/访存量低位（相对 Full Cache）的同时大幅提升长序列效率，提供长达 **1M 序列** 的高性能推理。”提供双方正文证据。V4 明确以 V3.2 的 DSA 为演进基线并增加滑窗与压缩，结合两卡可判断模型升级时注意力主体、缓存形态和长序列能力的迁移。
+<!-- cannbot:related:end -->

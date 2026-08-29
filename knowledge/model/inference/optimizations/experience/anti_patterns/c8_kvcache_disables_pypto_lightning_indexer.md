@@ -69,3 +69,10 @@ C8 不是只把 KV 存成 int8 就完事，Lightning Indexer 侧还要额外做�
 - 溯源下探：
   - [cann-recipes-infer-issue-8-rfc-deepseek-v3-2-exp-w8a8c8](https://gitcode.com/cann/cann-recipes-infer/issues/8)
   - [cann-recipes-infer-pr-7-feat-add-deepseek-v3-2-exp-w8a8c8-quantization-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/7)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [C8 KV-cache 量化前置：MLA 系模型必须 enable_mla_prolog=True，否则 bringup 抛 ValueError](../../../runbooks/runtime/c8_kvcache_requires_mla_prolog.md)（`related`）：在 DeepSeek-V3.2-Exp（DSA 架构）上，不要期望 **C8 KVCache 量化** 与 **PyPTO 版 Lightning Indexer 加速** 同时生效。 此外 C8 还与 PyPTO Lightning Indexer 互斥（开 C8 则 LI 走不到 PyPTO 快路），是另一条独立约束——同时开 C8 + `enable_pypto` 时 LI 不走 PTO，别误以为 PyPTO 没生效是抢卡。 两卡把 MLA-Prolog 前置门禁与 Lightning Indexer 的 PyPTO 互斥合成 C8 启用前的连续检查。
+- [Lightning Indexer Kernel](../../../concepts/kernels/lightning_indexer.md)（`related`）：“本 kernel 在 cann-recipes-infer 中同时提供 **AscendC**（手写高性能）、**PyPTO**（自研 MegaKernel）、**TileLang**（社区编译）三路实现，彼此性能/易用性各有取舍；V4 在 AscendC 侧补充了 950PR/DT 直方图 Top-k 与 FP8 量化版 LI（INT8/FP8 共用 `npu_quant_lightning_indexer`，FP8 区别在上游 q 经 `npu_dynamic_block_quant` 量化，见下文 ［DeepSeek-V4 CSA 层增强］(#deepseek-v4-csa-层增强)）。”；“二者当前互斥：一旦开启 C8（`kv_cache_quant_mode == "int8"`，早期实现里叫 `kv_cache_c8`），Lightning Indexer 的 decode 会被强制路由到 C8 量化算子 `npu_lightning_indexer_quant`，PyPTO 快路 `npu_lightning_indexer_pto` 永远不可达。”。多后端 LI 的一般实现清单需要该 decode 守卫补充，才能正确判断 C8 配置下 PyPTO 路线是否可达。
+<!-- cannbot:related:end -->

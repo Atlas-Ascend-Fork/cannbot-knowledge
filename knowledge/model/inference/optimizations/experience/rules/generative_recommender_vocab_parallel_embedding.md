@@ -43,3 +43,10 @@ token 化的生成式推荐 / ranking 模型（把用户/物品/上下文离散�
 - `diff 事实`（HSTU，PR 合并 @67aa6b552d7d）：`inference_embedding.py` 的 `VocabParallelEmbedding` vocab 段切分、`should_shard = (embed_tp_size>1) and (vocab_size>=small_table_threshold)` 阈值门控、forward 的 `all_gather→mask→reduce_scatter`，与 `hstu_optimization.md`「Embedding TP + DP、DP→TP→DP」一致。
 - "embedding 主导容量、词表千万上亿"为文档动机；"显存随卡数摊薄"为结构性推断，无实测数字。
 - 溯源下探：[cann-recipes-infer-pr-225-feat-add-hstu-model-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/225)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Embedding Tensor Parallel](../../../concepts/parallelism/embedding_tp.md)（`related`）：**切分对象 = 按 vocab 维切大 embedding 表**（［vocab-parallel embedding］(../../../concepts/parallelism/embedding_tp.md)，Megatron `VocabParallelEmbedding` 式）：本卡只持有 `［vocab_start, vocab_end)` 段，`start = rank * ceil(vocab_size / tp_size)`。embedding 与 dense 用不同并行度——embedding 走 TP、外层套 ［DP］(../../../concepts/parallelism/data_parallel.md)。；Embedding Tensor Parallel（Embedding TP）是针对**稀疏参数占主导**的推荐/生成式推荐模型的并行策略：把超大规模的 **Embedding Tables 按 vocab 维度切分**到多张 NPU 上，以减少单卡显存负担，支撑超大 Embedding 词表的推理。；经验规则把 Embedding TP 的 vocab 分片机制落实为阈值门控和 DP→TP→DP 调度，概念页提供该机制的总体定义。
+- [HSTU](../../../concepts/models/hstu.md)（`related`）：“基于此，我们在推理侧引入 Embedding TP（如下图），对大表**按 vocab 维度切分**到不同 NPU 上，以减少单卡显存负担，支撑模型推理。同时，在 Embedding TP 外采用 DP 进行并行处理，Embedding 部分进行 **DP → TP → DP** 的操作。”与“- **阈值门控（关键判断）**：不是所有表都切。用 `should_shard = (tp_size > 1) and (vocab_size >= threshold)` 门控（本仓默认阈值 1000）；小于阈值的小表整表复制到各卡，**避免小表切分后 all_gather/reduce_scatter 的通信开销 > 省下的那点显存**。给新的大稀疏 embedding 模型上多卡前，先按表规模分档再决定切/不切。”是双方正文中的具体合同。HSTU 卡给出正在使用的 vocab-parallel 路径，优化规则补充大小表阈值门控和通信/显存权衡，能直接推进该模型的切分决策。
+<!-- cannbot:related:end -->

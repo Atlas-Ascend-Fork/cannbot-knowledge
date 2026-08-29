@@ -24,9 +24,3 @@ platforms: ['950']
 约束：标量接口无约束，矢量接口使用duplicate填充前count个元素赋最低有限值，参照Memory矢量计算下的数据填充接口duplicate约束。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Min](min.md)（`same_topic`）：Lowest complements Min for floating types: Min is the smallest positive normal value, whereas Lowest is the most negative finite value.
-<!-- cannbot:related:end -->

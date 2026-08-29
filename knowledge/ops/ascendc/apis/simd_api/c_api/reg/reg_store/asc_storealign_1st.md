@@ -21,5 +21,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscStorealign1stPostupdate](asc_storealign_1st_postupdate.md)（`same_topic`）：AscStorealign1stPostupdate 与《AscStorealign1st》的实质衔接是：AscStorealign1stPostupdate 在仅写首元素后更新地址，非 postupdate/通用 Store 与 AscUpdateAddrReg 明确写回粒度和地址推进两部分契约。
+- [AscStorealign1stPostupdate](asc_storealign_1st_postupdate.md)（`related`）：“从矢量数据寄存器搬出第一个元素到UB的接口，忽略mask”给出焦点端事实；“接口调用后自动更新目的操作数地址。”给出候选端事实。基础接口定义首元素对齐存储，postupdate 变体在相同搬运语义上增加目的地址自动更新；二者直接支持调用变体选择。
 <!-- cannbot:related:end -->

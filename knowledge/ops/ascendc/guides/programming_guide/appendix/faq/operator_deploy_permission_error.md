@@ -23,9 +23,3 @@ platforms: [agnostic]
 ## 处理步骤
 -   方法一：使用--install-path参数指定安装目录（参考指定目录安装）。运行用户需要对指定的安装路径有可读写权限。安装后执行生成的set_env.bash脚本，由该脚本配置算子运行时查找路径。
 -   方法二：联系CANN软件包安装用户修改默认安装路径下的vendors目录权限，比如修改为777：
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [调用算子时出现无法打开config.ini的报错](config_ini_open_error.md)（`related`）：调用算子时出现无法打开config.ini的报错 与《算子包部署时出现权限不足报错》的实质衔接是：config.ini 打开失败要沿文件名、权限、架构配置和构建/调试工具链排查；所保留卡均提供具体检查或恢复动作。
-<!-- cannbot:related:end -->

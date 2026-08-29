@@ -20,10 +20,3 @@ platforms: ['950']
 参数：T: 目的操作数和源操作数的数据类型。；mode: MaskMergeMode枚举类型。选择MERGING模式或ZEROING模式。 • ZEROING模式下，mask未筛选的元素在dstReg中置零。 • MERGING模式当前不支持。；U: 目的操作数和源操作数的RegTensor类型，例如RegTensor ，由编译器自动推导，用户不需要填写。；dstReg(输出): 目的操作数。 类型为RegTensor。；srcReg0(输入): 源操作数。 类型为RegTensor。；srcReg1(输入): 源操作数。 类型为RegTensor。；mask(输入): 源操作数元素操作的有效指示，详细说明请参考MaskReg。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AbsSub](../../memory_vector_compute/composite_compute/abs_sub_isasi.md)（`related`）：两者都执行逐元素 abs(src0-src1)，但 focal 从 LocalTensor 直接计算，Reg 版本以 RegTensor+mask 工作；可按内存/寄存器编程模型迁移。
-- [AscAbsSub](../../../c_api/reg/compound_compute/asc_abs_sub.md)（`related`）：AscAbsSub 是同一 Reg 硬件语义的 C API 入口，便于在 C 指针与 C++ RegTensor 路线间对照签名。
-<!-- cannbot:related:end -->

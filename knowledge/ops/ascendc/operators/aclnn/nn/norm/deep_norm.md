@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/config/ascend950/deep_norm_binary.json
     role: implementation
 created_at: "2026-08-25T17:51:52Z"
-updated_at: "2026-08-25T17:51:52Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1236,9 +1236,9 @@ FP32 resident body 直接在 `gx_local` 写 `alpha*x+gx`，复制到输出 Queue
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` config 有 FP16/BF16/FP32 bins | 公开支持；`ascend910_93` config 有同三 bins | 公开 README/API 明确不支持；虽然存在 OpDef/config 实现信号，构成发布冲突，因此不发布 `_a5` 卡 |
+| 支持状态 | 公开支持；`ascend910b` config 有 FP16/BF16/FP32 bins | 公开支持；`ascend910_93` config 有同三 bins | 公开 README/API 明确不支持；虽然存在 OpDef/config 实现信号，构成发布冲突，因此不发布 `_950` 卡 |
 | Host/Launcher | 共用 `Tiling4DeepNorm` 与 12 keys | 同 A2 | 不进入正式知识 |
 | Kernel/资源 | 共用 `deep_norm` AIV_VECTOR body；A2/A3 的 DataCopyPad 分支 | 同 A2 | 不进入正式知识 |
 
@@ -1259,7 +1259,7 @@ FP32 resident body 直接在 `gx_local` 写 `alpha*x+gx`，复制到输出 Queue
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/平台 | `norm/deep_norm/README.md` | 产品支持表、`aclnnDeepNorm` 调用说明 | A2/A3 支持、A5 不支持 |
+| 入口声明/平台 | `norm/deep_norm/README.md` | 产品支持表、`aclnnDeepNorm` 调用说明 | A2/A3 支持、950 不支持 |
 | 入口声明/约束 | `norm/deep_norm/docs/aclnnDeepNorm.md` | `aclnnDeepNormGetWorkspaceSize/aclnnDeepNorm` | 公开 API、平台、dtype/shape、状态语义 |
 | 入口实现 | `norm/deep_norm/op_host/deep_norm_def.cpp` | `ops::DeepNorm`、`OP_ADD` | AutoContiguous、dtype、属性、平台注册 |
 | infer | `norm/deep_norm/op_host/deep_norm_infershape.cpp` | `InferShape4DeepNorm/InferDataType4DeepNorm` | 输出 shape/dtype |
@@ -1268,7 +1268,7 @@ FP32 resident body 直接在 `gx_local` 写 `alpha*x+gx`，复制到输出 Queue
 | Kernel entry/body | `norm/deep_norm/op_kernel/deep_norm.cpp` | `deep_norm/KernelDeepNorm<T>` | router、四类实现、内存、同步、精度、tail |
 | 构建接线 | `norm/deep_norm/op_host/config/ascend910b/deep_norm_binary.json` | `DeepNorm_01/02/03` | A2 FP16/BF16/FP32 bins |
 | 构建接线 | `norm/deep_norm/op_host/config/ascend910_93/deep_norm_binary.json` | `DeepNorm_01/02/03` | A3 FP16/BF16/FP32 bins |
-| 平台冲突审计 | `norm/deep_norm/op_host/config/ascend950/deep_norm_binary.json` | `DeepNorm_01/02/03` | A5 实现信号；不能覆盖公开文档的不支持结论 |
+| 平台冲突审计 | `norm/deep_norm/op_host/config/ascend950/deep_norm_binary.json` | `DeepNorm_01/02/03` | 950 实现信号；不能覆盖公开文档的不支持结论 |
 
 ### 实现复用检查
 
@@ -1279,4 +1279,10 @@ FP32 resident body 直接在 `gx_local` 写 `alpha*x+gx`，复制到输出 Queue
 | workspace/内存 | workspace=1 未读；UB 按 short/resident/Extra/Common 分配 | depth=1、RU、D/U 容量与 cache lifetime | `Tiling4DeepNorm`、`Init*` |
 | 同步 | Queue + PIPE_V + V_S/S_V/S_MTE3/MTE3_S | 标量读写和原地复用前 barrier 不得省略 | `ReduceSumCustom`、Compute/CopyOut helpers |
 | 精度与尾块 | FP16/BF16 升 FP32；BF16 RINT；D mask、row_tail、lsize | cast mode、`1/D`、epsilon 顺序和有效写范围 | `Compute*`、`CopyOut/CommonCopyOutRes` |
-| 失败边界 | shape gate、12 legal keys、A5 文档不支持 | 不发布 A5，不把 empty tensor 文档声明覆盖 Tiling 实际失败 | `CheckInputOutputShape*`、README/API 平台表 |
+| 失败边界 | shape gate、12 legal keys、950 文档不支持 | 不发布 950，不把 empty tensor 文档声明覆盖 Tiling 实际失败 | `CheckInputOutputShape*`、README/API 平台表 |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepNormGrad A2/A3 ACLNN 算子知识](deep_norm_grad.md)（`related`）：｜ 计算语义 ｜ 对每个归一化行先算 `x' = alpha*x + gx`，再算 `mean=Σx'/D`、`rstd=1/sqrt(Σ(x'-mean)^2/D+epsilon)`、`y=(x'-mean)*rstd*gamma+beta`。 ｜；｜ 计算语义 ｜ 将输入展平为 `［N,D］`，计算 DeepNorm 对 `x/gx/gamma/beta` 的反向梯度 `dx/dgx/dgamma/dbeta` ｜。DeepNorm 卡定义前向归一化与 mean/rstd，DeepNormGrad 卡消费该运算语义并计算 x、gx、gamma、beta 的反向梯度，是同一训练算子链的前后向节点。
+<!-- cannbot:related:end -->

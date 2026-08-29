@@ -25,9 +25,7 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Ascend950 Reg 命名空间无 Erf/Tanh 封装](../../../../../runbooks/compilation/ascend950_reg_erf_tanh.md)（`exemplifies`）：该 runbook 证明 dav-3510 Reg 命名空间没有 Erf 封装，需选用高阶 Erf 或已支持的基础运算组合，给出 API 层选择边界。
-- [GeGLU](../../activation_functions/ge_glu_interface/ge_glu.md)（`related`）：GeGLU 与《Erf》的实质衔接是：GeGLU 直接调用 GELU 门控语义并要求独立临时缓冲；接口页和两种空间查询决定 tiling，GELU/Erf 卡解释其激活公式。
-- [Erf接口](erf_interface.md)（`same_topic`）：Erf说明按元素做误差函数计算，也称为高斯误差函数。
-- [GetErfMaxMinTmpSize](get_erf_max_min_tmp_size.md)（`same_topic`）：GetErfMaxMinTmpSize 与《Erf》的衔接是：Erf 临时空间查询以 ErfMaxMinTmpSize 的计算因子和接口约束为依据，查询结果直接决定 Erf 调用可安全使用的 tmpBuffer 大小。
-- [GetErfTmpBufferFactorSize](get_erf_tmp_buffer_factor_size.md)（`same_topic`）：factor-size 允许在固定临时空间下反推 Erf 单次最大元素数，与 MaxMin 查询互补。
+- [ForeachErf A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_erf.md)（`related`）：焦点算子路线明确为“R-002 FLOAT32 直接 `Erf<float,false>`”，候选 API 的计算合同是“按元素做误差函数计算（高斯误差函数，error function）。”；该 primitive 是 ForeachErf FLOAT32 Device 路线的直接计算节点。
+- [GetErfMaxMinTmpSize](get_erf_max_min_tmp_size.md)（`related`）：“host侧Tiling接口，用于获取Erf接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”与“临时空间大小通过GetErfMaxMinTmpSize获取。”是双方正文中的具体合同。Tiling 卡说明如何取得最大最小临时空间，Erf 计算卡明确把该接口作为 workspace 尺寸来源，二者组成 Host 估算到 Kernel 调用的前置链。
+- [GetErfTmpBufferFactorSize](get_erf_tmp_buffer_factor_size.md)（`related`）：“推算公式：currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。”；“接口参数：dstTensor为输出操作数；srcTensor为输入操作数，TPosition支持VECIN/VECCALC/VECOUT，数据类型需与dstTensor一致；sharedTmpBuffer为临时缓存；calCount为参与计算元素个数。”。factor 接口反推可计算元素规模，Erf 接口消费 sharedTmpBuffer 和 calCount，构成 Tiling 到计算调用的直接合同。
 <!-- cannbot:related:end -->

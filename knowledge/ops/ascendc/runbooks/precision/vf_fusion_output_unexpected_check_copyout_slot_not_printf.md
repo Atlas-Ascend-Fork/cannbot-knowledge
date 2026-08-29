@@ -122,8 +122,5 @@ agent 第一反应归因"asc_vf_call async + 3510 无 asc_sync_vec + V_MTE3 flag
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DumpTensor](../../apis/simd_api/basic_api/debug_interface/onboard_print/dump_tensor.md)（`exemplifies`）：《DumpTensor》说明打印Tensor内容并支持自定义标签，可选传入Shape信息按指定维度排列展示数据。；《双 VF 融合输出非预期 先排 CopyOut slot 勿用 PRINTF》说明VF 融合(asc_vf_call/__simd_vf__)kernel 输出非预期(全零/错误)时，先排除 CopyOut buffer slot/参数顺序/buffer 映射等非 VF 因素，勿在 __simd_vf__ 函数内用 PRINTF(语义不兼容致观测假象)，用控制变量实验+参考实现交叉验证。。二者在DumpTensor/asc_dump、checkpoint、开关和上板调试工具构成设备张量观测链；VF和精度卡给出不可用PRINTF时的替代证据路径上存在可执行的直接衔接。
-- [Printf](../../apis/utils_api/tuning_interface/printf.md)（`exemplifies`）：该 runbook 明确说明 VF 融合异常时 device PRINTF 不稳定，先用 host copyout/slot 映射核对数据链，给出 Printf 的调试边界。
-- [asc_vf_call](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/asc_vf_call.md)（`exemplifies`）：Runbook围绕 asc_vf_call 启动 __simd_vf__ 的实际融合排障，API 卡确认入口必须是非成员/静态函数、使用 __simd_vf__ 且指针指向 UB。
-- [VfFusionOptimization](../../guides/operator_practice/simd_operator_optimization/vector_compute/vf_optimization/vf_fusion_optimization.md)（`related`）：优化指南给出 VF 融合以减少中间 UB 和同步的目标，Runbook 则提供融合输出异常时先查 CopyOut slot、参数和观测手段的验证流程。
+- [VfFusionOptimization](../../guides/operator_practice/simd_operator_optimization/vector_compute/vf_optimization/vf_fusion_optimization.md)（`related`）：真因是 CopyOut slot 指向错误 buffer（B2 而非 B1）；编译器首先会做融合前的合法性检查。指南说明 VF 融合的合法性、收益与自动同步，Runbook 则给出融合实现输出异常时先排 CopyOut 映射和禁用 VF 内 PRINTF 的验证顺序，避免把非 VF 错误误判为融合机制缺陷。
 <!-- cannbot:related:end -->

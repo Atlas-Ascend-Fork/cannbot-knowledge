@@ -28,12 +28,3 @@ platforms: ['950', a2, a3]
 - 使用该接口时，若采用bisheng命令行编译，开发者需要手动链接相关的静态库；而使用CMake编译时，框架会自动处理链接问题，无需开发者额外关注。具体编译命令如下：通过--cce-aicpu-laicpu_api为Device链接libaicpu_api.a，通过--cce-aicpu-L指定libaicpu_api.a的库路径。
 
 支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品AI Core、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AI CPU算子编译](../../guides/programming_guide/compilation_and_execution/operator_compilation/ai_cpu_operator_compilation.md)（`explains`）：assert 依赖 AI CPU 的 .aicpu/.asc 双文件编译、`>>` 调用和 libaicpu_api.a 链接；编译指南给出这些落地步骤。
-- [AI CPU编程（编程模型）](../../guides/programming_guide/programming_model/ai_cpu_programming.md)（`explains`）：AI CPU 编程模型解释 `.aicpu` 核函数如何由 `.asc` 中的 `>>` 入口调用，补全 assert 所在的设备执行域。
-- [Assert](../simd_api/basic_api/debug_interface/exception_detection/assert.md)（`related`）：两卡都以条件失败触发设备侧诊断，但目标接口运行在 SIMD/SIMT AI Core 域；对照可防止把 AI CPU 断言的链接和调用规则套到 AI Core。
-- [Assert](../utils_api/tuning_interface/assert.md)（`related`）：Utils 调测断言覆盖 SIMD/SIMT 融合编译场景，而 AI CPU assert 覆盖 AI CPU Kernel；二者形成按执行域选择断言接口的边界。
-<!-- cannbot:related:end -->

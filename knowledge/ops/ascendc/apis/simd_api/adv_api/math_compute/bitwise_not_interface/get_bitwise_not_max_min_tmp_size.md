@@ -29,8 +29,6 @@ Kernel侧BitwiseNot接口的计算需要开发者预留 申请临时空间，本
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BitwiseNot](bitwise_not.md)（`related`）：BitwiseNot 是该尺寸查询所服务的设备侧计算；尺寸结果需随 Tiling 传给它使用。
-- [BitwiseNot接口](bitwise_not_interface.md)（`related`）：BitwiseNot 的显式 sharedTmpBuffer 需由 MaxMin 查询得到合法范围。
-- [GetBitwiseNotTmpBufferFactorSize](get_bitwise_not_tmp_buffer_factor_size.md)（`same_topic`）：GetBitwiseNotTmpBufferFactorSize 与《GetBitwiseNotMaxMinTmpSize》的实质衔接是：BitwiseNot 的 factor 查询与 MaxMin 查询及 kernel 调用配套，才能确定 sharedTmpBuffer 大小。
-- [LogicalNot](../logical_not_interface/logical_not.md)（`same_topic`）：LogicalNot 与《GetBitwiseNotMaxMinTmpSize》的实质衔接是：LogicalNot 的 Host MaxMin/factor 查询为 Kernel 分配临时空间；BitwiseNot 对照明确逻辑真假取反与逐 bit 取反不是同一语义。
+- [BitwiseNot](bitwise_not.md)（`same_topic`）：逐比特对输入进行取反。；Kernel侧BitwiseNot接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小；BitwiseNot 计算卡定义逐比特取反与整型 dtype，Host 查询卡为该 Kernel 计算准备平台、shape 和类型相关的临时空间区间。
+- [GetBitwiseNotTmpBufferFactorSize](get_bitwise_not_tmp_buffer_factor_size.md)（`same_topic`）：“开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用”先确定 BitwiseNot 可用的临时空间；“通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量”再把选定空间换算成单次分块上限。
 <!-- cannbot:related:end -->

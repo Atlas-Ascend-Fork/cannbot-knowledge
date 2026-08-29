@@ -29,5 +29,5 @@ OpAICoreConfig类，请参考OpAICoreConfig。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SetCheckSupport](../op_ai_core_def/set_check_support.md)（`related`）：NeedCheckSupportFlag=true 只会在已通过 SetCheckSupport 注册回调时触发 dtype/shape 校验；二者必须配套。
+- [SetCheckSupport](../op_ai_core_def/set_check_support.md)（`related`）：SetCheckSupport 卡要求“需要将NeedCheckSupportFlag参数配置为true”；NeedCheckSupportFlag 卡说明“框架会调用通过SetCheckSupport设置的算子参数校验函数”。回调注册和调用开关是融合阶段支持性校验的共同条件。
 <!-- cannbot:related:end -->

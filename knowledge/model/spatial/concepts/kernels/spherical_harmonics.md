@@ -50,3 +50,9 @@ Python 封装（[`ops/spherical_harmonics.py`](https://gitcode.com/cann/cann-rec
 - 枢纽：[3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md)
 - 下游：[projection-3dgs](projection_3dgs.md)（消费 SH 颜色，反向产 `v_colors`）
 - 跨域：[ascendc](../../../inference/concepts/frameworks/ascendc.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [3D Gaussian Splatting 昇腾 Atlas A2 训推优化实践](../algorithms/3d_gaussian_splatting.md)（`related`）：“球谐（Spherical Harmonics, SH）着色是 3DGS 渲染流程的第一步：由相机到高斯球的视线方向 `dirs` 与每个高斯球的球谐系数 `coeffs` 计算出视角相关颜色，再送入投影与渲染。”与“1. **球谐着色** `spherical_harmonics(sh_degree, rays_d, shs)` —— 由视线方向 + 球谐系数算出每个高斯球颜色。见 ［spherical-harmonics］(../kernels/spherical_harmonics.md)。”提供双方正文证据。算子卡产出视角相关颜色，算法卡把该调用固定为 3DGS 光栅化第一阶段，直接连接单算子合同与整条渲染流水。
+<!-- cannbot:related:end -->

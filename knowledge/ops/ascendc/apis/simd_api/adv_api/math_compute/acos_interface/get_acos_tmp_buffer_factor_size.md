@@ -26,8 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Acos](acos.md)（`related`）：当已有固定临时空间预算时，GetAcosTmpBufferFactorSize 可反推 Acos 单次可处理元素量，补足容量受限时的 tiling 决策。
-- [Acos接口](acos_interface.md)（`related`）：Acos接口 负责“提供Acos反余弦计算接口及其Tiling临时空间大小查询接口，包含Acos、GetAcosMaxMinTmpSize等”；GetAcosTmpBufferFactorSize 负责“获取Acos接口的maxLiveNodeCount和extraBuf，用于推算固定空间下单次最大计算元素数”。
-- [GetAcosMaxMinTmpSize](get_acos_max_min_tmp_size.md)（`related`）：GetAcosMaxMinTmpSize 与《GetAcosTmpBufferFactorSize》的实质衔接是：Acos 的 host 临时空间查询必须与 kernel Acos、接口封装及 factor-size 推算使用同一 shape/typeSize/复用策略。
-- [更多样例（数学计算）](../more_examples.md)（`related`）：样例三需分别计算 Asin、Acos 的单次最大元素数并取较小值，目标接口提供 Acos 这一半的 factor 参数。
+- [Acos](acos.md)（`same_topic`）：该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。 临时空间大小BufferSize的获取方式请参考GetAcosMaxMinTmpSize。 因子接口从已有 Buffer 反推 calCount，Acos 本体消费由 Tiling 确定的 sharedTmpBuffer，二者闭合缓存与分块配置。
 <!-- cannbot:related:end -->

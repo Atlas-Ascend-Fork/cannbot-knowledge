@@ -37,7 +37,6 @@ __aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetAtanMaxMinTmpSize](get_atan_max_min_tmp_size.md)（`related`）：GetAtanMaxMinTmpSize 在 Host 侧给出 Atan Kernel 的临时空间上下界，结果直接决定 sharedTmpBuffer 分配。
-- [GetAtanTmpBufferFactorSize](get_atan_tmp_buffer_factor_size.md)（`related`）：factor 查询返回的 maxLiveNodeCount/extraBuf 用于按已分配临时空间推算 Atan 单次 calCount，直接决定 Kernel 侧 Atan 的分块规模。
-- [Atan接口](atan_interface.md)（`same_topic`）：《Atan接口》处理“提供Atan反正切计算接口及其Tiling临时空间大小查询接口，包含Atan、GetAtanMaxMinTmpSize等。”。《Atan》明确提供“按元素做反正切运算，支持泰勒展开和多项式逼近两种算法配置”，其参数、调用或验证步骤直接接入Atan Kernel 调用、临时空间查询和 SIMT 对应实现。
+- [GetAtanMaxMinTmpSize](get_atan_max_min_tmp_size.md)（`related`）：不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。；kernel侧Atan接口的计算需要开发者预留 申请临时空间。左卡的 Atan Kernel 需要独立 sharedTmpBuffer，右卡在 Host 侧按 shape、dtype 与复用配置给出其合法空间范围；右卡结果直接决定左卡缓冲区的申请大小。
+- [GetAtanTmpBufferFactorSize](get_atan_tmp_buffer_factor_size.md)（`related`）：该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。；template <typename T, bool isReuseSource = false, const AtanConfig& config = defaultAtanConfig> __aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor, const LocalTensor<uint8_t>& sharedTmpBuffer, const uint32_t calCount)；Host 侧系数用于反推单次元素上限，恰好约束带 sharedTmpBuffer 与 calCount 的 Atan 重载如何切分计算。
 <!-- cannbot:related:end -->

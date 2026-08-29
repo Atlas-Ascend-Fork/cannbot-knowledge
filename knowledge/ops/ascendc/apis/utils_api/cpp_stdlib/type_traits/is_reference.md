@@ -26,10 +26,3 @@ platforms: ['950', a2, a3]
 -   false：Tp不是引用类型。
 
 平台支持：Ascend 950PR/950DT、Atlas A3 训练/推理、Atlas A2 训练/推理系列支持，其他产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [add_lvalue_reference](add_lvalue_reference.md)（`related`）：add_lvalue_reference 构造 T&，is_reference 可验证构造后的类型是否落入引用分支；二者用于编译期引用限定的生成与检查。
-- [remove_reference](remove_reference.md)（`related`）：is_reference 先判定 Tp 是否为 T&/T&&，remove_reference 再把引用类型规范化为底层类型，是泛型分派中的检测—变换链。
-<!-- cannbot:related:end -->

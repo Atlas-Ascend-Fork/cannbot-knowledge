@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hgtx2](_hgtx2.md)（`related`）：> 是相反方向谓词，可用于条件反转诊断。
-- [__hlex2](../../half_type/half2_compare_functions/_hlex2.md)（`related`）：bfloat16x2 版本保持相同逐 lane <= 语义，用于跨两种 16bit 浮点输入实现对照。
-- [__hblex2](_hblex2.md)（`same_topic`）：hlex2 返回逐分量结果，而 hblex2 合并成单 bool，按输出粒度选型。
-- [__hleux2](_hleux2.md)（`same_topic`）：__hleux2 与《__hlex2》的实质衔接是：__hleux2 返回 unordered ≤ 的双 lane 数值结果；mask 版本、ordered 版本、反向 ≥/> 与 isnan 共同限定 NaN 时 true 的语义及返回形态。
-- [__hlex2_mask](_hlex2_mask.md)（`same_topic`）：Mask 版本输出逐 lane 条件 mask。
+- [__hlex2_mask](_hlex2_mask.md)（`same_topic`）：功能：比较两个bfloat16x2_t类型数据的两个分量，如果分量满足第一个数小于或等于第二个数，则对应比较结果为1.0，否则为0.0。；功能：比较两个bfloat16x2_t类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量满足第一个数小于或等于第二个数，则对应16位掩码为0xFFFF，否则为0x0。。两接口执行同一 bfloat16x2 分量小于等于比较，差别是普通版返回 1.0/0.0 向量，mask 版返回打包的 0xFFFF/0x0 位掩码。
 <!-- cannbot:related:end -->

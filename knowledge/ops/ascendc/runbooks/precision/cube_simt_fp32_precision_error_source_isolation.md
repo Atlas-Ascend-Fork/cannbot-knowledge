@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.precision", "topic.programming_model.execution_m
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 ---
 
@@ -28,7 +28,7 @@ platforms: ["950"]
 ## 系统信息
 
 - **工具链**：CANN 9.2.0，DrivingSDK（`customize_arch35=ascend950`），AscendC kernel + DumpTensor。
-- **目标平台**：Ascend950（A5）。
+- **目标平台**：Ascend950（950）。
 - **目录布局**：算子源在 `/mnt/workspace/gitCode/cann/cloud-ops-turbo/driving/cloud_sparse_inverse_conv3d_with_matmul/`（`op_kernel/*.h`、`op_kernel/*.cpp`、`op_host/*`）；CPU golden 与 dump 分析在 `/mnt/workspace/gitCode/cann/inverse_demo.py`、`compare_kidx0.py`、`result.csv`。
 - **相关文件清单**（与事件流实际读写一一对应）：
   - `op_kernel/cloud_sparse_inverse_conv3d_with_matmul.h` — `Process` AIV 批切分循环、`OutFeaturesScatterAdd`、`CalOutFeaturesMatmul`
@@ -213,8 +213,8 @@ if ASCEND_IS_AIV {
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DumpTensor](../../apis/simd_api/basic_api/debug_interface/onboard_print/dump_tensor.md)（`exemplifies`）：《DumpTensor》说明打印Tensor内容并支持自定义标签，可选传入Shape信息按指定维度排列展示数据。；《稀疏反卷积精度误差源隔离配方》说明用 K=1/inChannels=1/单核/SIMT 线程=1 退化测试与 kIdx=0 DumpTensor 对比，逐层隔离 Cube MatMul 与 SIMT ScatterAdd 的 FP32 误差贡献。。二者在DumpTensor/asc_dump、checkpoint、开关和上板调试工具构成设备张量观测链；VF和精度卡给出不可用PRINTF时的替代证据路径上存在可执行的直接衔接。
-- [SIMT接口精度标准汇总](../../apis/appendix/simt_interface_precision_standard_summary.md)（`exemplifies`）：配方的 SIMT 分支必须按接口定义的误差标准判断偏差；该汇总提供 SIMT 数学接口的精度基线，避免把合法近似误判为故障。
-- [FP16 scatter 归约逐次回写放大相消误差](low_precision_scatter_reduction_needs_fp32_accumulator.md)（`related`）：当 scatter-add 与 Cube MatMul 混合后精度超阈，隔离配方通过单核、单线程和 kIdx=0 dump 区分 scatter 累加与 Cube FP32 内积误差，避免误改 accumulator。
-- [含有Matmul高阶API的算子精度问题](../../guides/programming_guide/appendix/faq/matmul_advanced_api_precision.md)（`related`）：配方的 Cube 分支需要先排除 Matmul 高阶 API 的输入格式、tiling 和累加精度问题；该 FAQ 给出对应验证顺序。
+- [CrossCoreSetFlag](../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)（`exemplifies`）：“CrossCoreSetFlag<0x4, PIPE_MTE3>(flagId);”是被诊断的 Cube/AIV 混合代码中的上报动作；“CrossCoreSetFlag：AI Core中的AIC/AIV在完成本核前置位的pipe流水任务后，调用该接口，向调度模块上报本核任务已完成。调度模块收集所有参与核的上报信息，作为全局完成标志。”给出其完成语义，可核对 dump 前的数据可见性和同步边界。
+- [CrossCoreWaitFlag](../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)（`exemplifies`）：“CrossCoreWaitFlag<0x4>(flagId);”是被诊断代码的等待动作；“由于当Kernel类型为KERNEL_TYPE_AIC_ONLY或KERNEL_TYPE_AIV_ONLY时，硬件不会开启调度模块，也就无法正常进行核间同步”给出该等待能生效的 Kernel 类型前提，可用于核验 Cube 结果到 AIV ScatterAdd 的同步配置。
+- [DumpTensor](../../apis/simd_api/basic_api/debug_interface/onboard_print/dump_tensor.md)（`exemplifies`）：“**kIdx=0 DumpTensor 直接对比**：在 kernel 内对 kIdx=0 dump Cube MatMul 的输入与输出，与 CPU 同 kIdx 的 partial 逐元素对比，直接量化 Cube 累加差异。”给出实际探针；“该接口可以打印Tensor的内容，同时支持打印自定义的标签（仅支持uint32_t数据类型的信息），比如打印当前行号等。”给出 DumpTensor 的数据与标签合同，直接支撑误差层级定位。
+- [asc_atomic_add](../../apis/simt_api/atomic_operations/asc_atomic_add.md)（`exemplifies`）：“asc_atomic_add(outFeaturesGmPtr + gmOffset, partialOutPtr［ubOffset］);”展示 ScatterAdd 的实际原子累加；“原子操作保证对同一地址的读改写过程具有原子性，但不保证多个线程之间的执行顺序。对于浮点累加顺序敏感场景，结果可能随线程调度变化而不同。”给出为何 SIMT 线程退化测试能隔离 FP32 顺序误差的接口边界。
 <!-- cannbot:related:end -->

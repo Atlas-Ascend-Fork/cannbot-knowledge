@@ -84,3 +84,10 @@ if image_features is not None and n_masked_elements != image_features.numel():
 - 同域运动控制模型：[lqc](../locomotion/lqc.md)
 - 跨域：[fused-infer-attention-score](../../../inference/concepts/kernels/fused_infer_attention_score.md)（FA/注意力融合）
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Flow-Matching Action Expert（流匹配动作专家）](../modules/flow_matching_action_expert.md)（`related`）：模型本体基于 Qwen3-VL 类多模态主干（VLM）+ 扩散式动作头（flow matching 积分），属 VLA 架构；Pi0 把机器人策略表示为一个**条件去噪扩散 / 流匹配过程**，整体拆成「慢系统」VLM 主干 + 「快系统」动作专家两段；Alpamayo-R1 的智驾轨迹头与 Pi0 动作专家都由 VLM 条件驱动流匹配生成连续动作，后者给出理解前者慢系统与快系统边界的架构参照。
+- [npu_fused_infer_attention_score (v1 / v2)](../../../inference/concepts/kernels/fused_infer_attention_score.md)（`related`）：FA 实现切换在 `src/alpamayo_r1/models/base_model.py` 模型初始化（`config.attn_implementation='flash_attention_2'`）。；昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算；Alpamayo-R1 的注意力实现切换需要昇腾 FlashAttention 能力，FIA 卡解释融合注意力主体计算、布局与缓存入口，可辅助选择和验证该类替换。
+<!-- cannbot:related:end -->

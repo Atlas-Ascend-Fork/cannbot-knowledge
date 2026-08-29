@@ -28,5 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Ilogbf](ilogbf.md)（`same_topic`）：Logbf 与《Ilogbf》的实质衔接是：Logbf 返回浮点形式的二进制指数，Ilogbf 返回整数形式的同一指数任务，两者特殊值契约可直接对照。
+- [Ilogbf](ilogbf.md)（`related`）：功能：计算以2为底，输入数据的对数，并对结果向下取整，返回整数。；功能：计算以2为底，输入数据的对数，并对结果向下取整，返回浮点数。。两接口共享有限非零输入的指数提取语义，但返回类型和零、无穷、NaN 的特殊值合同不同，选型时需成对比较。
 <!-- cannbot:related:end -->

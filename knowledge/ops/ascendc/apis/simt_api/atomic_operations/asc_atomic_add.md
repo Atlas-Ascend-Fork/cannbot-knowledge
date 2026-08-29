@@ -23,9 +23,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [原子操作指令优化](../../../guides/operator_practice/simt_operator_optimization/instruction_optimization/atomic_instruction_optimization.md)（`explains`）：《原子操作指令优化》处理“【描述】SIMT编程模式下，多个线程更新同一个内存地址时需要使用原子操作接口保证更新结果正确。原子操作属于高开销指令，其耗时由两方面决定：一是同一地址上的原子操作只能排队依次执行，二是单条原子指令的处理开销。”。《asc_atomic_add》明确提供“对Unified Buffer或Global Memory中的数据与指定数据执行原子加操作，即将指定数据累加到这些内存区域的数据中。”，其参数、调用或验证步骤直接接入原子写优化的冲突模型、AtomicAdd/Inc 实现和性能验证。
-- [AtomicAdd](../../simd_api/basic_api/atomic_operations/atomic_add.md)（`related`）：基础 AtomicAdd 提供相同 GM 原子读改写/返回旧值语义，是 C++ 基础 API 的直接映射。
-- [asc_atomic_sub](asc_atomic_sub.md)（`related`）：AscAtomicAdd 是同一 SIMT 地址与返回旧值模型下的加法对偶，可据更新方向选择且共享并发顺序不确定性。
-- [asc_set_store_atomic_config_v2（废弃）](../../simd_api/c_api/simd_atomic/asc_set_store_atomic_config_v2_deprecated.md)（`related`）：废弃卡明确要求原子加迁移到 asc_atomic_add；目标接口给出原子读改写、返回旧值、内存空间和浮点顺序敏感约束。
-- [AscAtomicAdd](../../simd_api/c_api/scalar_compute/asc_atomic_add.md)（`same_topic`）：SIMD 标量 AscAtomicAdd 与 SIMT asc_atomic_add 都对目标地址做原子读改加并返回旧值；SIMT 版本还支持 UB，而 SIMD 标量卡限定 GM。
+- [稀疏反卷积精度误差源隔离配方](../../../runbooks/precision/cube_simt_fp32_precision_error_source_isolation.md)（`exemplifies`）：“asc_atomic_add(outFeaturesGmPtr + gmOffset, partialOutPtr［ubOffset］);”展示 ScatterAdd 的实际原子累加；“原子操作保证对同一地址的读改写过程具有原子性，但不保证多个线程之间的执行顺序。对于浮点累加顺序敏感场景，结果可能随线程调度变化而不同。”给出为何 SIMT 线程退化测试能隔离 FP32 顺序误差的接口边界。
+- [原子操作指令优化](../../../guides/operator_practice/simt_operator_optimization/instruction_optimization/atomic_instruction_optimization.md)（`explains`）：“- asc_atomic_add接口性能对比样例：包含16个场景、归为5组对照实验，量化内存层级、原子累加组织方式、是否使用返回值、同一地址上的竞争程度与目标地址的Sector分布对原子加性能的影响。每组对照仅改变一个属性，其余配置保持一致。”与“对Unified Buffer或Global Memory中的数据与指定数据执行原子加操作，即将指定数据累加到这些内存区域的数据中。”。优化指南围绕 asc_atomic_add 的内存层级、返回值和竞争做对照，API 卡提供原子加合同。
 <!-- cannbot:related:end -->

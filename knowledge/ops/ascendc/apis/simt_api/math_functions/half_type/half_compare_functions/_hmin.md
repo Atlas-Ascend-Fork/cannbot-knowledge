@@ -28,7 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hmax](_hmax.md)（`related`）：__hmax is the complementary extrema selector and differs from __hmin in both comparison direction and some NaN/zero tie outcomes.
-- [__hmin](../../bfloat16_type/bfloat16_compare_functions/_hmin.md)（`related`）：half __hmin 保持相同二元最小值接口但输入/返回类型为 half，可用于跨 half/bfloat16 实现迁移时核对类型差异。
-- [__hmin_nan](_hmin_nan.md)（`same_topic`）：《__hmin》明确“获取两个输入数据中的最小值。”；它与《__hmin_nan》的“获取两个输入数据中的最小值。任一输入为nan时结果为nan。”在实际调用参数、数据流或结果校验上直接衔接。
+- [__hmin_nan](_hmin_nan.md)（`same_topic`）：返回值：两个输入数据中的最小值。本接口受全局饱和寄存器的影响，。特殊值：±0→0；nan→normal；nan→nan；-inf→-inf；(normal,-inf)→-inf；inf→normal；(normal,inf)→normal。；返回值：两个输入数据中的最小值。特殊值：-0→x；(+0,-0)→y；nan→nan；(任意值,nan)→nan；-inf→-inf；(任意值,-inf)→-inf；inf→y。。两接口均求 half 标量最小值，但 __hmin_nan 明确传播任一 NaN，而 __hmin 的特殊值结果受全局饱和寄存器及操作数组合影响。
 <!-- cannbot:related:end -->

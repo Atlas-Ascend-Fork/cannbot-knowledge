@@ -26,9 +26,7 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Dequantize](dequantize.md)（`related`）：Dequantize 是将低精度结果恢复为高精度的逆向能力，常与 Quantize 构成压缩与恢复链。
-- [GetQuantizeMaxMinTmpSize](get_quantize_max_min_tmp_size.md)（`related`）：Quantize 的 sharedTmpBuffer 大小需由 Host 侧 max/min 查询按 shape 和 dtype 预算。
-- [AscendQuant](ascend_quant.md)（`same_topic`）：文档明确推荐用 Quantize 替代 AscendQuant；新接口保留量化任务并扩展 PER_GROUP 与舍入配置。
-- [GetDequantizeMaxMinTmpSize](get_dequantize_max_min_tmp_size.md)（`same_topic`）：GetDequantizeMaxMinTmpSize 与《Quantize》的实质衔接是：GetDequantizeMaxMinTmpSize 与 factor 查询共同选择 kernel 临时空间，Dequantize/CastDequant 是消费端，Quantize 是逆过程，SetDequantType 决定输出模式。
-- [GetQuantizeTmpBufferFactorSize](get_quantize_tmp_buffer_factor_size.md)（`same_topic`）：GetQuantizeTmpBufferFactorSize 与《Quantize》的实质衔接是：GetQuantizeTmpBufferFactorSize 用可用 UB 反推 Quantize 的单次元素数，GetQuantizeMaxMinTmpSize 给出另一种 Host 侧空间选择，Quantize kernel 是两类查询结果的直接消费方。
+- [AscendQuant](ascend_quant.md)（`related`）：“推荐使用Quantize替代本接口”；“推荐使用本接口替代AscendQuant，因其在PER_TENSOR/PER_CHANNEL场景扩展了舍入模式配置”。两卡明确给出从 AscendQuant 到 Quantize 的迁移方向和新增能力。
+- [GetQuantizeMaxMinTmpSize](get_quantize_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Quantize接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetQuantizeMaxMinTmpSize获取。。前者计算 Quantize 所需的临时空间上下界，后者明确 Quantize 的 sharedTmpBuffer 重载依赖该 helper，二者闭合 Host Tiling 选空间与 kernel 量化调用的任务链。
+- [GetQuantizeTmpBufferFactorSize](get_quantize_tmp_buffer_factor_size.md)（`related`）：“获取Quantize接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”给出固定 UB 下的容量因子，而“提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetQuantizeMaxMinTmpSize获取。”给出 Quantize 的临时缓存调用合同；组合后可安全推导量化 tile 的最大元素数。
 <!-- cannbot:related:end -->

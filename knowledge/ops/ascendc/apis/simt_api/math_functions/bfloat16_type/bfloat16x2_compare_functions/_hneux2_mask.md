@@ -29,10 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hgeux2_mask](_hgeux2_mask.md)（`related`）：hneux2_mask 是不等谓词；与 >= mask 对照可排查谓词选错和分支反转。
-- [__hneux2_mask](../../half_type/half2_compare_functions/_hneux2_mask.md)（`related`）：bfloat16x2 同名接口采用相同的 unordered-not-equal 分量 mask 编码，便于跨 half2/bfloat16x2 对照。
-- [__hequx2](_hequx2.md)（`same_topic`）：__hequx2 与《__hneux2_mask》的实质衔接是：hequx2 是 unordered equality（NaN 也为真）；mask、half2、ordered equality 与 unordered not-equal 入口直接界定返回形态和 NaN 分支。
-- [__hgtux2_mask](_hgtux2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hneux2_mask》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
-- [__hleux2](_hleux2.md)（`same_topic`）：__hleux2 与《__hneux2_mask》的实质衔接是：__hleux2 返回 unordered ≤ 的双 lane 数值结果；mask 版本、ordered 版本、反向 ≥/> 与 isnan 共同限定 NaN 时 true 的语义及返回形态。
-- [__hnex2_mask](_hnex2_mask.md)（`same_topic`）：__hnex2_mask 与 __hneux2_mask 都返回两 lane 的不等掩码，差异集中在 NaN 时 ordered/unordered 的 0x0000/0xFFFF 结果。
+- [__hneux2](_hneux2.md)（`same_topic`）：满足时对应结果为1.0，不满足时对应结果为0.0；满足时对应16位掩码结果为0xFFFF，不满足时对应16位掩码结果为0x0。两接口执行相同的 bfloat16x2 无序不等比较和 NaN 判定，差别是前者返回数值分量，后者返回可供掩码消费的两个 16 位字段。
 <!-- cannbot:related:end -->

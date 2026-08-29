@@ -43,8 +43,7 @@ Atlas 训练系列产品
 <!-- cannbot:related:start -->
 ## 相关
 
-- [直调共享库加载未定义平台符号—补齐CANN链接依赖](../../../runbooks/compilation/platform_manager_shared_library_link_dependencies.md)（`exemplifies`）：PlatformAscendCManager 正文明确要求包含 platform_ascendc.h 并链接 tiling_api、platform 动态库，正是 Runbook 处理的未定义符号依赖契约。
-- [AddPlatformInfo](../tiling_tuning/context_builder/add_platform_info.md)（`related`）：AddPlatformInfo 与《PlatformAscendCManager》的实质衔接是：AddPlatformInfo 把 PlatformInfo 注入 ContextBuilder，随后 BuildTiling/KernelRunContext 消费；PlatformAscendC/Manager 是平台能力信息的来源。
-- [PlatformAscendC](platform_ascend_c/platform_ascend_c.md)（`related`）：《PlatformAscendCManager》明确“Kernel直调场景下获取硬件平台信息的单例管理类，通过GetInstance获取PlatformAscendC指针以访问核数等平台信息。”；它与《PlatformAscendC》的“PlatformAscendC平台信息查询接口索引。”在实际调用参数、数据流或结果校验上直接衔接。
-- [PlatformAscendC简介](platform_ascend_c/platform_ascend_c_intro.md)（`related`）：《PlatformAscendC简介》的任务是“在实现Host侧的Tiling函数时，可能需要获取一些硬件平台的信息，来支撑Tiling的计算，比如获取硬件平台的核数等信息。PlatformAscendC类提供获取这些平台信息的功能。”。《PlatformAscendCManager》具体提供“Kernel直调场景下获取硬件平台信息的单例管理类，通过GetInstance获取PlatformAscendC指针以访问核数等平台信息。”，它直接用于PlatformAscendC 的获取入口、兼容性和链接/SoC 枚举故障。
+- [直调共享库加载未定义平台符号—补齐CANN链接依赖](../../../runbooks/compilation/platform_manager_shared_library_link_dependencies.md)（`exemplifies`）：“该 host 入口调用了 `platform_ascendc::PlatformAscendCManager::GetInstance()` 来取得 AIV 核数”；“使用该功能需要包含"tiling/platform/platform_ascendc.h"头文件，并在编译脚本中链接tiling_api、platform动态库”。API 卡的链接合同正是 Runbook 中 undefined symbol 的根因与修复依据。
+- [ArgMax 950 Direct Invoke 算子知识](../../../operators/direct/math/math/arg_max_950.md)（`related`）：“Direct `PlatformAscendCManager` 读取 AIV core/UB；显式 launcher”给出 ArgMax 950 Host 的平台查询动作；“通过该类的GetInstance方法可以获取一个PlatformAscendC类的指针，再通过该指针获取硬件平台相关信息”给出 manager 到平台对象的访问合同。
+- [Sigmoid 950 Direct Invoke 算子知识](../../../operators/direct/nn/activation/sigmoid_950.md)（`related`）：“`calc_sigmoid_tiling_params(totalLength, elementBytes)` 查询 AIV 核数和 UB 字节数；AIV 核数非正时回退为 1。”给出 Direct Host 的平台信息需求；“基于Kernel Launch算子工程，通过Kernel直调（Kernel Launch）方式调用算子的场景下，可能需要获取硬件平台相关信息，比如获取硬件平台的核数。PlatformAscendCManager类提供获取平台信息的功能：通过该类的GetInstance方法可以获取一个PlatformAscendC类的指针，再通过该指针获取硬件平台相关信息，支持获取的信息可参考PlatformAscendC。”给出直调场景的获取入口。
 <!-- cannbot:related:end -->

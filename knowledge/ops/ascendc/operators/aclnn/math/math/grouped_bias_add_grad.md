@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T11:07:13Z"
-updated_at: "2026-08-25T11:07:13Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1239,9 +1239,9 @@ Kernel 先为每组构造长度和原 group id，排序后用 `2*i+offset` 将�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 API 文档支持；OpDef/config/CMake `ascend910b` 支持 | 公开 API 文档支持；OpDef/config/CMake `ascend910_93` 支持 | API 文档写支持，但同目录 README 明确写不支持，发布证据冲突，未生成 A5 卡 |
+| 支持状态 | 公开 API 文档支持；OpDef/config/CMake `ascend910b` 支持 | 公开 API 文档支持；OpDef/config/CMake `ascend910_93` 支持 | API 文档写支持，但同目录 README 明确写不支持，发布证据冲突，未生成 950 卡 |
 | Host/Launcher | `arch32` Tiling | 同一 `arch32` Tiling | 实现接线指向 `arch35`/`grouped_bias_add_grad_apt`，因公开冲突不纳入本卡 |
 | Kernel/资源 | 同一 arch32 AIV body；实际 AIV 核数/UB 从平台读取 | 同左 | 固定仓存在不同 body，但本卡不跨平台引用 |
 

@@ -18,10 +18,3 @@ platforms: [agnostic]
 本节汇总介绍了一些主要的API的流水类型，以下内容针对如下型号生效： - Ascend 950PR/Ascend 950DT - Atlas A3 训练系列产品/Atlas A3 推理系列产品 - Atlas A2 训练系列产品/Atlas A2 推理系列产品 针对Ascend 950PR/Ascend 950DT：单个VF是PIPE_V流水，用户不需要管理VF和VF之间的同步，VF内的不同的Reg矢量接口存在数据依赖时需要调用LocalMemBar进行同步。 表1 Memory矢量计算API流水类型汇总 | API类型 | API接口名称 | 执行核（AIC/AIV） | 流水类型
 
 适用：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [C-API-Reg矢量计算接口理论性能汇总](c_api_reg_vector_compute_theoretical_perf_summary.md)（`related`）：C-API Reg 理论性能表需要结合 PIPE_V 流水及 LocalMemBar 依赖规则解释可达到的吞吐。
-- [Reg矢量计算接口指令单双发汇总](reg_vector_compute_interface_instruction_single_dual_issue_summary.md)（`related`）：流水归属决定 Reg 接口能否并发发射；单双发汇总把该流水信息落实为调度吞吐约束。
-<!-- cannbot:related:end -->

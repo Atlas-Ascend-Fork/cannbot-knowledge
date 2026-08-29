@@ -206,11 +206,3 @@ at::Tensor softmax(const at::Tensor& x, int64_t dim)
 ## 误诊
 
 `LoadAlign`/`StoreAlign` 报错容易被看成 dist 参数问题；根诊断是最早出现的 `TypeGet<c10::Half>` 未定义。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RegTensor](../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/reg_tensor.md)（`exemplifies`）：RegTensor 与《RegTensor 使用 c10 低精度类型导致 TypeGet 未定义》的实质衔接是：RegTensor 是 256B VL 的 VF 内基本单元；MaskReg/AddrReg/非对齐状态、内置类型和跨 VF/错误类型案例直接限定 lane、寿命和模板参数。
-- [模板内 float→float Cast 使 fp32 分支全错](../precision/templated_float_input_must_bypass_same_type_cast.md)（`related`）：模板内 float→float Cast 使 fp32 分支全错 与《RegTensor 使用 c10 低精度类型导致 TypeGet 未定义》的实质衔接是：float 到 float 不应进入窄化 Cast，应该保持原值或 Copy；同步、BF16 分阶段、native 类型、VL、舍入与 RmsNorm 案例分别说明真正需要 Cast 时的类型、时序和验证契约。
-- [AscendC 标量类型误加命名空间导致模板分发编译失败](device_half_bfloat16_types_are_global.md)（`same_topic`）：两卡共同限定 device 模板的低精度类型边界：kernel 侧使用全局 `half`/`bfloat16_t` 原生类型，不能加 AscendC:: 前缀，也不能把 c10::Half/c10::BFloat16 带入 RegTensor。
-<!-- cannbot:related:end -->

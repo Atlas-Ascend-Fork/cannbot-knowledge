@@ -27,19 +27,3 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [per-core zero-out 经 grid-stride ZeroOutS](../../../../../runbooks/precision/per_core_zero_out_grid_stride_zeroout_simt_overshoot.md)（`exemplifies`）：per-core zero-out 经 grid-stride ZeroOutS 与《核间同步能力概述》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-- [单 rank mock HCCL 致 AIC+AIV SyncAll 死锁](../../../../../runbooks/compilation/rank_mock_hccl_aic_aiv_syncall.md)（`exemplifies`）：单 rank mock HCCL 致 AIC+AIV SyncAll 死锁说明atcoss BlockPrologueAllGather 等 AIC+AIV 通算融合 kernel 在单 rank mock HCCL context 下执行超时，mock 不提供 SyncAll 跨核配对所需的状态标志写入流程致 ReadStatus/SyncAll 死锁；该 mock 路线 banned，分布式融合 kernel 须用真实多卡 HCCL。
-- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`exemplifies`）：双AIV CrossCoreFlag未按subBlock偏移致507015死锁说明Ascend950/DAV_3510 上 __mix__(1,2)=1AIC+2AIV 双 AIV 融合算子（GroupedMatmul Blaze G-B FP8）运行报 507015=ACL_ERROR_RT_AICORE_EXCEPTION，plog 呈现所有核停在同一 PC、timeout or trap、subErrType 0x4、cube error info=0（非 MMAD 越界）。判别=取 plog grep 出 sqe_type/errorStr/subErrType/PC + 按 core id 区分 AIC/AIV + 核对 gen_data.py 的 M<E 空 group 与 curM 奇数致 V1 localRows=0 + 比对 kernel AIV 侧 CrossCoreWaitFlag 是否按 GetSubBlockIdx()*FLAG_ID_MAX 偏移区分 V0/V1。根因=AIC 每 K-block set 两个 flag(8+countId 给 V0、24+countId 给 V1)但 AIV 侧 V0/V1 都 wait 同一 8+countId，AIC 只 set 1 次被 V0 消费，V1 永久阻塞；叠加 epilogue localRows<=0 early return 不发 AIV→AIC flag，AIC 也等 V1 的 flag，互锁全核 timeout。
-- [核间负载均衡](../../../../../guides/operator_practice/simd_operator_optimization/tiling_strategy/inter_core_load_balance.md)（`explains`）：核间负载均衡 与《核间同步能力概述》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
-- [CrossCoreSetFlag](cross_core_set_flag_isasi.md)（`related`）：核间同步能力概述说明核间同步的使用场景通常是：一个核计算所依赖的数据，需要等待其他相关核的计算全部完成后才能获取。
-- [CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)（`related`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《核间同步能力概述》补充：核间同步的使用场景通常是：一个核计算所依赖的数据，需要等待其他相关核的计算全部完成后才能获取。
-- [IBWait](ib_wait.md)（`related`）：核间同步能力概述说明核间同步的使用场景通常是：一个核计算所依赖的数据，需要等待其他相关核的计算全部完成后才能获取。
-- [同步控制](../../../c_api/sync/sync_control.md)（`related`）：同步控制 与《核间同步能力概述》的实质衔接是：该同步总览按核内、核间、任务间和 SIMT fence 划分选择，所选卡解释这些同步域的边界。
-- [系统同步能力概述（同步控制）](../system_sync_overview.md)（`related`）：系统同步能力概述（同步控制） 与《核间同步能力概述》的实质衔接是：系统同步能力按核内、核间、任务间分层；这些概述提供选择同步域所需的边界，而非把所有同步 API 机械串联。
-- [SyncAll](sync_all.md)（`same_topic`）：核间同步概览解释 SyncAll 的参与核、workspace 和阻塞语义，是正确放置全核屏障的机制背景。
-- [关键特性说明](key_features.md)（`same_topic`）：关键特性说明 与《核间同步能力概述》的衔接是：CrossCoreSet/CrossCoreWait 是该四种跨核同步模式的实际发信与等待原语；AIV/AIC 配对 runbook 给出同一计数契约失配时的可执行排查。
-<!-- cannbot:related:end -->

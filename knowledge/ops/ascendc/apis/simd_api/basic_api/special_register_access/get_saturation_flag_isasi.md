@@ -24,5 +24,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SetSaturationFlag](set_saturation_flag_isasi.md)（`same_topic`）：SetSaturationFlag说明设置饱和开关的标志位，控制计算或精度转换时饱和模式的开启与关闭；对GetSaturationFlag而言，GetSaturationFlag 读取的正是 SetSaturationFlag 写入的全局饱和状态，二者构成可验证的设置—读取闭环。
+- [SetSaturationFlag](set_saturation_flag_isasi.md)（`same_topic`）：“设置饱和开关的标志位，以控制计算/精度转换时饱和模式的开启与关闭。”；“获取计算/精度转换时饱和模式的开启状态。”。两接口分别写入和读取同一饱和模式状态，构成配置验证闭环。
 <!-- cannbot:related:end -->

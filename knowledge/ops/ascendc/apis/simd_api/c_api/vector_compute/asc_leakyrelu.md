@@ -22,7 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LeakyRelu](../../basic_api/reg_vector_compute/basic_arithmetic/leaky_relu.md)（`related`）：LeakyRelu 与《AscLeakyrelu》的实质衔接是：Reg LeakyRelu 与 Memory/C Reg/C Vector 入口实现同一负半轴 slope 计算，Matmul-LeakyRelu 案例给出该接口在融合算子中的真实落点。
-- [AscLeakyrelu](../reg/arithmetic_compute/asc_leakyrelu.md)（`same_topic`）：Vector AscLeakyrelu 与 Reg AscLeakyrelu 执行相同负半轴乘 slope 的激活，可按 UB 与寄存器数据路径选择。
-- [LeakyRelu](../../basic_api/memory_vector_compute/basic_arithmetic/leaky_relu.md)（`same_topic`）：LeakyRelu 与《AscLeakyrelu》的实质衔接是：LeakyRelu 的负分支乘 alpha、非负分支保留原值，可由 Muls 与 Maxs/Mins 组合；Prelu、Relu 及 C/Reg 入口给出相同或退化调用语义。
+- [AscLeakyrelu](../reg/arithmetic_compute/asc_leakyrelu.md)（`same_topic`）：执行矢量Leaky Relu运算。计算公式如下：；该接口用于按元素执行Leaky ReLU（Leaky Rectified Linear Unit）操作：当源操作数中某元素大于0时，直接将该元素写入目的操作数；否则将该元素乘以标量值value后写入目的操作数。。两卡是同一 C API LeakyReLU 语义的 A2/A3 UB 指针版与 950 寄存器 mask 版。
 <!-- cannbot:related:end -->

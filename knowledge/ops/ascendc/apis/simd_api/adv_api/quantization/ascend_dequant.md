@@ -26,7 +26,7 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Dequantize](dequantize.md)（`related`）：AscendDequant 与《Dequantize》的实质衔接是：AscendDequant 的两个 Host 查询共同确定 sharedTmpBuffer；Dequantize 是正文明确给出的替代入口，并改变了反量化策略与 workspace 契约。
-- [GetAscendDequantMaxMinTmpSize](get_ascend_dequant_max_min_tmp_size.md)（`related`）：AscendDequant 是该 Host workspace 查询所服务的 Kernel 计算接口，isReuseSource 和 typeSize 必须在两侧一致。
-- [GetAscendDequantTmpBufferFactorSize](get_ascend_dequant_tmp_buffer_factor_size.md)（`same_topic`）：GetAscendDequantTmpBufferFactorSize 与《AscendDequant》的实质衔接是：factor 查询与 GetAscendDequantMaxMinTmpSize 共同换算临时空间和单次元素数，AscendDequant 是结果消费方，SetDequantType 控制输出模式。
+- [GetAscendDequantMaxMinTmpSize](get_ascend_dequant_max_min_tmp_size.md)（`related`）：先用“host侧Tiling接口，用于获取AscendDequant接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”在 max/min 范围内选择空间，再遵守“提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持标量/矢量scale场景。临时空间大小通过GetAscendDequantMaxMinTmpSize获取。”把空间交给标量或矢量 scale 重载，可直接排查临时空间和 isReuseSource 配置。
+- [GetAscendDequantTmpBufferFactorSize](get_ascend_dequant_tmp_buffer_factor_size.md)（`related`）：选择“提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持标量/矢量scale场景。临时空间大小通过GetAscendDequantMaxMinTmpSize获取。”的显式 sharedTmpBuffer 重载后，用“获取AscendDequant接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。”的 maxLiveNodeCount 与 extraBuf 反算 currentShapeSize，并处理 maxLiveNodeCount 为零的边界。
+- [Dequantize](dequantize.md)（`same_topic`）：“按元素做反量化计算（如int32_t反量化为half/float），将整数类型转换为浮点类型。最多支持二维输入。推荐使用Dequantize替代本接口。支持950PR/950DT、A3、A2训练/推理、推理AI Core、Kirin X90/9030。”与“按元素做反量化计算（如int32_t反量化为half/float），将高精度整数类型转换为浮点类型。最多支持二维输入。推荐使用本接口替代AscendDequant。仅Ascend 950PR/950DT支持。”是双方正文中的具体合同。旧接口与替代接口双向声明迁移关系，核心都是 int32 到浮点的逐元素反量化；互读能核对替代时的 scale 策略和平台收缩。
 <!-- cannbot:related:end -->

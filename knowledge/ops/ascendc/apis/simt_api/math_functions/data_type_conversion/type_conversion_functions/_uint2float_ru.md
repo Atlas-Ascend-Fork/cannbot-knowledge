@@ -25,14 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/device_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__int2float_ru](_int2float_ru.md)（`same_topic`）：__uint2float_ru 与《__int2float_ru》的实质衔接是：候选覆盖 uint32→float 的其他舍入方向、signed int 与 uint64 输入；它们直接对照 2^24+1 等不可精确表示整数在 ru 下的选择。
-- [__uint2float_rd](_uint2float_rd.md)（`same_topic`）：__uint2float_ru 与《__uint2float_rd》的实质衔接是：候选覆盖 uint32→float 的其他舍入方向、signed int 与 uint64 输入；它们直接对照 2^24+1 等不可精确表示整数在 ru 下的选择。
-- [__uint2float_rn](_uint2float_rn.md)（`same_topic`）：__uint2float_ru 与《__uint2float_rn》的实质衔接是：候选覆盖 uint32→float 的其他舍入方向、signed int 与 uint64 输入；它们直接对照 2^24+1 等不可精确表示整数在 ru 下的选择。
-- [__uint2float_rna](_uint2float_rna.md)（`same_topic`）：__uint2float_ru 与《__uint2float_rna》的实质衔接是：候选覆盖 uint32→float 的其他舍入方向、signed int 与 uint64 输入；它们直接对照 2^24+1 等不可精确表示整数在 ru 下的选择。
-- [__uint2float_rz](_uint2float_rz.md)（`same_topic`）：__uint2float_ru 与《__uint2float_rz》的实质衔接是：候选覆盖 uint32→float 的其他舍入方向、signed int 与 uint64 输入；它们直接对照 2^24+1 等不可精确表示整数在 ru 下的选择。
-- [__ull2float_ru](_ull2float_ru.md)（`same_topic`）：__ull2float_ru 与《__uint2float_ru》的实质衔接是：这些接口以 ull→float 为核心并切换舍入方向，ll/uint 入口验证源有无符号和位宽，ull→half/bfloat16 则保持 CAST_CEIL 但改变目标精度。
-<!-- cannbot:related:end -->

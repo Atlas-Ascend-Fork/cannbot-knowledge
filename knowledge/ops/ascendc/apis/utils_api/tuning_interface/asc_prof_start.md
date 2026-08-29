@@ -25,9 +25,5 @@ SIMD场景下，用于设置性能数据采集信号启动，和asc_prof_stop配
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_mark_stamp](asc_mark_stamp.md)（`related`）：asc_prof_start/stop 定义指标采集窗口，mark_stamp 在窗口内细分执行路径。
-- [性能统计](../../simd_api/basic_api/debug_interface/performance_stats/performance_stats.md)（`related`）：性能统计说明性能统计接口集，包含 MetricsProfStart、MetricsProfStop 等性能指标采集接口。
-- [MetricsProfStart](../../simd_api/basic_api/debug_interface/performance_stats/metrics_prof_start.md)（`same_topic`）：MetricsProfStart 与 asc_prof_start 都向 profiling 流程发送开始采集信号，分别是基础 API 与 C 接口的直接对应入口。
-- [MetricsProfStop](../../simd_api/basic_api/debug_interface/performance_stats/metrics_prof_stop.md)（`same_topic`）：焦点处理MetricsProfStop 标定性能采集区间；asc_prof_start正文界定“SIMD场景下，用于设置性能数据采集信号启动，和asc_prof_stop配合使用。使用msOpProf工具进行算子上板调优时，可在kernel侧代码段前后分别调用asc_prof_start和asc_prof_stop来指定需要调优的代码”。候选是采集区间的 Start/Stop 对或 msOpProf 调优流程，直接决定采集窗口。
-- [asc_prof_stop](asc_prof_stop.md)（`same_topic`）：asc_prof_stop：asc_prof_start/stop必须包围同一采集区间；MetricsProfStart/Stop是另一套成对性能区间接口，可直接辅助避免起止混配。 目标卡《asc_prof_start》补充：SIMD场景下，用于设置性能数据采集信号启动，和asc_prof_stop配合使用。使用msOpProf工具进行算子上板调优时，可在kernel侧代码段前后分别调用asc_prof_start和asc_prof_stop来指定需要调优的代码段范围。
+- [asc_prof_stop](asc_prof_stop.md)（`related`）：SIMD场景下，用于设置性能数据采集信号启动，和asc_prof_stop配合使用。使用msOpProf工具进行算子上板调优时，可在kernel侧代码段前后分别调用asc_prof_start和asc_prof_stop来指定需要调优的代码段范围。；SIMD场景下，设置性能数据采集信号停止，和asc_prof_start配合使用。使用msOpProf工具进行算子上板调优时，可在kernel侧代码段前后分别调用asc_prof_start和asc_prof_stop来指定需要调优的代码段范围。。asc_prof_start 与 asc_prof_stop 分别标记 msOpProf 采集区间的起点和终点，两卡都要求在 Kernel 目标代码段前后成对调用，构成完整性能采集边界。
 <!-- cannbot:related:end -->

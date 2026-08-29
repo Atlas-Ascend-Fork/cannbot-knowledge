@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -427,9 +427,9 @@ pre清零/展开、Cube+Vector主计算和post cast在一次MIX launch内重建T
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V5公开支持 | V5公开支持 | 独立 `_a5` 卡 |
+| 支持状态 | V5公开支持 | V5公开支持 | 独立 `_950` 卡 |
 | Host/Launcher | DAV_2201 arch22 registry | 共用DAV_2201源码 | DAV_3510 varlen RegBase |
 | Kernel/资源 | arch22 MIX 1:2 | 同左，核数取平台 | arch35独立POD/flags |
 
@@ -469,3 +469,9 @@ pre清零/展开、Cube+Vector主计算和post cast在一次MIX launch内重建T
 | 同步 | barrier+CrossCore/pipe events | flag轮次与pingpong | body |
 | 精度与尾块 | FP32累计后cast、actualSeq裁尾 | 不提前cast/跨段 | body/Post |
 | 失败边界 | 只对PARAM_INVALID fallback | 其它错误不可吞掉 | DoTilingImpl |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FlashAttentionUnpaddingScoreGrad 950 ACLNN 算子知识](flash_attention_unpadding_score_grad_950.md)（`same_topic`）：固定仓公开文档把 V5 标为 A2、A3 和 Ascend 950 支持；V5 相对 V4 增加 `sinkInOptional/dsinkOut`，是这些平台当前公开的最新 Unpadding 版本。；固定 Commit 同时声明基础版、V2、V3、V4、V5；V5 是最新公开 Unpadding 版本。。两端共同闭合 V5 FlashAttentionUnpaddingScoreGrad 的 TND 变长反向语义，分别记录 A2/A3 arch22 与 950 arch35 RegBase 路线，可直接用于平台 route 和功能边界对照。
+<!-- cannbot:related:end -->

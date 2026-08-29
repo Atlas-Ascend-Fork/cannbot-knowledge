@@ -29,15 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalignDeintlvPostupdate](../reg_load/asc_loadalign_deintlv_postupdate.md)（`related`）：《AscLoadalignDeintlvPostupdate》的任务是“从UB读取连续2×VL长度数据并在Load过程中完成解交织，分别写入两个目的矢量寄存器，调用后自动更新源地址。”。《AscUpdateAddrReg》具体提供“更新地址寄存器用于迭代寻址，支持1至4维偏移量和b8、b16、b32三种位宽模式”，它直接用于解交织 Load 的地址 post-update、DeInterleave 结果顺序和等价入口。
-- [AscLoadalignPostupdate](../reg_load/asc_loadalign_postupdate.md)（`related`）：《AscLoadalignPostupdate》处理“从UB对齐地址搬入数据到矢量数据寄存器或掩码寄存器，调用后自动更新源地址，支持立即数偏移和非连续搬入两种模式。”。《AscUpdateAddrReg》明确提供“更新地址寄存器用于迭代寻址，支持1至4维偏移量和b8、b16、b32三种位宽模式”，其参数、调用或验证步骤直接接入LoadAlign 的地址 post-update、预取/非对齐加载和地址寄存器更新。
-- [AscLoadalignUnpack4Postupdate](../reg_load/asc_loadalign_unpack4_postupdate.md)（`related`）：《AscLoadalignUnpack4Postupdate》处理“从UB对齐搬入VL/4长度u8数据并unpack到VL长度u32类型，调用后自动更新源地址。”。《AscUpdateAddrReg》提供“更新地址寄存器用于迭代寻址，支持1至4维偏移量和b8、b16、b32三种位宽模式”，其具体合同或探针直接接入u8→u32 unpack4 对齐加载、post-update 地址推进和显式解包合同。
-- [AscLoadalignUpsamplePostupdate](../reg_load/asc_loadalign_upsample_postupdate.md)（`related`）：《AscLoadalignUpsamplePostupdate》处理“从UB对齐搬入VL/2个数据并实现2倍上采样，调用后自动更新源地址。”。《AscUpdateAddrReg》明确“更新地址寄存器用于迭代寻址，支持1至4维偏移量和b8、b16、b32三种位宽模式”，可直接用于核对LoadAlign upsample/post-update 的搬运语义与地址寄存器推进合同。
-- [AscStoreAlignPostupdate](../reg_store/asc_storealign_postupdate.md)（`related`）：AscStoreAlignPostupdate 与《AscUpdateAddrReg》的实质衔接是：StoreAlignPostupdate 在对齐写回后推进地址，pack/first/non-post 变体、Load postupdate、reg 搬出和 AscUpdateAddrReg 拆解数据分布与地址更新。
-- [AscStoreUnalignPostupdate](../reg_store/asc_storeunalign_postupdate.md)（`related`）：PostUpdate store 消费更新后的 AddrReg，展示实际下游。
-- [AscStorealign1stPostupdate](../reg_store/asc_storealign_1st_postupdate.md)（`related`）：AscStorealign1stPostupdate 与《AscUpdateAddrReg》的实质衔接是：AscStorealign1stPostupdate 在仅写首元素后更新地址，非 postupdate/通用 Store 与 AscUpdateAddrReg 明确写回粒度和地址推进两部分契约。
-- [AscStorealignPackPostupdate](../reg_store/asc_storealign_pack_postupdate.md)（`related`）：AscStorealignPackPostupdate 与《AscUpdateAddrReg》的实质衔接是：PackPostupdate 将低半位压缩写回后推进地址，非 postupdate/quarter/general Store、AscUpdateAddrReg 和 Pack/UnPack 接口拆解同一存储协议。
-- [AscUpdateMask](asc_update_mask.md)（`related`）：地址推进和有效 lane mask 往往需在同一循环同步更新。
-- [asc_create_iter_reg (废弃)](asc_create_iter_reg_deprecated.md)（`related`）：废弃 IterReg 的地址推进可迁移为 AddrReg + UpdateAddrReg。
-- [AddrReg](../../../basic_api/reg_vector_compute/register_data_types/addr_reg.md)（`same_topic`）：AddrReg 类型是 UpdateAddrReg 更新的核心对象。
+- [asc_create_iter_reg (废弃)](asc_create_iter_reg_deprecated.md)（`same_topic`）：该接口已废弃，请使用asc_update_addr_reg实现此功能。 地址寄存器通过该接口初始化，然后在循环之中使用地址寄存器存储地址偏移量，该重载接口同步支持1-4个offset参数，并支持初始化b8/b16/b32位宽的寄存器，适配1-4维Tensor。底层在多维循环中自动计算地址偏移，消除标量地址运算开销。；>旧接口 asc_create_iter_reg_ 已废弃，请使用 asc_update_addr_reg_ 替代。旧接口返回类型 iter_reg 也已更名为 addr_reg。。两卡从旧接口和新接口两端明确声明一对一替代，并保留同一多维迭代寻址功能。
 <!-- cannbot:related:end -->

@@ -52,7 +52,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v3/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T19:07:39Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -100,7 +100,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-A2 同平台最新公开入口为 V4，声明/实现位于 `moe_distribute_combine_v2/op_api`，wrapper 经 base 进入 inner V2。A3 同平台最新公开入口为 V5；`moe_distribute_combine_v3/README.md` 仅勾选 A3，实现直接进入 inner V3。固定仓没有 V5 公共头，故声明可追溯性只到 README、实现符号与 OpDef，不补造头文件。V5 新增 `context/cclBufferSize`。README 明确 V5 不支持 Ascend 950DT，A5 因而仍用 V4并另卡描述。
+A2 同平台最新公开入口为 V4，声明/实现位于 `moe_distribute_combine_v2/op_api`，wrapper 经 base 进入 inner V2。A3 同平台最新公开入口为 V5；`moe_distribute_combine_v3/README.md` 仅勾选 A3，实现直接进入 inner V3。固定仓没有 V5 公共头，故声明可追溯性只到 README、实现符号与 OpDef，不补造头文件。V5 新增 `context/cclBufferSize`。README 明确 V5 不支持 Ascend 950DT，950 因而仍用 V4并另卡描述。
 
 ## Host/Launcher 执行流程
 
@@ -909,11 +909,11 @@ if (dataplaneMode == DataplaneMode::AIV) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 最新公开V4 | 最新公开V5 | 本卡不覆盖；V5 README明确不支持 |
-| Host/Launcher | groupEp→inner V2；fullmesh/hierarchy | context+cclBufferSize→inner V3；仅MTE | 最新公开V4；本任务未生成A5目标文件 |
-| Kernel/资源 | A2 POD；fullmesh或8-rank/server hierarchy | V2 POD；context EP/TP窗 | V4内部context桥接到A5 MTE body |
+| Host/Launcher | groupEp→inner V2；fullmesh/hierarchy | context+cclBufferSize→inner V3；仅MTE | 最新公开V4；本任务未生成950目标文件 |
+| Kernel/资源 | A2 POD；fullmesh或8-rank/server hierarchy | V2 POD；context EP/TP窗 | V4内部context桥接到950 MTE body |
 
 ## 限制与失败边界
 
@@ -964,3 +964,11 @@ if (dataplaneMode == DataplaneMode::AIV) {
 | 同步 | A3 32B状态；A2 flag/magic | route协议不可替换 | `WaitDispatch/GM2IPC` |
 | 精度与尾块 | FP32 sum+RINT | INT8分组与BF16 TP FP32 add不可省 | `ProcessExpert/ReduceScatterTrans` |
 | 失败边界 | Host guard直接失败 | INT8+AICPU无fallback | V2 entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoeDistributeCombineAddRmsNorm A3 ACLNN 算子知识](moe_distribute_combine_add_rms_norm.md)（`related`）：基础 Combine 卡以“｜ 计算语义 ｜ 按 Dispatch 产生的 rank/token/top-k 辅助信息收回专家输出，以 `expertScales` 加权并恢复 `［BS,H］` token 顺序 ｜”界定路由结果恢复；融合卡在“｜ 计算语义 ｜ 可选 TP 两卡 ReduceScatterV，再做 EP AllToAllV；按权重聚合后执行 Add+RmsNorm ｜”中把相同的按权重聚合扩展为 Add+RmsNorm，可用于判断何时以融合算子替代普通 Combine 尾部链路。
+- [MoeDistributeDispatch 950 ACLNN 算子知识](moe_distribute_dispatch_950.md)（`related`）：950 Dispatch 卡说明“接收端压紧为 `expandX`，并输出 `［源EP rank, 源token索引, k］` 等 combine 辅助信息。”；Combine 卡规定“按 Dispatch 产生的 rank/token/top-k 辅助信息收回专家输出，以 `expertScales` 加权并恢复 `［BS,H］` token 顺序”，形成 Dispatch 生产元数据、专家计算后 Combine 消费元数据的任务链。
+- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](moe_distribute_dispatch.md)（`related`）：Dispatch 卡指出“目标端压紧为 `expandX` 和 `assistInfoForCombine`。”；Combine 卡规定“按 Dispatch 产生的 rank/token/top-k 辅助信息收回专家输出，以 `expertScales` 加权并恢复 `［BS,H］` token 顺序”，构成 Dispatch 产生元数据、专家计算后 Combine 消费元数据恢复 token 的完整任务链。
+<!-- cannbot:related:end -->

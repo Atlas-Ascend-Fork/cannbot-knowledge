@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_matmul_reduce_sum/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:39:57Z"
-updated_at: "2026-08-25T17:39:57Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -83,7 +83,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-第一段创建 executor、校验并加入 Contiguous、`QuantMatmulReduceSum` AICore 与 ViewCopy 节点；第二段以调用者的 workspace 和 stream 执行。固定仓没有 V2/V3 或架构专用新版。A2 `ascend910b` 与 A3 `ascend910_93` 连接到同一源码和同名 binary 描述。产品表明确 A2/A3 支持、Ascend 950PR/950DT 不支持，故本卡不覆盖 A5。
+第一段创建 executor、校验并加入 Contiguous、`QuantMatmulReduceSum` AICore 与 ViewCopy 节点；第二段以调用者的 workspace 和 stream 执行。固定仓没有 V2/V3 或架构专用新版。A2 `ascend910b` 与 A3 `ascend910_93` 连接到同一源码和同名 binary 描述。产品表明确 A2/A3 支持、Ascend 950PR/950DT 不支持，故本卡不覆盖 950。
 
 ## Host/Launcher 执行流程
 
@@ -539,9 +539,9 @@ Host 字节账与 Device `InitBuffer` 一致；Device 再用 `U/align16(baseN)` 
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 950PR/950DT 明确不支持；不生成 `_a5`。 |
+| 支持状态 | 公开支持 | 公开支持 | 950PR/950DT 明确不支持；不生成 `_950`。 |
 | Host/Launcher | OpDef `ascend910b`，共用 API/Tiling | OpDef `ascend910_93`，共用 API/Tiling | N/A |
 | Kernel/资源 | 同 binary 描述/MIX 源码；资源运行时获取 | 同源码；L2 报 96 MiB 时修正为 168 MiB | N/A |
 
@@ -589,4 +589,4 @@ Host 字节账与 Device `InitBuffer` 一致；Device 再用 `U/align16(baseN)` 
 | workspace/内存 | four INT32 slots/core | offset/extent/sequential layout/lifetime | `GetWorkspaceSize/MMCompute` |
 | 同步 | flag5 ready，flag3 release | IDs/mode/pipes/wait/drain | `MMCompute/VectorCompute/PostCompute` |
 | 精度与尾块 | INT32→x2 dequant→x1 Mul→RINT BF16→AtomicAdd | order/cast location/N align16/strides | `ComputeDequantAndActivate/Dequant/DataCopyOut` |
-| 失败边界 | Host/Tiling errors，entry silent returns | no A5/unknown-key fallback | checks/entry |
+| 失败边界 | Host/Tiling errors，entry silent returns | no 950/unknown-key fallback | checks/entry |

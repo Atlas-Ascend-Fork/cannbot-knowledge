@@ -14,9 +14,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/92
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a2
 ---
 
 # 多卡 Ring/序列并行注意力用异步 all-gather + 本地 FA + LSE 合并掩盖 KV 通信
@@ -65,3 +65,11 @@ platforms:
 - `diff 事实`（@28bf626f6a7d）：`_ring_attention_overlap`（异步 `all_gather_into_tensor(async_op=True)` → 本地 `_attention_with_lse` → `wait()` → `index_select` 远端 → reshape 合并 → 第二段 FA → `_merge_two_outputs`）、`_merge_two_outputs` 的 LSE 重加权公式、`_npu_attention_with_lse`（FIA `softmax_lse_flag=True`）逐条对上；Wan2.2-I2V 与 HunyuanVideo 均实例化 `UnifiedSPAttention(use_ring_overlap=True)`。
 - 无实测加速数字；源仅给设计目标（把通信藏进本地计算）。"与全 KV 一次注意力等价"依 LSE 合并的数学性质与两条代码路径推断。
 - 溯源下探：[cann-recipes-infer-pr-220-feat-support-for-communication-and-computation-overlap-in-ringattention](https://gitcode.com/cann/cann-recipes-infer/merge_requests/220) · [cann-recipes-infer-issue-92-rfc-wan2-2-i2v-hunyuan-video-ringattention](https://gitcode.com/cann/cann-recipes-infer/issues/92)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CP chunked-prefill 空 KV 分片返回 None 破 LSE 合并——须返零输出 + -inf LSE 占位（在线-softmax 中性元）](../../../runbooks/runtime/cp_prefill_empty_kv_shard_none_lse_merge.md)（`related`）：**`-inf` 的 LSE 是在线-softmax（log-sum-exp）合并的中性元**：合并按 `exp(lse)` 定权重，`exp(-inf)=0`，故该分片权重为 0，对最终注意力零贡献。；**LSE 在线-softmax 合并两段**：以两段 LSE 的 max 为基做数值稳定的加权和，等价于对全 KV 做一次注意力：；候选给出 focal 中性元所进入的跨段稳定合并公式。
+- [HunyuanVideo](../../../concepts/models/hunyuan_video.md)（`related`）：“通信完成后再算其他分片，并通过 **LSE 合并**两段输出”；“用 all-gather 一次性收全环 KV，配合异步启动 + 本地先算 + LSE 合并，把通信掩盖在第一段本地注意力里”。模型卡的实际两段计算由指南给出可执行步骤和 LSE 前置。
+- [Ring Attention Overlap](../../../concepts/techniques/ring_attention_overlap.md)（`related`）：用 all-gather 一次性收全环 KV，配合异步启动 + 本地先算 + LSE 合并，把通信掩盖在第一段本地注意力里。机制思想见 ［ring-attention-overlap］(../../../concepts/techniques/ring_attention_overlap.md)，流程：；LSE 合并（`_merge_two_outputs`）采用在线 softmax 数值稳定式：`lse_new = max(lse_l, lse_r) + log(Σ exp(lse_i - max))`，权重 `w_i = exp(lse_i - lse_new)`，`out = w_l·O_l + w_r·O_r`；两次 FA 均通过 `_npu_attention_with_lse` 调 `torch_npu.npu_fused_infer_attention_score` 并置 `softmax_lse_flag=True` 取回 lse。指南把该概念机制落实为 all-gather、本地与远端两段 FA 以及在线 LSE 合并的可执行流程。
+<!-- cannbot:related:end -->

@@ -248,12 +248,6 @@ __simd_vf__ inline void softmax_div_cast_vf(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscDuplicate](../../apis/simd_api/c_api/reg/data_fill/asc_duplicate.md)（`exemplifies`）：该卡给出 high/low 与 MergeMode 模板参数次序的编译诊断。
-- [AscDuplicateHighest](../../apis/simd_api/c_api/reg/data_fill/asc_duplicate_highest.md)（`exemplifies`）：AscDuplicateHighest 与《Duplicate 广播枚举与模板顺序不兼容》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
-- [AscDuplicateMerge](../../apis/simd_api/c_api/reg/data_fill/asc_duplicate_merge.md)（`exemplifies`）：该卡给出 high/low 和 MergeMode 模板次序的构建诊断。
-- [AscDuplicateScalar](../../apis/simd_api/c_api/reg/data_fill/asc_duplicate_scalar.md)（`exemplifies`）：AscDuplicateScalar 与《Duplicate 广播枚举与模板顺序不兼容》的实质衔接是：AscDuplicateScalar 把一个 scalar 广播到 RegTensor；Merge/Highest/普通 Duplicate 改变未选中 lane 或来源，标量运算和错例直接约束广播范围与消费方式。
-- [Duplicate](../../apis/simd_api/basic_api/reg_vector_compute/data_padding/duplicate.md)（`exemplifies`）：Duplicate 广播枚举与模板顺序不兼容 与《Duplicate》的实质衔接是：Duplicate 的模板参数顺序由 MaskMergeMode 与接口支持矩阵决定，Duplicate 卡给出实际重载契约。
-- [MaskMergeMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/mask_merge_mode.md)（`exemplifies`）：MaskMergeMode 与《Duplicate 广播枚举与模板顺序不兼容》的实质衔接是：MaskMergeMode 决定 inactive lane 合并行为；支持矩阵和两张编译故障卡直接约束枚举选择与模板实参顺序。
-- [Reg矢量计算接口MergeMode支持情况汇总](../../apis/appendix/reg_vector_compute_interface_mergemode_support_summary.md)（`exemplifies`）：MergeMode 支持汇总用于判断接口模板是否接收 MERGING/ZEROING；该 runbook 给出 Duplicate 中 HighLowPart 必须位于 MergeMode 之前的真实模板顺序错误。
-- [InitOutput GM 专用，UB 清零用 Duplicate](initoutput_gm_ub_duplicate.md)（`related`）：InitOutput GM 专用，UB 清零用 Duplicate 与《Duplicate 广播枚举与模板顺序不兼容》的实质衔接是：InitOutput 只接受 GM GlobalTensor，而 UB LocalTensor 要用 Duplicate；相关 API、类型错误、TBuf 取 LocalTensor 和清零覆盖故障直接验证该边界。
+- [AscDuplicateMerge](../../apis/simd_api/c_api/reg/data_fill/asc_duplicate_merge.md)（`exemplifies`）：merge模式下，将src的最低位元素广播到dst中被mask筛选的位置，dst中未被mask筛选的元素保留原值。；安装头文件的真实声明表明，寄存器到寄存器重载的模板形参依次是 `T, HighLowPart pos, MaskMergeMode mode`。。API定义 merge 广播最低位并保留未命中 lane，Runbook给出 CANN 9.0.1 调用该寄存器广播重载时的模板参数次序。
+- [Duplicate](../../apis/simd_api/basic_api/reg_vector_compute/data_padding/duplicate.md)（`exemplifies`）：“安装头文件的真实声明表明，寄存器到寄存器重载的模板形参依次是 `T, HighLowPart pos, MaskMergeMode mode`。”给出实际编译修复，而“参数：T: 操作数数据类型。支持的数据类型请参考数据类型。；U: scalar的数据类型。支持的数据类型请参考数据类型。；mode: MaskMergeMode枚举类型，选择MERGING模式或ZEROING模式。 • ZEROING模式下，mask未筛选的元素在dstReg中置零。 • MERGING模式下，mask未筛选的元素在dstReg中保留dstReg原值。；pos: 默认为LOWEST，表示将srcReg中的最低位广播至dstReg（暂不支持其他取值）。；S: 目的操作数的RegTensor类型， 例如RegTensor ，由编译器自动推导，用户不需要填写。；dstReg(输出): 目的操作数。 类型为RegTensor。；scalarValue(输入): 源操作数。 类型为标量。；srcReg(输入): 源操作数。 类型为RegTensor。”定义 Duplicate 的 pos/mode 契约；runbook 直接示范模板顺序错误及正确实例化。
 <!-- cannbot:related:end -->

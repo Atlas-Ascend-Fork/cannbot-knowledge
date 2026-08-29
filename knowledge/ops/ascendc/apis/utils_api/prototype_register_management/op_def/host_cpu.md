@@ -23,10 +23,3 @@ platforms: [agnostic]
 OpHostCPUDef请参考OpHostCPUDef。
 ## 约束说明
 无
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FlagPartial](../op_host_cpu_def/flag_partial.md)（`same_topic`）：HostCPU（OpDef）说明设置Host CPU的配置信息：包括算子输入输出的name、支持的dtype、format等信息。
-- [OpHostCPUDef](../op_host_cpu_def/op_host_cpu_def.md)（`same_topic`）：OpHostCPUDef说明OpHostCPUDef算子定义接口索引；对HostCPU（OpDef）而言，HostCPU 返回 OpHostCPUDef，后者承载 HostCPU 子图注册配置，形成明确的 fluent API 返回值契约。
-<!-- cannbot:related:end -->

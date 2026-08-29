@@ -76,3 +76,9 @@ AttributeError: '_OpNamespace' '_C' object has no attribute 'apply_repetition_pe
 
 - [torchair](../../../concepts/frameworks/torchair.md) — 昇腾 vLLM/TorchAir 图执行与后端适配栈。
 - [fused-infer-attention-score](../../../concepts/kernels/fused_infer_attention_score.md) — 昇腾侧 NPU 原生融合算子（区别于上游 CUDA `torch.ops._C` custom op），示意 NPU 适配应落到硬件无关或 NPU 原生实现而非误触 CUDA 分支。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CUDA 原生 vLLM 多模态模型移植 vllm-ascend NPU：三处固定后端不兼容点与修法](../../../runbooks/runtime/vllm_cuda_multimodal_npu_bringup.md)（`related`）：不要在昇腾适配代码里用 `if x.is_cuda:` 判断张量是否真在 CUDA 上，进而选择走 CUDA custom-op / CUDA kernel 分支。该判断在 NPU 上恒真、无法区分 CUDA 与 NPU。；1. **MoE**：`import` 期或前向命中 `torch.ops._moe_C`（CUDA 专有算子）缺失——vLLM 原生 `fused_topk` / `fused_moe` 依赖它，NPU 无此 op，MoE 层无法在 NPU 执行。；前者给出 NPU 上误入 CUDA 分支的失效判别，后者给出同类 vLLM 移植中 CUDA 专有算子缺失的具体阻断点。
+<!-- cannbot:related:end -->

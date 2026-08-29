@@ -88,10 +88,5 @@ errorStr: The address for VEC to access UB is out of bounds. subErrType: 0x4
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetCeilTmpBufferFactorSize](../../apis/simd_api/adv_api/math_compute/ceil_interface/get_ceil_tmp_buffer_factor_size.md)（`exemplifies`）：GetCeilTmpBufferFactorSize 与《tmpBuffer 分配步长≠访问步长触发 UB 越界 341》的实质衔接是：factor 查询与 GetCeilMaxMinTmpSize 共同换算 Ceil 单次元素数，Ceil/C API 是消费端；tmpBuffer 步长故障直接验证空间公式错误会造成 UB 越界。
-- [507035 — 三队列 float32 tile 超 UB](507035_float32_tile_ub.md)（`related`）：tmpBuffer 分配步长≠访问步长触发 UB 越界 341 与《507035 — 三队列 float32 tile 超 UB》的衔接是：四个案例都把 UB 预算、分块或对齐计算与实际访问跨度不一致定位为越界根因，可复用‘按访问类型和对齐重算最大偏移’的验证方法。
-- [ACLNN 507015 — tiling UB 漏算 kIdxBuf 下溢](aclnn_507015_tiling_ub_kidxbuf.md)（`related`）：tmpBuffer 分配步长≠访问步长触发 UB 越界 341 与《ACLNN 507015 — tiling UB 漏算 kIdxBuf 下溢》的衔接是：四个案例都把 UB 预算、分块或对齐计算与实际访问跨度不一致定位为越界根因，可复用‘按访问类型和对齐重算最大偏移’的验证方法。
-- [FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR](fp16_double_buffer_ub_budget_queue_vs_tbuf_multiplier.md)（`related`）：tmpBuffer 分配步长≠访问步长触发 UB 越界 341 与《FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR》的衔接是：四个案例都把 UB 预算、分块或对齐计算与实际访问跨度不一致定位为越界根因，可复用‘按访问类型和对齐重算最大偏移’的验证方法。
-- [FindSplitAxis 误传 total_slots 致 slot 翻倍](../precision/findsplitaxis_total_slots_slot.md)（`related`）：tmpBuffer 分配步长≠访问步长触发 UB 越界 341 与《FindSplitAxis 误传 total_slots 致 slot 翻倍》的衔接是：四个案例都把 UB 预算、分块或对齐计算与实际访问跨度不一致定位为越界根因，可复用‘按访问类型和对齐重算最大偏移’的验证方法。
-- [Vector Sub 源 UB 非 32B 对齐触发错误 340](vector_sub_ub_32b_340.md)（`same_topic`）：Vector Sub 源 UB 非 32B 对齐触发错误 340 与《tmpBuffer 分配步长≠访问步长触发 UB 越界 341》的实质衔接是：Vector Sub 的每个 UB 源必须 32B 对齐，LocalTensor 非零 operator[] 偏移会破坏对齐；Sub API、GetWithOffset/TBuf 和相邻未对齐故障卡直接支持定位及对齐搬入修法。
+- [DequantSwigluQuant 950 ACLNN 算子知识](../../operators/aclnn/nn/quant/dequant_swiglu_quant_950.md)（`related`）：焦点卡在“dequant_swiglu_quant 算子的 nlast 场景”重建 tmpBuffer 越界，候选算子把对应路线标为“non-tail axis, dynamic, no group”并给出 Nlast 的 UB/路由闭包；算子卡可定位受影响 route，runbook 则提供 341 的步长判别与修法。
 <!-- cannbot:related:end -->

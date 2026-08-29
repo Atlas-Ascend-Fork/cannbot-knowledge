@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__int2float_rd](_int2float_rd.md)（`same_topic`）：ru 是同一转换的向上取整变体，与 rd 构成结果上下界。
-- [__int2float_rn](_int2float_rn.md)（`same_topic`）：rn 提供最近舍入，可减少相对 floor/ceil 的绝对误差。
-- [__int2float_rna](_int2float_rna.md)（`same_topic`）：rna 在平局时远离零，是最近舍入的另一变体。
-- [__int2float_rz](_int2float_rz.md)（`same_topic`）：__int2float_ru说明遵循CAST_CEIL模式，将int32类型数据转换为浮点数，返回转换后的值。
-- [__uint2float_ru](_uint2float_ru.md)（`same_topic`）：__uint2float_ru 与《__int2float_ru》的实质衔接是：候选覆盖 uint32→float 的其他舍入方向、signed int 与 uint64 输入；它们直接对照 2^24+1 等不可精确表示整数在 ru 下的选择。
+- [__int2float_rz](_int2float_rz.md)（`same_topic`）：“功能：遵循CAST_TRUNC模式，将int32类型数据转换为浮点数，返回转换后的值。”与“功能：遵循CAST_CEIL模式，将int32类型数据转换为浮点数，返回转换后的值。”提供双方正文证据。两端处理相同的 int32 到 float 转换，唯一关键选择是 CAST_TRUNC 与 CAST_CEIL 的舍入方向；互读能避免把截断和向上取整混用。
 <!-- cannbot:related:end -->

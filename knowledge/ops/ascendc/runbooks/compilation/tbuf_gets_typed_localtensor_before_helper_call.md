@@ -193,19 +193,3 @@ lines: 307-311
 ## 误诊
 
 看到 `LocalTensor<half>` 就继续调整 `T` 或 Cast 路径是误诊；错误文本已经表明模板实例化完成，失败的是 `TBuf` 实参。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Get](../../apis/simd_api/basic_api/resource_management/t_buf/get.md)（`exemplifies`）：TBuf::Get<T>() 正是把缓冲管理对象转换为 typed LocalTensor 视图的正式接口，是本卡修复调用点的直接契约。
-- [GetWithOffset](../../apis/simd_api/basic_api/resource_management/t_buf/get_with_offset.md)（`exemplifies`）：GetWithOffset 在需要同一 TBuf 的带偏移 typed 视图时补全 Get<T>() 契约，可避免重新把 TBuf 或裸偏移直接传给 LocalTensor helper。
-- [LocalTensor](../../apis/simd_api/basic_api/data_structures/local_tensor/local_tensor.md)（`exemplifies`）：LocalTensor 接口定义 helper 实际消费的带类型、可寻址张量视图，解释编译器为何拒绝把 TBuf 管理对象直接绑定到该形参。
-- [LocalTensor构造函数](../../apis/simd_api/basic_api/data_structures/local_tensor/local_tensor_constructor.md)（`exemplifies`）：《LocalTensor构造函数》处理“LocalTensor构造函数。”。《TBuf 不能直接传给 LocalTensor 形参》明确“Ascend C helper 以 LocalTensor 为形参时，调用点必须先从 TBuf 取得带类型的 LocalTensor，不能依赖隐式转换。”，可直接用于核对LocalTensor 的默认/静态地址构造、LocalMemAllocator 构造路径及错误实参诊断。
-- [TBuf简介](../../apis/simd_api/basic_api/resource_management/t_buf/t_buf_intro.md)（`exemplifies`）：TBuf简介 与《TBuf 不能直接传给 LocalTensor 形参》的实质衔接是：TBuf 的构造、InitBuffer、Get/GetWithOffset 共同定义 UB 临时缓冲的分配与类型化取用；所连案例分别验证参数签名、地址独立性、容量预算和 helper 传参约束。
-- [DataCopyPad 无匹配重载 LocalTensor 实参不一致](datacopypad_localtensor.md)（`related`）：两卡的编译器诊断都已完成模板推导，真正失败在对象类型契约：TBuf 必须先 Get<T>() 成 LocalTensor，而不同 LocalTensor<E> 之间也没有隐式转换。
-- [L1/L0 tensor 须用 TPosition 构造非 SetAddr](l1_l0_tensor_tposition_setaddr.md)（`related`）：该卡区分 TBuf 管理对象与 LocalTensor 可寻址视图，补充另一类因对象层级错误导致的 LocalTensor 编译失败，可避免把 TBuf 当作 SetAddr/裸地址替代。
-- [TBuf 跨 MTE2 与 Vector 须队列交接](../precision/tbuf_mte2_to_vector_requires_queue_handoff.md)（`related`）：TBuf 直取 typed LocalTensor 可解决类型传递，但仍不建立 MTE2→Vector 依赖；两卡明确类型与同步是独立契约。
-- [TBuf的使用](../../guides/operator_practice/simd_operator_impl/vector_programming/tbuf_usage.md)（`related`）：该 runbook 强调 helper 形参需要 LocalTensor，必须先 TBuf.Get<T>()；与指南 Compute 步骤的类型化获取一致。
-- [独立 TBuf.Get 返回重叠 UB 地址 dav-2201](tbuf_get_ub_dav_2201.md)（`related`）：候选要求先 Get<T>() 取得有类型 LocalTensor 再传 helper；本卡还需保证多个所得 tensor 区间不重叠。
-- [未分配 TBuf 导致浮点索引随机错乱](../precision/missing_tbuf_allocation_causes_undefined_ub_index_scratch.md)（`same_topic`）：《未分配 TBuf 导致浮点索引随机错乱》处理“分支内使用未初始化的临时 TBuf 会造成静默索引错乱；在同一 Init 分支补齐 InitBuffer 后恢复精确结果。”。《TBuf 不能直接传给 LocalTensor 形参》明确“Ascend C helper 以 LocalTensor 为形参时，调用点必须先从 TBuf 取得带类型的 LocalTensor，不能依赖隐式转换。”，可直接用于核对TBuf 在同一分支先 InitBuffer 再 Get 的生命周期，以及无效/重叠 UB 地址的差分诊断。
-<!-- cannbot:related:end -->

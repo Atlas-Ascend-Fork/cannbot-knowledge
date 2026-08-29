@@ -49,7 +49,9 @@ HunyuanVideo 是腾讯发布的开源 DiT 文生视频模型；cann-recipes-infe
 
 ## 优化总览（源表）
 
-| 优化方案 | 优化角度 | 方案介绍 | | ------- | -------- | -------- | | NPU 开箱，FA 融合算子适配 | 融合算子 | 使用 CANN 内部的 FIA 融合算子替代 transformer 中 attention 计算，算子内部通过 tiling 策略减少运行时的动态内存，并且加速 attention 计算。| | NPU RMS Norm 融合算子适配 | 融合算子 | 使用 CANN 内部的 RMSNorm 融合算子替代小算子实现。| | NPU ROPE 融合算子适配 | 融合算子 | 使用 CANN 内部的 `npu_rotary_mul` 融合算子替代小算子实现。| | Ulysses 序列并行 | 提高算力 | 将超长序列高效地切分到多个 NPU 上并行处理，每张卡负责处理自己负责的序列长度。Attention 以外切 S，Attention 处切 N。| | Ring Attention 序列并行 | 提高算力 | 与 Ulysses 类似，但 attention 计算时仍按 S 切分，通过 P2P 循环传递 KV 块。| | FBCache | 减少计算量 | 用第一个 DiT Block 的输出判断能否复用残差。| | TeaCache | 减少计算量 | 用第一个 img modulate 输出判断能否复用残差。| | Ulysses Anything Attention | 功能泛化 | 扩展 Ulysses 支持任意头数配置，动态填充 + 对齐。| | VAE 并行 | 提高算力 | 每张卡仅处理分配给自身的序列；为卡补充相邻卡部分序列解决卷积感受野。| | VAE 优化 | 减少计算量 | mask 缓存，减少重复构造。| | 取消 VAE offload | 减少搬运 | 开启虚拟内存，取消 CPU-offload。| | FP8 量化注意力 | 降低显存带宽 | per-block 动态量化 Q/K/V 为 FP8。| | MXFP8 矩阵量化 (A8W8) | 降低显存带宽 | DiT Linear 层 MXFP8，权重显存减半。| | 块稀疏 Attention | 减少计算量 | TopK / SVG 两种 predictor，基于 blitz_sparse_attention 算子。|
+| 优化方案 | 优化角度 | 方案介绍 |
+| ------- | -------- | -------- |
+| NPU 开箱，FA 融合算子适配 | 融合算子 | 使用 CANN 内部的 FIA 融合算子替代 transformer 中 attention 计算，算子内部通过 tiling 策略减少运行时的动态内存，并且加速 attention 计算。| | NPU RMS Norm 融合算子适配 | 融合算子 | 使用 CANN 内部的 RMSNorm 融合算子替代小算子实现。| | NPU ROPE 融合算子适配 | 融合算子 | 使用 CANN 内部的 `npu_rotary_mul` 融合算子替代小算子实现。| | Ulysses 序列并行 | 提高算力 | 将超长序列高效地切分到多个 NPU 上并行处理，每张卡负责处理自己负责的序列长度。Attention 以外切 S，Attention 处切 N。| | Ring Attention 序列并行 | 提高算力 | 与 Ulysses 类似，但 attention 计算时仍按 S 切分，通过 P2P 循环传递 KV 块。| | FBCache | 减少计算量 | 用第一个 DiT Block 的输出判断能否复用残差。| | TeaCache | 减少计算量 | 用第一个 img modulate 输出判断能否复用残差。| | Ulysses Anything Attention | 功能泛化 | 扩展 Ulysses 支持任意头数配置，动态填充 + 对齐。| | VAE 并行 | 提高算力 | 每张卡仅处理分配给自身的序列；为卡补充相邻卡部分序列解决卷积感受野。| | VAE 优化 | 减少计算量 | mask 缓存，减少重复构造。| | 取消 VAE offload | 减少搬运 | 开启虚拟内存，取消 CPU-offload。| | FP8 量化注意力 | 降低显存带宽 | per-block 动态量化 Q/K/V 为 FP8。| | MXFP8 矩阵量化 (A8W8) | 降低显存带宽 | DiT Linear 层 MXFP8，权重显存减半。| | 块稀疏 Attention | 减少计算量 | TopK / SVG 两种 predictor，基于 blitz_sparse_attention 算子。|
 
 ## Known Optimizations
 
@@ -152,13 +154,33 @@ xk_out = torch_npu.npu_rotary_mul(xk, cos, sin, rotary_mode="interleave")
 
 ### 性能优化（Atlas A3，baseline 仅做 NPU 开箱 FIA 替换）
 
-| 并行 | 融合算子 | ditcache | vae 并行 | vae 优化 | 虚拟内存<br/>取消 VAE offload | UAA | dit(s) | vae(s) | e2e | dit speedup | vae speedup | e2e speedup | | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | | 1, **baseline** | x | x | x | x | x | x | 3634.48 | 133.15 | 3768.91 | 1.00 | 1.00 | 1.00 | | | √ | x | x | √ | √ | x | 3568.36 | 39.66 | 3612.30 | 1.02 | 3.36 | 1.04 | | | √ | FBCache | x | √ | x | x | 1693.89 | 83.03 | 1778.28 | 2.15 | 1.60 | 2.12 | | | √ | TeaCache | x | √ | x | x | 1737.92 | 88.56 | 1830.75 | 2.09 | 1.50 | 2.06 | | | √ | TaylorSeer | x | √ | x | x | 1405.68 | 92.85 | 1500.17 | 2.59 | 1.43 | **2.51** | | ulysses5 | √ | x | √ | √ | √ | √ | 769.33 | 40.61 | 811.38 | 4.72 | 3.28 | 4.65 | | ulysses8 | √ | x | √ | x | √ | x | 467.67 | 22.78 | 495.94 | 7.77 | 5.85 | 7.60 | | | √ | x | √ | √ | √ | x | 465.43 | 12.40 | 487.68 | 7.81 | 10.74 | 7.73 | | | √ | x | √ | √ | √ | √ | 477.12 | 13.10 | 482.65 | 7.62 | 10.16 | **7.81** | | | √ | x | √ | √ | √ | 730, 1300 | 511.12 | 13.06 | 525.75 | 7.11 | 10.20 | 7.17 |
+| 并行 | 融合算子 | ditcache | vae 并行 | vae 优化 | 虚拟内存<br/>取消 VAE offload | UAA | dit(s) | vae(s) | e2e | dit speedup | vae speedup | e2e speedup |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 1, **baseline** | x | x | x | x | x | x | 3634.48 | 133.15 | 3768.91 | 1.00 | 1.00 | 1.00 |
+| | √ | x | x | √ | √ | x | 3568.36 | 39.66 | 3612.30 | 1.02 | 3.36 | 1.04 |
+| | √ | FBCache | x | √ | x | x | 1693.89 | 83.03 | 1778.28 | 2.15 | 1.60 | 2.12 |
+| | √ | TeaCache | x | √ | x | x | 1737.92 | 88.56 | 1830.75 | 2.09 | 1.50 | 2.06 |
+| | √ | TaylorSeer | x | √ | x | x | 1405.68 | 92.85 | 1500.17 | 2.59 | 1.43 | **2.51** |
+| ulysses5 | √ | x | √ | √ | √ | √ | 769.33 | 40.61 | 811.38 | 4.72 | 3.28 | 4.65 |
+| ulysses8 | √ | x | √ | x | √ | x | 467.67 | 22.78 | 495.94 | 7.77 | 5.85 | 7.60 |
+| | √ | x | √ | √ | √ | x | 465.43 | 12.40 | 487.68 | 7.81 | 10.74 | 7.73 |
+| | √ | x | √ | √ | √ | √ | 477.12 | 13.10 | 482.65 | 7.62 | 10.16 | **7.81** |
+| | √ | x | √ | √ | √ | 730, 1300 | 511.12 | 13.06 | 525.75 | 7.11 | 10.20 | 7.17 |
 
 > Cache 配置：FBCache L1 阈值 0.05；TeaCache L1 阈值 0.15；TaylorSeer 算 1 跳 3，三阶泰勒。三种方法都能保持良好的推理精度（与 `cache_config.json` 配置一致）。
 
 ### 量化性能（950PR）
 
-| 并行 | 融合算子 | matmul 量化 | fa 量化 | vae 并行 | dit(s) | vae(s) | e2e | dit speedup | vae speedup | e2e speedup | | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | | 1, **baseline** | √ | x | x | x | 2548.49 | 31.76 | 2580.87 | 1.00 | 1.00 | 1.00 | | | √ | √ | x | x | 2392.24 | 31.71 | 2424.52 | 1.07 | 1.00 | 1.06 | | | √ | x | √ | x | 1606.29 | 31.70 | 1638.55 | 1.59 | 1.00 | 1.58 | | | √ | √ | √ | x | 1539.24 | 31.43 | 1571.24 | 1.66 | 1.01 | 1.64 | | ulysses8, **baseline** | √ | x | x | √ | 246.29 | 10.27 | 256.92 | 1.00 | 1.00 | 1.00 | | | √ | √ | x | √ | 231.55 | 10.33 | 244.47 | 1.06 | 0.99 | 1.05 | | | √ | x | √ | √ | 181.85 | 10.50 | 193.96 | 1.35 | 0.98 | 1.32 | | | √ | √ | √ | √ | 170.04 | 10.17 | 185.54 | 1.45 | 1.01 | **1.38** |
+| 并行 | 融合算子 | matmul 量化 | fa 量化 | vae 并行 | dit(s) | vae(s) | e2e | dit speedup | vae speedup | e2e speedup |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 1, **baseline** | √ | x | x | x | 2548.49 | 31.76 | 2580.87 | 1.00 | 1.00 | 1.00 |
+| | √ | √ | x | x | 2392.24 | 31.71 | 2424.52 | 1.07 | 1.00 | 1.06 |
+| | √ | x | √ | x | 1606.29 | 31.70 | 1638.55 | 1.59 | 1.00 | 1.58 |
+| | √ | √ | √ | x | 1539.24 | 31.43 | 1571.24 | 1.66 | 1.01 | 1.64 |
+| ulysses8, **baseline** | √ | x | x | √ | 246.29 | 10.27 | 256.92 | 1.00 | 1.00 | 1.00 |
+| | √ | √ | x | √ | 231.55 | 10.33 | 244.47 | 1.06 | 0.99 | 1.05 |
+| | √ | x | √ | √ | 181.85 | 10.50 | 193.96 | 1.35 | 0.98 | 1.32 |
+| | √ | √ | √ | √ | 170.04 | 10.17 | 185.54 | 1.45 | 1.01 | **1.38** |
 
 ### 块稀疏 Attention 性能（TopK vs SVG，单卡）
 
@@ -222,3 +244,23 @@ xk_out = torch_npu.npu_rotary_mul(xk, cos, sin, rotary_mode="interleave")
 - **unverified**：块稀疏 Attention 的端到端 speedup 与画质对比未在 benchmark 表中给出
 - **gap**：源文档未给出 baseline 所用具体分辨率/帧数与 A3 硬件规格（只提"Atlas A3"），假定与正文描述 5s 720p 129 帧一致
 - **gap**：与 HunyuanImage-3.0 的 MoE DoubleRouting 不同，HunyuanVideo 文档未涉及 MoE；HunyuanVideo DiT 纯 dense
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Blockwise Sparse Attention (TopK / SVG)](../modules/blockwise_sparse_attention.md)（`related`）：“块稀疏 Attention ｜ 减少计算量 ｜ TopK / SVG 两种 predictor，基于 blitz_sparse_attention 算子”；“**Blockwise Sparse Attention** 是一种 Attention 组件变体：按 `［block_Q, block_K］` 粒度估计块的重要程度，只计算 TopK 重要块、跳过其余块”。模型卡的具体优化由候选卡定义算法机制和离线配置要求。
+- [DiT Cache (FBCache / TeaCache / TaylorSeer)](../techniques/dit_cache.md)（`related`）：“DiT 多步缓存（FBCache / TeaCache / TaylorSeer）”；“DiT-Cache 是扩散生成模型推理加速的 Step-level 缓存框架”。模型采用候选卡定义的三种 step 级复用/预测机制，后者提供阈值与验证边界。
+- [DiT 采样步残差缓存（FBCache / TeaCache）键控、阈值权衡与 TeaCache 属性名 bug](../../optimizations/experience/rules/dit_step_cache_fbcache_teacache.md)（`related`）：“config 变体（`config/`）：`single`·`sp8`（基线，`dit_cache.method` 注释切 NoCache/FBCache/TeaCache/TaylorSeer）”；“用 **step-level 残差缓存**跳过整段 DiT block 前向可得约 **2x** DiT 加速”。候选卡直接解释该配置的键控、阈值和 TeaCache 属性名故障。
+- [FP8 Per-Block Dynamic Quant Attention](../quantization/fp8_attention.md)（`related`）：“FP8 量化注意力 ｜ 降低显存带宽 ｜ per-block 动态量化 Q/K/V 为 FP8”；“HunyuanVideo 在 DiT Attention 上引入的 FP8 量化方案：对 Q/K/V 做 **per-block 动态量化**”。两卡共同描述模型的 FP8 Attention 生产配置与算子消费合同。
+- [MM Inference Launch（多模态生成模型统一推理拉起架构）](../frameworks/mm_inference_launch.md)（`related`）：“部署经统一拉起架构 ［mm-inference-launch］(../frameworks/mm_inference_launch.md)：`models/hunyuan-video/infer.sh` + YAML 场景切换”；“MM Inference Launch 是 cann-recipes-infer 中 4 个多模态生成模型（Wan2.2-I2V / HunyuanVideo / SANA-Video / HunyuanImage-3.0）的统一推理拉起架构”。前者把 HunyuanVideo 的入口和配置交给后者，形成直接部署合同。
+- [MXFP8 A8W8 (DiT Linear)](../quantization/mxfp8_a8w8.md)（`related`）：“MXFP8 矩阵量化 (A8W8) ｜ 降低显存带宽 ｜ DiT Linear 层 MXFP8，权重显存减半”；“HunyuanVideo 针对 DiT 中 Linear 层（MLP / 投影层）的 Micro-scaling FP8 矩阵量化方案”。前者是模型配置，后者给出权重/激活分组和算子调用边界。
+- [Ring Attention Overlap](../techniques/ring_attention_overlap.md)（`related`）：“**Ring + TopK + overlap** 进一步把 key/value 分成本地分片和其他分片：异步 `all_gather(k/v)` 的同时先算本地分片的稀疏 attention”；“多卡 Ring Attention 的 P2P / AllGather 通信通常与 FA 计算串行，利用率低”。前者是模型落地，后者定义异步通信、本地 FA 与 LSE 合并机制。
+- [Ring Attention Sequence Parallelism](../parallelism/ring_attention.md)（`related`）：“Ring Attention 序列并行 ｜ 提高算力 ｜ 与 Ulysses 类似，但 attention 计算时仍按 S 切分，通过 P2P 循环传递 KV 块”；“Ring Attention 是另一种长序列 SP 方案：与 Ulysses 不同，**attention 内部也保持序列切分**”。模型卡给出 Ring 选项，候选卡补足实际 AllGather/LSE 路线与适用边界。
+- [Ulysses Sequence Parallelism](../parallelism/ulysses.md)（`related`）：“Ulysses 序列并行 ｜ 提高算力 ｜ 将超长序列高效地切分到多个 NPU 上并行处理，每张卡负责处理自己负责的序列长度”；“Ulysses 是面向**长序列多头注意力**的序列并行策略”。模型明确采用 Ulysses，候选卡给出 all-to-all 布局转换和整除边界。
+- [VAE Patch Parallel](../parallelism/vae_patch_parallel.md)（`related`）：“VAE 并行 ｜ 提高算力 ｜ 每张卡仅处理分配给自身的序列；为卡补充相邻卡部分序列解决卷积感受野”；“**HunyuanVideo 是另一份实现**：用 `models/hunyuan-video/hyvideo/vae/vae_parallel.py` 的沿单一序列维 1D overlap-chunk decode”。模型卡的 VAE 并行由候选卡精确限定为 HunyuanVideo 专用一维重叠切分。
+- [块稀疏 Attention 与 Ulysses 序列并行同时使能（看全序列 + 规范序重映射 + head 负载均衡）](../../guides/experience/interventions/blockwise_sparse_attention_ulysses_integration.md)（`related`）：“`single_sparse`·`sp8_sparse`（块稀疏 Attention，默认 SVG 可切 TopK；`sp8_sparse` 为 Ulysses8）”；“长序列视频 ［DiT］(../../../concepts/modules/dit.md) 想同时吃到两种降本：［块稀疏 Attention］(../../../concepts/modules/blockwise_sparse_attention.md)（TopK/SVG 丢弃低注意力块）减计算量，［Ulysses］(../../../concepts/parallelism/ulysses.md) 序列并行摊显存/时延”。候选卡就是该配置组合的布局重排与负载均衡实施指南。
+- [多卡 Ring/序列并行注意力用异步 all-gather + 本地 FA + LSE 合并掩盖 KV 通信](../../guides/experience/interventions/ring_attention_comm_compute_overlap_lse_merge.md)（`related`）：“通信完成后再算其他分片，并通过 **LSE 合并**两段输出”；“用 all-gather 一次性收全环 KV，配合异步启动 + 本地先算 + LSE 合并，把通信掩盖在第一段本地注意力里”。模型卡的实际两段计算由指南给出可执行步骤和 LSE 前置。
+- [大分辨率 VAE encode/decode 多卡空间并行（按算子选通信 + 边界 halo/overlap 补偿）](../../guides/experience/interventions/vae_multicard_spatial_parallel.md)（`related`）：“每张卡仅处理分配给自身的序列；为卡补充相邻卡部分序列解决卷积感受野”；“VAE decode 沿 latent 宽度维在各 rank 间切分：因卷积感受野，非首片向左借 `overlap_size`、各片向右借到边界”。候选指南把模型总览中的 VAE 并行扩成可执行切分、去 pad 和 all_gather 流程。
+- [视频 DiT 块稀疏 Attention 使能 — must-keep 首帧/文本 + TopK/SVG 选型（TopK 需离线 profiling）](../../optimizations/experience/rules/video_dit_blockwise_sparse_attention.md)（`related`）：“模型专用 predictor 适配器：`HunyuanVideoTopKAdapter` / `HunyuanVideoSVGAdapter`”；“长序列视频 ［dit］(../../../concepts/modules/dit.md)（本经验覆盖 ［hunyuan-video］(../../../concepts/models/hunyuan_video.md)）”。候选卡直接给出模型专用 must-keep、TopK profiling 与 SVG 选型步骤。
+- [视频 DiT 量化降显存 / 带宽：per-block FP8 注意力（主要收益，Ulysses-only）+ MXFP8 matmul（跳过 adaLN）](../../guides/experience/interventions/video_dit_fp8_mxfp8_quantization.md)（`related`）：“`single_fp8`（FP8 FA + MXFP8 matmul，950PR）”；“两者都需 ［ascend-950］(../../../concepts/platforms/ascend_950.md)（Atlas 950）级 FP8 硬件”。模型配置的双量化组合由候选指南给出量化范围、硬件门控与 Ulysses-only 限制。
+<!-- cannbot:related:end -->

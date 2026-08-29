@@ -26,7 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Asin](asin.md)（`related`）：固定 UB 空间时，GetAsinTmpBufferFactorSize 的 maxLiveNodeCount/extraBuffer 用于反算 Asin 单次 calCount，直接决定分块大小。
-- [GetAsinMaxMinTmpSize](get_asin_max_min_tmp_size.md)（`related`）：GetAsinMaxMinTmpSize 先界定合法缓存范围，factor 查询再在实际选定缓存上推算元素数；二者组成同一 Asin tiling 流程。
-- [更多样例（数学计算）](../more_examples.md)（`related`）：样例三正是用 Asin 的 maxLiveNodeCount 与 extraBuf 反推 currentShapeSize；目标接口给出这两个量的定义和参数类型。
+- [GetAsinMaxMinTmpSize](get_asin_max_min_tmp_size.md)（`related`）：通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量；开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。最大/最小接口先确定合法临时空间范围，factor 接口再把已选空间换算成单次元素容量；两端组成 Host Tiling 选 buffer、Kernel 按容量分块的闭环。
 <!-- cannbot:related:end -->

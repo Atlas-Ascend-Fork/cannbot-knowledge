@@ -22,9 +22,6 @@ reg计算数据搬运接口，适用于从矢量数据寄存器连续非32B对�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscStoreUnalignPostupdate](asc_storeunalign_postupdate.md)（`related`）：PostUpdate 版本在生成主体状态时自动更新地址；其 offset 类型决定随后应选择哪一种 Post 尾处理。
-- [reg数据搬出](reg_store.md)（`related`）：RegStore 总览解释对齐、非对齐和 postupdate 存储族，给出 AscStoreUnalignPost 在完整写回流程中的位置。
-- [AscStoreUnalign](asc_storeunalign.md)（`same_topic`）：“AscStoreUnalign”处理从矢量数据寄存器连续非32B对齐搬出到UB，使用uint32_t作为存储偏移量，不改变源操作数地址，每次循环需用户手动更新目的地址。；“AscStoreUnalignPost”明确从矢量数据寄存器连续非32B对齐搬出到UB的尾块场景，将非对齐寄存器中暂存的尾块搬出到UB，需在asc_storeunalign或asc_storeunalign_postupdate之后调用。。实质衔接：AscStoreUnalign 正文要求调用 Post 收尾；Postupdate 是自动更新地址的对应流程，优化指南说明连续非对齐搬出的使用模式。
-- [AscStoreUnalignPost](asc_storeunalign_post_deprecated.md)（`same_topic`）：当前 AscStoreUnalignPost 是废弃同名接口的直接承接者，保留非对齐连续搬出并处理末尾暂存数据。
-- [asc_storeunalign_post_postupdate](asc_storeunalign_post_postupdate.md)（`same_topic`）：AscStoreUnalignPost 与 post_postupdate 都完成非对齐连续搬出的尾块收尾；后者在相同收尾合同上自动推进目的地址，前者由调用方提供偏移。
+- [AscStoreUnalign](asc_storeunalign.md)（`related`）：调用本接口之前，需要调用asc_storeunalign接口，或者asc_storeunalign_postupdate接口，且本接口与前序接口的非对齐寄存器要保持一致。；调用该接口之后，需要调用asc_storeunalign_post处理非对齐搬出的尾块。两端互相声明前序主体搬出与尾块收尾的强制调用顺序。
+- [AscStoreUnalignPostupdate](asc_storeunalign_postupdate.md)（`related`）：调用本接口之前，需要调用asc_storeunalign接口，或者asc_storeunalign_postupdate接口，且本接口与前序接口的非对齐寄存器要保持一致。；使用addr_reg作为存储偏移量时，本接口应与asc_storeunalign_post接口配合使用。asc_storeunalign_post接口用于处理该场景下非对齐搬出的尾块。前者要求前序寄存器一致，后者明确 addr_reg 路线由 post 收尾。
 <!-- cannbot:related:end -->

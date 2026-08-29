@@ -12,9 +12,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_shmem_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # CANN SHMEM 通信编程模型
@@ -101,3 +101,11 @@ cache_nope = torch_npu._C._construct_NPU_Tensor_From_Storage_And_Metadata(metada
 
 - **gap（外部仓）**：SHMEM kernel 级实现（MTE/xDMA/SDMA 引擎封装、`aclshmem_init`/`aclshmem_finialize`/`aclshmem_create_tensor` 等运行时细节）在外部 `cann/shmem` 仓，cann-recipes-infer 未含。
 - **接口名记法**：`GetShmemDataAddr`/`GetShmemSignalAddr`/`shmem_ub_put_nbi_new`/`aclshmem_malloc`/`MemType.HOST_SIDE` 均按 guide 文档原拼写记录；guide 代码片段为示意（省略号略去细节）。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [HIXL（Huawei Xfer Library 单边零拷贝通信库）](hixl.md)（`related`）：焦点卡区分“远端 DRAM 访问走的 **SDMA** 引擎属 ［hixl］(hixl.md) 子节”，候选卡说明“基于全局统一编址，发起方经 SDMA 直接读写对端 DRAM”；两卡共同闭合 SHMEM 编址到 HIXL 远端 DRAM 传输的执行路径。
+- [KVCache Offload](kvcache_offload.md)（`related`）：焦点卡说明“支持 NPU HBM 与 CPU DDR 混合编址，把 Host 内存映射成可直接当 Device tensor 使用的内存”，候选卡给出“把占比较高的 **MLA Full KVCache** 从设备 HBM 内存卸载到 **Host 内存**上”的容量方案；前者是后者 Host 映射访问的通信内存机制。
+- [基于 SHMEM 重写的 MoE Dispatch&Combine](shmem_dispatch_combine.md)（`related`）：焦点卡给出“状态区紧跟数据区之后”，候选卡以“对称内存 win 区（数据区 + 状态区）与 put/signal/wait 语义为基础”展开 Dispatch/Combine 的发数据、发状态与等待流程；基础内存合同直接支撑该 MoE 通算融合实现。
+<!-- cannbot:related:end -->

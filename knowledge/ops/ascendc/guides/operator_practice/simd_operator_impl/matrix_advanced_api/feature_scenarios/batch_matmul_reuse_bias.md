@@ -25,6 +25,5 @@ A、B、C矩阵的Layout类型都为NORMAL时，不支持batchMode参数设为SI
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SetBias](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_bias.md)（`explains`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；Batch Matmul复用Bias矩阵正文说明“Batch Matmul场景中各Batch使用相同Bias时，设置isBiasBatch为false复用单个不带Batch轴的Bias矩阵”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
-- [Batch Matmul基础功能](batch_matmul_basics.md)（`related`）：Bias 复用建立在 Batch Matmul 基本 shape/batch 配置上，只在各 batch 使用同一 Bias 时将 isBiasBatch 设 false。
+- [SetBias](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_bias.md)（`explains`）：若不同Batch的计算使用的Bias数据相同，则多Batch计算可以复用同一个Bias矩阵，如下图所示，此场景中调用SetBias接口时，只需设置一个1 * singleCoreN大小的Bias矩阵。 在Matmul Tiling计算中，必须配置TCubeTiling结构中的isBias参数为1，即启用Bias后，才能调用本接口设置Bias矩阵。 指南确定复用时只传一个 N 维 Bias，API 合同补充 Tiling 必须先启用 Bias，形成完整调用配置。
 <!-- cannbot:related:end -->

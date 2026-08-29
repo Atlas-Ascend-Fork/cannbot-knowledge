@@ -23,6 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_atomic_add](asc_atomic_add.md)（`related`）：AscAtomicAdd 是同一 SIMT 地址与返回旧值模型下的加法对偶，可据更新方向选择且共享并发顺序不确定性。
-- [AscAtomicSub](../../simd_api/c_api/scalar_compute/asc_atomic_sub.md)（`same_topic`）：AscAtomicSub 与《asc_atomic_sub》的实质衔接是：SIMT asc_atomic_sub 是同一 GM 原子减；原子加提供逆操作对照，绕过 DCache 的读写和 AscDcci 共同落实 focal 明示的缓存一致性要求。
+- [AscAtomicSub](../../simd_api/c_api/scalar_compute/asc_atomic_sub.md)（`same_topic`）：“对Unified Buffer或Global Memory上的数据与指定数据执行原子减操作，即在这些内存区域的数据中减去指定数据。”与“对Global Memory中的数据与指定数据执行原子减操作，即将val从address指向的数据元素上减去。”提供双方正文证据。二者共享对 address 执行原子减并返回旧值的核心契约；SIMT API 允许 UB 或 GM，而 C scalar API 仅声明 GM，互读能直接确认地址空间边界。
 <!-- cannbot:related:end -->

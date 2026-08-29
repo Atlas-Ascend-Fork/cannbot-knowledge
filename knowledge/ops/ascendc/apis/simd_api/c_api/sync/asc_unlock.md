@@ -32,7 +32,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLock](asc_lock.md)（`related`）：AscUnlock 必须在相同 mutex_id/mode 的 AscLock 之后，二者共同形成互斥同步区间。
-- [Lock](../../basic_api/sync_control/intra_core_sync/lock.md)（`same_topic`）：Lock 与《AscUnlock》的实质衔接是：Lock 必须用 AllocMutexID 得到 mutex，并与 Unlock、ReleaseMutexID 成对；C Lock/Unlock 和核内同步概述共享同一阻塞流水契约。
-- [ReleaseMutexID](../../basic_api/sync_control/intra_core_sync/release_mutex_id_isasi.md)（`same_topic`）：ReleaseMutexID 与《AscUnlock》的实质衔接是：ReleaseMutexID 必须在 Lock/Unlock 完成后与 AllocMutexID 成对，避免框架 mutex 资源耗尽；C Lock/Unlock 是同一资源契约的对应入口。
+- [AscLock](asc_lock.md)（`related`）：asc_lock与asc_unlock必须严格成对使用，并使用相同的mutex_id与mode。；必须与asc_lock搭配使用，且需要使用相同的mutex_id与mode。。两端相互声明同一 mutex_id/mode 的成对协议：asc_lock 获取并阻塞流水，asc_unlock 在前序指令完成后释放；联合阅读才能确定合法同步序列。
 <!-- cannbot:related:end -->

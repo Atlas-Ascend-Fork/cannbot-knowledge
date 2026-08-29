@@ -233,11 +233,6 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSyncDataBarrier](../../apis/simd_api/c_api/sync/asc_sync_data_barrier.md)（`exemplifies`）：《AscSyncDataBarrier》处理“阻塞后续指令执行，直到所有之前的内存访问指令执行结束，用于解决Scalar的内存依赖。”。《PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线》提供“dav-3510 编译器不接受 PIPE_S 作为 PipeBarrier 模板参数；移除该屏障并保留 UB 写后与 DMA 写后的有效同步。”，其具体合同或探针直接接入Scalar 内存依赖的 data barrier、pipe barrier 选择和同步位置验证。
-- [PipeBarrier](../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)（`exemplifies`）：接口契约列出 PipeBarrier 支持的流水同步语义，可据此确认 PIPE_S 不是有效模板参数，并选择实际生产者/消费者流水。
-- [核内同步](../../apis/simd_api/basic_api/sync_control/intra_core_sync/intra_core_sync.md)（`exemplifies`）：核内同步 与《PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线》的实质衔接是：核内同步的选择取决于流水依赖：MTE 事件用 SetFlag/WaitFlag，指令流水用 PipeBarrier，mutex 用 Lock；所连案例验证错误枚举、缺失屏障和跨 VF 可见性。
-- [PipeBarrier 的 PIPE_V 是全局枚举](pipebarrier_pipe_v_uses_global_enum.md)（`related`）：即便换成支持的 PIPE_V，classic Ascend C 中枚举也必须使用全局 PIPE_V 而非 AscendC::PIPE_V；两卡共同界定模板参数和值的合法写法。
-- [中级性能优化](../../guides/operator_practice/typical_operator_cases/simd_operator_impl/gelu_reg_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线》的实质衔接是：GELU 中级优化从入门版迁到 Reg/VF 融合并使用 Load/Store/PipeBarrier；所选故障卡直接约束这些调用和 GELU 数值实现。
-- [中级性能优化](../../guides/operator_practice/typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线》的实质衔接是：Matmul+LeakyRelu 中级优化的正文直接串联 LoadData/Mmad/LeakyRelu、Load/Store、PipeBarrier、SetFlag 和 UnitFlag；所选故障卡约束这条融合流水。
-- [标量 S pipe 误用 TQue 导致输出全常数](../precision/scalar_s_pipe_requires_explicit_mte_dependencies.md)（`related`）：若原意是让标量访问 UB 与 DMA 保序，正确做法是 TBuf+PIPE_ALL 显式串行 MTE/S 数据依赖，而不是不支持的 PipeBarrier<PIPE_S>。
+- [PipeBarrier 的 PIPE_V 是全局枚举](pipebarrier_pipe_v_uses_global_enum.md)（`related`）：“`PipeBarrier` 模板位于 `AscendC`，但 `PIPE_V` 由底层 intrinsic 头以全局枚举声明；模板名和枚举名不共享命名空间。”与“删除不受支持的 `AscendC::PipeBarrier<PIPE_S>()`，保留写回前的 `PIPE_V` 与 UB 复用前的 `PIPE_MTE3`。如果换成不同的流水线组合，不应照抄删除；先按目标芯片与 CANN 版本确认允许的 `PipeBarrier` 模板参数，再用编译和端到端精度验证顺序关系。”是双方正文中的具体合同。一张卡解决合法 PIPE_V 的枚举命名空间，另一张卡解决 PIPE_S 不是目标模板参数并保留 PIPE_V/MTE3；两端共同支撑 PipeBarrier 编译修复后的合法写法与同步边界。
+- [标量 S pipe 误用 TQue 导致输出全常数](../precision/scalar_s_pipe_requires_explicit_mte_dependencies.md)（`related`）：焦点卡采用“用三道 `PipeBarrier<PIPE_ALL>()` 显式串行化 `MTE2(load) → S(scalar) → MTE3(store) → buffer reuse`。”；编译卡指出“目标编译器对 `PipeBarrier` 的模板参数有受支持范围，`PIPE_S` 不在该范围内。”，解释为什么不能把三道 PIPE_ALL 简化为非法的 PIPE_S 屏障。
 <!-- cannbot:related:end -->

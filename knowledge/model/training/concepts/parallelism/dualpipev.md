@@ -165,3 +165,11 @@ profiling 取证场景：DeepSeek-V3 671B 模型、`PP8 TP2 EP32` 下采集的 P
 - [torchtitan-5d-parallel](torchtitan_5d_parallel.md)（跨框架对照：TorchTitan 侧未来计划接入 DualPipeV，但 torch 原生 dW 约束使其当前无法与 FSDP/ZeRO3 同用）
 - [fsdp](fsdp.md)（互斥关系：DualPipeV 与 `use_custom_fsdp` 不兼容，PP 重叠掩盖与 FSDP 零冗余权重是两条不同显存路线）
 - [moe-comm-overlap](../techniques/moe_comm_overlap.md)（DualPipeV 全掩盖依赖的 MoE 跨 microbatch 前反向通信掩盖 `--moe-fb-overlap`）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FSDP2（Fully Sharded Data Parallel 2）](fsdp.md)（`related`）：“- 与以下特性**互斥**：VPP（`num_layers_per_virtual_pipeline_stage`）、长序列并行 / CP（`context_parallel_size > 1`）、异步 DDP（`overlap_grad_reduce`）、`swap_attention`、`tp_2d`、`use_custom_fsdp`、`use_multiparameter_pipeline_model_parallel`、`--pipeline-model-parallel-layout`。”明确给出左端事实；“- **DualPipeV**（MoE 大模型高效 PP 调度，脱胎自 DeepSeek DualPipe）当前**无法**与 ZeRO3 DP 切分同时使能——torch 原生 dW 计算约束权重 W 不能在 DP 域保持切分；后续需适配以同时拿内存与性能收益。”明确给出右端事实。两端共同约束 DualPipeV 与全分片数据并行的组合：一端给出 custom-fsdp 互斥开关，另一端解释 torch dW 对 ZeRO3/FSDP 并用的限制及包装层差异。
+- [MoE 通信掩盖（Dispatch 调度 + AllToAll/AllGather Overlap + 前反向跨 MicroBatch 掩盖）](../techniques/moe_comm_overlap.md)（`related`）：“配合 `--moe-fb-overlap`（MoE 跨 microbatch 前反向通信掩盖）可在稳定阶段全掩盖专家 All2All。”明确给出左端事实；“- **跨 microbatch 前反向掩盖**（`--moe-fb-overlap`）：用「无依赖的前向计算掩盖反向产生的 All2All、用反向计算掩盖前向 All2All」，配合 dw/dx 分离，在 1F1B 稳定阶段做到 All2All **100% 掩盖**。这是 ［dualpipev］(../parallelism/dualpipev.md) 稳定阶段全掩盖专家 All2All 的机制本体。”明确给出右端事实。DualPipeV 提供双向流水载体，MoE 通信页解释该开关如何以跨 microbatch 前反向计算和 WeightGradStore 掩盖 All2All。
+- [Swap Attention（激活换出 Host + SmartSwap + 自适应内存）](../techniques/swap_attention.md)（`related`）：三者都是「显存 ↔ 算力/带宽」取舍的不同自动化程度，解决同一问题、通常择一启用（其中 swap-attention 与自适应内存有显式互斥校验，详见各节），且都与重计算特性配合或二选一。；开关为 `--schedules-method dualpipev`，约束模型层数为 `2·PP` 倍数、microbatch 数 ≥ `2·PP−1`，与 VPP/长序列 CP/异步 DDP/swap-attention/tp_2d/custom-fsdp 互斥。profiling 场景：DeepSeek-V3 671B、PP8 TP2 EP32。；目标给出 DualPipeV 与 swap-attention 的显式互斥，直接约束同一训练配置的合法组合。
+<!-- cannbot:related:end -->

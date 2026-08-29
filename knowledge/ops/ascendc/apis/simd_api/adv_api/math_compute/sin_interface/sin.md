@@ -26,12 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [按序列位缓存 cos/sin 并让 q/k 共享搬运](../../../../../runbooks/performance/cache_position_coefficients_across_shared_inputs.md)（`exemplifies`）：Sin 与《按序列位缓存 cos/sin 并让 q/k 共享搬运》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
-- [Cos](../cos_interface/cos.md)（`related`）：Sin 与《Cos》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
-- [Cos接口](../cos_interface/cos_interface.md)（`related`）：Sin 与《Cos接口》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
-- [Tan](../tan_interface/tan.md)（`related`）：Sin/Cos 组合可做公式 A/B，但不能忽略极点边界。
-- [GetSinMaxMinTmpSize](get_sin_max_min_tmp_size.md)（`same_topic`）：Sin 与《GetSinMaxMinTmpSize》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
-- [GetSinTmpBufferFactorSize](get_sin_tmp_buffer_factor_size.md)（`same_topic`）：Sin 与《GetSinTmpBufferFactorSize》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
-- [Sin接口](sin_interface.md)（`same_topic`）：Sin 与《Sin接口》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
-- [Tan接口](../tan_interface/tan_interface.md)（`same_topic`）：Tan接口 与《Sin》的实质衔接是：Tan 接口由 Tan 和两种临时空间查询组成；Atan 是反函数，Sin/Cos 卡解释 tan=sin/cos 的输入值域与验证关系。
+- [GetSinTmpBufferFactorSize](get_sin_tmp_buffer_factor_size.md)（`related`）：GetSinTmpBufferFactorSize 给出“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize”；Sin 页说明“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。”，前者正用于为后者带 calCount 的显式缓冲重载推导单次计算量。
 <!-- cannbot:related:end -->

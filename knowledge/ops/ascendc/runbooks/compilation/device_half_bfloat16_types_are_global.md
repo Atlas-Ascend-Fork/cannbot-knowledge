@@ -250,9 +250,5 @@ std::tuple<at::Tensor, at::Tensor> apply_rotary_pos_emb(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Tiling模板编程](../../apis/utils_api/tiling_template_programming/tiling_template_programming.md)（`exemplifies`）：Tiling模板编程 与《AscendC 标量类型误加命名空间导致模板分发编译失败》的实质衔接是：Tiling 模板编程依赖参数声明、选择宏和 key 获取；所选编译故障直接约束模板类型与分发实例化。
-- [bfloat16类型](../../apis/simt_api/math_functions/bfloat16_type/bfloat16_type.md)（`exemplifies`）：《bfloat16类型》说明bfloat16类型函数总入口，涵盖算术、比较、数学库及精度转换函数，并包含bfloat16x2类型对应函数。；《AscendC 标量类型误加命名空间导致模板分发编译失败》说明CANN 9.0.1 的 device 标量类型 half 与 bfloat16_t 位于全局作用域；host dtype 分发实例化 kernel 时不能写成 AscendC::half 或 AscendC::bfloat16_t。。二者在bfloat16类型入口的实际使用受全局类型命名、B16边界转换和提升后lane宽度约束，而非由平台或版本过滤上存在可执行的直接衔接。
-- [Reg CastTrait RoundMode 命名空间编译失败](casttrait_roundmode_is_in_ascendc.md)（`related`）：Reg CastTrait RoundMode 命名空间编译失败 与《AscendC 标量类型误加命名空间导致模板分发编译失败》的实质衔接是：该故障由 CastTrait 字段 RoundMode 的错误命名空间触发；trait 存储期/NTTP、merge/sat/round 枚举和 Cast 模式故障共同约束真实模板声明。
-- [AscendC:: 前缀致全局符号编译失败](ascendc.md)（`same_topic`）：AscendC 前缀卡系统列出 half、bfloat16_t、PIPE_* 等实际位于全局命名空间的符号，本卡给出低精度 device 分发中的具体编译闭环。
-- [RegTensor 使用 c10 低精度类型导致 TypeGet 未定义](device_templates_use_native_types_not_torch_wrappers.md)（`same_topic`）：两卡共同限定 device 模板的低精度类型边界：kernel 侧使用全局 `half`/`bfloat16_t` 原生类型，不能加 AscendC:: 前缀，也不能把 c10::Half/c10::BFloat16 带入 RegTensor。
+- [AscendC:: 前缀致全局符号编译失败](ascendc.md)（`related`）：dav-2201 总结卡规定“`bfloat16_t`、`PIPE_ALL/PIPE_FIX/PIPE_MTE2/PIPE_V/PIPE_MTE3`、`CubeFormat`、`CFG_MDL` 属全局命名空间，不加前缀。”；950 专项卡确认“CANN 9.0.1 的 device 标量类型 `half` 与 `bfloat16_t` 位于全局作用域而不是 `AscendC` 命名空间”，可用于跨版本核对标量模板实参的同一名称解析规则。
 <!-- cannbot:related:end -->

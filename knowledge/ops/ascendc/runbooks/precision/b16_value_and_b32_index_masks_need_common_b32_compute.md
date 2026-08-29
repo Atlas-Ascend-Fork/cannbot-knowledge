@@ -254,16 +254,8 @@ __simd_vf__ inline void cummin_scan_vf(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCreateMask](../../apis/simd_api/c_api/reg/reg_data_types/asc_create_mask.md)（`exemplifies`）：AscCreateMask 与《B16 比较先升到 B32 锁定索引 lane》的实质衔接是：AscCreateMask 根据数据位宽和 pat_mode 生成 MaskReg，随后由 UpdateMask/GetMaskSpr、Load/Store 和 MergeMode 消费；两个编译错例限定模板类型与可写引用。
-- [Select](../../apis/simd_api/basic_api/reg_vector_compute/mask_reg_compute/select.md)（`exemplifies`）：《Select》的任务是“根据mask的比特位值从src0或src1中选取元素，bit为1选src0，bit为0选src1。”。《B16 比较先升到 B32 锁定索引 lane》具体提供“cummin/argmin 前缀扫描同时更新 B16 值与 int32 索引时，128-lane 比较 mask 不能驱动 64-lane 索引 Select；先升 float 统一 B32 lane。”，它直接用于Reg Select 的 mask 来源、CMPMASK 生命周期、偏移、别名和跨调用污染。
-- [Ascend950 Reg 扫描按 256B 锁定 lane](dav3510_vector_register_width_is_256_bytes.md)（`related`）：256B 寄存器决定 B16 为 128 lane、B32 为 64 lane，是该 mask 错配的硬件根因。
-- [B16 结果大幅偏差 — UNPACK 后补 Reg Cast](b16_unpack_requires_numeric_cast_before_fp32_compute.md)（`related`）：统一到 B32 计算时，UNPACK 只改变布局，仍需显式数值 Cast 才能得到正确 float 值。
-- [BF16 标量 cast 后端失败—改用位序键](../compilation/bf16_scalar_compare_by_raw_bits.md)（`related`）：BF16 标量 cast 后端失败—改用位序键 与《B16 比较先升到 B32 锁定索引 lane》的实质衔接是：位序键是 BF16 标量 cast 失败的直接替代；所选卡补充同一后端限制、B16→B32 比较宽度及 NaN 显式选择。
-- [FP16 算子 Cast 提升-计算-回退链设计](fp16_cast_up_fp32_compute_cast_down_chain.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《B16 比较先升到 B32 锁定索引 lane》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [Reg Cast 默认 UNKNOWN mask 被拒 — 显式 ZEROING](../compilation/reg_cast_requires_explicit_zeroing_trait.md)（`related`）：B16 升 float 的 Reg Cast 必须显式选择合法 mask merge trait，否则修复会在编译期被默认 UNKNOWN 拒绝。
-- [Reg int32→int64 Cast 源目 VL 错配留空索引](int32_to_int64_reg_cast_must_respect_destination_lane_width.md)（`related`）：候选展示 value/index 不同位宽时同一 MaskReg 不能跨 lane 语义复用；焦点展示 widening Cast 的 load/cast/store 也必须按目标 lane 锁定。
-- [b16 running 经 fp32 回转会改写 NaN payload](bit_exact_b16_nan_payload_needs_original_dtype_running_value.md)（`related`）：该卡保证 B16 value 与 int32 index 使用同一 64-lane B32 mask；focal在此基础上再分离原 dtype value 与 fp32 compare state，防止索引正确但 NaN payload 被 Cast 改写。
-- [累计极值 NaN 语义须用 self-NE 合成选择掩码](ordered_compare_alone_cannot_propagate_nan_prefix_state.md)（`related`）：cummin/argmin 同时更新值与索引时还需统一 B32 lane 宽度，否则即使 NaN mask 逻辑正确也会驱动错索引半区。
-- [b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane](compute_lane_count_must_follow_promoted_fp32_width.md)（`same_topic`）：两卡共同要求比较计算提升到 fp32 后按 B32 的 64-lane 域组织 value、index 与 mask；否则仍按 B16 128-lane 分块会漏更新后半区。
-- [半精度索引错位—拆分双 int32 掩码](b16_value_mask_must_split_for_two_int32_index_registers.md)（`same_topic`）：两卡针对同一 128 个 B16 value lane 与 64 个 int32 index lane 的锁步失败；候选统一升 B32，本卡保留 B16 并拆两组 index/mask。
+- [B16 交错 DINTLV 成对归零 — 转 fp32 后重排](b16_interleave_compute_should_promote_to_b32_layout.md)（`related`）：同一 `MaskReg` 跨 B16/B32 使用会破坏 value/index 的逐 lane 对应。；唯一根因是把 `DINTLV_B16` 产生的 B16 双寄存器 lane 布局直接当作逻辑偶/奇对，再经 `Reg::Cast` 做逐 lane 运算；两张运行手册都证明 B16 lane 或 mask 不能直接按 B32 消费语义复用，并把计算提升到共同的 fp32/B32 布局作为正确性基线。
+- [b16 running 经 fp32 回转会改写 NaN payload](bit_exact_b16_nan_payload_needs_original_dtype_running_value.md)（`related`）：“两份 running 使用同一 mask 更新，避免值与索引、值与比较状态发生漂移；”要求原 dtype carry 与 FP32 compare carry 同步；“用 B16 `Compare` 的 mask 直接驱动 int32 `Select`，只检查 values 不检查 indices。”指出同一 cummin 链里 mask 跨 B16/B32 会破坏值与索引的 lane 对齐。
+- [Ascend950 Reg 扫描按 256B 锁定 lane](dav3510_vector_register_width_is_256_bytes.md)（`same_topic`）：“工具链头文件与算子源码探针都显示 dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。int32 寄存器实际只有 `256 / 4 = 64` 个 lane。”与“在 256B Reg 宽度下，B16 值寄存器有 128 个 lane，int32 索引寄存器只有 64 个 lane。”提供双方正文证据。两条精度卡共同定位 dav-3510 256B Reg 下 int32 只有 64 lane；后一条继续解释 B16 128-lane mask 与 B32 index 64-lane 的语义冲突。
+- [半精度索引错位—拆分双 int32 掩码](b16_value_mask_must_split_for_two_int32_index_registers.md)（`same_topic`）：“每个 value register iteration 必须加载两组 int32 寄存器”与“修复把 half/bfloat16/float 的计算类型统一为 float，int32 保持 int32”是同一 B16 value/B32 index lane 错配的两条已验证修复路线，可直接用于快路与安全回退选型。
 <!-- cannbot:related:end -->

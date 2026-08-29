@@ -47,3 +47,10 @@ start_time = time.time()
 
 - `diff 事实`（@11c5c88b）：`import torch.distributed as dist` + `dist.barrier()`（带注释）确在 merged diff、插在计时起点之前。"barrier 降低打点抖动"为作者陈述意图，效果层未并入事实面。
 - 溯源下探：[cann-recipes-infer-pr-23-feat-optimize-for-data-process-between-models](https://gitcode.com/cann/cann-recipes-infer/merge_requests/23)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MTP / 投机解码 decode 计时采集口径：累加每步全部 draft 前向、每 decode 步记一条完整耗时、分「每步」与「每 token」两指标](mtp_decode_timing_collection_granularity.md)（`related`）：- 多卡 MTP 计时前 `dist.barrier` 对齐各 rank、剔除卡间异步抖动见 ［multicard-mtp-timing-barrier］(../validations/multicard_mtp_timing_barrier.md)。；在 `torch.npu.synchronize()` 与 `start_time = time.time()` **之前**插入一次全局 barrier，强制所有 rank 汇合到同一点再启动计时：。采集卡要求每步记录 main 与全部 draft 的完整耗时，barrier 卡补上多卡情况下计时起点对齐的具体插入位置，使该记录不混入 rank 间进度差。
+- [MTP / 投机解码 decode 计时：拆「每 step 时延」与「每等效 token 时延」两口径分报](../../optimizations/experience/rules/mtp_decode_timing_two_metric_split.md)（`related`）：“`dist.barrier()` 剔除卡间进度不齐带来的打点抖动，使 main/MTP 模型的计时更真实反映各自执行开销。”；“- **每等效 token 时延**（average equivalent latency of MTP-n）= `time / (累计接受数 + step 数)`：每个真正吐出 token 的有效耗时，反映投机接受的吞吐收益。”。多卡计时先对齐 rank，再按等效 token 分母解释投机收益，避免把同步抖动和指标口径混为一体。
+<!-- cannbot:related:end -->

@@ -88,13 +88,3 @@ cyclic（每 16 元素轮换）与 block（每 128 元素共用）的错位，�
 
 - 直接用 `Muls<float>(yf, ab, st, cc)` 把 per-group scale 作用到 `tg*groupSize_` 长度的数据上，假设 API 会做 block repeat。
 - 仅看 kernel 是否编译通过、是否被调度执行，不核对 scale 与数据的索引对齐方式。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Broadcast（张量变换）](../../apis/simd_api/adv_api/tensor_transform/broadcast.md)（`exemplifies`）：AscendC Muls cyclic-repeat 致分组 scale 错配 与《Broadcast（张量变换）》的实质衔接是：Muls 对短 scale 做 cyclic repeat 而分组量化需要 block repeat；Broadcast、Muls、AntiQuant、GroupedMatmul/SwiGLU 案例共同验证 scale 的连续分组映射。
-- [GetBroadCastMaxMinTmpSize](../../apis/simd_api/adv_api/tensor_transform/get_broad_cast_max_min_tmp_size.md)（`exemplifies`）：AscendC Muls cyclic-repeat 致分组 scale 错配 与《GetBroadCastMaxMinTmpSize》的实质衔接是：Muls 对短 scale 做 cyclic repeat 而分组量化需要 block repeat；Broadcast、Muls、AntiQuant、GroupedMatmul/SwiGLU 案例共同验证 scale 的连续分组映射。
-- [Muls（灵活标量位置）](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/muls_flexible_scalar.md)（`exemplifies`）：Muls（灵活标量位置） 与《AscendC Muls cyclic-repeat 致分组 scale 错配》的实质衔接是：灵活标量 Muls 的 scalarTensorIndex、LocalTensor 单点标量和 cyclic-repeat 语义会直接影响广播乘法、量化 scale 与标量位置。
-- [Broadcast场景](../../guides/operator_practice/simd_operator_impl/vector_programming/broadcast_scenario.md)（`related`）：AscendC Muls cyclic-repeat 致分组 scale 错配 与《Broadcast场景》的实质衔接是：Muls 对短 scale 做 cyclic repeat 而分组量化需要 block repeat；Broadcast、Muls、AntiQuant、GroupedMatmul/SwiGLU 案例共同验证 scale 的连续分组映射。
-- [Max/Min 逐元素非标量广播 须 Duplicate 至同长 buffer](count_based_max_min_is_element_wise_not_scalar_broadcast.md)（`same_topic`）：AscendC Muls cyclic-repeat 致分组 scale 错配 与《Max/Min 逐元素非标量广播 须 Duplicate 至同长 buffer》的实质衔接是：Muls 对短 scale 做 cyclic repeat 而分组量化需要 block repeat；Broadcast、Muls、AntiQuant、GroupedMatmul/SwiGLU 案例共同验证 scale 的连续分组映射。
-<!-- cannbot:related:end -->

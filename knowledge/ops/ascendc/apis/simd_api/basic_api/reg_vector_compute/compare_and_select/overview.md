@@ -27,9 +27,3 @@ platforms: ['950']
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscGe](../../../c_api/reg/compare_and_select/asc_ge.md)（`related`）：Reg 比较概述解释比较结果如何进入 MaskReg 并驱动选择，是理解 AscGe 输出用途的机制背景。
-<!-- cannbot:related:end -->

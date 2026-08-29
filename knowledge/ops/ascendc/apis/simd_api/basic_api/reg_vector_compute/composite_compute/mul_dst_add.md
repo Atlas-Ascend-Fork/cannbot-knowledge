@@ -24,12 +24,3 @@ platforms: ['950']
 - 本接口不修改全局寄存器的值。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reg Cast 默认 UNKNOWN mask 被拒 — 显式 ZEROING](../../../../../runbooks/compilation/reg_cast_requires_explicit_zeroing_trait.md)（`exemplifies`）：MulDstAdd 与《Reg Cast 默认 UNKNOWN mask 被拒 — 显式 ZEROING》的衔接是：MulDstAdd 与 MulAddDst 共享乘加写回但目标操作数位置不同；ZEROING trait 是 focal 明确允许的掩码模式，错误沿用累加式 mask 会改变写回结果。
-- [Axpy](axpy.md)（`same_topic`）：MulDstAdd说明将目的操作数与源操作数逐元素相乘再加另一个源操作数，结果写回目的操作数。
-- [MulAddDst](../../memory_vector_compute/composite_compute/mul_add_dst.md)（`same_topic`）：MulDstAdd 与《MulAddDst》的衔接是：MulDstAdd 与 MulAddDst 共享乘加写回但目标操作数位置不同；ZEROING trait 是 focal 明确允许的掩码模式，错误沿用累加式 mask 会改变写回结果。
-- [MulAddDst](mul_add_dst.md)（`same_topic`）：MulDstAdd 与《MulAddDst》的衔接是：MulDstAdd 与 MulAddDst 共享乘加写回但目标操作数位置不同；ZEROING trait 是 focal 明确允许的掩码模式，错误沿用累加式 mask 会改变写回结果。
-<!-- cannbot:related:end -->

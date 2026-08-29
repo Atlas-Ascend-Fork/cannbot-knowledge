@@ -26,14 +26,3 @@ Scalar读写Unified Buffer时，可以使用LocalTensor的SetValue和GetValue接
 ## Scalar读写数据时的同步
 Scalar读写Global Memory和Unified Buffer时属于PIPE_S（Scalar流水）操作，当用户使用SetValue或者GetValue接口，且算子工程开启自动同步时，不需要手动插入同步事件。
 如果用户关闭算子工程的自动同步功能时，则需要手动插入同步事件：
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetValue](../../../../apis/simd_api/basic_api/data_structures/global_tensor/set_value.md)（`explains`）：《SetValue》的任务是“设置GlobalTensor指定偏移位置的元素值，操作先写入DCache，需配合DataCacheCleanAndInvalid确保一致性。”。《Scalar读写数据》具体提供“Scalar计算单元仅支持读写Global Memory和Unified Buffer，介绍其读写方式及同步机制。”，它直接用于GlobalTensor 标量写入后的 DCache 可见性与 GetValue 验证。
-- [asc_dcci_entire](../../../../apis/simt_api/memory_access_functions/asc_dcci_entire.md)（`explains`）：asc_dcci_entire 与《Scalar读写数据》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_ldcg（内存访问函数）](../../../../apis/simt_api/memory_access_functions/asc_ldcg.md)（`explains`）：asc_ldcg（内存访问函数） 与《Scalar读写数据》的实质衔接是：asc_ldcg 通过 L2 cache 读取 GM，stcg 是写回配对，DCCI 用于失效缓存；L2 模式和 Scalar 访存指南共同决定命中策略与一致性。
-- [asc_stwt（内存访问函数）](../../../../apis/simt_api/memory_access_functions/asc_stwt.md)（`explains`）：asc_stwt（内存访问函数） 与《Scalar读写数据》的实质衔接是：asc_stwt 把数据写入 GM 并缓存到 DCache/L2；stcg/ldcg、缓存模式和 DCCI 共同决定写策略、后续读取及显式失效时机。
-- [GM SetValue 写回后 GetValue 读到旧值](../../../../runbooks/precision/gm_setvalue_getvalue_reads_stale_within_kernel.md)（`related`）：Scalar 读写指南要求 GM 写入后处理缓存一致性；该 runbook 给出同一 Kernel 内 SetValue 后 GetValue 读旧值的具体失效信号。
-- [VF 归约落 UB 后 GetValue 读取陈旧标量](../../../../runbooks/precision/vector_scalar_ub_handoff_requires_explicit_completion.md)（`related`）：指南中的 Scalar↔UB 访问还需尊重异步 Vector 流水；该卡验证 StoreAlign 后立即 GetValue 会读陈旧标量，并给出完成边界。
-<!-- cannbot:related:end -->

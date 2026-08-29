@@ -127,3 +127,11 @@ fb-overlap 的约束较硬（`MoEFwdBwdOverlapFeature.validate_args`）：仅 `a
 - [mc2](mc2.md)（TP 域算子级通算融合，另一条通信掩盖路线；与 `--moe-alltoall-overlap-comm` 的 `use_ascend_mc2` 互斥校验直接相关）
 - [mindspeed](../frameworks/mindspeed.md)（三档特性所在框架，经 features_manager patch 注入 Megatron MoE 层与调度）
 - [moe-dispatch-combine-v2](../../../inference/concepts/techniques/moe_dispatch_combine_v2.md)（跨域对照：推理侧把整条 dispatch/combine All2All 收敛为一体化融合算子，与训练侧异步重叠互为对照）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DualPipeV（V 形双向流水 + Zero-Bubble dw 分离）](../parallelism/dualpipev.md)（`related`）：“配合 `--moe-fb-overlap`（MoE 跨 microbatch 前反向通信掩盖）可在稳定阶段全掩盖专家 All2All。”明确给出左端事实；“- **跨 microbatch 前反向掩盖**（`--moe-fb-overlap`）：用「无依赖的前向计算掩盖反向产生的 All2All、用反向计算掩盖前向 All2All」，配合 dw/dx 分离，在 1F1B 稳定阶段做到 All2All **100% 掩盖**。这是 ［dualpipev］(../parallelism/dualpipev.md) 稳定阶段全掩盖专家 All2All 的机制本体。”明确给出右端事实。DualPipeV 提供双向流水载体，MoE 通信页解释该开关如何以跨 microbatch 前反向计算和 WeightGradStore 掩盖 All2All。
+- [MoE 训练优化（TP-Extend-EP / Zero-Memory / GMM 分组矩阵乘 / Shared-Experts）](moe_training_optim.md)（`related`）：依赖与边界（`MoEZeroMemoryFeature`）：必须搭 `--moe-alltoall-overlap-comm` 或 `--moe-fb-overlap`；支持 `alltoall` 与 `alltoall_seq` dispatcher；`--moe-fb-overlap` 下支持 level0 但不支持 `--moe-zero-memory-num-layers`。机制上，overlap 前向把专家计算的中间激活在用完后 `untyped_storage().resize_(0)` 直接释放、把重算所需的 `weight1 / activation_func / tokens_per_expert` 等存进 ctx，反向时按 `group_list` 重新 permute + GMM 复算出激活；level1 较 level0 多复算一段从而省得更多。跨 microbatch 前反向通信掩盖的机制本体见 ［moe-comm-overlap］(moe_comm_overlap.md)。；三档可独立衡量收益也彼此约束（`moe-fb-overlap` 与 `moe-alltoall-overlap-comm` 互斥，二选一）。机制承自 MindSpeed Core 的 MoE 特性模块（见 ［mindspeed］(../frameworks/mindspeed.md)），是 ［moe-training-optim］(moe_training_optim.md) 通信维度的核心抓手。。训练优化卡的 Zero-Memory 依赖 overlap 掩盖重算与重通信，通信卡提供对应 AllToAll 层内和跨 microbatch 调度机制。
+- [单专家 alltoall-v 缺同步屏障：非阻塞 D2H 搬回的 split 尺寸未就绪即被异步集合通信消费](../../../inference/runbooks/runtime/moe_alltoallv_single_expert_missing_d2h_sync.md)（`related`）：`num_local_experts == 1` 时不需要构造 `global_input_tokens_local_experts_indices`，代码**跳过整个 `repeat_interleave`**；代价是要从 device 取回每专家 token 数（一次 device→host 同步）；前者说明单专家分支为何丢失 split 搬回的偶然屏障，后者说明 alltoall dispatcher 消费每专家 token 数时本来就跨越 device→host 控制面，二者共同定位 split 在集合通信前必须就绪。
+<!-- cannbot:related:end -->

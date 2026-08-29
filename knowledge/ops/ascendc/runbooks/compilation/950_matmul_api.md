@@ -120,6 +120,5 @@ MatmulImpl<inputXType, inputWType, outputYType, inputBiasType, CFG_MDL> mmObj;
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Matmul高阶API开启纯Cube模式](../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_pure_cube.md)（`related`）：Runbook 的核心选择是 950 上不盲用 MIX、优先同核顺序执行；纯 Cube 指南给出 Matmul 高阶 API 的执行模式配置与适用边界，可核对是否真的需要 Vector/Cube 分核。
-- [TSCM输入的矩阵乘](../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/tscm_input_matmul.md)（`related`）：Runbook 从内置源确认 950 A/B 使用 TSCM+NZ，目标指南说明 TSCM 输入 Matmul 的 L1 驻留、类型配置和数据准备，是该选型的直接实现参考。
+- [WeightQuantBatchMatmulNz 950 ACLNN 算子知识](../../operators/aclnn/nn/matmul/weight_quant_batch_matmul_nz_950.md)（`related`）：焦点卡核对当前固定源码后确认“三条 Route 都是单 Kernel `MIX_CV`”，候选卡警告“arch35 目录 cpp（新版，MIX_AIC_1_2 + custom_weight_nz.h）与根目录 cpp 的 3510 `#else`（单核顺序 + weight_nz_performance.h）并存”；联合阅读可避免跨 CANN 源码版本误选执行模式。
 <!-- cannbot:related:end -->

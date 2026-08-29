@@ -88,3 +88,12 @@ cann-recipes-infer 在 [qwen3-next](../../../concepts/models/qwen3_next.md) 上�
 - 溯源下探：
   - [cann-recipes-infer-pr-359-support-context-parallel-execution-of-gateddeltanet-attention-in-qwen3-n](https://gitcode.com/cann/cann-recipes-infer/merge_requests/359)
   - [cann-recipes-infer-issue-159-rfc-support-context-parallelism-for-gateddeltanet-in-qwen3-next](https://gitcode.com/cann/cann-recipes-infer/issues/159)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Context Parallel](../../../concepts/parallelism/context_parallel.md)（`related`）：ZECO 卡把递推改写为“**一次轻量的跨 rank 状态传播**得到每个 rank 的 initial_state，再用 `h_t = a·h_0 + b` 本地还原状态、出输出——不再需要按 rank 顺序滚算 `h`。”；CP 概念卡定义“将 Sequence 切分为多个 chunk，每个 Rank 处理一个 chunk”，前者正是让 GDN 满足后者序列分片执行形态的专用状态传播机制。
+- [Gated DeltaNet (GDN)](../../../concepts/modules/gated_deltanet.md)（`related`）：GDN 概念卡指出“GDN 在长序列下显著降低计算与显存复杂度，但引入 Conv1d 和状态递推，不适合沿 Sequence 的并行切分。”；ZECO 卡以“线性注意力的 **chunk 递推状态跨 chunk 顺序依赖**（`h_t` 要等 `h_{t-1}`），天然抗拒按序列切分”定位同一阻碍并给出仿射状态传播修法。
+- [Qwen3-Next Atlas A3 推理部署与优化指南](../../models/qwen3_next_atlas_a3_deployment.md)（`related`）：ZECO 卡给出“**使能**：`export ENABLE_CONTEXT_PARALLEL_GDN=1` + `--cp-size N`（替换 `--enable-dp-attention --dp-size N`）；env 打开后 `use_full_tp=False` → GDN 走 CP。”；部署指南补充“GDN-CP 还需 CP 实际激活（`cp_size > 1`，即已设 `--cp-size`）作前置——仅设 `ENABLE_CONTEXT_PARALLEL_GDN` 而未开 CP 无效”，两端合成可执行的双开关使能合同。
+- [长序列 Prefill 注意力优先 Context Parallel（CP 仅 prefill 生效，MoE 复用 CP 域走 EP）](../../../optimizations/experience/rules/long_seq_prefill_context_parallel.md)（`related`）：ZECO 卡说明“于是线性注意力层也能沿序列维切到多 rank（CP），与全注意力层的 CP（ZigZag 负载均衡，见 ［long-seq-prefill-context-parallel］(../../../optimizations/experience/rules/long_seq_prefill_context_parallel.md)）配齐。”；选型卡限定“CP 全程受 `is_prefill` 门控”，因此前者扩展的是长序列 Prefill 的线性注意力覆盖面，而不是 Decode 并行。
+<!-- cannbot:related:end -->

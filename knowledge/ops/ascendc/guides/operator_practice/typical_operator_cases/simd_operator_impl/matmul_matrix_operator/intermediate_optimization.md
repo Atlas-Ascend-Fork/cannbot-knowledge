@@ -31,14 +31,6 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMmad](../../../../../apis/simd_api/c_api/cube_compute/asc_mmad.md)（`explains`）：中级性能优化 与《AscMmad》的实质衔接是：Matmul 中级优化直接使用 GM/L1/L0 搬入、LoadData、Mmad 和 UnitFlag，前后阶段及 UnitFlag 指南支撑同一流水。
-- [GmL1OrL0DataMove](../../../../../apis/simd_api/basic_api/data_move_guide/gm_l1_or_l0_data_move.md)（`explains`）：中级性能优化 与《GmL1OrL0DataMove》的实质衔接是：Matmul 中级优化直接使用 GM/L1/L0 搬入、LoadData、Mmad 和 UnitFlag，前后阶段及 UnitFlag 指南支撑同一流水。
-- [L1与L0数据搬运](../../../../../apis/simd_api/basic_api/data_move_guide/l1_l0_data_move.md)（`explains`）：中级性能优化 与《L1与L0数据搬运》的实质衔接是：Matmul 中级优化直接使用 GM/L1/L0 搬入、LoadData、Mmad 和 UnitFlag，前后阶段及 UnitFlag 指南支撑同一流水。
-- [LoadData](../../../../../apis/simd_api/basic_api/cube_compute/cube_compute_load/load_data_2_d.md)（`explains`）：中级性能优化 与《LoadData》的实质衔接是：Matmul 中级优化直接使用 GM/L1/L0 搬入、LoadData、Mmad 和 UnitFlag，前后阶段及 UnitFlag 指南支撑同一流水。
-- [Mmad](../../../../../apis/simd_api/basic_api/cube_compute/mmad_compute/mmad.md)（`explains`）：中级性能优化 与《Mmad》的实质衔接是：Matmul 中级优化直接使用 GM/L1/L0 搬入、LoadData、Mmad 和 UnitFlag，前后阶段及 UnitFlag 指南支撑同一流水。
-- [UnitFlag](../../../../../apis/simd_api/basic_api/cube_compute/mmad_compute_key_features/unit_flag.md)（`explains`）：中级性能优化 与《UnitFlag》的实质衔接是：Matmul 中级优化直接使用 GM/L1/L0 搬入、LoadData、Mmad 和 UnitFlag，前后阶段及 UnitFlag 指南支撑同一流水。
-- [UnitFlag](../../../../../apis/simd_api/basic_api/cube_compute_tensor_api/mmad_compute_key_features/unit_flag.md)（`explains`）：《UnitFlag》处理“unitFlag的核心功能体现为：Mmad和Copy接口引入了单元标志（unit-flag）机制，通过以内存块为粒度实现精细化的数据同步，从而有效降低同步延迟，提升系统整体性能。当UnitFlag开关打开后，对于L0C Buffer中的每个内存块（512B），提供一个单元标志位，用于指示该块是否可读或可写。”。《中级性能优化》提供“本节基于C++ Tensor编程范式，介绍Matmul基础API算子的性能调优方法，通过4个渐进式优化步骤（L1/L0双缓冲机制、细粒度流水同步、多核并行切分、DataCopyIn优先搬运B矩阵），展示从基础实现到高性能优化的完整调优路径。”，其具体合同或探针直接接入UnitFlag 在 Mmad 产出与 L0C 搬出之间的 512B 细粒度同步和方向配置。
-- [Matmul高阶API开启UnitFlag](../../../best_practices/matmul_tuning_cases/matmul_unit_flag.md)（`related`）：中级性能优化 与《Matmul高阶API开启UnitFlag》的实质衔接是：Matmul 中级优化直接使用 GM/L1/L0 搬入、LoadData、Mmad 和 UnitFlag，前后阶段及 UnitFlag 指南支撑同一流水。
-- [入门功能落地](getting_started.md)（`related`）：中级篇直接承接入门 Matmul 实现，引入 L1/L0 双缓冲、细粒度同步和多核切分，形成可复现的下一阶段优化路径。
-- [高级极限打磨](advanced_extreme_optimization.md)（`same_topic`）：中级性能优化 与《高级极限打磨》的实质衔接是：Matmul 中级优化直接使用 GM/L1/L0 搬入、LoadData、Mmad 和 UnitFlag，前后阶段及 UnitFlag 指南支撑同一流水。
+- [入门功能落地](getting_started.md)（`related`）：以上各优化方向的详细实现方案，请参见中级性能优化和高级极限打磨。；本节基于C++ Tensor编程范式，介绍Matmul基础API算子的性能调优方法，通过4个渐进式优化步骤（L1/L0双缓冲机制、细粒度流水同步、多核并行切分、DataCopyIn优先搬运B矩阵），展示从基础实现到高性能优化的完整调优路径。。入门指南在完成基础 Matmul 后把优化方向明确交给中级与高级章节，中级指南随即展开双缓冲、细粒度同步、多核切分和 B 矩阵优先搬运四步，因此二者是同一案例的连续实践阶段。
+- [高级极限打磨](advanced_extreme_optimization.md)（`related`）：本节基于C++ Tensor编程范式，在上文中级性能优化的基础上，进一步介绍Matmul基础API算子的高级极限打磨方法，通过5个高级优化步骤（大包搬运、LoadData3D替代LoadData2D、常量Tiling、UnitFlag优化、L2Cache优化），深入挖掘硬件性能极限。；本节基于C++ Tensor编程范式，介绍Matmul基础API算子的性能调优方法，通过4个渐进式优化步骤（L1/L0双缓冲机制、细粒度流水同步、多核并行切分、DataCopyIn优先搬运B矩阵），展示从基础实现到高性能优化的完整调优路径。。高级指南明确建立在中级四步优化之上，再追加五项极限打磨；中级指南定义前置的流水、同步、分核和搬运基础，二者组成同一 Matmul 基础 API 的递进调优路线。
 <!-- cannbot:related:end -->

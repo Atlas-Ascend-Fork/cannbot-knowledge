@@ -50,7 +50,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:03:45Z"
-updated_at: "2026-08-24T19:35:12Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -1350,10 +1350,10 @@ Device 不展开 INT8 权重，而是对 A 做 FP32 max/sum reduce，按 A1=roun
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持：公开 `aclnnFFNV3.md` 产品表为 √，`FFN` OpDef 注册 `ascend910b`；含 BF16 的公开场景进一步限 Atlas 800I A2 推理产品 | 不发布：公开 V3 文档明确为 ×，与 OpDef 的 `ascend910_93` 实现注册冲突 | 不支持：公开 V3 文档为 ×，OpDef 也未注册 `ascend950` |
-| Host/Launcher | V3 ACLNN→L0→`TilingFFN`；平台对象提供实际 AIC/AIV/内存容量 | 实现文件可见共用 launcher，但公开 API 支持证据被文档否定，不建立 route | 固定仓无可达的 A5 ACLNN Host route |
+| Host/Launcher | V3 ACLNN→L0→`TilingFFN`；平台对象提供实际 AIC/AIV/内存容量 | 实现文件可见共用 launcher，但公开 API 支持证据被文档否定，不建立 route | 固定仓无可达的 950 ACLNN Host route |
 | Kernel/资源 | 编译进入 `__CCE_AICORE__==220` 的 MIX route；容量由平台查询 | `ascend910_93` 同属 arch22 是冲突的实现接线证据，不能覆盖公开文档 | `arch35`/顶层 SoC 列表不能单独证明 FFN 公开支持 |
 
 ## 限制与失败边界
@@ -1375,7 +1375,7 @@ Device 不展开 INT8 权重，而是对 A 做 FP32 max/sum reduce，按 A1=roun
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 公开文档/平台 | ffn/ffn/docs/aclnnFFNV3.md | `aclnnFFNV3GetWorkspaceSize/aclnnFFNV3` 产品表 | V3 是扫描范围内最新公开版本；A2 支持、A3/A5 不支持 |
+| 公开文档/平台 | ffn/ffn/docs/aclnnFFNV3.md | `aclnnFFNV3GetWorkspaceSize/aclnnFFNV3` 产品表 | V3 是扫描范围内最新公开版本；A2 支持、A3/950 不支持 |
 | 入口声明/约束 | ffn/ffn/op_host/op_api/aclnn_ffn_v3.h | `aclnnFFNV3GetWorkspaceSize/aclnnFFNV3` | V3 参数、dtype、shape与两段式接口 |
 | 入口实现 | ffn/ffn/op_host/op_api/aclnn_ffn.cpp | `GetFFNResultByL0Api/aclnnFFNV3GetWorkspaceSize/aclnnFFNV3` | 校验、连续化、executor、workspace和运行失败传播 |
 | L0 Launcher | ffn/ffn/op_host/op_api/ffn.cpp | `l0op::FFN` | 输出分配与 `ADD_TO_LAUNCHER_LIST_AICORE` 参数顺序 |
@@ -1407,4 +1407,4 @@ Device 不展开 INT8 权重，而是对 A 做 FP32 max/sum reduce，按 A1=roun
 | workspace/内存 | 普通/高精度共享两段中间区模型 | route 附加区、64 B/32 B 对齐、GLU四片ping-pong、antiquant展开W和MSD多切片不能互换或重叠 | `FFNSetTilingData`、各 `Init/InitWorkspace` |
 | 同步 | 普通 route 可复用 expert buffer 和 EVENT7/SyncAll 协议 | producer 写 GM workspace 后 consumer 才可读；MSD atomic清零/全核同步、GLU最后tile处理和Matmul `WaitIterateAll` 不得删除 | `FFNBase::ProcessNormal`、`FFNGlu::Process`、`FFNAntiQuantMSD::ComputeExpertMM1` |
 | 精度与尾块 | 激活 helper 与 `KernelTiling` 可跨普通route复用 | 高精度 FP32 activation 后 round cast、quant deq→act→quant、MSD A1 round/A2 floor、DataCopyPad有效N提交顺序不可变 | `ApplyActivation`、`Elewise1ComputeHighPrecision`、`CastCompute`、`CalcA1A2` |
-| 失败边界 | 统一复用 ACLNN校验和Tiling `GRAPH_FAILED` 传播 | Device tokens值域缺口不得臆造校验；GLU/per-group/MSD谓词、`blockDim=0`空域和A5不支持不得转成隐式fallback | `CheckParam`、`RunFusionKernelTiling`、`FFNGluParamsCheck`、`CheckMSD` |
+| 失败边界 | 统一复用 ACLNN校验和Tiling `GRAPH_FAILED` 传播 | Device tokens值域缺口不得臆造校验；GLU/per-group/MSD谓词、`blockDim=0`空域和950不支持不得转成隐式fallback | `CheckParam`、`RunFusionKernelTiling`、`FFNGluParamsCheck`、`CheckMSD` |

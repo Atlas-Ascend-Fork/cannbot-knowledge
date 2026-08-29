@@ -26,5 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DeepNorm Tiling](deep_norm_tiling.md)（`related`）：DeepNormTiling 在 Host 侧根据输入形状生成 DeepNorm Kernel 所需 tiling，输出结构随后传入焦点计算接口。
+- [DeepNorm Tiling](deep_norm_tiling.md)（`same_topic`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过DeepNorm Tiling获取。host侧Tiling接口，用于获取DeepNorm kernel计算所需的Tiling参数，分两步：通过GetDeepNormMaxMinTmpSize获取最大和最小临时空间大小；通过GetDeepNormNDTilingInfo获取kernel侧所需tiling参数。Kernel 卡明确把 DeepNorm Tiling 作为参数来源，Host 卡给出临时空间范围和最终 tiling 结构的生成步骤；实现时必须用相同 shape、dtype 大小和复用设置生成并传入该结构。
 <!-- cannbot:related:end -->

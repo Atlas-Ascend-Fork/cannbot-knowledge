@@ -124,3 +124,11 @@ GatedDeltaNet 的前向/反向在 T=4096、bf16 下与 GPU FLAME（`fla-org/flam
 - [gdn-chunk-kernels](../kernels/gdn_chunk_kernels.md)（同域：chunk gated delta rule 三套后端的逐阶段算子细节）
 - [deltanet-pretrain](../../guides/recipes/deltanet_pretrain.md)（同域·训练：Ascend-TLA 无门控纯 Delta Rule 预训练样例，与本页 Gated DeltaNet 同谱系对照）
 - [mamba-ssm-train](mamba_ssm_train.md)（同为线性序列模型训练：Mamba 切序列 vs GDN 切 head）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend-TLA · DeltaNet 线性注意力 NLP 预训练样例](../../guides/recipes/deltanet_pretrain.md)（`related`）：样例卡将自身限定为“本样例聚焦 **Delta Rule / DeltaNet** 路径及 **NLP** 侧训练与 Notebook，不包含通用 Linear Attention 算子目录”；训练概念卡说明“GDN 的概念定义（in_proj → Causal Conv1d → 门控 → Delta Rule 递推 → 输出 RMSNorm+Gate）见推理侧”，为从无门控 DeltaNet 样例迁移到 Gated DeltaNet 训练时补上门控、递推与归一化差异。
+- [GDN Chunk 算子（solve_tril / chunk_delta_h / chunk_o / wy_fast Triton 核）](../kernels/gdn_chunk_kernels.md)（`related`）：上层由 MindSpeed-LLM 的 `ChunkGatedDeltaRuleFunction`（`torch.autograd.Function`）按固定顺序把这些核串成正反向。；chunk 算子的逐阶段实现细节链 ［gdn-chunk-kernels］(../kernels/gdn_chunk_kernels.md)。。算子卡闭合 ChunkGatedDeltaRuleFunction 的正反向 kernel 链，模块卡明确把该算子卡作为训练 GDN 的逐阶段实现细节，因此可从模块任务直接下钻到各 chunk kernel。
+- [Gated DeltaNet (GDN)](../../../inference/concepts/modules/gated_deltanet.md)（`same_topic`）：“MindSpeed-LLM 把 Gated DeltaNet（GDN）线性注意力搬到训练侧：Qwen3-Next 及稠密/混合 GatedDeltaNet 模型在昇腾 NPU 上从头预训练时，GDN 层既要算前向，也要算反向梯度，并要在长序列下沿 chunk 切块并行、在多卡下做上下文并行。GDN 的概念定义（in_proj → Causal Conv1d → 门控 → Delta Rule 递推 → 输出 RMSNorm+Gate）见推理侧 ［gated-deltanet］(../../../inference/concepts/modules/gated_deltanet.md)，此处只记训练侧新增的三件事：带完整反向的 **chunk gated delta rule**（torch 参考 / Triton / Flash-AscendC 三套后端）、decode-cache 路径的 **逐步递归**形式、以及 GDN 专属的 **上下文并行**（沿 head 而非沿序列切）。chunk 算子的逐阶段实现细节链 ［gdn-chunk-kernels］(../kernels/gdn_chunk_kernels.md)。”声明训练页只补反向、chunk 和上下文并行，并复用 GDN 概念定义；“承担线性复杂度上下文聚合的线性注意力模块，基于 Mamba/DeltaNet 风格的递推状态更新加门控机制。”给出同一 GDN 核心机制。两卡以同一模块为对象，差别是训练与推理生命周期。
+<!-- cannbot:related:end -->

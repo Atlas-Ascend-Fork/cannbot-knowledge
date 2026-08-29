@@ -69,3 +69,13 @@ platforms:
   - 溯源下探：[cann-recipes-infer-issue-190-bug-report-models-deepseek-v4-deepseek-v4-flash-runtimeerror-customize-d](https://gitcode.com/cann/cann-recipes-infer/issues/190)
 - **CANN 算子包版本门控 · 维护者确认 + diff 事实**（修复 commit `@ad58ba176e1a` "update r1 version"）：diff 仅动 `README.md` 与 `requirements.txt`（CANN/torch_npu/依赖版本 bump）、**无 recipe / 量化 / 算子代码改动** → 与「根因是 CANN 算子包版本、非 recipe bug」一致；维护者两次确认根因为 CANN 版本、需更新算子包。报错 token（`x dtype 27 and weight dtype 2`、`groupedmatmul_infershape.cpp`）逐字取自源（终端 OCR、有噪声）。
   - 溯源下探：[cann-recipes-infer-issue-68-bug-report-r1-alpha003-16tp](https://gitcode.com/cann/cann-recipes-infer/issues/68)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Int8 / Hybrid INT8-INT4 (DeepSeek-V4 Atlas A3 Pod)](../../concepts/quantization/int8_int4_hybrid.md)（`related`）：“A3：DeepSeek-V4-Flash → INT8 W8A8（`--quant_type w8a8-int`）；DeepSeek-V4-Pro → Hybrid INT8-INT4（`--quant_type w4a8-int`）。”给出型号到参数的分流；“**Hybrid INT8-INT4（推荐 Pro）**”解释 Pro 分支为何采用 W4A8 路由专家与 W8A8 共享专家。
+- [compressed-tensors 量化加载器的方案识别门控陷阱：别假设总有激活量化、MX 与普通 fp8 靠 weight_block_size 区分、AWQ int4 走 W4A16](compressed_tensors_scheme_gating_pitfalls.md)（`related`）：纯权重 int4 / pack_quantized / MX 格式；受两道**相互独立**的门控；连接方案判定与 SoC/CANN 支持面排除。
+- [torch 无对应 dtype 的硬件低精度格式（如 HiFloat8 KV 量化）：在 aclnn 算子调用边界覆写 acl dtype](../../optimizations/experience/rules/torchless_lowprec_dtype_acl_override.md)（`related`）：在昇腾 ［torch_ops_extension］(../../../concepts/frameworks/ascendc.md) 里给自定义 aclnn 算子喂一种**硬件低精度格式**（如 hif8 / HiFloat8）的张量，而 PyTorch / torch_npu **没有对应的张量 dtype** 时；一个量化权重格式 / dtype 组合并非到处可用，它受两道**相互独立**的门控——(a) 运行的 **SoC 平台**，(b) 已装的 **CANN 二进制算子包版本**。。两卡把低精度 dtype 故障分层：先核对 SoC 与 CANN 是否支持，再在 torch 表达层缺 dtype 时使用 TensorWrapper 覆写 acl dtype。
+- [昇腾部署镜像的组件版本对齐（torch_npu / 驱动 HDK / CANN 包）与过渡态规避](../../optimizations/experience/rules/ascend_deployment_image_version_alignment.md)（`related`）：“CANN 算子包版本缺口 → 升版本”把一类 dtype 报错归因到版本；“不要把其中任一组件当作可自由升级的旋钮”要求升级时保持 torch_npu、驱动和 CANN 的镜像配套。
+- [昇腾量化权重制备路径选择：仓内离线系数 convert_model.py vs 权重自带 compressed-tensors 运行时量化 vs amct](../../guides/experience/interventions/quant_weight_conversion_path_selection.md)（`related`）：“平台不支持该格式 → 转量化类型”给出报错后的动作类别；“模型样例按「**是否有仓维护的离线量化系数包**」分两条量化路径”进一步决定应采用官方系数转换还是自备校准链。
+<!-- cannbot:related:end -->

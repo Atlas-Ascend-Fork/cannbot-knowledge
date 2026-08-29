@@ -77,11 +77,14 @@ class RunbookLintTest(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def _run(self, content):
+    def _run(self, content, *, strict=False):
         card = self.root / "knowledge/ops/ascendc/runbooks/compilation" / "card.md"
         card.write_text(content, encoding="utf-8")
+        command = [sys.executable, str(SCRIPT), str(self.root)]
+        if strict:
+            command.extend(["--card", card.relative_to(self.root).as_posix()])
         return subprocess.run(
-            [sys.executable, str(SCRIPT), str(self.root)],
+            command,
             text=True,
             capture_output=True,
             check=False,
@@ -101,6 +104,82 @@ class RunbookLintTest(unittest.TestCase):
         result = self._run(_card().replace("## 适用场景\n", ""))
         self.assertEqual(0, result.returncode)
         self.assertIn("缺 `## 适用场景`", result.stdout)
+
+    def test_strict_card_requires_apply_scenario_section(self):
+        result = self._run(_card().replace("## 适用场景\n", ""), strict=True)
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("缺 `## 适用场景`", result.stdout)
+
+    def test_full_scan_accepts_legacy_equivalent_annotations(self):
+        legacy = "- 构建退出 0（a3，tool_observed）。"
+        result = self._run(_card(validation=legacy))
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+        strict = self._run(_card(validation=legacy), strict=True)
+        self.assertNotEqual(0, strict.returncode)
+
+    def test_only_scans_ascendc_runbooks(self):
+        model = self.root / "knowledge/model/inference/runbooks/runtime/invalid.md"
+        model.parent.mkdir(parents=True)
+        model.write_text("not a governed card\n", encoding="utf-8")
+        result = self._run(_card())
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_staged_card_can_be_strictly_checked_outside_knowledge(self):
+        staged = self.root / ".build/staged-cards/precision/good_card.md"
+        staged.parent.mkdir(parents=True)
+        staged.write_text(_card(), encoding="utf-8")
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                str(self.root),
+                "--staged-card",
+                str(staged),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_staged_card_enforces_frontmatter_machine_contract(self):
+        staged = self.root / ".build/staged-cards/precision/bad_card.md"
+        staged.parent.mkdir(parents=True)
+        cases = {
+            "schema field": _card().replace(
+                "platforms: [a3]\n", "platforms: [a3]\ntimestamp: '2026-08-14'\n"
+            ),
+            "internal evidence field": _card().replace(
+                "platforms: [a3]\n", "platforms: [a3]\nreproduce_count: 2\n"
+            ),
+            "unregistered platform": _card().replace(
+                "platforms: [a3]", "platforms: [unknown_platform]"
+            ),
+            "invalid time": _card().replace(
+                "created_at: '2026-08-14T00:00:00Z'",
+                "created_at: '2026-08-14'",
+            ),
+        }
+        for label, content in cases.items():
+            with self.subTest(label=label):
+                staged.write_text(content, encoding="utf-8")
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        str(SCRIPT),
+                        str(self.root),
+                        "--staged-card",
+                        str(staged),
+                    ],
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                self.assertNotEqual(
+                    0, result.returncode, result.stdout + result.stderr
+                )
+                self.assertIn("机器契约", result.stdout)
 
 
 if __name__ == "__main__":

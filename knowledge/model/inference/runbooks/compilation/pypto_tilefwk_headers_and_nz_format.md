@@ -62,3 +62,10 @@ platforms:
 - `diff 事实 / 维护者确认`（@2c45117）：`ops/pypto` 依赖 `tilefwk/*.h` 与 `register/op_ct_impl_registry.h`，社区版 CANN 未随包提供，须从 `cann/pypto` 构建；维护者在 issue 中确认修法。
 - `diff 事实`（@87f244c）：PyPTO 算子 op info 库对 NZ 权重仍声明 `FORMAT_ND`，NZ 由 pass 指定。
 - 溯源下探：[cann-recipes-infer-issue-100-question](https://gitcode.com/cann/cann-recipes-infer/issues/100)、[cann-recipes-infer-issue-53-bug-report-no-module-named-custom-ops](https://gitcode.com/cann/cann-recipes-infer/issues/53)、[cann-recipes-infer-pr-64-feat-lip-li-dia-pypto](https://gitcode.com/cann/cann-recipes-infer/merge_requests/64)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [PyPTO](../../concepts/frameworks/pypto.md)（`related`）：焦点卡定位“`tilefwk/*.h`、`register/op_ct_impl_registry.h` 等头由**独立开源的 PyPTO 编译器仓**（`cann/pypto`）提供”，候选卡同样声明“PTO ISA、毕昇 PTO 编译器及 DFX（TPRINT 等）是 **外部 Cann-PyPTO 编译器仓（`gitcode.com/cann/pypto`）** 的能力”；框架边界解释了为何社区 CANN 安装内找不到 TileFwk，能直接指导补齐构建来源。
+- [weightNZ Format](../../concepts/techniques/weight_nz.md)（`related`）：焦点卡规定“NZ 的实际排布由 PyPTO 的 pass 在编译期指定，无需在算子信息库里额外增加 NZ format 条目。”，候选卡定义 WeightNZ 是“将 Matmul 类算子的权重 Tensor 转成昇腾 NPU 亲和的 **NZ 分形布局**（512 字节对齐）”；前者给出 PyPTO OpInfo 只声明 ND 的作者合同，后者补充实际权重布局和加载转换语义。
+<!-- cannbot:related:end -->

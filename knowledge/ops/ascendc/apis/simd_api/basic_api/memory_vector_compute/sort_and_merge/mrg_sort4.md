@@ -31,8 +31,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMrgsort4](../../../c_api/vector_compute/asc_mrgsort4.md)（`related`）：AscMrgsort4 与《MrgSort4（排序与合并）》的实质衔接是：AscMrgsort4 的 Reg/C++ 入口、状态寄存器与结果读取必须配套，高层 MergeSort 说明同一四路归并任务如何落到该原语。
-- [GetMrgSortResult](get_mrg_sort_result.md)（`related`）：MrgSort4 在某个输入队列耗尽时停止；GetMrgSortResult 用于读取四个队列已消费的 Region Proposal 数，以便推进剩余合并。
-- [RpSort16（排序与合并）](rp_sort16.md)（`related`）：RpSort16 先把每组 16 个 proposal 按 score 排序，MrgSort4 再把最多四条已排序队列合并，是候选框排序流水的直接下游。
-- [ProposalConcat](proposal_concat.md)（`same_topic`）：《ProposalConcat》处理“将连续元素合入Region Proposal内对应位置，每次迭代会将16个连续元素合入到16个Region Proposals的对应位置里。 Region Proposal说明： 目前仅支持两种数据类型：half、float。 每个Region Proposal占用连续8个half/float类型的元素，约定其格式：”。《MrgSort4（排序与合并）》明确提供“将已经排好序的最多4条Region Proposals队列，排列并合并成1条队列，结果按照score域由大到小排序。”，其参数、调用或验证步骤直接接入ProposalConcat 与 ProposalExtract、Sort32、MrgSort 组成的 proposal 流水。
+- [RpSort16（排序与合并）](rp_sort16.md)（`related`）：根据Region Proposals中的score域对其进行排序（score大的排前面），每次排16个Region Proposals；将已经排好序的最多4条Region Proposals队列，排列并合并成1条队列；RpSort16 产生已排序的小队列，MrgSort4 明确消费已排序队列完成归并。
 <!-- cannbot:related:end -->

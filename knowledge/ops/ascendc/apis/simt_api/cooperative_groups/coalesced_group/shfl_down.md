@@ -22,8 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CoalescedGroup协作组shfl](shfl.md)（`related`）：通用 Shfl 按目标 rank 取值，而 ShflDown 按相对 delta 取值，用户需按索引表达方式选择。
-- [ShflDown](../thread_block_tile/shfl_down.md)（`related`）：ThreadBlockTile 的 ShflDown 具有相似位移语义，但作用域是静态 tile 而不是活动线程形成的 coalesced group。
-- [AscShflDown](../../warp_functions/warp_shfl_functions/asc_shfl_down.md)（`same_topic`）：AscShflDown 与《ShflDown》的实质衔接是：AscShflDown 从较高 lane 读取值；general/up/xor 与 cooperative-group ShflDown 对照偏移方向和 warp/group 作用域。
-- [ShflUp](shfl_up.md)（`same_topic`）：ShflUp 与《ShflDown》的实质衔接是：coalesced_group::shfl_up 在当前活跃线程子组内读取前 delta lane；组的构造与简介限定发散后的成员集合，generic shfl、shfl_down、thread_block_tile 和 Warp C API 给出索引方向及作用域对照。
+- [CoalescedGroup协作组shfl](shfl.md)（`same_topic`）：coalesced_group组内线程的数据交换接口，不通过共享内存实现直接读取组内指定线程的寄存器中的值。；获取coalesced_group组内当前线程向后偏移delta的线程的数据。。前者定义 coalesced_group 的指定线程寄存器读取原语，后者是以当前线程加 delta 计算来源线程的方向性变体，联合阅读可在同一组内交换任务中选择绝对 rank 或相对偏移。
 <!-- cannbot:related:end -->

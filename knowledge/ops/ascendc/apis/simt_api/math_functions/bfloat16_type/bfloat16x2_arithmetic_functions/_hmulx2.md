@@ -25,10 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hmul](../bfloat16_arithmetic_functions/_hmul.md)（`related`）：__hmul说明计算两个bfloat16类型数据相乘的结果，并遵循CAST_RINT模式对结果进行舍入；对__hmulx2而言，packed half2 乘法应与同名另一 packed 类型和标量 half 乘法按数据宽度选择，不能由相似函数名替代。
-- [__hmulx2](../../half_type/half2_arithmetic_functions/_hmulx2.md)（`related`）：__hmulx2说明计算两个half2类型数据各分量的相乘结果，并遵循CAST_RINT模式对结果进行舍入；对__hmulx2而言，packed half2 乘法应与同名另一 packed 类型和标量 half 乘法按数据宽度选择，不能由相似函数名替代。
-<!-- cannbot:related:end -->

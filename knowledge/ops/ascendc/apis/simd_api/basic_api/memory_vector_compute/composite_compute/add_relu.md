@@ -31,9 +31,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AddDeqRelu](add_deq_relu.md)（`related`）：《AddDeqRelu》处理“依次计算按元素求和、结果进行deq量化后再进行relu计算（结果和0对比取较大值）。需与SetDeqScale接口配合使用。”。《AddRelu》明确“按元素求和，再进行Relu计算（结果和0对比取较大值）。”，可直接用于核对AddDeqRelu 的加法、dequant scale、ReLU 与输出转换组合合同。
-- [AddReluCast](add_relu_cast.md)（`related`）：AddReluCast 在 Add+Relu 后增加类型转换；当输入输出 dtype 相同无需 Cast 时，AddRelu 是更直接的同链路接口。
-- [AscAddRelu](../../../c_api/vector_compute/asc_add_relu.md)（`related`）：两接口都逐元素 Add 后 ReLU；基础 API 版本以 LocalTensor 表达同一复合计算。
-- [AscMulAddRelu](../../../c_api/vector_compute/asc_mul_add_relu.md)（`related`）：AscMulAddRelu 与《AddRelu》的实质衔接是：AscMulAddRelu 融合 dst*src0+src1 与 ReLU；MulAdd/AddRelu 对应入口拆解同一计算，FMA 舍入卡和随路量化+ReLU材料给出精度与融合边界。
-- [Relu](../basic_arithmetic/relu.md)（`related`）：AddRelu 等价于先逐元素求和再对中间结果执行 Relu；拆分为 Add+Relu 可用于不满足复合接口 dtype/mask 契约的路径。
+- [AscAddRelu](../../../c_api/vector_compute/asc_add_relu.md)（`same_topic`）：“按元素求和，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。计算公式如下：”与“按元素求和，再进行Relu计算（结果和0对比取较大值）。”是双方正文中的具体合同。两端执行同一 add 后 ReLU 复合运算；C API 还带结果类型转换，基础接口则提供 LocalTensor mask 形态，互读可用于接口形态选型。
 <!-- cannbot:related:end -->

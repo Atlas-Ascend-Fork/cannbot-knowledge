@@ -29,11 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__float22half2_rd](_float22half2_rd.md)（`related`）：RD 向下舍入，与 RU 的方向相反，可按误差单调性要求选型。
-- [__float22half2_ro_sat](_float22half2_ro_sat.md)（`related`）：《__float22half2_ro_sat》说明饱和模式下，将float2类型数据的两个分量遵循CAST_ODD模式转换为半精度浮点数，返回转换后的half2类型数据。；《__float22half2_ru》说明将float2类型数据的两个分量遵循CAST_CEIL模式转换为半精度浮点数，返回转换后的half2类型数据。。二者在float2到half2的CAST_ODD饱和转换必须与同舍入非饱和版以及其他舍入模式的饱和/非饱和变体按CTRL与特殊值选择上存在可执行的直接衔接。
-- [__float22half2_rn](_float22half2_rn.md)（`same_topic`）：RU 对同一转换向上舍入，提供结果上界。
-- [__float22half2_rna](_float22half2_rna.md)（`same_topic`）：《__float22half2_rna》说明将float2类型数据的两个分量遵循CAST_ROUND模式转换为半精度浮点数，返回转换后的half2类型数据。；《__float22half2_ru》说明将float2类型数据的两个分量遵循CAST_CEIL模式转换为半精度浮点数，返回转换后的half2类型数据。。二者在float2到half2的rna与饱和开关、rn/rd/ro/ru/rz舍入变体共享同一输入输出合同上存在可执行的直接衔接。
-- [__float22half2_ro](_float22half2_ro.md)（`same_topic`）：__float22half2_ro 与《__float22half2_ru》的实质衔接是：__float22half2_ro 与 RO-sat、RD/RN/RNA/RU/RZ 变体共享 float2→half2 双 lane 窄化，只改变舍入或饱和；scalar RO 和反向 half2→float2 明确向量封装及转换方向。
-- [__float22half2_ru_sat](_float22half2_ru_sat.md)（`same_topic`）：“__float22half2_ru_sat”处理将float2类型数据的两个分量遵循CAST_CEIL模式转换为半精度浮点数，返回转换后的half2类型数据。；“__float22half2_ru”明确将float2类型数据的两个分量遵循CAST_CEIL模式转换为半精度浮点数，返回转换后的half2类型数据。。实质衔接：这些接口保持 float2→half2 转换不变，仅切换饱和、标量/向量和舍入模式，可直接确认 ru_sat 的邻接选择。
-- [__float22half2_rz](_float22half2_rz.md)（`same_topic`）：__float22half2_ru 与本接口源/目标类型一致，把舍入从截断改为向上取整。
+- [__float22half2_ru_sat](_float22half2_ru_sat.md)（`related`）：功能：将float2类型数据的两个分量遵循CAST_CEIL模式转换为半精度浮点数，返回转换后的half2类型数据。；约束：使用此接口前需将CTRL［60］寄存器设置为0，否则饱和模式不生效。设置方式请参见控制饱和行为的方式。 SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效。需包含头文件 simt_api/asc_fp16.h。；饱和变体建立在同一 CAST_CEIL float2 到 half2 转换上，但增加 CTRL［60］ 与 SIMT 失效条件，提供明确入口选型边界。
 <!-- cannbot:related:end -->

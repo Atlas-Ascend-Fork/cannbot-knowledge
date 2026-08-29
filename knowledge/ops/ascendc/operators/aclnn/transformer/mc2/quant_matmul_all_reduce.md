@@ -24,7 +24,7 @@ sources:
   - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/3rd/quant_batch_matmul_v3/op_kernel/quant_batch_matmul_v3.h", role: implementation}
   - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_host/CMakeLists.txt", role: implementation}
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T19:59:23Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -364,9 +364,9 @@ if (tilingData_.param.isInputCommQuantScale == 1U) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 公开支持表不支持 | 支持，见 `_a5` 卡 |
+| 支持状态 | 支持 | 公开支持表不支持 | 支持，见 `_950` 卡 |
 | Host/Launcher | ai_cpu；rank≤8 | N/A | ai_cpu/ccu；rank≤64 |
 | Kernel/资源 | A2 QBMM+AICPU | N/A | FP8/HIF8/MX、CCU、两段通信 |
 
@@ -411,3 +411,10 @@ if (tilingData_.param.isInputCommQuantScale == 1U) {
 | 同步 | SyncAll+notify/handle | Commit/Wait/Finalize顺序 | base/body |
 | 精度与尾块 | INT32累加后scale；tail独立tiling | INT8额外round/pad/crop | quant bodies |
 | 失败边界 | selector拒绝返回错误 | 不补造fallback | `IsCapable`,`CheckA8W8` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [QuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](quant_matmul_all_reduce_add_rms_norm.md)（`related`）：｜ 计算语义 ｜ `qmm=dequantScale*(x1_int8@x2_int8+bias_int32)`；`mmOut=AllReduceSum(qmm)`；`y=mmOut+residual`；`normOut=y/sqrt(mean(y²)+epsilon)*gamma` ｜；普通路径为 `Y=AllReduce(x2Scale*x1ScaleOptional*(x1@x2+bias)+x3)`。。融合算子的前半段直接复用 QuantMatmul+AllReduce SUM 任务链，随后再接 residual add 与 RMSNorm，基础算子卡帮助拆解融合节点的数据流。
+- [QuantMatmulAllReduce 950 ACLNN 算子知识](quant_matmul_all_reduce_950.md)（`same_topic`）：｜ 计算语义 ｜ A8W8、FP8/HIF8、MXFP4/MXFP8 QuantMatmul+x3+SUM；通信可为原 dtype、INT8或FP8 per-tile ｜；｜ 计算语义 ｜ A8W8 QuantMatmul（可带 bias、per-token scale、x3）后 SUM；可压成 INT8 通信 ｜。两卡闭合同一 QuantMatmul+AllReduce SUM 算子族，950 在 A2 的 A8W8/INT8 通信基础上扩展 FP8、HIF8、MX 与 per-tile 通信路线。
+<!-- cannbot:related:end -->

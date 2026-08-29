@@ -57,13 +57,6 @@ aliases: ["tie_ordering"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Concat（排序操作）](../../apis/simd_api/adv_api/sort_operations/concat.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《Concat（排序操作）》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [Extract（排序操作）](../../apis/simd_api/adv_api/sort_operations/extract.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《Extract（排序操作）》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [MrgSort](../../apis/simd_api/adv_api/sort_operations/mrg_sort.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《MrgSort》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [MrgSort](../../apis/simd_api/basic_api/memory_vector_compute/sort_and_merge/mrg_sort.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《MrgSort》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [Sort](../../apis/simd_api/adv_api/sort_operations/sort.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《Sort》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [TopK](../../apis/simd_api/adv_api/sort_operations/top_k.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《TopK》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [TopKTiling](../../apis/simd_api/adv_api/sort_operations/top_k_tiling.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《TopKTiling》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [排序操作](../../apis/simd_api/adv_api/sort_operations/sort_operations.md)（`exemplifies`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《排序操作》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
-- [bf16 边缘失败用 fair-oracle 探针判 oracle 不公](bf16_fair_oracle_oracle.md)（`related`）：TopK BF16 tie 索引顺序与 CPU 不一致 与《bf16 边缘失败用 fair-oracle 探针判 oracle 不公》的实质衔接是：TopK 对 tie 不保证与 CPU 相同的索引顺序；TopK/tiling 与 Sort→MrgSort→Concat/Extract 链解释内部排序，fair-oracle 卡给出集合而非逐元素索引的验证方式。
+- [MrgSort](../../apis/simd_api/adv_api/sort_operations/mrg_sort.md)（`exemplifies`）：将已排好序的最多4条队列合并排列成1条队列，结果按score域由大到小排序。与Sort配合使用，先对多段数据分别排序，再通过MrgSort合并。；TopK 高阶 API 对 tie 值的索引顺序未定义，其内部 Sort+MrgSort+Extract 的稳定顺序与 CPU `torch.topk` 实现不同，导致同一 tie 组内索引排列差异。这不是 kernel 计算错误，是 tie 顺序未定义语义的体现。若值集合已不等，则不是本现象，应另查真精度 bug。；焦点定义 MrgSort 的降序归并，runbook 给出它在完整 TopK 管线中遇到 tie 时的可复现验证与误诊边界。
+- [TopK](../../apis/simd_api/adv_api/sort_operations/top_k.md)（`exemplifies`）：本算子在 plugin 层把 BF16 先 Cast 为 float32 再调 `AscendC::TopK<float>`、结果 Cast 回 BF16。；获取最后一个维度的前k个最大值或最小值及其对应的索引。输入为向量时对全部元素操作，输入为矩阵时沿最后一维对每行操作。；故障卡直接调用目标 TopK API，并围绕其 values/indices 输出诊断 BF16 tie 的索引差异。
 <!-- cannbot:related:end -->

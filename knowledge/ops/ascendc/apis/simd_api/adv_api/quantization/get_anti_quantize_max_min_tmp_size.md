@@ -26,7 +26,5 @@ host侧Tiling接口，用于获取AntiQuantize接口所需的最大和最小临�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetArangeMaxMinTmpSize](../index_compute/get_arange_max_min_tmp_size.md)（`related`）：AntiQuantize 是不同算子，workspace 公式不能因返回类型相同复用。
-- [AntiQuantize](anti_quantize.md)（`same_topic`）：GetAntiQuantizeMaxMinTmpSize 与《AntiQuantize》的实质衔接是：GetAntiQuantizeMaxMinTmpSize 给 AntiQuantize 划定可用临时空间范围，factor 查询在固定空间下反推单次处理元素数。
-- [GetAntiQuantizeTmpBufferFactorSize](get_anti_quantize_tmp_buffer_factor_size.md)（`same_topic`）：GetAntiQuantizeMaxMinTmpSize 与《GetAntiQuantizeTmpBufferFactorSize》的实质衔接是：GetAntiQuantizeMaxMinTmpSize 给 AntiQuantize 划定可用临时空间范围，factor 查询在固定空间下反推单次处理元素数。
+- [AntiQuantize](anti_quantize.md)（`related`）：“host侧Tiling接口，用于获取AntiQuantize接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”定义 Host sizing；“提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetAntiQuantizeMaxMinTmpSize获取。”明确 Kernel 消费点。
 <!-- cannbot:related:end -->

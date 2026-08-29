@@ -47,13 +47,3 @@ platforms: [agnostic]
 -   假设读指令操作的地址为0x0000（bank0），写指令操作的地址为0x10000 ，在NPU架构版本2201中，地址0x10000（bank16）不会发生读写冲突，而在NPU架构版本3510中，这个地址0x10000（bank0）会引发读写冲突。
 
 下文介绍不同硬件架构下如何避免bank冲突。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [指令双发优化](../../vector_compute/vf_optimization/dual_issue_optimization.md)（`related`）：指令双发优化 与《SIMD算子优化概述》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
-- [核函数内删除Workspace相关冗余操作](../../overhead_optimization/remove_workspace_redundancy.md)（`related`）：核函数内删除Workspace相关冗余操作 与《SIMD算子优化概述》的实质衔接是：workspace 已直接是用户 Workspace 时不应再 SetSysWorkSpace/GetUserWorkspace；Workspace API、使用指南和 RESERVED/预偏移案例界定何时仍需系统区与局部区。
-- [设置合适的核数和算子Kernel类型](../../overhead_optimization/core_count_kernel_type.md)（`related`）：设置合适的核数和算子Kernel类型 与《SIMD算子优化概述》的实质衔接是：核数、kernel 类型和 workspace 都会影响启动/头尾开销；SetKernelMode、负载均衡与 SK_BIND 卡给出 host 配置和核侧绑定的执行落点。
-- [避免bank冲突（NPU架构版本3510）](avoid_bank_conflict_npu_arch_3510.md)（`related`）：概述解释 bank 结构与并发访问为何冲突，为 3510 卡中的具体 padding/地址排布方案提供机制基础。
-- [核间负载均衡](../../tiling_strategy/inter_core_load_balance.md)（`same_topic`）：核间负载均衡 与《SIMD算子优化概述》的实质衔接是：核间负载均衡通过调整拖尾核与 block 数减少尾部空闲，并与核间同步、DoubleBuffer/异步 Iterate 和具体 Matmul/Philox 分块约束共同决定并行度。
-<!-- cannbot:related:end -->

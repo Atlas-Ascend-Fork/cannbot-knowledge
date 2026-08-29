@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/circular_pad_grad/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T23:50:40Z"
-updated_at: "2026-08-24T23:50:40Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -80,7 +80,7 @@ gradInput[..., h, w] = Σ G[..., oh, ow]
 
 ### 入口与版本
 
-固定源码只公开这一组无版本后缀的 2D backward 两段式接口。`commonPad2dBackward` 固定以 `mode="circular"`、`paddingsContiguous=true`、`padFlag=true` 调用 `l0op::PadV3Grad`。该 L0 selector 在 `mode == "circular"` 时，A2/A3 的 `IsRegBase()==false` 分支无条件落到 `CircularPadGradAiCore`；A5 走另一实现，见独立 `_a5` 卡。公开产品表明确 A2、A3 支持。
+固定源码只公开这一组无版本后缀的 2D backward 两段式接口。`commonPad2dBackward` 固定以 `mode="circular"`、`paddingsContiguous=true`、`padFlag=true` 调用 `l0op::PadV3Grad`。该 L0 selector 在 `mode == "circular"` 时，A2/A3 的 `IsRegBase()==false` 分支无条件落到 `CircularPadGradAiCore`；950 走另一实现，见独立 `_950` 卡。公开产品表明确 A2、A3 支持。
 
 ## Host/Launcher 执行流程
 
@@ -496,9 +496,9 @@ if (inputH * inputWAlign < usedUBSize / tSize) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，但使用独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，但使用独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`，arch32 `CircularPadGrad` | `ascend910_93`，同 arch32 实现 | RegBase selector 改投 `PadV3Grad` |
 | Kernel/资源 | key 211/212/221/222/231/232，192 KiB UB 常量 | 同左 | SIMT/MicroAPI SIMD，不使用本卡 body |
 
@@ -542,3 +542,9 @@ if (inputH * inputWAlign < usedUBSize / tSize) {
 | 同步 | queue 生命周期、atomic 开关、硬 event | atomic 关闭与下一阶段等待顺序 | `AddTopAndBottom*` / `MTE3ToMTE2Sync` |
 | 精度与尾块 | 16-bit→FP32 累加→round cast；big 显式尾行 | cast 次序、有效宽和负 pad 零区 | `CopyGMToGMOnceCast*` |
 | 失败边界 | 未知 key 返回、Host 校验失败无 fallback | 不得扩展到 3D key 或假设 AICPU fallback | `circular_pad_grad` / `CheckInput` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CircularPad2dBackward 950 ACLNN 算子知识](circular_pad_2d_backward_950.md)（`same_topic`）：把 `gradOutput` 中所有经 circular 映射到同一原输入坐标的梯度求和到 `gradInput`；负 padding 对应前向裁剪，裁掉位置的梯度为 0。；对每个原输入坐标，直接枚举正文及各维左右回卷候选并求和；负 padding 对应裁剪并由边界过滤去除无效候选。。两卡实现同一 CircularPad2DBackward 梯度回卷求和语义，并对负 padding 的裁剪边界给出一致解释；一端为通用算子知识，另一端闭合 950 实现。
+<!-- cannbot:related:end -->

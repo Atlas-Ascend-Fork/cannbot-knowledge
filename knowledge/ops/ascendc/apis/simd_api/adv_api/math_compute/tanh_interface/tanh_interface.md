@@ -29,10 +29,3 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Kirin X90。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTanhTmpBufferFactorSize](get_tanh_tmp_buffer_factor_size.md)（`same_topic`）：总页定义 Tanh、workspace 和 factor-size 的完整流程。
-- [Tanhf](../../../../simt_api/math_functions/float_math_functions/tanhf.md)（`same_topic`）：Tanhf 与《Tanh接口》的实质衔接是：Tanhf 与半精度/bfloat16、SIMD Tanh 入口实现同一双曲正切语义，Atanhf 是其反函数；Reg 缺少 Tanh 封装的案例明确需要选择这些现有入口而非虚构 Reg API。
-<!-- cannbot:related:end -->

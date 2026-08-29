@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/config/ascend910b/embedding_bag_binary.json
     role: implementation
 created_at: "2026-08-25T16:24:42Z"
-updated_at: "2026-08-25T16:24:42Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -527,9 +527,9 @@ yTDataLocal = yDataLocal.template ReinterpretCast<T>();
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 见独立 `_950` 卡 |
 | Host/Launcher | 非 regbase，indices/offsets统一Cast INT32 | 同 A2 | regbase保留INT32/INT64并使用新Tiling |
 | Kernel/资源 | key1/2/3 AIV旧body | 同 A2 | Vector+SIMT多实现族 |
 
@@ -567,3 +567,9 @@ yTDataLocal = yDataLocal.template ReinterpretCast<T>();
 | 同步 | MTE2_V/V_MTE3/MTE3_S+PIPE_ALL | alias覆盖前必须等待 | sync helpers |
 | 精度与尾块 | FP32累计、精确DataCopyPad tail | max等值保留旧值、padding不计数 | `AddWeight/MaxWeight/UBToGM` |
 | 失败边界 | Tiling失败/unknown key/workspace空 | 不得静默补 fallback | `Init`, entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [EmbeddingBag 950 ACLNN 算子知识](embedding_bag_950.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnEmbeddingBagGetWorkspaceSize` + `aclnnEmbeddingBag`，公开 ACLNN 两段式接口，无 V2/V3 版本 ｜；｜ 实际入口 ｜ `aclnnEmbeddingBagGetWorkspaceSize` + `aclnnEmbeddingBag`，公开 ACLNN ｜；两卡均闭合同一 aclnnEmbeddingBag 两段式接口和分 bag 聚合语义，差异集中在 A2/A3 与 950 的 Host 选择、Kernel 路线和平台资源。
+<!-- cannbot:related:end -->

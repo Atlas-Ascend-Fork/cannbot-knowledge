@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant_v2/op_host/config/ascend910_93/dynamic_quant_v2_binary.json
     role: implementation
 created_at: "2026-08-25T18:23:59Z"
-updated_at: "2026-08-25T18:23:59Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -186,7 +186,7 @@ else: BF16 ? key0 : key1
 | 同上 | `numTailTimes` | uint32/32 | 第24项 | loop | 未赋值 | 未读取 | inactive |
 | 同上 | `numLastTailRow` | uint32/32 | 第25项 | row | 未赋值 | 未读取 | inactive |
 | 同上 | `alignType` | uint32/32 | 第26项 | enum | 未赋值 | 未读取 | inactive |
-| 同上 | `totalBatchLen` | int64/64 | 第27项 | batch | 未赋值 | 未读取 | A5 perchannel only |
+| 同上 | `totalBatchLen` | int64/64 | 第27项 | batch | 未赋值 | 未读取 | 950 perchannel only |
 | 同上 | `mLen` | int64/64 | 第28项 | element | 未赋值 | 未读取 | inactive |
 | 同上 | `mBlockSize` | int64/64 | 第29项 | element | 未赋值 | 未读取 | inactive |
 | 同上 | `mTailBlockSize` | int64/64 | 第30项 | element | 未赋值 | 未读取 | inactive |
@@ -823,7 +823,7 @@ if (ubAvail == 0U) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | V2 公开支持 | V2 公开支持 | 本卡不覆盖；最新为 V4 |
 | Host/Launcher | DAV_2201 进入共同 `DynamicQuantTiling` | DAV_3003/DAV_3113 进入同一 tiler | RegBase tiler |
@@ -871,3 +871,9 @@ if (ubAvail == 0U) {
 | 同步 | queue/pipe/event 模式 | DB ping-pong 与 pass boundary | 各 `Process` |
 | 精度与尾块 | FP32 extrema/scale，RINT→ROUND→TRUNC | INT4 packing、tail mask/pad | `Compute*` |
 | 失败边界 | 校验失败阻断 launch | INT64 group、unknown key、空 user workspace | `Check*`/entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DynamicQuant 950 ACLNN 算子知识](dynamic_quant_950.md)（`same_topic`）：“｜ 计算语义 ｜ 对称/非对称；`pertoken`、`pertensor`、`perchannel`；可选 smooth，per-token MOE 可用 groupIndex；HiFloat8 可用 `dstTypeMax` 自定义量化范围。 ｜”定义 950 DynamicQuant V4 对象；“｜ 计算语义 ｜ 仅 per-token；对称：`s=max(abs(v))/Qmax, y=round(v/s)`；非对称：`s=max((max(v)-min(v))/(Qmax-Qmin), eps), offset=Qmax-max(v)/s, y=round(v/s+offset)`；`v=x*smooth`（有 smooth 时），MOE 用 `groupIndex` 选专家 smooth 行。 ｜”定义 A2/A3 V2 的同一核心量化合同，可用于跨平台功能矩阵和 route 迁移核验。
+<!-- cannbot:related:end -->

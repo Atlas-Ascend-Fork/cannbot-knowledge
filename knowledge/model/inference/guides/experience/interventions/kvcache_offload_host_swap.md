@@ -66,3 +66,13 @@ prefill 阶段当前层整层 cache 在设备与 host 侧均布局连续、源�
   - [cann-recipes-infer-pr-134-feat-deepseek-v3-2-exp-model-support-kv-cache-offload](https://gitcode.com/cann/cann-recipes-infer/merge_requests/134)
   - [cann-recipes-infer-pr-282-feat-hstu-model-add-kv-offload-and-optimize-preprocessing](https://gitcode.com/cann/cann-recipes-infer/merge_requests/282)
   - [cann-recipes-infer-pr-139-bug-replace-scatter-nd-update-with-copy-for-better-performance](https://gitcode.com/cann/cann-recipes-infer/merge_requests/139)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DSA decode 显存预算：Full MLA KVCache + 新增 Indexer Key Cache（勿漏）+ Indexer 权重](../../../optimizations/experience/cases/dsa_decode_memory_budget_indexer_cache.md)（`related`）：DSA decode 显存 = **Full MLA KVCache + Indexer Key Cache + Indexer 新增权重**；Host 全量、设备单层。前者给出 DSA decode 的三项显存预算，后者给出把多层 KV 常驻量转移到 Host、设备只留单层缓冲的落地方案，联合后可从预算直接选择 offload 并重算设备驻留量。
+- [HSTU](../../../concepts/models/hstu.md)（`related`）：“将 KV offload 时机**前移**到每层 Attention 结束立即触发，放到另一条 NPU stream 异步执行，实现**计算链路（HSTU dense + MLP + 后处理）与通信链路（KV offload）的重叠**，显著降低流水线空泡。详见 ［kvcache-offload］(../techniques/kvcache_offload.md)（HSTU 变体）。”与“把「等 dense 全部算完再逐层串行 offload」改为「每层 Attention 结束即在独立 offload stream 上异步触发该层 KV offload」，用 NPU Event 定义计算链与通信链依赖，把 offload 通信隐藏进后续计算：”是双方正文中的具体合同。模型卡说明 HSTU 采用逐层异步 KV offload，干预卡给出独立 stream 与 NPU Event 的依赖骨架，能支撑这一优化的实现和同步验证。
+- [KVCache Offload](../../../concepts/techniques/kvcache_offload.md)（`related`）：**容量型 Offload（DeepSeek-V3.2-Exp）**：把 MLA Full KVCache 卸载到 Host 内存，设备仅留一层 cache，释放 HBM 以容纳更大的 batch 或更长的序列。Decode 阶段借助 Lightning Indexer TopK + `GatherSelectionKvCache` 算子，利用前后 Token 命中率复用设备端 cache，缓解 H2D 带宽压力。；**Host 全量、设备单层**：每层 KV cache 用 host-swapped 内存常驻 Host；设备上只申请**单层** temp 缓冲，计算读写都落在这块单层缓冲上——把「设备驻留 N 层」压成「设备 1 层 + Host N 层」（例：61 层模型每卡 Host 存 61 层、设备只 1 层）。C8 布局时 nope/rope/scale 拼成 int8 供融合算子，见 ［mla-c8-int8-kv-cache-op-wiring］(../../../optimizations/experience/rules/mla_c8_int8_kv_cache_op_wiring.md)。。概念卡定义容量型 Host Offload，实践卡给出 Host 全量、设备单层 temp 的具体内存布局。
+- [KVCache 卸载到 Host + 稀疏 TopK-selection decode：跨 step 复用设备常驻选中块摊薄 H2D](../../../optimizations/experience/rules/kvcache_offload_sparse_selection_cross_step_reuse.md)（`related`）：焦点卡指出“offload 引入的 H2D 是 decode 新增开销，靠 decode 侧跨-step gather-selection 复用摊薄”；优化卡确认“decode 每步需从 Host 取参与计算的 kv token，**H2D 成为主要新增开销**”，把该风险收敛到 sparse TopK-selection 的跨步常驻块复用。
+- [NPU 多流优化(Multi-Stream)](../../../concepts/techniques/multi_stream.md)（`related`）：焦点卡要求“用「专用流 + event 依赖」把卸载与计算重叠、又保证共享的单层缓冲不被提前覆盖”；多流卡定义“**Event** 是跨 Stream 的同步原语：Stream A 上的 `record_event` 在执行流上标记一个时间点，Stream B 上的 `wait_event` 在该时间点完成后才继续（不同执行模式接口不同）。”，直接补足这一读写边界的同步语义。
+<!-- cannbot:related:end -->

@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hfma](../../bfloat16_type/bfloat16_arithmetic_functions/_hfma.md)（`same_topic`）：__hfma_relu 与《__hfma》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
-- [__hfma](_hfma.md)（`same_topic`）：__hfma_relu 与《__hfma》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
-- [__hfma_relu](../../bfloat16_type/bfloat16_arithmetic_functions/_hfma_relu.md)（`same_topic`）：__hfma_relu 与《__hfma_relu》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
-- [__hfmax2_relu](../../bfloat16_type/bfloat16x2_arithmetic_functions/_hfmax2_relu.md)（`same_topic`）：__hfma_relu 与《__hfmax2_relu》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
-- [__hfmax2_relu](../half2_arithmetic_functions/_hfmax2_relu.md)（`same_topic`）：__hfma_relu 与《__hfmax2_relu》的实质衔接是：__hfma_relu 在 half 上执行 x*y+z 后 ReLU；基础 hfma 与 bfloat16 对应入口拆分类型，两个历史命名为 hfmax2_relu 的卡正文同样是 packed FMA+ReLU 契约。
+- [__hfma](_hfma.md)（`related`）：功能：对输入数据x、y、z，计算x与y相乘加上z的结果，并遵循CAST_RINT模式对结果进行舍入处理。；功能：对输入half类型数据x、y、z，计算x与y相乘加上z的结果，并遵循CAST_RINT模式对结果进行舍入。负数结果置为0。。两接口共享 half FMA 与 CAST_RINT 核心计算，目标接口在同一结果后增加负数钳零，适合据是否需要融合 ReLU 选型。
 <!-- cannbot:related:end -->

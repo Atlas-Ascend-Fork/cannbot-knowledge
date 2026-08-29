@@ -29,5 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ReinterpretCast](../local_tensor/reinterpret_cast.md)（`related`）：LocalTensor 与 GlobalTensor 的 ReinterpretCast 都保持地址、字节数和内容不变，只改变元素类型解释；可按存储层级映射。
+- [FreeTensor早释使队列别名被下一轮DMA覆盖](../../../../../runbooks/precision/reinterpret_tensor_alias_must_outlive_queue_release.md)（`exemplifies`）：“转换后的Tensor与原Tensor地址及内容完全相同，Tensor的内存大小（比特数）保持不变。”给出焦点端事实；“xT = xIO.ReinterpretCast<CT>()”给出候选端事实。API 的同地址重解释合同解释了 runbook 中 xT 仍别名 xIO 的事实，并直接支撑 FreeTensor 早释后别名被复用内存覆盖的根因判断。
 <!-- cannbot:related:end -->

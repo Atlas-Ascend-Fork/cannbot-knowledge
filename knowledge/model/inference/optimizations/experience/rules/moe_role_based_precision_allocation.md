@@ -20,9 +20,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/issues/114
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # 大 MoE 量化按模块角色分配精度：路由专家最激进、共享专家 / 注意力保守
@@ -68,3 +68,10 @@ W4 权重对离群值（outlier）敏感、量化困难、易掉精度。降路�
   - [cann-recipes-infer-issue-16-rfc-deepseek-v3-2-exp-w4a8c8](https://gitcode.com/cann/cann-recipes-infer/issues/16)
   - [cann-recipes-infer-pr-13-feat-add-deepseek-v3-2-exp-w4a8c8-quantization-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/13)
   - [cann-recipes-infer-issue-114-question-kimi](https://gitcode.com/cann/cann-recipes-infer/issues/114)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoE 专家 GMM 权重加载后处理与低比特量化调用约定：NZ 布局 / W4A8 bias 辅助矩阵 / W4A16 N-dim 重打包 / clip](moe_expert_gmm_weight_lowbit_prep.md)（`related`）：“从 ［W8A8］(../../../concepts/quantization/w8a8c8.md) 迁到 ［W4A8］(../../../concepts/quantization/w4a8c8.md)（权重 4-bit 对称静态、激活 8-bit per-token 动态）时，直接照搬 W8A8 的 MoE GMM 方法会漏掉 W4A8 特有约定：”落实低比特 GMM 的迁移合同；“**MoE 路由专家（routing experts）的 Linear / GroupedMatmul → 最激进**：降到 W4A8（4bit 权重、8bit 激活）或 W4A16。它们冗余度高、且每 token 只激活一小部分，是量化的主战场。”给出何时选择该合同的模块角色策略，两卡连成选型到实现准备链。
+- [为 MoE+MLA+MTP 模型做混合精度量化的配置陷阱：保留不量化层·激活分支按位宽子串门控](deepseekv3_mixed_precision_quant_config_pitfalls.md)（`related`）：条件 → 做什么：量化 DeepseekV3 家族时，router `gate`（MoE 路由门控，`params_dtype=float32`）、`lm_head`（输出投影）、MTP/next-n 层的 `eh_proj`（`2*hidden → hidden` 融合投影）与 `shared_head.head` 必须保持**不量化**——路由权重量化会扰动专家选择。；**MoE 路由专家（routing experts）的 Linear / GroupedMatmul → 最激进**：降到 W4A8（4bit 权重、8bit 激活）或 W4A16。它们冗余度高、且每 token 只激活一小部分，是量化的主战场。前者保护 router gate 等敏感控制层，后者只对路由专家计算权重采用激进低比特，二者共同界定 MoE 角色分配而非整模型统一量化。
+<!-- cannbot:related:end -->

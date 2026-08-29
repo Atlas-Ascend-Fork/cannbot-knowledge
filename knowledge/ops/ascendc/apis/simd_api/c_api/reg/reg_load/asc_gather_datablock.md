@@ -22,7 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GatherB](../../../basic_api/reg_vector_compute/reg_data_load/gather_b_discrete.md)（`related`）：两接口都按偏移寄存器离散收集 8 个 32B datablock，分别是 ISASI/Reg 与 C API 表面，可用于同一 gather-block 需求迁移。
-- [AscGather](asc_gather.md)（`same_topic`）：《AscGather》明确“根据索引位置index将源操作数src按元素收集到目的操作数dst中。”；它与《AscGatherDatablock》的“根据索引将UB中的源操作数按32B的DataBlock收集到目的操作数中。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscGatherDatablock](../../vector_compute/asc_gather_datablock.md)（`same_topic`）：《AscGatherDatablock》明确“给定一个输入的矢量和一个地址偏移矢量，根据偏移地址按照DataBlock的粒度将输入矢量收集到目的矢量中。”；它与《AscGatherDatablock》的“根据索引将UB中的源操作数按32B的DataBlock收集到目的操作数中。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscGatherDatablock](../../vector_compute/asc_gather_datablock.md)（`same_topic`）：“给定源操作数在UB中的基地址和索引，根据索引位置将源操作数按DataBlock收集到目的操作数中。每个DataBlock长度为32B。 其中，index中仅前8个元素有效，每个元素对应一个DataBlock。”与“给定一个输入的矢量和一个地址偏移矢量，根据偏移地址按照DataBlock的粒度将输入矢量收集到目的矢量中。”提供双方正文证据。两端都以 UB 基址和偏移索引按 DataBlock 收集数据；寄存器版进一步限定 32B 块和前八个索引，向量版给出 LocalTensor 地址偏移入口，互读可完成平台与接口形态选型。
 <!-- cannbot:related:end -->

@@ -104,7 +104,5 @@ bisheng: error: clang frontend command failed due to signal (use -v to see invoc
 <!-- cannbot:related:start -->
 ## 相关
 
-- [BiSheng bf16 类型转换失败——隔离模板实例化](if_constexpr_excludes_unsupported_bf16_cast.md)（`related`）：两卡都定位模板实例化阶段的跨 dtype 失败；该卡用独立模板入口隔离不支持 BF16 Cast，本卡进一步证明跨字宽分支需物理拆类。
-- [RegBase VF __simd_vf__ 路线致 bisheng 编译崩溃](regbase_vf_simd_vf_bisheng_exit139_banned.md)（`related`）：RegBase VF 的 exit139/exit70 是另一已验证 compiler crash 触发构造；与单模板跨字宽卡对照可先最小化 VF 结构或 dtype 分支。
-- [bisheng 动态 shape 编译段错误 — extern C + DTYPE](bisheng_extern_c_dtype_dynamic_shape_segfault.md)（`related`）：该卡记录 extern C+DTYPE 动态 shape 重编译的另一类 bisheng segfault，可用触发阶段和拆类探针对前端崩溃做分流。
+- [BiSheng bf16 类型转换失败——隔离模板实例化](if_constexpr_excludes_unsupported_bf16_cast.md)（`related`）：焦点卡观测“`if constexpr(is_c8)` 两分支操作不同 `LocalTensor` element 类型：非选中分支仍进前端类型检查。”；目标卡解释“运行时的 `if (isUpdate)` 或 `TORCH_CHECK(isUpdate, ...)` 不会阻止编译器实例化宏体中已经写出的 `scatter_kernel<float, bfloat16_t, ...>` reduce 分支”，两者共同指向把不支持类型分支从翻译单元物理隔离的编译期修法。
 <!-- cannbot:related:end -->

@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/inplace_add_rms_norm/op_host/config/ascend910_93/inplace_add_rms_norm_binary.json
     role: implementation
 created_at: "2026-08-25T17:56:36Z"
-updated_at: "2026-08-25T17:56:36Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -709,9 +709,9 @@ Host 将按 dtype 的 repeat 主体、尾长和跨行 stride 固化进 POD，Dev
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，见 `_950` 卡 |
 | Host/Launcher | 通用 selector，910b config | 同实现，910_93 config | regbase 两路线 |
 | Kernel/资源 | 5 mode 类、五条 Route | 同 A2 | arch35 AIV-only MicroAPI |
 
@@ -755,3 +755,9 @@ Host 将按 dtype 的 repeat 主体、尾长和跨行 stride 固化进 POD，Dev
 | 同步 | queue、PipeBarrier、hard event | Single-N 覆盖 x2 前必须 V_MTE2 | body |
 | 精度与尾块 | FP32 reduce，BF16 RINT，DataCopyCustom tail | 不得让 padding lane 写 GM/参与有效 sum | helpers/body |
 | 失败边界 | selector fallback 到 Normal | dead key、unknown key、溢出不可补推 | selector/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [InplaceAddRmsNorm 950 ACLNN 算子知识](inplace_add_rms_norm_950.md)（`same_topic`）：｜ 计算语义 ｜ `x=x1+x2`；每个归一化行 `rstd=1/sqrt(mean(x^2)+epsilon)`；`y=x*rstd*gamma` ｜；｜ 计算语义 ｜ `x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma` ｜。两卡定义同一原地 Add+RMSNorm 数学链，分别闭合 950 与 A2/A3 的 Host、Tiling 和 Kernel 实现，可用于跨平台接口迁移核对。
+<!-- cannbot:related:end -->

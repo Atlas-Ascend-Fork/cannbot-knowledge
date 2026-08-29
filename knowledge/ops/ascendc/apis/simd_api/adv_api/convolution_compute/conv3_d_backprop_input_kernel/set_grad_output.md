@@ -26,10 +26,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Iterate（卷积计算）](iterate.md)（`related`）：Iterate（卷积计算）说明每次调用Iterate时，会计算出一个baseM \ baseN的结果矩阵，并将该结果写入L0C Buffer。接口内部会维护迭代进度，每次调用后，矩阵的起始地址将进行偏移。如果传入的数据未对齐存在尾块，则在最后一次迭代中输出尾块的计算结果。本接口需与GetTensorC接口配合使用；在调用本接口后，再调用GetTensorC接口，L0C Buffer中的数据将被写入目标地址。
-- [SetGradOutput](../conv3_d_backprop_filter_kernel/set_grad_output.md)（`related`）：反向输入与反向权重两类卷积都绑定同语义的 GradOutput GM 张量，但服务不同反传目标，可帮助避免混用对象。
-- [SetGradOutputShape](../conv3_d_backprop_input_tiling/set_grad_output_shape.md)（`related`）：Host 侧设置的 GradOutput 形状必须与 Kernel 侧绑定的实际 GradOutput 张量一致，连接 tiling 配置和计算输入。
-- [SetStartPosition](set_start_position.md)（`related`）：SetStartPosition 定位的正是 GradOutput 在 D/H 方向的载入起点，必须与 SetGradOutput 绑定的 GM 张量共同解释地址。
-- [Conv3DBackpropInput](conv3_d_backprop_input_usage.md)（`same_topic`）：焦点处理Conv3DBackpropInput 的初始化、输入设置、迭代和取结果调用顺序；SetGradOutput正文说明“设置卷积反向计算的输入矩阵GradOutput”。候选正是该用法页按先后调用的阶段；遗漏或错序会破坏资源划分、输入绑定或结果搬出。
-- [SetGradOutputType](../conv3_d_backprop_input_tiling/set_grad_output_type.md)（`same_topic`）：SetGradOutputType 与《SetGradOutput》的实质衔接是：主机侧 GradOutput 的 GM/NDC1HWC0/dtype 设置必须与实际 SetGradOutput 张量及 Kernel Init 消费的 tiling 数据一致；shape、GetTiling 和 tiling struct 完成同一配置链。
+- [Conv3DBackpropInput](conv3_d_backprop_input_usage.md)（`related`）：设置卷积反向计算的输入矩阵GradOutput。；Conv3DBackpropInput 以 GradOutput 和转置后的 Weight 为输入，计算特征矩阵的反向传播误差 GradInput。。SetGradOutput 卡指定写入卷积反向计算的 GradOutput 输入，使用说明卡给出该输入与转置 Weight 共同计算 GradInput 的数学角色，因此参数设置可直接落到完整反向运算链。
 <!-- cannbot:related:end -->

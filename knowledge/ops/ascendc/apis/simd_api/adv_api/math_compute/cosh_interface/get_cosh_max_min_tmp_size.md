@@ -25,7 +25,5 @@ host侧Tiling接口，用于获取Cosh接口所需的最大和最小临时空间
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Cosh](cosh.md)（`same_topic`）：GetCoshMaxMinTmpSize说明在host侧获取Cosh接口预留或申请临时空间的最大和最小值，用于Tiling参数传递；对Cosh而言，Cosh 的 Host Tiling 必须在最大/最小临时空间与 factor 参数之间选择，才能推算 Kernel 单次处理量。
-- [Cosh接口](cosh_interface.md)（`same_topic`）：焦点处理Cosh 高阶 API 的计算接口与临时空间计算；GetCoshMaxMinTmpSize正文说明“在host侧获取Cosh接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”。候选分别承担 Cosh 实际计算、workspace 上下界和固定空间容量推算。
-- [GetCoshTmpBufferFactorSize](get_cosh_tmp_buffer_factor_size.md)（`same_topic`）：GetCoshMaxMinTmpSize说明在host侧获取Cosh接口预留或申请临时空间的最大和最小值，用于Tiling参数传递。
+- [Cosh](cosh.md)（`related`）：Cosh 卡明确“临时空间大小通过GetCoshMaxMinTmpSize获取。”；Host Tiling 卡说明“host侧Tiling接口，用于获取Cosh接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”，二者形成 Cosh 临时空间的 Host 计算到 Kernel 使用链，但主 API 的双曲余弦计算与 helper 的容量规划并非同一主题。
 <!-- cannbot:related:end -->

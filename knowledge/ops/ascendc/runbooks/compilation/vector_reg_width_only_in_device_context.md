@@ -122,8 +122,7 @@ static __aicore__ inline uint32_t ChunkCount(uint32_t count) {
 <!-- cannbot:related:start -->
 ## 相关
 
-- [507035 — Host 按逻辑行宽预算导致 UB 溢出](ub_budget_uses_aligned_physical_width_507035.md)（`related`）：focal 的 Host 预算需要 256B 向量宽度却不能直接引用 Device intrinsic；目标卡证明 VECTOR_REG_WIDTH 只在设备作用域可见，并要求 Host 使用独立信息来源。
-- [CastTrait 文件域声明触发命名空间编译失败](reg_casttrait_define_inside_simd_vf.md)（`related`）：依赖寄存器宽度的 trait/数组应在 device/VF 作用域定义。
-- [核函数调用未标__aicore__的纯算术辅助函数](aicore_helper_requires_device_qualifier.md)（`related`）：helper 缺 device qualifier 会让 device-only 宏在 host 上求值失败。
-- [Ascend950 Reg 扫描按 256B 锁定 lane](../precision/dav3510_vector_register_width_is_256_bytes.md)（`same_topic`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《VECTOR_REG_WIDTH 只能在 Device 作用域求值》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
+- [Ascend950 Reg 扫描按 256B 锁定 lane](../precision/dav3510_vector_register_width_is_256_bytes.md)（`related`）：工具包探针在设备相关头文件中观测到 `VECTOR_REG_WIDTH=256` 字节；dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。；前卡规定常量的合法求值位置，后卡给出该值驱动 64-lane 分块的精度边界。
+- [CastTrait 文件域声明触发命名空间编译失败](reg_casttrait_define_inside_simd_vf.md)（`related`）：CANN 9.0.1 dav-3510 的 Reg 常量在 device/VF 函数上下文内可见，将它提前到文件作用域会脱离该解析上下文。；放回 `__simd_vf__` 函数域后类型可见并通过语义编译。；两卡共同给出 dav-3510 Reg 专属符号在文件域不可见、移入设备函数域恢复编译的诊断与修复链。
+- [Dilation2D 950 Direct Invoke 算子知识](../../operators/direct/nn/pooling/dilation_2d_950.md)（`related`）：“RegTensor ｜ channel chunk `r*VECTOR_REG_WIDTH/2`”；“CANN 9.0.1 dav-3510 的 Reg 常量在 device/VF 函数上下文内可见”。Dilation2D Vector 路线以 VECTOR_REG_WIDTH 划分通道，Runbook 给出避免把该常量移到全局作用域的编译边界。
 <!-- cannbot:related:end -->

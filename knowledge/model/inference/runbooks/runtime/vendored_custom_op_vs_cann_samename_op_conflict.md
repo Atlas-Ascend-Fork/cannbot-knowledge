@@ -68,3 +68,10 @@ platforms:
   - 溯源下探：[cann-recipes-infer-issue-117-bug-report-test-npu-sparse-flash-attention-py](https://gitcode.com/cann/cann-recipes-infer/issues/117)
 - **接口漂移 · 维护者确认 + diff 事实**（clone `@239c0c1a`）：`ops/ascendc/src/` 现存 vendored 算子中已**无 `mla_prolog_v3`**（已移除），各建模文件改调 `torch_npu.npu_mla_prolog_v3`。维护者确认根因（算子合入 ops-transformer 时改了接口、recipes 未同步）与修法（已适配、当时用 README 镜像规避）。
   - 溯源下探：[cann-recipes-infer-issue-130-bug-report-mla-prolog-v3-cann-transformer](https://gitcode.com/cann/cann-recipes-infer/issues/130)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscendC 自定义算子的构建/打包/可用性坑：vendor 同名覆盖、build.sh op-name 不匹配、未编译则命名空间缺失、镜像滞后源码、逐 SoC AddConfig、并行编译提速](../compilation/ascendc_custom_op_build_packaging_availability.md)（`related`）：焦点卡描述安装期“新包会**整包覆盖**同名 `customize` vendor 包”，候选卡描述运行期“仓内自带的自定义算子与 CANN 侧提供的**同名**算子”发生解析与接口冲突；二者共同构成同名自定义算子的打包覆盖与调用消歧排障链。
+- [昇腾部署镜像的组件版本对齐（torch_npu / 驱动 HDK / CANN 包）与过渡态规避](../../optimizations/experience/rules/ascend_deployment_image_version_alignment.md)（`related`）：“因为部署镜像的 CANN 包过旧、旧镜像上直接调内置版会缺算子”与“调用解析到了「错的那一份」”分别覆盖内置算子缺失和同名实现解析错误，属于升级镜像后的同一算子来源排查链。
+<!-- cannbot:related:end -->

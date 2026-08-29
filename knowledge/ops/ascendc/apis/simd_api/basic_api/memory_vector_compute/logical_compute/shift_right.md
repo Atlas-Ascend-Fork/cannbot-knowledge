@@ -31,7 +31,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ShiftRight](../../reg_vector_compute/logical_compute/shift_right.md)（`related`）：Memory ShiftRight 用单个 scalarValue 并可舍入，Reg ShiftRight 用 srcReg1 逐 lane 指定位移；两者共享有符号算术/无符号逻辑右移和超位宽边界。
-- [AscShiftright](../../../c_api/vector_compute/asc_shiftright.md)（`same_topic`）：AscShiftright：所选接口都执行右移，区别是 Memory/Reg/C API、逐元素 shift tensor 或 scalar shift；它们可直接核对位宽和移位量契约。 目标卡《ShiftRight》补充：对源操作数中的每个元素进行右移操作，右移位数由标量scalarValue决定，无符号类型执行逻辑右移，有符号类型执行算术右移，支持舍入功能。
-- [ShiftRight](shift_right_shift_amount_tensor.md)（`same_topic`）：基础 ShiftRight 的 tensor shift-amount 重载由本页展开；二者共享输出和整数类型约束。
+- [ShiftRight](shift_right_shift_amount_tensor.md)（`related`）：焦点卡写明“右移位数由标量scalarValue决定”，候选卡写明“右移位数由Tensor指定”。两卡分别定义统一标量位移与逐元素 Tensor 位移，形成重载选型。
 <!-- cannbot:related:end -->

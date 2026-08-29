@@ -25,16 +25,6 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Conv3DBackpropInput Kernel侧接口](../conv3_d_backprop_input_kernel/conv3_d_backprop_input_kernel.md)（`related`）：GetTiling 与《Conv3DBackpropInput Kernel侧接口》的衔接是：GetTiling 是 Conv3DBackpropInput 主机侧配置的收口：构造并设置参数后生成 TConv3DBackpropInputTiling，随后由 Kernel 侧按该 tiling 驱动计算。
-- [Conv3DBackpropInput Tiling侧接口](conv3_d_backprop_input_tiling.md)（`related`）：Conv3DBackpropInput Tiling侧接口：该 Host Tiling集合产出 TConv3DBackpropInputTiling，GetTiling把形状/类型/卷积参数固化后交给同算子的 Kernel Init；用法卡展示完整 Host→Kernel 衔接。 目标卡《GetTiling》补充：获取Tiling参数。
-- [Conv3DBackpropInput Tiling构造函数](conv3_d_backprop_input_tiling_constructor.md)（`related`）：构造函数创建单核 tiling 对象；配置 shape/type/stride 后必须调用 GetTiling 才生成传给 Kernel 的结构体。
-- [Conv3DBackpropInputTiling](conv3_d_backprop_input_tiling_usage.md)（`related`）：GetTiling 与《Conv3DBackpropInputTiling》的衔接是：GetTiling 是 Conv3DBackpropInput 主机侧配置的收口：构造并设置参数后生成 TConv3DBackpropInputTiling，随后由 Kernel 侧按该 tiling 驱动计算。
-- [SetGradOutputShape](set_grad_output_shape.md)（`related`）：SetGradOutputShape 等 setter 的结果最终由 GetTiling 汇总生成 Kernel 参数；缺少该调用配置不会形成可用 tiling。
-- [SetInputType](set_input_type.md)（`related`）：类型与形状 setter 最终由 GetTiling 固化为 Kernel 参数，是配置的直接消费端。
-- [SetOutputPadding](set_output_padding.md)（`related`）：SetOutputPadding 与《GetTiling》的实质衔接是：SetOutputPadding 只在 Conv3DTranspose 形状反推中生效；这些卡共同限定输入、普通 padding、tiling 结构与 GetTiling/Init 的调用链，并用同名属性非根因案例防止误诊。
-- [SetStride](set_stride.md)（`related`）：SetStride 等几何配置最终由 GetTiling 固化为 Kernel 参数。
-- [SetWeightShape](set_weight_shape.md)（`related`）：SetWeightShape 与《GetTiling》的实质衔接是：Weight shape 必须与 weight 类型、输入及 GradOutput 形状一起写入 Conv3DBackpropInput tiling 对象，再由 GetTiling 生成核侧结构。
-- [GetTiling](../conv3_d_tiling/get_tiling.md)（`same_topic`）：《GetTiling》明确“获取Tiling参数。”；它与《GetTiling》的“获取Tiling参数。”在实际调用参数、数据流或结果校验上直接衔接。
-- [SetGradOutputType](set_grad_output_type.md)（`same_topic`）：SetGradOutputType 与《GetTiling》的实质衔接是：主机侧 GradOutput 的 GM/NDC1HWC0/dtype 设置必须与实际 SetGradOutput 张量及 Kernel Init 消费的 tiling 数据一致；shape、GetTiling 和 tiling struct 完成同一配置链。
-- [TConv3DBackpropInputTiling结构体](t_conv3_d_backprop_input_tiling_struct.md)（`same_topic`）：GetTiling 把各 setter 收口并写入 TConv3DBackpropInputTiling。
+- [Conv3DBackpropInputTiling](conv3_d_backprop_input_tiling_usage.md)（`related`）：“Conv3DBackpropInput Tiling API提供一个GetTiling接口获取Tiling参数”给出焦点端事实；“如果返回值不为-1，则代表Tiling计算成功”给出候选端事实。使用卡把 GetTiling 放进 Conv3DBackpropInput Tiling 的实际调用流程，接口卡给出返回值成功判据，二者闭合调用与验证。
+- [TConv3DBackpropInputTiling结构体](t_conv3_d_backprop_input_tiling_struct.md)（`related`）：TConv3DBackpropInputTiling结构体包含Conv3DBackpropInput算子规格信息及Tiling切分算法的相关参数，被传递给Conv3DBackpropInput Kernel侧，用于数据切分、数据搬运和计算等。TConv3DBackpropInputTiling结构体的参数说明见下表。 用户通过调用GetTiling接口获取TConv3DBackpropInputTiling结构体，具体流程请参考Conv3DBackpropInput Tiling使用说明。当前暂不支持用户自定义配置TConv3DBackpropInputTiling结构体中的参数。 具体字段、含义和取值约束见固定来源中的结构说明表。；- tiling（输出）：Conv3DBackpropInput的Tiling结构体，用于存储最终的Tiling结果。TConv3DBackpropInputTiling结构介绍请参考TConv3DApiTiling结构体说明。。结构体卡定义 Kernel 消费的数据结构，GetTiling 卡定义产生该结构体的 Host 输出，构成明确的生产与消费合同。
 <!-- cannbot:related:end -->

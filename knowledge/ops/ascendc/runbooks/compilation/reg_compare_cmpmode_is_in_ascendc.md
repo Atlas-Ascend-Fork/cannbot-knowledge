@@ -191,10 +191,3 @@ __simd_vf__ inline void cummin_vf(
 
 - 根据 `Reg::Compare` 的函数名机械写成 `Reg::CMPMODE`；
 - 为消除错误改掉比较谓词本身，例如把 `LT` 换成另一个可编译模式，从而掩盖语义变化。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendC:: 前缀致全局符号编译失败](ascendc.md)（`related`）：总卡提供逐符号查声明、不能统一加 AscendC:: 的判别框架，本卡给出 Reg::Compare/CMPMODE 的相反层级实例。
-- [Reg CastTrait RoundMode 命名空间编译失败](casttrait_roundmode_is_in_ascendc.md)（`same_topic`）：Compare 的 CMPMODE 与 Cast 的 RoundMode 都说明函数位于 AscendC::Reg 不代表枚举也在 Reg；枚举实际位于 AscendC。
-<!-- cannbot:related:end -->

@@ -69,9 +69,3 @@ platforms: ["a2"]
 
 - 曾怀疑 FP16 值域溢出（max≈65504，乘法溢出）——不成立，17.8 在 FP16 范围内；真正原因是就地覆写后读到 `y_first` 而非 `x1`（agent 推断，已由代码顺序分析与重排后实测恢复共同推翻）。
 - 曾试图用 `DataCopy` 在 UB 内把 yFirst 复制到 xFp32——API 误用，未解决问题（已弃用）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FP16 算子 Cast 提升-计算-回退链设计](fp16_cast_up_fp32_compute_cast_down_chain.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《FP16 half 就地覆写 x1 破坏 y_second 读依赖》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-<!-- cannbot:related:end -->

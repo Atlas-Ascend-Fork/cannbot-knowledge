@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.pipeline"]
 status: stable
 sources: []
 created_at: "2026-08-18T09:12:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 aliases: ["memory_driven_stitch"]
 ---
@@ -15,13 +15,13 @@ aliases: ["memory_driven_stitch"]
 
 ## 现象
 
-在 Ascend950（A5）上 `sparse_flash_attention_quant_d_950`（bf16）的 `_part` 参考实现已使用 memory-driven stitch 自动合图（隐式决定 stitch 合图数）。为尝试进一步优化，在 JIT `runtime_options` 中显式加入 `stitch_function_max_num: 128`（取与基线 stitch 数同值）。运行后 5 分钟无任何输出（正常完成约 2-3 秒），shell tool 在 300000ms 超时后终止，判定为编译/运行挂起。回退该参数后运行恢复正常。
+在 Ascend950（950）上 `sparse_flash_attention_quant_d_950`（bf16）的 `_part` 参考实现已使用 memory-driven stitch 自动合图（隐式决定 stitch 合图数）。为尝试进一步优化，在 JIT `runtime_options` 中显式加入 `stitch_function_max_num: 128`（取与基线 stitch 数同值）。运行后 5 分钟无任何输出（正常完成约 2-3 秒），shell tool 在 300000ms 超时后终止，判定为编译/运行挂起。回退该参数后运行恢复正常。
 
 ## 适用场景
 
 - **工程形态**：kernel 直调（pypto-gym JIT，已用 memory-driven stitch 自动合图的算子）。
 - **API 路径**：JIT `runtime_options.stitch_function_max_num`（与 memory-driven stitch 模式互斥）。
-- **验证过的平台与 CANN 版本**：Ascend950（A5）。
+- **验证过的平台与 CANN 版本**：Ascend950（950）。
 - **适用粒度**：`workflow_only`（pypto-gym JIT stitch 配置组合行为，非 kernel 行为本身）。
 - **路线优先级**：`banned`——memory-driven stitch 模式下显式设 `stitch_function_max_num` 为禁用组合。
 - **不适用/未验证场景**：未启用 memory-driven stitch 的算子不受此约束；显式 stitch 模式下该参数可能合法（本 trace 未验证该路径）；a2/a3 未验证，不得据本卡推断可迁移。
@@ -44,9 +44,3 @@ aliases: ["memory_driven_stitch"]
 ## 预防
 
 memory-driven stitch 模式下不要显式设 `stitch_function_max_num`；显式 stitch 与 memory-driven stitch 是两种互斥的合图决策路径，不可混用。把一个实现上正常的 JIT 参数值照搬到用不同 stitch 模式的另一实现，上下文不同、参数语义不同，属坏实践。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [PyPTO F40005 UB 越界：scope 扩展压满 UB](pypto_f40005_ub_scope_ub.md)（`same_topic`）：《PyPTO F40005 UB 越界：scope 扩展压满 UB》处理“在 PyPTO 前端扩展 sg_set_scope/Mix合图覆盖段或在循环内 sg_set_scope=-1 重开、或为 V0/V1 段加 sg_set_ooo_scope 时，OoO 调度把更多算子并入同一调度域，单算子 in/output UB 占用超出 MEM_UB(253952) 即报 F40005 TENSOR_MEMORY_ALLOCATION；诊断即回退 scope/ooo 扩展到上一可运行配置。”。《memory-driven stitch 与显式 max_num 冲突致挂起》明确“在已启用 memory-driven stitch 自动合图的 sparse_flash_attention_quant _part 实现上，于 JIT runtime_options 显式设 stitch_function_max_num=128 试图进一步优化，运行后 5 分钟无任何输出、shell 在 300000ms 超时终止，判定为编译/运行挂起；回退该参数后恢复正常。memory-driven stitch 与显式 stitch_function_max_num 是两种互斥的合图决策路径，不可混用，banned。”，可直接用于核对同一 sparse flash PyPTO scope/Mix 合图扩展对 UB、调度、精度和编译挂起的联动约束。
-<!-- cannbot:related:end -->

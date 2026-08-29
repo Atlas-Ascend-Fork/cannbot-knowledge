@@ -27,9 +27,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMaxScalar](asc_max_scalar.md)（`related`）：AscMinScalar 与 AscMaxScalar 共享输入、mask 和标量契约并提供相反钳位方向，便于实现上下界 clamp。
-- [AscMaxScalar](../../vector_compute/asc_max_scalar.md)（`related`）：AscMaxScalar 与《AscMinScalar》的实质衔接是：Reg 与基础 MaxScalar 操作同一 vector-scalar 最大值，MinScalar 给出相反选择边界。
-- [AscMin](asc_min.md)（`same_topic`）：AscMinScalar 与《AscMin》的实质衔接是：AscMinScalar 在 Reg 上比较 vector 与 scalar；Vector 对应入口、tensor-tensor Min、MaxScalar 和灵活 Mins 分别界定执行层、操作数形态与相反边界。
-- [AscMinScalar](../../vector_compute/asc_min_scalar.md)（`same_topic`）：AscMinScalar 与《AscMinScalar》的实质衔接是：AscMinScalar 在 Reg 上比较 vector 与 scalar；Vector 对应入口、tensor-tensor Min、MaxScalar 和灵活 Mins 分别界定执行层、操作数形态与相反边界。
-- [Mins（灵活标量位置）](../../../basic_api/memory_vector_compute/basic_arithmetic/mins_flexible_scalar.md)（`same_topic`）：AscMinScalar 与《Mins（灵活标量位置）》的实质衔接是：AscMinScalar 在 Reg 上比较 vector 与 scalar；Vector 对应入口、tensor-tensor Min、MaxScalar 和灵活 Mins 分别界定执行层、操作数形态与相反边界。
+- [AscMin](asc_min.md)（`same_topic`）：“该接口根据mask，对源操作数src0、src1进行按元素求最小值操作，将结果写入目的操作数dst。”与“根据mask将源操作数src按元素与标量value进行比较，将最小值写入目的操作数dst。”是双方正文中的具体合同。两端都按 mask 计算逐元素最小值，第二操作数分别为矢量 src1 和标量 value，互读能选择输入形态并核对广播行为。
+- [AscMinScalar](../../vector_compute/asc_min_scalar.md)（`same_topic`）：源操作数矢量逐元素与标量相比，如果比标量值大，则取标量值，比标量值小，则取源操作数值。；根据mask将源操作数src按元素与标量value进行比较，将最小值写入目的操作数dst。两卡核心对象都是 vector-scalar 逐元素最小值，分别覆盖 A2/A3 UB 指针接口与 950 寄存器掩码接口。
 <!-- cannbot:related:end -->

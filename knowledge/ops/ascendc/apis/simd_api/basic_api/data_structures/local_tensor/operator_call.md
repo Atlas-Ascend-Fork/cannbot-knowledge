@@ -27,12 +27,3 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LocalTensor SetValue 参数颠倒导致索引错乱](../../../../../runbooks/precision/localtensor_setvalue_uses_offset_then_value.md)（`exemplifies`）：operator 与《LocalTensor SetValue 参数颠倒导致索引错乱》的实质衔接是：LocalTensor operator 生成子视图，必须与地址/size/shape 属性和 Get/SetValue、offset 故障共同理解。
-- [GetValue](get_value.md)（`same_topic`）：operator 与《GetValue》的实质衔接是：LocalTensor operator 生成子视图，必须与地址/size/shape 属性和 Get/SetValue、offset 故障共同理解。
-- [OperatorSubscript](operator.md)（`same_topic`）：LocalTensor::operator[] 按元素偏移得到共享存储的子张量，operator() 提供另一种切片/地址视图入口；二者共同决定子视图的偏移与共享存储语义。
-- [SetValue](set_value.md)（`same_topic`）：operator 与《SetValue》的实质衔接是：LocalTensor operator 生成子视图，必须与地址/size/shape 属性和 Get/SetValue、offset 故障共同理解。
-<!-- cannbot:related:end -->

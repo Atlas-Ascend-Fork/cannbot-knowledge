@@ -44,6 +44,14 @@ class InstallerTests(unittest.TestCase):
                     "ops-knowledge-cv-ingest",
                 },
             )
+            help_result = subprocess.run(
+                ["bash", str(INSTALLER), "--help"],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(0, help_result.returncode, help_result.stderr)
+            self.assertIn("repository-internal trace ingest skill is not installed", help_result.stdout)
             env = (project / ".cannbot/knowledge.env").read_text(encoding="utf-8")
             self.assertIn(f"export CANNBOT_KNOWLEDGE_ROOT={ROOT}", env)
             self.assertIn("export CANNBOT_KNOWLEDGE_PROFILE=contributor", env)
@@ -66,6 +74,7 @@ class InstallerTests(unittest.TestCase):
                 "`discover`",
                 "`common`",
                 "`ascendc`、`triton`、`tilelang`、`pypto`、`shared`",
+                "`inference`、`training`、`spatial`、`embodied`",
                 "`graph`、`runtime`",
                 "### 什么时候调用或重新调用",
                 "### 每次执行的基本流程",
@@ -78,6 +87,8 @@ class InstallerTests(unittest.TestCase):
             for expected in required_contract:
                 with self.subTest(expected=expected):
                     self.assertIn(expected, prompt)
+            self.assertNotIn("当前都没有知识卡", prompt)
+            self.assertNotIn("当前没有知识卡", prompt)
             self.assertNotIn("### 贡献者附加流程", prompt)
 
     def test_conflict_does_not_leave_partial_install(self) -> None:

@@ -19,10 +19,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MakeTensor](make_tensor.md)（`same_topic`）：MakeMemPtr 与《MakeTensor》的实质衔接是：MakeMemPtr 先把地址、物理存储位置和类型包装成 HardwareMemPtr，再由 MakeTensor 构成 Tensor；Pointer/Tensor 结构卡定义这一适配边界。
-- [Pointer（基础API）](pointer.md)（`same_topic`）：MakeMemPtr 与《Pointer（基础API）》的实质衔接是：MakeMemPtr 先把地址、物理存储位置和类型包装成 HardwareMemPtr，再由 MakeTensor 构成 Tensor；Pointer/Tensor 结构卡定义这一适配边界。
-- [Tensor](tensor.md)（`same_topic`）：MakeMemPtr 与《Tensor》的实质衔接是：MakeMemPtr 先把地址、物理存储位置和类型包装成 HardwareMemPtr，再由 MakeTensor 构成 Tensor；Pointer/Tensor 结构卡定义这一适配边界。
-- [Tensor数据结构](tensor_structure.md)（`same_topic`）：MakeMemPtr 与《Tensor数据结构》的实质衔接是：MakeMemPtr 先把地址、物理存储位置和类型包装成 HardwareMemPtr，再由 MakeTensor 构成 Tensor；Pointer/Tensor 结构卡定义这一适配边界。
-- [ViewEngine](view_engine.md)（`same_topic`）：ViewEngine 与《MakeMemPtr》的实质衔接是：ViewEngine 持有 Iterator，并与 Layout 组成 Tensor 视图；MakeMemPtr/MakeTensor、Slice 和 shape/stride 查询共同决定 Begin 指向的物理位置。
-- [数据结构(TensorAPI，试验特性)](../data_structure_tensor_api.md)（`same_topic`）：MakeMemPtr 与《数据结构(TensorAPI，试验特性)》的实质衔接是：MakeMemPtr 先把地址、物理存储位置和类型包装成 HardwareMemPtr，再由 MakeTensor 构成 Tensor；Pointer/Tensor 结构卡定义这一适配边界。
+- [MakeTensor](make_tensor.md)（`related`）：“试验接口。构造带物理存储位置标记和数据类型信息的内存指针适配器 HardwareMemPtr。”产生指针适配器，而“试验接口。将内存指针（MakeMemPtr 生成）与布局对象（MakeFrameLayout/MakeLayout 生成）绑定，生成带完整类型信息的 Tensor 对象。”明确消费该结果；这是从裸地址到 Tensor 的直接两步构造链。
 <!-- cannbot:related:end -->

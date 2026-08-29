@@ -26,9 +26,6 @@ host侧Tiling接口，用于获取Dequantize接口所需的最大和最小临时
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CastDequant](../../basic_api/memory_vector_compute/composite_compute/cast_dequant.md)（`related`）：GetDequantizeMaxMinTmpSize 与《CastDequant》的实质衔接是：GetDequantizeMaxMinTmpSize 与 factor 查询共同选择 kernel 临时空间，Dequantize/CastDequant 是消费端，Quantize 是逆过程，SetDequantType 决定输出模式。
-- [SetDequantType](../cube_compute/matmul_tiling/set_dequant_type.md)（`related`）：GetDequantizeMaxMinTmpSize 与《SetDequantType》的实质衔接是：GetDequantizeMaxMinTmpSize 与 factor 查询共同选择 kernel 临时空间，Dequantize/CastDequant 是消费端，Quantize 是逆过程，SetDequantType 决定输出模式。
-- [Dequantize](dequantize.md)（`same_topic`）：GetDequantizeMaxMinTmpSize 与《Dequantize》的实质衔接是：GetDequantizeMaxMinTmpSize 与 factor 查询共同选择 kernel 临时空间，Dequantize/CastDequant 是消费端，Quantize 是逆过程，SetDequantType 决定输出模式。
-- [GetDequantizeTmpBufferFactorSize](get_dequantize_tmp_buffer_factor_size.md)（`same_topic`）：《GetDequantizeTmpBufferFactorSize》说明获取Dequantize接口的maxLiveNodeCount和extraBuf，在固定空间大小下推算算子单次最大计算元素数量。；《GetDequantizeMaxMinTmpSize》说明在host侧获取Dequantize接口计算所需的最大和最小临时空间大小，用于选择合适的空间大小作为Tiling参数传递到kernel侧。。二者在Dequantize的factor和最大/最小workspace查询为同一Kernel反推单次处理规模上存在可执行的直接衔接。
-- [Quantize](quantize.md)（`same_topic`）：GetDequantizeMaxMinTmpSize 与《Quantize》的实质衔接是：GetDequantizeMaxMinTmpSize 与 factor 查询共同选择 kernel 临时空间，Dequantize/CastDequant 是消费端，Quantize 是逆过程，SetDequantType 决定输出模式。
+- [Dequantize](dequantize.md)（`related`）：“提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetDequantizeMaxMinTmpSize获取。”在 Kernel API 中指定 sizing 依赖；“host侧Tiling接口，用于获取Dequantize接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”给出 Host 到 Kernel 的参数交接。
+- [GetDequantizeTmpBufferFactorSize](get_dequantize_tmp_buffer_factor_size.md)（`related`）：“参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource与Dequantize接口保持一致；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。”与“获取Dequantize接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。”。两卡分别给出空间上下界和固定空间反推处理元素数的 factor，形成互补 Tiling 预算。
 <!-- cannbot:related:end -->

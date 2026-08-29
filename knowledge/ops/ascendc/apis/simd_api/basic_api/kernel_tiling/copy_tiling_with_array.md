@@ -31,7 +31,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [COPY_TILING_WITH_STRUCT](copy_tiling_with_struct.md)（`related`）：COPY_TILING_WITH_STRUCT说明拷贝Tiling结构体，并返回指向拷贝后的Tiling结构体的指针。该宏适用于嵌套结构体场景，可拷贝结构体的子结构体成员变量。该宏将指定结构体拷贝至栈上，适用于频繁访问Tiling数据的场景，能够加快数据访问速度；对COPY_TILING_WITH_ARRAY而言，数组 TilingData 的复制宏与结构体宏互为声明方案，Kernel 侧再按整对象或成员宏解析同一块 GM Tiling 数据。
-- [GET_TILING_DATA](get_tiling_data.md)（`related`）：GET_TILING_DATA说明用于获取算子kernel入口函数传入的Tiling信息，并填入注册的TilingData结构体中，此函数会以宏展开的方式进行编译。对应的算子host实现中需要定义TilingData结构体，实现并注册计算TilingData的Tiling函数。如果用户通过TilingData结构注册注册了多个TilingData结构体，使用该接口返回默认注册的结构体；对COPY_TILING_WITH_ARRAY而言，数组 TilingData 的复制宏与结构体宏互为声明方案，Kernel 侧再按整对象或成员宏解析同一块 GM Tiling 数据。
-- [GET_TILING_DATA_MEMBER](get_tiling_data_member.md)（`related`）：GET_TILING_DATA_MEMBER说明用于获取tiling结构体的成员变量；对COPY_TILING_WITH_ARRAY而言，数组 TilingData 的复制宏与结构体宏互为声明方案，Kernel 侧再按整对象或成员宏解析同一块 GM Tiling 数据。
+- [COPY_TILING_WITH_STRUCT](copy_tiling_with_struct.md)（`same_topic`）：适用于拷贝一个结构体的数组成员变量的场景。；以结构体方式拷贝 Tiling 数据。通过宏展开从 GM 搬运 Tiling 数据到 Local Memory 并填充到结构体。支持 950/a2/a3。。两者是同一 Tiling 数据搬运链的互补宏：一个定位结构体数组成员，另一个填充结构体整体，选择取决于目标字段形态。
 <!-- cannbot:related:end -->

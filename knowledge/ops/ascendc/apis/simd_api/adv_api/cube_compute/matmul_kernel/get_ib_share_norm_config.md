@@ -33,9 +33,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Matmul高阶API开启IBShare模板共享A和B矩阵数据](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_ibshare_ab.md)（`explains`）：该案例覆盖 A/B 同时共享的融合算子形态，可据输入复用关系选择单边或双边 IBShare。
-- [Matmul高阶API开启IBShare模板共享B矩阵数据](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_ibshare_b.md)（`explains`）：Matmul高阶API开启IBShare模板共享B矩阵数据 与《GetIBShareNormConfig》的实质衔接是：IBShare 的 B-only 配置受 MatmulConfig、tiling 策略、preload/MDL 和 kernel Iterate 契约共同约束，直接影响 L1 复用。
-- [GetMDLConfig](get_mdl_config.md)（`same_topic`）：GetMDLConfig 与《GetIBShareNormConfig》的实质衔接是：GetMDLConfig 生成 MatmulConfig；其 batchLoop、VecND2NZ 和模板参数会直接要求 IterateNBatch、GetMatmulApiTiling 与 local workspace 等配套路径。
-- [GetNormalConfig](get_normal_config.md)（`same_topic`）：GetNormalConfig 与《GetIBShareNormConfig》的实质衔接是：GetNormalConfig 生成 MatmulConfig 并选择 Norm/MDL/Basic 等模板参数；batchLoop 和 VecND2NZ 会直接要求 IterateNBatch、local workspace 与对应搬运路径，tiling/注册材料说明配置如何被消费。
-- [MatmulConfig](matmul_config.md)（`same_topic`）：MatmulConfig 定义 GetIBShareNormConfig 返回对象中的 intrinsicsCheck、batchMode、double-cache 与 UnitFlag 等字段。
+- [Matmul高阶API开启IBShare模板共享A和B矩阵数据](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_ibshare_ab.md)（`explains`）：用于配置IBShare模板的参数，获取自定义IBShare模板；通过设置A和B矩阵MatmulType的IBShare均为true，开启该优化。接口提供 IBShare 模板配置入口，指南展示 A/B 同时共享时的 MatmulType 设置、Cube 分核与 27.11us 到 22.44us 的验证路径。
+- [Matmul高阶API开启IBShare模板共享B矩阵数据](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_ibshare_b.md)（`explains`）：开启IBShare模板后，在L1 Buffer上是否同时缓存两块数据；IBShare功能通过共享L1 Buffer上相同的A矩阵或B矩阵数据，减少重复的MTE2数据搬运开销，提升算子性能。接口的 isDoubleCache 参数控制 L1 缓存块数，指南说明 B 共享的 MTE2 复用机制、适用 shape 与 IterateAll 输出约束。
 <!-- cannbot:related:end -->

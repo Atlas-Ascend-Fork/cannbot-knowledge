@@ -22,8 +22,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscNdimCopyGm2ub](asc_ndim_copy_gm2ub.md)（`related`）：AscSetNdimPadCount 配置各维 padding 个数，决定 AscNdimCopyGm2ub 写入 UB 时的补齐布局。
-- [AscSetNdimLoopStride](asc_set_ndim_loop_stride.md)（`related`）：《AscSetNdimLoopStride》明确“设置asc_ndim_copy_gm2ub接口每个维度内源和目的操作数元素间的间隔，最多5个维度。”；它与《AscSetNdimPadCount》的“设置asc_ndim_copy_gm2ub接口各个维度左右侧的padding元素个数。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscNdimPadCountConfig](../struct/asc_ndim_pad_count_config.md)（`same_topic`）：《AscNdimPadCountConfig》明确“用于设置asc_ndim_copy_gm2ub接口各维度左右侧的padding元素个数。”；它与《AscSetNdimPadCount》的“设置asc_ndim_copy_gm2ub接口各个维度左右侧的padding元素个数。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscSetNdimPadValue](asc_set_ndim_pad_value.md)（`same_topic`）：《AscSetNdimPadValue》明确“设置asc_ndim_copy_gm2ub接口Padding的填充固定值。”；它与《AscSetNdimPadCount》的“设置asc_ndim_copy_gm2ub接口各个维度左右侧的padding元素个数。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscNdimCopyGm2ub](asc_ndim_copy_gm2ub.md)（`related`）：用于设置asc_ndim_copy_gm2ub接口的各个维度左右侧的padding元素个数。；多维数据搬运接口，将数据从Global Memory (GM)搬运到Unified Buffer (UB)。相比于基础数据搬移接口，可以更加自由配置搬入的维度信息。 本功能最多能处理5个维度，每个维度都可以单独配置Stride，且支持随路Padding功能。相关配置参数有很多，需要通过不同的接口传入。 表1 Stride配置涉及的所有参数及其传入接口，其中i表示第i维，可取值［0,4］；PadCount 配置函数直接为 AscNdimCopyGm2ub 提供逐维左右 padding，主搬运接口明确支持随路 Padding。
+- [AscNdimPadCountConfig](../struct/asc_ndim_pad_count_config.md)（`related`）：asc_ndim_pad_count_config用于asc_set_ndim_pad_count接口中，设置asc_ndim_copy_gm2ub接口的各个维度左右侧的padding元素个数。；用于设置asc_ndim_copy_gm2ub接口的各个维度左右侧的padding元素个数。；两端分别定义配置结构和写入该结构的设置接口。
 <!-- cannbot:related:end -->

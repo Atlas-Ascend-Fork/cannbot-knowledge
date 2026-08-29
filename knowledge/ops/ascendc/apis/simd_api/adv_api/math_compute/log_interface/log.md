@@ -25,10 +25,7 @@ Log（以e为底）和Log10仅支持接口框架申请临时空间方式，每�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [exponential_ 0% 匹配须改 -log(1-u) 路径](../../../../../runbooks/precision/exponential_0_log_1_u.md)（`exemplifies`）：Exponential inverse-CDF 最终调用 Log；输入应是 (0,1] 而非含 0 的 u。
-- [AscLog](../../../c_api/vector_compute/asc_log.md)（`related`）：高阶 Log 同样覆盖自然对数，并扩展到 base 2/10 和临时空间管理；AscLog 是 UB 上 half 自然对数的 C API 入口。
-- [GetLogMaxMinTmpSize](get_log_max_min_tmp_size.md)（`related`）：GetLogMaxMinTmpSize 返回的区间正用于为 Log/Log2/Log10 执行分配 sharedTmpBuffer；Log 是其直接消费者。
-- [Log](../../../basic_api/reg_vector_compute/basic_arithmetic/log.md)（`related`）：两者计算同一自然对数，但分别面向 LocalTensor 高阶接口和 RegTensor VF 接口；Reg 版为无需高阶临时空间的不同实现路径。
-- [GetLogTmpBufferFactorSize](get_log_tmp_buffer_factor_size.md)（`same_topic`）：GetLogTmpBufferFactorSize 与《Log》的实质衔接是：Log 的 factor/max-min 查询服务 Log kernel，log2/log10 和 UB 步长故障补充实现与空间约束。
-- [Log接口](log_interface.md)（`same_topic`）：总览中的 e/2/10 底数选择、LocalTensor 与 sharedTmpBuffer 约束由 Log 具体接口实现。
+- [GetLogMaxMinTmpSize](get_log_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Log/Log2/Log10接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；Log（以e为底）和Log10仅支持接口框架申请临时空间方式，每种区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。Log2额外支持通过sharedTmpBuffer传入临时空间。临时空间大小通过GetLogMaxMinTmpSize获取。。Log 计算接口明确以 GetLogMaxMinTmpSize 规划 shared 临时空间，形成 host 预算到 kernel 调用的直接链。
+- [GetLogTmpBufferFactorSize](get_log_tmp_buffer_factor_size.md)（`related`）：获取Log/Log2/Log10接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；Log（以e为底）和Log10仅支持接口框架申请临时空间方式，每种区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。Log2额外支持通过sharedTmpBuffer传入临时空间。临时空间大小通过GetLogMaxMinTmpSize获取。。Factor 接口在固定临时空间下反推 Log 家族单次处理量，Log 卡说明唯一显式 sharedTmpBuffer 路径在 Log2，二者共同支撑分块预算。
+- [Log2](../../../basic_api/reg_vector_compute/basic_arithmetic/log2.md)（`same_topic`）：根据mask对源操作数逐元素求以2为底的对数，将结果写入目的操作数；按元素做对数运算，提供以e为底（Log）、以2为底（Log2）、以10为底（Log10）三种接口。前者是 register vector 的 Log2，后者包含高阶 API 的 Log2，二者实现同一逐元素以 2 为底对数。
 <!-- cannbot:related:end -->

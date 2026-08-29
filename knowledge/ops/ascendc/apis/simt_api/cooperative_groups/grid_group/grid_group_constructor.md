@@ -23,8 +23,5 @@ grid_group不提供默认的构造函数，用户使用this_grid函数获取当�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Grid协作组sync](sync.md)（`related`）：GridGroupConstructor 返回的对象是 grid 级 sync 的调用主体，形成获取对象到跨块同步的使用链。
-- [NumThreads](num_threads.md)（`related`）：NumThreads：grid_group 的 NumThreads 与 size共同给出网格总线程数，ThreadRank据此界定合法索引，GroupDim/NumBlocks说明总数的分解，构造函数提供对象来源。 目标卡《GridGroupConstructor》补充：grid_group不提供默认的构造函数，用户使用this_grid函数获取当前Grid对应的grid_group对象。
-- [IsValid](is_valid.md)（`same_topic`）：this_grid 得到对象后可用 IsValid 验证当前执行配置是否支持 grid_group 操作。
-- [ThreadRank](thread_rank.md)（`same_topic`）：ThreadRank：grid_group ThreadRank以NumThreads/size为上界，BlockRank/BlockIndex与GroupDim/NumBlocks解释全局rank分解，构造函数给出group对象来源。 目标卡《GridGroupConstructor》补充：grid_group不提供默认的构造函数，用户使用this_grid函数获取当前Grid对应的grid_group对象。
+- [GridGroup](grid_group.md)（`related`）：grid_group对核函数启动的所有SIMT线程进行抽象，线程范围覆盖当前Grid中所有线程块及其线程。提供is_valid有效性查询和sync跨线程块同步。；grid_group不提供默认的构造函数，用户使用this_grid函数获取当前Grid对应的grid_group对象。。对象卡说明 grid_group 能力范围，构造卡给出取得该对象并使用这些能力的唯一入口。
 <!-- cannbot:related:end -->

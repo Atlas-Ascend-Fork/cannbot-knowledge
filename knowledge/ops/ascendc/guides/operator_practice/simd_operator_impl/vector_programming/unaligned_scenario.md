@@ -37,11 +37,3 @@ DataCopyPad接口提供非对齐搬运的功能，如果基于该接口支持的
 -   通过Pad一次性清零。计算前，针对多行数据，可以采用高阶API Pad接口对冗余数据一次性清零。
 示例片段如下：
 最后，使用DataCopy对齐数据搬运接口进行数据搬出。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwiGLU 高级 API 在非32B对齐 slice 上精度失败](../../../../runbooks/precision/swiglu_adv_api_fails_non_32b_aligned_slice.md)（`related`）：SwiGLU 高级 API 在非32B对齐 slice 上精度失败说明AscendC::SwiGLU 高级 API（adv_api/activation/swiglu.h）在 dav-2201 上对 slice*sizeof(T) 非 32B 整数倍的 case 产生大错值（fp32 slice=509 MARE≈2.5e9；fp16 全零 slice=506 MARE=93/65504），对齐 slice 正常。banned：非对齐 slice 不得用此 API，回退手写 SiLU 链；对非对齐场景而言，非对齐分块需要多核首尾边界方案；SwiGLU 在非 32B slice 的失败实例提供了对齐假设的反证与验证信号。
-- [基础矢量算子](basic_vector_operator.md)（`related`）：《基础矢量算子》说明基于Ascend C方式实现基础矢量算子核函数的流程如下图所示。；《非对齐场景》说明本节介绍非32字节对齐数据的更多处理方式，包括数据搬入、计算和搬出的处理。用户在实际算子开发中，可以参考如下方案介绍和算子样例灵活地处理非对齐场景。。二者在基础矢量实现把多核切分、TBuf/TQue、双缓冲、非对齐CopyIn和Add计算串成可执行流程上存在可执行的直接衔接。
-- [多核非对齐切分](../matrix_advanced_api/feature_scenarios/multi_core_unaligned_split.md)（`related`）：多核非对齐切分说明多核场景，对矩阵进行切分时，若M、N、K无法整除singleCoreM 、singleCoreN、 singleCoreK时，就会出现尾块，即多核非对齐场景。如下图矩阵A、B的最后一行和最后一列的矩阵块：；对非对齐场景而言，非对齐分块需要多核首尾边界方案；SwiGLU 在非 32B slice 的失败实例提供了对齐假设的反证与验证信号。
-<!-- cannbot:related:end -->

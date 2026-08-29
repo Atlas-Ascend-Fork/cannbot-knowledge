@@ -24,10 +24,7 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AllocEventID](alloc_event_id.md)（`related`）：显式分配的 event 必须在销毁前不再被使用。
-- [Init](init.md)（`related`）：TPipe Init 建立资源状态，Destroy 释放同一对象的资源；重复复用 TPipe 时二者构成明确的初始化/清理生命周期。
-- [Reset](../t_buf_pool/reset.md)（`related`）：Reset 与《Destroy》的实质衔接是：Reset 结束当前 TBufPool 事件但保留 pool/buffer，必须放在 InitBufPool/Init 与 Destroy 之间；自定义池说明给出切换资源池的生命周期。
-- [DestroyWithoutPipeAll](destroy_without_pipe_all.md)（`same_topic`）：DestroyWithoutPipeAll 与《Destroy》的实质衔接是：DestroyWithoutPipeAll 释放 TPipe 但不插入 PIPE_ALL，调用前需自行完成事件/流水同步；Destroy、EventID 释放和 TPipe 范式给出完整销毁顺序。
-- [TBufPool简介](../t_buf_pool/t_buf_pool_intro.md)（`same_topic`）：TBufPool简介 与《Destroy》的实质衔接是：TBufPool 在 TPipe 下手工复用 UB/L1，必须依次 InitBufPool、分配/取址、Reset 或 Destroy；所连容量和 TPipe 初始化案例直接约束资源预算与生命周期。
-- [TPipe](t_pipe.md)（`same_topic`）：类型页定义 Destroy 释放的 event 和 buffer pool 生命周期。
+- [DestroyWithoutPipeAll](destroy_without_pipe_all.md)（`related`）：“该接口内部未设置PIPE_ALL同步，需要开发者自行保证同步流水正确。”揭示无全流水同步版本的责任转移；“创建tpipe对象后，可调用Destroy手动释放资源。”给出常规手动释放入口，二者用于按同步保障选择释放方式。
+- [Init](init.md)（`related`）：Tpipe对象复用时，要与Destroy接口成对使用，每次复用需要先Destroy释放资源，再调用init重新初始化。；约束：用于重复申请释放tpipe，创建tpipe对象后，可调用Destroy手动释放资源。。Init 明确规定复用前先 Destroy，Destroy 则提供手工释放资源的对应动作，两者共同定义 TPipe 重复申请释放的生命周期。
+- [TPipe](t_pipe_constructor.md)（`related`）：如果需要使用多个TPipe时，请先调用Destroy接口释放前一个TPipe；创建tpipe对象后，可调用Destroy手动释放资源。构造卡明确同一时刻只能有一个 TPipe，并把再次创建前的释放指向 Destroy；Destroy 卡给出对应资源回收操作，形成直接生命周期合同。
 <!-- cannbot:related:end -->

@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T17:43:20Z"
-updated_at: "2026-08-25T17:43:20Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1119,11 +1119,11 @@ if(isDeterministicKey) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` 接线 | 公开支持；`ascend910_93` 接线 | 公开支持；见 `_a5` 卡 |
+| 支持状态 | 公开支持；`ascend910b` 接线 | 公开支持；`ascend910_93` 接线 | 公开支持；见 `_950` 卡 |
 | Host/Launcher | 与 A3 共用 Tiling/OpDef，平台提供 AIV 核数和 UB | 与 A2 共用 | 同源实现，独立 `ascend950` config |
-| Kernel/资源 | 同一 router/body；固定仓未公开产品到 `__CCE_AICORE__` 数值映射 | 同左 | guard 与 220 路径共同覆盖 310；详见 `_a5` 卡 |
+| Kernel/资源 | 同一 router/body；固定仓未公开产品到 `__CCE_AICORE__` 数值映射 | 同左 | guard 与 220 路径共同覆盖 310；详见 `_950` 卡 |
 
 ## 限制与失败边界
 
@@ -1151,7 +1151,7 @@ if(isDeterministicKey) {
 | 构建接线 | `norm/add_layer_norm_grad/op_host/config/ascend910b/add_layer_norm_grad_binary.json` | `AddLayerNormGrad` op_list | A2 dtype binary |
 | 构建接线 | `norm/add_layer_norm_grad/op_host/config/ascend910_93/add_layer_norm_grad_binary.json` | `AddLayerNormGrad` op_list | A3 dtype binary |
 | 构建接线 | `norm/add_layer_norm_grad/op_host/CMakeLists.txt` | `add_modules_sources(... ACLNNTYPE aclnn)` | ACLNN Host 接入 |
-| 构建接线 | `scripts/kernel/binary_config/ascendc_config.json` | `AddLayerNormGrad` | A2/A3/A5 kernel 编译单元 |
+| 构建接线 | `scripts/kernel/binary_config/ascendc_config.json` | `AddLayerNormGrad` | A2/A3/950 kernel 编译单元 |
 
 ### 实现复用检查
 

@@ -23,9 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [编译与执行RTC](../../../guides/programming_guide/compilation_and_execution/operator_compilation/rtc_runtime_compilation.md)（`explains`）：RTC 指南把 DestroyProg 放在创建、可选名称注册、编译、取二进制、加载执行之后，说明正确销毁时机和完整生命周期。
-- [aclrtcCompileProg](aclrtc_compile_prog.md)（`related`）：《aclrtcDestroyProg》明确“销毁运行时编译程序的实例。”；它与《aclrtcCompileProg》的“编译接口，编译指定的程序。”在实际调用参数、数据流或结果校验上直接衔接。
-- [aclrtcCreateProg](aclrtc_create_prog.md)（`same_topic`）：《aclrtcCreateProg》处理“通过给定的参数，创建编译程序的实例。”。《aclrtcDestroyProg》明确提供“销毁运行时编译程序的实例。”，其参数、调用或验证步骤直接接入RTC Kernel 创建、编译、函数获取、launch 和销毁生命周期。
-- [aclrtcGetBinDataSize](aclrtc_get_bin_data_size.md)（`same_topic`）：《aclrtcGetBinDataSize》处理“获取编译的二进制数据大小。用于在aclrtcGetBinData获取二进制数据时分配对应大小的内存空间。”。《aclrtcDestroyProg》提供“销毁运行时编译程序的实例。”，其具体合同或探针直接接入RTC 二进制大小查询、数据读取和 create/compile/destroy 生命周期。
-- [aclrtcGetLoweredName](aclrtc_get_lowered_name.md)（`same_topic`）：《aclrtcGetLoweredName》处理“获取已经注册的__global__函数的mangling name。”。《aclrtcDestroyProg》明确“销毁运行时编译程序的实例。”，可直接用于核对RTC name expression 到 lowered symbol 的 create/compile/query/destroy 生命周期。
+- [aclrtcCreateProg](aclrtc_create_prog.md)（`related`）：“参数 prog 为输出，返回运行时编译程序句柄；src 为 Ascend C Device 侧源代码字符串；name 为程序名称，默认值为 default_program。”说明句柄的创建和所有权起点；“销毁运行时编译程序实例，释放资源。函数签名为 aclError aclrtcDestroyProg(aclrtcProg* prog)。”给出对应释放动作，二者闭合资源生命周期。
 <!-- cannbot:related:end -->

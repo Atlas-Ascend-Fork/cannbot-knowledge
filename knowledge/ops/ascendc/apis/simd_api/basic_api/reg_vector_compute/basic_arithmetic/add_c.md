@@ -35,9 +35,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Add](add.md)（`related`）：AddC 与《Add》的实质衔接是：AddC 在逐 lane 加法中消费输入 carry 并产生输出 carry；Add/SubC 与 AscAddc/AscAdd 用同一 carry 寄存器契约界定普通加法和带进位运算的差别。
-- [AscAdd](../../../c_api/reg/arithmetic_compute/asc_add.md)（`related`）：AddC 与《AscAdd》的实质衔接是：AddC 在逐 lane 加法中消费输入 carry 并产生输出 carry；Add/SubC 与 AscAddc/AscAdd 用同一 carry 寄存器契约界定普通加法和带进位运算的差别。
-- [Sub](sub.md)（`related`）：AddC 与《Sub》的实质衔接是：AddC 在逐 lane 加法中消费输入 carry 并产生输出 carry；Add/SubC 与 AscAddc/AscAdd 用同一 carry 寄存器契约界定普通加法和带进位运算的差别。
-- [AscAddc](../../../c_api/reg/arithmetic_compute/asc_addc.md)（`same_topic`）：AddC 与《AscAddc》的实质衔接是：AddC 在逐 lane 加法中消费输入 carry 并产生输出 carry；Add/SubC 与 AscAddc/AscAdd 用同一 carry 寄存器契约界定普通加法和带进位运算的差别。
-- [SubC](sub_c.md)（`same_topic`）：焦点处理SubC 的带借位减法、carry 输入输出和对应加法；AddC正文说明“对srcReg0、srcReg1及输入进位按元素求和，结果写入dstReg和carry”。候选与 SubC 共享 carry 寄存器契约，分别覆盖普通减法、带借位减法和带进位加法。
+- [AscAddc](../../../c_api/reg/arithmetic_compute/asc_addc.md)（`same_topic`）：对srcReg0、srcReg1及输入进位按元素求和，结果写入dstReg和carry；该接口根据mask，对源操作数src0、src1及输入进位carry_src进行按元素求和操作，将结果写入目的操作数dst，同时将每个元素的进位结果写入carry（存放进位的掩码寄存器）。两卡描述同一带输入进位的寄存器逐元素加法；候选补充 uint32_t、mask 置零和完整进位输出合同。
 <!-- cannbot:related:end -->

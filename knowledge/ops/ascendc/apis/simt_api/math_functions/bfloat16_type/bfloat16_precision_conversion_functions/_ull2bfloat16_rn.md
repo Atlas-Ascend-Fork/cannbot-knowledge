@@ -29,8 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__ull2bfloat16_rd](_ull2bfloat16_rd.md)（`same_topic`）：《__ull2bfloat16_rn》说明遵循CAST_RINT模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。；《__ull2bfloat16_rd》说明遵循CAST_FLOOR模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。。二者在uint64到bfloat16的目标类型固定，四种舍入模式是同一转换合同的互斥选择上存在可执行的直接衔接。
-- [__ull2bfloat16_rna](_ull2bfloat16_rna.md)（`same_topic`）：《__ull2bfloat16_rn》说明遵循CAST_RINT模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。；《__ull2bfloat16_rna》说明遵循CAST_ROUND模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。。二者在uint64到bfloat16的目标类型固定，四种舍入模式是同一转换合同的互斥选择上存在可执行的直接衔接。
-- [__ull2bfloat16_ru](_ull2bfloat16_ru.md)（`same_topic`）：《__ull2bfloat16_rn》说明遵循CAST_RINT模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。；《__ull2bfloat16_ru》说明遵循CAST_CEIL模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。。二者在uint64到bfloat16的目标类型固定，四种舍入模式是同一转换合同的互斥选择上存在可执行的直接衔接。
-- [__ull2bfloat16_rz](_ull2bfloat16_rz.md)（`same_topic`）：《__ull2bfloat16_rz》说明遵循CAST_TRUNC模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。；《__ull2bfloat16_rn》说明遵循CAST_RINT模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。。二者在uint64到bfloat16的rz只改变舍入方向，同源同目标的rd/rn/rna/ru接口构成直接选择集合上存在可执行的直接衔接。
+- [__ull2bfloat16_rna](_ull2bfloat16_rna.md)（`related`）：焦点卡写明“特殊值：0→0；257→256；259→260”，候选卡写明“特殊值：0→0；257→258；511→512”。同一转换对 257 给出不同结果，直接支撑 RINT 与 ROUND 的舍入选择及边界验证。
 <!-- cannbot:related:end -->

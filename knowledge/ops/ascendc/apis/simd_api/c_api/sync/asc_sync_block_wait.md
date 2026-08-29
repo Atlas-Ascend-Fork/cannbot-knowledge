@@ -22,7 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSyncInterWait](asc_sync_inter_wait.md)（`related`）：BlockWait 等待组内 block/subblock 全部到达，而 InterWait 等待不同 group 的信号；二者提供不同层级的 barrier/notification 选择。
-- [AscSyncSubblockWait](asc_sync_subblock_wait.md)（`related`）：SubblockWait 只同步同组不同 AIV subblock，而 BlockWait 同步主 block 与 subblock；对比作用域可避免在 1:N 分离模式中选错等待原语。
-- [AscSyncBlockArrive](asc_sync_block_arrive.md)（`same_topic`）：AscSyncBlockArrive 增加 block 同步计数，AscSyncBlockWait 等待该计数满足条件，二者构成同一 block 同步协议的到达/等待两端。
+- [AscSyncBlockArrive](asc_sync_block_arrive.md)（`related`）：每个flag_id对应一个初始值为0的计数器，执行asc_sync_block_arrive后flag_id对应的计数器增加1；执行asc_sync_block_wait时如果对应的计数器数值为0则阻塞不执行；如果对应的计数器大于0，则计数器减一，同时后续指令开始执行。；和asc_sync_block_arrive配合使用（通过flag_id关联），用于等待所有同步对象到达flag_id对应的同步点。。两接口共享 flag_id 计数器，但 arrive 负责发布到达信号，wait 负责等待并消费信号；它们是同步协议中有顺序的互补动作。
 <!-- cannbot:related:end -->

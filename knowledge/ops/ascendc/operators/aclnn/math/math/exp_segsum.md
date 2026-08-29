@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T14:26:10Z"
-updated_at: "2026-08-25T14:26:10Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -879,11 +879,11 @@ FP32 与 16 位路线的关键差异：FP32 总共四份 `S*4B`；FP16/BF16 为�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；公开 API 文档与 `ascend910b` OpDef/binary config 闭合 | 支持；公开 API 文档与 `ascend910_93` OpDef/binary config 闭合 | 公开 API 文档明确不支持；未发布 `_a5` 卡 |
+| 支持状态 | 支持；公开 API 文档与 `ascend910b` OpDef/binary config 闭合 | 支持；公开 API 文档与 `ascend910_93` OpDef/binary config 闭合 | 公开 API 文档明确不支持；未发布 `_950` 卡 |
 | Host/Launcher | 共用 `SegsumTiling`，从平台读取 AIV 核数与 UB | 同 A2 | 无 `ascend950` OpDef/config 接线 |
-| Kernel/资源 | 共用 `segsum` 与六个模板实例；三 dtype binary | 同 A2 | 固定仓中本逻辑算子无 A5 Kernel binary 配置 |
+| Kernel/资源 | 共用 `segsum` 与六个模板实例；三 dtype binary | 同 A2 | 固定仓中本逻辑算子无 950 Kernel binary 配置 |
 
 ## 限制与失败边界
 
@@ -915,7 +915,7 @@ FP32 与 16 位路线的关键差异：FP32 总共四份 `S*4B`；FP16/BF16 为�
 | 构建接线 | `math/segsum/op_host/CMakeLists.txt` | `add_modules_sources` | Host/API/Tiling/OpDef 纳入模块 |
 | 构建接线 | `math/segsum/op_host/config/ascend910b/segsum_binary.json` | `Segsum` 三 dtype binary | A2 binary 配置 |
 | 构建接线 | `math/segsum/op_host/config/ascend910_93/segsum_binary.json` | `Segsum` 三 dtype binary | A3 binary 配置 |
-| 构建接线 | `scripts/kernel/binary_config/ascendc_config.json` | `Segsum` compute_units | A2/A3/Kirin 构建选择且无 A5 |
+| 构建接线 | `scripts/kernel/binary_config/ascendc_config.json` | `Segsum` compute_units | A2/A3/Kirin 构建选择且无 950 |
 
 ### 实现复用检查
 
@@ -927,3 +927,9 @@ FP32 与 16 位路线的关键差异：FP32 总共四份 `S*4B`；FP16/BF16 为�
 | 同步 | Queue 生命周期和 Vector pipe barrier | last/current/cast 不得提前覆盖 | `Compute/ComputeBatches/processY` |
 | 精度与尾块 | FP32 状态/Exp，最终 16 位 cast；MODE0 cal tail、MODE1 active tail | ToFloat/CAST_ROUND 顺序、32B padded batch stride | `processCurrent/processY/CopyOutBatch` |
 | 失败边界 | 空 Tensor bypass、资源检查、unknown key return | 平台公开支持、数组/窄化边界、workspace null guard | ACLNN 入口、TilingPrepare、`segsum` router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ExpSegsumBackward A2/A3 ACLNN 算子知识](exp_segsum_backward.md)（`related`）：输出每个前缀 batch 的 `N×N` 下三角半可分矩阵；`gradSelf` ｜ 与 `gradOutput` 同 shape、`ND` ｜ 公开约束要求与 `gradOutput` 同 dtype ｜ 正向 `aclnnExpSegsum` 的输出；支持非连续 tensor并先连续化。实际 `CheckParams` 只检查它属于支持集合，没有显式比较两输入 dtype，见限制。。正向页定义 ExpSegsum 的矩阵输出，反向页明确把该正向输出作为 gradSelf 消费，形成训练中的前向/反向接口链。
+<!-- cannbot:related:end -->

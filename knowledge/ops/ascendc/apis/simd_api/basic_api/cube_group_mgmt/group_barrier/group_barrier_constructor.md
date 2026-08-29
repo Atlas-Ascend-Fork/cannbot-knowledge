@@ -21,10 +21,5 @@ platforms: ['950', a2]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Cube核间管理Wait](wait.md)（`related`）：GroupBarrier构造函数 与《Cube核间管理Wait》的实质衔接是：GroupBarrier 构造依赖 workspace 并产生可用于 Arrive/Wait 的组对象；用法页和空间查询闭合初始化、到达、等待流程。
-- [GetResGroupBarrierWorkSpaceSize](../../../../utils_api/platform_info/platform_ascend_c/get_res_group_barrier_work_space_size.md)（`related`）：GroupBarrier构造函数 与《GetResGroupBarrierWorkSpaceSize》的实质衔接是：GroupBarrier 构造依赖 workspace 并产生可用于 Arrive/Wait 的组对象；用法页和空间查询闭合初始化、到达、等待流程。
-- [GetWorkspaceLen](get_workspace_len.md)（`related`）：GroupBarrier构造函数 与《GetWorkspaceLen》的实质衔接是：GroupBarrier 构造依赖 workspace 并产生可用于 Arrive/Wait 的组对象；用法页和空间查询闭合初始化、到达、等待流程。
-- [Arrive（Cube核间管理）](arrive.md)（`same_topic`）：GroupBarrier构造函数 与《Arrive（Cube核间管理）》的实质衔接是：GroupBarrier 构造依赖 workspace 并产生可用于 Arrive/Wait 的组对象；用法页和空间查询闭合初始化、到达、等待流程。
-- [GroupBarrier](group_barrier.md)（`same_topic`）：GroupBarrier构造函数 与《GroupBarrier》的实质衔接是：GroupBarrier 构造依赖 workspace 并产生可用于 Arrive/Wait 的组对象；用法页和空间查询闭合初始化、到达、等待流程。
-- [GroupBarrier使用说明](group_barrier_usage.md)（`same_topic`）：GroupBarrier使用说明 与《GroupBarrier构造函数》的实质衔接是：GroupBarrier 用法明确要求 workspace 查询、对象构造、Arrive 与 Wait；CubeResGroupHandle 是这些分组任务所属的资源组。
+- [GroupBarrier使用说明](group_barrier_usage.md)（`related`）：“原型：`__aicore__ inline GroupBarrier(GM_ADDR workspace, uint8_t arriveBlockDim, uint8_t waitBlockDim)`。”给出对象构造所需 workspace 和两组 block 数；“使用流程：GetWorkspaceLen 获取所需 GM 空间 → 分配 workspace → 构造 GroupBarrier(workspace, arriveBlockDim, waitBlockDim) → Arrive 组 AIV 调用 Arrive() → Wait 组 AIV 调用 Wait()。”把构造参数放进完整同步调用顺序。
 <!-- cannbot:related:end -->

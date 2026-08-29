@@ -66,7 +66,6 @@ M方向切分：
 <!-- cannbot:related:start -->
 ## 相关
 
-- [L0C Buffer到Unified Buffer双目标模式](../../cube_compute_tensor_api/cube_store_key_features/l0c_to_ub_dual_dst.md)（`related`）：TensorAPI 卡描述相同 L0C→双 UB 拆分能力，可对照 ISASI 与 TensorAPI 的配置入口。
-- [DataCopy（L0C Buffer到UB数据搬运）](../cube_compute_store/data_copy_l0_c_to_ub.md)（`same_topic`）：DataCopy（L0C Buffer到UB数据搬运） 与《L0C Buffer到UB双目标模式》的实质衔接是：L0C 到 UB 搬出依赖 L0C 布局、Copy/Fixpipe、双目标模式和对齐/stride 约束。
-- [FixpipeL0CToUB](../cube_compute_store/fixpipe_l0_c_to_ub.md)（`same_topic`）：FixpipeL0CToUB 与《L0C Buffer到UB双目标模式》的实质衔接是：Fixpipe L0C→UB 的搬出依赖 L0C 布局、Fixpipe 配置/地址、clip/quant 标志及双目标模式，所选卡均直接改变这条搬运。
+- [NZ2ND](nz2_nd.md)（`related`）：双目标模式仅支持在L0C Buffer到UB通路，普通搬运模式（NZ2NZ）或NZ2ND搬运场景下使用，不支持随路功能场景。；矩阵搬出时将 NZ 格式矩阵转换为 ND 格式矩阵。通过 Fixpipe/DataCopy 的 config=CFG_ROW_MAJOR 或 nz2ndEn=true 开启。。双目标卡明确允许 NZ2ND 场景并规定 M/N 切分约束，NZ2ND 卡补齐行主序开关、stride 与目标不重叠合同。
+- [L0C Buffer到Unified Buffer双目标模式](../../cube_compute_tensor_api/cube_store_key_features/l0c_to_ub_dual_dst.md)（`same_topic`）：双目标模式仅支持L0C Buffer到Unified Buffer通路；双目标模式仅支持在L0C Buffer到UB通路。两卡描述 Tensor API 与基础 Cube API 中同一 L0C→双 UB 拆分能力，并给出相同的通路与 M/N 切分约束；对照可核验两种编程入口的双目标行为。
 <!-- cannbot:related:end -->

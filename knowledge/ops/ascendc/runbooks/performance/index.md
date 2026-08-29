@@ -13,7 +13,7 @@
 - [flat 多核切分 elementwise scalar 主导诊断](flat_elementwise_scalar.md)：flat 多核切分的 elementwise 算子在 msprof PipeUtilization 上呈现 scalar_ratio 主导、核间严重不均衡、MTE2 带宽远未饱和的诊断方法与机制解释。
 - [Gather 非 last-dim 转置+索引换算预处理占比高](gather_last_dim.md)：Ascend950 上 Gather 算子当 dim != last 时，plugin 端 permute+contiguous 转置与 Cast/Mul/Cast 三段索引 byte-offset 换算合计占 case 总耗时的 58-83%，kernel 本身仅占 17-41%。
 - [L2 读写端口独立并行 HBM 总线串行共享](l2_hbm.md)：Ascend950 L2 的 MTE2 读端口与 MTE3 写端口独立并行（吞吐可相加），HBM 总线被读写共享串行仲裁；并发读写带宽应按总数据量与实际并发时间算，不能把单路带宽相加当并发带宽。
-- [MIX_AIC_1_1 仅启用 28/56 AIV 带宽不饱和](mix_aic_1_1_underutilizes_aiv_on_1_to_2_topology.md)：A5（Ascend950PR，28 CubeCore:56 VectorCore）上 KERNEL_TYPE_MIX_AIC_1_1 强制 1:1 配比，blockNum 上限=28，只启用 28/56 AIV（50%），HBM 带宽无法饱和；测 HBM 带宽应回退到 AIV_ONLY 56 核路线，MIX_AIC_1_1 在此场景 banned。
+- [MIX_AIC_1_1 仅启用 28/56 AIV 带宽不饱和](mix_aic_1_1_underutilizes_aiv_on_1_to_2_topology.md)：950（Ascend950PR，28 CubeCore:56 VectorCore）上 KERNEL_TYPE_MIX_AIC_1_1 强制 1:1 配比，blockNum 上限=28，只启用 28/56 AIV（50%），HBM 带宽无法饱和；测 HBM 带宽应回退到 AIV_ONLY 56 核路线，MIX_AIC_1_1 在此场景 banned。
 - [Mix合图包入 V2 致任务数减半 E2E 劣化](mix_v2_e2e.md)：Ascend950（CANN 9.1.0）上 sparse_flash_attention_quant _d_950 变体，把 sg_set_scope Mix合图闭合点后移使 V2 段（division+cast）也包入调度域后，AICore Utilization 从 67% 升到 80% 但 Total Task Count 从 2304 减半到 1536（并行度下降），E2E 反而从 729us 劣化约 1.13× 到 824us；精度未退化但仍回退，V2 入 Mix合图在本算子结构下 banned。
 - [MulPreferContiguous 稀疏广播拦截失败且慢于 304](mulprefercontiguous_304.md)：B 类稀疏广播（首轴稀疏、stride 大）触发 MulPreferContiguous 拦截转连续，baseline GetWorkspaceSize 返回 -1.0（schMode 空）或性能慢于 fixed 直接走 304 nddma_transpose_noLoop。
 - [PyPTO loop_unroll 串行 s2 循环诊断](pypto_loop_unroll_s2.md)：PyPTO decode 算子 no_flash compute 路径 s2_kv tile 循环以 unroll_list={1} 串行执行 4 次独立迭代，AICore E2E 超 500us 目标而利用率已 93%+、0 瓶颈；用 perf-analyze 解析 bubble_analysis.log + 内核源码检视 unroll_list 与迭代依赖性二分定位为串行迭代链未并行化，而非调度/搬运瓶颈。
@@ -25,4 +25,4 @@
 - [通算流水 tileCnt>1 性能反降 banned](tilecnt_1_banned.md)：matmul_reducescatter 通算流水 tileCnt>1 即使精度通过、死锁解除，端到端耗时随 tileCnt 反增；根因为 fixpipe 固定开销随 Blaze 调用次数线性累积 + Pattern B 依赖链限制流水窗口。tileCnt>1 路线 banned。
 - [按行均分 tiling 致 nnz 倾斜时约半数核空闲](tiling_nnz.md)：稀疏算子 Host 按行数均分多核（不按 nnz），nnz 前重后轻时后半核约半数空闲，逐核 cycle 差距 20×+；用 msprof sample-based + ai_vector_core.db task_cyc 判别。
 
-- [MLA Prolog decode A5 tile 调优配方](mla_prolog_decode_a5_tile_tuning_recipe.md)：A5/Ascend950 上 mla_prolog_quant_d decode 算子通过 4 项独立 tile_config 旋钮调优 (pre_quant_cube_tile k=256 / q_vec/k_vec 翻倍 / cube_wuk_tile k=64 / stitch_function_max_num=128) 使 E2E 相对初始 baseline 约 0.85x，精度全 PASS。
+- [MLA Prolog decode 950 tile 调优配方](mla_prolog_decode_950_tile_tuning_recipe.md)：950/Ascend950 上 mla_prolog_quant_d decode 算子通过 4 项独立 tile_config 旋钮调优 (pre_quant_cube_tile k=256 / q_vec/k_vec 翻倍 / cube_wuk_tile k=64 / stitch_function_max_num=128) 使 E2E 相对初始 baseline 约 0.85x，精度全 PASS。

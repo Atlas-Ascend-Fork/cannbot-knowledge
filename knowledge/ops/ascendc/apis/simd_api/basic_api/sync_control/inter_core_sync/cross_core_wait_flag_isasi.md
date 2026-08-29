@@ -8,7 +8,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_core_sync/CrossCoreWaitFlag_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ['950', a2, a3]
 ---
 # CrossCoreWaitFlag
@@ -28,13 +28,7 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [A5 mix(1,2) mode=2 漏 AIV1 flag 致全零](../../../../../runbooks/precision/a5_mix_1_2_mode_2_aiv1_flag.md)（`exemplifies`）：A5 mix(1,2) mode=2 漏 AIV1 flag 致全零 与《CrossCoreWaitFlag》的实质衔接是：mix(1,2) 的 AIC/AIV flag 路由依赖 CrossCoreSet/Wait、kernel type 与组间同步契约；所选卡覆盖同一断链和死锁机制。
-- [CrossCore 反压 flag 方向错致通算流水死锁](../../../../../runbooks/compilation/crosscore_flag.md)（`exemplifies`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《CrossCore 反压 flag 方向错致通算流水死锁》补充：MC2 通算融合算子（Pattern B 先计后通、AIC 写大容量 GM、AIV 读）从数据流反向的基底工程照搬 AIC WaitFlag(t-buf)+AIV SetFlag(t-buf) 反压，在 tileCnt>bufferSize 时形成 AIC t↔AIV t 循环等待死锁。判别=画出 t 与 t-bufferSize 的 flag 依赖图，出现 AIC t↔AIV t 互等即循环依赖。根因是反压方向与数据流不匹配，且 cG
-- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`exemplifies`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《双AIV CrossCoreFlag 的 subBlock 契约缺陷》补充：Ascend950 双 AIV 融合 kernel 中，AIC 为 V0/V1 设置不同 flag 段，而 AIV wait 未按 subBlock 偏移，且空分支可能不回传 flag；源码依赖图可确认同步缺陷，但单独修正后 507015 仍存在，不能把整起异常只归因于该缺陷。
-- [算子适配说明](../../../../../guides/programming_guide/advanced_programming/super_kernel/operator_adaptation.md)（`explains`）：算子适配说明 与《CrossCoreWaitFlag》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [InitDetermineComputeWorkspace](init_determine_compute_workspace.md)（`related`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《InitDetermineComputeWorkspace》补充：基于核间顺序执行的确定性计算初始化接口，初始化GM共享内存后才能调用WaitPreBlock和NotifyNextBlock完成核间顺序执行。
-- [核间同步](inter_core_sync.md)（`related`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《核间同步》补充：核间同步接口索引页，汇总IBSet、IBWait、SyncAll、CrossCoreSetFlag/WaitFlag(ISASI)及NotifyNextBlock/WaitPreBlock。
-- [核间同步能力概述](inter_core_sync_overview.md)（`related`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《核间同步能力概述》补充：核间同步的使用场景通常是：一个核计算所依赖的数据，需要等待其他相关核的计算全部完成后才能获取。
-- [CrossCoreSetFlag](cross_core_set_flag_isasi.md)（`same_topic`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《CrossCoreSetFlag》补充：核间同步场景中向调度模块上报本核前置pipe流水任务已完成，与CrossCoreWaitFlag配对使用，通过flagId控制核间同步。
-- [关键特性说明](key_features.md)（`same_topic`）：关键特性说明 与《CrossCoreWaitFlag》的衔接是：CrossCoreSet/CrossCoreWait 是该四种跨核同步模式的实际发信与等待原语；AIV/AIC 配对 runbook 给出同一计数契约失配时的可执行排查。
+- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`exemplifies`）：焦点卡说明“AIC 只 set 1 次 `8+countId` 被 V0 消费，V1 也 wait `8+countId` 但 AIC 不会再 set 第二次 → V1 永久阻塞”，候选卡说明“在核间同步场景中，CrossCoreSetFlag接口和CrossCoreWaitFlag接口配对工作，具体功能”；配对合同能直接解释全核同 PC timeout 的形成链。
+- [稀疏反卷积精度误差源隔离配方](../../../../../runbooks/precision/cube_simt_fp32_precision_error_source_isolation.md)（`exemplifies`）：“CrossCoreWaitFlag<0x4>(flagId);”是被诊断代码的等待动作；“由于当Kernel类型为KERNEL_TYPE_AIC_ONLY或KERNEL_TYPE_AIV_ONLY时，硬件不会开启调度模块，也就无法正常进行核间同步”给出该等待能生效的 Kernel 类型前提，可用于核验 Cube 结果到 AIV ScatterAdd 的同步配置。
+- [CrossCoreSetFlag](cross_core_set_flag_isasi.md)（`related`）：“在核间同步场景中，CrossCoreSetFlag接口和CrossCoreWaitFlag接口配对工作，具体功能”与“在核间同步场景中，CrossCoreSetFlag接口和CrossCoreWaitFlag接口配对工作，使用时需传入核间同步的标记ID（flagId），每个ID对应一个用于控制同步的计数器。”是双方正文中的具体合同。Wait 卡声明两接口必须成对，Set 卡给出共享 flagId 计数器以及上报/阻塞职责；阅读两端才能闭合核间同步的生产与等待链。
 <!-- cannbot:related:end -->

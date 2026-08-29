@@ -16,10 +16,3 @@ platforms: [agnostic]
 
 矩阵计算接口提供Cube核的矩阵乘与精度模式控制能力。核心接口asc_mmad执行矩阵乘法，asc_mmad_mx支持微缩放格式，asc_mmad_sparse支持稀疏矩阵乘。
 精度模式接口asc_enable_hf32/hif8/fp8及asc_set_hf32_round_mode控制计算精度与舍入行为。asc_set_l0c2gm_config/nz2nd配置L0C到GM的搬运参数，asc_get_l0c2gm_prequant/relu/unitflag查询随路计算配置。asc_set_mmad_direction_m/n设置矩阵乘方向，asc_set_fp32_mode设置FP32计算模式。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscMmad](asc_mmad.md)（`same_topic`）：AscMmad 与《矩阵计算》的实质衔接是：AscMmad 在 AIC 上消费 L0A/L0B 并累加到 L0C；Mmad 约束、方向/HF32 配置、Cube 流程和 AIV 误调用故障共同覆盖实际调用边界。
-- [AscSetFp32Mode](asc_set_fp32_mode.md)（`same_topic`）：AscSetFp32Mode 与《矩阵计算》的实质衔接是：AscSetFp32Mode 与 HF32 round/enable/trans 配置共同决定 AscMmad 的 FP32/HF32 计算模式，Mmad 约束和 HF32 指南说明精度与方向设置。
-<!-- cannbot:related:end -->

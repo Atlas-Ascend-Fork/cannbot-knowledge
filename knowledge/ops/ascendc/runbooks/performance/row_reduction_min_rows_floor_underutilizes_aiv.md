@@ -166,8 +166,6 @@ calc_rms_norm_tiling_params(int64_t numRow, int64_t D, int64_t sizeofT)
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetBlockIdx](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_idx.md)（`exemplifies`）：《GetBlockIdx》处理“获取当前逻辑AI Core的索引，用于多核逻辑控制及偏移量计算等。”。《每核最少行数地板压低 AIV 并行度—按可用核数切分》明确提供“行级归约 tiling 不应先用每核最少行数限制 block 数；按可用 AIV 核数上限切分可恢复并行度。”，其参数、调用或验证步骤直接接入GetBlockIdx/GetBlockNum 与 Tiling 切核、尾核边界和多核验证的合同。
-- [NumBlocks](../../apis/simt_api/cooperative_groups/grid_group/num_blocks.md)（`exemplifies`）：每核最少行数地板压低 AIV 并行度—按可用核数切分说明行级归约 tiling 不应先用每核最少行数限制 block 数；按可用 AIV 核数上限切分可恢复并行度。
-- [归约计算](../../apis/simd_api/basic_api/reg_vector_compute/reduction_compute/reduction_compute.md)（`exemplifies`）：《归约计算》处理“Reg矢量计算归约接口索引页，包含Reduce、ReduceDataBlock与PairReduceElem。”。《每核最少行数地板压低 AIV 并行度—按可用核数切分》提供“行级归约 tiling 不应先用每核最少行数限制 block 数；按可用 AIV 核数上限切分可恢复并行度。”，其具体合同或探针直接接入规约 count、尾部填充、并行切核和 UB 容量的直接正确性约束。
-- [block 数应覆盖可用 Vector 核](block_count_uses_all_available_vector_cores.md)（`related`）：两卡都处理 host 侧切分未覆盖可用 AIV 的问题：本卡是固定 block cap，目标卡是每核最少行数地板；可用同一“有效 block 对照设备核数”探针区分原因。
+- [按行均分 tiling 致 nnz 倾斜时约半数核空闲](tiling_nnz.md)（`related`）：28 个忙核对 28 个空闲核；导致大量 vector core 没有收到工作。前者用 task_cyc 证明按行数切分遇到 nnz 倾斜时部分核空转，后者证明人为每核最少行数会压低 block 数；两者提供区分工作量倾斜与 launch 并行度不足的互补诊断。
+- [block 数应覆盖可用 Vector 核](block_count_uses_all_available_vector_cores.md)（`same_topic`）：选择 `numBlocks=min(coreNumAiv,numRow)`：前者保证尽量覆盖可用 AIV，后者保证每个激活 block 至少有一行，避免空核。 host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`，使输出量充足的 case 只能暴露 `C_old` 路并行工作，留下 `V_measured - C_old` 个核的可用并行度未覆盖。 两卡诊断同一 Host block 数低于可用 Vector 核的问题，分别排除每核最少行数地板与固定 cap。
 <!-- cannbot:related:end -->

@@ -24,5 +24,5 @@ GetGroupNormNDTilingInfo参数：ascendcPlatform平台信息；输入shape各维
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GroupNorm](group_norm.md)（`same_topic`）：《GroupNorm》处理“对shape为[N,C,H,W]的输入，将每个[C,H,W]在C维度上分为groupNum组并对每一组进行标准化，再通过可训练的缩放参数γ和平移参数β进行调整。”。《GroupNorm Tiling》明确提供“获取GroupNorm kernel计算时所需的Tiling参数，包括通过GetGroupNormMaxMinTmpSize获取最大最小临时空间大小和GetGroupNormNDTilingInfo获取tiling参数。”，其参数、调用或验证步骤直接接入GroupNorm 的分组统计、Welford 计算、Tiling 与格式约束。
+- [GroupNorm](group_norm.md)（`related`）：“host侧Tiling接口，用于获取GroupNorm kernel计算所需的Tiling参数，分两步：通过GetGroupNormMaxMinTmpSize获取最大和最小临时空间大小；通过GetGroupNormNDTilingInfo获取kernel侧所需tiling参数。”与“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过GroupNorm Tiling获取。模板参数isReuseSource预留（传false）。”分别给出两端正文事实；Host 侧先计算临时空间和 GroupNormTiling，Kernel 侧 GroupNorm 明确消费该 tiling，二者形成同一接口的参数生产消费链。
 <!-- cannbot:related:end -->

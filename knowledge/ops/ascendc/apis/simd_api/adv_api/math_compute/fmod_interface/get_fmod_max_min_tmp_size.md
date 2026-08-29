@@ -21,11 +21,3 @@ host侧Tiling接口，用于获取Fmod接口所需的最大和最小临时空间
 参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource预留，传false；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。
 
 在minValue到maxValue范围内，临时空间越大性能越好。约束：无。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Fmod](fmod.md)（`related`）：Fmod 的 sharedTmpBuffer 必须落在 GetFmodMaxMinTmpSize 返回的最小/最大范围内，否则无法保证计算正确或有效利用 UB。
-- [Fmod接口](fmod_interface.md)（`same_topic`）：GetFmodMaxMinTmpSize 的核心契约是“在host侧获取Fmod接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”；Fmod接口 补充“按元素计算两个浮点数相除后的余数，并提供临时空间大小获取接口”。
-- [GetFmodTmpBufferFactorSize](get_fmod_tmp_buffer_factor_size.md)（`same_topic`）：GetFmodMaxMinTmpSize 的核心契约是“在host侧获取Fmod接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”；GetFmodTmpBufferFactorSize 补充“获取Fmod接口的maxLiveNodeCount和extraBuf，用于推算算子单次最大计算元素数量”。
-<!-- cannbot:related:end -->

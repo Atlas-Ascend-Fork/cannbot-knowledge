@@ -25,9 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__high2float](../../bfloat16_type/bfloat16_precision_conversion_functions/_high2float.md)（`related`）：该接口执行相同的高 16 位→float 操作，但输入为 half2；用于在 bfloat16x2 与 half2 两种 packed 类型间迁移实现。
-<!-- cannbot:related:end -->

@@ -55,3 +55,9 @@ NoPE/RoPE 分离入参须与建模里 q_pe / k_rope 的实际张量对齐（`npu
 - `doc 披露`（@f5bf59cf）：`deepseek_r1_prefill_optimization.md`「TND 格式支持」节——TND 两问题、改用 NTD、+15%、NoPE/RoPE 分离消除 split/concat/transpose 均为文档原文。溯源下探 [cann-recipes-infer-pr-72-feat-add-deepseek-r1-kimi-k2](https://gitcode.com/cann/cann-recipes-infer/merge_requests/72)。
 - `diff 事实`（@2c45117 / @f5bf59cf）：`modeling_deepseek.py` 的 NTD 布局处理、`forward_page_attention_mla_prolog`、`npu_fused_infer_attention_score(..., query_rope=q_pe, key_rope=k_rope)` NoPE/RoPE 分离入参。溯源下探 [cann-recipes-infer-issue-17-rfc-deepseek-r1-kimi-k2-model-inference-support](https://gitcode.com/cann/cann-recipes-infer/issues/17)。
 - +15% 属 doc 披露、无独立复测；NTD 布局与 mla_prolog / FIA 调用为代码事实。归因主语为 cann-recipes-infer 的建模实现。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [昇腾推理统一 TND packed-sequence 布局：为何是标准、BSND/packed-1D shim 的等长约束与变长崩溃](../rules/tnd_packed_sequence_standard_and_bsnd_shim.md)（`related`）：Prefill MLA 的 FA 实际改用 **NTD** 布局；默认优先 TND（packed-sequence）布局。通用执行器规则以 TND packed sequence 作为默认，MLA Prefill 案例则因 FA 访存与转置成本选 NTD；对照可识别何时遵守默认布局、何时采用有证据的 MLA 特例。
+<!-- cannbot:related:end -->

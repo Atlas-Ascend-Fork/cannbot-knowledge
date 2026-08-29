@@ -24,9 +24,5 @@ LocalMemAllocator构造函数。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Alloc](alloc.md)（`related`）：Alloc 前必须以物理位置和起始地址构造 LocalMemAllocator；构造状态决定后续 LocalTensor 的实际地址域。
-- [CheckLocalMemoryIA](../../debug_interface/exception_detection/check_local_memory_ia_isasi.md)（`related`）：CheckLocalMemoryIA 与《LocalMemAllocatorConstructor》的实质衔接是：CheckLocalMemoryIA 通过保留的 UB 地址范围触发异常，需结合 LocalMemAllocator、地址空间转换与 ASCENDC_DUMP 调试开关定位本地内存越界。
-- [GetCurAddr](get_cur_addr.md)（`related`）：构造后的起始地址以及每次 Alloc 后的下一空闲地址都可由 GetCurAddr 核验。
-- [LocalTensor构造函数](../../data_structures/local_tensor/local_tensor_constructor.md)（`related`）：《LocalTensor构造函数》处理“LocalTensor构造函数。”。《LocalMemAllocatorConstructor》明确“LocalMemAllocator构造函数，用于初始化指定物理位置的内存分配器对象。”，可直接用于核对LocalTensor 的默认/静态地址构造、LocalMemAllocator 构造路径及错误实参诊断。
-- [LocalMemAllocator简介](local_mem_allocator_intro.md)（`same_topic`）：LocalMemAllocatorConstructor说明LocalMemAllocator构造函数，用于初始化指定物理位置的内存分配器对象。
+- [Alloc](alloc.md)（`related`）：构造接口说明“LocalMemAllocator构造函数。”并建立唯一 allocator 对象；其消费接口“根据用户指定的逻辑位置、数据类型、数据长度返回对应的LocalTensor对象。”，说明构造完成后的核心分配动作和返回对象。
 <!-- cannbot:related:end -->

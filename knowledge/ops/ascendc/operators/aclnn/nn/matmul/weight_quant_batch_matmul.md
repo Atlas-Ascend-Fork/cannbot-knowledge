@@ -46,7 +46,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/weight_quant_batch_matmul_v2/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:41:23Z"
-updated_at: "2026-08-25T17:41:23Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -434,15 +434,15 @@ AIV 完成低比特 B 的反量化及 L1 写入后通知 AIC；AIC 消费该 pin
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V3 支持 | V3 支持 | V3 支持，见 `_a5` 卡 |
+| 支持状态 | V3 支持 | V3 支持 | V3 支持，见 `_950` 卡 |
 | Host/Launcher | DAV_2201，共用 V3 Host | DAV_2201，共用 V3 Host | DAV_3510 dtype 增加 F8/FP4/MX |
 | Kernel/资源 | 公共 kernel，AIC-only+MIX 1:2 | 同 A2 | arch35 kernel 与专用 tiling/POD |
 
 ## 限制与失败边界
 
-- A2/A3 不支持 V3 文档角标 2 的 FLOAT8/HIFLOAT8/FLOAT4/MX 组合；不得因 A5 binary/config 存在而外推。
+- A2/A3 不支持 V3 文档角标 2 的 FLOAT8/HIFLOAT8/FLOAT4/MX 组合；不得因 950 binary/config 存在而外推。
 - 所有 `IsCapable` 均失败、tiling POD 超容量、Matmul tiling 失败或 workspace 获取失败时返回失败，不存在未记录的安全 fallback。
 - `TCubeTiling` 的精确 ABI、平台系统 workspace 数值与 generated executor 内部节点 ABI 位于固定仓外公共库边界；本卡不推测。
 - 本次知识提取未执行编译、真机、数值或性能测试。
@@ -472,3 +472,9 @@ AIV 完成低比特 B 的反量化及 L1 写入后通知 AIC；AIC 消费该 pin
 | 同步 | AIV↔AIC flags，HardEvent，必要时 SyncAll | flag ID/pipe/轮次/ack | common/body headers |
 | 精度与尾块 | 反量化→FP32 Mmad→bias→quant | cast/round、K/N mask、split-K reduce | Route `Process` |
 | 失败边界 | priority fallback | 不可跳过 `IsCapable`/Matmul tiling failure | registry/classes |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [WeightQuantBatchMatmul 950 ACLNN 算子知识](weight_quant_batch_matmul_950.md)（`same_topic`）：`y = x @ ((weight + antiquantOffset) * antiquantScale) + bias`；配置 `quantScale` 时再做输出量化；`y=x@((weight+antiquantOffset)*antiquantScale)+bias`；950 公开 dtype 表不支持带角标 1 的输出量化参数/INT8 y。两卡闭合同一 WeightQuantBatchMatmul V3 入口与反量化矩阵乘语义，分别给出 A2/A3 和 950 的 route、dtype 与输出量化边界。
+<!-- cannbot:related:end -->

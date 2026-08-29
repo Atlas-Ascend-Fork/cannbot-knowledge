@@ -22,7 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscNdimCopyGm2ub](asc_ndim_copy_gm2ub.md)（`related`）：AscSetNdimPadValue 只在 AscNdimCopyGm2ub 开启 padding_mode 时生效，是该搬运的直接前置配置。
-- [AscSetCopyPadVal](asc_set_copy_pad_val.md)（`same_topic`）：AscSetCopyPadVal 的核心契约是“配合asc_copy_gm2ub_align或asc_copy_ub2gm_align接口，设置搬运数据块左右两侧需要填补的数据值”；AscSetNdimPadValue 补充“设置asc_ndim_copy_gm2ub接口Padding的填充固定值”。
-- [AscSetNdimPadCount](asc_set_ndim_pad_count.md)（`same_topic`）：《AscSetNdimPadValue》明确“设置asc_ndim_copy_gm2ub接口Padding的填充固定值。”；它与《AscSetNdimPadCount》的“设置asc_ndim_copy_gm2ub接口各个维度左右侧的padding元素个数。”在实际调用参数、数据流或结果校验上直接衔接。
+- [AscNdimCopyGm2ub](asc_ndim_copy_gm2ub.md)（`related`）：“当asc_ndim_copy_gm2ub接口的padding_mode参数为true时，该值将设置为Padding的填充固定值。”给出 pad value 生效条件；“本功能最多能处理5个维度，每个维度都可以单独配置Stride，且支持随路Padding功能。”说明 AscNdimCopyGm2ub 是执行该随路 Padding 的搬运接口。
 <!-- cannbot:related:end -->

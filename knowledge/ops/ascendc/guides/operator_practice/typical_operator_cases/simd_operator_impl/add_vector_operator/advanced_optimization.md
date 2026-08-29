@@ -42,7 +42,5 @@ aiv_mte2_ratio：0.005：0.973：0.961
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SetL2CacheHint](../../../../../apis/simd_api/basic_api/data_structures/global_tensor/set_l2_cache_hint.md)（`explains`）：该优化用 SetL2CacheHint(CACHE_MODE_DISABLE) 绕过只读一次输入的 L2，给出 28.9% 搬运耗时下降的具体选型证据。
-- [中级性能优化](intermediate_optimization.md)（`same_topic`）：中级性能优化 与《高阶性能打磨》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
-- [入门功能落地](getting_started.md)（`same_topic`）：高级篇继续消费同一 Add 案例的已优化基线，属于从功能正确到性能打磨的后续阶段。
+- [SetL2CacheHint](../../../../../apis/simd_api/basic_api/data_structures/global_tensor/set_l2_cache_hint.md)（`explains`）：“原理：L2 Cache是AI Core和HBM之间的缓存层，适合需要重复访问的数据。对于Add算子这种流式访问场景（输入数据只读取一次），数据经过L2 Cache反而会占用Cache空间（Cache污染），增加搬运延时。通过SetL2CacheHint设置CACHE_MODE_DISABLE，让数据绕过L2 Cache直接从GM载入UB。”给出 Add 单次读取输入发生 L2 污染时的实测优化调用；“当特定 GlobalTensor 启用 L2 Cache 后性能反而下降时可手动禁用，例如仅对单次读取的 Tensor 关闭缓存以避免额外搬运开销。”定义该 API 正适用于只访问一次的 GlobalTensor。两端把性能症状、选型条件和具体 CACHE_MODE_DISABLE 接口连成可复用步骤。
 <!-- cannbot:related:end -->

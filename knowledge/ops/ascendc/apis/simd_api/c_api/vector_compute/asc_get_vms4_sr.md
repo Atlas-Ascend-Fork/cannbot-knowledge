@@ -22,5 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscMrgsort4](asc_mrgsort4.md)（`same_topic`）：《AscMrgsort4》给出“将最多 4 条已排序队列合并为 1 条队列，并按 Region Proposal 的 score 域从大到小排序。”；该约束/探针可直接复现、解释或前置验证《AscGetVms4Sr》中的“此接口用于获取执行asc_mrgsort4操作后的4个队列中，每个队列已经理过的Region Proposal个数。使用时，需要将asc_mrgsort4中的if_exhausted_suspension参数配置为true，该配置模式下某条队列耗尽后，MrgSort4指令停止。”。
+- [AscMrgsort4](asc_mrgsort4.md)（`related`）：将已经排好序的最多4条队列，合并排列成1条队列，结果按照score域由大到小排序。；此接口用于获取执行asc_mrgsort4操作后的4个队列中，每个队列已经理过的Region Proposal个数。使用时，需要将asc_mrgsort4中的if_exhausted_suspension参数配置为true，该配置模式下某条队列耗尽后，MrgSort4指令停止。后者读取前者在 exhausted-suspension 模式下的队列消费进度，形成排序与状态查询链。
 <!-- cannbot:related:end -->

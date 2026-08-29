@@ -23,6 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GridGroupConstructor](grid_group_constructor.md)（`same_topic`）：this_grid 得到对象后可用 IsValid 验证当前执行配置是否支持 grid_group 操作。
-- [Grid协作组sync](sync.md)（`same_topic`）：IsValid 专门回答该对象能否调用 sync；当前实现固定 true，随后可执行跨块同步。
+- [Grid协作组sync](sync.md)（`related`）：判断当前grid_group是否可使用sync()接口进行跨线程块同步。grid_group默认支持同步功能，因此接口固定返回true。；同步当前Grid内所有SIMT线程。所有线程块中的所有线程都执行到该同步点位置后，Grid内线程才能继续执行。。IsValid 查询的能力对象就是 grid_group 的 sync 跨线程块同步，sync 卡进一步给出所有线程到达同步点的执行语义与约束，因此查询与被查询操作属于同一调用决策链。
 <!-- cannbot:related:end -->

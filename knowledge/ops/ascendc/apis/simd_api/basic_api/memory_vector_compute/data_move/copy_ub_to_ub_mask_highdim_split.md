@@ -27,21 +27,3 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [如何使用掩码操作API](../../../../../guides/programming_guide/library_api/basic_api/quick_reference/how_to_use_mask_api.md)（`explains`）：Copy 与《如何使用掩码操作API》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [高维切分API](../../../../../guides/programming_guide/library_api/basic_api/interface_classification/high_dim_split_api.md)（`explains`）：Copy 与《高维切分API》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [DataCopy](data_copy_ub_to_ub_highdim_split.md)（`related`）：Copy 的 mask 高维切分适合按元素有效位搬运，DataCopy 版本则以块和 stride 描述搬运。
-- [AscCopy](../../../c_api/reg/reg_load/asc_copy.md)（`same_topic`）：Copy 与《AscCopy》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [AscCopy](../../../c_api/vector_compute/asc_copy.md)（`same_topic`）：AscCopy 与《Copy》的实质衔接是：AscCopy 是 UB→UB 搬运；basic Copy、UB 搬运指南和 Reg Copy提供连续、高维/掩码入口，非整 VL 的 fp32 案例说明何时必须改用 masked Reg load/store。
-- [Copy](copy_ub_to_ub_continuous.md)（`same_topic`）：Copy 与《Copy》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [ResetMask](../mask_operations/reset_mask.md)（`same_topic`）：Copy 与《ResetMask》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [SIMD计算掩码](../simd_compute/mask.md)（`same_topic`）：Copy 与《SIMD计算掩码》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [SetMaskCount](../mask_operations/set_mask_count.md)（`same_topic`）：Copy 与《SetMaskCount》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [SetMaskNorm](../mask_operations/set_mask_norm.md)（`same_topic`）：Copy 与《SetMaskNorm》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [SetVectorMask](../mask_operations/set_vector_mask.md)（`same_topic`）：Copy 与《SetVectorMask》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [UB与UB数据搬运](../../data_move_guide/ub_ub_data_move.md)（`same_topic`）：Copy 与《UB与UB数据搬运》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [高维切分（SIMD计算）](../simd_compute/high_dim_split.md)（`same_topic`）：Copy 与《高维切分（SIMD计算）》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-<!-- cannbot:related:end -->

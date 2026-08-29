@@ -28,10 +28,3 @@ platforms: [agnostic]
 -   使用Comment接口设置算子分组名称后，会对应生成同名的供GE调用的原型定义代码文件。如果因为此类文件导致文件名过长报错，应减少算子分组名称的长度。
 -   文件路径过长报错
 完成工程编译相关配置时，如果在CMakePresets.json文件中配置vendor_name，编译时会在vendor目录下生成以vendor_name为名称的路径。如果因为此类文件路径过长报错，应减少配置的vendor_name长度。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Comment](../../../../apis/utils_api/prototype_register_management/op_def/comment.md)（`explains`）：FAQ 指出 Comment 设置的算子分组名会生成同名原型文件；OpDef::Comment 是该分组和注释配置入口。
-- [命名转换规则对照表（附录）](../../advanced_programming/aclnn_operator_development/appendix/naming_conversion_table.md)（`same_topic`）：FAQ 指出过长 OpType 会生成过长 host/kernel 文件名；命名转换表明确构建期如何从 OpType 派生文件名，可在改名前预估最终长度。
-<!-- cannbot:related:end -->

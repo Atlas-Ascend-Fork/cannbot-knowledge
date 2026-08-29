@@ -64,7 +64,5 @@ trace 内未找到可在多流下保活 `.to()` 的改法；最终采用规避�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [aclrtMemcpyAsync 局部源生命周期缺陷](aclrtmemcpyasync_use_after_free.md)（`related`）：《自定义算子内 .to(FP8) 多流跨流竞争 banned》明确“多流 prefill 下自定义 NPU 算子内调用 .to(float8_e4m3fn) 触发 aclnnCast 跨流竞争 yHalf，507035=1028，该路线 banned。”；它与《aclrtMemcpyAsync 局部源生命周期缺陷》的“直调算子把局部 std::vector 的 data 指针交给 aclrtMemcpyAsync 后立即返回，源码上无法保证 host 源存活到异步拷贝完成；该缺陷需独立修正，但现有 trace 未证明它是后续 507035 的唯一根因。”在实际调用参数、数据流或结果校验上直接衔接。
-- [at::zeros 异步零初始化跨 stream 覆盖 kernel 写出](../precision/at_zeros_stream_kernel.md)（`same_topic`）：《at::zeros 异步零初始化跨 stream 覆盖 kernel 写出》说明kernel 直调算子的 host 层用 allocate_xpu_zeros_like（at::zeros）在 torch 默认 stream 异步零初始化输出 tensor，kernel launch 走 XpuRuntimeManager::get_ins<aclrtStream> 的 xpu_ops stream，两 stream 无同步；批量高负载下零初始化在 kernel 写入之后完成，整段 GM 写入覆盖 kv_a_out new 区。判别=BUGDIAG 按 region 分桶报 hist_zr=0 new_zr 非零 + 源码审查命中 allocate_xpu_zeros_like 且 kernel 在异 stream。；《自定义算子内 .to(FP8) 多流跨流竞争 banned》说明多流 prefill 下自定义 NPU 算子内调用 .to(float8_e4m3fn) 触发 aclnnCast 跨流竞争 yHalf，507035=1028，该路线 banned。。二者在at::zeros和直调kernel位于不同stream且无依赖，设备同步或同stream staging是防止零初始化覆盖写出的直接修复上存在可执行的直接衔接。
-- [半精度 shadow 跨流竞态 — 转换与 kernel 两侧做设备同步](../precision/torch_npu_async_temporaries_need_completion_before_raw_kernel.md)（`same_topic`）：两卡都通过同步/多流 A/B 证明 PyTorch dtype 转换与 raw aclStream kernel 未建立依赖会产生跨流竞态；一张是 kernel 后 .to(FP8) 被过早读取，另一张是 cast 临时量在 kernel 前未完成。
+- [DynamicBlockQuant 950 ACLNN 算子知识](../../operators/aclnn/nn/quant/dynamic_block_quant_950.md)（`related`）：焦点故障卡的规避要求是“让 kernel 直接产出模型期望的 dtype”，候选原生算子明确“950 为 FP8_E5M2/FP8_E4M3FN/HiFloat8”；使用其原生 FP8 输出可避开自定义 kernel 后再 `.to(FP8)` 的跨流 Cast 竞争。
 <!-- cannbot:related:end -->

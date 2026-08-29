@@ -18,9 +18,3 @@ platforms: ['950', a2, a3]
 函数原型：void asc_get_arch_ver(uint32_t& core_version)
 约束：在调用asc_get_arch_ver接口前，需先定义core_version,调用asc_get_arch_ver接口后core_version会变成相对应架构版本号的值。
 支持平台：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core, Atlas 推理系列产品Vector Core等
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetArchVersion](../../basic_api/tool_interface/system_resources_and_variables/get_arch_version.md)（`same_topic`）：《AscGetArchVer》明确“获取当前AI处理器架构版本号。”；它与《GetArchVersion》的“获取当前AI处理器架构版本号。”在实际调用参数、数据流或结果校验上直接衔接。
-<!-- cannbot:related:end -->

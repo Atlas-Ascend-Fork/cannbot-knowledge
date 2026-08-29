@@ -32,10 +32,3 @@ platforms: ['950', a2, a3]
     - Atlas A2 训练系列产品/Atlas A2 推理系列产品：不支持。
 需包含头文件 "utils/debug/asc_time.h"。
 支持 SIMT 与 SIMD/SIMT 混合编程场景。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscTimeStamp](asc_time_stamp.md)（`related`）：Clock 返回从程序启动到当前时刻的周期数，可与 AscTimeStamp 的流水打点按是否需要直接取值或离线分析选型。
-- [asc_mark_stamp](asc_mark_stamp.md)（`same_topic`）：Clock：Clock读取当前cycle count，AscTimeStamp提供同类设备时间戳，asc_mark_stamp把时间点写入调测流；联合使用可构造区间测量。 目标卡《asc_mark_stamp》补充：SIMD场景下，用户通过调用接口，用于在算子执行过程中标记特定位置，便于后期通过流水图分析代码执行路径与性能热点。
-<!-- cannbot:related:end -->

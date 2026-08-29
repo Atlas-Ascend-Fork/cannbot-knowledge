@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:11:02Z"
-updated_at: "2026-08-25T18:11:02Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -654,9 +654,9 @@ GM/Queue 保持 16-bit，进入 `inCastBuf` 后所有 Adam/EMA 算术用 FP32。
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` 接线 | 公开支持；`ascend910_93` 接线 | 公开支持，但见独立 `_a5` 卡 |
+| 支持状态 | 公开支持；`ascend910b` 接线 | 公开支持；`ascend910_93` 接线 | 公开支持，但见独立 `_950` 卡 |
 | Host/Launcher | 共用 `Tiling4ApplyFusedEmaAdam`，运行时查询 AIV 核数/UB | 同 | 同一源码，平台查询值可不同 |
 | Kernel/资源 | 共用三 key 单 AIV Vector body | 同 | 同一 body，binary config 独立为 ascend950 |
 
@@ -675,7 +675,7 @@ GM/Queue 保持 16-bit，进入 `inCastBuf` 后所有 Adam/EMA 算术用 FP32。
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `README.md` | 产品支持/公式 | A2/A3/A5 支持、算子语义 |
+| 入口声明/约束 | `README.md` | 产品支持/公式 | A2/A3/950 支持、算子语义 |
 | 入口声明/约束 | `docs/aclnnApplyFusedEmaAdam.md` | 两段式函数原型 | ACLNN 参数、shape/dtype、错误语义 |
 | 入口实现边界 | `op_host/apply_fused_ema_adam_def.cpp` | `ApplyFusedEmaAdam` | AutoContiguous、attr、平台配置 |
 | Host/Tiling | `op_host/apply_fused_ema_adam_tiling.h` | `ApplyFusedEmaAdamTilingData` | key 常量与 POD 字段 |
@@ -698,3 +698,9 @@ GM/Queue 保持 16-bit，进入 `inCastBuf` 后所有 Adam/EMA 算术用 FP32。
 | 同步 | MTE2↔V、V→MTE3、V→S event | 覆盖或 GM copy 前的等待关系 | `PipeVM2/PipeM2V/PipeVM3/ScalarPow` |
 | 精度与尾块 | 低精度 FP32 compute、RINT output；实际 count tail | 不可提前以 T 值继续校正；front/tail base 公式 | `FusedEmaAdamF16::Compute/Process` |
 | 失败边界 | dtype/shape/attr/core 获取失败即终止 | 不得补造 empty、非法 mode 或 unknown key fallback | Host checks + router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ApplyFusedEmaAdam 950 ACLNN 算子知识](apply_fused_ema_adam_950.md)（`same_topic`）：“950 binary/CMake 接线闭合”与“A2/A3 binary/CMake 接线闭合”表明同一公开 ApplyFusedEmaAdam 合同分别闭合到 950 与 A2/A3 构建路线，可按目标平台进入对应 Host/Kernel 实现。
+<!-- cannbot:related:end -->

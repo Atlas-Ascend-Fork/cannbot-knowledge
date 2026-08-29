@@ -35,8 +35,5 @@ gather & adds算子的详细执行流程如图2所示。基于该流程，按照
 <!-- cannbot:related:start -->
 ## 相关
 
-- [内存空间限定符](../../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/memory_space_qualifier.md)（`explains`）：实现同时传递 GM 输入、UB 中间区和 VF 参数，该限定符卡明确 __gm__/__ubuf__ 对象的地址空间含义，支撑接口签名和共享 UB 数据流。
-- [使用Unified Buffer提升内存访问效率](../simd_simt_hybrid_optimization/memory_access/ub_memory_access.md)（`related`）：《算子实现（SIMD与SIMT混合算子实现）》给出“以下内容以gather & adds算子为例，介绍SIMD与SIMT混合算子的实现过程。完整代码请参见SIMD与SIMT混合编程实现gather&adds算子样例。”；该约束/探针可直接复现、解释或前置验证《使用Unified Buffer提升内存访问效率》中的“>该性能优化建议适用于如下型号：”。
-- [编程示例（SIMD与SIMT混合编程）](../../programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/programming_examples.md)（`related`）：“编程示例（SIMD与SIMT混合编程）”定义：本节以gather & adds混合编程样例为例，展示SIMD与SIMT混合编程的关键语法。；“算子实现（SIMD与SIMT混合算子实现）”定义：以下内容以gather & adds算子为例，介绍SIMD与SIMT混合算子的实现过程。完整代码请参见SIMD与SIMT混合编程实现gather&adds算子样例。。实质衔接：gather&adds 样例同时依赖 kernel/VF 调用层级、GM/UB/私有内存边界和混合模式选择；算子实现页把示例语法落到工程流程。
-- [核函数与VF函数（SIMD与SIMT混合编程）](../../programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md)（`same_topic`）：焦点处理混合 SIMD/SIMT 中 kernel、VF、callee 的限定符和启动边界；算子实现（SIMD与SIMT混合算子实现）正文说明“以下内容以gather & adds算子为例，介绍SIMD与SIMT混合算子的实现过程。完整代码请参见SIMD与SIMT混合编程实现gather&adds算子样例”。候选明确 kernel/VF/callee 的允许调用方向、地址空间和 launch API，或给出同机制编译失败。
+- [基础知识（SIMD与SIMT混合算子实现）](basics.md)（`related`）：“SIMD编程提供了基于寄存器（Regbase）开发的Reg矢量计算API，Reg矢量计算API可以直接操作Vector Core中的SIMD寄存器，API单次处理的数据量上限等于寄存器的大小，通过GetVecLen接口获取该值。在算子实现中，需要多次调用Reg矢量计算API完成对单核数据的处理。”与“其中，gather阶段包含索引映射和离散访问，使用SIMT表达每个线程的数据访问逻辑；adds阶段处理连续数据，使用SIMD完成向量计算。”是双方正文中的具体合同。基础卡区分 SIMD 寄存器批处理与 SIMT 索引访问，实例卡把两种模式分别落到 gather 与 adds 阶段，能推进混合算子的阶段划分和实现。
 <!-- cannbot:related:end -->

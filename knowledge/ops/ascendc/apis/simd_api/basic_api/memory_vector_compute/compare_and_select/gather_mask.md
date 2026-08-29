@@ -19,6 +19,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Compare](compare.md)（`related`）：《Compare》明确“逐元素比较两个tensor大小，结果为真的对应比特位为1，否则为0，支持LT、GT、GE、EQ、NE、LE六种比较模式。”；它与《GatherMask》的“以内置固定模式或用户自定义Tensor为gather mask，从源操作数中选取元素写入目的操作数。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscReduce](../../../c_api/vector_compute/asc_reduce.md)（`same_topic`）：《AscReduce》说明以内置固定模式对应的二进制或者用户自定义输入的数值对应的gather mask（数据收集的掩码），从源操作数中选取元素写入目的操作数中。；《GatherMask》说明以内置固定模式或用户自定义Tensor为gather mask，从源操作数中选取元素写入目的操作数。。二者在AscReduce是按mask压缩选中元素的gather语义，GatherMask提供等价数据选择，AscGetRsvdCount读取实际保留数量上存在可执行的直接衔接。
+- [InplaceIndexFill 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/inplace_index_fill_950.md)（`related`）：“每个 indices 分块在 UB 中 radix sort，以相邻比较和 `GatherMask` 只保留唯一位置，再由 SIMT 写 mask；对大量重复索引减少共享 mask 的同地址写次数。”；“根据 mask 从源 tensor 中收集有效元素到目的 tensor。头文件 `basic_api/kernel_operator_vec_cmpsel_intf.h`。支持 950/a2/a3。”。相邻比较产生的唯一位置 mask 由 GatherMask 压缩成 uniqueIdBuff，随后 SIMT 只写去重后的索引位置。
 <!-- cannbot:related:end -->

@@ -283,11 +283,6 @@ __global__ __aicore__ void gather_kernel(GM_ADDR x, GM_ADDR index, GM_ADDR y,
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)（`exemplifies`）：《DataCopyPad》说明将数据从GM非对齐搬运至UB，可根据需要自行填充数据。；《DataCopyPad UB→GM 四参调用导致编译失败》说明DataCopyPad 搬出方向只接受 GlobalTensor、LocalTensor 与 DataCopyExtParams 三参；误带 PadExtParams 会令模板匹配失败。。二者在GM到UB非对齐搬入依赖Pad参数、32B最小DMA和LocalTensor/offset/rightPad合同，UB到GM方向的重载不同上存在可执行的直接衔接。
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm.md)（`exemplifies`）：该 API 正文规定 UB→GM DataCopyPad 的三参数搬出契约，直接解释 focal 四参数调用为何没有可匹配 overload。
-- [DataCopy 非32字节对齐尾块丢字节](../precision/datacopy_32.md)（`related`）：本卡 CopyOut 改 DataCopyPad 时，UB→GM 方向只接收三参数；目标卡可避免把搬入的 PadExtParams 机械复制到搬出调用。
-- [DataCopyExtParams 运行时块数窄化编译失败](datacopyextparams_block_count_requires_uint16.md)（`related`）：两张构建卡分别约束 UB 到 GM 重载的参数数量和 DataCopyExtParams 字段类型，合并可避免连续两类编译错误。
-- [DataCopyPad 五参编译失败—LocalTensor 子视图替代偏移](datacopypad_offset_via_tensor_subview.md)（`related`）：该卡进一步说明 GM→UB 四参数 load 不接受第五个目标 offset，偏移要由 LocalTensor 子视图承载；与 focal 共同给出方向、arity、offset 三步调用判别。
-- [DataCopyPad 无匹配重载 LocalTensor 实参不一致](datacopypad_localtensor.md)（`related`）：UB→GM 卡明确该方向没有 PadExtParams；结合本卡的元素类型一致性，可同时核对 DataCopyPad 的方向重载和 LocalTensor<T> 实参。
-- [DataCopyPad 加载缺少 Pad 参数导致编译失败](datacopypad_gm_to_ub_requires_pad_params.md)（`same_topic`）：焦点处理DataCopyPad GM→UB 扩展重载的 Pad 参数签名；DataCopyPad UB→GM 四参调用导致编译失败正文界定“DataCopyPad 搬出方向只接受 GlobalTensor、LocalTensor 与 DataCopyExtParams 三参；误带 PadExtParams 会令模板匹配失败”。候选是 DataCopyPad API、相反方向重载、参数窄化与 rightPad 类型的同一签名决策。
+- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm.md)（`exemplifies`）：`GlobalTensor <- LocalTensor` 的 UB→GM `DataCopyPad`；将数据从UB非对齐搬运至GM。runbook 的四参编译失败与三参修复正是该 UB→GM API 的方向特定重载案例；API 方向合同可用于排除误套 GM→UB padding 参数。
+- [DataCopyPad 加载缺少 Pad 参数导致编译失败](datacopypad_gm_to_ub_requires_pad_params.md)（`related`）：同一函数内的 UB 到 GM 输出搬运仍可使用三参数形式，因此不能仅凭函数名相同就把两个方向的重载签名视为对称；GM→UB 的 MTE2 overload 为 `LocalTensor dst + GlobalTensor src + DataCopyExtParams + DataCopyPadExtParams`，而 UB→GM 的 MTE3 overload 为 `GlobalTensor dst + LocalTensor src + DataCopyExtParams`。两条运行手册从相反方向给出同一工具链的非对称重载合同，联合用于根据首参 Tensor 类型选择三参或四参调用。
 <!-- cannbot:related:end -->

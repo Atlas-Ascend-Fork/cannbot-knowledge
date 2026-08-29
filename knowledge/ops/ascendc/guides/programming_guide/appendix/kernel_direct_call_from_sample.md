@@ -45,8 +45,5 @@ Cmake命令语法说明
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GM_ADDR 标量不可解引用为 tiling 结构体指针](../../../runbooks/compilation/gm_addr_tiling.md)（`related`）：GM_ADDR 标量不可解引用为 tiling 结构体指针 与《基于样例工程完成Kernel直调》的实质衔接是：GM_ADDR 在该入口是 __gm__ uint8_t 标量而非结构体指针；typed __gm__ tiling 指针、Kernel Tiling/GET_TILING_DATA 和地址空间案例给出正确入口与强转边界。
-- [SIMT 核类型推导失败 — 补 __vector__](../../../runbooks/compilation/direct_launch_kernel_requires_vector_qualifier.md)（`related`）：The runbook resolves a direct-launch kernel-type inference failure by adding the required __vector__ qualifier to the kernel shown by this guide.
-- [直调不可用 GET_TILING_DATA_WITH_STRUCT 宏](../../../runbooks/compilation/direct_invoke_unavailable_get_tiling_data_with_struct.md)（`related`）：The runbook shows that direct-invoke builds cannot rely on GET_TILING_DATA_WITH_STRUCT and must decode the tiling pointer explicitly.
-- [核函数直调算子额外适配说明](../advanced_programming/super_kernel/kernel_direct_call_adaptation.md)（`same_topic`）：样例给出 direct call 的声明、绑定和构建写法，可用于适配验证。
+- [核函数直调算子额外适配说明](../advanced_programming/super_kernel/kernel_direct_call_adaptation.md)（`related`）：完成算子kernel侧实现；需要在算子Kernel入口侧增加SuperKernel入口函数。样例工程卡给出普通 Kernel 直调的构建、Host 调用和验证流程，适配卡说明把这类直调算子纳入 SuperKernel 时必须增加 SK 入口、参数结构和 SK_BIND 的差异步骤。
 <!-- cannbot:related:end -->

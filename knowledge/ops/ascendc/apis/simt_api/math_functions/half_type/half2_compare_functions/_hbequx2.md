@@ -25,11 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/asc_fp16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hbequx2](../../bfloat16_type/bfloat16x2_compare_functions/_hbequx2.md)（`same_topic`）：“__hbequx2”定义：比较两个bfloat16x2_t类型数据的两个分量是否相等，当两个分量均相等时返回true。若任一输入的分量为nan，该分量的比较结果为true。；“__hbequx2”定义：比较两个half2类型数据的两个分量是否相等，当两个分量均相等时返回true。若任一输入的分量为nan，该分量的比较结果为true。。实质衔接：half2 版保持 unordered 双分量全等布尔语义；__hequx2 改为逐分量数值结果，__hbeqx2 改为 NaN 不视为相等，选择时必须区分。
-- [__hbeqx2](_hbeqx2.md)（`same_topic`）：《__hbequx2》处理“比较两个half2类型数据的两个分量是否相等，当两个分量均相等时返回true。若任一输入的分量为nan，该分量的比较结果为true。”。《__hbeqx2》提供“比较两个half2类型数据的两个分量是否相等，仅当两个分量均相等时返回true。”，其具体合同或探针直接接入half2 全 lane 无序相等、其有序版本和无序不等补集。
-- [__hbneux2](_hbneux2.md)（`same_topic`）：《__hbequx2》处理“比较两个half2类型数据的两个分量是否相等，当两个分量均相等时返回true。若任一输入的分量为nan，该分量的比较结果为true。”。《__hbneux2》提供“比较两个half2类型数据的两个分量是否不相等，当两个分量均不相等时返回true。若任一输入的分量为nan，该分量的比较结果为true。”，其具体合同或探针直接接入half2 全 lane 无序相等、其有序版本和无序不等补集。
-<!-- cannbot:related:end -->

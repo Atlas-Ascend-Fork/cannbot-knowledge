@@ -58,3 +58,11 @@ platforms:
   - 溯源下探：[cann-recipes-infer-issue-47-bug-report-tilelang-example-test-lightning-indexer-py](https://gitcode.com/cann/cann-recipes-infer/issues/47)
 - **框架后端 bug · diff 事实 + 维护者确认**（tilelang-ascend `@ba306cb` "Fix dynamic shape on x86"）：单文件 `cython_wrapper.pyx` 的 `CythonKernelWrapper` 把动态 dim 由裸 append 改为 `ctypes.c_int64(...)` 包裹；维护者已复现并确认更新到含该修复的框架即修复。原始 aicore error 仅以截图给出、未 OCR，症状→根因映射依赖维护者定位 + 该 PR 确为动态 shape/x86 修复。
   - 溯源下探：[cann-recipes-infer-issue-52-bug-report-shape-sfa-aicore-error](https://gitcode.com/cann/cann-recipes-infer/issues/52)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Lightning Indexer Kernel](../../concepts/kernels/lightning_indexer.md)（`related`）：“本 kernel 在 cann-recipes-infer 中同时提供 **AscendC**（手写高性能）、**PyPTO**（自研 MegaKernel）、**TileLang**（社区编译）三路实现，彼此性能/易用性各有取舍；V4 在 AscendC 侧补充了 950PR/DT 直方图 Top-k 与 FP8 量化版 LI（INT8/FP8 共用 `npu_quant_lightning_indexer`，FP8 区别在上游 q 经 `npu_dynamic_block_quant` 量化，见下文 ［DeepSeek-V4 CSA 层增强］(#deepseek-v4-csa-层增强)）。”；“用 ［TileLang］(../../concepts/frameworks/tilelang.md) 写的算子（［SFA］(../../concepts/kernels/sparse_flash_attention.md) / ［lightning_indexer］(../../concepts/kernels/lightning_indexer.md) 等 ［DSA］(../../concepts/modules/dsa.md) 稀疏注意力链路算子）在 bringup 时报错，而**同目录别的 tilelang 算子却能跑通**。”。焦点的 TileLang LI 路线遇到局部 bringup 失败时，目标 runbook把排查起点落到 tilelang-ascend 分支、原语签名与动态参数 wrapper。
+- [TileLang](../../concepts/frameworks/tilelang.md)（`related`）：CodeGen 生成源码 → 编到 `.so` → 基于 TileLang 的 Cython 适配器对接 NPU 接口 → 集成到 Python 环境。三者都是「仓内 tilelang 核定义 ↔ 外部 tilelang-ascend 框架」的版本/分支错配，只是错配落点不同：框架卡给出 CodeGen、Cython JIT 到动态库的执行链，故障卡把缺原语、签名漂移和动态维度位宽错误分别定位到这条链的 parse、codegen 与 host wrapper 环节，可按失败阶段选择版本对齐或 wrapper 修复路径。
+- [自定义算子框架决定可用图后端：PyPTO 仅 GE 入图（无 eager/aclgraph）、tilelang 仅 aclgraph](../../optimizations/experience/rules/custom_op_framework_graph_backend_compat.md)（`related`）：三者都是「仓内 tilelang 核定义 ↔ 外部 tilelang-ascend 框架」的版本/分支错配，只是错配落点不同：；要让 tilelang(`@tilelang.jit`)自定义算子被图执行捕获（减少逐 kernel 下发调度开销），走 **aclgraph**（`torch.npu.NPUGraph` capture/replay）路径；**GE 图接入维护者称短期无规划**（roadmap，可变）。。runbook 确认 kernel 与外部框架必须版本匹配，后端卡继续限定匹配后的 TileLang 自定义算子应走 aclgraph 捕获。
+<!-- cannbot:related:end -->

@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcdiv_scalar/op_host/config/ascend910b/foreach_addcdiv_scalar_binary.json
     role: implementation
 created_at: "2026-08-25T15:30:35Z"
-updated_at: "2026-08-25T15:30:35Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -551,9 +551,9 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2 公开支持；`ascend910b` | V2 公开支持；`ascend910_93` | V2 公开支持，详见独立 `_a5` 卡 |
+| 支持状态 | V2 公开支持；`ascend910b` | V2 公开支持；`ascend910_93` | V2 公开支持，详见独立 `_950` 卡 |
 | Host/Launcher | arch22 `ForeachCommonTiling` | 与 A2 共用 arch22 | 独立 arch35 POD/Tiling |
 | Kernel/资源 | 默认 AIV Vector Kernel | 与 A2 共用 | SIMT VF，直接 GM，无 AIV Queue |
 
@@ -585,7 +585,7 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 | Kernel entry/body | `foreach/foreach_utils/op_kernel/foreach_one_scalar_quaternary_implict_output.h` | implicit-output 模板 | Queue、循环、直写与同步 |
 | Kernel entry/body | `foreach/foreach_utils/op_kernel/kernel_foreach_unary.h` | `KernelForeachUnary` | tile、CopyIn、tail |
 | Kernel entry/body | `foreach/foreach_utils/op_kernel/kernel_foreach_base.h` | `KernelForeachBase` | POD 解析与 TensorList GM 地址解析 |
-| 构建接线 | `foreach/foreach_addcdiv_scalar/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3 默认源与 A5 分源 |
+| 构建接线 | `foreach/foreach_addcdiv_scalar/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3 默认源与 950 分源 |
 | 构建接线 | `foreach/foreach_addcdiv_scalar/op_host/CMakeLists.txt` | `SUPPORT_COMPUTE_UNIT` / `SUPPORT_TILING_DIR` | A2/A3→arch22 |
 | 构建接线 | `foreach/foreach_addcdiv_scalar/op_host/config/ascend910b/foreach_addcdiv_scalar_binary.json` | `op_list` | 三个 dtype 组合及 BF16 scalar=FP32 |
 
@@ -599,3 +599,9 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 | 同步 | Queue + V/MTE3 + MTE3/MTE2 | 原地 buffer 写回前后不可删事件 | implicit `Compute` |
 | 精度与尾块 | FP16/BF16 升 FP32、Div→Axpy→CAST_RINT；尾部按有效字节 | 不得改计算顺序/round mode | adapters；`KernelForeachUnary::CopyIn` |
 | 失败边界 | API dtype/shape/format；BF16 编译 guard；未知 key 无 body | 不把宽松实现检查当公开支持 | dtype check；router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachAddcdivScalar 950 ACLNN 算子知识](foreach_addcdiv_scalar_950.md)（`same_topic`）：对三个等长 TensorList 逐项、逐元素计算 `y_i = x1_i + scalar * (x2_i / x3_i)`。；`y_i［j］ = x1_i［j］ + scalar * (x2_i［j］ / x3_i［j］)`。。两卡描述同一个 ForeachAddcdivScalar V2 两段式入口和逐列表元素公式，分别闭合 A2/A3 的 AIV Vector 实现与 950 的 SIMT VF 实现，是同一算子契约的跨平台实现卡。
+<!-- cannbot:related:end -->

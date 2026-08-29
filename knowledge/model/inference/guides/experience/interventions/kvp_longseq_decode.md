@@ -93,3 +93,12 @@ bring-up 启动期在 `check_parallel_settings` / `check_common_parallel_setting
 - 溯源下探：
   - [cann-recipes-infer-pr-215-feat-support-kvp-feat-for-longcat-flash-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/215)
   - [cann-recipes-infer-pr-246-fix-revise-check-common-parallel-settings-and-check-parallel-settings-fo](https://gitcode.com/cann/cann-recipes-infer/merge_requests/246)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Context Parallel](../../../concepts/parallelism/context_parallel.md)（`related`）：KVP 配置矩阵明确“｜ `cp_size == 1` ｜ KVP 与 ［context-parallel］(../../../concepts/parallelism/context_parallel.md) 都沿 S 维切、互斥 ｜”；CP 卡定义“将输入序列沿 Sequence 维度切分到多个 Rank 并行处理的策略，用于解决长序列场景下单卡激活值内存不足的问题。通常与 TP 组合使用。”，两卡共同提供沿序列维并行时的互斥选型边界。
+- [KV Parallel (KVP)](../../../concepts/parallelism/kvp.md)（`related`）：KVP (KV Parallel) 是面向**长序列推理场景**的 KV Cache 切分并行策略：通过将 KV Cache **沿 S (sequence) 维度切分**到多个 rank 上，缓解单 rank 的 KV Cache 访存压力，从而降低时延并扩大单请求可处理的序列长度上限。；连续 `kvp_size` 个 rank 组成一个 `kvp_group` 共同持有一份完整 KV Cache，组内各 rank 各存 `1/kvp_size` 分片；有效 attention-DP 组数 = `world_size // kvp_size`，组内 batch 复制。。概念卡定义沿序列维切分 KV Cache 的 KVP，指南给出同一机制的 rank 分组、分片比例和部署约束，因此可从定义继续进入实施与验证。
+- [MTP Speculative Decoding](../../../concepts/techniques/mtp_speculative_decoding.md)（`related`）：KVP 配置矩阵规定“｜ `next_n == 0` ｜ KVP 暂不支持 ［mtp-speculative-decoding］(../../../concepts/techniques/mtp_speculative_decoding.md)（MTP 投机） ｜”；MTP 卡说明“Multi-Token Prediction (MTP) 投机推理：主模型一次前向同时验证 1 个主 token + `next_n` 个 draft token（MTP1 即 `next_n`=1，即每步 1 个 draft、共验证 1+1=2 个 token），在相近的 HBM 搬运量下做更多算术运算，充分利用 Decode 阶段剩余的算力水位，降低等效 per-token 时延并提升吞吐。”，明确 `next_n` 门控为何必须关闭。
+- [npu_fused_infer_attention_score (v1 / v2)](../../../concepts/kernels/fused_infer_attention_score.md)（`related`）：KVP decode 明确“每 rank 用完整 `num_heads_per_rank` 对本地 `1/kvp_size` KV 分片调 ［fused-infer-attention-score］(../../../concepts/kernels/fused_infer_attention_score.md)（`softmax_lse_flag = kvp_size>1`）得 `attn_partial` / `lse_partial`”；FIA 卡界定“昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算：`softmax(QKᵀ/√d)·V`，支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。”，可据此理解局部 attention 与 LSE 合并的算子端点。
+<!-- cannbot:related:end -->

@@ -56,3 +56,12 @@ platforms:
 ## Evidence
 
 - `diff 事实`（@4444dbc5）：`model_infer.py`（+18/-10）三处改动——draft 耗时改累加 list、采集改 `infer_time_main + sum(mtp)` 单条记录、`obtain_mtp_stats` 拆「每步平均」与「MTP-N 等效单 token」双指标；`process_infer_time` 的 `总时间 / token_count` 语义确认两指标口径。归因主语为本仓 DeepSeek-V3.2-Exp 建模脚本 / 该修复，非模型厂商；无 benchmark 数值故不作加速比断言。溯源下探：[cann-recipes-infer-pr-61-fix-fix-mtp-time-collection-bug](https://gitcode.com/cann/cann-recipes-infer/merge_requests/61)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MTP / 投机解码 decode 计时：拆「每 step 时延」与「每等效 token 时延」两口径分报](../../optimizations/experience/rules/mtp_decode_timing_two_metric_split.md)（`related`）：先执行“**每个 decode 步记一条完整耗时** `infer_time_main + sum(所有 draft 步耗时)`，令 `len(rec) == 步数`，使按记录的平均与 IQR 离群过滤口径正确。”收集每步完整耗时并保持 len(rec)==步数，再按“**每等效 token 时延**（average equivalent latency of MTP-n）= `time / (累计接受数 + step 数)`：每个真正吐出 token 的有效耗时，反映投机接受的吞吐收益。”用接受数加 step 数归一，形成采集粒度到指标上报的完整验证链。
+- [多卡 MTP 推理打点计时抖动 —— 计时前 dist.barrier 对齐各 rank](multicard_mtp_timing_barrier.md)（`related`）：- 多卡 MTP 计时前 `dist.barrier` 对齐各 rank、剔除卡间异步抖动见 ［multicard-mtp-timing-barrier］(../validations/multicard_mtp_timing_barrier.md)。；在 `torch.npu.synchronize()` 与 `start_time = time.time()` **之前**插入一次全局 barrier，强制所有 rank 汇合到同一点再启动计时：。采集卡要求每步记录 main 与全部 draft 的完整耗时，barrier 卡补上多卡情况下计时起点对齐的具体插入位置，使该记录不混入 rank 间进度差。
+- [昇腾性能测量失真陷阱：不代表真实访存的测量输入·折算前被截断的度量口径](../../optimizations/experience/anti_patterns/perf_measurement_distortion_input_and_metric.md)（`related`）：测量代码要和被测算法一样被审；**每个 decode 步记一条完整耗时** `infer_time_main + sum(所有 draft 步耗时)`。前者要求审计测量 harness，后者把审计落实为 main 与全部 draft 耗时合并到单步记录的采集规则。
+- [评估 MTP 推测解码收益：稀疏注意力(DSA)按模块分化、SFA 不吃 MTP + 等效时延度量口径](../../optimizations/experience/cases/mtp_benefit_sparse_attention_and_latency_metric.md)（`related`）：度量「等效推理时延」（把多 token 推理折算成单 token 口径 = 实际时延 / 本次被接受的 token 数）；**每个 decode 步记一条完整耗时** `infer_time_main + sum(所有 draft 步耗时)`。前者定义最终折算目标，后者保证输入该指标的每步 main 与全部 draft 耗时完整采集，属于指标计算前后的直接验证链。
+<!-- cannbot:related:end -->

@@ -71,10 +71,3 @@ k_rope: max_diff=0.003906, ..., allclose=True
 
 - 修复前单 case：`query max_diff=0.125000, allclose(rtol=1e-2,atol=1e-2)=False`，其余三输出 allclose=True（来源平台:ASCEND910B/DAV_2201，未定位 a2/a3；证据等级:tool_observed）
 - 逐步探针：Step1 `token_x@W_DQ` max_diff=0.015625、Step2 RMSNorm 0.001953、Step3 `c_q@W_UQ_QR` 0.0625、Step4 `einsum` 0.0625；单独 einsum NPU vs CPU golden 仅 0.000977——证明累积发生在多步 matmul 链而非单步 einsum（来源平台:ASCEND910B/DAV_2201，未定位 a2/a3；证据等级:tool_observed）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [golden BF16 rstd 归约误取 post-BF16 量化值](golden_bf16_rstd_post_bf16.md)（`related`）：两卡都要求先对齐 golden 与 NPU 的 BF16 中间张量边界：多 Matmul 链每步返回 BF16，而 rstd 卡的 kernel 使用 pre-BF16 FP32 和，边界不同都会形成伪精度归因。
-- [奇数 H 致 B 视图 UB 地址非 32B 对齐](../compilation/h_b_ub_32b.md)（`related`）：B/H 缓冲拆分后仍需核对 bf16 Matmul 的布局和精度。
-<!-- cannbot:related:end -->

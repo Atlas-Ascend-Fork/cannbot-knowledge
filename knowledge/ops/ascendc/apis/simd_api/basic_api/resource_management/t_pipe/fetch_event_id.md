@@ -24,10 +24,10 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetTPipePtr 错加 AscendC 命名空间导致编译失败](../../../../../runbooks/compilation/gettpipeptr_is_global_function.md)（`exemplifies`）：GetTPipePtr 错加 AscendC 命名空间导致编译失败 与《FetchEventID》的实质衔接是：GetTPipePtr 是返回 AscendC::TPipe* 的全局函数；全局符号前缀案例和 FetchEventID/SetFlag/WaitFlag API共同说明只应去掉函数名上的 AscendC::。
-- [ReleaseEventID](release_event_id.md)（`related`）：《FetchEventID》明确“根据HardEvent获取相应可用的TEventID，此接口不会申请TEventID，仅提供可用的TEventID。”；它与《ReleaseEventID》的“用于释放HardEvent硬件同步事件的TEventID，通常与AllocEventID搭配使用。”在实际调用参数、数据流或结果校验上直接衔接。
-- [SetFlag/WaitFlag](../../sync_control/intra_core_sync/set_flag_wait_flag.md)（`related`）：FetchEventID 取得的 TEventID 作为 SetFlag/WaitFlag 的同步标识，后者是该临时 ID 的直接消费者。
-- [AllocEventID](alloc_event_id.md)（`same_topic`）：FetchEventID 只临时取得静态事件号且不占用资源，重复同 pipeline 可能死锁；AllocEventID 则为需要持有或重复同管线同步的场景分配可管理 ID。
-- [DestroyWithoutPipeAll](destroy_without_pipe_all.md)（`same_topic`）：DestroyWithoutPipeAll 与《FetchEventID》的实质衔接是：DestroyWithoutPipeAll 释放 TPipe 但不插入 PIPE_ALL，调用前需自行完成事件/流水同步；Destroy、EventID 释放和 TPipe 范式给出完整销毁顺序。
-- [FreeAllEvent](../t_que_bind/free_all_event.md)（`same_topic`）：《FreeAllEvent》处理“释放TQueBind队列中申请的所有同步事件，便于在Buffer数量超过同步事件限制时重新申请队列。”。《FetchEventID》明确“根据HardEvent获取相应可用的TEventID，此接口不会申请TEventID，仅提供可用的TEventID。”，可直接用于核对FreeAllEvent 对 TQueBind 事件和 Alloc/Fetch/Release event ID 生命周期的回收合同。
+- [GetTPipePtr 错加 AscendC 命名空间导致编译失败](../../../../../runbooks/compilation/gettpipeptr_is_global_function.md)（`exemplifies`）：“未改 `AscendC::HardEvent`、`FetchEventID` 或同步事件种类，因为报错只指向函数名的命名空间查找；”说明修复后事件调用合同保持不变；“根据HardEvent（硬件类型的同步事件）获取相应可用的TEventID，此接口不会申请TEventID，仅提供可用的TEventID。”定义该成员调用的语义。
+- [探针末尾 MTE2_S/MTE3_S 同步不可由 stream sync 替代](../../../../../runbooks/compilation/mte2_s_mte3_s_stream_sync.md)（`exemplifies`）：“- API 路径：`PipeBarrier<PIPE_MTE2｜PIPE_MTE3>`；`GetTPipePtr()->FetchEventID(HardEvent::MTE2_S｜MTE3_S)`；`SetFlag`/`WaitFlag`；Host 侧 `aclrtSynchronizeStream`。”与“根据HardEvent（硬件类型的同步事件）获取相应可用的TEventID，此接口不会申请TEventID，仅提供可用的TEventID。”提供双方正文证据。排障卡在 MTE2_S/MTE3_S 同步序列中实际调用 FetchEventID，API 卡说明它按 HardEvent 返回但不占用 TEventID，支撑该事件配对的资源判断。
+- [AllocEventID](alloc_event_id.md)（`related`）：“相比于AllocEventID，FetchEventID适用于临时使用ID的场景，获取ID后，不会对ID进行占用。”给出不占用路线；“用于申请HardEvent（硬件类型同步事件）的TEventID，必须与ReleaseEventID搭配使用，调用该接口后，会占用申请的TEventID，直至调用ReleaseEventID释放。”给出复杂同步需要独占 ID 时的替代生命周期。
+- [DequantBias A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dequant_bias.md)（`related`）：“event_t eventMTE2V = static_cast<event_t>(GetTPipePtr()->FetchEventID(HardEvent::MTE2_V));”给出 DequantBias 的 MTE2→V 临时事件取得方式；“此接口不会申请TEventID，仅提供可用的TEventID。”提示该调用不占用事件 ID，连续复用时需由实现保证安全。
+- [ReleaseEventID](release_event_id.md)（`related`）：“相比于AllocEventID，FetchEventID适用于临时使用ID的场景，获取ID后，不会对ID进行占用。”说明 Fetch 路线没有释放生命周期；“AllocEventID、ReleaseEventID需成对出现，ReleaseEventID传入的TEventID需由对应的AllocEventID申请而来。”界定改用独占 ID 后必须履行的释放合同。
+- [SetFlag/WaitFlag](../../sync_control/intra_core_sync/set_flag_wait_flag_isasi.md)（`related`）：- 在采用TPipe-TQue框架编程范式时，eventID需要通过AllocEventID或者FetchEventID来获取。；根据HardEvent（硬件类型的同步事件）获取相应可用的TEventID，此接口不会申请TEventID，仅提供可用的TEventID。。同步卡列出 FetchEventID 获取 eventID，目标卡说明它只返回可用 ID 而不占用申请槽位。
 <!-- cannbot:related:end -->

@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T14:59:51Z"
-updated_at: "2026-08-25T14:59:51Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -677,9 +677,9 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持，ascend910b | 支持，ascend910_93 | 支持，见 `_a5` 卡 |
+| 支持状态 | 支持，ascend910b | 支持，ascend910_93 | 支持，见 `_950` 卡 |
 | Host/Launcher | 共用 Tiling/POD | 共用 | 同源码，独立 config |
 | Kernel/资源 | key1/2/3，192 KiB | 同 A2 | 同 router/body |
 
@@ -719,3 +719,9 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 | 同步 | event0/1 ping-pong | MTE3 完成后复用 | `SmallTailProcess` |
 | 精度与尾块 | FP32 compute | BF16 RINT；only d to GM | `Compute/CopyOut` |
 | 失败边界 | Host rejects invalid inputs | unknown key/zero last dim | `RunBigKernelTiling/gelu_mul` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GeluMul 950 ACLNN 算子知识](gelu_mul_950.md)（`same_topic`）：实际入口是无版本后缀的公开 `aclnnGeluMul`。仓内没有手写 ACLNN inner bridge；`op_host/CMakeLists.txt` 用 `ACLNNTYPE aclnn` 接线 `GeluMul` OpDef，生成层作为框架边界。公开表支持 A2/A3；OpDef 注册 `ascend910b/ascend910_93`，两份 binary config 均列出三种 dtype。；实际入口是无版本后缀的公开 `aclnnGeluMul`。仓内没有手写 ACLNN inner bridge；`op_host/CMakeLists.txt` 用 `ACLNNTYPE aclnn` 接线 `GeluMul` OpDef，生成层作为框架边界。公开表支持 Ascend 950PR/950DT；OpDef 注册 `ascend950`，其 binary config 列出三种 dtype。；两卡治理同一无版本后缀 aclnnGeluMul 接口、GELU 后乘语义和共同 OpDef 接线，只把 A2/A3 与 950 的 binary config、平台 Route 和资源边界分开记录。
+<!-- cannbot:related:end -->

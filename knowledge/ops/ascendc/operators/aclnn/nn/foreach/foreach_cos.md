@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_cos/op_host/config/ascend910_93/foreach_cos_binary.json
     role: implementation
 created_at: "2026-08-25T15:30:56Z"
-updated_at: "2026-08-25T15:30:56Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -561,9 +561,9 @@ Cast(yLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_RI
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；README/API、`ascend910b` 注册与 config 一致 | 支持；README/API、`ascend910_93` 注册与 config 一致 | 支持，但使用独立 `_a5` 卡 |
+| 支持状态 | 支持；README/API、`ascend910b` 注册与 config 一致 | 支持；README/API、`ascend910_93` 注册与 config 一致 | 支持，但使用独立 `_950` 卡 |
 | Host/Launcher | arch22 `ForeachCommonTiling` | 与 A2 共用 arch22 | arch35 独立 Tiling，workspace 0 |
 | Kernel/资源 | AIV Vector、双 Queue，BF16 有 FP32 Queue | 与 A2 相同 | SIMT VF、512 threads，无 AIV Queue |
 
@@ -593,7 +593,7 @@ Cast(yLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_RI
 | Kernel entry/body | `foreach/foreach_utils/op_kernel/foreach_triangle.h` | `ForeachTriangle/InnerComputer` | Cos、BF16 Cast 和 barriers |
 | Kernel entry/body | `foreach/foreach_utils/op_kernel/kernel_foreach_unary.h` | `KernelForeachUnary` | Queue、Tensor/tile 循环、DMA 与 tail |
 | Kernel entry/body | `foreach/foreach_utils/op_kernel/kernel_foreach_base.h` | `KernelForeachBase` | POD 解析、TensorList 指针与 tile 上界 |
-| 构建接线 | `foreach/foreach_cos/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3 默认 kernel 与 A5 arch35 分流 |
+| 构建接线 | `foreach/foreach_cos/op_kernel/CMakeLists.txt` | `add_kernel_sources` | A2/A3 默认 kernel 与 950 arch35 分流 |
 | 构建接线 | `foreach/foreach_cos/op_host/CMakeLists.txt` | `SUPPORT_COMPUTE_UNIT/SUPPORT_TILING_DIR` | ascend910b/910_93→arch22 |
 | 构建接线 | `foreach/foreach_cos/op_host/config/ascend910b/foreach_cos_binary.json` | `op_list` | A2 三 dtype binary |
 | 构建接线 | `foreach/foreach_cos/op_host/config/ascend910_93/foreach_cos_binary.json` | `op_list` | A3 三 dtype binary |
@@ -608,3 +608,9 @@ Cast(yLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_RI
 | 同步 | Queue 协议加 Cos/Cast 间 `PIPE_V` | Free/覆盖前必须完成 consumer，BF16 barriers 不可省 | `InnerComputer::Compute/ComputePerCast` |
 | 精度与尾块 | FP16/FP32 原生；BF16 在 FP32 中 Cos 后 RINT | `dataCount` 必须用实际尾长；GM tail 按字节 | `SingleTensorProcess/CopyIn/CopyOut` |
 | 失败边界 | Host 校验失败阻断 launch | 50 Tensor 上限、unknown key 无输出、外部 bridge 不可臆造 | `CheckOpInfo`、`foreach_cos` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachCos 950 ACLNN 算子知识](foreach_cos_950.md)（`same_topic`）：对 TensorList 中每个张量逐元素计算 `y［t］［i］ = cos(x［t］［i］)`。；对 TensorList 中每个 Tensor 逐元素计算 `y［t］［i］=cos(x［t］［i］)`。。两卡记录同一个 ACLNN ForeachCos 逻辑算子，分别闭合 A2/A3 Vector 实现与 950 SIMT 实现，可用于同一算子的跨平台路由选择。
+<!-- cannbot:related:end -->

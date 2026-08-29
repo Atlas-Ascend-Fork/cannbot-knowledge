@@ -23,6 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_atomic_inc](asc_atomic_inc.md)（`related`）：AtomicInc 在达到 val 时回绕到 0，AtomicDec 在 0/越界时回绕到 val；二者是循环计数器的增减方向选择。
-- [AscAtomicDec](../../simd_api/c_api/scalar_compute/asc_atomic_dec.md)（`same_topic`）：AscAtomicDec：AscAtomicDec与SIMT asc_atomic_dec执行同一GM原子自减，AscAtomicInc提供相反更新的边界对照，便于验证返回值和上下界行为。 目标卡《asc_atomic_dec》补充：对Unified Buffer或Global Memory上address的数值进行原子减1操作，如果address上的数值等于0或大于指定数值val，则对address赋值为val，否则将address上数值减1。
+- [AscAtomicDec](../../simd_api/c_api/scalar_compute/asc_atomic_dec.md)（`same_topic`）：对Global Memory中address指向的计数器执行原子递减操作，如果address上的数值等于0或大于指定数值val，则对address赋值为val，否则将address上数值减1。；对Unified Buffer或Global Memory上address的数值进行原子减1操作，如果address上的数值等于0或大于指定数值val，则对address赋值为val，否则将address上数值减1。两卡定义同一有回绕上限的 atomic decrement，分别给出 Scalar 与 SIMT 的内存、同步和调度边界。
 <!-- cannbot:related:end -->

@@ -40,7 +40,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: "2026-08-24T19:26:39Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -593,11 +593,11 @@ window 把固定 512 B 对齐的 info header 与 `HS` stride 的 token data 分�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | README/API 明确不支持 | 支持：Atlas A3 训练/推理，单“卡”语义为单 DIE | 950PR/950DT 明确不支持 |
 | Host/Launcher | 无正式 route | `ascend910_93` OpDef/config；AIV blockDim；MTE server type | 无正式 route |
-| Kernel/资源 | 虽 key 头声明 A2 tag 值，但无 selector 实例和公开支持，不可达 | `arch22/ffn_to_attention.cpp` 仅执行 `ArchTag==A3`；remote window + UB | 虽 key 头声明 A5 tag 值，但无 selector 实例和公开支持，不可达 |
+| Kernel/资源 | 虽 key 头声明 A2 tag 值，但无 selector 实例和公开支持，不可达 | `arch22/ffn_to_attention.cpp` 仅执行 `ArchTag==A3`；remote window + UB | 虽 key 头声明 950 tag 值，但无 selector 实例和公开支持，不可达 |
 
 ## 限制与失败边界
 
@@ -647,3 +647,9 @@ window 把固定 512 B 对齐的 info header 与 `HS` stride 的 token data 分�
 | 同步 | queue + 首轮 `S_MTE3` + `PIPE_MTE3` data-before-flag | flag 不得先于 data；`--cce-auto-sync=off` 下不能依赖编译器补同步 | `Process`、Host CMake |
 | 精度与尾块 | FP16/BF16 原样 2 B 搬运；token 循环交错分核 | 无 cast/scale/round；`actualTokenNum<=Y` | `xCopyParams`、`YOffset` |
 | 失败边界 | Host shape/dtype/format/window guard | 不得为越界索引、未支持平台或未知 key 发明 Device fallback | `CheckAndSetAttrs`、`CheckInput*`、`ASCENDC_TPL_SEL` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AttentionToFfn A3 ACLNN 算子知识](attention_to_ffn.md)（`related`）：焦点算子让 Attention worker“写入对端 HCOM window，并发布 token 状态与批次 flag”，候选反向算子则“把 `x［y, 0:H］` 写入目标 rank 的 HCCL window 数据表，并在对应 token-info 槽写 `int32(1)`”；两者构成 Attention 与 FFN worker 间双向 token window 发布协议的两半。
+<!-- cannbot:related:end -->

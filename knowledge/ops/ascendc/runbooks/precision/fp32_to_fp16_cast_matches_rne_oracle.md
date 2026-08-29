@@ -295,17 +295,3 @@ platforms: ["a3"]
 ## 误诊
 
 单独复现的随机输入曾得到 MARE 约 0.021，但它没有覆盖正式失败数据；不能据此否定正式用例的真实边界问题。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](mte2_barrier_must_precede_vector_cast.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《DataCopyPad 后未先同步 Cast 导致低精度 NaN》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [FP16 scatter 归约逐次回写放大相消误差](low_precision_scatter_reduction_needs_fp32_accumulator.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《FP16 scatter 归约逐次回写放大相消误差》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [FP16 算子 Cast 提升-计算-回退链设计](fp16_cast_up_fp32_compute_cast_down_chain.md)（`related`）：FP16 算子 Cast 提升-计算-回退链设计 与《fp32 窄化舍入模式不一致触发稀疏 MARE 越线》的实质衔接是：FP16 提升到 FP32、VF 计算再 RINT 回退要求 Cast 模式、lane 宽、UB 容量和 MTE/Vector 同步一致；相关故障均命中这些步骤。
-- [b16 running 经 fp32 回转会改写 NaN payload](bit_exact_b16_nan_payload_needs_original_dtype_running_value.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《b16 running 经 fp32 回转会改写 NaN payload》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别](bf16_cast_cast_rint.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [bf16 边缘失败用 fair-oracle 探针判 oracle 不公](bf16_fair_oracle_oracle.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《bf16 边缘失败用 fair-oracle 探针判 oracle 不公》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [fp32 乘积相消 MARE 超阈值 — 用补偿乘积保留低位](fp32_rope_product_cancellation_two_product.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《fp32 乘积相消 MARE 超阈值 — 用补偿乘积保留低位》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [按序列位缓存 cos/sin 并让 q/k 共享搬运](../performance/cache_position_coefficients_across_shared_inputs.md)（`related`）：The optimized RoPE path computes in fp32 then narrows with CAST_RINT; this runbook verifies why RNE is required to pass the same fp16/bf16 oracle.
-- [模板内 float→float Cast 使 fp32 分支全错](templated_float_input_must_bypass_same_type_cast.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《模板内 float→float Cast 使 fp32 分支全错》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-<!-- cannbot:related:end -->

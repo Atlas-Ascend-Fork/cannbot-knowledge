@@ -31,9 +31,6 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [4:2稀疏矩阵乘](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/4_2_sparse_matmul.md)（`explains`）：4:2稀疏矩阵乘 与《SetSparseIndex》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
-- [AscMmadSparse](../../../c_api/cube_compute/asc_mmad_sparse.md)（`related`）：AscMmadSparse 消费稀疏权重的索引矩阵，SetSparseIndex 负责在 Matmul 对象中绑定该索引。
-- [LoadDataWithSparse](../../../basic_api/cube_compute/cube_compute_load/load_data_with_sparse.md)（`same_topic`）：LoadDataWithSparse说明从L1 Buffer搬运稠密权重矩阵到L0B Buffer，同时搬运索引矩阵到专用buffer空间，供后续MmadWithSparse接口读取。
-- [MmadWithSparse](../../../basic_api/cube_compute/mmad_compute/mmad_with_sparse.md)（`same_topic`）：SetSparseIndex说明设置稀疏矩阵稠密化过程生成的索引矩阵。 索引矩阵在稠密化中的作用请参考MmadWithSparse。
-- [SetSparse](../matmul_tiling/set_sparse.md)（`same_topic`）：SetSparse说明设置Matmul的使用场景是否为Sparse Matmul场景。
+- [4:2稀疏矩阵乘](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/4_2_sparse_matmul.md)（`explains`）：通过SetSparseIndex接口传入稠密化过程中生成的索引矩阵。；设置稀疏矩阵稠密化过程生成的索引矩阵。 索引矩阵在稠密化中的作用请参考MmadWithSparse。。实践指南把 SetSparseIndex 放到 4:2 稀疏 Matmul 的索引生成与传入步骤中，说明该接口在完整 Kernel 流程中的使用位置。
+- [MmadWithSparse](../../../basic_api/cube_compute/mmad_compute/mmad_with_sparse.md)（`related`）：设置稀疏矩阵稠密化过程生成的索引矩阵。 索引矩阵在稠密化中的作用请参考MmadWithSparse。；4:2 结构化稀疏矩阵乘加接口，实现 C=A×B+C。左矩阵 A 为稀疏矩阵（L0A，M×K，Zz，int8_t），右矩阵 B 为经 4:2 稀疏过滤后的稠密矩阵（L0B，K/2×N，Zn，int8_t），结果 C 位于 L0C（M×N，Nz，int32_t）。头文件 `basic_api/kernel_operator_mm_intf.h`。；SetSparseIndex 提供 MmadWithSparse 稠密化阶段消费的索引矩阵，连接索引配置与 4:2 稀疏矩阵乘加。
 <!-- cannbot:related:end -->

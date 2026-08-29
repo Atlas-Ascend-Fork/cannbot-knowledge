@@ -29,8 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__ull2float_rd](_ull2float_rd.md)（`same_topic`）：__ull2float_rd 与《__ull2float_rn》的实质衔接是：这些转换保持 ull 到 float 的源目类型并改变舍入模式；ll/uint 的 rd 入口用于核对有符号性和源位宽对向下舍入结果的影响。
-- [__ull2float_rna](_ull2float_rna.md)（`same_topic`）：两卡同为 unsigned long long→float，分别采用 nearest-even 与 ties-away 的最近舍入规则。
-- [__ull2float_ru](_ull2float_ru.md)（`same_topic`）：__ull2float_ru 与《__ull2float_rn》的实质衔接是：这些接口以 ull→float 为核心并切换舍入方向，ll/uint 入口验证源有无符号和位宽，ull→half/bfloat16 则保持 CAST_CEIL 但改变目标精度。
-- [__ull2float_rz](_ull2float_rz.md)（`same_topic`）：两卡同为 unsigned long long→float，rn 取最近，rz 向零截断到可表示值。
+- [__ull2float_rna](_ull2float_rna.md)（`same_topic`）：功能：遵循CAST_RINT模式，将uint64类型数据转换为浮点数，返回转换后的值。；功能：遵循CAST_ROUND模式，将uint64类型数据转换为浮点数，返回转换后的值。。两端执行相同 uint64 到 float 转换但采用 CAST_RINT 与 CAST_ROUND 两种舍入合同，联合阅读可据目标舍入规则选择对应 intrinsic 并核对临界值。
 <!-- cannbot:related:end -->

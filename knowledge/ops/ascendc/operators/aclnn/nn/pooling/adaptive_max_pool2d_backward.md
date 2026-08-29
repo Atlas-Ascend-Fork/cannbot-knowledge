@@ -48,7 +48,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_grad_with_argmax/op_host/config/ascend910_93/max_pool3d_grad_with_argmax_binary.json
     role: implementation
 created_at: "2026-08-25T18:17:34Z"
-updated_at: "2026-08-25T18:17:34Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -92,7 +92,7 @@ gradInput[n,c,h,w] = Σ gradOutput[n,c,oh,ow]
 
 ### 入口与版本
 
-固定 Commit 只公开无后缀 `aclnnAdaptiveMaxPool2dBackward` 版本。公开文档明确支持 Atlas A2 与 A3，明确不支持 Ascend 950PR/950DT；因此本卡覆盖 A2/A3，不能据 `ascend950` 内部 OpDef/config 推导公开 A5 支持。A2/A3 的 L0 OpDef 与 binary config 都包含 FP16/FP32/BF16 + INT32 NCDHW 组合，ACLNN 对 INT64 indices 的支持由入口 Cast 到 INT32 实现。
+固定 Commit 只公开无后缀 `aclnnAdaptiveMaxPool2dBackward` 版本。公开文档明确支持 Atlas A2 与 A3，明确不支持 Ascend 950PR/950DT；因此本卡覆盖 A2/A3，不能据 `ascend950` 内部 OpDef/config 推导公开 950 支持。A2/A3 的 L0 OpDef 与 binary config 都包含 FP16/FP32/BF16 + INT32 NCDHW 组合，ACLNN 对 INT64 indices 的支持由入口 Cast 到 INT32 实现。
 
 ## Host/Launcher 执行流程
 
@@ -844,9 +844,9 @@ Scatter 不为每个可能输入位置建立大 Vector 中间矩阵，只保留 
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开 ACLNN 文档明确不支持，未生成 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开 ACLNN 文档明确不支持，未生成 `_950` 卡 |
 | Host/Launcher | ascend910b config；同一 API selector/Tiling | ascend910_93 config；与 A2 源码相同 | 内部 `ascend950/arch35` 实现信号不能覆盖公开“不支持” |
 | Kernel/资源 | arch32 AIV Normal/Scatter | arch32 AIV Normal/Scatter | 不进入本卡；不得据 SIMT/internal OpDef 推导公开链路 |
 
@@ -866,7 +866,7 @@ Scatter 不为每个可能输入位置建立大 Vector 中间矩阵，只保留 
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `pooling/adaptive_max_pool3d_grad/docs/aclnnAdaptiveMaxPool2dBackward.md` | 产品支持表/接口约束 | A2/A3 支持、A5 不支持、dtype/shape |
+| 入口声明/约束 | `pooling/adaptive_max_pool3d_grad/docs/aclnnAdaptiveMaxPool2dBackward.md` | 产品支持表/接口约束 | A2/A3 支持、950 不支持、dtype/shape |
 | 入口实现 | `pooling/adaptive_max_pool3d_grad/op_api/aclnn_adaptive_max_pool2d_backward.cpp` | 两段 ACLNN / `View4Das3D` | 校验、前后处理、executor |
 | 入口实现 | `pooling/adaptive_max_pool3d_grad/op_api/adaptive_max_pool_common.cpp` | `selectLevelZeroOperation` | 整除 specialization 与 L0 分流 |
 | 入口实现 | `pooling/pool_3d_common/op_api/pool_3d_util.cpp` | `View3Das4D/View4Das5D/View5Das4D` | 3D/4D/5D view 变换 |
@@ -897,4 +897,4 @@ Scatter 不为每个可能输入位置建立大 Vector 中间矩阵，只保留 
 | workspace/内存 | b16 overlap 用 `NC*H*W*4` FP32 workspace | 必须清零、全贡献完成后再 cast；owner/lifetime 到 Kernel 结束 | Normal/Scatter workspace producers |
 | 同步 | Normal overlap atomic+SyncAll；Scatter NC owner | 不能让两个 core 拥有同一 NC plane 而仍用非 atomic RMW | `CopyOut` / `InitParams` |
 | 精度与尾块 | FP32 累加；FP16 CAST_NONE、BF16 CAST_RINT | DMA 只提交 valid tail；无效 lane 不得写 GM | `ProcessCast`, `CopyOut` |
-| 失败边界 | 整除/非整除算法分支与 Normal→Scatter fallback | A5 公开不支持；不得启用 arch35 internal route | public doc / selector / tiling registry |
+| 失败边界 | 整除/非整除算法分支与 Normal→Scatter fallback | 950 公开不支持；不得启用 arch35 internal route | public doc / selector / tiling registry |

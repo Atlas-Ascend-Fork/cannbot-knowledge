@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:10:47Z"
-updated_at: "2026-08-25T18:10:47Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -711,9 +711,9 @@ half/BF16 只承担 GM 与 storage TBuf，反量化状态、bias correction、m/
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开文档明确不支持（Ascend 950 行为 `x`），未生成 A5 卡 |
+| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开文档明确不支持（Ascend 950 行为 `x`），未生成 950 卡 |
 | Host/Launcher | 共用 OpDef/Tiling，A2 binary JSON 三 dtype | 共用代码；A3 binary JSON 与 A2 内容一致 | 无 AddConfig、binary JSON 或 Kernel CMake 接线 |
 | Kernel/资源 | 同一三个模板与按 runtime UB/AIV 数计算的 P/K | 同一代码，资源值由 A3 platform info 实例化 | N/A |
 
@@ -736,7 +736,7 @@ half/BF16 只承担 GM 与 storage TBuf，反量化状态、bias correction、m/
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `optim/apply_adam_w_quant/docs/aclnnApplyAdamWQuant.md` | 两段式原型、产品表、参数表、约束 | ACLNN 公开性、A2/A3 支持、A5 不支持、语义与错误 |
+| 入口声明/约束 | `optim/apply_adam_w_quant/docs/aclnnApplyAdamWQuant.md` | 两段式原型、产品表、参数表、约束 | ACLNN 公开性、A2/A3 支持、950 不支持、语义与错误 |
 | OpDef/入口实现边界 | `optim/apply_adam_w_quant/op_host/apply_adam_w_quant_def.cpp` | `ops::ApplyAdamWQuant` | dtype/layout、AutoContiguous、attrs、A2/A3 config |
 | InferShape | `optim/apply_adam_w_quant/op_host/apply_adam_w_quant_infershape.cpp` | `InferShape4ApplyAdamWQuant`,`InferDataType4ApplyAdamWQuant` | 5 路引用输出 shape/dtype |
 | Host/Tiling | `optim/apply_adam_w_quant/op_host/apply_adam_w_quant_tiling.cpp` | `GetTilingAttr`,`CheckInputShape`,`DoTiling`,`Tiling4ApplyAdamWQuant` | 校验、key、UB、分核、POD、blockDim |
@@ -760,3 +760,9 @@ half/BF16 只承担 GM 与 storage TBuf，反量化状态、bias correction、m/
 | 同步 | MTE2_V、V_MTE3、MTE3_MTE2 与 PIPE_V 顺序可复用 | 覆盖前必须维持 producer→consumer event/barrier | `PipeSync`,`Process` |
 | 精度与尾块 | FP16/BF16 主体统一FP32；BF16 CAST_RINT | 不得将中间更新降精度；不得假设 `last_core_last_block` 生效 | `CastFp32ToF16`,`Process` |
 | 失败边界 | attr/shape/P/POD容量失败阻断launch | unknown key静默、零absmax与partial row无fallback | `Tiling4ApplyAdamWQuant`,`apply_adam_w_quant` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ApplyAdamW A2/A3 ACLNN 算子知识](apply_adam_w.md)（`related`）：按 256 元素块由 `uint8` 索引与 qmap/absmax 反量化 m、v，执行 AdamW 更新，再按块求 absmax、归一化并量化回索引。；原地更新 `var/m/v`；`amsgrad=true` 时还原地更新 `maxGradNorm`；`maximize` 可先反转梯度。V2 从标量 `step` 在 Device 侧生成 bias correction。；量化算子在 AdamW 更新前后加入块级反量化与重量化，基础算子给出非量化状态、amsgrad 与 maximize 合同，可用于核对状态布局和算法差异。
+<!-- cannbot:related:end -->

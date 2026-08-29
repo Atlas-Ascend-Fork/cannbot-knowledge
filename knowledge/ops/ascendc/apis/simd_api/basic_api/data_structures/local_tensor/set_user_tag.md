@@ -29,5 +29,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetUserTag](get_user_tag.md)（`same_topic`）：《GetUserTag》处理“获取指定Tensor块的Tag信息，用户可以根据Tag信息对Tensor进行不同操作。”。《SetUserTag》提供“为Tensor添加用户自定义信息，用户可以根据需要设置对应的Tag。后续可通过GetUserTag获取指定Tensor的Tag信息，并根据Tag信息对Tensor进行相应操作。”，其具体合同或探针直接接入GetUserTag 与 SetUserTag 及 LocalTensor 所有权的读写合同。
+- [GetUserTag](get_user_tag.md)（`related`）：焦点卡负责“获取指定Tensor块的Tag信息”，候选卡明确“后续可通过GetUserTag获取指定Tensor的Tag信息”；SetUserTag 写入、GetUserTag 读取构成同一 Tensor 元信息的成对访问合同。
 <!-- cannbot:related:end -->

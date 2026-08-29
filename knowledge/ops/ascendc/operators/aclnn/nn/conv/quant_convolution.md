@@ -40,7 +40,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/convolution_forward/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:24:07Z"
-updated_at: "2026-08-25T16:24:07Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -96,7 +96,7 @@ y = cast_rint_fp16_or_bf16(float32(acc) * scale[co] + bias[co])
 
 ### 入口与版本
 
-固定 Commit 的公开文档明确支持 Atlas A2 与 A3；实现通过 `TemporaryLimitChecker` 接受 `ASCEND910B` 与 `ASCEND910_93`。`IsSocSupportND()==false` 时只允许五维输入，并选择 `QuantConv3d6HdInt8ToNCDHWFp16/Bf16`，二者均进入最新 `Conv3DV2` 实现。A5 的 2D、FP8/HIF8 与独立 `QuantConv3D/ExtendConv2D` 不属于本卡。
+固定 Commit 的公开文档明确支持 Atlas A2 与 A3；实现通过 `TemporaryLimitChecker` 接受 `ASCEND910B` 与 `ASCEND910_93`。`IsSocSupportND()==false` 时只允许五维输入，并选择 `QuantConv3d6HdInt8ToNCDHWFp16/Bf16`，二者均进入最新 `Conv3DV2` 实现。950 的 2D、FP8/HIF8 与独立 `QuantConv3D/ExtendConv2D` 不属于本卡。
 
 ## Host/Launcher 执行流程
 
@@ -468,7 +468,7 @@ if constexpr (Intf::quantType == static_cast<int8_t>(QuantType::PER_CHANNEL_NO_O
 
 - 适用：同样需要 Cube int32 累加后由 AIV 执行逐通道 FP32 epilogue 的 MIX_CV 算子。
 - 前提：一 AIC 对两 AIV、四组可用 cross-core event、workspace 按 `blockDim*4*mL0*nL0` 分片。
-- 失效：A5 Fixpipe 可直接完成量化，或执行族比例/事件资源不同；必须重新设计协议。
+- 失效：950 Fixpipe 可直接完成量化，或执行族比例/事件资源不同；必须重新设计协议。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -526,9 +526,9 @@ if (scaleAndBiasDTypeSize * tilingIns_->shapeInfo.singleCo <= maxLoadSize) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 见独立 `_950` 卡 |
 | Host/Launcher | `ASCEND910B`，共用 3D-only ACLNN 路线 | `ASCEND910_93`，共用 3D-only ACLNN 路线 | DAV_3510 可支持 2D/3D 与更多 dtype |
 | Kernel/资源 | `Conv3DV2` MIX、NDC1HWC0/FRACTAL_Z_3D、workspace Vector epilogue | 同源码与 binary 结构，core 数/容量由平台信息提供 | 新 arch35 Conv/ExtendConv 实现，量化多进入 Fixpipe |
 
@@ -577,3 +577,9 @@ if (scaleAndBiasDTypeSize * tilingIns_->shapeInfo.singleCo <= maxLoadSize) {
 | 同步 | C2V 0..3、V2C 4..7、slot 四轮 | wait/set 方向与 slot 更新不能改变 | `GetTensorC/VecCompute` |
 | 精度与尾块 | int32→FP32→Mul→Add→CAST_RINT→output | bias Host cast、scale FP32、有效 nCurSize | `oneVecCompute/CopyOut` |
 | 失败边界 | checker/Tiling/launch 任一失败终止 | 不得将错误改写为静默 fallback | `CheckQuantConvParams/CommonOpExecutorRun` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [QuantConvolution 950 ACLNN 算子知识](quant_convolution_950.md)（`same_topic`）：“固定 Commit 的公开文档明确支持 Atlas A2 与 A3；实现通过 `TemporaryLimitChecker` 接受 `ASCEND910B` 与 `ASCEND910_93`。`IsSocSupportND()==false` 时只允许五维输入，并选择 `QuantConv3d6HdInt8ToNCDHWFp16/Bf16`，二者均进入最新 `Conv3DV2` 实现。950 的 2D、FP8/HIF8 与独立 `QuantConv3D/ExtendConv2D` 不属于本卡。”界定 A2/A3 只走 3D Conv3DV2，而“公开产品表支持 Ascend 950PR/950DT。实现以 `GetCurNpuArch()==DAV_3510` 选择 950 路线；2D 创建 `ExtendConv2dImpl`，3D 创建 `QuantConv3dImpl`。本卡只记录 `aclnnQuantConvolution`，不包含语义独立的 `aclnnQuantConvolutionWeightNz`。”界定 950 的 2D/3D 分流；二者共同覆盖同一公开入口的平台选型。
+<!-- cannbot:related:end -->

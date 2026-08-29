@@ -40,8 +40,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [EnableMultiCoreSplitK](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/enable_multi_core_split_k.md)（`explains`）：指南给出 EnableMultiCoreSplitK 的适用 shape、调用时点和完整 Kernel 配套：C 只写 GM、首次写前清零并用 AtomicAdd、禁止 Bias，同时说明为何 K 大而 M/N 小时能提升并行度。
-- [SetSplitK](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_split_k.md)（`explains`）：SetSplitK 与《Matmul高阶API开启多核切K》的实质衔接是：SplitK 必须与 multi-core split、split range、single range/shape、core 数和 AtomicAdd 汇合配置一致。
-- [Matmul高阶API开启多核K轴错峰访问内存](matmul_multi_core_k_stagger.md)（`same_topic`）：《Matmul高阶API开启多核K轴错峰访问内存》明确“多核执行Matmul时开启K轴错峰访问内存，使不同核从不同起始地址访问数据，缓解地址冲突。”；它与《Matmul高阶API开启多核切K》的“当M、N轴较小无法有效切分时，开启多核切K功能实现K轴切分，使算子多核并行执行。”在实际调用参数、数据流或结果校验上直接衔接。
-- [多核对齐切分](../../simd_operator_impl/matrix_advanced_api/feature_scenarios/multi_core_aligned_split.md)（`same_topic`）：多核对齐切分 与《Matmul高阶API开启多核切K》的实质衔接是：对齐切分按可用核数设置 SetDim/NumBlocks，并与非对齐尾块、N 对齐、Channel 拆分、多核 K 切分及临时空间计算共同决定实际 Matmul 分工。
+- [EnableMultiCoreSplitK](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/enable_multi_core_split_k.md)（`explains`）：开启多核切K功能的方式为：在GetTiling接口前调用EnableMultiCoreSplitK接口，开启多核切K，并在Kernel实现中，对C矩阵的Global Memory地址清零后开启AtomicAdd。；多核场景，通过该接口开启切K轴。不调用该接口的情况下，默认不切K轴。在GetTiling接口调用前使用。指南给出完整 Host/Kernel 操作链，API 卡固定其中开关时序与默认行为。
 <!-- cannbot:related:end -->

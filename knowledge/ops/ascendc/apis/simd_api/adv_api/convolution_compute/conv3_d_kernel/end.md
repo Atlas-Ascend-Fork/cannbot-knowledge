@@ -23,15 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SetSingleOutputShape](set_single_output_shape.md)（`related`）：SetSingleOutputShape 与《卷积计算End》的实质衔接是：SetSingleOutputShape 定义单核 Co/Do/M 输出分块；Conv3D kernel、tiling、shape 查询与 Iterate 的参数必须按同一 M 合轴输出契约传递。
-- [Conv3D Kernel侧接口](conv3d_kernel.md)（`same_topic`）：卷积计算End 与《Conv3D Kernel侧接口》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
-- [Conv3DUsage](conv3_d_usage.md)（`same_topic`）：卷积计算End 与《Conv3DUsage》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
-- [Conv3D模板参数](conv3_d_template_params.md)（`same_topic`）：卷积计算End 与《Conv3D模板参数》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
-- [GetTensorC](../conv3_d_backprop_filter_kernel/get_tensor_c.md)（`same_topic`）：卷积计算End 与《GetTensorC》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
-- [IterateAll](iterate_all.md)（`same_topic`）：卷积计算End 与《IterateAll》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
-- [Iterate（卷积计算）](../conv3_d_backprop_filter_kernel/iterate.md)（`same_topic`）：卷积计算End 与《Iterate（卷积计算）》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
-- [卷积计算End](../conv3_d_backprop_filter_kernel/end.md)（`same_topic`）：卷积计算End 与《卷积计算End》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
-- [卷积计算End](../conv3_d_backprop_input_kernel/end.md)（`same_topic`）：卷积计算End 与《卷积计算End》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
-- [卷积计算Init](../conv3_d_backprop_filter_kernel/init.md)（`same_topic`）：卷积计算End 与《卷积计算Init》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
-- [卷积计算Init](init.md)（`same_topic`）：卷积计算End 与《卷积计算Init》的实质衔接是：Conv3D 完成 Iterate/GetTensorC 后必须调用 End 清理 EventID 和内部临时内存；Init、模板、usage 及其他卷积 End 入口共享这一成对生命周期。
+- [IterateAll](iterate_all.md)（`related`）：焦点卡规定多 batch 时“多 batch 场景需逐 batch 调用 SetInput、IterateAll 和 End”，候选卡说明“在Conv3D计算完成后，必须调用一次End函数，以清除EventID并释放内部申请的临时内存。”；这把逐 batch 计算与资源收尾组成完整生命周期。
 <!-- cannbot:related:end -->

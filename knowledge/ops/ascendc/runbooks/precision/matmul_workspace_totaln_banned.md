@@ -53,10 +53,5 @@ CANNJudge cube1（QuantBatchMatMulV3，INT8 cube matmul→INT32 workspace→AIV 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetUserWorkspace](../../apis/simd_api/basic_api/resource_management/workspace/get_user_workspace.md)（`exemplifies`）：GetUserWorkspace 与《Matmul workspace 预偏移 totalN 回读 banned》的实质衔接是：GetUserWorkspace 与 SetSysWorkSpace 分离用户区和系统区；workspace 指南、Matmul workspace 设置及 host staging/偏移故障说明地址从 host 到 kernel 的使用边界。
-- [IterateAll](../../apis/simd_api/adv_api/cube_compute/matmul_kernel/iterate_all.md)（`exemplifies`）：Runbook 的核心错误是按 totalN 预留/偏移输出，而 IterateAll 明确一次只写 singleCoreM×singleCoreN；该输出契约直接决定 workspace 步长。
-- [SetSingleShape](../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_single_shape.md)（`exemplifies`）：SetSingleShape 在运行时确定 singleCoreM/N/K，Runbook 应以其中 singleCoreN 而非全局 totalN 计算每核输出区域。
-- [SetSingleShape](../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_single_shape.md)（`exemplifies`）：该 Runbook 说明工作区步长必须依据 singleCoreM×singleCoreN 的紧凑输出，不能把全局 totalN 当作 SetSingleShape 后的单核 N。
-- [Batch Matmul基础功能](../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/batch_matmul_basics.md)（`related`）：Batch Matmul基础功能 与《Matmul workspace 预偏移 totalN 回读 banned》的实质衔接是：Batch Matmul 直接使用 Batch tmp 查询、IterateBatch/NBatch、batch shape/输出与 batch 数配置；workspace 和精度卡约束真实使用。
-- [核函数内删除Workspace相关冗余操作](../../guides/operator_practice/simd_operator_optimization/overhead_optimization/remove_workspace_redundancy.md)（`related`）：核函数内删除Workspace相关冗余操作 与《Matmul workspace 预偏移 totalN 回读 banned》的实质衔接是：workspace 已直接是用户 Workspace 时不应再 SetSysWorkSpace/GetUserWorkspace；Workspace API、使用指南和 RESERVED/预偏移案例界定何时仍需系统区与局部区。
+- [IterateAll](../../apis/simd_api/adv_api/cube_compute/matmul_kernel/iterate_all.md)（`exemplifies`）：AIC `Matmul` 高阶 API 把 INT32 中间结果经 `IterateAll` 写入 GM workspace，AIV 从 workspace 读回做反量化；多核切分单核 M/N。；调用一次IterateAll，会计算出singleCoreM * singleCoreN大小的C矩阵。迭代顺序可通过tiling参数iterateOrder调整。。Runbook 的错误路线直接依赖 IterateAll 把每核 INT32 结果写入 GM workspace，再由 AIV 按布局回读；API 卡给出单次输出的 singleCoreM×singleCoreN 契约，正是判断预偏移和 totalN stride 是否成立的接口依据。
 <!-- cannbot:related:end -->

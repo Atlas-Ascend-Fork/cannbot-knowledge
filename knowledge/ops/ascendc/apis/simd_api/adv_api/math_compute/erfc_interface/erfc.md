@@ -25,9 +25,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscendC GELU 三系数 erfc 在大值域 fp32 精度不足](../../../../../runbooks/precision/gelu_erfc_polynomial_precision_budget.md)（`exemplifies`）：本 Runbook 的精度变量是 erfc 多项式逼近；Erfc API 卡明确该函数通常由多项式逼近实现并给出输入与临时空间契约，提供标准接口参照。
-- [GELU 负尾部用 erfc 形态避免大数相消](../../../../../runbooks/precision/gelu_negative_tail_erfc_avoids_cancellation.md)（`exemplifies`）：该精度卡说明 GELU 负尾用 Erfc 形式规避 1+erf 的消减，给出选择 Erfc 的明确数值稳定性理由。
-- [GetErfcMaxMinTmpSize](get_erfc_max_min_tmp_size.md)（`related`）：Erfc 的 sharedTmpBuffer 需由 Host tiling 预算，GetErfcMaxMinTmpSize 给出最小/最大值并说明区间内空间越大性能越好，是计算接口的直接前置。
-- [GetErfcTmpBufferFactorSize](get_erfc_tmp_buffer_factor_size.md)（`related`）：factor size 反推的最大元素数直接决定一次 Erfc 调用可处理的 tile。
-- [Erfc接口](erfc_interface.md)（`same_topic`）：Erfc接口 与《Erfc》的实质衔接是：Erfc 接口组由实际 Erfc、工作区上限/下限查询和 factor 查询组成；SIMT Erfcf提供标量对照，两张 GELU 卡直接讨论以 erfc 逼近实现时的精度与负尾相消。
+- [GetErfcMaxMinTmpSize](get_erfc_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Erfc接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；临时空间大小通过GetErfcMaxMinTmpSize获取。。前者给出 Erfc 的 Host 侧 workspace 上下界，后者把它指定为 Erfc 计算重载的临时空间来源，二者构成 Tiling 尺寸规划到 Kernel 调用的直接前置链。
+- [GetErfcTmpBufferFactorSize](get_erfc_tmp_buffer_factor_size.md)（`related`）：获取Erfc接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。。FactorSize 卡把可用临时空间反推为单次 Erfc 元素数，Erfc 卡说明计算重载如何传入或申请 sharedTmpBuffer；联合阅读可在固定 UB 预算下确定分块规模。
 <!-- cannbot:related:end -->

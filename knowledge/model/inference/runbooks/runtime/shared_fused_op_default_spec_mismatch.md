@@ -83,3 +83,12 @@ platforms:
 - `diff 事实`（D 类，@756029b50）：非量化 fused-MoE MLP `unquant_apply_mlp` 新增 `act_name = getattr(activation, "value", activation)`，激活比对由 `activation == "swigluoai"` 改为 `act_name == "swigluoai"`；框架某版本起该字段由字符串改传激活枚举，字符串比恒 False 致 `swiglu_oai` 专用分支静默回落通用 `npu_swiglu`。维护者定位在派发点并说明枚举来由；before→after 为仓自报手工端到端回归（gpt-oss-120b，TP=8，enforce-eager），无独立复测、未加单测。
 - 溯源下探（D 类）：[vllm-ascend-issue-8463-bug-the-inference-result-of-the-gptoss-120b-model-is-incorrect-on-vllm-a](https://github.com/vllm-project/vllm-ascend/issues/8463)
 - 溯源下探：[cann-recipes-infer-pr-304-feat-pangu-7b-model-inference-support-on-cann](https://gitcode.com/cann/cann-recipes-infer/merge_requests/304)、[cann-recipes-infer-pr-392-feat-shared-expert-adapt-clamp](https://gitcode.com/cann/cann-recipes-infer/merge_requests/392)、[cann-recipes-infer-pr-408-feat-add-gemma-4-model-optimized-by-agent-skills](https://gitcode.com/cann/cann-recipes-infer/merge_requests/408)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DequantSwigluQuant 950 ACLNN 算子知识](../../../../ops/ascendc/operators/aclnn/nn/quant/dequant_swiglu_quant_950.md)（`related`）：带钳位 SwiGLU（clamped/bounded gated activation，gpt-oss 式）的量化 MoE 共享专家，用普通融合算子 `npu_dequant_swiglu_quant` / `npu_swiglu` 时静默丢掉模型规格要求的激活上界。950 V2 只使用普通 SwiGLU：`swish(A)*B=A/(1+exp(-A))*B`，`activateLeft` 决定 A/B。故障规格与 950 V2 的普通公式构成明确的能力边界：该平台路由不能承接 bounded 激活，选型时应避免把它当作钳位变体。
+- [DequantSwigluQuant A2/A3 ACLNN 算子知识](../../../../ops/ascendc/operators/aclnn/nn/quant/dequant_swiglu_quant.md)（`related`）：带钳位 SwiGLU（clamped/bounded gated activation，gpt-oss 式）的量化 MoE 共享专家，用普通融合算子 `npu_dequant_swiglu_quant` / `npu_swiglu` 时静默丢掉模型规格要求的激活上界。`swigluMode=1` 时按偶/奇通道 gather，计算 `min(x_glu,L)/(1+exp(-alpha*min(x_glu,L))) * (clamp(x_linear,-L,L)+beta)`。故障信号要求保留的上界、alpha 与 beta 语义由 A2/A3 V2 的模式 1 公式直接承接，可据此替换普通融合路径并验证钳位结果。
+- [Gemma-4-26B-A4B](../../concepts/models/gemma4_26b_a4b.md)（`related`）：“**MoE**：128 experts，top-8，moe_intermediate=704，专家激活 **GEGLU**（`Gemma4GegluMoEGMM`）。”；“- 根因：框架默认的 FusedMoEGMM 量化方法**硬编码 `npu_swiglu`（SiLU）**，直接复用会让专家算错激活。”。运行手册直接解释焦点模型不能复用默认 SiLU MoE 融合路径的静默精度风险。
+- [MXFP8 A8W8 (DiT Linear)](../../concepts/quantization/mxfp8_a8w8.md)（`related`）：焦点卡写明“仅量化 Transformer block 中的 2D Linear；adaLN / modulation 与 1D 权重跳过”，候选卡写明“共享的 `module/quantization/mxfp8.py` 的 `MxFp8LinearMethod` 原本只注册 weight+weight_scale、**丢弃 bias**”。概念卡给出正常量化范围，排障卡指出复用无 bias 实现到 dense attention Linear 会静默丢参。
+<!-- cannbot:related:end -->

@@ -22,7 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ICachePreLoad](../../basic_api/cache_control/i_cache_pre_load_isasi.md)（`related`）：ICachePreLoad 是 Basic API 侧对应的预加载发起接口，与状态查询组成另一套完整调用链。
-- [AscIcachePreload](asc_icache_preload.md)（`same_topic`）：AscIcachePreload 与《AscGetIcachePreloadStatus》的实质衔接是：Icache preload 的 C/C++ 入口和状态查询成对使用；slim TU 实测卡验证 I-cache 取指压力的性能后果。
-- [GetICachePreloadStatus](../../basic_api/cache_control/get_i_cache_preload_status_isasi.md)（`same_topic`）：GetICachePreloadStatus 是 C++ Basic API 的对应状态查询，返回值 0/1 与 AscGetIcachePreloadStatus 一致。
+- [AscIcachePreload](asc_icache_preload.md)（`related`）：开发者手动调用该接口，能够从指令所在GM地址预加载指令到ICache中。；该接口为调试接口，在asc_icache_preload后调用，用于获取ICache的PreLoad的状态。前者发起预加载，后者在同一调用链中判定完成状态。
 <!-- cannbot:related:end -->

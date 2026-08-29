@@ -75,11 +75,3 @@ flat 多核切分把总元素数均匀分到 40 核，每核再按固定 tile �
 
 - 用过小数据集（如 96 元素）做 msprof 采集——头开销占比失真，掩盖真实瓶颈；本 trace 性能验收子 agent 显式指出"小数据量头开销占比高，不能反映真实性能"并改用 1M 元素重采。
 - 只看 Task Duration 单一数值判定"慢"——会漏掉"scalar 主导 + MTE2 未饱和"的结构性失衡；必须读 `PipeUtilization.csv` 逐核占比 + `Memory.csv` 带宽利用率联合定位。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Muls（灵活标量位置）](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/muls_flexible_scalar.md)（`exemplifies`）：Muls（灵活标量位置） 与《flat 多核切分 elementwise scalar 主导诊断》的实质衔接是：灵活标量 Muls 的 scalarTensorIndex、LocalTensor 单点标量和 cyclic-repeat 语义会直接影响广播乘法、量化 scale 与标量位置。
-- [按行均分 tiling 致 nnz 倾斜时约半数核空闲](tiling_nnz.md)（`related`）：flat scalar 卡同样用 PipeUtilization 和核间 cycles 判别，但工作量按元素；与 nnz 卡对照可避免把稀疏工作量倾斜误判为单纯 scalar 指令慢。
-- [稀疏不规则输出算子 SIMD 标量退化诊断](simd.md)（`related`）：两卡都用 msprof 中高 aiv_scalar_ratio 判断逐元素标量循环主导；flat elementwise 卡提供把标量循环转为向量/多核的对照诊断。
-<!-- cannbot:related:end -->

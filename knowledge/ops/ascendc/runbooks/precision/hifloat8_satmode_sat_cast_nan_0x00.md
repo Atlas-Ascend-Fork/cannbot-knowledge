@@ -86,9 +86,7 @@ constexpr static AscendC::Reg::CastTrait castTraitF32toh8 = {
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__float22hif82_rna](../../apis/simt_api/math_functions/fp8_type/fp8_conversion_functions/_float22hif82_rna.md)（`exemplifies`）：该精度卡用全 NaN 输入确认 HiFloat8 SAT 路径映射为 0x00，直接给出选择非 sat/sat 转换接口时的字节级 oracle。
-- [__float22hif82_rna_sat](../../apis/simt_api/math_functions/fp8_type/fp8_conversion_functions/_float22hif82_rna_sat.md)（`exemplifies`）：精度卡的 device 路径正是 float→HiFloat8 SAT 转换；目标 API 给出同方向 RNA 饱和入口，可用于构造 NaN 字节级复现。
-- [__half22hif82_rh_sat](../../apis/simt_api/math_functions/fp8_type/fp8_conversion_functions/_half22hif82_rh_sat.md)（`exemplifies`）：__half22hif82_rh_sat 与《HiFloat8 SatMode::SAT Cast NaN 映射 0x00》的实质衔接是：half2→hif8x2 的 hybrid 舍入+饱和转换与非饱和、RNA、float2 入口、反向转换及 NaN 饱和故障共享编码契约。
-- [Cast SatMode::SAT 饱和致 fp16 NaN/Inf 丢失](cast_satmode_sat_fp16_nan_inf.md)（`related`）：两卡都验证 SatMode::SAT 会破坏 NaN，但目标 HiFloat8 路径映射到 0x00，本卡 FP16 路径映射到 65504；输出指纹可区分具体转换链。
-- [MX-FP4 NaN 块 device 写 e8m0=0xFF、fp4=0x0](mx_fp4_nan_device_e8m0_0xff_fp4_0x0.md)（`related`）：两卡都证明有限低精度格式的 Device Cast 对 NaN 映射为 0x00，而 Python dtype cast 给出另一 NaN/负零码；可复用全 NaN 输入和字节 dump 判别。
+- [SatMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/sat_mode.md)（`exemplifies`）：**触发条件（trigger）**：对使用 `Cast<hifloat8_t, float, castTraitF32toh8>`（SatMode::SAT）做 fp32→hifloat8 量化的算子，用全 NaN 输入跑 golden-vs-device 字节级比对，HiFloat8 路径 FAIL/SUPPRESSED，而同输入下其他量化模式（如 MX-FP8、Normal）PASS。；SatMode 用于设置 Cast 类型转换的饱和与不饱和模式。。runbook 的 NaN 字节差异由具体 HiFloat8 Cast 的 SatMode::SAT 路径触发，辅助类型卡提供选择饱和/不饱和模式的枚举入口，联合阅读可从失败信号回到 Cast trait 配置。
+- [AddRmsNormQuant 950 ACLNN 算子知识](../../operators/aclnn/nn/norm/add_rms_norm_quant_950.md)（`related`）：算子卡明确“量化 cast 使用显式 SAT 与 round trait，并暂时控制浮点溢出模式”；精度卡针对“Cast<hifloat8_t, float, castTraitF32toh8>”说明 SAT cast 的 NaN 字节语义，因而 HIFLOAT8 输出的 golden 必须按相同有限格式编码而不能直接保留 NaN。
+- [RmsNormGradQuant 950 ACLNN 算子知识](../../operators/aclnn/nn/norm/rms_norm_grad_quant_950.md)（`related`）：hifloat8 使用 `SAT + CAST_ROUND`；`SatMode::SAT` 是有限格式语义：把溢出/±inf 饱和到最大有限幅值（±32768），并把 **NaN 映射为 `0x00`（正零）**。；候选给出 focal 的 HiFloat8 量化输出在 NaN golden 对拍时的精确故障判据。
 <!-- cannbot:related:end -->

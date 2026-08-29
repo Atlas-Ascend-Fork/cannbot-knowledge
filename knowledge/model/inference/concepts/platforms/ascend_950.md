@@ -11,7 +11,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
   role: primary
 created_at: '2026-05-31T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - '950'
 ---
@@ -20,7 +20,7 @@ platforms:
 
 ## Summary
 
-Ascend 950（950PR / 950DT）是新代际昇腾推理芯片，与 [atlas-a3](atlas_a3.md) 在上游 README 中并列为两类目标部署平台。cann-recipes-infer 中已有多个模型适配 950 新代际（deepseek-v4 `platform_version` 取值仅 `A3`/`950`；「A5」仅见于个别 commit 标签，与 950 关系源未明示）：[deepseek-v4](../models/deepseek_v4.md) 0day LLM 适配（A3 + 950PR/DT）、HunyuanVideo single_fp8（量化加速仅支持 950PR）、Pangu-7B（声明支持 Atlas A3 + 950PR/DT 系列）等；DeepSeek-V4 是其上的 0day LLM 适配之一，也是本页代际特性的主要证据来源。相对 A3，950 的核心代际增益体现在三点：**原生 FP8 / MXFP4 浮点算力**、**Histograms（直方图）指令加速 LI 精确 Top-k**、以及**更充裕的 L0A/L0B 片上 Buffer 容量**（容下 256³ 统一基本块，据 Tiling 约束推断）。
+Ascend 950（950PR / 950DT）是新代际昇腾推理芯片，与 [atlas-a3](atlas_a3.md) 在上游 README 中并列为两类目标部署平台。cann-recipes-infer 中已有多个模型适配 950 新代际（deepseek-v4 `platform_version` 取值仅 `A3`/`950`；「950」仅见于个别 commit 标签，与 950 关系源未明示）：[deepseek-v4](../models/deepseek_v4.md) 0day LLM 适配（A3 + 950PR/DT）、HunyuanVideo single_fp8（量化加速仅支持 950PR）、Pangu-7B（声明支持 Atlas A3 + 950PR/DT 系列）等；DeepSeek-V4 是其上的 0day LLM 适配之一，也是本页代际特性的主要证据来源。相对 A3，950 的核心代际增益体现在三点：**原生 FP8 / MXFP4 浮点算力**、**Histograms（直方图）指令加速 LI 精确 Top-k**、以及**更充裕的 L0A/L0B 片上 Buffer 容量**（容下 256³ 统一基本块，据 Tiling 约束推断）。
 
 `950PR` 与 `950DT` 是部署侧的两类标识：`950PR` 偏 Prefill 部署、`950DT` 偏 Decode 部署。在本仓配置层面二者共用同一枚举值——`platform_version: "950"`（与 `"A3"` 二选一），代码未将 PR / DT 进一步细分。
 
@@ -80,7 +80,7 @@ LI Top-k 必须精确（非近似）。950PR/DT 用 Histograms 方案在 Sₖ=16
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/config/ci_950/deepseek_v4.yaml`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/config/ci_950/deepseek_v4.yaml) / [`config/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/config/README.md)（`platform_version: "950"`、`world_size: 16`、`next_n: 3`；枚举仅 `["A3", "950"]`）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/README.md)（最小部署单元 950PR/DT Flash 4 / Pro 16 chips）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/infer.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/infer.py)（已代码核对：`enable_weight_nz = not platform_version == "950"`、`platform_version` 仅 `"A3"`/`"950"`、kernel 注册键拼接 `op_type_kernel_impl_platform`）；[`models/modules/attention_data.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/attention_data.py)（950 cmp_kv dtype = `float8_e4m3fn`）；MXFP4 dtype `float4_e2m1fn_x2`（`modeling_deepseek.py`）
-- 溯源（@2c45117）：`13b8e6a` dsv4 add platform guide（!396）；`377f20f` DeepSeek-V4-Flash 模型与文档；`c62b731` deepseek-v4 ge_graph（!412）；`5ba7598` a5 combine quant、`fac85e8` A5 inplace_partial_rotary_mul 混合精度（commit message 标 A5；A5 与 950 关系源未明示，本页不并称同代际）。
+- 溯源（@2c45117）：`13b8e6a` dsv4 add platform guide（!396）；`377f20f` DeepSeek-V4-Flash 模型与文档；`c62b731` deepseek-v4 ge_graph（!412）；`5ba7598` 950 combine quant、`fac85e8` 950 inplace_partial_rotary_mul 混合精度（commit message 标 950；950 与 950 关系源未明示，本页不并称同代际）。
 
 ## Links
 
@@ -94,4 +94,11 @@ LI Top-k 必须精确（非近似）。950PR/DT 用 Histograms 方案在 Sₖ=16
 - [weight-nz](../techniques/weight_nz.md)（950 上关闭，A3 启用）
 - [inference-config](../techniques/inference_config.md)（`platform_version: "950"` 配置项 / `is_ascend_950()` 平台分支）
 - 亦相关（弱链，纯文字提及不强求反链）：parallelism/context-parallel（950PR 长序列 Prefill CP）、technique/cann-shmem、technique/hixl、technique/kvcache-offload（超长序列 KV 卸载）
-- [deepseek-v3-low-precision-pretrain](../../../training/guides/recipes/deepseek_v3_low_precision_pretrain.md)（跨域·训练：950DT(A5) 上 V3 低精度预训练）
+- [deepseek-v3-low-precision-pretrain](../../../training/guides/recipes/deepseek_v3_low_precision_pretrain.md)（跨域·训练：950DT(950) 上 V3 低精度预训练）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Atlas A3](atlas_a3.md)（`related`）：“## 与 Atlas A3 的代际架构对照”给出焦点端事实；“与 A2、Ascend 950 或 950 的差异，只保留在具有直接证据的专题卡中。”给出候选端事实。Ascend 950 卡提供两代平台的逐维对照，而 Atlas A3 卡明确把代际差异交给具备直接证据的专题卡，二者共同确定平台选型时可采用的证据边界。
+- [DeepSeek-V3 裁剪模型 MXFP8/HiF8 低精度预训练（MindSpeed · Atlas 950 950DT · 8K）](../../../training/guides/recipes/deepseek_v3_low_precision_pretrain.md)（`related`）：cann-recipes-train 在 **Atlas 950 950DT** 上跑通的 **8-bit 混合精度预训练**：基于 ［mindspeed］(../../concepts/frameworks/mindspeed.md) 框架（MindSpeed Core + **MindSpeed-LLM** 组件，底座对接 NVIDIA **Megatron-LM core_v0.12.1**），用一个 DeepSeek-V3 **裁剪模型**（2 层：1 dense + 1 MoE，hidden 7168、256 专家、MLA），在 **8 卡 950（950DT，单卡 486 TFLOPS）**、序列长 8K、GBS=64 下，分别用 **HiF8** 与 **MXFP8（E4M3）** 两种低精度格式量化整网的 **MatMul（MM）/ Grouped MatMul（GMM）** 算子，与 BF16 混合精度做长稳精度对齐与性能对比。；`950PR` 与 `950DT` 是部署侧的两类标识：`950PR` 偏 Prefill 部署、`950DT` 偏 Decode 部署。。recipe 明确在 8 卡 Atlas 950DT 上验证低精度训练，平台页提供 950PR/950DT 标识与代际算力、内存边界，帮助约束硬件适用范围。
+<!-- cannbot:related:end -->

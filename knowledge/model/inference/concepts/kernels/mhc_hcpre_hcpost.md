@@ -15,7 +15,7 @@ sources:
 - resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/npu_fused_ops.md
   role: supporting
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - a3
 - '950'
@@ -90,12 +90,17 @@ Tiling：在 b、s、d 轴上分核，b、s 合并为 `bs` 轴，在 `(bs, d)` �
 
 **性能（源文档实测，hc=4, d=4096）：**
 
-| 规格 b·s | 性能 (us) | | 规格 b·s | 性能 (us) |
+| 规格 b·s | 性能 (us) |
+| 规格 b·s | 性能 (us) |
 | ---- | ---- | --- | ---- | ---- |
-| 8 | 5.09 | | 128 | 13.85 |
-| 16 | 5.37 | | 4K | 319.86 |
-| 32 | 6.99 | | 16K | 1264.68 |
-| 64 | 9.16 | | 64K | 5044.53 |
+| 8 | 5.09 |
+| 128 | 13.85 |
+| 16 | 5.37 |
+| 4K | 319.86 |
+| 32 | 6.99 |
+| 16K | 1264.68 |
+| 64 | 9.16 |
+| 64K | 5044.53 |
 
 ## PyPTO 实现（hc_pre / hc_post）
 
@@ -123,19 +128,19 @@ mHC `HcPre` / `HcPost` 的分核**基于 shape 即可确定（非值依赖）**�
 
 替换模型中的 `HcPre` 模块，做 mHC pre-processing（多路 → 一路 + Sinkhorn 系数透传）：
 
-- **A5（`NpuHcPreFused`）**：`convert()` 先 `import custom_ops` 注册 A5 融合算子；前向走 `MHCPre.apply` → `torch_npu.npu_hc_pre(..., need_grad=True)`，`npu_hc_pre` 产出 8 元组 `(y, post, comb_frag, h_pre, hc_before_norm, inv_rms, sum_out, norm_out)`，`forward` 仅返回 `(y, post, comb_frag)`、其余 5 个中间量 `save_for_backward`；反向用专门的融合算子 `torch_npu.npu_mhc_pre_sinkhorn_grad(...)` 回传 `grad_x / grad_phi(权重) / grad_alpha(hc_scale) / grad_bias(hc_base)`。这是训练侧专有的 backward 融合，推理侧无反向。
-- **非 A5（`NpuHcPre`）**：走已有 Triton 实现 `MHCPreTriton.apply(...)`（前向把 4D `[B,S,N,D]` flatten 为 `[B,S,N*D]`，再 RMSNorm + 线性投影 + Sinkhorn-Knopp 聚合）。
+- **950（`NpuHcPreFused`）**：`convert()` 先 `import custom_ops` 注册 950 融合算子；前向走 `MHCPre.apply` → `torch_npu.npu_hc_pre(..., need_grad=True)`，`npu_hc_pre` 产出 8 元组 `(y, post, comb_frag, h_pre, hc_before_norm, inv_rms, sum_out, norm_out)`，`forward` 仅返回 `(y, post, comb_frag)`、其余 5 个中间量 `save_for_backward`；反向用专门的融合算子 `torch_npu.npu_mhc_pre_sinkhorn_grad(...)` 回传 `grad_x / grad_phi(权重) / grad_alpha(hc_scale) / grad_bias(hc_base)`。这是训练侧专有的 backward 融合，推理侧无反向。
+- **非 950（`NpuHcPre`）**：走已有 Triton 实现 `MHCPreTriton.apply(...)`（前向把 4D `[B,S,N,D]` flatten 为 `[B,S,N*D]`，再 RMSNorm + 线性投影 + Sinkhorn-Knopp 聚合）。
 - **默认状态**：在 DeepSeek-V4 的 `config_registry.py` `_default_converters()` 中**已默认启用**（与 `npu_rms_norm` / `npu_permute` / `npu_gmm` / `npu_rope` / `npu_smla` 并列）。
 
-### `npu_mhc_post`（替换 `HcPost`，**默认不开**，且非 A5 兼带替换 `HcHead`）
+### `npu_mhc_post`（替换 `HcPost`，**默认不开**，且非 950 兼带替换 `HcHead`）
 
 替换模型中的 `HcPost` 模块，做 mHC post-processing（一路输出扩展回多路 + `comb` 残差融合）：
 
-- **A5（`NpuHcPostFused`）**：前向 `torch_npu.npu_hc_post(x, residual, post, comb)`，反向 `torch_npu.npu_mhc_post_grad(...)` 回传 `grad_x / grad_residual / grad_h_post / grad_h_res`。
-- **非 A5（`NpuHcPost`）**：走 Triton `MHCPostTriton.apply(...)`；**且** `MHCPostConverter` 在 `not use_fused_kernel` 分支里**额外把 `HcHead` 替换为 `NpuHcHead`**（Triton `MHCPreOnlyTriton.apply(...)`，对应推理侧脚本里 Pre 风格只输出 `y` 的收敛函数 `hc_head`）。A5 融合路径则不替换 `HcHead`。
-- **默认状态**：在 `_default_converters()` 中**未打开**，只在 `_enable_all_converters()` 中出现。出于性能考虑——**A5 上建议按需打开**以使用 MHC post 融合算子；**A3 上建议保持关闭**，继续走默认模型路径，避免 converter 替换带来的额外开销或性能退化。
+- **950（`NpuHcPostFused`）**：前向 `torch_npu.npu_hc_post(x, residual, post, comb)`，反向 `torch_npu.npu_mhc_post_grad(...)` 回传 `grad_x / grad_residual / grad_h_post / grad_h_res`。
+- **非 950（`NpuHcPost`）**：走 Triton `MHCPostTriton.apply(...)`；**且** `MHCPostConverter` 在 `not use_fused_kernel` 分支里**额外把 `HcHead` 替换为 `NpuHcHead`**（Triton `MHCPreOnlyTriton.apply(...)`，对应推理侧脚本里 Pre 风格只输出 `y` 的收敛函数 `hc_head`）。950 融合路径则不替换 `HcHead`。
+- **默认状态**：在 `_default_converters()` 中**未打开**，只在 `_enable_all_converters()` 中出现。出于性能考虑——**950 上建议按需打开**以使用 MHC post 融合算子；**A3 上建议保持关闭**，继续走默认模型路径，避免 converter 替换带来的额外开销或性能退化。
 
-> 与推理侧 `mhc.py` 三/两注册键（`native` / AscendC / PyPTO）对应关系：训练 converter 复用同一对 `torch_npu.npu_hc_pre` / `npu_hc_post` 算子（A5），并各自补了 backward 融合算子（`npu_mhc_pre_sinkhorn_grad` / `npu_mhc_post_grad`）；非 A5 下走 Triton，是训练侧独有的第三套实现路径。详见 [npu-fused-op-converters](../../../training/concepts/frameworks/npu_fused_op_converters.md)。
+> 与推理侧 `mhc.py` 三/两注册键（`native` / AscendC / PyPTO）对应关系：训练 converter 复用同一对 `torch_npu.npu_hc_pre` / `npu_hc_post` 算子（950），并各自补了 backward 融合算子（`npu_mhc_pre_sinkhorn_grad` / `npu_mhc_post_grad`）；非 950 下走 Triton，是训练侧独有的第三套实现路径。详见 [npu-fused-op-converters](../../../training/concepts/frameworks/npu_fused_op_converters.md)。
 
 ## Evidence
 
@@ -144,7 +149,7 @@ mHC `HcPre` / `HcPost` 的分核**基于 shape 即可确定（非值依赖）**�
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modules/op_impls/mhc.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/op_impls/mhc.py)（`hc_pre` 三注册键 `native`/`hc_pre_ascendc`(`npu_hc_pre`)/`hc_pre_pypto_a3`；`hc_post` 两注册键 `native`/`hc_post_ascendc`(`npu_hc_post`)；接口产出 `(y, post, comb)` / `y`）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`ops/pypto_python/impl/hc_pre_pypto.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/ops/pypto_python/impl/hc_pre_pypto.py)（生产入口 `hc_pre_kernel`（`:132`，生产 wrapper 在 `:402` 调用）`matmul(x_fp32, hc_fn, b_trans=True)` + `enable_split_k` + `unroll_list=[256,64,16,4,1]`；`hc_pre_kernel_prefill`（`:249`）`matmul(hc_fn, x_fp32, b_trans=True)` 转置 + `unroll_list=[128,1]`，仅由 `example/test_hc_pre_pypto.py:224` 调用（guide/test 示例路径）；`ops/pypto_python` 内无 `hc_post` 注册；`set_operation_config(combine_axis=True)`；`hc_split_sinkhorn` 首步行归一→列归一）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py)（`OpKernel.hc_pre`/`hc_post` 每层两轮调用 `hc_attn_*`/`hc_ffn_*`；`hc_head` 单独的 Pre 风格收敛函数 L1478-1483；进网络 `unsqueeze(2).repeat(1,1,hc_mult,1)`）
-- [torchtitan-npu](https://gitcode.com/cann/torchtitan-npu) — [`torchtitan_npu/converters/kernels/mhc_prepost.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/kernels/mhc_prepost.py)（@8f128cd：`MHCPreConverter`/`MHCPostConverter` 按 `get_npu_device_type()=="A5"` 选 Fused/Triton；A5 `MHCPre.forward`→`torch_npu.npu_hc_pre(need_grad=True)`、`backward`→`npu_mhc_pre_sinkhorn_grad`；`MHCPost.forward`→`torch_npu.npu_hc_post`、`backward`→`npu_mhc_post_grad`；非 A5 走 `MHCPreTriton`/`MHCPostTriton`，`MHCPostConverter` 在 `not use_fused_kernel` 时额外把 `HcHead` 换成 `NpuHcHead`(`MHCPreOnlyTriton`)）+ [`models/deepseek_v4/config_registry.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/models/deepseek_v4/config_registry.py)（`_default_converters()` 含 `npu_mhc_pre`（默认开）不含 `npu_mhc_post`；`_enable_all_converters()` 才加 `npu_mhc_post`）+ [`docs/feature_guides/npu_fused_ops.md`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/npu_fused_ops.md)（MHCPre/MHCPost converter 功能说明、A5 按需开 / A3 保持关闭的性能取舍）
+- [torchtitan-npu](https://gitcode.com/cann/torchtitan-npu) — [`torchtitan_npu/converters/kernels/mhc_prepost.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/converters/kernels/mhc_prepost.py)（@8f128cd：`MHCPreConverter`/`MHCPostConverter` 按 `get_npu_device_type()=="A5"` 选 Fused/Triton；950 `MHCPre.forward`→`torch_npu.npu_hc_pre(need_grad=True)`、`backward`→`npu_mhc_pre_sinkhorn_grad`；`MHCPost.forward`→`torch_npu.npu_hc_post`、`backward`→`npu_mhc_post_grad`；非 950 走 `MHCPreTriton`/`MHCPostTriton`，`MHCPostConverter` 在 `not use_fused_kernel` 时额外把 `HcHead` 换成 `NpuHcHead`(`MHCPreOnlyTriton`)）+ [`models/deepseek_v4/config_registry.py`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/models/deepseek_v4/config_registry.py)（`_default_converters()` 含 `npu_mhc_pre`（默认开）不含 `npu_mhc_post`；`_enable_all_converters()` 才加 `npu_mhc_post`）+ [`docs/feature_guides/npu_fused_ops.md`](https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/npu_fused_ops.md)（MHCPre/MHCPost converter 功能说明、950 按需开 / A3 保持关闭的性能取舍）
 - 论文：[Manifold-Constrained Hyper-Connections (Xie et al., 2026)](https://arxiv.org/abs/2512.24880)
 - 溯源（diff `2f82d10..2c45117` + MR）：`5df82b1` support deepseek v4（!366 merge publish into master）随 V4 0day 引入 mHC guide + `mhc.py`；`985b882` 更新 deepseek_v4_ascendc_operator_guide（!367）；`5e9e41d` Edit V4 AscendC Operator Guide（!375）；PyPTO guide 同批随 V4 发布。
 
@@ -159,3 +164,12 @@ mHC `HcPre` / `HcPost` 的分核**基于 shape 即可确定（非值依赖）**�
 运行于 Atlas A3（arch_support 已覆盖 A3 / ascend-950）。
 - [deepseek-v4-continue-pretrain](../../../training/guides/recipes/deepseek_v4_continue_pretrain.md)（跨域·训练：mHC 在 V4 训练侧(AutoFuse 融合小算子)）
 - [mhc-train](../../../training/concepts/kernels/mhc_train.md)（跨域·训练：MindSpeed-LLM 的 mHC 训练正反向 Triton BMM + Sinkhorn 算子，与本页 AscendC 正向算子对照）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MHC 训练算子（DeepSeek-V4 Manifold-Constrained Hyper-Connections：Triton BMM + Sinkhorn）](../../../training/concepts/kernels/mhc_train.md)（`related`）：补齐推理侧只有正向的 `HcPre`/`HcPost` 所缺的**训练正反向**。；`HcPre`（多路 → 一路）**：融合 RMSNorm → `mixes = linear(x, hc_fn)·rsqrt` → Sinkhorn-Knopp 三段切分 → 用 Pre 系数把多路残差加权求和为一路，同时输出 `post` / `comb` 系数透传给 `HcPost`。。训练卡补齐 HcPre/HcPost 的反向与 Triton BMM/Sinkhorn 链，推理 kernel 卡闭合成对正向融合算子的输入输出与流水；二者可对照验证前向合同和梯度实现。
+- [MhcPost A2/A3 ACLNN 算子知识](../../../../ops/ascendc/operators/aclnn/transformer/mhc/mhc_post.md)（`related`）：把 TND 的 `T` 或 BSND 的 `B*S` 统一记为 `Q`。每个 `q,i,d` 先以 FP32 标量 `hPost［q,i］` 缩放 `hOut［q,d］`，再按 `j` 顺序用 `hRes［q,j,i］` 对 `x［q,j,d］` 做 `Axpy`。索引 `j*n+i` 实现 `hRes` 转置乘法；输入先转 FP32，累加保持 FP32，最终以 `CAST_RINT` 转回 FP16/BF16，只提交真实 D 域。；**`HcPost`（一路输出 → 多路 + 残差融合）**：把子层一路输出经 Post 扩展回多路，与经 `comb` 混合的多路残差加和。融合的核心价值是**消除小算子下的内存墙**——数据不出核内 buffer（UBuffer）即完成计算，大幅减少 HBM 访存。；算子卡给出 hPost/hRes 的具体 Axpy 实现，概念卡解释其在 mHC 前后处理链中的残差融合角色和优化目的。
+- [MhcPreSinkhorn A2/A3 ACLNN 算子知识](../../../../ops/ascendc/operators/aclnn/transformer/mhc/mhc_pre_sinkhorn.md)（`related`）：RMSNorm(x) 与 FP32 投影生成 hPre/hPost/hRes/hIn，再对 hRes 做 20 轮 Sinkhorn；融合 RMSNorm → `mixes = linear(x, hc_fn)·rsqrt` → Sinkhorn-Knopp 三段切分；两卡描述同一 HcPre 融合核心，算子卡闭合 A2/A3 源码 Route，概念卡补充模型接口与 A3/950 使用语境。
+- [mHC (Manifold-Constrained Hyper-Connections)](../modules/mhc.md)（`related`）：“`HcPre` 与 `HcPost` 是 DeepSeek-V4 为 **mHC（Manifold-Constrained Hyper-Connections）** 残差结构发布的两个全新融合算子，承载 ［mhc］(../modules/mhc.md) 在每层 Attention / MoE 子层前后的多路↔单路残差转换计算：”与“mHC 的结构语义与计算公式：多路残差如何替代单残差、三映射各自作用、Sinkhorn-Knopp 如何约束混合矩阵。mHC 由 **`HcPre` / `HcPost` 两个融合算子**承载（`HcPre` 提供 Native / AscendC / PyPTO 三版，`HcPost` 提供 Native / AscendC 两版）；这两个算子的 A3 分离架构 CV 流水、Decode 切 K / Prefill 分 token 双模板、Tiling、性能 us 表属算子实现层面，见 ［mhc-hcpre-hcpost］(../kernels/mhc_hcpre_hcpost.md)。”分别给出双端正文事实；模块卡定义 mHC 的多路残差与 Pre/Post/comb 结构语义，算子卡实现这些映射并给出 CV 流水，二者连接模型模块合同与 HcPre/HcPost 的具体执行。
+<!-- cannbot:related:end -->

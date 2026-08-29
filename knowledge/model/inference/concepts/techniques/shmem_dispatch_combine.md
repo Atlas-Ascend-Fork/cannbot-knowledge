@@ -76,3 +76,11 @@ shmem 初始化三步：`MoeDistributeCppBuffer(<bytes>, 1)` 为当前 die 分�
 - [deepseek-v4](../models/deepseek_v4.md)
 - [tilelang](../frameworks/tilelang.md)
 - [pypto](../frameworks/pypto.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [CANN SHMEM 通信编程模型](cann_shmem.md)（`related`）：焦点卡给出“状态区紧跟数据区之后”，候选卡以“对称内存 win 区（数据区 + 状态区）与 put/signal/wait 语义为基础”展开 Dispatch/Combine 的发数据、发状态与等待流程；基础内存合同直接支撑该 MoE 通算融合实现。
+- [MoE Dispatch/Combine V2（一体化融合算子）](moe_dispatch_combine_v2.md)（`related`）：SHMEM 手写重写（显式发/等状态 + win 拷贝机制）与 `npu_moe_distribute_dispatch_v2` / `npu_moe_distribute_combine_v2`（torch_npu **一体化融合算子**，［moe-dispatch-combine-v2］(moe_dispatch_combine_v2.md)，Qwen3-MoE/Qwen3.5/Gemma-4 及 V4 生产路径普遍调用）是不同机制——融合算子把发/等/拷贝封装在算子内部，不暴露 win 区。；- **vs ［shmem-dispatch-combine］(shmem_dispatch_combine.md)**：那是 DeepSeek-V4 shmem_guide 给出的、用 CANN SHMEM 对称内存**单边通信手写重写** dispatch&combine 的文档级指南（put/signal/wait）；dispatch/combine_v2 是 torch_npu **标准一体化融合算子**（HCCL/MC2 底层），把发/等/拷贝封装在算子内部、不暴露 win 区。V4 生产路径实调 dispatch/combine_v2 算子（`modeling_deepseek.py:578/616`），非 SHMEM 重写路径。；双方明确给出生产融合算子与 SHMEM 文档级重写的替代机制和验证边界。
+- [MoE Double-Routing](double_routing.md)（`related`）：［double-routing］(double_routing.md) 是 Prefill 阶段基于 `npu_moe_init_routing_v2` + `dist.all_to_all_single` 的 **8 步集合通信路由**（init-routing×2 + finalize-routing×2），走 HCCL AllToAll；SHMEM 重写则基于对称内存 win 区 + put/signal/wait 做**单边通信**，两者解决同一 EP All-to-All 问题但通信原语不同。；DeepSeek-R1 / Kimi-K2 等大 EP MoE 模型在 Prefill 阶段使用的专家路由方案。每张卡完成 **2 次 init-routing + 2 次 finalize-routing**：第一次做本卡内按专家排序 + 通过 AllToAll+ReduceSum 推导 `input_splits` / `output_splits`；token AllToAll 之后再做一次 re-routing 让本卡 token 按本地专家再次排序。相较 AllGather 全量方案，Double-Routing 在负载较均衡时**峰值显存更低**（无数据冗余）且**通信量更小**。；双方把同一 EP All-to-All 任务的单边 SHMEM 路线与 HCCL double-routing 路线做成可执行的机制对照。
+<!-- cannbot:related:end -->

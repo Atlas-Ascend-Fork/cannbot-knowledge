@@ -23,6 +23,6 @@ PrimType 通过 PrimT<T> 从基础数据类型或 TensorTrait 中萃取基础数
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GM SetValue 写回后 GetValue 读到旧值](../../../../../runbooks/precision/gm_setvalue_getvalue_reads_stale_within_kernel.md)（`exemplifies`）：The runbook demonstrates that a GM scalar write followed by a scalar read in one kernel can observe stale data, constraining operator()/SetValue/GetValue use.
-- [GetValue](get_value.md)（`same_topic`）：GetValue is the explicit rvalue operation equivalent to using GlobalTensor::operator() on the right-hand side.
+- [GetValue](get_value.md)（`related`）：返回值为指定索引位置的 PrimType 类型引用，用于左值相当于 SetValue，用于右值相当于 GetValue。；获取GlobalTensor的相应偏移位置的值。。GlobalTensor operator() 卡明确右值语境等价于 GetValue，GetValue 卡给出按偏移读取的语义，二者连接运算符重载与显式读取接口。
+- [SetValue](set_value.md)（`related`）：返回值为指定索引位置的 PrimType 类型引用，用于左值相当于 SetValue，用于右值相当于 GetValue。；设置 GlobalTensor 指定偏移位置的元素值。操作先写入 DCache，需配合 DataCacheCleanAndInvalid 确保数据一致性。。GlobalTensor operator() 卡明确左值语境等价于 SetValue，SetValue 卡说明指定偏移写入及 DCache 一致性要求，二者连接运算符重载与显式写接口。
 <!-- cannbot:related:end -->

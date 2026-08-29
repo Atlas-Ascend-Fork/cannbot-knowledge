@@ -23,5 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_atomic_xor](../../../simt_api/atomic_operations/asc_atomic_xor.md)（`related`）：asc_atomic_xor 与《AscAtomicXor》的实质衔接是：SIMT atomic xor 与 C scalar 对应入口操作同一原子异或，SIMT 原子简介补充旧值返回和并发顺序。
+- [AscDcci](../cache_ctrl/asc_dcci.md)（`related`）：AscAtomicXor 卡告警“Scalar原子操作会绕过DCache，需要调用asc_dcci接口确保GM与DCache的一致性。”；AscDcci 卡解释“用户通过Scalar单元写Global Memory的数据，希望立刻写出，也需要使用asc_dcci接口。”，给出原子写 GM 后刷新缓存的直接一致性合同。
 <!-- cannbot:related:end -->

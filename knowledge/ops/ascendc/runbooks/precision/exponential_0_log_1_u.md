@@ -70,10 +70,7 @@ AscendC::Muls<float>(outLocal, outLocal, negInvLambd, count);  // = -log(u)/lamb
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Log](../../apis/simd_api/adv_api/math_compute/log_interface/log.md)（`exemplifies`）：Exponential inverse-CDF 最终调用 Log；输入应是 (0,1] 而非含 0 的 u。
-- [PhiloxRandom](../../apis/simd_api/adv_api/random_functions/philox_random.md)（`exemplifies`）：“PhiloxRandom”处理基于Philox随机数生成算法，给定随机数种子，生成若干的随机数。 Philox随机数生成的核心算法是一个基于记数的伪随机数生成算法，输入为一个128bit的记数器C，两个32bit的key（k0和k1），输出为4个32bit的整数。；“exponential_ 0% 匹配须改 -log(1-u) 路径”明确自定义 AscendC kernel 拦截 aten.exponential_ 同 seed 0% bit-exact 匹配时，判别 kernel exponential 分支是否存 u 直接 Log(u)（坏模式）：native aclnnInplaceUniform 生成 u∈[0,1) 后存 1-u∈(0,1] 再 …。实质衔接：这些卡直接定位 PhiloxRandom 的轮数、counter/offset、每核 group=4 对齐以及 uint32 到浮点分布变换，能够执行性地解释随机序列不一致。
-- [PhiloxRandom 默认 7 rounds 与原生 10 不匹配](philoxrandom_7_rounds_10.md)（`related`）：PhiloxRandom 默认 7 rounds 与原生 10 不匹配 与《exponential_ 0% 匹配须改 -log(1-u) 路径》的实质衔接是：Philox 与原生逐元素对齐同时依赖显式 10 rounds、counter[2:3]、offset=12、group4 切分及 uint 到 uniform/exponential 转换，所选卡组成同一 RNG 序列契约。
-- [Uint32ToFloat 须用 IEEE754 位操作而非位移乘法](uint32tofloat_ieee754.md)（`related`）：整数 bit 到 uniform float 的映射决定是否产生 0/1 边界。
-- [philox offset 推进量须固定 12 而非元素数](philox_offset_12.md)（`same_topic`）：philox offset 推进量须固定 12 而非元素数 与《exponential_ 0% 匹配须改 -log(1-u) 路径》的实质衔接是：Philox 多次调用的一致性同时依赖固定 offset=12、10 rounds、counter[2:3]、每核 group4 和 uint32→uniform/exponential 转换。
-- [多核 numPerCore 须对齐 Philox group 4](numpercore_philox_group_4.md)（`same_topic`）：每核元素分组需按 Philox 每 counter 产出 4 个值。
+- [SimThreadExponential A2/A3 ACLNN 算子知识](../../operators/aclnn/math/random/sim_thread_exponential.md)（`related`）：“指数变换在 FP32 中执行：非零保护、`Log(u)`、接近 1 时用 `-epsilon/2` 替代对数结果”与“native `aclnnInplaceUniform→StatelessRandomUniformV2` 用 IEEE754 位操作生成 `u∈［0,1)`”共同提供原生 exponential 变换与自定义复现时的路径核验。
+- [Uint32ToFloat 须用 IEEE754 位操作而非位移乘法](uint32tofloat_ieee754.md)（`related`）：任何 bit-exact 复现 CANN 随机算子的 kernel，uint32→float 一律照搬 native `Uint32ToFloat` 的 IEEE754 位操作：`(h & 0x7fffff) ｜ (127 << 23)` 重解释为 `［1.0, 2.0)` 的 float 再减 `1.0`，禁止用位移乘法“等价改写”——浮点乘舍入会破坏比特一致。常量定义固定为 `MANTISSA_MASK = 0x7fffff`、`EXP_MASK = 127u << 23`，按位或后用 `__builtin_memcpy`（或等价 `reinterpret`）取 float 再减 1.0。；1-u 路径的隔离效果未单独测量（与 `Uint32ToFloat`、counter 映射、`numPerCore` 对齐一起验证），勿单独归因闭包 100% match。；目标明确把焦点转换与 1-u 指数变换列为同一 bit-exact 修复闭包的独立步骤。
+- [多核 numPerCore 须对齐 Philox group 4](numpercore_philox_group_4.md)（`related`）：在 Uint32ToFloat、exponential 路径、Philox counter 按 group 推进三项 kernel 修复完成之后，自定义输出从"全 0% 匹配"变为"前 3 个元素跨不同 shape 保持一致，但从第 4 个元素起随 shape 出现偏移"。；正确模式应存 `1.0f - fval`（`fval∈［0,1)`）使落点 ∈`(0,1］`，再 `Log+Muls(negInvLambd)` 得 `-log(1-u)/lambd`，与 native 计算路径逐比特对齐并规避 `log(0)`。候选闭合变换公式，focal 处理公式正确后仍存在的跨核错位。
 <!-- cannbot:related:end -->

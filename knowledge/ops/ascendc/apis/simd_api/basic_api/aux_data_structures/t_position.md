@@ -22,7 +22,6 @@ TPosition用于LocalTensor和GlobalTensor的类型区分，不同位置的Tensor
 <!-- cannbot:related:start -->
 ## 相关
 
-- [L1/L0 tensor 须用 TPosition 构造非 SetAddr](../../../../runbooks/compilation/l1_l0_tensor_tposition_setaddr.md)（`exemplifies`）：焦点处理TPosition 在 Tensor 和队列中的片上位置类型约束；L1/L0 tensor 须用 TPosition 构造非 SetAddr正文界定“CANN 9.2.0 arch35 上 TBuf 无 SetAddr、LocalTensor<T>(addr) 触 tPos trait 错；L1/L0A/L0B/L0C 须用 LocalTensor<T>(TPosition, addr,”。候选直接读取/构造 TPosition 或复现 TPosition 枚举和 L1/L0 Tensor 构造错误。
-- [TQue 位置参数须用 AscendC::TPosition 枚举](../../../../runbooks/compilation/tque_ascendc_tposition.md)（`exemplifies`）：TQue 位置参数须用 AscendC::TPosition 枚举 与《TPosition》的实质衔接是：TPosition定义了TQue/LocalTensor位置枚举；L1/L0 构造案例和 GetPosition 分别给出相同位置契约的创建与读取方式。
-- [GetPosition](../data_structures/local_tensor/get_position.md)（`related`）：《GetPosition》处理“获取LocalTensor所在的TPosition逻辑位置，支持TPosition为VECIN、VECOUT、VECCALC、A1、A2、B1、B2、CO1、CO2。”。《TPosition》明确提供“Ascend C管理不同层级物理内存的抽象逻辑位置，代替片上物理存储概念，包括矢量编程和矩阵编程所需的各类存储位置。”，其参数、调用或验证步骤直接接入GetPosition 所读取的 LocalTensor 位置、构造来源和 TPosition 故障定位。
+- [L1/L0 tensor 须用 TPosition 构造非 SetAddr](../../../../runbooks/compilation/l1_l0_tensor_tposition_setaddr.md)（`exemplifies`）：“L1/L0A/L0B/L0C 的正确构造方式是带 `TPosition` 的构造函数 `LocalTensor<T>(TPosition pos, uint32_t addr, uint32_t tileSize)`，由 `TPosition`（`A1`=L1A、`A2`=L0A、`B2`=L0B、`CO1`=L0C）承担位置语义，裸类型无需具备 trait。”；“TPosition是Tensor位置枚举，描述Tensor在Ascend AI Core存储层次中的位置。包含VECIN（输入队列位置）、VECCALC（中间计算位置）、VECOUT（输出队列位置）、TSCN（L1 Buffer位置）、LCM（L0C Buffer位置）等。”。Runbook把 TPosition 的抽象位置合同落到 arch35 L1/L0 LocalTensor 构造修法，并给出 SetAddr 与裸地址构造的失败信号。
+- [GetPosition](../data_structures/local_tensor/get_position.md)（`related`）：返回值为 TPosition 枚举，支持 VECIN、VECOUT、VECCALC、A1、A2、B1、B2、CO1、CO2 等逻辑位置。；TPosition是Tensor位置枚举，描述Tensor在Ascend AI Core存储层次中的位置。前者返回后者定义的枚举，直接用于按存储位置分派逻辑。
 <!-- cannbot:related:end -->

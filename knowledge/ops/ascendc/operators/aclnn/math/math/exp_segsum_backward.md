@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T10:56:08Z"
-updated_at: "2026-08-25T10:56:08Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -80,7 +80,7 @@ gradInput[b,r] = Σ(c=0..r-1) carry[c]
 
 ### 入口与版本
 
-固定 Commit 只公开 `aclnnExpSegsumBackwardGetWorkspaceSize` 与 `aclnnExpSegsumBackward` 这一版本族。README 和 ACLNN 文档明确支持 Atlas A2、A3，OpDef 的 `AICore().AddConfig` 分别接入 `ascend910b`、`ascend910_93`，两平台 binary config 均覆盖 FP16/FP32/BF16。文档明确 Ascend 950PR/950DT 不支持；虽然全局 `ascendc_config.json` 把 `ExpSegsumGrad` 列入 `ascend950`，公开支持与实现信号冲突，故本卡不把 A5 纳入平台，也不发布 `_a5` 卡。
+固定 Commit 只公开 `aclnnExpSegsumBackwardGetWorkspaceSize` 与 `aclnnExpSegsumBackward` 这一版本族。README 和 ACLNN 文档明确支持 Atlas A2、A3，OpDef 的 `AICore().AddConfig` 分别接入 `ascend910b`、`ascend910_93`，两平台 binary config 均覆盖 FP16/FP32/BF16。文档明确 Ascend 950PR/950DT 不支持；虽然全局 `ascendc_config.json` 把 `ExpSegsumGrad` 列入 `ascend950`，公开支持与实现信号冲突，故本卡不把 950 纳入平台，也不发布 `_950` 卡。
 
 ## Host/Launcher 执行流程
 
@@ -175,7 +175,7 @@ slideSize = min(L*A, M)
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 公开平台 | 文档 A2/A3 为 `√`，950 为 `×`；OpDef 仅加 `ascend910b/ascend910_93` | 避免把单独的全局 950 编译信号当作公开支持 | 全部 | A5 不发布正式卡 | `README.md::产品支持情况`；`ExpSegsumGrad::ExpSegsumGrad` |
+| 公开平台 | 文档 A2/A3 为 `√`，950 为 `×`；OpDef 仅加 `ascend910b/ascend910_93` | 避免把单独的全局 950 编译信号当作公开支持 | 全部 | 950 不发布正式卡 | `README.md::产品支持情况`；`ExpSegsumGrad::ExpSegsumGrad` |
 | UB/reduction 上界 | `M` 按 `U`、20 KiB、六等分和 `ReduceSum.minTmp` 计算 | 保证六个显式 buffer 与 reduction 临时需求可落入 UB | R-001/R-002 分界 | `L>M` 转 R-001，不是错误 | `ExpSegsumGradTiling::GetTilingKey` |
 | 32-byte 行对齐 | `A=ceil(L/(32/s))*(32/s)` | R-002 的多行 `DataCopyPad` 及每行 UB 起点按 32 bytes 对齐 | R-002 | 通过 padding，不另设 fallback | `GetTilingKey`；`ComputeBatches` |
 | 核间同步调度 | `key==0` 时 `SetScheduleMode(1)` | R-001 在 GM 清零后调用 `SyncAll` | R-001 | key 1 不设置 schedule mode | `FillTilingData`；`Process` |
@@ -577,11 +577,11 @@ if (num2 == 0) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；公开文档 `√`，OpDef `ascend910b`，有三 dtype binary config | 支持；公开文档 `√`，OpDef `ascend910_93`，有三 dtype binary config | 公开文档 `×`、OpDef/本地 binary config缺失，但全局 `ascendc_config.json` 含 `ascend950`；发布证据冲突，不建卡。 |
 | Host/Launcher | 共用同一 ACLNN、Tiling、POD；平台提供各自 AIV coreNum/UB size | 同左 | 不作为公开入口发布。 |
-| Kernel/资源 | 共用 `exp_segsum_grad` 与 key 0/1；binary JSON 与 A3 内容同构 | 共用同一源码 | 固定仓没有 950 OpDef config 或本地 binary JSON，不能闭合公开 A5 Route。 |
+| Kernel/资源 | 共用 `exp_segsum_grad` 与 key 0/1；binary JSON 与 A3 内容同构 | 共用同一源码 | 固定仓没有 950 OpDef config 或本地 binary JSON，不能闭合公开 950 Route。 |
 
 ## 限制与失败边界
 
@@ -592,7 +592,7 @@ if (num2 == 0) {
 - `batchStart/end` 只有 50 项且为 int32，`B` 的乘积、int64→int32 窄化、`needCoreNum<=50` 均无显式溢出/范围 guard；`CopyInBatch` 还把 R-002 的 `row` 转为 uint16 blockCount。
 - Tiling 的 `ParseInputAttrs()` 返回值没有在 `RunBigKernelTiling()` 中检查；输入 shape/desc、compileInfo 与 workspace 数组指针也没有在该函数内逐项判空。公开 ACLNN 正常非空路线提供受约束输入，但 direct Host 复用不能跳过这些前提。
 - `TILING_DATA_FIELD_DEF`、`GET_TILING_DATA`、`GetReduceSumMaxMinTmpSize`、`CommonOpExecutorRun`、`Contiguous/ViewCopy` 的实现来自固定仓外框架；因此 POD 具体 offset、reduction 临时区物理布局、executor 总 workspace 切片与 stream/event 原语固定仓不可见。
-- A5 公开文档与全局编译配置冲突，按公开文档优先不发布；本次也未执行编译、真机、数值或性能测试。
+- 950 公开文档与全局编译配置冲突，按公开文档优先不发布；本次也未执行编译、真机、数值或性能测试。
 
 ## 源码索引
 
@@ -600,7 +600,7 @@ if (num2 == 0) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `math/exp_segsum_grad/docs/aclnnExpSegsumBackward.md` | 产品支持表、函数原型、参数表 | A2/A3 支持、A5 不支持、公开语义/shape/dtype/空 tensor/确定性。 |
+| 入口声明/约束 | `math/exp_segsum_grad/docs/aclnnExpSegsumBackward.md` | 产品支持表、函数原型、参数表 | A2/A3 支持、950 不支持、公开语义/shape/dtype/空 tensor/确定性。 |
 | 入口声明/约束 | `math/exp_segsum_grad/op_host/op_api/aclnn_exp_segsum_backward.h` | 两个 `ACLNN_API` 声明 | 两段式 ABI 和公开公式。 |
 | 入口实现 | `math/exp_segsum_grad/op_host/op_api/aclnn_exp_segsum_backward.cpp` | `CheckParams`、两段 ACLNN 实现 | 校验顺序、空路径、Contiguous→L0→ViewCopy、executor。 |
 | 入口实现 | `math/exp_segsum_grad/op_host/op_api/exp_segsum_grad.cpp` | `l0op::ExpSegsumGrad` | 临时输出分配和自有单 Kernel launcher。 |
@@ -612,7 +612,7 @@ if (num2 == 0) {
 | Kernel entry/body | `math/exp_segsum_grad/op_kernel/exp_segsum_grad.h` | `ExpSegsumGradND<T,MODE>` | 全部 UB、循环、搬运、Vector、同步、精度和 tail。 |
 | 构建接线 | `math/exp_segsum_grad/op_host/config/ascend910b/exp_segsum_grad_binary.json` | `ExpSegsumGrad.op_list` | A2 三个同 dtype binary 组合。 |
 | 构建接线 | `math/exp_segsum_grad/op_host/config/ascend910_93/exp_segsum_grad_binary.json` | `ExpSegsumGrad.op_list` | A3 三个同 dtype binary 组合。 |
-| 构建接线 | `scripts/kernel/binary_config/ascendc_config.json` | `ExpSegsumGrad` 条目 | AscendC 编译单元与 A5 冲突信号、`auto_sync=false`。 |
+| 构建接线 | `scripts/kernel/binary_config/ascendc_config.json` | `ExpSegsumGrad` 条目 | AscendC 编译单元与 950 冲突信号、`auto_sync=false`。 |
 
 每行只写一个文件，并确保该文件存在于 Frontmatter `sources`。
 
@@ -626,3 +626,9 @@ if (num2 == 0) {
 | 同步 | key 0 `scheduleMode=1 + ClearGM + SyncAll`；MTE/V events；Queue lifecycle | 不得去掉 GM carry 的 event 或在 Mul消费前覆盖复用 TBuf | `FillTilingData`；`Process`；`getLastRow/setLastRow` |
 | 精度与尾块 | 低精度先升 FP32；严格下三角 count；R-001 `CAST_ROUND`、R-002 `CAST_RINT` | `num1` 含对角线、`num2` 排除对角线；不能合并两个 round mode | `ComputeMul/ComputeSum/ComputeMulBatches/ComputeBatches` |
 | 失败边界 | 空 tensor fast path、unknown key返回、workspace空返回 | 保留 A2/A3 公共约束；混合 dtype、>50 cores、workspace越界没有可依赖 fallback | ACLNN first stage；`exp_segsum_grad`；`GetNeedCoreNum` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ExpSegsum A2/A3 ACLNN 算子知识](exp_segsum.md)（`related`）：输出每个前缀 batch 的 `N×N` 下三角半可分矩阵；`gradSelf` ｜ 与 `gradOutput` 同 shape、`ND` ｜ 公开约束要求与 `gradOutput` 同 dtype ｜ 正向 `aclnnExpSegsum` 的输出；支持非连续 tensor并先连续化。实际 `CheckParams` 只检查它属于支持集合，没有显式比较两输入 dtype，见限制。。正向页定义 ExpSegsum 的矩阵输出，反向页明确把该正向输出作为 gradSelf 消费，形成训练中的前向/反向接口链。
+<!-- cannbot:related:end -->

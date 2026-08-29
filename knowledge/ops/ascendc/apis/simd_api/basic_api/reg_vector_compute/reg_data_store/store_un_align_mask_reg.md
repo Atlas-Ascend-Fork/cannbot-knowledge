@@ -29,11 +29,5 @@ StoreUnAlign能够实现数据从MaskReg连续搬运至非对齐Unified Buffer�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSqueezeAndStoreunalignInit](../../../c_api/reg/system_variables_access/asc_squeeze_and_storeunalign_init.md)（`related`）：StoreUnAlignMaskReg 与《AscSqueezeAndStoreunalignInit》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
-- [AscStoreUnalign](../../../c_api/reg/reg_store/asc_storeunalign.md)（`related`）：StoreUnAlignMaskReg 与《AscStoreUnalign》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
-- [UnalignRegForLoadAndUnalignRegForStore](../register_data_types/unalign_reg_for_load_unalign_reg_for_store.md)（`related`）：UnalignRegForLoadAndUnalignRegForStore 与《StoreUnAlignMaskReg》的实质衔接是：非对齐寄存器是 LoadUnAlign Pre→Load 与 Store→Post 协议的临时状态，所选 C/C++ 接口、连续优化和 Init/Postupdate 共同闭合搬入搬出流程。
-- [LoadUnAlign](../reg_data_load/load_un_align_continuous.md)（`same_topic`）：StoreUnAlignMaskReg 与《LoadUnAlign》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
-- [MaskGenWithRegTensor](../reg_data_load/mask_gen_with_reg_tensor_mask_reg.md)（`same_topic`）：StoreUnAlignMaskReg 与《MaskGenWithRegTensor》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
-- [MaskReg](../register_data_types/mask_reg.md)（`same_topic`）：MaskReg 与《StoreUnAlignMaskReg》的实质衔接是：MaskReg 定义有效 lane，直接被 Load/Store、MaskGen 与 MaskReg 计算消费；C 创建/更新接口、merge mode、复用指南和两个编译故障明确其构造约束。
-- [StoreAlignMaskReg](store_align_mask_reg.md)（`same_topic`）：StoreUnAlignMaskReg 与《StoreAlignMaskReg》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
+- [StoreUnAlignContinuous](store_un_align_continuous.md)（`same_topic`）：StoreUnAlign能够实现数据从MaskReg连续搬运至非对齐Unified Buffer（UB），利用非对齐寄存器UnalignRegForStore作为临时缓存区，暂存跨对齐边界的数据，从而实现高效的连续非对齐数据传输。；StoreUnAlign能够实现数据从RegTensor连续搬运至非对齐Unified Buffer（UB），利用非对齐寄存器UnalignRegForStore作为临时缓存区，暂存跨对齐边界的数据，从而实现高效的连续非对齐数据传输。。两卡描述同一 StoreUnAlign 非对齐连续搬运契约，并共享 UnalignRegForStore 跨边界暂存机制；差别仅在源操作数是 MaskReg 还是 RegTensor。
 <!-- cannbot:related:end -->

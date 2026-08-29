@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.programming_model.execution_model.simd", "topic.
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-08-28T06:56:32Z"
 platforms: ["950"]
 ---
 
@@ -363,10 +363,9 @@ __aicore__ inline void ArOut(const AscendC::LocalTensor<T> &y, const AscendC::Lo
 
 本卡信号来自一次 Ascend950 Softmax kernel 开发中修复前后的真实 NPU 命令输出和 clean build；内部事件锚点仅保存在 manifest。
 
-- `tool_observed`，Ascend950：修复前的边界扫描显示单块结果正确，跨过向量宽度后 max_diff 非零；确定性输入进一步显示首块独立归一化、后续区域异常。
-- `tool_observed`，Ascend950：六个函数按上述方式重构后 clean build 成功。
-- `tool_observed`，Ascend950：相同边界扫描覆盖单块、跨边界、多块、尾块和长归约，全部得到 max_diff 为零。
-- 本卡不把编译成功单独当作正确性证明，也不使用测试容差放宽作为验证。
+- 修复前的边界扫描显示单块结果正确，跨过向量宽度后 max_diff 非零；确定性输入进一步显示首块独立归一化、后续区域异常（来源平台：950；证据等级：tool_observed）。
+- 六个函数按上述方式重构后 clean build 成功（来源平台：950；证据等级：tool_observed）。
+- 相同边界扫描覆盖单块、跨边界、多块、尾块和长归约，全部得到 max_diff 为零（来源平台：950；证据等级：tool_observed）。
 
 ## 性能影响
 
@@ -392,16 +391,8 @@ __aicore__ inline void ArOut(const AscendC::LocalTensor<T> &y, const AscendC::Lo
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Reg矢量计算概述](../../apis/simd_api/basic_api/reg_vector_compute/overview.md)（`exemplifies`）：《AR 跨块循环放在 __simd_vf__ 只执行首块》给出“Ascend950 Reg kernel 把 AR 跨向量块状态机留在单次 __simd_vf__ 中时只完成首块；将循环上移至 __aicore__ wrapper，并在同址读改写调用之间加入 Vector barrier。”；该约束/探针可直接复现、解释或前置验证《Reg矢量计算概述》中的“Reg矢量计算API概述，直接操作Vector计算寄存器实现数据搬运与计算，较Memory矢量计算API提供更大开发自由度。”。
-- [AR 输出张量未初始化导致 Softmax 部分用例错](softmax_ar_output_buffer_must_be_initialized_from_input.md)（`related`）：两卡位于同一 Reg Softmax 调试链：先保证多 chunk 由 wrapper 驱动，再修复每块 helper 必须从输入而非未初始化输出读取。
-- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：wrapper 拆分还必须覆盖 VF 间的 UB producer/consumer RAW 边界；该卡给出拆 wrapper 并在调用间加 PIPE_V barrier 的验证证据。
-- [Reg 固定地址跨块累加需逐 VF PipeBarrier](fixed_address_vf_accumulator_needs_per_call_barrier.md)（`related`）：当每块 VF 复用同一 UB 累加地址时，调用间必须排空前次 StoreAlign 后再 LoadAlign，补足 wrapper 循环的同步条件。
-- [Reg矢量计算编程（C++ Tensor编程）](../../guides/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/reg_vector_computation.md)（`related`）：Reg矢量计算编程（C++ Tensor编程） 与《AR 跨块循环放在 __simd_vf__ 只执行首块》的实质衔接是：Reg C++ 编程仍遵循 asc_vf_call→__simd_vf__→Load/Compute/Store；C API 对照、性能/边界/merge/精度表和 helper 编译卡直接约束这一调用模型。
-- [SIMD&SIMT BuiltIn关键字](../../guides/programming_guide/language_extension/simd_simt_hybrid_builtin_keywords.md)（`related`）：SIMD&SIMT BuiltIn关键字 与《AR 跨块循环放在 __simd_vf__ 只执行首块》的实质衔接是：混合 BuiltIn 关键字需结合执行/地址限定、kernel/VF、内置变量和混合编程故障使用。
-- [嵌套 VF 循环触发 bisheng stack smashing ICE](../compilation/vf_bisheng_stack_smashing_ice.md)（`related`）：两卡都要求把跨 chunk/row 循环移到 __aicore__ wrapper：focal 为避免 INFERCHANNEL 嵌套循环 ICE，目标卡为避免单次 VF 只执行首块，分别覆盖编译与运行边界。
-- [核函数与VF函数（SIMD与SIMT混合编程）](../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md)（`related`）：焦点处理混合 SIMD/SIMT 中 kernel、VF、callee 的限定符和启动边界；AR 跨块循环放在 __simd_vf__ 只执行首块正文说明“Ascend950 Reg kernel 把 AR 跨向量块状态机留在单次 __simd_vf__ 中时只完成首块；将循环上移至 __aicore__ wrapper，并在同址读改写调用之间加入 Vector barrier”。候选明确 kernel/VF/callee 的允许调用方向、地址空间和 launch API，或给出同机制编译失败。
-- [RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽](regtensor_cross_chunk_state_should_persist_in_ub_slot.md)（`same_topic`）：《RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽》说明同 dtype 标量归约的 Reg Softmax 安全回退：每 VL 一次 VF、UB 槽持久化 max/sum；不适用于同时携带 B16 值与 B32 索引的 cummin/argmin 前缀扫描。；《AR 跨块循环放在 __simd_vf__ 只执行首块》说明Ascend950 Reg kernel 把 AR 跨向量块状态机留在单次 __simd_vf__ 中时只完成首块；将循环上移至 __aicore__ wrapper，并在同址读改写调用之间加入 Vector barrier。。二者在跨VL Reduce必须由AICore wrapper逐次调用并把max/sum持久化到UB；跨chunk累加、同步、offset和RegTensor合同均直接参与修复验证上存在可执行的直接衔接。
-- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`same_topic`）：VF 归约落 UB 后 GetValue 读取陈旧标量 与《AR 跨块循环放在 __simd_vf__ 只执行首块》的实质衔接是：Reg Reduce 经 StoreAlign 落 UB 后，PIPE_V 不保证 Scalar GetValue 可见；相关跨 VF 累加、barrier、GetValue 陈旧和 SoftMax 卡共同支持把归约与 lane0 广播保留在同一 VF。
-- [simd_vf 互调导致 helper 编译失败](../compilation/simd_vf_helpers_use_simd_callee.md)（`same_topic`）：simd_vf 互调导致 helper 编译失败 与《AR 跨块循环放在 __simd_vf__ 只执行首块》的实质衔接是：顶层 __simd_vf__ 只能调用 __simd_callee__ helper；asc_vf_call、执行限定符、kernel/VF 指南和相邻 VF 编译故障共同固定三层调用结构。
-- [分块 wrapper 与 VF callee 不可重复叠加 offset](wrapper_and_vf_callee_must_not_double_apply_chunk_offset.md)（`same_topic`）：两卡共同定义多 chunk 的 wrapper/callee 责任：__aicore__ wrapper 驱动 chunk 并前移地址，VF callee 只处理当前块，不能再叠加 offset。
+- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：把三次 pass 拆成三个完整的 `__simd_vf__` 函数和三个独立的 `asc_vf_call` wrapper。；将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。；两卡共同要求用 AICore wrapper 提供 VF pass 与 chunk 的显式提交边界。
+- [分块 wrapper 与 VF callee 不可重复叠加 offset](wrapper_and_vf_callee_must_not_double_apply_chunk_offset.md)（`related`）：Ascend C Reg kernel 直调，以 `__aicore__` wrapper 循环调用 `__simd_vf__` callee。；将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。；后者确立逐块 VF 调用的正确调度边界，前者进一步约束该边界内 offset 只能由 wrapper 或 callee 一侧负责。
+- [核函数与VF函数（SIMD与SIMT混合编程）](../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md)（`related`）：simd vf函数：能被核函数或者__aicore__函数通过asc_vf_call接口调用。simd vf函数内只能调用__simd_callee__函数和__callee__函数。；AR 把跨向量块状态机留在单次 `__simd_vf__` 中，导致该调用只完成首块且同址累加无法在块间可靠提交。。指南明确 __aicore__ 经 asc_vf_call 驱动 SIMD VF，runbook 说明跨向量块循环错误地留在单次 VF 会只完成首块，支撑把 chunk 状态机移回 wrapper。
+- [Reg 固定地址跨块累加需逐 VF PipeBarrier](fixed_address_vf_accumulator_needs_per_call_barrier.md)（`same_topic`）：“把“一个 VF 内循环所有 chunk”改成“一个 VF 只处理一个 chunk”；在 `__aicore__` 的 chunk 循环中，每次调用后执行 `PipeBarrier<PIPE_V>()`，再进入下一块。”与“将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。”描述同一跨块 Softmax 状态修复，后一张补齐症状、边界验证和 barrier 仅用于同址 RMW 的限制。
 <!-- cannbot:related:end -->

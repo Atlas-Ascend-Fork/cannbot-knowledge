@@ -35,18 +35,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Follow（OpParamDef）](../../../../apis/utils_api/prototype_register_management/op_param_def/follow.md)（`explains`）：基本开发流程 与《Follow（OpParamDef）》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [OpDef](../../../../apis/utils_api/prototype_register_management/op_def/op_def.md)（`explains`）：基本开发流程 与《OpDef》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [SetInferDataType](../../../../apis/utils_api/prototype_register_management/op_def/set_infer_data_type.md)（`explains`）：基本开发流程 与《SetInferDataType》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [SetInferShape](../../../../apis/utils_api/prototype_register_management/op_def/set_infer_shape.md)（`explains`）：基本开发流程说明该开发流程以工程化算子开发为基础，除了需要提供工程化算子开发中的算子实现文件外，还需要额外交付算子入图的代码文件。本节仅提供算子入图代码文件的开发指导。
-- [InferShape 返回 identity 致空 kernel 假通过](../../../../runbooks/precision/infershape_identity_kernel.md)（`related`）：基本开发流程 与《InferShape 返回 identity 致空 kernel 假通过》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [optional input 未连接触发 InferShape 失败](../../../../runbooks/compilation/optional_input_infershape.md)（`related`）：基本开发流程 与《optional input 未连接触发 InferShape 失败》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [开启Tiling下沉](enable_tiling_sink.md)（`related`）：基本开发流程 与《开启Tiling下沉》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [算子原型定义](../aclnn_operator_development/design_and_implementation/operator_prototype_definition.md)（`related`）：基本开发流程 与《算子原型定义》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [缺 OP_PROTO_LIB 致空 axes 命中内置 InferShape](../../../../runbooks/compilation/op_proto_lib_axes_infershape.md)（`related`）：基本开发流程 与《缺 OP_PROTO_LIB 致空 axes 命中内置 InferShape》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [输出shape依赖计算](../aclnn_operator_development/design_and_implementation/kernel_output_shape_computation.md)（`related`）：基本开发流程 与《输出shape依赖计算》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [高级编程概述](overview.md)（`related`）：基本开发流程 与《高级编程概述》的实质衔接是：算子图基本流程把 OpDef 原型、InferShape/InferDataType、图编译执行和 tiling 下沉串成同一生命周期；三个失败案例分别验证原型加载、可选输入和 shape 推导不能被绕过。
-- [单算子API调用](../aclnn_operator_development/invocation/single_operator_api_call.md)（`same_topic`）：焦点处理aclnn 两段式单算子调用的编译、部署和运行流程；基本开发流程正文界定“该开发流程以工程化算子开发为基础，除了需要提供工程化算子开发中的算子实现文件外，还需要额外交付算子入图的代码文件。本节仅提供算子入图代码文件的开发指导”。候选覆盖单算子调用前的编译部署、动态加载、调用样例、stream 缓存一致性和延迟回调生命周期。
-- [图编译和图执行](graph_compilation_and_execution.md)（`same_topic`）：基础流程给出建图、编译、加载、执行顺序，编译执行页展开其中后半段。
-- [如何开发动态输入算子](../../appendix/common_operations/develop_dynamic_input_operator.md)（`same_topic`）：如何开发动态输入算子 与《基本开发流程》的实质衔接是：动态输入必须在原型侧声明动态 Input，在 host/kernel 间用 ListTensorDesc/TensorDesc 与 TensorList 传递；动态编译和 InferShape/optional input 案例限定完整开发链。
+- [图编译和图执行](graph_compilation_and_execution.md)（`related`）：先编译算子（例如，使用ATC工具将Ascend IR定义的单算子描述文件编译成算子om模型文件），再调用acl接口加载算子模型，最后调用acl接口执行算子；除了需要提供工程化算子开发中的算子实现文件外，还需要额外交付算子入图的代码文件；基本开发流程给出图编译执行前必须交付的入图代码边界。
 <!-- cannbot:related:end -->

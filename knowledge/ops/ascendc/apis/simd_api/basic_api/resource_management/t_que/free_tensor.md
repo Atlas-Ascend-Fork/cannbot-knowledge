@@ -22,14 +22,8 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ACL 507035 — 空 TQue DeQue 触发 B16 路径异常](../../../../../runbooks/compilation/tque_dequeue_requires_prior_enqueue_507035.md)（`exemplifies`）：ACL 507035 — 空 TQue DeQue 触发 B16 路径异常 与《FreeTensor》的实质衔接是：空队列 DeQue 违反 AllocTensor→EnQue→DeQue→FreeTensor 的所有权链；相关失败卡覆盖重复 DeQue、早释、未释放、InitBuffer 参数和验证报错，Sin/Cos 是该 B16 分支中实际触发计算。
-- [FreeTensor早释使队列别名被下一轮DMA覆盖](../../../../../runbooks/precision/reinterpret_tensor_alias_must_outlive_queue_release.md)（`exemplifies`）：FreeTensor 允许底层 UB 被复用，因此对 ReinterpretCast 别名必须延后到最后硬件消费者之后调用。
-- [TQue tensor 所有权只能 DeQue 一次](../../../../../runbooks/compilation/tque_tensor_ownership_single_dequeue.md)（`exemplifies`）：TQue tensor 所有权只能 DeQue 一次 与《FreeTensor》的实质衔接是：TQue 元素必须严格 Alloc→EnQue→DeQue→Free 且只由一个消费者出队；相关 API、生命周期指南和失败卡覆盖临时值、早释、空队列及跨函数交接。
-- [TQue 输入未释放导致循环 AllocTensor 卡死](../../../../../runbooks/compilation/tque_dequeue_must_end_with_freetensor.md)（`exemplifies`）：《TQue 输入未释放导致循环 AllocTensor 卡死》给出“循环内 DeQue 的输入 Tensor 未归还 TQue，耗尽队列 buffer 后后续 AllocTensor 无进展；消费完成立即 FreeTensor。”；该约束/探针可直接复现、解释或前置验证《FreeTensor》中的“释放Que中的指定Tensor，需与AllocTensor配对使用。”。
-- [TPipe-TQue编程原理介绍](../../../../../guides/programming_guide/programming_model/ai_core_simd_programming/tpipe_tque_programming/tpipe_tque_principles.md)（`explains`）：最后一个消费者完成后必须 FreeTensor，才允许底层 UB 被后续任务复用。
-- [TPipe和TQue编程范式](../../../../../guides/programming_guide/programming_model/ai_core_simd_programming/tpipe_tque_programming/tpipe_tque_paradigm.md)（`explains`）：《TPipe和TQue编程范式》说明上一章阐述了TPipe‑TQue编程模型的底层设计原理：基于经典C/C++队列管道（Queue Pipeline）思想，将算子任务拆分为多级流水Stage，依靠TQue队列解决写后读数据依赖、依靠AllocTensor/FreeTensor解决读后写内存复用冲突，通过底层同步指令实现多单元异步并行的时序安全。；《FreeTensor》说明释放Que中的指定Tensor，需与AllocTensor配对使用。。二者在TPipe/TQue范式用InitBuffer和Alloc/EnQue/DeQue/FreeTensor表达内存所有权与Stage同步，相关FAQ和故障直接验证生命周期约束上存在可执行的直接衔接。
-- [运行验证时AllocTensor/FreeTensor失败](../../../../../guides/programming_guide/appendix/faq/alloc_free_tensor_failure.md)（`explains`）：运行验证时AllocTensor/FreeTensor失败 的核心契约是“通过NPU进行核函数的运行验证时，出现挂死现象；通过CPU进行核函数的运行验证时，出现AllocTensor/FreeTensor失败的报错，日志报错和调用栈打印如下：”；FreeTensor 补充“释放Que中的指定Tensor，需与AllocTensor配对使用”。
-- [AllocTensor](alloc_tensor.md)（`related`）：《FreeTensor》明确“释放Que中的指定Tensor，需与AllocTensor配对使用。”；它与《AllocTensor》的“从Que中分配Tensor，Tensor大小为InitBuffer时设置的每块内存长度，支持non-inplace和inplace两种接口。”在实际调用参数、数据流或结果校验上直接衔接。
-- [HasIdleBuffer](has_idle_buffer.md)（`related`）：FreeTensor 把消费完成的 Tensor 归还队列，从而恢复 HasIdleBuffer 所观察的空闲块状态。
-- [AllocTensor](../t_que_bind/alloc_tensor.md)（`same_topic`）：《AllocTensor》处理“从Que中分配Tensor，Tensor所占大小为InitBuffer时设置的每块内存长度。”。《FreeTensor》提供“释放Que中的指定Tensor，需与AllocTensor配对使用。”，其具体合同或探针直接接入AllocTensor/FreeTensor 与 EnQue/DeQue 的队列所有权、初始化和耗尽故障。
+- [FreeTensor早释使队列别名被下一轮DMA覆盖](../../../../../runbooks/precision/reinterpret_tensor_alias_must_outlive_queue_release.md)（`exemplifies`）：`FreeTensor` 把该队列槽标为可复用，不表示所有持有它的视图已经完成消费。下一子 tile 的 `AllocTensor + DataCopyPad` 可以用 MTE2 覆盖同一 UB，而前一 tile 的 V 流水仍在读取，于是产生真正的数据竞争：有时读到 NaN，有时读到错误有限值，表现随运行时序变化。；释放Que中的指定Tensor。；目标是触发队列槽复用的接口，焦点进一步给出别名仍被异步消费时过早释放的竞态机制。
+- [TQue 输入未释放导致循环 AllocTensor 卡死](../../../../../runbooks/compilation/tque_dequeue_must_end_with_freetensor.md)（`exemplifies`）：Runbook 说明“`DeQue` 只把已入队 Tensor 交给消费者，不等于把底层 buffer 归还给队列”；FreeTensor API执行“释放Que中的指定Tensor。”。该动作正是修复循环中输入 buffer 不归还导致的队列耗尽。
+- [运行验证时AllocTensor/FreeTensor失败](../../../../../guides/programming_guide/appendix/faq/alloc_free_tensor_failure.md)（`explains`）：释放Que中的指定Tensor。；不满足该约束，在后续使用AllocTensor/FreeTensor可能会出现分配资源失败。；FAQ 提供同一 API 在队列 buffer 数量超限时的故障信号与处置。
+- [AllocTensor](alloc_tensor.md)（`related`）：从Que中分配Tensor，Tensor所占大小为InitBuffer时设置的每块内存长度。；释放Que中的指定Tensor。；AllocTensor 占用的有限缓冲必须由 FreeTensor 归还，形成资源闭环。
 <!-- cannbot:related:end -->

@@ -91,7 +91,6 @@ Host 多核 tiling 按"行数均分"而非"nnz 均分"，当输入矩阵 nnz 分
 <!-- cannbot:related:start -->
 ## 相关
 
-- [block 数应覆盖可用 Vector 核](block_count_uses_all_available_vector_cores.md)（`related`）：先确认 block 数覆盖实测 Vector 核，再用逐核 task_cyc 判断 nnz 工作量是否均衡，可区分少发核与已发核空转。
-- [flat 多核切分 elementwise scalar 主导诊断](flat_elementwise_scalar.md)（`related`）：flat scalar 卡同样用 PipeUtilization 和核间 cycles 判别，但工作量按元素；与 nnz 卡对照可避免把稀疏工作量倾斜误判为单纯 scalar 指令慢。
-- [稀疏不规则输出算子 SIMD 标量退化诊断](simd.md)（`related`）：nnz 倾斜解释核间一半空闲，SIMD scalar 卡解释忙核内部逐行 GetValue 占比 80%+；两者可同时构成稀疏算子的核间与核内瓶颈。
+- [每核最少行数地板压低 AIV 并行度—按可用核数切分](row_reduction_min_rows_floor_underutilizes_aiv.md)（`related`）：28 个忙核对 28 个空闲核；导致大量 vector core 没有收到工作。前者用 task_cyc 证明按行数切分遇到 nnz 倾斜时部分核空转，后者证明人为每核最少行数会压低 block 数；两者提供区分工作量倾斜与 launch 并行度不足的互补诊断。
+- [稀疏不规则输出算子 SIMD 标量退化诊断](simd.md)（`related`）：每行输出长度不规则（nnz 逐行变化）使 SIMD 框架无法跨行向量化输出写入，被迫退化为"逐行标量 GetValue 读预计算结果 + 单行 Duplicate/DataCopyPad 写出"的标量循环路径；该路径随行数 m 线性增长，scalar pipe 占比 80%+。；Host 多核 tiling 按"行数均分"而非"nnz 均分"，当输入矩阵 nnz 分布倾斜（前重后轻）时，后半核分到的行 nnz 极少而空转，逐核 cycle 差距 20×+。；两卡分别量化同类 CSR→COO 稀疏任务的核内 scalar 瓶颈与核间 nnz 负载倾斜，形成两级性能定界。
 <!-- cannbot:related:end -->

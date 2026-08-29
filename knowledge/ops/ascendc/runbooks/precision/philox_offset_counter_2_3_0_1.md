@@ -94,11 +94,9 @@ STATUS: ALL PASSED
 <!-- cannbot:related:start -->
 ## 相关
 
-- [PhiloxRandom](../../apis/simd_api/adv_api/random_functions/philox_random.md)（`exemplifies`）：PhiloxRandom API 定义 128bit counter、key 与 count 的消费接口，是 counter[2:3] offset 布局最终进入随机数生成的执行端。
-- [随机函数](../../apis/simd_api/adv_api/random_functions/random_functions.md)（`exemplifies`）：该运行卡确认 PhiloxRandom 的 offset 应写入 counter[2:3]、counter[0:1] 保留给 block/group 计数，补充随机 API 总览未展开的 counter 布局契约。
-- [PhiloxRandom 默认 7 rounds 与原生 10 不匹配](philoxrandom_7_rounds_10.md)（`related`）：即使 counter 布局正确，沿用 PhiloxRandom 默认 7 rounds 仍会单次 0% 匹配；需显式 10 rounds 才闭合原生 bit-exact 链。
-- [SIMT 切分未 coalesce 致 block 边界错位](simt_coalesce_block.md)（`related`）：目标卡说明 Philox 的 position/subsequence 字段如何改变序列，本卡的 block 起点最终也要映射到同一 counter 布局；可用 offset=0 与非零分层排除字段放置问题后再查 coalesce。
-- [Uint32ToFloat 须用 IEEE754 位操作而非位移乘法](uint32tofloat_ieee754.md)（`same_topic`）：Uint32ToFloat 须用 IEEE754 位操作而非位移乘法 与《Philox offset 须放 counter[2:3] 而非 [0:1]》的实质衔接是：bit-exact 随机链必须与 Philox 原生实现一致：counter/round/offset 先生成 uint32，再按 IEEE754 尾数位重解释；通用 Cast 不能替代该位级契约。
-- [philox offset 推进量须固定 12 而非元素数](philox_offset_12.md)（`same_topic`）：philox offset 推进量须固定 12 而非元素数 与《Philox offset 须放 counter[2:3] 而非 [0:1]》的实质衔接是：Philox 多次调用的一致性同时依赖固定 offset=12、10 rounds、counter[2:3]、每核 group4 和 uint32→uniform/exponential 转换。
-- [多核 numPerCore 须对齐 Philox group 4](numpercore_philox_group_4.md)（`same_topic`）：多核 numPerCore 须对齐 Philox group 4 与《Philox offset 须放 counter[2:3] 而非 [0:1]》的实质衔接是：Philox 每核切分须保持 group4；round 数、counter 槽、offset 推进和 PhiloxRandom API共同定义可复现随机序列。
+- [PhiloxRandom 默认 7 rounds 与原生 10 不匹配](philoxrandom_7_rounds_10.md)（`related`）：三个根因（Rounds=10、increment=12、counter［2:3］）须同时满足；仅修 counter［2:3］ 而不修 Rounds/increment 不会得到一致输出。；改为显式 `PhiloxRandom<10, uint32_t>` 后单次调用逐元素一致。。offset/counter 卡要求 rounds、increment、counter 布局共同闭合，Rounds 卡提供其中 7 改 10 的单次调用验证，联合使用才能覆盖连续调用精度对齐。
+- [SimThreadExponential A2/A3 ACLNN 算子知识](../../operators/aclnn/math/random/sim_thread_exponential.md)（`related`）：“construct 4-word counters for active_batch*256 lanes; add offset/4 and state”与“offset 改放 `counter［2:3］` 后”连接了算子四字 counter 构造和自定义 Kernel 的字段放置验证。
+- [Uint32ToFloat 须用 IEEE754 位操作而非位移乘法](uint32tofloat_ieee754.md)（`related`）：对追求 bit-exact 的随机数复现，位移乘法的乘法舍入是致命差异——判据为：转换路径出现浮点乘（`*(1/16777216)` 之类）即非 bit-exact，必须改 IEEE754 位重解释。；三个根因（Rounds=10、increment=12、counter［2:3］）须同时满足；仅修 counter［2:3］ 而不修 Rounds/increment 不会得到一致输出。；目标限定 counter 字段与推进条件，焦点补齐其后 uint32 流到 uniform 的最后一段位级对齐。
+- [philox offset 推进量须固定 12 而非元素数](philox_offset_12.md)（`related`）：焦点卡明确“increment=12 只解决 offset 推进量；不解决 kernel 内 counter 放置位置。”，候选卡进一步约束“三个根因（Rounds=10、increment=12、counter［2:3］）须同时满足”；两卡把 Host generator 推进与 Device counter 字段组成完整的多次调用确定性合同。
+- [多核 numPerCore 须对齐 Philox group 4](numpercore_philox_group_4.md)（`related`）：在 Uint32ToFloat、exponential 路径、Philox counter 按 group 推进三项 kernel 修复完成之后，自定义输出从"全 0% 匹配"变为"前 3 个元素跨不同 shape 保持一致，但从第 4 个元素起随 shape 出现偏移"。；三个根因（Rounds=10、increment=12、counter［2:3］）同时满足后，自定义 `exponential_` 与原生在单核、多核、多次连续调用下均逐 bit 对齐。候选给出进入 focal 多核边界排查前必须闭合的 counter 根因。
 <!-- cannbot:related:end -->

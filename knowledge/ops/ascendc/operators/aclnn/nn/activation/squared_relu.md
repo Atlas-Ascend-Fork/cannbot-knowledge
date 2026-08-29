@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T19:03:03Z"
-updated_at: "2026-08-25T19:03:03Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -525,11 +525,11 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b`三dtype，`source_closed` | 公开支持；`ascend910_93`三dtype，`source_closed` | 公开支持，另见 `_a5`卡 |
+| 支持状态 | 公开支持；`ascend910b`三dtype，`source_closed` | 公开支持；`ascend910_93`三dtype，`source_closed` | 公开支持，另见 `_950`卡 |
 | Host/Launcher | 共用 ACLNN/Tiling/POD | 同 A2 | 共用同一 Host/Tiling |
-| Kernel/资源 | 同一模板，192KiB/24576元素 | 同 A2 | 同模板；A5命中外层 `==310`允许分支 |
+| Kernel/资源 | 同一模板，192KiB/24576元素 | 同 A2 | 同模板；950命中外层 `==310`允许分支 |
 
 ## 限制与失败边界
 
@@ -569,3 +569,9 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 | 同步 | 双event + `MTE2_V/V_MTE3/PIPE_V` | 等待不可删除 | 三个helper |
 | 精度与尾块 | 16-bit升FP32；BF16 RINT、half NONE | Relu后原地Mul；`calNum` | `Compute/CastAndCopyOut` |
 | 失败边界 | dtype失败；未知key无body；空域零循环 | 不补造fallback | `RunBigKernelTiling/squared_relu/Process` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SquaredRelu 950 ACLNN 算子知识](squared_relu_950.md)（`same_topic`）：“｜ 计算语义 ｜ `y［i］ = max(x［i］, 0)^2` ｜”与“对每个有效元素先计算 `r=max(x［i］,0)`，再计算 `y［i］=r*r`。公开契约规定 NaN→NaN、`+Inf`→`+Inf`、`-Inf`→0；Kernel 顺序是 FP32 `Relu` 后原地 `Mul`。”是双方正文中的具体合同。A2/A3 卡的速览公式与 950 卡的逐元素和特殊值合同描述同一 SquaredRelu 算子语义；互读用于跨平台实现核对。
+<!-- cannbot:related:end -->

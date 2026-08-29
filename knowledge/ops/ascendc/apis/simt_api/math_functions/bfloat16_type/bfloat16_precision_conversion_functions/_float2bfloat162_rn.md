@@ -18,17 +18,3 @@ platforms: ['950']
 函数原型：bfloat16x2_t __float2bfloat162_rn(const float x)
 返回值：将输入数据遵循CAST_RINT模式转换为bfloat16类型并填充到bfloat16x2的前后两部分，返回填充后的数据。本接口受全局饱和模式影响，特殊值如下：
 支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat1622float2](_bfloat1622float2.md)（`related`）：__float2bfloat162_rn 与《__bfloat1622float2》的实质衔接是：单个 float 填充 bf16x2 的 RNE 转换与双 float、双标量打包、标量转换和反向解包共享分量顺序与舍入契约。
-- [__bfloat162bfloat162](_bfloat162bfloat162.md)（`related`）：__float2bfloat162_rn 与《__bfloat162bfloat162》的实质衔接是：单个 float 填充 bf16x2 的 RNE 转换与双 float、双标量打包、标量转换和反向解包共享分量顺序与舍入契约。
-- [__float22bfloat162_rn_sat](_float22bfloat162_rn_sat.md)（`related`）：__float2bfloat162_rn 与《__float22bfloat162_rn_sat》的实质衔接是：单个 float 填充 bf16x2 的 RNE 转换与双 float、双标量打包、标量转换和反向解包共享分量顺序与舍入契约。
-- [__float2bfloat16](_float2bfloat16.md)（`related`）：__float2bfloat162_rn 与《__float2bfloat16》的实质衔接是：单个 float 填充 bf16x2 的 RNE 转换与双 float、双标量打包、标量转换和反向解包共享分量顺序与舍入契约。
-- [__float2bfloat16_rn](_float2bfloat16_rn.md)（`related`）：__float2bfloat162_rn 与《__float2bfloat16_rn》的实质衔接是：单个 float 填充 bf16x2 的 RNE 转换与双 float、双标量打包、标量转换和反向解包共享分量顺序与舍入契约。
-- [__float2bfloat16_rn_sat](_float2bfloat16_rn_sat.md)（`related`）：__float2bfloat162_rn 与《__float2bfloat16_rn_sat》的实质衔接是：单个 float 填充 bf16x2 的 RNE 转换与双 float、双标量打包、标量转换和反向解包共享分量顺序与舍入契约。
-- [__floats2bfloat162_rn](_floats2bfloat162_rn.md)（`related`）：__float2bfloat162_rn 与《__floats2bfloat162_rn》的实质衔接是：单个 float 填充 bf16x2 的 RNE 转换与双 float、双标量打包、标量转换和反向解包共享分量顺序与舍入契约。
-- [__halves2bfloat162](_halves2bfloat162.md)（`related`）：__float2bfloat162_rn 与《__halves2bfloat162》的实质衔接是：单个 float 填充 bf16x2 的 RNE 转换与双 float、双标量打包、标量转换和反向解包共享分量顺序与舍入契约。
-- [__float22bfloat162_rn](_float22bfloat162_rn.md)（`same_topic`）：__float22bfloat162_rn 与《__float2bfloat162_rn》的实质衔接是：这些入口保持 float2→bfloat16x2，切换舍入/饱和或打包来源；逆转换用于对拍两 lane 结果，避免混用 scalar 与 packed 形式。
-<!-- cannbot:related:end -->

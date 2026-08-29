@@ -72,13 +72,3 @@ fprintf(stderr, "[ParseAxes] axesShapeSize=%ld dimNum=%ld addr=%p\n",
 ## 误诊
 
 无。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetShapeInfo](../../apis/simd_api/basic_api/data_structures/global_tensor/get_shape_info.md)（`exemplifies`）：GetShapeInfo 与《StorageShape scalar GetShapeSize 返回 1》的实质衔接是：GetShapeInfo 只有在对应 GlobalTensor 已 SetShapeInfo 后才有效；ShapeInfo、SetGlobalBuffer 与 tensor 子视图共同约束 shape 元数据生命周期。
-- [ValueDepend(REQUIRED) 让 axes 走 host 端](opdef_value_depend_required_for_axes_host_read.md)（`related`）：《StorageShape scalar GetShapeSize 返回 1》明确“空 axes 表示为 rank-0 scalar tensor 时 GetShapeSize() 返回 1（非 0），TilingFunc 误判 axesNum=1 并读 nullptr 数据；须用 GetDimNum()==0 检测 empty axes。”；它与《ValueDepend(REQUIRED) 让 axes 走 host 端》的“reduce 类算子的 axes Input 在 OpDef 注册时加 .ValueDepend(REQUIRED)，框架会把 device 数据拷到 host 供 TilingFunc 读取，并生成 aclnnXxxGetWorkspaceSize(aclIntArray*) 与 aclnnXxxTensorGetWorkspaceSize(aclTensor*) 两个 API 变体。”在实际调用参数、数据流或结果校验上直接衔接。
-- [empty分支SetBlockDim(0)与aUbFactor误式判别](empty_setblockdim_0_aubfactor.md)（`related`）：空 axes 常表示 rank-0 scalar tensor，但 GetShapeSize 返回 1；该边界会把 empty 分支错误路由到非空 tiling，与 focal 的 EMPTY_A/EMPTY_R 判别直接衔接。
-- [低 rank 零填充致 count=0 用 td_->rank 非 RANK](../precision/rank_count_0_td_rank_rank.md)（`related`）：低 rank 零填充致 count=0 用 td_->rank 非 RANK 与《StorageShape scalar GetShapeSize 返回 1》的实质衔接是：实际 rank 必须来自 tiling 而非模板容量；低 rank padding、NDDMA维度、shape/axes 和 blockDim 卡共同验证零填充维被误纳入循环后 count=0 的机制。
-- [标量输入被赋非标量 shape 致 561002 判别](shape_561002.md)（`same_topic`）：两卡都处理 rank-0 scalar 的 shape 语义：标量元素数为1但维数为0，不能靠 GetShapeSize 或伪造非标量 shape 判断。
-<!-- cannbot:related:end -->

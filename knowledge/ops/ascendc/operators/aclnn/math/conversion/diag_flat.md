@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-24T23:51:55Z"
-updated_at: "2026-08-24T23:51:55Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -73,7 +73,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-公开声明为 `aclnnDiagFlatGetWorkspaceSize` 与 `aclnnDiagFlat`。第一段创建 executor、校验、连续化输入、调用 L0 `DiagFlat`、调用 `Cast` 和 `ViewCopy` 并返回 workspace；第二段调用 `CommonOpExecutorRun`。固定仓未发现更高版本公开符号或旧版本 body 复用关系，因此 A2/A3 采用该唯一版本。公开 ACLNN 文档明确 A2/A3 支持、Ascend 950 不支持；950 的 OpDef、binary config 和通用 README 接线与公开 ACLNN 表冲突，因此本卡不把这些实现信号解释为 A5 公开支持。
+公开声明为 `aclnnDiagFlatGetWorkspaceSize` 与 `aclnnDiagFlat`。第一段创建 executor、校验、连续化输入、调用 L0 `DiagFlat`、调用 `Cast` 和 `ViewCopy` 并返回 workspace；第二段调用 `CommonOpExecutorRun`。固定仓未发现更高版本公开符号或旧版本 body 复用关系，因此 A2/A3 采用该唯一版本。公开 ACLNN 文档明确 A2/A3 支持、Ascend 950 不支持；950 的 OpDef、binary config 和通用 README 接线与公开 ACLNN 表冲突，因此本卡不把这些实现信号解释为 950 公开支持。
 
 ## Host/Launcher 执行流程
 
@@ -495,9 +495,9 @@ workspace_total_for_DiagFlat = 32*C_total + 16*1024*1024 bytes
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 ACLNN 文档支持；映射 `ascend910b` | 公开 ACLNN 文档支持；映射 `ascend910_93` | 公开 ACLNN 文档明确不支持；通用 README、OpDef、binary config 又接入 950，发布证据冲突，不生成 A5 卡 |
+| 支持状态 | 公开 ACLNN 文档支持；映射 `ascend910b` | 公开 ACLNN 文档支持；映射 `ascend910_93` | 公开 ACLNN 文档明确不支持；通用 README、OpDef、binary config 又接入 950，发布证据冲突，不生成 950 卡 |
 | Host/Launcher | 共用 API/L0/Tiling；binary JSON 提供 1/2/4/8-byte DtypeByte 实例 | 与 A2 共用实现和等价 binary JSON | `IsRegBase()` 会选择含 BF16 的 dtype 表，OpDef/AddConfig 和构建表存在，但不能覆盖公开“不支持” |
 | Kernel/资源 | `GetCoreNumAiv/GetCoreMemSize(UB)` 运行时取平台值；同一 key 101/103 body | 同 A2；`C_total/UB_platform` 随平台实际值变化 | 实现文件存在且 compute_units 含 ascend950；因 ACLNN 冲突不发布 |
 
@@ -509,7 +509,7 @@ workspace_total_for_DiagFlat = 32*C_total + 16*1024*1024 bytes
 - `abs(INT64_MIN)`、`N+abs(d)`、`W*W`、workspace `32*C_total` 与各种乘法没有显式溢出保护；POD 全为 int64，但部分 DMA 参数窄化为 uint8/uint16。
 - R-002 实际 UB 分配不消费 Host 写入的 `ubInputSize/ubOutputSize`，没有 UB IsCapable/fallback；`PopStackBuffer` 容量、tiling-data 宏最终 ABI、A2/A3 的精确编译宏值均为固定仓不可见。
 - entry 遇到 `workspace==nullptr` 直接返回，无 Device 状态回传；unknown key 也没有显式错误分支。
-- A5 的公开文档与实现接线冲突，所以 `diag_flat_a5.md` 不得创建。源码 key 102/104 的 16B body 对公开 ACLNN 不可达，未纳入 Route 正文。
+- 950 的公开文档与实现接线冲突，所以 `diag_flat_950.md` 不得创建。源码 key 102/104 的 16B body 对公开 ACLNN 不可达，未纳入 Route 正文。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -518,12 +518,12 @@ workspace_total_for_DiagFlat = 32*C_total + 16*1024*1024 bytes
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `conversion/diag_flat/docs/aclnnDiagFlat.md` | 产品支持表、函数原型 | A2/A3 支持、A5 不支持、公开参数与两段式调用 |
-| 入口声明/约束 | `conversion/diag_flat/README.md` | 产品支持情况 | 通用算子层 A5 支持信号及 dtype/语义 |
+| 入口声明/约束 | `conversion/diag_flat/docs/aclnnDiagFlat.md` | 产品支持表、函数原型 | A2/A3 支持、950 不支持、公开参数与两段式调用 |
+| 入口声明/约束 | `conversion/diag_flat/README.md` | 产品支持情况 | 通用算子层 950 支持信号及 dtype/语义 |
 | 入口声明/约束 | `conversion/diag_flat/op_host/op_api/aclnn_diag_flat.h` | `aclnnDiagFlat*` | C ABI 声明 |
 | 入口实现 | `conversion/diag_flat/op_host/op_api/aclnn_diag_flat.cpp` | `CheckParams/aclnnDiagFlatGetWorkspaceSize/aclnnDiagFlat` | dtype/rank、空输入、Contiguous→DiagFlat→Cast→ViewCopy、executor |
 | Host/Launcher | `conversion/diag_flat/op_host/op_api/diag_flat.cpp` | `DiagFlat/DiagFlatAiCore` | 输出 shape 与 AICore launcher |
-| Host/Launcher | `conversion/diag_flat/op_host/diag_flat_def.cpp` | `ops::DiagFlat` | OpDef dtype 和 A2/A3/A5 config，BOOL 冲突 |
+| Host/Launcher | `conversion/diag_flat/op_host/diag_flat_def.cpp` | `ops::DiagFlat` | OpDef dtype 和 A2/A3/950 config，BOOL 冲突 |
 | Host/Tiling/Launcher | `conversion/diag_flat/op_host/diag_flat_tiling.cpp` | `TilingDiagFlat` | 分核、key、workspace、blockDim、ScheduleMode |
 | POD/参数 | `conversion/diag_v2/op_host/diag_v2_tiling.h` | `DiagV2TilingData/DiagV2CompileInfo` | POD 字段、常量、key 定义 |
 | Kernel entry/body | `conversion/diag_flat/op_kernel/diag_flat.cpp` | `diag_flat` | key router 与 dtype byte-width 模板 |
@@ -531,7 +531,7 @@ workspace_total_for_DiagFlat = 32*C_total + 16*1024*1024 bytes
 | Kernel entry/body | `conversion/diag_flat/op_kernel/diag_flat_nd_to_2d.h` | `DiagFlatNDTo2D` | R-002 完整 body |
 | 构建接线 | `conversion/diag_flat/op_host/config/ascend910b/diag_flat_binary.json` | `DiagFlat op_list` | A2 DtypeByte binary 实例 |
 | 构建接线 | `conversion/diag_flat/op_host/config/ascend910_93/diag_flat_binary.json` | `DiagFlat op_list` | A3 DtypeByte binary 实例 |
-| 构建接线 | `scripts/kernel/binary_config/ascendc_config.json` | `DiagFlat` | A2/A3/A5 compute_units 与 auto_sync |
+| 构建接线 | `scripts/kernel/binary_config/ascendc_config.json` | `DiagFlat` | A2/A3/950 compute_units 与 auto_sync |
 
 每行只写一个文件，并确保该文件存在于 Frontmatter `sources`。
 
@@ -544,4 +544,4 @@ workspace_total_for_DiagFlat = 32*C_total + 16*1024*1024 bytes
 | workspace/内存 | 前 `32*C_total` 字节为 sync；R-001/R-002 Queue/TBuf 公式可直接移植 | 保留 16MiB 系统 workspace、owner/lifetime；PopStack 临时容量外部决定 | `TilingDiagFlat`, `MemSetZero`, `InitBuffer` |
 | 同步 | ScheduleMode 1、auto_sync、SyncAll 和 Queue 生命周期 | 整张输出清零完成前不得写对角线；编译能力分支的两种 SyncAll ABI 不得混用 | `TilingDiagFlat`, `IsDataCopyPadSupport`, `InitGm` |
 | 精度与尾块 | 以同位宽整数/`int16` 重解释并复制 bit pattern；R-002 尾核回退 | 不得引入数值 cast；mask 对角必须全 1；rollback 必须保持完整 64 元素在界内 | `diag_flat` router, `ConstructAssistMatrix`, `Compute`, `ParseTilingData` |
-| 失败边界 | 平台核数/UB 读取失败、节点组图失败和 API 前置错误可复用 | workspace null/unknown key 是静默终点；空输入、BOOL 和 A5 冲突必须显式处理 | `TilingPrepareForDiagFlat`, `diag_flat`, `CheckParams` |
+| 失败边界 | 平台核数/UB 读取失败、节点组图失败和 API 前置错误可复用 | workspace null/unknown key 是静默终点；空输入、BOOL 和 950 冲突必须显式处理 | `TilingPrepareForDiagFlat`, `diag_flat`, `CheckParams` |

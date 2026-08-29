@@ -58,3 +58,11 @@ FIA 的 **MLA 无量化路径**——`NO_QUANT` + 带 rope + query/key head_dim=
 
 - **运行时 artifact（算子自陈）**：事件页完整复现算子诊断——error code 561002 + `CheckFeatureMlaNoQuantShape` + FILE/LINE + 支持集 `{1,2,4,8,16,32,64,128}` 与观测值 `got 5`，是 CANN 算子 tiling 检查的运行时输出，约束由算子自陈。**维护者确认**归因层（属 SGLang 框架 + FA 算子层、指向 SGLang 社区 / ops-transformers 跟进），未额外确认 / 否认约束本身。FIA 算子源码（`fused_infer_attention_score_tiling_check_feature.cpp` 在 CANN / ops-transformers、非本仓）未独立 clone，约束以算子自身诊断为一手依据；「为何 group_num=5」与具体修法旋钮均标为推断。
   - 溯源下探：[cann-recipes-infer-issue-125-bug-report-glm4-7-flash-910b3-call-aclnnfusedinferattentionscorev3-faile](https://gitcode.com/cann/cann-recipes-infer/issues/125)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MLA (Multi-head Latent Attention)](../../concepts/modules/mla.md)（`related`）：在昇腾上跑 ［MLA］(../../concepts/modules/mla.md) 结构模型（query/key head_dim=512），调 ［FIA］(../../concepts/kernels/fused_infer_attention_score.md) 算子 `aclnnFusedInferAttentionScoreV3` 失败，error code **561002**，算子自陈的诊断直接列出支持集与观测值：；DeepSeek-V3 系列（DeepSeek-R1、Kimi-K2）使用的低秩压缩注意力机制。前者定位 MLA 结构在 FIA tiling 的 group_num 失败，后者解释低秩 KV、NoPE/RoPE 通道与 head 维度来源，可用于核对触发形态。
+- [MLA 开图模式硬约束 num_heads/num_kv_heads ∈ {32,64,128}（每 rank 比值出集合则图编译期 EZ9999 / CheckMlaAttrs 失败）](mla_graph_mode_queries_per_kv_head_ratio_set.md)（`related`）：焦点卡说明“图模式下 FIA 的 tiling 校验 `CheckMlaAttrs`（`incre_flash_attention_tiling_check.cc`）只接受 `numHeads/numKvHeads ∈ {32, 64, 128}`。”，候选卡则限定另一条“group_num 为 2 的幂且落在 `{1, 2, 4, 8, 16, 32, 64, 128}`”的 CheckFeatureMlaNoQuantShape 合同；并读两卡可按错误码和支持集避免把两种 FIA/MLA 编译失败混诊。
+- [npu_fused_infer_attention_score (v1 / v2)](../../concepts/kernels/fused_infer_attention_score.md)（`related`）：在昇腾上跑 ［MLA］(../../concepts/modules/mla.md) 结构模型（query/key head_dim=512），调 ［FIA］(../../concepts/kernels/fused_infer_attention_score.md) 算子 `aclnnFusedInferAttentionScoreV3` 失败，error code **561002**，算子自陈的诊断直接列出支持集与观测值：；昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算：`softmax(QKᵀ/√d)·V`，支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。失败卡给出 FIA V3 的 tiling 约束，概念卡补齐 FIA 的输入布局与量化入口，能从报错回到实际算子合同。
+<!-- cannbot:related:end -->

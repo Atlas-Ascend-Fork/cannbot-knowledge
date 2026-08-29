@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_div_list/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:39:39Z"
-updated_at: "2026-08-25T15:39:39Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -492,9 +492,9 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor, RoundMode::CAST_RINT, da
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；公开文档、`ascend910b` OpDef/config/CMake 一致 | 支持；公开文档、`ascend910_93` OpDef/config/CMake 一致 | 支持，但使用独立 `_a5` 卡 |
+| 支持状态 | 支持；公开文档、`ascend910b` OpDef/config/CMake 一致 | 支持；公开文档、`ascend910_93` OpDef/config/CMake 一致 | 支持，但使用独立 `_950` 卡 |
 | Host/Launcher | arch22 `ForeachCommonTiling` | 与 A2 共用 arch22 | arch35 独立 Tiling，key 编号变为 0/1/2 |
 | Kernel/资源 | 默认 AIV Vector body | 与 A2 共用 | SIMT `VF_CALL`，以 GM workspace 暂存列表元数据，无 AIV Queue |
 
@@ -540,3 +540,9 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor, RoundMode::CAST_RINT, da
 | 同步 | Queue 生命周期与 `PIPE_V` barrier | BF16 每次 Cast/Div/Cast 间不得删 barrier；释放后才能覆盖 | `InnerComputer::Compute/ComputePerCast` |
 | 精度与尾块 | FP16/FP32 原生；BF16 经 FP32 + `CAST_RINT` | `maxCastDataCount=S/4`、只写有效 tail 字节 | BF16 `ComputePerCast`、`CopyOut` |
 | 失败边界 | Host 检查列表/shape/dtype/维度并以 `GRAPH_FAILED` 终止 | 不得让未知 key、>50 Tensor 或未闭合空列表进入 body | `CheckOpInfo`、entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachDivList 950 ACLNN 算子知识](foreach_div_list_950.md)（`same_topic`）：｜ 计算语义 ｜ 对两个等长 TensorList 的同位置 Tensor 做逐元素 `y_i［j］ = x1_i［j］ / x2_i［j］`。 ｜；｜ 计算语义 ｜ 两个等长 TensorList 对应项逐元素相除：`y_i［j］=x1_i［j］/x2_i［j］`。 ｜。两卡共享同一个 ForeachDivList 逐项逐元素除法契约，分别闭合 A2/A3 Vector 与 Ascend 950 SIMT 实现。
+<!-- cannbot:related:end -->

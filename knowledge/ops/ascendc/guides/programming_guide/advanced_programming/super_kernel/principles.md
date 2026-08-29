@@ -36,9 +36,10 @@ CANN包发布的主流模型常用算子已支持SuperKernel融合。用户自�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SK_BIND（SuperKernel）](../../../../apis/utils_api/super_kernel/sk_bind.md)（`explains`）：SK_BIND（SuperKernel） 与《SuperKernel原理介绍》的实质衔接是：SK_BIND 绑定 SuperKernel 子任务，需结合 kernel 类型/tiling、前后任务同步和 runtime context。
-- [WaitPreTaskEnd](../../../../apis/simd_api/basic_api/sync_control/inter_task_sync/wait_pre_task_end.md)（`explains`）：WaitPreTaskEnd 与《SuperKernel原理介绍》的实质衔接是：WaitPreTaskEnd 与 SetNextTaskStart 构成前后任务的早启动握手；任务间同步和 SuperKernel 卡解释该握手在绑定任务调度中的生效条件。
-- [核函数直调算子额外适配说明](kernel_direct_call_adaptation.md)（`related`）：原理页解释直调如何消除 host launch 并用任务绑定维持执行顺序。
-- [算子自验证说明](operator_self_verification.md)（`related`）：自验证确认任务命中、输出和同步，防止只看图编译成功。
-- [算子适配说明](operator_adaptation.md)（`same_topic`）：算子适配说明 与《SuperKernel原理介绍》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
+- [SK_BIND（SuperKernel）](../../../../apis/utils_api/super_kernel/sk_bind.md)（`explains`）：核函数直调算子额外适配说明：对于使用>>方式开发的Ascend C算子，进入SuperKernel前需要进行的额外适配工作。；本接口为算子SuperKernel场景提供绑定原核函数和SK子函数的能力。核函数直调算子的完整适配方法请参见核函数直调算子额外适配说明。；焦点指向的直调适配由 SK_BIND 提供原 Kernel 与 SK 子函数绑定合同。
+- [SetNextTaskStart](../../../../apis/simd_api/basic_api/sync_control/inter_task_sync/set_next_task_start.md)（`explains`）：算子间流水并行：通过SuperKernel内提供的任务间同步接口（SetNextTaskStart、WaitPreTaskEnd），可以让子Kernel之间的部分指令实现并行执行，进一步压缩端到端耗时。；在SuperKernel的子Kernel中调用，调用后的指令可以和后续其他的子Kernel实现并行，提升整体性能。；目标接口实现焦点所述的后向子 Kernel 并行起点。
+- [WaitPreTaskEnd](../../../../apis/simd_api/basic_api/sync_control/inter_task_sync/wait_pre_task_end.md)（`explains`）：算子间流水并行：通过SuperKernel内提供的任务间同步接口（SetNextTaskStart、WaitPreTaskEnd），可以让子Kernel之间的部分指令实现并行执行，进一步压缩端到端耗时。；在SuperKernel的子Kernel中调用，调用前的指令可以和前序其他的子Kernel实现并行，提升整体性能。；目标接口实现焦点所述的前序子 Kernel 重叠边界。
+- [SuperKernel](../../../../../../model/inference/concepts/techniques/superkernel.md)（`related`）：TorchAir `ge_graph`（max-autotune）图模式下，**按用户声明的 scope 将计算子图整体融合为单个大 kernel** 的优化能力。；减少Kernel启动开销：原本需要多次启动的子Kernel，被统一通过一次SuperKernel启动完成，减少了任务调度开销。概念卡定义框架侧能力，指南解释二进制融合的启动与调度收益来源。
+- [核函数直调算子额外适配说明](kernel_direct_call_adaptation.md)（`related`）：核函数直调算子额外适配说明：对于使用>>方式开发的Ascend C算子，进入SuperKernel前需要进行的额外适配工作。；对于使用>>方式开发的Ascend C算子，除了遵循算子适配说明中的通用约束外，还需要在算子Kernel入口侧增加SuperKernel入口函数。本文档介绍具体的适配方法。；目标指南展开焦点明确列出的直调算子额外适配路径。
+- [算子适配说明](operator_adaptation.md)（`related`）：算子适配说明：算子要融合进SuperKernel需要满足的通用约束（与具体的开启方式无关）。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。；目标指南展开焦点概述的自定义算子通用适配约束。
 <!-- cannbot:related:end -->

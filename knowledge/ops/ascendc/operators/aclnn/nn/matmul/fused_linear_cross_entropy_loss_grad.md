@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/fused_linear_cross_entropy_loss_grad/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:34:41Z"
-updated_at: "2026-08-25T17:34:41Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -617,15 +617,15 @@ for (uint32_t step = 0; step < baseTaskEpochCnt + SIZE_3; step++) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；`ASCEND910B` / `ascend910b` | 支持；`ASCEND910_93` / `ascend910_93` | 公开文档明确不支持 |
 | Host/Launcher | 与 A3 共用 API、Tiling 与 key | 与 A2 共用 | 无正式入口链路 |
-| Kernel/资源 | 与 A3 使用相同源码和内容相同的八 specialization binary config；资源数运行时从平台取得 | 同左 | 不生成 `_a5` 卡 |
+| Kernel/资源 | 与 A3 使用相同源码和内容相同的八 specialization binary config；资源数运行时从平台取得 | 同左 | 不生成 `_950` 卡 |
 
 ## 限制与失败边界
 
-- A5 被公开产品表明确标为不支持，不能用不存在的 arch35/950 config 推断支持。
+- 950 被公开产品表明确标为不支持，不能用不存在的 arch35/950 config 推断支持。
 - 空 `input` 或 `weight` 在平台检查前直接成功返回 workspace 0；固定 API 没有显式填充输出，调用者不能把空域理解为自动清零。
 - `maskedTarget` 只校验长度，不校验范围；mask 为 false 时越界值会参与 GM/UB 地址计算。
 - R-001 会修改 `softmaxOptional` 的内容并复用其存储；接口将其声明为 const 输入，但固定 Device 行为不是只读。
@@ -643,7 +643,7 @@ for (uint32_t step = 0; step < baseTaskEpochCnt + SIZE_3; step++) {
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `op_host/op_api/aclnn_fused_linear_cross_entropy_loss_grad.h` | 两段式 API 原型 | 参数与入口公开性 |
-| 入口声明/约束 | `docs/aclnnFusedLinearCrossEntropyLossGrad.md` | 产品表、公式、参数表 | A2/A3 支持、A5 不支持与公开语义 |
+| 入口声明/约束 | `docs/aclnnFusedLinearCrossEntropyLossGrad.md` | 产品表、公式、参数表 | A2/A3 支持、950 不支持与公开语义 |
 | 入口实现 | `op_host/op_api/aclnn_fused_linear_cross_entropy_loss_grad.cpp` | `CheckParam`、两段 API | 校验、连续化、平台、executor、ViewCopy |
 | 入口实现 | `op_host/op_api/fused_linear_cross_entropy_loss_grad.cpp` | `l0op::FusedLinearCrossEntropyLossGrad` | 输出分配与 launcher 添加 |
 | Host/Tiling/Launcher | `op_host/fused_linear_cross_entropy_loss_grad_def.cpp` | OpDef | dtype 组合与两平台注册 |
@@ -668,4 +668,10 @@ for (uint32_t step = 0; step < baseTaskEpochCnt + SIZE_3; step++) {
 | workspace/内存 | R-001 NZ 环；R-002 五段用户 workspace | offset、FP32/Half 单位、parity slot 与 owner 必须一致 | 两个 Tiling、两个 `Init` |
 | 同步 | R-001 flags0..3；R-002 flags0..4 与 hard events | flag id、CV mode 2、PIPE 类型、wait/set 轮次不可混用 | sync helpers |
 | 精度与尾块 | FP32 softmax/update，CAST_RINT，R-002 FP32 accumulator | 不得提前降精度；保持 M/N/K 与 H-cycle tail | Vector helpers、`SetSingleShape` |
-| 失败边界 | 平台/shape/Tiling/UB guard 与 unknown key | 不得把失败分支补造成 fallback；A5 不支持 | `CheckPlatformSupported`、Tiling、entry |
+| 失败边界 | 平台/shape/Tiling/UB guard 与 unknown key | 不得把失败分支补造成 fallback；950 不支持 | `CheckPlatformSupported`、Tiling、entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FusedLinearOnlineMaxSum A2/A3 ACLNN 算子知识](fused_linear_online_max_sum.md)（`related`）：“省显存路线不物化完整 softmax 输入，而是按 `［baseBT,baseV］` 块执行：”明确给出左端事实；“｜ 输入输出 ｜ input/weight 为 FP16 或 BF16 ND；target 为 INT32/INT64；三个统计输出 FP32，mask UINT8，masked target 同 target，可选完整 logits 同 input dtype ｜”明确给出右端事实。OnlineMaxSum 生成行 max、sum-exp、target mask 与 masked target；Grad 的省显存路线直接消费这些统计量重建 softmax 梯度并计算 input/weight grad。
+<!-- cannbot:related:end -->

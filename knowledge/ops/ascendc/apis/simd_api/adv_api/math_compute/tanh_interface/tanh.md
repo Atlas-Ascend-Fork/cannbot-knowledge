@@ -26,7 +26,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Ascend950 Reg 命名空间无 Erf/Tanh 封装](../../../../../runbooks/compilation/ascend950_reg_erf_tanh.md)（`exemplifies`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《Tanh》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
-- [GetTanhMaxMinTmpSize](get_tanh_max_min_tmp_size.md)（`related`）：Tanh 调用所需 sharedTmpBuffer 的合法区间由 GetTanhMaxMinTmpSize 在 host 侧给出，二者共享 isReuseSource 与输入 shape 合同。
-- [GetTanhTmpBufferFactorSize](get_tanh_tmp_buffer_factor_size.md)（`related`）：GetTanhTmpBufferFactorSize 提供 Tanh 的存活节点倍数和额外空间，供已有 UB 容量反算 calCount，直接决定 Tanh 分块。
+- [GetTanhMaxMinTmpSize](get_tanh_max_min_tmp_size.md)（`related`）：Host 接口说明“host侧Tiling接口，用于获取Tanh接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”；Tanh 卡明确“临时空间大小通过GetTanhMaxMinTmpSize获取。”，两端形成 Tanh sharedTmpBuffer 的容量选择与调用链，但 Host Tiling 规划和 Kernel 双曲正切计算是两个主题。
+- [GetTanhTmpBufferFactorSize](get_tanh_tmp_buffer_factor_size.md)（`related`）：Factor 接口说明“获取Tanh接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”；Tanh 卡说明“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。”，前者为后者显式缓冲、带 calCount 重载推导单次 tile 上限，属于 Host 推导到 Kernel 调用的跨主题任务链。
 <!-- cannbot:related:end -->

@@ -142,3 +142,10 @@ Tiling 得到 Tile Operation 粒度的计算图后，框架对计算图切分并
 - [indexer-prolog](../kernels/indexer_prolog.md)（V3.2-Exp `npu_lightning_indexer_prolog_pto` 大融合算子；V4 CSA 层 IndexerProlog q_hadamard / Quant 流程）
 - [cann-shmem](../techniques/cann_shmem.md)（pyPTO-shmem 框架接入 SHMEM：以 `shmem_put`/`shmem_get`/`ShmemSignal` 等图记法做通算融合算子）
 - [shmem-dispatch-combine](../techniques/shmem_dispatch_combine.md)（pyPTO-shmem 写 MoE dispatch&combine：dispatch 三子图 / combine 两子图，ShmemPut/WaitUntil/ShmemGet/Matmul 加权融合）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [自定义算子框架决定可用图后端：PyPTO 仅 GE 入图（无 eager/aclgraph）、tilelang 仅 aclgraph](../../optimizations/experience/rules/custom_op_framework_graph_backend_compat.md)（`related`）：自研的 Python 级融合算子编程框架，通过声明式的 Tensor 操作图来描述融合 kernel，兼顾开发效率与运行性能。在 cann-recipes-infer 中用于实现 MegaKernel 级别的多算子融合。；- **结论**：cann-recipes-infer 的 PyPTO 算子（`torch.ops.custom_pypto.*`，如 `npu_lightning_indexer_prolog_pto` / `npu_lightning_indexer_pto` / `npu_sparse_attention_pto`）**只提供 GE 入图路径（TorchAir GE 图）**，不支持 acl graph、也不支持 eager/aclnn 直调。要给用这些算子的链路（如 ［DSA］(../../../concepts/modules/dsa.md) / DeepSeek Indexer Attention）开图模式，只能走 TorchAir GE 图。；框架卡定义 PyPTO 的融合 kernel 编程能力，后端兼容规则进一步限定这些 PyPTO 算子的可执行图路径，选用 PyPTO 后可据此完成图后端决策。
+- [自建 PyPTO 融合算子在社区版 CANN 上因缺 TileFwk 头文件编译失败 + 算子 NZ 格式由 pass 指定](../../runbooks/compilation/pypto_tilefwk_headers_and_nz_format.md)（`related`）：焦点卡定位“`tilefwk/*.h`、`register/op_ct_impl_registry.h` 等头由**独立开源的 PyPTO 编译器仓**（`cann/pypto`）提供”，候选卡同样声明“PTO ISA、毕昇 PTO 编译器及 DFX（TPRINT 等）是 **外部 Cann-PyPTO 编译器仓（`gitcode.com/cann/pypto`）** 的能力”；框架边界解释了为何社区 CANN 安装内找不到 TileFwk，能直接指导补齐构建来源。
+<!-- cannbot:related:end -->

@@ -22,11 +22,3 @@ platforms: ['950']
 约束：本接口只能在VF函数内调用，命名空间为AscendC::Reg，函数标记符为__simd_callee__。如果需要在VF外调用，命名空间为AscendC，函数标记符为__aicore__，具体
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ClearSpr](../../special_register_access/clear_spr.md)（`related`）：两个 ClearSpr 分别面向 Reg VF 与普通 AI Core 调用域，文档明确需要按调用位置选择命名空间和函数标记。
-- [GetSpr](../../special_register_access/get_spr.md)（`related`）：清零后可通过 GetSpr 读取特殊寄存器，用于验证状态复位或后续控制流消费。
-- [系统变量访问](system_variable_access.md)（`same_topic`）：系统变量访问 与《ClearSpr》的实质衔接是：本页的实际能力是 ClearSpr 清零 AR 特殊寄存器；GetSpr 读取同一 AR，而 Reg Squeeze 会把有效元素字节数写入 AR，因此它们形成明确的生产、读取和复位契约。
-<!-- cannbot:related:end -->

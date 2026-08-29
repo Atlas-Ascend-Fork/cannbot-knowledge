@@ -21,7 +21,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscPackToHigh](../data_compress/asc_pack_to_high.md)（`related`）：AscPackToHigh 与《AscStorealignPack》的实质衔接是：AscPackToHigh 与 PackToLow/Unpack 定义高低半部压缩布局，带 pack 的 store 与 postupdate 入口说明压缩结果如何对齐写回。
-- [AscStoreAlignPackQuarter](asc_storealign_pack_quarter.md)（`related`）：PackQuarter 只保留 b32 元素低 8bit，而 Pack 保留低半位宽；目标压缩倍率决定接口选择。
-- [AscStorealignPackPostupdate](asc_storealign_pack_postupdate.md)（`same_topic`）：AscStorealignPackPostupdate 与《AscStorealignPack》的实质衔接是：PackPostupdate 将低半位压缩写回后推进地址，非 postupdate/quarter/general Store、AscUpdateAddrReg 和 Pack/UnPack 接口拆解同一存储协议。
+- [AscStorealignPackPostupdate](asc_storealign_pack_postupdate.md)（`same_topic`）：从矢量数据寄存器压缩搬出到UB的接口，根据mask将src中有效元素的低半部分bit数据连续存储于dst_align32b中，支持数据类型为b16、b32、b64。；从矢量数据寄存器或掩码寄存器压缩搬出到UB的接口，根据mask将src中有效元素的低半部分bit数据连续存储于dst中，接口调用后自动更新目的操作数地址。。两接口执行同一掩码压缩搬出，Postupdate 版本额外按 offset 自动推进目的地址，属于同一操作的地址更新变体。
 <!-- cannbot:related:end -->

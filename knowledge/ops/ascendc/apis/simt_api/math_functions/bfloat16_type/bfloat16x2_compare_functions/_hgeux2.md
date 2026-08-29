@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hbgeux2](_hbgeux2.md)（`related`）：__hgeux2 保留两个 lane 的结果，__hbgeux2 只有两 lane 均满足 unordered >= 时才返回单个 bool；后者是前者结果的 all 聚合。
-- [__hgeux2_mask](_hgeux2_mask.md)（`same_topic`）：__hgeux2 与 __hgeux2_mask 对相同 bfloat16x2 输入执行逐 lane unordered ≥；一个返回 1.0/0.0 lane，另一个返回 0xFFFF/0x0000 位掩码。
-- [__hgex2](_hgex2.md)（`same_topic`）：__hgex2 与《__hgeux2》的实质衔接是：__hgex2 返回 bfloat16x2 两个 lane 的 ordered ≥ 结果；mask 版本、half 对应入口及 unordered ≥/≤ 用于区分返回形态和 NaN 行为。
-- [__hgtux2_mask](_hgtux2_mask.md)（`same_topic`）：__hgtux2_mask 与《__hgeux2》的实质衔接是：__hgtux2_mask 返回 unordered 大于的双 lane 16-bit mask；ordered/unordered、反向比较、值返回和 isnan 入口共同限定 NaN 与返回布局。
-- [__hleux2](_hleux2.md)（`same_topic`）：__hleux2 与《__hgeux2》的实质衔接是：__hleux2 返回 unordered ≤ 的双 lane 数值结果；mask 版本、ordered 版本、反向 ≥/> 与 isnan 共同限定 NaN 时 true 的语义及返回形态。
+- [__hgeux2_mask](_hgeux2_mask.md)（`same_topic`）：如果分量满足第一个数大于或等于第二个数，则对应比较结果为1.0，否则为0.0。若任一输入的分量为nan，该分量的比较结果为1.0。；如果分量满足第一个数大于或等于第二个数，则对应16位掩码为0xFFFF，否则为0x0。若任一输入的分量为nan，对应16位掩码为0xFFFF。。两接口对同一 bfloat16x2 无序大于等于比较采用相同 NaN 判真语义，区别仅在逐分量浮点结果与打包掩码结果。
 <!-- cannbot:related:end -->

@@ -43,3 +43,9 @@ platforms:
 - `config 事实`（clone @2c45117）：prefill 默认 config `world_size: 64`、decode 默认 config `world_size: 128 / cp_size: 128`，两处注释均 `= 2 * chip_num in A3` → prefill 32 卡、decode 64 卡。
 - `维护者确认`：默认 decode config = 64 卡；仅验证过 64 卡 decode bs=512、未验证 32 卡 decode batch 上限。
 - 溯源下探：[cann-recipes-infer-issue-13-question-32-config](https://gitcode.com/cann/cann-recipes-infer/issues/13)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [长序列 Prefill 注意力优先 Context Parallel（CP 仅 prefill 生效，MoE 复用 CP 域走 EP）](long_seq_prefill_context_parallel.md)（`related`）：- **迁移时按阶段独立对齐卡数**：`world_size` 设为 `2 × 目标卡数`、`cp_size`（［CP］(../../../concepts/parallelism/context_parallel.md)）随 `world_size` 对齐；prefill 与 decode 分别核对，不假设同规模。；长序列 Prefill（本经验覆盖 16K–166K，示例常以 64K 计），注意力单 rank 要承担整条序列的计算量与 activation 内存，OOM 风险高、TTFT 难控。此时注意力**优先选 ［context-parallel］(../../../concepts/parallelism/context_parallel.md)（CP）**，把序列维切到多 rank 均摊，单 rank 计算量与 activation 内存都变小、TTFT 可控。约束 `cp_size == world_size`（DeepSeek-V3.2-Exp / Kimi-K2-Thinking 实践都令 CP 铺满整个 world）。。规模迁移规则要求 prefill 独立对齐 CP，长序列规则解释该约束用于分摊序列计算和激活内存。
+<!-- cannbot:related:end -->

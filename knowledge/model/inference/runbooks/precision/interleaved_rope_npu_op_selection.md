@@ -60,3 +60,10 @@ platforms:
 - **代码事实**（clone `@73ed847`）：`.agent/skills/torch-npu-fusion-optimizer/references/module-attention-mla-absorb.md` 实际用 `npu_interleave_rope`；`torch_npu_API/torch_npu_list.md` 列 `npu_interleave_rope`（专用交错 RoPE）、`npu_rotary_mul`（通用 RoPE 二维平面旋转）。正向断言为 diff 事实 + 算子清单。
 - **报告披露**：负向 cos_sim≈0 来自 PR 附带的 LongCat-Flash-Lite 评估报告（作者 agent 自述观测、缩减模型、无独立复测）。
 - 溯源下探：[cann-recipes-infer-pr-328-feat-add-agent-optimization-skills-and-evaluation-reports](https://gitcode.com/cann/cann-recipes-infer/merge_requests/328)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [昇腾多模态 M-RoPE 优先走 triton-ascend triton_mrope，decode 吞吐优于原生 npu_mrope](../../optimizations/experience/rules/mrope_triton_ascend_vs_npu_mrope_decode.md)（`related`）：排障卡界定“模型用交错 RoPE（interleaved：相邻维两两配对旋转），排布与常规 rotate_half RoPE 不同。”；M-RoPE 选型卡明确“仅针对**多模态 M-RoPE**（二维 position），不针对普通一维 RoPE。”，两张卡共同提供按位置编码布局先分类、再选择专用实现的分流边界。
+- [生成模型 (DiT) 接融合算子 / autocast 时的 dtype·混精·RoPE cos-sin 布局精度对齐](../../optimizations/experience/rules/precision_dit_fusion_autocast_cossin_dtype.md)（`related`）：“交错 RoPE 的算子选型本身（专用 `npu_interleave_rope` vs 通用算子的 interleave 模式，通用算子选错模式会使 cos_sim≈0）见 ［interleaved-rope-npu-op-selection］(../../../runbooks/precision/interleaved_rope_npu_op_selection.md)；本页补的是「选对模式后 + cos/sin 4D 布局上移」的精度与冗余消除。”明确把算子选型交给排障页，并将自身边界限定为 dtype 与 4D 布局；“交错 RoPE → 用专用算子 `torch_npu.npu_interleave_rope`”给出选型结论。联合使用才能先避免旋转语义错误，再处理 cos/sin cast 与布局冗余。
+<!-- cannbot:related:end -->

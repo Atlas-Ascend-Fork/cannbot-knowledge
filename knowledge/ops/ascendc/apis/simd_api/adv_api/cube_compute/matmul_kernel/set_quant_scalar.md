@@ -27,7 +27,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [矩阵乘输出的量化/反量化](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_quant_dequant.md)（`explains`）：PER_TENSOR 模式要求 Iterate 前用 SetQuantScalar 设置整张 C 矩阵共享的系数。
-- [Iterate](iterate.md)（`related`）：SetQuantScalar 明确要求在 Iterate 前调用，量化系数由后续 Matmul 搬出阶段消费。
-- [SetQuantVector](set_quant_vector.md)（`same_topic`）：SetQuantVector 为 C 矩阵提供逐行/逐通道量化参数，而 Scalar 对全矩阵只用 shape=[1] 系数，是直接选型对。
+- [矩阵乘输出的量化/反量化](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_quant_dequant.md)（`explains`）：“整个C矩阵对应一个量化参数，量化参数的shape为［1］”与“开发者在算子Kernel侧调用接口SetQuantScalar设置量化参数”把 PER_TENSOR 的 shape 契约落实到 Kernel 调用。
 <!-- cannbot:related:end -->

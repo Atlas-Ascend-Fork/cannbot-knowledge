@@ -26,13 +26,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DCacheAccess](../../../guides/operator_practice/simt_operator_optimization/memory_access/dcache_access.md)（`explains`）：asc_dcci_entire 与《DCacheAccess》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [Scalar读写数据](../../../guides/technical_appendix/concepts_and_terms/memory_access/scalar_read_write.md)（`explains`）：asc_dcci_entire 与《Scalar读写数据》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_ldcg（内存访问函数）](asc_ldcg.md)（`related`）：asc_dcci_entire 与《asc_ldcg（内存访问函数）》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_stcg（内存访问函数）](asc_stcg.md)（`related`）：asc_dcci_entire 与《asc_stcg（内存访问函数）》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [AscDcci](../../simd_api/c_api/cache_ctrl/asc_dcci.md)（`same_topic`）：asc_dcci_entire 与《AscDcci》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_dcci_single](asc_dcci_single.md)（`same_topic`）：asc_dcci_entire 与《asc_dcci_single》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_dci（缓存控制）](../../simd_api/c_api/cache_ctrl/asc_dci.md)（`same_topic`）：asc_dcci_entire 与《asc_dci（缓存控制）》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
-- [asc_stwt（内存访问函数）](asc_stwt.md)（`same_topic`）：asc_stwt（内存访问函数） 与《asc_dcci_entire》的实质衔接是：asc_stwt 把数据写入 GM 并缓存到 DCache/L2；stcg/ldcg、缓存模式和 DCCI 共同决定写策略、后续读取及显式失效时机。
-- [缓存控制](../../simd_api/c_api/cache_ctrl/cache_control.md)（`same_topic`）：asc_dcci_entire 与《缓存控制》的实质衔接是：asc_dcci_entire 刷新整个 DCache，而 single 只针对地址；ldcg/stcg、C DCCI、缓存控制和 DCache 指南共同定义何时绕过或失效缓存。
+- [asc_dcci_single](asc_dcci_single.md)（`related`）：entire 卡说明“刷新核内整个 Data Cache，保证后续从 Global Memory 读取数据时 Cache 一致性。”并警告整缓存代价；single 卡说明“相比 asc_dcci_entire 仅刷新单条 Cache Line，适合轮询标志位等小范围刷新场景。”，给出按一致性范围和性能代价选择的直接分支。
 <!-- cannbot:related:end -->

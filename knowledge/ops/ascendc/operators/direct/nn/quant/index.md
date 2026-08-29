@@ -2,5 +2,5 @@
 
 本目录保存量化融合类 Direct Invoke 算子知识。
 
-- [DequantSwigluQuant A5](dequant_swiglu_quant_a5.md)：说明反量化、SwiGlu 与再量化的融合实现路线。
-- [DynamicQuant A5](dynamic_quant_a5.md)：说明动态量化的缩放、取整与 dtype 特化路线。
+- [DequantSwigluQuant 950](dequant_swiglu_quant_950.md)：说明反量化、SwiGlu 与再量化的融合实现路线。
+- [DynamicQuant 950](dynamic_quant_950.md)：说明动态量化的缩放、取整与 dtype 特化路线。

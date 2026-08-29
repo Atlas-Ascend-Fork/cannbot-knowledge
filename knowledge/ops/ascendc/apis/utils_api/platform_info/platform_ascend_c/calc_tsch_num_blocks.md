@@ -23,11 +23,3 @@ platforms: [agnostic]
 返回用于底层任务调度的核数。
 ## 约束说明
 无
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCoreNumAic](get_core_num_aic.md)（`related`）：CalcTschNumBlocks 还需结合 Cube 核数判断 AIC:AIV 拓扑比例；GetCoreNumAic 提供该资源侧输入。
-- [GetCoreNumAiv](get_core_num_aiv.md)（`related`）：CalcTschNumBlocks 计算 task scheduler block 数时需要 Vector 核资源信息；GetCoreNumAiv 提供分离架构下可用 AIV 数量。
-- [NumBlocks](../../../simt_api/cooperative_groups/grid_group/num_blocks.md)（`related`）：CalcTschNumBlocks说明针对Cube与Vector分离模式，计算融合算子启动的numBlocks值，即AIV与AIC组合数量，结果通过SetSimdNumBlocks设置。
-<!-- cannbot:related:end -->

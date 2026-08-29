@@ -23,7 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscNe](asc_ne.md)（`related`）：《AscNe》说明按元素判断src0 != src1是否成立，若成立则输出结果为1，否则为0。每个元素的比较结果占1个bit。 当结果输出到寄存器中时，可在计算完成后调用asc_get_cmp_mask获取比较结果。；《AscGeScalar》说明按元素判断src >= value是否成立，若成立则输出结果为1，否则为0。每个元素的比较结果占1个bit。。二者在AscNe生成1-bit比较结果并通过CMPMASK读取；Reg等价接口、标量变体和Eq/Gt边界用于确认谓词语义上存在可执行的直接衔接。
-- [AscEqScalar](asc_eq_scalar.md)（`same_topic`）：AscEqScalar 与《AscGeScalar》的实质衔接是：AscEqScalar 与其他标量比较共享 scalar 广播和 mask 输出契约；vector-vector Eq、灵活标量 Compare/Select 说明比较源形态及结果消费方式。
-- [AscGeScalar](../reg/compare_and_select/asc_ge_scalar.md)（`same_topic`）：焦点处理AscGeScalar 的标量比较 mask 及 Select 消费路径；AscGeScalar正文界定“按元素判断src >= value是否成立，若成立则输出结果为1，否则为0。每个元素的比较结果占1个bit”。候选生成相同 GE mask、提供标量 Compares，或由 Select/AscSelect 直接消费比较结果。
+- [AscGe](asc_ge.md)（`same_topic`）：Ge（greater than or equal to），逐元素比较src0 >= src1是否成立，成立则输出结果为1，否则输出结果为0，每个元素的比较结果占一个bit。；按元素判断src >= value是否成立，若成立则输出结果为1，否则为0。每个元素的比较结果占1个bit。。两卡在 A2/A3 vector_compute C API 中执行相同的逐元素大于等于比较并输出 bit 结果，分别覆盖矢量对矢量和矢量对标量，属于同一 AscGe 计算契约的操作数变体。
 <!-- cannbot:related:end -->

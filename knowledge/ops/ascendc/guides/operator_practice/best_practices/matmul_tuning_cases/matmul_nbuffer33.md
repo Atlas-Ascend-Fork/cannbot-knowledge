@@ -43,5 +43,6 @@ MTE2 Bound的场景，Tiling参数满足约束条件时，可以开启NBuffer33�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [IterateAll](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/iterate_all.md)（`explains`）：《IterateAll》说明调用一次IterateAll，会计算出singleCoreM \ singleCoreN大小的C矩阵。迭代顺序可通过tiling参数iterateOrder调整。；《Matmul高阶API开启NBuffer33模板》说明MTE2 Bound场景下开启NBuffer33模板，将A矩阵切分为3x3基本块错开搬运流水，平衡MTE2与FixPipe数据流量。。二者在IterateAll一次完成singleCoreM×singleCoreN，异步模式必须配WaitIterateAll并按GetTensorC/输出场景消费结果上存在可执行的直接衔接。
+- [MatmulPolicy](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_policy.md)（`explains`）：NBuffer33模板的详细介绍请参考MatmulPolicy。；涵盖以下类别：MatmulPolicy、TrianUpperMatmulPolicy/TrianLowerMatmulPolicy、NBuffer33MatmulPolicy、MatmulWithScalePolicy/SplitMMatmulPolicy/SplitNMatmulPolicy。指南的优化方案必须在 Kernel 对象侧选择 NBuffer33MatmulPolicy，API 卡给出该内置策略及其 MDL/GM 约束。
+- [SetMatmulConfigParams](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_matmul_config_params.md)（`explains`）：开启NBuffer33模板：在GetTiling接口前，调用SetMatmulConfigParams接口开启NBuffer33模式，使获取的Tiling满足要求；Kernel侧在创建Matmul对象时开启NBuffer33模板。；若Matmul对象使用NBuffer33模板策略，即MatmulPolicy为NBuffer33MatmulPolicy，则在调用GetTiling接口生成Tiling参数前，必须通过本接口将scheduleTypeIn参数设置为ScheduleType::N_BUFFER_33，以启用NBuffer33模板策略的Tiling生成逻辑。指南给出两端配置，API 卡钉死 Host Tiling 参数必须与 Kernel policy 一致。
 <!-- cannbot:related:end -->

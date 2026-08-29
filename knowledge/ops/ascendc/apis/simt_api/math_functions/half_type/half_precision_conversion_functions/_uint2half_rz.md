@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__uint2half_rd](_uint2half_rd.md)（`same_topic`）：__uint2half_rd 与《__uint2half_rz》的实质衔接是：uint→half 向下舍入的饱和形态与 RN/RNA/RU/RZ 变体共同定义溢出处理和舍入选择。
-- [__uint2half_rn](_uint2half_rn.md)（`same_topic`）：RN 保持 uint32→half 契约并采用最近偶数舍入，与 focal 的 RZ 截断语义直接对照。
-- [__uint2half_rna](_uint2half_rna.md)（`same_topic`）：__uint2half_rna 与《__uint2half_rz》的实质衔接是：这些接口共享 uint32→half 输入输出契约，RNA/RN/RD/RU/RZ 及 SAT 变体只改变中点舍入和溢出处理。
-- [__uint2half_ru](_uint2half_ru.md)（`same_topic`）：RU 对同一无符号转换向上舍入，与 RZ 在非精确可表示值上给出相反边界。
-- [__uint2half_rz_sat](_uint2half_rz_sat.md)（`same_topic`）：__uint2half_rz_sat 与《__uint2half_rz》的实质衔接是：uint→half RZ 的饱和/非饱和以及 RU/RD/RN/RNA 饱和变体共享输出类型，互相对照可确定大整数的截断和边界行为。
+- [__uint2half_rz_sat](_uint2half_rz_sat.md)（`related`）：“特殊值：2049→2048；4097→4096；ASCRT_MAX_NORMAL_FP16→ASCRT_MAX_NORMAL_FP16”给出焦点端事实；“本接口的饱和模式不生效。”给出候选端事实。普通 RZ 卡给出截断与最大值行为，RZ_SAT 卡明确 SAT 在 SIMT 场景不生效；联合阅读可避免把后缀误当作额外饱和保证。
 <!-- cannbot:related:end -->

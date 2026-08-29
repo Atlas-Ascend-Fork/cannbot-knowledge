@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__int2half_rd_sat](_int2half_rd_sat.md)（`related`）：该变体保持 int32→half 与 sat 标称模式，但把 CEIL 改为 FLOOR，可用于需要向下而非向上舍入的路径选型。
-- [__int2half_rn](_int2half_rn.md)（`same_topic`）：《__int2half_rn》的任务是“遵循CAST_RINT模式，将int32类型数据转换为half类型数据，返回转换后的值。”。《__int2half_ru_sat》具体提供“将int32类型数据转换为half类型数据，并遵循CAST_CEIL模式，返回转换后的值。”，它直接用于int32→half 的舍入与饱和组合选择。
-- [__int2half_rna_sat](_int2half_rna_sat.md)（`same_topic`）：《__int2half_rna_sat》处理“将int32类型数据转换为half类型数据，并遵循CAST_ROUND模式，返回转换后的值。”。《__int2half_ru_sat》明确提供“将int32类型数据转换为half类型数据，并遵循CAST_CEIL模式，返回转换后的值。”，其参数、调用或验证步骤直接接入int32 到 half 的舍入与 saturation 组合选择。
-- [__int2half_ru](_int2half_ru.md)（`same_topic`）：两者都是 int32→half、CAST_CEIL；非 sat 版本揭示 focal 名称中的 sat 在 SIMT 无法设置 CTRL 时实际不生效，数值行为应按非饱和边界验证。
-- [__int2half_rz](_int2half_rz.md)（`same_topic`）：《__int2half_rz》处理“遵循CAST_TRUNC模式，将int32类型数据转换为half类型数据，返回转换后的值。”。《__int2half_ru_sat》提供“将int32类型数据转换为half类型数据，并遵循CAST_CEIL模式，返回转换后的值。”，其具体合同或探针直接接入int32 到 half 的 TRUNC 与其他舍入/饱和组合选择。
+- [__int2half_ru](_int2half_ru.md)（`same_topic`）：功能：遵循CAST_CEIL模式，将int32类型数据转换为half类型数据，返回转换后的值。；功能：将int32类型数据转换为half类型数据，并遵循CAST_CEIL模式，返回转换后的值。。两端共享 int32 到 half 的 CAST_CEIL 转换核心合同，后者增加 sat 命名及其平台饱和模式边界，联合阅读可核对是否需要该变体。
 <!-- cannbot:related:end -->

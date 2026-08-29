@@ -27,7 +27,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [使用高阶API时配套的Tiling实现](../../../../guides/programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/tiling_with_advanced_api.md)（`explains`）：指南明确即使算子没有自定义临时数据，也要用 GetLibApiWorkSpaceSize 查询高阶 API 的系统 workspace 后再设置 Context。
-- [如何使用workspace](../../../../guides/programming_guide/appendix/common_operations/how_to_use_workspace.md)（`explains`）：workspace 指南给出 host 分配、地址下发和 kernel 使用流程，补全 GetLibApiWorkSpaceSize 只有返回字节数而没有生命周期的部分。
-- [SetSysWorkSpace](../../../simd_api/basic_api/resource_management/workspace/set_sys_work_space.md)（`same_topic`）：SetSysWorkSpace 与《GetLibApiWorkSpaceSize》的实质衔接是：SetSysWorkSpace 设置高阶 API 的系统区指针；Host 先用 GetLibApiWorkSpaceSize 计量，kernel 再经 GetSys/GetUserWorkspace 分区，RESERVED 故障验证偏移契约。
+- [GetSysWorkSpacePtr](../../../simd_api/basic_api/resource_management/workspace/get_sys_work_space_ptr.md)（`related`）：获取AscendC API需要的workspace空间大小。；获取系统workspace指针。部分高阶API如Matmul需要使用系统workspace，相关接口需要传入系统workspace指针，此时可以通过该接口获取。使用系统workspace时，host侧开发者需要自行申请系统workspace的空间，其预留空间大小可以通过GetLibApiWorkSpaceSize接口获取。。GetLibApiWorkSpaceSize 给出 Host 侧预留容量，GetSysWorkSpacePtr 明确该容量由 Host 申请后在 Kernel 侧取得系统 workspace 指针，二者是同一 workspace 生命周期的容量端与地址端。
 <!-- cannbot:related:end -->

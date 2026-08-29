@@ -199,18 +199,3 @@ __aicore__ inline void CopyIn(int64_t r)
 ## 误诊
 
 轨迹中曾把小维失败怀疑为 `ReduceSum` 小计数限制或 V→S 同步竞争；这些只是 `agent_reported` 假设。真正可验证的区分信号是：仅调整分配/补零覆盖范围、不改规约公式和同步后，全部 NPU pytest 立即通过。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [归约计算](../../apis/simd_api/basic_api/reg_vector_compute/reduction_compute/reduction_compute.md)（`exemplifies`）：《归约计算》处理“Reg矢量计算归约接口索引页，包含Reduce、ReduceDataBlock与PairReduceElem。”。《DataCopyPad 未填满强制对齐缓冲 — 小维规约读入脏尾部》提供“行缓冲强制扩到固定向量长度、rightPadding 却只覆盖较短 DMA 边界时，小归一化维会把未初始化 UB 尾部纳入规约；用 32/sizeof(T) 统一分配与补零粒度。”，其具体合同或探针直接接入规约 count、尾部填充、并行切核和 UB 容量的直接正确性约束。
-- [归约计算概述](../../apis/simd_api/basic_api/memory_vector_compute/reduction_compute/introduction.md)（`exemplifies`）：归约计算概述 与《DataCopyPad 未填满强制对齐缓冲 — 小维规约读入脏尾部》的实质衔接是：基础归约概述说明 pair、datablock、repeat 与全量 reduce 的粒度选择；使用指南和故障卡限定有效 count、对齐尾部、work buffer、累加类型及多行验证。
-- [DataCopyPad rightPad 字段为 uint8_t](../compilation/datacopypad_rightpad_uint8_t.md)（`related`）：目标卡展示 rightPadding 数值不足会留下 UB 脏尾部；本卡确保表达该数值时使用正确的 uint8_t 字段类型，连接编译契约与规约正确性验证。
-- [DataCopyPad 加载缺少 Pad 参数导致编译失败](../compilation/datacopypad_gm_to_ub_requires_pad_params.md)（`related`）：GM→UB DataCopyPad 的 pad 参数决定尾部写入值；缺失时无法依赖搬运自动初始化 reduction tail。
-- [DataCopyPad多行stride单位误用导致非对齐行输出NaN](datacopypad_stride_fields_use_32_byte_block_units.md)（`related`）：初始化 reduction extent 前必须按 32B block 理解搬入跨度，否则 tail 范围和物理行布局都会算错。
-- [Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差](reduce_lane0_must_be_broadcast_before_vector_normalization.md)（`related`）：归约后不仅 tail 要干净，lane0 标量还需广播到有效向量范围，二者共同保证后续归一化输入完整。
-- [窄尾 tile 行距错位：补齐 UB gap](datacopypad_narrow_tile_needs_explicit_ub_row_gap.md)（`related`）：窄 tile 的 UB 行 gap 会留下未写区域；若参与归约必须显式初始化完整 extent。
-- [AR 输出张量未初始化导致 Softmax 部分用例错](softmax_ar_output_buffer_must_be_initialized_from_input.md)（`same_topic`）：两卡都处理归约读取了未初始化 UB：一张针对 DataCopyPad tail，一张针对 AR 输出 buffer 的初值。
-- [DataCopyPad stride 表示 block 间隙](datacopypad_stride_is_inter_block_gap.md)（`same_topic`）：DataCopyPad stride 表示 block 间隙 与《DataCopyPad 未填满强制对齐缓冲 — 小维规约读入脏尾部》的实质衔接是：这些卡都直接解释 DataCopyPad 的 stride 是有效 block 后的 gap，并覆盖32B单位、窄尾padding、逐行复制、非连续子块、NDDMA stride及官方GM→L1参数契约。
-- [Reduce count 必须排除 DMA 对齐填充元素](reduction_count_excludes_dma_padding.md)（`same_topic`）：Reduce count 必须排除 DMA 对齐填充元素 与《DataCopyPad 未填满强制对齐缓冲 — 小维规约读入脏尾部》的实质衔接是：DMA 对齐容量不是 Reduce 的数学 count；DataCopyPad/padding 故障、Softmax 与 ReduceMax/Sum 各层入口共同验证填充零经 Exp 后会污染分母。
-<!-- cannbot:related:end -->

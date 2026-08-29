@@ -25,9 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Truncf](truncf.md)（`related`）：《Modff》说明将输入参数分解为小数部分和整数部分。；《Truncf》说明返回输入按向零方向截断后的整数部分，结果仍为float。。二者在Modff返回小数部分并通过指针写整数部分；Truncf给出其向零截断的整数分量上存在可执行的直接衔接。
-<!-- cannbot:related:end -->

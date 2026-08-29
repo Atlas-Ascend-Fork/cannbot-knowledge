@@ -21,5 +21,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ASC_CPU_LOG](asc_cpu_log.md)（`same_topic`）：AscCpuLog 是 Log 工具的具体 Host/CPU 输出入口。
+- [ASC_CPU_LOG](asc_cpu_log.md)（`same_topic`）：提供 Host 侧日志打印接口 ASC_CPU_LOG，包含 ASC_CPU_LOG_ERROR、ASC_CPU_LOG_INFO、ASC_CPU_LOG_WARNING、ASC_CPU_LOG_DEBUG 四个级别，可在算子的 TilingFunc 代码中输出调试信息。；提供Host侧打印Log的功能。开发者可以在算子的TilingFunc代码中使用ASC_CPU_LOG_XXX接口来输出相关内容。一般情况下，开发者也可以选择使用printf等Host侧通用的打印方式进行调试。然而，在Tiling下沉场景中，由于Tiling函数运行在AI CPU上，必须使用本接口进行打印。。总览卡列出 ASC_CPU_LOG 级别，接口卡补充 Tiling 下沉到 AI CPU 时必须使用该日志接口的诊断合同。
 <!-- cannbot:related:end -->

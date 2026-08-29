@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
     role: implementation
 created_at: "2026-08-25T18:19:46Z"
-updated_at: "2026-08-25T18:19:46Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -129,7 +129,7 @@ else:
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台 guard | `!IsRegbaseSocVersion(context_)` | legacy POD/body 仅非 RegBase 实例化 | 两条 | A5 V3 分支 | 两个 `IsCapable` |
+| 平台 guard | `!IsRegbaseSocVersion(context_)` | legacy POD/body 仅非 RegBase 实例化 | 两条 | 950 V3 分支 | 两个 `IsCapable` |
 | 最小 UB tile | `tmpTotalSize <= UB_SIZE` | 即使一个输出也需 input/max/index/temp/mask 全部区 | R-001 | R-002 | `NoExpandIndicesTiling::IsCapable/DoBufferCalculate` |
 | dilation | D/H/W 都等于 1 | R-001 的 transpose/连续索引与 R-002 的窗口 body 前提 | 两条 | ACLNN 参数错误 | `CheckShape`、两个 `IsCapable` |
 | INT64 indices | 用户 dtype INT64 | legacy Device ABI 固定 int32 | executor 增 Cast | Cast 失败即 API 失败 | `ExecMaxPool3dWithIndicesGetWorkspaceSize` |
@@ -462,9 +462,9 @@ for (int32_t dhwLoop = 0; dhwLoop < dhwLoops; dhwLoop++) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，但见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，但见独立 `_950` 卡 |
 | Host/Launcher | 非 RegBase，2D→NCDHW V2 | 与 A2 共用 DAV_2201 路线 | RegBase 直接 MaxPoolWithArgmaxV3 |
 | Kernel/资源 | R-001/R-002 AIV | 同 A2 | Gather/BigKernel/NHWC/SIMT 等 arch35 实现 |
 
@@ -505,3 +505,9 @@ for (int32_t dhwLoop = 0; dhwLoop < dhwLoops; dhwLoop++) {
 | 同步 | Queue/barrier/event 模式可复用 | MTE/Vector/Scalar 依赖不可省 | 两个 body |
 | 精度与尾块 | BF16 升 FP32、输出 round、valid-tail 写回 | NaN/index tie 顺序与 blockTail 不可改 | `PoolMaxAndIndices`、`Compute/UpdateMax` |
 | 失败边界 | R-001→R-002 的优先级闭合 | 不得把后续 dormant legacy route写成 2D 可达 | 两个 `REGISTER_TILING_TEMPLATE` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MaxPool2dWithIndices 950 ACLNN 算子知识](max_pool2d_with_indices_950.md)（`same_topic`）：对输出 `(n,c,oh,ow)`，窗口起点为 `(oh*sH-pH, ow*sW-pW)`，沿 H/W 以 dilation 采样；有效输入中的最大值写 `out`，其 `ih*Win+iw` 写 `indices`。；令 `ih=oh*sH-pH+mh*dH`、`iw=ow*sW-pW+mw*dW`，则 `out［n,c,oh,ow］` 是所有合法 `(ih,iw)` 上的最大输入值，`indices［n,c,oh,ow］=ih*W+iw`。；两卡定义同一 MaxPool2dWithIndices 的窗口最大值与展平索引语义，950 卡补充 NHWC、正 dilation 与 SIMT fallback，A2/A3 卡闭合 NCHW 和 dilation 等于一的两条 AIV 路线。
+<!-- cannbot:related:end -->

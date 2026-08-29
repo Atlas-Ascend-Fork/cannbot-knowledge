@@ -56,3 +56,10 @@ platforms:
 - 配套：[gaussian-filter](gaussian_filter.md)（视锥剔除 + 反向 Scatter 还原）、[spherical-harmonics](spherical_harmonics.md)（颜色来源）
 - 下游：[precise-intersection](precise_intersection.md)（消费本算子产出的 2D 投影属性 means2d/conics/covars2d 算高斯-tile 精确相交）
 - 跨域：[ascendc](../../../inference/concepts/frameworks/ascendc.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [3D Gaussian Splatting 昇腾 Atlas A2 训推优化实践](../algorithms/3d_gaussian_splatting.md)（`related`）：“3DGS 用一组 3D 高斯椭球表示场景，每个高斯球带均值 `means`、四元数 `quats`、缩放 `scales`、不透明度 `opacities`、球谐系数（`sh0`/`shN`）。渲染（光栅化）流程在 ［`rasterization/rasterizer.py`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/algorithms/gaussian_splatting/rasterization/rasterizer.py) 的 `_ascend_rasterization` 中实现，内部按顺序调用并串联各自研算子（导入自 ［`meta_gauss_render`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/meta_gauss_render/__init__.py)）：”与“投影预处理把 3D 高斯球的均值与协方差由 3D 球面投影到 2D 平面，得到光栅化所需的 2D 均值 `means2d`、协方差/锥参 `conics`/`covars2d`、深度 `depths`、半径 `radius` 等属性。”分别给出双端正文事实；算法卡把光栅化组织为自研算子流水，Projection-3DGS 卡生产后续精确相交与排序消费的 2D 属性，连接场景高斯表示与渲染预处理阶段。
+- [Precise Intersection（FlashGaussianBuildMask）—— 3DGS 高斯球-像素块精确相交算子](precise_intersection.md)（`related`）：“- 上游：［projection-3dgs］(projection_3dgs.md)（提供 2D 投影属性）；下游：［gaussian-sort］(gaussian_sort.md)、［calc-render］(calc_render.md)”与“- 下游：［precise-intersection］(precise_intersection.md)（消费本算子产出的 2D 投影属性 means2d/conics/covars2d 算高斯-tile 精确相交）”提供双方正文证据。双方正文明确给出 projection 的 means2d、conics、covars2d 是 precise-intersection 的上游输入，构成 3DGS 光栅流水的生产者到消费者边。
+<!-- cannbot:related:end -->

@@ -22,11 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h](../../../../runbooks/compilation/asc_simd_umbrella_header_for_c_api_symbols.md)（`exemplifies`）：焦点处理C API DeqScale 与 dequant 计算及头文件约束；ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h正文说明“CANN 9.2.0 的 vector_compute.h 是声明源头但不是自包含用户入口；直接 include 会缺内部前置定义，改用 asc_simd.h umbrella”。候选读取 DeqScale 完成 dequant，或给出 C API 可编译的包含与配置边界。
-- [AscDeqInt162b8](asc_deq_int162b8.md)（`same_topic`）：焦点处理C API DeqScale 与 dequant 计算及头文件约束；AscDeqInt162b8正文说明“将 int16_t 转换为 int8_t 或 uint8_t，并把结果写入每个 DataBlock 的高半块或低半块；调用前需通过 asc_set_deq_scale 设置量化参数”。候选读取 DeqScale 完成 dequant，或给出 C API 可编译的包含与配置边界。
-- [AscDeqInt322half](asc_deq_int322half.md)（`same_topic`）：焦点处理C API DeqScale 与 dequant 计算及头文件约束；AscDeqInt322half正文说明“对输入的int32_t类型的数据按元素做量化并转换为half类型”。候选读取 DeqScale 完成 dequant，或给出 C API 可编译的包含与配置边界。
-- [AscVdeqInt162b8](asc_vdeq_int162b8.md)（`same_topic`）：焦点处理C API DeqScale 与 dequant 计算及头文件约束；AscVdeqInt162b8正文说明“将 int16_t 转换为 int8_t 或 uint8_t，并把结果写入每个 DataBlock 的上半块或下半块；调用前需通过 asc_set_deq_scale 设置量化参数”。候选读取 DeqScale 完成 dequant，或给出 C API 可编译的包含与配置边界。
-- [CastDequant](../../basic_api/memory_vector_compute/composite_compute/cast_dequant.md)（`same_topic`）：焦点处理C API DeqScale 与 dequant 计算及头文件约束；CastDequant正文说明“对输入做量化并进行精度转换，对输出结果的溢出采用饱和处理。需与SetDeqScale接口配合使用”。候选读取 DeqScale 完成 dequant，或给出 C API 可编译的包含与配置边界。
-- [SetDeqScale](../../basic_api/memory_vector_compute/type_conversion_aux_config/set_deq_scale.md)（`same_topic`）：焦点处理C API DeqScale 与 dequant 计算及头文件约束；SetDeqScale正文说明“设置DEQSCALE寄存器的值，用于Vector计算单元上的量化计算，支持不同场景的量化参数配置”。候选读取 DeqScale 完成 dequant，或给出 C API 可编译的包含与配置边界。
-- [类型转换辅助配置接口](../../basic_api/memory_vector_compute/type_conversion_aux_config/type_conversion_aux_config.md)（`same_topic`）：焦点处理C API DeqScale 与 dequant 计算及头文件约束；类型转换辅助配置接口正文说明“类型转换辅助配置接口索引页，包含SetDeqScale”。候选读取 DeqScale 完成 dequant，或给出 C API 可编译的包含与配置边界。
+- [AscVdeqInt162b8](asc_vdeq_int162b8.md)（`related`）：使用该接口前需要调用asc_set_deq_scale设置量化参数；设置DEQSCALE（量化参数）寄存器的值。前者明确把后者作为 int16 到 8 位反量化转换的调用前置条件，后者提供被消费的 DEQSCALE 配置。
 <!-- cannbot:related:end -->

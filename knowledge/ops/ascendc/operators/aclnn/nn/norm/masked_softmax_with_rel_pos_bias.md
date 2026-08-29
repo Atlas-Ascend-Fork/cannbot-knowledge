@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/masked_softmax_with_rel_pos_bias/op_host/config/ascend910_93/masked_softmax_with_rel_pos_bias_binary.json
     role: implementation
 created_at: "2026-08-25T18:04:36Z"
-updated_at: "2026-08-25T18:04:36Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -748,7 +748,7 @@ x、mask、bias 先 cast 到独立 FP32 子区，缩放与两次加法交替写 
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开 ACLNN 文档支持；OpDef `ascend910b`、binary config闭合 | 公开 ACLNN 文档支持；OpDef `ascend910_93`、binary config闭合 | 公开 README/API 明确不支持；不生成卡 |
 | Host/Launcher | 与 A3 共用 Tiling；运行时 SoC 枚举为 `ASCEND910B` 时 workspace=16MiB | 与 A2 共用；若枚举非 `ASCEND910B` 则 workspace=0，固定仓不外推产品映射 | 虽有 `ascend950` OpDef 实现信号，但与公开“不支持”冲突，不能发布 |
@@ -762,7 +762,7 @@ x、mask、bias 先 cast 到独立 FP32 子区，缩放与两次加法交替写 
 - shape 乘积大量写入 `uint32_t`，DMA `blockCount/blockLen` 又多处窄化到 `uint16_t`；固定源码未提供统一溢出 guard或 fallback。
 - BF16 router 受编译宏保护；guard不满足时对应 key分支无 body，固定 entry没有显式 unknown-key错误写回。
 - R-003 尾批 `SoftMaxShapeInfo` 源码以 `stackSize*S1` 初始化，tail路径未按 `tail*S1` 改写；本文只记录该源码边界，不推测库如何处理额外行。
-- A5公开产品表与实现接线冲突，按公开文档优先，不生成 `_a5` 卡。
+- 950公开产品表与实现接线冲突，按公开文档优先，不生成 `_950` 卡。
 - ACLNN生成 bridge、TilingData序列化宏、`SoftMaxTiling` 布局与 AscendC SoftMax primitive内部临时区属于固定仓外框架边界。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
@@ -772,7 +772,7 @@ x、mask、bias 先 cast 到独立 FP32 子区，缩放与两次加法交替写 
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | norm/masked_softmax_with_rel_pos_bias/docs/aclnnMaskedSoftmaxWithRelPosBias.md | 两段式原型、产品表、错误表 | ACLNN公开性、A2/A3/A5、shape/dtype |
+| 入口声明/约束 | norm/masked_softmax_with_rel_pos_bias/docs/aclnnMaskedSoftmaxWithRelPosBias.md | 两段式原型、产品表、错误表 | ACLNN公开性、A2/A3/950、shape/dtype |
 | 入口实现 | norm/masked_softmax_with_rel_pos_bias/op_host/masked_softmax_with_rel_pos_bias_def.cpp | `MaskedSoftmaxWithRelPosBias` OpDef | AutoContiguous、support_aclnn、平台配置 |
 | 入口实现 | norm/masked_softmax_with_rel_pos_bias/op_host/masked_softmax_with_rel_pos_bias_infershape.cpp | `InferShapeMaskedSoftmaxWithRelPosBias`, `InferDataTypeMaskedSoftmaxWithRelPosBias` | out复制x的shape/dtype |
 | Host/Tiling/POD | norm/masked_softmax_with_rel_pos_bias/op_host/masked_softmax_with_rel_pos_bias_tiling.h | `MaskedSoftmaxWithRelPosBiasTilingData` | POD字段顺序 |
@@ -797,4 +797,4 @@ x、mask、bias 先 cast 到独立 FP32 子区，缩放与两次加法交替写 
 | workspace/内存 | workspace不进入Kernel算法；UB由Route guard控制 | Queue depth必须计入，mask/bias/cast分区offset不能改 | 各 `IsCapable/InitBuffer` |
 | 同步 | Queue同步DMA/Vector，PIPE_V同步连续Vector写读 | tensor释放前消费完成 | `EnQue/DeQue/FreeTensor/PipeBarrier` |
 | 精度与尾块 | FP16/BF16升FP32；BF16 RINT；S2a只为UB布局 | SoftMax逻辑末维必须保持S2，CopyOut只写S2 | 各 `Compute/CopyOut*` |
-| 失败边界 | priority fallthrough直到BWNS1，最后失败 | A5文档冲突不可用实现配置覆盖；unknown/BF16 guard不可猜测 | registry + docs产品表 + entry |
+| 失败边界 | priority fallthrough直到BWNS1，最后失败 | 950文档冲突不可用实现配置覆盖；unknown/BF16 guard不可猜测 | registry + docs产品表 + entry |

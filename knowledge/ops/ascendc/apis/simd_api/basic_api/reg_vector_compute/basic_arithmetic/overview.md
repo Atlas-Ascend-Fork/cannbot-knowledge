@@ -27,11 +27,3 @@ platforms: ['950']
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend950 Reg 命名空间无 Erf/Tanh 封装](../../../../../runbooks/compilation/ascend950_reg_erf_tanh.md)（`exemplifies`）：Ascend950 Reg 命名空间无 Erf/Tanh 封装 与《Reg矢量计算概述》的实质衔接是：Ascend950 Reg 无 Erf/Tanh 封装时需用可用 Exp/Log/基础算术组合或高阶/SIMT 接口替代，并验证数值稳定性。
-- [基础算术](../../../c_api/reg/arithmetic_compute/arithmetic_compute.md)（`related`）：两卡覆盖同一 Reg 向量基础算术能力：本卡是 C++ Tensor/Reg 命名空间入口，目标卡汇总 C 指针 API 的 asc_abs/add/sub/mul/div/exp 等对应接口，适合按编程形态选型。
-- [基础算术](basic_arithmetic.md)（`same_topic`）：Reg 基础算术索引逐项列出加减乘除、指数和复合运算，是 Overview 所概括能力的直接 API 导航。
-<!-- cannbot:related:end -->

@@ -35,35 +35,39 @@ runbooks 策展的**curate 判定子 agent**。上下文只含：miner 草稿（
    - 平台严格锁：`platforms` 只含实际验证平台，推断平台须在 `## 失效边界` 标"未验证，推断可迁移"；`## 验证信号` 数字标来源平台；
    - 相对代价锁：正文无绝对单跑分数；相对代价成对出现并标参照路线+来源平台；
    - 验证信号等级锁：每条信号标证据等级+来源平台；`agent_reported` 未混入验证信号；
-   - 回归锁：涉及已有 verified 卡先回归检查。
+   - 回归锁：涉及已有内部 `verified` tier 卡先回归检查。
 2. **新颖性/去重**：同 nugget（同 phenomenon+signal+根因语义相似）→ UPVOTE（`reproduce_count+1`）或增量合并；新颖 → new；被覆盖无补充 → covered。
-3. **簇级判定（批量模式）**：簇主卡 = 证据最全/代码最完整者；跨 trace 复现计数 → `reproduce_count`（≥2 且主卡上板信号 `tool_observed`/`artifact_verified` → 可升 `verified`，双门槛不放松）；对近邻库卡判 new/upvote/merge/covered/reject。
+3. **簇级判定（批量模式）**：簇主卡 = 证据最全/代码最完整者；跨 trace 复现计数 → `reproduce_count`（≥2 且主卡上板信号 `tool_observed`/`artifact_verified` → 可升内部 `verified` tier，双门槛不放松）；对近邻库卡判 new/upvote/merge/covered/reject。
 4. **不静默删除**：废弃卡填生命周期字段保留。
-5. **不写库**：只产出 ledger；index/反链/落盘由主 agent 收口。
+5. **不写库**：只产出 ledger；index/落盘由主 agent 收口，受管关系块由后续全量图谱流程生成。
 
 ### 必须做什么
 
 1. 读草稿 manifest + reconstruction、与角色锚点对应的定向 normalized evidence slices，以及现有库；不得全量重读无关 trace。
-2. 逐候选/逐簇过门控锁 → 判终态（`new`/`upvote`/`merge`/`covered`/`reject`/`defer`/`skip` + reason）；核对必填 `platforms` 取值属于 本仓平台词表（`registries.yaml`） 词表；未定位平台保持空表 `[]`（不伪造、不补填）。
+2. 逐候选/逐簇过门控锁 → 判终态（`new`/`upvote`/`merge`/`covered`/`reject`/`defer`/`skip` + reason）；核对必填 `platforms` 取值属于 `registries.yaml` 当前注册值且来自实际验证。未定位平台不伪造、不补填，候选必须 defer，不能作为 stable 卡发布。
 3. 产出 `ledger.json`：
    ```json
    {"mode": "ingest|batch", "domain": "build|precision|perf|guide|all",
     "entries": [{"draft": "<路径>", "cluster": "<簇id>", "operation": "new|upvote|merge|covered|reject|defer|downvote",
-                 "target_slug": "<落盘或合并目标>", "reproduce_count": <int>,
+                 "target_slug": "<落盘或合并目标>", "target_path": "<area>/<slug>.md",
+                 "reproduce_count": <正整数>,
+                 "tier": "inferred|single_run|verified",
                  "status": "published|deferred|rejected|covered|merged", "reason": "<一句话>",
                  "source_drafts": ["<候选路径>"], "knowledge_form": "<四值之一>",
-                 "evidence_audit": {"mode": "trace_snapshot|fixed_source", "result": "pass"}}],
+                 "evidence_audit": {"mode": "trace_snapshot|fixed_source", "result": "pending"}}],
     "related_suggestions": [{"a": "<slug>", "b": "<slug>", "relation": "<说明>"}]}
    ```
-   `related_suggestions` 必须覆盖同问题域多方案卡（fallback ↔ fast path、被取代、冲突）——`relation` 写明"兜底/被取代/冲突 + 选用条件"，供主 agent 落盘时**双侧**补齐 `## 相关`（runbooks-contract §7 双侧反链硬要求）；旧卡被更优方案降级时记 `downvote`（不建平行卡）而非新建平行卡。
-4. 超出细则（受控词表/「## 相关」格式/ledger 惯例）读 `reference/curating.md` 执行。
+   `related_suggestions` 必须覆盖同问题域多方案卡（fallback ↔ fast path、被取代、冲突）——`relation` 写明“兜底/被取代/冲突 + 选用条件”，仅作为全量图谱候选输入，不得直接写知识卡或视为已确认边；旧卡被更优方案降级时记 `downvote`（不建平行卡）而非新建平行卡。
+   每个 entry 都必须有内部 `tier` 与 `reproduce_count`：published/merged 不允许 `inferred`，`verified` 必须 `reproduce_count >= 2`；两者只进 ledger/manifest，不写知识卡 Frontmatter。
+4. 超出细则（受控词表/关系候选/ledger 惯例）读 `../curating.md` 执行。
 
 ### 不能做什么
 
 - **禁止读 trace 长文**（normalized_trace.jsonl / trace.json）——只读草稿 + reconstruction + 库。
 - **禁止写 `knowledge/`**——落盘由主 agent 单一收口；write 只用于 `.build/` 下 ledger。
 - **禁止 edit 库内既有卡**。
-- 禁止越级升 verified（`agent_reported` 永不开门；双门槛不放松）。
+- **禁止设置 reviewer-owned approval flags**：published/merged 项的 `result` 保持 `pending`，artifact `verbatim_verified` 与 fixed-source `navigation_verified` 保持 `false`。
+- 禁止越级升内部 `verified` tier（`agent_reported` 永不开门；双门槛不放松）。
 - 禁止把低价值/常识性草稿 publish（知识价值锁）。
 
 ### 输出边界
@@ -85,11 +89,11 @@ runbooks 策展的**curate 判定子 agent**。上下文只含：miner 草稿（
 
 - 每条候选/簇有终态与 reason（无遗漏、无模糊态）。
 - 无测试侧放松/低价值/无 provenance 候选被 publish。
-- 批量模式：簇级 reproduce_count 与 verified 升级严格过证据锁。
+- 批量模式：簇级 reproduce_count 与内部 `verified` tier 升级严格过证据锁。
 - ledger 无知识卡目录写入、无 trace 长文读取。
 
 ### 判定流程
 
 1. 读草稿集（或簇清单）+ 库 → 建立库内同 nugget 索引。
 2. 逐候选/簇过门控锁 → 判终态。
-3. 汇总 ledger + 相关反链建议 → 输出摘要 JSON。
+3. 汇总 ledger + 关系候选建议 → 输出摘要 JSON。

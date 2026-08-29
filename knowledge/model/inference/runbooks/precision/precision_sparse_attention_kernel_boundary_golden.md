@@ -74,3 +74,11 @@ sparse_indices = np.transpose(sparse_indices, axes=(0, 2, 1, 3))   # 遗漏这�
 - diff 事实（@3253316）：两处 kernel `GetS2BaseBlockNumOnMask` 各加 `actS2Size==0` 早退；phantom block 内部机制为读上下文推断。溯源下探 [cann-recipes-infer-pr-161-fix-fix-precisionfail-when-acts2-0](https://gitcode.com/cann/cann-recipes-infer/merge_requests/161)
 - diff 事实（@04f9edd83104，+2 −6 单文件）：`s2ProcessSize` 本地重算 → 改用 `actualSingleProcessSInnerSize`；`curlen==0` 触发链为对 diff + 上下文的机制推断。溯源下探 [cann-recipes-infer-pr-148-fix-fix-precisionfail-in-curlen-equal-0](https://gitcode.com/cann/cann-recipes-infer/merge_requests/148)
 - diff 事实 + 维护者确认（buggy 父 @8dd3a3b / 修复 @918b806）：真值新增 `sparse_indices` 转置 + 用例改真实 per-batch 长度 + 新增 TND/PA_BSND 用例；reporter 复核真值修改无误。溯源下探 [cann-recipes-infer-issue-40-bug-report-sparsefa-cpu-sparse-flash-attention-sparse-indices](https://gitcode.com/cann/cann-recipes-infer/issues/40)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscendC kernel 用无符号整型算有效长度：负差下溢 + Max(x,0) 对无符号是空操作 → 无效 / 短行 aic error](../runtime/ascendc_kernel_unsigned_underflow_invalid_row.md)（`related`）：这类精度 bug 集中在两处：**kernel 内部的变长 / 零长度 (KV 长度为 0) 边界处理**，以及**CPU 真值 (golden) 校验脚本的布局与用例设计**。；这类 bug 只在特定 shape（有效 S1 > 有效 S2 的行）暴露，标定 shape 的自测常测不到；验证要覆盖「短行 / 长度差为负」的边界场景。；目标卡把焦点的变长边界问题收敛到无符号差值下溢和短行验证用例。
+- [Lightning Indexer Kernel](../../concepts/kernels/lightning_indexer.md)（`related`）：“DSA 计算链路：`MLAProlog + IndexerProlog → LightningIndexer → SparseFlashAttention → MLAEpilog`。LI 的输出是 TopK index 张量，SFA 据此 Gather 稀疏 KV；在长序列场景下 LI 的 TopK 排序成为主要热点。”；“变长 batch 里某条序列实际 KV 长度（`actS2Size`）为 0 时，计算掩码下 S2 base block 数量的函数若不短路，负算术（`validS2LenBase = 0 - actS1Size` 为负）会算出非零 / 错误块数，使 preload 处理并不存在的 KV 数据→精度失败。”。目标 runbook 给出 LI/SFA 变长零 KV 的 phantom block 失败链和早退修法，可验证焦点链路的边界形状。
+- [SparseFlashAttention 950 Direct Invoke 算子知识](../../../../ops/ascendc/operators/direct/transformer/attention/sparse_flash_attention_950.md)（`related`）：“｜ 计算语义 ｜ 对每个 query row/head 依 `sparseIndices` 收集 K，计算 `softmax(scaleValue·QKᵀ)K［:Dv］`；causal 以索引实值应用 right-down 边界。 ｜”与“- 陷阱 2 参考实现：`sparse_flash_attention_antiquant` 的 MLA 向量算子（`ElewiseCompute` / `MergeKv` 的 `s2ProcessSize`），触发条件 `sparseBlockSize != 1` / `curlen==0`。”。Direct SFA 以 sparseIndices 驱动稀疏计算，Runbook 给出同族 kernel 的零长度和有效长度验证边界。
+<!-- cannbot:related:end -->

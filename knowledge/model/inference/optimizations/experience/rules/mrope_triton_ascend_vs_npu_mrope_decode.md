@@ -12,9 +12,10 @@ sources:
 - resource: https://github.com/vllm-project/vllm-ascend/pull/6009
   role: evidence
 created_at: '2026-07-15T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
+- 310p
 ---
 
 # 昇腾多模态 M-RoPE 优先走 triton-ascend triton_mrope，decode 吞吐优于原生 npu_mrope
@@ -82,7 +83,7 @@ if HAS_TRITON and positions.ndim == 2:
 
 - **参考实现**：vllm-ascend 文件 `vllm_ascend/ops/rotary_embedding.py`，类 `AscendMRotaryEmbedding(MRotaryEmbedding)`，`forward_oot` 分派 + `forward_triton`。`triton_mrope` 从 `vllm.model_executor.layers.rotary_embedding.mrope` 导入。triton 侧依赖 `triton-ascend`（记录版本 3.2.0.dev20260105）。
 - **该实现的约束（非技术本身的约束）**：
-  - 原生回退分支还带一层判定——`mrope_section != [16, 24, 24]` 或设备为 A5（`AscendDeviceType.A5`）时走父类 `super().forward_oot`；这是该仓当下的硬编码分派边界，迁移到别处不必照搬。
+  - 原生回退分支还带一层判定——`mrope_section != [16, 24, 24]` 或设备为 950（`AscendDeviceType.A5`）时走父类 `super().forward_oot`；这是该仓当下的硬编码分派边界，迁移到别处不必照搬。
   - 早期版本曾把 triton 门写死为 `mrope_section == [24, 20, 20]`（仅 Qwen3-VL 特定 mrope_section），后泛化为 `positions.ndim == 2`；说明「按具体 mrope_section 精确匹配」是过窄的门，应按二维 position 泛化。
   - 原生 `npu_mrope` 路径注明待 CANN 8.5.0 更新，属阶段性回退实现。
 
@@ -99,3 +100,11 @@ if HAS_TRITON and positions.ndim == 2:
 - 平台页：[atlas-a3](../../../concepts/platforms/atlas_a3.md)（支持 Triton 的昇腾平台；310P 无 Triton 须回退原生）
 - 同族 RoPE 算子选型经验：[interleaved-rope-npu-op-selection](../../../runbooks/precision/interleaved_rope_npu_op_selection.md)（交错 RoPE 必须用专用算子、通用 RoPE 融合算子会破精度）
 - Triton 不可用时的回退判断：[ascend-310p-no-triton-kernel-eager-fallback](../../../runbooks/runtime/ascend_310p_no_triton_kernel_eager_fallback.md)（310P 不支持 Triton kernel，须补 host/eager 等价路径）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 310P 不支持 Triton kernel：走 Triton 的算子须补纯 host/eager 等价路径](../../../runbooks/runtime/ascend_310p_no_triton_kernel_eager_fallback.md)（`related`）：“- 依赖 `triton-ascend`（［Atlas A3］(../../../concepts/platforms/atlas_a3.md) / A2 支持 Triton；Ascend 310P 不支持 Triton，须自动回退）。”；“在 **Ascend 310P（Atlas 300I 推理卡系列 / 300I Duo）** 上做 bringup / 跑推理时，凡是通用（跨平台）执行路径经由 **Triton kernel** 实现的算子，在 310P 上都不可用——310P 硬件不支持 Triton。”。经验卡的 310P 自动回退条件由 runbook 的硬件能力边界直接解释。
+- [Triton-on-Ascend（昇腾 Triton 算子后端）](../../../../training/concepts/frameworks/triton_on_ascend.md)（`related`）：“- 若 `HAS_TRITON`（triton-ascend 构建可用）**且** `positions.ndim == 2`（二维 M-RoPE position）→ **优先走 `triton_mrope` kernel**（`forward_triton` 路径）。”；“Triton-on-Ascend 让用 **Triton DSL**（`@triton.jit` + `tl.load/store` + `tl.dot` 的 SPMD 内核语法）写的融合算子直接跑在昇腾 NPU 上”。经验卡的 triton_mrope 选型依赖后者定义的 Triton-on-Ascend 执行后端。
+- [交错 RoPE 必须用 npu_interleave_rope，通用 RoPE 融合算子替换会破精度（cos_sim≈0）](../../../runbooks/precision/interleaved_rope_npu_op_selection.md)（`related`）：排障卡界定“模型用交错 RoPE（interleaved：相邻维两两配对旋转），排布与常规 rotate_half RoPE 不同。”；M-RoPE 选型卡明确“仅针对**多模态 M-RoPE**（二维 position），不针对普通一维 RoPE。”，两张卡共同提供按位置编码布局先分类、再选择专用实现的分流边界。
+<!-- cannbot:related:end -->

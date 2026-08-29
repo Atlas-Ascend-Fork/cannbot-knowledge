@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcdiv_list/op_host/config/ascend910_93/foreach_addcdiv_list_binary.json
     role: implementation
 created_at: "2026-08-25T15:30:02Z"
-updated_at: "2026-08-25T15:30:02Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -87,7 +87,7 @@ out[i][j] = x1[i][j] + scalars[i] * q[i][j]
 
 固定 Commit 只公开无版本后缀的 `aclnnForeachAddcdivListGetWorkspaceSize` 和 `aclnnForeachAddcdivList`。第一段返回 `workspaceSize` 与持有执行流程的 `aclOpExecutor`，第二段在调用方给定的 `aclrtStream` 上执行。仓内没有手写 ACLNN bridge；`op_host/CMakeLists.txt` 以 `ACLNNTYPE aclnn` 接入自动生成层，OpDef 的 `AutoContiguous()` 是输入前处理的框架边界。自动生成 bridge 的逐语句 executor 实现、临时连续 Tensor 的精确 owner/lifetime 在固定仓不可见，未推测补齐。
 
-公开 ACLNN 文档明确支持 Atlas A2/A3，并明确不支持 Ascend 950；因此本卡只覆盖 A2/A3。算子 README、OpDef 与 A5 构建虽有 Ascend 950 实现信号，也不能覆盖公开 ACLNN 的“不支持”结论。
+公开 ACLNN 文档明确支持 Atlas A2/A3，并明确不支持 Ascend 950；因此本卡只覆盖 A2/A3。算子 README、OpDef 与 950 构建虽有 Ascend 950 实现信号，也不能覆盖公开 ACLNN 的“不支持”结论。
 
 ## Host/Launcher 执行流程
 
@@ -696,9 +696,9 @@ Host 不为列表内每个 Tensor 分别发射 Kernel，而是生成每核首尾
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开 ACLNN 支持；`ascend910b` config | 公开 ACLNN 支持；`ascend910_93` config | 公开 ACLNN 文档明确不支持；不发布 `_a5` 卡 |
+| 支持状态 | 公开 ACLNN 支持；`ascend910b` config | 公开 ACLNN 支持；`ascend910_93` config | 公开 ACLNN 文档明确不支持；不发布 `_950` 卡 |
 | Host/Launcher | 共用非-regbase `ForeachCommonTiling` | 共用非-regbase `ForeachCommonTiling` | 源码存在 regbase 分支，但与公开 ACLNN 支持表冲突，不进入本卡实现正文 |
 | Kernel/资源 | 共用 `op_kernel/foreach_addcdiv_list.cpp` | 共用同一 Kernel | 存在 arch35 Reg-VF 文件仅是实现信号，不能证明公开 ACLNN 可用 |
 
@@ -718,7 +718,7 @@ Host 不为列表内每个 Tensor 分别发射 Kernel，而是生成每核首尾
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `foreach/foreach_addcdiv_list/docs/aclnnForeachAddcdivList.md` | 两段式函数原型、产品表、参数/错误表 | A2/A3公开性、A5明确不支持、接口约束 |
+| 入口声明/约束 | `foreach/foreach_addcdiv_list/docs/aclnnForeachAddcdivList.md` | 两段式函数原型、产品表、参数/错误表 | A2/A3公开性、950明确不支持、接口约束 |
 | 入口声明/约束 | `foreach/foreach_addcdiv_list/README.md` | 产品支持/功能/参数 | 逻辑算子语义与实现层平台信号 |
 | 入口实现 | `foreach/foreach_addcdiv_list/op_host/foreach_addcdiv_list_def.cpp` | `ops::ForeachAddcdivList` | dtype/format、AutoContiguous、A2/A3 AICore config |
 | Host推理 | `foreach/foreach_utils/op_host/foreach_infershape.cpp` | `InferShape4ForeachCommon`、`IMPL_OP_INFERSHAPE(ForeachAddcdivList)` | 输出数、shape、dtype 推理 |
@@ -744,4 +744,4 @@ Host 不为列表内每个 Tensor 分别发射 Kernel，而是生成每核首尾
 | workspace/内存 | 普通 Route `8U`，BF16 `75U` | depth=2、BF16 `9U` Queue、3U FP32 slice及Host selector必须联动 | 各 `InitBuffer`、`DivideUbMemory3` |
 | 同步 | Queue协议与 `PIPE_V` barrier 可复用 | Div→Axpy→copy/Cast 的RAW顺序不可删除 | `AddcDivListFloatAdapter`、`ComputePerCast` |
 | 精度与尾块 | FP16/FP32原生；BF16升FP32后RINT；GM仅写valid | BF16 Cast chunk、local 32B上取整、GM有效字节必须一致 | `InnerComputer`、`CopyIn/CopyOut` |
-| 失败边界 | Host shape/dtype/list校验与未知key终点 | 不得宣称>50 Tensor、A5 ACLNN或未知key fallback受支持 | `CheckOpInfo`、entry router、公开产品表 |
+| 失败边界 | Host shape/dtype/list校验与未知key终点 | 不得宣称>50 Tensor、950 ACLNN或未知key fallback受支持 | `CheckOpInfo`、entry router、公开产品表 |

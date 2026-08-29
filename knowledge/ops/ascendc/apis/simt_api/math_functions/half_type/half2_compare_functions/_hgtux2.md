@@ -29,9 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hbgtux2](_hbgtux2.md)（`related`）：Hbgtux2 将两个 lane 的 unordered greater-than 再做全真归约返回 bool，适合组级分支而非逐 lane 结果。
-- [__hltux2](_hltux2.md)（`related`）：《__hltux2》说明比较两个half2类型数据的两个分量，如果分量满足第一个数小于第二个数，则对应比较结果为1.0，否则为0.0。若任一输入的分量为nan，该分量的比较结果为1.0。；《__hgtux2》说明比较两个half2类型数据的两个分量，如果分量满足第一个数大于第二个数，则对应比较结果为1.0，否则为0.0。若任一输入的分量为nan，该分量的比较结果为1.0。。二者在该接口实现unordered小于并返回half2数值；mask版、有序小于和反向大于用于核对NaN及返回编码上存在可执行的直接衔接。
-- [__hgtux2](../../bfloat16_type/bfloat16x2_compare_functions/_hgtux2.md)（`same_topic`）：half2 版本执行相同无序大于比较，源精度不同。
-- [__hgtux2_mask](_hgtux2_mask.md)（`same_topic`）：两者执行同一 unordered greater-than 且 NaN 为真，mask 版本把两个 lane 输出编码为 16bit 掩码而非 half2 的 1/0。
-- [__hgtx2](_hgtx2.md)（`same_topic`）：__hgtx2 与《__hgtux2》的实质衔接是：__hgtx2 返回 half2 ordered > 的逐 lane 0/1；mask、boolean-all、unordered >、反向 < 与 isnan 入口用于核对返回形态和 NaN=false。
+- [__hgtux2_mask](_hgtux2_mask.md)（`same_topic`）：“功能：比较两个half2类型数据的两个分量，如果分量满足第一个数大于第二个数，则对应比较结果为1.0，否则为0.0。若任一输入的分量为nan，该分量的比较结果为1.0。”与“功能：比较两个half2类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量满足第一个数大于第二个数，则对应16位掩码为0xFFFF，否则为0x0。若任一输入的分量为nan，对应16位掩码为0xFFFF。”是双方正文中的具体合同。两端实施相同的 half2 unordered greater-than 判定并对 NaN 置真，差别是返回 half2 数值还是 32 位双分量掩码。
 <!-- cannbot:related:end -->

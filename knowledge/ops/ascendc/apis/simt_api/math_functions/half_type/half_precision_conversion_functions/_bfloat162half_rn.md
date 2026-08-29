@@ -29,10 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscBfloat162Half](../../../../simd_api/c_api/reg/data_type_convert/asc_bfloat162half.md)（`related`）：__bfloat162half_rn 与《AscBfloat162Half》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
-- [__bfloat162half_rd](_bfloat162half_rd.md)（`same_topic`）：__bfloat162half_rn 与《__bfloat162half_rd》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
-- [__bfloat162half_rn_sat](_bfloat162half_rn_sat.md)（`same_topic`）：__bfloat162half_rn 与《__bfloat162half_rn_sat》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
-- [__bfloat162half_rna](_bfloat162half_rna.md)（`same_topic`）：__bfloat162half_rn 与《__bfloat162half_rna》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
-- [__bfloat162half_ru](_bfloat162half_ru.md)（`same_topic`）：__bfloat162half_rn 与《__bfloat162half_ru》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
-- [__bfloat162half_rz](_bfloat162half_rz.md)（`same_topic`）：__bfloat162half_rn 与《__bfloat162half_rz》的实质衔接是：这些接口都把 bfloat16 窄化为 half，差别只在 RN/RNA/RD/RU/RZ 与是否饱和；AscBfloat162Half 提供 Reg C API 的对应转换契约。
+- [__bfloat162half_rn_sat](_bfloat162half_rn_sat.md)（`same_topic`）：遵循CAST_RINT模式，将bfloat16类型数据转换为half类型数据；使用此接口前需将CTRL［60］寄存器设置为0，否则饱和模式不生效。两卡完成相同 bfloat16 到 half 的 RINT 转换；候选增加由 CTRL［60］ 控制的饱和模式，适合从普通转换导航到饱和配置边界。
 <!-- cannbot:related:end -->

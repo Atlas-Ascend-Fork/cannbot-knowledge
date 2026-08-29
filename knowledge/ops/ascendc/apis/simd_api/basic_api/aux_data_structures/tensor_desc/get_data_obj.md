@@ -23,7 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetIndex](get_index.md)（`related`）：GetIndex说明获取TensorDesc在ListTensorDesc中对应的索引值；对GetDataObj而言，GetDataObj 返回的对象需按 TensorDesc 的 data pointer 与 index 契约解释，不能把描述对象当作裸数据地址。
-- [TensorDesc](tensor_desc.md)（`related`）：TensorDesc说明TensorDesc 辅助数据结构用于描述张量描述信息，提供 SetShapeAddr、GetDim、GetShape、GetDataPtr 等接口；对GetDataObj而言，GetDataObj 返回的对象需按 TensorDesc 的 data pointer 与 index 契约解释，不能把描述对象当作裸数据地址。
-- [GetDataPtr](get_data_ptr.md)（`same_topic`）：GetDataPtr 返回 TensorDesc 的裸数据地址，GetDataObj 用同一地址构造 GlobalTensor 访问对象；两者围绕同一 TensorDesc 地址载体提供裸指针与张量封装两种访问合同。
+- [GetDataPtr](get_data_ptr.md)（`related`）：获取储存Tensor数据地址。；将数据指针置于 GlobalTensor 中并返回该 GlobalTensor。；两接口都在 TensorDesc 与底层 Tensor 数据之间建立访问入口；前者返回原始地址，后者把相同数据指针封装成后续搬运或计算可消费的 GlobalTensor。
 <!-- cannbot:related:end -->

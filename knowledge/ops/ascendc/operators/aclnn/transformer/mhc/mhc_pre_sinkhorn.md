@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_pre_sinkhorn/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T17:30:00Z"
-updated_at: "2026-08-24T20:08:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -133,7 +133,7 @@ key1 的 split-MK 分支虽然存在于同一 Device entry，Host 注释明确�
 | Stage2 行 tile | `rowOnceLoop=min(ceil(M/40),1)`；源码扩行循环首句为无条件 `break` | 实际 key0 每次只处理一行，避免超出已核算 UB | R-001/R-002 | 不扩行，循环处理 | 同上 |
 | Matmul tiling | `GetTiling(mm1TilingData)!=-1` | Cube specialization 依赖有效 `TCubeTiling` | R-001/R-002 | `GRAPH_FAILED`，不启动 kernel | `CalcStage1Tiling` |
 | workspace 非空 | `workspace!=nullptr && GetUserWorkspace(workspace)!=nullptr` | xCast 是 AIV→AIC 必需交接边 | R-001/R-002 | Device 直接 return，无 fallback | `mhc_pre_sinkhorn` |
-| 平台 | `socVersion!=ASCEND950` | ASCEND950 被分流到 arch35 selector；但公开产品表明确 A5 不支持 | R-001/R-002 | A5 不发布正式 ACLNN Route | `TilingForMhcPreSinkhorn`、公开产品表 |
+| 平台 | `socVersion!=ASCEND950` | ASCEND950 被分流到 arch35 selector；但公开产品表明确 950 不支持 | R-001/R-002 | 950 不发布正式 ACLNN Route | `TilingForMhcPreSinkhorn`、公开产品表 |
 
 ### POD/ABI
 
@@ -616,7 +616,7 @@ AIV 只把 x cast 为 FP32并独立计算 invRms，AIC 先做未归一化投影�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持 | 支持 | 不发布正式卡：README/API 产品表明确“×”，与实现接线冲突 |
 | Host/Launcher | 共用 `MhcPreSinkhornTiling`，key0，blockDim=20 | 同 A2 | 固定仓存在 `MhcPreSinkhornTilingRegbase`，但不能覆盖公开不支持结论 |
@@ -627,7 +627,7 @@ AIV 只把 x cast 为 FP32并独立计算 invRms，AIC 先做未归一化投影�
 - 公开 ACLNN 强制 rank4、N/hcMult=4、numIters=20 和精确输出 shape；needBackward=true 时五个中间输出必须有效。Host Tiling 未额外检查 D 正值/上界，底层 DataCopy、乘法溢出与资源极限在固定仓中没有完整防护证据。
 - Matmul 设置 HF32，其他门控/RMS/Sinkhorn以 FP32 执行，hIn最终 cast回 x dtype。epsilon 从 double 窄化到 float。
 - `TCubeTiling` 的精确 ABI、MatmulImpl 的 L1/L0 byte布局和 runtime 144 MiB reserve 细分用途依赖仓外组件，固定仓不可见。
-- A5 的公开产品表与 `ascend950`/`mhc_pre_sinkhorn_apt` 接线冲突；按公开 ACLNN 发布规则不生成或覆盖 A5 正式卡。实现存在不等于公开平台支持。
+- 950 的公开产品表与 `ascend950`/`mhc_pre_sinkhorn_apt` 接线冲突；按公开 ACLNN 发布规则不生成或覆盖 950 正式卡。实现存在不等于公开平台支持。
 
 ## 源码索引
 
@@ -635,8 +635,8 @@ AIV 只把 x cast 为 FP32并独立计算 invRms，AIC 先做未归一化投影�
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | mhc/mhc_pre_sinkhorn/README.md | 产品支持表/约束说明 | A2/A3支持、A5不支持、D需128对齐 |
-| 入口声明/约束 | mhc/mhc_pre_sinkhorn/docs/aclnnMhcPreSinkhorn.md | 产品表/接口表 | A2/A3支持、A5不支持、语义与公开shape |
+| 入口声明/约束 | mhc/mhc_pre_sinkhorn/README.md | 产品支持表/约束说明 | A2/A3支持、950不支持、D需128对齐 |
+| 入口声明/约束 | mhc/mhc_pre_sinkhorn/docs/aclnnMhcPreSinkhorn.md | 产品表/接口表 | A2/A3支持、950不支持、语义与公开shape |
 | 入口声明/约束 | mhc/mhc_pre_sinkhorn/op_host/op_api/aclnn_mhc_pre_sinkhorn.h | `aclnnMhcPreSinkhorn*` | 真正公开签名 |
 | 入口实现 | mhc/mhc_pre_sinkhorn/op_host/op_api/aclnn_mhc_pre_sinkhorn.cpp | `CheckParams/GetWorkspaceSize` | 校验、空张量与contiguous |
 | 入口实现 | mhc/mhc_pre_sinkhorn/op_host/op_api/mhc_pre_sinkhorn.cpp | `MhcPreSinkhornAiCore` | OP_INPUT/OUTPUT/ATTR与float窄化 |
@@ -658,4 +658,11 @@ AIV 只把 x cast 为 FP32并独立计算 invRms，AIC 先做未归一化投影�
 | workspace/内存 | xCast/invRms/hcBeforeNorm切片公式 | needBackward两种地址空间不得混用 | `CalcStage1Tiling/Stage1::Init/Stage2::Init` |
 | 同步 | flag8/9与阶段间GM交接 | AIC预置信号、AIV发信号、等待次数不可删除 | `Stage1::Process` |
 | 精度与尾块 | FP32投影、RMS/Sinkhorn与有效域搬运 | HF32开关、epsilon顺序、最后cast不可改变 | `ProcessMatmulXPhi/Stage2::Process` |
-| 失败边界 | 参数/Matmul/workspace门禁可复用 | 不得把失败终点改成key1 fallback，也不得把A5实现接线当作公开支持 | `CheckParams/PostTiling/TilingForMhcPreSinkhorn` |
+| 失败边界 | 参数/Matmul/workspace门禁可复用 | 不得把失败终点改成key1 fallback，也不得把950实现接线当作公开支持 | `CheckParams/PostTiling/TilingForMhcPreSinkhorn` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [HcPre / HcPost (mHC 融合算子)](../../../../../../model/inference/concepts/kernels/mhc_hcpre_hcpost.md)（`related`）：RMSNorm(x) 与 FP32 投影生成 hPre/hPost/hRes/hIn，再对 hRes 做 20 轮 Sinkhorn；融合 RMSNorm → `mixes = linear(x, hc_fn)·rsqrt` → Sinkhorn-Knopp 三段切分；两卡描述同一 HcPre 融合核心，算子卡闭合 A2/A3 源码 Route，概念卡补充模型接口与 A3/950 使用语境。
+- [mHC (Manifold-Constrained Hyper-Connections)](../../../../../../model/inference/concepts/modules/mhc.md)（`related`）：RMSNorm(x) 与 FP32 投影生成 hPre/hPost/hRes/hIn，再对 hRes 做 20 轮 Sinkhorn；`comb`（连同 Sinkhorn 约束）实际在 **HcPre 内**算出；算子实现正是 mHC 结构中生成 Pre/Post/Res 系数并执行 Sinkhorn 约束的 HcPre 阶段。
+<!-- cannbot:related:end -->

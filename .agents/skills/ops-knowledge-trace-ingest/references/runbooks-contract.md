@@ -31,7 +31,7 @@
 4. **可验证性**——有本 trace 内 `tool_observed`/`artifact_verified` 信号锚定；对纯流程卡尤其严格。
 **明确不产卡**：agent 编排/加载重试/工具定位等通用 LLM 行为；无垂域因果的环境配置问题；无失败-修复闭环的纯流程描述；转写不完整（无 tool_result）无法验证的闭环。**一条 trace 产出 0 张候选是合法结果**，不是挖掘失败。
 
-**适用性与路线（检索前的第一道滤网，必填）**：每张卡必须讲清"这条知识**在哪个场景被真正验证有效**"。正文开段 `## 适用场景` **必填**——工程形态、API 路径、验证过的平台与 CANN 版本、适用粒度（`transfer_scope` 五档取证据能支持的最窄档）、路线优先级（`recommended_fastpath`/`safety_fallback`/`banned` 三档必标其一）、明确不适用/未验证场景。`platforms` **只填实际验证过的平台**（注册词表见 `registries.yaml`；trace 无法定位时写空表 `[]`），推断可迁移的平台在 `## 失效边界` 标注"未验证，推断可迁移"，不得写进 `platforms`。`safety_fallback` 卡必须明写 fallback 声明。
+**适用性与路线（检索前的第一道滤网，必填）**：每张卡必须讲清“这条知识**在哪个场景被真正验证有效**”。正文开段 `## 适用场景` **必填**——工程形态、API 路径、验证过的平台与 CANN 版本、适用粒度（`transfer_scope` 五档取证据能支持的最窄档）、路线优先级（`recommended_fastpath`/`safety_fallback`/`banned` 三档必标其一）、明确不适用/未验证场景。`platforms` **只填实际验证过的平台**（注册词表见 `registries.yaml`）；miner draft 无法定位时可写空表 `[]`，但 curate 必须 defer，不能以 stable 发布。推断可迁移的平台在 `## 失效边界` 标注“未验证，推断可迁移”，不得写进 `platforms`。`safety_fallback` 卡必须明写 fallback 声明。
 
 **统一准入基准（第一道闸）**：每张卡的基准要求都是**完整场景描述**——`## 现象`/`## 适用场景` 用自然语言讲清"**在做什么**（命令/步骤）、**哪个算子哪个文件**、**看到什么报错（原文）**、**当时代码什么状态**"，让人不看 trace 就能理解；**禁止用内部编号（Task N/轮次/会话 id）与"Agent 转述"代替原始输出**；涉及代码的卡必须把**关键代码原样内联**（before/after verbatim 函数级），语言+代码双通道成立才过第一道闸。
 
@@ -63,7 +63,7 @@ knowledge/ops/ascendc/runbooks/
 - **文件名** = title 的稳定英文 slug，纯 `snake_case`、无前导序号、无 session 前缀；**无 `id` 字段**——卡片唯一性由 slug 文件名保证。
 - **错误码进文件名**：现象有关键编译/运行报错码（如 `561002`/`507035`/`161001`）时，slug 应包含该错误码——错误码是精确检索锚点，按码检索直接命中。
 - **撞名兜底**：同 area 内 slug 冲突 → 追加 `__<hash6>`。
-- **跨 area/跨树反链**：`## 相关` 可跨 area，也可跨内容树链至 `knowledge/` 其他分类树；对侧须回链本卡。
+- **跨 area/跨树关系**：关系候选可跨 area，也可跨至 `knowledge/` 其他分类树；候选不是边，须经全量图谱 reviewer 判定与聚合。知识卡中的 `cannbot:related` 受管块只由判定缓存派生，不手工维护。
 
 ## 3. frontmatter schema
 
@@ -77,7 +77,7 @@ status: stable                          # draft | stable | deprecated
 sources: []                             # trace 摄入卡可空；非空须为可核验来源
 created_at: '2026-06-30T00:00:00Z'
 updated_at: '2026-06-30T00:00:00Z'
-platforms: [950, a2]                    # 必填：只填实际验证过的平台（注册词表）；无法定位写 []
+platforms: [950, a2]                    # 必填：只填实际验证过的平台（注册词表）；stable 不得为空
 ---
 ```
 
@@ -92,10 +92,10 @@ platforms: [950, a2]                    # 必填：只填实际验证过的平�
 | `status` | enum | ✅ | `draft`/`stable`/`deprecated` |
 | `sources` | string[]/object[] | ✅ | trace 摄入卡可空 `[]`；非空必须可核验（固定 commit/规范 URL/Registry 本地来源） |
 | `created_at` / `updated_at` | UTC iso8601 | ✅ | 秒级 `...Z` 格式 |
-| `platforms` | string[] | ✅ | 注册平台词表取值；**只填实际验证过的平台**；无法定位写 `[]`（不伪造） |
+| `platforms` | string[] | ✅ | 注册平台词表取值；**只填实际验证过的平台**；仅 draft 无法定位时可写 `[]`，stable/deprecated 不得为空 |
 | `cann_versions` | string[] | — | 可选 |
 | `aliases` | string[] | — | 可选 |
-| `verified` | bool | — | 可选：真实发生的复核事件 |
+| `verified` | object/object[] | — | 可选 OKF verification event；单事件为 `{by, at}` mapping，多事件为该 mapping 数组，不得写布尔值 |
 | `replaced_by` | string | — | 仅 `deprecated` 卡可设 |
 
 ## 4. 受控词表与 area 选择
@@ -126,7 +126,7 @@ frontmatter **不设 `confidence`/`reproduce_count` 字段**：证据强度由 *
 | `inferred` | 仅 `agent_reported`/`inferred` 证据，或纯静态推断 | **不入主库**，只 reject 或转 meta |
 
 - tier 由审查/curator 判定，**不落 frontmatter**（复现计数存 ledger/manifest）。单次轨迹产出的候选默认只能是 `single_run` / `inferred`。**仅 `agent_reported` 的证据无论复现多少次都不算 verified**。
-- **`## 验证信号` 逐信号标证据等级**：正文每条信号必须标注 `（来源平台：…；证据等级：artifact_verified / tool_observed / agent_reported / inferred）` 与**来源平台**。`agent_reported` 只能作假设/线索，**不得当实测事实写进 `## 验证信号`**——只有 `tool_observed`/`artifact_verified` 才算验证信号，其余等级进 `## 误诊` 并如实标注。
+- **`## 验证信号` 逐信号标证据等级**：正文每条验证信号必须标注 `（来源平台：…；证据等级：artifact_verified / tool_observed）`。`agent_reported`/`inferred` 只能作假设或线索，**不得当实测事实写进 `## 验证信号`**；它们应进 `## 误诊` 并如实标注。
 
 ## 6. 正文约束（HARD）
 
@@ -134,10 +134,10 @@ frontmatter **不设 `confidence`/`reproduce_count` 字段**：证据强度由 *
 
 1. **type↔目录自洽**：`type: "Runbook"` 与 `runbooks/` 路径 Profile 一致；area 属于 `registries.yaml` 的 `runbook_areas`。
 2. **文件名合规**：纯 `snake_case` slug、无前导序号、无 session 前缀、非字母数字转 `_`；撞名须已加 `__<hash6>`。
-3. **必填非空**：`type`/`title`/`description`/`tags`/`status`/`sources`/`created_at`/`updated_at`/`platforms` 齐全且非空（`sources`、`platforms` 允许空表）。`title` 不超过 40 个 Unicode 字符。
+3. **必填字段**：`type`/`title`/`description`/`tags`/`status`/`sources`/`created_at`/`updated_at`/`platforms` 齐全；`sources` 可为空，`platforms` 仅 draft 可为空，stable/deprecated 必须有实际平台范围。`title` 不超过 40 个 Unicode 字符。
 4. **正文须含 `## 适用场景`**（统一准入基准——完整场景描述，语言+代码双通道）：正文开段写清工程形态/API 路径/验证过的平台与版本/适用粒度/路线优先级/不适用场景（§8 模板）。lint 对缺失报 **warn（聚合为单条输出，不阻塞退出码；存量卡容忍；新卡由审查门禁按 blocker 拦截）**。
 5. **验证信号逐条标注**：`## 验证信号` 每条信号必须标来源平台 + 可用证据等级（`tool_observed`/`artifact_verified`）；缺失即 HARD 违反。
-6. **`## 相关` 双向闭合**：正文 `## 相关` 章节（`<!-- okf:related:start -->` 块内）的每条 markdown 超链接都以文本链接到 `path.md`，对侧文件必须存在且回链本卡（悬空/单链 fail）。
+6. **关系导航归图谱管理**：新卡只在 ledger 中提交关系候选，不手写 `## 相关`。只有完整 Agent 判定缓存可派生 `<!-- cannbot:related:start -->` 受管块，由 `knowledge_graph.py finalize/verify` 同步和校验；该块不是技术事实源。
 7. **无嵌入图片**：`!\[[^\]]*\]\(` 与 `<img` 双查均无命中。
 8. **无静默删除**：常规 ingest/upgrade 中，废弃卡使用通用生命周期字段并填 `replaced_by` 后保留（`replaced_by` 与 `status: deprecated` 联动），不得直接删文件。**全量重建例外**：仅当用户明确授权"清空现有 runbooks 并从完整轨迹重新提取"时，允许在 Git 可恢复基线上整树删除；删除前必须记录旧卡数、当前 commit、原始输入 inventory 及图谱/索引基线，并在同一重建运行中精确移除图谱失效 endpoint、重建图谱与检索索引并写当日 log。重建不得继承旧卡文本、slug 或复现计数；复现只按本轮 inventory 中不同 source SHA-256 的独立轨迹计数。
 9. **跨算子禁止内容（默认生效）**：runbook 卡默认面向跨算子复用，卡内一律不得含源算子常量、checkpoint、shape 列表、**绝对**单跑性能分数（score/latency/speedup 的绝对值）。**相对性能代价允许**：`## 验证信号` / `## 性能影响` 可写同一算子内部两条路线的**相对**对比（如"相对 SIMT 路线约 0.05x"），相对代价必须成对出现（写明参照路线）与来源平台，**不得单独报绝对分数、不得写成通用预期收益**。被标 `safety_fallback` 的路线必须保留该相对代价表述。
@@ -145,18 +145,18 @@ frontmatter **不设 `confidence`/`reproduce_count` 字段**：证据强度由 *
 11. **反投机取巧**：`repair_recipe`/`validated_pattern` 不得以"测试侧放松"为解法——放宽容差、修改 oracle、删减/跳过失败用例或固定随机种子绕过，即使因此"通过"也不得作为正向知识。若轨迹客观证明其危害，可作为明确 `banned` 的 `negative_result`（内部 taxonomy）；否则只作附属坏实践。
 12. **机制 artifact 完整**：`repair_recipe` 的代码/配置修复必须为完整因果单元 before/after；`diagnostic_rule` 的 probe/命令与原始观测必须完整；`negative_result` 的尝试实现/配置、客观失败或回退与边界必须可重建；`validated_pattern` 的完整实现与验证必须可直接复用。所有核心 artifact 均正文内联、verbatim，不能恢复时 defer。完整配方类 Runbook 必须含 `## 系统信息` + `## 完整代码`（可执行，正文内联）+ `## 设计决策`。
 13. **验证信号禁 hearsay**：`## 验证信号` 只放本 trace 内 `tool_observed`/`artifact_verified` 实测值；"前序 LOG.md/issue 记载、本 trace 未复现"的转述最多进 `## 误诊` 并标注 `agent_reported`。
-14. **平台标注**：`platforms` 为**必填**字段，取值必须在注册平台词表内；trace 无法定位平台时写空表 `[]`（不伪造值），**空表/缺省不代表通用平台**。**`platforms` 只填实际验证过的平台**——推断可迁移的平台不得写入，须在正文 `## 失效边界` 标注"未验证，推断可迁移"；`## 验证信号` 每个数字必须标注来源平台，与 `platforms` 严格一致。
+14. **平台标注**：`platforms` 为**必填**字段，取值必须在注册平台词表内；miner draft 无法定位平台时写空表 `[]`（不伪造值），**空表/缺省不代表通用平台**；curate 遇到空平台必须 defer，不能发布 stable。**`platforms` 只填实际验证过的平台**——推断可迁移的平台不得写入，须在正文 `## 失效边界` 标注“未验证，推断可迁移”；`## 验证信号` 每个数字必须标注来源平台，与 `platforms` 严格一致。
 15. **附件机制弃用**：正文**不得出现 `okf:attachment` 引用**；核心 artifact 一律正文内联，无法恢复时按约束⑫ defer。lint 对存量遗留标记报 warn，新落库卡由审查门禁按 blocker 拦截。
 
-## 7. 「## 相关」双向反链
+## 7. 受管关系导航
 
-卡片**正文末尾**的 `## 相关` 章节（用 `<!-- okf:related:start --> ... <!-- okf:related:end -->` 块包裹）关联相关但不等同的知识卡。**不在 frontmatter 设 `related` 字段**。
+卡片正文末尾可以包含由图谱判定缓存派生的 `## 相关` 导航，但必须位于 `<!-- cannbot:related:start --> ... <!-- cannbot:related:end -->` 受管块中。**不在 frontmatter 设 `related` 字段，也不由 trace curator 手写或修改该块**。
 
 典型关系：同根因·不同现象；同现象·不同切入层；同码不同根因；正知识↔坏实践；方案演进（同问题域不同方案）；冲突主张（显式标注）。
 
-**冲突/方案关系标注是硬要求**：同一问题域出现两条路线（如 `safety_fallback` 与 `recommended_fastpath`）时，两侧 `## 相关` 都必须写明关系与选用条件（如"与 X 卡冲突：本卡为安全兜底，X 为性能路线，按场景选用"）；只建单侧链接视为未治理冲突。
+**冲突/方案关系必须显式提交判定**：同一问题域出现两条路线（如 `safety_fallback` 与 `recommended_fastpath`）时，curator 在 ledger 的 `related_suggestions` 中记录两个 Concept ID、候选关系和选用条件；之后仍必须经图谱候选、全文 Agent 判定与聚合，不能由 curator 直接成边。
 
-格式（markdown 文件超链接，同 area `slug.md`、跨 area `../<area>/slug.md`、跨树相对路径）；对侧卡须回链本卡。跨树反链通常由图谱 pipeline（`build_graph.py` 全库重建）产生，不手写。
+受管块的目标链接、关系类型和理由格式由 `knowledge-ingest/scripts/knowledge_graph.py` 统一渲染。人工正文仍可在技术叙述中链接 Bundle 内卡片，但这类链接不放入受管块，也不代替 Agent 语义判定。
 
 ## 8. 正文规范（蒸馏，非照搬源文）
 
@@ -208,7 +208,7 @@ frontmatter **不设 `confidence`/`reproduce_count` 字段**：证据强度由 *
 <未解决的遗留问题；未追到根因的卡必须把根因深挖列为优先项>
 
 ## 相关
-<正文末尾，okf:related 块包裹，markdown 文件超链接；见 §7>
+<不在草稿中手写；落库后由图谱判定缓存派生 `cannbot:related` 受管块，见 §7>
 ```
 
 ### 8.1 证据准入：来源模式 × 内部知识形态
@@ -241,7 +241,7 @@ active Runbook 必须有支撑核心技术结论的**最小机制完整证据**�
 
 - 顶层 `knowledge/ops/ascendc/runbooks/index.md`：只列当前至少有一张卡片的 area 目录 + 各 area 一句话说明。
 - area 级 `<area>/index.md`：只列本 area 卡片（用各自 `description`），不深入下层、不跨 area。
-- 每条目格式：`* slug.md — description`。
+- 条目格式由 `governance/contracts/indexes.py` 唯一决定；通过 `python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py --knowledge-root . sync-indexes` 生成，并用同一入口的 `sync-indexes --check` 验证，不在本合同复制格式模板。
 
 ## 11. 溯源与迁移边界（正文溯源，frontmatter 不设 evidence）
 

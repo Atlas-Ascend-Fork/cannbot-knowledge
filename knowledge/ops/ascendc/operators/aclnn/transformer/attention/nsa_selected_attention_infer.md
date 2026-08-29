@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:49:51Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -613,10 +613,10 @@ Kernel 不先物化完整 gathered KV；它在 C1/C2 的 L1 搬入阶段扫描 t
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | README/API支持；OpDef `ascend910b` | README/API支持；OpDef `ascend910_93` | README/API明确950PR/950DT不支持 |
-| Host/Launcher | 共用Tiling，平台提供核数/system workspace | 共用Tiling | 不生成`_a5`卡 |
+| Host/Launcher | 共用Tiling，平台提供核数/system workspace | 共用Tiling | 不生成`_950`卡 |
 | Kernel/资源 | 同一MIX_CV与key0/1 | 同一MIX_CV与key0/1 | 不由通用源码推定支持 |
 
 ## 限制与失败边界
@@ -637,7 +637,7 @@ Kernel 不先物化完整 gathered KV；它在 C1/C2 的 L1 搬入阶段扫描 t
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 公开产品/约束 | `attention/nsa_selected_attention_infer/README.md` | 产品表/约束 | A2/A3支持、A5不支持、语义与上界 |
+| 公开产品/约束 | `attention/nsa_selected_attention_infer/README.md` | 产品表/约束 | A2/A3支持、950不支持、语义与上界 |
 | ACLNN契约 | `attention/nsa_selected_attention_infer/docs/aclnnNsaSelectedAttentionInfer.md` | 两段式原型 | 参数、dtype/layout、确定性 |
 | 公开API清单 | `docs/zh/op_api_list.md` | `aclnnNsaSelectedAttentionInfer` | 公开无后缀入口与确定性状态 |
 | ACLNN导出清单 | `cmake/level2_ops_list` | `aclnn_nsa_selected_attention_infer.h` | 固定仓仅列无后缀公开头 |
@@ -667,4 +667,10 @@ Kernel 不先物化完整 gathered KV；它在 C1/C2 的 L1 搬入阶段扫描 t
 | workspace/内存 | libapi后四段user workspace、4槽、每AIC组双AIV共享 | slice顺序、dtype字节、core stride、槽深及静态容量 | `CalcWorkSpace`、`Init`、`InitBuffers` |
 | 同步 | flag7/8/9与L1/L0 event ping-pong | AIC:AIV=1:2、mode2、wait/set、pipe可见性 | `Process`、`ComputeMm1/2` |
 | 精度与尾块 | FP32 Mmad/softmax/PV，V1 cast，最终按dtype round | streaming max/sum/exp、C2实际K tail、有效G×128输出 | softmax/V2/cast helpers |
-| 失败边界 | Host只产生key0/1，非法shape/dtype/page失败 | 不补造unknown key、非paged或A5 fallback | `Check*`、`GenTilingKey`、entry |
+| 失败边界 | Host只产生key0/1，非法shape/dtype/page失败 | 不补造unknown key、非paged或950 fallback | `Check*`、`GenTilingKey`、entry |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NsaSelectedAttention A2 ACLNN 算子知识](nsa_selected_attention.md)（`related`）：对每个 query token 和 KV head 按 `topkIndices` 聚合 `C=selectedBlockCount` 个、每个长 `L_b=selectedBlockSize` 的 KV block，计算 `Softmax(mask(scale·QKᵀ))V`；用 `topkIndices` 选出逻辑 KV 区间，经 `blockTable` 映射到 paged KV cache，计算 `Softmax(scaleValue × QKᵀ) × V`。多 token 时按 query token 收缩可见 KV 尾部。。两卡都实现 NSA 的 topk 选块后 QK、Softmax、PV 注意力链；基础版本直接聚合 TND 连续 KV block，Infer 版本经 blockTable 访问 paged KV cache，联合阅读可完成训练式连续存储与推理式分页存储选型。
+<!-- cannbot:related:end -->

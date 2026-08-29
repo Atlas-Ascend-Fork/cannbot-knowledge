@@ -76,6 +76,6 @@ L2_DFX_PHASE_1(aclnnSoftplusV2Grad, DFX_IN(gradOutput, self, beta, threshold), D
 <!-- cannbot:related:start -->
 ## 相关
 
-- [aclnn TilingData 缓存致 runtime attr 陈旧](../precision/aclnn_tilingdata_runtime_attr.md)（`same_topic`）：两张卡都定位到同 shape/dtype、不同 runtime scalar 时 ACLNN repeat cache 复用陈旧 TilingData；该卡进一步用 tiling 函数日志和 AbandonCache(true) 闭环验证。
-- [标量属性入 TilingData 致同 shape 跨调用陈旧](../precision/tilingdata_shape.md)（`same_topic`）：该卡给出独立进程正确、同进程顺序调用错误且 actual 对应旧 threshold 的隔离探针，直接复现 L2 cache key 漏 scalar 的部分匹配。
+- [aclnn TilingData 缓存致 runtime attr 陈旧](../precision/aclnn_tilingdata_runtime_attr.md)（`same_topic`）：失败用例呈现一个明显模式：**同一用例单独跑通过、放进批量用例集里跑失败**，且失败数随用例顺序波动。；aclnn L2 executor 对"可 repeat"的算子以 **(算子, shape, dtype)** 为 key 缓存整块 `TilingData`。本算子把 `beta`/`threshold` 这两个**每次调用都不同**的 runtime scalar 写进了 `TilingData`。当第二批调用 shape/dtype 与第一批相同（scalar shape `()` + 同 dtype）时，框架**跳过 tiling 函数**、直接复用第一批的 `TilingData`——里面的 beta/threshold 是第一批的陈旧值，kernel 据此取错分支。shape 越是"撞 key"（scalar、或同 shape 反复跑）越容易触发；多 case 批跑必发，单跑看不出来。。两卡描述同一 SoftplusV2Grad 缓存污染，候选卡用 executor repeat 机制解释顺序相关的单跑通过、批跑失败。
+- [标量属性入 TilingData 致同 shape 跨调用陈旧](../precision/tilingdata_shape.md)（`same_topic`）：**若 `DFX_IN` 遗漏了某个影响 TilingData 的 scalar（如 `beta`/`threshold`），该 scalar 不参与 cache key hash**；同 shape/dtype 不同属性的后续调用复用陈旧 `TilingData`，kernel 读到陈旧 `beta`/`threshold`，分支判定与数值均偏离 golden。。两卡都定位同一 SoftplusV2Grad 批跑陈旧 scalar 故障：左卡从 DFX_IN 缺项解释缓存键并给出补项修复，右卡用隔离/顺序探针证明同 shape 跨调用复用旧 TilingData；核心排障决策一致。
 <!-- cannbot:related:end -->

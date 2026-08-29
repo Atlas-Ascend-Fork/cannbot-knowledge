@@ -92,12 +92,6 @@ bool CheckBroadcastShape(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Broadcast（张量变换）](../../apis/simd_api/adv_api/tensor_transform/broadcast.md)（`exemplifies`）：Broadcast 高阶接口页定义输入/输出 shape 契约，是判断 561103 是否来自非法广播的直接依据。
-- [Dequantize](../../apis/simd_api/adv_api/quantization/dequantize.md)（`exemplifies`）：Dequantize 与《反量化 561103 实为 CheckBroadcastShape 过严》的实质衔接是：Dequantize 的 workspace 查询、scale/offset 设置、替代反量化入口及量化逆过程共同约束数据类型恢复；所选故障卡直接验证 scale 与广播边界。
-- [561103 同名算子签名冲突链接绑内置版](561103.md)（`related`）：同为 561103，但签名冲突卡发生在 aclnn op 匹配，而本卡发生在 broadcast shape 校验；日志阶段可直接分流。
-- [561103: beta 属性按 float 读致 GRAPH_FAILED](561103_beta_float_graph_failed.md)（`related`）：beta 属性误读也可在图 tiling 阶段报 561103；固定属性并核对 shape 是区分两者的 A/B。
-- [Broadcast场景](../../guides/operator_practice/simd_operator_impl/vector_programming/broadcast_scenario.md)（`related`）：Broadcast 场景指南给出合法 shape 条件和索引展开，可核对 CheckBroadcastShape 的预期。
-- [softplus_v2_grad tiling rank 校验拒标量广播](softplus_v2_grad_tiling_rank.md)（`related`）：两卡都证明 host tiling 的广播校验比算子广播语义更严格会在 kernel 启动前拒绝合法输入；一张是 raw rank 必须相等，一张是多输入非 1 维两两相等。
-- [标量属性入 TilingData 致同 shape 跨调用陈旧](../precision/tilingdata_shape.md)（`related`）：广播 shape 校验在 Host tiling 入口提供前置错误信号，可区分非法 shape 与合法 shape 下复用旧 TilingData。
-- [标量输入被赋非标量 shape 致 561002 判别](shape_561002.md)（`related`）：shape_561002 处理 scalar role 与生成 shape 不一致；两卡共同覆盖进入 tiling 前的 shape 合法性检查。
+- [softplus_v2_grad tiling rank 校验拒标量广播](softplus_v2_grad_tiling_rank.md)（`related`）：“正确做法是只校验“每个输入和输出都能广播到 `max_bro_shape`”，不要求各输入之间两两互兼容。”明确给出左端事实；“- **判读（interpretation，根因分析）**：raw rank 一致性校验是**冗余且自相矛盾**的插入。”明确给出右端事实。两页分别定位广播 tiling 的逐维兼容校验过严和 raw-rank 前置校验过严；排障时应先补 1 对齐，再校验每个输入能否广播到输出，而不是拒绝合法异 rank/外积广播。
+- [标量输入被赋非标量 shape 致 561002 判别](shape_561002.md)（`related`）：“但反量化算子的 `scale` 合法地拥有与 `x`/`zero_point` 不同的独立广播模式：例如 `x=［3,1］`、`scale=［1,4］`、`zero_point=［3,1］`、`output=［3,4］` 是合法广播（各输入都能广播到 `［3,4］`），但 `CheckBroadcastShape` 在某些 axis 上会把 `scale` 的非 1 维度与 `x` 的非 1 维度判为互斥而拒绝、返回 false，导致 tiling 失败、kernel 拿不到 workspace，上报 `561103`。”明确给出左端事实；“根因排查发现：spec.yaml 明确规定 `w_square_sum` / `g_square_sum` / `weight_decay` / `learning_rate` 的 `role: scalar`（synthesize shape 为 `［］`/`()`/`(1,)`），但黑盒用例 gen_data 把这些标量输入赋了非标量大形状（如一维大 shape），违反 spec role:scalar，导致 host `TilingFunc`（`PadAndSqueeze`/`CheckBroadcastShape`）无法处理 → tiling 失败 → 561002 → NO_OUTPUT。”明确给出右端事实。一页说明 CheckBroadcastShape 实现拒绝合法外积广播，另一页说明测试把 scalar 角色输入造为大张量而使同类 PadAndSqueeze/CheckBroadcastShape 失败，二者提供实现缺陷与输入违约的鉴别路径。
 <!-- cannbot:related:end -->

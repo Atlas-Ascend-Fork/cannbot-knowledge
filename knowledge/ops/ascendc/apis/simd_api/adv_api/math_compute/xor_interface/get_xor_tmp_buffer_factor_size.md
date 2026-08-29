@@ -26,7 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Xor](xor.md)（`related`）：固定缓存下，GetXorTmpBufferFactorSize 提供 Xor 的存活节点倍数和额外空间，直接用于反算一次 calCount。
-- [GetXorMaxMinTmpSize](get_xor_max_min_tmp_size.md)（`same_topic`）：Both APIs size the same Xor workspace: one returns bounds directly and the other returns factors for formula-based sizing.
-- [Xor接口](xor_interface.md)（`same_topic`）：《Xor接口》明确“按元素执行异或（Xor）运算，并提供临时空间大小获取接口。”；它与《GetXorTmpBufferFactorSize》的“获取maxLiveNodeCount和extraBuf，用于推算Xor接口在固定临时空间下单次最大计算元素数量。”在实际调用参数、数据流或结果校验上直接衔接。
+- [GetXorMaxMinTmpSize](get_xor_max_min_tmp_size.md)（`same_topic`）：host侧Tiling接口，用于获取Xor接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。获取Xor接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。两端共同定义 Xor 临时空间规划的两个方向：先由 shape 确定可选空间范围，或由既定空间反推单次处理量，Host 可据此检查 Tiling 是否自洽。
 <!-- cannbot:related:end -->

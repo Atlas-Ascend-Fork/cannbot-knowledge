@@ -22,9 +22,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetCtrlSpr](../../basic_api/special_register_access/get_ctrl_spr_isasi.md)（`related`）：AscGetCtrl 与《GetCtrlSpr》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
-- [ResetCtrlSpr](../../basic_api/special_register_access/reset_ctrl_spr_isasi.md)（`related`）：AscGetCtrl 与《ResetCtrlSpr》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
-- [SetCtrlSpr](../../basic_api/special_register_access/set_ctrl_spr_isasi.md)（`related`）：AscGetCtrl 与《SetCtrlSpr》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
-- [AscSetCtrl](asc_set_ctrl.md)（`same_topic`）：AscGetCtrl 与《AscSetCtrl》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
-- [系统变量](system_variables.md)（`same_topic`）：AscGetCtrl 与《系统变量》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
+- [AscSetCtrl](asc_set_ctrl.md)（`related`）：读取CTRL寄存器（控制寄存器）特定比特位上的值。；约束：使用前需要先用asc_get_ctrl()获取当前值，仅对需要变更的bit位进行修改。；仅支持已设置CTRL［48］、CTRL［53］、CTRL［56］、CTRL［59］比特位。；SetCtrl 的约束要求先由 GetCtrl 读取现值并只修改目标位，因此读取与设置形成寄存器安全更新序列。
 <!-- cannbot:related:end -->

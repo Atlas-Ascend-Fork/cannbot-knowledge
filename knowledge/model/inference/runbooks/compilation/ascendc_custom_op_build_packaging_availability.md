@@ -75,3 +75,11 @@ AscendC 算子的 torch 扩展（`NpuExtension` + `torch.utils.cpp_extension.Bui
 - `diff 事实`（@3fa4f62）：`OpDef` 逐 SoC `AddConfig`，只有 ascend910_93 时 A2 不可用。
 - `仓自报`（@2ce177b）：ninja + `MAX_JOBS` 并行把算子编译约 5min→1min（无独立复测）。
 - 溯源下探：[cann-recipes-infer-issue-86-requirement-ops-custom-ops-custom-ops-custom-ops](https://gitcode.com/cann/cann-recipes-infer/issues/86)、[cann-recipes-infer-issue-87-bug-report-ops-bash-build-sh-op-name-n-op-name](https://gitcode.com/cann/cann-recipes-infer/issues/87)、[cann-recipes-infer-issue-69-requirement-910b-example-readme](https://gitcode.com/cann/cann-recipes-infer/issues/69)、[cann-recipes-infer-pr-198-feat-check-ops-check-more-ops-and-list-all-existing-custom-ops](https://gitcode.com/cann/cann-recipes-infer/merge_requests/198)、[cann-recipes-infer-issue-41-bug-report-readme-pr](https://gitcode.com/cann/cann-recipes-infer/issues/41)、[cann-recipes-infer-pr-429-fix-fix-scatter-nd-update-asc-def-cpp-to-support-910b](https://gitcode.com/cann/cann-recipes-infer/merge_requests/429)、[cann-recipes-infer-pr-312-feat-optimize-ops-ascendc-torch-api-compile-time-cost-using-multi-proces](https://gitcode.com/cann/cann-recipes-infer/merge_requests/312)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [cann-recipes-infer ops/ascendc 自定义算子的跨平台 / 跨 CANN 版本构建与加载失败](ascendc_custom_op_cross_platform_cann_build.md)（`related`）：焦点卡指出“每个要支持的 SoC 都必须在 `op_host/<op>_def.cpp` 里单写一条 `this->AICore().AddConfig("<soc>")`”，候选卡给出 A2 修复命令“bash build.sh -c ascend910b”；两卡分别覆盖源码注册与目标 SoC 重编，组成跨平台可用性的完整修复链。
+- [def.cpp 缺 AddConfig 致 SOC_NOT_SUPPORT](../../../../ops/ascendc/runbooks/compilation/def_cpp_addconfig_soc_not_support.md)（`related`）：def.cpp 未对 ascend950 注册 → 该 SOC 的 ops-info 不生成（`.ini` 0 字节、`.json` 缺失）→ 安装包未带 ascend950 ops-info → TTK 运行时在 custom_math vendor 找不到该 SOC 的算子注册 → `SOC_NOT_SUPPORT`。；每个要支持的 SoC 都必须在 `op_host/<op>_def.cpp` 里单写一条 `this->AICore().AddConfig("<soc>")`，**不跨 SoC 自动继承**。；候选把单算子故障扩展为构建、打包和可用性的系统检查。
+- [自带（vendored）自定义算子与 CANN 库同名算子冲突：torch_npu.npu_* 解析走偏 / 接口漂移](../runtime/vendored_custom_op_vs_cann_samename_op_conflict.md)（`related`）：焦点卡描述安装期“新包会**整包覆盖**同名 `customize` vendor 包”，候选卡描述运行期“仓内自带的自定义算子与 CANN 侧提供的**同名**算子”发生解析与接口冲突；二者共同构成同名自定义算子的打包覆盖与调用消歧排障链。
+<!-- cannbot:related:end -->

@@ -16,9 +16,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/402
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # 混合线性注意力 (Mamba / Gated-DeltaNet) 昇腾部署的精度陷阱清单
@@ -72,3 +72,10 @@ beta = beta.sigmoid().unsqueeze(0)
 - 维护者确认 + doc 披露（@be33ff59ad77）：`mamba_cache_indices=0` 症状+根因+512 缓解由维护者答复 + README「注意事项」第 8 条给出；无精度/性能量化数字。溯源下探 [cann-recipes-infer-pr-270-feat-qwen3-next-rmsnormgated-gdr](https://gitcode.com/cann/cann-recipes-infer/merge_requests/270)
 - diff 事实（@be33ff59ad77）：`fused_gdn_gating.py` 尾行 `return g, b.sigmoid()` → `return g, b`，融合/回退两分支 beta 处理差异。溯源同上 pr-270。
 - doc 披露（@843c3dd61a35）：Qwen3.5-MoE 优化文档 ChunkGDR 小节的 CANN 9.1.0 版本钉定建议（维护者随代码合入、预防性钉定、无独立精度复测 artifact）。溯源下探 [cann-recipes-infer-pr-402-feat-support-qwen3-5](https://gitcode.com/cann/cann-recipes-infer/merge_requests/402)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Gated DeltaNet (GDN)](../../concepts/modules/gated_deltanet.md)（`related`）：Prefill 整段 chunk 计算走 `torch_npu.npu_chunk_gated_delta_rule` 融合算子（一次完成 chunk 内 L2 归一化、decay、下三角求解、递推状态更新）时，该算子为**近期合入**，早于 CANN 9.1.0 的包上有精度正确性隐患。**动作**：发现 GDN Prefill 精度异常（或部署前做基线）时，先确认/钉定 CANN 9.1.0+ 再排查建模逻辑，把「CANN 版本过旧」列为该算子精度回归的首查根因。Decode 阶段的 ［npu_recurrent_gated_delta_rule］(../../concepts/kernels/recurrent_gated_delta_rule.md) 未同样标注版本要求。；- **Prefill kernel 选择**：Qwen3-Next 走 PyPTO ChunkGDN；Qwen3.5-MoE 走 torch_npu 原生 `torch_npu.npu_chunk_gated_delta_rule`（另有 PyTorch `solve_triangular` 回退路径）。运行手册的版本首查项直接补充概念页所列 Qwen3.5-MoE Prefill 原生算子的精度边界。
+- [recurrent_gated_delta_rule](../../concepts/kernels/recurrent_gated_delta_rule.md)（`related`）：一旦把某激活（此处 GDN gating 的 beta `sigmoid`）下沉进融合算子内部，产出该值的 gating 函数就改成返回 **raw**（未激活）值——此后所有**不走**该融合算子的回退/旁路分支必须自行补回该激活，否则精度错误：；Decode/MTP 阶段 ［gated-deltanet］(../modules/gated_deltanet.md) 的融合算子，用于混合注意力模型（［qwen3-next］(../models/qwen3_next.md)、［qwen3-5-moe］(../models/qwen3_5_moe.md)）线性注意力层的单步/少量 draft token 递推。一次 kernel launch 完成 Sigmoid + L2Norm + Gated Delta 递推注意力 + `ssm_state` 选择性更新，消除 Decode GDN 路径多个小算子的 Launch 和中间搬运开销。BF16 输入输出、FP32 累加，AIV 单元执行（`KERNEL_TYPE_AIV_ONLY`）。运行手册的旁路补激活规则由该融合算子内部执行 Sigmoid 的合同直接解释。
+<!-- cannbot:related:end -->

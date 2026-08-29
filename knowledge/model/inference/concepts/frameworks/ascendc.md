@@ -117,3 +117,10 @@ SAS / LI 这类「值依赖算子」仅靠 shape 无法做好分核，需运行�
 - [gaussian-filter](../../../spatial/concepts/kernels/gaussian_filter.md)（跨域·空间智能：3DGS 视锥剔除融合算子）
 - [hunyuan3d](../../../spatial/concepts/models/hunyuan3d.md)（跨域·空间智能：render_npu / 自研光栅化小算子的 AscendC 实现）
 - [triton-on-ascend](../../../training/concepts/frameworks/triton_on_ascend.md)（与手写 AscendC 并列的第三条算子通道：Triton DSL 落昇腾）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [同一算子有 AscendC / pyPTO / TileLang 多后端实现时的选型 — 当前阶段优先 AscendC](../../optimizations/experience/rules/op_backend_selection_ascendc_pypto_tilelang.md)（`related`）：默认采用 **Ascend C** 实现——维护者确认在当前阶段其性能最优，作为默认选型。；华为昇腾原生的 C++ 算子编程框架，提供对 NPU 硬件的精细控制能力，用于实现高性能融合算子。。前者给出 cann-recipes-infer 多后端并存时优先 Ascend C 的当前选型，后者说明 AscendC 以 C++ 模板和硬件精细控制实现高性能融合算子的能力基础，形成后端选择到框架能力的下钻链。
+- [自定义算子接图模式的 lowering 正确性：converter 按 GE IR 原型对齐 + meta 函数显式声明输出 dtype](../../runbooks/precision/custom_op_graph_lowering_converter_meta_correctness.md)（`related`）：带自定义 ［AscendC］(../../concepts/frameworks/ascendc.md) 算子的模型在 **eager 下正常、一入图（ge_graph / torch 图捕获）就报错或结果错**。；华为昇腾原生的 C++ 算子编程框架，提供对 NPU 硬件的精细控制能力，用于实现高性能融合算子。。AscendC 概念页定义真实 NPU kernel 的实现框架，运行手册说明这类 kernel 接图模式时还必须让 meta 输出与 GE converter 原型精确对齐。
+<!-- cannbot:related:end -->

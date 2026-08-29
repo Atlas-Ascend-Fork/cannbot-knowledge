@@ -123,3 +123,10 @@ MM 侧由理解模型 `model.json` 的 `loss_cfg` 驱动，`compute_mode ∈ {de
 - [mindspeed](../frameworks/mindspeed.md)（Chunk Loss 内核所在框架；MindSpeed-LLM 与 MindSpeed-MM 共用 `ChunkLoss`）
 - [optimizer-memory](optimizer_memory.md)（训练显存治理全景：Chunk Loss 压制末端 logits 激活峰值，与优化器侧显存优化互补）
 - [mm-activation-memory](mm_activation_memory.md)（MM 训练激活显存压制；FSDP2 路径的分块 LM-Head 是其一环）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MindSpeed（昇腾大模型训练加速框架 + 低精度训练）](../frameworks/mindspeed.md)（`related`）：`ChunkLossFeature` 注册两个开关：`--loss-compute-mode {default,chunk}`（默认 `default`）与 `--loss-chunk-size`（默认 1024）。`gpt_model.py` 与 `deepseek4_model.py` 的 `post_process` 末端在 `loss_compute_mode == "chunk"` **且** `tensor_model_parallel_size == 1` **且** `context_parallel_size == 1` 时走 chunk 分支——Megatron 隐藏态布局为 `［S, B, H］`，先 `transpose(0,1).contiguous()` 成 `［B, S, H］` 再沿 `dim=1` 分块；`alpha = loss_mask.sum()`、`reduction="sum"`，`head_weight = self.output_layer.weight`。TP>1（词表并行 logits）或 CP>1（序列已被切分）时不进入该路径，回退原始全量 logits + `output_layer`。；- ［chunk-loss］(../techniques/chunk_loss.md)（承载的内存特性：分块 LM-Head + 损失，MindSpeed-LLM `ChunkLossFeature` 注册 `--loss-compute-mode chunk` / MindSpeed-MM 经 `loss_cfg` 启用，压末端 logits 激活峰值）。前者定义启用条件与调用参数，后者确认该特性由 MindSpeed 两条上层套件承载。
+- [VLM 多模态训练适配（DenseMaskSDPA）](../modules/vlm_multimodal_training.md)（`related`）：开 CP 时 `shift_labels` 与 per-sample 的 `alpha` 都经 `split_forward_gather_backward_with_cp` 沿序列切给各 rank。该 loss 在 `TrainEngine.set_loss_func` 处把 `loss_type` 编译成闭包挂到 `model.loss_function`；开 `enable_chunk_loss` 时按 `chunk_size` 沿序列分块算以省 logits 显存，与 ［mm-activation-memory］(../techniques/mm_activation_memory.md) 的 ChunkLoss 同源。；Chunk Loss 把训练末端「LM-Head 投影 + 交叉熵」沿**序列维度切成若干长度为 `chunk_size` 的子段**，每段在前向内立即算出该段的损失与梯度、随手累加，再丢弃该段的中间张量。任意时刻只驻留一段 `［B, chunk_size, V］` 的 logits，而非完整的 `［B, S, V］`——大词表（`vocab_size ≫ hidden_size`）下后者一次性 materialize 是训练显存峰值的主要来源之一。。VLM 卡给出 enable_chunk_loss 的消费点，技术卡解释 chunk_size 分块如何降低 logits 峰值。
+<!-- cannbot:related:end -->

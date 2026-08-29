@@ -30,6 +30,6 @@ WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合
 <!-- cannbot:related:start -->
 ## 相关
 
-- [InitDetermineComputeWorkspace](init_determine_compute_workspace.md)（`same_topic`）：InitDetermineComputeWorkspace：InitDetermineComputeWorkspace初始化确定性核间顺序执行所需GM空间，随后每核严格调用WaitPreBlock/NotifyNextBlock；workspace指南说明共享区的申请与传入。 目标卡《NotifyNextBlock》补充：通过写全局内存通知后序核当前核已执行完成，与WaitPreBlock和InitDetermineComputeWorkspace配合实现AIV核按blockIdx升序执行的确定性计算。
-- [WaitPreBlock](wait_pre_block.md)（`same_topic`）：WaitPreBlock 与《NotifyNextBlock》的实质衔接是：WaitPreBlock 必须与 NotifyNextBlock 等次数配对并先初始化 workspace；GetBlockNum 决定 GM/UB workspace 下限，关键特性说明其按 blockIdx 串行的确定性语义。
+- [InitDetermineComputeWorkspace](init_determine_compute_workspace.md)（`related`）：“完成初始化后才可以调用WaitPreBlock和NotifyNextBlock”明确初始化前置；“WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合使用”从通知接口侧确认三者必须组合，构成升序核执行的完整调用合同。
+- [WaitPreBlock](wait_pre_block.md)（`related`）：按“NotifyNextBlock通过写全局内存来通知其他核当前核已执行完成，其他核可以继续往下执行；WaitPreBlock通过读取全局内存，判断当前核是否可以继续往下执行。”把每次写通知与后序核读等待组成握手，并用“如果调用了NotifyNextBlock没有与之配对的WaitPreBlock，会导致非确定性计算、输出结果可能不符合预期；如果调用了WaitPreBlock没有与之配对的NotifyNextBlock，会导致程序卡死。”检查所有核的调用次数相同，能定位漏 Notify 或漏 Wait 的具体故障。
 <!-- cannbot:related:end -->

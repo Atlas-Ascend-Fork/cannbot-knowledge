@@ -77,12 +77,5 @@ NDDMA 描述符在 arch35 上最多覆盖 5 维。当 RANK>5 时，split axis �
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_to_ub_nddma.md)（`exemplifies`）：NDDMA DataCopy 暴露多维 loopSize 与 stride 描述符，本卡的核心约束是描述符只覆盖至多五维，额外维度必须由外循环补齐。
-- [GmUbDataMove](../../apis/simd_api/basic_api/data_move_guide/gm_ub_data_move.md)（`exemplifies`）：GmUbDataMove 与《RANK大于5时NDDMA漏维只解释accum错误》的实质衔接是：GM↔UB 总览按连续、高维、切片、ND2NZ/NZ2ND、NDDMA 和 DataCopyPad 选择通路；所选 NDDMA 卡逐一约束 padding、维度和 stride。
-- [NDDMA 快速路径 C=1 中间轴漏维判别](nddma_c_1.md)（`related`）：NDDMA 快速路径 C=1 中间轴漏维判别 与《RANK大于5时NDDMA漏维只解释accum错误》的实质衔接是：这些 NDDMA 卡围绕维序、stride、padding 与高 rank 配置解释同一快速路径漏维/越界机制。
-- [NDDMA 最内层 srcStride=0 广播读越界](nddma_srcstride_0.md)（`related`）：当 RANK>5 时描述符只能覆盖部分维度，需外层循环补齐；该卡补充本 focal 在纯标量广播且 actualRank>5 时明确提到的独立漏维边界。
-- [NDDMA多维dstStride致data搬运偏移的判别](nddma_dststride_data.md)（`related`）：该卡用 1D 通过、2D 以上偏移和 GetValue 探针定位多维 dstStride，补充高维 NDDMA 问题的维度隔离诊断方法。
-- [NDDMA非对齐尾轴需NdDmaConfig右填充与DataCopyPad回写](../compilation/nddma_nddmaconfig_datacopypad.md)（`related`）：该卡说明 NDDMA 只把最内层 loop0 padding 送入硬件，外层与尾轴需显式配置，强化不能假设描述符自动覆盖所有维度和边界。
-- [split.axis 未随 PadAndSqueeze 偏移致 507035](../compilation/split_axis_padandsqueeze_507035.md)（`related`）：候选展示高 rank 映射 NDDMA 漏维导致累积偏移错误，本卡展示低 rank padding 后轴未偏移导致 inner_count 爆涨。
-- [低 rank 零填充致 count=0 用 td_->rank 非 RANK](rank_count_0_td_rank_rank.md)（`same_topic`）：低 rank 零填充致 count=0 用 td_->rank 非 RANK 与《RANK大于5时NDDMA漏维只解释accum错误》的实质衔接是：实际 rank 必须来自 tiling 而非模板容量；低 rank padding、NDDMA维度、shape/axes 和 blockDim 卡共同验证零填充维被误纳入循环后 count=0 的机制。
+- [NDDMA 快速路径 C=1 中间轴漏维判别](nddma_c_1.md)（`related`）：“NDDMA 可用性需单独判 `chanStride_==1`”给出焦点端事实；“NDDMA 描述符在 arch35 上最多覆盖 5 维。”给出候选端事实。焦点卡诊断 channel 轴误判导致 NDDMA 漏搬，候选卡诊断 RANK>5 时外循环未覆盖描述符外维度；两者给出同一多维快速路径的两个独立准入条件。
 <!-- cannbot:related:end -->

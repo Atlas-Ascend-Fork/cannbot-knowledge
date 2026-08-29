@@ -31,11 +31,3 @@ platforms: ['950']
 - 操作数地址重叠约束
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_copy_l12l0b](../asc_copy_l12l0b/asc_copy_l12l0b_arch_3510.md)（`related`）：3510 通用 asc_copy_l12l0b 同时覆盖非转置、转置和 3D 搬运；与专用 Trans 接口对照可据 m_step/k_step 约束选择入口。
-- [AscCopyL12L0bTrans](asc_copy_l12l0b_trans.md)（`same_topic`）：3510 变体给出 Ascend950 签名。
-- [AscCopyL12L0bTrans](asc_copy_l12l0b_trans_arch_2201.md)（`same_topic`）：两张卡是 AscCopyL12L0bTrans 在 2201 与 3510 架构下的同名实现，均完成 L1→L0B 并转置，但参数和支持约束需按架构选择。
-<!-- cannbot:related:end -->

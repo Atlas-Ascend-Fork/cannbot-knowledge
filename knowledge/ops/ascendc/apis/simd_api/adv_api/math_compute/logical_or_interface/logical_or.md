@@ -26,8 +26,7 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetLogicalOrMaxMinTmpSize](get_logical_or_max_min_tmp_size.md)（`related`）：LogicalOr 运行前需由 Host 查询最小和最大临时空间，最小值保障正确性并作为 Kernel tiling 参数。
-- [LogicalOrs](../logical_ors_interface/logical_ors.md)（`related`）：LogicalOrs 与《LogicalOr》的实质衔接是：LogicalOrs 的接口页和两种临时空间查询支撑 vector-scalar 逻辑或，LogicalOr 是 vector-vector 对应形态并共享真假判定规则。
-- [LogicalOrs接口](../logical_ors_interface/logical_ors_interface.md)（`related`）：《LogicalOrs接口》说明输入矢量每个元素与标量进行逻辑或操作，并提供临时空间大小获取接口。；《LogicalOr》说明按元素进行或操作。当输入的数据类型不是bool时，零被视为False，非零数据被视为True。。二者在LogicalOrs是矢量与标量逻辑或，Kernel调用和两种workspace查询必须配套；LogicalOr用于区分双Tensor语义上存在可执行的直接衔接。
-- [GetLogicalOrTmpBufferFactorSize](get_logical_or_tmp_buffer_factor_size.md)（`same_topic`）：GetLogicalOrTmpBufferFactorSize 与《LogicalOr》的实质衔接是：LogicalOr 的 factor 查询需与 MaxMin 查询共同换算 sharedTmpBuffer，LogicalOr Kernel 是唯一直接消费该 tiling 结果的接口。
+- [BitwiseOrTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)（`related`）：若 `P=BOOL`，源码改提交 `LogicalOr`；零视为False，非零视为True；算子 BOOL Route 直接切换到 LogicalOr 语义。
+- [GetLogicalOrTmpBufferFactorSize](get_logical_or_tmp_buffer_factor_size.md)（`related`）：获取LogicalOr接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；按元素进行逻辑或操作。当输入数据类型不是bool时，零视为False，非零视为True。仅Ascend 950PR/950DT支持。。FactorSize 的输出专门用于规划 LogicalOr 单次计算量，LogicalOr 页定义被规划的 Kernel 运算及平台范围。
+- [GetLogicalOrMaxMinTmpSize](get_logical_or_max_min_tmp_size.md)（`same_topic`）：获取LogicalOr接口所需的最大和最小临时空间大小；按元素进行逻辑或操作；连接 Host 临时空间生产与 Kernel 计算。
 <!-- cannbot:related:end -->

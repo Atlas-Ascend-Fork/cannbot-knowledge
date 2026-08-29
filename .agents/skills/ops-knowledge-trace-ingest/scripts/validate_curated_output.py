@@ -33,6 +33,7 @@ RECONSTRUCTION_METHODS = {
     "base_plus_complete_edit_chain",
     "self_contained_event",
 }
+EVIDENCE_TIERS = {"inferred", "single_run", "verified"}
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 REVISION_RE = re.compile(r"^[0-9a-f]{40}$")
 ANCHOR_RE = re.compile(r"^([0-9a-f]{12})#([1-9][0-9]*)$")
@@ -147,7 +148,7 @@ def validate_reconstruction(entry, snapshot, sources, errors):
                 )
 
 
-def validate_trace_snapshot(entry, snapshot, errors):
+def validate_trace_snapshot(entry, snapshot, errors, approved=True):
     label = entry.get("target_slug") or entry.get("draft") or "<entry>"
     paths = as_list(snapshot.get("normalized_trace_path"))
     raw_shas = as_list(snapshot.get("raw_source_sha256"))
@@ -223,8 +224,12 @@ def validate_trace_snapshot(entry, snapshot, errors):
             errors.append(f"{label}: mechanism artifact role is not an evidence role")
         if not artifact.get("anchors"):
             errors.append(f"{label}: mechanism artifact anchors missing")
-        if artifact.get("verbatim_verified") is not True:
-            errors.append(f"{label}: mechanism artifact is not verbatim verified")
+        expected_verbatim = True if approved else False
+        if artifact.get("verbatim_verified") is not expected_verbatim:
+            state = "true after review" if approved else "false before review"
+            errors.append(
+                f"{label}: mechanism artifact verbatim_verified must be {state}"
+            )
     anchors = []
     for role_anchors in roles.values():
         anchors.extend(as_list(role_anchors))
@@ -236,7 +241,7 @@ def validate_trace_snapshot(entry, snapshot, errors):
             errors.append(f"{label}: {anchor_error}")
 
 
-def validate_fixed_source(entry, source, errors):
+def validate_fixed_source(entry, source, errors, approved=True):
     label = entry.get("target_slug") or entry.get("draft") or "<entry>"
     form = entry.get("knowledge_form")
     roles = source.get("evidence_roles") or {}
@@ -264,14 +269,23 @@ def validate_fixed_source(entry, source, errors):
             errors.append(f"{label}: fixed_source file revision is not registered")
         if item.get("role") not in roles:
             errors.append(f"{label}: fixed_source file role is not an evidence role")
-        if item.get("navigation_verified") is not True:
-            errors.append(f"{label}: fixed_source navigation is not verified")
+        expected_navigation = True if approved else False
+        if item.get("navigation_verified") is not expected_navigation:
+            state = "true after review" if approved else "false before review"
+            errors.append(
+                f"{label}: fixed_source navigation_verified must be {state}"
+            )
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("clusters", type=Path)
     parser.add_argument("ledger", type=Path)
+    parser.add_argument(
+        "--pre-review",
+        action="store_true",
+        help="validate a structurally complete ledger whose reviewer-owned flags are pending/false",
+    )
     args = parser.parse_args()
     clusters = json.loads(args.clusters.read_text(encoding="utf-8"))
     ledger = json.loads(args.ledger.read_text(encoding="utf-8"))
@@ -289,6 +303,7 @@ def main():
     status_counts = Counter()
     operation_counts = Counter()
     form_counts = Counter()
+    tier_counts = Counter()
     for entry in entries:
         drafts = as_list(entry.get("source_drafts"))
         if not drafts:
@@ -311,26 +326,76 @@ def main():
             )
         if not entry.get("reason"):
             errors.append(f"entry {entry.get('cluster')!r} lacks reason")
-        if status in {"published", "merged"} and not entry.get("target_slug"):
-            errors.append(f"entry {entry.get('cluster')!r} lacks target_slug")
+        if status in {"published", "merged"}:
+            target_slug = entry.get("target_slug")
+            target_path_text = entry.get("target_path")
+            if not target_slug:
+                errors.append(f"entry {entry.get('cluster')!r} lacks target_slug")
+            if not target_path_text:
+                errors.append(f"entry {entry.get('cluster')!r} lacks target_path")
+            else:
+                target_path = Path(str(target_path_text))
+                if (
+                    target_path.is_absolute()
+                    or ".." in target_path.parts
+                    or target_path.suffix != ".md"
+                    or target_path.stem != target_slug
+                ):
+                    errors.append(
+                        f"entry {entry.get('cluster')!r} has invalid target_path {target_path_text!r}"
+                    )
         form = entry.get("knowledge_form")
         form_counts[str(form)] += 1
         if form not in ROLE_SETS:
             errors.append(f"entry {entry.get('cluster')!r} has invalid form {form!r}")
+        tier = entry.get("tier")
+        tier_counts[str(tier)] += 1
+        reproduce_count = entry.get("reproduce_count")
+        if tier not in EVIDENCE_TIERS:
+            errors.append(f"entry {entry.get('cluster')!r} has invalid tier {tier!r}")
+        if (
+            not isinstance(reproduce_count, int)
+            or isinstance(reproduce_count, bool)
+            or reproduce_count < 1
+        ):
+            errors.append(
+                f"entry {entry.get('cluster')!r} has invalid reproduce_count {reproduce_count!r}"
+            )
+        elif tier == "verified" and reproduce_count < 2:
+            errors.append(
+                f"entry {entry.get('cluster')!r} verified tier requires reproduce_count >= 2"
+            )
+        if status in {"published", "merged"} and tier == "inferred":
+            errors.append(
+                f"entry {entry.get('cluster')!r} cannot publish inferred tier"
+            )
         if status not in {"published", "merged"}:
             continue
         audit = entry.get("evidence_audit") or {}
-        if audit.get("result") != "pass":
-            errors.append(f"entry {entry.get('cluster')!r} evidence audit did not pass")
+        expected_result = "pending" if args.pre_review else "pass"
+        if audit.get("result") != expected_result:
+            errors.append(
+                f"entry {entry.get('cluster')!r} evidence audit must be {expected_result!r}"
+            )
         mode = audit.get("mode")
         if mode == "trace_snapshot":
             if "fixed_source" in audit:
                 errors.append(f"entry {entry.get('cluster')!r} mixes evidence modes")
-            validate_trace_snapshot(entry, audit.get("trace_snapshot") or {}, errors)
+            validate_trace_snapshot(
+                entry,
+                audit.get("trace_snapshot") or {},
+                errors,
+                approved=not args.pre_review,
+            )
         elif mode == "fixed_source":
             if "trace_snapshot" in audit:
                 errors.append(f"entry {entry.get('cluster')!r} mixes evidence modes")
-            validate_fixed_source(entry, audit.get("fixed_source") or {}, errors)
+            validate_fixed_source(
+                entry,
+                audit.get("fixed_source") or {},
+                errors,
+                approved=not args.pre_review,
+            )
         else:
             errors.append(f"entry {entry.get('cluster')!r} has invalid evidence mode {mode!r}")
 
@@ -351,6 +416,7 @@ def main():
         "statuses": dict(sorted(status_counts.items())),
         "operations": dict(sorted(operation_counts.items())),
         "forms": dict(sorted(form_counts.items())),
+        "tiers": dict(sorted(tier_counts.items())),
         "errors": len(errors),
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2))

@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/distribute_barrier/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:41:43Z"
-updated_at: "2026-08-24T19:52:59Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -653,9 +653,9 @@ __aicore__ inline void DistributeBarrier<TemplateDistributeBarrierTypeFunc>::Ini
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开文档明确不支持 | 支持，本卡 | 公开 V2 支持 950DT，见 `_a5` 卡 |
+| 支持状态 | 公开文档明确不支持 | 支持，本卡 | 公开 V2 支持 950DT，见 `_950` 卡 |
 | Host/Launcher | N/A | base→inner `DistributeBarrier`，生成 AIV HCCL tiling | base→`DistributeBarrierExtend`，预建 MC2 context |
 | Kernel/资源 | N/A | `GetHcclContext` + A3 local/remote window helper；12 dtype guard | context tensor + `epHcclBuffer_`；同一 body |
 
@@ -678,13 +678,13 @@ __aicore__ inline void DistributeBarrier<TemplateDistributeBarrierTypeFunc>::Ini
 | 入口实现 | `mc2/distribute_barrier/op_api/aclnn_distribute_barrier_v2.cpp` | `aclnnDistributeBarrierV2*` | 两段式转发 |
 | API 平台分发 | `mc2/distribute_barrier/op_api/distribute_barrier_base.cpp` | `*Base` | A3 inner 路线、MTE server type、失败传播 |
 | Host/Tiling | `mc2/distribute_barrier/op_host/op_tiling/distribute_barrier_tiling.cpp` | checks / `DistributeBarrierExtendTilingFuncNew` | optional、W、workspace、A/U/blockDim、AIV HCCL 配置 |
-| Tiling 常量/索引 | `mc2/distribute_barrier/op_host/op_tiling/distribute_barrier_tiling_helper.h` | `DistributeBarrierConfig` / `SYSTEM_NEED_WORKSPACE` / world-size 常量 | 输入索引、16 MiB workspace、A3/A5 上限 |
+| Tiling 常量/索引 | `mc2/distribute_barrier/op_host/op_tiling/distribute_barrier_tiling_helper.h` | `DistributeBarrierConfig` / `SYSTEM_NEED_WORKSPACE` / world-size 常量 | 输入索引、16 MiB workspace、A3/950 上限 |
 | POD/ABI | `mc2/distribute_barrier/op_kernel/distribute_barrier_tiling.h` | `DistributeBarrierTilingData` | 嵌套 POD 与字段顺序 |
 | Kernel entry | `mc2/distribute_barrier/op_kernel/distribute_barrier.cpp` | `distribute_barrier` | 默认 POD、A3 dtype guard、单节点启动 |
 | Kernel body | `mc2/distribute_barrier/op_kernel/distribute_barrier.h` | `DistributeBarrier<XType>` | 全部地址、UB、Vector API、同步与 optional 路径 |
 | 同步 helper | `mc2/common/op_kernel/mc2_kernel_utils.h` | `SyncFunc` | SetFlag→WaitFlag 硬事件闭包 |
 | A3 window helper | `mc2/common/op_kernel/moe_distribute_base.h` | `Mc2Kernel::*` A3 branch | rank id 与 local/remote state window 地址 |
-| 平台注册 | `mc2/distribute_barrier/op_host/distribute_barrier_def.cpp` | `DistributeBarrier` OpDef | dtype、ND、A3/A5 config 与 ACLNN 支持 |
+| 平台注册 | `mc2/distribute_barrier/op_host/distribute_barrier_def.cpp` | `DistributeBarrier` OpDef | dtype、ND、A3/950 config 与 ACLNN 支持 |
 | binary config | `mc2/distribute_barrier/op_host/config/ascend910_93/distribute_barrier_binary.json` | `DistributeBarrier_*` | A3 12 dtype binary 实例 |
 | 构建接线 | `mc2/distribute_barrier/op_host/CMakeLists.txt` | `add_modules_sources_with_soc` | API/Host/MC2 target 与 A3 auto-sync off |
 
@@ -698,3 +698,9 @@ __aicore__ inline void DistributeBarrier<TemplateDistributeBarrierTypeFunc>::Ini
 | 同步 | MTE2_V、V_S、V_MTE3、MTE3_S、PipeBarrier、DCCI、SyncAll | producer 完成前不得 reduce/复用/退出 | `SyncFunc` / `Process` |
 | 精度与尾块 | 8 个 FP32 1 的精确和；余 rank给前 m 核 | compareTarget、blockLen、stride、idle worker处理不可改 | `SplitToCore` / `WaitStatus` |
 | 失败边界 | API/Tiling/inner 错误直接传播 | 不得把 optional 内容、UB/window 前提伪装为已校验 | `Check*` / base |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DistributeBarrier 950 ACLNN 算子知识](distribute_barrier_950.md)（`same_topic`）：｜ 计算语义 ｜ 在独占通信域内等待全部 rank 到达；`xRef` 只建立 Tensor 依赖，Kernel 不读写其数据 ｜；｜ 计算语义 ｜ 在独占通信域内等待全部 rank 到达；`xRef` 只建立依赖，Kernel 不读写其数据 ｜。两卡闭合同一 DistributeBarrierV2 屏障语义；A3 从 HCCL rank window 工作，950 则由 Host 预建 Mc2MoeContext 并走 DistributeBarrierExtend。
+<!-- cannbot:related:end -->

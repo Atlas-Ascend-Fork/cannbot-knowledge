@@ -29,6 +29,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [分析性能数据（性能分析）](analyze_performance_data.md)（`related`）：采集页产生 op_summary、流水图等数据，分析页紧接着用理论带宽/算力、流水利用率和实际耗时定位瓶颈；构成采集到决策的上下游。
-- [性能调优（调试与调优）](../../programming_guide/debug_and_tuning/performance_tuning.md)（`related`）：性能调优指南中的 msOpProf 上板和 simulator 流程需要先采集稳定数据；采集页给出命令入口和 trace 可视化方式。
+- [性能调优（调试与调优）](../../programming_guide/debug_and_tuning/performance_tuning.md)（`related`）：通过毕昇编译器编译生成可执行程序后，使用msOpProf工具采集Ascend C算子在AI处理器上执行的性能数据，进行性能精细调优。；在进行性能优化之前，需要拿到准确的性能数据，了解性能现状，并根据性能现状分析下一步的优化方向。Ascend C提供了多种性能测试方法，包括上板Profiling、单算子性能仿真流水图等手段。；性能调优入口要求用 msOpProf 采集，数据采集指南给出优化前建立性能现状及 Profiling/仿真方法的前置步骤。
 <!-- cannbot:related:end -->

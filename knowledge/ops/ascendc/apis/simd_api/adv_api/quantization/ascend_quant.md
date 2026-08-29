@@ -26,8 +26,7 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscendAntiQuant](ascend_anti_quant.md)（`related`）：AscendAntiQuant 与《AscendQuant》的实质衔接是：AscendAntiQuant 依赖两种空间查询，generic AntiQuant 是同任务入口，AscendQuant 是逆过程；scale 错配卡直接约束分组反量化。
-- [GetAscendQuantMaxMinTmpSize](get_ascend_quant_max_min_tmp_size.md)（`same_topic`）：该接口给出 AscendQuant 可用 workspace 上下界，是调用旧接口前的直接 Tiling 配套。
-- [GetAscendQuantTmpBufferFactorSize](get_ascend_quant_tmp_buffer_factor_size.md)（`same_topic`）：factor-size 依据固定空间反推 AscendQuant 单次处理量，与 max/min 查询共同完成分片设计。
-- [Quantize](quantize.md)（`same_topic`）：文档明确推荐用 Quantize 替代 AscendQuant；新接口保留量化任务并扩展 PER_GROUP 与舍入配置。
+- [GetAscendQuantMaxMinTmpSize](get_ascend_quant_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取AscendQuant接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；临时空间大小通过GetAscendQuantMaxMinTmpSize获取。。前者计算 AscendQuant workspace 的上下界，后者明确用该结果配置量化计算临时空间，联合阅读可闭合 Host 规划与 Kernel 调用。
+- [GetAscendQuantTmpBufferFactorSize](get_ascend_quant_tmp_buffer_factor_size.md)（`related`）：获取AscendQuant接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持不同量化场景和舍入模式配置。。FactorSize 卡给出固定 buffer 下 AscendQuant 的最大单次元素数公式，计算卡说明各量化重载如何消费 sharedTmpBuffer；二者闭合 UB 预算到分块调用链。
+- [Quantize](quantize.md)（`related`）：“推荐使用Quantize替代本接口”；“推荐使用本接口替代AscendQuant，因其在PER_TENSOR/PER_CHANNEL场景扩展了舍入模式配置”。两卡明确给出从 AscendQuant 到 Quantize 的迁移方向和新增能力。
 <!-- cannbot:related:end -->

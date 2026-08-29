@@ -25,9 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IsFinite](../../../simd_api/adv_api/math_compute/is_finite_interface/is_finite.md)（`same_topic`）：高阶 IsFinite 与 SIMT isfinite 都判断 float 是否非 NaN 且非 ±Inf，分别输出 tensor 布尔/数值结果与标量 bool。
-<!-- cannbot:related:end -->

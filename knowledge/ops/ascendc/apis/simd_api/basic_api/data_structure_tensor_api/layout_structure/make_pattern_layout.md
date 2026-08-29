@@ -23,13 +23,5 @@ TraitType 使用 LayoutTrait<T, C0> 或 LayoutTraitDefault<T> 写法时，T 仅�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [noTrans extract 与 NDExtLayoutPtn 方向不匹配](../../../../../runbooks/precision/notrans_extract_ndextlayoutptn.md)（`exemplifies`）：MakePatternLayout 与《noTrans extract 与 NDExtLayoutPtn 方向不匹配》的衔接是：MakePatternLayout 把 LayoutPattern/Trait 附着到由 Shape、Stride 构成的 Layout；GetLayoutPattern 和 MakeLayout 是读取与构造同一元数据的配套步骤，方向不匹配会造成矩阵布局解释错误。
-- [GetLayoutPattern](../utils/get_layout_pattern.md)（`related`）：MakePatternLayout 与《GetLayoutPattern》的衔接是：MakePatternLayout 把 LayoutPattern/Trait 附着到由 Shape、Stride 构成的 Layout；GetLayoutPattern 和 MakeLayout 是读取与构造同一元数据的配套步骤，方向不匹配会造成矩阵布局解释错误。
-- [Layout](layout.md)（`related`）：MakePatternLayout 与《Layout》的衔接是：MakePatternLayout 把 LayoutPattern/Trait 附着到由 Shape、Stride 构成的 Layout；GetLayoutPattern 和 MakeLayout 是读取与构造同一元数据的配套步骤，方向不匹配会造成矩阵布局解释错误。
-- [Layout和层次化表述法](layout_hierarchical_representation.md)（`related`）：MakePatternLayout 与《Layout和层次化表述法》的衔接是：MakePatternLayout 把 LayoutPattern/Trait 附着到由 Shape、Stride 构成的 Layout；GetLayoutPattern 和 MakeLayout 是读取与构造同一元数据的配套步骤，方向不匹配会造成矩阵布局解释错误。
-- [MakeLayout](make_layout.md)（`related`）：MakePatternLayout 与《MakeLayout》的衔接是：MakePatternLayout 把 LayoutPattern/Trait 附着到由 Shape、Stride 构成的 Layout；GetLayoutPattern 和 MakeLayout 是读取与构造同一元数据的配套步骤，方向不匹配会造成矩阵布局解释错误。
-- [MakeShape](make_shape.md)（`related`）：MakePatternLayout 与《MakeShape》的衔接是：MakePatternLayout 把 LayoutPattern/Trait 附着到由 Shape、Stride 构成的 Layout；GetLayoutPattern 和 MakeLayout 是读取与构造同一元数据的配套步骤，方向不匹配会造成矩阵布局解释错误。
-- [MakeStride](make_stride.md)（`related`）：MakePatternLayout 与《MakeStride》的衔接是：MakePatternLayout 把 LayoutPattern/Trait 附着到由 Shape、Stride 构成的 Layout；GetLayoutPattern 和 MakeLayout 是读取与构造同一元数据的配套步骤，方向不匹配会造成矩阵布局解释错误。
-- [基础API工具函数](../utils/tool_functions.md)（`related`）：GetLayoutPattern 的结果可用于构造/验证 PatternLayout。
-- [MakeFrameLayout](make_frame_layout.md)（`same_topic`）：MakeFrameLayout 依据标准分形 Pattern/Trait 构造布局；MakePatternLayout 在已有 Shape/Stride 时显式携带同一 Pattern/Trait，是直接构造方式对照。
+- [MakeLayout](make_layout.md)（`same_topic`）：“根据Shape和Stride构造Layout对象，描述数据张量在逻辑维度上的形状及各维步长信息。”与“根据 Shape、Stride、LayoutPattern 和 TraitType 构造带布局模式信息的 Layout 对象。”是双方正文中的具体合同。两端都由 Shape 与 Stride 构造 Layout，Pattern 版本额外携带 LayoutPattern 与 TraitType，互读可完成基础布局和模式布局的选型。
 <!-- cannbot:related:end -->

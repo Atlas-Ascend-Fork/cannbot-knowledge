@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cast/op_api/cast.cpp
     role: implementation
 created_at: "2026-08-25T10:19:23Z"
-updated_at: "2026-08-25T10:19:23Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -168,7 +168,7 @@ else: SetTilingKey(1) -> InitTril -> ProcessTril
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台公开支持 | A2/A3 产品表为 `√` | 实现同时有 910B/910_93 config | 两者 | A5 公开为 `×`，不发布 A5 卡 | `docs/aclnnLinalgCholesky.md` 产品表 |
+| 平台公开支持 | A2/A3 产品表为 `√` | 实现同时有 910B/910_93 config | 两者 | 950 公开为 `×`，不发布 950 卡 | `docs/aclnnLinalgCholesky.md` 产品表 |
 | AIV core 可用 | `GetCoreNumAiv()>0` | `blockDim` 直接来自 AIV 核数 | 两者 | Tiling `GRAPH_FAILED` | `tilingPrepareTiling` |
 | 矩阵块上限 | `B=min(N,256)` | 限制五个 depth=2 Queue 的单 buffer 容量及 DMA `uint16_t blockCount` | 两者 | `N>256` 分多块，无独立 fallback | `CholeskyTiling::Init` |
 | API 尾轴上限 | `N<=8192` | 源码注释说明更大会有超时风险 | 两者 | `ACLNN_ERR_PARAM_INVALID` | `aclnnLinalgCholeskyGetWorkspaceSize` |
@@ -199,7 +199,7 @@ else: SetTilingKey(1) -> InitTril -> ProcessTril
 
 `cholesky(self,out,workspace,tiling)` 先拒绝空 workspace，再解析 POD，构造一个 `TPipe`。两条 key 都实例化 `Cholesky<float>`，所以 API BF16 在进入核心前已升到 FP32。每个 core 以 `p=blockIdx+blockDim*k` 轮转 batch；矩阵之间没有共享地址。单矩阵内，第 0 列/行先生成，随后 `index=1..N-1` 串行读取临时 `outGM` 的历史三角区域并写下一列/行。
 
-通用 Cast 是 BF16 路径的精度边：A2/A3 `Cast` L0 对 BF16↔FP32 选择 `ADD_TO_LAUNCHER_LIST_AICORE`，但该平台的 Cast body/POD/binary 接线不在此固定仓；它是前后处理而非 Cholesky 核心算法。A5 的 `cast_apt` 明确 `KERNEL_TYPE_AIV_ONLY` 不能被反推为 A2/A3 body 证据。
+通用 Cast 是 BF16 路径的精度边：A2/A3 `Cast` L0 对 BF16↔FP32 选择 `ADD_TO_LAUNCHER_LIST_AICORE`，但该平台的 Cast body/POD/binary 接线不在此固定仓；它是前后处理而非 Cholesky 核心算法。950 的 `cast_apt` 明确 `KERNEL_TYPE_AIV_ONLY` 不能被反推为 A2/A3 body 证据。
 
 ### Route R-001：下三角逐列
 
@@ -539,7 +539,7 @@ Cholesky 同一列/行的所有元素共享对角主元的逆平方根。源码�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持；`ascend910b` config | 公开支持；`ascend910_93` config | 公开 README/API 文档明确不支持；虽然 OpDef、binary config、全局 compute_units 含 `ascend950`，构成实现信号与公开发布状态冲突，故不发布 |
 | Host/Launcher | 与 A3 共用 ACLNN、Tiling；dtype selector 的可见架构分支为 DAV_2201 | 与 A2 共用源码和同名 binary | 不进入本卡；不得由 `DAV_3510`/ascend950 接线反推公开支持 |
@@ -565,7 +565,7 @@ Cholesky 同一列/行的所有元素共享对角主元的逆平方根。源码�
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `math/cholesky/docs/aclnnLinalgCholesky.md` | 产品表、原型、参数表 | A2/A3 公开支持、A5 不支持、公开 dtype/shape |
+| 入口声明/约束 | `math/cholesky/docs/aclnnLinalgCholesky.md` | 产品表、原型、参数表 | A2/A3 公开支持、950 不支持、公开 dtype/shape |
 | 入口声明/约束 | `math/cholesky/op_host/op_api/aclnn_linalg_cholesky.h` | 两段式声明 | API ABI 与注释链路 |
 | 入口实现 | `math/cholesky/op_host/op_api/aclnn_linalg_cholesky.cpp` | `CheckParams`、两段接口 | 实际校验顺序、空域、Cast/Cholesky/ViewCopy、executor |
 | 直接依赖 | `math/cast/op_api/cast.cpp` | `IsAiCoreSupport`、`Cast` | BF16↔FP32 选择 AiCore launcher；同 dtype 无任务 |
@@ -591,3 +591,10 @@ Cholesky 同一列/行的所有元素共享对角主元的逆平方根。源码�
 | 同步 | 四个硬事件 helper + 点积后 `PIPE_ALL` | GM/UB/Scalar producer-consumer 次序；单矩阵 index 串行 | `PIPE_*`、`SecondToNColumn/Row` |
 | 精度与尾块 | 核心统一 FP32，`count=min(...)`，scale 首块计算后复用 | BF16 前后 Cast；padded route Vector 长度/Scalar 索引乘 8；assert 后 sqrt | `FirstColumn/Row`、`Process*DotProduct`、`ComputeScaleFactor` |
 | 失败边界 | Host 参数错误、L0 nullptr、Tiling failure、entry return、Device assert 可分别处理 | 不得将未知 key、空 workspace 或非正定静默视为成功输出 | `CheckParams`、`CholeskyTilingFunc`、`cholesky`、`ComputeScaleFactor` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AscendcAssert](../../../../apis/simd_api/basic_api/debug_interface/exception_detection/ascendc_assert.md)（`related`）：Cholesky 实现规定“Device 仅在每个对角主元/Schur 残差处执行 `ascendc_assert(value>0)`。”；AscendcAssert 页说明“断言条件不满足时输出断言信息并格式化打印，NPU 模式下还会触发 Trap 中断。”，后者给出非正定主元在设备侧的失败传播机制。
+- [InitValue（OpParamDef）](../../../../apis/utils_api/prototype_register_management/op_param_def/init_value.md)（`related`）：Cholesky 卡说明“Kernel 只写被选三角；`Cholesky` OpDef 为临时输出声明 `.InitValue(0)`”；InitValue 页说明“设置后会在算子执行前对算子输出的GM空间进行清零操作或者插入memset类算子进行初始值设置。”，该 Host 初始化为未写的相反三角提供零值。
+<!-- cannbot:related:end -->

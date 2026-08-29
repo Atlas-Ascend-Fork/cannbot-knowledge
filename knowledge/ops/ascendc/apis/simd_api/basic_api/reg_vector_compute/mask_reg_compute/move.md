@@ -22,9 +22,3 @@ platforms: ['950']
 参数：dst: 目的操作数，类型为MaskReg。；src: 源操作数，类型为MaskReg。；mask: 指示在复制过程中哪些bit有效，类型为MaskReg。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Move](../reg_data_load/move.md)（`same_topic`）：Move 与《Move》的实质衔接是：Move 的掩码写入语义由 C API 对应接口、MaskMergeMode 和 MaskReg 计算契约共同界定。
-<!-- cannbot:related:end -->

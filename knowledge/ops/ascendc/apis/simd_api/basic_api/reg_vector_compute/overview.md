@@ -27,12 +27,3 @@ Reg矢量计算API概述，直接操作Vector计算寄存器实现数据搬运�
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AR 跨块循环放在 __simd_vf__ 只执行首块](../../../../runbooks/precision/simd_vf_chunk_loop_must_be_driven_by_aicore_wrapper.md)（`exemplifies`）：《AR 跨块循环放在 __simd_vf__ 只执行首块》给出“Ascend950 Reg kernel 把 AR 跨向量块状态机留在单次 __simd_vf__ 中时只完成首块；将循环上移至 __aicore__ wrapper，并在同址读改写调用之间加入 Vector barrier。”；该约束/探针可直接复现、解释或前置验证《Reg矢量计算概述》中的“Reg矢量计算API概述，直接操作Vector计算寄存器实现数据搬运与计算，较Memory矢量计算API提供更大开发自由度。”。
-- [__simd_vf__ if constexpr 致 hoisted 报错](../../../../runbooks/compilation/simd_vf_if_constexpr_lowering_banned_exit_70.md)（`exemplifies`）：《__simd_vf__ if constexpr 致 hoisted 报错》说明dav-3510 上某 Reg __simd_vf__ 实现使用 if constexpr 与 constexpr trait 时，bisheng 后端报 Unsupported Inst must be hoisted 并退出 70；记录源码定位与编译边界，不提供未完成的 fallback 实现。；《Reg矢量计算概述》说明Reg矢量计算API概述，直接操作Vector计算寄存器实现数据搬运与计算，较Memory矢量计算API提供更大开发自由度。。二者在该编译失败锁定__simd_vf__中的if constexpr/trait lowering，同类模板隔离、helper/VF边界与后端崩溃用于交叉验证上存在可执行的直接衔接。
-- [asc_vf_call](vf_call/asc_vf_call.md)（`related`）：《asc_vf_call》给出“在SIMD编程场景下使用。用于启动SIMD VF（Vector Function）子任务。”；该约束/探针可直接复现、解释或前置验证《Reg矢量计算概述》中的“Reg矢量计算API概述，直接操作Vector计算寄存器实现数据搬运与计算，较Memory矢量计算API提供更大开发自由度。”。
-- [Reg矢量计算](reg_vector_compute.md)（`same_topic`）：Reg矢量计算 与《Reg矢量计算概述》的实质衔接是：Reg 矢量计算必须在 VF 内完成 Load→寄存器计算→Store；C/C++ 编程指南和边界、精度、性能、MergeMode 表直接约束该执行模型。
-<!-- cannbot:related:end -->

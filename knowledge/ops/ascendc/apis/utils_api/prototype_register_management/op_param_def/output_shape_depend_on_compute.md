@@ -28,5 +28,5 @@ OpParamDef算子定义，OpParamDef请参考OpParamDef。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [输出shape依赖计算](../../../../guides/programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/kernel_output_shape_computation.md)（`explains`）：OutputShapeDependOnCompute 只完成原型标记，目标指南给出 kernel 写实际 shape、框架读取并管理输出内存的完整实现合同。
+- [输出shape依赖计算](../../../../guides/programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/kernel_output_shape_computation.md)（`explains`）：本文属于扩展内容，介绍输出shape依赖Kernel计算结果时的实现方法。NonZero等算子在Kernel计算完成前无法确定实际输出shape。此类输出需要在原型定义中调用OutputShapeDependOnCompute()标记，并由Kernel按照固定格式把实际shape写入框架追加的shape输出地址。；标识算子输出的shape是否依赖于计算得到。某些算子，比如NonZero（统计tensor中非零值的个数），计算完成前无法得知算子输出的shape信息，算子计算完成后才能获取。。指南给出动态输出 shape 从原型标记到 Kernel 回写的完整实现，API 卡定义其中 OutputShapeDependOnCompute 的标记合同与输出限定。
 <!-- cannbot:related:end -->

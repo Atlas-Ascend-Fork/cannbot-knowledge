@@ -83,3 +83,11 @@ with torch_npu.npu.stream(cp_chunkedprefill_comm_stream()):
 - 事件源：[vllm-ascend-pr-6479-0-13-0-bugfix-fix-npu-memory-is-not-released-in-cp](https://github.com/vllm-project/vllm-ascend/pull/6479)
 - 一手：合并态 diff（merge commit `e3725695169f9a6a43e19b2edd1b5ed970c698b2`，state MERGED）中 `attention_cp.py` 的 clone 修法，事件页 Changes 记为 `attention_cp.py` 4 增 1 删。
 - 因果层级：跨流消费导致内存不释放，源自事件源的 PR 描述与 review comment；更深的 NPU allocator per-stream 生命周期内部机制不在证据范围内。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [NPU 多流优化(Multi-Stream)](../../concepts/techniques/multi_stream.md)（`related`）：要使能多 Stream 并行，需要计算图中存在满足并行条件的结构：当多个算子的输入都依赖于同一前驱算子的输出、彼此之间没有数据依赖时，这些算子在拓扑上即可并发执行。如下图，前置算子 A 的输出同时被 B 与 C 两条分支消费；B、C 之间无数据依赖，可分别承载于两条 Stream 并行，最终在汇合算子 D 合并。；进入通信流消费前，先把主流张量 `.clone()` 一份到临时变量，**通信流只消费这个副本**。clone 出的副本归属消费流的生命周期，与原张量解耦；原张量在主流上不再被外部流引用，其 NPU 内存即可正常释放。。通用卡描述生产者输出被多流分支消费的拓扑，runbook 给出跨流消费者延长张量生命周期时的 clone 修复。
+- [图模式多流并行的跨流同步：ge_graph 控制边 vs aclgraph tagged-event 及 API 选型](../../guides/experience/interventions/graph_mode_multi_stream_cross_stream_sync_api.md)（`related`）：“clone **必须发生在消费流的 context 内**”给出 CP gather 场景解耦原张量生命周期的具体修法；“显式 stream / aclgraph 路径下短生命周期张量被其它流继续消费时必须补 `record_stream()`；只切流不管内存会出错。”给出同类跨流所有权问题的通用登记要求。
+- [多流 + TP 下 MoE 无报错卡死：排查并发分支复用同名 Python 变量（路由 vs 共享专家）](multistream_branch_variable_name_collision_hang.md)（`related`）：**排查纪律**：多流 + TP 的 MoE（尤其 A8W8 量化路径）出现**无报错卡死**时，先检查被切到不同流的两条分支（路由专家 / 共享专家）有没有**复用同名 Python 变量**——复用会在多流下造成冲突；给两条并发分支的中间量各起独立名字是低成本的规避。；症状是**内存只增不减**，不是数值错、不是 hang（同名变量并发冲突导致的多流卡死是另一签名，见 ［multistream-branch-variable-name-collision-hang］(../runtime/multistream_branch_variable_name_collision_hang.md)；跨流同步 API 选型是 ［graph-mode-multi-stream-cross-stream-sync-api］(../../guides/experience/interventions/graph_mode_multi_stream_cross_stream_sync_api.md)）。两张卡用 hang 与显存单调增长分流，再分别采取变量隔离和消费流 clone。
+<!-- cannbot:related:end -->

@@ -59,3 +59,11 @@ platforms:
 - `diff 事实`（序列 pad/unpad，PR head @1e865ed2183c）：`UnifiedSPAttention.forward` 序列维 pad→all-to-all→切回。演进：基准 sha @2c45117d 处 `_forward_core` 已不再对序列维补齐，改由 `_all_to_all_qkv_anything` 承接任意/动态切分，头维由 `_maybe_pad_qkv_head` 补齐，头数硬约束由 `--ulysses-anything` 放宽。溯源下探：[cann-recipes-infer-pr-253-fix-fix-the-issue-where-the-sequence-length-is-not-divisible-when-ulysse](https://gitcode.com/cann/cann-recipes-infer/merge_requests/253)
 - `diff 事实`（UAA head padding，@dfa1a889）：`_maybe_pad_qkv_head`（补数须 < 本地 head 数否则 `raise`）、`_gather_size_by_comm` + `all_to_all_single`、patch 对齐 split_func；UAA 仅纯 Ulysses 的约束。doc 自报 ulysses8 下 UAA-on 482.65s vs off 487.68s（额外开销可忽略，仅此配置）。溯源下探：[cann-recipes-infer-pr-325-feat-hunyuanvideo-support-fa-matmul-quant-and-uaa](https://gitcode.com/cann/cann-recipes-infer/merge_requests/325)
 - `diff 事实`（稀疏场景 UAA，@a12b2affe2d0）：`_slice_ulysses_local_heads_with_uaa`（pad→slice→unpad、标准分支不整除 `raise ValueError`）、`_resolve_ulysses_local_sparsity_override`（跨 rank 收本地 head 数、非均匀切分）。溯源下探：[cann-recipes-infer-pr-353-feat-hunyuanvideo-support-ulysses-parallelism-with-block-wise-sparse-att](https://gitcode.com/cann/cann-recipes-infer/merge_requests/353)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ulysses Sequence Parallelism](../../concepts/parallelism/ulysses.md)（`related`）：Ulysses 是面向**长序列多头注意力**的序列并行策略：在 attention 以外的部分沿 S（sequence）维度切分，在 attention 处通过一次 all-to-all 把切分维度从 S 换到 N（num_heads），attention 内部按 head 并行、attention 输出再 all-to-all 换回 S。；标准 Ulysses 用 head-to-seq 的 all-to-all，**同时**把序列维和 head 维在各 rank 间等分，故两维都要求能被 `ulysses_world_size` 整除。序列长不整除→无法均分；head 数不整除→all-to-all 头切分不成立。单卡走 all-to-all no-op 分支，无此约束。。概念卡说明 S 与 head 之间的 all-to-all 切分转换，运行手册由同一转换推导序列和 head 的整除故障及 UAA 修法，形成机制到部署排障的直接链路。
+- [块稀疏 Attention 与 Ulysses 序列并行同时使能（看全序列 + 规范序重映射 + head 负载均衡）](../../guides/experience/interventions/blockwise_sparse_attention_ulysses_integration.md)（`related`）：集成卡要求“对 img q/k/v 做 all-to-all，从**序列并行布局切到头并行布局**，让每卡对自己负责的 head 持有**完整序列**”，并把非整除 head 交给 UAA；约束卡进一步要求“**稀疏度向量按实际本地 head 数对齐**”，补齐块稀疏场景在不均匀本地 head 切分后的稀疏度向量边界。
+- [多卡 MoE/SP 部署的整除·对齐约束（batch↔EP、input_max_len↔attn-TP）](parallel_dim_divisibility_constraints.md)（`related`）：“`input_max_len = align_up(input_max_len, attn_tp_size)`”是 MoE 的 SP prefill 对序列维的修复；“把序列维和 head 维在各 rank 间等分”是 Ulysses 的双维约束，联读可先按并行拓扑选择应检查的维度和修法。
+<!-- cannbot:related:end -->

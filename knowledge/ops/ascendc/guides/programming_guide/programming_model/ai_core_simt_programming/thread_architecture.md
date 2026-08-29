@@ -33,17 +33,3 @@ Grid是SIMT线程层次结构的最顶层，由多个Thread Block组成。使用
 gridDim：Grid的维度大小。：dim3
 实际上，每个线程块内的线程并无法同时并发执行，底层是通过Warp对线程块内的线程进行划分，在一个Thread Block内，所有线程按线性顺序被硬件自动划分为每32个线程一组的Warp，同一Warp内的所有线程执行同一条指令。Warp是SIMT架构中基本的调度和执行单位。Warp内的线程从相同的程序地址开始执行，拥有各自的指令地址计数器和寄存器状态，并且可以选择分支独立执行。基于Warp的划分机制，Thread Block的blockDim建议设置为32的整数倍，否则最后一个Warp将包含不足32个线程，导致该Warp内存在空闲线程通道，进而降低执行效率。
 Warp内的线程虽然执行同一段代码，但在分支处可能进入不同的执行路径，这种情况称为分支发散（Warp Divergence）。控制流指令（if、switch、do、for、while）都可能会引起分支发散。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [扩展语法内置变量](../../../../apis/simt_api/simt_programming_intro/extended_syntax/builtin_variables.md)（`explains`）：内置变量是实现线程架构身份映射的实际接口，直接提供 gridDim、blockDim、blockIdx、threadIdx。
-- [核函数配置](../../../../apis/simt_api/simt_programming_intro/extended_syntax/kernel_function_config.md)（`explains`）：《核函数配置》的任务是“核函数是SIMT编程的Device侧入口函数，负责协调整个算子的执行流程。函数定义语法为：”。《ThreadArchitecture》具体提供“SIMT编程模型采用Grid、Thread Block、Thread分层线程组织结构，每个层次维度可自定义配置，通过Warp调度机制执行。”，它直接用于SIMT Kernel 入口的执行/内存限定符、内置变量和 launch 头文件。
-- [编程模型](../../../../apis/simt_api/simt_programming_intro/programming_model.md)（`explains`）：SIMT API 模型定义 Grid/Block/Thread 内置维度，线程架构指南解释这些维度如何映射到 Warp 调度。
-- [原子操作（AI Core SIMT编程）](atomic_operations.md)（`related`）：Thread/Block/Grid 的独立执行与共享范围决定哪些线程可能并发更新同一地址，是选择原子作用域的前提。
-- [同一Warp内避免分支跳转](../../../operator_practice/simt_operator_optimization/control_flow/avoid_warp_branch.md)（`related`）：《同一Warp内避免分支跳转》的任务是“同一Warp内线程应避免分支跳转以防止分支发散，减少掩码屏蔽等待，提升SIMT算子执行效率。”。《ThreadArchitecture》具体提供“SIMT编程模型采用Grid、Thread Block、Thread分层线程组织结构，每个层次维度可自定义配置，通过Warp调度机制执行。”，它直接用于Warp divergence 的线程架构、谓词/协作改写和优化总览。
-- [编程示例（AI Core SIMT编程）](programming_examples.md)（`related`）：ThreadArchitecture说明SIMT编程模型采用Grid、Thread Block、Thread分层线程组织结构，每个层次维度可自定义配置，通过Warp调度机制执行；对编程示例（AI Core SIMT编程）而言，示例中的线程索引、核函数、内存层级与同步必须共同成立；Hello World 给出从 launch 到输出检查的最小可运行验证。
-- [内存层级（AI Core SIMT编程）](memory_hierarchy.md)（`same_topic`）：焦点处理SIMT 内存层级与地址空间、同步可见性；ThreadArchitecture正文界定“SIMT编程模型采用Grid、Thread Block、Thread分层线程组织结构，每个层次维度可自定义配置，通过Warp调度机制执行”。候选给出 SIMT 线程/硬件层级、地址空间限定符和 fence/sync 的可见性边界。
-- [抽象硬件架构（AI Core SIMT编程）](abstract_hardware_architecture.md)（`same_topic`）：“抽象硬件架构（AI Core SIMT编程）”处理AI Core上的SIMT（Single Instruction Multiple Thread，单指令多线程）编程允许指令对数据进行独立寻址，从而支持线程级并行计算。这种方式特别适用于离散访问和复杂控制逻辑等场景。SIMT编程能够有效简化复杂…；“ThreadArchitecture”明确SIMT编程模型采用Grid、Thread Block、Thread分层线程组织结构，每个层次维度可自定义配置，通过Warp调度机制执行。。实质衔接：正文明确把 SIMT 抽象建立在线程层级和内存层级上，并指向底层 AI Core 架构；只连接理解资源分配所必需的章节。
-- [核函数（AI Core SIMT编程）](kernel_function.md)（`same_topic`）：线程架构说明 block/thread/warp 的索引和执行范围，决定 kernel 内如何把全局数据映射到每个 SIMT 线程。
-<!-- cannbot:related:end -->

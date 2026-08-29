@@ -98,6 +98,10 @@ class RouteContractTests(unittest.TestCase):
         }
         self.assertEqual(expected, {name: self.contract.okf_type(name) for name in expected})
 
+    def test_platform_registry_uses_950_as_the_only_a5_generation_id(self) -> None:
+        self.assertIn("950", self.contract.platforms)
+        self.assertNotIn("a5", self.contract.platforms)
+
     def test_invalid_route_shapes_are_rejected(self) -> None:
         cases = (
             "knowledge/ops/apis/no_dsl.md",
@@ -660,6 +664,40 @@ platforms: [a2]
         self.assertIn(
             "frontmatter.time",
             {finding["code"] for finding in payload["findings"]},
+        )
+
+    def test_body_hygiene_rejects_duplicate_h1_and_collapsed_table(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            result = self.run_lint(
+                root,
+                self.render_card(body="# Duplicate\n\n| A | B | | --- | --- |"),
+                "--json",
+            )
+        self.assertEqual(1, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual(
+            {"body.h1_count", "body.collapsed_table"},
+            {
+                finding["code"]
+                for finding in payload["findings"]
+                if finding["check"] == "body"
+            },
+        )
+
+    def test_body_hygiene_ignores_h1_and_table_examples_in_fences(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            result = self.run_lint(
+                root,
+                self.render_card(body="```markdown\n# Example\n| A | B | | --- | --- |\n```"),
+                "--json",
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertFalse(
+            {"body.h1_count", "body.collapsed_table"}
+            & {finding["code"] for finding in payload["findings"]}
         )
 
     def test_index_entry_without_summary_is_a_nonblocking_finding(self) -> None:

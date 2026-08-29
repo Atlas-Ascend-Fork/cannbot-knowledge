@@ -19,9 +19,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MakeLayout](make_layout.md)（`related`）：MakeLayout 消费 MakeShape 与 MakeStride 的结果形成可寻址布局，是 MakeStride 的直接下游。
-- [MakePatternLayout](make_pattern_layout.md)（`related`）：MakePatternLayout 与《MakeStride》的衔接是：MakePatternLayout 把 LayoutPattern/Trait 附着到由 Shape、Stride 构成的 Layout；GetLayoutPattern 和 MakeLayout 是读取与构造同一元数据的配套步骤，方向不匹配会造成矩阵布局解释错误。
-- [MakeShape](make_shape.md)（`related`）：Shape 描述逻辑维度、Stride 描述各维内存步长，二者是 MakeLayout 的两个互补输入。
-- [GetStride](get_stride.md)（`same_topic`）：MakeStride说明构造Stride对象，用于描述各维度在内存中的步长。支持传入多个步长值，也支持传入嵌套的Stride子结构以构造层次化Stride。
-- [Stride（基础API）](stride.md)（`same_topic`）：Stride 类型是 MakeStride 构造的返回对象，定义各维地址步长的静态表示。
+- [Stride（基础API）](stride.md)（`related`）：Stride 用于定义各维度在内存中的步长，即同维度相邻元素在内存中的间隔，单位为元素，与 Shape 维度一一对应。；构造 Stride 对象描述各维度内存步长。。前者定义 Stride 对象表达的逐维元素间隔及其与 Shape 的对应关系，后者是构造该对象的入口，二者形成布局步长语义到对象创建的直接使用链。
 <!-- cannbot:related:end -->

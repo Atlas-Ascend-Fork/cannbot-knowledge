@@ -103,3 +103,9 @@ V3.2-Exp 阶段 [lightning-indexer](../kernels/lightning_indexer.md) 曾把分�
 - [ascendc](../frameworks/ascendc.md)
 - [ascend-950](../platforms/ascend_950.md)（值依赖分核下沉芯片内置 AICPU 的硬件平台之一，与 A3 同机制）
 - [pypto](../frameworks/pypto.md)（PyPTO MPMD 运行时由 AICPU 调度器拓扑下发任务 + 完成回调解依赖）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SparseAttnSharedKV (SAS) Kernel](../kernels/sparse_attn_sharedkv.md)（`related`）：**AICPU Scheduler** 是 DeepSeek-V4 引入的一种**值依赖分核下沉**优化：把 Attention / Lightning Indexer 这类"值依赖算子"的分核策略计算，从 Host 或 AICore 下沉到昇腾芯片内置的 **AICPU（若干个 ARM 计算核）**上独立执行，产出蕴含分核信息的 metadata 供后续 NPU 算子消费。；SAS 与 LI 属"值依赖算子"：仅靠输入 shape 无法得到好的分核策略，还需运行时**实际上下文长度**。。机制卡给出值依赖分核下沉与 metadata 生产合同，SAS 卡给出该机制在 SparseAttnSharedKV 中的具体输入依赖和 metadata 消费点。
+<!-- cannbot:related:end -->

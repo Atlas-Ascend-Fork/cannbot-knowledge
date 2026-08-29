@@ -22,10 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscStoreUnalign](asc_storeunalign.md)（`related`）：AscStoreUnalign 负责非对齐搬出的主体数据，AscStoreUnalignPost 负责用暂存寄存器完成最终跨边界尾部，两者按阶段配合。
-- [AscStoreUnalignPostupdate](asc_storeunalign_postupdate.md)（`related`）：AscStoreUnalignPostupdate 在非对齐搬出时更新源寄存器或地址状态，与 Post 收尾接口共同支持循环式连续写回。
-- [reg数据搬出](reg_store.md)（`related`）：reg 数据搬出总览把 StoreUnalign/Post/Postupdate 组织为一组，说明它们与对齐、Scatter、Pack 等搬出方式的选择边界。
-- [AscSqueezeAndStoreunalignFinalize](asc_squeeze_and_storeunalign_finalize.md)（`same_topic`）：废弃 AscStoreUnalignPost 正文明确指定 AscSqueezeAndStoreunalignFinalize 为替代接口；二者都负责把非对齐寄存器暂存的尾块最终写入 UB。
-- [AscStoreUnalignPost](asc_storeunalign_post.md)（`same_topic`）：当前 AscStoreUnalignPost 是废弃同名接口的直接承接者，保留非对齐连续搬出并处理末尾暂存数据。
-- [asc_storeunalign_post_postupdate](asc_storeunalign_post_postupdate.md)（`same_topic`）：焦点处理非对齐 Reg store 的 post-update 与尾块收尾；AscStoreUnalignPost正文界定“已废弃接口。从矢量数据寄存器连续非32B对齐搬出到UB的尾块场景，不指定偏移量，将非对齐寄存器中暂存的尾块搬出到UB。请使用asc_squeeze_and_storeunalign_finalize替代”。候选明确 base store、post/postupdate、squeeze 替代及 finalize/init 的同一地址推进生命周期。
+- [AscSqueezeAndStoreunalignFinalize](asc_squeeze_and_storeunalign_finalize.md)（`same_topic`）：该接口已废弃。请使用asc_squeeze_and_storeunalign_finalize实现此功能。 reg计算数据搬运接口，适用于从矢量数据寄存器连续非32B对齐的起始地址连续搬出到UB的尾块场景。 需要先调用下列接口之一后，再调用本接口。；reg计算数据搬运接口，适用于从矢量数据寄存器中筛选出有效元素后按照连续非32B对齐的起始地址连续搬出到UB的尾块场景。 搬运原理如下： 记目的操作数的起始地址为dst_start，结束地址为dst_end，尾块元素个数为unalign_count = (dst_end - dst_end / 32 32) / sizeof(T)。则搬运的数据会分为两部分，分别是：。废弃卡明确指定 AscSqueezeAndStoreunalignFinalize 替代相同非对齐 UB 尾块收尾功能，目标卡给出新接口合同。
 <!-- cannbot:related:end -->

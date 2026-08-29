@@ -27,11 +27,3 @@ platforms: ['950', a2, a3]
 支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddReluCast](add_relu_cast.md)（`related`）：AddReluCast 与本接口共享 ReLU+Cast 尾链，仅首个二元运算由 Sub 改为 Add，便于按算式选择。
-- [SubRelu](sub_relu.md)（`related`）：SubRelu 保留相同减法和激活但不做类型转换，可在源目 dtype 相同或需拆分 Cast 时选用。
-- [AscSubRelu](../../../c_api/vector_compute/asc_sub_relu.md)（`same_topic`）：AscSubRelu 是 C API 下相同的 Sub→ReLU→类型转换融合链，可直接映射支持的转换组合。
-<!-- cannbot:related:end -->

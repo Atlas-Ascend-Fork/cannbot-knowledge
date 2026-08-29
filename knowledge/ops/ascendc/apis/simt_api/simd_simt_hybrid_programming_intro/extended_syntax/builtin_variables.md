@@ -41,18 +41,3 @@ platforms: [agnostic]
 -   warpSize
 
     const int32_t类型变量，表示一个线程束（Warp）中的线程数量，当前为固定值32。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [dim3 未声明：显式引入 SIMT 公共头](../../../../runbooks/compilation/asc_vf_call_launch_config_requires_simt_header.md)（`exemplifies`）：扩展语法内置变量 与《dim3 未声明：显式引入 SIMT 公共头》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [SIMD&SIMT BuiltIn关键字](../../../../guides/programming_guide/language_extension/simd_simt_hybrid_builtin_keywords.md)（`explains`）：扩展语法内置变量 与《SIMD&SIMT BuiltIn关键字》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [SIMD与SIMT混合编程概述](../../../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/overview.md)（`explains`）：扩展语法内置变量 与《SIMD与SIMT混合编程概述》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [SIMT BuiltIn关键字](../../../../guides/programming_guide/language_extension/simt_builtin_keywords.md)（`explains`）：扩展语法内置变量 与《SIMT BuiltIn关键字》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [核函数与VF函数（SIMD与SIMT混合编程）](../../../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md)（`explains`）：扩展语法内置变量 与《核函数与VF函数（SIMD与SIMT混合编程）》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [编程示例（SIMD与SIMT混合编程）](../../../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/programming_examples.md)（`explains`）：扩展语法内置变量 与《编程示例（SIMD与SIMT混合编程）》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [内置数据类型](builtin_data_types.md)（`related`）：扩展语法内置变量 与《内置数据类型》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [扩展语法](extended_syntax.md)（`related`）：扩展语法内置变量 与《扩展语法》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [扩展语法内置变量](../../simt_programming_intro/extended_syntax/builtin_variables.md)（`related`）：扩展语法内置变量 与《扩展语法内置变量》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-- [核函数配置](kernel_function_config.md)（`related`）：扩展语法内置变量 与《核函数配置》的实质衔接是：dim3 内置变量依赖扩展语法、核函数配置和公共头暴露；SIMT/mixed-SIMT 指南及 dim3 编译故障给出实际声明与使用链。
-<!-- cannbot:related:end -->

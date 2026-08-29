@@ -52,10 +52,3 @@ platforms: ["950"]
 
 - dav-3510（950）实测；a2/a3 未验证，推断可迁移（GetValue/SetValue 是 AscendC 通用 LocalTensor 接口）。
 - 若后续 CANN 版本为 `LocalTensor` 增加 `operator[]` 直接返回可读写标量引用，则本卡可作为历史背景。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetValue](../../apis/simd_api/basic_api/data_structures/global_tensor/get_value.md)（`exemplifies`）：AscendC DataCopy 标量参数模板推导失败 与《GetValue》的实质衔接是：失败根因是把标量传给仅接收 LocalTensor 的 DataCopy；LocalTensor GetValue/SetValue 正是正文给出的逐元素修复。
-- [SetValue](../../apis/simd_api/basic_api/data_structures/global_tensor/set_value.md)（`exemplifies`）：AscendC DataCopy 标量参数模板推导失败 与《SetValue》的实质衔接是：失败根因是把标量传给仅接收 LocalTensor 的 DataCopy；LocalTensor GetValue/SetValue 正是正文给出的逐元素修复。
-<!-- cannbot:related:end -->

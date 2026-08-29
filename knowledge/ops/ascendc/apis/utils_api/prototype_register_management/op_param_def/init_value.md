@@ -31,3 +31,9 @@ OpParamDef算子定义，OpParamDef请参考OpParamDef。
 -   针对OpParamDef &InitValue(const std::vector &value)接口输入value的size需要与输出参数配置的DataType或DataTypeList接口参数的size一致。同时，相同数据类型需保证设置的类型和值相同，否则将会报错。
 -   对于同一个输出参数仅支持调用一种接口设置初值，调用多种InitValue接口为未定义行为；多次调用同一种接口以最后一次调用设置的初值为准。
 -   基于旧版本CANN包（不支持InitValue特性）生成的自定义算子工程，无法兼容InitValue接口。在使用非当前版本CANN包生成的自定义算子工程时，需特别注意兼容性问题。您可以通过查看自定义算子工程下cmake/util/ascendc_impl_build.py中有无output_init_value字段来确认当前工程是否支持该特性，如果未找到该字段，则需要重新生成自定义算子工程以启用InitValue特性。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LinalgCholesky A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/math/linalg_cholesky.md)（`related`）：Cholesky 卡说明“Kernel 只写被选三角；`Cholesky` OpDef 为临时输出声明 `.InitValue(0)`”；InitValue 页说明“设置后会在算子执行前对算子输出的GM空间进行清零操作或者插入memset类算子进行初始值设置。”，该 Host 初始化为未写的相反三角提供零值。
+<!-- cannbot:related:end -->

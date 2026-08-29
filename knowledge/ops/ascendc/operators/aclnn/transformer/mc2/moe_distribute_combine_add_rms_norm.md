@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_add_rms_norm/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:41:43Z"
-updated_at: "2026-08-24T19:08:31Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -458,9 +458,9 @@ Cast(xFp32, yLocal, RoundMode::CAST_NONE, numCol);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | README明确不支持 | 支持，本卡 | 支持，见 `_a5` |
+| 支持状态 | README明确不支持 | 支持，本卡 | 支持，见 `_950` |
 | Host/Launcher | Base拒绝910B | arch22 wrapper→A3 Tiling | arch35 selector |
 | Kernel/资源 | 不发布 | AIV_ENGINE，可选TP | 无TP；默认MTE |
 
@@ -481,7 +481,7 @@ Cast(xFp32, yLocal, RoundMode::CAST_NONE, numCol);
 | 入口声明/约束 | `mc2/moe_distribute_combine_add_rms_norm/docs/aclnnMoeDistributeCombineAddRmsNormV2.md` | V2文档 | 最新API约束 |
 | 入口实现 | `mc2/moe_distribute_combine_add_rms_norm/op_api/aclnn_moe_distribute_combine_add_rms_norm_v2.cpp` | V2 symbols | Base转发 |
 | API Base | `mc2/moe_distribute_combine_add_rms_norm/op_api/moe_distribute_combine_add_rms_norm_base.cpp` | Check/Base | 校验/inner |
-| 平台注册 | `mc2/moe_distribute_combine_add_rms_norm/op_host/moe_distribute_combine_add_rms_norm_def.cpp` | AddConfig | A3/A5 |
+| 平台注册 | `mc2/moe_distribute_combine_add_rms_norm/op_host/moe_distribute_combine_add_rms_norm_def.cpp` | AddConfig | A3/950 |
 | A3 wrapper | `mc2/moe_distribute_combine_add_rms_norm/op_host/op_tiling/arch22/moe_distribute_combine_add_rms_norm_tiling_a2a3.cpp` | TilingFunc | 共享Tiling入口 |
 | Host/Tiling | `mc2/moe_distribute_combine_v2/op_host/op_tiling/moe_distribute_combine_v2_tiling.cpp` | A3 Tiling/key/UB | POD producer |
 | POD | `mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_v2_tiling.h` | structs | ABI |
@@ -502,3 +502,10 @@ Cast(xFp32, yLocal, RoundMode::CAST_NONE, numCol);
 | 同步 | TP/EP flags、HardEvent、Queue | 等待/清零/Free | `WaitDispatch`等 |
 | 精度与尾块 | FP32聚合、两次RINT、商余数分核 | 保留中间BF16舍入 | `AddRmsNorm*` |
 | 失败边界 | Host失败即终止 | 不发布dormant路线 | Base/Tiling |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [MoeDistributeCombine A2/A3 ACLNN 算子知识](moe_distribute_combine.md)（`related`）：基础 Combine 卡以“｜ 计算语义 ｜ 按 Dispatch 产生的 rank/token/top-k 辅助信息收回专家输出，以 `expertScales` 加权并恢复 `［BS,H］` token 顺序 ｜”界定路由结果恢复；融合卡在“｜ 计算语义 ｜ 可选 TP 两卡 ReduceScatterV，再做 EP AllToAllV；按权重聚合后执行 Add+RmsNorm ｜”中把相同的按权重聚合扩展为 Add+RmsNorm，可用于判断何时以融合算子替代普通 Combine 尾部链路。
+- [MoeDistributeCombineAddRmsNorm 950 ACLNN 算子知识](moe_distribute_combine_add_rms_norm_950.md)（`same_topic`）：EP AllToAllV 后按权重聚合普通/特殊专家结果，再执行 Add+RmsNorm；公开 950 不支持 TP；可选 TP 两卡 ReduceScatterV，再做 EP AllToAllV；按权重聚合后执行 Add+RmsNorm。两页都是 V2 CombineAddRmsNorm，公共链为 EP 聚合后 Add+RmsNorm；A3 额外支持可选 TP，950 明确禁用 TP，因此关系直接支撑平台路线选择。
+<!-- cannbot:related:end -->

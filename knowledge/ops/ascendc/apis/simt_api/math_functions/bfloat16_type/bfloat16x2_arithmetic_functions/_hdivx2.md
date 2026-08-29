@@ -25,12 +25,3 @@ platforms: ['950']
 约束：针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。需包含头文件 simt_api/asc_bf16.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hdiv](../bfloat16_arithmetic_functions/_hdiv.md)（`related`）：标量 bfloat16 __hdiv 与 packed __hdivx2 使用相同 CAST_RINT 和特殊值规则，分别适配单值与双 lane 计算。
-- [__hdivx2](../../half_type/half2_arithmetic_functions/_hdivx2.md)（`related`）：half2 版本 __hdivx2 与 focal 都做双分量并行除法和 CAST_RINT，差异在 half2 与 bfloat16x2 的精度、特殊值上界及头文件。
-- [__fdividef](../../float_math_functions/_fdividef.md)（`same_topic`）：__fdividef 与《__hdivx2》的实质衔接是：__fdividef 与 Fdividef 是 float 快速除法入口，half/half2 对应接口用于在降精度时保持相除语义和 lane 形态。
-- [bfloat16x2类型算术函数](bfloat16x2_arithmetic_functions.md)（`same_topic`）：bfloat16x2 算术函数汇总明确收录 __hdivx2，并把它与 packed 加减乘、FMA 和 ReLU 变体放在同一 API 族。
-<!-- cannbot:related:end -->

@@ -103,9 +103,3 @@ for fmt in [0, 2, 29]:   # NCHW, ND, FRACTAL_NZ
 - 本结论在 a2 / CANN 9.0.0 上成立。a3、950 的 NPU 内存分配器选格式行为未实测，**推断可迁移（未验证）**——只要分配器对 2D+ 大张量可能选非 NCHW 物理布局、且 kernel 按 flat 1D 写，就适用本结论。
 - 本卡只覆盖"输出 `z` 物理布局错位"这一个根因；其他精度现象（如 FP16 cast-back 舍入、UB 尾块对齐）是独立根因，不在本卡。
 - 本 trace 未定位 NPU 内存分配器在什么条件下对 `torch::empty` 的 2D+ 张量选 NCHW vs FRACTAL_NZ（看起来与张量 size、分配池状态、是否首次分配有关），故间歇性未在机制层闭环。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [关键分形格式详解](../../apis/simd_api/basic_api/cube_compute/cube_compute_fractal_intro/key_fractal_format_details.md)（`exemplifies`）：NZ dim=1 错位的根因在分形物理排布；关键分形格式详解给出 NZ 分块、轴映射和尾块解释，是重算地址与验证输出布局的依据。
-<!-- cannbot:related:end -->

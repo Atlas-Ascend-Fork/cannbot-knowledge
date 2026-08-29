@@ -25,5 +25,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopyL1ToGMContinuous](data_copy_l1_to_gm_continuous.md)（`related`）：HighdimSplit 用 blockCount/blockLen/gap 做非连续 L1→GM，连续版用于无 gap 的整段搬出；正文明确连续场景优先后者。
+- [DataCopyL1ToGMContinuous](data_copy_l1_to_gm_continuous.md)（`related`）：约束：不支持 950；支持 a2/a3、Kirin X90/9030。连续搬运场景推荐使用 DataCopy（L1ToGM 连续搬运）。；将矩阵从 L1 Buffer 连续搬运至 Global Memory，格式和内容保持不变。头文件 `basic_api/kernel_operator_data_copy_intf.h`。。高维切分卡明确连续场景改用 DataCopy，目标卡给出推荐接口的 L1 到 GM 数据合同。
 <!-- cannbot:related:end -->

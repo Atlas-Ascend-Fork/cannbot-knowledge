@@ -26,8 +26,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetSinCosTmpBufferFactorSize](../sin_cos_interface/get_sin_cos_tmp_buffer_factor_size.md)（`related`）：同时需要 sin/cos 输出时应使用双输出接口的独立 factor 规则，不能沿用单 Sin 的容量估计。
-- [GetSinMaxMinTmpSize](get_sin_max_min_tmp_size.md)（`same_topic`）：MaxMin 给出 Sin 临时空间区间，FactorSize 在固定 buffer 下按 maxLiveNodeCount/extraBuf 反推 count；两者还要求 SinConfig 保持一致。
-- [Sin](sin.md)（`same_topic`）：Sin 与《GetSinTmpBufferFactorSize》的实质衔接是：这些卡覆盖 Sin 的高阶入口、临时空间计算和与 Cos 成对计算的调用方式；缓存案例与空队列案例都直接执行 sin/cos 并给出搬运或队列生命周期约束。
-- [Sin接口](sin_interface.md)（`same_topic`）：Sin 接口总页定义 FactorSize、MaxMinTmpSize 与 Sin 的组合流程。
+- [GetSinMaxMinTmpSize](get_sin_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Sin接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧；推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。前者给出 Sin 临时空间的合法选择区间，后者把实际可用空间换算为单次处理元素数，属于同一 Tiling 计算链。
+- [Sin](sin.md)（`related`）：GetSinTmpBufferFactorSize 给出“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize”；Sin 页说明“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。”，前者正用于为后者带 calCount 的显式缓冲重载推导单次计算量。
 <!-- cannbot:related:end -->

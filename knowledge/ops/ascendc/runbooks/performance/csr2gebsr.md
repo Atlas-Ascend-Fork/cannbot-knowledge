@@ -193,5 +193,5 @@ __simt_callee__ __aicore__ inline void FillBlockValues(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SIMT VF 栈数组动态索引致输出全零](../precision/simt_vf.md)（`related`）：《SIMT VF 栈数组动态索引致输出全零》明确“__simt_vf__ 计算函数内声明栈分配固定大小数组（如 int32_t rowPtrStart[32]）并用运行期变量下标动态索引（rowPtrStart[localR]）时，SIMT 编译器生成错误代码——数组读写未落在预期栈位置，Pass1 marker 与 Pass2 填充全部失效，Convert kernel 启动却静默产出全零（bsrColIndC/bsrValC 全零，bsrRowPtr 正确）。判别=二分定位含/不含局部数组版本的参数化测试。”；它与《csr2gebsr 双指针法窄矩阵退化》的“csr2gebsr Convert 用双指针法替代 BinarySearchCsrRow，窄矩阵严重退化、大矩阵改善，回退禁用。”在实际调用参数、数据流或结果校验上直接衔接。
+- [SIMT VF 栈数组动态索引致输出全零](../precision/simt_vf.md)（`related`）：回退双指针法、仅保留 P4+P11，窄矩阵恢复至噪声范围，退化消除；移除局部数组、Pass1 直读 __gm__ csrRowPtrA 后：64/64 PASSED；两卡记录同一 csr2gebsr Convert 优化链中相互独立的性能回退与正确性修复，可共同确定最终安全补丁集合。
 <!-- cannbot:related:end -->

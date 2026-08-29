@@ -24,11 +24,3 @@ platforms: ['950']
 约束：mask控制源操作数是否参与计算，源操作数不参与计算的元素在输出对应位置置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__half2bfloat16_rd](../../../../simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_half2bfloat16_rd.md)（`related`）：《__half2bfloat16_rd》的任务是“遵循CAST_FLOOR模式，将half类型数据转换为bfloat16类型，返回转换后的值。”。《AscHalf2Bfloat16》具体提供“将half类型数据转为bfloat16类型，并支持多种舍入模式。 关于舍入模式的详细说明，请参见舍入模式。”，它直接用于half→bfloat16 的同源同目标舍入模式选择。
-- [__half2bfloat16_rn](../../../../simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_half2bfloat16_rn.md)（`related`）：SIMT 标量接口以 RN 模式完成 half→bfloat16，而 focal 在 RegTensor 上向量化转换；两者帮助按执行模型与舍入要求选型。
-- [__half2bfloat16_ru](../../../../simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_half2bfloat16_ru.md)（`same_topic`）：《__half2bfloat16_ru》处理“遵循CAST_CEIL模式，将half类型数据转换为bfloat16类型，返回转换后的值。”。《AscHalf2Bfloat16》明确提供“将half类型数据转为bfloat16类型，并支持多种舍入模式。 关于舍入模式的详细说明，请参见舍入模式。”，其参数、调用或验证步骤直接接入half 到 bfloat16 的同源同目标不同舍入模式。
-<!-- cannbot:related:end -->

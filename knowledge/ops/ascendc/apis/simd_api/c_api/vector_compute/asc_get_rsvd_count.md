@@ -23,5 +23,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscReduce](asc_reduce.md)（`related`）：《AscReduce》说明以内置固定模式对应的二进制或者用户自定义输入的数值对应的gather mask（数据收集的掩码），从源操作数中选取元素写入目的操作数中。；《AscGetRsvdCount》说明此接口用于获取执行asc_reduce操作后剩余的元素数量。。二者在AscReduce是按mask压缩选中元素的gather语义，GatherMask提供等价数据选择，AscGetRsvdCount读取实际保留数量上存在可执行的直接衔接。
+- [AscReduce](asc_reduce.md)（`related`）：此接口用于获取执行asc_reduce操作后剩余的元素数量。；以内置固定模式对应的二进制或者用户自定义输入的数值对应的gather mask（数据收集的掩码），从源操作数中选取元素写入目的操作数中。。AscReduce 按 gather mask 收集元素，AscGetRsvdCount 读取该操作完成后保留的元素数量，二者构成筛选执行与结果计数的直接调用链。
 <!-- cannbot:related:end -->

@@ -23,8 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetCtrlSpr](../../basic_api/special_register_access/get_ctrl_spr_isasi.md)（`related`）：AscSetCtrl 是 C API 配置 CTRL 的对应入口，便于在 C 路线复现 Set/Get 验证。
-- [SetCtrlSpr](../../basic_api/special_register_access/set_ctrl_spr_isasi.md)（`related`）：SetCtrlSpr 以模板位段方式写 CTRL 寄存器，AscSetCtrl 则写入读取并修改后的整体寄存器值，是同一控制寄存器的两种配置入口。
-- [系统变量](system_variables.md)（`related`）：系统变量入口页把 asc_set_ctrl/get_ctrl 放在运行时状态配置接口中，并列出其与核编号、架构和搬运寄存器的边界。
-- [AscGetCtrl](asc_get_ctrl.md)（`same_topic`）：AscGetCtrl 与《AscSetCtrl》的实质衔接是：AscGetCtrl 必须与 AscSetCtrl 配对做读改写，Get/Set/ResetCtrlSpr 与系统变量说明 CTRL 控制位的读取、保存和恢复范围。
+- [AscGetCtrl](asc_get_ctrl.md)（`related`）：读取CTRL寄存器（控制寄存器）特定比特位上的值。；约束：使用前需要先用asc_get_ctrl()获取当前值，仅对需要变更的bit位进行修改。；仅支持已设置CTRL［48］、CTRL［53］、CTRL［56］、CTRL［59］比特位。；SetCtrl 的约束要求先由 GetCtrl 读取现值并只修改目标位，因此读取与设置形成寄存器安全更新序列。
 <!-- cannbot:related:end -->

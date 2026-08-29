@@ -21,8 +21,7 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalignBrcDatablockPostupdate](asc_loadalign_brc_datablock_postupdate.md)（`related`）：废弃页明确要求 brc_postupdate_v2 迁移到 AscLoadalignBrcDatablockPostupdate。
-- [AscLoadalignBrcElem2datablockPostupdate](asc_loadalign_brc_elem2datablock_postupdate.md)（`related`）：废弃页明确要求 brc_postupdate_v3 迁移到 Elem2datablock Postupdate 接口。
-- [AscLoadalignPostupdate](asc_loadalign_postupdate.md)（`related`）：对普通 postupdate 模式，废弃的 V4 统一入口应迁移到 AscLoadalignPostupdate。
-- [AscLoadalignUnpack4Postupdate](asc_loadalign_unpack4_postupdate.md)（`related`）：废弃页把 unpack_postupdate_v2 的替代路径指定为 AscLoadalignUnpack4Postupdate。
+- [AscLoadalignBrcDatablockPostupdate](asc_loadalign_brc_datablock_postupdate.md)（`same_topic`）：该接口已废弃。其中asc_loadalign_brc_postupdate_v2请使用asc_loadalign_brc_datablock_postupdate，asc_loadalign_brc_postupdate_v3请使用asc_loadalign_brc_elem2datablock_postupdate，asc_loadalign_unpack_postupdate_v2请使用asc_loadalign_unpack4_postupdate实现此功能。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现DataBlock广播搬入模式并启用Post Update：读取一个DataBlock（32B）并广播到VL，接口调用后自动更新源操作数地址。。废弃页把旧 brc_postupdate_v2 明确映射到新的 DataBlock Post Update 接口。
+- [AscLoadalignBrcElem2datablockPostupdate](asc_loadalign_brc_elem2datablock_postupdate.md)（`same_topic`）：该接口已废弃。其中asc_loadalign_brc_postupdate_v2请使用asc_loadalign_brc_datablock_postupdate，asc_loadalign_brc_postupdate_v3请使用asc_loadalign_brc_elem2datablock_postupdate，asc_loadalign_unpack_postupdate_v2请使用asc_loadalign_unpack4_postupdate实现此功能。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现元素到DataBlock广播搬入模式并启用Post Update：加载（VL/DataBlock）个元素的数据并将每个元素（16bit/32bit）广播到一个DataBlock（32B）中，接口调用后自动更新源操作数地址。。废弃页把旧 brc_postupdate_v3 映射到逐元素广播并自动更新地址的新接口。
+- [AscLoadalignUnpack4Postupdate](asc_loadalign_unpack4_postupdate.md)（`same_topic`）：该接口已废弃。其中asc_loadalign_brc_postupdate_v2请使用asc_loadalign_brc_datablock_postupdate，asc_loadalign_brc_postupdate_v3请使用asc_loadalign_brc_elem2datablock_postupdate，asc_loadalign_unpack_postupdate_v2请使用asc_loadalign_unpack4_postupdate实现此功能。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现UNPACK4搬入模式并启用Post Update：按无符号整型u8加载VL/4长度数据并unpack到VL长度u32类型（中间位置补0），接口调用后自动更新源操作数地址。。废弃页把旧 unpack_postupdate_v2 明确映射到新 UNPACK4 Post Update 接口。
 <!-- cannbot:related:end -->

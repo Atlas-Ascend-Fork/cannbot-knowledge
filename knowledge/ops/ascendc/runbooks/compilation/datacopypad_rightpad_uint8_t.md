@@ -82,15 +82,3 @@ ColSplit/ARA 路径同样模式（line 286/314/363，逐字）：
 
 - DAV_3510（a3 / Ascend950）上 `DataCopyPadExtParams` 字段类型是否同为 `uint8_t`：未验证，推断可迁移（同一 AscendC DataCopyPad API 族应保持字段一致，但本 trace 仅在 a2 观测到）。
 - CANN 大版本升级后字段类型若调整：未验证；升级时需重跑本判别方法确认。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)（`exemplifies`）：《DataCopyPad》说明将数据从GM非对齐搬运至UB，可根据需要自行填充数据。；《DataCopyPad rightPad 字段为 uint8_t》说明AscendC DataCopyPadExtParams 的 rightPad 量字段类型是 uint8_t，用 static_cast<uint16_t> 填充会触发 C++11 narrowing 编译错误；编译器建议改 static_cast<uint8_t>。。二者在GM到UB非对齐搬入依赖Pad参数、32B最小DMA和LocalTensor/offset/rightPad合同，UB到GM方向的重载不同上存在可执行的直接衔接。
-- [DataCopyExtParams blockLen 窄化编译失败](datacopyextparams_block_len_requires_uint32.md)（`related`）：DataCopyExtParams blockLen 窄化编译失败 与《DataCopyPad rightPad 字段为 uint8_t》的实质衔接是：本故障和 blockCount/rightPad 卡都发生在 AscendC 参数结构体列表初始化的精确整数宽度不匹配；DataCopyPad 是 DataCopyExtParams 的直接消费接口，其他 stride、对齐或队列故障不是同一编译根因。
-- [DataCopyPad 五参编译失败—LocalTensor 子视图替代偏移](datacopypad_offset_via_tensor_subview.md)（`related`）：GM→UB 四参数结构确定后，PadExtParams 的 rightPadding 字段类型仍可能独立阻断编译；该卡补充了 focal 调用链中 padding 结构的字段契约。
-- [DataCopyPad 尾块改逐行一维搬入](../precision/datacopypad_partial_2d_blocks_use_per_row_copy.md)（`related`）：DataCopyPad 尾块改逐行一维搬入 与《DataCopyPad rightPad 字段为 uint8_t》的衔接是：这些候选直接解释 DataCopy/DataCopyPad 的 blockCount、行跨度、32B/256B 粒度、padding 与地址偏移；它们可用于判断短二维行何时必须退化为逐行复制。
-- [DataCopyPad 未填满强制对齐缓冲 — 小维规约读入脏尾部](../precision/datacopypad_tail_must_initialize_full_reduction_extent.md)（`related`）：目标卡展示 rightPadding 数值不足会留下 UB 脏尾部；本卡确保表达该数值时使用正确的 uint8_t 字段类型，连接编译契约与规约正确性验证。
-- [DataCopy尾chunk非32B对齐触发ERR99999](datacopy_chunk_32b_err99999.md)（`related`）：《DataCopy尾chunk非32B对齐触发ERR99999》说明Ascend C DataCopy 在 UB↔GM 方向要求 count*sizeof(T) 为 32 字节对齐，否则搬运量对 32B 向下取整。当纯搬运算子尾 chunk 的实际元素数不满足 32B 对齐时，UB→GM 写方向触发 ERR99999、GM→UB 读方向静默丢尾部数据。判别方法：尾部元素数*sizeof(T)%32!=0 即命中。；《DataCopyPad rightPad 字段为 uint8_t》说明AscendC DataCopyPadExtParams 的 rightPad 量字段类型是 uint8_t，用 static_cast<uint16_t> 填充会触发 C++11 narrowing 编译错误；编译器建议改 static_cast<uint8_t>。。二者在DataCopy尾chunk错误由有效字节数非32B倍数触发，DataCopyPad的逐行、stride、padding和最小DMA卡给出修复边界上存在可执行的直接衔接。
-- [DataCopyPad 加载缺少 Pad 参数导致编译失败](datacopypad_gm_to_ub_requires_pad_params.md)（`same_topic`）：焦点处理DataCopyPad GM→UB 扩展重载的 Pad 参数签名；DataCopyPad rightPad 字段为 uint8_t正文界定“AscendC DataCopyPadExtParams 的 rightPad 量字段类型是 uint8_t，用 static_cast<uint16_t> 填充会触发 C++11 narrowing 编译错误；编译器建议改 static_”。候选是 DataCopyPad API、相反方向重载、参数窄化与 rightPad 类型的同一签名决策。
-<!-- cannbot:related:end -->

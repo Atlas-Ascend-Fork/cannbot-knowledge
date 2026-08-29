@@ -226,16 +226,3 @@ __simt_vf__ __launch_bounds__(THREAD_DIM) inline void SimtComputeVF(
 ## 误诊
 
 同一阶段同时引入了 RegBase 掩码变化，最初把 Bisheng 崩溃归因于 `UnPack`；回退掩码后错误不变，说明应继续检查 SIMT 作用域。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscGetBlockIdx](../../apis/simd_api/c_api/sys_var/asc_get_block_idx.md)（`exemplifies`）：SIMT 内读块号致 Bisheng 崩溃—移到核入口 与《AscGetBlockIdx》的实质衔接是：块级 GetBlockIdx/GetBlockNum 必须在 __aicore__ caller 读取并把标量区间传给 __simt_vf__；C/C++ 查询卡给出正确入口，SIMT helper/纯 SIMT 参数与混合入口卡共同限定 caller/callee 作用域。
-- [AscGetBlockNum](../../apis/simd_api/c_api/sys_var/asc_get_block_num.md)（`exemplifies`）：SIMT 内读块号致 Bisheng 崩溃—移到核入口 与《AscGetBlockNum》的实质衔接是：块级 GetBlockIdx/GetBlockNum 必须在 __aicore__ caller 读取并把标量区间传给 __simt_vf__；C/C++ 查询卡给出正确入口，SIMT helper/纯 SIMT 参数与混合入口卡共同限定 caller/callee 作用域。
-- [GetBlockIdx](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_idx.md)（`exemplifies`）：SIMT 内读块号致 Bisheng 崩溃—移到核入口 与《GetBlockIdx》的实质衔接是：块级 GetBlockIdx/GetBlockNum 必须在 __aicore__ caller 读取并把标量区间传给 __simt_vf__；C/C++ 查询卡给出正确入口，SIMT helper/纯 SIMT 参数与混合入口卡共同限定 caller/callee 作用域。
-- [GetBlockNum](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_num.md)（`exemplifies`）：SIMT 内读块号致 Bisheng 崩溃—移到核入口 与《GetBlockNum》的实质衔接是：块级 GetBlockIdx/GetBlockNum 必须在 __aicore__ caller 读取并把标量区间传给 __simt_vf__；C/C++ 查询卡给出正确入口，SIMT helper/纯 SIMT 参数与混合入口卡共同限定 caller/callee 作用域。
-- [CANN 9.0.1 SIMT 入口类型无法派生—改混合 VF](mixed_simt_requires_vector_shell_and_simt_vf.md)（`related`）：SIMT 内读块号致 Bisheng 崩溃—移到核入口 与《CANN 9.0.1 SIMT 入口类型无法派生—改混合 VF》的实质衔接是：块级 GetBlockIdx/GetBlockNum 必须在 __aicore__ caller 读取并把标量区间传给 __simt_vf__；C/C++ 查询卡给出正确入口，SIMT helper/纯 SIMT 参数与混合入口卡共同限定 caller/callee 作用域。
-- [SIMT VF 栈数组动态索引致输出全零](../precision/simt_vf.md)（`related`）：SIMT VF 栈数组动态索引致输出全零：本卡暴露 __simt_vf__ 内局部数组动态索引的编译器语义缺口；官方执行空间限定符界定 VF/callee契约，helper限定符和Block元数据卡给出同一执行域内已验证的代码生成禁区。 目标卡《SIMT 内读块号致 Bisheng 崩溃—移到核入口》补充：在 __simt_vf__ 内读取 BlockIdx/BlockNum 会使 Bisheng 前端异常终止；在 __aicore__ 调用侧切分并传参。
-- [SIMT helper 误标 __simt_vf__ 导致编译失败](simt_vf_helpers_use_simt_callee.md)（`related`）：SIMT 内读块号致 Bisheng 崩溃—移到核入口 与《SIMT helper 误标 __simt_vf__ 导致编译失败》的实质衔接是：块级 GetBlockIdx/GetBlockNum 必须在 __aicore__ caller 读取并把标量区间传给 __simt_vf__；C/C++ 查询卡给出正确入口，SIMT helper/纯 SIMT 参数与混合入口卡共同限定 caller/callee 作用域。
-- [per-core zero-out 经 grid-stride ZeroOutS](../precision/per_core_zero_out_grid_stride_zeroout_simt_overshoot.md)（`same_topic`）：per-core zero-out 经 grid-stride ZeroOutS 与《SIMT 内读块号致 Bisheng 崩溃—移到核入口》的实质衔接是：该故障由 ZeroOutSimt 使用 blockIdx/gridDim 的跨核 grid-stride 导致；SIMT builtin、block 数接口与 SyncAll 共同解释索引越界和回退同步要求。
-<!-- cannbot:related:end -->

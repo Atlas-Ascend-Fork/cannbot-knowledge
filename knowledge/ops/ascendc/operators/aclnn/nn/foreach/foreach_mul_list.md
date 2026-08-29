@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_mul_list/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:47:11Z"
-updated_at: "2026-08-25T15:47:11Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -491,9 +491,9 @@ maxCastDataCount = S/4 FP32 elements
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，但见独立 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，但见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22 公共 Tiling | `ascend910_93`→同一 arch22 Tiling | arch35 专用 Tiling |
 | Kernel/资源 | 公共 AIV Vector Kernel | 同一公共 AIV Vector Kernel | 专用 SIMT、直接 GM、0 B workspace |
 
@@ -538,3 +538,9 @@ maxCastDataCount = S/4 FP32 elements
 | 同步 | Queue 生命周期 + PIPE_V barriers | 原地 FP32 Mul 前后 barrier 不可删除 | `InnerComputer::Compute` |
 | 精度与尾块 | 原 dtype路线；BF16 FP32 Mul + RINT；DMA tail 按字节 | cast 顺序、round mode、valid count | `ComputePerCast`、`CopyIn/CopyOut` |
 | 失败边界 | Host 拒绝列表/shape/dtype/维数错误 | 不得把未知 dtype/key 或 >50 Tensor 推成 fallback | `CheckOpInfo`、entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachMulList 950 ACLNN 算子知识](foreach_mul_list_950.md)（`same_topic`）：实际入口 ｜ `aclnnForeachMulListGetWorkspaceSize` + `aclnnForeachMulList`，无版本后缀的公开两段式 ACLNN；实际入口 ｜ `aclnnForeachMulListGetWorkspaceSize` + `aclnnForeachMulList`，无版本后缀公开 ACLNN。两卡闭合同一公开入口在 A2/A3 与 950 上的不同 Host、Tiling 和 Device 路线。
+<!-- cannbot:related:end -->

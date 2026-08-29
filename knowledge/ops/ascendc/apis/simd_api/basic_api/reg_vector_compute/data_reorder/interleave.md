@@ -28,13 +28,3 @@ platforms: ['950']
 - 数据类型为b64时，仅支持RegTraitNumTwo。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [B16 交错 DINTLV 成对归零 — 转 fp32 后重排](../../../../../runbooks/precision/b16_interleave_compute_should_promote_to_b32_layout.md)（`exemplifies`）：该卡实测 B16 交织布局直接计算会成对归零，给出先升 B32 的边界。
-- [DeInterleave 两路写反——按偶索引到 dst0 修正](../../../../../runbooks/precision/deinterleave_dst0_is_even_lane_output.md)（`exemplifies`）：该卡明确 DeInterleave dst0/dst1 对应偶/奇 lane，可验证交织顺序。
-- [DeInterleave](de_interleave.md)（`related`）：Reg DeInterleave 把两个 RegTensor 拆为交错子流，Reg Interleave 用相同寄存器布局重新组合，是成对计算前后的直接布局链。
-- [Interleave](../mask_reg_compute/interleave.md)（`related`）：MaskReg 版本操作掩码位布局，不等同于数值 RegTensor 交织。
-- [Interleave](../../memory_vector_compute/data_rearrange/interleave.md)（`same_topic`）：Memory Tensor 版本完成同一交织任务，可按数据驻留选择。
-<!-- cannbot:related:end -->

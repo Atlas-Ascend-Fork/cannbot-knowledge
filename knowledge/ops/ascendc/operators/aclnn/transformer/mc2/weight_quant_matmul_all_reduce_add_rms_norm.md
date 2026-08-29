@@ -62,7 +62,7 @@ sources:
   - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce_add_rms_norm/op_host/CMakeLists.txt"
     role: implementation
 created_at: "2026-08-24T16:41:43Z"
-updated_at: "2026-08-24T20:23:29Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["a2"]
 cann_versions: ["9.1.0"]
 ---
@@ -1135,7 +1135,7 @@ __aicore__ inline void PreProcForBiasOnVector()
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持 ascend910b；200I/500 A2 不支持 | 公开文档明确不支持 | 950PR/950DT 明确不支持 |
 | Host/Launcher | OpDef 仅 `AddConfig("ascend910b")`，公开无后缀 ACLNN | 无本 op 配置/入口闭包 | 无本 op arch35 配置/入口闭包 |
@@ -1200,4 +1200,11 @@ ascend910b binary JSON 为该 op 声明 FP16/INT8、BF16/INT8、FP16/INT4、BF16
 | workspace/内存 | 三槽 cache、normOut 原位与计数区可迁移 | `Wfusion=Wmc2+256 B`；BF16 bias 在 cache 前；阶段复用不得提前 | fusion tiler/base/custom body |
 | 同步 | flag 6/7/8/9 与 HCCL Query 协议可复用 | CMake 关闭 auto-sync；DCCI/SyncAll/Finalize 顺序不能省略 | CUSTOM body/ARN driver |
 | 精度与尾块 | FP16/BF16 反量化和五 ARN specialization 可复用 | `(cast(w)+offset)*scale`；BF16 RINT；tile/tail 各自 tiling/handle | antiquant/ARN bodies |
-| 失败边界 | API 空域与 Host selector 可复用 | K=0 失败，其他空域零 workspace；A2 only；无 V2/A5 fallback | ACLNN cpp/docs/OpDef |
+| 失败边界 | API 空域与 Host selector 可复用 | K=0 失败，其他空域零 workspace；A2 only；无 V2/950 fallback | ACLNN cpp/docs/OpDef |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AddRmsNorm A2/A3 ACLNN 算子知识](../../nn/norm/add_rms_norm.md)（`related`）：替代组合是 aclnnWeightQuantMatmulAllReduce + aclnnAddRmsNorm。 `x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma` 废弃融合入口把归一化尾段迁移到 AddRmsNorm，后者定义残差 add、rstd 与 gamma 计算合同。
+- [WeightQuantMatmulAllReduce A2 ACLNN 算子知识](weight_quant_matmul_all_reduce.md)（`related`）：替代组合是 aclnnWeightQuantMatmulAllReduce + aclnnAddRmsNorm。 `output = AllReduce(x1 @ ((x2 + antiquantOffset) * antiquantScale) + bias + x3)`；空 K 时退化为 `AllReduce(bias + x3)` 废弃融合入口明确拆到 WeightQuantMatmulAllReduce，后者闭合量化 MatMul、可选 x3 与 AllReduce 前半段。
+<!-- cannbot:related:end -->

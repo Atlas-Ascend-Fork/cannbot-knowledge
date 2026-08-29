@@ -145,12 +145,3 @@ static uint32_t QueryAivCores() {
 ## 误诊
 
 该错误在头文件解析阶段发生，与 kernel dtype、tiling、UB 或 runtime 设备状态无关。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [dim3 未声明：显式引入 SIMT 公共头](asc_vf_call_launch_config_requires_simt_header.md)（`related`）：该卡说明 asc_vf_call 的 launch config 还需 SIMT 专用声明，补充“只用一套根头”后仍需按设备接口显式包含的边界。
-- [半精度 shadow 跨流竞态 — 转换与 kernel 两侧做设备同步](../precision/torch_npu_async_temporaries_need_completion_before_raw_kernel.md)（`related`）：同在 torch_npu 与 raw kernel 混合路径，临时 tensor 的流完成性是头文件/ABI 统一之后仍需满足的运行时契约。
-- [连续直调异常可用 stream(true) 做同环境 A/B](direct_launch_requires_empty_task_queue_stream.md)（`related`）：direct-launch 卡给出 torch_npu stream 与任务队列的实际启动约束，补足编译头文件统一后的 launch 验证。
-- [ASC_VDEQ_SIZE 未声明 — 勿直引 vector_compute.h](asc_simd_umbrella_header_for_c_api_symbols.md)（`same_topic`）：两卡都处理头文件族一致性：设备 C API 需 asc_simd umbrella，host 侧需 torch_npu bundled ACL，避免符号缺失或重复声明。
-<!-- cannbot:related:end -->

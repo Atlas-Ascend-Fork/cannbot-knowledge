@@ -29,8 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__half2ull_rd](_half2ull_rd.md)（`related`）：__half2ull_rd 与《__half2ull_rna》的实质衔接是：half→unsigned long long 的 floor 模式与同目标的 RN/RNA/RU/RZ 及同 floor 的有符号/其他源类型形成可执行舍入选择矩阵。
-- [__half2ll_rn](_half2ll_rn.md)（`same_topic`）：__half2ll_rn 与《__half2ull_rna》的实质衔接是：这些转换保持 half→long long 并切换舍入模式，或保持 RINT 改变源/目标有无符号；可直接核对 rn 的边界与溢出行为。
-- [__half2ull_rn](_half2ull_rn.md)（`same_topic`）：《__half2ull_rn》明确“遵循CAST_RINT模式，将half类型数据转换为unsigned long long类型数据，返回转换后的值。”；它与《__half2ull_rna》的“遵循CAST_ROUND模式，将half类型数据转换为unsigned long long int类型数据，返回转换后的值。”在实际调用参数、数据流或结果校验上直接衔接。
-- [__half2ull_ru](_half2ull_ru.md)（`same_topic`）：《__half2ull_ru》明确“遵循CAST_CEIL模式，将half类型数据转换为unsigned long long int类型数据，返回转换后的值。”；它与《__half2ull_rna》的“遵循CAST_ROUND模式，将half类型数据转换为unsigned long long int类型数据，返回转换后的值。”在实际调用参数、数据流或结果校验上直接衔接。
+- [__half2ull_rn](_half2ull_rn.md)（`same_topic`）：“功能：遵循CAST_ROUND模式，将half类型数据转换为unsigned long long int类型数据，返回转换后的值。”与“功能：遵循CAST_RINT模式，将half类型数据转换为unsigned long long类型数据，返回转换后的值。”提供双方正文证据。二者都是 half 到 unsigned long long 的转换，分别使用 CAST_ROUND 和 CAST_RINT；互读能直接核对中点舍入选择。
 <!-- cannbot:related:end -->

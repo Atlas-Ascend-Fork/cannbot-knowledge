@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/gen_ops_info.cmake
     role: implementation
 created_at: "2026-08-25T18:36:16Z"
-updated_at: "2026-08-25T18:36:16Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -83,7 +83,7 @@ storage = concat(i, f, g, o)
 
 ### 入口与版本
 
-固定仓只公开这一组无版本后缀接口；不存在同语义的 V2/V3，因此它就是 A2/A3 实际支持的最新公开版本。`aclnnThnnFusedLstmCellGetWorkspaceSize` 组装 executor，`aclnnThnnFusedLstmCell` 通过 `CommonOpExecutorRun` 在给定 stream 上执行。README 与 ACLNN 文档均明确支持 Atlas A2、A3，明确不支持 Ascend 950；OpDef 对 `ascend910b`、`ascend910_93` 注册同一配置。构建侧在没有 binary JSON 时由 `get_op_type_and_validate` 调用 `check_op_supported` 检查 OpDef 的 `.AddConfig("<compute_unit>")`；因此 A2/A3 可达，A5 会被判为不支持，与公开表一致。
+固定仓只公开这一组无版本后缀接口；不存在同语义的 V2/V3，因此它就是 A2/A3 实际支持的最新公开版本。`aclnnThnnFusedLstmCellGetWorkspaceSize` 组装 executor，`aclnnThnnFusedLstmCell` 通过 `CommonOpExecutorRun` 在给定 stream 上执行。README 与 ACLNN 文档均明确支持 Atlas A2、A3，明确不支持 Ascend 950；OpDef 对 `ascend910b`、`ascend910_93` 注册同一配置。构建侧在没有 binary JSON 时由 `get_op_type_and_validate` 调用 `check_op_supported` 检查 OpDef 的 `.AddConfig("<compute_unit>")`；因此 A2/A3 可达，950 会被判为不支持，与公开表一致。
 
 ## Host/Launcher 执行流程
 
@@ -559,7 +559,7 @@ Helper 用 Horner 形式在 FP32 上计算 `x*(c0+x²*(c1+x²*(c2+x²*(c3+x²*c4
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持 | 公开支持 | 公开 README 与 ACLNN 文档明确不支持 Ascend 950 |
 | Host/Launcher | OpDef `ascend910b`，共用 ACLNN/Tiling；构建检查通过 AddConfig | OpDef `ascend910_93`，共用 ACLNN/Tiling；构建检查通过 AddConfig | 无 `ascend950` AddConfig，构建检查判不支持；不生成正式卡 |
@@ -573,7 +573,7 @@ Helper 用 Horner 形式在 FP32 上计算 `x*(c0+x²*(c1+x²*(c2+x²*(c3+x²*c4
 - Tiling 未提供 `taskSize==0` fallback，依赖 A2/A3 平台 UB 足以满足公式；`aivNum==0` 明确失败。
 - ACLNN 返回的总 workspace 由 executor 计算，固定仓未公开框架辅助节点的逐 slice offset；主 Kernel 自身不使用 workspace。
 - FP16 Cast 的同子区别名是固定源码行为；底层 AscendC primitive 的微架构实现属于框架边界。
-- A5 被公开产品表明确标为不支持，因此未创建 `_a5` 卡。
+- 950 被公开产品表明确标为不支持，因此未创建 `_950` 卡。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -582,7 +582,7 @@ Helper 用 Horner 形式在 FP32 上计算 `x*(c0+x²*(c1+x²*(c2+x²*(c3+x²*c4
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `rnn/thnn_fused_lstm_cell/docs/aclnnThnnFusedLstmCell.md` | 接口原型、产品表、参数表 | A2/A3 公开支持、A5 不支持、shape/dtype 与两段式 API |
+| 入口声明/约束 | `rnn/thnn_fused_lstm_cell/docs/aclnnThnnFusedLstmCell.md` | 接口原型、产品表、参数表 | A2/A3 公开支持、950 不支持、shape/dtype 与两段式 API |
 | 入口声明/约束 | `rnn/thnn_fused_lstm_cell/README.md` | 产品支持、公式 | 逻辑语义与平台交叉证据 |
 | 入口实现 | `rnn/thnn_fused_lstm_cell/op_api/aclnn_thnn_fused_lstm_cell.cpp` | `CheckParamsValid/HandleParams/RunBaseOp/ViewCopyResults` | 校验、空域、连续化、零 bias、executor 图与 workspace |
 | 入口实现 | `rnn/thnn_fused_lstm_cell/op_api/thnn_fused_lstm_cell.cpp` | `l0op::ThnnFusedLstmCell` | 单个 AICore launcher 添加与失败映射 |
@@ -605,4 +605,10 @@ Helper 用 Horner 形式在 FP32 上计算 `x*(c0+x²*(c1+x²*(c2+x²*(c3+x²*c4
 | workspace/内存 | 主 body workspace 为 0；Queue 总量按统一 FP32 tile | depth=2 必须计入；17 子区容量和 FP16 alias offset 不可改 | `FillTilingInfo`; `ThnnFusedLstmCell::Init` |
 | 同步 | Queue 负责 MTE↔V，barrier 负责 V 内依赖 | 原位覆盖前必须消费旧值；CopyOut 前必须完成 V→MTE3 交接 | `ProcessCopyIn*`; `ProcessCompute`; `ProcessHy` |
 | 精度与尾块 | FP16 全程升 FP32 计算；两处 tanh 小值修正；`x` 控制有效范围 | Cast round mode、tanh 系数/阈值/顺序、mask 与 Select 长度、门物理 offset | `ProcessCastIn`; `TanhPartialHighPrecision`; `ProcessCopyOutHalf` |
-| 失败边界 | AIV=0 tiling 失败；其它 dtype/shape API 失败；空输入不启动 | 不添加未实现的 fallback；不宣称 A5 支持 | `GetInfo`; `CheckParamsValid`; `check_op_supported`; 公开产品支持表 |
+| 失败边界 | AIV=0 tiling 失败；其它 dtype/shape API 失败；空输入不启动 | 不添加未实现的 fallback；不宣称 950 支持 | `GetInfo`; `CheckParamsValid`; `check_op_supported`; 公开产品支持表 |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ThnnFusedLstmCellBackward A2/A3 ACLNN 算子知识](thnn_fused_lstm_cell_backward.md)（`same_topic`）：“｜ `storageOut` ｜ `［B,4H］`，ND ｜ 与 `inputGates` 相同 ｜ 必选；保存四门激活供反向使用；固定 Device 物理次序 `［i,f,g,o］` ｜”与“｜ `storage` ｜ `［B,4H］` / ND ｜ 同上 ｜ 每行依次为 `i/f/j/o` 四门激活值 ｜”提供双方正文证据。前向输出 storage 是反向接口直接消费的门激活，双方还共同暴露固定四门物理次序，连接前向产物接线与反向梯度计算。
+<!-- cannbot:related:end -->

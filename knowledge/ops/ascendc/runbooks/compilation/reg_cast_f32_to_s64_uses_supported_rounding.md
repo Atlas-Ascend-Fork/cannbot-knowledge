@@ -165,14 +165,5 @@ __simd_vf__ inline void cummin_cast_i64_vf(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscFloat2Int64](../../apis/simd_api/c_api/reg/data_type_convert/asc_float2int64.md)（`exemplifies`）：runbook 记录 dav-3510 f322s64 不接受 CAST_NONE 的实际编译断言，并给出精确整数输入用 CAST_TRUNC 的已验证构建修复。
-- [RoundMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/round_mode.md)（`exemplifies`）：RoundMode 与《f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言》的实质衔接是：RoundMode 与 SatMode 共同配置 Reg Cast；所选故障卡直接覆盖命名空间、非法 CAST_NONE、BF16 CAST_RINT 和 NaN/Inf 饱和后果。
-- [精度转换（数据结构）](../../apis/simd_api/basic_api/data_structures/precision_conversion.md)（`exemplifies`）：精度转换（数据结构） 与《f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言》的实质衔接是：本卡给出跨类型舍入、饱和与尾数损失规则；SIMT、Memory/Reg Cast 总览和具体 f32→s64 失败分别把这些规则落实到模式选择、数据宽度与编译约束。
-- [CastTrait 按值 NTTP 在 C++17 编译失败](casttrait_nttp_uses_reference_in_cxx17.md)（`related`）：f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言 与《CastTrait 按值 NTTP 在 C++17 编译失败》的实质衔接是：这些卡都约束 Reg::Cast 的 RoundMode、MaskMergeMode、trait 存储期/命名空间及宽化 lane，是同一静态断言链上的可执行检查。
-- [Reg int32→int64 Cast 源目 VL 错配留空索引](../precision/int32_to_int64_reg_cast_must_respect_destination_lane_width.md)（`related`）：f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言 与《Reg int32→int64 Cast 源目 VL 错配留空索引》的实质衔接是：这些卡都约束 Reg::Cast 的 RoundMode、MaskMergeMode、trait 存储期/命名空间及宽化 lane，是同一静态断言链上的可执行检查。
-- [Reg::Cast 的 trait 需要静态存储期](reg_casttrait_requires_static_storage.md)（`related`）：Reg::Cast 的 trait 需要静态存储期 与《f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言》的实质衔接是：这些卡都处理 Reg CastTrait 的存储期、文件域、命名空间、NTTP 与 RoundMode 静态约束，属于同一编译失败链。
-- [bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别](../precision/bf16_cast_cast_rint.md)（`related`）：f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言 与《bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别》的实质衔接是：这些卡都约束 Reg::Cast 的 RoundMode、MaskMergeMode、trait 存储期/命名空间及宽化 lane，是同一静态断言链上的可执行检查。
-- [CastTrait 文件域声明触发命名空间编译失败](reg_casttrait_define_inside_simd_vf.md)（`same_topic`）：f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言 与《CastTrait 文件域声明触发命名空间编译失败》的实质衔接是：这些卡都约束 Reg::Cast 的 RoundMode、MaskMergeMode、trait 存储期/命名空间及宽化 lane，是同一静态断言链上的可执行检查。
-- [Reg Cast 默认 UNKNOWN mask 被拒 — 显式 ZEROING](reg_cast_requires_explicit_zeroing_trait.md)（`same_topic`）：f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言 与《Reg Cast 默认 UNKNOWN mask 被拒 — 显式 ZEROING》的实质衔接是：这些卡都约束 Reg::Cast 的 RoundMode、MaskMergeMode、trait 存储期/命名空间及宽化 lane，是同一静态断言链上的可执行检查。
-- [Reg CastTrait RoundMode 命名空间编译失败](casttrait_roundmode_is_in_ascendc.md)（`same_topic`）：Reg CastTrait RoundMode 命名空间编译失败 与《f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言》的实质衔接是：该故障由 CastTrait 字段 RoundMode 的错误命名空间触发；trait 存储期/NTTP、merge/sat/round 枚举和 Cast 模式故障共同约束真实模板声明。
+- [RoundMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/round_mode.md)（`exemplifies`）：`CAST_NONE` 在这条 f32→s64 VCONV 实例化中对应不受支持的舍入编码。；枚举类型，用于设置精度转换时的舍入模式，支持向偶数舍入、向下、向上、四舍五入、截断等多种模式。。Runbook 定位 f32→s64 不能使用 CAST_NONE 并改用 CAST_TRUNC，RoundMode 卡给出可配置舍入枚举；联合阅读可从编译静态断言回到合法 trait 选择。
 <!-- cannbot:related:end -->

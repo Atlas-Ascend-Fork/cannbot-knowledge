@@ -20,11 +20,3 @@ platforms: ['950']
 函数原型通过模板参数T指定数据类型（支持int32_t/uint32_t/int64_t/uint64_t/float等）。接口参数：address为GM地址指针；value为输入标量值。返回值为修改前的旧值。
 
 约束：仅支持标量操作；遵循通用地址对齐约束。头文件：basic_api/kernel_operator_atomic_intf.h。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_atomic_max](../../../simt_api/atomic_operations/asc_atomic_max.md)（`related`）：Basic AtomicMax 同样直接更新 GM 单地址并返回旧值，可与 SIMT 版本对照支持的数据类型和内存空间。
-- [AscAtomicMax](../../c_api/scalar_compute/asc_atomic_max.md)（`same_topic`）：AscAtomicMax 与《AtomicMax》的衔接是：AscAtomicMax 是原子最大值更新；SIMT/basic AtomicMax 提供同一竞争更新语义，SetAtomicMax/AscSetAtomicMax 则配置后续搬运执行该原子操作。
-- [SetAtomicMax](set_atomic_max_isasi.md)（`same_topic`）：SetAtomicMax 与《AtomicMax》的实质衔接是：SetAtomicMax 与 C API 配置、AtomicMax 消费、SetAtomicMin 对照及状态清理构成同一随路原子配置生命周期。
-<!-- cannbot:related:end -->

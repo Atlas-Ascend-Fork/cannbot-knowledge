@@ -24,11 +24,3 @@ platforms: ['950']
 约束：mask控制源操作数是否参与计算，源操作数不参与计算的元素在输出对应位置置零。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162float](../../../../simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162float.md)（`related`）：C Reg AscBfloat162Float 与 SIMT 标量函数实现同一数值提升，可按执行模型选型。
-- [asc_bfloat162e1m2x2 (废弃)](asc_bfloat162e1m2x2_deprecated.md)（`related`）：asc_bfloat162e1m2x2 (废弃) 与《AscBfloat162Float》的实质衔接是：该废弃转换与 E1M2/E2M1 逆转换、现行 BF16 转换及舍入/饱和规则共享明确的位宽压缩与迁移契约。
-- [AscBfloat162float](../../vector_compute/asc_bfloat162float.md)（`same_topic`）：《AscBfloat162float》明确“将bfloat16_t类型数据转为float，无舍入模式。”；它与《AscBfloat162Float》的“将bfloat16_t类型转化为float类型，无舍入模式。 由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个VL大小的数据分为两部分，根据不同接口选择输入数据索引为奇数的位置或偶数的位置。”在实际调用参数、数据流或结果校验上直接衔接。
-<!-- cannbot:related:end -->

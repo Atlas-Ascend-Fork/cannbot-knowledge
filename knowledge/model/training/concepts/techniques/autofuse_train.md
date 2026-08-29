@@ -223,3 +223,10 @@ AutoFuse 是 V4-Flash 续训三条优化主线（极简并行、自动融合、�
 - [torchtitan-5d-parallel](../parallelism/torchtitan_5d_parallel.md)（V4 纯 FSDP+EP、TP=1 是 Eager 执行编译图的前提；并行装配中 compile 处于 AC 之后、FSDP 之前）
 - [autofuse](../../../inference/concepts/frameworks/autofuse.md)（跨域：推理侧已落地的同一 CANN AutoFuse 组件——继承 Inductor、Schedule 模板规约 + ATT 自动 Tiling + Ascend C Codegen；训练侧应用与对照）
 - [atlas-a3](../../../inference/concepts/platforms/atlas_a3.md)（跨域：A3 64 卡集群，纯 FSDP+EP + AutoFuse 达 1100 TPS 的硬件底座）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepSeek-V4 TorchTitan-NPU + AutoFuse 极简续训练（Flash 64 卡 / Pro 192 卡 A3）](../../guides/recipes/deepseek_v4_continue_pretrain.md)（`related`）：“使能 AutoFuse 后 DeepSeek-V4-Flash 整网吞吐收益 **31.8%**”给出焦点端事实；“## torch.compile + AutoFuse 训练入图”给出候选端事实。技术卡给出 AutoFuse 的收益与入图约束，续训指南把该机制放进 DeepSeek-V4 的真实配置和训练流程，能够把组件原理落实到部署与验证。
+- [AutoFuse（Inductor NPU 自动融合编译组件）](../../../inference/concepts/frameworks/autofuse.md)（`same_topic`）：“两者共用同一 CANN AutoFuse 组件（继承 Inductor、Ascend C Codegen）”给出焦点端事实；“AutoFuse** 是 CANN 框架继承自 PyTorch Inductor 的**面向 NPU 的即时编译（JIT）算子自动融合组件”给出候选端事实。两端明确指向同一个 CANN AutoFuse/Inductor NPU Codegen 组件；推理卡定义通用编译链，训练卡补充反向与重计算场景的接入和运维约束。
+<!-- cannbot:related:end -->

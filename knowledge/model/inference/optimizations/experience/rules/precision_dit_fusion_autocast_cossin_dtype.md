@@ -86,3 +86,9 @@ freqs_cos = freqs_cos.to(self.device).unsqueeze(-2).unsqueeze(0)   # 采样路�
 
 - diff 事实（@fdb79bf65a8b）：gate 处 `torch.npu.amp.autocast(enabled=False)`、cos/sin `.to(torch.bfloat16)` 预转，与优化文档「消除冗余算子」两小节一致。收益（消冗余 cast / 保 fp32）为定性、无 before→after 数字。溯源下探 [cann-recipes-infer-pr-218-feat-support-hunyuanimage-3-0-model-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/218)
 - diff 事实（@cec5c22b8960）：`npu_rotary_mul(..., rotary_mode="interleave")` 新增、cos/sin 4D `[1,S,1,D]` 整形上移、移除逐块 reshape/搬运。「默认旋转模式与交错约定不匹配致精度偏离」为对 diff 的机制推断（未取到算子规格独立核实），修复前后精度数值源未披露。溯源下探 [cann-recipes-infer-pr-233-fix-hunyuanvideo-rope-debug](https://gitcode.com/cann/cann-recipes-infer/merge_requests/233)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [交错 RoPE 必须用 npu_interleave_rope，通用 RoPE 融合算子替换会破精度（cos_sim≈0）](../../../runbooks/precision/interleaved_rope_npu_op_selection.md)（`related`）：“交错 RoPE 的算子选型本身（专用 `npu_interleave_rope` vs 通用算子的 interleave 模式，通用算子选错模式会使 cos_sim≈0）见 ［interleaved-rope-npu-op-selection］(../../../runbooks/precision/interleaved_rope_npu_op_selection.md)；本页补的是「选对模式后 + cos/sin 4D 布局上移」的精度与冗余消除。”明确把算子选型交给排障页，并将自身边界限定为 dtype 与 4D 布局；“交错 RoPE → 用专用算子 `torch_npu.npu_interleave_rope`”给出选型结论。联合使用才能先避免旋转语义错误，再处理 cos/sin cast 与布局冗余。
+<!-- cannbot:related:end -->

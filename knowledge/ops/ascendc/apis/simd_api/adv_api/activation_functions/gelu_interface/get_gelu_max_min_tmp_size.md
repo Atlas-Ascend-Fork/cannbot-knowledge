@@ -30,8 +30,5 @@ kernel侧Gelu、FasterGelu、FasterGeluV2接口的计算需要开发者预留 �
 <!-- cannbot:related:start -->
 ## 相关
 
-- [FasterGelu](faster_gelu.md)（`related`）：FasterGelu 的 sharedTmpBuffer 由 Host 侧 GetGeluMaxMinTmpSize 按 shape 与 typeSize 给出合法上下界，最小值决定正确性、区间内增大空间可换取性能。
-- [FasterGeluV2](faster_gelu_v2.md)（`related`）：V2 计算仍需按接口要求配置临时空间，不能沿用零 workspace 假设。
-- [Gelu](gelu.md)（`same_topic`）：Gelu 与《GetGeluMaxMinTmpSize》的实质衔接是：Gelu 接口、快速近似变体和空间查询共同定义高精度/高性能调用；GeGLU 直接以 GELU 为门控，两个 runbook 给出 erfc 近似与负尾相消的可执行精度边界。
-- [Gelu接口](gelu_interface.md)（`same_topic`）：GELU 总页定义计算与 workspace 查询流程。
+- [FasterGeluV2](faster_gelu_v2.md)（`related`）：不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。；kernel侧Gelu、FasterGelu、FasterGeluV2接口的计算需要开发者预留 申请临时空间；FasterGeluV2 的 Kernel 调用既要为 sharedTmpBuffer 分配独立地址，又要用 Host 查询得到的上下界确定容量，二者合起来形成可执行的临时空间合同。
 <!-- cannbot:related:end -->

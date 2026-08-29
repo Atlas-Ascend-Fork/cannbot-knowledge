@@ -58,7 +58,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_swiglu_quant_v2/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T18:24:13Z"
-updated_at: "2026-08-24T19:38:11Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -145,15 +145,15 @@ supportL12BtBf16=false
 
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行族与 kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
-| R-001 A8W4 MSD | key 2 | 非 A5；`x=INT8`、`weight=INT4`；weight storage rank 2/3/4/5；`dequantMode=0/1` | 单节点 `MIX_AIC_1_2` | `MMImplTypeCustom<ND INT4,NZ/ND INT4,ND FP16>`；`GMMA8W4Pre/Mid/PostProcess` | 两槽 X 拆分区 + 两槽 high/low C 区；`SyncAll<false/true>` | M/N/K 和 workspace split 尾块；不满足返回 tiling 失败 |
-| R-002 A8W8 fusion | key 3（registry priority 0） | 非 A5；`weight=INT8`，storage rank 4/5；ACLNN 要求 NZ、K 16 对齐、N 32 对齐 | 单节点 `MIX_AIC_1_2` | `Matmul<INT8,NZ,INT32>` + `GroupedMatmulDequantSwigluQuantFusion` | GM workspace `M*N*sizeof(int32_t)`；flag 8/9 协议 | `realM/realN` 裁剪；fusion 拒绝后 base 也拒绝 INT8 |
-| R-003 A4W4 pipeline | key 4/5 | 非 A5；`x=INT4`、`weight=INT4`；key 5 仅 `transposeWeight=true` | 单节点 `MIX_AIC_1_2` | `MMImplTypeCustom<ND INT4,NZ/ZN INT4,ND FP16>`；`GMMA4W4Mid/PostProcess` | 两槽 FP16 C workspace；片间全核同步 | M/N/K-group tail；其它 key 无可达 body |
+| R-001 A8W4 MSD | key 2 | 非 950；`x=INT8`、`weight=INT4`；weight storage rank 2/3/4/5；`dequantMode=0/1` | 单节点 `MIX_AIC_1_2` | `MMImplTypeCustom<ND INT4,NZ/ND INT4,ND FP16>`；`GMMA8W4Pre/Mid/PostProcess` | 两槽 X 拆分区 + 两槽 high/low C 区；`SyncAll<false/true>` | M/N/K 和 workspace split 尾块；不满足返回 tiling 失败 |
+| R-002 A8W8 fusion | key 3（registry priority 0） | 非 950；`weight=INT8`，storage rank 4/5；ACLNN 要求 NZ、K 16 对齐、N 32 对齐 | 单节点 `MIX_AIC_1_2` | `Matmul<INT8,NZ,INT32>` + `GroupedMatmulDequantSwigluQuantFusion` | GM workspace `M*N*sizeof(int32_t)`；flag 8/9 协议 | `realM/realN` 裁剪；fusion 拒绝后 base 也拒绝 INT8 |
+| R-003 A4W4 pipeline | key 4/5 | 非 950；`x=INT4`、`weight=INT4`；key 5 仅 `transposeWeight=true` | 单节点 `MIX_AIC_1_2` | `MMImplTypeCustom<ND INT4,NZ/ZN INT4,ND FP16>`；`GMMA4W4Mid/PostProcess` | 两槽 FP16 C workspace；片间全核同步 | M/N/K-group tail；其它 key 无可达 body |
 
 ### 隐藏性能 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 平台 selector | `supportL12BtBf16 == false` | A2/A3 使用 classic INT tiling 和非 APT entry | 全部 | 为 true 时转 A5 template，不落入本卡 | `GroupedMatmulSwigluQuantV2TilingFunc` |
+| 平台 selector | `supportL12BtBf16 == false` | A2/A3 使用 classic INT tiling 和非 APT entry | 全部 | 为 true 时转 950 template，不落入本卡 | `GroupedMatmulSwigluQuantV2TilingFunc` |
 | UB 行容量 | A8W4/A4W4：`weightFactor*row*N + 4*align8(row)+6N+64 <= ubSize`；A8W8 使用剩余 UB 公式 | Post 需同时容纳两半、scale、reduce 与双缓冲 | R-001/R-003；R-002 有独立 `ubFactorDimx` | `maxProcessRowNum<1` 报错 | `CalMaxRowInUbA8W4`、`CalMaxRowInUb` |
 | user workspace | `mLimit=floor((64MiB/2)/perRowBytes)>0` | ping/pong 每槽必须容纳完整 split | R-001/R-003 | tiling 失败 | `DoOpTiling` |
 | Fusion UB 因子 | `N<4600 -> 4`；`4600<=N<8192 -> 2`；否则 1 | N 增大时减少一次 AIV 处理行数 | R-002 | 同一路线更小行 tile | `GroupedMatmulSwigluQuantV2FusionTiling::ParseInputAndAttr` |
@@ -508,7 +508,7 @@ L1 = depthA1*baseM*baseK*0.5 + depthB1*baseN*baseK*0.5 + scale buffers
 
 #### 触发与源码依据
 
-- 适用 Route：R-001、R-002、R-003；A5 另见 `_a5` 卡。
+- 适用 Route：R-001、R-002、R-003；950 另见 `_950` 卡。
 - 触发条件：`supportL12BtBf16=false`，先尝试 fusion，再尝试 base；INT8 weight 命中 key 3，INT4 按 X dtype/transpose 命中 key 2/4/5。
 - Golden 来源：[`gmm/grouped_matmul_swiglu_quant_v2/op_host/op_tiling/grouped_matmul_swiglu_quant_v2_tiling.cpp:76-80`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_swiglu_quant_v2/op_host/op_tiling/grouped_matmul_swiglu_quant_v2_tiling.cpp#L76-L80)
 
@@ -530,7 +530,7 @@ L1 = depthA1*baseM*baseK*0.5 + depthB1*baseN*baseK*0.5 + scale buffers
 
 - 适用：复用 A2/A3 V2 公开入口的 selector。
 - 前提：平台能力位、dtype、weight storage rank 与编译宏接线一致。
-- 失效：A5 或未实例化 key 必须进入对应平台实现或返回失败。
+- 失效：950 或未实例化 key 必须进入对应平台实现或返回失败。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -589,9 +589,9 @@ Cube 将 tile 物化到精确 GM offset 后才发布完成信号；Vector 等待
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 两个 V2 入口支持 | 支持 | 支持，见 _a5 |
+| 支持状态 | 两个 V2 入口支持 | 支持 | 支持，见 _950 |
 | Host/Launcher | classic key2/3/4/5 | 共用族 | arch35 POD/body |
 | Kernel/资源 | A8W8/A8W4/A4W4 MIX | 同族 | MX/per-token/weight-quant controller |
 
@@ -616,7 +616,7 @@ Cube 将 tile 物化到精确 GM offset 后才发布完成信号；Vector 等待
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 版本对比 | gmm/grouped_matmul_swiglu_quant/README.md | GroupedMatmulSwigluQuant | 固定提交仍有 V1，用于确认 V2 是后续公开 ABI 而非同名 body |
-| 平台与版本约束 | gmm/grouped_matmul_swiglu_quant_v2/README.md | 产品支持情况/功能说明 | V2 对 A2/A3/A5 的公开支持与语义 |
+| 平台与版本约束 | gmm/grouped_matmul_swiglu_quant_v2/README.md | 产品支持情况/功能说明 | V2 对 A2/A3/950 的公开支持与语义 |
 | 公开接口约束 | gmm/grouped_matmul_swiglu_quant_v2/docs/aclnnGroupedMatmulSwigluQuantV2.md；gmm/grouped_matmul_swiglu_quant_v2/docs/aclnnGroupedMatmulSwigluQuantWeightNzV2.md | 产品支持/约束说明/参数表 | A2/A3 的 A8W8、A8W4、A4W4 类型、shape、格式与两个公开入口边界 |
 | 入口声明/约束 | gmm/grouped_matmul_swiglu_quant_v2/op_api/aclnn_grouped_matmul_swiglu_quant_v2.h | aclnnGroupedMatmulSwigluQuantV2* | V2 ABI |
 | 入口实现 | gmm/grouped_matmul_swiglu_quant_v2/op_api/aclnn_grouped_matmul_swiglu_quant_v2.cpp | GetWorkspaceSizeCommon | checker/executor |
@@ -636,3 +636,10 @@ Cube 将 tile 物化到精确 GM offset 后才发布完成信号；Vector 等待
 | 同步 | MIX producer/consumer slot | 写完、等待、释放顺序 | pipeline/fusion |
 | 精度与尾块 | FP32 SwiGLU 和逐行 scale | N/2、round/clamp、tail mask | Post Process |
 | 失败边界 | 无 key/资源不足失败 | 不得跨路线 fallback | SetTilingKey/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SwiGLU](../../../../apis/simd_api/adv_api/activation_functions/swi_glu_interface/swi_glu.md)（`related`）：随后把 `C_e［:,0:N/2］` 作为第一分支、`C_e［:,N/2:N］` 作为第二分支，源码调用 `SwiGLU(src0=后半, src1=前半, beta=1)`；A4W4 再乘逐专家或逐通道 `smoothScale`。；SwiGLU是采用Swish作为激活函数的GLU变体。 其中Swish激活函数的计算公式如下：β为常量。算子卡的双分支参数顺序与 beta=1 直接落到 SwiGLU API 合同。
+- [grouped_matmul_swiglu_quant 950 ACLNN 算子知识](grouped_matmul_swiglu_quant_950.md)（`same_topic`）：分组矩阵乘→per-token/MX 尺度恢复→SwiGLU→per-token 或 MX 输出量化；Y 支持 INT8/FP8/FP4/HIFLOAT8 子集；GMM→反量化→SwiGLU→动态 INT8 量化，同时输出 per-token scale。两卡闭合同一 GroupedMatmulSwigluQuant V2 逻辑算子，950 扩展 MX/FP8/FP4 路线，A2/A3 卡记录 classic A8W8/A8W4/A4W4 路线。
+<!-- cannbot:related:end -->

@@ -31,13 +31,3 @@ StoreAlign能够实现数据从MaskReg搬运至Unified Buffer（UB）。有三�
 - MaskReg模板参数regTrait只支持RegTraitNumOne。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscStoreAlign](../../../c_api/reg/reg_store/asc_storealign_v4_deprecated.md)（`related`）：《AscStoreAlign》说明已废弃接口。从矢量数据寄存器或掩码寄存器连续对齐搬出到UB，支持NORM、FIRST、PACK、PACKV2等多种搬出模式，通过int32_t传入偏移并由硬件自动Post Update目的地址。；《StoreAlignMaskReg》说明将数据从MaskReg搬运至Unified Buffer，支持普通搬运和PostUpdate扩展搬运。。二者在废弃StoreAlign重载需迁移到现行或PostUpdate形式；连续、MaskReg、非连续搬出和原子配置决定地址推进与写语义上存在可执行的直接衔接。
-- [LoadAlign](../reg_data_load/load_align_mask_reg.md)（`related`）：LoadAlignMaskReg 把 UB 搬入 MaskReg，StoreAlignMaskReg 按相同 MaskDist/PostUpdate/AddrReg 约束反向搬回 UB，构成 MaskReg 数据往返。
-- [MaskReg](../register_data_types/mask_reg.md)（`related`）：StoreAlignMaskReg 与《MaskReg》的实质衔接是：MaskReg Store 的对齐/非对齐形态依赖 MaskReg 生成，LoadAlign 是反向搬入，C API StoreAlign 提供同语义入口。
-- [MaskGenWithRegTensor](../reg_data_load/mask_gen_with_reg_tensor_mask_reg.md)（`same_topic`）：StoreAlignMaskReg 与《MaskGenWithRegTensor》的实质衔接是：MaskReg Store 的对齐/非对齐形态依赖 MaskReg 生成，LoadAlign 是反向搬入，C API StoreAlign 提供同语义入口。
-- [StoreUnAlignMaskReg](store_un_align_mask_reg.md)（`same_topic`）：StoreUnAlignMaskReg 与《StoreAlignMaskReg》的实质衔接是：非对齐 MaskReg Store 依赖 MaskGen/MaskReg 与 UnalignReg 配置，和非对齐 Load 是往返协议；squeeze 初始化卡给出真实配置错误后果。
-<!-- cannbot:related:end -->

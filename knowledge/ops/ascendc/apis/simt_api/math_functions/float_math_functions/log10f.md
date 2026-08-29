@@ -28,9 +28,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [H2Log10](../bfloat16_type/bfloat16x2_math_functions/h2log10.md)（`related`）：Log10f 与《H2Log10》的实质衔接是：Log10f 与 Reg、bfloat16、half 和 half2 的 log10 入口执行同一以 10 为底的对数，区别在执行模型和返回精度。
-- [H2Log10](../half_type/half2_math_functions/h2log10.md)（`related`）：Log10f 与《H2Log10》的实质衔接是：Log10f 与 Reg、bfloat16、half 和 half2 的 log10 入口执行同一以 10 为底的对数，区别在执行模型和返回精度。
-- [Hlog10](../bfloat16_type/bfloat16_math_functions/hlog10.md)（`related`）：Log10f 与《Hlog10》的实质衔接是：Log10f 与 Reg、bfloat16、half 和 half2 的 log10 入口执行同一以 10 为底的对数，区别在执行模型和返回精度。
-- [Hlog10](../half_type/half_math_functions/hlog10.md)（`related`）：Log10f 与《Hlog10》的实质衔接是：Log10f 与 Reg、bfloat16、half 和 half2 的 log10 入口执行同一以 10 为底的对数，区别在执行模型和返回精度。
-- [Log10](../../../simd_api/basic_api/reg_vector_compute/basic_arithmetic/log10.md)（`related`）：Log10 与《Log10f》的实质衔接是：Reg Log10 与 bfloat16/half/half2/float 的 log10 入口执行同一以 10 为底的对数任务，区别在执行模型和返回精度。
+- [ForeachLog10 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_log10_950.md)（`related`）：获取以10为底，输入数据的对数；R-001 FLOAT `log10f`；950 ForeachLog10 的 FLOAT route 直接消费该 SIMT 函数。
 <!-- cannbot:related:end -->

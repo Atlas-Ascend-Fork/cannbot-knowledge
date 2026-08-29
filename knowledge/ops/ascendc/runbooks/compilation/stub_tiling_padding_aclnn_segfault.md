@@ -64,8 +64,5 @@ padding 后构建通过（`BUILD_EXIT=0`、`MAKE_EXIT=0`）、kernel JSON `opPar
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GET_TILING_DATA_WITH_STRUCT](../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data_with_struct.md)（`exemplifies`）：GET_TILING_DATA_WITH_STRUCT 决定 kernel 注册的 tiling 结构和 opParaSize，本卡用 host `sizeof(T)` 对照该容量并证明 padding 只修容量契约。
-- [RegisterNoneTiling](../../apis/simd_api/basic_api/kernel_tiling/register_none_tiling.md)（`exemplifies`）：REGISTER_NONE_TILING 是 stub kernel 的无 tiling 注册入口；与结构化注册对照可明确何时根本没有 tiling 参数、何时必须为真实 Host Tiling 预留容量。
-- [ACLNN 507035 — stub kernel tiling 数据未初始化](aclnn_507035_stub_tilingfunc_must_init_tiling_buffer.md)（`related`）：两卡共同覆盖 stub tiling 交付链：本卡证明注册容量不足只会导致 capacity 失败且 padding 不解决 host Segfault，目标卡证明 stub TilingFunc 还必须实际初始化 tiling buffer。
-- [GET_TILING_DATA_WITH_STRUCT 宏不接受模板类型](get_tiling_data_with_struct.md)（`related`）：目标卡限定 GET_TILING_DATA_WITH_STRUCT 宏只能接收非模板类型名；本卡展示即使 stub 类型能注册并扩大容量，也不能把 host 侧设备指针 Segfault 归因给该宏。
+- [ACLNN 507035 — stub kernel tiling 数据未初始化](aclnn_507035_stub_tilingfunc_must_init_tiling_buffer.md)（`related`）：padding 仍是必要的容量契约（否则 `GetTilingData` capacity 检查失败退化为 exit 255），但不是 Segfault 的根因修复。；stub TilingFunc 必须调用 `context->GetTilingData<TilingDataT>()` 取得指针并写入至少一个字段（如 `totalLength`），再 `SetBlockDim`/workspace；kernel 侧保持接口桩不变。修复后 11/11 冒烟通过。。两卡共同排查 stub tiling 联调：一张否定仅靠扩大容量修复 Segfault，另一张给出必须初始化 tiling buffer 的可验证修法。
 <!-- cannbot:related:end -->

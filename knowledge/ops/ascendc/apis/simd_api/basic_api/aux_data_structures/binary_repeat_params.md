@@ -18,9 +18,3 @@ platforms: [agnostic]
 二元计算接口的重复参数结构体，用于描述双操作数指令（如Add、Mul等）的源操作数和目的操作数的步长、block偏移等参数。
 
 包含源操作数src0/src1的blockStride（每个block间偏移）、src0/src1的repeatStride（每次repeat间偏移）、目的操作数dst的blockStride和repeatStride等字段。通过BinaryRepeatParams构造或直接传入参数。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [UnaryRepeatParams](unary_repeat_params.md)（`related`）：UnaryRepeatParams 与 BinaryRepeatParams 使用同一 block/repeat stride 模型，区别在单源与双源操作数，可据运算元数选择结构体。
-<!-- cannbot:related:end -->

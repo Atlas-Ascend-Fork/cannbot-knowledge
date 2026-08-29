@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_host/config/ascend910b/add_rms_norm_quant_v2_binary.json
     role: implementation
 created_at: "2026-08-25T17:50:39Z"
-updated_at: "2026-08-25T17:50:39Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -78,7 +78,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-V2 文档明确支持 Atlas A2/A3，OpDef 注册 `ascend910b`、`ascend910_93`，两个 binary config 都接入 `AddRmsNormQuantV2`。V2 是该平台版本族最新公开接口；旧 `aclnnAddRmsNormQuant` 仅作为 V2 ACLNN 在不满足快路时实际调用的内部 body。V2 文档明确不支持 Ascend 950，因此本文件不覆盖 A5。
+V2 文档明确支持 Atlas A2/A3，OpDef 注册 `ascend910b`、`ascend910_93`，两个 binary config 都接入 `AddRmsNormQuantV2`。V2 是该平台版本族最新公开接口；旧 `aclnnAddRmsNormQuant` 仅作为 V2 ACLNN 在不满足快路时实际调用的内部 body。V2 文档明确不支持 Ascend 950，因此本文件不覆盖 950。
 
 ## Host/Launcher 执行流程
 
@@ -950,9 +950,9 @@ LocalTensor<float> tmpLocal = ubLocal[ubFactor * 3];
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2公开支持 | V2公开支持 | V2文档明确不支持；另见 `_a5` 的 V1 卡 |
+| 支持状态 | V2公开支持 | V2公开支持 | V2文档明确不支持；另见 `_950` 的 V1 卡 |
 | Host/Launcher | 共用 910B 路线 | 共用 910_93 路线 | 不进入本卡 |
 | Kernel/资源 | 共用 non-regbase 三 body | 共用 non-regbase 三 body | V1 改用 regbase MicroAPI 三 body |
 
@@ -995,3 +995,9 @@ LocalTensor<float> tmpLocal = ubLocal[ubFactor * 3];
 | 同步 | queue/barrier/event图可复用 | single-N事件不可删 | `Process*`, `DataCopyCustom` |
 | 精度与尾块 | FP32 rstd、固定 int8 cast链 | PT/非PT gamma顺序、colTail | `ComputePart2`, `RoundFloat2Int8` |
 | 失败边界 | V2回退与unknown-key边界 | rms-only不满足快路时不得伪造fallback | `CheckSupportV2`, router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AddRmsNormQuant 950 ACLNN 算子知识](add_rms_norm_quant_950.md)（`same_topic`）：`x=x1+x2`；`r=x/sqrt(mean(x²)+epsilon)*gamma`；可选 `beta` 后量化；V2 还可输出不含 beta 的 `rmsNormOut`；`x=x1+x2`；`r=x/sqrt(mean(x²)+epsilon)*gamma`；`y1/y2=round(r ÷或× scale + zeroPoint)`。两卡围绕同一 AddRmsNormQuant 融合算子，但按平台选择 A2/A3 V2 或 950 V1 并闭合不同 route。
+<!-- cannbot:related:end -->

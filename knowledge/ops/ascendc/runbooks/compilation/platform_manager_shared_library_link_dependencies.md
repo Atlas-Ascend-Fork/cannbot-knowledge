@@ -136,7 +136,5 @@ target_link_directories(op_rms_norm PRIVATE
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LoadTilingLibrary](../../apis/utils_api/tiling_tuning/op_tiling_registry/load_tiling_library.md)（`exemplifies`）：直调共享库加载未定义平台符号—补齐CANN链接依赖说明Ascend C 直调共享库可链接却在加载时缺 PlatformAscendCManager 符号；为目标补齐 CANN 平台运行依赖集与库目录；对LoadTilingLibrary而言，LoadTilingLibrary 完成共享库装载后由 GetTilingFunc 取函数；链接缺符号和产物不含目标符号是两个可操作的验证分支。
-- [PlatformAscendCManager](../../apis/utils_api/platform_info/platform_ascend_c_manager.md)（`exemplifies`）：PlatformAscendCManager 正文明确要求包含 platform_ascendc.h 并链接 tiling_api、platform 动态库，正是 Runbook 处理的未定义符号依赖契约。
-- [PlatformAscendC简介](../../apis/utils_api/platform_info/platform_ascend_c/platform_ascend_c_intro.md)（`exemplifies`）：《PlatformAscendC简介》的任务是“在实现Host侧的Tiling函数时，可能需要获取一些硬件平台的信息，来支撑Tiling的计算，比如获取硬件平台的核数等信息。PlatformAscendC类提供获取这些平台信息的功能。”。《直调共享库加载未定义平台符号—补齐CANN链接依赖》具体提供“Ascend C 直调共享库可链接却在加载时缺 PlatformAscendCManager 符号；为目标补齐 CANN 平台运行依赖集与库目录。”，它直接用于PlatformAscendC 的获取入口、兼容性和链接/SoC 枚举故障。
+- [PlatformAscendCManager](../../apis/utils_api/platform_info/platform_ascend_c_manager.md)（`exemplifies`）：“该 host 入口调用了 `platform_ascendc::PlatformAscendCManager::GetInstance()` 来取得 AIV 核数”；“使用该功能需要包含"tiling/platform/platform_ascendc.h"头文件，并在编译脚本中链接tiling_api、platform动态库”。API 卡的链接合同正是 Runbook 中 undefined symbol 的根因与修复依据。
 <!-- cannbot:related:end -->

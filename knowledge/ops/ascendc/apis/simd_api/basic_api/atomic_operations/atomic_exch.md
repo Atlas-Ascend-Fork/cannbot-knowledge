@@ -24,8 +24,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](../../../../runbooks/precision/repeated_overwrite_updates_need_ordered_ub_merge.md)（`exemplifies`）：AtomicExch 是卡内列出的硬件原子替代路线之一，但原子交换本身不定义多个 k 的 winner 顺序。
-- [AscAtomicExch](../../c_api/scalar_compute/asc_atomic_exch.md)（`related`）：基础 C++ AtomicExch 提供同一 GM 原子交换契约，可与 C Scalar 版本按语言接口选择。
-- [AtomicCas](atomic_cas.md)（`related`）：《AtomicExch》处理“对GM地址执行原子交换，将输入标量值写入并返回修改前的旧值。”。《AtomicCas》明确“对GM地址执行原子比较交换：旧值与value1相等时写入value2，否则不变，返回旧值。”，可直接用于核对AtomicExch 的 C/C++ 入口及与 AtomicCas 的原子更新语义差异。
-- [asc_atomic_exch](../../../simt_api/atomic_operations/asc_atomic_exch.md)（`same_topic`）：《AtomicExch》处理“对GM地址执行原子交换，将输入标量值写入并返回修改前的旧值。”。《asc_atomic_exch》明确“对Unified Buffer或Global Memory地址做原子赋值操作，即将指定数据赋值到Unified Buffer或Global Memory地址中。”，可直接用于核对AtomicExch 的 C/C++ 入口及与 AtomicCas 的原子更新语义差异。
+- [AscAtomicExch](../../c_api/scalar_compute/asc_atomic_exch.md)（`same_topic`）：在指定GM地址上进行原子交换操作。将address指向的GM地址上的旧值与输入值进行原子交换运算，将结果写回GM地址，返回修改前的旧值。仅Ascend 950PR/950DT支持。；对Global Memory中address指向的元素执行原子赋值操作，即将该元素值设置为val。两页描述同一 GM 原子交换语义，C scalar 页进一步给出流水同步与 DCache 一致性约束，能直接支撑接口选型和正确使用。
 <!-- cannbot:related:end -->

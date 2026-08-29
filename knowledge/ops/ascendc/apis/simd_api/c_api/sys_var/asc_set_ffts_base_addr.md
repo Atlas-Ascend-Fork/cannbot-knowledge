@@ -22,5 +22,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetFftsBaseAddr](asc_get_ffts_base_addr.md)（`same_topic`）：AscGetFftsBaseAddr 与《AscSetFftsBaseAddr》的实质衔接是：AscGetFftsBaseAddr 读取 Host 获取后经 AscSetFftsBaseAddr 写入的同一核间同步寄存器基地址。
+- [AscGetFftsBaseAddr](asc_get_ffts_base_addr.md)（`related`）：获取核间同步寄存器的基地址。需要在Host侧调用接口aclrtGetHardwareSyncAddr获取核间同步寄存器的基地址，并作为参数传入asc_set_ffts_base_addr后使用。；在asc_sync_block_wait和asc_sync_block_arrive之前使用，设置核间同步寄存器的基地址。需要在Host侧调用接口aclrtGetHardwareSyncAddr获取，并作为参数传入。；GetFftsBaseAddr 读取的正是 SetFftsBaseAddr 预先写入的核间同步寄存器基地址，两者共享 Host 获取地址后的设置与读取合同。
 <!-- cannbot:related:end -->

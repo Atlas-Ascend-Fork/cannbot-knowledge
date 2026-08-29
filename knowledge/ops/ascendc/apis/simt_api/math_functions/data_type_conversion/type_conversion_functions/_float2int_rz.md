@@ -25,17 +25,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/device_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cast](../../../../simd_api/basic_api/memory_vector_compute/type_conversion/cast.md)（`related`）：__float2int_rz 与《Cast》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-- [Cast](../../../../simd_api/basic_api/reg_vector_compute/type_conversion/cast.md)（`related`）：__float2int_rz 与《Cast》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-- [Truncate](../../../../simd_api/basic_api/memory_vector_compute/type_conversion/truncate_isasi.md)（`related`）：__float2int_rz 与《Truncate》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-- [类型转换函数](type_conversion_functions.md)（`related`）：__float2int_rz 与《类型转换函数》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-- [AscFloat2int32](../../../../simd_api/c_api/vector_compute/asc_float2int32.md)（`same_topic`）：__float2int_rz 与《AscFloat2int32》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-- [__float2int_rd](_float2int_rd.md)（`same_topic`）：__float2int_rz 与《__float2int_rd》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-- [__float2int_rn](_float2int_rn.md)（`same_topic`）：__float2int_rz 与《__float2int_rn》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-- [__float2int_rna](_float2int_rna.md)（`same_topic`）：__float2int_rz 与《__float2int_rna》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-- [__float2int_ru](_float2int_ru.md)（`same_topic`）：__float2int_rz 与《__float2int_ru》的实质衔接是：__float2int_rz 按 CAST_TRUNC 把 float 饱和到 int32；RN/RNA/RD/RU、转换总览、AscFloat2int32 与 Cast/Truncate 映射同一模式。
-<!-- cannbot:related:end -->

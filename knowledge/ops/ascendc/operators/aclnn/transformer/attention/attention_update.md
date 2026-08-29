@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/src/op_host/tiling_util.cpp
     role: implementation
 created_at: "2026-08-24T16:27:18Z"
-updated_at: "2026-08-24T19:36:32Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -327,9 +327,9 @@ UB 始终只为 `spAlloc<=16` 个槽分配。首批用一个 dummy slot 加 15 �
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持但由独立 A5 卡描述 |
+| 支持状态 | 支持 | 支持 | 支持但由独立 950 卡描述 |
 | Host/Launcher | 共用非 RegBase `DecodeUpdateTiling`，SP<=128 | 同 A2 | ACLNN 走 RegBase 校验，SP<=16 |
 | Kernel/资源 | classic AIV，188 KiB UB 模型 | 同 A2 | arch35 MicroAPI，另一 POD/route |
 
@@ -351,7 +351,7 @@ UB 始终只为 `spAlloc<=16` 个槽分配。首批用一个 dummy slot 加 15 �
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
 | 入口声明/约束 | `attention/attention_update/README.md` | 产品支持表、约束说明 | A2/A3 公开支持与通用 SP 约束差异 |
-| 入口声明/约束 | `attention/attention_update/docs/aclnnAttentionUpdate.md` | 产品支持表、约束说明 | A2/A3/A5 公开支持、接口 shape/dtype/SP/D 约束 |
+| 入口声明/约束 | `attention/attention_update/docs/aclnnAttentionUpdate.md` | 产品支持表、约束说明 | A2/A3/950 公开支持、接口 shape/dtype/SP/D 约束 |
 | 入口声明/约束 | `attention/attention_update/op_host/op_api/aclnn_attention_update.h` | `aclnnAttentionUpdate*` | 公开两段式签名 |
 | 入口实现 | `attention/attention_update/op_host/op_api/aclnn_attention_update.cpp` | `CheckParams`、两段式入口 | 校验、Contiguous、executor 图 |
 | 入口实现 | `attention/attention_update/op_host/op_api/attention_update.cpp` | `l0op::AttentionUpdate` | 内部输出分配与 AICore launcher 节点 |
@@ -377,3 +377,9 @@ UB 始终只为 `spAlloc<=16` 个槽分配。首批用一个 dummy slot 加 15 �
 | 同步 | Queue + PIPE_V/ALL | EnQue/DeQue/FreeTensor 与临时 TBuf barrier 次序 | `CopyInSp/Compute/CopyOut` |
 | 精度与尾块 | FP32 LSE/累加、非 FP32 输入输出 cast | +INF 替换、log-sum-exp 顺序、DataCopyPad tail | `ProcessLseInfReplacement/Compute` |
 | 失败边界 | Host 拒绝非法参数，空 Tensor 快返 | 不得让未识别 dtype 进入 key=0 | `CheckParams/GetTilingKey` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AttentionUpdate 950 ACLNN 算子知识](attention_update_950.md)（`same_topic`）：“｜ 计算语义 ｜ 以稳定 log-sum-exp 权重合并 SP 分片的局部 LSE 和局部 attention 输出 ｜”与“｜ 计算语义 ｜ 对 SP 分片的局部 LSE 先做稳定 log-sum-exp，再以 `exp(lse_i-lse_m)` 加权合并局部 attention 输出 ｜”是双方正文中的具体合同。两端都合并 SP 分片的局部 LSE 与 attention 输出，A2/A3 卡展开稳定权重公式，950 卡给出同一核心归约，互读可核对跨分片数值稳定性。
+<!-- cannbot:related:end -->

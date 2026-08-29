@@ -198,15 +198,5 @@ path: `operators/cummin/cummin.asc`；symbols: `KernelCummin<T>::StoreOut`、`Ke
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetPhyAddr](../../apis/simd_api/basic_api/data_structures/local_tensor/get_phy_addr.md)（`exemplifies`）：《__ubuf__ 指针传普通形参导致编译失败》给出“Ascend C 地址空间是类型的一部分；__ubuf__ 指针不能隐式绑定到普通 T* 形参，未使用参数应删除或按真实地址空间声明。”；该约束/探针可直接复现、解释或前置验证《GetPhyAddr》中的“返回LocalTensor的地址或指定偏移量后的地址。”。
-- [Load](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_load/load.md)（`exemplifies`）：__ubuf__ 指针传普通形参导致编译失败 与《Load》的实质衔接是：__ubuf__ 是指针类型的一部分，helper 形参、Load/Store、ReinterpretCast、地址空间转换与谓词必须保留相同 qualifier，不能隐式退化为普通 T*。
-- [ReinterpretCast](../../apis/simd_api/basic_api/data_structures/local_tensor/reinterpret_cast.md)（`exemplifies`）：__ubuf__ 指针传普通形参导致编译失败 与《ReinterpretCast》的实质衔接是：__ubuf__ 是指针类型的一部分，helper 形参、Load/Store、ReinterpretCast、地址空间转换与谓词必须保留相同 qualifier，不能隐式退化为普通 T*。
-- [Store](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_store/store.md)（`exemplifies`）：__ubuf__ 指针传普通形参导致编译失败 与《Store》的实质衔接是：__ubuf__ 是指针类型的一部分，helper 形参、Load/Store、ReinterpretCast、地址空间转换与谓词必须保留相同 qualifier，不能隐式退化为普通 T*。
-- [__cvta_generic_to_ubuf](../../apis/simt_api/address_space_conversion_functions/_cvta_generic_to_ubuf.md)（`exemplifies`）：__ubuf__ 指针传普通形参导致编译失败 与《__cvta_generic_to_ubuf》的实质衔接是：__ubuf__ 是指针类型的一部分，helper 形参、Load/Store、ReinterpretCast、地址空间转换与谓词必须保留相同 qualifier，不能隐式退化为普通 T*。
-- [__cvta_ubuf_to_generic](../../apis/simt_api/address_space_conversion_functions/_cvta_ubuf_to_generic.md)（`exemplifies`）：__ubuf__ 指针传普通形参导致编译失败 与《__cvta_ubuf_to_generic》的实质衔接是：__ubuf__ 是指针类型的一部分，helper 形参、Load/Store、ReinterpretCast、地址空间转换与谓词必须保留相同 qualifier，不能隐式退化为普通 T*。
-- [__isUbuf](../../apis/simt_api/address_space_predicate_functions/_is_ubuf.md)（`exemplifies`）：《__isUbuf》处理“判断输入的指针是否指向Unified Buffer内存空间的地址。”。《__ubuf__ 指针传普通形参导致编译失败》明确“Ascend C 地址空间是类型的一部分；__ubuf__ 指针不能隐式绑定到普通 T* 形参，未使用参数应删除或按真实地址空间声明。”，可直接用于核对SIMT UB 地址空间谓词、generic/ubuf 转换和指针形参限定合同。
-- [地址空间转换函数](../../apis/simt_api/address_space_conversion_functions/address_space_conversion_functions.md)（`exemplifies`）：《地址空间转换函数》处理“SIMT API地址空间转换函数汇总，提供generic与Global、UBuf、Local间指针与地址值的双向转换能力。”。《__ubuf__ 指针传普通形参导致编译失败》提供“Ascend C 地址空间是类型的一部分；__ubuf__ 指针不能隐式绑定到普通 T* 形参，未使用参数应删除或按真实地址空间声明。”，其具体合同或探针直接接入SIMT 地址空间转换与谓词验证、helper 形参地址限定合同。
-- [Device helper 必须保留 GM 地址空间](device_helper_preserves_gm_address_space.md)（`same_topic`）：__ubuf__ 指针传普通形参导致编译失败 与《Device helper 必须保留 GM 地址空间》的实质衔接是：__ubuf__ 是指针类型的一部分，helper 形参、Load/Store、ReinterpretCast、地址空间转换与谓词必须保留相同 qualifier，不能隐式退化为普通 T*。
-- [Reg LoadAlign 不接受 const __ubuf__ 指针](reg_loadalign_requires_nonconst_ubuf_pointer.md)（`same_topic`）：两卡都把 __ubuf__ 视为指针类型合同的一部分：helper 形参不能退化为普通 T*，而 Reg::LoadAlign 还要求可写的非 const __ubuf__ 指针；丢失任一限定都会导致重载匹配失败。
-- [__aicore__ 禁止 void* 转 __ubuf__ 桥接](aicore_void_ubuf.md)（`same_topic`）：两张 Runbook 都把 UB 地址空间视为类型契约：焦点证明 void* 不能在 __aicore__ wrapper 内恢复为 __ubuf__ T*，目标证明 __ubuf__ 指针不能隐式绑定普通 T* 形参。共同修复原则是让形参或 LocalTensor 从调用边界起保留真实地址空间。
+- [Reg LoadAlign 不接受 const __ubuf__ 指针](reg_loadalign_requires_nonconst_ubuf_pointer.md)（`related`）：焦点卡指出“bisheng 把 `__ubuf__` 地址空间编码进指针类型，`__ubuf__ T*` 不能隐式转换为普通 `T*` 形参。”；LoadAlign 排障卡进一步限定“该版本 RegBase 两参数 `LoadAlign` / `StoreAlign` 与 `asc_vf_call` 接口链要求 `__ubuf__ T *`”，把通用地址空间不匹配收窄到还必须去除 const 的具体 ABI。
 <!-- cannbot:related:end -->

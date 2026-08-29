@@ -33,10 +33,3 @@ quant_pre_mode量化模式参数支持的枚举值
 约束：- 各存储单元的空间大小和对齐要求
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscCopyL12gm](asc_copy_l12gm.md)（`related`）：AscCopyL12gm 与《AscCopyL0c2ub》的实质衔接是：AscCopyL12gm 是 L1 到 GM 的数据路径；L1 到 UB、L0C 到 UB/GM 接口提供相邻存储层的可执行搬运组合，迁移指导则明确 3510 删除该直达路径后的替代方案。
-- [AscSetL0cCopyParams](asc_set_l0c_copy_params.md)（`same_topic`）：AscSetL0cCopyParams说明设置L0C搬运随路格式转换（NZ转ND）的相关配置。
-<!-- cannbot:related:end -->

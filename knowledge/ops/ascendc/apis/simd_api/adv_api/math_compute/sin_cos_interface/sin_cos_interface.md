@@ -29,13 +29,3 @@ platforms: ['950']
 支持的硬件型号：Ascend 950PR/Ascend 950DT。
 
 临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSinCosMaxMinTmpSize](get_sin_cos_max_min_tmp_size.md)（`same_topic`）：SinCos接口 与《GetSinCosMaxMinTmpSize》的实质衔接是：SinCos 接口组以一次调用同时产出 sin/cos，并由两级工作区查询决定 tmpBuffer；Sincosf/Sincospif提供无 π 与带 π 缩放的标量对照。
-- [GetSinCosTmpBufferFactorSize](get_sin_cos_tmp_buffer_factor_size.md)（`same_topic`）：SinCos接口 与《GetSinCosTmpBufferFactorSize》的实质衔接是：SinCos 接口组以一次调用同时产出 sin/cos，并由两级工作区查询决定 tmpBuffer；Sincosf/Sincospif提供无 π 与带 π 缩放的标量对照。
-- [SinCos](sin_cos.md)（`same_topic`）：SinCos接口 与《SinCos》的实质衔接是：SinCos 接口组以一次调用同时产出 sin/cos，并由两级工作区查询决定 tmpBuffer；Sincosf/Sincospif提供无 π 与带 π 缩放的标量对照。
-- [Sincosf](../../../../simt_api/math_functions/float_math_functions/sincosf.md)（`same_topic`）：SinCos接口 与《Sincosf》的实质衔接是：SinCos 接口组以一次调用同时产出 sin/cos，并由两级工作区查询决定 tmpBuffer；Sincosf/Sincospif提供无 π 与带 π 缩放的标量对照。
-- [Sincospif](../../../../simt_api/math_functions/float_math_functions/sincospif.md)（`same_topic`）：SinCos接口 与《Sincospif》的实质衔接是：SinCos 接口组以一次调用同时产出 sin/cos，并由两级工作区查询决定 tmpBuffer；Sincosf/Sincospif提供无 π 与带 π 缩放的标量对照。
-<!-- cannbot:related:end -->

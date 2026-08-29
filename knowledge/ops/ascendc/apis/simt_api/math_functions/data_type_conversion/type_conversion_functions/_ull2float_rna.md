@@ -29,11 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__float2ull_rna](_float2ull_rna.md)（`related`）：__ull2float_rna 是 64 位无符号整数到 float 的反向转换，可与 focal 组成往返路径并评估大整数精度丢失。
-- [__ull2half_rna](../../half_type/half_precision_conversion_functions/_ull2half_rna.md)（`related`）：__ull2half_rna 与《__ull2float_rna》的实质衔接是：uint64→half RNA 与其他舍入、有符号、bfloat16/float 目标变体共享大整数输入；UINT64 量化卡提供实际位宽约束。
-- [__ll2float_rna](_ll2float_rna.md)（`same_topic`）：__ll2float_rna：所选转换保持ll→float或RNA语义，只切换有符号性、源位宽和RD/RN/RU/RZ舍入，能直接核对大整数不可精确表示时的方向。 目标卡《__ull2float_rna》补充：遵循CAST_ROUND模式，将uint64类型数据转换为浮点数，返回转换后的值。
-- [__ull2float_rd](_ull2float_rd.md)（`same_topic`）：__ull2float_rd 与《__ull2float_rna》的实质衔接是：这些转换保持 ull 到 float 的源目类型并改变舍入模式；ll/uint 的 rd 入口用于核对有符号性和源位宽对向下舍入结果的影响。
-- [__ull2float_rn](_ull2float_rn.md)（`same_topic`）：两卡同为 unsigned long long→float，分别采用 nearest-even 与 ties-away 的最近舍入规则。
-- [__ull2float_ru](_ull2float_ru.md)（`same_topic`）：__ull2float_ru 与《__ull2float_rna》的实质衔接是：这些接口以 ull→float 为核心并切换舍入方向，ll/uint 入口验证源有无符号和位宽，ull→half/bfloat16 则保持 CAST_CEIL 但改变目标精度。
-- [__ull2float_rz](_ull2float_rz.md)（`same_topic`）：两卡同为 uint64→float，分别采用 toward-zero 与 ties-away 的最近舍入。
+- [__ull2float_rn](_ull2float_rn.md)（`same_topic`）：功能：遵循CAST_RINT模式，将uint64类型数据转换为浮点数，返回转换后的值。；功能：遵循CAST_ROUND模式，将uint64类型数据转换为浮点数，返回转换后的值。。两端执行相同 uint64 到 float 转换但采用 CAST_RINT 与 CAST_ROUND 两种舍入合同，联合阅读可据目标舍入规则选择对应 intrinsic 并核对临界值。
 <!-- cannbot:related:end -->

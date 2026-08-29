@@ -25,12 +25,3 @@ OpDef算子定义，OpDef请参考OpDef。
 ## 约束说明
 当用户使用CATEGORY参数设置算子分组名称时，会对应生成同名的代码文件。若文件名过长在编译时可能超过tar的打包文件名称长度限制，导致报错。
 具体参考算子工程编译时出现文件名过长报错。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [算子工程编译时出现文件名过长报错](../../../../guides/programming_guide/appendix/faq/filename_too_long_error.md)（`explains`）：FAQ 指出 Comment 设置的算子分组名会生成同名原型文件；OpDef::Comment 是该分组和注释配置入口。
-- [Comment](../op_param_def/comment.md)（`related`）：OpParamDef::Comment 为 input/output 参数生成注释，与 OpDef::Comment 的算子级说明形成层级化文档。
-- [Comment（原型注册管理）](../op_attr_def/comment.md)（`related`）：OpAttrDef::Comment 为单个算子属性生成注释，focal OpDef::Comment 则描述整个算子及分组；二者共同组成原型文档。
-- [OpDef](op_def.md)（`same_topic`）：OpDef 入口把 Comment 列为算子原型定义能力，与 Input/Output/Attr、推导函数和执行引擎配置共同生成原型。
-<!-- cannbot:related:end -->

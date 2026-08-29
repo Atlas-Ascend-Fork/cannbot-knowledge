@@ -83,8 +83,5 @@ plog 对 `aclnnDequantize_22`..`aclnnDequantize_39` 逐 case 输出上述错误�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Input（OpDef）](../../apis/utils_api/prototype_register_management/op_def/input.md)（`exemplifies`）：焦点处理OpDef Input 的参数类型、格式、可选性和值依赖配置；ACLNN 561102 单 dtype 原型注册与 opbuild 字节约束正文说明“多 dtype 反量化算子 ST 全失败，根因为 opbuild 要求同一算子原型内同一 input 各 dtype 字节数一致，int8/int32 不能共存于单一 REG_OP/OP_ADD，需按字节数拆分算子原型组”。候选配置 Input 返回的 OpParamDef，或复现输入可选性、格式和值依赖造成的框架故障。
-- [Input（原型注册管理）](../../apis/utils_api/prototype_register_management/op_ai_core_config/input.md)（`exemplifies`）：《Input（原型注册管理）》处理“某些场景下，同一个算子在不同的AI处理器型号上，其支持的原型输入不同。 通过该接口，可针对不同的AI处理器型号注册差异化的算子原型。调用该接口后会返回一个OpParamDef结构，后续可通过该结构配置算子输入信息。”。《ACLNN 561102 单 dtype 原型注册与 opbuild 字节约束》明确“多 dtype 反量化算子 ST 全失败，根因为 opbuild 要求同一算子原型内同一 input 各 dtype 字节数一致，int8/int32 不能共存于单一 REG_OP/OP_ADD，需按字节数拆分算子原型组。”，可直接用于核对算子 Input/Output 原型、OpParamDef dtype/format/optional/value-depend 参数及已证注册故障。
-- [原型注册接口（OP_ADD）](../../apis/utils_api/prototype_register_management/op_add.md)（`exemplifies`）：《原型注册接口（OP_ADD）》处理“注册算子的原型定义，从而确保算子能够被框架正确识别、编译和执行。 算子原型主要描述了算子的输入输出、属性等信息以及算子在AI处理器上相关实现信息，并关联tiling实现等函数。算子原型通过自定义的算子类来承载，该算子类继承自OpDef类。完成算子的原型定义等操作后，需要调用OP_ADD接口，传入算子类型（自定义算子类的类名），进行算子原型注册。详细内容请参考算子原型定义。”。《ACLNN 561102 单 dtype 原型注册与 opbuild 字节约束》明确提供“多 dtype 反量化算子 ST 全失败，根因为 opbuild 要求同一算子原型内同一 input 各 dtype 字节数一致，int8/int32 不能共存于单一 REG_OP/OP_ADD，需按字节数拆分算子原型组。”，其参数、调用或验证步骤直接接入OP_ADD 宏与 OpDef、注册函数、原型库和注册故障的可执行闭环。
-- [binary.json bin_filename 空致多 dtype kerne](binary_json_bin_filename_empty_overwrites_multi_dtype_o.md)（`related`）：两卡都会造成多 dtype 只剩部分 binary，但本卡根因是 OpDef 组合未注册，目标卡根因是 bin_filename 重名覆盖；检查 OpDef 与最终 binList 可快速区分。
+- [原型注册接口（OP_ADD）](../../apis/utils_api/prototype_register_management/op_add.md)（`exemplifies`）：`OP_ADD` 同样受字节约束，不能只拆 `REG_OP` 而把所有 dtype 塞进单个 `OP_ADD`。；注册算子的原型定义，从而确保算子能够被框架正确识别、编译和执行。。运行手册展示 OP_ADD 原型中的 input dtype 字节数约束如何导致运行时 SelectBin 失败并要求拆分原型，API 卡定义 OP_ADD 的算子原型注册职责，是注册接口合同的具体故障实例。
 <!-- cannbot:related:end -->

@@ -208,12 +208,5 @@ __aicore__ inline void PathVecLine(int64_t m)
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscInt322int64](../../apis/simd_api/c_api/vector_compute/asc_int322int64.md)（`exemplifies`）：《AscInt322int64》处理“将int32_t类型数据转换为int64_t类型。”。《Reg int32→int64 Cast 源目 VL 错配留空索引》明确“以 int32 的 64-lane 步长驱动 int64 的 32-lane Reg Cast 时，每块后半索引未写；先以 Scalar 逐元素转换建立正确基线。”，可直接用于核对Reg int32/int64 双向转换及按目的 lane 宽度驱动 Cast 的正确性约束。
-- [__float2ll_rz](../../apis/simt_api/math_functions/data_type_conversion/type_conversion_functions/_float2ll_rz.md)（`exemplifies`）：__float2ll_rz 与《Reg int32→int64 Cast 源目 VL 错配留空索引》的实质衔接是：float→int64 RZ 与其他舍入、无符号和 half/bfloat16 变体共享饱和范围；Reg lane 错配卡验证 32→64 位宽变化的存储边界。
-- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`related`）：候选展示 value/index 不同位宽时同一 MaskReg 不能跨 lane 语义复用；焦点展示 widening Cast 的 load/cast/store 也必须按目标 lane 锁定。
-- [b16 提升 fp32 比较后按存储宽度分块会漏掉后半 lane](compute_lane_count_must_follow_promoted_fp32_width.md)（`related`）：int32→int64 Cast 同样证明循环步长必须按目标类型 lane 宽度重算，不能沿用源/存储类型的 VL 元素数。
-- [f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言](../compilation/reg_cast_f32_to_s64_uses_supported_rounding.md)（`related`）：f32→s64 Cast 使用 CAST_NONE 触发 vcvt 静态断言 与《Reg int32→int64 Cast 源目 VL 错配留空索引》的实质衔接是：这些卡都约束 Reg::Cast 的 RoundMode、MaskMergeMode、trait 存储期/命名空间及宽化 lane，是同一静态断言链上的可执行检查。
-- [半精度索引错位—拆分双 int32 掩码](b16_value_mask_must_split_for_two_int32_index_registers.md)（`related`）：候选在 int32→int64 Cast 中展示目标 lane 变窄导致后半索引空缺，本卡是 B16 value 配 int32 index 的同类宽度不等。
-- [Ascend950 Reg 扫描按 256B 锁定 lane](dav3510_vector_register_width_is_256_bytes.md)（`same_topic`）：Ascend950 Reg 扫描按 256B 锁定 lane 与《Reg int32→int64 Cast 源目 VL 错配留空索引》的实质衔接是：这些卡共同约束 256B RegTensor 的 lane 数、B16/B32 提升后的 mask 宽度以及 LoadAlign/VF 调用范围；所连错例均由按错误数据宽度计算 lane 或目标 VL 导致。
-- [模板内 float→float Cast 使 fp32 分支全错](templated_float_input_must_bypass_same_type_cast.md)（`same_topic`）：模板内 float→float Cast 使 fp32 分支全错 与《Reg int32→int64 Cast 源目 VL 错配留空索引》的实质衔接是：float 到 float 不应进入窄化 Cast，应该保持原值或 Copy；同步、BF16 分阶段、native 类型、VL、舍入与 RmsNorm 案例分别说明真正需要 Cast 时的类型、时序和验证契约。
+- [Ascend950 Reg 扫描按 256B 锁定 lane](dav3510_vector_register_width_is_256_bytes.md)（`related`）：源代码以 `VECTOR_REG_WIDTH / sizeof(int32_t)` 得到 64-lane 的循环步长，但目标 `RegTensor<int64_t>` 只有 `VECTOR_REG_WIDTH / sizeof(int64_t)=32` lanes；因此每个 64 元素步长只能实际生成/存储 32 个 int64，中间 32 个位置被留空，下一轮又从下一个 64 元素起点继续。；工具链头文件与算子源码探针都显示 dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。int32 寄存器实际只有 `256 / 4 = 64` 个 lane。。平台宽度卡确定 256B 与 int32 64 lane，Cast 卡据此解释 int64 仅 32 lane 导致 widening 写空，二者闭合 lane 预算排障。
 <!-- cannbot:related:end -->

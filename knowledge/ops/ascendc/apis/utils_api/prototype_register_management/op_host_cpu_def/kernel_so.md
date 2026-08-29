@@ -22,12 +22,3 @@ platforms: [agnostic]
 OpHostCPUDef算子定义，OpHostCPUDef请参考OpHostCPUDef。
 ## 约束说明
 无
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FunctionName](function_name.md)（`related`）：KernelSo 定位实现库，FunctionName 固定库内入口 RunCpuKernel；运行时装载需要库名和函数名两级定位。
-- [OpkernelLib](../op_aicpu_def/opkernel_lib.md)（`related`）：OpkernelLib 与《KernelSo》的实质衔接是：OpkernelLib 在 OpAICPUDef 固定 CUSTAICPUKernel，必须与 KernelSo、Engine、FunctionName 和 AICPU OpDef/launcher 生成链一致。
-- [OpHostCPUDef](op_host_cpu_def.md)（`same_topic`）：KernelSo 指定承载函数的共享库，与 FunctionName 共同完成运行时加载。
-- [OpKernelLib](op_kernel_lib.md)（`same_topic`）：OpKernelLib 与《KernelSo》的实质衔接是：OpKernelLib、KernelSo、Engine、FunctionName 和 OpHostCPUDef 是 HostCPU 注册的一组直接字段；AICPU OpkernelLib提供不同后端固定库名对照。
-<!-- cannbot:related:end -->

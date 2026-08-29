@@ -25,9 +25,7 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetLgammaTmpBufferFactorSize](get_lgamma_tmp_buffer_factor_size.md)（`related`）：factor 查询产生的临时空间容量用于决定 Lgamma kernel 单次可处理元素量，执行接口直接消费该 Tiling 决策。
-- [Tgammaf](../../../../simt_api/math_functions/float_math_functions/tgammaf.md)（`related`）：高阶 LocalTensor Lgamma 与 SIMT lgammaf 同为 log-gamma，可按数据路径选择稳定替代。
-- [GetLgammaMaxMinTmpSize](get_lgamma_max_min_tmp_size.md)（`same_topic`）：《Lgamma》处理“按元素计算x的gamma函数的绝对值并求自然对数”。《GetLgammaMaxMinTmpSize》明确“在host侧获取Lgamma接口预留或申请临时空间的最大和最小值，用于Tiling参数传递”，可直接用于核对Lgamma Kernel、临时空间查询与标量 lgammaf 的同一计算合同。
-- [Lgammaf](../../../../simt_api/math_functions/float_math_functions/lgammaf.md)（`same_topic`）：《Lgamma》处理“按元素计算x的gamma函数的绝对值并求自然对数”。《Lgammaf》明确“获取输入数据x伽马值的绝对值并求自然对数。”，可直接用于核对Lgamma Kernel、临时空间查询与标量 lgammaf 的同一计算合同。
-- [Lgamma接口](lgamma_interface.md)（`same_topic`）：《Lgamma》处理“按元素计算x的gamma函数的绝对值并求自然对数”。《Lgamma接口》明确“按元素计算x的gamma函数绝对值的自然对数，并提供临时空间大小获取接口。”，可直接用于核对Lgamma Kernel、临时空间查询与标量 lgammaf 的同一计算合同。
+- [GetLgammaMaxMinTmpSize](get_lgamma_max_min_tmp_size.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetLgammaMaxMinTmpSize获取。；host侧Tiling接口，用于获取Lgamma接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。Lgamma 的 sharedTmpBuffer 重载消费 Host Tiling 接口给出的容量上下界，二者构成明确的临时空间生产与消费合同。
+- [GetLgammaTmpBufferFactorSize](get_lgamma_tmp_buffer_factor_size.md)（`related`）：参数：typeSize为输入数据类型字节数（half传2）；maxLiveNodeCount输出最大存活节点数；extraBuffer输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetLgammaMaxMinTmpSize获取。。因子接口把可用 UB 反推成 Lgamma 可处理 shape，Lgamma 的手工临时空间重载正是该容量规划的消费端。
+- [Lgammaf](../../../../simt_api/math_functions/float_math_functions/lgammaf.md)（`same_topic`）：功能：获取输入数据x伽马值的绝对值并求自然对数。；按元素计算x的gamma函数绝对值的自然对数（lgamma(x) = ln(｜gamma(x)｜)）。模板参数T支持half/float。两卡核心数学对象均为 lgamma，分别覆盖 SIMT 标量 float 与高阶 LocalTensor 逐元素接口。
 <!-- cannbot:related:end -->

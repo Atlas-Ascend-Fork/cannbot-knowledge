@@ -122,5 +122,5 @@ static aclTensor *CreateAclTensor(const at::Tensor &tensor) {
 <!-- cannbot:related:start -->
 ## 相关
 
-- [aclnnQuantMatmulV5 FP16 x2Scale 须 UINT64](aclnnquantmatmulv5_fp16_x2scale_uint64.md)（`same_topic`）：该闭环卡把 int8 输入、fp16 输出的 161002 定位到 L0C→out checker 要求 x2Scale 为 UINT64/INT64；这正是 V4 手构 tensor 失败样本的具体参数审计方向。
+- [aclnnQuantMatmulV5 FP16 x2Scale 须 UINT64](aclnnquantmatmulv5_fp16_x2scale_uint64.md)（`related`）：焦点卡写明“符号存在 + 同一 NPU 上经 torch_npu 内部构造 `aclTensor` 调同一算子成功”，候选卡写明“x2Scale(scale) must be in dtype support list ［DT_UINT64,DT_INT64,］”。前者以成功对照收敛到手构 tensor 契约，后者用 SLOG 定位 FP16 直出路径的 x2Scale dtype。
 <!-- cannbot:related:end -->

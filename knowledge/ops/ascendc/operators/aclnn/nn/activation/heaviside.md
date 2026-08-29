@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:01:44Z"
-updated_at: "2026-08-25T15:01:44Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -599,9 +599,9 @@ if (std::is_same_v<T, bfloat16_t>) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` 接线 | 公开支持；`ascend910_93` 接线 | 公开文档明确不支持，与 `ascend950` 实现接线冲突，不发布 A5 卡 |
+| 支持状态 | 公开支持；`ascend910b` 接线 | 公开支持；`ascend910_93` 接线 | 公开文档明确不支持，与 `ascend950` 实现接线冲突，不发布 950 卡 |
 | Host/Launcher | 共用 ACLNN、Tiling、key 1 | 共用 | 实现信号存在但不能推翻公开“不支持” |
 | Kernel/资源 | `__CCE_AICORE__==220/310` guard 之一；192 KiB、8192/tile | 同一 guard 集；192 KiB、8192/tile | 本卡不声明可用实现 |
 
@@ -612,7 +612,7 @@ if (std::is_same_v<T, bfloat16_t>) {
 - 核心 Tiling 仅接受 `values` 单元素或与 `input` 原始 shape 完全相同；一般 broadcast 依赖 ACLNN 的外部 `BroadcastTo` 前处理。
 - Tiling 固定申报 16 MiB workspace，Kernel 明确不使用；不可因 Device 未消费而省略 Host workspace 请求。
 - POD 生成宏实现不在固定算子目录，精确 `sizeof/alignof/offsetof` 不可见；禁止凭普通 C++ struct 布局推测。
-- A5 公开支持表与实现接线冲突，未生成 `heaviside_a5.md`。
+- 950 公开支持表与实现接线冲突，未生成 `heaviside_950.md`。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -621,7 +621,7 @@ if (std::is_same_v<T, bfloat16_t>) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `docs/aclnnHeaviside.md` | 两段式函数原型、支持表 | API、shape/dtype、A2/A3 支持与 A5 不支持 |
+| 入口声明/约束 | `docs/aclnnHeaviside.md` | 两段式函数原型、支持表 | API、shape/dtype、A2/A3 支持与 950 不支持 |
 | 入口声明/约束 | `README.md` | 产品支持、公式 | 平台交叉证据与语义 |
 | 入口实现 | `op_host/op_api/aclnn_heaviside.cpp` | `CheckParams`、`aclnnHeavisideGetWorkspaceSize`、`aclnnHeaviside` | 校验、空域、前后处理、executor |
 | 入口实现 | `op_host/op_api/heaviside.cpp` | `HeavisideAiCore`、`Heaviside` | 核心 launcher 节点 |

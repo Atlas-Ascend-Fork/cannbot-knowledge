@@ -24,9 +24,3 @@ platforms: ['950']
 支持数据类型：int32_t、uint8_t。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_uint322uint8 (废弃)](asc_uint322uint8_deprecated.md)（`related`）：焦点处理废弃 uint32→uint8 转换的邻接位宽替代链；asc_int322uint8 (废弃)正文界定“将int32_t类型转化为uint8_t类型，支持饱和/非饱和模式。 关于舍入模式和饱和/非饱和模式的详细说明，请参见舍入模式与饱和模式。 由于源操作数与目的操作数类型位宽比为4:1，写入数据时需要将一个VL大小的数据分为四部分，根据不同接”。候选给出逆向转换或 uint32→uint16→uint8 邻接链，避免把无关 dtype 转换当替代。
-<!-- cannbot:related:end -->

@@ -21,8 +21,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscLoadalignBrcDatablock](asc_loadalign_brc_datablock.md)（`related`）：《AscLoadalignBrcElem2datablockPostupdate》明确“从UB加载多个元素并将每个元素广播到一个DataBlock（32B）中，调用后自动更新源地址。”；它与《AscLoadalignBrcDatablock》的“从UB对齐搬入一个DataBlock（32B）并广播到VL。”在实际调用参数、数据流或结果校验上直接衔接。
-- [AscLoadalignV4Deprecated](asc_loadalign_v4_deprecated.md)（`related`）：废弃页明确要求 brc_postupdate_v3 迁移到 Elem2datablock Postupdate 接口。
-- [AscLoadalignBrcElem2datablock](asc_loadalign_brc_elem2datablock.md)（`same_topic`）：《AscLoadalignBrcElem2datablockPostupdate》明确“从UB加载多个元素并将每个元素广播到一个DataBlock（32B）中，调用后自动更新源地址。”；它与《AscLoadalignBrcElem2datablock》的“从UB加载多个元素并将每个元素广播到一个DataBlock（32B）中。”在实际调用参数、数据流或结果校验上直接衔接。
-- [Brcb](../../../basic_api/memory_vector_compute/data_padding/brcb.md)（`same_topic`）：焦点处理Brcb 把 8 个输入分别广播到 8 个 DataBlock 的填充模式；AscLoadalignBrcElem2datablockPostupdate正文说明“从UB加载多个元素并将每个元素广播到一个DataBlock（32B）中，调用后自动更新源地址”。候选提供同一 DataBlock 广播在 C API/Reg load 中的等价形态或标量广播替代。
+- [AscLoadalignBrcElem2datablock](asc_loadalign_brc_elem2datablock.md)（`same_topic`）：“对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现元素到DataBlock广播搬入模式：加载（VL/DataBlock）个元素的数据，并将每个元素（16bit/32bit）广播到一个DataBlock（32B）中。”与“对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现元素到DataBlock广播搬入模式并启用Post Update：加载（VL/DataBlock）个元素的数据并将每个元素（16bit/32bit）广播到一个DataBlock（32B）中，接口调用后自动更新源操作数地址。”是双方正文中的具体合同。两端执行相同的元素到 DataBlock 广播搬入，Post Update 版本额外在调用后推进源地址，互读能核对循环中的地址生命周期。
+- [AscLoadalignV4Deprecated](asc_loadalign_v4_deprecated.md)（`same_topic`）：该接口已废弃。其中asc_loadalign_brc_postupdate_v2请使用asc_loadalign_brc_datablock_postupdate，asc_loadalign_brc_postupdate_v3请使用asc_loadalign_brc_elem2datablock_postupdate，asc_loadalign_unpack_postupdate_v2请使用asc_loadalign_unpack4_postupdate实现此功能。；对齐数据搬运接口，从UB连续对齐搬入目的操作数，实现元素到DataBlock广播搬入模式并启用Post Update：加载（VL/DataBlock）个元素的数据并将每个元素（16bit/32bit）广播到一个DataBlock（32B）中，接口调用后自动更新源操作数地址。。废弃页把旧 brc_postupdate_v3 映射到逐元素广播并自动更新地址的新接口。
 <!-- cannbot:related:end -->

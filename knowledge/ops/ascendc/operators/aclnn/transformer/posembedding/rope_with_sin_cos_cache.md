@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rope_with_sin_cos_cache/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:58:57Z"
-updated_at: "2026-08-24T19:43:09Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -88,7 +88,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-公开版本族含 `aclnnRopeWithSinCosCache` 与 `aclnnRopeWithSinCosCacheV2`；A2/A3 选择实际最新 V2。V1 把 `cacheMode` 固定为 0，V2 在公共 `GetWorkspaceSizeCommon` 前检查 0/1，并沿 L0 attr、Tiling POD 传到 Device。V2 文档明确支持 A2/A3。不能把 A5 的 `rope_with_sin_cos_cache_apt` 视为 V2 等价实现：同一固定仓的 V2 产品表把 A5 标为不支持，且 arch35 基类/body 未读取 `cacheMode` 与 `mrope_section3`。
+公开版本族含 `aclnnRopeWithSinCosCache` 与 `aclnnRopeWithSinCosCacheV2`；A2/A3 选择实际最新 V2。V1 把 `cacheMode` 固定为 0，V2 在公共 `GetWorkspaceSizeCommon` 前检查 0/1，并沿 L0 attr、Tiling POD 传到 Device。V2 文档明确支持 A2/A3。不能把 950 的 `rope_with_sin_cos_cache_apt` 视为 V2 等价实现：同一固定仓的 V2 产品表把 950 标为不支持，且 arch35 基类/body 未读取 `cacheMode` 与 `mrope_section3`。
 
 ## Host/Launcher 执行流程
 
@@ -804,11 +804,11 @@ NeoX 的 `[前半,后半]` 已是计算所需的 two-half 布局，body 直接 `
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持公开 V2；OpDef `ascend910b` | 支持公开 V2；OpDef `ascend910_93` | V2 文档明确不支持；A5 实际最新公开版本为 V1，由独立 A5 卡覆盖 |
+| 支持状态 | 支持公开 V2；OpDef `ascend910b` | 支持公开 V2；OpDef `ascend910_93` | V2 文档明确不支持；950 实际最新公开版本为 V1，由独立 950 卡覆盖 |
 | Host/Launcher | 共用 `GetSupportDtypeList`、L0、membase Tiling/POD | 与 A2 共用 | V1 复用公共 ACLNN/L0，但在入口把 `cacheMode` 固定为 0；不属于本卡 V2 闭包 |
-| Kernel/资源 | `rope_with_sin_cos_cache.cpp`，显式 event 同步，支持 cacheMode0/1 与 mrope 3/4 段 | 与 A2 共用 | `rope_with_sin_cos_cache_apt.cpp` 使用 arch35 body；不消费 `cacheMode/mrope_section3`，不能作为 V2 body，V1 边界由独立 A5 卡记录 |
+| Kernel/资源 | `rope_with_sin_cos_cache.cpp`，显式 event 同步，支持 cacheMode0/1 与 mrope 3/4 段 | 与 A2 共用 | `rope_with_sin_cos_cache_apt.cpp` 使用 arch35 body；不消费 `cacheMode/mrope_section3`，不能作为 V2 body，V1 边界由独立 950 卡记录 |
 
 ## 限制与失败边界
 
@@ -821,7 +821,7 @@ NeoX 的 `[前半,后半]` 已是计算所需的 two-half 布局，body 直接 `
 - FP16/BF16 从非连续 query/key 的 leading dimension 计算 core/loop 地址；FP32 `Init` 的 core 基址和 `ComputeAlongHeads` 地址按 packed `heads*H`，只有 token-batch 内部 DataCopy 还使用 leading stride，故 FP32 非 packed 输入的正确性不能由固定源码闭合。
 - FP16/BF16 全部旋转算术在 FP32，末端 `CAST_RINT`；FP32 保持 FP32。源码没有性能收益保证，也未做本任务真机数值验证。
 - A2/A3 两份 binary config 完全相同，均列出 BF16/FP16/FP32 三个 binary，但 attrs 只列到 `isNeoxStyle`；V2 的 `cacheMode` 由 OpDef/L0/Tiling 第八 attr 传入。固定仓未展示 binary config 到最终 Kernel/Tiling attr ABI 的生成展开，不能据 config 缺项推测补齐。
-- A5 不纳入本卡：其实际最新公开版本是 V1；公开 V2 产品表为不支持，且 arch35 Device consumer 缺 `cacheMode/mrope_section3`，不能声称 A5 支持 V2 cacheMode1 或四段 mrope 语义。
+- 950 不纳入本卡：其实际最新公开版本是 V1；公开 V2 产品表为不支持，且 arch35 Device consumer 缺 `cacheMode/mrope_section3`，不能声称 950 支持 V2 cacheMode1 或四段 mrope 语义。
 
 ## 源码索引
 
@@ -829,12 +829,12 @@ NeoX 的 `[前半,后半]` 已是计算所需的 two-half 布局，body 直接 `
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 公开约束 | posembedding/rope_with_sin_cos_cache/docs/aclnnRopeWithSinCosCacheV2.md | 产品支持表、V2 原型与约束说明 | A2/A3 公开支持、A5 不支持、V2 新增 cacheMode、shape/dtype/alignment 契约 |
+| 公开约束 | posembedding/rope_with_sin_cos_cache/docs/aclnnRopeWithSinCosCacheV2.md | 产品支持表、V2 原型与约束说明 | A2/A3 公开支持、950 不支持、V2 新增 cacheMode、shape/dtype/alignment 契约 |
 | 公开总览 | posembedding/rope_with_sin_cos_cache/README.md | 产品规格与 ACLNN 调用说明 | 逻辑算子语义、输入输出规格与公开入口导航 |
 | 入口声明/约束 | posembedding/rope_with_sin_cos_cache/op_host/op_api/aclnn_rope_with_sin_cos_cache_v2.h | `aclnnRopeWithSinCosCacheV2GetWorkspaceSize/aclnnRopeWithSinCosCacheV2` | V2 两段式签名、cacheMode 与输入输出语义 |
 | 入口实现 | posembedding/rope_with_sin_cos_cache/op_host/op_api/aclnn_rope_with_sin_cos_cache.cpp | `CheckParams/GetWorkspaceSizeCommon/V2GetWorkspaceSize` | 校验、Contiguous、stride/head producer、ViewCopy、executor |
 | L0 Launcher | posembedding/rope_with_sin_cos_cache/op_host/op_api/rope_with_sin_cos_cache.cpp | `RopeWithSinCosCache/RoepWithSinCosCacheAICore` | 连续中间输出与 AICore launcher attrs |
-| 平台注册 | posembedding/rope_with_sin_cos_cache/op_host/rope_with_sin_cos_cache_def.cpp | `RopeWithSinCosCache::RopeWithSinCosCache` | dtype/attr、A2/A3 membase 与 A5 apt 接线 |
+| 平台注册 | posembedding/rope_with_sin_cos_cache/op_host/rope_with_sin_cos_cache_def.cpp | `RopeWithSinCosCache::RopeWithSinCosCache` | dtype/attr、A2/A3 membase 与 950 apt 接线 |
 | Host/Tiling | posembedding/rope_with_sin_cos_cache/op_host/rope_with_sin_cos_cache_tiling.cpp | `TilingRopeWithSinCosCache/TilingCompute/TilingKeyChose` | key、分核、UB、POD、workspace |
 | POD 声明 | posembedding/rope_with_sin_cos_cache/op_host/rope_with_sin_cos_cache_tiling.h | `RopeWithSinCosCacheTilingData` | 31 字段声明顺序与注册 |
 | Kernel entry/body | posembedding/rope_with_sin_cos_cache/op_kernel/rope_with_sin_cos_cache.cpp | `rope_with_sin_cos_cache` | key20/21/22 到 dtype template |
@@ -843,9 +843,9 @@ NeoX 的 `[前半,后半]` 已是计算所需的 two-half 布局，body 直接 `
 | Kernel FP32 body | posembedding/rope_with_sin_cos_cache/op_kernel/rope_with_sin_cos_cache_fp32.h | `Init/Process/Compute/ComputeAlongHeads/GetCosSinCache` | FP32 两类控制流、地址、资源与 tail |
 | A2 binary config | posembedding/rope_with_sin_cos_cache/op_host/config/ascend910b/rope_with_sin_cos_cache_binary.json | `op_list` | A2 三个 dtype binary 与七项 attr metadata |
 | A3 binary config | posembedding/rope_with_sin_cos_cache/op_host/config/ascend910_93/rope_with_sin_cos_cache_binary.json | `op_list` | 与 A2 完全相同的三 dtype/七 attr metadata |
-| A5 V2 缺口证据 | posembedding/rope_with_sin_cos_cache/op_kernel/arch35/rope_with_sin_cos_cache_base.h | `RopeWithSinCosCacheBase/InitData` | 缺少 cacheMode/mrope_section3 consumer，证明 apt 不是 V2 body |
-| A5 V2 FP16/BF16 缺口 | posembedding/rope_with_sin_cos_cache/op_kernel/arch35/rope_with_sin_cos_cache_f_bf16.h | `GetCosSinCache` | 仅三段分段组合，无 cacheMode1/四段分支 |
-| A5 V2 FP32 缺口 | posembedding/rope_with_sin_cos_cache/op_kernel/arch35/rope_with_sin_cos_cache_fp32.h | `GetCosSinCache` | 同样缺 V2 新增 cacheMode consumer |
+| 950 V2 缺口证据 | posembedding/rope_with_sin_cos_cache/op_kernel/arch35/rope_with_sin_cos_cache_base.h | `RopeWithSinCosCacheBase/InitData` | 缺少 cacheMode/mrope_section3 consumer，证明 apt 不是 V2 body |
+| 950 V2 FP16/BF16 缺口 | posembedding/rope_with_sin_cos_cache/op_kernel/arch35/rope_with_sin_cos_cache_f_bf16.h | `GetCosSinCache` | 仅三段分段组合，无 cacheMode1/四段分支 |
+| 950 V2 FP32 缺口 | posembedding/rope_with_sin_cos_cache/op_kernel/arch35/rope_with_sin_cos_cache_fp32.h | `GetCosSinCache` | 同样缺 V2 新增 cacheMode consumer |
 | 构建接线 | posembedding/rope_with_sin_cos_cache/op_host/CMakeLists.txt | `add_modules_sources/add_ops_compile_options` | Host/module、auto-sync 与 ascend950 编译选项 |
 
 ### 实现复用检查
@@ -858,3 +858,9 @@ NeoX 的 `[前半,后半]` 已是计算所需的 two-half 布局，body 直接 `
 | 同步 | MTE2→V、V→MTE2、V→MTE3、MTE3→V 的 producer/consumer 边可直接复用 | Q/K 顺序复用和 cache 覆盖前硬事件不得删除；TQue 未使用 EnQue/DeQue，不能替换描述 | `RopeWithSinCosCacheBase::*Sync` 与各 Compute |
 | 精度与尾块 | 低精度 FP32 中间+RINT、FP32 原精度；front/tail core、token last、head last 公式可复用 | 不得前移低精度 cast；必须保留 interleaved GatherMask/Gather、未旋转后缀与 Q/K 独立 tail | `FP16::Compute/ComputeAlongHeads`、`F32::Compute/ComputeAlongHeads` |
 | 失败边界 | API null/dtype/shape/mrope/cacheMode 错误与 Tiling 对齐检查可复用 | 必须补上 Tiling 返回值传播、UB 下溢/zero-head 与 uint16 上界；不能把固定源码缺口写成 fallback | `CheckParams/TilingRopeWithSinCosCache/TilingCompute` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [RopeWithSinCosCache 950 ACLNN 算子知识](rope_with_sin_cos_cache_950.md)（`same_topic`）：两种模式随后都计算 `o1=x1*cos-x2*sin`、`o2=x2*cos+x1*sin`，false 分支再用 `Gather` 恢复偶奇交错。；两者均计算 `o1=x1*cos-x2*sin`、`o2=x2*cos+x1*sin`；GPT-J 路线再用 `Gather` 恢复偶奇交错。；两卡实现同一 RopeWithSinCosCache 旋转公式和 NeoX/GPT-J 布局，分别记录 A2/A3 V2 cacheMode 能力与 950 V1 arch35 路线和四段 mrope 冲突。
+<!-- cannbot:related:end -->

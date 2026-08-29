@@ -24,6 +24,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetCurAddr](get_cur_addr.md)（`same_topic`）：焦点处理自定义 TBufPool 当前地址游标的读取、设置与生命周期；GetBufHandle正文说明“根据offset取出自定义TBufPool中管理的内存块，返回TBufHandle类型的内存块句柄”。候选读写同一个 pool 游标/块计数，或决定这些值何时初始化、复位和失效。
-- [InitStartBufHandle](../t_que_bind/init_start_buf_handle.md)（`same_topic`）：InitStartBufHandle 与《GetBufHandle》的实质衔接是：InitStartBufHandle 与 InitBufHandle/GetBufHandle 围绕同一 TQueBind 缓冲句柄起点和获取流程。
+- [ExternImplBufpool](extern_impl_bufpool.md)（`related`）：焦点接口“根据offset取出自定义TBufPool中管理的内存块。”，候选宏则“提供EXTERN_IMPL_BUFPOOL宏来辅助用户自定义TBufPool。”；宏建立自定义池实现，GetBufHandle 按 offset 取得该实现管理的块，两者构成定义与访问合同。
 <!-- cannbot:related:end -->

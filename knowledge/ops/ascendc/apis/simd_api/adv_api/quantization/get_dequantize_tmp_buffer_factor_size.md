@@ -26,7 +26,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [量化操作](quantization.md)（`related`）：《GetDequantizeTmpBufferFactorSize》说明获取Dequantize接口的maxLiveNodeCount和extraBuf，在固定空间大小下推算算子单次最大计算元素数量。；《量化操作》说明量化操作接口导航页，涵盖AscendQuant、AscendDequant、AscendAntiQuant及Quantize系列量化与反量化接口。。二者在Dequantize的factor和最大/最小workspace查询为同一Kernel反推单次处理规模上存在可执行的直接衔接。
-- [Dequantize](dequantize.md)（`same_topic`）：Dequantize 与《GetDequantizeTmpBufferFactorSize》的实质衔接是：Dequantize 的 workspace 查询、scale/offset 设置、替代反量化入口及量化逆过程共同约束数据类型恢复；所选故障卡直接验证 scale 与广播边界。
-- [GetDequantizeMaxMinTmpSize](get_dequantize_max_min_tmp_size.md)（`same_topic`）：《GetDequantizeTmpBufferFactorSize》说明获取Dequantize接口的maxLiveNodeCount和extraBuf，在固定空间大小下推算算子单次最大计算元素数量。；《GetDequantizeMaxMinTmpSize》说明在host侧获取Dequantize接口计算所需的最大和最小临时空间大小，用于选择合适的空间大小作为Tiling参数传递到kernel侧。。二者在Dequantize的factor和最大/最小workspace查询为同一Kernel反推单次处理规模上存在可执行的直接衔接。
+- [Dequantize](dequantize.md)（`related`）：获取Dequantize接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；按元素做反量化计算（如int32_t反量化为half/float），将高精度整数类型转换为浮点类型。。前者用 maxLiveNodeCount 与 extraBuf 反推 Dequantize 单次可处理规模，后者给出被规划的反量化核心计算，二者可用于固定 UB 预算下确定一次 Dequantize 调用的数据量。
+- [GetDequantizeMaxMinTmpSize](get_dequantize_max_min_tmp_size.md)（`related`）：“参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource与Dequantize接口保持一致；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。”与“获取Dequantize接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。”。两卡分别给出空间上下界和固定空间反推处理元素数的 factor，形成互补 Tiling 预算。
 <!-- cannbot:related:end -->

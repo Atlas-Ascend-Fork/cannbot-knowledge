@@ -24,6 +24,6 @@ EnableBias接口功能与该接口相同，建议使用EnableBias。 设置Bias�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [EnableBias](enable_bias.md)（`same_topic`）：SetBias 文档明确说明 EnableBias 功能相同且为推荐替代；目标接口是同一 Matmul tiling 开关的当前入口。
-- [SetBias](../matmul_kernel/set_bias.md)（`same_topic`）：焦点处理Matmul SetBias 的启用/禁用状态、Tiling 类型一致性与调用时机；SetBias正文说明“EnableBias接口功能与该接口相同，建议使用EnableBias。 设置Bias是否参与运算”。候选决定 Bias 是否参与、Host/Kernel 类型是否一致，或界定 SetBias 必须发生在迭代前。
+- [SetBias](../matmul_kernel/set_bias.md)（`related`）：在Matmul Tiling计算中，必须配置TCubeTiling结构中的isBias参数为1，即启用Bias后，才能调用本接口设置Bias矩阵。；EnableBias接口功能与该接口相同，建议使用EnableBias。 设置Bias是否参与运算。；Kernel 侧 SetBias 的合法调用以前置 Tiling 启用 isBias 为硬条件，Tiling 侧 SetBias 或推荐的 EnableBias 正是设置该参与标志的入口。
+- [EnableBias](enable_bias.md)（`same_topic`）：“EnableBias接口功能与该接口相同，建议使用EnableBias。 设置Bias是否参与运算。”明确旧接口的等价替代；“设置Bias是否参与运算，设置的信息必须与Kernel侧保持一致。”补充新接口的 Kernel 一致性合同，二者是同一配置决策的迁移前后版本。
 <!-- cannbot:related:end -->

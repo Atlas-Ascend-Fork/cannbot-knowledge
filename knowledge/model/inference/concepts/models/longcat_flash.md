@@ -60,7 +60,13 @@ LongCat-Flash 原论文提供了四阶段的并行策略，方案图如下（源
 
 ### 支持的规格（Atlas A3）
 
-| 配置文件 | world_size | 并行策略 | 量化 | 关键开关 | | ---- | ---- | ---- | ---- | ---- | | `longcat_flash_densetp8_ep32.yaml` | 32 | dense_tp=8, oproj_tp=1, moe_ep=32 | BF16 | eager/`moe_chunk_max_len: 1024` | | `longcat_flash_densetp8_ep32_gegraph_mtp.yaml` | 32 | dense_tp=8, oproj_tp=8, moe_ep=32 | BF16 | `ge_graph` + `next_n: 1` | | `longcat_flash_densetp8_ep32_kvp8_gegraph_w8a8.yaml` ⚑ | 32 | dense_tp=8, oproj_tp=8, `kvp_size=8`, moe_ep=32 | W8A8 | KVP 长序列，`input_max_len: 131072` | | `longcat_flash_densetp8_ep64_gegraph_mtp2_eplb_afd_w8a8.yaml` | 128 | dense_tp=8, oproj_tp=8, moe_ep=64 | W8A8 | `enable_afd: True` + `next_n: 2` + `perfect_eplb: True` + `enable_superkernel: True` + `enable_prefetch: True` | | `longcat_flash_densetp8_ep128_gegraph_mtp_eplb_w8a8.yaml` | 128 | 同上（无 AFD） | W8A8 | 标准 ge_graph + MTP + eplb |
+| 配置文件 | world_size | 并行策略 | 量化 | 关键开关 |
+| ---- | ---- | ---- | ---- | ---- |
+| `longcat_flash_densetp8_ep32.yaml` | 32 | dense_tp=8, oproj_tp=1, moe_ep=32 | BF16 | eager/`moe_chunk_max_len: 1024` |
+| `longcat_flash_densetp8_ep32_gegraph_mtp.yaml` | 32 | dense_tp=8, oproj_tp=8, moe_ep=32 | BF16 | `ge_graph` + `next_n: 1` |
+| `longcat_flash_densetp8_ep32_kvp8_gegraph_w8a8.yaml` ⚑ | 32 | dense_tp=8, oproj_tp=8, `kvp_size=8`, moe_ep=32 | W8A8 | KVP 长序列，`input_max_len: 131072` |
+| `longcat_flash_densetp8_ep64_gegraph_mtp2_eplb_afd_w8a8.yaml` | 128 | dense_tp=8, oproj_tp=8, moe_ep=64 | W8A8 | `enable_afd: True` + `next_n: 2` + `perfect_eplb: True` + `enable_superkernel: True` + `enable_prefetch: True` |
+| `longcat_flash_densetp8_ep128_gegraph_mtp_eplb_w8a8.yaml` | 128 | 同上（无 AFD） | W8A8 | 标准 ge_graph + MTP + eplb |
 
 > ⚑ `kvp8` 配置（`config/longcat_flash_densetp8_ep32_kvp8_gegraph_w8a8.yaml` 及 `config/ci/longcat_flash_densetp8_ep16_kvp8_gegraph_w8a8.yaml`）**已于 2026-05 回退删除**，HEAD@2c45117 不再 ship 该 YAML，列于此处仅记录回退前可用规格（详见「MLA KVP 切分优化」节 ⚠️）。
 
@@ -237,7 +243,12 @@ LongCat-Flash 独有的 Decode 极致时延优化。在非分离场景中，Atte
 
 基于 Atlas A3 环境，本实践对 LongCat-Flash W8A8 量化版本进行了性能 Benchmark 测试。**在使能 AFD 特性后，模型的 TPOT 迈入了 10 ms 之内**，并且相比于同样卡数和 global batch size 的不分离场景，拥有更优的 TPOT 和吞吐。
 
-| Enable AFD | Quant Mode | Global Batch Size | Seq Length | Chips | TPOT (ms) | Throughput (tokens/p/s) | | ---- | ---- | ---- | ---- | ---- | ---- | ---- | | N | W8A8 | 512 | 4608 | 64 | 10.37 | 771.46 | | N | W8A8 | 256 | 4608 | 32 | 10.64 | 751.88 | | N | W8A8 | 256 | 4608 | 64 | 9.95 | 402.01 | | Y | W8A8 | 256 | 4608 | 64 | **9.5** | **421.05** |
+| Enable AFD | Quant Mode | Global Batch Size | Seq Length | Chips | TPOT (ms) | Throughput (tokens/p/s) |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| N | W8A8 | 512 | 4608 | 64 | 10.37 | 771.46 |
+| N | W8A8 | 256 | 4608 | 32 | 10.64 | 751.88 |
+| N | W8A8 | 256 | 4608 | 64 | 9.95 | 402.01 |
+| Y | W8A8 | 256 | 4608 | 64 | **9.5** | **421.05** |
 
 > 1. 性能数据基于 **MTP2 与 perfect eplb** 配置采集。
 > 2. 当前 CANN 软件版本下，SuperKernel 标记范围内的部分算子尚不支持完全融合，将在后续社区版本中得到解决。
@@ -282,3 +293,9 @@ LongCat-Flash 独有的 Decode 极致时延优化。在非分离场景中，Atte
 ## 已知冲突
 
 - [kvp](../parallelism/kvp.md)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [LongCat-Flash-Lite](longcat_flash_lite.md)（`related`）：“LongCat-Flash 是美团 2025 年开源（arXiv 2509.01322）的 **560B MoE** 大语言模型，核心架构特色是 **ScMoE（Shortcut-connected MoE）**，每个 Transformer Block 内部存在 "第一段 Attention → FFN → 第二段 Attention → MoE" 的双段结构，天然存在可并行的计算路径。”与“LongCat-Flash-Lite 是 ［longcat-flash］(longcat_flash.md) 的**减配验证模型**：保留 **MoE + MLA + N-gram Embedding** 核心结构，但层数、expert 数与若干配置缩小到适合**单节点 8 卡（A2 / A3）冷启动优化**的规模（顶层类 `LongcatFlashNgramForCausalLM`，`model_type="longcat_flash_ngram"`）。”是双方正文中的具体合同。满配卡定义 ScMoE 双段结构，Lite 卡明确自己由该模型缩小并保留 MoE、MLA 与 N-gram 核心，互读可区分共享架构与不同部署规模。
+<!-- cannbot:related:end -->

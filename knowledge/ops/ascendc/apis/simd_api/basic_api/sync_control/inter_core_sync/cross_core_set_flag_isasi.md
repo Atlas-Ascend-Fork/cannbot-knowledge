@@ -8,7 +8,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_core_sync/CrossCoreSetFlag_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ['950', a2, a3]
 ---
 # CrossCoreSetFlag
@@ -33,14 +33,9 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [A5 mix(1,2) mode=2 漏 AIV1 flag 致全零](../../../../../runbooks/precision/a5_mix_1_2_mode_2_aiv1_flag.md)（`exemplifies`）：A5 mix(1,2) mode=2 漏 AIV1 flag 致全零说明DAV_3510 (Ascend 950) 上 __mix__(1,2) 双 AIV kernel 若沿用 A2/A3 的 CrossCoreSetFlag mode=2，AIC 发出的 flag 只路由到 AIV0，AIV1 永不收到，AIC↔AIV1 同步链断裂致输出全零。判别要点是查 mode 模板参数与 AIV1 flagId+16 偏移。
-- [CrossCore 反压 flag 方向错致通算流水死锁](../../../../../runbooks/compilation/crosscore_flag.md)（`exemplifies`）：CrossCore 反压 flag 方向错致通算流水死锁 与《CrossCoreSetFlag》的实质衔接是：该死锁来自 CrossCoreSet/Wait 的 t↔t-buffer 循环依赖；同 MC2 流水、subBlock、UDMA/ReduceScatter 及核间 flag 材料共同支撑依赖图和去反压验证。
-- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`exemplifies`）：故障卡的 AIC 向 V0/V1 分段发 flag 正是 CrossCoreSetFlag 上报完成契约；接口文档补充 mode、Kernel 类型、pipe 与 flagId 的合法范围。
-- [算子适配说明](../../../../../guides/programming_guide/advanced_programming/super_kernel/operator_adaptation.md)（`explains`）：算子适配说明 与《CrossCoreSetFlag》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [DataSyncBarrier](../intra_core_sync/data_sync_barrier_isasi.md)（`related`）：CrossCore flag 作用于不同核，不是 DataSyncBarrier 的核内替代；同步域需严格区分。
-- [SetFlag/WaitFlag](../intra_core_sync/set_flag_wait_flag_isasi.md)（`related`）：CrossCore 作用于不同核，不能替代核内流水 event。
-- [SetNextTaskStart](../inter_task_sync/set_next_task_start.md)（`related`）：CrossCoreSetFlag 是核间信号而非 task 间依赖；需要跨核时应切换到对应 wait flag 机制。
-- [核间同步能力概述](inter_core_sync_overview.md)（`related`）：核间同步能力概述说明核间同步的使用场景通常是：一个核计算所依赖的数据，需要等待其他相关核的计算全部完成后才能获取。
-- [CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)（`same_topic`）：CrossCoreWaitFlag：CrossCoreWaitFlag 必须与 CrossCoreSetFlag 成对，并依赖核间同步 workspace/flag 编号约定；两个 runbook分别给出方向和双 AIV subBlock 契约的可执行诊断。 目标卡《CrossCoreSetFlag》补充：核间同步场景中向调度模块上报本核前置pipe流水任务已完成，与CrossCoreWaitFlag配对使用，通过flagId控制核间同步。
-- [关键特性说明](key_features.md)（`same_topic`）：关键特性说明 与《CrossCoreSetFlag》的衔接是：CrossCoreSet/CrossCoreWait 是该四种跨核同步模式的实际发信与等待原语；AIV/AIC 配对 runbook 给出同一计数契约失配时的可执行排查。
+- [950 mix(1,2) mode=2 漏 AIV1 flag 致全零](../../../../../runbooks/precision/950_mix_1_2_mode_2_aiv1_flag.md)（`exemplifies`）：950 `__mix__(1,2)` 双 AIV CrossCore 同步必须用 mode=4；不同产品对同步模式的支持情况请参见modeId支持的取值说明。Runbook 实测 mode=2 只路由到 AIV0 并要求 950 双 AIV 改用 mode=4 加 AIV1 偏移，API 卡明确 modeId 与 Kernel 类型按产品选择，是该故障直接依赖的接口边界。
+- [CrossCore 反压 flag 方向错致通算流水死锁](../../../../../runbooks/compilation/crosscore_flag.md)（`exemplifies`）：“- CrossCoreSetFlag：AI Core中的AIC/AIV在完成本核前置位的pipe流水任务后，调用该接口，向调度模块上报本核任务已完成。调度模块收集所有参与核的上报信息，作为全局完成标志。”与“为 matmul_reducescatter（MC2 通算融合，4P SHMEM ReduceScatter，Pattern B 先计后通）实现通算流水时，按改造指令给 `MatmulProcess`（AIC）和 `ReduceScatterProcess`（AIV）各加 mLoop 循环，并用 ping-pong 反压：AIC 在 `t >= bufferSize` 后 `CrossCoreWaitFlag<0x2, PIPE_FIX>(t - bufferSize)` 等 AIV 释放旧 buffer，AIV 在 reduce 后 `CrossCoreSetFlag<0x2, PIPE_MTE3>(t - bufferSize)` 通知 AIC。”提供双方正文证据。API 卡给出 SetFlag 向调度模块上报完成的正向语义；runbook 展示反压方向放错后形成循环等待的具体故障，因此后者是前者同步合同的可复现反例与排障实例。
+- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`exemplifies`）：焦点卡定位到“epilogue `localRows<=0` 时仍发 `CrossCoreSetFlag` 再 return”，候选卡规定 SetFlag 会“向调度模块上报本核任务已完成”；该语义解释空分支为何也必须上报，才能解除对端等待。
+- [稀疏反卷积精度误差源隔离配方](../../../../../runbooks/precision/cube_simt_fp32_precision_error_source_isolation.md)（`exemplifies`）：“CrossCoreSetFlag<0x4, PIPE_MTE3>(flagId);”是被诊断的 Cube/AIV 混合代码中的上报动作；“CrossCoreSetFlag：AI Core中的AIC/AIV在完成本核前置位的pipe流水任务后，调用该接口，向调度模块上报本核任务已完成。调度模块收集所有参与核的上报信息，作为全局完成标志。”给出其完成语义，可核对 dump 前的数据可见性和同步边界。
+- [CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)（`related`）：“在核间同步场景中，CrossCoreSetFlag接口和CrossCoreWaitFlag接口配对工作，具体功能”与“在核间同步场景中，CrossCoreSetFlag接口和CrossCoreWaitFlag接口配对工作，使用时需传入核间同步的标记ID（flagId），每个ID对应一个用于控制同步的计数器。”是双方正文中的具体合同。Wait 卡声明两接口必须成对，Set 卡给出共享 flagId 计数器以及上报/阻塞职责；阅读两端才能闭合核间同步的生产与等待链。
 <!-- cannbot:related:end -->

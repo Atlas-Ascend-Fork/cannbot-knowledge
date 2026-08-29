@@ -85,9 +85,5 @@ kernel 已选"Vector pipe 向量化预计算 per-row nnz/start + 标量循环 Ge
 <!-- cannbot:related:start -->
 ## 相关
 
-- [flat 多核切分 elementwise scalar 主导诊断](flat_elementwise_scalar.md)（`related`）：两卡都用 msprof 中高 aiv_scalar_ratio 判断逐元素标量循环主导；flat elementwise 卡提供把标量循环转为向量/多核的对照诊断。
-- [分析性能数据（性能分析）](../../guides/operator_practice/performance_analysis/analyze_performance_data.md)（`related`）：本卡依赖 msprof 的 scalar/MTE/Vector 占比判别瓶颈；性能分析指南给出采集后如何解释流水占比与热点的标准工作流。
-- [按行均分 tiling 致 nnz 倾斜时约半数核空闲](tiling_nnz.md)（`related`）：nnz 倾斜解释核间一半空闲，SIMD scalar 卡解释忙核内部逐行 GetValue 占比 80%+；两者可同时构成稀疏算子的核间与核内瓶颈。
-- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](../precision/repeated_overwrite_updates_need_ordered_ub_merge.md)（`related`）：候选诊断稀疏不规则输出的 SIMD 标量退化；本卡 UB chunk 重扫保证语义但属于 safety fallback。
-- [随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM](random_gather_per_element_dma_should_switch_to_simt_direct_gm.md)（`related`）：该卡以完整 A/B 证明随机独立索引的逐元素 DMA 可改为 SIMT 直访 GM；它为本卡尚未验证的 SIMT 方向提供机制与验证模板，但不能直接宣称本算子已提速。
+- [按行均分 tiling 致 nnz 倾斜时约半数核空闲](tiling_nnz.md)（`related`）：每行输出长度不规则（nnz 逐行变化）使 SIMD 框架无法跨行向量化输出写入，被迫退化为"逐行标量 GetValue 读预计算结果 + 单行 Duplicate/DataCopyPad 写出"的标量循环路径；该路径随行数 m 线性增长，scalar pipe 占比 80%+。；Host 多核 tiling 按"行数均分"而非"nnz 均分"，当输入矩阵 nnz 分布倾斜（前重后轻）时，后半核分到的行 nnz 极少而空转，逐核 cycle 差距 20×+。；两卡分别量化同类 CSR→COO 稀疏任务的核内 scalar 瓶颈与核间 nnz 负载倾斜，形成两级性能定界。
 <!-- cannbot:related:end -->

@@ -24,10 +24,5 @@ GetRmsNormNDTilingInfo参数：ascendcPlatform平台信息；输入shape各维�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [A3 RMSNorm 不要用分母正值保护吞掉 NaN 传播](../../../../runbooks/precision/rmsnorm_nan_propagation_not_positive_guard.md)（`exemplifies`）：RmsNorm Tiling 与《A3 RMSNorm 不要用分母正值保护吞掉 NaN 传播》的实质衔接是：RmsNorm host tiling 直接生成 RmsNorm kernel 参数；同名结构体冲突、NaN/Rsqrt 与 UB 预算卡都作用于这套 tiling/kernel 契约。
-- [RmsNormTiling 与 CANN 内置类型冲突 — 改名隔离](../../../../runbooks/compilation/tiling_type_name_does_not_shadow_cann_builtin.md)（`exemplifies`）：RmsNorm Tiling 与《RmsNormTiling 与 CANN 内置类型冲突 — 改名隔离》的实质衔接是：RmsNorm host tiling 直接生成 RmsNorm kernel 参数；同名结构体冲突、NaN/Rsqrt 与 UB 预算卡都作用于这套 tiling/kernel 契约。
-- [dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数](../../../../runbooks/precision/rsqrt_fast_approximation_use_sqrt_reciprocal.md)（`exemplifies`）：RmsNorm Tiling 与《dav-2201 Rsqrt 精度不足 — 改用 Sqrt 加标量倒数》的实质衔接是：RmsNorm host tiling 直接生成 RmsNorm kernel 参数；同名结构体冲突、NaN/Rsqrt 与 UB 预算卡都作用于这套 tiling/kernel 契约。
-- [golden BF16 rstd 归约误取 post-BF16 量化值](../../../../runbooks/precision/golden_bf16_rstd_post_bf16.md)（`exemplifies`）：RmsNorm Tiling 与《golden BF16 rstd 归约误取 post-BF16 量化值》的实质衔接是：RmsNorm host tiling 直接生成 RmsNorm kernel 参数；同名结构体冲突、NaN/Rsqrt 与 UB 预算卡都作用于这套 tiling/kernel 契约。
-- [按 dtype 分配 UB 必须匹配 tiling 预算](../../../../runbooks/compilation/dtype_conditional_ub_allocation_matches_tiling_budget.md)（`exemplifies`）：RmsNorm Tiling 与《按 dtype 分配 UB 必须匹配 tiling 预算》的实质衔接是：RmsNorm host tiling 直接生成 RmsNorm kernel 参数；同名结构体冲突、NaN/Rsqrt 与 UB 预算卡都作用于这套 tiling/kernel 契约。
-- [RmsNorm](rms_norm.md)（`same_topic`）：RmsNorm Tiling 与《RmsNorm》的实质衔接是：RmsNorm host tiling 直接生成 RmsNorm kernel 参数；同名结构体冲突、NaN/Rsqrt 与 UB 预算卡都作用于这套 tiling/kernel 契约。
+- [RmsNorm](rms_norm.md)（`related`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过RmsNorm Tiling获取。模板参数isBasicBlock在满足基本块要求（H为64的倍数且小于2048，B*S为8的倍数）时可设为true提升性能。”与“host侧Tiling接口，用于获取RmsNorm kernel计算所需的Tiling参数，分两步：通过GetRmsNormMaxMinTmpSize获取最大和最小临时空间大小；通过GetRmsNormNDTilingInfo获取kernel侧所需tiling参数。”提供双方正文证据。RmsNorm kernel 明确消费 RmsNorm Tiling，tiling 卡给出先求临时空间再生成参数的两步 Host 流程。
 <!-- cannbot:related:end -->

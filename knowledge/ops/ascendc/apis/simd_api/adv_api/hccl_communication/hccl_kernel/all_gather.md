@@ -43,11 +43,8 @@ __aicore__ inline HcclHandle AllGather(GM_ADDR sendBuf, GM_ADDR recvBuf, uint64_
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Commit（HCCL集合通信）](commit.md)（`related`）：commit=false 的 AllGather 只准备并返回 handle，随后需 Commit 通知服务端执行该 handle 对应任务。
-- [GetRankDim](get_rank_dim.md)（`related`）：AllGather 的输入拼接和输出布局按通信域内 rank 数及 rank id 排列，RankDim 是分配结果空间的依据。
-- [HCCL集合通信Wait](wait.md)（`related`）：Wait 按 Prepare 顺序等待 AllGather 返回 handle 的任务完成，闭合异步下发到消费结果的同步协议。
-- [InitV2](init_v2.md)（`related`）：AllGather 下发前明确要求完成 InitV2，后者建立 HCCL 客户端状态，是任务创建的前置步骤。
-- [ReduceScatter](reduce_scatter.md)（`related`）：ReduceScatter：ReduceScatter 的通信语义可分解为归约后分散，其 handle 必须进入 HCCL 的 Init/Commit/Query/Wait 生命周期；AllReduce/AllGather用于精确区分其数据分布语义。 目标卡《AllGather》补充：集合通信算子AllGather的任务下发接口，返回该任务的标识handleId给用户。AllGather的功能为：将通信域内所有节点的输入按照rank id重新排序，然后拼接起来，再将结果发送到所有节点的输出。 !
-- [SetCcTilingV2](set_cc_tiling_v2.md)（`related`）：AllGather 约束要求先设置通信算法 TilingData 地址，SetCcTilingV2 正是该前置配置接口。
-- [HCCL使用说明](hccl_usage.md)（`same_topic`）：使用说明串联 Init、SetCcTiling、AllGather、Commit 与 Wait，可据 commit 模板参数选择完整执行序列。
+- [AllGatherMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/all_gather_matmul_950.md)（`related`）：焦点卡的 Device 流程是“所有 tile 先异步提交，AIC 同时计算本地块；远端块只等待对应 handle”，候选 API 返回“该任务的标识handleId”；算子正是用 AllGather 的 handle 粒度等待来解锁各远端 Matmul tile。
+- [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)（`related`）：焦点算子说明“MIX AIV 侧再以 `Hccl<HCCL_SERVER_TYPE_AICPU>` 提交 AllToAllV/AllGather command”，候选 API 规定“recvBuf的数据个数等于sendCount * rank size，即sendCount * 卡数。”；该接口合同直接解释算子 TP 域 AllGather 的输出扩张和 buffer 规划。
+- [Commit（HCCL集合通信）](commit.md)（`related`）：集合通信算子AllGather的任务下发接口，返回该任务的标识handleId给用户。；非［细粒度通信］(iterate.md)时，每调用一次本接口，则通知服务端可以执行handleId对应的任务一次。。AllGather 返回的 handleId 正是 Commit 通知服务端执行该已准备通信任务所消费的标识，二者形成准备后提交的调用链。
+- [HCCL集合通信Wait](wait.md)（`related`）：返回值：返回该任务的标识handleId，handleId大于等于0。调用失败时，返回 -1。；阻塞AI Core，非［细粒度通信］(iterate.md)时，等待handleId对应的通信任务完成，［细粒度通信］(iterate.md)时，等待handleId对应的步长长度的子通信任务完成。。AllGather 产出的有效 handleId 被 Wait 用于等待相同通信任务完成，联合阅读可闭合下发到完成同步。
 <!-- cannbot:related:end -->

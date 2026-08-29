@@ -48,7 +48,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:38:55Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -88,7 +88,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定范围仅有公开 V2Grad 版本族，因此逻辑算子 `MoeInitRoutingGrad` 在 CANN 9.1.0 的实际最新入口为 `aclnnMoeInitRoutingV2Grad`。公开 API 文档明确支持 A2、A3 和 A5；本无后缀卡仅收录 A2/A3。OpDef 把 A2 `ascend910b`、A3 `ascend910_93` 都接到 `moe_init_routing_v2_grad`，两份 binary config 均列出 FP16/BF16/FP32，公开文档与实现接线无冲突。A5 转 `moe_init_routing_v2_grad_apt` 与 RegBase POD/body，不混入本卡。
+固定范围仅有公开 V2Grad 版本族，因此逻辑算子 `MoeInitRoutingGrad` 在 CANN 9.1.0 的实际最新入口为 `aclnnMoeInitRoutingV2Grad`。公开 API 文档明确支持 A2、A3 和 950；本无后缀卡仅收录 A2/A3。OpDef 把 A2 `ascend910b`、A3 `ascend910_93` 都接到 `moe_init_routing_v2_grad`，两份 binary config 均列出 FP16/BF16/FP32，公开文档与实现接线无冲突。950 转 `moe_init_routing_v2_grad_apt` 与 RegBase POD/body，不混入本卡。
 
 ## Host/Launcher 执行流程
 
@@ -741,7 +741,7 @@ Host 用 K 直接生产 `binaryAddBufferNum/tmpBufferNum/exponentOfBinary`。Dev
 
 - 适用：每个输出行对 K 个 gather 行做独立求和。
 - 前提：A2/A3 AIV，FP32 累加，UB 可容纳 `tokensFormer*perBuff*(bin+tmp)`。
-- 失效：不足以容纳至少一 token 时固定仓无另一 Kernel fallback；A5 使用独立 RegBase 实现。
+- 失效：不足以容纳至少一 token 时固定仓无另一 Kernel fallback；950 使用独立 RegBase 实现。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -798,11 +798,11 @@ WaitFlag<HardEvent::MTE2_V>(eventMte2V);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持，`ascend910b` OpDef/config。 | 公开支持，`ascend910_93` OpDef/config。 | 公开支持且 OpDef 注册 `ascend950`；按知识布局应由 `_a5` 后缀卡承载。 |
+| 支持状态 | 公开支持，`ascend910b` OpDef/config。 | 公开支持，`ascend910_93` OpDef/config。 | 公开支持且 OpDef 注册 `ascend950`；按知识布局应由 `_950` 后缀卡承载。 |
 | Host/Launcher | 共用非 RegBase priority 10000 / key 1000 系列。 | 同 A2。 | 使用 RegBase priority 20000/30000/40000 与独立 POD；本卡不展开。 |
-| Kernel/资源 | `moe_init_routing_v2_grad` entry，两 TBuf 二分加，`AIV_ONLY`。 | 同 A2。 | OpDef 接 `moe_init_routing_v2_grad_apt`；详细 Route/资源应在 A5 卡中闭合。 |
+| Kernel/资源 | `moe_init_routing_v2_grad` entry，两 TBuf 二分加，`AIV_ONLY`。 | 同 A2。 | OpDef 接 `moe_init_routing_v2_grad_apt`；详细 Route/资源应在 950 卡中闭合。 |
 
 ## 限制与失败边界
 
@@ -818,12 +818,12 @@ WaitFlag<HardEvent::MTE2_V>(eventMte2V);
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 公开文档 | moe/moe_init_routing_v2_grad/docs/aclnnMoeInitRoutingV2Grad.md | 产品支持表/函数原型/参数说明 | A2/A3/A5 公开性、两段式入口、shape/dtype/索引值域与确定性。 |
+| 公开文档 | moe/moe_init_routing_v2_grad/docs/aclnnMoeInitRoutingV2Grad.md | 产品支持表/函数原型/参数说明 | A2/A3/950 公开性、两段式入口、shape/dtype/索引值域与确定性。 |
 | 入口声明/约束 | moe/moe_init_routing_v2_grad/op_host/op_api/aclnn_moe_init_routing_v2_grad.h | 两段式ACLNN | 公开原型。 |
 | 入口实现 | moe/moe_init_routing_v2_grad/op_host/op_api/aclnn_moe_init_routing_v2_grad.cpp | `CheckParams`及两入口 | executor/Contiguous/ViewCopy/run。 |
 | L0 Launcher | moe/moe_init_routing_v2_grad/op_host/op_api/moe_init_routing_v2_grad.cpp | `l0op::MoeInitRoutingV2Grad` | 输出分配、launcher顺序。 |
 | 接口约束 | moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_infershape.cpp | `CheckParm/InferShape` | shape/属性/N,H。 |
-| 平台注册 | moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_def.cpp | OpDef构造 | A2/A3 接 `moe_init_routing_v2_grad`，A5 接 `_apt`，三平台 dtype 集一致。 |
+| 平台注册 | moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_def.cpp | OpDef构造 | A2/A3 接 `moe_init_routing_v2_grad`，950 接 `_apt`，三平台 dtype 集一致。 |
 | Host/POD | moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling.h | TilingData | 字段声明顺序。 |
 | Host公共 | moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling_base.cpp | shape/platform/workspace方法 | 校验、资源、16MiB。 |
 | Host路线 | moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling.cpp | 非RegBase模板 | key/分核/UB/POD。 |

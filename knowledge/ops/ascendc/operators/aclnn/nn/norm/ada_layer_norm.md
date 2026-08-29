@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:42:35Z"
-updated_at: "2026-08-25T17:42:35Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -455,9 +455,9 @@ reduceFloat = reduceBuf.Get<float>();
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V2公开支持 | V2公开支持 | V2公开支持，见独立 `_a5` 卡 |
+| 支持状态 | V2公开支持 | V2公开支持 | V2公开支持，见独立 `_950` 卡 |
 | Host/Launcher | `isRegBase=false`，key1/2 | 同 A2 | `isRegBase=true`，key11/12/21/22 |
 | Kernel/资源 | `AdaLayerNormND`，184320 B固定UB | 同 A2；binary为 ascend910_93 | arch35 FullLoad/Welford 与 MicroAPI |
 

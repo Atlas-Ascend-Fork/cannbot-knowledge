@@ -22,7 +22,7 @@ sources:
   - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_host/CMakeLists.txt"
     role: implementation
 created_at: "2026-08-25T18:52:58Z"
-updated_at: "2026-08-25T18:52:58Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -791,9 +791,9 @@ Cast(yLocal, pos, RoundMode::CAST_RINT, currentNum);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 本卡源码闭合 | 公开稳定 README 声称支持，但固定 Commit 无活动 A3 实现，未发布卡 | 见独立 `_a5` 卡 |
+| 支持状态 | 本卡源码闭合 | 公开稳定 README 声称支持，但固定 Commit 无活动 A3 实现，未发布卡 | 见独立 `_950` 卡 |
 | Host/Launcher | experimental `PreluTilingFunc`，7 modes | 固定仓不可见 | stable arch35 Broadcast Tiling |
 | Kernel/资源 | 手写 AIV，0 workspace | 固定仓不可见 | atvoss Broadcast AIV/NDDMA |
 
@@ -802,7 +802,7 @@ Cast(yLocal, pos, RoundMode::CAST_RINT, currentNum);
 - 文档允许空 Tensor，但 Host Tiling 的通道模式要求 weight、N/C/L 正数；单权重空 x 可形成 `usedCoreNum=1, tailLength=0`，Device 循环不执行。
 - 文档写 weight rank 0–8，而此 A2 Tiling 明确要求 weight storage rank 为 1；公开 bridge 如何把标量规范为 1-D 在固定仓不可见，调用复用时应保留此边界。
 - 所有元素/字节、对齐、task 乘法的显式溢出 guard 不得删；`uint32_t` 搬运长度要求所选 tile 已由 UB 约束。
-- A3 缺少 source-closed 实现；未推测复用 A2 或 A5。
+- A3 缺少 source-closed 实现；未推测复用 A2 或 950。
 
 ## 源码索引
 
@@ -829,3 +829,9 @@ Cast(yLocal, pos, RoundMode::CAST_RINT, currentNum);
 | 同步 | Queue + NC hard events/barriers | weightVec 生成后才可 Mul | `Sync*/BuildNc*` |
 | 精度与尾块 | BF16 FP32→RINT；32B zero pad | 只写 realLen | `Compute/Copy*Pad` |
 | 失败边界 | dtype/shape/UB/overflow guards | 不得静默 fallback 越界 | `GetShapeAndDtypeInfo/CalcTiling` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Prelu 950 ACLNN 算子知识](prelu_950.md)（`same_topic`）：“｜ 实际入口 ｜ `aclnnPreluGetWorkspaceSize` + `aclnnPrelu`；公开两段式 ACLNN，inner bridge/executor 由 `ACLNNTYPE aclnn` 生成。 ｜”与“｜ 实际入口 ｜ `aclnnPreluGetWorkspaceSize` + `aclnnPrelu`，公开两段式 ACLNN；L0 为 `l0op::PRelu`。 ｜”提供双方正文证据。两卡闭合同一个 aclnnPrelu 公开入口在 A2 与 Ascend 950 的实现；联合阅读可迁移同一 API，同时辨别 A2 七路线与 950 RegBase/NDDMA 路线差异。
+<!-- cannbot:related:end -->

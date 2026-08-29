@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v3/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:26:55Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -762,9 +762,9 @@ ReduceMax(dynamicQuantLocal, tempLocal, tempLocal, this->cols_);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持，本卡 | 支持，本卡 | 支持，见 `_a5` 卡 |
+| 支持状态 | 支持，本卡 | 支持，本卡 | 支持，见 `_950` 卡 |
 | Host/Launcher | fallback priority 10000 | 同 A2 | Arch35 priority 1000 |
 | Kernel/资源 | AIV、静态 UB | 同 A2 | APT RegBase+SIMT、动态 UB、更多 mode |
 
@@ -814,3 +814,9 @@ ReduceMax(dynamicQuantLocal, tempLocal, tempLocal, this->cols_);
 | 同步 | Queue/Event/SyncAll/atomic | producer→consumer | helpers |
 | 精度与尾块 | FP32 dynamic pipeline | /127、RINT/cast、valid blockLen | quant body |
 | 失败边界 | Host reject/terminal router | 不得静默改 mode | Check*/router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [昇腾融合 MoE 路由的整数契约：npu_moe_init_routing(_v2) 的 active_expert_range 只吃 int、topk_ids 须 int32](../../../../../../model/inference/runbooks/runtime/npu_moe_init_routing_integer_contract.md)（`related`）：｜ `expertIdx` ｜ `［N,K］` / ND ｜ INT32 ｜ 必选；与 `x` 的 N 相同，`L=N*K` ｜；`topk_ids`（expert 索引）须 `torch.int32`。前者给出 ACLNN MoeInitRoutingV3 的专家索引输入 dtype，后者给出框架侧融合路由入口的同一专家索引整数约束，可用于定位路由调用前未归一 dtype 的失败。
+<!-- cannbot:related:end -->

@@ -31,11 +31,3 @@ SIMT直接访问Global Memory上的x、y和z数据，对应样例中的场景0�
 场景0：SIMT直接访问GM：64：812.063：785.715：0.004：0.001
 场景3：SIMT连续访问UB：64：463.179：301.474：437.055：110.788
 场景0中，aiv_mte2_time和aiv_mte3_time接近0，说明数据读写没有走GM到UB、UB到GM的MTE搬运路径，耗时主要集中在SIMT直接访问GM和计算过程上。场景3中，输入和输出通过搬运接口在GM与UB之间连续搬运，SIMT线程直接访问UB完成计算，Task Duration从812.063μs降低至463.179μs，端到端耗时下降约43.0%。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMD与SIMT混合算子性能优化概述](../overview.md)（`related`）：《SIMD与SIMT混合算子性能优化概述》明确“AI Core上SIMD与SIMT混合编程结合了SIMD多数据并行计算能力与SIMT离散访存、复杂分支处理能力，可以在同一算子中以Vector Function（VF）为基本调度单位灵活组织SIMD和SIMT执行逻辑。SIMD编程适合处理连续、规整的向量或矩阵计算，SIMT编程适合处理分支判断、索引映射、离散访存等不规则逻辑，在程序中结合使用两种编程方式，可以兼顾硬件高吞吐和编程灵活性。”；它与《使用Unified Buffer提升内存访问效率》的“>该性能优化建议适用于如下型号：”在实际调用参数、数据流或结果校验上直接衔接。
-- [内存层级（SIMD与SIMT混合编程）](../../../programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/memory_hierarchy.md)（`related`）：《内存层级（SIMD与SIMT混合编程）》给出“在SIMD与SIMT混合编程场景下，整体内存资源如下图所示。核外的Global Memory是所有核的全局内存，容量最大，但访问效率最低。AIC的L1和AIV的UB是单核内的共享内存，容量较小，但访问效率较高。私有内存层最靠近计算单元，容量最小，访问效率最高。”；该约束/探针可直接复现、解释或前置验证《使用Unified Buffer提升内存访问效率》中的“>该性能优化建议适用于如下型号：”。
-- [算子实现（SIMD与SIMT混合算子实现）](../../simd_simt_hybrid_operator_impl/operator_impl.md)（`related`）：《算子实现（SIMD与SIMT混合算子实现）》给出“以下内容以gather & adds算子为例，介绍SIMD与SIMT混合算子的实现过程。完整代码请参见SIMD与SIMT混合编程实现gather&adds算子样例。”；该约束/探针可直接复现、解释或前置验证《使用Unified Buffer提升内存访问效率》中的“>该性能优化建议适用于如下型号：”。
-<!-- cannbot:related:end -->

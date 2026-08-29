@@ -22,7 +22,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T16:35:02Z"
-updated_at: "2026-08-25T16:35:02Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -71,7 +71,7 @@ outputPermuteOut[outputOffset[i] : outputOffset[i + 1]]
 
 公开文档只声明无版本后缀的 `aclnnExpandIntoJaggedPermute`。第一段接口完成校验、生成 executor 并返回 workspace 大小；第二段把 workspace、executor 和 stream 提交执行。固定仓未保存自动生成的 ACLNN inner bridge 源文，但 `op_host/CMakeLists.txt` 将 `expand_into_jagged_permute` 标为 `ACLNNTYPE aclnn`，OpDef 的三个输入均启用 `AutoContiguous()`；这是允许保留为框架边界的生成层，算子自有 Tiling、POD、router 和 body 均已闭合。
 
-公开产品表明确支持 Atlas A2/A3，OpDef 和 binary config 同时接入 `ascend910b`、`ascend910_93`。公开表明确不支持 Ascend 950PR/950DT，故本卡不覆盖 A5。
+公开产品表明确支持 Atlas A2/A3，OpDef 和 binary config 同时接入 `ascend910b`、`ascend910_93`。公开表明确不支持 Ascend 950PR/950DT，故本卡不覆盖 950。
 
 ## Host/Launcher 执行流程
 
@@ -523,9 +523,9 @@ R-001 在每核开始时用一次 `DataCopyPad` 把完整 inputOffset 搬入 UB�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` config | 公开支持；`ascend910_93` config | 公开文档明确不支持；未生成 `_a5` 卡 |
+| 支持状态 | 公开支持；`ascend910b` config | 公开支持；`ascend910_93` config | 公开文档明确不支持；未生成 `_950` 卡 |
 | Host/Launcher | 共用同一 OpDef、Tiling 和两条 key Route | 共用 | N/A |
 | Kernel/资源 | binary config 启用同一 `ExpandIntoJaggedPermute`，blockDim/UB 从平台运行信息读取 | 同左 | binary config 无 `ascend950`，OpDef 无对应 AddConfig |
 
@@ -547,7 +547,7 @@ R-001 在每核开始时用一次 `DataCopyPad` 把完整 inputOffset 搬入 UB�
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `index/expand_into_jagged_permute/docs/aclnnExpandIntoJaggedPermute.md` | `aclnnExpandIntoJaggedPermuteGetWorkspaceSize`、`aclnnExpandIntoJaggedPermute` | 两段式原型、语义、参数、错误与 A2/A3/A5 产品表 |
+| 入口声明/约束 | `index/expand_into_jagged_permute/docs/aclnnExpandIntoJaggedPermute.md` | `aclnnExpandIntoJaggedPermuteGetWorkspaceSize`、`aclnnExpandIntoJaggedPermute` | 两段式原型、语义、参数、错误与 A2/A3/950 产品表 |
 | 入口实现 | `index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_def.cpp` | `ops::ExpandIntoJaggedPermute` / `OP_ADD` | int32/ND、AutoContiguous、属性及 ascend910b/910_93 注册；生成 bridge 边界 |
 | Host/Tiling/Launcher | `index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_tiling.h` | `ExpandIntoJaggedPermuteParam` / `ExpandIntoJaggedPermuteTilingData` | Host 参数与 POD 字段 |
 | Host/Tiling/Launcher | `index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_tiling.cpp` | `InputParamCheck` / `Init` / `SetTilingKey` / `SetTilingData` / `TilingForExpandIntoJaggedPermute` | 校验、workspace、分块、key、POD 与 blockDim |
@@ -565,4 +565,4 @@ R-001 在每核开始时用一次 `DataCopyPad` 把完整 inputOffset 搬入 UB�
 | workspace/内存 | Kernel 无 operator-owned workspace；6 个 UB buffer 的请求账可复用 | depth=1、固定 512/128 容量、R-002 未消除 inputOffsetsQueue、UB 上界需外部补证 | Tiling `Init` / Kernel `Init` |
 | 同步 | TQue 的 Alloc/EnQue/DeQue/Free 顺序连接 DMA、Vector 和 CopyOut | depth-1 buffer 必须消费后再覆盖；模分核依赖输出 tile 不重叠 | `CopyInPermute` / `CopyInOffset` / `CopyOut` / `Process` |
 | 精度与尾块 | int32 range + int32 scalar Adds；尾 tile 满算、只写有效前缀 | scalar cast、128-lane Adds、`nowlen` CopyOut 顺序不能随意改 | `initRange` / `Process` / `CopyOut` |
-| 失败边界 | Host 只产生 key 0/1；公开约束承担值域与单调性 | 不可假定不可达 shape 检查、UB guard、未知 key fallback 或 A5 支持存在 | `InputParamCheck` / `SetTilingKey` / entry router / API 产品表 |
+| 失败边界 | Host 只产生 key 0/1；公开约束承担值域与单调性 | 不可假定不可达 shape 检查、UB guard、未知 key fallback 或 950 支持存在 | `InputParamCheck` / `SetTilingKey` / entry router / API 产品表 |

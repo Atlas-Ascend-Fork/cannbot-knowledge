@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_add_scalar_list/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:30:28Z"
-updated_at: "2026-08-25T15:30:28Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -77,7 +77,7 @@ cann_versions: ["9.1.0"]
 1. 生成 ACLNN 第一段接口检查 `x/scalars/out` 非空、dtype 组合、`x/out` dtype 一致；其生成源码固定仓不可见，错误终点以公开文档为准。
 2. OpDef 对 `x`、`scalars`、`y` 声明 `AutoContiguous()`；输入的实际转换节点、临时 owner 和 ViewCopy 细节属于生成框架边界。
 3. `InferShape4ForeachCommon` 要求动态输入和输出 Tensor 数相等，将每个 `x_i` shape 复制给 `y_i`；`InferDataType4ForeachCommon` 复制 dtype。
-4. `Tiling4ForeachAddScalarListTiling` 调用优先级模板注册表。priority 10000 的 `ForeachAddScalarListMembaseTiling::IsCapable()` 在非 regbase SoC 为真；priority 30000 的 A5 模板对 A2/A3 不可达。
+4. `Tiling4ForeachAddScalarListTiling` 调用优先级模板注册表。priority 10000 的 `ForeachAddScalarListMembaseTiling::IsCapable()` 在非 regbase SoC 为真；priority 30000 的 950 模板对 A2/A3 不可达。
 5. `ForeachCommonTiling::CheckOpInfo` 校验列表 shape/dtype、标量列表长度、输出 dtype/容量与维数；失败返回 `GRAPH_FAILED`，阻断 launch。
 
 ### 参数、Workspace 与生命周期
@@ -134,7 +134,7 @@ priority 10000: !IsRegbaseSocVersion(A2/A3) ? membase : fallthrough
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
-| 非 regbase | `!IsRegbaseSocVersion(context_)` | 选择旧 Vector body/POD | 全部 | priority 30000 regbase（仅 A5）或失败 | `foreach_tiling_def.h::MEMBASE_TILING::IsCapable` |
+| 非 regbase | `!IsRegbaseSocVersion(context_)` | 选择旧 Vector body/POD | 全部 | priority 30000 regbase（仅 950）或失败 | `foreach_tiling_def.h::MEMBASE_TILING::IsCapable` |
 | 最多 50 Tensor/核记录 | `Init` 扫描 `i<50`，`blockDim<=50` | POD 数组固定长度 | 全部 | 对合法的等长 x/scalars 列表，超过 50 时 scalar 数与已扫描 Tensor 数不等而 Tiling 失败；无专用“x 超 50”错误 | `ForeachCommonTiling::Init/CheckScalarsTenorShapeInfo` |
 | UB 对齐 | `U=floor32(...)`；BF16 `floor64(...)` | DMA block 与 BF16 cast buffer 布局 | 全部/R-004 | 只生成对齐后的较小 tile | `ForeachCommonTiling::DivideUbMemory1` |
 | BF16 编译 guard | `__CCE_AICORE__>=220` 且 arch 非 3003/3113 | BF16 Cast 路线可用性 | R-004 | router 无 BF16 branch | `foreach_add_scalar_list` |
@@ -587,9 +587,9 @@ if (castTimesRemainder > 0) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持，但见独立 `_a5` 卡。 |
+| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持，但见独立 `_950` 卡。 |
 | Host/Launcher | priority 10000 membase | 同 | priority 30000 regbase。 |
 | Kernel/资源 | 旧 `ForeachCommonTilingData` + Vector API body | 同一源码与构建组 | arch35 MicroAPI body、不同 POD/切核/UB。 |
 
@@ -631,3 +631,9 @@ if (castTimesRemainder > 0) {
 | 同步 | Queue 生命周期+Adds 前后 V barrier | scratch 覆盖前须完成 output Cast | `InnerComputer::Compute` |
 | 精度与尾块 | native routes；BF16 FP32+RINT | INT64→int 窄化、tail valid count | `ProcessPlusInLoop/ComputePerCast` |
 | 失败边界 | Tiling 失败阻断；unknown key 无 body | 不得把无分支当 fallback | `foreach_add_scalar_list` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachAddScalarList 950 ACLNN 算子知识](foreach_add_scalar_list_950.md)（`same_topic`）：｜ 计算语义 ｜ 对列表位置 `i`：`y_i［j］ = x_i［j］ + scalars_i`，只覆盖 `x_i` 的元素域。 ｜；｜ 计算语义 ｜ 对列表位置 `i`：`y_i［j］ = x_i［j］ + scalars_i`，有效域为 `x_i` 元素域。 ｜。两卡实现同一 aclnnForeachAddScalarListV2 的逐列表位置标量加法语义，分别覆盖 A2/A3 与 950。
+<!-- cannbot:related:end -->

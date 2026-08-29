@@ -12,9 +12,9 @@ sources:
 - resource: https://github.com/vllm-project/vllm-ascend/pull/8899
   role: evidence
 created_at: '2026-07-15T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a3
 ---
 
 # Ascend hybrid KV cache（多 block_size 分组）与 context parallelism 共存：放开 CUDA 专属禁令 + lcm(各组 block_size)*dcp*pcp 对齐

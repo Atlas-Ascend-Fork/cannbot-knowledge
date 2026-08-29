@@ -29,12 +29,3 @@ AI Core上SIMD与SIMT混合编程结合了SIMD多数据并行计算能力与SIMT
 其中，aiv_vec_simt_vf_ratio表示SIMT VF类型指令cycle数占AIV核上执行的cycle总数的比例。
 read_main_memory_datas和write_main_memory_datas是执行算子时的GM读、写数据量，未必全部是由SIMT VF触发的读写操作。计算SIMT VF实际带宽时，应使用SIMT VF相关GM读写数据量进行计算：
 如果同一个Kernel中还存在SIMD VF、MTE搬运或其他阶段的GM读写，且无法判断GM读写数据是否由SIMT VF触发，则不应将AIV核整体GM读写量直接除以SIMT VF执行时间。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMD与SIMT混合编程概述](../../programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/overview.md)（`related`）：SIMD与SIMT混合算子性能优化概述说明AI Core上SIMD与SIMT混合编程结合了SIMD多数据并行计算能力与SIMT离散访存、复杂分支处理能力，可以在同一算子中以Vector Function（VF）为基本调度单位灵活组织SIMD和SIMT执行逻辑。SIMD编程适合处理连续、规整的向量或矩阵计算，SIMT编程适合处理分支判断、索引映射、离散访存等不规则逻辑，在程序中结合使用两种编程方式，可以兼顾硬件高吞吐和编程灵活性。
-- [使用Unified Buffer提升内存访问效率](memory_access/ub_memory_access.md)（`related`）：《SIMD与SIMT混合算子性能优化概述》明确“AI Core上SIMD与SIMT混合编程结合了SIMD多数据并行计算能力与SIMT离散访存、复杂分支处理能力，可以在同一算子中以Vector Function（VF）为基本调度单位灵活组织SIMD和SIMT执行逻辑。SIMD编程适合处理连续、规整的向量或矩阵计算，SIMT编程适合处理分支判断、索引映射、离散访存等不规则逻辑，在程序中结合使用两种编程方式，可以兼顾硬件高吞吐和编程灵活性。”；它与《使用Unified Buffer提升内存访问效率》的“>该性能优化建议适用于如下型号：”在实际调用参数、数据流或结果校验上直接衔接。
-- [抽象硬件架构（SIMD与SIMT混合编程）](../../programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/abstract_hardware_architecture.md)（`related`）：SIMD与SIMT混合算子性能优化概述说明AI Core上SIMD与SIMT混合编程结合了SIMD多数据并行计算能力与SIMT离散访存、复杂分支处理能力，可以在同一算子中以Vector Function（VF）为基本调度单位灵活组织SIMD和SIMT执行逻辑。SIMD编程适合处理连续、规整的向量或矩阵计算，SIMT编程适合处理分支判断、索引映射、离散访存等不规则逻辑，在程序中结合使用两种编程方式，可以兼顾硬件高吞吐和编程灵活性；对抽象硬件架构（SIMD与SIMT混合编程）而言，混合编程概述定义 SIMD/SIMT 分工，性能章节给出分支与访存选择，SIMT 分支实现卡提供落地接口。
-- [核函数与VF函数（SIMD与SIMT混合编程）](../../programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md)（`related`）：焦点处理混合 SIMD/SIMT 中 kernel、VF、callee 的限定符和启动边界；SIMD与SIMT混合算子性能优化概述正文说明“AI Core上SIMD与SIMT混合编程结合了SIMD多数据并行计算能力与SIMT离散访存、复杂分支处理能力，可以在同一算子中以Vector Function（VF）为基本调度单位灵活组织SIMD和SIMT执行逻辑。SIMD编程适合处理连续、规整的向量或矩阵计算，SIMT编程适”。候选明确 kernel/VF/callee 的允许调用方向、地址空间和 launch API，或给出同机制编译失败。
-<!-- cannbot:related:end -->

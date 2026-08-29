@@ -26,12 +26,7 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [反量化 561103 实为 CheckBroadcastShape 过严](../../../../runbooks/compilation/561103_checkbroadcastshape.md)（`exemplifies`）：Dequantize 与《反量化 561103 实为 CheckBroadcastShape 过严》的实质衔接是：Dequantize 的 workspace 查询、scale/offset 设置、替代反量化入口及量化逆过程共同约束数据类型恢复；所选故障卡直接验证 scale 与广播边界。
-- [矩阵乘输出的量化/反量化](../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_quant_dequant.md)（`explains`）：Dequantize 与《矩阵乘输出的量化/反量化》的实质衔接是：Dequantize 的 workspace 查询、scale/offset 设置、替代反量化入口及量化逆过程共同约束数据类型恢复；所选故障卡直接验证 scale 与广播边界。
-- [AscendDequant](ascend_dequant.md)（`related`）：AscendDequant 与《Dequantize》的实质衔接是：AscendDequant 的两个 Host 查询共同确定 sharedTmpBuffer；Dequantize 是正文明确给出的替代入口，并改变了反量化策略与 workspace 契约。
-- [CastDequant](../../basic_api/memory_vector_compute/composite_compute/cast_dequant.md)（`related`）：Dequantize 与《CastDequant》的实质衔接是：Dequantize 的 workspace 查询、scale/offset 设置、替代反量化入口及量化逆过程共同约束数据类型恢复；所选故障卡直接验证 scale 与广播边界。
-- [Quantize](quantize.md)（`related`）：Dequantize 是将低精度结果恢复为高精度的逆向能力，常与 Quantize 构成压缩与恢复链。
-- [SetDequantType](../cube_compute/matmul_tiling/set_dequant_type.md)（`related`）：Dequantize 与《SetDequantType》的实质衔接是：Dequantize 的 workspace 查询、scale/offset 设置、替代反量化入口及量化逆过程共同约束数据类型恢复；所选故障卡直接验证 scale 与广播边界。
-- [GetDequantizeMaxMinTmpSize](get_dequantize_max_min_tmp_size.md)（`same_topic`）：GetDequantizeMaxMinTmpSize 与《Dequantize》的实质衔接是：GetDequantizeMaxMinTmpSize 与 factor 查询共同选择 kernel 临时空间，Dequantize/CastDequant 是消费端，Quantize 是逆过程，SetDequantType 决定输出模式。
-- [GetDequantizeTmpBufferFactorSize](get_dequantize_tmp_buffer_factor_size.md)（`same_topic`）：Dequantize 与《GetDequantizeTmpBufferFactorSize》的实质衔接是：Dequantize 的 workspace 查询、scale/offset 设置、替代反量化入口及量化逆过程共同约束数据类型恢复；所选故障卡直接验证 scale 与广播边界。
+- [GetDequantizeMaxMinTmpSize](get_dequantize_max_min_tmp_size.md)（`related`）：“提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetDequantizeMaxMinTmpSize获取。”在 Kernel API 中指定 sizing 依赖；“host侧Tiling接口，用于获取Dequantize接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”给出 Host 到 Kernel 的参数交接。
+- [GetDequantizeTmpBufferFactorSize](get_dequantize_tmp_buffer_factor_size.md)（`related`）：获取Dequantize接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；按元素做反量化计算（如int32_t反量化为half/float），将高精度整数类型转换为浮点类型。。前者用 maxLiveNodeCount 与 extraBuf 反推 Dequantize 单次可处理规模，后者给出被规划的反量化核心计算，二者可用于固定 UB 预算下确定一次 Dequantize 调用的数据量。
+- [AscendDequant](ascend_dequant.md)（`same_topic`）：“按元素做反量化计算（如int32_t反量化为half/float），将整数类型转换为浮点类型。最多支持二维输入。推荐使用Dequantize替代本接口。支持950PR/950DT、A3、A2训练/推理、推理AI Core、Kirin X90/9030。”与“按元素做反量化计算（如int32_t反量化为half/float），将高精度整数类型转换为浮点类型。最多支持二维输入。推荐使用本接口替代AscendDequant。仅Ascend 950PR/950DT支持。”是双方正文中的具体合同。旧接口与替代接口双向声明迁移关系，核心都是 int32 到浮点的逐元素反量化；互读能核对替代时的 scale 策略和平台收缩。
 <!-- cannbot:related:end -->

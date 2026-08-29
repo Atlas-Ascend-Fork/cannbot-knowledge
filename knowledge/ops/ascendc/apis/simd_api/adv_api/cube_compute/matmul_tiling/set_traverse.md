@@ -21,9 +21,3 @@ platforms: ['950', a2, a3]
 - traverse（输入）：设置固定的Matmul计算方向。可选值：MatrixTraverse::FIRSTM/MatrixTraverse::FIRSTN。 FIRSTM代表先往M轴方向偏移再往N轴方向偏移。 FIRSTN代表先往N轴方向偏移再往M轴方向偏移。
 
 返回值：-1表示设置失败；0表示设置成功。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTiling](get_tiling.md)（`related`）：SetTraverse 只写入 FIRSTM/FIRSTN 遍历方向，最终由 GetTiling 消费该配置并产出 TCubeTiling。
-<!-- cannbot:related:end -->

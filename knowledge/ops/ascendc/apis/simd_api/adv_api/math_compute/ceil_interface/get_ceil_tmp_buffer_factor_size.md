@@ -26,9 +26,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [tmpBuffer 分配步长≠访问步长触发 UB 越界 341](../../../../../runbooks/compilation/tmpbuffer_ub_341.md)（`exemplifies`）：GetCeilTmpBufferFactorSize 与《tmpBuffer 分配步长≠访问步长触发 UB 越界 341》的实质衔接是：factor 查询与 GetCeilMaxMinTmpSize 共同换算 Ceil 单次元素数，Ceil/C API 是消费端；tmpBuffer 步长故障直接验证空间公式错误会造成 UB 越界。
-- [AscCeil](../../../c_api/reg/data_type_convert/asc_ceil.md)（`related`）：GetCeilTmpBufferFactorSize 与《AscCeil》的实质衔接是：factor 查询与 GetCeilMaxMinTmpSize 共同换算 Ceil 单次元素数，Ceil/C API 是消费端；tmpBuffer 步长故障直接验证空间公式错误会造成 UB 越界。
-- [Ceil](ceil.md)（`same_topic`）：GetCeilTmpBufferFactorSize 与《Ceil》的实质衔接是：factor 查询与 GetCeilMaxMinTmpSize 共同换算 Ceil 单次元素数，Ceil/C API 是消费端；tmpBuffer 步长故障直接验证空间公式错误会造成 UB 越界。
-- [Ceil接口](ceil_interface.md)（`same_topic`）：《Ceil接口》说明提供Ceil向上取整计算接口及其Tiling临时空间大小查询接口，包含Ceil、GetCeilMaxMinTmpSize等。；《GetCeilTmpBufferFactorSize》说明获取Ceil接口的maxLiveNodeCount和extraBuf，用于推算固定空间下单次最大计算元素数。二者在Ceil计算、临时空间估算与多核尾段切分共同决定向上取整算子的正确执行上存在可执行的直接衔接。
-- [GetCeilMaxMinTmpSize](get_ceil_max_min_tmp_size.md)（`same_topic`）：MaxMin 接口给出 Ceil workspace 合法区间，factor 接口再由实际空间反算单次处理量，是同一 tiling 公式的正反两侧。
+- [Ceil](ceil.md)（`related`）：“该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。”给出 Ceil 临时区容量推导；“用于Ceil内部复杂计算时存储中间变量，由开发者提供。”确认 Ceil 实际消费该临时缓存，因此能直接用于实现时的 tile 上限计算。
 <!-- cannbot:related:end -->

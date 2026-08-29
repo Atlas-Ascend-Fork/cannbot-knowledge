@@ -124,20 +124,6 @@ platforms: ["a3", "950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DeQue](../../apis/simd_api/basic_api/resource_management/tscm/de_que.md)（`exemplifies`）：DeQue 与《TBuf 跨 MTE2 与 Vector 须队列交接》的实质衔接是：TSCM DeQue 必须与 EnQue、Alloc/Free 和所有权交接配套；所选故障卡直接覆盖空队列、重复 DeQue、早释和跨流水交接。
-- [asc_sync（同步）](../../apis/simd_api/c_api/sync/asc_sync.md)（`exemplifies`）：《asc_sync（同步）》处理“等待所有流水线操作完成。”。《TBuf 跨 MTE2 与 Vector 须队列交接》明确提供“GM 数据写入裸 TBuf 后立刻由 V pipe 消费时，A3 与 Ascend950 的独立轨迹均出现数值错误、NaN 或非有限值位置不一致；改为 VECIN TQue 交接后定向及完整测试通过。”，其参数、调用或验证步骤直接接入等待全部流水的 sync_all/pipe/barrier 入口与实际 MTE/队列 hazard 验证。
-- [FreeTensor早释使队列别名被下一轮DMA覆盖](reinterpret_tensor_alias_must_outlive_queue_release.md)（`related`）：别名所有权窗口和 MTE2 到 Vector 的队列交接共同保证消费者既读到已就绪数据，也不会读到复用后的数据。
-- [InitOutput GM 专用，UB 清零用 Duplicate](../compilation/initoutput_gm_ub_duplicate.md)（`related`）：InitOutput GM 专用，UB 清零用 Duplicate 与《TBuf 跨 MTE2 与 Vector 须队列交接》的实质衔接是：InitOutput 只接受 GM GlobalTensor，而 UB LocalTensor 要用 Duplicate；相关 API、类型错误、TBuf 取 LocalTensor 和清零覆盖故障直接验证该边界。
-- [TBuf 不能直接传给 LocalTensor 形参](../compilation/tbuf_gets_typed_localtensor_before_helper_call.md)（`related`）：TBuf 直取 typed LocalTensor 可解决类型传递，但仍不建立 MTE2→Vector 依赖；两卡明确类型与同步是独立契约。
-- [TQue MTE2→MTE3 缺 MTE3_MTE2 fence 致回读错位](../compilation/tque_mte2_mte3_mte3_mte2_fence.md)（`related`）：若用 TBuf 而非 TQue，MTE2→Vector 没有自动队列依赖；该卡给出需要改队列或显式 barrier 的边界。
-- [TQue tensor 所有权只能 DeQue 一次](../compilation/tque_tensor_ownership_single_dequeue.md)（`related`）：TQue tensor 所有权只能 DeQue 一次 与《TBuf 跨 MTE2 与 Vector 须队列交接》的实质衔接是：TQue 元素必须严格 Alloc→EnQue→DeQue→Free 且只由一个消费者出队；相关 API、生命周期指南和失败卡覆盖临时值、早释、空队列及跨函数交接。
-- [TQue 输入未释放导致循环 AllocTensor 卡死](../compilation/tque_dequeue_must_end_with_freetensor.md)（`related`）：改用 TQue 交接后必须在消费结束 FreeTensor，否则正确同步会换成队列耗尽问题。
-- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`related`）：若 TBuf 数据转由标量侧读取，还需显式完成 Vector/标量流水，而不仅是 MTE2→Vector。
-- [Vector 结果搬出前须经 VECOUT 队列](vector_results_need_vecout_queue_before_mte3.md)（`related`）：反向 Vector→MTE3 需 VecOut 队列交接，和本卡组成 copy-in/compute/copy-out 两端的流水所有权。
-- [arch35 小 per-channel 输出读旧值判别与规避](../compilation/arch35_per_channel.md)（`related`）：《arch35 小 per-channel 输出读旧值判别与规避》处理“arch35 上 DCCI 缓存不一致使 DataCopyPad 对小 per-channel [C] 输出不可靠、TQue GetValue(MTE2→scalar) 读到旧值；判别方法为先 V-launder(Duplicate 0.0f+Add) 到 TBuf 再 GetValue，并用 GlobalTensor::SetValue 直写 GM per-channel 结果。”。《TBuf 跨 MTE2 与 Vector 须队列交接》提供“GM 数据写入裸 TBuf 后立刻由 V pipe 消费时，A3 与 Ascend950 的独立轨迹均出现数值错误、NaN 或非有限值位置不一致；改为 VECIN TQue 交接后定向及完整测试通过。”，其具体合同或探针直接接入arch35 小 per-channel 的 DCCI/Scalar 旧值机制、V-launder 与 SetValue 验证。
-- [按序列位缓存 cos/sin 并让 q/k 共享搬运](../performance/cache_position_coefficients_across_shared_inputs.md)（`related`）：The caching design loads cos/sin through an MTE2-to-Vector handoff before keeping them resident; this runbook verifies that a bare TBuf can race and that TQue EnQue/DeQue closes the dependency.
-- [标量 S pipe 误用 TQue 导致输出全常数](scalar_s_pipe_requires_explicit_mte_dependencies.md)（`related`）：TBuf→Vector 卡证明裸 TBuf 不自动建立 MTE2→V 依赖；本卡把同一对象管理边界延伸到 MTE2→S 与 S→MTE3，并解释为何 V-only TQue 事件仍不足。
-- [BF16 gamma Cast 分阶段编排导致随机 NaN](bf16_gamma_cast_must_share_ordered_compute_stage.md)（`same_topic`）：候选说明裸 TBuf 跨 MTE2 与 Vector 缺队列交接会读未就绪数据，本卡分阶段 gamma/x Cast 是同类边界。
-- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](mte2_barrier_must_precede_vector_cast.md)（`same_topic`）：两卡都要求 MTE2 写 UB 完成后才能由 Vector 读取；barrier 卡给出不用队列时的显式同步边界。
-- [Vector Sub 源 UB 非 32B 对齐触发错误 340](../compilation/vector_sub_ub_32b_340.md)（`same_topic`）：Vector Sub 源 UB 非 32B 对齐触发错误 340 与《TBuf 跨 MTE2 与 Vector 须队列交接》的实质衔接是：Vector Sub 的每个 UB 源必须 32B 对齐，LocalTensor 非零 operator[] 偏移会破坏对齐；Sub API、GetWithOffset/TBuf 和相邻未对齐故障卡直接支持定位及对齐搬入修法。
+- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](mte2_barrier_must_precede_vector_cast.md)（`related`）：裸 TBuf 没有在这两个调用之间表达生产者到消费者的队列交接；本次会话中，改为 TQue 的 EnQue/DeQue 后原非有限值位置不一致消失。；正确 RAW 依赖是 `MTE2 write gammaLocal → barrier/event → VEC read gammaLocal`。。两卡诊断同一 MTE2 生产者到 Vector 消费者的 RAW 依赖缺口，分别给出 TQue EnQue/DeQue 交接和手工 barrier/event 两种修复路径。
+- [Vector 结果搬出前须经 VECOUT 队列](vector_results_need_vecout_queue_before_mte3.md)（`related`）：形成完整所有权与事件链：为本轮输出分配 VECOUT tensor，在 Vector 流水写入后 `EnQue`，由搬出侧 `DeQue` 后再 `DataCopyPad`，最后 `FreeTensor`；改为 VECIN TQue 的 EnQue/DeQue 交接后，各轨迹的定向或完整测试均闭合。焦点给出 Vector→MTE3 的 VECOUT 交接，候选给出 MTE2→Vector 的 VECIN 交接；二者从相反方向覆盖 DMA 与 Vector 之间的标准 Queue 生命周期。
 <!-- cannbot:related:end -->

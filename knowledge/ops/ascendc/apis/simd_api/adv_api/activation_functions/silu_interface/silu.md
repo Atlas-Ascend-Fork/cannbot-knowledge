@@ -37,7 +37,5 @@ __aicore__ inline void Silu(const LocalTensor<T>& dstLocal, const LocalTensor<T>
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetSiluTmpSize](get_silu_tmp_size.md)（`related`）：GetSiluTmpSize 根据 shape、typeSize 和 isReuseSource 返回 Silu 的合法临时空间范围，kernel 侧 Silu 必须使用同一组条件预留缓存。
-- [Silu接口](silu_interface.md)（`same_topic`）：《Silu》明确“按元素做Silu激活运算，支持half和float数据类型，不支持源操作数与目的操作数地址重叠。”；它与《Silu接口》的“提供Silu激活函数接口及GetSiluTmpSize等Tiling临时空间大小查询接口。”在实际调用参数、数据流或结果校验上直接衔接。
-- [Swish](../swish_interface/swish.md)（`same_topic`）：Swish 与《Silu》的实质衔接是：Swish kernel 与临时空间查询直接配套；SiLU 是 beta=1 的同公式变体，Sigmoid 是门控项。
+- [GetSiluTmpSize](get_silu_tmp_size.md)（`related`）：“用于获取Silu Tiling参数：Silu接口能完成计算所需最大临时空间大小和最小临时空间大小。”说明 Host 侧空间计算直接服务 Silu；“函数原型： template <typename T, bool isReuseSource = false> __aicore__ inline void Silu(const LocalTensor<T>& dstLocal, const LocalTensor<T>& srcLocal, uint32_t dataSize)”给出消费该 Tiling 结果的 Kernel 计算接口。
 <!-- cannbot:related:end -->

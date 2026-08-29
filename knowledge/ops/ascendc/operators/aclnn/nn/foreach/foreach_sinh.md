@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:20:50Z"
-updated_at: "2026-08-25T16:20:50Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -543,9 +543,9 @@ Host 把多个 Tensor 的元素视为连续总域进行负载分配，并用首�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持，见独立 `_a5` 卡 |
+| 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开支持，见独立 `_950` 卡 |
 | Host/Launcher | 共用 arch22 `ForeachCommonTiling` | 共用 arch22 `ForeachCommonTiling` | arch35 独立 SIMT Tiling |
 | Kernel/资源 | 共用 AIV Vector Kernel | 共用 AIV Vector Kernel | SIMT、无显式 TQue/TBuf |
 
@@ -586,3 +586,9 @@ Host 把多个 Tensor 的元素视为连续总域进行负载分配，并用首�
 | 同步 | Queue 生命周期与 PIPE_V barrier | FP32 双子区消费前不得覆盖 | `InnerComputer::ComputePerCast` |
 | 精度与尾块 | FP16/FP32 直算；BF16 FP32+RINT | tail 按有效字节搬运 | `CopyIn/CopyOut/InnerComputer` |
 | 失败边界 | Host 校验阻断 launch | unknown key、UB 下溢不得当作 fallback | `CheckOpInfo`、entry branches |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachSinh 950 ACLNN 算子知识](foreach_sinh_950.md)（`same_topic`）：对 TensorList 中每个输入张量逐元素计算 `y_i［j］ = sinh(x_i［j］) = (exp(x_i［j］) - exp(-x_i［j］)) / 2`。；对 TensorList 每个 Tensor 逐元素计算 `sinh`；SIMT body 统一以 FP32 `sinhf` 求值。；两卡实现同一 ForeachSinh ACLNN 语义，分别闭合 A2/A3 向量公式与 950 SIMT sinhf 路线，可比较 dtype、精度和分块差异。
+<!-- cannbot:related:end -->

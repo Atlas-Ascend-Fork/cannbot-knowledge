@@ -40,7 +40,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_div_scalar_list/op_host/config/ascend910_93/foreach_div_scalar_list_binary.json
     role: implementation
 created_at: "2026-08-25T15:32:31Z"
-updated_at: "2026-08-25T15:32:31Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -490,9 +490,9 @@ workspace_total = 32 B reserved, unused by Kernel
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持；见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持；见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b` membase，共用 key 1/2/4 | `ascend910_93` membase，共用实现 | regbase priority 30000、key 10001/10002/10004 |
 | Kernel/资源 | 通用 Level-0 body | 同 A2 | arch35 MicroAPI、VReg float pipeline |
 
@@ -538,3 +538,9 @@ workspace_total = 32 B reserved, unused by Kernel
 | 同步 | Queue + V_MTE3 + MTE3_MTE2；BF16 加 PIPE_V | Free/覆盖不得早于等待点 | `CopyOut`、`ComputePerCast` |
 | 精度与尾块 | FP16 direct；FP32 direct；BF16 经 FP32/RINT | scalar P、repeat mask、cast 顺序 | `InnerComputer` specializations |
 | 失败边界 | 模板 capability、dtype key、公开校验 | 不得为 unknown key 自造 fallback | router 与 `CheckOpInfo` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachDivScalarList 950 ACLNN 算子知识](foreach_div_scalar_list_950.md)（`same_topic`）：｜ 计算语义 ｜ 对列表位置 `i` 的每个有效元素 `j` 计算 `out［i］［j］ = x［i］［j］ / scalars［i］` ｜；｜ 执行类型 ｜ 单 Kernel `foreach_div_scalar_list`：`AIV_VECTOR`（arch35 regbase MicroAPI） ｜。两卡共享 ForeachDivScalarList 的逐 Tensor 标量列表除法合同；目标卡进一步闭合 950 RegBase MicroAPI 路线，与 A2/A3 Level-0 实现分开。
+<!-- cannbot:related:end -->

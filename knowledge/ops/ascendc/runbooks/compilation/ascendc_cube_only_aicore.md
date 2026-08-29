@@ -106,9 +106,3 @@ trace 内 agent 一度据报错文本推测「`__cube__` 属性需与 `__global_
 - 构建目标 `ascend910b` 上实测；精确 SoC 未定位。bisheng 属性语义跨平台一致，推断可迁移到 a2/a3/950，但未独立验证，不写入 frontmatter `platforms`。
 - 不同 CANN 版本若 `ASCENDC_CUBE_ONLY` 宏语义调整（不再注入 core_ratio 属性），本卡即失效——使用前先按报错信息确认。
 - `ASCEND_COMPUTE_UNIT=ascend910b;ascend910_93` 同时包含两个泛化构建目标，且未跑 `npu-smi`，不足以确认具体平台；不能据此把本卡标为 a2。明确的 Ascend910B3 仍按平台概念卡映射为 a2。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [算子实现](../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/operator_impl.md)（`related`）：算子实现 与《ASCENDC_CUBE_ONLY 入口须 __aicore__》的实质衔接是：该指南的核心是 host tiling→kernel Matmul 对象→Set A/B→Iterate/IterateAll→End；耦合模式、异步迭代与 CUBE_ONLY 故障直接约束实现选择。
-<!-- cannbot:related:end -->

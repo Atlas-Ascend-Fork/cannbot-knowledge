@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:40:05Z"
-updated_at: "2026-08-25T17:40:05Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -465,7 +465,7 @@ Tiling 不是固定 128×256：它先在 L0C/L0A/L0B 上界内遍历 base，再�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持；公开文档与 `ASCEND910B` config/Host 白名单闭合 | 支持；公开文档与 `ASCEND910_93` config/Host 白名单闭合 | 不支持生成正式卡：公开文档未列，Host 白名单拒绝其它 SoC |
 | Host/Launcher | 与 A3 共用代码、priority 0/key 0 | 与 A2 共用代码、priority 0/key 0 | 无公开 Host Route |
@@ -473,7 +473,7 @@ Tiling 不是固定 128×256：它先在 L0C/L0A/L0B 上界内遍历 base，再�
 
 ## 限制与失败边界
 
-- 公开 API 只支持 A2/A3；A5 不能由仓库顶层 950 说明或其它算子 arch35 文件外推。
+- 公开 API 只支持 A2/A3；950 不能由仓库顶层 950 说明或其它算子 arch35 文件外推。
 - 不支持空 `x`/`sparseWeight`，不支持 x 转置；文档标注输入均不支持非连续，源码仅对 x 经过标准 Contiguous 边界。
 - `K<=65535`，且 `AlignUp(K,8)=2*Kb`；M/N/K 为零在 API/Tiling 失败。Host 对相乘/窄化字段没有逐项独立 overflow guard，复用时不得扩大有效域。
 - `xScale` 与 `sparseWeightScale` 在公开 API 必须非空，即使底层 OpDef 声明 optional；不能依据 OpDef 放宽 ACLNN 合约。

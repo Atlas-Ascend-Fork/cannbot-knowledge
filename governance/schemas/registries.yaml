@@ -91,9 +91,7 @@ platforms:
   a3:
     description: Atlas A3 系列
   "950":
-    description: Ascend 950 系列
-  a5:
-    description: Atlas A5 系列
+    description: Ascend 950 系列（包含旧称 Atlas A5）
   "310p":
     description: Ascend 310P 系列
   "910":

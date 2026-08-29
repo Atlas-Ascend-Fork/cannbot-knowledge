@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_maximum_scalar_list/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:47:02Z"
-updated_at: "2026-08-25T15:47:02Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -611,9 +611,9 @@ BF16 路线不直接执行 BF16 `Maxs`：输入按 `maxCastDataCount=U/4` 分段
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持；见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持；见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`→arch22，共享 Tiling | `ascend910_93`→arch22，共享 Tiling | arch35 自有 Tiling，workspace=0，最多 256 Tensor |
 | Kernel/资源 | AIV_VECTOR、Queue UB、workspace 32 B unused | 同 A2 | SIMT 直读写 GM，无 AIV Queue；FP16/BF16 FP32 compare、INT32 INT64 compare |
 
@@ -659,3 +659,9 @@ BF16 路线不直接执行 BF16 `Maxs`：输入按 `maxCastDataCount=U/4` 分段
 | 同步 | Queue 协议与 `PIPE_V` barrier | 原地 BF16 子区的 cast/Maxs/cast 顺序 | `InnerComputer::ComputePerCast` |
 | 精度与尾块 | 原生 FP16/FP32/INT32；BF16 FP32+RINT | scalar conversion、实际 valid、DataCopyPad | `ProcessPlusInLoop`; `CopyIn/CopyOut` |
 | 失败边界 | 校验失败终止；未知 key 无输出 | 不虚构 fallback；不扩展 50 Tensor | `CheckOpInfo`; entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachMaximumScalarList 950 ACLNN 算子知识](foreach_maximum_scalar_list_950.md)（`same_topic`）：｜ 计算语义 ｜ 对第 `i` 个 Tensor 的每个元素计算 `y_i［j］ = max(x_i［j］, scalars_i)` ｜；｜ 计算语义 ｜ `y_i［j］ = max(x_i［j］, scalars_i)`；浮点 SIMT helper 显式传播 NaN 并处理相等零，整数 helper 使用 `a>=b?a:b` ｜两页是相同 ACLNN TensorList 与 ScalarList 最大值算子的 A2/A3 Vector 和 950 SIMT 实现，平台迁移时可直接对照路线与边界。
+<!-- cannbot:related:end -->

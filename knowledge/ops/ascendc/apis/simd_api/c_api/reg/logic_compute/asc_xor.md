@@ -26,11 +26,3 @@ asc_xor支持两种接口
 约束：dst中未被mask筛选的位置被置为0。
 
 仅 Ascend 950PR/Ascend 950DT 支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Xor](../../../adv_api/math_compute/xor_interface/xor.md)（`same_topic`）：AscXor 与《Xor》的实质衔接是：高阶 Xor、基础 Reg Xor 和 AscXor 完成同一逐元素异或，差异在 LocalTensor/RegTensor/C Reg 入口和工作区管理。
-- [Xor](../../../basic_api/reg_vector_compute/logical_compute/xor.md)（`same_topic`）：AscXor 与《Xor》的实质衔接是：高阶 Xor、基础 Reg Xor 和 AscXor 完成同一逐元素异或，差异在 LocalTensor/RegTensor/C Reg 入口和工作区管理。
-- [Xor接口](../../../adv_api/math_compute/xor_interface/xor_interface.md)（`same_topic`）：AscXor 与《Xor接口》的实质衔接是：高阶 Xor、基础 Reg Xor 和 AscXor 完成同一逐元素异或，差异在 LocalTensor/RegTensor/C Reg 入口和工作区管理。
-<!-- cannbot:related:end -->

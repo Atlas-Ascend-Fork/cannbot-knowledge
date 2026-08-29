@@ -1,7 +1,7 @@
 ---
 type: Guide
 title: 视频 DiT 量化降显存 / 带宽：per-block FP8 注意力（主要收益，Ulysses-only）+ MXFP8 matmul（跳过 adaLN）
-description: 视频 DiT 量化降显存 / 带宽：per-block FP8 注意力（主要收益，Ulysses-only）+ MXFP8 matmul（跳过 adaLN）。视频 / 图像 dit 推理里 attention 与 Linear（MLP / 投影）在 bf16 下占显存与带宽，想降本时。这里有两条量化手段，优先级不同：FP8 注意力量化是端到端加速主要来源，MXFP8 matmul 量化单独收益小、主要作为叠加项。两者都需 ascend-950（Atlas A5）级 FP8 硬件（Ascend910B / Ascend910_93 抛 RuntimeError）。
+description: 视频 DiT 量化降显存 / 带宽：per-block FP8 注意力（主要收益，Ulysses-only）+ MXFP8 matmul（跳过 adaLN）。视频 / 图像 dit 推理里 attention 与 Linear（MLP / 投影）在 bf16 下占显存与带宽，想降本时。这里有两条量化手段，优先级不同：FP8 注意力量化是端到端加速主要来源，MXFP8 matmul 量化单独收益小、主要作为叠加项。两者都需 ascend-950（Atlas 950）级 FP8 硬件（Ascend910B / Ascend910_93 抛 RuntimeError）。
 tags:
 - task.debugging
 - topic.attention
@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/325
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-07-06T00:00:00Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - '950'
 ---
@@ -21,7 +21,7 @@ platforms:
 
 ## 适用场景
 
-视频 / 图像 [dit](../../../concepts/modules/dit.md) 推理里 attention 与 Linear（MLP / 投影）在 bf16 下占显存与带宽，想降本时。这里有两条量化手段，**优先级不同**：FP8 注意力量化是端到端加速主要来源，MXFP8 matmul 量化单独收益小、主要作为叠加项。两者都需 [ascend-950](../../../concepts/platforms/ascend_950.md)（Atlas A5）级 FP8 硬件（`Ascend910B` / `Ascend910_93` 抛 RuntimeError）。
+视频 / 图像 [dit](../../../concepts/modules/dit.md) 推理里 attention 与 Linear（MLP / 投影）在 bf16 下占显存与带宽，想降本时。这里有两条量化手段，**优先级不同**：FP8 注意力量化是端到端加速主要来源，MXFP8 matmul 量化单独收益小、主要作为叠加项。两者都需 [ascend-950](../../../concepts/platforms/ascend_950.md)（Atlas 950）级 FP8 硬件（`Ascend910B` / `Ascend910_93` 抛 RuntimeError）。
 
 ## 手段一 · per-block FP8 注意力（主要收益）
 
@@ -46,10 +46,19 @@ platforms:
 
 ## 参考实现及其约束
 
-参考 cann-recipes-infer 的 HunyuanVideo（`module/fa_quant/fa_quant.py` 的 `npu_fp8_attn` / `npu_group_quant`、`hyvideo/modules/mxfp8_a8w8.py` 的 `dynamic_convert_mxfp8_linear` / `mxfp8_linear_forward`、`inference.py` 硬件门控），[ascend-950](../../../concepts/platforms/ascend_950.md)。group_size 128/256、`group_sizes=[1,1,32]`、E8M0、Ulysses-only、Atlas A5 门控为参考实现约束；「converter 当前产出 / 传入 X」不升为「算子只能吃 X」。
+参考 cann-recipes-infer 的 HunyuanVideo（`module/fa_quant/fa_quant.py` 的 `npu_fp8_attn` / `npu_group_quant`、`hyvideo/modules/mxfp8_a8w8.py` 的 `dynamic_convert_mxfp8_linear` / `mxfp8_linear_forward`、`inference.py` 硬件门控），[ascend-950](../../../concepts/platforms/ascend_950.md)。group_size 128/256、`group_sizes=[1,1,32]`、E8M0、Ulysses-only、Atlas 950 门控为参考实现约束；「converter 当前产出 / 传入 X」不升为「算子只能吃 X」。
 
 ## Evidence
 
-- `diff 事实`（@dfa1a889）：`fa_quant.py`（`npu_group_quant` group 128/256、`npu_fp8_attn` FIA v2 `quant_mode=7`、`ring_world_size>1` ValueError）、`mxfp8_a8w8.py`（跳过 `mod` / 1D 权重、`group_sizes=[1,1,32]` / E8M0）、`inference.py` Atlas A5 门控为读到的实际 merged diff。
+- `diff 事实`（@dfa1a889）：`fa_quant.py`（`npu_group_quant` group 128/256、`npu_fp8_attn` FIA v2 `quant_mode=7`、`ring_world_size>1` ValueError）、`mxfp8_a8w8.py`（跳过 `mod` / 1D 权重、`group_sizes=[1,1,32]` / E8M0）、`inference.py` Atlas 950 门控为读到的实际 merged diff。
 - `doc 披露`（@dfa1a889）：`hunyuan_video_optimization.md` 量化结果表逐格照录（单卡 baseline 2580.87s → FP8 FA 1638.55s / +matmul 1571.24s；ulysses8 256.92s → 193.96s / 185.54s），仓自报、无独立复测。
 - 溯源下探：[cann-recipes-infer-pr-325-feat-hunyuanvideo-support-fa-matmul-quant-and-uaa](https://gitcode.com/cann/cann-recipes-infer/merge_requests/325)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [FP8 Per-Block Dynamic Quant Attention](../../../concepts/quantization/fp8_attention.md)（`related`）：“FP8 FA **只支持纯 ［ulysses］(../../../concepts/parallelism/ulysses.md) 序列并行**”是部署指南的硬门槛；“MXFP8 量化注意力当前**仅支持 Ulysses 序列并行，不支持 Ring Attention**”从量化注意力概念侧确认同一并行限制。
+- [HunyuanVideo](../../../concepts/models/hunyuan_video.md)（`related`）：“`single_fp8`（FP8 FA + MXFP8 matmul，950PR）”；“两者都需 ［ascend-950］(../../../concepts/platforms/ascend_950.md)（Atlas 950）级 FP8 硬件”。模型配置的双量化组合由候选指南给出量化范围、硬件门控与 Ulysses-only 限制。
+- [MXFP8 A8W8 (DiT Linear)](../../../concepts/quantization/mxfp8_a8w8.md)（`related`）：焦点卡写明“仅量化 Transformer block 中的 2D Linear；adaLN / modulation 与 1D 权重跳过”，候选卡写明“量化视频 DiT 时应优先做 FP8 注意力量化，matmul 量化作叠加。”。概念卡定义 MXFP8 Linear 边界，指南给出与 FP8 Attention 叠加时的优先级和收益拆分。
+- [长序列视频 DiT 接 Ulysses 序列并行（pad_freqs 补齐 + world_size 拓扑校验两处易错）](../../../optimizations/experience/rules/video_dit_ulysses_sequence_parallel.md)（`related`）：“给用 Ring Attention 的模型上 FP8 FA 前须先确认并行模式为纯 Ulysses”提出量化前置检查；“`initialize_model_parallel` 校验 `world_size == cfg_degree × sp_degree × tp_degree`”提供把该检查落到进程拓扑的具体等式。
+<!-- cannbot:related:end -->

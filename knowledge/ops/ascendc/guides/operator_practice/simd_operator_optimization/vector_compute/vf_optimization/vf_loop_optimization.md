@@ -41,8 +41,5 @@ if控制流可使用if constexpr或者for(1)替换。if constexpr在编译时已
 <!-- cannbot:related:start -->
 ## 相关
 
-- [VF调用](../../../../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`explains`）：VF 循环优化指南讨论将循环组织到 VF 内的收益和边界，补足 asc_vf_call 调用粒度与循环应由 wrapper 还是 VF 承担的决策。
-- [VfFusionOptimization](vf_fusion_optimization.md)（`related`）：VF Fusion 依赖可融合的 Hardware Loop；Loop 指南给出 uint16_t 计数、0 起步、步长 1、循环内无跳转等可识别条件。
-- [中级性能优化](../../../typical_operator_cases/simd_operator_impl/add_vector_operator/intermediate_optimization.md)（`related`）：中级性能优化 与《VfLoopOptimization》的实质衔接是：Add 中级优化围绕 mask 复用、双发、循环/融合与 Get/SetValue 访问开销实施。
-- [指令双发优化](dual_issue_optimization.md)（`related`）：指令双发优化 与《VfLoopOptimization》的实质衔接是：双发优化依赖 VF 融合、循环/掩码复用、原子与地址寄存器编排；这些卡分别提供发射冲突定位和可执行改写。
+- [VfFusionOptimization](vf_fusion_optimization.md)（`related`）：“如果多个VF函数的控制流等价，且满足均为Hardware Loop循环，编译器会执行VF融合优化特性。”与“当VF函数中的循环满足Hardware Loop编码规范时，会被编译器优化为Hardware Loop，提升整体执行性能；否则循环逻辑会由迭代变量和条件判断语句构成Software Loop，无法开启VF循环优化。”提供双方正文证据。融合指南把两端均为 Hardware Loop 作为自动 VF 融合条件，循环指南给出生成 Hardware Loop 的成功与回退判据，组成先规范循环再获得融合的优化链。
 <!-- cannbot:related:end -->

@@ -71,10 +71,3 @@ platforms: ["a3"]
 ## 失效边界
 
 本卡不证明高阶 SoftMax 永远不能处理尾部；只有在使用与目标 CANN 匹配的正式 tiling/shape 契约并完成非对齐验证后，才可解除 banned。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SoftMax/SimpleSoftMax Tiling](../../apis/simd_api/adv_api/activation_functions/soft_max_interface/soft_max_simple_soft_max_tiling.md)（`exemplifies`）：SoftMax/SimpleSoftMax Tiling 接口负责根据真实 shape 生成计算参数，正是解除本卡 banned 手工补齐路线前必须恢复的契约。
-- [数据填充](../../apis/simd_api/c_api/reg/data_fill/data_fill.md)（`exemplifies`）：该卡展示 tail fill 路线参数/地址错误导致向量异常。
-<!-- cannbot:related:end -->

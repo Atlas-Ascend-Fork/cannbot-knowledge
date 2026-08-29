@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:41:05Z"
-updated_at: "2026-08-25T18:41:05Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -89,7 +89,7 @@ FP16/BF16 路线先把 `g/y` 升到 FP32，归约、缩放和掩码都在 FP32 �
 
 ### 入口与版本
 
-固定 Commit 中该逻辑语义唯一公开入口为 `aclnnScaledMaskedSoftmaxBackward`，内部落到 `ScaledMaskedSoftmaxGradV2`；没有更高版本号的同语义公开 API。正向 `ScaledMaskedSoftmax`、其它 softmax grad、原地或量化变体不属于本卡。README 与 API 文档产品表明确列出 Atlas A2、A3；OpDef 的 `ascend910b/ascend910_93` 注册、对应 binary config 和 Kernel CMake 共同闭合两平台。公开文档未列 A5，因此 `ascend950` 实现信号不用于发布 A5 卡。
+固定 Commit 中该逻辑语义唯一公开入口为 `aclnnScaledMaskedSoftmaxBackward`，内部落到 `ScaledMaskedSoftmaxGradV2`；没有更高版本号的同语义公开 API。正向 `ScaledMaskedSoftmax`、其它 softmax grad、原地或量化变体不属于本卡。README 与 API 文档产品表明确列出 Atlas A2、A3；OpDef 的 `ascend910b/ascend910_93` 注册、对应 binary config 和 Kernel CMake 共同闭合两平台。公开文档未列 950，因此 `ascend950` 实现信号不用于发布 950 卡。
 
 ## Host/Launcher 执行流程
 
@@ -769,7 +769,7 @@ Host 把四种合法 shape 压成 mode 0–3；Device 用行号取模或 batch �
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开 API 文档明确支持；`ascend910b` config 闭合 | 公开 API 文档明确支持；`ascend910_93` config 闭合 | 公开产品表未声明；虽有 `ascend950` 注册/config/CMake，按发布规则不生成正式卡 |
 | Host/Launcher | 共用 wrapper、Tiling 与 4096 末轴上限 | 共用 | wrapper/Tiling 源码含 Regbase 8192 信号，但缺公开支持证据，不纳入本卡 |
@@ -818,4 +818,10 @@ Host 把四种合法 shape 压成 mode 0–3；Device 用行号取模或 batch �
 | workspace/内存 | GM workspace 仅系统库；每核 UB 按四个公式 | `selectSize` 是 UB 不是 GM slice；depth=1 仍计容量 | `DoTiling`; 各 `InitBuffer` |
 | 同步 | normal 用 Queue/PIPE_V，large 用 MTE/V events | y→mask、mask→Vector、Vector→CopyOut 的依赖不能删 | norm/large body |
 | 精度与尾块 | 16-bit FP32 算术后 RINT；P padding 清零；GM crop D | 归约前必须清零 padding；最后 loop 三长度同步更新 | `DoSoftmaxGrad`; `SetParams/Process` |
-| 失败边界 | shape/dtype/fixTriuMask/UB 条件固定 | 不得把 A5 实现信号当公开支持；不得声称存在 M=0 fallback | API checks；Tiling UB/key；产品表 |
+| 失败边界 | shape/dtype/fixTriuMask/UB 条件固定 | 不得把 950 实现信号当公开支持；不得声称存在 M=0 fallback | API checks；Tiling UB/key；产品表 |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ScaledMaskedSoftmax A2/A3 ACLNN 算子知识](scaled_masked_softmax.md)（`related`）：“对末轴逐行计算 `q=g*y`、`z=(q-sum_D(q)*y)*scale`，再按 bool `mask` 将真值位置清零”中的 y 是正向 Softmax 结果；“对每个 `［B,N,S1］` 行先缩放 `x`，由布尔 `mask` 在缩放值与 `-10000` 间选择，再沿末轴执行 Softmax。”给出 y 的生成合同，两卡闭合训练正反向。
+<!-- cannbot:related:end -->

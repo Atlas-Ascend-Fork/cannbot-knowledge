@@ -22,9 +22,3 @@ platforms: ['950']
 参数：ascendcPlatform为平台信息；typeSize为输入数据类型字节数（half传2）；maxLivedNodeCount输出最大存活节点数；extraBuf输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuf) / maxLivedNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLivedNodeCount可能为0，计算时需判断避免除零错误。
 
 约束：当反推出的currentShapeSize * typeSize < 256B时，currentShapeSize按256B/typeSize向上取整。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Where（数学计算）](where.md)（`related`）：《GetWhereTmpBufferFactorSize》明确“获取Where接口所需的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”；它与《Where（数学计算）》的“根据指定的条件，从两个源操作数中选择元素，生成目标操作数。两个源操作数均可以是LocalTensor或标量。”在实际调用参数、数据流或结果校验上直接衔接。
-<!-- cannbot:related:end -->

@@ -258,13 +258,7 @@ at::Tensor gather(const at::Tensor &x, const at::Tensor &index, int64_t dim)
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetBlockIdx](../../apis/simd_api/c_api/sys_var/asc_get_block_idx.md)（`exemplifies`）：AscGetBlockIdx 与《block 数应覆盖可用 Vector 核》的实质衔接是：AscGetBlockIdx 与 block 数 API、系统变量共同定义多核索引；所选故障/性能卡直接用 blockIdx 解释错误切分、串行启动和尾核边界。
-- [GetBlockIdx](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_idx.md)（`exemplifies`）：《GetBlockIdx》处理“获取当前逻辑AI Core的索引，用于多核逻辑控制及偏移量计算等。”。《block 数应覆盖可用 Vector 核》明确提供“Host 的固定 block 上限低于目标设备实测 Vector Core 数；把上限绑定到同设备探针结果后，配对端到端性能改善且正确性未退化。”，其参数、调用或验证步骤直接接入GetBlockIdx/GetBlockNum 与 Tiling 切核、尾核边界和多核验证的合同。
-- [GetCoreNumVector](../../apis/utils_api/platform_info/platform_ascend_c/get_core_num_vector.md)（`exemplifies`）：Runbook 要求使用目标设备实测 Vector 核数，而该 API 明确在 A3 返回 0、只对独立 Vector Core 的特定推理产品有效，构成防止选错探针的关键边界。
-- [NumBlocks](../../apis/simt_api/cooperative_groups/grid_group/num_blocks.md)（`exemplifies`）：block 数应覆盖可用 Vector 核说明Host 的固定 block 上限低于目标设备实测 Vector Core 数；把上限绑定到同设备探针结果后，配对端到端性能改善且正确性未退化。
-- [EnableVectorCore](../../guides/programming_guide/appendix/common_operations/enable_vector_core.md)（`related`）：性能卡实测固定 block 上限低于可用 Vector 核会留下并行度；它把指南的 numBlocks 规则落到探针值、正确性回归和配对性能验证。
-- [MIX_AIC_1_1 仅启用 28/56 AIV 带宽不饱和](mix_aic_1_1_underutilizes_aiv_on_1_to_2_topology.md)（`related`）：两卡都由未覆盖全部 Vector Core 导致并行度不足；焦点是 1:1 MIX 拓扑把 56 AIV 限为 28，候选是 Host 固定 block cap 低于设备实测核数。
-- [按行均分 tiling 致 nnz 倾斜时约半数核空闲](tiling_nnz.md)（`related`）：先确认 block 数覆盖实测 Vector 核，再用逐核 task_cyc 判断 nnz 工作量是否均衡，可区分少发核与已发核空转。
-- [每核最少行数地板压低 AIV 并行度—按可用核数切分](row_reduction_min_rows_floor_underutilizes_aiv.md)（`related`）：两卡都处理 host 侧切分未覆盖可用 AIV 的问题：本卡是固定 block cap，目标卡是每核最少行数地板；可用同一“有效 block 对照设备核数”探针区分原因。
-- [线程块数量配置优化](../../guides/operator_practice/simd_simt_hybrid_optimization/execution_control/thread_block_config.md)（`related`）：指南给出“大 workload 时 block 数等于实测物理 Vector Core、小时应降低”的选择规则；Runbook 在 A3 上把固定 32 上限改为 `min(N_out,V_measured)`，以 20/20 正确性和整体时间比 0.758 验证了同一大 workload 决策。
+- [EnableVectorCore](../../guides/programming_guide/appendix/common_operations/enable_vector_core.md)（`related`）：“设置的numBlocks代表的是AI Core和Vector Core的总数”给出启用 Vector Core 时 host tiling 的计数语义；“host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`”展示固定上限如何造成实际 Vector 核闲置。
+- [blockLength 对齐 slice 致 numBlocks 塌缩单核](blocklength_slice_numblocks.md)（`related`）：固定封顶故障表现为“host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`，使输出量充足的 case 只能暴露 `C_old` 路并行工作，留下 `V_measured - C_old` 个核的可用并行度未覆盖。”；切片账本则要求“`numBlocks = min(coreNum, totalSlices / minSlicesPerCore)`；`slicesPerBlock = ceil(totalSlices / numBlocks)`；对齐口径下 `blockLength = slicesPerBlock * slice`。”，两者共同用于区分硬编码核数上限与切片公式造成的低 block 数。
+- [每核最少行数地板压低 AIV 并行度—按可用核数切分](row_reduction_min_rows_floor_underutilizes_aiv.md)（`same_topic`）：选择 `numBlocks=min(coreNumAiv,numRow)`：前者保证尽量覆盖可用 AIV，后者保证每个激活 block 至少有一行，避免空核。 host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`，使输出量充足的 case 只能暴露 `C_old` 路并行工作，留下 `V_measured - C_old` 个核的可用并行度未覆盖。 两卡诊断同一 Host block 数低于可用 Vector 核的问题，分别排除每核最少行数地板与固定 cap。
 <!-- cannbot:related:end -->

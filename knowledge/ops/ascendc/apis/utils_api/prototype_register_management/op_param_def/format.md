@@ -26,10 +26,6 @@ OpParamDef算子定义，OpParamDef请参考OpParamDef。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Follow（OpParamDef）](follow.md)（`related`）：Follow 同时可传播 format/shape 约束。
-- [FormatForBinQuery](format_for_bin_query.md)（`related`）：FormatForBinQuery 在二进制查询阶段补充该参数的格式匹配信息，与 Format 的运行原型格式共同决定选包条件。
-- [FormatList](format_list.md)（`same_topic`）：FormatList 的核心契约是“定义算子参数数据格式，当某个输入/输出的格式可与其他所有输入/输出的数据类型和格式自由组合时使用，无需重复列出所有组合”；Format（OpParamDef） 补充“定义算子参数数据格式”。
-- [Input（OpDef）](../op_def/input.md)（`same_topic`）：焦点处理OpDef Input 的参数类型、格式、可选性和值依赖配置；Format（OpParamDef）正文说明“定义算子参数数据格式”。候选配置 Input 返回的 OpParamDef，或复现输入可选性、格式和值依赖造成的框架故障。
-- [Input（原型注册管理）](../op_ai_core_config/input.md)（`same_topic`）：《Input（原型注册管理）》处理“某些场景下，同一个算子在不同的AI处理器型号上，其支持的原型输入不同。 通过该接口，可针对不同的AI处理器型号注册差异化的算子原型。调用该接口后会返回一个OpParamDef结构，后续可通过该结构配置算子输入信息。”。《Format（OpParamDef）》明确“定义算子参数数据格式。”，可直接用于核对算子 Input/Output 原型、OpParamDef dtype/format/optional/value-depend 参数及已证注册故障。
-- [UnknownShapeFormat](unknown_shape_format_deprecated.md)（`same_topic`）：《Format（OpParamDef）》明确“定义算子参数数据格式。”；它与《UnknownShapeFormat》的“已废弃接口，设置未知Shape情况下的Format默认值，请统一使用Format接口替代。”在实际调用参数、数据流或结果校验上直接衔接。
+- [OpDef FORMAT_NCHW 致 5D 报 161002](../../../../runbooks/compilation/opdef_format_nchw_5d_161002.md)（`exemplifies`）：“CANN 的 `ACL_FORMAT_NCHW` 仅对 4D 张量有效；5D 张量（`［N,D,C,H,W］`）没有 NCHW 这一物理格式，OpDef 强制 NCHW 会让 5D 输入在 `GetWorkspaceSize` 阶段被拒。”与“定义算子参数数据格式。”提供双方正文证据。Format API 给出 OpDef 参数格式定义入口，运行手册具体证明把 5D 输入定义为 NCHW 会在 GetWorkspaceSize 返回 161002，并给出保持 FORMAT_ND、由 shape 推断布局的边界。
+- [UnknownShapeFormat](unknown_shape_format_deprecated.md)（`same_topic`）：该接口废弃，并将在后续版本移除，请不要使用该接口。无需针对动态/静态shape单独设置format，统一使用Format接口来设置即可。定义算子参数数据格式。废弃卡明确把 UnknownShapeFormat 的职责迁移到 Format，目标卡定义承接后的参数格式设置合同；替换后还能消除 deprecated 警告在严格编译选项下升级为错误的风险。
 <!-- cannbot:related:end -->

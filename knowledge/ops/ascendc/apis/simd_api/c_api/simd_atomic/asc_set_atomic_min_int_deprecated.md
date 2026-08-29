@@ -23,6 +23,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSetAtomicMin](asc_set_atomic_min.md)（`related`）：AscSetAtomicMin 与《asc_set_atomic_min_int（废弃）》的实质衔接是：AscSetAtomicMin 开启后续搬出取小，并需用 None 复位；SetAtomicMin/AtomicMin 和 store atomic 配置给出同一原子写回状态机。
-- [AscSetAtomicNone](asc_set_atomic_none.md)（`related`）：原子取小状态会影响后续搬运，完成目标区间后需 AscSetAtomicNone 清理，避免污染无关写回。
+- [AscSetAtomicMin](asc_set_atomic_min.md)（`same_topic`）：该接口已废弃，请使用asc_set_atomic_min_int32替代。 设置对后续的从Unified Buffer/L0C Buffer/L1 Buffer到GM的数据传输开启原子比较取小操作。 废弃页给出迁移方向，当前接口族保留后续搬运比较取小的数据合同，支撑旧调用迁移。
+- [AscSetAtomicNone](asc_set_atomic_none.md)（`same_topic`）：约束：使用结束后，建议通过asc_set_atomic_none关闭原子最小操作，以免影响后续相关指令功能。 清空原子操作的状态。一般和asc_set_atomic_add，asc_set_atomic_max，asc_set_atomic_min接口配合使用，用于在完成原子操作后关闭原子操作，避免影响后续功能。 旧接口的约束与 None 的状态清理语义共同确定原子最小完成后的收尾调用。
 <!-- cannbot:related:end -->

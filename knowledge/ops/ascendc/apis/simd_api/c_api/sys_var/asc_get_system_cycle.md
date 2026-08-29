@@ -23,8 +23,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscGetProgramCounter](asc_get_program_counter.md)（`related`）：ProgramCounter 标识当前指令位置，SystemCycle 提供时间轴；二者结合可做位置标记与性能耗时诊断。
-- [AscTimeStamp](../../../utils_api/tuning_interface/asc_time_stamp.md)（`related`）：“AscGetSystemCycle”处理读取当前系统cycle计数器，用于性能统计与耗时测量。；“AscTimeStamp”明确SIMD场景下提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点，便于调试和性能分析。。实质衔接：AscGetSystemCycle 提供原始 cycle；GetSystemCycle 是同义层接口，PrintTimeStamp/AscTimeStamp 是直接消费该计数器的打点能力。
-- [PrintTimeStamp](../../basic_api/debug_interface/onboard_print/print_time_stamp.md)（`related`）：“AscGetSystemCycle”处理读取当前系统cycle计数器，用于性能统计与耗时测量。；“PrintTimeStamp”明确提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点并打印当前系统cycle数。。实质衔接：AscGetSystemCycle 提供原始 cycle；GetSystemCycle 是同义层接口，PrintTimeStamp/AscTimeStamp 是直接消费该计数器的打点能力。
-- [GetSystemCycle](../../basic_api/tool_interface/system_resources_and_variables/get_system_cycle_isasi.md)（`same_topic`）：GetSystemCycle 与 AscGetSystemCycle 都读取同一个系统 cycle 计数器，并以两次读数差计算耗时；它们是 Basic API 与 C API 的直接对应。
+- [GetSystemCycle](../../basic_api/tool_interface/system_resources_and_variables/get_system_cycle_isasi.md)（`same_topic`）：获取系统计数器当前的cycle值。通过计算代码段前后cycle值的差值，可得到代码段消耗的系统cycle数，再通过换算即可获得代码段的执行时间。；读取当前系统cycle计数器，返回int64_t类型的当前计数值。该计数器为只读系统计数器，宽度64bit，复位值为0，随系统时钟持续递增，反映硬件运行以来的累计cycle数，常用于性能统计、耗时测量与执行序的时序判断。本接口在AIC与AIV上均可调用，返回值含义一致。。两张 API 卡描述同一只读系统 cycle 计数器的 C++ 与 C 接口语义，均用于前后差值计时。
 <!-- cannbot:related:end -->

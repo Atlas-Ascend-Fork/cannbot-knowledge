@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_host/ascend_quant_v2_def.cpp
     role: implementation
 created_at: "2026-08-25T18:21:59Z"
-updated_at: "2026-08-25T18:21:59Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -603,9 +603,9 @@ Cast(x1Tmp.template ReinterpretCast<int4b_t>(), x1Tmp.template ReinterpretCast<h
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | V3 公开支持 | V3 公开支持 | V3 公开支持，见独立 `_a5` 卡 |
+| 支持状态 | V3 公开支持 | V3 公开支持 | V3 公开支持，见独立 `_950` 卡 |
 | Host/Launcher | 普通 Tiling，AIV 核数/UB；本卡源码未再拆 A2 与 A3 Host 差异 | 同左 | RegBase Tiling |
 | Kernel/资源 | 普通 AscendC body | 普通 AscendC body；BF16/per-head 有 arch guard | AIV MicroAPI、双缓冲 |
 

@@ -85,11 +85,7 @@ The vector core execution is abnormal.
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Slice（基础API）](../../apis/simd_api/basic_api/data_structure_tensor_api/tensor_structure/slice.md)（`exemplifies`）：Slice（基础API） 与《跨 slice 批量 vector 源地址非 32B 对齐触发 507035》的实质衔接是：Slice 根据 coord 和 layout 计算子张量基址且保留存储位置；Tensor/ViewEngine 负责视图构造，非连续及非 32B 对齐案例直接约束后续高阶 API 和 DMA 使用。
-- [SwiGLU 高级 API 在非32B对齐 slice 上精度失败](../precision/swiglu_adv_api_fails_non_32b_aligned_slice.md)（`related`）：两卡来自同一 SwiGLU 非对齐 slice 优化链：本卡禁止偏移向量批处理，候选禁止对该边界启用高级 SwiGLU API并给出手写链回退。
-- [arch35 分块 Select 掩码偏移非 32B 对齐崩溃 507035](arch35_select_32b_507035.md)（`related`）：候选证明 packed mask 按 8B 偏移后 set_cmpmask 同样因非 32B 地址触发 507035，为 operator[] 偏移仍受硬件地址约束提供独立探针。
-- [blockLength 对齐 slice 致 numBlocks 塌缩单核](../performance/blocklength_slice_numblocks.md)（`related`）：性能卡说明按 slice 对齐 blockLength 会让小 slice 工作量塌缩到单核；本卡又禁止未对齐跨 slice 批量。
-- [多块 DataCopyPad dst 基址非 32B 对齐崩溃](datacopypad_dst_32b.md)（`related`）：跨 slice 路径先用 DataCopyPad 搬入；候选说明每个多块 DMA 的 UB 目的起点也必须 32B 对齐。
-- [Vector Sub 源 UB 非 32B 对齐触发错误 340](vector_sub_ub_32b_340.md)（`same_topic`）：Vector Sub 源 UB 非 32B 对齐触发错误 340 与《跨 slice 批量 vector 源地址非 32B 对齐触发 507035》的实质衔接是：Vector Sub 的每个 UB 源必须 32B 对齐，LocalTensor 非零 operator[] 偏移会破坏对齐；Sub API、GetWithOffset/TBuf 和相邻未对齐故障卡直接支持定位及对齐搬入修法。
-- [奇数 H 致 B 视图 UB 地址非 32B 对齐](h_b_ub_32b.md)（`same_topic`）：两卡都处理连续 UB 布局后按逻辑维度取第二段做 VEC 的崩溃，并把修复落到独立对齐缓冲。
+- [SwiGLU 高级 API 在非32B对齐 slice 上精度失败](../precision/swiglu_adv_api_fails_non_32b_aligned_slice.md)（`related`）：“slice*sizeof(T) 非 32B 整数倍时禁用 `AscendC::SwiGLU` adv_api”给出高级 API 的精度失败边界；“c220 vector 指令要求源 tensor 物理地址 32B（C0Size）对齐。”给出手写或批量回退路径仍必须遵守的底层源地址条件。
+- [Vector Sub 源 UB 非 32B 对齐触发错误 340](vector_sub_ub_32b_340.md)（`related`）：c220 vector 指令要求源 tensor 物理地址 32B（C0Size）对齐。；`AscendC::Sub` Level 2 接口（`Sub(dst, src0, src1, count)`）底层 Vector 指令要求 `src0`/`src1`/`dst` 三个 LocalTensor 的起始地址均 32B 对齐（每 block 32 字节，即 8 个 int32）。。两份运行手册分别在 c220 批量 slice 与 950 Vector Sub 中把 507035 追到 LocalTensor 起始地址不满足 32B；后一份提供偏移乘元素字节数的判别步骤，可辅助验证前一故障。
+- [多块 DataCopyPad dst 基址非 32B 对齐崩溃](datacopypad_dst_32b.md)（`related`）：多块 `DataCopyPad` 的**每个数据块的 dst 起始地址必须 32B 对齐**（`DataCopyPadGm2UBImpl` 断言 `TransUBAddr % 32 == 0`）。优化版把一个 tile 的 x0 分成 head(firstLen) + middle（逐 slice，`blockLen=slice*es`）+ tail 三段，head 拷贝写入 `dst［0..firstLen)` 后，middle 的 dst 基址取 `dst［firstLen］`。当 `firstLen * sizeof(T)` 不是 32B 整数倍时，middle 块的 dst 基址非 32B 对齐 → MTE 指令访问地址未对齐 → vector core exception。；c220 vector 指令要求源 tensor 物理地址 32B（C0Size）对齐。跨 slice 批量路径中，逐组计算的源地址是 `xIn［b］`，偏移 `b = g * 2 * slice`，单位是元素；当 `slice*sizeof(T)` 不是 32B 整数倍时，`b*sizeof(T)` 不是 32B 对齐，vector 指令读取非对齐源地址触发 vector core exception（507035）。；两端给出同一 SwiGlu 优化链中 MTE dst 与 vector src 两种 32B 地址故障，可按失败指令阶段分流。
 <!-- cannbot:related:end -->

@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_cosh/op_host/config/ascend910_93/foreach_cosh_binary.json
     role: implementation
 created_at: "2026-08-25T15:31:16Z"
-updated_at: "2026-08-25T15:31:16Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -567,9 +567,9 @@ uint32_t castTimesRemainder = dataCount % maxCastDataCount;
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持，`ascend910b` | 公开支持，`ascend910_93` | 公开支持，但见独立 `_a5` 卡。 |
+| 支持状态 | 公开支持，`ascend910b` | 公开支持，`ascend910_93` | 公开支持，但见独立 `_950` 卡。 |
 | Host/Launcher | arch22 `ForeachCommonTiling` | 与A2共用arch22 | arch35独立Tiling。 |
 | Kernel/资源 | 公共 AIV_VECTOR `ForeachTriangle` | 与A2共用 | SIMT VF、无AIV Queue；不在本卡展开。 |
 

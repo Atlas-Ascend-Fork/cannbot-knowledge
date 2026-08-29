@@ -29,8 +29,7 @@ aclError为int类型变量，详细说明请参考RTC错误码。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [编译与执行RTC](../../../guides/programming_guide/compilation_and_execution/operator_compilation/rtc_runtime_compilation.md)（`explains`）：指南把 aclrtcAddNameExpr 定位为模板核编译前的可选步骤；接口卡明确它必须在 CompileProg 前调用。
-- [aclrtcCompileProg](aclrtc_compile_prog.md)（`related`）：aclrtcAddNameExpr 必须在 aclrtcCompileProg 前调用，编译完成后才能为已注册模板 kernel 解析 lowered name。
-- [aclrtcCreateProg](aclrtc_create_prog.md)（`related`）：《aclrtcCreateProg》处理“通过给定的参数，创建编译程序的实例。”。《aclrtcAddNameExpr》明确提供“注册指定的名称表达式，该表达式代表了一个__global__函数。 主要用于__global__函数为模板函数的场景，调用本接口后，可以通过aclrtcGetLoweredName接口获取函数的mangling name，在launch阶段调用对应的模板__global__函数。”，其参数、调用或验证步骤直接接入RTC Kernel 创建、编译、函数获取、launch 和销毁生命周期。
-- [aclrtcGetLoweredName](aclrtc_get_lowered_name.md)（`same_topic`）：《aclrtcGetLoweredName》处理“获取已经注册的__global__函数的mangling name。”。《aclrtcAddNameExpr》明确“注册指定的名称表达式，该表达式代表了一个__global__函数。 主要用于__global__函数为模板函数的场景，调用本接口后，可以通过aclrtcGetLoweredName接口获取函数的mangling name，在launch阶段调用对应的模板__global__函数。”，可直接用于核对RTC name expression 到 lowered symbol 的 create/compile/query/destroy 生命周期。
+- [编译与执行RTC](../../../guides/programming_guide/compilation_and_execution/operator_compilation/rtc_runtime_compilation.md)（`explains`）：“aclrtcAddNameExpr（可选）：注册需要导出的核函数名表达式”描述可选导出步骤，“该接口需要在aclrtcCompileProg编译接口前使用”给出必须满足的调用顺序。
+- [aclrtcGetLoweredName](aclrtc_get_lowered_name.md)（`related`）：“使用前必须先通过aclrtcAddNameExpr注册原始名称，且两次传入的nameExpression字符串必须完全相同。”与“主要用于__global__函数为模板函数的场景，调用本接口后，可以通过aclrtcGetLoweredName接口获取函数的mangling name，在launch阶段调用对应的模板__global__函数。”分别给出双端正文事实；GetLoweredName 的前置条件是 AddNameExpr 注册完全相同的表达式，AddNameExpr 卡又明确后续由 GetLoweredName 取得 mangling name，二者形成 RTC 模板函数注册到 launch 名称查询的调用序。
+- [aclrtcCompileProg](aclrtc_compile_prog.md)（`same_topic`）：该接口需要在aclrtcCompileProg编译接口前使用。编译接口，编译指定的程序。函数签名为 aclError aclrtcCompileProg(aclrtcProg prog, int numOptions, const char** options)。名称表达式卡规定注册时序，编译卡给出消耗同一 `aclrtcProg` 句柄的编译入口；模板 `__global__` 函数若需 lowered name，必须先注册表达式再执行编译。
 <!-- cannbot:related:end -->

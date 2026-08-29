@@ -34,10 +34,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AdjustSoftMaxRes](adjust_soft_max_res.md)（`same_topic`）：《SoftMax》的任务是“对输入tensor按行做Softmax计算，内部包含reducemax、exp、reducesum和div过程，可输出sum和max中间结果，支持ND和NZ格式。”。《AdjustSoftMaxRes》具体提供“调整SoftMax计算结果为指定值，当maxTensor中存在指定值时，按行将对应softMaxRes结果替换为自定义值，用于SoftMax后处理。”，它直接用于SoftMax 的 Tiling、输出规整、跨 VL 规约状态和尾块同步闭环。
-- [IsBasicBlockInSoftMax](is_basic_block_in_soft_max.md)（`same_topic`）：《SoftMax》的任务是“对输入tensor按行做Softmax计算，内部包含reducemax、exp、reducesum和div过程，可输出sum和max中间结果，支持ND和NZ格式。”。《IsBasicBlockInSoftMax》具体提供“用于判断SoftMaxTiling结构是否符合基本块特征。”，它直接用于SoftMax 的 Tiling、输出规整、跨 VL 规约状态和尾块同步闭环。
-- [SimpleSoftMax](simple_soft_max.md)（`same_topic`）：《SoftMax》的任务是“对输入tensor按行做Softmax计算，内部包含reducemax、exp、reducesum和div过程，可输出sum和max中间结果，支持ND和NZ格式。”。《SimpleSoftMax》具体提供“使用预先计算好的sum和max数据对输入tensor按行做Softmax计算，内部不含reduce过程。”，它直接用于SoftMax 的 Tiling、输出规整、跨 VL 规约状态和尾块同步闭环。
-- [SoftMax Tiling使用说明](soft_max_tiling_usage.md)（`same_topic`）：《SoftMax Tiling使用说明》处理“Ascend C提供一组SoftMax Tiling API，方便用户获取SoftMax kernel计算时所需的Tiling参数。”。《SoftMax》明确提供“对输入tensor按行做Softmax计算，内部包含reducemax、exp、reducesum和div过程，可输出sum和max中间结果，支持ND和NZ格式。”，其参数、调用或验证步骤直接接入SoftMax 的 Tiling 结构、临时空间、跨 VL 归约和 Kernel 参数合同。
-- [SoftMax/SimpleSoftMax Tiling](soft_max_simple_soft_max_tiling.md)（`same_topic`）：《SoftMax》的任务是“对输入tensor按行做Softmax计算，内部包含reducemax、exp、reducesum和div过程，可输出sum和max中间结果，支持ND和NZ格式。”。《SoftMax/SimpleSoftMax Tiling》具体提供“用于获取SoftMax/SimpleSoftMax Tiling参数。”，它直接用于SoftMax 的 Tiling、输出规整、跨 VL 规约状态和尾块同步闭环。
-- [SoftMax接口](soft_max_interface.md)（`same_topic`）：《SoftMax》的任务是“对输入tensor按行做Softmax计算，内部包含reducemax、exp、reducesum和div过程，可输出sum和max中间结果，支持ND和NZ格式。”。《SoftMax接口》具体提供“提供SoftMax及其变体接口，包含SoftMax、SimpleSoftMax、SoftmaxFlash、SoftmaxGrad等以及Tiling使用说明。”，它直接用于SoftMax 的 Tiling、输出规整、跨 VL 规约状态和尾块同步闭环。
+- [SimpleSoftMax](simple_soft_max.md)（`related`）：- inSumTensor和inMaxTensor为输入，并且last轴长度必须固定32Byte。；- sumTensor和maxTensor为输出，并且last轴长度必须固定32Byte，非last轴大小需要和src以及dst保持一致。；SoftMax 负责计算并输出 sum 与 max，而 SimpleSoftMax 接收已经计算好的 sum 与 max 并省去 reduce，二者构成同一 Softmax 流程中可替换的完整计算与复用中间量路径。
 <!-- cannbot:related:end -->

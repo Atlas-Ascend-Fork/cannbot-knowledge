@@ -72,7 +72,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_all_matmul/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:41:43Z"
-updated_at: "2026-08-24T19:53:51Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -126,7 +126,7 @@ alltoAllOutOptional = A（仅在请求该可选输出时写）
 
 ### 入口与版本
 
-固定 Commit 同时公开旧版 `aclnnAlltoAllMatmul` 与 V2；V2 文档明确相对旧版新增 `commMode`，因此无后缀 A2/A3 卡选择 V2 为该平台最新公开入口。V2 两个函数只转发到 `aclnnAlltoAllMatmulBaseGetWorkspaceSize/Base`。公开产品表同时支持 Atlas A2、Atlas A3 与 Ascend 950；本文件按平台命名规则仅覆盖 A2/A3，Ascend 950 归 `_a5` 卡，不从 `arch35` 文件名反推到本卡。
+固定 Commit 同时公开旧版 `aclnnAlltoAllMatmul` 与 V2；V2 文档明确相对旧版新增 `commMode`，因此无后缀 A2/A3 卡选择 V2 为该平台最新公开入口。V2 两个函数只转发到 `aclnnAlltoAllMatmulBaseGetWorkspaceSize/Base`。公开产品表同时支持 Atlas A2、Atlas A3 与 Ascend 950；本文件按平台命名规则仅覆盖 A2/A3，Ascend 950 归 `_950` 卡，不从 `arch35` 文件名反推到本卡。
 
 ## Host/Launcher 执行流程
 
@@ -800,9 +800,9 @@ transpose 的输出无论落用户 `alltoAllOut` 还是 workspace 第二片，�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持；本卡R-001 | 公开支持；本卡R-002 | 公开支持，但按命名规则属于 `_a5` 卡，本文件不提取 |
+| 支持状态 | 公开支持；本卡R-001 | 公开支持；本卡R-002 | 公开支持，但按命名规则属于 `_950` 卡，本文件不提取 |
 | Host/Launcher | `AlltoAllMatmulTiling910b`；`commMode=aiv`；MTE server；R=2/4/8 | `AllToAllFpMatmulTilingBaseA3`；`commMode=ai_cpu`；AICPU server；R=2/4/8/16 | DAV_3510 registry/多通信模式；不从本卡外推 |
 | Kernel/资源 | peer-window双槽直接拼A；Catlass AtlasA2 | comm workspace+显式AIV transpose；A3 MatMulV3 | `allto_all_matmul_apt`等独立实现；不纳入无后缀卡 |
 
@@ -827,7 +827,7 @@ transpose 的输出无论落用户 `alltoAllOut` 还是 workspace 第二片，�
 | 入口声明/约束 | `mc2/allto_all_matmul/op_api/aclnn_allto_all_matmul_v2.h` | 两段式V2声明 | 精确公开签名 |
 | 入口实现 | `mc2/allto_all_matmul/op_api/aclnn_allto_all_matmul_v2.cpp` | V2两个函数 | 转发base |
 | 入口实现 | `mc2/allto_all_matmul/op_api/allto_all_matmul_base.cpp` | `CheckAndHandleParams`, inner wrapper, Base | API校验、默认量化参数、server选择、失败传播 |
-| Host/Tiling/Launcher | `mc2/allto_all_matmul/op_host/op_tiling/allto_all_matmul_tiling.cpp` | `AlltoAllMatmulTilingFunc` | DAV_3510与非A5 registry分流 |
+| Host/Tiling/Launcher | `mc2/allto_all_matmul/op_host/op_tiling/allto_all_matmul_tiling.cpp` | `AlltoAllMatmulTilingFunc` | DAV_3510与非950 registry分流 |
 | Host/Tiling/Launcher | `mc2/allto_all_matmul/op_host/op_tiling/allto_all_matmul_tiling_base.cpp` | workspace、shape、formulaic tiling | A3公共M/N/K、workspace与tile/tail |
 | Host/Tiling/Launcher | `mc2/allto_all_matmul/op_host/op_tiling/arch22/allto_all_matmul_tiling_910b.cpp` | A2 tiling类 | A2检查、条件表、CoC、key、workspace/blockDim |
 | Host/Tiling/Launcher | `mc2/allto_all_matmul/op_host/op_tiling/arch22/allto_all_fp_matmul_tiling_910_93.cpp` | A3 tiling类 | A3检查、MatMulV3/HCCL POD、key/blockDim |
@@ -867,3 +867,9 @@ transpose 的输出无论落用户 `alltoAllOut` 还是 workspace 第二片，�
 | 同步 | A2 slot/peer flags；A3 HCCL Wait+flags8/9 | 删除wait/barrier、复用flag编号或提前覆盖均破坏可见性 | `AlltoAll`, `AlltoAllMatmulKernel`, pipeline |
 | 精度与尾块 | 通信/transpose保持输入dtype；Cube按actual shape/tile-tail处理 | bias dtype组合、A2 L0C累加与MatMulV3 POD不可擅改；pad只补局部尾部 | Host dtype checks，BlockMmad，transpose |
 | 失败边界 | 保留Host/API状态码与不可达的 Device 零 task 防御分支 | 不得把非法rank/commMode/window/key静默fallback到另一SoC路线；不得把文档中的 A3 `BS=0` 当作固定实现已支持 | 两套 Host、API base，`CheckShapeDimRange` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [AlltoAllQuantMatmul A2 ACLNN 算子知识](allto_all_quant_matmul.md)（`related`）：`transposeX1` 必须为 `false`。`transposeX2=false` 时 `x2:［R*H,N］`、B 为 RowMajor；`true` 时 API shape 为 `［N,R*H］`、Device B 为 ColumnMajor。FP16 走 FP16 bias，BF16 走 FP32 bias；无 bias 时不做偏置累加。本卡只覆盖非量化公开入口，量化 API 是独立逻辑语义，不并入版本族。；R-001 的 `qmax=127`、Aq 为 INT8；R-002 的 `qmax=7`、Aq 为 packed INT4；R-003 直接消费 INT4 `x1` 与 API `x1Scale`。动态路线若传 `x1ScaleOptional`，先逐 K 乘 smooth scale。`commScale/x1Offset/x2Offset` 是保留参数，A2 body 不消费。。非量化卡明确划出量化 API，量化卡在同一 AllToAll 后 MatMul 任务链中补充 INT8/INT4 量化、scale 与反量化路线。
+<!-- cannbot:related:end -->

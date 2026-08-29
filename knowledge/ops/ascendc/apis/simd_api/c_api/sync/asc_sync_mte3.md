@@ -17,12 +17,3 @@ platforms: ['950', a2, a3]
 针对PIPE_MTE3流水线执行同步操作。其作用是保证PIPE_MTE3流水线中前序指令（如UB到GM的数据搬运）全部完成后，PIPE_MTE2与PIPE_V流水线的后续指令才能开始执行。
 函数原型：void asc_sync_mte3(int id)
 支持平台：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core, Atlas 推理系列产品Vector Core等
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [探针末尾 MTE2_S/MTE3_S 同步不可由 stream sync 替代](../../../../runbooks/compilation/mte2_s_mte3_s_stream_sync.md)（`exemplifies`）：AscSyncMte3 与《探针末尾 MTE2_S/MTE3_S 同步不可由 stream sync 替代》的实质衔接是：AscSyncMte3 与 MTE2/Vector/pipe/barrier 配套，保证 MTE3 写出在消费者读取前完成。
-- [AscSyncMte2](asc_sync_mte2.md)（`related`）：AscSyncMte2 保证 MTE2 前序完成后 MTE3/V 才继续，AscSyncMte3 则保证搬出完成后 MTE2/V 继续；二者按生产者流水方向成对选用。
-- [asc_sync（同步）](asc_sync.md)（`same_topic`）：《asc_sync（同步）》处理“等待所有流水线操作完成。”。《AscSyncMte3》明确提供“针对PIPE_MTE3流水线执行同步操作，保证其前序指令全部完成后，PIPE_MTE2与PIPE_V流水线的后续指令才能执行。”，其参数、调用或验证步骤直接接入等待全部流水的 sync_all/pipe/barrier 入口与实际 MTE/队列 hazard 验证。
-- [核内同步能力概述](intra_core_sync_overview.md)（`same_topic`）：AscSyncMte3 与《核内同步能力概述》的实质衔接是：AscSyncMte3 与 MTE2/Vector/pipe/barrier 配套，保证 MTE3 写出在消费者读取前完成。
-<!-- cannbot:related:end -->

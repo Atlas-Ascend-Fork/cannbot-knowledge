@@ -58,3 +58,9 @@ offline 批量推理的分页 KV cache 预分配（`offline_max_len` 已知固�
 - 溯源下探：
   - [cann-recipes-infer-issue-150-question-paged-attention-kv-cache](https://gitcode.com/cann/cann-recipes-infer/issues/150)
   - [cann-recipes-infer-pr-388-fix-fix-page-attention-cache-management-and-packed-sequence](https://gitcode.com/cann/cann-recipes-infer/merge_requests/388)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [KV Cache Manager（框架级 Paged Attention KV Cache 管理）](../../../concepts/frameworks/kv_cache_manager.md)（`related`）：`prepare_block_tables()` / `prepare_slot_mapping()` 按 `attn_type` 组织成字典。；这两份 per-`manager_key` 张量（`block_table［manager_key］ = block_table_tensor` 给出每请求的逻辑块表、`slot_mapping［manager_key］ = slot_mapping_tensor` 给出每 token 的物理写入槽位）经 `ForwardMetaData` 喂给 ［fused-infer-attention-score］(../kernels/fused_infer_attention_score.md)（FIA）等 paged-attention 算子，由算子据此在分块 KV Cache 上完成 gather / 写入。；优化卡要求把分页索引喂给算子，框架概念卡展开了这些索引按 manager_key 生成并进入 FIA 的运行期合同。
+<!-- cannbot:related:end -->

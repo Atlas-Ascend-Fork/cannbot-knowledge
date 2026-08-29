@@ -29,8 +29,6 @@ kernel侧Asin接口的计算需要开发者预留 申请临时空间，本接口
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Asin](asin.md)（`related`）：Asin 的 sharedTmpBuffer 不能与输入输出重叠且大小必须满足 GetAsinMaxMinTmpSize 返回的下界，二者构成直接 host/kernel 合同。
-- [GetAsinTmpBufferFactorSize](get_asin_tmp_buffer_factor_size.md)（`related`）：GetAsinMaxMinTmpSize 先界定合法缓存范围，factor 查询再在实际选定缓存上推算元素数；二者组成同一 Asin tiling 流程。
-- [更多样例（数学计算）](../more_examples.md)（`related`）：样例一明确在 Host 侧用 GetXxxMaxMinTmpSize 为 Asin 取得 maxValue/minValue，再把选定 tmpSize 写入 TilingData；目标卡正是该 Asin 专用接口。
-- [Asin接口](asin_interface.md)（`same_topic`）：《Asin接口》明确“提供Asin反正弦计算接口及其Tiling临时空间大小查询接口，包含Asin、GetAsinMaxMinTmpSize等。”；它与《GetAsinMaxMinTmpSize》的“在host侧获取Asin接口预留临时空间的最大和最小值，用于Tiling参数选择”在实际调用参数、数据流或结果校验上直接衔接。
+- [Asin](asin.md)（`related`）：临时空间大小BufferSize的获取方式请参考GetAsinMaxMinTmpSize。；本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。。Asin 明确把临时空间取得步骤交给右侧 Host 接口，右侧产生的范围又直接成为 Asin Kernel 的 Tiling 输入；两者是计算接口与资源查询 helper 的互补任务链，并非同一操作。
+- [GetAsinTmpBufferFactorSize](get_asin_tmp_buffer_factor_size.md)（`related`）：通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量；开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。最大/最小接口先确定合法临时空间范围，factor 接口再把已选空间换算成单次元素容量；两端组成 Host Tiling 选 buffer、Kernel 按容量分块的闭环。
 <!-- cannbot:related:end -->

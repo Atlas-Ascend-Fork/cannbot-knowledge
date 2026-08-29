@@ -30,12 +30,6 @@ SK0：输入：SK子函数签名。
 <!-- cannbot:related:start -->
 ## 相关
 
-- [直调 kernel-type 裸赋值标记无效](../../../runbooks/compilation/kernel_type.md)（`exemplifies`）：SK_BIND（SuperKernel） 与《直调 kernel-type 裸赋值标记无效》的实质衔接是：SK_BIND 绑定 SuperKernel 子任务，需结合 kernel 类型/tiling、前后任务同步和 runtime context。
-- [SuperKernel原理介绍](../../../guides/programming_guide/advanced_programming/super_kernel/principles.md)（`explains`）：SK_BIND（SuperKernel） 与《SuperKernel原理介绍》的实质衔接是：SK_BIND 绑定 SuperKernel 子任务，需结合 kernel 类型/tiling、前后任务同步和 runtime context。
-- [核函数直调算子额外适配说明](../../../guides/programming_guide/advanced_programming/super_kernel/kernel_direct_call_adaptation.md)（`explains`）：SKBind 是把任务/算子绑定进 SuperKernel 的实际注册接口。
-- [算子适配说明](../../../guides/programming_guide/advanced_programming/super_kernel/operator_adaptation.md)（`explains`）：算子适配说明 与《SK_BIND（SuperKernel）》的实质衔接是：SuperKernel 适配要求算子 block 数、SK_BIND、核间 flag 与缓存可见性匹配；原理、流程和 mix-mode 失败案例给出可执行约束。
-- [设置合适的核数和算子Kernel类型](../../../guides/operator_practice/simd_operator_optimization/overhead_optimization/core_count_kernel_type.md)（`explains`）：设置合适的核数和算子Kernel类型 与《SK_BIND（SuperKernel）》的实质衔接是：核数、kernel 类型和 workspace 都会影响启动/头尾开销；SetKernelMode、负载均衡与 SK_BIND 卡给出 host 配置和核侧绑定的执行落点。
-- [SetNextTaskStart](../../simd_api/basic_api/sync_control/inter_task_sync/set_next_task_start.md)（`related`）：SK_BIND（SuperKernel） 与《SetNextTaskStart》的实质衔接是：SK_BIND 绑定 SuperKernel 子任务，需结合 kernel 类型/tiling、前后任务同步和 runtime context。
-- [WaitPreTaskEnd](../../simd_api/basic_api/sync_control/inter_task_sync/wait_pre_task_end.md)（`related`）：SK_BIND（SuperKernel） 与《WaitPreTaskEnd》的实质衔接是：SK_BIND 绑定 SuperKernel 子任务，需结合 kernel 类型/tiling、前后任务同步和 runtime context。
-- [任务间同步](../../simd_api/basic_api/sync_control/inter_task_sync/inter_task_sync.md)（`related`）：SK_BIND（SuperKernel） 与《任务间同步》的实质衔接是：SK_BIND 绑定 SuperKernel 子任务，需结合 kernel 类型/tiling、前后任务同步和 runtime context。
+- [SuperKernel原理介绍](../../../guides/programming_guide/advanced_programming/super_kernel/principles.md)（`explains`）：核函数直调算子额外适配说明：对于使用>>方式开发的Ascend C算子，进入SuperKernel前需要进行的额外适配工作。；本接口为算子SuperKernel场景提供绑定原核函数和SK子函数的能力。核函数直调算子的完整适配方法请参见核函数直调算子额外适配说明。；焦点指向的直调适配由 SK_BIND 提供原 Kernel 与 SK 子函数绑定合同。
+- [核函数直调算子额外适配说明](../../../guides/programming_guide/advanced_programming/super_kernel/kernel_direct_call_adaptation.md)（`explains`）：本接口为算子SuperKernel场景提供绑定原核函数和SK子函数的能力。核函数直调算子的完整适配方法请参见核函数直调算子额外适配说明。；- 需要与普通Kernel函数通过SK_BIND宏绑定。。API 卡定义 SK_BIND 的绑定能力并指向直调适配说明，Guide 把该宏列为 SuperKernel 入口与普通 Kernel 配套的必需步骤。
 <!-- cannbot:related:end -->

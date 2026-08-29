@@ -17,10 +17,3 @@ platforms: ['950']
 提供 Arange 接口，在寄存器中生成递增或递减索引序列。递增模式以 scalarValue 为起始值生成递增索引，递减模式以 scalarValue 为终止值生成递减索引，结果保存在 dstReg 中。
 
 通过模板参数 IndexOrder 选择 INCREASE_ORDER 或 DECREASE_ORDER 模式。仅 Ascend 950PR/Ascend 950DT 支持，需在 VF 函数内调用。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [索引操作](../../../c_api/reg/index_operate/index_operate.md)（`same_topic`）：Reg矢量计算索引操作 与《索引操作》的实质衔接是：Reg 索引操作与 C Reg 索引计算是同一 Arange/索引生成能力的跨层概述；具体成员关系由 part_of 覆盖。
-- [索引计算](../../../adv_api/index_compute/index_compute.md)（`same_topic`）：Reg矢量计算索引操作 与《索引计算》的实质衔接是：Reg 索引操作与 C Reg 索引计算是同一 Arange/索引生成能力的跨层概述；具体成员关系由 part_of 覆盖。
-<!-- cannbot:related:end -->

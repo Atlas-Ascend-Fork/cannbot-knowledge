@@ -366,13 +366,8 @@ __global__ __aicore__ void rms_norm_kernel(
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscSyncDataBarrier](../../apis/simd_api/c_api/sync/asc_sync_data_barrier.md)（`exemplifies`）：《AscSyncDataBarrier》处理“阻塞后续指令执行，直到所有之前的内存访问指令执行结束，用于解决Scalar的内存依赖。”。《DataCopyPad 后未先同步 Cast 导致低精度 NaN》提供“MTE2 搬入后把 PipeBarrier 放在 Cast 之后过晚；应先同步，再由 Vector Cast 消费 LocalTensor。”，其具体合同或探针直接接入Scalar 内存依赖的 data barrier、pipe barrier 选择和同步位置验证。
-- [PipeBarrier](../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)（`exemplifies`）：Runbook 证明 PipeBarrier 放在 Cast 之后不能倒退补齐依赖，必须位于 MTE2 producer 与 Vector consumer 之间。
-- [TQue MTE2→MTE3 缺 MTE3_MTE2 fence 致回读错位](../compilation/tque_mte2_mte3_mte3_mte2_fence.md)（`related`）：MTE2→Vector 方向需在读取前建立完成性，与 Vector→MTE3 共同组成双向流水依赖。
-- [Vector 结果搬出前须经 VECOUT 队列](vector_results_need_vecout_queue_before_mte3.md)（`related`）：裸 TBuf 路径至少需显式 MTE2 barrier；队列则编码依赖。
-- [fp32 窄化舍入模式不一致触发稀疏 MARE 越线](fp32_to_fp16_cast_matches_rne_oracle.md)（`related`）：fp32 窄化舍入模式不一致触发稀疏 MARE 越线 与《DataCopyPad 后未先同步 Cast 导致低精度 NaN》的实质衔接是：该精度故障的核心是 fp32 窄化舍入未与 RNE oracle 对齐；Cast/Round 接口、BF16/FP16 边界值和精度验收卡直接提供对照与验证。
-- [BF16 gamma Cast 分阶段编排导致随机 NaN](bf16_gamma_cast_must_share_ordered_compute_stage.md)（`same_topic`）：两卡都把 BF16 Cast 随机 NaN 定位到 MTE2 搬入未完成即被 Vector Cast 消费；本卡进一步把 gamma/x 两次 Cast 汇合到共同完成点。
-- [MTE2跨流水未建依赖导致UB读到上次调用残值](direct_mte_slot_reuse_needs_bidirectional_hard_events.md)（`same_topic`）：单向首次消费可用 MTE2 barrier，而 slot 双向反复复用必须再保护写回到下一次搬入。
-- [TBuf 跨 MTE2 与 Vector 须队列交接](tbuf_mte2_to_vector_requires_queue_handoff.md)（`same_topic`）：两卡都要求 MTE2 写 UB 完成后才能由 Vector 读取；barrier 卡给出不用队列时的显式同步边界。
-- [模板内 float→float Cast 使 fp32 分支全错](templated_float_input_must_bypass_same_type_cast.md)（`same_topic`）：模板内 float→float Cast 使 fp32 分支全错 与《DataCopyPad 后未先同步 Cast 导致低精度 NaN》的实质衔接是：float 到 float 不应进入窄化 Cast，应该保持原值或 Copy；同步、BF16 分阶段、native 类型、VL、舍入与 RmsNorm 案例分别说明真正需要 Cast 时的类型、时序和验证契约。
+- [BF16 gamma Cast 分阶段编排导致随机 NaN](bf16_gamma_cast_must_share_ordered_compute_stage.md)（`related`）：`DataCopyPad` 的 GM→UB 搬运由 MTE2 异步执行，而 `Cast` 在 Vector pipeline 消费 `gammaLocal`。正确 RAW 依赖是 `MTE2 write gammaLocal → barrier/event → VEC read gammaLocal`。；after 把 gamma Cast 延后到 `Compute`：先用一个 `PIPE_MTE2` 屏障等待 gamma 和 x 的搬运，再在同一 Vector 序列中依次 Cast gamma 与 x，最后用 `PIPE_V` 确认两个 FP32 输入都完成。。前者给出 MTE2 生产者到 Vector Cast 消费者必须先同步的 RAW 根因，后者把这一纪律落实到 gamma/x 两路 BF16 Cast 共用 Compute 阶段的修复顺序，可连续用于诊断和验证归一化 NaN。
+- [TBuf 跨 MTE2 与 Vector 须队列交接](tbuf_mte2_to_vector_requires_queue_handoff.md)（`related`）：裸 TBuf 没有在这两个调用之间表达生产者到消费者的队列交接；本次会话中，改为 TQue 的 EnQue/DeQue 后原非有限值位置不一致消失。；正确 RAW 依赖是 `MTE2 write gammaLocal → barrier/event → VEC read gammaLocal`。。两卡诊断同一 MTE2 生产者到 Vector 消费者的 RAW 依赖缺口，分别给出 TQue EnQue/DeQue 交接和手工 barrier/event 两种修复路径。
+- [bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt](../compilation/device_sqrt_uses_vector_api.md)（`related`）：sqrtf 编译修复卡的验证路径明确“归约结果经 `AscendC::Sqrt`、`PipeBarrier<PIPE_ALL>`、`LocalTensor::GetValue` 转成标量倒数。”；同一 950 RMSNorm 低精度链的同步卡规定“低精度分支顺序固定为 `DataCopyPad → PipeBarrier → Cast`”，两卡分别闭合 gamma 搬入和归约开方两处 producer→consumer 同步，可顺序用于同一实现。
+- [模板内 float→float Cast 使 fp32 分支全错](templated_float_input_must_bypass_same_type_cast.md)（`related`）：直接搬运与 Cast 两条路径都在数据消费前完成 MTE2→VEC 同步；这避免“修复 fp32 却让低精度产生 NaN”的二次回归。；低精度分支顺序固定为 `DataCopyPad → PipeBarrier → Cast`；不使用“分支外统一屏障”掩盖分支内部依赖。。两卡共同约束同一模板化 gamma 搬运链：按 dtype 分流以后，仍须在低精度分支内部保证 MTE2 写入先于 Vector Cast。
 <!-- cannbot:related:end -->

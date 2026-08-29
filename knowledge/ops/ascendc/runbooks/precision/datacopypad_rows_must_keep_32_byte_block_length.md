@@ -273,9 +273,5 @@ CumminTiling calc_cummin_tiling(int64_t outer, int64_t inner, int64_t sizeofT)
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DataCopyPad 尾块改逐行一维搬入](datacopypad_partial_2d_blocks_use_per_row_copy.md)（`related`）：DataCopyPad 尾块改逐行一维搬入 与《合并尾块的非 32B 行导致 PathB 数据损坏》的衔接是：这些候选直接解释 DataCopy/DataCopyPad 的 blockCount、行跨度、32B/256B 粒度、padding 与地址偏移；它们可用于判断短二维行何时必须退化为逐行复制。
-- [DataCopyPad多行stride单位误用导致非对齐行输出NaN](datacopypad_stride_fields_use_32_byte_block_units.md)（`related`）：即使每行有效元素不足 32B，blockLen 仍需维持最小 DMA block；该约束与 stride block 单位共同决定二维搬运。
-- [DataCopy尾chunk非32B对齐触发ERR99999](../compilation/datacopy_chunk_32b_err99999.md)（`related`）：《DataCopy尾chunk非32B对齐触发ERR99999》说明Ascend C DataCopy 在 UB↔GM 方向要求 count*sizeof(T) 为 32 字节对齐，否则搬运量对 32B 向下取整。当纯搬运算子尾 chunk 的实际元素数不满足 32B 对齐时，UB→GM 写方向触发 ERR99999、GM→UB 读方向静默丢尾部数据。判别方法：尾部元素数*sizeof(T)%32!=0 即命中。；《合并尾块的非 32B 行导致 PathB 数据损坏》说明PathB 把 inner 余数合入最后一个二维 DataCopyPad 块后，blockLen 不再是 32B 的整数倍并产生值与索引损坏；保留完整 V32 块、将余数逐行走一维拷贝可恢复正确性。。二者在DataCopy尾chunk错误由有效字节数非32B倍数触发，DataCopyPad的逐行、stride、padding和最小DMA卡给出修复边界上存在可执行的直接衔接。
-- [多核非对齐 DataCopyPad 写回边界互相覆盖](multicore_non_aligned_datacopypad_rmw_overlap.md)（`related`）：两卡都定位到非 32B 行/列块边界破坏：本卡是多核相邻 GM RMW 覆盖，目标卡是合并尾块破坏行的块长度；共同修复原则是保持物理 32B 边界。
-- [DataCopyPad stride 表示 block 间隙](datacopypad_stride_is_inter_block_gap.md)（`same_topic`）：DataCopyPad stride 表示 block 间隙 与《合并尾块的非 32B 行导致 PathB 数据损坏》的实质衔接是：这些卡都直接解释 DataCopyPad 的 stride 是有效 block 后的 gap，并覆盖32B单位、窄尾padding、逐行复制、非连续子块、NDDMA stride及官方GM→L1参数契约。
+- [DataCopyPad多行stride单位误用导致非对齐行输出NaN](datacopypad_stride_fields_use_32_byte_block_units.md)（`related`）：“完整 chunk 固定为 `V32 = 32 / sizeof(T)` 个元素，使二维搬运的每行 `blockLen` 恰为 32B。”与“也就是说，这些 stride 字段使用 32B block 数，而 `blockLen` 仍使用字节数。”分别给出双端正文事实；两张排障卡分别约束同一次多行 DataCopyPad 的 blockLen 字节长度与 srcStride/dstStride 的 32B block 单位，联合使用可避免把行长和行间距单位混为一谈。
 <!-- cannbot:related:end -->

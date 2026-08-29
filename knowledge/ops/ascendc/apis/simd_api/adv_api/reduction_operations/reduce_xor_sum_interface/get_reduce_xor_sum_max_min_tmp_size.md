@@ -26,6 +26,5 @@ host侧Tiling接口，用于获取ReduceXorSum接口所需的最大和最小临�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ReduceXorSum接口](reduce_xor_sum_interface.md)（`related`）：高阶 XOR-sum 归约前需按 shape 获取 workspace。
-- [ReduceXorSum](reduce_xor_sum.md)（`same_topic`）：GetReduceXorSumMaxMinTmpSize 与《ReduceXorSum》的实质衔接是：GetReduceXorSumMaxMinTmpSize 是 ReduceXorSum 的 host 侧空间查询，结果直接作为该接口 kernel tiling 的临时缓冲预算。
+- [ReduceXorSum](reduce_xor_sum.md)（`related`）：焦点卡要求“isReuseSource与ReduceXorSum接口保持一致”，候选卡定义“对多维向量按指定维度进行异或求和归约。”；Host 侧临时空间计算的复用参数必须与 Kernel 侧 ReduceXorSum 调用一致。
 <!-- cannbot:related:end -->

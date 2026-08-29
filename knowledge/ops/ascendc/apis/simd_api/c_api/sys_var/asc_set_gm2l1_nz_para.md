@@ -21,6 +21,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCopyGm2l1Dn2nz](../cube_data_move/asc_copy_gm2l1_dn2nz.md)（`related`）：AscSetGm2l1NzPara 明确在 asc_copy_gm2l1_dn2nz 前配置 MTE2_NZ_PARA，是寄存器设置的直接消费者。
-- [asc_copy_gm2l1_nd2nz](../cube_data_move/asc_copy_gm2l1_nd2nz/asc_copy_gm2l1_nd2nz_arch_3510.md)（`related`）：ND2NZ 搬运同样读取 MTE2_NZ_PARA；该卡给出 3510 路径的矩阵尺寸与 stride 契约。
+- [AscCopyGm2l1Dn2nz](../cube_data_move/asc_copy_gm2l1_dn2nz.md)（`related`）：“对MTE2_NZ_PARA寄存器中的值进行设置，可以在调用asc_copy_gm2l1_dn2nz和asc_copy_gm2l1_nd2nz前设置相关参数。”；“将矩阵数据从Global Memory搬运到L1 Buffer，在此过程中执行DN->NZ/NCHW->NC1HWC0/NCHW->C1HWNC0操作。”。焦点接口在 DN→NZ 搬运前写入该指令消费的 MTE2_NZ_PARA 参数。
+- [asc_copy_gm2l1_nd2nz](../cube_data_move/asc_copy_gm2l1_nd2nz/asc_copy_gm2l1_nd2nz_arch_3510.md)（`related`）：“对MTE2_NZ_PARA寄存器中的值进行设置，可以在调用asc_copy_gm2l1_dn2nz和asc_copy_gm2l1_nd2nz前设置相关参数。”；“将矩阵数据从Global Memory搬运到L1 Buffer，在此过程中执行ND->NZ/NHWC->NC1HWC0/NHWC->C1HWNC0操作。”。焦点接口在 arch3510 的 ND→NZ 搬运前设置其 MTE2_NZ_PARA 配置。
 <!-- cannbot:related:end -->

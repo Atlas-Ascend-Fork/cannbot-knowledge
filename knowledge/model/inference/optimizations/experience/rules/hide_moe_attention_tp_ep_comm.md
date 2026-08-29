@@ -14,9 +14,9 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/merge_requests/305
   role: evidence
 created_at: '2026-07-06T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
-- agnostic
+- a2
 ---
 
 # 掩盖 MoE/attention 的 TP/EP 并行通信（共享专家异步 all_reduce / 通算融合算子）
@@ -74,3 +74,9 @@ npu_mm_reduce_scatter_base(rearrange(o, 'b n s d -> (s b) (n d)'), weight.T, hcc
 
 - `diff 事实`（@fdb79bf65a8b）：`moe_forward` 的 `dist.all_reduce(..., async_op=True)` → `shared_mlp(...)` → `wait()` → 两路相加。收益定性，无独立 benchmark。溯源下探：[cann-recipes-infer-pr-218-feat-support-hunyuanimage-3-0-model-inference](https://gitcode.com/cann/cann-recipes-infer/merge_requests/218)
 - `diff 事实` + `维护者确认`（@f4a8014a8db0）：`npu_all_gather_base_mm` / `npu_mm_reduce_scatter_base` 调用 + `(s b)` 合轴；"算子只支持 2 维、只沿第 0 轴切、S 前 B 后否则精度错"及"融合优于不融合"为维护者确认，无独立复测数字。溯源下探：[cann-recipes-infer-pr-305-feat-hunyuanimage-3-0-supports-moe-ep-and-the-performance-is-optimized](https://gitcode.com/cann/cann-recipes-infer/merge_requests/305)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [多卡 HCCL 通信组/域构建的规则与陷阱（全秩组哨兵 / MC2 专用域 / 并发流独立域）](hccl_comm_group_construction_pitfalls.md)（`related`）：“掩盖 TP/EP 通信的上层手段见 ［hide-moe-attention-tp-ep-comm］(hide_moe_attention_tp_ep_comm.md)。”与“该融合算子走 MC2 路径，其平台/结构兼容性边界另见 ［mc2-fused-comm-op-compatibility-fallback］(../../../runbooks/runtime/mc2_fused_comm_op_compatibility_fallback.md)；相关通信域建法见 ［hccl-comm-group-construction-pitfalls］(hccl_comm_group_construction_pitfalls.md)。”分别给出两端正文事实；两卡互相给出上下层入口：通信隐藏方案调用 MC2/集合通信，通信组规则补齐其专用命名域和不可复用约束，联合阅读能避免优化开启后因域构造错误而失败。
+<!-- cannbot:related:end -->

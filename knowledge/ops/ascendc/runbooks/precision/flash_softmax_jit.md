@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.precision", "topic.compute.normalization"]
 status: stable
 sources: []
 created_at: "2026-08-18T08:43:16Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: ["950"]
 aliases: ["online_softmax", "loop_carried_dependency"]
 ---
@@ -21,7 +21,7 @@ aliases: ["online_softmax", "loop_carried_dependency"]
 
 - **工程形态**：kernel 直调（PyPTO gym，flash 在线 softmax 算子）。
 - **API 路径**：`pypto.loop(..., unroll_list=...)`、JIT `runtime_options.device_sched_mode`、JIT `pass_options.cube_nbuffer_setting`。
-- **验证过的平台与 CANN 版本**：Ascend950（A5）。
+- **验证过的平台与 CANN 版本**：Ascend950（950）。
 - **适用粒度**：`operator_family`（任何采用 flash 在线 softmax、`mi/li/oi` 跨迭代传递的 attention 变体）。
 - **路线优先级**：`banned`——对在线 softmax 算子，`loop_unroll_list={4}`（裸展开未守序）、`device_sched_mode=2/3`、`cube_nbuffer_setting={-1:2}` 属禁用路线；保持默认 `unroll_list={1}` / `device_sched_mode=0` / 不设 `cube_nbuffer_setting`。
 - **不适用/未验证场景**：非在线 softmax（标准注意力、单块 softmax）不受此约束；用 `sg_set_scope=5001` 全包裹 CV 序列后再 unroll 的 `_part` 参考实现精度通过，说明禁用的是"未守序下的裸重排"而非 unroll 本身。
@@ -58,12 +58,7 @@ aliases: ["online_softmax", "loop_carried_dependency"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SoftMax/SimpleSoftMax Tiling](../../apis/simd_api/adv_api/activation_functions/soft_max_interface/soft_max_simple_soft_max_tiling.md)（`exemplifies`）：正式 tiling 页给出 tile/临时空间基线，可与 JIT 模板参数对照。
-- [SoftmaxFlashV2](../../apis/simd_api/adv_api/activation_functions/soft_max_interface/softmax_flash_v2.md)（`exemplifies`）：《SoftmaxFlashV2》处理“SoftmaxFlash增强版本，对应FlashAttention-2算法，支持通过isUpdate参数控制是否根据前一次的sum和max更新当前结果，支持ND和NZ格式。”。《flash在线softmax JIT重排致精度超阈》提供“flash 在线 softmax 的 mi/li/oi 循环依赖对执行顺序敏感；loop_unroll_list、device_sched_mode、cube_nbuffer_setting 任一调离默认值都会改变 C1 任务执行顺序，引入 BF16 ULP 级累积误差 0.00048828 超逐位置阈值，三参数对在线 softmax 算子 banned。”，其具体合同或探针直接接入Flash softmax 的 update 状态、专用 Tiling 与在线 mi/li 依赖。
-- [SoftmaxFlashV3 Tiling接口](../../apis/simd_api/adv_api/activation_functions/soft_max_interface/softmax_flash_v3_tiling_interface.md)（`exemplifies`）：《SoftmaxFlashV3 Tiling接口》处理“用于获取SoftmaxFlashV3接口所需的Tiling参数。”。《flash在线softmax JIT重排致精度超阈》明确“flash 在线 softmax 的 mi/li/oi 循环依赖对执行顺序敏感；loop_unroll_list、device_sched_mode、cube_nbuffer_setting 任一调离默认值都会改变 C1 任务执行顺序，引入 BF16 ULP 级累积误差 0.00048828 超逐位置阈值，三参数对在线 softmax 算子 banned。”，可直接用于核对SoftmaxFlashV3 的 Kernel 参数、专用 Tiling、update 状态与在线 softmax 数值依赖。
-- [AR 输出张量未初始化导致 Softmax 部分用例错](softmax_ar_output_buffer_must_be_initialized_from_input.md)（`related`）：JIT 路径仍需正确初始化 AR 规约缓冲。
-- [Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差](reduce_lane0_must_be_broadcast_before_vector_normalization.md)（`related`）：规约标量在归一化前需广播，不能因 JIT 融合省略。
-- [SoftmaxV2 ARA与AR模板R向累加树不同致1ULP分歧](softmaxv2_ara_ar_r_1ulp.md)（`related`）：目标卡展示在线 softmax 的任务重排改变累加次序并产生 ULP 级误差；本卡展示 tiling 模板自身采用不同 reduce 树产生同类顺序敏感差异。
-- [PyPTO F40005 UB 越界：scope 扩展压满 UB](../compilation/pypto_f40005_ub_scope_ub.md)（`same_topic`）：《PyPTO F40005 UB 越界：scope 扩展压满 UB》处理“在 PyPTO 前端扩展 sg_set_scope/Mix合图覆盖段或在循环内 sg_set_scope=-1 重开、或为 V0/V1 段加 sg_set_ooo_scope 时，OoO 调度把更多算子并入同一调度域，单算子 in/output UB 占用超出 MEM_UB(253952) 即报 F40005 TENSOR_MEMORY_ALLOCATION；诊断即回退 scope/ooo 扩展到上一可运行配置。”。《flash在线softmax JIT重排致精度超阈》明确“flash 在线 softmax 的 mi/li/oi 循环依赖对执行顺序敏感；loop_unroll_list、device_sched_mode、cube_nbuffer_setting 任一调离默认值都会改变 C1 任务执行顺序，引入 BF16 ULP 级累积误差 0.00048828 超逐位置阈值，三参数对在线 softmax 算子 banned。”，可直接用于核对同一 sparse flash PyPTO scope/Mix 合图扩展对 UB、调度、精度和编译挂起的联动约束。
-- [unroll s2 内层循环破坏 flash 在线 softmax 循环态](unroll_s2_flash_softmax.md)（`same_topic`）：两卡都证明在线 softmax 的 mi/li/oi 跨 s2 循环态对重排敏感；目标卡覆盖 unroll/sched/nbuffer 导致 ULP 漂移，focal 则记录展开内层边界造成大面积状态错位。
+- [C1 Cube FP32 输出阻断 950 Mix合图 CV 通路](../compilation/c1_cube_fp32_950_mix_cv.md)（`related`）：Mix CV 卡给出同一算子的 dtype 通路边界“950 Mix合图 CV 通路（L0C→UB）只支持 FP16/BF16，不支持 FP32。”；JIT 卡给出顺序边界“在线 softmax 的 `mi/li/oi` 跨迭代循环依赖对执行顺序敏感”，共同要求 sparse_flash_attention_quant_d_950 的优化同时通过 CV dtype 与在线 softmax 顺序两道 gate。
+- [cube_l1_reuse_setting 32 非单调反退](../performance/cube_l1_reuse_setting_32.md)（`related`）：性能卡记录“将 `cube_l1_reuse_setting` 从 `{-1:16}` 增大到 `{-1:32}`，期望通过增加 L1 复用次数进一步减少 L1 重载。”但性能未改善；精度卡进一步规定“`cube_nbuffer_setting={-1:2}` 属禁用路线”，并解释重排在线 softmax 的 C1 任务会造成 BF16 超阈，二者共同约束同一算子的 Cube/JIT 复用调参和验证。
+- [unroll s2 内层循环破坏 flash 在线 softmax 循环态](unroll_s2_flash_softmax.md)（`related`）：“在线 softmax 的 `mi/li/oi` 跨迭代循环依赖对执行顺序敏感，任何重排 C1 任务顺序的优化都会改变累积次序”给出 JIT 重排的通用故障机制；“把 `unroll_list` 从 `{1}` 扩为 `{1,2}` 后，框架对 s2 第 2 层循环做展开，破坏了 `is_loop_begin` / `is_loop_end` 在原单层 s2 上的边界语义”提供一个更严重且可复现的具体分支。
 <!-- cannbot:related:end -->

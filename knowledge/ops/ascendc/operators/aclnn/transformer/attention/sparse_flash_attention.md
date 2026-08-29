@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: "2026-08-24T19:48:11Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -566,7 +566,7 @@ V route 由两枚 AIV 将小块 K/Krope 聚合为连续 576-wide cache，AIC 再
 
 - 适用：DAV_2201、D512+Dr64、1:2 MIX。
 - 前提：V route 保留四 buffer cache、valid mask、flag3/6 与 workspace。
-- 失效：A5 使用另一套 arch35 CFA body。
+- 失效：950 使用另一套 arch35 CFA body。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -653,9 +653,9 @@ if (extraInfo1.isValid) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | README/API 明确支持 | README/API 明确支持 | 由 `_a5` 卡描述 |
+| 支持状态 | README/API 明确支持 | README/API 明确支持 | 由 `_950` 卡描述 |
 | Host/Launcher | 共用 DAV_2201 | 共用 DAV_2201 | 同 Host 的 DAV_3510 分支 |
 | Kernel/资源 | arch22 MIX、workspace CV edges | 同 | arch35 L1/UB cross-core policy 与 triple GM cache |
 
@@ -701,3 +701,10 @@ if (extraInfo1.isValid) {
 | 同步 | flags3~9 与 L1/L0 events | set/wait/PIPE 类型 | `ProcessBalance/ProcessVec1L` |
 | 精度与尾块 | FP32 MM/softmax，cast/mask/page tail | BF16 RINT、有效前缀 | `AmlaVecCompute/Bmm2CastAndCopyOut` |
 | 失败边界 | Host fail closed；V stride fallback | 不启用 inactive FD/unknown key | `SFATilingCheck/CopyInKv` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ascendc SparseFlashAttention 非 PA(无 block table)decode 路由到未优化模板、慢于 tilelang](../../../../../../model/inference/runbooks/runtime/ascendc_sparse_flash_attention_non_pa_slow.md)（`related`）：该非 PA 场景在 ascendc `SparseFlashAttention` 中会**路由到未优化的模板**，故性能差；R-001 C 连续 KV；R-002 C PageAttention；R-003 V 连续 KV；R-004 V PageAttention。运行手册定位连续 KV 与 PageAttention 的性能分叉，算子卡给出四条 Host 可达 Route，支持继续核对该分叉的 Tiling 与 Device 实现。
+- [SparseFlashAttention 950 ACLNN 算子知识](sparse_flash_attention_950.md)（`same_topic`）：对 `sparseIndices` 选出的 K/V token 计算 `softmax(scaleValue·(Q,Qrope)·(K,Krope)^T)·V`；`sparseMode=3` 再施加右下因果有效域；按 sparseIndices 收集 K/K-rope，计算 softmax(scaleValue·QKᵀ) 后与收集数据的前 512 维相乘；sparseMode=3 再施加右下因果边界。两卡描述同一 SparseFlashAttention 的稀疏索引收集、缩放 QK softmax、与 V 相乘及 sparseMode 3 因果边界；另一端补充 950 执行闭包。
+<!-- cannbot:related:end -->

@@ -24,9 +24,3 @@ platforms: ['950']
 约束：无。需包含头文件 simt_api/math_functions.h。
 
 支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Sincosf](sincosf.md)（`same_topic`）：sinf 只返回正弦，sincosf 对同一 float 输入同时写出正弦与余弦；当调用链还需要 cos 时，后者是避免重复角函数求值的直接替代契约。
-<!-- cannbot:related:end -->

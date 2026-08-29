@@ -23,6 +23,8 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Add](add.md)（`related`）：双线性插值需合并四邻域加权结果，Add 是下游组合步骤而非完整插值接口。
-- [Mul](mul.md)（`related`）：双线性插值由若干权重乘法和加法组成，Mul 是其基础计算构件但不包含坐标/权重契约。
+- [Add](add.md)（`related`）：BilinearInterpolation 的末步是“通过 Add 完成水平迭代累加输出到 dst。”；Add 页定义“计算公式 dst_i = src0_i + src1_i。”，后者是前者汇总各权重乘积的直接原语。
+- [Brcb](../data_padding/brcb.md)（`related`）：BilinearInterpolation 的第二步是“通过 Brcb 广播填充 src1”；Brcb 定义“每一次取输入张量中的8个数进行填充操作，将每个数填充到结果张量的一个DataBlock（32字节）中。”，后者提供权重广播布局。
+- [Gatherb](../scatter_gather/gatherb_isasi.md)（`related`）：BilinearInterpolation 的实现流程第一步是“通过 Gatherb 按 DataBlock 粒度收集 src0 到临时 Buffer”；Gatherb 定义“根据DataBlock偏移张量将输入张量按DataBlock粒度收集到结果张量中，每次迭代完成8个DataBlock的数据收集。”，后者是前者非规则源数据收集阶段的直接原语。
+- [Mul](mul.md)（`related`）：BilinearInterpolation 明确“通过 Mul 执行逐元素乘法”；Mul 页定义“计算公式 dst_i = src0_i * src1_i。”，该原语消费 Gatherb 数据与 Brcb 权重形成乘积。
 <!-- cannbot:related:end -->

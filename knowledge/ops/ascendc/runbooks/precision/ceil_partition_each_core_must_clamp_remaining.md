@@ -118,15 +118,3 @@ __aicore__ inline void Process()
 ## 误诊
 
 看到“大规模失败、小规模通过”时只检查向量计算或精度容差，会错过 Host/Kernel 共同决定的任务范围错误。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscGetBlockIdx](../../apis/simd_api/c_api/sys_var/asc_get_block_idx.md)（`exemplifies`）：AscGetBlockIdx 与《多核 ceil 尾块为负 — 每核按 remaining 截断》的实质衔接是：AscGetBlockIdx 与 block 数 API、系统变量共同定义多核索引；所选故障/性能卡直接用 blockIdx 解释错误切分、串行启动和尾核边界。
-- [Ceil](../../apis/simd_api/adv_api/math_compute/ceil_interface/ceil.md)（`exemplifies`）：Ceil 与《多核 ceil 尾块为负 — 每核按 remaining 截断》的实质衔接是：Ceil kernel 依赖两种临时空间查询，C API 是对应入口，Floor 提供相反取整边界；多核尾块卡直接验证 remaining 计数错误。
-- [Ceil接口](../../apis/simd_api/adv_api/math_compute/ceil_interface/ceil_interface.md)（`exemplifies`）：《Ceil接口》说明提供Ceil向上取整计算接口及其Tiling临时空间大小查询接口，包含Ceil、GetCeilMaxMinTmpSize等。；《多核 ceil 尾块为负 — 每核按 remaining 截断》说明ceil 分块后预计算末核 tail 可为负并让中后核越界；改为每核按 total-start 截断。。二者在Ceil计算、临时空间估算与多核尾段切分共同决定向上取整算子的正确执行上存在可执行的直接衔接。
-- [GetBlockIdx](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_idx.md)（`exemplifies`）：《GetBlockIdx》处理“获取当前逻辑AI Core的索引，用于多核逻辑控制及偏移量计算等。”。《多核 ceil 尾块为负 — 每核按 remaining 截断》明确提供“ceil 分块后预计算末核 tail 可为负并让中后核越界；改为每核按 total-start 截断。”，其参数、调用或验证步骤直接接入GetBlockIdx/GetBlockNum 与 Tiling 切核、尾核边界和多核验证的合同。
-- [GetBlockNum](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_num.md)（`exemplifies`）：该 API 提供任务配置的逻辑核数，focal 的 ceil factor 与错误 tail 公式都依赖该值；结合 GetBlockIdx 可逐核计算 remaining。
-- [DAV_2201 element-wise unary kernel 骨架 多核](../compilation/dav2201_elementwise_unary_kernel_skeleton_relu.md)（`related`）：该已验证骨架展示运行时核数、blockIdx 基址、空输入保护和尾核 tiling 的完整实现，可将 focal 的区间不变量落到 direct-invoke kernel。
-- [多核共享首段行区间导致部分输出未写](multiblock_launch_must_derive_row_range_from_block_index.md)（`same_topic`）：多核共享首段行区间导致部分输出未写 与《多核 ceil 尾块为负 — 每核按 remaining 截断》的实质衔接是：多核 kernel 必须从 block index 推导独立行区间；核数、主尾块切分和 block 同步卡直接支持修复。
-<!-- cannbot:related:end -->

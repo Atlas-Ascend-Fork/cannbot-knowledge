@@ -190,13 +190,3 @@ static ge::graphStatus InferShapeForEuclideanNorm(gert::InferShapeContext* conte
 ## 误诊
 
 - 早期一度怀疑"infershape 桩错（y=x）是直接根因"——但实测 `aclGetViewShape` 返回的是调用方 shape 而非 x shape（24），说明该 infershape 既未生效也未传播；真正的驱动是 CSV y-shape。判别时先查 `aclGetViewShape` 返回值是否等于调用方填入 shape，勿先动 infershape 桩或 compute。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetOutputViewTensor 私有致 op_host 编译失败](../compilation/getoutputviewtensor_op_host.md)（`related`）：aclnn 黑盒 numel 不符：输出取自 CSV y 不被算子覆盖 与《GetOutputViewTensor 私有致 op_host 编译失败》的实质衔接是：该 ACLNN numel 误判来自输出 shape/测试数据来源；L0 shape、白盒绕过、identity InferShape、OP_PROTO_LIB 和 output view 卡提供同层判别。
-- [缺 OP_PROTO_LIB 致空 axes 命中内置 InferShape](../compilation/op_proto_lib_axes_infershape.md)（`related`）：aclnn 黑盒 numel 不符：输出取自 CSV y 不被算子覆盖 与《缺 OP_PROTO_LIB 致空 axes 命中内置 InferShape》的实质衔接是：该 ACLNN numel 误判来自输出 shape/测试数据来源；L0 shape、白盒绕过、identity InferShape、OP_PROTO_LIB 和 output view 卡提供同层判别。
-- [InferShape 返回 identity 致空 kernel 假通过](infershape_identity_kernel.md)（`same_topic`）：aclnn 黑盒 numel 不符：输出取自 CSV y 不被算子覆盖 与《InferShape 返回 identity 致空 kernel 假通过》的实质衔接是：该 ACLNN numel 误判来自输出 shape/测试数据来源；L0 shape、白盒绕过、identity InferShape、OP_PROTO_LIB 和 output view 卡提供同层判别。
-- [L0 op 须算归约后 shape（非复用输入）](../compilation/l0op_stub_must_derive_reduce_shape_not_input.md)（`same_topic`）：aclnn 黑盒 numel 不符：输出取自 CSV y 不被算子覆盖 与《L0 op 须算归约后 shape（非复用输入）》的实质衔接是：该 ACLNN numel 误判来自输出 shape/测试数据来源；L0 shape、白盒绕过、identity InferShape、OP_PROTO_LIB 和 output view 卡提供同层判别。
-- [白盒pytest走aten内置绕过自定义aclnn](../compilation/pytest_aten_aclnn.md)（`same_topic`）：aclnn 黑盒 numel 不符：输出取自 CSV y 不被算子覆盖 与《白盒pytest走aten内置绕过自定义aclnn》的实质衔接是：该 ACLNN numel 误判来自输出 shape/测试数据来源；L0 shape、白盒绕过、identity InferShape、OP_PROTO_LIB 和 output view 卡提供同层判别。
-<!-- cannbot:related:end -->

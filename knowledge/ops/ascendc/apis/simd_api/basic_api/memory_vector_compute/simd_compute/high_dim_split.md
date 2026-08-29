@@ -23,7 +23,5 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [高维切分API](../../../../../guides/programming_guide/library_api/basic_api/interface_classification/high_dim_split_api.md)（`explains`）：The high-dimension split guide explains how GetDim/SetDim/GetShape/UpdateShape are composed to partition a high-dimensional tensor safely.
-- [Copy](../data_move/copy_ub_to_ub_mask_highdim_split.md)（`same_topic`）：Copy 与《高维切分（SIMD计算）》的实质衔接是：该 Copy 是 UB 高维/掩码搬运；SetMaskNorm/Count/VectorMask、ResetMask、UB 搬运指南和 AscCopy 共同决定 mask 模式、stride 与恢复步骤。
-- [DataCopy](../data_move/data_copy_gm_and_ub_highdim_split.md)（`same_topic`）：DataCopy 与《高维切分（SIMD计算）》的实质衔接是：该 DataCopy 用 DataCopyParams 做 GM/UB 高维切分；slice/continuous 对照、高维 API 分类和 blockLen 窄化故障共同说明何时选用及参数类型边界。
+- [高维切分API](../../../../../guides/programming_guide/library_api/basic_api/interface_classification/high_dim_split_api.md)（`explains`）：“支持开发者控制指令的迭代执行和操作数的地址间隔”由“高维切分API，支持repeatTime、stride和mask参数”落实为 repeat、步长和掩码三个接口控制维度。
 <!-- cannbot:related:end -->

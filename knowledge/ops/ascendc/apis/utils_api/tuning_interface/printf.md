@@ -39,13 +39,3 @@ platforms: ['950', a2, a3]
 
     - Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持。
 支持 SIMT 与 SIMD/SIMT 混合编程场景。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [kernel 源码改动未生效因 binary 缓存](../../../runbooks/compilation/kernel_binary_cache_printf_hash_toggle.md)（`exemplifies`）：当源码修改未进入 device binary hash 时，加入 PRINTF 会改变 binary 并可判别运行时仍加载旧缓存，展示 Printf 的另一诊断用途。
-- [双 VF 融合输出非预期 先排 CopyOut slot 勿用 PRINTF](../../../runbooks/precision/vf_fusion_output_unexpected_check_copyout_slot_not_printf.md)（`exemplifies`）：该 runbook 明确说明 VF 融合异常时 device PRINTF 不稳定，先用 host copyout/slot 映射核对数据链，给出 Printf 的调试边界。
-- [NPU域上板调试（功能调试）](../../../guides/programming_guide/debug_and_tuning/functional_debug/npu_board_debug.md)（`explains`）：《NPU域上板调试（功能调试）》处理“NPU域上板调试手段主要包含上板数据打印、msSanitizer内存异常检测和msDebug单步调试等功能，数据打印包括printf、DumpTensor两种方式，其中，DumpTensor是SIMD编程独有功能，用于打印指定Tensor的数据。”。《Printf》提供“SIMD和SIMT编程调试场景下提供格式化输出功能，在算子Kernel侧打印日志信息。”，其具体合同或探针直接接入NPU 上板打印、异常定位、Tiling 调试、精度对比和离线解析流程。
-- [核函数运行验证时算子存在精度问题](../../../guides/programming_guide/appendix/faq/kernel_precision_issue.md)（`explains`）：FAQ 明确把 printf 数值打印作为定位 tileLength、LocalTensor 大小和中间值的手段；目标卡给出可调用接口。
-- [printf（AI CPU API）](../../ai_cpu_api/printf.md)（`related`）：焦点处理AI CPU printf 的格式化输出、Dump 配额与异构链接约束；Printf正文界定“SIMD和SIMT编程调试场景下提供格式化输出功能，在算子Kernel侧打印日志信息”。候选分别给出相同打印能力在通用 Kernel、AI CPU 编译/编程和 NPU/CPU 调试中的实际调用边界。
-<!-- cannbot:related:end -->

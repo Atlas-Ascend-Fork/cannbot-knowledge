@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_maximum_scalar/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:47:02Z"
-updated_at: "2026-08-25T15:47:02Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -388,11 +388,11 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | V2 公开支持 | V2 公开支持 | V2 公开支持，但不属于本卡 |
 | Host/Launcher | arch22 公共 Tiling | arch22 公共 Tiling | arch35 独立 Tiling |
-| Kernel/资源 | AIV Vector、公共 Queue body | 同 A2 | SIMT，详见 `_a5` 卡 |
+| Kernel/资源 | AIV Vector、公共 Queue body | 同 A2 | SIMT，详见 `_950` 卡 |
 
 ## 限制与失败边界
 
@@ -400,7 +400,7 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_
 - Tiling POD 只容纳 50 个 Tensor 和 50 个 core 的边界数组；API 文档未公开该 50 Tensor 上限。
 - A2/A3 Tiling 声明 32 B workspace，但 Device body 不消费；ACLNN 返回值还可能包含 Contiguous/标量转换框架临时量，固定仓未给聚合 offset/extent。
 - 全空元素列表的 API 仅在列表长度为 0 时短路；非空但各 Tensor 都为空时，arch22 `AssignDataToEachCore` 的负尾 offset 没有专门说明，固定仓缺少运行验证结论。
-- `Maxs` primitive 内部 NaN、有符号零语义及硬件指令细节不在固定仓；不得从 A5 的显式 `SimtMaximum` 反推本卡。
+- `Maxs` primitive 内部 NaN、有符号零语义及硬件指令细节不在固定仓；不得从 950 的显式 `SimtMaximum` 反推本卡。
 
 ## 源码索引
 
@@ -432,3 +432,10 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_
 | 同步 | Queue 同步与 PIPE_V barrier | Cast/Maxs/Cast barrier 不可删 | `InnerComputer::ComputePerCast` |
 | 精度与尾块 | BF16 FP32 计算并 RINT；尾部精确字节回写 | `maxCastDataCount`、dataCount、pad API | `InnerComputer` / `CopyOut` |
 | 失败边界 | API、Tiling 任一失败阻断 Kernel | key 4 编译 guard、50 Tensor/POD 上限 | `CheckParams` / `RunBigScalarKernelTiling` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Maxs](../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/maxs.md)（`related`）：A2/A3 算子卡的实际路由包含“FLOAT32 -> key 2 -> ForeachOneScalarBinary<float, float, MaxsAdapter<float>, 2>”；Maxs 卡定义“计算公式 dst_i = max(src_i, scalarValue)。”，后者直接解释 Foreach 内核每个张量 tile 的标量最大值 primitive。
+- [ForeachMaximumScalar 950 ACLNN 算子知识](foreach_maximum_scalar_950.md)（`same_topic`）：A2/A3 卡的核心合同是“对列表中每个张量逐元素计算 `y_i［j］ = max(x_i［j］, scalar)`。”；950 卡保持“对列表中每个张量逐元素计算 `y_i［j］ = max(x_i［j］, scalar)`；浮点路径显式传播 NaN 并处理有符号零。”，二者是同一 aclnnForeachMaximumScalarV2 对象在 arch22 与 arch35 的平台实现。
+<!-- cannbot:related:end -->

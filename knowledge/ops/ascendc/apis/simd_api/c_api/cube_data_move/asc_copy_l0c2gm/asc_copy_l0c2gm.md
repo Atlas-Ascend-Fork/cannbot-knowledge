@@ -29,13 +29,7 @@ platforms: [agnostic]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AccompanyingQuantization](../../../basic_api/cube_compute/cube_store_key_features/accompanying_quantization.md)（`related`）：AccompanyingQuantization说明矩阵计算搬出过程中支持随路cast和quant能力，包括Scalar和Tensor两种量化模式，支持多种量化类型。
-- [AscSetL0c2gmChannelPara](../../sys_var/asc_set_l0c2gm_channel_para.md)（`related`）：AscSetL0c2gmChannelPara说明设置通道步长寄存器比特位，配合L0C搬运接口使用。
-- [AscSetL0c2gmLreluAlpha](../asc_set_l0c2gm_lrelu_alpha.md)（`related`）：AscSetL0c2gmLreluAlpha 设置的 alpha 由后续 AscCopyL0c2Gm 随路 LeakyReLU 消费，是该搬出前的直接配置。
-- [AscSetL0cCopyPrequant](../asc_set_l0c_copy_prequant.md)（`related`）：《AscCopyL0c2Gm》明确“将矩阵计算结果从L0C Buffer搬运至GM，支持随路量化、ReLU、格式转换等能力，包含不同架构版本实现。”；它与《AscSetL0cCopyPrequant》的“设置数据搬运随路量化流程中的标量量化参数。”在实际调用参数、数据流或结果校验上直接衔接。
-- [DataCopyL0CToGM](../../../basic_api/cube_compute/cube_compute_store/data_copy_l0_c_to_gm.md)（`related`）：DataCopyL0CToGM说明将L0C Buffer中的矩阵计算结果搬运至Global Memory，支持随路量化、ReLU激活和NZ2ND格式转换。
-- [随路ReLU](../../../basic_api/cube_compute/cube_store_key_features/accompanying_relu.md)（`related`）：随路ReLU说明矩阵计算的搬出过程中支持随路ReLU能力，当前支持如下随路ReLU能力。DataCopyCO12DstParams结构体参数定义中reluPre可设置为1开启Normal ReLU，结合clipReluPre可进一步开启ClipReLU能力。
-- [随路量化与随路ReLU场景组合](../../../basic_api/cube_compute/cube_store_key_features/accompanying_quantization_and_relu_scenario_combination.md)（`related`）：随路量化与随路ReLU场景组合说明矩阵搬出支持多种随路量化与随路ReLU的组合，芯片支持的全量场景组合参考下表，接下来将对下表中的随路量化ReLU算法逐一介绍。
-- [AscCopyL0c2Gm](asc_copy_l0c2gm_arch_2201.md)（`same_topic`）：AscCopyL0c2Gm：这些卡共同约束同一 L0C→GM fixpipe 搬运：架构变体核对原型，SetL0cCopyParams/Prequant/ChannelPara配置随路转换，NZ2ND与Fixpipe页解释输出布局。 目标卡《AscCopyL0c2Gm》补充：将矩阵计算结果从L0C Buffer搬运至GM，支持随路量化、ReLU、格式转换等能力，包含不同架构版本实现。
-- [AscCopyL0c2Gm](asc_copy_l0c2gm_arch_3510.md)（`same_topic`）：AscCopyL0c2Gm说明将矩阵计算结果从L0C Buffer搬运至GM，搬运过程中支持随路量化、ReLU、格式转换、通道拆分等能力。
+- [AscSetL0c2gmLreluAlpha](../asc_set_l0c2gm_lrelu_alpha.md)（`related`）：用于设置asc_copy_l0c2l1或asc_copy_l0c2gm接口计算过程中使用的Leaky ReLU alpha值。该值只支持half和float两种数据类型。；将矩阵计算结果从L0C Buffer搬运至GM，支持随路量化、ReLU、格式转换等能力，包含不同架构版本实现。；alpha 设置接口为 asc_copy_l0c2gm 的随路 Leaky ReLU 提供参数，搬运接口则执行含激活能力的 L0C 到 GM 数据路径。
+- [AscSetL0cCopyParams](../asc_set_l0c_copy_params.md)（`related`）：DataCopy从L0C Buffer搬运到Global Memory或L1 Buffer过程中进行随路格式转换（NZ格式转换为ND格式）时，通过调用该接口设置格式转换的相关配置。；将矩阵计算结果从L0C Buffer搬运至GM，支持随路量化、ReLU、格式转换等能力，包含不同架构版本实现。；配置接口为 L0C 搬运的 NZ→ND 随路格式转换设置参数，asc_copy_l0c2gm 是执行同一 L0C→GM 格式转换搬运的接口族。
+- [AscSetL0cCopyPrequant](../asc_set_l0c_copy_prequant.md)（`related`）：数据搬运过程中进行随路量化时，通过调用该接口设置量化流程中的标量量化参数。；将矩阵计算结果从L0C Buffer搬运至GM，支持随路量化、ReLU、格式转换等能力，包含不同架构版本实现。；AscSetL0CCopyPreQuant 配置搬运随路量化使用的标量参数，AscCopyL0c2Gm 则在 L0C 到 GM 搬运中执行该随路量化能力，前者直接支撑后者的量化路径。
 <!-- cannbot:related:end -->

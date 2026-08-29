@@ -50,7 +50,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/unfold_grad/op_host/config/ascend950/unfold_grad_binary.json
     role: implementation
 created_at: "2026-08-25T09:52:23Z"
-updated_at: "2026-08-25T09:52:23Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -98,7 +98,7 @@ gradIn[..., x, ...] = Σ gradOut[..., w, ..., k]
 
 公开文档和头文件只定义无后缀 `aclnnUnfoldGrad` 版本族。第一段接口创建 executor、校验参数、为空 Tensor 直接返回零 workspace，否则依次建立 `Contiguous(gradOut)`、`inputSizes` Tensor、`Contiguous(inputSizes)`、`l0op::UnfoldGrad`、同 dtype `Cast`、`ReFormat` 和 `ViewCopy`。第二段仅把 workspace/executor/stream 交给 `CommonOpExecutorRun`。固定 Commit 不存在更高版本公开入口。
 
-A2/A3 的 README、OpDef `ascend910b`/`ascend910_93`、binary config 与 CMake compute-unit 列表一致。README、OpDef 与 binary config 声称支持 A5，但算子 CMake 的 `SUPPORT_COMPUTE_UNIT` 未列 `ascend950`；该平台构建接线冲突不纳入本卡，也不发布 `_a5` 卡。
+A2/A3 的 README、OpDef `ascend910b`/`ascend910_93`、binary config 与 CMake compute-unit 列表一致。README、OpDef 与 binary config 声称支持 950，但算子 CMake 的 `SUPPORT_COMPUTE_UNIT` 未列 `ascend950`；该平台构建接线冲突不纳入本卡，也不发布 `_950` 卡。
 
 ## Host/Launcher 执行流程
 
@@ -1445,7 +1445,7 @@ pipe->InitBuffer(computeOutQueueDst, 1, T2DstDataSize);
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 支持：README、OpDef、ascend910b binary、CMake 一致 | 支持：README、OpDef、ascend910_93 binary、CMake 一致 | 不发布：README/OpDef/ascend950 binary 声称支持，但活动 per-op CMake compute-unit 列表缺失，存在发布冲突 |
 | Host/Launcher | 共用 root Host/Tiling；AIV core 数和 UB 运行期查询 | 同 A2 | root 实现存在，但固定仓无法消解构建接线冲突 |
@@ -1460,7 +1460,7 @@ pipe->InitBuffer(computeOutQueueDst, 1, T2DstDataSize);
 - executor 外围 Contiguous/Cast/ReFormat/ViewCopy 的具体 Kernel、workspace slice、stream/event 实现与 `GetLibApiWorkSpaceSize` 数值固定仓不可见；本卡只闭合算子拥有的 selector、POD 与核心 body。
 - BigSize body 把每个窗口按 32B 对齐后的 `neededSpaceForOnePaddedSize` 写到 GM；padding lane 为 0，但固定仓未给出用户输出物理分配尾部的对齐容量证明。复用时必须保留框架的 tensor storage 分配边界，不能只按逻辑元素数裸分配 GM。
 - AIV low 路线为 FP32 累加后 RINT；AICPU low fallback 按 T 类型逐项累加。两者默认确定性，但固定源码未证明二者逐 bit 一致。
-- A5 公开支持证据与活动 CMake compute-unit 列表冲突，故未创建 `_a5` 正式卡。
+- 950 公开支持证据与活动 CMake compute-unit 列表冲突，故未创建 `_950` 正式卡。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -1486,11 +1486,11 @@ pipe->InitBuffer(computeOutQueueDst, 1, T2DstDataSize);
 | Kernel entry/body | `conversion/unfold_grad/op_kernel_aicpu/unfold_grad_aicpu.cpp` | `Compute/DoCompute/Process` | AICPU fallback 与并行分片 |
 | 构建接线 | `conversion/unfold_grad/op_kernel_aicpu/unfold_grad_aicpu_def.cpp` | `ApplyMathAicpuDefaultCfg` | AICPU OpDef 调用 |
 | 构建接线 | `common/inc/aicpu/aicpu_op_def.h` | `ApplyMathAicpuDefaultCfg` | AICPU so/lib/workspace 配置 |
-| 构建接线 | `conversion/unfold_grad/CMakeLists.txt` | `SUPPORT_COMPUTE_UNIT/add_all_modules_sources` | A2/A3 active compute units 与 A5 冲突 |
+| 构建接线 | `conversion/unfold_grad/CMakeLists.txt` | `SUPPORT_COMPUTE_UNIT/add_all_modules_sources` | A2/A3 active compute units 与 950 冲突 |
 | 构建接线 | `cmake/func.cmake` | `add_all_modules_sources` | L2/Host/Tiling/AICPU 源收集规则 |
 | 构建接线 | `conversion/unfold_grad/op_host/config/ascend910b/unfold_grad_binary.json` | `UnfoldGrad` op_list | A2 三 dtype binary |
 | 构建接线 | `conversion/unfold_grad/op_host/config/ascend910_93/unfold_grad_binary.json` | `UnfoldGrad` op_list | A3 三 dtype binary |
-| 构建接线 | `conversion/unfold_grad/op_host/config/ascend950/unfold_grad_binary.json` | `UnfoldGrad` op_list | A5 实现信号及冲突证据 |
+| 构建接线 | `conversion/unfold_grad/op_host/config/ascend950/unfold_grad_binary.json` | `UnfoldGrad` op_list | 950 实现信号及冲突证据 |
 
 每行只写一个文件，并确保该文件存在于 Frontmatter `sources`。
 
@@ -1503,4 +1503,10 @@ pipe->InitBuffer(computeOutQueueDst, 1, T2DstDataSize);
 | workspace/内存 | low AIV 使用 output-shaped FP32 user workspace | offset 是 FP32 element 的 `gradInBlockOffset`；owner 到 final cast 后 | `InitFinal*/SetMIDGMtoZero/CopyToOutBigShapeOnePage` |
 | 同步 | Queue depth1 + pipe/event + Atomic | Duplicate/transpose/DMA 间 barrier；FreeTensor 不得提前 | `PipeSync/Process*/SumFP32Res*` |
 | 精度与尾块 | low AIV `CAST_NONE→FP32 accumulate→CAST_RINT` | normal tail、big 整窗口、second tailCol 各自公式 | `CopyIn*/Compute*/CopyGMToGMOnceCastFromFP32` |
-| 失败边界 | AIV 阈值外 AICPU；Tiling/ParallelFor 错误上抛 | 不能把公开契约外 fallback 当公开支持扩展；A5 冲突不发布 | `IsAiCoreSupport/DoTiling/DoCompute` |
+| 失败边界 | AIV 阈值外 AICPU；Tiling/ParallelFor 错误上抛 | 不能把公开契约外 fallback 当公开支持扩展；950 冲突不发布 | `IsAiCoreSupport/DoTiling/DoCompute` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SetAtomicAdd](../../../../apis/simd_api/basic_api/atomic_operations/set_atomic_add.md)（`related`）：UnfoldGrad 实现记录“普通与 second-axis body 都遵循 `CopyIn→可选 T1→FP32 Cast→transpose/rearrange/add→Atomic CopyOut`”；SetAtomicAdd 规定“后续从UB/L0C/L1到GM的DataCopy搬运将对目标GM地址执行原子累加（旧值+新值）。”。该 API 正是重叠窗口梯度写回的冲突合并机制。
+<!-- cannbot:related:end -->

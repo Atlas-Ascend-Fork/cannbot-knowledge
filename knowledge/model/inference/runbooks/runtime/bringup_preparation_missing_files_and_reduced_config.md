@@ -71,3 +71,10 @@ bringup 早期的一类报错根因是**缺文件 / 文件不完整 / 环境残�
 
 - `维护者确认`（@2c45117）：`hunyuan_image_3` 未内置、须下载上游代码；config NoneType 由 checkpoint 拷贝不完整引起；清 `/root/atc_data/` 缓存；减 `num_hidden_layers` 到 ≥4 做功能验证。
 - 溯源下探：[cann-recipes-infer-issue-178-bug-report-models-hunyuan-image-3-0](https://gitcode.com/cann/cann-recipes-infer/issues/178)、[cann-recipes-infer-issue-54-bug-report-deepseek-v3-2-exp-w8a8c8-8p-16](https://gitcode.com/cann/cann-recipes-infer/issues/54)、[cann-recipes-infer-issue-31-question-set-env-sh-rm-rf](https://gitcode.com/cann/cann-recipes-infer/issues/31)、[cann-recipes-infer-issue-72-question-8-910c](https://gitcode.com/cann/cann-recipes-infer/issues/72)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [config/tokenizer 侧车与属性约定的 bringup 陷阱：MoE 属性名别名、yaml 布尔透传丢失、tokenizer chat_template 缺失](config_tokenizer_sidecar_and_attr_alias.md)（`related`）：HF 权重目录里缺 chat_template；缺文件 / 文件不完整 / 环境残留。前者给出 tokenizer sidecar 缺 chat_template 的具体症状与修复，后者给出 bringup 阶段缺件误报的通用检查顺序；联合可先验证权重目录完整性再追查框架属性错误。
+- [昇腾 bringup 初始化/HCCL 报错的根因常在环境/驱动/平台层，顶层 ACL/HCCL 码是泛化包装](bringup_error_root_cause_env_driver_platform.md)（`related`）：缺文件 / 文件不完整 / 环境残留；先怀疑环境/驱动/平台不匹配，别急着改模型或并行代码。前者覆盖模型代码、checkpoint 与编译缓存准备问题，后者覆盖驱动、设备透传和平台错配；二者合并成 bringup 早期按阶段排除环境侧根因的互补诊断树。
+<!-- cannbot:related:end -->

@@ -22,6 +22,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscStorealign](asc_storealign.md)（`related`）：若无需 postupdate 的地址更新语义，可改用通用 AscStoreAlign 完成连续对齐搬出。
-- [AscStoreAlignPostupdate](asc_storealign_postupdate.md)（`same_topic`）：废弃说明明确要求用 asc_storealign_postupdate 替代 v5 的 repeat-stride 搬出功能。
+- [AscStoreAlignPostupdate](asc_storealign_postupdate.md)（`same_topic`）：启用Post Update模式在搬出后自动累加目的地址指针；该接口已废弃，请使用asc_storealign_postupdate实现此功能。。右卡明确把废弃 asc_storealign 的连续对齐 UB 搬出迁移到左卡，左卡提供 post-update 自动推进目的地址的现行合同；两端共同决定旧调用的替代入口。
 <!-- cannbot:related:end -->

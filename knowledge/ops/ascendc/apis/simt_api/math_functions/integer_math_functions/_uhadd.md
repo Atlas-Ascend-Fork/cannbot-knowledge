@@ -19,11 +19,3 @@ uint32 无符号平均值函数。获取 uint32 类型数据 x 和 y 的平均�
 函数原型：unsigned int __uhadd(unsigned int x, unsigned int y)
 
 参数 x、y 为源操作数。返回输入数据的平均值。仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/device_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hadd（整数数学函数）](_hadd.md)（`related`）：__uhadd 保持无溢出、向下取整平均语义，将输入从 int32 改为 uint32。
-- [__rhadd（整数数学函数）](_rhadd.md)（`related`）：“__uhadd（整数数学函数）”定义：获取uint32类型数据x和y的平均值，避免中间求和溢出。；“__rhadd（整数数学函数）”定义：获取int32类型数据x和y的向上取整平均值，避免中间求和溢出。。实质衔接：__urhadd 保持 uint32 防溢出平均但向上取整；__rhadd 改为有符号且向上取整，明确符号与舍入选择。
-- [__urhadd](_urhadd.md)（`same_topic`）：uhadd 与 urhadd 同为 uint32 防溢出平均，区别是普通取整与向上取整。
-<!-- cannbot:related:end -->

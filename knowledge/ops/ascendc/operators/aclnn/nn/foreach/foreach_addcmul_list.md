@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_list/op_host/config/ascend910_93/foreach_addcmul_list_binary.json
     role: implementation
 created_at: "2026-08-25T15:30:51Z"
-updated_at: "2026-08-25T15:30:51Z"
+updated_at: '2026-08-28T06:56:32Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -765,7 +765,7 @@ __aicore__ inline void ComputePerCast(
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开 ACLNN 文档支持；`ascend910b` 注册/config/build 完整。 | 公开 ACLNN 文档支持；`ascend910_93` 注册/config/build 完整。 | 公开 ACLNN 文档明确不支持；虽然固定实现出现 `ascend950` 接线，但构成发布冲突，本卡不覆盖。 |
 | Host/Launcher | 共用非 regbase `ForeachCommonTiling`。 | 共用非 regbase `ForeachCommonTiling`。 | 实现信号改走 regbase template，但不能作为公开 ACLNN 发布依据。 |
@@ -780,7 +780,7 @@ __aicore__ inline void ComputePerCast(
 - 算子 Tiling 登记 32 B workspace，但 Kernel 显式不消费。ACLNN 生成 bridge、输入连续化的额外 workspace 组合、executor owner/cleanup 和 stream launch 代码固定仓不可见。
 - `ForeachCommonTilingData` 的字段类型、顺序与数组长度可见；定义宏来自仓外，精确 `sizeof/alignof/offsetof` 固定仓不可见。
 - Vector primitive 的 INT32 溢出/饱和细节、FP16 `Axpy` 的硬件内部舍入细节和寄存器占用固定仓不可见；本卡仅记录固定源码显式的调用与 cast 顺序。
-- Ascend 950 的公开 ACLNN 文档与实现接线冲突，因此未生成 `_a5` 正式卡。
+- Ascend 950 的公开 ACLNN 文档与实现接线冲突，因此未生成 `_950` 正式卡。
 - 本次知识提取未执行编译、单元测试、真机、数值或性能测试。
 
 ## 源码索引
@@ -814,4 +814,4 @@ __aicore__ inline void ComputePerCast(
 | workspace/内存 | 原生 `8B`、BF16 `75B` 真实分配公式 | depth 必须计入；BF16 `9B/3B`、Host `/10`/`/8`/64 B 对齐不可拆开修改 | `DivideUbMemory3`、各 `InitBuffer` |
 | 同步 | Queue 与 `PIPE_V` barriers 可复用 | Mul→后继、Axpy→copy、各 BF16 Cast/compute 的 producer→consumer 顺序 | 两个 adapter、specialized `InnerComputer` |
 | 精度与尾块 | FP16/FP32 native、INT32 native、BF16 FP32+RINT | 不改变 BF16 cast/round；local pad lane 不得写入 GM 有效域 | `InnerComputer`、`CopyIn/CopyOut` |
-| 失败边界 | Host shape/dtype/list/scalars/output 检查 | 未知 key 无 kernel error、>50 无显式 guard、A5 公开冲突不得发布 | `CheckOpInfo`、entry router、公开产品表 |
+| 失败边界 | Host shape/dtype/list/scalars/output 检查 | 未知 key 无 kernel error、>50 无显式 guard、950 公开冲突不得发布 | `CheckOpInfo`、entry router、公开产品表 |

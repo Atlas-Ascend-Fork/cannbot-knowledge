@@ -25,7 +25,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Exp](exp.md)（`same_topic`）：Exp 与《GetExpTmpBufferFactorSize》的实质衔接是：这些卡直接给出 Exp 的高阶、基础、Reg 与 C 入口及其临时空间契约；所连排障卡均以 Exp 的溢出、下溢、FTZ 或 clamp 行为作为精度根因和修复对象。
-- [Exp接口](exp_interface.md)（`same_topic`）：GetExpTmpBufferFactorSize 与《Exp接口》的实质衔接是：该因子查询与 Exp、Exp 接口页及最大最小临时空间查询共同定义固定 UB 容量下单次可计算元素数。
-- [GetExpMaxMinTmpSize](get_exp_max_min_tmp_size.md)（`same_topic`）：GetExpTmpBufferFactorSize 与《GetExpMaxMinTmpSize》的实质衔接是：该因子查询与 Exp、Exp 接口页及最大最小临时空间查询共同定义固定 UB 容量下单次可计算元素数。
+- [Exp](exp.md)（`related`）：“获取Exp接口的maxLiveNodeCount和extraBuffer，用于在固定临时空间下推算算子单次最大计算元素数量。”提供反推 tile 容量的系数，而“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetExpMaxMinTmpSize获取。”说明 Exp 的临时空间消费入口；两者可用于在多个高阶 API 共用 UB 时确定 Exp 单次 calCount。
 <!-- cannbot:related:end -->

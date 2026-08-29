@@ -26,7 +26,5 @@ host侧Tiling接口，用于获取ReduceMax接口所需的最大和最小临时�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscReduceMax](../../../c_api/reg/reduce_compute/asc_reduce_max.md)（`same_topic`）：AscReduceMax 与《GetReduceMaxMaxMinTmpSize》的实质衔接是：这些接口都是最大值归约的不同执行层或粒度；count 排除 padding 和跨 chunk 显式累加案例直接约束 AscReduceMax 的参与元素及分块合并方式。
-- [ReduceMax](reduce_max.md)（`same_topic`）：GetReduceMaxMaxMinTmpSize：该 host 接口专门为 ReduceMax 计算选择 sharedTmpBuffer，ReduceMax 正文中的 isReuseSource/shape 必须与这里的估算入参保持一致。 目标卡《ReduceMax》补充：对多维向量在指定维度求最大值，通过pattern参数指定Reduce轴和Normal轴，当前支持AR和RA两种模式。
-- [ReduceMax接口](reduce_max_interface.md)（`same_topic`）：GetReduceMaxMaxMinTmpSize：该 host 接口专门为 ReduceMax 计算选择 sharedTmpBuffer，ReduceMax 正文中的 isReuseSource/shape 必须与这里的估算入参保持一致。 目标卡《ReduceMax接口》补充：对多维向量在指定维度求最大值，并提供临时空间大小获取接口。
+- [ReduceMax](reduce_max.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetReduceMaxMaxMinTmpSize获取。模板参数isReuseSource预留（传false）。；host侧Tiling接口，用于获取ReduceMax接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。ReduceMax 明确要求以 GetReduceMaxMaxMinTmpSize 决定临时空间，目标卡则定义该 Host 查询的上下界输出，二者构成 Host Tiling 到 Kernel 归约调用的资源配置链。
 <!-- cannbot:related:end -->

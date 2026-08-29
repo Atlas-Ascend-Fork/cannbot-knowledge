@@ -23,8 +23,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__mul24（整数数学函数）](_mul24.md)（`related`）：__mul_i32toi64 保留完整 32×32→64 位有符号乘积，而 __mul24 只使用低 24 位并返回低 32 位。
-- [__mulhi（整数数学函数）](_mulhi.md)（`related`）：__mulhi 返回乘积高位，而 focal 返回完整 64 位结果；二者可按结果表示和指令成本选型。
-- [__umulhi](_umulhi.md)（`related`）：__umulhi：__mulhi与__umulhi只差有符号解释，64hi扩展相同高半乘积契约，__mul_i32toi64给出完整32位乘积以核对高位提取。 目标卡《__mul_i32toi64》补充：计算输入32位整数x和y的乘积，返回64位结果。
-- [__mul64hi](_mul64hi.md)（`same_topic`）：焦点处理整数乘积高半部的有符号/无符号与位宽变体；__mul_i32toi64正文界定“计算输入32位整数x和y的乘积，返回64位结果”。候选保持“乘积高半部”语义，只改变 32/64 位和有符号性。
+- [SimThreadExponential 950 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)（`related`）：焦点卡定义“计算输入 32 位整数 x 和 y 的乘积，返回 64 位结果。”，候选算子在 Philox 热路径实际执行“uint64_t res0_u64 = __mul_i32toi64(PHILOX_M4X32_A, counter［0］);”；API 的 64 位乘积合同直接支撑随机数 round 的高低 32 位复用。
 <!-- cannbot:related:end -->

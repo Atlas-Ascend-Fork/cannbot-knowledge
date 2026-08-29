@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_asin/op_host/config/ascend910_93/foreach_asin_binary.json
     role: implementation
 created_at: "2026-08-25T15:31:05Z"
-updated_at: "2026-08-25T15:31:05Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -524,9 +524,9 @@ Cast(yLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_RI
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持；README/API、ascend910b config | 支持；README/API、ascend910_93 config | 支持，但使用独立 `_a5` 卡 |
+| 支持状态 | 支持；README/API、ascend910b config | 支持；README/API、ascend910_93 config | 支持，但使用独立 `_950` 卡 |
 | Host/Launcher | arch22 `ForeachCommonTiling` | 与 A2 共用 arch22 | arch35 独立 Tiling/POD |
 | Kernel/资源 | 通用 AIV Vector body，平台核数/UB 运行时获取 | 与 A2 共用 | SIMT VF，512 threads，16 MiB workspace 声明 |
 
@@ -574,3 +574,9 @@ Cast(yLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_RI
 | 同步 | TQue + PIPE_V barrier | Cast/Asin/Cast 与 FreeTensor 先后 | `InnerComputer::Compute`, `ComputePerCast` |
 | 精度与尾块 | FP16/FP32 直接；BF16 FP32 升精度、RINT | tail 精确字节数，不能把 padding 写回 | `CopyIn`, `CopyOut`, BF16 `InnerComputer` |
 | 失败边界 | Host 校验失败阻断 launch | 未知 key、>50 tensor、UB 下溢无 fallback | `CheckOpInfo`, `DivideUbMemory4`, router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachAsin 950 ACLNN 算子知识](foreach_asin_950.md)（`same_topic`）：｜ 计算语义 ｜ 对 tensor list 中每个有效元素执行 `y［t］［i］ = asin(x［t］［i］)`。 ｜；｜ 支持状态 ｜ 支持；README/API、ascend910b config ｜ 支持；README/API、ascend910_93 config ｜ 支持，但使用独立 `_950` 卡 ｜。两卡共同覆盖 aclnnForeachAsin 的逐元素语义，并按 950 的 arch35 SIMT 与 A2/A3 的 arch22 Vector 实现分开记录平台路线。
+<!-- cannbot:related:end -->

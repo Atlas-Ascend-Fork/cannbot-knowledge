@@ -26,7 +26,6 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetSignMaxMinTmpSize](get_sign_max_min_tmp_size.md)（`same_topic`）：GetSignTmpBufferFactorSize：该因子接口只服务 Sign 的临时空间反推；Sign与接口页定义 kernel计算，MaxMinTmpSize给出另一种从shape正向估算的预算方式。 目标卡《GetSignMaxMinTmpSize》补充：在host侧获取Sign接口计算所需最大和最小临时空间大小，供Tiling参数选择。
-- [Sign](sign.md)（`same_topic`）：GetSignTmpBufferFactorSize：该因子接口只服务 Sign 的临时空间反推；Sign与接口页定义 kernel计算，MaxMinTmpSize给出另一种从shape正向估算的预算方式。 目标卡《Sign》补充：按元素返回输入数据的符号，零返回0，正数返回1，负数返回-1。
-- [Sign接口](sign_interface.md)（`same_topic`）：GetSignTmpBufferFactorSize：该因子接口只服务 Sign 的临时空间反推；Sign与接口页定义 kernel计算，MaxMinTmpSize给出另一种从shape正向估算的预算方式。 目标卡《Sign接口》补充：按元素返回输入数据的符号（正数为1、负数为-1、零为0），并提供临时空间大小获取接口。
+- [GetSignMaxMinTmpSize](get_sign_max_min_tmp_size.md)（`related`）：开发者据此选择合适的Tiling参数传入kernel侧；推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize。总量接口确定 Sign 临时空间可选范围，因子接口把实际可用空间反推为单次最大元素数，二者组成 host 到 kernel 的分块 Tiling 计算。
+- [Sign](sign.md)（`same_topic`）：获取Sign接口的maxLiveNodeCount和extraBuf；临时空间大小通过GetSignMaxMinTmpSize获取。因子查询给出在固定临时空间下反推 Sign 单次元素数的公式，而 Sign 的 sharedTmpBuffer 路径需要先确定临时空间容量；两接口共同完成容量到计算规模的配置。
 <!-- cannbot:related:end -->

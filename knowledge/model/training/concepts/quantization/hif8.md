@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: HiF8（HiFloat8）8-bit 浮点格式与 V3 低精度预训练量化方案
-description: HiF8/MXFP8 8-bit 低精度训练（canonical 格式页）：两条实现路径。(1)MindSpeed+TE：--fp8-format/--fp8-recipe，FP8GlobalStateManager/TERowParallelLinear，A5 950DT。(2)torchtitan-npu converter 路径：nn.Linear→MXLinear(quant_linear.py)、npu_grouped_mm→低精度 GMM(quant_gmm.py)，converter quantize.linear.mx/quantize.grouped_mm.mx，recipe_name∈{mxfp8,hif8}，MXFP8 用 torch_npu.npu_dynamic_mx_quant(block=32)+npu_quant_matmul、HiF8 用 npu_dynamic_quant+npu_grouped_matmul，filter_fqns 跳敏感层，npu_gmm 须先于 quantize.grouped_mm.mx，仅 Ascend950+。区别 framework/torchtitan 的上游 TorchAO MXLinearConverter 路径。
+description: HiF8/MXFP8 8-bit 低精度训练（canonical 格式页）：两条实现路径。(1)MindSpeed+TE：--fp8-format/--fp8-recipe，FP8GlobalStateManager/TERowParallelLinear，950 950DT。(2)torchtitan-npu converter 路径：nn.Linear→MXLinear(quant_linear.py)、npu_grouped_mm→低精度 GMM(quant_gmm.py)，converter quantize.linear.mx/quantize.grouped_mm.mx，recipe_name∈{mxfp8,hif8}，MXFP8 用 torch_npu.npu_dynamic_mx_quant(block=32)+npu_quant_matmul、HiF8 用 npu_dynamic_quant+npu_grouped_matmul，filter_fqns 跳敏感层，npu_gmm 须先于 quantize.grouped_mm.mx，仅 Ascend950+。区别 framework/torchtitan 的上游 TorchAO MXLinearConverter 路径。
 tags:
 - task.design
 - topic.precision
@@ -16,10 +16,9 @@ sources:
 - resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/low_precision_training.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-08-27T12:23:11Z'
 platforms:
 - '950'
-- a5
 ---
 
 # HiF8（HiFloat8）8-bit 浮点格式与 V3 低精度预训练量化方案
@@ -226,3 +225,9 @@ model_converters = ModelConvertersContainer.Config(
 - [torchtitan](../frameworks/torchtitan.md)（HiF8/MXFP8 的**第二实现框架**：torchtitan-npu 经 converter 机制（`quantize.linear.mx` / `quantize.grouped_mm.mx`）把 GEMM 重写为 `torch_npu` 低精度算子，与上游 TorchAO `quantize_` + `MXLinearConverter` 路径并存；V3 低精度预训练验证走 MindSpeed+TE）
 - [npu-fused-op-converters](../frameworks/npu_fused_op_converters.md)（承载 torchtitan-npu 低精度路径的 converter 注册/替换机制：`npu_gmm` 前置约束、`MXFP8Converter` patch 与 `linear_quantize_`/`grouped_quantize_` 递归替换）
 - [qat-train](../techniques/qat_train.md)（训练态量化：QAT 学习适应量化误差，对照 HiF8 低精度训练格式）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [DeepSeek-V3 裁剪模型 MXFP8/HiF8 低精度预训练（MindSpeed · Atlas 950 950DT · 8K）](../../guides/recipes/deepseek_v3_low_precision_pretrain.md)（`related`）：这一动态范围优势使 HiF8 能采用**粗粒度 Per-Tensor 量化 + 周期较长的 Delayed Scaling**，从而比需要 Per-Block 细粒度 scaling 的 MXFP8 省下大量缩放元数据访存与控制开销。；分别用 **HiF8** 与 **MXFP8（E4M3）** 两种低精度格式量化整网的 **MatMul（MM）/ Grouped MatMul（GMM）** 算子，与 BF16 混合精度做长稳精度对齐与性能对比。。概念卡解释 HiF8 的 Per-Tensor 与 Delayed Scaling 机制及相对 MXFP8 的开销差异，Recipe 将这两种格式用于 MM/GMM 并与 BF16 做稳定性和性能验证，形成量化原理到训练实验的实施链。
+<!-- cannbot:related:end -->

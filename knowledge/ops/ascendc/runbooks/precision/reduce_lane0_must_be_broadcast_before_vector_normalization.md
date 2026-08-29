@@ -279,18 +279,5 @@ __aicore__ inline void Process()
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscDuplicateHighest](../../apis/simd_api/c_api/reg/data_fill/asc_duplicate_highest.md)（`exemplifies`）：AscDuplicateHighest 与《Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差》的实质衔接是：AscDuplicateHighest 从 src 最高 lane 广播到 mask 选中位置；Merge/Scalar/普通 Duplicate 的来源与未选中位置处理不同，相关错例直接约束枚举、范围和归约结果广播。
-- [AscDuplicateScalar](../../apis/simd_api/c_api/reg/data_fill/asc_duplicate_scalar.md)（`exemplifies`）：AscDuplicateScalar 与《Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差》的实质衔接是：AscDuplicateScalar 把一个 scalar 广播到 RegTensor；Merge/Highest/普通 Duplicate 改变未选中 lane 或来源，标量运算和错例直接约束广播范围与消费方式。
-- [BroadCastVecToMMISASI](../../apis/simd_api/basic_api/cube_compute/cube_compute_load/broad_cast_vec_to_mm_isasi.md)（`exemplifies`）：该卡展示标量 lane 广播到向量消费的必要性，可对照广播语义，但目标流水不同。
-- [Duplicate](../../apis/simd_api/basic_api/memory_vector_compute/data_padding/duplicate.md)（`exemplifies`）：“Duplicate”定义：将变量或立即数复制多次并填充到向量中，支持前n个数据计算和高维切分计算两种方式。；“Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差”定义：仅限 fp32 末轴 Softmax 的安全回退：归约结果经 32B UB 槽 GetValue 后标量 Duplicate；FP16/BF16 不适用，应走 UB 槽 LoadAlign 到 Reg 后广播。。实质衔接：这些卡分别限定 Duplicate 的等价 Reg/C API、UB 清零和标量广播正用法，以及全量 padding 覆盖、归约标量来源和纯写预填充的失败/性能边界。
-- [Duplicate](../../apis/simd_api/basic_api/reg_vector_compute/data_padding/duplicate.md)（`exemplifies`）：该卡用 Duplicate 把归约 lane0 广播到向量，展示其在归一化链中的正确消费位置。
-- [ReduceMax接口](../../apis/simd_api/adv_api/reduction_operations/reduce_max_interface/reduce_max_interface.md)（`exemplifies`）：Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差说明仅限 fp32 末轴 Softmax 的安全回退：归约结果经 32B UB 槽 GetValue 后标量 Duplicate；FP16/BF16 不适用，应走 UB 槽 LoadAlign 到 Reg 后广播。
-- [AR 输出张量未初始化导致 Softmax 部分用例错](softmax_ar_output_buffer_must_be_initialized_from_input.md)（`related`）：即使输入/输出 buffer 契约正确，规约 lane0 仍需按 dtype 合法地广播后才能归一化；两者覆盖 Softmax 的相邻正确性阶段。
-- [Ascend950 ReduceSum AR 多行归约逐行错](ascend950_reduce_sum_ar_multibundle_use_per_row.md)（`related`）：《Ascend950 ReduceSum AR 多行归约逐行错》说明Ascend950 上 ReduceSum<AR> 单次传入 aBundle>1 行时逐行结果错（总量近似但逐元素偏）；改逐行调用 ReduceSum(aBundle=1) 规避。仅当 aBundle>1 才触发。；《Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差》说明仅限 fp32 末轴 Softmax 的安全回退：归约结果经 32B UB 槽 GetValue 后标量 Duplicate；FP16/BF16 不适用，应走 UB 槽 LoadAlign 到 Reg 后广播。。二者在该故障专指ReduceSum AR一次处理多行时逐行错误，逐行调用、跨chunk累加和归约边界是直接修复/验证点上存在可执行的直接衔接。
-- [DataCopyPad 未填满强制对齐缓冲 — 小维规约读入脏尾部](datacopypad_tail_must_initialize_full_reduction_extent.md)（`related`）：归约后不仅 tail 要干净，lane0 标量还需广播到有效向量范围，二者共同保证后续归一化输入完整。
-- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：多阶段 VF 写回并读 UB 时应拆分 wrapper 并加 PIPE_V barrier，与本卡 max/sum 两次 slot 交接的隔离策略一致。
-- [Reg::Reduce 跨 chunk 覆写导致规约失真](reg_reduce_per_chunk_result_must_accumulate_explicitly.md)（`related`）：显式跨 chunk 折叠得到的标量位于 lane 0，向量归一化前还需把该 lane 广播到所有有效 lane。
-- [flash在线softmax JIT重排致精度超阈](flash_softmax_jit.md)（`related`）：规约标量在归一化前需广播，不能因 JIT 融合省略。
-- [Reduce count 必须排除 DMA 对齐填充元素](reduction_count_excludes_dma_padding.md)（`same_topic`）：Reduce count 必须排除 DMA 对齐填充元素 与《Reg 归约结果直接 Duplicate 导致末轴 Softmax 偏差》的实质衔接是：DMA 对齐容量不是 Reduce 的数学 count；DataCopyPad/padding 故障、Softmax 与 ReduceMax/Sum 各层入口共同验证填充零经 Exp 后会污染分母。
-- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`same_topic`）：VF 归约卡在 Reduce 后把 lane0 落 UB 再从标量侧读取，正好命中另一卡的 VEC Store→Scalar GetValue 未完成竞态；把归约与广播留在同一 VF 可同时修复陈旧标量和未广播 lane。
+- [Duplicate](../../apis/simd_api/basic_api/reg_vector_compute/data_padding/duplicate.md)（`exemplifies`）：焦点卡验证“去掉 RegTensor→Duplicate 直连，并改为 `StoreAlign` 到 32B UB 标量槽、`GetValue(0)` 读回 C++ 标量、再调用标量 `Duplicate` 后，两个末轴 fp32 探针同时恢复。”，候选 API 明确“Scalar模式：将scalarValue广播到寄存器，并保存在dstReg中（如果有mask，则保存在dstReg中被mask筛选的位置）。”；修复正是强制选用这一 Scalar 广播合同。
 <!-- cannbot:related:end -->

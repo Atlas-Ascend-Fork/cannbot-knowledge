@@ -64,7 +64,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
     role: implementation
 created_at: "2026-08-25T17:58:58Z"
-updated_at: "2026-08-25T17:58:58Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -868,7 +868,7 @@ Host 只在 N 短且未对齐时选择该 Route。Device 把最多 16 个行组 
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持；`ascend910b` OpDef/config | 公开支持；`ascend910_93` OpDef/config | 公开文档明确不支持，未生成卡 |
 | Host/Launcher | 共用 LayerNormV4 priority tiling | 共用 | 虽存在 ascend950 内部实现信号，但不能覆盖公开不支持结论 |
@@ -880,7 +880,7 @@ Host 只在 N 短且未对齐时选择该 Route。Device 把最多 16 个行组 
 - `N==0` 与 `M==0` 不启动 LayerNormV4；前者可选 mean=0/rstd=NaN，后者直接 workspace 0。
 - 公共 API 的全部 executor workspace 公式由框架实现决定，固定仓只明确核心 LayerNormV4 节点请求 32 B。
 - binary JSON 只列 dtype 专用文件名 100/110/111/120/122；动态 shape tiling 仍由 router 覆盖 200/600/700 等 Host 可达 key。固定仓未执行构建验证。
-- A5 文档明确不支持，因此 `fast_layer_norm_a5.md` 不创建；不能以 ascend950 OpDef 或 arch35 文件反推公开支持。
+- 950 文档明确不支持，因此 `fast_layer_norm_950.md` 不创建；不能以 ascend950 OpDef 或 arch35 文件反推公开支持。
 
 ## 源码索引
 
@@ -888,7 +888,7 @@ Host 只在 N 短且未对齐时选择该 Route。Device 把最多 16 个行组 
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `norm/layer_norm_v4/docs/aclnnFastLayerNorm.md` | 产品表、原型、参数表 | A2/A3 支持、A5 不支持、公开语义 |
+| 入口声明/约束 | `norm/layer_norm_v4/docs/aclnnFastLayerNorm.md` | 产品表、原型、参数表 | A2/A3 支持、950 不支持、公开语义 |
 | 入口实现 | `norm/layer_norm_v4/op_host/op_api/aclnn_fast_layer_norm.cpp` | `aclnnFastLayerNormGetWorkspaceSize/doFastLayerNorm` | 校验、空域、框架前后处理 |
 | 入口实现 | `norm/layer_norm_v4/op_host/op_api/layer_norm_v4.cpp` | `l0op::LayerNormV4` | 唯一核心 launcher 节点 |
 | Host/Tiling/Launcher | `norm/layer_norm_v4/op_host/layer_norm_v4_tiling.h` | POD 与 template classes | ABI 字段/key |
@@ -912,7 +912,7 @@ Host 只在 N 短且未对齐时选择该 Route。Device 把最多 16 个行组 
 | Kernel entry/body | `norm/layer_norm_v4/op_kernel/subblock/sub_block_layer_norm_copy_out.h` | `SubBlockLayerNormCopyOut` | Common CopyOut 下钻 |
 | Kernel entry/body | `norm/layer_norm_v4/op_kernel/tile/tile_copy.h` | `TileCopy` | GM→UB、16-bit cast |
 | Kernel entry/body | `norm/layer_norm_v4/op_kernel/tile/tile_copy_out.h` | `TileCopyOut` | UB→GM、输出 cast |
-| 构建接线 | `norm/layer_norm_v4/op_host/layer_norm_v4_def.cpp` | `LayerNormV4::LayerNormV4` | A2/A3/A5 OpDef 信号与 dtype |
+| 构建接线 | `norm/layer_norm_v4/op_host/layer_norm_v4_def.cpp` | `LayerNormV4::LayerNormV4` | A2/A3/950 OpDef 信号与 dtype |
 | 构建接线 | `norm/layer_norm_v4/op_host/config/ascend910b/layer_norm_v4_binary.json` | `op_list` | A2 binary dtype 组合 |
 | 构建接线 | `norm/layer_norm_v4/op_host/config/ascend910_93/layer_norm_v4_binary.json` | `op_list` | A3 binary dtype 组合 |
 | 构建接线 | `norm/layer_norm_v4/op_host/CMakeLists.txt` | `add_modules_sources` | LayerNormV4 Host 模块与 ACLNN 排除/依赖接线 |
@@ -927,4 +927,4 @@ Host 只在 N 短且未对齐时选择该 Route。Device 把最多 16 个行组 
 | workspace/内存 | 核心 body 不使用 user workspace | entry 要求非空；UB 分配必须逐 Route 保持 | `GetWorkspaceSize/layer_norm_v4/InitBuffer` |
 | 同步 | queue/hard event/barrier 模式可复用 | scratch 覆盖前的 V↔MTE 依赖不能删 | 各 body `ProcessBasicBlock` |
 | 精度与尾块 | FP32 reduction/affine、BF16 round | former/tail core、tile tail、pad 有效域 | 六 Route body |
-| 失败边界 | priority fallthrough 到 Common | Common capacity failure、unknown key 无 body、A5 公开不支持 | `TilingRegistry/DoOpTiling/layer_norm_v4` |
+| 失败边界 | priority fallthrough 到 Common | Common capacity failure、unknown key 无 body、950 公开不支持 | `TilingRegistry/DoOpTiling/layer_norm_v4` |

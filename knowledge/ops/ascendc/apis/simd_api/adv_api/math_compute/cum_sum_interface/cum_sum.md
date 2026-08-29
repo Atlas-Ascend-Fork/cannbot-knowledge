@@ -25,6 +25,5 @@ platforms: ['950', a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetCumSumMaxMinTmpSize](get_cum_sum_max_min_tmp_size.md)（`related`）：“CumSum”定义：对输入二维张量按行或列进行累加和操作，输出每个位置及之前所有行或列元素的累加结果，支持逐行和Sklansky二分两种算法。；“GetCumSumMaxMinTmpSize”定义：在host侧获取CumSum接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。。实质衔接：CumSum kernel 调用前需由同一接口族的 Host 查询临时空间并写入 Tiling；接口总览同时限定逐行/Sklansky算法与二维行列语义。
-- [CumSum接口](cum_sum_interface.md)（`same_topic`）：“CumSum”定义：对输入二维张量按行或列进行累加和操作，输出每个位置及之前所有行或列元素的累加结果，支持逐行和Sklansky二分两种算法。；“CumSum接口”定义：提供CumSum累计求和计算接口及其Tiling临时空间大小查询接口，包含CumSum、GetCumSumMaxMinTmpSize等。。实质衔接：CumSum kernel 调用前需由同一接口族的 Host 查询临时空间并写入 Tiling；接口总览同时限定逐行/Sklansky算法与二维行列语义。
+- [GetCumSumMaxMinTmpSize](get_cum_sum_max_min_tmp_size.md)（`related`）：临时空间大小通过GetCumSumMaxMinTmpSize获取。；host侧Tiling接口，用于获取CumSum接口所需的最大和最小临时空间大小。左卡明确要求由目标接口确定 CumSum 临时空间，右卡又把 isLastAxis 与 Kernel config 对齐并返回 min/max；两端衔接 Host 定容与二维行列累加 Kernel。
 <!-- cannbot:related:end -->

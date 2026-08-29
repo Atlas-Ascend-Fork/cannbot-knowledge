@@ -28,8 +28,6 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAxpy](../../../c_api/reg/compound_compute/asc_axpy.md)（`same_topic`）：AscAxpy 与《Axpy》的衔接是：AscAxpy 的 C Vector、基础及高阶 Axpy 入口实现同一 alpha*x+y 数据流，差异集中在张量形态、临时空间和调度层级。
-- [Axpy](../../memory_vector_compute/composite_compute/axpy.md)（`same_topic`）：Axpy说明计算向量和标量的乘积，并将乘积结果逐元素加到的输出向量上。
-- [MulAddDst](mul_add_dst.md)（`same_topic`）：MulAddDst说明将两个源操作数逐元素相乘再加到目的操作数上，结果写回目的操作数。
-- [MulDstAdd](mul_dst_add.md)（`same_topic`）：MulDstAdd说明将目的操作数与源操作数逐元素相乘再加另一个源操作数，结果写回目的操作数。
+- [DepthwiseConv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/depthwise_conv_2d_950.md)（`related`）：“一个 padded plane 每 plane 只搬一次，输出向量在 9/25 次 Axpy 中驻留寄存器，避免逐 tap 重复 GM patch 搬运。”；“该接口根据mask对dstReg、srcReg和标量scalarValue按元素执行乘加操作，将结果写入dstReg。”。operator 的 3×3/5×5 Vector 路线用寄存器 Axpy 累加每个 tap，API 定义 dstReg 原位乘加和 mask 行为。
+- [ForeachLerpScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_lerp_scalar_950.md)（`related`）：950 算子 Device body 逐字调用“Axpy(tensorOneRegToFloat, tensorTwoRegToFloat, weightVal_, maskReg);”；Reg API 定义“该接口根据mask对dstReg、srcReg和标量scalarValue按元素执行乘加操作”，这正对应 `x1 + weight*(x2-x1)` 中差值寄存器与标量 weight 的乘加步骤。
 <!-- cannbot:related:end -->

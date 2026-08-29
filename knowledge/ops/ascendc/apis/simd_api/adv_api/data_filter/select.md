@@ -37,8 +37,5 @@ __aicore__ inline void Select(const LocalTensor<T>& dst, const LocalTensor<T>& s
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GE图模式263: 自定义VF Select被禁](../../../../runbooks/compilation/ge_263_vf_select.md)（`exemplifies`）：正式 Select 接口页给出支持模式和参数约束，可验证 VF 调用是否落在文档契约内。
-- [Select](../../basic_api/memory_vector_compute/compare_and_select/select.md)（`related`）：基础 Select 提供更底层的 UB 选择路径，并具有不同的 mask 模式和尾块约束，适合在高阶接口之外做实现选型。
-- [Select](../../basic_api/reg_vector_compute/compare_and_select/select.md)（`related`）：Reg Select 将条件选择留在寄存器链中，补充高阶 Tensor Select 之外避免中间 UB 往返的实现路线。
-- [GetSelectMaxMinTmpSize](get_select_max_min_tmp_size.md)（`same_topic`）：该 Host 接口给出高阶 Select 执行所需 workspace 上下界，是调用 Select 前完成 Tiling 资源分配的直接配套契约。
+- [GetSelectMaxMinTmpSize](get_select_max_min_tmp_size.md)（`related`）：kernel侧Select接口的计算需要开发者申请临时空间，本接口用于在host侧获取申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；给定两个源操作数src0和src1，根据maskTensor相应位置的值（非bit位）选取元素，得到目的操作数dst。。Host 侧 GetSelectMaxMinTmpSize 直接为 Kernel 侧 Select 计算其临时空间取值范围，Select 卡定义被配置的逐元素选择操作，因此二者连接了 Tiling 空间预算与实际 Kernel 调用。
 <!-- cannbot:related:end -->

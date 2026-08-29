@@ -65,3 +65,10 @@ if params.joint_tensor_key is not None:
 
 - diff 事实（@2c45117，merged patch）：joint K/V 顶部拼接删除、按 ulysses rank 沿 head 切分、`ring_world_size==1` 直接拼、新增 `_kv_post_process`；ulysses seq-len 补齐块删除的**理由**为推断、不并入事实面；精度 before→after 数值源未给。溯源下探 [cann-recipes-infer-pr-287-fix-fix-hunyuanvideo-sequence-parallel-and-vae-parallel-debug](https://gitcode.com/cann/cann-recipes-infer/merge_requests/287)
 - diff 事实（回退动作，@366a74296cb5）：`UnifiedSPAttention`→`xFuserLongContextAttention`、requirements 加 xfuser/yunchang、README 删侵入式补丁附录；「自研 SP 精度损失」这一**回退原因**仅见 PR 描述、非维护者展开、无 benchmark，已降级标注。溯源下探 [cann-recipes-infer-pr-266-feat-hunyuanvideo-support-taylorseer-offload-prefetch-vae-parallel-rolli](https://gitcode.com/cann/cann-recipes-infer/merge_requests/266)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ring Attention Sequence Parallelism](../../concepts/parallelism/ring_attention.md)（`related`）：焦点卡指出“若在 Ulysses all_to_all（head→seq）与 Ring gather **之前**就把 joint K/V 拼进普通序列 K/V，joint token 会被后续 all_to_all 与 ring gather 当**普通序列 token 重分布**——joint attention 结果被破坏。”；Ring 卡说明“Ring Attention 是另一种长序列 SP 方案：与 Ulysses 不同，**attention 内部也保持序列切分**，每张卡仅维护自己那 1/SP 的 Q。”，并明确 KV 会跨 rank 汇集，因此能限定延后拼接发生在 Ring KV 汇集之后。
+- [Ulysses Sequence Parallelism](../../concepts/parallelism/ulysses.md)（`related`）：焦点卡的故障链是“若在 Ulysses all_to_all（head→seq）与 Ring gather **之前**就把 joint K/V 拼进普通序列 K/V，joint token 会被后续 all_to_all 与 ring gather 当**普通序列 token 重分布**——joint attention 结果被破坏。”；Ulysses 卡给出“Ulysses 是面向**长序列多头注意力**的序列并行策略：在 attention 以外的部分沿 S（sequence）维度切分，在 attention 处通过一次 all-to-all 把切分维度从 S 换到 N（num_heads），attention 内部按 head 并行、attention 输出再 all-to-all 换回 S。”，可据此定位 joint K/V 应在换维之后按 head 对齐。
+<!-- cannbot:related:end -->

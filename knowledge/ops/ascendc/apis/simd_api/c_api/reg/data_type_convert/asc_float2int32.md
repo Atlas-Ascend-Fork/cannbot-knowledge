@@ -29,7 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscInt322Float](asc_int322float.md)（`related`）：AscInt322Float 与《AscFloat2Int32》的实质衔接是：AscInt322Float 的 Vector 对应入口执行同一 int32→float 转换，AscFloat2Int32 则提供反向路径，用于核对舍入和 mask 置零契约。
-- [AscFloat2Int32](../../scalar_compute/asc_float2int32.md)（`same_topic`）：AscFloat2Int32 与《AscFloat2Int32》的实质衔接是：AscFloat2Int32 的四种舍入模式对应 Rint/Round/Floor/Ceil，相关 float/half/bfloat16 转换卡用于保持目标位宽、源类型和逆转换契约。
-- [AscFloat2int32](../../vector_compute/asc_float2int32.md)（`same_topic`）：两张 AscFloat2Int32 卡都执行 float→int32 转换，分别作用于 UB vector 与寄存器向量，并共享舍入模式选择。
+- [AscFloat2int32](../../vector_compute/asc_float2int32.md)（`same_topic`）：将float类型转化为int32_t类型，并支持多种舍入模式： RINT舍入模式：四舍六入五成双舍入 ROUND舍入模式：四舍五入舍入；将float类型数据转化为int32_t类型，并支持多种舍入模式，饱和/非饱和模式。。两卡围绕同一 float 到 int32 转换及舍入契约，Reg 版本进一步明确饱和模式。
 <!-- cannbot:related:end -->

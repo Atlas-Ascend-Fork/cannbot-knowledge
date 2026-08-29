@@ -39,6 +39,5 @@ __aicore__ inline void SoftmaxGrad(const LocalTensor<T>& dstTensor, const LocalT
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SoftmaxGrad Tiling接口](softmax_grad_tiling_interface.md)（`same_topic`）：SoftmaxGrad Tiling接口 与《SoftmaxGrad》的实质衔接是：SoftmaxGrad tiling 直接驱动反向 kernel，并与 forward/adjust/basic-block、rank 校验和 tiling 默认项配套。
-- [SoftmaxGradFront](softmax_grad_front.md)（`same_topic`）：SoftmaxGrad 的 isFront=true 只计算前半结果，正对应 SoftmaxGradFront 单独暴露的前半计算；两者是同一梯度核心对象的整接口与前半接口。
+- [SoftmaxBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/softmax_backward_950.md)（`related`）：“把逻辑 shape 沿 `dim` 融合为 `［A1, R, A0］`：`R=shape［dim］`，`A1=prod(shape［:dim］)`，`A0=prod(shape［dim+1:］)`。对每个 `(a1,a0)`，先以 FP32（FP32 输入直接使用；FP16/BF16 body 先升精度）计算”与“当输入shape为ND格式时，内部的reduce过程按last轴进行；当输入shape为NZ格式时，内部的reduce过程按照last轴和first轴进行，reduce过程可以参考SoftMax中的图示说明。”提供双方正文证据。950 ACLNN 算子把任意 dim 规约重排为 A1/R/A0 并在 FP32 中完成梯度归约，SoftmaxGrad API 给出 ND/NZ 下实际 reduce 轴规则；两端描述同一 Softmax 反向核心计算的算子级与 API 级合同。
 <!-- cannbot:related:end -->

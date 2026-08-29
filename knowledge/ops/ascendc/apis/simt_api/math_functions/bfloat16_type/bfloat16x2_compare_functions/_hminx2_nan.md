@@ -29,7 +29,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [__hminx2_nan](../../half_type/half2_compare_functions/_hminx2_nan.md)（`related`）：bfloat16x2 的同名 __hminx2_nan 保留逐分量最小值和 NaN 传播语义，但输入输出类型与头文件不同，可防止按名称误用 half2 重载。
-- [__hmin_nan](../bfloat16_compare_functions/_hmin_nan.md)（`same_topic`）：__hmin_nan 与《__hminx2_nan》的实质衔接是：hmin 与 hmin_nan 的核心差别是 NaN 选择，hmax_nan 及 half2 版本提供相反极值和 packed 特殊值对照。
-- [__hminx2](_hminx2.md)（`same_topic`）：《__hminx2》明确“获取两个bfloat16x2_t类型数据各分量的最小值。”；它与《__hminx2_nan》的“获取两个bfloat16x2_t类型数据各分量的最小值。任一分量为nan时，对应分量的计算结果为nan。”在实际调用参数、数据流或结果校验上直接衔接。
+- [__hminx2](_hminx2.md)（`same_topic`）：功能：获取两个bfloat16x2_t类型数据各分量的最小值；任一分量为nan时，对应分量的计算结果为nan。两卡都计算 bfloat16x2 逐分量最小值，候选把任一输入分量为 NaN 时的传播语义显式化，直接支撑特殊值选型。
 <!-- cannbot:related:end -->

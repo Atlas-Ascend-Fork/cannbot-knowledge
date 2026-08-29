@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:38:18Z"
-updated_at: "2026-08-25T18:38:18Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -66,7 +66,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-固定 Commit 只有无后缀两段式 API。公开文档明确支持 Atlas A2、A3；`ModulateGrad` OpDef、binary config 和全局 AscendC config 对应 `ascend910b` 与 `ascend910_93`。未发现 A5/`ascend950` 公开文档、OpDef 或 binary 接线。本卡覆盖 A2/A3 的同一最新公开实现，不补造 A5 版本。
+固定 Commit 只有无后缀两段式 API。公开文档明确支持 Atlas A2、A3；`ModulateGrad` OpDef、binary config 和全局 AscendC config 对应 `ascend910b` 与 `ascend910_93`。未发现 950/`ascend950` 公开文档、OpDef 或 binary 接线。本卡覆盖 A2/A3 的同一最新公开实现，不补造 950 版本。
 
 ## Host/Launcher 执行流程
 
@@ -551,7 +551,7 @@ computegradScaleLocal_ = gradScaleLocalQueue_.DeQue<float>();
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持；`ascend910b` | 公开支持；`ascend910_93` | 公开文档未列出，且无 `ascend950` 接线 |
 | Host/Launcher | 与 A3 共用源码和 binary schema | 与 A2 共用 | 不生成卡 |
@@ -594,3 +594,9 @@ computegradScaleLocal_ = gradScaleLocalQueue_.DeQue<float>();
 | 同步 | Queue + PIPE_ALL/PIPE_V | Mul/Add 与覆盖顺序 | `Process/ComputeGradients` |
 | 精度与尾块 | FP32 Kernel、D/L 双 tail | d_size 有效 lane、last L tile写归约 | `CalculateOffsets/CopyOutScaleShift` |
 | 失败边界 | empty 快速返回、无 key fallback | optional null 风险、窄化缺口 | `CheckMaxDimension/CopyInScale/modulate_grad` |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Modulate A2/A3 ACLNN 算子知识](modulate.md)（`related`）：“｜ 计算语义 ｜ 对 `［B,L,D］` 的 `grad_output`：`grad_input=grad_output*scale［:,None,:］`（无 scale 时源码复制 `grad_output`）；可选地沿 `L` 归约得到 `grad_scale=sum(input*grad_output)`、`grad_shift=sum(grad_output)` ｜”与“｜ 计算语义 ｜ `out［b,l,d］ = self［b,l,d］ * (1 + scale［b,d］) + shift［b,d］`；缺少 scale 时省略乘法，缺少 shift 时省略加法 ｜”是双方正文中的具体合同。反向卡给出 grad_input、grad_scale、grad_shift 的梯度合同，前向卡给出被求导的广播调制公式；两端构成同一训练算子链的前向与反向语义。
+<!-- cannbot:related:end -->

@@ -169,18 +169,3 @@ CANN 9.0.1 的 GM→UB `DataCopyPad` 重载不接收独立的第五个目标偏�
 ## 误诊
 
 无证据表明 blockLen、32B 对齐或 padding 数值导致本次错误；原始错误明确发生在参数个数不匹配的重载决议阶段。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)（`exemplifies`）：《DataCopyPad》说明将数据从GM非对齐搬运至UB，可根据需要自行填充数据。；《DataCopyPad 五参编译失败—LocalTensor 子视图替代偏移》说明CANN 9.0.1 的 GM→UB DataCopyPad 不接收第五个目标偏移参数；先对 LocalTensor 取元素偏移子视图，再调用四参数重载。。二者在GM到UB非对齐搬入依赖Pad参数、32B最小DMA和LocalTensor/offset/rightPad合同，UB到GM方向的重载不同上存在可执行的直接衔接。
-- [LocalTensor构造函数](../../apis/simd_api/basic_api/data_structures/local_tensor/local_tensor_constructor.md)（`exemplifies`）：《LocalTensor构造函数》处理“LocalTensor构造函数。”。《DataCopyPad 五参编译失败—LocalTensor 子视图替代偏移》明确“CANN 9.0.1 的 GM→UB DataCopyPad 不接收第五个目标偏移参数；先对 LocalTensor 取元素偏移子视图，再调用四参数重载。”，可直接用于核对LocalTensor 的默认/静态地址构造、LocalMemAllocator 构造路径及错误实参诊断。
-- [SetAddrWithOffset](../../apis/simd_api/basic_api/data_structures/local_tensor/set_addr_with_offset.md)（`exemplifies`）：该 API 给出以元素 offset 建立 LocalTensor 地址视图的正式接口，可作为 focal 中 operator[] 子视图方案的显式地址偏移替代，并提醒 offset 单位是元素而非字节。
-- [DataCopyPad UB→GM 四参调用导致编译失败](datacopypad_ub_to_gm_has_no_pad_params.md)（`related`）：该卡进一步说明 GM→UB 四参数 load 不接受第五个目标 offset，偏移要由 LocalTensor 子视图承载；与 focal 共同给出方向、arity、offset 三步调用判别。
-- [DataCopyPad rightPad 字段为 uint8_t](datacopypad_rightpad_uint8_t.md)（`related`）：GM→UB 四参数结构确定后，PadExtParams 的 rightPadding 字段类型仍可能独立阻断编译；该卡补充了 focal 调用链中 padding 结构的字段契约。
-- [DataCopyPad 尾块改逐行一维搬入](../precision/datacopypad_partial_2d_blocks_use_per_row_copy.md)（`related`）：DataCopyPad 尾块改逐行一维搬入 与《DataCopyPad 五参编译失败—LocalTensor 子视图替代偏移》的衔接是：这些候选直接解释 DataCopy/DataCopyPad 的 blockCount、行跨度、32B/256B 粒度、padding 与地址偏移；它们可用于判断短二维行何时必须退化为逐行复制。
-- [DataCopyPad 无匹配重载 LocalTensor 实参不一致](datacopypad_localtensor.md)（`related`）：两卡共同给出 DataCopyPad `no matching function` 的分诊边界：一个由第五个偏移实参造成，另一个由 LocalTensor/GlobalTensor 元素类型不一致造成。
-- [多块 DataCopyPad dst 基址非 32B 对齐崩溃](datacopypad_dst_32b.md)（`related`）：focal 用 LocalTensor 子视图改变实际 UB 目标基址；该卡给出后续多块搬运必须继续核对 32B 目标地址对齐的运行期约束，避免编译通过后转为 507035。
-- [DataCopyPad 加载缺少 Pad 参数导致编译失败](datacopypad_gm_to_ub_requires_pad_params.md)（`same_topic`）：两卡处理同一个 GM→UB overload 契约：缺少 Pad 参数是三参错误，多传目标 offset 是五参错误；合法调用固定为四参，offset 由 tensor 视图承担。
-- [Vector Sub 源 UB 非 32B 对齐触发错误 340](vector_sub_ub_32b_340.md)（`same_topic`）：Vector Sub 源 UB 非 32B 对齐触发错误 340 与《DataCopyPad 五参编译失败—LocalTensor 子视图替代偏移》的实质衔接是：Vector Sub 的每个 UB 源必须 32B 对齐，LocalTensor 非零 operator[] 偏移会破坏对齐；Sub API、GetWithOffset/TBuf 和相邻未对齐故障卡直接支持定位及对齐搬入修法。
-<!-- cannbot:related:end -->

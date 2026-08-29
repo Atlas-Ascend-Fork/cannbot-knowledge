@@ -29,8 +29,5 @@ kernel侧GeGLU接口的计算需要开发者预留 申请临时空间，本接�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetSwiGLUMaxMinTmpSize](../swi_glu_interface/get_swi_glu_max_min_tmp_size.md)（`related`）：SwiGLU 激活不同，临时空间公式不可直接复用；按门控函数选接口。
-- [GeGLU](ge_glu.md)（`same_topic`）：GeGLU 与《GetGeGLUMaxMinTmpSize》的实质衔接是：GeGLU 直接调用 GELU 门控语义并要求独立临时缓冲；接口页和两种空间查询决定 tiling，GELU/Erf 卡解释其激活公式。
-- [GeGLU接口](ge_glu_interface.md)（`same_topic`）：总页定义 GeGLU、workspace 查询和 factor-size 的完整调用流程。
-- [GetGeGLUTmpBufferFactorSize](get_ge_glu_tmp_buffer_factor_size.md)（`same_topic`）：GetGeGLUTmpBufferFactorSize 与《GetGeGLUMaxMinTmpSize》的实质衔接是：该 factor 查询把 GeGLU 的 maxLiveNodeCount/extraBuf 与最大最小临时空间合并，直接推导 GeGLU 固定 UB 下的单次处理量。
+- [GeGLU](ge_glu.md)（`related`）：kernel侧GeGLU接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；用于GeGLU内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetGeGLUMaxMinTmpSize。；GeGLU 的 sharedTmpBuffer 大小明确由 Host 侧范围接口产生，形成 Tiling 参数到 kernel 临时缓存的直接合同。
 <!-- cannbot:related:end -->

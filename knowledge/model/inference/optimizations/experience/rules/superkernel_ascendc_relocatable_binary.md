@@ -53,3 +53,9 @@ add_ops_compile_options(
 - **代码事实**（clone `@da545ca42b74`）：`grep -rn "op_relocatable_kernel_binary" ops/ascendc/` 命中 16 个算子的 `CMakeLists.txt`，均在 `add_ops_compile_options` 的 `OPTIONS` 内（如 `hc_post/CMakeLists.txt`、`moe_gating_top_k_hash/CMakeLists.txt`）。
 - **维护者确认**：该选项编译时产出 super kernel 专用 `.o`、此情况无需在线编译即可用 super kernel。
 - 溯源下探：[cann-recipes-infer-issue-35-bug-report-lightningindexer-superkernel](https://gitcode.com/cann/cann-recipes-infer/issues/35)
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [SuperKernel](../../../concepts/techniques/superkernel.md)（`related`）：要让一个走 AscendC `add_ops_compile_options` 构建的自定义算子能被 ［SuperKernel］(../../../concepts/techniques/superkernel.md) 融合，在其 `CMakeLists.txt` 的 `OPTIONS` 里加 `--op_relocatable_kernel_binary=true`——编译时会额外产出 super kernel 专用的**可重定位二进制** `.o`。；TorchAir `ge_graph`（max-autotune）图模式下，**按用户声明的 scope 将计算子图整体融合为单个大 kernel** 的优化能力。。规则卡给出 AscendC 算子进入 SuperKernel scope 前必须产出可重定位二进制的编译前提，概念卡定义该 scope 融合机制，因此能够从融合目标落实到自定义算子的构建条件。
+<!-- cannbot:related:end -->

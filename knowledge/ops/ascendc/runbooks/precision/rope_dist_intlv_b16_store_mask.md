@@ -52,12 +52,5 @@ platforms: ["950"]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscStore](../../apis/simd_api/c_api/reg/reg_store/asc_store.md)（`exemplifies`）：AscStore 与《RoPE DIST_INTLV_B16 store mask 致零值》的实质衔接是：AscStore 的 C++ 对应入口共享 GM 写回语义；B16 load-cast-store 与 RoPE store-mask 故障直接约束存储分布和有效 lane。
-- [AscStorealignIntlv](../../apis/simd_api/c_api/reg/reg_store/asc_storealign_intlv.md)（`exemplifies`）：AscStorealignIntlv 与《RoPE DIST_INTLV_B16 store mask 致零值》的实质衔接是：AscStorealignIntlv 忽略 mask，将两路 Reg lane 交错写 UB；普通 StoreAlign、C++ Store 和 DeIntlv 反向操作及 B16 交错故障直接核对偶奇 lane。
-- [reg数据搬出](../../apis/simd_api/c_api/reg/reg_store/reg_store.md)（`exemplifies`）：焦点处理Reg 数据搬出中对齐、非对齐与带 mask store 的选择；RoPE DIST_INTLV_B16 store mask 致零值正文说明“MLA 融合算子 rms_norm_rope_k_store_kv_cache（dav-3510/Ascend950/CANN 9.1.0）的 DoRope64 用 DIST_INTLV_B16 interleave store 把 even/odd 配对 RoPE 结果交错写回”。候选把总览中的 store 选择落到 Basic Reg 对应接口或真实非 VL/交错 mask 故障。
-- [数据重排](../../apis/simd_api/basic_api/reg_vector_compute/data_reorder/data_reorder.md)（`exemplifies`）：数据重排 与《RoPE DIST_INTLV_B16 store mask 致零值》的实质衔接是：Reg 数据重排与 memory/C 重排使用同一交织/解交织语义；两张排障卡分别限定 DeInterleave 偶奇输出和 B16 interleave store mask。
-- [DeInterleave 两路写反——按偶索引到 dst0 修正](deinterleave_dst0_is_even_lane_output.md)（`related`）：RoPE interleaved 计算的前半链还依赖 dst0=偶 lane、dst1=奇 lane；该卡提供递增序列探针和接线契约，可先排除输入拆分写反，再定位 focal 的 B16 store 布局。
-- [TQue MTE2→MTE3 缺 MTE3_MTE2 fence 致回读错位](../compilation/tque_mte2_mte3_mte3_mte2_fence.md)（`related`）：focal 已用 barrier 探针排除普通流水时序；该卡给出真正的跨迭代 MTE2/MTE3 WAR 分形和双向 fence 验证，可据错误是周期性 lane 零还是前段回读错位区分布局与同步根因。
-- [特定 b16 load-cast-store 组合失真时在 LocalTensor 边界转换](b16_reg_cast_layout_should_convert_at_localtensor_boundary.md)（`related`）：该卡在另一条 B16 load-cast-store 组合上也用 LocalTensor 边界 Cast 建立正确性基线，支持 focal 将转换移出有问题的寄存器布局链，而不修改正确的 fp32 算术。
-- [B16 交错 DINTLV 成对归零 — 转 fp32 后重排](b16_interleave_compute_should_promote_to_b32_layout.md)（`same_topic`）：两卡复现同一类 B16 interleave 结构性失真：直接 B16 DINTLV/INTLV 产生周期性成对零或错位，而先转连续 fp32、用 B32 重排后再窄化可闭环正确性。
+- [B16 交错 DINTLV 成对归零 — 转 fp32 后重排](b16_interleave_compute_should_promote_to_b32_layout.md)（`related`）：唯一根因是把 `DINTLV_B16` 产生的 B16 双寄存器 lane 布局直接当作逻辑偶/奇对，再经 `Reg::Cast` 做逐 lane 运算；该 interleave store 的 mask 在 64 维 / 当前 UB 布局下行为异常；两张运行手册都定位 Ascend950 上 B16 interleave 路径的成对错位或零值，并分别从寄存器解交错布局与 interleave store mask 给出放弃 B16 直排的诊断依据。
 <!-- cannbot:related:end -->

@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_host/config/ascend910_93/group_norm_silu_binary.json
     role: implementation
 created_at: "2026-08-25T17:54:36Z"
-updated_at: "2026-08-25T17:54:36Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -625,9 +625,9 @@ if (isNormSocLists) {
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 支持 | 支持 | 支持，见独立 `_a5` 卡 |
+| 支持状态 | 支持 | 支持 | 支持，见独立 `_950` 卡 |
 | Host/Launcher | `ascend910b`，共用非 RegBase Tiling | `ascend910_93`，共用非 RegBase Tiling | RegBase selector 与 body 不同 |
 | Kernel/资源 | AIV Vector、1011–108 可达 key、16 MiB system workspace | 同 A2 | Welford/TwoPass MicroAPI，整 UB TBuf |
 
@@ -675,3 +675,10 @@ if (isNormSocLists) {
 | 同步 | Queue、S_V、MTE2_S/V_S、PIPE_V/ALL | buffer 覆盖前必须保留等待/FreeTensor | route bodies |
 | 精度与尾块 | FP32 statistics、B16 cast、Pad tail | `activateSilu=false`、有效长度 | `CalcSilu/CalculateGroupNormSilu` |
 | 失败边界 | 参数/Tiling/launcher 失败阻断；unknown key 无输出 | 不新增 fallback | `CheckParams`, router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [GroupNormBackward A2/A3 ACLNN 算子知识](group_norm_backward.md)（`related`）：`xHat=(x-mean)*rstd`；输出 `(x-mean)*rstd*gamma+beta`、`mean`、`rstd=1/sqrt(var+eps)`。反向算子直接消费前向 GroupNorm 定义并输出的 mean 与 rstd 来构造 xHat，前向卡补齐这些统计量的生成语义。
+- [GroupNorm 950 ACLNN 算子知识](group_norm_950.md)（`same_topic`）：每个 `(n,g)` 对 `R=(C/group)*HxW` 元素做总体方差 GroupNorm，输出 affine 结果、mean、rstd；对每个 `(n,g)` 的 `R=(C/group)*HxW` 个元素求总体均值和方差，输出 `(x-mean)*rstd*gamma+beta`、`mean`、`rstd=1/sqrt(var+eps)`。两页闭合同一 aclnnGroupNorm 公式与三输出契约，差别在 950 RegBase 和 A2/A3 非 RegBase 实现，能直接支持跨平台调用选择。
+<!-- cannbot:related:end -->

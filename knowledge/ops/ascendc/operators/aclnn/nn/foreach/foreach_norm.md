@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_norm/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:58:55Z"
-updated_at: "2026-08-25T15:58:55Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -578,9 +578,9 @@ slot 0 保存跨批运行累加器，slot 8 起缓存 tile partial；缓存达�
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 公开支持 | 公开支持 | 公开支持，但见独立 `_a5` 卡 |
+| 支持状态 | 公开支持 | 公开支持 | 公开支持，但见独立 `_950` 卡 |
 | Host/Launcher | 共用 membase priority 10000 | 共用 membase priority 10000 | regbase priority 30000 |
 | Kernel/资源 | `foreach_norm.h`，最多64核POD，传统Vector API | 同A2 | arch35 MicroAPI，最多80核POD，UB公式不同 |
 

@@ -23,11 +23,6 @@ B 矩阵需通过 LoadDataWithSparse 载入并同时加载索引矩阵（uint8�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [4:2稀疏矩阵乘](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/4_2_sparse_matmul.md)（`explains`）：4:2稀疏矩阵乘 与《MmadWithSparse》的实质衔接是：4:2 稀疏 Matmul 实现直接依赖 SetSparse/SetSparseIndex 和 sparse Mmad 两层接口传递稠密化索引。
-- [K方向对齐约束](../mmad_compute_key_features/k_direction_alignment_constraint.md)（`related`）：K方向对齐约束 与《MmadWithSparse》的实质衔接是：K 对齐由 Mmad 的输入格式、数据搬运与参数配置共同决定；普通、Tensor API 和稀疏 Mmad 均需按该约束选择 K 长度及转换模式。
-- [LoadDataWithSparse](../cube_compute_load/load_data_with_sparse.md)（`related`）：LoadDataWithSparse 把稀疏 B 矩阵及索引搬入 L0B，正是 MmadWithSparse 随后进行稀疏矩阵乘所消费的输入。
-- [Mmad](mmad.md)（`related`）：MmadWithSparse 在左矩阵为 4:2 结构化稀疏时替代普通 Mmad，并额外消费稀疏索引，属于输入契约驱动的直接选型。
-- [AscMmadSparse](../../../c_api/cube_compute/asc_mmad_sparse.md)（`same_topic`）：AscMmadSparse说明完成稀疏矩阵乘加计算，左矩阵A为稠密矩阵、右矩阵B为稀疏矩阵，B在输入前按稠密算法完成稠密化并生成索引矩阵用于A的稠密化。
-- [SetSparse](../../../adv_api/cube_compute/matmul_tiling/set_sparse.md)（`same_topic`）：SetSparse说明设置Matmul的使用场景是否为Sparse Matmul场景。
-- [SetSparseIndex](../../../adv_api/cube_compute/matmul_kernel/set_sparse_index.md)（`same_topic`）：SetSparseIndex说明设置稀疏矩阵稠密化过程生成的索引矩阵。 索引矩阵在稠密化中的作用请参考MmadWithSparse。
+- [LoadDataWithSparse](../cube_compute_load/load_data_with_sparse.md)（`related`）：将稀疏矩阵数据从L1 Buffer搬运到L0A或L0B Buffer，支持稀疏数据的压缩搬运。；B 矩阵需通过 LoadDataWithSparse 载入并同时加载索引矩阵（uint8，分形(32,16)，每个元素含 4 个 uint2 索引）。。前者提供稀疏数据从 L1 到 L0A/L0B 的解压搬运，后者把 LoadDataWithSparse 明确规定为 MmadWithSparse 的 B 矩阵与索引矩阵装载前置，组成稀疏矩阵乘的直接数据通路。
+- [SetSparseIndex](../../../adv_api/cube_compute/matmul_kernel/set_sparse_index.md)（`related`）：设置稀疏矩阵稠密化过程生成的索引矩阵。 索引矩阵在稠密化中的作用请参考MmadWithSparse。；4:2 结构化稀疏矩阵乘加接口，实现 C=A×B+C。左矩阵 A 为稀疏矩阵（L0A，M×K，Zz，int8_t），右矩阵 B 为经 4:2 稀疏过滤后的稠密矩阵（L0B，K/2×N，Zn，int8_t），结果 C 位于 L0C（M×N，Nz，int32_t）。头文件 `basic_api/kernel_operator_mm_intf.h`。；SetSparseIndex 提供 MmadWithSparse 稠密化阶段消费的索引矩阵，连接索引配置与 4:2 稀疏矩阵乘加。
 <!-- cannbot:related:end -->

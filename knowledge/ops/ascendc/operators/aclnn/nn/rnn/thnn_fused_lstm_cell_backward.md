@@ -28,7 +28,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/gen_ops_info.cmake
     role: implementation
 created_at: "2026-08-25T18:37:32Z"
-updated_at: "2026-08-25T18:37:32Z"
+updated_at: '2026-08-27T12:23:11Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -884,10 +884,10 @@ Host 先按真实的 18 个 FP32 TBuf 预算得到单 tile 最大元素数，再
 
 ## 平台差异
 
-| 项目 | A2 | A3 | A5 |
+| 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 公开支持 | 公开支持 | 公开文档明确不支持 |
-| Host/Launcher | 与 A3 共用；OpDef 含 `ascend910b`/`ascend910_93` 配置 | 与 A2 共用 | 不生成 `_a5` 卡 |
+| Host/Launcher | 与 A3 共用；OpDef 含 `ascend910b`/`ascend910_93` 配置 | 与 A2 共用 | 不生成 `_950` 卡 |
 | Kernel/资源 | 同一 key 0 AIV body；C、U 运行时读取 | 同一源码，C、U 随平台信息取值 | 无公开可发布链路 |
 
 ## 限制与失败边界
@@ -907,7 +907,7 @@ Host 先按真实的 18 个 FP32 TBuf 预算得到单 tile 最大元素数，再
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | `rnn/thnn_fused_lstm_cell_grad/docs/aclnnThnnFusedLstmCellBackward.md` | 产品表、函数原型 | 公开语义、A2/A3 支持与 A5 不支持 |
+| 入口声明/约束 | `rnn/thnn_fused_lstm_cell_grad/docs/aclnnThnnFusedLstmCellBackward.md` | 产品表、函数原型 | 公开语义、A2/A3 支持与 950 不支持 |
 | 入口声明/约束 | `rnn/thnn_fused_lstm_cell_grad/op_api/aclnn_thnn_fused_lstm_cell_backward.h` | 两段式 API | ABI 参数顺序 |
 | 入口实现 | `rnn/thnn_fused_lstm_cell_grad/op_api/aclnn_thnn_fused_lstm_cell_backward.cpp` | `CheckParams`, GetWorkspaceSize, executor run | 校验、Contiguous、ViewCopy、失败传播 |
 | 入口实现 | `rnn/thnn_fused_lstm_cell_grad/op_api/thnn_fused_lstm_cell_grad.cpp` | `l0op::ThnnFusedLstmCellGrad` | 输出分配和 AICore launcher |
@@ -929,3 +929,9 @@ Host 先按真实的 18 个 FP32 TBuf 预算得到单 tile 最大元素数，再
 | 同步 | tile event + bias `SyncAll` + pass event | schedule mode 1、producer 完成后才能消费/覆盖 | `Process`, sync helpers |
 | 精度与尾块 | FP16 输入升 FP32、bias 延迟降精度 | half `CAST_NONE`、实际 N/flat tail、FP32 tree 顺序 | `Load/StoreDgatesResults`, `BinarySum`, `CastDgatesBack` |
 | 失败边界 | Host dtype/shape/format 失败，无 Device fallback | optional 名称不能解释为可传空，unknown key 不可用 | `CheckParams`, entry router |
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ThnnFusedLstmCell A2/A3 ACLNN 算子知识](thnn_fused_lstm_cell.md)（`same_topic`）：“｜ `storageOut` ｜ `［B,4H］`，ND ｜ 与 `inputGates` 相同 ｜ 必选；保存四门激活供反向使用；固定 Device 物理次序 `［i,f,g,o］` ｜”与“｜ `storage` ｜ `［B,4H］` / ND ｜ 同上 ｜ 每行依次为 `i/f/j/o` 四门激活值 ｜”提供双方正文证据。前向输出 storage 是反向接口直接消费的门激活，双方还共同暴露固定四门物理次序，连接前向产物接线与反向梯度计算。
+<!-- cannbot:related:end -->

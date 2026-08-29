@@ -106,3 +106,10 @@ Agent RL 在 RL 之前通常需要一个 **SFT 冷启动**阶段——纯靠 RL 
 - [qwen3-code-toolcall-rl](../../guides/recipes/qwen3_code_toolcall_rl.md)（落地实践：Qwen3-1.7B 长上下文多轮工具调用 Code RL + ScaleBox，叠推测解码 +38% 吞吐）
 - [grpo-dapo](grpo_dapo.md)（承载 RL 算法：verl-retool 用 DAPO 在 agent_loop 多轮轨迹上算优势/奖励）
 - [sam-speculative](sam_speculative.md)（可叠加：Code RL 样例在 agent_loop rollout 上叠 Suffix/EAGLE3 推测解码，Suffix 与 SAM 同属 Model-Free 检索路线）
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Qwen3 Tool Agent RL（verl-retool：SFT→RL 两阶段 Sandbox 工具 Agent，昇腾 A3）](../../guides/recipes/qwen3_tool_agent_rl.md)（`related`）：**Agent RL** 与朴素 RLVR 的根本区别在 rollout 阶段的执行形态：朴素 RL 一个 prompt 一次性生成完整 response 再算 reward；Agent RL 让模型在生成过程中**调用外部工具/代码沙盒**，把工具返回结果作为新一轮输入继续推理，**多轮交互**收敛后才算 reward。；整条流程使能 veRL 的 **`asyncLLM`**（异步生成）+ **`agent_loop`**（多轮工具调用）特性，这两个执行特性的机制见 ［Agent RL 执行范式］(../../concepts/techniques/agent_rl_loop.md)。。概念卡定义工具参与的多轮 rollout，Qwen3 配方以 asyncLLM 和 agent_loop 具体启用这套多轮工具调用执行形态，形成机制到训练配置的直接链。
+- [Qwen3-1.7B 多轮工具调用 Code RL（verl + ScaleBox 沙盒 + EAGLE3/Suffix 投机解码）](../../guides/recipes/qwen3_code_toolcall_rl.md)（`related`）：**Agent RL** 与朴素 RLVR 的根本区别在 rollout 阶段的执行形态：朴素 RL 一个 prompt 一次性生成完整 response 再算 reward；Agent RL 让模型在生成过程中**调用外部工具/代码沙盒**，把工具返回结果作为新一轮输入继续推理，**多轮交互**收敛后才算 reward。；训练时模型把 ScaleBox 沙盒当成「Python 工具」在推理过程中多轮调用（写代码→执行→看结果→续推），由含**工具调用奖励**的奖励信号驱动策略提升。。概念卡给出外部工具返回结果驱动下一轮推理的 Agent RL 定义，代码工具配方把它落实为 ScaleBox 中写代码、执行、观察结果并续推的多轮 rollout。
+<!-- cannbot:related:end -->

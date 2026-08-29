@@ -31,16 +31,3 @@ Data Cache作为访问GM内存的缓存，其大小会影响算子的访存效�
 由于Data Cache、预留空间与用户申请的UB内存共用同一块UB，因此开发者无法使用全部UB空间，应确保SIMT和SIMD各个执行空间中的实际UB访问范围都不超过已申请的静态内存和动态内存大小。
 静态内存和动态内存的声明或配置限定了用户使用UB内存的有效范围。若用户配置的内存大小不足，甚至未申请内存即直接访问UB地址，访问地址可能越过用户动、静态内存边界并落入Data Cache区域。由于Data Cache容量由UB总量扣除静态内存、动态内存和预留空间后确定，所以用户共享内存配置偏小会扩大可分配给Data Cache的剩余空间。当程序执行越过已申请的动、静态内存边界，发生越界写入行为时，未必立即表现为内存分配失败，但可能破坏SIMT全局内存访问的数据缓存，导致计算结果不稳定或算子精度异常。
 混合编程模式下，可在SIMT VF、SIMD VF和MainScalar执行空间申请静态内存和动态内存。MainScalar是指Device侧在VF函数外部的执行空间。下图为不同执行空间申请内存时对应的UB内存排布示意图。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [内存栅栏接口](../../../../../apis/simt_api/sync_and_memory_fence/memory_fence/memory_fence.md)（`explains`）：内存栅栏为不同 VF/线程观察共享数据提供顺序保证，是混合内存层级中的同步契约。
-- [内存空间限定符](../../../../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/memory_space_qualifier.md)（`explains`）：内存限定符把 __gm__/__ubuf__/私有存储映射到指南描述的 GM、共享 UB 和线程私有层级。
-- [使用Unified Buffer提升内存访问效率](../../../../operator_practice/simd_simt_hybrid_optimization/memory_access/ub_memory_access.md)（`related`）：《内存层级（SIMD与SIMT混合编程）》给出“在SIMD与SIMT混合编程场景下，整体内存资源如下图所示。核外的Global Memory是所有核的全局内存，容量最大，但访问效率最低。AIC的L1和AIV的UB是单核内的共享内存，容量较小，但访问效率较高。私有内存层最靠近计算单元，容量最小，访问效率最高。”；该约束/探针可直接复现、解释或前置验证《使用Unified Buffer提升内存访问效率》中的“>该性能优化建议适用于如下型号：”。
-- [基本架构（硬件实现）](../../hardware_implementation/basic_architecture.md)（`related`）：存储层级页展开 GM/L2/片上 buffer 的数据流，直接支撑基础架构中的搬运与流水理解。
-- [缓存一致性](../../memory_model/cache_coherence.md)（`related`）：存储层级页解释 GM/L2/片上缓存的可见范围，为理解何时需要显式一致性操作提供基础。
-- [编程示例（SIMD与SIMT混合编程）](programming_examples.md)（`related`）：“编程示例（SIMD与SIMT混合编程）”定义：本节以gather & adds混合编程样例为例，展示SIMD与SIMT混合编程的关键语法。；“内存层级（SIMD与SIMT混合编程）”定义：在SIMD与SIMT混合编程场景下，整体内存资源如下图所示。核外的Global Memory是所有核的全局内存，容量最大，但访问效率最低。AIC的L1和AIV的UB是单核内的共享内存，容量较小，但访问效率较高。私有内存层最靠近计算单元，容量最小，访问效率最高。。实质衔接：gather&adds 样例同时依赖 kernel/VF 调用层级、GM/UB/私有内存边界和混合模式选择；算子实现页把示例语法落到工程流程。
-- [内存层级（AI Core SIMT编程）](../../../programming_model/ai_core_simt_programming/memory_hierarchy.md)（`same_topic`）：焦点处理SIMT 内存层级与地址空间、同步可见性；内存层级（SIMD与SIMT混合编程）正文界定“在SIMD与SIMT混合编程场景下，整体内存资源如下图所示。核外的Global Memory是所有核的全局内存，容量最大，但访问效率最低。AIC的L1和AIV的UB是单核内的共享内存，容量较小，但访问效率较高。私有内存层最靠近计算单元，容量”。候选给出 SIMT 线程/硬件层级、地址空间限定符和 fence/sync 的可见性边界。
-- [核函数与VF函数（SIMD与SIMT混合编程）](kernel_and_vf_functions.md)（`same_topic`）：焦点处理混合 SIMD/SIMT 中 kernel、VF、callee 的限定符和启动边界；内存层级（SIMD与SIMT混合编程）正文说明“在SIMD与SIMT混合编程场景下，整体内存资源如下图所示。核外的Global Memory是所有核的全局内存，容量最大，但访问效率最低。AIC的L1和AIV的UB是单核内的共享内存，容量较小，但访问效率较高。私有内存层最靠近计算单元，容量最小，访问效率最高”。候选明确 kernel/VF/callee 的允许调用方向、地址空间和 launch API，或给出同机制编译失败。
-<!-- cannbot:related:end -->

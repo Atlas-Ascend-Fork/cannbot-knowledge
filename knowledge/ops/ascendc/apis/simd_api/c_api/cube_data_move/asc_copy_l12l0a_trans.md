@@ -34,9 +34,5 @@ platforms: [a2, a3]
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscCopyL12L0bTrans](asc_copy_l12l0b_trans/asc_copy_l12l0b_trans.md)（`related`）：L0B Trans 处理右矩阵，L0A Trans 处理左矩阵，操作数侧别不可混用。
-- [AscCopyL12l0aMx](asc_copy_l12l0a_mx.md)（`related`）：MX 量化路径还需专用 scale/格式处理，不由普通 Trans 隐式完成。
-- [AscSetL13dRpt](asc_set_l13d_rpt.md)（`related`）：《AscSetL13dRpt》处理“设置Load3Dv2接口的repeat参数。”。《AscCopyL12l0aTrans》明确提供“将2D格式数据带转置地从L1 Buffer加载到L0A Buffer。”，其参数、调用或验证步骤直接接入3D L1 到 L0 搬运的 Fmatrix、尺寸、padding、repeat 和配置接口。
-- [asc_copy_l12l0a](asc_copy_l12l0a/asc_copy_l12l0a_arch_2201.md)（`related`）：需要转置布局时应使用 L12L0A Trans 变体，而普通接口不隐式转置。
-- [asc_copy_l12l0a](asc_copy_l12l0a/asc_copy_l12l0a_arch_3510.md)（`same_topic`）：asc_copy_l12l0a 与《AscCopyL12l0aTrans》的实质衔接是：该 3510 接口把 512B L1 矩阵搬到 L0A；架构变体、转置/MX 入口及 GM→L1 上游构成实际 Cube 搬运链，迁移卡限定不同架构可用路径。
+- [asc_copy_l12l0a](asc_copy_l12l0a/asc_copy_l12l0a_arch_3510.md)（`related`）：该接口实现带转置的2D格式数据从L1 Buffer到L0A Buffer的加载。；用于搬运存放在L1 Buffer里的512B大小的矩阵到L0A Buffer里，包含2D格式搬运、2D格式转置搬运、3D格式搬运。；A2/A3 专用转置入口的能力在 arch3510 合并进通用 L1 到 L0A 搬运接口，是平台迁移时的 API 对应关系。
 <!-- cannbot:related:end -->

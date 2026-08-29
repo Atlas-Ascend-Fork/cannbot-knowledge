@@ -26,3 +26,9 @@ OpParamDef算子定义，OpParamDef请参考OpParamDef。
 -   该接口仅在如下场景支持：
 -   通过单算子API执行的方式开发单算子调用应用。
 -   间接调用单算子API(aclnnxxx)接口：Pytorch框架单算子直调的场景。
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [ForeachPowScalarList A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_pow_scalar_list.md)（`related`）：ForeachPowScalarList 的 ABI 写明“`scalars` 为与列表等长的 `FLOAT32/INT64` ScalarList”；ScalarList 页定义“配置该参数后，自动生成的单算子API（aclnnxxx）接口中，输入类型为aclScalarList类型。”，后者解释 ACLNN bridge 如何暴露前者指数列表输入。
+<!-- cannbot:related:end -->

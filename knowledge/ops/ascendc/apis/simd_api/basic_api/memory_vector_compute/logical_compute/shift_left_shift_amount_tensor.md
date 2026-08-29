@@ -25,12 +25,5 @@ platforms: ['950']
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ShiftRight](shift_right_shift_amount_tensor.md)（`related`）：相同 tensor 位移量输入下，ShiftLeft 执行相反方向，可用于方向选择和 round-trip 位测试。
-- [AscShiftLeft](../../../c_api/reg/logic_compute/asc_shiftleft.md)（`same_topic`）：ShiftLeft 与《AscShiftLeft》的实质衔接是：这些接口覆盖 tensor/标量移位量、Memory/Reg/C 路径及左右移方向，直接用于核对 ShiftLeft 的移位量来源与有符号/无符号语义。
-- [AscShiftRight](../../../c_api/reg/logic_compute/asc_shiftright.md)（`same_topic`）：ShiftLeft 与《AscShiftRight》的实质衔接是：这些接口覆盖 tensor/标量移位量、Memory/Reg/C 路径及左右移方向，直接用于核对 ShiftLeft 的移位量来源与有符号/无符号语义。
-- [AscShiftleft](../../../c_api/vector_compute/asc_shiftleft.md)（`same_topic`）：ShiftLeft 与《AscShiftleft》的实质衔接是：这些接口覆盖 tensor/标量移位量、Memory/Reg/C 路径及左右移方向，直接用于核对 ShiftLeft 的移位量来源与有符号/无符号语义。
-- [AscShiftright](../../../c_api/vector_compute/asc_shiftright.md)（`same_topic`）：ShiftLeft 与《AscShiftright》的实质衔接是：这些接口覆盖 tensor/标量移位量、Memory/Reg/C 路径及左右移方向，直接用于核对 ShiftLeft 的移位量来源与有符号/无符号语义。
-- [ShiftLeft](shift_left.md)（`same_topic`）：ShiftLeft 与《ShiftLeft》的实质衔接是：这些接口覆盖 tensor/标量移位量、Memory/Reg/C 路径及左右移方向，直接用于核对 ShiftLeft 的移位量来源与有符号/无符号语义。
-- [ShiftLeft](../../reg_vector_compute/logical_compute/shift_left.md)（`same_topic`）：ShiftLeft 与《ShiftLeft》的实质衔接是：这些接口覆盖 tensor/标量移位量、Memory/Reg/C 路径及左右移方向，直接用于核对 ShiftLeft 的移位量来源与有符号/无符号语义。
-- [ShiftLefts](../../reg_vector_compute/logical_compute/shift_lefts.md)（`same_topic`）：ShiftLeft 与《ShiftLefts》的实质衔接是：这些接口覆盖 tensor/标量移位量、Memory/Reg/C 路径及左右移方向，直接用于核对 ShiftLeft 的移位量来源与有符号/无符号语义。
+- [ShiftLeft](shift_left.md)（`same_topic`）：对源操作数中的每个元素进行左移操作，左移位数由标量scalarValue决定，无符号类型执行逻辑左移，有符号类型执行算术左移。；对源操作数中的每个元素进行左移操作，左移位数由Tensor指定，无符号类型执行逻辑左移，有符号类型执行算术左移。。两卡描述相同 ShiftLeft 元素语义的两个重载，核心差异是移位量由单个标量还是逐元素 Tensor 提供。
 <!-- cannbot:related:end -->
