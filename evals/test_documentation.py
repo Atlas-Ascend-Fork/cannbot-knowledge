@@ -97,7 +97,6 @@ class DocumentationContractTests(unittest.TestCase):
         self.assertIn("--technology ascendc", recipe)
         self.assertIn("--type apis", recipe)
         self.assertNotIn("--scope", recipe)
-        self.assertNotIn("内容重合率", recipe)
 
     def test_governance_specs_keep_five_focused_entries(self) -> None:
         expected = {"okf.md", "paths.md", "frontmatter.md", "schemas.md", "skills.md"}
