@@ -25,6 +25,7 @@ Schema、Profile、Registry 和 Contract 共同构成机器规则，Spec 是解�
 - **最小变更**：只修改相关知识、导航、规则、Skill 和测试。
 - **可复现**：提供实际完成的查询、校验、测试或最小实验结果。
 - **安全**：不得提交密钥、Token、账号、内网地址、私有路径或不可公开数据。
+- **许可合规**：根目录 Shell、`governance/` 与 `evals/` 中的非空 Python/YAML 文件使用仓库标准 CANN 2.0 许可头；带 shebang 的文件保持 shebang 为首行。
 - **不自动发布**：仓库脚本和 Skill 不得自动 commit、push、合并或发布。
 
 集合型目录使用复数，例如 `references/`、`scripts/`、`schemas/`、`specs/`、`evals/`、`artifacts/` 和 `logs/`。

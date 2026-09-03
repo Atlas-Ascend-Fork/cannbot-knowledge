@@ -107,6 +107,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 | `docs/` | 知识库设计原则和用户指南 |
 | `recipes/` | 面向具体任务的知识库最佳实践 |
 | `evals/` | 检索、治理、文档和安装回归 |
+| `OAT.xml` | GitCode 开源扫描使用的 CANN 2.0 许可策略和 matcher |
 | `init.sh` | 把 Skill 安装到目标项目 |
 | `check.sh` | 运行仓库完整质量检查 |
 | `artifacts/` | 本地生成且可重建的产物，默认不提交 |
@@ -168,7 +169,7 @@ bash init.sh agents /path/to/project contributor
 bash check.sh
 ```
 
-该入口覆盖本仓知识 Lint（含严格 Git 来源导航）、Ascend C Runbook 正文门禁、检索回归、单元测试、Ruff、Shell 语法、基于现有 Agent 判定缓存的图谱合成/校验和 `git diff --check`。重新产生关系判定时，仍须按 Ingest 的多 Agent 全量流程执行。
+该入口覆盖本仓知识 Lint（含严格 Git 来源导航）、Ascend C Runbook 正文门禁、检索回归、单元测试、Ruff、Shell 语法、基于现有 Agent 判定缓存的图谱合成/校验和 `git diff --check`。官方 `LICENSE` 原文中的空白由确定性摘要回归保护，不参与通用差异空白检查。重新产生关系判定时，仍须按 Ingest 的多 Agent 全量流程执行。
 
 ## 治理规范
 

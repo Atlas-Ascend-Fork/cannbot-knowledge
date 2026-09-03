@@ -9,6 +9,7 @@
 - `.agents/skills/`、`governance/`、`evals/`、`logs/` 和可重建的 `artifacts/` 是生产、消费与治理设施，`docs/` 与 `recipes/` 是说明和实践文档；它们都不属于 OKF Bundle。
 - `docs/` 只解释设计原则和使用方式，`recipes/` 只提供场景化最佳实践。不要在两者中保存 CANN、DSL、API、算子、调试或优化事实，也不要把 Recipe 写成新的强制规则。
 - 只修改当前任务需要的文件。开始前检查工作区，保留用户已有修改；不要顺手格式化或重写无关内容。
+- 根目录 Shell、`governance/` 与 `evals/` 中的非空 Python/YAML 文件必须保留仓库标准的 CANN 2.0 版权许可头；带 shebang 的文件先写 shebang 再写许可头。根 `LICENSE` 必须保持官方 CANN 2.0 原文，包括原文中的空白；不要用通用格式化器改写。根 `OAT.xml` 是开源扫描策略和 CANN 2.0 matcher 的机器事实源，修改许可范围或模板时同步更新扫描回归。
 - 未经用户明确要求，不执行 commit、push、merge、tag、release、发布或修改用户全局环境。
 
 ## 维护本文件
