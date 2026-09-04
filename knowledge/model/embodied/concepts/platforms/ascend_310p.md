@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Ascend 310P（OM 离线推理目标平台）
-description: 华为昇腾 Ascend 310P 系列推理芯片，是 cann-recipes-embodied-ai 操作类 VLA 模型 OM 离线推理样例的目标部署平台（边缘/嵌入式推理形态，如 OrangePi AI Station）。Pi0、Pi0.5、ACT、Diffusion-Policy 的 infer_with_om/ 样例都以 310P 为运行环境，由本页 canonical 描述其上的部署形态。
+description: 华为昇腾 Ascend 310P 系列推理芯片，是 cann-recipes-embodied-ai 操作类 VLA 模型 OM 离线推理样例的目标部署平台（边缘/嵌入式推理形态，如 OrangePi AI Station）。Pi0、Pi0.5、ACT、Diffusion-Policy 的 infer_with_om/ 样例都以 310P 为运行环境。
 tags:
 - task.lookup
 - topic.architecture
@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/pi05/infer_with_om/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - 310p
 ---
@@ -25,9 +25,9 @@ platforms:
 
 华为昇腾 **Ascend 310P** 系列推理芯片，是 `cann-recipes-embodied-ai` 操作类 VLA 模型 **OM 离线推理样例**的目标部署平台（边缘/嵌入式推理形态，如 OrangePi AI Station）。Pi0、Pi0.5、ACT、Diffusion-Policy 的 `infer_with_om/` 样例都以 310P 为运行环境。
 
-> 本仓样例仅声明「310P」为 OM 离线推理目标平台，未在文档内展开 310P 的硬件规格（算力/die/HBM/功耗等）；硬件细节以昇腾官方资料为准。
+> `cann-recipes-embodied-ai` 的 OM 样例声明目标平台为「310P」，未提供其算力、die、HBM、功耗等硬件规格；硬件细节以昇腾官方资料为准。
 
-## 仓内确有的部署事实
+## OM 部署要求
 
 - **角色**：310P 是 OM 离线推理（PyTorch→ONNX→ATC→OM）链路的执行平台。在线训练 / torch 推理优化样例则跑在 Atlas A2（见 [gradient-checkpoint-refine](../techniques/gradient_checkpoint_refine.md)）。
 - **芯片型号确认**：`npu-smi info` 的 Name/Device 列给出芯片型号（如 `310P1`、`310P3`），ATC 转换的 `--soc_version` 必须与之一致（如 `Ascend310P1`）。型号不符会报 `acl.mdl.execute error 507011`。
@@ -48,7 +48,7 @@ platforms:
 
 ## OM 离线推理实测时延（310P / OrangePi AI Station）
 
-仓 root README 能力入口表给出三个操作类模型在 310P（OrangePi AI Station 边缘设备）上的 OM 静态图离线推理端到端实测时延：
+`cann-recipes-embodied-ai` 根 README 能力入口表给出三个操作类模型在 310P（OrangePi AI Station 边缘设备）上的 OM 静态图离线推理端到端实测时延：
 
 | 模型 | OM E2E 时延 | 设备 | 来源 |
 | --- | --- | --- | --- |
@@ -84,5 +84,5 @@ OM/ATC 部署范式、算子退化、多段切分细节见 [om-atc-offline](../t
 <!-- cannbot:related:start -->
 ## 相关
 
-- [OM/ATC 离线静态图推理（310P 部署范式）](../techniques/om_atc_offline.md)（`related`）：**角色**：310P 是 OM 离线推理（PyTorch→ONNX→ATC→OM）链路的执行平台。；`cann-recipes-embodied-ai` 操作类 VLA 模型在 **Ascend 310P**（OrangePi AI Station 等边缘形态）上的离线推理部署范式：**PyTorch → ONNX → ATC → OM**，固定 shape、静态图、ACL Runtime 执行。平台卡确定执行目标，范式卡把同一链路细化为导出、ATC 编译和 ACL Runtime 验证。
+- [OM/ATC 离线静态图推理（310P 部署范式）](../techniques/om_atc_offline.md)（`related`）：Ascend 310P 执行 VLA 模型经 PyTorch → ONNX → ATC 转换得到的固定 shape OM 静态图，运行时依赖 ACL Runtime。
 <!-- cannbot:related:end -->

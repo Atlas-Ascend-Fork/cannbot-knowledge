@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/common/online_split_weight_guide.md
   role: supporting
 created_at: '2026-04-15T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - agnostic
 ---
@@ -99,7 +99,7 @@ model_config:
 
 - **调试阶段**：避免离线切分带来的 "修改 TP 配置 → 重新离线切 → 拷贝到各节点" 循环；改配置直接重跑。
 - **磁盘空间受限**：不同 `attn_tp_size` / `moe_tp_size` 组合不需要预存多份切分权重。
-- **通用载入路径**：本仓大多数 LLM 模型的 `modeling_*.py` 都按此机制实现 `load_weights`。
+- **通用载入路径**：cann-recipes-infer 的大多数 LLM 模型的 `modeling_*.py` 都按此机制实现 `load_weights`。
 
 ## Constraints
 

@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - agnostic
 ---
@@ -219,9 +219,9 @@ cann-recipes-infer
 
 ## Notes
 
-- **gap**：源未给出 benchmark 端到端数据
-- **meta**：源 optimization.md 文档散文将该文件误写作 `iamge2video.py`，真实代码文件为 `image2video.py`
-- **ambiguity**：`FusedLayerNormModulate.forward` 中 `scale` 变量未在片段作用域定义，源代码片段可能有遗漏
+- **性能数据范围**：源未给出 benchmark 端到端数据
+- **文件名差异**：源 optimization.md 将该文件误写作 `iamge2video.py`，真实代码文件为 `image2video.py`
+- **示例限制**：`FusedLayerNormModulate.forward` 中 `scale` 变量未在片段作用域定义，源代码片段可能有遗漏
 
 <!-- cannbot:related:start -->
 ## 相关

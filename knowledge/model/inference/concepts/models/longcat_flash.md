@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: LongCat-Flash
-description: LongCat-Flash 是美团 2025 年开源（arXiv 2509.01322）的 **560B MoE** 大语言模型，核心架构特色是 **ScMoE（Shortcut-connected MoE）**，每个 Transformer Block 内部存在 "第一段 Attention → FFN → 第二段 Attention → MoE" 的双段结构，天然存在可并行的计算路径。模型结构中与 Llama 类似的部分沿用通用优化点（固定 KV Cache 大小、cos/sin 优化、AddRMSNorm 融合）。 cann-recipes-infer 在 Atlas A3 上基于自研 `executor/` 推理框架对 LongCat-Flash 进行推理优化实践，是**本仓优化技术最密集的模型**：除了沿用 DeepSeek-R1 的 MLA 融合算子 + EP MoE + 图模式 + SuperKernel + MTP 外，还引入了 **多流并行与控核**、**权重预取**、**o_proj TP K 轴切分**、**MLA KVP 切分**、**MLP dense-TP**、以及面向 Decode TPOT 极致优化的 **Attention-FFN Disaggregation (AFD)**，使能 AFD 后 TPOT 迈入 10 ms 内。 （MLA KVP 部署已于 2026-05 回退，kvp8 YAML/新 ParallelConfig.kvp_size 字段/优化文档移除，legacy modeling 代码残留）
+description: LongCat-Flash 是美团 2025 年开源（arXiv 2509.01322）的 **560B MoE** 大语言模型，核心架构特色是 **ScMoE（Shortcut-connected MoE）**，每个 Transformer Block 内部存在 "第一段 Attention → FFN → 第二段 Attention → MoE" 的双段结构，天然存在可并行的计算路径。模型结构中与 Llama 类似的部分沿用通用优化点（固定 KV Cache 大小、cos/sin 优化、AddRMSNorm 融合）。 cann-recipes-infer 在 Atlas A3 上基于自研 `executor/` 推理框架对 LongCat-Flash 进行推理优化：除了沿用 DeepSeek-R1 的 MLA 融合算子 + EP MoE + 图模式 + SuperKernel + MTP 外，还引入了 **多流并行与控核**、**权重预取**、**o_proj TP K 轴切分**、**MLA KVP 切分**、**MLP dense-TP**、以及面向 Decode TPOT 极致优化的 **Attention-FFN Disaggregation (AFD)**，使能 AFD 后 TPOT 迈入 10 ms 内。 （MLA KVP 部署已于 2026-05 回退，kvp8 YAML/新 ParallelConfig.kvp_size 字段/优化文档移除，legacy modeling 代码残留）
 tags:
 - task.design
 - topic.model_architecture
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/longcat_flash_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -25,7 +25,7 @@ platforms:
 
 LongCat-Flash 是美团 2025 年开源（arXiv 2509.01322）的 **560B MoE** 大语言模型，核心架构特色是 **ScMoE（Shortcut-connected MoE）**，每个 Transformer Block 内部存在 "第一段 Attention → FFN → 第二段 Attention → MoE" 的双段结构，天然存在可并行的计算路径。模型结构中与 Llama 类似的部分沿用通用优化点（固定 KV Cache 大小、cos/sin 优化、AddRMSNorm 融合）。
 
-cann-recipes-infer 在 Atlas A3 上基于自研 `executor/` 推理框架对 LongCat-Flash 进行推理优化实践，是**本仓优化技术最密集的模型**：除了沿用 DeepSeek-R1 的 MLA 融合算子 + EP MoE + 图模式 + SuperKernel + MTP 外，还引入了 **多流并行与控核**、**权重预取**、**o_proj TP K 轴切分**、**MLA KVP 切分**（部署已于 2026-05 回退，legacy 代码残留；详见「MLA KVP 切分优化」节）、**MLP dense-TP**、以及面向 Decode TPOT 极致优化的 **Attention-FFN Disaggregation (AFD)**，使能 AFD 后 TPOT 迈入 10 ms 内。
+cann-recipes-infer 在 Atlas A3 上基于自研 `executor/` 推理框架对 LongCat-Flash 进行推理优化：除了沿用 DeepSeek-R1 的 MLA 融合算子 + EP MoE + 图模式 + SuperKernel + MTP 外，还引入了 **多流并行与控核**、**权重预取**、**o_proj TP K 轴切分**、**MLA KVP 切分**（部署已于 2026-05 回退，legacy 代码残留；详见「MLA KVP 切分优化」节）、**MLP dense-TP**、以及面向 Decode TPOT 极致优化的 **Attention-FFN Disaggregation (AFD)**，使能 AFD 后 TPOT 迈入 10 ms 内。
 
 ### Highlights
 

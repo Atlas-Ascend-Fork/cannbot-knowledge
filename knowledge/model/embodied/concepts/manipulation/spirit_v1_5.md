@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/spirit-v1.5/infer_with_torch/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - 310p
 ---
@@ -22,7 +22,7 @@ platforms:
 
 `cann-recipes-embodied-ai` 的操作类 VLA 模型样例：在 **Ascend 310P** 平台上适配 **Spirit-v1.5** 并做推理。一手源：`manipulation/spirit-v1.5/infer_with_torch/` 下的昇腾适配源 `attention_processor_patch.py`、`modeling_spirit_vla.py` 与 `README.md`。
 
-> Spirit-v1.5 是千寻智能（Spirit AI）自研的具身智能模型，在 2026.1.12 的 RoboChallenge 评测中取得综合排名第一，在多任务连续执行、复杂指令拆解、跨构型迁移等维度表现稳定（README 散文叙述）。上游开源仓 https://github.com/Spirit-AI-Team/spirit-v1.5。
+> Spirit-v1.5 是千寻智能（Spirit AI）自研的具身智能模型，在 2026.1.12 的 RoboChallenge 评测中取得综合排名第一，在多任务连续执行、复杂指令拆解、跨构型迁移等维度表现稳定（据 `cann-recipes-embodied-ai` 适配 README）。上游开源仓 https://github.com/Spirit-AI-Team/spirit-v1.5。
 
 ## 部署形态：310P 在线 torch 推理
 
@@ -30,12 +30,12 @@ platforms:
 
 ## 代码与权重准备
 
-样例采用「上游官方仓 + 本仓昇腾适配文件覆盖」的方式：
+样例采用「Spirit AI 官方仓 + `cann-recipes-embodied-ai` 昇腾适配文件覆盖」的方式：
 
-1. clone 本仓 + 千寻官方仓 `spirit-v1.5`；
-2. 将本仓下列文件拷贝（同名替换）进官方仓对应位置：
+1. clone `cann-recipes-embodied-ai` + 千寻官方仓 `spirit-v1.5`；
+2. 将 `cann-recipes-embodied-ai/manipulation/spirit-v1.5/` 下列文件拷贝（同名替换）进官方仓对应位置：
 
-   | 本仓文件 | 官方仓位置 |
+   | 昇腾适配文件 | Spirit AI 官方仓位置 |
    | --- | --- |
    | `infer_with_torch/pyproject.toml` | `pyproject.toml` |
    | `infer_with_torch/requirements.txt` | `requirements.txt` |

@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Pi0（π0 · VLA 流匹配模型 · 昇腾训练/在线推理/OM 离线三链路）
-description: cann-recipes-embodied-ai 的操作类（manipulation）VLA 模型样例，演示 Pi0（π0） 在昇腾上的 训练（Atlas A2）/ 在线 torch 推理（A2）/ OM 离线推理（310P） 三条完整链路。本页是模型枢纽，架构与算子机制下放到 canonical 概念页，模型页只链接 + 记录 Pi0 专属配置与性能数字。
+description: cann-recipes-embodied-ai 的操作类（manipulation）VLA 模型样例，演示 Pi0（π0） 在昇腾上的 训练（Atlas A2）/ 在线 torch 推理（A2）/ OM 离线推理（310P） 三条完整链路。
 tags:
 - task.design
 - topic.model_architecture
@@ -18,7 +18,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/pi0/infer_with_om/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a2
 - 310p
@@ -26,9 +26,9 @@ platforms:
 
 # Pi0（π0 · VLA 流匹配模型 · 昇腾训练/在线推理/OM 离线三链路）
 
-`cann-recipes-embodied-ai` 的操作类（manipulation）VLA 模型样例，演示 **Pi0（π0）** 在昇腾上的 **训练（Atlas A2）/ 在线 torch 推理（A2）/ OM 离线推理（310P）** 三条完整链路。架构与算子机制见各概念页；以下记录 Pi0 专属配置与性能数字。
+`cann-recipes-embodied-ai` 的操作类（manipulation）VLA 模型样例，演示 **Pi0（π0）** 在昇腾上的 **训练（Atlas A2）/ 在线 torch 推理（A2）/ OM 离线推理（310P）** 三条完整链路。
 
-> 论文：π0: A Vision-Language-Action Flow Model for General Robot Control（arXiv:2410.24164）。上游开源本体 OpenPI https://github.com/Physical-Intelligence/openpi ；仓内基于 HuggingFace LeRobot 对 Pi0 的迁移实现（固定 commit）。
+> 论文：π0: A Vision-Language-Action Flow Model for General Robot Control（arXiv:2410.24164）。上游开源本体 OpenPI https://github.com/Physical-Intelligence/openpi ；`cann-recipes-embodied-ai` 基于 HuggingFace LeRobot 对 Pi0 的迁移实现（固定 commit）。
 
 ## 模型简介
 
@@ -54,7 +54,7 @@ Pi0 是面向通用机器人控制的视觉-语言-动作（VLA）模型：基�
 | disable outer suffix checkpoint | 77.64 samples/s |
 | 两者同时开启 | 81.77 samples/s（较基线端到端约 +24%） |
 
-机制下放：disable-outer-suffix-checkpoint（单项收益最大）见 [gradient-checkpoint-refine](../techniques/gradient_checkpoint_refine.md)；NPU fusion attention 的 Pi0 局部接法（`_repeat_kv_heads` + `_npu_fusion_attention_forward`，实例级 `use_npu_fusion_attention` 开关，不全局 monkey-patch Gemma）同见该页。
+disable-outer-suffix-checkpoint（单项收益最大）的机制见 [gradient-checkpoint-refine](../techniques/gradient_checkpoint_refine.md)；NPU fusion attention 的 Pi0 局部接法使用 `_repeat_kv_heads` + `_npu_fusion_attention_forward` 和实例级 `use_npu_fusion_attention` 开关，不全局 monkey-patch Gemma。
 
 **训练特有迁移点**（`manipulation/pi0/train/doc/README.md` §3）：NPU 不支持 INT64 `cumsum`——attention mask / `position_ids` 构造路径统一转 `int32`（`torch.cumsum(..., dtype=torch.int32)`），`pad_masks` 转 bool 后再 `logical_and`，规避 `aclnnCumsum failed ... DT_INT64`、`aclnnBitwiseAndTensor ... DT_FLOAT` 报错。
 
@@ -94,7 +94,7 @@ Pi0 是面向通用机器人控制的视觉-语言-动作（VLA）模型：基�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Flow-Matching Action Expert（流匹配动作专家）](../modules/flow_matching_action_expert.md)（`related`）：架构是「慢系统 VLM 主干（PaliGemma）+ 快系统流匹配动作专家（Gemma）」双流结构，VLM 一次提取多模态前缀 KV cache，动作专家在其上**多步去噪**（默认 `num_steps=10`）输出动作块。；两段在推理流上**解耦**：VLM 计算 image/language prefix KV cache，action expert 在其上多步 denoise。；Pi0 模型页给出慢系统产生 KV cache、快系统执行十步去噪的实例，模块页把同一分界抽象成共享架构合同，二者直接衔接模型理解与实现验证。
-- [OM/ATC 离线静态图推理（310P 部署范式）](../techniques/om_atc_offline.md)（`related`）：**两段 OM 切分**：part1 VLM（`modeling_pi0_vlm.py`，输出 `past_kv_tensor` + `prefix_pad_masks`）+ part2 action expert（`modeling_pi0_action_expert.py`，10 步去噪，循环调用），`run_om_e2e.py` 端到端串联。；Pi0/Pi0.5 不一次性导出完整图，而是拆成 **VLM（part1）** 与 **action expert（part2）** 两段 OM（`docs/manipulation/pi0/infer_with_om/README.md` §2）：；Pi0 模型页给出两段 OM 的具体脚本和中间张量，部署范式页解释相同切分的转换、精度对齐与运行顺序，组成同一 310P 离线部署任务链。
-- [梯度检查点精细化（disable outer suffix checkpoint）](../techniques/gradient_checkpoint_refine.md)（`related`）：机制下放：disable-outer-suffix-checkpoint（单项收益最大）见 ［gradient-checkpoint-refine］(../techniques/gradient_checkpoint_refine.md)；NPU fusion attention 的 Pi0 局部接法（`_repeat_kv_heads` + `_npu_fusion_attention_forward`，实例级 `use_npu_fusion_attention` 开关，不全局 monkey-patch Gemma）同见该页。；关闭这层「外包式」大 checkpoint 后，显存策略仍可控（模型内部细粒度 checkpoint 仍在），但反向计算明显变快——因此是当前收益最直接的一项。；Pi0 模型页把 disable outer suffix checkpoint 列为已验证训练开关，优化页解释关闭外层重复重算而保留细粒度 checkpoint 的机制，连接配置、根因与吞吐复现。
+- [Flow-Matching Action Expert（流匹配动作专家）](../modules/flow_matching_action_expert.md)（`related`）：Pi0 的 VLM 一次计算多模态前缀 KV cache，流匹配动作专家复用该 cache 执行默认 10 步去噪并输出动作块。
+- [OM/ATC 离线静态图推理（310P 部署范式）](../techniques/om_atc_offline.md)（`related`）：Pi0 的 310P 离线部署将 VLM 与动作专家分别导出为 OM，通过 `past_kv_tensor` 和 `prefix_pad_masks` 衔接，并由 `run_om_e2e.py` 串联执行。
+- [梯度检查点精细化（disable outer suffix checkpoint）](../techniques/gradient_checkpoint_refine.md)（`related`）：Pi0 训练通过 disable outer suffix checkpoint 关闭外层重复重算，保留模型内部细粒度 checkpoint，以提升训练吞吐。
 <!-- cannbot:related:end -->

@@ -146,6 +146,6 @@ sparse:
 ## 相关
 
 - [Diffusion Transformer (DiT)](dit.md)（`related`）：**Blockwise Sparse Attention** 是一种 Attention 组件变体：按 `［block_Q, block_K］` 粒度估计块的重要程度，只计算 TopK 重要块、跳过其余块，从而把超长序列 DiT 的 Attention 计算量显著降低。；DiT 推理优化栈既复用 LLM 的融合算子（FA / RMSNorm / RoPE），也引入一批视频生成专属优化：序列并行（Ulysses / Ring）、步间缓存（FBCache / TeaCache / TaylorSeer）、块稀疏 Attention、VAE patch 并行、CFG 并行等。。前者给出块级 TopK 稀疏注意力的机制，后者把块稀疏 Attention 定位为长序列 DiT 推理优化栈的一环，能够从 DiT 性能瓶颈下钻到可用组件。
-- [HunyuanVideo](../models/hunyuan_video.md)（`related`）：“块稀疏 Attention ｜ 减少计算量 ｜ TopK / SVG 两种 predictor，基于 blitz_sparse_attention 算子”；“**Blockwise Sparse Attention** 是一种 Attention 组件变体：按 `［block_Q, block_K］` 粒度估计块的重要程度，只计算 TopK 重要块、跳过其余块”。模型卡的具体优化由候选卡定义算法机制和离线配置要求。
-- [视频 DiT 块稀疏 Attention 使能 — must-keep 首帧/文本 + TopK/SVG 选型（TopK 需离线 profiling）](../../optimizations/experience/rules/video_dit_blockwise_sparse_attention.md)（`related`）：焦点卡写明“把 `sink_frame_len + txt_len` 覆盖的块标为 must-keep”，候选卡写明“TopK 需要离线 profiling 保存 QK”。规则卡给出模型专属 must-keep，组件卡给出 TopK 离线 QK profiling，合读完成选型与配置。
+- [HunyuanVideo](../models/hunyuan_video.md)（`related`）：HunyuanVideo 通过 TopK/SVG predictor 选择重要 Attention 块，并用 `blitz_sparse_attention` 执行稀疏计算。
+- [视频 DiT 块稀疏 Attention 使能 — must-keep 首帧/文本 + TopK/SVG 选型（TopK 需离线 profiling）](../../optimizations/experience/rules/video_dit_blockwise_sparse_attention.md)（`related`）：HunyuanVideo 的块稀疏实现须将首帧和文本覆盖的块标为 must-keep；使用 TopK 时还需离线 QK profiling。
 <!-- cannbot:related:end -->

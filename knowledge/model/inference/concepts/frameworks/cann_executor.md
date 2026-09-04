@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/design/executor_design.md
   role: supporting
 created_at: '2026-04-15T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - agnostic
 ---
@@ -23,9 +23,9 @@ platforms:
 
 ## Summary
 
-cann-recipes-infer 仓库自带一套轻量级推理执行框架（以下简称 "CANN Executor"），是本仓多数 LLM 模型在 NPU 上的自研落地载体，不依赖 vLLM / SGLang。代码位于 `executor/`。但**本仓并非所有 LLM 模型都走同一套部署路径**——`executor/scripts/function.sh:288-290` 在离线模式下先取 `models/${MODEL_DIR}/infer.py`，仅当该文件不存在才 fallback 到 `executor/offline/infer.py`。据此本仓存在**三类部署模式**（详见下文「部署模式分类」）。
+cann-recipes-infer 仓库自带一套轻量级推理执行框架（以下简称 "CANN Executor"），是该仓多数 LLM 模型在 NPU 上的自研落地载体，不依赖 vLLM / SGLang。代码位于 `executor/`。但**这些 LLM 模型并非都走同一套部署路径**——`executor/scripts/function.sh:288-290` 在离线模式下先取 `models/${MODEL_DIR}/infer.py`，仅当该文件不存在才 fallback 到 `executor/offline/infer.py`。由此区分**三类部署模式**（详见下文「部署模式分类」）。
 
-本页主要描述其中的**新执行器路径**（`executor/offline/infer.py` + `OfflineInference` / `ExecutionEngine` / `InferenceConfig`），它提供 **offline / online 两种执行方式**：离线入口 `OfflineInference`（批处理，关注单步执行时间、吞吐与资源利用率，**推荐在验证性能上限、问题定位时使用**）；在线入口 `OnlineInference`（Client-Server 服务模式，以 PD 分离部署，主要用于 benchmark / 精度评测，见 [online-pd-inference](online_pd_inference.md)）。`models/<name>/infer.py` legacy 路径与独立 HSTU 路径不使用 `OfflineInference` / `InferenceConfig`。
+**新执行器路径**（`executor/offline/infer.py` + `OfflineInference` / `ExecutionEngine` / `InferenceConfig`），它提供 **offline / online 两种执行方式**：离线入口 `OfflineInference`（批处理，关注单步执行时间、吞吐与资源利用率，**推荐在验证性能上限、问题定位时使用**）；在线入口 `OnlineInference`（Client-Server 服务模式，以 PD 分离部署，主要用于 benchmark / 精度评测，见 [online-pd-inference](online_pd_inference.md)）。`models/<name>/infer.py` legacy 路径与独立 HSTU 路径不使用 `OfflineInference` / `InferenceConfig`。
 
 核心设计要点：
 
@@ -39,7 +39,7 @@ cann-recipes-infer 仓库自带一套轻量级推理执行框架（以下简称 
 
 ### 部署模式分类
 
-`executor/scripts/function.sh:288-290` 决定了本仓 LLM 离线部署分流：先尝试 `models/${MODEL_DIR}/infer.py`，**仅当不存在**才 fallback 到 `executor/offline/infer.py`。由此分为三类（已代码核对）：
+`executor/scripts/function.sh:288-290` 决定 cann-recipes-infer 的 LLM 离线部署分流：先尝试 `models/${MODEL_DIR}/infer.py`，**仅当不存在**才 fallback 到 `executor/offline/infer.py`。由此分为三类：
 
 | 部署模式 | 入口 | 配置载体 | 在用模型 |
 |----------|------|----------|----------|
@@ -159,9 +159,9 @@ sequenceDiagram
 ## Evidence
 
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/design/executor_design.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/design/executor_design.md)（框架总览：offline+online 两种执行方式、目录结构、五组件、CommManager 三类职责、初始化/运行时时序、§6 接口契约。MR !458 refactor）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`executor/core/{config, engine, forward_data_info, kv_cache, model_worker, scheduler}` + `executor/{offline, online}`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/core/config/comm_manager.py)（核心组件实现；已代码核对：`CommManager.register_group/init_cpu_groups/_cache_default_group`、`OnlineInference(OfflineInference)`、`support_models._specs` 延迟 importlib、`forward_data_info/` 取代旧 `types_/`、`offline/`+`online/` 取代旧 `core/entrypoints/`）
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`executor/core/{config, engine, forward_data_info, kv_cache, model_worker, scheduler}` + `executor/{offline, online}`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/core/config/comm_manager.py)（核心组件实现：`CommManager.register_group/init_cpu_groups/_cache_default_group`、`OnlineInference(OfflineInference)`、`support_models._specs` 延迟 importlib、`forward_data_info/` 取代旧 `types_/`、`offline/`+`online/` 取代旧 `core/entrypoints/`）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — `docs/common/inference_config_guide.md` / `new_model_checklist.md §1`（配置字段语义与 YAML 必填项，详见 [inference-config](../techniques/inference_config.md)）
-- 旧版证据（**已失效，按矛盾协议保留**）：[`docs/design/offline_inference_design.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/design/offline_inference_design.md) —— 该文件已在 2c45117（MR !458）删除，由 `executor_design.md` 取代（后者把 offline 与 online 合并为框架总览）；旧链接锚定基线 2f82d10、不可达 HEAD。
+- 旧版证据（**适用于旧版本**）：[`docs/design/offline_inference_design.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/design/offline_inference_design.md) —— 该文件已在 2c45117（MR !458）删除，由 `executor_design.md` 取代（后者把 offline 与 online 合并为框架总览）；旧链接锚定基线 2f82d10、不可达 HEAD。
 
 ## Links
 

@@ -1,7 +1,7 @@
 ---
 type: Guide
 title: DeepSeek-V3.2 TorchTitan 32K 长序列预训练
-description: 基于 torchtitan + torchtitan-npu 插件（样例版本 v0.2.2），在 64 卡 Atlas A3 集群上完成 DeepSeek-V3.2（671B / 61 层，DSA 稀疏注意力）32K 长序列预训练 / CPT 的全链路优化适配，A3 64 卡极致显存场景达成 148 TPS/卡。本实践打通 5D 混合并行（FSDP2+TP+PP+EP+自定义 CP），并在业界率先攻克 DSA 算子的反向传播（SLIG / SFAG），结合 torch.compile + Inductor 实现从模型定义到算子编译的原生对齐。DeepSeek-V3.2 与推理侧 deepseek-v3.2-exp 同属 DSA 模型谱系。本页是该 recipe 的总枢纽，各优化点的算子/并行细节见下方链出的子页。
+description: 基于 torchtitan + torchtitan-npu 插件（样例版本 v0.2.2），DeepSeek-V3.2（671B / 61 层，DSA 稀疏注意力）32K 长序列预训练 / CPT 在 64 卡 Atlas A3 集群上达到 148 TPS/卡。训练使用 5D 混合并行（FSDP2+TP+PP+EP+自定义 CP）、DSA 反向算子 SLIG / SFAG，以及 torch.compile + Inductor 的模型到算子编译路径。DeepSeek-V3.2 与推理侧 deepseek-v3.2-exp 同属 DSA 模型谱系。
 tags:
 - task.implementation
 - topic.attention
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v32_pre_train_optimization.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -23,7 +23,7 @@ platforms:
 
 ## Summary
 
-基于 [torchtitan](../../concepts/frameworks/torchtitan.md) + `torchtitan-npu` 插件（样例版本 `v0.2.2`），在 **64 卡 Atlas A3** 集群上完成 **DeepSeek-V3.2**（671B / 61 层，DSA 稀疏注意力）**32K 长序列预训练 / CPT** 的全链路优化适配，A3 64 卡极致显存场景达成 **148 TPS/卡**。本实践打通 5D 混合并行（FSDP2+TP+PP+EP+自定义 CP），并在业界率先攻克 **DSA 算子的反向传播**（SLIG / SFAG），结合 `torch.compile + Inductor` 实现从模型定义到算子编译的原生对齐。DeepSeek-V3.2 与推理侧 [deepseek-v3.2-exp](../../../inference/concepts/models/deepseek_v3_2_exp.md) 同属 DSA 模型谱系。各优化点的算子/并行细节见下方各小节链出的子页。
+基于 [torchtitan](../../concepts/frameworks/torchtitan.md) + `torchtitan-npu` 插件（样例版本 `v0.2.2`），**DeepSeek-V3.2**（671B / 61 层，DSA 稀疏注意力）**32K 长序列预训练 / CPT** 在 **64 卡 Atlas A3** 集群上达到 **148 TPS/卡**。训练使用 5D 混合并行（FSDP2+TP+PP+EP+自定义 CP）、**DSA 反向算子**（SLIG / SFAG），以及 `torch.compile + Inductor` 的模型到算子编译路径。DeepSeek-V3.2 与推理侧 [deepseek-v3.2-exp](../../../inference/concepts/models/deepseek_v3_2_exp.md) 同属 DSA 模型谱系。
 
 ## 训练配置与拉起
 

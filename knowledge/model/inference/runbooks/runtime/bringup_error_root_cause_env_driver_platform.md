@@ -96,6 +96,6 @@ platforms:
 ## 相关
 
 - [bringup 前置准备与缺文件误报：未内置上游建模代码 / checkpoint 拷贝不完整 + 清 ATC 缓存 / 减层跑通功能验证](bringup_preparation_missing_files_and_reduced_config.md)（`related`）：缺文件 / 文件不完整 / 环境残留；先怀疑环境/驱动/平台不匹配，别急着改模型或并行代码。前者覆盖模型代码、checkpoint 与编译缓存准备问题，后者覆盖驱动、设备透传和平台错配；二者合并成 bringup 早期按阶段排除环境侧根因的互补诊断树。
-- [推理 warmup 静默长耗时易误判卡死 + 同质 minibatch 冗余前向可 dummy 缓存跳过](../performance/warmup_silent_slow_and_dummy_cache.md)（`related`）：焦点卡记录“**看似卡死**：warmup 阶段全程无日志输出”，而 bringup 排障卡明确“「拉起后长时间无输出、看似 hang」常是 warmup 静默长耗时而非真故障”；二者共同把启动静默从环境/HCCL 真故障中分流出来。
+- [推理 warmup 静默长耗时易误判卡死 + 同质 minibatch 冗余前向可 dummy 缓存跳过](../performance/warmup_silent_slow_and_dummy_cache.md)（`related`）：warmup 现象为“**看似卡死**：warmup 阶段全程无日志输出”，而 bringup 排障需注意“「拉起后长时间无输出、看似 hang」常是 warmup 静默长耗时而非真故障”；二者共同把启动静默从环境/HCCL 真故障中分流出来。
 - [昇腾部署镜像的组件版本对齐（torch_npu / 驱动 HDK / CANN 包）与过渡态规避](../../optimizations/experience/rules/ascend_deployment_image_version_alignment.md)（`related`）：“先把组件版本对齐到目标 recipe/镜像 pin 的版本，再动优化”与“先怀疑环境/驱动/平台不匹配，别急着改模型或并行代码”共同给出从版本对齐到环境根因排查的 bringup 顺序。
 <!-- cannbot:related:end -->

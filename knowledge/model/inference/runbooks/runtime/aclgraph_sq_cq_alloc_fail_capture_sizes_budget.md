@@ -96,5 +96,5 @@ num_capture_sizes = (1920)              / (num_hidden_layer + 1) / (1 + pg_num *
 <!-- cannbot:related:start -->
 ## 相关
 
-- [稳定图模式输入张量签名（shape/stride/dtype）避免 dynamo 重编译与缓存 miss](../performance/graph_mode_stable_input_signature_recompile.md)（`related`）：图模式档位 / 输入签名与重复编译相关问题见 ［graph-mode-stable-input-signature-recompile］(../performance/graph_mode_stable_input_signature_recompile.md)。；图模式按输入张量的 **shape + dtype + stride 签名** 缓存/守卫（guard）已编译图；decode 每步输入的 shape/dtype/stride 只要有一维不稳，dynamo 就把它当新形态触发重编译或 guard 失效。三类常见漂移：；焦点卡主动把输入签名问题交给目标卡，目标卡给出签名漂移触发重编译的具体机制。
+- [稳定图模式输入张量签名（shape/stride/dtype）避免 dynamo 重编译与缓存 miss](../performance/graph_mode_stable_input_signature_recompile.md)（`related`）：图模式档位 / 输入签名与重复编译相关问题见 ［graph-mode-stable-input-signature-recompile］(../performance/graph_mode_stable_input_signature_recompile.md)。；图模式按输入张量的 **shape + dtype + stride 签名** 缓存/守卫（guard）已编译图；decode 每步输入的 shape/dtype/stride 只要有一维不稳，dynamo 就把它当新形态触发重编译或 guard 失效。三类常见漂移：；排查 SQ/CQ 耗尽时，还需核对输入签名漂移是否触发重复编译。
 <!-- cannbot:related:end -->

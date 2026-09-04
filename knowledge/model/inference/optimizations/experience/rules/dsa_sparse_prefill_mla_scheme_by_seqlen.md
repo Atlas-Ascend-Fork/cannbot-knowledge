@@ -52,5 +52,5 @@ platforms:
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MLA 访存 / 显存优化：优先权重吸收（absorb）+ latent-KV 缓存；稀疏 / 长序列 prefill 选 Absorb+Sparse](mla_weight_absorption_latent_kv.md)（`related`）：三方案的 BMM shape 表与访存推导见 ［mla-weight-absorption-latent-kv］(mla_weight_absorption_latent_kv.md)，此处不复制。；**方案三 Absorb + Sparse Attention（推荐）**：相对方案二计算量增约 3 倍，但 BMM 的 M 轴变为 128（GEMM 友好），HBM 访存量相较方案二降几十倍，且与 decode 的 MLA 计算流归一（同一套 absorb 计算流，简化融合 kernel 设计）。。左卡把 DSA prefill 的按长度选型依据明确下钻到右卡，右卡提供方案三的 GEMM、访存与计算代价；阅读右卡可解释左卡为何在长序列选 Absorb+Sparse。
+- [MLA 访存 / 显存优化：优先权重吸收（absorb）+ latent-KV 缓存；稀疏 / 长序列 prefill 选 Absorb+Sparse](mla_weight_absorption_latent_kv.md)（`related`）：三方案的 BMM shape 表与访存推导见 ［mla-weight-absorption-latent-kv］(mla_weight_absorption_latent_kv.md)；**方案三 Absorb + Sparse Attention（推荐）**：相对方案二计算量增约 3 倍，但 BMM 的 M 轴变为 128（GEMM 友好），HBM 访存量相较方案二降几十倍，且与 decode 的 MLA 计算流归一（同一套 absorb 计算流，简化融合 kernel 设计）。。DSA prefill 的按长度选型依赖方案三的 GEMM、访存与计算代价；这些条件解释了长序列场景选择 Absorb+Sparse 的依据。
 <!-- cannbot:related:end -->

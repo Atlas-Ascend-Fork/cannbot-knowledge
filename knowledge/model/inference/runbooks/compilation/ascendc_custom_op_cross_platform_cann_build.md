@@ -164,5 +164,5 @@ CMake Error at cmake/config.cmake ... Check version compatibility failed.
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscendC 自定义算子的构建/打包/可用性坑：vendor 同名覆盖、build.sh op-name 不匹配、未编译则命名空间缺失、镜像滞后源码、逐 SoC AddConfig、并行编译提速](ascendc_custom_op_build_packaging_availability.md)（`related`）：焦点卡指出“每个要支持的 SoC 都必须在 `op_host/<op>_def.cpp` 里单写一条 `this->AICore().AddConfig("<soc>")`”，候选卡给出 A2 修复命令“bash build.sh -c ascend910b”；两卡分别覆盖源码注册与目标 SoC 重编，组成跨平台可用性的完整修复链。
+- [AscendC 自定义算子的构建/打包/可用性坑：vendor 同名覆盖、build.sh op-name 不匹配、未编译则命名空间缺失、镜像滞后源码、逐 SoC AddConfig、并行编译提速](ascendc_custom_op_build_packaging_availability.md)（`related`）：源码注册要求“每个要支持的 SoC 都必须在 `op_host/<op>_def.cpp` 里单写一条 `this->AICore().AddConfig("<soc>")`”，A2 目标重编命令为“bash build.sh -c ascend910b”；源码注册与目标 SoC 重编共同组成跨平台可用性的完整修复链。
 <!-- cannbot:related:end -->

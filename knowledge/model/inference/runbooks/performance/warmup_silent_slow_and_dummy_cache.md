@@ -60,6 +60,6 @@ platforms:
 <!-- cannbot:related:start -->
 ## 相关
 
-- [aclgraph decode 稳态期优化：warm-up 后 skip_guard_eval_unsafe 跳 guard 复评 + custom op reinplace 映射](../../guides/experience/interventions/aclgraph_decode_steady_state_skip_guard_reinplace.md)（`related`）：焦点卡警示“**看似卡死**：warmup 阶段全程无日志输出”，不能在首编译阶段误杀进程；稳态优化卡则限定“**仅对非 warm-up 的稳态步开启**”，明确跳 guard/reinplace 的启用时点必须等 warmup 完成。
-- [昇腾 bringup 初始化/HCCL 报错的根因常在环境/驱动/平台层，顶层 ACL/HCCL 码是泛化包装](../runtime/bringup_error_root_cause_env_driver_platform.md)（`related`）：焦点卡记录“**看似卡死**：warmup 阶段全程无日志输出”，而 bringup 排障卡明确“「拉起后长时间无输出、看似 hang」常是 warmup 静默长耗时而非真故障”；二者共同把启动静默从环境/HCCL 真故障中分流出来。
+- [aclgraph decode 稳态期优化：warm-up 后 skip_guard_eval_unsafe 跳 guard 复评 + custom op reinplace 映射](../../guides/experience/interventions/aclgraph_decode_steady_state_skip_guard_reinplace.md)（`related`）：warmup 诊断警示“**看似卡死**：warmup 阶段全程无日志输出”，不能在首编译阶段误杀进程；稳态优化则限定“**仅对非 warm-up 的稳态步开启**”，明确跳 guard/reinplace 的启用时点必须等 warmup 完成。
+- [昇腾 bringup 初始化/HCCL 报错的根因常在环境/驱动/平台层，顶层 ACL/HCCL 码是泛化包装](../runtime/bringup_error_root_cause_env_driver_platform.md)（`related`）：warmup 现象为“**看似卡死**：warmup 阶段全程无日志输出”，而 bringup 排障需注意“「拉起后长时间无输出、看似 hang」常是 warmup 静默长耗时而非真故障”；二者共同把启动静默从环境/HCCL 真故障中分流出来。
 <!-- cannbot:related:end -->

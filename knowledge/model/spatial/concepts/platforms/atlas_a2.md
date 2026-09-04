@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/algorithms/gaussian_splatting/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a2
 ---
@@ -25,9 +25,9 @@ platforms:
 
 华为昇腾 **Atlas A2** 系列训练/推理服务器，是 `cann-recipes-spatial-intelligence` 仓所有样例（[VGGT](../models/vggt.md)、[Hunyuan3D](../models/hunyuan3d.md)、[3D Gaussian Splatting](../algorithms/3d_gaussian_splatting.md)）的目标部署平台。各样例 README 明确以 Atlas A2 为运行环境（3DGS 为**单卡 Atlas A2** 训推）。
 
-> 本仓样例仅声明「Atlas A2」为目标平台，未在文档内展开 A2 的硬件规格（算力/die/HBM 等）；硬件细节以昇腾官方资料为准。
+> `cann-recipes-spatial-intelligence` 样例声明目标平台为「Atlas A2」，未提供其算力、die、HBM 等硬件规格；硬件细节以昇腾官方资料为准。
 
-## 各样例的 CANN / 框架版本（README 逐字）
+## 各样例的 CANN / 框架版本
 
 | 样例 | CANN | torch / torch_npu | Python |
 |---|---|---|---|
@@ -35,7 +35,7 @@ platforms:
 | 3D Gaussian Splatting | 8.2.RC1 | 2.1.0 / 2.1.0.post12 | 3.8 |
 | Hunyuan3D | 8.2.RC1 | 2.6.0 / 2.6.0.post3 | 3.10 |
 
-（版本差异源于各样例独立适配；引用认准对应样例 README。）
+版本差异源于各样例独立适配；各版本组合的适用范围限于对应样例 README。
 
 ## Links
 

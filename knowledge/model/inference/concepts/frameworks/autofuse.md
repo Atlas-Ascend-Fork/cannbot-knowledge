@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md
   role: supporting
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -27,11 +27,11 @@ platforms:
 
 设计上，AutoFuse **扩展了 Inductor 在 NPU 上的 Codegen 后端**：通过将 InductorLoopIR 转换为 AscendLoopIR，调用 AutoFuse 模块做 Schedule 模板选择、UB 复用与 Tiling 调优，最终生成 AscendC Kernel 实现。它与 [npu-graph-mode](../techniques/npu_graph_mode.md) 的 `torch.compile` 图捕获是上下游关系：图模式负责把前向逻辑捕获成图，AutoFuse 负责把图中的 vector 子图编译成 NPU 亲和的融合 kernel。
 
-> AutoFuse 模块源码不在本仓，已在 `cann/ge` 仓开源（`compiler/graph/optimize/autofuse`）；本仓提供的是与之对接的参考实现 [`inductor_npu_ext`](https://gitcode.com/Ascend/torchair/blob/41af5b5871232805a670bd62527e4d0a7b7ab446/experimental/_inductor_npu_ext/)（位于 `Ascend/torchair` 仓）。
+> AutoFuse 模块源码位于 `cann/ge` 的 `compiler/graph/optimize/autofuse`；对接参考实现为 [`inductor_npu_ext`](https://gitcode.com/Ascend/torchair/blob/41af5b5871232805a670bd62527e4d0a7b7ab446/experimental/_inductor_npu_ext/)（位于 `Ascend/torchair` 仓）。
 
 ## 使能方式
 
-据 guide/README 文档说明的使能方式：PyTorch 前端增加一行导入即可注册基于 AutoFuse 的 Inductor NPU 后端扩展，随后对目标函数加 `@torch.compile` 装饰。（注：`import inductor_npu_ext` 仅出现在 guide/README 文档片段中；本仓 InductorAF 参考模型 `model.py` 仅含 `@torch.compile`，未含该后端扩展 import。）
+据 guide/README 文档说明的使能方式：PyTorch 前端增加一行导入即可注册基于 AutoFuse 的 Inductor NPU 后端扩展，随后对目标函数加 `@torch.compile` 装饰。（注：`import inductor_npu_ext` 仅出现在 guide/README 文档片段中；cann-recipes-infer 的 InductorAF 参考模型 `model.py` 仅含 `@torch.compile`，未含该后端扩展 import。）
 
 ```python
 import inductor_npu_ext  # 注册基于 AscendC 的 inductor 编译后端扩展
@@ -131,13 +131,13 @@ DeepSeek-V4 的 `hc_post` 片段含多个小算子组合，适合 AutoFuse 融�
 | --- | --- | --- | --- | --- | --- |
 | hc_post | 30 us | 7.5 us | 4x | 10 us | 3x |
 
-> 该数据前提为昇腾 A3 平台、`hc_post` 单算子上述典型输入 shape；端到端多片段收益待验证。`hc_post` 在仓内已有 AscendC 手写融合算子实现（见 [mhc-hcpre-hcpost](../kernels/mhc_hcpre_hcpost.md)）；此处 AutoFuse 是**自动融合**路径，与手写 AscendC 算子为并列两种实现来路。
+> 该数据前提为昇腾 A3 平台、`hc_post` 单算子上述典型输入 shape；端到端多片段收益待验证。cann-recipes-infer 的 `hc_post` 已有 AscendC 手写融合算子实现（见 [mhc-hcpre-hcpost](../kernels/mhc_hcpre_hcpost.md)）；此处 AutoFuse 是**自动融合**路径，与手写 AscendC 算子为并列两种实现来路。
 
 ## Evidence
 
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_autofuse_guide.md)（406 行主源：Inductor 对接、Schedule 模板规约/AutoSchedule、ATT 自动 Tiling 性能建模+轴排序求解器、Codegen、AscendLoopIR）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4-flash-tilelang-and-inductorAF/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4-flash-tilelang-and-inductorAF/README.md) / [`model.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4-flash-tilelang-and-inductorAF/model.py)（已代码核对：`@torch.compile` 装饰 `RMSNorm.forward`/`Expert.forward`/`hc_pre`/`hc_post`/`hc_head`（model.py:345/802/925/936/1010）；`hc_post` 计算式与 guide 一致；`hc_split_sinkhorn` 经 `torch.library.Library("tl","FRAGMENT")` 封装、暴露为 `torch.ops.tl.hc_split_sinkhorn` 自定义算子（model.py:34-53）。`import inductor_npu_ext` 仅见于 guide/README 文档片段，本仓 .py 无该 import，作为文档来源不计入代码核对勾）
-- AutoFuse 模块源码（外部仓，不在本仓）：[`cann/ge compiler/graph/optimize/autofuse`](https://gitcode.com/cann/ge/tree/e69d5b4a4945238a595bb56a5fba7941ef8c8316/compiler/graph/optimize/autofuse)；对接参考实现 [`inductor_npu_ext`](https://gitcode.com/Ascend/torchair/blob/41af5b5871232805a670bd62527e4d0a7b7ab446/experimental/_inductor_npu_ext/)（`Ascend/torchair` 仓）
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4-flash-tilelang-and-inductorAF/README.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4-flash-tilelang-and-inductorAF/README.md) / [`model.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4-flash-tilelang-and-inductorAF/model.py)（实现：`@torch.compile` 装饰 `RMSNorm.forward`/`Expert.forward`/`hc_pre`/`hc_post`/`hc_head`（model.py:345/802/925/936/1010）；`hc_post` 计算式与 guide 一致；`hc_split_sinkhorn` 经 `torch.library.Library("tl","FRAGMENT")` 封装、暴露为 `torch.ops.tl.hc_split_sinkhorn` 自定义算子（model.py:34-53）。`import inductor_npu_ext` 仅见于 guide/README 文档片段，参考模型的 .py 文件未包含该 import）
+- AutoFuse 模块源码（cann/ge）：[`cann/ge compiler/graph/optimize/autofuse`](https://gitcode.com/cann/ge/tree/e69d5b4a4945238a595bb56a5fba7941ef8c8316/compiler/graph/optimize/autofuse)；对接参考实现 [`inductor_npu_ext`](https://gitcode.com/Ascend/torchair/blob/41af5b5871232805a670bd62527e4d0a7b7ab446/experimental/_inductor_npu_ext/)（`Ascend/torchair` 仓）
 - 溯源（diff `2f82d10..2c45117`）：`377f20f` Add DeepSeek-V4-Flash Model and Tilelang SFA&MHC Kernel/InductorAF and Document（autofuse guide + InductorAF 参考模型引入）；`5df82b1` support deepseek v4（!366）；`13b8e6a` dsv4 add platform guide（!396）；`272df2f` [docs]deepseek v4 update（!449）；`d9f2926` README.md 自定义融合算子编译入参字段修改。
 
 ## Links
@@ -155,5 +155,5 @@ DeepSeek-V4 的 `hc_post` 片段含多个小算子组合，适合 AutoFuse 融�
 ## 相关
 
 - [inductor(autofuse) 部分图编译：按图结构稳定 / 范围 / pointwise 密度选子模块 + 收益观测](../../optimizations/experience/rules/inductor_autofuse_partial_compile_scope.md)（`related`）：“优先选择含较多 Pointwise / Reduce 计算的范围，Inductor 对这类计算的融合效果好，编译代价小、收益高。”给出 AutoFuse 的选域原则；“此时**不追求 fullgraph，而是挑"编译收益/代价比"高的子模块加 `@torch.compile`**——本页给选范围的三条规则与一组收益观测。”把该原则落实为动态模型的部分图编译和收益验证。
-- [训练入图：torch.compile + Inductor + AutoFuse（Bypass Triton → AutoFuse）](../../../training/concepts/techniques/autofuse_train.md)（`same_topic`）：“两者共用同一 CANN AutoFuse 组件（继承 Inductor、Ascend C Codegen）”给出焦点端事实；“AutoFuse** 是 CANN 框架继承自 PyTorch Inductor 的**面向 NPU 的即时编译（JIT）算子自动融合组件”给出候选端事实。两端明确指向同一个 CANN AutoFuse/Inductor NPU Codegen 组件；推理卡定义通用编译链，训练卡补充反向与重计算场景的接入和运维约束。
+- [训练入图：torch.compile + Inductor + AutoFuse（Bypass Triton → AutoFuse）](../../../training/concepts/techniques/autofuse_train.md)（`same_topic`）：训练与推理共用 CANN AutoFuse 的 Inductor NPU Codegen；训练接入还需考虑反向与重计算场景。
 <!-- cannbot:related:end -->

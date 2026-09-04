@@ -100,8 +100,8 @@ flowchart LR
 <!-- cannbot:related:start -->
 ## 相关
 
-- [HunyuanVideo](../models/hunyuan_video.md)（`related`）：“Ring Attention 序列并行 ｜ 提高算力 ｜ 与 Ulysses 类似，但 attention 计算时仍按 S 切分，通过 P2P 循环传递 KV 块”；“Ring Attention 是另一种长序列 SP 方案：与 Ulysses 不同，**attention 内部也保持序列切分**”。模型卡给出 Ring 选项，候选卡补足实际 AllGather/LSE 路线与适用边界。
+- [HunyuanVideo](../models/hunyuan_video.md)（`related`）：HunyuanVideo 的参考 Ring 路径以 AllGather 汇集 KV，再用 LSE 合并局部 Attention 输出。
 - [Ring Attention Overlap](../techniques/ring_attention_overlap.md)（`related`）：Ring Attention 是另一种长序列 SP 方案：与 Ulysses 不同，**attention 内部也保持序列切分**，每张卡仅维护自己那 1/SP 的 Q。；多卡 Ring Attention 的 P2P / AllGather 通信通常与 FA 计算串行，利用率低。Wan2.2-I2V 在此基础上做了**计算-通信掩盖**：异步启动 AllGather 收集远端 KV 的同时，立即用本地 KV 算第一次 FA；AllGather 完成后把远端多个 chunks 合并为一段长序列一次性算第二次 FA；最后用 LSE（Log-Sum-Exp）合并两次输出。。概念卡定义 attention 内保持序列切分的 Ring Attention，优化卡在同一 Ring 通信与两段 FA 计算上引入异步 AllGather 和 LSE 合并，因此从并行模式直接进入计算通信掩盖实现。
-- [VGGT 昇腾 Atlas A2 推理适配与优化](../../../spatial/concepts/models/vggt.md)（`related`）：“**Ring（序列维度切分）**：`use_ring_overlap` 边通信边计算 —— 异步 allgather K/V 的同时算 local attention，等通信完成再算 cross attention，最后**用 NPU FIA 返回的 LSE（log-sum-exp）做分块结果数值稳定合并**。”；“概念上（见下方 HunyuanVideo 文档引用）以 P2P 环形逐跳传递 KV；但本仓 `module/unified_sp/core.py` 的实际实现是用一次 `all_gather_into_tensor` 把其他所有 rank 的 1/SP KV 一次性收齐，再对「本地 FA」与「其他 rank 合并 FA」共 2 路输出做 LSE（Log-Sum-Exp）合并（非逐跳 P2P、非 SP-1 串行轮）。”。目标卡补齐焦点 overlap 路径的通信与 LSE 合并机制。
-- [混合序列并行 (Ulysses + Ring) 下 joint / 文本 token 的 attention 精度](../../runbooks/precision/precision_hybrid_sp_joint_token_attention.md)（`related`）：焦点卡指出“若在 Ulysses all_to_all（head→seq）与 Ring gather **之前**就把 joint K/V 拼进普通序列 K/V，joint token 会被后续 all_to_all 与 ring gather 当**普通序列 token 重分布**——joint attention 结果被破坏。”；Ring 卡说明“Ring Attention 是另一种长序列 SP 方案：与 Ulysses 不同，**attention 内部也保持序列切分**，每张卡仅维护自己那 1/SP 的 Q。”，并明确 KV 会跨 rank 汇集，因此能限定延后拼接发生在 Ring KV 汇集之后。
+- [VGGT 昇腾 Atlas A2 推理适配与优化](../../../spatial/concepts/models/vggt.md)（`related`）：VGGT 的 Ring overlap 在异步 AllGather KV 期间计算本地 Attention，随后使用 NPU FIA 返回的 LSE 合并结果。
+- [混合序列并行 (Ulysses + Ring) 下 joint / 文本 token 的 attention 精度](../../runbooks/precision/precision_hybrid_sp_joint_token_attention.md)（`related`）：joint K/V 应在 Ulysses 换维与 Ring KV 汇集之后拼接，避免被当作普通序列 token 重分布。
 <!-- cannbot:related:end -->

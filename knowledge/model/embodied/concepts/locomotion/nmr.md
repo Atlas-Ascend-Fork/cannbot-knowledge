@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/locomotion/NMR/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -25,7 +25,7 @@ platforms:
 
 ## 许可边界（重要）
 
-`locomotion/NMR` 整体**非 Apache-2.0-only**：自研代码与 NMR 修改部分按 Apache-2.0 发布，但包含非商业 / 受限许可的第三方代码、模型与资产。特别地 `smplx` 及运行所需的 **SMPL-X 模型文件**受 SMPL-X / SMPLify-X 官方许可约束（通常仅限非商业科研用途），**不作为默认依赖自动安装**，需用户自行从 [SMPL-X 官方下载页](https://smpl-x.is.tue.mpg.de/download.php) 获取 `SMPLX_NEUTRAL.npz` 并遵守其许可；本仓库不分发该文件，商业用途需另行授权。
+`locomotion/NMR` 整体**非 Apache-2.0-only**：自研代码与 NMR 修改部分按 Apache-2.0 发布，但包含非商业 / 受限许可的第三方代码、模型与资产。特别地 `smplx` 及运行所需的 **SMPL-X 模型文件**受 SMPL-X / SMPLify-X 官方许可约束（通常仅限非商业科研用途），**不作为默认依赖自动安装**，需用户自行从 [SMPL-X 官方下载页](https://smpl-x.is.tue.mpg.de/download.php) 获取 `SMPLX_NEUTRAL.npz` 并遵守其许可；`cann-recipes-embodied-ai` 不分发该文件，商业用途需另行授权。
 
 ## 架构概述
 
@@ -61,7 +61,7 @@ flowchart LR
    | `betas.npy` | `checkpoints/humanoid_model/g1/betas.npy` |
    | `gmr_mean.npy` / `gmr_std.npy` | `data/gmr_data/` |
    | `smplx_mean.npy` / `smplx_std.npy` | `data/smplx_data/` |
-3. **SMPL-X 模型**：SMPL-X 官方下载页选 **"SMPL-X 2020: neutral model with FLAME 2020 expression blendshapes"**，下载得 `SMPLX_NEUTRAL_2020.npz` 后**重命名为** `SMPLX_NEUTRAL.npz` → `checkpoints/human_model/`（本仓不分发，遵其非商业许可，见上「许可边界」）。`humanoid_model` 的 G1 文件按 [PHUMA asset](https://github.com/DAVIAN-Robotics/PHUMA/tree/f0306c1687c75aaa6623f5ed16c54f9480bb4f17/asset/) 说明自备。
+3. **SMPL-X 模型**：SMPL-X 官方下载页选 **"SMPL-X 2020: neutral model with FLAME 2020 expression blendshapes"**，下载得 `SMPLX_NEUTRAL_2020.npz` 后**重命名为** `SMPLX_NEUTRAL.npz` → `checkpoints/human_model/`（`cann-recipes-embodied-ai` 不分发，遵其非商业许可，见上「许可边界」）。`humanoid_model` 的 G1 文件按 [PHUMA asset](https://github.com/DAVIAN-Robotics/PHUMA/tree/f0306c1687c75aaa6623f5ed16c54f9480bb4f17/asset/) 说明自备。
 4. **碰撞评估 URDF**：`g1_custom_collision_with_fixed_hand.urdf`（取自 [YanjieZe/TWIST](https://github.com/YanjieZe/TWIST/blob/42d8c134739eee51f28d7cc0ff72a86728afb8dc/assets/g1/g1_custom_collision_with_fixed_hand.urdf)）→ `src/metrics/assets/g1/`（指标碰撞计算依赖）。
 
 ## 运行环境（昇腾 A3）
@@ -86,7 +86,7 @@ PYTHONPATH=. python tools/train.py configs/retarget_fwd.py --cfg-options train_c
 ```
 
 默认训练参数（`configs/retarget_fwd.py`）：batch size **24**（train；val/test 32）、`max_epochs` **50**、优化器 AdamW（lr=**2e-5**）、调度 LinearLR（warmup 至 step 200）+ CosineAnnealingLR（T_max=50）；多卡可经 `MASTER_ADDR`/`PORT`/`ASCEND_RT_VISIBLE_DEVICES` 调整。
-> ⚠️ README step4 散文写 batch 64 / epochs 1000 / lr 2e-4 / MultiStep，与 pin-sha 配置文件（24/50/2e-5/Cosine）不一致。
+> ⚠️ 固定版本的 README step4 给出 batch 64 / epochs 1000 / lr 2e-4 / MultiStep，与同版本配置文件（24/50/2e-5/Cosine）不一致。
 
 **数据长度约束**：`RetargetDataset` 在 `window_size > 0` 时固定采样长度为 `window_size`；样本 `T < window_size` 会在数据加载阶段直接抛 `ValueError`（不自动补齐）；初始化阶段按 `min_motion_length` 过滤、仅保留 `T >= min_motion_length` 的序列。
 
@@ -104,7 +104,7 @@ PYTHONPATH=. python tools/train.py configs/retarget_fwd.py --cfg-options train_c
 | ACCEL (`accel`) | 平均关节加速度误差 |
 | DOF 抖动比 (`dof_accel_ratio` / `dof_jerk_ratio`) | DOF 加速度 / jerk 比值，衡量关节抖动 |
 
-> ⚠️ README 评估表散文列出 `DOF_ERR`「DOF 角度误差」，但代码 `compute_metrics` 未实现该指标（全 `src/metrics` 无 `DOF_ERR` 键），DOF 抖动实以 `dof_accel_ratio`/`dof_jerk_ratio` 衡量，且 `compute_metrics` 额外返回 README 漏列的 `w_mpjpe`。
+> ⚠️ README 评估表列出 `DOF_ERR`「DOF 角度误差」，但 `compute_metrics` 未实现该指标；DOF 抖动以 `dof_accel_ratio`/`dof_jerk_ratio` 衡量，且 `compute_metrics` 额外返回 README 未列出的 `w_mpjpe`。
 
 推理 `tools/inference.py` 把 SMPL-X 动作文件转为 G1 控制指令，支持单文件 / 目录批量 / `--no-filter`（禁用低通滤波）：
 

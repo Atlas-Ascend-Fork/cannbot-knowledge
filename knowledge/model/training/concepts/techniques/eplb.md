@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: EPLB（专家并行负载均衡器，MoE 专家动态负载均衡）
-description: EPLB（Expert Parallelism Load Balancer，专家并行负载均衡器）最早由 DeepSeek 针对大规模 MoE 模型训练中「负载不均」核心痛点推出，是一种动态负载均衡解决方案。MoE 门控网络把样本分配给适配专家，导致专家负载两极分化（热/冷专家分化），且「冷热」身份随数据批次切换动态漂移形成负载热点；在专家并行架构下专家固定分配至 NPU 节点，这种冷热分化直接传导为节点利用率失衡。EPLB 的核心目标是通过智能调度策略消除专家模块及计算节点间的负载差异、最大化 NPU 资源利用率。它提供分层 / 全局两种调度模式，并依托历史负载估计动态调整专家复制与分配方案，快速适配批次切换、领域迁移导致的负载热点漂移。 本页是 EPLB 概念的 canonical 页，依 Qwen3-235B 32K 长序列 RL 训练优化文档 §2.3.2 讲透其现象分析、双模式调度、动态估计机制，以及——最关键的实测诚实结论：在 Qwen3-30B / 235B 加载真实权重的 RL rollout 推理场景下，实测各卡负载本身并无明显不均衡，开启 EPLB 无明显性能收益；只有在人为构造的极端负载不均场景下 EPLB 才带来推理耗时 -17.78% 的提升。即「负载均衡时 EPLB 不带收益，仅极端不均才有效」。MindSpeed-RL workers/eplb 在 RL 训推共卡下做 MoE 专家负载均衡：采集各专家负载→重排/复制热专家→更新 device 映射，与训练态 balanced/placement（moe-load-balance）互补。
+description: EPLB（Expert Parallelism Load Balancer，专家并行负载均衡器）最早由 DeepSeek 针对大规模 MoE 模型训练中的负载不均推出，通过分层 / 全局调度及历史负载估计，动态调整专家复制与分配，缓解热/冷专家随数据批次、领域变化而漂移导致的节点利用率失衡。Qwen3-235B 32K 长序列 RL 训练优化文档 §2.3.2 的实验中，Qwen3-30B / 235B 真实权重 rollout 各卡负载无明显不均，开启 EPLB 无明显性能收益；人为构造极端不均时推理耗时降低 17.78%，收益取决于实际负载分布。MindSpeed-RL workers/eplb 在 RL 训推共卡下采集专家负载、重排/复制热专家并更新 device 映射，与训练态 balanced/placement（moe-load-balance）互补。
 tags:
 - task.optimization
 - topic.mixture_of_experts
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-06-30T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -201,7 +201,7 @@ MindSpeed-RL 实现（钉定版 `398fd9a5`）：
 ## 相关
 
 - [EPLB 专家重映射漏搬独立 scale 张量：per-expert 参数清单缺 scale 致权重/scale 失配、静默掉精度](../../../inference/runbooks/precision/eplb_remap_drops_independent_scale_tensor.md)（`related`）：EPLB 靠一份 **per-expert 参数名清单**（如 `expert_weight_names`）决定「哪些逐专家张量需要随专家一起被搬运/重映射」。；EPLB 的核心目标是通过智能调度策略消除专家模块及计算节点间的负载差异、最大化 NPU 资源利用率。；故障卡给出 EPLB 重映射的参数完整性约束，概念卡解释为何会动态调整专家复制与分配，二者共同支撑触发条件与修复边界。
-- [MindSpeed-RL](../frameworks/mindspeed_rl.md)（`related`）：焦点卡写明“EPLB **动态调整专家复制策略与分配方案**”，候选卡写明“EPLB 专家映射则在 `resharding/vllm_weight_container.py`（`eplb_map` / 冗余专家收发）”。概念卡解释动态复制与落卡，框架卡定位 eplb_map 在训推权重重组织中的集成点。
-- [MoE 负载均衡（Balanced-MoE 路由均衡 + 专家放置 + Router 修正）](moe_load_balance.md)（`related`）：焦点卡写明“负载均衡时 EPLB 不带收益，仅极端不均才有效”，候选卡写明“EPLB 落地 vLLM-Ascend 在 **RL rollout 推理**侧做专家重分布”。EPLB 卡提供推理判据，训练态卡对照热专家复制与物理迁移语境，帮助选择实现栈。
-- [Qwen3 长序列 RL 训练实践（235B-A22B 2K 推 32K + 32B SAM 投机，veRL/MindSpeed/vLLM-Ascend，GRPO/DAPO）](../../guides/recipes/qwen3_rl.md)（`related`）：焦点卡写明“开启 EPLB 无明显性能收益”，候选卡写明“Qwen3-30B/235B 真实权重实测**无明显收益**”。概念卡给出收益判据，Qwen3 实践提供真实权重与极端不均对照，直接支撑启用决策。
+- [MindSpeed-RL](../frameworks/mindspeed_rl.md)（`related`）：EPLB **动态调整专家复制策略与分配方案**；MindSpeed-RL 在 `resharding/vllm_weight_container.py` 中通过 `eplb_map` 与冗余专家收发，把专家映射接入训推权重重组织。
+- [MoE 负载均衡（Balanced-MoE 路由均衡 + 专家放置 + Router 修正）](moe_load_balance.md)（`related`）：vLLM-Ascend 的 EPLB 在 **RL rollout 推理**侧重分布专家，需与训练态的路由均衡、专家放置区分；启用前应检查实际负载分布，真实权重实验未见明显不均时也未见性能收益。
+- [Qwen3 长序列 RL 训练实践（235B-A22B 2K 推 32K + 32B SAM 投机，veRL/MindSpeed/vLLM-Ascend，GRPO/DAPO）](../../guides/recipes/qwen3_rl.md)（`related`）：Qwen3-30B/235B 真实权重 rollout 各卡负载无明显不均，开启 EPLB **无明显收益**；人为构造极端不均时才观察到推理耗时下降，可据此区分启用条件与收益边界。
 <!-- cannbot:related:end -->

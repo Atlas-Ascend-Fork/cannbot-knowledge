@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: veRL（火山引擎开源 LLM RL 后训练框架 + 昇腾适配）
-description: veRL（volcengine/verl）是开源 LLM 强化学习后训练框架，结合单控制器（控制流）与多控制器（计算流）优势，简化了 PPO / GRPO 等 RL 算法的实现。它把一次 RL 迭代抽象为多个 worker 角色——actor（被训练模型）/ rollout（推理生成）/ reference（参考模型）/ reward（奖励）——上层用 Ray 做单控制器调度、在 worker 间传递数据驱动 RL 控制流。veRL 训练后端支持 FSDP / FSDP2 / Megatron-LM，推理后端支持 vLLM / SGLang / HFTransformers，这种「训练引擎 × 推理引擎」可插拔结构正是昇腾适配的接口。 本页是 veRL 在昇腾 NPU 上的 canonical 框架页：讲清 veRL 的 RL 角色与数据流，以及昇腾把它跑通的两条后端——训练后端 mindspeed（经 MindSpeed 使能 Megatron-LM 拿 NPU 训练性能）与 rollout 推理后端 vllm-ascend（vLLM 的昇腾插件，图模式 + 大 EP 推理）；并给出 deepseek-r1-rl 在 Atlas A3 SuperPoD 128 卡集群上跑 grpo-dapo 高吞吐 RL 补充：verl_npu 昇腾 patch 适配层(import 触发 apply_npu_plugin、patch_summary.yaml commit 校验后逐个 patch -p1、衔接 MindSpeed 训练后端)。
+description: veRL（volcengine/verl）是开源 LLM 强化学习后训练框架，结合单控制器（控制流）与多控制器（计算流）优势，简化 PPO / GRPO 等 RL 算法的实现。一次 RL 迭代包含 actor（被训练模型）/ rollout（推理生成）/ reference（参考模型）/ reward（奖励）等 worker 角色，由 Ray 单控制器调度并传递数据。训练后端支持 FSDP / FSDP2 / Megatron-LM，推理后端支持 vLLM / SGLang / HFTransformers。昇腾适配采用 MindSpeed 使能 Megatron-LM 训练后端，以 vLLM-Ascend 承载图模式与大 EP rollout 推理；DeepSeek-R1 RL 使用 Atlas A3 SuperPoD 128 卡集群。verl_npu 适配层在 import 时触发 apply_npu_plugin，经 patch_summary.yaml commit 校验后逐个执行 patch -p1，衔接 MindSpeed 训练后端。
 tags:
 - task.implementation
 - topic.architecture
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -46,7 +46,7 @@ veRL NPU 适配的核心是替换它的两个可插拔引擎：
 - **训练引擎**：NPU 上通过 MindSpeed 使能 Megatron-LM，以获得较好的 NPU 训练性能。
 - **推理引擎**：适配 vLLM-Ascend 图模式与大 EP 推理；由于多机场景的 sleep 特性暂未支持，需要手动实现 offload 与 onload、init_cache 与 free_cache。
 
-在此之上，veRL 的 NPU 性能优化从四个方面展开（各自有独立 technique / framework 页承载机制细节）：模型间调度（D2D 数据直传消除任务下发时差）、训推切换（reshard + offload）、训练（复用 MindSpeed 优化 + old_log_prob 免计算）、推理（rollout 阶段算子/调度优化，已合入 vLLM-Ascend）。
+在此之上，veRL 的 NPU 性能优化从四个方面展开：模型间调度（D2D 数据直传消除任务下发时差）、训推切换（reshard + offload）、训练（复用 MindSpeed 优化 + old_log_prob 免计算）、推理（rollout 阶段算子/调度优化，已合入 vLLM-Ascend）。
 
 <p align="center"><img src="https://raw.gitcode.com/cann/cann-recipes-train/raw/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/figures/deepseek_figures/image2.png" width="72%"></p>
 <p align="center"><sub>图：veRL 的四向性能优化总览——模型间调度 / 训推切换 / 训练 / 推理（<a href="https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md">DeepSeek-R1 RL 训练优化文档</a>·verl 适配和优化实践总览）</sub></p>

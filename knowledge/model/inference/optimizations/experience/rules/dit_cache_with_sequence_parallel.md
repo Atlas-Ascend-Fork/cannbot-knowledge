@@ -66,7 +66,7 @@ platforms:
 ## 相关
 
 - [CFG 类生成模型用与 TP 正交的样本级并行摊平每步两次前向](../../../guides/experience/interventions/cfg_parallel_sample_level_diffusion.md)（`related`）：CFG 只是"同一网络吃两份无依赖的输入"，因此可分到两组设备并行，且这条轴与 ［TP］(../../../concepts/parallelism/tensor_parallel.md) 正交：；数据相关缓存要与 SP 共存，各卡本地算出判据标量后，在 SP 通信组上 `all_reduce(SUM)` 再除以 `sp_world_size` 得平均值，用该平均标量比阈值——各卡拿到相同标量 → 相同决策，前向不再分叉。。前者建立 CFG 与 TP/SP 可正交组合的拓扑，后者给出其中数据相关缓存判据在 SP 组内保持一致的同步约束，二者共同决定 CFG+SP 推理链的正确执行。
-- [DiT Cache (FBCache / TeaCache / TaylorSeer)](../../../concepts/techniques/dit_cache.md)（`related`）：焦点卡说明“多卡 SP 下，各 rank 的 l1 loss 差异会导致跳步判断不同步；需要一次 all_reduce 取均值”，候选卡把这一点收紧为“数据相关缓存要与 SP 共存，各卡本地算出判据标量后，在 SP 通信组上 `all_reduce(SUM)`”；后者补齐通信组、cache-miss 路径和失败形态。
-- [DiT 跳步缓存想更激进跳步且精度损失更小 — TaylorSeer 预测式缓存（记特征导数泰勒外推，代价：全阶导数显存需 offload + 仅单卡）](taylorseer_predictive_dit_cache.md)（`related`）：“TaylorSeer / 当前所有 DiT-Cache 与多卡互斥”给出焦点端事实；“固定 step 计划（TaylorSeer）”给出候选端事实。焦点规则记录当前样例的多卡硬互斥，候选规则说明固定 step 计划天然跨卡一致；联合阅读可区分“实现当前禁止”与“判据机制无需同步”这两个不同层次。
+- [DiT Cache (FBCache / TeaCache / TaylorSeer)](../../../concepts/techniques/dit_cache.md)（`related`）：SP 缓存同步要求指出“多卡 SP 下，各 rank 的 l1 loss 差异会导致跳步判断不同步；需要一次 all_reduce 取均值”，运行时同步规则将其细化为“数据相关缓存要与 SP 共存，各卡本地算出判据标量后，在 SP 通信组上 `all_reduce(SUM)`”；后者补齐通信组、cache-miss 路径和失败形态。
+- [DiT 跳步缓存想更激进跳步且精度损失更小 — TaylorSeer 预测式缓存（记特征导数泰勒外推，代价：全阶导数显存需 offload + 仅单卡）](taylorseer_predictive_dit_cache.md)（`related`）：TaylorSeer 固定 step 计划天然跨卡一致，但当前样例仍将所有 DiT-Cache 与多卡互斥；使用时需区分实现限制与判据机制是否需要同步。
 - [DiT 采样步残差缓存（FBCache / TeaCache）键控、阈值权衡与 TeaCache 属性名 bug](dit_step_cache_fbcache_teacache.md)（`related`）：“**数据相关（FBCache / TeaCache）**：跳 step 的判据是逐 step 算出的**本地统计标量**”说明多卡接入前提；“第二个去噪 step 起**才走到读 `rel_l1_thresh_teacache` 的分支”指出 TeaCache 单卡实现先要修复的确定性故障。
 <!-- cannbot:related:end -->

@@ -59,6 +59,6 @@ platforms:
 
 - [FP8 Per-Block Dynamic Quant Attention](../../../concepts/quantization/fp8_attention.md)（`related`）：“FP8 FA **只支持纯 ［ulysses］(../../../concepts/parallelism/ulysses.md) 序列并行**”是部署指南的硬门槛；“MXFP8 量化注意力当前**仅支持 Ulysses 序列并行，不支持 Ring Attention**”从量化注意力概念侧确认同一并行限制。
 - [HunyuanVideo](../../../concepts/models/hunyuan_video.md)（`related`）：“`single_fp8`（FP8 FA + MXFP8 matmul，950PR）”；“两者都需 ［ascend-950］(../../../concepts/platforms/ascend_950.md)（Atlas 950）级 FP8 硬件”。模型配置的双量化组合由候选指南给出量化范围、硬件门控与 Ulysses-only 限制。
-- [MXFP8 A8W8 (DiT Linear)](../../../concepts/quantization/mxfp8_a8w8.md)（`related`）：焦点卡写明“仅量化 Transformer block 中的 2D Linear；adaLN / modulation 与 1D 权重跳过”，候选卡写明“量化视频 DiT 时应优先做 FP8 注意力量化，matmul 量化作叠加。”。概念卡定义 MXFP8 Linear 边界，指南给出与 FP8 Attention 叠加时的优先级和收益拆分。
+- [MXFP8 A8W8 (DiT Linear)](../../../concepts/quantization/mxfp8_a8w8.md)（`related`）：MXFP8 Linear 量化范围为“仅量化 Transformer block 中的 2D Linear；adaLN / modulation 与 1D 权重跳过”，视频 DiT 量化建议“量化视频 DiT 时应优先做 FP8 注意力量化，matmul 量化作叠加。”。概念卡定义 MXFP8 Linear 边界，指南给出与 FP8 Attention 叠加时的优先级和收益拆分。
 - [长序列视频 DiT 接 Ulysses 序列并行（pad_freqs 补齐 + world_size 拓扑校验两处易错）](../../../optimizations/experience/rules/video_dit_ulysses_sequence_parallel.md)（`related`）：“给用 Ring Attention 的模型上 FP8 FA 前须先确认并行模式为纯 Ulysses”提出量化前置检查；“`initialize_model_parallel` 校验 `world_size == cfg_degree × sp_degree × tp_degree`”提供把该检查落到进程拓扑的具体等式。
 <!-- cannbot:related:end -->

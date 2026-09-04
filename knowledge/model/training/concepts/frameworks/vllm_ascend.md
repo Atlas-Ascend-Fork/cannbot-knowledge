@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: vLLM-Ascend（veRL RL 的 rollout 推理后端）
-description: vLLM-Ascend 是开源高吞吐推理引擎 vLLM 的昇腾 NPU 适配插件：通过硬件插件化机制解耦框架与硬件依赖，用户无需修改核心代码即可在昇腾 NPU 上部署模型。在 DeepSeek-R1 671B 的 RL 训练实践中，它充当 verl 框架的 rollout（on-policy 采样生成）推理后端——即「推理生成完整问答数据（rollout/generate）→ 参考模型计算参考概率分布（ref）→ 训练模型计算 loss 并反向更新（update）」这条 RL 流水的第一阶段。原文给出选型理由： > vLLM Ascend 通过硬件插件化机制解耦了框架与硬件依赖，用户无需修改核心代码即可在昇腾 NPU 上部署模型，代码完全开源，且持续进行新特性适配。目前 vLLM Ascend 已经支持 vLLM 的 V1 模式，并针对 DeepSeekR1 的 TorchAir 图模式进行了优化，这对于 rollout 部分的优化很有必要。 本实践与训练引擎 mindspeed（经 Megatron-LM）配合，在 Atlas A3 SuperPoD 超节点 128 卡上达成系统吞吐 123.16 TPS/卡 补充：MindSpeed-RL rollout vllm_adapter(megatron_weight_loaders 在线灌权重 + QKV/MoE reshape、acl graph、prefix cache、chunked prefill 在 RL rollout 的应用)。
+description: vLLM-Ascend 是开源高吞吐推理引擎 vLLM 的昇腾 NPU 适配插件，通过硬件插件化机制解耦框架与硬件依赖，无需修改核心代码即可部署模型。它支持 vLLM V1 模式及 DeepSeek-R1 TorchAir 图模式优化。在 DeepSeek-R1 671B RL 训练中，它承载 veRL 的 rollout（on-policy 采样生成），后续由 reference 计算参考概率分布，再由 actor 计算 loss 并反向更新；与 MindSpeed / Megatron-LM 训练引擎配合，在 Atlas A3 SuperPoD 128 卡上达到真实权重系统吞吐 123.16 TPS/卡。MindSpeed-RL 的 rollout vllm_adapter 负责 megatron_weight_loaders 在线加载权重、QKV/MoE reshape，以及 acl graph、prefix cache、chunked prefill 的接入。
 tags:
 - task.implementation
 - topic.architecture
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -25,7 +25,7 @@ platforms:
 
 [vLLM-Ascend](https://github.com/vllm-project/vllm-ascend) 是开源高吞吐推理引擎 [vLLM](https://github.com/vllm-project/vllm) 的**昇腾 NPU 适配插件**：通过硬件插件化机制解耦框架与硬件依赖，用户无需修改核心代码即可在昇腾 NPU 上部署模型。在 DeepSeek-R1 671B 的 RL 训练实践中，它充当 [verl](verl.md) 框架的 **rollout（on-policy 采样生成）推理后端**——即「推理生成完整问答数据（rollout/generate）→ 参考模型计算参考概率分布（ref）→ 训练模型计算 loss 并反向更新（update）」这条 RL 流水的第一阶段。选它作 rollout 后端的关键能力是：代码完全开源并持续适配新特性、已支持 vLLM 的 V1 模式、并针对 DeepSeek-R1 的 TorchAir 图模式做了优化（图模式优化直接决定 rollout 这一耗时主导阶段的吞吐）。
 
-本实践与训练引擎 [mindspeed](mindspeed.md)（经 Megatron-LM）配合，在 Atlas A3 SuperPoD 超节点 128 卡上达成系统吞吐 123.16 TPS/卡（真实权重）/ 250.2 TPS/卡（随机权重）。这是与推理域 [sglang](../../../inference/concepts/frameworks/sglang.md) **同为 LLM 推理服务框架**、但被嵌入训练循环作 rollout 引擎的训练侧用法（vLLM rollout 与 SGLang 同属 veRL 的可选推理后端）。
+DeepSeek-R1 RL 训练使用 vLLM-Ascend 与训练引擎 [mindspeed](mindspeed.md)（经 Megatron-LM）配合，在 Atlas A3 SuperPoD 超节点 128 卡上达成系统吞吐 123.16 TPS/卡（真实权重）/ 250.2 TPS/卡（随机权重）。这是与 [sglang](../../../inference/concepts/frameworks/sglang.md) **同为 LLM 推理服务框架**、但被嵌入训练循环作 rollout 引擎的用法（vLLM rollout 与 SGLang 同属 veRL 的可选推理后端）。
 
 ## rollout 在 RL 训推流程中的角色
 
@@ -189,6 +189,6 @@ adapter 在 import vllm 后立刻打两类 patch（`from vllm_ascend.patch impor
 ## 相关
 
 - [DeepSeek-R1 veRL + MindSpeed + vLLM-Ascend 全共卡 GRPO RL 训练](../../guides/recipes/deepseek_r1_rl.md)（`related`）：rollout（generate） ｜ vLLM + vLLM-Ascend；修改主要集中在用于初始化 `vLLMRollout` 对象的 `vllm_rollout_spmd.py` 文件；连接 rollout 选型与适配入口。
-- [MindSpeed-RL](mindspeed_rl.md)（`related`）：“共用 vLLM 推理后端（［vllm-ascend］(vllm_ascend.md)）”；“它充当 ［verl］(verl.md) 框架的 **rollout（on-policy 采样生成）推理后端**”。候选卡是框架 rollout 阶段的直接执行后端并给出图模式/大 EP 边界。
+- [MindSpeed-RL](mindspeed_rl.md)（`related`）：MindSpeed-RL 与 veRL 共用 vLLM-Ascend 作为 **rollout（on-policy 采样生成）推理后端**；rollout 的执行受该后端图模式与大 EP 配置约束。
 - [veRL（火山引擎开源 LLM RL 后训练框架 + 昇腾适配）](verl.md)（`related`）：按“veRL 在昇腾 NPU 上跑通靠替换它的两个可插拔引擎：训练后端 ［mindspeed］(mindspeed.md)（经 MindSpeed 使能 Megatron-LM 拿 NPU 训练性能）与 rollout 推理后端 ［vllm-ascend］(vllm_ascend.md)（vLLM 的昇腾插件，图模式 + 大 EP 推理）。”把 rollout 路由到 vLLM-Ascend 后，以“在 DeepSeek-R1 671B 的 RL 训练实践中，它充当 ［verl］(verl.md) 框架的 **rollout（on-policy 采样生成）推理后端**——即「推理生成完整问答数据（rollout/generate）→ 参考模型计算参考概率分布（ref）→ 训练模型计算 loss 并反向更新（update）」这条 RL 流水的第一阶段。”划定第一阶段的输入输出边界，便可区分 rollout 引擎问题与后续 ref/update 训练问题。
 <!-- cannbot:related:end -->

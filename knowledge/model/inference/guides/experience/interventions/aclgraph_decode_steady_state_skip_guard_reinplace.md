@@ -71,5 +71,5 @@ if exe_mode == "acl_graph":
 ## 相关
 
 - [NPU LLM 图模式启用骨架：decode-only 编译 + ge_graph / acl_graph / npugraph_ex 后端编译入口与配置约束](../../../optimizations/experience/rules/graph_mode_decode_only_compile_backends.md)（`related`）：已在 acl_graph（torch.compile + ACLGraph 捕获）跑通 decode、想再压 host 侧开销时的两项稳态优化。；实现上把 prefill / decode 的 forward 拆成不同方法，**只对 decode 方法** `torch.compile(...)`，prefill 保持 eager。前者是在后者完成 decode-only 编译与预热之后追加 skip_guard/reinplace 的稳态优化步骤。
-- [推理 warmup 静默长耗时易误判卡死 + 同质 minibatch 冗余前向可 dummy 缓存跳过](../../../runbooks/performance/warmup_silent_slow_and_dummy_cache.md)（`related`）：焦点卡警示“**看似卡死**：warmup 阶段全程无日志输出”，不能在首编译阶段误杀进程；稳态优化卡则限定“**仅对非 warm-up 的稳态步开启**”，明确跳 guard/reinplace 的启用时点必须等 warmup 完成。
+- [推理 warmup 静默长耗时易误判卡死 + 同质 minibatch 冗余前向可 dummy 缓存跳过](../../../runbooks/performance/warmup_silent_slow_and_dummy_cache.md)（`related`）：warmup 诊断警示“**看似卡死**：warmup 阶段全程无日志输出”，不能在首编译阶段误杀进程；稳态优化则限定“**仅对非 warm-up 的稳态步开启**”，明确跳 guard/reinplace 的启用时点必须等 warmup 完成。
 <!-- cannbot:related:end -->

@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Action Chunking（动作分块 / ACT Transformer）
-description: VLA 模仿学习策略的核心结构思想：一次性预测一段连续动作序列（动作块，action chunk），而不是逐步预测，从而缓解逐步预测带来的误差累积。cann-recipes-embodied-ai 中由 ACT（Action Chunking with Transformers，act）模型直接体现，Pi0/Pi0.5 的 flow-matching 动作专家也以 chunk 形式整段输出动作，因此本页作为 canonical 概念页被多模型复用。
+description: VLA 模仿学习策略的核心结构思想：一次性预测一段连续动作序列（动作块，action chunk），而不是逐步预测，从而缓解逐步预测带来的误差累积。cann-recipes-embodied-ai 中由 ACT（Action Chunking with Transformers，act）模型直接体现，Pi0/Pi0.5 的 flow-matching 动作专家也以 chunk 形式整段输出动作。
 tags:
 - task.design
 - topic.model_architecture
@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/act/infer_with_om/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a2
 - 310p
@@ -23,7 +23,7 @@ platforms:
 
 VLA 模仿学习策略的核心结构思想：**一次性预测一段连续动作序列（动作块，action chunk）**，而不是逐步预测，从而缓解逐步预测带来的误差累积。`cann-recipes-embodied-ai` 中由 **ACT**（Action Chunking with Transformers，[act](../manipulation/act.md)）模型直接体现，Pi0/Pi0.5 的 flow-matching 动作专家也以 chunk 形式整段输出动作，这一概念被多模型复用。
 
-> 论文：Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware（ACT，arXiv:2304.13705）；上游开源仓 https://github.com/tonyzhaozh/act 。仓内适配基于 HuggingFace LeRobot 的 ACT 实现。
+> 论文：Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware（ACT，arXiv:2304.13705）；上游开源仓 https://github.com/tonyzhaozh/act 。`cann-recipes-embodied-ai` 的适配基于 HuggingFace LeRobot 的 ACT 实现。
 
 ## 机制
 
@@ -31,7 +31,7 @@ ACT 是一种基于 **Transformer** 的模仿学习控制策略。核心思想�
 
 > 以「动作分块（Action Chunking）」的方式一次性预测一段连续动作序列，从而有效缓解逐步预测带来的误差累积问题，并在多个双臂精细操作任务中验证了其有效性。
 
-学术上 ACT 在训练时用一个 **CVAE**（条件变分自编码器）建模动作块分布、推理时只用解码器 Transformer 预测动作块；本仓 README 只表述到「Transformer + 动作分块」与端到端输入输出，CVAE 细节属上游模型本体语义，此处不展开。
+学术上 ACT 在训练时用一个 **CVAE**（条件变分自编码器）建模动作块分布、推理时只用解码器 Transformer 预测动作块；`cann-recipes-embodied-ai` 的 README 仅说明「Transformer + 动作分块」与端到端输入输出，未提供 CVAE 训练细节。
 
 ## 输入 / 输出契约
 
@@ -67,7 +67,7 @@ OM 输出 action 需配 `policy_preprocessor` / `policy_postprocessor` 做归一
 
 ## Links
 
-- 模型页：[act](../manipulation/act.md)
+- ACT 模型：[act](../manipulation/act.md)
 - 同类动作块结构：[flow-matching-action-expert](flow_matching_action_expert.md)
 - 离线部署：[om-atc-offline](../techniques/om_atc_offline.md)、[ascend-310p](../platforms/ascend_310p.md)
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
@@ -75,7 +75,7 @@ OM 输出 action 需配 `policy_preprocessor` / `policy_postprocessor` 做归一
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ACT (Action Chunking with Transformers) · 昇腾训练 + 310P OM 离线推理](../manipulation/act.md)（`related`）：VLA 模仿学习策略的核心结构思想：**一次性预测一段连续动作序列（动作块，action chunk）**，而不是逐步预测，从而缓解逐步预测带来的误差累积。；ACT 是论文 *Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware*（arXiv:2304.13705）提出的基于 **Transformer** 的模仿学习控制策略。核心思想是**动作分块（Action Chunking）**：一次性预测一段连续动作序列（action chunk），从而缓解逐步预测的误差累积，在多个双臂精细操作任务上验证有效。；概念卡定义动作分块的通用结构与动机，ACT 模型卡把它落实为 Transformer 策略及动作张量合同，可用于模型选型、训练和部署验证。
+- [ACT (Action Chunking with Transformers) · 昇腾训练 + 310P OM 离线推理](../manipulation/act.md)（`related`）：ACT 用 Transformer 单次前向预测连续动作块，以缓解逐步预测的误差累积。
 - [Flow-Matching Action Expert（流匹配动作专家）](flow_matching_action_expert.md)（`related`）：VLA 模仿学习策略的核心结构思想：**一次性预测一段连续动作序列（动作块，action chunk）**，而不是逐步预测，从而缓解逐步预测带来的误差累积。；`chunk_size` 是一次预测的机器人执行步数（动作块），动作以 action-chunking 方式整段输出而非逐步预测——这一点与 ［action-chunking］(action_chunking.md) 同源。；Action Chunking 给出整段动作预测的通用粒度，Flow-Matching Action Expert 明确以 chunk_size 整段输出动作，把该粒度接到 Pi0/Pi0.5 的多步去噪生成链。
 - [Spirit-v1.5（千寻智能 VLA · 310P 在线推理）](../manipulation/spirit_v1_5.md)（`related`）：**推理：flow-matching Euler 去噪迭代。** `_sample_actions_unified` 从噪声 `x_t` 起步，`dt = -1.0/num_steps`（默认 `num_steps=10`），每步 `_denoise_step` 调 DiT 预测速度场 `v_t`、按 Euler `x_t += dt * v_t` 更新，迭代 `num_steps` 步得到去噪后的动作序列。；VLA 模仿学习策略的核心结构思想：**一次性预测一段连续动作序列（动作块，action chunk）**，而不是逐步预测，从而缓解逐步预测带来的误差累积。前者生成完整动作序列，后者说明这种序列的块级控制语义；Spirit 的多步 DiT 去噪不等于 ACT 单次前向。
 <!-- cannbot:related:end -->

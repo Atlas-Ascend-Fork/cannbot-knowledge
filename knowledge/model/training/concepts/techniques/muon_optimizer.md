@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/torchtitan_npu/patches/optimizer/muon_optimizer.py
   role: supporting
 created_at: '2026-06-23T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - agnostic
 ---
@@ -192,7 +192,7 @@ MindSpeed 侧限制：不支持 fp16（`validate_args` 直接抛 `AssertionError
 
 ## 在 recipe 中的应用
 
-[deepseek-v4-continue-pretrain](../../guides/recipes/deepseek_v4_continue_pretrain.md) 在"未来展望"中将"集成 Muon 优化器"列为后续工作项（当前 V4 续训未启用，受上述单设备限制制约）。
+[DeepSeek-V4 续训练](../../guides/recipes/deepseek_v4_continue_pretrain.md)所依据的上游优化文档将集成 Muon 列为未来工作；其已展示的 V4 续训配置未启用 Muon，受上述 torchtitan-npu 实现的单设备限制制约。
 
 ## Evidence
 

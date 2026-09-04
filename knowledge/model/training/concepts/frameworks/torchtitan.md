@@ -18,7 +18,7 @@ sources:
 - resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/user-guides/quickstart.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - '950'
 ---
@@ -138,7 +138,7 @@ bash scripts/run_train.sh
 
 - **CANN 环境外置**：`run_train.sh` / `run_train_multinodes.sh` **不再内置 `source`**，启动前需自行在当前 shell 加载 `source .../cann/set_env.sh`（基础，必需）+ `source .../nnal/atb/set_env.sh`（ATB 融合算子）+ `source .../opp/vendors/custom_transformer/bin/set_env.bash`（custom operators）。
 - **调试看更多 rank 日志**：默认控制台只打印 `LOG_RANK=0`；报错可能在其它 rank，临时用 `LOG_RANK=0,1,2,3,4,5,6,7 bash scripts/run_train.sh` 打印本机全部 rank（多机各节点写本节点 `logs/`）。更多维测见 [training-debug-observability](../techniques/training_debug_observability.md)。
-- **直接跑上游 torchtitan**：把 `torchtitan/torchtitan` 拷进本项目后，`TRAIN_FILE=torchtitan_npu.entry MODULE=llama3 CONFIG=llama3_debugmodel NGPU=8 bash scripts/run_train.sh` 即用原生配置启动（llama4 为上游透传 debug，无 NPU 优化）。
+- **直接跑上游 torchtitan**：把上游源码中的 `torchtitan/torchtitan` 目录拷入 `torchtitan-npu` 仓库根目录后，在该仓库执行 `TRAIN_FILE=torchtitan_npu.entry MODULE=llama3 CONFIG=llama3_debugmodel NGPU=8 bash scripts/run_train.sh`，即用原生配置启动（llama4 为上游透传 debug，无 NPU 优化）。
 
 **多机**：`scripts/run_train_multinodes.sh` 按集群实际编辑顶部 `Network_Interface=enp23s0f3`（`ifconfig` 驱动名）、`IPs=('192.168.x.x' ...)`（全部节点 IP）、`LOCAL_HOST`（本机 IP，脚本据此 `for` 匹配 `IPs` 推导 `NODE_RANK`，匹配失败报错退出）。关键端口/超时（须放开防火墙、按集群规模调）：
 

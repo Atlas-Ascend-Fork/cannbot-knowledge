@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -66,7 +66,7 @@ npu_result, softmax_lse = torch.ops.custom.npu_sparse_attn_sharedkv(..., metadat
 
 ## V4 代码落地：metadata 按计算模式分别生成
 
-V4 在前向开始时统一生成各计算模式的 kernel metadata（已代码核对 `modeling_deepseek.py:generate_kernel_metadata`，L2020-2052）：
+V4 在前向开始时统一生成各计算模式的 kernel metadata（`modeling_deepseek.py:generate_kernel_metadata`，L2020-2052）：
 
 - 按层的 compress ratio 分别构造 `c1a_metadata` / `c4a_metadata` / `c128a_metadata`（SAS）以及 `lightning_indexer_quant`（LI，仅 C4A 层、`li_cache_quant_mode` 为 int8/float8 时）；
 - 调用 `calc_sas_metadata` / `calc_li_metadata`（L1955-1965）执行对应 AICPU 算子，结果写入 `attn_metadata['kernel_metadata'][...]`，后续 SAS（`prepare_fa_kwargs` 取 `metadata=...`）与 LI（`indexer` 取 `kernel_metadata['lightning_indexer_quant']`）消费；
@@ -88,10 +88,10 @@ V3.2-Exp 阶段 [lightning-indexer](../kernels/lightning_indexer.md) 曾把分�
 
 ## Evidence
 
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md)（frontmatter 主源：AICPU Scheduler 节——值依赖困境、两段拆分、三优势、SAS/LI AICPU Scheduler 算子链接）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py)（已代码核对：`sas_metadata_ops = torch.ops.custom.npu_sparse_attn_sharedkv_metadata`（L1753）/ 伪量化 `npu_kv_quant_sparse_attn_sharedkv_metadata`（L1755）；`calc_li_metadata` 调 `npu_quant_lightning_indexer_metadata`（L1965）；`generate_kernel_metadata` 按 c1a/c4a/c128a 分别生成（L2020-2052）；`generate_sas_metadata_kwargs`/`generate_li_metadata_kwargs` 纯 shape 入参（L1984-2018）；`calc_sas_metadata` 补 `cu_seqlens_q`/`seqused_kv`（L1955-1960）；`metadata_stream` 多流同步）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modules/indexer.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/indexer.py)（已代码核对：LI 消费 `attn_metadata["kernel_metadata"]["lightning_indexer_quant"]`，L214）
-- 上游算子仓：[SAS AICPU Scheduler](https://gitcode.com/cann/ops-transformer/tree/ca41b0b5eb9dbf6eb94a58aa20fe379681c1d751/experimental/attention/sparse_attn_sharedkv_metadata)、[LI AICPU Scheduler](https://gitcode.com/cann/ops-transformer/tree/ca41b0b5eb9dbf6eb94a58aa20fe379681c1d751/experimental/attention/quant_lightning_indexer_metadata)（源文档给出，本仓外，未深入核对）
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md)（AICPU Scheduler 节——值依赖困境、两段拆分、三优势、SAS/LI AICPU Scheduler 算子链接）
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modeling_deepseek.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modeling_deepseek.py)（实现：`sas_metadata_ops = torch.ops.custom.npu_sparse_attn_sharedkv_metadata`（L1753）/ 伪量化 `npu_kv_quant_sparse_attn_sharedkv_metadata`（L1755）；`calc_li_metadata` 调 `npu_quant_lightning_indexer_metadata`（L1965）；`generate_kernel_metadata` 按 c1a/c4a/c128a 分别生成（L2020-2052）；`generate_sas_metadata_kwargs`/`generate_li_metadata_kwargs` 纯 shape 入参（L1984-2018）；`calc_sas_metadata` 补 `cu_seqlens_q`/`seqused_kv`（L1955-1960）；`metadata_stream` 多流同步）
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/deepseek-v4/models/modules/indexer.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/deepseek-v4/models/modules/indexer.py)（实现：LI 消费 `attn_metadata["kernel_metadata"]["lightning_indexer_quant"]`，L214）
+- 上游算子仓：[SAS AICPU Scheduler](https://gitcode.com/cann/ops-transformer/tree/ca41b0b5eb9dbf6eb94a58aa20fe379681c1d751/experimental/attention/sparse_attn_sharedkv_metadata)、[LI AICPU Scheduler](https://gitcode.com/cann/ops-transformer/tree/ca41b0b5eb9dbf6eb94a58aa20fe379681c1d751/experimental/attention/quant_lightning_indexer_metadata)（源文档引用的独立算子库；内部实现未作源码级验证）
 - 溯源（diff `2f82d10..2c45117` + MR）：`5df82b1` support deepseek v4（!366 merge publish into master）随 V4 0day 引入 SAS/LI AICPU Scheduler；`985b882` 更新 deepseek_v4_ascendc_operator_guide（!367）；`5e9e41d` Edit V4 AscendC Operator Guide（!375）补充 AICPU Scheduler 节。
 
 ## Links

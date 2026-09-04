@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: MindSpeed（昇腾大模型训练加速框架 + 低精度训练）
-description: MindSpeed（MindSpeed Core）是面向华为昇腾设备的大模型加速库，把大模型训练/推理任务高效迁移到昇腾平台并提供昇腾专有优化能力。DeepSeek-V3 的 HiF8 / MXFP8 低精度预训练实践（裁剪版 DeepSeek-v3，8 卡 Atlas 950 950DT，8K 序列）正是基于 MindSpeed + MindSpeed-LLM + Megatron-LM(core_v0.12.1) 这条栈跑通的——区别于 torchtitan（PyTorch 原生、DTensor / DeepSeek-V3.2 DSA 那条 recipe），MindSpeed 走的是 Megatron 风格 的训练栈，低精度由其内置的 Transformer Engine（TE）兼容模块承载。本页讲清这条栈的层次关系、TE 低精度训练流程（Fprop/Dgrad/Wgrad MatMul 量化、Delayed/Tensorwise/Blockwise/MX 四类 scaling、HiF8/MXFP8 支持矩阵）、以及 swap-optimizer 这一「自适应 Swap」特性的来源；安装/拉起命令忠实裁剪自 recipe README。 补充：MindSpeed 特性接入机制——features_manager + monkey-patch 注入(MindSpeedFeature 自描述特性、MindSpeedPatchesManager 两阶段打补丁、optimization_level 0/1/2 分级、ms-core⇄ms-llm 两层补丁框架)。
+description: MindSpeed（MindSpeed Core）是面向华为昇腾设备的大模型加速库，提供训练/推理迁移与昇腾专有优化能力。DeepSeek-V3 HiF8 / MXFP8 低精度预训练使用 MindSpeed + MindSpeed-LLM + Megatron-LM(core_v0.12.1)，配置为裁剪版 DeepSeek-v3、8 卡 Atlas 950 950DT、8K 序列。与采用 PyTorch 原生 DTensor 的 torchtitan 不同，MindSpeed 使用 Megatron 风格训练栈，内置 Transformer Engine（TE）兼容模块承载 Fprop/Dgrad/Wgrad MatMul 量化，支持 Delayed/Tensorwise/Blockwise/MX 四类 scaling 与 HiF8/MXFP8；swap-optimizer 源于其自适应 Swap 特性。features_manager 通过 MindSpeedFeature 自描述特性、MindSpeedPatchesManager 两阶段 monkey-patch、optimization_level 0/1/2 分级及 ms-core⇄ms-llm 两层补丁框架接入优化。
 tags:
 - task.implementation
 - topic.architecture
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v3_pre_train_hifp8_mxfp8.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - '950'
 ---
@@ -194,5 +194,5 @@ MindSpeed 在 [deepseek-v3-low-precision-pretrain](../../guides/recipes/deepseek
 - [DeepSeek-V3 裁剪模型 MXFP8/HiF8 低精度预训练（MindSpeed · Atlas 950 950DT · 8K）](../../guides/recipes/deepseek_v3_low_precision_pretrain.md)（`related`）：cann-recipes-train 在 **Atlas 950 950DT** 上跑通的 **8-bit 混合精度预训练**：基于 ［mindspeed］(../../concepts/frameworks/mindspeed.md) 框架（MindSpeed Core + **MindSpeed-LLM** 组件，底座对接 NVIDIA **Megatron-LM core_v0.12.1**），用一个 DeepSeek-V3 **裁剪模型**（2 层：1 dense + 1 MoE，hidden 7168、256 专家、MLA），在 **8 卡 950（950DT，单卡 486 TFLOPS）**、序列长 8K、GBS=64 下，分别用 **HiF8** 与 **MXFP8（E4M3）** 两种低精度格式量化整网的 **MatMul（MM）/ Grouped MatMul（GMM）** 算子，与 BF16 混合精度做长稳精度对齐与性能对比。；MindSpeed（**MindSpeed Core**）是面向华为昇腾设备的大模型加速库，把大模型训练/推理任务高效迁移到昇腾平台并提供昇腾专有优化能力。。recipe 的 950 低精度训练以 MindSpeed Core、MindSpeed-LLM 和 Megatron-LM 组栈，框架页解释其 TE 量化及补丁式接管机制。
 - [MindSpeed-Bridge（Megatron-Bridge 昇腾非侵入适配 + HF↔Megatron 权重桥接）](megatron_bridge.md)（`related`）：“MindSpeed-Bridge 把 NVIDIA **Megatron-Bridge**（NeMo 系的「HF 权重 ↔ Megatron-Core 训练」桥接层） 适配到昇腾 NPU。它**不 fork** Megatron-Bridge 本体，而是以一个外挂包 `mindspeed_bridge/` + 三处 import 注入 + 一个 `ConfigContainer.validate` monkey-patch，复用上游的 Bridge 权重桥接框架， 在 `validate()` 时机触发 ［mindspeed］(mindspeed.md) 的 repatch（昇腾算子/特性补丁）。”与“MindSpeed Core 是**亲和加速底座**，向上派生面向不同场景的套件，向下落到 PyTorch / MindSpore → CANN → 昇腾硬件。DeepSeek-V3 低精度 LLM 场景用的是 **MindSpeed LLM 套件**：”提供双方正文证据。Bridge 卡明确在配置校验期调用 MindSpeed repatch，把 Megatron-Bridge 的权重桥接层适配到 NPU；MindSpeed 卡界定被调用的昇腾亲和加速底座，能够解释该 repatch 所接入的框架层。
 - [MindSpeed-MM（昇腾 NPU 多模态大模型训练套件）](mindspeed_mm.md)（`related`）：“MindSpeed Core 是**亲和加速底座**，向上派生面向不同场景的套件，向下落到 PyTorch / MindSpore → CANN → 昇腾硬件。DeepSeek-V3 低精度 LLM 场景用的是 **MindSpeed LLM 套件**：”与“MindSpeed-MM 是昇腾 NPU 的**多模态大模型训练套件**，建在 ［mindspeed］(mindspeed.md) 训练加速底座之上，覆盖 **VLM 理解 / DiT 视频图像生成 / Omni 全模态** 三类模态。它提供两套训练后端——传统 Megatron-mcore 路线，与新版**插件式 FSDP2**（一份顶层 YAML + 注册表解耦模型/数据/特性，per-parameter sharding 的 DTensor 替代 FSDP1 的 FlatParameter）；用 **Bridge + Canonical Model** 两层抽象做 HF↔Megatron 的权重映射与计算等价转换；并经 `verl_plugin` 支持多模态生成式 RL。DiT/VAE/DiT-Cache 见 ［dit］(../../../inference/concepts/modules/dit.md)、［vae］(../../../inference/concepts/modules/vae.md)、［dit-cache］(../../../inference/concepts/techniques/dit_cache.md)。”是双方正文中的具体合同。MindSpeed 卡界定 Core 为套件底座，MindSpeed-MM 卡明确其建立在该底座之上并给出多模态后端，能够解释框架层次和上层能力归属。
-- [Qwen3-1.7B MindSpeed-LLM SFT 单卡 A3 alpaca 入门样例](../../guides/recipes/qwen3_sft.md)（`related`）：焦点卡的实际栈是“训练栈走 **MindSpeed-LLM + Megatron mcore**（Megatron 风格、需要 HF↔mcore 权重格式互转）”；框架卡说明“**MindSpeed-LLM**：面向 LLM 场景的上层套件”，并给出其模型、数据与训练入口职责，为四步 SFT 脚本提供框架分层。
+- [Qwen3-1.7B MindSpeed-LLM SFT 单卡 A3 alpaca 入门样例](../../guides/recipes/qwen3_sft.md)（`related`）：Qwen3-1.7B SFT 使用 **MindSpeed-LLM + Megatron mcore**，需要 HF↔mcore 权重格式互转；MindSpeed-LLM 是面向 LLM 的上层套件，承载四步 SFT 流程所需的模型、数据处理与训练入口。
 <!-- cannbot:related:end -->

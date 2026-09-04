@@ -72,5 +72,5 @@ Atlas A3 是昇腾训练与推理产品系列之一。固定版本 HCCL 样例�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Ascend 950 (950PR / 950DT)](ascend_950.md)（`related`）：“## 与 Atlas A3 的代际架构对照”给出焦点端事实；“与 A2、Ascend 950 或 950 的差异，只保留在具有直接证据的专题卡中。”给出候选端事实。Ascend 950 卡提供两代平台的逐维对照，而 Atlas A3 卡明确把代际差异交给具备直接证据的专题卡，二者共同确定平台选型时可采用的证据边界。
+- [Ascend 950 (950PR / 950DT)](ascend_950.md)（`related`）：A3 与 950 的低精度计算、Top-k 指令和片上存储约束不同，部署与算子选型须按各平台的固定来源核对。
 <!-- cannbot:related:end -->

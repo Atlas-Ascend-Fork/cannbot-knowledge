@@ -64,7 +64,7 @@ head 级负载均衡增量收益：四卡 `576→564`（~1.3%）、八卡 `335�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [HunyuanVideo](../../../concepts/models/hunyuan_video.md)（`related`）：“`single_sparse`·`sp8_sparse`（块稀疏 Attention，默认 SVG 可切 TopK；`sp8_sparse` 为 Ulysses8）”；“长序列视频 ［DiT］(../../../concepts/modules/dit.md) 想同时吃到两种降本：［块稀疏 Attention］(../../../concepts/modules/blockwise_sparse_attention.md)（TopK/SVG 丢弃低注意力块）减计算量，［Ulysses］(../../../concepts/parallelism/ulysses.md) 序列并行摊显存/时延”。候选卡就是该配置组合的布局重排与负载均衡实施指南。
+- [HunyuanVideo](../../../concepts/models/hunyuan_video.md)（`related`）：“`single_sparse`·`sp8_sparse`（块稀疏 Attention，默认 SVG 可切 TopK；`sp8_sparse` 为 Ulysses8）”；“长序列视频 ［DiT］(../../../concepts/modules/dit.md) 想同时吃到两种降本：［块稀疏 Attention］(../../../concepts/modules/blockwise_sparse_attention.md)（TopK/SVG 丢弃低注意力块）减计算量，［Ulysses］(../../../concepts/parallelism/ulysses.md) 序列并行摊显存/时延”。该配置组合的实施需要同时处理布局重排与负载均衡。
 - [Ulysses 按 head 切分的整除约束（序列可软填充、head 需 UAA 放开）](../../../runbooks/runtime/ulysses_head_seq_divisibility_uaa.md)（`related`）：集成卡要求“对 img q/k/v 做 all-to-all，从**序列并行布局切到头并行布局**，让每卡对自己负责的 head 持有**完整序列**”，并把非整除 head 交给 UAA；约束卡进一步要求“**稀疏度向量按实际本地 head 数对齐**”，补齐块稀疏场景在不均匀本地 head 切分后的稀疏度向量边界。
-- [视频 DiT 块稀疏 Attention 使能 — must-keep 首帧/文本 + TopK/SVG 选型（TopK 需离线 profiling）](../../../optimizations/experience/rules/video_dit_blockwise_sparse_attention.md)（`related`）：焦点卡写明“把 `sink_frame_len + txt_len` 覆盖的块标为 must-keep”，候选卡写明“对 img q/k/v 做 all-to-all，从**序列并行布局切到头并行布局**”。单卡规则先保全首帧与文本，多卡指南再恢复每个 head 的完整序列后选择稀疏块。
+- [视频 DiT 块稀疏 Attention 使能 — must-keep 首帧/文本 + TopK/SVG 选型（TopK 需离线 profiling）](../../../optimizations/experience/rules/video_dit_blockwise_sparse_attention.md)（`related`）：块稀疏规则要求“把 `sink_frame_len + txt_len` 覆盖的块标为 must-keep”，Ulysses 集成要求“对 img q/k/v 做 all-to-all，从**序列并行布局切到头并行布局**”。单卡规则先保全首帧与文本，多卡指南再恢复每个 head 的完整序列后选择稀疏块。
 <!-- cannbot:related:end -->

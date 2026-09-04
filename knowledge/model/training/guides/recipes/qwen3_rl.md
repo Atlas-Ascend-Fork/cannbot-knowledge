@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/qwen3_235B_32k_longseq_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -95,10 +95,10 @@ SAM 是基于**动态后缀自动机**的**无模型（draft-model-free）投机
 
 据此最终配置：**TP4DP32EP128**（大 TP 降单卡权重占比、Decode 访存 bound 下缓解瓶颈并留更多 KV Cache 空间）+ `max_num_seqs=256` + `max_num_batched_tokens=32768` + `gpu_memory_utilization=0.87`（配合 Chunk-MoE 特性降 prefill 峰值内存，doc §2.1）。
 
-### 计算与调度优化（doc §2.2，新增 4 点）
+### 计算与调度优化（doc §2.2）
 
 - **切分策略** §2.2.1：长尾低 BS 下 Matmul 访存 bound（实测随 request 减少、shape 变小但耗时不等比下降）。非 MoE 部分用更大 TP（TP4DP32 vs TP1DP128）让每卡只加载小权重、提高计算占比——TP1 切分 Matmul 严重访存 bound，TP4DP32 整网更优、更不易 KVCache 换出。
-- **图模式路径** §2.2.2：veRL+vLLM 有 5 种图模式路径，本实践对比 Full_decode_only ACLGraph 与 TorchAir GE，选 **GE 图模式**——GE 可配更大 `max_num_seqs` 并开多档位编图，总体推理耗时最优；且 Full Graph 要求 kernel 地址固定、必须用 vLLM 原生 sleep mode（依赖关闭虚拟内存，与训练侧冲突易 OOM），大集群 RL 训练下无法正常运行。版本注记：doc(d17909e) 选定 TorchAir GE，但当前 recipe 代码已切到 **npugraph_ex 替代 GE**（README 注记，235B 长序列优化文档中部分 GE 相关 patch 已失效，完整 GE 实现见 v0.1.0 版本；235B 128die 启动脚本走 `CUDAGRAPH_SIZES` + `cudagraph_capture_sizes` 的 npugraph_ex 路线、无 TorchAir GE 配置），与本页他处 npugraph_ex 表述一致。
+- **图模式路径** §2.2.2：veRL+vLLM 有 5 种图模式路径，Qwen3-235B 长序列优化文档对比 Full_decode_only ACLGraph 与 TorchAir GE，选 **GE 图模式**——GE 可配更大 `max_num_seqs` 并开多档位编图，总体推理耗时最优；且 Full Graph 要求 kernel 地址固定、必须用 vLLM 原生 sleep mode（依赖关闭虚拟内存，与训练侧冲突易 OOM），大集群 RL 训练下无法正常运行。版本注记：优化文档（d17909e）采用 TorchAir GE；同一来源版本的 recipe README 与启动脚本采用 **npugraph_ex**。README 注明部分 GE 相关 patch 已不适用，完整 GE 实现见 v0.1.0；235B 128die 启动脚本使用 `CUDAGRAPH_SIZES` + `cudagraph_capture_sizes`，无 TorchAir GE 配置。因此，GE 实验结果与 npugraph_ex 启动配置不能作为同一图模式使用。
 - **FIA 算子负载均衡** §2.2.3：长序列 decode 各 batch cache 长度不一，IFA（IncreFlashAttention）多核负载不均（部分核空闲）。改用 **FIA（FusedInferAttention）**，基于核数循环模拟求最优核数 + 贪心块分配均衡各核开销；该优化已集成 CANN 8.3.RC1。系统吞吐 105→117（**+11.4%**）。算法/公式见下方专节。
 - **Decode HostBound** §2.2.4：Decode 通信拖尾根因是 Host 侧 GC 与内存操作引入空泡导致下发延迟。**Decode step 临时禁用 GC + taskset 绑核**（Ray 拉起时 device id 都被设 0，`CPU_AFFINITY_CONF` 失效，改用 taskset）：forward 137.64→124.66ms（-9.4%）、总推理 4851.98→4192.09s（-13.6%）。
 
@@ -173,10 +173,10 @@ HDP 装箱按序列预估占用 rank 数动态分组、溢出部分轮转合并�
 
 ## 未来方向（doc 长尾内存/线性注意力延展）
 
-长序列 RL 当前在 Device 侧内存与长尾负载两条线上仍有可演进空间，与 cann-infer 域已有的两项技术天然衔接：
+针对 Device 侧内存与长尾负载限制，可考虑以下优化方向；它们不等于 Qwen3-235B 训练配置中已启用的能力，仍需按目标模型和部署条件验证：
 
-- **KVP 切分**（cross-link [kvp](../../../inference/concepts/parallelism/kvp.md)）：本实践通过分析推理侧实际内存、配置合适 `max_num_seqs=256` 不触发 continuous batching 来规避 OOM；但对未来 Device 侧内存不够、必须 continuous batching 的极端长序列场景，沿 KV/序列维度做 KV-Parallel 切分可在单实例内进一步摊薄单卡 KV Cache 压力，与 Seer 的 Divided Rollout（每块最多推 8K token、推完放回缓存池再分配，规避 OOM 与中途 preempt）思路一致，是 Rollout Rebalance 之外的另一条长尾/显存缓解路径（doc §2.2.2、§2.3.1 与 Seer 论文对比）。
-- **Qwen-Next gated_delta_rule**（cross-link [recurrent-gated-delta-rule](../../../inference/concepts/kernels/recurrent_gated_delta_rule.md)）：本实践模型为标准 attention 的 Qwen3-235B-A22B；Qwen-Next 引入的 **gated delta rule 线性/递归注意力**使 KV Cache 不再随序列长度线性增长，从根上缓解 §2.1 所述「HBM 随序列长度线性增长」的长序列显存瓶颈，是长序列 RL 后续模型迭代的关键算子方向（doc §1.1 背景）。
+- **KVP 切分**（[kvp](../../../inference/concepts/parallelism/kvp.md)）：Qwen3-235B RL 配置通过分析推理侧实际内存、设置 `max_num_seqs=256` 不触发 continuous batching 来规避 OOM；对 Device 侧内存不够、必须 continuous batching 的极端长序列场景，沿 KV/序列维度做 KV-Parallel 切分可在单实例内进一步摊薄单卡 KV Cache 压力，与 Seer 的 Divided Rollout（每块最多推 8K token、推完放回缓存池再分配，规避 OOM 与中途 preempt）思路一致，是 Rollout Rebalance 之外的另一条长尾/显存缓解方向（doc §2.2.2、§2.3.1 与 Seer 论文对比）。
+- **Qwen-Next gated_delta_rule**（[recurrent-gated-delta-rule](../../../inference/concepts/kernels/recurrent_gated_delta_rule.md)）：上述训练配置使用标准 attention 的 Qwen3-235B-A22B；Qwen-Next 引入的 **gated delta rule 线性/递归注意力**使 KV Cache 不再随序列长度线性增长，可缓解 §2.1 所述「HBM 随序列长度线性增长」的长序列显存瓶颈，是长序列 RL 后续模型迭代的算子方向（doc §1.1 背景）。
 
 ## Evidence
 
@@ -209,8 +209,8 @@ HDP 装箱按序列预估占用 rank 数动态分组、溢出部分轮转合并�
 ## 相关
 
 - [DeepSeek-R1 veRL + MindSpeed + vLLM-Ascend 全共卡 GRPO RL 训练](deepseek_r1_rl.md)（`related`）：RL 系统底座沿用 ［deepseek-r1-rl］(deepseek_r1_rl.md)；ActorRolloutRef **三模型全共卡、分时复用**部署下完成训练；Qwen3 recipe 明确继承 DeepSeek-R1 recipe 的全共卡系统与训推切换底座。
-- [EPLB（专家并行负载均衡器，MoE 专家动态负载均衡）](../../concepts/techniques/eplb.md)（`related`）：焦点卡写明“开启 EPLB 无明显性能收益”，候选卡写明“Qwen3-30B/235B 真实权重实测**无明显收益**”。概念卡给出收益判据，Qwen3 实践提供真实权重与极端不均对照，直接支撑启用决策。
-- [GRPO / DAPO（组相对策略优化 RL 算法）](../../concepts/techniques/grpo_dapo.md)（`related`）：焦点卡写明“去掉 PPO 的 critic（价值网络）”，候选卡写明“DAPO（在 GRPO 上加 clip-higher、token-level 重要性采样、动态样本过滤）”。算法卡给出 GRPO/DAPO 骨架，Qwen3 实践给出 DAPO 的具体裁剪、token-IS 与过滤配置和吞吐观测。
+- [EPLB（专家并行负载均衡器，MoE 专家动态负载均衡）](../../concepts/techniques/eplb.md)（`related`）：Qwen3-30B/235B 真实权重 rollout 各卡负载无明显不均，开启 EPLB **无明显收益**；人为构造极端不均时才观察到推理耗时下降，可据此区分启用条件与收益边界。
+- [GRPO / DAPO（组相对策略优化 RL 算法）](../../concepts/techniques/grpo_dapo.md)（`related`）：GRPO 去掉 PPO 的 critic（价值网络）；DAPO 在 GRPO 上加入 clip-higher、token-level 重要性采样与动态样本过滤，Qwen3 RL 配置中的裁剪、token-IS 和过滤参数对应这些算法机制。
 - [RL 训推切换（Train/Rollout Switch：reshard / offload / D2D）](../../concepts/techniques/train_rollout_switch.md)（`related`）：同样的 veRL 全共卡 + 训推切换 + 零冗余 reshard；每完成一次训练更新，新权重必须先**重新切分（reshard）**成推理布局再喂给 rollout；概念页给出 recipe 复用的训推切换契约。
 - [Rollout Rebalance（RL On-Policy rollout 序列级均衡调度引擎）](../../concepts/techniques/rollout_rebalance.md)（`related`）：推理侧（切分策略/图模式/FIA 负载均衡/Rollout Rebalance/EPLB/Expert Parallelism Load Balance）；Qwen3-235B 64 卡 A3 单轮推理耗时降约 60%；概念页具体化 recipe 总览中的在线序列迁移和实测收益。
 - [SAM 无损投机推理（后缀自动机投机解码加速 RL Rollout）](../../concepts/techniques/sam_speculative.md)（`related`）：SAM 卡记录“统一配置 DAPO-MATH-17k、`max_response_length`=34816、SAM 阈值（32B 为 8 / 235B 为 8）、投机 token 数 3、eager 模式”；Qwen3 recipe给出“32B 推荐自适应阈值 8、投机 token 数 3”。概念机制与可复用训练配置、收益验证在此接合。

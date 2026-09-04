@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: 基于 SHMEM 重写的 MoE Dispatch&Combine
-description: MoE Dispatch 按路由将 token 发往专家所在 rank，Combine 再按逆映射返回并按权重聚合结果。本方案用 CANN SHMEM 对称 win 区和 put/signal/wait 语义，将两者显式编排为发送数据、发送状态、等待状态、本地拷贝四步；Dispatch 还记录来源 rank、token 和 top-k 序号供 Combine 原路返回。guide 给出原生 SHMEM、TileLang-shmem 与 pyPTO-shmem 三种实现，均依赖独立数据区和状态区。它适用于 MoE EP All-to-All 通算融合，但不同于 HCCL double-routing，也不同于将通信封装在 npu_moe_distribute_dispatch_v2/combine_v2 内的融合算子。当前 DeepSeek-V4 生产模型仍调用 torch_npu 融合算子，SHMEM 重写仅为文档级开发示例，外部 cann/shmem 运行时未在本仓核验。
+description: MoE Dispatch 按路由将 token 发往专家所在 rank，Combine 再按逆映射返回并按权重聚合结果。本方案用 CANN SHMEM 对称 win 区和 put/signal/wait 语义，将两者显式编排为发送数据、发送状态、等待状态、本地拷贝四步；Dispatch 还记录来源 rank、token 和 top-k 序号供 Combine 原路返回。guide 给出原生 SHMEM、TileLang-shmem 与 pyPTO-shmem 三种实现，均依赖独立数据区和状态区。它适用于 MoE EP All-to-All 通算融合，但不同于 HCCL double-routing，也不同于将通信封装在 npu_moe_distribute_dispatch_v2/combine_v2 内的融合算子。当前 DeepSeek-V4 生产模型仍调用 torch_npu 融合算子，SHMEM 重写仅为文档级开发示例，未验证独立 cann/shmem 运行时的实际执行行为。
 tags:
 - task.optimization
 - topic.mixture_of_experts
@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_shmem_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - agnostic
 ---
@@ -80,7 +80,7 @@ shmem 初始化三步：`MoeDistributeCppBuffer(<bytes>, 1)` 为当前 die 分�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CANN SHMEM 通信编程模型](cann_shmem.md)（`related`）：焦点卡给出“状态区紧跟数据区之后”，候选卡以“对称内存 win 区（数据区 + 状态区）与 put/signal/wait 语义为基础”展开 Dispatch/Combine 的发数据、发状态与等待流程；基础内存合同直接支撑该 MoE 通算融合实现。
+- [CANN SHMEM 通信编程模型](cann_shmem.md)（`related`）：SHMEM Dispatch/Combine 使用对称 win 中的数据区、紧随其后的状态区及 put/signal/wait 完成通算同步。
 - [MoE Dispatch/Combine V2（一体化融合算子）](moe_dispatch_combine_v2.md)（`related`）：SHMEM 手写重写（显式发/等状态 + win 拷贝机制）与 `npu_moe_distribute_dispatch_v2` / `npu_moe_distribute_combine_v2`（torch_npu **一体化融合算子**，［moe-dispatch-combine-v2］(moe_dispatch_combine_v2.md)，Qwen3-MoE/Qwen3.5/Gemma-4 及 V4 生产路径普遍调用）是不同机制——融合算子把发/等/拷贝封装在算子内部，不暴露 win 区。；- **vs ［shmem-dispatch-combine］(shmem_dispatch_combine.md)**：那是 DeepSeek-V4 shmem_guide 给出的、用 CANN SHMEM 对称内存**单边通信手写重写** dispatch&combine 的文档级指南（put/signal/wait）；dispatch/combine_v2 是 torch_npu **标准一体化融合算子**（HCCL/MC2 底层），把发/等/拷贝封装在算子内部、不暴露 win 区。V4 生产路径实调 dispatch/combine_v2 算子（`modeling_deepseek.py:578/616`），非 SHMEM 重写路径。；双方明确给出生产融合算子与 SHMEM 文档级重写的替代机制和验证边界。
 - [MoE Double-Routing](double_routing.md)（`related`）：［double-routing］(double_routing.md) 是 Prefill 阶段基于 `npu_moe_init_routing_v2` + `dist.all_to_all_single` 的 **8 步集合通信路由**（init-routing×2 + finalize-routing×2），走 HCCL AllToAll；SHMEM 重写则基于对称内存 win 区 + put/signal/wait 做**单边通信**，两者解决同一 EP All-to-All 问题但通信原语不同。；DeepSeek-R1 / Kimi-K2 等大 EP MoE 模型在 Prefill 阶段使用的专家路由方案。每张卡完成 **2 次 init-routing + 2 次 finalize-routing**：第一次做本卡内按专家排序 + 通过 AllToAll+ReduceSum 推导 `input_splits` / `output_splits`；token AllToAll 之后再做一次 re-routing 让本卡 token 按本地专家再次排序。相较 AllGather 全量方案，Double-Routing 在负载较均衡时**峰值显存更低**（无数据冗余）且**通信量更小**。；双方把同一 EP All-to-All 任务的单边 SHMEM 路线与 HCCL double-routing 路线做成可执行的机制对照。
 <!-- cannbot:related:end -->

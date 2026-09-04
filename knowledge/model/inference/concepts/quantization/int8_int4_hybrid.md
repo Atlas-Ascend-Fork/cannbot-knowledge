@@ -112,6 +112,6 @@ Atlas-A3 Pod，64 卡，DP+EP，**W8A8C16**（DeepSeek-V4 Flash，LI Cache Int8 
 ## 相关
 
 - [Hybrid FP8-MXFP4 / Hybrid MXFP8-MXFP4 (DeepSeek-V4 Ascend 950PR/DT)](hybrid_mxfp8_mxfp4.md)（`related`）：二者均区别于 Atlas A3 Pod 的整数路径（见 ［int8-int4-hybrid］(int8_int4_hybrid.md)）：A3 走 Int8/W4A8 整数 + KV C16；950 走 FP8/MXFP8 浮点 + KV C8。；DeepSeek-V4 在 ［atlas-a3］(../platforms/atlas_a3.md) Pod 平台上的两档整数量化方案，二者均以原生 Hybrid FP8-MXFP4 权重为转换起点：。两卡共同完成 DeepSeek-V4 从同一原生权重出发、按 950 与 A3 平台选择浮点或整数量化路线的部署决策。
-- [W4A8C8 (MoE W4A8 + Attention W8A8C8)](w4a8c8.md)（`related`）：焦点卡写明“A3 Pod 的 Hybrid INT8-INT4 走整数 W4A8 且 **KV 为 C16（非 C8）**”，候选卡写明“仅替换 MoE 路由专家（其余同 Int8 矩阵）”。焦点明确 V3.2 W4A8C8 与 V4 A3 整数 W4A8 的 KV 差异，候选给出 V4 只替换路由专家的具体矩阵。
+- [W4A8C8 (MoE W4A8 + Attention W8A8C8)](w4a8c8.md)（`related`）：V4 A3 的 Hybrid INT8-INT4 只将路由专家替换为整数 W4A8，KV 保持 C16；需与 V3.2 的 W4A8C8 区分。
 - [量化权重格式 / dtype 组合的可用性受 SoC 平台与 CANN 算子包版本双重约束（非量化配置 bug）](../../runbooks/precision/quant_format_dtype_platform_cann_version_gating.md)（`related`）：“A3：DeepSeek-V4-Flash → INT8 W8A8（`--quant_type w8a8-int`）；DeepSeek-V4-Pro → Hybrid INT8-INT4（`--quant_type w4a8-int`）。”给出型号到参数的分流；“**Hybrid INT8-INT4（推荐 Pro）**”解释 Pro 分支为何采用 W4A8 路由专家与 W8A8 共享专家。
 <!-- cannbot:related:end -->

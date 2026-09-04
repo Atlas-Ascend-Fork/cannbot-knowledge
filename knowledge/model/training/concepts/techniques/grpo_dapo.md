@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: GRPO / DAPO（组相对策略优化 RL 算法）
-description: GRPO（Group Relative Policy Optimization，组相对策略优化）是 DeepSeek-R1 RL 训练采用的核心策略梯度算法：它去掉 PPO 的 critic（价值网络），改用「同一 prompt 采样一组（group）rollout，用组内奖励的相对高低估计 advantage」。少了独立 value model，省去其前反向与显存，特别契合 671B 级大模型的全共卡 RL 部署。本页讲清 GRPO 的 rollout → reward → advantage → 策略更新 数据流与其 on-policy 性质，并把 DAPO 作为同族变体先占位（后续 Qwen3 recipe 会丰富 DAPO 细节）。本页以 deepseek-r1-rl 实践（verl + MindSpeed + vLLM-Ascend，Atlas A3 128 卡）中 GRPO 的真实用法为据。 > 本页是 GRPO/DAPO 算法的 唯一 canonical 页：讲算法机制本身。verl 框架的单/多控制器调度、D2D 数据流加速、训推切换 reshard 等 工程优化 归 verl 与 deepseek-r1-rl，本页只在与 GRPO 算法语义耦合处（如 on-policy 免计算 old_log_prob）引用。 MindSpeed-RL 把 GRPO/DAPO/PPO 做成继承 RayBaseTrainer 的 Ray 共卡 trainer（grpo/dapo/ppo_trainer_hybrid），损失按 (stage,role) 注册 LossFuncFactory、组优势 compute_group_norm_advantage_return 组内 z-score；DAPO kl_loss≡0、PPO 用 CriticWorker+GAE+apply_kl_penalty；DPO 委托 mindspeed_llm 离线 DPOTrainer。
+description: GRPO（Group Relative Policy Optimization，组相对策略优化）去掉 PPO 的 critic（价值网络），对同一 prompt 采样一组 rollout，以组内相对奖励估计 advantage，省去独立 value model 的前反向与显存。数据流为 rollout → reward → advantage → 策略更新；on-policy 条件支持免计算 old_log_prob。DeepSeek-R1 671B 在 Atlas A3 128 卡上使用 veRL + MindSpeed + vLLM-Ascend 执行全共卡 GRPO。DAPO 在 GRPO 骨架上叠加解耦 clip 上下界、token-level 重要性采样与动态样本过滤。MindSpeed-RL 以继承 RayBaseTrainer 的 Ray 共卡 trainer（grpo/dapo/ppo_trainer_hybrid）实现 GRPO/DAPO/PPO，损失按 (stage,role) 注册 LossFuncFactory，compute_group_norm_advantage_return 计算组内 z-score；DAPO kl_loss≡0，PPO 使用 CriticWorker+GAE+apply_kl_penalty，DPO 委托 mindspeed_llm 离线 DPOTrainer。
 tags:
 - task.optimization
 - topic.reinforcement_learning
@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -23,7 +23,7 @@ platforms:
 
 GRPO（Group Relative Policy Optimization，组相对策略优化）是 DeepSeek-R1 RL 训练采用的核心策略梯度算法：它**去掉 PPO 的 critic（价值网络）**，改用「**同一 prompt 采样一组（group）rollout，用组内奖励的相对高低估计 advantage**」。少了独立 value model，省去其前反向与显存，特别契合 671B 级大模型的全共卡 RL 部署。其数据流为 **rollout → reward → advantage → 策略更新**，并具备 **on-policy** 性质。**DAPO**（GRPO 同族变体）在此骨架上叠加解耦 clip 上下界 / token-level 重要性采样 / 动态样本过滤等改动。GRPO 在 [deepseek-r1-rl](../../guides/recipes/deepseek_r1_rl.md) 实践（[verl](../frameworks/verl.md) + MindSpeed + vLLM-Ascend，Atlas A3 128 卡）中的真实用法见下文。
 
-> GRPO/DAPO 讲算法机制本身。verl 框架的单/多控制器调度、D2D 数据流加速、训推切换 reshard 等 *工程优化* 见 [verl](../frameworks/verl.md) 与 [deepseek-r1-rl](../../guides/recipes/deepseek_r1_rl.md)；与 GRPO 算法语义耦合处（如 on-policy 免计算 old_log_prob）在下文相应小节说明。
+> 单/多控制器调度、D2D 数据直传与训推切换 reshard 属于 [veRL](../frameworks/verl.md) 和 [DeepSeek-R1 RL](../../guides/recipes/deepseek_r1_rl.md) 的系统实现；old_log_prob 免计算则依赖 GRPO 的 on-policy 条件，不能脱离算法语义单独启用。
 
 ## 在 RL 训练系统中的位置
 
@@ -98,7 +98,7 @@ DAPO 与 GRPO 均为「组相对、on-policy」族，落到 verl 上都靠 [verl
 
 ## 与 PPO 的关键差异
 
-| 维度 | PPO | GRPO（本页） |
+| 维度 | PPO | GRPO |
 |------|-----|--------------|
 | value/critic 网络 | 需要独立 value model 算 GAE | **无 critic**，组内相对奖励直接估 advantage |
 | advantage 来源 | value model 前向 + GAE | 同 prompt 一组 $G$ 响应的奖励组内归一化 |
@@ -134,7 +134,7 @@ DAPO trainer 的 `dynamic_sampling` 落地「过滤零梯度组 + 动态补采�
 
 ### 与 verl 侧的对照
 
-| 维度 | verl（cann-recipes-train，本页上方） | MindSpeed-RL 原生 |
+| 维度 | verl（cann-recipes-train） | MindSpeed-RL 原生 |
 |---|---|---|
 | 调度 | 单控制器(控制流)+多控制器(计算流)，D2D TensorCache | Ray 共卡 trainer + TransferDock 经验队列 |
 | GRPO KL | 目标函数内 `β·D_KL`（图示） | 损失内 `kl_ctrl.value·kl_mean_loss`（同义） |
@@ -181,11 +181,11 @@ DPO 是四算法里的异类：`cli/train_dpo.py` 不挂 actor/rollout/reward/cr
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DeepSeek-R1 veRL + MindSpeed + vLLM-Ascend 全共卡 GRPO RL 训练](../../guides/recipes/deepseek_r1_rl.md)（`related`）：焦点卡写明“去掉 PPO 的 critic（价值网络）”，候选卡写明“GRPO 是 on-policy 算法”。算法卡解释去 critic 的组优势，DeepSeek-R1 实践利用 on-policy 语义免算 old_log_prob，连接算法与系统优化。
-- [MindSpeed-RL](../frameworks/mindspeed_rl.md)（`related`）：焦点卡写明“去掉 PPO 的 critic（价值网络）”，候选卡写明“支持 GRPO / DAPO / PPO / DPO”。算法卡定义 GRPO/DAPO 与 PPO 的差异，框架卡定位这些算法在 MindSpeed-RL 共卡引擎中的承载范围。
-- [Partial Rollout（长尾 rollout 暂停续跑）](partial_rollout.md)（`related`）：焦点卡的停止条件是“攒够 `GBS_train` 个**组内 n 条样本全部完成**的 prompt 组就停”，候选卡定义“同一 prompt 采样一组（group）rollout，用组内奖励的相对高低估计 advantage”；Partial Rollout 必须维持完整组边界，才能服务 GRPO/DAPO 的组内 advantage。
+- [DeepSeek-R1 veRL + MindSpeed + vLLM-Ascend 全共卡 GRPO RL 训练](../../guides/recipes/deepseek_r1_rl.md)（`related`）：DeepSeek-R1 使用 GRPO 的组相对奖励优势；满足 on-policy 条件时可免算 old_log_prob。
+- [MindSpeed-RL](../frameworks/mindspeed_rl.md)（`related`）：MindSpeed-RL 承载 GRPO、DAPO、PPO 和 DPO；其中 GRPO/DAPO 使用组相对奖励，PPO 依赖 critic。
+- [Partial Rollout（长尾 rollout 暂停续跑）](partial_rollout.md)（`related`）：Partial Rollout 必须按组收齐响应，保持 GRPO/DAPO 组内 advantage 估计的完整边界。
 - [Qwen3 Tool Agent RL（verl-retool：SFT→RL 两阶段 Sandbox 工具 Agent，昇腾 A3）](../../guides/recipes/qwen3_tool_agent_rl.md)（`related`）：｜ RL 算法 ｜ DAPO（`run_qwen3_4b_dapo_npu.sh`） ｜；DAPO（Decoupled Clip & Dynamic Sampling Policy Optimization）是 GRPO 的同族改进算法，沿用「组采样 + 去 critic 的组内相对 advantage」骨架，在 GRPO 基础上叠加四项改动以缓解长序列 RL 的熵塌缩与梯度信号稀疏。Qwen3 235B/32B RL 实践（［qwen3-rl］(../../guides/recipes/qwen3_rl.md)）按以下 DAPO 配置实测（启动脚本 `train_dapo_qwen3_{235b_128die,32b_32die}_true_weight.sh`）：recipe 的 DAPO 选型由算法页的 GRPO 同族机制与改动边界提供解释。
-- [Qwen3 长序列 RL 训练实践（235B-A22B 2K 推 32K + 32B SAM 投机，veRL/MindSpeed/vLLM-Ascend，GRPO/DAPO）](../../guides/recipes/qwen3_rl.md)（`related`）：焦点卡写明“去掉 PPO 的 critic（价值网络）”，候选卡写明“DAPO（在 GRPO 上加 clip-higher、token-level 重要性采样、动态样本过滤）”。算法卡给出 GRPO/DAPO 骨架，Qwen3 实践给出 DAPO 的具体裁剪、token-IS 与过滤配置和吞吐观测。
+- [Qwen3 长序列 RL 训练实践（235B-A22B 2K 推 32K + 32B SAM 投机，veRL/MindSpeed/vLLM-Ascend，GRPO/DAPO）](../../guides/recipes/qwen3_rl.md)（`related`）：Qwen3 RL 提供 GRPO/DAPO 的裁剪、token-level 重要性采样和动态过滤配置，以及对应吞吐观测。
 - [veRL + ScaleBox 沙盒长上下文 Code RL（DeepSeek-R1-Distill-1.5B / Qwen3-4B / Qwen3-30B-A3B）](../../guides/recipes/qwen2_code_rl_scalebox.md)（`related`）：三脚本均 `algorithm.adv_estimator=grpo`，仅借用 DAPO 的 clip-higher，非纯 DAPO；同一 prompt 采样一组（group）rollout，用组内奖励的相对高低估计 advantage。Recipe 给出实际 GRPO 与 clip-higher 配置，概念页解释组内相对奖励如何形成 advantage，二者闭合算法选择。
-- [规则奖励 / Verifier（数学·格式校验的无模型奖励）](rule_reward_verifier.md)（`related`）：焦点卡写明“rollout → reward → advantage → 策略更新”，候选卡写明“再把 `rm_scores` 写回，供 advantage 估计”。算法卡定义 reward 到 advantage 的数据流，Verifier 卡给出规则奖励如何产生并回写 rm_scores，补齐无 reward model 的奖励阶段。
+- [规则奖励 / Verifier（数学·格式校验的无模型奖励）](rule_reward_verifier.md)（`related`）：规则 Verifier 生成并回写 rm_scores，随后由 GRPO/DAPO 估计 advantage 并更新策略。
 <!-- cannbot:related:end -->

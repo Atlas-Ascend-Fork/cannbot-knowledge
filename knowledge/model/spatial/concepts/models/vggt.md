@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: VGGT 昇腾 Atlas A2 推理适配与优化
-description: VGGT（Visual Geometry Grounded Transformer，CVPR 2025）是一个前馈式 3D 视觉基础模型：给定一组无序图像，单次前向即可联合预测相机位姿、点云、深度图等几何属性。本页记录 cann-recipes-spatial-intelligence 在 Atlas A2（Atlas 800I A2 推理产品）上对 VGGT 的推理适配、性能优化与三任务精度评测。模型本体来自上游开源仓 facebookresearch/vggt（外部未克隆未核验，本页只引本仓内重写/覆盖的优化文件）。 补充：三任务精度评测指标语义（AUC@30=位姿误差≤30°累积准确率、Acc=预测→真值点云最近邻均距、Comp=真值→预测最近邻均距、Overall=(Acc+Comp)/2）。
+description: VGGT（Visual Geometry Grounded Transformer，CVPR 2025）是一个前馈式 3D 视觉基础模型：给定一组无序图像，单次前向即可联合预测相机位姿、点云、深度图等几何属性。cann-recipes-spatial-intelligence 提供 Atlas A2（Atlas 800I A2 推理产品）上的推理适配、性能优化与三任务精度评测。模型本体来自上游开源仓 facebookresearch/vggt；实现与测量证据限于昇腾适配文件，不覆盖上游完整实现。三任务精度评测指标为 AUC@30（位姿误差≤30°累积准确率）、Acc（预测→真值点云最近邻均距）、Comp（真值→预测最近邻均距）、Overall（(Acc+Comp)/2）。
 tags:
 - task.design
 - topic.three_dimensional_reconstruction
@@ -14,16 +14,16 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/models/vggt/vggt_optimization.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a2
 ---
 
 # VGGT 昇腾 Atlas A2 推理适配与优化
 
-VGGT（Visual Geometry Grounded Transformer，CVPR 2025）是一个前馈式 3D 视觉基础模型：给定一组无序图像，单次前向即可联合预测**相机位姿、点云、深度图**等几何属性。cann-recipes-spatial-intelligence 在 **Atlas A2**（Atlas 800I A2 推理产品）上对 VGGT 做推理适配、性能优化与三任务精度评测。模型本体来自上游开源仓 [facebookresearch/vggt](https://github.com/facebookresearch/vggt)，优化围绕本仓内重写/覆盖的优化文件展开。
+VGGT（Visual Geometry Grounded Transformer，CVPR 2025）是一个前馈式 3D 视觉基础模型：给定一组无序图像，单次前向即可联合预测**相机位姿、点云、深度图**等几何属性。cann-recipes-spatial-intelligence 在 **Atlas A2**（Atlas 800I A2 推理产品）上对 VGGT 做推理适配、性能优化与三任务精度评测。模型本体来自上游开源仓 [facebookresearch/vggt](https://github.com/facebookresearch/vggt)，昇腾优化实现在 `cann-recipes-spatial-intelligence/models/vggt/`。
 
-> 优化成果：在 `examples/kitchen` 25 张图片输入下，整网推理耗时降至 **1.12 秒**（8 卡 Ulysses=8 序列并行下另有 ~6.47x 提升）。
+> 推理时延：在 `examples/kitchen` 25 张图片输入下，整网推理耗时降至 **1.12 秒**（8 卡 Ulysses=8 序列并行下另有 ~6.47x 提升）。
 
 ## 模型结构
 
@@ -78,7 +78,7 @@ NPU 上做二维卷积需先用 Transdata 把卷积核转为 `Fractal_Z` 格式�
 
 ## 序列并行推理（Ulysses + Ring）
 
-VGGT 原生仅单卡。本仓为 **Global Attention** 引入序列并行（`--enable_sp`，约束 `ulysses_degree × ring_degree = nproc_per_node`，且 `num_attention_heads` 须被 `ulysses_degree` 整除），实现见 [`vggt/sp/unified_sp_attention.py`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/models/vggt/vggt/sp/unified_sp_attention.py)：
+VGGT 原生仅单卡。`cann-recipes-spatial-intelligence` 为 **Global Attention** 引入序列并行（`--enable_sp`，约束 `ulysses_degree × ring_degree = nproc_per_node`，且 `num_attention_heads` 须被 `ulysses_degree` 整除），实现见 [`vggt/sp/unified_sp_attention.py`](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/models/vggt/vggt/sp/unified_sp_attention.py)：
 
 - **Ulysses（头维度切分）**：通过 all-to-all 把 `[B, shard_s, H, D]` 与 `[B, S, shard_hc, D]` 互换 —— 每 rank 持有完整序列、部分 attention 头。跨域同概念见 [ulysses](../../../inference/concepts/parallelism/ulysses.md)。
 - **Ring（序列维度切分）**：`use_ring_overlap` 边通信边计算 —— 异步 allgather K/V 的同时算 local attention，等通信完成再算 cross attention，最后**用 NPU FIA 返回的 LSE（log-sum-exp）做分块结果数值稳定合并**。跨域同概念见 [ring-attention](../../../inference/concepts/parallelism/ring_attention.md)。
@@ -93,10 +93,10 @@ VGGT 原生仅单卡。本仓为 **Global Attention** 引入序列并行（`--en
 
 ## 三任务精度评测
 
-评测脚本与基线见 [vggt_accurancy_evaluation.md](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/models/vggt/vggt_accurancy_evaluation.md)。论文未开源全部评测脚本，本仓评测基于论文描述 + 社区代码复现。
+评测脚本与基线见 [vggt_accurancy_evaluation.md](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/models/vggt/vggt_accurancy_evaluation.md)。论文未开源全部评测脚本，`cann-recipes-spatial-intelligence` 的评测基于论文描述 + 社区代码复现。
 
 **指标语义**（读懂下表数字的前提）：
-- **AUC@30**（相机位姿，越大越好）：相机位姿误差 $\leq$ 30° 的累积准确率，即 0~30° 误差范围内模型正确估计相机位姿的累积准确率（源定义为「累积准确率」；AUC 字面为 Area Under Curve，此处不额外引申）。
+- **AUC@30**（相机位姿，越大越好）：相机位姿误差 $\leq$ 30° 的累积准确率，即 0~30° 误差范围内模型正确估计相机位姿的累积准确率（评测文档定义为「累积准确率」）。
 - **Acc（Accuracy）**（点云重建/深度估计，越小越好）：预测点云中所有点到真值点云上最近邻的平均距离。
 - **Comp（Completeness）**（越小越好）：真值点云中所有点到预测点云上最近邻的平均距离。
 - **Overall（Average Overall）**：`(Acc + Comp) / 2`，三项数值越低重建精度越高。
@@ -105,7 +105,7 @@ VGGT 原生仅单卡。本仓为 **Global Attention** 引入序列并行（`--en
 - **相机位姿估计**（Co3D，AUC@30，越大越好）：论文 88.2 / GPU 90.5 / **NPU 91.1**。脚本 `eval/pose_evaluation/eval_co3d.py`。
 - **点云三维重建**（ETH3D，Acc/Comp/Overall，越小越好）：NPU 0.491 / 0.422 / 0.456，与 GPU（0.498 / 0.429 / 0.464）基本一致。脚本 `eval/point_map_estimation/eval_eth3d.py`。
 - **深度估计**（DTU，Acc/Comp/Overall）：NPU 1.4669 / 0.5475 / 1.0072，与 GPU 接近。流程：`eval_dtu.py` 生成深度图 → `align_depth.py` 数值分布对齐 → `_open3d_fusion.py` 多视角融合点云 → `measure.py` 算点云距离。
-  - **`unverified` / gap**：深度估计与论文（0.389/0.374/0.382）存在明显差异，本仓在 [vggt_accurancy_evaluation.md](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/models/vggt/vggt_accurancy_evaluation.md) 标注为**已知问题**（评测脚本基于社区复现、与论文实验设置有细微区别），非昇腾适配引入。
+  - **与论文结果的可比性限制**：深度估计与论文（0.389/0.374/0.382）存在明显差异，尚未对齐；[vggt_accurancy_evaluation.md](https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/models/vggt/vggt_accurancy_evaluation.md) 将其列为**已知问题**，归因于社区复现评测脚本与论文实验设置的细微区别，而非昇腾适配。
 
 ## Evidence
 
@@ -120,7 +120,7 @@ VGGT 原生仅单卡。本仓为 **Global Attention** 引入序列并行（`--en
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Ring Attention Sequence Parallelism](../../../inference/concepts/parallelism/ring_attention.md)（`related`）：“**Ring（序列维度切分）**：`use_ring_overlap` 边通信边计算 —— 异步 allgather K/V 的同时算 local attention，等通信完成再算 cross attention，最后**用 NPU FIA 返回的 LSE（log-sum-exp）做分块结果数值稳定合并**。”；“概念上（见下方 HunyuanVideo 文档引用）以 P2P 环形逐跳传递 KV；但本仓 `module/unified_sp/core.py` 的实际实现是用一次 `all_gather_into_tensor` 把其他所有 rank 的 1/SP KV 一次性收齐，再对「本地 FA」与「其他 rank 合并 FA」共 2 路输出做 LSE（Log-Sum-Exp）合并（非逐跳 P2P、非 SP-1 串行轮）。”。目标卡补齐焦点 overlap 路径的通信与 LSE 合并机制。
-- [Ulysses Sequence Parallelism](../../../inference/concepts/parallelism/ulysses.md)（`related`）：“**Ulysses（头维度切分）**：通过 all-to-all 把 `［B, shard_s, H, D］` 与 `［B, S, shard_hc, D］` 互换 —— 每 rank 持有完整序列、部分 attention 头。”；“Ulysses 是面向**长序列多头注意力**的序列并行策略：在 attention 以外的部分沿 S（sequence）维度切分，在 attention 处通过一次 all-to-all 把切分维度从 S 换到 N（num_heads），attention 内部按 head 并行、attention 输出再 all-to-all 换回 S。”。两端给出 VGGT 实例与通用 Ulysses 数据重排合同。
-- [npu_fused_infer_attention_score (v1 / v2)](../../../inference/concepts/kernels/fused_infer_attention_score.md)（`related`）：“**Global Attention**（跨帧长序列）：切换到 `torch_npu.npu_fused_infer_attention_score`，`input_layout="BNSD"`、`pre_tokens=next_tokens=65535`、`inner_precise=0`。”；“昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算：`softmax(QKᵀ/√d)·V`，支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。”。FIA 卡补齐 VGGT Global Attention 的算子语义与参数边界。
+- [Ring Attention Sequence Parallelism](../../../inference/concepts/parallelism/ring_attention.md)（`related`）：VGGT 的 `use_ring_overlap` 路径重叠异步 allgather K/V 与本地 attention，并用 FIA 返回的 LSE 稳定合并本地和跨 rank 的分块输出。
+- [Ulysses Sequence Parallelism](../../../inference/concepts/parallelism/ulysses.md)（`related`）：VGGT Global Attention 使用 Ulysses all-to-all 在序列切分与头切分之间转换，使每个 rank 持有完整序列和部分 attention 头。
+- [npu_fused_infer_attention_score (v1 / v2)](../../../inference/concepts/kernels/fused_infer_attention_score.md)（`related`）：VGGT Global Attention 使用 FIA 执行跨帧长序列注意力，采用 `BNSD` 布局、`pre_tokens=next_tokens=65535` 和 `inner_precise=0`。
 <!-- cannbot:related:end -->

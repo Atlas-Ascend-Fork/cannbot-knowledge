@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/cann/npu_graph_optimization.md
   role: supporting
 created_at: '2026-04-15T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - agnostic
 ---
@@ -126,28 +126,28 @@ torch._dynamo.config.inline_inbuilt_nn_modules = False # 避免内建模块被�
 | layout | FIA 接口 | 图后端 | `actual_seq_lengths_kv` | `dynamic` | 已验证案例 | 备注 |
 |--------|----------|--------|-------------------------|-----------|------------|------|
 | BSH | `torch.ops.npu.*` | `ge_graph` | `list[int]` | `True` | PASS | 仓内 qwen3-moe 参考路径；成熟稳定 |
-| BNSD | `torch.ops.npu.*` | `ge_graph` | `list[int]` | `True` | **FAIL**： P1 首次 replay aicore `EZ9999 MTE DDR out of range / 507011`；`mark_static(q/k/v)` 无效 | **不可用**组合 |
-| BNSD | `torchair.ops.*` | `ge_graph` | Tensor | `False` | **FAIL**： P2 精度 3/16 漂移 + 单步 1970 ms；假设根因是 torchair GE 在 `dynamic=False` 下对 72 个 `register_buffer` in-place 更新的别名跟踪不完整 | **精度风险高**，慎用 |
-| BNSD | `torch.ops.npu.*` | `npugraph_ex` | `list[int]` | `True` | P3 PASS | 本次实验确认的可用备选路径 |
-| BSH | `torch.ops.npu.*` | `npugraph_ex` | `list[int]` | `True` | PASS | 第三轮实验确认；需配合下文"npugraph_ex options 推荐"使用 |
+| BNSD | `torch.ops.npu.*` | `ge_graph` | `list[int]` | `True` | **FAIL**：首次 replay aicore `EZ9999 MTE DDR out of range / 507011`；`mark_static(q/k/v)` 无效 | **不可用**组合 |
+| BNSD | `torchair.ops.*` | `ge_graph` | Tensor | `False` | **FAIL**：精度 3/16 漂移 + 单步 1970 ms；假设根因是 torchair GE 在 `dynamic=False` 下对 72 个 `register_buffer` in-place 更新的别名跟踪不完整 | **精度风险高**，慎用 |
+| BNSD | `torch.ops.npu.*` | `npugraph_ex` | `list[int]` | `True` | PASS | 已验证的备选路径 |
+| BSH | `torch.ops.npu.*` | `npugraph_ex` | `list[int]` | `True` | PASS | 需配合下文"npugraph_ex options 推荐"使用 |
 
-**纠偏**：早先经验"BSH 必须配 GE / BNSD 才能配 npugraph_ex"属路径依赖造成的二选一框架，实际是**三选一**——BSH+GE、BNSD+npugraph_ex、BSH+npugraph_ex 三种 layout×后端组合在本模型上均验证成立，精度全部 16/16 bit-exact。
+**组合边界**：BSH+GE、BNSD+npugraph_ex、BSH+npugraph_ex 三种 layout×后端组合在同一受测模型上均验证成立，精度全部 16/16 bit-exact；不能仅凭 BSH 或 BNSD 布局限定图后端。
 
-**重要辨义**：本节表格里记录的各轮 decode 稳态（14.43 / 13.77 / 11.20 ms）**差异主要不来自 layout×后端组合本身**，而来自每轮叠加的算子/模式优化是否相同。将 "decode 数字" 与 "layout×后端" 绑定会造成选型误导。以第三轮（11.20 ms）相对第二轮（13.77 ms）的 -2.57 ms/step 为例，其中 ~80% 归因于**与 layout/后端正交的三项专属优化**：
+**性能比较边界**：所记录的 decode 稳态（14.43 / 13.77 / 11.20 ms）**差异主要不来自 layout×后端组合本身**，而来自每轮叠加的算子/模式优化是否相同。将 "decode 数字" 与 "layout×后端" 绑定会造成选型误导。以 11.20 ms 配置相对 13.77 ms 配置的 -2.57 ms/step 为例，其中 ~80% 归因于**与 layout/后端正交的三项专属优化**：
 1. `npu_interleave_rope` 取代 `npu_rotary_mul`（partial RoPE D=64 直绑定）
 2. GDN `recurrent_state` 彻底 op-native 布局预分配（`(B, N_v, D_v, D_k)` 零 transpose）
 3. 懒 buffer 图外 materialize（`register_buffer(persistent=False)` + `_force_materialize*` + `model.apply(...)`）
 
 这三项原则上可移植到 BSH+GE 或 BNSD+npugraph_ex 路径（具体兼容性需独立 A/B 验证，参考上文"FIA layout × 图后端 兼容性"表的逐组合结论）。因此选型建议是：
 
-- **路径（layout×后端）选择**：按**可行性**决策——GE 不可用时切 npugraph_ex；BSH 与 BNSD 按已有 sunk cost 选。决策依据不是"谁更快"
+- **路径（layout×后端）选择**：按**可行性**决策——GE 不可用时切 npugraph_ex；BSH 与 BNSD 按现有实现和已验证的兼容性选择
 - **正交优化**：无论走哪条路径，都应评估 `npu_interleave_rope`（若 partial RoPE）、op-native cache 布局（若 SSM/GDN 族）、懒 buffer 图外 materialize 三项是否适用；这些是真正影响 decode 稳态的差别项
 
-如果当前路径组合挂了，**首选是换图后端**，其次才是回退 layout；上述正交优化不受 pivot 影响，保留即可。
+如果当前组合执行失败，可先评估更换图后端，再评估调整 layout；上述正交优化可分别验证后保留。
 
 ### npugraph_ex options 推荐模板（经验性，适用含 in-place 更新与懒 buffer 的模型）
 
-下述 `torch.compile` options 组合从三轮 aclgraph crash 调试中沉淀，推荐作为 Hybrid-Attention / Mamba 族 / GatedDeltaNet 等含大量 `register_buffer` 原地更新模型的起点。
+下述 `torch.compile` options 组合用于处理含大量 `register_buffer` 原地更新和懒分配 buffer 的模型，可作为 Hybrid-Attention / Mamba 族 / GatedDeltaNet 模型的调试起点；适用性仍需按具体模型验证。
 
 ```python
 torch._dynamo.config.recompile_limit = 64
@@ -170,7 +170,7 @@ model.decode_forward = torch.compile(
 
 - `inplace_pass=False` + `input_inplace_pass=False`：规避 dynamo 对 `a.mul_(b)` 等 inplace 算子做 shape 合法性重写时的假阳性（典型症状 `aclnnInplaceMul selfRef [1,1,16] vs [16]`），代价是潜在失去 inplace 的内存复用优化
 - `clone_output=True` + `capture_limit=256`：为每个子图 output 克隆，避免"前一 aclgraph 仍持有的 output tensor 被后一 aclgraph 的 pool state 回滚"引发的 `definitely_stale_pointers` 断言
-- **代价**：首步 aclgraph capture 编译时间会放大（本模型从典型 41 s 放大到 88 s，约 2×）；适合长输出 / 服务端热启动场景，不适合对冷启动延迟敏感的单次推理
+- **代价**：首步 aclgraph capture 编译时间会放大（所记录配置从典型 41 s 放大到 88 s，约 2×）；适合长输出 / 服务端热启动场景，不适合对冷启动延迟敏感的单次推理
 
 ### 懒 buffer 必须图外 materialize（前置 checklist）
 
@@ -228,11 +228,11 @@ model = torch.compile(model, backend="npugraph_ex", ...)
 | 通信无法入图 | 依赖版本的集合通信入图前置处理未完成 | 根据当前 PyTorch / TorchAir 版本检查是否需要 `torchair.patch_for_hcom()` 等前置 |
 | cache compile 不生效 | 缓存目录、输入 shape/dtype/长度组织或配置变化 | 固定 cache 目录，避免模型代码或编译参数频繁变化 |
 | 图模式下精度异常 | KV cache / FA / 原地更新语义变化 | 先回退 eager 对齐，再逐项恢复优化 |
-| torchair GE 首次 replay 即 `EZ9999 aivec 0x800000 / MTE DDR out of range / 507011` | 在本次经验里，BNSD layout + `torch.ops.npu.npu_fused_infer_attention_score` + `list[int]` 组合不可用；独立 minimal repro 仍挂 | 不要死磕 GE：切到 `npugraph_ex` + `torch.ops.npu.*` + `list[int]` + `dynamic=True`（参考上文"FIA layout × 图后端 兼容性"表 P3 行）。若必须保留 GE，考虑把 layout 改成 BSH |
-| torchair GE 进图成功但 decode 精度前 N 对齐、第 N+1 起漂移 | `dynamic=False` 下对模型内大量 `register_buffer` 的 in-place 更新别名跟踪不完整（假设根因）；symptom 与本次实验 P2 一致 | 切 `npugraph_ex`（CUDA-graph 语义下原地更新是一等公民）；若暂无条件切换，把可疑 buffer 改为图外管理的入参 tensor 再验证 |
+| torchair GE 首次 replay 即 `EZ9999 aivec 0x800000 / MTE DDR out of range / 507011` | 实测 BNSD layout + `torch.ops.npu.npu_fused_infer_attention_score` + `list[int]` 组合不可用；独立最小复现仍失败 | 可尝试切到 `npugraph_ex` + `torch.ops.npu.*` + `list[int]` + `dynamic=True`（参考上文"FIA layout × 图后端 兼容性"表的 BNSD/npugraph_ex 组合）。若必须保留 GE，考虑把 layout 改成 BSH |
+| torchair GE 进图成功但 decode 精度前 N 对齐、第 N+1 起漂移 | `dynamic=False` 下对模型内大量 `register_buffer` 的 in-place 更新别名跟踪不完整（假设根因） | 切 `npugraph_ex`（CUDA-graph 语义下原地更新是一等公民）；若暂无条件切换，把可疑 buffer 改为图外管理的入参 tensor 再验证 |
 | `npugraph_ex` 判定为"未安装" | import 路径错误（裸写 `import npugraph_ex`） | 正确导入是 `from torch_npu.npu import npugraph_ex`；`torch.compile(backend="npugraph_ex", ...)` |
 | aclgraph capture 中 conv 报错 | 默认内部 format 与 aclgraph 不兼容 | `torch.npu.config.allow_internal_format = False` |
-| aclgraph capture 中 inplace-mul shape 校验挂 | `A * B` 对 `.mul_` 的 broadcast 校验严格 | 在 forward 外或 lazy init 中显式 `.view(...)` 对齐 shape（如本次 `A_log / dt_bias` reshape 到 `[1, 1, 16]`） |
+| aclgraph capture 中 inplace-mul shape 校验挂 | `A * B` 对 `.mul_` 的 broadcast 校验严格 | 在 forward 外或 lazy init 中显式 `.view(...)` 对齐 shape（如 `A_log / dt_bias` reshape 到 `[1, 1, 16]`） |
 | `register_buffer(persistent=False)` + `from_pretrained(device_map=...)` 初值被丢弃 | torch 在 `device_map` 搬运时覆盖 buffer 为 empty-on-device | 方案一：`_init_weights` 显式 `nn.init.ones_/zeros_` 补回。方案二：提供 `_force_materialize_*` 静态方法 + Runner 在 `to(device)` 后 `model.apply(...)` 物化 |
 | npugraph_ex 下运行首层或 q_norm 就报 `Expected allocated_pointer != definitely_stale_pointers.end` | 模型存在懒构建 buffer（典型 `Qwen3_5RMSNorm._gamma_plus_one` 的 `if need_rebuild:` 分支 / `_get_gate_up_weight` 的 lazy merge）。dynamo 把每层的懒分支 trace 成独立 aclgraph 片段，capture_limit 内多个子图交叉持有 output tensor，下一 capture 回滚 pool state 时命中 stale pointer 断言 | 参考上文"懒 buffer 必须图外 materialize"章节：懒初始化改 `register_buffer(persistent=False)` + `_force_materialize_*` 静态方法，Runner 在 `to(device)` 之后 `model.apply(...)` 物化 |
 | npugraph_ex 下多层 aclgraph 交叉引用 live output tensor，`definitely_stale_pointers` 断言 | 默认 options 下每个子图 output 可能与下一子图 input 共享地址 | `options={"clone_output": True, "capture_limit": 256}`：为每个子图 output 克隆，并放宽 aclgraph pool 上限；代价是首步编译时间放大（典型 ~2×） |
@@ -240,7 +240,7 @@ model = torch.compile(model, backend="npugraph_ex", ...)
 
 ## Constraints
 
-- **图模式只对 decode 生效**（本仓框架约定）。
+- **图模式只对 decode 生效**（cann-recipes-infer 执行器约定）。
 - **`ge_graph` + SuperKernel 可组合**（如 DeepSeek-R1 `decode_r1_rank_128_128ep_a8w8c8_mtp_benchmark.yaml`）；**`npugraph_ex` 不支持 SuperKernel**。
 - **MTP 与图模式的兼容性按模型而异**：DeepSeek-R1 `ge_graph + MTP1` 可共存；Qwen3-Next 的 MTP 与 SGLang ACLGraph 互斥。见 [mtp-speculative-decoding](mtp_speculative_decoding.md)。
 - **`enable_static_kernel` 仅 `npugraph_ex` 可用**。

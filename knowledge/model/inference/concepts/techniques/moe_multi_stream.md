@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/longcat_flash_optimization.md
   role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -110,7 +110,7 @@ Prefill 阶段则由 [prefill-micro-batch](prefill_micro_batch.md) 提供计算/
 
 ### ScMoE Stream Switch + Core Limit（LongCat-Flash）
 
-大模型推理场景下，多流并行常因"所有 Core 都被一条流占用"退化为串行；本变体通过 `npu_stream_switch` + `limit_core_num` 两个 API 组合，把核分给不同流，让算子真正并行执行。LongCat-Flash 的 ScMoE 双段结构（第一段 Attention → FFN → 第二段 Attention → MoE）天然存在可并行路径，本实践在此基础上把第二段 Attention 与 FFN 专家提前执行，并通过控核使双流计算时间接近。
+大模型推理场景下，多流并行常因"所有 Core 都被一条流占用"退化为串行；本变体通过 `npu_stream_switch` + `limit_core_num` 两个 API 组合，把核分给不同流，让算子真正并行执行。LongCat-Flash 的 ScMoE 双段结构（第一段 Attention → FFN → 第二段 Attention → MoE）天然存在可并行路径，cann-recipes-infer 的实现将第二段 Attention 与 FFN 专家提前执行，并通过控核使双流计算时间接近。
 
 - 多流并行技术的详细介绍：[官方文档](https://www.hiascend.com/document/detail/zh/Pytorch/720/modthirdparty/torchairuseguide/torchair_00026.html)
 - 控核技术的详细介绍：[官方文档](https://www.hiascend.com/document/detail/zh/Pytorch/720/modthirdparty/torchairuseguide/torchair_00044.html)
@@ -120,7 +120,7 @@ Prefill 阶段则由 [prefill-micro-batch](prefill_micro_batch.md) 提供计算/
 ![LongCat-Flash 原始 overlap 策略](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/longcat-flash/figures/overlap_strategy.png)
 *来源：[`docs/models/longcat-flash/figures/overlap_strategy.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/longcat-flash/figures/overlap_strategy.png)（cann-recipes-infer @ 2f82d10）*
 
-本实践对并行策略进行了调整，调整后的多流并行和控核方案图如下：**将第二段 attention 和 FFN 专家提前执行，并通过控制多流上的 ai core 和 vector core 核数，使得双流的计算时间接近，无明显拖尾，提升性能。**
+cann-recipes-infer 的多流并行和控核方案如下：**将第二段 attention 和 FFN 专家提前执行，并通过控制多流上的 ai core 和 vector core 核数，使得双流的计算时间接近，无明显拖尾，提升性能。**
 
 - **stage1 不做控核**，默认占用全部的 ai core 和 vector core 核数；
 - **stage2 里的 stream0 采用 `c16v32` 控核方案**，stream1 采用 `c8v16`。
@@ -172,7 +172,7 @@ with limit_core_num(True, "16", "32"):
 
 ## 多流优化（case pattern）
 
-多流编排/控核的方法论总纲见 [multi-stream](multi_stream.md)。下列锚点按 cann-recipes-infer **@2c45117** 代码标注行号，与上文 `2f82d10` 时点的旧叙述并存、不互相覆盖。
+多流编排/控核的方法见 [multi-stream](multi_stream.md)。以下实现细节对应 cann-recipes-infer **@2c45117**；上文标注 `2f82d10` 的实现适用于该旧版本。
 
 cann-recipes-infer 里 MoE 多流落地分三种实现形态，思想一致（把 shared/MLP 分支从主路径剥离与路由专家的通信/计算重叠），但**切流 API、同步原语、注入时机**各不相同：
 
@@ -240,7 +240,7 @@ router_output = self.experts.dispatcher.combine(combine_input=combine_input)
 current_stream.wait_stream(shared_expert_stream)
 ```
 
-> ⚠️ 与上文 Summary/Variants 旧叙述（按 `2f82d10` 概括为「shared stream 上两段」）并存：@2c45117 的 patch 实际是**三段** `with torch.npu.stream(...)`，每段前都 `wait_stream(current_stream)`，`down_proj` 单独成段（不与 sigmoid/act_fn 合并）。
+> **版本差异**：`2f82d10` 的 shared stream 实现分为两段；`2c45117` 则是**三段** `with torch.npu.stream(...)`，每段前都 `wait_stream(current_stream)`，`down_proj` 单独成段（不与 sigmoid/act_fn 合并）。
 
 配套：`w8a8_int8.py` 把 NPU 上 `layer.w2_weight_scale` 转 `torch.bfloat16`（避免 GroupedMatMul scale 类型冲突）。详见 [qwen3-next](../models/qwen3_next.md)。
 
@@ -308,9 +308,9 @@ with torch.npu.stream(self.share_mlp_stream):
 <!-- cannbot:related:start -->
 ## 相关
 
-- [NPU 多流优化(Multi-Stream)](multi_stream.md)（`related`）：焦点卡以“把 MoE 层内部可并行的子计算/通信段分配到多条 stream，让它们在时间轴上重叠”给出 MoE 专用拓扑，候选卡明确把“MoE 子场景（共享专家双流、ScMoE 控核变体）的拓扑细节”下钻到焦点卡；通用规划、执行模式与 profiling 方法可直接用于审查该专用拓扑。
+- [NPU 多流优化(Multi-Stream)](multi_stream.md)（`related`）：MoE 的共享专家双流和 ScMoE 控核依赖通用 Stream/Event 机制；需按执行模式选择同步接口并用 profiling 调整并行度。
 - [torchair 图模式 multistream MoE 的两处静默错配：mc2_mask 漏切致 shape mismatch + isinstance 打在非-torchair 基类致 overlap 恒失效](../../runbooks/runtime/torchair_multistream_moe_tp_mask_and_isinstance_gating.md)（`related`）：开了 `multistream_moe` + W8A8Dynamic + `FusedMoEState.MC2`，却**观测不到**预期的量化/路由 overlap 收益；无异常、无精度问题，就是优化像没开。；MoE 层上的多 NPU stream 并行是 cann-recipes-infer 在多个模型里反复使用的优化手段，共同思想是 **把 MoE 层内部可并行的子计算/通信段分配到多条 stream，让它们在时间轴上重叠**，隐藏 AllToAll、GroupedMatMul 或专家计算的时延。；概念页说明 MoE 多流用于重叠通信与专家计算，运行手册处理该优化已配置却因门控未生效的诊断链。
-- [图模式多流并行的跨流同步：ge_graph 控制边 vs aclgraph tagged-event 及 API 选型](../../guides/experience/interventions/graph_mode_multi_stream_cross_stream_sync_api.md)（`related`）：焦点卡指出“两个变体都依赖 NPU 多 stream 调度与 stream 间 event 同步”，候选卡规定“不要把 Ascend IR 图内 API（`npu_wait_tensor`）与 aclgraph 显式 event API 混写到同一实现”；该后端分流合同是落地 MoE 多流时避免错误同步的必要补充。
-- [多流并行后还要分核：limit_core_num 给两条重路径流配不同 Cube/Vector 核数、让时长趋近](../../optimizations/experience/cases/moe_multi_stream_limit_core_num.md)（`related`）：焦点卡要求“通过控制多流上的 ai core 和 vector core 核数，使得双流的计算时间接近”，候选卡把触发信号收敛为“多流之后还要分核”；后者提供 profile 驱动的核数再平衡步骤，直接补齐 LongCat-Flash 变体的调优闭环。
-- [带共享专家的 MoE decode 双流重叠：共享专家副流掩盖路由专家 dispatch/GMM/combine](../../optimizations/experience/rules/moe_shared_expert_decode_dual_stream.md)（`related`）：“主流跑路由专家主路径（gate/topk → dispatch → GMM → combine），副流跑共享专家前向，汇合点再同步、相加。仅在 decode（`not is_prefill`）启用。”与“将共享专家（shared expert）与路由专家（routed expert）的 `dispatch`、`gate_up_proj`、`act_fn`、`down_proj` 分别绑定到主 NPU stream 与独立 shared_expert stream，重叠 shared-expert 的计算与路由专家的 AllToAll dispatch/combine 通信，隐藏 EP 通信时延。”是双方正文中的具体合同。规则卡给出 decode 主副流与汇合点，技术卡展开 routed dispatch/combine 和 shared-expert 计算重叠，二者共同闭合实现顺序与性能机制。
+- [图模式多流并行的跨流同步：ge_graph 控制边 vs aclgraph tagged-event 及 API 选型](../../guides/experience/interventions/graph_mode_multi_stream_cross_stream_sync_api.md)（`related`）：MoE 多流同步必须匹配图后端：GE 使用图内控制边，aclgraph 使用显式 event，不能混用两套 API。
+- [多流并行后还要分核：limit_core_num 给两条重路径流配不同 Cube/Vector 核数、让时长趋近](../../optimizations/experience/cases/moe_multi_stream_limit_core_num.md)（`related`）：LongCat-Flash 双流需按 profiling 分配 Cube/Vector 核数，使两条重路径时长接近，减少拖尾。
+- [带共享专家的 MoE decode 双流重叠：共享专家副流掩盖路由专家 dispatch/GMM/combine](../../optimizations/experience/rules/moe_shared_expert_decode_dual_stream.md)（`related`）：Decode 主流执行路由专家 gate/topk、dispatch、GMM 和 combine，副流执行共享专家；在汇合点同步后相加。
 <!-- cannbot:related:end -->

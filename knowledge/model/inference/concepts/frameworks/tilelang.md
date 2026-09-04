@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/deepseek_v3.2_exp_tilelang_operator_guide.md
   role: primary
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - agnostic
 ---
@@ -41,12 +41,12 @@ cann-recipes-infer 同步对接 CANN 软件栈，在 TileLang 上完成了 DSA �
  5. 封装为可调用的 Python 函数对象；
  6. 用户以普通 Python 函数方式调用，提供输入张量即可在昇腾 NPU 上执行并拿结果。
 
-### 编译运行流程（含本次适配修改点）
+### 编译运行流程与 Ascend 适配层
 
 ![TileLang 编译运行流程图](https://raw.gitcode.com/cann/cann-recipes-infer/raw/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v3.2-exp/figures/tl-ascendc-workflow.png)
 *来源：[`docs/models/deepseek-v3.2-exp/figures/tl-ascendc-workflow.png`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/deepseek-v3.2-exp/figures/tl-ascendc-workflow.png)（cann-recipes-infer @ 2f82d10）*
 
-深绿色为本次对接 Ascend NPU 要修改的部分：TileLang API 原语、CodeGen（AscendC 映射）、JIT 适配器、PyTorch 集成。
+图中深绿色标出 Ascend NPU 适配层：TileLang API 原语、CodeGen（AscendC 映射）、JIT 适配器、PyTorch 集成。
 
 ### NPU 内存层次
 
@@ -112,7 +112,7 @@ def exp(dst: Buffer, src0: Buffer):
 
 - **跨平台算子复用**：TileLang 的 DSL 理论上在 GPU/NPU/CPU 间可移植，对比 Triton 可保留更多硬件亲和的底层控制。
 - **社区开源算子快速落地**：对接 CANN 栈后，社区贡献的算子可直接在昇腾平台使用。
-- **DeepSeek-V3.2-Exp DSA**：本仓同步提供了 TileLang 版的 LI 与 SFA —— 用较少代码量达到开箱可用；后续计划性能对齐 Triton 及更优（见 "下一步计划"）。
+- **DeepSeek-V3.2-Exp DSA**：cann-recipes-infer 提供了 TileLang 版的 LI 与 SFA —— 用较少代码量达到开箱可用；后续计划性能对齐 Triton 及更优（见 "下一步计划"）。
 
 ## Known Kernels
 

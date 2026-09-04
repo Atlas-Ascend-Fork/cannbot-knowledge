@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: HiF8（HiFloat8）8-bit 浮点格式与 V3 低精度预训练量化方案
-description: HiF8/MXFP8 8-bit 低精度训练（canonical 格式页）：两条实现路径。(1)MindSpeed+TE：--fp8-format/--fp8-recipe，FP8GlobalStateManager/TERowParallelLinear，950 950DT。(2)torchtitan-npu converter 路径：nn.Linear→MXLinear(quant_linear.py)、npu_grouped_mm→低精度 GMM(quant_gmm.py)，converter quantize.linear.mx/quantize.grouped_mm.mx，recipe_name∈{mxfp8,hif8}，MXFP8 用 torch_npu.npu_dynamic_mx_quant(block=32)+npu_quant_matmul、HiF8 用 npu_dynamic_quant+npu_grouped_matmul，filter_fqns 跳敏感层，npu_gmm 须先于 quantize.grouped_mm.mx，仅 Ascend950+。区别 framework/torchtitan 的上游 TorchAO MXLinearConverter 路径。
+description: HiF8/MXFP8 8-bit 低精度训练有两条实现路径。(1)MindSpeed+TE：--fp8-format/--fp8-recipe，FP8GlobalStateManager/TERowParallelLinear，950 950DT。(2)torchtitan-npu converter 路径：nn.Linear→MXLinear(quant_linear.py)、npu_grouped_mm→低精度 GMM(quant_gmm.py)，converter quantize.linear.mx/quantize.grouped_mm.mx，recipe_name∈{mxfp8,hif8}，MXFP8 用 torch_npu.npu_dynamic_mx_quant(block=32)+npu_quant_matmul、HiF8 用 npu_dynamic_quant+npu_grouped_matmul，filter_fqns 跳敏感层，npu_gmm 须先于 quantize.grouped_mm.mx，仅 Ascend950+。该 converter 路径不同于 torchtitan 上游的 TorchAO MXLinearConverter 路径。
 tags:
 - task.design
 - topic.precision
@@ -16,7 +16,7 @@ sources:
 - resource: https://gitcode.com/cann/torchtitan-npu/blob/8f128cd177e9c9a14d9b70f4491bde28bc342481/docs/feature_guides/low_precision_training.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - '950'
 ---

@@ -105,7 +105,7 @@ cache_nope = torch_npu._C._construct_NPU_Tensor_From_Storage_And_Metadata(metada
 <!-- cannbot:related:start -->
 ## 相关
 
-- [HIXL（Huawei Xfer Library 单边零拷贝通信库）](hixl.md)（`related`）：焦点卡区分“远端 DRAM 访问走的 **SDMA** 引擎属 ［hixl］(hixl.md) 子节”，候选卡说明“基于全局统一编址，发起方经 SDMA 直接读写对端 DRAM”；两卡共同闭合 SHMEM 编址到 HIXL 远端 DRAM 传输的执行路径。
-- [KVCache Offload](kvcache_offload.md)（`related`）：焦点卡说明“支持 NPU HBM 与 CPU DDR 混合编址，把 Host 内存映射成可直接当 Device tensor 使用的内存”，候选卡给出“把占比较高的 **MLA Full KVCache** 从设备 HBM 内存卸载到 **Host 内存**上”的容量方案；前者是后者 Host 映射访问的通信内存机制。
-- [基于 SHMEM 重写的 MoE Dispatch&Combine](shmem_dispatch_combine.md)（`related`）：焦点卡给出“状态区紧跟数据区之后”，候选卡以“对称内存 win 区（数据区 + 状态区）与 put/signal/wait 语义为基础”展开 Dispatch/Combine 的发数据、发状态与等待流程；基础内存合同直接支撑该 MoE 通算融合实现。
+- [HIXL（Huawei Xfer Library 单边零拷贝通信库）](hixl.md)（`related`）：HIXL 基于 SHMEM 全局统一编址，通过 SDMA 直接访问远端 DRAM。
+- [KVCache Offload](kvcache_offload.md)（`related`）：SHMEM 支持 NPU HBM 与 CPU DDR 混合编址，可为卸载到 Host 的 KV Cache 提供映射访问机制。
+- [基于 SHMEM 重写的 MoE Dispatch&Combine](shmem_dispatch_combine.md)（`related`）：SHMEM Dispatch/Combine 使用对称 win 中的数据区、紧随其后的状态区及 put/signal/wait 完成通算同步。
 <!-- cannbot:related:end -->

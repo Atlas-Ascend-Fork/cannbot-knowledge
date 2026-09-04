@@ -98,7 +98,7 @@ for block in model.blocks:
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MXFP8 A8W8 (DiT Linear)](../../../concepts/quantization/mxfp8_a8w8.md)（`related`）：焦点卡写明“仅量化 Transformer block 中的 2D Linear；adaLN / modulation 与 1D 权重跳过”，候选卡写明“conv1×1 量化 = 加载期模块替换（卷积当线性算），不复用运行时快路径”。概念卡覆盖普通 2D Linear，优化卡说明 1×1 Conv 必须在加载期改写为量化 Linear 并关闭旧快路。
+- [MXFP8 A8W8 (DiT Linear)](../../../concepts/quantization/mxfp8_a8w8.md)（`related`）：MXFP8 Linear 量化范围为“仅量化 Transformer block 中的 2D Linear；adaLN / modulation 与 1D 权重跳过”，1×1 Conv 量化规则为“conv1×1 量化 = 加载期模块替换（卷积当线性算），不复用运行时快路径”。概念卡覆盖普通 2D Linear，优化卡说明 1×1 Conv 必须在加载期改写为量化 Linear 并关闭旧快路。
 - [Sana-Video](../../../concepts/models/sana_video.md)（`related`）：“把卷积的量化**下沉到加载期的模块替换**”与“上节 1×1 conv2d → matmul 的量化延伸是 `QuantConv1x1AsLinear`”共同闭合 Sana-Video 在加载期把 1×1 Conv 替换为量化 Linear 的实施链。
 - [DiT/CNN 层在昇腾的算子级代数改写：1×1 conv→matmul、卷积换末轴、LayerNorm+adaLN 折叠](dit_cnn_operator_algebraic_rewrite_npu.md)（`same_topic`）：kernel_size 为 (1,1) 的 conv2d **等价改写为 matmul 比走原生卷积更高效**；把卷积的量化**下沉到加载期的模块替换**：在模型加载时把 `nn.Conv2d(1×1)` 整体换成一个"卷积当线性算"的量化模块；基础规则给出 1×1 卷积到 matmul 的数学等价快路，MXFP 规则补充量化开启后必须在加载期替换模块并关闭 BF16 运行时快路。
 <!-- cannbot:related:end -->

@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Precise Intersection（FlashGaussianBuildMask）—— 3DGS 高斯球-像素块精确相交算子
-description: Precise Intersection 算子用于计算高斯球-像素块（tile）映射关系，基于 FlashGS 算法（外部论文，未克隆未核验）实现。host 定义为 FlashGaussianBuildMask，Python 侧为 flash_gaussian_build_mask(...)。被 3d-gaussian-splatting 串联在投影之后、排序之前，输出供 gaussian-sort 排序、calc-render 渲染。
+description: Precise Intersection 算子用于计算高斯球-像素块（tile）映射关系，基于 FlashGS 算法实现；算法归属依据昇腾适配文档，证据范围限于该适配实现。host 定义为 FlashGaussianBuildMask，Python 侧为 flash_gaussian_build_mask(...)。被 3d-gaussian-splatting 串联在投影之后、排序之前，输出供 gaussian-sort 排序、calc-render 渲染。
 tags:
 - task.implementation
 - topic.rendering
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/gaussian_splatting_precise_intersection_optimization.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a2
 ---

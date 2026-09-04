@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: TorchTitan 5D 并行与 DTensor Sharding 优化（DeepSeek-V3.2）
-description: 这是 DeepSeek-V3.2 TorchTitan 预训练 recipe 的并行原理枢纽页：把「为什么选 TorchTitan、5D 并行如何乐高式组合、MoE 的 TP 策略为何要重排通信、DTensor 算子 sharding 默认策略为何不合理」这些原理讲清。各维度的实现细节下放到专页（FSDP2 / 自定义 CP / TP / EP / CP 基础），本页负责把它们串成一张图并嵌入文档原始图示——此前这些原理只被折成 deepseek-v32-pretrain 的几行 bullet，是知识缺口。
+description: DeepSeek-V3.2 TorchTitan 预训练以 DTensor 组织 5D 并行，组合 FSDP2、TP、PP、EP 与自定义 CP；通过调整 MoE 的 TP 通信顺序及 DTensor 算子 sharding 策略，减少不必要的通信与张量重排。
 tags:
 - task.design
 - topic.parallelism
@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_pretrain/deepseek-v32_pre_train_optimization.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-06-11T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -22,7 +22,7 @@ platforms:
 
 ## Summary
 
-这是 DeepSeek-V3.2 TorchTitan 预训练 recipe 的**并行原理枢纽页**：把「为什么选 TorchTitan、5D 并行如何乐高式组合、MoE 的 TP 策略为何要重排通信、DTensor 算子 sharding 默认策略为何不合理」这些原理讲清。各维度的实现细节下放到专页（FSDP2 / 自定义 CP / TP / EP / CP 基础），本页负责把它们**串成一张图**并嵌入文档原始图示——此前这些原理只被折成 [deepseek-v32-pretrain](../../guides/recipes/deepseek_v32_pretrain.md) 的几行 bullet，是知识缺口。
+[DeepSeek-V3.2 TorchTitan 预训练](../../guides/recipes/deepseek_v32_pretrain.md)以 **DTensor** 组织 5D 并行，组合 **FSDP2、TP、PP、EP 与自定义 CP**。MoE 的 TP 通信顺序与 DTensor 算子 sharding 策略共同决定分片张量间的数据搬运；调整这两类策略可减少不必要的通信与张量重排。
 
 ## DTensor 一等公民 + 5D 乐高并行
 
@@ -59,7 +59,7 @@ enable_custom_context_parallel = true    # DSA 专用自定义 CP
 5. **compile**（`apply_compile`）— 逐 TransformerBlock `torch.compile`（inner_attention 已是融合算子故跳过）
 6. **FSDP2**（`apply_fsdp`，**最外层**）— 对剩余复制维做全分片；详见 [fsdp](fsdp.md)
 
-**PP** 在本 recipe 取 `Interleaved1F1B` 调度（toml 当前 PP1）；推理侧无对应页。未来计划接入 **DualPipeV**（脱胎自 DeepSeek DualPipe、借鉴 Interleaved1F1B 的高效 MoE PP 调度，一卡同时承载一前向 batch + 一反向 batch 以互相掩盖 EP 通信），但 torch 原生 dW 约束权重 W 不能在 DP 域保持切分，故当前**无法与 ZeRO3/FSDP 同时使能**，待适配。
+**PP** 在 DeepSeek-V3.2 配置中取 `Interleaved1F1B` 调度（toml 当前 PP1）。上游优化文档计划接入 **DualPipeV**（脱胎自 DeepSeek DualPipe、借鉴 Interleaved1F1B 的高效 MoE PP 调度，一卡同时承载一前向 batch + 一反向 batch 以互相掩盖 EP 通信），但 torch 原生 dW 约束权重 W 不能在 DP 域保持切分，故当前**无法与 ZeRO3/FSDP 同时使能**，待适配。
 
 ## MoE 的 TP 策略优化原理
 

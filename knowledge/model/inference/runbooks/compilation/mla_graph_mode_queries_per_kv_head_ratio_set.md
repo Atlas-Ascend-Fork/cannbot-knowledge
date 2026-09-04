@@ -74,5 +74,5 @@ vllm-ascend 的处理是**把算子内层晦涩报错前移成框架层 fail-fas
 <!-- cannbot:related:start -->
 ## 相关
 
-- [FIA 的 MLA 无量化路径硬约束 group_num ∈ {2 的幂}（否则 561002 / CheckFeatureMlaNoQuantShape 失败）](fia_mla_noquant_group_num_power_of_two.md)（`related`）：焦点卡说明“图模式下 FIA 的 tiling 校验 `CheckMlaAttrs`（`incre_flash_attention_tiling_check.cc`）只接受 `numHeads/numKvHeads ∈ {32, 64, 128}`。”，候选卡则限定另一条“group_num 为 2 的幂且落在 `{1, 2, 4, 8, 16, 32, 64, 128}`”的 CheckFeatureMlaNoQuantShape 合同；并读两卡可按错误码和支持集避免把两种 FIA/MLA 编译失败混诊。
+- [FIA 的 MLA 无量化路径硬约束 group_num ∈ {2 的幂}（否则 561002 / CheckFeatureMlaNoQuantShape 失败）](fia_mla_noquant_group_num_power_of_two.md)（`related`）：FIA 图模式约束为“图模式下 FIA 的 tiling 校验 `CheckMlaAttrs`（`incre_flash_attention_tiling_check.cc`）只接受 `numHeads/numKvHeads ∈ {32, 64, 128}`。”，FIA MLA 无量化路径则限定另一条“group_num 为 2 的幂且落在 `{1, 2, 4, 8, 16, 32, 64, 128}`”的 CheckFeatureMlaNoQuantShape 合同；对照两类约束可按错误码和支持集避免把两种 FIA/MLA 编译失败混诊。
 <!-- cannbot:related:end -->

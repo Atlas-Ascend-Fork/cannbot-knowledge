@@ -12,7 +12,7 @@ sources:
 - resource: https://github.com/vllm-project/vllm-ascend/pull/4753
   role: evidence
 created_at: '2026-07-15T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - agnostic
 ---
@@ -90,10 +90,10 @@ else:
 
 - 溯源：[vllm-ascend-deepseek-v3-2-sfa-decode-接入-mlapo-融合预处理算子的两条硬前置](https://github.com/vllm-project/vllm-ascend/pull/4753)
 - 上游 diff：vllm-project/vllm-ascend `vllm_ascend/attention/sfa_v1.py`，merge sha `b91a5f096889b2b6e1d09c2137974de13ad9b904`（单文件 +244/-53）。两条前置、静默回退、权重预处理链、`mla_preprocess` 调用参数均出自该合并态 diff。
-- 无 before→after 性能数字：该变更的 'How was this patch tested' 为空，「避免 q_down 重复计算」为描述层意图，未升格为已验证事实，故本页为 `optimization_rule` 而非 benchmark。
+- 无 before→after 性能数字：该变更的 'How was this patch tested' 为空，「避免 q_down 重复计算」为描述层意图，尚无验证结果支持。
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [DSA（DeepSeek Sparse Attention）架构模式](../../../concepts/modules/dsa.md)（`related`）：“**场景**：你在给一个 MLA / SFA（Sparse Flash Attention，DSA 结构）注意力的 decode 路径做前处理加速，想把 decode 前那一串小算子——`fused_qkv_a_proj` matmul → split → `q_a_layernorm` → `exec_kv` → q 上投影与 K up-proj → `rope`——融成**一个** NPU 前处理算子（MLAPO），以吃掉 kernel launch 与中间张量搬运开销，并避免 q_down 的重复计算。”与“其本质是 **MLA 的 Q/K/V LoRA 计算图 + 一个并行的学习式 indexer overlay**：indexer 与 MLA 共享同一份输入 `x`（及 MLA Q 侧 LoRA 中间量 `qr`），独立打分后为**每个 query 位置**选出 `index_topk` 个最相关的 key，产出一个加性 `-inf` mask；该 mask 在 **softmax 之前**叠加到 MLA 的注意力分数上，把非 top-k 位置置零。”提供双方正文证据。优化卡作用于 DSA decode 中 MLA/SFA 前处理小算子链，架构卡说明 MLA 与 indexer 的共享输入和 mask 关系；结合后才能判断 MLAPO 门控影响的确切子图。
+- [DSA（DeepSeek Sparse Attention）架构模式](../../../concepts/modules/dsa.md)（`related`）：“**场景**：你在给一个 MLA / SFA（Sparse Flash Attention，DSA 结构）注意力的 decode 路径做前处理加速，想把 decode 前那一串小算子——`fused_qkv_a_proj` matmul → split → `q_a_layernorm` → `exec_kv` → q 上投影与 K up-proj → `rope`——融成**一个** NPU 前处理算子（MLAPO），以吃掉 kernel launch 与中间张量搬运开销，并避免 q_down 的重复计算。”与“其本质是 **MLA 的 Q/K/V LoRA 计算图 + 一个并行的学习式 indexer overlay**：indexer 与 MLA 共享同一份输入 `x`（及 MLA Q 侧 LoRA 中间量 `qr`），独立打分后为**每个 query 位置**选出 `index_topk` 个最相关的 key，产出一个加性 `-inf` mask；该 mask 在 **softmax 之前**叠加到 MLA 的注意力分数上，把非 top-k 位置置零。”分别说明融合目标与 DSA 计算结构。优化卡作用于 DSA decode 中 MLA/SFA 前处理小算子链，架构卡说明 MLA 与 indexer 的共享输入和 mask 关系；结合后才能判断 MLAPO 门控影响的确切子图。
 <!-- cannbot:related:end -->

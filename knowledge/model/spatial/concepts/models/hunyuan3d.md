@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Hunyuan3D 2.0 — 图生 3D 资产生成（NPU 推理适配）
-description: Hunyuan3D 是腾讯混元系列在 2025 年推出的图生 3D 资产创作模型，生成带高分辨率纹理贴图的高保真 3D mesh。本样例提供其昇腾 Atlas A2 单机单卡推理适配版，依赖上游开源仓 Tencent-Hunyuan/Hunyuan3D-2 的网络结构代码（外部未克隆未核验），通过非覆盖方式将本仓优化模块（替换文件 + module/dit_cache）叠加进去。环境为 CANN 8.2.RC1 + torch/torch_npu 2.6。推理通过 python minimal_demo_npu.py 入口启动（source set_env.sh 后），优化后 texgen 在 2 万平面 mesh 输入下推理时间降至约 26 秒。
+description: Hunyuan3D 是腾讯混元系列在 2025 年推出的图生 3D 资产创作模型，生成带高分辨率纹理贴图的高保真 3D mesh。cann-recipes-spatial-intelligence 提供其昇腾 Atlas A2 单机单卡推理适配版，依赖上游开源仓 Tencent-Hunyuan/Hunyuan3D-2 的网络结构代码，通过非覆盖方式叠加优化模块（替换文件 + module/dit_cache）；实现与测量证据限于该昇腾适配版本，不覆盖上游完整实现。环境为 CANN 8.2.RC1 + torch/torch_npu 2.6。推理通过 python minimal_demo_npu.py 入口启动（source set_env.sh 后），优化后 texgen 在 2 万平面 mesh 输入下推理时间降至约 26 秒。
 tags:
 - task.design
 - topic.three_dimensional_reconstruction
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/models/Hunyuan3D/Hunyuan3D_optimization.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a2
 ---
@@ -198,7 +198,7 @@ FP32 数据会使 `torch.mean`/`torch.std` 落到 aicpu 上、性能下降。手
 18 次光栅化只有 6 种不同相机输入，其余 12 次冗余。以 `(elev, azim, camera_distance)` 为 key 把首次 `rast_out` 缓存进 `self.render_result`，相同位姿直接命中（`--save_render`）。
 
 ### 光栅化过程 NPU 迁移（render_npu）
-源码光栅化无 NPU 版本、被迫迁 CPU 串行。本仓引入 `render_npu`：把「遍历 mesh 顶点」改为「二维平面分块，每块内三角网格合并成矩阵计算深度/重心坐标，再判定每像素对应三角面片」（`--use_render_npu`）。NPU 侧为小算子计算，**不能与多线程并行光栅化共用**（`--multi_thread` 与 `--use_render_npu` 互斥）。
+源码光栅化无 NPU 版本、被迫迁 CPU 串行。`cann-recipes-spatial-intelligence` 引入 `render_npu`：把「遍历 mesh 顶点」改为「二维平面分块，每块内三角网格合并成矩阵计算深度/重心坐标，再判定每像素对应三角面片」（`--use_render_npu`）。NPU 侧为小算子计算，**不能与多线程并行光栅化共用**（`--multi_thread` 与 `--use_render_npu` 互斥）。
 
 ### texgen 性能指标
 1 卡 Atlas 800I A2，输入 `assets/example_images/004.png`，mesh 面数 20000，开启 `--face_reduce`：
@@ -224,9 +224,9 @@ python minimal_demo_npu.py --model_path tencent/Hunyuan3D-2 \
 
 ## Links
 
-跨域复用 cann-infer 共享概念（正向链，应用差异已在上文标注）：
+Hunyuan3D 的计算模块与优化机制：
 - [dit](../../../inference/concepts/modules/dit.md) — DiT 是 shapegen 形状生成主干；Hunyuan3D 是其 3D 图生场景部署。
-- [dit-cache](../../../inference/concepts/techniques/dit_cache.md) — DiT-Cache 概念页（FBCache/TeaCache/TaylorSeer）；本页记 Hunyuan3D 非 CFG 串行的具体适配与实测。
+- [dit-cache](../../../inference/concepts/techniques/dit_cache.md) — Hunyuan3D 在非 CFG 串行场景中使用 FBCache、TeaCache 与 TaylorSeer，缓存阈值和跳过间隔影响生成精度与加速比。
 - [vae](../../../inference/concepts/modules/vae.md) — VAE geo_decoder 负责几何解码，与 DiT 一同入图编译。
 - [torchair](../../../inference/concepts/frameworks/torchair.md) — `--full_graph` 经 torchair 后端 `torch.compile` 入图。
 - [npu-graph-mode](../../../inference/concepts/techniques/npu_graph_mode.md) — 图模式优化（计算图优化/多流/内存复用/模型下沉/tiling 下沉）。

@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: RL 训推切换（Train/Rollout Switch：reshard / offload / D2D）
-description: 大模型 on-policy RL 训练中，同一组卡要在「训练态」（actor update / ref log_prob，由 Megatron+MindSpeed 承载）与「推理态」（rollout/generate，由 vLLM+vLLM-Ascend 承载）之间反复交替——这就是训推切换。两态对同一份 671B 权重采用不同并行策略：训练侧 TP4EP8PP8，推理侧 DP64TP2EP128（真实权重场景）甚至 DP128TP2EP256（随机权重场景）。每完成一次训练更新，新权重必须先重新切分（reshard）成推理布局再喂给 rollout；又因本实践选了 ActorRolloutRef 三模型全共卡部署（分时复用计算资源），切换时还要把上一态模型 offload 到 host、把下一态模型 onload 到 device。本页是 RL 训推切换的 canonical 页，讲清三件事：reshard 优化（训→推权重重切分，［doc §4.1］(#reshard-优化训推权重重切分)）、offload 优化（训练态权重/KV 显存卸载，［doc §4.2］(#offload-优化全共卡分时复用显存)），以及任务间训推权重 D2D 高速数据传输（device 间直传消除 host 中转，［doc §3.2］(#d2d-数据传输任务间张量直传)）。 MindSpeed-RL 原生侧：resharding（MegatronShardingManager）做训练态 Megatron 切分↔推理态 vLLM 切分的权重重切，offload 在训练后卸载权重/优化器降峰值（base_worker onload/offload）。
+description: 大模型 on-policy RL 训推切换包含训练态与推理态之间的权重重切分（reshard）、显存装卸（offload/onload）及任务间 D2D 张量直传。DeepSeek-R1 671B 全共卡部署中，Megatron+MindSpeed 承载 actor update / ref log_prob，训练侧为 TP4EP8PP8；vLLM+vLLM-Ascend 承载 rollout，推理侧为 DP64TP2EP128（真实权重）或 DP128TP2EP256（随机权重）。更新后的权重须转换为推理布局，各态模型通过 host/device 装卸分时复用显存。MindSpeed-RL 原生 MegatronShardingManager 负责 Megatron↔vLLM 权重重切分，onload/offload 接口管理权重与优化器状态以降低峰值显存。
 tags:
 - task.optimization
 - topic.reinforcement_learning
@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/docs/llm_rl/deepseek_rl_train_optimization.md
   role: supporting
 created_at: '2026-06-11T00:00:00Z'
-updated_at: '2026-06-30T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -23,7 +23,7 @@ platforms:
 
 大模型 on-policy RL 训练中，**同一组卡**要在「训练态」（actor update / ref log_prob，由 Megatron+MindSpeed 承载）与「推理态」（rollout/generate，由 vLLM+vLLM-Ascend 承载）之间反复交替——这就是**训推切换**。两态对同一份 671B 权重采用**不同并行策略**：训练侧 `TP4EP8PP8`，推理侧 `DP64TP2EP128`（真实权重场景）甚至 `DP128TP2EP256`（随机权重场景）。每完成一次训练更新，新权重必须先**重新切分（reshard）**成推理布局再喂给 rollout；又因 ActorRolloutRef 三模型采用**全共卡部署**（分时复用计算资源），切换时还要把上一态模型 **offload 到 host**、把下一态模型 **onload 到 device**。训推切换由三个机制构成：**reshard**（训→推权重重切分，[§reshard 优化](#reshard-优化训推权重重切分)）、**offload**（训练态权重/KV 显存卸载，[§offload 优化](#offload-优化全共卡分时复用显存)），以及任务间**训推权重 D2D 高速数据传输**（device 间直传消除 host 中转，[§D2D 数据传输](#d2d-数据传输任务间张量直传)）。
 
-> 训推切换是 RL 系统优化的核心环节，也是 DeepSeek-R1 与后续 Qwen3 等模型共享的通用问题。具体 RL 实践（端到端配置、训推并行策略、整体性能历程）见所属 stage 页。
+> 训推切换是 DeepSeek-R1 与 Qwen3 等模型共享的 RL 系统优化问题。端到端配置、训推并行策略及性能结果分别见 [DeepSeek-R1 RL](../../guides/recipes/deepseek_r1_rl.md) 与 [Qwen3 RL](../../guides/recipes/qwen3_rl.md)。
 
 ## 为什么训推切换是 RL 性能瓶颈
 
@@ -166,7 +166,7 @@ veRL 侧之所以「用 `onload_model_weight` + `init_cache_engine` 替代 vLLM 
 ## 相关
 
 - [DeepSeek-R1 veRL + MindSpeed + vLLM-Ascend 全共卡 GRPO RL 训练](../../guides/recipes/deepseek_r1_rl.md)（`related`）：TP4EP8PP8 ↔ DP·TP2·EP128/256；每完成一次训练更新，新权重必须先**重新切分（reshard）**成推理布局再喂给 rollout；连接并行配置与 reshard/offload 机制。
-- [MindSpeed-RL](../frameworks/mindspeed_rl.md)（`related`）：“用显式的训推态切换接口与分层配置体系驱动一轮 RL 迭代”；“**同一组卡**要在「训练态」（actor update / ref log_prob，由 Megatron+MindSpeed 承载）与「推理态」（rollout/generate，由 vLLM+vLLM-Ascend 承载）之间反复交替”。候选卡解释框架核心切换接口的 reshard、offload 与 D2D 合同。
+- [MindSpeed-RL](../frameworks/mindspeed_rl.md)（`related`）：MindSpeed-RL 用显式训推态切换接口与分层配置驱动一轮 RL 迭代；**同一组卡**在 Megatron+MindSpeed 的 actor update / ref log_prob 与 vLLM+vLLM-Ascend 的 rollout/generate 间交替，切换涉及 reshard、offload 与 D2D 数据传输。
 - [Qwen3 长序列 RL 训练实践（235B-A22B 2K 推 32K + 32B SAM 投机，veRL/MindSpeed/vLLM-Ascend，GRPO/DAPO）](../../guides/recipes/qwen3_rl.md)（`related`）：同样的 veRL 全共卡 + 训推切换 + 零冗余 reshard；每完成一次训练更新，新权重必须先**重新切分（reshard）**成推理布局再喂给 rollout；概念页给出 recipe 复用的训推切换契约。
 - [Swap Optimizer（优化器状态卸载 Host 内存）](swap_optimizer.md)（`related`）：Swap Optimizer 把 AdamW 优化器状态在前向 / 反向期间**卸载到 Host（CPU pinned）内存**、仅在 `optimizer.step()` 时以 **param 为粒度的「加载 → 更新 → 卸载」切片流水**搬回 device 计算，从而压低 device 显存峰值。；`MegatronOffLoader` 用 `offload_train_optimizer` / `offload_train_grad` / `offload_train_param` 三个 `generate_config` 开关分别控制优化器状态、梯度、权重的卸载。两者在 RL 全共卡训推切换时衔接为优化器态卸载的机制选择与切换期显存释放。
 <!-- cannbot:related:end -->

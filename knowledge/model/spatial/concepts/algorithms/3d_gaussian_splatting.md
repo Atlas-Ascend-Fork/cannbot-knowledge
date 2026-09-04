@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: 3D Gaussian Splatting 昇腾 Atlas A2 训推优化实践
-description: 3D Gaussian Splatting（3DGS）是 2023 年由 Kerbl 等人提出的可微渲染算法，以 3D 高斯椭球为核心图元，通过可微光栅化完成三维场景的重建与渲染（Kerbl et al., ACM TOG 2023）。cann-recipes-spatial-intelligence 提供了 3DGS 的昇腾适配版本，基于 gsplat（外部未克隆未核验）框架，在 Atlas A2 上支持单卡训练与推理，并通过一组 AscendC 自研融合算子重写了 GPU 实现中的关键流程。
+description: 3D Gaussian Splatting（3DGS）是 2023 年由 Kerbl 等人提出的可微渲染算法，以 3D 高斯椭球为核心图元，通过可微光栅化完成三维场景的重建与渲染（Kerbl et al., ACM TOG 2023）。cann-recipes-spatial-intelligence 提供了基于 gsplat 框架的昇腾适配版本，在 Atlas A2 上支持单卡训练与推理，并通过一组 AscendC 自研融合算子重写了 GPU 实现中的关键流程；实现与测量证据限于该昇腾适配版本，不覆盖 gsplat 完整实现。
 tags:
 - task.design
 - topic.three_dimensional_reconstruction
@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/docs/algorithms/gaussian_splatting/gaussian_splatting_precise_intersection_optimization.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a2
 ---
@@ -69,7 +69,7 @@ platforms:
 - 负载均衡：前向、反向均约 23% 收益。
 - Precise Intersection 流水并行 15.2% + 计算优化 26.7% + 过滤优化 18.8%；相比传统 GS 算法渲染前向显著降低（如 100w 高斯/425 块：35.957→22.880 ms）。
 
-> 上游开源本体 3DGS（INRIA repo-sam）与 gsplat、FlashGS 算法见 [arXiv:2408.07967](https://arxiv.org/abs/2408.07967)；以上数据均来自本仓一手实现。
+> 上游开源本体 3DGS（INRIA repo-sam）与 gsplat、FlashGS 算法见 [arXiv:2408.07967](https://arxiv.org/abs/2408.07967)；以上数据均来自 `cann-recipes-spatial-intelligence` 的昇腾实现。
 
 ## 相关页面
 
@@ -80,9 +80,9 @@ platforms:
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CalcRender —— 3DGS Alpha-blending 渲染融合算子（前向/反向）](../kernels/calc_render.md)（`related`）：“3DGS 用一组 3D 高斯椭球表示场景，每个高斯球带均值 `means`、四元数 `quats`、缩放 `scales`、不透明度 `opacities`、球谐系数（`sh0`/`shN`）。渲染（光栅化）流程在 ［`rasterization/rasterizer.py`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/algorithms/gaussian_splatting/rasterization/rasterizer.py) 的 `_ascend_rasterization` 中实现，内部按顺序调用并串联各自研算子（导入自 ［`meta_gauss_render`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/meta_gauss_render/__init__.py)）：”与“`CalcRender` 是 3DGS 光栅化的核心渲染算子，把空间中已排序的 3D 高斯球颜色 alpha-blending 到各像素上，构成对应视角的渲染图。”分别给出双端正文事实；算法卡把光栅化组织为自研算子流水，CalcRender 卡实现流水末端的按深度排序高斯球 alpha-blending，连接整体算法与最终颜色和深度输出阶段。
-- [GaussianFilter —— 3DGS 视锥剔除融合算子（前向/反向 Scatter）](../kernels/gaussian_filter.md)（`related`）：Culling（剔除）是渲染前的关键优化步骤：提前过滤对当前帧渲染无贡献的高斯球，减少后续投影/排序/Alpha-blending 计算量。`GaussianFilter` 把视锥剔除融合为单算子，host 定义见 ［`gaussian_filter.cpp`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/gaussian_filter.cpp)，在 `projection_three_dims_gaussian_fused(...)` 内与投影一同调用。被 ［3d-gaussian-splatting］(../algorithms/3d_gaussian_splatting.md) 串联。；2. **投影 + 视锥剔除** `projection_three_dims_gaussian_fused(...)` —— 把 3D 高斯球的均值/协方差投影到 2D 平面（`means2d`/`conics`/`radius`/`covars2d`），并融合视锥剔除。投影见 ［projection-3dgs］(../kernels/projection_3dgs.md)，剔除（`GaussianFilter`）见 ［gaussian-filter］(../kernels/gaussian_filter.md)。。kernel 卡展开 GaussianFilter 的过滤和反向 Scatter，算法卡把它定位为投影阶段内的融合视锥剔除步骤。
-- [Precise Intersection（FlashGaussianBuildMask）—— 3DGS 高斯球-像素块精确相交算子](../kernels/precise_intersection.md)（`related`）：“3DGS 用一组 3D 高斯椭球表示场景，每个高斯球带均值 `means`、四元数 `quats`、缩放 `scales`、不透明度 `opacities`、球谐系数（`sh0`/`shN`）。渲染（光栅化）流程在 ［`rasterization/rasterizer.py`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/algorithms/gaussian_splatting/rasterization/rasterizer.py) 的 `_ascend_rasterization` 中实现，内部按顺序调用并串联各自研算子（导入自 ［`meta_gauss_render`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/meta_gauss_render/__init__.py)）：”与“Precise Intersection 算子用于计算高斯球-像素块（tile）映射关系，基于 ［FlashGS 算法］(https://arxiv.org/abs/2408.07967)实现。”分别给出双端正文事实；算法卡把光栅化组织为自研算子流水，Precise Intersection 卡负责投影后生成高斯球到 tile 的命中映射，连接整体算法与排序前的空间筛选阶段。
-- [Projection-3DGS —— 3D→2D 高斯球投影融合算子（前向/反向）](../kernels/projection_3dgs.md)（`related`）：“3DGS 用一组 3D 高斯椭球表示场景，每个高斯球带均值 `means`、四元数 `quats`、缩放 `scales`、不透明度 `opacities`、球谐系数（`sh0`/`shN`）。渲染（光栅化）流程在 ［`rasterization/rasterizer.py`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/algorithms/gaussian_splatting/rasterization/rasterizer.py) 的 `_ascend_rasterization` 中实现，内部按顺序调用并串联各自研算子（导入自 ［`meta_gauss_render`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/meta_gauss_render/__init__.py)）：”与“投影预处理把 3D 高斯球的均值与协方差由 3D 球面投影到 2D 平面，得到光栅化所需的 2D 均值 `means2d`、协方差/锥参 `conics`/`covars2d`、深度 `depths`、半径 `radius` 等属性。”分别给出双端正文事实；算法卡把光栅化组织为自研算子流水，Projection-3DGS 卡生产后续精确相交与排序消费的 2D 属性，连接场景高斯表示与渲染预处理阶段。
-- [SphericalHarmonics —— 3DGS 球谐系数→颜色 算子（前向/反向）](../kernels/spherical_harmonics.md)（`related`）：“球谐（Spherical Harmonics, SH）着色是 3DGS 渲染流程的第一步：由相机到高斯球的视线方向 `dirs` 与每个高斯球的球谐系数 `coeffs` 计算出视角相关颜色，再送入投影与渲染。”与“1. **球谐着色** `spherical_harmonics(sh_degree, rays_d, shs)` —— 由视线方向 + 球谐系数算出每个高斯球颜色。见 ［spherical-harmonics］(../kernels/spherical_harmonics.md)。”提供双方正文证据。算子卡产出视角相关颜色，算法卡把该调用固定为 3DGS 光栅化第一阶段，直接连接单算子合同与整条渲染流水。
+- [CalcRender —— 3DGS Alpha-blending 渲染融合算子（前向/反向）](../kernels/calc_render.md)（`related`）：CalcRender 在 3DGS 光栅化末端对按深度排序的高斯球执行 alpha-blending，输出渲染颜色和深度。
+- [GaussianFilter —— 3DGS 视锥剔除融合算子（前向/反向 Scatter）](../kernels/gaussian_filter.md)（`related`）：GaussianFilter 与 3DGS 投影一同执行视锥剔除，减少后续排序和渲染的高斯球数量，并在反向通过 Scatter 还原梯度。
+- [Precise Intersection（FlashGaussianBuildMask）—— 3DGS 高斯球-像素块精确相交算子](../kernels/precise_intersection.md)（`related`）：Precise Intersection 在 3DGS 投影之后计算高斯球到 tile 的精确命中映射，供后续排序和渲染使用。
+- [Projection-3DGS —— 3D→2D 高斯球投影融合算子（前向/反向）](../kernels/projection_3dgs.md)（`related`）：Projection-3DGS 将场景高斯球转换为 `means2d`、`conics`、`covars2d` 等 2D 投影属性，供精确相交与排序使用。
+- [SphericalHarmonics —— 3DGS 球谐系数→颜色 算子（前向/反向）](../kernels/spherical_harmonics.md)（`related`）：SphericalHarmonics 在 3DGS 光栅化第一阶段根据视线方向和球谐系数生成视角相关颜色，供后续投影与渲染使用。
 <!-- cannbot:related:end -->

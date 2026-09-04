@@ -1,7 +1,7 @@
 ---
 type: Guide
 title: Qwen3-1.7B MindSpeed-LLM SFT 单卡 A3 alpaca 入门样例
-description: 本页是昇腾 SFT（监督微调）的最小上手样例：用 mindspeed 系的 MindSpeed-LLM（叠加 Megatron-LM core_v0.12.1 的 mcore 训练栈），对 Qwen3-1.7B（dense）在 alpaca 指令数据集上跑监督微调，单卡即可——README §硬件要求逐字写明「卡数：1张A3」。它把昇腾上「HF 模型转 mcore → alpaca 数据转换 → SFT 训练 → mcore 转回 HF」的全链路压到一台机器、一张卡上跑通，是 dense 模型微调的入门梯子；同框架的大规模实践（DeepSeek-V3 HiF8/MXFP8 低精度预训练）见 mindspeed。Qwen3 dense 本体作为推理模型见跨域页 qwen-dense。 本样例与 qwen2.5-rl（veRL 原生 FSDP+vLLM 的单卡 RL 入门）的关键差异：训练栈走 MindSpeed-LLM + Megatron mcore（Megatron 风格、需要 HF↔mcore 权重格式互转），阶段是 SFT 而非 RL，无 rollout / 奖励函数环节。
+description: Qwen3-1.7B（dense）使用 MindSpeed-LLM + Megatron-LM core_v0.12.1 的 mcore 训练栈，在单卡 A3 上对 alpaca 指令数据集执行 SFT（监督微调）。流程包含 HF 模型转 mcore、alpaca 数据转换、SFT 训练及 mcore 转回 HF，需要 HF↔mcore 权重格式互转。与 Qwen2.5 的 veRL 原生 FSDP+vLLM 单卡 RL 路线不同，SFT 不包含 rollout 或奖励函数环节。
 tags:
 - task.implementation
 - topic.model_adaptation
@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-train/blob/d17909ef35e0eee1f5bc81189a12d2abebb0b4c2/llm_sft/qwen3/README.md
   role: supporting
 created_at: '2026-06-12T00:00:00Z'
-updated_at: '2026-06-26T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a2
 - a3
@@ -87,7 +87,7 @@ SFT 训练由 `posttrain_gpt.py` 拉起（区别于 pretrain 入口）。关键�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MindSpeed（昇腾大模型训练加速框架 + 低精度训练）](../../concepts/frameworks/mindspeed.md)（`related`）：焦点卡的实际栈是“训练栈走 **MindSpeed-LLM + Megatron mcore**（Megatron 风格、需要 HF↔mcore 权重格式互转）”；框架卡说明“**MindSpeed-LLM**：面向 LLM 场景的上层套件”，并给出其模型、数据与训练入口职责，为四步 SFT 脚本提供框架分层。
-- [PEFT / LoRA 家族（LoRA / CC-LoRA / QLoRA / LU-LoRA / LoRA-MoE）](../../concepts/techniques/peft_lora.md)（`related`）：焦点卡把候选定位为“SFT 全流程的入门样例”，候选卡说明 LoRA 家族“可替代全参 SFT 省显存”；Qwen3 全参四步链提供基线，PEFT 卡给出在同一训练链上替换为低秩适配的选择与参数。
-- [Qwen3-30B-A3B torchtitan-npu SFT（GSM8K + Ulysses CP 开箱配置）](qwen3_sft_torchtitan.md)（`related`）：焦点卡以“昇腾 SFT（监督微调）最小上手样例：用 ［mindspeed］(../../concepts/frameworks/mindspeed.md) 系的 **MindSpeed-LLM**（叠加 Megatron-LM `core_v0.12.1` 的 mcore 训练栈），对 **Qwen3-1.7B**（dense）在 **alpaca** 指令数据集上跑监督微调，**单卡即可**——硬件要求为「卡数：1张A3」。”给出单卡 dense 路线；目标卡明确“与 ［qwen3-sft］(qwen3_sft.md) 是昇腾 SFT 的两条独立技术路线”，并列出 torchtitan MoE 多卡路线，形成具体选型对照。
+- [MindSpeed（昇腾大模型训练加速框架 + 低精度训练）](../../concepts/frameworks/mindspeed.md)（`related`）：Qwen3-1.7B SFT 使用 **MindSpeed-LLM + Megatron mcore**，需要 HF↔mcore 权重格式互转；MindSpeed-LLM 是面向 LLM 的上层套件，承载四步 SFT 流程所需的模型、数据处理与训练入口。
+- [PEFT / LoRA 家族（LoRA / CC-LoRA / QLoRA / LU-LoRA / LoRA-MoE）](../../concepts/techniques/peft_lora.md)（`related`）：Qwen3 全参 SFT 的数据转换、权重转换、训练与导出流程可作为基线；LoRA 家族通过低秩适配替代全参更新以节省显存，需按训练框架选择对应参数。
+- [Qwen3-30B-A3B torchtitan-npu SFT（GSM8K + Ulysses CP 开箱配置）](qwen3_sft_torchtitan.md)（`related`）：Qwen3-1.7B dense 使用 MindSpeed-LLM + Megatron-LM `core_v0.12.1`，在单卡 A3 上以 alpaca 执行 SFT；Qwen3-30B-A3B 使用 torchtitan-npu 的 MoE 多卡路线。两者是模型规模、数据集与训练框架不同的 SFT 选型。
 <!-- cannbot:related:end -->

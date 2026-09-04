@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/common/inference_config_guide.md
   role: supporting
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - '950'
 ---
@@ -76,7 +76,7 @@ YAML 直配的 TP 维度 + 推导出的 DP/EP 维度，rank 信息从环境变�
 | `embed_dp_size` | **推导** | `world_size // embed_tp_size` |
 | `moe_ep_size` | **推导** | `world_size // moe_tp_size`，见 [expert-parallel](../parallelism/expert_parallel.md) |
 
-> ⚠️ 矛盾标记（doc≠code，以代码实现为准）：字段说明文档 §2.3（见 Evidence `inference_config_guide.md`）将 `attn_dp_size` 推导式写为 `world_size // attn_tp_size`；而 `inference_config.py:210-213` 实际为 `world_size // (attn_tp_size * cp_size)`（即把 attention 通信组按 TP×CP 计成一组后再分 DP）。以代码实现为准；`cp_size == 1` 时两式等价。
+> **文档与实现差异**：字段说明文档 §2.3（见 Evidence `inference_config_guide.md`）将 `attn_dp_size` 推导式写为 `world_size // attn_tp_size`；而 `inference_config.py:210-213` 实际为 `world_size // (attn_tp_size * cp_size)`（即把 attention 通信组按 TP×CP 计成一组后再分 DP）。以代码实现为准；`cp_size == 1` 时两式等价。
 
 `_validate` 要求 `world_size` 能被各 `*_tp_size`、`cp_size` 及 `attn_tp_size*cp_size` 整除；`validate_model_config` 进一步校验 `num_experts % moe_ep_size == 0`、`num_attention_heads % attn_tp_size == 0`。
 
@@ -133,7 +133,7 @@ PD 分离运行时配置，由 `executor/online/server.py` 启动时按 CLI 参�
 ## Evidence
 
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`executor/core/config/inference_config.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/executor/core/config/inference_config.py)（五子配置 dataclass 定义、`from_dict` 推导逻辑、`_validate`；`attn_dp_size` 含 `cp_size`、`input_truncated_len∈DataConfig` 默认 256、`engine_backend` Literal 默认 memfabric、`num_reserved_decode_tokens=64`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/common/inference_config_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/common/inference_config_guide.md)（字段说明文档；其 `attn_dp_size` 推导式与代码实现存在偏差，按矛盾协议取代码实现）
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/common/inference_config_guide.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/common/inference_config_guide.md)（字段说明文档；其 `attn_dp_size` 推导式与代码实现存在偏差，实际行为以代码实现为准）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/common/new_model_checklist.md §1`](https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/common/new_model_checklist.md)（新模型 YAML 必填字段：model_name/model_path/exe_mode、input_truncated_len、batch_size/max_new_tokens/max_prefill_tokens、world_size + 各 tp_size）
 - 演进溯源：commit `b085e02`（!501 revert kvp）、`0296d00`（!388）、`f0b0fde`（!386）page-attention/packed sequence；config-guide 字段更新随 refactor !458 / docs !446。
 

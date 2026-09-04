@@ -11,7 +11,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_inference_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - '950'
 ---
@@ -20,12 +20,12 @@ platforms:
 
 ## Summary
 
-DeepSeek-V4 在 Ascend 950PR/DT 代际平台上的浮点混合量化方案，引入 **MXFP4**（Micro-scaling FP4，OCP 微缩放格式，dtype `float4_e2m1fn_x2`）量化——本仓/本知识库首次使用该格式：
+DeepSeek-V4 在 Ascend 950PR/DT 代际平台上的浮点混合量化方案，引入 **MXFP4**（Micro-scaling FP4，OCP 微缩放格式，dtype `float4_e2m1fn_x2`）量化：
 
 - **Hybrid FP8-MXFP4（原生）**：HuggingFace 发布的原始权重格式 —— 部分 Matmul 用 FP8 量化、MoE 模块用 MXFP4 量化；可在 950 平台**权重无损平滑迁移**直接推理。
 - **Hybrid MXFP8-MXFP4（硬件亲和，推荐 Flash/Pro）**：用 **MXFP8** 替换原生 FP8 格式的 Linear 模块（部分 Matmul MXFP8 + MoE MXFP4），在 Prefill/Decode 高吞吐场景进一步提升 950 算力利用率。KV Cache 采用 **C8 伪量化（动态存 8 算 16，Per-Group-64 FP8，Scale 格式 E8M0）**，超长序列省 2× KV 显存。
 
-二者均区别于 Atlas A3 Pod 的整数路径（见 [int8-int4-hybrid](int8_int4_hybrid.md)）：A3 走 Int8/W4A8 整数 + KV C16；950 走 FP8/MXFP8 浮点 + KV C8。MXFP8 在本仓另有 DiT 场景实现（[mxfp8-a8w8](mxfp8_a8w8.md)，HunyuanVideo Linear），与此处 V4 LLM 场景为不同模型用途。
+二者均区别于 Atlas A3 Pod 的整数路径（见 [int8-int4-hybrid](int8_int4_hybrid.md)）：A3 走 Int8/W4A8 整数 + KV C16；950 走 FP8/MXFP8 浮点 + KV C8。cann-recipes-infer 的 MXFP8 另有 DiT 场景实现（[mxfp8-a8w8](mxfp8_a8w8.md)，HunyuanVideo Linear），与此处 V4 LLM 场景为不同模型用途。
 
 ## Mechanism
 
@@ -51,10 +51,10 @@ MXFP4 路径实现于 `module/quantization/mxfp4.py`：
 
 - MoE GMM 方法类 `W4A8MxFp4MoEGMMMethod`，及上/下投影分别 W4A4/W4A8 的子类 `UpGateW4A4DownW4A8MxFp4MoEGMMMethod`（继承前者）。
 - MXFP4 权重 dtype 为 `torch_npu.float4_e2m1fn_x2`；激活量化经 `torch_npu.npu_dynamic_mx_quant(x, dst_type=torch.float8_e4m3fn)`（A8 用 FP8 E4M3）或 `dst_type=torch_npu.float4_e2m1fn_x2`（A4）。
-- 权重转换 `convert_model.py` 从 `mx_quantize.py`（本仓 `models/deepseek-v4/utils/mx_quantize.py`）导入 `quantize_mx` / `pack_uint4` / `unpack_uint4` / `f4_unpacked_to_f32` / `f32_to_f4_unpacked` 完成 MXFP4 打包。
+- 权重转换 `convert_model.py` 从 `mx_quantize.py`（`models/deepseek-v4/utils/mx_quantize.py`）导入 `quantize_mx` / `pack_uint4` / `unpack_uint4` / `f4_unpacked_to_f32` / `f32_to_f4_unpacked` 完成 MXFP4 打包。
 - 转换为 Hybrid MXFP8-MXFP4 权重：`--quant_type w4a8-mx`（源 README）。
 
-> 代码核对：modeling 中 `quant_mode` 注释「2: mxfp8 for dst_dtype e5m2; 3: mxfp8 for dst_dtype e4m3; 4: fp8 for dst_dtype e5m2; 5: fp8 for dst_dtype e4m3」；950 平台当 `"float" in mm_quant_mode` 时 KV/LI Cache 置 `float8`，否则 LI Cache 置 `int8`（`update_kv_quant_settings`）。
+> `modeling_deepseek.py` 中 `quant_mode` 注释「2: mxfp8 for dst_dtype e5m2; 3: mxfp8 for dst_dtype e4m3; 4: fp8 for dst_dtype e5m2; 5: fp8 for dst_dtype e4m3」；950 平台当 `"float" in mm_quant_mode` 时 KV/LI Cache 置 `float8`，否则 LI Cache 置 `int8`（`update_kv_quant_settings`）。
 
 ## Applicable Scenarios
 
@@ -65,8 +65,8 @@ MXFP4 路径实现于 `module/quantization/mxfp4.py`：
 ## Constraints
 
 - **仅 950PR/DT 代际**：FP8/MXFP8/MXFP4 浮点路径与 KV C8 为 950 平台特性；A3 Pod 走整数路径（[int8-int4-hybrid](int8_int4_hybrid.md)）。
-- **MXFP4 算法依赖 `mx_quantize`**：打包/解包逻辑在本仓 `models/deepseek-v4/utils/mx_quantize.py`（`quantize_mx`）；底层 `npu_dynamic_mx_quant` / `float4_e2m1fn_x2` 由 torch_npu 提供。
-- **MXFP8 区分 DiT 场景**：本页为 V4 LLM 的部分 Matmul MXFP8；[mxfp8-a8w8](mxfp8_a8w8.md) 是 HunyuanVideo DiT Linear 的 MXFP8 A8W8，用途不同。
+- **MXFP4 算法依赖 `mx_quantize`**：打包/解包逻辑在 cann-recipes-infer 的 `models/deepseek-v4/utils/mx_quantize.py`（`quantize_mx`）；底层 `npu_dynamic_mx_quant` / `float4_e2m1fn_x2` 由 torch_npu 提供。
+- **MXFP8 区分 DiT 场景**：V4 LLM 使用部分 Matmul MXFP8；[mxfp8-a8w8](mxfp8_a8w8.md) 是 HunyuanVideo DiT Linear 的 MXFP8 A8W8，用途不同。
 
 ## Known Results
 
@@ -106,5 +106,5 @@ MXFP4 路径实现于 `module/quantization/mxfp4.py`：
 
 - [EPLB 专家重映射漏搬独立 scale 张量：per-expert 参数清单缺 scale 致权重/scale 失配、静默掉精度](../../runbooks/precision/eplb_remap_drops_independent_scale_tensor.md)（`related`）：专家权重采用**独立 scale 量化布局**：反量化时需要「量化权重张量」与其**独立存放的 scale 张量**成对使用，缺一不可。；｜ MoE ｜ 路由专家 Linear **W4A8（MXFP4）** ｜ 共享专家 Linear W8A8 ｜ — ｜ — ｜；前者规定 EPLB 搬运必须覆盖独立 scale，后者界定 DeepSeek-V4 950 上 MXFP4 路由专家这一具体适用量化域。
 - [Int8 / Hybrid INT8-INT4 (DeepSeek-V4 Atlas A3 Pod)](int8_int4_hybrid.md)（`related`）：二者均区别于 Atlas A3 Pod 的整数路径（见 ［int8-int4-hybrid］(int8_int4_hybrid.md)）：A3 走 Int8/W4A8 整数 + KV C16；950 走 FP8/MXFP8 浮点 + KV C8。；DeepSeek-V4 在 ［atlas-a3］(../platforms/atlas_a3.md) Pod 平台上的两档整数量化方案，二者均以原生 Hybrid FP8-MXFP4 权重为转换起点：。两卡共同完成 DeepSeek-V4 从同一原生权重出发、按 950 与 A3 平台选择浮点或整数量化路线的部署决策。
-- [W4A8C8 (MoE W4A8 + Attention W8A8C8)](w4a8c8.md)（`related`）：焦点卡写明“950PR/DT 的 Hybrid MXFP8-MXFP4 走 **MXFP4 浮点变体**的 W4A8”，候选卡写明“路由专家 Linear **W4A8（MXFP4）**”。焦点指出 950 的 W4A8 是 MXFP4 浮点变体，候选给出路由专家与共享专家的位宽分工，可防止误当整数 INT4。
+- [W4A8C8 (MoE W4A8 + Attention W8A8C8)](w4a8c8.md)（`related`）：950PR/DT 的 W4A8 路由专家使用 MXFP4 浮点格式，与整数 INT4 不同；共享专家和其它模块采用各自的量化位宽。
 <!-- cannbot:related:end -->

@@ -12,7 +12,7 @@ sources:
 - resource: https://github.com/vllm-project/vllm-ascend/issues/4842
   role: evidence
 created_at: '2026-07-15T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - agnostic
 ---
@@ -64,4 +64,3 @@ platforms:
 - 涉及文件：`vllm_ascend/distributed/mooncake_layerwise_connector.py`、`vllm_ascend/attention/mla_v1.py`（`reshape_cache_event` record on `is_kv_producer`）。
 - 设计出处：RFC「Use event synchronize to replace stream synchronize」（CDCP scheduling for disaggregated prefilling with KV cache layerwise 的 Proposed Change 2①）。
 - 溯源 claim：[layerwise-kv-push-用逐层-torch-npu-event-record-于-reshape-and-c](https://github.com/vllm-project/vllm-ascend/issues/4842)
-- 交叉引用口径：本页对 [online-pd-inference](../../../concepts/frameworks/online_pd_inference.md)、[multi-stream](../../../concepts/techniques/multi_stream.md) 等静态 canonical 概念页为**只读跨链**（动态层引用静态层不改写，见 `schema/dynamic-pages.md`），故不要求这些静态页反向回链本动态页。

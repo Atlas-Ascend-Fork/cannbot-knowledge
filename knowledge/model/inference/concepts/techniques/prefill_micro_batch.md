@@ -233,6 +233,6 @@ event_expert_combine_mb0 = cur_stream.record_event()    # :2161
 <!-- cannbot:related:start -->
 ## 相关
 
-- [HCCL AIV 算子展开与 prefill micro-batch 双流互斥（A3 开 AIV、微批关 AIV、多机放宽超时）](../../optimizations/experience/rules/hccl_aiv_expansion_vs_prefill_micro_batch.md)（`related`）：焦点卡明确“因此 micro-batch 与 Decode 阶段常用的 `HCCL_OP_EXPANSION_MODE=AIV`（Decode 小通信量 + 低时延场景）**互斥**。”；规则卡给出动作“核心互斥：**prefill 开 micro-batch 双流优化时，不要设 `HCCL_OP_EXPANSION_MODE=AIV`，保持默认 SDMA 模式**。”。规则把资源冲突结论落实为环境配置。
-- [Prefill 用 micro-batch 双流把 MoE dispatch/combine 通信藏进计算](../../guides/experience/interventions/prefill_micro_batch_dual_stream_moe_overlap.md)（`related`）：焦点卡指出“把 batch 切成 2 份，可以构造两条流水，使得一路的通信与另一路的计算严格并行。”；指南要求“用一路的计算穿插另一 micro-batch 的通信，隐藏 MoE EP 的通信空洞。”。前者解释双流机制，后者把机制落成可观测通信空洞和实施步骤。
+- [HCCL AIV 算子展开与 prefill micro-batch 双流互斥（A3 开 AIV、微批关 AIV、多机放宽超时）](../../optimizations/experience/rules/hccl_aiv_expansion_vs_prefill_micro_batch.md)（`related`）：Prefill micro-batch 双流与 HCCL AIV 展开存在资源冲突，须保持默认 SDMA 模式，避免设置 `HCCL_OP_EXPANSION_MODE=AIV`。
+- [Prefill 用 micro-batch 双流把 MoE dispatch/combine 通信藏进计算](../../guides/experience/interventions/prefill_micro_batch_dual_stream_moe_overlap.md)（`related`）：将 batch 分为两份，让一路的 MoE dispatch/combine 通信与另一路计算重叠，并通过 profiling 检查通信空洞。
 <!-- cannbot:related:end -->

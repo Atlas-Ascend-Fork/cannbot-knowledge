@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Cosmos-Transfer2.5-2B 视频风格转换世界模型（昇腾 A3）
-description: Cosmos-Transfer2.5-2B 是 NVIDIA Cosmos 平台的世界基础模型之一，是面向物理 AI 的多控制网络（multi-controlnet）视频风格转换模型：基于深度图、语义分割、边缘检测等多种控制信号，对输入视频做 video-to-video 的风格迁移与内容转换，输入可同时接收 RGB / depth / segmentation / edge 等多模态结构化信号，用于自动驾驶场景模拟、机器人视觉仿真、视频内容创作。本仓在昇腾 Atlas A3 上完成 NPU 适配优化，重点是使能 CFG 并行 + 上下文并行 + NPU 融合算子适配。
+description: Cosmos-Transfer2.5-2B 是 NVIDIA Cosmos 平台的世界基础模型之一，是面向物理 AI 的多控制网络（multi-controlnet）视频风格转换模型：基于深度图、语义分割、边缘检测等多种控制信号，对输入视频做 video-to-video 的风格迁移与内容转换，输入可同时接收 RGB / depth / segmentation / edge 等多模态结构化信号，用于自动驾驶场景模拟、机器人视觉仿真、视频内容创作。cann-recipes-embodied-ai 提供昇腾 Atlas A3 上的 NPU 适配优化，重点是 CFG 并行 + 上下文并行 + NPU 融合算子适配。
 tags:
 - task.design
 - topic.model_architecture
@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/world_model/cosmos-transfer2.5/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 ---
@@ -23,9 +23,9 @@ platforms:
 
 ## Summary
 
-Cosmos-Transfer2.5-2B 是 NVIDIA Cosmos 平台的世界基础模型之一，是面向物理 AI 的**多控制网络（multi-controlnet）视频风格转换模型**：基于深度图、语义分割、边缘检测等多种控制信号，对输入视频做 video-to-video 的风格迁移与内容转换，输入可同时接收 RGB / depth / segmentation / edge 等多模态结构化信号，用于自动驾驶场景模拟、机器人视觉仿真、视频内容创作。本仓在昇腾 Atlas A3 上完成 NPU 适配优化，重点是**使能 CFG 并行 + 上下文并行 + NPU 融合算子适配**。
+Cosmos-Transfer2.5-2B 是 NVIDIA Cosmos 平台的世界基础模型之一，是面向物理 AI 的**多控制网络（multi-controlnet）视频风格转换模型**：基于深度图、语义分割、边缘检测等多种控制信号，对输入视频做 video-to-video 的风格迁移与内容转换，输入可同时接收 RGB / depth / segmentation / edge 等多模态结构化信号，用于自动驾驶场景模拟、机器人视觉仿真、视频内容创作。`cann-recipes-embodied-ai` 提供昇腾 Atlas A3 上的 NPU 适配优化，重点是**CFG 并行 + 上下文并行 + NPU 融合算子适配**。
 
-> 模型本体来自 NVIDIA 官方仓 `nvidia-cosmos/cosmos-transfer2.5`（checkout `8b0e6af4...`）。本仓描述昇腾适配代码与文档，与 [cosmos-predict2.5](cosmos_predict2_5.md) **共用** 本仓 `docs/world_model/Cosmos/README.md` 多卡并行优化文档，下文聚焦 Transfer 侧差异。
+> 模型本体来自 NVIDIA 官方仓 `nvidia-cosmos/cosmos-transfer2.5`（checkout `8b0e6af4...`）。昇腾适配来自 `cann-recipes-embodied-ai/world_model/cosmos-transfer2.5/`，与 [cosmos-predict2.5](cosmos_predict2_5.md) **共用** `cann-recipes-embodied-ai/docs/world_model/Cosmos/README.md` 多卡并行优化文档。
 
 ## 架构定位
 
@@ -56,7 +56,7 @@ DiT 侧 RMSNorm/Rotary 两个融合算子是 Transfer/Predict 共用的算子适
 
 ## 多卡并行使能（CFG 并行核心改造在本模型）
 
-本仓优化文档的 `enable_cfg_parallel` 代码改造落在 **Transfer 的 `inference_patch.py`**：
+`enable_cfg_parallel` 的实现位于 **Transfer 的 `inference_patch.py`**：
 
 - 配置层 `cosmos_transfer2/config.py` 的 `SetupArguments` 新增 `enable_cfg_parallel: bool = False`。
 - 推理层 `Control2WorldInference.__init__` 改造：当 `enable_cfg_parallel=True` 时，`parallel_state.initialize_model_parallel(context_parallel_size = args.context_parallel_size // 2)` —— 把总卡对半分，一半跑 conditional、一半跑 unconditional 去噪；`enable_cfg_parallel=False` 时全部卡用于上下文并行。例如 8 卡：CFG 并行模式下 `context_parallel_size=4`（4 卡 condition + 4 卡 unconditional）。

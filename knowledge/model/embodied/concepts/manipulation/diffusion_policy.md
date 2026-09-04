@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-embodied-ai/blob/aed7a4788dfe94f6b90084f16ce493f9969471b1/manipulation/diffusion-policy/infer_with_om/README.md
   role: supporting
 created_at: '2026-06-13T00:00:00Z'
-updated_at: '2026-06-27T00:00:00Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - 310p
 ---
@@ -25,7 +25,7 @@ Diffusion Policy（DP）出自论文 *Diffusion Policy: Visuomotor Policy Learni
 
 > 上游算法主页 https://diffusion-policy.cs.columbia.edu/；扩散式动作生成与 [action-chunking](../modules/action_chunking.md)（ACT 一次性整段预测）、[flow-matching-action-expert](../modules/flow_matching_action_expert.md)（Pi0/Pi0.5 流匹配）并列为三种动作生成范式。
 
-源：`manipulation/diffusion-policy/infer_with_om/README.md`（仓内仅提供 OM 离线推理样例，**未提供 DP 训练样例**）。
+源：`cann-recipes-embodied-ai/manipulation/diffusion-policy/infer_with_om/README.md`（仅提供 OM 离线推理样例，**未提供 DP 训练样例**）。
 
 ## 模型级契约（config.json）
 
@@ -64,7 +64,7 @@ Diffusion Policy（DP）出自论文 *Diffusion Policy: Visuomotor Policy Learni
 
 mock 输入相似度对比：`verify_om_onnx.py --onnx-model-path outputs/onnx/dp.onnx --om-model-path outputs/om/dp.om --seed 42 --n-action-steps 16`。脚本按命令行参数（默认 `--n-action-steps 8` / `--action-dim 2` / `--global-cond-dim 132`）用固定 `--seed` 经 `rng.standard_normal` 造确定性 **UNet 级** dummy 输入（`sample`/`global_cond`），对比 ONNXRuntime(CPU) vs OM(NPU)，**不读 `config.json`**。
 
-> 上游 README 称该脚本「据 `config.json` 生成」dummy 输入，与脚本实现不符：`verify_om_onnx.py` 无任何 `config.json`/`json.load` 调用，全部输入维度由 CLI 参数构造。
+> 上游 README 称该脚本「据 `config.json` 生成」dummy 输入，与 `verify_om_onnx.py` 实现不符：脚本不读取 `config.json`，全部输入维度由 CLI 参数构造。
 
 > README 仅给出 ONNX 导出阶段的 diff/相似度数字，**未提供 OM(NPU) 端到端 PushT 任务成功率**（unverified）。
 

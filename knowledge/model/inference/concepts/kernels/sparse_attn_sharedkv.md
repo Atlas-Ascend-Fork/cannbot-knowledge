@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/docs/models/deepseek-v4/deepseek_v4_ascendc_operator_guide.md
   role: primary
 created_at: '2026-05-30T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-03T13:55:44Z'
 platforms:
 - a3
 - '950'
@@ -93,7 +93,7 @@ SAS 通过入参组合覆盖 V4 不同 Attention 场景。源文档列出的关�
 | `cmp_kv` | C4A / C128A 层压缩后 $KV$ cache |
 | `cmp_ratio` | `cmp_kv` 的压缩比例（4 或 128） |
 
-> doc≠code：`prepare_fa_kwargs`（`modeling_deepseek.py:L1068-L1118`）实际组装的 kwargs 与文档语义入参表略有出入 —— 代码键为 `ori_win_left=127` / `ori_win_right=0`（非通用 `win_left/win_right` 默认值；与 `sliding_window=128` 对应）、`ori_mask_mode=4`（注释 sliding window）/ `cmp_mask_mode=3`（注释 causal）、`cmp_ratio=self.compress_ratio`、`cmp_sparse_indices`（注释 only for C4A）、`sinks=self.attn_sink`、`metadata`（来自 AICPU Scheduler）、`layout_q="TND"` / `layout_kv="PA_ND"`。伪量化路径额外加 `tile_size=64` / `rope_head_dim` / `kv_quant_mode=1`。文档的 `ori_win_left/ori_win_right` 为通用语义说明，不等同于代码常量值。
+> **文档与实现差异**：`prepare_fa_kwargs`（`modeling_deepseek.py:L1068-L1118`）实际组装的 kwargs 与文档语义入参表略有出入 —— 代码键为 `ori_win_left=127` / `ori_win_right=0`（非通用 `win_left/win_right` 默认值；与 `sliding_window=128` 对应）、`ori_mask_mode=4`（注释 sliding window）/ `cmp_mask_mode=3`（注释 causal）、`cmp_ratio=self.compress_ratio`、`cmp_sparse_indices`（注释 only for C4A）、`sinks=self.attn_sink`、`metadata`（来自 AICPU Scheduler）、`layout_q="TND"` / `layout_kv="PA_ND"`。伪量化路径额外加 `tile_size=64` / `rope_head_dim` / `kv_quant_mode=1`。文档的 `ori_win_left/ori_win_right` 为通用语义说明，不等同于代码常量值。
 
 `attn_sink` 为 per-head `nn.Parameter`（`torch.empty(num_heads_per_rank, dtype=torch.float32)`，`modeling_deepseek.py:L698`），以 `sinks` 入参喂入 SAS，参与 softmax 归一（见下方 TileLang 实现的 sink 计入分母）。
 

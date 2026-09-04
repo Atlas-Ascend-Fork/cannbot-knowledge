@@ -60,7 +60,7 @@ platforms:
 <!-- cannbot:related:start -->
 ## 相关
 
-- [MTP Speculative Decoding](../../../concepts/techniques/mtp_speculative_decoding.md)（`related`）：焦点卡的状态机要求“按 n 选择性回写”，候选卡将同一正确性合同细化为“只把前 `num_accepted_tokens` 个对应的状态写回持久 `conv_state` / `ssm_state`”；两卡围绕 MTP 接受前缀与缓存推进这一核心决策分别给出总机制和结构化排障规则。
+- [MTP Speculative Decoding](../../../concepts/techniques/mtp_speculative_decoding.md)（`related`）：MTP 状态机要求“按 n 选择性回写”，draft 缓存正确性要求进一步细化为“只把前 `num_accepted_tokens` 个对应的状态写回持久 `conv_state` / `ssm_state`”；两类约束围绕 MTP 接受前缀与缓存推进这一核心决策分别给出总机制和结构化排障规则。
 - [给新模型接入 MTP 推测解码：draft 模型构造 / 权重共享 / prev_hidden_states / 三元组注册 / 无损 verify](../../../guides/experience/interventions/mtp_speculative_decode_model_onboarding.md)（`related`）：draft 的 KV / 递归状态缓存分配另有结构相关的正确性坑（单层 draft 需 `next_n` 层 KV、SSM 递归状态按接收数推进）；draft 的缓存正确性随注意力结构分两类处理，接入前先对号入座。。接入指南明确把缓存分配和推进留给该规则，规则则补齐不同注意力结构下 draft 状态正确性的后续步骤。
 - [MTP 投机解码的两个记账约束：KV cache 按预测层数(非草稿步数)分配 + 与分片 prefill 共存时延后补跑 draft 步](mtp_cache_and_microbatch_prefill_bookkeeping.md)（`same_topic`）：遇到 cache 份数争议时，先用“cache 层数取 `num_nextn_predict_layers`（KV cache 与 ［offload cache］(../../../concepts/techniques/kvcache_offload.md) 同口径）”核对 checkpoint 是否真的有多预测层，再用“单层 draft 跑 `next_n` 步时**每一步各需一层 KV cache**：第 `k` 步取 `past_key_values［k］`。”核对单层 draft 是否以 past_key_values［k］ 分步取用，避免把两种结构的规则互相套用。
 <!-- cannbot:related:end -->
