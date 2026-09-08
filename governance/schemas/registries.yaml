@@ -12,6 +12,9 @@ domains:
   common:
     description: 跨领域公共知识
     direct_types: [glossaries]
+  contrib:
+    description: 社区贡献的工程知识
+    direct_types: []
   ops:
     description: 算子语义、设计、实现、调试与优化
     direct_types: []
@@ -31,7 +34,7 @@ technologies:
   ascendc:
     type: language
     description: Ascend C 算子编程语言与 API
-    domains: [ops]
+    domains: [ops, contrib]
   triton:
     type: dsl
     description: Triton 算子编程 DSL
