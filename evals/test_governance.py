@@ -184,7 +184,13 @@ class RouteContractTests(unittest.TestCase):
             Path("knowledge/common/platforms/concepts/ascend_910b3_atlas_a2.md"),
             cards,
         )
-        self.assertFalse((ROOT / "knowledge/common/platforms").exists())
+        # common/platforms 已由首批真实平台知识创建，只允许注册 Profile 子目录。
+        platforms = ROOT / "knowledge/common/platforms"
+        self.assertTrue((platforms / "concepts").is_dir())
+        self.assertEqual(
+            {path.name for path in platforms.iterdir() if path.is_dir()},
+            {"concepts"},
+        )
 
     def test_ascend910b3_runbooks_are_not_scoped_to_a3(self) -> None:
         conflicts: list[str] = []
