@@ -175,10 +175,3 @@ __simd_vf__ inline void softmax_expsum_vf(__ubuf__ float *sumSlot, __ubuf__ floa
 ## 误诊
 
 失败最初可能被归到 dtype Cast 或非末轴搬运路径；但“所有 dtype 同时失败、单 chunk 通过、多 chunk 失败”的组合信号更直接指向共享的跨 chunk 标量规约。（证据等级: inferred，不作为验证信号）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：审查多 pass Reg kernel 时，画出每个 `asc_vf_call` 的 UB 读写集合；每个 chunk 先 Reduce 到临时寄存器 `tmp` 的 lane 0，再用仅 lane 0 有效的 `scalarMask` 对运行累加器执行 `Max` 或 `Add`。；目标卡补足焦点审查流程中每个 chunk 的规约结果必须显式合并这一数值合同。
-- [RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽](regtensor_cross_chunk_state_should_persist_in_ub_slot.md)（`related`）：UB 槽 Runbook的修法是“每次 VF 限制为一个 VL，并在每次调用前从 UB 槽加载 running state、合并本 VL 的 Reduce 结果、立即写回”；Reduce Runbook规定“每个 chunk 先 Reduce 到临时寄存器 `tmp` 的 lane 0，再用仅 lane 0 有效的 `scalarMask` 对运行累加器执行 `Max` 或 `Add`。”。二者都显式化跨 chunk 状态，但分别选择 UB 跨 VF 持久化和单 VF 内 lane-0 折叠。
-<!-- cannbot:related:end -->

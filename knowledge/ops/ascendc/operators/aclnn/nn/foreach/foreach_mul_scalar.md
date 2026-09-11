@@ -732,10 +732,3 @@ GM→UB 一次可搬入 `9U` 字节 BF16 数据，而 FP32 中间区仅 `U` 字�
 | 同步 | TQue 生命周期与 Vector barrier | Queue slot Free 前不得覆盖；BF16 cast片 barrier 不可省略 | `CopyIn/Compute/CopyOut`; `ComputePerCast` |
 | 精度与尾块 | direct dtype Muls；BF16 FP32升精度/RINT；tail DataCopyPad | FP16不升精度；tail只写有效字节 | `InnerComputer`; `KernelForeachUnary::CopyOut` |
 | 失败边界 | selector 不适用返回 param invalid；校验失败阻断 | unknown key 无 Device fallback；Host/build key必须一致 | `MEMBASE_TILING::IsCapable`; router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMulScalar 950 ACLNN 算子知识](foreach_mul_scalar_950.md)（`same_topic`）：同一语义存在 `aclnnForeachMulScalar` 与 `aclnnForeachMulScalarV2`。V2 将公开 `scalar` 入口从单元素 `aclTensor` 改为 `aclScalar`；A2、A3 和 Ascend 950 的公开产品表均支持 V2，因此按“逐架构最新公开版本”选择 V2。；V2 相对 `aclnnForeachMulScalar` 只改变公开 scalar 容器：从单元素 `aclTensor` 改为 `aclScalar`。；两卡描述同一 ACLNN 算子与 V2 合同，只因 A2/A3 和 950 平台实现拆卡。
-- [ForeachMulScalarList A2/A3 ACLNN 算子知识](foreach_mul_scalar_list.md)（`same_topic`）：对列表位置 `i` 与元素位置 `j`，`out［i］［j］ = x［i］［j］ * scalars［i］` 对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ * scalar` A2/A3 ScalarList 为每个 Tensor 提供独立标量，ForeachMulScalar 让全列表共享一个标量，直接决定参数容器与加载方式。
-<!-- cannbot:related:end -->

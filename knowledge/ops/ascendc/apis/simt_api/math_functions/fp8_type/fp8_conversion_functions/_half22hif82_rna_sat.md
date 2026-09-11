@@ -86,10 +86,3 @@ SIMT编程场景当前不支持使用该接口。
         asc_vf_call<simt_half22hif82_rna_sat>(dim3(1024), (__gm__ half2*)input, (__gm__ hifloat8x2_t*)output, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__half22hif82_rna](_half22hif82_rna.md)（`same_topic`）：“本接口受全局饱和模式影响”与“使用此接口前需将CTRL［60］寄存器设置为0，否则饱和模式不生效”共同给出同一 half2→hifloat8x2 CAST_ROUND 转换在饱和模式下的选型和寄存器前置条件。
-<!-- cannbot:related:end -->

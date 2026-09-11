@@ -448,9 +448,3 @@ for (uint32_t i = 0; i < STAGES; i++) {
 | 同步 | flag7/8/9+hard event | ID/pipe/1:2/轮次 | kernel body |
 | 精度与尾块 | FP32中间、typed P/dS、final cast | scale时机/actualShape | MMAD/epilogues |
 | 失败边界 | Host/Tiling拒绝、无fallback | 不扩展公开MHA边界 | API/Tiling/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BlockSparseAttentionGrad 950 ACLNN 算子知识](block_sparse_attention_grad_950.md)（`same_topic`）：从“固定 Commit 仅有无版本后缀 Grad API，故为同平台最新公开版本。”的 A2/A3 实现迁移到“固定 Commit 仅有无版本后缀 Grad API，是 950 最新公开版本。”的 950 实现时可以保持公开 ABI，再逐项核对 BSND/GQA、blockShape 和非确定性等平台新增或收紧条件。
-<!-- cannbot:related:end -->

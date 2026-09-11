@@ -65,11 +65,3 @@ GM ──(MTE2)──> L1 ──(MTE1)──> L0A/L0B ──(Cube)──> L0C �
 这表明采用CV融合方式编写时，AIV的Vector计算时间基本被AIC的Cube计算时间完全覆盖，实现了高效的流水并行。
 
 详细内容请参见[Matmul+Gelu中级性能优化](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/03_fusion_compute/matmul_gelu_high_performance/README.md)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [入门功能落地](getting_started.md)（`related`）：“## 可优化方向分析”明确给出左端事实；“本节在入门功能落地的基础上，介绍Matmul融合算子的中级性能优化方法。”明确给出右端事实。入门页列出 L1/L0 双缓冲、细粒度同步、VF 融合等瓶颈；中级页把这些方向展开为 Matmul+Gelu 的具体优化案例和性能数据。
-- [高阶极限打磨](extreme_optimization.md)（`related`）：本节在中级性能优化的基础上，介绍Matmul融合算子的高阶极限打磨方法。；本节在入门功能落地的基础上，介绍Matmul融合算子的中级性能优化方法。。高阶 Matmul 融合优化明确承接中级优化，后者提供前一阶段的实现基线。
-<!-- cannbot:related:end -->

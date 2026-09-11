@@ -343,12 +343,3 @@ __simd_vf__ inline void softmax_row_vf(
 ## 误诊
 
 - 把该错误当作 fp16/bf16 精度或 runtime 问题会走偏：构建尚未生成 ASC object，没有任何 kernel 运行结果可供精度归因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cast](../../apis/simd_api/basic_api/reg_vector_compute/type_conversion/cast.md)（`exemplifies`）：焦点卡把 RoundMode 列入“trait: CastTrait类型，类型转换模式结构体。包括RegLayout、SatMode、MaskMergeMode、RoundMode。”，候选卡定位“`RoundMode` 的声明位于外层 `AscendC`”；该 runbook 给出 CastTrait 字段正确限定名及编译验证路径。
-- [RoundMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/round_mode.md)（`exemplifies`）：枚举类型，用于设置精度转换时的舍入模式，支持向偶数舍入、向下、向上、四舍五入、截断等多种模式。；只把两个 `RoundMode` 限定名从 `AscendC::Reg` 提升到 `AscendC`；其余 Reg 枚举、trait 的函数内 `static constexpr` 形态和三段计算逻辑全部保留。；目标卡把焦点枚举用于 CastTrait，并给出错误限定名的最小编译修复。
-- [CastTrait 文件域声明触发命名空间编译失败](reg_casttrait_define_inside_simd_vf.md)（`related`）：“AscendC::RoundMode::CAST_RINT};”与“softmax.asc:99:47: error: no member named 'RoundMode' in namespace 'AscendC::Reg'; did you mean 'AscendC::RoundMode'?”。focal 把 RoundMode 放在 AscendC，配套 Runbook 给出误写 AscendC::Reg::RoundMode 的编译错误。
-- [Reg::Cast 的 trait 需要静态存储期](reg_casttrait_requires_static_storage.md)（`related`）：只把两个 `RoundMode` 限定名从 `AscendC::Reg` 提升到 `AscendC`；其余 Reg 枚举、trait 的函数内 `static constexpr` 形态和三段计算逻辑全部保留。；函数内普通 `constexpr CastTrait` 仍具有自动存储期，不能作为该 `const CastTrait&` 非类型模板参数的有效地址常量，所以编译器拒绝显式模板实参。；目标 runbook 给出焦点保留 static constexpr 的模板参数存储期原因。
-<!-- cannbot:related:end -->

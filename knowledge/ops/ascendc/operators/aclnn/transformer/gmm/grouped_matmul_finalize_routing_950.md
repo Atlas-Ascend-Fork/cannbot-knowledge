@@ -857,9 +857,3 @@ VecComputeNzNkWithStartLimit(kMte2Offset, curOffsetParam.kSize, curOffsetParam);
 | 同步 | 同位宽4/20、6/22；mixed 8/24、9/25、4/20、3 | 两AIV完成、pipe类型和轮次不可省略 | Notify/Wait / VCV flags |
 | 精度与尾块 | 同位宽MX；mixed FP4→FP8、bias×1/64、C×64、FP32 atomic | group32/物理64、K/N对齐、valid M/N、负rowIndex语义 | builder/VF/epilogue |
 | 失败边界 | 四Route；mixed按bias分key | 不纳入per-token或其它WeightNzV2 body，不外推未列dtype/layout | V3/API checker/Tiling/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [grouped_matmul_finalize_routing A2/A3 ACLNN 算子知识](grouped_matmul_finalize_routing.md)（`same_topic`）：焦点卡写明“A8W4 MSD GMM：INT8 X 拆成高/低 INT4 两路”，候选卡写明“同位宽 MXFP8/MXFP4 直接进 Cube”。两卡实现同一 V3 核心，A2/A3 采用整数 MSD，950 采用 MX 路线，可按平台与量化格式选型。
-<!-- cannbot:related:end -->

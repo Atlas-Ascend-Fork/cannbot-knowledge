@@ -224,9 +224,3 @@ extern "C" __global__ __vector__ void relu_kernel(GM_ADDR x, GM_ADDR y, GM_ADDR 
 - 广播/规约/多输入算子不适用本骨架（未实现广播维 stride=0、规约轴语义）。
 - FP32/BF16 未实现（需模板化，本例未做，未验证）。
 - host `main()` 的 `totalLength` 在模板里写死，bin 通路仅覆盖单一 shape（见相关 build 卡）；多 shape 须改 host 或走 PyTorch 通路。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [bisheng 拒绝大写 --npu-arch=DAV2201 须用小写 dav](bisheng_npu_arch_requires_lowercase_dav_2201.md)（`related`）：NpuArch DAV_2201 / UB 192KB；bisheng 的 `--npu-arch` 旗标要求传**NpuArch 规范名的小写带连字符形式**。骨架卡给出目标硬件内部名 DAV_2201，编译 runbook 给出该值到 bisheng 参数 dav-2201 的必要映射；联合可避免用 DAV2201 或 SoC 枚举导致后端无架构。
-<!-- cannbot:related:end -->

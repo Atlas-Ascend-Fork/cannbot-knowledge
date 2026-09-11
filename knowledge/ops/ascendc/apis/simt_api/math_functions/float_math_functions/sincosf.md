@@ -100,18 +100,4 @@ cos_result: 0.9689124 0.7316889 0.3153224 -0.1782461
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Sincospif](sincospif.md)（`same_topic`）：获取输入数据与π相乘的三角函数正弦值和余弦值；获取输入数据的三角函数正弦值和余弦值。两端一次返回 sin/cos 双结果，区别是 Sincospif 先把输入按 π 缩放而 Sincosf 直接使用弧度；对照可避免调用者重复乘 π 或漏乘 π。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [SimThreadExponential 950 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)（`related`）：算子声明的固定版本源码包含对 `sincosf(...)` 的直接调用（第 323 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h#L323)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [SimThreadExponential 950 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)

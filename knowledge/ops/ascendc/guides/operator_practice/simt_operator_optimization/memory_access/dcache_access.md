@@ -93,10 +93,3 @@ __global__ void sin_table_lookup_optimized(float* input, float* sin_table, float
 从Task Duration看，优化后的执行耗时为50.895us，相比优化前的56.82us，下降约10.4%。从DCache Read GM看，优化后为3531次，相比优化前的5064次，减少约30.2%（减少1533次GM访问）。这说明优化前的主要瓶颈来自所有数据共同竞争DCache空间，导致热点数据（sin查找表）被挤出DCache后需要重新从GM加载；通过访存函数区分缓存策略后，sin查找表优先驻留DCache，减少了从GM重新加载的次数，DCache命中率提升，整体性能得到改善。
 
 【总结】当SIMT算子中存在多种不同访问模式的数据时，应分析各类数据的访问特征，通过访存函数为不同类型的数据指定合适的缓存策略：对仅遍历一次的数据使用`asc_ldcg`降低其Cache占用优先级；对需要频繁访问的热点数据使用`asc_ldca`确保其常驻DCache；对写入后无需驻留DCache的输出数据使用`asc_stcg`优化写入后的Cache分配。这样可以减少热点数据被挤出DCache的情况，降低GM访问次数，提升算子整体性能。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_stcg（内存访问函数）](../../../../apis/simt_api/memory_access_functions/asc_stcg.md)（`explains`）：存储数据到 Global Memory 并缓存到 L2 Cache，但不缓存至 Data Cache。适用于写入后不需要被当前核再次读取的场景，避免污染 Data Cache。；asc_stcg：存储数据时直接写入Global Memory，不经过DCache缓存，适用于写入GM后不会再从DCache读取的数据，避免输出数据占用DCache空间影响热点数据的缓存。；优化指南把焦点接口的缓存语义落到避免输出污染 DCache 的选型场景。
-<!-- cannbot:related:end -->

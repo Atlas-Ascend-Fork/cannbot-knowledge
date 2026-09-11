@@ -97,10 +97,3 @@ AscendC::Swish(dstLocal, srcLocal, 32, -1.702);
   0.07157208  0.25509655  0.48380467  0.74341846  1.019972    1.3029958   1.5861256   1.8662498
   2.1423235   2.4144034   2.6830263   2.9488626   3.2125497   3.4746296   3.735532    3.995585  ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSwishTmpSize](get_swish_tmp_size.md)（`same_topic`）：“在神经网络中，Swish是一个重要的激活函数。”；“用于获取Swish Tiling参数：Swish接口能完成计算所需最大临时空间大小和最小临时空间大小。”。目标接口为焦点 Swish 计算提供 Host 侧临时空间定额。
-<!-- cannbot:related:end -->

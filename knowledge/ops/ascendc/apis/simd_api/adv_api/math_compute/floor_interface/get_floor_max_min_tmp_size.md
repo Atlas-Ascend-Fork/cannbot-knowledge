@@ -64,10 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetFloorMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Floor](floor.md)（`related`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetFloorMaxMinTmpSize获取。”明确 Floor 的依赖，而“host侧Tiling接口，用于获取Floor接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”定义 Host 侧生产值；二者构成 sharedTmpBuffer 从 Host 计算到 Kernel 调用的直接合同。
-<!-- cannbot:related:end -->

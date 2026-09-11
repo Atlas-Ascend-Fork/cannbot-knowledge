@@ -88,20 +88,8 @@ __simd_vf__ inline void MinsVF(__ubuf__ T* dstAddr, __ubuf__ T* src0Addr, T scal
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [ClippedSwiglu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/clipped_swiglu_950.md)（`related`）：算子声明的固定版本源码包含对 `Mins(...)` 的直接调用（第 399 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/clipped_swiglu/op_kernel/arch35/clipped_swiglu_kernel.h#L399)
-- [AvgPool2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/avg_pool2d_950.md)（`related`）：算子声明的固定版本源码包含对 `Mins(...)` 的直接调用（第 828 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_common.h#L828)
-- [DequantSwigluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dequant_swiglu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Mins(...)` 的直接调用（第 336 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_common.h#L336)
-- [SwigluMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/swiglu_mx_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Mins(...)` 的直接调用（第 1007 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant/op_kernel/arch35/swiglu_mx_quant_last_last.h#L1007)
-- [DequantSwigluQuant 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/quant/dequant_swiglu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Mins(...)` 的直接调用（第 140 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_dynamic_not_full_vf.h#L140)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ClippedSwiglu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/clipped_swiglu_950.md)
+- [AvgPool2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/avg_pool2d_950.md)
+- [DequantSwigluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dequant_swiglu_quant_950.md)
+- [SwigluMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/swiglu_mx_quant_950.md)
+- [DequantSwigluQuant 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/quant/dequant_swiglu_quant_950.md)

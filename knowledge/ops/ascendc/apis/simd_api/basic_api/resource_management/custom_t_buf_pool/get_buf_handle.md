@@ -70,10 +70,3 @@ offset值不可超出EXTERN\_IMPL\_BUFPOOL中定义的BUFID\_SIZE大小，用户
 ## 调用示例<a name="section1234017553610"></a>
 
 请参考[调用示例](extern_impl_bufpool.md#section1234017553610)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ExternImplBufpool](extern_impl_bufpool.md)（`related`）：焦点接口“根据offset取出自定义TBufPool中管理的内存块。”，候选宏则“提供EXTERN_IMPL_BUFPOOL宏来辅助用户自定义TBufPool。”；宏建立自定义池实现，GetBufHandle 按 offset 取得该实现管理的块，两者构成定义与访问合同。
-<!-- cannbot:related:end -->

@@ -81,11 +81,3 @@ AscendC::BitwiseNot(dst, src, count);
 输出数据（dst）:
 [-92, -49, 70, -113, -65, 106, -75, 120, 102, 49, -113, 22, -16, ... 73]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetBitwiseNotMaxMinTmpSize](get_bitwise_not_max_min_tmp_size.md)（`same_topic`）：逐比特对输入进行取反。；Kernel侧BitwiseNot接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小；BitwiseNot 计算卡定义逐比特取反与整型 dtype，Host 查询卡为该 Kernel 计算准备平台、shape 和类型相关的临时空间区间。
-- [GetBitwiseNotTmpBufferFactorSize](get_bitwise_not_tmp_buffer_factor_size.md)（`same_topic`）：逐比特对输入进行取反。；该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。；BitwiseNot 的 count 决定单次逐比特计算规模，factor 查询把固定临时空间转换成允许的最大元素数量，可用于设计 Kernel 分块。
-<!-- cannbot:related:end -->

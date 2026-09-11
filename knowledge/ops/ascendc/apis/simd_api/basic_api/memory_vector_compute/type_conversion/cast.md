@@ -636,25 +636,13 @@ AscendC::Cast(dstLocal, srcLocal, AscendC::RoundMode::CAST_CEIL, mask, 8, { 1, 1
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 28 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [ReflectionPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/reflection_pad_2d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 3306 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_mirror_gather.h#L3306)
-- [Celu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/celu_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 113 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/celu_v2/op_kernel/arch35/celu_v2.h#L113)
-- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 556 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention/op_kernel/attn_infra/epilogue/block/bsa_block_epilogue_online_softmax.hpp#L556)
-- [UnfoldGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/unfold_grad.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 194 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/unfold_grad/op_kernel/unfold_grad.h#L194)
-- [InplaceCelu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/inplace_celu_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 113 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/celu_v2/op_kernel/arch35/celu_v2.h#L113)
-- [BlockSparseAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 119 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention/op_kernel/attn_infra/epilogue/block/block_epilogue_mask2idx_arch35.hpp#L119)
-- [InplaceDivs 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_divs_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 39 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/muls/op_kernel/arch35/muls_dag.h#L39)
-- [SoftmaxCrossEntropyWithLogits 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/softmax_cross_entropy_with_logits_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 223 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_full_load.h#L223)
-- [MlaProlog A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/mla_prolog.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 1922 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/arch22/kernel_mla_prolog_split_n.h#L1922)
-- [Sort 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/sort_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 278 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/sort/op_kernel/arch35/merge_sort_big_size.h#L278)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ReflectionPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/reflection_pad_2d_backward_950.md)
+- [Celu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/celu_950.md)
+- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)
+- [UnfoldGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/unfold_grad.md)
+- [InplaceCelu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/inplace_celu_950.md)
+- [BlockSparseAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_950.md)
+- [InplaceDivs 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_divs_950.md)
+- [SoftmaxCrossEntropyWithLogits 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/softmax_cross_entropy_with_logits_950.md)
+- [MlaProlog A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/mla_prolog.md)
+- [Sort 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/sort_950.md)

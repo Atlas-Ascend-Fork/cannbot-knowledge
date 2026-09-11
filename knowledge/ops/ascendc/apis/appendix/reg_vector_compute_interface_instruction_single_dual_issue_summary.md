@@ -116,9 +116,3 @@ Ascend 950PR/Ascend 950DT
 | 数据压缩 | VPACK | Pack |
 | 数据压缩 | VUNPACK | UnPack |
 | 直方图计算 | DHISTv2 | Histograms |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [指令双发优化](../../guides/operator_practice/simd_operator_optimization/vector_compute/vf_optimization/dual_issue_optimization.md)（`explains`）：指令双发指1个Cycle能够执行两条指令；两条指令之间没有数据上的依赖关系。接口汇总给出单/双发能力上限，优化指南进一步给出无数据依赖与资源充足的启用条件以及拆分、展开 VF 的实现方法。
-<!-- cannbot:related:end -->

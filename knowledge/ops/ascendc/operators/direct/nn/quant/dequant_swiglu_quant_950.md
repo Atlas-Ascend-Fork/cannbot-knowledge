@@ -648,9 +648,3 @@ uint64_t gmOffset = blockIdx_ * yLength_ + loop * blockLength_;
 | 同步 | FL Queue；NF Queue + HardEvent | NF `MTE3_MTE2` 必须位于两遍之间 | `ProcessSingleRow` |
 | 精度与尾块 | FP32 compute/reduce，scale floor，固定 INT8 cast 链 | qscale 乘入必须早于 max；tail mask 只覆盖有效元素 | `CalculateReduceMax`, `QuantAndCast`, FL Vector scope |
 | 失败边界 | Host 资源/shape/dtype 失败 | 不得虚构 scalar fallback；非 AIV entry 返回 | `CheckInputs`, `CalcDirectTiling`, entry guard |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [奇数 H 致 B 视图 UB 地址非 32B 对齐](../../../../runbooks/compilation/h_b_ub_32b.md)（`related`）：“对 `x［M,2H］` 做可选 INT32 反量化，选择左右半部形成 `Swish(act) * gate`”定义 Direct Invoke 的 2H 分半数据流；“kernel 把一行 x（长度 `twoH = 2*H`，A、B 两段各 H）整体 `DataCopyPad` 装入一个 UB 缓冲”定位同一算子奇数 H 时后半段地址未对齐的故障点。
-<!-- cannbot:related:end -->

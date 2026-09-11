@@ -62,11 +62,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetSignMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSignTmpBufferFactorSize](get_sign_tmp_buffer_factor_size.md)（`related`）：开发者据此选择合适的Tiling参数传入kernel侧；推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize。总量接口确定 Sign 临时空间可选范围，因子接口把实际可用空间反推为单次最大元素数，二者组成 host 到 kernel 的分块 Tiling 计算。
-- [Sign](sign.md)（`same_topic`）：临时空间大小通过GetSignMaxMinTmpSize获取；实际预留不能小于该值。Sign 的 sharedTmpBuffer 重载明确依赖 GetSignMaxMinTmpSize，查询接口给出 min/max 和性能取舍，直接决定 kernel 侧临时空间的合法容量。
-<!-- cannbot:related:end -->

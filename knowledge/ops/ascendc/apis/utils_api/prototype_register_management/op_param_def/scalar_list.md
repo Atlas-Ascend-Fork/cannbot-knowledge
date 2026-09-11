@@ -51,8 +51,4 @@ this->Input("x")
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachPowScalarList A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_pow_scalar_list.md)（`related`）：ForeachPowScalarList 的 ABI 写明“`scalars` 为与列表等长的 `FLOAT32/INT64` ScalarList”；ScalarList 页定义“配置该参数后，自动生成的单算子API（aclnnxxx）接口中，输入类型为aclScalarList类型。”，后者解释 ACLNN bridge 如何暴露前者指数列表输入。
-<!-- cannbot:related:end -->
+- [ForeachPowScalarList A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_pow_scalar_list.md)

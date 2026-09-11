@@ -660,10 +660,5 @@ lambda 以值捕获两个 scalar，使每个 shard 的元素循环只访问 x/y�
 | 精度与尾块 | AIV 同 dtype `Maxs→Mins` 与 `ubTail`；AICPU `ClampScalar` 与 `[beg,end)` | 不能混用两个执行族的 NaN规则；tail 只写有效长度 | `Process`; `ClampScalar`; `KernelScalarBound` |
 | 失败边界 | API null/dtype/shape/minmax、tiling UB/core/yDim、AICPU context/ParallelFor错误 | priority 1 非 `GRAPH_PARAM_INVALID` 失败不会自动转 common tiling；A2/A3 不可由 950外推 | `CheckParams`; `DoTilingImpl`; `GetInputAndCheck` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Maxs](../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/maxs.md)（`related`）：Maxs(yLocal, xLocal, minValue, len)；标量矢量计算接口，每个元素与标量取最大值。头文件 `basic_api/kernel_operator_vec_binary_intf.h`。计算公式 dst_i = max(src_i, scalarValue)。算子 kernel 直接以 Maxs 实现 Hardtanh 下界裁剪。
-- [Mins](../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/mins.md)（`related`）：Mins(yLocal, yLocal, maxValue, len)；标量矢量计算接口，每个元素与标量取最小值。头文件 `basic_api/kernel_operator_vec_binary_intf.h`。计算公式 dst_i = min(src_i, scalarValue)。算子 kernel 直接以 Mins 实现 Hardtanh 上界裁剪。
-- [Hardtanh 950 ACLNN 算子知识](hardtanh_950.md)（`same_topic`）：非原地接口最终经 `ViewCopy` 写入独立 `out`；本卡不覆盖 `aclnnInplaceHardtanh`。；对 `selfRef` 的每个逻辑元素执行 `min(max(x, clipValueMin), clipValueMax)`，最后把结果写回 `selfRef` 的原 view。。两卡共享 Hardtanh 裁剪公式和底层计算主题，差异集中在结果写入独立 out 还是写回 selfRef 原 view，属于原地性变体。
-<!-- cannbot:related:end -->
+- [Maxs](../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/maxs.md)
+- [Mins](../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/mins.md)

@@ -108,10 +108,3 @@ n：1, 2, 3, 1
 vector_data：[[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6], [4, 5, 6, 7]]
 result: 1 0.2773501 0.1414214 0.25
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Rnorm4df](rnorm4df.md)（`same_topic`）：功能：获取输入数据a、b、c、d的平方和a^2 + b^2 + c^2 + d^2的平方根的倒数。 功能：获取输入数据a中前n个元素的平方和a［0］^2 + a［1］^2 + ...+ a［n-1］^2的平方根的倒数。 相同 reciprocal norm 定义下，固定四标量与地址加可变 n 是可执行的 ABI 和长度选型边界。
-<!-- cannbot:related:end -->

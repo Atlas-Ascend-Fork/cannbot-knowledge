@@ -293,9 +293,3 @@ __global__ __aicore__ __vector__ void cummin_kernel(
 ## 误诊
 
 首轮设计担心的是 `__vector__` kernel 中的 scalar GM 访问不可编译，但编译器已经越过 GM 访问并精确停在 BF16 cast 后端，故该次构建失败的直接根因不是 GM 指针能力。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [bisheng 不支持 bf16 标量强转时用位布局精确提升到 fp32](bf16_scalar_to_fp32_bit_extension.md)（`related`）：比较卡定位到“dav-3510 的 bisheng aicore 后端不支持在该标量 kernel 路径中实例化 `bfloat16_t` 与 `float` 的双向 `static_cast`。”；转换卡给出“该后端不支持 UB bf16 标量经 C++ cast 直接生成 fp32。bf16 的 16 位编码正好是 fp32 的高 16 位，因此对原始位 `raw` 做 `fbits = uint32_t(raw) << 16`，再按 float 重解释即可保持符号位、指数和 7 位尾数，不引入算术舍入。”，共同提供绕开 BF16 标量 cast 限制的两种位级策略。
-<!-- cannbot:related:end -->

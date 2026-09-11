@@ -678,9 +678,3 @@ context tag 将通信域与 Extend op 隔离，`COMM_ENGINE_AIV` 明确把可达
 | 同步 | hard events、DCCI、PipeBarrier、SyncAll | producer完成前不得reduce/clear/退出 | `SyncFunc`/`Process` |
 | 精度与尾块 | FP32 1/0 exact sum；balanced rank remainder | `8n`、stride15、idle worker/used规则 | `SplitToCore/WaitStatus` |
 | 失败边界 | context/UB_MEM/Tiling/inner错误直返 | 不得把elastic内容、UB/window前提视为已校验 | `CheckProtocolSupport`/checks |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DistributeBarrier A3 ACLNN 算子知识](distribute_barrier.md)（`same_topic`）：｜ 计算语义 ｜ 在独占通信域内等待全部 rank 到达；`xRef` 只建立 Tensor 依赖，Kernel 不读写其数据 ｜；｜ 计算语义 ｜ 在独占通信域内等待全部 rank 到达；`xRef` 只建立依赖，Kernel 不读写其数据 ｜。两卡闭合同一 DistributeBarrierV2 屏障语义；A3 从 HCCL rank window 工作，950 则由 Host 预建 Mc2MoeContext 并走 DistributeBarrierExtend。
-<!-- cannbot:related:end -->

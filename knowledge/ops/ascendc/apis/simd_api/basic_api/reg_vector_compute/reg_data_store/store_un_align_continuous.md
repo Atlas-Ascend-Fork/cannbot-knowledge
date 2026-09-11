@@ -245,11 +245,3 @@ __simd_vf__ inline void LoadUnAlignVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, 
     }
     ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Squeeze](../compare_and_select/squeeze.md)（`related`）：“StoreUnAlign会自动从AR寄存器读取有效字节数作为地址偏移”说明 Squeeze 的 STORE_REG 输出直接驱动连续非对齐写址；“必须保证Squeeze接口和StoreUnAlign交替使用”给出消费该 AR 状态时的硬件调用顺序。
-- [StoreUnAlignMaskReg](store_un_align_mask_reg.md)（`same_topic`）：StoreUnAlign能够实现数据从MaskReg连续搬运至非对齐Unified Buffer（UB），利用非对齐寄存器UnalignRegForStore作为临时缓存区，暂存跨对齐边界的数据，从而实现高效的连续非对齐数据传输。；StoreUnAlign能够实现数据从RegTensor连续搬运至非对齐Unified Buffer（UB），利用非对齐寄存器UnalignRegForStore作为临时缓存区，暂存跨对齐边界的数据，从而实现高效的连续非对齐数据传输。。两卡描述同一 StoreUnAlign 非对齐连续搬运契约，并共享 UnalignRegForStore 跨边界暂存机制；差别仅在源操作数是 MaskReg 还是 RegTensor。
-<!-- cannbot:related:end -->

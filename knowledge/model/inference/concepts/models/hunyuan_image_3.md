@@ -194,9 +194,3 @@ with torch.npu.amp.autocast(enabled=False):
 
 - **gap**：源文档未给出 benchmark 数字、未列出 `attn_tp_size` / `moe_tp_size` / `ep_size` 推荐值
 - **gap**：文档提到 `HunyuanMoE` 类与 `HunyuanImage3ForCausalMM` 类，但未解释 `HunyuanImage-3.0` 的文本 tower 细节（是否为独立 LLM）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CFG Parallel](../parallelism/cfg_parallel.md)（`related`）：Classifier-Free Guidance (CFG) 在 DiT 每个采样 step 内需要做两次前向：一次条件（cond，带 prompt）、一次无条件（uncond，空 prompt），再按 `noise_pred = noise_pred_uncond + w·(noise_pred_cond - noise_pred_uncond)` 融合。CFG Parallel 把这两个样本分别放到两张卡上同时跑，每卡只做一次模型推理，最后通过 all_gather 互相拿对方的结果，端到端相当于把 DiT 每步耗时减半。HunyuanImage-3.0、Wan2.2-I2V 均采用该并行。；`cond` / `uncond` 两样本拆到两卡并行，all_gather 后合并。示例：TP2 + CFGP：。并行概念说明两次前向的拆卡机制，模型卡确认 HunyuanImage-3.0 的 cond/uncond 拆分与合并。
-<!-- cannbot:related:end -->

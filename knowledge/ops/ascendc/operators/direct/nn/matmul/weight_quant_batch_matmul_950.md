@@ -673,8 +673,4 @@ raw CMCT 的 A 不需要反量化。容量 guard 先令 `stepKa=ceil(align16(K)/
 | 精度与尾块 | R-001 exact raw + FP32 correction；R-002 FP32 dequant/HF32 off/K=16 Kahan | offset→scale→bias顺序、一次最终cast、M/N/K有效域 | `Prepare*/Process/Accumulate*/Finish*` |
 | 失败边界 | 校验/资源错误终止，无外部算子 fallback | 不把缺省指针占位当有效tensor；不扩展到batch/NZ/group | `CheckInputs/MakeRawAdaptiveSplitTiling` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetHF32](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_hf32.md)（`related`）：开启后，在矩阵乘计算时，float32数据类型会转换为hf32数据类型，可提升计算性能，但同时也会带来精度损失。；R-002 严格保持 FP32 反量化顺序：先把 X 转 FP32，把 `(W+offset)*scale` 转为 FP32 并由 `［K,N］` 写成 `［N,K］`，关闭 HF32；每 16 个 K 产生一个 FP32 `M×N` partial，用 FP32 Kahan 累积，最后加 bias 并 cast 一次。API 卡给出开启 HF32 的精度代价，算子卡明确在补偿 FP32 route 关闭它。
-<!-- cannbot:related:end -->
+- [SetHF32](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_hf32.md)

@@ -201,10 +201,3 @@ dst和src使用[TensorTrait](../../aux_data_structures/tensor_trait/index.md)类
 输入数据scalar = 2
 输出数据dstLocal: [4 8 12 ... 2048]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ShiftLeft](shift_left_shift_amount_tensor.md)（`same_topic`）：对源操作数中的每个元素进行左移操作，左移位数由标量scalarValue决定，无符号类型执行逻辑左移，有符号类型执行算术左移。；对源操作数中的每个元素进行左移操作，左移位数由Tensor指定，无符号类型执行逻辑左移，有符号类型执行算术左移。。两卡描述相同 ShiftLeft 元素语义的两个重载，核心差异是移位量由单个标量还是逐元素 Tensor 提供。
-<!-- cannbot:related:end -->

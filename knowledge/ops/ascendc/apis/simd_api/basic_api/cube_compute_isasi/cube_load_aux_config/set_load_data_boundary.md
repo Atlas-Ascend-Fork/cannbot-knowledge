@@ -73,11 +73,3 @@ AscendC::SetLoadDataBoundary(0);
 
 AscendC::LoadData(a2Local, a1Local, loadDataParams);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [基础API迁移指导](../../../../../guides/cross_gen_migration_guide/3510_arch_migration/2201_to_3510_guide/basic_api_migration.md)（`explains`）：不支持SetLoadDataBoundary接口。；设置 LoadData（卷积数据搬运）接口的 L1 Buffer（A1/B1）边界值。源操作数在 L1 Buffer 上的地址超出边界时，从起始地址开始读取（环绕）。迁移指南给出 3510 不支持结论，API 卡解释被移除能力的具体边界语义。
-- [LoadData](../cube_compute_load/load_data_3_d.md)（`related`）：设置 LoadData（卷积数据搬运）接口的 L1 Buffer（A1/B1）边界值。；将数据从L1 Buffer搬运到L0A或L0B Buffer的3D模式搬运接口。。SetLoadDataBoundary 配置的正是 LoadData 从 L1 到 L0A/L0B 搬运时的源地址环绕边界，需与实际 3D 搬运调用合用。
-<!-- cannbot:related:end -->

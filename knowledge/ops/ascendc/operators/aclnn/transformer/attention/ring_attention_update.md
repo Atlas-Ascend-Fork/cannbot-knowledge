@@ -550,9 +550,3 @@ workspace_total=16*1024*1024 system workspace（body不读写）
 | 同步 | Queue+PIPE_V | 原地temp依赖边 | Compute |
 | 精度与尾块 | softmax FP32，attention升FP32 | BF16 RINT/有效byte len | AttnCompute |
 | 失败边界 | 无fallback | 不能放宽0tile/非法key/attr | API/Tiling/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RingAttentionUpdate 950 ACLNN 算子知识](ring_attention_update_950.md)（`same_topic`）：稳定归并两组 softmax max/sum，并用归一化权重归并两份 attention；FP32 RegBase MicroAPI 稳定归并 softmax 统计量并加权归并 attention。两卡均执行 RingAttentionUpdate 的稳定 softmax 统计量合并和 attention 加权归并，目标卡把相同核心契约落实为 950 FP32 RegBase MicroAPI 实现。
-<!-- cannbot:related:end -->

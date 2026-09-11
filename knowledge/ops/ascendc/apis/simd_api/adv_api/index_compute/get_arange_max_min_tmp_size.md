@@ -62,10 +62,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetArangeMaxMinTmpSize(maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Arange（索引计算）](arange.md)（`related`）：由于Arange接口内部不需要用到临时空间，max和min均返回0。；给定起始值，等差值和长度，返回一个等差数列。。临时空间查询卡给出调用 Arange 生成等差数列前的 workspace 选取结果，二者组成 Host 侧容量查询到 Kernel 接口调用的直接链路。
-<!-- cannbot:related:end -->

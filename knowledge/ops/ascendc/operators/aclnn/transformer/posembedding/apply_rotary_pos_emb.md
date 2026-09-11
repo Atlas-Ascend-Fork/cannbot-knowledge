@@ -998,10 +998,3 @@ Q/K、cos、sin先以 `CAST_NONE` 升到 FP32，half交换、负号、两次 Mul
 | 同步 | TQue EnQue/DeQue/FreeTensor模式可复用 | depth1/depth2、输入消费后释放、输出写回后释放顺序不可改 | `CopyInQK/CopyIn/CopyOut` |
 | 精度与尾块 | FP16/FP32保持dtype，BF16升FP32后CAST_ROUND | mask、repeat stride、half交换、partial只写前缀不可跨route套用 | `ComputeTotary/ComputeBF16/CTotaryBF16` |
 | 失败边界 | Host检查和Kernel早退事实可复用 | 非half校验、alias建图、aclnnStatus映射固定仓不可见；不能自行补齐 | `CheckParams/ComputeAB`、V2 wrappers、entry guards |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [按序列位缓存 cos/sin 并让 q/k 共享搬运](../../../../runbooks/performance/cache_position_coefficients_across_shared_inputs.md)（`related`）：把 `cosFullF/sinFullF` 留在 TBuf 中，以 `cachedS_` 只在 `s` 变化时重载，并在同一行循环中先后计算 q/k，可同时消除跨 head 与 q/k 的冗余系数事务。；对 query、key 的前 `D_r=cos.shape［-1］` 个元素执行 half RoPE：`y=x*cos+rotate_half(x)*sin`，结果原地更新；A2/A3 公开约束仅允许 `rotaryMode="half"`。性能运行手册针对同一 half RoPE 的 query/key 共享 cos/sin 数据流，把算子契约落实为按序列位缓存系数的搬运优化。
-- [ApplyRotaryPosEmb 950 ACLNN 算子知识](apply_rotary_pos_emb_950.md)（`same_topic`）：A2/A3 只接受 half 模式。；half按两半成对：`(-x1,x0)`；quarter按四段成对：`(-x1,x0,-x3,x2)`；interleave按偶奇对：`(-odd,even)`。；两张卡闭合同一 ApplyRotaryPosEmb V2 入口和 RoPE 语义，前者限定 A2/A3 的 half Vector 路线，后者展开 950 的三模式 RegBase 路线及 key 缺陷，适合平台迁移与失败定位。
-<!-- cannbot:related:end -->

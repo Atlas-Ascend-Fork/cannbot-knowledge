@@ -88,19 +88,5 @@ mm.End();
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [矩阵乘输出的量化/反量化](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_quant_dequant.md)（`explains`）：“整个C矩阵对应一个量化参数，量化参数的shape为［1］”与“开发者在算子Kernel侧调用接口SetQuantScalar设置量化参数”把 PER_TENSOR 的 shape 契约落实到 Kernel 调用。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [InplaceQuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/inplace_quant_matmul_all_reduce_add_rms_norm.md)（`related`）：算子正文包含对 `SetQuantScalar(...)` 的直接调用；本卡提供该接口契约。
-- [QuantGroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_grouped_mat_mul_allto_allv_950.md)（`related`）：算子正文包含对 `SetQuantScalar(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [InplaceQuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/inplace_quant_matmul_all_reduce_add_rms_norm.md)
+- [QuantGroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_grouped_mat_mul_allto_allv_950.md)

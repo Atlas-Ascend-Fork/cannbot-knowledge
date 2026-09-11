@@ -185,10 +185,3 @@ platforms: []
 ## 总结<a name="section7965192813710"></a>
 
 优化点一和优化点二的适用场景，需要shape足够大，数据量足够多，才能分满核和开启最优的基本块。大shape场景下，MTE2 Bound算子可参考此案例的优化手段。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Matmul Tiling类使用说明](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/matmul_tiling_usage.md)（`explains`）：优化基本块，选择最优的baseM、baseN、baseK参数，其中baseM、baseN、baseK为Matmul Tiling中的参数。；Ascend C提供一组Matmul Tiling API，方便用户获取Matmul kernel计算时所需的Tiling参数。用户只需要传入A/B/C矩阵的Position位置、Format格式和DType数据类型等信息，调用API接口，即可获取到Init中TCubeTiling结构体中的相关参数。。调优案例以 baseM/baseN/baseK 改善搬运效率，API 使用页给出获得 TCubeTiling 参数的入口，连接了性能选择与可执行配置步骤。
-<!-- cannbot:related:end -->

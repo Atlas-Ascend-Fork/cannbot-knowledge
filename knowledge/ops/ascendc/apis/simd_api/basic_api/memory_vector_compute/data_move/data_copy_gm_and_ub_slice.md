@@ -226,10 +226,3 @@ AscendC::DataCopy(dstGlobal, srcLocal, dstSliceInfo, dstSliceInfo, dimValue);
 ```
 
 完整样例请参考[切片数据搬运样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2ub_slice)。srcSliceInfo、dstSliceInfo参数解析与结果示例请参考[图1](#fig1196816115710)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopy](data_copy_gm_and_ub_highdim_split.md)（`same_topic`）：软仿接口，支持数据的切片搬运，提取多维Tensor数据的子集进行搬运。；通过 DataCopyParams 配置 blockCount（数据块个数）、blockLen（单个数据块长度）、srcGap（源地址偏移）、dstGap（目的地址偏移），同时支持非连续和连续的数据搬运。。两端都解决 GM 与 UB 的多维非连续子集搬运；切片端以 SliceInfo 表达区间，HighDimSplit 端以块数、块长和 gap 表达相同搬运任务的另一参数化路径。
-<!-- cannbot:related:end -->

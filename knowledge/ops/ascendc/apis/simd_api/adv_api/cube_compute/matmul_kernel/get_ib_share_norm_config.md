@@ -84,11 +84,3 @@ if (tiling.isBias) {
 mm.IterateAll(gm_c);
 mm.End();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Matmul高阶API开启IBShare模板共享A和B矩阵数据](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_ibshare_ab.md)（`explains`）：用于配置IBShare模板的参数，获取自定义IBShare模板；通过设置A和B矩阵MatmulType的IBShare均为true，开启该优化。接口提供 IBShare 模板配置入口，指南展示 A/B 同时共享时的 MatmulType 设置、Cube 分核与 27.11us 到 22.44us 的验证路径。
-- [Matmul高阶API开启IBShare模板共享B矩阵数据](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_ibshare_b.md)（`explains`）：开启IBShare模板后，在L1 Buffer上是否同时缓存两块数据；IBShare功能通过共享L1 Buffer上相同的A矩阵或B矩阵数据，减少重复的MTE2数据搬运开销，提升算子性能。接口的 isDoubleCache 参数控制 L1 缓存块数，指南说明 B 共享的 MTE2 复用机制、适用 shape 与 IterateAll 输出约束。
-<!-- cannbot:related:end -->

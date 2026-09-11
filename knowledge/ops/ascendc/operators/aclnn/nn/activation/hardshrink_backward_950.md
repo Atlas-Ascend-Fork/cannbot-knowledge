@@ -913,8 +913,4 @@ for (int64_t i = 0; i < loopCount; i++) {
 | 精度与尾块 | FP16/FP32 native；BF16 FP32 比较后 `CAST_RINT`；U 计算/n 写回 | `CMPMODE::LE`、Select 输入次序、round mode、CopyOut 有效长度不可变 | `Compute`、`CopyOut` |
 | 失败边界 | 空域 API 快返；资源、shape、dtype、POD 获取失败阻断 launch | 不得绕过 A2/A3 缺失闭包、`uint16_t` DMA 与 UB 隐含前提 | `CheckParams`、`HardShrinkGradTilingFunc` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ASCENDC_TPL_SEL_PARAM](../../../../apis/utils_api/tiling_template_programming/ascendc_tpl_sel_param.md)（`related`）：“-> ASCENDC_TPL_SEL_PARAM(dtype, BUFFER_MODE)”展示 HardshrinkBackward Host selector 的实际调用；“宏展开后调用 GET_TPL_TILING_KEY 计算模板参数对应的 key 值，再通过 context->SetTilingKey 设置。”给出该调用如何生成 TilingKey，可直接核对 dtype 与 BUFFER_MODE 到 Device 模板的路由。
-<!-- cannbot:related:end -->
+- [ASCENDC_TPL_SEL_PARAM](../../../../apis/utils_api/tiling_template_programming/ascendc_tpl_sel_param.md)

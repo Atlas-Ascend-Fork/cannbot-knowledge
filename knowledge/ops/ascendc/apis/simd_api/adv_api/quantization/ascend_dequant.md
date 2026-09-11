@@ -413,21 +413,5 @@ AscendDequant<dstType, srcType, scaleType, config, policy>(dstLocal, srcLocal, s
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAscendDequantMaxMinTmpSize](get_ascend_dequant_max_min_tmp_size.md)（`related`）：先用“host侧Tiling接口，用于获取AscendDequant接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”在 max/min 范围内选择空间，再遵守“提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持标量/矢量scale场景。临时空间大小通过GetAscendDequantMaxMinTmpSize获取。”把空间交给标量或矢量 scale 重载，可直接排查临时空间和 isReuseSource 配置。
-- [GetAscendDequantTmpBufferFactorSize](get_ascend_dequant_tmp_buffer_factor_size.md)（`related`）：选择“提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持标量/矢量scale场景。临时空间大小通过GetAscendDequantMaxMinTmpSize获取。”的显式 sharedTmpBuffer 重载后，用“获取AscendDequant接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。”的 maxLiveNodeCount 与 extraBuf 反算 currentShapeSize，并处理 maxLiveNodeCount 为零的边界。
-- [Dequantize](dequantize.md)（`same_topic`）：“按元素做反量化计算（如int32_t反量化为half/float），将整数类型转换为浮点类型。最多支持二维输入。推荐使用Dequantize替代本接口。支持950PR/950DT、A3、A2训练/推理、推理AI Core、Kirin X90/9030。”与“按元素做反量化计算（如int32_t反量化为half/float），将高精度整数类型转换为浮点类型。最多支持二维输入。推荐使用本接口替代AscendDequant。仅Ascend 950PR/950DT支持。”是双方正文中的具体合同。旧接口与替代接口双向声明迁移关系，核心都是 int32 到浮点的逐元素反量化；互读能核对替代时的 scale 策略和平台收缩。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [FusedQuantMatmul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/fused_quant_matmul.md)（`related`）：算子正文包含对 `AscendDequant(...)` 的直接调用；本卡提供该接口契约。
-- [Sparse4to2QuantMatmulWeightNz A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/sparse4to2_quant_matmul_weight_nz.md)（`related`）：算子正文包含对 `AscendDequant(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [FusedQuantMatmul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/fused_quant_matmul.md)
+- [Sparse4to2QuantMatmulWeightNz A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/sparse4to2_quant_matmul_weight_nz.md)

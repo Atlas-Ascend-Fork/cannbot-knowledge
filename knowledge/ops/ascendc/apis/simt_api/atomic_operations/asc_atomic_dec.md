@@ -131,10 +131,3 @@ n: 6
 slots: 0, 3, 2, 1, 0, 3 // 顺序由实际原子执行顺序决定
 ticket after: 2
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscAtomicDec](../../simd_api/c_api/atomic/scalar_atomic/asc_atomic_dec.md)（`same_topic`）：对Global Memory中address指向的计数器执行原子递减操作，如果address上的数值等于0或大于指定数值val，则对address赋值为val，否则将address上数值减1。；对Unified Buffer或Global Memory上address的数值进行原子减1操作，如果address上的数值等于0或大于指定数值val，则对address赋值为val，否则将address上数值减1。两卡定义同一有回绕上限的 atomic decrement，分别给出 Scalar 与 SIMT 的内存、同步和调度边界。
-<!-- cannbot:related:end -->

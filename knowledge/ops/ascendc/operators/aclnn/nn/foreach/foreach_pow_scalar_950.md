@@ -555,9 +555,3 @@ SIMT body 对每个元素 load 后立刻 cast 到 `C=float`，调用 `powf`，�
 | 同步 | 写集互斥，不用 barrier/atomic | `tid` 与 `stride=threadNum*blockNum` 不得改坏 | `OpForeachPowScalarSimt` |
 | 精度与尾块 | FP16/BF16 升 FP32 powf；idx guard | scalar dtype producer、最终 cast、空 tensor continue | `ComputeType/Exec.../OpForeachPowScalarSimt` |
 | 失败边界 | API 校验、tensorNum/平台/UB/dtype Tiling 检查 | 不把 INT32 实现信号扩张成 V2 契约 | `CheckParams/GetPlatformInfo/ForeachPowScalarTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachPowScalar A2/A3 ACLNN 算子知识](foreach_pow_scalar.md)（`same_topic`）：对列表中每个张量逐元素计算 `y_i［j］ = pow(x_i［j］, exponent)`；对 TensorList 的每个有效元素计算 `y_i［j］=pow(x_i［j］, exponent)`；两端是同一 aclnnForeachPowScalarV2 公开算子合同在 A2/A3 与 950 的平台实现。
-<!-- cannbot:related:end -->

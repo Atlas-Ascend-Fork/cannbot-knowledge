@@ -106,10 +106,3 @@ AscendC::ReduceXorSum<int16_t, false>(dstLocal, src0Local, src1Local, sharedTmpB
 
 输出数据(dstLocal): [32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0] // 仅32为有效值
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetReduceXorSumMaxMinTmpSize](get_reduce_xor_sum_max_min_tmp_size.md)（`related`）：焦点卡要求“isReuseSource与ReduceXorSum接口保持一致”，候选卡定义“对多维向量按指定维度进行异或求和归约。”；Host 侧临时空间计算的复用参数必须与 Kernel 侧 ReduceXorSum 调用一致。
-<!-- cannbot:related:end -->

@@ -149,9 +149,3 @@ __simd_vf__ inline void reduce_sq_vf(__ubuf__ float *sumSqAddr, __ubuf__ float *
 ## 误诊
 
 静态断言中的“current device”容易让人误判为硬件不支持 float。实际不支持的是被错误推导为 `scalarValue` 的 `RegTensor` 类型，而不是 float 数据类型。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RegTensor](../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/reg_tensor.md)（`exemplifies`）：RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Length），长度为256B。b64或complex32类型下，支持通过RegTrait模板参数扩展存储2VL用于复杂计算。；`Adds` 是向量加标量接口，其第三个数据参数是 `scalarValue`。把 `RegTensor<float>` 传入后，模板会尝试把整个寄存器类型当成标量，随后触发 SupportType、可转换性和底层 `vadds` 重载检查。。API 卡定义 RegTensor 是寄存器操作数，runbook 用编译失败证明不能把它当 Adds 的标量参数。
-<!-- cannbot:related:end -->

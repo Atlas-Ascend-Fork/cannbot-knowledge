@@ -71,27 +71,13 @@ ge::graphStatus TilingXXX(gert::TilingContext* context) {
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCoreNum](get_core_num.md)（`same_topic`）：获取当前硬件平台的核数。；获取当前硬件平台AI Core中Vector核数。。两卡的产品表给出同一返回合同：分离架构返回 Vector Core 数、耦合架构返回 AI Core 数；它们是围绕同一平台核数查询决策的两个入口说明。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例（部分算子）
-
-展示 10 / 156 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [Im2colBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/im2col_backward_950.md)（`related`）：算子正文包含对 `GetCoreNumAiv(...)` 的直接调用；本卡提供该接口契约。
-- [CircularPad2d A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/circular_pad_2d.md)（`related`）：算子正文包含对 `GetCoreNumAiv(...)` 的直接调用；本卡提供该接口契约。
-- [Celu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/celu_950.md)（`related`）：算子正文包含对 `GetCoreNumAiv(...)` 的直接调用；本卡提供该接口契约。
-- [AttentionToFfn A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)（`related`）：算子正文包含对 `GetCoreNumAiv(...)` 的直接调用；本卡提供该接口契约。
-- [Rasterizer A2/A3 ACLNN 算子知识](../../../../operators/aclnn/cv/image/rasterizer.md)（`related`）：算子正文包含对 `GetCoreNumAiv(...)` 的直接调用；本卡提供该接口契约。
-- [CircularPad2dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)（`related`）：算子正文包含对 `GetCoreNumAiv(...)` 的直接调用；本卡提供该接口契约。
-- [ClippedSwiglu A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/clipped_swiglu.md)（`related`）：算子正文包含对 `GetCoreNumAiv(...)` 的直接调用；本卡提供该接口契约。
-- [DistributeBarrier A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/distribute_barrier.md)（`related`）：算子正文包含对 `GetCoreNumAiv(...)` 的直接调用；本卡提供该接口契约。
-- [ThreeInterpolateBackward A2/A3 ACLNN 算子知识](../../../../operators/aclnn/cv/image/three_interpolate_backward.md)（`related`）：算子正文包含对 `GetCoreNumAiv(...)` 的直接调用；本卡提供该接口契约。
-- [CircularPad3d A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/circular_pad_3d.md)（`related`）：算子正文包含对 `GetCoreNumAiv(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Im2colBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/im2col_backward_950.md)
+- [CircularPad2d A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/circular_pad_2d.md)
+- [Celu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/celu_950.md)
+- [AttentionToFfn A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)
+- [Rasterizer A2/A3 ACLNN 算子知识](../../../../operators/aclnn/cv/image/rasterizer.md)
+- [CircularPad2dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)
+- [ClippedSwiglu A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/clipped_swiglu.md)
+- [DistributeBarrier A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/distribute_barrier.md)
+- [ThreeInterpolateBackward A2/A3 ACLNN 算子知识](../../../../operators/aclnn/cv/image/three_interpolate_backward.md)
+- [CircularPad3d A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/circular_pad_3d.md)

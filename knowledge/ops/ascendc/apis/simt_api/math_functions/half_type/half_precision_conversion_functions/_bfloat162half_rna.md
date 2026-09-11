@@ -84,10 +84,3 @@ inline half __bfloat162half_rna(const bfloat16_t x)
         dst[idx] = __bfloat162half_rna(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162half_rna_sat](_bfloat162half_rna_sat.md)（`same_topic`）：遵循CAST_ROUND模式，将bfloat16类型数据转换为half类型数据；inf→ASCRT_MAX_NORMAL_FP16。两接口都是 bfloat16 到 half 的 CAST_ROUND 转换，`_sat` 变体明确把无穷钳到 FP16 最大正规值，提供是否采用饱和特殊值语义的直接选择。
-<!-- cannbot:related:end -->

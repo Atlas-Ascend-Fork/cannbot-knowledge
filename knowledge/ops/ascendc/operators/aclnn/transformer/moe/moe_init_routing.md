@@ -814,9 +814,3 @@ ReduceMax(dynamicQuantLocal, tempLocal, tempLocal, this->cols_);
 | 同步 | Queue/Event/SyncAll/atomic | producer→consumer | helpers |
 | 精度与尾块 | FP32 dynamic pipeline | /127、RINT/cast、valid blockLen | quant body |
 | 失败边界 | Host reject/terminal router | 不得静默改 mode | Check*/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [昇腾融合 MoE 路由的整数契约：npu_moe_init_routing(_v2) 的 active_expert_range 只吃 int、topk_ids 须 int32](../../../../../../model/inference/runbooks/runtime/npu_moe_init_routing_integer_contract.md)（`related`）：｜ `expertIdx` ｜ `［N,K］` / ND ｜ INT32 ｜ 必选；与 `x` 的 N 相同，`L=N*K` ｜；`topk_ids`（expert 索引）须 `torch.int32`。前者给出 ACLNN MoeInitRoutingV3 的专家索引输入 dtype，后者给出框架侧融合路由入口的同一专家索引整数约束，可用于定位路由调用前未归一 dtype 的失败。
-<!-- cannbot:related:end -->

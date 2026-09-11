@@ -142,9 +142,3 @@ after（终版，元素级 `tileOffset` 累加 + `xGm[tileOffset]`）：
 - 推断可迁移到 Ascend 950 / A3（同属 AscendC Vector 数据搬运模型，`DataCopy` + `SetGlobalBuffer` 语义一致），但**未验证，推断可迁移**——950/a3 上未实测。
 - `DataCopyPad` 的带 pad 参数重载 offset 由参数结构体控制，本卡的 `xGm[tileOffset]` 元素索引结论不直接套用。
 - 多核 `blockNum>1` 下 `numPerCore`/`tailNumLastCore` 的切分正确性在本 trace 未实测（首版固定单核）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetGlobalBuffer](../../apis/simd_api/basic_api/data_structures/global_tensor/set_global_buffer.md)（`exemplifies`）：“传入 GM 全局数据地址和大小，初始化 GlobalTensor。”给出焦点端事实；“GlobalTensor::SetGlobalBuffer(ptr, len)”给出候选端事实。API 卡说明 SetGlobalBuffer 只绑定 GM 地址与大小，runbook 用该调用复现多次 DataCopy 不会自动推进位置的故障，并给出显式 tileOffset 的修复边界。
-<!-- cannbot:related:end -->

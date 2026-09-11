@@ -92,18 +92,4 @@ ge::graphStatus TilingXXX(gert::TilingContext* context) {
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ASCEND350 非 SocVersion 枚举成员致编译失败](../../../../runbooks/compilation/ascend350_socversion.md)（`exemplifies`）：观测（tool_observed）：`platform_ascendc::SocVersion` 枚举的合法成员含 `ASCEND950`，无 `ASCEND350`；`build.sh` 的 `SOC_TO_ARCH` 把 `ascend350` 与 `ascend950` 都映射到同一个 arch 字符串 `3510`（运行时落到同一 SoC），但 C++ 侧枚举没有 `ASCEND350` 这个成员。；获取当前硬件平台版本型号。runbook 的编译排障必须以平台接口返回的实际 SocVersion 枚举合同为准，不能把构建别名当枚举。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [GroupNormSwish A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/group_norm_swish.md)（`related`）：算子正文包含对 `GetSocVersion(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [GroupNormSwish A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/group_norm_swish.md)

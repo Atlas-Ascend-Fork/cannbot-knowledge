@@ -75,10 +75,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         dst[idx] = __bfloat162half_ru_sat(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162half_ru](_bfloat162half_ru.md)（`same_topic`）：饱和模式下，将bfloat16类型数据转换为half类型数据，并遵循CAST_CEIL模式；遵循CAST_CEIL模式，将bfloat16类型数据转换为half类型数据。两端共享 BF16 到 half 的向上取整合同，sat 变体额外声明饱和模式；对照可核对同一转换的饱和与非饱和入口，避免误把后缀当作不同舍入方式。
-<!-- cannbot:related:end -->

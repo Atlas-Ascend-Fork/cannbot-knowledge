@@ -103,9 +103,3 @@ branch-4 用 `CeilAlign(aTotal*dtypeSize, blockSize)` 同语义。强制 `postRe
 
 - 推断可迁移：a2 / a3 平台 group 路径同构 `DataCopyPad` + `ReduceSum`——未验证，推断可迁移。
 - 未验证：`srcStride` 在 3510 上的单位（bytes vs 32B 块）歧义未在本卡闭环，仅用 `srcStride=0` 绕开；若未来需多 chunk 读，必须先确认单位语义。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad多行stride单位误用导致非对齐行输出NaN](../precision/datacopypad_stride_fields_use_32_byte_block_units.md)（`related`）：强制 `postReduceUbSize >= CeilAlign(aTotal_*dtypeSize, blockSize)` → `aUbFactorP2 = aTotal_` → `srcStride = aTotal_*4 - aTotal_*4 = 0`，Phase 2 单 chunk 连续读 workspace，消除 stride 错位。；也就是说，这些 stride 字段使用 32B block 数，而 `blockLen` 仍使用字节数。；若以后恢复 Phase 2 多 chunk，必须把相邻 workspace 行的字节间隔换算为 32B block 后填写 srcStride；现修法让该间隔和 srcStride 同时为零，正好绕开字段单位误填。
-<!-- cannbot:related:end -->

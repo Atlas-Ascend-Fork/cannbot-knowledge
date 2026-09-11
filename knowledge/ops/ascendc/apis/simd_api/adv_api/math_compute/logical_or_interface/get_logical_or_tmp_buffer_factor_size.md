@@ -74,11 +74,3 @@ uint32_t extraBuf = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetLogicalOrTmpBufferFactorSize(plat, typeSize, maxLivedNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogicalOrMaxMinTmpSize](get_logical_or_max_min_tmp_size.md)（`related`）：获取LogicalOr接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；host侧Tiling接口，用于获取LogicalOr接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两个 Host 接口面向同一 LogicalOr 临时空间预算：FactorSize 将固定空间换算为单次元素量，MaxMin 给出可选空间上下界。
-- [LogicalOr](logical_or.md)（`related`）：获取LogicalOr接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；按元素进行逻辑或操作。当输入数据类型不是bool时，零视为False，非零视为True。仅Ascend 950PR/950DT支持。。FactorSize 的输出专门用于规划 LogicalOr 单次计算量，LogicalOr 页定义被规划的 Kernel 运算及平台范围。
-<!-- cannbot:related:end -->

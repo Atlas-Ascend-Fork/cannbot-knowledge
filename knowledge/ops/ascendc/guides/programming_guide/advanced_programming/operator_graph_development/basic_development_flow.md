@@ -465,10 +465,3 @@ ge::graphStatus InferShapeForReshape(InferShapeContext *context) {
 >[!CAUTION]注意 
 >- 只有声明过数据依赖的输入，才可以在InferShape时调用GetInputTensor等获取tensor的接口获取其对应的tensor数据。若对一个未声明数据依赖的输入调用GetInputTensor等获取tensor的接口，只能在tensor中获取到正确的shape、format、datatype信息，无法获取到真实的tensor数据地址（获取到的地址为nullptr）。
 >- 从tensor中获取tensor\_data时\(GetData<int32\_t\>或GetData<int64\_t\>\)，使用者需要保证获取的数据类型是正确的，否则行为是未定义的。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [图编译和图执行](graph_compilation_and_execution.md)（`related`）：先编译算子（例如，使用ATC工具将Ascend IR定义的单算子描述文件编译成算子om模型文件），再调用acl接口加载算子模型，最后调用acl接口执行算子；除了需要提供工程化算子开发中的算子实现文件外，还需要额外交付算子入图的代码文件；基本开发流程给出图编译执行前必须交付的入图代码边界。
-<!-- cannbot:related:end -->

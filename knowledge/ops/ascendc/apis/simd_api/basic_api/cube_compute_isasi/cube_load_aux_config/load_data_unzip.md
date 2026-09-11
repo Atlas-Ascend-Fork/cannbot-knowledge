@@ -62,10 +62,3 @@ AscendC::LocalTensor<int8_t> weightB1 = inQueueB1.AllocTensor<int8_t>();
 AscendC::LoadUnzipIndex(indexGlobal, numOfIndexTabEntry); // 加载索引数据，加载GM上的压缩索引表到内部寄存器
 AscendC::LoadDataUnzip(weightB1, weGlobal); // 根据内部寄存器里的索引表加载数据
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LoadUnzipIndex](load_unzip_index.md)（`related`）：将 GM 上的压缩数据解压并搬运到 L1 Buffer（A1/B1）或 L0B Buffer（B2）。执行前须先调用 LoadUnzipIndex 加载压缩索引表到内部寄存器。；加载 GM 上的压缩索引表到内部寄存器，供 LoadDataUnzip 使用。索引表由压缩工具根据权重数据离线生成，包含压缩长度等信息。一个 LoadUnzipIndex 可加载多个索引表，每个 LoadDataUnzip 只消耗一个，索引表顺序须与压缩数据对应。。LoadDataUnzip 明确以前置 LoadUnzipIndex 为执行条件，目标接口负责加载并排序其消费的压缩索引表，二者组成索引准备后解压搬运到 L1/L0B 的有序调用链。
-<!-- cannbot:related:end -->

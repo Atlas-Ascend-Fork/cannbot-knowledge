@@ -98,22 +98,8 @@ extern "C" __global__ __aicore__ void add_custom(__gm__ uint8_t *x, __gm__ uint8
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [手动 tiling 头遮蔽自动生成类致 no member 判别](../../../../runbooks/compilation/tiling_no_member.md)（`exemplifies`）：用于获取tiling结构体的成员变量。；在 `JOIN_OP_DEF True` 工程里，kernel 侧不要手动 `#include "<op>_tiling.h"`、不要 `REGISTER_TILING_DEFAULT`；tiling 数据经自动生成的 `kernel_tiling/kernel_tiling.h` + `GET_TILING_DATA` 获取本地拷贝。。运行手册解释成员访问报错并非字段不存在，而是手写 tiling 类遮蔽生成类，最终应回到受支持的宏获取路径。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_MEMBER(...)` 的直接调用（第 407 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_kernel/grouped_matmul.cpp#L407)
-- [grouped_matmul_add A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_add.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_MEMBER(...)` 的直接调用（第 403 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_add/op_kernel/grouped_matmul_add.cpp#L403)
-- [grouped_matmul_add 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_add_950.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_MEMBER(...)` 的直接调用（第 403 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_add/op_kernel/grouped_matmul_add.cpp#L403)
-- [grouped_matmul_swiglu_quant A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_MEMBER(...)` 的直接调用（第 38 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_swiglu_quant_v2/op_kernel/grouped_matmul_swiglu_quant_v2.cpp#L38)
-- [GroupedMatMulAllReduce A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/grouped_mat_mul_all_reduce.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_MEMBER(...)` 的直接调用（第 63 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/grouped_mat_mul_all_reduce/op_kernel/arch22/grouped_mat_mul_all_reduce.cpp#L63)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)
+- [grouped_matmul_add A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_add.md)
+- [grouped_matmul_add 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_add_950.md)
+- [grouped_matmul_swiglu_quant A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant.md)
+- [GroupedMatMulAllReduce A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/grouped_mat_mul_all_reduce.md)

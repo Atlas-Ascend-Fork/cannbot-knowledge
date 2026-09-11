@@ -719,9 +719,3 @@ QK、缩放、mask、Softmax、importance和PV累加保持FP32；仅供PV的概�
 | 同步 | flag0 QK→AIV、flag1 P→AIC、HardEvent | mode2/pipe/ID/process序 | AIC/AIV Process |
 | 精度/tail | FP32主链、末端cast | BF16 RINT、FP16 NONE、真实M/N/K | Softmax/MMAD/Fixpipe |
 | 失败 | Host失败关闭、多token退化 | 不补mask内容/未知key fallback | checks/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NsaCompress A2 ACLNN 算子知识](nsa_compress.md)（`related`）：“｜ Kernel 路线 ｜ R-001：key 0 通用滑窗压缩；FP16/BF16 仅模板类型不同，启动拓扑相同 ｜”明确给出左端事实；“令压缩 KV 长度为 `Scmp`，GQA 分组 `G=numHeads/numKeyValueHeads`。AIC 先以 FP32 累加生成 `QKᵀ`；AIV 依次乘 `scaleValue`、在 `attenMaskFlag==1` 时按实际 Q/选择前 KV 长度把需要屏蔽行的最后一个压缩位置写为 `-3e38`、执行 FP32 Softmax，并同时输出 FP32 概率到 importance-score 路径和 FP16/BF16 概率到第二次 MMAD。AIC 将后者与 V 相乘、FP32 累加后转回输入 dtype。AIV 按源码权重三角窗累计 `Pslc`，再对每个 KV head 的 `G` 个 Q head 求和；边界候选写入 FP32 正无穷位型，最后 `TopK<float,...TOPK_NORMAL>` 输出 `int32` 索引。”明确给出右端事实。NsaCompress 以窗口和步长产出压缩序列，AttentionInfer 将压缩 KV 长度 Scmp 用于 QK、Softmax、PV 与选择块 TopK，前者产物进入后者的压缩注意力阶段。
-<!-- cannbot:related:end -->

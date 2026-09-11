@@ -60,10 +60,3 @@ AscendC::GlobalTensor<uint64_t> srcGlobal;
 int64_t cacheOffset = 0;
 AscendC::DataCachePreload(srcGlobal, cacheOffset);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_datacache_preload](../../c_api/cache_ctrl/asc_datacache_preload.md)（`same_topic`）：从源地址所在的特定GM地址预加载数据到Data Cache中，每次调用只能预加载一个Cache Line大小的数据。；预加载GM数据到Data Cache，提前将指定GM地址的数据加载到Cache中，后续Scalar单元读取时可直接命中Cache，减少访存延迟。。两卡描述同一 GM→Data Cache 预加载能力的 C API 与基础 API 表达，均服务后续 Scalar 访问命中。
-<!-- cannbot:related:end -->

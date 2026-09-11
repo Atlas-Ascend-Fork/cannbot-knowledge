@@ -86,19 +86,5 @@ value = AscendC::Std::get<2>(layoutInit.GetStride()); // value = 200
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [layout](layout1.md)（`related`）：“Layout结构体用于描述Tensor的数据排布，包含shape（各维度大小）、stride（各维度步长）和format（数据格式）等成员。”与“构造Layout结构体的辅助函数。通过传入shape、stride和format等信息创建Layout。”分别来自双方当前正文。Layout 卡定义结构体所承载的 shape、stride、format，MakeLayout 卡说明以这三类信息构造该结构体，形成数据描述与构造入口的直接关系。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AllGatherMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/all_gather_matmul.md)（`related`）：算子声明的固定版本源码包含对 `MakeLayout(...)` 的直接调用（第 401 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/all_gather_matmul_v2/op_kernel/all_gather_matmul_aiv_mode.h#L401)
-- [MatmulReduceScatter A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_reduce_scatter.md)（`related`）：算子声明的固定版本源码包含对 `MakeLayout(...)` 的直接调用（第 212 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_reduce_scatter_v2/op_kernel/matmul_reduce_scatter_aiv_mode.h#L212)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AllGatherMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/all_gather_matmul.md)
+- [MatmulReduceScatter A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_reduce_scatter.md)

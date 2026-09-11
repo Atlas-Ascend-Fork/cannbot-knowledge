@@ -145,11 +145,3 @@ Matmul API开启MDL模板的完整样例请参考[开启UnitFlag功能和MDL模�
 ## 总结<a name="section1593812115413"></a>
 
 大Shape输入、MTE2搬运次数多，且MTE1流水等MTE2流水的同步等待耗时较长的场景下，可以开启MDL模板。通过实现MTE2从Global Memory一次性搬入多个基本块到L1 Buffer（A1或B1），使后续的MTE1流水能尽量复用A1/B1的缓存数据，减少MTE2的搬运次数，从而提升算子性能。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulConfig](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_config.md)（`explains`）：本案例呈现了在矩阵乘算子场景中，使用Matmul高阶API进行矩阵乘法计算，开启MDL模板对算子性能的提升效果。在MDL模板中，MTE2流水从Global Memory到L1 Buffer（A1/B1）的数据搬运为一次性大包搬运，即一次MTE2能搬入多个Matmul计算的基本块，提升带宽利用率，使后续的MTE1流水尽可能复用A1/B1内基本块的缓存数据，减少MTE2的搬运次数。MDL模板的详细介绍请参考MatmulConfig。；模板参数MatmulConfig，用于配置Matmul模板信息以及相关的配置参数。不配置默认开启Norm模板，Norm模板的介绍请参考表模板特性。MatmulConfig的参数说明见表2。MatmulConfig的定义方式有： - 该模板参数可选取提供的模板之一，当前提供的MatmulConfig模板取值范围为【CFG_NORM、CFG_MDL、CFG_IBSHARE_NORM、MM_CFG_BB】，分别对应默认的Norm、MDL、IBShare、BasicBlock模板。各模板的介绍请参考表1。 - 该模板参数可以基于各类获取模板的接口，自定义模板参数配置，获取自定义模板。；案例要求开启 MDL，目标给出选择 CFG_MDL 的实际模板参数入口及默认 Norm 行为。
-- [MatmulTemplateParams](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_template_params.md)（`explains`）：本案例呈现了在矩阵乘算子场景中，使用Matmul高阶API进行矩阵乘法计算，开启MDL模板对算子性能的提升效果。在MDL模板中，MTE2流水从Global Memory到L1 Buffer（A1/B1）的数据搬运为一次性大包搬运，即一次MTE2能搬入多个Matmul计算的基本块，提升带宽利用率，使后续的MTE1流水尽可能复用A1/B1内基本块的缓存数据，减少MTE2的搬运次数。MDL模板的详细介绍请参考MatmulConfig。；创建Matmul对象时需要传入： - A、B、C、Bias的参数类型信息，类型信息通过MatmulType来定义，包括：内存逻辑位置、数据格式、数据类型、是否转置、数据排布和是否开启L1复用。 - MatmulConfig信息（可选），用于配置Matmul模板信息以及相关的配置参数。不配置默认使用Norm模板。；案例的 MDL 配置最终通过 Matmul 对象模板参数传入，目标补齐其与 A/B/C/Bias 类型信息的装配位置。
-<!-- cannbot:related:end -->

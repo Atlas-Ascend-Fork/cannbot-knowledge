@@ -608,9 +608,3 @@ if ASCEND_IS_AIC {
 | 精度与尾块 | 非量化FP16/BF16、expert/Matmul/permute tail | 不推断外部Matmul round | GMM/permute bodies |
 | 通信路由 | CCU=0、AICPU=1，engine/server/key一致 | 不做跨engine Device fallback | API/Host/entry/HCCL selector |
 | 失败边界 | 公开P集合、shape/count/resource | `e>32`不可安全复用；unknown key/空workspace不fallback | API/tiling/entry/`QuantGroupedMatmul::Init` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AlltoAllvGroupedMatMul A3 ACLNN 算子知识](allto_allv_grouped_mat_mul.md)（`same_topic`）：｜ 计算语义 ｜ `ataOut=AlltoAllv(gmmX)`；`gmmY=GroupedMatMul(ataOut,gmmWeight)`；可选 `mmY=mmX×mmWeight`，可选输出 expert-first `permuteOut` ｜；｜ 执行类型 ｜ `MIX_CV` + runtime HCCL CCU/AICPU service task；单个 AscendC kernel 使用 `KERNEL_TYPE_MIX_AIC_1_2` ｜。两卡实现同一 AlltoAllv 后 GroupedMatMul 公开任务；A3 仅闭合 AICPU 服务任务，950 还闭合 CCU 路线。
-<!-- cannbot:related:end -->

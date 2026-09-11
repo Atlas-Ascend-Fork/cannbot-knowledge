@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCnt = 0;
 uint32_t extraBuf = 0;
 AscendC::GetMeanTmpBufferFactorSize(typeSize, maxLiveNodeCnt, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Mean](mean.md)（`related`）：获取Mean接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetMeanMaxMinTmpSize获取。。factor 查询把固定缓冲换算为 Mean 单次元素数，Mean 接口选择显式缓冲或框架申请，闭合 Kernel 侧空间规划。
-<!-- cannbot:related:end -->

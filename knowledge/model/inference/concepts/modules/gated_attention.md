@@ -59,9 +59,3 @@ platforms:
 - [tensor-parallel](../parallelism/tensor_parallel.md)
 - [zigzag-cp](../parallelism/zigzag_cp.md)
 - [w8a8c8](../quantization/w8a8c8.md)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Qwen3.5-MoE](../models/qwen3_5_moe.md)（`related`）：“- **full attention**：`merged_qkv_proj` 一次 Matmul 同时输出 Q/K/V 与 attention gate；Q/K 做 QK-RMSNorm；partial RoPE（仅 `head_dim` 的一部分应用 MRoPE，`partial_rotary_factor=0.25`）；FlashAttention 走 `npu_fused_infer_attention_score_v2`（TND + block KV，见 ［fused-infer-attention-score］(../kernels/fused_infer_attention_score.md)）。”；“- **Qwen3.5-MoE full attention 路径**：`merged_qkv_proj` 一次 Matmul 同时输出 Q/K/V 与 **attention gate**”。模型卡的 full-attention 结构由模块卡的 Qwen3.5 专用 gated-attention 路径直接展开。
-<!-- cannbot:related:end -->

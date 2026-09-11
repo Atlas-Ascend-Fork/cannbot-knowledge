@@ -48,9 +48,3 @@ platforms: ["950"]
 - bs=64 `k_rope_cache` 断言失败：NPU RoPE 输出呈"每隔一个元素为零"模式，golden 全非零、npu 多处 0.0000（来源平台:950；证据等级:tool_observed）
 - `debug_rope.py` 逐元素对比输出 `[27] golden=0.373047 npu=0.000000 FAIL` 等，零值 index 集合 {27, 30-31, 34-35, …, 62-63}，自 27 起每 4 元素 2 零（来源平台:950；证据等级:tool_observed）
 - `DoRope64` 前后加 `PipeBarrier<PIPE_V>()` 后零值仍持续，排除 V 流水线 race（来源平台:950；证据等级:tool_observed）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [B16 交错 DINTLV 成对归零 — 转 fp32 后重排](b16_interleave_compute_should_promote_to_b32_layout.md)（`related`）：唯一根因是把 `DINTLV_B16` 产生的 B16 双寄存器 lane 布局直接当作逻辑偶/奇对，再经 `Reg::Cast` 做逐 lane 运算；该 interleave store 的 mask 在 64 维 / 当前 UB 布局下行为异常；两张运行手册都定位 Ascend950 上 B16 interleave 路径的成对错位或零值，并分别从寄存器解交错布局与 interleave store mask 给出放弃 B16 直排的诊断依据。
-<!-- cannbot:related:end -->

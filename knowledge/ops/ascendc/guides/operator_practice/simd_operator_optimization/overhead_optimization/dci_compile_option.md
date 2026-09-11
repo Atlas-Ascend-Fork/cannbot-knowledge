@@ -33,10 +33,3 @@ platforms: []
 -   算子使用\* \_\_gm\_\_的方式改写GM内存，或者调用GlobalTensor.SetValue函数时，正确的使用DataCacheCleanAndInvalid接口，手动将数据从DCache中回刷到GM上，保证Cache的一致性。不依赖编译框架自动插入DCCI指令来保证一致性。
 -   算子不包含使用\* \_\_gm\_\_的方式改写GM内存，或者调用GlobalTensor.SetValue函数的代码。
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCacheCleanAndInvalid](../../../../apis/simd_api/basic_api/cache_control/data_cache_clean_and_invalid.md)（`explains`）：插入DCCI是一种额外的容错保证，如果开发者使用了* __gm__的方式改写GM内存，或者调用GlobalTensor.SetValue函数时，没有正确的调用DataCacheCleanAndInvalid接口来保证Cache一致性，编译框架自动插入DCCI恰好可以保证算子精度正常。；清除并失效Data Cache，确保Scalar单元通过Data Cache读取的GM数据与DMA单元直接写入GM的数据保持一致。。指南说明开启 no-dcache-flush 前必须手动承担 DCCI 的一致性职责，API 卡定义清除旧缓存与回刷可见性的接口作用，直接决定该编译优化能否安全启用。
-<!-- cannbot:related:end -->

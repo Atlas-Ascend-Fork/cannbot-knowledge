@@ -457,9 +457,3 @@ block-level 分片已经体现在 GM base 与 len 中，VF 只能使用 thread s
 | 同步 | Queue protocol；SIMT unique writer | Queue 释放顺序；VF 无二次 block stride | RegBase/SIMT |
 | 精度与尾块 | B16→FP32；先 Div 后乘加 | CAST_RINT、mask/thread guard、inclusive range | Compute/VF |
 | 失败边界 | tiling/copy/validation 失败 | void launcher 不是状态；不混用 POD | plugin/calc/launch |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddcdivScalar 950 ACLNN 算子知识](../../../aclnn/nn/foreach/foreach_addcdiv_scalar_950.md)（`same_topic`）：“y［i］［j］ = x1［i］［j］ + float32(scalar) * q”与“y_i［j］ = x1_i［j］ + scalar * (x2_i［j］ / x3_i［j］)”分别给出双端正文事实；两卡执行相同的 TensorList addcdiv 标量公式，分别给出 Direct Invoke 与 ACLNN 的参数打包、Tiling、launcher 和精度路线，可用于同一逻辑算子的接入选型与结果核验。
-<!-- cannbot:related:end -->

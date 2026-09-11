@@ -882,9 +882,3 @@ if ((usedCoreNum_ < totalCoreNum_ / DOUBLE) &&
 | 同步 | Queue和 staged 路线的 MTE3→V event；LoopMode每次 reset | xOut 被 MTE3 消费完前不得由 Vector 覆盖 | `CopyXToMatchOut*`, `CopyOutY` |
 | 精度与尾块 | 核心按 T bit-copy；BOOL在框架边界转INT8；full/tail CP、tile、mask闭合 | 不引入算术 cast/round；只写有效 blockLen/mask | scalar VF helpers |
 | 失败边界 | Tiling shape/dtype失败；launcher添加失败；workspace null静默return | 不把 A2/A3缺失 body或 950未公开 unsigned dtype推测为正式闭包 | `CheckShape/CheckDtype`, entry guards |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RepeatInterleaveWithDim 950 ACLNN 算子知识](repeat_interleave_with_dim_950.md)（`same_topic`）：“｜ 计算语义 ｜ 对 `self` 的 `dim` 轴每个切片连续复制 `repeats` 次；`out.shape［dim］ = self.shape［dim］ * repeats`，其它维不变 ｜”与“｜ `repeats` ｜ 0D 或 1D、ND，可非连续；1D 长度为 1 或 `self.shape［d］` ｜ INT32、INT64 ｜ 值须为自然数；0D/长度 1 广播，长度 `R` 时逐轴位置取值 ｜”提供双方正文证据。两卡实现同一 RepeatInterleaveWithDim 语义；标量入口统一重复每个切片，tensor 入口还支持逐位置 repeats，并在 0D/长度 1 时覆盖标量路线。
-<!-- cannbot:related:end -->

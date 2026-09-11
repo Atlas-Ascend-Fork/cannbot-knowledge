@@ -69,11 +69,3 @@ uint32_t extraBuffer = 0;
 
 AscendC::GetDigammaTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuffer);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Digamma](digamma.md)（`related`）：“获取Digamma接口的maxLiveNodeCount和extraBuffer，用于在固定临时空间下推算算子单次最大计算元素数量。”提供固定 buffer 的反向容量公式；“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。”说明 Digamma 的临时空间入口，联合阅读可从已有 UB 容量推导可处理元素数。
-- [GetDigammaMaxMinTmpSize](get_digamma_max_min_tmp_size.md)（`related`）：“在minValue到maxValue范围内，临时空间越大性能越好”；“用于在固定临时空间下推算算子单次最大计算元素数量”。前者给可选空间范围，后者把实际可用空间反算为分块元素数，形成 Tiling 决策链。
-<!-- cannbot:related:end -->

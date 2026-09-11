@@ -81,9 +81,3 @@ kernel 已选"Vector pipe 向量化预计算 per-row nnz/start + 标量循环 Ge
 
 - 见 msprof 采集后 scalar ratio 80%+，不先评估 SIMT/负载均衡架构级路径，只在编码层做成员变量外提等微调，预期把 scalar 从 90% 降到 60% 仍是瓶颈。
 - 把超大行场景（scalar 63%）的结论外推到分布式场景——两者瓶颈形态不同，优化方向相反（超大行应优化 Duplicate/写出，分布式应消除标量循环）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [按行均分 tiling 致 nnz 倾斜时约半数核空闲](tiling_nnz.md)（`related`）：每行输出长度不规则（nnz 逐行变化）使 SIMD 框架无法跨行向量化输出写入，被迫退化为"逐行标量 GetValue 读预计算结果 + 单行 Duplicate/DataCopyPad 写出"的标量循环路径；该路径随行数 m 线性增长，scalar pipe 占比 80%+。；Host 多核 tiling 按"行数均分"而非"nnz 均分"，当输入矩阵 nnz 分布倾斜（前重后轻）时，后半核分到的行 nnz 极少而空转，逐核 cycle 差距 20×+。；两卡分别量化同类 CSR→COO 稀疏任务的核内 scalar 瓶颈与核间 nnz 负载倾斜，形成两级性能定界。
-<!-- cannbot:related:end -->

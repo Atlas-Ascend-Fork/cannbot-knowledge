@@ -99,10 +99,3 @@ yGm.SetL2CacheHint(AscendC::CacheMode::CACHE_MODE_DISABLE);</pre>
 >msopprof --launch-count=2 --output=./prof ./execute_add_op
 >```
 >重点关注Memory.csv中的aiv\_gm\_to\_ub\_bw\(GB/s\)和aiv\_main\_mem\_write\_bw\(GB/s\)写带宽的速率。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetL2CacheHint](../../../../apis/simd_api/basic_api/data_structures/global_tensor/set_l2_cache_hint.md)（`explains`）：当特定 GlobalTensor 启用 L2 Cache 后性能反而下降时可手动禁用，例如仅对单次读取的 Tensor 关闭缓存以避免额外搬运开销。；开发者可以针对访问的数据设置其CacheMode，对于只访问一次的Global Memory数据设置其访问状态为不进入L2 Cache，这样可以更加高效的利用L2 Cache缓存需要重复读取的数据，避免一次性访问的数据替换有效数据。。API 卡给出禁用入口，指南解释一次性数据污染缓存并替换有效数据的性能机制。
-<!-- cannbot:related:end -->

@@ -681,9 +681,3 @@ __aicore__ inline uint64_t ComputeByteOffset(uint64_t elementCount)
 | KC 精度 | Cube bias与 AIV F32 scale/cast顺序 | QBMM mix |
 | MX packing | FP4 byte offset与E8M0 scale offset | MX body/Cube-on-the-fly |
 | 同步 | KC barriers、MX 8/9 flags、communicator End | pipeline/communicator |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [QuantMatmulAlltoAll A2 ACLNN 算子知识](quant_matmul_allto_all.md)（`same_topic`）：A2 workspace 为 `16 MiB + tileM0*blockDim*2*tileN0*4` 字节；两 route 均化简为 `16 MiB + 262144*blockDim`，后项是 INT32 Cube 双 stage；workspace_total = libApiWorkspace + AlignUp(M*N*yBytes,512) * 2。两卡共享 QuantMatmulAlltoAll V2 逻辑入口，但分别给出 A2 peer-window 和 950 transpose/communicator 的资源闭包。
-<!-- cannbot:related:end -->

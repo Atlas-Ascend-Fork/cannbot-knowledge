@@ -77,10 +77,3 @@ platforms: []
 >- 请参考[Ascend C API](../../../../apis/index.md)中具体API支持的型号，来判断API接口是否支持Atlas 推理系列产品Vector Core。
 >- 支持Vector Core后，因为AI Core和Vector Core会分别执行，通过不同的任务进行调度，所以不支持核间同步指令，如IBSet、IBWait、SyncAll等。
 >- 算子计算溢出（输入inf/nan或计算结果超出范围）时，需注意AI Core和Vector Core结果表现不一致，AI Core仅支持饱和模式，Vector Core仅支持inf/nan模式。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [block 数应覆盖可用 Vector 核](../../../../runbooks/performance/block_count_uses_all_available_vector_cores.md)（`related`）：“设置的numBlocks代表的是AI Core和Vector Core的总数”给出启用 Vector Core 时 host tiling 的计数语义；“host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`”展示固定上限如何造成实际 Vector 核闲置。
-<!-- cannbot:related:end -->

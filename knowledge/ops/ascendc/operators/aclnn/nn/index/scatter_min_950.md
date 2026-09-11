@@ -614,8 +614,4 @@ cur = asc_atomic_cas(wordAddr, prev, newWord);
 | 精度与尾块 | FP16 用 float ACC，8-bit 用 int32 ACC；前尾核长度独立 | signed INT8 解码、half bitcast、`local<blockElems`、越界跳过 | `ReduceAcc`；`SimtComputeReduce` |
 | 失败边界 | coreNum 0 回退 1，空 index/slice 无写 | 非 950、非法 dtype/shape 不得伪造 fallback；算术溢出无源码保护 | `ResolveCoreNum`；ACLNN 文档错误表 |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_atomic_cas](../../../../apis/simt_api/atomic_operations/asc_atomic_cas.md)（`related`）：“Kernel 对同一目标元素的并发更新使用 CAS 重试；越界 `indices［m］` 直接 `continue`。”与“对Unified Buffer或Global Memory上address的数值进行原子比较赋值操作，如果address上的数值等于指定数值compare，则对address赋值为指定数值val，否则address的数值不变。”提供双方正文证据。ScatterMin 以 CAS 重试保护同一目标元素的并发最小值更新，API 卡定义比较相等才写入并返回旧值的原子合同，解释了重试循环的正确性基础。
-<!-- cannbot:related:end -->
+- [asc_atomic_cas](../../../../apis/simt_api/atomic_operations/asc_atomic_cas.md)

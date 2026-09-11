@@ -81,11 +81,3 @@ if (tilingFunc != nullptr) {
 // ...
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TilingDebug](../../../../guides/programming_guide/appendix/common_operations/tiling_debug.md)（`explains`）：通过OpTilingRegistry的LoadTilingLibrary接口加载Tiling动态库；使用GetTilingFunc接口获取Tiling函数指针。；典型用法：先通过 OpTilingRegistry.LoadTilingLibrary 加载算子 so 库，再调用 GetTilingFunc("AddCustom") 获取 Tiling 函数并执行。。候选 API 精确实现指南在加载动态库后的函数解析与调用步骤。
-- [LoadTilingLibrary](load_tiling_library.md)（`related`）：根据输入的路径，加载对应的Tiling动态库。开发者基于工程化算子开发开发方式完成算子实现后，可通过算子包编译或算子动态库编译获取对应的Tiling动态库文件。；典型用法：先通过 OpTilingRegistry.LoadTilingLibrary 加载算子 so 库，再调用 GetTilingFunc("AddCustom") 获取 Tiling 函数并执行。。加载接口把编译产物装入进程，GetTilingFunc 随后按算子名取得并执行其中的 Tiling 函数。
-<!-- cannbot:related:end -->

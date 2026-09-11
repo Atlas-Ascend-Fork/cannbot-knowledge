@@ -667,9 +667,3 @@ Mul(cLocal, cLocal, bLocal, curTileLen);
 | 同步 | Queue + PIPE_V | A consumer完成后才覆盖 temp | `Compute` |
 | 精度与尾块 | half/bf16升FP32、RINT；FP32原精度 | Pad calLen与GM有效长度分离 | `Compute`, `CaclTileCopyParams` |
 | 失败边界 | 资源/DMA guard和unknown key | 不添加不存在的fallback | `CalcTiling`, `swi_glu` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwiGlu 950 ACLNN 算子知识](swi_glu_950.md)（`same_topic`）：“公开两段式 `aclnnSwiGluGetWorkspaceSize` / `aclnnSwiGlu`；固定仓只有这一版公开 SwiGlu”与“公开两段式 `aclnnSwiGluGetWorkspaceSize` / `aclnnSwiGlu`；固定仓普通 SwiGlu 只有这一公开版本。”指向同一公开 ABI，分别给出 A2/A3 与 950 的 Host、Route 和 Kernel 实现。
-<!-- cannbot:related:end -->

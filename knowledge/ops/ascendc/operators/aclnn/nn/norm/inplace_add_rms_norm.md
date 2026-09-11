@@ -755,9 +755,3 @@ Host 将按 dtype 的 repeat 主体、尾长和跨行 stride 固化进 POD，Dev
 | 同步 | queue、PipeBarrier、hard event | Single-N 覆盖 x2 前必须 V_MTE2 | body |
 | 精度与尾块 | FP32 reduce，BF16 RINT，DataCopyCustom tail | 不得让 padding lane 写 GM/参与有效 sum | helpers/body |
 | 失败边界 | selector fallback 到 Normal | dead key、unknown key、溢出不可补推 | selector/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceAddRmsNorm 950 ACLNN 算子知识](inplace_add_rms_norm_950.md)（`same_topic`）：｜ 计算语义 ｜ `x=x1+x2`；每个归一化行 `rstd=1/sqrt(mean(x^2)+epsilon)`；`y=x*rstd*gamma` ｜；｜ 计算语义 ｜ `x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma` ｜。两卡定义同一原地 Add+RMSNorm 数学链，分别闭合 950 与 A2/A3 的 Host、Tiling 和 Kernel 实现，可用于跨平台接口迁移核对。
-<!-- cannbot:related:end -->

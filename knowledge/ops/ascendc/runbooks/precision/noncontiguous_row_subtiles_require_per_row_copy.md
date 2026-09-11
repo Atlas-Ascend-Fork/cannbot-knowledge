@@ -177,11 +177,3 @@ aliases: ["row_dma"]
 ## 误诊
 
 轨迹曾把该失败归因于 TQue 同步与 32B 最小搬运长度；显式屏障已经让完整行路径确定正确，而剩余失败严格跟随 `nCur<N`，最终按行修复后全量闭环，说明这里是独立的布局根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad 尾块改逐行一维搬入](datacopypad_partial_2d_blocks_use_per_row_copy.md)（`related`）：焦点卡写明“当 `nCur < N` 时相邻目标行首地址相差 `N` 个元素”，候选卡写明“改成每个 `r` 单独一次 `blockCount=1` 的一维搬入后”。焦点从 GM 行跨度证明部分列不能连续 slab，候选以逐行搬入消除 stride 与 UB 行落点歧义。
-- [非连续搬运场景减少搬运次数](../../guides/operator_practice/simd_operator_optimization/memory_access/reduce_non_contiguous_transfer.md)（`related`）：在非连续搬运场景可以使用DataCopyPad接口的Loop模式和DataCopy的多维数据搬运接口来减少搬运次数，优化搬运性能。；- `nCur < N_` 改用逐行 DMA，放弃未核实字段语义的 2D `srcStride` 一次搬运，优先保证正确性；指南给出非连续二维块在已核实参数下减少搬运指令的优化路径，运行手册给出行宽小于物理步长时先按行搬运的正确性基线，二者共同指导先证明 stride 合同再选择批量搬运。
-- [广播 CopyIn tile 跨段越界读判别](copyin_tile.md)（`same_topic`）：3. 反查 `CopyInOne` 广播分支：若用单次 1D `DataCopyPad(ub, gm［srcOff］, blockLen=tileLen)` 且 `tileLen > innerContig - (offset % innerContig)`，则 `gm［srcOff .. srcOff+tileLen)` 必然读出广播输入 GM 缓冲边界（广播输入在 GM 里只有 innerContig 个元素）之外的内存——越界读成立。；- 每次把二维/三维子块压成一次 DMA 前，写出相邻行地址差：若 `row_stride != copied_row_width`，它就不是连续块；两条 runbook 都裁定逻辑子块带物理间隔时单次连续 1D DMA 会越过当前行或广播段，修复决策是按真实连续边界切 tile 或逐行搬运后再验证。
-<!-- cannbot:related:end -->

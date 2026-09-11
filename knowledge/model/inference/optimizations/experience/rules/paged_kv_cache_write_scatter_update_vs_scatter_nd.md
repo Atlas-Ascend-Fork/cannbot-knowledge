@@ -57,9 +57,3 @@ prefill 分支需一个全 0 的 `kv_scatter_update_indices = torch.zeros((batch
 - `diff 事实`（@ea8d712a02e2）：`models/deepseek-v3.2-exp/models/indexer.py` 与 `modeling_deepseek.py` 的 `if is_prefill: scatter_update_ … else: npu_scatter_nd_update_` 两处（indexer 的 scales / states、MLA-prolog 的 nope / rope）逐条对上；`kv_scatter_update_indices = torch.zeros((batch_size,))` + 两句注释原文对上。
 - 性能仅定性（代码注释），不并入事实面。
 - 溯源下探：[cann-recipes-infer-pr-197-fix-tmp-kv-cache-set-to-bsnd-scatter-nd-update-replace-to-scatter-update](https://gitcode.com/cann/cann-recipes-infer/merge_requests/197)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MLA-prolog + zigzag-CP Prefill 必须用两段式 KV cache 写（勿按 slot_mapping 直写 paged cache）](mla_prolog_zigzag_cp_kv_write.md)（`related`）：“ - 叠加 zigzag-CP 时，prefill 不能按全局 `slot_mapping` 直写 paged cache，须先 all-gather 还原全序再 `scatter_update_` 写回（两段式），见 ［mla-prolog-zigzag-cp-kv-write］(mla_prolog_zigzag_cp_kv_write.md)——本页的连续 `scatter_update_(axis=1)` 正是那里「写回真 cache」的算子选择。”给出阶段选算子的例外，而“正确性锚点：CP 下写回真 cache 必须发生在 all-gather + zigzag 逆序**之后**，用连续的 `scatter_update_`（axis=1）而非按全局 `slot_mapping` 的 scatter-nd 直写。”规定执行次序；两者组成 zigzag-CP prefill 的完整 cache 写回合同。
-<!-- cannbot:related:end -->

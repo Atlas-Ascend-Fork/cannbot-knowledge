@@ -69,9 +69,3 @@ aliases: ["scalar_bypass"]
 - 平台：本 trace 只在 Ascend950PR（`950`）实测。a2/a3 上 GetValue/SetValue 在向量 kernel 中的副作用预期类似，但**未验证，推断可迁移**；如要落到 a2/a3 须重测。
 - 确切失败机制未追到硬件层——失败是 compile-time 还是 runtime 错误未区分（从 trace 看编译通过、运行时产出错误值）。
 - 本卡结论限定于"标量 bypass 在 arch35 向量 kernel 中混用 scalar/vector API"这一路线；GetValue/SetValue 在合法标量上下文（如 host 侧、非向量流）的正当用途不受影响。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetValue](../../apis/simd_api/basic_api/data_structures/local_tensor/set_value.md)（`exemplifies`）：设置 LocalTensor 指定索引的元素值。仅在 TPosition 为 VECIN/VECCALC/VECOUT 时支持。参数 offset 为索引偏移，value 为设置的值。支持 950/a2/a3。；在 Ascend950PR（arch35 / RegBase、CANN cann-9.0.0-beta.2）上开发 `softplus_v2_grad` 算子。为绕过 `Select(VSEL_CMPMASK_SPR)` 在标量场景（count==1）的 mask 污染问题，尝试对标量输入用 `LocalTensor::GetValue` / `SetValue` 做标量计算 bypass：当 count==1 时用 GetValue 从 LocalTensor 取标量值、用标量数学函数计算、用 SetValue 写回，绕开 Compare+Select 路径。；API 卡给出合法位置和参数，runbook 说明在 arch35 向量流把它当标量 bypass 会让测试失败数暴涨。
-<!-- cannbot:related:end -->

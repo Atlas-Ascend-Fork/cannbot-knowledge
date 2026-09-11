@@ -92,26 +92,12 @@ AscendC::GetSortMaxMinTmpSize(srcShape, valueType, indexType, isReuseSource, con
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Sort](sort.md)（`related`）：host侧Tiling接口，用于获取Sort接口所需的最大和最小临时空间大小。；提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetSortMaxMinTmpSize获取。。Sort 明确把显式 sharedTmpBuffer 的容量查询委托给 GetSortMaxMinTmpSize，二者是直接的 Host Tiling 与 Kernel 调用合同。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 9 / 9 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Sort 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/sort_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSortMaxMinTmpSize(...)` 的直接调用（第 204 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/sort/op_host/arch35/sort_tiling_arch35.cpp#L204)
-- [IndexFill 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/index_fill_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSortMaxMinTmpSize(...)` 的直接调用（第 75 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/index_fill/op_host/arch35/index_fill_tiling_simt_dense_indices.cpp#L75)
-- [TopK 950 Direct Invoke 算子知识](../../../../operators/direct/math/math/top_k_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSortMaxMinTmpSize(...)` 的直接调用（第 1236 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_host/arch35/top_k_v2_tiling_arch35.cpp#L1236)
-- [IndexFillTensor 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/index_fill_tensor_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSortMaxMinTmpSize(...)` 的直接调用（第 75 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/index_fill/op_host/arch35/index_fill_tiling_simt_dense_indices.cpp#L75)
-- [InplaceIndexFillTensor 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/inplace_index_fill_tensor_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSortMaxMinTmpSize(...)` 的直接调用（第 75 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/index_fill/op_host/arch35/index_fill_tiling_simt_dense_indices.cpp#L75)
-- [ScatterNd 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/scatter_nd_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSortMaxMinTmpSize(...)` 的直接调用（第 498 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_nd_update/op_host/arch35/scatter_nd_update_tiling_regbase.cpp#L498)
-- [ScatterNdUpdate 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/scatter_nd_update_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSortMaxMinTmpSize(...)` 的直接调用（第 498 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_nd_update/op_host/arch35/scatter_nd_update_tiling_regbase.cpp#L498)
-- [Scatter 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/scatter_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSortMaxMinTmpSize(...)` 的直接调用（第 368 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_host/arch35/scatter_elements_v2_asc_tiling.cpp#L368)
-- [UnsortedSegmentSum 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/unsorted_segment_sum_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSortMaxMinTmpSize(...)` 的直接调用（第 101 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_tiling_base.cpp#L101)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Sort 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/sort_950.md)
+- [IndexFill 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/index_fill_950.md)
+- [TopK 950 Direct Invoke 算子知识](../../../../operators/direct/math/math/top_k_950.md)
+- [IndexFillTensor 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/index_fill_tensor_950.md)
+- [InplaceIndexFillTensor 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/inplace_index_fill_tensor_950.md)
+- [ScatterNd 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/scatter_nd_950.md)
+- [ScatterNdUpdate 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/scatter_nd_update_950.md)
+- [Scatter 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/scatter_950.md)
+- [UnsortedSegmentSum 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/unsorted_segment_sum_950.md)

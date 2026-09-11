@@ -59,12 +59,3 @@ with limit_core_num(not self.enable_afd, self.aic_num2, self.aiv_num2):
 ## Evidence
 
 - `npu_stream_switch` + `limit_core_num(enable, aic, aiv)` 两套核数配置 + `npu_prefetch` 的耦合并行段：diff 事实 @d739fecb4232（skill 示例具名披露 LongCat-Flash，未逐字核模型源建模文件；`aic_num*/aiv_num*` 具体数值未给、案例强调按 profile 调，无 benchmark）。溯源下探 [cann-recipes-infer-pr-351-feat-update-agent-skills-with-full-optimization-pipeline-and-role-based](https://gitcode.com/cann/cann-recipes-infer/merge_requests/351)。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Attention-FFN 解耦（AFD）部署：把 MoE/FFN 剥到独立 rank，Send/Recv over SDMA 解除同卡多流控核约束降 decode TPOT](afd_attn_ffn_disaggregation.md)（`related`）：控核本身有代价：控核后每条流只能用部分核、算子受算力约束；**多流控核旋钮与 AFD 互斥**：`enable_multi_stream` 在 AFD 场景不生效（走 Send/Recv over SDMA 隐藏通信、非多流控核路径）。开 AFD 就别再指望多流控核旋钮。；两端给出同卡分核与跨节点 AFD 的明确替代边界。
-- [MoE Multi-Stream](../../../concepts/techniques/moe_multi_stream.md)（`related`）：MoE 多流平衡要求“通过控制多流上的 ai core 和 vector core 核数，使得双流的计算时间接近”，分核调优的触发信号为“多流之后还要分核”；后者提供 profile 驱动的核数再平衡步骤，直接补齐 LongCat-Flash 变体的调优闭环。
-- [带共享专家的 MoE decode 双流重叠：共享专家副流掩盖路由专家 dispatch/GMM/combine](../rules/moe_shared_expert_decode_dual_stream.md)（`related`）：分核是同卡多流方案内部的再平衡，不是无脑加。；**多流之后往往还要分核**（给两条流按 `limit_core_num` 配不同 Cube/Vector 核数）才稳定获益；候选把分核原则落到共享专家与路由专家双流的具体使用时机。
-- [decode 多流并行 overlap：模块级双流控核平衡 + 前处理子链切流](../rules/decode_multi_stream_overlap_core_balance.md)（`same_topic`）：**控核平衡是关键**：多流下单流独占全部 AI core 会压低另一流的算子并行度 → 用 `limit_core_num` 给主流/副流各分一段 core，使两流计算时间对齐、消除拖尾。；`aic_num*/aiv_num*` 不是通用值——控核参数要结合 profile 调整，硬搬别的模型的核数配比大概率不最优。；两端围绕同一 decode 模块双流控核决策，规则定义以两流时长对齐为目标，案例补齐 aic/aiv 两组参数必须由 profile 迭代而不能照搬常量。
-<!-- cannbot:related:end -->

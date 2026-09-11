@@ -37,10 +37,3 @@ platforms: []
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/code_optimization.png)<a id="图1-代码优化"></a>
 
 理论分析：SetMaskCount、SetMask、ResetMask、SetMaskNorm四个接口，每个接口调用耗时1cycle，连续调用180次Adds计算接口，共节省4×180 = 720cycles。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetVectorMask](../../../../apis/simd_api/basic_api/memory_vector_compute/mask_operations/set_vector_mask.md)（`explains`）：“在这些场景中，掩码配置保持不变的情况下，遵循“**一次性全局配置，后续复用**”的核心原则：在所有连续计算操作执行之前，通过调用**SetVectorMask**接口完成**全局掩码**的一次性、完整设置mask；随后，所有后续的向量计算接口调用均应将**isSetMask**参数设置为**false**，以明确指示接口跳过内部掩码设置流程，直接**复用已预置**的全局掩码状态。”与“设置 Vector Mask，控制矢量计算接口中参与计算的元素。支持 Count 模式（按元素计数）和 Norm 模式（按比特位）。头文件 `basic_api/kernel_operator_vec_intf.h`。支持 950/a2/a3。”提供双方正文证据。优化指南把 SetVectorMask 用作一次性全局配置并要求后续关闭 isSetMask，API 卡定义其 Count/Norm 掩码合同，指南解释了该 API 的复用用法。
-<!-- cannbot:related:end -->

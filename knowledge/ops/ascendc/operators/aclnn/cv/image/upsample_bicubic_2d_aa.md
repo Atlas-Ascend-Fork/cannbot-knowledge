@@ -644,9 +644,3 @@ Host 将输入、权重构造、两次 Matmul 与中间图统一为 FP32，避�
 | 同步 | queue lifecycle、Matmul End、W/H 全核 barrier | radio 覆盖和 H 读取不能提前 | `CopyRadioTensorToGm`、`Process` |
 | 精度与尾块 | FP32 cubic/Matmul；slice/row/batch tail | 权重先归一化；最后 slice 必须 `SetTail`；输出 cast 只在 wrapper | `CalculateRadioTensor`、`Calculate*Extension` |
 | 失败边界 | 空 tensor Host 短路、null workspace/unknown key 无 body | 不得把 classic key 1/3误记为公开 ACLNN 可达路线 | ACLNN entry、kernel router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [UpsampleBicubic2dAA 950 ACLNN 算子知识](upsample_bicubic_2d_aa_950.md)（`same_topic`）：对 NCHW 输入执行可分离的二维 Keys cubic 抗锯齿插值；先 W、后 H，核函数参数 `a=-0.5`；对 NCHW 输入逐输出像素执行 Keys cubic 抗锯齿插值；H/W 一维权重分别归一化后相乘，`a=-0.5`。两端实现同一 UpsampleBicubic2dAA 的 Keys cubic 抗锯齿语义，分别记录 A2/A3 的可分离两阶段路线与 950 的逐输出像素路线，可直接用于平台实现选型和结果对照。
-<!-- cannbot:related:end -->

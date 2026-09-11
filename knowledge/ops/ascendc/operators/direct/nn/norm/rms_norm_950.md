@@ -859,9 +859,3 @@ Host 把 `U` 和 `ubLoop` 约束为 2 的幂，Device 可用 power-of-two fold �
 | 同步 | Queue lifecycle 与 LocalMemBar 足以闭合单核 UB 流 | 不可把 Host 书写顺序替代 stream/queue 语义；无跨核 reduce | `DataCopyPad`、`LocalMemBar` |
 | 精度与尾块 | B16 输入先 FP32；平方和/rstd/Y 在 FP32；末端 RINT | mask/pad、末核、末行批、末列片、SIMT 单行 tail 均需保留 | `ComputeY/ComputeLatterY/RmsNormBfloat16D2Simt` |
 | 失败边界 | dtype/shape/resource 失败可定位 | 不得把零维、非连续、enqueue 错误宣称已处理 | `rms_norm_npu`、`CalcTiling`、Launcher |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RmsNorm 950 ACLNN 算子知识](../../../aclnn/nn/norm/rms_norm_950.md)（`same_topic`）：“把 `x` 的前导维展平为 `numRow = numel(x) / D`，最后一维长度记为 `D = numCol`。每行独立计算平方和、乘 `1/D`、加 `epsilon`、开方取倒数，再逐元素乘原输入与一维权重 `gamma`。”与“令 `D=product(gamma.shape)`，`N=product(x.shape［0:xRank-gammaRank］)`。每行计算 `s=sum_{i=0}^{D-1} float(x_i)^2`、`rstd=1/sqrt(s/D+epsilon)`、`y_i=cast_x(float(x_i)*rstd*float(gamma_i))`。归一化域是 `gamma` 对应的全部尾部维；`rstd` 保留这些维但长度均为 1。”提供双方正文证据。Direct 与 ACLNN 两端都按尾部 D 维逐行计算平方均值、epsilon、rstd 并乘 gamma，核心 RMSNorm 合同相同；差异在 Direct 固定一维 gamma，而 ACLNN 支持 gamma 对应的多尾维。
-<!-- cannbot:related:end -->

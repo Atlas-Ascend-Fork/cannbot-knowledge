@@ -1074,9 +1074,3 @@ if (tiling->numGroups == tiling->shapeC) {
 | 同步 | Queue + S_V/MTE2_S/V_S/PipeBarrier | Scalar/Vector 与 DMA 可见性 | 各 body |
 | 精度与尾块 | B16 升 FP32、round 降精度、DataCopyPad | sum/x² 顺序、有效 tail | base/B16/G16/HW1 |
 | 失败边界 | Host 失败即不 launch；entry 空 workspace/unknown key 无输出 | 不得自行 fallback | API 与 router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupNormSilu 950 ACLNN 算子知识](group_norm_silu_950.md)（`same_topic`）：A2/A3 卡以“最新公开两段式 `aclnnGroupNormSiluV2GetWorkspaceSize` / `aclnnGroupNormSiluV2`”为入口；950 卡同样以“最新公开 `aclnnGroupNormSiluV2GetWorkspaceSize` / `aclnnGroupNormSiluV2`”为入口，都是同一 GroupNorm+可选 SiLU 契约的平台实现，只是 Tiling/Kernel 路线不同。
-<!-- cannbot:related:end -->

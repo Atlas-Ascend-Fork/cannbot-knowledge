@@ -180,10 +180,3 @@ template <TPosition src, TPosition dst, int32_t depth, auto mask = 0> class TQue
 </tr>
 </tbody>
 </table>
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [纯搬运类算子VECIN和VECOUT建议复用](../../../../../guides/operator_practice/simd_operator_optimization/memory_access/vecin_vecout_reuse.md)（`explains`）：“这种场景可以使用Ascend C针对纯搬运类算子提供的TQueBind接口，该接口可以将UB（VECIN）与UB（VECOUT）绑定，省略将数据从UB（VECIN）拷贝到UB（VECOUT）的步骤，从而避免vector的无谓消耗。”给出优化动作；“TQueBind绑定源逻辑位置和目的逻辑位置，根据源位置和目的位置，来确定内存分配的位置 、插入对应的同步事件，帮助开发者解决内存分配和管理、同步等问题。”给出接口的内存与同步合同，二者直接支撑实现和验证。
-<!-- cannbot:related:end -->

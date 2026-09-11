@@ -917,10 +917,3 @@ Host 将 UB 切分轴到最内轴的轴数编进 schedule key。不超过 5 轴�
 | 同步 | TQue 交接每个 tile，单 Device node 无 event/atomic | 不得在 `DeQue` 前覆盖 input slot，不得在 CopyOut 前释放 output | `CopyIn*`, `Compute3`, `CopyOut4` |
 | 精度与尾块 | FP16/BF16 升 FP32，0.5 分支，RINT 降精度；`ubTail` + register mask + exact byte CopyOut | 不得只保留单公式或删除 mask/RINT；无效 lane 不得写 GM | 各 body `Compute3/CopyOut4` |
 | 失败边界 | API dtype/shape/null 失败，Tiling rank/UB/core/key 失败，unknown Device key 无输出 | mixed-weight key 不得当作 `aclnnInplaceLerp` 可达 Route；A3 不得仅凭文档生成卡 | `CheckParams`, `GetOpKey`, `DoBrodcastTiling`, `lerp` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Lerp 950 ACLNN 算子知识](lerp_950.md)（`related`）：｜ 计算语义 ｜ `selfRef <- selfRef + weight * (end - selfRef)`，逐元素 broadcast，最终结果写回 `selfRef` ｜；｜ 计算语义 ｜ 广播后逐元素计算 `out=start+weight*(end-start)`；Device 按 `weight<0.5` 选择等价的 start-anchored 或 end-anchored 公式 ｜；两端共享 Lerp 数值公式与 950 广播实现，但分别定义原地 owner 与非原地 out 合同。
-- [InplaceLerps 950 ACLNN 算子知识](inplace_lerps_950.md)（`same_topic`）：`weight` 是 Host `aclScalar`，在 950 被物化为 FP32 标量 Tensor；本卡仅 Tensor weight，不包含 scalar `aclnnInplaceLerps`。两卡共享原地 Lerp 计算核心，但分别闭合 scalar weight 与 Tensor weight 的公开入口和可达 Route，互相明确重载选择边界。
-<!-- cannbot:related:end -->

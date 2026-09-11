@@ -56,10 +56,3 @@ IEEE 754 下 `inf + (-inf) = NaN`。EMA 公式 `stat + m*(batch - stat)` 在 `st
 ## 坏实践
 
 把数学等价当 IEEE 754 等价：`a + b*(c - a)` 与 `(1-b)*a + b*c` 在有限域等价，在 inf 域结果不同（前者 NaN，后者 inf）。判别此类 bug 时不能只看数值容差，须检查 reason 是否为 `NaN/Inf mismatch` 且仅出现在含 inf 输入的用例。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BatchNorm 950 ACLNN 算子知识](../../operators/aclnn/nn/norm/batch_norm_950.md)（`related`）：BatchNorm 950 的训练语义规定“`runningMean=(1-momentum)*runningMean+momentum*mean`、`runningVar=(1-momentum)*runningVar+momentum*R/(R-1)*var` 更新统计量”；EMA 排障卡证明“`stat + m*(batch - stat)` 与 golden 的 `(1-m)*stat + m*batch` 在有限域数学等价、在 inf 域 IEEE 754 不等价。”，因此可直接用于构造含 inf 的 running statistics 验证和禁止等价改写。
-- [NDDMA 快速路径 C=1 中间轴漏维判别](nddma_c_1.md)（`related`）：“bn_training_update 精度调试中，blackbox TTK 含 inf 统计量的用例（如 `(3,12)` fp16、`variance` 范围 `(inf, inf)`；`(1,15,1,2,3)` fp16、`mean` 范围 `(-inf,-inf)`）报 `runningVariance` 或 `runningMean` `GOLD: FAIL`，reason 为 `NaN/Inf mismatch`。”；“`bn_training_update` 算子精度调试会话中，blackbox TTK 用例 shape `(5,1,3,4,4)` fp16 C=1（`(C,)` 张量长度 1），`square_sum` 范围 `(0,0)`（sq=0）。”。两卡是同一 bn_training_update 黑盒精度排障树的不同输出与触发分支，可用于先区分 EMA 相消和 NDDMA 漏维。
-<!-- cannbot:related:end -->

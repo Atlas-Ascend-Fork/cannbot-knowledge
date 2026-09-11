@@ -728,9 +728,3 @@ struct AsinOpWithCast {
 | 同步 | atvoss buffer id 的 MTE2/V/MTE3 Mutex protocol | 不得在 consumer 完成前覆盖同 buffer id；temp 跨 tile仅在完整 Run 后复用 | `GetTensor`; `ReleaseTensor`; `Run` |
 | 精度与尾块 | F32 direct；F16/BF16 `CAST_NONE -> asinf -> CAST_RINT`；DOUBLE `std::asin` | `count` 必须贯穿 DMA/Cast/SIMT，thread 必须保留 `i<count` | `AsinOpWithCast`; `AsinSimtCompute`; `ComputeAsinKernel` |
 | 失败边界 | dtype、shape、资源、launcher与 CPU dispatch 失败均传播 | 不得把 DOUBLE 塞入 950 AICore；不得忽略 Tiling `ubFormer==0` | `CheckParams1In1Out`; `ElewiseTiling`; `ComputeAsinDispatch` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceAsin 950 ACLNN 算子知识](inplace_asin_950.md)（`same_topic`）：第一段入口先执行 Inplace 专属校验，再复用 `ExecAsinGetWorkspaceSize(selfRef, selfRef, ...)`，但本卡不合并非原地 `aclnnAsin` 的整数输入和独立输出语义。；本卡只处理新建输出的 `aclnnAsin`；共享内部函数虽也被原地入口调用，但 `aclnnInplaceAsin` 属不同逻辑变体，不纳入路线。；两卡是共享 ExecAsin 内部路径的同一 950 Asin 核心对象，分别约束原地别名与独立输出契约。
-<!-- cannbot:related:end -->

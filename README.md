@@ -38,11 +38,11 @@ bash get_resources.sh
 
 脚本默认恢复文档及 `ops-nn`、`ops-math`、`ops-transformer`、`ops-cv` 源码；也可用 `--docs` 或 `--code` 单独恢复。源码按 Registry 中的固定 40 位提交统一放在 `cann-ops-raw/ascendc/<仓库名>/<commit>/`，当前每仓只登记一个提交，Direct Invoke 与 ACLNN 共用同仓基线；复用前校验提交、来源和工作区，拒绝覆盖本地修改。Operator 的本地 `sources` 路径相对于知识仓根，本地化只改写可用文件，对缺失来源明确报告，不自动切换版本。安装器默认准备这些资源；显式离线安装可传 `--skip-resources`。源码与归档均不提交。
 
-API 的相关区块区分“源码中使用此 API 的算子”和仅有正文证据的调用示例，前者可继续打开对应固定源码行。每个 API 最多展示 10 个自动关联，超出时标注“部分算子”；这不是全量调用图，也不表示每个编译分支都会执行调用。
+API 卡片通过普通 Markdown 链接引用算子知识。需要发现新引用时，可按需生成基于固定源码调用或正文示例的建议；建议区分证据来源和扫描范围，不证明运行时可达性，也不限制卡片已有链接的数量。
 
-普通构图与 CI 校验已提交导航，不要求下载源码；源码调用证据仍由知识更新和完整门禁重新扫描、校验。
+图谱按需读取卡片之间的现有链接；API 引用建议单独按需执行，不作为知识入库或 CI 构图的前置步骤。
 
-文档恢复时，脚本校验固定归档 SHA-256 后恢复到 `cann-docs-raw/`，并以固定文件、token 和数量幂等修复该批发布器误扩展到代码围栏中的链接；即使完成标记匹配，复用前也会重新计算整个最终内容树的 SHA-256，其他已有目标失败关闭。官方 API/Guide 只为含独立技术事实的来源页建卡，README、发布占位、纯链接目录和接口清单由逐层 `index.md` 统一导航；保留页的“产品支持情况”先写入 Frontmatter `platforms` 再从正文省略，其余正文保持完整并修正失效链接，再通过 `cannbot:related` 导航到使用相关 API 的算子知识。
+文档恢复时，脚本校验固定归档 SHA-256 后恢复到 `cann-docs-raw/`，并以固定文件、token 和数量幂等修复该批发布器误扩展到代码围栏中的链接；即使完成标记匹配，复用前也会重新计算整个最终内容树的 SHA-256，其他已有目标失败关闭。官方 API/Guide 只为含独立技术事实的来源页建卡，README、发布占位、纯链接目录和接口清单由逐层 `index.md` 统一导航；保留页的“产品支持情况”先写入 Frontmatter `platforms` 再从正文省略，其余正文保持完整并修正失效链接，可通过普通 Markdown 链接导航到使用相关 API 的算子知识。
 
 ## 这个仓库如何工作
 
@@ -69,9 +69,9 @@ API 的相关区块区分“源码中使用此 API 的算子”和仅有正文�
 |---|---|---|
 | `knowledge-query` | 查看实际知识覆盖，检索知识卡，并可保存不可覆盖的审计 receipt | 除指定 receipt 外只读 |
 | `ascendc-api-knowledge-query` | 复用 Query 按硬件平台检索 Ascend C API，阅读全文并按需追踪相关卡片和本地 CANN 头文件 | 否 |
-| `knowledge-ingest` | 统一路由新来源、增量、版本升级、通用建卡和图谱完整生命周期 | 可以创建候选卡并同步可提交的受管关系块；图谱 JSON 等产物始终 ignored |
+| `knowledge-ingest` | 统一路由新来源、增量、版本升级和通用建卡，支持按需链接图谱 | 创建候选卡；构图只读正文，产物始终 ignored |
 | `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航和日志；整理 Issue 材料 | 否 |
-| `ops-knowledge-trace-ingest` | 从算子开发 trace 蒸馏 Runbook，并按当前 Schema、索引和全库图谱门禁收口 | 仓内使用；只写经审查的 Runbook、导航和日志 |
+| `ops-knowledge-trace-ingest` | 从算子开发 trace 蒸馏 Runbook，并按当前 Schema、索引和Lint 和检索门禁收口 | 仓内使用；只写经审查的 Runbook、导航和日志 |
 | `ops-knowledge-vv-ingest` | 从固定版本源码提取不含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
 | `ops-knowledge-cv-ingest` | 从固定版本源码提取含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
 
@@ -180,7 +180,7 @@ bash init.sh agents /path/to/project contributor
 bash check.sh
 ```
 
-该入口先恢复并校验固定归档，再覆盖本仓知识 Lint（含严格 Git 来源导航）、固定归档受控转换复验、API→Operator 明确调用关系复验、Ascend C Runbook 正文门禁、检索回归、单元测试、Ruff、Shell 语法和本地图谱合成/校验。官方 `LICENSE` 原文不参与通用差异空白检查；固定归档 API/Guide 只对保留的来源正文行豁免 Git 空白提示，Frontmatter 与受管关系块仍执行通用检查，完整卡片再由确定性同步器复验。重新产生一般语义关系判定时，仍须按 Ingest 的多 Agent 全量流程执行。
+该入口先恢复并校验登记资源，再执行知识 Lint、固定归档受控转换复验、Runbook 正文检查、检索回归、单元测试、Ruff 和 Shell 语法检查。官方 `LICENSE` 原文不参与通用差异空白检查；固定归档 API/Guide 只对保留的来源正文行豁免 Git 空白提示，Frontmatter 与追加的普通链接仍执行通用检查。图谱按需从卡片间现有链接生成，API 引用建议也按需执行，两者都不是入库门禁；CI 保留同一轻量链接构图入口。
 
 ## 治理规范
 

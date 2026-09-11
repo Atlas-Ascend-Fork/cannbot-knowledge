@@ -618,9 +618,3 @@ if (rstdFlag_ != 0) {
 | 同步 | Queue、LocalMemBar、RegTensor scope | cache覆盖和输出 Free 时点不可提前 | 两 body `Process` |
 | 精度与尾块 | FP32 reduction/Newton/affine；dtype CastTrait | FP8/HIF8 sat/round、INT4 pack、curN/foldTail | common/reduce helpers |
 | 失败边界 | FullLoad→Recompute fallback | priority、R/UB/optional/dtype/shape guard | registry + `IsCapable` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RmsNormQuant A2/A3 ACLNN 算子知识](rms_norm_quant.md)（`same_topic`）：A2/A3 的公开产品表明确支持 `aclnnRmsNormQuant`，而 `aclnnRmsNormQuantV3` 的公开产品表明确不支持 A2/A3；公开产品表中 `aclnnRmsNormQuantV3` 只支持 Ascend 950PR/950DT，并明确不支持 A2/A3。两端共同划定 RmsNormQuant 的平台版本入口：A2/A3 使用无后缀接口，950 使用 V3。
-<!-- cannbot:related:end -->

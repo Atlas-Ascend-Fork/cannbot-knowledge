@@ -269,10 +269,3 @@ $$
    0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0 10 89  3 39 94 23 89 16
  23 60 71 42 46 58 65 90]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetDeqScale](../type_conversion_aux_config/set_deq_scale.md)（`related`）：“对输入做量化并进行精度转换，对输出结果的溢出采用饱和处理。需与SetDeqScale接口配合使用。”；“设置DEQSCALE寄存器的值，用于Vector计算单元上的量化计算，支持不同场景的量化参数配置。”。SetDeqScale 写入 CastDequant 计算前必须存在的 DEQSCALE 配置。
-<!-- cannbot:related:end -->

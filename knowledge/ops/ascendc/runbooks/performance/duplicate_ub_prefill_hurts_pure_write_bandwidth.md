@@ -57,9 +57,3 @@ platforms: ["950"]
 ## 坏实践
 
 - 为"让 HBM 写有已初始化数据"在纯写探针里加 `Duplicate` 预填充 UB——无 HBM 收益、纯增 Vector 开销。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Duplicate](../../apis/simd_api/basic_api/memory_vector_compute/data_padding/duplicate.md)（`exemplifies`）：`Duplicate<half>` 是 Vector 流水线指令，执行时占用 Vector 管线把 UB 填成指定值。在纯写探针里，UB 内容对 HBM 写带宽无影响（HBM 控制器按总线事务写，不关心 payload 初值），但 `Duplicate` 与 `DataCopy`（MTE3）在 kernel 里串行执行，`Duplicate` 的 Vector 执行时间被加进 kernel 总时间，拉低写带宽。即"预填充 UB"没有 HBM 侧收益，只有 Vector 侧开销。；将变量或立即数复制多次并填充到向量中，支持前n个数据计算和高维切分计算两种方式。运行手册用纯写 HBM 探针实证该填充 API 会额外占用 Vector 流水线，给出不得为写带宽预填 UB 的具体性能边界。
-<!-- cannbot:related:end -->

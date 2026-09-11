@@ -87,10 +87,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         asc_vf_call<simt_float22half2_ro_sat>(dim3(1024), (__gm__ float2*)input, (__gm__ half2*)output, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float22half2_ro](_float22half2_ro.md)（`same_topic`）：“饱和模式下，将float2类型数据的两个分量遵循CAST_ODD模式转换”与“将float2类型数据的两个分量遵循CAST_ODD模式转换”是同一 float2 到 half2 转换的饱和与普通入口。
-<!-- cannbot:related:end -->

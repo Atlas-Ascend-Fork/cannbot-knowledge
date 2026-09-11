@@ -109,13 +109,3 @@ BEGIN_TILING_DATA_DEF(TilingDataUnalign)
 END_TILING_DATA_DEF;
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GET_TILING_DATA](../../../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data.md)（`explains`）：“调用GET_TILING_DATA宏后，会将Tiling信息从GM拷贝到AI处理器的栈空间上，期间会有拷贝开销，由于GM访问效率较低，同时考虑到栈空间限制，需要限制TilingData结构大小。”；“获取算子 kernel 入口函数传入的 Tiling 信息，填入注册的 TilingData 结构体。以宏展开方式编译。”。Guide 解释为何要减小 GET_TILING_DATA 从 GM 到栈的搬运量，API 卡界定该宏的实际取数行为。
-- [GetBlockNum](../../../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_num.md)（`explains`）：“NumBlocks信息已经通过SetSimdNumBlocks接口进行设置，可以在Kernel侧调用GetBlockNum接口获取，无需通过TilingData结构传递。”；“获取当前任务配置的逻辑AI Core的数量，用于代码内部的多核逻辑控制等。”。Guide 给出删除冗余 NumBlocks 字段的具体替代调用，API 卡说明 GetBlockNum 返回的是任务逻辑核数。
-- [TilingData结构定义](../../../../apis/utils_api/tiling_data_structure_register/tiling_data_struct_definition.md)（`explains`）：“- CheckAlignAndGenPlaceHolder：该接口是内部关联接口，用于框架侧检查Tiling结构体中成员变量是否满足字节对齐要求，并对不对齐的变量进行补齐，开发者无需关注。”；“调用GET_TILING_DATA宏后，会将Tiling信息从GM拷贝到AI处理器的栈空间上，期间会有拷贝开销，由于GM访问效率较低，同时考虑到栈空间限制，需要限制TilingData结构大小。”。指南把结构定义的对齐与长度直接转成字段精简、排布和 GM→栈开销优化决策。
-- [Host 缺 SetDataSize 致 TilingData 截断](../../../../runbooks/precision/host_setdatasize_tilingdata.md)（`related`）：“【描述】TilingData结构是Tiling切分信息的载体，当Host侧按照Tiling切分策略计算完Tiling后，算子会以入参的方式将Tiling切分信息从Host侧传递到Device侧，此时Tiling信息存放在GM上。”；“任何在 op_host 自定义 TilingData 结构体的 ACLNN 算子，TilingFunc 末尾填完字段后必须 `rawTilingData->SetDataSize(sizeof(<TilingData>))`，再 `SetBlockDim`/`SetTilingKey`。”。精简 TilingData 时还必须由 Host 声明实际传输字节数，否则 Device 只收到截断结构，优化会变成功能错误。
-<!-- cannbot:related:end -->

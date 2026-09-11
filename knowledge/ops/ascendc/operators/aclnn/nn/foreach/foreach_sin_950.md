@@ -507,9 +507,3 @@ __simt_callee__ inline T ComputeSin(T val)
 | 同步 | 无barrier/atomic，线程独占idx | `idx`起点/步长必须保持全grid唯一 | `OpForeachSinSimt` |
 | 精度与尾块 | FP32 `sinf`统一opmath，`idx<count`tail | 低精度升降顺序与有效域 | `ComputeSin` |
 | 失败边界 | Host平台/tensorNum/dtype失败阻断launch | 非法mode不得视为fallback | `GetPlatformInfo/ForeachSinTilingFunc/foreach_sin` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachSin A2/A3 ACLNN 算子知识](foreach_sin.md)（`same_topic`）：分核只以列表中最大Tensor的元素数 `M` 为依据，不按Tensor总元素数求和。；令 `E=sum_i tensorDataCountList［i］`，`s=sizeof(dtype)`，`e32=32/s`。两卡均实现 aclnnForeachSin TensorList 逐元素正弦，但 950 按最大成员组织 SIMT grid，A2/A3 按列表总元素组织 Vector 分核，适合跨平台迁移核验。
-<!-- cannbot:related:end -->

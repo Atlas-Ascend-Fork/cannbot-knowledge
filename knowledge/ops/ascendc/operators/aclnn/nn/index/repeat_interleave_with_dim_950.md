@@ -694,9 +694,3 @@ Host 按 batch→CP→repeats 的顺序逐级补并行，只在前两级仍不�
 | 同步 | Queue事件；Small DCCI+SyncAll | 标量读前MTE2→S、UB覆盖前MTE3→V | 各 body 同步点 |
 | 精度与尾块 | T位复制；offset按201/202选位宽；exact blockLen | 不得把INT64 offset降为INT32或让padding lane写GM | `UseInt64`、CopyOut方法 |
 | 失败边界 | API参数错误、Tiling失败、unknown key无输出 | 不得把缺少Host guard解释为支持超大repeat/溢出shape | `CheckParamsDim/GetTilingKey/repeat_interleave` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RepeatInterleaveIntWithDim 950 ACLNN 算子知识](repeat_interleave_int_with_dim_950.md)（`same_topic`）：“｜ 计算语义 ｜ 对 `self` 的 `dim` 轴每个切片连续复制 `repeats` 次；`out.shape［dim］ = self.shape［dim］ * repeats`，其它维不变 ｜”与“｜ `repeats` ｜ 0D 或 1D、ND，可非连续；1D 长度为 1 或 `self.shape［d］` ｜ INT32、INT64 ｜ 值须为自然数；0D/长度 1 广播，长度 `R` 时逐轴位置取值 ｜”提供双方正文证据。两卡实现同一 RepeatInterleaveWithDim 语义；标量入口统一重复每个切片，tensor 入口还支持逐位置 repeats，并在 0D/长度 1 时覆盖标量路线。
-<!-- cannbot:related:end -->

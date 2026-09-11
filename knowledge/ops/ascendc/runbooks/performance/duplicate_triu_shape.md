@@ -77,9 +77,3 @@ aliases: ["mask_generation", "HardEvent", "event_flag"]
 
 - 初判"33M 次标量 SetValue 使 Case 9 超时 FAILED"——`timeout 120 ./run.sh` 复测推翻：kernel 在 120s 内跑完、输出错误，属 correctness 非超时。标量操作数 33M 仅是数量级旁证，非因果。
 - 把路线 A 的"仍 FAILED"误读为"向量化力度不够"而升级到路线 B/C——实为方向错误，三条例证均未触及 event flag 耗尽的真实根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetFlag/WaitFlag](../../apis/simd_api/basic_api/sync_control/intra_core_sync/set_flag_wait_flag_isasi.md)（`exemplifies`）：用 per-tile `SetFlag`/`WaitFlag` 处理 ~131k tile 的 V→V 依赖——event 资源在大 tile 数下耗尽，应改 `PipeBarrier<PIPE_ALL>`。；- SetFlag和WaitFlag必须成对使用，且SetFlag和WaitFlag的参数必须完全一致（包括模板参数event和输入参数eventID）。如果不匹配，会引发timeout问题。例如，SetFlag(1)和WaitFlag(1)并不匹配，因为其模板参数event不同。运行手册给出该同步 API 在大量逐 tile 事件下资源耗尽的真实失败路线，补充接口页的配对合同与排障边界。
-<!-- cannbot:related:end -->

@@ -56,10 +56,3 @@ platforms:
 
 - `仓自报`（@244e12f）：warmup 在增补日志前全程无输出、长 seq 下易被误判卡死；dummy 缓存复用把多同质 minibatch 的重复前向压到只跑首个。二者均为该仓 warmup 路径行为，无独立 before→after 计时数字。
 - 溯源下探：[cann-recipes-infer-issue-10-requirement-warmup](https://gitcode.com/cann/cann-recipes-infer/issues/10)、[cann-recipes-infer-pr-6-feat-add-warm-up-dummy](https://gitcode.com/cann/cann-recipes-infer/merge_requests/6)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclgraph decode 稳态期优化：warm-up 后 skip_guard_eval_unsafe 跳 guard 复评 + custom op reinplace 映射](../../guides/experience/interventions/aclgraph_decode_steady_state_skip_guard_reinplace.md)（`related`）：warmup 诊断警示“**看似卡死**：warmup 阶段全程无日志输出”，不能在首编译阶段误杀进程；稳态优化则限定“**仅对非 warm-up 的稳态步开启**”，明确跳 guard/reinplace 的启用时点必须等 warmup 完成。
-- [昇腾 bringup 初始化/HCCL 报错的根因常在环境/驱动/平台层，顶层 ACL/HCCL 码是泛化包装](../runtime/bringup_error_root_cause_env_driver_platform.md)（`related`）：warmup 现象为“**看似卡死**：warmup 阶段全程无日志输出”，而 bringup 排障需注意“「拉起后长时间无输出、看似 hang」常是 warmup 静默长耗时而非真故障”；二者共同把启动静默从环境/HCCL 真故障中分流出来。
-<!-- cannbot:related:end -->

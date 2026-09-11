@@ -230,10 +230,3 @@ platforms: []
 
 
 若要深入理解Ascend C的SIMD与SIMT编程模型，请参阅[Ascend C编程模型概述](../../../programming_guide/programming_model/programming_model_overview.md)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscAdd](../../../../apis/simd_api/c_api/vector_compute/vector_arith/asc_add.md)（`explains`）：数据计算：通过C API接口asc_add或C++接口AscendC::Add完成。；执行矢量加法运算。计算公式如下：快速入门明确选择 asc_add 完成计算，API 卡给出该调用的矢量加法与对齐合同，可从教程步骤直接进入接口查阅。
-<!-- cannbot:related:end -->

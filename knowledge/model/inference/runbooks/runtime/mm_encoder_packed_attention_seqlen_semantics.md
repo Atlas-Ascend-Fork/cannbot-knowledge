@@ -101,11 +101,3 @@ def npu_flash_attention(query, key, value, seq_lens_cpu, head_num, scale_value, 
 
 - `diff 事实`（merge commit `c9aff2b0`，`vllm_ascend/device/device_op.py` / `vllm_ascend/ops/mm_encoder_attention.py` @`c9aff2b095e0e3b9295bc4cadc497e5d8f447840`）：`_npu_flash_attention_unpad` 收 `seq_len=seq_lens_cpu`（原始长度、out-tensor 语义）、`npu_fusion_attention` 收 `list(seq_lens_cpu.cumsum(0))` 后的 `actual_seq_qlen/actual_seq_kvlen`（TND、返回取 `[0]`），两算子 seq_lens 均在 CPU；设备分派 `BaseDeviceAdaptor`(A2/A3) vs. `A5DeviceAdaptor`(950) 由 `get_device_adaptor()` 在 import 期依 `get_ascend_device_type()` 决定。
 - 溯源下探：[vllm-ascend-pr-8671-performance-in-scenarios-a2-and-a3-replace-npu-fusion-attention-with-the](https://github.com/vllm-project/vllm-ascend/pull/8671)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [把注意力/compressor 算子迁到 TND packed-sequence 的调用约定（合轴 query、actual_seq_qlen、dequant_scale 同轴、按阶段切布局）](../../optimizations/experience/rules/attention_compressor_tnd_layout_migration.md)（`related`）：“必须提供按请求累积的 `actual_seq_qlen`”规定 FIA 的 TND 调用要传请求边界；“走 `npu_fusion_attention(TND)` 的分支：先 `seq_lens_cpu = list(seq_lens_cpu.cumsum(0))` 转前缀和”给出从原始序列长度生成该边界的具体转换。
-- [昇腾多模态模型 bringup 的结构失配：框架侧 config 扫描盲区与 OOT 算子秩契约违背](mm_bringup_config_scan_and_oot_op_rank_contract.md)（`related`）：同类多模态编码器 packed 全注意力里，两个可互换昇腾融合算子的 `seq_len` 语义（原始长度 vs. cumsum）不同、误用也会导致输出错位——同源于「OOT 算子契约细节被上层误当同义」，见 ［mm-encoder-packed-attention-seqlen-semantics］(mm_encoder_packed_attention_seqlen_semantics.md)。；同一段 packed 全注意力可由两个昇腾融合算子实现，但它们的「每序列长度」入参**名字和含义都不同**：；结构失配手册把 packed seq_len 表示列为相邻的 OOT 合同风险，目标手册展开原始长度与 cumsum 的算子差异，联合阅读可同时校验编码器输出秩和 packed 序列边界。
-- [昇腾推理统一 TND packed-sequence 布局：为何是标准、BSND/packed-1D shim 的等长约束与变长崩溃](../../optimizations/experience/rules/tnd_packed_sequence_standard_and_bsnd_shim.md)（`related`）：- `unpad` 吃**原始长度**；`fusion_attention` TND 吃 **cumsum 前缀和**。把原始长度直接喂给 TND 版（或把 cumsum 喂给 unpad 版）就会按错误的边界切分。转换是 `list(seq_lens_cpu.cumsum(0))`（原始 → cumsum），反向做差分还原。；**变长 packed 或多序列 decode 必须把注意力迁到 TND 布局**（不能靠 shim 硬撑）。packed-1D 下还有几条 lm_head/判阶段约定（维护者 review 确认）：；运行手册给出 TND 所需 cumsum 表示，布局规则给出变长 packed 的 TND 选择，二者共同约束布局、长度转换和错位排查。
-<!-- cannbot:related:end -->

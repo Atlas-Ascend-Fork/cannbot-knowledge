@@ -72,10 +72,3 @@ __aicore__ inline void SetUserTag(const TTagType tag)
 AscendC::TTagType tag = 10;
 inputLocal.SetUserTag(tag); // 对LocalTensor设置tag信息。
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetUserTag](get_user_tag.md)（`related`）：焦点卡负责“获取指定Tensor块的Tag信息”，候选卡明确“后续可通过GetUserTag获取指定Tensor的Tag信息”；SetUserTag 写入、GetUserTag 读取构成同一 Tensor 元信息的成对访问合同。
-<!-- cannbot:related:end -->

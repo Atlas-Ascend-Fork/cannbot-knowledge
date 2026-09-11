@@ -116,12 +116,3 @@ __global__ __aicore__ void mul(GM_ADDR x1, GM_ADDR x2, GM_ADDR y, GM_ADDR worksp
 }
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [507035 host tiling workspace 缺 RESERVED](../../../../runbooks/compilation/register_none_tiling_reserved_workspace_507035.md)（`exemplifies`）：“`REGISTER_NONE_TILING` 模式下，框架生成的 kernel wrapper 调用 `SetSysWorkspaceForce(workspace)` 把整个 workspace 起始段留作系统保留区，再计算 `usrWorkspace = workspace + AscendC::RESERVED_WORKSPACE` 并把 `usrWorkspace` 作为 `workspace` 形参传给 kernel。”把 507035 的触发范围锁定在 REGISTER_NONE_TILING 的无 TilingFunc 路径；“Kernel侧使用标准C++语法定义TilingData时，告知框架使用未注册结构体，配套GET_TILING_DATA系列接口获取TilingData。”定义该注册模式的框架入口。两端共同提示此模式下 workspace 总量不能沿用 TilingFunc 路径的假设。
-- [REGISTER_NONE_TILING 致 UnboundLocalError](../../../../runbooks/compilation/register_none_tiling_unboundlocalerror.md)（`exemplifies`）：Kernel侧使用标准C++语法定义TilingData时，告知框架使用未注册结构体，配套GET_TILING_DATA系列接口获取TilingData。；op-compile 在 `REGISTER_NONE_TILING` 下抛 `UnboundLocalError: cannot access local variable 'tiling_struct_size'`（ascendc_compile_dfx.py:239 `_generate_binary_for_tiling_without_register`）（来源平台：950；证据等级: tool_observed）；API 给出未注册结构体模式，runbook 提供模板化 TilingData 在 CANN 9.1.0 上的构建失败与替代注册方式。
-- [直调不可用 GET_TILING_DATA_WITH_STRUCT 宏](../../../../runbooks/compilation/direct_invoke_unavailable_get_tiling_data_with_struct.md)（`exemplifies`）：Kernel侧使用标准C++语法定义TilingData时，告知框架使用未注册结构体，配套GET_TILING_DATA系列接口获取TilingData。；直调路径下 `REGISTER_TILING_DEFAULT` / `GET_TILING_DATA_WITH_STRUCT` / `TILING_KEY_IS` 不可用，须用上述手动 `__gm__` 拷贝替代；`KERNEL_TASK_TYPE_DEFAULT(KERNEL_TYPE_AIV_ONLY)` 在直调路径仍可用且应保留。；焦点定义打包路径的注册与获取接口，目标给出迁到直调工程时必须改为手工解包的边界。
-<!-- cannbot:related:end -->

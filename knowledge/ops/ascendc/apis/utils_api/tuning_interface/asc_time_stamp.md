@@ -75,10 +75,3 @@ opType=AddCustom, DumpHead: AIV-0, CoreType=AIV, block dim=8, total_block_num=8,
 ...// 一些框架内部的打点信息
 descId is 11, rsv is 0, timeStamp is 815603975350485, pcPtr is 19792358553124, entry is 815603975328116.
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [PrintTimeStamp](../../simd_api/basic_api/debug_interface/onboard_print/print_time_stamp.md)（`same_topic`）：提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点并打印当前系统cycle数。；SIMD场景下，提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点。调用后会打印如下信息：两页均用于 Kernel 关键点时间戳打点，分别给出 Basic PrintTimeStamp 与调优接口 asc_time_stamp 的入口参照。
-<!-- cannbot:related:end -->

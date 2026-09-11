@@ -91,9 +91,3 @@ _, permutated_local_input_tokens, handle = async_all_to_all(
 ## 关联
 
 - 场景概念：[expert-parallel](../../concepts/parallelism/expert_parallel.md) · [moe-dispatch-combine-v2](../../concepts/techniques/moe_dispatch_combine_v2.md)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoE 通信掩盖（Dispatch 调度 + AllToAll/AllGather Overlap + 前反向跨 MicroBatch 掩盖）](../../../training/concepts/techniques/moe_comm_overlap.md)（`related`）：`num_local_experts == 1` 时不需要构造 `global_input_tokens_local_experts_indices`，代码**跳过整个 `repeat_interleave`**；代价是要从 device 取回每专家 token 数（一次 device→host 同步）；前者说明单专家分支为何丢失 split 搬回的偶然屏障，后者说明 alltoall dispatcher 消费每专家 token 数时本来就跨越 device→host 控制面，二者共同定位 split 在集合通信前必须就绪。
-<!-- cannbot:related:end -->

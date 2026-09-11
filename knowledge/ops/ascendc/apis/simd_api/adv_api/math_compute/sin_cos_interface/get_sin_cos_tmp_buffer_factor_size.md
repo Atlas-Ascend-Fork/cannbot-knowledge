@@ -74,10 +74,3 @@ uint32_t extraBuf = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetSinCosTmpBufferFactorSize(plat, typeSize, maxLivedNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSinCosMaxMinTmpSize](get_sin_cos_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取SinCos接口所需的最大和最小临时空间大小；currentShapeSize = (currBuff - extraBuf) / maxLivedNodeCount / typeSize。前者给出 SinCos 临时空间的合法选择范围，后者把所选 currBuff 换算为单次 shape 容量；两端共同支持 Host 侧定 buffer 并生成 Kernel 分块参数。
-<!-- cannbot:related:end -->

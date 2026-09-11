@@ -1117,10 +1117,5 @@ if (unlikely(xIndex == preIdx0 || xIndex == preIdx1 ||xIndex == preIdx2)) {
 | 精度与尾块 | 纯位搬运，int64 index仅专用路线可安全窄化 | 越界零/AICPU错误差异，former/tail core与行列tail | 各 `Process` |
 | 失败边界 | Host校验、Tiling失败、AICPU越界错误 | 不得把公开支持等同于旧架构 source_closed | API/Tiling/AICPU symbols |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetBlockNum](../../../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_num.md)（`related`）：“与 R-001 的行/列搬运相同，但分核与 `ubAvailable` 在 Device 用 `GetBlockNum/GetUBSizeInBytes-128KiB` 重算，避免 PCIe 地址由 SIMT 直接解引用。”记录 GatherV2 PCIe 路线的实际调用；“获取当前任务配置的逻辑AI Core的数量，用于代码内部的多核逻辑控制等。”给出 GetBlockNum 的返回语义，直接支撑 Device 分核重算。
-- [GetUBSizeInBytes](../../../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_ub_size_in_bytes.md)（`related`）：“与 R-001 的行/列搬运相同，但分核与 `ubAvailable` 在 Device 用 `GetBlockNum/GetUBSizeInBytes-128KiB` 重算，避免 PCIe 地址由 SIMT 直接解引用。”记录 UB 可用量计算；“获取UB空间的大小，单位为Byte。开发者根据UB的大小来计算循环次数等参数值。”给出 GetUBSizeInBytes 的字节单位和用途，直接支撑减去 128 KiB 后的 buffer 分配。
-- [随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM](../../../../runbooks/performance/random_gather_per_element_dma_should_switch_to_simt_direct_gm.md)（`related`）：“SIMT 按输出元素分核，并把每核量对齐 `threadNum`”说明 GatherV2 的直接 GM 路线；“SIMT 路线把同一语义改写为一元素一线程的 grid-stride 循环：线程直接读取 `index［o］`，按逐轴 stride 计算 `x_off`，然后执行 `y［o］ = x［x_off］`。”给出随机 indexed-read 从 DMA 转 SIMT 的实现与性能诊断方法，可用于理解和验证该路线选择。
-<!-- cannbot:related:end -->
+- [GetBlockNum](../../../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_num.md)
+- [GetUBSizeInBytes](../../../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_ub_size_in_bytes.md)

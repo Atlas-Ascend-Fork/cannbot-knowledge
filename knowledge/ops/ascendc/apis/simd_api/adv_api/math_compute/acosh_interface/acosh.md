@@ -115,10 +115,3 @@ AscendC::Acosh(dstLocal, srcLocal, sharedTmpBuffer, 512);
 输入数据(srcLocal): [-1.000000 0.000000 1.000000 2.000000 3.000000 4.000000 ...]
 输出数据(dstLocal): [-nan      -nan     0.000000 1.316958 1.762747 2.063437 ...]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAcoshMaxMinTmpSize](get_acosh_max_min_tmp_size.md)（`same_topic`）：用于Acosh内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAcoshMaxMinTmpSize。 本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。 Host helper 产生 sharedTmpBuffer 的合法容量范围，Acosh 本体在 Kernel 中直接消费该缓存。
-<!-- cannbot:related:end -->

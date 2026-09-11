@@ -657,9 +657,4 @@ for (int64_t welfordUpdateCount = 0; welfordUpdateCount < td_->welfordUpdateTime
 | 精度与尾块 | FP32统计、B16受控cast、显式row/tile/R tail | eps顺序、mask、只写有效R、stats cache尾提交 | Normalize/reduce/Welford methods |
 | 失败边界 | perf→two-pass→Welford；未知key无输出 | priority/fallthrough不可重排 | template registry、router |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [LayerNorm](../../../../apis/simd_api/adv_api/normalization/layer_norm.md)（`related`）：｜ 计算语义 ｜ 对末尾 `normalizedShape` 轴计算 `mean`、`rstd=1/sqrt(var+eps)` 与 `y=(x-mean)*rstd*gamma+beta`；gamma/beta 可缺省。 ｜；计算公式：y = γ*(x-μ)/sqrt(σ²+ε) + β，其中γ为缩放系数，β为平移系数，ε为防除零系数。。ACLNN 算子与 Ascend C 高阶 API 共享 LayerNorm 公式，接口卡可用于理解算子 Kernel 层所实现的归一化核心。
-- [LayerNormWithImplMode 950 ACLNN 算子知识](layer_norm_with_impl_mode_950.md)（`same_topic`）：`CheckImplMode` 始终校验 0/1/2，但 `IsV4SocCheck` 对 RegBase 立即返回 `true`，随后 950 分支只构造 `LayerNormV4Params`，不把 `implMode` 传入 V4。 第一段固定以 `HIGH_PRECISION(0)` 复用公共实现。 950 两入口都进入 LayerNormV4；WithImplMode 额外校验但模式不参与核心 selector，普通入口固定 HIGH_PRECISION。
-<!-- cannbot:related:end -->
+- [LayerNorm](../../../../apis/simd_api/adv_api/normalization/layer_norm.md)

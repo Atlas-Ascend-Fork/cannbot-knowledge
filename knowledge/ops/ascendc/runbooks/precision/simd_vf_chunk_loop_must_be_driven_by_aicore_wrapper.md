@@ -387,12 +387,3 @@ __aicore__ inline void ArOut(const AscendC::LocalTensor<T> &y, const AscendC::Lo
 ## 误诊
 
 最初容易把后续块异常归因于尾部越界或 UB 容量；但单块与跨边界的受控对比，以及首块独立归一化的输出模式，更直接指向块间提交/循环语义。扩大末尾 padding 不能解释第二块起始即失败。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：把三次 pass 拆成三个完整的 `__simd_vf__` 函数和三个独立的 `asc_vf_call` wrapper。；将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。；两卡共同要求用 AICore wrapper 提供 VF pass 与 chunk 的显式提交边界。
-- [分块 wrapper 与 VF callee 不可重复叠加 offset](wrapper_and_vf_callee_must_not_double_apply_chunk_offset.md)（`related`）：Ascend C Reg kernel 直调，以 `__aicore__` wrapper 循环调用 `__simd_vf__` callee。；将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。；后者确立逐块 VF 调用的正确调度边界，前者进一步约束该边界内 offset 只能由 wrapper 或 callee 一侧负责。
-- [核函数与VF函数（SIMD与SIMT混合编程）](../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md)（`related`）：simd vf函数：能被核函数或者__aicore__函数通过asc_vf_call接口调用。simd vf函数内只能调用__simd_callee__函数和__callee__函数。；AR 把跨向量块状态机留在单次 `__simd_vf__` 中，导致该调用只完成首块且同址累加无法在块间可靠提交。。指南明确 __aicore__ 经 asc_vf_call 驱动 SIMD VF，runbook 说明跨向量块循环错误地留在单次 VF 会只完成首块，支撑把 chunk 状态机移回 wrapper。
-- [Reg 固定地址跨块累加需逐 VF PipeBarrier](fixed_address_vf_accumulator_needs_per_call_barrier.md)（`same_topic`）：“把“一个 VF 内循环所有 chunk”改成“一个 VF 只处理一个 chunk”；在 `__aicore__` 的 chunk 循环中，每次调用后执行 `PipeBarrier<PIPE_V>()`，再进入下一块。”与“将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。”描述同一跨块 Softmax 状态修复，后一张补齐症状、边界验证和 barrier 仅用于同址 RMW 的限制。
-<!-- cannbot:related:end -->

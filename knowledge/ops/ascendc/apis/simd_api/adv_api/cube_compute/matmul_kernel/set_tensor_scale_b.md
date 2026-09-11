@@ -69,19 +69,5 @@ mm.End();
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetScaleBType](../matmul_tiling/set_scale_b_type.md)（`related`）：MxMatmul场景，设置矩阵乘中右矩阵的量化系数矩阵scaleB。；MxMatmul场景，设置scaleB矩阵的位置、数据格式、是否转置等信息，这些信息需要和Kernel侧的设置保持一致。如果不调用本接口，scaleB矩阵的信息将与SetBType中设置的B矩阵的信息保持一致。；Kernel 侧 SetTensorScaleB 绑定 scaleB 张量和转置方式，Host Tiling 侧 SetScaleBType 描述同一 scaleB 的位置、排布与转置，二者参数必须一致才能闭合 MxMatmul 配置。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [TransposeQuantBatchMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_950.md)（`related`）：算子正文包含对 `SetTensorScaleB(...)` 的直接调用；本卡提供该接口契约。
-- [QuantGroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_grouped_mat_mul_allto_allv_950.md)（`related`）：算子正文包含对 `SetTensorScaleB(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [TransposeQuantBatchMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_950.md)
+- [QuantGroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_grouped_mat_mul_allto_allv_950.md)

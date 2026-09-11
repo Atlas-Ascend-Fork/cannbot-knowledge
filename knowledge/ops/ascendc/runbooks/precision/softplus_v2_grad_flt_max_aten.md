@@ -67,11 +67,3 @@ aliases: ["intermediate_overflow", "stable_form"]
 
 - 本结论仅对 `gradOutput=±FLT_MAX`/`threshold=858` 且超出 spec `extreme_inputs` 的输入成立；spec 范围内的极端值（NaN/+inf self、fp16 上溢边界）仍需正确处理。
 - a2/a3 是否有相同 V pipe FTZ 与 fp32 表示极限未验证，不外推。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Exp 默认 INTRINSIC FTZ 致 subnormal 残留失配](exp_intrinsic_ftz_subnormal.md)（`related`）：焦点卡补充“对 `z∈［-95,-38］`，`exp(z)` 为 fp32 非规范数，NPU V pipe FTZ（Flush-To-Zero）刷为 0”；目标卡给出可执行判据“确认残留失败的 `Actual` 是否为 `0`、`Golden` 是否为 `sigmoid(大负 z)×FLT_MAX` 量级”，把同一极值回归中的 subnormal 分支从正 z 乘法溢出分支中分离出来。
-- [SoftplusV2Grad VF Form B exp 溢出判别](softplusv2grad_vf_form_b_exp.md)（`same_topic`）：- golden Form A `pr=g/(1+exp(-cbx))`：正向 `cbx` 大→`exp(-cbx)→0`→`denom→1`→`pr→g`（安全）；负向 `cbx` 大负→`exp(-cbx)→+inf`→`g/inf→0`（inf 算术下安全）。两向都不依赖正向大 exp，故不溢出。Form B→Form A 后 19 例转 PASS 印证正向 exp 溢出为根因。；残留失败是 fp32 表示极限 + golden(aten) 自身中间溢出 + 硬件 FTZ 的共同结果，属 golden/硬件限制而非算子算法 bug。aten 按 `aop × exp(z)` 先算，对 `gradOutput=FLT_MAX, z>0`，`aop × exp(z)` 先溢出为 ±inf，再除 `(exp(z)+1)` 得 ±inf；NPU 按 spec 推荐的稳定式 `gradOutput × (exp(z)/(1+exp(z)))`（先算 sigmoid 再乘）不溢出，得有限值（数学上更正确）。二者因计算顺序不同在 fp32 表示极限处不可对齐。对 `z∈［-95,-38］`，`exp(z)` 为 fp32 非规范数，NPU V pipe FTZ（Flush-To-Zero）刷为 0，golden（CPU 保留非规范数）得小非零值，`gradOutput=FLT_MAX` 放大差异。上述 aten 运算顺序与 FTZ 行为的归因来自开发会话的离线分析重算，非本卡上板实测信号。两卡共同界定 SoftplusV2Grad 中 sigmoid 等价式的计算顺序与溢出边界，可区分 kernel Form B 缺陷和极端 golden 不稳定。
-- [softplus_v2_grad 极值 inf 发散源于 aten 乘除顺序](softplus_v2_grad_inf_aten.md)（`same_topic`）：焦点卡定位“对 `gradOutput=FLT_MAX, z>0`，`aop × exp(z)` 先溢出为 ±inf，再除 `(exp(z)+1)` 得 ±inf”；目标卡同样用“`grad*exp(z)=FLT_MAX*1.022=3.48e38 > FLT_MAX → inf`”解释 golden=inf、NPU 有限值。两卡围绕同一 softplus_v2_grad FLT_MAX/aten 运算顺序故障，只是处置结论与回归阶段不同。
-<!-- cannbot:related:end -->

@@ -88,9 +88,3 @@ agent 一度认为移除 sync 仅影响 profiler 对 NPU kernel 的检测（`no_
 
 - 本 trace 仅在 Ascend 950 / dav-3510 实测；a2、a3 平台未验证，推断 RunOpApi 的 stream 语义在 torch_npu 跨平台一致，故**未验证，推断可迁移**，但 stream 管理细节可能随 CANN/torch_npu 版本变化。
 - 若 kernel 启动后不对输出张量做任何 host 侧 torch 操作，本 sync 是否必需未在本 trace 验证。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RunOpApi 延迟回调需按值捕获局部 launch vector](runopapi_callbacks_capture_launch_state_by_value.md)（`related`）：“- 在 op_plugin 中，凡 `RunOpApi` 后紧跟对同一输出张量的 torch 侧操作（`.to` / `.contiguous` / `transpose` / `view`），默认在二者间显式 `c10_npu::getCurrentNPUStream().synchronize()`。”明确给出左端事实；“唯一根因是延迟执行的 lambda 通过引用捕获局部 vector。包装函数结束后，vector 对象及其 storage 已失效；回调再读取 `size()`、pointer 或 tiling 参数即产生悬空访问。捕获标量按值而只对 vector 用引用，并不能保证 vector 生命周期。”明确给出右端事实。两页覆盖 RunOpApi Host 发射链的两个独立生命周期条件：消费输出前需完成 stream 排序，延迟 lambda 又必须按值保存 launch vectors，联合排除越序读写和悬空捕获。
-<!-- cannbot:related:end -->

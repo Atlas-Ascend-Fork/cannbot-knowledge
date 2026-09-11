@@ -163,10 +163,3 @@ source_headers:
 输出数据(cmpMask寄存器):
 [122  86 237  94 150   3 226 242]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCmpMask](get_cmp_mask_isasi.md)（`related`）：“获取CompareStoreToRegister指令写入CmpMask寄存器的比较结果。”明确 GetCmpMask 的数据来源；“逐元素比较两个 tensor，将比较结果存储到寄存器中。”明确 CompareStoreToRegister 的生产行为，二者形成同一 CmpMask 寄存器的写入与读取链。
-<!-- cannbot:related:end -->

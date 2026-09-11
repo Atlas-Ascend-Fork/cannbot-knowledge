@@ -128,10 +128,3 @@ __simd_vf__ inline void cast_fp32_to_b16_vf(__ubuf__ T *dstAddr, __ubuf__ float 
 ## 误诊
 
 后续一次构建又报出 `CastTrait`、`RegLayout` 等定义不可见；那是缺少显式 Reg utils 头文件的独立根因，不能反推 `const &` NTTP 修复无效。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CastTrait 文件域声明触发命名空间编译失败](reg_casttrait_define_inside_simd_vf.md)（`related`）：“两组设备侧 `AscendC::Reg::CastTrait` 非类型模板实参被提升到 `.asc` 文件域，使 CANN 9.0.1 的 bisheng 在该词法位置解析不到 Reg 类型；放回 `__simd_vf__` 函数域后类型可见并通过语义编译。”与“error: a non-type template parameter cannot have type 'AscendC::Reg::CastTrait' before C++20”。focal 确认 CastTrait 模板实参形态，配套 Runbook 说明 C++17 不可按值 NTTP，需用引用。
-- [Reg::Cast 的 trait 需要静态存储期](reg_casttrait_requires_static_storage.md)（`same_topic`）：保留文件级 `static constexpr CastTrait` 对象，但把 VF 的非类型模板参数改成 `AscendC::Reg::CastTrait const &traitDown`；函数体仍把该引用作为 `AscendC::Reg::Cast<T, float, traitDown>` 的编译期 trait。；函数内普通 `constexpr CastTrait` 仍具有自动存储期，不能作为该 `const CastTrait&` 非类型模板参数的有效地址常量，所以编译器拒绝显式模板实参。改成函数内 `static constexpr` 后，对象获得静态存储期，同时仍位于只由 device pass 解析的 `__simd_vf__` 内。两卡闭合同一 C++17 Reg Cast 引用型 NTTP 修复：模板参数必须改为 const 引用，实参对象还必须具有静态存储期。
-<!-- cannbot:related:end -->

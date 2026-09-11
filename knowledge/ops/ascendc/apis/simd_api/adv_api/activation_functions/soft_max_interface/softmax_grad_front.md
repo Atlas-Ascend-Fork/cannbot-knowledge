@@ -172,19 +172,5 @@ AscendC::SoftmaxGradFront<T>(dstLocal, gradLocal, srcLocal, softmaxTiling, softm
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SoftmaxGrad Tiling接口](softmax_grad_tiling_interface.md)（`same_topic`）：将输入tensor［m0, m1, ...mt, n］（t大于等于0）的非尾轴长度相乘的结果看作m，则输入tensor的shape看作［m, n］。对输入tensor［m,n］按行做gradfront反向计算，计算公式如下： 当输入shape为ND格式时，内部的reduce过程按last轴进行；当输入shape为NZ格式时，内部的reduce过程按照last轴和first轴进行，，reduce过程可以参考SoftMax中的图示说明。；- isFront（输入）：是否只计算，和kernel侧的SoftmaxGrad接口一致，默认false。。SoftmaxGradFront 是 kernel 侧的前段梯度计算变体，Tiling 接口用 isFront 参数选择与该变体一致的切分契约。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [BlockSparseAttentionGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad.md)（`related`）：算子声明的固定版本源码包含对 `SoftmaxGradFront(...)` 的直接调用（第 286 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention_grad/op_kernel/arc22/attn_infra/epilogue/block/block_epilogue_softmaxgrad.hpp#L286)
-- [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `SoftmaxGradFront(...)` 的直接调用（第 459 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention_grad/op_kernel/arc35/vec_op.h#L459)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [BlockSparseAttentionGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad.md)
+- [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)

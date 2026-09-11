@@ -789,9 +789,3 @@ AIV 把完整高位 B tile 写入 `loop%3` 槽；AIC 每轮先等当前槽，再
 | 同步 | BL1 flags或workspace flags | AIV发布与AIC释放必须成对，flag ID/pipe不可混换 | CMCT/RegBase/custom body |
 | 精度与尾块 | offset→scale→Matmul+bias；BF16 custom用FP32/RINT | mode/dtype specialization和M/N/K tail | prologue/custom/Matmul calls |
 | 失败边界 | priority 7→8→11→失败 | A2/A3不发布，API截断的 dormant route 不升级为公开支持 | docs/registry/checkers |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [950 Matmul高阶API选型先查内置源](../../../../runbooks/compilation/950_matmul_api.md)（`related`）：焦点卡核对当前固定源码后确认“三条 Route 都是单 Kernel `MIX_CV`”，候选卡警告“arch35 目录 cpp（新版，MIX_AIC_1_2 + custom_weight_nz.h）与根目录 cpp 的 3510 `#else`（单核顺序 + weight_nz_performance.h）并存”；联合阅读可避免跨 CANN 源码版本误选执行模式。
-<!-- cannbot:related:end -->

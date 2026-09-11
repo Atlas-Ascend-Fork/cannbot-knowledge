@@ -67,12 +67,3 @@ if self.use_fia:
 
 - diff 事实（@73ed847）：SKILL.md 的症状分类 / 快速验证清单 / 常见精度陷阱表 / 附录 F.1–F.6 逐条对上；本仓 skill 文档。溯源下探 [cann-recipes-infer-pr-328-feat-add-agent-optimization-skills-and-evaluation-reports](https://gitcode.com/cann/cann-recipes-infer/merge_requests/328)
 - diff 事实（@50e41b5b8220）：patch 按 `use_fia` 给 `kv_item_lens` 乘 `page_size`（+16/-7），根因由 diff 结构直接可读。溯源下探 [cann-recipes-infer-pr-205-feat-support-qwen3-moe-sglang](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FIA 的 actual_seq_lengths_kv 类型随后端不同：torch.ops.npu/npugraph_ex 要 host list、torchair/ge_graph 要 Tensor](../runtime/fia_actual_seq_lengths_kv_backend_type.md)（`related`）：排障卡提示“此外 `actual_seq_lengths_kv` 的**类型随后端不同**（host list vs Tensor），传错类型直接 schema 报错”；后端卡给出具体分支“经 `torch.ops.npu`（eager 及 npugraph_ex 的 `torch.compile`/dynamo 路径）时，dynamo 按 `SymInt［］` schema 校验该入参——**传 Tensor 会失败**，必须传 host Python list。”，把泛化提示落为可执行判据。
-- [FIA/qlens 的 block_table 首维 / num_reqs / TND seq-len 须等实际 batch：被 SP-padding 或整缓冲首维打破 → 算子 shape 校验失败](../runtime/fia_qlens_block_table_num_reqs_batch_contract.md)（`related`）：排障卡规定“`block_table` dtype 必须 int32、值域 `［0, total_blocks)` 排列且 `numel == batch_size × (max_seq_len // block_size)`”；运行时卡进一步要求“把交给算子的 block_table / num_reqs 收敛到实际 batch”，补齐多 batch、SP padding 与整缓冲透传时的首维检查。
-- [npu_fused_infer_attention_score (v1 / v2)](../../concepts/kernels/fused_infer_attention_score.md)（`related`）：排障卡的入口是“把手写 attention 换成 ［npu_fused_infer_attention_score］(../../concepts/kernels/fused_infer_attention_score.md)(FA/FIA) 融合算子 + 静态 KVCache 后”；概念卡定义该算子“支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。”，为排查 layout、block_table 和量化参数提供接口语义。
-- [单卡 NPU 推理优化的三阶段固定流程：KVCache 静态化+FA 替换 → torch_npu 融合算子替换 → GE 图模式(仅 decode)，每阶段精度+性能 gate](../../optimizations/experience/rules/staged_single_card_optimize_pipeline.md)（`related`）：# 单卡 NPU 推理优化的三阶段固定流程：KVCache 静态化+FA 替换 → torch_npu 融合算子替换 → GE 图模式(仅 decode)，每阶段精度+性能 gate；把手写 attention 换成 ［npu_fused_infer_attention_score］(../../concepts/kernels/fused_infer_attention_score.md)(FA/FIA) 融合算子 + 静态 KVCache 后，Prefill 对但 Decode 偏、输出全重复 token / 乱码、多 batch 部分样本错、量化模式偏差放大。这类精度问题几乎都出在 **FA 入参与 layout 约定、KVCache 写入位置、KV 长度语义**上，而非注意力数学本身。按症状对号入座定位。。三阶段流程把静态 KVCache 与 FA 替换列为第一阶段，精度 Runbook 给出替换后 Decode 偏差、重复 token 等症状及其入参、layout 和写入位置根因，构成该阶段精度 gate 的排障依据。
-<!-- cannbot:related:end -->

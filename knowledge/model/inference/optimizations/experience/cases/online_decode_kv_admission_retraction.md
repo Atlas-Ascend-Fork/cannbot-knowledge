@@ -55,10 +55,3 @@ victim = min(running_requests.values(),
 
 - `diff 事实`（@c695829cd2c0）：`pop_preallocated` 的预留计算、`_retract_one` 的受害者 key、`_schedule_decode_batch` 的 retraction 循环、`SchedulerConfig.num_reserved_decode_tokens=64` 及 docstring、base scheduler 的 `break→continue` 与 prompt-length-check-before-allocate 均为读到的实际 diff；死锁根因与权衡表述来自代码内注释 / docstring。
 - 溯源下探：[cann-recipes-infer-pr-315-refactor-online-batch](https://gitcode.com/cann/cann-recipes-infer/merge_requests/315)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [KV Cache Manager（框架级 Paged Attention KV Cache 管理）](../../../concepts/frameworks/kv_cache_manager.md)（`related`）：base 调度里 `allocate_slots` 失败的处理由 `break` 改为 `continue`，队首不可装请求不再阻断其后小请求；`allocate_slots` 是整个 KV Cache 管理链路的核心入口，设计重点是**逐请求**地对不同 attention type 做块分配。前者处理该分配入口失败时的调度行为，后者定义入口的分配职责，构成 Scheduler 到 KV Cache Manager 的直接故障处理链。
-- [在线 PD 分离推理执行机制（Online PD-Disaggregated Inference）](../../../concepts/frameworks/online_pd_inference.md)（`related`）：**（1）入场控制 + KV 预留**：为每个在途请求（running + transfer 队列）预留 `⌈num_reserved_decode_tokens / block_size⌉` 块未来 decode 增长空间；**入场控制**（`DecodePreallocQueue.pop_preallocated`）：在 `allocate_slots` 前做块预算检查。前者是防 KV 打满的具体配方，后者把同一机制定位到 Online PD Decode 调度器与执行顺序。
-<!-- cannbot:related:end -->

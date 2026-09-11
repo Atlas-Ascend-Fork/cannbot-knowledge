@@ -128,10 +128,3 @@ void PadTilingFunc(const AscendC::TensorShape srcShape, const AscendC::TensorSha
         }
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Pad](pad.md)（`related`）：提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。Tiling参数通过Pad Tiling获取。；host侧Tiling接口，用于获取Pad kernel计算所需的Tiling参数，分两步：通过GetPadMaxMinTmpSize获取最大和最小临时空间大小；通过GetPadNDTilingInfo获取kernel侧所需tiling参数。。Pad Kernel 明确从 Pad Tiling 获取参数，Host Tiling 页给出先预算临时空间再生成 PadTiling 结构体的两步调用链。
-<!-- cannbot:related:end -->

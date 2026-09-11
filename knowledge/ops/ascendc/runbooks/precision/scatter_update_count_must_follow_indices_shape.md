@@ -256,9 +256,3 @@ at::Tensor scatter(const at::Tensor& data, int64_t dim,
 ## 误诊
 
 此前的 SIMT 索引可见性问题已由同步修复；本轮只剩固定 shape 族失败，因此不能再用“VF 读不到索引”解释全部失败。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Scatter 950 Direct Invoke 算子知识](../../operators/direct/nn/index/scatter_950.md)（`related`）：故障卡要求“kernel 实际循环次数应为 `totalUpdates=indices.numel()=Midx×Ku`”；Scatter 950 实现卡则规定“`dataNum=product(dataShape)`，`updatesNum=product(indexShape)`。”，两端共同把输出域容量和更新域次数分离，可直接核查 Host tiling 是否错误地用 data 行数展开 indices/updates。
-<!-- cannbot:related:end -->

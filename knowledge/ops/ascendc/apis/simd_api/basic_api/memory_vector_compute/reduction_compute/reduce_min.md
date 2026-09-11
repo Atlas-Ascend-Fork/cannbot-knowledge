@@ -276,10 +276,3 @@ source_headers:
 
     > 输出数据dst_gm：[0.00393,  4.3e-06]
     > 4.3e-06需要使用reinterpret_cast方法转换得到索引值72
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [950 循环内 ReduceMin 取索引致 vector core 异常](../../../../../runbooks/precision/950_reducemin_vector_core.md)（`exemplifies`）：从所有输入数据中找出最小值，可选返回最小值索引。；触发（tool_observed）：在 950（arch 3510）上，kernel 的 `for` 循环内反复调用 `ReduceMin(dst, src, workBuf, count, calIndex=true)` + `reinterpret_cast<uint32_t*>(&tempIndex)` 取最小值索引时，plog 报 `AIV Kernel happen error, retCode=0x31`（vector core exception），对应 error code 264、subErrType 0x4（D-cache 读写 UB、总线返回非零）。同一 V2 用例、同一数据跑 10 次出现 3 PASS/7 FAIL 的非确定崩溃；`numSeqs` 越大（`ComputeInputTokens` 的 `for` 循环迭代越多、`ReduceMin` 调用越频繁）崩溃率越高。。API允许返回最小值索引，Runbook精确限定 950 循环内反复以 calIndex=true 取索引会触发非确定 vector core 异常。
-<!-- cannbot:related:end -->

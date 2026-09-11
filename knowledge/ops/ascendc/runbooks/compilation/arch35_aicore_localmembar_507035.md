@@ -63,11 +63,3 @@ Reg::LocalMemBar<Reg::MemType::VEC_STORE, Reg::MemType::VEC_LOAD>();
 
 - 在 `__aicore__` 常规 kernel 函数里直接调 `Reg::` (`__simd_callee__`) 命名空间的 sync API，不看调用上下文约束。
 - 据 softmax regbase「能调 `Reg::LocalMemBar`」反推任意 kernel 都能直接调——softmax 是在 `__simd_vf__` 函数内调用，调用上下文不同。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LocalMemBar](../../apis/simd_api/basic_api/reg_vector_compute/sync_control/local_mem_bar.md)（`exemplifies`）：Reg矢量计算宏函数内不同流水线之间的同步指令。；从 `__aicore__` 常规函数调 `Reg::LocalMemBar<VEC_STORE,VEC_LOAD>` 触发 507035 (AIV error)，两次独立代码版本（旧 4-buffer、新 5-buffer 重排）重编重跑均复现（来源平台:950；证据等级:tool_observed）。API 同步语义受 VF 调用上下文约束，runbook 给出错误上下文的可复现失败。
-- [NMS 950 Direct Invoke 算子知识](../../operators/direct/cv/image/nms_950.md)（`related`）：“每次 Vector 更新必须在下一标量读取前完成”必须同时满足“要求调用点处于 `__simd_vf__` (VF) 调用上下文”，后者解释 NMS 为何只能在 VF 内放置 LocalMemBar，不能移到普通 __aicore__ 调用点。
-- [arch35 count Compare Select 异步VF 存读 RAW](../precision/arch35_count_compare_select_vf_raw.md)（`related`）：原始轨迹卡记录“`Reg::LocalMemBar<VEC_STORE,VEC_LOAD>` 从 `__aicore__` 调用 → 运行时 507035 崩溃”；专项卡复现“从常规 `__aicore__` 函数直接调用违反调用约定，AIV 报 507035。”，后者提供调用上下文证据并把这一候选修法明确列为 banned。
-<!-- cannbot:related:end -->

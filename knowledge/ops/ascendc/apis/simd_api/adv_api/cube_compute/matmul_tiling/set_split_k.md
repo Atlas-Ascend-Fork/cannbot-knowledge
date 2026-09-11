@@ -67,10 +67,3 @@ tiling.SetSplitK(true);
 optiling::TCubeTiling tilingData;
 int ret = tiling.GetTiling(tilingData);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [EnableMultiCoreSplitK](enable_multi_core_split_k.md)（`same_topic`）：EnableMultiCoreSplitK接口功能与该接口相同，建议使用EnableMultiCoreSplitK。；多核场景，通过该接口开启切K轴。不调用该接口的情况下，默认不切K轴。在GetTiling接口调用前使用。。SetSplitK 明确指定同功能推荐接口，后者给出切 K 的调用时序与默认关闭契约。
-<!-- cannbot:related:end -->

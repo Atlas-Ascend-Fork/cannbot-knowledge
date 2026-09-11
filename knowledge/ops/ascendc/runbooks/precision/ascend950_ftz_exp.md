@@ -50,10 +50,3 @@ platforms: ["950"]
 
 - 对 `grad` 接近 `±FLT_MAX` 的极值用例，若 `z` 落在次正规 exp 带（`[-104,-87]`），预期 NPU 与 CPU golden 在该窄带发散——属硬件 FTZ，声明为硬件行为，不追逐软件修复。
 - 设计极值测试用例时，避免 `grad=±FLT_MAX` 且 `z` 恰落在次正规 exp 带的组合（该组合的 golden 本身依赖 CPU 保留次正规的实现细节，可移植性差）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [arch35 sigmoid 大负 z 下 exp 溢出 inf 致 sig=0](arch35_sigmoid_z_exp_inf_sig_0.md)（`related`）：“`Actual=0` 的量级与 subnormal/FTZ 签名吻合”给出单例判别，“NPU 向量管 `Exp` 指令对次正规输出执行 FTZ”把该判别收敛到 950 平台硬件边界和豁免结论。
-- [Exp 默认 INTRINSIC FTZ 致 subnormal 残留失配](exp_intrinsic_ftz_subnormal.md)（`same_topic`）：NPU 向量管 `Exp` 指令对次正规输出执行 FTZ（Flush-To-Zero）刷新为 0，`npu = FLT_MAX × 0 = 0`。；残留失败均位于 sigmoid 分支的极值区间：gradOutput≈FLT_MAX（3.4e38）、z=beta*self 落在 (-104,-87)（exp(z) 为 fp32 subnormal）。；两卡定位同一 softplus_v2_grad 极值残差：一张给出 FTZ 硬件语义，另一张保留探针区间与失败样例。
-<!-- cannbot:related:end -->

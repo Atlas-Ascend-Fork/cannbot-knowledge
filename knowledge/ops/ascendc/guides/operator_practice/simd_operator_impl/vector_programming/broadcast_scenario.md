@@ -203,10 +203,3 @@ __aicore__ inline void Compute(int32_t progress)
     ...
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Broadcast（张量变换）](../../../../apis/simd_api/adv_api/tensor_transform/broadcast.md)（`explains`）：接口卡给出“将输入按照输出shape进行广播。例如将shape为(m,1)的数据广播到(m,k)，即将一列扩展为相同的k列。”；场景卡落实为“在Compute函数中，调用Add接口前需要先对输入进行Broadcast。”，说明怎样计算 shape 并把广播结果接到 Add。
-<!-- cannbot:related:end -->

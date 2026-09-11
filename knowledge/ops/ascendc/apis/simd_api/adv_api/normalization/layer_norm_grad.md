@@ -191,11 +191,3 @@ AscendC::LayerNormGrad<float, isReuseSource>(
 输出数据(resForGamma):
 [ -1.5275106 -1.091079 -0.6546474 -0.21821581 0.21821581 0.6546474 1.091079 1.5275106 -1.5275106 -1.091079 -0.6546474 -0.21821581 0.21821581 0.6546474 1.091079 1.5275106 -1.5275106 -1.091079 -0.6546474 -0.21821581 0.21821581 0.6546474 1.091079 1.5275106 -1.5275106 -1.091079 -0.6546474 -0.21821581 0.21821581 0.6546474 1.091079 1.5275106 -1.5275106 -1.091079 -0.6546474 -0.21821581 0.21821581 0.6546474 1.091079 1.5275106 -1.5275106 -1.091079 -0.6546474 -0.21821581 0.21821581 0.6546474 1.091079 1.5275106 -1.5275106 -1.091079 -0.6546474 -0.21821581 0.21821581 0.6546474 1.091079 1.5275106 -1.5275106 -1.091079 -0.6546474 -0.21821581 0.21821581 0.6546474 1.091079 1.5275106 ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LayerNormGrad Tiling](layer_norm_grad_tiling.md)（`same_topic`）：“host侧Tiling接口，用于获取LayerNormGrad kernel计算所需的Tiling参数，分两步：通过GetLayerNormGradMaxMinTmpSize获取最大和最小临时空间大小；通过GetLayerNormGradNDTilingInfo获取kernel侧所需tiling参数。”与“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过LayerNormGrad Tiling获取。模板参数isReuseSource预留（传false）。”分别给出双端正文事实；Kernel 卡明确消费 LayerNormGrad Tiling 的结果，Tiling 卡给出临时空间和 LayerNormGradTiling 生成步骤，二者定义同一反向归一化接口的 Host/Device 交接。
-- [LayerNormGradBeta](layer_norm_grad_beta.md)（`same_topic`）：计算LayerNorm的反向传播梯度。可单独使用输出pd_x和resForGamma；也可与LayerNormGradBeta配合使用，将resForGamma传递给LayerNormGradBeta同时得到pd_x、pd_gamma和pd_beta。输入shape为［B,S,H］。模板参数T支持half/float。；获取LayerNorm反向传播的gamma和beta梯度，与LayerNormGrad配合使用。接收LayerNormGrad输出的resForGamma和上游梯度inputDy，计算并输出pd_gamma和pd_beta。模板参数T支持half/float。。前一接口产生 resForGamma，后一接口把它作为必需输入继续计算 gamma 与 beta 梯度，明确构成 LayerNorm 反向的生产者到消费者调用链。
-<!-- cannbot:related:end -->

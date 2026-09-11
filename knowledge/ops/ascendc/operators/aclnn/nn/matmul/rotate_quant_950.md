@@ -862,9 +862,3 @@ if (scaleAlg_ == 1) {
 | 同步 | mode4 C2V/V2C 双 bank | round parity、subBlockId、PIPE_FIX/PIPE_V/PIPE_MTE3 | `KernelRotateQuant::Run` |
 | 精度与尾块 | BF16 handoff、七条 scale/quant路线 | dtype max、6/7精确分支、clamp bit guard、scale padding | epilogue |
 | 失败边界 | 参数/Tiling/launcher失败 | 无 Device fallback；空域不 launch | ACLNN/Tiling/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RotateQuant A2/A3 ACLNN 算子知识](rotate_quant.md)（`same_topic`）：“逐块计算 `x_block @ rotation［K,K］`，再逐行按最大绝对值做对称动态 INT8 或 INT4 量化。”给出焦点端事实；“按 K=32/64/128 做块旋转，可选每 32 元素 group clamp，再输出 MXFP4/MXFP8 与 E8M0 group scale。”给出候选端事实。两卡共享 aclnnRotateQuant 入口与块旋转核心对象，同时分别定义 A2/A3 的 INT8/INT4 路线和 950 的 MXFP 路线，直接支撑平台与输出格式选型。
-<!-- cannbot:related:end -->

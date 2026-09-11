@@ -203,10 +203,3 @@ dst和src使用[TensorTrait](../../aux_data_structures/tensor_trait/index.md)类
 输入数据scalar = 2
 输出数据dstLocal: [0 0 0 1 1 1 1 ... 128]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ShiftRight](shift_right_shift_amount_tensor.md)（`related`）：焦点卡写明“右移位数由标量scalarValue决定”，候选卡写明“右移位数由Tensor指定”。两卡分别定义统一标量位移与逐元素 Tensor 位移，形成重载选型。
-<!-- cannbot:related:end -->

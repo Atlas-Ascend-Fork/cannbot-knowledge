@@ -81,27 +81,14 @@ __aicore__ inline void DataSyncBarrier()
 完整样例请参考[DataSyncBarrier接口样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/data_sync_barrier)。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [DepthwiseConv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/depthwise_conv_2d_950.md)（`related`）：“｜ index ｜ `DataSyncBarrier<UB>` ｜ scalar writes ｜ VF ｜ index table ｜ exact uint32 index ｜”；“阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束，用于解决Scalar的内存依赖。”。stride-2 Gather route 在 Scalar 写 index table 后用 UB barrier 再让 VF 读取，API 合同解释该依赖为何必要。
-- [GatherNd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/gather_nd_950.md)（`related`）：shape helper ｜ `DataSyncBarrier<UB>` ｜ scalar SetValue ｜ SIMD ｜ helpTBuf ｜ T3 int32/64 exact阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束，用于解决Scalar的内存依赖。GatherNd 的 shape helper 表明确实由 Scalar 写 `helpTBuf`、随后交给 SIMD 消费，接口卡定义屏障等待先前内存访问完成；在该位置插入 UB 屏障正好闭合生产者到消费者的数据依赖。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 9 / 9 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [StridedSlice 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/strided_slice_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 508 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice/op_kernel/arch35/strided_slice_simt_big_shape.h#L508)
-- [InplaceScatterUpdate 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/inplace_scatter_update_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 429 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter/op_kernel/arch35/scatter.h#L429)
-- [ScatterNd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/scatter_nd_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 179 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_nd_update/op_kernel/arch35/scatter_nd_update_simt.h#L179)
-- [ScatterNdUpdate 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/scatter_nd_update_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 179 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_nd_update/op_kernel/arch35/scatter_nd_update_simt.h#L179)
-- [AvgPool2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/avg_pool2d_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 107 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_simt.h#L107)
-- [AvgPool3d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/avg_pool3d_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 138 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/avg_pool_3d_simt.h#L138)
-- [Gather 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/index/gather_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 447 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_kernel/arch35/gather_elements.h#L447)
-- [Scatter 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/index/scatter_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 1028 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_kernel/arch35/scatter_elements.h#L1028)
-- [AdaptiveAvgPool3D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/pooling/adaptive_avg_pool_3d_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 191 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_simt.h#L191)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [DepthwiseConv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/depthwise_conv_2d_950.md)
+- [GatherNd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/gather_nd_950.md)
+- [StridedSlice 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/strided_slice_950.md)
+- [InplaceScatterUpdate 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/inplace_scatter_update_950.md)
+- [ScatterNd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/scatter_nd_950.md)
+- [ScatterNdUpdate 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/scatter_nd_update_950.md)
+- [AvgPool2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/avg_pool2d_950.md)
+- [AvgPool3d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/avg_pool3d_950.md)
+- [Gather 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/index/gather_950.md)
+- [Scatter 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/index/scatter_950.md)
+- [AdaptiveAvgPool3D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/pooling/adaptive_avg_pool_3d_950.md)

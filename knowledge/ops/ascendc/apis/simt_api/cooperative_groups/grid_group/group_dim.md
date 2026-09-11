@@ -54,10 +54,3 @@ static dim3 group_dim()
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DimBlocks](dim_blocks.md)（`same_topic`）：获取当前Grid的线程块维度配置。；获取当前Grid的线程块维度配置，与接口dim_blocks功能相同。。两卡明确返回相同 Grid 线程块维度，group_dim 是 dim_blocks 的同功能接口。
-<!-- cannbot:related:end -->

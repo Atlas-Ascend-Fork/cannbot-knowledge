@@ -220,19 +220,5 @@ AscendC::Reg::StoreAlign(dstAddr, dstReg, pregVL1);
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceDataBlock](reduce_data_block.md)（`related`）：归约指令根据ReduceType，将数据集合简化为单一值或者更小的集合。；归约指令根据ReduceType，将数据集合在每个DataBlock（32B）内简化为单一值。。前者给出跨有效元素集合的通用 Reduce，后者把同一 ReduceType 约束到每个 32B DataBlock 内，能够在实现归约时依据目标范围选择全局式或块内式原语。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [QuantMax 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/quant_max_950.md)（`related`）：算子声明的固定版本源码包含对 `Reduce(...)` 的直接调用（第 211 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quant_max/op_kernel/arch35/quant_max_per_tensor_regbase.h#L211)
-- [MhcPreBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_pre_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `Reduce(...)` 的直接调用（第 402 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_pre_backward/op_kernel/arch35/mhc_pre_backward_kernel.h#L402)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [QuantMax 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/quant_max_950.md)
+- [MhcPreBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_pre_backward_950.md)

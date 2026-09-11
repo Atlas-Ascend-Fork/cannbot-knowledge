@@ -59,10 +59,3 @@ uint32_t orgShape3 = maxShapeInfo.originalShape[3];
 // 获取现有的shape的2维的值
 uint32_t shape2 = maxShapeInfo.shape[2];
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetShapeInfo](set_shape_info.md)（`related`）：设置GlobalTensor的shape信息。；获取GlobalTensor的shape信息。注意：Shape信息没有默认值，只有通过SetShapeInfo设置过Shape信息后，才可以调用该接口获取正确的ShapeInfo。。GetShapeInfo 明确依赖此前由 SetShapeInfo 写入的 shape 元数据，两接口形成同一 GlobalTensor 属性的写后读契约。
-<!-- cannbot:related:end -->

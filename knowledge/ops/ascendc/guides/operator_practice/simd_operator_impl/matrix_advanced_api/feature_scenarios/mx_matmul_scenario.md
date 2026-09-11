@@ -265,10 +265,3 @@ Host侧自动获取Tiling参数的关键步骤介绍如下：
     }
     int32_t totalTmpBuf = scaleATmpBuf + scaleBTmpBuf;
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetMadType](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_mad_type.md)（`explains`）：MxMatmul（全称Microscaling Matmul）为带有量化系数的矩阵乘法；在MxMatmul场景，必须调用该接口并配置为开启MxMatmul场景。场景卡定义带 scaleA/scaleB 的 MxMatmul 语义，SetMadType 卡给出该场景生成正确 Tiling 的强制开关；实现 MxMatmul 时必须把场景识别落实到该 Host Tiling 调用。
-<!-- cannbot:related:end -->

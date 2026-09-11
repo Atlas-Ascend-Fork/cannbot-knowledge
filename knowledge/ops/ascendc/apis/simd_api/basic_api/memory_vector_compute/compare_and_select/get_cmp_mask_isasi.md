@@ -87,10 +87,3 @@ src0Local:   [1, 8, 16, ...256]
 src1Local:   [2, 10, 18, ...257]
 GetCmpMask结果：[256, 256, 256, 256, 256, 256, 256, 256]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CompareStoreToRegister](compare_store_to_register.md)（`related`）：“获取CompareStoreToRegister指令写入CmpMask寄存器的比较结果。”明确 GetCmpMask 的数据来源；“逐元素比较两个 tensor，将比较结果存储到寄存器中。”明确 CompareStoreToRegister 的生产行为，二者形成同一 CmpMask 寄存器的写入与读取链。
-<!-- cannbot:related:end -->

@@ -1364,9 +1364,3 @@ Host 为每个 core 分配按 `AAlign` 对齐的 mean/variance FP32 partial；De
 | 同步 | queue pipe 可复用；R-split 使用 `SyncAll` | partial 写完成后才能 reload；仅 core0 写 stats | `BatchNormV3BlockSplitR::Process`、`BatchNormV3RARBlockSplitR::Process` |
 | 精度与尾块 | FP32 reduce/rstd/cache；y cast 回 T | Bessel update、Newton rstd、POD tails、mask/unaligned copy | 各 `Compute/LastFinalize/CopyOut` |
 | 失败边界 | template 优先链可复用 | layout/training predicate、UB guard、key 无默认 body | 各 `IsCapable/GetTilingKey`、entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [EMA 公式 stat+m*(batch-stat) 在 inf 时 NaN](../../../../runbooks/precision/ema_stat_m_batch_stat_inf_nan.md)（`related`）：BatchNorm 950 的训练语义规定“`runningMean=(1-momentum)*runningMean+momentum*mean`、`runningVar=(1-momentum)*runningVar+momentum*R/(R-1)*var` 更新统计量”；EMA 排障卡证明“`stat + m*(batch - stat)` 与 golden 的 `(1-m)*stat + m*batch` 在有限域数学等价、在 inf 域 IEEE 754 不等价。”，因此可直接用于构造含 inf 的 running statistics 验证和禁止等价改写。
-<!-- cannbot:related:end -->

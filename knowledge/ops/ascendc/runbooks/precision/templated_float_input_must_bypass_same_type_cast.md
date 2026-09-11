@@ -357,10 +357,3 @@ __global__ __aicore__ void rms_norm_kernel(
 ## 误诊
 
 fp32 输出是大幅有限偏差而非稳定报错，容易误判为归约精度或标量开方问题；dtype 对照显示共享 rstd 链在低精度路径可用，问题集中在 fp32 独有的 gamma 初始化路径。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](mte2_barrier_must_precede_vector_cast.md)（`related`）：直接搬运与 Cast 两条路径都在数据消费前完成 MTE2→VEC 同步；这避免“修复 fp32 却让低精度产生 NaN”的二次回归。；低精度分支顺序固定为 `DataCopyPad → PipeBarrier → Cast`；不使用“分支外统一屏障”掩盖分支内部依赖。。两卡共同约束同一模板化 gamma 搬运链：按 dtype 分流以后，仍须在低精度分支内部保证 MTE2 写入先于 Vector Cast。
-- [bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt](../compilation/device_sqrt_uses_vector_api.md)（`related`）：sqrtf 修复后的 dtype 路径要“把 `mean+epsilon` 写入 LocalTensor，通过 Ascend C Vector API 完成开方。”；同一模板化 RMSNorm 卡指出“模板把“低精度升 fp32”错误泛化到了已经是 fp32 的分支。”，后者防止在进入前者 fp32 Vector 开方链前用同类型 Cast 破坏数据。
-<!-- cannbot:related:end -->

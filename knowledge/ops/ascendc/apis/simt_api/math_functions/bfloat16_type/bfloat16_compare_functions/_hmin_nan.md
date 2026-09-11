@@ -85,10 +85,3 @@ bfloat16_t __hmin_nan(const bfloat16_t x, const bfloat16_t y)
         dst[idx] = __hmin_nan(x[idx], y[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hmin](_hmin.md)（`same_topic`）：获取两个输入数据中的最小值。；获取两个输入数据中的最小值。任一输入为nan时，结果为nan。。两接口计算相同 bfloat16 最小值，候选显式提供 NaN 传播版本，适合按异常值契约选择。
-<!-- cannbot:related:end -->

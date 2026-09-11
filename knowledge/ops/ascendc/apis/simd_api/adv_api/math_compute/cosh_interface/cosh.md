@@ -126,19 +126,4 @@ AscendC::Cosh(dstLocal, srcLocal, sharedTmpBuffer, 256);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCoshMaxMinTmpSize](get_cosh_max_min_tmp_size.md)（`related`）：Cosh 卡明确“临时空间大小通过GetCoshMaxMinTmpSize获取。”；Host Tiling 卡说明“host侧Tiling接口，用于获取Cosh接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”，二者形成 Cosh 临时空间的 Host 计算到 Kernel 使用链，但主 API 的双曲余弦计算与 helper 的容量规划并非同一主题。
-- [GetCoshTmpBufferFactorSize](get_cosh_tmp_buffer_factor_size.md)（`same_topic`）：“获取Cosh接口的maxLiveNodeCount和extraBuffer，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuffer表示额外临时空间大小（字节）。”与“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetCoshMaxMinTmpSize获取。”提供双方正文证据。factor 接口把固定可用缓冲换算为单次 Cosh 元素数，Cosh 卡给出显式 sharedTmpBuffer 与 calCount 重载；两端可共同确定分块大小和传入的计算元素数。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ForeachCosh A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cosh.md)（`related`）：算子正文包含对 `Cosh(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ForeachCosh A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cosh.md)

@@ -55,10 +55,3 @@ MetricsProfStart();
 ... // 需要调优的kernel侧代码段。
 MetricsProfStop();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MetricsProfStart](metrics_prof_start.md)（`related`）：“设置性能数据采集信号停止，与MetricsProfStart配合使用，用于指定msOpProf调优的kernel侧代码段范围。”定义区间终点；“设置性能数据采集信号启动，与MetricsProfStop配合使用，用于指定msOpProf调优的kernel侧代码段范围。”定义同一区间起点，调用时必须成对框定待测代码段。
-<!-- cannbot:related:end -->

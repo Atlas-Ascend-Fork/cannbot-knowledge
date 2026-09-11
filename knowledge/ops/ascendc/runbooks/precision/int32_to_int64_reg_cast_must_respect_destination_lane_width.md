@@ -204,9 +204,3 @@ __aicore__ inline void PathVecLine(int64_t m)
 ## 误诊
 
 索引前几个元素看起来正确，容易误判为尾块或多核切分问题；真正的判别点是错误边界与目标 int64 VL=32 一致。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend950 Reg 扫描按 256B 锁定 lane](dav3510_vector_register_width_is_256_bytes.md)（`related`）：源代码以 `VECTOR_REG_WIDTH / sizeof(int32_t)` 得到 64-lane 的循环步长，但目标 `RegTensor<int64_t>` 只有 `VECTOR_REG_WIDTH / sizeof(int64_t)=32` lanes；因此每个 64 元素步长只能实际生成/存储 32 个 int64，中间 32 个位置被留空，下一轮又从下一个 64 元素起点继续。；工具链头文件与算子源码探针都显示 dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。int32 寄存器实际只有 `256 / 4 = 64` 个 lane。。平台宽度卡确定 256B 与 int32 64 lane，Cast 卡据此解释 int64 仅 32 lane 导致 widening 写空，二者闭合 lane 预算排障。
-<!-- cannbot:related:end -->

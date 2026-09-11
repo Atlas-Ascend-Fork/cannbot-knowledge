@@ -120,10 +120,3 @@ Matmul计算需要计算出多个singleCoreM \* singleCoreN大小的C矩阵，�
         ```
         mm.End();
         ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IterateBatch](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/iterate_batch.md)（`explains`）：通过IterateBatch接口批量处理Matmul，可以有效提升带宽利用率。；调用一次IterateBatch，可以计算出多个singleCoreM * singleCoreN大小的C矩阵。；指南给出小 shape 批处理的性能动机，API 卡给出一次调用产生多个 C 矩阵的执行合同。
-<!-- cannbot:related:end -->

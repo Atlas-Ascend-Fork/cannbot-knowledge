@@ -89,25 +89,13 @@ __simd_vf__ inline void MaxsVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, T scala
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 14 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [SimThreadExponential 950 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)（`related`）：算子声明的固定版本源码包含对 `Maxs(...)` 的直接调用（第 260 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h#L260)
-- [ClippedSwiglu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/clipped_swiglu_950.md)（`related`）：算子声明的固定版本源码包含对 `Maxs(...)` 的直接调用（第 406 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/clipped_swiglu/op_kernel/arch35/clipped_swiglu_kernel.h#L406)
-- [AddRmsNormDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_dynamic_mx_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Maxs(...)` 的直接调用（第 665 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_dynamic_mx_quant/op_kernel/arch35/add_rms_norm_dynamic_mx_quant_common.h#L665)
-- [RmsNormDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/rms_norm_dynamic_mx_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Maxs(...)` 的直接调用（第 547 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_dynamic_mx_quant/op_kernel/arch35/rms_norm_dynamic_mx_quant_common.h#L547)
-- [AvgPool2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/avg_pool2d_950.md)（`related`）：算子声明的固定版本源码包含对 `Maxs(...)` 的直接调用（第 830 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_common.h#L830)
-- [DequantSwigluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dequant_swiglu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Maxs(...)` 的直接调用（第 344 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_common.h#L344)
-- [DynamicBlockMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_block_mx_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Maxs(...)` 的直接调用（第 943 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_block_mx_quant/op_kernel/arch35/dynamic_block_mx_quant_base.h#L943)
-- [DynamicDualLevelMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_dual_level_mx_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Maxs(...)` 的直接调用（第 827 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_dual_level_mx_quant/op_kernel/arch35/dynamic_dual_level_mx_quant_base.h#L827)
-- [DynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_mx_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Maxs(...)` 的直接调用（第 903 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_mx_quant/op_kernel/arch35/dynamic_mx_quant_not_tail_axis_optimize_high_perf_large_tail.h#L903)
-- [DynamicMxQuantWithDualAxis 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_mx_quant_with_dual_axis_950.md)（`related`）：算子声明的固定版本源码包含对 `Maxs(...)` 的直接调用（第 1795 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_mx_quant_with_dual_axis/op_kernel/arch35/dynamic_mx_quant_with_dual_axis_base.h#L1795)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [SimThreadExponential 950 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)
+- [ClippedSwiglu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/clipped_swiglu_950.md)
+- [AddRmsNormDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_dynamic_mx_quant_950.md)
+- [RmsNormDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/rms_norm_dynamic_mx_quant_950.md)
+- [AvgPool2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/avg_pool2d_950.md)
+- [DequantSwigluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dequant_swiglu_quant_950.md)
+- [DynamicBlockMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_block_mx_quant_950.md)
+- [DynamicDualLevelMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_dual_level_mx_quant_950.md)
+- [DynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_mx_quant_950.md)
+- [DynamicMxQuantWithDualAxis 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_mx_quant_with_dual_axis_950.md)

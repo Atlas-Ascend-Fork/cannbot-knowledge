@@ -493,9 +493,3 @@ pipe.InitBuffer(outQueueMul, bufferNum, bufferSize * sizeof(T));
 | 同步 | Queue双缓冲 | EnQue/DeQue/FreeTensor | arch35 body |
 | 精度与尾块 | FP32 GELU、cast-rint、exact tail | Erf config/pattern | arch35 base/body |
 | 失败边界 | 参数/Tiling/unknown key | 不补fallback | CheckParams/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GeGlu A2/A3 ACLNN 算子知识](ge_glu.md)（`same_topic`）：V3 用 `activateLeft` 选择激活半边，另一半作为 gate；`outGelu` 保存被激活半边的 GELU，`out` 保存其与另一半的逐元素乘积。`activateLeft=true` 时 `outGelu=GELU(A), out=outGelu*B`，否则 `outGelu=GELU(B), out=A*outGelu`。两卡定义同一 aclnnGeGluV3 的门控与双输出数学合同，分别给出 A2/A3 和 950 的 Kernel/Tiling 实现，可直接支撑平台迁移时的 route 选择与双输出核验。
-<!-- cannbot:related:end -->

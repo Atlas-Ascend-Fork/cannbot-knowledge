@@ -490,9 +490,3 @@ for (uint64_t idx = tid; idx < static_cast<uint64_t>(count); idx += stride) {
 | 同步 | 每元素单线程程序顺序 | 唯一 idx 映射；无须也没有 atomic/barrier | `OpForeachMaximumScalarSimt` |
 | 精度与尾块 | half/BF16 升 FP32；浮点显式 NaN/±0；idx guard | ComputeType、SimtMaximum 顺序、降精度 cast | `ComputeType` / `SimtMaximum` |
 | 失败边界 | tensorNum≤256、四 dtype key | 其它 dtype、零 core/UB、POD/workspace 获取失败必须终止 | `ForeachMaximumScalarTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMaximumScalar A2/A3 ACLNN 算子知识](foreach_maximum_scalar.md)（`same_topic`）：A2/A3 卡的核心合同是“对列表中每个张量逐元素计算 `y_i［j］ = max(x_i［j］, scalar)`。”；950 卡保持“对列表中每个张量逐元素计算 `y_i［j］ = max(x_i［j］, scalar)`；浮点路径显式传播 NaN 并处理有符号零。”，二者是同一 aclnnForeachMaximumScalarV2 对象在 arch22 与 arch35 的平台实现。
-<!-- cannbot:related:end -->

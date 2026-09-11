@@ -99,10 +99,3 @@ Vector计算单元每个迭代会从Unified Buffer（UB）中取出**8**个**Dat
 
     **图6**  多次迭代间非连续场景的示意图  
     ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/multi_iter_non_continuous.png)<a id="图6-多次迭代间非连续场景的示意图"></a>
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [高维切分API](../../../../../guides/programming_guide/library_api/basic_api/interface_classification/high_dim_split_api.md)（`explains`）：“支持开发者控制指令的迭代执行和操作数的地址间隔”由“高维切分API，支持repeatTime、stride和mask参数”落实为 repeat、步长和掩码三个接口控制维度。
-<!-- cannbot:related:end -->

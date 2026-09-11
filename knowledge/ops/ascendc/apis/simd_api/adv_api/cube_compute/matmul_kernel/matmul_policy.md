@@ -318,10 +318,3 @@ platforms:
         DataCopy(gmC[baseOffset], bufferC, {blockCount, blockLen, srcStride, dstStride});
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Matmul高阶API开启NBuffer33模板](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_nbuffer33.md)（`explains`）：NBuffer33模板的详细介绍请参考MatmulPolicy。；涵盖以下类别：MatmulPolicy、TrianUpperMatmulPolicy/TrianLowerMatmulPolicy、NBuffer33MatmulPolicy、MatmulWithScalePolicy/SplitMMatmulPolicy/SplitNMatmulPolicy。指南的优化方案必须在 Kernel 对象侧选择 NBuffer33MatmulPolicy，API 卡给出该内置策略及其 MDL/GM 约束。
-<!-- cannbot:related:end -->

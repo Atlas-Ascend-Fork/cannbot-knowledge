@@ -774,9 +774,3 @@ AIC 仅在 AIV 归还对应 ping/pong 后覆盖 workspace，写完通过 PIPE_FI
 | 同步 | SyncAll、C2V/V2C ping-pong | flag ID、轮次、AIC:AIV核比 | MSD/perblock/pergroup body |
 | 精度与尾块 | int32/float accum，FP32 epilogue，CAST_RINT | scale/bias/offset顺序与tail mask | Device body |
 | 失败边界 | checker/Tiling/key miss均终止 | 不得跨 V3/V4 猜测 fallback | API/registry/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [QuantMatmul 950 ACLNN 算子知识](quant_matmul_950.md)（`same_topic`）：量化矩阵乘；按模式执行 `x1*x2` 后应用 per-tensor/per-channel/per-token/per-group scale，可选 offset/bias，并转换为目标 dtype；950 上的整数/FP8/HIF8/FP4 量化矩阵乘，覆盖 T-C/T-T、K-C/K-T、G-B、K-G、T-CG 与 MX。两卡都定义 QuantMatmul 的量化矩阵乘核心，目标卡是在 950 上扩展整数与多种低精度模式的架构实现，属于同一算子的跨平台知识。
-<!-- cannbot:related:end -->

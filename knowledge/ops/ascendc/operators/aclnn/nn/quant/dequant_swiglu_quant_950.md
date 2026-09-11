@@ -792,12 +792,3 @@ Host 将任意 rank 规约成 `[D0,2D1,D2]`，Device 在 D0/D1 上二维切分�
 | 同步 | Queue、MTE/V events、LoopMode reset | workspace pass1完成后才能pass2 | `SetFlag/WaitFlag`, `ResetLoopModePara` |
 | 精度与尾块 | FP32 SwiGLU；dtype-specific max/round/pack | FP4 pair、full-row dynamic scale、2-D tail POD | common helpers / body masks |
 | 失败边界 | Host selector无 Device fallback | non-AIV/unknown key不写；Nlast UB不足失败 | entry/`IsCapable`/`DoUbSplit` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CMake arch 子目录隔离 dav-3510 专属 API](../../../../runbooks/compilation/cmake_arch_dav_3510_api.md)（`related`）：在 xpu_ops v2 框架中迁移 dequant_swiglu_quant 算子，算子根目录（`kernels/dequant_swiglu_quant/*.cpp`）使用 dav-3510 专属 API（`DequantSwigluQuantAicpuTiling` aicpu tiling kernel、`MicroAPI`、`RegTensor`、`get_aiv_num`、`get_ub_size`）。；所有 Route 共享 `_apt` entry、AIV guard 和 `TPipe`。；故障卡的具体触发算子正是目标卡闭合的 950 DequantSwigluQuant arch35 实现。
-- [tmpBuffer 分配步长≠访问步长触发 UB 越界 341](../../../../runbooks/compilation/tmpbuffer_ub_341.md)（`related`）：焦点卡在“dequant_swiglu_quant 算子的 nlast 场景”重建 tmpBuffer 越界，候选算子把对应路线标为“non-tail axis, dynamic, no group”并给出 Nlast 的 UB/路由闭包；算子卡可定位受影响 route，runbook 则提供 341 的步长判别与修法。
-- [复用共享融合算子/量化方法到不同结构模型时的静默规格失配（MoE 默认 SiLU 遇 GEGLU、钳位 SwiGLU 需专用算子、mxfp8 Linear 丢 dense 的 bias）](../../../../../../model/inference/runbooks/runtime/shared_fused_op_default_spec_mismatch.md)（`related`）：带钳位 SwiGLU（clamped/bounded gated activation，gpt-oss 式）的量化 MoE 共享专家，用普通融合算子 `npu_dequant_swiglu_quant` / `npu_swiglu` 时静默丢掉模型规格要求的激活上界。950 V2 只使用普通 SwiGLU：`swish(A)*B=A/(1+exp(-A))*B`，`activateLeft` 决定 A/B。故障规格与 950 V2 的普通公式构成明确的能力边界：该平台路由不能承接 bounded 激活，选型时应避免把它当作钳位变体。
-- [DequantSwigluQuant A2/A3 ACLNN 算子知识](dequant_swiglu_quant.md)（`same_topic`）：`swigluMode=1` 时按偶/奇通道 gather，计算 `min(x_glu,L)/(1+exp(-alpha*min(x_glu,L))) * (clamp(x_linear,-L,L)+beta)`。950 V2 只使用普通 SwiGLU：`swish(A)*B=A/(1+exp(-A))*B`，`activateLeft` 决定 A/B。两端均描述 DequantSwigluQuant V2 的反量化、门控激活与再量化合同，但平台允许的激活公式不同；迁移时必须据此重新选择属性、Tiling 与 Kernel 路由。
-<!-- cannbot:related:end -->

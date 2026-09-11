@@ -44,9 +44,3 @@ platforms:
 
 - 分片 prefill 时 MTP 单步退出、prefill 后补跑 `next_n-1` 步并拼回 `input_ids`、`get_actual_seq_lengths` 改按 batch 跨步：diff 事实 @d20ac4f4f639（动机取自代码注释 `the mtp model performs only prefill`）。溯源下探 [cann-recipes-infer-pr-290-fix-for-glm-5-use-one-cache-data-in-mpt3-and-support-multi-batch-per-die](https://gitcode.com/cann/cann-recipes-infer/merge_requests/290)。
 - cache 分配由 `next_n` 改为 `num_nextn_predict_layers`、备份/还原与 per-step 换 cache 旁路删除、草稿步就地推进：diff 事实 @d20ac4f4f639；定量收益标为推断、未并入事实面。溯源同上。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MTP 草稿模型的缓存/状态正确性（按注意力结构）：单层 draft 需 next_n 层 KV、SSM 递归状态按接收数推进](mtp_draft_cache_state_correctness.md)（`same_topic`）：遇到 cache 份数争议时，先用“cache 层数取 `num_nextn_predict_layers`（KV cache 与 ［offload cache］(../../../concepts/techniques/kvcache_offload.md) 同口径）”核对 checkpoint 是否真的有多预测层，再用“单层 draft 跑 `next_n` 步时**每一步各需一层 KV cache**：第 `k` 步取 `past_key_values［k］`。”核对单层 draft 是否以 past_key_values［k］ 分步取用，避免把两种结构的规则互相套用。
-<!-- cannbot:related:end -->

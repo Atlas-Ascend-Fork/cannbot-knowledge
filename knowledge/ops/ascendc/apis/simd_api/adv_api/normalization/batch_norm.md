@@ -141,10 +141,3 @@ AscendC::BatchNorm<dataType, isReuseSource, isBasicBlock>(
 输出数据(varianceLocal):
 [ 336 336 336 336 336 336 336 336 ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BatchNorm Tiling](batch_norm_tiling.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过BatchNorm Tiling获取。模板参数isReuseSource预留（传false）；isBasicBlock在满足基本块要求（originB为8的倍数，S*H为64的倍数且小于2048）时可设为true提升性能。；host侧Tiling接口，用于获取BatchNorm kernel计算所需的Tiling参数，分两步：通过GetBatchNormMaxMinTmpSize获取最大和最小临时空间大小（minValue保证功能正确，maxValue提升性能）；通过GetBatchNormNDTilingInfo获取kernel侧所需tiling参数（含切分信息、临时空间位置等），开发者无需关注tiling结构体细节，直接传入BatchNorm高阶API使用。；BatchNorm 明确消费 BatchNorm Tiling 生成的临时空间范围和切分参数，Tiling 页又规定如何产生这些参数，二者构成 Host 规划到 Kernel 调用的直接接口链。
-<!-- cannbot:related:end -->

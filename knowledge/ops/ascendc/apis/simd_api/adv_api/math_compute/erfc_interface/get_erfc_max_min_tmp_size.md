@@ -64,10 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetErfcMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Erfc](erfc.md)（`related`）：host侧Tiling接口，用于获取Erfc接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；临时空间大小通过GetErfcMaxMinTmpSize获取。。前者给出 Erfc 的 Host 侧 workspace 上下界，后者把它指定为 Erfc 计算重载的临时空间来源，二者构成 Tiling 尺寸规划到 Kernel 调用的直接前置链。
-<!-- cannbot:related:end -->

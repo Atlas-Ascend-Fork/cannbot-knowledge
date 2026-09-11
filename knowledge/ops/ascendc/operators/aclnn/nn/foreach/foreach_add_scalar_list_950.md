@@ -649,9 +649,3 @@ Host 把所有 Tensor flatten 为一个总元素域，用 4096 字节等价元�
 | 同步 | Queue producer/consumer；repeat内数据依赖 | FreeTensor 前消费完成 | `CopyIn/Compute/CopyOut` |
 | 精度与尾块 | FP16/BF16在寄存器升FP32并RINT；mask tail | cast trait、pack distribution、valid-byte DMA | `Compute/LoadOneTensorForDtypeT/StoreOneTensorForDtypeT` |
 | 失败边界 | 1–50 Tensor、dtype组合、output校验 | unknown key不是fallback | `GetShapeAttrsInfo/CheckScalarList/CheckOutput` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddScalarList A2/A3 ACLNN 算子知识](foreach_add_scalar_list.md)（`same_topic`）：｜ 计算语义 ｜ 对列表位置 `i`：`y_i［j］ = x_i［j］ + scalars_i`，只覆盖 `x_i` 的元素域。 ｜；｜ 计算语义 ｜ 对列表位置 `i`：`y_i［j］ = x_i［j］ + scalars_i`，有效域为 `x_i` 元素域。 ｜。两卡实现同一 aclnnForeachAddScalarListV2 的逐列表位置标量加法语义，分别覆盖 A2/A3 与 950。
-<!-- cannbot:related:end -->

@@ -81,11 +81,3 @@ The vector core execution is abnormal.
 
 - 该判别规则针对 c220（arch 2201）vector 指令源地址 32B 对齐约束；Ascend950 等其他架构的对齐粒度可能不同，未验证，标注"未验证，推断可迁移"。
 - 32B（C0Size）对齐是从 `DataCopyExtParams` stride 单位与 vector RepeatParams stride 单位间接推断，可在后续追到 c220 vector 指令手册时复核"源地址对齐"的严格定义。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwiGLU 高级 API 在非32B对齐 slice 上精度失败](../precision/swiglu_adv_api_fails_non_32b_aligned_slice.md)（`related`）：“slice*sizeof(T) 非 32B 整数倍时禁用 `AscendC::SwiGLU` adv_api”给出高级 API 的精度失败边界；“c220 vector 指令要求源 tensor 物理地址 32B（C0Size）对齐。”给出手写或批量回退路径仍必须遵守的底层源地址条件。
-- [Vector Sub 源 UB 非 32B 对齐触发错误 340](vector_sub_ub_32b_340.md)（`related`）：c220 vector 指令要求源 tensor 物理地址 32B（C0Size）对齐。；`AscendC::Sub` Level 2 接口（`Sub(dst, src0, src1, count)`）底层 Vector 指令要求 `src0`/`src1`/`dst` 三个 LocalTensor 的起始地址均 32B 对齐（每 block 32 字节，即 8 个 int32）。。两份运行手册分别在 c220 批量 slice 与 950 Vector Sub 中把 507035 追到 LocalTensor 起始地址不满足 32B；后一份提供偏移乘元素字节数的判别步骤，可辅助验证前一故障。
-- [多块 DataCopyPad dst 基址非 32B 对齐崩溃](datacopypad_dst_32b.md)（`related`）：多块 `DataCopyPad` 的**每个数据块的 dst 起始地址必须 32B 对齐**（`DataCopyPadGm2UBImpl` 断言 `TransUBAddr % 32 == 0`）。优化版把一个 tile 的 x0 分成 head(firstLen) + middle（逐 slice，`blockLen=slice*es`）+ tail 三段，head 拷贝写入 `dst［0..firstLen)` 后，middle 的 dst 基址取 `dst［firstLen］`。当 `firstLen * sizeof(T)` 不是 32B 整数倍时，middle 块的 dst 基址非 32B 对齐 → MTE 指令访问地址未对齐 → vector core exception。；c220 vector 指令要求源 tensor 物理地址 32B（C0Size）对齐。跨 slice 批量路径中，逐组计算的源地址是 `xIn［b］`，偏移 `b = g * 2 * slice`，单位是元素；当 `slice*sizeof(T)` 不是 32B 整数倍时，`b*sizeof(T)` 不是 32B 对齐，vector 指令读取非对齐源地址触发 vector core exception（507035）。；两端给出同一 SwiGlu 优化链中 MTE dst 与 vector src 两种 32B 地址故障，可按失败指令阶段分流。
-<!-- cannbot:related:end -->

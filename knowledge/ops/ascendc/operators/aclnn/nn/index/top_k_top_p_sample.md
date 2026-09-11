@@ -606,9 +606,3 @@ softmax 的第二遍直接加载 q、计算 `abs(q)+eps`、相除并做 tile Arg
 | 同步 | MTE/Vector/Scalar event 与 PipeBarrier | workspace ping-pong 前必须 MTE3→MTE2 | `SetWaitFlag`, `MrgSort4Que` |
 | 精度与尾块 | 所有计算升到 FP32；softmax 减 max | 尾有效字节与 32 元素排序补齐不可混淆 | `SoftMax*`, `SortSPartAll` |
 | 失败边界 | 校验失败阻断；unknown key return | 不可推测 fallback 输出 | `RunKernelTiling`, entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TopKTopPSample 950 ACLNN 算子知识](top_k_top_p_sample_950.md)（`same_topic`）：“｜ 计算语义 ｜ 每行按 TopK→TopP→MinP 过滤；随后输出过滤中间量，或执行 ArgMax，或按 `probs/(abs(q)+eps)` 执行 Q-Sample 后 ArgMax ｜”与“｜ 计算语义 ｜ 每行依次进行可选 TopK、TopP、MinP，再输出中间量、ArgMax 或 `probs/(abs(q)+eps)` 的 Q-Sample ArgMax ｜”是双方正文中的具体合同。两端保持 TopK、TopP、MinP 过滤顺序及三种输出路线，互读可跨平台验证采样数学合同和 Q-Sample 归一形式。
-<!-- cannbot:related:end -->

@@ -250,12 +250,3 @@ __simd_vf__ inline void cummin_scan_vf(
 ## 误诊
 
 在此之前，部分 B16 失败曾与 CopyIn 尾块错误混在一起。逐行 CopyIn 后 float32/int32 已全过、仅 B16 路径残留，才把根因收敛到跨 dtype mask lane-lock。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [B16 交错 DINTLV 成对归零 — 转 fp32 后重排](b16_interleave_compute_should_promote_to_b32_layout.md)（`related`）：同一 `MaskReg` 跨 B16/B32 使用会破坏 value/index 的逐 lane 对应。；唯一根因是把 `DINTLV_B16` 产生的 B16 双寄存器 lane 布局直接当作逻辑偶/奇对，再经 `Reg::Cast` 做逐 lane 运算；两张运行手册都证明 B16 lane 或 mask 不能直接按 B32 消费语义复用，并把计算提升到共同的 fp32/B32 布局作为正确性基线。
-- [b16 running 经 fp32 回转会改写 NaN payload](bit_exact_b16_nan_payload_needs_original_dtype_running_value.md)（`related`）：“两份 running 使用同一 mask 更新，避免值与索引、值与比较状态发生漂移；”要求原 dtype carry 与 FP32 compare carry 同步；“用 B16 `Compare` 的 mask 直接驱动 int32 `Select`，只检查 values 不检查 indices。”指出同一 cummin 链里 mask 跨 B16/B32 会破坏值与索引的 lane 对齐。
-- [Ascend950 Reg 扫描按 256B 锁定 lane](dav3510_vector_register_width_is_256_bytes.md)（`same_topic`）：“工具链头文件与算子源码探针都显示 dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。int32 寄存器实际只有 `256 / 4 = 64` 个 lane。”与“在 256B Reg 宽度下，B16 值寄存器有 128 个 lane，int32 索引寄存器只有 64 个 lane。”提供双方正文证据。两条精度卡共同定位 dav-3510 256B Reg 下 int32 只有 64 lane；后一条继续解释 B16 128-lane mask 与 B32 index 64-lane 的语义冲突。
-- [半精度索引错位—拆分双 int32 掩码](b16_value_mask_must_split_for_two_int32_index_registers.md)（`same_topic`）：“每个 value register iteration 必须加载两组 int32 寄存器”与“修复把 half/bfloat16/float 的计算类型统一为 float，int32 保持 int32”是同一 B16 value/B32 index lane 错配的两条已验证修复路线，可直接用于快路与安全回退选型。
-<!-- cannbot:related:end -->

@@ -157,33 +157,13 @@ mm.SetTensorB(scalar_a, isTransposeB);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetBType](../matmul_tiling/set_b_type.md)（`related`）：- isTransposeB（输入）：B矩阵是否需要转置。 注意：若B矩阵MatmulType的ISTRANS参数设置为true，该参数可以为true也可以为false，即运行时可以转置和非转置交替使用； 若B矩阵MatmulType的ISTRANS参数设置为false，该参数只能设置为false，若强行设置为true，精度会有异常；对于非half、非bfloat16_t输入类型的场景，为了确保Tiling侧与Kernel侧L1 Buffer空间计算大小保持一致及结果精度正确，该参数取值必须与Kernel侧定义B矩阵MatmulType的ISTRANS参数以及Tiling侧SetBType()接口的isTrans参数保持一致，即上述三个参数必须同时设置为true或同时设置为false。；设置B矩阵的位置，数据格式，数据类型，是否转置等信息，这些信息需要和kernel侧的设置保持一致。；Kernel 侧 SetTensorB 明确要求转置设置与 Tiling 侧 SetBType 一致，SetBType 正是声明 B 矩阵布局和转置的 Host 侧契约。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)（`related`）：算子声明的固定版本源码包含对 `SetTensorB(...)` 的直接调用（第 263 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/fused_linear_cross_entropy_loss_grad/op_kernel/fused_linear_cross_entropy_loss_grad_high_perf.h#L263)
-
-### 知识正文中的调用示例（部分算子）
-
-展示 9 / 12 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [UpsampleBilinear2dAABackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bilinear_2d_aa_backward.md)（`related`）：算子正文包含对 `SetTensorB(...)` 的直接调用；本卡提供该接口契约。
-- [LSTM A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/lstm.md)（`related`）：算子正文包含对 `SetTensorB(...)` 的直接调用；本卡提供该接口契约。
-- [NsaSelectedAttention A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_selected_attention.md)（`related`）：算子正文包含对 `SetTensorB(...)` 的直接调用；本卡提供该接口契约。
-- [QuantMatmul 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/matmul/quant_matmul_950.md)（`related`）：算子正文包含对 `SetTensorB(...)` 的直接调用；本卡提供该接口契约。
-- [grouped_matmul_add A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add.md)（`related`）：算子正文包含对 `SetTensorB(...)` 的直接调用；本卡提供该接口契约。
-- [LSTM 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/lstm_950.md)（`related`）：算子正文包含对 `SetTensorB(...)` 的直接调用；本卡提供该接口契约。
-- [grouped_matmul_add 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add_950.md)（`related`）：算子正文包含对 `SetTensorB(...)` 的直接调用；本卡提供该接口契约。
-- [grouped_matmul_finalize_routing A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing.md)（`related`）：算子正文包含对 `SetTensorB(...)` 的直接调用；本卡提供该接口契约。
-- [GroupedMatMulAlltoAllv A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/grouped_mat_mul_allto_allv.md)（`related`）：算子正文包含对 `SetTensorB(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)
+- [UpsampleBilinear2dAABackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bilinear_2d_aa_backward.md)
+- [LSTM A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/lstm.md)
+- [NsaSelectedAttention A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_selected_attention.md)
+- [QuantMatmul 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/matmul/quant_matmul_950.md)
+- [grouped_matmul_add A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add.md)
+- [LSTM 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/lstm_950.md)
+- [grouped_matmul_add 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add_950.md)
+- [grouped_matmul_finalize_routing A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing.md)
+- [GroupedMatMulAlltoAllv A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/grouped_mat_mul_allto_allv.md)

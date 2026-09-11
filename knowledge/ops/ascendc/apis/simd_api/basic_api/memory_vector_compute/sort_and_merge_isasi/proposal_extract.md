@@ -167,10 +167,3 @@ __aicore__ inline void ProposalExtract(const LocalTensor<T>& dst, const LocalTen
      -20.67   59.56   35.72   -6.12  -39.4   -11.46   -7.066  30.23  -11.18
      -35.84  -40.88   60.9   -73.3    38.47 ]
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ProposalConcat](proposal_concat.md)（`related`）：将连续元素合入Region Proposal内对应位置，每次迭代会将16个连续元素合入到16个Region Proposals的对应位置里。；与ProposalConcat功能相反，从Region Proposals内将相应位置的单个元素抽取后重排，每次迭代处理16个Region Proposals，抽取16个元素后连续排列。。两个接口分别把连续元素写入 proposal 字段和从相同布局抽取字段，构成同一 Region Proposal 布局的互逆数据变换。
-<!-- cannbot:related:end -->

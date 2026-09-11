@@ -670,9 +670,3 @@ R-004 必须位于通用 FP32 CATLASS 之前；R-005 必须位于 common FP16/BF
 | FP32 specialization | direct-only | `CatlassF32Grouped::Route`、`GroupedMatmulSliceMTla`、`AddFp32Bias` |
 | FP16 specialization | direct-only | `CompactUnreliableOutputs`、`RefineIndexedDots` |
 | 构建 | operator CMake | direct registration + operator-private cgmct/CATLASS/TLA closure |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupedMatmul 950 ACLNN 算子知识](../../../aclnn/transformer/gmm/grouped_matmul_950.md)（`same_topic`）：对累积边界 `r_g=group_list［g］`，计算 `Y［r_{g-1}:r_g,:］ = X［r_{g-1}:r_g,:］ × W［g］ + bias［g］`；`transpose_weight=true` 时 `W［g］` 的存储 shape 为 `［N,K］`。；每组计算 Y_i=X_i×W_i+bias_i。。两端实现同一 950 GroupedMatmul 分组矩阵乘加核心，分别记录 Direct Invoke 的 Torch/launcher 契约与 ACLNN V5 的 TensorList、量化和 arch35 路线，联合阅读可完成前端与实现路线选型。
-<!-- cannbot:related:end -->

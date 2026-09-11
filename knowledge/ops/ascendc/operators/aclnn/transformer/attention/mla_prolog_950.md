@@ -615,10 +615,3 @@ if (scenarioInfo_.weightQuantMode_ == WEIGHT_QUANT_MODE::MXFP8_FULL_QUANT &&
 | 同步 | CrossCore/HardEvent | zero flag/IDs/pipes | comm/body |
 | 精度与尾块 | MXFP8 FP32 accumulation | scale/tail/cast | MLAPType/MatmulSplitMKOuter |
 | 失败边界 | exact selector/fallback | no inferred split-M | SetScenarioInfo |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MlaProlog 950 Direct Invoke 算子知识](../../../direct/transformer/attention/mla_prolog_950.md)（`same_topic`）：`X` 同时生成 query 与压缩 KV：`Cq=RMSNorm(X·W_dq)`，`［Qc,Qr］=Cq·W_uq_qr`，`Q=Qc·W_uk`，`Q_rope=RoPE_half(Qr)`；`［Ckv,Kr］=X·W_dkv_kr`，输出 `RMSNorm(Ckv)` 与 `RoPE_half(Kr)`。；`Cq=αq*RMSNorm(X*WDq)`，`［Qc,Qr］=Cq*［WUq,WQr］`，`query=Qc*WUk`，`queryRope=RoPE(Qr)`；`［Ckv,Kr］=X*［WDkv,WKr］`，`αkv*RMSNorm(Ckv)` 与 `RoPE(Kr)` 写 cache。950 额外支持 MXFP8/FP8/HIF8；MXFP8 MM 以 FP8E8M0 scale 并累加为 FP32。。两卡闭合相同 MlaProlog 的四 Matmul、两 RMSNorm、query/RoPE 和压缩 KV 语义，分别提供 950 Direct Invoke BF16 路线与 ACLNN V3 量化/cache 路线。
-- [MlaProlog A2/A3 ACLNN 算子知识](mla_prolog.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnMlaPrologV3WeightNzGetWorkspaceSize` / `aclnnMlaPrologV3WeightNz`，公开 ACLNN V3 WeightNz ｜；｜ 实际入口 ｜ `aclnnMlaPrologV3WeightNzGetWorkspaceSize` / `aclnnMlaPrologV3WeightNz` ｜。两卡绑定完全相同的 ACLNN V3 WeightNz 入口，分别说明 A2/A3 与 950 的实现合同。
-<!-- cannbot:related:end -->

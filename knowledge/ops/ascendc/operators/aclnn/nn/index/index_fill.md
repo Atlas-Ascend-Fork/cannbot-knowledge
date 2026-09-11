@@ -741,9 +741,3 @@ value 在进入 `(p,n)` 循环前已扩成可 DMA 的连续块；命中索引时
 | 同步 | event + `SyncAll` + GM flags | 位图完成前不得覆盖/读取输出阶段数据 | `InitCoreSys/WaitForIndicesTask` |
 | 精度与尾块 | 同宽位模式复制，Select 仅选值 | 负索引只加一次 N、越界跳过、有效长度搬运 | 五个 Route body |
 | 失败边界 | API 校验和 launcher 返回可传播 | 不得把空 self/index 当 Kernel 路线，不得接受未知 key | `ExecIndexFillGetWorkspaceSize`, `index_fill` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IndexFill 950 ACLNN 算子知识](index_fill_950.md)（`same_topic`）：“｜ 实际入口 ｜ `aclnnIndexFillGetWorkspaceSize` + `aclnnIndexFill`，公开、非原地 ACLNN ｜”与“固定仓仅有公开 `aclnnIndexFill` 两段式入口；第一段固定以 `isInplace=false` 进入 `l0op::IndexFill`，不触达任何 Inplace 或 Tensor-value 变体。”分别给出两端正文事实；两卡描述同一公开非原地 aclnnIndexFill 契约，分别闭合 A2/A3 arch32 与 950 arch35 的 route、workspace 和同步实现，适合做平台迁移对照。
-<!-- cannbot:related:end -->

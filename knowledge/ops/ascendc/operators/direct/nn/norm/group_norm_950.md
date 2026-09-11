@@ -1073,9 +1073,3 @@ Frontmatter 仅收录固定官方 HTTP(S) blob URL。Direct 包装、typed entry
 | 同步 | AIV hard events；SIMT barrier；跨节点stream序 | ping/pong正反事件、两次barrier、producer→consumer顺序 | `CalNormalize`、`NormalizeLargeGroupF32` |
 | 精度与尾块 | FP32统计与normalize、B16 CAST_RINT、Welford三种非对齐 finalize | 不代数重排 rstd/scale-bias；mask用真实有效长 | `CalRstdByHighPrecision`、`VFWelfordParallelFinalizeNonAlign` |
 | 失败边界 | tiling `-1` 可回传；空输入Host终止 | unknown key不可外部注入；launch错误当前不显式回传 | `calc_group_norm_tiling`、`group_norm_npu` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupNorm 950 ACLNN 算子知识](../../../aclnn/nn/norm/group_norm_950.md)（`same_topic`）：“令 `D=C/G`，把 channel 后的所有维度展平为 `HW`，每组元素数 `R=D·HW`。对 `q=n·G+g`：”与“令 `D=C/group`、`R=D*HxW`。对 `a=n*group+g`，计算 `mean_a=sum(x_a)/R`、`var_a=sum((x_a-mean_a)^2)/R`、`rstd_a=1/sqrt(var_a+eps)`，每个通道 `c=g*D+d` 输出 `y=(x-mean_a)*rstd_a*gamma［c］+beta［c］`。”提供双方正文证据。两卡围绕同一 950 GroupNorm 统计与 affine 公式；Direct 入口只返回 y 并含补充路线，ACLNN 入口还返回 mean/rstd 并走四条 RegBase 路线，适合按调用形态核对。
-<!-- cannbot:related:end -->

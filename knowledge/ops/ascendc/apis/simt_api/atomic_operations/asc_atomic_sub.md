@@ -164,10 +164,3 @@ remaining before: 100
 requests: 4, 8, 3
 remaining after: 85 // 表明共享配额被3个线程原子扣减了15
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscAtomicSub](../../simd_api/c_api/atomic/scalar_atomic/asc_atomic_sub.md)（`same_topic`）：“对Unified Buffer或Global Memory上的数据与指定数据执行原子减操作，即在这些内存区域的数据中减去指定数据。”与“对Global Memory中的数据与指定数据执行原子减操作，即将val从address指向的数据元素上减去。”提供双方正文证据。二者共享对 address 执行原子减并返回旧值的核心契约；SIMT API 允许 UB 或 GM，而 C scalar API 仅声明 GM，互读能直接确认地址空间边界。
-<!-- cannbot:related:end -->

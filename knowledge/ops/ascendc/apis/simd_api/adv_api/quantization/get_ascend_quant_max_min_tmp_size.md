@@ -62,10 +62,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetAscendQuantMaxMinTmpSize(srcShape, typeSize, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendQuant](ascend_quant.md)（`related`）：host侧Tiling接口，用于获取AscendQuant接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；临时空间大小通过GetAscendQuantMaxMinTmpSize获取。。前者计算 AscendQuant workspace 的上下界，后者明确用该结果配置量化计算临时空间，联合阅读可闭合 Host 规划与 Kernel 调用。
-<!-- cannbot:related:end -->

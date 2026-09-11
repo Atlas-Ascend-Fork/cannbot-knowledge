@@ -69,10 +69,3 @@ unsigned int size() const
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NumThreads](num_threads.md)（`same_topic`）：获取协作组内线程的总数，功能与num_threads函数一致。；获取当前线程所属的thread_block_tile组内的线程总数。。size 文档直接声明与 num_threads 功能一致，两者是同一 thread_block_tile 线程总数查询的别名入口。
-<!-- cannbot:related:end -->

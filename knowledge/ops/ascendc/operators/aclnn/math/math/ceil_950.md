@@ -736,9 +736,4 @@ struct CeilDAG {
 | 精度与尾块 | 各dtype原位宽CAST_CEIL；DOUBLE Eigen；mask/tail | FP16/BF16不升精度；符号位合并常量与dtype宽度；只写count | `CeilCustom`; `ComputeCeil` |
 | 失败边界 | Host校验、Tiling guard、AICPU返回码均可复用 | 不把A2/A3缺失链补成950复用；不把DOUBLE路由到AIV | `CheckParamsCeil`; `ElewiseTiling`; `IsAiCoreSupport` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Truncate](../../../../apis/simd_api/basic_api/reg_vector_compute/type_conversion/truncate.md)（`related`）：AIV 路线不升精度：FP32、FP16、BF16 均在自身位宽上执行 `MicroAPI::Truncate<T, RoundMode::CAST_CEIL, ZEROING>`；roundMode: 舍入模式，取值如下： • RoundMode::CAST_RINT • RoundMode::CAST_ROUND • RoundMode::CAST_FLOOR • RoundMode::CAST_CEIL • RoundMode::CAST_TRUNC；Ceil 950 的三种 AIV dtype 直接消费 Truncate 的 CAST_CEIL 模式，API 卡可核对 dtype、mask 与舍入合同。
-- [InplaceCeil 950 ACLNN 算子知识](inplace_ceil_950.md)（`same_topic`）：｜ 计算语义 ｜ 对 `selfRef` 的每个逻辑元素执行向正无穷取整，并把结果写回同一用户 Tensor 的逻辑视图 ｜；｜ 计算语义 ｜ 对每个逻辑元素计算 `out［i］ = ceil(self［i］)`，即取不小于输入的最小整数值，并以输入 dtype 表示。 ｜。两算子共享逐元素 ceil 核心语义，InplaceCeil 在相同内部计算之上增加 selfRef 原地别名与写回契约。
-<!-- cannbot:related:end -->
+- [Truncate](../../../../apis/simd_api/basic_api/reg_vector_compute/type_conversion/truncate.md)

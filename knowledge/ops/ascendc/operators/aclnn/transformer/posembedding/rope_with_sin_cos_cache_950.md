@@ -775,9 +775,3 @@ DMA 的 padding 会把有效数据相对目标起点平移；helper 用 `padding
 | 同步 | arch35 PipeBarrier + token-route MTE2_V | 复用前不得删除 Barrier；auto-sync 构建选项 | arch35 body/CMake |
 | 精度与尾块 | lowp FP32 中间+RINT；FP32原精度；front/tail+head tail | uint16 上界、packed FP32边界、last=0语义 | `Compute/ComputeAlongHeads/Process` |
 | 失败边界 | API 参数错误与 Tiling guard 可复用 | 必须补齐 Tiling 返回传播、UB下溢、M=0、四段950和FP32 stride | `CheckParams/TilingRopeWithSinCosCache/arch35 body` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RopeWithSinCosCache A2/A3 ACLNN 算子知识](rope_with_sin_cos_cache.md)（`same_topic`）：两种模式随后都计算 `o1=x1*cos-x2*sin`、`o2=x2*cos+x1*sin`，false 分支再用 `Gather` 恢复偶奇交错。；两者均计算 `o1=x1*cos-x2*sin`、`o2=x2*cos+x1*sin`；GPT-J 路线再用 `Gather` 恢复偶奇交错。；两卡实现同一 RopeWithSinCosCache 旋转公式和 NeoX/GPT-J 布局，分别记录 A2/A3 V2 cacheMode 能力与 950 V1 arch35 路线和四段 mrope 冲突。
-<!-- cannbot:related:end -->

@@ -102,10 +102,3 @@ __simd_vf__ inline void SubC(__ubuf__ T* dst0Addr, __ubuf__ T* dst1Addr, __ubuf_
     }
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscSubc](../../../c_api/reg_compute/reg_arith/asc_subc.md)（`same_topic`）：该接口根据mask，对源操作数src0、src1及输入进位carry_src进行按元素求差操作，减法运算在硬件底层通过补码加法实现，将结果写入目的操作数dst，同时将每个元素的进位结果写入carry（存放进位的掩码寄存器）。；该接口根据mask，对源操作数srcReg0、srcReg1及输入进位carrySrc进行按元素求差操作，减法运算在硬件底层通过补码加法实现，将结果写入目的操作数dstReg，同时将每个元素的进位结果写入carry（存放进位的MaskReg寄存器）。。两卡描述同一 Reg 按掩码带进位减法语义，仅分别采用 C API 操作数名与基础 API RegTensor/MaskReg 名称。
-<!-- cannbot:related:end -->

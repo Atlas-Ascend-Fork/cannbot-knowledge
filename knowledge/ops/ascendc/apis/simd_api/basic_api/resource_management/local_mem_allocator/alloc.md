@@ -153,10 +153,3 @@ auto layoutMake = AscendC::MakeLayout(shape, stride);
 auto tensorTraitMake = AscendC::MakeTensorTrait<float, AscendC::TPosition::VECIN>(layoutMake);
 auto tensor3 = allocator.Alloc<decltype(tensorTraitMake)>();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LocalMemAllocatorConstructor](local_mem_allocator_constructor.md)（`related`）：构造接口说明“LocalMemAllocator构造函数。”并建立唯一 allocator 对象；其消费接口“根据用户指定的逻辑位置、数据类型、数据长度返回对应的LocalTensor对象。”，说明构造完成后的核心分配动作和返回对象。
-<!-- cannbot:related:end -->

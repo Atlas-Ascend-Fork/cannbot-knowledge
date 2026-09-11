@@ -86,10 +86,3 @@ inline half __bfloat162half_rn(const bfloat16_t x)
         dst[idx] = __bfloat162half_rn(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162half_rn_sat](_bfloat162half_rn_sat.md)（`same_topic`）：遵循CAST_RINT模式，将bfloat16类型数据转换为half类型数据；使用此接口前需将CTRL［60］寄存器设置为0，否则饱和模式不生效。两卡完成相同 bfloat16 到 half 的 RINT 转换；候选增加由 CTRL［60］ 控制的饱和模式，适合从普通转换导航到饱和配置边界。
-<!-- cannbot:related:end -->

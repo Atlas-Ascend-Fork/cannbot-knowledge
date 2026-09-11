@@ -75,10 +75,3 @@ mm.SetTensorA(gmA);
 mm.SetTensorB(gmB);
 mm.IterateAll();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulCallBackFunc](matmul_call_back_func.md)（`related`）：“用户可配置3个函数指针”定义 Matmul 回调，“设置算子tiling地址，用于回调函数使用”说明回调读取 tiling 信息时的配套初始化接口。
-<!-- cannbot:related:end -->

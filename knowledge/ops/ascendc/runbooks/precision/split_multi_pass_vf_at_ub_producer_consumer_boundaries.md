@@ -453,14 +453,3 @@ buffer 初始化也必须同步改变；slot 按完整 vector load 的访问宽�
 ## 误诊
 
 早期曾关注 tail mask、低精度 cast 与 UB 残留，但这些假设不能解释 fp32 同样失败以及长度非单调；真正闭环来自改变 wrapper 边界和数据依赖。`GetValue` 路线只产生编译器拒绝，不是运行时精度修复。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AR 跨块循环放在 __simd_vf__ 只执行首块](simd_vf_chunk_loop_must_be_driven_by_aicore_wrapper.md)（`related`）：把三次 pass 拆成三个完整的 `__simd_vf__` 函数和三个独立的 `asc_vf_call` wrapper。；将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。；两卡共同要求用 AICore wrapper 提供 VF pass 与 chunk 的显式提交边界。
-- [Reg 固定地址跨块累加需逐 VF PipeBarrier](fixed_address_vf_accumulator_needs_per_call_barrier.md)（`related`）：调用之间由 `PipeBarrier<PIPE_V>` 建立可见性；把“一个 VF 内循环所有 chunk”改成“一个 VF 只处理一个 chunk”；在 `__aicore__` 的 chunk 循环中，每次调用后执行 `PipeBarrier<PIPE_V>()`，再进入下一块。；目标卡把焦点的 pass 间 barrier 规则具体化为固定 UB 累加地址的逐 chunk 调用边界。
-- [Reg::Reduce 跨 chunk 覆写导致规约失真](reg_reduce_per_chunk_result_must_accumulate_explicitly.md)（`related`）：审查多 pass Reg kernel 时，画出每个 `asc_vf_call` 的 UB 读写集合；每个 chunk 先 Reduce 到临时寄存器 `tmp` 的 lane 0，再用仅 lane 0 有效的 `scalarMask` 对运行累加器执行 `Max` 或 `Add`。；目标卡补足焦点审查流程中每个 chunk 的规约结果必须显式合并这一数值合同。
-- [RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽](regtensor_cross_chunk_state_should_persist_in_ub_slot.md)（`related`）：跨 wrapper 只传小标量时，使用 VL 大小的 UB slot，避免 `LoadAlign` 越过分配范围。；running max/sum 每个 VL 都 `LoadAlign(slot) → Reduce → Max/Add → StoreAlign(slot)`；目标卡细化焦点跨 wrapper 标量槽为逐 chunk 持久状态的生产消费协议。
-- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`related`）：`PipeBarrier<PIPE_V>` 只约束 Vector pipe 内部顺序；vector store 尚未排空时 load 可能读到旧 UB 数据。前者定位 V→UB→Scalar 的可见性缺口并要求避免 GetValue 交接，后者定位同一 wrapper 内 VEC_STORE→VEC_LOAD 的排空缺口并通过拆分 wrapper 插入 barrier；两卡共同界定 barrier 必须放在可表达的生产者消费者边界。
-- [分块 wrapper 与 VF callee 不可重复叠加 offset](wrapper_and_vf_callee_must_not_double_apply_chunk_offset.md)（`related`）：第三个 pass 重新计算 `exp(x-max)`，不再回读第二个 pass 写出的整行指数 UB。；固定单一寻址责任：wrapper 传已按 chunk 前移的 `fAddr`/`xAddr`；callee 删除 `offset` 参数，对收到的指针直接 `LoadAlign`。；拆分 wrapper 后，目标卡给出每块地址只前移一次的必要寻址合同。
-<!-- cannbot:related:end -->

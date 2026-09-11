@@ -64,11 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetLgammaMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLgammaTmpBufferFactorSize](get_lgamma_tmp_buffer_factor_size.md)（`related`）：参数：typeSize为输入数据类型字节数（half传2）；maxLiveNodeCount输出最大存活节点数；extraBuffer输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。；host侧Tiling接口，用于获取Lgamma接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两接口从 shape 到空间上下界和空间到可处理 shape 两个方向闭合 Lgamma 的 Host 临时空间规划。
-- [Lgamma](lgamma.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetLgammaMaxMinTmpSize获取。；host侧Tiling接口，用于获取Lgamma接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。Lgamma 的 sharedTmpBuffer 重载消费 Host Tiling 接口给出的容量上下界，二者构成明确的临时空间生产与消费合同。
-<!-- cannbot:related:end -->

@@ -794,9 +794,3 @@ if (colsTail_ != colsPerLoop_) {
 | 同步 | Queue + LocalMemBar；Welford V_S | scalar 读取必须等待 Vector store | `SetFlag/WaitFlag<V_S>` |
 | 精度与尾块 | FP32 add/reduce/affine；mask 有效列 | 非对齐 Welford 计数不可改 | VF helpers |
 | 失败边界 | Host 校验失败阻断 launch | unknown key 无输出 | `GetShapeAttrsInfo`, router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddLayerNorm A2/A3 ACLNN 算子知识](add_layer_norm.md)（`same_topic`）：｜ 计算语义 ｜ `x=x1+x2+biasOptional`，沿 `gamma` 对应尾部维归一化，输出 `y/mean/rstd`，属性开启时输出 `x` ｜；｜ 计算语义 ｜ `x=x1+x2+biasOptional`；在 `gamma` 对应的尾部归一化域上计算 `mean`、`rstd=1/sqrt(var+epsilon)`；`y=(x-mean)*rstd*gamma+beta` ｜。两卡描述同一 AddLayerNorm 公开计算合同，分别闭合 A2/A3 和 950 的 Host selector、POD 与单 Kernel 实现。
-<!-- cannbot:related:end -->

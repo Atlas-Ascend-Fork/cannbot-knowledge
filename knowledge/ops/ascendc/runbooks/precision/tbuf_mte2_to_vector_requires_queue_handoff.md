@@ -120,10 +120,3 @@ platforms: ["a3", "950"]
 ## 误诊
 
 若修复后非有限值位置仍不一致，先把 gamma 搬运与规约标量路径分别做独立探针，不能继续把错误归到同一交接点。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](mte2_barrier_must_precede_vector_cast.md)（`related`）：裸 TBuf 没有在这两个调用之间表达生产者到消费者的队列交接；本次会话中，改为 TQue 的 EnQue/DeQue 后原非有限值位置不一致消失。；正确 RAW 依赖是 `MTE2 write gammaLocal → barrier/event → VEC read gammaLocal`。。两卡诊断同一 MTE2 生产者到 Vector 消费者的 RAW 依赖缺口，分别给出 TQue EnQue/DeQue 交接和手工 barrier/event 两种修复路径。
-- [Vector 结果搬出前须经 VECOUT 队列](vector_results_need_vecout_queue_before_mte3.md)（`related`）：形成完整所有权与事件链：为本轮输出分配 VECOUT tensor，在 Vector 流水写入后 `EnQue`，由搬出侧 `DeQue` 后再 `DataCopyPad`，最后 `FreeTensor`；改为 VECIN TQue 的 EnQue/DeQue 交接后，各轨迹的定向或完整测试均闭合。焦点给出 Vector→MTE3 的 VECOUT 交接，候选给出 MTE2→Vector 的 VECIN 交接；二者从相反方向覆盖 DMA 与 Vector 之间的标准 Queue 生命周期。
-<!-- cannbot:related:end -->

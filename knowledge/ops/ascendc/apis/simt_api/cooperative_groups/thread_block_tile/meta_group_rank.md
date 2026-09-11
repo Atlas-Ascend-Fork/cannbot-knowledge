@@ -69,10 +69,3 @@ unsigned int meta_group_rank() const
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [tiled_partition](../tiled_partition.md)（`related`）：获取当前线程所在的组在从父组划分出的子组集合中的排名，排名从0开始。；返回值：返回划分出的子组对象。tiled_partition 生产子组集合，MetaGroupRank 在该集合中解释当前组序号，形成直接对象生产与查询链。
-<!-- cannbot:related:end -->

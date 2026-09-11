@@ -698,9 +698,3 @@ __aicore__ inline void DistributeBarrier<TemplateDistributeBarrierTypeFunc>::Ini
 | 同步 | MTE2_V、V_S、V_MTE3、MTE3_S、PipeBarrier、DCCI、SyncAll | producer 完成前不得 reduce/复用/退出 | `SyncFunc` / `Process` |
 | 精度与尾块 | 8 个 FP32 1 的精确和；余 rank给前 m 核 | compareTarget、blockLen、stride、idle worker处理不可改 | `SplitToCore` / `WaitStatus` |
 | 失败边界 | API/Tiling/inner 错误直接传播 | 不得把 optional 内容、UB/window 前提伪装为已校验 | `Check*` / base |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DistributeBarrier 950 ACLNN 算子知识](distribute_barrier_950.md)（`same_topic`）：｜ 计算语义 ｜ 在独占通信域内等待全部 rank 到达；`xRef` 只建立 Tensor 依赖，Kernel 不读写其数据 ｜；｜ 计算语义 ｜ 在独占通信域内等待全部 rank 到达；`xRef` 只建立依赖，Kernel 不读写其数据 ｜。两卡闭合同一 DistributeBarrierV2 屏障语义；A3 从 HCCL rank window 工作，950 则由 Host 预建 Mc2MoeContext 并走 DistributeBarrierExtend。
-<!-- cannbot:related:end -->

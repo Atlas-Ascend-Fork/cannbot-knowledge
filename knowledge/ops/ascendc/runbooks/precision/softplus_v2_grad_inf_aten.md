@@ -55,9 +55,3 @@ aten 顺序核验与诊断佐证（来源平台：950；证据等级：tool_obse
 - 仅当 `grad*exp(z)` 跨越 `FLT_MAX` 时发散；常规输入（`grad` 远离 `FLT_MAX`）两种顺序等价。
 - aten 其他算子的具体计算顺序须各自核验 req_analysis 或 aten 源码，不可直接套用本卡结论。
 - a2/a3 平台未验证，推断同 fp32 溢出模型但未实测。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [softplus_v2_grad 极端 FLT_MAX 与 aten 不可对齐](softplus_v2_grad_flt_max_aten.md)（`same_topic`）：焦点卡定位“对 `gradOutput=FLT_MAX, z>0`，`aop × exp(z)` 先溢出为 ±inf，再除 `(exp(z)+1)` 得 ±inf”；目标卡同样用“`grad*exp(z)=FLT_MAX*1.022=3.48e38 > FLT_MAX → inf`”解释 golden=inf、NPU 有限值。两卡围绕同一 softplus_v2_grad FLT_MAX/aten 运算顺序故障，只是处置结论与回归阶段不同。
-<!-- cannbot:related:end -->

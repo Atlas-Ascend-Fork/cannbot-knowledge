@@ -64,10 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetTruncMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Trunc](trunc.md)（`same_topic`）：“临时空间大小通过GetTruncMaxMinTmpSize获取”与“host侧Tiling接口，用于获取Trunc接口所需的最大和最小临时空间大小”明确了 Trunc 的 Host Tiling 到 Kernel 临时空间调用链。
-<!-- cannbot:related:end -->

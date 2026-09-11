@@ -97,10 +97,3 @@ AscendC::Mc2CcTilingConfig mc2CcTilingConfig(
 mc2CcTilingConfig.GetTiling(tiling->mc2InitTiling); // tiling为算子组装的TilingData结构体
 mc2CcTilingConfig.GetTiling(tiling->reduceScatterTiling);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HCCL Tiling使用说明](hccl_tiling_usage.md)（`related`）：用于创建一个Mc2CcTilingConfig对象；Mc2CcTiling为具体每个通信任务的参数配置；连接对象构造与 GetTiling/Kernel 消费。
-<!-- cannbot:related:end -->

@@ -199,10 +199,3 @@ bitModeParams.SetIfTranspose(false);
 
 AscendC::LoadData<AscendC::TPosition::A2, AscendC::TPosition::A1, half>(dstLocal, srcLocal, bitModeParams);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LoadData](load_data_2_d.md)（`same_topic`）：“将数据从L1 Buffer搬运到L0A或L0B Buffer的2D模式搬运接口。”与“LoadData 2D的位宽模式变体，支持int4等特定位宽数据类型的搬运。”是双方正文中的具体合同。两端执行同一 L1 到 L0A/L0B 的二维搬运，BitMode 端增加 int4 等位宽解释，互读能决定常规与特定位宽入口。
-<!-- cannbot:related:end -->

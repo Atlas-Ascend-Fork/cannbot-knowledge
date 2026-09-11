@@ -109,12 +109,3 @@ coalesced_group tiled_partition(const coalesced_group& parent, unsigned int tile
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MetaGroupRank](thread_block_tile/meta_group_rank.md)（`related`）：获取当前线程所在的组在从父组划分出的子组集合中的排名，排名从0开始。；返回值：返回划分出的子组对象。tiled_partition 生产子组集合，MetaGroupRank 在该集合中解释当前组序号，形成直接对象生产与查询链。
-- [ShflUp](thread_block_tile/shfl_up.md)（`related`）：获取thread_block_tile组内当前线程向前偏移delta的线程的数据。；tiled_partition API用于将一个线程组划分为多个更小、固定大小的子组，以便线程在以更精细的粒度上进行协作。。tiled_partition 先创建固定大小的 thread_block_tile，shfl_up 再在该组内按 delta 读取前方线程数据，形成分组到组内通信的使用链。
-- [thread_block_tile构造函数](thread_block_tile/thread_block_tile_constructor.md)（`related`）：tiled_partition API用于将一个线程组划分为多个更小、固定大小的子组，以便线程在以更精细的粒度上进行协作。；thread_block_tile不提供默认构造函数，可通过tiled_partition接口从另一个协作组中划分得到。前者定义划分操作，后者把该操作确定为 thread_block_tile 的构造入口。
-<!-- cannbot:related:end -->

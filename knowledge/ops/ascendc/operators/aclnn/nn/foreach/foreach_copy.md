@@ -637,9 +637,3 @@ R-001 只有一个 depth-1 input queue，U 可占满扣除 POD 后的 32-byte �
 | 同步 | queue + V/MTE3 + MTE3/MTE2 | depth-1 buffer 不能在 consumer 完成前覆盖 | 两个 `ComputeAndCopyOut` |
 | 精度与尾块 | 扩展 `CAST_NONE`，窄化 `CAST_RINT`；tail 精确 blockLen | 不能互换 round mode；不能把 padding lane 写出 | `ForeachCastND::ComputeAndCopyOut/CopyIn` |
 | 失败边界 | Host 拦截 dtype/shape/list inconsistency | 不能依赖 unknown-key Device fallback；A3 不支持 | `CheckOpInfo/CheckForeachCopyDtype`；公开产品表 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachCopy 950 ACLNN 算子知识](foreach_copy_950.md)（`same_topic`）：焦点卡写明“本卡只标记 A2”，候选卡写明“950 没有独立 arch35 body，复用活动 `arch22` Host 与公共 AIV source”。两卡覆盖同一 ForeachCopy 契约在 A2 与 950 的活动接线，950 复用 arch22 body 的事实可直接指导平台迁移与构建核查。
-<!-- cannbot:related:end -->

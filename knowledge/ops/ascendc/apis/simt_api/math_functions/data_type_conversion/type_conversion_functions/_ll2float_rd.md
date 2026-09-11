@@ -90,10 +90,3 @@ inline float __ll2float_rd(const long long int x)
         dst[idx] = __ll2float_rd(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__ll2float_rz](_ll2float_rz.md)（`same_topic`）：“功能：遵循CAST_TRUNC模式，将int64类型数据转换为浮点数，返回转换后的值。”与“功能：遵循CAST_FLOOR模式，将int64类型数据转换为浮点数，返回转换后的值。”是双方正文中的具体合同。两端都将 int64 转换为浮点数，分别采用向零截断与向下取整，互读能针对负数与非精确表示值选择舍入模式。
-<!-- cannbot:related:end -->

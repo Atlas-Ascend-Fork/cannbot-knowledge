@@ -174,10 +174,3 @@ source_headers:
         ```
 
     
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceRepeat](../reduction_compute/reduce_repeat.md)（`related`）：获取ReduceRepeat或ReduceMax/ReduceMin计算的最值及索引，结果以全局变量形式存储。；对每个repeat内所有数据进行归约操作，支持求和、求最大值和求最小值，可返回最值索引。。辅助接口读取 ReduceRepeat MAX/MIN 写入全局状态的最值与内部索引，计算接口定义每个 repeat 的归约域与索引语义。
-<!-- cannbot:related:end -->

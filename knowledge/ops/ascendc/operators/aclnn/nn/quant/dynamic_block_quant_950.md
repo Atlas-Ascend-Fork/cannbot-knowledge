@@ -640,10 +640,3 @@ AscendC::MicroAPI::Max<uint16_t, AscendC::MicroAPI::MaskMergeMode::MERGING>(
 | 同步 | queue 生命周期和 MicroAPI vec scope | DeQue/Free 前后关系；retained slice 特例 | 三 body `Process*` |
 | 精度与尾块 | 16-bit abs max→FP32 scale/div→8-bit SAT cast | dtype max、round trait、UpdateMask | common + `ComputeVF` |
 | 失败边界 | Host 非法域失败；unknown key 无输出 | 不得使 dormant hybrid/未知 key 可达 | `GetAttr`; router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FP8 Per-Block Dynamic Quant Attention](../../../../../../model/inference/concepts/quantization/fp8_attention.md)（`related`）：input_quant, input_scale = torch_npu.npu_dynamic_block_quant(；｜ 计算语义 ｜ 对每个 `rowBlockSize × colBlockSize` 块求绝对值最大值 `amax`，输出 `scale=min(amax/dstMax, 1/minScale)`，再以 `y=cast(x/scale)` 量化；`minScale=0` 时 `1/minScale` 依 IEEE 除法成为上界 Inf。 ｜。前者是量化注意力的实际前处理调用，后者闭合该 950 ACLNN 算子的 block、scale 与 cast 语义。
-- [自定义算子内 .to(FP8) 多流跨流竞争 banned](../../../../runbooks/compilation/to_fp8_banned.md)（`related`）：焦点故障卡的规避要求是“让 kernel 直接产出模型期望的 dtype”，候选原生算子明确“950 为 FP8_E5M2/FP8_E4M3FN/HiFloat8”；使用其原生 FP8 输出可避开自定义 kernel 后再 `.to(FP8)` 的跨流 Cast 竞争。
-<!-- cannbot:related:end -->

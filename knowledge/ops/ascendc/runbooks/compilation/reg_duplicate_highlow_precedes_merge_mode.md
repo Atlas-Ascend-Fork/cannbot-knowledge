@@ -244,10 +244,3 @@ __simd_vf__ inline void softmax_div_cast_vf(
 ## 误诊
 
 这是模板名称与签名兼容问题，不是 max/sum 广播值错误或 softmax 精度问题。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_duplicate_merge](../../apis/simd_api/c_api/reg_compute/reg_broadcast/asc_duplicate_merge.md)（`exemplifies`）：merge模式下，将src的最低位元素广播到dst中被mask筛选的位置，dst中未被mask筛选的元素保留原值。；安装头文件的真实声明表明，寄存器到寄存器重载的模板形参依次是 `T, HighLowPart pos, MaskMergeMode mode`。。API定义 merge 广播最低位并保留未命中 lane，Runbook给出 CANN 9.0.1 调用该寄存器广播重载时的模板参数次序。
-- [Duplicate](../../apis/simd_api/basic_api/reg_vector_compute/data_padding/duplicate.md)（`exemplifies`）：“安装头文件的真实声明表明，寄存器到寄存器重载的模板形参依次是 `T, HighLowPart pos, MaskMergeMode mode`。”给出实际编译修复，而“参数：T: 操作数数据类型。支持的数据类型请参考数据类型。；U: scalar的数据类型。支持的数据类型请参考数据类型。；mode: MaskMergeMode枚举类型，选择MERGING模式或ZEROING模式。 • ZEROING模式下，mask未筛选的元素在dstReg中置零。 • MERGING模式下，mask未筛选的元素在dstReg中保留dstReg原值。；pos: 默认为LOWEST，表示将srcReg中的最低位广播至dstReg（暂不支持其他取值）。；S: 目的操作数的RegTensor类型， 例如RegTensor ，由编译器自动推导，用户不需要填写。；dstReg(输出): 目的操作数。 类型为RegTensor。；scalarValue(输入): 源操作数。 类型为标量。；srcReg(输入): 源操作数。 类型为RegTensor。”定义 Duplicate 的 pos/mode 契约；runbook 直接示范模板顺序错误及正确实例化。
-<!-- cannbot:related:end -->

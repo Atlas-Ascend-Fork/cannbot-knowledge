@@ -554,13 +554,3 @@ struct RopeTiling {
 ## 误诊
 
 最初假设是复用 `t1/t2` 造成 V 流水 RAW/WAW。轨迹把它改成四个独立 scratch 并重建，但非确定性仍稳定复现。这个失败尝试非常有判别力：当“计算临时量不复用”仍无效，应转向输入 owner 的释放点。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FreeTensor](../../apis/simd_api/basic_api/resource_management/t_que/free_tensor.md)（`exemplifies`）：`FreeTensor` 把该队列槽标为可复用，不表示所有持有它的视图已经完成消费。下一子 tile 的 `AllocTensor + DataCopyPad` 可以用 MTE2 覆盖同一 UB，而前一 tile 的 V 流水仍在读取，于是产生真正的数据竞争：有时读到 NaN，有时读到错误有限值，表现随运行时序变化。；释放Que中的指定Tensor。；目标是触发队列槽复用的接口，焦点进一步给出别名仍被异步消费时过早释放的竞态机制。
-- [ReinterpretCast](../../apis/simd_api/basic_api/data_structures/global_tensor/reinterpret_cast.md)（`exemplifies`）：“转换后的Tensor与原Tensor地址及内容完全相同，Tensor的内存大小（比特数）保持不变。”给出焦点端事实；“xT = xIO.ReinterpretCast<CT>()”给出候选端事实。API 的同地址重解释合同解释了 runbook 中 xT 仍别名 xIO 的事实，并直接支撑 FreeTensor 早释后别名被复用内存覆盖的根因判断。
-- [ReinterpretCast](../../apis/simd_api/basic_api/data_structures/local_tensor/reinterpret_cast.md)（`exemplifies`）：焦点 API 的核心合同是“转换后的Tensor与原Tensor地址及内容完全相同”，候选故障卡中的“`xT = xIO.ReinterpretCast<CT>()`，这里 `T` 与 `CT` 都是 fp32，`xT` 仍指向 `xIO` 的 UB”正是该别名合同导致 FreeTensor 后仍访问同一 UB 的具体失效实例。
-- [TQue tensor 所有权只能 DeQue 一次](../compilation/tque_tensor_ownership_single_dequeue.md)（`related`）：`FreeTensor` 把该队列槽标为可复用，不表示所有持有它的视图已经完成消费。下一子 tile 的 `AllocTensor + DataCopyPad` 可以用 MTE2 覆盖同一 UB，而前一 tile 的 V 流水仍在读取，于是产生真正的数据竞争：有时读到 NaN，有时读到错误有限值，表现随运行时序变化。；队列所有权还要求一个已入队 tensor 只被一个消费者出队一次；如果 `Compute` 已消费 x，外层循环再次 `DeQue` 就破坏 `Alloc→EnQue→DeQue→Free` 的一一对应关系。；焦点说明槽位释放后的复用，目标补齐单次 DeQue 与唯一消费者的所有权约束。
-- [TQue 输入未释放导致循环 AllocTensor 卡死](../compilation/tque_dequeue_must_end_with_freetensor.md)（`related`）：把 `FreeTensor(xIO)` 从别名创建后移动到本 tile 所有 V 计算完成之后、输出搬运之前。生命周期边界应围绕“最后一次实际消费”，而不是围绕“最后一次 C++ 变量赋值”。；`DeQue` 只把已入队 Tensor 交给消费者，不等于把底层 buffer 归还给队列；循环在消费完成后遗漏 `FreeTensor`，有限 depth 的输入 buffer 被逐轮占用，后续 `AllocTensor` 无空闲 buffer 可分配而无进展。；两张卡给出同一 TQue 生命周期的两端失败：过早释放造成覆盖竞态，遗漏释放造成队列耗尽。
-<!-- cannbot:related:end -->

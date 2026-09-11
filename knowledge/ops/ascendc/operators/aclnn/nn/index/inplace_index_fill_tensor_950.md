@@ -939,9 +939,3 @@ Kernel 将 FLOAT16/BFLOAT16/FLOAT/DOUBLE 等数据按相同字节宽度的整数
 | 同步 | zero/set/read 与 copy/overwrite 的全核 barrier 图 | 任一 `SyncAll` 或 MTE2_S/V_S/S_V 事件均不能提前删除 | `index_fill_common.h`、各 body |
 | 精度与尾块 | API 单次 cast + Kernel 同宽位模式、former/tail 与线程 guard | 不得在整数载体上做数值算术；最后 tile 必须用 tail extent | `ComputeTypeGet`、Copy/Compute helpers |
 | 失败边界 | 公共校验、空域、Host template fallback、unknown template | R-001 workspaceSize 缺失赋值、A2/A3 closure 缺失必须保留 | ACLNN API、Tiling registry/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IndexFillTensor 950 ACLNN 算子知识](index_fill_tensor_950.md)（`same_topic`）：“实现复用非原地第一段接口，并把 `out` 指向 `selfRef`。”与“非原地语义由先复制 `self`、再填充输出以及最终 `ViewCopy` 到独立 `out` 保证。”分别给出双端正文事实；原地入口直接复用非原地 IndexFillTensor 第一段并把输入输出绑定到 selfRef，非原地卡定义相同核心算子的独立 out 语义，二者是同一 IndexFillTensor 合同的别名变体。
-<!-- cannbot:related:end -->

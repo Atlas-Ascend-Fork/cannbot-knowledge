@@ -68,10 +68,3 @@ ContextBuilder &NodeIoNum(size_t inputNum, size_t outputNum)
 auto builder = ContextBuilder().NodeIoNum(5, 3); // 该算子有5个输入，3个输出
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddInputTd](add_input_td.md)（`related`）：“调用AddInputTd前需要调用NodeIoNum与IrInstanceNum接口”；“先通过 NodeIoNum 设置输入输出个数，再通过 IrInstanceNum 设置每种输入的实例化个数”。NodeIoNum 是 AddInputTd 索引布局的显式前置，决定输入 index 空间。
-<!-- cannbot:related:end -->

@@ -744,9 +744,3 @@ for (int64_t dIdx = 0; dIdx < tiling->shapeD; dIdx++) {
 | 同步 | Queue 生命周期、V barrier、单块 S2V、构建 auto_sync | buffer 覆盖必须晚于消费/FreeTensor | `CalcSilu`、`ComputeQuant`、binary config |
 | 精度与尾块 | FP32 归约/SiLU，FP16 量化中间，A2/A3 RINT；DataCopyPad tail | 不得改成直接 FP32→INT8 或越界对齐 copy | `CastFromF16ToI8`、copy helpers |
 | 失败边界 | S/C+core guard、workspace 判空、未知 key无输出 | 无 Host/Device fallback，不得虚构 950 路线 | `SetTiling`、entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupNormSwish A2/A3 ACLNN 算子知识](group_norm_swish.md)（`related`）：｜ 计算语义 ｜ 对 `［N,C,...］` 的每个 `(n, group)` 域做 GroupNorm，按通道应用 `gamma/beta`，执行 SiLU，再以标量或逐通道 `quantScale` 量化为 INT8；另输出 `mean/rstd` ｜；｜ 计算语义 ｜ 对 NCHW 的每个 `(n,g)` 在 `D=(C/numGroups)·∏shape［2:］` 个元素上求 mean/variance，做 affine；`activateSwish=true` 时再做 `z/(1+exp(-swishScale·z))`。 ｜两页共享 GroupNorm 加 SiLU/Swish 激活链，但一页继续量化 INT8、另一页保留浮点并支持 swishScale，构成融合算子选型的实质对照。
-<!-- cannbot:related:end -->

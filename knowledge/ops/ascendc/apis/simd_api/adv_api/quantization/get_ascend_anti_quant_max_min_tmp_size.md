@@ -79,11 +79,3 @@ bool isTranspose = false;
 AscendC::GetAscendAntiQuantMaxMinTmpSize(
     srcShape, scaleShape, isTranspose, AscendC::TensorDataType::DT_INT8, AscendC::TensorDataType::DT_BF16, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendAntiQuant](ascend_anti_quant.md)（`related`）：“host侧Tiling接口，用于获取AscendAntiQuant接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”与“临时空间大小通过GetAscendAntiQuantMaxMinTmpSize获取。”是双方正文中的具体合同。Tiling 卡提供 AscendAntiQuant workspace 上下界，计算卡明确由它取得临时空间大小，二者闭合 Host 尺寸规划和 Kernel 侧调用。
-- [GetAscendAntiQuantTmpBufferFactorSize](get_ascend_anti_quant_tmp_buffer_factor_size.md)（`related`）：“调用多个高阶API时取各接口推算结果的最小值。maxLiveNodeCount可能为0，计算时需判断避免除零错误。”；“isReuseSource与AscendAntiQuant接口保持一致；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。”。两张卡是同一 AscendAntiQuant Tiling 中 factor 反推和 max/min 容量边界的互补接口。
-<!-- cannbot:related:end -->

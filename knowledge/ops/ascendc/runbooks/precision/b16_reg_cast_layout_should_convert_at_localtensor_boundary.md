@@ -138,9 +138,3 @@ __aicore__ inline void Compute(int64_t row)
 ## 误诊
 
 把偏差解释成 `exp` 或规约累加精度，会导致反复修改正确的 fp32 计算链。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [B16 结果大幅偏差 — UNPACK 后补 Reg Cast](b16_unpack_requires_numeric_cast_before_fp32_compute.md)（`related`）：本轨迹中这条 b16 load/cast/store 组合没有形成与 fp32 中间 UB 一致的 1:1 元素布局；将转换后的 RegTensor 写回 UB 再加载，导致部分 lane 值错误。；`DIST_UNPACK_B16`/`DIST_PACK_B32` 只控制 B16 数据在寄存器搬运时的展开/打包布局，并不等价于 fp16/bf16 与 fp32 的数值格式转换；把展开后的 B16 位模式直接当作 `RegTensor<float>` 参与运算，会让参与平方、规约和缩放的数值语义错误。两卡区分已显式 Cast 但布局仍错与完全缺少数值 Cast 两类 B16 精度失败，并给出递进排查。
-<!-- cannbot:related:end -->

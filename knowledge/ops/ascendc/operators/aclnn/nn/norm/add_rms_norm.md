@@ -837,11 +837,3 @@ Host 将按 dtype 的 repeat 主体、尾长和跨行 stride 固化进 POD，Dev
 | 同步 | queue、PipeBarrier、hard event | Single-N 覆盖 x2 前必须 V_MTE2 | body |
 | 精度与尾块 | FP32 reduce，BF16 RINT，DataCopyCustom tail | 不得让 padding lane 写 GM/参与有效 sum | helpers/body |
 | 失败边界 | selector fallback 到 Normal | dead key、unknown key、溢出不可补推 | selector/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../transformer/mc2/matmul_all_reduce_add_rms_norm.md)（`related`）：融合算子卡明确“头文件与文档标记其计划在 2026 年 12 月之后废弃，迁移目标为 `aclnnMatmulAllReduce` + `aclnnAddRmsNorm`。”；AddRmsNorm 卡给出目标阶段的“`x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma`”语义，可用于拆分迁移时核对 residual 加法与 RMSNorm 输出。
-- [WeightQuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../transformer/mc2/weight_quant_matmul_all_reduce_add_rms_norm.md)（`related`）：替代组合是 aclnnWeightQuantMatmulAllReduce + aclnnAddRmsNorm。 `x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma` 废弃融合入口把归一化尾段迁移到 AddRmsNorm，后者定义残差 add、rstd 与 gamma 计算合同。
-- [AddRmsNorm 950 ACLNN 算子知识](add_rms_norm_950.md)（`same_topic`）：｜ 计算语义 ｜ `x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma` ｜；｜ 计算语义 ｜ `x=x1+x2`；每个归一化行 `rstd=1/sqrt(mean(x^2)+epsilon)`；`y=x*rstd*gamma` ｜。两卡共享 AddRmsNorm 三输出数学合同和同一公开 ACLNN 入口，分别闭合 A2/A3 六路 Tiling 与 950 两路 RegBase 实现。
-<!-- cannbot:related:end -->

@@ -499,9 +499,3 @@ HCCL wait与AIV barrier先保证commOut可见，再用PIPE_V→PIPE_MTE2 flag交
 | 同步 | A3 mode2 flag8及MTE events | auto-sync关闭时保留显式协议 | scheduler/permute/CMake |
 | 精度与尾块 | 非量化FP16/BF16、expert/Matmul/permute tail | 不推断外部Matmul round | GMM/permute bodies |
 | 失败边界 | 仅ai_cpu、P集合、shape/count/resource | unknown key/空workspace不fallback | API/tiling/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AlltoAllvGroupedMatMul 950 ACLNN 算子知识](allto_allv_grouped_mat_mul_950.md)（`same_topic`）：｜ 计算语义 ｜ `ataOut=AlltoAllv(gmmX)`；`gmmY=GroupedMatMul(ataOut,gmmWeight)`；可选 `mmY=mmX×mmWeight`，可选输出 expert-first `permuteOut` ｜；｜ 执行类型 ｜ `MIX_CV` + runtime HCCL CCU/AICPU service task；单个 AscendC kernel 使用 `KERNEL_TYPE_MIX_AIC_1_2` ｜。两卡实现同一 AlltoAllv 后 GroupedMatMul 公开任务；A3 仅闭合 AICPU 服务任务，950 还闭合 CCU 路线。
-<!-- cannbot:related:end -->

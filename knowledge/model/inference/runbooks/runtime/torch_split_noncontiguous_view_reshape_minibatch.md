@@ -63,9 +63,3 @@ prev, next = torch.split(x, x.size(1) // 2, dim=1)
 ## Evidence
 
 - `diff 事实`（@ef0f82d0）：`indexer.py` 的 `Indexer.forward` `if self.cp_size > 1 and is_prefill:` 分支内 4 处 `.view(-1, ...)`→`.reshape(-1, ...)`（`query_dequant_scale_prev/next` 在 `if self.kv_cache_c8` 内、`weights_prev/next` 在通用分支）逐行对上，张量来自 `torch.split(..., dim=1)`。「非连续 + bsz>1 → view 失败」为 PyTorch view/reshape 连续性语义 + split(dim=1) 布局推断，与 PR 标题「minibatch>1 bug」一致；无独立复测。溯源下探：[cann-recipes-infer-pr-59-fix-fix-minibatch-1-bug-and-remove-redundent-code](https://gitcode.com/cann/cann-recipes-infer/merge_requests/59)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [长序列 Prefill 注意力优先 Context Parallel（CP 仅 prefill 生效，MoE 复用 CP 域走 EP）](../../optimizations/experience/rules/long_seq_prefill_context_parallel.md)（`related`）：“因果注意力下，CP 若简单按 rank 顺序切片会负载不均（靠前 rank 关注历史 KV 少、算得少；靠后 rank 算得多）。做法：把序列按 **`cp_size*2`** 切成对称 block，每 rank 负责**头尾对称的两个切片**；进 ［lightning-indexer］(../../../concepts/kernels/lightning_indexer.md) / ［sparse-flash-attention］(../../../concepts/kernels/sparse_flash_attention.md)（或 Gated Attention）计算前用 **Token 重排**把 KV 还原回因果顺序。”；“参考实现在 cann-recipes-infer DeepSeek-V3.2-Exp（［DSA］(../../concepts/modules/dsa.md)）的 ［lightning indexer］(../../concepts/kernels/lightning_indexer.md) `Indexer.forward` 的 context-parallel prefill 分支（`cp_size > 1 and is_prefill`）：该分支 all-gather 后按 `cp_reverse_index` 重排、沿 `dim=1` split 成 prev/next（load-balanced / ［zigzag-CP］(../../concepts/parallelism/zigzag_cp.md) 双 chunk 重构），涉及 C8 KV cache 路径的 `query_dequant_scale_prev/next` 与通用路径的 `weights_prev/next` 共 4 处 `.view`→`.reshape`。”。目标 runbook 给出焦点双切片重排在 minibatch 下的非连续内存故障与修法。
-<!-- cannbot:related:end -->

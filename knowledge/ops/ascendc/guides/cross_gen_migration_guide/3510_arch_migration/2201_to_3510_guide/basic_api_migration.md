@@ -478,10 +478,3 @@ platforms: []
     **说明**：因芯片删除L1 Buffer-\>GM通路，不支持L1 Buffer-\>GM的功能。
 
     **兼容方案**：该接口为调测接口，对功能无影响。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetLoadDataBoundary](../../../../apis/simd_api/basic_api/cube_compute_isasi/cube_load_aux_config/set_load_data_boundary.md)（`explains`）：不支持SetLoadDataBoundary接口。；设置 LoadData（卷积数据搬运）接口的 L1 Buffer（A1/B1）边界值。源操作数在 L1 Buffer 上的地址超出边界时，从起始地址开始读取（环绕）。迁移指南给出 3510 不支持结论，API 卡解释被移除能力的具体边界语义。
-<!-- cannbot:related:end -->

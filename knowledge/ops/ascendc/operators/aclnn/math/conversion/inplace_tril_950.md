@@ -954,9 +954,3 @@ __aicore__ inline void SplitRowAndCol<T, IS_LOWER>::CopyIn(NormalBlockInfo& info
 | 同步 | SplitAll events、queue EnQue/DeQue/FreeTensor、zeroBuf V→MTE3顺序可复用 | buffer 未消费前不得覆盖；bound queue 只用于直通 tile | `SplitAll::Process`; 各 `Process/Copy*` |
 | 精度与尾块 | 同字节宽位搬运/选择、`highTail`、row/col/core tail 可复用 | 不得加入数值 cast；必须屏蔽 VReg/UB padding，GM 只提交有效字节 | `ComputeBlockInfo`; `DoVectorCopy`; `DataCopyPad` 参数 |
 | 失败边界 | Host检查、Tiling资源检查、unknown key无 body、workspace空直接返回 | 不得把固定仓不可见的 executor/primitive行为推测成成功 fallback | `CheckParams`; `RunTriangulatorTilingAscendC`; `triangulatorEntry` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Tril 950 ACLNN 算子知识](tril_950.md)（`related`）：｜ 计算语义 ｜ 对每个最后二维平面，`j <= i + diagonal` 时 `out［...,i,j］=self［...,i,j］`，否则写零 ｜；｜ 计算语义 ｜ 对最后两维的每个 `(i,j)`，当 `j <= i + diagonal` 时保留输入，否则写零；结果经 `ViewCopy` 写回 `selfRef`。 ｜。两卡共享下三角 diagonal 谓词和同一 AIV 路由族，目标卡补齐原地提交由临时结果经 ViewCopy 写回 selfRef 的生命周期。
-<!-- cannbot:related:end -->

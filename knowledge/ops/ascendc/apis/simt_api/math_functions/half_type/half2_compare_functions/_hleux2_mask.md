@@ -130,10 +130,3 @@ unsigned int __hleux2_mask(half2 x, half2 y)
         asc_vf_call<simt_hleux2_mask>(dim3(1024), (__gm__ half2*)x, (__gm__ half2*)y, dst, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hlex2_mask](_hlex2_mask.md)（`same_topic`）：功能：比较两个half2类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量满足第一个数小于或等于第二个数，则对应16位掩码为0xFFFF，否则为0x0。若任一输入的分量为nan，对应16位掩码为0xFFFF。；功能：比较两个half2类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量满足第一个数小于或等于第二个数，则对应16位掩码为0xFFFF，否则为0x0。。两端都返回 half2 的逐分量小于等于 packed mask；后缀 u 的接口把 NaN 判真，而有序接口把 NaN 判假，互读能避免异常值语义选错。
-<!-- cannbot:related:end -->

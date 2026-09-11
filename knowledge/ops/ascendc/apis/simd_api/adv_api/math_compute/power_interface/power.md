@@ -247,36 +247,15 @@ AscendC::Power<T, false\>\(dstLocal, srcLocalBase, scalarValueExp\)示例数据�
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ApplyAdamW A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w.md)（`related`）：“每个模板在 `Init` 中读取单元素 `step`、绑定本核 GM基址、初始化 Queue/TBuf、每核只计算一次两个 bias correction”需要幂运算形成 beta 的 step 次方，“按元素做幂运算（dst = src0 ^ src1）”提供可对照的 Power 计算合同。
-- [ForeachPowScalar A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_pow_scalar.md)（`related`）：`Power<half,false>`，公共 unary foreach；按元素做幂运算（dst = src0 ^ src1），提供三类接口：Power(dstTensor, src0Tensor, src1Tensor)两个Tensor输入、Power(dstTensor, src0Tensor, src1Scalar)Tensor+标量、Power(dstTensor, src0Scalar, src1Tensor)标量+Tensor。；候选是 A2/A3 foreach FP16/FP32 tile 的直接数学 primitive。
-- [ForeachPowScalarList A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_pow_scalar_list.md)（`related`）：ForeachPowScalarList 的 Device 语义是“Kernel 调用 `Power<T,false>` 计算 `y_i［j］=x_i［j］^{e_i}`。”；Power 页定义“按元素做幂运算（dst = src0 ^ src1）”并提供 Tensor+标量重载，后者是每个列表元素 tile 的直接计算原语。
-- [GetPowerMaxMinTmpSize](get_power_max_min_tmp_size.md)（`related`）：“临时空间大小通过GetPowerMaxMinTmpSize获取。”在 Power 调用契约中指定 sizing 入口；“在minValue到maxValue范围内，临时空间越大性能越好。”说明该入口返回区间内的性能取舍。
-- [GetPowerTmpBufferFactorSize](get_power_tmp_buffer_factor_size.md)（`related`）：“currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize”从固定 UB 预算反推单次元素数；“临时空间大小通过GetPowerMaxMinTmpSize获取。”说明 Power kernel 的另一种显式临时空间获取入口，两者构成 host 分块与 kernel 调用的选型链。
-- [InplacePowTensorScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_pow_tensor_scalar_950.md)（`related`）：otherwise -> Power<T,false,{INTRINSIC}>(x,T(e),len)；模板参数isReuseSource预留，传false；config为PowerConfig类型，其中algo指定算法：INTRINSIC（默认，整型使用快速幂算法支持uint8_t/int8_t/uint16_t/int16_t/uint32_t/int32_t，浮点型按exp(y*ln(x))计算支持half/float）或DOUBLE_FLOAT_TECH（高精度浮点算法，精度提升后按exp(y*ln(x))计算减少精度损失，支持bfloat16_t/half/float）。；候选给出整数通用指数分支所调用的 Power 算法合同。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 7 / 7 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [InplaceExp2 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_exp2_950.md)（`related`）：算子声明的固定版本源码包含对 `Power(...)` 的直接调用（第 236 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/arch35/pow_tensor_scalar_float.h#L236)
-- [ForeachPowList A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_pow_list.md)（`related`）：算子声明的固定版本源码包含对 `Power(...)` 的直接调用（第 43 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_list/op_kernel/foreach_pow_list.h#L43)
-- [PowTensorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/pow_tensor_tensor_950.md)（`related`）：算子声明的固定版本源码包含对 `Power(...)` 的直接调用（第 236 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/arch35/pow_tensor_scalar_float.h#L236)
-- [ForeachPowScalarAndTensor A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_pow_scalar_and_tensor.md)（`related`）：算子声明的固定版本源码包含对 `Power(...)` 的直接调用（第 39 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar_and_tensor/op_kernel/foreach_pow_scalar_and_tensor.h#L39)
-- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)（`related`）：算子声明的固定版本源码包含对 `Power(...)` 的直接调用（第 81 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_quant/op_kernel/apply_adam_w_quant_base.h#L81)
-- [ApplyFusedEmaAdam A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_fused_ema_adam.md)（`related`）：算子声明的固定版本源码包含对 `Power(...)` 的直接调用（第 95 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_base.h#L95)
-- [ApplyFusedEmaAdam 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_fused_ema_adam_950.md)（`related`）：算子声明的固定版本源码包含对 `Power(...)` 的直接调用（第 95 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_base.h#L95)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [InplacePowTensorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_pow_tensor_tensor_950.md)（`related`）：算子正文包含对 `Power(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ApplyAdamW A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w.md)
+- [ForeachPowScalar A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_pow_scalar.md)
+- [ForeachPowScalarList A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_pow_scalar_list.md)
+- [InplacePowTensorScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_pow_tensor_scalar_950.md)
+- [InplaceExp2 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_exp2_950.md)
+- [ForeachPowList A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_pow_list.md)
+- [PowTensorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/pow_tensor_tensor_950.md)
+- [ForeachPowScalarAndTensor A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_pow_scalar_and_tensor.md)
+- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)
+- [ApplyFusedEmaAdam A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_fused_ema_adam.md)
+- [ApplyFusedEmaAdam 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_fused_ema_adam_950.md)
+- [InplacePowTensorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_pow_tensor_tensor_950.md)

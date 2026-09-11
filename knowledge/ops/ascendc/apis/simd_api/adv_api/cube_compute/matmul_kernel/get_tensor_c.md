@@ -237,24 +237,8 @@ __aicore__ inline void GetTensorC(const LocalTensor<DstT>& c, uint8_t enAtomic =
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [单次矩阵乘局部输出](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/single_matmul_local_output.md)（`explains`）：用户可以通过GetTensorC接口获取对应的单片数据；Iterate后，获取一块或者两块C矩阵片。场景卡要求 Partial Output 后从 GetTensorC 取得单片并自行累加 K 轴，接口卡给出 INNER/OUTER_PRODUCT 返回一片或两片的合同；联合可写出正确取片与累加循环。
-- [WaitGetTensorC](wait_get_tensor_c.md)（`related`）：GetTensorC 的参数合同写明“sync：设置同步或者异步模式：同步模式设置为true；异步模式设置为false。”；WaitGetTensorC 明确规定“当使用GetTensorC异步接口将结果矩阵从GM拷贝到UB，且UB后续需要进行Vector计算时，需要调用WaitGetTensorC进行同步。”，后者正是前者 sync=false 路线在 UB 被 Vector 消费前的完成等待步骤，但发起取数与等待同步是任务链上的两个接口主题。
-- [AsyncGetTensorC](async_get_tensor_c.md)（`same_topic`）：获取Iterate接口异步计算的结果矩阵。该接口功能已被GetTensorC覆盖，建议直接使用GetTensorC异步接口。；sync：设置同步或者异步模式：同步模式设置为true；异步模式设置为false。。焦点接口明确迁移到候选接口的异步重载，候选接口给出对应 sync 参数与 workspace 约束。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [QuantMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul.md)（`related`）：算子正文包含对 `GetTensorC(...)` 的直接调用；本卡提供该接口契约。
-- [RotaryPositionEmbedding A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/rotary_position_embedding.md)（`related`）：算子正文包含对 `GetTensorC(...)` 的直接调用；本卡提供该接口契约。
-- [QuantMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_950.md)（`related`）：算子正文包含对 `GetTensorC(...)` 的直接调用；本卡提供该接口契约。
-- [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)（`related`）：算子正文包含对 `GetTensorC(...)` 的直接调用；本卡提供该接口契约。
-- [TransposeQuantBatchMatMulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_weight_nz_950.md)（`related`）：算子正文包含对 `GetTensorC(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [QuantMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul.md)
+- [RotaryPositionEmbedding A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/rotary_position_embedding.md)
+- [QuantMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_950.md)
+- [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)
+- [TransposeQuantBatchMatMulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_weight_nz_950.md)

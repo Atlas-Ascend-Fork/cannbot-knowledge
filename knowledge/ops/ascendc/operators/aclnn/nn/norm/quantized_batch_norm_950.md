@@ -812,9 +812,3 @@ Muls(varInTensor, varInTensor, inputScale / outputScale, aProcNum);
 | 同步 | 硬事件与 PIPE_V 串联 MTE/Vector | 复用 xTensor 前必须完成 MTE3 | CopyIn/CopyOut helpers |
 | 精度与尾块 | alpha/beta FP32；round 再降整数 | I8/U8 half 中间、R0/group tail 和 pad | `DequantX/QuantX` |
 | 失败边界 | Host 检查失败；unknown key 无输出 | 不得假设 Device fallback | checks/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [QuantizedBatchNorm A2/A3 ACLNN 算子知识](quantized_batch_norm.md)（`same_topic`）：逐 NCHW 元素完成反量化、使用逐 C 的统计量/仿射参数归一化，再量化回输入 dtype；所有实际 body 都是 Vector/MTE；固定源码没有 Cube API 或 MIX_CV body。两卡闭合同一 QuantizedBatchNorm 公开入口与反量化—归一化—再量化计算；候选补充 950 的单 AIV Vector/MTE 实现边界。
-<!-- cannbot:related:end -->

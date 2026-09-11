@@ -100,9 +100,3 @@ bisheng: error: clang frontend command failed due to signal (use -v to see invoc
 - 在 AscendC Vector kernel 里按 dtype/cache 类型分路时，**默认拆成多个类型各自一致的独立类**，不要用单模板 + 跨类型 `if constexpr`/`std::conditional`/`ReinterpretCast` 桥接。
 - 公共逻辑（GatherCopyIn/MaxWritableT/ScatterStore）允许重复以换取编译稳定性；如需去重，抽到无类型依赖的模板自由函数（如 `template<typename U> GatherCopyIn(...)`），而非塞进一个带跨类型分支的类。
 - `if constexpr` 只用于分支内类型一致的场景（如同类内按 `hasValue` bool 模板分路），跨类型分支一律物理拆类。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BiSheng bf16 类型转换失败——隔离模板实例化](if_constexpr_excludes_unsupported_bf16_cast.md)（`related`）：焦点卡观测“`if constexpr(is_c8)` 两分支操作不同 `LocalTensor` element 类型：非选中分支仍进前端类型检查。”；目标卡解释“运行时的 `if (isUpdate)` 或 `TORCH_CHECK(isUpdate, ...)` 不会阻止编译器实例化宏体中已经写出的 `scatter_kernel<float, bfloat16_t, ...>` reduce 分支”，两者共同指向把不支持类型分支从翻译单元物理隔离的编译期修法。
-<!-- cannbot:related:end -->

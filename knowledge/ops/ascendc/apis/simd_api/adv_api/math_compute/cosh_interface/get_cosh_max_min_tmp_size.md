@@ -64,10 +64,3 @@ uint32_t minValue;
 uint32_t maxValue;
 AscendC::GetCoshMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cosh](cosh.md)（`related`）：Cosh 卡明确“临时空间大小通过GetCoshMaxMinTmpSize获取。”；Host Tiling 卡说明“host侧Tiling接口，用于获取Cosh接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”，二者形成 Cosh 临时空间的 Host 计算到 Kernel 使用链，但主 API 的双曲余弦计算与 helper 的容量规划并非同一主题。
-<!-- cannbot:related:end -->

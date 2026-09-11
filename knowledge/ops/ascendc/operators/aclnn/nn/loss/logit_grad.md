@@ -653,9 +653,3 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 | 同步 | EVENT0/1 与 ping-pong half 一一对应 | `MTE3_MTE2`、`MTE2_V`、`V_MTE3` 和 Vector barrier 不得省略/错序 | `Process`、`CopyInAndCast`、`CastAndCopyOut` |
 | 精度与尾块 | FP32 内部计算、compare 向上对齐 64、Select/DMA 只用 count | FP16 `CAST_NONE`、BF16 `CAST_RINT`、尾核公式 | `ComputeStepTwo`、`CastAndCopyOut` |
 | 失败边界 | 不支持 dtype Host 失败，空域循环 0 次 | unknown key/非目标编译值无 body；无 UB fallback | `RunBigKernelTiling`、`logit_grad`、`Process` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Logit 950 ACLNN 算子知识](logit_950.md)（`related`）：`eps>=0` 时，Device 先构造 `x==x`、`x>=eps`、`x<=1-eps` 三个 mask，依次完成上界、下界和 NaN 选择，得到 `z`；随后原地执行 `x2=-z+1`、`x1=z/x2`、`x1=ln(x1)`。`eps<0` 跳过 clamp。FP16/BF16 输入先升为 FP32，所有算术均为 FP32。；Device 对三种输入 dtype 都用 FP32 执行 `1-x`、乘、除、双边比较和选择；FP16/BF16 输入先升为 FP32，结果再降回原 dtype。公开文档另称 `eps > 1` 输出 NaN、`eps == 1` 输出 Inf，但固定 Kernel 的可见谓词是同时满足 `x >= eps && x <= 1-eps`，不满足即在 `eps >= 0` 分支选择 0；该边界存在文档与实现不一致，复用时应以目标 CANN 的实测契约确认，本文不推测消解。。Logit 950 给出前向裁剪与对数变换，LogitGrad A2/A3 给出同一 eps 边界下的导数计算和已知文档冲突，能闭合前向到反向的实现核对。
-<!-- cannbot:related:end -->

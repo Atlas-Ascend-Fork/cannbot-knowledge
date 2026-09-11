@@ -66,10 +66,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetCumSumMaxMinTmpSize(srcShape, 2, true, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CumSum](cum_sum.md)（`related`）：临时空间大小通过GetCumSumMaxMinTmpSize获取。；host侧Tiling接口，用于获取CumSum接口所需的最大和最小临时空间大小。左卡明确要求由目标接口确定 CumSum 临时空间，右卡又把 isLastAxis 与 Kernel config 对齐并返回 min/max；两端衔接 Host 定容与二维行列累加 Kernel。
-<!-- cannbot:related:end -->

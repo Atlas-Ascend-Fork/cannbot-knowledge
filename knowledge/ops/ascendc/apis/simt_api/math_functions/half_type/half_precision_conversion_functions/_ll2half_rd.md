@@ -90,10 +90,3 @@ inline half __ll2half_rd(const long long int x)
         dst[idx] = __ll2half_rd(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__ll2half_rn](_ll2half_rn.md)（`same_topic`）：功能：遵循CAST_FLOOR模式，将int64类型数据转换为half类型数据，返回转换后的值。；功能：遵循CAST_RINT模式，将int64类型数据转换为half类型数据，返回转换后的值。。两接口转换相同 int64 输入到 half，核心差异是向下取整与就近取整模式，联合阅读可选择正确舍入契约。
-<!-- cannbot:related:end -->

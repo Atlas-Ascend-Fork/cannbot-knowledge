@@ -1027,8 +1027,3 @@ Host 和 Device 用同一 `GetCacheID(idx)=popcount(idx^(idx+1))-1` 协议：新
 | 同步 | Queue提供MTE/Vector生产消费；单Kernel无跨核同步 | `EnQue/DeQue/FreeTensor`与loop-mode Set/Reset顺序不可改；cache更新后才覆盖temp | 各Route `Process/Copy*` |
 | 精度与尾块 | B16升FP32，FP32归约/FMA，`CAST_RINT`回T | `UpdateMask`、fold tail、A0/A1/R尾和只拷有效GM范围不可删除 | `castTrait*`、各Calc/Copy方法 |
 | 失败边界 | priority不适配用`GRAPH_PARAM_INVALID`继续；硬校验失败终止 | 不得把A2/A3或950 BF16标为公开source_closed；最终资源失败/未知key不可伪造fallback | `DoTilingImpl`、`CheckDtypeValid`、`softmax_grad` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:related:end -->

@@ -169,10 +169,3 @@ Ascend 950PR/Ascend 950DT，目的操作数dst和源操作数src支持的数据�
 输入数据src1Local: [1 2 3 ... 512]
 输出数据dstLocal: [0 0 0 ... 0]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [And](and.md)（`same_topic`）：矢量内每个元素和标量间做按位与操作，支持标量在前和标量在后两种场景，标量输入支持配置LocalTensor单点元素。；对LocalTensor中的元素做按位与运算，支持整个tensor、前n个数据连续计算和高维切分计算三种调用方式。。两卡的核心操作都是 LocalTensor 元素的按位与；一端覆盖 tensor 与标量的操作数形态，另一端覆盖 tensor 间及连续或高维切分的调用形态，属于同一 And API 主题的重载边界。
-<!-- cannbot:related:end -->

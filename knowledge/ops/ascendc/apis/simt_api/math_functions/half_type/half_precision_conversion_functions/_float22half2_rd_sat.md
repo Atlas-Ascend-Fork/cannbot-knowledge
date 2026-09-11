@@ -86,10 +86,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         asc_vf_call<simt_float22half2_rd_sat>(dim3(1024), (__gm__ float2*)input, (__gm__ half2*)output, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float22half2_rd](_float22half2_rd.md)（`same_topic`）：函数原型：half2 __float22half2_rd(const float2 x)；函数原型：half2 __float22half2_rd_sat(const float2 x)。两端接受同一 float2 并按 CAST_FLOOR 转为 half2，目标是带 `_sat` 名称的对应变体，应在选择饱和转换入口时共同核对。
-<!-- cannbot:related:end -->

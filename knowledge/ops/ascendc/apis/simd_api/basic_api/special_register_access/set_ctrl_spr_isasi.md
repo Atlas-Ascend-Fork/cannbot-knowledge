@@ -155,30 +155,14 @@ __aicore__ static inline void SetCtrlSpr(int64_t value)
 更多示例请参考[CtrlSpr样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/09_utils/ctrl_spr)。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCtrlSpr](get_ctrl_spr_isasi.md)（`related`）：“读取CTRL寄存器（控制寄存器）特定比特位上的值。”；“对CTRL寄存器（控制寄存器）的特定比特位进行设置。通过模板参数startBit和endBit指定目标比特位范围，将运行参数value（超出比特位范围会出现编译报错）写入CTRL寄存器对应位置。”。两接口以相同 bit range 形成 CTRL 配置写入与回读核验链。
-- [InplacePowTensorScalar 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_pow_tensor_scalar_950.md)（`related`）：e==2/3 -> SAT bit60=0; masked multiply (u8/s8 widen to 16-bit); restore bit60=1；Ascend 950PR/Ascend 950DT仅支持CTRL［8:6］、CTRL［10:9］、CTRL［45］、CTRL［48］、CTRL［50］、CTRL［53］、CTRL［59］、CTRL［60］比特位。；候选为平方和立方专用 helper 的 CTRL［60］ 保存恢复提供接口边界。
-- [Reset](../resource_management/t_pipe/reset.md)（`related`）：针对Ascend 950PR/Ascend 950DT，调用该接口后，CTRL［48］保持原值，CTRL［60］复位为1。CTRL寄存器比特位说明请见SetCtrlSpr。；对CTRL寄存器（控制寄存器）的特定比特位进行设置。通过模板参数startBit和endBit指定目标比特位范围，将运行参数value（超出比特位范围会出现编译报错）写入CTRL寄存器对应位置。；焦点给出 Reset 对 CTRL 位的副作用，目标提供这些位的显式读取边界与恢复设置入口。
-- [ResetCtrlSpr](reset_ctrl_spr_isasi.md)（`same_topic`）：“对CTRL寄存器（控制寄存器）的特定比特位做重置。由模板参数［startBit, endBit］指定的比特位重置为默认值，默认值参考表 常用CTRL寄存器比特位说明。”与“对CTRL寄存器（控制寄存器）的特定比特位进行设置。通过模板参数startBit和endBit指定目标比特位范围，将运行参数value（超出比特位范围会出现编译报错）写入CTRL寄存器对应位置。”提供双方正文证据。SetCtrlSpr 写指定 CTRL 位段，ResetCtrlSpr 将同一位段恢复默认值，构成控制寄存器配置与清理的生命周期闭环。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 44 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [InplaceDivs 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_divs_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCtrlSpr(...)` 的直接调用（第 72 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/muls/op_kernel/arch35/muls_dag.h#L72)
-- [GeluQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/gelu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCtrlSpr(...)` 的直接调用（第 88 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h#L88)
-- [MlaProlog A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/mla_prolog.md)（`related`）：算子声明的固定版本源码包含对 `SetCtrlSpr(...)` 的直接调用（第 93 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_kernel/mla_prolog_v3.cpp#L93)
-- [PowTensorTensor 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/pow_tensor_tensor_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCtrlSpr(...)` 的直接调用（第 197 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/arch35/pow_tensor_scalar_integer.h#L197)
-- [SwigluGroupQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/swiglu_group_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCtrlSpr(...)` 的直接调用（第 68 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant/op_kernel/arch35/swiglu_group_quant_perf.h#L68)
-- [MlaProlog 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/mla_prolog_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCtrlSpr(...)` 的直接调用（第 93 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_kernel/mla_prolog_v3.cpp#L93)
-- [SimThreadExponential 950 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCtrlSpr(...)` 的直接调用（第 111 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h#L111)
-- [InplaceQuantScatter 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/inplace_quant_scatter_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCtrlSpr(...)` 的直接调用（第 67 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_base.h#L67)
-- [grouped_matmul_swiglu_quant 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCtrlSpr(...)` 的直接调用（第 74 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_swiglu_quant_v2/op_kernel/grouped_matmul_swiglu_quant_v2_apt.cpp#L74)
-- [RotateQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/rotate_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCtrlSpr(...)` 的直接调用（第 67 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/common/cmct/epilogue/block_epilogue_rotate_quant.h#L67)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [InplacePowTensorScalar 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_pow_tensor_scalar_950.md)
+- [InplaceDivs 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_divs_950.md)
+- [GeluQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/gelu_quant_950.md)
+- [MlaProlog A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/mla_prolog.md)
+- [PowTensorTensor 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/pow_tensor_tensor_950.md)
+- [SwigluGroupQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/swiglu_group_quant_950.md)
+- [MlaProlog 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/mla_prolog_950.md)
+- [SimThreadExponential 950 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)
+- [InplaceQuantScatter 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/inplace_quant_scatter_950.md)
+- [grouped_matmul_swiglu_quant 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant_950.md)
+- [RotateQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/rotate_quant_950.md)

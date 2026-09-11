@@ -308,10 +308,3 @@ Fixpipe完整样例请参考[fixpipe\_l0c2gm样例](https://gitcode.com/cann/asc
         AscendC::Fixpipe<outputType, l0cType, AscendC::CFG_ROW_MAJOR>(cGM, c, fixpipeParams);
     ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetFixpipeNz2ndFlag](../cube_store_aux_config/set_fixpipe_nz2nd_flag.md)（`related`）：焦点卡规定“DataCopy 数据搬运（L0C Buffer→GM）过程中进行随路 NZ2ND 格式转换时，设置格式转换配置。”，候选卡确认 FixpipeL0CToGM “支持随路 scalar/tensor 量化（QuantMode_t）、ReLU、NZ2ND/NZ2NZ/NZ2DN 格式转换和通道切分。”；配置接口与实际搬出载体属于同一调用链。
-<!-- cannbot:related:end -->

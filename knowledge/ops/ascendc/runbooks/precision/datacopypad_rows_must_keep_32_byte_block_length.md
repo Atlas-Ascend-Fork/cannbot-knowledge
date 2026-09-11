@@ -269,9 +269,3 @@ CumminTiling calc_cummin_tiling(int64_t outer, int64_t inner, int64_t sizeofT)
 
 - 失败跨四种 dtype 且集中在带余数的 PathB，不是某一 dtype 的比较精度或 NaN 规则问题。
 - 开头 lane 正确不代表 scan carry 正确；该 trace 的损坏集中在 tail 搬运覆盖的列。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad多行stride单位误用导致非对齐行输出NaN](datacopypad_stride_fields_use_32_byte_block_units.md)（`related`）：“完整 chunk 固定为 `V32 = 32 / sizeof(T)` 个元素，使二维搬运的每行 `blockLen` 恰为 32B。”与“也就是说，这些 stride 字段使用 32B block 数，而 `blockLen` 仍使用字节数。”分别给出双端正文事实；两张排障卡分别约束同一次多行 DataCopyPad 的 blockLen 字节长度与 srcStride/dstStride 的 32B block 单位，联合使用可避免把行长和行间距单位混为一谈。
-<!-- cannbot:related:end -->

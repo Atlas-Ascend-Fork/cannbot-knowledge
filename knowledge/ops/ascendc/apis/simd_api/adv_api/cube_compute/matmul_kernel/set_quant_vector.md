@@ -106,22 +106,9 @@ mm.End();
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [QuantMatmul 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/matmul/quant_matmul_950.md)（`related`）：“对于输入shape为［1, N］的参数向量，N值为Matmul矩阵计算时M/N/K中的N值”规定 SetQuantVector 的逐输出列参数合同；“MatMulASWKernel::SetQuantVector -> mm_.Iterate/GetTensorC”证明 QuantMatmul 的 packed-scale 路由按该合同在计算前消费向量。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [TransposeBatchMatMul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul.md)（`related`）：算子正文包含对 `SetQuantVector(...)` 的直接调用；本卡提供该接口契约。
-- [FFN A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/ffn/ffn.md)（`related`）：算子正文包含对 `SetQuantVector(...)` 的直接调用；本卡提供该接口契约。
-- [TransposeBatchMatMulWeightNZ 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul_weight_nz_950.md)（`related`）：算子正文包含对 `SetQuantVector(...)` 的直接调用；本卡提供该接口契约。
-- [grouped_matmul_finalize_routing A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing.md)（`related`）：算子正文包含对 `SetQuantVector(...)` 的直接调用；本卡提供该接口契约。
-- [TransposeQuantBatchMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_950.md)（`related`）：算子正文包含对 `SetQuantVector(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [QuantMatmul 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/matmul/quant_matmul_950.md)
+- [TransposeBatchMatMul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul.md)
+- [FFN A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/ffn/ffn.md)
+- [TransposeBatchMatMulWeightNZ 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul_weight_nz_950.md)
+- [grouped_matmul_finalize_routing A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing.md)
+- [TransposeQuantBatchMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_950.md)

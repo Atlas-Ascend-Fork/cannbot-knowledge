@@ -538,10 +538,3 @@ if (dataCount <= static_cast<int64_t>(INT32_MAX)) {
 | 同步 | 无 atomic/barrier；靠互斥分核/线程索引 | 复用前必须保持输出地址互斥 | AssignDataToEachCore；VF loop |
 | 精度与尾块 | 低精度升 FP32；thread loop 自然 tail | FP16/BF16 cast 顺序；32/64 位索引阈值 | SIMT VF；`Process` |
 | 失败边界 | tensorNum 256、UB>128KiB、已知 BF16 scalar ABI 冲突 | 不把冲突路线当作已验证正确 | TilingFunc；API conversion；VF scalarPtr |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddcdivScalar 950 Direct Invoke 算子知识](../../../direct/nn/foreach/foreach_addcdiv_scalar_950.md)（`same_topic`）：“y［i］［j］ = x1［i］［j］ + float32(scalar) * q”与“y_i［j］ = x1_i［j］ + scalar * (x2_i［j］ / x3_i［j］)”分别给出双端正文事实；两卡执行相同的 TensorList addcdiv 标量公式，分别给出 Direct Invoke 与 ACLNN 的参数打包、Tiling、launcher 和精度路线，可用于同一逻辑算子的接入选型与结果核验。
-- [ForeachAddcdivScalar A2/A3 ACLNN 算子知识](foreach_addcdiv_scalar.md)（`same_topic`）：对三个等长 TensorList 逐项、逐元素计算 `y_i = x1_i + scalar * (x2_i / x3_i)`。；`y_i［j］ = x1_i［j］ + scalar * (x2_i［j］ / x3_i［j］)`。。两卡描述同一个 ForeachAddcdivScalar V2 两段式入口和逐列表元素公式，分别闭合 A2/A3 的 AIV Vector 实现与 950 的 SIMT VF 实现，是同一算子契约的跨平台实现卡。
-<!-- cannbot:related:end -->

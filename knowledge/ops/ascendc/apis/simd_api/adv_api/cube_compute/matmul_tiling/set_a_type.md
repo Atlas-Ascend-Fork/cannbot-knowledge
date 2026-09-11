@@ -65,10 +65,3 @@ tiling.SetBufferSpace(-1, -1, -1);
 optiling::TCubeTiling tilingData;
 int ret = tiling.GetTiling(tilingData);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetScaleAType](set_scale_a_type.md)（`related`）：设置A矩阵的位置，数据格式，数据类型，是否转置等信息，这些信息需要和kernel侧的设置保持一致。；如果不调用本接口，scaleA矩阵的信息将与SetAType中设置的A矩阵的信息保持一致。。SetScaleAType 的缺省描述直接继承 SetAType 的 A 矩阵描述，因此配置 scaleA 时必须理解 SetAType 的位置、格式、类型和转置合同，但两接口仍配置不同操作数。
-<!-- cannbot:related:end -->

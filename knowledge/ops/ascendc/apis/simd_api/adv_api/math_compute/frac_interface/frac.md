@@ -121,10 +121,3 @@ AscendC::Frac<srcType, false>(dstLocal, srcLocal);
 输入数据(srcLocal): [9.33 -8.07 -6.38 8.45 5.83 6.46 4.18 1.93]
 输出数据(dstLocal): [0.33 -0.07 -0.38 0.45 0.83 0.46 0.18 0.93]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetFracMaxMinTmpSize](get_frac_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Frac接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetFracMaxMinTmpSize获取。。Host 侧接口产出 Frac 所需临时空间上下界，Frac 计算接口明确以该结果确定 sharedTmpBuffer 容量；这是 Tiling 生产值到 Kernel 调用消费值的直接合同。
-<!-- cannbot:related:end -->

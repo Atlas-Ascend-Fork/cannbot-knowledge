@@ -54,10 +54,3 @@ GlobalTensor<gradOutputType> gradOutputGm_;
 gradOutputGm_.SetGlobalBuffer((__gm__ gradOutputType*)gradOutput);
 gradInput_.SetGradOutput(gradOutputGm_);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Conv3DBackpropInput](conv3_d_backprop_input_usage.md)（`related`）：设置卷积反向计算的输入矩阵GradOutput。；Conv3DBackpropInput 以 GradOutput 和转置后的 Weight 为输入，计算特征矩阵的反向传播误差 GradInput。。SetGradOutput 卡指定写入卷积反向计算的 GradOutput 输入，使用说明卡给出该输入与转置 Weight 共同计算 GradInput 的数学角色，因此参数设置可直接落到完整反向运算链。
-<!-- cannbot:related:end -->

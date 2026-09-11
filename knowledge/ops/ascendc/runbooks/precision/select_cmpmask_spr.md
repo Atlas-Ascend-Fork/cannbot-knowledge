@@ -56,13 +56,3 @@ python3 test.py --lib ./build/libtorch_adapter.so
 
 - 开发期对照 `DESIGN.md` 检查"实现↔设计"的 SELMODE 偏差：DESIGN 指定 `VSEL_TENSOR_TENSOR_MODE` 而实现用 `VSEL_CMPMASK_SPR` 即高优先级假设。
 - 在 dav_c310/arch35 上优先用 `VSEL_TENSOR_TENSOR_MODE`（mask 作为 tensor 参数，每 repeat 自动偏移）；仅当变体不支持 mode 2 时才退回 CMPMASK_SPR 并手动按 `ONE_REPEAT_ELE_NUM_FP32`(=64) 分段 Compare+Select。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Select](../../apis/simd_api/basic_api/memory_vector_compute/compare_and_select/select.md)（`exemplifies`）：改用 `VSEL_TENSOR_TENSOR_MODE` 后，mask 作为 tensor 参数传入，`VselImpl` 每 repeat 用 `sel + i*selOffset` 正确偏移，对任意 count 正确。；根据 mask 从两个源 tensor 中选择元素，mask 为 1 选 src0，为 0 选 src1。头文件 `basic_api/kernel_operator_vec_cmpsel_intf.h`。支持 950/a2/a3。。API 定义 mask 到 src0/src1 的选择语义，运行手册实测其 CMPMASK_SPR 重复 mask 故障并给出 tensor-mask 模式的正确偏移用法。
-- [Select dst==src 别名破坏张量输入值](select_dst_src.md)（`related`）：改用 `VSEL_TENSOR_TENSOR_MODE` 后，mask 作为 tensor 参数传入，`VselImpl` 每 repeat 用 `sel + i*selOffset` 正确偏移，对任意 count 正确。；对所有 `dst==src0` 或 `dst==src1` 的 Select 调用，改用空闲中间 LocalTensor 作 dst，再 `DataCopy` 回填目标。。两张卡分别修复 Select 的 mask-repeat 推进与 dst/src 别名覆盖，是审查同一 Select 调用时需要独立排除的两类精度机制。
-- [arch35 Select cmpmask SPR 跨调用泄漏致非确定失败](arch35_select_cmpmask_spr.md)（`related`）：“同一 case 单独跑 PASS、在套件内 FAIL”是随调用历史变化的套件级信号；“分块循环对 `sel`（mask 指针）不做偏移”描述 count 超过单 repeat 后确定复用首段 mask，联读可按复现稳定性和 count 边界分流。
-- [Select VSEL_CMPMASK_SPR count>64 掩码错位判别](select_vsel_cmpmask_spr_count_64.md)（`same_topic`）：错在 `SelectMode0Level2` 只读首段。；改 MODE 后 PyTorch ST 失败数 116 降至 3；前者给出实现级根因，后者用模式替换回归验证同一故障与修复。
-- [Select cmpmask 不偏移致分支反转诊断](select_cmpmask.md)（`same_topic`）：`VselImpl` 的 repeatRounding 循环不偏移 `sel` 指针；分块循环对 `sel`（mask 指针）不做偏移；两卡独立定位同一高层 Select CMPMASK_SPR 多 repeat 复用首块 mask 的核心缺陷。
-<!-- cannbot:related:end -->

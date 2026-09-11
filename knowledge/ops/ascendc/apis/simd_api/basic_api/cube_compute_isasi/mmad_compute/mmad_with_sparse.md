@@ -176,11 +176,3 @@ uint32_t k = 64;
 uint32_t n = 128;
 AscendC::MmadWithSparse(c1Local, a2Local, b2Local, { m, n, k, false, 0, false, false, false });
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LoadDataWithSparse](../cube_compute_load/load_data_with_sparse.md)（`related`）：将稀疏矩阵数据从L1 Buffer搬运到L0A或L0B Buffer，支持稀疏数据的压缩搬运。；B 矩阵需通过 LoadDataWithSparse 载入并同时加载索引矩阵（uint8，分形(32,16)，每个元素含 4 个 uint2 索引）。。前者提供稀疏数据从 L1 到 L0A/L0B 的解压搬运，后者把 LoadDataWithSparse 明确规定为 MmadWithSparse 的 B 矩阵与索引矩阵装载前置，组成稀疏矩阵乘的直接数据通路。
-- [SetSparseIndex](../../../adv_api/cube_compute/matmul_kernel/set_sparse_index.md)（`related`）：设置稀疏矩阵稠密化过程生成的索引矩阵。 索引矩阵在稠密化中的作用请参考MmadWithSparse。；4:2 结构化稀疏矩阵乘加接口，实现 C=A×B+C。左矩阵 A 为稀疏矩阵（L0A，M×K，Zz，int8_t），右矩阵 B 为经 4:2 稀疏过滤后的稠密矩阵（L0B，K/2×N，Zn，int8_t），结果 C 位于 L0C（M×N，Nz，int32_t）。头文件 `basic_api/kernel_operator_mm_intf.h`。；SetSparseIndex 提供 MmadWithSparse 稠密化阶段消费的索引矩阵，连接索引配置与 4:2 稀疏矩阵乘加。
-<!-- cannbot:related:end -->

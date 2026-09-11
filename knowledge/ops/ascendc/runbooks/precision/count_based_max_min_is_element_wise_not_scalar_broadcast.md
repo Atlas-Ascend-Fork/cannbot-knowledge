@@ -135,9 +135,3 @@ platforms: []
 
 - **误诊 1**：先尝试把高维 `Max/Min` 换成 `SetValue(0, val)` + `Max<float>(data, data, clampLocal, count)`，假设 count-based 接口会广播 `clampLocal[0]`。实测 mismatch 反升至约 0.93——count-based 接口是逐元素比较，`clampLocal` 未初始化元素参与比较，损坏数据。此误诊揭示了根因 1（逐元素非广播）。
 - **误诊 2**：改用 `Duplicate<float>(clampLocal, val, count)` + `Max/Min(count)`，但 `clampLocal` 仍取自 32B 的 `clampBuf_`。仍不正确——`clampBuf_` 容量不足 N×float，`Duplicate` 越界。此误诊揭示了根因 2（广播 buffer 容量）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Abs 原地取绝对值后量化丢符号致 int8 坍缩](abs_inplace_overwrites_signed_source_before_quant.md)（`related`）：修复后小 N 仍存的 mismatch 属 clamp 的 Max/Min 广播与 buffer 问题；count-based `Max/Min` 是逐元素、非标量广播。前者修复 in-place Abs 后把剩余小 N mismatch 明确定位到 clamp，后者说明 count-based Max/Min 误把未初始化 tensor 当标量广播的机制与修法；两卡组成连续精度排障链。
-<!-- cannbot:related:end -->

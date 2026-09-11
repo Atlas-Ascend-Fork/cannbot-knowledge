@@ -94,11 +94,3 @@ AscendC::Clamp(dst, src, min, max, count);
 输出数据（dst）:
 [30, 60, 35, 60, 60, 30, 30, 60, 51, 60, 60, 30, 55, 32, 60, 30, 40, 30, 60, ... 60]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetClampMaxMinTmpSize](get_clamp_max_min_tmp_size.md)（`related`）：“host侧Tiling接口，用于获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”；“将输入中除nan值以外大于max的数替换为max，小于min的数替换为min，小于等于max和大于等于min的数保持不变，作为输出。当min大于max时，将除nan值外所有值替换为max。min和max可以为标量或LocalTensor。”。焦点 Host 接口为 Clamp kernel 计算临时空间上下界，连接 kernel 语义与 workspace 选择。
-- [GetClampTmpBufferFactorSize](get_clamp_tmp_buffer_factor_size.md)（`same_topic`）：“获取ClampMax/ClampMin/Clamp接口的maxLiveNodeCount和extraBuf，用于在固定临时空间大小下推算算子单次最大计算元素数量。”与“将输入中除nan值以外大于max的数替换为max，小于min的数替换为min，小于等于max和大于等于min的数保持不变，作为输出。”分别给出双端正文事实；临时空间因子接口专门为 Clamp 计算反推单次元素规模，Clamp 卡定义被切分执行的逐元素上下界语义，二者是同一高阶 API 的容量计算与 Kernel 合同。
-<!-- cannbot:related:end -->

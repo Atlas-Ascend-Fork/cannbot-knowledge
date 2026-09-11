@@ -52,10 +52,3 @@ int64\_t类型，0表示ICache的PreLoad已完成，1表示ICache的PreLoad未�
 // 获取ICache预加载状态，0表示已完成，1表示未完成。
 int64_t cachePreloadStatus = AscendC::GetICachePreloadStatus();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ICachePreLoad](i_cache_pre_load_isasi.md)（`related`）：“获取Instruction Cache预加载状态，查询当前指令Cache的预加载配置是否生效。”与“约束：与GetICachePreloadStatus配合使用。头文件：basic_api/kernel_operator_cache_intf.h。”分别给出两端正文事实；ICachePreLoad 发起指令预加载，GetICachePreloadStatus 查询该配置是否生效，构成同一预加载操作的提交与状态确认链。
-<!-- cannbot:related:end -->

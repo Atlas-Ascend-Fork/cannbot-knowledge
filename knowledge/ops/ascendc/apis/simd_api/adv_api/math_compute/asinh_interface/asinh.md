@@ -115,10 +115,3 @@ AscendC::Asinh(dstLocal, srcLocal, sharedTmpBuffer, 512);
 输入数据srcLocal: [0.000000 0.100000 0.200000 ... 51.000000 51.100002]
 输出数据dstLocal: [0.000000 0.099834 0.198690 ... 4.625069 4.627028]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAsinhMaxMinTmpSize](get_asinh_max_min_tmp_size.md)（`related`）：临时空间大小BufferSize的获取方式请参考GetAsinhMaxMinTmpSize；开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。Asinh Kernel 的 sharedTmpBuffer 明确要求由 Host 查询接口定容，目标卡给出最大/最小范围和下限正确性约束；两端直接闭合 buffer 申请与 Tiling 传参。
-<!-- cannbot:related:end -->

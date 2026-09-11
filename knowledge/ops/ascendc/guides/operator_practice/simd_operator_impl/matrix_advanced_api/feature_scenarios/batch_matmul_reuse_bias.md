@@ -56,10 +56,3 @@ mm.SetBias(gm_bias);    // 设置Bias，矩阵大小为1 * singleCoreN
 mm.IterateBatch(gm_c, batchA, batchB, false);
 mm.End();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetBias](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_bias.md)（`explains`）：若不同Batch的计算使用的Bias数据相同，则多Batch计算可以复用同一个Bias矩阵，如下图所示，此场景中调用SetBias接口时，只需设置一个1 * singleCoreN大小的Bias矩阵。 在Matmul Tiling计算中，必须配置TCubeTiling结构中的isBias参数为1，即启用Bias后，才能调用本接口设置Bias矩阵。 指南确定复用时只传一个 N 维 Bias，API 合同补充 Tiling 必须先启用 Bias，形成完整调用配置。
-<!-- cannbot:related:end -->

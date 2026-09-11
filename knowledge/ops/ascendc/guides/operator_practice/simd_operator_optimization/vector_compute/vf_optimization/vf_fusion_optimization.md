@@ -164,11 +164,3 @@ VF融合优化可分为三个阶段：VF浅度融合、VF深度融合和VF内自
         // ...
     };
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [VfLoopOptimization](vf_loop_optimization.md)（`related`）：“如果多个VF函数的控制流等价，且满足均为Hardware Loop循环，编译器会执行VF融合优化特性。”与“当VF函数中的循环满足Hardware Loop编码规范时，会被编译器优化为Hardware Loop，提升整体执行性能；否则循环逻辑会由迭代变量和条件判断语句构成Software Loop，无法开启VF循环优化。”提供双方正文证据。融合指南把两端均为 Hardware Loop 作为自动 VF 融合条件，循环指南给出生成 Hardware Loop 的成功与回退判据，组成先规范循环再获得融合的优化链。
-- [双 VF 融合输出非预期 先排 CopyOut slot 勿用 PRINTF](../../../../../runbooks/precision/vf_fusion_output_unexpected_check_copyout_slot_not_printf.md)（`related`）：真因是 CopyOut slot 指向错误 buffer（B2 而非 B1）；编译器首先会做融合前的合法性检查。指南说明 VF 融合的合法性、收益与自动同步，Runbook 则给出融合实现输出异常时先排 CopyOut 映射和禁用 VF 内 PRINTF 的验证顺序，避免把非 VF 错误误判为融合机制缺陷。
-<!-- cannbot:related:end -->

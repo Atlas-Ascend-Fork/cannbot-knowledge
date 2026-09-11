@@ -81,11 +81,3 @@ mask_fill_apt.cpp:43:61: error: use of undeclared identifier 'tilingData'
 ## 误诊
 
 - 中间尝试 `if constexpr` / trait 时一度以为是 `REGISTER_TILINGDATA_SIZE` 的 `__COUNTER__` 符号冲突，但根因是宏对 `tiling_struct` 的 `#` 字符串化与节级注册对「具体类型可见性」的要求——非 template 别名 + 显式特化同时满足两者。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GET_TILING_DATA_WITH_STRUCT](../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data_with_struct.md)（`exemplifies`）：使用该接口指定结构体名称，可获取指定的tiling信息，并填入对应的Tiling结构体中，此函数会以宏展开的方式进行编译。 构建 Ascend950 kernel 时报 C++ 解析错，出错行即 `GET_TILING_DATA_WITH_STRUCT(MaskedFillTilingData<RANK>, tilingData, tiling);`。 宏展开在模板类型的 `<>` 字符串化处产生解析错误，Runbook 还区分了分支绕过后节级注册丢失。
-- [GET_TILING_DATA 首参传类型名致变量遮蔽类型](get_tiling_data.md)（`related`）：“`GET_TILING_DATA` 宏首参是变量名。”对应 InitTilingData 模板实参错误中的类型名遮蔽；“`GET_TILING_DATA_WITH_STRUCT` 宏内部对 `tiling_struct` 参数做 `#` 字符串化”对应模板类型解析错和节级注册丢失，可据所用宏分流诊断。
-- [直调不可用 GET_TILING_DATA_WITH_STRUCT 宏](direct_invoke_unavailable_get_tiling_data_with_struct.md)（`related`）：“直调编译路径没有自定义算子打包系统生成的宏”说明宏整体不可见，“GET_TILING_DATA_WITH_STRUCT 宏不接受模板类型”说明宏可见时仍可能因模板实参展开失败，二者共同划分编译故障。
-<!-- cannbot:related:end -->

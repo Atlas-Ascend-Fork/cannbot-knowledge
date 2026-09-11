@@ -72,10 +72,3 @@ static constexpr Reg::CastTrait castTrait = {
 ## 误诊
 
 - 初判 `kCastTraitFromFp32Fp16` 的 `NO_SAT` 会生效（agent_reported，非实测）；实测 ST 后仍饱和，纠正为硬件限制。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cast](../../apis/simd_api/basic_api/reg_vector_compute/type_conversion/cast.md)（`exemplifies`）：焦点卡说明“使能SatMode生效需与SetCtrlSpr配合使用。”，候选卡却在 dav-3510 实测“在 dav-3510 上经 Cast 传播 NaN/Inf 的路线 banned”；该 runbook 给出 SAT 硬编码导致 fp16 NaN/Inf 变为 65504 的失效边界和 bypass 方向。
-- [SatMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/sat_mode.md)（`exemplifies`）：SatMode 用于设置 Cast 类型转换的饱和与不饱和模式。 即高层 `AscendC::Cast` 对所有 b16↔fp32 转换强制 `SatMode::SAT`（饱和），底层 `Reg::Cast` 指令同样饱和。 Runbook 用 NaN/Inf 变为 65504 的实测信号具体化 SAT 后果，并说明 trait 调参无法恢复已丢失的非有限值。
-<!-- cannbot:related:end -->

@@ -760,9 +760,3 @@ half/BF16 只承担 GM 与 storage TBuf，反量化状态、bias correction、m/
 | 同步 | MTE2_V、V_MTE3、MTE3_MTE2 与 PIPE_V 顺序可复用 | 覆盖前必须维持 producer→consumer event/barrier | `PipeSync`,`Process` |
 | 精度与尾块 | FP16/BF16 主体统一FP32；BF16 CAST_RINT | 不得将中间更新降精度；不得假设 `last_core_last_block` 生效 | `CastFp32ToF16`,`Process` |
 | 失败边界 | attr/shape/P/POD容量失败阻断launch | unknown key静默、零absmax与partial row无fallback | `Tiling4ApplyAdamWQuant`,`apply_adam_w_quant` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ApplyAdamW A2/A3 ACLNN 算子知识](apply_adam_w.md)（`related`）：按 256 元素块由 `uint8` 索引与 qmap/absmax 反量化 m、v，执行 AdamW 更新，再按块求 absmax、归一化并量化回索引。；原地更新 `var/m/v`；`amsgrad=true` 时还原地更新 `maxGradNorm`；`maximize` 可先反转梯度。V2 从标量 `step` 在 Device 侧生成 bias correction。；量化算子在 AdamW 更新前后加入块级反量化与重量化，基础算子给出非量化状态、amsgrad 与 maximize 合同，可用于核对状态布局和算法差异。
-<!-- cannbot:related:end -->

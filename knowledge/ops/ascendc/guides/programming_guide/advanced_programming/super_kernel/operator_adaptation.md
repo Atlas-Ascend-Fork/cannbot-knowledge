@@ -154,12 +154,3 @@ Cache刷新机制示意图如下图所示：
 ## 核函数（Kernel）直调算子的额外适配
 
 对于使用`<<<>>>`方式开发的Ascend C算子，目前仅支持在npugraph_ex后端融合进SuperKernel。此类算子除需遵循上述通用约束外，还需要在算子kernel入口侧增加SuperKernel入口函数。具体方法请参考[核函数（Kernel）直调算子额外适配说明](kernel_direct_call_adaptation.md)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SuperKernel原理介绍](principles.md)（`related`）：算子适配说明：算子要融合进SuperKernel需要满足的通用约束（与具体的开启方式无关）。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。；目标指南展开焦点概述的自定义算子通用适配约束。
-- [核函数直调算子额外适配说明](kernel_direct_call_adaptation.md)（`related`）：对于使用>>方式开发的Ascend C算子，除了遵循算子适配说明中的通用约束外，还需要在算子Kernel入口侧增加SuperKernel入口函数。本文档介绍具体的适配方法。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。这些约束与具体的开启方式（npugraph_ex后端或GE图模式）无关，大部分约束与算子启动核数（block num）以及SuperKernel启动核数之间的关系相关，需要开发者在算子设计阶段就予以关注。Kernel 直调适配明确建立在通用算子适配约束之上，并增加入口函数这一专属步骤，二者组成完整接入链。
-- [算子自验证说明](operator_self_verification.md)（`related`）：算子开发完成后，可通过本文档中的样例自行验证算子是否支持融合进SuperKernel，包括功能正确性与精度对齐。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。；适配页定义开发阶段约束，自验证页消费这些约束并检查功能与精度。
-<!-- cannbot:related:end -->

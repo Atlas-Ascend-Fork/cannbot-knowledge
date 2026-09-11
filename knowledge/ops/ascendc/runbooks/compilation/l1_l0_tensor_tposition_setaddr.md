@@ -81,9 +81,3 @@ CANN 9.2.0 的 `TBuf<TPosition>` 不暴露 `SetAddr`（L1/L0 的固定硬件地�
 ## 性能影响
 
 未观测。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TPosition](../../apis/simd_api/basic_api/aux_data_structures/t_position.md)（`exemplifies`）：“L1/L0A/L0B/L0C 的正确构造方式是带 `TPosition` 的构造函数 `LocalTensor<T>(TPosition pos, uint32_t addr, uint32_t tileSize)`，由 `TPosition`（`A1`=L1A、`A2`=L0A、`B2`=L0B、`CO1`=L0C）承担位置语义，裸类型无需具备 trait。”；“TPosition是Tensor位置枚举，描述Tensor在Ascend AI Core存储层次中的位置。包含VECIN（输入队列位置）、VECCALC（中间计算位置）、VECOUT（输出队列位置）、TSCN（L1 Buffer位置）、LCM（L0C Buffer位置）等。”。Runbook把 TPosition 的抽象位置合同落到 arch35 L1/L0 LocalTensor 构造修法，并给出 SetAddr 与裸地址构造的失败信号。
-<!-- cannbot:related:end -->

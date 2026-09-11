@@ -203,10 +203,3 @@ platforms: ["950"]
 ## 误诊
 
 修复前曾把偏差归因于 Register Gather 的 lane-permute 方向或索引粒度。该方向值得排查，但本次工具包源码取证和 offset-first 修复后的结果表明，决定性根因是 `SetValue` 参数颠倒。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LocalTensor简介](../../apis/simd_api/basic_api/data_structures/local_tensor/local_tensor_intro.md)（`exemplifies`）：核心方法：GetValue/SetValue 元素读写，GetShapeInfo/SetShapeInfo 形状管理，GetSize/GetLength 大小获取，GetPhyAddr 物理地址，ReinterpretCast 类型重解释，operator［］/operator() 下标访问，SetBufferLen/SetAddrWithOffset 地址管理，Print 调试打印，ToFile 数据导出。；`LocalTensor::SetValue` 的真实契约是 `SetValue(offset, value)`，而出错代码按 `SetValue(value, offset)` 调用。概览列出 SetValue 能力，runbook 给出其参数次序错误、精度症状和验证修法，能直接推进 LocalTensor 标量写入排障。
-- [SetValue](../../apis/simd_api/basic_api/data_structures/local_tensor/set_value.md)（`exemplifies`）：`LocalTensor::SetValue` 的真实契约是 `SetValue(offset, value)`，而出错代码按 `SetValue(value, offset)` 调用。；设置 LocalTensor 指定索引的元素值。仅在 TPosition 为 VECIN/VECCALC/VECOUT 时支持。参数 offset 为索引偏移，value 为设置的值。支持 950/a2/a3。。故障卡中的参数顺序错误由 SetValue API 的 offset 索引优先、value 值次之合同直接解释。
-<!-- cannbot:related:end -->

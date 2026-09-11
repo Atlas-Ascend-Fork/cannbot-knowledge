@@ -396,9 +396,3 @@ Frontmatter 仅保留固定 Commit 的 HTTP 来源；下表区分官方锚点与
 | 构建 | operator Kernel CMake | `register_direct_launch_op` | arch35/950 映射→Direct kernel/plugin 编译接线 |
 
 复用检查应以 `Host producer→按值 ABI→launcher symbol→RunKernelMode→ProcessSegment/ComputeTile→workspace SyncAll→FinishTensor` 为最短闭包。任何只到宏 entry、只到公共模板名或只到官方 RegBase body 的描述，都不足以证明本卡 Direct Route。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachNorm 950 ACLNN 算子知识](../../../aclnn/nn/foreach/foreach_norm_950.md)（`same_topic`）：“空 Tensor 由其输出核直接写零。所有输入路线在寄存器中使用 FP32 聚合；FP16/BF16 输入先升为 FP32，输出以 `CAST_RINT` 降回原 dtype。”与“每个输入 Tensor 全元素归约成一个同 dtype 输出。MicroAPI 始终把 FP16/BF16 load 后转为 FP32，FP32也在寄存器中计算；跨 tile、跨核 partial 均为 FP32，最后才按 `StoreOneTensorForDtypeT` 的 RINT/zeroing cast 降精度。”分别给出双端正文事实；两卡都实现 TensorList 独立范数归约并在 FP32 累加后回写原 dtype，分别给出 Direct 扩展 mode 与 ACLNN 公开 route，可用于同一逻辑算子的 ABI 和模式选型。
-<!-- cannbot:related:end -->

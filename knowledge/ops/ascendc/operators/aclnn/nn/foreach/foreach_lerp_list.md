@@ -580,9 +580,3 @@ PipeBarrier<PIPE_V>();
 | 同步 | Queue+PIPE_V+V_S+V_MTE3+MTE3_MTE2 | 不能在消费/写回前释放槽 | `GenerateMask/SyncVToS/ComputeAndCopyOut` |
 | 精度与尾块 | 双公式阈值选择；低精度升FP32并RINT；Pad尾写 | 0.5阈值、GE方向、公式对应、valid bytes | `InnerComputer`、`CopyIn/CopyOut` |
 | 失败边界 | Host校验与key必须先成功 | unknown key、BF16 guard、静态表上限无fallback | `CheckOpInfo`、entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLerpList 950 ACLNN 算子知识](foreach_lerp_list_950.md)（`same_topic`）：对三个等长 TensorList 的对应 Tensor 逐元素计算 `y=x1+weight*(x2-x1)`；实现根据 `abs(weight)<0.5` 在两个代数等价公式之间选择。；拼接全部 Tensor 的线性域，对每元素计算 lerp；`abs(weight)<0.5` 取 `x1+w*(x2-x1)`，否则取 `x2+(w-1)*(x2-x1)`。两端公开入口和数学语义相同，A2/A3 采用 AIV Queue/Vector，950 采用 SIMT VF 与 int32/int64 索引路线。
-<!-- cannbot:related:end -->

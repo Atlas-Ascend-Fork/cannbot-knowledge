@@ -625,9 +625,3 @@ __aicore__ inline void KernelMoeTokenUnpermute<T1, T2, T3, PROBS>::CalToken(
 | 同步 | Queue 的 MTE2→Vector、outque 的 Vector→MTE3 和显式 `PIPE_V` 边可复用 | Free/复用顺序、Cast→Add 与 accumulator→Cast 屏障不能删除；具体 auto-sync event 不得臆造 | `CopyTokenIn`、`CalFirstToken`、`CalToken`、`CopyOut` |
 | 精度与尾块 | BF16/FP16 的 FP32 顺序累加、FP32 原生累加、former core 与两级 remain tail 可复用 | key 0/2 与 key 4 的 UB/精度路线不能合并；元素 count=`h_length` 和精确 GM 写长必须保持 | `SetTilingKey`、`Init`、`Process`、`CalSingleOutToken` |
 | 失败边界 | Host dtype/format 约束、上界无效索引跳过和未知 key 无 body 是可审计事实 | 不得把负索引、`paddedMode=true`、非正 topK、shape 不一致或 UB 零 tile 宣称为支持 | `OpDef`、`InputParamCheck`、`InferShapeForMoeTokenPermuteGrad`、`CalPartOutToken` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeTokenPermute A2/A3 ACLNN 算子知识](moe_token_permute.md)（`related`）：“对 `flatten(indices)` 两次 argsort 得逆置换，再把第 `i` 个 token 的 `topK` 个副本散写到排序位置”生成前向置换及索引，“以每个输出 token 对应的连续 `numTopk` 个 `sortedIndices` 为索引，从 `permutedOutputGrad` gather 行并沿 top-k 维求和”消费该索引完成梯度回收。
-<!-- cannbot:related:end -->

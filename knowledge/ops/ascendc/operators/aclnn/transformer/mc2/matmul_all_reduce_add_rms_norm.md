@@ -846,10 +846,5 @@ AIV将A/B写入GM NZ staging；AIC等待event id4后读取。BOTH_AB时B slice�
 | 精度与尾块 | FP32 RMS、BF16 RINT、tile/tail独立key | BF16不得进MultiN；真实N尾搬运 | ARN bodies |
 | 失败边界 | 空tensor空executor；Host只产已注册key | K=0、unknown key、MergeN缺口不可补造 | ACLNN/entry/router |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddRmsNorm A2/A3 ACLNN 算子知识](../../nn/norm/add_rms_norm.md)（`related`）：融合算子卡明确“头文件与文档标记其计划在 2026 年 12 月之后废弃，迁移目标为 `aclnnMatmulAllReduce` + `aclnnAddRmsNorm`。”；AddRmsNorm 卡给出目标阶段的“`x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma`”语义，可用于拆分迁移时核对 residual 加法与 RMSNorm 输出。
-- [AllReduce](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/all_reduce.md)（`related`）：融合算子语义为“`mmOut=AllReduce(x1@x2+bias,SUM)`”；HCCL 接口说明“将通信域内所有节点的同名张量进行reduce操作后，再把结果发送到所有节点的输出buffer。”，把融合节点中的 SUM 归约落到具体 send/recv buffer、count 和前置 tiling 合同。
-- [DataCacheCleanAndInvalid](../../../../apis/simd_api/basic_api/cache_control/data_cache_clean_and_invalid.md)（`related`）：融合算子用“AIV0 发布增长后的完成数，DCCI 清理/失效 cache line 后全 AIV 同步”广播 HCCL 完成前缀；缓存接口规定“当DMA向GM写入数据后，若Scalar需要读取该数据，需先调用本接口清除Data Cache中的旧缓存，否则可能读到过期数据。”，解释发布计数前后两次清理/失效的可见性目的。
-<!-- cannbot:related:end -->
+- [AllReduce](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/all_reduce.md)
+- [DataCacheCleanAndInvalid](../../../../apis/simd_api/basic_api/cache_control/data_cache_clean_and_invalid.md)

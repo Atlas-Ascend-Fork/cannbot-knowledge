@@ -83,10 +83,3 @@ inline float __uint2float_rd(const unsigned int x)
         dst[idx] = __uint2float_rd(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__uint2float_rz](_uint2float_rz.md)（`same_topic`）：“功能：遵循CAST_FLOOR模式，将uint32类型数据转换为浮点数，返回转换后的值。”与“功能：遵循CAST_TRUNC模式，将uint32类型数据转换为浮点数，返回转换后的值。”是双方正文中的具体合同。两端都将 uint32 转换为浮点数，并分别声明 CAST_FLOOR 与 CAST_TRUNC，互读可核对舍入模式和可表示边界。
-<!-- cannbot:related:end -->

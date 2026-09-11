@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetAsinTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAsinMaxMinTmpSize](get_asin_max_min_tmp_size.md)（`related`）：通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量；开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。最大/最小接口先确定合法临时空间范围，factor 接口再把已选空间换算成单次元素容量；两端组成 Host Tiling 选 buffer、Kernel 按容量分块的闭环。
-<!-- cannbot:related:end -->

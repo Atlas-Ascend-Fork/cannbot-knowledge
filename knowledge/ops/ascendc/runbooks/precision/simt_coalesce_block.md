@@ -63,9 +63,3 @@ block0 末尾几个值（global idx 305323311、305323312、305323313）与 gold
 
 - **误诊一：transform 的 uniform 转换常数差异**。一度怀疑 NPU kernel `u = u32 × RAND_2POW32_INV + RAND_2POW32_INV_HALF`（+1.164e-10，半值）与 golden `u = u32 × RAND_2POW32_INV + RAND_2POW32_INV`（+2.328e-10，全值）差一倍是 fp16 "差很多"的根因（来源平台：未定位；证据等级: agent_reported）。机制核算：`u32×RAND_2POW32_INV` 的值（量级 0.3）远大于常数项差 1.164e-10，在 fp32 精度下被完全吸收，fp16 精度更低更被吸收；仿真显示 fp16 最大差 0.000584（精度级），非"差很多"。此假设被本 trace 否定。
 - **误诊二：kernel blockDim=512（`DEFAULT_SIMT_THREAD_NUM`）vs tiling `SIMT_THREAD_GROUP_SIZE=256` 不一致**。用户假设这是仅 fp16 出错的根因（来源平台：未定位；证据等级: agent_reported）。机制分析：kernel grid-stride 用 `linearIndex < totalThreads` 守卫，`totalThreads` 来自 tiling（256 基），`blockDim=512` 时 threadIdx 256~511 的 `linearIndex` 起即 ≥ totalThreads 被守卫跳过，只多 256 个空闲线程（性能问题非正确性）；仿真显示 tiling 参数（grid/threads/rounds/kernelOffset）完全不依赖 dtype。本 trace 未能确认此为真 bug。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SimThreadExponential 950 ACLNN 算子知识](../../operators/aclnn/math/random/sim_thread_exponential_950.md)（`related`）：精度卡复现“在调 `sim_thread_exponential`（arch35）随机数算子对齐 PyTorch/CUDA curand Philox4_32_10 指数分布输出时，给定 8 维 C-contiguous shape `［81989,7,76,1,1,2,1,7］`（numel = 81989×7×76×1×1×2×1×7 = 610654072）、dtype fp32。”；算子卡说明“若输出不能用 32 位索引，最多分成 8 个 contiguous split block，再为每个 block 计算 logical grid、totalThreads 与独立 counter offset。”，直接把该大 shape 触发的 coalesce 故障映射到 950 算子的 split-block Tiling 路线。
-<!-- cannbot:related:end -->

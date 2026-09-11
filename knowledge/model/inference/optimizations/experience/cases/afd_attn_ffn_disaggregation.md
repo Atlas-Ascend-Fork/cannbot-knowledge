@@ -77,11 +77,3 @@ Atlas A3、LongCat-Flash W8A8、MTP2 + perfect eplb：
 
 - AFD send/recv 接线、`enable_afd` 分支、`limit_core_num(not self.enable_afd, ...)`、rank 划分、新增 FFN 侧 `recv→router→moe→send`：diff 事实 @72495f0ee845；控核耗时表与 TPOT 数字为 doc 披露（仓自报、无独立复测）。溯源下探 [cann-recipes-infer-pr-249-feat-longcat-support-attention-ffn-disaggregation-afd](https://gitcode.com/cann/cann-recipes-infer/merge_requests/249)、[cann-recipes-infer-issue-99-rfc-longcat-flash-model-support-afd-feature](https://gitcode.com/cann/cann-recipes-infer/issues/99)。
 - `world_size%2==0` 校验 + `ffn_world_size=world_size//2` + 前半 FFN/后半 Attn：diff 事实 @72495f0ee845；Send/Recv 1:1、M==N 为 doc 披露且与代码自洽；barrier 删除为维护者/作者确认。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AFD 后 FFN 侧成新瓶颈：Attention 侧 Recv EVENT_WAIT 拖尾 → 对 FFN 侧 MoE-GMM 权重做通信间隙预取](../../../runbooks/performance/afd_ffn_side_bottleneck_prefetch.md)（`related`）：在 ［Attention-FFN 解耦（AFD）］(../../optimizations/experience/cases/afd_attn_ffn_disaggregation.md)部署下（Attention 侧解除控核、计算算子提速后），profiling 里 Attention 侧的 Recv 算子长时间收不到 FFN 侧发回的数据，**计算流上出现 EVENT_WAIT 间隙的拖尾**。；把 MoE/FFN 模块从整网剥离、与 Attention 分处不同 rank，两侧用点对点 Send/Recv 交互：。AFD 部署卡定义分离 rank 与 Send/Recv 主链，Runbook接续该链诊断解耦后 FFN 侧反成瓶颈的 EVENT_WAIT 拖尾。
-- [Attention-FFN Disaggregation (AFD)](../../../concepts/techniques/afd.md)（`related`）：Attention-FFN Disaggregation (AFD) 是 LongCat-Flash 模型在 Decode 阶段的**部署级解耦**优化：将 Attention 模块与 MoE (FFN) 模块**部署在不同的节点**上，中间通过 Send/Recv 算子进行节点间的数据交互。；把 MoE/FFN 模块从整网剥离、与 Attention 分处不同 rank，两侧用点对点 Send/Recv 交互：。两卡描述同一个 LongCat-Flash AFD 部署决策：概念卡定义机制，案例卡给出 rank 拆分与 Send/Recv 落地。
-- [多流并行后还要分核：limit_core_num 给两条重路径流配不同 Cube/Vector 核数、让时长趋近](moe_multi_stream_limit_core_num.md)（`related`）：控核本身有代价：控核后每条流只能用部分核、算子受算力约束；**多流控核旋钮与 AFD 互斥**：`enable_multi_stream` 在 AFD 场景不生效（走 Send/Recv over SDMA 隐藏通信、非多流控核路径）。开 AFD 就别再指望多流控核旋钮。；两端给出同卡分核与跨节点 AFD 的明确替代边界。
-<!-- cannbot:related:end -->

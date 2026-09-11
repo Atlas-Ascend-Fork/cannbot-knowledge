@@ -138,10 +138,3 @@ platforms: []
         GM_ADDR x = (__gm__ uint8_t*)keyListTensorDescInit.GetDataPtr<__gm__ uint8_t>(0);
         GM_ADDR y = (__gm__ uint8_t*)keyListTensorDescInit.GetDataPtr<__gm__ uint8_t>(1);
         ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ListTensorDesc](../../../../apis/simd_api/basic_api/aux_data_structures/list_tensor_desc.md)（`explains`）：“核函数的入参采用ListTensorDesc的结构存储输入数据信息”指出动态输入 kernel 的 ABI 容器；“提供构造函数创建空列表，通过AppendTensorDesc添加Tensor描述符，通过GetTensorDesc获取指定位置的描述符，通过GetNum获取列表大小。”给出构造、访问和计数该容器的接口操作。
-<!-- cannbot:related:end -->

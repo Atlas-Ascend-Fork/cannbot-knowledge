@@ -1273,9 +1273,3 @@ Host 同时设置 executor server 与 HCCL tiling engine，key 再把 server typ
 | 同步 | flags8/9+AIV0+handleWait | IDs/PIPE_FIX/Finalize | scheduler/guard |
 | 精度与尾块 | FP16/BF16、dynamic TCube | transpose/MNK tail | Cube/block |
 | 失败边界 | Host failure/no fallback/nullWS return | 不补造engine fallback | API/Tiling/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupedMatMulAlltoAllv A3 ACLNN 算子知识](grouped_mat_mul_allto_allv.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnGroupedMatMulAlltoAllvV2GetWorkspaceSize` / `aclnnGroupedMatMulAlltoAllvV2`，公开 ACLNN V2 两段式接口 ｜；｜ 实际入口 ｜ `aclnnGroupedMatMulAlltoAllvV2GetWorkspaceSize` / `aclnnGroupedMatMulAlltoAllvV2`，公开 ACLNN V2 ｜；双方闭合同一 V2 公开入口和 GroupedMatMul 到 AlltoAllV 的融合语义，分别覆盖 A3 与 950 路线。
-<!-- cannbot:related:end -->

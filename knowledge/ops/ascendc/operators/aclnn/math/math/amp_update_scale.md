@@ -491,9 +491,3 @@ if constexpr (IsSameType<T, bfloat16_t>::value) {
 | 同步 | MTE2_V、V_S/S_V、V_MTE3、MTE3_MTE2 | 不得在 producer 完成前读取或复用 | `SyncM2toV/SyncVtoM3/SyncM3toM2` |
 | 精度与尾块 | FP32 中间计算，BF16 RINT 回写 | 有限性按 FP32 指数域；DataCopyPad 仅提交一个元素 | `IsFinite/LoadInputData/StoreOutputData` |
 | 失败边界 | 公开 dtype/shape/interval 校验 | 不可依赖 unknown key 行为；非法 interval 不得窄化 | `Init/RunKernelTiling/amp_update_scale` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AmpUpdateScale 950 ACLNN 算子知识](amp_update_scale_950.md)（`same_topic`）：发现 Inf/NaN 时回退 scale；达到 growth interval 时在有限值保护下增长 scale；同步更新 tracker；foundInf 非零时回退 scale；成功计数达到 interval 时在有限值保护下增长 scale；更新 tracker。两端是同一 aclnnAmpUpdateScale 合约的 A2/A3 与 950 实现，语义和三条 dtype Route 对齐，平台构建接线不同。
-<!-- cannbot:related:end -->

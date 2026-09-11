@@ -171,22 +171,7 @@ __aicore__ inline HcclHandle AllGather(GM_ADDR sendBuf, GM_ADDR recvBuf, uint64_
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AllGatherMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/all_gather_matmul_950.md)（`related`）：焦点卡的 Device 流程是“所有 tile 先异步提交，AIC 同时计算本地块；远端块只等待对应 handle”，候选 API 返回“该任务的标识handleId”；算子正是用 AllGather 的 handle 粒度等待来解锁各远端 Matmul tile。
-- [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)（`related`）：焦点算子说明“MIX AIV 侧再以 `Hccl<HCCL_SERVER_TYPE_AICPU>` 提交 AllToAllV/AllGather command”，候选 API 规定“recvBuf的数据个数等于sendCount * rank size，即sendCount * 卡数。”；该接口合同直接解释算子 TP 域 AllGather 的输出扩张和 buffer 规划。
-- [Commit（HCCL集合通信）](commit.md)（`related`）：集合通信算子AllGather的任务下发接口，返回该任务的标识handleId给用户。；非［细粒度通信］(iterate.md)时，每调用一次本接口，则通知服务端可以执行handleId对应的任务一次。。AllGather 返回的 handleId 正是 Commit 通知服务端执行该已准备通信任务所消费的标识，二者形成准备后提交的调用链。
-- [HCCL集合通信Wait](wait.md)（`related`）：返回值：返回该任务的标识handleId，handleId大于等于0。调用失败时，返回 -1。；阻塞AI Core，非［细粒度通信］(iterate.md)时，等待handleId对应的通信任务完成，［细粒度通信］(iterate.md)时，等待handleId对应的步长长度的子通信任务完成。。AllGather 产出的有效 handleId 被 Wait 用于等待相同通信任务完成，联合阅读可闭合下发到完成同步。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [QuantMatmulAllReduce A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce.md)（`related`）：算子声明的固定版本源码包含对 `AllGather(...)` 的直接调用（第 251 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_kernel/arch22/matmul_all_reduce_quant_bf16_comm_int8.h#L251)
-- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)（`related`）：算子声明的固定版本源码包含对 `AllGather(...)` 的直接调用（第 197 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_kernel/arch35/matmul_all_reduce_quant_comm_int8.h#L197)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AllGatherMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/all_gather_matmul_950.md)
+- [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)
+- [QuantMatmulAllReduce A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce.md)
+- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)

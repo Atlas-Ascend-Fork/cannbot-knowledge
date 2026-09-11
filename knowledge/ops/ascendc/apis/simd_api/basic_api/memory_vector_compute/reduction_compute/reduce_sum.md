@@ -298,11 +298,3 @@ source_headers:
     > 输入数据src_gm：[1. 1. 1. ... 1. 1. 1.]
     >
     > 输出数据dst_gm：[288.   0.   0.   0.   0.   0.   0.   0.   0.   0.   0.   0.   0.   0.   0.   0.]
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend950 ReduceSum AR 多行归约逐行错](../../../../../runbooks/precision/ascend950_reduce_sum_ar_multibundle_use_per_row.md)（`exemplifies`）：对所有输入数据进行求和操作。；关键相关性：所有 `aLen=1`（即 `aBundle=1`）的用例全部通过；所有 `aLen>1`（`aBundle>1`）的用例全部失败。失败集合与 aBundle 是否大于 1 严格对应。。API 卡给出 ReduceSum 的归约语义，runbook 用 aBundle 大于 1 的严格失败分界限定 Ascend950 AR 多行调用的诊断路径。
-- [GetReduceRepeatSumSpr](../reduction_compute_aux_config/get_reduce_repeat_sum_spr_isasi.md)（`related`）：对所有输入数据进行求和操作。；获取ReduceSum接口前n个数据连续计算的结果，以全局变量形式存储。。ReduceSum 执行求和，辅助接口读取其前 n 个连续数据计算结果并以全局变量暴露，形成计算到结果检查的配套链。
-<!-- cannbot:related:end -->

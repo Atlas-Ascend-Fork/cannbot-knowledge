@@ -162,32 +162,14 @@ DataCacheCleanAndInvalid接口用于解决上述一致性问题，其功能可�
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend950 DataCopy 写回 L2 驱逐丢对角线](../../../../runbooks/precision/ascend950_datacopy_l2.md)（`exemplifies`）：修复路线确认：CopyOut 改 `SetValue` 只写对角线 + 末尾一次 `DataCacheCleanAndInvalid` 后重跑全量 286/286 PASS，dense path 48/48、sparse path 238/238 三模式均 100% golden，`PRECISION_STATUS: PASS`（来源平台：Ascend950；证据等级: tool_observed）；当DMA向GM写入数据后，若Scalar需要读取该数据，需先调用本接口清除Data Cache中的旧缓存，否则可能读到过期数据。；运行手册给出 SetValue 与 DataCacheCleanAndInvalid 组合的 Ascend950 实测修复，API 卡说明清除旧 Data Cache line 以恢复 Scalar 侧 GM 可见性的调用合同，前者是后者在具体精度排障中的应用实例。
-- [DataCacheCleanAndInvalid 无参调用导致编译失败](../../../../runbooks/compilation/datacache_clean_requires_tensor_target.md)（`exemplifies`）：当前 CANN 头文件暴露的是以 `LocalTensor<T>` 或 `GlobalTensor<T>` 为目标的函数重载，因此模板枚举解析和实参数量同时不满足契约。；函数原型提供基于GM地址和长度的清除方式。参数包含GM地址指针和数据长度。。运行手册的无参编译失败必须回到候选接口的显式目标范围契约，而不能臆造全缓存事件。
-- [设置DCI编译选项来减少算子尾开销](../../../../guides/operator_practice/simd_operator_optimization/overhead_optimization/dci_compile_option.md)（`explains`）：插入DCCI是一种额外的容错保证，如果开发者使用了* __gm__的方式改写GM内存，或者调用GlobalTensor.SetValue函数时，没有正确的调用DataCacheCleanAndInvalid接口来保证Cache一致性，编译框架自动插入DCCI恰好可以保证算子精度正常。；清除并失效Data Cache，确保Scalar单元通过Data Cache读取的GM数据与DMA单元直接写入GM的数据保持一致。。指南说明开启 no-dcache-flush 前必须手动承担 DCCI 的一致性职责，API 卡定义清除旧缓存与回刷可见性的接口作用，直接决定该编译优化能否安全启用。
-- [GetValue](../data_structures/global_tensor/get_value.md)（`related`）：Scalar单元访问GM，首先会访问每个核内的Data Cache，因此存在Data Cache与GM的Cache一致性问题。；清除并失效Data Cache，确保Scalar单元通过Data Cache读取的GM数据与DMA单元直接写入GM的数据保持一致。当DMA向GM写入数据后，若Scalar需要读取该数据，需先调用本接口清除Data Cache中的旧缓存，否则可能读到过期数据。。GetValue 卡指出 Scalar 读 GM 会经过核内 Data Cache 并产生一致性风险，DataCacheCleanAndInvalid 卡给出 DMA 写后、Scalar 读前清除旧缓存的具体操作，构成读值前的缓存一致性处理链。
-- [MatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/matmul_all_reduce_add_rms_norm.md)（`related`）：融合算子用“AIV0 发布增长后的完成数，DCCI 清理/失效 cache line 后全 AIV 同步”广播 HCCL 完成前缀；缓存接口规定“当DMA向GM写入数据后，若Scalar需要读取该数据，需先调用本接口清除Data Cache中的旧缓存，否则可能读到过期数据。”，解释发布计数前后两次清理/失效的可见性目的。
-- [SetValue](../data_structures/global_tensor/set_value.md)（`related`）：设置 GlobalTensor 指定偏移位置的元素值。操作先写入 DCache，需配合 DataCacheCleanAndInvalid 确保数据一致性。；清除并失效Data Cache，确保Scalar单元通过Data Cache读取的GM数据与DMA单元直接写入GM的数据保持一致。。SetValue 明确产生 DCache 写入，DataCacheCleanAndInvalid 提供写回并失效的可见性动作，联合阅读可闭合 GM 一致性处理。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 36 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [MaskedSelect A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/masked_select.md)（`related`）：算子声明的固定版本源码包含对 `DataCacheCleanAndInvalid(...)` 的直接调用（第 136 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/masked_select_v3/op_kernel/masked_select_v3.h#L136)
-- [ForeachNonFiniteCheckAndUnscale 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_non_finite_check_and_unscale_950.md)（`related`）：算子声明的固定版本源码包含对 `DataCacheCleanAndInvalid(...)` 的直接调用（第 143 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_non_finite_check_and_unscale/op_kernel/arch35/foreach_non_finite_check_and_unscale_regbase.h#L143)
-- [grouped_matmul_add A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_add.md)（`related`）：算子声明的固定版本源码包含对 `DataCacheCleanAndInvalid(...)` 的直接调用（第 64 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_add/op_kernel/grouped_matmul_add.h#L64)
-- [RepeatInterleave 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/repeat_interleave_950.md)（`related`）：算子声明的固定版本源码包含对 `DataCacheCleanAndInvalid(...)` 的直接调用（第 568 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/repeat_interleave/op_kernel/arch35/repeat_interleave_small.h#L568)
-- [AttentionToFfn A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)（`related`）：算子声明的固定版本源码包含对 `DataCacheCleanAndInvalid(...)` 的直接调用（第 230 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L230)
-- [RepeatInterleaveWithDim 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/repeat_interleave_with_dim_950.md)（`related`）：算子声明的固定版本源码包含对 `DataCacheCleanAndInvalid(...)` 的直接调用（第 568 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/repeat_interleave/op_kernel/arch35/repeat_interleave_small.h#L568)
-- [DistributeBarrier A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/distribute_barrier.md)（`related`）：算子声明的固定版本源码包含对 `DataCacheCleanAndInvalid(...)` 的直接调用（第 198 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/distribute_barrier/op_kernel/distribute_barrier.h#L198)
-- [TopKTopPSample A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/index/top_k_top_p_sample.md)（`related`）：算子声明的固定版本源码包含对 `DataCacheCleanAndInvalid(...)` 的直接调用（第 998 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/top_k_top_p_sample_v2/op_kernel/top_k_top_p_sample_v2.h#L998)
-- [DistributeBarrier 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/distribute_barrier_950.md)（`related`）：算子声明的固定版本源码包含对 `DataCacheCleanAndInvalid(...)` 的直接调用（第 198 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/distribute_barrier/op_kernel/distribute_barrier.h#L198)
-- [TopKTopPSample 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/top_k_top_p_sample_950.md)（`related`）：算子声明的固定版本源码包含对 `DataCacheCleanAndInvalid(...)` 的直接调用（第 998 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/top_k_top_p_sample_v2/op_kernel/top_k_top_p_sample_v2.h#L998)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/matmul_all_reduce_add_rms_norm.md)
+- [MaskedSelect A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/masked_select.md)
+- [ForeachNonFiniteCheckAndUnscale 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_non_finite_check_and_unscale_950.md)
+- [grouped_matmul_add A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_add.md)
+- [RepeatInterleave 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/repeat_interleave_950.md)
+- [AttentionToFfn A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)
+- [RepeatInterleaveWithDim 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/repeat_interleave_with_dim_950.md)
+- [DistributeBarrier A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/distribute_barrier.md)
+- [TopKTopPSample A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/index/top_k_top_p_sample.md)
+- [DistributeBarrier 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/distribute_barrier_950.md)
+- [TopKTopPSample 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/top_k_top_p_sample_950.md)

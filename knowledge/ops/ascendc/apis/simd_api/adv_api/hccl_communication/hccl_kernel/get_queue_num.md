@@ -46,11 +46,3 @@ BatchWrite通信任务的通信队列数量。
 
 请参见[BatchWrite的调用示例](batch_write.md#调用示例)。
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BatchWrite](batch_write.md)（`related`）：焦点卡“获取BatchWrite通信任务的通信队列数量。”，候选卡要求“queueID（输入）：指定当前通信所在的队列ID，默认值为0。”；查询队列总数为 BatchWrite 选择合法 queueID 提供运行时边界。
-- [SetQueueNum](../hccl_tiling/set_queue_num.md)（`related`）：焦点卡“获取BatchWrite通信任务的通信队列数量。”，候选卡“设置每个向服务端下发任务的核上的BatchWrite通信队列数量。”；Host 设置值与 Kernel 查询值构成同一 BatchWrite 队列数量合同。
-<!-- cannbot:related:end -->

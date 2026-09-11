@@ -566,9 +566,3 @@ Host 将 BF16 input Queue slot 放大到 `9S`，但只提供 `S` bytes FP32 scra
 | 同步 | Queue + V_MTE3/MTE3_MTE2；BF16 另有 PIPE_V | GM store 完成前不得复用 slot | `ForeachImplictOutput::Compute/ComputePerCast` |
 | 精度与尾块 | FP16/FP32 direct；BF16 CAST_NONE→FP32 Sqrt→CAST_RINT | valid count 与 exact-byte tail | `InnerComputer`/`CopyIn` |
 | 失败边界 | Host 失败阻断；Device 无 unknown-key fallback | dtype/platform/shape guard 不可省略 | `CheckOpInfo`/`foreach_sqrt` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachSqrt 950 ACLNN 算子知识](foreach_sqrt_950.md)（`same_topic`）：对 TensorList 中每个输入元素计算平方根：`y_i［j］=sqrt(x_i［j］)`。；对 TensorList 中每个输入元素计算 `y_i［j］=sqrt(x_i［j］)`。；两卡描述同一个 ForeachSqrt ACLNN 入口和逐 TensorList 开方语义，分别闭合 A2/A3 AIV Vector 路线与 950 RegBase 路线。
-<!-- cannbot:related:end -->

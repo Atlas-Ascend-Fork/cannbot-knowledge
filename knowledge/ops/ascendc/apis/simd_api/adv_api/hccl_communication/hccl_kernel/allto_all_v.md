@@ -227,25 +227,11 @@ __aicore__ inline HcclHandle AlltoAllV(GM_ADDR sendBuf, void* sendCounts, void* 
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AlltoAll](allto_all.md)（`related`）：焦点卡写明“每张卡向通信域内所有卡发送相同数据量的数据，并从所有卡接收相同数据量的数据”，候选卡写明“AlltoAll要求所有卡的收发数据量相同，AlltoAllV则不需要数据量相同”。两卡给出等量与逐 rank 变长收发契约，可决定是否传 counts/displacements。
-- [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)（`related`）：焦点算子说明“MIX AIV 侧再以 `Hccl<HCCL_SERVER_TYPE_AICPU>` 提交 AllToAllV/AllGather command”，候选 API 定义“定制每张卡给其它卡发送的数据量和从其它卡接收的数据量，以及定制发送和接收的数据在内存中的偏移。”；该合同对应算子 EP 域分片通信的计数与位移参数。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 7 / 7 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AlltoAllvGroupedMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_allv_grouped_mat_mul.md)（`related`）：算子声明的固定版本源码包含对 `AlltoAllV(...)` 的直接调用（第 182 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_allv_quant_grouped_mat_mul/op_kernel/mc2_templates/communication/hccl_a2av_op.h#L182)
-- [AlltoAllvGroupedMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_allv_grouped_mat_mul_950.md)（`related`）：算子声明的固定版本源码包含对 `AlltoAllV(...)` 的直接调用（第 182 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_allv_quant_grouped_mat_mul/op_kernel/mc2_templates/communication/hccl_a2av_op.h#L182)
-- [AlltoAllvQuantGroupedMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_allv_quant_grouped_mat_mul_950.md)（`related`）：算子声明的固定版本源码包含对 `AlltoAllV(...)` 的直接调用（第 182 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_allv_quant_grouped_mat_mul/op_kernel/mc2_templates/communication/hccl_a2av_op.h#L182)
-- [BatchMatMulReduceScatterAlltoAll A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/batch_mat_mul_reduce_scatter_allto_all.md)（`related`）：算子声明的固定版本源码包含对 `AlltoAllV(...)` 的直接调用（第 959 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/batch_mat_mul_reduce_scatter_allto_all/op_kernel/batch_mat_mul_reduce_scatter_allto_all.h#L959)
-- [GroupedMatMulAlltoAllv A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/grouped_mat_mul_allto_allv.md)（`related`）：算子声明的固定版本源码包含对 `AlltoAllV(...)` 的直接调用（第 182 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_allv_quant_grouped_mat_mul/op_kernel/mc2_templates/communication/hccl_a2av_op.h#L182)
-- [GroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/grouped_mat_mul_allto_allv_950.md)（`related`）：算子声明的固定版本源码包含对 `AlltoAllV(...)` 的直接调用（第 182 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_allv_quant_grouped_mat_mul/op_kernel/mc2_templates/communication/hccl_a2av_op.h#L182)
-- [QuantGroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_grouped_mat_mul_allto_allv_950.md)（`related`）：算子声明的固定版本源码包含对 `AlltoAllV(...)` 的直接调用（第 182 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_allv_quant_grouped_mat_mul/op_kernel/mc2_templates/communication/hccl_a2av_op.h#L182)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)
+- [AlltoAllvGroupedMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_allv_grouped_mat_mul.md)
+- [AlltoAllvGroupedMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_allv_grouped_mat_mul_950.md)
+- [AlltoAllvQuantGroupedMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_allv_quant_grouped_mat_mul_950.md)
+- [BatchMatMulReduceScatterAlltoAll A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/batch_mat_mul_reduce_scatter_allto_all.md)
+- [GroupedMatMulAlltoAllv A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/grouped_mat_mul_allto_allv.md)
+- [GroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/grouped_mat_mul_allto_allv_950.md)
+- [QuantGroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_grouped_mat_mul_allto_allv_950.md)

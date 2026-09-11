@@ -887,10 +887,3 @@ if (IsNeedUpdateLevel2Cache(basicBlockIdx)) {
 | 同步 | Atomic、queue、LocalMemBar、SyncAll | pipe reset只在跨阶段同步后 | Base/route bodies |
 | 精度与尾块 | T/U边界cast、FP32 Reg/workspace、binary fold | `CAST_RINT`、mask、main/fold tail | Common/ReCompute |
 | 失败边界 | UB、dtype、shape、mode2 search | 不得添加未证实 fallback | Tiling/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupNorm 950 ACLNN 算子知识](group_norm_950.md)（`related`）：输出 affine 结果、mean、rstd；与 GroupNorm 反向一致：`dbeta=sum(dy)`，`dgamma=sum(dy*(x-mean)*rstd)`，`dx=rstd*gamma*(dy-(dbeta+xhat*dgamma)/(C/G*HXW))`。。950 正向产生 affine 输出及 mean/rstd，950 反向公式消费 mean/rstd 与 gamma 计算 dx/dgamma/dbeta，构成同平台训练任务链。
-- [GroupNormBackward A2/A3 ACLNN 算子知识](group_norm_backward.md)（`same_topic`）：对 `［N,C,HxW］` 按 `G=group` 分组；`xHat=(x-mean)*rstd`，输出 `dbeta=sum(dy)`、`dgamma=sum(dy*xHat)` 与 `dx=rstd*gamma*(dy-(dbeta+xHat*dgamma)/(C/G*HxW))`。；与 GroupNorm 反向一致：`dbeta=sum(dy)`，`dgamma=sum(dy*(x-mean)*rstd)`，`dx=rstd*gamma*(dy-(dbeta+xhat*dgamma)/(C/G*HXW))`。。两张卡描述同一 GroupNormBackward 梯度公式，分别闭合 A2/A3 与 950 的 Host、Tiling 和 Kernel 路线。
-<!-- cannbot:related:end -->

@@ -258,9 +258,3 @@ before 将 gamma 的搬入与 Cast 封装在 `LoadGamma`，随后 `CopyIn` 又�
 ## 误诊
 
 曾尝试把高阶 `RmsNorm` 临时替换为 identity copy 来判断 Cast 是否工作；这只能缩小范围，不能证明跨阶段 Cast 编排正确。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](mte2_barrier_must_precede_vector_cast.md)（`related`）：`DataCopyPad` 的 GM→UB 搬运由 MTE2 异步执行，而 `Cast` 在 Vector pipeline 消费 `gammaLocal`。正确 RAW 依赖是 `MTE2 write gammaLocal → barrier/event → VEC read gammaLocal`。；after 把 gamma Cast 延后到 `Compute`：先用一个 `PIPE_MTE2` 屏障等待 gamma 和 x 的搬运，再在同一 Vector 序列中依次 Cast gamma 与 x，最后用 `PIPE_V` 确认两个 FP32 输入都完成。。前者给出 MTE2 生产者到 Vector Cast 消费者必须先同步的 RAW 根因，后者把这一纪律落实到 gamma/x 两路 BF16 Cast 共用 Compute 阶段的修复顺序，可连续用于诊断和验证归一化 NaN。
-<!-- cannbot:related:end -->

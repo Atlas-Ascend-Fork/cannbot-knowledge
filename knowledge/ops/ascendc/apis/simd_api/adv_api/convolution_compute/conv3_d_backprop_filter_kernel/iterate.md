@@ -75,11 +75,3 @@ while (gradWeight_.Iterate()) {
 // SingleShape计算完成后，需要将ctx.isFirstIter_设置为true，确保下一块SingleShape的正确计算
 gradWeight_.ctx.isFirstIter_ = true;
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTensorC](get_tensor_c.md)（`related`）：“Iterate接口必须在初始化接口及输入输出配置接口之后进行调用，完成卷积反向实现”启动块级计算；“在完成Iterate操作后调用本接口，获取结果矩阵块，完成数据从L0C到GM的搬运。”规定结果消费紧随 Iterate，形成计算与搬出闭环。
-- [卷积计算Init](init.md)（`related`）：“Init主要用于对Conv3DBackpropFilter对象中的Tiling数据进行初始化，根据Tiling参数进行资源划分”建立对象和资源；“Iterate接口必须在初始化接口及输入输出配置接口之后进行调用，完成卷积反向实现”明确计算阶段依赖初始化，形成同一调用序列。
-<!-- cannbot:related:end -->

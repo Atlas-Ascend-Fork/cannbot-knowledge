@@ -95,24 +95,10 @@ ge::graphStatus TilingXXX(gert::TilingContext* context) {
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [DequantBias A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/quant/dequant_bias.md)（`related`）：“平台对象产生 `aivNum=GetCoreNumAiv()` 与 `ubSize=GetCoreMemSize(UB)`。”说明 DequantBias Tiling 以平台 UB 容量计算分核和 tile；“获取硬件平台存储空间的内存大小，例如L1、L0_A、L0_B、L2等”给出平台查询接口的职责。
-- [ReserveLocalMemory](reserve_local_memory.md)（`related`）：“获取硬件平台存储空间的内存大小，例如L1、L0_A、L0_B、L2等，支持的存储空间类型定义如下：”明确给出左端事实；“该函数用于在Unified Buffer中预留指定大小的内存空间。调用该接口后，使用GetCoreMemSize可以获取实际可用的剩余Unified Buffer空间大小。”明确给出右端事实。ReserveLocalMemory 改变 UB 预留量，GetCoreMemSize 随后返回剩余可用空间；两者共同确定 Tiling 可使用的本地内存预算。
-- [Sigmoid 950 Direct Invoke 算子知识](../../../../operators/direct/nn/activation/sigmoid_950.md)（`related`）：“令 `N=numel`、`s=elementBytes`、`C=max(GetCoreNumAiv(),1)`、`U=GetCoreMemSize(UB)`：”显示 Sigmoid 用该接口取得 UB 容量；“获取硬件平台存储空间的内存大小，例如L1、L0_A、L0_B、L2等，支持的存储空间类型定义如下：”给出平台内存查询合同，直接决定四段 UB tile 上界。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [Threshold 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/threshold_950.md)（`related`）：算子正文包含对 `GetCoreMemSize(...)` 的直接调用；本卡提供该接口契约。
-- [FfnToAttention A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/ffn_to_attention.md)（`related`）：算子正文包含对 `GetCoreMemSize(...)` 的直接调用；本卡提供该接口契约。
-- [InplaceWeightQuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/inplace_weight_quant_matmul_all_reduce_add_rms_norm.md)（`related`）：算子正文包含对 `GetCoreMemSize(...)` 的直接调用；本卡提供该接口契约。
-- [QuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_add_rms_norm.md)（`related`）：算子正文包含对 `GetCoreMemSize(...)` 的直接调用；本卡提供该接口契约。
-- [MhcSinkhorn 950 Direct Invoke 算子知识](../../../../operators/direct/transformer/mhc/mhc_sinkhorn_950.md)（`related`）：算子正文包含对 `GetCoreMemSize(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [DequantBias A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/quant/dequant_bias.md)
+- [Sigmoid 950 Direct Invoke 算子知识](../../../../operators/direct/nn/activation/sigmoid_950.md)
+- [Threshold 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/threshold_950.md)
+- [FfnToAttention A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/ffn_to_attention.md)
+- [InplaceWeightQuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/inplace_weight_quant_matmul_all_reduce_add_rms_norm.md)
+- [QuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_add_rms_norm.md)
+- [MhcSinkhorn 950 Direct Invoke 算子知识](../../../../operators/direct/transformer/mhc/mhc_sinkhorn_950.md)

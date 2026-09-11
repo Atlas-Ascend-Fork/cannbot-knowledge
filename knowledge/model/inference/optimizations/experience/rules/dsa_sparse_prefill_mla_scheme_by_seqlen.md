@@ -48,9 +48,3 @@ platforms:
 
 - `doc 披露`（@fa6892b / @239c0c1a）：`deepseek_v3.2_exp_inference_guide.md`「MLA Naive vs Absorb」节三方案定义、BMM shape、「方案二 M=1 + 访存 2048×」「方案三 M=128 + 访存比方案二降几十倍」「实践选方案三归一 Prefill/Decode」。`forward_absorb_cp`/`forward_absorb` 存在为 diff 事实。溯源下探 [cann-recipes-infer-pr-3-feat-add-deepseek-v3-2-exp-model](https://gitcode.com/cann/cann-recipes-infer/merge_requests/3)。
 - `维护者确认`（@239c0c1a）：短序列（<4K）→方案一、长序列→方案三，及 v3.1 prefill=MHA / decode=MQA；guide 正文不含 `<4K` 阈值（grep 确认）、属事件独有经验。提问者的「方案二计算量是方案三 1/3」「M=1 因 16×16 tile 降十几倍」为提问者推断、未被逐条确认，本页不据此断言具体倍数。溯源下探 [cann-recipes-infer-issue-55-question-npu-deepseek-v3-2-exp-mla](https://gitcode.com/cann/cann-recipes-infer/issues/55)。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MLA 访存 / 显存优化：优先权重吸收（absorb）+ latent-KV 缓存；稀疏 / 长序列 prefill 选 Absorb+Sparse](mla_weight_absorption_latent_kv.md)（`related`）：三方案的 BMM shape 表与访存推导见 ［mla-weight-absorption-latent-kv］(mla_weight_absorption_latent_kv.md)；**方案三 Absorb + Sparse Attention（推荐）**：相对方案二计算量增约 3 倍，但 BMM 的 M 轴变为 128（GEMM 友好），HBM 访存量相较方案二降几十倍，且与 decode 的 MLA 计算流归一（同一套 absorb 计算流，简化融合 kernel 设计）。。DSA prefill 的按长度选型依赖方案三的 GEMM、访存与计算代价；这些条件解释了长序列场景选择 Absorb+Sparse 的依据。
-<!-- cannbot:related:end -->

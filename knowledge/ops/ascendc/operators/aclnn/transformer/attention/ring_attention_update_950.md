@@ -655,9 +655,3 @@ ND小时用额外8S字节将BNS8 gather后的权重重排为Seq*N顺序，使att
 | 同步 | Queue+PIPE_V+VEC_SCOPE | producer/consumer与slot释放 | bodies |
 | 精度与尾块 | FP32稳定归并、B16升精度/RINT | UpdateMask/count/valid DMA | common helpers |
 | 失败边界 | selector无fallback | 非法key/attr/资源不得默默放宽 | Tiling/APT |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RingAttentionUpdate A2/A3 ACLNN 算子知识](ring_attention_update.md)（`same_topic`）：稳定归并两组 softmax max/sum，并用归一化权重归并两份 attention；FP32 RegBase MicroAPI 稳定归并 softmax 统计量并加权归并 attention。两卡均执行 RingAttentionUpdate 的稳定 softmax 统计量合并和 attention 加权归并，目标卡把相同核心契约落实为 950 FP32 RegBase MicroAPI 实现。
-<!-- cannbot:related:end -->

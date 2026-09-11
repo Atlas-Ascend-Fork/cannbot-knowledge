@@ -98,11 +98,3 @@ __simd_vf__ inline void SqueezeVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint
      AscendC::Reg::StoreUnAlignPost(dstAddr, ureg);
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSpr](../../special_register_access/get_spr.md)（`related`）：“参数：spr: 特殊寄存器，类型为SpecialPurposeReg枚举类，具体的取值请参考表SpecialPurposeReg模板参数说明。；AR: AR寄存器通常配合Reg矢量计算API Squeeze和连续非对齐搬出的场景3（无需显式传入偏移量）接口一起使用，寄存器会存储有效元素的总字节数。”与“特别地，当模板参数store取值为GatherMaskMode::STORE_REG时，Squeeze会将有效元素的总字节数存入AR特殊寄存器。此时配合使用连续非对齐搬出的场景3接口（无需显式传入偏移量），StoreUnAlign会自动从AR寄存器读取有效字节数作为地址偏移，参考调用示例。”提供双方正文证据。GetSpr 读取的 AR 值正是 Squeeze 在 STORE_REG 模式写入的有效元素总字节数，形成特殊寄存器生产与读取关系。
-- [StoreUnAlignContinuous](../reg_data_store/store_un_align_continuous.md)（`related`）：“StoreUnAlign会自动从AR寄存器读取有效字节数作为地址偏移”说明 Squeeze 的 STORE_REG 输出直接驱动连续非对齐写址；“必须保证Squeeze接口和StoreUnAlign交替使用”给出消费该 AR 状态时的硬件调用顺序。
-<!-- cannbot:related:end -->

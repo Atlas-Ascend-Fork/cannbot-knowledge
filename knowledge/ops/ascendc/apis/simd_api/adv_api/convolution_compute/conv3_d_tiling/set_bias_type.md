@@ -53,10 +53,3 @@ conv3dApiTiling.SetBiasType(
     ConvCommonApi::TPosition::GM, ConvCommonApi::ConvFormat::ND, ConvCommonApi::ConvDtype::FLOAT32);
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetBias](../conv3_d_kernel/set_bias.md)（`related`）：bias（输入）：Bias在Global Memory上的地址。类型为GlobalTensor。偏置矩阵Bias支持的数据类型为：half、bfloat16_t。；设置Bias在内存上的位置、数据格式和数据类型。。tiling 侧先声明 Bias 的位置、格式和类型，kernel 侧 SetBias 再接收相应 GM tensor，形成 Host 配置到 Device 入参的合同。
-<!-- cannbot:related:end -->

@@ -82,21 +82,4 @@ for (uint64_t batchIter = 0; batchIter < singleCoreBatch; ++batchIter) {
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetSingleOutputShape](set_single_output_shape.md)（`related`）：SetSingleOutputShape 卡规定“设置单核上结果矩阵Output的形状。”；IterateAll 卡明确“singleCo、singleDo和singleM的大小通过SetSingleOutputShape接口设置。”。形状配置是单核 Conv3D 计算输出块的前置合同。
-- [SetWeight](set_weight.md)（`related`）：SetWeight 的动作是“设置权重矩阵Weight。”；IterateAll 规定“IterateAll接口必须在初始化接口及输入输出配置接口之后进行调用”。权重配置属于启动单核 Conv3D 计算前必须完成的输入配置。
-- [卷积计算End](end.md)（`related`）：焦点卡规定多 batch 时“多 batch 场景需逐 batch 调用 SetInput、IterateAll 和 End”，候选卡说明“在Conv3D计算完成后，必须调用一次End函数，以清除EventID并释放内部申请的临时内存。”；这把逐 batch 计算与资源收尾组成完整生命周期。
-- [卷积计算Init](init.md)（`related`）：焦点卡要求“Init接口必须在IterateAll和End接口前调用”，候选卡再次约束“IterateAll接口必须在初始化接口及输入输出配置接口之后进行调用”；两端共同固定 Conv3D Kernel 的初始化到计算阶段顺序。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [QuantConvolution A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/quant_convolution.md)（`related`）：算子声明的固定版本源码包含对 `IterateAll(...)` 的直接调用（第 247 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_v2/op_kernel/conv3dv2.h#L247)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [QuantConvolution A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/quant_convolution.md)

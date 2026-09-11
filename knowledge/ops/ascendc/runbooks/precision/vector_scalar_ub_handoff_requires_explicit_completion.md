@@ -245,11 +245,3 @@ __aicore__ inline void Compute(uint32_t off)
 
 - 该现象不是普通浮点累积误差：错误量级超过概率范围，且同行中正常值和巨大异常值并存。
 - 该现象也不是测试 harness 问题：替换 Kernel 内跨域交接后，同一测试和参考实现全部通过。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetValue](../../apis/simd_api/basic_api/data_structures/local_tensor/get_value.md)（`exemplifies`）：焦点卡只定义“获取 LocalTensor 指定索引的元素值。”，候选卡实测“`PipeBarrier<PIPE_V>` 只约束 Vector pipe 内部顺序，不能保证前一 VF 的 `StoreAlign` 已对 `__aicore__` 标量侧 `LocalTensor::GetValue` 可见”；该 runbook 给出使用 GetValue 时最关键的跨域可见性故障与替代方案。
-- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：`PipeBarrier<PIPE_V>` 只约束 Vector pipe 内部顺序；vector store 尚未排空时 load 可能读到旧 UB 数据。前者定位 V→UB→Scalar 的可见性缺口并要求避免 GetValue 交接，后者定位同一 wrapper 内 VEC_STORE→VEC_LOAD 的排空缺口并通过拆分 wrapper 插入 barrier；两卡共同界定 barrier 必须放在可表达的生产者消费者边界。
-- [标量 S pipe 误用 TQue 导致输出全常数](scalar_s_pipe_requires_explicit_mte_dependencies.md)（`related`）：焦点卡说明“`TQue::EnQue/DeQue` 建立的事件面向 Vector pipe，不能替代标量 S pipe 与 MTE2/MTE3 之间的跨管依赖”；另一故障卡同样证明“`PipeBarrier<PIPE_V>` 只约束 Vector pipe 内部顺序，不能保证前一 VF 的 `StoreAlign` 已对 `__aicore__` 标量侧 `LocalTensor::GetValue` 可见”，共同给出队列/V 屏障不足以建立跨执行域可见性的诊断规则。
-<!-- cannbot:related:end -->

@@ -1249,9 +1249,3 @@ if (isScalar) {
 | 同步 | tensor mutex与loop mode可复用 | `Get/ReleaseTensor`、Set/ResetLoopMode配对 | scheduler headers |
 | 精度与尾块 | 按公共P比较，Select物化0/1 | 不得升/降精度或读padding lane；尾长来自POD | `GreaterEqualCompute/Process` |
 | 失败边界 | 专用非连续失败回304/305；非AICore dtype走AICPU | 不得用950 body补A3或把Scalar/原地入口并入 | selectors/OpDef/CMake |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GeScalar 950 ACLNN 算子知识](ge_scalar_950.md)（`same_topic`）：｜ 计算语义 ｜ `out［i］ = (self［i］ >= other) ? true : false`；比较前按 950 TensorScalar 规则得到提升类型 `P`，最终 BOOL 结果可再转换到调用者声明的 `out.dtype` ｜；固定仓只公开无后缀的 `aclnnGeTensor` 两段式版本；本卡不合并同文件中的 `aclnnInplaceGeTensor`，也不合并 Scalar 入口。公开文档明确支持 Ascend 950PR/950DT。`GreaterEqual` OpDef 仅把当前 `greater_equal_apt` AICore 实现接到 `ascend950` 与 `ascend910_55`，`greater_equal_binary.json` 给出 950 的 F16/F32/I32/I64/I8/U8/U64/BOOL/BF16 二进制组合。A3 虽在公开文档中标为支持，但固定仓指定目录没有 `arch32` Host/Tiling/Kernel，故未生成无后缀卡。两页共同覆盖 950 GreaterEqual ACLNN 路线，并明确区分 scalar 与 tensor 右操作数入口，能指导调用与类型提升选型。
-<!-- cannbot:related:end -->

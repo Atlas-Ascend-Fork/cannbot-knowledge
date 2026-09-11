@@ -78,10 +78,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         dst[idx] = __float2half_ro_sat(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float2half_ro](_float2half_ro.md)（`same_topic`）：“本接口受全局饱和寄存器的影响”与“SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效”共同界定同一 float→half CAST_ODD 转换选择饱和变体时的实际失效边界。
-<!-- cannbot:related:end -->

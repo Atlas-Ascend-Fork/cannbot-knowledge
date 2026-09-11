@@ -538,9 +538,3 @@ workspace_total = 32 B reserved, unused by Kernel
 | 同步 | Queue + V_MTE3 + MTE3_MTE2；BF16 加 PIPE_V | Free/覆盖不得早于等待点 | `CopyOut`、`ComputePerCast` |
 | 精度与尾块 | FP16 direct；FP32 direct；BF16 经 FP32/RINT | scalar P、repeat mask、cast 顺序 | `InnerComputer` specializations |
 | 失败边界 | 模板 capability、dtype key、公开校验 | 不得为 unknown key 自造 fallback | router 与 `CheckOpInfo` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachDivScalarList 950 ACLNN 算子知识](foreach_div_scalar_list_950.md)（`same_topic`）：｜ 计算语义 ｜ 对列表位置 `i` 的每个有效元素 `j` 计算 `out［i］［j］ = x［i］［j］ / scalars［i］` ｜；｜ 执行类型 ｜ 单 Kernel `foreach_div_scalar_list`：`AIV_VECTOR`（arch35 regbase MicroAPI） ｜。两卡共享 ForeachDivScalarList 的逐 Tensor 标量列表除法合同；目标卡进一步闭合 950 RegBase MicroAPI 路线，与 A2/A3 Level-0 实现分开。
-<!-- cannbot:related:end -->

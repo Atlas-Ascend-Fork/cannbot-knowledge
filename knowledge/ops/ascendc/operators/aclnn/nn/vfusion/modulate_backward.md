@@ -594,9 +594,3 @@ computegradScaleLocal_ = gradScaleLocalQueue_.DeQue<float>();
 | 同步 | Queue + PIPE_ALL/PIPE_V | Mul/Add 与覆盖顺序 | `Process/ComputeGradients` |
 | 精度与尾块 | FP32 Kernel、D/L 双 tail | d_size 有效 lane、last L tile写归约 | `CalculateOffsets/CopyOutScaleShift` |
 | 失败边界 | empty 快速返回、无 key fallback | optional null 风险、窄化缺口 | `CheckMaxDimension/CopyInScale/modulate_grad` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Modulate A2/A3 ACLNN 算子知识](modulate.md)（`related`）：“｜ 计算语义 ｜ 对 `［B,L,D］` 的 `grad_output`：`grad_input=grad_output*scale［:,None,:］`（无 scale 时源码复制 `grad_output`）；可选地沿 `L` 归约得到 `grad_scale=sum(input*grad_output)`、`grad_shift=sum(grad_output)` ｜”与“｜ 计算语义 ｜ `out［b,l,d］ = self［b,l,d］ * (1 + scale［b,d］) + shift［b,d］`；缺少 scale 时省略乘法，缺少 shift 时省略加法 ｜”是双方正文中的具体合同。反向卡给出 grad_input、grad_scale、grad_shift 的梯度合同，前向卡给出被求导的广播调制公式；两端构成同一训练算子链的前向与反向语义。
-<!-- cannbot:related:end -->

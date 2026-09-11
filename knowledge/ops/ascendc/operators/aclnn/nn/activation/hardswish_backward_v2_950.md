@@ -439,9 +439,4 @@ DataCopyPad(this->outGm[outputOffset], this->selfTensor, dataCopyParams);
 | 精度与尾块 | FP32 中间、BF16 RINT、DataCopyPad tail | 阈值严格性、常量、round、n | 220 Compute/CopyOut |
 | 失败边界 | API/Tiling 终点明确 | 不得虚构 950 fallback | CheckParams; RunBigKernelTiling |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GET_TILING_DATA](../../../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data.md)（`related`）：“GET_TILING_DATA(tilingData, tiling);”；“获取算子 kernel 入口函数传入的 Tiling 信息，填入注册的 TilingData 结构体。以宏展开方式编译。”。950 operator entry 实际调用该宏把 Host 生成的 HardSwishGradV2TilingData 解析到 Device，API 定义其宏展开合同。
-- [HardswishBackwardV2 A2/A3 ACLNN 算子知识](hardswish_backward_v2.md)（`same_topic`）：“｜ Kernel/资源 ｜ 通用 entry 的 220 分支 ｜ 同左 ｜ `_apt` entry 直接复用同一 220 body；U/P 取 950 平台值 ｜”；“｜ Kernel/资源 ｜ `hard_swish_grad_v2.cpp` 的 220 分支 ｜ 同左 ｜ `_apt` entry 直接实例化相同 `HardSwishGradV2220` body ｜”。两卡是同一 HardswishBackwardV2 ACLNN 语义和同一 220 body 的平台拆分，差别在 entry、binary config 与平台资源值。
-<!-- cannbot:related:end -->
+- [GET_TILING_DATA](../../../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data.md)

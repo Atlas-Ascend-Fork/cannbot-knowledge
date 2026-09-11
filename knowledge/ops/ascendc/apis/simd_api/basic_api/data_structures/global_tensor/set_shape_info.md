@@ -73,10 +73,3 @@ AscendC::GlobalTensor<float> tglobal;
 uint32_t shapeArray[] = {16, 1024};
 tglobal.SetShapeInfo(AscendC::ShapeInfo(2, shapeArray, AscendC::DataFormat::ND));
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetShapeInfo](get_shape_info.md)（`related`）：设置GlobalTensor的shape信息。；获取GlobalTensor的shape信息。注意：Shape信息没有默认值，只有通过SetShapeInfo设置过Shape信息后，才可以调用该接口获取正确的ShapeInfo。。GetShapeInfo 明确依赖此前由 SetShapeInfo 写入的 shape 元数据，两接口形成同一 GlobalTensor 属性的写后读契约。
-<!-- cannbot:related:end -->

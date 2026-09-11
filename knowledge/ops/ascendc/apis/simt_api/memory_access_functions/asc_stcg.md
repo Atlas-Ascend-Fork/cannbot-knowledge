@@ -241,10 +241,3 @@ inline void asc_stcg(half2* address, half2 val)
         asc_stcg(dst + idx, val[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DCacheAccess](../../../guides/operator_practice/simt_operator_optimization/memory_access/dcache_access.md)（`explains`）：存储数据到 Global Memory 并缓存到 L2 Cache，但不缓存至 Data Cache。适用于写入后不需要被当前核再次读取的场景，避免污染 Data Cache。；asc_stcg：存储数据时直接写入Global Memory，不经过DCache缓存，适用于写入GM后不会再从DCache读取的数据，避免输出数据占用DCache空间影响热点数据的缓存。；优化指南把焦点接口的缓存语义落到避免输出污染 DCache 的选型场景。
-<!-- cannbot:related:end -->

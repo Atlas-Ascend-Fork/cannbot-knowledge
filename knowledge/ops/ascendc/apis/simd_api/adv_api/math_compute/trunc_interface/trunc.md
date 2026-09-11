@@ -122,11 +122,3 @@ AscendC::Trunc<srcType, false>(dstLocal, srcLocal);
 输入数据(srcLocal): [9.33 -8.07 -6.38 8.45 5.83 6.46 4.18 1.93]
 输出数据(dstLocal): [9.   -8.   -6.   8.   5.   6.   4.   1.  ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTruncMaxMinTmpSize](get_trunc_max_min_tmp_size.md)（`same_topic`）：“临时空间大小通过GetTruncMaxMinTmpSize获取”与“host侧Tiling接口，用于获取Trunc接口所需的最大和最小临时空间大小”明确了 Trunc 的 Host Tiling 到 Kernel 临时空间调用链。
-- [GetTruncTmpBufferFactorSize](get_trunc_tmp_buffer_factor_size.md)（`same_topic`）：获取Trunc接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；按元素做浮点数截断，即向零取整操作（Trunc(3.9)=3, Trunc(-3.9)=-3）。模板参数T支持half/float。；factor 查询依据固定空间推导 Trunc 单次 calCount，计算卡以该 calCount 对 half 或 float 执行向零取整。
-<!-- cannbot:related:end -->

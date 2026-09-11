@@ -567,9 +567,3 @@ key 不只是算法编号，而把 full-load、ping-pong、M/HW输出映射、gr
 | 同步 | K1/K2间同stream；K2内部cross-core/MTE协议 | producer完整完成后consumer；ping/pong flag ID | executor, Conv helpers |
 | 精度与尾块 | K1 FP32插值回T；K2按dtype/Fixpipe；32/64索引分流 | OOB=0、mask最后乘、singleCore tail | offsets body, Conv2dBase |
 | 失败边界 | K1 infer/tiling和K2 tuple fail closed | 不回退到A2/A3单kernel；保留wrapper返回值缺口 | Host return paths |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DeformableConv2d A2/A3 ACLNN 算子知识](deformable_conv2d.md)（`same_topic`）：offset 给出每个卷积采样点的 x/y 偏移与 mask；四邻域双线性插值得到 `deformOut`，再执行分组卷积并可选加 bias；AIV SIMT 计算 offset+mask 双线性采样，再以采样结果为输入执行 stride=(kH,kW) 的 `Conv2DV2`，可在卷积 Fixpipe 中加 bias。两端闭合相同 DeformableConv2d 的偏移加 mask 双线性采样再卷积语义，分别记录 A2/A3 与 950 的执行图，联合阅读可比较平台 route 与中间 deformOut 的物化方式。
-<!-- cannbot:related:end -->

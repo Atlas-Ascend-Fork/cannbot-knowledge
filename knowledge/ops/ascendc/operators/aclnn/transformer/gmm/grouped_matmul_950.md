@@ -600,11 +600,3 @@ AIC 用 PIPE_FIX 将 L0C tile 放到共享 VECIN UB 后向 AIV 发两个间隔 `
 | 同步 | ASWT Cube event、MIX/controller flag | producer/consumer/slot 回收顺序 | GQmmMixRegbaseKernel::Process |
 | 精度与尾块 | Cube accumulate→scale/dequant→cast | quant mode、round、main/tail block 不可混用 | GMMWeightQuantResplitController::Process |
 | 失败边界 | checker 或 key 无 body即失败 | 不得臆造 fallback 或跨平台复用 POD | SetTilingKey/grouped_matmul |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GMM A8W4 561000 缺 binary entry 无 JIT 回退](../../../../runbooks/compilation/gmm_a8w4_561000_binary_entry_jit.md)（`related`）：- weight-quant main/tail block、workspace extent 与 VecAntiQuantConfig 是一体化协议，不得独立修改。；即 runtime 按 tiling key `91308033` 在预编译 kernel binary 里查 kernel function entry，查不到（`BinaryGetFunctionByEntry failed, funcEntry=91308033` → `aclrtBinaryGetFunctionByEntry` 返回 107000 → op_executor 报 361001 → ACLNN 层最终抛 561000 "GMM launch aicore"）。。算子卡规定 weight-quant key 与资源协议必须闭合，runbook 展示新增 A8W4 key 未进入 binary 的具体 launch 失败。
-- [GroupedMatmul 950 Direct Invoke 算子知识](../../../direct/transformer/gmm/grouped_matmul_950.md)（`same_topic`）：对累积边界 `r_g=group_list［g］`，计算 `Y［r_{g-1}:r_g,:］ = X［r_{g-1}:r_g,:］ × W［g］ + bias［g］`；`transpose_weight=true` 时 `W［g］` 的存储 shape 为 `［N,K］`。；每组计算 Y_i=X_i×W_i+bias_i。。两端实现同一 950 GroupedMatmul 分组矩阵乘加核心，分别记录 Direct Invoke 的 Torch/launcher 契约与 ACLNN V5 的 TensorList、量化和 arch35 路线，联合阅读可完成前端与实现路线选型。
-- [GroupedMatmul A2/A3 ACLNN 算子知识](grouped_matmul.md)（`same_topic`）：“R-001 基础 Cube 与 transpose-X 空域辅助；R-002 A8W8 O16 MIX/固定轴特化；R-003 低比特量化/伪量化 CV 子实现族”给出焦点端事实；“R-001 非量化 ASWT；R-002 全量化 ASW/CV/CGMCT；R-003 weight-quant basic/resplit CV”给出候选端事实。两卡共享 aclnnGroupedMatmulV5 与分组矩阵乘核心合同，同时分别列出 A2/A3 与 950 的完整 Route 家族，直接支持平台路由和量化实现选型。
-<!-- cannbot:related:end -->

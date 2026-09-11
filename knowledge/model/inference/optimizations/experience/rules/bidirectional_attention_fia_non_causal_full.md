@@ -69,11 +69,3 @@ platforms:
 
 - `diff 事实`（clone `@8cd85a87af03`）：patch 0001/0002——快路径进入判据加 `and not self.is_dllm_model`（0001 加、0002 改由 `forward` 前置分流到 `forward_dllm`）；`forward_dllm` 内 `npu_fused_infer_attention_score` 参数为 `atten_mask=None`、`input_layout="TND"`、`block_size=self.page_size`。归因主语为本仓 LLaDA2.x-sglang 昇腾适配。
 - 溯源下探：[cann-recipes-infer-pr-284-feat-llada2-x-sglang-ascend](https://gitcode.com/cann/cann-recipes-infer/merge_requests/284)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FIA 的 actual_seq_lengths_kv 类型随后端不同：torch.ops.npu/npugraph_ex 要 host list、torchair/ge_graph 要 Tensor](../../../runbooks/runtime/fia_actual_seq_lengths_kv_backend_type.md)（`related`）：FIA 的 `actual_seq_lengths_kv` 变长实参类型随后端不同，见 ［fia-actual-seq-lengths-kv-backend-type］(../../../runbooks/runtime/fia_actual_seq_lengths_kv_backend_type.md)。；经 `torch.ops.npu`（eager 及 npugraph_ex 的 `torch.compile`/dynamo 路径）时，dynamo 按 `SymInt［］` schema 校验该入参——**传 Tensor 会失败**，必须传 host Python list。；双向注意力规则明确将变长实参类型交给该运行手册，运行手册给出 torch.ops.npu 和图后端的具体形态差异，可在部署同一 FIA 调用时避免 schema 失败。
-- [npu_fused_infer_attention_score (v1 / v2)](../../../concepts/kernels/fused_infer_attention_score.md)（`related`）：**把双向注意力改路由到 ［FIA］(../../../concepts/kernels/fused_infer_attention_score.md) 的「全（非因果）注意力」路径**：核心开关是 `atten_mask=None`（无 causal mask → 块内全连接）。；昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算：`softmax(QKᵀ/√d)·V`，支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。；规则卡选择 FIA 的非因果调用形态，算子卡定义该调用依赖的融合注意力对象及 Paged KVCache 和 Block-Table 能力，连接语义选路与算子实现合同。
-- [把注意力映射到昇腾 FIA：attention sink / 滑窗 / 全窗的 sparse_mode 选择 + 推理 FIA vs 训练 FA + GQA 头数](attention_to_fia_sparse_mode_sink_window.md)（`related`）：**把双向注意力改路由到 ［FIA］(../../../concepts/kernels/fused_infer_attention_score.md) 的「全（非因果）注意力」路径**：核心开关是 `atten_mask=None`（无 causal mask → 块内全连接）。；在昇腾上把各类注意力（含 attention sink、滑动窗口、全窗因果）落到融合算子时，优先整段映射到 ［FIA］(../../../concepts/kernels/fused_infer_attention_score.md)（`npu_fused_infer_attention_score` / `_v2`），用 `sparse_mode` + 入参承接各种注意力变体，而不是在 softmax 前后手拼逻辑。；第一张规则确定双向块的 atten_mask=None 分支，第二张规则确定滑窗、全窗和投机解码的 sparse_mode 分支，联合使用可完成注意力数学语义到 FIA 参数的互斥选路。
-<!-- cannbot:related:end -->

@@ -85,9 +85,3 @@ NEW:
 ## 坏实践
 
 - 为压同步开销直接删末尾 `MTE2_S`/`MTE3_S` 的 `SetFlag`/`WaitFlag`，靠 `aclrtSynchronizeStream` 兜底——会测到未完成搬运，带宽虚高。该路线标记为 `banned`。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FetchEventID](../../apis/simd_api/basic_api/resource_management/t_pipe/fetch_event_id.md)（`exemplifies`）：“- API 路径：`PipeBarrier<PIPE_MTE2｜PIPE_MTE3>`；`GetTPipePtr()->FetchEventID(HardEvent::MTE2_S｜MTE3_S)`；`SetFlag`/`WaitFlag`；Host 侧 `aclrtSynchronizeStream`。”与“根据HardEvent（硬件类型的同步事件）获取相应可用的TEventID，此接口不会申请TEventID，仅提供可用的TEventID。”提供双方正文证据。排障卡在 MTE2_S/MTE3_S 同步序列中实际调用 FetchEventID，API 卡说明它按 HardEvent 返回但不占用 TEventID，支撑该事件配对的资源判断。
-<!-- cannbot:related:end -->

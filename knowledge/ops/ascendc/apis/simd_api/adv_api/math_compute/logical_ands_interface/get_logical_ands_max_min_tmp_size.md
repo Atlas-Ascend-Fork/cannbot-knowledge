@@ -66,11 +66,3 @@ uint32_t minValue = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetLogicalAndsMaxMinTmpSize(plat, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogicalAndsTmpBufferFactorSize](get_logical_ands_tmp_buffer_factor_size.md)（`related`）：获取LogicalAnds接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；host侧Tiling接口，用于获取LogicalAnds接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；factor 接口按固定临时空间反推单次元素数，max/min 接口给出可选临时空间区间，二者共同闭合 Host Tiling 容量计算。
-- [LogicalAnds](logical_ands.md)（`related`）：输入矢量每个元素与标量进行逻辑与操作。当数据类型不是bool时，零视为False，非零视为True。；host侧Tiling接口，用于获取LogicalAnds接口所需的最大和最小临时空间大小。前者定义 Kernel 计算，后者给出为该接口准备临时空间的 Host Tiling 契约。
-<!-- cannbot:related:end -->

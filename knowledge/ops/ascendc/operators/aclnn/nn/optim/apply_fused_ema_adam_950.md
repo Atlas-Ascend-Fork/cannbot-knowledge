@@ -695,9 +695,3 @@ GM/Queue 保持 16-bit，进入 `inCastBuf` 后所有 Adam/EMA 算术用 FP32。
 | 同步 | MTE2↔V、V→MTE3、V→S event | 覆盖或 GM copy 前的等待关系 | `PipeVM2/PipeM2V/PipeVM3/ScalarPow` |
 | 精度与尾块 | 低精度 FP32 compute、RINT output；实际 count tail | 不可提前以 T 值继续校正；front/tail base 公式 | `FusedEmaAdamF16::Compute/Process` |
 | 失败边界 | dtype/shape/attr/core 获取失败即终止 | 不得补造 empty、非法 mode 或 unknown key fallback | Host checks + router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ApplyFusedEmaAdam A2/A3 ACLNN 算子知识](apply_fused_ema_adam.md)（`same_topic`）：“950 binary/CMake 接线闭合”与“A2/A3 binary/CMake 接线闭合”表明同一公开 ApplyFusedEmaAdam 合同分别闭合到 950 与 A2/A3 构建路线，可按目标平台进入对应 Host/Kernel 实现。
-<!-- cannbot:related:end -->

@@ -117,13 +117,3 @@ AscendC::WaitFlag<AscendC::HardEvent::MTE2_V>(EVENT_ID0);
 AscendC::Maxs(tmpTensor1, src0Local, inputVal, tileLength);
 AscendC::Mins(tmpTensor2, src0Local, inputVal, tileLength);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Duplicate 掩码向量化未修复 triu 大 shape 失败](../../../../../runbooks/performance/duplicate_triu_shape.md)（`exemplifies`）：用 per-tile `SetFlag`/`WaitFlag` 处理 ~131k tile 的 V→V 依赖——event 资源在大 tile 数下耗尽，应改 `PipeBarrier<PIPE_ALL>`。；- SetFlag和WaitFlag必须成对使用，且SetFlag和WaitFlag的参数必须完全一致（包括模板参数event和输入参数eventID）。如果不匹配，会引发timeout问题。例如，SetFlag(1)和WaitFlag(1)并不匹配，因为其模板参数event不同。运行手册给出该同步 API 在大量逐 tile 事件下资源耗尽的真实失败路线，补充接口页的配对合同与排障边界。
-- [AllocEventID](../../resource_management/t_pipe/alloc_event_id.md)（`related`）：- 在采用TPipe-TQue框架编程范式时，eventID需要通过AllocEventID或者FetchEventID来获取。；用于申请HardEvent（硬件类型同步事件）的TEventID，必须与ReleaseEventID搭配使用，调用该接口后，会占用申请的TEventID，直至调用ReleaseEventID释放。。同步卡要求从 TPipe 获取 eventID，AllocEventID 提供带申请和释放生命周期的 HardEvent ID。
-- [FetchEventID](../../resource_management/t_pipe/fetch_event_id.md)（`related`）：- 在采用TPipe-TQue框架编程范式时，eventID需要通过AllocEventID或者FetchEventID来获取。；根据HardEvent（硬件类型的同步事件）获取相应可用的TEventID，此接口不会申请TEventID，仅提供可用的TEventID。。同步卡列出 FetchEventID 获取 eventID，目标卡说明它只返回可用 ID 而不占用申请槽位。
-- [SetFlag/WaitFlag](set_flag_wait_flag.md)（`same_topic`）：如图1所示，SetFlag/WaitFlag接口用于核内多流水间的同步；同一核内不同流水线之间的同步指令，具有数据依赖的不同流水指令之间需要插入此同步。。两卡描述同一 SetFlag/WaitFlag 核内跨流水同步合同，ISASI 卡是该接口的平台版本。
-<!-- cannbot:related:end -->

@@ -659,9 +659,3 @@ BF16 路线不直接执行 BF16 `Maxs`：输入按 `maxCastDataCount=U/4` 分段
 | 同步 | Queue 协议与 `PIPE_V` barrier | 原地 BF16 子区的 cast/Maxs/cast 顺序 | `InnerComputer::ComputePerCast` |
 | 精度与尾块 | 原生 FP16/FP32/INT32；BF16 FP32+RINT | scalar conversion、实际 valid、DataCopyPad | `ProcessPlusInLoop`; `CopyIn/CopyOut` |
 | 失败边界 | 校验失败终止；未知 key 无输出 | 不虚构 fallback；不扩展 50 Tensor | `CheckOpInfo`; entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMaximumScalarList 950 ACLNN 算子知识](foreach_maximum_scalar_list_950.md)（`same_topic`）：｜ 计算语义 ｜ 对第 `i` 个 Tensor 的每个元素计算 `y_i［j］ = max(x_i［j］, scalars_i)` ｜；｜ 计算语义 ｜ `y_i［j］ = max(x_i［j］, scalars_i)`；浮点 SIMT helper 显式传播 NaN 并处理相等零，整数 helper 使用 `a>=b?a:b` ｜两页是相同 ACLNN TensorList 与 ScalarList 最大值算子的 A2/A3 Vector 和 950 SIMT 实现，平台迁移时可直接对照路线与边界。
-<!-- cannbot:related:end -->

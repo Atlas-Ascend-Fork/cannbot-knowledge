@@ -532,9 +532,3 @@ int64_t groupOffset = cStart % inC_conv_group;
 | 同步 | MTE2/V/MTE3 event + PIPE_V | event 分配/释放和覆盖顺序 | `InitEventId`, body methods |
 | 精度与尾块 | 坐标/权重/累加 FP32；T cast_rint | OOB=0、mask 后乘、align/gather tail | `CalculateWeight`, `ProcessZero` |
 | 失败边界 | launcher/Tiling/Matmul tiling fail closed | 不能用 950 分解路线替代 A2/A3 实现事实 | API/Tiling return paths |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DeformableConv2d 950 ACLNN 算子知识](deformable_conv2d_950.md)（`same_topic`）：offset 给出每个卷积采样点的 x/y 偏移与 mask；四邻域双线性插值得到 `deformOut`，再执行分组卷积并可选加 bias；AIV SIMT 计算 offset+mask 双线性采样，再以采样结果为输入执行 stride=(kH,kW) 的 `Conv2DV2`，可在卷积 Fixpipe 中加 bias。两端闭合相同 DeformableConv2d 的偏移加 mask 双线性采样再卷积语义，分别记录 A2/A3 与 950 的执行图，联合阅读可比较平台 route 与中间 deformOut 的物化方式。
-<!-- cannbot:related:end -->

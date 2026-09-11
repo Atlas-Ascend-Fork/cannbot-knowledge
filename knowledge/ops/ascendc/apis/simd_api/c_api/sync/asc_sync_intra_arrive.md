@@ -173,10 +173,3 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscSyncIntraWait](asc_sync_intra_wait.md)（`related`）：asc_sync_intra_arrive指令后其他Core对应的计数器增加1；执行asc_sync_intra_wait时如果对应的计数器数值为0则阻塞不执行；如果对应的计数器大于0，则计数器减一，同时后续指令开始执行。；asc_sync_intra_arrive指令后其他CORE对应的计数器增加1；执行asc_sync_intra_wait时如果对应的计数器数值为0则阻塞不执行；如果对应的计数器大于0，则计数器减一，同时后续指令开始执行。；arrive 负责增加另一 Core 的 sync_id 计数，wait 依据同一计数阻塞或消费一次信号，两端共同定义 block 内流水同步的成对调用协议。
-<!-- cannbot:related:end -->

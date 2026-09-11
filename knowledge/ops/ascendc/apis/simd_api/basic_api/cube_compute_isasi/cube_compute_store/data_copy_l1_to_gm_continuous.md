@@ -100,10 +100,3 @@ Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、hal
 ## 调用示例<a name="zh-cn_topic_0000002540198372_section088124295117"></a>
 
 L1到GM连续数据搬运的样例请参考[L1到GM搬运样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/06_compatibility_guide/data_copy_l1togm)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyL1ToGMHighdimSplit](data_copy_l1_to_gm_highdim_split.md)（`related`）：约束：不支持 950；支持 a2/a3、Kirin X90/9030。连续搬运场景推荐使用 DataCopy（L1ToGM 连续搬运）。；将矩阵从 L1 Buffer 连续搬运至 Global Memory，格式和内容保持不变。头文件 `basic_api/kernel_operator_data_copy_intf.h`。。高维切分卡明确连续场景改用 DataCopy，目标卡给出推荐接口的 L1 到 GM 数据合同。
-<!-- cannbot:related:end -->

@@ -36,9 +36,3 @@ platforms:
 ## Evidence
 
 - `superkernel_scope`（`FakeContextManager` 分支）、`tng.scope.super_kernel`、decode 层分别包 attn/moe 的 `with` 语句：diff 事实 @50e41b5b8220；「减头开销/提利用率」据 superkernel 语义 + 源描述、无独立 benchmark。溯源下探 [cann-recipes-infer-pr-205-feat-support-qwen3-moe-sglang](https://gitcode.com/cann/cann-recipes-infer/merge_requests/205)。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SuperKernel](../../../concepts/techniques/superkernel.md)（`related`）：TorchAir `ge_graph`（max-autotune）图模式下，**按用户声明的 scope 将计算子图整体融合为单个大 kernel** 的优化能力。；**融合粒度按功能段切**：decode 层内的 **attention 段与 MoE 段各包一个** `tng.scope.super_kernel` scope（scope 名带 layer id 区分），而非整层一锅端；配合 Grouped Matmul、Dequant-Swiglu 等融合算子一起提高 NPU 计算单元利用率。后者给出前者 scope 边界的可执行分段与门控写法。
-<!-- cannbot:related:end -->

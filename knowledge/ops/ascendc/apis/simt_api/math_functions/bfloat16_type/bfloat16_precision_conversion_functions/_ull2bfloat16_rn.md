@@ -82,10 +82,3 @@ inline bfloat16_t __ull2bfloat16_rn(const unsigned long long int x)
         dst[idx] = __ull2bfloat16_rn(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__ull2bfloat16_rna](_ull2bfloat16_rna.md)（`related`）：焦点卡写明“特殊值：0→0；257→256；259→260”，候选卡写明“特殊值：0→0；257→258；511→512”。同一转换对 257 给出不同结果，直接支撑 RINT 与 ROUND 的舍入选择及边界验证。
-<!-- cannbot:related:end -->

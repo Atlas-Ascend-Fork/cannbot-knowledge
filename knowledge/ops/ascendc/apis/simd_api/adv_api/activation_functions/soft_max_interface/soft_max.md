@@ -268,27 +268,7 @@ AscendC::SoftMax<T>(dstLocal, sumTempLocal, maxTempLocal, srcLocal, softmaxTilin
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SimpleSoftMax](simple_soft_max.md)（`related`）：- inSumTensor和inMaxTensor为输入，并且last轴长度必须固定32Byte。；- sumTensor和maxTensor为输出，并且last轴长度必须固定32Byte，非last轴大小需要和src以及dst保持一致。；SoftMax 负责计算并输出 sum 与 max，而 SimpleSoftMax 接收已经计算好的 sum 与 max 并省去 reduce，二者构成同一 Softmax 流程中可替换的完整计算与复用中间量路径。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 3 / 3 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [MaskedSoftmaxWithRelPosBias A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/masked_softmax_with_rel_pos_bias.md)（`related`）：算子声明的固定版本源码包含对 `SoftMax(...)` 的直接调用（第 244 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/masked_softmax_with_rel_pos_bias/op_kernel/masked_softmax_with_rel_pos_bias_B.h#L244)
-- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)（`related`）：算子声明的固定版本源码包含对 `SoftMax(...)` 的直接调用（第 1247 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress_attention_infer/op_kernel/nsa_compress_attention_infer.h#L1247)
-- [NsaSelectedAttention A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_selected_attention.md)（`related`）：算子声明的固定版本源码包含对 `SoftMax(...)` 的直接调用（第 555 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention/op_kernel/nsa_selected_attention.h#L555)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ScaledMaskedSoftmax A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/vfusion/scaled_masked_softmax.md)（`related`）：算子正文包含对 `SoftMax(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MaskedSoftmaxWithRelPosBias A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/masked_softmax_with_rel_pos_bias.md)
+- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)
+- [NsaSelectedAttention A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_selected_attention.md)
+- [ScaledMaskedSoftmax A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/vfusion/scaled_masked_softmax.md)

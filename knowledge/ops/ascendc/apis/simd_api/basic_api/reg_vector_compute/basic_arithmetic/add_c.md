@@ -102,10 +102,3 @@ static __simd_vf__ inline void AddVF(__ubuf__ T* dst0Addr, __ubuf__ T* dst1Addr,
     }
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscAddc](../../../c_api/reg_compute/reg_arith/asc_addc.md)（`same_topic`）：对srcReg0、srcReg1及输入进位按元素求和，结果写入dstReg和carry；该接口根据mask，对源操作数src0、src1及输入进位carry_src进行按元素求和操作，将结果写入目的操作数dst，同时将每个元素的进位结果写入carry（存放进位的掩码寄存器）。两卡描述同一带输入进位的寄存器逐元素加法；候选补充 uint32_t、mask 置零和完整进位输出合同。
-<!-- cannbot:related:end -->

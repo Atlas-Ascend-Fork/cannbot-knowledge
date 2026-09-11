@@ -599,8 +599,4 @@ __simt_callee__ inline void AtomicReduceSubWord(__gm__ uint32_t* base, uint64_t 
 | 精度与尾块 | 32 位原类型 max；half→float、int8/uint8→int32 后 cast-back；grid-stride tail | `a>b?a:b` 运算顺序、ACC 选择、`local<count`、index guard、`sliceSize==0` guard 不得改变 | `ReduceAcc`、`SimtComputeReduce`、`ScatterReduceSimt::{Init,Process}` |
 | 失败边界 | Host null/platform/POD/workspace 失败关闭；Device 越界 index 跳过 | 不得把越界跳过改写成已由 Host 报错；不支持 dtype/platform 无 Device fallback | `OP_CHECK_NULL_WITH_CONTEXT` sites、`SimtComputeReduce` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_atomic_cas](../../../../apis/simt_api/atomic_operations/asc_atomic_cas.md)（`related`）：“重复 `indices` 或并发命中同一元素时，CAS retry loop 把每次最大值更新串行化到该 GM 地址；固定源码没有给出重复索引的确定执行次序保证。”；“原子操作保证对同一地址的读改写过程具有原子性，但不保证多个线程之间的执行顺序。”。CAS API 合同直接解释 ScatterMax 重复索引的同步保证与非确定顺序边界。
-<!-- cannbot:related:end -->
+- [asc_atomic_cas](../../../../apis/simt_api/atomic_operations/asc_atomic_cas.md)

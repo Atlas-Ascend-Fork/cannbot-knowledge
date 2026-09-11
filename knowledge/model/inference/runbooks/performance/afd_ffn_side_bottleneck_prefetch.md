@@ -47,11 +47,3 @@ platforms:
 ## Evidence
 
 - FFN 侧层间/层内 `npu_prefetch`（router 分类器、experts w13/w2 权重）+ `gmm1/gmm2_prefetch_size` 换算：diff 事实 @72495f0ee845；「EVENT_WAIT 拖尾 + AFD 后 FFN 成瓶颈」为 doc 披露（作者 profiling 叙述、示意图，无独立复现数字），整体收益并入 AFD benchmark。溯源下探 [cann-recipes-infer-pr-249-feat-longcat-support-attention-ffn-disaggregation-afd](https://gitcode.com/cann/cann-recipes-infer/merge_requests/249)、[cann-recipes-infer-issue-99-rfc-longcat-flash-model-support-afd-feature](https://gitcode.com/cann/cann-recipes-infer/issues/99)。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Attention-FFN Disaggregation (AFD)](../../concepts/techniques/afd.md)（`related`）：相比把 Attention 与 MoE 部署在同一张卡 + 多流 + 控核方案，AFD 解除了双流共享 Cube/Vector 核数的约束，Attention 侧算子不再控核后耗时大幅下降。；解耦本身会**重排瓶颈**。AFD 让 Attention 侧解除多流控核后，MLA_Prolog/FA/MM/TBMM/QBMM 等算子耗时下降，于是 FFN 侧（Router/Dispatch/MoE-GMM/Combine）反而成为新瓶颈——一侧被优化后另一侧暴露为拖尾源，是解耦部署的通用陷阱。。前者给出 AFD 解除 Attention 控核的收益，后者承接该收益导致的 FFN 新瓶颈并提供 profiling 诊断与预取修法。
-- [Attention-FFN 解耦（AFD）部署：把 MoE/FFN 剥到独立 rank，Send/Recv over SDMA 解除同卡多流控核约束降 decode TPOT](../../optimizations/experience/cases/afd_attn_ffn_disaggregation.md)（`related`）：在 ［Attention-FFN 解耦（AFD）］(../../optimizations/experience/cases/afd_attn_ffn_disaggregation.md)部署下（Attention 侧解除控核、计算算子提速后），profiling 里 Attention 侧的 Recv 算子长时间收不到 FFN 侧发回的数据，**计算流上出现 EVENT_WAIT 间隙的拖尾**。；把 MoE/FFN 模块从整网剥离、与 Attention 分处不同 rank，两侧用点对点 Send/Recv 交互：。AFD 部署卡定义分离 rank 与 Send/Recv 主链，Runbook接续该链诊断解耦后 FFN 侧反成瓶颈的 EVENT_WAIT 拖尾。
-- [Weight Prefetch (npu_prefetch)](../../concepts/techniques/weight_prefetch.md)（`related`）：该优化提供网络 weight 预取功能，在算子计算的同时，**利用空闲的带宽，提前将一些访存 bound 算子的权重从 HBM 搬运到 L2 Cache 中**，提升算子性能。；对 FFN 侧访存 Bound 的算子（MoE-GMM、MatMul）做**通信间隙权重预取**（［`npu_prefetch`］(../../concepts/techniques/weight_prefetch.md)），用 Send/Recv 通信间隙填掉访存等待、降低 FFN 侧整体耗时、消除拖尾：后者给出了 AFD 后 FFN 侧出现新瓶颈时复用该预取机制的具体通信空窗。
-<!-- cannbot:related:end -->

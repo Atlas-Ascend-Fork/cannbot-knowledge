@@ -534,8 +534,4 @@ launch_same_stream_graph(x, values, indices, workspace, p, stream);
 
 本卡记录 Direct 交付实现的 Host selector、Device body、launch graph 与构建接线，并以固定官方 TopKV2/950 源码解释被复用的 arch35 body。streaming/sharded heap、64 位 SIMT 转置、安全 override 与动态窄化属于 Direct 实现扩展，不应归因于官方 TopKV2。Frontmatter 固定的是已恢复并核对的官方 Commit 文件；Direct 交付文件不在这些官方 sources 中，其内容哈希仍未记录，不能用官方文件身份核对替代 Direct 实现复核。复用前需取得相应交付快照；若更新 CANN 版本，需重新核验 compact POD、tmp 查询与 official body 的 NaN/稳定索引行为。
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_atomic_or](../../../../apis/simt_api/atomic_operations/asc_atomic_or.md)（`related`）：“对Unified Buffer或Global Memory上address的数值与指定数值val进行原子或（｜）操作，即将address数值或（｜）val的结果赋值到Unified Buffer或Global Memory上。”与“if (static_cast<int64_t>(narrowed) != value) asc_atomic_or(rangeFlag, 1U);”提供双方正文证据。TopK 的 int64 窄化检测在任一值不可表示时以 asc_atomic_or 原子置位共享 rangeFlag，API 卡给出该原子读改写合同，直接支撑多线程范围标记。
-<!-- cannbot:related:end -->
+- [asc_atomic_or](../../../../apis/simt_api/atomic_operations/asc_atomic_or.md)

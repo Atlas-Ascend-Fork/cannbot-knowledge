@@ -62,9 +62,3 @@ sigmoid 类算子的 grad 分支中，当 z 极负（z 远小于 -50）且 grad 
 - Ascend950PR/arch35 实测；grad 量级正常时 `Maxs(-50)` 残差影响可忽略，移除与否无差。
 - 与公式顺序变更（aten `grad*exp(z)/(1+exp(z))`）同批应用，独立信号未隔离；若仅移除 clamp 而不改公式顺序，改善量可能不同。
 - 非 arch35 平台（a2/a3）未验证，推断可迁移。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [exp 下界 clamp -50 破坏 sigmoid 大负数下溢](exp_clamp_50_sigmoid.md)（`same_topic`）：根因是 `Maxs(bx, -50.0)` 下限 clamp 阻止了 exp(z) 的自然下溢。；最小复现：`z = beta*self = -1105`，`gradOutput = 3.4e38`（接近 FLT_MAX）。golden = `gradOutput * sigmoid(z) = 3.4e38 * 0 = 0`（sigmoid 在大负数处下溢为 0）。NPU 输出 `6.56e16`，正好等于 `gradOutput × exp(-50) ≈ 3.4e38 × 1.9e-22 ≈ 6.5e16`——即 exp 输入被 clamp 到 -50 后，`exp(-50)≈1.9e-22` 本应下溢为 0，却被人为抬高，再乘大 gradOutput 放大成可见误差。。两张 Runbook 都定位 SoftplusV2Grad 的 Maxs -50 下限 clamp 阻断负大 z 的 exp 自然下溢，并以大梯度把 exp(-50) 残留放大为可见误差，核心故障机制、修复方向和验证信号一致。
-<!-- cannbot:related:end -->

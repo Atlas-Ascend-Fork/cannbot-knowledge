@@ -778,9 +778,3 @@ Tiling reservation = 16 MiB + 2*maxCoreNum*4 bytes
 | 同步 | block 内 barrier、跨核 `SyncAll` 后 block0归约 | 不得在所有 partial 写完前读取或复用 workspace | `SimtComputeBinaryReduction`; `Process` |
 | 精度与尾块 | NCHW gather、FP32归约、最终 CAST_EVEN可复用 | ignore/target guard、地址公式、树形顺序、valid byte tail不可改变 | `SimtComputeNLLLoss4dNone/Sum/Mean`; `CalBinaryReductionInterBlock` |
 | 失败边界 | Host拒绝 null/dtype/shape/reduction；Device断言标签 | 不把 A2/A3缺失实现、无weight、普通/Backward变体补成本卡路线 | `CheckParams`; `TargetCheck`; 950 CMake/config |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NLLLoss2dBackward 950 ACLNN 算子知识](nll_loss2d_backward_950.md)（`related`）：｜ 项目 ｜ 内容 ｜ ｜---｜---｜ ｜ 实际入口 ｜ 公开两段式 `aclnnNLLLoss2dBackwardGetWorkspaceSize` / `aclnnNLLLoss2dBackward`，固定仓未出现更高版本后缀 ｜ ｜ 计算语义 ｜ 对 `self［N,C,H,W］` 求 NLLLoss 的输入梯度；每个 `(n,h,w)` 只在 `target［n,h,w］` 指定的类别位置写负梯度，其余类别为 0，`ignoreIndex` 位置全为 0 ｜ ｜ 输入输出 ｜ `self/gradOutput/weight/totalWeight/out` 为 FLOAT/FLOAT16/BFLOAT16 且同 dtype；`target` 为 INT32/INT64/UINT8；ND；`out.shape=self.shape` ｜ ｜ 执行类型 ｜ 算子自有核心为单 Kernel `SIMT`：AIV block 内用 `asc_vf_call` 启动最多 1024 个 SIMT 线程；无 Cube/AIC 或 `MIX_CV` 节点 ｜ ｜ Kernel 路线 ｜ R-001 `none`，R-002 `mean`，R-003 `sum`；27 个 binary descriptor 归入三条 reduction Route，运行时 TilingKey 均为 0 ｜ ｜ 核心资源 ｜ GM 输入/输出；每核三个 4 B `TBuf<VECCALC>`；SIMT 线程；Tiling 为核心节点请求 16 MiB workspace，并把 local memory 设为平台 UB−32 KiB ｜ ｜ 来源闭包 ｜ `source_closed`：公开 ACLNN→950 L0 AICore selector→arch35 Host/Tiling/POD→单 SIMT entry/body→ascend950 binary/CMake 已闭合；同 dtype `Cast` 调用、`Contiguous/ViewCopy` 与 executor 聚合是明确框架边界 ｜ ｜ 验证状态 ｜ 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 ｜；令扁平输出索引 `i=n*H*W+h*W+w`，标签 `t_i=target［n,h,w］`。当 `t_i==ignoreIndex` 时，`l_i=0` 且权重贡献 `q_i=0`；否则 Kernel 先断言 `0<=t_i<C`，取 `q_i=weight［t_i］`，并计算 `l_i=-q_i*self［n,t_i,h,w］`。公开入口强制 `weight` 非空，因此低层的无权重分支在本入口中不活跃。。前向卡定义 target 指定类别与 ignoreIndex 的损失，反向卡沿同一位置和权重合同产生唯一非零输入梯度。
-<!-- cannbot:related:end -->

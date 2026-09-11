@@ -151,10 +151,3 @@ __simt_vf__ inline void floor_mod_simt_contiguous(
 | 场景3 | SIMT连续访问UB | 64 | 463.179 | 301.474 | 0.668 | 437.055 | 0.968 |
 
 相比场景1，场景3使用SIMT直接表达floor\_mod中的分支判断逻辑，aiv\_vec\_time从509.987μs降低至301.474μs，下降约40.9%，说明Vector计算侧耗时明显降低。端到端Task Duration从525.736μs降低至463.179μs，下降约11.9%，场景3的aiv\_mte2\_ratio达到0.968，主要瓶颈已转为MTE2 Bound，即算子性能的最大影响转变为GM到UB的搬运效率。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [同一Warp内避免分支跳转](../../simt_operator_optimization/control_flow/avoid_warp_branch.md)（`related`）：“此时，可以考虑采用SIMT方式，因为SIMT编程更为灵活，更适合处理分支判断的场景”；“当同一Warp内不同线程的跳转目标不一致时线程执行路径产生分歧，引起分支发散（Warp Divergence）”。前者给 SIMD→SIMT 选型，后者给迁移后必须控制的 Warp 分支风险。
-<!-- cannbot:related:end -->

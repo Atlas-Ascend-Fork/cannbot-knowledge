@@ -97,11 +97,3 @@ __sk__ __vector__ void add_custom_sk(const AddCustomArgs *args, sk::SkSystemArgs
 // cap取值4表示配置disable_dcci
 SK_BIND(add_custom, 4, add_custom_sk<0>, add_custom_sk<1>, add_custom_sk<2>, add_custom_sk<3>);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SuperKernel原理介绍](../../../guides/programming_guide/advanced_programming/super_kernel/principles.md)（`explains`）：核函数直调算子额外适配说明：对于使用>>方式开发的Ascend C算子，进入SuperKernel前需要进行的额外适配工作。；本接口为算子SuperKernel场景提供绑定原核函数和SK子函数的能力。核函数直调算子的完整适配方法请参见核函数直调算子额外适配说明。；焦点指向的直调适配由 SK_BIND 提供原 Kernel 与 SK 子函数绑定合同。
-- [核函数直调算子额外适配说明](../../../guides/programming_guide/advanced_programming/super_kernel/kernel_direct_call_adaptation.md)（`explains`）：本接口为算子SuperKernel场景提供绑定原核函数和SK子函数的能力。核函数直调算子的完整适配方法请参见核函数直调算子额外适配说明。；- 需要与普通Kernel函数通过SK_BIND宏绑定。。API 卡定义 SK_BIND 的绑定能力并指向直调适配说明，Guide 把该宏列为 SuperKernel 入口与普通 Kernel 配套的必需步骤。
-<!-- cannbot:related:end -->

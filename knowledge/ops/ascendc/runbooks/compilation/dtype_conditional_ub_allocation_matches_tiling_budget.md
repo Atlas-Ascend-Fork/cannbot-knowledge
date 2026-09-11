@@ -143,10 +143,3 @@ SPLIT_D 的 fp32 计算直接对 `xLocal` 做平方，不使用 `xFp32Buf_`；�
 ## 误诊
 
 如果缩小 `ubFactor` 后故障位置不变，或错误日志指向 GM 地址、尾块 DMA、队列同步，应检查地址和生命周期，不要把所有 ACL 507035 都归为容量溢出。只有“模板切换相关 + 实际分配可算出超过 UB + 移除无用缓冲后闭环”才支持本根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [507035 — Host 按逻辑行宽预算导致 UB 溢出](ub_budget_uses_aligned_physical_width_507035.md)（`related`）：“kernel 的 dtype 条件分配与 tiling 的逐元素预算不一致”定位多分配的转换 TBuf，“Host 与 Device 共用同一对齐公式”处理物理 stride 低估，二者共同要求 Host 预算精确复刻 Device live-buffer。
-- [FP16 double-buffer UB 预算漏乘 2 致 VEC_ERROR](fp16_double_buffer_ub_budget_queue_vs_tbuf_multiplier.md)（`related`）：“kernel 的 dtype 条件分配与 tiling 的逐元素预算不一致”要求按 dtype 枚举 live-buffer，“Queue 部分受 double buffer 翻倍、Cast(TBuf) 部分不翻倍”进一步给出混合 Queue/TBuf 时各自倍数的核算法。
-<!-- cannbot:related:end -->

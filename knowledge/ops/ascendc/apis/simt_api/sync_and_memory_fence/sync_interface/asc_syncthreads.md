@@ -133,20 +133,5 @@ inline void asc_syncthreads()
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [同步机制（AI Core SIMT编程）](../../../../guides/programming_guide/programming_model/ai_core_simt_programming/synchronization.md)（`explains`）：“- 需要Thread Block内所有Thread完成某一阶段后再继续执行时，使用同步屏障。”与“asc_syncthreads接口用于阻塞当前线程块内所有线程，直到所有线程都执行到该同步点位置。”提供双方正文证据。编程指南给出 Thread Block 阶段同步的选择规则，AscSyncthreads 卡定义阻塞直到全员到达的具体屏障语义，指南解释该接口何时使用。
-- [AscThreadfence](../memory_fence/asc_threadfence.md)（`related`）：“不阻塞线程，仅约束可见性顺序”说明 asc_threadfence 不是执行会合点，“阻塞当前线程块内所有线程，直到所有线程都执行到该同步点位置”则提供块内会合，二者共同决定共享数据发布协议。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Sort 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/sort_950.md)（`related`）：算子声明的固定版本源码包含对 `asc_syncthreads(...)` 的直接调用（第 1453 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/sort/op_kernel/arch35/sort_radix_sort_more_core.h#L1453)
-- [NLLLoss2d 950 ACLNN 算子知识](../../../../operators/aclnn/nn/loss/nll_loss2d_950.md)（`related`）：算子声明的固定版本源码包含对 `asc_syncthreads(...)` 的直接调用（第 65 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/arch35/nll_loss_simt.h#L65)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Sort 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/sort_950.md)
+- [NLLLoss2d 950 ACLNN 算子知识](../../../../operators/aclnn/nn/loss/nll_loss2d_950.md)

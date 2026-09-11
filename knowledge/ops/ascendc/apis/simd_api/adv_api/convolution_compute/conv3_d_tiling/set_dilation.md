@@ -52,10 +52,3 @@ Conv3dTilingApi::Conv3dTiling conv3dApiTiling(ascendcPlatform);
 conv3dApiTiling.SetDilation(dilationD, dilationH, dilationW);
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Conv3D Tiling使用说明](conv3_d_tiling_usage.md)（`related`）：接口卡给出“函数原型：void SetDilation(int64_t dilationD, int64_t dilationH, int64_t dilationW)”；使用说明要求“如果存在Padding、Stride、Dilation参数，通过SetPadding、SetStride、SetDilation接口进行相关设置。”，把三个 dilation 维度参数放入 Conv3D Tiling 的调用顺序。
-<!-- cannbot:related:end -->

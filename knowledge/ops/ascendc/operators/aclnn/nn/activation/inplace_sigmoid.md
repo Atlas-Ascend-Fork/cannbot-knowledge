@@ -578,10 +578,3 @@ __aicore__ inline void ComputeBase(int64_t curTileLength)
 | 同步 | 绑定 Queue 负责 GM/VECIN/VECOUT/GM 所有权转换 | `FreeTensor` 前不能覆盖 LocalTensor | `CopyInBase/ComputeBase/CopyOutBase` |
 | 精度与尾块 | 16 位路线 FP32 算术后 `CAST_RINT`；全部 API使用实际 `n` | Cast顺序、round mode、tail blockLen 不得改变 | `KernelSigmoidUpcast::ComputeBase`、`ProcessBase` |
 | 失败边界 | 空域成功短路；非法 dtype/rank 失败；launcher失败阻断 ViewCopy | 不得把 A3/950 文档声明当成候选实现平台注册 | `CheckInplaceParams`、`SigmoidTilingFunc`、`l0op::Sigmoid` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reciprocal 低精度致 sigmoid 比对失败](../../../../runbooks/precision/reciprocal_sigmoid.md)（`related`）：“｜ `tmpBufFp32_` ｜ 独立 TBuf ｜ `L*4` bytes ｜ FLOAT32 ｜ `Duplicate(1)` ｜ `Div` ｜ Kernel 实例 ｜ 每 tile 覆盖 ｜”；“判定：对照实验前后 `verify_result.py` 的 `Max diff` 从 ~1e-3 量级降到 0，即单点归因到 `Reciprocal` 的低精度近似（同一 kernel 的 `Muls/Exp/Adds` 未改）。”。焦点实现采用 Duplicate+Div，目标 runbook 用同一替换的前后对照验证其避免 Reciprocal 精度误差。
-- [Sigmoid A2 ACLNN 算子知识](sigmoid.md)（`related`）：“核心 Sigmoid Kernel 写 executor 分配的连续中间张量，并不直接覆盖输入；随后 `ViewCopy(tmp, selfRef)` 才完成 ACLNN 的原地语义。”；“｜ 计算语义 ｜ 逐元素 `y = 1 / (1 + exp(-x))`。 ｜”。InplaceSigmoid 复用同一 Sigmoid 计算节点，并在其后增加 ViewCopy 才形成原地 API 语义。
-<!-- cannbot:related:end -->

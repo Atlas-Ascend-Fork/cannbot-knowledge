@@ -878,9 +878,3 @@ for (auto r = 0; r < baseInfoOp.row; ++r) {
 | 同步 | Queue 生命周期、SplitAll events、zeroBuf V→MTE3 | ping/pong 复用前必须等待前次 MTE3 | `SplitAll::ProcessPerLoop`, `SplitRowAndCol::Process` |
 | 精度与尾块 | byte-exact搬运、零 bit、mask Select | key 必须与 B 对应；保留 high/row/col/UB tail | `ComputeTilingKey`, 各 `CopyOut` |
 | 失败边界 | platform/UB/core/POD capacity 检查可复用 | unknown key、窄化与乘法溢出没有源码 fallback，不能推测补齐 | `TilingPrepare4Trilu`, `PostTiling`, `triangulatorEntry` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceTril 950 ACLNN 算子知识](inplace_tril_950.md)（`related`）：｜ 计算语义 ｜ 对每个最后二维平面，`j <= i + diagonal` 时 `out［...,i,j］=self［...,i,j］`，否则写零 ｜；｜ 计算语义 ｜ 对最后两维的每个 `(i,j)`，当 `j <= i + diagonal` 时保留输入，否则写零；结果经 `ViewCopy` 写回 `selfRef`。 ｜。两卡共享下三角 diagonal 谓词和同一 AIV 路由族，目标卡补齐原地提交由临时结果经 ViewCopy 写回 selfRef 的生命周期。
-<!-- cannbot:related:end -->

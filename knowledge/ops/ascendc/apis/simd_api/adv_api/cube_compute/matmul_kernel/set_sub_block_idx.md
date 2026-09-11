@@ -64,10 +64,3 @@ typedef AscendC::MatmulType<AscendC::TPosition::GM, CubeFormat::ND, float> biasT
 Matmul<aType, bType, cType, biasType, CFG_NORM> mm;
 mm.SetSubBlockIdx(0); // 子核ID设置为0
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSubBlockIdx](get_sub_block_idx.md)（`related`）：若在算子程序中调用SetSubBlockIdx()后， GetSubBlockIdx()接口将返回由SetSubBlockIdx接口设置的ID值；设置当前AIV核的ID。前者明确读取值由后者写入，二者共同构成 AIV 子核 ID 的设置与读取契约。
-<!-- cannbot:related:end -->

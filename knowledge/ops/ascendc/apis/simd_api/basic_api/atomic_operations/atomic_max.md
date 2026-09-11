@@ -89,16 +89,4 @@ AscendC::DataCopy(yLocal, yGlobal, DATA_SIZE);
 完整样例请参考[scalar_atomic_operations样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/06_atomic/scalar_atomic_operations)。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [Scatter 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/scatter_950.md)（`related`）：算子正文包含对 `AtomicMax(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Scatter 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/scatter_950.md)

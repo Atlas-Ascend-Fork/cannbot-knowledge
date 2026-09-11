@@ -72,9 +72,3 @@ grep -n "fp16 reduce\|launch_acc\|acc.to\|dataC.to" scatter.asc |
 ## 失效边界
 
 如果共享库并非运行时实际加载的 artifact，或符号被完全内部化，先锁定实际加载路径再解释 probe。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [kernel 源码改动未生效因 binary 缓存](../compilation/kernel_binary_cache_printf_hash_toggle.md)（`related`）：当 source 分支存在而目标专用 symbol 不在实际共享库中时，这个二进制至少没有提供按该名称期望的 specialization。；在 Ascend950 上调试 ApplyCamePart2 Branch-0 fp32 Kernel 时，多次出现「改了 kernel 源码、`build.sh` 重编成功、`run.sh` 重跑，但输出与改动前**逐字节一致**」的现象。；目标 runbook 提供源码已改但实际加载制品仍旧时的另一条 artifact 新鲜度探针。
-<!-- cannbot:related:end -->

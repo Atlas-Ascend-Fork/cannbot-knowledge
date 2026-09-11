@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetFloorTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Floor](floor.md)（`related`）：“获取Floor接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。”提供固定 UB 预算反推 Floor 单次元素数的公式参数；“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetFloorMaxMinTmpSize获取。”说明 Floor 的 sharedTmpBuffer 调用入口。二者组合用于先按可用空间定 tile，再把同一预算传入 kernel 重载。
-<!-- cannbot:related:end -->

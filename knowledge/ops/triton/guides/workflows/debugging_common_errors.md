@@ -75,15 +75,3 @@ platforms: [a2, a3, '950']
 | SIMT | 不支持 | 支持（减少分支发散影响） |
 | 跨核同步 | FFTS | Reg-based SetFlag/WaitFlag（更轻量，Triton API 不变） |
 | bishengir 目标 | `--target=Ascend910B3` | `--target=Ascend910_95` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [调试、稳定性与 API 规范](./debugging.md)（`related`）：“调试、稳定性与 API 规范速查”
-- [错误码参考（报错信息对照表）](./error_codes.md)（`related`）：“错误码参考”
-- [调试环境变量完整参考](./debug_env_variables.md)（`related`）：“环境变量完整参考”
-- [数据类型支持矩阵（Data Type Support Matrix）](../../apis/data_type_matrix.md)（`related`）：“E3/E12 类型不支持的对照表”
-- [Triton API 在 Ascend NPU 上的支持矩阵](../../apis/api_support_matrix.md)（`related`）：“操作不支持时的 API 支持核对”
-- [NPU 分块策略（Tiling）](../../optimizations/techniques/tiling_strategy.md)（`related`）：“E1 UB 溢出的分块调整策略”
-
-<!-- cannbot:related:end -->

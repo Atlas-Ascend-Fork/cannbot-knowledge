@@ -93,11 +93,3 @@ mm.SetTensorA(gmA);
 mm.SetTensorB(gmB);
 mm.IterateAll();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulCallBackFunc](matmul_call_back_func.md)（`related`）：“用户可配置3个函数指针”定义回调入口，“设置需要的计算数据或在GM上存储的数据地址等信息，用于回调函数使用”说明回调依赖自定义运行数据时如何注入。
-- [MatmulTemplateParams](matmul_template_params.md)（`related`）：“class MM_CB = MatmulCallBackFunc<nullptr, nullptr, nullptr>”在创建 Matmul 对象时声明回调模板参数；“启用模板参数［MatmulCallBackFunc］(matmul_template_params.md#matmul-callback-func)（自定义回调函数）时”说明 SetSelfDefineData 是向该回调注入计算数据或 GM 地址的运行期入口。
-<!-- cannbot:related:end -->

@@ -127,11 +127,3 @@ meanParams.inner = inner;
                      [4 5 6 0 0 0 0 0 0 0 0 0 0 0 0 0]]
 输出数据(dstLocal): [2 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetMeanMaxMinTmpSize](get_mean_max_min_tmp_size.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetMeanMaxMinTmpSize获取。；host侧Tiling接口，用于获取Mean接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。Mean 明确要求用该 Host 查询选择临时空间，二者闭合执行前容量规划。
-- [GetMeanTmpBufferFactorSize](get_mean_tmp_buffer_factor_size.md)（`related`）：获取Mean接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetMeanMaxMinTmpSize获取。。factor 查询把固定缓冲换算为 Mean 单次元素数，Mean 接口选择显式缓冲或框架申请，闭合 Kernel 侧空间规划。
-<!-- cannbot:related:end -->

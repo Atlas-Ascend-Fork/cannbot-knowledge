@@ -64,10 +64,3 @@ OpAICoreConfig类，请参考[OpAICoreConfig](index.md)。
 
 请参考[SetCheckSupport](../op_ai_core_def/set_check_support.md)节调用示例。
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetCheckSupport](../op_ai_core_def/set_check_support.md)（`related`）：SetCheckSupport 卡要求“需要将NeedCheckSupportFlag参数配置为true”；NeedCheckSupportFlag 卡说明“框架会调用通过SetCheckSupport设置的算子参数校验函数”。回调注册和调用开关是融合阶段支持性校验的共同条件。
-<!-- cannbot:related:end -->

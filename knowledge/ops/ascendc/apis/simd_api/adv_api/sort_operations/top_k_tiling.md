@@ -304,10 +304,3 @@ TopKTilingFunc返回值为true/false，true表示成功拿到TopK的Tiling各项
         op.Process();
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TopK](top_k.md)（`related`）：提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。Tiling参数通过TopK Tiling获取。；host侧Tiling接口，用于获取TopK kernel计算所需的Tiling参数，分两步：通过GetTopKMaxMinTmpSize获取最大和最小临时空间大小；通过GetTopKNDTilingInfo获取kernel侧所需tiling参数。计算接口明确依赖后者生成临时空间与 TopKParams，形成 Host Tiling 到 Kernel 调用的直接契约。
-<!-- cannbot:related:end -->

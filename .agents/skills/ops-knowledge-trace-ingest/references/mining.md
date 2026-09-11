@@ -17,7 +17,7 @@
 0. **细粒度（一卡一根因一形态，宁多勿并）**：每条候选只证明一个独立结论，并标 `knowledge_form`。修复、诊断、失败路线、已验证模式分别满足各自合同；禁止把多个根因或不同形态混成“合集”。
 1. **严格按 schema 输出**：每条新候选草稿 = `runbooks-contract.md` §3 frontmatter + §8 正文，字段齐全（`type: "Runbook"`，`title` ≤40 个 Unicode 字符，`status: draft`，trace 摄入 `sources: []`，必填 `platforms`——trace 可定位平台时填词表取值，无法定位写 `[]`；**frontmatter 不设 `evidence`/`confidence`/`transfer_scope`/`quality_score`/`reproduce_count`/`kind`/`category`/`phenomenon`/`signal`/`solution_layer`/`source_family`/`knowledge_form`/`keywords`**——内部形态 `knowledge_form` 与检索词 `signal`/`phenomenon`/`solution_layer` 只进 manifest，不写卡 frontmatter）；溯源写入正文 `## 验证信号` 段首。
 2. **仅产候选，不落库**：绝不写 `knowledge/ops/ascendc/runbooks/`，只写暂存草稿（落 `.build/ops-knowledge-trace-ingest/`，gitignored）。
-3. **不对齐现有库**：不做去重、不查新颖性、不判定图谱关系——关系候选由 curator 输出，图谱 reviewer 独立判定。
+3. **不对齐现有库**：不做去重、不查新颖性、不判定图谱关系；curate 查重时可按需补充普通正文链接。
 4. **不升级内部 verified tier**：frontmatter 不设 `confidence`/`reproduce_count`；单条 trace 默认 `single_run`。内部 `verified` tier（跨轨迹复现 ≥2 + 证据等级 `tool_observed`/`artifact_verified` + 正文 `## 验证信号` 含上板实测）由 curator 门控判定并记录于 ledger/manifest，见 runbooks-contract §5。
 5. **职责隔离**：门禁子 agent 与主 agent 各司其职，门禁只做相关性判定（§相关性预检），不参与挖掘。
 6. **证据等级如实判定**：区分 `tool_observed`（工具调用/命令输出/报错记录）与 `agent_reported`（只有 agent 消息声称）。**仅 `agent_reported` 的结论不得写进「## 验证信号」**；每条候选在 manifest 的 `evidence_anchors` 记录内部结构化溯源锚点（`sequence/event_type/raw_source/raw_record/raw_sha256`，不写卡正文，见 §字段映射）。
@@ -286,7 +286,7 @@ Agent(references/subagents/ops-knowledge-trace-relevance-gate.md)
 | `platforms` | **必填**：**只填 trace 内实际验证过的平台**（芯片名/AddConfig soc 名/探测结果 + 上板或可运行实测），取 `governance/schemas/registries.yaml` 的当前注册值，不在 Skill 中复制枚举；miner 无法定位时 draft 写空表 `[]`（不伪造，缺省不代表通用平台），curate 必须 defer 而不能把空平台 draft 发布为 stable；推断可迁移的平台写入 `## 失效边界` 并标注“未验证，推断可迁移”（纪律 21） |
 | 迁移边界 | **不设 frontmatter 字段**：跨算子纪律默认生效（禁源算子常量/checkpoint/shape 列表/绝对单跑分数）；适用粒度与具体边界写正文 `## 适用场景`/`## 失效边界`（runbooks-contract §8/§11） |
 | `evidence`（frontmatter） | **不设**（runbooks-contract §11）：溯源锚点（`sequence/event_type/raw_source/raw_record/raw_sha256`，取自 reconstruction 的 event_refs）只进 manifest 的 `evidence_anchors`，**不写卡正文** |
-| 关系 | **不写知识卡**：miner 不判关系；curator 只把同问题域冲突/方案关系写成 ledger 候选，候选须经全量图谱 reviewer 判定后才能派生受管 `cannbot:related` 块（见 runbooks-contract §7） |
+| 跨卡引用 | miner 不读取现有知识库；curate 查重时可在 staged card 中按需添加普通链接与选用条件，不要求图谱关系判定（见 runbooks-contract §7） |
 | `created_at` / `updated_at` | 从同一次系统时钟读取并写 RFC 3339 UTC，miner 新草稿两者相同；不创建 schema 外的 `timestamp` |
 | 正文 `## 验证信号` | 如实记 R<n> + 精度 N/M / Δ / 编译通过，**每条信号标注来源平台 + 可用证据等级**（如“精度 32768/32768 通过（来源平台:950；证据等级:tool_observed）”）；`agent_reported`/`inferred` 必须移入 `## 误诊`，不得写进本章节 |
 | 正文 `## 适用场景` | **所有卡必填**：工程形态/API 路径/验证过的平台与 CANN 版本/适用粒度（transfer_scope 五档取最窄）/路线优先级（recommended_fastpath|safety_fallback|banned）/明确不适用或未验证场景；`safety_fallback` 卡必须明写 fallback 声明（纪律 19-20） |
@@ -338,7 +338,7 @@ Agent(references/subagents/ops-knowledge-trace-relevance-gate.md)
 
 > **数量预期**：一条含 kernel 联调 + spec 生成的**完整开发 trace** 应产 **≥10 张**候选（旧版同源 5 trace 产 30 卡）；**启动片段/纯问答 trace 产出 0~2 张为正常**（先过 §价值预筛）——若一条完整 trace 只产 1~3 张，说明扫描抽样或把多根因合并了（违反纪律 0）；若产出大量低价值卡（agent 编排/流程描述），说明没过价值门槛（违反纪律 12）。
 
-- 每个草稿卡 = 完整 frontmatter + 正文，**schema 合规**（跑 `runbooks-contract` validator 时只豁免文件名 `DRAFT-*` 非纯 slug；草稿不包含受管关系块，其余约束全过）。
+- 每个草稿卡 = 完整 frontmatter + 正文，**schema 合规**（跑 `runbooks-contract` validator 时只豁免文件名 `DRAFT-*` 非纯 slug；不要求额外关系章节，其余约束全过）。
 - `manifest.json` 记每条候选的 `{draft_path, type, knowledge_form, phenomenon, solution_layer, evidence_level, evidence_roles, mechanism_artifacts, signal, normalized_trace_path, raw_source_sha256, normalized_trace_sha256, coverage, claim_mapping, provenance_missing:[...]}`，供 curator 读。`evidence_roles` 的键按 runbooks-contract §8.1 随形态变化；artifact 逐字内容、重建方式与角色锚点必须结构化记录。**另须记 `skipped` 清单**并对旧式修复门禁 skip 写 `reclassification_checked: true`，供 curator 与 meta 报告对账。
 
 ---
@@ -373,7 +373,7 @@ trace ──normalize──▶ 归一化事件流 ──▶ mine ──▶ recon
 
 1. **dry-run trace → 候选表**：对照 hand-built 期望（各失败 case + perf 各轮 + 成功实现 + **子 agent 闭环** → 预期 phenomenon/solution_layer 映射）。
 2. **细粒度（量）**：候选数 ≥ 期望值（同源批 30 卡基准）；**无聚合卡**——每卡 `## 根因` 是单句可判定归因（不出现两个"因为"），title 不出现"合集/汇总/踩坑"字样。
-3. **schema 合规**：草稿卡跑 `runbooks-contract` validator，只豁免文件名 `DRAFT-*` 非纯 slug；草稿不包含受管关系块，其余约束全过（含必填 `platforms`、guide 卡含系统信息+完整代码+设计决策）。
+3. **schema 合规**：草稿卡跑 `runbooks-contract` validator，只豁免文件名 `DRAFT-*` 非纯 slug；不要求额外关系章节，其余约束全过（含必填 `platforms`、guide 卡含系统信息+完整代码+设计决策）。
 4. **门控有效**：仅 `agent_reported`/`inferred` 证据的候选**不入主库**（tier 由 curator 按 §5 判定），**不产内部 `verified` tier**。
 5. **无泄露**：草稿卡 frontmatter/正文/文件名均无 session_id 与内部结构化锚点（source/raw record/sequence 只进 manifest）。
 6. **四轨覆盖**：精度/工程/性能/方案四类均扫到，无一缺席。

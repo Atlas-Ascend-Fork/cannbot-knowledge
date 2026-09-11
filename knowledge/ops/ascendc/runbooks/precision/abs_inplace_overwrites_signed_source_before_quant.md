@@ -109,9 +109,3 @@ FAIL: M= 128, N=4096, dtype=torch.bfloat16       | int8_match=False, mismatch=0.
 ## 误诊
 
 最初怀疑 `xOut`/`scale` 本身错，但实测二者 `xOut_diff=0.000000`、`scale_diff≈0` 全部精确匹配，排除上游；进一步怀疑 `Muls` 的 `invScale` 数值错，但 `scale` 正确即 `invScale=127/maxAbs` 正确，排除；最终定位到 `Abs` in-place 覆写带符号源。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Max/Min 逐元素非标量广播 须 Duplicate 至同长 buffer](count_based_max_min_is_element_wise_not_scalar_broadcast.md)（`related`）：修复后小 N 仍存的 mismatch 属 clamp 的 Max/Min 广播与 buffer 问题；count-based `Max/Min` 是逐元素、非标量广播。前者修复 in-place Abs 后把剩余小 N mismatch 明确定位到 clamp，后者说明 count-based Max/Min 误把未初始化 tensor 当标量广播的机制与修法；两卡组成连续精度排障链。
-<!-- cannbot:related:end -->

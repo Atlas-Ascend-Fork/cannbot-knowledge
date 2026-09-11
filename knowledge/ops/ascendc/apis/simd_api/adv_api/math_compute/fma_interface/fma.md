@@ -120,11 +120,3 @@ struct FmaConfig {
 输入数据(src2):[1 1 1 ...... 1 1 1]
 输出数据(dst):[3 3 3 ...... 3 3 3]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetFmaMaxMinTmpSize](get_fma_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Fma接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。接口内部涉及精度转换，临时空间大小通过GetFmaMaxMinTmpSize获取。。Host 查询提供 Fma 缓冲上下界，Kernel 执行重载消费显式或框架申请的临时空间，闭合 Tiling 到执行链。
-- [GetFmaTmpBufferFactorSize](get_fma_tmp_buffer_factor_size.md)（`related`）：获取Fma接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。接口内部涉及精度转换，临时空间大小通过GetFmaMaxMinTmpSize获取。。factor 查询把固定临时空间换算为 Fma 单次元素上限，执行接口实际消费 sharedTmpBuffer 或框架缓冲。
-<!-- cannbot:related:end -->

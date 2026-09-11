@@ -94,10 +94,3 @@ inline half __hmin(half x, half y)
         dst[idx] = __hmin(x[idx], y[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hmin_nan](_hmin_nan.md)（`same_topic`）：返回值：两个输入数据中的最小值。本接口受全局饱和寄存器的影响，。特殊值：±0→0；nan→normal；nan→nan；-inf→-inf；(normal,-inf)→-inf；inf→normal；(normal,inf)→normal。；返回值：两个输入数据中的最小值。特殊值：-0→x；(+0,-0)→y；nan→nan；(任意值,nan)→nan；-inf→-inf；(任意值,-inf)→-inf；inf→y。。两接口均求 half 标量最小值，但 __hmin_nan 明确传播任一 NaN，而 __hmin 的特殊值结果受全局饱和寄存器及操作数组合影响。
-<!-- cannbot:related:end -->

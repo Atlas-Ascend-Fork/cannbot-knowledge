@@ -606,9 +606,3 @@ GM→UB 保持连续的 `[A0,G0,A1,G1,...]`，MicroAPI 在寄存器加载时对 
 | 同步 | Queue + group V_S | output Queue 的固定 DeQue/EnQue/DMA/Free 顺序 | `ComputeTiling`/`CopyOut` |
 | 精度与尾块 | FP32寄存器数学、16-bit RINT、mask tail | interleaved input stride与输出 pair mask | `ComputeVfSwiglu` |
 | 失败边界 | Host检查/UB/key阻断 | 四 tuple key与AIV-only执行类型 | `SetTilingKey`/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ClippedSwiglu A2/A3 ACLNN 算子知识](clipped_swiglu.md)（`same_topic`）：｜ 计算语义 ｜ 将 `x` 沿 `dim` 合并为 `［B,2H］`；可选取 `B'=min(sum(group_index),B)`；按奇偶或前后拆为 `A,Bgate`，计算 `min(A,L)/(1+exp(-alpha*min(A,L))) * (clamp(Bgate,-L,L)+bias)`。 ｜；｜ 计算语义 ｜ 将 `x` 合并为 `［B,2H］`，可选按 `min(sum(group_index),B)` 截短 B；奇偶或前后拆 A/G，输出 `min(A,L)/(1+exp(-alpha*min(A,L)))*(clamp(G,-L,L)+bias)`。 ｜；两卡描述同一 aclnnClippedSwiglu 数学合同，分别闭合 A2/A3 与 950 的 Host、route、Kernel 和平台边界。
-<!-- cannbot:related:end -->

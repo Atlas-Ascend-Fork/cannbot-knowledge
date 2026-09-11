@@ -685,9 +685,3 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_
 | 同步 | Queue 生命周期 + Vector barrier | scratch 覆盖前必须等待前一阶段 | `InnerComputer/CopyIn/CopyOut` |
 | 精度与尾块 | BF16 分段 FP32；full/tail 两种 DMA | `CAST_NONE→Mins→CAST_RINT` 与有效 byte 数 | `ComputePerCast/SingleTensorProcess` |
 | 失败边界 | 校验失败阻断 launch；未知 key 无 body | 不得为 >50、低 UB、越界 INT64 scalar 编造 fallback | `CheckOpInfo/router` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMinimumScalarList 950 ACLNN 算子知识](foreach_minimum_scalar_list_950.md)（`same_topic`）：｜ 计算语义 ｜ 对第 `i` 个 Tensor 的每个有效元素 `j` 计算 `y_i［j］ = min(x_i［j］, scalars［i］)`。 ｜；｜ 计算语义 ｜ `y_i［j］=min(x_i［j］,scalars［i］)`；浮点显式传播任一操作数的 NaN。 ｜。两卡定义同一 TensorList 逐项 scalar minimum，950 卡进一步闭合 SIMT 路线并明确浮点 NaN 传播规则。
-<!-- cannbot:related:end -->

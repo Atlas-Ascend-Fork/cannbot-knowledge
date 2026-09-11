@@ -66,20 +66,6 @@ AscendC::GetTanhMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Tanh](tanh.md)（`related`）：Host 接口说明“host侧Tiling接口，用于获取Tanh接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”；Tanh 卡明确“临时空间大小通过GetTanhMaxMinTmpSize获取。”，两端形成 Tanh sharedTmpBuffer 的容量选择与调用链，但 Host Tiling 规划和 Kernel 双曲正切计算是两个主题。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 3 / 3 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [LSTM A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/lstm.md)（`related`）：算子声明的固定版本源码包含对 `GetTanhMaxMinTmpSize(...)` 的直接调用（第 144 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_host/dynamic_lstm_tiling.cpp#L144)
-- [ThnnFusedLstmCellBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/thnn_fused_lstm_cell_backward.md)（`related`）：算子声明的固定版本源码包含对 `GetTanhMaxMinTmpSize(...)` 的直接调用（第 267 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/thnn_fused_lstm_cell_grad/op_host/thnn_fused_lstm_cell_grad_tiling.cpp#L267)
-- [LSTM 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/lstm_950.md)（`related`）：算子声明的固定版本源码包含对 `GetTanhMaxMinTmpSize(...)` 的直接调用（第 144 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_host/dynamic_lstm_tiling.cpp#L144)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [LSTM A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/lstm.md)
+- [ThnnFusedLstmCellBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/thnn_fused_lstm_cell_backward.md)
+- [LSTM 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/lstm_950.md)

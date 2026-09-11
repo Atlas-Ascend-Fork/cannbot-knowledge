@@ -83,16 +83,4 @@ auto cap3_0_1 = capacity<0, 1>(layout3); // max(10*1, 20*10) = max(10, 200) = 20
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [MoeReRouting 950 Direct Invoke 算子知识](../../../../operators/direct/transformer/moe/moe_re_routing_950.md)（`related`）：算子正文包含对 `capacity(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MoeReRouting 950 Direct Invoke 算子知识](../../../../operators/direct/transformer/moe/moe_re_routing_950.md)

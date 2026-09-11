@@ -85,10 +85,3 @@ bool __hne(bfloat16_t x, bfloat16_t y)
         dst[idx] = __hne(x[idx], y[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hneu](_hneu.md)（`same_topic`）：比较两个bfloat16类型数据是否不相等，不相等时返回true。 比较两个bfloat16类型数据是否不相等，不相等时返回true。若任一输入为nan，返回true。 共同的 BF16 不等运算把选型差异限定到 __hneu 的 unordered NaN 为 true，特殊值测试可据此设计。
-<!-- cannbot:related:end -->

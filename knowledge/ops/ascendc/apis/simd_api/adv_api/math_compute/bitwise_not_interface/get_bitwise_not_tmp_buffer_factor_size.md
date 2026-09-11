@@ -74,11 +74,3 @@ uint32_t extraBuf = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetBitwiseNotTmpBufferFactorSize(plat, typeSize, maxLivedNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BitwiseNot](bitwise_not.md)（`same_topic`）：逐比特对输入进行取反。；该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。；BitwiseNot 的 count 决定单次逐比特计算规模，factor 查询把固定临时空间转换成允许的最大元素数量，可用于设计 Kernel 分块。
-- [GetBitwiseNotMaxMinTmpSize](get_bitwise_not_max_min_tmp_size.md)（`same_topic`）：“开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用”先确定 BitwiseNot 可用的临时空间；“通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量”再把选定空间换算成单次分块上限。
-<!-- cannbot:related:end -->

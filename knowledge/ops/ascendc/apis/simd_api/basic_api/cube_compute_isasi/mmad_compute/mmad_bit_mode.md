@@ -143,10 +143,3 @@ __aicore__ inline MmadBitModeParams(const MmadBitModeParams &mmadParams_);
 ## 调用示例
 
 样例请参考[Mmad样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Mmad](mmad.md)（`related`）：Mmad 的 BitMode 变体，使用 union 与 bit-field 结构体 MmadBitModeParams 传参，将多参数融合为单个入参，减少 scalar 计算开销。；Ascend C 矩阵乘加核心接口，实现 C=A×B+C。BitMode 保持 Mmad 的矩阵乘加核心语义，只改变参数编码并针对 scalar 流水瓶颈优化。
-<!-- cannbot:related:end -->

@@ -489,9 +489,3 @@ for (uint16_t i = 0; i < bshInLoopNum; i++) {
 | 同步 | TQue + MicroAPI pipeline | 队列生命周期与临时权重复用顺序 | 两 body 的 `Process` |
 | 精度与尾块 | FP32 LSE/累加，predicate tail | 最终权重 Exp mode、+INF 处理；SDK helper 的最终 dtype 舍入不可外推 | `ComputeLseMVF/ComputeMaxVF/ComputeOut*` |
 | 失败边界 | 空输入快返与 Host 校验 | 10000 不得误当公开非空 fallback | `GetTilingKey`/ACLNN empty branch |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AttentionUpdate A2/A3 ACLNN 算子知识](attention_update.md)（`same_topic`）：“｜ 计算语义 ｜ 以稳定 log-sum-exp 权重合并 SP 分片的局部 LSE 和局部 attention 输出 ｜”与“｜ 计算语义 ｜ 对 SP 分片的局部 LSE 先做稳定 log-sum-exp，再以 `exp(lse_i-lse_m)` 加权合并局部 attention 输出 ｜”是双方正文中的具体合同。两端都合并 SP 分片的局部 LSE 与 attention 输出，A2/A3 卡展开稳定权重公式，950 卡给出同一核心归约，互读可核对跨分片数值稳定性。
-<!-- cannbot:related:end -->

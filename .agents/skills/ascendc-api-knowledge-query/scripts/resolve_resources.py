@@ -18,19 +18,11 @@ sys.path.insert(0, str(QUERY_SCRIPTS))
 
 import yaml  # noqa: E402
 
-from retrieval.index import MANAGED_RELATED_RE, load_contract  # noqa: E402
+from retrieval.index import load_contract  # noqa: E402
 from retrieval.root import local_markdown_link, resolve_root  # noqa: E402
 
 
 PAGE_CHAR_BUDGET = 10000
-
-
-def navigation_ranges(text: str) -> list[list[int]]:
-    return [
-        [text.count("\n", 0, match.start()) + 1,
-         text.count("\n", 0, match.start()) + len(match.group().splitlines())]
-        for match in MANAGED_RELATED_RE.finditer(text)
-    ]
 
 
 def selected_card(root: Path, card: Path) -> Path:
@@ -63,7 +55,7 @@ def read_card_page(root: Path, card: Path, start_line: int = 1, expected_sha256:
     lines = text.splitlines()
     if not 1 <= start_line <= len(lines):
         raise ValueError("start-line must be within the selected card")
-    navigation = navigation_ranges(text)
+    navigation = []
     selected = []
     size = 0
     for number in range(start_line, len(lines) + 1):
@@ -118,7 +110,7 @@ def read_card_page(root: Path, card: Path, start_line: int = 1, expected_sha256:
 
 
 def compare_card_field(root: Path, cards: list[Path], field: str) -> dict:
-    """Juxtapose literal field context from already selected cards, excluding managed navigation."""
+    """Juxtapose literal field context from already selected cards, excluding frontmatter."""
     if not field or field != field.strip() or any(ord(char) < 32 for char in field):
         raise ValueError("field must be a nonempty literal name without control characters")
     root = root.resolve(strict=True)
@@ -134,7 +126,7 @@ def compare_card_field(root: Path, cards: list[Path], field: str) -> dict:
         metadata, body = split_frontmatter(text)
         # The returned body is a stripped suffix. Work in normalized lines, but emit original lines.
         body_start = text[:text.rfind(body)].count("\n") + 1 if body else len(original_lines) + 1
-        navigation = {number for first, last in navigation_ranges(text) for number in range(first, last + 1)}
+        navigation = {number for first, last in [] for number in range(first, last + 1)}
         selected_lines = set()
         for number in range(body_start, len(original_lines) + 1):
             if number not in navigation and field in original_lines[number - 1]:

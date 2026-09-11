@@ -304,11 +304,3 @@ __aicore__ inline void ProcessRow(int64_t row)
 
 - 初看可怀疑 tail mask 或 DMA/Cast；但 `K=VL` 正确、`K=VL+1` 立刻失败，且逐元素 general path 大部分通过，更强地指向跨 VL 规约状态。
 - 一次 bf16 non-last-axis 用例出现阈值边缘失败，未做针对性代码修改后在后续全量测试通过；该信号不纳入本卡根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：跨 wrapper 只传小标量时，使用 VL 大小的 UB slot，避免 `LoadAlign` 越过分配范围。；running max/sum 每个 VL 都 `LoadAlign(slot) → Reduce → Max/Add → StoreAlign(slot)`；目标卡细化焦点跨 wrapper 标量槽为逐 chunk 持久状态的生产消费协议。
-- [Reg 尾块 masked Add 清零跨块累加器](reg_tail_mask_zeroing_clears_cross_chunk_accumulator.md)（`related`）：尾掩码 Runbook 定位到“尾块的 `Add(accReg, accReg, sqReg, tailMask)` 不只是忽略无效 lane，而是把 `accReg` 的未激活 lane 清零”；UB 槽 Runbook定位到“失败实现把跨 VL 的持久状态放在 VF 循环内的 `RegTensor acc`，只在循环开始从 UB 槽加载、循环结束再写回。”。两者给出跨 chunk 累加失效的不同根因和不同修复分支。
-- [Reg::Reduce 跨 chunk 覆写导致规约失真](reg_reduce_per_chunk_result_must_accumulate_explicitly.md)（`related`）：UB 槽 Runbook的修法是“每次 VF 限制为一个 VL，并在每次调用前从 UB 槽加载 running state、合并本 VL 的 Reduce 结果、立即写回”；Reduce Runbook规定“每个 chunk 先 Reduce 到临时寄存器 `tmp` 的 lane 0，再用仅 lane 0 有效的 `scalarMask` 对运行累加器执行 `Max` 或 `Add`。”。二者都显式化跨 chunk 状态，但分别选择 UB 跨 VF 持久化和单 VF 内 lane-0 折叠。
-<!-- cannbot:related:end -->

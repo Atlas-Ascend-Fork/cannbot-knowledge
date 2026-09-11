@@ -80,9 +80,3 @@ op_kernel/histogram.cpp:29:44: error: no member named 'scaleBits' in 'HistogramT
 
 - 同时保留手动 tiling 头 + 自动生成头，依赖"哪个先 include"的未定义顺序来决定可见的 `<Op>TilingData` 定义——必然踩 `no member named X` 编译错。
 - 看到 `no member named 'minBits'` 就去 op_host 的 `BEGIN_TILING_DATA_DEF` 里改字段名或补字段，不先核 kernel 是否手动引入了冲突的同名 tiling 头。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GET_TILING_DATA_MEMBER](../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data_member.md)（`exemplifies`）：用于获取tiling结构体的成员变量。；在 `JOIN_OP_DEF True` 工程里，kernel 侧不要手动 `#include "<op>_tiling.h"`、不要 `REGISTER_TILING_DEFAULT`；tiling 数据经自动生成的 `kernel_tiling/kernel_tiling.h` + `GET_TILING_DATA` 获取本地拷贝。。运行手册解释成员访问报错并非字段不存在，而是手写 tiling 类遮蔽生成类，最终应回到受支持的宏获取路径。
-<!-- cannbot:related:end -->

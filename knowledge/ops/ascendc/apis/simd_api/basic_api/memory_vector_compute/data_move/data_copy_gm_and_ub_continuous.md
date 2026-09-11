@@ -170,10 +170,3 @@ source_headers:
     输入数据dstLocal：[1 2 3 ... 512]
     输出数据dstGlobal：[1 2 3 ... 512]
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopy](data_copy_gm_and_ub_highdim_split.md)（`same_topic`）：当高维参数退化为连续访问时，以“连续搬运场景推荐使用 DataCopy GM 与 UB 连续数据搬运接口以获得更好性能。”作选型触发，并用“支持GM与UB之间的连续数据搬运，数据传输过程中保持原始格式和内容不变。”确认连续接口保持格式和内容不变，从而减少不必要的高维配置开销。
-<!-- cannbot:related:end -->

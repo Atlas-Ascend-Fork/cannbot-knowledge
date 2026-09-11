@@ -73,13 +73,3 @@ data = tl.where(offs_n == 1, data1, data)
 | 910_95 | 248 KB | 124 KB（910_95 默认 multibuffer=False，手动开启后需重估 BLOCK_SIZE） |
 
 910_95 上 MTE3 搬运要求 32B 对齐。合并后的连续 store 天然更易满足对齐，是额外收益；但合并后总字节数仍可能不足 32B（如 3×int32=12B），此时主要收益是减少搬运次数。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [数据搬运与内存访问模式优化](data_movement_optimization.md)（`related`）：“连续访存 vs 离散访存、MTE3 带宽共享”
-- [内存访问优化](memory_access_optimization.md)（`related`）：“内存访问优化专项”
-- [Where 条件优化（单位置 False 场景）](where_optimization.md)（`related`）：“`tl.where` 的退化风险与替代写法”
-- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 UB 容量与 32B 对齐约束”
-
-<!-- cannbot:related:end -->

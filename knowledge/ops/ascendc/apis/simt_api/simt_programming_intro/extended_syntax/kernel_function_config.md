@@ -77,10 +77,3 @@ __global__ void add_custom(float* x, float* y, float* z, uint64_t total_length);
 // 调用
 add_custom<<<blocks_per_grid, threads_per_block, dyn_ubuf_size, stream>>>(x, y, z, 1024);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [核函数配置](../../simd_simt_hybrid_programming_intro/extended_syntax/kernel_function_config.md)（`related`）：核函数是 SIMT 编程的 Device 侧入口函数，使用 __global__ 修饰符定义；核函数是 SIMD 与 SIMT 混合编程的 Device 侧入口函数，使用 __global__ __vector__ 修饰。两端给出纯 SIMT 与混合编程的 Device 入口定义，迁移执行模式时必须同时调整修饰符与 GM 指针约束。
-<!-- cannbot:related:end -->

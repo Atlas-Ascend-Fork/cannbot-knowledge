@@ -119,11 +119,3 @@ AscendC::Exp<half, 15, false>(dstLocal, srcLocal, sharedTmpBuffer, 512);
 输出数据(dstLocal):
 [ 1.0000000  1.0100503  1.0202013  1.0304545  ...  165.67036]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetExpMaxMinTmpSize](get_exp_max_min_tmp_size.md)（`related`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetExpMaxMinTmpSize获取。”与“host侧Tiling接口，用于获取Exp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”。Exp 的 sharedTmpBuffer 重载需要空间预算，Host 接口给出可用最大值与不得低于的最小值。
-- [GetExpTmpBufferFactorSize](get_exp_tmp_buffer_factor_size.md)（`related`）：“获取Exp接口的maxLiveNodeCount和extraBuffer，用于在固定临时空间下推算算子单次最大计算元素数量。”提供反推 tile 容量的系数，而“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetExpMaxMinTmpSize获取。”说明 Exp 的临时空间消费入口；两者可用于在多个高阶 API 共用 UB 时确定 Exp 单次 calCount。
-<!-- cannbot:related:end -->

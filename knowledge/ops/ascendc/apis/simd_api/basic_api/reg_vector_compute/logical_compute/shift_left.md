@@ -113,10 +113,3 @@ __simd_vf__ inline void ShiftLeftVF(__ubuf__ T* dstAddr, __ubuf__ T* src0Addr, _
     }
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ShiftLefts](shift_lefts.md)（`same_topic`）：“ShiftLefts指令根据mask对源操作数srcReg，按照scalarValue进行左移操作，将结果写入目的操作数dstReg。”与“ShiftLeft指令根据mask对源操作数srcReg0，按照srcReg1对应元素进行左移操作，将结果写入目的操作数dstReg。”提供双方正文证据。二者定义同一掩码寄存器左移操作，差异只在移位量由单个 scalarValue 还是逐元素 srcReg1 提供，互读可直接选择标量或向量移位版本。
-<!-- cannbot:related:end -->

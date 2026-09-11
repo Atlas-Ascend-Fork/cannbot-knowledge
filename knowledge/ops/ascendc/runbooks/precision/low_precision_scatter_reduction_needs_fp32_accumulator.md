@@ -418,9 +418,3 @@ at::Tensor scatter(const at::Tensor& data, int64_t dim,
 ## 误诊
 
 “绝对误差很小，因此 FP16 累加足够”是误诊。相消位置的参考结果接近 0 时，同一绝对误差会对应很高的相对误差；应同时检查 MARE 与相消兜底信号。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [半精度 shadow 跨流竞态 — 转换与 kernel 两侧做设备同步](torch_npu_async_temporaries_need_completion_before_raw_kernel.md)（`related`）：“修复把递推改为 FP32 中间状态： ```text a₀ = fp32(fp16(data)) aⱼ₊₁ = fp32(aⱼ + fp32(fp16(updateⱼ))) y = fp16(aₘ) ``` 这样只在最终输出时转回 FP16，避免每次随机读改写都进行半精度量化。”明确给出左端事实；“在 fp32 shadow 分支建立两道设备级边界：”明确给出右端事实。前者要求 FP16 scatter-add 用 FP32 中间状态避免逐次半精度舍入；后者补出 Host 提升、raw float kernel 与降精度之间的双侧同步，保证该 shadow accumulator 真正可用。
-<!-- cannbot:related:end -->

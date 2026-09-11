@@ -83,9 +83,3 @@ grep -rn "__simd_vf__\|asc_vf_call\|Reg::\|MicroAPI" op_kernel/
 - 判别流程在 Ascend950 regbase arch32 + CANN 9.1.0 上实测；其他架构/版本未验证，推断可迁移（探针命令不依赖架构特有路径，但 `Ascend950PR_9579` kernel_cache 路径需按目标平台替换）。
 - 探针 3「arg5=0 ≠ tiling 未传递」的判读基于 GE 图模式 sysParam 传递机制；aclnn 路径的 tiling 由 `aclnnSetTilingData` 传递，不在本判别范围。
 - 本卡只诊断到「崩溃在 kernel 向量指令执行期、非图基础设施、非 tiling 链路」这一层；普通 `AscendC::CompareScalar`+`Select` 在 TBE 动态编译下对非空张量崩溃的真实机制层根因未追到。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GE图模式263: 自定义VF Select被禁](ge_263_vf_select.md)（`same_topic`）：分层判别卡把该路径定位为“探针 5 命中 VF → 先按自定义 VF 在 TBE 动态编译下被禁的失败路线修复；改普通 API 后 aclnn 仍绿但 GE 仍崩 → 根因不在 VF/API 选型，在 TBE 生成 binary 的向量指令执行期（本 trace 终态，未追到机制层）。”；专项卡则明确“**banned 路线：在须跑 GE 图模式的 regbase arch35 kernel 中用 `__simd_vf__`/`asc_vf_call` 自定义 VF 实现 Select。**”，两端针对同一次 MaskedFill GE 263 排障中的同一 VF 路线与后续未闭合根因。
-<!-- cannbot:related:end -->

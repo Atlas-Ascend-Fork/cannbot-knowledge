@@ -704,9 +704,3 @@ Host把L1 owner交给算子body并令entry选择 `ProcessL1Carry`；同时bmm2�
 | 同步 | MIX1:2、adapter reset、三槽 | general/SameAB协议不可混用 | entry/body |
 | 精度与尾块 | FP32 score/state/PV | actualSeq、implMode、S1/S2/D tail | body/TCube POD |
 | 失败边界 | TND/key/sparse边界 | 不回退旧V或950 ABI | IsCapable/key selector |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FlashAttentionVarLenScore 950 ACLNN 算子知识](flash_attention_var_len_score_950.md)（`same_topic`）：“固定仓公开 VarLen、V2、V3、V4、V5；V5 产品表明确支持 A2/A3，因此选择同平台最新 V5。”与“固定仓 `FlashAttentionVarLenScore` 版本族的最新公开变长接口为V5，产品表列 Ascend 950PR/950DT 支持；本卡仅记录950。”共同确认同一 V5 入口，随后可按平台分别读取 arch22 与 arch35 route/限制。
-<!-- cannbot:related:end -->

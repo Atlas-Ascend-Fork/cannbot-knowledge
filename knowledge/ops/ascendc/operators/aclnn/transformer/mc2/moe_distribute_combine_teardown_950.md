@@ -546,9 +546,3 @@ epStatusSpaceGM_ = GetWinStateAddrByRankId(moeDistributeCombineTeardownInfo_->ep
 | 同步 | DCCI,status events,PIPE_V,SyncAll | no producer-consumer edge removed | Init/Wait/LocalCopy |
 | 精度与尾块 | input→FP32,K sums,final RINT | no low-precision intermediate sum | LocalWindowCopy |
 | 失败边界 | immediate Host errors,no fallback | no silent success; polling has no timeout | API/checks/entry/Wait |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeDistributeCombineSetup 950 ACLNN 算子知识](moe_distribute_combine_setup_950.md)（`related`）：等待配套 `MoeDistributeCombineSetup` 写完当前 ping-pong 窗口；Setup 提交 URMA 后立即返回，完成确认与后处理交给 CombineTeardown；两算子通过 HCCL window/status 完成明确的生产、发布、等待和消费协议。
-<!-- cannbot:related:end -->

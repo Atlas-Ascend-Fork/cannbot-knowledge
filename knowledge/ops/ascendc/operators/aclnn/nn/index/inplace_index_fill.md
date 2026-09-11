@@ -729,9 +729,3 @@ if (update) {
 | 同步 | flag=133 软件屏障 | 全 blockDim 核参加，MTE 完成后写 flag | `WriteFlagToGm/WaitForIndicesTask` |
 | 精度与尾块 | marker half；x 按 1/2/4/8B 位宽搬运 | INT64/BOOL frontQ；left loops | router/body |
 | 失败边界 | ACLNN 空域短路和空指针返回 | 不从 direct Host 绕过这些约束 | `ExecIndexFillGetWorkspaceSize` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceIndexFill 950 ACLNN 算子知识](inplace_index_fill_950.md)（`same_topic`）：“｜ Kernel/资源 ｜ arch32 AIV Vector、5 keys ｜ 同 A2 ｜ arch35 SIMT/Sort+Unique 三模板、N-byte mask ｜”；“｜ Kernel/资源 ｜ 五 key AIV Vector ｜ 与 A2 共用 ｜ 三模板 SIMT/Sort，N-byte mask ｜”。两卡覆盖同一 aclnnInplaceIndexFill 语义并明确 A2/A3 与 950 的 route 替换，便于跨平台迁移 selector、mask 和 workspace。
-<!-- cannbot:related:end -->

@@ -480,9 +480,3 @@ Host 只用最大 Tensor 决定统一 `blockDim`，POD 保存各 Tensor 元素�
 | 同步 | 唯一索引与线程程序序足够 | 引入共享写/跨 Tensor依赖时必须新增 barrier/atomic/节点边 | `OpForeachReciprocalSimt` |
 | 精度与尾块 | 三 dtype 都以 FP32 除法；`idx<count` 截尾 | FP16/BF16 升降精度顺序和 512*blockNum 步长 | `ComputeReciprocal` |
 | 失败边界 | 平台、N、dtype、POD/workspace 获取失败关闭 | 禁止绕过列表 dtype 一致性；无 Device fallback | `ForeachReciprocalTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachReciprocal A2/A3 ACLNN 算子知识](foreach_reciprocal.md)（`same_topic`）：“｜ 计算语义 ｜ 对 TensorList 的每个有效元素执行 `y_i［j］ = 1 / x_i［j］` ｜”与“｜ 计算语义 ｜ 对 TensorList 中每个有效元素执行 `y_i［j］=1/x_i［j］` ｜”分别来自双方当前正文。两卡实现同一 ForeachReciprocal 逻辑语义，但 A2/A3 使用 AIV Queue 与 Vector Div，950 使用 512-thread SIMT 和 GM 直访；对照可完成平台 route 与资源模型选型。
-<!-- cannbot:related:end -->

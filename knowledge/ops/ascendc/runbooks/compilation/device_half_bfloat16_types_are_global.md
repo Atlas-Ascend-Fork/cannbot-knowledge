@@ -246,9 +246,3 @@ std::tuple<at::Tensor, at::Tensor> apply_rotary_pos_emb(
 ## 误诊
 
 轨迹中没有实际尝试 `AscendC::half_t`、`at::Half` 或其他替代类型；这些仅在分析中被提及，不能当作已验证路径。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendC:: 前缀致全局符号编译失败](ascendc.md)（`related`）：dav-2201 总结卡规定“`bfloat16_t`、`PIPE_ALL/PIPE_FIX/PIPE_MTE2/PIPE_V/PIPE_MTE3`、`CubeFormat`、`CFG_MDL` 属全局命名空间，不加前缀。”；950 专项卡确认“CANN 9.0.1 的 device 标量类型 `half` 与 `bfloat16_t` 位于全局作用域而不是 `AscendC` 命名空间”，可用于跨版本核对标量模板实参的同一名称解析规则。
-<!-- cannbot:related:end -->

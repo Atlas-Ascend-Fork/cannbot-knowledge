@@ -81,10 +81,3 @@ AscendC::PrintTimeStamp(65577);
 // 一些框架内部的打点信息
 descId is 65577, rsv is 0, timeStamp is 13806084506158, pcPtr is 20619064414544, entry is 13806084502126.
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscTimeStamp](../../../../utils_api/tuning_interface/asc_time_stamp.md)（`same_topic`）：提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点并打印当前系统cycle数。；SIMD场景下，提供时间戳打点功能，用于在算子Kernel代码中标记关键执行点。调用后会打印如下信息：两页均用于 Kernel 关键点时间戳打点，分别给出 Basic PrintTimeStamp 与调优接口 asc_time_stamp 的入口参照。
-<!-- cannbot:related:end -->

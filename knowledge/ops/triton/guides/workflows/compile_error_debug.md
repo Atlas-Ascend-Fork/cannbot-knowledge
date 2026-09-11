@@ -85,17 +85,3 @@ IR 手动分析流程：dump IR → 查 TTIR（kernel/操作/形状类型）→ 
 官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
 
 - [debugging.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/debugging.md)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [错误码参考（报错信息对照表）](./error_codes.md)（`related`）：“错误码参考（报错对照表）”
-- [Triton-Ascend 调试方法总览](./debug_overview.md)（`related`）：“调试方法总览”
-- [调试环境变量完整参考](./debug_env_variables.md)（`related`）：“调试环境变量”
-- [运行时错误排查](./runtime_error_debug.md)（`related`）：“运行时错误排查”
-- [Triton API 在 Ascend NPU 上的支持矩阵](../../apis/api_support_matrix.md)（`related`）：“failed to legalize 时核对 API 支持矩阵”
-- [数据类型支持矩阵（Data Type Support Matrix）](../../apis/data_type_matrix.md)（`related`）：“unsupported data type 时核对类型支持”
-- [NPU 分块策略（Tiling）](../../optimizations/techniques/tiling_strategy.md)（`related`）：“UB 溢出的分块缩减策略”
-
-<!-- cannbot:related:end -->

@@ -71,10 +71,3 @@ if (id >= 0 && id < ARRIVE_NUM) {
   // 各种Vector计算逻辑，用户自行实现
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Arrive（Cube核间管理）](arrive.md)（`same_topic`）：“Arrive 组中所有 AIV 调用 Arrive 后，Wait 组的 AIV 才能继续执行”定义到达侧的完成条件；“Wait 组所有 AIV 调用 Wait 后阻塞，直到 Arrive 组所有 AIV 均调用 Arrive”定义等待侧何时解除阻塞，二者组成同一 GroupBarrier 握手。
-<!-- cannbot:related:end -->

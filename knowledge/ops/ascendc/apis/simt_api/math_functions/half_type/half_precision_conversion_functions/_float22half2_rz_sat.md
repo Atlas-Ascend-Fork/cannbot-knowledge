@@ -86,10 +86,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         asc_vf_call<simt_float22half2_rz_sat>(dim3(1024), (__gm__ float2*)input, (__gm__ half2*)output, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float22half2_rz](_float22half2_rz.md)（`related`）：使用此接口前需将CTRL［60］寄存器设置为0，否则饱和模式不生效。；功能：将float2类型数据的两个分量遵循CAST_TRUNC模式转换为半精度浮点数，返回转换后的half2类型数据。；sat 路线的饱和效果依赖 CTRL［60］，普通路线保留相同 CAST_TRUNC 转换语义，因此在 SIMT 无法设置该寄存器时可用普通接口作为明确的非饱和选型。
-<!-- cannbot:related:end -->

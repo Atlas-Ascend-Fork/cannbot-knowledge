@@ -774,9 +774,3 @@ int64_t IndexFillSimtTiling::CalcSimtUsedCoreNum()
 | 同步 | Queue、MTE2→S、S→V、V→S 与多核 barrier 图 | mask 清零/填充/消费边必须保持 | `index_fill_common.h`、各 body |
 | 精度与尾块 | 同位宽 bitwise T、负 index 归一化、copy/index/Q tail | 不得加入浮点 cast；不能把 B64 工作量窄化 | `ComputeTypeGet`、SIMT VF、Copy loops |
 | 失败边界 | 公共校验失败终止；模板按 1→6→10 fallthrough | 不用旁路 arch32 `IndexFill` 补造 A2/A3 的 `IndexFillD` 链路 | `TilingRegistry`、ACLNN selector、两个 CMake |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceIndexFillTensor 950 ACLNN 算子知识](inplace_index_fill_tensor_950.md)（`same_topic`）：“实现复用非原地第一段接口，并把 `out` 指向 `selfRef`。”与“非原地语义由先复制 `self`、再填充输出以及最终 `ViewCopy` 到独立 `out` 保证。”分别给出双端正文事实；原地入口直接复用非原地 IndexFillTensor 第一段并把输入输出绑定到 selfRef，非原地卡定义相同核心算子的独立 out 语义，二者是同一 IndexFillTensor 合同的别名变体。
-<!-- cannbot:related:end -->

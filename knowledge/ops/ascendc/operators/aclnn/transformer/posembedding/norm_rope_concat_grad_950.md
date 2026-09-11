@@ -1094,9 +1094,3 @@ pipe_->InitBufPool(postPool_, poolSize, queryPool_);
 | 同步 | queue、barrier、HardEvent、SyncAll | GM读写及block0等待边不可删 | 三HardEvent helper/Prepare/PostProcess |
 | 精度与尾块 | FP32中间与三重tail | CAST_NONE→FP32→CAST_ROUND、Sum有效D、Rope mask不可换序 | `Compute/GetSeqRange` |
 | 失败边界 | Host/Tiling校验 | optional配对、窄化、40层、avgHeads缺口不得伪造fallback | `CheckParam/CheckInput/ComputeUBTilingStrategy` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NormRopeConcatGrad A2/A3 ACLNN 算子知识](norm_rope_concat_grad.md)（`same_topic`）：`source_closed`：ACLNN→L0→OpDef/InferShape→Tiling/POD→54-key entry→Vector body/helper→A2/A3 config/CMake 闭合；`source_closed`：ACLNN→L0→OpDef/InferShape→Tiling/POD→54-key entry→Vector body/helper→950 config/CMake 闭合。两卡闭合相同 aclnnNormRopeConcatBackward 与 54-key Device 链，仅构建接线和资源边界按平台拆分。
-<!-- cannbot:related:end -->

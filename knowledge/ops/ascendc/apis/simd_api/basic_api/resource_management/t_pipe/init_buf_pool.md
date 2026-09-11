@@ -148,23 +148,8 @@ tbufPool2.Reset();
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ExternImplBufpool](../custom_t_buf_pool/extern_impl_bufpool.md)（`related`）：焦点卡规定“自定义TBufPool之前，必须通过TPipe::InitBufPool接口进行TBufPool内存资源池初始化”，候选卡说明初始化后“在整体内存资源中划分出一块子资源池”；该调用是使用自定义宏前不可省略的资源准备步骤。
-- [InitBuffer](../t_buf_pool/init_buffer.md)（`related`）：TBufPool::InitBuffer接口分配Buffer；调用TBufPool::InitBuffer接口为TQue/TBuf进行内存分配。。焦点接口先从整体内存划分子资源池，候选接口再从该 TBufPool 向 TQue/TBuf 分配具体 Buffer。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)（`related`）：算子声明的固定版本源码包含对 `InitBufPool(...)` 的直接调用（第 347 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/fused_linear_cross_entropy_loss_grad/op_kernel/fused_linear_cross_entropy_loss_grad_mem_friendly.h#L347)
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)（`related`）：算子声明的固定版本源码包含对 `InitBufPool(...)` 的直接调用（第 926 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_v2_full_mesh.h#L926)
-- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)（`related`）：算子声明的固定版本源码包含对 `InitBufPool(...)` 的直接调用（第 926 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_v2_full_mesh.h#L926)
-- [NormRopeConcatGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad.md)（`related`）：算子声明的固定版本源码包含对 `InitBufPool(...)` 的直接调用（第 710 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat_grad/op_kernel/norm_rope_concat_grad.h#L710)
-- [NormRopeConcatGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `InitBufPool(...)` 的直接调用（第 710 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat_grad/op_kernel/norm_rope_concat_grad.h#L710)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)
+- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)
+- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)
+- [NormRopeConcatGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad.md)
+- [NormRopeConcatGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad_950.md)

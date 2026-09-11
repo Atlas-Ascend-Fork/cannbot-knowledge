@@ -99,11 +99,3 @@ kernel 头需 include struct.h（使 ASCENDC_TPL 符号在 tiling .so 中可见�
 ## 误诊
 
 - 起初误判为 kernel 未实现/空 kernel 崩溃（507035 vector core exception），后通过运行时 DEBUG 日志定位到 `BinaryGetFunctionByEntry(funcEntry=1)` 失败，才确认是 funcEntry 注册问题而非 kernel 本身崩溃（agent_reported，非实测信号）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ASCENDC_TPL_SEL_PARAM](../../apis/utils_api/tiling_template_programming/ascendc_tpl_sel_param.md)（`exemplifies`）：“宏展开后调用 GET_TPL_TILING_KEY 计算模板参数对应的 key 值，再通过 context->SetTilingKey 设置。”；“运行时**直接令 `funcEntry = tilingKey`** 查找入口。”。运行手册给出焦点宏下发 key 后与 funcEntry 映射失配导致 361001 的诊断链。
-- [sub-kernel 后缀 _N 是 tilingKey 位编码非序号](sub_kernel_n_tilingkey.md)（`related`）：在为 TileWithAxis 算子（ascend950 / arch35）实现 Branch-1 kernel（`tilingKey=1, ubAxis=inner`）后，运行 aclnn ST：`aclnnTileWithAxisGetWorkspaceSize` 与 `aclnnTileWithAxis`（launch）均返回 OK，但 `aclrtSynchronizeStream(stream)` 返回 **361001**。所有 Branch-1 ST 用例（10 个）失败，只有 BR1-9（空张量，走 op_api 空快速路径）通过。开启 `ASCEND_GLOBAL_LOG_LEVEL=0` 抓运行时日志，定位到运行时调用 `BinaryGetFunctionByEntry(funcEntry=1)` 找不到入口——kernel 二进制只注册了 `funcEntry_0`，而 Host TilingFunc 调用了 `context->SetTilingKey(1)`。Branch-2（tilingKey=2）与 Branch-3（tilingKey=3）首次联调时同样以 361001 失败，因为 stub kernel 仅有 `funcEntry_0`。；故 `tilingKey = T ｜ (E<<1) ｜ (R<<2)`。后缀 `_N` 就是这个编码值：。一端通过运行时找不到 funcEntry 定位 SEL 位置与 tilingKey 映射，另一端通过二进制 sub-kernel 后缀解释 TPL 位编码值；联合阅读可区分入口位置缺失与编码后缀非连续这两类路由诊断。
-- [tilingKey 编码与 TPL 位打包不一致致路由错误](tiling_key_tpl_bit_encoding_mismatch.md)（`related`）：- 若 SEL 列表顺序与 KEY 升序不一致（例如 SEL{2,1}），funcEntry≠tilingKey，本卡的"位置=tilingKey"简化不再成立——需按 SEL 实际位置核对 kernel JSON。；而 host 侧 `ComputeTilingKey(bool isGroup, bool isEmptyTensor, bool isTailR)` 用语义顺序编码 `empty=2 / normal-tail-A=0 / normal-tail-R=1 / group-tail-A=3 / group-tail-R=4`。当 host 对 normal-tail-R `SetTilingKey(1)`，runtime 按后缀 `_1` 路由到 TPL 解码为 (1,0,0)=group-tail-A 的 sub-kernel，而 group 模板的 Init/Process 是存根，输出垃圾。。focal 说明运行时入口依赖 SEL 位置，候选给出 Host 语义顺序 key 与 TPL 位打包后缀不一致时路由到错误 sub-kernel 的实例；二者覆盖从 Host key 生产到运行时入口选择的连续排障链。
-<!-- cannbot:related:end -->

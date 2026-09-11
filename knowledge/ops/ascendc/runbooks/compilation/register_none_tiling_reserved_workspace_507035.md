@@ -114,11 +114,3 @@ ws[0] = kReservedWorkspace + static_cast<size_t>(2) * static_cast<size_t>(derive
 ## 误诊
 
 前序开发者曾把 `kReservedWorkspace` 设为 `2MB + 2*C*4`（仍是 2MB 量级），仍未解决崩溃——因为 2MB 远小于 16MB。正确做法是改成 16MB，不是在 2MB 的基础上加用户量。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSysWorkSpacePtr](../../apis/simd_api/basic_api/resource_management/workspace/get_sys_work_space_ptr.md)（`exemplifies`）：使用系统workspace时，host侧开发者需要自行申请系统workspace的空间，其预留空间大小可以通过GetLibApiWorkSpaceSize接口获取。`usrWorkspace = workspace + 16MB` 落在仅有 ~2MB 的 buffer 末尾之外 ~14MB，kernel 写 multiplier/addend 时 GM 越界 → 507035 向量核异常。接口卡的系统区申请合同直接解释该故障的越界地址；Host 总量计入平台 reserved 区即可同时覆盖系统指针和用户段。
-- [GetUserWorkspace](../../apis/simd_api/basic_api/resource_management/workspace/get_user_workspace.md)（`exemplifies`）：“host `GetWorkspaceSize` → `workspaces［0］` → 框架生成的 kernel wrapper → `SetSysWorkspaceForce(workspace)` + `usrWorkspace = workspace + AscendC::RESERVED_WORKSPACE` → kernel `workspace` 形参。”展示 wrapper 将用户段偏移 RESERVED_WORKSPACE 后才传入 kernel；“获取用户使用的workspace指针。Kernel直调开发方式下，如果未开启HAVE_WORKSPACE编译选项，框架不会自动设置系统workspace。如果使用了Matmul Kernel侧接口等需要系统workspace的高阶API，kernel侧需要通过SetSysWorkSpace设置系统workspace，此时用户workspace需要通过该接口获取。”定义系统区与用户区共存时应获取用户 workspace。该实例用于验证 Host 总大小必须包含保留区与用户写入量。
-- [RegisterNoneTiling](../../apis/simd_api/basic_api/kernel_tiling/register_none_tiling.md)（`exemplifies`）：“`REGISTER_NONE_TILING` 模式下，框架生成的 kernel wrapper 调用 `SetSysWorkspaceForce(workspace)` 把整个 workspace 起始段留作系统保留区，再计算 `usrWorkspace = workspace + AscendC::RESERVED_WORKSPACE` 并把 `usrWorkspace` 作为 `workspace` 形参传给 kernel。”把 507035 的触发范围锁定在 REGISTER_NONE_TILING 的无 TilingFunc 路径；“Kernel侧使用标准C++语法定义TilingData时，告知框架使用未注册结构体，配套GET_TILING_DATA系列接口获取TilingData。”定义该注册模式的框架入口。两端共同提示此模式下 workspace 总量不能沿用 TilingFunc 路径的假设。
-<!-- cannbot:related:end -->

@@ -112,10 +112,3 @@ AscendC::DumpAccChkPoint(srcLocal, index, countOff, dumpSize);
 DumpTensor: desc=56, addr=0x40, data_type=float16, position=UB, dump_size=15
 [4.710938, 4.707031, 4.773438, 2.271484, 4.347656, 2.359375, 1.284180, 1.073242, 1.242188, 2.298828, 0.521973, 1.099609, 1.880859, 1.226562, 3.916016]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DumpTensor](dump_tensor.md)（`related`）：DumpAccChkPoint 卡说明“区别于 DumpTensor，支持指定偏移位置开始打印。”；DumpTensor 卡提供“打印Tensor内容并支持自定义标签，可选传入Shape信息按指定维度排列展示数据。”，两者共同给出按偏移截取与按 shape 展示之间的调试接口选型。
-<!-- cannbot:related:end -->

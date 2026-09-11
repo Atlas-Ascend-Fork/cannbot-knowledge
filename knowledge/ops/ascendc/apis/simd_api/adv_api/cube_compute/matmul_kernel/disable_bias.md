@@ -54,10 +54,3 @@ mm.DisableBias();    //清除tiling中的Bias标志位
 mm.IterateAll(gm_c);
 mm.End();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ClearBias](clear_bias.md)（`same_topic`）：DisableBias接口与该接口的功能相同，建议使用DisableBias。 清除Bias标志位，表示Matmul计算时没有Bias参与。；清除Bias标志位，表示Matmul计算时没有Bias参与。。焦点卡明确将同功能旧入口迁移为候选 DisableBias。
-<!-- cannbot:related:end -->

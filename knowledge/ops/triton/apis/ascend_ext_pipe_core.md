@@ -126,15 +126,3 @@ class my_matmul_reduce:
 
 - [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py)
 - [semantic.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/semantic.py)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
-- [fixpipe 操作（L0C → UB 搬运与融合后处理）](./ascend_ext_fixpipe.md)（`related`）：“fixpipe 操作（PIPE_FIX 详解）”
-- [sync_block_set / wait / all 同步操作](./ascend_ext_sync.md)（`related`）：“同步操作（PIPE 在同步中的使用）”
-- [自定义算子注册与调用（register_custom_op / custom）](./ascend_ext_custom_op.md)（`related`）：“自定义算子（CORE/PIPE/MODE 注册）”
-- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
-
-<!-- cannbot:related:end -->

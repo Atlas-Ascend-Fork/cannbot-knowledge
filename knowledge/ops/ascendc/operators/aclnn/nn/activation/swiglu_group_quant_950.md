@@ -1039,9 +1039,3 @@ ProcessSwigluQuant(tokenStart, tokenEnd);
 | 同步 | TQue、PipeBarrier、hard event、SyncAll 图可复用 | 不可删除 R-004 两次 SyncAll 或 origin/quant 间 event | dynamic/static/base helpers |
 | 精度与尾块 | FP32 SwiGLU、RINT/CAST_ROUND、cur row/d/token tail | 非有限屏蔽、`1e-4/1e-8`、FP4 打包字节数 | vector helpers/逐 Route Process |
 | 失败边界 | Host 非法组合失败，unknown key 静默返回 | 不把 1100/2100 当作 Host 可达；不外推 A2/A3 | `GetAttr/SetTilingKey/swiglu_group_quant` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwigluGroupQuantGrad 950 ACLNN 算子知识](swiglu_group_quant_grad_950.md)（`related`）：“s = x0 / (1 + exp(-x0)) * x1”；“grad_x0 = g * x1' * dsilu”。前者定义 SwigluGroupQuant 中被量化前的 SwiGLU 正向值，后者给出同一拆分输入的反向梯度。
-<!-- cannbot:related:end -->

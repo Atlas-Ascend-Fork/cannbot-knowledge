@@ -587,9 +587,3 @@ AscendC::MicroAPI::DataCopyUnAlign(curDstAddr, dstReg1, uReg, mainFP32);
 | 同步 | MTE2_V、V_MTE3、MTE3_MTE2/V、LocalMemBar | producer 完成前不得覆盖/store 重排 | `Compute/CopyOut/CopyCatVF` |
 | 精度与尾块 | cross16 RINT；widen ZERO/ONE+Interleave；短 chunk 显式零 | CastTrait、mask、tailFP32Fir/Sec、partial-row 次序 | `DoCopyCatVF/DoScatterCatVF` |
 | 失败边界 | 无 key fallback，scatter 仅内部回退 sequential | 不得把 SDK 外部行为推测为成功/错误 | `Compute/Tiling4ChunkCat` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ChunkCat A2/A3 ACLNN 算子知识](chunk_cat.md)（`same_topic`）：每个输入沿 `dim=0` 切为 `numChunks` 个上界等宽块，逐块横向拼接，短尾块补零，并转换到 `out` dtype；把每个输入沿 `dim=0` 切为 `numChunks` 个等宽上界块，逐块横向拼接并把短尾块补零，最后转换到 `out` dtype。两卡定义完全相同的 dim=0 分块、横向拼接、短尾补零与输出类型转换语义，差别是分别记录 950 与 A2/A3 实现，属于同一 ChunkCat 算子的架构分支。
-<!-- cannbot:related:end -->

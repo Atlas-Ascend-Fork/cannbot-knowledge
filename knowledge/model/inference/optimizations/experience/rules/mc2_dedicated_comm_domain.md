@@ -45,10 +45,3 @@ platforms:
 
 - 新建独立 `moe_ep_group_mc2` + `dispatch_kwargs` 追加 `comm_alg=fullmesh_v2` + buffer 从 `moe_ep_buffer_size` 归位到 `moe_ep_mc2_buffer_size`、`moe_ep_group` 删 `hccl_buffer_size` 回落默认：diff 事实 @d4b8eb61；「只有 decode mc2 需要单独配置这个 size」「moe_ep_group use default」为维护者确认。溯源下探 [cann-recipes-infer-pr-421-refactor-mc2-use-independent-communication-group](https://gitcode.com/cann/cann-recipes-infer/merge_requests/421)。
 - 「MC2 不能与任何其它通信域复用、即使 prefill EP/CP 也不能」「dispatch/combine 不含 GMM」：维护者确认（严重级 review 纠正 + 作者采纳）+ `set_mc2_kwargs` 独立组 + fullmesh_v2 diff 事实 @895615c；`set_mc2_kwargs` 在 `process_weights_after_loading` 预构建避免图区构建。溯源下探 [cann-recipes-infer-pr-462-refactor-longcat-flash-lite-tnd-pa-npugraph-ex-mc2-ep-decode](https://gitcode.com/cann/cann-recipes-infer/merge_requests/462)。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MC2 融合通信算子的平台/结构兼容性约束与回退（A2 专家上限、mm-reduce-scatter、fullmesh_v2 零专家）](../../../runbooks/runtime/mc2_fused_comm_op_compatibility_fallback.md)（`related`）：适用边界：只约束 fullmesh_v2 这条通信算法；零专家 MoE 仍建独立 `moe_ep_group_mc2` 通信域（拓扑一致），只是 dispatch 走默认 `comm_alg`。；**MC2 dispatch/combine 只能独占通信域**，不能与任何其它通信域复用——**连 prefill 的 EP/CP 通信域都不能复用**。这不是「为避 TP 冲突」，而是这对算子本身要求非共享通信组（`comm_alg="fullmesh_v2"` 拓扑的硬要求）。；兼容性 runbook 在零专家回退后仍要求独立 MC2 域，优化卡给出该通信域不可复用的普遍硬约束。
-- [多卡 HCCL 通信组/域构建的规则与陷阱（全秩组哨兵 / MC2 专用域 / 并发流独立域）](hccl_comm_group_construction_pitfalls.md)（`same_topic`）：“**MC2 dispatch/combine 只能独占通信域**，不能与任何其它通信域复用——**连 prefill 的 EP/CP 通信域都不能复用**。这不是「为避 TP 冲突」，而是这对算子本身要求非共享通信组（`comm_alg="fullmesh_v2"` 拓扑的硬要求）。”与“MoE 走 MC2 融合 dispatch/combine（`npu_moe_distribute_dispatch_v2` / `combine_v2`）时，即使与常规 `moe_ep_group` 覆盖**完全相同的 ranks**，也要为它单建 `moe_ep_group_mc2`（`allow_physical_reuse=False`）、并捕获其 HCCL comm name（`return_name=True` → `get_group_name`）传给算子。”分别限定通信域独占性与构造方法。两条规则围绕同一个 MC2 专用通信域合同，后一条进一步给出禁止物理复用和传递 comm name 的构造方法。
-<!-- cannbot:related:end -->

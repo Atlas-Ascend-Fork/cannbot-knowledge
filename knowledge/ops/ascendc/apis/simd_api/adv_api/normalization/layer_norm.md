@@ -303,21 +303,7 @@ platforms:
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [LayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_950.md)（`related`）：｜ 计算语义 ｜ 对末尾 `normalizedShape` 轴计算 `mean`、`rstd=1/sqrt(var+eps)` 与 `y=(x-mean)*rstd*gamma+beta`；gamma/beta 可缺省。 ｜；计算公式：y = γ*(x-μ)/sqrt(σ²+ε) + β，其中γ为缩放系数，β为平移系数，ε为防除零系数。。ACLNN 算子与 Ascend C 高阶 API 共享 LayerNorm 公式，接口卡可用于理解算子 Kernel 层所实现的归一化核心。
-- [LayerNorm Tiling](layer_norm_tiling.md)（`same_topic`）：“host侧Tiling接口，用于获取LayerNorm kernel计算所需的Tiling参数，分两步：通过GetLayerNormMaxMinTmpSize获取最大和最小临时空间大小；通过GetLayerNormNDTilingInfo（或GetLayerNormTmpBufferFactorSize）获取kernel侧所需tiling参数。”与“提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持不同输入/输出shape模式。Tiling参数通过LayerNorm Tiling获取。”分别给出双端正文事实；LayerNorm Kernel 明确消费 LayerNorm Tiling，Tiling 卡生成临时空间范围与 LayerNormTiling 结构，二者定义同一归一化接口的 Host/Device 参数交接。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 3 / 3 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AdaLayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/ada_layer_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `LayerNorm(...)` 的直接调用（第 305 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_full_load.h#L305)
-- [AdaLayerNormQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/ada_layer_norm_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `LayerNorm(...)` 的直接调用（第 305 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_full_load.h#L305)
-- [LayerNormWithImplMode 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_with_impl_mode_950.md)（`related`）：算子声明的固定版本源码包含对 `LayerNorm(...)` 的直接调用（第 215 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/arch35/layer_norm_v4_two_pass.h#L215)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [LayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_950.md)
+- [AdaLayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/ada_layer_norm_950.md)
+- [AdaLayerNormQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/ada_layer_norm_quant_950.md)
+- [LayerNormWithImplMode 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_with_impl_mode_950.md)

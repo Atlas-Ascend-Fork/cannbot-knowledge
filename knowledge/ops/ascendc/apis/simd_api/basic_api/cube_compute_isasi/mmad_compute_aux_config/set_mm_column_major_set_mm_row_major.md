@@ -48,10 +48,3 @@ __aicore__ inline void SetMMRowMajor()   // 代表CUBE将首先通过N方向，�
 ```cpp
 AscendC::SetMMRowMajor();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [UnitFlag](../mmad_compute_key_features/unit_flag.md)（`related`）：开启 unitFlag 时需配合设置：Fixpipe 开启 NZ2ND/ChannelMerge 时用 SetMMRowMajor，否则用 SetMMColumnMajor。；需配合 SetMMColumnMajor/SetMMRowMajor 设置方向：Fixpipe 开启 NZ2ND/ChannelMerge 时用 SetMMRowMajor，否则用 SetMMColumnMajor。；两卡从方向配置与 UnitFlag 两端给出同一组合契约，直接支撑实现选型。
-<!-- cannbot:related:end -->

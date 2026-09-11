@@ -860,9 +860,3 @@ CHECK_RET(outResult != nullptr, ACLNN_ERR_INNER_NULLPTR);
 | 同步 | 输入/结果 ping-pong 经 MTE2→V→MTE3 Mutex 转移 | 同 parity buffer 在消费者完成前不得覆盖 | `GetTensor`、`ReleaseTensor` |
 | 精度与尾块 | FP32 三级 Select；T16 unpack→FP32→RINT pack；former/tail + mask | Select 顺序、Inf bit-pattern、cast traits、有效 count/mask 不得擅改 | `NanToNumCustom`、`ElementwiseSch::Process` |
 | 失败边界 | API/Tiling/launcher 任一失败即返回；无 AiCPU fallback | 不得把 A2/A3 缺失 body、FLOAT64 注释或 format warning当作正式支持 | `CheckDtypeValid`、`NanToNum`、`RunTiling` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NanToNum 950 ACLNN 算子知识](nan_to_num_950.md)（`same_topic`）：最终写回 `selfRef` 的原 view；本卡不包含原地变体 `aclnnInplaceNanToNum`。两卡共享 Nan/±Inf 替换核心，但前者通过临时输出和 ViewCopy 提交到原 view，后者明确只描述 out-of-place API；对照可选择别名语义并核验写回链。
-<!-- cannbot:related:end -->

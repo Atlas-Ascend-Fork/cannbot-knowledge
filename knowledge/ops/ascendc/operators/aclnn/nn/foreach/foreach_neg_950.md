@@ -386,9 +386,3 @@ Host 只按总元素数选择一次 blockDim，Device 在同一 Kernel 中让同
 | 同步 | 无共享写、无需 barrier/atomic | 必须保持每个 `idx` 唯一和单 stream launch ordering | `OpForeachNegSimt` |
 | 精度与尾块 | 原 dtype unary minus、`idx<count` tail | 不得引入隐式 Cast/round；空 Tensor 必须在地址使用前跳过 | `OpForeachNegSimt` |
 | 失败边界 | 非四 dtype Host 失败 | 256 Tensor 容量、int32 窄化、totalElements 与 UB 减法边界 | `ForeachNegTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachNeg A2/A3 ACLNN 算子知识](foreach_neg.md)（`same_topic`）：对 TensorList 中每个元素求相反数：`y［i］［j］ = -x［i］［j］`；对 TensorList 中每个元素执行 `y［i］［j］ = -x［i］［j］`。两卡具有相同公开入口和逐 TensorList 求负语义；A2/A3 使用 Vector Queue 路线，950 使用 SIMT grid-stride，适合作为跨架构实现对照。
-<!-- cannbot:related:end -->

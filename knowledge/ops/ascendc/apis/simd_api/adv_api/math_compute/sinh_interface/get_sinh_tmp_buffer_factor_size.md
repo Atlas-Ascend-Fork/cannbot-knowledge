@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetSinhTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Sinh](sinh.md)（`related`）：“临时空间大小通过GetSinhMaxMinTmpSize获取”给出容量范围入口，“currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize”进一步把固定容量换算为单次计算元素数，二者共同完成 Tiling。
-<!-- cannbot:related:end -->

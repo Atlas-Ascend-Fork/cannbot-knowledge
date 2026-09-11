@@ -90,10 +90,3 @@ valueIn = 0x00FFULL;
 sffValue = AscendC::GetSFFValue<0>(valueIn); // 返回8
 sffValue = AscendC::GetSFFValue<1>(valueIn); // 返回0
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_ffs（标量计算）](../../c_api/scalar_compute/scalar_bit/asc_ffs.md)（`same_topic`）：FindFirstSet接口，输入数据的二进制表示中从最低位向最高位查找第一个值为1的位，并返回其位置，如果没找到则返回-1。；查找uint64_t类型数值的二进制表示中从最低有效位开始的首个指定比特值（0或1）的位置，如果没找到则返回-1。。两张接口卡共享从低位搜索首个目标 bit 的核心契约，GetSFFValue 将 asc_ffs 的固定查 1 扩展为可指定查 0 或 1。
-<!-- cannbot:related:end -->

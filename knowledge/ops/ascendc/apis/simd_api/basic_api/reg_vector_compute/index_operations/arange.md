@@ -84,25 +84,13 @@ __simd_vf__ inline void ArangeVF(__ubuf__ T* dstAddr, T scalarValue, uint32_t on
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 42 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)（`related`）：算子声明的固定版本源码包含对 `Arange(...)` 的直接调用（第 131 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/concat/op_kernel/arch35/concat_base.h#L131)
-- [SwiGluGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/swi_glu_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `Arange(...)` 的直接调用（第 313 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/arch35/swi_glu_grad_ub_rearrange.h#L313)
-- [MhcSinkhorn 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_sinkhorn_950.md)（`related`）：算子声明的固定版本源码包含对 `Arange(...)` 的直接调用（第 196 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn.h#L196)
-- [ChunkCat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat_950.md)（`related`）：算子声明的固定版本源码包含对 `Arange(...)` 的直接调用（第 260 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/chunk_cat/op_kernel/chunk_cat_arch35.h#L260)
-- [Embedding 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/embedding_950.md)（`related`）：算子声明的固定版本源码包含对 `Arange(...)` 的直接调用（第 125 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_v2/op_kernel/arch35/gather_v2_ga_all_load.h#L125)
-- [MhcSinkhornBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_sinkhorn_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `Arange(...)` 的直接调用（第 512 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_simd.h#L512)
-- [ReflectionPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/reflection_pad_2d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `Arange(...)` 的直接调用（第 1038 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_mirror_gather.h#L1038)
-- [GatherNd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/gather_nd_950.md)（`related`）：算子声明的固定版本源码包含对 `Arange(...)` 的直接调用（第 38 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_nd/op_kernel/arch35/gather_nd_all_load.h#L38)
-- [MhcSinkhorn 950 Direct Invoke 算子知识](../../../../../operators/direct/transformer/mhc/mhc_sinkhorn_950.md)（`related`）：算子声明的固定版本源码包含对 `Arange(...)` 的直接调用（第 196 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn.h#L196)
-- [ReplicationPad2d 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/replication_pad_2d_950.md)（`related`）：算子声明的固定版本源码包含对 `Arange(...)` 的直接调用（第 266 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3/op_kernel/arch35/pad_edge_gather.h#L266)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)
+- [SwiGluGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/swi_glu_grad_950.md)
+- [MhcSinkhorn 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_sinkhorn_950.md)
+- [ChunkCat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat_950.md)
+- [Embedding 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/embedding_950.md)
+- [MhcSinkhornBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_sinkhorn_backward_950.md)
+- [ReflectionPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/reflection_pad_2d_backward_950.md)
+- [GatherNd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/gather_nd_950.md)
+- [MhcSinkhorn 950 Direct Invoke 算子知识](../../../../../operators/direct/transformer/mhc/mhc_sinkhorn_950.md)
+- [ReplicationPad2d 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/replication_pad_2d_950.md)

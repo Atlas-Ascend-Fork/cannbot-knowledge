@@ -72,10 +72,3 @@ TRACE_START(0x2);
 Add(zLocal, xLocal, yLocal, dataSize);
 TRACE_STOP(0x2);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TraceStop](trace_stop.md)（`related`）：“用于表示起始位置打点，一般与TRACE_STOP配套使用。”给出焦点端事实；“用于表示终止位置打点，一般与TRACE_START配套使用。”给出候选端事实。两端明确互为配套的起止打点接口，联合使用才能形成完整的调优测量区间。
-<!-- cannbot:related:end -->

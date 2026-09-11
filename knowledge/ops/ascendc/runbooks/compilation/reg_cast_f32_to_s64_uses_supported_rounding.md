@@ -161,9 +161,3 @@ __simd_vf__ inline void cummin_cast_i64_vf(
 - 因为输入“理论上是整数”就使用 f322s64 不支持的 `CAST_NONE`；
 - 看到目标构建成功便宣称 Reg::Cast 的运行时 int64 输出正确；
 - 忽略 fp32 精确整数范围和 int64 范围约束。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RoundMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/round_mode.md)（`exemplifies`）：`CAST_NONE` 在这条 f32→s64 VCONV 实例化中对应不受支持的舍入编码。；枚举类型，用于设置精度转换时的舍入模式，支持向偶数舍入、向下、向上、四舍五入、截断等多种模式。。Runbook 定位 f32→s64 不能使用 CAST_NONE 并改用 CAST_TRUNC，RoundMode 卡给出可配置舍入枚举；联合阅读可从编译静态断言回到合法 trait 选择。
-<!-- cannbot:related:end -->

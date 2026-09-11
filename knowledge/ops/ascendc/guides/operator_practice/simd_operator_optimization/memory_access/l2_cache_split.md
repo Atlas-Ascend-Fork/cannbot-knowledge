@@ -160,10 +160,3 @@ extern "C" __global__ __aicore__ void simple_kernel(__gm__ uint8_t* srcGm, __gm_
 ```
 
 更多完整样例请参考[L2 Cache切分的算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_l2cache)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Matmul高阶API开启L2 Cache切分](../../best_practices/matmul_tuning_cases/matmul_l2_cache_split.md)（`same_topic`）：Matmul 案例的适用条件是“输入和输出的数据量超过L2 Cache的大小。”；通用指南给出决策“当输入和输出数据的数据量超过L2 Cache大小时，Tiling中开启L2 Cache切分策略。”。两卡围绕同一切分决策，案例进一步给出 Matmul 分块与拖尾选法。
-<!-- cannbot:related:end -->

@@ -69,19 +69,5 @@ mm.End();
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetScaleAType](../matmul_tiling/set_scale_a_type.md)（`related`）：MxMatmul场景，设置矩阵乘中左矩阵的量化系数矩阵scaleA。；MxMatmul场景，设置scaleA矩阵的位置、数据格式、是否转置等信息，这些信息需要和Kernel侧的设置保持一致。如果不调用本接口，scaleA矩阵的信息将与SetAType中设置的A矩阵的信息保持一致。；SetTensorScaleA 在 Kernel 侧提供 MxMatmul 的 scaleA 张量，SetScaleAType 在 Tiling 侧声明同一张量的位置、格式和转置，必须按同一合同配置。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [TransposeQuantBatchMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_950.md)（`related`）：算子正文包含对 `SetTensorScaleA(...)` 的直接调用；本卡提供该接口契约。
-- [QuantGroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_grouped_mat_mul_allto_allv_950.md)（`related`）：算子正文包含对 `SetTensorScaleA(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [TransposeQuantBatchMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_950.md)
+- [QuantGroupedMatMulAlltoAllv 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_grouped_mat_mul_allto_allv_950.md)

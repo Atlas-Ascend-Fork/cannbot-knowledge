@@ -692,9 +692,3 @@ __simt_callee__ inline CalcT LerpCompute(CalcT startVal, CalcT endVal, CalcT wei
 | 同步 | grid-stride互斥，无atomic/barrier | block/thread到flatIdx公式 | `OpForeachLerpListSimtKernel` |
 | 精度与尾块 | CalcT=float、双公式、abs阈值；flat<E | strict `<0.5`、path对应、dtype cast边界 | `LerpCompute`/VF loop |
 | 失败边界 | E阈值切IDX、tensor≤256常规检查、weight等长 | x2/out条件需由外层保证；大数窄化/溢出不可依赖 | TilingFunc/Process |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLerpList A2/A3 ACLNN 算子知识](foreach_lerp_list.md)（`same_topic`）：对三个等长 TensorList 的对应 Tensor 逐元素计算 `y=x1+weight*(x2-x1)`；实现根据 `abs(weight)<0.5` 在两个代数等价公式之间选择。；拼接全部 Tensor 的线性域，对每元素计算 lerp；`abs(weight)<0.5` 取 `x1+w*(x2-x1)`，否则取 `x2+(w-1)*(x2-x1)`。两端公开入口和数学语义相同，A2/A3 采用 AIV Queue/Vector，950 采用 SIMT VF 与 int32/int64 索引路线。
-<!-- cannbot:related:end -->

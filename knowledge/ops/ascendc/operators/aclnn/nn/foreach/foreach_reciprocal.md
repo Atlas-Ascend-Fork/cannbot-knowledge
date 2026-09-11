@@ -559,9 +559,3 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 | 同步 | Queue + V_MTE3 + MTE3_MTE2；BF16 另有 PIPE_V | 同一 slot 输出完成前不得被 MTE2 覆盖 | `ForeachImplictOutputLevelZeroApi::Compute` |
 | 精度与尾块 | FP16/FP32 原 dtype；BF16 FP32 Div 后 CAST_RINT | repeat≤255、stride `{1,0,1,8,0,8}`、tail mask 与精确 DMA bytes | `InnerComputer::Compute{PerCast}` |
 | 失败边界 | Host 检查失败关闭；无 Device fallback | 未知 key、>50 Tensor、编译 guard 不能静默放行 | `CheckOpInfo`、entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachReciprocal 950 ACLNN 算子知识](foreach_reciprocal_950.md)（`same_topic`）：“｜ 计算语义 ｜ 对 TensorList 的每个有效元素执行 `y_i［j］ = 1 / x_i［j］` ｜”与“｜ 计算语义 ｜ 对 TensorList 中每个有效元素执行 `y_i［j］=1/x_i［j］` ｜”分别来自双方当前正文。两卡实现同一 ForeachReciprocal 逻辑语义，但 A2/A3 使用 AIV Queue 与 Vector Div，950 使用 512-thread SIMT 和 GM 直访；对照可完成平台 route 与资源模型选型。
-<!-- cannbot:related:end -->

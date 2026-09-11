@@ -182,10 +182,3 @@ Matmul API开启纯Cube模式的完整样例请参考[纯Cube模式的Matmul样�
 ## 总结<a name="section252011820413"></a>
 
 在只有矩阵计算，没有矢量计算的场景下，可以考虑开启纯Cube模式，优化Matmul计算中的消息通信性能开销，提升算子性能。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [REGIST_MATMUL_OBJ](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/regist_matmul_obj.md)（`explains`）：纯 Cube 指南说明“用户使用Matmul高阶API编写算子代码时，可以使用REGIST_MATMUL_OBJ宏，无需区分AIV和AIC”，并据此对比 MIX 消息开销；接口卡则明确“初始化Matmul对象。”，把指南中的宏落到对象初始化及其 tiling/同步资源合同。
-<!-- cannbot:related:end -->

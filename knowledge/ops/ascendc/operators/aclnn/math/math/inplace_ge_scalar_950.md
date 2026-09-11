@@ -651,9 +651,3 @@ scalar x2 令 `is_need_call_bcast=false`，随后 `NoBcastCompute` 将分支类�
 | 同步 | AIV buffer mutex、scalar 两相缓存；AiCPU ParallelFor join | 两个 parity 均须初始化；CPU shard 不得重叠 | `BroadcastOneDimAdvanceSch::Process`; `NoBcastCompute` |
 | 精度与尾块 | promote dtype 比较；AIV 选择 byte 0/1；AiCPU bool store | 不得按 self 原 dtype比较混合 scalar；tail 仅提交有效元素 | `CheckPromoteType`; `GreaterEqualCompute` |
 | 失败边界 | 空域 Host 短路；dtype selector固定 AiCore/AiCPU；A2/A3 不发布 | 不得补造 arch32、Tensor 或非原地路线 | `CheckParams`; `IsAiCoreSupport`; `CMakeLists.txt` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceGeTensor 950 ACLNN 算子知识](inplace_ge_tensor_950.md)（`same_topic`）：`other` 为同一公开集合的 scalar `other` ｜ ND，0–8 维，可非连续 ｜ 同 `selfRef` ｜ 必选输入；shape 必须可向 `selfRef.shape` 广播。 两张 950 原地比较卡共享 BOOL 临时结果回写链，other 是单标量还是可广播 Tensor 直接决定入口和广播校验。
-<!-- cannbot:related:end -->

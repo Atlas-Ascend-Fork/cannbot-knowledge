@@ -225,11 +225,3 @@ struct AntiQuantizeParams {
 输出数据（dstLocal），此时dstLocal = srcLocal:
 [-4, 2, -2, -3, -1, -4, 1, 3, 4, 1, -2, 0, ... 1]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAntiQuantizeMaxMinTmpSize](get_anti_quantize_max_min_tmp_size.md)（`related`）：“host侧Tiling接口，用于获取AntiQuantize接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”定义 Host sizing；“提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetAntiQuantizeMaxMinTmpSize获取。”明确 Kernel 消费点。
-- [AscendAntiQuant](ascend_anti_quant.md)（`same_topic`）：“按元素做伪量化计算（如int8_t伪量化为half），计算公式：dst = scale * (src + offset)。支持PER_CHANNEL（按通道量化）和PER_GROUP（按组量化）策略，支持输入转置配置。推荐使用AntiQuantize替代本接口。支持950PR/950DT、A3、A2训练/推理、推理AI Core、Kirin X90/9030。”与“按元素做伪量化计算（如int8_t伪量化为half），将低精度数据类型转换为高精度数据类型。最多支持二维输入。推荐使用本接口替代AscendAntiQuant，因其在不同量化场景下形式更统一。仅Ascend 950PR/950DT支持。”是双方正文中的具体合同。旧接口正文明确指向 AntiQuantize，替代接口又反向声明取代 AscendAntiQuant；二者围绕同一伪量化核心合同，可用于迁移时核对策略与平台差异。
-<!-- cannbot:related:end -->

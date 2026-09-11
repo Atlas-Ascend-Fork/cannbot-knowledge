@@ -586,9 +586,3 @@ workspace_total(core op) = 32 B reserved, 0 B consumed
 | 同步 | Queue + V_MTE3 + MTE3_MTE2；BF16 另有 PIPE_V | Free/覆盖必须发生在 consumer 完成后 | `ForeachImplictOutputLevelZeroApi::Compute`、BF16 `ComputePerCast` |
 | 精度与尾块 | 原 dtype Sub；BF16 Cast/Sub/Cast；精确字节 tail | repeat≤255、stride `{1,0,1,8,0,8}`、BF16 `CAST_RINT` | `InnerComputer::Compute` |
 | 失败边界 | Host 校验失败阻断 launch；未知 key 无 body | Tensor/core 容量、BF16 编译 guard、UB 上界不得外推 | `CheckOpInfo`、`foreach_neg` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachNeg 950 ACLNN 算子知识](foreach_neg_950.md)（`same_topic`）：对 TensorList 中每个元素求相反数：`y［i］［j］ = -x［i］［j］`；对 TensorList 中每个元素执行 `y［i］［j］ = -x［i］［j］`。两卡具有相同公开入口和逐 TensorList 求负语义；A2/A3 使用 Vector Queue 路线，950 使用 SIMT grid-stride，适合作为跨架构实现对照。
-<!-- cannbot:related:end -->

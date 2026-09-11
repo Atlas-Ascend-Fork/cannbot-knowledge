@@ -237,14 +237,3 @@ platforms:
         mm1.IterateBatch(gm_c[batchOffsetC], batchA, batchB, false);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Batch Matmul基础功能](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/batch_matmul_basics.md)（`explains`）：通过IterateBatch接口批量处理Matmul，可以有效提升带宽利用率。；调用一次IterateBatch，可以计算出多个singleCoreM * singleCoreN大小的C矩阵。；指南给出小 shape 批处理的性能动机，API 卡给出一次调用产生多个 C 矩阵的执行合同。
-- [IterateNBatch](iterate_n_batch.md)（`related`）：单次Matmul计算处理的shape比较小时，由于每次计算均涉及到内部的通信，可能会影响性能，该接口提供批量处理Matmul的功能，调用一次IterateBatch，可以计算出多个singleCoreM * singleCoreN大小的C矩阵。；调用一次IterateNBatch，会进行N次IterateBatch计算，计算出N个多Batch的singleCoreM * singleCoreN大小的C矩阵。在调用该接口前，需将MatmulConfig中的isNBatch参数设为true，开启多Batch输入多Batch输出功能，并调用SetWorkspace接口申请临时空间，用于缓存计算结果，即IterateNBatch的结果输出至SetWorkspace指定的Global Memory内存中。；IterateNBatch 直接以 IterateBatch 为单次计算单元，并新增 isNBatch 与 workspace 输出合同。
-- [SetBatchNum](set_batch_num.md)（`related`）：在不改变Tiling的情况下，重新设置多Batch计算的Batch数。；调用一次IterateBatch，可以计算出多个singleCoreM * singleCoreN大小的C矩阵。；SetBatchNum 调整当前 Matmul 对象的 batchA/batchB，随后 IterateBatch 按该多 Batch 状态一次产出多个 C 矩阵，形成运行期批数设置到批量执行的调用链。
-- [SetBatchNum](../matmul_tiling/set_batch_num.md)（`related`）：“调用IterateBatch接口之前，需要在Host侧Tiling实现中通过本接口设置多Batch计算的Batch数”；“调用一次IterateBatch，可以计算出多个singleCoreM * singleCoreN大小的C矩阵”。SetBatchNum 生产 IterateBatch 必需的 Batch Tiling 参数，后者按该参数批量计算。
-- [WaitIterateBatch](wait_iterate_batch.md)（`related`）：“等待IterateBatch异步接口或IterateNBatch异步接口返回，支持连续输出到Global Memory。”与“异步场景需要配合WaitIterateBatch接口使用。”分别给出两端正文事实；WaitIterateBatch 是 IterateBatch 异步提交的明确等待端，联合阅读可确定 sync/waitIterateBatch 参数与完成点的正确组合。
-<!-- cannbot:related:end -->

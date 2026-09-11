@@ -157,10 +157,3 @@ $dst_i = scalar + src_i$
 输入数据src1Local：[1 2 3 ... 512]
 输出数据dstLocal：[2 3 4 ... 513]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Adds](adds.md)（`same_topic`）：Adds 的灵活标量位置变体，支持标量操作数在 src0 或 src1 位置灵活配置；计算公式 dst_i = src_i + scalarValue。前者是 Adds 对标量位置的 950 扩展，后者给出基础逐元素加标量语义，属于同一计算操作的通用版与变体。
-<!-- cannbot:related:end -->

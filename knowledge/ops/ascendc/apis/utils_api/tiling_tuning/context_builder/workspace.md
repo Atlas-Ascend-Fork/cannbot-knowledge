@@ -68,10 +68,3 @@ void AddWorkspaceData(gert::ContinuousVector *ws)
 }
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BuildTilingContext](build_tiling_context.md)（`related`）：“由于TilingContext与KernelContext、TilingParseContext内部数据排序不同，Workspace()只支持以调用BuildTilingContext()为前提来使用；其他场景建议用Outputs接口，否则发生未定义行为。”把 BuildTilingContext 设为 Workspace() 的硬前置条件；“构造KernelRunContextHolder的对象，该对象可通过GetContext接口获取TilingContext类型的对象。”说明该构造调用产出可取得 TilingContext 的 holder。该边用于避免在 KernelContext/TilingParseContext 排布下误读 workspace。
-<!-- cannbot:related:end -->

@@ -80,20 +80,6 @@ __aicore__ inline void SetAtomicType()
 根据约束说明可知，使用[SetAtomicAdd](set_atomic_add.md)、[SetAtomicMax](set_atomic_max_isasi.md)、[SetAtomicMin](set_atomic_min_isasi.md)时，已通过模板参数指定原子操作的数据类型，无需额外调用`SetAtomicType`接口，因此本接口不提供调用示例。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [DisableDmaAtomic](disable_dma_atomic.md)（`same_topic`）：函数原型：template <typename T> __aicore__ inline void SetAtomicType(AtomicType atomicType)。模板参数T指定数据类型。参数：atomicType为原子操作类型枚举。约束：与DisableDmaAtomic配合使用。头文件：basic_api/kernel_operator_atomic_intf.h。 调用后，后续从UB/L0C/L1到GM的DataCopy搬运不再执行原子操作，恢复为普通覆盖写入。 SetAtomicType 选择随路原子类型，DisableDmaAtomic 在使用后清状态，避免后续搬运继续执行原子操作。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 3 / 3 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `SetAtomicType(...)` 的直接调用（第 422 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention_grad/op_kernel/arc35/cube_op.h#L422)
-- [FlashAttentionScoreGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_grad.md)（`related`）：算子声明的固定版本源码包含对 `SetAtomicType(...)` 的直接调用（第 2634 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_kernel/arch22/flash_attention_score_grad_s1s2_bn2gs1s2_sab.h#L2634)
-- [FlashAttentionUnpaddingScoreGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_unpadding_score_grad.md)（`related`）：算子声明的固定版本源码包含对 `SetAtomicType(...)` 的直接调用（第 2634 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_kernel/arch22/flash_attention_score_grad_s1s2_bn2gs1s2_sab.h#L2634)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)
+- [FlashAttentionScoreGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_grad.md)
+- [FlashAttentionUnpaddingScoreGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_unpadding_score_grad.md)

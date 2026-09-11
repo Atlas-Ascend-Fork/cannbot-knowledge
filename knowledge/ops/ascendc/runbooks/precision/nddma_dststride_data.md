@@ -118,9 +118,3 @@ NDDMA `nddma_out_to_ub_b32` 在 `RANK=4` 模板（ND=4，含 filler 维度）下
 ## 坏实践
 
 - 用 `AscendC::printf` + `PipeBarrier<PIPE_ALL>` 在 MTE 流水中间 dump UB——触发 NPU 流同步错误 `507035`，破坏流水线时序（banned：kernel 内 printf + 全屏障 dump UB 不可用于 MTE 流水中间的数据采集）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_to_ub_nddma.md)（`exemplifies`）：“约束：一条指令所能获取的所有数据的地址范围宽度不能超过40位（1TB），即：；源操作数的每一次循环的大小为：(loopLpSize + loopSize + loopRpSize -1 ) * loopSrcSize，目的操作数的每一次循环的大小为：(loopLpSize + loopSize + loopRpSize -1 ) * loopDstSize，所有的循环的大小加起来不超过2的40次方位。；当每层循环的dstStride为升序序列，则不同循环间的地址空间不能交织或者重叠。以一个2D Padding场景为例，loopSrcStride、loopDstStride第二个维度的stride值最小是3，数据3不能落在维度1的循环中。；该接口通过NDDMA进行数据搬运，对应的NDDMA Cache大小为32KB，在使用DataCopy接口进行数据搬运前，需要使用NdDmaDci接口刷新缓存，否则多核场景下读写同一块Global Memory地址可能会导致部分核读取数据错误。”与“NDDMA `nddma_out_to_ub_b32` 在 `RANK=4` 模板（ND=4，含 filler 维度）下、当**实际维度 ≥ 2** 时，`loopDstStride` 参数被硬件错误应用，导致 GM→UB 搬运后 UB 内 data 错位；1 维（仅一个实际维度）时 filler 不触发该路径，搬运正确。被诊断的 NDDMA 搬运机制单元（`CopyInBrcImpl`，RANK≤5 分支）：”。API 规定 dstStride 地址空间约束，Runbook 给出多维 dstStride 被错误应用时的错位诊断。
-<!-- cannbot:related:end -->

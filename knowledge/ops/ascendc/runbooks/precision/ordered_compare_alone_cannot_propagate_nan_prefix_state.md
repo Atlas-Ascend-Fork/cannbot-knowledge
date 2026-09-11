@@ -271,9 +271,3 @@ constexpr bool kNanAwareV = std::is_same_v<X, half> || std::is_same_v<X, float>;
 
 - “只有一个极端输入失败，所以是评测器容差或随机误差”不成立：失败同时包含 NaN 位置与整数索引的大量不匹配，是离散语义错误。
 - 普通相等比较会让两个同位 NaN 被判不等；诊断脚本可能显示聚合布尔失败，但这不能覆盖设备输出逐项显示相同的事实，也不能作为放宽评测的理由。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [b16 running 经 fp32 回转会改写 NaN payload](bit_exact_b16_nan_payload_needs_original_dtype_running_value.md)（`related`）：“NaN 验证同时检查 `isnan`、原始位模式与索引，不能只做数值等价；”规定 payload 修复后的三项验收；“value 与 index 必须使用同一个最终选择掩码，否则值正确时索引仍可能漂移。”补足 NaN 前缀状态机中 values/indices 共享谓词的前置。
-<!-- cannbot:related:end -->

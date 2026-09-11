@@ -258,9 +258,3 @@ at::Tensor gather(const at::Tensor& x, const at::Tensor& index, int64_t dim)
 ## 误诊
 
 - 该错误发生在 host 入口的指针类型适配，不是 device kernel 的计算、同步、UB 或精度问题；修改 kernel body 不会消除编译器对 `static_cast<GM_ADDR>` 的拒绝。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [混合 SIMT 启动边界用 GM_ADDR 承接地址空间](mixed_simt_launch_boundary_uses_gm_addr.md)（`related`）：在 dav-3510 的 ASC 编译单元里，`GM_ADDR` 展开为带 `__gm__`/`cce_global` 地址空间限定的 `uint8_t*`，Bisheng 不接受用 C++ `static_cast` 把普通 `void*` 建立为该限定指针并据此报出 `casts away qualifiers`。混合编译的 `<<<>>>` host launch 边界按 `GM_ADDR`（`__gm__ uint8_t*`）封送地址，而 wrapper 形参提前收窄成具体 `__gm__ T*`，Bisheng 不在该边界隐式转换不同 pointee 类型的地址空间指针。两端共同限定 Host tensor 地址到混合 SIMT wrapper 的 ABI：入口先形成 GM_ADDR，wrapper 再恢复具体类型。
-<!-- cannbot:related:end -->

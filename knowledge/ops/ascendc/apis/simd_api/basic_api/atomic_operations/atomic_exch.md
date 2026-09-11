@@ -87,10 +87,3 @@ AscendC::DataCopy(yLocal, yGlobal, DATA_SIZE);
 ```
 
 完整样例请参考[scalar_atomic_operations样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/06_atomic/scalar_atomic_operations)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscAtomicExch](../../c_api/atomic/scalar_atomic/asc_atomic_exch.md)（`same_topic`）：在指定GM地址上进行原子交换操作。将address指向的GM地址上的旧值与输入值进行原子交换运算，将结果写回GM地址，返回修改前的旧值。仅Ascend 950PR/950DT支持。；对Global Memory中address指向的元素执行原子赋值操作，即将该元素值设置为val。两页描述同一 GM 原子交换语义，C scalar 页进一步给出流水同步与 DCache 一致性约束，能直接支撑接口选型和正确使用。
-<!-- cannbot:related:end -->

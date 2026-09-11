@@ -48,10 +48,3 @@ if self.platform_version == "950":
 
 - `dispatch_quant_mode` 新增 `"w4a8int4": 2`（与 `w8a8int8` 同值）、int4 权重-only、激活 `npu_dynamic_quant` 到 int8：diff 事实 @6857a2062f66。溯源下探 [cann-recipes-infer-pr-410-feat-w4a8int4](https://gitcode.com/cann/cann-recipes-infer/merge_requests/410)。
 - `platform_version=="950"` 门控 + `combine_kwargs["comm_quant_mode"]=4`（MXFP8）：diff 事实 + 维护者确认（`4` 表示走 mxfp8）@a9f61599688c；「外部不感知 / combine 通信内部量化」为作者披露，收益/精度影响未实测。溯源下探 [cann-recipes-infer-pr-450-feat-950-combine-quant](https://gitcode.com/cann/cann-recipes-infer/merge_requests/450)。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoE Dispatch/Combine V2（一体化融合算子）](../../../concepts/techniques/moe_dispatch_combine_v2.md)（`related`）：`torch_npu.npu_moe_distribute_dispatch_v2` / `npu_moe_distribute_combine_v2`（仓内文档亦称 **MC2** 路由）是把 MoE 专家并行（［expert-parallel］(../parallelism/expert_parallel.md)）的整条 All-to-All 路由链路收敛为**两个一体化融合算子**：；MoE token 派发（dispatch/combine）的量化模式由**激活 dtype** 决定、**不随权重位宽变**：`w4a8int4` 与 `w8a8int8` 同用 `dispatch_quant_mode = 2`（int8 派发）。int4 只作用于专家 grouped_matmul 的权重，激活侧仍走 a8（int8）per-token 动态量化（进 GMM 前 `npu_dynamic_quant`）。映射规律：`*a8int8 → 2`、`*a8mxfloat* → 4`，即 W4A8 与对应 W8A8 共用同一 dispatch 量化路径。。概念卡定义 dispatch/combine V2 调用链，规则卡补齐该链的 dispatch_quant_mode 与 950 combine 通信量化选项。
-- [MoE 专家 GMM 权重加载后处理与低比特量化调用约定：NZ 布局 / W4A8 bias 辅助矩阵 / W4A16 N-dim 重打包 / clip](moe_expert_gmm_weight_lowbit_prep.md)（`related`）：“MoE token 派发（dispatch/combine）的量化模式由**激活 dtype** 决定、**不随权重位宽变**：`w4a8int4` 与 `w8a8int8` 同用 `dispatch_quant_mode = 2`（int8 派发）。int4 只作用于专家 grouped_matmul 的权重，激活侧仍走 a8（int8）per-token 动态量化（进 GMM 前 `npu_dynamic_quant`）。”与“从 ［W8A8］(../../../concepts/quantization/w8a8c8.md) 迁到 ［W4A8］(../../../concepts/quantization/w4a8c8.md)（权重 4-bit 对称静态、激活 8-bit per-token 动态）时，直接照搬 W8A8 的 MoE GMM 方法会漏掉 W4A8 特有约定：”分别限定通信量化模式与专家权重约定。通信规则把 dispatch 模式绑定到激活 dtype，并明确 int4 仅属于专家 GMM 权重；GMM 规则进一步给出 W4A8 权重、scale、bias 与打包约定，二者共同划清同一低比特 MoE 任务链的通信侧和专家计算侧责任。
-<!-- cannbot:related:end -->

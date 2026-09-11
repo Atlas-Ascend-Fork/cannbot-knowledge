@@ -47,27 +47,13 @@ OpParamDef算子定义，OpParamDef请参考[OpParamDef](index.md)。
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ACLNN 561000 非连续张量需 AutoContiguous](../../../../runbooks/compilation/aclnn_561000_autocontiguous.md)（`exemplifies`）：在 `Input("self")` 的 `OpParamDef` 链尾追加 `.AutoContiguous()` 后，非连续 view（transpose/slice）用例 ST 通过；配置该参数，当单算子API（aclnnxxx）接口中的输入（aclTensor类型）是非连续tensor时，框架会自动将其转换为连续tensor。。运行手册用真实 transpose 和 slice 用例验证在 Input 定义追加 AutoContiguous 可修复非连续输入，API 卡解释其自动转换为连续 tensor 的框架行为，是规则在故障修复中的直接实例。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例（部分算子）
-
-展示 10 / 111 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [Rasterizer A2/A3 ACLNN 算子知识](../../../../operators/aclnn/cv/image/rasterizer.md)（`related`）：算子正文包含对 `AutoContiguous(...)` 的直接调用；本卡提供该接口契约。
-- [StridedSliceAssignV2 A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/strided_slice_assign_v2.md)（`related`）：算子正文包含对 `AutoContiguous(...)` 的直接调用；本卡提供该接口契约。
-- [FatreluMul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/fatrelu_mul.md)（`related`）：算子正文包含对 `AutoContiguous(...)` 的直接调用；本卡提供该接口契约。
-- [IncreFlashAttention A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/incre_flash_attention.md)（`related`）：算子正文包含对 `AutoContiguous(...)` 的直接调用；本卡提供该接口契约。
-- [AngleV2 A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/math/angle_v2.md)（`related`）：算子正文包含对 `AutoContiguous(...)` 的直接调用；本卡提供该接口契约。
-- [GeluMul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/gelu_mul.md)（`related`）：算子正文包含对 `AutoContiguous(...)` 的直接调用；本卡提供该接口契约。
-- [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)（`related`）：算子正文包含对 `AutoContiguous(...)` 的直接调用；本卡提供该接口契约。
-- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential.md)（`related`）：算子正文包含对 `AutoContiguous(...)` 的直接调用；本卡提供该接口契约。
-- [GeluMul 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/gelu_mul_950.md)（`related`）：算子正文包含对 `AutoContiguous(...)` 的直接调用；本卡提供该接口契约。
-- [AlltoAllvGroupedMatMul A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/allto_allv_grouped_mat_mul.md)（`related`）：算子正文包含对 `AutoContiguous(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Rasterizer A2/A3 ACLNN 算子知识](../../../../operators/aclnn/cv/image/rasterizer.md)
+- [StridedSliceAssignV2 A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/strided_slice_assign_v2.md)
+- [FatreluMul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/fatrelu_mul.md)
+- [IncreFlashAttention A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/incre_flash_attention.md)
+- [AngleV2 A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/math/angle_v2.md)
+- [GeluMul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/gelu_mul.md)
+- [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)
+- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential.md)
+- [GeluMul 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/gelu_mul_950.md)
+- [AlltoAllvGroupedMatMul A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/allto_allv_grouped_mat_mul.md)

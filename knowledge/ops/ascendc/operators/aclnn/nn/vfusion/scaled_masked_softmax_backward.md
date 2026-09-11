@@ -819,9 +819,3 @@ Host 把四种合法 shape 压成 mode 0–3；Device 用行号取模或 batch �
 | 同步 | normal 用 Queue/PIPE_V，large 用 MTE/V events | y→mask、mask→Vector、Vector→CopyOut 的依赖不能删 | norm/large body |
 | 精度与尾块 | 16-bit FP32 算术后 RINT；P padding 清零；GM crop D | 归约前必须清零 padding；最后 loop 三长度同步更新 | `DoSoftmaxGrad`; `SetParams/Process` |
 | 失败边界 | shape/dtype/fixTriuMask/UB 条件固定 | 不得把 950 实现信号当公开支持；不得声称存在 M=0 fallback | API checks；Tiling UB/key；产品表 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ScaledMaskedSoftmax A2/A3 ACLNN 算子知识](scaled_masked_softmax.md)（`related`）：“对末轴逐行计算 `q=g*y`、`z=(q-sum_D(q)*y)*scale`，再按 bool `mask` 将真值位置清零”中的 y 是正向 Softmax 结果；“对每个 `［B,N,S1］` 行先缩放 `x`，由布尔 `mask` 在缩放值与 `-10000` 间选择，再沿末轴执行 Softmax。”给出 y 的生成合同，两卡闭合训练正反向。
-<!-- cannbot:related:end -->

@@ -82,10 +82,3 @@ def _gather_size_by_comm(size, group):
 
 - `diff 事实`（@c695829cd2c0）：`_build_dummy_batch`（`request_id=-1` / `is_dummy=True`）、`run_step` 的 `if batch.is_dummy: return None`、`decode.py::has_work` 排除 CPU-only 队列的实现与其昇腾失败根因注释、`advance_queues_consensus` 的 Gloo MIN all-reduce 均为读到的实际代码。溯源下探：[cann-recipes-infer-pr-315-refactor-online-batch](https://gitcode.com/cann/cann-recipes-infer/merge_requests/315)
 - `diff 事实`（@dfa1a889）：`uaa.py#_gather_size_by_comm` 全文含「不缓存」NOTE、`core.py` 两处 all_to_all-anything 每步实时调用它（未缓存）；失败机制（参与方不匹配→挂死→watchdog 超时）为作者源码 NOTE 记录、属分布式集合通信通用原理。溯源下探：[cann-recipes-infer-pr-325-feat-hunyuanvideo-support-fa-matmul-quant-and-uaa](https://gitcode.com/cann/cann-recipes-infer/merge_requests/325)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [多卡 HcclAllGather 超时 / Get_Socket_Timeout 常是次生症状：先查全部 rank 日志找真实故障（多为另一 rank OOM）](hccl_timeout_secondary_to_rank_failure_oom.md)（`related`）：“集合通信在其余 rank 上永远凑不齐”描述 rank 崩溃造成的缺席，“集合通信参与方逐 rank 对齐”给出集合通信为何因此挂死的统一正确性约束。
-- [多机/多进程 DP+EP MoE 推理的集合通信一致性对齐（phase 对齐 + 变长换定长）](../../guides/experience/interventions/multimachine_dp_ep_moe_collective_alignment.md)（`related`）：**凡相互做 MoE 集合通信的 DP 进程，必须在同一状态下发起集合通信**；同一进程组里做**同一次**集合通信的各 rank，参与方必须**逐 rank 完全一致**。干预指南用全局 phase、dummy 参与和定长通信落实运行手册的逐 rank 到达一致性约束。
-<!-- cannbot:related:end -->

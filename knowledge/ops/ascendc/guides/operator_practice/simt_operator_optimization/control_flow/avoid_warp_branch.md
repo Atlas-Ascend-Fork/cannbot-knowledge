@@ -104,10 +104,3 @@ __global__ void kernel_spmv_warp(float* values, uint32_t* col_idx,
 从Task Duration看，正例的执行耗时为31.772μs，相比反例的81.811μs，下降约61.1%。从Read Main Memory看，正例为2278次，相比反例的39808次，减少约94.3%。性能提升来自两方面：一是同一Warp内线程协作处理同一行数据，循环次数基本相同，Warp Divergence显著减小；二是Warp内各线程访问同一行的连续元素，实现了访存合并，读主存储器次数大幅减少。
 
 【总结】在SIMT算子中，对于for循环等循环类控制流，应尽量使同一Warp内线程的循环次数保持一致。通过调整线程与数据的映射关系，将"一个线程处理一行数据"改为"一个Warp协作处理一行数据"，可显著减小Warp Divergence，同时实现访存合并，大幅提升算子性能。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [通过SIMT实现分支判断](../../simd_simt_hybrid_optimization/compute_optimization/simt_branch_judgment.md)（`related`）：“此时，可以考虑采用SIMT方式，因为SIMT编程更为灵活，更适合处理分支判断的场景”；“当同一Warp内不同线程的跳转目标不一致时线程执行路径产生分歧，引起分支发散（Warp Divergence）”。前者给 SIMD→SIMT 选型，后者给迁移后必须控制的 Warp 分支风险。
-<!-- cannbot:related:end -->

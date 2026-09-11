@@ -176,11 +176,3 @@ UB或Global Memory上的初始数据。
 status: 0, 2, 0, 1, 3
 error_count: 3 // 表明status中有3个数据是非0的
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [稀疏反卷积精度误差源隔离配方](../../../runbooks/precision/cube_simt_fp32_precision_error_source_isolation.md)（`exemplifies`）：“asc_atomic_add(outFeaturesGmPtr + gmOffset, partialOutPtr［ubOffset］);”展示 ScatterAdd 的实际原子累加；“原子操作保证对同一地址的读改写过程具有原子性，但不保证多个线程之间的执行顺序。对于浮点累加顺序敏感场景，结果可能随线程调度变化而不同。”给出为何 SIMT 线程退化测试能隔离 FP32 顺序误差的接口边界。
-- [原子操作指令优化](../../../guides/operator_practice/simt_operator_optimization/instruction_optimization/atomic_instruction_optimization.md)（`explains`）：“- asc_atomic_add接口性能对比样例：包含16个场景、归为5组对照实验，量化内存层级、原子累加组织方式、是否使用返回值、同一地址上的竞争程度与目标地址的Sector分布对原子加性能的影响。每组对照仅改变一个属性，其余配置保持一致。”与“对Unified Buffer或Global Memory中的数据与指定数据执行原子加操作，即将指定数据累加到这些内存区域的数据中。”。优化指南围绕 asc_atomic_add 的内存层级、返回值和竞争做对照，API 卡提供原子加合同。
-<!-- cannbot:related:end -->

@@ -995,9 +995,3 @@ LocalTensor<float> tmpLocal = ubLocal[ubFactor * 3];
 | 同步 | queue/barrier/event图可复用 | single-N事件不可删 | `Process*`, `DataCopyCustom` |
 | 精度与尾块 | FP32 rstd、固定 int8 cast链 | PT/非PT gamma顺序、colTail | `ComputePart2`, `RoundFloat2Int8` |
 | 失败边界 | V2回退与unknown-key边界 | rms-only不满足快路时不得伪造fallback | `CheckSupportV2`, router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddRmsNormQuant 950 ACLNN 算子知识](add_rms_norm_quant_950.md)（`same_topic`）：`x=x1+x2`；`r=x/sqrt(mean(x²)+epsilon)*gamma`；可选 `beta` 后量化；V2 还可输出不含 beta 的 `rmsNormOut`；`x=x1+x2`；`r=x/sqrt(mean(x²)+epsilon)*gamma`；`y1/y2=round(r ÷或× scale + zeroPoint)`。两卡围绕同一 AddRmsNormQuant 融合算子，但按平台选择 A2/A3 V2 或 950 V1 并闭合不同 route。
-<!-- cannbot:related:end -->

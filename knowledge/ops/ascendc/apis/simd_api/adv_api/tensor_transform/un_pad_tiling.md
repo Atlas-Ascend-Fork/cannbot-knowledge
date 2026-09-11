@@ -126,10 +126,3 @@ void UnPadTilingFunc(const AscendC::TensorShape srcShape, const uint32_t stackBu
         }
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [UnPad（张量变换）](un_pad.md)（`related`）：Tiling 卡规定“host侧Tiling接口，用于获取UnPad kernel计算所需的Tiling参数”；UnPad 卡明确“Tiling参数通过UnPad Tiling获取。”，形成 Host 计算并向 Kernel 传递 UnPadTiling 的直接调用合同。
-<!-- cannbot:related:end -->

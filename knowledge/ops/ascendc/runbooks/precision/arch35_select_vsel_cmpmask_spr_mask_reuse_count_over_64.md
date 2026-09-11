@@ -124,11 +124,3 @@ print("sf[0,0,0,0,0,0]=\n", sf[0,0,0,0,0,0])
 
 - Ascend950PR/arch35 实测；模式2 需预留 8K UB 临时区（本 kernel 由 `kUbReserved` 保证，UB 顶端 8192B 未分配给 TBuf）。
 - 非 arch35 平台（a2/a3）的 `Select` 三模式语义未验证，推断可迁移但需查对应平台 Select.md。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [arch35 Select cmpmask SPR 跨调用泄漏致非确定失败](arch35_select_cmpmask_spr.md)（`related`）：“同一 case 单独跑 PASS、在套件内 FAIL”描述非确定的跨调用表现，“4 次重跑结果完全相同”证明 count>64 掩码复用是确定性逻辑故障，二者共同提供排障分界。
-- [Select VSEL_CMPMASK_SPR count>64 掩码错位判别](select_vsel_cmpmask_spr_count_64.md)（`same_topic`）：错误位置 pos % 64 集中于 44, 55, 56, 12, 31 等固定偏移；当 `count_padded > 64` 时跨 64 元素块掩码错配；两卡用独立探针收敛到同一 arch35 Select 模式 0 掩码复用机制。
-- [arch35 Select 超64 cmpmask 残缺判别](arch35_select_64_cmpmask.md)（`same_topic`）：“arch35 上 `Compare` 一次产生 cmpmask 的容量 = `ONE_REPEAT_ELE_NUM_FP32 = 256B / 4B = 64` 位（一个 vector repeat 的 fp32 元素数）。”与“模式0 `VSEL_CMPMASK_SPR`：根据 selMask 在两个 tensor 中选取元素，**selMask 中有效数据的个数存在限制**（对 float 为 256B/4B=64 个）；**每一轮迭代中，根据 selMask 的有效位数据进行选择操作，每一轮迭代采用的 selMask，均为相同数值**，即多轮迭代复用同一 64bit 掩码。”分别来自双方当前正文。两份 runbook 指向同一个 arch35 超 64 元素 cmpmask 故障：一份用 64/128/256 边界实验定位容量，另一份解释模式 0 每轮复用同一 64bit mask 并给出模式 2 修复。
-<!-- cannbot:related:end -->

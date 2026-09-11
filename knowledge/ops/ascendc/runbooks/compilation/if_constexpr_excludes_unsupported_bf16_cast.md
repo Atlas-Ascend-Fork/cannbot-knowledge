@@ -336,10 +336,3 @@ at::Tensor scatter(const at::Tensor& data, int64_t dim, const at::Tensor& indice
 ## 误诊
 
 “运行时不会走 BF16 reduce 分支，所以编译器不会生成它”是错误假设。模板是否实例化取决于翻译单元中写出的 specialization，不取决于运行时 `mode`。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [bisheng 单模板跨字宽分支 segfault 判别](bisheng_segfault.md)（`related`）：焦点卡观测“`if constexpr(is_c8)` 两分支操作不同 `LocalTensor` element 类型：非选中分支仍进前端类型检查。”；目标卡解释“运行时的 `if (isUpdate)` 或 `TORCH_CHECK(isUpdate, ...)` 不会阻止编译器实例化宏体中已经写出的 `scatter_kernel<float, bfloat16_t, ...>` reduce 分支”，两者共同指向把不支持类型分支从翻译单元物理隔离的编译期修法。
-- [bf16 未编译剔除触发 backend Cannot select](if_constexpr_excludes_unsupported_bf16_compare.md)（`same_topic`）：选择编译期隔离，而不是继续添加运行时 guard：根因发生在模板实例化阶段，只有从源码中移除不支持的 specialization 才能阻止 BiSheng 进入 BF16 cast 后端路径。；选择 `if constexpr`，因为问题发生在模板实例化而不是运行时分支选择；普通 `if`、提前设置 `reduceMode_` 或依赖 Host 永不分发都无法阻止后端编译该表达式。。两卡针对同一 scatter BF16 模板实例化决策，分别在 Host 分发 specialization 和 Device 函数体分支两层执行编译期剔除，避免生成不支持的 cast 或 compare。
-<!-- cannbot:related:end -->

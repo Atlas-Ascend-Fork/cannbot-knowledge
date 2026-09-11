@@ -1067,9 +1067,5 @@ aclnnStatus aclnnInplacePowTensorScalarGetWorkspaceSize(const aclTensor *self,
 | 精度与尾块 | 16-bit Pow升f32、BF16 RINT；Square按T；AICPU按P | `ubTail`、former/tail、worker end与SAT恢复不可改 | `Process/ElementwiseSch/ComputeKernel` |
 | 失败边界 | Host dtype/负指数/溢出、unknown key、AICPU dispatch | 不得把缺失 backend当fallback；空域不launch | `Check*`/routers/`Compute` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Power（数学计算）](../../../../apis/simd_api/adv_api/math_compute/power_interface/power.md)（`related`）：otherwise -> Power<T,false,{INTRINSIC}>(x,T(e),len)；模板参数isReuseSource预留，传false；config为PowerConfig类型，其中algo指定算法：INTRINSIC（默认，整型使用快速幂算法支持uint8_t/int8_t/uint16_t/int16_t/uint32_t/int32_t，浮点型按exp(y*ln(x))计算支持half/float）或DOUBLE_FLOAT_TECH（高精度浮点算法，精度提升后按exp(y*ln(x))计算减少精度损失，支持bfloat16_t/half/float）。；候选给出整数通用指数分支所调用的 Power 算法合同。
-- [SetCtrlSpr](../../../../apis/simd_api/basic_api/special_register_access/set_ctrl_spr_isasi.md)（`related`）：e==2/3 -> SAT bit60=0; masked multiply (u8/s8 widen to 16-bit); restore bit60=1；Ascend 950PR/Ascend 950DT仅支持CTRL［8:6］、CTRL［10:9］、CTRL［45］、CTRL［48］、CTRL［50］、CTRL［53］、CTRL［59］、CTRL［60］比特位。；候选为平方和立方专用 helper 的 CTRL［60］ 保存恢复提供接口边界。
-<!-- cannbot:related:end -->
+- [Power（数学计算）](../../../../apis/simd_api/adv_api/math_compute/power_interface/power.md)
+- [SetCtrlSpr](../../../../apis/simd_api/basic_api/special_register_access/set_ctrl_spr_isasi.md)

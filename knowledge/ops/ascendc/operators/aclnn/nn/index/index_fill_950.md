@@ -743,9 +743,3 @@ while ((simtUsedCoreNum < (coreNum_ / 2)) && (threadNum > MIN_THREAD_NUM)) {
 | 同步 | schedule mode1 + SyncAll | mask 初始化、写入、消费三者不可重排 | `GetWorkspaceSize`, `BuildIndicesMask` |
 | 精度与尾块 | 同宽整数位模式、B64 地址 | 负索引只加一次 N，越界跳过，DMA 使用有效尾长 | `ComputeTypeGet`, SIMT bodies |
 | 失败边界 | priority fallthrough 到通用模板 | 空 public 输入不进 Kernel；不得把 dormant EMPTY 当公开 Route | API short-circuit, registry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IndexFill A2/A3 ACLNN 算子知识](index_fill.md)（`same_topic`）：“｜ 实际入口 ｜ `aclnnIndexFillGetWorkspaceSize` + `aclnnIndexFill`，公开、非原地 ACLNN ｜”与“固定仓仅有公开 `aclnnIndexFill` 两段式入口；第一段固定以 `isInplace=false` 进入 `l0op::IndexFill`，不触达任何 Inplace 或 Tensor-value 变体。”分别给出两端正文事实；两卡描述同一公开非原地 aclnnIndexFill 契约，分别闭合 A2/A3 arch32 与 950 arch35 的 route、workspace 和同步实现，适合做平台迁移对照。
-<!-- cannbot:related:end -->

@@ -62,10 +62,3 @@ tiling.SetBufferSpace(-1, -1, -1);
 optiling::TCubeTiling tilingData;
 int ret = tiling.GetTiling(tilingData);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [4:2稀疏矩阵乘](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/4_2_sparse_matmul.md)（`explains`）：在Host侧，获取Tiling前需要通过SetSparse接口设置Sparse Matmul场景。；设置Matmul的使用场景是否为Sparse Matmul场景。。实践指南明确在获取 Tiling 前调用 SetSparse，把接口的布尔场景开关放入 Host 侧稀疏 Matmul 配置顺序。
-<!-- cannbot:related:end -->

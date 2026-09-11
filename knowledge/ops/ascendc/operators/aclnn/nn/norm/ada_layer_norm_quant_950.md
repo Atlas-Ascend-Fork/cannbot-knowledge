@@ -508,9 +508,3 @@ for (int64_t i = 0; i < sliceCount; i ++) {
 | 同步 | Queue + barrier/event | FreeTensor/覆盖点不可提前 | FullLoad/Welford |
 | 精度与尾块 | FP32 normalize/adaptive；Y-specific cast | quantFactor 与 Y 一致；UpdateMask 有效列 | common/dynamic quant |
 | 失败边界 | H 分流 key 11/21 | 无 unknown-key fallback；quantOffset=null | router/API |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AdaLayerNormQuant A2/A3 ACLNN 算子知识](ada_layer_norm_quant.md)（`same_topic`）：｜ Kernel 路线 ｜ R-001 key 11 FullLoad（`H<=6144`）；R-002 key 21 Welford 分片（`H>6144`） ｜；｜ Kernel 路线 ｜ R-001：`H<=6144` 全载入；R-002：`H>6144` 分片、workspace 暂存归一化结果；两者均为 key 1 ｜两卡实现同一 AdaLayerNormQuant 语义，但给出 950 RegBase Welford 与 A2/A3 Vector workspace 两套路线，可支持同算子跨平台迁移。
-<!-- cannbot:related:end -->

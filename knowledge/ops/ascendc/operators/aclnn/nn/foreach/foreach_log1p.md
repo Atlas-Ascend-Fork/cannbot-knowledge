@@ -528,9 +528,3 @@ BF16 输入 tile 可占 `9S` B，而 FP32 scratch 仅 `S` B；代码以 `maxCast
 | 同步 | Queue + V_MTE3 + MTE3_MTE2 | MTE3 完成前不能 Free/覆盖 slot | `ForeachImplictOutput::Compute` |
 | 精度与尾块 | FP16/FP32原 dtype；BF16升FP32；tail精确字节 | BF16 `CAST_RINT`、有效长度、full/tail分支 | `InnerComputer` / `CopyIn` |
 | 失败边界 | Host拒绝 dtype/shape/list不一致 | unknown key无fallback、列表/POD上限、S>0 | `CheckOpInfo` / `foreach_log1p` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLog1p 950 ACLNN 算子知识](foreach_log1p_950.md)（`same_topic`）：｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `y_i［j］ = ln(x_i［j］ + 1)` ｜；｜ 执行类型 ｜ 单 Kernel `SIMT`；每个 outer block 以 512 个 SIMT thread 执行 grid-stride loop ｜。两卡覆盖同一 aclnnForeachLog1p 逐元素语义；A2/A3 用 AIV_VECTOR，950 卡给出 512 线程 SIMT grid-stride 实现，适合跨代际路线对照。
-<!-- cannbot:related:end -->

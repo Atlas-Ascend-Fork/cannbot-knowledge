@@ -592,9 +592,5 @@ Cholesky 同一列/行的所有元素共享对角主元的逆平方根。源码�
 | 精度与尾块 | 核心统一 FP32，`count=min(...)`，scale 首块计算后复用 | BF16 前后 Cast；padded route Vector 长度/Scalar 索引乘 8；assert 后 sqrt | `FirstColumn/Row`、`Process*DotProduct`、`ComputeScaleFactor` |
 | 失败边界 | Host 参数错误、L0 nullptr、Tiling failure、entry return、Device assert 可分别处理 | 不得将未知 key、空 workspace 或非正定静默视为成功输出 | `CheckParams`、`CholeskyTilingFunc`、`cholesky`、`ComputeScaleFactor` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [assert/ascendc_assert](../../../../apis/utils_api/tuning_interface/assert.md)（`related`）：Cholesky 实现规定“Device 仅在每个对角主元/Schur 残差处执行 `ascendc_assert(value>0)`。”；assert/ascendc_assert 页说明断言条件不成立时打印失败信息并触发异常，后者给出非正定主元在设备侧的失败传播机制。
-- [InitValue（OpParamDef）](../../../../apis/utils_api/prototype_register_management/op_param_def/init_value.md)（`related`）：Cholesky 卡说明“Kernel 只写被选三角；`Cholesky` OpDef 为临时输出声明 `.InitValue(0)`”；InitValue 页说明“设置后会在算子执行前对算子输出的GM空间进行清零操作或者插入memset类算子进行初始值设置。”，该 Host 初始化为未写的相反三角提供零值。
-<!-- cannbot:related:end -->
+- [assert/ascendc_assert](../../../../apis/utils_api/tuning_interface/assert.md)
+- [InitValue（OpParamDef）](../../../../apis/utils_api/prototype_register_management/op_param_def/init_value.md)

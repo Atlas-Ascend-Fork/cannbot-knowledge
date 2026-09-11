@@ -68,9 +68,3 @@ Atlas A3 是昇腾训练与推理产品系列之一。固定版本 HCCL 样例�
 - [qwen3-rl](../../../training/guides/recipes/qwen3_rl.md)（跨域·训练：Qwen3 235B/32B RL on A3）
 - [atlas-a2](../../../spatial/concepts/platforms/atlas_a2.md)（跨域·空间智能：空间智能样例目标平台 Atlas A2，同属昇腾 Atlas 系列）
 - 跨域·具身：[cosmos-transfer2.5](../../../embodied/concepts/world_models/cosmos_transfer2_5.md)、[cosmos-predict2.5](../../../embodied/concepts/world_models/cosmos_predict2_5.md)、[isaac-gr00t](../../../embodied/concepts/manipulation/isaac_gr00t.md)、[ascend-310p](../../../embodied/concepts/platforms/ascend_310p.md)、[ddp-static-graph](../../../embodied/concepts/techniques/ddp_static_graph.md)、[gradient-checkpoint-refine](../../../embodied/concepts/techniques/gradient_checkpoint_refine.md)（具身样例在 Atlas A3 的训练 / 推理）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend 950 (950PR / 950DT)](ascend_950.md)（`related`）：A3 与 950 的低精度计算、Top-k 指令和片上存储约束不同，部署与算子选型须按各平台的固定来源核对。
-<!-- cannbot:related:end -->

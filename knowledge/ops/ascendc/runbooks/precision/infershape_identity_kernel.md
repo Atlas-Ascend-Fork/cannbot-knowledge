@@ -98,10 +98,3 @@ aclnn 框架在 `InferShape` 判定输入输出 shape 一致时，对 identity �
 
 - Ascend950 / CANN 9.1.0 已实测。其它平台/版本未验证——aclnn 框架 identity 旁路是否在所有 CANN 版本一致未确认，未验证，推断可迁移。
 - 真 identity 算子（输出 shape 恒等于输入）不适用本规则。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetInferShape](../../apis/utils_api/prototype_register_management/op_def/set_infer_shape.md)（`exemplifies`）：“`InferShape` 必须按算子真实语义计算输出 shape，不可长期保留 `*output=*input` stub；调试"空 kernel 却有通过"时第一探针即查 InferShape 是否返回 identity。”记录注册回调若长期保留 identity stub 会让形状变换算子假通过；“使用图模式时，需要调用该接口注册Shape推导函数。”定义 SetInferShape 是图模式挂载该回调的入口。该边把假通过诊断落到需要检查的注册函数。
-- [Host 缺 SetDataSize 致 TilingData 截断](host_setdatasize_tilingdata.md)（`related`）：“正确 InferShape + 真 kernel（但 tiling 数据被截断）：仅 Branch-1 int64 identity 用例通过。”说明修正 InferShape 后仍可能因 tiling 截断留下少数 identity 假通过；“765 个用例仅 6 个通过，且这 6 个全是 int64 identity 用例（block_shape=［1,1］ crops=0）。输出缓冲区与未跑 kernel 时几乎一致——kernel 实质上没有向输出 GM 写入任何可见数据。”给出同一 BatchToSpace 会话中缺 SetDataSize 的观测。两页组成先排除 shape 旁路、再修复 kernel 未执行的分层诊断链。
-<!-- cannbot:related:end -->

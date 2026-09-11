@@ -181,10 +181,3 @@ __aicore__ inline void GetMrgSortResult(uint16_t &mrgSortList1, uint16_t &mrgSor
     uint16_t mrgRes4 = 0;
     AscendC::GetMrgSortResult(mrgRes1, mrgRes2, mrgRes3, mrgRes4);
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MrgSort](mrg_sort.md)（`related`）：与MrgSort接口配合使用，在队列耗尽停止后获取4个队列已处理的Region Proposal个数。；将已排序的最多4条队列合并为1条队列，结果按score域由大到小排序，通常处理Sort32预处理的数据。。MrgSort 执行最多四路有序队列合并，GetMrgSortResult 在该过程因队列耗尽停止后返回各路已消费的 Region Proposal 数量。
-<!-- cannbot:related:end -->

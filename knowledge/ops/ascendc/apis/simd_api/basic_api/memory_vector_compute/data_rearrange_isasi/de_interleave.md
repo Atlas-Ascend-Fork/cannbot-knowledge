@@ -103,11 +103,3 @@ source_headers:
     输出数据dst0Local：[1 3 5 ... 511]
     输出数据dst1Local：[2 4 6 ... 512]
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DeInterleave 两路写反——按偶索引到 dst0 修正](../../../../../runbooks/precision/deinterleave_dst0_is_even_lane_output.md)（`exemplifies`）：“在变量命名与 API 目标顺序之间建立一一对应：`qE` 必须放在 `dst0`，`qO` 必须放在 `dst1`。以下为轨迹逐字恢复的完整 `ProcessOneTile` before/after；唯一语义修复是 `DeInterleave` 两个目标的顺序。”与“将两个源操作数中的元素解交织存入两个结果操作数中，支持双输入和单输入两种模式。”提供双方正文证据。精度 runbook 通过调整 DeInterleave 的 dst0/dst1 顺序修复偶奇流接反，API 卡定义该接口可按单输入或双输入解交织到两路输出。
-- [Interleave](interleave.md)（`related`）：将两个源操作数中的元素解交织存入两个结果操作数中，支持双输入和单输入两种模式。；将两个源操作数中的元素交织存入两个结果操作数中，要求元素个数为偶数。。DeInterleave 把交织输入拆成两路，Interleave 把两路重新交织；二者在成对数据重排流水中互为拆分与重组步骤，数据顺序合同直接衔接。
-<!-- cannbot:related:end -->

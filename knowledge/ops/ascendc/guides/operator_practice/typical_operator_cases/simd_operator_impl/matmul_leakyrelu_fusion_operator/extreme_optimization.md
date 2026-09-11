@@ -67,10 +67,3 @@ AscendC::Fixpipe<float, float, CFG_ROW_MAJOR_UB>(xUB, cLocal, fixpipeParams);
 - Scenario 2中aiv_mte2_time仅为0.005μs，相比Scenario 1的57.145μs几乎降为零
 
 详细内容请参见[Matmul+Gelu高阶极限打磨](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/03_fusion_compute/matmul_gelu_high_performance/README.md)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [中级性能优化](intermediate_optimization.md)（`related`）：本节在中级性能优化的基础上，介绍Matmul融合算子的高阶极限打磨方法。；本节在入门功能落地的基础上，介绍Matmul融合算子的中级性能优化方法。。高阶 Matmul 融合优化明确承接中级优化，后者提供前一阶段的实现基线。
-<!-- cannbot:related:end -->

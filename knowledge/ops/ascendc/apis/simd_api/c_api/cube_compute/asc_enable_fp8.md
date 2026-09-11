@@ -62,10 +62,3 @@ bool c_matrix_init_val = true;
 asc_mmad_sync(c_matrix, a_matrix, b_matrix, left_height, n_dim, right_width,
               unit_flag, disable_gemv, c_matrix_source, c_matrix_init_val);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscEnableHif8](asc_enable_hif8.md)（`related`）：用于设置Mmad计算开启FP8模式。该接口会关闭HiF8模式（与asc_enable_hif8相反），开启该模式后L0A Buffer/L0B Buffer中的FP8数据在参与Mmad计算之前不会被转化为hifloat8_t类型数据。；用于设置Mmad计算开启HiF8模式，开启该模式后L0A Buffer/L0B Buffer中的8bit数据将在参与矩阵乘法运算前被转化为hifloat8_t类型数据。两接口控制同一 Mmad 输入解释点的互斥模式，必须一起理解才能正确选择低精度路径。
-<!-- cannbot:related:end -->

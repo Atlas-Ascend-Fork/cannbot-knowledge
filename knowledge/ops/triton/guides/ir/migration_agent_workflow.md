@@ -85,12 +85,3 @@ if __name__ == "__main__":
 1. **迁移向导**（问题导向、代码驱动）：已收录为 [gpu_migration_overview](../workflows/gpu_migration_overview.md)、[migration_code_patterns](../workflows/migration_code_patterns.md) 及 [flash_attention_migration](../migration/flash_attention_migration.md) 等 GPU→NPU 迁移卡（workflows/ 与 ops/ 分区）。
 2. **Triton-Ascend 开发文档**（API 参数、编译流程细节）：已收录为 [../api/](../../apis/index.md)、[../techniques/](../../optimizations/techniques/index.md)、[../workflows/](../workflows/index.md) 等分区卡片，以及本分区 [compilation_pipeline/](../../apis/ir/compilation_pipeline/index.md)。
 3. **AscendNPU-IR 编译器文档**（IR 语义、pass 定义）：已收录为本分区 [architecture/](../../apis/ir/architecture/index.md)、[hivm/](../../apis/ir/hivm/index.md) 等卡片，分析提取的 IR 时查阅。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IR 分析工作流（IR 优先的性能分析决策）](ir_analysis_workflow.md)（`related`）：“Phase 2 瓶颈定位方法”
-- [IR 提取（run_and_extract.sh）](ir_extraction.md)（`related`）：“每轮迭代的 IR 采集”
-- [NPU 硬件架构总览（AI Core 组成、型号规格、核心类型枚举、Reg-based/Mem-based）](../../apis/ir/architecture/npu_hardware_overview.md)（`related`）：“910_95 硬件约束”
-
-<!-- cannbot:related:end -->

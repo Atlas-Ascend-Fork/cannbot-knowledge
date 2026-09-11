@@ -712,9 +712,3 @@ Host 把 slice 扩到 UB 能容纳的最大 2 的幂倍数；Device 用 level1/2
 | 同步 | Queue/PIPE_V/MTE event | store/load event 和 Queue Free 不可删 | common/Route methods |
 | 精度与尾块 | FP32 主计算、Qmax specialization、UpdateMask | INT8 与三种浮点8 cast trait、realN | `ComputeYScale/ComputeY` |
 | 失败边界 | perf→normal→single→split | only smooth2、dtype/shape、最小 split 失败终止 | `SetTilingParams/CheckOptionalInput` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddRmsNormDynamicQuant A2/A3 ACLNN 算子知识](add_rms_norm_dynamic_quant.md)（`same_topic`）：`x=x1+x2`，逐最后一维做 RMSNorm，可选 `beta`，再按 `outputMask` 对一路或两路结果做 INT8/INT4 对称动态量化；`x=x1+x2`，逐最后一维 RMSNorm，可选 beta；一路必做动态量化，smooth1+smooth2 同时存在时做第二路。两卡是同一 V2 融合算子的 A2/A3 与 950 实现，归一化主链一致，同时明确 outputMask 和输出 dtype 的平台分歧。
-<!-- cannbot:related:end -->

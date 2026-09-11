@@ -122,10 +122,3 @@ platforms: []
     END_TILING_DATA_DEF; 
     REGISTER_TILING_DATA_CLASS(Add_1, AddStructSample1) 
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TilingData结构定义](tiling_data_struct_definition.md)（`related`）：“定义一个TilingData的类，添加所需的成员变量（TilingData字段），用于保存所需TilingData参数。”；“注册定义的TilingData结构体并和自定义算子绑定。具体使用说明请参考调用示例。”。结构定义先产生字段与序列化类型，注册步骤再把该类型绑定到算子。
-<!-- cannbot:related:end -->

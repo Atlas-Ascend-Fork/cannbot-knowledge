@@ -42,7 +42,7 @@ runbooks 策展的**独立审查子 agent**。以全新 reviewer 上下文审查
 19. **platforms 超验证范围**：frontmatter `platforms` 含推断平台，且 `## 失效边界` 未标"未验证，推断可迁移"；`## 验证信号` 数字未标来源平台。
 20. **验证信号未逐条标注**：`## 验证信号` 每条信号缺证据等级或来源平台；`agent_reported` 被当实测事实写进验证信号。
 21. **绝对性能分数落正文**：绝对 score/latency/speedup 落正文即 blocker（provenance 只进 manifest）；相对性能代价未标参照路线/来源平台。
-22. **同问题域冲突未进入候选**：存在 fallback/fast path/被取代方案并存，却未在 ledger 记录关系候选及兜底/被取代/冲突的选用条件。
+22. **同问题域方案边界不清**：存在 fallback/fast path/被取代方案并存，却未在正文说明选用条件；采用的跨卡引用使用普通 Markdown 链接。
 23. **未追根因未标优先项**：`## 根因` 承认未追到底，但 `## 遗留问题` 未把"复现并追根因"标为优先项。
 24. **active 轨迹证据合同不完整**：任一 adopted claim 缺实际 normalized 路径、raw/normalized 双 SHA、连续 coverage、与 `knowledge_form` 匹配的角色锚点、逐字机制 artifact、客观 `tool_observed|artifact_verified` 信号、双向 claim mapping 或单点归因。仅缺 remote blob 不是 blocker；若声称有 fixed revision/blob 则必须真实可核。
 

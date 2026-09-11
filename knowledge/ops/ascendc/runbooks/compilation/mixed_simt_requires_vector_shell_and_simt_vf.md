@@ -209,11 +209,3 @@ __global__ __aicore__ __vector__ void gather_kernel(
 
 - `__aicore__` 缺失是更早的独立机械错误；补上后进入 kernel 类型派生失败，不能把它当成完整根因；
 - `dim3` 命名空间和 SIMT header 重载是混合模型落地后的两个独立编译问题，本卡不把它们合并成纯入口类型派生的根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [dim3 未声明：显式引入 SIMT 公共头](asc_vf_call_launch_config_requires_simt_header.md)（`related`）：“正确分层是：三参数启动一个 `__global__ __aicore__ __vector__` AI Core 入口，再由入口用 SIMT 版 `asc_vf_call(cce::dim3(thread_count), ...)` 启动 `__simt_vf__` 线程函数。”；“CANN 9.0.1 混合 ASC 翻译单元仅含 kernel_operator.h 时，global dim3 alias 与 launch-config asc_vf_call overload 不可见；调用前须包含 SDK SIMT 公共/聚合头。”。目标 runbook补齐焦点 asc_vf_call(dim3) 调用所需的头文件和重载可见性。
-- [混合 SIMT 启动边界用 GM_ADDR 承接地址空间](mixed_simt_launch_boundary_uses_gm_addr.md)（`related`）：让 host launch 和 `__global__` wrapper 的全部地址形参都保持 `GM_ADDR`；进入 device wrapper 后，再显式恢复 VF 所需的具体 `__gm__ T*` 类型。；正确分层是：三参数启动一个 `__global__ __aicore__ __vector__` AI Core 入口，再由入口用 SIMT 版 `asc_vf_call(cce::dim3(thread_count), ...)` 启动 `__simt_vf__` 线程函数。。两条 runbook 共同闭合同一混合 SIMT wrapper：一条修正 launch 地址 ABI，另一条修正 Vector shell、三参数 launch 与 SIMT VF 的执行模型。
-- [SIMT 核类型推导失败 — 补 __vector__](direct_launch_kernel_requires_vector_qualifier.md)（`same_topic`）：SIMT VF 启动 shell 只写 `__global__ __aicore__` 而缺少 `__vector__` 函数类型属性，使 `ld.lld` 无法为模板实例化确定 AIV kernel type，因而链接失败。；`__vector__` 不是给纯 SIMT 入口“补链接属性”的孤立修饰符；一旦采用它，就要同步改为三参数入口并把线程维放入 `asc_vf_call`；。两卡处理同一 kernel type 派生故障与 Vector shell 决策，右卡补充了从纯 SIMT 四参数入口迁移时必须同步调整 launch 契约的边界。
-<!-- cannbot:related:end -->

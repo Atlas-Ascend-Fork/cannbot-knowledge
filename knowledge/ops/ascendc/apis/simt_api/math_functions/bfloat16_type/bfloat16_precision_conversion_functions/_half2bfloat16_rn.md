@@ -83,10 +83,3 @@ inline bfloat16_t __half2bfloat16_rn(const half x)
         dst[idx] = __half2bfloat16_rn(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__half2bfloat16_rna](_half2bfloat16_rna.md)（`same_topic`）：遵循CAST_RINT模式，将half类型数据转换为bfloat16类型，返回转换后的值。；遵循CAST_ROUND模式，将half类型数据转换为bfloat16类型，返回转换后的值。。两端具有相同 half 到 bfloat16 转换合同，只在 CAST_RINT 与 CAST_ROUND 舍入规则上分流，互读可按数值舍入要求选择入口。
-<!-- cannbot:related:end -->

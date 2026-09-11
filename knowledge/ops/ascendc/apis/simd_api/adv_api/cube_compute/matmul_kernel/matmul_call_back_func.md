@@ -85,12 +85,3 @@ if (tiling.isBias) {
 mm.IterateAll();
 mm.End();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetSelfDefineData](set_self_define_data.md)（`related`）：“用户可配置3个函数指针”定义回调入口，“设置需要的计算数据或在GM上存储的数据地址等信息，用于回调函数使用”说明回调依赖自定义运行数据时如何注入。
-- [SetUserDefInfo](set_user_def_info.md)（`related`）：“用户可配置3个函数指针”定义 Matmul 回调，“设置算子tiling地址，用于回调函数使用”说明回调读取 tiling 信息时的配套初始化接口。
-- [MatmulTemplateParams](matmul_template_params.md)（`same_topic`）：“通过模板参数MatmulCallBackFunc，传入实现的搬运函数的函数指针”定义回调定制方式，“MM_CB = MatmulCallBackFunc<nullptr, nullptr, nullptr>”给出该回调在 Matmul 模板参数中的实际槽位与默认值。
-<!-- cannbot:related:end -->

@@ -265,25 +265,13 @@ auto tensor1 = AscendC::LocalTensor<decltype(tensorTraitMake)>(addr);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 13 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [QuantMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalTensor(...)` 的直接调用（第 90 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_batch_matmul_v4/op_kernel/arch35/quant_batch_matmul_v4_perchannel.h#L90)
-- [BlockSparseAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalTensor(...)` 的直接调用（第 529 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention/op_kernel/arch35/block_sparse_attention_kernel_arch35_full_quant.h#L529)
-- [QuantMatmulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_weight_nz_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalTensor(...)` 的直接调用（第 90 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_batch_matmul_v4/op_kernel/arch35/quant_batch_matmul_v4_perchannel.h#L90)
-- [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalTensor(...)` 的直接调用（第 383 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/matmul.h#L383)
-- [WeightQuantBatchMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/weight_quant_batch_matmul_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalTensor(...)` 的直接调用（第 91 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/weight_quant_batch_matmul_v2/op_kernel/arch35/n_first/weight_quant_batch_matmul_v2_basic_block.h#L91)
-- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)（`related`）：算子声明的固定版本源码包含对 `LocalTensor(...)` 的直接调用（第 53 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_kernel/mem.h#L53)
-- [WeightQuantBatchMatmulNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/weight_quant_batch_matmul_nz_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalTensor(...)` 的直接调用（第 600 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/weight_quant_batch_matmul_v2/op_kernel/arch35/weight_quant_batch_matmul_v2_reg_base_common.h#L600)
-- [SparseFlashAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/sparse_flash_attention_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalTensor(...)` 的直接调用（第 383 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/matmul.h#L383)
-- [Conv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/conv_2d_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalTensor(...)` 的直接调用（第 165 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/common/op_kernel/arch35/conv_iterate_base_impl.h#L165)
-- [GroupedMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalTensor(...)` 的直接调用（第 120 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_kernel/arch35/weight_quant_basic_block/weight_quant_basic_block.h#L120)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [QuantMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_950.md)
+- [BlockSparseAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_950.md)
+- [QuantMatmulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_weight_nz_950.md)
+- [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)
+- [WeightQuantBatchMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/weight_quant_batch_matmul_950.md)
+- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)
+- [WeightQuantBatchMatmulNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/weight_quant_batch_matmul_nz_950.md)
+- [SparseFlashAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/sparse_flash_attention_950.md)
+- [Conv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/conv_2d_950.md)
+- [GroupedMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_950.md)

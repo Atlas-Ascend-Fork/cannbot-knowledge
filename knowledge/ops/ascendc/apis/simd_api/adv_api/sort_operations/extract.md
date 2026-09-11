@@ -60,10 +60,3 @@ __aicore__ inline void Extract(const LocalTensor<T>& dstValue, const LocalTensor
 ## 调用示例
 
 请参见[MrgSort](mrg_sort.md)的调用示例。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Sort](sort.md)（`related`）：焦点卡把参数合同写为“sorted输入Sort的结果数据”，候选卡明确 Sort 要“配合Concat（预处理）和Extract（结果提取）使用。”；Sort 的结构化 score/index 输出正是 Extract 的直接输入。
-<!-- cannbot:related:end -->

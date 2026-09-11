@@ -68,11 +68,3 @@ else:
 
 - [expert-parallel](../../concepts/parallelism/expert_parallel.md) —— EP / 专家分布与重映射机制的 canonical 概念页
 - [hybrid-mxfp8-mxfp4](../../concepts/quantization/hybrid_mxfp8_mxfp4.md) —— MXFP8 / MXFP4 微缩放量化格式与独立 scale 布局
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [EPLB（专家并行负载均衡器，MoE 专家动态负载均衡）](../../../training/concepts/techniques/eplb.md)（`related`）：EPLB 靠一份 **per-expert 参数名清单**（如 `expert_weight_names`）决定「哪些逐专家张量需要随专家一起被搬运/重映射」。；EPLB 的核心目标是通过智能调度策略消除专家模块及计算节点间的负载差异、最大化 NPU 资源利用率。；故障卡给出 EPLB 重映射的参数完整性约束，概念卡解释为何会动态调整专家复制与分配，二者共同支撑触发条件与修复边界。
-- [Hybrid FP8-MXFP4 / Hybrid MXFP8-MXFP4 (DeepSeek-V4 Ascend 950PR/DT)](../../concepts/quantization/hybrid_mxfp8_mxfp4.md)（`related`）：专家权重采用**独立 scale 量化布局**：反量化时需要「量化权重张量」与其**独立存放的 scale 张量**成对使用，缺一不可。；｜ MoE ｜ 路由专家 Linear **W4A8（MXFP4）** ｜ 共享专家 Linear W8A8 ｜ — ｜ — ｜；前者规定 EPLB 搬运必须覆盖独立 scale，后者界定 DeepSeek-V4 950 上 MXFP4 路由专家这一具体适用量化域。
-- [昇腾量化权重的加载期布局/命名处理：W4A8 MoEGMM 三件套、剔除零 offset、scale 改名门控、NZ 按 dtype 门控](../../optimizations/experience/rules/quant_weight_load_layout_and_naming.md)（`related`）：“## 三、scale→weight_scale 改名必须门控”明确给出左端事实；“- 独立 scale 布局下，专家 `i` 的「量化权重」与其「scale 张量」是一组必须锁在一起的数据。EPLB 重映射专家时，如果只按参数清单搬运了量化权重、没搬对应 scale，专家在 rank 间重排后**权重换了、scale 没跟着换**，两者错位。”明确给出右端事实。加载页要求 scale 命名与参数表匹配，EPLB 页进一步要求专家重映射时权重、scale 和 bias 同组搬运；两端共同保护独立 scale 量化权重不被静默错配。
-<!-- cannbot:related:end -->

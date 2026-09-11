@@ -83,9 +83,3 @@ platforms: []
 ## 误诊
 
 无(根因在 rebase 冲突阶段一次定位成功:字段集不同步,而非冲突标记本身或 kernel 计算链缺陷)。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TilingData结构定义](../../apis/utils_api/tiling_data_structure_register/tiling_data_struct_definition.md)（`exemplifies`）：焦点卡指出“任何 kernel 直读的字段都必须在 `TILING_DATA_FIELD_DEF` 中显式声明”，候选 API 说明“set_\{field_name\}接口：用于设置TilingData类的字段值”；API 的字段生成合同正是 rebase 后 host setter 与 kernel 字段集必须同步的依据。
-<!-- cannbot:related:end -->

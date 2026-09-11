@@ -85,10 +85,3 @@ inline half __float2half_rd(const float x)
         dst[idx] = __float2half_rd(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float2half_rd_sat](_float2half_rd_sat.md)（`related`）：使用此接口前需将CTRL［60］寄存器设置为0，否则饱和模式不生效。；功能：遵循CAST_FLOOR模式，将浮点数转换为半精度浮点数，返回转换后的值。；sat 路线的饱和效果依赖 CTRL［60］，普通路线保留相同 CAST_FLOOR 转换语义，因此在 SIMT 无法设置该寄存器时可用普通接口作为明确的非饱和选型。
-<!-- cannbot:related:end -->

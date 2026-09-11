@@ -648,9 +648,3 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor, RoundMode::CAST_RINT, da
 | 同步 | Queue 管线 + V barrier | 原地 Axpy/Muls 后不得提前覆盖 | adapters；`InnerComputer` |
 | 精度与尾块 | BF16 FP32 中间、CAST_RINT；尾块 Pad | `valid` count 和 GM 有效字节 | `ComputePerCast`; `CopyOut` |
 | 失败边界 | API 校验、Tiling graph failure、launcher failure | 未知 key 无 body；无源码 fallback | `ForeachAddListV2CheckParams`; router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddList 950 ACLNN 算子知识](foreach_add_list_950.md)（`same_topic`）：输入是两个长度相同的 TensorList。对每个列表位置 `i`，只处理 `x1_i` 的有效元素域，并计算 `out_i = x1_i + alpha * x2_i`。；Host 将所有 Tensor 看作按列表顺序拼接的扁平元素域，再把连续区间分给 AIV core；Device 恢复每核首尾 Tensor 与元素 offset。。两卡实现同一 aclnnForeachAddListV2 合同，分别闭合 A2/A3 AIV Queue 与 950 SIMT VF 路线。
-<!-- cannbot:related:end -->

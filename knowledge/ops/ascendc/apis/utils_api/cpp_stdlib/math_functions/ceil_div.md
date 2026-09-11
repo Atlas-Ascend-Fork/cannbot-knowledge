@@ -86,10 +86,3 @@ __simd_vf__ inline void AddCustom(__local_mem__ T *dst, __local_mem__ T *src0, _
     }
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CeilDivision](ceil_division.md)（`same_topic`）：“计算两个整数a和b相除后向上取整的结果。该接口可在Host侧和AI Core侧使用。”与“计算两个整数num1和num2相除后向上取整结果。”提供双方正文证据。两端定义同一整数除法向上取整语义，分别服务 utils C++ 标准库接口和 SIMD 基础标量接口，适合按调用层选择。
-<!-- cannbot:related:end -->

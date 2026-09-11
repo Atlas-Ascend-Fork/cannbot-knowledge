@@ -131,11 +131,3 @@ platforms: []
 ## 总结<a name="section8281219125011"></a>
 
 MTE2 Bound的场景，Tiling参数满足stepM、stepKa、stepKb小于等于3的条件时，可以考虑开启NBuffer33模板，切分矩阵将搬运流水错开，减少单次搬运的数据量，平衡MTE2和FixPipe的数据流量。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulPolicy](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_policy.md)（`explains`）：NBuffer33模板的详细介绍请参考MatmulPolicy。；涵盖以下类别：MatmulPolicy、TrianUpperMatmulPolicy/TrianLowerMatmulPolicy、NBuffer33MatmulPolicy、MatmulWithScalePolicy/SplitMMatmulPolicy/SplitNMatmulPolicy。指南的优化方案必须在 Kernel 对象侧选择 NBuffer33MatmulPolicy，API 卡给出该内置策略及其 MDL/GM 约束。
-- [SetMatmulConfigParams](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_matmul_config_params.md)（`explains`）：开启NBuffer33模板：在GetTiling接口前，调用SetMatmulConfigParams接口开启NBuffer33模式，使获取的Tiling满足要求；Kernel侧在创建Matmul对象时开启NBuffer33模板。；若Matmul对象使用NBuffer33模板策略，即MatmulPolicy为NBuffer33MatmulPolicy，则在调用GetTiling接口生成Tiling参数前，必须通过本接口将scheduleTypeIn参数设置为ScheduleType::N_BUFFER_33，以启用NBuffer33模板策略的Tiling生成逻辑。指南给出两端配置，API 卡钉死 Host Tiling 参数必须与 Kernel policy 一致。
-<!-- cannbot:related:end -->

@@ -66,11 +66,3 @@ uint32_t minValue = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetLogicalOrsMaxMinTmpSize(plat, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogicalOrsTmpBufferFactorSize](get_logical_ors_tmp_buffer_factor_size.md)（`related`）：焦点接口给出“在minValue到maxValue范围内，临时空间越大性能越好。”的分配区间；目标接口给出“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLivedNodeCount / typeSize”，可在固定 UB 预算下反推单次 shape，两者是 LogicalOrs Host Tiling 的正向预算与反向求块配套合同。
-- [LogicalOrs](logical_ors.md)（`related`）：输入矢量每个元素与标量进行逻辑或操作。；host侧Tiling接口，用于获取LogicalOrs接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。计算接口定义 LogicalOrs 的逐元素逻辑或语义，该 Host Tiling 接口提供执行它所需的临时空间上下界。
-<!-- cannbot:related:end -->

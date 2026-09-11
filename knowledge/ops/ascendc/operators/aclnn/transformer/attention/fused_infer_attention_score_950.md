@@ -829,9 +829,3 @@ constexpr bool splitD = (uint16_t)dVTemplateType > (uint16_t)DTemplateType::Alig
 | 精度与尾块 | FP32 score/softmax/update/FD 后 cast | online rescale 顺序、有效前缀提交 | `FlashAttentionNoQuantGqaKernel`,`FlashAttentionFullQuantMxKernel` |
 | 构建 | arch35 sources + common/PFA/IFA dependencies | Ascend950 SSBUF 与 auto-sync 选项 | operator `CMakeLists.txt` |
 | 失败边界 | checker/registry/fallback/key/POD/workspace fail-close | 不执行未注册 key，不猜 generated bridge | V5 API,arch35 selector/fallback |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FP8 Per-Block Dynamic Quant Attention](../../../../../../model/inference/concepts/quantization/fp8_attention.md)（`related`）：**算子内部流程**（`npu_fused_infer_attention_score_v2`，源「量化模式说明」）：用 E8M0 缩放因子对量化值反量化 → Q×Kᵀ → Softmax → Attn×V → 返回原始精度格式输出。`npu_dynamic_mx_quant` 负责动态 MX 量化。；AIC: MXFP8 QK with scale -> FP32 score。前者定义 MXFP8 注意力的端到端数值顺序，后者给出 950 FIA MX 全量化实现的首个核心 Device 阶段。
-<!-- cannbot:related:end -->

@@ -58,10 +58,3 @@ int ret = tiling.GetTiling(tilingData);
 int baseK = tiling.GetBaseK(); // 获取Tiling计算得到的baseK
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTiling](get_tiling.md)（`related`）：“约束：必须使用已创建的 MatmulApiTiling 对象调用，且需在完成 GetTiling 计算后再获取 baseK，否则返回值无效。”；“返回值：如果返回值不为-1，则代表Tiling计算成功，用户可以使用该Tiling结构的值。如果返回值为-1，则代表Tiling计算失败，该Tiling结果无法使用。”。GetTiling 成功是 GetBaseK 返回有效 baseK 的明确前置条件，调用方需先检查失败码再读取基本块。
-<!-- cannbot:related:end -->

@@ -960,9 +960,3 @@ gamma/beta 原地变为 scale/bias，同一通道的多个 H tile 不重复组�
 | 同步 | Queue/PIPE/V_S | wait/free before overwrite | arch35 bodies |
 | 精度与尾块 | FP32 stats, conditional cast/copy | arch35 compile guard | GetRoundMode/CopyOut helpers |
 | 失败边界 | invalid GRAPH_FAILED, Large fallback | unknown key no output | Check*/SetTilingKey/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupNormSwish A2/A3 ACLNN 算子知识](group_norm_swish.md)（`same_topic`）：R-001…R-012；key 与 A2/A3 相同，router 为 `_apt`，body 全在 `arch35/`。；R-001…R-012：四个 shape family（HW1/Small/Norm/Large）× FP16/BF16 同型、16-bit+FP32 affine、FP32。；两卡描述同一 GroupNormSwish ACLNN 算子的同一十二 Route 合同，分别闭合 950 arch35 与 A2/A3 实现。
-<!-- cannbot:related:end -->

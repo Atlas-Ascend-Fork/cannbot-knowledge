@@ -948,9 +948,3 @@ MicroAPI::DataCopy(yPtrOffset, RegY, maskRegInput);
 | 同步 | TQue、boundQ、same-stream、R-007 DSB | 不省略handoff或跨Kernel顺序 | `Process*/launch_gather` |
 | 精度与尾块 | 位模式、mask、core/UB/NDDMA四类tail | index解包、有效mask、四分区 | `GatherValue/GetIntervalInfoForCutTwice` |
 | 失败边界 | 仅七key可达且接线 | 不把dormant 240–243或官方完整key视为Direct可达 | `calc_gather_tiling/DEFINE_LAUNCH` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Gather 非 last-dim 转置+索引换算预处理占比高](../../../../runbooks/performance/gather_last_dim.md)（`related`）：在 Ascend950（dav-3510, CANN 9.1.0）上用 ops-direct-invoke-flash 工作流实现 Gather 算子：plugin（`gather_plugin.cpp`）在 `dim != ndim-1`（非最后一维）时，先把 `x` 与 `index` `permute(actual_dim, ndim-1).contiguous()` 转置成最后一维 gather，再用三段 on-device 换算把元素索引转成 byte-offset uint32：；selector 只为 key244 分配 `xTranspose/indexTranspose/yTranspose`。launcher 中 240–243 分支没有 selector producer，均为 dormant。；生产卡的 key244 多节点路线是焦点转置预处理性能归因的当前实现闭包。
-<!-- cannbot:related:end -->

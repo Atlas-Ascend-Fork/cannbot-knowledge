@@ -466,9 +466,3 @@ epilogue 按目标 rank 写 peer window，省去本地完整 `[M,N]` 中间结�
 | workspace | 16MiB 与双 stage INT32 公式 | Host/QuantMatmul |
 | 精度 | INT32→F32→两 scale→bias→cast | epilogue |
 | 同步 | AIC/AIV flag 与 rank rendezvous | QuantMatmul/CommBase |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [QuantMatmulAlltoAll 950 ACLNN 算子知识](quant_matmul_allto_all_950.md)（`same_topic`）：A2 workspace 为 `16 MiB + tileM0*blockDim*2*tileN0*4` 字节；两 route 均化简为 `16 MiB + 262144*blockDim`，后项是 INT32 Cube 双 stage；workspace_total = libApiWorkspace + AlignUp(M*N*yBytes,512) * 2。两卡共享 QuantMatmulAlltoAll V2 逻辑入口，但分别给出 A2 peer-window 和 950 transpose/communicator 的资源闭包。
-<!-- cannbot:related:end -->

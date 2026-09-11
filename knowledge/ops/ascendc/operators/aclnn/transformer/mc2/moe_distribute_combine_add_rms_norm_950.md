@@ -421,10 +421,3 @@ Cast(xFp32, yLocal, RoundMode::CAST_NONE, numCol);
 | 同步 | EP flags/HardEvent/Queue/950 SPR恢复 | Reset后恢复控制位 | WaitDispatch/BuffInit |
 | 精度与尾块 | FP32聚合、BF16中间RINT、商余数 | 不折叠cast | AddRmsNorm* |
 | 失败边界 | 公开仅空commAlg | CCU selector不公开 | docs/arch35 selector |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoE Dispatch/Combine V2（一体化融合算子）](../../../../../../model/inference/concepts/techniques/moe_dispatch_combine_v2.md)（`related`）：950 公开路线把 `expandX` 按 `assistInfoForCombine` 写入 EP 目标 window；`torch_npu.npu_moe_distribute_dispatch_v2` / `npu_moe_distribute_combine_v2`（仓内文档亦称 **MC2** 路由）是把 MoE 专家并行（［expert-parallel］(../parallelism/expert_parallel.md)）的整条 All-to-All 路由链路收敛为**两个一体化融合算子**：。算子卡给出 950 CombineAddRmsNorm 的 window 写入与专家聚合实现，概念页把它放回 MC2 dispatch/combine 的端到端 All-to-All 路由链。
-- [MoeDistributeCombineAddRmsNorm A3 ACLNN 算子知识](moe_distribute_combine_add_rms_norm.md)（`same_topic`）：EP AllToAllV 后按权重聚合普通/特殊专家结果，再执行 Add+RmsNorm；公开 950 不支持 TP；可选 TP 两卡 ReduceScatterV，再做 EP AllToAllV；按权重聚合后执行 Add+RmsNorm。两页都是 V2 CombineAddRmsNorm，公共链为 EP 聚合后 Add+RmsNorm；A3 额外支持可选 TP，950 明确禁用 TP，因此关系直接支撑平台路线选择。
-<!-- cannbot:related:end -->

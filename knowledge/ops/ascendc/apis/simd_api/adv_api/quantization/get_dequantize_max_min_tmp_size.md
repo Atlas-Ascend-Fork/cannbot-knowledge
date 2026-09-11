@@ -63,11 +63,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetDequantizeMaxMinTmpSize(srcShape, typeSize, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Dequantize](dequantize.md)（`related`）：“提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetDequantizeMaxMinTmpSize获取。”在 Kernel API 中指定 sizing 依赖；“host侧Tiling接口，用于获取Dequantize接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”给出 Host 到 Kernel 的参数交接。
-- [GetDequantizeTmpBufferFactorSize](get_dequantize_tmp_buffer_factor_size.md)（`related`）：“参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource与Dequantize接口保持一致；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。”与“获取Dequantize接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。”。两卡分别给出空间上下界和固定空间反推处理元素数的 factor，形成互补 Tiling 预算。
-<!-- cannbot:related:end -->

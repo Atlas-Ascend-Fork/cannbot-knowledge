@@ -36,10 +36,3 @@ Ascend950（dav-3510，16 AIV 核）上优化 `AddRmsNormDynamicQuant`（Add+Rms
 
 - 触发态 eval（raw transcript Turn 67 Tool Results）：case1 elapsed=42866µs baseline=577.3µs speedup=0.0135、case6 elapsed=1484430µs、多 case 加速比量级 0.002~0.025、20/20 精度全过（来源平台:Ascend950；证据等级:tool_observed）。
 - 改单次 `<<<numBlocks>>>` 启动后 eval（raw transcript Turn 76 Tool Results）：case1 elapsed=705µs（约 60× 相对提升）、20/20 精度不变（来源平台:Ascend950；证据等级:tool_observed）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetBlockNum](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_block_num.md)（`exemplifies`）：改单次 `<<<numBlocks, nullptr, stream>>>` + kernel 内 `GetBlockIdx/GetBlockNum` 自算 `［startRow, endRow)` 后；获取当前任务配置的逻辑AI Core的数量，用于代码内部的多核逻辑控制等。；接口合同直接支撑修复后的 kernel 内多核行区间计算。
-- [AddRmsNormDynamicQuant 950 Direct Invoke 算子知识](../../operators/direct/nn/norm/add_rms_norm_dynamic_quant_950.md)（`related`）：代码审计发现 launch 函数把多核切分写成 host 侧 `for (b = 0; b < numBlocks; ++b)` 循环；每个 block 负责连续 `mPerCore` 行，末 block 用 `mLastCore`。；该 runbook 直接诊断并修复此算子逐行分块被 host 串行 launch 的性能问题。
-<!-- cannbot:related:end -->

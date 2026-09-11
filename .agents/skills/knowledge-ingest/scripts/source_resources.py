@@ -120,8 +120,7 @@ def localize(root: Path, stamp: str) -> int:
                 source["resource"] = resolved.resource
                 updated = True
         body = raw[framing.end():]
-        managed_offset = body.find("<!-- cannbot:related:start -->")
-        authored = body if managed_offset < 0 else body[:managed_offset]
+        authored = body
         masked = links.mask_code(authored)
         destinations = [(match.start(3), match.end(3), match.group(3)) for match in links.INLINE_LINK_RE.finditer(masked) if not match.group(1)]
         destinations.extend((match.start(2 if match.group(2) else 3), match.end(2 if match.group(2) else 3), match.group(2) or match.group(3)) for match in links.REFERENCE_DEFINITION_RE.finditer(masked))
@@ -147,7 +146,7 @@ def localize(root: Path, stamp: str) -> int:
         if not updated:
             continue
         metadata["updated_at"] = stamp
-        body = authored if managed_offset < 0 else authored + body[managed_offset:]
+        body = authored
         rendered = "---\n" + source_frontmatter(framing.group(1), metadata) + "\n---\n\n" + body
         pending[path] = rendered
     for path, rendered in pending.items():

@@ -124,11 +124,3 @@ public:
     EXTERN_IMPL_BUFPOOL(MyBufPool, AscendC::TPosition::VECCALC, 16);
 };
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetBufHandle](get_buf_handle.md)（`related`）：焦点接口“根据offset取出自定义TBufPool中管理的内存块。”，候选宏则“提供EXTERN_IMPL_BUFPOOL宏来辅助用户自定义TBufPool。”；宏建立自定义池实现，GetBufHandle 按 offset 取得该实现管理的块，两者构成定义与访问合同。
-- [InitBufPool](../t_pipe/init_buf_pool.md)（`related`）：焦点卡规定“自定义TBufPool之前，必须通过TPipe::InitBufPool接口进行TBufPool内存资源池初始化”，候选卡说明初始化后“在整体内存资源中划分出一块子资源池”；该调用是使用自定义宏前不可省略的资源准备步骤。
-<!-- cannbot:related:end -->

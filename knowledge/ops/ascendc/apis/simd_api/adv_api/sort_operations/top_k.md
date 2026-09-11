@@ -431,20 +431,5 @@ AscendC::TopK<T, isInitIndex, isHasfinish, isReuseSrc, AscendC::TopKMode::TOPK_N
 | 输出数据 | 输出数据dstValueLocal：输出每行数据的前8个最大值。<br>[[57553.4    55492.18   54669.473  54519.184  27748.229  19276.926<br>  14828.149  10165.924 ]<br> [57778.72   44148.117  39390.4    37069.496  21753.582  16273.109<br>   4327.308  -1650.6737]<br> [53757.543  39955.844  33584.566  31141.16   29945.332  29750.484<br>  29401.35   28482.525 ]<br> [59926.07   47037.562  27090.158  19581.654  15695.861  13305.985<br>   5699.733   2211.4912]]<br>输出数据dstIndexLocal：输出每行数据的前8个最大值索引。<br>[[ 6  0 11 12  1  3  4 13]<br> [ 1 10 16  2 14  3  7 13]<br> [12 10 13  7  2  5 11  4]<br> [ 7  4 16 14 12  6 10  3]] |
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [TopK BF16 tie 索引顺序与 CPU 不一致](../../../../runbooks/precision/topk_bf16_tie_cpu.md)（`exemplifies`）：本算子在 plugin 层把 BF16 先 Cast 为 float32 再调 `AscendC::TopK<float>`、结果 Cast 回 BF16。；获取最后一个维度的前k个最大值或最小值及其对应的索引。输入为向量时对全部元素操作，输入为矩阵时沿最后一维对每行操作。；故障卡直接调用目标 TopK API，并围绕其 values/indices 输出诊断 BF16 tie 的索引差异。
-- [TopKTiling](top_k_tiling.md)（`related`）：提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。Tiling参数通过TopK Tiling获取。；host侧Tiling接口，用于获取TopK kernel计算所需的Tiling参数，分两步：通过GetTopKMaxMinTmpSize获取最大和最小临时空间大小；通过GetTopKNDTilingInfo获取kernel侧所需tiling参数。计算接口明确依赖后者生成临时空间与 TopKParams，形成 Host Tiling 到 Kernel 调用的直接契约。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [TopK 950 Direct Invoke 算子知识](../../../../operators/direct/math/math/top_k_950.md)（`related`）：算子声明的固定版本源码包含对 `TopK(...)` 的直接调用（第 877 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_kernel/arch35/radix_sort_top_k.h#L877)
-- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)（`related`）：算子声明的固定版本源码包含对 `TopK(...)` 的直接调用（第 1561 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress_attention_infer/op_kernel/nsa_compress_attention_infer.h#L1561)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [TopK 950 Direct Invoke 算子知识](../../../../operators/direct/math/math/top_k_950.md)
+- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)

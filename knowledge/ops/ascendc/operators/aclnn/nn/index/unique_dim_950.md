@@ -530,9 +530,3 @@ workspace_total = 与 R-001 相同（counts=true）；inverse=false 不减少 wo
 | 同步 | VF barrier+dcci、跨核 SyncAll、merge PipeBarrier | 不能仅以源码书写顺序替代可见性 | `SimtPhase1AllInOne/Phase2_CrossCoreMerge` |
 | 精度与尾块 | dtype compare、-0/NaN 规则、tile/core clamp | NaN dedup 不等、merge tail copy、grid-stride bounds | `SimtScalarCompare/SimtRowCompareDedup` |
 | 失败边界 | 950 selector，不满足落 AICPU | AICPU body 不可拿本卡 950 实现代替；uint32 上界无 guard | `CheckSupport4UniqueDim` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Unique 950 Direct Invoke 算子知识](../../../direct/nn/index/unique_950.md)（`related`）：“｜ 计算语义 ｜ 沿归一化轴 `k` 把每个切片视为长度 `rowLen=prod(shape)/shape［k］` 的行，按行字典序排序并去重；输出唯一行、原行到唯一行的逆映射和计数。 ｜”；“适配器把官方 POD 固定为 `rowLen=1, dim=0, outerSize=innerSize=1, returnCounts=0`，所以官方 body 被复用为一维标量去重。”。Direct Unique 明确把 UniqueDim 的 POD 和 body 固定为 rowLen=1 的退化场景，形成具体实现复用链。
-<!-- cannbot:related:end -->

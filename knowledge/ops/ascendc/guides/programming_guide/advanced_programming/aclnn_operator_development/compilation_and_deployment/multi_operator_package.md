@@ -76,10 +76,3 @@ platforms: []
 
 - [编译与部署基本流程](basic_process.md) — 编译配置、部署流程、包内目录组织方式。
 - [算子动态库和静态库编译](dynamic_static_lib_compilation.md) — 以动态库或静态库形态输出算子。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [算子动态库和静态库编译](dynamic_static_lib_compilation.md)（`related`）：焦点卡写明“默认建议放在同一个算子包中。”，候选卡写明“算子包：TYPE RUN：custom_opp_*.run：安装到OPP的vendors/路径，供运行环境使用。”。多算子卡决定一个或多个 RUN 包，编译卡给出 RUN 与 SHARED/STATIC 的产物差异，衔接拆包与构建选择。
-<!-- cannbot:related:end -->

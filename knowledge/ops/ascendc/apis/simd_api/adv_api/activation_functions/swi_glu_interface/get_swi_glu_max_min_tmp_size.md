@@ -62,11 +62,3 @@ uint32_t max;
 uint32_t min;
 AscendC::GetSwiGLUMaxMinTmpSize(shape, 2, max, min, false);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSwiGLUTmpBufferFactorSize](get_swi_glu_tmp_buffer_factor_size.md)（`related`）：“- maxValue（输出）：SwiGLU接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。”；“- maxLiveNodeCount（输出）：最大存活节点数，最大临时空间是输入所占空间的多少倍。”。两种 Host 查询分别给定绝对空间范围和按输入规模反推空间的因子，服务同一 SwiGLU tiling 预算。
-- [SwiGLU](swi_glu.md)（`related`）：“kernel侧SwiGLU接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。”；“__aicore__ inline void SwiGLU(LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor0, const LocalTensor<T>& srcTensor1, const float& scalarValue, const LocalTensor<uint8_t>& sharedTmpBuffer, const uint32_t calCount)”。Host 查询得到的空间范围直接决定 SwiGLU kernel 的 sharedTmpBuffer 申请。
-<!-- cannbot:related:end -->

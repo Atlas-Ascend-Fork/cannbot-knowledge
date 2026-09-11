@@ -224,10 +224,3 @@ with torchair.scope.super_kernel("sk1", ""):
     y1 = torch_npu.my_custom_op(x)
     y2 = torch_npu.npu_dequant_swiglu_quant(y1, weight_scale=weight_scale)
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [算子适配说明](operator_adaptation.md)（`related`）：算子开发完成后，可通过本文档中的样例自行验证算子是否支持融合进SuperKernel，包括功能正确性与精度对齐。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。；适配页定义开发阶段约束，自验证页消费这些约束并检查功能与精度。
-<!-- cannbot:related:end -->

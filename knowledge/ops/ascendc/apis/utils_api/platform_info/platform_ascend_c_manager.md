@@ -113,10 +113,5 @@ GetInfoFun() {
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [直调共享库加载未定义平台符号—补齐CANN链接依赖](../../../runbooks/compilation/platform_manager_shared_library_link_dependencies.md)（`exemplifies`）：“该 host 入口调用了 `platform_ascendc::PlatformAscendCManager::GetInstance()` 来取得 AIV 核数”；“使用该功能需要包含"tiling/platform/platform_ascendc.h"头文件，并在编译脚本中链接tiling_api、platform动态库”。API 卡的链接合同正是 Runbook 中 undefined symbol 的根因与修复依据。
-- [ArgMax 950 Direct Invoke 算子知识](../../../operators/direct/math/math/arg_max_950.md)（`related`）：“Direct `PlatformAscendCManager` 读取 AIV core/UB；显式 launcher”给出 ArgMax 950 Host 的平台查询动作；“通过该类的GetInstance方法可以获取一个PlatformAscendC类的指针，再通过该指针获取硬件平台相关信息”给出 manager 到平台对象的访问合同。
-- [Sigmoid 950 Direct Invoke 算子知识](../../../operators/direct/nn/activation/sigmoid_950.md)（`related`）：“`calc_sigmoid_tiling_params(totalLength, elementBytes)` 查询 AIV 核数和 UB 字节数；AIV 核数非正时回退为 1。”给出 Direct Host 的平台信息需求；“基于Kernel Launch算子工程，通过Kernel直调（Kernel Launch）方式调用算子的场景下，可能需要获取硬件平台相关信息，比如获取硬件平台的核数。PlatformAscendCManager类提供获取平台信息的功能：通过该类的GetInstance方法可以获取一个PlatformAscendC类的指针，再通过该指针获取硬件平台相关信息，支持获取的信息可参考PlatformAscendC。”给出直调场景的获取入口。
-<!-- cannbot:related:end -->
+- [ArgMax 950 Direct Invoke 算子知识](../../../operators/direct/math/math/arg_max_950.md)
+- [Sigmoid 950 Direct Invoke 算子知识](../../../operators/direct/nn/activation/sigmoid_950.md)

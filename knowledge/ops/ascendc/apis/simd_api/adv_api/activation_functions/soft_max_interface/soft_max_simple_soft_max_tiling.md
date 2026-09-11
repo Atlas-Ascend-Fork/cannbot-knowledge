@@ -76,8 +76,4 @@ GetSoftMaxMinTmpSize返回SoftMax/SimpleSoftMax接口能完成计算所需最小
 无
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ScaledMaskedSoftmax A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/vfusion/scaled_masked_softmax.md)（`related`）：“`SetPaddingInfo/SetUbSplitInfo/SetSoftmaxTiling/SetTilingKey`”；“void SoftMaxTilingFunc(const AscendC::TensorShape& srcShape, const uint32_t dataTypeSize, const uint32_t localWorkSpaceSize, optiling::SoftMaxTiling& softmaxTiling)”。算子 Host Tiling 直接调用该高阶 API 生产 SoftMaxTiling POD。
-<!-- cannbot:related:end -->
+- [ScaledMaskedSoftmax A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/vfusion/scaled_masked_softmax.md)

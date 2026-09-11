@@ -101,9 +101,3 @@ python3 -m pytest tests/st/torch/test.py --isolate -k "L0"
 - 本卡证据仅 Ascend950 / CANN 9.2.0。a2/a3 未验证，推断可迁移（GE TilingKey 缓存机制与平台无关，但 a2/a3 的 CANN 版本 TilingKey 实现细节需实测）——未验证，推断可迁移。
 - --isolate 止血仅隔离 GE tiling 缓存，不改算子逻辑；若算子本身有 cof 计算错误，--isolate 不会修复，需另定位。
 - 治本（correction 纳 TilingKey）落地后 --isolate 可不再必需；但治本前 --isolate 是必要止血。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclnn TilingData 缓存致 runtime attr 陈旧](../precision/aclnn_tilingdata_runtime_attr.md)（`related`）：GE 框架按 **TilingKey 缓存 tilingdata**：同一 TilingKey 的第二次调用复用首次算好的 tilingdata，不再调 tiling 函数。；aclnn L2 executor 对"可 repeat"的算子以 **(算子, shape, dtype)** 为 key 缓存整块 `TilingData`。；两张运行手册都解释 per-call 属性写入 TilingData 后，批跑同缓存键调用会跳过 Tiling 并复用陈旧属性；它们分别给出 TilingKey 扩维与 AbandonCache 的适用修复。
-<!-- cannbot:related:end -->

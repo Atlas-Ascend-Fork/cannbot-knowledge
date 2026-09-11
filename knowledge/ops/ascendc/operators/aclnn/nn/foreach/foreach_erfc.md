@@ -576,9 +576,3 @@ BF16 输入只以 `maxCastDataCount=U/4` 元素为单位进入 FP32；同一 `2U
 | 同步 | queue 生命周期 + `PIPE_V` barrier | BF16 三阶段间不得省略 barrier | `InnerComputer::Compute` |
 | 精度与尾块 | FP16/FP32 原生；BF16 经 FP32 与 RINT | tail 只按有效字节提交 | `ComputePerCast/CopyIn/CopyOut` |
 | 失败边界 | Host 校验阻断 launch | 不得为未知 key 自造 fallback | `CheckOpInfo/foreach_erfc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachErfc 950 ACLNN 算子知识](foreach_erfc_950.md)（`same_topic`）：｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `y_i［j］ = erfc(x_i［j］) = 1 - erf(x_i［j］)` ｜；｜ 计算语义 ｜ TensorList 中每个元素独立计算 `erfc` ｜。两卡共享 ForeachErfc TensorList 逐元素语义和公开 ACLNN 契约，分别闭合 A2/A3 AIV 向量路线与 950 arch35 SIMT VF 路线。
-<!-- cannbot:related:end -->

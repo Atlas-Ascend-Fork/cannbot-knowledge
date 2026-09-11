@@ -83,11 +83,3 @@ tiling.SetBufferSpace(-1, -1, -1);
 optiling::TCubeTiling tilingData;
 int ret = tiling.GetTiling(tilingData);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IterateBatch](../matmul_kernel/iterate_batch.md)（`related`）：“调用IterateBatch接口之前，需要在Host侧Tiling实现中通过本接口设置多Batch计算的Batch数”；“调用一次IterateBatch，可以计算出多个singleCoreM * singleCoreN大小的C矩阵”。SetBatchNum 生产 IterateBatch 必需的 Batch Tiling 参数，后者按该参数批量计算。
-- [SetBatchNum](../matmul_kernel/set_batch_num.md)（`related`）：在不改变Tiling的情况下，重新设置多Batch计算的Batch数。；设置多Batch计算的最大Batch数，最大Batch数为A矩阵batchA和B矩阵batchB中的最大值。；Host 侧先把最大 Batch 写入 Tiling，Kernel 侧再在不重做 Tiling 时改当前 batchA/batchB，二者是同一 Matmul 多 Batch 配置在静态上限与运行期覆盖两个阶段的合同。
-<!-- cannbot:related:end -->

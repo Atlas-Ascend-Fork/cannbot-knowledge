@@ -442,10 +442,3 @@ Host 先扣除 n/alignedN/alignedNN 的常量缓冲，再按每个 D 元素需�
 | 同步 | AIV queue/PIPE_V/V_S 与 Matmul内部协议可复用 | 不得虚构 AIC-AIV flag；不同输出所有权不可交叉 | `ComputeTile/HierarchicalReduceSum/SetMMParaAndCompute` |
 | 精度与尾块 | AIV FP32+RINT、AIC FP32 accumulate 可复用 | mask、rightPad、gmCopyD 和 B transpose 不可改变 | `ComputeGrad*Tile/SetMMParaAndCompute` |
 | 失败边界 | n 集合、正维、Matmul tiling失败可复用 | 不得把空 tensor 当零 workspace成功、绕过 workspace/userWS null return 或泛化到非 DAV_3510 | `CheckSpecConstraints/GetTiling/mhc_post_backward` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MhcPreBackward 950 ACLNN 算子知识](mhc_pre_backward_950.md)（`related`）：对 MhcPre 的门控、RMS 归一化、特征缩放和投影求反向；同时生成 `gradX,gradHRes,gradHOut,gradHPost`。两卡分别闭合同一 MHC 模块 Pre 与 Post 子图的反向计算；联读可区分各自梯度输出、workspace 和 MIX_CV 阶段，而不是把两个 backward 接口误当成同一算子。
-- [MhcPostBackward A2/A3 ACLNN 算子知识](mhc_post_backward.md)（`same_topic`）：对每个 T 或 B×S 位置计算 `gradX=hRes·gradOutput`、`gradHRes=x·gradOutput^T`、`gradHOut=hPost^T·gradOutput`、`gradHPost=hOut·gradOutput^T`；同时生成 `gradX,gradHRes,gradHOut,gradHPost`；AIV 负责三项，AIC Matmul 负责 `gradHRes`。两卡生成同一四路 MhcPost 梯度；A2/A3 在 AIV UB 中计算全部乘加，950 用 MIX_CV 把 gradHRes 交给 AIC Matmul，适合跨架构实现对照。
-<!-- cannbot:related:end -->

@@ -80,9 +80,3 @@ OM/ATC 部署范式、算子退化、多段切分细节见 [om-atc-offline](../t
 - 受益模型：[pi0](../manipulation/pi0.md)、[pi05](../manipulation/pi05.md)、[act](../manipulation/act.md)
 - 平台 family：[atlas-a3](../../../inference/concepts/platforms/atlas_a3.md)、[atlas-a2](../../../spatial/concepts/platforms/atlas_a2.md)
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [OM/ATC 离线静态图推理（310P 部署范式）](../techniques/om_atc_offline.md)（`related`）：Ascend 310P 执行 VLA 模型经 PyTorch → ONNX → ATC 转换得到的固定 shape OM 静态图，运行时依赖 ACL Runtime。
-<!-- cannbot:related:end -->

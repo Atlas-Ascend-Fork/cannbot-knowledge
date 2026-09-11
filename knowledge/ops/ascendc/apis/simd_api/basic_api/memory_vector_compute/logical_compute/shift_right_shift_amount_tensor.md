@@ -89,10 +89,3 @@ AscendC::ShiftRight(dstLocal, srcLocal0, srcLocal1, 512);
 输入数据(srcLocal1): [2 2 2 ... 2]
 输出数据(dstLocal): [0 0 0 1 1 1 1 ... 128]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ShiftRight](shift_right.md)（`related`）：焦点卡写明“右移位数由标量scalarValue决定”，候选卡写明“右移位数由Tensor指定”。两卡分别定义统一标量位移与逐元素 Tensor 位移，形成重载选型。
-<!-- cannbot:related:end -->

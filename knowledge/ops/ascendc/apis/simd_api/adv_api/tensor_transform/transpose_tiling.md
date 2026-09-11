@@ -155,10 +155,3 @@ platforms: []
         op.Process();
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Transpose](transpose.md)（`related`）：Tiling参数通过Transpose Tiling获取。；host侧Tiling接口，用于获取Transpose kernel计算所需的Tiling参数，分两步：通过GetTransposeMaxMinTmpSize获取最大和最小临时空间大小；通过GetTransposeNDTilingInfo获取kernel侧所需tiling参数。。Kernel 侧 Transpose 明确消费 Transpose Tiling，目标页给出 Host 侧临时空间查询与 tiling 参数生成的完整前置链。
-<!-- cannbot:related:end -->

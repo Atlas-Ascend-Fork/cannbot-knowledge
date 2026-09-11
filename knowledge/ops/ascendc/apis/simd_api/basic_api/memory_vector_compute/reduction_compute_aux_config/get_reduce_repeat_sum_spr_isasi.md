@@ -66,10 +66,3 @@ AscendC::LocalTensor<float> dst;
 AscendC::ReduceSum(dst, src, work, 128);
 float res = AscendC::GetReduceRepeatSumSpr<float>(); // 返回前128个数的和
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceSum](../reduction_compute/reduce_sum.md)（`related`）：对所有输入数据进行求和操作。；获取ReduceSum接口前n个数据连续计算的结果，以全局变量形式存储。。ReduceSum 执行求和，辅助接口读取其前 n 个连续数据计算结果并以全局变量暴露，形成计算到结果检查的配套链。
-<!-- cannbot:related:end -->

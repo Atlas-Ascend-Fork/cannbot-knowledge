@@ -345,9 +345,3 @@ flowchart TD
 - [deepseek-r1-rl](../../../training/guides/recipes/deepseek_r1_rl.md)（跨域·训练：R1 在 A3 128 卡的 veRL+MindSpeed+vLLM-Ascend 全共卡 GRPO RL 后训练，120+ TPS/卡；本推理部署是其训练目标模型）
 - [grpo-dapo](../../../training/concepts/techniques/grpo_dapo.md)（跨域·训练：R1 RL 用 GRPO 算法）
 - [eplb](../../../training/concepts/techniques/eplb.md)（跨域·训练：EPLB(DeepSeek 提出的专家并行负载均衡器)）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Kimi-K2-Thinking](kimi_k2_thinking.md)（`related`）：“基础优化点可从 ［deepseek-r1］(deepseek_r1.md) 平滑继承”明确 Kimi-K2-Thinking 的适配基线；“本实践覆盖 Prefill 与 Decode 两阶段的端到端优化”给出 R1 可继承的两阶段优化范围，联合阅读可区分共享的 DeepseekV3 思路和 Kimi 的独立 legacy 实现。
-<!-- cannbot:related:end -->

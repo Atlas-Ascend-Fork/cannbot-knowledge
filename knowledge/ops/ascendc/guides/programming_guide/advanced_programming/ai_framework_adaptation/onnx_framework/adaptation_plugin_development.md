@@ -120,10 +120,3 @@ namespace domi {
     >[!NOTE]说明 
     >- 当前版本GetAttr与SetAttr接口不支持对原始文件中数据类型为double和uint64的字段进行解析。
     >- 使用ATC工具执行模型转换时，对属性的获取情况不会进行强校验。所以进行算子适配插件实现时，若用户调用GetAttr失败，建议根据算子实际情况增加相应的处理逻辑，例如，针对必选属性，可返回失败，针对可选属性，可设置默认值。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [高级编程调用样例](call_examples.md)（`related`）：插件开发卡要求“使用REGISTER_CUSTOM_OP宏，完成CANN算子和ONNX框架的算子映射关系注册。”；调用示例说明“完成了ONNX框架的适配插件开发后，即可实现从ONNX框架调用Ascend C自定义算子。”。注册完成是后续 ONNX 推理调用样例的直接前置。
-<!-- cannbot:related:end -->

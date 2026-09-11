@@ -44,9 +44,3 @@ platforms: ["950"]
 - 仅 Ascend950 / CANN 9.0.0 实测。a2/a3 对应 soc 名的同型平台分支判断未实测，推断可迁移（`SocVersion` 枚举合法成员名跨平台一致），标注未验证、推断可迁移。
 - 本卡只诊断到“SOC 别名误当 C++ 枚举成员名”这一根因；删除 ASCEND350 分支后的构建闭环（`Build binary success`）未作为非 redacted tool_result 落地，本卡不发布 repair_recipe 的 verbatim before/after 代码块。
 - 若 CANN 后续头文件真的新增 `ASCEND350` 枚举成员，本判据需重新审视；当前以头文件实际合法成员名为准。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSocVersion](../../apis/utils_api/platform_info/platform_ascend_c/get_soc_version.md)（`exemplifies`）：观测（tool_observed）：`platform_ascendc::SocVersion` 枚举的合法成员含 `ASCEND950`，无 `ASCEND350`；`build.sh` 的 `SOC_TO_ARCH` 把 `ascend350` 与 `ascend950` 都映射到同一个 arch 字符串 `3510`（运行时落到同一 SoC），但 C++ 侧枚举没有 `ASCEND350` 这个成员。；获取当前硬件平台版本型号。runbook 的编译排障必须以平台接口返回的实际 SocVersion 枚举合同为准，不能把构建别名当枚举。
-<!-- cannbot:related:end -->

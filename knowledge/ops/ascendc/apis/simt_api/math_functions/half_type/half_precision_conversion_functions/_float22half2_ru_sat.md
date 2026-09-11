@@ -86,10 +86,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         asc_vf_call<simt_float22half2_ru_sat>(dim3(1024), (__gm__ float2*)input, (__gm__ half2*)output, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float22half2_ru](_float22half2_ru.md)（`related`）：功能：将float2类型数据的两个分量遵循CAST_CEIL模式转换为半精度浮点数，返回转换后的half2类型数据。；约束：使用此接口前需将CTRL［60］寄存器设置为0，否则饱和模式不生效。设置方式请参见控制饱和行为的方式。 SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效。需包含头文件 simt_api/asc_fp16.h。；饱和变体建立在同一 CAST_CEIL float2 到 half2 转换上，但增加 CTRL［60］ 与 SIMT 失效条件，提供明确入口选型边界。
-<!-- cannbot:related:end -->

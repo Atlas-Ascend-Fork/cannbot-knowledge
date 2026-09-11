@@ -182,14 +182,3 @@ def _attn_fwd(Q, K, V, sm_scale, M, Out,
 官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
 
 - [06-fused-attention.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/06-fused-attention.py)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Flash Attention Causal 代码骨架](./flash_attention_causal.md)（`related`）：“生产骨架（GQA/MQA、经验加速数据）”
-- [Attention 算子](../guides/operator_design/attention.md)（`related`）：“attention 算子规格”
-- [融合 Softmax 示例（Fused Softmax on NPU）](./fused_softmax.md)（`related`）：“单行 softmax 基础版”
-- [Matmul 教学 Walkthrough（GPU 基线 → NPU 对角线分核）](./matmul_walkthrough.md)（`related`）：“tl.dot 教学”
-
-<!-- cannbot:related:end -->

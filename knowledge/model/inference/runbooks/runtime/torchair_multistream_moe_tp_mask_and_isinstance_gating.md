@@ -118,9 +118,3 @@ overlap 分支要做的事：在次级流上把 `torch_npu.npu_dynamic_quant`（
 - vllm-ascend PR merged diff（mergeCommit `79a910ef4730d3f1be14496a1681eee2566f64a0`，state MERGED），改动文件 `vllm_ascend/torchair/ops/torchair_fused_moe.py`：mc2_mask 切分由 `not replace_allreduce` 内提到 `if tp_size > 1` 顶层；overlap 门控的 import 与 isinstance 目标由基类 `AscendW8A8DynamicFusedMoEMethod` 换成 torchair 子类 `TorchairAscendW8A8DynamicFusedMoEMethod`。
 - e2e 验证配置 DP32TP1EP32、vLLM v0.10.2（该配置 TP1，故信号 1 的 `tp_size > 1` 分支由其它 TP 配置覆盖）；无 before→after 性能数字，user-facing 无变化、e2e serving 通过。
 - 溯源：[torchair-图模式-moe-mc2-mask-未随-replace-allreduce-true-分支做-tp-切](https://github.com/vllm-project/vllm-ascend/pull/2681) · [torchair-图模式下-multistream-moe-的并行量化-overlap-被静默禁用-isinstance](https://github.com/vllm-project/vllm-ascend/pull/2681)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoE Multi-Stream](../../concepts/techniques/moe_multi_stream.md)（`related`）：开了 `multistream_moe` + W8A8Dynamic + `FusedMoEState.MC2`，却**观测不到**预期的量化/路由 overlap 收益；无异常、无精度问题，就是优化像没开。；MoE 层上的多 NPU stream 并行是 cann-recipes-infer 在多个模型里反复使用的优化手段，共同思想是 **把 MoE 层内部可并行的子计算/通信段分配到多条 stream，让它们在时间轴上重叠**，隐藏 AllToAll、GroupedMatMul 或专家计算的时延。；概念页说明 MoE 多流用于重叠通信与专家计算，运行手册处理该优化已配置却因门控未生效的诊断链。
-<!-- cannbot:related:end -->

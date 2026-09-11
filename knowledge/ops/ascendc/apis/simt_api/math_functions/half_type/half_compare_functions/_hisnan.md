@@ -77,8 +77,4 @@ inline bool __hisnan(half x)
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMinimumList 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_minimum_list_950.md)（`related`）：y［idx］=(__hisnan(a) ｜｜ a<b) ? a : b；功能：判断浮点数是否为nan。；950 ForeachMinimumList 的 FP16 SIMT 路线直接调用该 helper 决定 NaN 传播分支。
-<!-- cannbot:related:end -->
+- [ForeachMinimumList 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_minimum_list_950.md)

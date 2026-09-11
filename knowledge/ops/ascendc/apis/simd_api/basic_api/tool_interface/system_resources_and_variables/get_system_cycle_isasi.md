@@ -95,27 +95,12 @@ __aicore__ inline int64_t GetSystemCycle()
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [选择低延迟指令，优化归约操作性能](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md)（`explains`）：“输入shape为30000，数据类型为float时，如下示例的性能数据对比如下，数据单位为cycle，使用GetSystemCycle接口获取。”；“获取系统计数器当前的cycle值。通过计算代码段前后cycle值的差值，可得到代码段消耗的系统cycle数，再通过换算即可获得代码段的执行时间。”。GetSystemCycle 是指南中比较归约方案 cycle 的直接测量接口，并给出平台频率换算合同。
-- [AscGetSystemCycle](../../../c_api/utils/sys_var/asc_get_system_cycle.md)（`same_topic`）：获取系统计数器当前的cycle值。通过计算代码段前后cycle值的差值，可得到代码段消耗的系统cycle数，再通过换算即可获得代码段的执行时间。；读取当前系统cycle计数器，返回int64_t类型的当前计数值。该计数器为只读系统计数器，宽度64bit，复位值为0，随系统时钟持续递增，反映硬件运行以来的累计cycle数，常用于性能统计、耗时测量与执行序的时序判断。本接口在AIC与AIV上均可调用，返回值含义一致。。两张 API 卡描述同一只读系统 cycle 计数器的 C++ 与 C 接口语义，均用于前后差值计时。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 9 / 9 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AttentionToFfn A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)（`related`）：算子声明的固定版本源码包含对 `GetSystemCycle(...)` 的直接调用（第 441 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/moe_distribute_base.h#L441)
-- [DistributeBarrier A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/distribute_barrier.md)（`related`）：算子声明的固定版本源码包含对 `GetSystemCycle(...)` 的直接调用（第 441 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/moe_distribute_base.h#L441)
-- [DistributeBarrier 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/distribute_barrier_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSystemCycle(...)` 的直接调用（第 112 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/distribute_barrier/op_kernel/distribute_barrier.h#L112)
-- [FfnToAttention A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/ffn_to_attention.md)（`related`）：算子声明的固定版本源码包含对 `GetSystemCycle(...)` 的直接调用（第 441 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/moe_distribute_base.h#L441)
-- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)（`related`）：算子声明的固定版本源码包含对 `GetSystemCycle(...)` 的直接调用（第 229 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_a2_layered.h#L229)
-- [MoeDistributeCombineAddRmsNorm A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm.md)（`related`）：算子声明的固定版本源码包含对 `GetSystemCycle(...)` 的直接调用（第 1068 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_v2.h#L1068)
-- [MoeDistributeCombineAddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSystemCycle(...)` 的直接调用（第 1068 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_v2.h#L1068)
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)（`related`）：算子声明的固定版本源码包含对 `GetSystemCycle(...)` 的直接调用（第 364 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_a2_layered.h#L364)
-- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)（`related`）：算子声明的固定版本源码包含对 `GetSystemCycle(...)` 的直接调用（第 1156 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_v2.h#L1156)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AttentionToFfn A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)
+- [DistributeBarrier A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/distribute_barrier.md)
+- [DistributeBarrier 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/distribute_barrier_950.md)
+- [FfnToAttention A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/ffn_to_attention.md)
+- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)
+- [MoeDistributeCombineAddRmsNorm A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm.md)
+- [MoeDistributeCombineAddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm_950.md)
+- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)
+- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)

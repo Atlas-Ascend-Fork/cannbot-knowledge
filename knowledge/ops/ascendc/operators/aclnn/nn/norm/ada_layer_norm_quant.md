@@ -476,9 +476,3 @@ ReduceMaxCustom(reduceFloat, yFloat, dataCount);
 | 同步 | event + Vector barrier | 写读方向不可倒置 | util/base_v1 helpers |
 | 精度与尾块 | FP32 归一化、两段 INT8 cast | scale=amax/127；有效 H 写出 | `DynamicQuant` |
 | 失败边界 | key 1 与 workspace 非空 | unknown key/空 userWS 无 fallback | entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AdaLayerNormQuant 950 ACLNN 算子知识](ada_layer_norm_quant_950.md)（`same_topic`）：｜ Kernel 路线 ｜ R-001 key 11 FullLoad（`H<=6144`）；R-002 key 21 Welford 分片（`H>6144`） ｜；｜ Kernel 路线 ｜ R-001：`H<=6144` 全载入；R-002：`H>6144` 分片、workspace 暂存归一化结果；两者均为 key 1 ｜两卡实现同一 AdaLayerNormQuant 语义，但给出 950 RegBase Welford 与 A2/A3 Vector workspace 两套路线，可支持同算子跨平台迁移。
-<!-- cannbot:related:end -->

@@ -126,11 +126,3 @@ struct RintConfig {
 输入数据(src): [-1.5, -1.3, -0.9, -0.5, 0.5, 0.9, 1.1, 1.5, 2.2, 2.5, 2.8, 3.2]
 输出数据(dst): [-2, -1, -1, 0, 0, 1, 1, 2, 2, 2, 3, 3]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetRintMaxMinTmpSize](get_rint_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Rint接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetRintMaxMinTmpSize获取。。GetRintMaxMinTmpSize 计算 Host 侧可用容量区间，Rint 的 Kernel 重载直接消费据此选择的 sharedTmpBuffer，组成容量查询到调用的完整链。
-- [GetRintTmpBufferFactorSize](get_rint_tmp_buffer_factor_size.md)（`related`）：获取Rint接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetRintMaxMinTmpSize获取。。焦点查询用于在固定 buffer 下切出候选 Rint 每次可处理的元素数。
-<!-- cannbot:related:end -->

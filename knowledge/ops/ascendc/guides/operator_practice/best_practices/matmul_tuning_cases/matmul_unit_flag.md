@@ -140,11 +140,3 @@ Matmul API开启UnitFlag功能的完整样例请参考[开启UnitFlag功能和MD
 ## 总结<a name="section8281219125011"></a>
 
 在算子的MMAD计算流水和FIXPIPE数据搬出流水串行且未被其他流水掩盖（比如MTE2 Bound）时，考虑开启UnitFlag功能，实现MMAD计算流水和FIXPIPE数据搬出流水的流水并行，提升算子性能。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulConfig](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_config.md)（`explains`）：开启UnitFlag功能的方式为将MatmulConfig中的enUnitFlag参数设置为true。；模板参数MatmulConfig，用于配置Matmul模板信息以及相关的配置参数。。调优指南把 MMAD 与 FIXPIPE 流水并行的开关落到 MatmulConfig.enUnitFlag，API 页定义承载该模板配置的 MatmulConfig 参数对象。
-- [UnitFlag](../../../../apis/simd_api/basic_api/cube_compute_isasi/mmad_compute_key_features/unit_flag.md)（`explains`）：Mmad 和 Fixpipe 接口的单元标志机制，以 L0C Buffer 512B 内存块为粒度实现精细化数据同步；UnitFlag功能为AIC核中MMAD计算指令和FIXPIPE数据搬运指令提供了基于内存访问的细粒度同步；机制页给出 flag 状态转换，调优案例给出开启条件、模板约束和 Profiling 验证。
-<!-- cannbot:related:end -->

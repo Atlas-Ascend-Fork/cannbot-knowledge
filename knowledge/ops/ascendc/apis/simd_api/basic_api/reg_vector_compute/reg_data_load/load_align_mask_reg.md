@@ -152,10 +152,3 @@ LoadAlign能够实现数据从Unified Buffer（UB）搬运至[MaskReg](../regist
     }
     ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddrReg](../register_data_types/addr_reg.md)（`related`）：“使用AddrReg寄存器存储偏移量场景：在每次迭代中，需要先调用CreateAddrReg手动设定地址偏移量，再调用搬运指令。”规定 MaskReg LoadAlign 的 AddrReg 重载每轮必须先设偏移；“AddrReg应该通过CreateAddrReg API初始化，然后在循环中使用AddrReg存储地址偏移量。AddrReg在每层循环中根据所设置的stride进行自增。”给出 CreateAddrReg 初始化和按 stride 自增的寄存器语义。二者共同决定多维循环中的实际 UB 地址。
-<!-- cannbot:related:end -->

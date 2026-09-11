@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetAcosTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Acos](acos.md)（`same_topic`）：该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。 临时空间大小BufferSize的获取方式请参考GetAcosMaxMinTmpSize。 因子接口从已有 Buffer 反推 calCount，Acos 本体消费由 Tiling 确定的 sharedTmpBuffer，二者闭合缓存与分块配置。
-<!-- cannbot:related:end -->

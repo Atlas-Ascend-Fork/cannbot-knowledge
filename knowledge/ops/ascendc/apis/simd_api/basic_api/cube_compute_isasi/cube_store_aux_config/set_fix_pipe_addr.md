@@ -283,10 +283,3 @@ __aicore__ inline void SetEleSrcPara(const LocalTensor<half>& eleWiseData, uint1
     KERNEL_CUBE_DATACOPY(half, int8_t, int8_t, int32_t, 128, 1, 1, QuantMode_t::DEQF16);
     ```
     
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyL0CToGM](../cube_compute_store/data_copy_l0_c_to_gm.md)（`related`）：DataCopy 数据搬运（L0C Buffer→GM）过程中进行随路量化后，设置 Elementwise 操作时 LocalTensor 的地址。；量化模式含 NoQuant、F322F16、F322BF16、DEQF16、VDEQF16、QF322B8_PRE、VQF322B8_PRE、REQ8、VREQ8，需配合 SetFixPipeConfig / SetFixpipePreQuantFlag / SetFixpipeNz2ndFlag 设置寄存器；Atlas 200I/500 A2 还支持 SetFixPipeClipRelu、SetFixPipeAddr。。SetFixPipeAddr 配置 L0C 到 GM 随路量化的 Elementwise 地址，DataCopyL0CToGM 是明确消费该配置的搬运接口。
-<!-- cannbot:related:end -->

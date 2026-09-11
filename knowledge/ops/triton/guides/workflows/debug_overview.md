@@ -85,18 +85,3 @@ export TRITON_DEBUG=1 TRITON_DISABLE_CACHE=1 MLIR_ENABLE_DUMP=1 TRITON_ENABLE_LL
 
 - [debugging.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/debugging.md)
 - [profiling.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/profiling.md)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [调试、稳定性与 API 规范](./debugging.md)（`related`）：“调试、稳定性与 API 规范速查”
-- [解释器模式调试（TRITON_INTERPRET）](./interpreter_mode.md)（`related`）：“解释器模式调试”
-- [编译错误排查（MLIRCompileError）](./compile_error_debug.md)（`related`）：“编译错误排查”
-- [运行时错误排查](./runtime_error_debug.md)（`related`）：“运行时错误排查”
-- [调试环境变量完整参考](./debug_env_variables.md)（`related`）：“调试环境变量完整参考”
-- [Triton API 在 Ascend NPU 上的支持矩阵](../../apis/api_support_matrix.md)（`related`）：“确认 API 在 NPU 是否支持”
-- [数据类型支持矩阵（Data Type Support Matrix）](../../apis/data_type_matrix.md)（`related`）：“确认数据类型支持情况”
-- [数据搬运与内存访问模式优化](../../optimizations/techniques/data_movement_optimization.md)（`related`）：“离散访存/MTE2 过长的修复方向”
-
-<!-- cannbot:related:end -->

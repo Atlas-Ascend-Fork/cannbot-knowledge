@@ -543,9 +543,4 @@ return static_cast<T>(result);
 | 精度与尾块 | FP32 opmath；grid-stride `idx<count` | `expf` 顺序、最终 cast 和 count guard | `ComputeSigmoid` |
 | 失败边界 | 平台/core/UB/Tensor 数/dtype 失败不 launch | 不把首 dtype 选择当完整列表校验 | `GetPlatformInfo`、`ForeachSigmoidTilingFunc` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [数学函数expf](../../../../apis/simt_api/math_functions/float_math_functions/expf.md)（`related`）：功能：根据输入x，获取e的x次方的计算结果。；`ComputeSigmoid` 无论 T 为 half、float 还是 BF16，都先转 float，按 `-x -> expf -> +1 -> reciprocal` 计算，再 cast 回 T。API 是 ForeachSigmoid 950 内部 sigmoid 标量链的核心函数。
-- [ForeachSigmoid A2/A3 ACLNN 算子知识](foreach_sigmoid.md)（`same_topic`）：单节点 `SIMT`；AICore 外层 block 内对每个 Tensor 发起 512-thread VF，所有可达节点均无 Cube/AIC 或 MIX_CV；单节点 `AIV_VECTOR`；没有 Cube/AIC、MIX_CV、SIMT 或 NDDMA 节点；两卡描述同一 aclnnForeachSigmoid 接口与逐元素语义，但 950 使用 SIMT、A2/A3 使用 AIV Vector，提供平台 route 选型和资源核验。
-<!-- cannbot:related:end -->
+- [数学函数expf](../../../../apis/simt_api/math_functions/float_math_functions/expf.md)

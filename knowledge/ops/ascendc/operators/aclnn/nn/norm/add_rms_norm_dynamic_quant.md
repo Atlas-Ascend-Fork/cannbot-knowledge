@@ -613,9 +613,3 @@ tmpOutQue.FreeTensor(xFp32);
 | 同步 | Queue + PIPE/event | scalar/vector 与 MTE store/load 依赖不可删 | helper/Route event 方法 |
 | 精度与尾块 | FP32 主计算、RINT→pack | BF16 xOut round、D 有效域、INT4 半字节搬运 | `RoundFloat2IntQuant`、`DataCopyEx` |
 | 失败边界 | normal→single→slice | shape/dtype/mask/epsilon 失败不得静默 fallback | `DoUbTiling`、`CheckParams` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddRmsNormDynamicQuant 950 ACLNN 算子知识](add_rms_norm_dynamic_quant_950.md)（`same_topic`）：`x=x1+x2`，逐最后一维做 RMSNorm，可选 `beta`，再按 `outputMask` 对一路或两路结果做 INT8/INT4 对称动态量化；`x=x1+x2`，逐最后一维 RMSNorm，可选 beta；一路必做动态量化，smooth1+smooth2 同时存在时做第二路。两卡是同一 V2 融合算子的 A2/A3 与 950 实现，归一化主链一致，同时明确 outputMask 和输出 dtype 的平台分歧。
-<!-- cannbot:related:end -->

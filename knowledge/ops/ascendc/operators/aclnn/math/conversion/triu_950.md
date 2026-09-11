@@ -921,9 +921,3 @@ Host 把单矩阵的上三角保留集编码到 `uint64_t highMask[4]`。Device 
 | 同步 | queue protocol、R-002 hard events、zero buffer V_MTE3 是完整复用协议 | 不得在 CopyOut 完成前重写 slot，不得在 Duplicate 完成前 MTE3 读 zero buffer | `SplitAll::ProcessPerLoop`, `SplitRowAndCol::Process` |
 | 精度与尾块 | raw-width copy/zero/select 支持同字节 dtype 共用 body | 不得引入数值 cast；必须保留 `highTail/rowActual/colActual/tailLoopBlockNum` 和 mask 展开 | `triu_binary.json`, 各 `CopyOut/DoVectorCopy` |
 | 失败边界 | Host 校验和 Tiling capacity 检查可直接复用 | unknown key/null workspace 的 Device 无声返回不能被视为成功输出 | `CheckParams`, `PostTiling`, `triangulatorEntry` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceTriu 950 ACLNN 算子知识](inplace_triu_950.md)（`related`）：｜ 计算语义 ｜ 对最后两维的每个 `(i,j)`，`i + diagonal <= j` 时保留 `self`，否则置零；前导维视为批量维。 ｜；｜ 计算语义 ｜ 原地更新最后二维：若列号 `j >= i + diagonal` 则保留 `selfRef［..., i, j］`，否则写零 ｜。两卡共享上三角 diagonal 谓词和 950 AIV 路由族，目标卡补齐原地结果经 ViewCopy 提交到 selfRef 的生命周期。
-<!-- cannbot:related:end -->

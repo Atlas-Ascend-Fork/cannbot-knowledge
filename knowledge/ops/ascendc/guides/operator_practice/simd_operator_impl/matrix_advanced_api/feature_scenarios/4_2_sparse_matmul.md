@@ -157,11 +157,3 @@ platforms: []
 ## 调用示例<a name="zh-cn_topic_0000002298767897_section15486294368"></a>
 
 Sparse Matmul场景的完整样例请参考[Sparse Matmul场景的算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_sparse)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetSparse](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_sparse.md)（`explains`）：在Host侧，获取Tiling前需要通过SetSparse接口设置Sparse Matmul场景。；设置Matmul的使用场景是否为Sparse Matmul场景。。实践指南明确在获取 Tiling 前调用 SetSparse，把接口的布尔场景开关放入 Host 侧稀疏 Matmul 配置顺序。
-- [SetSparseIndex](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_sparse_index.md)（`explains`）：通过SetSparseIndex接口传入稠密化过程中生成的索引矩阵。；设置稀疏矩阵稠密化过程生成的索引矩阵。 索引矩阵在稠密化中的作用请参考MmadWithSparse。。实践指南把 SetSparseIndex 放到 4:2 稀疏 Matmul 的索引生成与传入步骤中，说明该接口在完整 Kernel 流程中的使用位置。
-<!-- cannbot:related:end -->

@@ -54,10 +54,3 @@ static unsigned long long size()
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NumThreads](num_threads.md)（`same_topic`）：获取当前Grid内的SIMT线程总数，与接口num_threads功能相同。；获取当前Grid内的SIMT线程总数。。Size 正文直接声明与 NumThreads 功能相同，两者都返回当前 Grid 的 SIMT 线程总数，是同一查询契约的两个接口名称。
-<!-- cannbot:related:end -->

@@ -126,26 +126,12 @@ __global__ __aicore__ void add_custom(GM_ADDR x, GM_ADDR y, GM_ADDR z)
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [950 mix(1,2) mode=2 漏 AIV1 flag 致全零](../../../../../runbooks/precision/950_mix_1_2_mode_2_aiv1_flag.md)（`exemplifies`）：在静态Tensor编程的场景中，用户必须在Kernel入口处调用此函数来初始化AI Core状态。；在 kernel 入口 `InitSocState()` 后立即 `PipeBarrier<PIPE_ALL>()`，确保所有 pipe 初始化完成再开始 wait。。该 950 双 AIV 同步 runbook 把 InitSocState 的入口初始化合同落到 CrossCore wait 前的具体调用顺序和屏障要求。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 9 / 9 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [DualLevelQuantMatmulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/dual_level_quant_matmul_weight_nz_950.md)（`related`）：算子声明的固定版本源码包含对 `InitSocState(...)` 的直接调用（第 44 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/dual_level_quant_batch_matmul/op_kernel/arch35/dual_level_quant_batch_matmul.cpp#L44)
-- [GroupedMatmulFinalizeRouting 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing_950.md)（`related`）：算子声明的固定版本源码包含对 `InitSocState(...)` 的直接调用（第 69 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_finalize_routing/op_kernel/grouped_matmul_finalize_routing_apt.cpp#L69)
-- [RotateQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/rotate_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `InitSocState(...)` 的直接调用（第 28 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/rotate_quant/op_kernel/arch35/rotate_quant.cpp#L28)
-- [grouped_matmul_swiglu_quant 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `InitSocState(...)` 的直接调用（第 71 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_swiglu_quant_v2/op_kernel/grouped_matmul_swiglu_quant_v2_apt.cpp#L71)
-- [TransposeBatchMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul_950.md)（`related`）：算子声明的固定版本源码包含对 `InitSocState(...)` 的直接调用（第 57 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/transpose_batch_mat_mul/op_kernel/arch35/transpose_batch_mat_mul.cpp#L57)
-- [GroupedMatmulSwigluQuant 950 Direct Invoke 算子知识](../../../../../operators/direct/transformer/gmm/grouped_matmul_swiglu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `InitSocState(...)` 的直接调用（第 71 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_swiglu_quant_v2/op_kernel/grouped_matmul_swiglu_quant_v2_apt.cpp#L71)
-- [TransposeBatchMatMulWeightNZ 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul_weight_nz_950.md)（`related`）：算子声明的固定版本源码包含对 `InitSocState(...)` 的直接调用（第 57 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/transpose_batch_mat_mul/op_kernel/arch35/transpose_batch_mat_mul.cpp#L57)
-- [FlatQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/flat_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `InitSocState(...)` 的直接调用（第 31 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/flat_quant/op_kernel/flat_quant_apt.cpp#L31)
-- [GRU 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/gru_950.md)（`related`）：算子声明的固定版本源码包含对 `InitSocState(...)` 的直接调用（第 169 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/batch_mat_mul_v3/op_kernel/arch35/batch_mat_mul_v3.cpp#L169)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [DualLevelQuantMatmulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/dual_level_quant_matmul_weight_nz_950.md)
+- [GroupedMatmulFinalizeRouting 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing_950.md)
+- [RotateQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/rotate_quant_950.md)
+- [grouped_matmul_swiglu_quant 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant_950.md)
+- [TransposeBatchMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul_950.md)
+- [GroupedMatmulSwigluQuant 950 Direct Invoke 算子知识](../../../../../operators/direct/transformer/gmm/grouped_matmul_swiglu_quant_950.md)
+- [TransposeBatchMatMulWeightNZ 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul_weight_nz_950.md)
+- [FlatQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/flat_quant_950.md)
+- [GRU 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/gru_950.md)

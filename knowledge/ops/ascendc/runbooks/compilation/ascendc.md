@@ -75,10 +75,3 @@ AscendC::Matmul<A_TYPE, B_TYPE, C_TYPE, BIAS_TYPE, AscendC::CFG_MDL> mm_;
 
 - agent 对 `bfloat16_t`/`PIPE_ALL`/`PIPE_FIX`/`PIPE_MTE2`/`PIPE_V`/`PIPE_MTE3` 执行 `edit replaceAll` 去掉 `AscendC::` 前缀，并用 `sed` 对 `CubeFormat`/`CFG_MDL` 去前缀（保留 `matmul_tiling::CubeFormat` 与 `AscendC::MatmulType`/`AscendC::TPosition`/`AscendC::Matmul` 等真命名空间符号）（来源平台：a2；证据等级：tool_observed）
 - 去前缀后 `make -j` 报 `[100%] Built target ascendc_ops` 并生成 `libascendc_ops.so`（来源平台：a2；证据等级：tool_observed）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendC 标量类型误加命名空间导致模板分发编译失败](device_half_bfloat16_types_are_global.md)（`related`）：dav-2201 总结卡规定“`bfloat16_t`、`PIPE_ALL/PIPE_FIX/PIPE_MTE2/PIPE_V/PIPE_MTE3`、`CubeFormat`、`CFG_MDL` 属全局命名空间，不加前缀。”；950 专项卡确认“CANN 9.0.1 的 device 标量类型 `half` 与 `bfloat16_t` 位于全局作用域而不是 `AscendC` 命名空间”，可用于跨版本核对标量模板实参的同一名称解析规则。
-- [PipeBarrier 的 PIPE_V 是全局枚举](pipebarrier_pipe_v_uses_global_enum.md)（`related`）：总卡将“`bfloat16_t`、`PIPE_ALL/PIPE_FIX/PIPE_MTE2/PIPE_V/PIPE_MTE3`、`CubeFormat`、`CFG_MDL` 属全局命名空间，不加前缀。”作为批量分类；PIPE_V 专项卡解释“`PipeBarrier` 模板位于 `AscendC`，但 `PIPE_V` 由底层 intrinsic 头以全局枚举声明；模板名和枚举名不共享命名空间。”，给出最易机械误加前缀的模板实参边界。
-<!-- cannbot:related:end -->

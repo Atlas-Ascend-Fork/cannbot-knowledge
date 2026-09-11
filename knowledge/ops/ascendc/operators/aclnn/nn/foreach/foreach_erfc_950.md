@@ -734,9 +734,3 @@ Host只发射一个 Kernel，把所有 Tensor拼为一个逻辑元素域；threa
 | 同步 | 无共享状态，不需barrier/atomic | 每个flat index只能唯一映射一个thread | `OpForeachErfcSimtKernel` |
 | 精度与尾块 | FP32 erfcf；half/BF16经FP32 | `INT32_MAX`位宽边界、`flat<M`、dtype转换顺序 | `ErfcCompute/Process` |
 | 失败边界 | 平台/UB/tensor count失败阻断launch | 不得扩大256或为未知schMode自造fallback | `ForeachErfcTilingFunc/foreach_erfc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachErfc A2/A3 ACLNN 算子知识](foreach_erfc.md)（`same_topic`）：｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `y_i［j］ = erfc(x_i［j］) = 1 - erf(x_i［j］)` ｜；｜ 计算语义 ｜ TensorList 中每个元素独立计算 `erfc` ｜。两卡共享 ForeachErfc TensorList 逐元素语义和公开 ACLNN 契约，分别闭合 A2/A3 AIV 向量路线与 950 arch35 SIMT VF 路线。
-<!-- cannbot:related:end -->

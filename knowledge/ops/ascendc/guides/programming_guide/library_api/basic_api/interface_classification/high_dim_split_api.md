@@ -181,10 +181,3 @@ mask用于控制每次迭代内参与计算的元素。可通过连续模式和�
     mask=\{6148914691236517205, 0\}（注：6148914691236517205表示64位二进制数0b010101....01）
 
     ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mask_32bit.png)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [高维切分（SIMD计算）](../../../../../apis/simd_api/basic_api/memory_vector_compute/simd_compute/high_dim_split.md)（`explains`）：“支持开发者控制指令的迭代执行和操作数的地址间隔”由“高维切分API，支持repeatTime、stride和mask参数”落实为 repeat、步长和掩码三个接口控制维度。
-<!-- cannbot:related:end -->

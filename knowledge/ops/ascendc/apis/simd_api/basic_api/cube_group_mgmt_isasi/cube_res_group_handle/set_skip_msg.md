@@ -83,10 +83,3 @@ AIC跳过指定个数假消息的处理，仅在回调函数中调用。下图�
     handle.SetSkipMsg(skipNum);
 };
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [PostFakeMsg](post_fake_msg.md)（`same_topic`）：“配合 PostFakeMsg 实现消息合并机制”与“AIC 侧通过 SetSkipMsg 跳过对应数量的假消息”分别给出 AIC 消费端与 AIV 生产端的假消息配对协议。
-<!-- cannbot:related:end -->

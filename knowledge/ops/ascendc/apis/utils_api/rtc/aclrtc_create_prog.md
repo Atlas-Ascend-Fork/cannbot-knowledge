@@ -132,12 +132,3 @@ const char* headersArray[] = { headerSrcA, headerSrcB };
 const char* includeNameArray[] = { includeNameA, includeNameB };
 aclError result = aclrtcCreateProg(&prog, src, "hello_world", 2,  headersArray,  includeNameArray);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [编译与执行RTC](../../../guides/programming_guide/compilation_and_execution/operator_compilation/rtc_runtime_compilation.md)（`explains`）：“通过给定参数创建编译程序实例。函数签名为 aclError aclrtcCreateProg(aclrtcProg* prog, const char* src, const char* name, int numHeaders, const char** headers, const char** includeNames)。”定义 CreateProg 接口；“aclrtcCreateProg：根据输入参数（字符串形式表达的Ascend C源代码等）创建aclrtcProg程序实例。”把它放入完整 RTC 编译执行步骤，指南能推进该 API 的实际使用。
-- [aclrtcCompileProg](aclrtc_compile_prog.md)（`related`）：“通过给定参数创建编译程序实例。函数签名为 aclError aclrtcCreateProg(aclrtcProg* prog, const char* src, const char* name, int numHeaders, const char** headers, const char** includeNames)。”生产 RTC 程序句柄；“参数 prog 为运行时编译程序句柄，numOptions 为编译选项数量，options 为编译选项数组（默认添加 -std=c++17）。”说明 CompileProg 消费该句柄，形成创建后编译的生命周期链。
-- [aclrtcDestroyProg](aclrtc_destroy_prog.md)（`related`）：“参数 prog 为输出，返回运行时编译程序句柄；src 为 Ascend C Device 侧源代码字符串；name 为程序名称，默认值为 default_program。”说明句柄的创建和所有权起点；“销毁运行时编译程序实例，释放资源。函数签名为 aclError aclrtcDestroyProg(aclrtcProg* prog)。”给出对应释放动作，二者闭合资源生命周期。
-<!-- cannbot:related:end -->

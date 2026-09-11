@@ -162,10 +162,3 @@ calc_rms_norm_tiling_params(int64_t numRow, int64_t D, int64_t sizeofT)
 ## 误诊
 
 最初把端到端低性能主要归因于逐行 DMA；受控 batched DMA 实验只有约 1.18 倍相对改善，随后核数探测与 full-core 实验才确认主因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [按行均分 tiling 致 nnz 倾斜时约半数核空闲](tiling_nnz.md)（`related`）：28 个忙核对 28 个空闲核；导致大量 vector core 没有收到工作。前者用 task_cyc 证明按行数切分遇到 nnz 倾斜时部分核空转，后者证明人为每核最少行数会压低 block 数；两者提供区分工作量倾斜与 launch 并行度不足的互补诊断。
-- [block 数应覆盖可用 Vector 核](block_count_uses_all_available_vector_cores.md)（`same_topic`）：选择 `numBlocks=min(coreNumAiv,numRow)`：前者保证尽量覆盖可用 AIV，后者保证每个激活 block 至少有一行，避免空核。 host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`，使输出量充足的 case 只能暴露 `C_old` 路并行工作，留下 `V_measured - C_old` 个核的可用并行度未覆盖。 两卡诊断同一 Host block 数低于可用 Vector 核的问题，分别排除每核最少行数地板与固定 cap。
-<!-- cannbot:related:end -->

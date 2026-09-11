@@ -460,11 +460,3 @@ extern "C" __global__ __aicore__ void kernel_asin_operator(
     // 0.606531, 1.64872, 4.48169, 12.1825, 33.1155, 90.0171, 244.692, 665.142, 1808.04] srcLocal: [0.5, 0.5, 0.5, 0.5, 0.5,
     // 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Asin](asin_interface/asin.md)（`related`）：样例一：展示GetXxxMaxMinTmpSize Tiling接口与kernel侧API配套使用。Host侧通过AscendC::TensorShape描述输入shape，调用GetXxxMaxMinTmpSize获取maxValue/minValue，结合PlatformAscendC获取UB剩余空间，选取合适的tmpSize写入tiling data；kernel侧读取tiling data分配临时空间并调用高阶API（以Asin为例）。；sharedTmpBuffer（输入）：临时缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 用于Asin内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAsinMaxMinTmpSize。；API 页提供样例所消费的 Asin 临时空间参数合同。
-- [ReserveLocalMemory](../../../utils_api/platform_info/platform_ascend_c/reserve_local_memory.md)（`related`）：样例二：展示PlatformAscendC::ReserveLocalMemory与kernel侧API配合使用。；该函数用于在Unified Buffer中预留指定大小的内存空间。调用该接口后，使用GetCoreMemSize可以获取实际可用的剩余Unified Buffer空间大小。；接口页具体定义样例二用于计算可用 UB 的预留和查询合同。
-<!-- cannbot:related:end -->

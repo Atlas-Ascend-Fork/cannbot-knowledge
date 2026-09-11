@@ -422,10 +422,3 @@ PAR列表示矢量计算单元一个迭代能够处理的元素个数。
  -7.68586426e+02  2.29329517e+03 -1.70910608e+03 -2.80956885e+03
   3.86657227e+03  4.07690765e+02  8.78310547e+02  1.32684253e+03]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差](../../../../../runbooks/precision/muladddst_fma_golden_mul_add.md)（`exemplifies`）：“按元素将src0和src1相乘并和dst相加，将最终结果存放进dst中。”与“`MulAddDst` 是 FMA：`dst = src0 * src1 + dst`，乘积 `src0*src1` 在无限精度计算后与 `dst` 相加、一次性舍入到 fp32。golden 的 `Mul` + `Add` 是两次独立舍入。”提供双方正文证据。API 卡给出融合乘加语义，运行手册把它落实为单次舍入 FMA，并说明抵消型 addend 与双舍入 golden 偏 1 ULP 时应拆成 Mul 与 Add。
-<!-- cannbot:related:end -->

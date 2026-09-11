@@ -56,10 +56,3 @@ for (int i = 0; i < singleCoreM/baseM * singleCoreN/baseN; ++i) {
     // Vector操作
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTensorC](get_tensor_c.md)（`related`）：GetTensorC 的参数合同写明“sync：设置同步或者异步模式：同步模式设置为true；异步模式设置为false。”；WaitGetTensorC 明确规定“当使用GetTensorC异步接口将结果矩阵从GM拷贝到UB，且UB后续需要进行Vector计算时，需要调用WaitGetTensorC进行同步。”，后者正是前者 sync=false 路线在 UB 被 Vector 消费前的完成等待步骤，但发起取数与等待同步是任务链上的两个接口主题。
-<!-- cannbot:related:end -->

@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetExpTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Exp](exp.md)（`related`）：“获取Exp接口的maxLiveNodeCount和extraBuffer，用于在固定临时空间下推算算子单次最大计算元素数量。”提供反推 tile 容量的系数，而“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetExpMaxMinTmpSize获取。”说明 Exp 的临时空间消费入口；两者可用于在多个高阶 API 共用 UB 时确定 Exp 单次 calCount。
-<!-- cannbot:related:end -->

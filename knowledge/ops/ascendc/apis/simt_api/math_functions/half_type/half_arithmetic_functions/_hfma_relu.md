@@ -128,10 +128,3 @@ x \* y + z的值，若结果为负数，置为0。本接口受全局饱和模式
         dst[idx] = __hfma_relu(x[idx], y[idx], z[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hfma](_hfma.md)（`related`）：功能：对输入数据x、y、z，计算x与y相乘加上z的结果，并遵循CAST_RINT模式对结果进行舍入处理。；功能：对输入half类型数据x、y、z，计算x与y相乘加上z的结果，并遵循CAST_RINT模式对结果进行舍入。负数结果置为0。。两接口共享 half FMA 与 CAST_RINT 核心计算，目标接口在同一结果后增加负数钳零，适合据是否需要融合 ReLU 选型。
-<!-- cannbot:related:end -->

@@ -38,9 +38,3 @@ platforms: ["950"]
 - 12/12 aclnn 冒烟用例通过（来源平台:950；证据等级:tool_observed）
 - 561103 不再出现（来源平台:950；证据等级:tool_observed）
 - 调试期 fprintf 观测 `beta=0.000000`（来源平台:950；证据等级:tool_observed）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [softplus_v2_grad tiling rank 校验拒标量广播](softplus_v2_grad_tiling_rank.md)（`related`）：“rank(gradOutput)=0 != rank(self)=2”给出焦点端事实；“GetAttrPointer<double>”给出候选端事实。两张卡都定位 softplus_v2_grad Host tiling 的 GRAPH_FAILED，但一张是 raw rank 过严校验，另一张是 beta 按错误类型读取；联合阅读提供同一 561103/GRAPH_FAILED 的分支诊断。
-<!-- cannbot:related:end -->

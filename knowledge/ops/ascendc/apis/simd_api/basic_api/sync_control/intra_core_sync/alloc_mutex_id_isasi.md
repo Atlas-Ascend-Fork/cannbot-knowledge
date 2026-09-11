@@ -51,10 +51,3 @@ MutexID有数量限制，使用结束后应立即调用[ReleaseMutexID](release_
 ## 调用示例<a name="section837496171220"></a>
 
 示例请参考[Lock调用示例](lock.md#section123275308128)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReleaseMutexID](release_mutex_id_isasi.md)（`related`）：从框架获取并占用一个MutexID，与ReleaseMutexID配合使用，管理MutexID的获取和释放。；从框架释放一个MutexID，与AllocMutexID配合使用。。前者取得并占用 MutexID，后者归还由 AllocMutexID 获得的同一资源，二者构成 MutexID 生命周期必须配对的申请与释放链。
-<!-- cannbot:related:end -->

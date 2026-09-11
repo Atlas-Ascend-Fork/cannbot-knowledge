@@ -65,10 +65,3 @@ uint32_t minValue = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetBitwiseXorMaxMinTmpSize(plat, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BitwiseXor](bitwise_xor.md)（`related`）：Kernel侧BitwiseXor接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用。；函数原型： template <const BitwiseXorConfig& config = DEFAULT_BITWISE_XOR_CONFIG, typename T> __aicore__ inline void BitwiseXor(const LocalTensor<T>& dst, const LocalTensor<T>& src0, const LocalTensor<T>& src1, const uint32_t count)；Host 查询接口专门为该 BitwiseXor Kernel 计算确定临时空间上下界，计算接口是这份 Tiling 参数的消费对象。
-<!-- cannbot:related:end -->

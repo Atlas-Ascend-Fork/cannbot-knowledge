@@ -164,8 +164,4 @@ __simd_vf__ inline void AssertSimdVf()
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [LinalgCholesky A2/A3 ACLNN 算子知识](../../../operators/aclnn/math/math/linalg_cholesky.md)（`related`）：Operator 在 Device 侧对每个 Cholesky 对角主元或 Schur 残差直接执行 ascendc_assert，落实该断言契约。
-<!-- cannbot:related:end -->
+- [LinalgCholesky A2/A3 ACLNN 算子知识](../../../operators/aclnn/math/math/linalg_cholesky.md)

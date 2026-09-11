@@ -96,31 +96,13 @@ result: 0 0 0 0
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 9 / 9 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [UpsampleTrilinear3d 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_trilinear_3d_950.md)（`related`）：算子声明的固定版本源码包含对 `isnan(...)` 的直接调用（第 59 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_kernel/arch35/resize_upsample_trilinear_simt_base.h#L59)
-- [ForeachMaximumList 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_maximum_list_950.md)（`related`）：算子声明的固定版本源码包含对 `isnan(...)` 的直接调用（第 46 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_maximum_list/op_kernel/arch35/foreach_maximum_list_simt.h#L46)
-- [GridSampler3D 950 Direct Invoke 算子知识](../../../../operators/direct/cv/image/grid_sampler_3d_950.md)（`related`）：算子声明的固定版本源码包含对 `isnan(...)` 的直接调用（第 41 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/grid_sample/op_kernel/arch35/grid_sampler_bilinear_smit_common.h#L41)
-- [ForeachMaximumScalar 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_maximum_scalar_950.md)（`related`）：算子声明的固定版本源码包含对 `isnan(...)` 的直接调用（第 60 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_maximum_scalar/op_kernel/arch35/foreach_maximum_scalar_simt.h#L60)
-- [ForeachMaximumScalarList 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_maximum_scalar_list_950.md)（`related`）：算子声明的固定版本源码包含对 `isnan(...)` 的直接调用（第 50 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_maximum_scalar_list/op_kernel/arch35/foreach_maximum_scalar_list_simt.h#L50)
-- [ForeachMinimumList 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_minimum_list_950.md)（`related`）：算子声明的固定版本源码包含对 `isnan(...)` 的直接调用（第 46 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_list/op_kernel/arch35/foreach_minimum_list_simt.h#L46)
-- [ForeachMinimumScalar 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_minimum_scalar_950.md)（`related`）：算子声明的固定版本源码包含对 `isnan(...)` 的直接调用（第 61 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar/op_kernel/arch35/foreach_minimum_scalar_simt.h#L61)
-- [MaxPool2dWithIndices 950 ACLNN 算子知识](../../../../operators/aclnn/nn/pooling/max_pool2d_with_indices_950.md)（`related`）：算子声明的固定版本源码包含对 `isnan(...)` 的直接调用（第 35 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_simt.h#L35)
-- [MaxPool3dWithArgmax 950 ACLNN 算子知识](../../../../operators/aclnn/nn/pooling/max_pool3d_with_argmax_950.md)（`related`）：算子声明的固定版本源码包含对 `isnan(...)` 的直接调用（第 42 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/arch35/max_pool3d_with_argmax_v2_simt.h#L42)
-
-### 知识正文中的调用示例（部分算子）
-
-展示 1 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [Hardtanh 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/hardtanh_950.md)（`related`）：算子正文包含对 `isnan(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [UpsampleTrilinear3d 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_trilinear_3d_950.md)
+- [ForeachMaximumList 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_maximum_list_950.md)
+- [GridSampler3D 950 Direct Invoke 算子知识](../../../../operators/direct/cv/image/grid_sampler_3d_950.md)
+- [ForeachMaximumScalar 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_maximum_scalar_950.md)
+- [ForeachMaximumScalarList 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_maximum_scalar_list_950.md)
+- [ForeachMinimumList 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_minimum_list_950.md)
+- [ForeachMinimumScalar 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_minimum_scalar_950.md)
+- [MaxPool2dWithIndices 950 ACLNN 算子知识](../../../../operators/aclnn/nn/pooling/max_pool2d_with_indices_950.md)
+- [MaxPool3dWithArgmax 950 ACLNN 算子知识](../../../../operators/aclnn/nn/pooling/max_pool3d_with_argmax_950.md)
+- [Hardtanh 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/hardtanh_950.md)

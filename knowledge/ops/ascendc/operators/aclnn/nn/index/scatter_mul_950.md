@@ -538,8 +538,4 @@ __simt_callee__ inline void AtomicReduceSubWord(__gm__ uint32_t* base, uint64_t 
 | 精度与尾块 | 32-bit 原 dtype；subword 用 FP32/INT32 单步计算后降回；尾核 + grid-stride predicate | FP16 不得跨多次更新一直保留 FP32；尾核必须用 `tailBlockTilingSize` | `ReduceAcc`; `AtomicReduceSubWord`; `ScatterReduceSimt::Init` |
 | 失败边界 | 参数失败不 launch；空 slice 早退；越界 index 跳过 | 不得把越界 index wrap；不得为 A2/A3 复用 950 卡 | ACLNN 文档错误表；`SimtComputeReduce`; README 支持表 |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_atomic_cas](../../../../apis/simt_api/atomic_operations/asc_atomic_cas.md)（`related`）：“更新是原地的，Kernel 的 `y` 参数不被读取或写入。重复索引通过 CAS 重试串行化相同目标元素的 read-modify-write；不同线程的成功次序不固定，因此浮点重复乘法的舍入次序也不固定。”与“对Unified Buffer或Global Memory上address的数值进行原子比较赋值操作，如果address上的数值等于指定数值compare，则对address赋值为指定数值val，否则address的数值不变。”提供双方正文证据。ScatterMul 卡明确用 CAS 重试实现重复索引下的原地乘法更新，asc_atomic_cas 卡定义比较成功才写入的原子原语；后者直接解释前者避免同地址更新丢失的机制。
-<!-- cannbot:related:end -->
+- [asc_atomic_cas](../../../../apis/simt_api/atomic_operations/asc_atomic_cas.md)

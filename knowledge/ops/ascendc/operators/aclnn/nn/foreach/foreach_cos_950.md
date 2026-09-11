@@ -556,9 +556,3 @@ for (uint64_t idx = tid; idx < static_cast<uint64_t>(count); idx += stride) {
 | 同步 | disjoint grid-stride 输出无需 atomic/barrier | 不能让线程输出 index 集合重叠；最终由 stream 完成同步 | `OpForeachCosSimt` |
 | 精度与尾块 | half/BF16→FP32→cosf→原 dtype | 保留转换顺序、`idx<count` 和 empty skip | `ToFloat32/FromFloat32/OpForeachCosSimt` |
 | 失败边界 | Host 拒绝 >256、unsupported dtype、空平台资源 | 空列表、UB 扣减假设、外部 bridge/VF_CALL 边界 | `ForeachCosTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachCos A2/A3 ACLNN 算子知识](foreach_cos.md)（`same_topic`）：对 TensorList 中每个张量逐元素计算 `y［t］［i］ = cos(x［t］［i］)`。；对 TensorList 中每个 Tensor 逐元素计算 `y［t］［i］=cos(x［t］［i］)`。。两卡记录同一个 ACLNN ForeachCos 逻辑算子，分别闭合 A2/A3 Vector 实现与 950 SIMT 实现，可用于同一算子的跨平台路由选择。
-<!-- cannbot:related:end -->

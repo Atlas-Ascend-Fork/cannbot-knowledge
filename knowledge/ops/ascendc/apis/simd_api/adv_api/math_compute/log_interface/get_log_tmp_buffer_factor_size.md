@@ -82,11 +82,3 @@ uint32_t extraBuf = 0;
 uint32_t typeSize = sizeof(half);
 AscendC::GetLogTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogMaxMinTmpSize](get_log_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Log/Log2/Log10接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；获取Log/Log2/Log10接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。。前者从 shape 求临时空间上下界，后者从已定临时空间反推单次元素量，二者闭合 Log tiling 的正反预算。
-- [Log](log.md)（`related`）：获取Log/Log2/Log10接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；Log（以e为底）和Log10仅支持接口框架申请临时空间方式，每种区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。Log2额外支持通过sharedTmpBuffer传入临时空间。临时空间大小通过GetLogMaxMinTmpSize获取。。Factor 接口在固定临时空间下反推 Log 家族单次处理量，Log 卡说明唯一显式 sharedTmpBuffer 路径在 Log2，二者共同支撑分块预算。
-<!-- cannbot:related:end -->

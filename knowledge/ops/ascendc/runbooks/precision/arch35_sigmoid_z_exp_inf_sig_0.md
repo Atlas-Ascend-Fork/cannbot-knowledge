@@ -61,10 +61,3 @@ platforms: ["950"]
 ## 误诊
 
 - 早期把 L1_018 的 `Actual=0` 归因于 cmpmask 分支选错（sigmoid 段被误选）——但 L1_018 **单独跑就 FAIL**（无跨调用污染），且最大差异位置的 `Actual=0` 与 `sig` 的 subnormal/FTZ 量级吻合，分支是对的、数值是错的，才转向 subnormal/Exp 根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend950 向量管 FTZ 刷新次正规 exp 为零](ascend950_ftz_exp.md)（`related`）：“`Actual=0` 的量级与 subnormal/FTZ 签名吻合”给出单例判别，“NPU 向量管 `Exp` 指令对次正规输出执行 FTZ”把该判别收敛到 950 平台硬件边界和豁免结论。
-- [Exp 默认 INTRINSIC FTZ 致 subnormal 残留失配](exp_intrinsic_ftz_subnormal.md)（`related`）：“Golden=2.152225 Actual=0.000000”在焦点卡由 exp 溢出和 Reciprocal 中间次正规数解释，目标卡用“默认 `INTRINSIC` FTZ 为 0”补充 aten 顺序下 Exp/Mul 次正规输入的同类诊断。
-<!-- cannbot:related:end -->

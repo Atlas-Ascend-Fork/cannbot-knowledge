@@ -54,11 +54,3 @@ platforms: []
 ICPU_SET_TILING_KEY(10086);
 ICPU_RUN_KF(sort_kernel0, coreNum, (uint8_t*)x, (uint8_t*)y);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IcpuRunKf](icpu_run_kf.md)（`related`）：调测时只执行核函数中该tilingKey对应的分支；CPU 调测总入口，完成 CPU 侧的算子程序调用；连接分支选择与 CPU 调测启动。
-- [TILING_KEY_IS](../../kernel_tiling/tiling_key_is.md)（`related`）：指定本次CPU调测使用的tilingKey；判断本次执行的 tiling_key 是否等于 host 侧设置的某个 key；连接调测 key 设置与 Kernel 分支消费。
-<!-- cannbot:related:end -->

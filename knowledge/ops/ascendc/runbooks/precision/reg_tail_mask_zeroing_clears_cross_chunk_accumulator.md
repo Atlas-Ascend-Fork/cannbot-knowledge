@@ -255,9 +255,3 @@ __simd_vf__ inline void rmsNormTileVf(__ubuf__ T *yAddr, __ubuf__ T *xAddr,
 ## 误诊
 
 初看像是平方和、均值或倒数平方根的数值精度问题；但故障只由尾块触发且约呈 `sqrt(vector_width)` 量级放大，更符合跨 lane 累加状态被清零，而非 Cast 或 epsilon 误差。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RegTensor 跨 VF 内循环累加失效 — 状态改存 UB 槽](regtensor_cross_chunk_state_should_persist_in_ub_slot.md)（`related`）：尾掩码 Runbook 定位到“尾块的 `Add(accReg, accReg, sqReg, tailMask)` 不只是忽略无效 lane，而是把 `accReg` 的未激活 lane 清零”；UB 槽 Runbook定位到“失败实现把跨 VL 的持久状态放在 VF 循环内的 `RegTensor acc`，只在循环开始从 UB 槽加载、循环结束再写回。”。两者给出跨 chunk 累加失效的不同根因和不同修复分支。
-<!-- cannbot:related:end -->

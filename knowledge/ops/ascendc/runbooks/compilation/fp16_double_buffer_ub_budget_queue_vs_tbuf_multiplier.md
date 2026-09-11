@@ -179,11 +179,3 @@ after（修复后，trace event 959 的 file_read 原文）：
 ## 误诊
 
 本 trace 在定位本根因前曾长时间误诊为 `compile info not contain [_pattern]` / `INVALID_TILING`：因删除 `opp/vendors/customize` 目录破坏环境、以及 ops-nn `build.sh --ops=fused_bias_leaky_relu` 在 build 目录残留了 advance_step 的旧 `libcust_opmaster_rt2.0.so`（`FusedBiasLeakyRelu` count=0）所致。期间 agent 一度尝试修改公共 `asc_op_compile_base/asc_op_compiler/op_tiling.py` 注入 `_pattern`，被用户驳回「别的算子可以编译，不要修改公共代码」。真正解法是清理 build 目录残留 .so 后重编安装，与本次 UB 根因无关，记录于此供下个 agent 跳过该弯路。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendC 融合算子 Tiling 定块与片上 Buffer 预算：核间 m 轴取舍 + L1/L0 字节账 + UB double-buffer 全计入](../../../../model/inference/optimizations/experience/cases/ascendc_attention_op_tiling_budget.md)（`related`）：per-block UB 预算必须**把每个队列的 double buffer 计满**（4 队列 = 8 份缓冲）；Queue 部分受 double buffer 翻倍、Cast(TBuf) 部分不翻倍；前者给出注意力/RoPE 类 tiling 的总账原则，后者给出 Queue 与 TBuf 倍数分拆的可执行修复公式。
-- [HardSwish 逐元素 kernel 的 TQue 双缓冲实现配方](elementwise_tque_double_buffer_inplace_recipe.md)（`related`）：FP16 路径的 UB 预算里，**Queue 部分受 double buffer 翻倍、Cast(TBuf) 部分不翻倍**；UB 占用 = `2 × tile × sizeof(DT) × BUFFER_NUM`，tile 可取 `ub_size / (sizeof(DT) × BUFFER_NUM × 2)`。；故障卡解释混合 Queue 与 TBuf 时必须分别计倍数，HardSwish 配方给出只有两个双缓冲 TQue 的正确容量公式和就地复用基线。
-- [按 dtype 分配 UB 必须匹配 tiling 预算](dtype_conditional_ub_allocation_matches_tiling_budget.md)（`related`）：“kernel 的 dtype 条件分配与 tiling 的逐元素预算不一致”要求按 dtype 枚举 live-buffer，“Queue 部分受 double buffer 翻倍、Cast(TBuf) 部分不翻倍”进一步给出混合 Queue/TBuf 时各自倍数的核算法。
-<!-- cannbot:related:end -->

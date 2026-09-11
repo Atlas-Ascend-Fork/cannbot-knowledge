@@ -929,10 +929,3 @@ idx/P已在UB，先用标量谓词可避免无贡献项的 Hcur随机GM gather�
 | 同步 | Queue与PIPE_V | Cast→Muls→Add→output/MTE3；不得提前Free | `CalMulti`/`CalToken`/`CopyOut` |
 | 精度与尾块 | FP32乘加、A2/A3 RINT、三层tail | 非FP32先升精度；Hcur有效；q/r地址 | `CalFirst/CalToken/CopyOut` |
 | 失败边界 | 显式Tiling失败与unknown key | N=0、负索引、key17 config缺口、inner不可见不得推测成功 | `InputParamCheck`/router/config |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeTokenPermute A2/A3 ACLNN 算子知识](moe_token_permute.md)（`related`）：“用 `sortedIndices` 从 `permutedTokens` 恢复输出 token”消费逆置换，“对 `flatten(indices)` 两次 argsort 得逆置换”说明该 sortedIndices 如何由前向 permute 生成，二者构成 MoE 路由往返。
-- [MoeTokenUnpermuteGrad A2/A3 ACLNN 算子知识](moe_token_unpermute_grad.md)（`related`）：“用 `sortedIndices` 从 `permutedTokens` 恢复输出 token”是前向恢复，“按 `sortedIndices` 把 `unpermutedTokensGrad` 行散写为 `permutedTokensGrad`”是其反向路由，并补充概率梯度点积。
-<!-- cannbot:related:end -->

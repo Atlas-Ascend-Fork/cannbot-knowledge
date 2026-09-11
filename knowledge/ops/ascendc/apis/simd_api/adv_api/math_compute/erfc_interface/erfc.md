@@ -135,19 +135,4 @@ AscendC::Erfc(dstLocal, srcLocal, sharedTmpBuffer, 512);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetErfcMaxMinTmpSize](get_erfc_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Erfc接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；临时空间大小通过GetErfcMaxMinTmpSize获取。。前者给出 Erfc 的 Host 侧 workspace 上下界，后者把它指定为 Erfc 计算重载的临时空间来源，二者构成 Tiling 尺寸规划到 Kernel 调用的直接前置链。
-- [GetErfcTmpBufferFactorSize](get_erfc_tmp_buffer_factor_size.md)（`related`）：获取Erfc接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。。FactorSize 卡把可用临时空间反推为单次 Erfc 元素数，Erfc 卡说明计算重载如何传入或申请 sharedTmpBuffer；联合阅读可在固定 UB 预算下确定分块规模。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ForeachErfc A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_erfc.md)（`related`）：算子正文包含对 `Erfc(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ForeachErfc A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_erfc.md)

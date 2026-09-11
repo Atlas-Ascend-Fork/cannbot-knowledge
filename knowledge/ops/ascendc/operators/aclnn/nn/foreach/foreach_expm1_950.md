@@ -565,9 +565,3 @@ __simt_callee__ inline float ComputeExpm1<float>(float x)
 | 同步 | 单流 launch + 线程内程序顺序 | idx 必须由 grid-stride互斥；不得无依据加入 atomic/barrier | `OpForeachExpm1Simt` |
 | 精度与尾块 | FP32 direct；FP16/BF16升精度；`idx<count` | 必须用 `expm1f` 与对应 cast顺序 | `ComputeExpm1` |
 | 失败边界 | unsupported dtype/资源指针导致 Host失败 | 不得自造 Device fallback；Tensor数≤256是实现前提 | `ForeachExpm1TilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachExpm1 A2/A3 ACLNN 算子知识](foreach_expm1.md)（`same_topic`）：｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `y_i［j］ = exp(x_i［j］) - 1`。 ｜；｜ 计算语义 ｜ 对 TensorList 中每个 Tensor 逐元素计算 `y_i［j］=expm1(x_i［j］)`，等价于 `exp(x_i［j］)-1`。 ｜；双方描述同一 aclnnForeachExpm1 契约，分别闭合 A2/A3 Vector 路线与 950 SIMT 路线。
-<!-- cannbot:related:end -->

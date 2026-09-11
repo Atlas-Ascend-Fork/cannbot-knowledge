@@ -72,10 +72,3 @@ AscendC::SinConfig config;
 config.algo = AscendC::SinAlgo::RADIAN_REDUCTION;
 AscendC::GetSinMaxMinTmpSize(config, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSinTmpBufferFactorSize](get_sin_tmp_buffer_factor_size.md)（`related`）：host侧Tiling接口，用于获取Sin接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧；推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。前者给出 Sin 临时空间的合法选择区间，后者把实际可用空间换算为单次处理元素数，属于同一 Tiling 计算链。
-<!-- cannbot:related:end -->

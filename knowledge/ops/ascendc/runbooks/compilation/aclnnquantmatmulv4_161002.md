@@ -118,9 +118,3 @@ static aclTensor *CreateAclTensor(const at::Tensor &tensor) {
 
 - agent 一度怀疑 `161002` 是"算子在 950 不支持"或"aclDataType 枚举值不对"，并反复改 dtype 映射试图消除，均未解决；最终用 `torch_npu.npu_quant_matmul` 反证"算子可用、问题在直调方式"。该怀疑属 agent_reported，不进验证信号（验证信号只保留 tool_observed 的 `161002` 与 `torch_npu` 成功对照）。
 - agent 初期用 `--soc=ascend910b` 构建（与目标 950 不符），属配置错误，改 `--soc=ascend950` 即解，不构成本卡的根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclnnQuantMatmulV5 FP16 x2Scale 须 UINT64](aclnnquantmatmulv5_fp16_x2scale_uint64.md)（`related`）：焦点卡写明“符号存在 + 同一 NPU 上经 torch_npu 内部构造 `aclTensor` 调同一算子成功”，候选卡写明“x2Scale(scale) must be in dtype support list ［DT_UINT64,DT_INT64,］”。前者以成功对照收敛到手构 tensor 契约，后者用 SLOG 定位 FP16 直出路径的 x2Scale dtype。
-<!-- cannbot:related:end -->

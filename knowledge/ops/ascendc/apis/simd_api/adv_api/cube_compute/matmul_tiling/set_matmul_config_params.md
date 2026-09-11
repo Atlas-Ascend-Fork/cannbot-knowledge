@@ -108,12 +108,3 @@ tiling.SetMatmulConfigParams(0); // 额外设置
 optiling::TCubeTiling tilingData;
 int ret = tiling.GetTiling(tilingData);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Matmul高阶API开启NBuffer33模板](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_nbuffer33.md)（`explains`）：开启NBuffer33模板：在GetTiling接口前，调用SetMatmulConfigParams接口开启NBuffer33模式，使获取的Tiling满足要求；Kernel侧在创建Matmul对象时开启NBuffer33模板。；若Matmul对象使用NBuffer33模板策略，即MatmulPolicy为NBuffer33MatmulPolicy，则在调用GetTiling接口生成Tiling参数前，必须通过本接口将scheduleTypeIn参数设置为ScheduleType::N_BUFFER_33，以启用NBuffer33模板策略的Tiling生成逻辑。指南给出两端配置，API 卡钉死 Host Tiling 参数必须与 Kernel policy 一致。
-- [GetSpecialMDLConfig](../matmul_kernel/get_special_mdl_config.md)（`related`）：用于配置SpecialMDL模板的参数，获取自定义SpecialMDL模板。；本接口中配置的参数对应的功能在Tiling与Kernel中需要保持一致，所以本接口中的参数取值，需要与Kernel侧对应的MatmulConfig参数值保持一致，详细MatmulConfig参数请见表2。；候选给出 Host Tiling 与 Kernel 配置必须一致的配套合同。
-- [MatmulConfig](../matmul_kernel/matmul_config.md)（`related`）：模板参数MatmulConfig，用于配置Matmul模板信息以及相关的配置参数。不配置默认开启Norm模板，Norm模板的介绍请参考表模板特性。；在计算Tiling时，用于自定义设置［表1］(#table9646134355611)中的MatmulConfig参数。本接口中配置的参数对应的功能在Tiling与Kernel中需要保持一致，所以本接口中的参数取值，需要与Kernel侧对应的MatmulConfig参数值保持一致，详细MatmulConfig参数请见表2。；MatmulConfig 定义 kernel 模板配置，SetMatmulConfigParams 在 Tiling 侧写入同一组参数并要求两侧取值一致。
-<!-- cannbot:related:end -->

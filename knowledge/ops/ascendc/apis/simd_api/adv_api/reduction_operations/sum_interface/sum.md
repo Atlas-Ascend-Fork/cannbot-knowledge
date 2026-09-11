@@ -139,27 +139,13 @@ AscendC::Sum(yLocal, xLocal, sharedTmpBuffer, params);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSumMaxMinTmpSize](get_sum_max_min_tmp_size.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetSumMaxMinTmpSize获取。模板参数isReuseSource预留（传false）；isBasicBlock在满足基本块要求时可提升性能；reduceDim指定reduce维度（默认-1为最后一轴）。；host侧Tiling接口，用于获取Sum接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。Sum 本体明确临时空间通过 GetSumMaxMinTmpSize 获取，目标 API 给出 host 侧最大/最小预算，形成直接调用合同。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 14 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [MultiScaleDeformableAttentionGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/vfusion/multi_scale_deformable_attention_grad.md)（`related`）：算子声明的固定版本源码包含对 `Sum(...)` 的直接调用（第 477 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_kernel/multi_scale_deformable_attention_grad.h#L477)
-- [AttentionToFfn A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)（`related`）：算子声明的固定版本源码包含对 `Sum(...)` 的直接调用（第 285 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L285)
-- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)（`related`）：算子声明的固定版本源码包含对 `Sum(...)` 的直接调用（第 318 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_v2.h#L318)
-- [MoeDistributeCombineAddRmsNorm A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm.md)（`related`）：算子声明的固定版本源码包含对 `Sum(...)` 的直接调用（第 318 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_v2.h#L318)
-- [MoeDistributeCombineAddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `Sum(...)` 的直接调用（第 318 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_v2.h#L318)
-- [MoeDistributeCombineTeardown 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_teardown_950.md)（`related`）：算子声明的固定版本源码包含对 `Sum(...)` 的直接调用（第 283 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_teardown/op_kernel/arch35/moe_distribute_combine_teardown_arch35.h#L283)
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)（`related`）：算子声明的固定版本源码包含对 `Sum(...)` 的直接调用（第 802 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_v2.h#L802)
-- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)（`related`）：算子声明的固定版本源码包含对 `Sum(...)` 的直接调用（第 802 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_v2.h#L802)
-- [MoeDistributeDispatchSetup 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_setup_950.md)（`related`）：算子声明的固定版本源码包含对 `Sum(...)` 的直接调用（第 599 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_setup/op_kernel/arch35/moe_distribute_dispatch_setup_arch35.h#L599)
-- [MoeDistributeDispatchTeardown 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_teardown_950.md)（`related`）：算子声明的固定版本源码包含对 `Sum(...)` 的直接调用（第 599 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_setup/op_kernel/arch35/moe_distribute_dispatch_setup_arch35.h#L599)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MultiScaleDeformableAttentionGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/vfusion/multi_scale_deformable_attention_grad.md)
+- [AttentionToFfn A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)
+- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)
+- [MoeDistributeCombineAddRmsNorm A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm.md)
+- [MoeDistributeCombineAddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm_950.md)
+- [MoeDistributeCombineTeardown 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_teardown_950.md)
+- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)
+- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)
+- [MoeDistributeDispatchSetup 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_setup_950.md)
+- [MoeDistributeDispatchTeardown 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_teardown_950.md)

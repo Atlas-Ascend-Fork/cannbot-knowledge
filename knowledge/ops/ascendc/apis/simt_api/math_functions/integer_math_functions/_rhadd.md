@@ -78,10 +78,3 @@ int __rhadd(int x, int y)
         dst[idx] = __rhadd(x[idx], y[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hadd（整数数学函数）](_hadd.md)（`related`）：int32 向上取整平均值函数。获取 int32 类型数据 x 和 y 的向上取整平均值，避免中间求和溢出。；int32 有符号平均值函数。获取 int32 类型数据 x 和 y 的平均值，计算过程避免中间求和溢出（向下取整）。。两接口都避免中间求和溢出，唯一区别是奇数和的向上或向下取整，直接支撑整数平均值舍入选型。
-<!-- cannbot:related:end -->

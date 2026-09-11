@@ -99,10 +99,3 @@ public:
 </tr>
 </tbody>
 </table>
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LocalTensor SetValue 参数颠倒导致索引错乱](../../../../../runbooks/precision/localtensor_setvalue_uses_offset_then_value.md)（`exemplifies`）：核心方法：GetValue/SetValue 元素读写，GetShapeInfo/SetShapeInfo 形状管理，GetSize/GetLength 大小获取，GetPhyAddr 物理地址，ReinterpretCast 类型重解释，operator［］/operator() 下标访问，SetBufferLen/SetAddrWithOffset 地址管理，Print 调试打印，ToFile 数据导出。；`LocalTensor::SetValue` 的真实契约是 `SetValue(offset, value)`，而出错代码按 `SetValue(value, offset)` 调用。概览列出 SetValue 能力，runbook 给出其参数次序错误、精度症状和验证修法，能直接推进 LocalTensor 标量写入排障。
-<!-- cannbot:related:end -->

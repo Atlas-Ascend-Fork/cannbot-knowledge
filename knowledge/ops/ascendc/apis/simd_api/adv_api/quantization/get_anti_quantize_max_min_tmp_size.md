@@ -66,10 +66,3 @@ auto scaleShape = AscendC::TensorShape(scaleDims);
 bool isTranspose = false;
 AscendC::GetAntiQuantizeMaxMinTmpSize(srcShape, scaleShape, isTranspose, AscendC::TensorDataType::DT_INT8, AscendC::TensorDataType::DT_BF16, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AntiQuantize](anti_quantize.md)（`related`）：“host侧Tiling接口，用于获取AntiQuantize接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”定义 Host sizing；“提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetAntiQuantizeMaxMinTmpSize获取。”明确 Kernel 消费点。
-<!-- cannbot:related:end -->

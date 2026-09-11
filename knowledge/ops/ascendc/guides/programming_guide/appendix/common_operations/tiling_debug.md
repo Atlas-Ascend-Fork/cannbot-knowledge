@@ -98,12 +98,3 @@ platforms: []
     ```
     ./test
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BuildTilingContext](../../../../apis/utils_api/tiling_tuning/context_builder/build_tiling_context.md)（`explains`）：使用ContextBuilder配置输入输出Tensor的形状、数据类型、格式及平台信息等，构建TilingContext。；构造KernelRunContextHolder的对象，该对象可通过GetContext接口获取TilingContext类型的对象。。指南中的离线调测第一个核心动作由候选 API 生成可传给 Tiling 函数的上下文。
-- [GetTilingFunc](../../../../apis/utils_api/tiling_tuning/op_tiling_registry/get_tiling_func.md)（`explains`）：通过OpTilingRegistry的LoadTilingLibrary接口加载Tiling动态库；使用GetTilingFunc接口获取Tiling函数指针。；典型用法：先通过 OpTilingRegistry.LoadTilingLibrary 加载算子 so 库，再调用 GetTilingFunc("AddCustom") 获取 Tiling 函数并执行。。候选 API 精确实现指南在加载动态库后的函数解析与调用步骤。
-- [LoadTilingLibrary](../../../../apis/utils_api/tiling_tuning/op_tiling_registry/load_tiling_library.md)（`explains`）：根据输入的路径，加载对应的Tiling动态库。开发者基于工程化算子开发开发方式完成算子实现后，可通过算子包编译或算子动态库编译获取对应的Tiling动态库文件。；在工程化算子开发过程中，开发者需实现Tiling函数，该函数原型是固定的，接受TilingContext作为输入。框架负责构造TilingContext并调用Tiling函数。若需单独进行Tiling调测，开发者可通过OpTilingRegistry加载编译后的Tiling动态库，获取Tiling函数的指针并进行调用，调用时Tiling函数的TilingContext入参使用ContextBuilder构建。。加载 API 是独立调测流程的入口，指南串起加载动态库、取函数指针和 ContextBuilder 构造入参。
-<!-- cannbot:related:end -->

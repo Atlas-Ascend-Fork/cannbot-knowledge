@@ -51,10 +51,3 @@ ConvBackpropApi::Conv3DBackpropInput<weightDxType, inputSizeDxType, gradOutputDx
 gradInput_.End();
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Conv3DBackpropInput](conv3_d_backprop_input_usage.md)（`related`）：Ascend C提供一组Conv3DBackpropInput高阶API，便于用户快速实现卷积的反向运算，求解反向传播的误差。；在Conv3DBackpropInput卷积反向计算完成后，必须调用一次End，以清除EventID并释放内部申请的临时内存。。用法卡覆盖 Conv3DBackpropInput 任务，End 卡规定该任务完成后的必需清理步骤。
-<!-- cannbot:related:end -->

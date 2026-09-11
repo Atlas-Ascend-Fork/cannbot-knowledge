@@ -521,9 +521,3 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 | 同步 | 两套 MTE event + Vector barrier | 同半区 MTE3 完成前不得覆盖 | `Process`/helpers |
 | 精度与尾块 | 窄 dtype 升 FP32，BF16 RINT | Compare 补 64、有效算术与搬运只用 n | `ComputeStepOne`/`CastAndCopyOut` |
 | 失败边界 | dtype 在 Host 失败 | unknown key 不写输出；不得假设 fallback | `RunBigKernelTiling`/`logit` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Logit 950 ACLNN 算子知识](logit_950.md)（`same_topic`）：“｜ 实际入口 ｜ `aclnnLogitGetWorkspaceSize` + `aclnnLogit`，公开 ACLNN、无 V2 版本族 ｜”与“｜ 实际入口 ｜ `aclnnLogitGetWorkspaceSize` + `aclnnLogit`，公开 ACLNN、固定仓无更高版本 ｜”锁定同一公开接口；两卡分别闭合 A2/A3 与 950 的构建和平台支持，可直接用于跨平台版本选型。
-<!-- cannbot:related:end -->

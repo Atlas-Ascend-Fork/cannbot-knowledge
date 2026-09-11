@@ -782,9 +782,5 @@ IMPL_OP(AlltoAllAllGatherBatchMatMul)
 | 精度与尾块 | BF16/SiLU FP32、y3 激活前、M/H/C/E tail | BMM bias 必须关闭；`CAST_ROUND` 与 optional y3 顺序；选择正确 tail POD | `CheckAddActivateUB` / `TransposeAfterBMM` |
 | 失败边界 | API校验、Tiling检查、无 Device fallback | 不能把 A2/950、空 tensor、跨超节点或并发场景静默接入 | `CheckParams` / `TilingCheck...` / README |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AllGather](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/all_gather.md)（`related`）：焦点算子说明“MIX AIV 侧再以 `Hccl<HCCL_SERVER_TYPE_AICPU>` 提交 AllToAllV/AllGather command”，候选 API 规定“recvBuf的数据个数等于sendCount * rank size，即sendCount * 卡数。”；该接口合同直接解释算子 TP 域 AllGather 的输出扩张和 buffer 规划。
-- [AlltoAllV](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/allto_all_v.md)（`related`）：焦点算子说明“MIX AIV 侧再以 `Hccl<HCCL_SERVER_TYPE_AICPU>` 提交 AllToAllV/AllGather command”，候选 API 定义“定制每张卡给其它卡发送的数据量和从其它卡接收的数据量，以及定制发送和接收的数据在内存中的偏移。”；该合同对应算子 EP 域分片通信的计数与位移参数。
-<!-- cannbot:related:end -->
+- [AllGather](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/all_gather.md)
+- [AlltoAllV](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/allto_all_v.md)

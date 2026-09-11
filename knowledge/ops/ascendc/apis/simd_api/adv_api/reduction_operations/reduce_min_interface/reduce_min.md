@@ -120,10 +120,3 @@ AscendC::ReduceMin<float, AscendC::Pattern::Reduce::AR, isReuse>(
 输入shape：(2,8)
 输出数据(dst): [-1.0 -9.0]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetReduceMinMaxMinTmpSize](get_reduce_min_max_min_tmp_size.md)（`related`）：“host侧Tiling接口，用于获取ReduceMin接口所需的最大和最小临时空间大小”给出焦点端事实；“临时空间大小通过GetReduceMinMaxMinTmpSize获取。”给出候选端事实。GetReduceMinMaxMinTmpSize 卡定义 Host 侧临时空间预算，ReduceMin 卡明确消费该预算，二者形成 Tiling 计算到 Kernel 调用的参数链。
-<!-- cannbot:related:end -->

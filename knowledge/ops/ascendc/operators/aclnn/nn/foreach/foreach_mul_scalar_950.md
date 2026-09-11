@@ -715,10 +715,3 @@ if constexpr (IsSameType<T, bfloat16_t>::value || IsSameType<T, half>::value) {
 | 同步 | TQue生命周期与同一Vector调用序列 | slot Free前不可覆盖；950源码无显式Vector barrier | base `CopyIn/Compute/CopyOut` |
 | 精度与尾块 | FP16/BF16升FP32、原地Muls、RINT；所有tile DataCopyPad | scalar实际dtype由binary实例决定；只写有效n元素 | derived `Compute`; base DMA |
 | 失败边界 | membase拒绝后regbase命中；Host校验失败阻断 | unknown key无body；selector/key/binary需一致 | `IsCapable`; `GetTilingKey`; router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMulScalar A2/A3 ACLNN 算子知识](foreach_mul_scalar.md)（`same_topic`）：同一语义存在 `aclnnForeachMulScalar` 与 `aclnnForeachMulScalarV2`。V2 将公开 `scalar` 入口从单元素 `aclTensor` 改为 `aclScalar`；A2、A3 和 Ascend 950 的公开产品表均支持 V2，因此按“逐架构最新公开版本”选择 V2。；V2 相对 `aclnnForeachMulScalar` 只改变公开 scalar 容器：从单元素 `aclTensor` 改为 `aclScalar`。；两卡描述同一 ACLNN 算子与 V2 合同，只因 A2/A3 和 950 平台实现拆卡。
-- [ForeachMulScalarList 950 ACLNN 算子知识](foreach_mul_scalar_list_950.md)（`same_topic`）：对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ * scalar` `out［i］［j］ = x［i］［j］ * scalars［i］` 共同的逐元素乘法语义下，标量是全列表共享还是按 Tensor 位置变化，直接决定 aclScalar 或 ScalarList 入口。
-<!-- cannbot:related:end -->

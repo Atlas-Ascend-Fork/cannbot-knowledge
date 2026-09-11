@@ -687,9 +687,5 @@ Host 不把多个 Tensor 物化为一块连续数据，而只在 POD 中描述�
 | 精度与尾块 | FP16/FP32/INT32 直接 Power；BF16 升 FP32、RINT 回写；两层 remainder | exponent cast、有效 `dataCount`、tail exact-byte copy 不得改变 | `InnerComputer/CopyIn/ComputeAndCopyOut` |
 | 失败边界 | Host 校验失败返回 `GRAPH_FAILED`；未知 key 无 body；950 冲突不发布 | 不得把未知 key、零 U 或 950 内部接线当成可用 fallback | `CheckOpInfo`、entry router、公开产品支持表 |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Power（数学计算）](../../../../apis/simd_api/adv_api/math_compute/power_interface/power.md)（`related`）：ForeachPowScalarList 的 Device 语义是“Kernel 调用 `Power<T,false>` 计算 `y_i［j］=x_i［j］^{e_i}`。”；Power 页定义“按元素做幂运算（dst = src0 ^ src1）”并提供 Tensor+标量重载，后者是每个列表元素 tile 的直接计算原语。
-- [ScalarList](../../../../apis/utils_api/prototype_register_management/op_param_def/scalar_list.md)（`related`）：ForeachPowScalarList 的 ABI 写明“`scalars` 为与列表等长的 `FLOAT32/INT64` ScalarList”；ScalarList 页定义“配置该参数后，自动生成的单算子API（aclnnxxx）接口中，输入类型为aclScalarList类型。”，后者解释 ACLNN bridge 如何暴露前者指数列表输入。
-<!-- cannbot:related:end -->
+- [Power（数学计算）](../../../../apis/simd_api/adv_api/math_compute/power_interface/power.md)
+- [ScalarList](../../../../apis/utils_api/prototype_register_management/op_param_def/scalar_list.md)

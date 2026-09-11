@@ -829,9 +829,3 @@ Cast(yLocal, pos, RoundMode::CAST_RINT, currentNum);
 | 同步 | Queue + NC hard events/barriers | weightVec 生成后才可 Mul | `Sync*/BuildNc*` |
 | 精度与尾块 | BF16 FP32→RINT；32B zero pad | 只写 realLen | `Compute/Copy*Pad` |
 | 失败边界 | dtype/shape/UB/overflow guards | 不得静默 fallback 越界 | `GetShapeAndDtypeInfo/CalcTiling` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Prelu 950 ACLNN 算子知识](prelu_950.md)（`same_topic`）：“｜ 实际入口 ｜ `aclnnPreluGetWorkspaceSize` + `aclnnPrelu`；公开两段式 ACLNN，inner bridge/executor 由 `ACLNNTYPE aclnn` 生成。 ｜”与“｜ 实际入口 ｜ `aclnnPreluGetWorkspaceSize` + `aclnnPrelu`，公开两段式 ACLNN；L0 为 `l0op::PRelu`。 ｜”提供双方正文证据。两卡闭合同一个 aclnnPrelu 公开入口在 A2 与 Ascend 950 的实现；联合阅读可迁移同一 API，同时辨别 A2 七路线与 950 RegBase/NDDMA 路线差异。
-<!-- cannbot:related:end -->

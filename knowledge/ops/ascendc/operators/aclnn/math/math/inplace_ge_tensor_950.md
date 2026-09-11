@@ -1014,9 +1014,3 @@ NDDMA把stride0广播直接编码进5D搬运；UB路线先搬紧凑输入再Broa
 | 同步 | scheduler Mutex、AiCPU ParallelFor join、executor顺序 | pingpong、broadcast缓存、loop-mode Reset不可删除 | `sync.h`, schedulers, AiCPU body |
 | 精度与尾块 | T域Compare→mask→0/1 Select→Bool→self dtype Cast | CMPMODE=4、SELMODE=2、tail count与Cast顺序 | GreaterEqual DAG、Vec primitives |
 | 失败边界 | Host校验、Tiling UB/rank、AiCPU Bcast/dtype、Cast pair | 空Tensor不得送核心；不支持pair返回nullptr | CheckParams、DoTiling、CpuKernel、Cast |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceGeScalar 950 ACLNN 算子知识](inplace_ge_scalar_950.md)（`same_topic`）：`other` 为同一公开集合的 scalar `other` ｜ ND，0–8 维，可非连续 ｜ 同 `selfRef` ｜ 必选输入；shape 必须可向 `selfRef.shape` 广播。 两张 950 原地比较卡共享 BOOL 临时结果回写链，other 是单标量还是可广播 Tensor 直接决定入口和广播校验。
-<!-- cannbot:related:end -->

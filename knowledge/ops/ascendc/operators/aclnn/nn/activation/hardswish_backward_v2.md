@@ -450,9 +450,3 @@ Host 只需一个 key；Device 对每个 tile 按 `dataCount*sizeof(T)` 生成�
 | 同步 | parity event 协议可复用 | MTE3→MTE2、MTE2→V、V→MTE3 与 PIPE_V 顺序 | 220 `Process`/helpers |
 | 精度与尾块 | FP32 中间与 DataCopyPad tail | 比较严格性、常量 0.33333334、BF16 RINT、有效 n | 220 `Compute/CastAndCopyOut` |
 | 失败边界 | API/Tiling 明确终点 | 不得把空域、非法 dtype/shape 或 U/E=0 降级成未知 Device Route | `CheckParams`; `RunBigKernelTiling` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HardswishBackwardV2 950 ACLNN 算子知识](hardswish_backward_v2_950.md)（`same_topic`）：“｜ Kernel/资源 ｜ 通用 entry 的 220 分支 ｜ 同左 ｜ `_apt` entry 直接复用同一 220 body；U/P 取 950 平台值 ｜”；“｜ Kernel/资源 ｜ `hard_swish_grad_v2.cpp` 的 220 分支 ｜ 同左 ｜ `_apt` entry 直接实例化相同 `HardSwishGradV2220` body ｜”。两卡是同一 HardswishBackwardV2 ACLNN 语义和同一 220 body 的平台拆分，差别在 entry、binary config 与平台资源值。
-<!-- cannbot:related:end -->

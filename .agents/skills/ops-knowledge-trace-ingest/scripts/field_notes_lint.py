@@ -9,7 +9,7 @@ Contract 做严格卡片校验，并补充 runbook **正文** 专属约束：
   ⑲ 验证信号逐条标来源平台与证据等级（tool_observed / artifact_verified）
   ⑳ okf:attachment 禁用（存量全扫记 warn；`--card` 新/改卡按 HARD 拦截）
   ③ 文件名纯 slug / 无 session 前缀
-  ⑦ 受管关系块由 knowledge_graph.py verify 统一校验，本脚本不重复实现
+  ⑦ 普通正文链接由治理 Contract 校验，不要求图谱块或构图
 
 违反任一 HARD 约束 → 退出码非零。只读只报。
 frontmatter 不设 evidence/confidence/transfer_scope/quality_score/reproduce_count

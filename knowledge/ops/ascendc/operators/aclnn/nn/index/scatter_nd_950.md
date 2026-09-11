@@ -832,9 +832,3 @@ workspace_total = 16MiB
 | 同步 | queue/event/UB barrier/SyncAll/atomic | 两道全核 barrier不可省略 | common + bodies |
 | 精度与尾块 | key100/200与 OFFSET specialization | MicroAPI tail mask、SIMT thread guards、DMA有效字节 | `GetTilingKey/router` |
 | 失败边界 | Host shape/UB/view校验与 unknown key | 不得把非确定性 route 宣称确定 | API/Tiling/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ScatterNd A2/A3 ACLNN 算子知识](scatter_nd.md)（`same_topic`）：“令 `K=indices.shape［-1］`、`N=prod(indices.shape［:-1］)`、`S=prod(data.shape［K:］)`。第 `r` 行索引的元素偏移为 `O［r］=sum(indices［r,d］*stride［d］)`，其更新切片覆盖 `out［O［r］:O［r］+S］`。确定性路线先以 atomic max 计算每个目标行对应的最大原始 `r`，再只提交该行更新，因此重复索引选择最后一条。非确定性路线用于框架关闭 deterministic 时，重复目标的最终值依具体路线与核间写入顺序。”与“设 `K=indices.shape［-1］`，`P=prod(indices.shape［:-1］)`，`S=prod(data.shape［K:］)`。对连续化后的 `data` 建立输出副本；对第 `p` 个索引元组 `i=(i0,...,iK-1)`，线性行号为 `L=sum(i［d］*prod(data.shape［d+1:K］))`，将 `updates［p, :］` 的 `S` 个元素覆盖到输出第 `L` 个切片。公开约束要求索引非负且不越界。R-002/R-003 按输入行顺序覆盖，重复目标最终取最后一行；R-001 对同一线性地址仅提交一个由排序结果携带的原位置，但固定仓未给出 `Sort` 对同键的稳定性契约，因此不能把其 winner 推断为最大原始位置。”是双方正文中的具体合同。两端定义同一 ScatterNd 覆盖语义与索引线性化，950 卡补充 atomic-max 确定性路线，A2/A3 卡说明排序路线的稳定性边界；互读可核对重复索引行为。
-<!-- cannbot:related:end -->

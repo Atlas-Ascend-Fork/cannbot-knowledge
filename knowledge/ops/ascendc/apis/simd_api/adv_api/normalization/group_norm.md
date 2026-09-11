@@ -156,10 +156,3 @@ AscendC::GroupNorm<T, isReuseSource>(
 输出数据(varianceLocal):
 [ 21.25 21.25 21.25 21.25 21.25 21.25 21.25 21.25 ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupNorm Tiling](group_norm_tiling.md)（`related`）：“host侧Tiling接口，用于获取GroupNorm kernel计算所需的Tiling参数，分两步：通过GetGroupNormMaxMinTmpSize获取最大和最小临时空间大小；通过GetGroupNormNDTilingInfo获取kernel侧所需tiling参数。”与“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过GroupNorm Tiling获取。模板参数isReuseSource预留（传false）。”分别给出两端正文事实；Host 侧先计算临时空间和 GroupNormTiling，Kernel 侧 GroupNorm 明确消费该 tiling，二者形成同一接口的参数生产消费链。
-<!-- cannbot:related:end -->

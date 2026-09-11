@@ -257,10 +257,7 @@ class RouteContractTests(unittest.TestCase):
         self.assertIsNone(
             fixed_archive_platforms(
                 "# API\n\n范围未知。\n\n"
-                "<!-- cannbot:related:start -->\n"
-                "## 相关\n\n"
-                "- [Other](other.md)（`related`）：目前仅支持Atlas A3训练系列产品。\n"
-                "<!-- cannbot:related:end -->\n"
+                "- [Other](other.md)\n"
             )
         )
         self.assertIsNone(
@@ -724,7 +721,7 @@ class FixedArchiveHeaderTests(unittest.TestCase):
                         if role is not None:
                             source["role"] = role
                         metadata = {**SYNTHETIC_API_METADATA, "type": kind, "sources": [source]}
-                        managed = f"{module.MANAGED_START}\n## 相关\n{module.MANAGED_END}"
+                        managed = "- [Related](other.md)"
                         text = module.render_card(metadata, "# Topic\n\nBody.  \n", managed)
                         path = root / f"knowledge/ops/ascendc/{profile}/{role or 'unroled'}.md"
                         path.parent.mkdir(parents=True, exist_ok=True)
@@ -826,7 +823,7 @@ class FixedArchiveHeaderTests(unittest.TestCase):
         body = '# Probe\n\n正文与空白保持。  \n\n```cpp\n#include "kernel_operator.h"\n```\n'
         old = self.metadata(module, body=body)
         old["source_headers"] = ["include/basic_api/probe.h"]
-        managed = f"{module.MANAGED_START}\n- [关联](other.md)\n{module.MANAGED_END}"
+        managed = "- [关联](other.md)"
         expected = module.render_card(old, body, managed)
         for _ in range(2):
             new = self.metadata(module, old=old, body=body)
@@ -834,6 +831,23 @@ class FixedArchiveHeaderTests(unittest.TestCase):
             self.assertIsNot(old["source_headers"], new["source_headers"])
             self.assertEqual(expected, module.render_card(new, body, managed))
             old = new
+
+    def test_mirror_preserves_plain_link_suffix_and_rejects_untracked_prose(self) -> None:
+        module = self.load_module()
+        body = "# Probe\n\nFixed contract with source whitespace.  \n"
+        metadata = self.metadata(module, body=body)
+        navigation = "- [Related](other.md)"
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "probe.md"
+            rendered = module.render_card(metadata, body, navigation)
+            path.write_text(rendered, encoding="utf-8")
+            old, suffix = module.existing_card(path, body)
+            self.assertEqual(metadata, old)
+            self.assertEqual(navigation, suffix)
+            self.assertEqual(rendered, module.render_card(old, body, suffix))
+            path.write_text(module.render_card(metadata, body, None) + "\nInjected claim.\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "ordinary trailing links"):
+                module.existing_card(path, body)
 
     def test_metadata_doc_headers_override_existing_enrichment(self) -> None:
         module = self.load_module()

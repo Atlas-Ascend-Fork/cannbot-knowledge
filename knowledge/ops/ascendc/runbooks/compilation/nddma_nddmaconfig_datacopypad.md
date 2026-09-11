@@ -101,9 +101,3 @@ padding 传递链：`config.loopLpSize/loopRpSize`（全局）在非 `unsetPad` 
 - a2/a3 平台未实测；arch35（Ascend950）的 padding 契约在 dav_m510 实现中同构存在，推断可迁移但未验证，不写入 platforms。
 - `DataCopyPad(DataCopyExtParams)` 的 arch35/5102 专用重载在其他 arch 上签名不同，跨 arch 须重新核对接口。
 - 本判别基于 API 契约推导与 TTK 编译失败信号；修复后编译/精度通过的闭环信号缺失。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_to_ub_nddma.md)（`exemplifies`）：“- **API 路径**：AscendC `DataCopy<T, dim, NdDmaConfig>`（GM→UB NDDMA）与 `DataCopyPad`（UB→GM 回写）；`NdDmaConfig` / `MultiCopyLoopInfo<dim>` / `DataCopyParams` / `DataCopyExtParams` 结构定义于 `asc/include/basic_api/kernel_struct_data_copy.h` 与 `kernel_operator_data_copy_intf.h`，arch35 实现于 `asc/impl/basic_api/dav_3510/kernel_operator_data_copy_impl.h`。”与“多维数据搬运接口，相比于基础数据搬运接口，可更加自由配置搬入的维度信息以及对应的Stride。 具体支持的数据通路为（以逻辑位置TPosition表示）： - Global Memory -> Unified Buffer - GM -> VECIN”提供双方正文证据。runbook 在非对齐尾轴修复中实际采用 GM→UB 的 NDDMA DataCopy，并围绕 NdDmaConfig 配 padding；API 卡定义该多维搬入和 stride 合同。
-<!-- cannbot:related:end -->

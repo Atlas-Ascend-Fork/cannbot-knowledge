@@ -203,31 +203,13 @@ CrossCoreSetFlag的模板参数`modeId`和`pipe`均**没有默认值**，其取�
 完整样例请参考[CrossCoreSetFlag和CrossCoreWaitFlag核间同步样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/cross_core_set_wait_flag)。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [950 mix(1,2) mode=2 漏 AIV1 flag 致全零](../../../../../runbooks/precision/950_mix_1_2_mode_2_aiv1_flag.md)（`exemplifies`）：950 `__mix__(1,2)` 双 AIV CrossCore 同步必须用 mode=4；不同产品对同步模式的支持情况请参见modeId支持的取值说明。Runbook 实测 mode=2 只路由到 AIV0 并要求 950 双 AIV 改用 mode=4 加 AIV1 偏移，API 卡明确 modeId 与 Kernel 类型按产品选择，是该故障直接依赖的接口边界。
-- [CrossCore 反压 flag 方向错致通算流水死锁](../../../../../runbooks/compilation/crosscore_flag.md)（`exemplifies`）：“- CrossCoreSetFlag：AI Core中的AIC/AIV在完成本核前置位的pipe流水任务后，调用该接口，向调度模块上报本核任务已完成。调度模块收集所有参与核的上报信息，作为全局完成标志。”与“为 matmul_reducescatter（MC2 通算融合，4P SHMEM ReduceScatter，Pattern B 先计后通）实现通算流水时，按改造指令给 `MatmulProcess`（AIC）和 `ReduceScatterProcess`（AIV）各加 mLoop 循环，并用 ping-pong 反压：AIC 在 `t >= bufferSize` 后 `CrossCoreWaitFlag<0x2, PIPE_FIX>(t - bufferSize)` 等 AIV 释放旧 buffer，AIV 在 reduce 后 `CrossCoreSetFlag<0x2, PIPE_MTE3>(t - bufferSize)` 通知 AIC。”提供双方正文证据。API 卡给出 SetFlag 向调度模块上报完成的正向语义；runbook 展示反压方向放错后形成循环等待的具体故障，因此后者是前者同步合同的可复现反例与排障实例。
-- [双AIV CrossCoreFlag 的 subBlock 契约缺陷](../../../../../runbooks/compilation/aiv_crosscoreflag_subblock_507015.md)（`exemplifies`）：焦点卡定位到“epilogue `localRows<=0` 时仍发 `CrossCoreSetFlag` 再 return”，候选卡规定 SetFlag 会“向调度模块上报本核任务已完成”；该语义解释空分支为何也必须上报，才能解除对端等待。
-- [稀疏反卷积精度误差源隔离配方](../../../../../runbooks/precision/cube_simt_fp32_precision_error_source_isolation.md)（`exemplifies`）：“CrossCoreSetFlag<0x4, PIPE_MTE3>(flagId);”是被诊断的 Cube/AIV 混合代码中的上报动作；“CrossCoreSetFlag：AI Core中的AIC/AIV在完成本核前置位的pipe流水任务后，调用该接口，向调度模块上报本核任务已完成。调度模块收集所有参与核的上报信息，作为全局完成标志。”给出其完成语义，可核对 dump 前的数据可见性和同步边界。
-- [CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)（`related`）：“在核间同步场景中，CrossCoreSetFlag接口和CrossCoreWaitFlag接口配对工作，具体功能”与“在核间同步场景中，CrossCoreSetFlag接口和CrossCoreWaitFlag接口配对工作，使用时需传入核间同步的标记ID（flagId），每个ID对应一个用于控制同步的计数器。”是双方正文中的具体合同。Wait 卡声明两接口必须成对，Set 卡给出共享 flagId 计数器以及上报/阻塞职责；阅读两端才能闭合核间同步的生产与等待链。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 71 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AddLora A2 ACLNN 算子知识](../../../../../operators/aclnn/math/math/add_lora.md)（`related`）：算子声明的固定版本源码包含对 `CrossCoreSetFlag(...)` 的直接调用（第 271 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_base.h#L271)
-- [ConvDepthwise2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/conv_depthwise2d_950.md)（`related`）：算子声明的固定版本源码包含对 `CrossCoreSetFlag(...)` 的直接调用（第 107 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/common/op_kernel/arch35/conv_opt_group_impl.h#L107)
-- [BlockSparseAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_950.md)（`related`）：算子声明的固定版本源码包含对 `CrossCoreSetFlag(...)` 的直接调用（第 577 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention/op_kernel/arch35/block_sparse_attention_kernel_arch35_full_quant.h#L577)
-- [QuantConvolution 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/quant_convolution_950.md)（`related`）：算子声明的固定版本源码包含对 `CrossCoreSetFlag(...)` 的直接调用（第 107 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/common/op_kernel/arch35/conv_opt_group_impl.h#L107)
-- [BlockSparseAttentionGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad.md)（`related`）：算子声明的固定版本源码包含对 `CrossCoreSetFlag(...)` 的直接调用（第 443 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention_grad/op_kernel/arc22/block_sparse_attention_grad_kernel.h#L443)
-- [ForeachNorm A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_norm.md)（`related`）：算子声明的固定版本源码包含对 `CrossCoreSetFlag(...)` 的直接调用（第 277 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_norm/op_kernel/foreach_norm.h#L277)
-- [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `CrossCoreSetFlag(...)` 的直接调用（第 163 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention_grad/op_kernel/arc35/block_sparse_attention_grad.h#L163)
-- [DualLevelQuantMatmulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/dual_level_quant_matmul_weight_nz_950.md)（`related`）：算子声明的固定版本源码包含对 `CrossCoreSetFlag(...)` 的直接调用（第 158 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/dual_level_quant_batch_matmul/op_kernel/arch35/dual_level_quant_batch_matmul_basic_block.h#L158)
-- [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)（`related`）：算子声明的固定版本源码包含对 `CrossCoreSetFlag(...)` 的直接调用（第 304 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/chunk_gated_delta_rule/op_kernel/chunk_gated_delta_rule_stage1.h#L304)
-- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)（`related`）：算子声明的固定版本源码包含对 `CrossCoreSetFlag(...)` 的直接调用（第 152 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/fused_linear_cross_entropy_loss_grad/op_kernel/fused_linear_cross_entropy_loss_grad_high_perf.h#L152)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AddLora A2 ACLNN 算子知识](../../../../../operators/aclnn/math/math/add_lora.md)
+- [ConvDepthwise2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/conv_depthwise2d_950.md)
+- [BlockSparseAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_950.md)
+- [QuantConvolution 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/quant_convolution_950.md)
+- [BlockSparseAttentionGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad.md)
+- [ForeachNorm A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_norm.md)
+- [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)
+- [DualLevelQuantMatmulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/dual_level_quant_matmul_weight_nz_950.md)
+- [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)
+- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)

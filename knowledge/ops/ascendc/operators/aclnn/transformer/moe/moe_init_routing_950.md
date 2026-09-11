@@ -830,11 +830,3 @@ Host 每次将列数减半，但重新向上对齐到 MX 的 32 列格式块，�
 | 同步 | events/SyncAll/atomic/SIMT call | schedule_mode=1 and exact conflict domains | PostTiling/body helpers |
 | 精度与尾块 | mode specializations | /127, INT4 /7, MX/FP8 blocks, masks/guards | quant bodies |
 | 失败边界 | Host validation | no silent semantic fallback | Validate*/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoE Double-Routing](../../../../../../model/inference/concepts/techniques/double_routing.md)（`related`）：950 算子定义“`keyValueSort(expertIdx, arange(L))` 得到 `(sortedExpert,sortedRow)`”；Double-Routing 的第一步是“调用 `npu_moe_init_routing_v2` 对本卡 token 按专家 expand + 排序”，概念页把该排序输出接入 AllToAll/re-routing/finalize，形成算子实现到完整 Prefill 路由链的直接衔接。
-- [MoeFinalizeRouting 950 ACLNN 算子知识](moe_finalize_routing_950.md)（`related`）：对 `(n,k)`，`expert=expertIdx［n,k］`；mode 0/1 从 `expandedRowIdx［n+k*N］` 取 `p`，mode 2/3 从 `expandedRowIdx［n*K+k］` 取 `p`。；`expandedRowIdx` ｜ 路由展开域/ND ｜ INT32 ｜ gather 逆索引或 scatter 原索引；InitRouting 产生的展开索引是 FinalizeRouting 恢复和累加 token 行的直接输入。
-- [昇腾融合 MoE 路由的整数契约：npu_moe_init_routing(_v2) 的 active_expert_range 只吃 int、topk_ids 须 int32](../../../../../../model/inference/runbooks/runtime/npu_moe_init_routing_integer_contract.md)（`related`）：950 算子接口要求“`expertIdx` ｜ `［N,K］`/ND ｜ INT32”；运行时故障卡指出“`topk_ids` 必须是 `torch.int32`”，后者给出模型路由结果进入前者 expertIdx 入口前的 dtype 修复与验证信号。
-<!-- cannbot:related:end -->

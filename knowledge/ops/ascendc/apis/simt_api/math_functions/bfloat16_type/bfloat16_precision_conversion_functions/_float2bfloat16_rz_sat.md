@@ -76,10 +76,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         dst[idx] = __float2bfloat16_rz_sat(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float2bfloat16_rz](_float2bfloat16_rz.md)（`same_topic`）：“遵循CAST_TRUNC模式，将浮点数转换为bfloat16精度，返回转换后的值。”与“饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST_TRUNC模式，返回转换后的值。”是双方正文中的具体合同。两端共享 float 到 bfloat16 的 CAST_TRUNC 舍入合同，sat 版本增加饱和处理，互读可正确处理溢出与边界值。
-<!-- cannbot:related:end -->

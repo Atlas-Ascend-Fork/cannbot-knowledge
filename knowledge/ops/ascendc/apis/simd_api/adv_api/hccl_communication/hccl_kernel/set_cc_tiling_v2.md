@@ -127,34 +127,12 @@ __aicore__ inline int32_t SetCcTilingV2(uint64_t offset)
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTiling](../hccl_tiling/get_tiling.md)（`related`）：Host Tiling 接口“获取Mc2InitTiling参数和Mc2CcTiling参数。”；Device 接口说明“Mc2CcTiling在Host侧计算得出”，因此 GetTiling 产出的 Mc2CcTiling 正是 SetCcTilingV2 在 Kernel 侧消费的配置来源。
-- [MatmulAllReduce 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_all_reduce_950.md)（`related`）：算子 POD 表注明“｜ 950 POD ｜ `mc2CcTiling` ｜ 外部结构 ｜ offset `sizeof(Mc2InitTiling)` ｜ 通信描述 ｜ AllReduce 或 AllToAll config ｜ `SetCcTilingV2` ｜ opType 随 topology ｜”；接口卡说明“用于设置HCCL客户端中某个通信算法配置的TilingData地址。”，闭合 topology 选择后的通信配置地址安装。
-- [MatmulAlltoAll A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_allto_all.md)（`related`）：`mc2CcTiling` ｜ generated POD ｜ 同上 ｜ HCCL CC 配置 ｜ 同上 ｜ `SetCcTilingV2`；Mc2CcTiling在Host侧计算得出；连接 Host 产生的通信 Tiling 与 Kernel 地址设置。
-- [ReduceScatter](reduce_scatter.md)（`related`）：调用本接口前确保已调用过InitV2和SetCcTilingV2接口。；用于设置HCCL客户端中某个通信算法配置的TilingData地址。ReduceScatter 明确要求前置调用，而 SetCcTilingV2 卡给出该前置步骤设置通信算法 TilingData 的参数和覆盖规则。
-- [SetCcTiling（废弃）](set_cc_tiling_deprecated.md)（`same_topic`）：用于设置HCCL客户端通信算法的Tiling地址。；用于设置HCCL客户端中某个通信算法配置的TilingData地址。两卡核心对象与决策都是 HCCL 通信算法 Tiling 地址设置，旧接口传 GM 指针且已废弃，V2 改为相对 Mc2InitTiling 的 offset。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 6 / 6 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AlltoAllMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_matmul.md)（`related`）：算子声明的固定版本源码包含对 `SetCcTilingV2(...)` 的直接调用（第 91 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/mc2_templates/communication/communicator/hccl_communicator.h#L91)
-- [AlltoAllQuantMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_quant_matmul_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCcTilingV2(...)` 的直接调用（第 91 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/mc2_templates/communication/communicator/hccl_communicator.h#L91)
-- [MatmulAlltoAll 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_allto_all_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCcTilingV2(...)` 的直接调用（第 91 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/mc2_templates/communication/communicator/hccl_communicator.h#L91)
-- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)（`related`）：算子声明的固定版本源码包含对 `SetCcTilingV2(...)` 的直接调用（第 252 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_a2.h#L252)
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)（`related`）：算子声明的固定版本源码包含对 `SetCcTilingV2(...)` 的直接调用（第 204 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_a2.h#L204)
-- [QuantMatmulAlltoAll 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_allto_all_950.md)（`related`）：算子声明的固定版本源码包含对 `SetCcTilingV2(...)` 的直接调用（第 91 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/mc2_templates/communication/communicator/hccl_communicator.h#L91)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)（`related`）：算子正文包含对 `SetCcTilingV2(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MatmulAllReduce 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_all_reduce_950.md)
+- [MatmulAlltoAll A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_allto_all.md)
+- [AlltoAllMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_matmul.md)
+- [AlltoAllQuantMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_quant_matmul_950.md)
+- [MatmulAlltoAll 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_allto_all_950.md)
+- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)
+- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)
+- [QuantMatmulAlltoAll 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_allto_all_950.md)
+- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)

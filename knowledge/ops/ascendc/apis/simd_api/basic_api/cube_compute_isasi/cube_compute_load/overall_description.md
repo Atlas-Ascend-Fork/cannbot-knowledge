@@ -136,10 +136,3 @@ platforms: []
 | [LoadImageToLocal](../cube_load_aux_config/load_image_to_local.md) | 将图像数据从Global Memory搬运到Local Memory。 | SetAippFunctions |
 | [LoadUnzipIndex](../cube_load_aux_config/load_unzip_index.md) | 加载GM上的压缩索引表到内部寄存器。 | - |
 | [SetAippFunctions](../cube_load_aux_config/set_aipp_functions.md) | 设置图片预处理（AIPP，AI Core pre-process）相关参数。 | LoadImageToLocal |
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LoadDataWithTranspose](load_data_with_transpose.md)（`related`）：“将数据从L1 Buffer搬运到L0A或L0B Buffer，支持在搬运过程中执行转置操作。用于需要在数据搬入时改变矩阵行列排布的场景。”描述通用目的端，而“Ascend 950PR/950DT 删除了 GM 到 L0A/L0B 的直连通路，需拆分为 GM→L1→L0A/L0B 两步搬运；该型号下 LoadDataWithTranspose 仅支持 L1→L0B 通路。”补上 950 的关键收窄；联合阅读可避免在 950 选择 L0A 目的端。
-<!-- cannbot:related:end -->

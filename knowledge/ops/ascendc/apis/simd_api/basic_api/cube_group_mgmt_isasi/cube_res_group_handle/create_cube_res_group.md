@@ -133,10 +133,3 @@ CubeResGroupHandle对象实例。
 ```
 auto handle = AscendC::CreateCubeResGroup<GROUPID, MatmulApiType, MyCallbackFunc, CubeMsgBody> (desc, BLOCKSTART, BLOCKSIZE, MSGQUEUESIZE, tilingGM);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetResCubeGroupWorkSpaceSize](../../../../utils_api/platform_info/platform_ascend_c/get_res_cube_group_work_space_size.md)（`related`）：快速创建 CubeResGroupHandle 对象，内部完成消息队列空间和同步事件分配。；基于CreateCubeResGroup进行AI Core分组计算需要传入workspace用于消息通信，在Host侧提供本接口用于获取CreateCubeResGroup所需要的workspace空间大小。；创建接口分配队列与同步资源，而 Host 查询接口给出该分组通信所需 workspace 的字节容量，调用方必须先按查询值分配再创建资源组。
-<!-- cannbot:related:end -->

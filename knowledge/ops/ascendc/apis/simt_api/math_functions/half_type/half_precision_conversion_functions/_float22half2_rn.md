@@ -105,10 +105,3 @@ inline half2 __float22half2_rn(const float2 x)
         asc_vf_call<simt_float22half2_rn>(dim3(1024), (__gm__ float2*)input, (__gm__ half2*)output, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float22half2_rn_sat](_float22half2_rn_sat.md)（`related`）：普通接口执行“将float2类型数据遵循CAST_RINT模式转换为half2类型”；饱和变体执行“饱和模式下，将float2类型数据的两个分量遵循CAST_RINT模式转换为半精度浮点数”，两者共享输入、输出和舍入模式，差异是是否启用饱和及 CTRL［60］ 前置条件，能直接支持接口选型。
-<!-- cannbot:related:end -->

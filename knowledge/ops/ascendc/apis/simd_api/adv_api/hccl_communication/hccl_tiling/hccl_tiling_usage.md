@@ -63,12 +63,3 @@ HCCL Tiling API获取Tiling参数的流程如下：
     mc2CcTilingConfig.GetTiling(tiling->mc2InitTiling); // tiling为算子组装的TilingData结构体
     mc2CcTilingConfig.GetTiling(tiling->reduceScatterTiling);
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTiling](get_tiling.md)（`related`）：在算子实现中，由Tiling组装通信配置项，核函数实现时将Tiling配置项通过入参传递给Kernel侧通信API做通信计算。；获取Mc2InitTiling参数和Mc2CcTiling参数。。使用说明规定由 Tiling 组装并下传通信配置，GetTiling 正是生成 Mc2InitTiling 与 Mc2CcTiling 的具体 Host 接口。
-- [HCCL Tiling构造函数](hccl_tiling_constructor.md)（`related`）：用于创建一个Mc2CcTilingConfig对象；Mc2CcTiling为具体每个通信任务的参数配置；连接对象构造与 GetTiling/Kernel 消费。
-- [HcclTilingData](tiling_data_struct.md)（`related`）：其中，［Mc2CcTiling］(#table678914014562)为具体每个通信任务的参数配置，当算子中有多个通信任务时，可定义多个［Mc2CcTiling］(#table678914014562)参数：（最多支持定义8个）。；在算子实现中，由Tiling组装通信配置项，核函数实现时将Tiling配置项通过入参传递给Kernel侧通信API做通信计算。；使用说明把结构体的多通信任务参数放入 Host 组装到 Kernel 消费的数据流。
-<!-- cannbot:related:end -->

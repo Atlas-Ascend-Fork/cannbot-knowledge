@@ -77,10 +77,3 @@ AscendC::Truncate<T, RoundMode::CAST_FLOOR>(dstLocal, srcLocal, 512);
 输入数据srcLocal：[-37.063736    64.17277    -33.448692 ... ]
 输出数据dstLocal：[-38  64 -34 ... ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Truncate](../../reg_vector_compute/type_conversion/truncate.md)（`same_topic`）：将源操作数的浮点数元素截断到整数位，保持原数据类型不变，支持多种舍入模式。；将源操作数中的浮点数元素截断为整数值（保留原数据类型），并存入目的操作数。两页定义相同的保留浮点 dtype 的整数化任务，分别覆盖 LocalTensor 多舍入模式与 Reg 形式。
-<!-- cannbot:related:end -->

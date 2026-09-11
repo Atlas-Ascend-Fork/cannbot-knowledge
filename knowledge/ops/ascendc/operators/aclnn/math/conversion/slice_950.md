@@ -385,10 +385,3 @@ V3 Host 把连续完整取值、stride=1 的相邻维合并后再交给共用 Ti
 | workspace | 核心节点申报 16 MiB、body 未读 | ABI 申报仍需保留；框架内部切分未知 |
 | 精度 | 无数值 cast，输出保持输入位模式 | B8 gather 的 B16 view/pack 只是存储重排 |
 | tail | Host POD 给出主尾核和 UB 尾；SIMT 用 idx guard | block/UB 同轴时保留 `ubTailTailFactor` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReplicationPad3d 950 ACLNN 算子知识](replication_pad_3d_950.md)（`related`）：｜ Kernel 路线 ｜ R-001 32 位索引 SIMT；R-002 64 位索引 SIMT；R-003 切尾轴；R-004 正常宽度 2/3/4 轴；R-005 小尾轴 Gather 2/3/4 轴；R-006～R-013 为纯负 padding 的 Slice MoveAlign/NDDMA/Gather 特化。 ｜；｜ 核心链路 ｜ `aclnnSlice` → `l0op::StridedSliceV3` → `StridedSliceV3` arch35 Tiling → `strided_slice_v3` router → 共用 `strided_slice` arch35 body ｜。ReplicationPad3D 的纯负 padding 直接复用 Slice 搬运路线，Slice 卡闭合共用 StridedSlice arch35 body 和 selector。
-- [StridedSlice 950 ACLNN 算子知识](strided_slice_950.md)（`related`）：｜ 核心链路 ｜ `aclnnSlice` → `l0op::StridedSliceV3` → `StridedSliceV3` arch35 Tiling → `strided_slice_v3` router → 共用 `strided_slice` arch35 body ｜；｜ 计算语义 ｜ 对归一化后的每个输出坐标 `o［d］`，读取 `x［begin［d］ + o［d］ * strides［d］］`；mask 会在 InferShape 阶段扩展省略号、插入新轴或收缩轴。 ｜。Slice 卡的公开入口落到 StridedSliceV3 并共用 arch35 body，StridedSlice 卡给出一般化多轴 begin/stride/mask 坐标合同。
-<!-- cannbot:related:end -->

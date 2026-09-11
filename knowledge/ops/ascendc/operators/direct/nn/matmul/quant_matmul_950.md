@@ -440,8 +440,4 @@ Host 没有证明 `Σ int8*int8 + bias` 必然落在 INT32 范围，也没有声
 | CATLASS Cube | `catlass/gemm/block/block_mmad_pingpong_tla.hpp` | `BlockMmadTla<MmadPingpong<...>>` |
 | CATLASS vector | `catlass/epilogue/block/block_epilogue_dequant.hpp` | `BlockEpilogueDequant::VFDoDequant` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetQuantVector](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_quant_vector.md)（`related`）：“对于输入shape为［1, N］的参数向量，N值为Matmul矩阵计算时M/N/K中的N值”规定 SetQuantVector 的逐输出列参数合同；“MatMulASWKernel::SetQuantVector -> mm_.Iterate/GetTensorC”证明 QuantMatmul 的 packed-scale 路由按该合同在计算前消费向量。
-<!-- cannbot:related:end -->
+- [SetQuantVector](../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_quant_vector.md)

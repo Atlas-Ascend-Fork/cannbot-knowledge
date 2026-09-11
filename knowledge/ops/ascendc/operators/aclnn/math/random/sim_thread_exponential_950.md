@@ -555,10 +555,4 @@ uint2& res1 = reinterpret_cast<uint2&>(res1_u64);
 | 精度与尾块 | FP32 log/div、近1保护、static_cast、逐元素 tail | epsilon、lane mapping、`li<numel` | `ExponentialTransform` |
 | 失败边界 | Host constraint/split/platform 失败阻断 | 空域、8片上限、未知 key、参数 alias | `DoTiling`, entry router |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMT 切分未 coalesce 致 block 边界错位](../../../../runbooks/precision/simt_coalesce_block.md)（`related`）：精度卡复现“在调 `sim_thread_exponential`（arch35）随机数算子对齐 PyTorch/CUDA curand Philox4_32_10 指数分布输出时，给定 8 维 C-contiguous shape `［81989,7,76,1,1,2,1,7］`（numel = 81989×7×76×1×1×2×1×7 = 610654072）、dtype fp32。”；算子卡说明“若输出不能用 32 位索引，最多分成 8 个 contiguous split block，再为每个 block 计算 logical grid、totalThreads 与独立 counter offset。”，直接把该大 shape 触发的 coalesce 故障映射到 950 算子的 split-block Tiling 路线。
-- [__mul_i32toi64](../../../../apis/simt_api/math_functions/integer_math_functions/_mul_i32toi64.md)（`related`）：焦点卡定义“计算输入 32 位整数 x 和 y 的乘积，返回 64 位结果。”，候选算子在 Philox 热路径实际执行“uint64_t res0_u64 = __mul_i32toi64(PHILOX_M4X32_A, counter［0］);”；API 的 64 位乘积合同直接支撑随机数 round 的高低 32 位复用。
-- [多核 numPerCore 须对齐 Philox group 4](../../../../runbooks/precision/numpercore_philox_group_4.md)（`related`）：host `numPerCore` 向上对齐到 4（`(numPerCore+3)&~3u`）后：4 shape 全部 `Exact match: True`、`max_abs_diff: 0.0`、`Exact match elements: 100.00%`（来源平台：未定位；证据等级：tool_observed）；每个输出消耗 Philox4x32-10 的一个 uint32 lane。focal 给出对齐原生输出的验证，候选说明原生 950 算子对 Philox lane 的实际消费。
-<!-- cannbot:related:end -->
+- [__mul_i32toi64](../../../../apis/simt_api/math_functions/integer_math_functions/_mul_i32toi64.md)

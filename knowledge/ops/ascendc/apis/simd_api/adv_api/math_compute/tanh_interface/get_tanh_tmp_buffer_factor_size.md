@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetTanhTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Tanh](tanh.md)（`related`）：Factor 接口说明“获取Tanh接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”；Tanh 卡说明“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。”，前者为后者显式缓冲、带 calCount 重载推导单次 tile 上限，属于 Host 推导到 Kernel 调用的跨主题任务链。
-<!-- cannbot:related:end -->

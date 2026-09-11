@@ -234,10 +234,3 @@ inline int32_t AxisIsReduce(int32_t dim, bool fullReduce)
 
 - trace 内早期一度怀疑"kernel 数值逻辑错"——但用例 C（奇位置 axes）值与 golden 一致，说明 kernel 数值逻辑对；错在 tiling 给 kernel 的 reduce 轴集合。此判别由 repro 的 A vs C 对比支撑（tool_observed）。
 - trace 内早期还怀疑"infershape 桩（y=x）致 shape 错"——但用例 A 给了正确 out shape (24) 仍只写 3 值，说明即使 shape 对、值仍错，根因在 tiling 轴集合而非 infershape；infershape 桩不传播是另一独立问题，不在本卡范围。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TilingFunc 未声明依赖读 axes 致 segfault](../compilation/tilingfunc_axes_segfault.md)（`related`）：注意：aclnn 路径下 axes 实际是 host 可读的 `aclTensor*`（经 `NnopbaseAddInput` 下发），tiling **本可以**用 `TilingInputsDataDependency({1})` + `context->GetInputTensor(1)->GetData<int64_t>()` 读到 axes 真值；当前 tiling 没声明该依赖、也没读数据，是"按 DESIGN 契约省事"的遗留。；在未声明 `TilingInputsDataDependency` 的情况下直接 `GetInputTensor(i)->GetData<T>()` 解引用数据是禁用路线。。焦点指出必须实读 axes 的正确性缺口，候选给出补读时不可绕过的数据依赖前置条件。
-- [ValueDepend(REQUIRED) 让 axes 走 host 端](../compilation/opdef_value_depend_required_for_axes_host_read.md)（`related`）：`euclidean_norm_tiling_arch35.cpp` 用**位置奇偶启发式**判定每个轴是否为 reduce 轴，而不是读 axes tensor 的实际数值。；`REQUIRED` 告诉框架：TilingFunc 必须在 host 拿到 axes 数值（编译期 / 运行期都要），框架会在 TilingFunc 调用前把 device tensor 数据拷到 host。。候选从 OpDef 层给出消除焦点奇偶猜测所需的 host 值依赖契约。
-<!-- cannbot:related:end -->

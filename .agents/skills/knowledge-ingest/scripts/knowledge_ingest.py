@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import json
 import importlib.util
 import os
 import subprocess
@@ -227,19 +228,83 @@ def sync_indexes(args: argparse.Namespace) -> int:
     return 0
 
 
+def doc_id(root: Path, path: Path) -> str:
+    return path.relative_to(root / "knowledge").with_suffix("").as_posix()
+
+
+def graph_data(root: Path) -> tuple[list[dict[str, object]], list[dict[str, str]]]:
+    """Project existing card links; indexes and inferred relations are not edges."""
+    contract = load_contract(root)
+    module = contract_module()
+    checks = importlib.import_module(f"{contract_package().__name__}.checks")
+    links = importlib.import_module(f"{contract_package().__name__}.checks.links")
+    knowledge_root = contract.root / "knowledge"
+    context = checks.RunContext()
+    nodes: list[dict[str, object]] = []
+    edge_keys: set[tuple[str, str]] = set()
+    for path in sorted(knowledge_root.rglob("*.md")):
+        if path.name == "index.md":
+            continue
+        text = path.read_text(encoding="utf-8")
+        metadata, body = module.split_frontmatter(text)
+        if metadata is None:
+            raise ValueError(f"missing frontmatter: {path}")
+        issues = contract.validate_card(path.relative_to(contract.root), metadata, body)
+        document = checks.Document.create(
+            contract, path, path.relative_to(contract.root), text, metadata, body
+        )
+        issues.extend(links.check(contract, document, context))
+        if issues:
+            details = "; ".join(f"{issue.code}: {issue.message}" for issue in issues)
+            raise ValueError(f"invalid card {path}: {details}")
+        source_id = doc_id(contract.root, path)
+        nodes.append(
+            {
+                "id": source_id,
+                "type": metadata.get("type"),
+                "profile": contract.derive_card_path(
+                    path.relative_to(contract.root)
+                ).card_type,
+                "title": metadata.get("title"),
+                "status": metadata.get("status"),
+                "tags": metadata.get("tags", []),
+            }
+        )
+        for _, target, _ in links.links_in_text(body, path, knowledge_root):
+            try:
+                target.relative_to(knowledge_root)
+            except ValueError:
+                continue
+            if (
+                target.is_file()
+                and target.suffix == ".md"
+                and target.name != "index.md"
+                and target != path
+            ):
+                edge_keys.add((source_id, doc_id(contract.root, target)))
+    edges = [
+        {"source": source, "relation": "links_to", "target": target}
+        for source, target in sorted(edge_keys)
+    ]
+    return nodes, edges
+
+
+def graph_payload(root: Path) -> dict[str, object]:
+    nodes, edges = graph_data(root)
+    return {
+        "schema_version": 1,
+        "nodes": nodes,
+        "edges": edges,
+    }
+
+
 def build_graph(args: argparse.Namespace) -> int:
-    """Keep the existing CI command wired to this Skill's graph builder."""
     root = resolve_root(args.knowledge_root)
-    return subprocess.run(
-        [
-            sys.executable,
-            str(Path(__file__).resolve().with_name("knowledge_graph.py")),
-            "--knowledge-root",
-            str(root),
-            "build",
-        ],
-        check=False,
-    ).returncode
+    output = graph_artifact_path(root, "artifacts/graphs/graph.json")
+    payload = graph_payload(root)
+    atomic_write(output, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    print(f"output={output} nodes={len(payload['nodes'])} edges={len(payload['edges'])}")
+    return 0
 
 
 def parser() -> argparse.ArgumentParser:

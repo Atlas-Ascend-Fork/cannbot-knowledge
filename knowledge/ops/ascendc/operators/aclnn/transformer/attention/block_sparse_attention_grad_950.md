@@ -434,10 +434,3 @@ for (int32_t s1_idx = s1Idx_; s1_idx < s1_end_idx; s1_idx += block_x_) {
 | 同步 | flag0..4+local events | ID/pipe/1:2/pingpong/初终flag4 | Process/CubeOp/VecOp |
 | 精度与尾块 | FP32寄存器/L0C/workspace、typed NZ、final RINT | dq/dk scale时机、16对齐、atomic lifecycle | CubeOp/VecOp |
 | 失败边界 | IsCapable严格拒绝，无fallback | 不把模板bool误作公开确定性route | Tiling/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BlockSparseAttention 950 ACLNN 算子知识](block_sparse_attention_950.md)（`related`）：“｜ 计算语义 ｜ 稀疏 gather 的 `Softmax(scale·QKᵀ)·V`；FP8 路线把 Q×K scale 合并进 QK Fixpipe、把 V scale 注入 PV Fixpipe，并用 FP8 P。 ｜”；“｜ 计算语义 ｜ 重算 `S/P/dP/dS`，以 FP32 累加并输出 `dQ/dK/dV` ｜”。前者是 950 BlockSparseAttention 正向，后者通过重算其 S/P 并输出 Q/K/V 梯度构成对应反向。
-- [BlockSparseAttentionGrad A2/A3 ACLNN 算子知识](block_sparse_attention_grad.md)（`same_topic`）：从“固定 Commit 仅有无版本后缀 Grad API，故为同平台最新公开版本。”的 A2/A3 实现迁移到“固定 Commit 仅有无版本后缀 Grad API，是 950 最新公开版本。”的 950 实现时可以保持公开 ABI，再逐项核对 BSND/GQA、blockShape 和非确定性等平台新增或收紧条件。
-<!-- cannbot:related:end -->

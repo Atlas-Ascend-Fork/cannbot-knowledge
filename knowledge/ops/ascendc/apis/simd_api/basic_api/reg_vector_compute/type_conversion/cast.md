@@ -382,31 +382,13 @@ result[i][7 : 0] = saturation(tmp3[7 : 0]) according to control bit;
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cast SatMode::SAT 饱和致 fp16 NaN/Inf 丢失](../../../../../runbooks/precision/cast_satmode_sat_fp16_nan_inf.md)（`exemplifies`）：焦点卡说明“使能SatMode生效需与SetCtrlSpr配合使用。”，候选卡却在 dav-3510 实测“在 dav-3510 上经 Cast 传播 NaN/Inf 的路线 banned”；该 runbook 给出 SAT 硬编码导致 fp16 NaN/Inf 变为 65504 的失效边界和 bypass 方向。
-- [CastTrait 文件域声明触发命名空间编译失败](../../../../../runbooks/compilation/reg_casttrait_define_inside_simd_vf.md)（`exemplifies`）：焦点卡要求 Cast 通过“trait: CastTrait类型，类型转换模式结构体。包括RegLayout、SatMode、MaskMergeMode、RoundMode。”配置，候选卡给出“把完整 trait 定义放到消费它们的 `__simd_vf__` 函数体内”的已验证声明位置；它解决同一 `.asc` Host/Device 分域下 CastTrait 不可见的构建故障。
-- [Reg Cast 默认 UNKNOWN mask 被拒 — 显式 ZEROING](../../../../../runbooks/compilation/reg_cast_requires_explicit_zeroing_trait.md)（`exemplifies`）：CANN 9.0.1 的默认 `castTrait` 将 `MaskMergeMode` 置为 `UNKNOWN`，而 dav-3510 的 `Reg::Cast` 实现静态约束只接受 `ZEROING` 或 `MERGING`。；trait: CastTrait类型，类型转换模式结构体。包括RegLayout、SatMode、MaskMergeMode、RoundMode。 struct CastTrait { RegLayout layoutMode = RegLayout::UNKNOWN; SatMode satMode = SatMode::UNKNOWN; MaskMergeMode mrgMode = MaskMergeMode::UNKNOWN; RoundMode roundMode = RoundMode::UNKNOWN; };。Runbook 复现默认 UNKNOWN merge mode 在 dav-3510 被静态断言拒绝并要求显式 ZEROING/MERGING，API 卡给出 CastTrait 的默认字段，形成接口默认值到编译失败再到显式 trait 修复的验证链。
-- [Reg CastTrait RoundMode 命名空间编译失败](../../../../../runbooks/compilation/casttrait_roundmode_is_in_ascendc.md)（`exemplifies`）：焦点卡把 RoundMode 列入“trait: CastTrait类型，类型转换模式结构体。包括RegLayout、SatMode、MaskMergeMode、RoundMode。”，候选卡定位“`RoundMode` 的声明位于外层 `AscendC`”；该 runbook 给出 CastTrait 字段正确限定名及编译验证路径。
-- [RegLayout](../aux_data_types/reg_layout.md)（`related`）：源操作数和目的操作数位宽不同时，单条指令计算量以位宽更大的数据类型为准，RegLayout用于控制位宽小的元素在寄存器中的排布方式。更多特性说明请参考Cast。；RegLayout：源操作数和目的操作数位宽不同时，单条指令计算量以位宽更大的数据类型为准，RegLayout用于控制位宽小的元素在寄存器中的排布方式。。候选 Cast 通过 CastTrait 实际消费焦点枚举来控制窄位元素布局。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 106 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 226 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_c_parallel.h#L226)
-- [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 924 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cast/op_kernel/arch35/cast_impl.h#L924)
-- [ClippedSwiglu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/clipped_swiglu_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 377 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/clipped_swiglu/op_kernel/arch35/clipped_swiglu_kernel.h#L377)
-- [FusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/fused_causal_conv1d_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 48 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_causal_conv1d/op_kernel/arch35/vf/fused_causal_conv1d_no_state_double_tail.h#L48)
-- [NMS 950 Direct Invoke 算子知识](../../../../../operators/direct/cv/image/nms_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 63 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/nms_with_mask/op_kernel/arch35/nms_with_mask_regbase_base.h#L63)
-- [ChunkCat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 189 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/chunk_cat/op_kernel/chunk_cat_arch35.h#L189)
-- [GeluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/gelu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 335 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_dynamic_quant_regbase.h#L335)
-- [InplaceFusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/inplace_fused_causal_conv1d_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 48 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_causal_conv1d/op_kernel/arch35/vf/fused_causal_conv1d_no_state_double_tail.h#L48)
-- [CircularPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 309 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_huge_width.h#L309)
-- [LogSoftmaxBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/log_softmax_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `Cast(...)` 的直接调用（第 270 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/log_softmax_grad/op_kernel/arch35/log_softmax_grad_ar_recompute.h#L270)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
+- [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)
+- [ClippedSwiglu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/clipped_swiglu_950.md)
+- [FusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/fused_causal_conv1d_950.md)
+- [NMS 950 Direct Invoke 算子知识](../../../../../operators/direct/cv/image/nms_950.md)
+- [ChunkCat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat_950.md)
+- [GeluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/gelu_quant_950.md)
+- [InplaceFusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/inplace_fused_causal_conv1d_950.md)
+- [CircularPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)
+- [LogSoftmaxBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/log_softmax_backward_950.md)

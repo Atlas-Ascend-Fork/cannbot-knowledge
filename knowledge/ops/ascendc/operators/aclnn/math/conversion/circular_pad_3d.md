@@ -1107,9 +1107,3 @@ if (dPad) {
 | 同步 | queue生命周期与 MTE3→MTE2 event可复用 | workspace/y 从写转读前不可删除事件；volume不能跨核拆分 | `MTE3ToMTE2Sync/CircularPad3D::ProcessSmallShape/CircularPad3D::ProcessBigShape` |
 | 精度与尾块 | 所有 dtype 位拷贝，无 cast；统一行/depth tile | 32B align、`uint16_t/uint32_t` DMA字段、row/depth tail有效长度 | `CopyLines/CopyOnePage/CopyGmToGm` |
 | 失败边界 | small不适用自动到big | 单行超 UB、padding越界、unknown key无 fallback；950公开不支持 | `CheckInput/Check* / circular_pad` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CircularPad3dBackward A2/A3 ACLNN 算子知识](circular_pad_3d_backward.md)（`related`）：“对最后三维 `(D,H,W)` 做循环填充；正 padding 从维度另一端循环复制，负 padding 先裁去对应端。”给出焦点端事实；“对 3D circular pad 做反向散加：正向中映射到同一 `self［D,H,W］` 位置的 `gradOutput` 元素在 `gradInput` 中求和；负 padding 表示裁剪”给出候选端事实。前向卡定义循环复制与裁剪映射，反向卡按同一映射将 gradOutput 散加回 gradInput，二者构成同一算子的前向、反向实现链。
-<!-- cannbot:related:end -->

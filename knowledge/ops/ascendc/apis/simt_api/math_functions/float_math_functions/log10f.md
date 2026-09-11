@@ -101,8 +101,4 @@ result: 0 0.30103 0.4771213 0.60206
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLog10 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_log10_950.md)（`related`）：获取以10为底，输入数据的对数；R-001 FLOAT `log10f`；950 ForeachLog10 的 FLOAT route 直接消费该 SIMT 函数。
-<!-- cannbot:related:end -->
+- [ForeachLog10 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_log10_950.md)

@@ -742,10 +742,3 @@ workspaces[0] = static_cast<size_t>(((bmm2Bytes + vec2Bytes) * PING_PONG_VALUE) 
 | 同步 | MIX1:2、四阶段、cross-core buffers | wait/set方向、flush、mod3 | KernelTrain/Cube/Vec |
 | 精度与尾块 | FP32 QK/softmax/PV | cast round、realM/N/K、actualSeq | Cube/Vec bodies |
 | 失败边界 | DAV3510/TND/key/D上限 | 不回退arch22/旧V/共享FP8 | IsCapable/key selector |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FlashAttn 950 ACLNN 算子知识](flash_attn_950.md)（`related`）：令 `Nq=Nkv·G`，每个 KV head 服务 `G` 个 query heads。对每个 batch、KV head 和 query group，AIC 的 BMM1 计算 FP32 分数块，AIV 将 `softmax_scale` 乘入分数、施加 `mask_mode` 对应的有效窗口，并以跨 S2 块保存的 `max/sum` 做在线 softmax；AIC 的 BMM2 计算概率块与 V 的乘积，AIV 用 `FlashUpdateNew/FlashUpdateLastNew` 按在线 softmax比例更新 FP32 累积结果，最后 cast 为输入 dtype 写出。若 metadata 把一个 `(B,Nkv,M)` 的 S2 域拆给多个 FA 工作单元，FA 阶段把局部 FP32 `accumOut/max/sum` 写入 workspace，FD 阶段先合并 max/sum，再缩放并规约各局部输出。；按 actual-length TND 段计算 `S=scaleValue*(QK^T+QropeKrope^T)+PSE`，执行 sparse/mask、FP32在线stable softmax、可选dropout与 `PV`。950 V5公开文档明确暂不支持 `sinkOptional` 与 `softmaxOutLayout`；不得因共享L0仍带这些指针而宣称可用。V5 API只接受 FP16/BF16/FP32，且把 `dScaleQ/K/V` 固定为 null、outDtype固定0；共享entry中的 HIFLOAT8/FP8 specialization对该API不可达。固定Host也不把内部softmax第3输出复制到用户 `softmaxOutOut`。。两卡都实现 950 上分块 QK、在线 softmax 和 PV 的 Flash Attention 主链，但公开入口、metadata、可选参数与训练变长契约不同，关联可用于选对接口而不混淆版本。
-- [FlashAttentionVarLenScore A2/A3 ACLNN 算子知识](flash_attention_var_len_score.md)（`same_topic`）：“固定仓公开 VarLen、V2、V3、V4、V5；V5 产品表明确支持 A2/A3，因此选择同平台最新 V5。”与“固定仓 `FlashAttentionVarLenScore` 版本族的最新公开变长接口为V5，产品表列 Ascend 950PR/950DT 支持；本卡仅记录950。”共同确认同一 V5 入口，随后可按平台分别读取 arch22 与 arch35 route/限制。
-<!-- cannbot:related:end -->

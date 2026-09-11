@@ -152,10 +152,3 @@ fixed include（revision: `76b4eab`, path: `operators/gather/gather.asc`, line 4
 ## 误诊
 
 最初把报错理解成“应该改用纯 SIMT kernel 入口”，但工具输出只证明 `dim3` 未声明；远程头文件证据表明缺失的是公共头暴露的别名和重载，而不是 gather 算法必须切换执行模型。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_vf_call](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/asc_vf_call.md)（`exemplifies`）：在SIMD编程场景下使用。用于启动SIMD VF（Vector Function）子任务。；选择显式包含 `simt_api/common_functions.h`，因为它同时解决类型别名与带线程维度的 `asc_vf_call` 重载可见性，机制闭环比只把调用点改成 `cce::dim3` 更完整。API 说明启动职责，runbook 给出混合 SIMD/SIMT 带线程维度重载的头文件前置条件与可复现编译信号。
-- [CANN 9.0.1 SIMT 入口类型无法派生—改混合 VF](mixed_simt_requires_vector_shell_and_simt_vf.md)（`related`）：“正确分层是：三参数启动一个 `__global__ __aicore__ __vector__` AI Core 入口，再由入口用 SIMT 版 `asc_vf_call(cce::dim3(thread_count), ...)` 启动 `__simt_vf__` 线程函数。”；“CANN 9.0.1 混合 ASC 翻译单元仅含 kernel_operator.h 时，global dim3 alias 与 launch-config asc_vf_call overload 不可见；调用前须包含 SDK SIMT 公共/聚合头。”。目标 runbook补齐焦点 asc_vf_call(dim3) 调用所需的头文件和重载可见性。
-<!-- cannbot:related:end -->

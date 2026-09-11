@@ -66,11 +66,3 @@ uint32_t minValue = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetLogicalAndMaxMinTmpSize(plat, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogicalAndTmpBufferFactorSize](get_logical_and_tmp_buffer_factor_size.md)（`related`）：获取LogicalAnd接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；host侧Tiling接口，用于获取LogicalAnd接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两个 Host 侧接口共同完成 LogicalAnd 的临时空间规划：一个反推单次 shape，另一个给出可分配空间上下界。
-- [LogicalAnd](logical_and.md)（`related`）：host侧Tiling接口，用于获取LogicalAnd接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；按元素进行逻辑与操作。当输入数据类型不是bool时，零视为False，非零视为True。仅Ascend 950PR/950DT支持。。Host 侧 tmp-size 查询为 kernel 侧 LogicalAnd 分配临时空间并选择 tiling 参数，直接支撑该逐元素逻辑与调用。
-<!-- cannbot:related:end -->

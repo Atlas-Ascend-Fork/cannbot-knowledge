@@ -515,10 +515,3 @@ R-001 对每个输出流 i 都为每个 j 重搬并重 Cast 一次 X；R-002 先
 | 同步 | TQue 协议可复用 | arch22 R-002 每次 Axpy 前后 PIPE_V barrier 及 output queue 交接不可删 | `ComputeCopyOutAllX`、`CopyOutTile` |
 | 精度与尾块 | FP32 累加、CAST_RINT 可复用 | hRes[j,i]、j 顺序、dTail/dTailAlign 和有效写回不可改 | `ComputeCopyOut/ComputeCopyOutAllX` |
 | 失败边界 | ACLNN/Tiling 返回链可复用 | A2/A3 n/D 规格、private format、空域和无 fallback 不可放宽 | `CheckParam/CheckSpecConstraints/CommonOpExecutorRun` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HcPre / HcPost (mHC 融合算子)](../../../../../../model/inference/concepts/kernels/mhc_hcpre_hcpost.md)（`related`）：把 TND 的 `T` 或 BSND 的 `B*S` 统一记为 `Q`。每个 `q,i,d` 先以 FP32 标量 `hPost［q,i］` 缩放 `hOut［q,d］`，再按 `j` 顺序用 `hRes［q,j,i］` 对 `x［q,j,d］` 做 `Axpy`。索引 `j*n+i` 实现 `hRes` 转置乘法；输入先转 FP32，累加保持 FP32，最终以 `CAST_RINT` 转回 FP16/BF16，只提交真实 D 域。；**`HcPost`（一路输出 → 多路 + 残差融合）**：把子层一路输出经 Post 扩展回多路，与经 `comb` 混合的多路残差加和。融合的核心价值是**消除小算子下的内存墙**——数据不出核内 buffer（UBuffer）即完成计算，大幅减少 HBM 访存。；算子卡给出 hPost/hRes 的具体 Axpy 实现，概念卡解释其在 mHC 前后处理链中的残差融合角色和优化目的。
-- [MhcPost 950 ACLNN 算子知识](mhc_post_950.md)（`same_topic`）：`y［q,i,d］=hOut［q,d］*hPost［q,i］+sum(j=0..n-1,x［q,j,d］*hRes［q,j,i］)`；A2/A3 要求 `n=4, 0<D<100000, D%128=0`。两卡的 MhcPost 计算公式和两段式入口一致；候选给出 A2/A3 的 n/D 约束，焦点闭合 950 arch35 两条 X 缓存 Route。
-<!-- cannbot:related:end -->

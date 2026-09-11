@@ -188,10 +188,3 @@ aclRet = aclFinalize();
         **./execute\_add\_op**
 
         如果有test pass，表明执行成功。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [基本开发流程](basic_development_flow.md)（`related`）：先编译算子（例如，使用ATC工具将Ascend IR定义的单算子描述文件编译成算子om模型文件），再调用acl接口加载算子模型，最后调用acl接口执行算子；除了需要提供工程化算子开发中的算子实现文件外，还需要额外交付算子入图的代码文件；基本开发流程给出图编译执行前必须交付的入图代码边界。
-<!-- cannbot:related:end -->

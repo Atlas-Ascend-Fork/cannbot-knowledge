@@ -1012,9 +1012,3 @@ MicroAPI::Div(vregOutput, vregInput, vregInputCub, mask);
 | 同步 | 单 stream、scheduler tensor acquire/release | 不能跨 stream 提前复用 Tensor/UB | `RunOpApi`、`ElementwiseSch16B::Process` |
 | 精度与尾块 | mode/dtype 专门化；mask、cast、tail/NaN restore | cast trait、阈值、恢复顺序、CopyOut live count不能变 | 两个 fused body、pair body |
 | 失败边界 | 插件拒绝非法 mode/dtype，空域正常返回 | Direct C ABI 不可接收未校验 code；无 Device fallback | `gelu_meta`、`launch_gelu_kernel` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend950 Reg 命名空间无 Erf/Tanh 封装](../../../../runbooks/compilation/ascend950_reg_erf_tanh.md)（`related`）：编译卡指出“GELU exact 模式的 erf 必须分解为 Reg 操作组合”；950 Direct 算子记录“交付件以此为转换参考，按输出 dtype 压缩中央区近似”，展示了不依赖 Reg::Erf 的实际六路 Device 实现及其 tail/NaN 恢复边界。
-<!-- cannbot:related:end -->

@@ -167,12 +167,3 @@ revision: 未提交工作区快照（精确 edit 后、成功重建前）；path
 ## 误诊
 
 本 trace 没有把该静态断言误判为 UB 大小、dtype 或 Host tiling 问题；这些方向没有失败证据，不能作为本卡结论。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InitBuffer](../../apis/simd_api/basic_api/resource_management/t_pipe/init_buffer.md)（`exemplifies`）：保留 `TQue` 的 `(queue, depth, bytes)` 三参数调用；仅对 `TBuf` 删除队列深度参数，改用 `(buffer, bytes)` 两参数调用。；用于为TQue等队列和TBuf分配内存。runbook 是 TPipe InitBuffer 面向两类对象时重载合同被误用的具体实例。
-- [TBuf简介](../../apis/simd_api/basic_api/resource_management/t_buf/t_buf_intro.md)（`exemplifies`）：TBuf占用的存储空间通过TPipe进行管理，您可以通过InitBuffer接口为TBuf进行内存初始化操作；保留 `TQue` 的 `(queue, depth, bytes)` 三参数调用；仅对 `TBuf` 删除队列深度参数，改用 `(buffer, bytes)` 两参数调用。。API 介绍要求 TPipe::InitBuffer 初始化 TBuf，运行手册补齐 TBuf 与 TQue 不同的重载签名及静态断言排障。
-- [TQue InitBuffer 须传深度和 uint32 长度](tque_initbuffer_requires_depth_and_uint32_length.md)（`related`）：保留 `TQue` 的 `(queue, depth, bytes)` 三参数调用；仅对 `TBuf` 删除队列深度参数，改用 `(buffer, bytes)` 两参数调用。；TQue 固定写成 `InitBuffer(queue, depth, uint32_bytes)`，TBuf 再使用对应两参数形式；两张 runbook 从 TBuf 与 TQue 两侧闭合同名 InitBuffer 的重载选择。
-- [未分配 TBuf 导致浮点索引随机错乱](../precision/missing_tbuf_allocation_causes_undefined_ub_index_scratch.md)（`related`）：同一初始化分支漏掉 `tmpIdx2Buf_` 的 `TPipe::InitBuffer`，后续 `.Get<int64_t>()` 因而不指向该分支受管的有效 UB 空间，NaN 索引合并的写入与读取出现未定义行为并静默污染索引。；保留 `TQue` 的 `(queue, depth, bytes)` 三参数调用；仅对 `TBuf` 删除队列深度参数，改用 `(buffer, bytes)` 两参数调用。以下 before/after 均由事件流中的完整首次写入与精确 edit 机械恢复，代码未做改写。。focal 根因是 TBuf 成员在实际分支漏做 InitBuffer，候选给出补分配时必须区分 TQue 三参数与 TBuf 两参数重载的编译合同，可直接指导正确补齐该 scratch 缓冲。
-<!-- cannbot:related:end -->

@@ -198,11 +198,3 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 -   核间同步
 
     该硬件架构不支持核间同步。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCurNpuArch](../../../../../apis/utils_api/platform_info/platform_ascend_c/get_cur_npu_arch.md)（`explains`）：对应的产品型号为；获取当前硬件平台芯片架构版本号；连接静态架构映射与平台查询 API。
-- [Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa](../../../../../runbooks/compilation/arch_variant_lookup_chain_soc_ini_npuarch_dispatcher.md)（`related`）：__NPU_ARCH__版本号为3002；须先确认编译期命中的变体，再读其 API 实现；连接架构编号事实与编译变体查证方法。
-<!-- cannbot:related:end -->

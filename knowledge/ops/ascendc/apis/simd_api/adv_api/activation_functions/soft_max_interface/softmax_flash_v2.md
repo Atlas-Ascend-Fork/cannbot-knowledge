@@ -381,19 +381,5 @@ struct SoftMaxShapeInfo {
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SoftmaxFlashV2 Tiling接口](softmax_flash_v2_tiling_interface.md)（`same_topic`）：SoftmaxFlash增强版本，对应FlashAttention-2算法。；用于获取SoftmaxFlashV2接口所需的Tiling参数。。kernel API 定义 SoftmaxFlashV2 计算，Tiling API 专门为该计算生成切分参数；实现时必须让 isUpdate 与 isBasicBlock 等配置在两侧一致。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [IncreFlashAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/incre_flash_attention.md)（`related`）：算子声明的固定版本源码包含对 `SoftmaxFlashV2(...)` 的直接调用（第 1595 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/incre_flash_attention/op_kernel/incre_flash_attention_allvec_new.h#L1595)
-- [NsaSelectedAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_selected_attention_infer.md)（`related`）：算子声明的固定版本源码包含对 `SoftmaxFlashV2(...)` 的直接调用（第 676 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_selected_attention_infer.h#L676)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [IncreFlashAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/incre_flash_attention.md)
+- [NsaSelectedAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_selected_attention_infer.md)

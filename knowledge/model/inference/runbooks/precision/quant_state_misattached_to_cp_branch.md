@@ -60,9 +60,3 @@ if self.cp_size > 1:
 
 - **diff 事实**（clone `@8bf2846517723eff`）：读到实际 merged diff 与同 sha 原文件 `mlaprolog_prefill` / `mlaprolog_decode` 上下文，确认被删句原在 `if cp_size > 1:` 块内、decode 侧本就仅由 C8 守卫——佐证 bug 仅存于 prefill。核心断言（scale 填充被误挂 CP 分支、单卡跳过、修法为按 C8 开关守卫）为 diff 事实；具体报错文本源未披露，如实标注不编造。
 - 溯源下探：[cann-recipes-infer-pr-76-fix-sfa-c8-cp-size-1-bugfix](https://gitcode.com/cann/cann-recipes-infer/merge_requests/76)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MLA / DSA 上 C8（int8 KV cache）的算子接线：打包布局 + prolog·SFA·FIA 走量化变体 + 单 scale 驱动](../../optimizations/experience/rules/mla_c8_int8_kv_cache_op_wiring.md)（`related`）：“下游 C8 注意力需要 per-token 反量化 scale `c8_input_dict［'pertoken_scale'］`”定位静默丢状态的直接消费者；“prefill 也必须迁到融合 MLA-Prolog（勿只改 decode）”说明该 scale 的上游产生路线必须同时覆盖 prefill。
-<!-- cannbot:related:end -->

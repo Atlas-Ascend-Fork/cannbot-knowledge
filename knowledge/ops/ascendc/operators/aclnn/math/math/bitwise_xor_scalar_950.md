@@ -915,9 +915,3 @@ for (uint16_t j = 0; j < loopTimes; j++) {
 | 同步 | 核内 buffer ID；跨节点同 stream；CPU join | scalar ping/pong需各初始化一次 | Advance scheduler |
 | 精度与尾块 | XOR predicate；Cast policy round/static_cast | 不得用无mask store；不得改变Cast round | `XorCompute/GetCastPolicy/CastTask` |
 | 失败边界 | dtype/shape/UB/pair检查 | 不得把 A2/A3 实现缺失推测补齐 | API/Tiling/CMake |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BitwiseXorTensor 950 ACLNN 算子知识](bitwise_xor_tensor_950.md)（`same_topic`）：｜ 计算语义 ｜ `out［i］ = self［i］ XOR other`；BOOL×BOOL 用逻辑异或，源码等价为 `NotEqual` ｜；｜ 核心语义 ｜ 整数按提升后的定宽整数逐位 XOR；两输入均为 BOOL 时以 `NotEqual` 实现逻辑 XOR。两输入先 broadcast。 ｜。两卡记录 950 上 BitwiseXor 的 Scalar 与 Tensor 两种 ACLNN 重载，共享整数逐位 XOR 和 BOOL NotEqual 核心，但 broadcast 输入形态不同。
-<!-- cannbot:related:end -->

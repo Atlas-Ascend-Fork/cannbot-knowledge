@@ -160,10 +160,3 @@ AscendC GELU 的 exact 路径用 `max(x,0) - 0.5*abs(x)*erfc(abs(x)/sqrt(2))` �
 ## 误诊
 
 该故障稳定集中在大值域 fp32 用例，输出误差由多项式精度阶数决定。若所有 dtype、所有值域都失败，先检查公式选择、approximate 路由和参数绑定。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend950 Reg 命名空间无 Erf/Tanh 封装](../compilation/ascend950_reg_erf_tanh.md)（`related`）：编译卡确认“Reg 命名空间不提供这些超越函数封装，exact 模式必须将 erf 分解为 Reg 已有操作的组合。”；精度卡在该分解上选择“保留无相消的 GELU 公式和一次 Newton 修正，只恢复 erfc 多项式的精度阶数。”，补充三系数失败后恢复五系数的验证闭环。
-- [GELU 负尾部用 erfc 形态避免大数相消](gelu_negative_tail_erfc_avoids_cancellation.md)（`related`）：三系数 Abramowitz 7.1.25 的绝对近似误差在 `erfc` 极小时被 GELU 尾部的 `0.5*abs(x)` 放大；golden 此时接近零，因而相对误差指标显著超限。；唯一根因是公式形态在负尾部发生灾难性相消。。前者诊断 erfc 多项式绝对误差在 GELU 负尾部被放大，后者诊断 erf 形态两大项相消的结构性误差；二者共同给出负尾部精度排障时先选稳定 erfc 公式、再校准多项式阶数的连续决策链。
-<!-- cannbot:related:end -->

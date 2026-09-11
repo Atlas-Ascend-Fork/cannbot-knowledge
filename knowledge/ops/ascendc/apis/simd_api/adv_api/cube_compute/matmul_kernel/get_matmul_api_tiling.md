@@ -82,13 +82,3 @@ typedef AscendC::MatmulType<AscendC::TPosition::GM, CubeFormat::ND, float> biasT
 constexpr auto staticTiling = GetMatmulApiTiling<aType, bType, cType, biasType>(CFG, 524288);
 AscendC::Matmul<aType, bType, cType, biasType, staticTiling> mm;
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetMMConfig](get_mm_config.md)（`related`）：返回值：MatmulConfig结构体。；mmCFG（输入）：获取的MatmulConfig模板。；GetMMConfig 的产物可直接作为 GetMatmulApiTiling 的输入，闭合编译期常量化 tiling 的生产消费链。
-- [Init](init.md)（`related`）：Init 的参数合同写明“Tiling参数可以通过host侧GetTiling接口获取，并传递到kernel侧使用。”；GetMatmulApiTiling 页说明“然后调用本接口，得到常量化的Matmul Tiling参数。”，构成 Host/编译期 Tiling 生产到 Kernel Init 消费的直接链。
-- [Matmul使用说明](matmul_usage.md)（`related`）：Ascend C提供一组Matmul高阶API，方便用户快速实现Matmul矩阵乘法的运算操作。；本接口用于在编译期间获取常量化的Matmul Tiling参数。前者定义 Matmul 高阶 API 的计算任务，后者把其 shape 与模板配置固化为编译期 Tiling，形成从矩阵计算到常量化优化的连续步骤。
-- [GetMDLConfig](get_mdl_config.md)（`same_topic`）：mmCFG（输入）：获取的MatmulConfig模板；返回值：MatmulConfig结构体。GetMDLConfig 生成 MatmulConfig，而 GetMatmulApiTiling 把该结构作为 mmCFG 输入生成编译期静态 Tiling；这是直接的生产者到消费者接口契约。
-<!-- cannbot:related:end -->

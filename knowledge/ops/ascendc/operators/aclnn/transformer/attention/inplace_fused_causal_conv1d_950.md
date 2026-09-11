@@ -635,9 +635,3 @@ BSH 的相邻 BS 核带有 `K-1` token 重叠，且 APC 可能先从旧 cache/x 
 | 同步 | hard event 保护流水，BSH 以多次 `SyncAll` 隔离 deferred cache/APC/x 回写 | 原地 x 写回不得提前；BH 无跨核 barrier | `SetWaitFlag/Process/CopyYToX` |
 | 精度与尾块 | FP16/BF16 输入、FP32 寄存器乘加、RINT 回写，64/128 通道 mask | helper dispatch 与 main/tail POD 不可混用 | `Conv1dNeedState*/Conv1dNo*` |
 | 失败边界 | 只有四 key | 无 generic fallback | entry 四个 `TILING_KEY_IS` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FusedCausalConv1d 950 ACLNN 算子知识](fused_causal_conv1d_950.md)（`same_topic`）：当前公开 ACLNN 是独立 y 输出，`convStates` 仍原地更新。；接口最终把卷积结果写回 `x`，并原地更新 `convStates`。。两卡都执行带状态更新的 FusedCausalConv1d，公开合同的核心差异是卷积结果落到独立 y 还是覆盖 x，因此是同一算子的原地性变体。
-<!-- cannbot:related:end -->

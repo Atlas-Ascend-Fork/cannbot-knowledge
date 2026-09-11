@@ -214,9 +214,3 @@ MindSpeed 侧限制：不支持 fp16（`validate_args` 直接抛 `AssertionError
 - [swap-optimizer](swap_optimizer.md)（内存侧优化器对照，机制不同；Muon 与其互斥）
 - [virtual-optimizer](virtual_optimizer.md)（内存侧优化器对照，机制不同）
 - [deepseek-v4-continue-pretrain](../../guides/recipes/deepseek_v4_continue_pretrain.md)（应用 recipe）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [优化器显存优化（Reuse-FP32-Param / 低精度优化器 / LayerZeRO）](optimizer_memory.md)（`related`）：Muon 是 torchtitan-npu 为大规模 LLM 训练提供的**计算侧**优化器特性：对 2D 矩阵参数（Linear 权重）做**动量正交化**（Momentum Orthogonalization，经 Newton-Schulz 迭代），获得比 Adam/AdamW 更快/更稳的收敛，而非内存侧的卸载技术。它与 ［swap-optimizer］(swap_optimizer.md) / ［virtual-optimizer］(virtual_optimizer.md) 不同 —— 后两者是把优化器状态/梯度搬到 Host 或缩减常驻显存（省内存），Muon 改的是**梯度更新方向本身**（改收敛，不省显存）。；混合精度训练的静态显存大头在优化器一侧：FP32 参数副本（master weight）、FP32 梯度、Adam 一二阶动量。MindSpeed 提供三条正交的优化器显存压缩路线，分别从「副本冗余」「精度冗余」「分片维度」三个角度切入——**Reuse-FP32-Param** 让 FP32 master 与 BF16 工作权重共享同一份 storage，省掉一份权重副本；**低精度优化器**把动量量化到 FP8/HiF8/MXFP8、梯度量化到 FP16，压缩动量与梯度的字节数；**LayerZeRO** 用「ZeRO1 存优化器状态 + ZeRO3 重建参数」的分层分片，在多模态长序列场景拿到接近 TP+ZeRO1 的省显存效果且通信可隐藏。三者与 ［swap-optimizer］(swap_optimizer.md)（把动量换出 Host）、［virtual-optimizer］(virtual_optimizer.md)（驱动级虚拟内存映射）一起构成 ［mindspeed］(../frameworks/mindspeed.md) 的优化器显存工具箱，各自有适用面与互斥约束。。Muon 卡明确它改变更新方向而不省显存，显存卡给出正交的副本、低精度和分片路线，二者共同支撑优化器选型。
-<!-- cannbot:related:end -->

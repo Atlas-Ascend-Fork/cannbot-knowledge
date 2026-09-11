@@ -115,10 +115,3 @@ bool __hgeu(half x, half y)
         dst[idx] = __hgeu(x[idx], y[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hge](_hge.md)（`related`）：返回值：比较输入的第一个数是否大于或等于第二个数的结果。任一输入为nan时，返回false。；返回值：比较输入的第一个数是否大于或等于第二个数的结果。特殊值：x<y→false；x>y→true；x=y→true；任一值为nan→true；±0→true；inf→true；-inf→false。。两接口对普通 half 的大于等于判断相同，差异集中在 ordered 与 unordered 的 NaN 处理，属于直接的比较谓词选型关系。
-<!-- cannbot:related:end -->

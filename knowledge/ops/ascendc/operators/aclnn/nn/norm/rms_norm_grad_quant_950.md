@@ -1005,9 +1005,3 @@ Host 把行 tile 向下取为 2 次幂，Device 用 `GetCacheID(i)` 选择树形
 | 同步 | queue、LocalMemBar、PipeBarrier、SyncAll | producer→consumer 不得重排 | helper/entry/BigM |
 | 精度与尾块 | fp32 accumulate；两种 output cast；mask/pad tails | int8/hif8 cast不同，D/M tail字段配套 | common + dx/dg bodies |
 | 失败边界 | BigM UB gate可 fall through；base反算失败终止 | workspace null、shape/dtype/quantMode检查 | selector/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HiFloat8 SatMode::SAT Cast NaN 映射 0x00](../../../../runbooks/precision/hifloat8_satmode_sat_cast_nan_0x00.md)（`related`）：hifloat8 使用 `SAT + CAST_ROUND`；`SatMode::SAT` 是有限格式语义：把溢出/±inf 饱和到最大有限幅值（±32768），并把 **NaN 映射为 `0x00`（正零）**。；候选给出 focal 的 HiFloat8 量化输出在 NaN golden 对拍时的精确故障判据。
-<!-- cannbot:related:end -->

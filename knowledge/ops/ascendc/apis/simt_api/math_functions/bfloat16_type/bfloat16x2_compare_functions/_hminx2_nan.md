@@ -150,10 +150,3 @@ bfloat16x2_t __hminx2_nan(const bfloat16x2_t x, const bfloat16x2_t y)
         asc_vf_call<simt_hminx2_nan>(dim3(1024), (__gm__ bfloat16x2_t*)x, (__gm__ bfloat16x2_t*)y, (__gm__ bfloat16x2_t*)dst, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hminx2](_hminx2.md)（`same_topic`）：功能：获取两个bfloat16x2_t类型数据各分量的最小值；任一分量为nan时，对应分量的计算结果为nan。两卡都计算 bfloat16x2 逐分量最小值，候选把任一输入分量为 NaN 时的传播语义显式化，直接支撑特殊值选型。
-<!-- cannbot:related:end -->

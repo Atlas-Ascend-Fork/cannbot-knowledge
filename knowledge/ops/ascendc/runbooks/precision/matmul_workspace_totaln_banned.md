@@ -49,9 +49,3 @@ CANNJudge cube1（QuantBatchMatMulV3，INT8 cube matmul→INT32 workspace→AIV 
 - 单核整 M/N 输出不触发（紧凑布局即全局布局）。
 - Ascend950/a3 的 `IterateAll` 布局语义未独立验证，推断可迁移（cannbot-skills 为通用口径），未实测。
 - 本卡只否定"预偏移+`totalN` stride 回读"这一路线；`IterateAll` 紧凑写契约本身（artifact_verified）是设计正确用法的依据，不是被否定的对象。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IterateAll](../../apis/simd_api/adv_api/cube_compute/matmul_kernel/iterate_all.md)（`exemplifies`）：AIC `Matmul` 高阶 API 把 INT32 中间结果经 `IterateAll` 写入 GM workspace，AIV 从 workspace 读回做反量化；多核切分单核 M/N。；调用一次IterateAll，会计算出singleCoreM * singleCoreN大小的C矩阵。迭代顺序可通过tiling参数iterateOrder调整。。Runbook 的错误路线直接依赖 IterateAll 把每核 INT32 结果写入 GM workspace，再由 AIV 按布局回读；API 卡给出单次输出的 singleCoreM×singleCoreN 契约，正是判断预偏移和 totalN stride 是否成立的接口依据。
-<!-- cannbot:related:end -->

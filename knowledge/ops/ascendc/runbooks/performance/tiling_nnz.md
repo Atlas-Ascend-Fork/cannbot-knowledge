@@ -87,10 +87,3 @@ Host 多核 tiling 按"行数均分"而非"nnz 均分"，当输入矩阵 nnz 分
 
 - 见多核场景总吞吐不达预期，不查逐核 task_cyc，直接归因为"核数不够"或"单核慢"——实际是约半数核空转。
 - 把 `aicore.db` 的空 `task_cyc` 当作"采集失败"放弃分析——AIV-only kernel 的逐核数据在 `ai_vector_core.db`，需换库查询。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [每核最少行数地板压低 AIV 并行度—按可用核数切分](row_reduction_min_rows_floor_underutilizes_aiv.md)（`related`）：28 个忙核对 28 个空闲核；导致大量 vector core 没有收到工作。前者用 task_cyc 证明按行数切分遇到 nnz 倾斜时部分核空转，后者证明人为每核最少行数会压低 block 数；两者提供区分工作量倾斜与 launch 并行度不足的互补诊断。
-- [稀疏不规则输出算子 SIMD 标量退化诊断](simd.md)（`related`）：每行输出长度不规则（nnz 逐行变化）使 SIMD 框架无法跨行向量化输出写入，被迫退化为"逐行标量 GetValue 读预计算结果 + 单行 Duplicate/DataCopyPad 写出"的标量循环路径；该路径随行数 m 线性增长，scalar pipe 占比 80%+。；Host 多核 tiling 按"行数均分"而非"nnz 均分"，当输入矩阵 nnz 分布倾斜（前重后轻）时，后半核分到的行 nnz 极少而空转，逐核 cycle 差距 20×+。；两卡分别量化同类 CSR→COO 稀疏任务的核内 scalar 瓶颈与核间 nnz 负载倾斜，形成两级性能定界。
-<!-- cannbot:related:end -->

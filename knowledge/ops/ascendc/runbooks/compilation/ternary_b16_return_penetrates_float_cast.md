@@ -130,9 +130,3 @@ __aicore__ inline __bf16 ApplyReduce<__bf16>(__bf16 a, __bf16 b, int32_t reduceM
 ## 误诊
 
 - 早期把 `i64 = setcc` 误读为"int64_t 比较不支持"，并据此删掉了 int64 的 amin/amax 分支。后读完整报文（操作数 `bf16`）才确认真实操作数是 bf16、行号落在 `__bf16` 特化，int64 比较是否支持未独立验证。下一 agent 遇到同报错应先读 `CopyFromReg` 操作数类型再归因，不要见到 `i64` 就归因 int64。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [bf16 未编译剔除触发 backend Cannot select](if_constexpr_excludes_unsupported_bf16_compare.md)（`related`）：换句话说：**`float` cast 在"比较 + 返回 B16"的三元里被编译器穿透失效**。；C++ 普通 `if` 只控制运行时执行，不控制模板实例化：编译器实例化 `Kernel<AccT=bfloat16_t>` 时，仍会编译 `else` 中的 `nanmax_(cur, v)`/`nanmin_(cur, v)`；helper 里的 `a != a` 被 lowering 为 unordered compare `setuo`，需要 bf16 `setcc`，而该版本 dav-3510 BiSheng 后端没有可选指令，于是以 `Cannot select` 终止。。两卡覆盖同一 950 BiSheng B16 比较后端失败链的两个入口：三元返回 B16 会穿透 float cast，运行时 if 又不能阻止不支持分支实例化；联合修法是收窄模板并用 if constexpr 剔除该路径。
-<!-- cannbot:related:end -->

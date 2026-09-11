@@ -926,9 +926,3 @@ using OpCopyOut = Bind<Vec::CopyOut<uint8_t>, Placeholder::Out0<uint8_t>, Select
 | 同步 | AIV buffer token、CPU ParallelFor join、executor stream | GM producer完成前consumer不得启动；UB不得提前复用 | scheduler/CPU body/executor调用 |
 | 精度与尾块 | 在提升类型 P 上比较；AIV用len，CPU用end独占；输出Cast遵循policy | BOOL×BOOL先转INT8；不能把BOOL字节重解释为宽输出 | `CheckPromoteType`、DAG、Cast policy |
 | 失败边界 | AIV miss走AICPU；Cast pair miss再查AICPU；空域Host返回 | 不支持的dtype/pair必须失败关闭，不推测新模板 | 两个 L0 selector |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GeTensor 950 ACLNN 算子知识](ge_tensor_950.md)（`same_topic`）：｜ 计算语义 ｜ `out［i］ = (self［i］ >= other) ? true : false`；比较前按 950 TensorScalar 规则得到提升类型 `P`，最终 BOOL 结果可再转换到调用者声明的 `out.dtype` ｜；固定仓只公开无后缀的 `aclnnGeTensor` 两段式版本；本卡不合并同文件中的 `aclnnInplaceGeTensor`，也不合并 Scalar 入口。公开文档明确支持 Ascend 950PR/950DT。`GreaterEqual` OpDef 仅把当前 `greater_equal_apt` AICore 实现接到 `ascend950` 与 `ascend910_55`，`greater_equal_binary.json` 给出 950 的 F16/F32/I32/I64/I8/U8/U64/BOOL/BF16 二进制组合。A3 虽在公开文档中标为支持，但固定仓指定目录没有 `arch32` Host/Tiling/Kernel，故未生成无后缀卡。两页共同覆盖 950 GreaterEqual ACLNN 路线，并明确区分 scalar 与 tensor 右操作数入口，能指导调用与类型提升选型。
-<!-- cannbot:related:end -->

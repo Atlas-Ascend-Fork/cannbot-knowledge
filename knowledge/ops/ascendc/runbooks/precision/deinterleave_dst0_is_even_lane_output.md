@@ -231,10 +231,3 @@ __aicore__ inline void ProcessOneTile(AscendC::TPipe &pipe,
 ## 误诊
 
 同一开发过程中曾把 interleaved 故障归因于 stale build 和 API 最小粒度；这些因素能解释特定小搬运宽度的运行错误，却不能解释合法宽度下稳定的数值错位。交换 dst 的 A/B 探针才闭合了当前根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DeInterleave](../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange_isasi/de_interleave.md)（`exemplifies`）：“在变量命名与 API 目标顺序之间建立一一对应：`qE` 必须放在 `dst0`，`qO` 必须放在 `dst1`。以下为轨迹逐字恢复的完整 `ProcessOneTile` before/after；唯一语义修复是 `DeInterleave` 两个目标的顺序。”与“将两个源操作数中的元素解交织存入两个结果操作数中，支持双输入和单输入两种模式。”提供双方正文证据。精度 runbook 通过调整 DeInterleave 的 dst0/dst1 顺序修复偶奇流接反，API 卡定义该接口可按单输入或双输入解交织到两路输出。
-- [DeInterleave](../../apis/simd_api/basic_api/reg_vector_compute/mask_reg_compute/de_interleave.md)（`exemplifies`）：“将源操作数src0和src1中的元素解交织存入目的操作数dst0和dst1中。”定义基础操作；“变量语义与实际数据流相反：旋转公式把奇索引值当成 even 分量，把偶索引值当成 odd 分量”记录 dst0/dst1 误命名后的精度故障，能把接口语义落实到 lane 排障。
-<!-- cannbot:related:end -->

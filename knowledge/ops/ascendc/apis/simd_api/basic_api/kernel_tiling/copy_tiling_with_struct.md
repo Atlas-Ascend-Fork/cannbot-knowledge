@@ -95,18 +95,4 @@ extern "C" __global__ __aicore__ void add_custom(__gm__ uint8_t *x, __gm__ uint8
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [COPY_TILING_WITH_ARRAY](copy_tiling_with_array.md)（`same_topic`）：适用于拷贝一个结构体的数组成员变量的场景。；以结构体方式拷贝 Tiling 数据。通过宏展开从 GM 搬运 Tiling 数据到 Local Memory 并填充到结构体。支持 950/a2/a3。。两者是同一 Tiling 数据搬运链的互补宏：一个定位结构体数组成员，另一个填充结构体整体，选择取决于目标字段形态。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)（`related`）：算子声明的固定版本源码包含对 `COPY_TILING_WITH_STRUCT(...)` 的直接调用（第 299 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/fused_linear_cross_entropy_loss_grad/op_kernel/fused_linear_cross_entropy_loss_grad_mem_friendly.h#L299)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)

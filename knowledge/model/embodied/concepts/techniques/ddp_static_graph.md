@@ -67,9 +67,3 @@ cd cann-recipes-embodied-ai/manipulation/pi05/train/src/scripts
 - 网络结构：[flow-matching-action-expert](../modules/flow_matching_action_expert.md)
 - 训练平台：[atlas-a2](../../../spatial/concepts/platforms/atlas_a2.md)（Pi0.5 多卡训练实际平台）；[ascend-310p](../platforms/ascend_310p.md) / [atlas-a3](../../../inference/concepts/platforms/atlas_a3.md)（family 对照）
 - 源：[cann-recipes-embodied-ai](https://gitcode.com/cann/cann-recipes-embodied-ai/tree/aed7a4788dfe94f6b90084f16ce493f9969471b1)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Pi0.5（π0.5 · 开放世界泛化 VLA · 昇腾训练/在线推理/OM 离线三链路）](../manipulation/pi05.md)（`related`）：Pi0.5 在 Atlas A2 多卡训练中默认固定 DDP 训练图、关闭无用参数探测并复用梯度 bucket view，以减少反向通信侧的额外开销。
-<!-- cannbot:related:end -->

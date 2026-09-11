@@ -92,12 +92,3 @@ AscendC::Fixpipe(cGM, c, fixpipeParams);
 | 128 | 256 | 512 | Disable | 8 | 4156 | 4225 |
 | 128 | 128 | 512 | Enable | 8 | 2108 | 2172 |
 | 128 | 128 | 512 | Disable | 8 | 2108 | 2172 |
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Matmul高阶API开启UnitFlag](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_unit_flag.md)（`explains`）：Mmad 和 Fixpipe 接口的单元标志机制，以 L0C Buffer 512B 内存块为粒度实现精细化数据同步；UnitFlag功能为AIC核中MMAD计算指令和FIXPIPE数据搬运指令提供了基于内存访问的细粒度同步；机制页给出 flag 状态转换，调优案例给出开启条件、模板约束和 Profiling 验证。
-- [AscSetMmadDirectionM](../../../c_api/cube_compute/asc_set_mmad_direction_m.md)（`related`）：方向 M 卡把使用条件限定为“在开启UnitFlag的场景下，当L0C Buffer上结果分形的生成顺序与数据搬出指令的搬出顺序保持一致时，可以获得更好的性能表现”；UnitFlag 卡说明“Mmad 和 Fixpipe 接口的单元标志机制，以 L0C Buffer 512B 内存块为粒度实现精细化数据同步，降低同步延迟。”，解释方向配置为何必须与细粒度生产/消费顺序一致。
-- [SetMMColumnMajor/SetMMRowMajor](../mmad_compute_aux_config/set_mm_column_major_set_mm_row_major.md)（`related`）：开启 unitFlag 时需配合设置：Fixpipe 开启 NZ2ND/ChannelMerge 时用 SetMMRowMajor，否则用 SetMMColumnMajor。；需配合 SetMMColumnMajor/SetMMRowMajor 设置方向：Fixpipe 开启 NZ2ND/ChannelMerge 时用 SetMMRowMajor，否则用 SetMMColumnMajor。；两卡从方向配置与 UnitFlag 两端给出同一组合契约，直接支撑实现选型。
-<!-- cannbot:related:end -->

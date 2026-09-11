@@ -68,10 +68,3 @@ AscendC::LocalTensor<half> tensor3 = que.AllocTensor<half>();
 AscendC::LocalTensor<half> tensor4 = que.AllocTensor<half>();
 ret = que.HasIdleBuffer(); // AllocTensor了四块内存，当前无空闲内存，返回值为false，继续AllocTensor会报错
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AllocTensor](alloc_tensor.md)（`related`）：查询Que中是否有空闲的内存块；从Que中分配Tensor，Tensor所占大小为InitBuffer时设置的每块内存长度。前者用于在执行后者前检查可分配块，二者构成 TQue 的容量探测与分配操作链。
-<!-- cannbot:related:end -->

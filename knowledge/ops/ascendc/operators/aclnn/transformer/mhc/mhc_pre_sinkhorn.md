@@ -659,10 +659,3 @@ AIV 只把 x cast 为 FP32并独立计算 invRms，AIC 先做未归一化投影�
 | 同步 | flag8/9与阶段间GM交接 | AIC预置信号、AIV发信号、等待次数不可删除 | `Stage1::Process` |
 | 精度与尾块 | FP32投影、RMS/Sinkhorn与有效域搬运 | HF32开关、epsilon顺序、最后cast不可改变 | `ProcessMatmulXPhi/Stage2::Process` |
 | 失败边界 | 参数/Matmul/workspace门禁可复用 | 不得把失败终点改成key1 fallback，也不得把950实现接线当作公开支持 | `CheckParams/PostTiling/TilingForMhcPreSinkhorn` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HcPre / HcPost (mHC 融合算子)](../../../../../../model/inference/concepts/kernels/mhc_hcpre_hcpost.md)（`related`）：RMSNorm(x) 与 FP32 投影生成 hPre/hPost/hRes/hIn，再对 hRes 做 20 轮 Sinkhorn；融合 RMSNorm → `mixes = linear(x, hc_fn)·rsqrt` → Sinkhorn-Knopp 三段切分；两卡描述同一 HcPre 融合核心，算子卡闭合 A2/A3 源码 Route，概念卡补充模型接口与 A3/950 使用语境。
-- [mHC (Manifold-Constrained Hyper-Connections)](../../../../../../model/inference/concepts/modules/mhc.md)（`related`）：RMSNorm(x) 与 FP32 投影生成 hPre/hPost/hRes/hIn，再对 hRes 做 20 轮 Sinkhorn；`comb`（连同 Sinkhorn 约束）实际在 **HcPre 内**算出；算子实现正是 mHC 结构中生成 Pre/Post/Res 系数并执行 Sinkhorn 约束的 HcPre 阶段。
-<!-- cannbot:related:end -->

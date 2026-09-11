@@ -707,9 +707,3 @@ inputFp32Queue.FreeTensor(xFp32Local);
 | 同步 | Queue slot 用 EnQue/DeQue/Free 维护 | 输出 GM 写完前不释放 output slot；不虚构 barrier | 各 `CopyIn/Compute/CopyOut` |
 | 精度与尾块 | x 先 clamp 到 -3；FP16/BF16 升 FP32、`CAST_ROUND` 降精度；`currentNum` 控制全管线 | 不得恢复 `-inf*0`；不得让无效 tail lane 进入算术或 GM 写 | 各 `Compute/Process`；`DataCopyPad` |
 | 失败边界 | 空 Tensor 成功短路；资源/dtype/`T<=0` 失败 | 固定实现没有可以自动代替的 fallback Route | `aclnnHardswishGetWorkspaceSize`；`HardSwishTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HardSwish 逐元素 kernel 的 TQue 双缓冲实现配方](../../../../runbooks/compilation/elementwise_tque_double_buffer_inplace_recipe.md)（`related`）：**2 个 TQue，in-place 计算，无 tmp buffer**：仅 `inQueueX (VECIN)` 与 `outQueueY (VECOUT)` 两个 `TQue<..., BUFFER_NUM=2>`；中间量 `relu6(x+3)/6` 直接写回 `yLocal`，输出再与 `xLocal` 相乘写入 `yLocal`，省去第三个 tmp TQue。UB 占用 = `2 × tile × sizeof(DT) × BUFFER_NUM`，tile 可取 `ub_size / (sizeof(DT) × BUFFER_NUM × 2)`。；`Process` 串行遍历本核 tile，每次按 `CopyIn -> Compute -> CopyOut` 执行。Queue 通过 `AllocTensor/EnQue/DeQue/FreeTensor` 管理生命周期；固定 body 没有显式 `PipeBarrier`/event。虽然 Queue depth=2，源码未把不同迭代拆成显式预取/计算交叠调度，不将未实测的重叠效果作为结论。；A2 配方给出两队列原地复用优化，950 算子卡给出三/四队列 route 的实际生命周期与未证明交叠边界，可用于跨平台实现取舍。
-<!-- cannbot:related:end -->

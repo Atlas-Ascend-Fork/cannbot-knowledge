@@ -91,10 +91,3 @@ const uint32_t tmpsize = AscendC::GetLogSoftMaxMaxTmpSize(shape, dtypesize, isRe
 // 计算最优分片策略并填充到tilingData结构体中，供核函数（Kernel）端使用。
 AscendC::LogSoftMaxTilingFunc(shape, dtypesize, tmpsize, tilingData);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LogSoftMax](log_soft_max.md)（`same_topic`）：const LogSoftMaxTiling& tiling；kernel侧LogSoftMax接口的计算需要开发者预留 申请临时空间，以下接口用于在host侧获取预留 申请的最大最小临时空间大小；LogSoftMax Kernel 原型直接消费 LogSoftMaxTiling，Tiling 卡负责在 Host 侧选择临时空间并生成 reduceSize、splitSize 等同一调用所需参数。
-<!-- cannbot:related:end -->

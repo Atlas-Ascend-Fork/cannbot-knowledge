@@ -61,10 +61,3 @@ asc_dcci接口与asc_store_dev接口向GM写数据时硬件不能保证两个接
 ```cpp
 asc_sync_data_barrier(mem_dsb_t::DSB_ALL);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_dci（缓存控制）](../cache_ctrl/asc_dci.md)（`related`）：asc_dci 的硬约束是“在调用asc_dci之前，需调用asc_sync_data_barrier插入DSB_ALL指令”；barrier API执行“阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束”。该屏障必须先完成，才能安全执行数据缓存失效。
-<!-- cannbot:related:end -->

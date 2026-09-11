@@ -201,11 +201,3 @@ void gather_kernel(const T *x, const I *index, T *y,
 
 轨迹早期把纯 SIMT 与混合 VF 的地址宏视为可直接互换；编译器展开信息已经表明问题发生在
 限定符语义，而不是计算逻辑。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [内存空间限定符](../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/memory_space_qualifier.md)（`exemplifies`）：SIMD 与 SIMT 混合编程使用两种内存空间限定符；保留纯 SIMT 的 `__global__` kernel 与寻址算法，只从函数形参移除 `__gm__`，让 普通 `const T *` / `T *` 承载 GM 地址。API 卡把 `__gm__` 定位于混合编程语法，运行手册给出纯 SIMT 编译前端中的相反形参写法和真实报错，形成编程模式切换时的具体边界。
-- [核函数配置](../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/kernel_function_config.md)（`exemplifies`）：核函数是 SIMD 与 SIMT 混合编程的 Device 侧入口函数，使用 __global__ __vector__ 修饰。返回值必须为 void，入参支持指针类型（需 __gm__ 修饰）和内置数据类型。；CANN 9.0.1 的纯 SIMT 编译前端把 `__gm__` 展开成变量级 `__attribute__((device))`，该 attribute 不能修饰 `__global__` 函数的非静态形参。；API 规定混合入口需 __gm__，runbook 给出纯 SIMT 编译模式必须移除该限定的具体编译原因。
-- [混合 SIMT 启动边界用 GM_ADDR 承接地址空间](mixed_simt_launch_boundary_uses_gm_addr.md)（`related`）：“纯 SIMT `__global__` kernel 形参优先用普通、类型完整的指针”给出纯模式修法；“让 host launch 和 `__global__` wrapper 的全部地址形参都保持 `GM_ADDR`；进入 device wrapper 后，再显式恢复 VF 所需的具体 `__gm__ T*` 类型。”给出混合模式相反的边界合同，联合阅读可避免跨编程模式误迁移。
-<!-- cannbot:related:end -->

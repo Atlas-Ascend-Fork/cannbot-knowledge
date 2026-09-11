@@ -129,9 +129,3 @@ parallel_config:
 
 - [longcat-flash](../models/longcat_flash.md)
 - [inference-config](../techniques/inference_config.md)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [KVP — 长序列 memory-bound decode 沿 S 维切 KV Cache（lse-softmax 在线归约 + 耦合配置约束）](../../guides/experience/interventions/kvp_longseq_decode.md)（`related`）：KVP (KV Parallel) 是面向**长序列推理场景**的 KV Cache 切分并行策略：通过将 KV Cache **沿 S (sequence) 维度切分**到多个 rank 上，缓解单 rank 的 KV Cache 访存压力，从而降低时延并扩大单请求可处理的序列长度上限。；连续 `kvp_size` 个 rank 组成一个 `kvp_group` 共同持有一份完整 KV Cache，组内各 rank 各存 `1/kvp_size` 分片；有效 attention-DP 组数 = `world_size // kvp_size`，组内 batch 复制。。概念卡定义沿序列维切分 KV Cache 的 KVP，指南给出同一机制的 rank 分组、分片比例和部署约束，因此可从定义继续进入实施与验证。
-<!-- cannbot:related:end -->

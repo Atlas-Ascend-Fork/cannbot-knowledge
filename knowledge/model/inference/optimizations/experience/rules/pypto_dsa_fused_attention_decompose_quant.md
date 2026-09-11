@@ -45,9 +45,3 @@ platforms:
 - `维护者确认` + `diff 事实`（@87f244c；pypto@c45d961）：维护者明确四部分构成 + 3 算子拆解（MLA_IP_Prolog/LI/SFA）；pypto `models/deepseek_v32_exp/README.md` 首段列 5 个交付算子，与 docs guide 合并文本一致（算子数 3→5 随版本漂移）。Hadamard + A8/C8 量化方案与新增 kernel `quant_lightning_indexer_prolog.cpp`、`lightning_indexer_prolog_pto/` 目录见同 sha。
 - `仓自报`：「逼近理论极限」为仓自报、无独立复测；tiling/bubble/vector 与性能数字据实分层、不并入事实面。
 - 溯源下探：[cann-recipes-infer-issue-12-rfc-pypto](https://gitcode.com/cann/cann-recipes-infer/issues/12)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Deepseek Indexer Attention Kernel](../../../concepts/kernels/deepseek_indexer_attention.md)（`related`）：DSA 大算子（［Deepseek Indexer Attention］(../../../concepts/kernels/deepseek_indexer_attention.md)）逻辑上由 ［MLA Prolog］(../../../concepts/kernels/mla_prolog.md)、［Indexer Prolog］(../../../concepts/kernels/indexer_prolog.md)、［Lightning Indexer］(../../../concepts/kernels/lightning_indexer.md)、［Sparse Flash Attention］(../../../concepts/kernels/sparse_flash_attention.md) 四个相对独立部分构成。；`Deepseek Indexer Attention` (DIA) 是 cann-recipes-infer 用 **PyPTO** 实现的**大融合算子** —— 把 DSA 的 4 个相对独立子算子 MLAProlog + IndexerProlog + Lightning Indexer + Sparse Flash Attention 融合成单一 kernel，在整网范围内挖掘更大并行度、提升内存利用率。。规则卡说明四子算子的分解与融合策略，DIA 卡给出同一四部分融合为单 kernel 的实际对象。
-<!-- cannbot:related:end -->

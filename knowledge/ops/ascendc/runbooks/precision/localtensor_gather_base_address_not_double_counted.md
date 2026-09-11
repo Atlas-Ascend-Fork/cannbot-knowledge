@@ -319,9 +319,3 @@ LocalTensor 参数已经确定了源数据的 UB 基址；该重载的有效寻�
 ## 误诊
 
 这类大幅乱码不是普通 fp16/bf16 舍入问题；先定位索引寻址，再讨论精度策略。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetPhyAddr](../../apis/simd_api/basic_api/data_structures/local_tensor/get_phy_addr.md)（`exemplifies`）：LocalTensor 参数已经确定了源数据的 UB 基址；该重载的有效寻址可按 `src.LocalBase + srcBaseAddr + offsets［i］` 理解。；返回LocalTensor的地址或指定偏移量后的地址。。故障卡的重复基址问题由 GetPhyAddr 返回 LocalTensor 基址的契约直接解释。
-<!-- cannbot:related:end -->

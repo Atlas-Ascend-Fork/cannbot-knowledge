@@ -151,9 +151,3 @@ __simd_vf__ inline void normalize_vf(__ubuf__ T *yAddr, __ubuf__ T *xAddr, __ubu
 ## 误诊
 
 无证据支持把该错误归因于 include 缺失；编译器已经定位为 `LoadDist` 枚举成员不存在。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reg LoadAlign 不接受 const __ubuf__ 指针](reg_loadalign_requires_nonconst_ubuf_pointer.md)（`related`）：`LoadDist` 与 `StoreDist` 是两套独立枚举：CANN 9.0.1 的 fp32 正常加载使用 `LoadDist::DIST_NORM`，而 `DIST_NORM_B32` 只存在于 `StoreDist`，不能用于 `LoadAlign`。；根因是该版本 RegBase 两参数 `LoadAlign` / `StoreAlign` 与 `asc_vf_call` 接口链要求 `__ubuf__ T *`，没有 const 兼容路径；任一 VF 形参或包装实参残留 `const __ubuf__ T *`，模板匹配都会因丢失 const 限定而失败。。两张 runbook 分别校验同一 CANN 9.0.1 Reg LoadAlign 调用的分布枚举与非 const UB 指针契约，可按编译报错次序联合排查。
-<!-- cannbot:related:end -->

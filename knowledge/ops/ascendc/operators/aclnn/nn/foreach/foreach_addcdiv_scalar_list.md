@@ -623,9 +623,3 @@ workspace_total = 32 B requested, 0 B consumed
 | 同步 | Queue ownership + PIPE_V | 不能删除依赖 barrier 或提前 Free | `Compute`; adapter |
 | 精度与尾块 | FP16/FP32 原生；BF16 FP32 中间 RINT；GM tail 精确 | BF16 固定三分区和 Cast 顺序；内部 32 B 对齐 copy | `InnerComputer`; `CopyIn/CopyOut` |
 | 失败边界 | Host 校验阻断 launch | 列表>50、全空域与生成式 ACLNN bridge 不得推测补齐 | `CheckOpInfo`; `Init`; ACLNN 文档 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddcdivScalarList 950 ACLNN 算子知识](foreach_addcdiv_scalar_list_950.md)（`same_topic`）：`y_i［j］ = x1_i［j］ + scalars［i］ * (x2_i［j］ / x3_i［j］)`；对列表下标 `i` 与张量元素 `j` 计算 `y_i［j］ = x1_i［j］ + (x2_i［j］ / x3_i［j］) * scalars［i］`。两个公式仅交换标量乘法的书写顺序，均定义列表逐项 addcdiv 并使用每张量独立 scalars［i］，两卡是同一 ForeachAddcdivScalarList 算子的 950 与 A2/A3 实现。
-<!-- cannbot:related:end -->

@@ -414,10 +414,3 @@ Ascend C高阶API基本兼容[NPU架构版本3510](../../../programming_guide/la
 </tr>
 </tbody>
 </table>
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [2201到3510架构变更](../2201_to_3510_arch_changes.md)（`related`）：焦点卡写明“AIV核采用Regbase架构，与NPU架构版本2201的Membase架构相比”，候选卡写明“当前3510架构不支持卷积计算类高阶API”。架构卡解释底层代际差异，迁移卡给出高阶 API 兼容例外，把架构变化落实到接口检查。
-<!-- cannbot:related:end -->

@@ -499,10 +499,3 @@ hCommuSize_ = blockCntPerToken_ * SPLIT_BLOCK_SIZE;
 | 同步 | 共用Mc2 window | status与embedded flag不可混用 | WaitDispatch/LocalCopy |
 | 精度与尾块 | quant模板复用 | mode/ScaleMode、cast次序、valid count | entry branches |
 | 失败边界 | public commAlg早筛 | CCU不作为public route，V5不支持950 | docs/base/README |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeDistributeCombine A2/A3 ACLNN 算子知识](moe_distribute_combine.md)（`related`）：950 Dispatch 卡说明“接收端压紧为 `expandX`，并输出 `［源EP rank, 源token索引, k］` 等 combine 辅助信息。”；Combine 卡规定“按 Dispatch 产生的 rank/token/top-k 辅助信息收回专家输出，以 `expertScales` 加权并恢复 `［BS,H］` token 顺序”，形成 Dispatch 生产元数据、专家计算后 Combine 消费元数据的任务链。
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](moe_distribute_dispatch.md)（`same_topic`）：A2/A3 卡说明“按 `expertIds［BS,K］` 扩展、可选动态量化 token，经 EP AllToAllV 分发；A3 可追加 TP AllGatherV”；950 卡说明“按专家路由扩展 token，可选多种低精度/动态量化，经 EP AllToAllV 分发并生成 combine 元数据”，两者描述同一 MoeDistributeDispatch 核心对象在不同平台/版本的实现。
-<!-- cannbot:related:end -->

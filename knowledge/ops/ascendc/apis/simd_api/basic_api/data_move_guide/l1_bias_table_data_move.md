@@ -63,10 +63,3 @@ src和dst分别为源操作数和目的操作数；repeatParams为搬运参数�
     template <typename T, typename U>
     __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<U>& src, const DataCopyParams& repeatParams)
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopy](../cube_compute_isasi/cube_compute_load/data_copy_l1_to_bias_table.md)（`same_topic`）：“将L1 Buffer中的bias数据搬运到BiasTable，用于Mmad计算的bias输入。”；“DataCopy 实现 L1 Buffer 到 BiasTable Buffer 的连续数据搬运，格式和内容保持不变。”。目标页给出焦点 API 的连续搬运语义和不变性。
-<!-- cannbot:related:end -->

@@ -112,10 +112,3 @@ AscendC::ReduceAny<float, AscendC::Pattern::Reduce::AR, isReuse>(
 输入shape：(2,8)
 输出数据(dst): [1.0 1.0]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetReduceAnyMaxMinTmpSize](get_reduce_any_max_min_tmp_size.md)（`related`）：“host侧Tiling接口，用于获取ReduceAny接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”明确给出左端事实；“对多维向量按指定维度进行逻辑或归约。定义指定计算维度为R轴，非指定维度为A轴。模板参数T支持half/float，pattern指定reduce模式。”明确给出右端事实。Host 查询接口给出 ReduceAny 的临时空间上下界，计算接口明确 sharedTmpBuffer 与归约轴语义，形成空间选择到逻辑或归约的调用链。
-<!-- cannbot:related:end -->

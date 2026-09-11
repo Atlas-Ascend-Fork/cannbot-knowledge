@@ -134,10 +134,3 @@ unsigned int __hequx2_mask(bfloat16x2_t x, bfloat16x2_t y)
         asc_vf_call<simt_hequx2_mask>(dim3(1024), (__gm__ bfloat16x2_t*)x, (__gm__ bfloat16x2_t*)y, dst, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__heqx2_mask](_heqx2_mask.md)（`same_topic`）：如果分量相等，则对应16位掩码为0xFFFF，否则为0x0。；如果分量相等，则对应16位掩码为0xFFFF，否则为0x0。若任一输入的分量为nan，对应16位掩码为0xFFFF。。两个接口返回相同双分量 16 位掩码布局，差别仅在 NaN 采用 ordered false 或 unordered true。
-<!-- cannbot:related:end -->

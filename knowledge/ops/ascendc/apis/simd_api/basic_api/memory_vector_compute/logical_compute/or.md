@@ -199,25 +199,6 @@ $dst_i = src0_i | src1_i$
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [BitwiseOrTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)（`related`）：算子整数与布尔 Device 路线都把当前 tile 的有效元素数直接传给 AscendC::Or，API 定义了完全对应的三个 LocalTensor 加 count 重载和按位或语义。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)（`related`）：算子声明的固定版本源码包含对 `Or(...)` 的直接调用（第 197 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h#L197)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [InplaceBitwiseOrScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_bitwise_or_scalar_950.md)（`related`）：算子正文包含对 `Or(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [BitwiseOrTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)
+- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)
+- [InplaceBitwiseOrScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_bitwise_or_scalar_950.md)

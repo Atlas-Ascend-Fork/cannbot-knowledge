@@ -148,26 +148,5 @@ AscendC::Cos<half, false, config>(dstLocal, srcLocal, sharedTmpBuffer, 512);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCosTmpBufferFactorSize](get_cos_tmp_buffer_factor_size.md)（`related`）：“提供两种重载：一种不带config参数（使用默认CosConfig），另一种带config参数（须与Cos Kernel接口模板参数config保持一致）。”；“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。”。Host factor 查询的 config 与 Cos kernel 模板及其 sharedTmpBuffer 路线必须一致。
-- [GetCosMaxMinTmpSize](get_cos_max_min_tmp_size.md)（`same_topic`）：“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetCosMaxMinTmpSize获取。”与“host侧Tiling接口，用于获取Cos接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”分别给出双端正文事实；Cos Kernel 明确由 GetCosMaxMinTmpSize 确定临时空间，Host Tiling 卡输出该范围，二者是同一余弦高阶 API 的空间规划与计算合同。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [SimThreadExponential 950 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)（`related`）：算子声明的固定版本源码包含对 `Cos(...)` 的直接调用（第 276 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h#L276)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ForeachCos A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cos.md)（`related`）：算子正文包含对 `Cos(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [SimThreadExponential 950 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)
+- [ForeachCos A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cos.md)

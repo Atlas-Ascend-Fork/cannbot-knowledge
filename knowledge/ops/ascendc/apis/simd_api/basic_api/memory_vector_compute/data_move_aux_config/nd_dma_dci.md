@@ -78,18 +78,4 @@ AscendC::DataCopy<T, 2, dmaConfig>(xLocal, xGm, params);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopy](../data_move/data_copy_gm_to_ub_nddma.md)（`related`）：“刷新NDDMA DataCache，确保多核场景下DataCopy多维搬运前缓存数据为最新状态。”定义 NdDmaDci 是多核 DataCopy 前的缓存刷新动作；“该接口通过NDDMA进行数据搬运，对应的NDDMA Cache大小为32KB，在使用DataCopy接口进行数据搬运前，需要使用NdDmaDci接口刷新缓存，否则多核场景下读写同一块Global Memory地址可能会导致部分核读取数据错误。”在 GM→UB NDDMA 搬运页给出不刷新会读旧 GM 数据的失败条件。两端构成必须先 flush 再 DataCopy 的顺序合同。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Cumsum 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/cumsum_950.md)（`related`）：算子声明的固定版本源码包含对 `NdDmaDci(...)` 的直接调用（第 246 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cumsum/op_kernel/arch35/cumsum_base/cumsum_core_sklansky.h#L246)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Cumsum 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/cumsum_950.md)

@@ -118,16 +118,3 @@ Pipeline 选择逻辑：950 且开启布局优化 → `InsertCVDataMovement`；9
 
 - [NPUTargetSpec.td](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HACC/Targets/NPUTargetSpec.td)
 - [HIVMAttrs.td](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/IR/HIVMAttrs.td)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend 910B2/910B3 硬件规格](ascend_910b.md)（`related`）：“910B2/910B3（dav-c220，Mem-based）硬件规格”
-- [NPU 内存层次与数据通路模型](npu_memory_model.md)（`related`）：“NPU 内存层次与数据通路模型”
-- [NPU 硬件架构总览（AI Core 组成、型号规格、核心类型枚举、Reg-based/Mem-based）](../../../ops/triton/apis/ir/architecture/npu_hardware_overview.md)（`related`）：“NPU 硬件架构总览”
-- [NPU 内存层次详解（GM/L1/L0A/L0B/L0C/UB、数据通路、随路操作）](../../../ops/triton/apis/ir/architecture/memory_hierarchy.md)（`related`）：“内存层次详解（完整数据通路、910B ASCII 图）”
-- [Pipeline 执行模型（PIPE 枚举、Pipe Trait、set_flag/wait_flag/pipe_barrier 同步）](../../../ops/triton/apis/ir/architecture/pipeline_execution_model.md)（`related`）：“Pipeline 执行模型（同步机制、Event ID）”
-- [数据布局详解（ND/nZ/zN/Fractal、DataLayoutAttr、nd2nz/nz2nd 转换）](../../../ops/triton/apis/ir/architecture/data_layout.md)（`related`）：“数据布局（ND/NZ/zN/nZ/Fractal）”
-
-<!-- cannbot:related:end -->

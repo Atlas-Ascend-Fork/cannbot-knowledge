@@ -858,10 +858,3 @@ Host 为完整输出平面分配 FP32 workspace；各 tile 先以 FP32 累加，
 | 同步 | MTE/Vector events、PIPE barriers、SyncAll | 清零、atomic/RMW、cast 的先后不可交换 | 各 Route `Process/CalcBlock` |
 | 精度与尾块 | FP32 局部/全局累加；BF16 RINT | depad 后只写 valid D/H/W，B16 只最终 cast | Normal/CutK/Scatter overlap bodies |
 | 失败边界 | selector 按 p10→p12→p16 fallback | AIC/unknown key/空 workspace 不产生输出 | registry + Kernel router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AdaptiveMaxPool3dBackward A2/A3 ACLNN 算子知识](adaptive_max_pool3d_backward.md)（`related`）：全部整除时令 `kernelSize=stride=isizes/osizes`、padding=0、dilation=1、ceilMode=false，调用 `MaxPool3DGradWithArgmax`；｜ 计算语义 ｜ 对每个 `gradOutput［n,c,od,oh,ow］`，按 `indices` 给出的展平 DHW 坐标回填到 `gradInput［n,c,:,:,:］`；同一坐标命中多次时求和，未命中位置为 0 ｜；Adaptive 的整除分支直接把等窗参数交给 MaxPool3DGradWithArgmax，后者的 indices 回填与重复命中累加合同因此就是该分支的实际 Device 语义。
-- [MaxPool3dWithArgmax A2/A3 ACLNN 算子知识](max_pool3d_with_argmax.md)（`related`）：“值是每个 NC 平面内展平 DHW 坐标”与“`indices` 是获胜坐标的 `d*H*W+h*W+w`”明确了前向输出 indices 到反向散射输入的同一坐标契约。
-<!-- cannbot:related:end -->

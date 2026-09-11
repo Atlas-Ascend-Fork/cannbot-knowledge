@@ -135,11 +135,3 @@ __aicore__ inline void Init(__gm__ uint8_t* x, __gm__ uint8_t* y, __gm__ uint8_t
 ```
 
 完成`Init`后，`Process`函数仍按照`tileNum`和`lastTileLength`进行循环处理。整核需要处理主块和尾块，尾核只处理主块；循环逻辑与[尾块均分](tail_block_even_split.md)中的`Process`函数一致，此处不再展开。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TailCoreTailBlockSplit](tail_core_tail_block_split.md)（`related`）：当remainingTailLength和tailBlockNumEachCore均不为0时，尾核切分分支不成立，进入尾核尾块切分场景。；由于tailBlockNumEachCore为0，各核未分配到基础尾块，因此尾核内只包含主块，整核比尾核多处理一个DataBlock的尾块。；两端以 tailBlockNumEachCore 是否为 0 划分互斥分支，前者必须记录尾核尾块，后者只给整核追加一个 DataBlock，直接决定 Tiling 字段和 Kernel 尾块处理。
-- [SIMD算子实现主块均分](main_block_even_split.md)（`same_topic`）：“当mainTileRemainder为0时”定义无余数快路径，“tailBlockNumEachCore为0，remainingTailLength不为0”定义余数只能分给部分整核的分支，二者共同闭合多核切分选择。
-<!-- cannbot:related:end -->

@@ -350,10 +350,3 @@ __simd_vf__ inline void rmsnorm_compute_y_vf(
 
 - “UNPACK 这个名字表示自动转换为 fp32”是错误假设；真机对比证明还需要显式 Cast；
 - 用户自定义 `CastTrait` 的编译失败不表示 Reg Cast 不可用；该 CANN 版本应使用 `AscendC::CastParam` 的预定义 trait。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddRmsNormQuant 950 ACLNN 算子知识](../../operators/aclnn/nn/norm/add_rms_norm_quant_950.md)（`related`）：950 算子实现说明“FP16/BF16 输入在 MicroAPI 中 unpack/cast，FP32直接载入。”；精度排障卡强调“`DIST_UNPACK_B16`/`DIST_PACK_B32` 只控制 B16 数据在寄存器搬运时的展开/打包布局，并不等价于 fp16/bf16 与 fp32 的数值格式转换”，可据此验证 norm 的 FP32 累加链没有漏掉数值 Cast。
-- [特定 b16 load-cast-store 组合失真时在 LocalTensor 边界转换](b16_reg_cast_layout_should_convert_at_localtensor_boundary.md)（`related`）：本轨迹中这条 b16 load/cast/store 组合没有形成与 fp32 中间 UB 一致的 1:1 元素布局；将转换后的 RegTensor 写回 UB 再加载，导致部分 lane 值错误。；`DIST_UNPACK_B16`/`DIST_PACK_B32` 只控制 B16 数据在寄存器搬运时的展开/打包布局，并不等价于 fp16/bf16 与 fp32 的数值格式转换；把展开后的 B16 位模式直接当作 `RegTensor<float>` 参与运算，会让参与平方、规约和缩放的数值语义错误。两卡区分已显式 Cast 但布局仍错与完全缺少数值 Cast 两类 B16 精度失败，并给出递进排查。
-<!-- cannbot:related:end -->

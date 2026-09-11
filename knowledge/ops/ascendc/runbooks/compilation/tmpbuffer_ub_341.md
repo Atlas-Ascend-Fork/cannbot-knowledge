@@ -84,9 +84,3 @@ errorStr: The address for VEC to access UB is out of bounds. subErrType: 0x4
 - **已验证**：Ascend950 (arch35)，bfloat16 输入，`inDim2=36`（非 8 倍数）触发；int32 输入不触发。
 - **未验证，推断可迁移**：arch22 (a2/a3) 同名算子若有相同 `xLastAlign_`/`xLastAlignB32_` 双步长模式，应同样适用——但 a2/a3 的 dequant_swiglu_quant nlast 实现是否使用相同 buffer 布局未验证，迁移前需核对 `op_kernel/arch22/` 下对应头文件是否含同一处 `tmpXPtr + i * xLastAlign_` 访问。
 - **不适用**：tmpBuffer 不存在或存非 float32 中间结果的 kernel；`inDim2` 恰为 16 倍数（bfloat16）/8 倍数（float32）时 `xLastAlign_` 与 `xLastAlignB32_` 差值缩小但不一定为零，仍需核对。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DequantSwigluQuant 950 ACLNN 算子知识](../../operators/aclnn/nn/quant/dequant_swiglu_quant_950.md)（`related`）：焦点卡在“dequant_swiglu_quant 算子的 nlast 场景”重建 tmpBuffer 越界，候选算子把对应路线标为“non-tail axis, dynamic, no group”并给出 Nlast 的 UB/路由闭包；算子卡可定位受影响 route，runbook 则提供 341 的步长判别与修法。
-<!-- cannbot:related:end -->

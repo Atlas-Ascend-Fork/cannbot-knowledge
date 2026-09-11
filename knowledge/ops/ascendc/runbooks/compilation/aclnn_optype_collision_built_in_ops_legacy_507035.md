@@ -135,10 +135,3 @@ ASCENDC_TPL_ARGS_DECL(SoftplusV2GradCustom, ...);
 ## 误诊
 
 初始诊断曾怀疑"vendor 包安装不完整、binary 未正确生成、或 tiling SO 注册失败"。plog 复现后证实 built-in 确实被优先加载（`bin file path` 指向 built-in），根因是 C++ 运行时优先级策略，非 vendor 安装问题。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [原型注册接口（OP_ADD）](../../apis/utils_api/prototype_register_management/op_add.md)（`exemplifies`）：将 opType 从 `SoftplusV2Grad` 重命名为 `SoftplusV2GradCustom`，涉及 6 处注册点同步修改。；完成算子的原型定义等操作后，需要调用OP_ADD接口，传入算子类型（自定义算子类的类名），进行算子原型注册。。该 runbook 用内置 opType 碰撞复现说明 OP_ADD 注册类名参与运行时算子身份，修复必须同步重命名注册点而保持 ACLNN 接口名不变。
-- [optype_collector工具](../../guides/programming_guide/appendix/optype_collector_tool.md)（`related`）：检测自定义算子包与内置算子包、自定义算子包之间的OpType重名问题；built-in 路径优先于 vendor 路径。工具卡提供交付前的 OpType 重名探测，runbook 解释重名后 C++ runtime 会优先命中 built-in binary；联合可从预检结果直接判断 507035 与错误 kernel 加载的根因。
-<!-- cannbot:related:end -->

@@ -85,9 +85,3 @@ is_weight_nz = False if "compressor" in module_name or (is_wq_b_transpose and "w
 - **维护者确认**：实例一 SoC 门控经维护者 `/lgtm /approve` 合入，未披露「为何 invalid」的原因（精度差 / 未实现 / 崩溃）。
 - **归因边界**：归因主语为 cann-recipes-infer 的算子路由 / 这两条改动，非上游模型厂商；适用面限本仓这些算子，不升为通用律。
 - 溯源下探：[cann-recipes-infer-pr-393-fix-a3-hcpre](https://gitcode.com/cann/cann-recipes-infer/merge_requests/393)、[cann-recipes-infer-pr-395-feat-adapt-dsv4-pro-on-a3](https://gitcode.com/cann/cann-recipes-infer/merge_requests/395)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [昇腾融合算子 host-tiling 的硬编码 shape 白名单 / 必填输入契约拦截新结构模型 bringup](../../../runbooks/compilation/fused_op_host_tiling_hardcoded_shape_whitelist.md)（`related`）：昇腾融合算子把 host tiling 做成「按已知模型的固定 shape 特化」以简化 kernel 分支——特化点表现为**硬编码常量白名单 / assert / 必填输入约束**。它们不是技术本身的限制，而是**该参考实现只覆盖了标定过的那组 shape**。新结构模型的维度落在白名单外时被 host 校验挡下，报错常在 tiling/prepare 阶段而非 kernel 计算阶段。；在昇腾上适配模型时，融合算子（单算子融合 / NZ 权重 / 融合 matmul）并非对所有 SoC 和所有 shape 都可用。它们常带**硬件/形状条件的门控**：不满足时须回退到"小算子拼接 / 普通 matmul(ND) / 非融合"的等价路径，否则精度/加载出问题。移植或调优时，检查融合算子路径是否有 SoC 白名单或轴上限守卫，并确保有对应 fallback。下面两条是已固化进本仓的实例（写"路由把这组条件当作融合路径不适用"、而非"算子在该硬件上不能运行"）。。Runbook识别参考实现 shape 白名单，规则卡给出硬件或 shape 门控失败时切换非融合等价路径的处置原则。
-<!-- cannbot:related:end -->

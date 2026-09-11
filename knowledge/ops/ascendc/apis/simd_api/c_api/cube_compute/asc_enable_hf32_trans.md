@@ -153,10 +153,3 @@ int main()
 }
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscEnableHf32](asc_enable_hf32.md)（`related`）：舍入接口要求“设置HF32模式舍入方式。使用该接口前需要先使用asc_enable_hf32开启HF32模式。”；HF32 开启接口进一步限定“须在本接口之后调用该配套接口配置舍入模式，否则舍入模式沿用上次配置或默认值。”，两端共同确定先启用、后配置舍入的顺序。
-<!-- cannbot:related:end -->

@@ -83,11 +83,3 @@ AscendC::BitwiseAnd(dst, src0, src1, count);
 输出数据（dst）:
 [81, 4, 33, 1, 7, 18, 2, 0, 81, 2, 16, 65, 0, 66, 32, 16, 16, 33, 0, ... 64]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetBitwiseAndMaxMinTmpSize](get_bitwise_and_max_min_tmp_size.md)（`related`）：__aicore__ inline void BitwiseAnd(const LocalTensor<T>& dst, const LocalTensor<T>& src0, const LocalTensor<T>& src1, const uint32_t count)；Kernel侧BitwiseAnd接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小；Kernel API 以 count 定义本次工作量，Host 查询为其底层实现提供合法临时空间范围，调用方据此同时确定分块元素数与 Tiling buffer 容量。
-- [GetBitwiseAndTmpBufferFactorSize](get_bitwise_and_tmp_buffer_factor_size.md)（`related`）：- count（输入）：参与计算的元素个数。；该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。；factor 查询把固定临时空间换算成 BitwiseAnd 单次最大元素数，该结果直接作为 Kernel count 的分块上限。
-<!-- cannbot:related:end -->

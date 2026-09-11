@@ -69,9 +69,3 @@ platforms: ["950"]
 ## 误诊
 
 - 无明显误诊路径：二分定位较早排除了 Fix1(双指针)/Fix2(min/max)/Fix4(转型) 的责任（三者单独叠加均 PASSED），并经 `git checkout` 原码 PASSED 反证，直接锁定 Fix3(局部数组缓存) 为唯一元凶。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [csr2gebsr 双指针法窄矩阵退化](../performance/csr2gebsr.md)（`related`）：回退双指针法、仅保留 P4+P11，窄矩阵恢复至噪声范围，退化消除；移除局部数组、Pass1 直读 __gm__ csrRowPtrA 后：64/64 PASSED；两卡记录同一 csr2gebsr Convert 优化链中相互独立的性能回退与正确性修复，可共同确定最终安全补丁集合。
-<!-- cannbot:related:end -->

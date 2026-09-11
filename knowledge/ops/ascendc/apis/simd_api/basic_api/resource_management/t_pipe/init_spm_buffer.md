@@ -120,11 +120,3 @@ SPM Buffer供解决UB空间不足的特殊场景使用，性能较差，一般�
     int len = 1024; // 设置spm buffer为1024个类型为T的数据
     pipe.InitSpmBuffer(len * sizeof(T));
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReadSpmBuffer](read_spm_buffer.md)（`related`）：初始化SPM Buffer。SPM Buffer是一块在GM上的空间，当UB空间不足时可以将溢出数据存放在SPM Buffer上。；从SPM Buffer读回到local数据中。；焦点建立溢出缓冲，目标接口消费该缓冲并把数据读回 local。
-- [WriteSpmBuffer](write_spm_buffer.md)（`related`）：初始化SPM Buffer。SPM Buffer是一块在GM上的空间，当UB空间不足时可以将溢出数据存放在SPM Buffer上。；将因为UB空间不足而需要溢出暂存的数据拷贝到SPM Buffer中。；焦点提供 GM 溢出空间，目标接口把 UB 溢出数据写入该空间。
-<!-- cannbot:related:end -->

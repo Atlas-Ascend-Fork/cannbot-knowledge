@@ -89,20 +89,6 @@ AscendC::DataCopy(yLocal, yGlobal, DATA_SIZE);
 完整样例请参考[scalar_atomic_operations样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/06_atomic/scalar_atomic_operations)。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscAtomicAdd](../../c_api/atomic/scalar_atomic/asc_atomic_add.md)（`same_topic`）：对Global Memory中的数据与指定数据执行原子加操作，即将val累加到address指向的数据元素上。；在指定GM地址上进行原子加操作。将address指向的GM地址上的旧值与输入值进行原子加运算，将结果写回GM地址，返回修改前的旧值。两卡描述同一 GM 标量原子加契约，分别提供 C API 与 Basic API 的入口、类型和对齐边界。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 3 / 3 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [Scatter 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/scatter_950.md)（`related`）：算子正文包含对 `AtomicAdd(...)` 的直接调用；本卡提供该接口契约。
-- [GroupedMatmulFinalizeRouting 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing_950.md)（`related`）：算子正文包含对 `AtomicAdd(...)` 的直接调用；本卡提供该接口契约。
-- [UnsortedSegmentSum 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/unsorted_segment_sum_950.md)（`related`）：算子正文包含对 `AtomicAdd(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Scatter 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/scatter_950.md)
+- [GroupedMatmulFinalizeRouting 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing_950.md)
+- [UnsortedSegmentSum 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/unsorted_segment_sum_950.md)

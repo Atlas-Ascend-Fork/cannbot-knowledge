@@ -485,9 +485,3 @@ Host 只依据最大张量确定一次 blockDim；Device 对每个列表项复�
 | 同步 | 线程私有、无 barrier/atomic | 每线程互斥索引和单线程程序次序 | 三个 SIMT body |
 | 精度与尾块 | FP32直算；FP16/BF16升到 FP32 | 转换顺序、512 threads、grid-stride guard | `OpForeachTanh*Simt` |
 | 失败边界 | context/dtype/resource失败即终止 | 256项、非空列表、窄化边界不可外推 | `ForeachTanhTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachTanh A2/A3 ACLNN 算子知识](foreach_tanh.md)（`same_topic`）：单 Kernel，唯一 Device 节点为 `AIV_VECTOR`。单 Kernel；唯一 Device 节点为 SIMT，外层 AscendC entry 内逐张量 `VF_CALL`。两端公开入口均为 aclnnForeachTanh，逐 TensorList 项计算 tanh 的合同一致，而 A2/A3 与 950 的 Device 执行单元和启动方式不同；对照两卡可完成同一算子的跨平台 route 选型与执行图核验。
-<!-- cannbot:related:end -->

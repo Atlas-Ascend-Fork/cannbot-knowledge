@@ -53,9 +53,3 @@ matmul_reducescatter（MC2 通算融合，4P SHMEM ReduceScatter）的 AIV 侧 `
 - 只凭 `aiv_mte2_time` 主导就断言 flag 是唯一根因，不做合法同步改写的成对 profile。
 - 只看 `T_comm` 总时长归因"通信慢"而不分解 `aiv_mte2_time`/`aiv_vec_time` 占比，漏掉 MTE2 被同步切碎的真因。
 - 用 reduce vec 耗时或 vector 计算耗时解释 T_comm 主导项而不经三段注释法交叉验证——本卡探针已证 reduce 仅约 3.4%、vec 可注释归零。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceScatter](../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/reduce_scatter.md)（`exemplifies`）：matmul_reducescatter（MC2 通算融合，4P SHMEM ReduceScatter）的 AIV 侧 `ReduceSegmentParallel` 对每个远程 rank 逐次 `DataCopy`，前后带 `V_MTE2/MTE2_V` 同步。 ReduceScatter的功能为：将所有rank的输入相加（或其他归约操作）后，再把结果按照rank编号均匀分散到各个rank的输出buffer，每个进程拿到其他进程1/ranksize份的数据进行归约操作。 逐 rank 拉取和归约是在实现 ReduceScatter 的跨 rank 汇聚/分散，msprof MTE2 指标定位该数据阶段的主导耗时。
-<!-- cannbot:related:end -->

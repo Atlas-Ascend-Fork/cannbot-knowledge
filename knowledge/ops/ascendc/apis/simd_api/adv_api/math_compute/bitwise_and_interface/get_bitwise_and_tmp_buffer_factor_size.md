@@ -74,11 +74,3 @@ uint32_t extraBuf = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetBitwiseAndTmpBufferFactorSize(plat, typeSize, maxLivedNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BitwiseAnd](bitwise_and.md)（`related`）：- count（输入）：参与计算的元素个数。；该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。；factor 查询把固定临时空间换算成 BitwiseAnd 单次最大元素数，该结果直接作为 Kernel count 的分块上限。
-- [GetBitwiseAndMaxMinTmpSize](get_bitwise_and_max_min_tmp_size.md)（`same_topic`）：Kernel侧BitwiseAnd接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用。；该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。前者按计算规模选择空间，后者在空间固定时反推 tile，闭合同一 BitwiseAnd sharedTmpBuffer sizing 合同。
-<!-- cannbot:related:end -->

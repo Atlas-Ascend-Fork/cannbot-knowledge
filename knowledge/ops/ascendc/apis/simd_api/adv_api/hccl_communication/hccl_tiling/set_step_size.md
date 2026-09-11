@@ -64,10 +64,3 @@ static ge::graphStatus AllToAllVCustomTilingFunc(gert::TilingContext* context)
     return ge::GRAPH_SUCCESS;
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Iterate](../hccl_kernel/iterate.md)（`related`）：Iterate 卡指出“seqSliceLen（输入）：seqSlices数组的长度。根据算法的通信步长及算法逻辑，取每一步通信需要保存的数据块索引个数为该数组长度。”；SetStepSize 卡用于“设置细粒度通信时，每次通信的步长。”。Tiling 步长决定 Iterate 每次推进和保存的算法步骤边界。
-<!-- cannbot:related:end -->

@@ -34,7 +34,7 @@ Query 只读索引；索引构建通过统一 Contract 拒绝重复 YAML key 等
 
 这里的知识仓根是 `discover` 输出的 `root`，包含 `governance/` 与 `knowledge/`；`knowledge/` 本身是 Bundle root，不是源码路径基准。Ascend C API 流程使用其[路径工具](../../ascendc-api-knowledge-query/SKILL.md)解析选定卡片的原始 source 或相对链接，再读取绝对路径；工具复用同一根解析与 Contract，不扫描替代文件。
 
-资源未恢复时，Query 不自动联网或退回扫描源码。向用户说明缺口，获准后运行仓库登记的资源获取入口；安装器支持显式离线模式，但不能声称已核对不可用源码。索引只收录知识卡正文，不收录源码树或受管关系块。
+资源未恢复时，Query 不自动联网或退回扫描源码。向用户说明缺口，获准后运行仓库登记的资源获取入口；安装器支持显式离线模式，但不能声称已核对不可用源码。索引只收录知识卡正文，不收录源码树；普通卡片链接与正文一起参与检索。
 
 ## Discover
 
@@ -68,7 +68,7 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 - 普通搜索至少传一个 platform。`--technology platforms` 可在映射产品平台时不传；未定位 draft 使用 `--include-unlocated --status draft|all`，且不能同时传 platform。
 - `--include-shared` 只与具体 technology 一起使用，并只附加同领域 shared。
 - Search 当前不提供 CANN 版本过滤；版本字段仍可随命中返回，具体适用边界由正文核对。
-- `text` 对 title、description、tags/aliases 和正文加权；`literal` 要求完整查询串出现在这些字段中，并按精确标题、标题片段、摘要、正文的顺序降权。由 `cannbot:related` 标记的管理型导航区块不进入索引。
+- `text` 对 title、description、tags/aliases 和正文加权；`literal` 要求完整查询串出现在这些字段中，并按精确标题、标题片段、摘要、正文的顺序降权。普通正文链接与其他正文一起进入索引，不按专用关系块标记排除内容。
 - 默认 status 为 `stable`，limit 必须大于零。
 
 ### Receipt

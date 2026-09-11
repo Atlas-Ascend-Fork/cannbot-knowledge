@@ -82,9 +82,3 @@ W4A8 与 W8A8 的差异关键点 = **clip-before-dynamic_quant + per-expert alph
 - diff 事实 + doc 披露（@8c6c58b36bac）：clip 系数加载 + `activation_use_clip`、「基于学习的 Clamp」段落 + 精度表。溯源下探 [cann-recipes-infer-pr-13-feat-add-deepseek-v3-2-exp-w4a8c8-quantization-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/13)
 - diff 事实 + 源码注释（@47228911d04d）：W4A8 `npu_swiglu_clip_quant` + per-expert alpha 对照 W8A8 `npu_dequant_swiglu_quant`；「提升精度」为注释意图、无量化收益。溯源下探 [cann-recipes-infer-pr-12-feat-support-moe-gmm-w4a8](https://gitcode.com/cann/cann-recipes-infer/merge_requests/12)
 - diff 事实 + 源码注释（@6857a2062f66）：`experts_w4a8int4` 的 `npu_dequant_swiglu_clamp_quant` + `swiglu_limit` 门控 clamp。溯源下探 [cann-recipes-infer-pr-410-feat-w4a8int4](https://gitcode.com/cann/cann-recipes-infer/merge_requests/410)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DSA/MLA+MoE 量化转换 (convert_model.py) 的选择性层布局·clip 开关·MTP 分片导出陷阱](precision_quant_convert_model_config_pitfalls.md)（`related`）：W8A8 通常可不 clip（见 ［precision-quant-convert-model-config-pitfalls］(precision_quant_convert_model_config_pitfalls.md)）；离群值也可用 Hadamard 正交旋转摊平（attention q/k，见 ［precision-lightning-indexer-low-bit-quant］(precision_lightning_indexer_low_bit_quant.md)）。；clip 关闭走标准 per-channel 对称 abs-max int8 量化；clip 开启则从 `quant_param_path` 载入学到的 clip 因子收窄量化范围（`if c8 and clip: assert quant_param_path is not None`）。。离群值卡说明 W4A8 的 clip 机制，转换卡给出 W8A8 的开关与参数包行为，联合用于选择转换配置。
-<!-- cannbot:related:end -->

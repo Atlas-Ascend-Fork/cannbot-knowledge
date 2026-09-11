@@ -19,8 +19,6 @@ python3 .agents/skills/knowledge-lint/scripts/knowledge_lint.py \
   --knowledge-root . --strict-navigation
 python3 .agents/skills/knowledge-ingest/scripts/fixed_archive_docs.py \
   --knowledge-root . verify
-python3 .agents/skills/knowledge-ingest/scripts/api_operator_links.py \
-  --knowledge-root . verify
 python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py \
   --knowledge-root . sync-indexes --check
 python3 .agents/skills/knowledge-query/scripts/knowledge_index.py \
@@ -33,19 +31,6 @@ python3 -m unittest discover -s .agents/skills/ops-knowledge-trace-ingest/script
 python3 .agents/skills/ops-knowledge-trace-ingest/scripts/field_notes_lint.py
 ruff check .agents/skills governance evals
 bash -n init.sh check.sh get_resources.sh
-if [[ ! -f artifacts/graphs/edge_judgments.json && ( \
-  -e artifacts/graphs/candidates.json \
-  || -d artifacts/graphs/judgment_shards \
-  || -d artifacts/graphs/reviews ) ]]; then
-  echo "error: graph rebuild artifacts exist without an aggregated judgment cache" >&2
-  exit 1
-fi
-python3 .agents/skills/knowledge-ingest/scripts/knowledge_graph.py \
-  --knowledge-root . build
-python3 .agents/skills/knowledge-ingest/scripts/knowledge_graph.py \
-  --knowledge-root . viz
-python3 .agents/skills/knowledge-ingest/scripts/knowledge_graph.py \
-  --knowledge-root . verify
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   python3 .agents/skills/knowledge-ingest/scripts/fixed_archive_docs.py \

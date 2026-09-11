@@ -99,22 +99,10 @@ result: 1 1 2 2
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 7 / 7 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Resize 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/resize_950.md)（`related`）：算子声明的固定版本源码包含对 `ceilf(...)` 的直接调用（第 84 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h#L84)
-- [UpsampleLinear1dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_linear_1d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `ceilf(...)` 的直接调用（第 80 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_linear_grad/op_kernel/arch35/resize_linear_grad_simt_determine.h#L80)
-- [UpsampleNearest2dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_nearest_2d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `ceilf(...)` 的直接调用（第 88 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_simt_determine.h#L88)
-- [UpsampleNearestExact2dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_nearest_exact_2d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `ceilf(...)` 的直接调用（第 37 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_simt_base.h#L37)
-- [UpsampleNearestExact3dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_nearest_exact_3d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `ceilf(...)` 的直接调用（第 37 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d_grad/op_kernel/arch35/upsample_nearest3d_grad_simt_base.h#L37)
-- [RoiPoolingWithArgMax 950 ACLNN 算子知识](../../../../operators/aclnn/cv/objdetect/roi_pooling_with_arg_max_950.md)（`related`）：算子声明的固定版本源码包含对 `ceilf(...)` 的直接调用（第 53 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_simt.h#L53)
-- [ResizeBilinear 950 Direct Invoke 算子知识](../../../../operators/direct/cv/image/resize_bilinear_950.md)（`related`）：算子声明的固定版本源码包含对 `ceilf(...)` 的直接调用（第 84 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h#L84)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Resize 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/resize_950.md)
+- [UpsampleLinear1dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_linear_1d_backward_950.md)
+- [UpsampleNearest2dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_nearest_2d_backward_950.md)
+- [UpsampleNearestExact2dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_nearest_exact_2d_backward_950.md)
+- [UpsampleNearestExact3dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_nearest_exact_3d_backward_950.md)
+- [RoiPoolingWithArgMax 950 ACLNN 算子知识](../../../../operators/aclnn/cv/objdetect/roi_pooling_with_arg_max_950.md)
+- [ResizeBilinear 950 Direct Invoke 算子知识](../../../../operators/direct/cv/image/resize_bilinear_950.md)

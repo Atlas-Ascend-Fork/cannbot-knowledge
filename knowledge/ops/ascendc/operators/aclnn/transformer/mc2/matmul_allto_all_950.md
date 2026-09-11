@@ -591,9 +591,3 @@ const uint64_t tilingKey = GET_TPL_TILING_KEY(NON_QUANT_MODE, x2TransposeFlag, b
 | 同步 | flags8/9、AIV SyncAll、HCCL handle Wait | producer完成前不可读，stream完成前不可释放 | pipeline、`HcclCommunicator::End` |
 | 精度与尾块 | same-X/FP32 bias key、ASW MatMul POD、64×256 copy tail | B transpose、bias dtype、有效tail；非量化splitK=1 | key、ASW block、transpose |
 | 失败边界 | M>0的Host/Tiling/GenTask明确失败；M=0为空executor终点 | 不得把非空路线非法commMode、rank、shape或外部engine失败改为静默成功；也不得误称空域执行了Tiling级校验 | API util、`DealWithEmptyTensor`、Tiling、GenTask、base execute |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulAlltoAll A2/A3 ACLNN 算子知识](matmul_allto_all.md)（`same_topic`）：｜ 计算语义 ｜ `C=X1@X2+bias`，再把 `［M,N］` 重排为 `［R,M,N/R］` 并执行 AlltoAll，输出 `［R*M,N/R］` ｜；｜ 计算语义 ｜ `C=X1@X2+bias`（bias 可空），`P=C.view(BS,R,H2/R).permute(1,0,2)`，`Y=AlltoAll(P).view(R*BS,H2/R)` ｜。两卡描述同一 MatmulAlltoAllV2 的 MatMul、重排和 AlltoAll 语义，分别闭合 950 与 A2/A3 的 MIX_CV 实现路线。
-<!-- cannbot:related:end -->

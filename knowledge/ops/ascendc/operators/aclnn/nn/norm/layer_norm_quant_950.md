@@ -875,9 +875,3 @@ mean、SSD、最终输出分为三遍 slice，统计量仅保留为 FP32 scalar�
 | 同步 | MTE2_V、V_S/S_V、V barrier、queues | scalar读写和alias不能越过flag | body methods |
 | 精度与尾块 | FP32统计/仿射，统一half量化桥 | dtype复制分支、tail eleNum | utils/split/normal |
 | 失败边界 | shape/quantMode/overflow失败 | unknown key无fallback；AIC不执行 | CheckParams/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LayerNormQuant A2/A3 ACLNN 算子知识](layer_norm_quant.md)（`same_topic`）：｜ Kernel 路线 ｜ R-001 FP16 整载；R-002 BF16 整载；R-003 FP16 分片；R-004 BF16 分片 ｜；｜ Kernel 路线 ｜ R-001 FP16 整载；R-002 BF16 整载；R-003 FP32 整载；R-004 FP16 分片；R-005 BF16 分片；R-006 FP32 分片 ｜；两卡描述同一 LayerNormQuant ACLNN 算子，950 卡在相同整载/分片结构上增加 FP32 路线。
-<!-- cannbot:related:end -->

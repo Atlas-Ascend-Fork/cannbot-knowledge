@@ -460,9 +460,3 @@ Matmul 先把 FP32 tile 写到 block 私有 workspace；MTE2 只取 `curSingleM�
 | 同步 | Matmul wait→MTE2_MTE3 event→AtomicAdd | reader 不得越过 wait；必须恢复 AtomicNone | `GmmAddCompute::MmCompute` |
 | 精度与尾块 | FP16/BF16 输入、FP32 Matmul/UB/yRef；curM/curN 有效域 | 不得添加 cast/scale/bias；CopyPad stride 与 tail 不变 | `MmImplType`、`MmComputePrepare/MmCompute` |
 | 失败边界 | 空输入无 launch；非法 dtype/format/rank/size 失败；未知 key 无 body | 不得把未校验属性/groupList 描述为安全支持，不得发明 fallback | `CheckParams/CheckZeroShape/CalMmTiling/grouped_matmul_add` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [grouped_matmul_add 950 ACLNN 算子知识](grouped_matmul_add_950.md)（`same_topic`）：｜ 计算语义 ｜ 对每组独立原位累加：`yRef_i［M,N］ = yRef_i［M,N］ + X_i［K_i,M］^T * W_i［K_i,N］`，不是跨组求和 ｜；｜ 计算语义 ｜ 每组独立原位累加：`yRef_i［M,N］ += X_i［K_i,M］^T * W_i［K_i,N］` ｜。两卡记录同一 GroupedMatmulAdd 原位分组累加语义，并分别闭合 A2/A3 classic 与 950 DAV3510 advanced 实现。
-<!-- cannbot:related:end -->

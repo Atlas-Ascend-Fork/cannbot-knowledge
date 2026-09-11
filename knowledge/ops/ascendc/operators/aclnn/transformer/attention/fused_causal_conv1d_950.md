@@ -725,9 +725,3 @@ BS 分核为卷积引入 overlap，同一 batch 或 APC physical line 可能被�
 | 同步 | BH queue/event；BSH queue/event+两级全核 barrier | producer→consumer event 和 APC read-before-deferred-write 顺序 | 两 body `Process/Compute` |
 | 精度与尾块 | FP16/BF16 load→FP32 RegTensor Mul/Add→RINT pack；last-core remainder | cast trait、64 FP32 lane、`UpdateMask(dimRem)`、overlap iStart | 四个 VF 头；BSH `Process` |
 | 失败边界 | rank/threshold/dtype/shape/resource 决定唯一 Route | 不得添加未知-key fallback、A2/A3或内部 inplace 公共入口 | dispatcher、`GetTilingKey`、entry、OpDef |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceFusedCausalConv1d 950 ACLNN 算子知识](inplace_fused_causal_conv1d_950.md)（`same_topic`）：当前公开 ACLNN 是独立 y 输出，`convStates` 仍原地更新。；接口最终把卷积结果写回 `x`，并原地更新 `convStates`。。两卡都执行带状态更新的 FusedCausalConv1d，公开合同的核心差异是卷积结果落到独立 y 还是覆盖 x，因此是同一算子的原地性变体。
-<!-- cannbot:related:end -->

@@ -103,11 +103,3 @@ AscendC::Ceil(dstLocal, srcLocal, sharedTmpBuffer, 512);
 输入数据(srcLocal): [-1.1  0.0  0.9  1.9  2.9  3.9  4.9  5.9]
 输出数据(dstLocal): [-1.0  0.0  1.0  2.0  3.0  4.0  5.0  6.0]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCeilMaxMinTmpSize](get_ceil_max_min_tmp_size.md)（`related`）：Ceil 接口直接声明“临时空间大小BufferSize的获取方式请参考GetCeilMaxMinTmpSize。”；Host 接口说明“kernel侧Ceil接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。”，两端构成 Ceil sharedTmpBuffer 的 Host 容量生产与 Kernel 消费链，但分别承担容量规划和数值计算两个主题。
-- [GetCeilTmpBufferFactorSize](get_ceil_tmp_buffer_factor_size.md)（`related`）：“该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。”给出 Ceil 临时区容量推导；“用于Ceil内部复杂计算时存储中间变量，由开发者提供。”确认 Ceil 实际消费该临时缓存，因此能直接用于实现时的 tile 上限计算。
-<!-- cannbot:related:end -->

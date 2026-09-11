@@ -74,11 +74,3 @@ uint32_t extraBuf = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetLogicalXorTmpBufferFactorSize(plat, typeSize, maxLivedNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogicalXorMaxMinTmpSize](get_logical_xor_max_min_tmp_size.md)（`related`）：Factor 查询卡给出“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLivedNodeCount / typeSize”；MaxMin 查询卡说明“在minValue到maxValue范围内，临时空间越大性能越好。”，两者组成先确定允许空间范围、再由实际 currBuff 反推单次元素数的 Host Tiling 链。
-- [LogicalXor](logical_xor.md)（`related`）：Factor 查询卡指出“获取LogicalXor接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”；计算卡的调用参数规定“count为参与计算元素个数。”，前者正是为后者的 count 分块提供容量上限。
-<!-- cannbot:related:end -->

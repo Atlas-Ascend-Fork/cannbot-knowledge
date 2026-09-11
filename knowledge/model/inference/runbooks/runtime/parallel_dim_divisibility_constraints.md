@@ -55,9 +55,3 @@ if attn_tp_size > 1 and moe_ep_size > 1:      # SP 激活
 
 - `diff 事实`（@e8eb6979，约束一）：`check_parallel_settings` 的 `batch_size % moe_ep_size` 断言 + 5 份 config YAML 的 batch/ep 组合自洽。溯源下探：[cann-recipes-infer-pr-4-qwen3moe](https://gitcode.com/cann/cann-recipes-infer/merge_requests/4)
 - `diff 事实` + `维护者确认`（@355e29ed，约束二）：`model_setting.py::update_vars` 新增 SP 分支的 `align_up` + `max_position_embeddings` 公式；SP 判定条件与 `(next_n+1)` 语义由作者确认。溯源下探：[cann-recipes-infer-pr-193-fix-max-input-len](https://gitcode.com/cann/cann-recipes-infer/merge_requests/193)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ulysses 按 head 切分的整除约束（序列可软填充、head 需 UAA 放开）](ulysses_head_seq_divisibility_uaa.md)（`related`）：“`input_max_len = align_up(input_max_len, attn_tp_size)`”是 MoE 的 SP prefill 对序列维的修复；“把序列维和 head 维在各 rank 间等分”是 Ulysses 的双维约束，联读可先按并行拓扑选择应检查的维度和修法。
-<!-- cannbot:related:end -->

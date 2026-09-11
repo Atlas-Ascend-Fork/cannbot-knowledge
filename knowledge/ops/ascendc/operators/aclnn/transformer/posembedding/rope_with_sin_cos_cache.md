@@ -858,9 +858,3 @@ NeoX 的 `[前半,后半]` 已是计算所需的 two-half 布局，body 直接 `
 | 同步 | MTE2→V、V→MTE2、V→MTE3、MTE3→V 的 producer/consumer 边可直接复用 | Q/K 顺序复用和 cache 覆盖前硬事件不得删除；TQue 未使用 EnQue/DeQue，不能替换描述 | `RopeWithSinCosCacheBase::*Sync` 与各 Compute |
 | 精度与尾块 | 低精度 FP32 中间+RINT、FP32 原精度；front/tail core、token last、head last 公式可复用 | 不得前移低精度 cast；必须保留 interleaved GatherMask/Gather、未旋转后缀与 Q/K 独立 tail | `FP16::Compute/ComputeAlongHeads`、`F32::Compute/ComputeAlongHeads` |
 | 失败边界 | API null/dtype/shape/mrope/cacheMode 错误与 Tiling 对齐检查可复用 | 必须补上 Tiling 返回值传播、UB 下溢/zero-head 与 uint16 上界；不能把固定源码缺口写成 fallback | `CheckParams/TilingRopeWithSinCosCache/TilingCompute` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RopeWithSinCosCache 950 ACLNN 算子知识](rope_with_sin_cos_cache_950.md)（`same_topic`）：两种模式随后都计算 `o1=x1*cos-x2*sin`、`o2=x2*cos+x1*sin`，false 分支再用 `Gather` 恢复偶奇交错。；两者均计算 `o1=x1*cos-x2*sin`、`o2=x2*cos+x1*sin`；GPT-J 路线再用 `Gather` 恢复偶奇交错。；两卡实现同一 RopeWithSinCosCache 旋转公式和 NeoX/GPT-J 布局，分别记录 A2/A3 V2 cacheMode 能力与 950 V1 arch35 路线和四段 mrope 冲突。
-<!-- cannbot:related:end -->

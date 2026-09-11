@@ -96,10 +96,3 @@ AscendC::DataCopyPad(srcLocal, srcGlobal, copyParams, padParams);
 ```
 
 完整样例请参考[DataCopyPad样例场景1](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_pad_gm2ub_ub2gm)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../data_move/data_copy_pad_gm_to_ub.md)（`related`）：设置DataCopyPad非对齐搬运时需要填充的数值，支持GM到UB的填充数据自定义。；DataCopyPad（GMToUB非对齐数据搬运）从Global Memory将数据非对齐搬运至Unified Buffer时，可根据开发者的需要自行填充数据。SetPadValue用于设置DataCopyPad需要填充的数值。 具体支持的数据通路为（以逻辑位置TPosition表示）： - Global Memory -> Unified Buffer - GM -> VECIN - GM -> VECOUT。配置卡产生自定义 pad 值，搬运卡在 GM→UB 非对齐 DataCopyPad 中消费该配置。
-<!-- cannbot:related:end -->

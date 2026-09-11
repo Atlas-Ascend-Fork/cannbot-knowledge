@@ -376,9 +376,4 @@ Host 不为每个 Tensor 启动独立 Kernel，也不为不同长度 Tensor 生�
 | 精度与尾块 | 三dtype统一FP32 log1pf，FP16/BF16降T；flatIdx guard | cast顺序与 `flatIdx<N` | `Log1pCompute<T>` |
 | 失败边界 | Tensor≤128、UB>128KiB、OpDef dtype | unknown dtype default不可当fallback；累计和不溢出 | `ForeachLog1pTilingFunc` / `GetTilingKeyByDtype` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Log1pf](../../../../apis/simt_api/math_functions/float_math_functions/log1pf.md)（`related`）：然后执行 `static_cast<T>(log1pf(static_cast<float>(x_i［j］)))`。；函数原型：float log1pf(float x)；ForeachLog1p 的统一 SIMT Route 对每个展平元素直接调用 log1pf，并在 FP16/BF16 情况下窄化回存储 dtype。
-- [ForeachLog1p A2/A3 ACLNN 算子知识](foreach_log1p.md)（`same_topic`）：｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `y_i［j］ = ln(x_i［j］ + 1)` ｜；｜ 执行类型 ｜ 单 Kernel `SIMT`；每个 outer block 以 512 个 SIMT thread 执行 grid-stride loop ｜。两卡覆盖同一 aclnnForeachLog1p 逐元素语义；A2/A3 用 AIV_VECTOR，950 卡给出 512 线程 SIMT grid-stride 实现，适合跨代际路线对照。
-<!-- cannbot:related:end -->
+- [Log1pf](../../../../apis/simt_api/math_functions/float_math_functions/log1pf.md)

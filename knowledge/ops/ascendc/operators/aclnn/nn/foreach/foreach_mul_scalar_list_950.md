@@ -588,10 +588,3 @@ Host 只需给 tile 容量，Device 统一按 FP32 lane 宽度迭代；`UpdateMa
 | 同步 | Queue 生命周期 + Vector scope program order | slot 在 FreeTensor 前不得覆盖 | Base Copy/Compute methods |
 | 精度与尾块 | masked FP32 lane 管线 | FP16/BF16 RINT；INT64 scalar→float；tail mask | load/store traits、`Compute` |
 | 失败边界 | 两级 selector、Host 校验、unknown key no-op | 不得把 A2 key 或非法 dtype 下发到 arch35 router | Registry/`GetTilingKey`/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMulScalar 950 ACLNN 算子知识](foreach_mul_scalar_950.md)（`same_topic`）：对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ * scalar` `out［i］［j］ = x［i］［j］ * scalars［i］` 共同的逐元素乘法语义下，标量是全列表共享还是按 Tensor 位置变化，直接决定 aclScalar 或 ScalarList 入口。
-- [ForeachMulScalarList A2/A3 ACLNN 算子知识](foreach_mul_scalar_list.md)（`same_topic`）：｜ 计算语义 ｜ `out［i］［j］ = x［i］［j］ * scalars［i］` ｜；｜ 计算语义 ｜ 对列表位置 `i` 与元素位置 `j`，`out［i］［j］ = x［i］［j］ * scalars［i］` ｜；两端是同一 ACLNN 算子与逐项标量广播合同，差异落在 950 RegBase 与 A2/A3 Membase 的实现路线和资源边界。
-<!-- cannbot:related:end -->

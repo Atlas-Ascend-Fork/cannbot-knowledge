@@ -99,10 +99,3 @@ int __clz(long x)
         dst[idx] = __clz(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_clz（标量计算）](../../../simd_api/c_api/scalar_compute/scalar_bit/asc_clz.md)（`same_topic`）：计算一个uint64_t类型整数在二进制表示下的前导零个数；前导零计数函数。从输入数据的二进制最高有效位开始，返回连续的前导零的位数。。asc_clz 与 SIMT __clz 都从最高有效位计算连续零数，但执行模型和参数重载不同，关系可帮助按 Scalar/SIMT 路线选型。
-<!-- cannbot:related:end -->

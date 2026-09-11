@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import replace
 import hashlib
 import importlib
+import json
 import os
 from pathlib import Path
 import shutil
@@ -231,112 +232,6 @@ class SourceResourceTests(unittest.TestCase):
         card.path.write_text(card.path.read_text().replace(self.revision, "a" * 40))
         self.assertTrue(link_checks.check(self.contract, document, context))
 
-    def graph_fixture(self, count=12, limit=10):
-        graph = importlib.import_module("knowledge_graph")
-        api = self.api()
-        operators = [self.operator(index) for index in range(count)]
-        source = {"resource": f"cann-ops-raw/ascendc/ops-nn/{self.revision}/kernel.h", "line": 3}
-        items = [api_links.Invocation(api, op, "GetBlockIdx", "int GetBlockIdx(void);", "", "high", source) for op in operators]
-        cards = {}
-        for card in [api, *operators]:
-            relative = Path(card.relative).relative_to("knowledge")
-            cards[relative.with_suffix("").as_posix()] = SimpleNamespace(path=card.path, doc_id=relative.with_suffix("").as_posix(), body=card.body, profile="apis" if card == api else "operators", title=card.title, metadata={"sources": [{"resource": value} for value in card.sources]})
-            parent = card.path.parent
-            while parent.is_relative_to(self.root / "knowledge"):
-                (parent / "index.md").write_text("# Index\n")
-                parent = parent.parent
-        api.path.write_text(api_links.expected_api_cards([api], operators, items, limit)[api.path])
-        return graph, api, operators, cards
-
-    def test_graph_consumes_committed_projection_without_sources_or_scanning(self):
-        graph, api, _, cards = self.graph_fixture()
-        before = {card.path: card.path.read_bytes() for card in cards.values()}
-        (self.root / "cann-ops-raw/ascendc/ops-nn").rename(self.root / "offline-backup")
-        with (
-            mock.patch.object(api_links, "invocations", side_effect=AssertionError("graph must not scan sources")),
-            mock.patch.object(resources, "validate_checkout", side_effect=AssertionError("graph must not require checkouts")),
-            mock.patch.object(graph, "corpus_fingerprint", return_value="fixture"),
-        ):
-            payload = graph.graph_payload(self.root, cards, {"judgments": []})
-            self.assertEqual(payload, graph.graph_payload(self.root, cards, {"judgments": []}))
-        automatic = [edge for edge in payload["edges"] if edge.get("generated_by") == "committed-api-operator-navigation-v1"]
-        self.assertEqual(10, len(automatic))
-        self.assertTrue(all(edge["confidence"] == "unverified" and edge["strength"] == "navigation" for edge in automatic))
-        self.assertFalse(any("cann-ops-raw/" in node["id"] for node in payload["nodes"]))
-        self.assertFalse((self.root / "cann-ops-raw/ascendc/ops-nn").exists())
-        self.assertEqual(before, {path: path.read_bytes() for path in before})
-        self.assertIn("部分算子", api.path.read_text())
-
-    def test_committed_api_navigation_rejects_invalid_structure_and_provenance(self):
-        graph, api, operators, cards = self.graph_fixture(count=1)
-        valid = api.path.read_text()
-        line = next(line for line in valid.splitlines() if line.startswith("- ["))
-        href = os.path.relpath(operators[0].path, api.path.parent)
-        (self.root / "cann-ops-raw/ascendc/ops-nn").rename(self.root / "offline-backup")
-        invalid = {
-            "dangling": valid.replace(href, "missing.md"),
-            "self": valid.replace(href, api.path.name),
-            "wrong relation": valid.replace("（`related`）", "（`explains`）"),
-            "unsupported relation": valid.replace("（`related`）", "（`links_to`）"),
-            "duplicate": valid.replace(line, line + "\n" + line),
-            "missing end": valid.replace(graph.API_OPERATOR_END, ""),
-            "duplicate start": valid.replace(graph.API_OPERATOR_START, graph.API_OPERATOR_START + "\n" + graph.API_OPERATOR_START),
-            "outside marker": graph.API_OPERATOR_START + "\n" + valid,
-            "duplicate outer": valid.replace(graph.MANAGED_START, graph.MANAGED_START + "\n" + graph.MANAGED_START),
-            "unknown revision": valid.replace(self.revision, "a" * 40),
-            "undeclared file": valid.replace("/kernel.h#L3", "/notes.md#L3"),
-            "no line": valid.replace("#L3", ""),
-            "no source": valid.replace(line, line.split(" [源码]")[0]),
-            "unparsed link": valid.replace(line, line.removeprefix("- ")),
-            "wrong section": valid.replace("### 源码中使用此 API 的算子", "### 知识正文中的调用示例"),
-            "empty block": valid.replace(line, ""),
-        }
-        for name, raw in invalid.items():
-            with self.subTest(name=name), self.assertRaises(ValueError):
-                api.path.write_text(raw)
-                graph.committed_managed_relations(self.root, cards)
-        api.path.write_text(valid)
-        operator_id = operators[0].path.relative_to(self.root / "knowledge").with_suffix("").as_posix()
-        cards[operator_id].profile = "guides"
-        with self.assertRaisesRegex(ValueError, "endpoints/type"):
-            graph.committed_managed_relations(self.root, cards)
-        cards[operator_id].profile = "operators"
-        api_card = next(card for card in cards.values() if card.profile == "apis")
-        api_card.profile = "guides"
-        with self.assertRaisesRegex(ValueError, "malformed API-to-Operator"):
-            graph.committed_managed_relations(self.root, cards)
-
-    def test_committed_api_navigation_enforces_display_limit(self):
-        graph, _, _, cards = self.graph_fixture(count=11, limit=11)
-        with self.assertRaisesRegex(ValueError, "exceeds display limit"):
-            graph.committed_managed_relations(self.root, cards)
-
-    def test_committed_body_only_projection_supports_partial_operator_label(self):
-        graph, api, operators, cards = self.graph_fixture()
-        items = [api_links.Invocation(api, op, "GetBlockIdx", "int GetBlockIdx(void);", "AscendC::GetBlockIdx();", "high") for op in operators]
-        api.path.write_text(api_links.expected_api_cards([api], operators, items, 10)[api.path])
-        self.assertIn("### 知识正文中的调用示例（部分算子）", api.path.read_text())
-        edges, _ = graph.committed_managed_relations(self.root, cards)
-        self.assertEqual(10, len(edges))
-
-    def test_committed_navigation_preserves_reviewed_reason_and_body_only_examples(self):
-        graph, api, operators, cards = self.graph_fixture(count=1)
-        raw = api.path.read_text()
-        source_line = next(line for line in raw.splitlines() if line.startswith("- ["))
-        reviewed_line = source_line.split("：", 1)[0] + "：Reviewed reason."
-        raw = raw.replace(graph.API_OPERATOR_START, reviewed_line + "\n\n" + graph.API_OPERATOR_START)
-        api.path.write_text(raw)
-        edges, _ = graph.committed_managed_relations(self.root, cards)
-        self.assertEqual(1, len(edges))
-        self.assertEqual("Reviewed reason.", edges[0]["reason"])
-        self.assertEqual("committed-managed-navigation-v1", edges[0]["generated_by"])
-        item = api_links.Invocation(api, operators[0], "GetBlockIdx", "int GetBlockIdx(void);", "AscendC::GetBlockIdx();", "high")
-        api.path.write_text(graph.strip_managed(raw))
-        api.path.write_text(api_links.expected_api_cards([api], operators, [item], 10)[api.path])
-        edges, _ = graph.committed_managed_relations(self.root, cards)
-        self.assertEqual(1, len(edges))
-        self.assertEqual("committed-api-operator-navigation-v1", edges[0]["generated_by"])
-
     def test_source_verification_still_requires_restored_clean_checkouts(self):
         self.api()
         self.operator()
@@ -347,17 +242,26 @@ class SourceResourceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "missing pinned Git checkout"):
             api_links.invocations(self.root)
 
-    def test_source_verification_still_rejects_stale_committed_navigation(self):
+    def test_suggestions_preserve_cards_and_repeat_without_a_graph_cache(self):
         api = self.api()
-        self.operator()
-        args = SimpleNamespace(knowledge_root=str(self.root), report="artifacts/graphs/api_operator_links.json", command="verify")
-        self.assertEqual(1, api_links.command(args))
-        args.command = "sync"
+        operator = self.operator()
+        original = {card.path: card.path.read_bytes() for card in (api, operator)}
+        args = SimpleNamespace(knowledge_root=str(self.root), report="artifacts/graphs/api_operator_links.json", command="suggest")
         self.assertEqual(0, api_links.command(args))
-        args.command = "verify"
+        report = self.root / args.report
+        payload = json.loads(report.read_text())
+        self.assertEqual(1, len(payload["suggested_markdown"]))
+        self.assertEqual(api.relative, payload["suggested_markdown"][0]["card"])
+        self.assertIn(operator.path.name, payload["suggested_markdown"][0]["link"])
+        self.assertIn("source", payload["suggested_markdown"][0]["evidence"])
+        before = report.read_bytes()
         self.assertEqual(0, api_links.command(args))
-        api.path.write_text(api.path.read_text().replace("#L3)", "#L4)"))
-        self.assertEqual(1, api_links.command(args))
+        self.assertEqual(before, report.read_bytes())
+        self.assertEqual(original, {path: path.read_bytes() for path in original})
+        self.assertFalse((self.root / "artifacts/graphs/graph.json").exists())
+        args.report = "knowledge/escaped.json"
+        with self.assertRaisesRegex(ValueError, "artifacts/graphs"):
+            api_links.command(args)
 
     def test_source_links_allow_registered_files_but_not_indexes_or_unknown_roots(self):
         card = self.operator()
@@ -425,28 +329,19 @@ class SourceResourceTests(unittest.TestCase):
         self.assertEqual(10, len(displayed))
         self.assertTrue(all(item.source for item in displayed))
         self.assertTrue(any("/math/" in item.operator.relative for item in displayed))
-        rendered = api_links.expected_api_cards([api], operators, items, 10)[api.path]
-        self.assertIn("源码中使用此 API 的算子（部分算子）", rendered)
-        self.assertIn("展示 10 / 13", rendered)
-        self.assertEqual(api_links.read_utf8(api.path), api_links.strip_managed(rendered, api.relative))
-        api.path.write_text(rendered)
-        self.assertEqual(rendered, api_links.expected_api_cards([api], operators, items, 10)[api.path])
         payload = api_links.artifact_payload([api], operators, items, [], {"counts": {}, "source_files": []}, 10)
         self.assertEqual(14, len(payload["relations"]))
         self.assertEqual(10, sum(item["displayed"] for item in payload["relations"]))
 
-    def test_semantic_links_are_preserved_and_body_only_examples_labeled(self):
+    def test_body_only_suggestions_keep_their_evidence_distinct(self):
         api = self.api()
         op = self.operator()
-        second = self.operator(1)
-        href = os.path.relpath(op.path, api.path.parent)
-        semantic = f"- [reviewed]({href})（`related`）：Reviewed reason."
-        api.path.write_text(api_links.read_utf8(api.path) + f"\n\n{api_links.MANAGED_START}\n## 相关\n\n{semantic}\n{api_links.MANAGED_END}\n")
-        items = [api_links.Invocation(api, target, "GetBlockIdx", "prototype", "GetBlockIdx()", "medium") for target in (op, second)]
-        rendered = api_links.expected_api_cards([api], [op, second], items, 10)[api.path]
-        self.assertIn(semantic, rendered)
-        self.assertIn("知识正文中的调用示例", rendered)
-        self.assertEqual(1, len(api_links.displayed_invocations([api], items, 10)))
+        item = api_links.Invocation(api, op, "GetBlockIdx", "prototype", "GetBlockIdx()", "medium")
+        payload = api_links.artifact_payload([api], [op], [item], [], {"counts": {}, "source_files": []}, 10)
+        relation = payload["relations"][0]
+        self.assertEqual("suggested_link", relation["relation"])
+        self.assertEqual("GetBlockIdx()", relation["evidence"]["operator_anchor"])
+        self.assertNotIn("source", relation["evidence"])
 
     def test_localization_preserves_code_fences_roles_and_missing_remote_sources(self):
         remote = f"https://gitcode.com/cann/ops-nn/blob/{self.revision}/kernel.h"

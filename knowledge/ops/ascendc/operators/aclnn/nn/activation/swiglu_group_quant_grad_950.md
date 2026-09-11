@@ -819,9 +819,3 @@ if (truncValue < totalTokens) {
 | 同步 | TQue、逐 Vector barrier、V_MTE3 event、SyncAll/Reset | 原位覆盖前的 barrier 和 Reset 前全局顺序不可删 | `ApplyClampMask`; `CopyOutGradX`; `Process` |
 | 精度与尾块 | 输入升 FP32、FP32 compute/accumulate、`CAST_RINT` 输出 | strict clamp mask、curT/curH、group tail zero协议 | `CopyInGradY/X`; `CopyOutGradX`; `ZeroOutTrunc` |
 | 失败边界 | Host 严格失败，无 Device fallback；仅 UB Full→Split-H | 不扩展 A2/A3、dtype、公开 H/B/S 或非法可选组合 | `CheckOpAllParams`; README/API支持表 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwigluGroupQuant 950 ACLNN 算子知识](swiglu_group_quant_950.md)（`related`）：“s = x0 / (1 + exp(-x0)) * x1”；“grad_x0 = g * x1' * dsilu”。前者定义 SwigluGroupQuant 中被量化前的 SwiGLU 正向值，后者给出同一拆分输入的反向梯度。
-<!-- cannbot:related:end -->

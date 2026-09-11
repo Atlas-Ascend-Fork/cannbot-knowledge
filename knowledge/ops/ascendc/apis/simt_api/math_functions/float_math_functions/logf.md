@@ -101,24 +101,6 @@ result: 0 0.6931472 1.098612 1.386294
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [SimThreadExponential 950 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)（`related`）：算子声明的固定版本源码包含对 `logf(...)` 的直接调用（第 322 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h#L322)
-- [ForeachLog 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_log_950.md)（`related`）：算子声明的固定版本源码包含对 `logf(...)` 的直接调用（第 50 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log_simt.h#L50)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [CrossEntropyLoss 950 Direct Invoke 算子知识](../../../../operators/direct/nn/loss/cross_entropy_loss_950.md)（`related`）：算子正文包含对 `logf(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [SimThreadExponential 950 ACLNN 算子知识](../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)
+- [ForeachLog 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_log_950.md)
+- [CrossEntropyLoss 950 Direct Invoke 算子知识](../../../../operators/direct/nn/loss/cross_entropy_loss_950.md)

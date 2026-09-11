@@ -71,19 +71,4 @@ tpipe.Destroy();  // 销毁tpipe管道资源
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Destroy](destroy.md)（`related`）：Tpipe对象复用时，要与Destroy接口成对使用，每次复用需要先Destroy释放资源，再调用init重新初始化。；约束：用于重复申请释放tpipe，创建tpipe对象后，可调用Destroy手动释放资源。。Init 明确规定复用前先 Destroy，Destroy 则提供手工释放资源的对应动作，两者共同定义 TPipe 重复申请释放的生命周期。
-- [Reset](reset.md)（`related`）：完成资源的释放与eventId等变量的初始化操作，恢复到TPipe的初始化状态。；用于内存和同步流水事件EventID的初始化。；Reset 释放当前资源并恢复 Init 建立的内存与 EventID 状态，两接口构成 TPipe 资源生命周期。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)（`related`）：算子声明的固定版本源码包含对 `Init(...)` 的直接调用（第 48 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/fused_linear_cross_entropy_loss_grad/op_kernel/fused_linear_cross_entropy_loss_grad_high_perf.h#L48)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)

@@ -316,10 +316,3 @@ source_headers:
     ```
 
     > 输出数据dst_gm：[16, 32, ..., 48]
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [选择低延迟指令，优化归约操作性能](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md)（`explains`）：“进一步测试分析可知，单指令ReduceDataBlock的执行效率优于ReduceRepeat，因此，根据不同的shape，通过不同的指令组合，可以达到更佳的执行性能。”；“对输入数据以DataBlock为单位进行归约操作，根据reduceType对每个DataBlock内数据求和、求最大值或求最小值。”。指南明确用 ReduceDataBlock 与 ReduceRepeat 的组合选择降低归约延迟，接口卡界定 DataBlock 级计算。
-<!-- cannbot:related:end -->

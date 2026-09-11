@@ -110,10 +110,3 @@ kv.view(kv_shape[0], kv_shape[1], num_kv_head, head_dim)
 - 信号 2（合并态 diff）：`register_kv_caches` 中 `block_rank` 由常量 3 改为 `len(first_kv_cache.shape) - 1`、注释同步补充 torchair 3 维布局，`_cat_kv_cache` 对 3 维 KV 先 view 再处理，均核到合并 diff（`vllm-project/vllm-ascend@0563106/vllm_ascend/distributed/mooncake_connector.py`）。source 未给 torchair 下修复前的具体报错文本。溯源下探：[vllm-ascend-pr-2947-feature-mooncake-connector-support-gqa-transport](https://github.com/vllm-project/vllm-ascend/pull/2947)。
 </content>
 </invoke>
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HIXL/HCCS IPC KV 传输须 2 MiB 内存对齐（分配点 over-allocate + narrow）](../../optimizations/experience/rules/hixl_hccs_ipc_2mib_alignment.md)（`related`）：“两者都发生在把已分配的 NPU HBM 上的 paged KV 缓冲区登记进 RDMA 式传输引擎、再逐块传输的路径上”定位内存注册阶段；“所有要向传输引擎 `register_memory` 的 NPU HBM 基址必须 2 MiB 对齐”提供同阶段可核验的 HIXL/HCCS 基址条件，可作为确认具体传输路径后的补充探针。
-- [Mooncake（protocol=ascend / HIXL）KV 传输后端在昇腾的三个非显式前置约束](mooncake_ascend_hixl_kv_transfer_bringup.md)（`related`）：“这里的 connector 是 vllm-ascend 的 `MooncakeConnectorStoreV1` / `mooncake_connector.py`，与 cann-recipes-infer 的 `--engine_backend mooncake`（见 ［mooncake-ascend-hixl-kv-transfer-bringup］(mooncake_ascend_hixl_kv_transfer_bringup.md)）是**不同框架的不同实现**，config 面与代码面都不同，排查时勿混两处。”给出实现分界；“在昇腾上启用 cann-recipes-infer 的 mooncake（protocol=`ascend` / ［HIXL］(../../concepts/techniques/hixl.md)）KV 传输后端（online ［PD 分离］(../../concepts/frameworks/online_pd_inference.md)推理，`--engine_backend mooncake`）时，有三个非显式前置约束，违反会在 bringup 期直接失败：”给出另一栈的入口和失败阶段，导航可用于先选对 runbook 再排障。
-<!-- cannbot:related:end -->

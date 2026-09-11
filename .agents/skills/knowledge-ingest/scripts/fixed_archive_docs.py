@@ -28,11 +28,16 @@ from urllib.parse import quote, unquote
 import yaml
 
 
-MANAGED_START = "<!-- cannbot:related:start -->"
-MANAGED_END = "<!-- cannbot:related:end -->"
-MANAGED_RE = re.compile(
-    rf"(?ms)^{re.escape(MANAGED_START)}\n.*?^{re.escape(MANAGED_END)}(?:\n)?\Z"
-)
+LINK_LIST_RE = re.compile(r"(?:- \[[^\]\n]+\]\([^\n)]+\)[ \t]*\n?)+\Z")
+
+
+def split_link_suffix(text: str) -> tuple[str, str | None]:
+    """Separate an optional trailing list of ordinary links, without block markers."""
+    boundary = text.rfind("\n\n")
+    if boundary >= 0 and LINK_LIST_RE.fullmatch(text[boundary + 2:]):
+        return text[:boundary], text[boundary + 2:]
+    return text, None
+
 FRONTMATTER_RE = re.compile(r"\A---\n(?P<metadata>.*?)\n---\n\n", re.DOTALL)
 INLINE_LINK_RE = re.compile(r"(!?)\[(?:\\.|[^\]\\\n])*\]\(([^)\n]+)\)")
 REFERENCE_DEFINITION_RE = re.compile(
@@ -638,7 +643,7 @@ def guide_tags(relative: str) -> list[str]:
     return ["task.lookup", "topic.programming_model"]
 
 
-def existing_card(path: Path) -> tuple[dict[str, object] | None, str | None]:
+def existing_card(path: Path, expected_body: str | None = None) -> tuple[dict[str, object] | None, str | None]:
     if not path.is_file():
         return None, None
     text = read_utf8(path)
@@ -649,10 +654,17 @@ def existing_card(path: Path) -> tuple[dict[str, object] | None, str | None]:
     if not isinstance(metadata, dict):
         raise ValueError(f"invalid existing mirror metadata: {path}")
     body = text[framing.end() :]
-    managed = MANAGED_RE.search(body)
-    if managed is None and (MANAGED_START in body or MANAGED_END in body):
-        raise ValueError(f"malformed existing managed block: {path}")
-    return metadata, managed.group(0).rstrip("\n") if managed is not None else None
+    if expected_body is None:
+        return metadata, None
+    if body.startswith(expected_body):
+        suffix = body[len(expected_body):]
+        if not suffix:
+            return metadata, None
+        if suffix.startswith("\n\n") and LINK_LIST_RE.fullmatch(suffix[2:]):
+            return metadata, suffix[2:].rstrip("\n")
+        raise ValueError(f"mirror additions must be ordinary trailing links: {path}")
+    _, suffix = split_link_suffix(body)
+    return metadata, suffix.rstrip("\n") if suffix is not None else None
 
 
 def normalize_api_header(path: str) -> str | None:
@@ -780,67 +792,10 @@ def metadata_for(
     return metadata
 
 
-def render_card(metadata: dict[str, object], body: str, managed: str | None) -> str:
+def render_card(metadata: dict[str, object], body: str, navigation: str | None) -> str:
     frontmatter = yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False).rstrip()
-    suffix = "" if managed is None else "\n\n" + managed + "\n"
+    suffix = "" if navigation is None else "\n\n" + navigation + "\n"
     return f"---\n{frontmatter}\n---\n\n" + body + suffix
-
-
-def managed_navigation_references(
-    root: Path,
-    navigation_cards: set[Path],
-    *,
-    write: bool,
-) -> tuple[list[Path], int]:
-    """Find or remove managed semantic links to navigation-only mirror cards."""
-
-    changed: list[Path] = []
-    removed = 0
-    knowledge_root = (root / "knowledge").resolve()
-    for path in sorted(knowledge_root.rglob("*.md")):
-        text = read_utf8(path)
-        managed = MANAGED_RE.search(text)
-        if managed is None:
-            continue
-        kept: list[str] = []
-        path_removed = 0
-        for line in managed.group().splitlines(keepends=True):
-            discard = False
-            if line.lstrip().startswith("- "):
-                for match in INLINE_LINK_RE.finditer(line):
-                    if match.group(1):
-                        continue
-                    value = match.group(2)
-                    start, end = target_token_span(value)
-                    target = value[start:end]
-                    if target.startswith(("#", "//")) or URI_SCHEME_RE.match(target):
-                        continue
-                    raw_path = unquote(target.split("#", 1)[0].strip("<>"))
-                    if not raw_path:
-                        continue
-                    resolved = (
-                        knowledge_root / raw_path.lstrip("/")
-                        if raw_path.startswith("/")
-                        else path.parent / raw_path
-                    ).resolve()
-                    if resolved in navigation_cards:
-                        discard = True
-                        break
-            if discard:
-                path_removed += 1
-            else:
-                kept.append(line)
-        if not path_removed:
-            continue
-        changed.append(path)
-        removed += path_removed
-        if write:
-            replacement = "".join(kept)
-            ingest.atomic_write(
-                path,
-                text[: managed.start()] + replacement + text[managed.end() :],
-            )
-    return changed, removed
 
 
 def mirror_card_paths(root: Path, definition: dict[str, object]) -> set[Path]:
@@ -966,9 +921,9 @@ def expected_cards(
             mirror=mirror,
         )
         rewrites += changes
-        old, managed = existing_card(output)
+        old, navigation = existing_card(output, body)
         if old is None and source.name.casefold() == "readme.md":
-            old, managed = existing_card(output.with_name("readme.md"))
+            old, navigation = existing_card(output.with_name("readme.md"), body)
         if stamp is None:
             if old is None or not isinstance(old.get("updated_at"), str):
                 raise ValueError(f"missing mirror card or updated_at: {output}")
@@ -986,10 +941,10 @@ def expected_cards(
             stamp=card_stamp,
             description_body=curated_bodies[source],
         )
-        candidate = render_card(metadata, body, managed)
+        candidate = render_card(metadata, body, navigation)
         if stamp is not None and (not output.is_file() or read_utf8(output) != candidate):
             metadata["updated_at"] = stamp
-            candidate = render_card(metadata, body, managed)
+            candidate = render_card(metadata, body, navigation)
         rendered[output] = candidate
     report = {
         "source_id": source_id,
@@ -1019,13 +974,8 @@ def mirror_authored_offsets(text: str, source_prefix: str, contract) -> tuple[in
     if match is None or not match[1].is_relative_to(contract.root / source_prefix):
         return None
     body_start = framing.end()
-    managed = MANAGED_RE.search(text)
-    if managed is None:
-        return body_start, len(text)
-    delimiter = "\n\n"
-    if text[max(body_start, managed.start() - len(delimiter)) : managed.start()] != delimiter:
-        raise ValueError("managed related block is missing its exact delimiter")
-    return body_start, managed.start() - len(delimiter)
+    source_body, _ = split_link_suffix(text[body_start:])
+    return body_start, body_start + len(source_body)
 
 
 def line_offset(text: str, line: int) -> int:
@@ -1123,13 +1073,6 @@ def command(args: argparse.Namespace) -> int:
             if read_utf8(path) != rendered[path]:
                 failures.append(f"mirror differs from fixed source: {path.relative_to(root)}")
         failures.extend(f"stale mirror card: {path.relative_to(root)}" for path in stale)
-        dangling, _ = managed_navigation_references(
-            root, navigation_cards, write=False
-        )
-        failures.extend(
-            f"managed relation targets a navigation-only card: {path.relative_to(root)}"
-            for path in dangling
-        )
         if failures:
             print("\n".join(failures[:100]), file=sys.stderr)
             print(f"verified={len(expected)} differences={len(failures)}")
@@ -1140,15 +1083,10 @@ def command(args: argparse.Namespace) -> int:
         ingest.atomic_write(path, rendered[path])
     for path in stale:
         path.unlink()
-    managed_changed, managed_removed = managed_navigation_references(
-        root, navigation_cards, write=True
-    )
     report.update(
         {
             "changed": len(changed),
             "removed": len(stale),
-            "managed_cards_pruned": len(managed_changed),
-            "managed_relations_removed": managed_removed,
             "updated_at": stamp,
         }
     )

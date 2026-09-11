@@ -1113,9 +1113,3 @@ Cast(xBufRight, ubX2, RoundMode::CAST_NONE, realProcCount);
 | 同步 | Queue + Perf events/barriers | Temp0跨MTE2/V/MTE3复用协议 | `CopyInXPerf`,`CopyOutDXPerf` |
 | 精度与尾块 | 半精度乘/升FP32/CAST_RINT | FP16前置Mul与BF16升精度顺序；仅写valid | dtype `Compute*`, Pad branches |
 | 失败边界 | Host校验、空tensor、entry null/key | 不绕过 platform/shape/workspace guards | API `CheckParams`, apt entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GeGluBackward A2/A3 ACLNN 算子知识](ge_glu_backward.md)（`same_topic`）：｜ 实际入口 ｜ 最新公开 `aclnnGeGluV3BackwardGetWorkspaceSize` / `aclnnGeGluV3Backward`；V1 固定 `activateLeft=false` 复用共同实现 ｜；｜ 实际入口 ｜ `aclnnGeGluV3BackwardGetWorkspaceSize` / `aclnnGeGluV3Backward`；旧 `aclnnGeGluBackward` 固定传 `activateLeft=false` 复用同一 body ｜；两卡治理同一个 aclnnGeGluV3Backward 公开契约及共同反向语义，只按 950 与 A2/A3 平台拆分 Host 路由、Kernel 模板和资源实现。
-<!-- cannbot:related:end -->

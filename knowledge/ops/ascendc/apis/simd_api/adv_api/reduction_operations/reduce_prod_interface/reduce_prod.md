@@ -116,10 +116,3 @@ AscendC::ReduceProd<float, AscendC::Pattern::Reduce::AR, isReuse>(dstLocal, srcL
 
 输出数据(dst): [40320,30]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetReduceProdMaxMinTmpSize](get_reduce_prod_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取ReduceProd接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetReduceProdMaxMinTmpSize获取。。ReduceProd 正文明确以 GetReduceProdMaxMinTmpSize 计算 sharedTmpBuffer 容量，两卡形成 Host 容量规划到 Kernel 归约调用的直接契约。
-<!-- cannbot:related:end -->

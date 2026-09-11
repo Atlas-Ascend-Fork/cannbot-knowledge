@@ -637,9 +637,4 @@ Cube 将 tile 物化到精确 GM offset 后才发布完成信号；Vector 等待
 | 精度与尾块 | FP32 SwiGLU 和逐行 scale | N/2、round/clamp、tail mask | Post Process |
 | 失败边界 | 无 key/资源不足失败 | 不得跨路线 fallback | SetTilingKey/router |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwiGLU](../../../../apis/simd_api/adv_api/activation_functions/swi_glu_interface/swi_glu.md)（`related`）：随后把 `C_e［:,0:N/2］` 作为第一分支、`C_e［:,N/2:N］` 作为第二分支，源码调用 `SwiGLU(src0=后半, src1=前半, beta=1)`；A4W4 再乘逐专家或逐通道 `smoothScale`。；SwiGLU是采用Swish作为激活函数的GLU变体。 其中Swish激活函数的计算公式如下：β为常量。算子卡的双分支参数顺序与 beta=1 直接落到 SwiGLU API 合同。
-- [grouped_matmul_swiglu_quant 950 ACLNN 算子知识](grouped_matmul_swiglu_quant_950.md)（`same_topic`）：分组矩阵乘→per-token/MX 尺度恢复→SwiGLU→per-token 或 MX 输出量化；Y 支持 INT8/FP8/FP4/HIFLOAT8 子集；GMM→反量化→SwiGLU→动态 INT8 量化，同时输出 per-token scale。两卡闭合同一 GroupedMatmulSwigluQuant V2 逻辑算子，950 扩展 MX/FP8/FP4 路线，A2/A3 卡记录 classic A8W8/A8W4/A4W4 路线。
-<!-- cannbot:related:end -->
+- [SwiGLU](../../../../apis/simd_api/adv_api/activation_functions/swi_glu_interface/swi_glu.md)

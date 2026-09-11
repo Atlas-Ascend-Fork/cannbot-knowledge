@@ -707,10 +707,3 @@ QK只传`qScale*kScale`给L0C→UB copy，PV只传V scale；避免额外dequant 
 | 同步 | mode4 IDs0..6及16..22 reverse | AIC对应两个AIV | sync helpers |
 | 精度与尾块 | regular/full-quant四族 | scale次序、448补偿、layout/LSE format | interface/epilogues |
 | 失败边界 | 24 key、无fallback | 非空mask行、quant guards | router/bodies |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BlockSparseAttentionGrad 950 ACLNN 算子知识](block_sparse_attention_grad_950.md)（`related`）：“｜ 计算语义 ｜ 稀疏 gather 的 `Softmax(scale·QKᵀ)·V`；FP8 路线把 Q×K scale 合并进 QK Fixpipe、把 V scale 注入 PV Fixpipe，并用 FP8 P。 ｜”；“｜ 计算语义 ｜ 重算 `S/P/dP/dS`，以 FP32 累加并输出 `dQ/dK/dV` ｜”。前者是 950 BlockSparseAttention 正向，后者通过重算其 S/P 并输出 Q/K/V 梯度构成对应反向。
-- [BlockSparseAttention A2/A3 ACLNN 算子知识](block_sparse_attention.md)（`same_topic`）：“｜ 计算语义 ｜ 对 `blockSparseMask［b,n,x,y］ >= 1` 选中的 KV 块计算 `Softmax(scaleValue·QKᵀ)·V`，跨 KV tile 维护在线 max/sum；`softmaxLseFlag=1` 时输出 `log(sum(exp))+max`。 ｜”与“｜ 计算语义 ｜ 稀疏 gather 的 `Softmax(scale·QKᵀ)·V`；FP8 路线把 Q×K scale 合并进 QK Fixpipe、把 V scale 注入 PV Fixpipe，并用 FP8 P。 ｜”是双方正文中的具体合同。两端都对稀疏选择的 KV 执行 Softmax-QK 与 V 聚合，A2/A3 卡强调 mask 和在线归约，950 卡补充 FP8 Fixpipe 缩放路线，互读能核对核心语义和平台差异。
-<!-- cannbot:related:end -->

@@ -381,11 +381,3 @@ __aicore__ inline void ComputeSoftmaxRow(
 ## 误诊
 
 这不是 GM/UB 对齐、tail mask 或 Cast 精度问题；编译器在函数重载/包装参数匹配时已经失败。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LoadAlign](../../apis/simd_api/basic_api/reg_vector_compute/reg_data_load/load_align_continuous.md)（`exemplifies`）：“LoadAlign能够实现数据从Unified Buffer（UB）连续搬运至RegTensor。支持单搬入模式和双搬入模式”定义连续 UB→RegTensor 的接口族；“candidate function template not viable: 2nd argument ('const __ubuf__ __bf16 *') would lose const qualifier”记录该两参数重载遇到 const `__ubuf__` 指针时的真实编译拒绝。该实例把 API 的地址空间签名落到可诊断的报错与去 const 修法。
-- [LoadDist 错用 DIST_NORM_B32 导致编译失败](reg_load_and_store_use_distinct_dist_enums.md)（`related`）：`LoadDist` 与 `StoreDist` 是两套独立枚举：CANN 9.0.1 的 fp32 正常加载使用 `LoadDist::DIST_NORM`，而 `DIST_NORM_B32` 只存在于 `StoreDist`，不能用于 `LoadAlign`。；根因是该版本 RegBase 两参数 `LoadAlign` / `StoreAlign` 与 `asc_vf_call` 接口链要求 `__ubuf__ T *`，没有 const 兼容路径；任一 VF 形参或包装实参残留 `const __ubuf__ T *`，模板匹配都会因丢失 const 限定而失败。。两张 runbook 分别校验同一 CANN 9.0.1 Reg LoadAlign 调用的分布枚举与非 const UB 指针契约，可按编译报错次序联合排查。
-- [__ubuf__ 指针传普通形参导致编译失败](ubuf_pointer_preserves_address_space.md)（`related`）：焦点卡指出“bisheng 把 `__ubuf__` 地址空间编码进指针类型，`__ubuf__ T*` 不能隐式转换为普通 `T*` 形参。”；LoadAlign 排障卡进一步限定“该版本 RegBase 两参数 `LoadAlign` / `StoreAlign` 与 `asc_vf_call` 接口链要求 `__ubuf__ T *`”，把通用地址空间不匹配收窄到还必须去除 const 的具体 ABI。
-<!-- cannbot:related:end -->

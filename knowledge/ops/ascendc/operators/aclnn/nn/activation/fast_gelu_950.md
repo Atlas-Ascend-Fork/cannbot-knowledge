@@ -628,11 +628,7 @@ FP32 输出没有末端量化可掩盖误差，因此模板将 `precisionMode=tr
 | 精度与尾块 | FP32 中的 fused formula、`UpdateMask` tail 可复用 | FP32 `precisionMode=true`；F16/BF16 升精度、`precisionMode=false`、降精度；每轮必须用剩余 `count` | `FastGeluCustom`; `FastGeluNoCast/NeedCast` |
 | 失败边界 | API/Host 失败终点和 entry 空 workspace 终点可复用 | 不得为未支持 dtype、A2/A3 或 experimental V2 编造 fallback | `CheckParams`; `FastGeluTiling::RunTiling`; `fast_gelu` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GET_TILING_DATA_WITH_STRUCT](../../../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data_with_struct.md)（`related`）：“Host 的 `GetTilingData<EleBaseTilingDataV2>` 与 entry 的 `REGISTER_TILING_DEFAULT/GET_TILING_DATA_WITH_STRUCT` 使用同一声明。”闭合 FastGelu 的 POD producer/consumer；“该接口可以根据指定的结构体名称获取对应的结构体，常用于针对不同的TilingKey注册了不同结构体的情况下。”解释 entry 按结构体名解析 Tiling 的合同。
-- [REGISTER_TILING_DEFAULT](../../../../apis/simd_api/basic_api/kernel_tiling/register_tiling_default.md)（`related`）：“Host 的 `GetTilingData<EleBaseTilingDataV2>` 与 entry 的 `REGISTER_TILING_DEFAULT/GET_TILING_DATA_WITH_STRUCT` 使用同一声明。”说明 FastGelu 注册与读取共享 ABI；“用于在kernel侧注册用户使用标准C++语法自定义的默认TilingData结构体。”给出 REGISTER_TILING_DEFAULT 在该链中的职责。
-- [RoundMode](../../../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/round_mode.md)（`related`）：“源码把整数 0 转为 `RoundMode`”标出 FastGelu 升精度 Cast 的枚举解释边界；“`CAST_NONE`：无精度损失时不舍入；存在精度损失时按 `CAST_RINT` 处理。”提供数值 0 对应模式的语义，用于核验转换路径。
-- [SetSysWorkSpace](../../../../apis/simd_api/basic_api/resource_management/workspace/set_sys_work_space.md)（`related`）：“entry 先检查 workspace，调用 `SetSysWorkspace`，再取得 `GetUserWorkspace(workspace)`；”给出 FastGelu 的实际 entry 顺序；“在kernel侧调用该接口前，需要在host侧调用GetLibApiWorkSpaceSize获取系统workspace的大小，并在host侧设置workspacesize大小。”补齐 Host 侧系统 workspace 前置。
-<!-- cannbot:related:end -->
+- [GET_TILING_DATA_WITH_STRUCT](../../../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data_with_struct.md)
+- [REGISTER_TILING_DEFAULT](../../../../apis/simd_api/basic_api/kernel_tiling/register_tiling_default.md)
+- [RoundMode](../../../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/round_mode.md)
+- [SetSysWorkSpace](../../../../apis/simd_api/basic_api/resource_management/workspace/set_sys_work_space.md)

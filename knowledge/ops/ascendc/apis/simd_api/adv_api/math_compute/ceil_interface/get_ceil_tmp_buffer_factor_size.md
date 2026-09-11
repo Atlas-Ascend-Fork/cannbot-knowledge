@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetCeilTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ceil](ceil.md)（`related`）：“该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。”给出 Ceil 临时区容量推导；“用于Ceil内部复杂计算时存储中间变量，由开发者提供。”确认 Ceil 实际消费该临时缓存，因此能直接用于实现时的 tile 上限计算。
-<!-- cannbot:related:end -->

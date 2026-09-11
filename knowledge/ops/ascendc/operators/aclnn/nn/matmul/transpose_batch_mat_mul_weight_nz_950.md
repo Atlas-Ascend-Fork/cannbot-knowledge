@@ -840,9 +840,3 @@ API 与 tiling 均把 `scale!=nullptr && factor!=1` 判为错误，不能绕过�
 | 同步 | 单 AIC 节点、Matmul pipeline、末尾 PIPE_ALL | 不得引入无协议的跨核共享 | `Process` |
 | 精度与尾块 | FP32 L0C 模型、可选 uint64 scale、sm/sn tail | scale/factor/dtype guard 与 Matmul API 顺序 | `SetQuantVector/SetSingleShape/GetTensorC` |
 | 失败边界 | 唯一模板，无 fallback | 非法 format/perm/shape/dtype/resource 必须失败 | `CheckParams`, `CheckArgs`, `IsCapable` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [weightNZ Format](../../../../../../model/inference/concepts/techniques/weight_nz.md)（`related`）：焦点卡写明“WeightNZ 的差异不是数学公式，而是 `x2` 物理存储”，候选卡写明“NZ 是昇腾 Cube 单元亲和的"分形"数据布局”。算子卡规定 FRACTAL_NZ storage，概念卡解释分形与对齐目的，把格式校验接到权重准备。
-<!-- cannbot:related:end -->

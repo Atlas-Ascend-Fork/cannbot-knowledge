@@ -634,9 +634,3 @@ helper 避免直接依赖通用 `max` 对 NaN 和 signed-zero 的实现差异：
 | 同步 | 无 barrier/atomic，靠唯一 idx 和线程程序顺序 | stride 必须是 `threadNum*blockNum` | SIMT loop |
 | 精度与尾块 | float helper；FP16/BF16 FP32；INT32 INT64 | NaN/zero 分支序、output cast、`idx<count` | `ComputeType`, `SimtMaximum`, `Op...` |
 | 失败边界 | Host 对 tensorNum/dtype/platform 失败 | 不虚构 fallback；不扩展 256 Tensor | Tiling func |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMaximumScalarList A2/A3 ACLNN 算子知识](foreach_maximum_scalar_list.md)（`same_topic`）：｜ 计算语义 ｜ 对第 `i` 个 Tensor 的每个元素计算 `y_i［j］ = max(x_i［j］, scalars_i)` ｜；｜ 计算语义 ｜ `y_i［j］ = max(x_i［j］, scalars_i)`；浮点 SIMT helper 显式传播 NaN 并处理相等零，整数 helper 使用 `a>=b?a:b` ｜两页是相同 ACLNN TensorList 与 ScalarList 最大值算子的 A2/A3 Vector 和 950 SIMT 实现，平台迁移时可直接对照路线与边界。
-<!-- cannbot:related:end -->

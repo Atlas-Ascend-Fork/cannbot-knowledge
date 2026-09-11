@@ -400,9 +400,3 @@ SB 释放的 Queue slot 用于更大 base tile；只有它把每核两 tile 降�
 | 算子 `CMakeLists.txt` 与顶层 `CMakeLists.txt` | `register_direct_launch_op`、`NPU_ARCH` | build wiring 与 950 arch |
 | 官方 `README.md`、`swi_glu_def.cpp`、950 binary config | 产品与 dtype 注册 | 官方语义/950 映射 |
 | 官方 `swi_glu_tiling.cpp`、arch35 搬运头 | tiling 与 `SwigluSingle` | 转换实现复用关系 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwiGlu 950 ACLNN 算子知识](../../../aclnn/nn/activation/swi_glu_950.md)（`same_topic`）：“沿 `dim` 把输入等分为前半 `A` 与后半 `B`，输出 `Y = swish(A) * B = A / (1 + exp(-A)) * B`。”与“沿 `dim` 对半切成 A/B，`y=A/(1+exp(-A))*B`。”分别给出两端正文事实；两卡实现同一 950 SwiGlu 数学与 shape 契约，但分别闭合 Direct Invoke 与 ACLNN 的 Host、empty、workspace 和 kernel route，联合阅读可做启动方式选型。
-<!-- cannbot:related:end -->

@@ -109,29 +109,14 @@ __simd_vf__ inline void AddVF(__ubuf__ T* dstAddr, __ubuf__ T* src0Addr, __ubuf_
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [arch35 __aicore__ 调 LocalMemBar 报 507035](../../../../../runbooks/compilation/arch35_aicore_localmembar_507035.md)（`exemplifies`）：Reg矢量计算宏函数内不同流水线之间的同步指令。；从 `__aicore__` 常规函数调 `Reg::LocalMemBar<VEC_STORE,VEC_LOAD>` 触发 507035 (AIV error)，两次独立代码版本（旧 4-buffer、新 5-buffer 重排）重编重跑均复现（来源平台:950；证据等级:tool_observed）。API 同步语义受 VF 调用上下文约束，runbook 给出错误上下文的可复现失败。
-- [arch35 count Compare Select 异步VF 存读 RAW](../../../../../runbooks/precision/arch35_count_compare_select_vf_raw.md)（`exemplifies`）：读写场景下，当读指令使用的寄存器和写指令使用的寄存器相同时，可以触发寄存器保序，指令将会按照代码顺序执行，不需要插入同步指令，而当使用的寄存器不同时，如果要确保读写指令顺序执行，则需要插入同步指令，写写场景同理。；arch35 count-based Compare 为 `__simd_vf__`、经 `Reg::StoreAlign/StoreUnAlign` (VEC_STORE) 写 bMask 且内部无 LocalMemBar；count-based Select 经 `Reg::LoadAlign<DIST_US>` (VEC_LOAD) 读 bMask（来源平台：950；证据等级: tool_observed）。通用依赖规则解释该 Compare 到 Select 的具体 RAW 隐患。
-- [NMS 950 Direct Invoke 算子知识](../../../../../operators/direct/cv/image/nms_950.md)（`related`）：“每次 Vector 更新必须在下一标量读取前完成”与“目的流水线将等待源流水线上所有指令完成才进行执行”把 NMS alive buffer 的生产消费顺序连接到 LocalMemBar 的流水线等待语义。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 40 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [ChunkCat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 199 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/chunk_cat/op_kernel/chunk_cat_arch35.h#L199)
-- [AddLayerNormQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 430 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_quant/op_kernel/arch35/add_layer_norm_quant_regbase_helper.h#L430)
-- [FusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/fused_causal_conv1d_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 54 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_causal_conv1d/op_kernel/arch35/vf/fused_causal_conv1d_state_single_tail.h#L54)
-- [ReplicationPad2d 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/replication_pad_2d_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 358 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3/op_kernel/arch35/pad_edge_gather.h#L358)
-- [AddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 420 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm/op_kernel/arch35/add_rms_norm_regbase_common.h#L420)
-- [InplaceFusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/inplace_fused_causal_conv1d_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 54 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_causal_conv1d/op_kernel/arch35/vf/fused_causal_conv1d_state_single_tail.h#L54)
-- [ReplicationPad3d 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/replication_pad_3d_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 358 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3/op_kernel/arch35/pad_edge_gather.h#L358)
-- [AddRmsNormCast 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_cast_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 94 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/norm_common/op_kernel/reduce_common_regbase.h#L94)
-- [QuantLightningIndexer 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/quant_lightning_indexer_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 520 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/quant_lightning_indexer/op_kernel/arch35/vf/quant_lightning_indexer_vector1.h#L520)
-- [Cumsum 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/cumsum_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 739 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cumsum/op_kernel/arch35/cumsum_4_int.h#L739)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [NMS 950 Direct Invoke 算子知识](../../../../../operators/direct/cv/image/nms_950.md)
+- [ChunkCat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat_950.md)
+- [AddLayerNormQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant_950.md)
+- [FusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/fused_causal_conv1d_950.md)
+- [ReplicationPad2d 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/replication_pad_2d_950.md)
+- [AddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_950.md)
+- [InplaceFusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/inplace_fused_causal_conv1d_950.md)
+- [ReplicationPad3d 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/replication_pad_3d_950.md)
+- [AddRmsNormCast 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_cast_950.md)
+- [QuantLightningIndexer 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/quant_lightning_indexer_950.md)
+- [Cumsum 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/cumsum_950.md)

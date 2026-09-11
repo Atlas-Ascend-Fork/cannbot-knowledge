@@ -64,10 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 bool res = AscendC::GetExpMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Exp](exp.md)（`related`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetExpMaxMinTmpSize获取。”与“host侧Tiling接口，用于获取Exp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”。Exp 的 sharedTmpBuffer 重载需要空间预算，Host 接口给出可用最大值与不得低于的最小值。
-<!-- cannbot:related:end -->

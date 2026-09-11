@@ -632,9 +632,3 @@ for (uint32_t i = 0; i < repeatBatchCnt; i++) {
 | 同步 | Queue协议、V barrier、V→MTE3/MTE3→MTE2事件 | 原地 FP32区和 Queue slot不得提前覆盖 | `ComputePerCast`；`CopyOut` |
 | 精度与尾块 | 低精度升 FP32 Div，RINT回写；byte tail + repeat mask | scalar dtype转换、round mode和 valid byte数不变 | `InnerComputer`；`DataCopyPad` |
 | 失败边界 | Tiling/API失败停止；unknown key无 body | 不得臆造 fallback或把实现内部 Contiguous当公开支持 | `CheckParams`；`foreach_div_scalar` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachDivScalar 950 ACLNN 算子知识](foreach_div_scalar_950.md)（`same_topic`）：｜ 计算语义 ｜ TensorList 内逐元素 `out［i］［j］ = x［i］［j］ / scalar`。 ｜；｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ / scalar`。 ｜。两卡实现同一 ForeachDivScalar V2 列表逐元素除标量契约，分别闭合 950 RegBase 与 A2/A3 Vector 路线。
-<!-- cannbot:related:end -->

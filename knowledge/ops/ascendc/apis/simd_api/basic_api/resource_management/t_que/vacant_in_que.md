@@ -72,10 +72,3 @@ que.EnQue(tensor3);// 将tensor3加入VECOUT的Queue中
 que.EnQue(tensor4);// 将tensor4加入VECOUT的Queue中
 ret = que.VacantInQue(); // 返回为false,继续入队操作（Enque）将报错
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TQue简介](t_que_intro.md)（`related`）：查询队列是否已满。 约束：该接口不支持Tensor原地操作，即TQue的depth设置为0的场景。；队列深度与 double buffer 是不同维度：深度为 1 时仍可开启 double buffer。非 Tensor 原地操作通常建议将深度设为 1；Tensor 原地操作按接口约束将深度设为 0。；VacantInQue 的可用性取决于 depth 是否为 0，TQue 概念卡给出原地操作与 depth 取值的配置边界。
-<!-- cannbot:related:end -->

@@ -253,21 +253,9 @@ DivAlgo::INTRINSIC为默认算法。--cce-ftz=false时保留Subnormal；--cce-ft
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 6 / 6 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)（`related`）：算子声明的固定版本源码包含对 `Div(...)` 的直接调用（第 357 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h#L357)
-- [CrossEntropyLoss 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss_950.md)（`related`）：算子声明的固定版本源码包含对 `Div(...)` 的直接调用（第 1000 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h#L1000)
-- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)（`related`）：算子声明的固定版本源码包含对 `Div(...)` 的直接调用（第 252 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention/op_kernel/attn_infra/epilogue/block/bsa_block_epilogue_rescale_o.hpp#L252)
-- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)（`related`）：算子声明的固定版本源码包含对 `Div(...)` 的直接调用（第 411 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_quant/op_kernel/apply_adam_w_quant_fp16.h#L411)
-- [DynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_mx_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Div(...)` 的直接调用（第 233 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_mx_quant/op_kernel/arch35/dynamic_mx_quant_post.h#L233)
-- [CrossEntropyLoss 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/loss/cross_entropy_loss_950.md)（`related`）：算子声明的固定版本源码包含对 `Div(...)` 的直接调用（第 1000 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h#L1000)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)
+- [CrossEntropyLoss 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss_950.md)
+- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)
+- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)
+- [DynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_mx_quant_950.md)
+- [CrossEntropyLoss 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/loss/cross_entropy_loss_950.md)

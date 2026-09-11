@@ -349,11 +349,3 @@ int main()
 
 更多场景使用样例请参考[asc_mmad_mx样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/03_c_api/03_matrix_compute/mmad_mx)。
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscCopyL12l0aMx](../cube_datamove/asc_copy_l12l0a_mx.md)（`related`）：计算接口明确要求“调用本接口前，需通过asc_copy_l12l0a_mx和asc_copy_l12l0b_mx等接口，将ScaleA和ScaleB矩阵分别搬入L0A_MX Buffer和L0B_MX Buffer。”；搬运接口负责“将Mx scale矩阵从L1 Buffer搬运到L0A Buffer。”，因此它是 AscMmadMx 读取 ScaleA 前的必要数据准备。
-- [AscCopyL12l0bMx](../cube_datamove/asc_copy_l12l0b_mx.md)（`related`）：计算接口规定“调用本接口前，需通过asc_copy_l12l0a_mx和asc_copy_l12l0b_mx等接口，将ScaleA和ScaleB矩阵分别搬入L0A_MX Buffer和L0B_MX Buffer。”；搬运接口执行“将Mx scale矩阵从L1 Buffer搬运到L0B Buffer。”，闭合 AscMmadMx 读取 ScaleB 的前置数据流。
-<!-- cannbot:related:end -->

@@ -608,9 +608,3 @@ Cast(yLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_RI
 | 同步 | Queue 协议加 Cos/Cast 间 `PIPE_V` | Free/覆盖前必须完成 consumer，BF16 barriers 不可省 | `InnerComputer::Compute/ComputePerCast` |
 | 精度与尾块 | FP16/FP32 原生；BF16 在 FP32 中 Cos 后 RINT | `dataCount` 必须用实际尾长；GM tail 按字节 | `SingleTensorProcess/CopyIn/CopyOut` |
 | 失败边界 | Host 校验失败阻断 launch | 50 Tensor 上限、unknown key 无输出、外部 bridge 不可臆造 | `CheckOpInfo`、`foreach_cos` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachCos 950 ACLNN 算子知识](foreach_cos_950.md)（`same_topic`）：对 TensorList 中每个张量逐元素计算 `y［t］［i］ = cos(x［t］［i］)`。；对 TensorList 中每个 Tensor 逐元素计算 `y［t］［i］=cos(x［t］［i］)`。。两卡记录同一个 ACLNN ForeachCos 逻辑算子，分别闭合 A2/A3 Vector 实现与 950 SIMT 实现，可用于同一算子的跨平台路由选择。
-<!-- cannbot:related:end -->

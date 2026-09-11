@@ -79,11 +79,3 @@ __aicore__ inline void InitDetermineComputeWorkspace(GlobalTensor<int32_t>& gmWo
 ```
 
 完整样例请参考[sequential\_block\_sync示例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/sequential_block_sync)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NotifyNextBlock](notify_next_block.md)（`related`）：“完成初始化后才可以调用WaitPreBlock和NotifyNextBlock”明确初始化前置；“WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合使用”从通知接口侧确认三者必须组合，构成升序核执行的完整调用合同。
-- [WaitPreBlock](wait_pre_block.md)（`related`）：“完成初始化后才可以调用WaitPreBlock和NotifyNextBlock”规定 Wait 的初始化依赖；“WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合使用”从等待接口侧确认三接口共同维持 blockIdx 升序。
-<!-- cannbot:related:end -->

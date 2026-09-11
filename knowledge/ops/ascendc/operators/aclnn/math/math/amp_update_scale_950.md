@@ -460,9 +460,3 @@ FP32 不转换、FP16 使用标量 cast，因此编译期不分配 castBuf，UB 
 | 同步 | hard events + PIPE_V | 覆盖/读取顺序 | `Sync*`/BF16 branches |
 | 精度与尾块 | FP32 math、BF16 RINT | bit-level finite、单元素有效字节 | `IsFinite/StoreOutputData` |
 | 失败边界 | Host 拒绝非法输入 | 不依赖 unknown key | `Init/RunKernelTiling/entry` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AmpUpdateScale A2/A3 ACLNN 算子知识](amp_update_scale.md)（`same_topic`）：发现 Inf/NaN 时回退 scale；达到 growth interval 时在有限值保护下增长 scale；同步更新 tracker；foundInf 非零时回退 scale；成功计数达到 interval 时在有限值保护下增长 scale；更新 tracker。两端是同一 aclnnAmpUpdateScale 合约的 A2/A3 与 950 实现，语义和三条 dtype Route 对齐，平台构建接线不同。
-<!-- cannbot:related:end -->

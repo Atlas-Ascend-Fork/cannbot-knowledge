@@ -106,9 +106,3 @@ $$ offset = \sum_{k=0}^{i-1}{cntPerCore_k} + \sum_{k=0}^{j-1}{cntPerCore_{i,k}} 
 - 枢纽：[3d-gaussian-splatting](../algorithms/3d_gaussian_splatting.md)
 - 配套：[projection-3dgs](projection_3dgs.md)（投影 + 反视锥还原）
 - 跨域：[ascendc](../../../inference/concepts/frameworks/ascendc.md)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [3D Gaussian Splatting 昇腾 Atlas A2 训推优化实践](../algorithms/3d_gaussian_splatting.md)（`related`）：Culling（剔除）是渲染前的关键优化步骤：提前过滤对当前帧渲染无贡献的高斯球，减少后续投影/排序/Alpha-blending 计算量。`GaussianFilter` 把视锥剔除融合为单算子，host 定义见 ［`gaussian_filter.cpp`］(https://gitcode.com/cann/cann-recipes-spatial-intelligence/blob/92747ee512faebff6068704f893d19d622f7282a/ops/ascendc/kernels/op_host/gaussian_filter.cpp)，在 `projection_three_dims_gaussian_fused(...)` 内与投影一同调用。被 ［3d-gaussian-splatting］(../algorithms/3d_gaussian_splatting.md) 串联。；2. **投影 + 视锥剔除** `projection_three_dims_gaussian_fused(...)` —— 把 3D 高斯球的均值/协方差投影到 2D 平面（`means2d`/`conics`/`radius`/`covars2d`），并融合视锥剔除。投影见 ［projection-3dgs］(../kernels/projection_3dgs.md)，剔除（`GaussianFilter`）见 ［gaussian-filter］(../kernels/gaussian_filter.md)。。kernel 卡展开 GaussianFilter 的过滤和反向 Scatter，算法卡把它定位为投影阶段内的融合视锥剔除步骤。
-<!-- cannbot:related:end -->

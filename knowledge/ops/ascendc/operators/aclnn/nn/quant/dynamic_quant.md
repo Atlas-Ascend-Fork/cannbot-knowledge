@@ -871,9 +871,3 @@ if (ubAvail == 0U) {
 | 同步 | queue/pipe/event 模式 | DB ping-pong 与 pass boundary | 各 `Process` |
 | 精度与尾块 | FP32 extrema/scale，RINT→ROUND→TRUNC | INT4 packing、tail mask/pad | `Compute*` |
 | 失败边界 | 校验失败阻断 launch | INT64 group、unknown key、空 user workspace | `Check*`/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DynamicQuant 950 ACLNN 算子知识](dynamic_quant_950.md)（`same_topic`）：“｜ 计算语义 ｜ 对称/非对称；`pertoken`、`pertensor`、`perchannel`；可选 smooth，per-token MOE 可用 groupIndex；HiFloat8 可用 `dstTypeMax` 自定义量化范围。 ｜”定义 950 DynamicQuant V4 对象；“｜ 计算语义 ｜ 仅 per-token；对称：`s=max(abs(v))/Qmax, y=round(v/s)`；非对称：`s=max((max(v)-min(v))/(Qmax-Qmin), eps), offset=Qmax-max(v)/s, y=round(v/s+offset)`；`v=x*smooth`（有 smooth 时），MOE 用 `groupIndex` 选专家 smooth 行。 ｜”定义 A2/A3 V2 的同一核心量化合同，可用于跨平台功能矩阵和 route 迁移核验。
-<!-- cannbot:related:end -->

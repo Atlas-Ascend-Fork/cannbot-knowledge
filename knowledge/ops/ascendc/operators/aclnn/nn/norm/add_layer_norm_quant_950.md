@@ -802,9 +802,3 @@ if (1 == rowsPerCore_ && isDynamicQuant_) {
 | small-N scale | 每核 128 B 页 + 全核合并 | 仅 `rowsPerCore==1`；需 system workspace | `MergeOutScales` |
 | precision | FP32 统计/scale、RINT INT8 | 不得以输入 dtype 做均值方差或 max | 各 RegBase body |
 | platform | 950 V1 source closure | 不得把 V2 文档冲突推断成 950 V2 支持 | `CheckPlatform`,`AddConfig("ascend950")` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddLayerNormQuant A2/A3 ACLNN 算子知识](add_layer_norm_quant.md)（`same_topic`）：｜ 计算语义 ｜ 融合 `Add + LayerNorm + 1/2 路静态或动态量化`，可选回写加法结果 `x`。 ｜；｜ 计算语义 ｜ `a=x1+x2+bias`，`ln=(a-mean(a))/sqrt(var(a)+eps)*gamma+beta`，公开 A2/A3 域执行单路静态 per-tensor 量化 `y1=round_int8(ln*scale1+zeroPoint1)`，并输出 `layernormRes=ln`。 ｜。两卡共享 AddLayerNormQuant 融合语义，分别给出 950 V1 的静态/动态多路能力与 A2/A3 V2 的单路静态边界。
-<!-- cannbot:related:end -->

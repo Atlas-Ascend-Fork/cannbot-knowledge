@@ -83,10 +83,3 @@ inline half __bfloat162half_ru(const bfloat16_t x)
         dst[idx] = __bfloat162half_ru(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162half_ru_sat](_bfloat162half_ru_sat.md)（`same_topic`）：饱和模式下，将bfloat16类型数据转换为half类型数据，并遵循CAST_CEIL模式；遵循CAST_CEIL模式，将bfloat16类型数据转换为half类型数据。两端共享 BF16 到 half 的向上取整合同，sat 变体额外声明饱和模式；对照可核对同一转换的饱和与非饱和入口，避免误把后缀当作不同舍入方式。
-<!-- cannbot:related:end -->

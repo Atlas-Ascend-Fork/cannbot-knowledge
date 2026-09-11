@@ -60,9 +60,3 @@ trace 内未找到可在多流下保活 `.to()` 的改法；最终采用规避�
 
 - 曾把 507035 归因到 `hc_post` 算子本身的 bug，反复改 `hc_post` 无效。后经受控对照实验才确认 `hc_post` 只是读到被 `.to()` 损坏的 FP8 数据的受害者。
 - 曾怀疑 `aclnnCast` 单独坏掉，单独跑 `.to()` 在 NPU 流上正常——说明 `aclnnCast` 本身不坏，坏在"自定义 kernel 流 vs `.to()` 派发流"的跨流竞争。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DynamicBlockQuant 950 ACLNN 算子知识](../../operators/aclnn/nn/quant/dynamic_block_quant_950.md)（`related`）：焦点故障卡的规避要求是“让 kernel 直接产出模型期望的 dtype”，候选原生算子明确“950 为 FP8_E5M2/FP8_E4M3FN/HiFloat8”；使用其原生 FP8 输出可避开自定义 kernel 后再 `.to(FP8)` 的跨流 Cast 竞争。
-<!-- cannbot:related:end -->

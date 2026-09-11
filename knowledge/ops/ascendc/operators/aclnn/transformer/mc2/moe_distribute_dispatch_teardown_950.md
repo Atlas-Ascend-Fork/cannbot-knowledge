@@ -634,9 +634,3 @@ window token只搬入UB一次。scale helper直接对 queue tensor 在 `Align256
 | 同步 | Setup token→status提交、HardEvent、SyncAll、DCache维护 | 不提前status；不用局部PipeBarrier替代跨核/缓存可见性 | Setup Communication；SyncFunc/Wait/Update |
 | 精度与尾块 | 无cast；count按Gather/Sum/Reinterpret | q0写H×2B；q4写H×1B和偶数scale | QuantInit/CopyScales/LocalCopy |
 | 失败边界 | Host gate失败；unknown无写；poll无超时 | dormant key/arch22/文档冲突不算公开支持 | selector/base/router/docs |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeDistributeDispatchSetup 950 ACLNN 算子知识](moe_distribute_dispatch_setup_950.md)（`related`）：`SetStatus` 为每个专家生成 8 个 INT32（32 B）状态记录，其中偏移 1 是发送 token 数。`Communication` 把本 rank 数据写到本地 window，或为远端 rank 组装数据 SQE 和状态 SQE，写入 HBM SQ 后敲 JFS doorbell。公开文档明确 Setup 只发数据和状态，指令发出后立即退出；接收与后处理属于配套的 Teardown 算子。；｜ 计算语义 ｜ 等待 `MoeDistributeDispatchSetup` 发起的 EP AllToAllV 数据到达；按本 rank 的专家窗口重排收到的 token，拆出 MX scale，生成 combine 辅助前缀计数和本地专家 token 数 ｜Setup 的发送与状态协议由 Teardown 等待和消费，二者构成同一 950 EP AllToAllV dispatch 生命周期的生产者与消费者。
-<!-- cannbot:related:end -->

@@ -624,9 +624,3 @@ Host 先扣除 `P` 并向下对齐 32 字节；这是源码可见的资源预算
 | 同步 | queue、V barrier、V_MTE3、MTE3_MTE2 | depth-1 buffer 不得早覆盖 | 两个 `ComputeAndCopyOut` |
 | 精度与尾块 | widening NONE，narrowing RINT，tail exact bytes | round mode、M=U/4 和输入/输出字节宽度不能互换 | `ForeachCastND` |
 | 失败边界 | Host 校验构造唯一合法 key | 不依赖 Device fallback；A3 不支持；950 仅 50 active cores | `CheckOpInfo`; router; products table |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachCopy A2 ACLNN 算子知识](foreach_copy.md)（`same_topic`）：焦点卡写明“本卡只标记 A2”，候选卡写明“950 没有独立 arch35 body，复用活动 `arch22` Host 与公共 AIV source”。两卡覆盖同一 ForeachCopy 契约在 A2 与 950 的活动接线，950 复用 arch22 body 的事实可直接指导平台迁移与构建核查。
-<!-- cannbot:related:end -->

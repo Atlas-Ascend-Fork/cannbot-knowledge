@@ -103,9 +103,3 @@ P 端 KV block 的**释放时机**与跨节点 KV **传输完成**没有同步�
 
 - 修法 A（延迟释放 + 全-rank ACK 屏障 + 去重 + 同步握手四要件均为合并态 diff 事实，merge sha `6b188ededc6a234a286a440439ac419cc9efa64d`）：[vllm-ascend-pr-1691-0-9-1-pd-added-support-for-delay-free-blocks-in-prefill-nodes](https://github.com/vllm-project/vllm-ascend/pull/1691)
 - 修法 B（CDCP proxy 编排反转，先 select_decoder / do_remote_prefill=True、metaserver 回调再 select_prefiller）：merge sha `2c291bc63f24abde489e93d91af8f8f517d618d7` 属落地实现的合并态 diff，其 RFC 入口见下探链（issue-4842 仍 open）：[vllm-ascend-issue-4842-rfc-cdcp-scheduling-for-disaggregated-prefilling-with-kv-cache-layerwise](https://github.com/vllm-project/vllm-ascend/issues/4842)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [在线 PD 分离推理执行机制（Online PD-Disaggregated Inference）](../../concepts/frameworks/online_pd_inference.md)（`related`）：“P 端 KV block 的**释放时机**与跨节点 KV **传输完成**没有同步屏障”定位 pull 路径的竞态；“释放发生在后续 `_pop_inflight`”表明 Online PD 调度器把释放推迟到传输状态轮询之后，正好满足该生命周期约束。
-<!-- cannbot:related:end -->

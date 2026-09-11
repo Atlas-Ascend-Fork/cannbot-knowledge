@@ -164,12 +164,3 @@ int main()
 }
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscMmad](asc_mmad.md)（`related`）：本接口是Ascend C面向昇腾AI芯片的矩阵乘加（Mmad）核心计算接口；本接口需在矩阵乘加指令（asc_mmad、asc_mmad_mx）执行前调用，以此来确保模式配置在矩阵乘加计算过程中生效。；方向 M 配置是 asc_mmad 执行前的持久前置状态，直接决定结果分形生成顺序。
-- [AscSetMmadDirectionN](asc_set_mmad_direction_n.md)（`related`）：M 方向接口规定“如需切换为先沿列方向、再沿行方向生成矩阵计算结果分形，请重新调用asc_set_mmad_direction_n接口。”；N 方向接口反向规定“如需切换为先沿行方向、再沿列方向生成矩阵计算结果分形，请重新调用asc_set_mmad_direction_m接口。”，两端构成依搬出顺序切换结果生成方向的成对配置。
-- [UnitFlag](../../basic_api/cube_compute_isasi/mmad_compute_key_features/unit_flag.md)（`related`）：方向 M 卡把使用条件限定为“在开启UnitFlag的场景下，当L0C Buffer上结果分形的生成顺序与数据搬出指令的搬出顺序保持一致时，可以获得更好的性能表现”；UnitFlag 卡说明“Mmad 和 Fixpipe 接口的单元标志机制，以 L0C Buffer 512B 内存块为粒度实现精细化数据同步，降低同步延迟。”，解释方向配置为何必须与细粒度生产/消费顺序一致。
-<!-- cannbot:related:end -->

@@ -86,10 +86,3 @@ __simd_vf__ inline void InterleaveDeInterleaveVF(__ubuf__ T* dstAddr, __ubuf__ T
     }
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DeInterleave 两路写反——按偶索引到 dst0 修正](../../../../../runbooks/precision/deinterleave_dst0_is_even_lane_output.md)（`exemplifies`）：“将源操作数src0和src1中的元素解交织存入目的操作数dst0和dst1中。”定义基础操作；“变量语义与实际数据流相反：旋转公式把奇索引值当成 even 分量，把偶索引值当成 odd 分量”记录 dst0/dst1 误命名后的精度故障，能把接口语义落实到 lane 排障。
-<!-- cannbot:related:end -->

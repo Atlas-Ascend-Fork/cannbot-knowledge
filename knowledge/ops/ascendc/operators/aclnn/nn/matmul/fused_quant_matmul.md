@@ -666,9 +666,3 @@ using epilogueClass = typename EpilogueTypeTraits<fusedOpType>::Type;
 | 同步 | C2V/V2C 双向反压可复用 | flags 4/5/6/7、pipe 类型、前两次免 wait与之后 wait 必须一致 | `BasicMMCVFusionCompute` |
 | 精度与尾块 | common dequant + compile-time GELU可复用 | INT32/float bias 次序、FP32 GELU、CAST_RINT、M/N有效写回不能改 | `EpilogueDequantCommon`、两种 GELU class |
 | 失败边界 | capability→priority 2→basic route链可复用 | 950、不支持 enum、mixed dtype、非零 groupSize不得静默落入此 route | `FusedQuantMatMulTilingFunc`、`AnalyzeAttrs` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FusedQuantMatmulWeightNz A2/A3 ACLNN 算子知识](fused_quant_matmul_weight_nz.md)（`related`）：INT8×INT8 或 INT4×INT4 的 batch matmul；INT32 累加，逐 token `x1Scale` 与逐通道/逐 tensor `x2Scale` 反量化，可选 bias，随后融合 `gelu_tanh` 或 `gelu_erf`；int8/int4 矩阵乘的 int32 累加，经 `x2Scale` 与逐 token `x1Scale` 反量化，按 bias dtype 在 MM 或 Vector 侧加 bias，再执行 `gelu_tanh` 或 `gelu_erf`。两卡共享低比特矩阵乘、INT32 累加、双尺度反量化、bias 与 GELU 融合的计算链，WeightNz 版本进一步规定 x2 的 FRACTAL_NZ 物理存储和专用公开入口，适合用于权重布局选型。
-<!-- cannbot:related:end -->

@@ -79,10 +79,3 @@ __aicore__ inline void asc_sync_inter_wait(pipe_t pipe,
 ## 调用示例
 
 `asc_sync_inter_wait`需与`asc_sync_inter_arrive`配对使用，具体调用示例请参考[asc_sync_inter_arrive调用示例](asc_sync_inter_arrive.md#调用示例)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscSyncInterArrive](asc_sync_inter_arrive.md)（`related`）：必须保证配套使用asc_sync_inter_arrive和asc_sync_inter_wait，否则会出现未定义行为。；核间同步指令，与asc_sync_inter_arrive配合使用（通过flag_id关联），用于组间block的信号同步。。双方正文都把另一端规定为必需配对，并以同一 flag_id 承载组间 block 信号；arrive 发布信号而 wait 等待信号，属于有顺序的互补同步任务。
-<!-- cannbot:related:end -->

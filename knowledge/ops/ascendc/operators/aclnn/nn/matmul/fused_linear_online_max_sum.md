@@ -809,9 +809,3 @@ R-003 与 R-004 的数值统计和 target 路径相同；区别仅为 R-003 清�
 | 同步 | flag5生产完成、flag6/7槽复用、三次全核barrier | PIPE_FIX/PIPE_MTE3方向、pp轮次和AIC:AIV=1:2必须成对保持 | `CVProcess` |
 | 精度与尾块 | 16-bit Matmul GM C→FP32在线统计；N tail `-inf`；M按两AIV分半 | 不得把文档闭区间替代Device `>=end`；INT64→FP32风险需保留 | `SetDataCopyPadParamsAndInit/TargetInnerProcess` |
 | 失败边界 | M=0 Host终止；unknown key无输出；资源无fallback | 不得补造950构建或自动fallback | ACLNN entry/kernel entry/CMake |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](fused_linear_cross_entropy_loss_grad.md)（`related`）：“省显存路线不物化完整 softmax 输入，而是按 `［baseBT,baseV］` 块执行：”明确给出左端事实；“｜ 输入输出 ｜ input/weight 为 FP16 或 BF16 ND；target 为 INT32/INT64；三个统计输出 FP32，mask UINT8，masked target 同 target，可选完整 logits 同 input dtype ｜”明确给出右端事实。OnlineMaxSum 生成行 max、sum-exp、target mask 与 masked target；Grad 的省显存路线直接消费这些统计量重建 softmax 梯度并计算 input/weight grad。
-<!-- cannbot:related:end -->

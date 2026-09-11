@@ -158,9 +158,3 @@ target_compile_options(demo PRIVATE
 ## 误诊
 
 - agent 第一反应曾怀疑"impl 文件在 `x86_64-linux` 子目录、include 路径指错 arch 子目录"（reasoning 口述，`agent_reported`），后经 `ls` 确认 `asc` 是符号链接、`x86_64-linux/asc` 与 `asc` 同址，排除该猜测。真实根因是 include **根层级**选错（缺 `impl/` 解析能力），而非 arch 子目录错配。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMD语言扩展层C API](../../guides/programming_guide/language_extension/simd_language_extension_c_api.md)（`related`）：包含asc_simd.h文件来调用C API相应接口。如无特殊说明，包含该头文件即可满足接口调用需求。；include 根是 `asc/`（覆盖并列的 `include/` 与 `impl/`），**不是** `asc/include`、也**不是** `asc/impl`。；指南确定用户要包含 asc_simd.h，排障卡进一步规定 CMake 必须让该公共头及其 impl 依赖同时可解析，补齐 950 工程从 include 指令到 include 根的配置。
-<!-- cannbot:related:end -->

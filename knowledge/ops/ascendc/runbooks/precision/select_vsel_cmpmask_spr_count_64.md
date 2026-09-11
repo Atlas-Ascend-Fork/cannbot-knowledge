@@ -53,14 +53,3 @@ platforms: ["950"]
 
 - 推断 a2/a3 同名 API 行为可能不同（不同 arch 的 `kernel_operator_vec_sel_impl.h` 实现），未在本 trace 验证，可迁移需查对应 arch 头文件。
 - count ≤ repeatElm（float 即 ≤64）时两模式行为一致，本卡结论不适用。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CeilDivision](../../apis/utils_api/cpp_stdlib/math_functions/ceil_division.md)（`exemplifies`）：“计算两个整数num1和num2相除后向上取整结果。”给出 CeilDivision 的整数合同；“repeatTime = CeilDivision(calCount, 64)”展示 Select 故障判读中如何用它计算 repeat 数，Runbook 的错误复现与源码解释直接依赖该 API。
-- [GetVecLen](../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_vec_len.md)（`exemplifies`）：焦点接口用于“获取RegTensor位宽VL（Vector Length）的大小。”，候选卡把它用于明确决策：“对 count 大于 GetVecLen/sizeof(T) 的场景，`VSEL_TENSOR_TENSOR_MODE` 是唯一逐 repeat 重载掩码的正确模式。”；VL 直接决定 Select 是否跨 repeat 以及应选的修复模式。
-- [arch35 count Compare Select 异步VF 存读 RAW](arch35_count_compare_select_vf_raw.md)（`related`）：`Compare` 本身把完整掩码 per repeat 正确写入 bMask；错在 Select 的 VEC_LOAD 早于 Compare 的 VEC_STORE 提交；两卡区分了首段 mask 复用与 Compare→Select 异步存读 RAW 两种可并存故障，组成分层诊断链。
-- [arch35 分块 Select 掩码偏移非 32B 对齐崩溃 507035](../compilation/arch35_select_32b_507035.md)（`related`）：507035 Runbook记录“尝试把单次 `Select(VSEL_CMPMASK_SPR)` 改为分块循环”；精度 Runbook 的预防规则是“arch35 上 `Select` 的 count 大于 GetVecLen/sizeof(T) 时禁用 `VSEL_CMPMASK_SPR`，统一用 `VSEL_TENSOR_TENSOR_MODE`”。前者是为绕过首 mask 重用而采用的失败分块路线，后者给出根问题的正确 mode 切换。
-- [Select CMPMASK_SPR 模式致混合分支误选](select_cmpmask_spr.md)（`same_topic`）：错在 `SelectMode0Level2` 只读首段。；改 MODE 后 PyTorch ST 失败数 116 降至 3；前者给出实现级根因，后者用模式替换回归验证同一故障与修复。
-- [arch35 Select VSEL_CMPMASK_SPR 每 64 元素复用](arch35_select_vsel_cmpmask_spr_mask_reuse_count_over_64.md)（`same_topic`）：错误位置 pos % 64 集中于 44, 55, 56, 12, 31 等固定偏移；当 `count_padded > 64` 时跨 64 元素块掩码错配；两卡用独立探针收敛到同一 arch35 Select 模式 0 掩码复用机制。
-<!-- cannbot:related:end -->

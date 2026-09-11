@@ -929,9 +929,3 @@ Host 先按真实的 18 个 FP32 TBuf 预算得到单 tile 最大元素数，再
 | 同步 | tile event + bias `SyncAll` + pass event | schedule mode 1、producer 完成后才能消费/覆盖 | `Process`, sync helpers |
 | 精度与尾块 | FP16 输入升 FP32、bias 延迟降精度 | half `CAST_NONE`、实际 N/flat tail、FP32 tree 顺序 | `Load/StoreDgatesResults`, `BinarySum`, `CastDgatesBack` |
 | 失败边界 | Host dtype/shape/format 失败，无 Device fallback | optional 名称不能解释为可传空，unknown key 不可用 | `CheckParams`, entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ThnnFusedLstmCell A2/A3 ACLNN 算子知识](thnn_fused_lstm_cell.md)（`same_topic`）：“｜ `storageOut` ｜ `［B,4H］`，ND ｜ 与 `inputGates` 相同 ｜ 必选；保存四门激活供反向使用；固定 Device 物理次序 `［i,f,g,o］` ｜”与“｜ `storage` ｜ `［B,4H］` / ND ｜ 同上 ｜ 每行依次为 `i/f/j/o` 四门激活值 ｜”提供双方正文证据。前向输出 storage 是反向接口直接消费的门激活，双方还共同暴露固定四门物理次序，连接前向产物接线与反向梯度计算。
-<!-- cannbot:related:end -->

@@ -666,9 +666,3 @@ __aicore__ inline void ComputePerCast(
 | 同步 | Queue 生命周期 + Vector barrier | Muls→Sub、Cast→Axpy→Cast、Axpy→copy 顺序 | adapters、`InnerComputer`、`KernelForeachUnary` |
 | 精度与尾块 | FP16/INT32 原 dtype；FP32 Axpy；BF16 FP32/RINT；GM tail 精确字节 | 不得把 UB 对齐 extra lane 写回 GM；BF16 两级 remainder | `CopyIn/CopyOut`、`ComputePerCast` |
 | 失败边界 | dtype、shape、Tensor count、UB/core 上限 | key 0/编译 guard 无 fallback；TensorList 必须 `<=50` | `CheckOpInfo`、`Init`、entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachSubList 950 ACLNN 算子知识](foreach_sub_list_950.md)（`same_topic`）：设列表长度为 `n`，`E_i = numel(x1_i)`。有效域为 `0 <= i < n`、`0 <= j < E_i`：；设列表长度 `n`，第 `i` 个 Tensor 元素数为 `E_i`。在 `0<=i<n`、`0<=j<E_i` 上：；两卡随后给出相同的 y_i 等于 x1_i 减 alpha 乘 x2_i 语义与 V2 ACLNN 入口，分别实现 950 SIMT 路线和 A2/A3 AIV Vector 路线。
-<!-- cannbot:related:end -->

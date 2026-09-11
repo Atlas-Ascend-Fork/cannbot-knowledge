@@ -99,11 +99,3 @@ if (tiling.isBias) {
 mm.IterateAll(gm_c);
 mm.End();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Batch Matmul复用Bias矩阵](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/batch_matmul_reuse_bias.md)（`explains`）：若不同Batch的计算使用的Bias数据相同，则多Batch计算可以复用同一个Bias矩阵，如下图所示，此场景中调用SetBias接口时，只需设置一个1 * singleCoreN大小的Bias矩阵。 在Matmul Tiling计算中，必须配置TCubeTiling结构中的isBias参数为1，即启用Bias后，才能调用本接口设置Bias矩阵。 指南确定复用时只传一个 N 维 Bias，API 合同补充 Tiling 必须先启用 Bias，形成完整调用配置。
-- [SetBias](../matmul_tiling/set_bias.md)（`related`）：在Matmul Tiling计算中，必须配置TCubeTiling结构中的isBias参数为1，即启用Bias后，才能调用本接口设置Bias矩阵。；EnableBias接口功能与该接口相同，建议使用EnableBias。 设置Bias是否参与运算。；Kernel 侧 SetBias 的合法调用以前置 Tiling 启用 isBias 为硬条件，Tiling 侧 SetBias 或推荐的 EnableBias 正是设置该参与标志的入口。
-<!-- cannbot:related:end -->

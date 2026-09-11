@@ -730,9 +730,3 @@ if (GetBlockIdx() == 0) {
 | 同步 | LocalMemBar/MTE event/SyncAll | Split workspace可见性、Single gather barrier | body helpers |
 | 精度与尾块 | FP32 Add/rstd/y1，B16 x/y2 | mask、zero pad、cast trait | reduce/common helpers |
 | 失败边界 | minimal split 不入 UB→失败；空域199 | 不把 arch35 路径单独当公开证据 | selector/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddRmsNormCast A2/A3 ACLNN 算子知识](add_rms_norm_cast.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnAddRmsNormCastGetWorkspaceSize` + `aclnnAddRmsNormCast`，公开两段式 ACLNN；950 使用同一无版本后缀入口的 arch35/regbase 最新公开实现。 ｜；｜ 实际入口 ｜ `aclnnAddRmsNormCastGetWorkspaceSize` + `aclnnAddRmsNormCast`，公开两段式 ACLNN；固定仓未暴露版本后缀，提取该公开入口的当前实现。 ｜；双方闭合同一无版本后缀 ACLNN 入口，分别描述 950 arch35 与 A2/A3 实现。
-<!-- cannbot:related:end -->

@@ -1074,9 +1074,3 @@ block 0 先清零输出并全核同步。各核在本地 FP32 累加 N 行，最
 | 同步 | Queue、PIPE_V、MTE2_S/S_V/V_S/MTE3_S、SyncAll | ordered token 只能在 Atomic DMA 完成后递增 | `CopyOut*InOrder` |
 | 精度与尾块 | FP16/BF16 升 FP32；FP16 `CAST_NONE`、BF16 `CAST_RINT` | D/merge/repeat tail 的有效元素数 | `MainComputeWithCast`、`DataCopyCustom` |
 | 失败边界 | shape/dtype 检查与三个 cut key | unknown key、950 unsupported、文档空 Tensor 冲突 | `CheckInputOutputShape*`、router、README |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DeepNorm A2/A3 ACLNN 算子知识](deep_norm.md)（`related`）：｜ 计算语义 ｜ 对每个归一化行先算 `x' = alpha*x + gx`，再算 `mean=Σx'/D`、`rstd=1/sqrt(Σ(x'-mean)^2/D+epsilon)`、`y=(x'-mean)*rstd*gamma+beta`。 ｜；｜ 计算语义 ｜ 将输入展平为 `［N,D］`，计算 DeepNorm 对 `x/gx/gamma/beta` 的反向梯度 `dx/dgx/dgamma/dbeta` ｜。DeepNorm 卡定义前向归一化与 mean/rstd，DeepNormGrad 卡消费该运算语义并计算 x、gx、gamma、beta 的反向梯度，是同一训练算子链的前后向节点。
-<!-- cannbot:related:end -->

@@ -74,7 +74,7 @@ runbooks 挖掘的**mine 执行子 agent**。上下文只含**一条** trace：�
 ### 完成标准
 
 - reconstruction + manifest + 全部 DRAFT 已写入暂存目录（0 张时 manifest 记 `candidates: []` + skipped 理由）。
-- 草稿 schema 合规（只豁免文件名 `DRAFT-*` 非纯 slug；草稿不包含受管关系块，runbooks-contract 其余约束全过）。
+- 草稿 schema 合规（只豁免文件名 `DRAFT-*` 非纯 slug；不要求额外关系章节，runbooks-contract 其余约束全过）。
 - 每张草稿验证信号仅含本 trace 内 `tool_observed|artifact_verified` 事件。
 - 无 runbooks 库读取、无知识卡目录写入。
 

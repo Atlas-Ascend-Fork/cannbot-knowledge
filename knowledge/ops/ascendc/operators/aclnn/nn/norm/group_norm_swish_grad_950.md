@@ -586,9 +586,3 @@ for (uint16_t i = 0; i < pairRepeatTimes; i++) {
 | 同步 | MTE events, pipe barriers, LocalMemBar, SyncAll | producer-consumer direction | VF/copy/stage2 helpers |
 | 精度与尾块 | FP32 math, Kahan stage2, masks | CAST modes, mask decrement, tail counts | `Swish*Vf/KahanAccumulateVf` |
 | 失败边界 | ordered UB fallback | capacity 0/unknown key/Init return bug | Host selector/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupNormSwishGrad A2/A3 ACLNN 算子知识](group_norm_swish_grad.md)（`same_topic`）：固定仓只公开该无版本后缀 API，未发现更新版本。文档明确支持 Atlas A2/A3 训练/推理；`GroupNormSwishGrad` OpDef 注册 `ascend910b` 和 `ascend910_93`，两份 binary config 均提供 FP32/FP16/BF16。；固定仓只有无版本后缀的公开 API，文档明确 Ascend 950PR/950DT 支持且默认确定性。；两卡闭合同一无版本 GroupNormSwishGrad 逻辑算子在 A2/A3 与 950 的平台实现。
-<!-- cannbot:related:end -->

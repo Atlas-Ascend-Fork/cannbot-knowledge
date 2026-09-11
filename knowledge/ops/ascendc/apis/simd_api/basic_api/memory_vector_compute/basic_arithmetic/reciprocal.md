@@ -235,10 +235,3 @@ ReciprocalAlgo::INTRINSIC为默认算法。--cce-ftz=false时保留Subnormal；-
 输入数据srcLocal：[-7.152 -7.24 1.771 ... -1.339 4.473]
 输出数据dstLocal：[-0.1396 -0.1382 0.5645 ... -0.748 0.2231]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reciprocal 低精度致 sigmoid 比对失败](../../../../../runbooks/precision/reciprocal_sigmoid.md)（`exemplifies`）：焦点卡把误差单点归因到“`AscendC::Reciprocal(yLocal, tmp, count)`”，候选卡规定该接口“计算公式 dst_i = 1/src_i”；接口正是 sigmoid 最后一步倒数的实现点，runbook补充 A2 严格精度下应改 Duplicate+Div 的验证边界。
-<!-- cannbot:related:end -->

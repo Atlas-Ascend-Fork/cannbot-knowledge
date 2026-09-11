@@ -83,10 +83,3 @@ inline bfloat16_t __uint2bfloat16_rn(const unsigned int x)
         dst[idx] = __uint2bfloat16_rn(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__uint2bfloat16_rna](_uint2bfloat16_rna.md)（`related`）：“特殊值：0→0；257→256；514→512”给出焦点端事实；“特殊值：0→0；257→258；4294967295（UINT32_MAX）→4294967296。”给出候选端事实。两端用同一输入 257 给出不同结果，直接呈现 RINT 与 ROUND 的舍入选择差异，能够用于转换接口选型和边界值验证。
-<!-- cannbot:related:end -->

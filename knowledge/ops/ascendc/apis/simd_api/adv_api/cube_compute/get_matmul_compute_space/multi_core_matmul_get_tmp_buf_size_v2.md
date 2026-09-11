@@ -66,10 +66,3 @@ AscendC::tiling::TCubeTiling tilingData;
 SysTilingTempBufSize bufSize;
 MultiCoreMatmulGetTmpBufSizeV2(tilingData, bufSize);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MultiCoreMatmulGetTmpBufSize](multi_core_matmul_get_tmp_buf_size.md)（`same_topic`）：多核Matmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。；TCubeTiling为Kernel侧定义的Matmul TilingData，与入参为带AscendC::tiling命名空间的TCubeTiling结构体的GetTiling接口配合使用。。两卡描述同一多核 Matmul 临时空间查询契约，V2 进一步限定 TCubeTiling 与带 AscendC::tiling 命名空间的 GetTiling 配对。
-<!-- cannbot:related:end -->

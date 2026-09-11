@@ -89,10 +89,3 @@ bool isReuseSource = false;
 AscendC::GetReduceAllMaxMinTmpSize(
     shape, AscendC::TensorDataType::DT_FLOAT, AscendC::ReducePattern::AR, isSrcInnerPad, isReuseSource, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceAll](reduce_all.md)（`related`）：host侧Tiling接口，用于获取ReduceAll接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetReduceAllMaxMinTmpSize获取。模板参数isReuseSource预留（传false）。。Host 查询接口产出临时空间范围，Kernel ReduceAll 重载直接消费这项大小决策。
-<!-- cannbot:related:end -->

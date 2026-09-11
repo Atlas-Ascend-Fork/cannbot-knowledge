@@ -57,10 +57,3 @@ OpDef算子定义，OpDef请参考[OpDef](index.md)。
 
 无
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetInferShape](set_infer_shape.md)（`same_topic`）：使用图模式时，需要调用该接口注册DataType推导函数。 使用图模式时，需要调用该接口注册Shape推导函数。 图模式 OpDef 分别需要 dtype 和 shape 推导注册，两接口共同闭合输出元数据推导。
-<!-- cannbot:related:end -->

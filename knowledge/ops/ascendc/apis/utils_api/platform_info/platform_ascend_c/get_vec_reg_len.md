@@ -57,17 +57,5 @@ void GetLayerNormMaxMinTmpSize(...)
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [AddRmsNormDynamicQuant 950 Direct Invoke 算子知识](../../../../operators/direct/nn/norm/add_rms_norm_dynamic_quant_950.md)（`related`）：算子正文包含对 `GetVecRegLen(...)` 的直接调用；本卡提供该接口契约。
-- [GroupNorm 950 Direct Invoke 算子知识](../../../../operators/direct/nn/norm/group_norm_950.md)（`related`）：算子正文包含对 `GetVecRegLen(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AddRmsNormDynamicQuant 950 Direct Invoke 算子知识](../../../../operators/direct/nn/norm/add_rms_norm_dynamic_quant_950.md)
+- [GroupNorm 950 Direct Invoke 算子知识](../../../../operators/direct/nn/norm/group_norm_950.md)

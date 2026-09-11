@@ -281,10 +281,3 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 5.  重复2-4步骤，完成矩阵块a1 \* b1的计算；
 6.  数据从矩阵块co2搬到矩阵块C：DataCopy每次搬运一块singleCoreM \* singleCoreN的矩阵块co2到矩阵块C中；
 7.  重复1-6步骤，完成矩阵A \* B = C的计算。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`related`）：Ascend C提供一组Matmul高阶API，方便用户快速实现Matmul矩阵乘法的运算操作。；本接口用于在编译期间获取常量化的Matmul Tiling参数。前者定义 Matmul 高阶 API 的计算任务，后者把其 shape 与模板配置固化为编译期 Tiling，形成从矩阵计算到常量化优化的连续步骤。
-<!-- cannbot:related:end -->

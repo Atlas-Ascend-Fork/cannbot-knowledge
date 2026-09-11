@@ -102,10 +102,3 @@ x：0.25, 0.75, 1.25, 1.75
 result: 0.5 0.75 0.625 0.875
 exp_out: -1 0 1 1
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ldexpf](ldexpf.md)（`related`）：功能：获取输入x乘以2的exp次幂的结果。；功能：将x转换为归一化1/2, 1)的有符号数乘以2的积分幂。返回归一化的有符号数，指数存储在exp中。Ldexpf 用尾数和指数合成数值，Frexpf 把数值分解为同一表示，构成二进制指数表示的正反任务链。
-<!-- cannbot:related:end -->

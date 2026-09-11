@@ -164,10 +164,3 @@ void GetLayerNormGradBetaNDTilingInfo(const AscendC::TensorShape srcShape, const
         }
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LayerNormGradBeta](layer_norm_grad_beta.md)（`related`）：“host侧Tiling接口，用于获取LayerNormGradBeta kernel计算所需的Tiling参数，分两步：通过GetLayerNormGradBetaMaxMinTmpSize获取最大和最小临时空间大小；通过GetLayerNormGradBetaNDTilingInfo获取kernel侧所需tiling参数。”；“获取LayerNorm反向传播的gamma和beta梯度，与LayerNormGrad配合使用。接收LayerNormGrad输出的resForGamma和上游梯度inputDy，计算并输出pd_gamma和pd_beta。”。Host 两步 tiling产出 LayerNormGradBeta kernel 所需临时空间和切分结构，kernel 再消费 resForGamma 与 inputDy 计算梯度。
-<!-- cannbot:related:end -->

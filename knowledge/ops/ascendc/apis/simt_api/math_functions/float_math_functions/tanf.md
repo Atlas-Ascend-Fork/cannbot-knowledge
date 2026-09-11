@@ -101,8 +101,4 @@ result: 0.2553419 0.9315965 3.00957 -5.52038
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachTan 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)（`related`）：“950 FP32 路线直接执行 `tanf(float)`；FP16/BF16 路线严格按 source 顺序执行低精度→FP32、`tanf`、FP32→低精度。”明确三条 950 route 的共同计算 primitive；“函数原型：float tanf(float x)”给出该 primitive 的标量签名。
-<!-- cannbot:related:end -->
+- [ForeachTan 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)

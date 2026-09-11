@@ -53,10 +53,3 @@ matmul_tiling::MatmulApiTiling tiling(ascendcPlatform);
 
 tiling.EnableBias(true); // 设置Bias是否参与运算
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetBias](set_bias.md)（`same_topic`）：“EnableBias接口功能与该接口相同，建议使用EnableBias。 设置Bias是否参与运算。”明确旧接口的等价替代；“设置Bias是否参与运算，设置的信息必须与Kernel侧保持一致。”补充新接口的 Kernel 一致性合同，二者是同一配置决策的迁移前后版本。
-<!-- cannbot:related:end -->

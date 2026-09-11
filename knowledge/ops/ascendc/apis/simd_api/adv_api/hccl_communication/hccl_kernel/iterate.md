@@ -133,11 +133,3 @@ extern "C" __global__ __aicore__ void alltoallv_custom(
     hccl.Finalize();
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HCCL集合通信Wait](wait.md)（`related`）：阻塞AI Core，非［细粒度通信］(iterate.md)时，等待handleId对应的通信任务完成，［细粒度通信］(iterate.md)时，等待handleId对应的步长长度的子通信任务完成。；sync（输入）：bool类型。是否需要等待当前通信步骤完成再进行后续计算或通信任务，参数取值如下：true：默认值，表示阻塞并等待当前通信步骤完成。该参数取值为true时，无需再调用Wait接口等待通信任务完成。两接口通过 Iterate 的 sync 选择共同决定每个细粒度步骤是否另行 Wait。
-- [SetStepSize](../hccl_tiling/set_step_size.md)（`related`）：Iterate 卡指出“seqSliceLen（输入）：seqSlices数组的长度。根据算法的通信步长及算法逻辑，取每一步通信需要保存的数据块索引个数为该数组长度。”；SetStepSize 卡用于“设置细粒度通信时，每次通信的步长。”。Tiling 步长决定 Iterate 每次推进和保存的算法步骤边界。
-<!-- cannbot:related:end -->

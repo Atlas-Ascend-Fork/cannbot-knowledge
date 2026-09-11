@@ -538,9 +538,3 @@ maxCastDataCount = S/4 FP32 elements
 | 同步 | Queue 生命周期 + PIPE_V barriers | 原地 FP32 Mul 前后 barrier 不可删除 | `InnerComputer::Compute` |
 | 精度与尾块 | 原 dtype路线；BF16 FP32 Mul + RINT；DMA tail 按字节 | cast 顺序、round mode、valid count | `ComputePerCast`、`CopyIn/CopyOut` |
 | 失败边界 | Host 拒绝列表/shape/dtype/维数错误 | 不得把未知 dtype/key 或 >50 Tensor 推成 fallback | `CheckOpInfo`、entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMulList 950 ACLNN 算子知识](foreach_mul_list_950.md)（`same_topic`）：实际入口 ｜ `aclnnForeachMulListGetWorkspaceSize` + `aclnnForeachMulList`，无版本后缀的公开两段式 ACLNN；实际入口 ｜ `aclnnForeachMulListGetWorkspaceSize` + `aclnnForeachMulList`，无版本后缀公开 ACLNN。两卡闭合同一公开入口在 A2/A3 与 950 上的不同 Host、Tiling 和 Device 路线。
-<!-- cannbot:related:end -->

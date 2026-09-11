@@ -537,8 +537,4 @@ this->mxScaleQueue_.template EnQue(mxScale);
 | 精度与尾块 | 两 scale 算法、RINT SAT、zero/Inf、列 mask | FP16/BF16 路径顺序、32-row scale、奇数平面 pad | `ComputeOCP`; `ComputecuBLAS` |
 | 失败边界 | Host/Tiling 拒绝非法属性；Device assert groupIndex | 无 fallback，不得静默接受非 0/1 或非零 dstTypeMax | `GetAttr`; `Process` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Interleave](../../../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange_isasi/interleave.md)（`related`）：“｜ Scale layout ｜ `Duplicate`+`Interleave` ｜ calcBuf ｜ mxScaleQueue ｜ 两个 32-row scale 平面 ｜ 奇数平面补零；行尾按实际 `blockCount` ｜”；“将两个源操作数中的元素交织存入两个结果操作数中，要求元素个数为偶数。”。operator 用 Interleave 把成对 E8M0 scale 平面排成 mxscale 尾维 2，奇数平面补零正好满足接口偶数约束。
-<!-- cannbot:related:end -->
+- [Interleave](../../../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange_isasi/interleave.md)

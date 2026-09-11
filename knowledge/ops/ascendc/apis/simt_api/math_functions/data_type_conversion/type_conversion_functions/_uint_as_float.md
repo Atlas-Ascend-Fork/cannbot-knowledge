@@ -86,10 +86,3 @@ inline float __uint_as_float(const unsigned int x)
         dst[idx] = __uint_as_float(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float_as_uint](_float_as_uint.md)（`same_topic`）：功能：将无符号整数中的位重新解释为浮点数，即将无符号整数存储的位按照float的格式进行读取。；功能：将浮点数中的位重新解释为无符号整数，即将浮点数存储的位按照无符号整数的格式进行读取。。两端对同一 32 位存储做方向相反的 uint/float 位重解释，不进行数值舍入；联合阅读可完成编码与还原。
-<!-- cannbot:related:end -->

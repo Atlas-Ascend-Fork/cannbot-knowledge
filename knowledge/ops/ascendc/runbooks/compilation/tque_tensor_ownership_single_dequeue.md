@@ -116,10 +116,3 @@ inQueueGamma.FreeTensor(inQueueGamma.DeQue<T>())
 
 - 为每个队列写出唯一生产者和唯一消费者。
 - code review 时按 tensor 画出 `Alloc→EnQue→DeQue→Free` 链，并核对循环次数。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FreeTensor早释使队列别名被下一轮DMA覆盖](../precision/reinterpret_tensor_alias_must_outlive_queue_release.md)（`related`）：`FreeTensor` 把该队列槽标为可复用，不表示所有持有它的视图已经完成消费。下一子 tile 的 `AllocTensor + DataCopyPad` 可以用 MTE2 覆盖同一 UB，而前一 tile 的 V 流水仍在读取，于是产生真正的数据竞争：有时读到 NaN，有时读到错误有限值，表现随运行时序变化。；队列所有权还要求一个已入队 tensor 只被一个消费者出队一次；如果 `Compute` 已消费 x，外层循环再次 `DeQue` 就破坏 `Alloc→EnQue→DeQue→Free` 的一一对应关系。；焦点说明槽位释放后的复用，目标补齐单次 DeQue 与唯一消费者的所有权约束。
-- [TQue 输入未释放导致循环 AllocTensor 卡死](tque_dequeue_must_end_with_freetensor.md)（`related`）：队列所有权还要求一个已入队 tensor 只被一个消费者出队一次；如果 `Compute` 已消费 x，外层循环再次 `DeQue` 就破坏 `Alloc→EnQue→DeQue→Free` 的一一对应关系。；`DeQue` 只把已入队 Tensor 交给消费者，不等于把底层 buffer 归还给队列；循环在消费完成后遗漏 `FreeTensor`，有限 depth 的输入 buffer 被逐轮占用，后续 `AllocTensor` 无空闲 buffer 可分配而无进展。两卡分别覆盖重复出队/临时值编译错误与漏释放运行期卡死，共同闭合同一 TQue 所有权生命周期审计。
-<!-- cannbot:related:end -->

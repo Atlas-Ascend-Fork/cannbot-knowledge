@@ -101,11 +101,3 @@ cache_nope = torch_npu._C._construct_NPU_Tensor_From_Storage_And_Metadata(metada
 
 - **gap（外部仓）**：SHMEM kernel 级实现（MTE/xDMA/SDMA 引擎封装、`aclshmem_init`/`aclshmem_finialize`/`aclshmem_create_tensor` 等运行时细节）在外部 `cann/shmem` 仓，cann-recipes-infer 未含。
 - **接口名记法**：`GetShmemDataAddr`/`GetShmemSignalAddr`/`shmem_ub_put_nbi_new`/`aclshmem_malloc`/`MemType.HOST_SIDE` 均按 guide 文档原拼写记录；guide 代码片段为示意（省略号略去细节）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HIXL（Huawei Xfer Library 单边零拷贝通信库）](hixl.md)（`related`）：HIXL 基于 SHMEM 全局统一编址，通过 SDMA 直接访问远端 DRAM。
-- [KVCache Offload](kvcache_offload.md)（`related`）：SHMEM 支持 NPU HBM 与 CPU DDR 混合编址，可为卸载到 Host 的 KV Cache 提供映射访问机制。
-- [基于 SHMEM 重写的 MoE Dispatch&Combine](shmem_dispatch_combine.md)（`related`）：SHMEM Dispatch/Combine 使用对称 win 中的数据区、紧随其后的状态区及 put/signal/wait 完成通算同步。
-<!-- cannbot:related:end -->

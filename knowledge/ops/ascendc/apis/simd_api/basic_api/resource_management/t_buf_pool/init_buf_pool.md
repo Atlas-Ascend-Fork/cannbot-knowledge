@@ -183,10 +183,3 @@ tbufPool2.Reset();
 tbufPool0.Reset();
 pipe->Reset();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InitBuffer](init_buffer.md)（`related`）：调用TBufPool::InitBuffer接口为TQue/TBuf进行内存分配；整块TbufPool资源可以继续通过TBufPool::InitBufPool接口划分成小块资源；先划分子池再从子池为队列或临时缓冲分配内存，构成同一资源生命周期的相邻步骤。
-<!-- cannbot:related:end -->

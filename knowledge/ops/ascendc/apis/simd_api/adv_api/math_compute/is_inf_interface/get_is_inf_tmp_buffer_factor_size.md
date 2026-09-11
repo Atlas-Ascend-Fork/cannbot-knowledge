@@ -74,10 +74,3 @@ uint32_t extraBuf = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetIsInfTmpBufferFactorSize(plat, typeSize, maxLivedNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetIsInfMaxMinTmpSize](get_is_inf_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取IsInf接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；获取IsInf接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。。两接口分别从 shape 求临时空间上下界、从固定临时空间反推单次元素量，构成 IsInf Tiling 的两种互补容量计算路径。
-<!-- cannbot:related:end -->

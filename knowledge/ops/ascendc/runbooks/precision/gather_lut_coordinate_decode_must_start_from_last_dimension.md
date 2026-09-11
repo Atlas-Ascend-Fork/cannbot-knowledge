@@ -218,10 +218,3 @@ static void build_offset_luts(const at::Tensor &x, const at::Tensor &index,
 ## 误诊
 
 剩余的 int8 随机输入异常和后续 `torch.Size` 比较 TypeError 都来自测试脚手架，不是本卡的 kernel 根因；它们已从候选知识中剔除，不能拿来解释多维 GM 地址错误。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [gather 扁平偏移公式 dim 上方形状错配](gather_dim.md)（`related`）：`outer` 是 index 系下的扁平外坐标，只有当 `idx_block_==x_block_` 且 dim 之上各维 `idx_shape［d］==x_shape［d］` 时两坐标系一致、公式恰好等价；一旦 dim 之上某一维 `idx_shape［d］!=x_shape［d］`，`outer` 在 index 系与 x 系下逐维解出的坐标不同，缩放后 x 外层偏移错位 `(x_shape［d］-idx_shape［d］) * ∏_{d'>d} x_shape［d'］`。；C-contiguous 扁平下标的最后一维才是最低有效维，但 LUT 代码从子空间首维开始执行 `% size` / `/= size`，把首维误当成最低有效维，导致多维 `outerBase` / `innerBase` 坐标反解顺序颠倒。。两份 Runbook 都诊断多维 Gather 将扁平坐标映射到错误 GM 地址：一份修正 index 与 x 的逐维 stride 坐标系，另一份修正 C-contiguous LUT 的末维优先反解，联合阅读可完整检查外层和内层地址生成。
-- [随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM](../performance/random_gather_per_element_dma_should_switch_to_simt_direct_gm.md)（`related`）：SIMT 路线把同一语义改写为一元素一线程的 grid-stride 循环：线程直接读取 `index［o］`，按逐轴 stride 计算 `x_off`，然后执行 `y［o］ = x［x_off］`。；C-contiguous 扁平下标的最后一维才是最低有效维，但 LUT 代码从子空间首维开始执行 `% size` / `/= size`，把首维误当成最低有效维，导致多维 `outerBase` / `innerBase` 坐标反解顺序颠倒。；目标卡补充了焦点逐轴 stride 地址计算中多维扁平坐标必须反向解码的正确性边界。
-<!-- cannbot:related:end -->

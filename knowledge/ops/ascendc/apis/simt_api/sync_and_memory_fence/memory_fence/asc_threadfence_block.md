@@ -78,10 +78,3 @@ inline void asc_threadfence_block()
         dst[0] = src[0];
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscThreadfence](asc_threadfence.md)（`same_topic`）：全局内存栅栏函数。保证调用线程在 asc_threadfence() 之前的所有全局内存和共享内存写操作对其他线程可见，不阻塞线程，仅约束可见性顺序。；Block 范围内存栅栏函数。保证当前线程在调用 asc_threadfence_block() 之前的所有内存读写操作对同一线程块内其他线程可见，不阻塞线程，仅约束 Block 范围可见性顺序。。两者都是不阻塞线程的可见性顺序栅栏，核心差异仅是全局范围与同一 Block 范围，属于同一 fence 合同的作用域变体。
-<!-- cannbot:related:end -->

@@ -92,10 +92,3 @@ aclrtcCompileProg(prog, numOptions, options);
 const char* manglingName = "";
 aclrtcGetLoweredName(prog, kernelNameExpr, &manglingName);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclrtcAddNameExpr](aclrtc_add_name_expr.md)（`related`）：“使用前必须先通过aclrtcAddNameExpr注册原始名称，且两次传入的nameExpression字符串必须完全相同。”与“主要用于__global__函数为模板函数的场景，调用本接口后，可以通过aclrtcGetLoweredName接口获取函数的mangling name，在launch阶段调用对应的模板__global__函数。”分别给出双端正文事实；GetLoweredName 的前置条件是 AddNameExpr 注册完全相同的表达式，AddNameExpr 卡又明确后续由 GetLoweredName 取得 mangling name，二者形成 RTC 模板函数注册到 launch 名称查询的调用序。
-<!-- cannbot:related:end -->

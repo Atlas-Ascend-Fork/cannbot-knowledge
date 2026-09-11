@@ -102,8 +102,4 @@ result: 0.2526123 0.8223166 1.601919 2.790414
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachSinh 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_sinh_950.md)（`related`）：｜ 计算语义 ｜ 对 TensorList 每个 Tensor 逐元素计算 `sinh`；SIMT body 统一以 FP32 `sinhf` 求值。 ｜；功能：获取输入数据的双曲正弦值。；950 ForeachSinh 的 SIMT body 明确把每个元素交给 FP32 sinhf，API 卡因此直接补齐该叶子调用的输入范围、特殊值与必需头文件。
-<!-- cannbot:related:end -->
+- [ForeachSinh 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_sinh_950.md)

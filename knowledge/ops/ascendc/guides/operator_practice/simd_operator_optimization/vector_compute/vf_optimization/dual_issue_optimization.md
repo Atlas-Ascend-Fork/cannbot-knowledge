@@ -276,10 +276,3 @@ __simd_callee__ inline void CompareDoubleImpl(Reg::MaskReg &dstMask, RegT &srcRe
     Reg::MaskOr(dstMask, dstMask, tmpMask1, mask);
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reg矢量计算接口指令单双发汇总](../../../../../apis/appendix/reg_vector_compute_interface_instruction_single_dual_issue_summary.md)（`explains`）：指令双发指1个Cycle能够执行两条指令；两条指令之间没有数据上的依赖关系。接口汇总给出单/双发能力上限，优化指南进一步给出无数据依赖与资源充足的启用条件以及拆分、展开 VF 的实现方法。
-<!-- cannbot:related:end -->

@@ -107,10 +107,3 @@ thread_block_tile<Size, ParentT> tiled_partition(const ParentT& g)
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [tiled_partition](../tiled_partition.md)（`related`）：tiled_partition API用于将一个线程组划分为多个更小、固定大小的子组，以便线程在以更精细的粒度上进行协作。；thread_block_tile不提供默认构造函数，可通过tiled_partition接口从另一个协作组中划分得到。前者定义划分操作，后者把该操作确定为 thread_block_tile 的构造入口。
-<!-- cannbot:related:end -->

@@ -74,10 +74,3 @@ aclrtcProg prog;
 char binData[32] = "some bin data ...";
 aclError result = aclrtcGetBinData(prog, binData);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclrtcGetBinDataSize](aclrtc_get_bin_data_size.md)（`same_topic`）：获取编译后的 Device 侧二进制数据大小，用于在调用 aclrtcGetBinData 前分配对应大小的内存空间。；调用前应先通过 aclrtcGetBinDataSize 获取二进制数据大小，并据此分配足够的内存空间。。两卡互相声明 size 查询必须先于二进制填充，形成先取长度、再分配、最后读取数据的两阶段 RTC 合同。
-<!-- cannbot:related:end -->

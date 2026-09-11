@@ -80,10 +80,3 @@ inline void asc_nop()
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [避免同地址访问](../../../guides/operator_practice/simd_operator_optimization/memory_access/avoid_same_address_access.md)（`explains`）：主要用于避免多个线程读写同地址时可能发生的卡死问题。；当同时访问Global Memory的数据，且地址处于连续的512字节范围内时，由于数据一致性的原因，多个请求会被串行处理，进而影响数据搬运效率。；目标页补充同地址请求的 512 字节归并和串行机制，可用于识别 asc_nop 所针对的访问形态。
-<!-- cannbot:related:end -->

@@ -617,9 +617,3 @@ BF16 转 FP32 只服务于 NaN 检查和大小比较，输出直接选择原始 
 | 同步 | 无 barrier/atomic，靠不重叠 idx 与 Kernel/stream 边界 | 核区间和线程 stride 必须保持无重叠 | `Process`、VF loops |
 | 精度与尾块 | 浮点 NaN propagation；BF16 FP32 predicate；INT32 direct compare | `(isnan(a)||a>b)?a:b` 顺序、`idx<cnt` | 四个 VF body |
 | 失败边界 | resource/tensorNum/dtype 失败阻断 launch | x2/out 校验仍依赖 ACLNN 框架；N 累加无溢出检查 | `GetPlatformInfo`、Tiling dtype branch |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMaximumList A2/A3 ACLNN 算子知识](foreach_maximum_list.md)（`same_topic`）：对两个等长 TensorList 的同位置 Tensor 逐元素计算 `y_i［j］ = max(x1_i［j］, x2_i［j］)`；两个等长 TensorList 的同位置 Tensor 逐元素 maximum；浮点 SIMT body 显式传播任一输入 NaN。两张算子卡共享 ForeachMaximumList 的 TensorList 对位逐元素 maximum 契约，950 卡进一步给出 SIMT 路线和 NaN 传播。
-<!-- cannbot:related:end -->

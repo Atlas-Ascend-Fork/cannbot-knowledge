@@ -244,12 +244,3 @@ platforms: ["950"]
 ## 误诊
 
 曾把部分块故障归因于 `UpdateMask`。改用全寄存器 mask 后错误保持，且坏数据表现为跨行错位，因此该假设被否定。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)（`exemplifies`）：“选择逐行 `blockCount=1`，因为它把每个 GM 行起点和 UB 行起点显式化，可以用一次改动隔离 stride 语义。”；“将数据从GM非对齐搬运至UB，可根据需要自行填充数据。”。Runbook用 DataCopyPad 的 GM→UB 能力实现逐行单 block 搬入，并以显式起点绕开多行 stride 歧义。
-- [DataCopyPad多行stride单位误用导致非对齐行输出NaN](datacopypad_stride_fields_use_32_byte_block_units.md)（`related`）：“若要恢复批量 2D 搬入，应先用独立搬运探针确认两个 stride 字段的单位和 start-to-start 规则，再与逐行结果逐 byte 比对。”；“修复保留 `blockLenBytes`，另算 `gapBlocks = gapBytes / 32`，并在三处多行搬运统一使用 `gapBlocks`。”。焦点把逐行实现作为 oracle，目标卡提供同平台已验证的 32B-block stride 编码，可作为恢复 2D fast path 时的最小探针候选。
-- [多块 DataCopyPad dst 基址非 32B 对齐崩溃](../compilation/datacopypad_dst_32b.md)（`related`）：机制链：多块 DataCopyPad 跨 slice 聚合 → head 块拷贝后 dst 偏移随非对齐长度累积 → middle/tail 块 dst 基址字节偏移 = `firstLen*sizeof(T)` 非 32B 倍数 → MTE 访问未对齐地址 → vector core exception。这不是"算子逻辑错"或"算力不够"，而是"多块 dst 基址必须 32B 对齐"的硬件级约束被 head 累积偏移破坏。；改成每个 `r` 单独一次 `blockCount=1` 的一维搬入后，不再使用 stride 字段；GM 和 UB 起点都由显式索引给出，消除了语义歧义。；两端都把多块 DataCopyPad 收敛为显式单块起点，但分别解决 dst 基址对齐和 2D stride 落点错行。
-- [跨行子块误作连续 slab 导致分块结果错](noncontiguous_row_subtiles_require_per_row_copy.md)（`related`）：焦点卡写明“当 `nCur < N` 时相邻目标行首地址相差 `N` 个元素”，候选卡写明“改成每个 `r` 单独一次 `blockCount=1` 的一维搬入后”。焦点从 GM 行跨度证明部分列不能连续 slab，候选以逐行搬入消除 stride 与 UB 行落点歧义。
-<!-- cannbot:related:end -->

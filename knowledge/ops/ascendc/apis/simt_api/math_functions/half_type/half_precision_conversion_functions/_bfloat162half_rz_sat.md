@@ -76,10 +76,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         dst[idx] = __bfloat162half_rz_sat(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162half_rz](_bfloat162half_rz.md)（`same_topic`）：函数原型：half __bfloat162half_rz(const bfloat16_t x)；函数原型：half __bfloat162half_rz_sat(const bfloat16_t x)。两接口具有相同 bfloat16_t 输入、half 输出和 rz 舍入核心，右侧仅增加饱和边界处理，是同一精度转换操作的模式变体。
-<!-- cannbot:related:end -->

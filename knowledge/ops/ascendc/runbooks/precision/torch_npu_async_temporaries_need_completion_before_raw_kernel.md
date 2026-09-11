@@ -382,10 +382,3 @@ at::Tensor scatter(const at::Tensor &data, int64_t dim,
 ## 误诊
 
 先前把顺序相关失败继续归入 kernel 的随机 GM 写问题。隔离与前缀测试表明，同一 kernel 输入在不同调用顺序下结论不同，真正新增变量是 Host cast/D2D/kernel/demote 的跨流依赖。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FP16 scatter 归约逐次回写放大相消误差](low_precision_scatter_reduction_needs_fp32_accumulator.md)（`related`）：“修复把递推改为 FP32 中间状态： ```text a₀ = fp32(fp16(data)) aⱼ₊₁ = fp32(aⱼ + fp32(fp16(updateⱼ))) y = fp16(aₘ) ``` 这样只在最终输出时转回 FP16，避免每次随机读改写都进行半精度量化。”明确给出左端事实；“在 fp32 shadow 分支建立两道设备级边界：”明确给出右端事实。前者要求 FP16 scatter-add 用 FP32 中间状态避免逐次半精度舍入；后者补出 Host 提升、raw float kernel 与降精度之间的双侧同步，保证该 shadow accumulator 真正可用。
-- [at::zeros 异步零初始化跨 stream 覆盖 kernel 写出](at_zeros_stream_kernel.md)（`related`）：`allocate_xpu_zeros_like` 底层是 `at::zeros(shape, options)`，在 **torch 默认 NPU stream** 上异步执行零初始化；`data.to/updates.to` 的转换 kernel 由 aten 当前 NPU stream 调度，而显式 Ascend C kernel 使用 `getCurrentNPUStream().stream(false)` 取得的 aclStream。；两端都是 aten 当前流产生异步写、显式 aclStream Kernel 随后消费或覆盖却缺少 happens-before；前者可在完整覆盖输出时改 empty，必须保留预写时则可按后者在 producer 与 raw Kernel 之间建立设备完成同步。
-<!-- cannbot:related:end -->

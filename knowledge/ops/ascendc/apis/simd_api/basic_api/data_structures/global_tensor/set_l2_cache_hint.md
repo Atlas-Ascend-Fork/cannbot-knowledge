@@ -109,28 +109,13 @@ AscendC::DataCopy(inputLocal, inputGlobal, dataSize); // 将Global Memory上的i
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [设置合理的L2 CacheMode](../../../../../guides/operator_practice/simd_operator_optimization/memory_access/l2_cache_mode_config.md)（`explains`）：当特定 GlobalTensor 启用 L2 Cache 后性能反而下降时可手动禁用，例如仅对单次读取的 Tensor 关闭缓存以避免额外搬运开销。；开发者可以针对访问的数据设置其CacheMode，对于只访问一次的Global Memory数据设置其访问状态为不进入L2 Cache，这样可以更加高效的利用L2 Cache缓存需要重复读取的数据，避免一次性访问的数据替换有效数据。。API 卡给出禁用入口，指南解释一次性数据污染缓存并替换有效数据的性能机制。
-- [高阶性能打磨](../../../../../guides/operator_practice/typical_operator_cases/simd_operator_impl/add_vector_operator/advanced_optimization.md)（`explains`）：“原理：L2 Cache是AI Core和HBM之间的缓存层，适合需要重复访问的数据。对于Add算子这种流式访问场景（输入数据只读取一次），数据经过L2 Cache反而会占用Cache空间（Cache污染），增加搬运延时。通过SetL2CacheHint设置CACHE_MODE_DISABLE，让数据绕过L2 Cache直接从GM载入UB。”给出 Add 单次读取输入发生 L2 污染时的实测优化调用；“当特定 GlobalTensor 启用 L2 Cache 后性能反而下降时可手动禁用，例如仅对单次读取的 Tensor 关闭缓存以避免额外搬运开销。”定义该 API 正适用于只访问一次的 GlobalTensor。两端把性能症状、选型条件和具体 CACHE_MODE_DISABLE 接口连成可复用步骤。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 18 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [QuantBatchMatmulInplaceAdd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_batch_matmul_inplace_add_950.md)（`related`）：算子声明的固定版本源码包含对 `SetL2CacheHint(...)` 的直接调用（第 172 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/common/cmct/kernel/kernel_qbmm_mx.h#L172)
-- [IncreFlashAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/incre_flash_attention.md)（`related`）：算子声明的固定版本源码包含对 `SetL2CacheHint(...)` 的直接调用（第 701 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/incre_flash_attention/op_kernel/incre_flash_attention_allvec_new.h#L701)
-- [SwigluBackwardMxQuantWithDualAxis 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/swiglu_backward_mx_quant_with_dual_axis_950.md)（`related`）：算子声明的固定版本源码包含对 `SetL2CacheHint(...)` 的直接调用（第 214 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_backward_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_backward_mx_quant_with_dual_axis_regbase.h#L214)
-- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)（`related`）：算子声明的固定版本源码包含对 `SetL2CacheHint(...)` 的直接调用（第 230 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_kernel/grouped_matmul_a4w4.h#L230)
-- [SwigluMxQuantWithDualAxis 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/swiglu_mx_quant_with_dual_axis_950.md)（`related`）：算子声明的固定版本源码包含对 `SetL2CacheHint(...)` 的直接调用（第 228 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h#L228)
-- [GroupedMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_950.md)（`related`）：算子声明的固定版本源码包含对 `SetL2CacheHint(...)` 的直接调用（第 396 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/common/cgmct/kernel/kernel_grouped_matmul.h#L396)
-- [grouped_matmul_add 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add_950.md)（`related`）：算子声明的固定版本源码包含对 `SetL2CacheHint(...)` 的直接调用（第 196 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/common/cgmct/kernel/kernel_grouped_matmul_add.h#L196)
-- [grouped_matmul_finalize_routing A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing.md)（`related`）：算子声明的固定版本源码包含对 `SetL2CacheHint(...)` 的直接调用（第 369 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_finalize_routing/op_kernel/grouped_matmul_finalize_routing_antiquant_a8w4_msd.h#L369)
-- [GroupedMatmulFinalizeRouting 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing_950.md)（`related`）：算子声明的固定版本源码包含对 `SetL2CacheHint(...)` 的直接调用（第 192 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_finalize_routing/op_kernel/arch35/weight_quant_basic_block/gmm_fr_weight_quant_vec_compute.h#L192)
-- [grouped_matmul_swiglu_quant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant.md)（`related`）：算子声明的固定版本源码包含对 `SetL2CacheHint(...)` 的直接调用（第 240 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_swiglu_quant_v2/op_kernel/grouped_matmul_swiglu_quant_v2_a4w4_mid.h#L240)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [QuantBatchMatmulInplaceAdd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_batch_matmul_inplace_add_950.md)
+- [IncreFlashAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/incre_flash_attention.md)
+- [SwigluBackwardMxQuantWithDualAxis 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/swiglu_backward_mx_quant_with_dual_axis_950.md)
+- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)
+- [SwigluMxQuantWithDualAxis 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/swiglu_mx_quant_with_dual_axis_950.md)
+- [GroupedMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_950.md)
+- [grouped_matmul_add 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add_950.md)
+- [grouped_matmul_finalize_routing A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing.md)
+- [GroupedMatmulFinalizeRouting 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing_950.md)
+- [grouped_matmul_swiglu_quant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant.md)

@@ -74,11 +74,3 @@ uint32_t extraBuf = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetFmaTmpBufferFactorSize(plat, typeSize, maxLivedNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Fma](fma.md)（`related`）：获取Fma接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。接口内部涉及精度转换，临时空间大小通过GetFmaMaxMinTmpSize获取。。factor 查询把固定临时空间换算为 Fma 单次元素上限，执行接口实际消费 sharedTmpBuffer 或框架缓冲。
-- [GetFmaMaxMinTmpSize](get_fma_max_min_tmp_size.md)（`related`）：获取Fma接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；host侧Tiling接口，用于获取Fma接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。一张卡给出固定空间的 factor/extraBuf 换算，另一张给出最大最小缓冲查询，二者共同完成 Host Tiling 容量选择。
-<!-- cannbot:related:end -->

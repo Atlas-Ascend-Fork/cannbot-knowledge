@@ -61,18 +61,4 @@ mm.WaitIterateAll(); // 等待IterateAll完成
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [IterateAll](iterate_all.md)（`related`）：异步：不需要同步等待IterateAll执行结束。；等待IterateAll异步接口返回，支持连续输出到Global Memory。。左卡允许 IterateAll 以 sync=false 发起异步矩阵计算，右卡负责等待该异步调用完成；两端给出发起与完成等待的直接生命周期顺序。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [grouped_matmul_add A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add.md)（`related`）：算子正文包含对 `WaitIterateAll(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [grouped_matmul_add A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add.md)

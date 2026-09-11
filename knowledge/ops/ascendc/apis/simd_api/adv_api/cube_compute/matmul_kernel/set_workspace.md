@@ -71,10 +71,3 @@ for (int i = 0; i < singleCoreM/baseM * singleCoreN/baseN; ++i) {
     mm.template GetTensorC<false>(ub_c);
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IterateNBatch](iterate_n_batch.md)（`same_topic`）：IterateNBatch计算时，调用本接口申请一块临时空间来缓存计算结果，然后根据同步或异步场景进行其它接口的调用。在调用该接口前，需将MatmulConfig中的isNBatch参数设为true，开启多Batch输入多Batch输出功能，并调用SetWorkspace接口申请临时空间，用于缓存计算结果，即IterateNBatch的结果输出至SetWorkspace指定的Global Memory内存中。SetWorkspace 卡定义缓存结果的 GM 空间，IterateNBatch 卡把这块空间列为调用前置并规定结果写入位置；二者构成同一次多 Batch Matmul 调用的资源申请和输出合同。
-<!-- cannbot:related:end -->

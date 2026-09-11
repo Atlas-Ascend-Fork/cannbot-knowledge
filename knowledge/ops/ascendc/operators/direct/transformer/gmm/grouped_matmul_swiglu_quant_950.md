@@ -675,9 +675,3 @@ ASWT 在多个专家间轮转起始 core；提前拆某一专家尾块会破坏�
 | 同步 | flags 4/20 与 6/22、hard events、SyncAll | MIX 1:2、PIPE方向、等待/通知轮次、schemMode 1 | `Notify/Wait`, launcher schedule attr |
 | 精度与尾块 | INT32累加→FP32 scales/SwiGLU→row max/127→INT8；ASWT/VF masks | 左右半顺序、scale广播、cast/round链、N偶数、last-group tail split | `VFDoDequant`, `VFDoSwiglu`, `ComputeScaleVF/YVF` |
 | 失败边界 | Host校验失败即不 launch；空组skip | 不得增加隐式 fallback或把 pack截断静默当合法 | `calc_grouped_matmul_swiglu_quant_tiling`, `UpdateGroupParams` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [grouped_matmul_swiglu_quant 950 ACLNN 算子知识](../../../aclnn/transformer/gmm/grouped_matmul_swiglu_quant_950.md)（`same_topic`）：按累计 `group_list` 做 INT8 GroupedMatmul；INT32 结果乘 FP32 `x_scale`/`weight_scale`，沿 N 二分后做 `Swish(left) * right`，再逐 token 求 `max(abs)/127` 并量化为 INT8。；每组矩阵乘宽度 N，设备端按 FP32 per-token scale 或 64 元素 MX group 的 E8M0 scale 恢复为中间浮点，按源码的后半/前半实参计算 `S=SwiGLU(C［:,N/2:N］,C［:,0:N/2］,beta=1)`。。两端实现同一 950 GroupedMatmul 后接 SwiGLU 与动态量化的核心链，分别记录 Direct Invoke 固定 INT8 per-token 路线与 ACLNN V2 的 per-token、MX 和 WeightNZ 路线，联合阅读可完成前端与量化 route 选型。
-<!-- cannbot:related:end -->

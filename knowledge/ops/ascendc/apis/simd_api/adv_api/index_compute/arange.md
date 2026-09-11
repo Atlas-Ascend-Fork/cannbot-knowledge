@@ -95,10 +95,3 @@ __aicore__ inline void Arange(const LocalTensor<T>& dst, const T firstValue, con
 // count_：等差数列的长度
 AscendC::Arange<T>(dst, static_cast<T>(firstValue_), static_cast<T>(diffValue_), count_);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetArangeMaxMinTmpSize](get_arange_max_min_tmp_size.md)（`related`）：由于Arange接口内部不需要用到临时空间，max和min均返回0。；给定起始值，等差值和长度，返回一个等差数列。。临时空间查询卡给出调用 Arange 生成等差数列前的 workspace 选取结果，二者组成 Host 侧容量查询到 Kernel 接口调用的直接链路。
-<!-- cannbot:related:end -->

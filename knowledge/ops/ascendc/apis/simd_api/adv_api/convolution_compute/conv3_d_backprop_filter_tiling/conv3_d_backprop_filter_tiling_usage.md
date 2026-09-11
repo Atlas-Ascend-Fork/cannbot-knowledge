@@ -54,10 +54,3 @@ int ret = conv3dBpDwTiling.GetTiling(tilingData); // 如果ret = -1,获取tiling
 ```
 #include "lib/conv_backprop/conv3d_bp_filter_tiling.h"
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTiling](get_tiling.md)（`related`）：“返回值：如果返回值不为-1，则代表Tiling计算成功，用户可以使用该Tiling结构的值。如果返回值为-1，则代表Tiling计算失败，该Tiling结果无法使用。”与“Ascend C提供一组Conv3DBackpropFilter Tiling API，方便用户获取Conv3DBackpropFilter Kernel计算时所需的Tiling参数。用户只需要传入Input/GradOutput/GradWeight的Position位置、Format格式和DType数据类型及相关参数等信息，调用API接口，即可获取Init中TConv3DBpFilterTiling结构体中的相关参数。 Conv3DBackpropFilter Tiling API提供一个GetTiling接口获取Tiling参数，获取Tiling参数的流程如下：创建单核 Tiling 对象，设置 Input、GradOutput、GradWeight 的类型、Shape 及可选 Padding/Stride，最后调用 GetTiling。”。接口卡定义 GetTiling 成败语义，使用页给出设置规格后调用 GetTiling 的完整流程。
-<!-- cannbot:related:end -->

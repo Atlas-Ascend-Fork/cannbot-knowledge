@@ -96,11 +96,3 @@ void GetPowerMaxMinTmpSize(const AscendC::TensorShape& srcShape1, const AscendC:
     uint32_t minValue = 0;
     AscendC::GetPowerMaxMinTmpSize(shape1, shape2, false, 4, false, maxValue, minValue);
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetPowerTmpBufferFactorSize](get_power_tmp_buffer_factor_size.md)（`related`）：“currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize”解决固定空间下的最大计算量；“在minValue到maxValue范围内，临时空间越大性能越好。”解决固定计算量下的空间范围与性能取舍，两者是 Power tiling 的互补 sizing 路线。
-- [Power（数学计算）](power.md)（`related`）：“临时空间大小通过GetPowerMaxMinTmpSize获取。”在 Power 调用契约中指定 sizing 入口；“在minValue到maxValue范围内，临时空间越大性能越好。”说明该入口返回区间内的性能取舍。
-<!-- cannbot:related:end -->

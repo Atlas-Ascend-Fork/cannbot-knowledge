@@ -148,10 +148,3 @@ AscendC::GeGLU<srcType, false>(dstLocal, src0Local, src1Local, sharedTmpBuffer, 
 输出数据(dstLocal):
 [-5.004   -4.984   -4.96 ... 4.94     4.96     4.984]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetGeGLUMaxMinTmpSize](get_ge_glu_max_min_tmp_size.md)（`related`）：kernel侧GeGLU接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；用于GeGLU内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetGeGLUMaxMinTmpSize。；GeGLU 的 sharedTmpBuffer 大小明确由 Host 侧范围接口产生，形成 Tiling 参数到 kernel 临时缓存的直接合同。
-<!-- cannbot:related:end -->

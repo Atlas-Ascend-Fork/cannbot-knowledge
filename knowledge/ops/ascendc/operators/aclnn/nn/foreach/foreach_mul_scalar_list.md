@@ -594,10 +594,3 @@ __aicore__ inline void ProcessPlusInLoop(uint32_t index, uint64_t cursorStart)
 | 同步 | Queue 生命周期 + `PIPE_V` barriers | 释放/覆盖不得早于 consumer | `InnerComputer::Compute` |
 | 精度与尾块 | FP16/FP32/INT32 直接 Muls；BF16 FP32 中间 | BF16 RINT、INT64→INT32、tail 有效长度 | `InnerComputer`、`CopyIn/CopyOut` |
 | 失败边界 | Host 校验失败阻止 launch，unknown key 无 body | 不得把不支持 dtype 自动映射到相邻 key | `CheckOpInfo`、entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMulScalar A2/A3 ACLNN 算子知识](foreach_mul_scalar.md)（`same_topic`）：对列表位置 `i` 与元素位置 `j`，`out［i］［j］ = x［i］［j］ * scalars［i］` 对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ * scalar` A2/A3 ScalarList 为每个 Tensor 提供独立标量，ForeachMulScalar 让全列表共享一个标量，直接决定参数容器与加载方式。
-- [ForeachMulScalarList 950 ACLNN 算子知识](foreach_mul_scalar_list_950.md)（`same_topic`）：｜ 计算语义 ｜ `out［i］［j］ = x［i］［j］ * scalars［i］` ｜；｜ 计算语义 ｜ 对列表位置 `i` 与元素位置 `j`，`out［i］［j］ = x［i］［j］ * scalars［i］` ｜；两端是同一 ACLNN 算子与逐项标量广播合同，差异落在 950 RegBase 与 A2/A3 Membase 的实现路线和资源边界。
-<!-- cannbot:related:end -->

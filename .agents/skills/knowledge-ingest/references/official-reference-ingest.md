@@ -33,7 +33,7 @@ Git ledger 使用：
 - `skip`：材料不产生可复用技术知识，写明理由。
 - `defer`：本批不处理、证据不足或依赖尚未迁移 producer，写明理由。
 
-按目标 Concept 聚合多份来源。融合后写一份自包含知识，不把每个 source 拼成独立章节。已有同概念卡使用 update/merge，不重复创建变体卡。Registry 固定归档中明确登记的官方 API/Guide 是受控例外：同步器只为含独立技术事实的页面建卡，README、发布占位、纯链接目录和接口清单等导航页改由对应目录 `index.md` 承载；保留页只删除 Registry 声明的冗余章节、改写失效链接，并在正文外增加 Frontmatter 和受管关系块。当前“产品支持情况”先用于生成 `platforms`，再从正文删除。
+按目标 Concept 聚合多份来源。融合后写一份自包含知识，不把每个 source 拼成独立章节。已有同概念卡使用 update/merge，不重复创建变体卡。Registry 固定归档中明确登记的官方 API/Guide 是受控例外：同步器只为含独立技术事实的页面建卡，README、发布占位、纯链接目录和接口清单等导航页改由对应目录 `index.md` 承载；保留页只删除 Registry 声明的冗余章节、改写失效链接，并在正文外增加 Frontmatter 与可选的普通知识卡链接。当前“产品支持情况”先用于生成 `platforms`，再从正文删除。
 
 对登记了 `mirror` 的固定归档执行：
 
@@ -42,10 +42,9 @@ API 的 `source_headers` 优先由源文档显式路径生成。归档没有 `in
 ```bash
 python3 <skill-dir>/scripts/fixed_archive_docs.py --knowledge-root <repo> \
   sync --updated-at <UTC-second>
-python3 <skill-dir>/scripts/api_operator_links.py --knowledge-root <repo> sync
 ```
 
-第二条命令同时检查既有 Operator 声明的固定提交源码调用与非受管正文调用；两种证据分区展示，源码优先，展示上限与图谱自动边保持一致，超出时注明“部分算子”。同名 API 的归属必须先在完整同名集合唯一成立，不能靠平台或参数数量猜测；证据、源码校验、抽取范围、幂等和审计格式统一见[本地图谱](local-graphs.md)。源码恢复与既有来源等价本地化见[新来源接入](source-onboarding.md)。自动同步不改官方正文或外层语义关系。
+需要发现 API 引用时可按[本地图谱](local-graphs.md)按需生成源码调用建议；该步骤不回写卡片或参与入库门禁。采用的关联使用普通 Markdown 链接，镜像正文之后可追加普通链接列表。源码恢复与既有来源等价本地化见[新来源接入](source-onboarding.md)。
 
 Source role 只使用当前 Schema：`primary`、`supporting`、`example`、`constraint`、`header`、`implementation`、`evidence`。Git 来源固定到 40 位 commit；关键代码结论优先使用精确 blob，而不是仓库根或宽 tree。
 
@@ -76,6 +75,6 @@ python3 <skill-dir>/scripts/reference_inventory.py verify \
 
 `verify` 不只检查 ledger 形状：它先比较目标根 Contract 与本 Skill 版本且不执行目标 Python；每个 `ingest` 决策的目标卡必须已经存在、通过当前 Contract，并在 `sources` 中以相同 role 绑定 inventory 的 canonical repo、40 位 commit 和源文件 path。来源可为固定远程 blob，或能按 Registry 还原同一 repository/revision/path 的本地 Git 文件。成功 receipt 同时绑定 inventory、ledger、源 blob OID 和候选卡 SHA-256，且拒绝覆盖已有文件。缺卡、宽 tree 代替精确文件、revision/path/role 不一致都不能标记为完成。
 
-固定归档批次不生成 inventory、ledger 或 verification receipt，只在当天日志记录 source ID、archive/tree SHA-256、created/updated/deferred 数和关键裁决。收尾必须运行 `fixed_archive_docs.py verify` 和 `api_operator_links.py verify`；前者校验恢复后内容树及已登记发布器修复状态，再按 Registry 策略重建期望卡片并复验导航过滤、章节省略、保留正文、链接和 Frontmatter，其中已有源码头文件补充仅做格式和来源绑定校验，不重新验证声明。后者重新召回明确调用并同时校验可复现审计产物（存在时）与 API 自动关系子区块。
+固定归档批次不生成 inventory、ledger 或 verification receipt，只在当天日志记录 source ID、archive/tree SHA-256、created/updated/deferred 数和关键裁决。收尾必须运行 `fixed_archive_docs.py verify`；该命令校验恢复后内容树及已登记发布器修复状态，再按 Registry 策略重建期望卡片并复验导航过滤、章节省略、保留正文、链接和 Frontmatter，其中已有源码头文件补充仅做格式和来源绑定校验，不重新验证声明。API 引用建议仅在需要时单独执行。
 
-两类批次都运行 `scripts/knowledge_ingest.py --knowledge-root <repo> sync-indexes` 同步逐层导航，并用 `--check` 验证没有陈旧 index；随后运行全库 lint、目标 query 和图谱构建。Git 批次的 inventory、ledger、verification receipt 和中间材料放在调用方实验目录或 ignored 构建目录，不写入知识正文。
+两类批次都运行 `scripts/knowledge_ingest.py --knowledge-root <repo> sync-indexes` 同步逐层导航，并用 `--check` 验证没有陈旧 index；随后运行全库 lint、重建 Query 索引并执行目标 query；图谱构建按需执行，不作为入库步骤。Git 批次的 inventory、ledger、verification receipt 和中间材料放在调用方实验目录或 ignored 构建目录，不写入知识正文。

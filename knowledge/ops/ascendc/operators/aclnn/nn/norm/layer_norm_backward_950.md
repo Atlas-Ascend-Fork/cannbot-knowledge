@@ -711,9 +711,3 @@ dynamic_ub = N/A
 | 同步 | 跨核 partial 由 `SyncAll` 保护 | 不能提前读 workspace 或复用 pipe | BigM/BigN impl |
 | 精度与尾块 | FP32 accumulate，B16 输出 RINT，POD 描述主/尾 tile | mask、对齐、有效 extent 不得省略 | `layer_norm_grad_v3_base.h` |
 | 失败边界 | 模板按 5000→6000→7000 选择 | shape 谓词与 UB guard 必须一起保留 | 三个 `IsCapable/*KernelTiling` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LayerNormBackward A2/A3 ACLNN 算子知识](layer_norm_backward.md)（`same_topic`）：实际入口 ｜ `aclnnLayerNormBackwardGetWorkspaceSize` / `aclnnLayerNormBackward`，公开 ACLNN；A2/A3 经 `DAV_2201` 选择合一 `LayerNormGradV3`。；实际入口 ｜ `aclnnLayerNormBackwardGetWorkspaceSize` / `aclnnLayerNormBackward`，950 由 `IsRegbase(curArch)` 进入融合 `LayerNormGradV3`。。两卡共享 ACLNN 入口与融合逻辑算子，但分别闭合 A2/A3 和 950 的代际实现。
-<!-- cannbot:related:end -->

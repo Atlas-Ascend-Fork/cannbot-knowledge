@@ -719,9 +719,3 @@ if (hiddensizeLen >= 4096) { // 二分累加到8192以内，再累加成4096大�
 | 同步 | R-001 复用 Queue 交接；R-002 复用 event 0/1、2/3、4/5、6/7 的固定职责 | 每次复用前必须等待相反 pipe，Process 末必须清理全部预置 flag；tokenGrad 与 probGrad 的 MTE3 event 共享顺序不能并行改写 | `ProbNone::Process`、`ProbNotNone::Process` |
 | 精度与尾块 | R-001 位级搬运；R-002 统一 FP32 计算并按 OriT/ProbT 回写 | 64 元素 Copy repeat/tail、H 的 32/512 B 对齐、最后 validH/validI、低精度 `CAST_RINT` 和 reduce 阈值不可改变 | `Base::ReduceSumFunc/BinaryAddFunc`、`ProbNotNone::Process` |
 | 失败边界 | K 上限、空 shape、无效 dtype、UB tile 为 0 和未知 key 规则可复用 | 不得把 key 10/11 宣称为可达，不得忽略负/重复索引风险，也不得把未传播的 CoreSplit false 写成可靠 Host 失败 | `Tiling4MoeTokenUnpermuteGrad`、entry key 条件、两 Route index 判断 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeTokenUnpermute A2/A3 ACLNN 算子知识](moe_token_unpermute.md)（`related`）：“用 `sortedIndices` 从 `permutedTokens` 恢复输出 token”是前向恢复，“按 `sortedIndices` 把 `unpermutedTokensGrad` 行散写为 `permutedTokensGrad`”是其反向路由，并补充概率梯度点积。
-<!-- cannbot:related:end -->

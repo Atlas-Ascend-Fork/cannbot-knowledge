@@ -180,9 +180,3 @@ revision：构建修复工作树状态（trace 未返回该汇总提交的 40 �
 ## 误诊
 
 该错误发生在列表初始化类型检查阶段，与 32B DMA 对齐、`srcStride`/`dstStride` 或运行时越界无关；先查字段类型，不要先改搬运布局。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RmsNorm](../../apis/simd_api/adv_api/normalization/rms_norm.md)（`exemplifies`）：在 Ascend950 `dav-3510` 的 Flash 单文件算子工程中构建 `rms_norm.asc` 时，Kernel 的 `Process`、`CopyIn`、`CopyOut` 都用 `D_ * sizeof(T)` 初始化 `AscendC::DataCopyExtParams::blockLen`。 对shape为［B,S,H］的输入数据做RmsNorm归一化。 Runbook 在 RmsNorm 直调实现中暴露 H 轴搬运字节表达式到 uint32_t 的编译窄化，API 卡界定同一归一化任务。
-<!-- cannbot:related:end -->

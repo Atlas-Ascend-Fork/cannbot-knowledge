@@ -57,10 +57,3 @@ int ret = conv3DBpDxTiling.GetTiling(tilingData); // if ret = -1, get tiling fai
 #include "lib/conv_backprop/conv3d_bp_input_tiling.h"
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTiling](get_tiling.md)（`related`）：“Conv3DBackpropInput Tiling API提供一个GetTiling接口获取Tiling参数”给出焦点端事实；“如果返回值不为-1，则代表Tiling计算成功”给出候选端事实。使用卡把 GetTiling 放进 Conv3DBackpropInput Tiling 的实际调用流程，接口卡给出返回值成功判据，二者闭合调用与验证。
-<!-- cannbot:related:end -->

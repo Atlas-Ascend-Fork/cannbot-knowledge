@@ -54,9 +54,3 @@ platforms: ["a2"]
 - 本退化在 a2（910B3 / DAV_2201，24 核）实测；a3、950 平台未在本 trace 实测，**未验证，推断可迁移**（同属多核 `numBlocks` 切分模型，但核数不同，`totalSlices < coreNum` 阈值不同，需重测）。
 - `totalSlices >= coreNum` 时对齐不塌缩 `numBlocks`，不触发本退化。
 - 修复（条件对齐 `edit`）的 verbatim before/after 在归一化事件流中为占位（adapter 丢失），未从 trace 逐字恢复；判别与根因由对齐/不对齐版前后成对评测耗时对照支撑，修复后信号未独立隔离观测。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [block 数应覆盖可用 Vector 核](block_count_uses_all_available_vector_cores.md)（`related`）：固定封顶故障表现为“host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`，使输出量充足的 case 只能暴露 `C_old` 路并行工作，留下 `V_measured - C_old` 个核的可用并行度未覆盖。”；切片账本则要求“`numBlocks = min(coreNum, totalSlices / minSlicesPerCore)`；`slicesPerBlock = ceil(totalSlices / numBlocks)`；对齐口径下 `blockLength = slicesPerBlock * slice`。”，两者共同用于区分硬编码核数上限与切片公式造成的低 block 数。
-<!-- cannbot:related:end -->

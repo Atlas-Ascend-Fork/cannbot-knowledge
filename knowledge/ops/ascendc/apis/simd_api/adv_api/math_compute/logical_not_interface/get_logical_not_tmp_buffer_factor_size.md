@@ -74,10 +74,3 @@ uint32_t extraBuf = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetLogicalNotTmpBufferFactorSize(plat, typeSize, maxLivedNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogicalNotMaxMinTmpSize](get_logical_not_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取LogicalNot接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；获取LogicalNot接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。两接口从正向空间范围与反向固定空间容量两个方向共同完成 LogicalNot Tiling 的临时空间决策。
-<!-- cannbot:related:end -->

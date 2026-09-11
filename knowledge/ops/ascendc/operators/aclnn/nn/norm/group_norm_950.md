@@ -732,11 +732,3 @@ Select(rstd, scalar2, rstd, cmpReg2);
 | 同步 | MTE2/V/MTE3 成对 events、LocalMemBar、PIPE_MTE2 | ping/pong与affine覆盖顺序 | four route bodies/base |
 | 精度与尾块 | FP32 Welford/TwoPass、refined rstd、CAST_RINT | Welford三 tail 分支、mask/unalign protocol | `VFWelfordParallelFinalize*`, `CalRstdByHighPrecision` |
 | 失败边界 | 参数/Tiling/launcher 阻断；AIC/空 workspace/unknown key无输出 | 不新增不存在的 fallback | ACLNN checks, APT entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupNormBackward 950 ACLNN 算子知识](group_norm_backward_950.md)（`related`）：输出 affine 结果、mean、rstd；与 GroupNorm 反向一致：`dbeta=sum(dy)`，`dgamma=sum(dy*(x-mean)*rstd)`，`dx=rstd*gamma*(dy-(dbeta+xhat*dgamma)/(C/G*HXW))`。。950 正向产生 affine 输出及 mean/rstd，950 反向公式消费 mean/rstd 与 gamma 计算 dx/dgamma/dbeta，构成同平台训练任务链。
-- [GroupNorm 950 Direct Invoke 算子知识](../../../direct/nn/norm/group_norm_950.md)（`same_topic`）：“令 `D=C/G`，把 channel 后的所有维度展平为 `HW`，每组元素数 `R=D·HW`。对 `q=n·G+g`：”与“令 `D=C/group`、`R=D*HxW`。对 `a=n*group+g`，计算 `mean_a=sum(x_a)/R`、`var_a=sum((x_a-mean_a)^2)/R`、`rstd_a=1/sqrt(var_a+eps)`，每个通道 `c=g*D+d` 输出 `y=(x-mean_a)*rstd_a*gamma［c］+beta［c］`。”提供双方正文证据。两卡围绕同一 950 GroupNorm 统计与 affine 公式；Direct 入口只返回 y 并含补充路线，ACLNN 入口还返回 mean/rstd 并走四条 RegBase 路线，适合按调用形态核对。
-- [GroupNorm A2/A3 ACLNN 算子知识](group_norm.md)（`same_topic`）：每个 `(n,g)` 对 `R=(C/group)*HxW` 元素做总体方差 GroupNorm，输出 affine 结果、mean、rstd；对每个 `(n,g)` 的 `R=(C/group)*HxW` 个元素求总体均值和方差，输出 `(x-mean)*rstd*gamma+beta`、`mean`、`rstd=1/sqrt(var+eps)`。两页闭合同一 aclnnGroupNorm 公式与三输出契约，差别在 950 RegBase 和 A2/A3 非 RegBase 实现，能直接支持跨平台调用选择。
-<!-- cannbot:related:end -->

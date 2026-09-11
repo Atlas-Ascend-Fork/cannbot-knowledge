@@ -39,7 +39,7 @@ runbooks 策展的**curate 判定子 agent**。上下文只含：miner 草稿（
 2. **新颖性/去重**：同 nugget（同 phenomenon+signal+根因语义相似）→ UPVOTE（`reproduce_count+1`）或增量合并；新颖 → new；被覆盖无补充 → covered。
 3. **簇级判定（批量模式）**：簇主卡 = 证据最全/代码最完整者；跨 trace 复现计数 → `reproduce_count`（≥2 且主卡上板信号 `tool_observed`/`artifact_verified` → 可升内部 `verified` tier，双门槛不放松）；对近邻库卡判 new/upvote/merge/covered/reject。
 4. **不静默删除**：废弃卡填生命周期字段保留。
-5. **不写库**：只产出 ledger；index/落盘由主 agent 收口，受管关系块由后续全量图谱流程生成。
+5. **不写库**：只产出 ledger；index/落盘由主 agent 收口，普通链接在 staged card 中随正文审查。
 
 ### 必须做什么
 
@@ -57,9 +57,9 @@ runbooks 策展的**curate 判定子 agent**。上下文只含：miner 草稿（
                  "evidence_audit": {"mode": "trace_snapshot|fixed_source", "result": "pending"}}],
     "related_suggestions": [{"a": "<slug>", "b": "<slug>", "relation": "<说明>"}]}
    ```
-   `related_suggestions` 必须覆盖同问题域多方案卡（fallback ↔ fast path、被取代、冲突）——`relation` 写明“兜底/被取代/冲突 + 选用条件”，仅作为全量图谱候选输入，不得直接写知识卡或视为已确认边；旧卡被更优方案降级时记 `downvote`（不建平行卡）而非新建平行卡。
+   `related_suggestions` 可省略或为空，仅记录查重或方案分析中发现的待核对引用，不要求全库关系扫描。发现 fallback、替代或冲突方案时，说明选用条件，供主 agent 在 staged card 正文融合；旧卡被更优方案降级时记 `downvote`（不建平行卡）。
    每个 entry 都必须有内部 `tier` 与 `reproduce_count`：published/merged 不允许 `inferred`，`verified` 必须 `reproduce_count >= 2`；两者只进 ledger/manifest，不写知识卡 Frontmatter。
-4. 超出细则（受控词表/关系候选/ledger 惯例）读 `../curating.md` 执行。
+4. 超出细则（受控词表/跨卡引用/ledger 惯例）读 `../curating.md` 执行。
 
 ### 不能做什么
 
@@ -96,4 +96,4 @@ runbooks 策展的**curate 判定子 agent**。上下文只含：miner 草稿（
 
 1. 读草稿集（或簇清单）+ 库 → 建立库内同 nugget 索引。
 2. 逐候选/簇过门控锁 → 判终态。
-3. 汇总 ledger + 关系候选建议 → 输出摘要 JSON。
+3. 汇总 ledger + 可选引用建议 → 输出摘要 JSON。

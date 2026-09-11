@@ -78,9 +78,3 @@ fp16 与 bf16 共用同一 `ProcessFp16Bf16` 实现、同一 4 buffer 布局、�
 - 据任务说明/设计文档里"bf16 不支持 CAST_NONE"字面推断"bf16→fp32 也得用 CAST_RINT"——把缩精度约束错误外推到扩精度方向。正确做法是查同方向 CANN 官方 kernel 用法（`top_k_top_p_sample.h`）+ 同实现 dtype 对照实测。
 - 用 fp16 全过来"默认"bf16 也对——fp16 与 bf16 在本实现里共用代码、仅 widenMode 不同，fp16 全过反而说明问题就在 bf16 专属的 widenMode 分支，而非全局计算逻辑。
 - 把 bf16 的 garbage 失败当成"bf16 精度天然差、放宽容差"处理——diff 量级 0.3~0.7 远超容差三个数量级，是 RoundMode 方向误用，不是精度漂移，放宽容差无法掩盖（属反投机取巧）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RoundMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/round_mode.md)（`exemplifies`）：枚举类型，用于设置精度转换时的舍入模式，支持向偶数舍入、向下、向上、四舍五入、截断等多种模式。；- **扩精度方向**（half/bfloat16 → float，位数增加、无信息丢失、不需要舍入）：`CAST_NONE` 合法且正确。官方 `top_k_top_p_sample.h:619` 对 `half/bfloat16 -> float32` 用 `CAST_NONE` 实证。；目标卡将焦点枚举落实到 bf16 扩精度方向的正确取值和实证验证。
-<!-- cannbot:related:end -->

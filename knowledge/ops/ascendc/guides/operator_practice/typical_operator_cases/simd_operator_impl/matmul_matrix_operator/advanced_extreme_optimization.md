@@ -59,10 +59,3 @@ platforms: []
 每步优化均包含原理说明与数据流向说明，并附有功能调试（printf、DumpTensor）与性能调试（msOpProf）方法说明。
 
 > **说明**：中级优化内容请参考 [中级性能优化](intermediate_optimization.md)，上述优化步骤5-9属于高级极限打磨范畴，建议在中级优化完成后逐步叠加。性能数据与理论分析详见README的 [性能数据分析](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#性能数据分析) 及 [理论性能分析](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#理论性能分析) 章节。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [中级性能优化](intermediate_optimization.md)（`related`）：本节基于C++ Tensor编程范式，在上文中级性能优化的基础上，进一步介绍Matmul基础API算子的高级极限打磨方法，通过5个高级优化步骤（大包搬运、LoadData3D替代LoadData2D、常量Tiling、UnitFlag优化、L2Cache优化），深入挖掘硬件性能极限。；本节基于C++ Tensor编程范式，介绍Matmul基础API算子的性能调优方法，通过4个渐进式优化步骤（L1/L0双缓冲机制、细粒度流水同步、多核并行切分、DataCopyIn优先搬运B矩阵），展示从基础实现到高性能优化的完整调优路径。。高级指南明确建立在中级四步优化之上，再追加五项极限打磨；中级指南定义前置的流水、同步、分核和搬运基础，二者组成同一 Matmul 基础 API 的递进调优路线。
-<!-- cannbot:related:end -->

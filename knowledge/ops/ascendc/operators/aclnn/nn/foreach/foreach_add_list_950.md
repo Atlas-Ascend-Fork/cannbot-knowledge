@@ -845,9 +845,3 @@ Host 不以“一个 Tensor 一个 core”绑定任务，而是把整个列表�
 | 同步 | 无 barrier/atomic；线程与 core 写域互斥 | flattened interval 必须不重叠 | Process + grid-stride bodies |
 | 精度与尾块 | FP16/BF16 FP32 中间+RN；i32/i64 tail guard | `L<=INT32_MAX` 分界、1024/512 threads | VF bodies；`THREAD_NUM_VF` |
 | 失败边界 | platform/UB/tensorNum/localMemory failures | 公开 50 Tensor 上限；API dtype 差异 | Tiling checks；API support lists |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddList A2/A3 ACLNN 算子知识](foreach_add_list.md)（`same_topic`）：输入是两个长度相同的 TensorList。对每个列表位置 `i`，只处理 `x1_i` 的有效元素域，并计算 `out_i = x1_i + alpha * x2_i`。；Host 将所有 Tensor 看作按列表顺序拼接的扁平元素域，再把连续区间分给 AIV core；Device 恢复每核首尾 Tensor 与元素 offset。。两卡实现同一 aclnnForeachAddListV2 合同，分别闭合 A2/A3 AIV Queue 与 950 SIMT VF 路线。
-<!-- cannbot:related:end -->

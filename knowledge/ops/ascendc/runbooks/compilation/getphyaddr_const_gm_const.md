@@ -84,9 +84,3 @@ testGm.SetGlobalBuffer(reinterpret_cast<__gm__ int32_t*>(wsBase + sysWsSize_));
 ## 误诊
 
 无（本卡根因单一，编译器报错原文直接指向 const-cast-away，且 after 替换实验闭环）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetPhyAddr](../../apis/simd_api/basic_api/data_structures/global_tensor/get_phy_addr.md)（`exemplifies`）：`AscendC::GlobalTensor<T>::GetPhyAddr()` 的返回类型是 `const __gm__ PrimType*`。C++ 规则下 `reinterpret_cast` 不能 casts away qualifiers（去 const），bisheng 编译器据此拒绝把 `const __gm__ int *` 转成 `__gm__ uint8_t *`。；GlobalTensor::GetPhyAddr 接口，用于获取全局数据的物理地址，支持全平台。；Runbook 用真实编译错误复现 GetPhyAddr 返回地址的 const 限定，并给出从 GM_ADDR 捕获可写裸指针的修复，直接示范该 API 合同的排障。
-<!-- cannbot:related:end -->

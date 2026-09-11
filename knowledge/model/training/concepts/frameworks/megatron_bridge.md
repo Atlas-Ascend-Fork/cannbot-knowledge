@@ -155,9 +155,3 @@ MindSpeed-LLM 转换侧的可复用能力（`Convert`/`Hf2MgConvert`/`Mg2HfConve
 
 - 被 repatch 注入的训练加速底座：[mindspeed](mindspeed.md)
 - 权重转换邻近概念：[model-custom-converter](model_custom_converter.md)（torchtitan-npu 声明式 `to_hf`/`from_hf` 路径）、[npu-fused-op-converters](npu_fused_op_converters.md)（融合算子权重布局改写）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MindSpeed（昇腾大模型训练加速框架 + 低精度训练）](mindspeed.md)（`related`）：“MindSpeed-Bridge 把 NVIDIA **Megatron-Bridge**（NeMo 系的「HF 权重 ↔ Megatron-Core 训练」桥接层） 适配到昇腾 NPU。它**不 fork** Megatron-Bridge 本体，而是以一个外挂包 `mindspeed_bridge/` + 三处 import 注入 + 一个 `ConfigContainer.validate` monkey-patch，复用上游的 Bridge 权重桥接框架， 在 `validate()` 时机触发 ［mindspeed］(mindspeed.md) 的 repatch（昇腾算子/特性补丁）。”与“MindSpeed Core 是**亲和加速底座**，向上派生面向不同场景的套件，向下落到 PyTorch / MindSpore → CANN → 昇腾硬件。DeepSeek-V3 低精度 LLM 场景用的是 **MindSpeed LLM 套件**：”提供双方正文证据。Bridge 卡明确在配置校验期调用 MindSpeed repatch，把 Megatron-Bridge 的权重桥接层适配到 NPU；MindSpeed 卡界定被调用的昇腾亲和加速底座，能够解释该 repatch 所接入的框架层。
-<!-- cannbot:related:end -->

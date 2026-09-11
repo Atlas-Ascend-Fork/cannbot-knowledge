@@ -635,10 +635,3 @@ Kernel 不为每行重复加载 `[N]` smooth；它保持 `smoothIndex` 和当前
 | 同步 | Queue 生命周期、MTE2_S 和 PIPE_V barrier | group 前缀和与 Vector 依赖顺序 | `GroupCopyIn/Compute` |
 | 精度与尾块 | FP32 激活/量化、staged cast、DataCopyPad | INT4 packing、有效 N/validRows | `CastQuantOut/CopyOut` |
 | 失败边界 | unknown key/no workspace no-op | Tiling 返回未传播、无列循环 fallback | `Tiling4SwiGluQuant`、entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [判断两算子能否多流并行看 vector 核是否被占满：cube 主导的 mix 算子（GMM）只部分占用、可与纯 vector 算子（swigluquant）并行](../../../../../../model/inference/optimizations/experience/rules/gmm_swigluquant_vector_core_parallel.md)（`related`）：“单 Kernel `swi_glu_quant`，全部 Host 可达 body 均为 `AIV_VECTOR`；无 Cube/AIC、MIX_CV、SIMT、NDDMA 或 AICPU。”与“swigluquant（SwiGLU 激活 + 量化，纯 vector 算子）在 vector 核；”分别给出双端正文事实；算子卡确认 SwiGluQuant 的全部可达 body 为纯 AIV_VECTOR，优化规则利用这一核类型与 cube 主导 GMM 的剩余 vector 容量判断双流并行，连接实现资源属性与调度决策。
-- [SwiGluQuant 950 ACLNN 算子知识](swi_glu_quant_950.md)（`same_topic`）：“`aclnnSwiGluQuantV2GetWorkspaceSize` / `aclnnSwiGluQuantV2`，公开 ACLNN 两段式接口；A2/A3 实际支持的最新公开版本为 V2。”与“`aclnnSwiGluQuantV2GetWorkspaceSize` / `aclnnSwiGluQuantV2`，公开两段式 ACLNN；950 最新公开版本为 V2。”分别给出双端正文事实；两卡描述同一 V2 SwiGluQuant 公开入口与动态、静态量化语义，分别闭合 A2/A3 和 950 的 Host、Tiling、Kernel route，可用于跨平台实现选型与一致性验证。
-<!-- cannbot:related:end -->

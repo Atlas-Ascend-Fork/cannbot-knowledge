@@ -601,10 +601,3 @@ BF16 权重的 offset/scale 运算保留 FP32 临时结果，进入共享权重 
 | 同步 | AIV/AIC flags + all-core barrier + HCCL handle | schedule mode 1；不得跳过 reuse barrier | CustomKernel/base |
 | 精度与尾块 | BF16 FP32 intermediate + RINT；padded copies | 不得提前降精度；tail count来自 POD | `WeightCopyOut`/empty `ProcessBias` |
 | 失败边界 | Host拒绝非法 dtype/shape/layout/mode | 不得自行 fallback到未注册 key | `CheckParams/CheckInput/GetTilingKey` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [WeightQuantMatmulAllReduceAddRmsNorm A2 ACLNN 算子知识](weight_quant_matmul_all_reduce_add_rms_norm.md)（`related`）：替代组合是 aclnnWeightQuantMatmulAllReduce + aclnnAddRmsNorm。 `output = AllReduce(x1 @ ((x2 + antiquantOffset) * antiquantScale) + bias + x3)`；空 K 时退化为 `AllReduce(bias + x3)` 废弃融合入口明确拆到 WeightQuantMatmulAllReduce，后者闭合量化 MatMul、可选 x3 与 AllReduce 前半段。
-- [WeightQuantMatmulAllReduce 950 ACLNN 算子知识](weight_quant_matmul_all_reduce_950.md)（`same_topic`）：｜ Kernel 路线 ｜ R-001 ND CustomAntiquant；R-002 FRACTAL_NZ WeightNZ；R-003 K=0 空域 ｜；｜ Kernel 路线 ｜ R-001 RegBase+AllReduce；R-002 RegBase+TwoShot；R-003 AdaptiveSplit+AllReduce；R-004 AdaptiveSplit+TwoShot；R-005 K=0 ｜；两卡描述同一 WeightQuantMatmulAllReduce ACLNN 算子，并明确展示 A2 与 950 的不同融合路线。
-<!-- cannbot:related:end -->

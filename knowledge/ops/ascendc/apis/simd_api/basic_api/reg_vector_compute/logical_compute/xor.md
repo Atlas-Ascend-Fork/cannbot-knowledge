@@ -138,20 +138,8 @@ source_headers:
   ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [BitwiseXorScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_xor_scalar_950.md)（`related`）：算子声明的固定版本源码包含对 `Xor(...)` 的直接调用（第 56 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/bitwise_xor/op_kernel/arch35/bitwise_xor_dag.h#L56)
-- [QuantLightningIndexer 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/quant_lightning_indexer_950.md)（`related`）：算子声明的固定版本源码包含对 `Xor(...)` 的直接调用（第 96 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/lightning_indexer/op_kernel/arch35/vf/common/lightning_indexer_vector1_base.h#L96)
-- [BitwiseXorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_xor_tensor_950.md)（`related`）：算子声明的固定版本源码包含对 `Xor(...)` 的直接调用（第 56 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/bitwise_xor/op_kernel/arch35/bitwise_xor_dag.h#L56)
-- [InplaceBitwiseXorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_bitwise_xor_tensor_950.md)（`related`）：算子声明的固定版本源码包含对 `Xor(...)` 的直接调用（第 56 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/bitwise_xor/op_kernel/arch35/bitwise_xor_dag.h#L56)
-- [Sort 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/sort_950.md)（`related`）：算子声明的固定版本源码包含对 `Xor(...)` 的直接调用（第 328 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/sort/op_kernel/arch35/sort_radix_sort_more_core.h#L328)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [BitwiseXorScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_xor_scalar_950.md)
+- [QuantLightningIndexer 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/quant_lightning_indexer_950.md)
+- [BitwiseXorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_xor_tensor_950.md)
+- [InplaceBitwiseXorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_bitwise_xor_tensor_950.md)
+- [Sort 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/sort_950.md)

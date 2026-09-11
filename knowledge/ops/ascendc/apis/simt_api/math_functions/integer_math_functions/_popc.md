@@ -99,10 +99,3 @@ int __popc(unsigned long x)
         dst[idx] = __popc(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_popc（标量计算）](../../../simd_api/c_api/scalar_compute/scalar_bit/asc_popc.md)（`same_topic`）：获取一个uint64_t类型数字的二进制中1的个数。；位计数函数（population count）。统计输入数据二进制中比特位为 1 的数量。两页给出同一 uint64 位计数任务的 C scalar 与 SIMT 入口，可互作接口选型参照。
-<!-- cannbot:related:end -->

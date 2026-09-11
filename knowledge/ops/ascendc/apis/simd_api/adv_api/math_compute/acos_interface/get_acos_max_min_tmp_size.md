@@ -64,10 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetAcosMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Acos](acos.md)（`related`）：sharedTmpBuffer（输入）：临时缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 用于Acos内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAcosMaxMinTmpSize。；为保证功能正确，预留 申请的临时空间大小不能小于最小临时空间大小。Acos 的 Kernel 调用直接依赖候选 Host 查询确定可用临时空间。
-<!-- cannbot:related:end -->

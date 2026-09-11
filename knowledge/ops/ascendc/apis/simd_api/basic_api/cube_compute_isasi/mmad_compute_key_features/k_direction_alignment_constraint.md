@@ -60,10 +60,3 @@ mmadParams.k = k;
 mmadParams.kDirectionAlign = true;
 AscendC::Mmad(c, a, b, mmadParams);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Mmad](../mmad_compute/mmad.md)（`related`）：通过 MmadParams.kDirectionAlign 控制 float 数据类型时 L0A/L0B Buffer 矩阵 K 方向对齐方式。；mmadParams 为 MmadParams 结构体，含 mSize/kSize/nSize 等矩阵维度参数。。对齐页定义 MmadParams 中 kDirectionAlign 的布局契约，核心 Mmad 页说明该参数结构体正由矩阵乘加接口消费。
-<!-- cannbot:related:end -->

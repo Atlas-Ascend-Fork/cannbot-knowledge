@@ -552,9 +552,3 @@ Cast(outLocal, this->castLocal_, RoundMode::CAST_RINT, dataCount);
 | 同步 | Queue lifecycle + Vector 程序序 | Free/覆盖点不可提前；无源码 event 可外推 | `ForeachRegbaseUnary::SingleTensorProcess` |
 | 精度与尾块 | FP16/BF16 CAST_NONE→FP32 Sqrt→CAST_RINT；FP32 direct | `dataCount` 同时控制 Vector 与 exact-byte DMA | `ForeachSqrtRegbase::Compute`/`CopyIn/CopyOut` |
 | 失败边界 | Host 任一校验失败阻断；Device unknown key 无 body | 950 公开 shape 相等约束严于 Host `>=` 实现 | `CheckOutput`/`foreach_sqrt` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachSqrt A2/A3 ACLNN 算子知识](foreach_sqrt.md)（`same_topic`）：对 TensorList 中每个输入元素计算平方根：`y_i［j］=sqrt(x_i［j］)`。；对 TensorList 中每个输入元素计算 `y_i［j］=sqrt(x_i［j］)`。；两卡描述同一个 ForeachSqrt ACLNN 入口和逐 TensorList 开方语义，分别闭合 A2/A3 AIV Vector 路线与 950 RegBase 路线。
-<!-- cannbot:related:end -->

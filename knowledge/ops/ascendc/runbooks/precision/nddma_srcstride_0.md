@@ -65,9 +65,3 @@ Ascend950 `masked_fill` 算子 Broadcast 路线（mask_predicate 范式，Regbas
 
 - 写 NDDMA 广播搬运前，先确认 mask（或任何需广播的输入）的最内层 NDDMA 维度 `srcStride` 不为 0；若为 0，先重排维度或走「loopSize=1 + 多次调用」填充模式。
 - 参考 adam kernel.h 的 NDDMA 参数计算逻辑，确认其对广播维度排布的处理。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_to_ub_nddma.md)（`exemplifies`）：1. **检查最内层 srcStride**：打印或断言 `nddmaParams_［IN_MASK］.loopInfo.loopSrcStride［0］`，若为 0 即命中本 bug。；多维数据搬运接口，支持自由配置搬入的维度信息及对应的Stride。。该 runbook 用实际最内层 srcStride=0 广播失败验证了 DataCopy NDDMA 的维度与 Stride 配置边界，可直接指导参数探针和回退。
-<!-- cannbot:related:end -->

@@ -122,9 +122,3 @@ batch-inner 相对 transpose 参照路线的成对相对代价（同算子、同
 
 - 本 trace 仅在 Ascend 950 / dav-3510 实测；a2、a3 未验证，推断可迁移（DMA 启动开销与标量吞吐瓶颈是平台硬件特性，非 950 独有，但具体倍数会变）。
 - batch-inner 在 dimSize 极小且高维 transpose 开销高的 case 上可能略优（Case 14 约 2×），但单一 case 不足以扭转整体；若要做 dimSize 自适应分支，须先在大 dimSize case 上证明不退化——本 trace 证明大 dimSize case 退化严重。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cummin 950 Direct Invoke 算子知识](../../operators/direct/math/math/cummin_950.md)（`related`）：把连续 ND 输入按 `dim` 展平为 `［M,R,N］`，对每个 `(m,n)` 沿 `r` 做 inclusive cumulative minimum，同时输出产生当前前缀最小值的位置。客观失败：batch-inner 相对 transpose 参照路线在大 dimSize case 退化 37-78×，整体评分相对 transpose 路线下降；仅 Case 14（dimSize 极小）约为 transpose 的 2×（唯一受益）。随即回退到 transpose 路线。性能卡针对同一 Cummin 前缀扫描任务给出必须排除的非末维替代路线，可用于审查搬运与 Tiling 改写是否引入实测退化。
-<!-- cannbot:related:end -->

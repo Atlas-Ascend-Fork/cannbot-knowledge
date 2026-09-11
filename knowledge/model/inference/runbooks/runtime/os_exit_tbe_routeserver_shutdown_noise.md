@@ -54,9 +54,3 @@ except Exception as exc:  # pylint: disable=broad-except
 
 - diff 事实（clone `@160c8d0b`，`models/sana-video/inference_video_scripts/inference_sana_video.py` 的 `__main__` 收尾块）：`RouteServer.finalize()` 新增块 + `os._exit`/SIGKILL 上下文；旧注释「shell-level grep 收拾孙进程」被替换为 Python 侧 finalize。属行为/噪声消除修复，源未给量化 metric。
   - 溯源下探：[cann-recipes-infer-pr-401-fix-some-modifications-to-multimodal-network-log-printing-and-readme-doc](https://gitcode.com/cann/cann-recipes-infer/merge_requests/401)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [一站式平台/未激活环境拉起多模推理的环境与运行期坑（torchrun PATH / cv2 static-TLS / TBE 首调缺依赖 / 退出双重释放）](multimodal_launch_and_runtime_env_pitfalls.md)（`related`）：“在 `os._exit(0)` 之前显式调用 TBE `RouteServer` 的 finalize 清理这层孙进程”承接“用 `os._exit(0)` 绕过解释器 shutdown、并先对直接子进程发 SIGKILL”，补上直接子进程清理触达不到 RouteServer 孙进程时的收尾步骤。
-<!-- cannbot:related:end -->

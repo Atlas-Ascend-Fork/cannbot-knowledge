@@ -99,12 +99,3 @@ int32_t RouteTilingKey(const EuclideanNormCtx& ctx)
 
 - 推断可迁移：a2 / a3 平台同样使用 `ASCENDC_TPL` + `GET_TPL_TILING_KEY`，位打包逻辑同构——未验证，推断可迁移。
 - 未验证：TPL 参数 bitWidth 非 1（如 int 枚举参数）时位布局不同，本卡公式不直接适用，需按 `EncodeTilingKey` 的 bitWidth 累加重算。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GET_TPL_TILING_KEY](../../apis/utils_api/tiling_template_programming/get_tpl_tiling_key.md)（`exemplifies`）：焦点 runbook 的修复结论是“host tilingKey 必须等于 TPL 位编码值”，候选 API 定义“该接口将传入的模板参数通过定义的位宽，转成二进制，按照顺序组合后转成uint64数值，即TilingKey。”；API 的位宽顺序正是重算 Host key、避免路由错模板的权威合同。
-- [561103: isGroup=-1 哨兵致 tilingKey 路由失配](561103_isgroup_1_tilingkey.md)（`related`）：“机制链：`isGroup 默认 -1` →（非 Group 路径未覆写）→ `ChooseTilingKey: 无 -1 分支 → return -1` → `TilingFunc: tilingKey != 期望 → kTilingFail/GRAPH_FAILED` → `aclnn 561103`。该因果链中"哨兵 + 二值路由"由结构体定义与 `ChooseTilingKey` 共同构成（二者在修复前后未变），故判别闭环。”明确给出左端事实；“而 host 侧 `ComputeTilingKey(bool isGroup, bool isEmptyTensor, bool isTailR)` 用语义顺序编码 `empty=2 / normal-tail-A=0 / normal-tail-R=1 / group-tail-A=3 / group-tail-R=4`。当 host 对 normal-tail-R `SetTilingKey(1)`，runtime 按后缀 `_1` 路由到 TPL 解码为 (1,0,0)=group-tail-A 的 sub-kernel，而 group 模板的 Init/Process 是存根，输出垃圾。”明确给出右端事实。两页连续覆盖 euclidean_norm 的 Host 路由正确性：先保证 isGroup 哨兵在所有路径写成 0/1，再保证得到的语义分支按 TPL 位布局编码到正确 sub-kernel。
-- [ACLNN 361001 — tilingKey 与 funcEntry 映射失](aclnn_361001_tilingkey_funcentry_sel_position.md)（`related`）：- 若 SEL 列表顺序与 KEY 升序不一致（例如 SEL{2,1}），funcEntry≠tilingKey，本卡的"位置=tilingKey"简化不再成立——需按 SEL 实际位置核对 kernel JSON。；而 host 侧 `ComputeTilingKey(bool isGroup, bool isEmptyTensor, bool isTailR)` 用语义顺序编码 `empty=2 / normal-tail-A=0 / normal-tail-R=1 / group-tail-A=3 / group-tail-R=4`。当 host 对 normal-tail-R `SetTilingKey(1)`，runtime 按后缀 `_1` 路由到 TPL 解码为 (1,0,0)=group-tail-A 的 sub-kernel，而 group 模板的 Init/Process 是存根，输出垃圾。。focal 说明运行时入口依赖 SEL 位置，候选给出 Host 语义顺序 key 与 TPL 位打包后缀不一致时路由到错误 sub-kernel 的实例；二者覆盖从 Host key 生产到运行时入口选择的连续排障链。
-- [缺 ASCENDC_TPL_SEL 致运行时分发静默 no-op 跳过](ascendc_tpl_sel_no_op.md)（`related`）：由 `ASCENDC_TPL_SEL` 在 `*_struct.h` 内声明 5 个 sub-kernel 实例；当 host 对 normal-tail-R `SetTilingKey(1)`，runtime 按后缀 `_1` 路由到 TPL 解码为 (1,0,0)=group-tail-A 的 sub-kernel；补齐分发结构后还必须按 TPL 位编码生成 host key，否则会从 no-op 转成错模板执行。
-<!-- cannbot:related:end -->

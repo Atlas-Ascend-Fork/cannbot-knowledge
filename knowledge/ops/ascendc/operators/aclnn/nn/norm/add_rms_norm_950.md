@@ -526,9 +526,3 @@ for (uint32_t repeat = 0; repeat < tailLoop; repeat++) {
 | 同步 | queue/barrier/LocalMemBar | 不得提前覆盖 FP32/rstd/level scratch | body/helpers |
 | 精度与尾块 | FP32 add/reduce/rstd，mask/pad tail | 有效 GM 只写 numCol/calColNum | Calculate*/Compute* |
 | 失败边界 | full-load 自动落 split | unknown key、负 epsilon、窄化边界不可补推 | Tiling/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddRmsNorm A2/A3 ACLNN 算子知识](add_rms_norm.md)（`same_topic`）：｜ 计算语义 ｜ `x=x1+x2`，`rstd=1/sqrt(mean(x^2)+epsilon)`，`y=x*rstd*gamma` ｜；｜ 计算语义 ｜ `x=x1+x2`；每个归一化行 `rstd=1/sqrt(mean(x^2)+epsilon)`；`y=x*rstd*gamma` ｜。两卡共享 AddRmsNorm 三输出数学合同和同一公开 ACLNN 入口，分别闭合 A2/A3 六路 Tiling 与 950 两路 RegBase 实现。
-<!-- cannbot:related:end -->

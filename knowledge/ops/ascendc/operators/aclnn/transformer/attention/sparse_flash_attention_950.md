@@ -753,9 +753,3 @@ workspaceSize_ += (S2_BASE_SIZE * D_SIZE * GetTypeSize(sfaInfo_->inputQType) \
 | 同步 | SSBUF 参数发布、Buffer policy stage 交接、splitG flag15 | producer/consumer、pipe、flag 编号和交换次数 | InitCubeVecSharedParams/BuffersPolicy3buff/ProcessMainLoop |
 | 精度与尾块 | FP32 MM/softmax/flash update，最终 Round cast | S2/M mask、actual length、-1 termination、LastDiv 顺序 | ProcessVec1Vf/ProcessVec2 |
 | 失败边界 | PA、layout、dtype、shape 在 Host 拒绝；pair copy 有单段 fallback | 不得把 value 独立读取或 FD route 推测补齐 | SFATilingCheck/CopyInKv/InitGlobalBuffer |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SparseFlashAttention A2/A3 ACLNN 算子知识](sparse_flash_attention.md)（`same_topic`）：对 `sparseIndices` 选出的 K/V token 计算 `softmax(scaleValue·(Q,Qrope)·(K,Krope)^T)·V`；`sparseMode=3` 再施加右下因果有效域；按 sparseIndices 收集 K/K-rope，计算 softmax(scaleValue·QKᵀ) 后与收集数据的前 512 维相乘；sparseMode=3 再施加右下因果边界。两卡描述同一 SparseFlashAttention 的稀疏索引收集、缩放 QK softmax、与 V 相乘及 sparseMode 3 因果边界；另一端补充 950 执行闭包。
-<!-- cannbot:related:end -->

@@ -71,11 +71,3 @@ banned 路线代码（`FLASH_LOOP_L4_s2_SA` 循环头，`unroll_list={1,2}`，ve
 
 - 用 `unroll_list` 扩展承载循环态的内层循环以"提升并行度"——在本算子上直接导致 8306526 误差点回归，既破坏精度又无性能收益。
 - 看到 compare fail 误差点暴涨两个量级时，不先核最近一次循环态/控制流改动，而去查计算公式。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [PyPTO loop_unroll 串行 s2 循环诊断](../performance/pypto_loop_unroll_s2.md)（`related`）：**明确不适用/未验证场景**：迭代间存在数据依赖的循环（如 flash 在线 softmax 归约路径 `FLASH_LOOP_L4_s2_SA`，其 `oi_update/li_update/mi_update` 跨迭代累积）不可套用本诊断的"迭代独立可并行"前提；a2/a3 平台未实测。；把 flash attention 主循环 `FLASH_LOOP_L4_s2_SA` 的 `unroll_list` 由 `{1}` 改为 `{1,2}`（即把 s2 的第 2 层循环也纳入展开）。改后单测 `compare` 立即失败。性能卡给出无依赖 s2 的正向展开，精度卡用在线 softmax 的跨迭代状态验证其禁止边界。
-- [SparseFlashAttention 950 Direct Invoke 算子知识](../../operators/direct/transformer/attention/sparse_flash_attention_950.md)（`related`）：“`/N` 与 `/C` 的 Device 差异：non-causal 不建 mask；causal 以 `validCounts!=nullptr` 作为 marker，`Dk<576` 用齐次偏置 lane，`Dk=576` 用 BMM1 score-UB mask。FP16/BF16 仅切换 IO 模板，两者 BMM 与 softmax 均为 FP32 中间精度。”与“- **适用粒度**：`operator_family`（适用于采用 online-softmax + 循环态更新的 flash attention 类算子，非仅本变体）。”。Direct SFA 执行 online softmax，Runbook 证明展开承载 li/mi 状态的 s2 循环会破坏精度。
-- [flash在线softmax JIT重排致精度超阈](flash_softmax_jit.md)（`related`）：“在线 softmax 的 `mi/li/oi` 跨迭代循环依赖对执行顺序敏感，任何重排 C1 任务顺序的优化都会改变累积次序”给出 JIT 重排的通用故障机制；“把 `unroll_list` 从 `{1}` 扩为 `{1,2}` 后，框架对 s2 第 2 层循环做展开，破坏了 `is_loop_begin` / `is_loop_end` 在原单层 s2 上的边界语义”提供一个更严重且可复现的具体分支。
-<!-- cannbot:related:end -->

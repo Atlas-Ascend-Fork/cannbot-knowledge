@@ -534,9 +534,3 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor, RoundMode::CAST_RINT, da
 | 同步 | Queue 生命周期与 PIPE_V barrier 可复用 | EnQue/DeQue/FreeTensor、BF16 四段 barrier 不得删改 | `InnerComputer::Compute` |
 | 精度与尾块 | 原生类型 Max；BF16 FP32 Max+RINT | BF16 cast 顺序、实际 dataCount、tail exact-byte DMA | `ComputePerCast`、`CopyIn/CopyOut` |
 | 失败边界 | 校验失败阻断 launch | 列表/shape/dtype/output、50 项和 BF16 编译 guard | `CheckOpInfo`、entry guard |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMaximumList 950 ACLNN 算子知识](foreach_maximum_list_950.md)（`same_topic`）：对两个等长 TensorList 的同位置 Tensor 逐元素计算 `y_i［j］ = max(x1_i［j］, x2_i［j］)`；两个等长 TensorList 的同位置 Tensor 逐元素 maximum；浮点 SIMT body 显式传播任一输入 NaN。两张算子卡共享 ForeachMaximumList 的 TensorList 对位逐元素 maximum 契约，950 卡进一步给出 SIMT 路线和 NaN 传播。
-<!-- cannbot:related:end -->

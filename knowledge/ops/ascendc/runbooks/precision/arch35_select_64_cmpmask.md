@@ -76,10 +76,3 @@ arch35 上 `Compare` 一次产生 cmpmask 的容量 = `ONE_REPEAT_ELE_NUM_FP32 =
 ## 误诊
 
 早期一度怀疑 Select 语义写反或 FTZ 把 threshold flush 到 0 导致 mask 翻转。但算式核验：threshold=-1.18e-38 即便 FTZ 成 0，对 bx=-0.5953 的 mask 仍是 false、与"取反"表现一致但解释不了 count=64 通过/128 失败的边界。真因是 cmpmask 单 repeat 容量 64，非语义反也非 FTZ（来源平台:950；证据等级:agent_reported——此为排除性推理，非实测信号）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Select cmpmask 不偏移致分支反转诊断](select_cmpmask.md)（`related`）：n=129 起 2 mismatches；PASS/FAIL 边界恰落在 `ONE_REPEAT_ELE_NUM = 256B/sizeof(elem)`（fp32=64）；两卡的规模边界探针共同把大 count 分支错选收敛到单 repeat cmpmask 容量及复用路径。
-- [arch35 Select VSEL_CMPMASK_SPR 每 64 元素复用](arch35_select_vsel_cmpmask_spr_mask_reuse_count_over_64.md)（`same_topic`）：“arch35 上 `Compare` 一次产生 cmpmask 的容量 = `ONE_REPEAT_ELE_NUM_FP32 = 256B / 4B = 64` 位（一个 vector repeat 的 fp32 元素数）。”与“模式0 `VSEL_CMPMASK_SPR`：根据 selMask 在两个 tensor 中选取元素，**selMask 中有效数据的个数存在限制**（对 float 为 256B/4B=64 个）；**每一轮迭代中，根据 selMask 的有效位数据进行选择操作，每一轮迭代采用的 selMask，均为相同数值**，即多轮迭代复用同一 64bit 掩码。”分别来自双方当前正文。两份 runbook 指向同一个 arch35 超 64 元素 cmpmask 故障：一份用 64/128/256 边界实验定位容量，另一份解释模式 0 每轮复用同一 64bit mask 并给出模式 2 修复。
-<!-- cannbot:related:end -->

@@ -135,11 +135,3 @@ AscendC::LayerNormGradBeta<T, isReuseSource>(
 输出数据(outputPdBeta):
 [ 224. 232. 240. 248. 256. 264. 272. 280. ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LayerNormGradBeta Tiling](layer_norm_grad_beta_tiling.md)（`related`）：“host侧Tiling接口，用于获取LayerNormGradBeta kernel计算所需的Tiling参数，分两步：通过GetLayerNormGradBetaMaxMinTmpSize获取最大和最小临时空间大小；通过GetLayerNormGradBetaNDTilingInfo获取kernel侧所需tiling参数。”；“获取LayerNorm反向传播的gamma和beta梯度，与LayerNormGrad配合使用。接收LayerNormGrad输出的resForGamma和上游梯度inputDy，计算并输出pd_gamma和pd_beta。”。Host 两步 tiling产出 LayerNormGradBeta kernel 所需临时空间和切分结构，kernel 再消费 resForGamma 与 inputDy 计算梯度。
-- [LayerNormGrad](layer_norm_grad.md)（`same_topic`）：计算LayerNorm的反向传播梯度。可单独使用输出pd_x和resForGamma；也可与LayerNormGradBeta配合使用，将resForGamma传递给LayerNormGradBeta同时得到pd_x、pd_gamma和pd_beta。输入shape为［B,S,H］。模板参数T支持half/float。；获取LayerNorm反向传播的gamma和beta梯度，与LayerNormGrad配合使用。接收LayerNormGrad输出的resForGamma和上游梯度inputDy，计算并输出pd_gamma和pd_beta。模板参数T支持half/float。。前一接口产生 resForGamma，后一接口把它作为必需输入继续计算 gamma 与 beta 梯度，明确构成 LayerNorm 反向的生产者到消费者调用链。
-<!-- cannbot:related:end -->

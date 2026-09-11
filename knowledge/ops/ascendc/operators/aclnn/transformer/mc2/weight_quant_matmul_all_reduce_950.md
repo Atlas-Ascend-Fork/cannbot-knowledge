@@ -806,9 +806,3 @@ buffer数与 inner-K 在编译期决定 UB 队列深度和一次反量化粒度�
 | 同步 | CV cross-core + HCCL wait + all-core barriers | schedule mode1、AG前barrier、handle<16 | RegBase/AS/A2A base |
 | 精度与尾块 | Host产生main/tail或三类AS block | FP8/HIF8 mode、pad copy、TCubeTiling不变 | `DoWeightQuantAsTiling`/controller |
 | 失败边界 | unsupported type/layout/mode fails Host；K=0 存在固定源码 ABI/成员初始化缺陷 | 不得fallback到A2 body或另一comm graph；不得把 empty 设计图写成已验证可运行 | `CheckInput/GetTilingKey`、950 empty constructor/宏 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [WeightQuantMatmulAllReduce A2 ACLNN 算子知识](weight_quant_matmul_all_reduce.md)（`same_topic`）：｜ Kernel 路线 ｜ R-001 ND CustomAntiquant；R-002 FRACTAL_NZ WeightNZ；R-003 K=0 空域 ｜；｜ Kernel 路线 ｜ R-001 RegBase+AllReduce；R-002 RegBase+TwoShot；R-003 AdaptiveSplit+AllReduce；R-004 AdaptiveSplit+TwoShot；R-005 K=0 ｜；两卡描述同一 WeightQuantMatmulAllReduce ACLNN 算子，并明确展示 A2 与 950 的不同融合路线。
-<!-- cannbot:related:end -->

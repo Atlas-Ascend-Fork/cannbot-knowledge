@@ -101,10 +101,3 @@ extern "C" __global__ __aicore__ void add_custom(__gm__ uint8_t *x, __gm__ uint8
 }
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [COPY_TILING_WITH_STRUCT](copy_tiling_with_struct.md)（`same_topic`）：适用于拷贝一个结构体的数组成员变量的场景。；以结构体方式拷贝 Tiling 数据。通过宏展开从 GM 搬运 Tiling 数据到 Local Memory 并填充到结构体。支持 950/a2/a3。。两者是同一 Tiling 数据搬运链的互补宏：一个定位结构体数组成员，另一个填充结构体整体，选择取决于目标字段形态。
-<!-- cannbot:related:end -->

@@ -279,10 +279,3 @@ __global__ __aicore__ void gather_kernel(GM_ADDR x, GM_ADDR index, GM_ADDR y,
 ## 误诊
 
 “could not match `LocalTensor` against `GlobalTensor`”容易被误读为源、目标 tensor 类型写反。该次故障中，后续候选已经明确指出三参数 store 可匹配，真正阻塞点是多传了第四个 `DataCopyPadExtParams`。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm.md)（`exemplifies`）：`GlobalTensor <- LocalTensor` 的 UB→GM `DataCopyPad`；将数据从UB非对齐搬运至GM。runbook 的四参编译失败与三参修复正是该 UB→GM API 的方向特定重载案例；API 方向合同可用于排除误套 GM→UB padding 参数。
-- [DataCopyPad 加载缺少 Pad 参数导致编译失败](datacopypad_gm_to_ub_requires_pad_params.md)（`related`）：同一函数内的 UB 到 GM 输出搬运仍可使用三参数形式，因此不能仅凭函数名相同就把两个方向的重载签名视为对称；GM→UB 的 MTE2 overload 为 `LocalTensor dst + GlobalTensor src + DataCopyExtParams + DataCopyPadExtParams`，而 UB→GM 的 MTE3 overload 为 `GlobalTensor dst + LocalTensor src + DataCopyExtParams`。两条运行手册从相反方向给出同一工具链的非对称重载合同，联合用于根据首参 Tensor 类型选择三参或四参调用。
-<!-- cannbot:related:end -->

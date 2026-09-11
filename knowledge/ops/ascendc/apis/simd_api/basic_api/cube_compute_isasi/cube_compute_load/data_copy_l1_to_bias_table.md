@@ -158,10 +158,3 @@ __aicore__ inline void SplitBias(AscendC::LocalTensor<outputType> bias1Local,
 ```
 
 完整示例请参考[data_copy_gm2l1样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2l1)中场景4。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [L1与BiasTable Buffer数据搬运](../../data_move_guide/l1_bias_table_data_move.md)（`same_topic`）：“将L1 Buffer中的bias数据搬运到BiasTable，用于Mmad计算的bias输入。”；“DataCopy 实现 L1 Buffer 到 BiasTable Buffer 的连续数据搬运，格式和内容保持不变。”。目标页给出焦点 API 的连续搬运语义和不变性。
-<!-- cannbot:related:end -->

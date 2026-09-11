@@ -165,21 +165,7 @@ __aicore__ inline HcclHandle AlltoAll(GM_ADDR sendBuf, GM_ADDR recvBuf, uint64_t
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AlltoAllV](allto_all_v.md)（`related`）：焦点卡写明“每张卡向通信域内所有卡发送相同数据量的数据，并从所有卡接收相同数据量的数据”，候选卡写明“AlltoAll要求所有卡的收发数据量相同，AlltoAllV则不需要数据量相同”。两卡给出等量与逐 rank 变长收发契约，可决定是否传 counts/displacements。
-- [MatmulAlltoAll A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_allto_all.md)（`related`）：`Y=AlltoAll(P).view(R*BS,H2/R)`；每张卡向通信域内所有卡发送相同数据量的数据；连接融合算子的通信阶段与 HCCL 任务语义。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 3 / 3 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [MatmulReduceScatter 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_reduce_scatter_950.md)（`related`）：算子声明的固定版本源码包含对 `AlltoAll(...)` 的直接调用（第 232 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_reduce_scatter_v2/op_kernel/arch35/matmul_a2a_vec_reduce_fp16_bf16.h#L232)
-- [QuantMatmulAllReduce A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce.md)（`related`）：算子声明的固定版本源码包含对 `AlltoAll(...)` 的直接调用（第 264 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_kernel/arch22/matmul_all_reduce_quant_pertoken_comm_int8.h#L264)
-- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)（`related`）：算子声明的固定版本源码包含对 `AlltoAll(...)` 的直接调用（第 230 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_kernel/arch35/matmul_all_reduce_quant_commfp8_mixed_calc.h#L230)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MatmulAlltoAll A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_allto_all.md)
+- [MatmulReduceScatter 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/matmul_reduce_scatter_950.md)
+- [QuantMatmulAllReduce A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce.md)
+- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)

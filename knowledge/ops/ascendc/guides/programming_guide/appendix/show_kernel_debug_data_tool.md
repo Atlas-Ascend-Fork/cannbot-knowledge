@@ -106,10 +106,3 @@ platforms:
      │   └── index_dtype.json              // index与数据类型的映射关系
      └── parser.log                         // 解析日志，包括printf、ascendc_assert接口的打印信息
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DumpTensor](../../../apis/simd_api/basic_api/debug_interface/onboard_print/dump_tensor.md)（`explains`）：本工具提供了对调测信息的离线解析能力；打印Tensor内容并支持自定义标签。DumpTensor 在 Kernel 侧生成带标签的 Tensor 调测数据，ShowKernelDebugData 再把导出的 bin 离线解析为可读内容；指南把具体 API 输出接到完整调试查看流程。
-<!-- cannbot:related:end -->

@@ -103,9 +103,3 @@ out_i = torch_npu.npu_prompt_flash_attention(
 - `diff 事实`（@524914b）：950 用 `hccl_op_expansion_mode:5` + `HCCL_BUFFSIZE`、单机 8 芯，由 platform_version 门控。
 - `维护者确认 + diff 事实`（@1ffca86）：310P 上 `_npu_flash_attention_unpad` 有精度问题（作者 review 明确陈述）；合并态 `mm_encoder_attention.py` 改用逐段 `npu_prompt_flash_attention`（BSND），diff 中未再出现 unpad 算子。
 - 溯源下探：[cann-recipes-infer-issue-4-rfc-qwen3-moe-model-inference-support](https://gitcode.com/cann/cann-recipes-infer/issues/4)、[cann-recipes-infer-issue-179-question-8-910b2-64gb-deepseekv4](https://gitcode.com/cann/cann-recipes-infer/issues/179)、[cann-recipes-infer-pr-128-feat-support-deepseekv3-on-ascend310p-20](https://gitcode.com/cann/cann-recipes-infer/merge_requests/128)、[cann-recipes-infer-pr-366-support-deepseek-v4](https://gitcode.com/cann/cann-recipes-infer/merge_requests/366)、[vllm-ascend-pr-5776-feature-support-310p-device-run-qwen2-5-3-dense-and-qwen2-5vl-models](https://github.com/vllm-project/vllm-ascend/pull/5776)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FP16-only 平台 (310P) 部署 BF16 训练模型：权重 cast 精度回归与验收盲区](../../../runbooks/precision/precision_fp16_only_platform_bf16_weight_cast.md)（`related`）：310P 这类非默认平台的整体部署选型（并行形态 / 模型变体 / 算子与 HCCL 适配）；310P 无标准 ［MLA］(../../../concepts/modules/mla.md)/［FIA］(../../../concepts/kernels/fused_infer_attention_score.md) 算子路径；部署规则页补充该精度 runbook 所在非默认平台的算子与通信适配边界。
-<!-- cannbot:related:end -->

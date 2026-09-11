@@ -371,12 +371,3 @@ __global__ __aicore__ void rms_norm_kernel(GM_ADDR x, GM_ADDR gamma, GM_ADDR y,
 ## 性能影响
 
 该单位修复没有隔离性能 A/B；不得把同时包含多行 tile、双缓冲和多核调整的端到端变化归因于 stride 单位修复。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad 尾块改逐行一维搬入](datacopypad_partial_2d_blocks_use_per_row_copy.md)（`related`）：“若要恢复批量 2D 搬入，应先用独立搬运探针确认两个 stride 字段的单位和 start-to-start 规则，再与逐行结果逐 byte 比对。”；“修复保留 `blockLenBytes`，另算 `gapBlocks = gapBytes / 32`，并在三处多行搬运统一使用 `gapBlocks`。”。焦点把逐行实现作为 oracle，目标卡提供同平台已验证的 32B-block stride 编码，可作为恢复 2D fast path 时的最小探针候选。
-- [postReduceUbSize 不足致 Phase2 读破坏](../compilation/euclidean_norm_group_post_reduce_ub_size_phase2_chunk.md)（`related`）：强制 `postReduceUbSize >= CeilAlign(aTotal_*dtypeSize, blockSize)` → `aUbFactorP2 = aTotal_` → `srcStride = aTotal_*4 - aTotal_*4 = 0`，Phase 2 单 chunk 连续读 workspace，消除 stride 错位。；也就是说，这些 stride 字段使用 32B block 数，而 `blockLen` 仍使用字节数。；若以后恢复 Phase 2 多 chunk，必须把相邻 workspace 行的字节间隔换算为 32B block 后填写 srcStride；现修法让该间隔和 srcStride 同时为零，正好绕开字段单位误填。
-- [合并尾块的非 32B 行导致 PathB 数据损坏](datacopypad_rows_must_keep_32_byte_block_length.md)（`related`）：“完整 chunk 固定为 `V32 = 32 / sizeof(T)` 个元素，使二维搬运的每行 `blockLen` 恰为 32B。”与“也就是说，这些 stride 字段使用 32B block 数，而 `blockLen` 仍使用字节数。”分别给出双端正文事实；两张排障卡分别约束同一次多行 DataCopyPad 的 blockLen 字节长度与 srcStride/dstStride 的 32B block 单位，联合使用可避免把行长和行间距单位混为一谈。
-- [窄尾 tile 行距错位：补齐 UB gap](datacopypad_narrow_tile_needs_explicit_ub_row_gap.md)（`related`）：分别在 GM→UB 的 `dstStride` 与 UB→GM 的 `srcStride` 中补上相同的 UB gap：；修复保留 `blockLenBytes`，另算 `gapBlocks = gapBytes / 32`，并在三处多行搬运统一使用 `gapBlocks`。。窄尾修复要求用 UB gap 恢复固定 rowBytesT_ 行距，stride 单位卡规定先把 gap 字节换算为 32B block；后者可直接验证前者公式除以 32 的必要性。
-<!-- cannbot:related:end -->

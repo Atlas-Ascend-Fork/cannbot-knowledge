@@ -72,11 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetClampTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetClampMaxMinTmpSize](get_clamp_max_min_tmp_size.md)（`related`）：“host侧Tiling接口，用于获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”；“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。”。焦点接口从 shape 求可用空间范围，factor 接口反向从固定缓冲求单次处理元素数，二者共同完成 Clamp workspace 与 tile 大小设计。
-- [Clamp（数学计算）](clamp.md)（`same_topic`）：“获取ClampMax/ClampMin/Clamp接口的maxLiveNodeCount和extraBuf，用于在固定临时空间大小下推算算子单次最大计算元素数量。”与“将输入中除nan值以外大于max的数替换为max，小于min的数替换为min，小于等于max和大于等于min的数保持不变，作为输出。”分别给出双端正文事实；临时空间因子接口专门为 Clamp 计算反推单次元素规模，Clamp 卡定义被切分执行的逐元素上下界语义，二者是同一高阶 API 的容量计算与 Kernel 合同。
-<!-- cannbot:related:end -->

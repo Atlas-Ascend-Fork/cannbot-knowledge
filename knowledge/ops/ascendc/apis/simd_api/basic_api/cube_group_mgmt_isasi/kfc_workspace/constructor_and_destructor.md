@@ -67,10 +67,3 @@ KfcWorkspace对象实例。
 ```
 AscendC::KfcWorkspace desc(workspaceGM);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetKfcWorkspace](get_kfc_workspace.md)（`related`）：创建 KfcWorkspace 对象，Kfc（kernel function call）表示核间通信调用，用于管理 CubeResGroupHandle 消息通信区的 GM 空间。；获取用于 CubeResGroupHandle 消息通信区的 GM 内存地址。用户使用 CubeResGroupHandle 构造函数时需用此接口自主管理空间地址。；构造函数建立管理核间通信 GM 空间的 KfcWorkspace 对象，GetKfcWorkspace 从同一对象取得 CubeResGroupHandle 所需地址。
-<!-- cannbot:related:end -->

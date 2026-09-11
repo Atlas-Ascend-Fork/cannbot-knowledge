@@ -59,10 +59,3 @@ uint32_t maxValue;
 uint32_t minValue;
 AscendC::GetSiluTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Silu](silu.md)（`related`）：“用于获取Silu Tiling参数：Silu接口能完成计算所需最大临时空间大小和最小临时空间大小。”说明 Host 侧空间计算直接服务 Silu；“函数原型： template <typename T, bool isReuseSource = false> __aicore__ inline void Silu(const LocalTensor<T>& dstLocal, const LocalTensor<T>& srcLocal, uint32_t dataSize)”给出消费该 Tiling 结果的 Kernel 计算接口。
-<!-- cannbot:related:end -->

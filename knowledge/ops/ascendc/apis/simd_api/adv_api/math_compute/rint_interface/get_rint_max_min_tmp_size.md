@@ -66,10 +66,3 @@ uint32_t minValue = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetRintMaxMinTmpSize(plat, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Rint](rint.md)（`related`）：host侧Tiling接口，用于获取Rint接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetRintMaxMinTmpSize获取。。GetRintMaxMinTmpSize 计算 Host 侧可用容量区间，Rint 的 Kernel 重载直接消费据此选择的 sharedTmpBuffer，组成容量查询到调用的完整链。
-<!-- cannbot:related:end -->

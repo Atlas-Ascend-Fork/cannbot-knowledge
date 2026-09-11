@@ -16,14 +16,14 @@
 
 ## 核心纪律（违反即废）
 
-1. **就地增量，绝不整体重写**：落盘只做条目级 delta（新建卡 / 合并字段 / 记录关系候选），不重排既有卡（防 ACE context collapse）。
+1. **就地增量，绝不整体重写**：落盘只做条目级 delta（新建卡 / 合并字段 / 补充普通引用），不重排既有卡（防 ACE context collapse）。
 2. **门控先行**：候选过不了门控的不落库，只进 ledger/meta 报告（deferred/rejected）。
 3. **独立审查**：落库前用全新 reviewer 上下文审查改动（§独立审查）；reviewer 只能输出 findings，不能编辑卡片。
 4. **新颖性/去重**：已覆盖的不重复 ADD——同 nugget 在 ledger 中累计内部 `reproduce_count`，必要时增量合并失效边界/坏实践；新颖的才新建卡。`reproduce_count` 不写知识卡 Frontmatter。
 5. **不静默删除**：常规 ingest/upgrade 中，废弃卡设 `status: deprecated`、填 `replaced_by` 并保留文件；`replaced_by` 不得出现在非 deprecated 卡中。改内部 `verified` tier 的旧结论前先回归检查。用户明确授权的 `rebuild` 是唯一例外：按 runbooks-contract 约束先留 inventory/基线，再整树删除并在同轮重建，不逐卡设置生命周期字段。
 6. **职责隔离**：只读 miner 草稿 + reconstruction + 现有 runbooks 库，**不读 trace 长文**（防轨迹细节误入知识卡）。
-7. **OKF 合规收尾**：纯 slug 文件名、type↔目录自洽、index 只列本层、代码完整为**正文内联**（无 `okf:attachment` 附件引用）、新/改卡严格 validator HARD=0，且受管关系块通过全库图谱 verify。
-8. **统一收口**：index/代码内联核对/coverage/log 与关系候选 ledger 由主 agent 一次性写入（单一 finalizer），不分散零散改；受管关系块只能在随后的全量图谱流程中派生。
+7. **OKF 合规收尾**：纯 slug 文件名、type↔目录自洽、index 只列本层、代码完整为**正文内联**（无 `okf:attachment` 附件引用）、新/改卡严格 validator HARD=0，普通正文链接通过统一 Contract 校验。
+8. **统一收口**：index/代码内联核对/coverage/log 与 ledger 由主 agent 一次性写入（单一 finalizer），不分散零散改；普通链接随 staged card 审查和发布。
 9. **可追溯**：落盘后写 `logs/<YYYY-MM-DD>.md` 条目（本仓规范）+ meta 报告（`.build/ops-knowledge-trace-ingest/`）+ ledger 终态。
 
 ---
@@ -60,7 +60,7 @@ runbooks 是**算子开发知识库**：只收"Agent 编写/调试/优化 Ascend
 | 模式 | 触发 | 输入 | 产出 |
 |------|------|------|------|
 | **ingest** | `ingest <草稿目录或manifest>` | 单条/少量 miner 草稿 | 落盘新卡（`single_run`）/ 增量合并 / reject；`reproduce_count=1` |
-| **upgrade** | `upgrade` | 扫 `knowledge/ops/ascendc/runbooks/` 全库 | 跨 trace 合并同 nugget → `reproduce_count` 累加 → 升内部 `verified` tier；输出关系候选；废弃卡 `replaced_by` |
+| **upgrade** | `upgrade` | 扫 `knowledge/ops/ascendc/runbooks/` 全库 | 跨 trace 合并同 nugget → `reproduce_count` 累加 → 升内部 `verified` tier；按需补充正文链接；废弃卡 `replaced_by` |
 | **rebuild** | 用户明确授权清空重建 | 完整原始轨迹 inventory + 空 runbooks 库 | 不继承旧卡；按本轮 source SHA-256 聚类复现并全量重建 index/图谱/检索 |
 
 > **模式边界**：内部 `verified` tier 门槛 = 上板信号（`tool_observed`/`artifact_verified`）+ `reproduce_count≥2`，复现计数只在**跨 trace** 时才能涨。ingest 单条落盘只能 `single_run`；攒够一批后跑 upgrade 才能真正升级。rebuild 只改变库的初始状态（空库重建），不放松同一证据门槛。
@@ -116,7 +116,7 @@ runbooks 是**算子开发知识库**：只收"Agent 编写/调试/优化 Ascend
 - **文件名纯 slug**：从 title 生成英文 snake_case slug，无序号无 session 前缀；撞名加 `__<hash6>`。**无 `id` 字段**——slug 文件名即唯一标识。
 - **错误码进文件名（build 卡优先）**：若现象有关键错误码，在不破坏稳定 slug 的前提下嵌入错误码作为精确检索锚点；存量 kebab-case 路径不因格式治理重命名。
 - **补 `description`**：确保非空（miner 已填则校验）。
-- **关系候选**：草稿和 curate 落盘都不手写 `## 相关` 或受管块。查到库内同问题域路线卡时，在 ledger `related_suggestions` 记录 `{a, b, relation, condition}`；后续由全库图谱候选、Agent 全文判定和聚合决定是否成边。
+- **跨卡引用**：查重时发现有助于理解结论的卡片，可在 staged card 的技术叙述中直接链接并说明选用条件。ledger `related_suggestions` 仅为可选的待核对引用建议，不增加全库图谱流程。
 - **机制 artifact 核对**：按 `knowledge_form` 核对 repair before/after、diagnostic probe/observation、negative attempt/boundary 或 validated implementation/validation；核心代码/配置均正文内联且逐字可核，附件引用一律退回。
 - **足量核查**：落盘前对照 runbooks-contract §8 维度表检查——`## 适用场景`、`## 设计决策`、`## 遗留问题` 与形态主章节；`repair_recipe` 核对 before/after 为完整因果单元，其他形态核对自身机制 artifact；guide 卡核对 `## 完整代码` 可执行；`## 验证信号` 核对无 hearsay、每条信号标来源平台+证据等级、`platforms` 只含实际验证平台。
 - **复现判定**：沿用草稿 manifest 的内部 `reproduce_count`（默认 1）；**不写卡 frontmatter**，frontmatter 也不设 `confidence`（tier 由复现数 + `## 验证信号` 判定，记 ledger/manifest，见 runbooks-contract §5）。
@@ -151,13 +151,13 @@ runbooks 是**算子开发知识库**：只收"Agent 编写/调试/优化 Ascend
   - **platforms 超验证范围**（frontmatter `platforms` 含推断平台，未在 `## 失效边界` 标"未验证，推断可迁移"）；
   - **验证信号未逐条标注**（每条信号缺来源平台或证据等级；`agent_reported` 被当实测事实写进验证信号）；
   - **绝对性能分数落正文**（绝对 score/latency/speedup 落正文即 blocker，provenance 只进 manifest；相对代价未标参照路线/来源平台）；
-  - **同问题域冲突未进入候选**（存在 fallback/fast path/被取代方案并存，却未在 ledger 记录带选用条件的关系候选）；
+  - **同问题域方案边界不清**（存在 fallback/fast path/被取代方案并存，却未在正文说明选用条件）；
 - 根据 findings 修订后生成新 subject 并重新审查，直到 blocker 和 major 清零；最终 PASS receipt 必须通过 `scripts/validate_review_receipt.py`。随后由带 receipt 门禁的 materialize `--verified` 仅应用 reviewer-owned approval flags，并再次运行 receipt 校验及 approved `validate_curated_output.py`。
 
 ### 6. 统一收口（单一 finalizer）
 审查通过后，由主 agent 一次性完成所有共享写入：
 1. 运行 `python3 <TRACE_SKILL_DIR>/scripts/publish_reviewed_cards.py <ledger> <staged-root> <receipt> --knowledge-root .` 原子发布 receipt 绑定字节，并立即加 `--check` 验证目标；再运行 `python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py --knowledge-root . sync-indexes` 生成全部受影响索引，并以同一入口的 `sync-indexes --check` 验证。不要手写索引条目格式。
-2. 跑 runbooks-contract §6 的 HARD 约束（文件名合规、必填 platforms、完整配方类 runbook 完整性、代码完整内联、验证信号禁 hearsay 等）。HARD≠0 时不得直接修改知识卡；回到 staged root 修正、生成新 subject、重新独立审查和发布。受管关系块由后续全库图谱 verify 单独门禁。
+2. 跑 runbooks-contract §6 的 HARD 约束（文件名合规、必填 platforms、完整配方类 runbook 完整性、代码完整内联、验证信号禁 hearsay 等）。HARD≠0 时不得直接修改知识卡；回到 staged root 修正、生成新 subject、重新独立审查和发布。正文链接由统一 Contract 校验，不另设图谱门禁。
 3. 写 ledger 终态 + meta 报告（含 coverage：每条候选处于 published/deferred/rejected/skipped 且有 reason）。
 4. 写 `logs/<YYYY-MM-DD>.md` 条目。
 
@@ -190,11 +190,11 @@ upgrade 扫描时，检出不过价值判据的存量卡（agent 编排/工具�
 ### 3.7 方案演进与冲突治理（不建平行卡）
 upgrade 扫描发现**同一问题域出现更优/替代方案**（新轨迹证明旧卡是 fallback、被否方案或 banned）时：
 - **不建平行卡**：新结论优先**增量合并**进旧卡（`## 设计决策` 补"当前方案属哪档路线"、`## 坏实践` 内联被降级路线为负例、`## 适用场景` 修正路线标注、`## 失效边界` 补"未验证，推断可迁移"）；
-- **旧卡降置信度（downvote）**：`reproduce_count` 不因被否路线继续累加；ledger 记 `downvote: <slug>` + reason（`replaced_by_fastpath`/`route_downgraded_to_fallback`/`banned`），并输出带选用条件的冲突关系候选，交给全量图谱判定；
+- **旧卡降置信度（downvote）**：`reproduce_count` 不因被否路线继续累加；ledger 记 `downvote: <slug>` + reason（`replaced_by_fastpath`/`route_downgraded_to_fallback`/`banned`），并在 staged card 正文说明选用条件，必要时链接冲突卡片；
 - **upgrade 不静默改内部已验证结论**：涉及旧卡降级时先回归检查旧基线认知来源，与 `knowledge-routing` 的“复现时更新置信度、不建重复卡”一致；`replaced_by` 仅在新方案完整覆盖旧卡且旧卡无独立价值时使用，并同时将 `status` 改为 `deprecated`（见核心纪律 5）。
 
-### 4. 输出关系候选
-跨簇扫描同根因不同现象（如 precision `output_all_zero` ↔ perf `bandwidth_unsaturated`，都源于多核切分）、同现象不同 `solution_layer` 的卡，写入 ledger 的关系候选及理由。候选不是图谱边，也不得直接写进知识卡；全量图谱流程由多个 reviewer 阅读当前正文后判定，聚合器再生成受管 `cannbot:related` 块。guide 卡与其“修复的现象卡”是典型候选对（模板 ↔ 修的问题）。
+### 4. 按需补充跨卡引用
+查重或方案分析时发现有助于理解结论的已有卡片，可在 staged card 的相应正文添加普通 Markdown 链接，并说明适用范围或选用条件。无需为图谱扫描全库或额外判定关系；未采用的引用建议可留在 ledger，不影响入库。
 
 ### 5. index + validator + log
 被合并卡设为 deprecated 并填写 `replaced_by` 后，运行统一 `sync-indexes` 生成索引（deprecated 卡仍由机器合同决定如何导航，不手工增删或加特殊格式）；跑 validator HARD=0；写 log + meta。
@@ -217,7 +217,7 @@ upgrade 扫描发现**同一问题域出现更优/替代方案**（新轨迹证�
 - **本仓 OKF 与路径原则**：字段和 Bundle 语义以 `governance/specs/okf.md` 与 `frontmatter.md` 为准，Runbook 路径固定为 `knowledge/<domain>/<route>/runbooks/<area>/<slug>.md`，受控 area 以 `governance/specs/paths.md` 和 Registry 为准，不自定义“层数”规则。
 - **log 规范**：遵守根 `AGENTS.md`——事后写、保留历史、插入当天文件顶部（最新在前）、时间戳来自同一次 `date`。
 - **git 协作**：只记录当前 commit/分支供审计，不写死分支名；未经用户明确授权不执行 pull、commit、push、merge 或发布。
-- **图谱（落盘后必做）**：使用 knowledge-ingest 的 `scripts/knowledge_graph.py` 执行 `candidates`、`make-shards`，由至少两个独立 subagent 完整覆盖全部 focal 后执行 `aggregate`、`finalize`。候选不是边，新卡及跨树关系都不手写；具体命令和 review schema 只以 knowledge-ingest 的 `references/local-graphs.md` 为准。
+- **图谱按需**：入库收尾不要求构图；需要查看链接关系时参见 knowledge-ingest 的 `references/local-graphs.md`。
 
 - **不改其他知识树或治理目录**（本 skill 只管 `knowledge/ops/ascendc/runbooks/`，自身 `.agents/skills/ops-knowledge-trace-ingest/references/` 仅在维护 Skill 契约时修改）。
 
@@ -231,7 +231,7 @@ upgrade 扫描发现**同一问题域出现更优/替代方案**（新轨迹证�
 2. **门控有效**：无上板信号/仅 `agent_reported`/不过价值判据（常识性·纯流程·截断闭环）的候选被 reject/deferred，不落库；单跑自评封顶 `single_run`。
 3. **去重有效**：同 nugget 第二次落盘 → UPVOTE（`reproduce_count+1`），不重复新建。
 4. **upgrade 升级**：同 nugget ≥2 份且有上板信号 → 主卡升内部 `verified` tier，被合并卡 `replaced_by` 保留。
-5. **图谱闭合**：全量图谱判定覆盖全部 focal，受管 `cannbot:related` 块与判定缓存一致、边端点有效且父索引闭合。
+5. **链接有效**：已采用的普通正文链接能解析到 Bundle 内现有文件；没有相关链接的卡片不影响入库。
 6. **审查有效**：无实测信号 / 跨算子泄漏 / 环境误判为 kernel / **测试侧放松当正解** / **hearsay 进验证信号** / **before-after 仅示意** 的候选被 blocker 拦下。
 7. **无泄露**：落盘卡文件名/frontmatter/正文均无 session_id 与内部结构化锚点（source/raw record/sequence 只进 manifest）。
 8. **无整体重写**：`git diff --stat` 行数 sane，单条目级。

@@ -420,9 +420,3 @@ needCoreNum = std::max(1, needCoreNum);
 | 同步 | 每线程程序序；无跨线程冲突 | gridStride 必须等于 threadNum*blockNum，输出索引唯一 | `OpForeachSignSimt` |
 | 精度与尾块 | T 比较、int 差、cast回T；NaN→0；idx guard | 不得用无界 load/store替代 tail guard | `OpForeachSignSimt` |
 | 失败边界 | Host 拒绝 >256、非法 dtype/核数/UB=0 | 不得绕过列表 dtype 一致性契约或 UB-128KiB 隐含下界 | `GetPlatformInfo/ForeachSignTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachSign A2/A3 ACLNN 算子知识](foreach_sign.md)（`same_topic`）：Host 按所有 Tensor 元素组成的逻辑串联域分核，但 Device 仍通过 TensorList 描述逐 Tensor 取真实 GM 地址。；Host 不按总元素数分核，而按最大单 Tensor `M` 选择 grid。；两张卡实现同一 aclnnForeachSign TensorList 语义，同时揭示 A2/A3 的总元素分核加 AIV Queue 与 950 的最大 Tensor 分核加 SIMT grid 差异，可直接支持跨平台实现选择和回归。
-<!-- cannbot:related:end -->

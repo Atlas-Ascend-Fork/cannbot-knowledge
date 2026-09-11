@@ -66,10 +66,3 @@ aclError为int类型变量，详细说明请参考[RTC错误码](rtc_error_code.
 aclrtcProg prog;
 aclError result = aclrtcDestroyProg(&prog);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclrtcCreateProg](aclrtc_create_prog.md)（`related`）：“参数 prog 为输出，返回运行时编译程序句柄；src 为 Ascend C Device 侧源代码字符串；name 为程序名称，默认值为 default_program。”说明句柄的创建和所有权起点；“销毁运行时编译程序实例，释放资源。函数签名为 aclError aclrtcDestroyProg(aclrtcProg* prog)。”给出对应释放动作，二者闭合资源生命周期。
-<!-- cannbot:related:end -->

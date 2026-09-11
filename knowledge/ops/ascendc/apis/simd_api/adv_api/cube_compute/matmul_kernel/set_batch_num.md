@@ -70,11 +70,3 @@ mm1.SetBatchNum(batchA, batchB);
 // 多batch Matmul计算
 mm1.IterateBatch(gm_c, false, 0, false);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IterateBatch](iterate_batch.md)（`related`）：在不改变Tiling的情况下，重新设置多Batch计算的Batch数。；调用一次IterateBatch，可以计算出多个singleCoreM * singleCoreN大小的C矩阵。；SetBatchNum 调整当前 Matmul 对象的 batchA/batchB，随后 IterateBatch 按该多 Batch 状态一次产出多个 C 矩阵，形成运行期批数设置到批量执行的调用链。
-- [SetBatchNum](../matmul_tiling/set_batch_num.md)（`related`）：在不改变Tiling的情况下，重新设置多Batch计算的Batch数。；设置多Batch计算的最大Batch数，最大Batch数为A矩阵batchA和B矩阵batchB中的最大值。；Host 侧先把最大 Batch 写入 Tiling，Kernel 侧再在不重做 Tiling 时改当前 batchA/batchB，二者是同一 Matmul 多 Batch 配置在静态上限与运行期覆盖两个阶段的合同。
-<!-- cannbot:related:end -->

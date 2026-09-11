@@ -73,9 +73,3 @@ NDDMA 描述符在 arch35 上最多覆盖 5 维。当 RANK>5 时，split axis �
 
 - 任何用 NDDMA 广播搬运的高维（RANK>5）算子，设计阶段就要确认外循环覆盖 split axis 到 NDDMA 覆盖区间的全部维度，不要默认 NDDMA 描述符覆盖全部 RANK。
 - 双输出算子出现「一个输出对一个输出错」时，优先怀疑只用于其中一个输出的标量读取，而非整体搬运逻辑——grad/accum_new 共用搬运，错只会出现在只用标量的步骤。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NDDMA 快速路径 C=1 中间轴漏维判别](nddma_c_1.md)（`related`）：“NDDMA 可用性需单独判 `chanStride_==1`”给出焦点端事实；“NDDMA 描述符在 arch35 上最多覆盖 5 维。”给出候选端事实。焦点卡诊断 channel 轴误判导致 NDDMA 漏搬，候选卡诊断 RANK>5 时外循环未覆盖描述符外维度；两者给出同一多维快速路径的两个独立准入条件。
-<!-- cannbot:related:end -->

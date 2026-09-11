@@ -67,11 +67,3 @@ AscendC::ResetCtrlSpr<48, 48>();
 ```
 
 更多示例请参考[CtrlSpr样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/09_utils/ctrl_spr)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCtrlSpr](get_ctrl_spr_isasi.md)（`related`）：“读取CTRL寄存器（控制寄存器）特定比特位上的值。”；“对CTRL寄存器（控制寄存器）的特定比特位做重置。由模板参数［startBit, endBit］指定的比特位重置为默认值，默认值参考表 常用CTRL寄存器比特位说明。”。Reset 后可用 GetCtrlSpr 对同一 bit range 回读默认值，闭合临时控制位的恢复验证。
-- [SetCtrlSpr](set_ctrl_spr_isasi.md)（`same_topic`）：“对CTRL寄存器（控制寄存器）的特定比特位做重置。由模板参数［startBit, endBit］指定的比特位重置为默认值，默认值参考表 常用CTRL寄存器比特位说明。”与“对CTRL寄存器（控制寄存器）的特定比特位进行设置。通过模板参数startBit和endBit指定目标比特位范围，将运行参数value（超出比特位范围会出现编译报错）写入CTRL寄存器对应位置。”提供双方正文证据。SetCtrlSpr 写指定 CTRL 位段，ResetCtrlSpr 将同一位段恢复默认值，构成控制寄存器配置与清理的生命周期闭环。
-<!-- cannbot:related:end -->

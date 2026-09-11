@@ -352,10 +352,3 @@ __global__ __aicore__ void rms_norm_kernel(
 ## 误诊
 
 最初容易把报错理解成“缺少 `-lm`”；轨迹中的 device 编译上下文与后续 Ascend C API 修复表明，正确切入层是 kernel API 路径，不是通用链接参数。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad 后未先同步 Cast 导致低精度 NaN](../precision/mte2_barrier_must_precede_vector_cast.md)（`related`）：sqrtf 编译修复卡的验证路径明确“归约结果经 `AscendC::Sqrt`、`PipeBarrier<PIPE_ALL>`、`LocalTensor::GetValue` 转成标量倒数。”；同一 950 RMSNorm 低精度链的同步卡规定“低精度分支顺序固定为 `DataCopyPad → PipeBarrier → Cast`”，两卡分别闭合 gamma 搬入和归约开方两处 producer→consumer 同步，可顺序用于同一实现。
-- [模板内 float→float Cast 使 fp32 分支全错](../precision/templated_float_input_must_bypass_same_type_cast.md)（`related`）：sqrtf 修复后的 dtype 路径要“把 `mean+epsilon` 写入 LocalTensor，通过 Ascend C Vector API 完成开方。”；同一模板化 RMSNorm 卡指出“模板把“低精度升 fp32”错误泛化到了已经是 fp32 的分支。”，后者防止在进入前者 fp32 Vector 开方链前用同类型 Cast 破坏数据。
-<!-- cannbot:related:end -->

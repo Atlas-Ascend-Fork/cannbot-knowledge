@@ -72,10 +72,3 @@ __aicore__ inline void IBWait(const GlobalTensor<int32_t>& gmWorkspace, const Lo
 ## 调用示例<a name="section177231425115410"></a>
 
 完整样例请参考[调用示例](ib_set.md#section177231425115410)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IBSet](ib_set.md)（`related`）：“调用IBSet设置某一个核的标志位，与IBWait成对使用，表示核之间的同步等待指令：被等待核中调用IBSet，通过将值1写入全局内存中某块地址来通知等待核；而等待核中调用IBWait，持续读取全局内存中相应地址块的值，直到其值变为1，从而实现核间同步。”与“参数：isAIVOnly: 控制是否为AIVOnly模式，默认为true。；gmWorkspace(输入): 外部存储核状态的公共缓存，类型为GlobalTensor。GlobalTensor数据结构的定义请参考GlobalTensor。；ubWorkspace(输入): 存储当前核状态的公共缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。；blockIdx(输入): 表示等待核的idx号，取值范围：［0,核数-1］。；eventID(输入): 用来控制当前核的set、wait事件。”是双方正文中的具体合同。Set 卡给出写 1 通知、Wait 轮询的成对协议，Wait 卡列出共享 gm/ub workspace、blockIdx 和 eventID 合同；两端共同闭合跨核通知链的调用参数。
-<!-- cannbot:related:end -->

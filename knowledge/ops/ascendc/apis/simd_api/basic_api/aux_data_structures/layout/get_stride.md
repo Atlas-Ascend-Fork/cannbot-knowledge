@@ -60,10 +60,3 @@ int value = AscendC::Std::get<0>(layoutInit.GetStride()); // value = 1
 value = AscendC::Std::get<1>(layoutInit.GetStride()); // value = 100
 value = AscendC::Std::get<2>(layoutInit.GetStride()); // value = 200
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetStride](../../../tensor_api/layout/get_stride.md)（`same_topic`）：获取Layout的Stride信息。返回Layout中描述的各维度步长；从 Layout 中提取 Stride 部分。两端均定义从 Layout 读取 Stride 的同一操作，候选进一步给出 950 Tensor API 的 tuple 索引形态。
-<!-- cannbot:related:end -->

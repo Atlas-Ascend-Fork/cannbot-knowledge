@@ -171,10 +171,3 @@ dn2nzA1Params.dstNzMatrixStride = 0;
 AscendC::DataCopy(a1Local, aGM, dn2nzA1Params);
 
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscCopyGm2l1Dn2nz](../../../c_api/cube_datamove/asc_copy_gm2l1_dn2nz.md)（`same_topic`）：将矩阵数据从Global Memory搬运到L1 Buffer，在此过程中执行DN->NZ/NCHW->NC1HWC0/NCHW->C1HWNC0操作。若D未对齐C0的大小，将会在L1 Buffer的最内层维度填充0值。GM中的数据以DN类型存储；L1中的数据以NZ形式存储。；将Global Memory中的DN格式数据搬运到L1 Buffer并转换为NZ格式。用于矩阵计算输入的随路格式转换搬入。。两卡描述同一 GM 到 L1 的 DN→NZ 搬运，在 C API 与 Basic API 中提供不同调用表面。
-<!-- cannbot:related:end -->

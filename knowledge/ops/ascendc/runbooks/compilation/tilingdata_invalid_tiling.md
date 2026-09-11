@@ -55,9 +55,3 @@ TilingData capacity 16384 < required 65576
 ## 误诊
 
 最初以为是 `GetTilingData<T>()` 的 `SetDataSize(sizeof(T))` 把 DataSize 锁死在 struct 大小导致尾区数据不传到 device——这确实也是一个相关问题（须改用 `GetRawTilingData()` 手动设 DataSize），但**不是** `INVALID_TILING` 的根因；`INVALID_TILING` 是 capacity 校验（`DataSize > capacity`），与 DataSize 设置是否锁死是两层。判据：`INVALID_TILING` 消息显式带 `capacity < required`，而“DataSize 锁死”表现为尾区读到零值、无该校验错。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GET_TILING_DATA_WITH_STRUCT](../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data_with_struct.md)（`exemplifies`）：- **工程形态**：ops-registry-invoke 自定义算子仓，host Tiling 用 `GetRawTilingData()` / `GetTilingData<T>()` 写 TilingData，并在 struct 之后追加额外数据（如全精度标量向量）；kernel 用 `GET_TILING_DATA_WITH_STRUCT` + 手动偏移读取尾区。；使用该接口指定结构体名称，可获取指定的tiling信息，并填入对应的Tiling结构体中，此函数会以宏展开的方式进行编译。与GET_TILING_DATA的区别是：GET_TILING_DATA只能获取默认注册的结构体，该接口可以根据指定的结构体名称获取对应的结构体，常用于针对不同的TilingKey注册了不同结构体的情况下。。Runbook的 kernel 先用该宏解包注册 struct，再手动读取尾区；API 卡明确宏只负责指定结构体的 tiling 信息，支撑区分 struct 与额外数据容量。
-<!-- cannbot:related:end -->

@@ -125,10 +125,3 @@ unsigned int __hequx2_mask(half2 x, half2 y)
         asc_vf_call<simt_hequx2_mask>(dim3(1024), (__gm__ half2*)x, (__gm__ half2*)y, dst, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__heqx2](_heqx2.md)（`same_topic`）：“功能：比较两个half2类型数据的两个分量，如果分量相等，则对应比较结果为1.0，否则为0.0。”与“功能：比较两个half2类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量相等，则对应16位掩码为0xFFFF，否则为0x0。若任一输入的分量为nan，对应16位掩码为0xFFFF。”提供双方正文证据。两端都逐分量判断 half2 相等，但 heqx2 返回 half2 数值 1.0/0.0，hequx2_mask 返回打包位掩码并规定 NaN 行为；这正是调用端选择结果表示的同一比较主题。
-<!-- cannbot:related:end -->

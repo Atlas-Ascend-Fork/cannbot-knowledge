@@ -409,11 +409,3 @@ source_headers:
 
     > 输出数据dst_gm：[0.999,  1.38e-05]
     > 1.38e-05使用reinterpret_cast方法转换后为索引值232
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reduce count 必须排除 DMA 对齐填充元素](../../../../../runbooks/precision/reduction_count_excludes_dma_padding.md)（`exemplifies`）：参数说明：T：操作数数据类型。；dst：输出 目的操作数。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；src：输入 源操作数。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；sharedTmpBuffer：输入 指令执行期间存储中间结果，用于内部计算所需操作空间，需特别注意空间大小。详情请参考［关键特性说明］(#关键特性说明)。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；count：输入 参与计算的元素个数。关于该参数的具体说明请参考［连续计算］(../simd_compute/continuous_compute.md)。最大处理的数据量不能超过UB大小限制。；buffer 容量和 DMA 传输对齐长度是存储约束，不是数学归约范围。把 `alignCount` 传给 reduce 会显式要求 API 处理填充 lane；填充零在减最大值和指数后可能变成非零贡献。。ReduceMax 将 count 定义为参与计算元素数，Runbook证明 DMA 对齐填充不能混入该逻辑 count。
-- [Reduce work buf 额外占 UB 致 507035](../../../../../runbooks/compilation/reduce_work_buf_ub_507035.md)（`exemplifies`）：参数说明：T：操作数数据类型。；dst：输出 目的操作数。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；src：输入 源操作数。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；sharedTmpBuffer：输入 指令执行期间存储中间结果，用于内部计算所需操作空间，需特别注意空间大小。详情请参考［关键特性说明］(#关键特性说明)。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；count：输入 参与计算的元素个数。关于该参数的具体说明请参考［连续计算］(../simd_compute/continuous_compute.md)。最大处理的数据量不能超过UB大小限制。；**机制解释**（根因分析，属 interpretation）：UB（Unified Buffer）是 Ascend950 上的片上 SRAM，`TPipe::InitBuffer` 静态划分、不能动态扩。。ReduceMax 合同要求 sharedTmpBuffer 并受 UB 上限约束，Runbook用额外 work buffer 导致 507035 的实测闭合该资源风险。
-<!-- cannbot:related:end -->

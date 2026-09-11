@@ -733,9 +733,3 @@ Host 把可证明的固定 S/D 对齐编码进 key，Device 选择 L1 custom spe
 | 同步 | stage SyncAll + pipe/hard events | schedule mode、flag方向、复用前等待 | entry/body |
 | 精度与尾块 | FP32 Matmul/vector intermediate，post cast | 不提前 cast，不写 padding/EOD | main/Post |
 | 失败边界 | capability/key/shape/workspace fail closed | 不执行未接线模板 | registry/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FlashAttentionScoreGrad 950 ACLNN 算子知识](flash_attention_score_grad_950.md)（`same_topic`）：V4 是固定提交中 950 最新公开 `FlashAttentionScoreGrad` 入口；产品表只把 Ascend 950PR/950DT 标为支持，A2/A3 明确不支持。；V3 文档的产品表把 A2/A3 标为支持，V4 文档把 A2/A3 明确标为不支持，因此本卡选择 A2/A3 实际支持的最新版本 V3，而不是现有旧卡曾写的 V4。。两端共同界定 FlashAttentionScoreGrad 在 950 使用 V4、在 A2/A3 使用 V3 的平台版本边界，并各自闭合同一反向核心的 Host、MIX_CV 与 workspace 路线，可直接用于版本选型。
-<!-- cannbot:related:end -->

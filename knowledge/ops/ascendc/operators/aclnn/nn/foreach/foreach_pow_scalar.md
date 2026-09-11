@@ -600,9 +600,4 @@ BF16 tile 可以大于 FP32 临时区；实现把 tile 按 `maxCastDataCount=I/4
 | 精度与尾块 | BF16 FP32 Power 后 CAST_RINT；GM tail 精确字节 | scalar 转换 dtype、castCap、有效 n | `Exec...`、`ComputePerCast`、`CopyOut` |
 | 失败边界 | API 检查、Tiling null/resource检查、未知 key | 不扩张 INT32 公共契约；不忽略 50 项 ABI 上限 | `CheckParams/CheckOpInfo/foreach_pow_scalar` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Power（数学计算）](../../../../apis/simd_api/adv_api/math_compute/power_interface/power.md)（`related`）：`Power<half,false>`，公共 unary foreach；按元素做幂运算（dst = src0 ^ src1），提供三类接口：Power(dstTensor, src0Tensor, src1Tensor)两个Tensor输入、Power(dstTensor, src0Tensor, src1Scalar)Tensor+标量、Power(dstTensor, src0Scalar, src1Tensor)标量+Tensor。；候选是 A2/A3 foreach FP16/FP32 tile 的直接数学 primitive。
-- [ForeachPowScalar 950 ACLNN 算子知识](foreach_pow_scalar_950.md)（`same_topic`）：对列表中每个张量逐元素计算 `y_i［j］ = pow(x_i［j］, exponent)`；对 TensorList 的每个有效元素计算 `y_i［j］=pow(x_i［j］, exponent)`；两端是同一 aclnnForeachPowScalarV2 公开算子合同在 A2/A3 与 950 的平台实现。
-<!-- cannbot:related:end -->
+- [Power（数学计算）](../../../../apis/simd_api/adv_api/math_compute/power_interface/power.md)

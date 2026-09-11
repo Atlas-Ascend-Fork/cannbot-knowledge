@@ -121,27 +121,13 @@ void AddConfig(const char *soc, OpAICoreConfig &aicore_config)
 </table>
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [def.cpp 缺 AddConfig 致 SOC_NOT_SUPPORT](../../../../runbooks/compilation/def_cpp_addconfig_soc_not_support.md)（`exemplifies`）：op_host `<op>_def.cpp` 的 `this->AICore().AddConfig("<soc>", <aicore_config>)` 注册块。；注册算子支持的AI处理器型号以及OpAICoreConfig信息。；候选是修复 SOC_NOT_SUPPORT 所需补齐的直接注册接口。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例（部分算子）
-
-展示 10 / 86 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [UpsampleLinear1dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_linear_1d_backward_950.md)（`related`）：算子正文包含对 `AddConfig(...)` 的直接调用；本卡提供该接口契约。
-- [Cat 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/cat_950.md)（`related`）：算子正文包含对 `AddConfig(...)` 的直接调用；本卡提供该接口契约。
-- [Celu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/celu_950.md)（`related`）：算子正文包含对 `AddConfig(...)` 的直接调用；本卡提供该接口契约。
-- [AttentionUpdate A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/attention_update.md)（`related`）：算子正文包含对 `AddConfig(...)` 的直接调用；本卡提供该接口契约。
-- [UpsampleNearestExact1d 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_nearest_exact_1d_950.md)（`related`）：算子正文包含对 `AddConfig(...)` 的直接调用；本卡提供该接口契约。
-- [ClampMin 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/clamp_min_950.md)（`related`）：算子正文包含对 `AddConfig(...)` 的直接调用；本卡提供该接口契约。
-- [ClippedSwiglu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/clipped_swiglu_950.md)（`related`）：算子正文包含对 `AddConfig(...)` 的直接调用；本卡提供该接口契约。
-- [FlashAttentionVarLenScore 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_var_len_score_950.md)（`related`）：算子正文包含对 `AddConfig(...)` 的直接调用；本卡提供该接口契约。
-- [ConfusionTranspose 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/confusion_transpose_950.md)（`related`）：算子正文包含对 `AddConfig(...)` 的直接调用；本卡提供该接口契约。
-- [Hardswish 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/hardswish_950.md)（`related`）：算子正文包含对 `AddConfig(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [UpsampleLinear1dBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_linear_1d_backward_950.md)
+- [Cat 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/cat_950.md)
+- [Celu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/celu_950.md)
+- [AttentionUpdate A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/attention_update.md)
+- [UpsampleNearestExact1d 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_nearest_exact_1d_950.md)
+- [ClampMin 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/clamp_min_950.md)
+- [ClippedSwiglu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/clipped_swiglu_950.md)
+- [FlashAttentionVarLenScore 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_var_len_score_950.md)
+- [ConfusionTranspose 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/confusion_transpose_950.md)
+- [Hardswish 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/hardswish_950.md)

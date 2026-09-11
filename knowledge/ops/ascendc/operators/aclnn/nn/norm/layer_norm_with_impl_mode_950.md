@@ -748,9 +748,3 @@ mean/rstd 不逐行立即 DMA，而是在 UB 的两个 256-FP32 Queue 中累积�
 | 同步 | Queue 生命周期与 R-001 LocalMemBar | partial store 未完成不得复读/覆盖 | `CalculateMeanVarRCommon` |
 | 精度与尾块 | FP32 statistics、B16 cast、mask/padding/tail | 不能把 `implMode=2` 推成 FP16 统计；只写有效 R | `CalculateMeanVar* / ProcessNormalize` |
 | 失败边界 | priority fallback、workspace/AIC/unknown-key early return | 不能把 entry silent return 当成功写出 | `IsCapable/layer_norm_impl` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LayerNorm 950 ACLNN 算子知识](layer_norm_950.md)（`same_topic`）：`CheckImplMode` 始终校验 0/1/2，但 `IsV4SocCheck` 对 RegBase 立即返回 `true`，随后 950 分支只构造 `LayerNormV4Params`，不把 `implMode` 传入 V4。 第一段固定以 `HIGH_PRECISION(0)` 复用公共实现。 950 两入口都进入 LayerNormV4；WithImplMode 额外校验但模式不参与核心 selector，普通入口固定 HIGH_PRECISION。
-<!-- cannbot:related:end -->

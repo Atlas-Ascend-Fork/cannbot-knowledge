@@ -57,9 +57,3 @@ pass_options = {
 - mix合图结构变化时甜点值移动：scope=5001 全包裹下 `{-1:1}` 最优（agent 报告，未由本 trace 的 tool_result 直接验证）；不可跨结构照搬 16 或 32。
 - a2/a3 未验证；L1 复用机制跨 A 系列一致但 L1 容量不同，甜点值可能移动。
 - 本卡只覆盖 `{-1:32}` 单次实测的负面结果；`{-1:16}` 甜点主张与 `{-1:8}` 基线值未由本 trace 的非 redact tool_result 直接验证。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [flash在线softmax JIT重排致精度超阈](../precision/flash_softmax_jit.md)（`related`）：性能卡记录“将 `cube_l1_reuse_setting` 从 `{-1:16}` 增大到 `{-1:32}`，期望通过增加 L1 复用次数进一步减少 L1 重载。”但性能未改善；精度卡进一步规定“`cube_nbuffer_setting={-1:2}` 属禁用路线”，并解释重排在线 softmax 的 C1 任务会造成 BF16 超阈，二者共同约束同一算子的 Cube/JIT 复用调参和验证。
-<!-- cannbot:related:end -->

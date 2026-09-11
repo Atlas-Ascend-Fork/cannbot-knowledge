@@ -97,10 +97,3 @@ target_compile_options(relu_ops PRIVATE
 
 - 抄 SoC 名 `ASCEND910B` 或 NpuArch 内部名 `DAV_2201` 去下划线当 `--npu-arch` 值。
 - DESIGN.md 注释写"编译时使用 `--npu-arch=DAV2201`"——这条注释本身是错的，会持续误导。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ascend arch 变体查证链路 SoC→ini→NpuArch→dispa](arch_variant_lookup_chain_soc_ini_npuarch_dispatcher.md)（`related`）：- `AIC_version` 与 `NpuArch` 互为印证：`NpuArch=3510` → dispatcher 的 `__NPU_ARCH__==3510` 分支；`AIC_version=AIC-C-310` → `dav_c310/` 目录名。任一即可定位变体，且都来自 ini 硬证据。；三条信息（产品 910B3、SocVersion `ASCEND910B`、NpuArch `DAV_2201`）都不能直接塞给 `--npu-arch`，必须经过"NpuArch → 小写带连字符"这一步映射：`DAV_2201` → `dav-2201`。；焦点确定 NpuArch 数值与变体，目标把同一架构事实转换为 bisheng 接受的命令行格式，闭合编译迁移链。
-- [DAV_2201 element-wise unary kernel 骨架 多核](dav2201_elementwise_unary_kernel_skeleton_relu.md)（`related`）：NpuArch DAV_2201 / UB 192KB；bisheng 的 `--npu-arch` 旗标要求传**NpuArch 规范名的小写带连字符形式**。骨架卡给出目标硬件内部名 DAV_2201，编译 runbook 给出该值到 bisheng 参数 dav-2201 的必要映射；联合可避免用 DAV2201 或 SoC 枚举导致后端无架构。
-<!-- cannbot:related:end -->

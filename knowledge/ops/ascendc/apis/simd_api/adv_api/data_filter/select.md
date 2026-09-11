@@ -157,10 +157,3 @@ AscendC::Select(dstLocal, srcLocal1, scalar, maskLocal, tmpBuffer, info);
  -87.4   -93.9    35.6    -69.9    35.6   -24.17   35.6   -91.   35.6   9.766  35.6   -57.78   35.6     35.6    35.6    21.6
   35.6    82.1    35.6    -23.75   35.6   -66.44   35.6    35.6  35.6   -90.9    15.945  38.16   35.6    96.94   35.6    35.6  ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSelectMaxMinTmpSize](get_select_max_min_tmp_size.md)（`related`）：kernel侧Select接口的计算需要开发者申请临时空间，本接口用于在host侧获取申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；给定两个源操作数src0和src1，根据maskTensor相应位置的值（非bit位）选取元素，得到目的操作数dst。。Host 侧 GetSelectMaxMinTmpSize 直接为 Kernel 侧 Select 计算其临时空间取值范围，Select 卡定义被配置的逐元素选择操作，因此二者连接了 Tiling 空间预算与实际 Kernel 调用。
-<!-- cannbot:related:end -->

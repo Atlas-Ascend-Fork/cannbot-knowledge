@@ -209,10 +209,3 @@ def test_rms_norm_operator(shape, dtype):
 ## 误诊
 
 该 507035 与前一个行首不对齐根因共享错误码，但触发区间相反：行首问题在多行非对齐时出现，预算问题在对齐扩张比例与 tile 因子乘积较大时出现。不能按错误码合并根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendC 融合算子 Tiling 定块与片上 Buffer 预算：核间 m 轴取舍 + L1/L0 字节账 + UB double-buffer 全计入](../../../../model/inference/optimizations/experience/cases/ascendc_attention_op_tiling_budget.md)（`related`）：tiling 阶段**不报错**（RC=0），错误延迟到 kernel 执行期才暴露；Host 旧公式用逻辑行宽计算 `perRow_old = 4*D*elementSize + 64`，Device 实际使用 `strideElems = ceil(D/VL)*VL`；两端把同一 507035/UB 溢出诊断链分别落到漏计缓冲份数与漏计物理对齐宽度。
-- [按 dtype 分配 UB 必须匹配 tiling 预算](dtype_conditional_ub_allocation_matches_tiling_budget.md)（`related`）：“kernel 的 dtype 条件分配与 tiling 的逐元素预算不一致”定位多分配的转换 TBuf，“Host 与 Device 共用同一对齐公式”处理物理 stride 低估，二者共同要求 Host 预算精确复刻 Device live-buffer。
-<!-- cannbot:related:end -->

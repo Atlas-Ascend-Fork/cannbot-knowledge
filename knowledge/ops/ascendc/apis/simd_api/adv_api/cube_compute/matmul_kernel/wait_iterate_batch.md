@@ -59,10 +59,3 @@ mm.IterateBatch(gm_c[offsetC], batchA, batchB, false);
 // do some other compute tasks
 mm.WaitIterateBatch(); // 等待IterateBatch完成
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IterateBatch](iterate_batch.md)（`related`）：“等待IterateBatch异步接口或IterateNBatch异步接口返回，支持连续输出到Global Memory。”与“异步场景需要配合WaitIterateBatch接口使用。”分别给出两端正文事实；WaitIterateBatch 是 IterateBatch 异步提交的明确等待端，联合阅读可确定 sync/waitIterateBatch 参数与完成点的正确组合。
-<!-- cannbot:related:end -->

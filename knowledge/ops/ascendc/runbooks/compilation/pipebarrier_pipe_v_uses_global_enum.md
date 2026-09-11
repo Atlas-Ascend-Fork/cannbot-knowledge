@@ -72,10 +72,3 @@ AscendC::PipeBarrier<PIPE_V>();
 ## 误诊
 
 这不是同步语义问题，首先是符号解析失败。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendC:: 前缀致全局符号编译失败](ascendc.md)（`related`）：总卡将“`bfloat16_t`、`PIPE_ALL/PIPE_FIX/PIPE_MTE2/PIPE_V/PIPE_MTE3`、`CubeFormat`、`CFG_MDL` 属全局命名空间，不加前缀。”作为批量分类；PIPE_V 专项卡解释“`PipeBarrier` 模板位于 `AscendC`，但 `PIPE_V` 由底层 intrinsic 头以全局枚举声明；模板名和枚举名不共享命名空间。”，给出最易机械误加前缀的模板实参边界。
-- [PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线](pipebarrier_pipe_s_is_not_supported.md)（`related`）：“`PipeBarrier` 模板位于 `AscendC`，但 `PIPE_V` 由底层 intrinsic 头以全局枚举声明；模板名和枚举名不共享命名空间。”与“删除不受支持的 `AscendC::PipeBarrier<PIPE_S>()`，保留写回前的 `PIPE_V` 与 UB 复用前的 `PIPE_MTE3`。如果换成不同的流水线组合，不应照抄删除；先按目标芯片与 CANN 版本确认允许的 `PipeBarrier` 模板参数，再用编译和端到端精度验证顺序关系。”是双方正文中的具体合同。一张卡解决合法 PIPE_V 的枚举命名空间，另一张卡解决 PIPE_S 不是目标模板参数并保留 PIPE_V/MTE3；两端共同支撑 PipeBarrier 编译修复后的合法写法与同步边界。
-<!-- cannbot:related:end -->

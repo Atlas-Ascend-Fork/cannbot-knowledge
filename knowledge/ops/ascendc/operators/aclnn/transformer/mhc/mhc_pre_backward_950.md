@@ -627,9 +627,3 @@ if constexpr (hasGamma) {
 | 同步 | 0x9 C0→V2、0x8 V2→C1、bias/gradPhi Atomic可复用 | flag索引0x2、PIPE_FIX/PIPE_MTE3方向、等待点、双缓冲轮次、首块非Atomic不可改 | `ProcessC0/ProcessV2Pipeline/ProcessC1/ProcessV1` |
 | 精度与尾块 | T先升FP32、双Matmul FP32、optional加法后RINT回T及M/K/chunk有效域可复用 | 不得把文档x_rs替代Kernel raw x RMS项；D需64对齐；gradGamma局部和必须保持跨全部M tile的同一 `sumBuf` 生命周期 | `VFDoPreProcessV0/AIV21Process/AIV22Process/ProcessV2ChunkOutputXGrad` |
 | 失败边界 | ACLNN、Tiling、双Matmul失败与无fallback可复用 | 不得扩展A2/A3、空tensor、其他N/D/dtype/layout或假设V=2C已检查；仓外Matmul内部不可补写 | `MhcGradCheckParams/ValidateShapeParams/GetMatmulTiling/GetTilingKey` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MhcPostBackward 950 ACLNN 算子知识](mhc_post_backward_950.md)（`related`）：对 MhcPre 的门控、RMS 归一化、特征缩放和投影求反向；同时生成 `gradX,gradHRes,gradHOut,gradHPost`。两卡分别闭合同一 MHC 模块 Pre 与 Post 子图的反向计算；联读可区分各自梯度输出、workspace 和 MIX_CV 阶段，而不是把两个 backward 接口误当成同一算子。
-<!-- cannbot:related:end -->

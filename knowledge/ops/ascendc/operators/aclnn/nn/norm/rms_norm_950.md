@@ -543,10 +543,3 @@ for (uint32_t repeat = 0; repeat < tailLoop; repeat++) {
 | 同步 | Queue + MicroAPI barrier | x/rstd 在 y 前不得释放/覆盖 | `EnQue/DeQue/FreeTensor`, `LocalMemBar` |
 | 精度与尾块 | FP32 square/reduce/mul，最终 cast | 0 padding、mask、有效 CopyOut 长度不可改变 | reduce helpers/`ComputeY` |
 | 失败边界 | 5000 不满足转 2001 | unknown key 无输出，epsilon/shape 失败不启动 | selector/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RmsNorm 950 Direct Invoke 算子知识](../../../direct/nn/norm/rms_norm_950.md)（`same_topic`）：“把 `x` 的前导维展平为 `numRow = numel(x) / D`，最后一维长度记为 `D = numCol`。每行独立计算平方和、乘 `1/D`、加 `epsilon`、开方取倒数，再逐元素乘原输入与一维权重 `gamma`。”与“令 `D=product(gamma.shape)`，`N=product(x.shape［0:xRank-gammaRank］)`。每行计算 `s=sum_{i=0}^{D-1} float(x_i)^2`、`rstd=1/sqrt(s/D+epsilon)`、`y_i=cast_x(float(x_i)*rstd*float(gamma_i))`。归一化域是 `gamma` 对应的全部尾部维；`rstd` 保留这些维但长度均为 1。”提供双方正文证据。Direct 与 ACLNN 两端都按尾部 D 维逐行计算平方均值、epsilon、rstd 并乘 gamma，核心 RMSNorm 合同相同；差异在 Direct 固定一维 gamma，而 ACLNN 支持 gamma 对应的多尾维。
-- [RmsNorm A2/A3 ACLNN 算子知识](rms_norm.md)（`same_topic`）：`rstd=1/sqrt(sum(x_i^2)/D+epsilon)`；`y_i=x_i*rstd*gamma_i`。两卡闭合相同 RmsNorm 数学与 ACLNN 输入输出契约，但 A2/A3 有五条 AIV 路线，950 使用两条 RegBase 路线，能直接支撑跨平台实现选择和资源核对。
-<!-- cannbot:related:end -->

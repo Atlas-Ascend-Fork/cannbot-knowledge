@@ -778,9 +778,3 @@ struct NanToNumDAG {
 | 同步 | 可复用同一 buffer id 的 MTE2→V→MTE3 Mutex 协议与 tile `i&1` | 不得在 consumer release 前让同相 producer 覆盖；不能把 TBuf 当无同步裸别名 | `GetTensor/ReleaseTensor`、`Process` |
 | 精度与尾块 | 可复用 FP32 compare/select 与 B16 upcast/downcast 管线 | NaN/Inf compare 必须读原输入；B16 下 cast 为 `NO_SAT+CAST_RINT`；mask 覆盖所有 load/store；core/tile tail字段配套 | `NanToNumCustom<T>`、`UpdateMask`、`Process` |
 | 失败边界 | 可复用设备/dtype/shape/空域 guard 与无 AiCPU fallback 结论 | 不得把 950 body外推至 A2/A3；不支持 dtype 不得静默进 CPU；公开 ND 契约不能由 warning 放宽 | `CheckDtypeValid`、`NanToNum`、CMake/OpDef |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceNanToNum 950 ACLNN 算子知识](inplace_nan_to_num_950.md)（`same_topic`）：最终写回 `selfRef` 的原 view；本卡不包含原地变体 `aclnnInplaceNanToNum`。两卡共享 Nan/±Inf 替换核心，但前者通过临时输出和 ViewCopy 提交到原 view，后者明确只描述 out-of-place API；对照可选择别名语义并核验写回链。
-<!-- cannbot:related:end -->

@@ -678,9 +678,3 @@ if constexpr (IsSameType<T, bfloat16_t>::value || IsSameType<T, half>::value) {
 | 同步 | Queue lifecycle与单Compute内Vector顺序 | castBuf在down-Cast前不得覆盖，Queue slot在Free前不得复用 | base/derived Compute |
 | 精度与尾块 | FP16/BF16 FP32 staging；FP32/INT32 direct | 16bit回写`CAST_RINT`；所有DMA blockLen必须用有效count | derived Compute/base Copy methods |
 | 失败边界 | API/tiling checks + priority selector | 不得把>50、unknown key、非连续输出或不匹配ScalarT当作fallback | check functions/router/binary config |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddScalar A2/A3 ACLNN 算子知识](foreach_add_scalar.md)（`same_topic`）：｜ 计算语义 ｜ `out［i］［j］ = x［i］［j］ + scalar`，逐 TensorList、逐线性元素。 ｜；｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ + scalar`。 ｜。两卡实现同一 aclnnForeachAddScalarV2 逐列表标量加法语义，分别给出 950 与 A2/A3 路线。
-<!-- cannbot:related:end -->

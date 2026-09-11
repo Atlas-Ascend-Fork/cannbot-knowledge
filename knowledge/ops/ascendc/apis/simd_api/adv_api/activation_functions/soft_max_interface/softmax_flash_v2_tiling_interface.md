@@ -81,10 +81,3 @@ GetSoftMaxFlashV2MaxTmpSize返回SoftmaxFlashV2接口能完成计算所需最大
 ## 约束说明
 
 无
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SoftmaxFlashV2](softmax_flash_v2.md)（`same_topic`）：SoftmaxFlash增强版本，对应FlashAttention-2算法。；用于获取SoftmaxFlashV2接口所需的Tiling参数。。kernel API 定义 SoftmaxFlashV2 计算，Tiling API 专门为该计算生成切分参数；实现时必须让 isUpdate 与 isBasicBlock 等配置在两侧一致。
-<!-- cannbot:related:end -->

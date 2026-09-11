@@ -72,10 +72,3 @@ MAX };</pre>
 ## 约束说明<a name="section633mcpsimp"></a>
 
 同一个物理位置的LocalMemAllocator对象，在算子生命周期内只能存在1个。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Alloc](alloc.md)（`related`）：构造接口说明“LocalMemAllocator构造函数。”并建立唯一 allocator 对象；其消费接口“根据用户指定的逻辑位置、数据类型、数据长度返回对应的LocalTensor对象。”，说明构造完成后的核心分配动作和返回对象。
-<!-- cannbot:related:end -->

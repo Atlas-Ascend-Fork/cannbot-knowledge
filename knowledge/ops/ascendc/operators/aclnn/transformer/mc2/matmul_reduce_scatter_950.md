@@ -924,13 +924,4 @@ if (tailMValue_ != 0UL) {
 | 精度 | QuantBMM scale/bias 后通信；AIV FP32 sum + `CAST_RINT` | scale group、累加/round 顺序、有效尾块 | quant tiling、`ReduceSumForAlltoAll` |
 | 构建 | MIX AIC:1/AIV:2 与 950 编译选项 | 不可脱离同一 opFile/compile definitions | entry、OpDef、CMake |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [CrossCore 反压 flag 方向错致通算流水死锁](../../../../runbooks/compilation/crosscore_flag.md)（`related`）：各 rank 的完整结果按 `sum` 归约后沿 M 轴等分，本 rank 输出 `y:［M/rankSize,N］`。；AIC t=2 ↔ AIV t=2 互相等待，循环依赖。；后者定位 MatMul 与 ReduceScatter 流水协作中的跨核反压死锁，可用于该算子的多 tile 同步诊断。
-- [MC²算子性能调优案例](../../../../guides/operator_practice/best_practices/mc_operator_tuning.md)（`related`）：各 rank 的完整结果按 `sum` 归约后沿 M 轴等分，本 rank 输出 `y:［M/rankSize,N］`。；MC2通算融合算子的性能收益主要来自于通信、计算的并行执行；指南给出该 MatMul 加 ReduceScatter 融合算子的切分与流水调优依据。
-- [ReduceScatter](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/reduce_scatter.md)（`related`）：各 rank 的完整结果按 `sum` 归约后沿 M 轴等分，本 rank 输出 `y:［M/rankSize,N］`。；ReduceScatter的功能为：将所有rank的输入相加（或其他归约操作）后，再把结果按照rank编号均匀分散到各个rank的输出buffer；前者的通信阶段正是后者定义的求和并按 rank 分散合同。
-- [UDMA GET size=0 污染后续 GET 致精度失败](../../../../runbooks/precision/udma_get_size_zero_pollutes_engine_guard.md)（`related`）：各 rank 的完整结果按 `sum` 归约后沿 M 轴等分，本 rank 输出 `y:［M/rankSize,N］`。；调用方必须在 GET 前用 `if (tileSegByteSize > 0)` 守卫；后者给出按 tile 分段执行该归约时零 overlap 导致 UDMA GET 污染的具体精度保护。
-- [通算流水 tileCnt>1 性能反降 banned](../../../../runbooks/performance/tilecnt_1_banned.md)（`related`）：各 rank 的完整结果按 `sum` 归约后沿 M 轴等分，本 rank 输出 `y:［M/rankSize,N］`。；tileCnt=1（无流水，单次 batch matmul）是基线参照路线；后者以同一 MatMul 后 ReduceScatter 链验证多 tile 流水性能反降并给出回退基线。
-- [MatmulReduceScatter A2/A3 ACLNN 算子知识](matmul_reduce_scatter.md)（`same_topic`）：｜ 计算语义 ｜ `y=ReduceScatterSUM(x1@x2+bias?)`；INT8 先 INT32 累加，再 per-channel/可选 per-token 反量化 ｜；｜ 计算语义 ｜ 先计算 `C = x1 × x2 + bias`，再在通信域对 `C` 做 `sum` ReduceScatter；本 rank 得到 `［M/rankSize, N］` ｜。两卡定义同一 MatmulReduceScatterV2 的 MatMul 加 SUM ReduceScatter 主语义，分别闭合 A2/A3 与 950 的 MIX_CV 及量化路线。
-<!-- cannbot:related:end -->
+- [ReduceScatter](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/reduce_scatter.md)

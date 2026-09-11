@@ -468,9 +468,3 @@ blockMmadOp.IterateAll(cGlobal_[cOffset], 1);
 | 同步 | Cube pipeline 与 `enAtomic=1` Fixpipe 写回 | 仓外 Matmul event 协议与输入输出别名 | BlockMmadOp::IterateAll |
 | 精度与尾块 | FP32 C 累加、ASWT tail split | split offset/shape/c0 对齐 | GetBlockShape |
 | 失败边界 | 空 K 组跳过、非法属性失败 | 不得猜测 Vector fallback | Init/GetAttrs |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [grouped_matmul_add A2/A3 ACLNN 算子知识](grouped_matmul_add.md)（`same_topic`）：｜ 计算语义 ｜ 对每组独立原位累加：`yRef_i［M,N］ = yRef_i［M,N］ + X_i［K_i,M］^T * W_i［K_i,N］`，不是跨组求和 ｜；｜ 计算语义 ｜ 每组独立原位累加：`yRef_i［M,N］ += X_i［K_i,M］^T * W_i［K_i,N］` ｜。两卡记录同一 GroupedMatmulAdd 原位分组累加语义，并分别闭合 A2/A3 classic 与 950 DAV3510 advanced 实现。
-<!-- cannbot:related:end -->

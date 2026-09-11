@@ -510,9 +510,3 @@ context->SetLocalMemorySize(static_cast<uint32_t>(ubSize - DCACHE_SIZE));
 | 同步 | 无跨线程同步，地址天然互斥 | stride 必须覆盖全 grid | `tid/stride` 公式 |
 | 精度与尾块 | FP32 logf；FP16/BF16 hlog；idx<count | 不得外推 intrinsic 内部 cast/round | `LogFunc<T>` |
 | 失败边界 | >256、非法 dtype、平台信息失败阻断 launch | 无 Device fallback | `ForeachLogTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLog A2/A3 ACLNN 算子知识](foreach_log.md)（`same_topic`）：对 TensorList 的每个有效元素计算自然对数；对 TensorList 中每个张量逐元素计算 `y_i［j］ = ln(x_i［j］)`。两张算子卡公开同一 aclnnForeachLog 与逐元素自然对数语义，分别闭合 950 SIMT 和 A2/A3 Vector 实现，可直接按平台选型。
-<!-- cannbot:related:end -->

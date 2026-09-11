@@ -79,9 +79,4 @@ AscendC::Interleave(dst0Local, dst1Local, src0Local, src1Local, 512);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [DeInterleave](de_interleave.md)（`related`）：将两个源操作数中的元素解交织存入两个结果操作数中，支持双输入和单输入两种模式。；将两个源操作数中的元素交织存入两个结果操作数中，要求元素个数为偶数。。DeInterleave 把交织输入拆成两路，Interleave 把两路重新交织；二者在成对数据重排流水中互为拆分与重组步骤，数据顺序合同直接衔接。
-- [GroupedDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/grouped_dynamic_mx_quant_950.md)（`related`）：“｜ Scale layout ｜ `Duplicate`+`Interleave` ｜ calcBuf ｜ mxScaleQueue ｜ 两个 32-row scale 平面 ｜ 奇数平面补零；行尾按实际 `blockCount` ｜”；“将两个源操作数中的元素交织存入两个结果操作数中，要求元素个数为偶数。”。operator 用 Interleave 把成对 E8M0 scale 平面排成 mxscale 尾维 2，奇数平面补零正好满足接口偶数约束。
-<!-- cannbot:related:end -->
+- [GroupedDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/grouped_dynamic_mx_quant_950.md)

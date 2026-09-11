@@ -64,7 +64,7 @@ OKF 通用 consumer 应容忍未知 `type`、扩展字段、断链和缺失索�
 - Ingest 只生成 CANNBot Profile 接受的候选 Concept；
 - Query 在加载时拒绝不符合 CANNBot Profile 的卡片，不承诺读取任意第三方 OKF Bundle；
 - Lint 检查字段白名单、受控路径、索引完整性和链接可达性，严格程度高于 OKF 最小要求；
-- 本地图谱从 Concept、Index、目录层级、人工 Markdown 链接和带卡片指纹的本地关系判定缓存生成；候选、判定缓存、完整图谱和可视化全部位于 ignored 的 `artifacts/graphs/`，不提交。Concept 可包含由判定缓存派生的 `cannbot:related` 受管导航块；该块可提交，但不是人工正文或技术事实源。
+- 本地图谱按需从 Concept 之间的普通 Markdown 链接生成，仅包含 Concept 节点和有向 `links_to` 边，包括 API 与算子卡片之间的链接；Index 只用于导航。构图不依赖关系判定缓存，不维护专用关系块，不回写 Concept，也不是入库门禁。图谱和可视化全部位于 ignored 的 `artifacts/graphs/`，不提交。
 
 这些限制是作者质量门禁，不应被描述成 OKF 对所有 consumer 的要求。
 

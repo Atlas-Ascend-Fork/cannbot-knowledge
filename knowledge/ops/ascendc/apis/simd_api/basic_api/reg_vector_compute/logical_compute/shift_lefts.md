@@ -108,27 +108,13 @@ __simd_vf__ inline void ShiftLeftsVF(__ubuf__ T* dstAddr, __ubuf__ T* src0Addr, 
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ShiftLeft](shift_left.md)（`same_topic`）：“ShiftLefts指令根据mask对源操作数srcReg，按照scalarValue进行左移操作，将结果写入目的操作数dstReg。”与“ShiftLeft指令根据mask对源操作数srcReg0，按照srcReg1对应元素进行左移操作，将结果写入目的操作数dstReg。”提供双方正文证据。二者定义同一掩码寄存器左移操作，差异只在移位量由单个 scalarValue 还是逐元素 srcReg1 提供，互读可直接选择标量或向量移位版本。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 42 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)（`related`）：算子声明的固定版本源码包含对 `ShiftLefts(...)` 的直接调用（第 1479 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cast/op_kernel/arch35/cast_impl.h#L1479)
-- [SwigluGroupQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/swiglu_group_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `ShiftLefts(...)` 的直接调用（第 633 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant/op_kernel/arch35/swiglu_group_quant_base.h#L633)
-- [MoeInitRoutingV3 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/moe/moe_init_routing_950.md)（`related`）：算子声明的固定版本源码包含对 `ShiftLefts(...)` 的直接调用（第 264 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v3/op_kernel/arch35/moe_v3_gather_mxfp4_quant.h#L264)
-- [InplaceClampMax 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/inplace_clamp_max_950.md)（`related`）：算子声明的固定版本源码包含对 `ShiftLefts(...)` 的直接调用（第 1479 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cast/op_kernel/arch35/cast_impl.h#L1479)
-- [RotateQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/rotate_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `ShiftLefts(...)` 的直接调用（第 677 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/common/cmct/epilogue/block_epilogue_rotate_quant.h#L677)
-- [All 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/all_950.md)（`related`）：算子声明的固定版本源码包含对 `ShiftLefts(...)` 的直接调用（第 1479 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cast/op_kernel/arch35/cast_impl.h#L1479)
-- [AddLayerNormQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `ShiftLefts(...)` 的直接调用（第 774 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/norm_common/op_kernel/reduce_common_regbase.h#L774)
-- [BitwiseOrTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)（`related`）：算子声明的固定版本源码包含对 `ShiftLefts(...)` 的直接调用（第 1479 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cast/op_kernel/arch35/cast_impl.h#L1479)
-- [AddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `ShiftLefts(...)` 的直接调用（第 774 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/norm_common/op_kernel/reduce_common_regbase.h#L774)
-- [BitwiseXorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_xor_tensor_950.md)（`related`）：算子声明的固定版本源码包含对 `ShiftLefts(...)` 的直接调用（第 1479 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cast/op_kernel/arch35/cast_impl.h#L1479)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Cat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/cat_950.md)
+- [SwigluGroupQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/swiglu_group_quant_950.md)
+- [MoeInitRoutingV3 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/moe/moe_init_routing_950.md)
+- [InplaceClampMax 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/inplace_clamp_max_950.md)
+- [RotateQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/rotate_quant_950.md)
+- [All 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/all_950.md)
+- [AddLayerNormQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant_950.md)
+- [BitwiseOrTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)
+- [AddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_950.md)
+- [BitwiseXorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_xor_tensor_950.md)

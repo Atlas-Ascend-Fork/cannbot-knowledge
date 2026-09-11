@@ -84,10 +84,3 @@ void sync(const GroupType& g)
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Grid协作组sync](grid_group/sync.md)（`same_topic`）：同步指定协作组内的所有线程，功能等价于调用该协作组对象的成员函数sync()。；同步当前Grid内所有SIMT线程。所有线程块中的所有线程都执行到该同步点位置后，Grid内线程才能继续执行。。自由函数 sync 明确等价于协作组对象的成员 sync，GridGroup 成员卡给出 Grid 内全部 SIMT 线程到达屏障后的继续条件，二者是同一 Grid 协作组同步合同的两种调用形式。
-<!-- cannbot:related:end -->

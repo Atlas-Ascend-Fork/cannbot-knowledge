@@ -60,10 +60,3 @@ enum class ScopeType : uint8_t { ALL, QUEUE, BLOCK, INVALID_TYPE };
 ## 调用示例
 
 请参见[BatchWrite的调用示例](batch_write.md#调用示例)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BatchWrite](batch_write.md)（`related`）：BatchWrite实现了一种点对点通信，这是一种直接传输数据的通信模式，能够同时将多份数据发送到不同的Global Memory地址上。；阻塞服务端上指定队列的BatchWrite通信任务，直到指定范围内所有队列上的任务完成执行，从而实现指定范围内队列的同步。。BatchWrite 在队列中下发多目的地址通信，QueueBarrier 则等待这些 BatchWrite 队列任务完成，是同一执行链的同步收口。
-<!-- cannbot:related:end -->

@@ -65,11 +65,3 @@ uint32_t minValue = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetBitwiseNotMaxMinTmpSize(plat, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BitwiseNot](bitwise_not.md)（`same_topic`）：逐比特对输入进行取反。；Kernel侧BitwiseNot接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小；BitwiseNot 计算卡定义逐比特取反与整型 dtype，Host 查询卡为该 Kernel 计算准备平台、shape 和类型相关的临时空间区间。
-- [GetBitwiseNotTmpBufferFactorSize](get_bitwise_not_tmp_buffer_factor_size.md)（`same_topic`）：“开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用”先确定 BitwiseNot 可用的临时空间；“通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量”再把选定空间换算成单次分块上限。
-<!-- cannbot:related:end -->

@@ -99,10 +99,3 @@ AscendC::ClampMin<half>(dstLocal, srcLocal, sharedTmpBuffer, static_cast<half>(2
 输入数据(srcLocal): [0 1 2 ...  126 127]
 输出数据(dstLocal): [2 2 2  ... 126 127]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetClampMaxMinTmpSize](get_clamp_max_min_tmp_size.md)（`related`）：提供两种重载：通过sharedTmpBuffer入参传入临时空间（开发者自行管理，可复用，内存利用率高），或由接口框架申请临时空间（需预留空间，大小通过GetClampMaxMinTmpSize获取）。；host侧Tiling接口，用于获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。ClampMin 的框架申请重载明确使用右侧公共接口确定预留大小，但右侧还覆盖另外两个 Clamp 操作，所以保持相关关系。
-<!-- cannbot:related:end -->

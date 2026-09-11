@@ -141,10 +141,3 @@ AscendC::ReGlu(dstLocal, src0Local, src1Local, sharedTmpBuffer, 30);
 [0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
  0.  0.2 0.4 0.6 0.8 1.  1.2 1.4 1.6 1.8 2.  2.2 2.4 2.6 0.  0. ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetReGluMaxMinTmpSize](get_re_glu_max_min_tmp_size.md)（`same_topic`）：kernel侧ReGlu接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大最小临时空间大小；ReGlu是一种GLU变体，使用Relu作为激活函数；Host 查询卡为 ReGlu 计算卡的 sharedTmpBuffer 产生最大最小空间边界，计算卡定义激活语义、输入输出和地址不重叠要求。
-<!-- cannbot:related:end -->

@@ -825,9 +825,3 @@ NHWC 的连续轴是 C，value 与 index 必须成对更新；Host 用更宽的 
 | 同步 | Queue、HardEvent、SyncAll、thread ownership | R-002 barrier与workspace生命周期不可拆 | 各body |
 | 精度与尾块 | NaN mask、INT32/64 index、各轴tail | tie/NaN更新和valid lane不可改 | Compare/Select/CycleUpdate |
 | 失败边界 | priority0→4→6→20→100 | 不得把 dormant key或另一逻辑算子并入 | REGISTER templates |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MaxPool2dWithIndices A2/A3 ACLNN 算子知识](max_pool2d_with_indices.md)（`same_topic`）：对输出 `(n,c,oh,ow)`，窗口起点为 `(oh*sH-pH, ow*sW-pW)`，沿 H/W 以 dilation 采样；有效输入中的最大值写 `out`，其 `ih*Win+iw` 写 `indices`。；令 `ih=oh*sH-pH+mh*dH`、`iw=ow*sW-pW+mw*dW`，则 `out［n,c,oh,ow］` 是所有合法 `(ih,iw)` 上的最大输入值，`indices［n,c,oh,ow］=ih*W+iw`。；两卡定义同一 MaxPool2dWithIndices 的窗口最大值与展平索引语义，950 卡补充 NHWC、正 dilation 与 SIMT fallback，A2/A3 卡闭合 NCHW 和 dilation 等于一的两条 AIV 路线。
-<!-- cannbot:related:end -->

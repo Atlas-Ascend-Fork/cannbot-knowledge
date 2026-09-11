@@ -589,9 +589,3 @@ BF16 queue slot 可容纳 `9U/2` 元素，但只配置 U bytes FP32 临时窗，
 | 同步 | PIPE_V、V_MTE3、MTE3_MTE2 | 写回完成前不得释放 queue slot | `Expm1Adapter`/`ForeachImplictOutput::Compute` |
 | 精度与尾块 | FP16/FP32 原 dtype；BF16 FP32 + CAST_RINT | API 顺序、cast mode、有效 count | `InnerComputer` |
 | 失败边界 | Host 检查失败不 launch；entry只识别1/2/4 | 不得给 unknown key 自造 fallback | `RunBigKernelTiling`/`foreach_expm1` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachExpm1 950 ACLNN 算子知识](foreach_expm1_950.md)（`same_topic`）：｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `y_i［j］ = exp(x_i［j］) - 1`。 ｜；｜ 计算语义 ｜ 对 TensorList 中每个 Tensor 逐元素计算 `y_i［j］=expm1(x_i［j］)`，等价于 `exp(x_i［j］)-1`。 ｜；双方描述同一 aclnnForeachExpm1 契约，分别闭合 A2/A3 Vector 路线与 950 SIMT 路线。
-<!-- cannbot:related:end -->

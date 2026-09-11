@@ -227,10 +227,3 @@ AscendC::SimpleSoftMax<T>(dstLocal, sumTempLocal, maxTempLocal, srcLocal, softma
  [0.00095032 0.00156681 0.00425903 0.01157725 0.03147022 0.08554492 0.2325352  0.63209623]
  [0.         0.         0.         0.         0.         0.         0.         1.        ]]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SoftMax](soft_max.md)（`related`）：- inSumTensor和inMaxTensor为输入，并且last轴长度必须固定32Byte。；- sumTensor和maxTensor为输出，并且last轴长度必须固定32Byte，非last轴大小需要和src以及dst保持一致。；SoftMax 负责计算并输出 sum 与 max，而 SimpleSoftMax 接收已经计算好的 sum 与 max 并省去 reduce，二者构成同一 Softmax 流程中可替换的完整计算与复用中间量路径。
-<!-- cannbot:related:end -->

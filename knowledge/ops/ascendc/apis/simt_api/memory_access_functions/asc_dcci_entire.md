@@ -104,10 +104,3 @@ inline void asc_dcci_entire(void *dst)
         }
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_dcci_single](asc_dcci_single.md)（`related`）：entire 卡说明“刷新核内整个 Data Cache，保证后续从 Global Memory 读取数据时 Cache 一致性。”并警告整缓存代价；single 卡说明“相比 asc_dcci_entire 仅刷新单条 Cache Line，适合轮询标志位等小范围刷新场景。”，给出按一致性范围和性能代价选择的直接分支。
-<!-- cannbot:related:end -->

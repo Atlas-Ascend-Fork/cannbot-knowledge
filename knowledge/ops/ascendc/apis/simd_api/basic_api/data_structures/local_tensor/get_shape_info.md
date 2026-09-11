@@ -57,10 +57,3 @@ uint32_t orgShape2 = maxShapeInfo.originalShape[2];
 uint32_t orgShape3 = maxShapeInfo.originalShape[3];
 uint32_t shape2 = maxShapeInfo.shape[2];
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetShapeInfo](set_shape_info.md)（`related`）：获取LocalTensor的Shape信息。注意：Shape信息没有默认值，只有通过SetShapeInfo设置过Shape信息后，才可以调用该接口获取正确的Shape信息。；设置LocalTensor的Shape信息。。GetShapeInfo 的正确性前置条件就是先由 SetShapeInfo 写入属性，两接口构成 LocalTensor shape 元数据的写后读合同。
-<!-- cannbot:related:end -->

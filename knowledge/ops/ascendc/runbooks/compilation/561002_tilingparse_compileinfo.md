@@ -92,10 +92,3 @@ grep -E "\[DBG\]" /tmp/run.log /tmp/build.log
 
 - 在 GetShapeInfo 中直接 `if (compileInfo == nullptr) return GRAPH_FAILED;` 而不提供 fallback——在 TilingParse 未触发的构建路径下直接导致 561002。
 - 把 TilingParse 注册和公共 tiling 逻辑放在同一文件——UT 直接编译该文件时引入 opp_registry 等传递链接依赖，链式报错。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [构造及析构函数（PlatformAscendC）](../../apis/utils_api/platform_info/platform_ascend_c/constructor_and_destructor.md)（`exemplifies`）：诊断后的处置方向：GetShapeInfo 不再硬依赖 CompileInfo，null 时回退到 `ctx_->GetPlatformInfo()` + `PlatformAscendC` 直读 `coreNum`/`ubSize`；UT 直接编译 tiling.cpp 时需为 PlatformAscendC 追加 `platform` 链接库。；在实现Host侧的Tiling函数时，可能需要获取一些硬件平台的信息，来支撑Tiling的计算，比如获取硬件平台的核数等信息。PlatformAscendC类提供获取这些平台信息的功能。。Runbook 给出 CompileInfo 为空时改由 PlatformAscendC 读取 coreNum/ubSize 的修复，API 卡定义该类的硬件信息能力。
-- [te_fusion 未调 TilingPrepare 致 GEIR FPE](te_fusion_tilingprepare_geir_fpe.md)（`related`）：调用链是：GE 编译图 → FE → TBE → vendor 安装的 `xdivy_apt.py:248 xdivy()` → `op_tiling.py:380 do_op_tiling()` → 通过 ctypes 调 C++ `TilingFuncXdivy`（在 `libcust_optiling.so`）→ 除以零。；smoke test 或 aclnn runtime 调用 `aclnxxxGetWorkspaceSize` 返回 561002（`ACLNN_ERR_INNER_TILING_ERROR`），且 tiling 函数已注册（`IMPL_OP_OPTILING.Tiling` 被调用）但返回非 SUCCESS，而 kernel binary 与构建均成功。。两卡都沿 TilingParse/CompileInfo 缺失排障：一张覆盖 GEIR 路径中零值 CompileInfo 导致 FPE，另一张覆盖 ACLNN 路径中空 CompileInfo 导致 561002，可用于区分编译子路径和选择回退。
-<!-- cannbot:related:end -->

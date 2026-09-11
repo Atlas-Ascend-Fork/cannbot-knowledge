@@ -509,9 +509,3 @@ yPtr[index] = static_cast<T>(result);
 | 同步 | 每 index 独占，无 atomic/barrier | 不能引入跨线程共享而不补同步 | `Op...Simt` |
 | 精度与尾块 | FP16/BF16→FP32→T；grid-stride tail | cast 顺序与 `index<N` | `Op...Simt` |
 | 失败边界 | >128 tensors 失败；四 dtype only | default key 0 不是公开 fallback | `ValidateAndGetTensorCount`, `GetTilingKeyByDtype` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddcmulScalarList A2/A3 ACLNN 算子知识](foreach_addcmul_scalar_list.md)（`same_topic`）：“单 AIV_VECTOR Kernel；R-001/R-002/R-003 均无 Cube/AIC/MIX_CV。”给出焦点端事实；“Kernel 内按 tensor 顺序发起 SIMT `VF_CALL`，无 AIC/Cube/MIX_CV。”给出候选端事实。两卡实现同一个 aclnnForeachAddcmulScalarList 合同，但 A2/A3 走 AIV Vector 队列路线，950 走顺序 SIMT VF_CALL；联合阅读支持按平台选择实现与资源模型。
-<!-- cannbot:related:end -->

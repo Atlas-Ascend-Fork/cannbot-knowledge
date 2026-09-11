@@ -702,10 +702,3 @@ MicroAPI::Div(inputReg, inputReg, sumReg, maskRegCalc);
 | 同步 | Queue 交接、reduce LocalMemBar、源码明确位置的 MTE3_V 可复用 | TBuf store→broadcast load 和已存在的 MTE3→V 边不得删除；最终 col snapshot 不得擅自补造同步保证 | `CalcSoftmax/CalcRowNorm/Process` |
 | 精度与尾块 | 全 FP32、动态 mask、former/tail core/loop 公式可复用 | 不得改成文档中的 `softmax+eps` 状态；GM 只提交 `handleNum` 有效域，R-002 `StoreUnAlign` tail stride 必须保留 | `Init/CalcSoftmax/CalcRowNorm/ScatterOutFromNorm/CopyOut` |
 | 失败边界 | ACLNN/Tiling 检查和 entry null-workspace return 可复用 | 不得假定中间输出 shape 已校验、`sumOut[0]` 已初始化或 `tUbFactor` 永不为 0 | `CheckParams/CheckInputShape/BaseSplitCores/mhc_sinkhorn` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MhcSinkhornBackward 950 ACLNN 算子知识](mhc_sinkhorn_backward_950.md)（`related`）：逆序回放 Sinkhorn 列/行归一化反向；再交替做列、行归一化。正向卡定义 softmax 后列/行交替归一化并可保存 norm/sum，反向卡按相反顺序消费这些状态计算梯度；联合可核对训练调用中正向保存量的长度、顺序和反向 phase。
-- [MhcSinkhorn 950 Direct Invoke 算子知识](../../../direct/transformer/mhc/mhc_sinkhorn_950.md)（`same_topic`）：`aclnnMhcSinkhornGetWorkspaceSize` + `aclnnMhcSinkhorn`；`torch.ops.cann_bench.mhc_sinkhorn(comb, iter_step=20, eps=1e-6)`。两端描述同一 950 Sinkhorn 归一化任务的 ACLNN 与 Direct 入口；对照可判断是否需要 norm/sum 中间输出，并核验 Direct selector 对官方无中间输出 body 的适配边界。
-<!-- cannbot:related:end -->

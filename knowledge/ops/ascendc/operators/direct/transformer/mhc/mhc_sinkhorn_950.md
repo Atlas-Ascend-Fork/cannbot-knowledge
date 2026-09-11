@@ -865,9 +865,3 @@ if constexpr (TEMPLATE_MODE == 0) {
 | 同步 | Queue + local barrier；官方保留 MTE3→V event | reduce store/reload 和 norm stage 之间不能去掉可见性 | `CalcSoftmax/CalcRowNorm/Process` |
 | 精度与尾块 | FP32 max-shift、FP32 sum/div；mask/tail/core 收口 | iteration cap、eps 加入位置、有效搬运字节 | `CalcSoftmax/CalcColNorm/Process` |
 | 失败边界 | Host 先校验再 launch；generic 是最终 fallback | 必须补 `B>=1`、contiguous、`n²<=256` 才能扩大安全域 | `mhc_sinkhorn_npu`、各 launcher |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MhcSinkhorn 950 ACLNN 算子知识](../../../aclnn/transformer/mhc/mhc_sinkhorn_950.md)（`same_topic`）：`aclnnMhcSinkhornGetWorkspaceSize` + `aclnnMhcSinkhorn`；`torch.ops.cann_bench.mhc_sinkhorn(comb, iter_step=20, eps=1e-6)`。两端描述同一 950 Sinkhorn 归一化任务的 ACLNN 与 Direct 入口；对照可判断是否需要 norm/sum 中间输出，并核验 Direct selector 对官方无中间输出 body 的适配边界。
-<!-- cannbot:related:end -->

@@ -545,10 +545,3 @@ if (info.isSegmentK) {
 | 同步 | window 双块/跨 rank/AIC-AIV | flag ID、depth、schedule mode | `AlltoAll/matmul.hpp` |
 | 精度与尾块 | FP32 scale、INT32 acc | qmax、cast/round、M tail | quant/epilogue |
 | 失败边界 | Host 无 Device fallback | rank/dtype/window/commMode | checks/tiling |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AlltoAllMatmul A2/A3 ACLNN 算子知识](allto_all_matmul.md)（`related`）：`transposeX1` 必须为 `false`。`transposeX2=false` 时 `x2:［R*H,N］`、B 为 RowMajor；`true` 时 API shape 为 `［N,R*H］`、Device B 为 ColumnMajor。FP16 走 FP16 bias，BF16 走 FP32 bias；无 bias 时不做偏置累加。本卡只覆盖非量化公开入口，量化 API 是独立逻辑语义，不并入版本族。；R-001 的 `qmax=127`、Aq 为 INT8；R-002 的 `qmax=7`、Aq 为 packed INT4；R-003 直接消费 INT4 `x1` 与 API `x1Scale`。动态路线若传 `x1ScaleOptional`，先逐 K 乘 smooth scale。`commScale/x1Offset/x2Offset` 是保留参数，A2 body 不消费。。非量化卡明确划出量化 API，量化卡在同一 AllToAll 后 MatMul 任务链中补充 INT8/INT4 量化、scale 与反量化路线。
-- [AlltoAllQuantMatmul 950 ACLNN 算子知识](allto_all_quant_matmul_950.md)（`same_topic`）：｜ Kernel 路线 ｜ R-001 K-C per-token 动态 FP8；R-002 MX FP8/FP4 ｜；｜ Kernel 路线 ｜ R-001 A16W8 动态量化；R-002 A16W4 动态量化；R-003 A4W4 静态量化 ｜两卡实现同一 AlltoAllQuantMatmulV2 逻辑算子，分别闭合 950 FP8/FP4 HCCL 与 A2 INT8/INT4 window 路线，是直接的平台选型对照。
-<!-- cannbot:related:end -->

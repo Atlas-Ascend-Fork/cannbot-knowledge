@@ -93,11 +93,3 @@ sync.SetFlag(0);
 sync.WaitFlag(0);
 AscendC::DataCopy(dstGlobal, dstLocal, dataSize);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AllocEventID](../../resource_management/t_pipe/alloc_event_id.md)（`related`）：参数：id(输入): 事件ID，由用户自己指定，推荐通过AllocEventID或者FetchEventID来获取。定义如下： using TEventID = int8_t;。；用于申请HardEvent（硬件类型同步事件）的TEventID，必须与ReleaseEventID搭配使用，调用该接口后，会占用申请的TEventID，直至调用ReleaseEventID释放。。SetFlag/WaitFlag 消费 TEventID，AllocEventID 提供受生命周期管理的硬件事件 ID，闭合同步事件获取与使用。
-- [SetFlag/WaitFlag](set_flag_wait_flag_isasi.md)（`same_topic`）：如图1所示，SetFlag/WaitFlag接口用于核内多流水间的同步；同一核内不同流水线之间的同步指令，具有数据依赖的不同流水指令之间需要插入此同步。。两卡描述同一 SetFlag/WaitFlag 核内跨流水同步合同，ISASI 卡是该接口的平台版本。
-<!-- cannbot:related:end -->

@@ -76,11 +76,3 @@ hanndle.AssignQueue(queIdx);
 auto msgPtr = handle.AllocMessage();        // 获取消息空间指针msgPtr
 auto offset = handle.PostFakeMsg(msgPtr);           // 在msgPtr指针位置，发送假消息
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [PostMessage](post_message.md)（`related`）：在消息合并场景中由 AIV 发送假消息，通知 AIC 跳过重复消息的读取和处理。需先通过 AllocMessage 获取消息空间地址。；通过 AllocMessage 获取消息空间地址后，构造 CubeMsgType 消息结构体并发送。两接口共享 AllocMessage 分配与 offset 协议，分别提交需跳过的假消息和需处理的真实消息，闭合消息合并生产端选择。
-- [SetSkipMsg](set_skip_msg.md)（`same_topic`）：“配合 PostFakeMsg 实现消息合并机制”与“AIC 侧通过 SetSkipMsg 跳过对应数量的假消息”分别给出 AIC 消费端与 AIV 生产端的假消息配对协议。
-<!-- cannbot:related:end -->

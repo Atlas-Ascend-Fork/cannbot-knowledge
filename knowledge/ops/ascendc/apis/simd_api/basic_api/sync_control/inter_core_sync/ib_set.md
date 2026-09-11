@@ -86,10 +86,3 @@ if (blockIdx == 0) { // 在核0设置IBSet，当核0的操作完成后再执行�
 ```
 
 完整样例请参考[IBSet与IBWait核间同步样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/ib_set_wait)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IBWait](ib_wait.md)（`related`）：“调用IBSet设置某一个核的标志位，与IBWait成对使用，表示核之间的同步等待指令：被等待核中调用IBSet，通过将值1写入全局内存中某块地址来通知等待核；而等待核中调用IBWait，持续读取全局内存中相应地址块的值，直到其值变为1，从而实现核间同步。”与“参数：isAIVOnly: 控制是否为AIVOnly模式，默认为true。；gmWorkspace(输入): 外部存储核状态的公共缓存，类型为GlobalTensor。GlobalTensor数据结构的定义请参考GlobalTensor。；ubWorkspace(输入): 存储当前核状态的公共缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。；blockIdx(输入): 表示等待核的idx号，取值范围：［0,核数-1］。；eventID(输入): 用来控制当前核的set、wait事件。”是双方正文中的具体合同。Set 卡给出写 1 通知、Wait 轮询的成对协议，Wait 卡列出共享 gm/ub workspace、blockIdx 和 eventID 合同；两端共同闭合跨核通知链的调用参数。
-<!-- cannbot:related:end -->

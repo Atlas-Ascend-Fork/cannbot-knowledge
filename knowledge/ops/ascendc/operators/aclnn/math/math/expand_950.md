@@ -1069,8 +1069,4 @@ Host 用真实 dtype 字节数和 block 对齐后的末轴计算末两轴字节�
 | 精度与尾块 | 全 dtype 按位复制；统一用 `uLeft`、mask、A tail | 64 位必须保留双 32 位 lane；DMA 长度是字节 | `DTYPE_X_`、各 `Process` |
 | 失败边界 | Host 校验/资源失败阻断 launch | 不得给未知 key 或 null workspace 编造 fallback | `CheckParams`、`broadcast_to_impl` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetSysWorkSpace](../../../../apis/simd_api/basic_api/resource_management/workspace/set_sys_work_space.md)（`related`）：entry 先 `SetSysWorkspace`；Matmul Kernel侧接口等高阶API需要系统workspace，所以在使用该类API时，需要调用该接口，设置系统workspace的指针；Expand 950 的 Kernel entry 实际调用与资源管理 API 的系统工作区合同直接衔接。
-<!-- cannbot:related:end -->
+- [SetSysWorkSpace](../../../../apis/simd_api/basic_api/resource_management/workspace/set_sys_work_space.md)

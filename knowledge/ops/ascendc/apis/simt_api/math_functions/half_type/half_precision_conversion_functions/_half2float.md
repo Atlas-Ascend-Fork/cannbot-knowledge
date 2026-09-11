@@ -95,28 +95,14 @@ inline float __half2float(const half x)
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachTan 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)（`related`）：“float val_f32=__half2float(val)”是 FP16 route 进入 tanf 前的实际转换；“功能：将half类型数据转换为浮点数，返回转换后的值。”给出扩精度方向。
-- [AscHalf2Float](../../../../simd_api/c_api/reg_compute/reg_convert/asc_half2float.md)（`same_topic`）：将half类型数据转换为float类型，无舍入模式。；功能：将half类型数据转换为浮点数，返回转换后的值。两页定义相同 half 到 float 转换语义，分别提供 Reg C API 与 SIMT 函数形式，便于按编程模型选接口。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 13 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [CircularPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `__half2float(...)` 的直接调用（第 145 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_simt.h#L145)
-- [ForeachAcos 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_acos_950.md)（`related`）：算子声明的固定版本源码包含对 `__half2float(...)` 的直接调用（第 55 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_acos/op_kernel/arch35/foreach_acos_simt.h#L55)
-- [ReflectionPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/reflection_pad_2d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `__half2float(...)` 的直接调用（第 133 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_mirror_simt.h#L133)
-- [ForeachAddList 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_add_list_950.md)（`related`）：算子声明的固定版本源码包含对 `__half2float(...)` 的直接调用（第 85 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_add_list/op_kernel/arch35/foreach_add_list_simt.h#L85)
-- [ForeachAddcdivScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_addcdiv_scalar_950.md)（`related`）：算子声明的固定版本源码包含对 `__half2float(...)` 的直接调用（第 42 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcdiv_scalar/op_kernel/arch35/foreach_addcdiv_scalar_simt.h#L42)
-- [ForeachAsin 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_asin_950.md)（`related`）：算子声明的固定版本源码包含对 `__half2float(...)` 的直接调用（第 43 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_asin/op_kernel/arch35/foreach_asin_simt.h#L43)
-- [ForeachAtan 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_atan_950.md)（`related`）：算子声明的固定版本源码包含对 `__half2float(...)` 的直接调用（第 105 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_atan/op_kernel/arch35/foreach_atan_simt.h#L105)
-- [ForeachCos 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cos_950.md)（`related`）：算子声明的固定版本源码包含对 `__half2float(...)` 的直接调用（第 54 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_cos/op_kernel/arch35/foreach_cos_simt.h#L54)
-- [ForeachCosh 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cosh_950.md)（`related`）：算子声明的固定版本源码包含对 `__half2float(...)` 的直接调用（第 54 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_cosh/op_kernel/arch35/foreach_cosh_simt.h#L54)
-- [ForeachErfc 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_erfc_950.md)（`related`）：算子声明的固定版本源码包含对 `__half2float(...)` 的直接调用（第 45 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_erfc/op_kernel/arch35/foreach_erfc_simt.h#L45)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ForeachTan 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)
+- [CircularPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)
+- [ForeachAcos 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_acos_950.md)
+- [ReflectionPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/reflection_pad_2d_backward_950.md)
+- [ForeachAddList 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_add_list_950.md)
+- [ForeachAddcdivScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_addcdiv_scalar_950.md)
+- [ForeachAsin 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_asin_950.md)
+- [ForeachAtan 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_atan_950.md)
+- [ForeachCos 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cos_950.md)
+- [ForeachCosh 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cosh_950.md)
+- [ForeachErfc 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_erfc_950.md)

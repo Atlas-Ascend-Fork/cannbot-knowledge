@@ -71,11 +71,3 @@ using PrimType = PrimT<T>;
 ## 约束说明<a name="section633mcpsimp"></a>
 
 无。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetValue](get_value.md)（`related`）：返回值为指定索引位置的 PrimType 类型引用，用于左值相当于 SetValue，用于右值相当于 GetValue。；获取GlobalTensor的相应偏移位置的值。。GlobalTensor operator() 卡明确右值语境等价于 GetValue，GetValue 卡给出按偏移读取的语义，二者连接运算符重载与显式读取接口。
-- [SetValue](set_value.md)（`related`）：返回值为指定索引位置的 PrimType 类型引用，用于左值相当于 SetValue，用于右值相当于 GetValue。；设置 GlobalTensor 指定偏移位置的元素值。操作先写入 DCache，需配合 DataCacheCleanAndInvalid 确保数据一致性。。GlobalTensor operator() 卡明确左值语境等价于 SetValue，SetValue 卡说明指定偏移写入及 DCache 一致性要求，二者连接运算符重载与显式写接口。
-<!-- cannbot:related:end -->

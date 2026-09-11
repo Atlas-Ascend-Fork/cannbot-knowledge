@@ -89,10 +89,3 @@ tiling.SetBufferSpace(-1, -1, -1);
 optiling::TCubeTiling tilingData;
 int ret = tiling.GetTiling(tilingData);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Matmul Tiling类使用说明](matmul_tiling_usage.md)（`related`）：“用户只需要传入A/B/C矩阵的Position位置、Format格式和DType数据类型等信息，调用API接口，即可获取到Init中TCubeTiling结构体中的相关参数。”与“设置A矩阵的Layout轴信息，包括B、S、N、G、D轴。对于BSNGD、SBNGD、BNGS1S2 Layout格式，调用IterateBatch接口之前，需要在Host侧Tiling实现中通过本接口设置A矩阵的Layout轴信息。”提供双方正文证据。通用流程要求先提供矩阵元数据，SetALayout 补充三类 Batch Layout 在 IterateBatch 前必须设置的 B/S/N/G/D 轴信息，形成特殊布局的调用前置条件。
-<!-- cannbot:related:end -->

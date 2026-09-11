@@ -61,9 +61,3 @@ aliases: ["aclnnTriu", "non_contiguous"]
 - 在 `OpDef`（算子类）上调用 `this->AutoContiguous()`：API 不在 `OpDef` 上，编译报 `has no member named 'AutoContiguous'`；正确做法是在 `Input("self")` 返回的 `OpParamDef&` 链尾追加。
 - 用 `IgnoreContiguous()` 但 kernel 仍假设连续：非连续张量传入 kernel 后按线性偏移反推的 (i,j) 与 view 语义不符，产生精度错误。
 - 将 UB headroom 调整当作 561000 的修复——掩盖连续性策略声明缺失的真因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AutoContiguous](../../apis/utils_api/prototype_register_management/op_param_def/auto_contiguous.md)（`exemplifies`）：在 `Input("self")` 的 `OpParamDef` 链尾追加 `.AutoContiguous()` 后，非连续 view（transpose/slice）用例 ST 通过；配置该参数，当单算子API（aclnnxxx）接口中的输入（aclTensor类型）是非连续tensor时，框架会自动将其转换为连续tensor。。运行手册用真实 transpose 和 slice 用例验证在 Input 定义追加 AutoContiguous 可修复非连续输入，API 卡解释其自动转换为连续 tensor 的框架行为，是规则在故障修复中的直接实例。
-<!-- cannbot:related:end -->

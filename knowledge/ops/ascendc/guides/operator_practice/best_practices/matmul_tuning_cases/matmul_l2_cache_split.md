@@ -193,10 +193,3 @@ Matmul API开启L2 Cache切分的完整样例请参考[L2 Cache切分的算子�
 ## 总结<a name="section1593812115413"></a>
 
 在Matmul计算数据量超过L2 Cache大小的场景下，可以考虑开启L2 Cache切分，提高L2 Cache命中率，利用L2 Cache高带宽特性提升算子性能。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [L2CacheSplit](../../simd_operator_optimization/memory_access/l2_cache_split.md)（`same_topic`）：Matmul 案例的适用条件是“输入和输出的数据量超过L2 Cache的大小。”；通用指南给出决策“当输入和输出数据的数据量超过L2 Cache大小时，Tiling中开启L2 Cache切分策略。”。两卡围绕同一切分决策，案例进一步给出 Matmul 分块与拖尾选法。
-<!-- cannbot:related:end -->

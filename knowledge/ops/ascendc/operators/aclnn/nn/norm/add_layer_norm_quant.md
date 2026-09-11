@@ -639,9 +639,3 @@ if (this->isPerTensor) {
 | 同步 | Queue/PIPE/event 模式可复用 | MTE3→MTE2/V 依赖不得删除 | 各 body `Process` |
 | 精度与尾块 | FP32 LN、RINT INT8、有效 N 写回 | BF16 RINT、slice/row tail 不得改 | `RoundFloat2Int8`,`QuantAndOut` |
 | 失败边界 | 三阶 UB fallback | 不得把非公开 dynamic/dual 路线补入 A2/A3 | `AddLayerNormQuantTilingImplV2` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddLayerNormQuant 950 ACLNN 算子知识](add_layer_norm_quant_950.md)（`same_topic`）：｜ 计算语义 ｜ 融合 `Add + LayerNorm + 1/2 路静态或动态量化`，可选回写加法结果 `x`。 ｜；｜ 计算语义 ｜ `a=x1+x2+bias`，`ln=(a-mean(a))/sqrt(var(a)+eps)*gamma+beta`，公开 A2/A3 域执行单路静态 per-tensor 量化 `y1=round_int8(ln*scale1+zeroPoint1)`，并输出 `layernormRes=ln`。 ｜。两卡共享 AddLayerNormQuant 融合语义，分别给出 950 V1 的静态/动态多路能力与 A2/A3 V2 的单路静态边界。
-<!-- cannbot:related:end -->

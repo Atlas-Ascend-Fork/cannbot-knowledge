@@ -210,11 +210,3 @@ supports: `srcStride=ubGapBlocks` 让 scatter 从固定 `rowBytesT_` 的下一�
 ## 误诊
 
 两个失败场景的数据范围和 dtype 不同，容易被归因于 bf16 或极值精度；共同的结构信号是 `A0` 留下窄尾 tile，且完整 tile 路径已通过。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)（`exemplifies`）：分别在 GM→UB 的 `dstStride` 与 UB→GM 的 `srcStride` 中补上相同的 UB gap：；DataCopyPad（GMToUB非对齐数据搬运）从Global Memory将数据非对齐搬运至Unified Buffer时，可根据开发者的需要自行填充数据。。Runbook 的修复在 GM→UB 搬入端设置 dstStride，目标 API 卡确认该方向使用带填充的 DataCopyPad，从而定位正确的 copy-in 接口与 UB 行距参数。
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm.md)（`exemplifies`）：分别在 GM→UB 的 `dstStride` 与 UB→GM 的 `srcStride` 中补上相同的 UB gap：；将数据从UB非对齐搬运至GM。。Runbook 的修复在 UB→GM 搬出端设置 srcStride，目标 API 卡确认该方向会丢弃对齐 dummy 数据，从而定位正确的 scatter 接口与源行距参数。
-- [DataCopyPad多行stride单位误用导致非对齐行输出NaN](datacopypad_stride_fields_use_32_byte_block_units.md)（`related`）：分别在 GM→UB 的 `dstStride` 与 UB→GM 的 `srcStride` 中补上相同的 UB gap：；修复保留 `blockLenBytes`，另算 `gapBlocks = gapBytes / 32`，并在三处多行搬运统一使用 `gapBlocks`。。窄尾修复要求用 UB gap 恢复固定 rowBytesT_ 行距，stride 单位卡规定先把 gap 字节换算为 32B block；后者可直接验证前者公式除以 32 的必要性。
-<!-- cannbot:related:end -->

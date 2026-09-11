@@ -567,9 +567,3 @@ yTDataLocal = yDataLocal.template ReinterpretCast<T>();
 | 同步 | MTE2_V/V_MTE3/MTE3_S+PIPE_ALL | alias覆盖前必须等待 | sync helpers |
 | 精度与尾块 | FP32累计、精确DataCopyPad tail | max等值保留旧值、padding不计数 | `AddWeight/MaxWeight/UBToGM` |
 | 失败边界 | Tiling失败/unknown key/workspace空 | 不得静默补 fallback | `Init`, entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [EmbeddingBag 950 ACLNN 算子知识](embedding_bag_950.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnEmbeddingBagGetWorkspaceSize` + `aclnnEmbeddingBag`，公开 ACLNN 两段式接口，无 V2/V3 版本 ｜；｜ 实际入口 ｜ `aclnnEmbeddingBagGetWorkspaceSize` + `aclnnEmbeddingBag`，公开 ACLNN ｜；两卡均闭合同一 aclnnEmbeddingBag 两段式接口和分 bag 聚合语义，差异集中在 A2/A3 与 950 的 Host 选择、Kernel 路线和平台资源。
-<!-- cannbot:related:end -->

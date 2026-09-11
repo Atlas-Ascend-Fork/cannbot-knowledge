@@ -607,9 +607,3 @@ __simt_callee__ inline C MinimumWithNaN(C a, C b)
 | 同步 | 无 atomic/barrier；元素独占写 | 仅在每个 `(t,idx)` 唯一映射时成立 | grid-stride loop |
 | 精度与尾块 | FP16/BF16→FP32、INT32→INT64；显式 NaN | cast 顺序与 `idx<count` 不得改变 | `ComputeType/MinimumWithNaN` |
 | 失败边界 | Host 数量/platform/dtype 失败阻断 launch | 不得为 >256、低 UB、溢出或 INT64 range 编造 fallback | `ForeachMinimumScalarListTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMinimumScalarList A2/A3 ACLNN 算子知识](foreach_minimum_scalar_list.md)（`same_topic`）：｜ 计算语义 ｜ 对第 `i` 个 Tensor 的每个有效元素 `j` 计算 `y_i［j］ = min(x_i［j］, scalars［i］)`。 ｜；｜ 计算语义 ｜ `y_i［j］=min(x_i［j］,scalars［i］)`；浮点显式传播任一操作数的 NaN。 ｜。两卡定义同一 TensorList 逐项 scalar minimum，950 卡进一步闭合 SIMT 路线并明确浮点 NaN 传播规则。
-<!-- cannbot:related:end -->

@@ -699,9 +699,3 @@ QK/PV 使用固定 A2 MMAD policy，Vector epilogue 维持 FP32 online max/sum/O
 | 同步 | C1V1→V1C2→C2V2/FD barrier | flag rounds/batch schedule | Process stages |
 | 精度与尾块 | FP32 accum/max/sum/O | P cast/output cast/actual lengths | epilogues |
 | 失败边界 | false vs error distinction | no silent fallback | registry/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [npu_fused_infer_attention_score (v1 / v2)](../../../../../../model/inference/concepts/kernels/fused_infer_attention_score.md)（`related`）：“｜ 计算语义 ｜ `S=QK^T*scale+pse+mask`，逐行 softmax 后计算 `O=softmax(S)V`；可选 page attention、RoPE、公共前缀、量化/反量化、后量化与 `softmaxLse` ｜”从 A2/A3 源码闭包定义 FIA V4 的完整计算与可选特征；“昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算：`softmax(QKᵀ/√d)·V`，支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。在 DeepSeek-R1 decode 路径中作为 ［mla-prolog］(mla_prolog.md) 之后的主 FA 算子。”从模型侧描述同一 FIA 在 MLA decode 中的角色。两卡围绕同一融合算子，分别提供 ABI/route 与模型接线。
-<!-- cannbot:related:end -->

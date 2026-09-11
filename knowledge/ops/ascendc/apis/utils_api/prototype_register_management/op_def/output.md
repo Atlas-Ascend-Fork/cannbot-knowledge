@@ -56,10 +56,3 @@ OpParamDef &Output(const char *name)
 
 参数注册的顺序需要和算子kernel入口函数一致。
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [advance_step in-place kernel FATBIN wrap](../../../../runbooks/compilation/fatbin_wrapper_param_count_matches_opdef_input_plus_output.md)（`exemplifies`）：ascend950 FATBIN 阶段为 kernel 自动生成一个 wrapper，wrapper 的调用实参数 = `OpDef` 声明的 input 数 + output 数 + workspace + tiling。；参数注册的顺序需要和算子kernel入口函数一致。；Output API 规定注册顺序与 Kernel 入口一致，排障实例进一步证明 wrapper 会按 input、output、workspace、tiling 机械生成实参，因此 Kernel 签名必须同时对齐 Output 数量和顺序。
-<!-- cannbot:related:end -->

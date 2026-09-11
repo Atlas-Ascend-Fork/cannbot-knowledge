@@ -548,9 +548,3 @@ uint64_t tilingKey = ComputeTiling({static_cast<uint32_t>(inDtype), moveAlign});
 | 同步 | Queue与MicroAPI函数顺序 | Free/EnQue时点 | `CopyIn/ComputePerLoop/CopyOut` |
 | 精度与尾块 | FP32 RegTensor、RINT低精度输出 | UpdateMask和pad有效范围 | `Base::Compute` |
 | 失败边界 | Host失败、null workspace、unknown key | 不得补fallback | Tiling/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwiGluGrad A2/A3 ACLNN 算子知识](swi_glu_grad.md)（`same_topic`）：“｜ 计算语义 ｜ 将 `x` 沿 `dim` 等分为 A/B，计算 `dA=yGrad*sigmoid(A)*(1+(1-sigmoid(A))*A)*B` 与 `dB=yGrad*sigmoid(A)*A` 后按原布局拼接 ｜”与“｜ 计算语义 ｜ `x=［A,B］`；`outA=yGrad*sigmoid(A)*(1+(1-sigmoid(A))*A)*B`，`outB=yGrad*sigmoid(A)*A` ｜”是双方正文中的具体合同。两端给出相同的 SwiGLU 反向两支公式，A2/A3 卡强调按 dim 切分与拼接，950 卡记录对应 outA/outB，能用于跨平台核对数学语义。
-<!-- cannbot:related:end -->

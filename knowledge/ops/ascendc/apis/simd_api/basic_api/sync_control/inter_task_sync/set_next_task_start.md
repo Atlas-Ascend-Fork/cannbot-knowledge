@@ -129,20 +129,5 @@ AscendC::SetNextTaskStart();
 完整样例请参考[TaskSync样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/task_sync)。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SuperKernel原理介绍](../../../../../guides/programming_guide/advanced_programming/super_kernel/principles.md)（`explains`）：算子间流水并行：通过SuperKernel内提供的任务间同步接口（SetNextTaskStart、WaitPreTaskEnd），可以让子Kernel之间的部分指令实现并行执行，进一步压缩端到端耗时。；在SuperKernel的子Kernel中调用，调用后的指令可以和后续其他的子Kernel实现并行，提升整体性能。；目标接口实现焦点所述的后向子 Kernel 并行起点。
-- [WaitPreTaskEnd](wait_pre_task_end.md)（`related`）：在SuperKernel的子Kernel中调用，调用后的指令可以和后续其他的子Kernel实现并行，提升整体性能。；在SuperKernel的子Kernel中调用，调用前的指令可以和前序其他的子Kernel实现并行，提升整体性能。。SetNextTaskStart 放开当前子 Kernel 尾部与后继并行，WaitPreTaskEnd 放开当前子 Kernel 头部与前序并行；二者从相邻两侧共同定义 SuperKernel Early-Start 重叠区间。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)（`related`）：算子声明的固定版本源码包含对 `SetNextTaskStart(...)` 的直接调用（第 220 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_matmul_reduce_sum/op_kernel/quant_matmul_reduce_sum.h#L220)
-- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)（`related`）：算子声明的固定版本源码包含对 `SetNextTaskStart(...)` 的直接调用（第 317 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_kernel/grouped_matmul.h#L317)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)
+- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)

@@ -70,10 +70,3 @@ enable_mm_quant_a8w8 = "a8" in self.mm_quant_mode
 ## Evidence
 
 - `diff 事实` + `维护者确认`（@6293961c1089）：`compressed_tensors.py` 删常量 `QUANT_MODE_W8A8`/`QUANT_MODE_W16A16`、`_get_quant_mode` 拼小写串；DeepSeek-R1 / V3.2-Exp / Kimi-K2-Thinking 三份 `modeling_deepseek.py` 把 `== QUANT_MODE_W8A8` → `"a8" in`，`DenseMLP`/`SharedExpert` 保留精确 `== "w8a8"` 例外；维护者答复小写来源（开源 `type` 字段小写）与「只有 w8a8 需走 down_proj 分支」。W4A8 修后能进 A8 内核路径，源未给 before→after 性能 / 精度数字。溯源下探：[cann-recipes-infer-pr-187-fix-w4a8-a8](https://gitcode.com/cann/cann-recipes-infer/merge_requests/187)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [compressed-tensors 量化加载器的方案识别门控陷阱：别假设总有激活量化、MX 与普通 fp8 靠 weight_block_size 区分、AWQ int4 走 W4A16](compressed_tensors_scheme_gating_pitfalls.md)（`related`）：激活是否量化、`weight_block_size`（MX 判据）、pack 格式都要纳入门控；那是加载器路由 LinearMethod 的门控，本页是 modeling 侧激活量化分支门控；连接加载器与 modeling 两层门控排障。
-- [为 MoE+MLA+MTP 模型做混合精度量化的配置陷阱：保留不量化层·激活分支按位宽子串门控](../../optimizations/experience/rules/deepseekv3_mixed_precision_quant_config_pitfalls.md)（`related`）：陷阱（反例 = supersede 的 failure_signature）：激活融合分支写死精确 `== "W8A8"` 时，新接入的 W4A8 掉出**全部** A8 融合路径、静默回落非量化慢路径。；激活量化分支门控写死为 `== "W8A8"`（甚至大小写都不匹配拼出的 `"w8a8"`）。W4A8 的 mode 是 `"w4a8"`，精确比较为 False → 不进 A8 分支，所有依赖它的激活 int8 算子被跳过、悄悄回落到非 A8 路径：两卡描述同一精确门控漏掉 W4A8 的 failure signature，规则卡给原则，runbook 给代码级诊断和修复。
-<!-- cannbot:related:end -->

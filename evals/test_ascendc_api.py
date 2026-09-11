@@ -278,7 +278,7 @@ class CardReadingTests(unittest.TestCase):
 
     def test_pages_preserve_all_lines_and_navigation_without_writing(self):
         body = "\n".join(f"正文 {number}: 字节、元素、块。" for number in range(886))
-        nav = "\n<!-- cannbot:related:start -->\n## 相关\n\n[Link](other.md)\n<!-- cannbot:related:end -->"
+        nav = "\n\n- [Link](other.md)\n"
         self.card.write_text("---\ntitle: Fixture\ntype: API\n---\n# Fixture\n" + body + nav, encoding="utf-8")
         original = self.card.read_bytes()
         before = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.rglob("*") if p.is_file()}
@@ -301,9 +301,8 @@ class CardReadingTests(unittest.TestCase):
             fingerprint = footer["file_sha256"]
         self.assertGreater(int(observed[-1][0]), len(lines))
         self.assertEqual([(str(i), line) for i, line in enumerate(original.decode().splitlines(), 1)], observed)
-        first, last = metadata["navigation_ranges"][0]
-        self.assertEqual("<!-- cannbot:related:start -->", observed[first - 1][1])
-        self.assertEqual("<!-- cannbot:related:end -->", observed[last - 1][1])
+        self.assertEqual([], metadata["navigation_ranges"])
+        self.assertEqual("- [Link](other.md)", observed[-1][1])
         self.assertEqual(before, {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.rglob("*") if p.is_file()})
 
     def test_continuation_requires_unchanged_content_not_only_unchanged_length(self):
@@ -407,12 +406,12 @@ class CardReadingTests(unittest.TestCase):
         self.assertEqual("", result.stdout)
         self.assertEqual(before, {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.rglob("*") if p.is_file()})
 
-    def test_field_comparison_preserves_original_context_and_excludes_metadata_and_navigation(self):
+    def test_field_comparison_preserves_ordinary_links_and_excludes_metadata(self):
         other = self.card.parent / "other.md"
         self.card.write_bytes(
             b'---\ntitle: "span metadata only"\nplatforms: [a2]\nstatus: stable\n---\n'
             b'\n# Fixture\n\nspan has an 8-byte unit.\n\n'
-            b'<!-- cannbot:related:start -->\nspan navigation claim\n<!-- cannbot:related:end -->\n'
+            b'- [span related](other.md)\n'
         )
         other.write_bytes(b'---\ntitle: "span = length;"\n---\n\n    span = length;\r\n')
         before = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.rglob("*") if p.is_file()}
@@ -425,10 +424,9 @@ class CardReadingTests(unittest.TestCase):
                 number, raw = line.split("\t", 1)
                 self.assertEqual(original[int(number) - 1], raw)
                 self.assertNotIn("metadata only", raw)
-                self.assertNotIn("navigation claim", raw)
-                self.assertNotIn("cannbot:related", raw)
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), item["file_sha256"])
         self.assertIn("9\tspan has an 8-byte unit.", result["cards"][0]["numbered_context"])
+        self.assertIn("11\t- [span related](other.md)", result["cards"][0]["numbered_context"])
         self.assertEqual(["5\t    span = length;"], result["cards"][1]["numbered_context"])
         self.assertEqual(before, {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.rglob("*") if p.is_file()})
 

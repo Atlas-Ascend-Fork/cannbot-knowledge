@@ -59,10 +59,3 @@ if (srcPos == AscendC::TPosition::VECCALC) {
     // 处理逻辑3
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TPosition](../../aux_data_structures/t_position.md)（`related`）：返回值为 TPosition 枚举，支持 VECIN、VECOUT、VECCALC、A1、A2、B1、B2、CO1、CO2 等逻辑位置。；TPosition是Tensor位置枚举，描述Tensor在Ascend AI Core存储层次中的位置。前者返回后者定义的枚举，直接用于按存储位置分派逻辑。
-<!-- cannbot:related:end -->

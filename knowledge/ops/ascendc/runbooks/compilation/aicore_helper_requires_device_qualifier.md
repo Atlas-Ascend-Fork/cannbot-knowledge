@@ -95,10 +95,3 @@ __aicore__ inline int32_t alignUp32(int64_t bytes)
 ## 坏实践
 
 看到 `inline` 就假设 helper 会随核函数一起成为 device 函数；在 bisheng 的 host/device 调用域中，两者不是同一概念。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [函数执行空间限定符](../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/function_execution_space_qualifier.md)（`exemplifies`）：在 `.asc` 中，普通 `static inline` 并不会自动获得 device 调用属性。于是 `__global__ __aicore__` 核函数看到的候选仍是 `__host__` 函数，bisheng 在重载选择阶段拒绝跨域调用。helper 的整数算术本身可在 device 上执行；补上 `__aicore__` 后，函数域与调用者一致。；主要限定符：__global__ __aicore__（算子入口，协调 VF 执行，Host 通过 <<<>>> 调用）、__aicore__（Device 侧辅助函数）、__simt_vf__（线程级并行计算任务，通过 asc_vf_call 调用）、__simd_vf__（向量级并行计算任务）、__simt_callee__（SIMT VF 子函数）、__simd_callee__（SIMD VF 子函数）、__callee__（编译期 Device 侧辅助函数）。runbook 的 host/device 调用域错误由限定符页的函数类型合同直接解释。
-- [函数执行空间限定符](../../apis/simt_api/simt_programming_intro/extended_syntax/function_execution_space_qualifier.md)（`exemplifies`）：__aicore__（Device 侧执行，只能被 __global__ 或其他 __aicore__ 函数调用）。；在 `.asc` 中，普通 `static inline` 并不会自动获得 device 调用属性。；Runbook 将限定符调用合同落到 host helper 被 device kernel 拒绝的编译故障。
-<!-- cannbot:related:end -->

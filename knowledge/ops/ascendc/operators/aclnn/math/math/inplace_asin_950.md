@@ -718,9 +718,3 @@ struct AsinOpWithCast {
 | 同步 | pool slice 通过 MTE2/V/MTE3 Mutex 交接；AICPU 通过 ParallelFor 完成 | ping/pong id、pipe producer→consumer 顺序和 executor stream ordering | `GetTensor/ReleaseTensor/ComputeAsinKernel` |
 | 精度与尾块 | FLOAT 直接 `asinf`；FLOAT16 核内 FP32；DOUBLE `std::asin` | Cast mode 0/1、1024 threads、`i<count`、former/tail POD 选择不得改变 | `asin_dag.h/ElementwiseSch::Process` |
 | 失败边界 | 空域 Host 成功短路；dtype/shape/UB/Tiling/AICPU 错误逐层返回 | 不得给不公开 BF16、缺失 A3 body 或 Tiling 失败臆造 fallback | `CheckInplaceParams/RunTiling/CheckAsin` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Asin 950 ACLNN 算子知识](asin_950.md)（`same_topic`）：第一段入口先执行 Inplace 专属校验，再复用 `ExecAsinGetWorkspaceSize(selfRef, selfRef, ...)`，但本卡不合并非原地 `aclnnAsin` 的整数输入和独立输出语义。；本卡只处理新建输出的 `aclnnAsin`；共享内部函数虽也被原地入口调用，但 `aclnnInplaceAsin` 属不同逻辑变体，不纳入路线。；两卡是共享 ExecAsin 内部路径的同一 950 Asin 核心对象，分别约束原地别名与独立输出契约。
-<!-- cannbot:related:end -->

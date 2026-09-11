@@ -1059,10 +1059,3 @@ AIV从GM读取FP4与scale，在UB中反量化并写选定BL1；AIC同时搬A并�
 | 同步 | VECIN flags、SyncAll、workspace/L1 flags | AIC:AIV=1:2、flag ID/轮次、schedule | MIX bodies |
 | 精度与尾块 | int32/float accum、FP32 scale/bias、CAST_RINT | 运算顺序、mask、SetTail | epilogue/body |
 | 失败边界 | template next-hop与最终failure | binary存在不得越过公开ND/checker | API/registry/key |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclnnQuantMatmulV5 L0C2out 三约束判别](../../../../runbooks/compilation/aclnnquantmatmulv5_l0c2out.md)（`related`）：`aclnnQuantMatmulV5` 的 L0C→out 直出路径（int8 输入、uint64 scale、输出 dtype 在 int8 之外）是硬件直出量化路径，其参数合同为：；｜ x2Scale ｜ 必选，标量/列/块/MX shape ｜ UINT64/INT64/FP16/BF16/FP32/FLOAT8_E8M0 ｜ INT64 view 转 UINT64；shape决定量化方式 ｜。runbook 把算子卡的多种 scale 输入收敛到 L0C 直出时必须使用的 uint64 类合同。
-- [QuantMatmul A2/A3 ACLNN 算子知识](quant_matmul.md)（`same_topic`）：量化矩阵乘；按模式执行 `x1*x2` 后应用 per-tensor/per-channel/per-token/per-group scale，可选 offset/bias，并转换为目标 dtype；950 上的整数/FP8/HIF8/FP4 量化矩阵乘，覆盖 T-C/T-T、K-C/K-T、G-B、K-G、T-CG 与 MX。两卡都定义 QuantMatmul 的量化矩阵乘核心，目标卡是在 950 上扩展整数与多种低精度模式的架构实现，属于同一算子的跨平台知识。
-<!-- cannbot:related:end -->

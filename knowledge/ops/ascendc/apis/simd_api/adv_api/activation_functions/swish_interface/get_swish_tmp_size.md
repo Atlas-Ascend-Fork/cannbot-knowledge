@@ -59,10 +59,3 @@ uint32_t maxValue;
 uint32_t minValue;
 AscendC::GetSwishTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Swish](swish.md)（`same_topic`）：“在神经网络中，Swish是一个重要的激活函数。”；“用于获取Swish Tiling参数：Swish接口能完成计算所需最大临时空间大小和最小临时空间大小。”。目标接口为焦点 Swish 计算提供 Host 侧临时空间定额。
-<!-- cannbot:related:end -->

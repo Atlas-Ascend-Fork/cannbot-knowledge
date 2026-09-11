@@ -102,8 +102,4 @@ result: 0.2231435 0.8109302 1.178655 1.446919
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLog1p 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_log1p_950.md)（`related`）：然后执行 `static_cast<T>(log1pf(static_cast<float>(x_i［j］)))`。；函数原型：float log1pf(float x)；ForeachLog1p 的统一 SIMT Route 对每个展平元素直接调用 log1pf，并在 FP16/BF16 情况下窄化回存储 dtype。
-<!-- cannbot:related:end -->
+- [ForeachLog1p 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_log1p_950.md)

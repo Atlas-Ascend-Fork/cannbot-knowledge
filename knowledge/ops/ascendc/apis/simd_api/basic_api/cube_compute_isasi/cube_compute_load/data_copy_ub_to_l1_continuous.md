@@ -113,10 +113,3 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>&
 // 使用传入count参数的搬运接口，完成连续搬运
 AscendC::DataCopy(dstLocal, srcLocal, 512);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad（UBToL1非对齐数据搬运）](data_copy_pad_ub_to_l1.md)（`same_topic`）：“将Unified Buffer中的数据搬运到L1 Buffer，支持在搬运过程中对数据进行Padding。用于源数据长度不满足对齐要求时自动补齐。”与“将Unified Buffer中的连续数据搬运到L1 Buffer，数据格式不变。用于从Vector侧向Cube侧传递数据。”是双方正文中的具体合同。两端都是 UB 到 L1 的 Vector→Cube 搬运合同，差别在源长度是否需要 Padding；互读能直接决定对齐输入使用连续搬运还是带补齐搬运。
-<!-- cannbot:related:end -->

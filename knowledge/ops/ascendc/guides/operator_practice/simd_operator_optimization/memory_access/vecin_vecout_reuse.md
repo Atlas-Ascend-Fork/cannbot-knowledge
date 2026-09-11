@@ -109,10 +109,3 @@ template <typename ComputeT> class KernelExample {
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fig_1.png)
 
 如上图所示，将反例中DataCopy指令替换为TQueBind之后有明显优化。由于省略了数据从UB（VECIN）拷贝到UB（VECOUT）的步骤，aiv\_vec\_time几乎缩减为0。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TQueBind简介](../../../../apis/simd_api/basic_api/resource_management/t_que_bind/t_que_bind_intro.md)（`explains`）：“这种场景可以使用Ascend C针对纯搬运类算子提供的TQueBind接口，该接口可以将UB（VECIN）与UB（VECOUT）绑定，省略将数据从UB（VECIN）拷贝到UB（VECOUT）的步骤，从而避免vector的无谓消耗。”给出优化动作；“TQueBind绑定源逻辑位置和目的逻辑位置，根据源位置和目的位置，来确定内存分配的位置 、插入对应的同步事件，帮助开发者解决内存分配和管理、同步等问题。”给出接口的内存与同步合同，二者直接支撑实现和验证。
-<!-- cannbot:related:end -->

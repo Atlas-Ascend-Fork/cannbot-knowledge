@@ -333,10 +333,3 @@ aclnnStatus aclnnXxxTensorGetWorkspaceSize(const aclTensor *x0, const aclTensor 
 
 - [快速入门](../aclnn_quick_start.md) — 创建并跑通AddCustom算子工程。
 - [算子工程编译](../compilation_and_deployment/basic_process.md) — 部署算子包并查看部署目录。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [运行时加载机制](runtime_loading_mechanism.md)（`related`）：单算子API采用二段式调用：aclnnXxxGetWorkspaceSize和aclnnXxx。；单算子API一般是“两段式接口”：。运行时加载机制解释两阶段如何匹配 binary、生成 tiling 与提交 stream，调用指南给出应用侧准备 workspace、executor 和两段式调用的具体入口。
-<!-- cannbot:related:end -->

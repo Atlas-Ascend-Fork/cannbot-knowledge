@@ -44,10 +44,3 @@ platforms: []
 | **L2Cache未充分利用** | 当前实现中B矩阵每次均从GM读取，多核反复访问GM导致MTE2带宽压力大；L2Cache纯读带宽约3~4倍于GM，但当前实现未能利用这一特性 | 沿M方向切分A矩阵，使B矩阵跨轮驻留L2Cache，减少GM访问次数，有效降低MTE2耗时 |
 
 > 以上各优化方向的详细实现方案，请参见[中级性能优化](intermediate_optimization.md)和[高级极限打磨](advanced_extreme_optimization.md)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [中级性能优化](intermediate_optimization.md)（`related`）：以上各优化方向的详细实现方案，请参见中级性能优化和高级极限打磨。；本节基于C++ Tensor编程范式，介绍Matmul基础API算子的性能调优方法，通过4个渐进式优化步骤（L1/L0双缓冲机制、细粒度流水同步、多核并行切分、DataCopyIn优先搬运B矩阵），展示从基础实现到高性能优化的完整调优路径。。入门指南在完成基础 Matmul 后把优化方向明确交给中级与高级章节，中级指南随即展开双缓冲、细粒度同步、多核切分和 B 矩阵优先搬运四步，因此二者是同一案例的连续实践阶段。
-<!-- cannbot:related:end -->

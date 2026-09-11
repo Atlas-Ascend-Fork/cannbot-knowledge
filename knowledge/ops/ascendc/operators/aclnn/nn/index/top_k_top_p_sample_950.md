@@ -511,9 +511,3 @@ if (tempSumVal < topp) {
 | 同步 | 950 cache flush + HardEvent/PipeBarrier | 写回后再读及输出初始化屏障 | `Process`, sort helper |
 | 精度与尾块 | FP32 中间、max-subtracted softmax | cast/abs(q)+eps/32-element pad | `SoftMax*`, `QSample*`, sort helper |
 | 失败边界 | Host 校验阻断、unknown key return | 不得补造 fallback | `RunKernelTiling`, entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TopKTopPSample A2/A3 ACLNN 算子知识](top_k_top_p_sample.md)（`same_topic`）：“｜ 计算语义 ｜ 每行按 TopK→TopP→MinP 过滤；随后输出过滤中间量，或执行 ArgMax，或按 `probs/(abs(q)+eps)` 执行 Q-Sample 后 ArgMax ｜”与“｜ 计算语义 ｜ 每行依次进行可选 TopK、TopP、MinP，再输出中间量、ArgMax 或 `probs/(abs(q)+eps)` 的 Q-Sample ArgMax ｜”是双方正文中的具体合同。两端保持 TopK、TopP、MinP 过滤顺序及三种输出路线，互读可跨平台验证采样数学合同和 Q-Sample 归一形式。
-<!-- cannbot:related:end -->

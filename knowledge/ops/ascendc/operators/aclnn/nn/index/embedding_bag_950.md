@@ -930,9 +930,3 @@ indices、weight、output（以及可选sample）均以depth2轮换，让后续�
 | 同步 | SIMT独占输出；Vector Queue/SyncAll | 不可引入无保护同址写 | SIMT funcs/Vector Process |
 | 精度与尾块 | FP32 sum/mean、W dtype max、多层tail | COMP_T宽度、mask、padding语义 | common+SIMT bodies |
 | 失败边界 | 512B/4KiB fallback、uint地址key、unknown key | 不得将目录存在当fallback | Tiling/GetTilingKey/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [EmbeddingBag A2/A3 ACLNN 算子知识](embedding_bag.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnEmbeddingBagGetWorkspaceSize` + `aclnnEmbeddingBag`，公开 ACLNN 两段式接口，无 V2/V3 版本 ｜；｜ 实际入口 ｜ `aclnnEmbeddingBagGetWorkspaceSize` + `aclnnEmbeddingBag`，公开 ACLNN ｜；两卡均闭合同一 aclnnEmbeddingBag 两段式接口和分 bag 聚合语义，差异集中在 A2/A3 与 950 的 Host 选择、Kernel 路线和平台资源。
-<!-- cannbot:related:end -->

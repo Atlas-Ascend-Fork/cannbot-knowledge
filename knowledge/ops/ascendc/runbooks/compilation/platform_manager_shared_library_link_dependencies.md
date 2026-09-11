@@ -132,9 +132,3 @@ target_link_directories(op_rms_norm PRIVATE
 ## 误诊
 
 动态加载错误与后续出现的 NaN、部分 shape 错误是不同闭环。前者在 Python 装载共享库时发生；后者只有库成功加载并启动 kernel 后才可能出现，不能合成同一个“精度问题”。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [PlatformAscendCManager](../../apis/utils_api/platform_info/platform_ascend_c_manager.md)（`exemplifies`）：“该 host 入口调用了 `platform_ascendc::PlatformAscendCManager::GetInstance()` 来取得 AIV 核数”；“使用该功能需要包含"tiling/platform/platform_ascendc.h"头文件，并在编译脚本中链接tiling_api、platform动态库”。API 卡的链接合同正是 Runbook 中 undefined symbol 的根因与修复依据。
-<!-- cannbot:related:end -->

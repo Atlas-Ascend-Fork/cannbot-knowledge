@@ -66,11 +66,3 @@ uint32_t typeSize = sizeof(half);
 
 AscendC::GetDigammaMaxMinTmpSize(shape, typeSize, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Digamma](digamma.md)（`related`）：“host侧Tiling接口，用于获取Digamma接口所需的最大和最小临时空间大小”；“临时空间大小通过GetDigammaMaxMinTmpSize获取”。前者生产临时空间上下界，Digamma 的 sharedTmpBuffer 重载直接消费该规划结果。
-- [GetDigammaTmpBufferFactorSize](get_digamma_tmp_buffer_factor_size.md)（`related`）：“在minValue到maxValue范围内，临时空间越大性能越好”；“用于在固定临时空间下推算算子单次最大计算元素数量”。前者给可选空间范围，后者把实际可用空间反算为分块元素数，形成 Tiling 决策链。
-<!-- cannbot:related:end -->

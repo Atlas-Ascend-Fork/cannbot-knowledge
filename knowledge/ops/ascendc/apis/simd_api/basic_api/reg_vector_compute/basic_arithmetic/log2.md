@@ -118,10 +118,3 @@ __simd_vf__ inline void Log2VF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint32_
     }
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Log](../../../adv_api/math_compute/log_interface/log.md)（`same_topic`）：根据mask对源操作数逐元素求以2为底的对数，将结果写入目的操作数；按元素做对数运算，提供以e为底（Log）、以2为底（Log2）、以10为底（Log10）三种接口。前者是 register vector 的 Log2，后者包含高阶 API 的 Log2，二者实现同一逐元素以 2 为底对数。
-<!-- cannbot:related:end -->

@@ -275,9 +275,3 @@ __aicore__ inline void Process()
 ## 误诊
 
 该偏差不是通用 Softmax 公式错误：相同输入上的末轴结果在替换归约广播边界后恢复，而同轮非末轴 fp32 探针在修复前已经接近参考值。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Duplicate](../../apis/simd_api/basic_api/reg_vector_compute/data_padding/duplicate.md)（`exemplifies`）：焦点卡验证“去掉 RegTensor→Duplicate 直连，并改为 `StoreAlign` 到 32B UB 标量槽、`GetValue(0)` 读回 C++ 标量、再调用标量 `Duplicate` 后，两个末轴 fp32 探针同时恢复。”，候选 API 明确“Scalar模式：将scalarValue广播到寄存器，并保存在dstReg中（如果有mask，则保存在dstReg中被mask筛选的位置）。”；修复正是强制选用这一 Scalar 广播合同。
-<!-- cannbot:related:end -->

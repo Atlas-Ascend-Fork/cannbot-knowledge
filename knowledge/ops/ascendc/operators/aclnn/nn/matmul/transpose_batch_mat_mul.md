@@ -818,9 +818,3 @@ for (tidx.k = 0; tidx.k < tdim.k; ++tidx.k) {
 | 同步 | Base primitive pipe；PP flags 0..3 | ping-pong覆盖前必须 wait | `PpMatmulEinSum::Process` |
 | 精度与尾块 | HF32、scale向量、FP32 L0C、actual/round | 量化仅 FP16→INT8；只写 actual tail | `SetHF32/SetQuantVector/Mmad` |
 | 失败边界 | selector无 device fallback | 未实例化 key、unsupported perm/shape 必须失败 | `ASCENDC_TPL_SEL`, `CheckParams` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TransposeBatchMatMul 950 ACLNN 算子知识](transpose_batch_mat_mul_950.md)（`same_topic`）：｜ 计算语义 ｜ 将 `permX1`、`permX2` 解释后的三维张量视为 `A［B,M,K］`、`B［B,K,N］`，计算 `C［b,m,n］=Σ_k A［b,m,k］B［b,k,n］`，再按 `permY=［1,0,2］` 物理写成 M-B-N；`batchSplitFactor>1` 时写成 `factor × M × (B*N/factor)`。 ｜；｜ 计算语义 ｜ 解析 `A［B,M,K］`、`B［B,K,N］` 后做逐 batch 矩阵乘，常规输出 M-B-N；factor>1 时输出 factor-M-(B*N/factor)；scale 路线为 FP16×FP16→INT8。 ｜。两卡实现同一 TransposeBatchMatMul 输出语义，分别给出 A2/A3 旧 selector 与 950 advanced selector 的路由和资源合同。
-<!-- cannbot:related:end -->

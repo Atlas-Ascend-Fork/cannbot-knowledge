@@ -106,10 +106,3 @@ AscendC::Round(dstLocal, srcLocal, sharedTmpBuffer, 512);
 输出数据(dstLocal):
 [ 7.0   -4.0   -9.0   ...   9.0   -8.0   6.0 ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetRoundMaxMinTmpSize](get_round_max_min_tmp_size.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetRoundMaxMinTmpSize获取。；host侧Tiling接口，用于获取Round接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；目标产生 Round 所需 workspace 上下界，焦点消费该 Tiling 结果配置临时空间。
-<!-- cannbot:related:end -->

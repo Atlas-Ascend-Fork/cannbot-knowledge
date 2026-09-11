@@ -75,10 +75,3 @@ __aicore__ inline void asc_sync_subblock_wait(pipe_t pipe,
 ## 调用示例
 
 `asc_sync_subblock_wait`需与`asc_sync_subblock_arrive`配对使用，具体调用示例请参考[asc_sync_subblock_arrive调用示例](asc_sync_subblock_arrive.md#调用示例)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscSyncSubblockArrive](asc_sync_subblock_arrive.md)（`same_topic`）：必须保证配套使用asc_sync_subblock_arrive和asc_sync_subblock_wait，否则会出现未定义行为。；执行asc_sync_subblock_wait时如果对应的计数器数值为0则阻塞；如果对应的计数器大于0，则计数器减一，同时后续指令开始执行。；arrive 负责递增 flag_id 计数器并明确要求与 wait 配套，wait 负责在相同计数器上阻塞和消费一次到达信号，是同一 subblock 同步握手的两端。
-<!-- cannbot:related:end -->

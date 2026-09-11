@@ -124,19 +124,4 @@ AscendC::Asin(dstLocal, srcLocal, sharedTmpBuffer, 512);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAsinMaxMinTmpSize](get_asin_max_min_tmp_size.md)（`related`）：临时空间大小BufferSize的获取方式请参考GetAsinMaxMinTmpSize。；本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。。Asin 明确把临时空间取得步骤交给右侧 Host 接口，右侧产生的范围又直接成为 Asin Kernel 的 Tiling 输入；两者是计算接口与资源查询 helper 的互补任务链，并非同一操作。
-- [更多样例（数学计算）](../more_examples.md)（`related`）：样例一：展示GetXxxMaxMinTmpSize Tiling接口与kernel侧API配套使用。Host侧通过AscendC::TensorShape描述输入shape，调用GetXxxMaxMinTmpSize获取maxValue/minValue，结合PlatformAscendC获取UB剩余空间，选取合适的tmpSize写入tiling data；kernel侧读取tiling data分配临时空间并调用高阶API（以Asin为例）。；sharedTmpBuffer（输入）：临时缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 用于Asin内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAsinMaxMinTmpSize。；API 页提供样例所消费的 Asin 临时空间参数合同。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ForeachAsin A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_asin.md)（`related`）：算子正文包含对 `Asin(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ForeachAsin A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_asin.md)

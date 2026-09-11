@@ -70,7 +70,6 @@ class DocumentationContractTests(unittest.TestCase):
             self.root / "AGENTS.md",
             self.root / "CLAUDE.md",
             self.root / "governance/specs",
-            self.root / "logs",
         ]
         result: list[Path] = []
         for path in roots:
@@ -213,23 +212,11 @@ class DocumentationContractTests(unittest.TestCase):
                 failures.append(card.relative_to(self.root).as_posix())
         self.assertEqual([], failures)
 
-    def test_knowledge_cards_only_use_well_formed_managed_related_blocks(self) -> None:
-        managed = re.compile(
-            r"(?ms)(?<=\n\n)^<!-- cannbot:related:start -->\n"
-            r"## 相关\n.*?"
-            r"^<!-- cannbot:related:end -->(?:\n)?\Z"
-        )
-        failures: list[str] = []
-        for card in sorted((self.root / "knowledge").rglob("*.md")):
-            if card.name == "index.md":
-                continue
-            text = card.read_text(encoding="utf-8")
-            blocks = managed.findall(text)
-            marker_count = text.count("<!-- cannbot:related:start -->") + text.count(
-                "<!-- cannbot:related:end -->"
-            )
-            if len(blocks) > 1 or marker_count != 2 * len(blocks):
-                failures.append(f"{card.relative_to(self.root)}: malformed managed block")
+    def test_knowledge_cards_have_no_managed_graph_blocks(self) -> None:
+        failures = [str(path.relative_to(self.root))
+                    for path in (self.root / "knowledge").rglob("*.md")
+                    if "cannbot:related" in path.read_text(encoding="utf-8")
+                    or "cannbot:api-operator" in path.read_text(encoding="utf-8")]
         self.assertEqual([], failures)
 
     def test_fixed_archive_uses_indexes_as_its_only_navigation_documents(self) -> None:
@@ -302,12 +289,10 @@ class DocumentationContractTests(unittest.TestCase):
         for card, target in cases:
             with self.subTest(card=card.relative_to(self.root)):
                 text = card.read_text(encoding="utf-8")
-                self.assertIn("<!-- cannbot:related:start -->", text)
                 # A valid body example may now be outside the source-first display cap.
                 self.assertIn((card, (card.parent / target).resolve()), self.body_invocation_pairs())
-                self.assertIn("源码中使用此 API 的算子（部分算子）", text)
-                automatic = text.split("<!-- cannbot:api-operator:start -->", 1)[1].split("<!-- cannbot:api-operator:end -->", 1)[0]
-                self.assertEqual(10, len(re.findall(r"(?m)^- \[", automatic)))
+                targets = [target for target, _ in markdown_targets(text)]
+                self.assertTrue(any("operators/" in target for target in targets))
 
     def test_api_operator_navigation_regressions(self) -> None:
         api_root = self.root / "knowledge/ops/ascendc/apis"
@@ -384,23 +369,10 @@ class DocumentationContractTests(unittest.TestCase):
                 self.assertEqual("draft", metadata["status"])
                 self.assertEqual([], metadata["platforms"])
 
-    def test_ascendc_runbooks_do_not_use_legacy_or_unmanaged_related_sections(self) -> None:
-        managed = re.compile(
-            r"(?ms)^<!-- cannbot:related:start -->\n"
-            r"## 相关\n.*?"
-            r"^<!-- cannbot:related:end -->\s*"
-        )
-        failures: list[str] = []
-        runbooks = self.root / "knowledge/ops/ascendc/runbooks"
-        for card in sorted(runbooks.glob("*/*.md")):
-            if card.name == "index.md":
-                continue
-            text = card.read_text(encoding="utf-8")
-            if re.search(r"(?m)^## 遗留问题\s*$", text):
-                failures.append(f"{card.relative_to(self.root)}: ## 遗留问题")
-            outside = managed.sub("", text)
-            if re.search(r"(?m)^## 相关\s*$", outside) or "cannbot:related" in outside:
-                failures.append(f"{card.relative_to(self.root)}: unmanaged related section")
+    def test_ascendc_runbooks_do_not_use_legacy_sections(self) -> None:
+        failures = [str(card.relative_to(self.root))
+                    for card in (self.root / "knowledge/ops/ascendc/runbooks").glob("*/*.md")
+                    if re.search(r"(?m)^## 遗留问题\s*$", card.read_text(encoding="utf-8"))]
         self.assertEqual([], failures)
 
     def test_knowledge_index_entries_have_descriptions(self) -> None:
@@ -511,8 +483,8 @@ class DocumentationContractTests(unittest.TestCase):
         ):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, text)
-        self.assertIn("knowledge_graph.py", text)
-        self.assertIn("cannbot:related", text)
+        self.assertIn("local-graphs.md", text)
+        self.assertNotIn("cannbot:related", text)
         self.assertIn("object/object[]", text)
         self.assertIn("trace.curated-review.v2", text)
         self.assertIn("--pre-review", text)
@@ -574,18 +546,12 @@ class DocumentationContractTests(unittest.TestCase):
                 failures.append(f"{document.relative_to(self.root)}: unbalanced fenced code blocks")
             whitespace_lines = lines
             if fixed_archive_mirror:
-                marker = next(
-                    (
-                        index
-                        for index, line in enumerate(lines)
-                        if line == "<!-- cannbot:related:start -->"
-                    ),
-                    len(lines),
+                mirror = self.load_module(
+                    self.root / ".agents/skills/knowledge-ingest/scripts/fixed_archive_docs.py",
+                    "documentation_mirror_whitespace",
                 )
-                # Source-authored body bytes are guarded by fixed_archive_docs.py.
-                # Keep the generic hygiene check on generated Frontmatter and the
-                # managed relation envelope instead of exempting the whole card.
-                whitespace_lines = lines[:content_start] + lines[marker:]
+                _, navigation = mirror.split_link_suffix(text)
+                whitespace_lines = lines[:content_start] + (navigation.splitlines() if navigation else [])
             if any(line != line.rstrip() for line in whitespace_lines):
                 failures.append(f"{document.relative_to(self.root)}: trailing whitespace")
         self.assertEqual([], failures)

@@ -125,10 +125,3 @@ bfloat16x2_t __hgeux2(bfloat16x2_t x, bfloat16x2_t y)
         asc_vf_call<simt_hgeux2>(dim3(1024), (__gm__ bfloat16x2_t*)x, (__gm__ bfloat16x2_t*)y, (__gm__ bfloat16x2_t*)dst, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hgeux2_mask](_hgeux2_mask.md)（`same_topic`）：如果分量满足第一个数大于或等于第二个数，则对应比较结果为1.0，否则为0.0。若任一输入的分量为nan，该分量的比较结果为1.0。；如果分量满足第一个数大于或等于第二个数，则对应16位掩码为0xFFFF，否则为0x0。若任一输入的分量为nan，对应16位掩码为0xFFFF。。两接口对同一 bfloat16x2 无序大于等于比较采用相同 NaN 判真语义，区别仅在逐分量浮点结果与打包掩码结果。
-<!-- cannbot:related:end -->

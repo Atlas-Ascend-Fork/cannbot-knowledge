@@ -73,10 +73,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         dst[idx] = __uint2half_rn_sat(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__uint2half_rn](_uint2half_rn.md)（`same_topic`）：约束：SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效。需包含头文件 simt_api/asc_fp16.h。；功能：遵循CAST_RINT模式，将uint32类型数据转换为half类型数据，返回转换后的值。。带 sat 名称的接口在 SIMT 场景明确说明饱和模式不生效，而非 sat 接口执行同样的 uint32→half CAST_RINT 转换，因此当前平台下二者的有效转换核心一致。
-<!-- cannbot:related:end -->

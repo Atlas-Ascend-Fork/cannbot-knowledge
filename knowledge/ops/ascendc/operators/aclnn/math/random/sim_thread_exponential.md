@@ -523,13 +523,3 @@ AscendC::LocalTensor<uint32_t> u32Tof32Tensor = tmpTensorBuf.GetWithOffset<uint3
 | 同步 | Vector/alias 依赖用 PIPE_V/PIPE_ALL | buffer 覆盖前 barrier | `genRandomData` |
 | 精度与尾块 | FP32 变换，低精度 CAST_RINT | epsilon 保护、整块写回条件 | `genRandomData` |
 | 失败边界 | Host dtype/count/lambda/核数错误阻断 launch | 未知 key、空域、UB 与尾块缺少 fallback | `DoTiling`, entry router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Philox offset 须放 counter[2:3] 而非 [0:1]](../../../../runbooks/precision/philox_offset_counter_2_3_0_1.md)（`related`）：“construct 4-word counters for active_batch*256 lanes; add offset/4 and state”与“offset 改放 `counter［2:3］` 后”连接了算子四字 counter 构造和自定义 Kernel 的字段放置验证。
-- [PhiloxRandom 默认 7 rounds 与原生 10 不匹配](../../../../runbooks/precision/philoxrandom_7_rounds_10.md)（`related`）：“每个 handle 初始化 Philox counter，执行 10 轮 Philox”与“`PhiloxRandom<10>` `Exact match: True`、`Matching 128/128`”把算子源码的 10-round 实现连接到可执行的逐元素验证。
-- [Uint32ToFloat 须用 IEEE754 位操作而非位移乘法](../../../../runbooks/precision/uint32tofloat_ieee754.md)（`related`）：若 native 实现版本切换（V2→V3 或 `Uint32ToFloat` 内部改写），需重新核对位操作常量（尾数掩码 `0x7fffff`、指数 `127<<23`）。；对每个线性位置生成 Philox4x32-10 的 32 位结果，先变换为 `u = r * 2^-32 + 2^-33`，再将等于区间上端的值回绕到 0。指数变换在 FP32 中执行：非零保护、`Log(u)`、接近 1 时用 `-epsilon/2` 替代对数结果，最后计算 `-log(u)/lambda`。FP16/BF16 路线在最后一步以 `CAST_RINT` 降精度，FP32 路线直接写回。；焦点要求后端变更时重新核对转换常量，目标给出 A2/A3 生产算子的另一套 uniform 构造与指数变换合同。
-- [exponential_ 0% 匹配须改 -log(1-u) 路径](../../../../runbooks/precision/exponential_0_log_1_u.md)（`related`）：“指数变换在 FP32 中执行：非零保护、`Log(u)`、接近 1 时用 `-epsilon/2` 替代对数结果”与“native `aclnnInplaceUniform→StatelessRandomUniformV2` 用 IEEE754 位操作生成 `u∈［0,1)`”共同提供原生 exponential 变换与自定义复现时的路径核验。
-- [philox offset 推进量须固定 12 而非元素数](../../../../runbooks/precision/philox_offset_12.md)（`related`）：“`state=offset&3`，Device 只为 state 2、3 提供专门 lane 拼接”与“原生 `aclnnSimThreadExponential` 每次调用推进的 increment 是**固定值 12**”共同覆盖 offset 在 Device lane 选择和 Host generator 推进两端的复现契约。
-<!-- cannbot:related:end -->

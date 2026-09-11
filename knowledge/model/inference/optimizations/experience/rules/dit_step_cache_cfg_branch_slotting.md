@@ -73,11 +73,3 @@ self.cfg_step = 1 - self.cfg_step
 
 - **diff 事实**（clone `@79de4ef93dcb`）：`module/dit_cache_step/cache_step.py` 中 `prev_block` / `prev_judge_input` / `previous_residual` / `accumulated_rel_l1` 均改为 `[None,None]` / `[0.0,0.0]` 双槽 + `idx = 1 if is_cond else 0` 索引；`StepCache.reuse_cache(is_cond)`；`models/wan2.2-i2v/wan/cache/cache_block.py` 首块 forward 的 `cfg_step` 翻转 + `is_cond` 传参 + skip 早返回。归因主语为 cann-recipes-infer 对共享 dit-cache 模块的适配。
 - 溯源下探：[cann-recipes-infer-pr-240-feat-hunyuanvideo-wan2-2-step-level-cache-cfg](https://gitcode.com/cann/cann-recipes-infer/merge_requests/240)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DiT Cache (FBCache / TeaCache / TaylorSeer)](../../../concepts/techniques/dit_cache.md)（`related`）：CFG 缓存约束为“**CFG 必须分离**：cond/uncond 共享 cache 会导致跳步判断错位”，故障触发条件为“cond 与 uncond 交替进入同一首块 forward”并要求双槽状态；它把概念约束推进到故障信号、分槽实现和复位验证。
-- [Wan2.2-I2V](../../../concepts/models/wan2_2_i2v.md)（`related`）：“集成 ［FBCache］(https://github.com/chengzeyi/ParaAttention)、［TeaCache］(https://liewfeng.github.io/TeaCache/)。因 WAN2.2 CFG 串行特点，采用 ［TeaCache4Wan2.1 cond/uncond 分别管理版］(https://github.com/ali-vilab/TeaCache/tree/7c10efc4702c6b619f47805f7abe4a7a08085aa0/TeaCache4Wan2.1)。实现路径：`module/dit_cache_step/cache_step.py` + `wan/cache/cache_block.py`。”与“单卡 ［dit］(../../../concepts/modules/dit.md) 视频生成，用 step-level 跳步缓存（［dit-cache］(../../../concepts/techniques/dit_cache.md) 的 FBCache / TeaCache 这类"相邻采样步判据张量差异小→跳整步、复用上一步残差"）加速，**而模型又用 Classifier-Free Guidance（CFG）、且 cond / uncond 两分支串行灌进同一个被 monkey-patch 的首块 forward**。这是 step-cache + CFG 串行结构的通用陷阱，不限于某一模型：只要缓存实现按"单份状态"写，就会在这种结构下出错。残差复用型缓存的键控/阈值细节见 ［dit-step-cache-fbcache-teacache］(dit_step_cache_fbcache_teacache.md)；想更激进跳步见 ［taylorseer-predictive-dit-cache］(taylorseer_predictive_dit_cache.md)。”。模型卡要求 TeaCache 分开管理 cond/uncond，经验卡给出双分支覆盖状态的故障机制和分槽修复。
-- [DiT 采样步残差缓存（FBCache / TeaCache）键控、阈值权衡与 TeaCache 属性名 bug](dit_step_cache_fbcache_teacache.md)（`same_topic`）：“cond 与 uncond 交替进入同一首块 forward、交替调用 `should_cache` / `reuse_cache`，会互相覆盖对方的 `prev_block` / 残差”指出 CFG 串行分支的污染点；“复用时 `reuse_cache()` 返回 `previous_residual + ori_latent`，`post_cache_update` 以 `latent - ori_latent` 更新残差”给出被污染状态的生产与消费位置。
-<!-- cannbot:related:end -->

@@ -108,10 +108,3 @@ __aicore__ inline void Process()
     }
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMD算子实现主块均分](main_block_even_split.md)（`same_topic`）：“当mainTileRemainder为0时”选择主块均分，“判断remainingTailLength是否为0”选择尾块均分；两张卡是同一多核 Tiling 决策树中相邻且互斥的分支。
-<!-- cannbot:related:end -->

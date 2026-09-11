@@ -94,9 +94,3 @@ __global__ __aicore__ __vector__ void cummin_kernel(
 ## 误诊
 
 错误最初被归因于 value/index mask 配对；`M=1` 恰好通过而多行失败才暴露出另一条独立的多核覆盖根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BlockIndex](../../apis/simt_api/cooperative_groups/grid_group/block_index.md)（`exemplifies`）：正确映射是 `mStart = blockIdx * rowsPerCore`，`mEnd = min(mStart + rowsPerCore, M)`；这里 `rowsPerCore = ceil(M / numBlocks)`。；获取当前线程所属线程块在Grid中的三维索引。。运行手册用 blockIdx 推导每个线程块负责的行区间并修复多块重复计算，BlockIndex 卡给出该索引在 Grid 中的语义，是索引 API 驱动任务划分的具体实例。
-<!-- cannbot:related:end -->

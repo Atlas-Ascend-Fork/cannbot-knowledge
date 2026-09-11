@@ -684,9 +684,3 @@ BF16 GM/Queue 外 tile 可达到 `9U/2` 个元素，但 FP32 临时区只需覆�
 | 同步 | Queue 生命周期与 `PIPE_V` barrier 可复用 | BF16 每次 Cast/Adds/Cast 之间不能提前覆盖 FP32 slot | `ComputePerCast` |
 | 精度与尾块 | direct Adds 与 BF16 FP32 staging | BF16 回写必须 `CAST_RINT`；tail 必须使用有效 byte count | `InnerComputer`、`CopyIn/CopyOut` |
 | 失败边界 | API dtype/shape/format check + template platform selector | 不得把 unknown key、>50 列表或非连续输出当作已支持 fallback | check functions、`IsCapable`、router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddScalar 950 ACLNN 算子知识](foreach_add_scalar_950.md)（`same_topic`）：｜ 计算语义 ｜ `out［i］［j］ = x［i］［j］ + scalar`，逐 TensorList、逐线性元素。 ｜；｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ + scalar`。 ｜。两卡实现同一 aclnnForeachAddScalarV2 逐列表标量加法语义，分别给出 950 与 A2/A3 路线。
-<!-- cannbot:related:end -->

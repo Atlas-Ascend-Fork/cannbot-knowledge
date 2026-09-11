@@ -202,25 +202,13 @@ dst和src使用[TensorTrait](../../aux_data_structures/tensor_trait/index.md)类
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 18 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [InplaceDivs 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_divs_950.md)（`related`）：算子声明的固定版本源码包含对 `Muls(...)` 的直接调用（第 60 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/muls/op_kernel/arch35/muls_dag.h#L60)
-- [Celu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/celu_950.md)（`related`）：算子声明的固定版本源码包含对 `Muls(...)` 的直接调用（第 119 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/celu_v2/op_kernel/arch35/celu_v2.h#L119)
-- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)（`related`）：算子声明的固定版本源码包含对 `Muls(...)` 的直接调用（第 538 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention/op_kernel/attn_infra/epilogue/block/bsa_block_epilogue_online_softmax.hpp#L538)
-- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)（`related`）：算子声明的固定版本源码包含对 `Muls(...)` 的直接调用（第 81 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h#L81)
-- [InplaceCelu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/inplace_celu_950.md)（`related`）：算子声明的固定版本源码包含对 `Muls(...)` 的直接调用（第 119 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/celu_v2/op_kernel/arch35/celu_v2.h#L119)
-- [FlashAttentionScoreGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_grad.md)（`related`）：算子声明的固定版本源码包含对 `Muls(...)` 的直接调用（第 1120 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_kernel/arch22/flash_attention_score_grad_post.h#L1120)
-- [EmbeddingBag 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/embedding_bag_950.md)（`related`）：算子声明的固定版本源码包含对 `Muls(...)` 的直接调用（第 562 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/arch35/embedding_bag_regbase_common.h#L562)
-- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)（`related`）：算子声明的固定版本源码包含对 `Muls(...)` 的直接调用（第 1234 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress_attention_infer/op_kernel/nsa_compress_attention_infer.h#L1234)
-- [CrossEntropyLoss A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss.md)（`related`）：算子声明的固定版本源码包含对 `Muls(...)` 的直接调用（第 154 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/cross_entropy_loss.h#L154)
-- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)（`related`）：算子声明的固定版本源码包含对 `Muls(...)` 的直接调用（第 1556 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_kernel/grouped_matmul_autotiling_a8w4.h#L1556)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [InplaceDivs 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_divs_950.md)
+- [Celu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/celu_950.md)
+- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)
+- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)
+- [InplaceCelu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/inplace_celu_950.md)
+- [FlashAttentionScoreGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_grad.md)
+- [EmbeddingBag 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/embedding_bag_950.md)
+- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)
+- [CrossEntropyLoss A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss.md)
+- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)

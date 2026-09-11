@@ -81,9 +81,3 @@ asc_vf_call<MaskedFillSelectVF<DT>>(/* ... */);
 
 - **测试侧绕过**：以空张量（spec 允许的合法边界）作为 route_probe 与图模式用例，使图基础设施校验退出 0，但 kernel 对非空张量在 GE 图模式仍崩。该做法在「图模式仅验 InferShape/InferDataType/RunGraph 流程、kernel 数值由 aclnn ST 覆盖」的 scope 内有合理性，但不得作为「kernel 已在 GE 图模式可执行」的证据。
 - **误诊：arg5=0 即 tiling 未传递**：据 plog「args(0 to 5) after execute」中 arg5=0 推断图模式未把 tiling 传给 kernel，据此补 `REGISTER_TILING_DEFAULT`（opParaSize 由 392 变为 680）与非模板入口，均未解决崩溃。后续观测到 `Op tiling succeed` 与 `logical_addrs size:5`（5 用户参数 + 1 sys tiling），即 tiling 函数确被调用、tiling 数据作为 sysParam 单独传递——arg5=0 是「after execute」框架清理后的读数，非 tiling 未传递。真正崩溃在 kernel 向量 Select 执行期，非 tiling 传递。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclnn 全绿但 GE 图模式 error 263 分层判别](aclnn_ge_error_263.md)（`same_topic`）：分层判别卡把该路径定位为“探针 5 命中 VF → 先按自定义 VF 在 TBE 动态编译下被禁的失败路线修复；改普通 API 后 aclnn 仍绿但 GE 仍崩 → 根因不在 VF/API 选型，在 TBE 生成 binary 的向量指令执行期（本 trace 终态，未追到机制层）。”；专项卡则明确“**banned 路线：在须跑 GE 图模式的 regbase arch35 kernel 中用 `__simd_vf__`/`asc_vf_call` 自定义 VF 实现 Select。**”，两端针对同一次 MaskedFill GE 263 排障中的同一 VF 路线与后续未闭合根因。
-<!-- cannbot:related:end -->

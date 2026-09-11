@@ -65,10 +65,3 @@ platforms: ["950"]
 
 - 在 `for` 循环内反复调用 `ReduceMin`/`ReduceMax` 等 Reduce 系列 API 的 `calIndex=true` 模式取索引，假设不同架构行为一致——950 上触发非确定 vector core 异常。该路线标记为 `banned`。
 - 把 `ReduceMin` 索引的 float 内存用 `reinterpret_cast<uint32_t*>` 读为 uint32 是 910B 惯用法，950 上即使 `ReduceMin` 不崩，索引格式也可能与 910B 不同，避免依赖该 reinterpret 惯用法。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceMin](../../apis/simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_min.md)（`exemplifies`）：从所有输入数据中找出最小值，可选返回最小值索引。；触发（tool_observed）：在 950（arch 3510）上，kernel 的 `for` 循环内反复调用 `ReduceMin(dst, src, workBuf, count, calIndex=true)` + `reinterpret_cast<uint32_t*>(&tempIndex)` 取最小值索引时，plog 报 `AIV Kernel happen error, retCode=0x31`（vector core exception），对应 error code 264、subErrType 0x4（D-cache 读写 UB、总线返回非零）。同一 V2 用例、同一数据跑 10 次出现 3 PASS/7 FAIL 的非确定崩溃；`numSeqs` 越大（`ComputeInputTokens` 的 `for` 循环迭代越多、`ReduceMin` 调用越频繁）崩溃率越高。。API允许返回最小值索引，Runbook精确限定 950 循环内反复以 calIndex=true 取索引会触发非确定 vector core 异常。
-- [AdvanceStep A2/A3 ACLNN 算子知识](../../operators/aclnn/nn/optim/advance_step.md)（`related`）：`numSeqs` 越大（`ComputeInputTokens` 的 `for` 循环迭代越多、`ReduceMin` 调用越频繁）崩溃率越高。；在 sampledTokenIds［s,0:K］ 后补 -1，经 ReduceMin 找到最小值索引 m：；算子卡给出触发 ReduceMin 的实际 token 选择阶段，Runbook 给出该阶段迁移到 950 时的故障判据和回退。
-<!-- cannbot:related:end -->

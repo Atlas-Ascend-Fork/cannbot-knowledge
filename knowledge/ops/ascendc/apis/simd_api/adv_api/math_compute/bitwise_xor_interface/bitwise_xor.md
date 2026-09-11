@@ -84,11 +84,3 @@ AscendC::BitwiseXor(dst, src0, src1, count);
 输出数据（dst）:
 [79, 14, 21, 81, ... -24]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetBitwiseXorMaxMinTmpSize](get_bitwise_xor_max_min_tmp_size.md)（`related`）：Kernel侧BitwiseXor接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用。；函数原型： template <const BitwiseXorConfig& config = DEFAULT_BITWISE_XOR_CONFIG, typename T> __aicore__ inline void BitwiseXor(const LocalTensor<T>& dst, const LocalTensor<T>& src0, const LocalTensor<T>& src1, const uint32_t count)；Host 查询接口专门为该 BitwiseXor Kernel 计算确定临时空间上下界，计算接口是这份 Tiling 参数的消费对象。
-- [GetBitwiseXorTmpBufferFactorSize](get_bitwise_xor_tmp_buffer_factor_size.md)（`related`）：该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。maxLivedNodeCount表示临时空间是单次计算数据量所占空间的多少倍；extraBuf表示使用的额外临时空间大小。 推算示例如下： - 算子实现需要调用BitwiseXor接口，开发者为其预留currBuff大小的空间，利用GetBitwiseXorTmpBufferFactorSize接口得到maxLivedNodeCount、extraBuf输出值，可推导算子单次最大计算元素数量为：；逐比特对两个输入进行异或操作。；因算子实现实际调用 BitwiseXor，factor 查询返回的 maxLivedNodeCount 与 extraBuf 正是规划该计算每次处理量和临时空间的 Host 侧依据。
-<!-- cannbot:related:end -->

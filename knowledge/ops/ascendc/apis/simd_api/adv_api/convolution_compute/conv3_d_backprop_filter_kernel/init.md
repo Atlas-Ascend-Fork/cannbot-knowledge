@@ -62,11 +62,3 @@ const Conv3DBackpropFilterTilingData* tilingData;
 ConvBackpropApi::Conv3DBackpropFilter <inputType, weightSizeType, gradOutputType, gradWeightType > gradWeight_;
 gradWeight_.Init(&(tilingData->dwTiling));
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTiling](../conv3_d_backprop_filter_tiling/get_tiling.md)（`related`）：“- tiling（输出）：TConv3DBpFilterTiling的Tiling结构体，用于存储最终的Tiling结果。TConv3DBpFilterTiling结构介绍请参考TConv3DBpFilterTiling结构体。”与“Init主要用于对Conv3DBackpropFilter对象中的Tiling数据进行初始化，根据Tiling参数进行资源划分，Tiling参数的具体介绍请参考Conv3DBackpropFilter Tiling侧接口。”。Tiling 接口生产 TConv3DBpFilterTiling，Kernel Init 消费它完成资源划分。
-- [Iterate（卷积计算）](iterate.md)（`related`）：“Init主要用于对Conv3DBackpropFilter对象中的Tiling数据进行初始化，根据Tiling参数进行资源划分”建立对象和资源；“Iterate接口必须在初始化接口及输入输出配置接口之后进行调用，完成卷积反向实现”明确计算阶段依赖初始化，形成同一调用序列。
-<!-- cannbot:related:end -->

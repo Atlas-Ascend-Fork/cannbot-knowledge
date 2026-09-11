@@ -89,14 +89,3 @@ assert torch.allclose(y_triton, y_torch), (y_triton, y_torch)
 
 - [02-fused-softmax.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/02-fused-softmax.py)
 - [02_fused_softmax_example.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/examples/02_fused_softmax_example.md)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Softmax / LogSoftmax 算子](../guides/operator_design/softmax.md)（`related`）：“softmax 算子规格”
-- [向量加法示例（Vector Add on NPU）](./vector_add.md)（`related`）：“入门 elementwise 示例”
-- [Flash Attention 教学 Walkthrough（block_ptr + online softmax）](./flash_attention_walkthrough.md)（`related`）：“online softmax 分块版本”
-- [归约操作模式集（行/列/全局归约与 NPU atomic 限制）](./reduction_pattern.md)（`related`）：“归约操作模式汇总”
-
-<!-- cannbot:related:end -->

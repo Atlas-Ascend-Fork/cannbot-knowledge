@@ -528,9 +528,3 @@ copyInQueue.FreeTensor(copyInLT);
 | 同步 | Queue 生命周期与 Reduce 后 V→S | 标量读取前必须等待 Vector | `Compute` |
 | 精度与尾块 | 低精度在 FP32 计算，`CAST_RINT` 返回；尾块补 0 | CopyOut 只能写实际元素数 | `CastToFloat/CastToOriginalType/CopyOut` |
 | 失败边界 | selector fallthrough 与 `GRAPH_FAILED` | 不得把 unknown key、空 workspace 当成功计算 | selector/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachNonFiniteCheckAndUnscale 950 ACLNN 算子知识](foreach_non_finite_check_and_unscale_950.md)（`same_topic`）：若任一原值为 Inf/NaN，则只把 `foundInf［0］` 置为 `1.0f`；检查所有 `scaledGrads` 原值中的 Inf/NaN。两卡实现相同 ACLNN 原地反缩放与非有限值检测契约，分别闭合 A2/A3 与 950 的 Tiling、队列和寄存器路线，可直接用于平台迁移选型。
-<!-- cannbot:related:end -->

@@ -47,10 +47,3 @@ platforms: []
     }
     ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupBarrier构造函数](group_barrier_constructor.md)（`related`）：“原型：`__aicore__ inline GroupBarrier(GM_ADDR workspace, uint8_t arriveBlockDim, uint8_t waitBlockDim)`。”给出对象构造所需 workspace 和两组 block 数；“使用流程：GetWorkspaceLen 获取所需 GM 空间 → 分配 workspace → 构造 GroupBarrier(workspace, arriveBlockDim, waitBlockDim) → Arrive 组 AIV 调用 Arrive() → Wait 组 AIV 调用 Wait()。”把构造参数放进完整同步调用顺序。
-<!-- cannbot:related:end -->

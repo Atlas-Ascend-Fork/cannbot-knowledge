@@ -219,27 +219,6 @@ AscendC::WelfordFinalize<false, CONFIG>(meanLocal, varianceLocal, inmeanLocal, i
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [WelfordFinalize Tiling](welford_finalize_tiling.md)（`same_topic`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过WelfordFinalize Tiling获取。接口接收WelfordUpdate输出的均值和方差中间结果，计算最终的均值和方差。”与“host侧Tiling接口，用于获取WelfordFinalize kernel计算所需的Tiling参数，分两步：通过GetWelfordFinalizeMaxMinTmpSize获取最大和最小临时空间大小；通过GetWelfordFinalizeNDTilingInfo获取kernel侧所需tiling参数。”提供双方正文证据。Finalize kernel 明确消费 WelfordFinalize Tiling，目标卡给出临时空间与 ND tiling 的两步 Host 生成流程。
-- [WelfordUpdate](welford_update.md)（`same_topic`）：“Welford算法的后处理接口，用于在线计算均值和方差的最终结果。与WelfordUpdate配合使用，通过切分Reduce轴实现等效LayerNorm计算。”与“Welford算法的前处理接口，用于在线逐步计算均值和方差的中间结果。与WelfordFinalize配合使用，通过切分Reduce轴实现等效LayerNorm计算。分n次调用本接口，每次处理切分后的一块数据［1,k］，逐步累加计算前i块数据的均值和方差中间结果。第一次调用时Meant_0和M_0需为全0数据。模板参数T支持half/float。”提供双方正文证据。Update 分块产生逐步均值和方差中间量，Finalize 消费这些中间量生成最终统计量，两端组成切分 Reduce 轴的同一 Welford/LayerNorm 计算链。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [LayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `WelfordFinalize(...)` 的直接调用（第 145 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/arch35/layer_norm_v4_welford.h#L145)
-- [LayerNormWithImplMode 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_with_impl_mode_950.md)（`related`）：算子声明的固定版本源码包含对 `WelfordFinalize(...)` 的直接调用（第 145 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/arch35/layer_norm_v4_welford.h#L145)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [AdaLayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/ada_layer_norm_950.md)（`related`）：算子正文包含对 `WelfordFinalize(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [LayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_950.md)
+- [LayerNormWithImplMode 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_with_impl_mode_950.md)
+- [AdaLayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/ada_layer_norm_950.md)

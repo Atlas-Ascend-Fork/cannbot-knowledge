@@ -169,10 +169,3 @@ Ascend 950PR/Ascend 950DT，目的操作数dst和源操作数src支持的数据�
 输入数据src1Local: [1 2 3 ... 512]
 输出数据dstLocal: [1 2 3 ... 512]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ResetMask](../mask_operations/reset_mask.md)（`related`）：约束：该接口仅在矢量计算API的isSetMask模板参数为false时生效，使用完成后需要使用ResetMask将mask恢复为默认值。；恢复mask值为默认值（全1），表示矢量计算中每次迭代内所有元素都参与运算。。Ors 的手工 mask 路径明确要求结束后调用 ResetMask，后者定义恢复后的全 1 状态。
-<!-- cannbot:related:end -->

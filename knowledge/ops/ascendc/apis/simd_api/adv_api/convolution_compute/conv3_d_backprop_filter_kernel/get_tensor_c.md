@@ -67,10 +67,3 @@ while (gradWeight_.Iterate()) {
     gradWeight_.GetTensorC(gradWeightGm_[offsetC_]);
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Iterate（卷积计算）](iterate.md)（`related`）：“Iterate接口必须在初始化接口及输入输出配置接口之后进行调用，完成卷积反向实现”启动块级计算；“在完成Iterate操作后调用本接口，获取结果矩阵块，完成数据从L0C到GM的搬运。”规定结果消费紧随 Iterate，形成计算与搬出闭环。
-<!-- cannbot:related:end -->

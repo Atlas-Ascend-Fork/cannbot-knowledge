@@ -1035,8 +1035,4 @@ ProcessMultiCoreResult();
 | 精度与尾块 | 多数 BF16 以 FP32 比较；ARA_CUT 以 BF16 比较；first tie/NaN；mask | Compare/Select顺序、startR、有效copyNum，以及 R-013/014 不得擅自插入 cast | base helpers / `ArgMaxWithValueArACutAAndNextA::ComputeVF` |
 | 失败边界 | tiler失败阻断launch | unknown key不得默认为某body；空维不支持 | `Run/CalcSplitInfo/launch_arg_max_*` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [PlatformAscendCManager](../../../../apis/utils_api/platform_info/platform_ascend_c_manager.md)（`related`）：“Direct `PlatformAscendCManager` 读取 AIV core/UB；显式 launcher”给出 ArgMax 950 Host 的平台查询动作；“通过该类的GetInstance方法可以获取一个PlatformAscendC类的指针，再通过该指针获取硬件平台相关信息”给出 manager 到平台对象的访问合同。
-<!-- cannbot:related:end -->
+- [PlatformAscendCManager](../../../../apis/utils_api/platform_info/platform_ascend_c_manager.md)

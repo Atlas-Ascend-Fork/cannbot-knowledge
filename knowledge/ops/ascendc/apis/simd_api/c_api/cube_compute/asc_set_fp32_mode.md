@@ -153,10 +153,3 @@ int main()
 }
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscEnableHf32](asc_enable_hf32.md)（`same_topic`）：如需开启HF32模式，请重新调用asc_enable_hf32接口。；如需关闭HF32模式，请重新调用asc_set_fp32_mode接口。。两个配置接口在正文中互相声明为 FP32/HF32 模式切换的反向操作，共同决定后续 asc_mmad 的输入舍入状态。
-<!-- cannbot:related:end -->

@@ -84,10 +84,3 @@ AscendC::BitwiseOr(dst, src0, src1, count);
 输入数据（dst）:
 [-47, -3, 127, -49, ... -97]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetBitwiseOrMaxMinTmpSize](get_bitwise_or_max_min_tmp_size.md)（`related`）：“Kernel侧BitwiseOr接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用。”明确 Host 到 Kernel 的空间参数链；“逐比特对两个输入进行或操作。”定义实际消费该空间的 BitwiseOr 计算。
-<!-- cannbot:related:end -->

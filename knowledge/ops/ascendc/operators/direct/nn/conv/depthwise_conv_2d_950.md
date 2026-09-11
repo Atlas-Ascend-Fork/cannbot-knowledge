@@ -1254,10 +1254,5 @@ pipe_->InitBuffer(indexBuf_, tilingData_->indiceUbSize);
 | 精度与尾块 | FP32 row-major accumulate；Vector B16 为 `CAST_RINT`，SIMT B16 为 `static_cast<T>`；mask/store bounds | padding zero仍参与乘法；tap 顺序固定；不得假设 SIMT 隐含 rounding mode | VF/SIMT helpers（交付件） |
 | 失败边界 | Host validation 与 dtype final fallback 完整 | 不可把 dead cached/spatial/fused body当可达 Route | selector + entry graph（交付件） |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Axpy](../../../../apis/simd_api/basic_api/reg_vector_compute/composite_compute/axpy.md)（`related`）：“一个 padded plane 每 plane 只搬一次，输出向量在 9/25 次 Axpy 中驻留寄存器，避免逐 tap 重复 GM patch 搬运。”；“该接口根据mask对dstReg、srcReg和标量scalarValue按元素执行乘加操作，将结果写入dstReg。”。operator 的 3×3/5×5 Vector 路线用寄存器 Axpy 累加每个 tap，API 定义 dstReg 原位乘加和 mask 行为。
-- [DataSyncBarrier](../../../../apis/simd_api/basic_api/sync_control/intra_core_sync/data_sync_barrier_isasi.md)（`related`）：“｜ index ｜ `DataSyncBarrier<UB>` ｜ scalar writes ｜ VF ｜ index table ｜ exact uint32 index ｜”；“阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束，用于解决Scalar的内存依赖。”。stride-2 Gather route 在 Scalar 写 index table 后用 UB barrier 再让 VF 读取，API 合同解释该依赖为何必要。
-- [RunOpApi 延迟回调需按值捕获局部 launch vector](../../../../runbooks/compilation/runopapi_callbacks_capture_launch_state_by_value.md)（`related`）：“Host 固定 `blocks=56`。`x/weight/bias/y` 的 data pointer、所有 scalar 与当前 stream 被值捕获进同步构造的 launch lambda；`OpCommand::RunOpApi("DepthwiseConv2DDirect", launch)` 调用恰好一个 launcher。”；“唯一根因是延迟执行的 lambda 通过引用捕获局部 vector。包装函数结束后，vector 对象及其 storage 已失效；回调再读取 `size()`、pointer 或 tiling 参数即产生悬空访问。”。Direct launcher 的按值捕获实现满足 RunOpApi 回调生命周期规则，目标 runbook可用于审查未来把单 launch 扩成局部 vector 时的悬空风险。
-<!-- cannbot:related:end -->
+- [Axpy](../../../../apis/simd_api/basic_api/reg_vector_compute/composite_compute/axpy.md)
+- [DataSyncBarrier](../../../../apis/simd_api/basic_api/sync_control/intra_core_sync/data_sync_barrier_isasi.md)

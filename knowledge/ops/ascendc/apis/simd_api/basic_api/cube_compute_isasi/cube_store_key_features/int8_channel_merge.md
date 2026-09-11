@@ -32,10 +32,3 @@ platforms: []
 **图1** Int8 Channel Merge示意图<a name="zh-cn_topic_0000002547260781_fig1935632714360"></a>  
 
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/Fixpipe_Int8_Channel_Merge.png)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Int8 Channel Merge](../../../tensor_api/matrix_compute/cube_store_key_features/int8_channel_merge.md)（`same_topic`）：硬件会将分形矩阵从16×16扩展为16×32；NZ输出时该特性自动启用。两卡描述同一 NZ 搬出时的 Int8 Channel Merge 硬件行为，但分别处于 Tensor API 与基础 Cube API 编程入口；对照可确认两种入口的自动启用规则一致。
-<!-- cannbot:related:end -->

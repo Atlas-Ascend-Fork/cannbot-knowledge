@@ -67,10 +67,3 @@ __aicore__ inline bool GetSaturationFlag()
 ```cpp
 bool enableSat = AscendC::GetSaturationFlag<AscendC::SaturationMode::INT>();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetSaturationFlag](set_saturation_flag_isasi.md)（`same_topic`）：“设置饱和开关的标志位，以控制计算/精度转换时饱和模式的开启与关闭。”；“获取计算/精度转换时饱和模式的开启状态。”。两接口分别写入和读取同一饱和模式状态，构成配置验证闭环。
-<!-- cannbot:related:end -->

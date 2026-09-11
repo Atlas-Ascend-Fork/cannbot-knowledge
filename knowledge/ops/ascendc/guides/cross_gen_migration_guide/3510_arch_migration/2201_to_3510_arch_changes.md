@@ -85,10 +85,3 @@ platforms: []
     | 删除AIPP硬件级指令，采用软仿实现AIPP功能。 | AIPP接口性能可能有所下降。 | SetAippFunctions/LoadImageToLocal |
     | 由于3510架构版本中相关寄存器的删除，UB异常调试接口也被移除。 | 调测接口对功能无影响。 | CheckLocalMemoryIA |
     | 由于3510架构版本中相关寄存器的删除，获取ReduceRepeat所有repeat最值及索引的能力也被移除。|已开放RegBase基础能力，可通过[Reduce](../../../apis/simd_api/basic_api/reg_vector_compute/reduction_compute/reduce.md)进行手动实现。| GetReduceRepeatMaxMinSpr |
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [高阶API迁移指导](2201_to_3510_guide/advanced_api_migration.md)（`related`）：焦点卡写明“AIV核采用Regbase架构，与NPU架构版本2201的Membase架构相比”，候选卡写明“当前3510架构不支持卷积计算类高阶API”。架构卡解释底层代际差异，迁移卡给出高阶 API 兼容例外，把架构变化落实到接口检查。
-<!-- cannbot:related:end -->

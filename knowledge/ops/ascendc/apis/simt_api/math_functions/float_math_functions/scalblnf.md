@@ -103,10 +103,3 @@ n：1, 2, 3, 1
 x：0.25, 0.75, 1.25, 1.75
 result: 0.5 3 10 3.5
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Scalbnf](scalbnf.md)（`same_topic`）：函数原型：float scalblnf(float x, int64_t n)；函数原型：float scalbnf(float x, int32_t n)。两接口都计算 x 与 2 的 n 次幂乘积，核心差异是指数 n 的 int64_t 与 int32_t 位宽，直接支撑按指数范围选择入口。
-<!-- cannbot:related:end -->

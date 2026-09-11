@@ -78,12 +78,3 @@ if (tiling.isBias) {
 mm.IterateAll(gm_c);
 mm.End();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulConfig](matmul_config.md)（`related`）：返回值：MatmulConfig结构体。；模板参数MatmulConfig，用于配置Matmul模板信息以及相关的配置参数。；GetSpecialMDLConfig 是 MatmulConfig 自定义实例的生产接口。
-- [MatmulTemplateParams](matmul_template_params.md)（`related`）：返回值：MatmulConfig结构体。；MatmulConfig信息（可选），用于配置Matmul模板信息以及相关的配置参数。不配置默认使用Norm模板。；候选给出返回配置在创建 Matmul 对象时的消费位置与默认回退。
-- [SetMatmulConfigParams](../matmul_tiling/set_matmul_config_params.md)（`related`）：用于配置SpecialMDL模板的参数，获取自定义SpecialMDL模板。；本接口中配置的参数对应的功能在Tiling与Kernel中需要保持一致，所以本接口中的参数取值，需要与Kernel侧对应的MatmulConfig参数值保持一致，详细MatmulConfig参数请见表2。；候选给出 Host Tiling 与 Kernel 配置必须一致的配套合同。
-<!-- cannbot:related:end -->

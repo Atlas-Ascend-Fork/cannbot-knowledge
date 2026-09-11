@@ -528,9 +528,3 @@ for (int32_t i = 0; i < tensorCount; i++) {
 | 同步 | 单线程程序顺序 + index 互斥；无 barrier/atomic | 并发 metadata 写只能保持 identical-write 条件 | `PopulateWorkspace`、SIMT VF |
 | 精度与尾块 | FP16/FP32 原生，BF16 使用 FP32 中间和 RN conversion；grid guard tail | 512 threads、stride=`512*blockNum`、`index<count` | 两个 `ComputeSimt` |
 | 失败边界 | platform/UB/Tensor数/local-memory失败返回 `GRAPH_FAILED` | 不支持 dtype、列表一致性与超大 numel 必须由前置层防住 | `ForeachDivListTilingFunc`、`GetTilingKeyByDtype` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachDivList A2/A3 ACLNN 算子知识](foreach_div_list.md)（`same_topic`）：｜ 计算语义 ｜ 对两个等长 TensorList 的同位置 Tensor 做逐元素 `y_i［j］ = x1_i［j］ / x2_i［j］`。 ｜；｜ 计算语义 ｜ 两个等长 TensorList 对应项逐元素相除：`y_i［j］=x1_i［j］/x2_i［j］`。 ｜。两卡共享同一个 ForeachDivList 逐项逐元素除法契约，分别闭合 A2/A3 Vector 与 Ascend 950 SIMT 实现。
-<!-- cannbot:related:end -->

@@ -229,10 +229,3 @@ __aicore__ inline void OutputChunk(int64_t mBase, int64_t r, int64_t nOff, uint3
 ## 误诊
 
 该问题容易被归因到比较谓词或索引更新。逐位检查显示差异只在 NaN payload，且取消 fp32 回转后立即闭环，才定位到 value carry 的表示选择。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`related`）：“两份 running 使用同一 mask 更新，避免值与索引、值与比较状态发生漂移；”要求原 dtype carry 与 FP32 compare carry 同步；“用 B16 `Compare` 的 mask 直接驱动 int32 `Select`，只检查 values 不检查 indices。”指出同一 cummin 链里 mask 跨 B16/B32 会破坏值与索引的 lane 对齐。
-- [累计极值 NaN 语义须用 self-NE 合成选择掩码](ordered_compare_alone_cannot_propagate_nan_prefix_state.md)（`related`）：“NaN 验证同时检查 `isnan`、原始位模式与索引，不能只做数值等价；”规定 payload 修复后的三项验收；“value 与 index 必须使用同一个最终选择掩码，否则值正确时索引仍可能漂移。”补足 NaN 前缀状态机中 values/indices 共享谓词的前置。
-<!-- cannbot:related:end -->

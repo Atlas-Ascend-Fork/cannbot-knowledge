@@ -71,9 +71,3 @@ agent 早期一度怀疑 case4 是 bfloat16 的 `Cast<float→half>` reinterpret
 - a2/a3 平台：未验证，推断可迁移（reduce work buffer 复用思路平台无关，但 UB 上限不同、阈值 N 不同）。
 - Ascend950 UB 精确上限未在 trace 中由探针确认；本卡阈值 N≥14336 是实测观察值，非由 UB 上限反推。
 - 若算子结构使 gamma 在归约后仍要被读，不能复用 `bufGamma_`，需另选闲置 buffer 或回退到单独 work buffer（但要把 N 限制在 UB 内）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceMax](../../apis/simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_max.md)（`exemplifies`）：参数说明：T：操作数数据类型。；dst：输出 目的操作数。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；src：输入 源操作数。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；sharedTmpBuffer：输入 指令执行期间存储中间结果，用于内部计算所需操作空间，需特别注意空间大小。详情请参考［关键特性说明］(#关键特性说明)。 类型为LocalTensor，支持的TPosition为VECIN、VECCALC、VECOUT。；count：输入 参与计算的元素个数。关于该参数的具体说明请参考［连续计算］(../simd_compute/continuous_compute.md)。最大处理的数据量不能超过UB大小限制。；**机制解释**（根因分析，属 interpretation）：UB（Unified Buffer）是 Ascend950 上的片上 SRAM，`TPipe::InitBuffer` 静态划分、不能动态扩。。ReduceMax 合同要求 sharedTmpBuffer 并受 UB 上限约束，Runbook用额外 work buffer 导致 507035 的实测闭合该资源风险。
-<!-- cannbot:related:end -->

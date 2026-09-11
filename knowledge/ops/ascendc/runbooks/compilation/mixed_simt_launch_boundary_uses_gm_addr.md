@@ -167,11 +167,3 @@ static inline void launch_gather(int64_t numBlocks, aclrtStream aclStream,
 
 - 该错误不是 `int8/int32/int64` dtype dispatch 缺分支；不同实例化只是重复暴露同一个 wrapper 形参问题。
 - 它也不是 `asc_vf_call` 参数数量问题；修复地址空间边界后出现的 `dim3`/参数数量错误属于另一根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CANN 9.0.1 SIMT 入口类型无法派生—改混合 VF](mixed_simt_requires_vector_shell_and_simt_vf.md)（`related`）：让 host launch 和 `__global__` wrapper 的全部地址形参都保持 `GM_ADDR`；进入 device wrapper 后，再显式恢复 VF 所需的具体 `__gm__ T*` 类型。；正确分层是：三参数启动一个 `__global__ __aicore__ __vector__` AI Core 入口，再由入口用 SIMT 版 `asc_vf_call(cce::dim3(thread_count), ...)` 启动 `__simt_vf__` 线程函数。。两条 runbook 共同闭合同一混合 SIMT wrapper：一条修正 launch 地址 ABI，另一条修正 Vector shell、三参数 launch 与 SIMT VF 的执行模型。
-- [dav-3510 GM_ADDR static_cast 编译失败](gm_addr_cast_from_void_uses_toolchain_cast.md)（`related`）：在 dav-3510 的 ASC 编译单元里，`GM_ADDR` 展开为带 `__gm__`/`cce_global` 地址空间限定的 `uint8_t*`，Bisheng 不接受用 C++ `static_cast` 把普通 `void*` 建立为该限定指针并据此报出 `casts away qualifiers`。混合编译的 `<<<>>>` host launch 边界按 `GM_ADDR`（`__gm__ uint8_t*`）封送地址，而 wrapper 形参提前收窄成具体 `__gm__ T*`，Bisheng 不在该边界隐式转换不同 pointee 类型的地址空间指针。两端共同限定 Host tensor 地址到混合 SIMT wrapper 的 ABI：入口先形成 GM_ADDR，wrapper 再恢复具体类型。
-- [纯 SIMT kernel 形参 __gm__ 导致编译失败](pure_simt_parameters_do_not_use_gm_qualifier.md)（`related`）：“纯 SIMT `__global__` kernel 形参优先用普通、类型完整的指针”给出纯模式修法；“让 host launch 和 `__global__` wrapper 的全部地址形参都保持 `GM_ADDR`；进入 device wrapper 后，再显式恢复 VF 所需的具体 `__gm__ T*` 类型。”给出混合模式相反的边界合同，联合阅读可避免跨编程模式误迁移。
-<!-- cannbot:related:end -->

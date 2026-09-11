@@ -229,20 +229,8 @@ class GraphBuildCompatibilityTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
         self.assertEqual(compatible, json.loads(output.read_text(encoding="utf-8")))
         self.assertIn("runtime/concepts/probe", {node["id"] for node in compatible["nodes"]})
-        self.assertTrue(any(edge["relation"] == "part_of" for edge in compatible["edges"]))
+        self.assertEqual([], compatible["edges"])
         self.assertEqual(before, card.read_bytes())
-
-    def test_compatibility_build_preserves_child_exit_code_and_output_streams(self) -> None:
-        spec = importlib.util.spec_from_file_location("graph_compat_ingest_test", INGEST)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        with mock.patch.object(module.subprocess, "run", return_value=mock.Mock(returncode=17)) as run:
-            result = module.build_graph(argparse.Namespace(knowledge_root=str(self.root)))
-        self.assertEqual(17, result)
-        run.assert_called_once_with(
-            [sys.executable, str(GRAPH), "--knowledge-root", str(self.root), "build"],
-            check=False,
-        )
 
     def test_compatibility_build_rejects_mismatched_contract_without_artifacts(self) -> None:
         self.prepare_corpus()

@@ -87,10 +87,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         asc_vf_call<simt_float22half2_rna_sat>(dim3(1024), (__gm__ float2*)input, (__gm__ half2*)output, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float22half2_rna](_float22half2_rna.md)（`same_topic`）：函数原型：half2 __float22half2_rna(const float2 x)；函数原型：half2 __float22half2_rna_sat(const float2 x)。两接口都执行 float2 到 half2 的 rna 转换，右侧只改变为饱和输出，是同一双元素精度转换的模式变体。
-<!-- cannbot:related:end -->

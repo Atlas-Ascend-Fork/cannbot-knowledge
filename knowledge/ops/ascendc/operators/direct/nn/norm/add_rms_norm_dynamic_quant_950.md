@@ -865,9 +865,3 @@ Direct 闭包的事实文件为 `op_plugin/add_rms_norm_dynamic_quant_plugin.cpp
 | 同步 | Queue、`PIPE_V`、MTE event 和 single-row scalar event 可复用 | producer/consumer 配对与等待点不可删除 | 各 Route `Process`/helper |
 | 精度与尾块 | FP32 add/reduce/norm；xOut 降输入 dtype；INT8 RINT/pack | valid N 写回、mask/padding、R-003 zero-max 分支 | `ReduceSumRstd`、`ComputeY*`、`ScaleTensor` |
 | 失败边界 | Host 在无 Route/无平台资源时失败 | 不得把失败改成未证明的 Device fallback | `CalcDirectTiling`、`Calculate` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [逐 block 串行启动退化多核并行](../../../../runbooks/performance/block.md)（`related`）：代码审计发现 launch 函数把多核切分写成 host 侧 `for (b = 0; b < numBlocks; ++b)` 循环；每个 block 负责连续 `mPerCore` 行，末 block 用 `mLastCore`。；该 runbook 直接诊断并修复此算子逐行分块被 host 串行 launch 的性能问题。
-<!-- cannbot:related:end -->

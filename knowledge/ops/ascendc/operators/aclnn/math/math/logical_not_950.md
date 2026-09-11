@@ -1090,9 +1090,3 @@ BOOL 输出时完全消除 Cast 节点；同位宽 8-bit 输出走 `Copy`；FLOA
 | 同步 | R-001 Mutex；Cast TQue；跨节点 executor/stream | 不得在 Release/Free 或 task 完成前覆盖 producer | `sync.h`、各 queue 调用、`Run` |
 | 精度与尾块 | 先 bool 化；R-001 half 链；BF16 RINT；其余 0/1 精确 | 末 tile API count/DMA blockLen 必须使用 tail，不能处理 padding lane | `LogicalNotDag`、Cast policies、`Process` |
 | 失败边界 | 空域短路；unsupported Cast pair、Tiling/launch 失败均返回 | unknown key、workspace null、AICPU map miss 不得伪造 fallback | `CalculateResult`、entries、`CastCpuKernel` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BitwiseNot 950 ACLNN 算子知识](bitwise_not_950.md)（`related`）：BitwiseNot 的 Host selector 明确“BOOL 调 `l0op::LogicalNot(selfContiguous)`；其余已通过白名单的 dtype 调 `l0op::Invert(selfContiguous)`。”；LogicalNot 卡说明“输入已为 BOOL 时返回原 Tensor，不加 launcher；950 其它类型按 R-002/R-003 加 launcher。”，可据此核查 BOOL 分支为何直接复用 LogicalNot 核心而整数分支不能复用。
-<!-- cannbot:related:end -->

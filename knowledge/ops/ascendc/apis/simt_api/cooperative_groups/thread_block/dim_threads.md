@@ -67,10 +67,3 @@ static dim3 dim_threads()
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupDim](group_dim.md)（`same_topic`）：“获取当前线程所属线程块的线程配置，返回值与内置变量blockDim相同。”给出焦点端事实；“获取当前线程所属线程块的线程配置，与接口dim_threads功能相同。”给出候选端事实。候选卡明确声明 group_dim 与 dim_threads 功能相同，两端是同一线程块维度查询合同的两个接口名。
-<!-- cannbot:related:end -->

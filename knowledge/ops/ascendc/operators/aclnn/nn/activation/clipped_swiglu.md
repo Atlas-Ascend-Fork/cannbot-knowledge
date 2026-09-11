@@ -735,9 +735,3 @@ if (tl_->isLongH == 0) {
 | 同步 | Queue + PIPE_V | Cast/Gather/数学链依赖 | `ProcessSingleLoop`/`Compute` |
 | 精度与尾块 | FP32 中间数学、dtype-specific output cast | BF16 RINT；有效长度与 padding 分离 | `ProcessSingleLoop` |
 | 失败边界 | 非法 shape/dtype/UB 阻断 launch | key 1、workspace 非空、SoC capable | `IsCapable`/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ClippedSwiglu 950 ACLNN 算子知识](clipped_swiglu_950.md)（`same_topic`）：｜ 计算语义 ｜ 将 `x` 沿 `dim` 合并为 `［B,2H］`；可选取 `B'=min(sum(group_index),B)`；按奇偶或前后拆为 `A,Bgate`，计算 `min(A,L)/(1+exp(-alpha*min(A,L))) * (clamp(Bgate,-L,L)+bias)`。 ｜；｜ 计算语义 ｜ 将 `x` 合并为 `［B,2H］`，可选按 `min(sum(group_index),B)` 截短 B；奇偶或前后拆 A/G，输出 `min(A,L)/(1+exp(-alpha*min(A,L)))*(clamp(G,-L,L)+bias)`。 ｜；两卡描述同一 aclnnClippedSwiglu 数学合同，分别闭合 A2/A3 与 950 的 Host、route、Kernel 和平台边界。
-<!-- cannbot:related:end -->

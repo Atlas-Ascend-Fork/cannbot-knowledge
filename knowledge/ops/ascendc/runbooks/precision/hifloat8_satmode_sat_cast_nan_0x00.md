@@ -82,11 +82,3 @@ constexpr static AscendC::Reg::CastTrait castTraitF32toh8 = {
 
 - 任何用 `Cast<hifloat8_t, float, castTraitF32toh8>`（SatMode::SAT）的算子，其 golden 不能直接 `astype(en_dtypes.hifloat8)`——须先确认 device cast 的 `SatMode`：SAT=有限格式（NaN→0、inf→max），非 SAT 可能保留 NaN 码。
 - 写 hifloat8 golden 前先跑全 NaN 输入 probe 做对照，定位是否命中此 cast 路径。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SatMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/sat_mode.md)（`exemplifies`）：**触发条件（trigger）**：对使用 `Cast<hifloat8_t, float, castTraitF32toh8>`（SatMode::SAT）做 fp32→hifloat8 量化的算子，用全 NaN 输入跑 golden-vs-device 字节级比对，HiFloat8 路径 FAIL/SUPPRESSED，而同输入下其他量化模式（如 MX-FP8、Normal）PASS。；SatMode 用于设置 Cast 类型转换的饱和与不饱和模式。。runbook 的 NaN 字节差异由具体 HiFloat8 Cast 的 SatMode::SAT 路径触发，辅助类型卡提供选择饱和/不饱和模式的枚举入口，联合阅读可从失败信号回到 Cast trait 配置。
-- [AddRmsNormQuant 950 ACLNN 算子知识](../../operators/aclnn/nn/norm/add_rms_norm_quant_950.md)（`related`）：算子卡明确“量化 cast 使用显式 SAT 与 round trait，并暂时控制浮点溢出模式”；精度卡针对“Cast<hifloat8_t, float, castTraitF32toh8>”说明 SAT cast 的 NaN 字节语义，因而 HIFLOAT8 输出的 golden 必须按相同有限格式编码而不能直接保留 NaN。
-- [RmsNormGradQuant 950 ACLNN 算子知识](../../operators/aclnn/nn/norm/rms_norm_grad_quant_950.md)（`related`）：hifloat8 使用 `SAT + CAST_ROUND`；`SatMode::SAT` 是有限格式语义：把溢出/±inf 饱和到最大有限幅值（±32768），并把 **NaN 映射为 `0x00`（正零）**。；候选给出 focal 的 HiFloat8 量化输出在 NaN golden 对拍时的精确故障判据。
-<!-- cannbot:related:end -->

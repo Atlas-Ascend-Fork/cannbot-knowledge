@@ -91,10 +91,3 @@ inline unsigned long long int __half2ull_rna(const half x)
         dst[idx] = __half2ull_rna(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__half2ull_rn](_half2ull_rn.md)（`same_topic`）：“功能：遵循CAST_ROUND模式，将half类型数据转换为unsigned long long int类型数据，返回转换后的值。”与“功能：遵循CAST_RINT模式，将half类型数据转换为unsigned long long类型数据，返回转换后的值。”提供双方正文证据。二者都是 half 到 unsigned long long 的转换，分别使用 CAST_ROUND 和 CAST_RINT；互读能直接核对中点舍入选择。
-<!-- cannbot:related:end -->

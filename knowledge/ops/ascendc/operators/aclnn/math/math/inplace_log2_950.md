@@ -884,9 +884,3 @@ const aclTensor* Cast(const aclTensor* self, op::DataType dstDtype, aclOpExecuto
 | 同步 | AIV按MTE2/V/MTE3 Mutex，AICPU以ParallelFor返回为完成点 | ping/pong同parity覆盖必须等消费者释放；ViewCopy只在核心完成后消费 | `GetTensor/ReleaseTensor`; `LogCompute` |
 | 精度与尾块 | F16/BF16核内FP32链后降精度；F32全FP32；AICPU保持dtype | Cast mode常量、换底顺序、MicroAPI mask与CPU半开区间不可改 | `LogScaleNot...`; `LogCustom`; `Log2Compute` |
 | 失败边界 | 空域Host短路；dtype selector；Tiling/AICPU错误终止 | 不把自然Log optimized DAG、A2/A3缺失实现或未知dtype当fallback | `CheckInplaceParams`; `SetAttr`; `LogOpCheck` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Log2 950 ACLNN 算子知识](log2_950.md)（`same_topic`）：“对每个元素计算 `out［i］ = log2(self［i］)`”定义非原地 Log2 计算，“对 `selfRef` 的每个逻辑元素计算以 2 为底的对数，并把结果提交回同一用户 Tensor 视图”定义同一数学算子的原地提交合同。
-<!-- cannbot:related:end -->

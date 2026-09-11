@@ -56,10 +56,3 @@ __aicore__ inline void SetSingleOutputShape(uint64_t singleCo, uint64_t singleDo
 ```
 conv3dApi.SetSingleOutputShape(singleCoreCout, singleCoreDout, singleCoreM);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IterateAll](iterate_all.md)（`related`）：SetSingleOutputShape 卡规定“设置单核上结果矩阵Output的形状。”；IterateAll 卡明确“singleCo、singleDo和singleM的大小通过SetSingleOutputShape接口设置。”。形状配置是单核 Conv3D 计算输出块的前置合同。
-<!-- cannbot:related:end -->

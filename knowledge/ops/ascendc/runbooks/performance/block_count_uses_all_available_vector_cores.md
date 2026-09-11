@@ -254,11 +254,3 @@ at::Tensor gather(const at::Tensor &x, const at::Tensor &index, int64_t dim)
 ## 误诊
 
 这次性能提升不是 tiling shape、UB buffer 大小或 DataCopy 指令改写造成的：A/B 中 kernel 与数据流均不变，唯一修改是 host 的 `numBlocks` 上限。反过来，这也不证明 per-element 搬运已经高效。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [EnableVectorCore](../../guides/programming_guide/appendix/common_operations/enable_vector_core.md)（`related`）：“设置的numBlocks代表的是AI Core和Vector Core的总数”给出启用 Vector Core 时 host tiling 的计数语义；“host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`”展示固定上限如何造成实际 Vector 核闲置。
-- [blockLength 对齐 slice 致 numBlocks 塌缩单核](blocklength_slice_numblocks.md)（`related`）：固定封顶故障表现为“host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`，使输出量充足的 case 只能暴露 `C_old` 路并行工作，留下 `V_measured - C_old` 个核的可用并行度未覆盖。”；切片账本则要求“`numBlocks = min(coreNum, totalSlices / minSlicesPerCore)`；`slicesPerBlock = ceil(totalSlices / numBlocks)`；对齐口径下 `blockLength = slicesPerBlock * slice`。”，两者共同用于区分硬编码核数上限与切片公式造成的低 block 数。
-- [每核最少行数地板压低 AIV 并行度—按可用核数切分](row_reduction_min_rows_floor_underutilizes_aiv.md)（`same_topic`）：选择 `numBlocks=min(coreNumAiv,numRow)`：前者保证尽量覆盖可用 AIV，后者保证每个激活 block 至少有一行，避免空核。 host 将 `numBlocks` 硬封顶为 `C_old`，而目标设备实测 `V_measured > C_old`，使输出量充足的 case 只能暴露 `C_old` 路并行工作，留下 `V_measured - C_old` 个核的可用并行度未覆盖。 两卡诊断同一 Host block 数低于可用 Vector 核的问题，分别排除每核最少行数地板与固定 cap。
-<!-- cannbot:related:end -->

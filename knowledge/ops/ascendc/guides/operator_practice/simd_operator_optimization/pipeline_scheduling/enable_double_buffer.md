@@ -102,10 +102,3 @@ __aicore__ inline void Process()
     }
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DoubleBuffer](../../../technical_appendix/concepts_and_terms/performance_optimization/double_buffer.md)（`same_topic`）：“DoubleBuffer是基于MTE指令队列与Vector指令队列的独立性和可并行性，通过将数据搬运与Vector计算并行执行以隐藏数据搬运时间并降低Vector指令的等待时间”与“DoubleBuffer是基于MTE指令队列与Vector指令队列的独立性和可并行性，通过将数据搬运与Vector计算并行执行以隐藏大部分的数据搬运时间”描述同一流水机制，实践卡进一步给出队列块数为 2 和不收益边界。
-<!-- cannbot:related:end -->

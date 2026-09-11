@@ -64,11 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetAtanMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Atan](atan.md)（`related`）：不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。；kernel侧Atan接口的计算需要开发者预留 申请临时空间。左卡的 Atan Kernel 需要独立 sharedTmpBuffer，右卡在 Host 侧按 shape、dtype 与复用配置给出其合法空间范围；右卡结果直接决定左卡缓冲区的申请大小。
-- [GetAtanTmpBufferFactorSize](get_atan_tmp_buffer_factor_size.md)（`same_topic`）：“预留 申请的临时空间大小不能小于最小临时空间大小”与“通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量”分别给出容量下界和固定空间下的 tile 推导。
-<!-- cannbot:related:end -->

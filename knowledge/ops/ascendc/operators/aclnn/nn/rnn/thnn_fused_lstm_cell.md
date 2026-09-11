@@ -606,9 +606,3 @@ Helper 用 Horner 形式在 FP32 上计算 `x*(c0+x²*(c1+x²*(c2+x²*(c3+x²*c4
 | 同步 | Queue 负责 MTE↔V，barrier 负责 V 内依赖 | 原位覆盖前必须消费旧值；CopyOut 前必须完成 V→MTE3 交接 | `ProcessCopyIn*`; `ProcessCompute`; `ProcessHy` |
 | 精度与尾块 | FP16 全程升 FP32 计算；两处 tanh 小值修正；`x` 控制有效范围 | Cast round mode、tanh 系数/阈值/顺序、mask 与 Select 长度、门物理 offset | `ProcessCastIn`; `TanhPartialHighPrecision`; `ProcessCopyOutHalf` |
 | 失败边界 | AIV=0 tiling 失败；其它 dtype/shape API 失败；空输入不启动 | 不添加未实现的 fallback；不宣称 950 支持 | `GetInfo`; `CheckParamsValid`; `check_op_supported`; 公开产品支持表 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ThnnFusedLstmCellBackward A2/A3 ACLNN 算子知识](thnn_fused_lstm_cell_backward.md)（`same_topic`）：“｜ `storageOut` ｜ `［B,4H］`，ND ｜ 与 `inputGates` 相同 ｜ 必选；保存四门激活供反向使用；固定 Device 物理次序 `［i,f,g,o］` ｜”与“｜ `storage` ｜ `［B,4H］` / ND ｜ 同上 ｜ 每行依次为 `i/f/j/o` 四门激活值 ｜”提供双方正文证据。前向输出 storage 是反向接口直接消费的门激活，双方还共同暴露固定四门物理次序，连接前向产物接线与反向梯度计算。
-<!-- cannbot:related:end -->

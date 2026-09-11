@@ -692,10 +692,3 @@ Tiling 在非对齐路线以 byte 生成 blockLen/stride；950 body 用 Ext 结�
 | 同步 | Queue+PIPE_V | temp覆盖和FreeTensor顺序 | `Compute` |
 | 精度与尾块 | low dtype升FP32 RINT；FP32原精度 | Pad calLen与GM有效区域分离 | BF16/Vector/tiling helper |
 | 失败边界 | empty y校验、DMA/UB guard、unknown key | 不添加未实现fallback | `processEmptyTensor`, `CalcTiling`, entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwiGlu 950 Direct Invoke 算子知识](../../../direct/nn/activation/swi_glu_950.md)（`same_topic`）：“沿 `dim` 把输入等分为前半 `A` 与后半 `B`，输出 `Y = swish(A) * B = A / (1 + exp(-A)) * B`。”与“沿 `dim` 对半切成 A/B，`y=A/(1+exp(-A))*B`。”分别给出两端正文事实；两卡实现同一 950 SwiGlu 数学与 shape 契约，但分别闭合 Direct Invoke 与 ACLNN 的 Host、empty、workspace 和 kernel route，联合阅读可做启动方式选型。
-- [SwiGlu A2/A3 ACLNN 算子知识](swi_glu.md)（`same_topic`）：“公开两段式 `aclnnSwiGluGetWorkspaceSize` / `aclnnSwiGlu`；固定仓只有这一版公开 SwiGlu”与“公开两段式 `aclnnSwiGluGetWorkspaceSize` / `aclnnSwiGlu`；固定仓普通 SwiGlu 只有这一公开版本。”指向同一公开 ABI，分别给出 A2/A3 与 950 的 Host、Route 和 Kernel 实现。
-<!-- cannbot:related:end -->

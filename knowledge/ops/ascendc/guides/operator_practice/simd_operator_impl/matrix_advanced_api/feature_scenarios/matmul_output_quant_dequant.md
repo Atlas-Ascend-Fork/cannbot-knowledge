@@ -122,11 +122,3 @@ Matmul量化/反量化包含两种模式：同一系数的量化/反量化模式
         mm.SetBias(gm_bias);
         mm.IterateAll(gm_c);
         ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetDequantType](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_dequant_type.md)（`explains`）：同一系数的量化/反量化：SetDequantType(DequantType::SCALAR)：SetQuantScalar(gmScalar)；SCALAR：表示同一系数的量化或反量化模式。/TENSOR：表示向量的量化或反量化模式。指南给出 Tiling 侧 SCALAR/TENSOR 与 Kernel 侧 SetQuantScalar/SetQuantVector 的配对，API 卡定义 dequantType 枚举语义和返回状态。
-- [SetQuantScalar](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_quant_scalar.md)（`explains`）：“整个C矩阵对应一个量化参数，量化参数的shape为［1］”与“开发者在算子Kernel侧调用接口SetQuantScalar设置量化参数”把 PER_TENSOR 的 shape 契约落实到 Kernel 调用。
-<!-- cannbot:related:end -->

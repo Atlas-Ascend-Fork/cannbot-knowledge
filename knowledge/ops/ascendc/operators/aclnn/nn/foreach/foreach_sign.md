@@ -787,9 +787,3 @@ PipeBarrier<PIPE_V>();
 | 同步 | TQue 阶段序；转换/INT32 使用 V barrier | 临时两半不得在 consumer 前覆盖 | `ComputeAndCopyOut`、各 specialization |
 | 精度与尾块 | dtype 特化的 Cast/Sign/Clamp；尾 DMA 精确字节 | RoundMode、maxCastDataCount、tail count 不得改变 | `InnerComputer`、`CopyIn/ComputeAndCopyOut` |
 | 失败边界 | Host 校验阻断非法 dtype/shape；unknown key 无 body | 不得把超过 50 Tensor 或 S=0 当成已支持 | `CheckOpInfo`、router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachSign 950 ACLNN 算子知识](foreach_sign_950.md)（`same_topic`）：Host 按所有 Tensor 元素组成的逻辑串联域分核，但 Device 仍通过 TensorList 描述逐 Tensor 取真实 GM 地址。；Host 不按总元素数分核，而按最大单 Tensor `M` 选择 grid。；两张卡实现同一 aclnnForeachSign TensorList 语义，同时揭示 A2/A3 的总元素分核加 AIV Queue 与 950 的最大 Tensor 分核加 SIMT grid 差异，可直接支持跨平台实现选择和回归。
-<!-- cannbot:related:end -->

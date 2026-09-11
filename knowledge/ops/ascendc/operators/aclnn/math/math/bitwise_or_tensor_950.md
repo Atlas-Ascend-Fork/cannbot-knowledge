@@ -750,9 +750,5 @@ NDDMA把 broadcast stride=0 直接编码进5维 MultiCopy，避免先搬紧凑�
 | 精度与尾块 | core纯整数/BOOL Or；Cast独立处理转换 | Or前必须Promote，Or后才转out dtype；有效count必须用tail | `Vec::Or`,`l0op::Cast` |
 | 失败边界 | Host校验、Tiling dtype/rank/UB检查 | 不得把空Tensor送入核心Tiling；不支持Cast pair返回nullptr | `CheckParams`,`DoTiling`,`Cast` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Or](../../../../apis/simd_api/basic_api/memory_vector_compute/logical_compute/or.md)（`related`）：算子整数与布尔 Device 路线都把当前 tile 的有效元素数直接传给 AscendC::Or，API 定义了完全对应的三个 LocalTensor 加 count 重载和按位或语义。
-- [LogicalOr](../../../../apis/simd_api/adv_api/math_compute/logical_or_interface/logical_or.md)（`related`）：若 `P=BOOL`，源码改提交 `LogicalOr`；零视为False，非零视为True；算子 BOOL Route 直接切换到 LogicalOr 语义。
-<!-- cannbot:related:end -->
+- [Or](../../../../apis/simd_api/basic_api/memory_vector_compute/logical_compute/or.md)
+- [LogicalOr](../../../../apis/simd_api/adv_api/math_compute/logical_or_interface/logical_or.md)

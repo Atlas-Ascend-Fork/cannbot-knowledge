@@ -279,23 +279,5 @@ struct BatchWriteItem {
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Commit（HCCL集合通信）](commit.md)（`related`）：集合通信BatchWrite的任务下发接口，返回该任务的标识handleId给用户。；非［细粒度通信］(iterate.md)时，每调用一次本接口，则通知服务端可以执行handleId对应的任务一次。。BatchWrite 产生通信任务 handle，Commit 以该 handle 通知服务端执行，二者构成 Prepare/提交的连续任务生命周期。
-- [GetQueueNum](get_queue_num.md)（`related`）：焦点卡“获取BatchWrite通信任务的通信队列数量。”，候选卡要求“queueID（输入）：指定当前通信所在的队列ID，默认值为0。”；查询队列总数为 BatchWrite 选择合法 queueID 提供运行时边界。
-- [QueueBarrier](queue_barrier.md)（`related`）：BatchWrite实现了一种点对点通信，这是一种直接传输数据的通信模式，能够同时将多份数据发送到不同的Global Memory地址上。；阻塞服务端上指定队列的BatchWrite通信任务，直到指定范围内所有队列上的任务完成执行，从而实现指定范围内队列的同步。。BatchWrite 在队列中下发多目的地址通信，QueueBarrier 则等待这些 BatchWrite 队列任务完成，是同一执行链的同步收口。
-- [SetCommBlockNum](../hccl_tiling/set_comm_block_num.md)（`related`）：设置参与BatchWrite通信的核数。；集合通信BatchWrite的任务下发接口，返回该任务的标识handleId给用户。；Tiling 接口生产 BatchWrite 的参与核数，Kernel 接口消费该配置下发点对点批量通信任务，形成参数生产到任务执行的直接合同。
-- [SetQueueNum](../hccl_tiling/set_queue_num.md)（`related`）：设置每个向服务端下发任务的核上的BatchWrite通信队列数量；queueID（输入）：指定当前通信所在的队列ID，默认值为0；配置页决定 BatchWrite 调用中 queueID 的可用队列域。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)（`related`）：算子声明的固定版本源码包含对 `BatchWrite(...)` 的直接调用（第 476 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_a2.h#L476)
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)（`related`）：算子声明的固定版本源码包含对 `BatchWrite(...)` 的直接调用（第 676 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_a2.h#L676)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)
+- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)

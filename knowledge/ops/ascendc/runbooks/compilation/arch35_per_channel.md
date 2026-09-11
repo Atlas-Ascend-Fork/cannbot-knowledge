@@ -174,9 +174,3 @@ arch35 上 V-pipeline 写 UB 与 MTE2/MTE3 搬运之间存在 DCCI（entire data
 - 已验证：Ascend950PR/arch35，CANN 9.0.0-beta.2，FP32 per-channel [C] 输出。
 - 未验证，推断可迁移：a2、a3 平台——DCCI/缓存一致性是 arch 级机制，是否同款问题需在各 arch 上实测；标注"未验证，推断可迁移"。
 - 不适用：大块连续 32B 对齐输出（DataCopyPad 仍首选且可靠）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscDcci](../../apis/simd_api/c_api/cache_ctrl/asc_dcci.md)（`exemplifies`）：Runbook 的直接信号是“per-channel ［C］ 小输出经 `DataCopyPad` 写 GM 后，host/下游读到旧值或错值”；asc_dcci 的适用条件是“读取Global Memory的数据，但该数据可能在外部被其余核修改，此时需要使用asc_dcci接口，直接访问Global Memory，获取最新数据；”。API语义帮助判定该旧值现象是否属于多核缓存一致性路径。
-<!-- cannbot:related:end -->

@@ -63,10 +63,3 @@ uint32_t minValue = 0;
 uint32_t typeSize = sizeof(int16_t);
 AscendC::GetReduceXorSumMaxMinTmpSize(shape, typeSize, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceXorSum](reduce_xor_sum.md)（`related`）：焦点卡要求“isReuseSource与ReduceXorSum接口保持一致”，候选卡定义“对多维向量按指定维度进行异或求和归约。”；Host 侧临时空间计算的复用参数必须与 Kernel 侧 ReduceXorSum 调用一致。
-<!-- cannbot:related:end -->

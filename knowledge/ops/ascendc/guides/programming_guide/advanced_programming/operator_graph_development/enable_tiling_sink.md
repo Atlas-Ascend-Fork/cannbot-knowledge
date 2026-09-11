@@ -162,11 +162,3 @@ Tiling下沉场景下，算子工程的op\_host目录结构如下，Tiling实现
     )
     ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DEVICE_IMPL_OP_OPTILING](../../../../apis/utils_api/tiling_sink/device_impl_op_optiling.md)（`explains`）：完成下沉Tiling函数注册：包含device_op_impl_registry.h头文件，使用宏DEVICE_IMPL_OP_OPTILING进行注册。；在Tiling下沉场景中，该宏定义用于生成Tiling下沉的注册类，再通过调用注册类的成员函数来注册需要下沉的Tiling函数。。指南给出 DEVICE_IMPL_OP_OPTILING 的注册步骤，接口卡解释该宏生成注册类并绑定下沉 Tiling 函数的具体作用。
-- [ValueDepend](../../../../apis/utils_api/prototype_register_management/op_param_def/value_depend.md)（`explains`）：本示例中的输入y通过ValueDepend配置了非Const类型的Tiling值依赖。；scope：输入：ALL：指在Tiling/InferShape等函数实现时都依赖该输入的具体数据，行为与调用单参数ValueDepend重载接口一致。TILING：指仅在Tiling时依赖Tensor的值，可以支持Tiling下沉。。指南以非 Const 输入 y 示范 ValueDepend 的 TILING 数据依赖，接口卡给出 ALL 与 TILING 的精确范围以及下沉能力。
-<!-- cannbot:related:end -->

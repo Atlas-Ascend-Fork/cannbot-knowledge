@@ -75,10 +75,3 @@ platforms: []
 ## 约束说明
 
 无
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SoftmaxFlashV3](softmax_flash_v3.md)（`related`）：对输入tensor x的尾轴进行切分，分块个数为splitMeanCnt；用于获取SoftmaxFlashV3接口所需的Tiling参数。右卡在 Host 侧按 srcShape、dtype 与 update/basic-block 配置生成临时空间和 Tiling 参数，左卡在 Device 侧消费这些配置执行 PASA 分块计算；两端是参数生产到 Kernel 消费的互补任务链。
-<!-- cannbot:related:end -->

@@ -80,9 +80,3 @@ platforms: ["a2"]
 - 仅在 a2（Ascend910B3/DAV_2201）实测验证。A3（Ascend910_93 族）共享 DAV_2201 架构，根因属软件侧 golden 取值点错误、不依赖具体型号，推断可迁移，但未验证（未验证，推断可迁移）。
 - 仅适用于 “BF16 输入 + 内部 FP32 归约 + BF16 输出” 的路径形态。若 kernel 本身就把归约放在 BF16 域完成（非本算子设计），则 golden 应与该路径同源，本卡的 pre-BF16 取值点结论不适用。
 - FP16 路径不适用（FP16 Add 在 FP16 完成，归约本就用 post-FP16 值，kernel/golden 同源）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddRmsNormCast A2/A3 ACLNN 算子知识](../../operators/aclnn/nn/norm/add_rms_norm_cast.md)（`related`）：算子卡规定“每行先求和 `x=x1+x2`，再计算 `rstd=1/sqrt(sum(x_fp32^2)/N+epsilon)`”；Runbook 的失败信号是“rstd 输出（FP32，`rsqrt(mean(x²)+eps)`）在两个小 numCol 用例上超出 FP32 容差”。算子内部 pre-BF16 FP32 归约顺序用于修正 golden 的 post-BF16 取值点。
-<!-- cannbot:related:end -->

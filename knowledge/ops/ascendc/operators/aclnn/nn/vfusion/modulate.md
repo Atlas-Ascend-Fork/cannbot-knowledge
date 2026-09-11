@@ -1104,10 +1104,3 @@ if (this->tilingData.inputB * this->tilingData.inputL < this->coreNum) {
 | 同步 | Queue 生命周期+PIPE_V barrier | scale原地+1、Mul/Add、BF16 cast之间不得重排 | `PreProcess`, `Compute*` |
 | 精度与尾块 | BF16 FP32计算并RINT；其余原dtype；DataCopyPad有效字节写 | 多行仅完整D；D/行组/核尾长度必须保持 | `Compute*`, `CopyIn/CopyOut` |
 | 失败边界 | 参数检查失败阻断任务；unknown key不写 | optional null解引用缺陷不可隐藏；不得假设fallback | `CheckShape`, `modulate` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ModulateBackward A2/A3 ACLNN 算子知识](modulate_backward.md)（`related`）：“｜ 计算语义 ｜ 对 `［B,L,D］` 的 `grad_output`：`grad_input=grad_output*scale［:,None,:］`（无 scale 时源码复制 `grad_output`）；可选地沿 `L` 归约得到 `grad_scale=sum(input*grad_output)`、`grad_shift=sum(grad_output)` ｜”与“｜ 计算语义 ｜ `out［b,l,d］ = self［b,l,d］ * (1 + scale［b,d］) + shift［b,d］`；缺少 scale 时省略乘法，缺少 shift 时省略加法 ｜”是双方正文中的具体合同。反向卡给出 grad_input、grad_scale、grad_shift 的梯度合同，前向卡给出被求导的广播调制公式；两端构成同一训练算子链的前向与反向语义。
-- [Modulate 950 ACLNN 算子知识](modulate_950.md)（`same_topic`）：“scale/shift 沿 L 广播，实际 Kernel 对存在的 scale 先加 1，再乘 self；存在 shift 时再加 shift。”与“令 `self∈R［B,L,D］`，scale/shift 在 L 维广播。公开文档和 Kernel 实体均实现 `self * (1 + scale) + shift`。”提供双方正文证据。两端核心公式、L 维广播和可选 scale/shift 语义一致，分别覆盖 950 与 A2/A3 的同一 Modulate 算子合同。
-<!-- cannbot:related:end -->

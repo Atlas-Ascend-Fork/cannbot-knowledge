@@ -135,16 +135,3 @@ tl.store(dw_g_ptrs, dw_g, mask=dw_mask)
 | UB 容量 | 910_95 为 256KB，允许更大 BLOCK_SIZE；910B 应限制搜索空间 |
 | 搜索空间 | 48 配置首次 autotune 耗时长，控制在 20 个以内 |
 | SPLIT_K | 仅支持 SPLIT_K=1 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [融合算子综合](../operator_design/fused_ops.md)（`related`）：“融合算子综合（GEMM+Activation 等 8 种融合模式）”
-- [Fused Matmul GPU→NPU 迁移对照](fused_matmul_migration.md)（`related`）：“Fused Matmul 迁移对照（同源迁移模式）”
-- [GPU→NPU 迁移概览：架构差异与迁移工作流](../workflows/gpu_migration_overview.md)（`related`）：“GPU→NPU 迁移概览”
-- [NPU 编译参数速查（含 910_95 差异）](../../optimizations/techniques/compile_params.md)（`related`）：“NPU 编译参数速查”
-- [NPU Autotune 配置与 AutoTilingTuner](../../optimizations/techniques/autotune_on_npu.md)（`related`）：“NPU Autotune 配置指南”
-- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 硬件规格”
-- [Triton API 在 Ascend NPU 上的差异对照](../workflows/migration_api_differences.md)（`related`）：“libdevice.fast_dividef 等 API 替代路径对照”
-
-<!-- cannbot:related:end -->

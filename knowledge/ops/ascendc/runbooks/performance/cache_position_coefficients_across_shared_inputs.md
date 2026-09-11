@@ -611,9 +611,3 @@ private:
 ## 误诊
 
 仅凭 kernel 占比高不能断言是算力瓶颈；本次结论还结合了源码中的逐行重复 DMA、Wait Time 和修改后的成对结果。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ApplyRotaryPosEmb A2/A3 ACLNN 算子知识](../../operators/aclnn/transformer/posembedding/apply_rotary_pos_emb.md)（`related`）：把 `cosFullF/sinFullF` 留在 TBuf 中，以 `cachedS_` 只在 `s` 变化时重载，并在同一行循环中先后计算 q/k，可同时消除跨 head 与 q/k 的冗余系数事务。；对 query、key 的前 `D_r=cos.shape［-1］` 个元素执行 half RoPE：`y=x*cos+rotate_half(x)*sin`，结果原地更新；A2/A3 公开约束仅允许 `rotaryMode="half"`。性能运行手册针对同一 half RoPE 的 query/key 共享 cos/sin 数据流，把算子契约落实为按序列位缓存系数的搬运优化。
-<!-- cannbot:related:end -->

@@ -150,19 +150,4 @@ AscendC::Atan<float, false, atanConfig>(dstLocal, srcLocal, sharedTmpBuffer, 512
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAtanMaxMinTmpSize](get_atan_max_min_tmp_size.md)（`related`）：不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。；kernel侧Atan接口的计算需要开发者预留 申请临时空间。左卡的 Atan Kernel 需要独立 sharedTmpBuffer，右卡在 Host 侧按 shape、dtype 与复用配置给出其合法空间范围；右卡结果直接决定左卡缓冲区的申请大小。
-- [GetAtanTmpBufferFactorSize](get_atan_tmp_buffer_factor_size.md)（`related`）：该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。；template <typename T, bool isReuseSource = false, const AtanConfig& config = defaultAtanConfig> __aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor, const LocalTensor<uint8_t>& sharedTmpBuffer, const uint32_t calCount)；Host 侧系数用于反推单次元素上限，恰好约束带 sharedTmpBuffer 与 calCount 的 Atan 重载如何切分计算。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ForeachAtan A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_atan.md)（`related`）：算子正文包含对 `Atan(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ForeachAtan A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_atan.md)

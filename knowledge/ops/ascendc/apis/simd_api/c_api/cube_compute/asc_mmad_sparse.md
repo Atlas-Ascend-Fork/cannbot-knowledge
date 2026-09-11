@@ -195,10 +195,3 @@ bool c_matrix_source = true;
 bool c_matrix_init_val = true;
 asc_mmad_sparse(c, a, b, m, k, n, unit_flag_mode, c_matrix_source, c_matrix_init_val);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscCopyL12l0bSparse](../cube_datamove/asc_copy_l12l0b_sparse.md)（`related`）：稀疏 Mmad 卡规定“稠密矩阵A需要通过asc_copy_l12l0b_sparse载入，同时加载索引矩阵，索引矩阵在矩阵B稠密化的过程中生成，再用于矩阵A的稠密化。”；搬运卡说明“用于搬运存放在L1 Buffer里的512B大小的稠密权重矩阵到L0B Buffer里，同时读取128B大小的索引矩阵用于稠密矩阵的稀疏化。”，构成 AscMmadSparse 计算前的矩阵与索引准备合同。
-<!-- cannbot:related:end -->

@@ -735,11 +735,3 @@ offsetParam[ctrlParam.processId].kbL1Size =
 | 同步 | producer 发布、consumer 等待、完成后释放 | R-004 的 1:2 MIX 图不能降为普通 ASWT | controller Process |
 | 精度与尾块 | 浮点恢复、SwiGLU、ReduceMax、INT8 饱和与 validM/N/K mask | MX group、per-token 顺序、空专家和 N/2 | scheduler/body loops |
 | 失败边界 | dtype、格式、转置与尺度必须共同命中路线 | 不允许跨 body 或跨 POD fallback | ACLNN checker/APT router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [950(Ascend950) MXFP8 fused-MoE：进分组 matmul 前激活量化 scale 必须打包成 [M, N//2, 2] 并中心化收口](../../../../../../model/inference/optimizations/experience/rules/950_mxfp8_moe_activation_scale_packed_layout.md)（`related`）：《950 MXFP8 MoE scale 布局》规定“scale 二维 + 最后一维 N 为偶数 → 打包成 `［M, N//2, 2］`；N 为奇数直接报错，不静默降级。”；《GroupedMatmulSwiGluQuant 950》指出“浮点 xScale 进入逐 token ASWT，E8M0 xScale 的 ND MX 或 NZ MXFP8 输入进入 MX ASWT”，前者是后者 E8M0 MX GMM 输入的上游布局守卫。
-- [GroupedMatmulSwigluQuant 950 Direct Invoke 算子知识](../../../direct/transformer/gmm/grouped_matmul_swiglu_quant_950.md)（`same_topic`）：按累计 `group_list` 做 INT8 GroupedMatmul；INT32 结果乘 FP32 `x_scale`/`weight_scale`，沿 N 二分后做 `Swish(left) * right`，再逐 token 求 `max(abs)/127` 并量化为 INT8。；每组矩阵乘宽度 N，设备端按 FP32 per-token scale 或 64 元素 MX group 的 E8M0 scale 恢复为中间浮点，按源码的后半/前半实参计算 `S=SwiGLU(C［:,N/2:N］,C［:,0:N/2］,beta=1)`。。两端实现同一 950 GroupedMatmul 后接 SwiGLU 与动态量化的核心链，分别记录 Direct Invoke 固定 INT8 per-token 路线与 ACLNN V2 的 per-token、MX 和 WeightNZ 路线，联合阅读可完成前端与量化 route 选型。
-- [grouped_matmul_swiglu_quant A2/A3 ACLNN 算子知识](grouped_matmul_swiglu_quant.md)（`same_topic`）：分组矩阵乘→per-token/MX 尺度恢复→SwiGLU→per-token 或 MX 输出量化；Y 支持 INT8/FP8/FP4/HIFLOAT8 子集；GMM→反量化→SwiGLU→动态 INT8 量化，同时输出 per-token scale。两卡闭合同一 GroupedMatmulSwigluQuant V2 逻辑算子，950 扩展 MX/FP8/FP4 路线，A2/A3 卡记录 classic A8W8/A8W4/A4W4 路线。
-<!-- cannbot:related:end -->

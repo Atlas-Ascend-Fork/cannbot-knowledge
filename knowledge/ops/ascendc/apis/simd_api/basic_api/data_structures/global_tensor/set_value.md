@@ -92,29 +92,13 @@ aGlobal数据 [1, 1, 0, 1, 1]
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GM SetValue 写回后 GetValue 读到旧值](../../../../../runbooks/precision/gm_setvalue_getvalue_reads_stale_within_kernel.md)（`exemplifies`）：“关键点：ProcessR 用 `CopyOutArray(rOutLocal, rOutGm_, n_)`（即 `rOutGm_.SetValue(...)`）把 r_out 写回 GM，ProcessC 同样把 c_out 写回 GM；ProcessU 随后用 `rOutGm_.GetValue(i)` 与 `CopyInArray(cOutLocal, cOutGm_, m_)` 再从 GM 读回。读回的值并未反映本 Kernel 刚写入的更新。”复现同 Kernel 写后读旧值，而“设置 GlobalTensor 指定偏移位置的元素值。操作先写入 DCache，需配合 DataCacheCleanAndInvalid 确保数据一致性。”给出 SetValue 的 DCache 一致性合同；runbook 直接示范违反该合同的故障。
-- [DataCacheCleanAndInvalid](../../cache_control/data_cache_clean_and_invalid.md)（`related`）：设置 GlobalTensor 指定偏移位置的元素值。操作先写入 DCache，需配合 DataCacheCleanAndInvalid 确保数据一致性。；清除并失效Data Cache，确保Scalar单元通过Data Cache读取的GM数据与DMA单元直接写入GM的数据保持一致。。SetValue 明确产生 DCache 写入，DataCacheCleanAndInvalid 提供写回并失效的可见性动作，联合阅读可闭合 GM 一致性处理。
-- [operator](operator_call.md)（`related`）：返回值为指定索引位置的 PrimType 类型引用，用于左值相当于 SetValue，用于右值相当于 GetValue。；设置 GlobalTensor 指定偏移位置的元素值。操作先写入 DCache，需配合 DataCacheCleanAndInvalid 确保数据一致性。。GlobalTensor operator() 卡明确左值语境等价于 SetValue，SetValue 卡说明指定偏移写入及 DCache 一致性要求，二者连接运算符重载与显式写接口。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 14 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [NMS 950 Direct Invoke 算子知识](../../../../../operators/direct/cv/image/nms_950.md)（`related`）：算子声明的固定版本源码包含对 `SetValue(...)` 的直接调用（第 219 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/experimental/image/nms_with_mask/op_kernel/nms_with_mask.h#L219)
-- [MaskedSelect A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/masked_select.md)（`related`）：算子声明的固定版本源码包含对 `SetValue(...)` 的直接调用（第 162 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/masked_select_v3/op_kernel/masked_select_v3.h#L162)
-- [ForeachNonFiniteCheckAndUnscale A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_non_finite_check_and_unscale.md)（`related`）：算子声明的固定版本源码包含对 `SetValue(...)` 的直接调用（第 197 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_non_finite_check_and_unscale/op_kernel/foreach_non_finite_check_and_unscale_n_d.h#L197)
-- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)（`related`）：算子声明的固定版本源码包含对 `SetValue(...)` 的直接调用（第 291 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_a2_layered_aicpu.h#L291)
-- [AddLora A2 ACLNN 算子知识](../../../../../operators/aclnn/math/math/add_lora.md)（`related`）：算子声明的固定版本源码包含对 `SetValue(...)` 的直接调用（第 607 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_base.h#L607)
-- [ForeachNonFiniteCheckAndUnscale 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_non_finite_check_and_unscale_950.md)（`related`）：算子声明的固定版本源码包含对 `SetValue(...)` 的直接调用（第 142 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_non_finite_check_and_unscale/op_kernel/arch35/foreach_non_finite_check_and_unscale_regbase.h#L142)
-- [MoeDistributeCombineSetup 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_setup_950.md)（`related`）：算子声明的固定版本源码包含对 `SetValue(...)` 的直接调用（第 238 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_setup/op_kernel/arch35/moe_distribute_combine_setup_arch35.h#L238)
-- [CrossEntropyLoss 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss_950.md)（`related`）：算子声明的固定版本源码包含对 `SetValue(...)` 的直接调用（第 54 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_empty.h#L54)
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)（`related`）：算子声明的固定版本源码包含对 `SetValue(...)` 的直接调用（第 321 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_a2_layered.h#L321)
-- [AddLayerNormGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_grad.md)（`related`）：算子声明的固定版本源码包含对 `SetValue(...)` 的直接调用（第 49 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad_cut_n.h#L49)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [NMS 950 Direct Invoke 算子知识](../../../../../operators/direct/cv/image/nms_950.md)
+- [MaskedSelect A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/masked_select.md)
+- [ForeachNonFiniteCheckAndUnscale A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_non_finite_check_and_unscale.md)
+- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)
+- [AddLora A2 ACLNN 算子知识](../../../../../operators/aclnn/math/math/add_lora.md)
+- [ForeachNonFiniteCheckAndUnscale 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_non_finite_check_and_unscale_950.md)
+- [MoeDistributeCombineSetup 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_setup_950.md)
+- [CrossEntropyLoss 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss_950.md)
+- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)
+- [AddLayerNormGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_grad.md)

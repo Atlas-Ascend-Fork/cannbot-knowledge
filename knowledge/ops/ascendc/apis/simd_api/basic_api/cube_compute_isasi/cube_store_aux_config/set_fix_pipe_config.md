@@ -85,11 +85,3 @@ __aicore__ inline void SetFPC(const LocalTensor <int32_t>& reluPreTensor, const 
     AscendC::PipeBarrier<PIPE_FIX>();
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyL0CToGM](../cube_compute_store/data_copy_l0_c_to_gm.md)（`related`）：“数据类型：float→{int8_t,uint8_t,half,bfloat16_t,float}，int32_t→{int8_t,uint8_t,half,int32_t}。量化模式含 NoQuant、F322F16、F322BF16、DEQF16、VDEQF16、QF322B8_PRE、VQF322B8_PRE、REQ8、VREQ8，需配合 SetFixPipeConfig / SetFixpipePreQuantFlag / SetFixpipeNz2ndFlag 设置寄存器；Atlas 200I/500 A2 还支持 SetFixPipeClipRelu、SetFixPipeAddr。”把 tensor 量化模式的寄存器前置配置列为必需步骤；“DataCopy 数据搬运（L0C Buffer→GM、L0C Buffer→L1 Buffer）过程中进行随路 tensor 量化时，设置量化参数。”定义 SetFixPipeConfig 正是 L0C→GM tensor 量化参数的生产接口。该边直接支撑量化 DataCopy 的正确调用顺序。
-- [DataCopyL0CToL1](../cube_compute_store/data_copy_l0_c_to_l1.md)（`related`）：“数据类型：float→{int8_t,uint8_t,half,bfloat16_t,float}，int32_t→{int8_t,uint8_t,half,int32_t}。F322F16/F322BF16 为 Cast 模式，DEQF16/VDEQF16/REQ8/VREQ8 等为 scalar/tensor 量化，需配合 SetFixPipeConfig / SetFixpipePreQuantFlag 设置寄存器；Atlas 200I/500 A2 还支持 SetFixPipeClipRelu、SetFixPipeAddr。”要求 L0C→L1 的 tensor 量化先设置 FixPipe 寄存器；“DataCopy 数据搬运（L0C Buffer→GM、L0C Buffer→L1 Buffer）过程中进行随路 tensor 量化时，设置量化参数。”定义 SetFixPipeConfig 覆盖该通路的 tensor 参数。该边直接用于校验量化搬出的前置调用。
-<!-- cannbot:related:end -->

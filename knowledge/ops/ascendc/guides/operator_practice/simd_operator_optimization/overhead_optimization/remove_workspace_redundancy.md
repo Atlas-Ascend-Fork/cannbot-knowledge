@@ -85,10 +85,3 @@ __global__ __aicore__ void fast_gelu(__gm__ uint8_t* x, __gm__ uint8_t* y, __gm_
 }
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetSysWorkSpace](../../../../apis/simd_api/basic_api/resource_management/workspace/set_sys_work_space.md)（`explains`）：“在Ascend C算子工程中，编写核函数时传入的参数workspace已经直接赋值为用户Workspace，因此无需再通过SetSysWorkspace和GetUserWorkspace来设置和获取Workspace。”与“框架需要使用的workspace称之为系统workspace。Matmul Kernel侧接口等高阶API需要系统workspace，所以在使用该类API时，需要调用该接口，设置系统workspace的指针。”分别给出双端正文事实；优化指南区分用户 workspace 的冗余设置与高阶 API 需要的系统 workspace，SetSysWorkSpace 卡给出后一类调用条件，二者形成删除冗余而保留必要设置的决策边界。
-<!-- cannbot:related:end -->

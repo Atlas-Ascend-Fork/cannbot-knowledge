@@ -126,11 +126,3 @@ context_ascendc::ContextBuilder builder;
     .AddInputTd(5, ge::DT_BF16, ge::FORMAT_ND, ge::FORMAT_ND, bias2_shape, reinterpret_cast<void*>(bias_value.data()))  // 内部会将该指针指向的数据转为Bf16类型
 
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IrInstanceNum](ir_instance_num.md)（`related`）：“输入的index需要基于算子IR定义，按照IrInstanceNum声明顺序来排布”；“参数 instanceNum 为按输入 index 顺序声明的实例化个数向量”。IrInstanceNum 生产动态输入实例顺序，AddInputTd 必须按该顺序消费 index。
-- [NodeIoNum](node_io_num.md)（`related`）：“调用AddInputTd前需要调用NodeIoNum与IrInstanceNum接口”；“先通过 NodeIoNum 设置输入输出个数，再通过 IrInstanceNum 设置每种输入的实例化个数”。NodeIoNum 是 AddInputTd 索引布局的显式前置，决定输入 index 空间。
-<!-- cannbot:related:end -->

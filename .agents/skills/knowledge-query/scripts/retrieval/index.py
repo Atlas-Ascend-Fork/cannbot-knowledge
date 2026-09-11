@@ -19,13 +19,10 @@ from typing import Any, Iterable
 from .root import repository_state, sha256_file
 
 
-INDEX_VERSION = 2
+INDEX_VERSION = 3
 INDEX_SCHEMA = "cannbot-knowledge-index.v1"
 INDEX_RELATIVE_PATH = Path("artifacts/indexes/knowledge.sqlite3")
 TOKEN_RE = re.compile(r"[a-zA-Z0-9_+./:-]+|[\u4e00-\u9fff]{2,}")
-MANAGED_RELATED_RE = re.compile(
-    r"(?ms)^<!-- cannbot:related:start -->.*?^<!-- cannbot:related:end -->\s*"
-)
 GOVERNANCE_INPUTS = (
     "governance/schemas/frontmatter.schema.json",
     "governance/schemas/profiles.yaml",
@@ -97,8 +94,8 @@ def query_tokens(value: str) -> list[str]:
 
 
 def searchable_body(body: str) -> str:
-    """Exclude generated navigation blocks from knowledge search."""
-    return MANAGED_RELATED_RE.sub("", body).strip()
+    """Index the card body, including ordinary knowledge links."""
+    return body.strip()
 
 
 def load_contract(root: Path):

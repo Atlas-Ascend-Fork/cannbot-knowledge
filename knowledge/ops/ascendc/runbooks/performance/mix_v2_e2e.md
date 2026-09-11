@@ -47,9 +47,3 @@ aliases: ["sparse_flash_attention_quant_d_950"]
 - 平台：仅 Ascend950 实测；a2/a3 的多核任务调度策略可能不同，未验证，推断可迁移但需独立实测。
 - 算子/段：结论针对本 SFA 算子 V2 段（division+cast，计算量小、依赖重）；若 V2 段计算量大或与前置段存在大量中间张量复用，包入 Mix合图可能反而有益，结论不适用。
 - 调度机制：Mix合图导致任务数减半的确切机制（依赖驱动的任务合并还是 scope 内串行化）未追到实现层，"任务数下降即不采纳"为实测经验判据。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SparseFlashAttention 950 Direct Invoke 算子知识](../../operators/direct/transformer/attention/sparse_flash_attention_950.md)（`related`）：“｜ 执行类型 ｜ 多 Kernel 图：0至3个 `AIV_VECTOR` pack/fill/index 节点 → 1个 `MIX_CV` attention 节点（AIC_CUBE QK/PV，两枚 AIV 做 gather/online-softmax/update）→ 可选 `AIV_VECTOR` unpack。 ｜”与“**边界**：利用率提升看似收益，实为任务数下降的副作用——当合图导致任务数下降时，利用率提升来自分母（时间）变大而非有用工作量增加。结论绑定本 SFA 算子 V2 段（division+cast，计算量小、依赖重）的结构；若 V2 段计算量大或与前置段存在大量中间张量复用，包入 Mix合图可能反而有益，结论不适用。”。Direct 实现包含 MIX_CV attention，Runbook 实测同类 SFA 将 V2 并入 Mix scope 会劣化 E2E。
-<!-- cannbot:related:end -->

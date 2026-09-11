@@ -55,12 +55,3 @@ platforms:
 ## Evidence
 - `diff 事实`（@b7a110bd6812）：`load_model` 的 `next_n>0` 门控与 `ValueError`、`share_weights_from_main_model` 自动填层、`verify_spec_tokens` 的 argmax 前缀校验、`model_dict` 三元组均在合入 diff；三步接入约定取自仓内 `mtp_model_guide.md`（`doc 披露`），与代码自洽。
 - 溯源下探：[cann-recipes-infer-pr-326-refactor-mtp-refactor-and-r1-adaptation-framework](https://gitcode.com/cann/cann-recipes-infer/merge_requests/326)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MTP Speculative Decoding](../../../concepts/techniques/mtp_speculative_decoding.md)（`related`）：以 `model_config.next_n>0` 使能、`=0` 关闭回退非推测解码。；YAML `next_n: 1` 使能；`decode_r1_rank_128_128ep_a8w8c8_mtp*.yaml` 三份配置都启用。。接入指南把概念页的 next_n 使能机制落实为新模型接入的门控与回退契约。
-- [MTP 草稿模型的缓存/状态正确性（按注意力结构）：单层 draft 需 next_n 层 KV、SSM 递归状态按接收数推进](../../../optimizations/experience/rules/mtp_draft_cache_state_correctness.md)（`related`）：draft 的 KV / 递归状态缓存分配另有结构相关的正确性坑（单层 draft 需 `next_n` 层 KV、SSM 递归状态按接收数推进）；draft 的缓存正确性随注意力结构分两类处理，接入前先对号入座。。接入指南明确把缓存分配和推进留给该规则，规则则补齐不同注意力结构下 draft 状态正确性的后续步骤。
-- [MoE + 投机解码：draft dummy_run 误带 profile-run 语义触发强制随机专家路由，静默拉低 MTP accept rate](../../../runbooks/precision/mtp_draft_dummy_run_in_profile_run_random_experts.md)（`related`）：若接受率异常低，先查 `prev_hidden_states` 与权重共享是否接对；decode 阶段观测到 **MTP accept rate（草稿 token 被主模型接受的比例）明显偏低**。指南给出低接受率的一般接入检查，运行手册补充 MoE draft 被 profile-run 随机专家路由污染的特定诊断分支。
-- [权重加载时全局索引须转本地：分片 vocab embedding 的 padding_idx 本地化 + MTP 权重按 num_hidden_layers 动态剥层](../../../runbooks/runtime/shard_local_index_vocab_padding_mtp_layer.md)（`related`）：“给新模型接入 MTP 推测解码的完整流程见 ［mtp-speculative-decode-model-onboarding］(../../guides/experience/interventions/mtp_speculative_decode_model_onboarding.md)。”把动态 MTP 层权重剥前缀纳入接入流程；“draft 类把 `lm_head` / `model.embed_tokens` 置 `None`，框架在 `load_model` 阶段用主模型对应层填入（`share_weights_from_main_model`）；”提供同一加载阶段的共享权重契约。
-<!-- cannbot:related:end -->

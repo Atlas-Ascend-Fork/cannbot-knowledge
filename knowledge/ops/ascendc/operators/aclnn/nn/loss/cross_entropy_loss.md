@@ -489,9 +489,3 @@ FP32 直接让 input queue 同时承担计算与输出源，省去 FP16/BF16 所
 | 同步 | MTE/V events、PIPE_V、SyncAll | FP32 同区复用必须保留 MTE3_MTE2 | `CopyIn/CopyOut/GetMeanLoss` |
 | 精度与尾块 | FP32中间、16-bit CAST_RINT、DataCopyPad | 有效 len、8192/4096 reduce split | `GetReduce*/cross_entropy_loss_fp32.h` |
 | 失败边界 | Host gate先于 launch | target INT64、未知 key无输出、zloss不写 | `CheckInputDtype/cross_entropy_loss` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CrossEntropyLoss 950 ACLNN 算子知识](cross_entropy_loss_950.md)（`same_topic`）：对每行 logits 做稳定 `log_softmax`，按 class-index target、可选 FP32 weight、`ignoreIndex` 和 label smoothing 产生 loss；同时输出完整 `logProbOut`。公开 zloss 参数/输出当前不生效。；稳定 log-softmax + class-index cross entropy；支持 weight、ignoreIndex、label smoothing 和 none/mean/sum，同时写完整 logProb；公开 zloss 功能当前不支持。。两卡闭合同一 ACLNN CrossEntropyLoss 的稳定 log-softmax、class-index、weight、ignoreIndex、label smoothing 与 logProb 语义，分别给出 A2/A3 和 950 的 Host/Kernel 路线。
-<!-- cannbot:related:end -->

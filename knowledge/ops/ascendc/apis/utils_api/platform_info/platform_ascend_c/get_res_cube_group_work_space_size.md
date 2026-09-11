@@ -66,10 +66,3 @@ static ge::graphStatus TilingFunc(gert::TilingContext* context)
     ...
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CreateCubeResGroup](../../../simd_api/basic_api/cube_group_mgmt_isasi/cube_res_group_handle/create_cube_res_group.md)（`related`）：快速创建 CubeResGroupHandle 对象，内部完成消息队列空间和同步事件分配。；基于CreateCubeResGroup进行AI Core分组计算需要传入workspace用于消息通信，在Host侧提供本接口用于获取CreateCubeResGroup所需要的workspace空间大小。；创建接口分配队列与同步资源，而 Host 查询接口给出该分组通信所需 workspace 的字节容量，调用方必须先按查询值分配再创建资源组。
-<!-- cannbot:related:end -->

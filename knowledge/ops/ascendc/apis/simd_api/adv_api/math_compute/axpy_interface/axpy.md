@@ -96,11 +96,3 @@ AscendC::Axpy(dstLocal, srcLocal, static_cast<half>(3.0), sharedTmpBuffer, 512);
 进行Axpy计算后，输出数据(dstLocal):
 [3. 6. 9. 12. 15. 18. ... 1536.]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAxpyMaxMinTmpSize](get_axpy_max_min_tmp_size.md)（`related`）：源操作数(srcTensor)中每个元素与标量求积后和目的操作数(dstTensor)中的对应元素相加，计算公式如下： 该接口功能同基础API Axpy，区别在于此接口指令是通过Muls和Add组合计算，从而提供更优的精度。；kernel侧Axpy接口的计算需要开发者申请临时空间，本接口用于在host侧获取申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；Axpy 定义 kernel 运算，Host helper 给出该运算的合法临时空间区间和 Tiling 传递方式，构成资源规划任务链。
-- [GetAxpyTmpBufferFactorSize](get_axpy_tmp_buffer_factor_size.md)（`related`）：源操作数(srcTensor)中每个元素与标量求积后和目的操作数(dstTensor)中的对应元素相加，计算公式如下： 该接口功能同基础API Axpy，区别在于此接口指令是通过Muls和Add组合计算，从而提供更优的精度。；该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。；Axpy 的 Tiling 需要确定 calCount，factor helper 由固定 buffer 反推单次元素数，连接 Host 分块与 Device 调用规模。
-<!-- cannbot:related:end -->

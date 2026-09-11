@@ -172,16 +172,4 @@ $dst_i = min(src0_i, src1_i)$
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [MinN 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/min_n_950.md)（`related`）：算子正文包含对 `Min(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MinN 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/min_n_950.md)

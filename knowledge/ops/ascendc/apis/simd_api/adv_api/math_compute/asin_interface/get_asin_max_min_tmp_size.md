@@ -64,11 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetAsinMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Asin](asin.md)（`related`）：临时空间大小BufferSize的获取方式请参考GetAsinMaxMinTmpSize。；本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。。Asin 明确把临时空间取得步骤交给右侧 Host 接口，右侧产生的范围又直接成为 Asin Kernel 的 Tiling 输入；两者是计算接口与资源查询 helper 的互补任务链，并非同一操作。
-- [GetAsinTmpBufferFactorSize](get_asin_tmp_buffer_factor_size.md)（`related`）：通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量；开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。最大/最小接口先确定合法临时空间范围，factor 接口再把已选空间换算成单次元素容量；两端组成 Host Tiling 选 buffer、Kernel 按容量分块的闭环。
-<!-- cannbot:related:end -->

@@ -66,12 +66,3 @@ optiling::TCubeTiling tilingData;
 SysTilingTempBufSize bufSize;
 MatmulGetTmpBufSize(tilingData, bufSize);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTiling](../matmul_tiling/get_tiling.md)（`related`）：“- tiling（输出）：Tiling结构体存储最终的tiling结果。TCubeTiling结构介绍请参考表1。/optiling::TCubeTiling：带有optiling命名空间的TCubeTiling结构体，，该结构体为Host侧定义的Matmul TilingData。”；“本接口用于在调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”。MatmulGetTmpBufSize 明确消费 GetTiling 的结果以计算三级 Buffer 资源预算。
-- [SetLocalWorkspace](../matmul_kernel/set_local_workspace.md)（`related`）：“具体需要申请的UB（VECCALC）临时空间大小由tiling接口MatmulGetTmpBufSize给出”明确 SetLocalWorkspace 的容量来源；“本接口用于在调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”定义该容量查询的调用阶段和输出范围。
-- [MatmulGetTmpBufSizeV2](matmul_get_tmp_buf_size_v2.md)（`same_topic`）：“本接口用于在调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”与“TCubeTiling为Kernel侧定义的Matmul TilingData，与入参为带AscendC::tiling命名空间的TCubeTiling结构体的GetTiling接口配合使用。”描述同一 Matmul 临时空间查询契约，V2 明确了 kernel 侧结构和配套重载。
-<!-- cannbot:related:end -->

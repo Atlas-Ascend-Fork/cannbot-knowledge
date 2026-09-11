@@ -88,9 +88,3 @@ if constexpr (W_TYPE == WQGMM_FRACTAL_NZ &&
 
 - 只跑 `build.sh --ophost`、只替换 `libophost_transformer.so` 就期望 jitCompile 生效——flag 实际在 op info JSON，so 替换不更新 JSON。
 - 直接删 `/usr/local/Ascend/cann-9.1.0/opp/built-in/.../grouped_matmul_apt/` 下预编译 binary 期望 CANN 自动 JIT 回退——ascend950 未设 flag 时不会回退，反而直接 561000。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupedMatmul 950 ACLNN 算子知识](../../operators/aclnn/transformer/gmm/grouped_matmul_950.md)（`related`）：- weight-quant main/tail block、workspace extent 与 VecAntiQuantConfig 是一体化协议，不得独立修改。；即 runtime 按 tiling key `91308033` 在预编译 kernel binary 里查 kernel function entry，查不到（`BinaryGetFunctionByEntry failed, funcEntry=91308033` → `aclrtBinaryGetFunctionByEntry` 返回 107000 → op_executor 报 361001 → ACLNN 层最终抛 561000 "GMM launch aicore"）。。算子卡规定 weight-quant key 与资源协议必须闭合，runbook 展示新增 A8W4 key 未进入 binary 的具体 launch 失败。
-<!-- cannbot:related:end -->

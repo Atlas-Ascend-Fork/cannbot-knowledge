@@ -135,9 +135,3 @@ __aicore__ inline void masked_scale_reg_compute_float(
     asc_vf_call<MaskedScaleComputeFloatVf>(dstAddr, xAddr, maskAddr, scale, elementCount, chunkCount);
 }
 ```
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetPhyAddr](../../apis/simd_api/basic_api/data_structures/local_tensor/get_phy_addr.md)（`exemplifies`）：边界与回退：void* 桥接路线 banned，整体回退；改让 wrapper 直接以 `const AscendC::LocalTensor<T>&` 形参接收队列出队的 tensor（dst、x 共用 T；mask 用独立固定类型 `const AscendC::LocalTensor<float>&`），在 wrapper 内部 `GetPhyAddr()` 取 `__ubuf__` 指针——地址空间转换由 LocalTensor 封装负责，不暴露 `void*` 中转。该路线编译推进到下一处错误，证明 void* 根因被消除。；返回LocalTensor的地址或指定偏移量后的地址。。Runbook的修法直接依赖 LocalTensor::GetPhyAddr 保留 UB 地址空间类型，API 卡给出该地址获取合同。
-<!-- cannbot:related:end -->

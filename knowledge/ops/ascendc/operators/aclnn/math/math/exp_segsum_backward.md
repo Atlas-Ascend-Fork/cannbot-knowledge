@@ -626,9 +626,3 @@ if (num2 == 0) {
 | 同步 | key 0 `scheduleMode=1 + ClearGM + SyncAll`；MTE/V events；Queue lifecycle | 不得去掉 GM carry 的 event 或在 Mul消费前覆盖复用 TBuf | `FillTilingData`；`Process`；`getLastRow/setLastRow` |
 | 精度与尾块 | 低精度先升 FP32；严格下三角 count；R-001 `CAST_ROUND`、R-002 `CAST_RINT` | `num1` 含对角线、`num2` 排除对角线；不能合并两个 round mode | `ComputeMul/ComputeSum/ComputeMulBatches/ComputeBatches` |
 | 失败边界 | 空 tensor fast path、unknown key返回、workspace空返回 | 保留 A2/A3 公共约束；混合 dtype、>50 cores、workspace越界没有可依赖 fallback | ACLNN first stage；`exp_segsum_grad`；`GetNeedCoreNum` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ExpSegsum A2/A3 ACLNN 算子知识](exp_segsum.md)（`related`）：输出每个前缀 batch 的 `N×N` 下三角半可分矩阵；`gradSelf` ｜ 与 `gradOutput` 同 shape、`ND` ｜ 公开约束要求与 `gradOutput` 同 dtype ｜ 正向 `aclnnExpSegsum` 的输出；支持非连续 tensor并先连续化。实际 `CheckParams` 只检查它属于支持集合，没有显式比较两输入 dtype，见限制。。正向页定义 ExpSegsum 的矩阵输出，反向页明确把该正向输出作为 gradSelf 消费，形成训练中的前向/反向接口链。
-<!-- cannbot:related:end -->

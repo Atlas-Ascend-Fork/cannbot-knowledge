@@ -85,10 +85,3 @@ bool __hequ(bfloat16_t x, bfloat16_t y)
         dst[idx] = __hequ(x[idx], y[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__heq](_heq.md)（`same_topic`）：比较两个bfloat16类型数据是否相等，相等时返回true。；比较两个bfloat16类型数据是否相等，相等时返回true。若任一输入为nan，返回true。。两者都是 bfloat16 标量相等比较，差别在有序版本遇 NaN 为 false、无序版本遇 NaN 为 true，是同一决策点的语义变体。
-<!-- cannbot:related:end -->

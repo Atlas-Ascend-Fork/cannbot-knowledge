@@ -169,10 +169,3 @@ __simd_vf__ inline void SimdVfDumpReg()
     asc_dump<float>(src_reg, desc, dump_size);
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [关闭ASCENDC_DUMP说明](../../simd_api/basic_api/debug_interface/disable_ascendc_dump.md)（`same_topic`）：关闭方式：在编译选项中不定义 ASCENDC_DUMP 宏或将其设为 0。；生产环境可以通过设置ASCENDC_DUMP=0的方式关闭。；两卡描述同一 asc_dump 调试能力的生产关闭开关，一端是开关说明，一端是被控制接口的运行边界。
-<!-- cannbot:related:end -->

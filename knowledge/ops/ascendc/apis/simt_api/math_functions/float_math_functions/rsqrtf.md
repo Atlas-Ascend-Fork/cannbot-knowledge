@@ -104,10 +104,3 @@ inline float rsqrtf(float x)
 x：0.25, 1.25, 2.25, 3.25
 result: 2 0.8944272 0.6666667 0.5547002
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Sqrtf](sqrtf.md)（`related`）：本接口内部实现使用到了sqrtf，由于sqrtf不支持Subnormal场景，当输入x为Subnormal数据时，会导致本接口最终结果为+inf；处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。Rsqrtf 正文明示内部调用 Sqrtf，候选给出 Sqrtf 对 Subnormal 的 flush-to-zero 行为，直接解释 Rsqrtf 在同域返回正无穷的机制。
-<!-- cannbot:related:end -->

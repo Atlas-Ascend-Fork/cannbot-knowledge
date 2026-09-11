@@ -606,10 +606,5 @@ pipePtr_->InitBuffer(queOut0_, DOUBLE_BUFFER, BUFFER_SIZE_0);
 | 精度与尾块 | T16 unpack→FP32 compute→RINT pack；FP32 norm；mask tail | 不能提前窄化，`UpdateMask<float>` 与 64-lane 地址步长必须一致 | 官方 `SigmoidF16/Bf16/F32::Compute1`；交付 `ComputeFloat/ComputeB16` |
 | 失败边界 | dtype 和非空/线性 dense 条件应在 Direct Host 收口 | 不得把未校验的空域、stride 或平台查询失败交给当前 tiling/body | `sigmoid_meta`、`calc_sigmoid_tiling_params` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCoreMemSize](../../../../apis/utils_api/platform_info/platform_ascend_c/get_core_mem_size.md)（`related`）：“令 `N=numel`、`s=elementBytes`、`C=max(GetCoreNumAiv(),1)`、`U=GetCoreMemSize(UB)`：”显示 Sigmoid 用该接口取得 UB 容量；“获取硬件平台存储空间的内存大小，例如L1、L0_A、L0_B、L2等，支持的存储空间类型定义如下：”给出平台内存查询合同，直接决定四段 UB tile 上界。
-- [PlatformAscendCManager](../../../../apis/utils_api/platform_info/platform_ascend_c_manager.md)（`related`）：“`calc_sigmoid_tiling_params(totalLength, elementBytes)` 查询 AIV 核数和 UB 字节数；AIV 核数非正时回退为 1。”给出 Direct Host 的平台信息需求；“基于Kernel Launch算子工程，通过Kernel直调（Kernel Launch）方式调用算子的场景下，可能需要获取硬件平台相关信息，比如获取硬件平台的核数。PlatformAscendCManager类提供获取平台信息的功能：通过该类的GetInstance方法可以获取一个PlatformAscendC类的指针，再通过该指针获取硬件平台相关信息，支持获取的信息可参考PlatformAscendC。”给出直调场景的获取入口。
-- [Sigmoid A2 ACLNN 算子知识](../../../aclnn/nn/activation/sigmoid.md)（`same_topic`）：“｜ 实际入口 ｜ Python 动态 wrapper `cann_bench.sigmoid`，PyTorch custom op `cann_bench::sigmoid`，PrivateUse1 实现 `sigmoid_npu`，C ABI launcher `launch_sigmoid_kernel_half`、`launch_sigmoid_kernel_bfloat16`、`launch_sigmoid_kernel_float`；入口类型为 `Direct Invoke`。 ｜”定义 950 Direct route；“｜ 实际入口 ｜ `aclnnSigmoidGetWorkspaceSize` + `aclnnSigmoid`，公开 ACLNN 两段式接口；采用活动 experimental 候选 `sigmoid_v2`。 ｜”定义 A2 ACLNN route，两卡围绕同一逐元素 Sigmoid 提供可直接对照的空域、workspace、dtype 与 Kernel 实现。
-<!-- cannbot:related:end -->
+- [GetCoreMemSize](../../../../apis/utils_api/platform_info/platform_ascend_c/get_core_mem_size.md)
+- [PlatformAscendCManager](../../../../apis/utils_api/platform_info/platform_ascend_c_manager.md)

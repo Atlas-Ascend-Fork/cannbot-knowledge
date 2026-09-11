@@ -527,9 +527,3 @@ Host 不无条件启动平台全部 AIV block，而以跨列表总元素数每 1
 | 同步 | 每元素独立，依靠单线程顺序 | stride 必须为完整 grid；若引入共享状态需新增同步 | `OpForeachLog2Simt` |
 | 精度与尾块 | FP16/BF16 以 FP32 `log2f`；`idx<count` | storage cast顺序、空 Tensor `continue`、round mode不可臆造 | `OpForeachLog2Simt<T,ComputeT>` |
 | 失败边界 | Host拒绝 tensorNum>256/无平台资源/unsupported dtype | 0 项列表、UB<128KiB、累加溢出没有 fallback | `GetPlatformInfo`; `ForeachLog2TilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLog2 A2/A3 ACLNN 算子知识](foreach_log2.md)（`same_topic`）：A2/A3 卡的“｜ Kernel 路线 ｜ R-001 FP16 原地 Vector；R-002 FP32 原地 Vector；R-003 BF16→FP32→BF16 Vector ｜”与 950 卡的“｜ Kernel 路线 ｜ R-001 FP32 SIMT；R-002 FP16→FP32 SIMT；R-003 BF16→FP32 SIMT ｜”在同一 aclnnForeachLog2 合同下给出跨平台互斥实现，迁移时必须对照 Vector Queue 与 SIMT grid-stride 路线。
-<!-- cannbot:related:end -->

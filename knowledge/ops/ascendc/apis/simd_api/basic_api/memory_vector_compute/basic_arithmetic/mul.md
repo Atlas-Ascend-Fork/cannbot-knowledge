@@ -185,33 +185,13 @@ $dst_i = src0_i \times src1_i$
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [BilinearInterpolation](bilinear_interpolation_isasi.md)（`related`）：BilinearInterpolation 明确“通过 Mul 执行逐元素乘法”；Mul 页定义“计算公式 dst_i = src0_i * src1_i。”，该原语消费 Gatherb 数据与 Brcb 权重形成乘积。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 9 / 9 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)（`related`）：算子声明的固定版本源码包含对 `Mul(...)` 的直接调用（第 73 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h#L73)
-- [CrossEntropyLoss A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss.md)（`related`）：算子声明的固定版本源码包含对 `Mul(...)` 的直接调用（第 103 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/cross_entropy_loss.h#L103)
-- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)（`related`）：算子声明的固定版本源码包含对 `Mul(...)` 的直接调用（第 801 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention/op_kernel/attn_infra/epilogue/block/bsa_block_epilogue_online_softmax.hpp#L801)
-- [MseLoss A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/mse_loss.md)（`related`）：算子声明的固定版本源码包含对 `Mul(...)` 的直接调用（第 58 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss_v2/op_kernel/mse_loss_v2_mean.h#L58)
-- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)（`related`）：算子声明的固定版本源码包含对 `Mul(...)` 的直接调用（第 876 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_kernel/grouped_matmul_autotiling_a8w4.h#L876)
-- [WeightQuantBatchMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/weight_quant_batch_matmul.md)（`related`）：算子声明的固定版本源码包含对 `Mul(...)` 的直接调用（第 369 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/weight_quant_batch_matmul_v2/op_kernel/weight_quant_batch_matmul_v2_custom_mix_splitk.h#L369)
-- [AddRmsNormDynamicQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_dynamic_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Mul(...)` 的直接调用（第 213 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_dynamic_quant/op_kernel/arch35/add_rms_norm_dynamic_quant_regbase_single_row.h#L213)
-- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)（`related`）：算子声明的固定版本源码包含对 `Mul(...)` 的直接调用（第 471 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_quant/op_kernel/apply_adam_w_quant_fp16.h#L471)
-- [AddRmsNormDynamicQuant 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/norm/add_rms_norm_dynamic_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Mul(...)` 的直接调用（第 213 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_dynamic_quant/op_kernel/arch35/add_rms_norm_dynamic_quant_regbase_single_row.h#L213)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [GeGlu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/ge_glu_950.md)（`related`）：算子正文包含对 `Mul(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)
+- [CrossEntropyLoss A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss.md)
+- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)
+- [MseLoss A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/mse_loss.md)
+- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)
+- [WeightQuantBatchMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/weight_quant_batch_matmul.md)
+- [AddRmsNormDynamicQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_dynamic_quant_950.md)
+- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)
+- [AddRmsNormDynamicQuant 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/norm/add_rms_norm_dynamic_quant_950.md)
+- [GeGlu 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/ge_glu_950.md)

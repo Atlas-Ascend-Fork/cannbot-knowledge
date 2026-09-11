@@ -155,11 +155,3 @@ private:
 
 > [!NOTE]说明
 > CopyIn、DataLoad、Compute和CopyOut四个阶段的操作分别在不同的硬件流水线上执行。为保证数据依赖正确——即每个阶段读取的数据必须由前一阶段写入完毕，需要在各阶段之间设置同步屏障。这里使用全局流水同步[PipeBarrier](../../../../apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi.md)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad（GMToL1非对齐数据搬运）](../../../../apis/simd_api/basic_api/cube_compute_isasi/cube_compute_load/data_copy_pad_gm_to_l1.md)（`explains`）：分离模式 Matmul 规格要求“DataCopy（GMToL1随路转换-ND2NZ搬运）：Global Memory到L1 Buffer数据搬运 + ND转NZ格式转换接口”；DataCopyPad 页定义“将Global Memory中的数据搬运到L1 Buffer，支持在搬运过程中对数据进行Padding（补齐）。”，后者是非对齐输入进入前者 GM→L1 阶段的具体实现选择。
-- [LoadData](../../../../apis/simd_api/basic_api/cube_compute_isasi/cube_compute_load/load_data_2_d.md)（`explains`）：分离模式 Matmul 规格列出“LoadData（2D矩阵搬运）：L1 Buffer到L0 Buffer数据搬运 + NZ转ZZ/ZN格式转换接口”；LoadData 页定义“将数据从L1 Buffer搬运到L0A或L0B Buffer的2D模式搬运接口。”，两端就是矩阵输入从 L1 到 L0A/L0B 的直接调用链。
-<!-- cannbot:related:end -->

@@ -84,28 +84,13 @@ __aicore__ inline void CopyIn(const AscendC::GlobalTensor<T>& input)
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetPhyAddr const __gm__ 返回不可去 const](../../../../../runbooks/compilation/getphyaddr_const_gm_const.md)（`exemplifies`）：`AscendC::GlobalTensor<T>::GetPhyAddr()` 的返回类型是 `const __gm__ PrimType*`。C++ 规则下 `reinterpret_cast` 不能 casts away qualifiers（去 const），bisheng 编译器据此拒绝把 `const __gm__ int *` 转成 `__gm__ uint8_t *`。；GlobalTensor::GetPhyAddr 接口，用于获取全局数据的物理地址，支持全平台。；Runbook 用真实编译错误复现 GetPhyAddr 返回地址的 const 限定，并给出从 GM_ADDR 捕获可写裸指针的修复，直接示范该 API 合同的排障。
-- [aicore 禁止 const char* cast 到 __gm__ T*](../../../../../runbooks/compilation/aicore_const_char_cast_gm_t.md)（`exemplifies`）：在 aicore kernel 中访问 GM 时，始终从 `__gm__` 限定的来源（`GM_ADDR` 入参、`GlobalTensor<T>::GetPhyAddr()`）派生指针，不要用 `reinterpret_cast` 把非 `__gm__` 指针升级为 `__gm__ T*`。；GlobalTensor::GetPhyAddr 接口，用于获取全局数据的物理地址，支持全平台。。Runbook要求从 `GlobalTensor<T>::GetPhyAddr()` 派生合法 GM 指针，API 卡定义获取该全局数据物理地址的接口。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 83 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Im2colBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/im2col_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPhyAddr(...)` 的直接调用（第 129 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/col2im/op_kernel/arch35/col2im_simt.h#L129)
-- [CircularPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPhyAddr(...)` 的直接调用（第 426 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_simt.h#L426)
-- [DeformableConv2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/deformable_conv2d_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPhyAddr(...)` 的直接调用（第 190 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_offsets/op_kernel/arch35/deformable_offsets.h#L190)
-- [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPhyAddr(...)` 的直接调用（第 886 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_noquant_block_cube.h#L886)
-- [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPhyAddr(...)` 的直接调用（第 156 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h#L156)
-- [ConfusionTranspose 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/confusion_transpose_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPhyAddr(...)` 的直接调用（第 269 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_small_shape.h#L269)
-- [QuantConvolution 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/quant_convolution_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPhyAddr(...)` 的直接调用（第 240 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_v2/op_kernel/arch35/conv3d_v2_instr_dequant_impl.h#L240)
-- [FlashAttentionVarLenScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_var_len_score_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPhyAddr(...)` 的直接调用（第 866 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_block_cube.h#L866)
-- [UpsampleBicubic2d 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bicubic_2d_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPhyAddr(...)` 的直接调用（第 159 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bicubic_v2/op_kernel/arch35/resize_bicubic_v2_simt_nchw.h#L159)
-- [DiagFlat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/diag_flat.md)（`related`）：算子声明的固定版本源码包含对 `GetPhyAddr(...)` 的直接调用（第 335 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/diag_flat/op_kernel/diag_flat_nd_to_2d.h#L335)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Im2colBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/im2col_backward_950.md)
+- [CircularPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d_backward_950.md)
+- [DeformableConv2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/deformable_conv2d_950.md)
+- [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)
+- [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
+- [ConfusionTranspose 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/confusion_transpose_950.md)
+- [QuantConvolution 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/quant_convolution_950.md)
+- [FlashAttentionVarLenScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_var_len_score_950.md)
+- [UpsampleBicubic2d 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bicubic_2d_950.md)
+- [DiagFlat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/diag_flat.md)

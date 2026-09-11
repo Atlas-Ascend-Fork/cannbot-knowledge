@@ -85,11 +85,3 @@ AscendC::LogicalXor(dst, src0, src1, count);
 输出数据（dst）:
 [False, False, False, False, True, ... False]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogicalXorMaxMinTmpSize](get_logical_xor_max_min_tmp_size.md)（`related`）：计算接口以“count为参与计算元素个数。”消费分块长度；Host 查询接口说明“host侧Tiling接口，用于获取LogicalXor接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”，先约束 UB 预算再确定 Kernel 分块。
-- [GetLogicalXorTmpBufferFactorSize](get_logical_xor_tmp_buffer_factor_size.md)（`related`）：Factor 查询卡指出“获取LogicalXor接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”；计算卡的调用参数规定“count为参与计算元素个数。”，前者正是为后者的 count 分块提供容量上限。
-<!-- cannbot:related:end -->

@@ -793,9 +793,5 @@ if (unlikely(xIndex == preIdx0 || xIndex == preIdx1 || xIndex == preIdx2)) {
 | 精度与尾块 | payload byte exact、索引整数、越界零、mask/tail | dtype improve只保持总字节；NIS语义不变 | `XDtypeImprove`、各body |
 | 失败边界 | Host校验/Tiling失败阻断；unknown key无输出 | 不得把zero/broadcast dormant key当公开Route | `CheckParams/DoOpTiling/gather_nd` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataSyncBarrier](../../../../apis/simd_api/basic_api/sync_control/intra_core_sync/data_sync_barrier_isasi.md)（`related`）：shape helper ｜ `DataSyncBarrier<UB>` ｜ scalar SetValue ｜ SIMD ｜ helpTBuf ｜ T3 int32/64 exact阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束，用于解决Scalar的内存依赖。GatherNd 的 shape helper 表明确实由 Scalar 写 `helpTBuf`、随后交给 SIMD 消费，接口卡定义屏障等待先前内存访问完成；在该位置插入 UB 屏障正好闭合生产者到消费者的数据依赖。
-- [SetSysWorkSpace](../../../../apis/simd_api/basic_api/resource_management/workspace/set_sys_work_space.md)（`related`）：Tiling 读取平台 AIV 核数和 UB，先保留 32 KiB DCache；所有 Route 的 `GetWorkspaceSize` 都令 GatherNd 节点 workspace 为 `16,777,216` 字节。entry 要求框架 workspace、`GetUserWorkspace` 均非空，调用 `SetSysWorkspace`，但五个可达 body 没有对 user workspace 的 load/store。Matmul Kernel侧接口等高阶API需要系统workspace，所以在使用该类API时，需要调用该接口，设置系统workspace的指针。算子卡给出 entry 的实际系统 workspace 设置和 16 MiB 申报，接口卡定义系统指针的职责；这能区分框架系统区设置与五个 body 未消费的用户区，避免误删 entry 调用或误判 user workspace 数据流。
-<!-- cannbot:related:end -->
+- [DataSyncBarrier](../../../../apis/simd_api/basic_api/sync_control/intra_core_sync/data_sync_barrier_isasi.md)
+- [SetSysWorkSpace](../../../../apis/simd_api/basic_api/resource_management/workspace/set_sys_work_space.md)

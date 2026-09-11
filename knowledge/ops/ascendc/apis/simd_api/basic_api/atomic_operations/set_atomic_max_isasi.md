@@ -108,23 +108,9 @@ Src1: [2,2,2,2,2,...,2] // 256个2
 完整样例请参考[DataMovementWithAtomicOperations样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/06_atomic/data_movement_with_atomic_operations)。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [DisableDmaAtomic](disable_dma_atomic.md)（`related`）：设置DMA搬运时的随路原子操作为取最大值。调用后，后续从UB/L0C/L1到GM的DataCopy搬运将对目标GM地址执行原子取最大值（旧值和新值中的最大值）。；函数原型：__aicore__ inline void DisableDmaAtomic()。参数：无。约束：与SetAtomicAdd/SetAtomicMax等配合使用，成对调用。头文件：basic_api/kernel_operator_atomic_intf.h。；焦点开启后续 DMA AtomicMax 状态，目标接口是合同要求的配对关闭动作。
-- [DynamicQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/quant/dynamic_quant_950.md)（`related`）：“｜ partial extrema ｜ `SetAtomicMax/Min<float>` ｜ M-block cores ｜ GM workspace ｜ FP32 extrema ｜ conflicts on same b,n ｜”记录 DynamicQuant split-M 的并发归约动作；“设置DMA搬运时的随路原子操作为取最大值。调用后，后续从UB/L0C/L1到GM的DataCopy搬运将对目标GM地址执行原子取最大值（旧值和新值中的最大值）。”给出 SetAtomicMax 的搬运合同，可直接核验 phase-1 extrema 合并。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)（`related`）：算子声明的固定版本源码包含对 `SetAtomicMax(...)` 的直接调用（第 1557 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_v2.h#L1557)
-- [MoeDistributeCombineAddRmsNorm A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm.md)（`related`）：算子声明的固定版本源码包含对 `SetAtomicMax(...)` 的直接调用（第 1557 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_v2.h#L1557)
-- [MoeDistributeCombineAddRmsNorm 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `SetAtomicMax(...)` 的直接调用（第 1557 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_v2.h#L1557)
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)（`related`）：算子声明的固定版本源码包含对 `SetAtomicMax(...)` 的直接调用（第 1180 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_v2.h#L1180)
-- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)（`related`）：算子声明的固定版本源码包含对 `SetAtomicMax(...)` 的直接调用（第 1180 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_v2.h#L1180)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [DynamicQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/quant/dynamic_quant_950.md)
+- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)
+- [MoeDistributeCombineAddRmsNorm A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm.md)
+- [MoeDistributeCombineAddRmsNorm 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_add_rms_norm_950.md)
+- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)
+- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)

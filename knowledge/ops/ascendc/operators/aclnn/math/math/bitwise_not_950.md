@@ -630,9 +630,3 @@ struct InvertDag {
 | 同步 | MTE2→V→MTE3 的 buffer mutex，tile parity ping/pong | 消费/搬出完成前不得覆盖同一 buf id | `GetTensor`; `ReleaseTensor`; `ElementwiseSch::Run` |
 | 精度与尾块 | BOOL `int8->half->abs(x-1)->int8`；整数原 dtype Not；真实 tile count | BOOL 合法域 0/1；Cast mode 0；末核/末 tile 字段选择不能省略 | `LogicalNotDag`; `InvertDag`; `ElementwiseSch::Process` |
 | 失败边界 | 空 Tensor Host 成功；未知 dtype/key、空 R-001 workspace 按原路径终止 | 不得把无输出返回伪装成 fallback；A2/A3 AICPU body缺失不能外推 950 body | `CheckParams`; `logical_not`; `invert`; `Invert::IsAiCoreSupport` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LogicalNot 950 ACLNN 算子知识](logical_not_950.md)（`related`）：BitwiseNot 的 Host selector 明确“BOOL 调 `l0op::LogicalNot(selfContiguous)`；其余已通过白名单的 dtype 调 `l0op::Invert(selfContiguous)`。”；LogicalNot 卡说明“输入已为 BOOL 时返回原 Tensor，不加 launcher；950 其它类型按 R-002/R-003 加 launcher。”，可据此核查 BOOL 分支为何直接复用 LogicalNot 核心而整数分支不能复用。
-<!-- cannbot:related:end -->

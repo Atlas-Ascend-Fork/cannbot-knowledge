@@ -57,11 +57,3 @@ tiling.SetAType(matmul_tiling::TPosition::GM, matmul_tiling::CubeFormat::ND, mat
 // 设置scaleB矩阵，buffer位置为GM，数据格式为ND，转置
 tiling.SetScaleBType(matmul_tiling::TPosition::GM, matmul_tiling::CubeFormat::ND, true);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetBType](set_b_type.md)（`related`）：“MxMatmul场景，设置scaleB矩阵的位置、数据格式、是否转置等信息，这些信息需要和Kernel侧的设置保持一致。如果不调用本接口，scaleB矩阵的信息将与SetBType中设置的B矩阵的信息保持一致。”明确 scaleB 的缺省继承，而“设置B矩阵的位置，数据格式，数据类型，是否转置等信息，这些信息需要和kernel侧的设置保持一致。”定义继承来源；联合阅读可确定未显式配置 scaleB 时的真实位置与排布。
-- [SetTensorScaleB](../matmul_kernel/set_tensor_scale_b.md)（`related`）：MxMatmul场景，设置矩阵乘中右矩阵的量化系数矩阵scaleB。；MxMatmul场景，设置scaleB矩阵的位置、数据格式、是否转置等信息，这些信息需要和Kernel侧的设置保持一致。如果不调用本接口，scaleB矩阵的信息将与SetBType中设置的B矩阵的信息保持一致。；Kernel 侧 SetTensorScaleB 绑定 scaleB 张量和转置方式，Host Tiling 侧 SetScaleBType 描述同一 scaleB 的位置、排布与转置，二者参数必须一致才能闭合 MxMatmul 配置。
-<!-- cannbot:related:end -->

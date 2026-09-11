@@ -92,10 +92,3 @@ inline half __int2half_rn(const int x)
         dst[idx] = __int2half_rn(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__int2half_rn_sat](_int2half_rn_sat.md)（`same_topic`）：功能：将int32类型数据按照CAST_RINT模式转换为half类型数据，返回转换后的值。；功能：遵循CAST_RINT模式，将int32类型数据转换为half类型数据，返回转换后的值。。两端共享 int32 到 half 的 CAST_RINT 转换；sat 变体还披露 SIMT 场景无法设置 CTRL、饱和模式不生效，互读可核对所谓饱和入口的实际行为。
-<!-- cannbot:related:end -->

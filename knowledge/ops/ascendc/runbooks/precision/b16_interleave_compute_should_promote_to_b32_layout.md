@@ -237,10 +237,3 @@ __aicore__ inline void ComputeRopeInterleaveFp32(const AscendC::LocalTensor<floa
 ## 误诊
 
 最初把失败归为 dtype-aware chunk step；修改后仍是 57 passed、28 failed，工具结果否定了该假设。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`related`）：同一 `MaskReg` 跨 B16/B32 使用会破坏 value/index 的逐 lane 对应。；唯一根因是把 `DINTLV_B16` 产生的 B16 双寄存器 lane 布局直接当作逻辑偶/奇对，再经 `Reg::Cast` 做逐 lane 运算；两张运行手册都证明 B16 lane 或 mask 不能直接按 B32 消费语义复用，并把计算提升到共同的 fp32/B32 布局作为正确性基线。
-- [RoPE DIST_INTLV_B16 store mask 致零值](rope_dist_intlv_b16_store_mask.md)（`related`）：唯一根因是把 `DINTLV_B16` 产生的 B16 双寄存器 lane 布局直接当作逻辑偶/奇对，再经 `Reg::Cast` 做逐 lane 运算；该 interleave store 的 mask 在 64 维 / 当前 UB 布局下行为异常；两张运行手册都定位 Ascend950 上 B16 interleave 路径的成对错位或零值，并分别从寄存器解交错布局与 interleave store mask 给出放弃 B16 直排的诊断依据。
-<!-- cannbot:related:end -->

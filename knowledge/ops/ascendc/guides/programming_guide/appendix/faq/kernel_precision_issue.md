@@ -91,10 +91,3 @@ Ascend C提供孪生调试的功能，通过CPU域的功能验证、gdb单步调
     tileLength: 1024
     ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [含有Matmul高阶API的算子精度问题](matmul_advanced_api_precision.md)（`related`）：Ascend C提供孪生调试的功能，通过CPU域的功能验证、gdb单步调试、printf数值打印来定位算子的实现逻辑问题。本样例仅展示了可能会出现的场景，便于演示定位步骤。实际使用过程中，请根据代码情况进行调试。；本节针对含有Matmul高阶API的算子，为排查算子精度问题是否为算子中Matmul高阶API调用方式导致，提供初步的问题定界和定位指导。如未特殊说明，下面均以Atlas A2 训练系列产品/Atlas A2 推理系列产品上的案例为例。；通用精度排障先在 CPU 孪生域定界，目标指南再把 Matmul Tiling、接口调用和 golden 逐层隔离。
-<!-- cannbot:related:end -->

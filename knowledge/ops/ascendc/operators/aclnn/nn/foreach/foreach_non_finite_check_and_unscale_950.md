@@ -493,9 +493,3 @@ V→S 保证标量读取发生在 Vector 累计之后；写 sticky flag 后，�
 | 同步 | Queue、V→S、单 cache line clean/invalidate | 不得省略显式发布或提前覆盖 TBuf | `Process/Compute` |
 | 精度与尾块 | T→FP32→T；`CAST_RINT`；mask+尾 DMA | 最末 VL inactive lane 清零；GM 只写 valid | load/store helper；`Compute/CopyOut` |
 | 失败边界 | priority fallthrough、Tiling hard fail、entry guard | 不把内部空域分支宣传成 ACLNN 支持 | selector/Tiling/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachNonFiniteCheckAndUnscale A2/A3 ACLNN 算子知识](foreach_non_finite_check_and_unscale.md)（`same_topic`）：若任一原值为 Inf/NaN，则只把 `foundInf［0］` 置为 `1.0f`；检查所有 `scaledGrads` 原值中的 Inf/NaN。两卡实现相同 ACLNN 原地反缩放与非有限值检测契约，分别闭合 A2/A3 与 950 的 Tiling、队列和寄存器路线，可直接用于平台迁移选型。
-<!-- cannbot:related:end -->

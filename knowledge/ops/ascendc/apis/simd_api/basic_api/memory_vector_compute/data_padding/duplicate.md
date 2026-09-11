@@ -200,29 +200,13 @@ dstLocal: [18.0 18.0 18.0 ... 18.0 18.0]
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Duplicate 全量清零 padding 覆盖有效区 banned](../../../../../runbooks/precision/duplicate_padding_banned.md)（`exemplifies`）：“将变量或立即数复制多次并填充到向量中，支持前n个数据计算和高维切分计算两种方式。”明确给出左端事实；“2. `Duplicate(bG, 0, count_padded)` 同样从 0 开始全量填 0，覆盖了 `bG`（gradOutput）的有效元素——`Duplicate` 不支持 offset 操作，只能从 0 开始填整个 `count_padded`，无法只清 `［count, count_padded)` 区间。”明确给出右端事实。API 从起点连续填充的语义解释了为何试图只清 padding 却覆盖有效区；排障页给出全量 Duplicate 后 ST 回归及源头/区间清零替代方向。
-- [InitOutput GM 专用，UB 清零用 Duplicate](../../../../../runbooks/compilation/initoutput_gm_ub_duplicate.md)（`exemplifies`）：“将变量或立即数复制多次并填充到向量中，支持前n个数据计算和高维切分计算两种方式。”明确给出左端事实；“UB 侧 LocalTensor 清零的正确 API 是 `Duplicate`（Vector 通道，按 mask 清零整个/部分 VReg），不是 `InitOutput`。”明确给出右端事实。API 的 LocalTensor 填充值能力正是排障页修复 InitOutput(GlobalTensor) 类型不匹配时采用的 UB 清零路径。
-- [UB 预填充 Duplicate 引入 Vector 开销拖慢纯写带宽](../../../../../runbooks/performance/duplicate_ub_prefill_hurts_pure_write_bandwidth.md)（`exemplifies`）：`Duplicate<half>` 是 Vector 流水线指令，执行时占用 Vector 管线把 UB 填成指定值。在纯写探针里，UB 内容对 HBM 写带宽无影响（HBM 控制器按总线事务写，不关心 payload 初值），但 `Duplicate` 与 `DataCopy`（MTE3）在 kernel 里串行执行，`Duplicate` 的 Vector 执行时间被加进 kernel 总时间，拉低写带宽。即"预填充 UB"没有 HBM 侧收益，只有 Vector 侧开销。；将变量或立即数复制多次并填充到向量中，支持前n个数据计算和高维切分计算两种方式。运行手册用纯写 HBM 探针实证该填充 API 会额外占用 Vector 流水线，给出不得为写带宽预填 UB 的具体性能边界。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 29 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [DiagFlat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/diag_flat.md)（`related`）：算子声明的固定版本源码包含对 `Duplicate(...)` 的直接调用（第 327 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/diag_flat/op_kernel/diag_flat_nd_to_2d.h#L327)
-- [GeluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/gelu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Duplicate(...)` 的直接调用（第 193 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_dynamic_quant_regbase.h#L193)
-- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)（`related`）：算子声明的固定版本源码包含对 `Duplicate(...)` 的直接调用（第 187 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention/op_kernel/block_sparse_attention_kernel_regular_arch22.h#L187)
-- [ReflectionPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/reflection_pad_2d_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `Duplicate(...)` 的直接调用（第 502 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_mirror_gather.h#L502)
-- [MseLoss A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/mse_loss.md)（`related`）：算子声明的固定版本源码包含对 `Duplicate(...)` 的直接调用（第 33 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss_v2/op_kernel/mse_loss_v2_sum.h#L33)
-- [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)（`related`）：算子声明的固定版本源码包含对 `Duplicate(...)` 的直接调用（第 105 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score/op_kernel/arch35/flash_attention_score_drop_mask_adapter_regbase.h#L105)
-- [UnfoldGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/unfold_grad.md)（`related`）：算子声明的固定版本源码包含对 `Duplicate(...)` 的直接调用（第 119 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/unfold_grad/op_kernel/unfold_grad.h#L119)
-- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)（`related`）：算子声明的固定版本源码包含对 `Duplicate(...)` 的直接调用（第 92 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_quant/op_kernel/apply_adam_w_quant_fp16.h#L92)
-- [FlashAttentionVarLenScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_var_len_score_950.md)（`related`）：算子声明的固定版本源码包含对 `Duplicate(...)` 的直接调用（第 105 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score/op_kernel/arch35/flash_attention_score_drop_mask_adapter_regbase.h#L105)
-- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)（`related`）：算子声明的固定版本源码包含对 `Duplicate(...)` 的直接调用（第 95 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h#L95)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [DiagFlat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/diag_flat.md)
+- [GeluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/gelu_quant_950.md)
+- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)
+- [ReflectionPad2dBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/reflection_pad_2d_backward_950.md)
+- [MseLoss A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/mse_loss.md)
+- [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)
+- [UnfoldGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/unfold_grad.md)
+- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)
+- [FlashAttentionVarLenScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_var_len_score_950.md)
+- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)

@@ -28,11 +28,3 @@ enum class SatMode {
     SAT
 };
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cast SatMode::SAT 饱和致 fp16 NaN/Inf 丢失](../../../../../runbooks/precision/cast_satmode_sat_fp16_nan_inf.md)（`exemplifies`）：SatMode 用于设置 Cast 类型转换的饱和与不饱和模式。 即高层 `AscendC::Cast` 对所有 b16↔fp32 转换强制 `SatMode::SAT`（饱和），底层 `Reg::Cast` 指令同样饱和。 Runbook 用 NaN/Inf 变为 65504 的实测信号具体化 SAT 后果，并说明 trait 调参无法恢复已丢失的非有限值。
-- [HiFloat8 SatMode::SAT Cast NaN 映射 0x00](../../../../../runbooks/precision/hifloat8_satmode_sat_cast_nan_0x00.md)（`exemplifies`）：**触发条件（trigger）**：对使用 `Cast<hifloat8_t, float, castTraitF32toh8>`（SatMode::SAT）做 fp32→hifloat8 量化的算子，用全 NaN 输入跑 golden-vs-device 字节级比对，HiFloat8 路径 FAIL/SUPPRESSED，而同输入下其他量化模式（如 MX-FP8、Normal）PASS。；SatMode 用于设置 Cast 类型转换的饱和与不饱和模式。。runbook 的 NaN 字节差异由具体 HiFloat8 Cast 的 SatMode::SAT 路径触发，辅助类型卡提供选择饱和/不饱和模式的枚举入口，联合阅读可从失败信号回到 Cast trait 配置。
-<!-- cannbot:related:end -->

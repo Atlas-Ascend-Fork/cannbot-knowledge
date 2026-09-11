@@ -129,10 +129,3 @@ half2 __hmaxx2_nan(const half2 x, const half2 y)
         asc_vf_call<simt_hmaxx2_nan>(dim3(1024), (__gm__ half2*)x, (__gm__ half2*)y, (__gm__ half2*)dst, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hmaxx2](_hmaxx2.md)（`same_topic`）：功能：获取两个half2类型数据各分量的最大值。；功能：获取两个half2类型数据中各分量的最大值。任一分量为nan时对应结果为nan。。两接口都计算 half2 两分量最大值，目标变体额外固定任一输入为 NaN 时传播 NaN 的边界。
-<!-- cannbot:related:end -->

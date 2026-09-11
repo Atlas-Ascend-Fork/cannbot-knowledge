@@ -433,9 +433,4 @@ Cast(outLocal[index * maxCastDataCount], float32Tensor[offset], RoundMode::CAST_
 | 精度与尾块 | BF16 FP32 计算并 RINT；尾部精确字节回写 | `maxCastDataCount`、dataCount、pad API | `InnerComputer` / `CopyOut` |
 | 失败边界 | API、Tiling 任一失败阻断 Kernel | key 4 编译 guard、50 Tensor/POD 上限 | `CheckParams` / `RunBigScalarKernelTiling` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Maxs](../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/maxs.md)（`related`）：A2/A3 算子卡的实际路由包含“FLOAT32 -> key 2 -> ForeachOneScalarBinary<float, float, MaxsAdapter<float>, 2>”；Maxs 卡定义“计算公式 dst_i = max(src_i, scalarValue)。”，后者直接解释 Foreach 内核每个张量 tile 的标量最大值 primitive。
-- [ForeachMaximumScalar 950 ACLNN 算子知识](foreach_maximum_scalar_950.md)（`same_topic`）：A2/A3 卡的核心合同是“对列表中每个张量逐元素计算 `y_i［j］ = max(x_i［j］, scalar)`。”；950 卡保持“对列表中每个张量逐元素计算 `y_i［j］ = max(x_i［j］, scalar)`；浮点路径显式传播 NaN 并处理有符号零。”，二者是同一 aclnnForeachMaximumScalarV2 对象在 arch22 与 arch35 的平台实现。
-<!-- cannbot:related:end -->
+- [Maxs](../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/maxs.md)

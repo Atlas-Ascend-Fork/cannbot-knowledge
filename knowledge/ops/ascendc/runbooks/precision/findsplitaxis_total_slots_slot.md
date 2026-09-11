@@ -82,9 +82,3 @@ bool FindSplitAxis(const std::vector<int64_t>& max_bro_shape,
 
 - 代码检视 tool_result ISSUE-A 给出 per_buf_bytes 内外不一致：外层 25376、`FindSplitAxis` 内部 12672，bf16 `per_buf_elems` 外层 6344、内部 3168（来源平台:950；证据等级:tool_observed）
 - 缺陷代码逐字可核：`DoTilingAndSet<R>` 内 `FindSplitAxis(..., total_slots, ...)` 与 `FindSplitAxis` 签名/内部 `total_slots = phys_nodes * 2` 均取自 trace file_read 事件（来源平台:950；证据等级:artifact_verified）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [split.axis 未随 PadAndSqueeze 偏移致 507035](../compilation/split_axis_padandsqueeze_507035.md)（`related`）：“定位 `DoTilingAndSet<R>` 中对 `FindSplitAxis` 的调用，核查第 4 个实参传的是 `total_slots`”；“真正根因在 host 侧 `DoTilingAndSet` 的坐标系不一致，与 NDDMA stride 无关”。两卡覆盖同一 Broadcast Tiling 调用链的两个独立参数/坐标故障，可组成排查顺序。
-<!-- cannbot:related:end -->

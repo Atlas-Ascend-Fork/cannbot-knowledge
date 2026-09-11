@@ -510,9 +510,4 @@ UB 只保留原 dtype 的两输入一输出 Queue，升精度值驻留 `RegTenso
 | 精度与尾块 | FP32 RegTensor、RINT store、MaskReg tail | FP32 loop 宽度、同一 mask、strict weight 阈值 | `DoCompute` / load-store traits |
 | 失败边界 | 10000 不适用继续 30000；30000 校验失败终止 | 不得把未知 key 当 fallback | registry / regbase Host / entry |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Axpy](../../../../apis/simd_api/basic_api/reg_vector_compute/composite_compute/axpy.md)（`related`）：950 算子 Device body 逐字调用“Axpy(tensorOneRegToFloat, tensorTwoRegToFloat, weightVal_, maskReg);”；Reg API 定义“该接口根据mask对dstReg、srcReg和标量scalarValue按元素执行乘加操作”，这正对应 `x1 + weight*(x2-x1)` 中差值寄存器与标量 weight 的乘加步骤。
-- [ForeachLerpScalar A2/A3 ACLNN 算子知识](foreach_lerp_scalar.md)（`same_topic`）：对列表位置 `i`：`y_i = x1_i + weight * (x2_i - x1_i)`。；`y_i = x1_i + weight * (x2_i - x1_i)`；950 公开约束要求三列表对应 shape size 一致，列表最多 50 项。两卡描述同一 ForeachLerpScalar ACLNN 逻辑算子，分别闭合 A2/A3 classic AIV 与 950 RegBase 的 Host、Tiling 和 Kernel 路由。
-<!-- cannbot:related:end -->
+- [Axpy](../../../../apis/simd_api/basic_api/reg_vector_compute/composite_compute/axpy.md)

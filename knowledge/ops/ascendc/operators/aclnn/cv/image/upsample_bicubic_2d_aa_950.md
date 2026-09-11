@@ -662,9 +662,3 @@ H/W权重可分离，源码分别求两个一维归一化和，再在双层采�
 | 同步 | copy queue生命周期；SIMT输出域互斥 | queue Free前不得覆盖；不得虚构SIMT atomic/barrier | DataCopy/Simt body |
 | 精度与尾块 | FP32权重/累加→T；core/thread/tile tail | H/W分别归一化、32/64 guard、clamp不可省略 | `SimtCompute`、各`Process` |
 | 失败边界 | direct empty Tiling失败、ACLNN empty成功；无未知key fallback | 不得套用A2/A3 scale<=50或误记Cube | API/Tiling/template key |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [UpsampleBicubic2dAA A2/A3 ACLNN 算子知识](upsample_bicubic_2d_aa.md)（`same_topic`）：对 NCHW 输入执行可分离的二维 Keys cubic 抗锯齿插值；先 W、后 H，核函数参数 `a=-0.5`；对 NCHW 输入逐输出像素执行 Keys cubic 抗锯齿插值；H/W 一维权重分别归一化后相乘，`a=-0.5`。两端实现同一 UpsampleBicubic2dAA 的 Keys cubic 抗锯齿语义，分别记录 A2/A3 的可分离两阶段路线与 950 的逐输出像素路线，可直接用于平台实现选型和结果对照。
-<!-- cannbot:related:end -->

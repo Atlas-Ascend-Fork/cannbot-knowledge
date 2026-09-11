@@ -137,10 +137,3 @@ void GetWelfordUpdateMaxMinTmpSize(const AscendC::TensorShape& srcShape, const u
         }
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [WelfordUpdate](welford_update.md)（`related`）：Tiling参数通过WelfordUpdate Tiling获取。；host侧Tiling接口，用于获取WelfordUpdate kernel计算所需的Tiling参数。左卡的分块在线均值/方差更新显式消费 WelfordUpdate Tiling，右卡先计算临时空间再生成 WelfordUpdateTiling 结构；两端衔接 Host 切分与 Kernel 累加状态。
-<!-- cannbot:related:end -->

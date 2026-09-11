@@ -63,10 +63,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetQuantizeMaxMinTmpSize(srcShape, typeSize, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Quantize](quantize.md)（`related`）：host侧Tiling接口，用于获取Quantize接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetQuantizeMaxMinTmpSize获取。。前者计算 Quantize 所需的临时空间上下界，后者明确 Quantize 的 sharedTmpBuffer 重载依赖该 helper，二者闭合 Host Tiling 选空间与 kernel 量化调用的任务链。
-<!-- cannbot:related:end -->

@@ -74,10 +74,3 @@ static constexpr uint32_t xAddrPongBC = MAX_DATA_COPY_LEN * sizeof(half) * 2;
 **最终结论**：Add算子经过入门→中级→高阶三级优化，端到端性能提升6711倍。当前瓶颈主要在搬运带宽本身，向量计算已接近理论极限。对于Ascend 950系列产品，Bank排列方式不同，无需Bank Conflict优化，Case 5即为最优版本。
 
 详细内容请参见[Add性能调优样例 Case 5-6](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/README.md#高阶性能打磨)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetL2CacheHint](../../../../../apis/simd_api/basic_api/data_structures/global_tensor/set_l2_cache_hint.md)（`explains`）：“原理：L2 Cache是AI Core和HBM之间的缓存层，适合需要重复访问的数据。对于Add算子这种流式访问场景（输入数据只读取一次），数据经过L2 Cache反而会占用Cache空间（Cache污染），增加搬运延时。通过SetL2CacheHint设置CACHE_MODE_DISABLE，让数据绕过L2 Cache直接从GM载入UB。”给出 Add 单次读取输入发生 L2 污染时的实测优化调用；“当特定 GlobalTensor 启用 L2 Cache 后性能反而下降时可手动禁用，例如仅对单次读取的 Tensor 关闭缓存以避免额外搬运开销。”定义该 API 正适用于只访问一次的 GlobalTensor。两端把性能症状、选型条件和具体 CACHE_MODE_DISABLE 接口连成可复用步骤。
-<!-- cannbot:related:end -->

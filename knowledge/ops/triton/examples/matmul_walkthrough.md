@@ -191,14 +191,3 @@ def triton_matmul(mat_a, mat_b):
 
 - [03-matrix-multiplication.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/03-matrix-multiplication.py)
 - [09-persistent-matmul.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/09-persistent-matmul.py)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GEMM 基础代码骨架](./gemm_basic.md)（`related`）：“生产用 GEMM 骨架（block_ptr 版，经验沉淀）”
-- [MatMul / GEMM 高性能算子](../guides/operator_design/matmul.md)（`related`）：“matmul 算子规格”
-- [Flash Attention 教学 Walkthrough（block_ptr + online softmax）](./flash_attention_walkthrough.md)（`related`）：“tl.dot 在 attention 中的用法”
-- [自定义算子示例（register_custom_op / al.custom / builtin ops）](./custom_op_example.md)（`related`）：“compile_hint 之外的 NPU 扩展用法”
-
-<!-- cannbot:related:end -->

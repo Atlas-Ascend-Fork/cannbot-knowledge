@@ -123,10 +123,3 @@ bfloat16x2_t __hnex2(bfloat16x2_t x, bfloat16x2_t y)
         asc_vf_call<simt_hnex2>(dim3(1024), (__gm__ bfloat16x2_t*)x, (__gm__ bfloat16x2_t*)y, (__gm__ bfloat16x2_t*)dst, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hnex2_mask](_hnex2_mask.md)（`same_topic`）：结果以unsigned int形式返回；对应比较结果为1.0，否则为0.0。两端执行同一 bfloat16x2 不等比较，但分别返回位掩码和数值向量；对照可按后续位操作或数值计算选择正确返回合同。
-<!-- cannbot:related:end -->

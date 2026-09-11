@@ -116,12 +116,3 @@ AscendC::MrgSort<float>(dstLocal, srcList, params);
 outQueueDst.EnQue<float>(dstLocal);
 outQueueDst.FreeTensor(dstLocal);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetMrgSortResult](get_mrg_sort_result.md)（`related`）：与MrgSort接口配合使用，在队列耗尽停止后获取4个队列已处理的Region Proposal个数。；将已排序的最多4条队列合并为1条队列，结果按score域由大到小排序，通常处理Sort32预处理的数据。。MrgSort 执行最多四路有序队列合并，GetMrgSortResult 在该过程因队列耗尽停止后返回各路已消费的 Region Proposal 数量。
-- [Lightning Indexer Kernel](../../../../../../../model/inference/concepts/kernels/lightning_indexer.md)（`related`）：将已排序的最多4条队列合并为1条队列，结果按score域由大到小排序，通常处理Sort32预处理的数据。；**Atlas-A3**：`sort32` + `mrgsort`，理论开销 $(1.36S_k + 3.32k + \lceil \frac{\max(\log_2(k)-5,0)}{2}S_k\rceil)/2$ cycle；Lightning Indexer 明确在 A3 精确 Top-k 路线中组合 sort32 与 mrgsort，MrgSort 卡可直接核对归并输入输出合同。
-- [Sort32](sort32.md)（`related`）：Sort32 卡说明“Sort32接口实现一次迭代内对32个数的降序排列操作。”；MrgSort 卡规定“将已排序的最多4条队列合并为1条队列，结果按score域由大到小排序，通常处理Sort32预处理的数据。”，形成先局部 32 元素排序、后最多四路归并的流水线。
-<!-- cannbot:related:end -->

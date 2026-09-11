@@ -1445,9 +1445,3 @@ __aicore__ inline void ProcessOneStep(int32_t idx)
 | 同步 | SIMT thread 私有；Vector 用 events/TQue；无跨核同步 | normal-W parity event ID、HugeWidth MTE2/V/MTE3 顺序 | `CopyIn/CopyOut` helpers |
 | 精度与尾块 | 所有 dtype 都按同位宽 bitwise copy；无算术 cast | B64 拆 B32 必须 Interleave；B8 Gather pack 与 exact tail | edge launchers/Gather helpers |
 | 失败边界 | Host 校验/空域、Tiling overflow/primitive guard、unknown key no-op 边界 | 不把文档未实现 padding 上界当实际 guard | `CheckParams/CalculateTilingKeyEdge/SliceTiling` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Slice 950 ACLNN 算子知识](slice_950.md)（`related`）：｜ Kernel 路线 ｜ R-001 32 位索引 SIMT；R-002 64 位索引 SIMT；R-003 切尾轴；R-004 正常宽度 2/3/4 轴；R-005 小尾轴 Gather 2/3/4 轴；R-006～R-013 为纯负 padding 的 Slice MoveAlign/NDDMA/Gather 特化。 ｜；｜ 核心链路 ｜ `aclnnSlice` → `l0op::StridedSliceV3` → `StridedSliceV3` arch35 Tiling → `strided_slice_v3` router → 共用 `strided_slice` arch35 body ｜。ReplicationPad3D 的纯负 padding 直接复用 Slice 搬运路线，Slice 卡闭合共用 StridedSlice arch35 body 和 selector。
-<!-- cannbot:related:end -->

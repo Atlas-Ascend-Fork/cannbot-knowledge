@@ -142,11 +142,3 @@ platforms:
     原始输入shape：(2,5)
     输出数据(dst): [4.0 2.0]
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [indexer / 块量化 AscendC kernel 的非有限值 (NaN/Inf) 污染防护](../../../../../../../model/inference/runbooks/precision/precision_nonfinite_nan_inf_quant_indexer_kernel.md)（`exemplifies`）：动态 per-block 量化的每块 scale = 块内 `max(｜x｜)`。；对多维向量在指定维度求最大值。定义指定计算维度为R轴（Reduce轴），非指定维度为A轴（Normal轴）。支持指定第一维或最后一维进行reduce。模板参数T支持half/float，pattern指定reduce模式。；API 页补齐 runbook 中块 scale 规约所调用的 ReduceMax 维度与类型合同。
-- [GetReduceMaxMaxMinTmpSize](get_reduce_max_max_min_tmp_size.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetReduceMaxMaxMinTmpSize获取。模板参数isReuseSource预留（传false）。；host侧Tiling接口，用于获取ReduceMax接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。ReduceMax 明确要求以 GetReduceMaxMaxMinTmpSize 决定临时空间，目标卡则定义该 Host 查询的上下界输出，二者构成 Host Tiling 到 Kernel 归约调用的资源配置链。
-<!-- cannbot:related:end -->

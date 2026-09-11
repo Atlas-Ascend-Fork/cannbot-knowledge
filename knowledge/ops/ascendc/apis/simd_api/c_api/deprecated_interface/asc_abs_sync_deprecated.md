@@ -68,11 +68,3 @@ __ubuf__ half src[total_length];
 __ubuf__ half dst[total_length];
 asc_abs(dst, src, total_length);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_sync（同步）](../sync/asc_sync.md)（`related`）：该接口废弃，请通过asc_abs和同步接口asc_sync实现精细化调优，达成最优性能。；等待所有流水线操作完成。。废弃接口把同步职责拆给 asc_sync，目标卡说明其等待全部流水线及性能代价，从而补齐拆分迁移后的顺序保证和调优边界。
-- [AscAbs](../vector_compute/vector_arith/asc_abs.md)（`same_topic`）：该接口废弃，请通过asc_abs和同步接口asc_sync实现精细化调优，达成最优性能。；按元素取绝对值，计算公式如下：。废弃接口的计算部分被明确迁移到 asc_abs，目标卡给出该替代接口的 half 数据与 32 字节对齐合同，能直接完成调用迁移。
-<!-- cannbot:related:end -->

@@ -482,10 +482,3 @@ Ascend 950PR/Ascend 950DT
 | Arange | half | half | 128 |
 | Arange | int32_t | int32_t | 32 |
 | Arange | float | float | 64 |
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reg矢量计算接口软仿情况汇总](reg_vector_compute_interface_soft_simulation_summary.md)（`related`）：底层硬件不支持该数据类型，通过多种接口组合软仿实现；软仿实现的接口和数据类型不提供理论性能。前者标明某些 dtype 是组合接口的软件仿真实现，后者明确这些软仿条目没有单指令理论性能；做接口性能选型时必须先排除软仿项再使用吞吐表。
-<!-- cannbot:related:end -->

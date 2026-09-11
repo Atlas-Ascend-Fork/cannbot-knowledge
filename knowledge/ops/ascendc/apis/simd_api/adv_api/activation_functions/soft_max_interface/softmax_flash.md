@@ -244,10 +244,3 @@ extern "C" __global__ __aicore__ void softmax_flash_kernel_half(
     op.Process();
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SoftmaxFlash Tiling接口](softmax_flash_tiling_interface.md)（`related`）：“注意：该接口后续即将废弃，请使用精度和性能更好的SoftmaxFlashV2接口。 Softmax增强版本，除了可以对输入tensor做SoftmaxFlash计算，还可以根据上一次Softmax计算的sum和max来更新本次的Softmax计算结果。”与“注意：该接口后续即将废弃，新开发内容不要使用该接口。 用于获取SoftmaxFlash Tiling参数。”分别给出两端正文事实；Kernel 侧 SoftmaxFlash 的 update 计算依赖 Host 侧同名 tiling 参数，二者共同构成旧版接口的调用合同与迁移警告。
-<!-- cannbot:related:end -->

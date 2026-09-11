@@ -75,9 +75,3 @@ int32_t ChooseTilingKey(const EuclideanNormCtx& ctx)
 ## 误诊
 
 - 本 trace 早期曾把 b3 的 361001 误判为"形状不匹配"，实际 361001 来自 `aclrtBinaryGetFunctionByEntry` 找不到 tilingKey 对应的 kernel 二进制（单二进制设计中误调 `SetTilingKey` 触发，属不同根因）；561103 与 361001 不可合并。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [tilingKey 编码与 TPL 位打包不一致致路由错误](tiling_key_tpl_bit_encoding_mismatch.md)（`related`）：“机制链：`isGroup 默认 -1` →（非 Group 路径未覆写）→ `ChooseTilingKey: 无 -1 分支 → return -1` → `TilingFunc: tilingKey != 期望 → kTilingFail/GRAPH_FAILED` → `aclnn 561103`。该因果链中"哨兵 + 二值路由"由结构体定义与 `ChooseTilingKey` 共同构成（二者在修复前后未变），故判别闭环。”明确给出左端事实；“而 host 侧 `ComputeTilingKey(bool isGroup, bool isEmptyTensor, bool isTailR)` 用语义顺序编码 `empty=2 / normal-tail-A=0 / normal-tail-R=1 / group-tail-A=3 / group-tail-R=4`。当 host 对 normal-tail-R `SetTilingKey(1)`，runtime 按后缀 `_1` 路由到 TPL 解码为 (1,0,0)=group-tail-A 的 sub-kernel，而 group 模板的 Init/Process 是存根，输出垃圾。”明确给出右端事实。两页连续覆盖 euclidean_norm 的 Host 路由正确性：先保证 isGroup 哨兵在所有路径写成 0/1，再保证得到的语义分支按 TPL 位布局编码到正确 sub-kernel。
-<!-- cannbot:related:end -->

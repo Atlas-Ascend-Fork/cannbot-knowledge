@@ -68,9 +68,3 @@ vllm-ascend 通过为不同量化格式注册各自的 **Ascend override config*
 - `维护者确认`：collaborator 明确答复 compressed-tensors W8A8 未在 310P override、310P 须用 ModelSlim + `--quantization ascend`；另一 collaborator 指出 `_POSSIBLE_INT8_KERNELS`（linear int8 kernel 候选）仅含 CPU/CUDA/ROCM，无 OOT/Ascend。issue 无修复 PR、无 diff，故为维护者确认级别、结论为操作约束。
 - 环境：`quay.io/ascend/vllm-ascend:v0.18.0rc1-310p`，Atlas 300I Duo / Ascend 310P，模型 Qwen3-ASR-1.7B 经 LLM-Compressor W8A8 量化。
 - 溯源下探：[vllm-ascend-issue-9129-bug-llm-compressor-w8a8-310p](https://github.com/vllm-project/vllm-ascend/issues/9129)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [compressed-tensors 量化加载器的方案识别门控陷阱：别假设总有激活量化、MX 与普通 fp8 靠 weight_block_size 区分、AWQ int4 走 W4A16](compressed_tensors_scheme_gating_pitfalls.md)（`related`）：真正的缺口是 **310P 平台分支尚未补齐 `compressed-tensors` 的 Ascend override 注册**，属平台/后端能力覆盖不完整，不是格式缺陷、也不是权重错误。；compressed-tensors 的方案识别**不能只看 num_bits/type**：激活是否量化、`weight_block_size`（MX 判据）、pack 格式都要纳入门控，否则误命中或误拒。。两卡覆盖 compressed-tensors 加载路由的连续两层门控：先有平台 override 接管，再按激活、block 与 pack 信息识别具体量化方案。
-<!-- cannbot:related:end -->

@@ -143,29 +143,13 @@ ge::graphStatus TilingFunc(gert::TilingContext* context)
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [REGISTER_TILING_DEFAULT 取小档致 NaN](../../../../runbooks/compilation/register_tiling_default_nan.md)（`exemplifies`）：提供逻辑表达式（以 TILING_KEY_VAR 代指实际 TilingKey）表达 TilingKey 满足的范围；`REGISTER_TILING_FOR_TILINGKEY` 不会把 opParaSize 抬到大档。接口卡说明该宏负责 key 到结构的注册，运行手册补充其不会决定全局 opParaSize 上界，防止把按 key 注册误当成大结构容量修复。
-- [REGISTER_TILING_DEFAULT 多 struct 冲突](../../../../runbooks/compilation/register_tiling_default_struct.md)（`exemplifies`）：在 kernel 侧注册与 TilingKey 相匹配的 TilingData 结构体；将 separable 分支的 `REGISTER_TILING_DEFAULT(MaxPool3DGradSeparableTilingData)` 改为 `REGISTER_TILING_FOR_TILINGKEY(<key 字符串>, MaxPool3DGradSeparableTilingData)` 后重新构建，该报错消失、binary 生成恢复。接口卡定义按 TilingKey 注册独立结构，运行手册以多分支 default 槽冲突的真实构建证明该宏是新增结构分支的直接修法。
-- [TILING_KEY_IS](tiling_key_is.md)（`same_topic`）：判断本次执行的 tiling_key 是否等于 host 侧设置的某个 key；注册与 TilingKey 相匹配的 TilingData 结构体。REGISTER_TILING_FOR_TILINGKEY 先把 key 条件映射到 TilingData，TILING_KEY_IS 再在 kernel 中选择相同 key 的执行分支；两者共同保证数据结构和代码分支匹配。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 26 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [InplaceIndexFill 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/inplace_index_fill_950.md)（`related`）：算子声明的固定版本源码包含对 `REGISTER_TILING_FOR_TILINGKEY(...)` 的直接调用（第 71 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/inplace_index_fill/op_kernel/inplace_index_fill_apt.cpp#L71)
-- [FlashAttentionScore 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)（`related`）：算子声明的固定版本源码包含对 `REGISTER_TILING_FOR_TILINGKEY(...)` 的直接调用（第 49 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score/op_kernel/flash_attention_score_apt.cpp#L49)
-- [QuantMatmul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/quant_matmul.md)（`related`）：算子声明的固定版本源码包含对 `REGISTER_TILING_FOR_TILINGKEY(...)` 的直接调用（第 223 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_batch_matmul_v3/op_kernel/quant_batch_matmul_v3.cpp#L223)
-- [FlashAttentionScoreGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_grad.md)（`related`）：算子声明的固定版本源码包含对 `REGISTER_TILING_FOR_TILINGKEY(...)` 的直接调用（第 509 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_kernel/flash_attention_score_grad.cpp#L509)
-- [AdaptiveMaxPool3d A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/pooling/adaptive_max_pool3d.md)（`related`）：算子声明的固定版本源码包含对 `REGISTER_TILING_FOR_TILINGKEY(...)` 的直接调用（第 78 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2.cpp#L78)
-- [FlashAttentionScoreGrad 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `REGISTER_TILING_FOR_TILINGKEY(...)` 的直接调用（第 56 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_kernel/flash_attention_score_grad_apt.cpp#L56)
-- [MaxPool2dWithIndices A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/pooling/max_pool2d_with_indices.md)（`related`）：算子声明的固定版本源码包含对 `REGISTER_TILING_FOR_TILINGKEY(...)` 的直接调用（第 78 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2.cpp#L78)
-- [FlashAttentionUnpaddingScoreGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_unpadding_score_grad.md)（`related`）：算子声明的固定版本源码包含对 `REGISTER_TILING_FOR_TILINGKEY(...)` 的直接调用（第 509 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_kernel/flash_attention_score_grad.cpp#L509)
-- [MaxPool3dWithArgmax A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/pooling/max_pool3d_with_argmax.md)（`related`）：算子声明的固定版本源码包含对 `REGISTER_TILING_FOR_TILINGKEY(...)` 的直接调用（第 78 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2.cpp#L78)
-- [FlashAttentionUnpaddingScoreGrad 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_unpadding_score_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `REGISTER_TILING_FOR_TILINGKEY(...)` 的直接调用（第 56 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_kernel/flash_attention_score_grad_apt.cpp#L56)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [InplaceIndexFill 950 ACLNN 算子知识](../../../../operators/aclnn/nn/index/inplace_index_fill_950.md)
+- [FlashAttentionScore 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)
+- [QuantMatmul A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/matmul/quant_matmul.md)
+- [FlashAttentionScoreGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_grad.md)
+- [AdaptiveMaxPool3d A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/pooling/adaptive_max_pool3d.md)
+- [FlashAttentionScoreGrad 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_grad_950.md)
+- [MaxPool2dWithIndices A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/pooling/max_pool2d_with_indices.md)
+- [FlashAttentionUnpaddingScoreGrad A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_unpadding_score_grad.md)
+- [MaxPool3dWithArgmax A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/pooling/max_pool3d_with_argmax.md)
+- [FlashAttentionUnpaddingScoreGrad 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_unpadding_score_grad_950.md)

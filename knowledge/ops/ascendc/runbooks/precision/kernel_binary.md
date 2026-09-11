@@ -83,10 +83,3 @@ sha256sum <op>_*.o
 
 - **误诊：`GlobalTensor.SetValue` 在 950 不生效**（agent_reported）：agent 按 ascendc-precision-debug 速查表把 `SetValue` 列为嫌疑并改用 `DataCopyPad` 重写，但 binary hash 始终不变（`a4fd7d5d...`）这本身就是“源码改动没进二进制”的信号。守卫移除后原 `SetValue` 写法 V1 直接 130/130 PASS，证伪。
 - **误诊：编译器缓存导致 binary 不更新**（agent_reported）：实际 binary 不变是因守卫让函数体为空，被守卫排除的源码改动不影响空壳二进制。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AdvanceStep A2/A3 ACLNN 算子知识](../../operators/aclnn/nn/optim/advance_step.md)（`related`）：AdvanceStep 适配 950（Ascend950, arch 3510）后，TTK 跑 250 用例全部 FAIL，且所有输出 tensor 与输入逐字节相同——kernel 被 launch 了但没做任何事。plog 显示 `tilingKey is 0, functionEntry=0, Kernel launch successfully`，确认 kernel 已加载执行。binary 文件 `AdvanceStep_..._high_performance.o` 只有 2136 字节，对包含 DataCopyPad/循环/算术的 kernel 异常小。；最新 V2 只有 R-001。`advance_step` 解析 POD，在 `__CCE_AICORE__==220` 且 key=2 时构造本地 `TPipe` 和 `KernelAdvanceStepSpec<int64_t>`。每核绑定连续 request 行；每 loop 严格执行位置/长度更新→slot 更新→token 更新，前一阶段通过同一 Queue/TBuf 和显式 HardEvent 向下一阶段交接。没有多 Kernel、跨节点 workspace 或通信边。。故障卡在 950 观察到空执行，算子卡揭示 body 被 `__CCE_AICORE__==220` 守卫且只接受 key=2，直接支撑迁移诊断。
-- [kernel 源码改动未生效因 binary 缓存](../compilation/kernel_binary_cache_printf_hash_toggle.md)（`related`）：“若加 PRINTF 后输出仍不变 → 排除缓存问题，改去查源码改动是否真的进入编译单元（路径/宏/CMake 源文件列表）。”与“若 binary 体积/hash 在多次 kernel 体改动后**始终不变** → 源码未进入 device binary，守卫把整个 kernel 体条件编译排除了。”分别给出两端正文事实；第一张卡把 PRINTF 作为缓存与编译单元问题的分流探针，第二张卡给出 hash 恒定时检查架构守卫吞体的下一步，二者组成同症状的确定性排障分支。
-<!-- cannbot:related:end -->

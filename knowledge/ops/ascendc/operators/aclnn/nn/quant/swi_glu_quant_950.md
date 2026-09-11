@@ -605,9 +605,3 @@ smooth/offset 向量在同一专家的连续行间驻留 UB，只有全局行号
 | 同步 | queues, MTE2_S, SyncAll, PIPE_V | prefix sum and vector ordering | GroupCopyIn/Compute |
 | 精度与尾块 | FP32 Act, dynamic floor, staged cast, INT4 pack | 1e-8 floor/N/validRows | arch35 Compute/CastQuantOut |
 | 失败边界 | no-op guards/unknown key | Tiling failure gap, no col fallback | Tiling4/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwiGluQuant A2/A3 ACLNN 算子知识](swi_glu_quant.md)（`same_topic`）：“`aclnnSwiGluQuantV2GetWorkspaceSize` / `aclnnSwiGluQuantV2`，公开 ACLNN 两段式接口；A2/A3 实际支持的最新公开版本为 V2。”与“`aclnnSwiGluQuantV2GetWorkspaceSize` / `aclnnSwiGluQuantV2`，公开两段式 ACLNN；950 最新公开版本为 V2。”分别给出双端正文事实；两卡描述同一 V2 SwiGluQuant 公开入口与动态、静态量化语义，分别闭合 A2/A3 和 950 的 Host、Tiling、Kernel route，可用于跨平台实现选型与一致性验证。
-<!-- cannbot:related:end -->

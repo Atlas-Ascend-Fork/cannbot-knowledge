@@ -620,9 +620,3 @@ AIV以128×64 tile、双buffer把稠密块mask转为紧凑Y下标；QK/PV的GM�
 | 同步 | flags1/2/3与pipe events | 配对核与轮次 | ready flags |
 | 精度与尾块 | 三路线、两layout、actual M/N/K | BF16禁low；cast顺序 | router/epilogues |
 | 失败边界 | 12 key、无公开fallback | 不把编译期else当runtime fallback | router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BlockSparseAttention 950 ACLNN 算子知识](block_sparse_attention_950.md)（`same_topic`）：“｜ 计算语义 ｜ 对 `blockSparseMask［b,n,x,y］ >= 1` 选中的 KV 块计算 `Softmax(scaleValue·QKᵀ)·V`，跨 KV tile 维护在线 max/sum；`softmaxLseFlag=1` 时输出 `log(sum(exp))+max`。 ｜”与“｜ 计算语义 ｜ 稀疏 gather 的 `Softmax(scale·QKᵀ)·V`；FP8 路线把 Q×K scale 合并进 QK Fixpipe、把 V scale 注入 PV Fixpipe，并用 FP8 P。 ｜”是双方正文中的具体合同。两端都对稀疏选择的 KV 执行 Softmax-QK 与 V 聚合，A2/A3 卡强调 mask 和在线归约，950 卡补充 FP8 Fixpipe 缩放路线，互读能核对核心语义和平台差异。
-<!-- cannbot:related:end -->

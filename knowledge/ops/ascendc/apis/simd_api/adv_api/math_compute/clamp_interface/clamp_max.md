@@ -99,10 +99,3 @@ AscendC::ClampMax<half>(dstLocal, srcLocal, sharedTmpBuffer, static_cast<half>(2
 输入数据(srcLocal): [0 1 2 ...  126 127]
 输出数据(dstLocal): [0 1 2  ...   2   2]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetClampMaxMinTmpSize](get_clamp_max_min_tmp_size.md)（`related`）：临时空间大小BufferSize的获取方式请参考GetClampMaxMinTmpSize。；host侧Tiling接口，用于获取ClampMax/ClampMin/Clamp接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。ClampMax 的执行需要右侧公共 Clamp 家族接口给出的临时空间范围，但该 Host 接口同时服务 ClampMin 与 Clamp，因此是直接依赖而不是仅属于 ClampMax 的单一合同。
-<!-- cannbot:related:end -->

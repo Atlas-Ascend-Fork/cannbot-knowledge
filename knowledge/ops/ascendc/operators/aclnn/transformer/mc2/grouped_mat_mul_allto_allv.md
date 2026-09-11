@@ -883,9 +883,3 @@ flag8 形成 AIC 屏障，flag9 建立 AIC→AIV 可见性；AIV0 异步发起 H
 | 同步 | flags8/9、AIV0单发起 | ID/PIPE_FIX/Wait/Finalize | scheduler/guard |
 | 精度与尾块 | FP16/BF16、动态TCube、last tail split | transpose地址/MNK tail | tiler/block scheduler |
 | 失败边界 | Host失败不launch；null WS返回 | 不补造fallback | API/Tiling/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupedMatMulAlltoAllv 950 ACLNN 算子知识](grouped_mat_mul_allto_allv_950.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnGroupedMatMulAlltoAllvV2GetWorkspaceSize` / `aclnnGroupedMatMulAlltoAllvV2`，公开 ACLNN V2 两段式接口 ｜；｜ 实际入口 ｜ `aclnnGroupedMatMulAlltoAllvV2GetWorkspaceSize` / `aclnnGroupedMatMulAlltoAllvV2`，公开 ACLNN V2 ｜；双方闭合同一 V2 公开入口和 GroupedMatMul 到 AlltoAllV 的融合语义，分别覆盖 A3 与 950 路线。
-<!-- cannbot:related:end -->

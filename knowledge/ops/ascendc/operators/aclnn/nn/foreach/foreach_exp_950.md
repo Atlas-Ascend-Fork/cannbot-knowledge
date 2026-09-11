@@ -482,8 +482,4 @@ Host 不为每个 Tensor 单独生成 launch；一个 VF 内所有线程逐 Tens
 | 精度与尾块 | FP32 `expf`; FP16/BF16 promote→expf→cast；`idx<count` | cast 顺序、dtype specialization、空 Tensor continue | `PromoteToFloat`; `CastFromFloat`; VF loop |
 | 失败边界 | platform/null/tensorNum/dtype 失败阻断 launch | 不得越过 256；不得把不支持 dtype 映射到任一 schMode | `GetPlatformInfo`; `ForeachExpTilingFunc` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [数学函数expf](../../../../apis/simt_api/math_functions/float_math_functions/expf.md)（`related`）：ForeachExp950 的 R-001 路线是“FLOAT32 值直接传给 `expf`”；expf API执行“根据输入x，获取e的x次方的计算结果。”。API语义支撑每线程标量指数计算和特殊值验证。
-<!-- cannbot:related:end -->
+- [数学函数expf](../../../../apis/simt_api/math_functions/float_math_functions/expf.md)

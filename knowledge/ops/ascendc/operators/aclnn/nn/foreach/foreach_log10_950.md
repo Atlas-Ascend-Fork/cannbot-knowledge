@@ -444,9 +444,4 @@ for (uint64_t idx = tid; idx < static_cast<uint64_t>(count); idx += stride) {
 | 精度与尾块 | FLOAT `log10f`；FP16/BF16 `hlog10`；`idx<count` | dtype specialization与空 Tensor skip | `Log10Func`; `OpForeachLog10Simt` |
 | 失败边界 | 平台/UB/core/dtype/tensorCount检查 | 不得为 >256、U<128KiB、未知 dtype 添加无证据 fallback | `GetPlatformInfo`; `ForeachLog10TilingFunc` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Log10f](../../../../apis/simt_api/math_functions/float_math_functions/log10f.md)（`related`）：获取以10为底，输入数据的对数；R-001 FLOAT `log10f`；950 ForeachLog10 的 FLOAT route 直接消费该 SIMT 函数。
-- [ForeachLog10 A2/A3 ACLNN 算子知识](foreach_log10.md)（`same_topic`）：｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `y_i［j］ = log10(x_i［j］)` ｜；｜ 执行类型 ｜ 单 Kernel，`AIV_VECTOR` ｜。两卡覆盖同一 aclnnForeachLog10 公开语义；950 采用 SIMT outer entry，而 A2/A3 卡明确采用 AIV_VECTOR，构成跨代际实现对照。
-<!-- cannbot:related:end -->
+- [Log10f](../../../../apis/simt_api/math_functions/float_math_functions/log10f.md)

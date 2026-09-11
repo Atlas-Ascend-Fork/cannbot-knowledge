@@ -196,9 +196,3 @@ README「性能数据」分两表，量化对比表标注于 **Atlas 950**（Atl
 
 - **gap**：源文档未提供 benchmark / 精度数据；shipped config 均单卡（`world_size: 1`），但 README 说明可将 `world_size` 调大切单机多卡 DP（`mm_function.sh` 自动转为 `accelerate --num_processes`），SP / CFG 等并行优化未涉及
 - **gap**：`GLUMBConvTemp` 的语义与 SANA 原始结构关系在源中未展开
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [在 NPU 上对含 1×1 卷积的 DiT 做 MXFP 低比特量化 — 卷积当线性算·加载期模块替换 + a4w4 混合精度部分回退 a8w8](../../optimizations/experience/rules/dit_mxfp_lowbit_quant_conv_as_linear.md)（`related`）：“把卷积的量化**下沉到加载期的模块替换**”与“上节 1×1 conv2d → matmul 的量化延伸是 `QuantConv1x1AsLinear`”共同闭合 Sana-Video 在加载期把 1×1 Conv 替换为量化 Linear 的实施链。
-<!-- cannbot:related:end -->

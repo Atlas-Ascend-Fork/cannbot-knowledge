@@ -450,9 +450,3 @@ Host 不把 N 尾强塞进单一过小 tile，而是给出两段 tail block 计�
 | 同步 | two-AIV flags、HardEvent、SSBUF/Notify | task ratio、flag+FLAG_ID_MAX、pipe/ack | basic_block/reg_base_common |
 | 精度与尾块 | VF antiquant→FP32 Mmad→bias/cast | MX/FP4 dtype traits、main/双 tail、batch tail | key/body/POD |
 | 失败边界 | resource branch + priority fallback | capability/solver/capacity failure不可绕过 | registry/IsCapable |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [WeightQuantBatchMatmul A2/A3 ACLNN 算子知识](weight_quant_batch_matmul.md)（`same_topic`）：`y = x @ ((weight + antiquantOffset) * antiquantScale) + bias`；配置 `quantScale` 时再做输出量化；`y=x@((weight+antiquantOffset)*antiquantScale)+bias`；950 公开 dtype 表不支持带角标 1 的输出量化参数/INT8 y。两卡闭合同一 WeightQuantBatchMatmul V3 入口与反量化矩阵乘语义，分别给出 A2/A3 和 950 的 route、dtype 与输出量化边界。
-<!-- cannbot:related:end -->

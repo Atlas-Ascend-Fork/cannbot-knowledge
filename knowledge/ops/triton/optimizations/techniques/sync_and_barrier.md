@@ -152,14 +152,3 @@ with al.scope(core_mode="vector"):
 
 - [HIVMSynchronizationOps.td](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/IR/HIVMSynchronizationOps.td)
 - [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [sync_block_set / wait / all 同步操作](../../apis/ascend_ext_sync.md)（`related`）：“同步 API 参考”
-- [CV 流水线优化（Cube-Vector 融合）](cv_pipeline_optimization.md)（`related`）：“CV 融合中的同步流程”
-- [FixPipe 随路操作与 Bias 融合优化](fixpipe_bias_fusion.md)（`related`）：“fixpipe 与同步配对”
-- [PIPE / CORE / MODE / IteratorType 枚举](../../apis/ascend_ext_pipe_core.md)（`related`）：“MTE/M/V/FIX Pipe 与 Core 枚举定义”
-
-<!-- cannbot:related:end -->

@@ -57,10 +57,3 @@ prefill micro-batch 多流模式（[prefill-micro-batch](../../../concepts/techn
 
 - `diff 事实`（@a957702d，规则一）：`init_comm_group` 旧 `use_default_pg = (group_num==world_size) or (group_num==1)` 拆成两分支；症状"qwen3_moe 16TP 输出异常"为作者披露 + maintainer `/lgtm`。溯源下探：[cann-recipes-infer-pr-391-fix-fix-qwen3-moe-16tp](https://gitcode.com/cann/cann-recipes-infer/merge_requests/391)
 - `diff 事实`（@fdd26d2c，规则二/三）：`moe_ep_group_mc2` 以 `allow_physical_reuse=False + return_name=True + calc_moe_hccl_buffer_size` 注册、longcat_flash_lite dispatch 侧 `get_group_name` 由 `moe_ep_group` 改 `moe_ep_group_mc2`；`PREFILL_MICRO_BATCH_SP_TP_EP` 分支注册 `attn_tp_group_stream1` / `moe_ep_group_stream1`。溯源下探：[cann-recipes-infer-pr-444-refactor-comm-manager-refactor](https://gitcode.com/cann/cann-recipes-infer/merge_requests/444)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [掩盖 MoE/attention 的 TP/EP 并行通信（共享专家异步 all_reduce / 通算融合算子）](hide_moe_attention_tp_ep_comm.md)（`related`）：“掩盖 TP/EP 通信的上层手段见 ［hide-moe-attention-tp-ep-comm］(hide_moe_attention_tp_ep_comm.md)。”与“该融合算子走 MC2 路径，其平台/结构兼容性边界另见 ［mc2-fused-comm-op-compatibility-fallback］(../../../runbooks/runtime/mc2_fused_comm_op_compatibility_fallback.md)；相关通信域建法见 ［hccl-comm-group-construction-pitfalls］(hccl_comm_group_construction_pitfalls.md)。”分别给出两端正文事实；两卡互相给出上下层入口：通信隐藏方案调用 MC2/集合通信，通信组规则补齐其专用命名域和不可复用约束，联合阅读能避免优化开启后因域构造错误而失败。
-- [MC2 dispatch/combine（fullmesh_v2）必须独占一个 HCCL 通信域，不能与 EP/TP/CP 复用](mc2_dedicated_comm_domain.md)（`same_topic`）：“**MC2 dispatch/combine 只能独占通信域**，不能与任何其它通信域复用——**连 prefill 的 EP/CP 通信域都不能复用**。这不是「为避 TP 冲突」，而是这对算子本身要求非共享通信组（`comm_alg="fullmesh_v2"` 拓扑的硬要求）。”与“MoE 走 MC2 融合 dispatch/combine（`npu_moe_distribute_dispatch_v2` / `combine_v2`）时，即使与常规 `moe_ep_group` 覆盖**完全相同的 ranks**，也要为它单建 `moe_ep_group_mc2`（`allow_physical_reuse=False`）、并捕获其 HCCL comm name（`return_name=True` → `get_group_name`）传给算子。”分别限定通信域独占性与构造方法。两条规则围绕同一个 MC2 专用通信域合同，后一条进一步给出禁止物理复用和传递 comm name 的构造方法。
-<!-- cannbot:related:end -->

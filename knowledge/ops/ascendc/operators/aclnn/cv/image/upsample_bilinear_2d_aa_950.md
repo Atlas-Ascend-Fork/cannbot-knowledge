@@ -674,9 +674,3 @@ for (T3 idx = static_cast<T3>(threadIdx.x); idx < blkProcessNum;
 | 同步 | copy EnQue/DeQue；SIMT unique writer无同步 | queue生命周期不能绕过；SIMT不添加无证据atomic | DataCopy/SimtCompute |
 | 精度与尾块 | copy raw bytes；SIMT FP32归一化/累加后写T1 | 32/64 key、idx guard、candidate clamp | apt entry/SimtCompute |
 | 失败边界 | copy false转SIMT；int32超界转int64；其它Host失败无fallback | 不套用A2/A3 scale<=50/Cube Route | CalTilingData/CheckParams |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [UpsampleBilinear2dAA A2/A3 ACLNN 算子知识](upsample_bilinear_2d_aa.md)（`same_topic`）：若 W 轴无需变化，H 段直接读 `X`；若 H 轴无需变化，W 段直接写 `Y`。公开 ACLNN 在 A2/A3 会先把 FP16/BF16 输入 Cast 为 FP32，算子 Kernel 因而以 `UpsampleBilinearAAND<float>` 计算，最后 Cast 回用户 dtype。；中心、权重、归一化和累加均为 FP32；赋给 `T1` 时转换为目标 dtype，具体 round mode 固定仓不可见。恒等 Route 不做算术，按原 dtype 字节复制。。两卡覆盖同一公开 UpsampleBilinear2dAA 计算契约的跨平台实现：A2/A3 使用 Vector 权重生成加 Cube Matmul，950 使用 AIV copy 或 SIMT 逐输出收集。
-<!-- cannbot:related:end -->

@@ -527,9 +527,3 @@ MM1 完成即唤醒 AIV，MM2 在覆盖上一 step CkvKr slice 前等待 AIV cac
 | 同步 | CrossCore + HardEvent | IDs/modes/pipes | comm/Process |
 | 精度与尾块 | typed MLAPType + valid tails | cast/quant order | MLAPType/UpdateStep |
 | 失败边界 | API/Tiling fail closed | no 950 dtype/splitM | checks/GenTilingKey |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MlaProlog 950 ACLNN 算子知识](mla_prolog_950.md)（`same_topic`）：｜ 实际入口 ｜ `aclnnMlaPrologV3WeightNzGetWorkspaceSize` / `aclnnMlaPrologV3WeightNz`，公开 ACLNN V3 WeightNz ｜；｜ 实际入口 ｜ `aclnnMlaPrologV3WeightNzGetWorkspaceSize` / `aclnnMlaPrologV3WeightNz` ｜。两卡绑定完全相同的 ACLNN V3 WeightNz 入口，分别说明 A2/A3 与 950 的实现合同。
-<!-- cannbot:related:end -->

@@ -80,10 +80,3 @@ T shfl_up(T var, unsigned int delta) const
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [tiled_partition](../tiled_partition.md)（`related`）：获取thread_block_tile组内当前线程向前偏移delta的线程的数据。；tiled_partition API用于将一个线程组划分为多个更小、固定大小的子组，以便线程在以更精细的粒度上进行协作。。tiled_partition 先创建固定大小的 thread_block_tile，shfl_up 再在该组内按 delta 读取前方线程数据，形成分组到组内通信的使用链。
-<!-- cannbot:related:end -->

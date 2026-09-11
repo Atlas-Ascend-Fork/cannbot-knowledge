@@ -66,11 +66,3 @@ uint32_t minValue = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetIsNanMaxMinTmpSize(plat, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetIsNanTmpBufferFactorSize](get_is_nan_tmp_buffer_factor_size.md)（`related`）：获取IsNan接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；host侧Tiling接口，用于获取IsNan接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两接口分别从固定临时空间反推单次元素量、按输入 shape 求临时空间上下界，共同完成 IsNan 的 Host Tiling 容量决策。
-- [IsNan](is_nan.md)（`related`）：host侧Tiling接口，用于获取IsNan接口所需的最大和最小临时空间大小；临时空间大小通过GetIsNanMaxMinTmpSize获取。。左卡返回 IsNan 可用临时空间范围，右卡明确由该查询结果为 sharedTmpBuffer 定容；两端直接衔接 950 Host Tiling 与按元素 NaN 判定 Kernel。
-<!-- cannbot:related:end -->

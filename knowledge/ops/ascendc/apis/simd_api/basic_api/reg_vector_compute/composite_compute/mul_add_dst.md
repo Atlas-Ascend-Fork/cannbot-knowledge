@@ -108,22 +108,8 @@ __simd_vf__ inline void MulAddDstVF(__ubuf__ T* dstAddr, __ubuf__ T* src0Addr, _
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [MulAddDst FMA 单次舍入与 golden Mul+Add 双舍入偏差](../../../../../runbooks/precision/muladddst_fma_golden_mul_add.md)（`exemplifies`）：Phase 2 用 VF 函数 `MulAddDstVF`（`__simd_vf__` + `asc_vf_call`，内部 `AscendC::Reg::MulAddDst`）计算 `y = addend + x * multiplier`。golden（C++ 独立参考）用 `multiplier * x` 再 `+ addend` 两次独立 fp32 舍入。；该接口按元素将srcReg0与srcReg1相乘再加上dstReg，根据mask将计算结果写入dstReg。。运行手册在 VF 中实际调用 MulAddDst，并因该融合乘加与 golden 的分离双舍入不同而出现 ULP 偏差；API 卡定义乘积加回 dstReg 的运算契约，可用于定位为何要改成 Mul 与 Add 两步。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [InplaceLerp 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_lerp_950.md)（`related`）：算子声明的固定版本源码包含对 `MulAddDst(...)` 的直接调用（第 166 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_bf16_nddma_with_loops.h#L166)
-- [AttentionUpdate 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/attention_update_950.md)（`related`）：算子声明的固定版本源码包含对 `MulAddDst(...)` 的直接调用（第 314 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/attention_update/op_kernel/arch35/attention_update_with_lse_regbase.h#L314)
-- [InplaceLerps 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_lerps_950.md)（`related`）：算子声明的固定版本源码包含对 `MulAddDst(...)` 的直接调用（第 165 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_0_nddma_with_loops.h#L165)
-- [QuantLightningIndexer 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/quant_lightning_indexer_950.md)（`related`）：算子声明的固定版本源码包含对 `MulAddDst(...)` 的直接调用（第 180 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/lightning_indexer/op_kernel/arch35/vf/common/lightning_indexer_vector1_base.h#L180)
-- [Lerp 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/lerp_950.md)（`related`）：算子声明的固定版本源码包含对 `MulAddDst(...)` 的直接调用（第 166 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_bf16_nddma_with_loops.h#L166)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [InplaceLerp 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_lerp_950.md)
+- [AttentionUpdate 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/attention_update_950.md)
+- [InplaceLerps 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_lerps_950.md)
+- [QuantLightningIndexer 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/quant_lightning_indexer_950.md)
+- [Lerp 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/lerp_950.md)

@@ -575,9 +575,4 @@ Host 不以“输入队列能放多少”直接选 tile，而先扣 POD，再按
 | 精度与尾块 | half/float 直接；BF16 升 FP32/RINT；tail 字节搬运 | dtype 模板、round mode、有效 dataCount | `InnerComputer`; `CopyIn/CopyOut` |
 | 失败边界 | 校验失败阻断 launch；无 unknown-key fallback | ≤8 维、输出容量、≤50 项可依赖范围 | `CheckOpInfo`; `foreach_erf` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Erf](../../../../apis/simd_api/adv_api/math_compute/erf_interface/erf.md)（`related`）：焦点算子路线明确为“R-002 FLOAT32 直接 `Erf<float,false>`”，候选 API 的计算合同是“按元素做误差函数计算（高斯误差函数，error function）。”；该 primitive 是 ForeachErf FLOAT32 Device 路线的直接计算节点。
-- [ForeachErf 950 ACLNN 算子知识](foreach_erf_950.md)（`same_topic`）：对 TensorList 中每个张量逐元素计算 erf；950 Device 实体采用 clamp 后的 FP32 有理式近似。；对 TensorList 中每个张量逐元素计算 `y_i［j］ = erf(x_i［j］)`。。两卡是 ForeachErf 在 950 与 A2/A3 域上的同一逐 TensorList 元素 erf 算子语义，950 卡进一步给出有理式近似实现。
-<!-- cannbot:related:end -->
+- [Erf](../../../../apis/simd_api/adv_api/math_compute/erf_interface/erf.md)

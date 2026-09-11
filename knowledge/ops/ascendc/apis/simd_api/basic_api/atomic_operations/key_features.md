@@ -397,11 +397,3 @@ Scalar单元访问GM上的信号量，存在两种访问方式：
     ```
 
 完整样例请参考：[数据搬运随路原子操作做确定性计算的样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/06_atomic/set_atomic_deterministic_computation)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DisableDmaAtomic](disable_dma_atomic.md)（`related`）：解决方案：通过DisableDmaAtomic禁用DMA原子操作；使用SetAtomicType配置原子类型；对浮点数累加结果进行reorder控制；或使用标量原子操作替代DMA随路原子操作。；禁用DMA搬运时的随路原子操作。调用后，后续从UB/L0C/L1到GM的DataCopy搬运不再执行原子操作，恢复为普通覆盖写入。。候选接口直接实现焦点卡针对浮点原子累加非确定性的关闭动作。
-- [SetAtomicAdd](set_atomic_add.md)（`related`）：函数原型：__aicore__ inline void SetAtomicAdd<T>()。模板参数T指定数据类型。参数：无。约束：与DisableDmaAtomic配合使用；浮点数累加可能产生非确定性结果。头文件：basic_api/kernel_operator_atomic_intf.h。；非确定性计算产生的前提条件：原子操作类型为累加（最大值/最小值满足结合律不受影响）、数据类型为浮点数（整数加法满足结合律不受影响）、带随路原子操作的搬运指令达到3条及以上。。候选特性卡补全焦点接口何时出现非确定性以及如何规避。
-<!-- cannbot:related:end -->

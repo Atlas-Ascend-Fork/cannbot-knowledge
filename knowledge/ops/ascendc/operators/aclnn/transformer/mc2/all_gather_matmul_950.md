@@ -711,9 +711,4 @@ Host task generation、tiling key 和 Device `HcclTypeSelector` 三处共同选�
 | 精度与尾块 | FP, scalar, MX, perblock routes | scale dtype/group and tail POD | tilers/router |
 | 失败边界 | selector/guard list | no cross-scene fallback | IsCapable/checks |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AllGather](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/all_gather.md)（`related`）：焦点卡的 Device 流程是“所有 tile 先异步提交，AIC 同时计算本地块；远端块只等待对应 handle”，候选 API 返回“该任务的标识handleId”；算子正是用 AllGather 的 handle 粒度等待来解锁各远端 Matmul tile。
-- [AllGatherMatmul A2/A3 ACLNN 算子知识](all_gather_matmul.md)（`same_topic`）：`gatherOut=AllGather(x1)`；浮点 `y=gatherOut@x2`；INT8/INT4 先 INT32 累加再反量化；FP16/BF16 或 FP8/HIF8 pertensor/perblock/MX 的 AllGather+Matmul+dequant。两卡闭合同一 AllGatherMatmul V2 通算融合算子，分别记录 A2/A3 的浮点与整数路线、950 的 FP8/HIF8 和 CCU/AICPU 路线。
-<!-- cannbot:related:end -->
+- [AllGather](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/all_gather.md)

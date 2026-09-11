@@ -592,10 +592,5 @@ for (uint32_t index = 0; index < taskCnt; index++) {
 | 精度与尾块 | dtype/bias key、MatMul POD、64×256 copy tail | BF16 bias规则、B transpose layout、有效 tail | key headers、MatMul/transpose body |
 | 失败边界 | Host/API/Tiling均显式失败 | 不得把非法 rank、commMode、window、shape 静默成功 | `CheckAndHandleParams`、两平台 `DoOpTiling` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AlltoAll](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/allto_all.md)（`related`）：`Y=AlltoAll(P).view(R*BS,H2/R)`；每张卡向通信域内所有卡发送相同数据量的数据；连接融合算子的通信阶段与 HCCL 任务语义。
-- [SetCcTilingV2](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/set_cc_tiling_v2.md)（`related`）：`mc2CcTiling` ｜ generated POD ｜ 同上 ｜ HCCL CC 配置 ｜ 同上 ｜ `SetCcTilingV2`；Mc2CcTiling在Host侧计算得出；连接 Host 产生的通信 Tiling 与 Kernel 地址设置。
-- [MatmulAlltoAll 950 ACLNN 算子知识](matmul_allto_all_950.md)（`same_topic`）：｜ 计算语义 ｜ `C=X1@X2+bias`，再把 `［M,N］` 重排为 `［R,M,N/R］` 并执行 AlltoAll，输出 `［R*M,N/R］` ｜；｜ 计算语义 ｜ `C=X1@X2+bias`（bias 可空），`P=C.view(BS,R,H2/R).permute(1,0,2)`，`Y=AlltoAll(P).view(R*BS,H2/R)` ｜。两卡描述同一 MatmulAlltoAllV2 的 MatMul、重排和 AlltoAll 语义，分别闭合 950 与 A2/A3 的 MIX_CV 实现路线。
-<!-- cannbot:related:end -->
+- [AlltoAll](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/allto_all.md)
+- [SetCcTilingV2](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/set_cc_tiling_v2.md)

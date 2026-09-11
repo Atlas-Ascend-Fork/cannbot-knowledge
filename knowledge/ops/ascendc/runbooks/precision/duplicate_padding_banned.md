@@ -62,9 +62,3 @@ SoftplusV2Grad arch35 kernel 在修复 Select 模式0→模式2（见姊妹卡 [
 ## 误诊
 
 agent 初判"padding 垃圾 mask 污染有效元素"方向正确，但修复方案（全量 `Duplicate` 清零）未考虑 `Duplicate` 无 offset 语义会覆盖有效区，导致回归。正确接续点应是源头清零或区间清零。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Duplicate](../../apis/simd_api/basic_api/memory_vector_compute/data_padding/duplicate.md)（`exemplifies`）：“将变量或立即数复制多次并填充到向量中，支持前n个数据计算和高维切分计算两种方式。”明确给出左端事实；“2. `Duplicate(bG, 0, count_padded)` 同样从 0 开始全量填 0，覆盖了 `bG`（gradOutput）的有效元素——`Duplicate` 不支持 offset 操作，只能从 0 开始填整个 `count_padded`，无法只清 `［count, count_padded)` 区间。”明确给出右端事实。API 从起点连续填充的语义解释了为何试图只清 padding 却覆盖有效区；排障页给出全量 Duplicate 后 ST 回归及源头/区间清零替代方向。
-<!-- cannbot:related:end -->

@@ -48,10 +48,3 @@ __gm__ foo_t *info; // info points to an array of foo_t elements
     ```
 
     动态内存的实际内存大小需要在核函数（Kernel）启动时配置。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [纯 SIMT kernel 形参 __gm__ 导致编译失败](../../../../runbooks/compilation/pure_simt_parameters_do_not_use_gm_qualifier.md)（`exemplifies`）：SIMD 与 SIMT 混合编程使用两种内存空间限定符；保留纯 SIMT 的 `__global__` kernel 与寻址算法，只从函数形参移除 `__gm__`，让 普通 `const T *` / `T *` 承载 GM 地址。API 卡把 `__gm__` 定位于混合编程语法，运行手册给出纯 SIMT 编译前端中的相反形参写法和真实报错，形成编程模式切换时的具体边界。
-<!-- cannbot:related:end -->

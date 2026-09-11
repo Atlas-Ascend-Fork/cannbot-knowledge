@@ -61,10 +61,3 @@ while (mm.Iterate()) {
     // 其他操作
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTensorC](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_tensor_c.md)（`explains`）：用户可以通过GetTensorC接口获取对应的单片数据；Iterate后，获取一块或者两块C矩阵片。场景卡要求 Partial Output 后从 GetTensorC 取得单片并自行累加 K 轴，接口卡给出 INNER/OUTER_PRODUCT 返回一片或两片的合同；联合可写出正确取片与累加循环。
-<!-- cannbot:related:end -->

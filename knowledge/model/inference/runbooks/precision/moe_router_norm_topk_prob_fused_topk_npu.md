@@ -95,9 +95,3 @@ final_hidden_states = torch_npu.npu_moe_finalize_routing(..., scales=scales, ...
 - NPU 强制 `norm_topk_prob=False` + 注释根因（fused_topk_npu 先归一化再缩放）、`routed_scaling_factor` 传入 fused_topk/experts 配置：最终合并态 diff 事实 @8cd85a87af03（同 PR 内曾试 `router_dtype=bf16` 已被回退、不纳入）。溯源下探 [cann-recipes-infer-pr-284-feat-llada2-x-sglang-ascend](https://gitcode.com/cann/cann-recipes-infer/merge_requests/284)。
 - 950 门控 top-k 固定 `renorm=0` + Python 侧对 `norm_type==0 & renorm==1` 补重归一、`topk_ids→int32`：合并态 diff 事实 @d452d04656eabc0bf719e1d07093973274eebd6e（`device/device_op.py` 950 override + `ops/fused_moe/experts_selector.py` 分发）。溯源下探 [vllm-ascend-pr-7573-950-bugfix-fix-fused-moe-950-mxfp8-scale-normalization-load-balance-routin](https://github.com/vllm-project/vllm-ascend/pull/7573)。
 - `apply_router_weight_on_input`（topk==1 断言 + 输入端预乘 + finalize `scales=ones_like` + `forward_oot` 透传）：合并态 diff 事实 @e56447033889ca95df512208cab22ef832bfdf07（`ops/fused_moe.py::fused_experts` + `ops/common_fused_moe.py::forward_oot`）。溯源下探 [vllm-ascend-issue-495-bug-notimplementederror-custom-routing-function-is-not-supported-now](https://github.com/vllm-project/vllm-ascend/issues/495)。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoE Dispatch/Combine V2（一体化融合算子）](../../concepts/techniques/moe_dispatch_combine_v2.md)（`related`）：精度卡给出“**这些环节里，同一份归一化或同一份路由权重只能被应用一次**”；Dispatch/Combine 卡则明确“**combine_v2**：专家计算后按 dispatch 的逆映射把结果退还回 token 原属 rank（All-to-All 收集 + 加权融合），入参 `assist_info_for_combine` 复用 dispatch 输出、`expert_scales` 为 routing 权重；`ep_send_counts` 取 dispatch 的 `ep_recv_counts`。”，由此可定位 routing 权重在 combine 端的实际消费点并避免重复加权。
-<!-- cannbot:related:end -->

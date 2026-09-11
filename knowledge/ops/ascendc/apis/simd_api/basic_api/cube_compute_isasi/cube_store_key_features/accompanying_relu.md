@@ -29,11 +29,3 @@ platforms: []
 - 开启Normal ReLU（reluPre=1）且同时配置clipReluPre=1并调用SetFixPipeClipRelu接口时，即Normal ReLU + ClipReLU，先执行`y = max(0, x)`，再执行`y = min(clipReluMaxVal, y)`，其中clipReluMaxVal通过SetFixPipeClipRelu接口设置。详见[SetFixPipeClipRelu](../cube_store_aux_config/set_fix_pipe_clip_relu.md)。
 
 与随路量化组合使用的详细信息请参考[随路量化与随路ReLU场景组合](accompanying_quantization_and_relu_scenario_combination.md)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetFixPipeClipRelu](../cube_store_aux_config/set_fix_pipe_clip_relu.md)（`related`）：开启Normal ReLU（reluPre=1）且同时配置clipReluPre=1并调用SetFixPipeClipRelu接口时，即Normal ReLU + ClipReLU，先执行`y = max(0, x)`，再执行`y = min(clipReluMaxVal, y)`，其中clipReluMaxVal通过SetFixPipeClipRelu接口设置。详见SetFixPipeClipRelu。；DataCopy 数据搬运（L0C Buffer→GM）过程中进行随路量化后，设置 ClipReLU 操作的最大值。ClipReLU 计算公式为 min(clipReluMaxVal, srcData)。。随路 ReLU 特性卡要求调用 SetFixPipeClipRelu 设置上界，API 卡给出 L0C 到 GM 搬运时的具体裁剪公式。
-- [随路Relu](../../../tensor_api/matrix_compute/cube_store_key_features/relu_pre.md)（`same_topic`）：enableRelu默认值为false，表示不使能随路Relu。设置为true时，搬出过程中对输出数据执行Normal Relu激活；**DataCopyCO12DstParams结构体参数**定义中reluPre可设置为1开启Normal ReLU。两端描述矩阵结果搬出阶段开启 Normal ReLU 的同一能力，只是分别通过 Tensor trait 与基础 API 参数配置。
-<!-- cannbot:related:end -->

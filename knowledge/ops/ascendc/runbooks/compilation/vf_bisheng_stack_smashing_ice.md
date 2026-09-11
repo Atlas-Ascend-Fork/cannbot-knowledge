@@ -157,9 +157,3 @@ __simd_vf__ inline void TriuVF(__ubuf__ T* outUb, __ubuf__ T* selfUb,
 
 - 初始怀疑 ICE 由 `reinterpret_cast<RegTensor<T>&>(zeroReg)`（double 分支）触发：移除 double 分支后全 14 dtype 仍 ICE，证明 `reinterpret_cast` 非根因（来源平台：950；证据等级：tool_observed，build 输出）。
 - 初始怀疑 `Duplicate` 本身触发 ICE：扁平化后同样的 `Duplicate` 调用编译通过，证明根因是嵌套循环结构而非具体 API（来源平台：950；证据等级：tool_observed）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RegBase VF __simd_vf__ 路线致 bisheng 编译崩溃](regbase_vf_simd_vf_bisheng_exit139_banned.md)（`related`）：`__simd_vf__` 函数体内采用**嵌套循环结构**：外层 `while (remaining > 0)` 逐行迭代，内含两个独立 `while` 子循环，分别在子循环体内调用 MicroAPI reg-compute 原语（`Duplicate` + `StoreAlign` 与 `LoadAlign` + `StoreAlign`）。；RegBase VF `__simd_vf__` + `AscendC::Reg::*` 路线在本 CANN/架构组合下不可用；`safety_fallback` = kernel 侧基础向量 API `AscendC::Add`/`AscendC::Muls`（LocalTensor 参数）路线。。两张运行手册覆盖 950 上 __simd_vf__ 的两层失败边界：嵌套 MicroAPI 循环触发 INFERCHANNEL stack smashing，Reg::* VF 路线则整体退回 LocalTensor 基础向量 API。
-<!-- cannbot:related:end -->

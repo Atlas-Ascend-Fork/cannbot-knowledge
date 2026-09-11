@@ -82,10 +82,3 @@ inline float __ull2float_rn(const unsigned long long int x)
         dst[idx] = __ull2float_rn(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__ull2float_rna](_ull2float_rna.md)（`same_topic`）：功能：遵循CAST_RINT模式，将uint64类型数据转换为浮点数，返回转换后的值。；功能：遵循CAST_ROUND模式，将uint64类型数据转换为浮点数，返回转换后的值。。两端执行相同 uint64 到 float 转换但采用 CAST_RINT 与 CAST_ROUND 两种舍入合同，联合阅读可据目标舍入规则选择对应 intrinsic 并核对临界值。
-<!-- cannbot:related:end -->

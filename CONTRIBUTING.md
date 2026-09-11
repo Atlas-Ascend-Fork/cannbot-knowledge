@@ -113,7 +113,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 4. 验证方式及证据强度；
 5. 与其他卡片的显式相对链接。
 
-不要求所有卡片使用同一模板：概念卡应突出定义和边界，API 卡应突出语义和约束，Runbook 应突出信号、判断和处置步骤，优化卡应突出触发条件、收益来源和失效边界。Registry 固定归档的官方 API/Guide 过滤导航页，以 `index.md` 作为唯一目录入口；保留页只删除 Registry 声明的冗余章节、添加 Frontmatter、修正失效链接目标，并由图谱流程维护 `cannbot:related` 区块。产品支持范围只保存在 Frontmatter `platforms` 中。
+不要求所有卡片使用同一模板：概念卡应突出定义和边界，API 卡应突出语义和约束，Runbook 应突出信号、判断和处置步骤，优化卡应突出触发条件、收益来源和失效边界。Registry 固定归档的官方 API/Guide 过滤导航页，以 `index.md` 作为唯一目录入口；保留页只删除 Registry 声明的冗余章节、添加 Frontmatter、修正失效链接目标，可在文末追加普通卡片链接。产品支持范围只保存在 Frontmatter `platforms` 中。
 
 ### 3.7 更新导航与记录
 
@@ -121,7 +121,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 - 新增、删除或移动卡片时，同步受影响的每一级 `index.md`；
 - 卡片移动时在同一变更中更新正文链接；Concept 与索引链接必须留在 `knowledge/` Bundle 内；知识卡可额外链接登记的固定提交本地源码文件作为证据导航，不生成源码 Concept；
 - 实质知识或治理变更记录到当天 `logs/`，纯排版和错别字修复不记录；
-- 图谱从 Concept/Index、目录层级、人工正文链接、已提交受管导航和通过指纹校验的多 Agent 关系判定状态本地构建；无本地判定缓存时仍必须验证已提交导航的端点并纳入图谱。候选、review、裁决、判定缓存、完整图谱和可视化都保存在 ignored 的 `artifacts/graphs/`，不签入 Git。`cannbot:related` 受管导航块应同步到知识卡并提交，Query 会将其排除在检索语料之外。
+- 图谱按需从知识卡之间的普通 Markdown 链接生成，包括 API 与算子卡片的关联。日常入库不构图、不做全库关系判定，不维护专用区块；没有链接的卡片也可入库。Index 仅提供导航，固定源码仅用于来源；图谱产物保存在 ignored 的 `artifacts/graphs/`。
 
 ### 3.8 知识提交检查
 

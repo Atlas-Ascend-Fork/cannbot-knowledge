@@ -53,10 +53,3 @@ AscendC::Layout<AscendC::Shape<int, int, int>, AscendC::Stride<int, int, int>> l
 // 使用layout函数获取实例化对象 
 constexpr auto& layout = layoutInit.layout();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MakeLayout](make_layout.md)（`related`）：“Layout结构体用于描述Tensor的数据排布，包含shape（各维度大小）、stride（各维度步长）和format（数据格式）等成员。”与“构造Layout结构体的辅助函数。通过传入shape、stride和format等信息创建Layout。”分别来自双方当前正文。Layout 卡定义结构体所承载的 shape、stride、format，MakeLayout 卡说明以这三类信息构造该结构体，形成数据描述与构造入口的直接关系。
-<!-- cannbot:related:end -->

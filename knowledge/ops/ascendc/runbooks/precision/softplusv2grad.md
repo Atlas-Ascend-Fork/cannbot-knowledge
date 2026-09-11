@@ -94,9 +94,3 @@ __simd_vf__ inline void SigmoidGradVF(
 - 推断可迁移至 a2/a3（同 arch regbase API `CompareScalar`/`Select`/`CMPMODE`），但**未验证，推断可迁移**——本卡 `platforms: [950]` 为实测，不得据推断回填平台。
 - GEIR 图模式路径未在本轮验证 threshold 修复（该路径有独立 AIVEC 崩溃问题，未收敛）。
 - `z` 极大（`z ≥ 18` fp32 / `z ≥ 11` fp16）时 exp 下溢成立，原 4-op 链与修复后链结果一致——修复不改变大 z 行为，仅修正"略大于 θ"区间。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SoftplusV2Grad VF Form B exp 溢出判别](softplusv2grad_vf_form_b_exp.md)（`same_topic`）：**触发**：以 `1/(1+exp(-z))` 除法改写实现的 SoftplusGrad 族 kernel，ST 出现**分层失败**——默认 θ=20.0 用例全过（baseline PASS），仅带非默认（小/负/零）θ 的用例集中超差，且超差用例的 θ 全部落入使 `exp(-(θ+δ))` 不可忽略的区间。次级触发：超差率随 ｜θ｜ 减小而上升（θ=-9.812 时 56% 最差，θ=-2.333 时仅 358/11760）。；触发（tool_observed）：在 arch35 SoftplusV2Grad device-side VF 链（bf16/fp16 实例化）上跑 TTK 黑盒（golden_plugin 走 numpy 独立 Form A 参考），22 例 `mare` 超阈 46×–96×（相对各自 dtype 阈值），`mere<1e-7` 仅 outlier 元素超阈；均为 bf16/fp16、`threshold` 较大（9.17 / 17.67 / 18.13）或 `grad_output` 含 inf 的场景。同一 kernel 在 ST（golden 用 `torch.ops.aten.softplus_backward`）下 72/72 PASS——ST 与 TTK golden 都走 Form A，两侧在数值边界发散指向 kernel 端的 Form B。两卡诊断同一 SoftplusV2Grad VF 精度任务的两种不同失败签名：缺 threshold 线性分支与 Form B 正向 exp 溢出，联合使用可避免误归因。
-<!-- cannbot:related:end -->

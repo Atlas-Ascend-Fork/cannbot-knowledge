@@ -92,11 +92,3 @@ __global__ __mix__(1, 2) void mmad_vec_custom(__gm__ uint8_t* xMatrix, __gm__ ui
 | 4 | Vector核VF融合 | 当前使用MemBase API，中间结果需写回UB | 使用RegBase+asc_vf_call进行VF融合，中间计算在寄存器完成 |
 | 5 | 大包搬运 | 当前仅搬运单块baseM×baseN数据 | 增大singleCoreM/singleCoreN，减少搬运次数 |
 | 6 | GM中转优化 | Cube核结果需经GM中转给Vector核（L0C→GM→UB） | Ascend 950PR支持Fixpipe直接写入UB（L0C→UB），省去GM中转开销 |
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [中级性能优化](intermediate_optimization.md)（`related`）：“## 可优化方向分析”明确给出左端事实；“本节在入门功能落地的基础上，介绍Matmul融合算子的中级性能优化方法。”明确给出右端事实。入门页列出 L1/L0 双缓冲、细粒度同步、VF 融合等瓶颈；中级页把这些方向展开为 Matmul+Gelu 的具体优化案例和性能数据。
-- [融合算子编程算子实现](../../../simd_operator_impl/fusion_operator_programming/cv_fusion/operator_impl.md)（`same_topic`）：下文将以Matmul+LeakyRelu融合算子的实现为例，介绍Mix融合算子的设计和实现流程。；本样例基于C++ Tensor编程模式实现Matmul和LeakyRelu融合计算，展示Cube单元（矩阵计算单元）和Vector单元（向量计算单元）协同计算的编程模式。；两页围绕同一个 Matmul+LeakyRelu Mix 算子，前者给出设计流程，后者给出可执行入门实现。
-<!-- cannbot:related:end -->

@@ -143,28 +143,13 @@ source_headers:
   ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddDeqRelu](../composite_compute/add_deq_relu.md)（`related`）：“复合矢量计算接口，按元素求和后反量化并 ReLU。计算公式 dst_i = relu((src0_i + src1_i) * deqScale)。支持 950/a2/a3。”与“设置DEQSCALE寄存器的值，用于Vector计算单元上的量化计算，支持不同场景的量化参数配置。”分别给出双端正文事实；AddDeqRelu 的反量化乘子来自 DEQSCALE 寄存器，SetDeqScale 负责配置该寄存器，形成调用前配置到复合矢量计算的直接参数依赖。
-- [CastDequant](../composite_compute/cast_dequant.md)（`related`）：“对输入做量化并进行精度转换，对输出结果的溢出采用饱和处理。需与SetDeqScale接口配合使用。”；“设置DEQSCALE寄存器的值，用于Vector计算单元上的量化计算，支持不同场景的量化参数配置。”。SetDeqScale 写入 CastDequant 计算前必须存在的 DEQSCALE 配置。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 22 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AddLayerNormQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant.md)（`related`）：算子声明的固定版本源码包含对 `SetDeqScale(...)` 的直接调用（第 299 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_quant/op_kernel/add_layer_norm_quant_helper.h#L299)
-- [grouped_matmul_swiglu_quant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant.md)（`related`）：算子声明的固定版本源码包含对 `SetDeqScale(...)` 的直接调用（第 530 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_swiglu_quant_v2/op_kernel/grouped_matmul_swiglu_quant_spilit_fusion.h#L530)
-- [AddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `SetDeqScale(...)` 的直接调用（第 304 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/rms_norm_base.h#L304)
-- [AlltoAllMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_matmul.md)（`related`）：算子声明的固定版本源码包含对 `SetDeqScale(...)` 的直接调用（第 339 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_all_matmul/op_kernel/arch22/allto_all_matmul.h#L339)
-- [AddRmsNormCast A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_cast.md)（`related`）：算子声明的固定版本源码包含对 `SetDeqScale(...)` 的直接调用（第 304 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/rms_norm_base.h#L304)
-- [AlltoAllQuantMatmul A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_quant_matmul.md)（`related`）：算子声明的固定版本源码包含对 `SetDeqScale(...)` 的直接调用（第 339 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_all_matmul/op_kernel/arch22/allto_all_matmul.h#L339)
-- [AddRmsNormDynamicQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_dynamic_quant.md)（`related`）：算子声明的固定版本源码包含对 `SetDeqScale(...)` 的直接调用（第 184 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_dynamic_quant/op_kernel/add_rms_norm_dynamic_quant_helper.h#L184)
-- [AttentionToFfn A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)（`related`）：算子声明的固定版本源码包含对 `SetDeqScale(...)` 的直接调用（第 348 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L348)
-- [AddRmsNormQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_quant.md)（`related`）：算子声明的固定版本源码包含对 `SetDeqScale(...)` 的直接调用（第 231 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_base.h#L231)
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)（`related`）：算子声明的固定版本源码包含对 `SetDeqScale(...)` 的直接调用（第 451 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_a2.h#L451)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AddLayerNormQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant.md)
+- [grouped_matmul_swiglu_quant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant.md)
+- [AddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_950.md)
+- [AlltoAllMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_matmul.md)
+- [AddRmsNormCast A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_cast.md)
+- [AlltoAllQuantMatmul A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_quant_matmul.md)
+- [AddRmsNormDynamicQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_dynamic_quant.md)
+- [AttentionToFfn A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/attention_to_ffn.md)
+- [AddRmsNormQuant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_quant.md)
+- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)

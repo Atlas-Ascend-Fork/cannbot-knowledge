@@ -53,9 +53,3 @@ platforms: ["950"]
 
 - 在 host 侧同时维护「压缩坐标系」与「R 维坐标系」两套 shape，但只对 shape 做填充、忘了对 `split.axis` 做对应 `delta` 偏移——这是坐标管线不一致的典型坑。
 - 用「在 kernel 里 1D 分段搬运绕过 NDDMA stride 约束」去掩盖 host tiling 坐标 bug：治标不治本，且会引入不必要的 kernel 复杂度。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FindSplitAxis 误传 total_slots 致 slot 翻倍](../precision/findsplitaxis_total_slots_slot.md)（`related`）：“定位 `DoTilingAndSet<R>` 中对 `FindSplitAxis` 的调用，核查第 4 个实参传的是 `total_slots`”；“真正根因在 host 侧 `DoTilingAndSet` 的坐标系不一致，与 NDDMA stride 无关”。两卡覆盖同一 Broadcast Tiling 调用链的两个独立参数/坐标故障，可组成排查顺序。
-<!-- cannbot:related:end -->

@@ -61,10 +61,3 @@ static __aicore__ inline void Unlock(MutexID id)
 ## 调用示例<a name="section123275308128"></a>
 
 Lock与Unlock必须严格配对使用，详细示例请参考[Lock调用示例](lock.md#section123275308128)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Lock](lock.md)（`related`）：根据MutexID获取Mutex，若Mutex已被锁定，将阻塞后续指定流水指令队列，直到当前流水的前序指令中对应MutexID的Mutex被Unlock。；直到当前流水的前序指令执行完成后，根据MutexID释放对应Mutex。。Lock 的阻塞条件以同 MutexID 的 Unlock 为解除点，Unlock 又要求前序流水完成后释放，二者共同定义成对互斥协议。
-<!-- cannbot:related:end -->

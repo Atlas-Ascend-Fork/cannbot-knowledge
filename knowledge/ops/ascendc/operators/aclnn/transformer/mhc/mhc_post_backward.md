@@ -404,9 +404,3 @@ for (uint64_t i = startIdx; i < endIdx; i++) {
 | 同步 | MTE2/V/MTE3 的 event 顺序和 PIPE_V barrier 可复用 | flag ID 0/1/2、单缓冲防覆盖关系不得删除或虚构跨核同步 | `Process/VecMatmulMknk/VecMatmulMkkn` |
 | 精度与尾块 | T→FP32→T、FP32 累加、full/tail 共用 helper 可复用 | `CAST_NONE/CAST_ROUND`、显式四行 Mknk、tailC 搬运长度不得改变 | `Process/VecMatmulMknk` |
 | 失败边界 | A2/A3 的 n/D/空 tensor/SoC 限制可复用 | 不得扩展到 n=6/8、非 910B/910_93 或声称资源 fallback | `CheckShape/REGISTER_TILING_TEMPLATE_WITH_SOCVERSION` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MhcPostBackward 950 ACLNN 算子知识](mhc_post_backward_950.md)（`same_topic`）：对每个 T 或 B×S 位置计算 `gradX=hRes·gradOutput`、`gradHRes=x·gradOutput^T`、`gradHOut=hPost^T·gradOutput`、`gradHPost=hOut·gradOutput^T`；同时生成 `gradX,gradHRes,gradHOut,gradHPost`；AIV 负责三项，AIC Matmul 负责 `gradHRes`。两卡生成同一四路 MhcPost 梯度；A2/A3 在 AIV UB 中计算全部乘加，950 用 MIX_CV 把 gradHRes 交给 AIC Matmul，适合跨架构实现对照。
-<!-- cannbot:related:end -->

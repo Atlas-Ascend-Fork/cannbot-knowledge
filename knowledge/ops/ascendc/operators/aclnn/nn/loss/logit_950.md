@@ -523,10 +523,3 @@ Compare 的工作长度上取整到 64 元素，而 Select、后续算术和 GM 
 | 同步 | event 0/1 + V barriers | 同半区覆盖必须等待 MTE3 | `Process`/helpers |
 | 精度与尾块 | FP32 core；BF16 RINT | Compare 64 补齐不等于有效长度 | `ComputeStepOne`/`CastAndCopyOut` |
 | 失败边界 | Host dtype 失败 | unknown key 无 fallback/无写出 | `RunBigKernelTiling`/`logit` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LogitGrad A2/A3 ACLNN 算子知识](logit_grad.md)（`related`）：`eps>=0` 时，Device 先构造 `x==x`、`x>=eps`、`x<=1-eps` 三个 mask，依次完成上界、下界和 NaN 选择，得到 `z`；随后原地执行 `x2=-z+1`、`x1=z/x2`、`x1=ln(x1)`。`eps<0` 跳过 clamp。FP16/BF16 输入先升为 FP32，所有算术均为 FP32。；Device 对三种输入 dtype 都用 FP32 执行 `1-x`、乘、除、双边比较和选择；FP16/BF16 输入先升为 FP32，结果再降回原 dtype。公开文档另称 `eps > 1` 输出 NaN、`eps == 1` 输出 Inf，但固定 Kernel 的可见谓词是同时满足 `x >= eps && x <= 1-eps`，不满足即在 `eps >= 0` 分支选择 0；该边界存在文档与实现不一致，复用时应以目标 CANN 的实测契约确认，本文不推测消解。。Logit 950 给出前向裁剪与对数变换，LogitGrad A2/A3 给出同一 eps 边界下的导数计算和已知文档冲突，能闭合前向到反向的实现核对。
-- [Logit A2/A3 ACLNN 算子知识](logit.md)（`same_topic`）：“｜ 实际入口 ｜ `aclnnLogitGetWorkspaceSize` + `aclnnLogit`，公开 ACLNN、无 V2 版本族 ｜”与“｜ 实际入口 ｜ `aclnnLogitGetWorkspaceSize` + `aclnnLogit`，公开 ACLNN、固定仓无更高版本 ｜”锁定同一公开接口；两卡分别闭合 A2/A3 与 950 的构建和平台支持，可直接用于跨平台版本选型。
-<!-- cannbot:related:end -->

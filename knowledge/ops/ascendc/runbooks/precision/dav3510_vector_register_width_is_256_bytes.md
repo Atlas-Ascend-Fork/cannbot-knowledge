@@ -137,12 +137,3 @@ constexpr static uint32_t LANES = 64;
 ## 误诊
 
 曾把高半错位归因于 `LoadAlign` 默认 distribution，并将所有 load 显式改为 `DIST_NORM`；实卡输出逐值不变，故该假设被否定。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RegTensor](../../apis/simd_api/basic_api/reg_vector_compute/register_data_types/reg_tensor.md)（`exemplifies`）：RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Length），长度为256B。b64或complex32类型下，支持通过RegTrait模板参数扩展存储2VL用于复杂计算。；工具链头文件与算子源码探针都显示 dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。int32 寄存器实际只有 `256 / 4 = 64` 个 lane。。API 的 256B 合同由 dav-3510 高半 lane 重放故障及头文件探针具体验证。
-- [Reg int32→int64 Cast 源目 VL 错配留空索引](int32_to_int64_reg_cast_must_respect_destination_lane_width.md)（`related`）：源代码以 `VECTOR_REG_WIDTH / sizeof(int32_t)` 得到 64-lane 的循环步长，但目标 `RegTensor<int64_t>` 只有 `VECTOR_REG_WIDTH / sizeof(int64_t)=32` lanes；因此每个 64 元素步长只能实际生成/存储 32 个 int64，中间 32 个位置被留空，下一轮又从下一个 64 元素起点继续。；工具链头文件与算子源码探针都显示 dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。int32 寄存器实际只有 `256 / 4 = 64` 个 lane。。平台宽度卡确定 256B 与 int32 64 lane，Cast 卡据此解释 int64 仅 32 lane 导致 widening 写空，二者闭合 lane 预算排障。
-- [VECTOR_REG_WIDTH 只能在 Device 作用域求值](../compilation/vector_reg_width_only_in_device_context.md)（`related`）：工具包探针在设备相关头文件中观测到 `VECTOR_REG_WIDTH=256` 字节；dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。；前卡规定常量的合法求值位置，后卡给出该值驱动 64-lane 分块的精度边界。
-- [B16 比较先升到 B32 锁定索引 lane](b16_value_and_b32_index_masks_need_common_b32_compute.md)（`same_topic`）：“工具链头文件与算子源码探针都显示 dav-3510 的 `VECTOR_REG_WIDTH` 是 256B，不是 512B。int32 寄存器实际只有 `256 / 4 = 64` 个 lane。”与“在 256B Reg 宽度下，B16 值寄存器有 128 个 lane，int32 索引寄存器只有 64 个 lane。”提供双方正文证据。两条精度卡共同定位 dav-3510 256B Reg 下 int32 只有 64 lane；后一条继续解释 B16 128-lane mask 与 B32 index 64-lane 的语义冲突。
-<!-- cannbot:related:end -->

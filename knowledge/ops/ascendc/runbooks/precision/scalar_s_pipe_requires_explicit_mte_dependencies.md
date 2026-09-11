@@ -273,10 +273,3 @@ path: `operators/cummin/cummin.asc`；symbols: `KernelCummin<T>::StoreOut`、`Ke
 ## 误诊
 
 整段同一常量容易被误认为“最终累加值被广播”或“数值公式错误”；本例的判别点是计算逻辑未改、只修复跨管同步后全部精度用例恢复。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线](../compilation/pipebarrier_pipe_s_is_not_supported.md)（`related`）：焦点卡采用“用三道 `PipeBarrier<PIPE_ALL>()` 显式串行化 `MTE2(load) → S(scalar) → MTE3(store) → buffer reuse`。”；编译卡指出“目标编译器对 `PipeBarrier` 的模板参数有受支持范围，`PIPE_S` 不在该范围内。”，解释为什么不能把三道 PIPE_ALL 简化为非法的 PIPE_S 屏障。
-- [VF 归约落 UB 后 GetValue 读取陈旧标量](vector_scalar_ub_handoff_requires_explicit_completion.md)（`related`）：焦点卡说明“`TQue::EnQue/DeQue` 建立的事件面向 Vector pipe，不能替代标量 S pipe 与 MTE2/MTE3 之间的跨管依赖”；另一故障卡同样证明“`PipeBarrier<PIPE_V>` 只约束 Vector pipe 内部顺序，不能保证前一 VF 的 `StoreAlign` 已对 `__aicore__` 标量侧 `LocalTensor::GetValue` 可见”，共同给出队列/V 屏障不足以建立跨执行域可见性的诊断规则。
-<!-- cannbot:related:end -->

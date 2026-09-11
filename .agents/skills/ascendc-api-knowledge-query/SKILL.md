@@ -45,7 +45,7 @@ python3 <api-skill-dir>/scripts/resolve_resources.py read --card "<选中 local_
 
 逐页执行输出的 `next_command`，直到同一 `file_sha256` 下第 1 行至末行连续读齐。结束行和续读位置只在页尾返回；看不到页尾就先补齐当前页，不推测下一页位置。不要给阅读命令接 `head`/`tail` 截断正文。文件改变就从头读。末页或 EOF 单独不能证明已读全文，分页指纹也不是 Query 审计的 `card_sha256`。
 
-`index.md` 是唯一导航文件；其他 Markdown（包括汇总、Operator、Runbook）选中后都全文阅读。标为“导航”的受管关系行只帮助选下一张卡，不能用未读目标的标题/理由作佐证。核对当前卡的声明、平台、生命周期与限制；`stable` 不是技术正确性的证明。
+`index.md` 是唯一导航文件；其他 Markdown（包括汇总、Operator、Runbook）选中后都全文阅读。正文中的普通链接可帮助选下一张卡，不能用未读目标的标题或链接说明作佐证。核对当前卡的声明、平台、生命周期与限制；`stable` 不是技术正确性的证明。
 
 ## 4. Agent 按问题缺口补证
 

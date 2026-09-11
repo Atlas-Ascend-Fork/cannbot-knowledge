@@ -79,9 +79,3 @@ plog 对 `aclnnDequantize_22`..`aclnnDequantize_39` 逐 case 输出上述错误�
 
 - 只拆 `REG_OP` 而不拆 `OP_ADD`：`OP_ADD` 同样有字节约束，仍会编译失败或只生成单 dtype 二进制。该路线标记为 `banned`。
 - 把 int8 与 int32 放进同一 `OP_ADD` input 槽位：opbuild 静默只生成一种 `simplifiedKey`，运行时才以 `SelectBin inconsistent` 暴露。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [原型注册接口（OP_ADD）](../../apis/utils_api/prototype_register_management/op_add.md)（`exemplifies`）：`OP_ADD` 同样受字节约束，不能只拆 `REG_OP` 而把所有 dtype 塞进单个 `OP_ADD`。；注册算子的原型定义，从而确保算子能够被框架正确识别、编译和执行。。运行手册展示 OP_ADD 原型中的 input dtype 字节数约束如何导致运行时 SelectBin 失败并要求拆分原型，API 卡定义 OP_ADD 的算子原型注册职责，是注册接口合同的具体故障实例。
-<!-- cannbot:related:end -->

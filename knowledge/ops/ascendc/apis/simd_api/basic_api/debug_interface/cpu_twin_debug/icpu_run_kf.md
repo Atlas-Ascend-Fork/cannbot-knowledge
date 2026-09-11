@@ -103,10 +103,3 @@ platforms:
         return 0;
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IcpuSetTilingKey](icpu_set_tiling_key.md)（`related`）：调测时只执行核函数中该tilingKey对应的分支；CPU 调测总入口，完成 CPU 侧的算子程序调用；连接分支选择与 CPU 调测启动。
-<!-- cannbot:related:end -->

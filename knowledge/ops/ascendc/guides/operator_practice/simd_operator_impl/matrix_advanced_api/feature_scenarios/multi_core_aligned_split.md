@@ -77,10 +77,3 @@ optiling::TCubeTiling tilingData;
 // 获取Tiling参数 
 int ret = cubeTiling.GetTiling(tilingData);    // if ret = -1, gen tiling failed 
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [多核非对齐切分](multi_core_unaligned_split.md)（`same_topic`）：主要的切分策略有切分K轴和不切分K轴两种；若M、N、K无法整除singleCoreM 、singleCoreN、 singleCoreK时，就会出现尾块。对齐切分卡定义 M/N/K 多核分块与核数配置，非对齐卡补充不能整除时用 SetTail 在 Iterate 前重设尾块大小，形成同一 Matmul 切分决策的完整分支。
-<!-- cannbot:related:end -->

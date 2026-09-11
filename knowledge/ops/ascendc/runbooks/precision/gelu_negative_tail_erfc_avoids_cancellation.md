@@ -201,9 +201,3 @@ GELU exact 路线的 fp32 大值域用例持续失败：多数普通范围和 fp
 ## 误诊
 
 这不是 Cast 精度或 padding 污染：失败只集中在 fp32 exact 的负大值尾部，且改公式形态即可让同一 harness 全通过。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendC GELU 三系数 erfc 在大值域 fp32 精度不足](gelu_erfc_polynomial_precision_budget.md)（`related`）：三系数 Abramowitz 7.1.25 的绝对近似误差在 `erfc` 极小时被 GELU 尾部的 `0.5*abs(x)` 放大；golden 此时接近零，因而相对误差指标显著超限。；唯一根因是公式形态在负尾部发生灾难性相消。。前者诊断 erfc 多项式绝对误差在 GELU 负尾部被放大，后者诊断 erf 形态两大项相消的结构性误差；二者共同给出负尾部精度排障时先选稳定 erfc 公式、再校准多项式阶数的连续决策链。
-<!-- cannbot:related:end -->

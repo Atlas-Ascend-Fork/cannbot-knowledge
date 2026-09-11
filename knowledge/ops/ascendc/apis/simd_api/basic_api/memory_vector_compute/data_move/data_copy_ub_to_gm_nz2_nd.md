@@ -154,10 +154,3 @@ AscendC::DataCopy(dstGlobal, srcLocal, intriParams);
 输入数据(srcLocal): [1 2 3 ... 1024]
 输出数据(dstGlobal):[1 2 ... 15 16 513 514 ... 527 528 17 18 ... 31 32 529 530 ... 543 544 ...497 498 ...  511 512  1009 1010... 1023 1024]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopy](data_copy_gm_to_ub_nd2_nz.md)（`same_topic`）：该接口为软仿接口，从易用性角度出发进行设计，支持在从Global Memory到Unified Buffer的数据搬运过程中进行ND到NZ格式的转换。；该接口为软仿接口，从易用性角度出发进行设计，支持在从Unified Buffer到Global Memory的数据搬运过程中进行NZ到ND格式的转换。。两端是 GM/UB 之间成对的 ND→NZ 搬入与 NZ→ND 搬出，联合阅读可闭合转换后的片上矩阵往返数据路径。
-<!-- cannbot:related:end -->

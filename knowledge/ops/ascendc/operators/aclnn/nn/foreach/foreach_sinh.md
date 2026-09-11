@@ -586,9 +586,3 @@ Host 把多个 Tensor 的元素视为连续总域进行负载分配，并用首�
 | 同步 | Queue 生命周期与 PIPE_V barrier | FP32 双子区消费前不得覆盖 | `InnerComputer::ComputePerCast` |
 | 精度与尾块 | FP16/FP32 直算；BF16 FP32+RINT | tail 按有效字节搬运 | `CopyIn/CopyOut/InnerComputer` |
 | 失败边界 | Host 校验阻断 launch | unknown key、UB 下溢不得当作 fallback | `CheckOpInfo`、entry branches |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachSinh 950 ACLNN 算子知识](foreach_sinh_950.md)（`same_topic`）：对 TensorList 中每个输入张量逐元素计算 `y_i［j］ = sinh(x_i［j］) = (exp(x_i［j］) - exp(-x_i［j］)) / 2`。；对 TensorList 每个 Tensor 逐元素计算 `sinh`；SIMT body 统一以 FP32 `sinhf` 求值。；两卡实现同一 ForeachSinh ACLNN 语义，分别闭合 A2/A3 向量公式与 950 SIMT sinhf 路线，可比较 dtype、精度和分块差异。
-<!-- cannbot:related:end -->

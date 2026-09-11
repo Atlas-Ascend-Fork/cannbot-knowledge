@@ -246,10 +246,3 @@ platforms:
         }
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [设置合适的核数和算子Kernel类型](../../../../guides/operator_practice/simd_operator_optimization/overhead_optimization/core_count_kernel_type.md)（`explains`）：所以推荐用户手动设置算子的Kernel类型。具体设置方法请参考设置Kernel类型。；用于用户自定义设置kernel类型，控制算子执行时只启动该类型的核，避免启动不需要工作的核，缩短核启动开销。。指南解释了自动识别可能失效及错误混合启动的头开销，API 卡给出手动限制启动核类型的具体入口，直接支撑该优化动作。
-<!-- cannbot:related:end -->

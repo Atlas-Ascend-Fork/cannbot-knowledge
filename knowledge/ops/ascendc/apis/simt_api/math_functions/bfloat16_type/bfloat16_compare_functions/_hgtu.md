@@ -79,10 +79,3 @@ bool __hgtu(bfloat16_t x, bfloat16_t y)
         dst[idx] = __hgtu(x[idx], y[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hgt](_hgt.md)（`related`）：比较两个bfloat16类型数据，当第一个数据大于第二个数据时，返回true。若任一输入为nan，返回true。；比较两个bfloat16类型数据，仅当第一个数据大于第二个数据时，返回true。两页是同一 bfloat16 大于比较的 unordered 与 ordered 选择，NaN 返回差异是实现正确性所需的关键决策。
-<!-- cannbot:related:end -->

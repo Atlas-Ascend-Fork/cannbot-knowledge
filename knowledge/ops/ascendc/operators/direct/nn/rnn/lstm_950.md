@@ -961,9 +961,3 @@ Direct 路线用 `UseHiddenGates/UseCellState` 模板布尔量消除首步 hidde
 | 同步 | 同stream跨kernel；kernel内ThreadBarrier/SyncAll | 跨stream必须event；scratch不得提前释放 | launcher和`RunLstm*` |
 | 精度与尾块 | FP32 accumulation/state，typed final output，SetTail | 禁止继承HF32；M/N/K和线程tail必须保留 | `LstmInputMatmul::Process`、`StepStaged` |
 | 失败边界 | shape/列表入口错误终止；dtype 晚检存在已提交 producer/错误吸收风险 | MIX不可当 fallback；Matmul上界无自动 fallback；不宣称未知 dtype 无副作用失败 | Host selector/TORCH_CHECK |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LSTM A2/A3 ACLNN 算子知识](../../../aclnn/nn/rnn/lstm.md)（`same_topic`）：“｜ 计算语义 ｜ 按层、按方向、按时间步计算 `i/f/g/o` 四门，更新 FP32 `c_t` 与 raw hidden；可选再做 `raw_h_t @ weight_hr^T` 投影。 ｜”与“｜ 计算语义 ｜ 按层、按方向执行 LSTM：两次矩阵乘产生四门预激活，Vector 计算 `f/i/o=sigmoid`、`j=tanh`、`c=f*c_prev+i*j`、`h=o*tanh(c)`。 ｜”是双方正文中的具体合同。两端围绕同一分层双向 LSTM 四门与 cell/hidden 更新，950 Direct 卡增加逐时间步、FP32 cell 和可选投影，A2/A3 ACLNN 卡展开门激活公式，互读能迁移数学验证。
-<!-- cannbot:related:end -->

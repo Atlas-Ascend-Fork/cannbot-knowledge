@@ -87,11 +87,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         asc_vf_call<simt_float22half2_rn_sat>(dim3(1024), (__gm__ float2*)input, (__gm__ half2*)output, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__float22half2_rn](_float22half2_rn.md)（`related`）：普通接口执行“将float2类型数据遵循CAST_RINT模式转换为half2类型”；饱和变体执行“饱和模式下，将float2类型数据的两个分量遵循CAST_RINT模式转换为半精度浮点数”，两者共享输入、输出和舍入模式，差异是是否启用饱和及 CTRL［60］ 前置条件，能直接支持接口选型。
-- [__float22half2_ro](_float22half2_ro.md)（`related`）：“功能：饱和模式下，将float2类型数据的两个分量遵循CAST_RINT模式转换为半精度浮点数，返回转换后的half2类型数据。”与“功能：将float2类型数据的两个分量遵循CAST_ODD模式转换为半精度浮点数，返回转换后的half2类型数据。”分别来自双方当前正文。两端处理相同 float2→half2 转换，但分别规定 CAST_RINT 饱和模式和 CAST_ODD；关系用于按舍入目标与饱和寄存器前置条件选型。
-<!-- cannbot:related:end -->

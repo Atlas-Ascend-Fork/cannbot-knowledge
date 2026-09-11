@@ -160,10 +160,3 @@ bool GetRmsNormTilingInfo(const AscendC::TensorShape& srcShape, const AscendC::T
         }
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RmsNorm](rms_norm.md)（`related`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过RmsNorm Tiling获取。模板参数isBasicBlock在满足基本块要求（H为64的倍数且小于2048，B*S为8的倍数）时可设为true提升性能。”与“host侧Tiling接口，用于获取RmsNorm kernel计算所需的Tiling参数，分两步：通过GetRmsNormMaxMinTmpSize获取最大和最小临时空间大小；通过GetRmsNormNDTilingInfo获取kernel侧所需tiling参数。”提供双方正文证据。RmsNorm kernel 明确消费 RmsNorm Tiling，tiling 卡给出先求临时空间再生成参数的两步 Host 流程。
-<!-- cannbot:related:end -->

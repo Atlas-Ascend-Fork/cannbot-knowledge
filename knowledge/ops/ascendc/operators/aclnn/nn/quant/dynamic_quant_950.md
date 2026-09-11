@@ -1229,10 +1229,4 @@ if (quantMode_ == TPL_PER_TENSOR_FULL_LOAD || quantMode_ == TPL_PER_TENSOR_LARGE
 | 精度与尾块 | FP32 extrema/scale、predicate、pack store | dstTypeMax/INT4 packing/M/N tail | MicroAPI helpers |
 | 失败边界 | capability fallthrough与参数失败 | 文档 group 域、UB正值、unknown tuple | `Check*`/`IsCapableFor*` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetAtomicMax](../../../../apis/simd_api/basic_api/atomic_operations/set_atomic_max_isasi.md)（`related`）：“｜ partial extrema ｜ `SetAtomicMax/Min<float>` ｜ M-block cores ｜ GM workspace ｜ FP32 extrema ｜ conflicts on same b,n ｜”记录 DynamicQuant split-M 的并发归约动作；“设置DMA搬运时的随路原子操作为取最大值。调用后，后续从UB/L0C/L1到GM的DataCopy搬运将对目标GM地址执行原子取最大值（旧值和新值中的最大值）。”给出 SetAtomicMax 的搬运合同，可直接核验 phase-1 extrema 合并。
-- [DynamicQuant 950 Direct Invoke 算子知识](../../../direct/nn/quant/dynamic_quant_950.md)（`same_topic`）：“｜ 实际入口 ｜ `aclnnDynamicQuantV4GetWorkspaceSize` / `aclnnDynamicQuantV4`；950 上版本族最新公开入口 V4，新增 `dstTypeMax`。 ｜”给出 950 ACLNN 完整入口；“｜ 实际入口 ｜ PyTorch 注册名 `cann_bench::dynamic_quant(Tensor x)`；NPU 实现 `dynamic_quant_npu`；Direct launcher 为 `launch_dynamic_quant_half` / `launch_dynamic_quant_bfloat16`。 ｜”给出同一 DynamicQuant 逻辑算子的 Direct 子域入口，对照可直接完成启动 route、功能域和 workspace 选型。
-- [DynamicQuant A2/A3 ACLNN 算子知识](dynamic_quant.md)（`same_topic`）：“｜ 计算语义 ｜ 对称/非对称；`pertoken`、`pertensor`、`perchannel`；可选 smooth，per-token MOE 可用 groupIndex；HiFloat8 可用 `dstTypeMax` 自定义量化范围。 ｜”定义 950 DynamicQuant V4 对象；“｜ 计算语义 ｜ 仅 per-token；对称：`s=max(abs(v))/Qmax, y=round(v/s)`；非对称：`s=max((max(v)-min(v))/(Qmax-Qmin), eps), offset=Qmax-max(v)/s, y=round(v/s+offset)`；`v=x*smooth`（有 smooth 时），MOE 用 `groupIndex` 选专家 smooth 行。 ｜”定义 A2/A3 V2 的同一核心量化合同，可用于跨平台功能矩阵和 route 迁移核验。
-<!-- cannbot:related:end -->
+- [SetAtomicMax](../../../../apis/simd_api/basic_api/atomic_operations/set_atomic_max_isasi.md)

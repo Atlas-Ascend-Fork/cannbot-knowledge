@@ -87,10 +87,3 @@ auto shape = AscendC::TensorShape({16, 32});
 AscendC::GetReduceProdMaxMinTmpSize(
     shape, AscendC::TensorDataType::DT_FLOAT, AscendC::ReducePattern::AR, true, false, maxSize, minSize);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceProd](reduce_prod.md)（`related`）：host侧Tiling接口，用于获取ReduceProd接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetReduceProdMaxMinTmpSize获取。。ReduceProd 正文明确以 GetReduceProdMaxMinTmpSize 计算 sharedTmpBuffer 容量，两卡形成 Host 容量规划到 Kernel 归约调用的直接契约。
-<!-- cannbot:related:end -->

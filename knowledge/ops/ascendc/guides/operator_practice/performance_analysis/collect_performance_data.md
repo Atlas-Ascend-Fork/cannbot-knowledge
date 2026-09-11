@@ -52,10 +52,3 @@ msopprof --output=$HOME/projects/output $HOME/projects/MyApp/out/main
 
 >[!NOTE]说明 
 >本文部分样例中展示的算子仿真流水图和上述两种可视化呈现方式不一致，但是其中的关键字段含义是对应的，开发者可以参考[《msOpProf用户指南》](https://gitcode.com/Ascend/msopprof/blob/master/docs/zh/user_guide/msopprof_user_guide.md)查看具体字段的含义。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [性能调优（调试与调优）](../../programming_guide/debug_and_tuning/performance_tuning.md)（`related`）：通过毕昇编译器编译生成可执行程序后，使用msOpProf工具采集Ascend C算子在AI处理器上执行的性能数据，进行性能精细调优。；在进行性能优化之前，需要拿到准确的性能数据，了解性能现状，并根据性能现状分析下一步的优化方向。Ascend C提供了多种性能测试方法，包括上板Profiling、单算子性能仿真流水图等手段。；性能调优入口要求用 msOpProf 采集，数据采集指南给出优化前建立性能现状及 Profiling/仿真方法的前置步骤。
-<!-- cannbot:related:end -->

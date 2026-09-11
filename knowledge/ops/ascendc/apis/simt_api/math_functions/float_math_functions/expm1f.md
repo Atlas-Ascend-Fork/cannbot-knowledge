@@ -103,19 +103,6 @@ result: 0.2840254 1.117 2.490343 4.754602
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Expm1 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/expm1_950.md)（`related`）：算子卡明确“对 `｜x｜ > 2` 直接采用 `expm1f(x)`”；API 卡定义“功能：指定输入x，获取e的x次方减1。”并列出 950 的 subnormal 边界，直接支撑大输入分支及其特殊值核对。
-- [InplaceExpm1 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_expm1_950.md)（`related`）：SIMT body 对每个 FP32 元素先保留库函数 `expm1f(x)` 结果。`｜x｜ <= 2` 时使用源码中的 ln2 约化、五阶系数组合及 `exp2f` 重建；`｜x｜ > 2` 时选回 `expm1f`。；函数原型：float expm1f(float x)；算子核心在大幅值分支直接消费 SIMT expm1f，API 卡提供该调用的标量合同。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [ForeachExpm1 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_expm1_950.md)（`related`）：算子声明的固定版本源码包含对 `expm1f(...)` 的直接调用（第 59 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_expm1/op_kernel/arch35/foreach_expm1_simt.h#L59)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Expm1 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/expm1_950.md)
+- [InplaceExpm1 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_expm1_950.md)
+- [ForeachExpm1 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_expm1_950.md)

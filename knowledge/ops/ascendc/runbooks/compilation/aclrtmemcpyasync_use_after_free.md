@@ -74,9 +74,3 @@ NPU function error: device error type 3, error code is 507035
 - 本卡结论（aclrtMemcpyAsync 不应用于生命周期短于 stream 排空时间的 host 数据）跨 Ascend 平台语义一致，a2/a3 推断可迁移但**未验证，推断可迁移**。
 - 仅适用于 host→device 拷贝；device→device 拷贝的源数据生命周期由 stream 顺序保证，不在本卡范围。
 - 若 host 数据生命周期被显式延长（堆分配 + 显式 stream sync 后释放），async 可用，本卡的"一律同步"建议不适用。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [异步执行（编译与执行）](../../guides/programming_guide/compilation_and_execution/async_execution.md)（`related`）：绑定在指定计算流内的API接口调用、核函数下发操作，相对于主机CPU线程均为异步执行。；`aclrtMemcpyAsync` 返回时并不保证拷贝完成，而 `p1` 在函数返回时析构，因此源码缺少“host 源存活到拷贝完成”的保证，这是独立且可确认的生命周期缺陷。；候选给出异步执行合同下 Host 源生命周期失配的具体诊断。
-<!-- cannbot:related:end -->

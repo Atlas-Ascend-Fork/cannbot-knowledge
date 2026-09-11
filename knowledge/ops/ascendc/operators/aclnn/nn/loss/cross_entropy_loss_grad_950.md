@@ -814,9 +814,3 @@ for (uint64_t n = 0; n < this->nLoopTimes; n++) {
 | 同步 | S/V/MTE event、Queue、必要时 SyncAll | Scalar target patch与DMA/Vector可见性 | `PipeS2V/PipeV2S/PipeV2M` |
 | 精度与尾块 | 16 位升 fp32、RINT Pack；UpdateMask | int64 target pack、tail mask、有效 GM blockLen | `LoadRegTensor/CopyOutRegTensor` |
 | 失败边界 | 参数/Tiling失败阻断 launch；full-load容量回split | label/int32非公开、negative ignore、A=0不应推测 fallback | `GetTilingAttr/CheckDtype/CELossGradInnerCoreFullLoad` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CrossEntropyLossGrad A2/A3 ACLNN 算子知识](cross_entropy_loss_grad.md)（`same_topic`）：公开 `labelSmoothing=0` 时，令 `m_i=1［target_i!=ignoreIndex］`，`w_i=1` 或 `weight［target_i］`：；公开支持的 `labelSmoothing=0` 下，令 `m_i = 1［target_i != ignoreIndex］`，`w_i=1`（weight 缺省）或 `weight［target_i］`。。两端定义同一 CrossEntropyLossGrad 的 target mask、可选 weight 与 labelSmoothing=0 公开语义，分别闭合 950 RegBase 与 A2/A3 classic Vector 路线，可用于平台实现和边界对照。
-<!-- cannbot:related:end -->

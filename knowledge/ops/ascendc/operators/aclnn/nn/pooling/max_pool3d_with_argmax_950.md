@@ -917,9 +917,3 @@ padding 路线若直接从负地址/越界地址 Gather 会非法读 GM；源码
 | 同步 | Gather Queue、BigKernel event、SIMT线程独占 | producer/consumer方向，SIMT无Atomic | Device各 body |
 | 精度与尾块 | Gather原dtype、BigKernel float处理、SIMT原dtype | NaN后遇更新、-inf pad、处理位宽key | ProcessW/ComputeSingleBlock/CycleUpdate |
 | 失败边界 | priority0→1→2 | format/dilation/W字节/UB/outputCount谓词 | 三个 IsCapable/GetTilingKey |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MaxPool3dWithArgmax A2/A3 ACLNN 算子知识](max_pool3d_with_argmax.md)（`same_topic`）：对输出 `(n,c,od,oh,ow)`，起点为 `(od*sD-pD,oh*sH-pH,ow*sW-pW)`；窗口采样 `(startD+kd*dD,startH+kh*dH,startW+kw*dW)` 中落在输入域的值。；令窗口起点为 `(od*sD-pD, oh*sH-pH, ow*sW-pW)`，有效采样坐标为起点加 `(kd*dD, kh*dH, kw*dW)` 且落在输入域内。；两卡定义同一 MaxPool3dWithArgmax 的三维窗口采样、最大值和 DHW 线性索引语义，分别闭合 950 Vector/SIMT routes 与 A2/A3 两条 AIV routes。
-<!-- cannbot:related:end -->

@@ -652,9 +652,3 @@ Host 只在尾轴确实需要切块时支付 DMA、双分区和 event 管线成�
 | 同步 | SIMT 单 owner；SIMD MTE2/V/MTE3 event | parity event 和 `idx>1` guard | `ProcessOneStep` / `SetEvent` |
 | 精度与尾块 | 16-bit→FP32 sum→RNE sat；32/64-bit 地址分流 | 候选嵌套顺序、mask、`dataLen` | `CopyOut` / `CopyOutputToGM` |
 | 失败边界 | padding/out shape 校验、SIMD 可回 SIMT | 不得把负 padding 强行送 SIMD，不得扩为 3D 卡 | `CheckModeInputParam` / `DoTilingModeCircular` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CircularPad2dBackward A2/A3 ACLNN 算子知识](circular_pad_2d_backward.md)（`same_topic`）：把 `gradOutput` 中所有经 circular 映射到同一原输入坐标的梯度求和到 `gradInput`；负 padding 对应前向裁剪，裁掉位置的梯度为 0。；对每个原输入坐标，直接枚举正文及各维左右回卷候选并求和；负 padding 对应裁剪并由边界过滤去除无效候选。。两卡实现同一 CircularPad2DBackward 梯度回卷求和语义，并对负 padding 的裁剪边界给出一致解释；一端为通用算子知识，另一端闭合 950 实现。
-<!-- cannbot:related:end -->

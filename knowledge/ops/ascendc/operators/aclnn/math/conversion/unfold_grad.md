@@ -1505,8 +1505,4 @@ pipe->InitBuffer(computeOutQueueDst, 1, T2DstDataSize);
 | 精度与尾块 | low AIV `CAST_NONE→FP32 accumulate→CAST_RINT` | normal tail、big 整窗口、second tailCol 各自公式 | `CopyIn*/Compute*/CopyGMToGMOnceCastFromFP32` |
 | 失败边界 | AIV 阈值外 AICPU；Tiling/ParallelFor 错误上抛 | 不能把公开契约外 fallback 当公开支持扩展；950 冲突不发布 | `IsAiCoreSupport/DoTiling/DoCompute` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetAtomicAdd](../../../../apis/simd_api/basic_api/atomic_operations/set_atomic_add.md)（`related`）：UnfoldGrad 实现记录“普通与 second-axis body 都遵循 `CopyIn→可选 T1→FP32 Cast→transpose/rearrange/add→Atomic CopyOut`”；SetAtomicAdd 规定“后续从UB/L0C/L1到GM的DataCopy搬运将对目标GM地址执行原子累加（旧值+新值）。”。该 API 正是重叠窗口梯度写回的冲突合并机制。
-<!-- cannbot:related:end -->
+- [SetAtomicAdd](../../../../apis/simd_api/basic_api/atomic_operations/set_atomic_add.md)

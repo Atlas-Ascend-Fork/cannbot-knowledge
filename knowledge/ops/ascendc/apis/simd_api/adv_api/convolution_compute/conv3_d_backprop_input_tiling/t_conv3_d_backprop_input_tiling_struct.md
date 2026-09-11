@@ -92,10 +92,3 @@ TConv3DBackpropInputTiling结构体包含Conv3DBackpropInput算子规格信息�
 | singleCoreBatch | 预留参数，用户无需感知。 |
 | singleCoreM | 单核M方向上需要计算的数据量大小。 |
 | singleCoreCin | 单核N方向上计算cin数据量的大小。 |
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTiling](get_tiling.md)（`related`）：TConv3DBackpropInputTiling结构体包含Conv3DBackpropInput算子规格信息及Tiling切分算法的相关参数，被传递给Conv3DBackpropInput Kernel侧，用于数据切分、数据搬运和计算等。TConv3DBackpropInputTiling结构体的参数说明见下表。 用户通过调用GetTiling接口获取TConv3DBackpropInputTiling结构体，具体流程请参考Conv3DBackpropInput Tiling使用说明。当前暂不支持用户自定义配置TConv3DBackpropInputTiling结构体中的参数。 具体字段、含义和取值约束见固定来源中的结构说明表。；- tiling（输出）：Conv3DBackpropInput的Tiling结构体，用于存储最终的Tiling结果。TConv3DBackpropInputTiling结构介绍请参考TConv3DApiTiling结构体说明。。结构体卡定义 Kernel 消费的数据结构，GetTiling 卡定义产生该结构体的 Host 输出，构成明确的生产与消费合同。
-<!-- cannbot:related:end -->

@@ -148,11 +148,3 @@ TPosition枚举值的具体定义如下：
 </tr>
 </tbody>
 </table>
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [L1/L0 tensor 须用 TPosition 构造非 SetAddr](../../../../runbooks/compilation/l1_l0_tensor_tposition_setaddr.md)（`exemplifies`）：“L1/L0A/L0B/L0C 的正确构造方式是带 `TPosition` 的构造函数 `LocalTensor<T>(TPosition pos, uint32_t addr, uint32_t tileSize)`，由 `TPosition`（`A1`=L1A、`A2`=L0A、`B2`=L0B、`CO1`=L0C）承担位置语义，裸类型无需具备 trait。”；“TPosition是Tensor位置枚举，描述Tensor在Ascend AI Core存储层次中的位置。包含VECIN（输入队列位置）、VECCALC（中间计算位置）、VECOUT（输出队列位置）、TSCN（L1 Buffer位置）、LCM（L0C Buffer位置）等。”。Runbook把 TPosition 的抽象位置合同落到 arch35 L1/L0 LocalTensor 构造修法，并给出 SetAddr 与裸地址构造的失败信号。
-- [GetPosition](../data_structures/local_tensor/get_position.md)（`related`）：返回值为 TPosition 枚举，支持 VECIN、VECOUT、VECCALC、A1、A2、B1、B2、CO1、CO2 等逻辑位置。；TPosition是Tensor位置枚举，描述Tensor在Ascend AI Core存储层次中的位置。前者返回后者定义的枚举，直接用于按存储位置分派逻辑。
-<!-- cannbot:related:end -->

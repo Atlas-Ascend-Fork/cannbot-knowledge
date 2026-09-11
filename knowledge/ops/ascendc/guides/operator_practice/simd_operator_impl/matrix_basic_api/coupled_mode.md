@@ -671,10 +671,3 @@ __aicore__ inline void Process()
             outQueueCO2.FreeTensor(c2Local);
         }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [算子实现](../matrix_advanced_api/operator_impl.md)（`related`）：Ascend C提供一组Matmul高阶API，封装了这些常用的切分和数据搬运、计算的算法逻辑，方便用户快速实现Matmul矩阵乘法的运算操作；Cube编程范式把算子的实现流程分为5个基本任务：CopyIn，Split，Compute，Aggregate，CopyOut。前者是封装切分搬运计算的高阶 Matmul 路线，后者展开耦合基础 API 的五阶段任务，二者为实现同一矩阵乘算子的两种具体方案。
-<!-- cannbot:related:end -->

@@ -58,10 +58,3 @@ LeakyRelu算子实现的完整样例请参考[LINK](https://gitcode.com/cann/asc
 
 4.  通过aclmdlExecute等接口在应用中加载模型执行推理。
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [适配插件开发](adaptation_plugin_development.md)（`related`）：插件开发卡要求“使用REGISTER_CUSTOM_OP宏，完成CANN算子和ONNX框架的算子映射关系注册。”；调用示例说明“完成了ONNX框架的适配插件开发后，即可实现从ONNX框架调用Ascend C自定义算子。”。注册完成是后续 ONNX 推理调用样例的直接前置。
-<!-- cannbot:related:end -->

@@ -80,10 +80,3 @@ SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生
         dst[idx] = __bfloat162half_rna_sat(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__bfloat162half_rna](_bfloat162half_rna.md)（`same_topic`）：遵循CAST_ROUND模式，将bfloat16类型数据转换为half类型数据；inf→ASCRT_MAX_NORMAL_FP16。两接口都是 bfloat16 到 half 的 CAST_ROUND 转换，`_sat` 变体明确把无穷钳到 FP16 最大正规值，提供是否采用饱和特殊值语义的直接选择。
-<!-- cannbot:related:end -->

@@ -749,10 +749,3 @@ L1 深度不是只按 A/B 计算：MX route 将每个 baseK 的分组 scale 对�
 | 同步 | R-001 双向双端点 flags | 8/24、6/22、PIPE_FIX/PIPE_V、final extra wait | `Notify*/Wait*` |
 | 精度与尾块 | K-C 双 FP32 scale + RINT；MX/HIF policy；single shape tail | scale 顺序、mask、perm、M/N/K guard | `VFDoDequant`；`SetTensorScale*`；`SetQuantVector` |
 | 失败边界 | 单 BASE template，无安全 fallback | 平台/shape/dtype/resource失败必须返回错误 | `DoTilingImpl`；`CheckParams` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [weightNZ Format](../../../../../../model/inference/concepts/techniques/weight_nz.md)（`related`）：焦点卡写明“`WeightNz`/FRACTAL_NZ 不在范围”，候选卡写明“NZ 布局使 L1/L0A/L0B 的数据加载指令更长、连续”。普通量化算子明确排除 NZ，概念卡解释采用 NZ 的访存目的，帮助判断何时改用专用 WeightNz 入口。
-- [TransposeQuantBatchMatMulWeightNz 950 ACLNN 算子知识](transpose_quant_batch_mat_mul_weight_nz_950.md)（`same_topic`）：本卡只覆盖公开 `aclnnTransposeQuantBatchMatMul` 的 ND x2 路线；`WeightNz` 变体与 FRACTAL_NZ binary 明确排除。；它与 `aclnnTransposeQuantBatchMatMul` 共用内部 `TransposeQuantBatchMatMul` L0 op，但独有“x2 必须 FRACTAL_NZ”校验，不能把 ND 权重接口视为 WeightNz 版本。。两卡共享同一个 TransposeQuantBatchMatMul 核心 L0 操作，且互相以 ND 与 FRACTAL_NZ 的 x2 格式边界区分，是同一算子的权重布局变体。
-<!-- cannbot:related:end -->

@@ -613,9 +613,3 @@ userWorkSpaceSize += static_cast<uint64_t>(workspaceM * info.N * rankSize * size
 | 同步 | rank flags, AIV/AIC flags | IDs/rounds/PIPE order | sync helpers |
 | 精度与尾块 | FP direct or INT32 dequant | Fixpipe predicate/INT4 packing | `CatlassMatmul/Dequant` |
 | 失败边界 | API+tiling+binary reachability | no 950/bias/unsupported rank | selectors |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AllGatherMatmul 950 ACLNN 算子知识](all_gather_matmul_950.md)（`same_topic`）：`gatherOut=AllGather(x1)`；浮点 `y=gatherOut@x2`；INT8/INT4 先 INT32 累加再反量化；FP16/BF16 或 FP8/HIF8 pertensor/perblock/MX 的 AllGather+Matmul+dequant。两卡闭合同一 AllGatherMatmul V2 通算融合算子，分别记录 A2/A3 的浮点与整数路线、950 的 FP8/HIF8 和 CCU/AICPU 路线。
-<!-- cannbot:related:end -->

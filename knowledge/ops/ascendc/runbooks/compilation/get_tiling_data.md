@@ -57,10 +57,3 @@ __inline__ __attribute__((always_inline)) __aicore__ void InitTilingData(const _
 来源：本次 Histogram 自定义算子开发会话（Ascend 910B，CANN 8.5.0-beta.1，kernel 改用 `GET_TILING_DATA` 后的二次构建与 judge 运行）。
 
 - 按判读把宏首参从类型名 `HistogramTilingData` 改为小写变量名 `tilingData` 后，下一次 judge 运行返回 `ret=561002`（aclnn 运行时错，aclnnHistogramGetWorkspaceSize 层）而**不再是 kernel 编译错**——`no matching function for call to 'InitTilingData'` 与 `candidate template ignored` 消失，kernel 已成功编译生成二进制（来源平台:未定位（Ascend 910B）；证据等级: tool_observed）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GET_TILING_DATA](../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data.md)（`exemplifies`）：获取算子 kernel 入口函数传入的 Tiling 信息，填入注册的 TilingData 结构体。以宏展开方式编译。Host 侧需定义 TilingData 结构体并注册 Tiling 函数。返回默认注册的结构体。支持 950/a2/a3。；`GET_TILING_DATA(var_name, tiling_arg)` → 展开为 `HistogramTilingData var_name; InitTilingData<HistogramTilingData>(tiling_arg, &var_name);`（首参为变量名，非类型名）。。运行手册用真实宏展开说明接口首参为何必须是变量名，并给出编译失败探针。
-- [GET_TILING_DATA_WITH_STRUCT 宏不接受模板类型](get_tiling_data_with_struct.md)（`related`）：“`GET_TILING_DATA` 宏首参是变量名。”对应 InitTilingData 模板实参错误中的类型名遮蔽；“`GET_TILING_DATA_WITH_STRUCT` 宏内部对 `tiling_struct` 参数做 `#` 字符串化”对应模板类型解析错和节级注册丢失，可据所用宏分流诊断。
-<!-- cannbot:related:end -->

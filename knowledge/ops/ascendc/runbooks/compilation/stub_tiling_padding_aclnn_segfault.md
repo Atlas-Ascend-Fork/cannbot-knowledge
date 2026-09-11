@@ -60,9 +60,3 @@ padding 后构建通过（`BUILD_EXIT=0`、`MAKE_EXIT=0`）、kernel JSON `opPar
 
 - 见到 aclnn Segfault（exit 139）+ kernel JSON `opParaSize < host tiling sizeof`，就直接断定「容量不匹配是 Segfault 根因」并只做 padding——本例实测 padding 后 Segfault 不变，真因是 host 侧 memcpy 设备地址。须先区分 Segfault 发生在 host 侧（tiling/value 下发）还是设备侧（kernel 执行）。
 - 为「让 opParaSize 小」把 host tiling 结构体砍小——host 下发字段是 kernel 计算所需，砍字段等于删数据；应 padding stub 而非削 host。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ACLNN 507035 — stub kernel tiling 数据未初始化](aclnn_507035_stub_tilingfunc_must_init_tiling_buffer.md)（`related`）：padding 仍是必要的容量契约（否则 `GetTilingData` capacity 检查失败退化为 exit 255），但不是 Segfault 的根因修复。；stub TilingFunc 必须调用 `context->GetTilingData<TilingDataT>()` 取得指针并写入至少一个字段（如 `totalLength`），再 `SetBlockDim`/workspace；kernel 侧保持接口桩不变。修复后 11/11 冒烟通过。。两卡共同排查 stub tiling 联调：一张否定仅靠扩大容量修复 Segfault，另一张给出必须初始化 tiling buffer 的可验证修法。
-<!-- cannbot:related:end -->

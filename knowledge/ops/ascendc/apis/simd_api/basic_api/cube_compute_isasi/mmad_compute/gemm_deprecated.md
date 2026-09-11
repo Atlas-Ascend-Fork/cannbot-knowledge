@@ -119,10 +119,3 @@ platforms:
 ## 调用示例
 
 该接口已废弃，请使用Mmad接口替代。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Mmad](mmad.md)（`related`）：请使用 Mmad 等接口替代。；Ascend C 矩阵乘加核心接口，实现 C=A×B+C。废弃 Gemm 卡给出明确替代方向，Mmad 卡提供替代接口的计算语义、输入 Buffer 与对齐契约。
-<!-- cannbot:related:end -->

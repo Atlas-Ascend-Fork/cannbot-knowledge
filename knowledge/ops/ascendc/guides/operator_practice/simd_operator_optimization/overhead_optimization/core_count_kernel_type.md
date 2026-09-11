@@ -34,10 +34,3 @@ platforms: []
 -   此外，算子的核函数（Kernel）类型也会影响算子启动的核数。以纯Vector算子为例，如果以混合启动的方式执行该算子，调度器会同时启动Vector核和Cube核。然而，此时Cube核并没有实际的计算指令，但仍会产生核启动和核初始化的头开销。因此，建议设置合适的核函数（Kernel）类型以最小化头开销。
 
     通常，算子工程会通过算子使用的指令自动识别算子类型，但该功能无法区分AIC和AIV的配比，默认按照AIV:AIC为1:2的配比下发任务。此外，自动识别功能可能失效，因为其依赖于编译优化的结果。所以推荐用户手动设置算子的核函数（Kernel）类型。具体设置方法请参考[设置核函数（Kernel）类型](../../../../apis/simd_api/basic_api/kernel_tiling/set_kernel_type.md)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [设置Kernel类型](../../../../apis/simd_api/basic_api/kernel_tiling/set_kernel_type.md)（`explains`）：所以推荐用户手动设置算子的Kernel类型。具体设置方法请参考设置Kernel类型。；用于用户自定义设置kernel类型，控制算子执行时只启动该类型的核，避免启动不需要工作的核，缩短核启动开销。。指南解释了自动识别可能失效及错误混合启动的头开销，API 卡给出手动限制启动核类型的具体入口，直接支撑该优化动作。
-<!-- cannbot:related:end -->

@@ -56,10 +56,3 @@ uint32_t len = 128;
 pipe.InitBuffer(que, num, len);
 pipe.DestroyWithoutPipeAll();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Destroy](destroy.md)（`related`）：“该接口内部未设置PIPE_ALL同步，需要开发者自行保证同步流水正确。”揭示无全流水同步版本的责任转移；“创建tpipe对象后，可调用Destroy手动释放资源。”给出常规手动释放入口，二者用于按同步保障选择释放方式。
-<!-- cannbot:related:end -->

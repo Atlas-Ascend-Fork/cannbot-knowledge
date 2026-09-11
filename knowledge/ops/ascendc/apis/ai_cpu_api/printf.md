@@ -110,10 +110,3 @@ fmt string 291
 fmt string 3.140000
 TEST 0xdfffd6fddd1c
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [kernel 源码改动未生效因 binary 缓存](../../runbooks/compilation/kernel_binary_cache_printf_hash_toggle.md)（`exemplifies`）：“该接口使用Dump功能，所有使用Dump功能的接口在每个核上Dump的数据总量不可超过1M。”规定 printf 探针的输出上限；“用上述 PRINTF 对照实验——加 PRINTF 后输出变化即确诊缓存未刷新。”展示该接口作为 kernel 二进制缓存生效探针的具体用法。
-<!-- cannbot:related:end -->

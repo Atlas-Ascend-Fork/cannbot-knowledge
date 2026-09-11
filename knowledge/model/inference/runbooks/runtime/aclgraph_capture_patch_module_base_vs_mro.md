@@ -98,9 +98,3 @@ def capture_model(self) -> None:
 - 合并态 diff：`capture_model` 由 `__base__.__module__` 改为沿 `self.__class__.__mro__` 找 `GPUModelRunner` 取 `__module__`、`super().capture_model()` 改为 `GPUModelRunner.capture_model(self)`、找不到时抛 `TypeError`；`_replace_gpu_model_runner_function_wrapper` 对 `sys.modules[target_module_name]` 的 `graph_capture` 做 `setattr` 替换。见 merge commit `vllm-project/vllm-ascend@cb6cd09388b15f9ceff943b7e62f8cc22fdf2cb6` 下 `vllm_ascend/worker/model_runner_v1.py` 全文与 diff。
 - 根因（patch 打错模块）由 source 描述「Ensure function graph_capture of vllm.v1.worker.gpu_model_runner is replaced」、评审意见（继承来的 capture_model 误判待 patch 模块、对昇腾 NPU graph capturing 必需）与 diff 因果一致得出。
 - 溯源下探：[vllm-ascend-pr-5887-v0-13-0-bugfix-fix-xlitemodelrunner-init-failed-when-aclgraph-is-enabled](https://github.com/vllm-project/vllm-ascend/pull/5887)（sha `cb6cd09388b15f9ceff943b7e62f8cc22fdf2cb6`）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NPU 图模式（ge_graph / npugraph_ex）](../../concepts/techniques/npu_graph_mode.md)（`related`）：定位「待 patch 模块」的写法用了**直接基类** `self.__class__.__base__.__module__`。；历史代码里的 `acl_graph` 命名对应当前 `npugraph_ex`，**将逐步废弃**。。运行手册修复的是候选概念所定义的 npugraph_ex/aclgraph 捕获路径中的 Python runner monkeypatch，不是普通 eager 继承问题。
-<!-- cannbot:related:end -->

@@ -88,10 +88,3 @@ bool CheckBroadcastShape(
 
 - **未验证，推断可迁移**：a2/a3 平台未在本 trace 内实测，`ASCENDC_TPL_*` 宏与 opbuild 行为属工具链层面，推断可迁移（未验证）。
 - **不适用**：若算子只有一个 dtype 变体、或各输入广播模式天然互兼容（如纯 elementwise），则 `CheckBroadcastShape` 过严问题不显现。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [softplus_v2_grad tiling rank 校验拒标量广播](softplus_v2_grad_tiling_rank.md)（`related`）：“正确做法是只校验“每个输入和输出都能广播到 `max_bro_shape`”，不要求各输入之间两两互兼容。”明确给出左端事实；“- **判读（interpretation，根因分析）**：raw rank 一致性校验是**冗余且自相矛盾**的插入。”明确给出右端事实。两页分别定位广播 tiling 的逐维兼容校验过严和 raw-rank 前置校验过严；排障时应先补 1 对齐，再校验每个输入能否广播到输出，而不是拒绝合法异 rank/外积广播。
-- [标量输入被赋非标量 shape 致 561002 判别](shape_561002.md)（`related`）：“但反量化算子的 `scale` 合法地拥有与 `x`/`zero_point` 不同的独立广播模式：例如 `x=［3,1］`、`scale=［1,4］`、`zero_point=［3,1］`、`output=［3,4］` 是合法广播（各输入都能广播到 `［3,4］`），但 `CheckBroadcastShape` 在某些 axis 上会把 `scale` 的非 1 维度与 `x` 的非 1 维度判为互斥而拒绝、返回 false，导致 tiling 失败、kernel 拿不到 workspace，上报 `561103`。”明确给出左端事实；“根因排查发现：spec.yaml 明确规定 `w_square_sum` / `g_square_sum` / `weight_decay` / `learning_rate` 的 `role: scalar`（synthesize shape 为 `［］`/`()`/`(1,)`），但黑盒用例 gen_data 把这些标量输入赋了非标量大形状（如一维大 shape），违反 spec role:scalar，导致 host `TilingFunc`（`PadAndSqueeze`/`CheckBroadcastShape`）无法处理 → tiling 失败 → 561002 → NO_OUTPUT。”明确给出右端事实。一页说明 CheckBroadcastShape 实现拒绝合法外积广播，另一页说明测试把 scalar 角色输入造为大张量而使同类 PadAndSqueeze/CheckBroadcastShape 失败，二者提供实现缺陷与输入违约的鉴别路径。
-<!-- cannbot:related:end -->

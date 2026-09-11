@@ -106,10 +106,3 @@ Src1: [2,2,2,2,2,...,2] // 256个2
 ```
 
 完整样例请参考[DataMovementWithAtomicOperations样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/06_atomic/data_movement_with_atomic_operations)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DisableDmaAtomic](disable_dma_atomic.md)（`same_topic`）：函数原型：__aicore__ inline void SetAtomicMin<T>()。模板参数T指定数据类型。参数：无。约束：与DisableDmaAtomic配合使用；取最小值满足结合律，不存在非确定性问题。头文件：basic_api/kernel_operator_atomic_intf.h。 调用后，后续从UB/L0C/L1到GM的DataCopy搬运不再执行原子操作，恢复为普通覆盖写入。 SetAtomicMin 开启随路原子最小后必须由 DisableDmaAtomic 收口，否则后续 DataCopy 仍受原子状态影响。
-<!-- cannbot:related:end -->

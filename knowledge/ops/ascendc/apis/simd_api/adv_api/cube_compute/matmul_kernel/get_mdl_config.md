@@ -95,20 +95,5 @@ mm.End();
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`same_topic`）：mmCFG（输入）：获取的MatmulConfig模板；返回值：MatmulConfig结构体。GetMDLConfig 生成 MatmulConfig，而 GetMatmulApiTiling 把该结构作为 mmCFG 输入生成编译期静态 Tiling；这是直接的生产者到消费者接口契约。
-- [GetNormalConfig](get_normal_config.md)（`same_topic`）：用于配置Norm模板的参数，获取自定义Norm模板；用于配置MDL模板的参数，获取自定义MDL模板。两端是同一 Matmul Kernel 模板工厂中的 Norm 与 MDL 配置入口，对照可在普通模板和 MDL 模板之间选择正确的 config 构造函数，避免把模板参数交给错误入口。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)（`related`）：算子声明的固定版本源码包含对 `GetMDLConfig(...)` 的直接调用（第 37 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_matmul_reduce_sum/op_kernel/quant_matmul_reduce_sum_utils.h#L37)
-- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)（`related`）：算子声明的固定版本源码包含对 `GetMDLConfig(...)` 的直接调用（第 163 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_kernel/grouped_matmul_utils.h#L163)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)
+- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)

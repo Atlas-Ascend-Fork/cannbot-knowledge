@@ -77,9 +77,3 @@ The extend info: errcode:(0, 0x200000000000000, 0) errorStr: The address for the
 - CANN 9.1.0 头文件未暴露 `__cube__` 函数级标记，`KERNEL_TASK_TYPE_DEFAULT` 宏是当前唯一编译期标记途径；后续 CANN 版本若暴露 `__cube__`，做法可能变化。
 - 950（Ascend950）**仿真器**无法验证本判别是否在 950 真实硬件上也成立——cannsim Ascend950PR 不支持 Cube 核直调 kernel 执行（见相关独立卡）；需在真实 Ascend950 卡上复验。950 真实芯片：未验证，推断可迁移。
 - A2（dav-200）：未验证，推断可迁移（同样有 Cube/AIV 区分）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LoadData](../../apis/simd_api/basic_api/cube_compute_isasi/cube_compute_load/load_data_2_d.md)（`exemplifies`）：函数体调用 Cube 专属 API（`AscendC::LoadData` / `AscendC::Mmad` / `AscendC::Fixpipe`）；将数据从L1 Buffer搬运到L0A或L0B Buffer的2D模式搬运接口。。运行手册把 LoadData 这类 L1→L0 Cube API 放入 AIV 核导致 0x26 的失败路线，直接展示接口所属执行单元约束在编译排障中的应用。
-<!-- cannbot:related:end -->

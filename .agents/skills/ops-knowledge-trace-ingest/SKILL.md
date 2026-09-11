@@ -52,7 +52,7 @@ description: 把一次算子开发会话的原始记录（日志目录 / trace �
 5. 单条轨迹最高只能得到内部 tier `single_run`；内部 tier `verified` 必须跨轨迹复现（≥2）且证据等级 `tool_observed`/`artifact_verified` 且 `## 验证信号` 含上板实测信号。这一 tier 只存 ledger/manifest，不是 frontmatter `verified`；后者只能记录真实 `{by, at}` OKF verification event。
 6. 全部 runbook 卡（跨算子纪律默认生效）禁止含源算子常量/checkpoint/shape 列表/**绝对**单跑分数；同一算子内部两条路线的**相对**性能代价允许（标参照路线+来源平台，见 runbooks-contract §6-9）。
 7. 不得猜测缺失的任务、环境、源码或评测信息；统一记录为 unknown。
-8. index、关系候选 ledger、coverage 与 log 由 curate 的**统一收口**（单一 finalizer）一次性写入，禁止分散零散修改；受管 `cannbot:related` 块只由随后运行的全量图谱流程派生。
+8. index、ledger、coverage 与 log 由 curate 的**统一收口**（单一 finalizer）一次性写入，禁止分散零散修改；需要的跨卡引用直接写为普通正文链接，不触发图谱流程。
 9. 环境/工具故障（device unavailable/quota/网络/harness）默认不写成 kernel 知识，只进 meta。
 10. 只要求原始来源，不要求用户说明 Agent 类型/提供 manifest；格式由脚本自动检测。
 11. **形态化机制证据（内部 taxonomy）**：挖掘分类（`repair_recipe`/`diagnostic_rule`/`negative_result`/`validated_pattern`）只进 manifest/ledger 等 `.build/` 中间产物，不写卡 frontmatter；再按 runbooks-contract §8.1 取证。`repair_recipe` 需要失败/完整因果单元 before/after/修后验证；`diagnostic_rule` 需要触发/探针/观测/判别；`negative_result` 需要尝试/客观失败或回退/边界；`validated_pattern` 需要完整实现单元/验证。只有修复配方强制 before/after；其余形态不得仅因没有成功修复或完整外层函数而 defer。所有核心代码/配置仍须 verbatim、正文内联，禁止示意片段和叙述补写。
@@ -108,9 +108,9 @@ python3 <SKILL_DIR>/scripts/trace_normalize.py verify <输出目录>        # �
 
 1. **判定与 pending 证据合同**：派 **`ops-knowledge-trace-curator`** subagent（上下文 = 草稿/reconstruction + 现有库 + 定向 normalized evidence slices）——按内部 `knowledge_form` 门控 + 新颖性/去重 → 产出 **ledger.json**（每候选终态 + reason/tier/reproduce_count；`source_drafts` 恰好一次覆盖全部簇成员）。使用同一次调用 `python3 <TRACE_SKILL_DIR>/scripts/materialize_trace_contract.py <mine_dir...> --normalized-root <normalized-root> --ledger <ledger> --clusters <clusters>`：脚本先为每个 mine dir 生成当前 snapshot/reconstruction，再把 snapshot 挂入 ledger；任一 mine dir 失败即整体非零。published/merged 项此时必须保持 `evidence_audit.result: pending`、`verbatim_verified: false`。主 agent 再把所有将新增或修改的最终卡字节写到 ignored 的 `.build/ops-knowledge-trace-ingest/<run>/staged-cards/<area>/<slug>.md`；ledger 的 `target_path` 集合必须与 staged 相对路径集合完全相等。逐 staged 文件运行 `field_notes_lint.py --staged-card <path>`，再运行 `scripts/validate_curated_output.py <clusters.json> <ledger.json> --pre-review`；任何失败都不得进入审查。
 2. **独立审查与批准**：对 pending ledger 和 staged cards 先运行 `scripts/validate_review_receipt.py <ledger> <staged-cards> --subject`，再通过 Agent 运行时真正创建**独立** `ops-knowledge-trace-reviewer` subagent（全新上下文，只读），逐字核对机制 artifact、定向 trace 事件和最终卡字节。只接受运行时标明 sender 的原始 subagent 回复；receipt 的 `reviewer` 必须等于该 sender、`attestation` 必须为 `agent-runtime-message`，并带真实 `reviewed_at`。确定性 receipt 校验器只验证字段和字节完整性，**不提供密码学身份认证**；没有可核验 subagent sender 的环境必须 defer，主 agent 不允许自行构造 PASS。blocker/major 清零且 `verdict: PASS` 后，先运行 `validate_review_receipt.py <ledger> <staged-cards> <receipt>`，再以 `materialize_trace_contract.py <mine_dir...> --normalized-root <normalized-root> --ledger <ledger> --clusters <clusters> --verified --receipt <receipt> --cards-root <staged-cards>` 仅把 reviewer-owned approval flags 从 pending/false 改为 pass/true。修改后重新运行 receipt 校验和不带 `--pre-review` 的 `validate_curated_output.py`；v2 subject 会规范化这些 approval flags，其他 ledger 决策或卡片字节变化仍会失效。
-3. **主 agent 单一收口**：运行 `python3 <TRACE_SKILL_DIR>/scripts/publish_reviewed_cards.py <ledger> <staged-cards> <receipt> --knowledge-root .`，只把 receipt 绑定的 `<area>/<slug>.md` 原子发布到 Runbook 树；紧接着以相同命令加 `--check` 校验最终目标字节。再运行 `python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py --knowledge-root . sync-indexes` 生成索引，不手写格式；对每张发布卡跑 `field_notes_lint.py --card <path>`，再执行全库门禁。发布后若任一检查失败，禁止直接修知识卡：必须修改 staged card、生成新 subject、重新独立审查和发布。关系候选只进 ledger，受管关系块由后续全库图谱流程统一产生。
+3. **主 agent 单一收口**：运行 `python3 <TRACE_SKILL_DIR>/scripts/publish_reviewed_cards.py <ledger> <staged-cards> <receipt> --knowledge-root .`，只把 receipt 绑定的 `<area>/<slug>.md` 原子发布到 Runbook 树；紧接着以相同命令加 `--check` 校验最终目标字节。再运行 `python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py --knowledge-root . sync-indexes` 生成索引，不手写格式；对每张发布卡跑 `field_notes_lint.py --card <path>`，再执行全库门禁。发布后若任一检查失败，禁止直接修知识卡：必须修改 staged card、生成新 subject、重新独立审查和发布。有助于理解结论的跨卡链接在 staged card 中随正文审查，不额外构图。
 
-Curator 先做 active 轨迹证据合同门禁：缺双 SHA/record 锚点、形态化角色、机制 artifact、客观信号、claim mapping 或单点归因的候选保留为 `.build/` support 并 `defer`，不得以复现次数绕过。固定 revision/blob 是优先证据而非轨迹发布的必填项。若 ledger 为零发布，主 agent 不创建空 `knowledge/ops/ascendc/runbooks/` 或 area index；只完成删除态图谱/检索索引、coverage、meta/log 与 lint 收口。
+Curator 先做 active 轨迹证据合同门禁：缺双 SHA/record 锚点、形态化角色、机制 artifact、客观信号、claim mapping 或单点归因的候选保留为 `.build/` support 并 `defer`，不得以复现次数绕过。固定 revision/blob 是优先证据而非轨迹发布的必填项。若 ledger 为零发布，主 agent 不创建空 `knowledge/ops/ascendc/runbooks/` 或 area index；只完成删除后的导航/正文链接与检索索引、coverage、meta/log 与 lint 收口。
 
 双模式：`ingest`（单条/少量）+ `upgrade`（全库复现升级）；批量模式见 §批量模式。
 
@@ -130,7 +130,7 @@ Curator 先做 active 轨迹证据合同门禁：缺双 SHA/record 锚点、形�
   │      簇 = 同根因跨 trace 聚合；簇内 cross_trace 数 → 复现判定批量来源
   ├─⑤ curate 聚合：分域派 curator subagent（簇级门控 + 对库近邻去重）→ 各域 pending ledger
   ├─⑥ 主 agent 生成 staged cards → reviewer 独立审查（新增主卡 + 升级/合并操作）→ receipt 批准
-  └─⑦ 主 agent 单一收口：原字节发布 → sync indexes → 全库图谱候选/判定/聚合/注入 → log + meta
+  └─⑦ 主 agent 单一收口：原字节发布 → sync indexes → lint + query → log + meta
 ```
 
 - 并行度只受环境并发 task 上限约束；token 预算充足，无预算分批（质量优先）。
@@ -142,10 +142,10 @@ Curator 先做 active 轨迹证据合同门禁：缺双 SHA/record 锚点、形�
 
 只在用户明确要求“清空当前 runbooks，再从完整轨迹重建”时执行：
 
-1. 删除前固化旧卡数、Git commit/工作区、原始输入 inventory（主会话/子 agent/字节数），并运行全库 `knowledge_lint.py --strict-navigation`、检索索引 full verify 和 `knowledge_graph.py verify` 记录基线；先用一条 related 和一条 unrelated 轨迹回归 adapter/verify/门禁。
-2. 在 Git 可恢复的前提下整树删除 `knowledge/ops/ascendc/runbooks/`，同步移除 `knowledge/ops/ascendc/index.md` 中的直接 Runbooks 导航；`knowledge/index.md` 只列 domain，不修改。旧 `artifacts/graphs/edge_judgments.json` 是可重建本地缓存，不手工裁剪；后续从新候选和完整 Agent review 聚合新缓存，再由 `finalize` 清理所有失效受管块。
+1. 删除前固化旧卡数、Git commit/工作区、原始输入 inventory（主会话/子 agent/字节数），并运行全库 `knowledge_lint.py --strict-navigation`和检索索引 full verify 记录基线；先用一条 related 和一条 unrelated 轨迹回归 adapter/verify/门禁。
+2. 在 Git 可恢复的前提下整树删除 `knowledge/ops/ascendc/runbooks/`，同步移除 `knowledge/ops/ascendc/index.md` 中的直接 Runbooks 导航；`knowledge/index.md` 只列 domain，不修改。同步清理其他卡片指向已删除卡片的普通链接；本地图谱是按需派生产物，不参与此次收尾。
 3. 新一轮 mine/cluster/curate 以**空库**为准，不读取、拷贝或对齐 Git 历史中的旧卡，不继承旧 slug/文本/复现计数；跨轨迹复现只按本轮不同 source SHA-256 计数。
-4. reviewer 通过后由主 agent 单一收口：有 approved active 卡时才重建 area 目录与逐层 index、恢复 `knowledge/ops/ascendc/index.md` 的 Runbooks 导航；若零发布则保持 runbooks 整树不存在且 AscendC 入口无该导航。两种结果都使用 `knowledge_graph.py` 从 `candidates`→`make-shards`→多 Agent 全量判定→`aggregate`→`finalize` 重建完整图谱，并重建检索索引、写 rebuild ledger/meta/log，最后跑 field_notes_lint 与 knowledge-lint。
+4. reviewer 通过后由主 agent 单一收口：有 approved active 卡时才重建 area 目录与逐层 index、恢复 `knowledge/ops/ascendc/index.md` 的 Runbooks 导航；若零发布则保持 runbooks 整树不存在且 AscendC 入口无该导航。两种结果都维护可解析的正文链接，重建检索索引、写 rebuild ledger/meta/log，最后跑 field_notes_lint 与 knowledge-lint。
 
 ## 输入契约
 
@@ -162,13 +162,13 @@ Curator 先做 active 轨迹证据合同门禁：缺双 SHA/record 锚点、形�
 - normalize：`<build>/trace-normalized/<sha12>/{normalized_trace.jsonl,session_manifest.json}`（脱敏后、带 provenance）。
 - batch：`<build>/batch-<日期>/trace-normalized/<sha12>/...` + `batch_manifest.json`（每源文件状态：ok/skipped/error）。
 - mine：`.build/ops-knowledge-trace-ingest/<日期>/<trace_id>/{relevance_gate.json(预检退出时),manifest.json,reconstruction.json,DRAFT-<area>-<n>.md}`（gitignored）。
-- curate：`knowledge/ops/ascendc/runbooks/<area>/<slug>.md`（新建/增量合并/升级）+ index 刷新 + 关系候选与 ledger 终态 + `logs/<日期>.md` 条目；受管关系块由后续全量图谱流程更新。
+- curate：`knowledge/ops/ascendc/runbooks/<area>/<slug>.md`（新建/增量合并/升级）+ index 刷新 + ledger 终态 + `logs/<日期>.md` 条目；跨卡引用使用普通 Markdown 链接。
 - **预检退出**（unrelated）：只产出 `relevance_gate.json` + 最小化 `reconstruction.json`/`manifest.json`，不产 DRAFT、不落库，全流程直接以报告收尾。
 
 ## 职责边界（与 Ingest / Query / Lint 的分工）
 
 - **本 skill** → `knowledge/ops/ascendc/runbooks/<area>/`（现象/任务驱动卡：精度/工程/性能/完整配方 × compilation/runtime/precision/performance/validations；area 由 curate 阶段按内容判定）。
-- `knowledge-ingest` 负责官方文档/固定源码的静态摄入与 `scripts/knowledge_graph.py` 图谱全流程；本 skill 只负责 trace → runbooks 的动态摄入，并由 Ingest 路由 trace 来源到本仓内 producer。
+- `knowledge-ingest` 负责官方文档/固定源码的静态摄入与按需链接图谱；本 skill 只负责 trace → runbooks 的动态摄入，并由 Ingest 路由 trace 来源到本仓内 producer。
 - `knowledge-query` 消费 runbook 卡（`type: Runbook`，按 Runbook Profile 统一归一）；`knowledge-lint` 通过统一 Contract 校验 `runbooks` Profile 的机器约束。
 - 不同知识产物，不混用目录。
 
@@ -177,21 +177,21 @@ Curator 先做 active 轨迹证据合同门禁：缺双 SHA/record 锚点、形�
 证据角色、artifact 类型、重建方式和连续 sequence 校验由 `scripts/validate_curated_output.py` 统一提供；相关物化与复审工具直接复用。文件 SHA-256 由 `scripts/validate_review_receipt.py` 统一计算，发布目录范围从仓库 Contract 获取。
 
 1. review 前对每张 staged card 跑 `python3 <SKILL_DIR>/scripts/field_notes_lint.py --staged-card <path>`；发布并完成 `publish_reviewed_cards.py --check` 后，再对每张目标卡跑 `--card <repo-relative-path>`，最后无参数运行一次 AscendC Runbook 全库兼容检查，三者 HARD 都为 0。任何发布后修订都必须回到 staging 并重新审查。
-2. `knowledge/ops/ascendc/runbooks/<area>/index.md` 只列本层直接卡。`field_notes_lint.py` 不复制图谱规则；`cannbot:related` 受管块的端点、类型、指纹和幂等性由 `knowledge_graph.py verify` 统一校验。
+2. `knowledge/ops/ascendc/runbooks/<area>/index.md` 只列本层直接卡。普通正文链接由统一 Contract 校验，不要求额外关系块或图谱缓存。
 3. **反投机取巧抽检**：无卡把放宽容差/改测试/改期望当解决配方（正知识）；`## 验证信号` 无"前序 LOG.md/本 trace 未复现"字样。
 4. **形态化证据抽检**：逐卡核对内部 `knowledge_form`（manifest/ledger）与对应角色合同；核心机制 artifact 正文内联并与事件流逐字一致。只有 `repair_recipe` 强制完整 before/after。
 4a. **active 轨迹证据合同抽检**：`trace_snapshot` 逐卡核对实际 normalized 路径、raw/normalized 两个完整 SHA-256、sequence/coverage、形态化角色锚点和 artifact 重建方式；`fixed_source` 逐卡核对 40 位 revision 与精确 blob 导航。
 5. **价值抽检**：无低价值/常识性/纯流程类卡落库（对照 mine `skipped` 清单与 runbooks-contract §0 判据）。
-6. **适用性与路线抽检**：抽查新落库卡含 `## 适用场景`（工程形态/API 路径/验证平台与版本/适用粒度/路线优先级/不适用场景）（约束㉑）；`safety_fallback` 卡含 fallback 声明；`platforms` 只含实际验证平台（推断平台在 `## 失效边界` 标注“未验证，推断可迁移”）；`## 验证信号` 逐条标来源平台+证据等级；无绝对单跑分数落正文（相对代价须成对标注参照路线）；同问题域冲突卡已记入 ledger `related_suggestions`，不手写受管块。
-7. **图谱全流程（必做）**：图谱工具位于 knowledge-ingest 的 `.agents/skills/knowledge-ingest/scripts/knowledge_graph.py`。按其 `references/local-graphs.md` 依次运行 `candidates`、`make-shards`，由至少两个独立 subagent 覆盖全部 focal 并阅读正文，再运行 `aggregate`、`finalize`。流程必须以当前卡片指纹完整收口；不得将历史红态、变更范围或新卡定向 review 当作遗留 stale 的豁免。
+6. **适用性与路线抽检**：抽查新落库卡含 `## 适用场景`（工程形态/API 路径/验证平台与版本/适用粒度/路线优先级/不适用场景）（约束㉑）；`safety_fallback` 卡含 fallback 声明；`platforms` 只含实际验证平台（推断平台在 `## 失效边界` 标注“未验证，推断可迁移”）；`## 验证信号` 逐条标来源平台+证据等级；无绝对单跑分数落正文（相对代价须成对标注参照路线）；同问题域冲突或方案选用条件已在正文说明，必要时链接对应卡片。
+7. **图谱按需**：日常入库不运行图谱命令，不做全库关系判定；仅在需要查看卡片链接时使用 knowledge-ingest 的 [本地图谱](../knowledge-ingest/references/local-graphs.md)。
 
 8. **预检退出校验**：unrelated 退出时暂存目录含 `relevance_gate.json` + `manifest.json`（candidates=[]、skipped 记 `not_ascendc_related`），无 DRAFT、无知识卡目录改动。
 9. 写 `logs/<YYYY-MM-DD>.md` 条目（本仓规范，时间取 `date`）。
-10. 运行全库 [`knowledge-lint`](../knowledge-lint/SKILL.md)、检索索引 full verify、目标 Query 和根 `bash check.sh`；图谱与索引必须在当前指纹上为绿，不引入 blocker。
+10. 运行全库 [`knowledge-lint`](../knowledge-lint/SKILL.md)、检索索引 full verify、目标 Query 和根 `bash check.sh`；索引必须与当前知识一致。
 
 ## 完成报告
 
-每轮 ingest 结束时向用户报告：输入来源与 adapter、归一化 coverage、相关性预检、重建能力、价值筛除统计、机制 artifact 恢复情况、捷径检出、候选与终态；**必须同时按内部 `knowledge_form` 报告 mined/published/deferred 数量**（此分类只用于内部对账，不落卡 frontmatter），并列出旧式 `no_validated_after`/`incomplete_code_chain` skip 中被重新分类和仍 defer 的数量，防止用总卡数掩盖某类知识被系统性漏挖。另报告全量图谱重建与校验结果。
+每轮 ingest 结束时向用户报告：输入来源与 adapter、归一化 coverage、相关性预检、重建能力、价值筛除统计、机制 artifact 恢复情况、捷径检出、候选与终态；**必须同时按内部 `knowledge_form` 报告 mined/published/deferred 数量**（此分类只用于内部对账，不落卡 frontmatter），并列出旧式 `no_validated_after`/`incomplete_code_chain` skip 中被重新分类和仍 defer 的数量，防止用总卡数掩盖某类知识被系统性漏挖。仅在按需构图时报告其结果。
 
 ## 设计借鉴
 

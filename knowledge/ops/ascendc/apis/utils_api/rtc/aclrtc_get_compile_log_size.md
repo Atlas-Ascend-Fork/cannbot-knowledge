@@ -74,10 +74,3 @@ aclrtcProg prog;
 size_t logSize;
 aclError result = aclrtcGetCompileLogSize(prog, &logSize);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclrtcGetCompileLog](aclrtc_get_compile_log.md)（`related`）：调用前应先通过 aclrtcGetCompileLogSize 获取日志大小，并据此分配足够的内存空间。；典型用法：先调用本接口获取大小，再 malloc 对应大小的缓冲区，最后调用 aclrtcGetCompileLog 填充日志内容。。两端规定编译日志读取任务的先后顺序：先查询字节数并分配缓冲，再取得日志正文；容量查询和内容读取是不同接口动作。
-<!-- cannbot:related:end -->

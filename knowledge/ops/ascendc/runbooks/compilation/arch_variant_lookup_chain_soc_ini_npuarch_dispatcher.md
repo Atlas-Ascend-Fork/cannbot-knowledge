@@ -118,12 +118,3 @@ cd $ASCEND_HOME_PATH/x86_64-linux/data/platform_config && \
 
 - 仅 Ascend950PR/dav_c310 实测；a2/a3 等其他平台的 ini 命名规律与 dispatcher 分支未完整实测（推断链路结构一致，但具体 ini 文件名/NpuArch 值需各自查证），未验证，推断可迁移。
 - 文件名通配符形式跨芯片系列不统一（950PR 有下划线、910B 无），不可假定固定形式——须用通配符 `*` 匹配后逐 ini 核 `SoC_version`。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCurNpuArch](../../apis/utils_api/platform_info/platform_ascend_c/get_cur_npu_arch.md)（`exemplifies`）：- `AIC_version` 与 `NpuArch` 互为印证：`NpuArch=3510` → dispatcher 的 `__NPU_ARCH__==3510` 分支；`AIC_version=AIC-C-310` → `dav_c310/` 目录名。任一即可定位变体，且都来自 ini 硬证据。；当前硬件平台架构号的枚举类。该枚举类和AI处理器型号的对应关系请通过CANN软件安装后文件存储路径下include/platform/soc_spec.h头文件获取。 - Ascend 950PR/Ascend 950DT：DAV_3510 - Atlas A3 训练系列产品/Atlas A3 推理系列产品：DAV_2201 - Atlas A2 训练系列产品/Atlas A2 推理系列产品：DAV_2201；焦点按 NpuArch 选择编译期 dispatcher 变体，目标提供产品到 DAV 架构枚举的权威映射入口。
-- [CMake arch 子目录隔离 dav-3510 专属 API](cmake_arch_dav_3510_api.md)（`related`）：- `AIC_version` 与 `NpuArch` 互为印证：`NpuArch=3510` → dispatcher 的 `__NPU_ARCH__==3510` 分支；`AIC_version=AIC-C-310` → `dav_c310/` 目录名。任一即可定位变体，且都来自 ini 硬证据。；修复方向=将 dav-3510 专属代码移入 `arch_3510/` 子目录、dav-2201 兼容版本移入 `arch_2201/` 子目录、根目录只留跨架构共享头文件，使 CMake 仅在 `NPU_ARCH=dav-3510` 时编译含专属 API 的代码。；焦点解决头文件变体选择，目标把同一架构判定落实为 CMake 源文件隔离与编译范围。
-- [NPU架构版本3002](../../guides/programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_3002.md)（`related`）：__NPU_ARCH__版本号为3002；须先确认编译期命中的变体，再读其 API 实现；连接架构编号事实与编译变体查证方法。
-- [bisheng 拒绝大写 --npu-arch=DAV2201 须用小写 dav](bisheng_npu_arch_requires_lowercase_dav_2201.md)（`related`）：- `AIC_version` 与 `NpuArch` 互为印证：`NpuArch=3510` → dispatcher 的 `__NPU_ARCH__==3510` 分支；`AIC_version=AIC-C-310` → `dav_c310/` 目录名。任一即可定位变体，且都来自 ini 硬证据。；三条信息（产品 910B3、SocVersion `ASCEND910B`、NpuArch `DAV_2201`）都不能直接塞给 `--npu-arch`，必须经过"NpuArch → 小写带连字符"这一步映射：`DAV_2201` → `dav-2201`。；焦点确定 NpuArch 数值与变体，目标把同一架构事实转换为 bisheng 接受的命令行格式，闭合编译迁移链。
-<!-- cannbot:related:end -->

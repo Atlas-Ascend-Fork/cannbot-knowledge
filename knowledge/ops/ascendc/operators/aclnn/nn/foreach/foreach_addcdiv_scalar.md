@@ -599,9 +599,3 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 | 同步 | Queue + V/MTE3 + MTE3/MTE2 | 原地 buffer 写回前后不可删事件 | implicit `Compute` |
 | 精度与尾块 | FP16/BF16 升 FP32、Div→Axpy→CAST_RINT；尾部按有效字节 | 不得改计算顺序/round mode | adapters；`KernelForeachUnary::CopyIn` |
 | 失败边界 | API dtype/shape/format；BF16 编译 guard；未知 key 无 body | 不把宽松实现检查当公开支持 | dtype check；router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddcdivScalar 950 ACLNN 算子知识](foreach_addcdiv_scalar_950.md)（`same_topic`）：对三个等长 TensorList 逐项、逐元素计算 `y_i = x1_i + scalar * (x2_i / x3_i)`。；`y_i［j］ = x1_i［j］ + scalar * (x2_i［j］ / x3_i［j］)`。。两卡描述同一个 ForeachAddcdivScalar V2 两段式入口和逐列表元素公式，分别闭合 A2/A3 的 AIV Vector 实现与 950 的 SIMT VF 实现，是同一算子契约的跨平台实现卡。
-<!-- cannbot:related:end -->

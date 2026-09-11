@@ -63,11 +63,3 @@ __aicore__ inline constexpr auto Crd2Idx(const CoordType& coord, const Layout<Sh
 template <typename CoordType, typename ShapeType, typename StrideType>
 __aicore__ inline constexpr auto Crd2Idx(const CoordType& coord, const ShapeType& shape, const StrideType& stride)
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Crd2Idx](crd2_idx.md)（`related`）：Coordinate与Crd2Idx配合使用：Crd2Idx将坐标转换为线性索引，用于在Tensor中定位元素。；将Coordinate坐标转换为Tensor中的线性索引（index）。；简介与 API 卡共同给出 Coordinate 到 Tensor 线性位置的消费链。
-- [MakeCoord](make_coord.md)（`related`）：通过MakeCoord构造，可用于Tensor的元素索引和位置计算。；构造Coordinate坐标结构体。；简介给出的 Coordinate 生产步骤由 MakeCoord 的构造合同具体实现。
-<!-- cannbot:related:end -->

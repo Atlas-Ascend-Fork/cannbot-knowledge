@@ -178,10 +178,3 @@ cat ./OPPROF_*/PipeUtilization.csv
 请参考 [《msOpProf用户指南》](https://gitcode.com/Ascend/msopprof/blob/master/docs/zh/user_guide/msopprof_user_guide.md)算子调优（msOpProf）中的内容。
 
 完整性能调优过程请参见[Add性能调优样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [基础矢量算子](../../../simd_operator_impl/vector_programming/basic_vector_operator.md)（`same_topic`）：“完成核函数的内部实现，包括3个基本任务：CopyIn，Compute，CopyOut”给出基础矢量算子的实现骨架，“Add算子的计算逻辑遵循"搬入-计算-搬出"三段式流水结构”提供该骨架的具体 Add 落地。
-<!-- cannbot:related:end -->

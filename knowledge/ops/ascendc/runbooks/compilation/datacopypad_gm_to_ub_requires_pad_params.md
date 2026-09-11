@@ -212,10 +212,3 @@ dav-3510 的 GM 到 UB 扩展重载签名要求 `DataCopyPadExtParams<T>`，而�
 ## 误诊
 
 无证据表明此错误与 DMA 32B 对齐或尾块长度有关；编译器在重载解析阶段已经明确指出参数个数不匹配。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)（`exemplifies`）：dav-3510 的 GM 到 UB 扩展重载签名要求 `DataCopyPadExtParams<T>`；将数据从GM非对齐搬运至UB，可根据需要自行填充数据。运行手册的四参数修法直接依赖 GM→UB DataCopyPad 的填充参数合同，API 卡给出该方向的通路与填充语义。
-- [DataCopyPad UB→GM 四参调用导致编译失败](datacopypad_ub_to_gm_has_no_pad_params.md)（`related`）：同一函数内的 UB 到 GM 输出搬运仍可使用三参数形式，因此不能仅凭函数名相同就把两个方向的重载签名视为对称；GM→UB 的 MTE2 overload 为 `LocalTensor dst + GlobalTensor src + DataCopyExtParams + DataCopyPadExtParams`，而 UB→GM 的 MTE3 overload 为 `GlobalTensor dst + LocalTensor src + DataCopyExtParams`。两条运行手册从相反方向给出同一工具链的非对称重载合同，联合用于根据首参 Tensor 类型选择三参或四参调用。
-<!-- cannbot:related:end -->

@@ -186,28 +186,13 @@ AscendC::Brcb(dstLocal, srcLocal, 2, {1, 8});
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [BilinearInterpolation](../basic_arithmetic/bilinear_interpolation_isasi.md)（`related`）：BilinearInterpolation 的第二步是“通过 Brcb 广播填充 src1”；Brcb 定义“每一次取输入张量中的8个数进行填充操作，将每个数填充到结果张量的一个DataBlock（32字节）中。”，后者提供权重广播布局。
-- [AscBrcb](../../../c_api/vector_compute/vector_broadcast/asc_brcb.md)（`same_topic`）：Brcb接口对输入数据，每一次取输入张量中的8个数进行填充操作，将每个数填充到结果张量的一个DataBlock（32字节）中。；给定一个输入矢量，每一次取输入矢量中的8个数填充到结果矢量的8个datablock（32Bytes）中去，每个数对应一个datablock。。两卡定义相同的八元素逐 DataBlock 广播语义，只是接口层和平台表达不同。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 17 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [FusedLinearOnlineMaxSum A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_online_max_sum.md)（`related`）：算子声明的固定版本源码包含对 `Brcb(...)` 的直接调用（第 855 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/fused_linear_online_max_sum/op_kernel/fused_linear_online_max_sum.h#L855)
-- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)（`related`）：算子声明的固定版本源码包含对 `Brcb(...)` 的直接调用（第 707 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention/op_kernel/attn_infra/epilogue/block/bsa_block_epilogue_online_softmax.hpp#L707)
-- [AddRmsNorm A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm.md)（`related`）：算子声明的固定版本源码包含对 `Brcb(...)` 的直接调用（第 242 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm/op_kernel/add_rms_norm_merge_n.h#L242)
-- [BlockSparseAttentionGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad.md)（`related`）：算子声明的固定版本源码包含对 `Brcb(...)` 的直接调用（第 374 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention_grad/op_kernel/arc22/attn_infra/epilogue/block/block_epilogue_simply_softmax.hpp#L374)
-- [AddRmsNormCast A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_cast.md)（`related`）：算子声明的固定版本源码包含对 `Brcb(...)` 的直接调用（第 168 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast.h#L168)
-- [IncreFlashAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/incre_flash_attention.md)（`related`）：算子声明的固定版本源码包含对 `Brcb(...)` 的直接调用（第 1458 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/incre_flash_attention/op_kernel/incre_flash_attention_allvec_new.h#L1458)
-- [FastLayerNorm A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/fast_layer_norm.md)（`related`）：算子声明的固定版本源码包含对 `Brcb(...)` 的直接调用（第 199 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_align_limit.h#L199)
-- [grouped_matmul_swiglu_quant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant.md)（`related`）：算子声明的固定版本源码包含对 `Brcb(...)` 的直接调用（第 514 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_swiglu_quant_v2/op_kernel/grouped_matmul_swiglu_quant_spilit_fusion.h#L514)
-- [InplaceAddRmsNorm A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/inplace_add_rms_norm.md)（`related`）：算子声明的固定版本源码包含对 `Brcb(...)` 的直接调用（第 242 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm/op_kernel/add_rms_norm_merge_n.h#L242)
-- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)（`related`）：算子声明的固定版本源码包含对 `Brcb(...)` 的直接调用（第 691 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_combine_v2/op_kernel/moe_distribute_combine_a2_layered.h#L691)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [FusedLinearOnlineMaxSum A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_online_max_sum.md)
+- [BlockSparseAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention.md)
+- [AddRmsNorm A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm.md)
+- [BlockSparseAttentionGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad.md)
+- [AddRmsNormCast A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_cast.md)
+- [IncreFlashAttention A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/incre_flash_attention.md)
+- [FastLayerNorm A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/fast_layer_norm.md)
+- [grouped_matmul_swiglu_quant A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant.md)
+- [InplaceAddRmsNorm A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/inplace_add_rms_norm.md)
+- [MoeDistributeCombine A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_combine.md)

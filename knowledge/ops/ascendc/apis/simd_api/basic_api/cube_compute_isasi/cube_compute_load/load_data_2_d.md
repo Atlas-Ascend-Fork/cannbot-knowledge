@@ -291,12 +291,3 @@ for (int i = 0; i < CeilDivision(m, fractalShape[1]); ++i) {
     AscendC::LoadData(a2Local[i * dstOffset], a1Local[i * srcOffset], loadDataParams);
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cube 直调 retCode=0x26：AIV 误跑 Cube API 越界](../../../../../runbooks/compilation/cube_retcode_0x26_aiv_cube_api.md)（`exemplifies`）：函数体调用 Cube 专属 API（`AscendC::LoadData` / `AscendC::Mmad` / `AscendC::Fixpipe`）；将数据从L1 Buffer搬运到L0A或L0B Buffer的2D模式搬运接口。。运行手册把 LoadData 这类 L1→L0 Cube API 放入 AIV 核导致 0x26 的失败路线，直接展示接口所属执行单元约束在编译排障中的应用。
-- [SIMD算子实现分离模式](../../../../../guides/operator_practice/simd_operator_impl/matrix_basic_api/decoupled_mode.md)（`explains`）：分离模式 Matmul 规格列出“LoadData（2D矩阵搬运）：L1 Buffer到L0 Buffer数据搬运 + NZ转ZZ/ZN格式转换接口”；LoadData 页定义“将数据从L1 Buffer搬运到L0A或L0B Buffer的2D模式搬运接口。”，两端就是矩阵输入从 L1 到 L0A/L0B 的直接调用链。
-- [LoadData（BitMode 2D矩阵搬运）](load_data_2_d_bit_mode.md)（`same_topic`）：“将数据从L1 Buffer搬运到L0A或L0B Buffer的2D模式搬运接口。”与“LoadData 2D的位宽模式变体，支持int4等特定位宽数据类型的搬运。”是双方正文中的具体合同。两端执行同一 L1 到 L0A/L0B 的二维搬运，BitMode 端增加 int4 等位宽解释，互读能决定常规与特定位宽入口。
-<!-- cannbot:related:end -->

@@ -116,9 +116,3 @@ MatmulImpl<inputXType, inputWType, outputYType, inputBiasType, CFG_MDL> mmObj;
 - platforms: [950] 只覆盖 Ascend950PR / DAV_3510 / arch35。
 - 非 3510 架构（a2 / a3）的内置取值不同（custom.h 用 GM/ND、arch35 custom_weight_nz.h 用 GM/ND + GM/NZ 混合且仍 MIX）；a2/a3 未在本 trace 内验证，未验证，推断可迁移（同 Matmul 高阶 API 语义），不写入 platforms。
 - CANN 版本差异：arch35 目录 cpp（新版，MIX_AIC_1_2 + custom_weight_nz.h）与根目录 cpp 的 3510 `#else`（单核顺序 + weight_nz_performance.h）并存；判别时以与本算子同源且能跑通的分支为准，版本升级时需重跑探针。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [WeightQuantBatchMatmulNz 950 ACLNN 算子知识](../../operators/aclnn/nn/matmul/weight_quant_batch_matmul_nz_950.md)（`related`）：焦点卡核对当前固定源码后确认“三条 Route 都是单 Kernel `MIX_CV`”，候选卡警告“arch35 目录 cpp（新版，MIX_AIC_1_2 + custom_weight_nz.h）与根目录 cpp 的 3510 `#else`（单核顺序 + weight_nz_performance.h）并存”；联合阅读可避免跨 CANN 源码版本误选执行模式。
-<!-- cannbot:related:end -->

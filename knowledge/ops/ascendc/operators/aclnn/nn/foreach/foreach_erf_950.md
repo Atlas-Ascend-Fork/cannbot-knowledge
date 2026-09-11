@@ -515,9 +515,3 @@ register_bytes = 固定仓不可见
 | 同步 | 元素互斥，无 barrier/atomic | stride 必须含 blockNum | `OpForeachErfSimt` |
 | 精度与尾块 | FP32 Horner；16-bit 路线升/降精度；idx guard | clamp、系数、求值顺序、NaN 处理 | `ComputeErf`; `ErfApproximation` |
 | 失败边界 | >256/unsupported dtype/平台信息失败不 launch | 不添加未证实 fallback | `ForeachErfTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachErf A2/A3 ACLNN 算子知识](foreach_erf.md)（`same_topic`）：对 TensorList 中每个张量逐元素计算 erf；950 Device 实体采用 clamp 后的 FP32 有理式近似。；对 TensorList 中每个张量逐元素计算 `y_i［j］ = erf(x_i［j］)`。。两卡是 ForeachErf 在 950 与 A2/A3 域上的同一逐 TensorList 元素 erf 算子语义，950 卡进一步给出有理式近似实现。
-<!-- cannbot:related:end -->

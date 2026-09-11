@@ -247,10 +247,3 @@ platforms: []
 |trace.json | 仿真指令流水图文件，包括每个核的子文件以及全部核的汇总文件，可参考指令流水图和内存通路吞吐率波形图。 |
 
 更多详细的信息可以参考[《msOpProf用户指南》](https://gitcode.com/Ascend/msopprof/blob/master/docs/zh/user_guide/msopprof_user_guide.md)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [获取性能数据（性能分析）](../../operator_practice/performance_analysis/collect_performance_data.md)（`related`）：通过毕昇编译器编译生成可执行程序后，使用msOpProf工具采集Ascend C算子在AI处理器上执行的性能数据，进行性能精细调优。；在进行性能优化之前，需要拿到准确的性能数据，了解性能现状，并根据性能现状分析下一步的优化方向。Ascend C提供了多种性能测试方法，包括上板Profiling、单算子性能仿真流水图等手段。；性能调优入口要求用 msOpProf 采集，数据采集指南给出优化前建立性能现状及 Profiling/仿真方法的前置步骤。
-<!-- cannbot:related:end -->

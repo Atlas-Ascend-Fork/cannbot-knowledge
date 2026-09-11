@@ -71,9 +71,3 @@ platforms:
 - 溯源下探：
   - [cann-recipes-infer-pr-7-feat-add-deepseek-v3-2-exp-w8a8c8-quantization-support](https://gitcode.com/cann/cann-recipes-infer/merge_requests/7)
   - [cann-recipes-infer-issue-8-rfc-deepseek-v3-2-exp-w8a8c8](https://gitcode.com/cann/cann-recipes-infer/issues/8)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [W8A8C8](../../../concepts/quantization/w8a8c8.md)（`related`）：组合量化方案：权重 Per-Channel 静态 Int8（W8），激活 Per-Token 动态 Int8（A8），KVCache 动态 Int8（C8）。；**计算受益点 → 推到 int8 计算**：［lightning-indexer］(../../../concepts/kernels/lightning_indexer.md) 的 BatchMatmul 是算力受益点，量到 A8C8 走 int8 计算，直接降单算子时延。前者定义组合量化档，后者说明 DSA 中哪些计算节点应真正落 int8。
-<!-- cannbot:related:end -->

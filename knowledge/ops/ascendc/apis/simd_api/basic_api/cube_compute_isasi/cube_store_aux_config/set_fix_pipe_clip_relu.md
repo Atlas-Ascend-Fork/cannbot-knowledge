@@ -283,11 +283,3 @@ SetFixPipeClipRelu(clipReluMaxVal); // 开启ReLU的情况下，先进行ReLU操
     KERNEL_CUBE_DATACOPY(half, int8_t, int8_t, int32_t, 128, 1, 1, QuantMode_t::DEQF16);
     ```
     
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyL0CToGM](../cube_compute_store/data_copy_l0_c_to_gm.md)（`related`）：DataCopy 数据搬运（L0C Buffer→GM）过程中进行随路量化后，设置 ClipReLU 操作的最大值。ClipReLU 计算公式为 min(clipReluMaxVal, srcData)。；量化模式含 NoQuant、F322F16、F322BF16、DEQF16、VDEQF16、QF322B8_PRE、VQF322B8_PRE、REQ8、VREQ8，需配合 SetFixPipeConfig / SetFixpipePreQuantFlag / SetFixpipeNz2ndFlag 设置寄存器；Atlas 200I/500 A2 还支持 SetFixPipeClipRelu、SetFixPipeAddr。。SetFixPipeClipRelu 写入 L0C→GM 随路 ClipReLU 上限，DataCopyL0CToGM 明确在受支持平台消费该附加配置。
-- [随路ReLU](../cube_store_key_features/accompanying_relu.md)（`related`）：开启Normal ReLU（reluPre=1）且同时配置clipReluPre=1并调用SetFixPipeClipRelu接口时，即Normal ReLU + ClipReLU，先执行`y = max(0, x)`，再执行`y = min(clipReluMaxVal, y)`，其中clipReluMaxVal通过SetFixPipeClipRelu接口设置。详见SetFixPipeClipRelu。；DataCopy 数据搬运（L0C Buffer→GM）过程中进行随路量化后，设置 ClipReLU 操作的最大值。ClipReLU 计算公式为 min(clipReluMaxVal, srcData)。。随路 ReLU 特性卡要求调用 SetFixPipeClipRelu 设置上界，API 卡给出 L0C 到 GM 搬运时的具体裁剪公式。
-<!-- cannbot:related:end -->

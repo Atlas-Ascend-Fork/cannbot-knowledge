@@ -964,11 +964,3 @@ if (dataplaneMode == DataplaneMode::AIV) {
 | 同步 | A3 32B状态；A2 flag/magic | route协议不可替换 | `WaitDispatch/GM2IPC` |
 | 精度与尾块 | FP32 sum+RINT | INT8分组与BF16 TP FP32 add不可省 | `ProcessExpert/ReduceScatterTrans` |
 | 失败边界 | Host guard直接失败 | INT8+AICPU无fallback | V2 entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeDistributeCombineAddRmsNorm A3 ACLNN 算子知识](moe_distribute_combine_add_rms_norm.md)（`related`）：基础 Combine 卡以“｜ 计算语义 ｜ 按 Dispatch 产生的 rank/token/top-k 辅助信息收回专家输出，以 `expertScales` 加权并恢复 `［BS,H］` token 顺序 ｜”界定路由结果恢复；融合卡在“｜ 计算语义 ｜ 可选 TP 两卡 ReduceScatterV，再做 EP AllToAllV；按权重聚合后执行 Add+RmsNorm ｜”中把相同的按权重聚合扩展为 Add+RmsNorm，可用于判断何时以融合算子替代普通 Combine 尾部链路。
-- [MoeDistributeDispatch 950 ACLNN 算子知识](moe_distribute_dispatch_950.md)（`related`）：950 Dispatch 卡说明“接收端压紧为 `expandX`，并输出 `［源EP rank, 源token索引, k］` 等 combine 辅助信息。”；Combine 卡规定“按 Dispatch 产生的 rank/token/top-k 辅助信息收回专家输出，以 `expertScales` 加权并恢复 `［BS,H］` token 顺序”，形成 Dispatch 生产元数据、专家计算后 Combine 消费元数据的任务链。
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](moe_distribute_dispatch.md)（`related`）：Dispatch 卡指出“目标端压紧为 `expandX` 和 `assistInfoForCombine`。”；Combine 卡规定“按 Dispatch 产生的 rank/token/top-k 辅助信息收回专家输出，以 `expertScales` 加权并恢复 `［BS,H］` token 顺序”，构成 Dispatch 产生元数据、专家计算后 Combine 消费元数据恢复 token 的完整任务链。
-<!-- cannbot:related:end -->

@@ -69,10 +69,3 @@ while (gradInput_.Iterate()) {
 // SingleShape计算完成后，需要将ctx.isFirstIter_设置为true，确保下一块SingleShape的正确计算
 gradInput_.ctx.isFirstIter_ = true;
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTensorC](get_tensor_c.md)（`related`）：本接口需与GetTensorC接口配合使用；在调用本接口后，再调用GetTensorC接口，L0C Buffer中的数据将被写入目标地址。；在完成Iterate操作后调用本接口，获取结果矩阵块，完成数据从L0C到GM的搬运。此接口与［Iterate］(iterate.md)接口配合使用，用于在Iterate执行迭代计算后，获取结果矩阵。。Iterate 卡规定先计算并把结果留在 L0C，再由 GetTensorC 卡规定的后继调用把该矩阵块搬到 GM，二者构成有顺序和中间存储契约的配套 API 链。
-<!-- cannbot:related:end -->

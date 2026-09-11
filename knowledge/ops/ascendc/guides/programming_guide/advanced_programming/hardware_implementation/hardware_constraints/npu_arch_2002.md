@@ -51,11 +51,3 @@ platforms: []
             AscendC::printf("global var is %f\n", aa);
         };
         ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCurNpuArch](../../../../../apis/utils_api/platform_info/platform_ascend_c/get_cur_npu_arch.md)（`explains`）：NPU架构版本2002不支持Generic Addressing通用寻址（针对UB、stack、GM等地址空间），因此语言层面地址空间必须匹配。；Atlas 推理系列产品AI Core：DAV_2002；GetCurNpuArch 的返回映射可在运行或 Host 选择阶段识别 DAV_2002，随后应用焦点卡的地址空间约束。
-- [NPU架构版本2002](../architecture_spec/npu_arch_2002.md)（`same_topic`）：NPU架构版本2002不支持Generic Addressing通用寻址（针对UB、stack、GM等地址空间），因此语言层面地址空间必须匹配。；本节介绍__NPU_ARCH__版本号为2002的硬件架构和其功能说明。；两卡以同一 NPU_ARCH 2002 为核心对象，分别给出硬件组成与由其产生的地址空间编程约束。
-<!-- cannbot:related:end -->

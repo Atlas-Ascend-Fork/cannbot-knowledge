@@ -160,9 +160,3 @@ CMake Error at cmake/config.cmake ... Check version compatibility failed.
 
 - **grep 事实**（clone `@2c45117`）：三条告警字符串（`Not found tiling so file` / `record_context_cpp` / 版本 `is invalid`）全库 grep 均不在本仓源码，确认由 CANN 工具链 / torch_npu / AscendC tiling 基础设施发出；`ops/ascendc/README.md` 库定位「Atlas A3 / 950PR/DT」与 `[ascend910b] Not found tiling so file` 的跨 soc 回退对上。**维护者确认**：告警自验证过程同样出现、不影响性能。精度佐证（100% / ~99.96%）为仓自报、无独立复测。
 - 溯源下探：[cann-recipes-infer-issue-76-question-example](https://gitcode.com/cann/cann-recipes-infer/issues/76)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendC 自定义算子的构建/打包/可用性坑：vendor 同名覆盖、build.sh op-name 不匹配、未编译则命名空间缺失、镜像滞后源码、逐 SoC AddConfig、并行编译提速](ascendc_custom_op_build_packaging_availability.md)（`related`）：源码注册要求“每个要支持的 SoC 都必须在 `op_host/<op>_def.cpp` 里单写一条 `this->AICore().AddConfig("<soc>")`”，A2 目标重编命令为“bash build.sh -c ascend910b”；源码注册与目标 SoC 重编共同组成跨平台可用性的完整修复链。
-<!-- cannbot:related:end -->

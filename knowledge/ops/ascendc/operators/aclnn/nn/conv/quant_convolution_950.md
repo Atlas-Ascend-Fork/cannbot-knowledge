@@ -896,9 +896,3 @@ self->ctx.weightUbLoadUB2L1Tools.LoadUB2L1();
 | 同步 | weight/group MTE flags；R-002 FIX/V flags | flag ID、subblock/vecId、ping-pong轮次 | `WeightUbTransVecImpl/DeQuantVecImpl` |
 | 精度与尾块 | scale编码决定route；Fixpipe或显式FP32 epilogue | Mul/Add/cast顺序、quantPre、roundMode、有效M/N | `GetQuantPre/DeQuantCalc` |
 | 失败边界 | checker、binary、Tiling、launch、Transpose均可失败 | 不得静默切换不等价scale语义 | ACLNN checker/selector |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [QuantConvolution A2/A3 ACLNN 算子知识](quant_convolution.md)（`same_topic`）：“固定 Commit 的公开文档明确支持 Atlas A2 与 A3；实现通过 `TemporaryLimitChecker` 接受 `ASCEND910B` 与 `ASCEND910_93`。`IsSocSupportND()==false` 时只允许五维输入，并选择 `QuantConv3d6HdInt8ToNCDHWFp16/Bf16`，二者均进入最新 `Conv3DV2` 实现。950 的 2D、FP8/HIF8 与独立 `QuantConv3D/ExtendConv2D` 不属于本卡。”界定 A2/A3 只走 3D Conv3DV2，而“公开产品表支持 Ascend 950PR/950DT。实现以 `GetCurNpuArch()==DAV_3510` 选择 950 路线；2D 创建 `ExtendConv2dImpl`，3D 创建 `QuantConv3dImpl`。本卡只记录 `aclnnQuantConvolution`，不包含语义独立的 `aclnnQuantConvolutionWeightNz`。”界定 950 的 2D/3D 分流；二者共同覆盖同一公开入口的平台选型。
-<!-- cannbot:related:end -->

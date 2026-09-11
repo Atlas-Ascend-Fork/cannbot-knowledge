@@ -66,11 +66,3 @@ uint32_t minValue = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetLogicalOrMaxMinTmpSize(plat, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogicalOrTmpBufferFactorSize](get_logical_or_tmp_buffer_factor_size.md)（`related`）：获取LogicalOr接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；host侧Tiling接口，用于获取LogicalOr接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两个 Host 接口面向同一 LogicalOr 临时空间预算：FactorSize 将固定空间换算为单次元素量，MaxMin 给出可选空间上下界。
-- [LogicalOr](logical_or.md)（`same_topic`）：获取LogicalOr接口所需的最大和最小临时空间大小；按元素进行逻辑或操作；连接 Host 临时空间生产与 Kernel 计算。
-<!-- cannbot:related:end -->

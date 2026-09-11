@@ -64,10 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetTanMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Tan](tan.md)（`related`）：提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetTanMaxMinTmpSize获取。；host侧Tiling接口，用于获取Tan接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；Kernel 侧重载明确把临时空间容量交给 GetTanMaxMinTmpSize，Host 侧查询再把容量作为 Tiling 参数回传，闭合 Tan 的分块与 buffer 规划。
-<!-- cannbot:related:end -->

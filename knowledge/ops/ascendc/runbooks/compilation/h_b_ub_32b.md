@@ -67,9 +67,3 @@ bf16 Cast 路径同理：对 `xLocal`（bf16 LocalTensor）做 `Cast(fp32, xLoca
 
 - 本 trace 初判曾怀疑"Silu/Mul 等 API 的 count 对齐要求"或"UB 容量超额"。经核算 UB 总占用约 62KB（远低于 192KB 上限），且对齐用例同样用 `H_align_` 作 count 却通过——排除了容量与 count 对齐假设，定位到**地址**未对齐才是根因。
 - 曾怀疑 ReduceMax workspace 不足；但 workspace 按 `H_*sizeof(float)+4096` 已足够，且崩溃发生在 Cast/Silu 阶段而非 ReduceMax，故排除。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DequantSwigluQuant 950 Direct Invoke 算子知识](../../operators/direct/nn/quant/dequant_swiglu_quant_950.md)（`related`）：“对 `x［M,2H］` 做可选 INT32 反量化，选择左右半部形成 `Swish(act) * gate`”定义 Direct Invoke 的 2H 分半数据流；“kernel 把一行 x（长度 `twoH = 2*H`，A、B 两段各 H）整体 `DataCopyPad` 装入一个 UB 缓冲”定位同一算子奇数 H 时后半段地址未对齐的故障点。
-<!-- cannbot:related:end -->

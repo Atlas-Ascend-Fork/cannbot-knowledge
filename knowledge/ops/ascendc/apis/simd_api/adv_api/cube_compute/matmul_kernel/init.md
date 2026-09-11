@@ -110,30 +110,7 @@ Init主要用于对Matmul对象中的Tiling数据进行初始化，根据Tiling�
         ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ClearBias](clear_bias.md)（`related`）：Init 页说明“Init主要用于对Matmul对象中的Tiling数据进行初始化，根据Tiling参数进行资源划分”；ClearBias 页明确“如果在调用［Init］(init.md)时配置了TCubeTiling结构中的isBias参数来启用Bias，调用该接口后，会清除Bias标志位，不再启用Bias。”，后者直接修改前者初始化出的 bias 状态。
-- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`related`）：Init 的参数合同写明“Tiling参数可以通过host侧GetTiling接口获取，并传递到kernel侧使用。”；GetMatmulApiTiling 页说明“然后调用本接口，得到常量化的Matmul Tiling参数。”，构成 Host/编译期 Tiling 生产到 Kernel Init 消费的直接链。
-- [GetTiling](../matmul_tiling/get_tiling.md)（`related`）：“- tiling（输出）：Tiling结构体存储最终的tiling结果。TCubeTiling结构介绍请参考表1。/optiling::TCubeTiling：带有optiling命名空间的TCubeTiling结构体，，该结构体为Host侧定义的Matmul TilingData。”；“- cubeTiling（输入）：Matmul Tiling参数，TCubeTiling结构体定义请参见表1 TCubeTiling结构说明。 Tiling参数可以通过host侧GetTiling接口获取，并传递到kernel侧使用。”。GetTiling 的结果被 Init 直接消费以初始化 Matmul 对象资源。
-- [REGIST_MATMUL_OBJ](regist_matmul_obj.md)（`related`）：Init 页说明“开发者可以先通过［REGIST_MATMUL_OBJ］(regist_matmul_obj.md)不传入Tiling参数对单个Matmul对象进行初始化，后续通过Init接口单独传入Tiling参数”；注册页说明“当代码中只有一个Matmul对象时，本接口可以不传入tiling参数，通过Init接口单独传入tiling参数。”，双方明确给出同一注册后再初始化的调用合同。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)（`related`）：算子声明的固定版本源码包含对 `Init(...)` 的直接调用（第 50 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/fused_linear_cross_entropy_loss_grad/op_kernel/fused_linear_cross_entropy_loss_grad_high_perf.h#L50)
-
-### 知识正文中的调用示例
-
-展示 3 / 3 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [Sparse4to2QuantMatmulWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/sparse4to2_quant_matmul_weight_nz.md)（`related`）：算子正文包含对 `Init(...)` 的直接调用；本卡提供该接口契约。
-- [MhcPreBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_pre_backward_950.md)（`related`）：算子正文包含对 `Init(...)` 的直接调用；本卡提供该接口契约。
-- [TransposeQuantBatchMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_950.md)（`related`）：算子正文包含对 `Init(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)
+- [Sparse4to2QuantMatmulWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/sparse4to2_quant_matmul_weight_nz.md)
+- [MhcPreBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_pre_backward_950.md)
+- [TransposeQuantBatchMatMul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_950.md)

@@ -144,12 +144,3 @@ aclrtcGetLoweredName(prog, kernelNameExpr, &manglingName);
 ```
 
 完整样例请参考：[rtc_template_add](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/05_aclrtc/rtc_template_add/README.md)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclrtcAddNameExpr](../../../../apis/utils_api/rtc/aclrtc_add_name_expr.md)（`explains`）：“aclrtcAddNameExpr（可选）：注册需要导出的核函数名表达式”描述可选导出步骤，“该接口需要在aclrtcCompileProg编译接口前使用”给出必须满足的调用顺序。
-- [aclrtcCompileProg](../../../../apis/utils_api/rtc/aclrtc_compile_prog.md)（`explains`）：“aclrtcCompileProg：编译给定的程序，支持用户自定义编译选项”定位 RTC 编译步骤，“options 为编译选项数组（默认添加 -std=c++17）”明确选项参数及默认行为。
-- [aclrtcCreateProg](../../../../apis/utils_api/rtc/aclrtc_create_prog.md)（`explains`）：“通过给定参数创建编译程序实例。函数签名为 aclError aclrtcCreateProg(aclrtcProg* prog, const char* src, const char* name, int numHeaders, const char** headers, const char** includeNames)。”定义 CreateProg 接口；“aclrtcCreateProg：根据输入参数（字符串形式表达的Ascend C源代码等）创建aclrtcProg程序实例。”把它放入完整 RTC 编译执行步骤，指南能推进该 API 的实际使用。
-<!-- cannbot:related:end -->

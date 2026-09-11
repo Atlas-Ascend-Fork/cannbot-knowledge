@@ -566,10 +566,3 @@ for (m0 : tiles<4>(m))
 | 构建接线 | 算子 `CMakeLists.txt::register_direct_launch_op` | kernel、launch header 与 plugin 合并进 Direct Invoke 扩展。 |
 
 官方 `README.md`、`mla_prolog.cpp`、`mla_prolog_tiling_data.h` 与 arch35 split-N header 用于对齐算子语义、公开接口背景和相关架构概念；Direct-specific 的 Host selector、streaming primitive 与精度顺序以上表源码闭包为准。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MLA 950 Direct Invoke 算子知识](mla_950.md)（`related`）：`Q=［q_nope,q_rope］`、`K=［k_nope,k_rope］`，计算 `softmax(scale·QK^T + causal_mask)V`；一只 KV head 被全部 query heads 共享。；`X` 同时生成 query 与压缩 KV：`Cq=RMSNorm(X·W_dq)`，`［Qc,Qr］=Cq·W_uq_qr`，`Q=Qc·W_uk`，`Q_rope=RoPE_half(Qr)`；`［Ckv,Kr］=X·W_dkv_kr`，输出 `RMSNorm(Ckv)` 与 `RoPE_half(Kr)`。。MlaProlog 从 X 生成 query/query_rope 与压缩 KV/RoPE 分量，MLA 随后消费 nope/rope 形式的 Q/K 执行注意力；二者构成 950 Direct MLA 推理的前处理到注意力计算链。
-- [MlaProlog 950 ACLNN 算子知识](../../../aclnn/transformer/attention/mla_prolog_950.md)（`same_topic`）：`X` 同时生成 query 与压缩 KV：`Cq=RMSNorm(X·W_dq)`，`［Qc,Qr］=Cq·W_uq_qr`，`Q=Qc·W_uk`，`Q_rope=RoPE_half(Qr)`；`［Ckv,Kr］=X·W_dkv_kr`，输出 `RMSNorm(Ckv)` 与 `RoPE_half(Kr)`。；`Cq=αq*RMSNorm(X*WDq)`，`［Qc,Qr］=Cq*［WUq,WQr］`，`query=Qc*WUk`，`queryRope=RoPE(Qr)`；`［Ckv,Kr］=X*［WDkv,WKr］`，`αkv*RMSNorm(Ckv)` 与 `RoPE(Kr)` 写 cache。950 额外支持 MXFP8/FP8/HIF8；MXFP8 MM 以 FP8E8M0 scale 并累加为 FP32。。两卡闭合相同 MlaProlog 的四 Matmul、两 RMSNorm、query/RoPE 和压缩 KV 语义，分别提供 950 Direct Invoke BF16 路线与 ACLNN V3 量化/cache 路线。
-<!-- cannbot:related:end -->

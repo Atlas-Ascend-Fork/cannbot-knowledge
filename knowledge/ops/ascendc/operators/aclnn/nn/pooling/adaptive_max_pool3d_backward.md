@@ -714,9 +714,3 @@ if (maxPoolGradParams.xDtypeSize != DTYPE_LEN_B32 && maxPoolGradParams.isOverLap
 | 同步 | output init、atomic/cache accumulation、cast 的先后 | cast 不得早于所有贡献 | Normal/ScatterOverlap `Process` |
 | 精度与尾块 | BF16 RINT、FP16 NONE；各 count 最后一块用 tail | padded lane 不写 GM | `ComputeCast`, CopyOut |
 | 失败边界 | Normal→Scatter；空 tensor no-op | Scatter 失败后不得静默选择未知 key | `IsCapable`, router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MaxPool3dWithArgmaxBackward A2/A3 ACLNN 算子知识](max_pool3d_with_argmax_backward.md)（`related`）：全部整除时令 `kernelSize=stride=isizes/osizes`、padding=0、dilation=1、ceilMode=false，调用 `MaxPool3DGradWithArgmax`；｜ 计算语义 ｜ 对每个 `gradOutput［n,c,od,oh,ow］`，按 `indices` 给出的展平 DHW 坐标回填到 `gradInput［n,c,:,:,:］`；同一坐标命中多次时求和，未命中位置为 0 ｜；Adaptive 的整除分支直接把等窗参数交给 MaxPool3DGradWithArgmax，后者的 indices 回填与重复命中累加合同因此就是该分支的实际 Device 语义。
-<!-- cannbot:related:end -->

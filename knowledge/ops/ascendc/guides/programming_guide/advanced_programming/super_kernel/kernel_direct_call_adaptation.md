@@ -349,13 +349,3 @@ A：不是必须的。`sk::SkSystemArgs *sysArgs`参数是可选的，只有算�
 **Q6：原global函数还需要保留吗？**
 
 A：是的，原global函数继续用于非SuperKernel场景，可以同时支持两种部署方式。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SK_BIND（SuperKernel）](../../../../apis/utils_api/super_kernel/sk_bind.md)（`explains`）：本接口为算子SuperKernel场景提供绑定原核函数和SK子函数的能力。核函数直调算子的完整适配方法请参见核函数直调算子额外适配说明。；- 需要与普通Kernel函数通过SK_BIND宏绑定。。API 卡定义 SK_BIND 的绑定能力并指向直调适配说明，Guide 把该宏列为 SuperKernel 入口与普通 Kernel 配套的必需步骤。
-- [SuperKernel原理介绍](principles.md)（`related`）：核函数直调算子额外适配说明：对于使用>>方式开发的Ascend C算子，进入SuperKernel前需要进行的额外适配工作。；对于使用>>方式开发的Ascend C算子，除了遵循算子适配说明中的通用约束外，还需要在算子Kernel入口侧增加SuperKernel入口函数。本文档介绍具体的适配方法。；目标指南展开焦点明确列出的直调算子额外适配路径。
-- [基于样例工程完成Kernel直调](../../appendix/kernel_direct_call_from_sample.md)（`related`）：完成算子kernel侧实现；需要在算子Kernel入口侧增加SuperKernel入口函数。样例工程卡给出普通 Kernel 直调的构建、Host 调用和验证流程，适配卡说明把这类直调算子纳入 SuperKernel 时必须增加 SK 入口、参数结构和 SK_BIND 的差异步骤。
-- [算子适配说明](operator_adaptation.md)（`related`）：对于使用>>方式开发的Ascend C算子，除了遵循算子适配说明中的通用约束外，还需要在算子Kernel入口侧增加SuperKernel入口函数。本文档介绍具体的适配方法。；自定义算子要支持融合进SuperKernel，开发流程上与普通算子并无显著差异，但需要遵循以下一系列特定约束。这些约束与具体的开启方式（npugraph_ex后端或GE图模式）无关，大部分约束与算子启动核数（block num）以及SuperKernel启动核数之间的关系相关，需要开发者在算子设计阶段就予以关注。Kernel 直调适配明确建立在通用算子适配约束之上，并增加入口函数这一专属步骤，二者组成完整接入链。
-<!-- cannbot:related:end -->

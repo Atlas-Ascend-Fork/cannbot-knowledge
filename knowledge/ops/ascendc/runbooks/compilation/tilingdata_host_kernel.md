@@ -80,11 +80,3 @@ kernel 侧 `max_pool3d_grad_struct.h` 含 kernel-only 构造，host 翻译单元
 
 - 本卡仅构建验证于 Ascend950（arch35）；a2/a3 未构建。host/kernel 双定义是 AscendC tiling 框架的通用约束——未验证，推断可迁移到 a2/a3。
 - struct 的具体字段集（32 个 `int64_t`）是 max_pool3d_grad separable 路径的设计产物；迁移到其它算子时字段随该算子的 tiling 需求变化，但"host/kernel 各定义一份、字段逐字一致"的模式不变。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GET_TILING_DATA](../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data.md)（`exemplifies`）：AscendC 算子的 TilingData struct 需要同时被两个编译器看到：；获取算子 kernel 入口函数传入的 Tiling 信息，填入注册的 TilingData 结构体。以宏展开方式编译。Host 侧需定义 TilingData 结构体并注册 Tiling 函数。返回默认注册的结构体。支持 950/a2/a3。runbook 的 host 完整类型报错发生在生产侧，GET_TILING_DATA 页明确 Kernel 消费同一注册结构体，能核对两端 ABI。
-- [TilingData结构定义](../../apis/utils_api/tiling_data_structure_register/tiling_data_struct_definition.md)（`exemplifies`）：新增 TilingData struct 时，同步在 host 可见头与 kernel 可见头**各定义一份**，字段顺序/类型逐字一致；优先放在算子既有的 host struct 汇总头（若该头非跨算子共享、可改）。；定义一个TilingData的类，添加所需的成员变量（TilingData字段），用于保存所需TilingData参数。完成该TilingData类的定义后，该类通过继承TilingDef类（用来存放、处理用户自定义Tiling结构体成员变量的基类）提供以下接口：runbook 的双端字段一致性要求由结构定义 API 补齐字段、序列化和长度接口背景。
-- [Host 缺 SetDataSize 致 TilingData 截断](../precision/host_setdatasize_tilingdata.md)（`related`）：AscendC 算子的 TilingData struct 需要同时被两个编译器看到：；任何在 op_host 自定义 TilingData 结构体的 ACLNN 算子，TilingFunc 末尾填完字段后必须 `rawTilingData->SetDataSize(sizeof(<TilingData>))`，再 `SetBlockDim`/`SetTilingKey`。前者保证 Host 与 Kernel 都有一致类型，后者保证 Host 把完整字节数传给 Kernel，组成编译可见性到运行传输的连续诊断链。
-<!-- cannbot:related:end -->

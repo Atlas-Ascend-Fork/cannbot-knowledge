@@ -41,9 +41,3 @@ sglang-on-Ascend 单卡 tp1 拉不起、疑似权重格式转换额外占显存�
 
 - `diff 事实`（@8cd85a87af03）：patch 0009 CI `setUpClass` 设 `SGLANG_NPU_DISABLE_ACL_FORMAT_WEIGHT=1` / `tearDownClass` 还原，提交标题 "introducing the SGLANG_NPU_DISABLE_ACL_FORMAT_WEIGHT env parameter, to avoid oom with tp1"，README 启动段亦 export。「关闭 ACL/NZ 格式权重转换省显存」为推断。
 - 溯源下探：[cann-recipes-infer-pr-284-feat-llada2-x-sglang-ascend](https://gitcode.com/cann/cann-recipes-infer/merge_requests/284)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [weightNZ Format](../../concepts/techniques/weight_nz.md)（`related`）：将 Matmul 类算子的权重 Tensor 转成昇腾 NPU 亲和的 **NZ 分形布局**（512 字节对齐），提升硬件访存带宽效率，加速 DeepSeek-R1 等模型的 Prefill / Decode Matmul 计算。；**触发**：tp1（单卡承载全权重）+ 昇腾把权重转成 ACL/NZ（fractal）格式的额外显存开销，一起超出单卡容量。概念卡说明 NZ 性能收益，runbook 给出单卡 OOM 时关闭格式转换的反向边界与验证信号。
-<!-- cannbot:related:end -->

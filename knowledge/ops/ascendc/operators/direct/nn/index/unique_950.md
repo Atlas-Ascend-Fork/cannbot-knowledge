@@ -1100,9 +1100,4 @@ Frontmatter `sources` 只列固定 Commit 下转换实际参考且可公开定�
 | 精度与尾块 | signed key顺序、zero canonical、unsigned dense delta、official comparator/dedup 差异 | fp16/bf16 与 fp32 完整语义均需无NaN；current而非aligned参与Reduce；所有core/tile tail | `CanonicalFixedKey/DenseRangeValid/SimtRowCompareDedup` |
 | 失败边界 | 非法输入Host失败；dense宽域Device fallback；radix dormant | 不扩dtype/rank/空域；不把body存在当可达 | `CheckInput/calc_unique_tiling` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AtomicMin](../../../../apis/simd_api/basic_api/atomic_operations/atomic_min.md)（`related`）：在指定GM地址上进行原子取最小值操作。将address指向的GM地址上的旧值与输入值进行原子取最小值运算，将结果写回GM地址，返回修改前的旧值。仅Ascend 950PR/950DT支持。；range==1只写first［0］，否则AtomicMin(first［x-min］,i)；Unique 的稠密标记阶段直接以 AtomicMin 保留每个值首次出现的位置。
-- [UniqueDim 950 ACLNN 算子知识](../../../aclnn/nn/index/unique_dim_950.md)（`related`）：“｜ 计算语义 ｜ 沿归一化轴 `k` 把每个切片视为长度 `rowLen=prod(shape)/shape［k］` 的行，按行字典序排序并去重；输出唯一行、原行到唯一行的逆映射和计数。 ｜”；“适配器把官方 POD 固定为 `rowLen=1, dim=0, outerSize=innerSize=1, returnCounts=0`，所以官方 body 被复用为一维标量去重。”。Direct Unique 明确把 UniqueDim 的 POD 和 body 固定为 rowLen=1 的退化场景，形成具体实现复用链。
-<!-- cannbot:related:end -->
+- [AtomicMin](../../../../apis/simd_api/basic_api/atomic_operations/atomic_min.md)

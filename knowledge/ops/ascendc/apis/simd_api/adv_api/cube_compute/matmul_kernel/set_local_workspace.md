@@ -65,10 +65,3 @@ if (tiling.isBias) {
 mm.IterateAll(gm_c);
 mm.End();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulGetTmpBufSize](../get_matmul_compute_space/matmul_get_tmp_buf_size.md)（`related`）：“具体需要申请的UB（VECCALC）临时空间大小由tiling接口MatmulGetTmpBufSize给出”明确 SetLocalWorkspace 的容量来源；“本接口用于在调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。”定义该容量查询的调用阶段和输出范围。
-<!-- cannbot:related:end -->

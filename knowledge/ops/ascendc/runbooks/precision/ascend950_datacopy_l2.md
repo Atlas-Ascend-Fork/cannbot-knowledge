@@ -45,9 +45,3 @@ platforms: ["950"]
 - dump 比对：dense path 失败用例 1907 个不匹配全在对角线位置、`out==input`、block 0-30 正确而 block 31-62 丢失（来源平台：Ascend950；证据等级: tool_observed）
 - 缓存策略对照：移除 `DataCacheCleanAndInvalid` 后 666404/666667 未填充；`ENTIRE_DATA_CACHE`/`SINGLE_CACHE_LINE`/`CACHELINE_OUT`/per-tile flush 均 ≤4/48 PASS（来源平台：Ascend950；证据等级: tool_observed）
 - 修复路线确认：CopyOut 改 `SetValue` 只写对角线 + 末尾一次 `DataCacheCleanAndInvalid` 后重跑全量 286/286 PASS，dense path 48/48、sparse path 238/238 三模式均 100% golden，`PRECISION_STATUS: PASS`（来源平台：Ascend950；证据等级: tool_observed）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCacheCleanAndInvalid](../../apis/simd_api/basic_api/cache_control/data_cache_clean_and_invalid.md)（`exemplifies`）：修复路线确认：CopyOut 改 `SetValue` 只写对角线 + 末尾一次 `DataCacheCleanAndInvalid` 后重跑全量 286/286 PASS，dense path 48/48、sparse path 238/238 三模式均 100% golden，`PRECISION_STATUS: PASS`（来源平台：Ascend950；证据等级: tool_observed）；当DMA向GM写入数据后，若Scalar需要读取该数据，需先调用本接口清除Data Cache中的旧缓存，否则可能读到过期数据。；运行手册给出 SetValue 与 DataCacheCleanAndInvalid 组合的 Ascend950 实测修复，API 卡说明清除旧 Data Cache line 以恢复 Scalar 侧 GM 可见性的调用合同，前者是后者在具体精度排障中的应用实例。
-<!-- cannbot:related:end -->

@@ -212,9 +212,3 @@ GM 偏移用 `GlobalTensor::operator[]`：`gmIn[0][off]` 返回 `__gm__ float&`�
 
 - 初判怀疑 `mean=+inf`（running state 输入）触发 VEC_ERROR——但 Phase 1 在处理 `mean` 之前就崩，`mean=+inf` 是该批用例的特征不是根因。
 - 与 build 卡 507035（workspace RESERVED_WORKSPACE）同错误码但不同根因：本卡是 kernel 侧 UB 越界（Phase 1 容量），那张是 host 侧 GM workspace 越界（workspace 大小）。两卡同 507035 但代码路径与修复层不同，各一卡。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)（`exemplifies`）：`DataCopyPad` 写 `19686*4 = 78744` 字节到 `50784` 字节 buffer；将数据从GM非对齐搬运至UB。Runbook 的 507035 由 GM→UB DataCopyPad 的 blockLen 超过目标 UB 容量直接触发，API 卡确定搬运方向；修复必须在该契约上按 per_buf_elems 分 chunk。
-<!-- cannbot:related:end -->

@@ -66,10 +66,3 @@ if exe_mode == "acl_graph":
 
 - diff 事实：`exe_mode == "acl_graph"` 且非 warm-up 时用 `torch.compiler.set_stance(skip_guard_eval_unsafe=True)` 包裹 decode；收益无独立数据。溯源下探 [cann-recipes-infer-pr-236-fix-duplicate-creation-of-multi-stream-events-when-mtp-enable-skip-guard](https://gitcode.com/cann/cann-recipes-infer/merge_requests/236)
 - diff 事实 + 维护者确认（@f8bb1545）：reinplace 注册块（`mutated_arg=[9,10]`、ImportError 告警文案）+ warm-up 后 skip_guard 分支；reinplace 的版本门控/静默跳过与 skip_guard 的"warm-up 后才跳"由 review 佐证。溯源下探 [cann-recipes-infer-pr-204-feat-dsv3-2-support-acl-graph](https://gitcode.com/cann/cann-recipes-infer/merge_requests/204)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NPU LLM 图模式启用骨架：decode-only 编译 + ge_graph / acl_graph / npugraph_ex 后端编译入口与配置约束](../../../optimizations/experience/rules/graph_mode_decode_only_compile_backends.md)（`related`）：已在 acl_graph（torch.compile + ACLGraph 捕获）跑通 decode、想再压 host 侧开销时的两项稳态优化。；实现上把 prefill / decode 的 forward 拆成不同方法，**只对 decode 方法** `torch.compile(...)`，prefill 保持 eager。前者是在后者完成 decode-only 编译与预热之后追加 skip_guard/reinplace 的稳态优化步骤。
-- [推理 warmup 静默长耗时易误判卡死 + 同质 minibatch 冗余前向可 dummy 缓存跳过](../../../runbooks/performance/warmup_silent_slow_and_dummy_cache.md)（`related`）：warmup 诊断警示“**看似卡死**：warmup 阶段全程无日志输出”，不能在首编译阶段误杀进程；稳态优化则限定“**仅对非 warm-up 的稳态步开启**”，明确跳 guard/reinplace 的启用时点必须等 warmup 完成。
-<!-- cannbot:related:end -->

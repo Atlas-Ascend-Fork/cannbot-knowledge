@@ -472,9 +472,3 @@ __VEC_SCOPE__
 | 同步 | Queue EnQue/DeQue/FreeTensor | 不得在消费前复用 slot | `ForeachRegbaseTernary` |
 | 精度与尾块 | FP16/BF16 边界升降，FP32 中间，RINT；Mask tail | cast trait、`UpdateMask` 和 byte count | `Compute`/load-store helper |
 | 失败边界 | platform/dtype/shape/key 均无 Device fallback | 不得把 arch35 存在当作独立公开支持证据 | docs/OpDef/Tiling/router/config |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddcmulScalar A2/A3 ACLNN 算子知识](foreach_addcmul_scalar.md)（`same_topic`）：对列表位置 `i` 与元素 `j`，`out_i［j］ = x1_i［j］ + scalar * x2_i［j］ * x3_i［j］`；`out_i［j］ = x1_i［j］ + scalar * x2_i［j］ * x3_i［j］`。两卡给出完全相同的 foreach_addcmul_scalar 逐列表逐元素公式；一端描述通用算子合同，另一端给出 950 路由与 Kernel 闭包。
-<!-- cannbot:related:end -->

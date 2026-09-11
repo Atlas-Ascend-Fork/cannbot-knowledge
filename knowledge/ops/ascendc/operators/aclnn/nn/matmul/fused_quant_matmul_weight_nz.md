@@ -636,9 +636,3 @@ for (uint32_t mUbLoopIdx = 0; mUbLoopIdx < mUbLoops; ++mUbLoopIdx) {
 | 同步 | 实际 AIC→AIV flags 6/7、AIV→AIC flags 4/5 | 第三轮 wait、End 补等待、PIPE_FIX/PIPE_MTE2；勿按常量名猜方向 | `BasicMMCVFusionCompute/End` |
 | 精度与尾块 | int32 MM；FP32 dequant/scale/bias/GELU；RINT 输出 | bias INT32 与非 INT32 的加入位置、M/N/UB tail | `DequantCompute/CopyOutToGM` |
 | 失败边界 | 无非 WeightNz 或其它 fused op fallback | 950 官方不支持；非法 NZ/资源/key 必须失败 | API checks/Tiling/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FusedQuantMatmul A2/A3 ACLNN 算子知识](fused_quant_matmul.md)（`related`）：INT8×INT8 或 INT4×INT4 的 batch matmul；INT32 累加，逐 token `x1Scale` 与逐通道/逐 tensor `x2Scale` 反量化，可选 bias，随后融合 `gelu_tanh` 或 `gelu_erf`；int8/int4 矩阵乘的 int32 累加，经 `x2Scale` 与逐 token `x1Scale` 反量化，按 bias dtype 在 MM 或 Vector 侧加 bias，再执行 `gelu_tanh` 或 `gelu_erf`。两卡共享低比特矩阵乘、INT32 累加、双尺度反量化、bias 与 GELU 融合的计算链，WeightNz 版本进一步规定 x2 的 FRACTAL_NZ 物理存储和专用公开入口，适合用于权重布局选型。
-<!-- cannbot:related:end -->

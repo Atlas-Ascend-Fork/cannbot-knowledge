@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetErfcTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Erfc](erfc.md)（`related`）：获取Erfc接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。。FactorSize 卡把可用临时空间反推为单次 Erfc 元素数，Erfc 卡说明计算重载如何传入或申请 sharedTmpBuffer；联合阅读可在固定 UB 预算下确定分块规模。
-<!-- cannbot:related:end -->

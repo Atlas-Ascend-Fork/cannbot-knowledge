@@ -141,12 +141,3 @@ struct MainTileOnlyTiling {
         }
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMD算子实现尾块均分](tail_block_even_split.md)（`same_topic`）：“当mainTileRemainder为0时”选择主块均分，“判断remainingTailLength是否为0”选择尾块均分；两张卡是同一多核 Tiling 决策树中相邻且互斥的分支。
-- [TailCoreSplit](tail_core_split.md)（`same_topic`）：“当mainTileRemainder为0时”定义无余数快路径，“tailBlockNumEachCore为0，remainingTailLength不为0”定义余数只能分给部分整核的分支，二者共同闭合多核切分选择。
-- [TailCoreTailBlockSplit](tail_core_tail_block_split.md)（`same_topic`）：“当mainTileRemainder为0时”定义最简单的主块均分快路径，“remainingTailLength和tailBlockNumEachCore均不为0”定义整核与尾核都含尾块的最复杂分支，二者属于同一切分决策树。
-<!-- cannbot:related:end -->

@@ -1016,9 +1016,3 @@ for (int64_t i = 0; i < nddmaProduct; i++) {
 | 同步 | TQue EnQue/DeQue/FreeTensor；executor stream ordering | 广播缓存必须先初始化双槽；外循环填完后才 EnQue | `CopyIn*/Compute3/CopyOut4` |
 | 精度与尾块 | FP32 两候选+阈值 Select；低精度 RINT；`blockTail/ubTail/mask` | 不得合并成未经证明的单表达式或改变 cast/round 顺序 | 各 `Compute3/Process` |
 | 失败边界 | dtype/shape/UB/rank 在 API/Tiling 失败；未知 key无输出 | 不得把 A2/A3 文档支持外推成该固定源码的实现闭包 | `CheckParams/DoBrodcastTiling/lerp` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceLerp 950 ACLNN 算子知识](inplace_lerp_950.md)（`same_topic`）：`weight` 是 Host `aclScalar`，在 950 被物化为 FP32 标量 Tensor；本卡仅 Tensor weight，不包含 scalar `aclnnInplaceLerps`。两卡共享原地 Lerp 计算核心，但分别闭合 scalar weight 与 Tensor weight 的公开入口和可达 Route，互相明确重载选择边界。
-<!-- cannbot:related:end -->

@@ -54,11 +54,3 @@ aliases: ["online_softmax", "loop_carried_dependency"]
 
 - 默认顺序配置（`unroll_list={1}`、`device_sched_mode=0`、不设 `cube_nbuffer_setting`）精度校验 `EXIT=0`、PRECISION 段无逐位置超阈项，基线通过（来源平台:950；证据等级:tool_observed）
 - `cube_nbuffer_setting={-1:2}`（与 `device_sched_mode=3` 同模式）精度校验输出固定位置 `误差=0.00048828` 超阈（阈值 `0.00041962`/`0.00046158`/`0.00042725`），精度失败（来源平台:950；证据等级:tool_observed）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [C1 Cube FP32 输出阻断 950 Mix合图 CV 通路](../compilation/c1_cube_fp32_950_mix_cv.md)（`related`）：Mix CV 卡给出同一算子的 dtype 通路边界“950 Mix合图 CV 通路（L0C→UB）只支持 FP16/BF16，不支持 FP32。”；JIT 卡给出顺序边界“在线 softmax 的 `mi/li/oi` 跨迭代循环依赖对执行顺序敏感”，共同要求 sparse_flash_attention_quant_d_950 的优化同时通过 CV dtype 与在线 softmax 顺序两道 gate。
-- [cube_l1_reuse_setting 32 非单调反退](../performance/cube_l1_reuse_setting_32.md)（`related`）：性能卡记录“将 `cube_l1_reuse_setting` 从 `{-1:16}` 增大到 `{-1:32}`，期望通过增加 L1 复用次数进一步减少 L1 重载。”但性能未改善；精度卡进一步规定“`cube_nbuffer_setting={-1:2}` 属禁用路线”，并解释重排在线 softmax 的 C1 任务会造成 BF16 超阈，二者共同约束同一算子的 Cube/JIT 复用调参和验证。
-- [unroll s2 内层循环破坏 flash 在线 softmax 循环态](unroll_s2_flash_softmax.md)（`related`）：“在线 softmax 的 `mi/li/oi` 跨迭代循环依赖对执行顺序敏感，任何重排 C1 任务顺序的优化都会改变累积次序”给出 JIT 重排的通用故障机制；“把 `unroll_list` 从 `{1}` 扩为 `{1,2}` 后，框架对 s2 第 2 层循环做展开，破坏了 `is_loop_begin` / `is_loop_end` 在原单层 s2 上的边界语义”提供一个更严重且可复现的具体分支。
-<!-- cannbot:related:end -->

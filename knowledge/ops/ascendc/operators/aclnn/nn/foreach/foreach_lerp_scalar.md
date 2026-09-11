@@ -503,9 +503,3 @@ FP16/BF16 输入在 FP32 临时区内完成减法与 Axpy，最后以 `CAST_RINT
 | 同步 | Queue + V/MTE3/MTE2 event | 结果复制和 slot 复用前等待 | `ComputeAndCopyOut` |
 | 精度与尾块 | 低精度升 FP32、CAST_RINT；尾 tile pad copy | strict weight 阈值、chunk offset、实际 `blockLen` | `ComputePerCast` / `CopyIn` |
 | 失败边界 | selector 不适用继续；校验失败立即终止 | 不得把未知 key 或 BF16 guard 当 fallback | `TilingRegistry::DoTilingImpl` / entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLerpScalar 950 ACLNN 算子知识](foreach_lerp_scalar_950.md)（`same_topic`）：对列表位置 `i`：`y_i = x1_i + weight * (x2_i - x1_i)`。；`y_i = x1_i + weight * (x2_i - x1_i)`；950 公开约束要求三列表对应 shape size 一致，列表最多 50 项。两卡描述同一 ForeachLerpScalar ACLNN 逻辑算子，分别闭合 A2/A3 classic AIV 与 950 RegBase 的 Host、Tiling 和 Kernel 路由。
-<!-- cannbot:related:end -->

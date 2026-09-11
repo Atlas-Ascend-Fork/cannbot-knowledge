@@ -458,25 +458,13 @@ Kirin 9030，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、
   ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 12 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Rasterizer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/rasterizer.md)（`related`）：算子声明的固定版本源码包含对 `TransDataTo5HD(...)` 的直接调用（第 279 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/rasterizer/op_kernel/barycentric_from_imgcoord_kernel.h#L279)
-- [ChunkCat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat.md)（`related`）：算子声明的固定版本源码包含对 `TransDataTo5HD(...)` 的直接调用（第 269 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/chunk_cat/op_kernel/chunk_cat.h#L269)
-- [LogSoftmaxBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/log_softmax_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `TransDataTo5HD(...)` 的直接调用（第 229 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/log_softmax_grad/op_kernel/arch35/log_softmax_grad_ar_small_r.h#L229)
-- [UnfoldGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/unfold_grad.md)（`related`）：算子声明的固定版本源码包含对 `TransDataTo5HD(...)` 的直接调用（第 188 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/unfold_grad/op_kernel/unfold_grad_final_axe.h#L188)
-- [SoftmaxBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/softmax_backward_950.md)（`related`）：算子声明的固定版本源码包含对 `TransDataTo5HD(...)` 的直接调用（第 222 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_small_r.h#L222)
-- [Transpose 950 Direct Invoke 算子知识](../../../../../operators/direct/math/conversion/transpose_950.md)（`related`）：算子声明的固定版本源码包含对 `TransDataTo5HD(...)` 的直接调用（第 107 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_transdata_5hd.h#L107)
-- [AddLayerNorm A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm.md)（`related`）：算子声明的固定版本源码包含对 `TransDataTo5HD(...)` 的直接调用（第 244 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm/op_kernel/add_layer_norm_base.h#L244)
-- [AdaptiveMaxPool3d A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/adaptive_max_pool3d.md)（`related`）：算子声明的固定版本源码包含对 `TransDataTo5HD(...)` 的直接调用（第 880 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2_no_expand_indices.h#L880)
-- [MaxPool2dWithIndices A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/max_pool2d_with_indices.md)（`related`）：算子声明的固定版本源码包含对 `TransDataTo5HD(...)` 的直接调用（第 880 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2_no_expand_indices.h#L880)
-- [MaxPool3dWithArgmax A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/max_pool3d_with_argmax.md)（`related`）：算子声明的固定版本源码包含对 `TransDataTo5HD(...)` 的直接调用（第 880 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2_no_expand_indices.h#L880)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Rasterizer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/rasterizer.md)
+- [ChunkCat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat.md)
+- [LogSoftmaxBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/log_softmax_backward_950.md)
+- [UnfoldGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/unfold_grad.md)
+- [SoftmaxBackward 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/softmax_backward_950.md)
+- [Transpose 950 Direct Invoke 算子知识](../../../../../operators/direct/math/conversion/transpose_950.md)
+- [AddLayerNorm A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm.md)
+- [AdaptiveMaxPool3d A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/adaptive_max_pool3d.md)
+- [MaxPool2dWithIndices A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/max_pool2d_with_indices.md)
+- [MaxPool3dWithArgmax A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/max_pool3d_with_argmax.md)

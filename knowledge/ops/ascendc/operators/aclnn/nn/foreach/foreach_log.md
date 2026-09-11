@@ -562,9 +562,3 @@ PipeBarrier<PIPE_V>();
 | 同步 | Queue 加 V/MTE3/MTE2；BF16 四个 V barrier | 原地槽不得提前覆盖 | `ForeachImplictOutput::Compute/ComputePerCast` |
 | 精度与尾块 | FP 原生；BF16→FP32 Log→CAST_RINT；tail 按真实字节 | cast 顺序、chunk 上限和有效元素数 | `InnerComputer`; `CopyIn` |
 | 失败边界 | Host 失败阻断；未知 key 无输出 | 不得发明 fallback 或扩大 50 项上限 | `CheckOpInfo`; `foreach_log` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLog 950 ACLNN 算子知识](foreach_log_950.md)（`same_topic`）：对 TensorList 的每个有效元素计算自然对数；对 TensorList 中每个张量逐元素计算 `y_i［j］ = ln(x_i［j］)`。两张算子卡公开同一 aclnnForeachLog 与逐元素自然对数语义，分别闭合 950 SIMT 和 A2/A3 Vector 实现，可直接按平台选型。
-<!-- cannbot:related:end -->

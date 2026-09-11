@@ -800,9 +800,3 @@ if constexpr (!std::is_same_v<ScalesDataType, float>) {
 | 同步 | Queue与S/MTE3、V/S、MTE2事件 | consumer完成前不得覆盖/Free | `SyncFunc/ProcessEachTokenPruning/CalculateUnroll` |
 | 精度与尾块 | scale统一FP32；Compare64输出K；映射4+rest | Cast/GE/K字节数 | pruning/CalculateRest |
 | 失败边界 | Host拒绝shape/dtype/optional非法 | 不补造Device fallback/逐值校验 | `CheckAttrs/DataType/Shape` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeUpdateExpert 950 ACLNN 算子知识](moe_update_expert_950.md)（`same_topic`）：`source_closed`：ACLNN、OpDef/推形、Tiling/POD/key、单 Kernel entry/body、同步 helper、A3 binary/CI 接线闭合；生成的 `aclnnInner` bridge 为框架边界；`source_closed`：ACLNN、OpDef/推形、Tiling/POD/key、单 Kernel entry/body、同步 helper、950 binary/CI 接线闭合；生成的 `aclnnInner` bridge 为框架边界；两卡闭合同一 MoeUpdateExpert 算子与四条 Route，只在 A3 和 950 构建接线上分平台。
-<!-- cannbot:related:end -->

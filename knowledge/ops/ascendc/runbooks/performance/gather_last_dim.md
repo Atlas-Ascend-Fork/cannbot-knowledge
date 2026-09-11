@@ -74,11 +74,3 @@ auto indexUint32 = (indexWork.to(torch::kInt64) * (int64_t)dtypeSize).to(torch::
 ## 误诊
 
 - 早期曾把慢 case 归因为「UB buffer overflow 触发 slow path」与「单线程并行不足」，但 perf 报告 `op_times` 显示 dim!=last 慢 case 的 kernel 时间占比仅 17-41%，真正瓶颈是预处理 aclnn kernel，不是 kernel 内 UB/并行（来源平台:950；证据等级:artifact_verified）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Gather 950 Direct Invoke 算子知识](../../operators/direct/nn/index/gather_950.md)（`related`）：在 Ascend950（dav-3510, CANN 9.1.0）上用 ops-direct-invoke-flash 工作流实现 Gather 算子：plugin（`gather_plugin.cpp`）在 `dim != ndim-1`（非最后一维）时，先把 `x` 与 `index` `permute(actual_dim, ndim-1).contiguous()` 转置成最后一维 gather，再用三段 on-device 换算把元素索引转成 byte-offset uint32：；selector 只为 key244 分配 `xTranspose/indexTranspose/yTranspose`。launcher 中 240–243 分支没有 selector producer，均为 dormant。；生产卡的 key244 多节点路线是焦点转置预处理性能归因的当前实现闭包。
-- [gather 扁平偏移公式 dim 上方形状错配](../precision/gather_dim.md)（`related`）：跑 `./scripts/run_evaluation.sh`（20 case）精度 20/20 All Pass（`max_diff=0.0`），但 dim!=last 的 4 个大 case（gather_1/3/4/10）speedup 均 < 1.0x。；case 20 参数 `x=［4,255,2049］, index=［4,127,2049］, dim=2, dtype=float32+int32`：`dim=2` 即 gather 轴是末维，按 `torch.gather` 语义应有 `y［i,j,k］=x［i,j,index［i,j,k］］`；两卡共同覆盖 Gather 末轴与非末轴实现的性能诊断和多维偏移精度验证。
-- [随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM](random_gather_per_element_dma_should_switch_to_simt_direct_gm.md)（`related`）：kernel 本身只占 17-41%。1D / last-dim 的 case（gather_7/13/20 等）没有 Transpose，kernel 占比 57-99%，speedup 1.15-16.24x。；SIMT 路线把同一语义改写为一元素一线程的 grid-stride 循环：线程直接读取 `index［o］`，按逐轴 stride 计算 `x_off`，然后执行 `y［o］ = x［x_off］`。；目标卡给出消除随机逐元素 DMA 的 SIMT 直访路线，可用于焦点去转置方案的独立快路探针。
-<!-- cannbot:related:end -->

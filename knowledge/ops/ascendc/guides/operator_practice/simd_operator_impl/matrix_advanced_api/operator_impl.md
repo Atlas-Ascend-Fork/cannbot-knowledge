@@ -187,10 +187,3 @@ AscendC::Matmul<aType, bType, cType> mm;
 ```
 
 针对数据格式，包括CubeFormat::ND, CubeFormat::NZ, CubeFormat::ND\_ALIGN三种，ND和NZ格式在[数据格式](basics.md#zh-cn_topic_0000001622194138_section1453415011)章节已经介绍，ND\_ALIGN格式的介绍请参考[数据排布格式](../../../technical_appendix/concepts_and_terms/neural_networks_and_operators/data_layout.md#li075920427155)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMD算子实现耦合模式](../matrix_basic_api/coupled_mode.md)（`related`）：Ascend C提供一组Matmul高阶API，封装了这些常用的切分和数据搬运、计算的算法逻辑，方便用户快速实现Matmul矩阵乘法的运算操作；Cube编程范式把算子的实现流程分为5个基本任务：CopyIn，Split，Compute，Aggregate，CopyOut。前者是封装切分搬运计算的高阶 Matmul 路线，后者展开耦合基础 API 的五阶段任务，二者为实现同一矩阵乘算子的两种具体方案。
-<!-- cannbot:related:end -->

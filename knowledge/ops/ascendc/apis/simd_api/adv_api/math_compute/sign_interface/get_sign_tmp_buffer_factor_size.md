@@ -72,11 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetSignTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSignMaxMinTmpSize](get_sign_max_min_tmp_size.md)（`related`）：开发者据此选择合适的Tiling参数传入kernel侧；推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize。总量接口确定 Sign 临时空间可选范围，因子接口把实际可用空间反推为单次最大元素数，二者组成 host 到 kernel 的分块 Tiling 计算。
-- [Sign](sign.md)（`same_topic`）：获取Sign接口的maxLiveNodeCount和extraBuf；临时空间大小通过GetSignMaxMinTmpSize获取。因子查询给出在固定临时空间下反推 Sign 单次元素数的公式，而 Sign 的 sharedTmpBuffer 路径需要先确定临时空间容量；两接口共同完成容量到计算规模的配置。
-<!-- cannbot:related:end -->

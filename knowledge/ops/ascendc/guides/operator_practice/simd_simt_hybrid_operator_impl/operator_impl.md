@@ -207,10 +207,3 @@ __simd_vf__ inline void simd_adds(
 simd\_adds函数实现对UB上的数据做加1计算。函数中循环repeat\_times次完成单核数据处理。input为SIMT阶段写入UB的gather结果，output为加1后的UB输出；本样例调用时input和output均传入local\_output。one\_repeat\_size表示每轮处理的float元素个数，repeat\_times表示完成count个元素所需的循环次数。
 
 循环中，使用[asc_loadalign](../../../apis/simd_api/c_api/reg_compute/load/asc_loadalign.md)接口将数据从UB搬运到SIMD矢量数据寄存器，使用[asc_add_scalar](../../../apis/simd_api/c_api/reg_compute/reg_arith/asc_add_scalar.md)接口完成数据加1运算，使用[asc_storealign](../../../apis/simd_api/c_api/reg_compute/store/asc_storealign.md)接口将数据从SIMD矢量数据寄存器搬运到UB。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [基础知识（SIMD与SIMT混合算子实现）](basics.md)（`related`）：“SIMD编程提供了基于寄存器（Regbase）开发的Reg矢量计算API，Reg矢量计算API可以直接操作Vector Core中的SIMD寄存器，API单次处理的数据量上限等于寄存器的大小，通过GetVecLen接口获取该值。在算子实现中，需要多次调用Reg矢量计算API完成对单核数据的处理。”与“其中，gather阶段包含索引映射和离散访问，使用SIMT表达每个线程的数据访问逻辑；adds阶段处理连续数据，使用SIMD完成向量计算。”是双方正文中的具体合同。基础卡区分 SIMD 寄存器批处理与 SIMT 索引访问，实例卡把两种模式分别落到 gather 与 adds 阶段，能推进混合算子的阶段划分和实现。
-<!-- cannbot:related:end -->

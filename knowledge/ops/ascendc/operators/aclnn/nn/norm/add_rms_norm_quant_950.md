@@ -639,12 +639,3 @@ if constexpr (IsSameType<T_Y, fp8_e4m3fn_t>::value || IsSameType<T_Y, fp8_e5m2_t
 | 同步 | queue/MicroAPI/barrier图 | xOut GM中转与overflow状态恢复 | 三类 `Process` |
 | 精度与尾块 | FP32 rstd/quant主链、TY cast trait | INT8/FP8/HIFLOAT8 round/sat差异、mask | `ComputeY`, `StoreTensorForDtypeTOut` |
 | 失败边界 | perf→normal→split→fail | V2不得用于950、beta key不可从公开入口声称可达 | docs、`SetTilingParams` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [B16 结果大幅偏差 — UNPACK 后补 Reg Cast](../../../../runbooks/precision/b16_unpack_requires_numeric_cast_before_fp32_compute.md)（`related`）：950 算子实现说明“FP16/BF16 输入在 MicroAPI 中 unpack/cast，FP32直接载入。”；精度排障卡强调“`DIST_UNPACK_B16`/`DIST_PACK_B32` 只控制 B16 数据在寄存器搬运时的展开/打包布局，并不等价于 fp16/bf16 与 fp32 的数值格式转换”，可据此验证 norm 的 FP32 累加链没有漏掉数值 Cast。
-- [HiFloat8 SatMode::SAT Cast NaN 映射 0x00](../../../../runbooks/precision/hifloat8_satmode_sat_cast_nan_0x00.md)（`related`）：算子卡明确“量化 cast 使用显式 SAT 与 round trait，并暂时控制浮点溢出模式”；精度卡针对“Cast<hifloat8_t, float, castTraitF32toh8>”说明 SAT cast 的 NaN 字节语义，因而 HIFLOAT8 输出的 golden 必须按相同有限格式编码而不能直接保留 NaN。
-- [torchair register_replacement 图融合三守则：head_dim 硬门控 / scale 直传免冗余 / extra_check 拒跨流](../../../../../../model/inference/optimizations/experience/rules/graph_fusion_register_replacement_guardrails.md)（`related`）：算子合同规定“`divMode=true` 时量化为 `round(r/scale+zeroPoint)`，false 时为 `round(r*scale+zeroPoint)`”；图融合守则要求“replacement 直接传 `scale`”，因此 replacement 不应预先求倒数，具体除/乘由算子的 divMode 决定。
-- [AddRmsNormQuant A2/A3 ACLNN 算子知识](add_rms_norm_quant.md)（`same_topic`）：`x=x1+x2`；`r=x/sqrt(mean(x²)+epsilon)*gamma`；可选 `beta` 后量化；V2 还可输出不含 beta 的 `rmsNormOut`；`x=x1+x2`；`r=x/sqrt(mean(x²)+epsilon)*gamma`；`y1/y2=round(r ÷或× scale + zeroPoint)`。两卡围绕同一 AddRmsNormQuant 融合算子，但按平台选择 A2/A3 V2 或 950 V1 并闭合不同 route。
-<!-- cannbot:related:end -->

@@ -67,10 +67,3 @@ platforms: ["950"]
 
 - **为何放弃分块路线**：64 元素 mask（8B）无法 32B 对齐；256 元素块虽 32B 对齐但超 cmpmask 宽度。对齐与宽度约束互斥，无分块粒度可同时满足。
 - **为何 banned 而非 safety_fallback**：此路线在 n>64 时必崩，无安全降级空间。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Select VSEL_CMPMASK_SPR count>64 掩码错位判别](../precision/select_vsel_cmpmask_spr_count_64.md)（`related`）：507035 Runbook记录“尝试把单次 `Select(VSEL_CMPMASK_SPR)` 改为分块循环”；精度 Runbook 的预防规则是“arch35 上 `Select` 的 count 大于 GetVecLen/sizeof(T) 时禁用 `VSEL_CMPMASK_SPR`，统一用 `VSEL_TENSOR_TENSOR_MODE`”。前者是为绕过首 mask 重用而采用的失败分块路线，后者给出根问题的正确 mode 切换。
-- [Select cmpmask 不偏移致分支反转诊断](../precision/select_cmpmask.md)（`related`）：后续 repeat 始终从 mask 张量首块加载 cmpmask；n=64（单块）通过；n>=128（多块）崩溃；后卡是针对前卡首块复用缺陷实施 64 元素分块后触发非 32B 对齐 507035 的失败路线。
-<!-- cannbot:related:end -->

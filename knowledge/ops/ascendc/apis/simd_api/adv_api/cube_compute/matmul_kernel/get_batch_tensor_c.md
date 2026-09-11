@@ -83,11 +83,3 @@ for (int i = 0; i < for_extent; ++i) {
     ...other compute
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetBatchC](get_batch_c.md)（`same_topic`）：GetBatchTensorC接口与该接口的功能相同，建议使用GetBatchTensorC。 调用一次GetBatchC，会获取C矩阵分片，该接口可以与IterateNBatch异步接口配合使用。用于在调用IterateNBatch迭代计算后，获取一片std::max(batchA, batchB) * singleCoreM * singleCoreN大小的矩阵分片。；调用一次GetBatchTensorC，会获取C矩阵片，该接口可以与IterateNBatch异步接口配合使用。用于在调用IterateNBatch迭代计算后，获取一片std::max(batchA, batchB) * singleCoreM * singleCoreN大小的矩阵分片。；两端定义同一 C 分片获取合同，焦点还给出向 GetBatchTensorC 的明确迁移建议。
-- [IterateNBatch](iterate_n_batch.md)（`same_topic`）：该接口可以与IterateNBatch异步接口配合使用；调用本接口后，需要调用GetBatchTensorC接口获取C矩阵，或者由开发者自行处理等待IterateNBatch执行结束的过程。GetBatchTensorC 定义异步结果分片的获取，IterateNBatch 明确在 waitIterateBatch=false 路径调用该接口，形成生产与取回 C 矩阵的直接调用合同。
-<!-- cannbot:related:end -->

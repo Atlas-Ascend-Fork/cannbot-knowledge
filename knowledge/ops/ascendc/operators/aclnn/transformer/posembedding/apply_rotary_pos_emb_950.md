@@ -759,9 +759,3 @@ SBND的内存顺序使固定S下的B×N数据相邻；编码又沿B广播，因�
 | 同步 | R-001/R-002的TQue流水可复用 | R-003的交叉Free ownership未证明安全；R-004无同步/无body；无跨核同步 | 各Process |
 | 精度与尾块 | 三mode FP32 RegTensor公式 | half/quarter符号、interleave奇偶、mask、B/S/N尾和store边界不可换 | common `*VF` |
 | 失败边界 | base校验和UB失败可复用 | 正维、D<=1024、layout-rank与realD整除校验缺口、R-003交叉Free、R-004 key0无写出及外部round缺口不得补造 | `CheckParam/SplitUb/PostTiling` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ApplyRotaryPosEmb A2/A3 ACLNN 算子知识](apply_rotary_pos_emb.md)（`same_topic`）：A2/A3 只接受 half 模式。；half按两半成对：`(-x1,x0)`；quarter按四段成对：`(-x1,x0,-x3,x2)`；interleave按偶奇对：`(-odd,even)`。；两张卡闭合同一 ApplyRotaryPosEmb V2 入口和 RoPE 语义，前者限定 A2/A3 的 half Vector 路线，后者展开 950 的三模式 RegBase 路线及 key 缺陷，适合平台迁移与失败定位。
-<!-- cannbot:related:end -->

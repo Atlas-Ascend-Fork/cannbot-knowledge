@@ -798,10 +798,3 @@ Host key 只表达 hierarchy；Device 再据实际数据面选择 AIV WQE/RDMA �
 | 同步 | 均基于通信 window | status、embedded、IPC flag 不可混用 | wait helpers |
 | 精度与尾块 | dynamic quant 模板复用 | FP32 scale→INT8次序和有效count | quant helpers |
 | 失败边界 | Host guard 早退 | 未知dataplane、V5 hierarchy、v2 TP无fallback | guards |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeDistributeCombine A2/A3 ACLNN 算子知识](moe_distribute_combine.md)（`related`）：Dispatch 卡指出“目标端压紧为 `expandX` 和 `assistInfoForCombine`。”；Combine 卡规定“按 Dispatch 产生的 rank/token/top-k 辅助信息收回专家输出，以 `expertScales` 加权并恢复 `［BS,H］` token 顺序”，构成 Dispatch 产生元数据、专家计算后 Combine 消费元数据恢复 token 的完整任务链。
-- [MoeDistributeDispatch 950 ACLNN 算子知识](moe_distribute_dispatch_950.md)（`same_topic`）：A2/A3 卡说明“按 `expertIds［BS,K］` 扩展、可选动态量化 token，经 EP AllToAllV 分发；A3 可追加 TP AllGatherV”；950 卡说明“按专家路由扩展 token，可选多种低精度/动态量化，经 EP AllToAllV 分发并生成 combine 元数据”，两者描述同一 MoeDistributeDispatch 核心对象在不同平台/版本的实现。
-<!-- cannbot:related:end -->

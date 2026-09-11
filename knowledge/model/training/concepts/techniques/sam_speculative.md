@@ -177,9 +177,3 @@ python3 -m verl.trainer.main_ppo --config-path="${CONFIG_DIR}" \
 - [scalebox](../frameworks/scalebox.md)（Code RL 投机加速场景）
 - [agent-rl-loop](agent_rl_loop.md)（投机解码叠加 agent RL 多轮流水）
 - [qwen3-code-toolcall-rl](../../guides/recipes/qwen3_code_toolcall_rl.md)（EAGLE3/Suffix 投机 vs SAM 对照）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Qwen3 长序列 RL 训练实践（235B-A22B 2K 推 32K + 32B SAM 投机，veRL/MindSpeed/vLLM-Ascend，GRPO/DAPO）](../../guides/recipes/qwen3_rl.md)（`related`）：SAM 卡记录“统一配置 DAPO-MATH-17k、`max_response_length`=34816、SAM 阈值（32B 为 8 / 235B 为 8）、投机 token 数 3、eager 模式”；Qwen3 recipe给出“32B 推荐自适应阈值 8、投机 token 数 3”。概念机制与可复用训练配置、收益验证在此接合。
-<!-- cannbot:related:end -->

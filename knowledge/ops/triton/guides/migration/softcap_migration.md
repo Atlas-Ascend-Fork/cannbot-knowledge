@@ -114,18 +114,3 @@ grid = lambda META: (triton.cdiv(numel, META["BLOCK_SIZE"] * META["BLOCK_NUM"]),
 4. **enable_vf_fusion 的 UB 开销**：VF 融合增加中间缓冲，与 `multibuffer=True` 同时开启可能 UB 溢出。建议把 `enable_vf_fusion` 也加入 autotune 搜索维度，或双缓冲时关闭。
 5. **`num_stages`/`num_warps` 必须移除**：保留会导致 NPU 编译错误。
 6. **`debug=True` 仅限调试阶段**，生产环境移除。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Attention 算子](../operator_design/attention.md)（`related`）：“Attention 算子（softcap 是 attention score 的软截断变体）”
-- [Flash Attention GPU→NPU 迁移对照](flash_attention_migration.md)（`related`）：“Flash Attention 迁移对照”
-- [GPU→NPU 迁移概览：架构差异与迁移工作流](../workflows/gpu_migration_overview.md)（`related`）：“GPU→NPU 迁移概览”
-- [NPU 编译参数速查（含 910_95 差异）](../../optimizations/techniques/compile_params.md)（`related`）：“NPU 编译参数速查”
-- [NPU Autotune 配置与 AutoTilingTuner](../../optimizations/techniques/autotune_on_npu.md)（`related`）：“NPU Autotune 配置指南”
-- [Store 合并优化](../../optimizations/techniques/store_merge.md)（`related`）：“Store 合并优化”
-- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 硬件规格”
-- [Triton API 在 Ascend NPU 上的差异对照](../workflows/migration_api_differences.md)（`related`）：“libdevice 路径与 enable_vf_fusion 差异对照”
-- [数据类型与精度保护（910_95 平台）](../../optimizations/techniques/data_type_precision.md)（`related`）：“tanh fp32 转换的精度保护”
-
-<!-- cannbot:related:end -->

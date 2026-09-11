@@ -108,17 +108,3 @@ platforms: [a2, a3, '950']
 官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
 
 - [debugging.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/debugging.md)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [编译错误排查（MLIRCompileError）](./compile_error_debug.md)（`related`）：“编译错误排查流程”
-- [运行时错误排查](./runtime_error_debug.md)（`related`）：“运行时错误排查流程”
-- [调试环境变量完整参考](./debug_env_variables.md)（`related`）：“环境变量完整参考”
-- [Triton-Ascend 常见问题速查（FAQ）](./triton_ascend_faq.md)（`related`）：“常见问题速查”
-- [常见编译/运行错误速查（报错-原因-修复）](./debugging_common_errors.md)（`related`）：“常见错误代码模式”
-- [Triton API 在 Ascend NPU 上的支持矩阵](../../apis/api_support_matrix.md)（`related`）：“failed to legalize 对应的 API 支持矩阵”
-- [数据类型支持矩阵（Data Type Support Matrix）](../../apis/data_type_matrix.md)（`related`）：“unsupported data type 对应的类型支持矩阵”
-
-<!-- cannbot:related:end -->

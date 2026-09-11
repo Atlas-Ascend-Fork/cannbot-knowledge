@@ -87,11 +87,3 @@ AscendC::DataCopyPad(gmOut[3], buf[0].Get<float>(), ep1);  // UB→GM，无需 p
 ## 误诊
 
 最初怀疑 workspace 大小（见 build 卡 507035）；修 workspace 后崩溃消失但暴露出本对齐问题——两问题同 trace 串联，但根因不同、各一卡。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)（`exemplifies`）：“参考 `layer_norm_v3` 参考实现（CANN 自带），1D GM→UB 用 `DataCopyPad`：”与“DataCopyPad（GMToUB非对齐数据搬运）从Global Memory将数据非对齐搬运至Unified Buffer时，可根据开发者的需要自行填充数据。”分别给出两端正文事实；runbook 以实际非对齐统计全零故障给出 DataCopyPad 修复配方，API 卡则定义 GM→UB 非对齐搬运能力，前者是后者在排障任务中的具体使用实例。
-- [DataCopy尾chunk非32B对齐触发ERR99999](../compilation/datacopy_chunk_32b_err99999.md)（`related`）：适用粒度：`operator_family`——任何在 UB↔GM 之间用 `DataCopy` 做纯搬运/拼接、且输出尾部元素数可能非 32B 对齐的向量算子（Slice/Concat/Split/Reshape 搬运路径、Gather 尾块等）均适用。；**触发**：GM→UB 用 `DataCopy`，且 `C * sizeof(dtype) % 32 != 0`（如 fp32 C=3 → 12 字节，fp32 C=1 → 4 字节）。现象是搬运后该 buffer 内容为 0/未写入，下游 Vector（`Muls`/`Sub`/`Sqrt` 等）吃全零输入，统计输出全零；编译过、无 507035。。候选补全同一 32B 契约在 GM→UB 方向的静默全零判别。
-- [DataCopy 非32字节对齐尾块丢字节](datacopy_32.md)（`same_topic`）：“`AscendC::DataCopy` 在硬件上按块长（Atlas A2 上为 32 字节）粒度搬运。当传入的 `count * sizeof(dtype)` 不是 32 字节倍数时，硬件只搬运 `floor(字节数 / 32) * 32` 字节，丢弃尾部不足 32 字节的部分。”与“`DataCopy`（GM→UB）要求搬运字节数 32B 对齐；非对齐时搬运不生效或写零，UB buffer 留为初始化态（全零），下游 Vector 链产出全零统计。”分别给出两端正文事实；两张 runbook 都围绕 DataCopy 的非 32B 搬运合同：一张用 A2 尾字节丢失定位，一张用 950 GM→UB 统计全零定位，能够按方向和症状复用同一诊断规则。
-<!-- cannbot:related:end -->

@@ -553,9 +553,3 @@ Host 把 L2 容量与 sparse 无效块密度编码进调度；窄 D 非对齐区
 | 同步 | taskId 双槽 flags | ID、PIPE、奇偶槽、set/wait | Kernel::Process |
 | 精度与尾块 | FP32 accum，post cast，actual prefix | 不提前 cast、不写 padding | cube/vec/post |
 | 失败边界 | selector/key/workspace/shape 失败关闭 | 不运行未注册 key | registry/APT |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FlashAttentionScoreGrad A2/A3 ACLNN 算子知识](flash_attention_score_grad.md)（`same_topic`）：V4 是固定提交中 950 最新公开 `FlashAttentionScoreGrad` 入口；产品表只把 Ascend 950PR/950DT 标为支持，A2/A3 明确不支持。；V3 文档的产品表把 A2/A3 标为支持，V4 文档把 A2/A3 明确标为不支持，因此本卡选择 A2/A3 实际支持的最新版本 V3，而不是现有旧卡曾写的 V4。。两端共同界定 FlashAttentionScoreGrad 在 950 使用 V4、在 A2/A3 使用 V3 的平台版本边界，并各自闭合同一反向核心的 Host、MIX_CV 与 workspace 路线，可直接用于版本选型。
-<!-- cannbot:related:end -->

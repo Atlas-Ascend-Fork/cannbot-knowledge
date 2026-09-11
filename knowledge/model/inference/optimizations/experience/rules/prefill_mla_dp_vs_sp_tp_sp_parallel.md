@@ -74,10 +74,3 @@ SP RS+AG（LongCat-Flash-Lite，EP=8，昇腾 8 卡）两组受控点：
 
 - `config/diff 事实` + `doc 披露`（@2c45117 / @f5bf59cf）：DeepSeek-R1 两套切分 yaml 并存、DP 与 SP-TP-SP 优缺点与选型建议为本仓 `deepseek_r1_prefill_optimization.md` 原文。溯源下探 [cann-recipes-infer-issue-17-rfc-deepseek-r1-kimi-k2-model-inference-support](https://gitcode.com/cann/cann-recipes-infer/issues/17)、[cann-recipes-infer-pr-72-feat-add-deepseek-r1-kimi-k2](https://gitcode.com/cann/cann-recipes-infer/merge_requests/72)。
 - `diff 事实`（@895615c）：`LongcatFlashMLA._forward_prefill` 的 `is_sp` 守卫、prefill 入口 `all_gather_into_tensor` + 出口 `reduce_scatter_tensor` 取代 `all_reduce`、decode 保留 `all_reduce`、`T_real`/`T_padded` slice / re-pad；benchmark 表出自仓内 `optimization_report_ep.md`（仓自报、两受控点）。溯源下探 [cann-recipes-infer-pr-462-refactor-longcat-flash-lite-tnd-pa-npugraph-ex-mc2-ep-decode](https://gitcode.com/cann/cann-recipes-infer/merge_requests/462)。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Data Parallel](../../../concepts/parallelism/data_parallel.md)（`related`）：将不同的请求/batch 分配到不同的模型副本上并行推理的策略，用于提升推理吞吐量。在推理场景中通常以 DP 通信域的形式与 TP/EP 配合使用。；MLA prefill 有两条互补路线——纯 ［DP］(../../../concepts/parallelism/data_parallel.md) 面向吞吐，［SP-TP-SP］(../../../concepts/parallelism/sp_tp_sp.md) 混合切分面向时延与负载均衡。。概念卡定义推理 DP，规则卡把它落实为 MLA Prefill 吞吐路线并与 SP-TP-SP 比较。
-- [SP-TP-SP Hybrid Split (Prefill MLA)](../../../concepts/parallelism/sp_tp_sp.md)（`related`）：MLA prefill 有两条互补路线——纯 ［DP］(../../../concepts/parallelism/data_parallel.md) 面向吞吐，［SP-TP-SP］(../../../concepts/parallelism/sp_tp_sp.md) 混合切分面向时延与负载均衡。；当前在 prefill 场景中，当请求量较大或 KV-Cache 内存占用较高时，可以考虑采用 DP 切分策略，以提升吞吐量；当请求数量较少、分布不均匀或单次请求序列长度较长时，可以考虑采用 SP-TP-SP 混合切分策略，以降低时延。。规则卡给出路线决策，概念卡解释同一 Prefill 场景下 SP-TP-SP 的适用条件。
-<!-- cannbot:related:end -->

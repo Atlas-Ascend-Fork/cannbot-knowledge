@@ -168,10 +168,3 @@ AscendC::Fmod<float, false, config>(dstLocal, src0Local, src1Local, sharedTmpBuf
 输入数据(src1Local): [2.    2.    2.    ... 2.    2. 2.   ... 2.    2.    2.]
 输出数据(dstLocal):  [-0.56 -0.55 -0.54 ... -0.01 0. 0.01 ... 0.53  0.54  0.55]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetFmodTmpBufferFactorSize](get_fmod_tmp_buffer_factor_size.md)（`related`）：“获取Fmod接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。”明确给出左端事实；“按元素计算两个浮点数相除后的余数（dst = src0 - Trunc(src0/src1) * src1），其中Trunc为向零取整操作。模板参数T支持half/float。”明确给出右端事实。factor 接口把可用临时空间换算为单次最大元素数，Fmod 计算接口再按该分块执行余数运算，二者衔接 Host 分块规划与 Kernel 调用。
-<!-- cannbot:related:end -->

@@ -126,19 +126,4 @@ AscendC::Acos(dstLocal, srcLocal, sharedTmpBuffer, 512);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAcosMaxMinTmpSize](get_acos_max_min_tmp_size.md)（`related`）：sharedTmpBuffer（输入）：临时缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 用于Acos内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAcosMaxMinTmpSize。；为保证功能正确，预留 申请的临时空间大小不能小于最小临时空间大小。Acos 的 Kernel 调用直接依赖候选 Host 查询确定可用临时空间。
-- [GetAcosTmpBufferFactorSize](get_acos_tmp_buffer_factor_size.md)（`same_topic`）：该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。 临时空间大小BufferSize的获取方式请参考GetAcosMaxMinTmpSize。 因子接口从已有 Buffer 反推 calCount，Acos 本体消费由 Tiling 确定的 sharedTmpBuffer，二者闭合缓存与分块配置。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ForeachAcos A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_acos.md)（`related`）：算子正文包含对 `Acos(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ForeachAcos A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_acos.md)

@@ -629,10 +629,3 @@ epDataOffsetOnWin_ = static_cast<uint64_t>(moeDistributeCombineSetupInfo_->epRan
 | 同步 | record/wait、MTE/Scalar events、`SyncAll`、CQ/PICI doorbells、DCCI | event 方向、全核参与、PICI 写回与 CQE失效顺序 | `Communication`；`CallJfsDoorbell`；URMA helpers |
 | 精度与尾块 | BF16/FP16按字节发送；self-copy 和 SQ/CQ ring 均有 tail | 不添加量化/cast；远端零 token dummy SQE和最后专家 notify 协议 | `Communication`；`CurRankComm`；`PutCommNotifySQE` |
 | 失败边界 | Host 参数/资源失败、任务生成失败、异常 CQE assert | 不把 world=4、globalBs=0 或声明输出未写解释为已验证行为 | 950 checks；`CheckCqeStatus` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoE Dispatch/Combine V2（一体化融合算子）](../../../../../../model/inference/concepts/techniques/moe_dispatch_combine_v2.md)（`related`）：根据 `assistInfoForCombine` 的专家累计 token 数，把 `expandX` 分段写入各 EP rank 的 HCCL window，并写通知状态；Setup 提交 URMA 后立即返回，完成确认与后处理交给 CombineTeardown；`torch_npu.npu_moe_distribute_dispatch_v2` / `npu_moe_distribute_combine_v2`（仓内文档亦称 **MC2** 路由）是把 MoE 专家并行（［expert-parallel］(../parallelism/expert_parallel.md)）的整条 All-to-All 路由链路收敛为**两个一体化融合算子**。950 Setup 算子卡展开 MC2 combine 链的窗口写入、通知和 Teardown 交接，概念页给出其在 dispatch/combine V2 All-to-All 路由中的上层位置。
-- [MoeDistributeCombineTeardown 950 ACLNN 算子知识](moe_distribute_combine_teardown_950.md)（`related`）：等待配套 `MoeDistributeCombineSetup` 写完当前 ping-pong 窗口；Setup 提交 URMA 后立即返回，完成确认与后处理交给 CombineTeardown；两算子通过 HCCL window/status 完成明确的生产、发布、等待和消费协议。
-<!-- cannbot:related:end -->

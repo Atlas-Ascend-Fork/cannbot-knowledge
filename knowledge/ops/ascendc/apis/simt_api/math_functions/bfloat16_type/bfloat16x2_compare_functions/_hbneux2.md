@@ -134,10 +134,3 @@ bool __hbneux2(bfloat16x2_t x, bfloat16x2_t y)
         asc_vf_call<simt_hbneux2>(dim3(1024), (__gm__ bfloat16x2_t*)x, (__gm__ bfloat16x2_t*)y, dst, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hbnex2](_hbnex2.md)（`same_topic`）：返回值：比较输入数据各分量是否均不相等的结果。特殊值：±0→false；inf→false；-inf→false；inf→true；任一分量含nan→true（任一输入分量为nan时，该分量≠比较结果为true）。；返回值：比较输入数据各分量是否均不相等的结果。特殊值：任一分量为nan→false；±0→false；±inf→相同符号inf返回false，不同符号inf返回true。。两接口都判断 bfloat16x2 两分量是否均不相等，关键差异是 NaN 与无穷值的比较语义，选型时必须成对辨析。
-<!-- cannbot:related:end -->

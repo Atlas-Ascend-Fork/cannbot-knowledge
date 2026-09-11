@@ -326,14 +326,3 @@ __simd_vf__ inline void rmsNormTileVf(__ubuf__ T *xAddr, __ubuf__ T *gAddr,
 ## 误诊
 
 最初把错误解释为 CANN 9.0.1 没有 `CastTrait` 或枚举命名变化；头文件与预处理探测证明符号存在，而声明域移动后的真实构建成功排除了“API 已删除”这一判断。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cast](../../apis/simd_api/basic_api/reg_vector_compute/type_conversion/cast.md)（`exemplifies`）：焦点卡要求 Cast 通过“trait: CastTrait类型，类型转换模式结构体。包括RegLayout、SatMode、MaskMergeMode、RoundMode。”配置，候选卡给出“把完整 trait 定义放到消费它们的 `__simd_vf__` 函数体内”的已验证声明位置；它解决同一 `.asc` Host/Device 分域下 CastTrait 不可见的构建故障。
-- [CastTrait 按值 NTTP 在 C++17 编译失败](casttrait_nttp_uses_reference_in_cxx17.md)（`related`）：“两组设备侧 `AscendC::Reg::CastTrait` 非类型模板实参被提升到 `.asc` 文件域，使 CANN 9.0.1 的 bisheng 在该词法位置解析不到 Reg 类型；放回 `__simd_vf__` 函数域后类型可见并通过语义编译。”与“error: a non-type template parameter cannot have type 'AscendC::Reg::CastTrait' before C++20”。focal 确认 CastTrait 模板实参形态，配套 Runbook 说明 C++17 不可按值 NTTP，需用引用。
-- [Reg Cast 默认 UNKNOWN mask 被拒 — 显式 ZEROING](reg_cast_requires_explicit_zeroing_trait.md)（`related`）：“AscendC::Reg::MaskMergeMode::ZEROING,”与“不要依赖默认 `castTrait`；为 widening 和 narrowing 分别构造显式 `CastTrait`，至少把 `mrgMode` 设为目标语义对应的 `ZEROING` 或 `MERGING`，并把 trait 作为第三个模板参数传入所有低精度转换调用。”。focal 的可编译 trait 显式选择 ZEROING，配套 Runbook 解释默认 UNKNOWN 不能通过 dav-3510 约束。
-- [Reg CastTrait RoundMode 命名空间编译失败](casttrait_roundmode_is_in_ascendc.md)（`related`）：“AscendC::RoundMode::CAST_RINT};”与“softmax.asc:99:47: error: no member named 'RoundMode' in namespace 'AscendC::Reg'; did you mean 'AscendC::RoundMode'?”。focal 把 RoundMode 放在 AscendC，配套 Runbook 给出误写 AscendC::Reg::RoundMode 的编译错误。
-- [Reg::Cast 的 trait 需要静态存储期](reg_casttrait_requires_static_storage.md)（`related`）：“- 路线优先级：`recommended_fastpath`。把 trait 保持为 `__simd_vf__` 内的 `static constexpr`，继续走原生 Reg Cast 路径；本轨迹没有对声明位置做独立性能比较。”与“在一个 PyTorch NPU 自定义算子的 `cummin.asc` 中编写原生 `AscendC::Reg` SIMD 扫描函数时，开发者把三组 `CastTrait` 放进 `__simd_vf__`，并以函数内普通 `constexpr` 对象作为 `AscendC::Reg::Cast<Dst, Src, trait>` 的第三个模板实参。通过远程构建脚本编译后，所有这些 `Cast` 调用都报：”。两卡共同约束 CastTrait 的声明位置与 static storage，才能作为引用型模板实参。
-- [VECTOR_REG_WIDTH 只能在 Device 作用域求值](vector_reg_width_only_in_device_context.md)（`related`）：CANN 9.0.1 dav-3510 的 Reg 常量在 device/VF 函数上下文内可见，将它提前到文件作用域会脱离该解析上下文。；放回 `__simd_vf__` 函数域后类型可见并通过语义编译。；两卡共同给出 dav-3510 Reg 专属符号在文件域不可见、移入设备函数域恢复编译的诊断与修复链。
-<!-- cannbot:related:end -->

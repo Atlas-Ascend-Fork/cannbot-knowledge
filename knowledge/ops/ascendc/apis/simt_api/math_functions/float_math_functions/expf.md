@@ -103,19 +103,6 @@ result: 1.284025 2.117 3.490343 5.754602
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachExp 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_exp_950.md)（`related`）：ForeachExp950 的 R-001 路线是“FLOAT32 值直接传给 `expf`”；expf API执行“根据输入x，获取e的x次方的计算结果。”。API语义支撑每线程标量指数计算和特殊值验证。
-- [ForeachSigmoid 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_sigmoid_950.md)（`related`）：功能：根据输入x，获取e的x次方的计算结果。；`ComputeSigmoid` 无论 T 为 half、float 还是 BF16，都先转 float，按 `-x -> expf -> +1 -> reciprocal` 计算，再 cast 回 T。API 是 ForeachSigmoid 950 内部 sigmoid 标量链的核心函数。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [Softmax 950 Direct Invoke 算子知识](../../../../operators/direct/nn/activation/softmax_950.md)（`related`）：算子正文包含对 `expf(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ForeachExp 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_exp_950.md)
+- [ForeachSigmoid 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_sigmoid_950.md)
+- [Softmax 950 Direct Invoke 算子知识](../../../../operators/direct/nn/activation/softmax_950.md)

@@ -738,9 +738,3 @@ Select(tanhLowTensor, tanhMaskTensor, temp2Tensor, tanhLowTensor, SELMODE::VSEL_
 | 同步 | Cube/Vector 和时间递归使用 `SyncAll`；UB 用 queue/PIPE_V | 不得把同 stream Host 顺序替代 Kernel 内 barrier | 两 Route `Process` |
 | 精度与尾块 | FP16 Route FP32 中间 + RINT；FP32 保持 FP32；Matmul/Vector 各自尾块 | tanh 修正阈值/系数、pad 粒度、有效 calcN | `CopyOutput`、`TanhPartialHighPrecision`、`SetTail` |
 | 失败边界 | Host 空指针/shape/dtype、SoC guard、Tiling 失败均停止后继 | 不得启用 dormant BF16 或 950；不假设 fallback | `CheckParams*`、`DynamicRNN`、`CalcTilingKey` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LSTM 950 Direct Invoke 算子知识](../../../direct/nn/rnn/lstm_950.md)（`same_topic`）：“｜ 计算语义 ｜ 按层、按方向、按时间步计算 `i/f/g/o` 四门，更新 FP32 `c_t` 与 raw hidden；可选再做 `raw_h_t @ weight_hr^T` 投影。 ｜”与“｜ 计算语义 ｜ 按层、按方向执行 LSTM：两次矩阵乘产生四门预激活，Vector 计算 `f/i/o=sigmoid`、`j=tanh`、`c=f*c_prev+i*j`、`h=o*tanh(c)`。 ｜”是双方正文中的具体合同。两端围绕同一分层双向 LSTM 四门与 cell/hidden 更新，950 Direct 卡增加逐时间步、FP32 cell 和可选投影，A2/A3 ACLNN 卡展开门激活公式，互读能迁移数学验证。
-<!-- cannbot:related:end -->

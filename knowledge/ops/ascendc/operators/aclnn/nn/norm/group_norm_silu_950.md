@@ -1146,9 +1146,3 @@ helper 在 FP32 RegTensor 中先加 epsilon，再组合 sqrt/reciprocal 与修�
 | 同步 | MTE2/Vector/MTE3 HardEvent，Empty 用 TQue | NDDMA/affine/phase 覆盖前必须等待 | 各 `Process*` |
 | 精度与尾块 | FP32 stats/rstd，T2 决定统计 GM dtype | Welford nonalign、loop tail、T1 round/cast | RegBase base helper |
 | 失败边界 | AIC/workspace/未知 key 直接 return | 无 fallback、无错误回写 | APT `group_norm_silu` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupNormSilu A2/A3 ACLNN 算子知识](group_norm_silu.md)（`same_topic`）：A2/A3 卡以“最新公开两段式 `aclnnGroupNormSiluV2GetWorkspaceSize` / `aclnnGroupNormSiluV2`”为入口；950 卡同样以“最新公开 `aclnnGroupNormSiluV2GetWorkspaceSize` / `aclnnGroupNormSiluV2`”为入口，都是同一 GroupNorm+可选 SiLU 契约的平台实现，只是 Tiling/Kernel 路线不同。
-<!-- cannbot:related:end -->

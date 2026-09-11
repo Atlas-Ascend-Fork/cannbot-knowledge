@@ -65,9 +65,3 @@ platforms:
 - diff 事实（vLLM-Ascend merge sha `aa8ac74984e2fbc07afbd19cb367b542ccc964b7`）：批量算子 `swap_blocks_batch`（`csrc/torch_binding.cpp`）、`CANN_MEMCPY_BATCH_ASYNC` 宏、`srcLoc` / `dstLoc` 契约、D2D 不走 batch、CMake `check_cxx_source_compiles` 编译期探测、`VLLM_ASCEND_ENABLE_BATCH_MEMCPY` 开关（`vllm_ascend/envs.py`）、Python `transfer_async` 向量化调用链（`vllm_ascend/kv_offload/cpu_npu.py`）。
 - benchmark 数字为 PR 描述自报（doc 披露层）、无独立复测。
 - 溯源下探：[vllm-ascend-pr-7819-performance-batch-kvcache-offloading-via-aclrtmemcpybatchasync](https://github.com/vllm-project/vllm-ascend/pull/7819)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [KVCache Offload](../../../concepts/techniques/kvcache_offload.md)（`related`）：“服务化 decode 下做 KV cache offload / prefix 复用：KV cache 要在 NPU HBM 与 CPU host 之间来回 block swap（HBM→host 的 D2H、host→HBM 的 H2D）。”与“**KVCache Offload** 泛指把部分或全部 KV Cache 从设备 HBM 卸载到 Host 内存（或延后到异步 stream 上执行），以换取显存容量或计算/通信重叠。”分别给出双端正文事实；概念卡界定 HBM 与 Host 间的 KV offload，规则卡针对该搬运中的碎片化 block swap 用批量异步 memcpy 降低提交开销，连接总体技术与具体传输优化。
-<!-- cannbot:related:end -->

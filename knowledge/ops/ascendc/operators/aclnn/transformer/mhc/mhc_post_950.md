@@ -507,9 +507,3 @@ R-002 的 `CopyInX` 以 `blockCount=(uint16)n` 一次搬入所有 X 行，`Cast`
 | 同步 | TQue EnQue/DeQue/Free 协议可复用 | 950 无显式 PIPE_V 的事实不得用 arch22 barrier 改写；output 交接不可删 | `ComputeCopyOutAllX/CopyOutTile` |
 | 精度与尾块 | FP32 Muls/Axpy 与 CAST_RINT 可复用 | hRes[j,i]、j 顺序、dTailAlign 和 dNum 有效写不可改 | `ComputeCopyOut/ComputeCopyOutAllX` |
 | 失败边界 | ACLNN/Tiling 失败传播可复用 | 950 只正维的真实边界、窄化缺口、空输入不 launch 和无 fallback 不可伪造补齐 | `CheckParam/CheckSpecConstraints/CommonOpExecutorRun` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MhcPost A2/A3 ACLNN 算子知识](mhc_post.md)（`same_topic`）：`y［q,i,d］=hOut［q,d］*hPost［q,i］+sum(j=0..n-1,x［q,j,d］*hRes［q,j,i］)`；A2/A3 要求 `n=4, 0<D<100000, D%128=0`。两卡的 MhcPost 计算公式和两段式入口一致；候选给出 A2/A3 的 n/D 约束，焦点闭合 950 arch35 两条 X 缓存 Route。
-<!-- cannbot:related:end -->

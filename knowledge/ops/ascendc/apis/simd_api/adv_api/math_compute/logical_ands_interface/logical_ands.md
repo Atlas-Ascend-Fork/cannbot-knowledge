@@ -104,11 +104,3 @@ AscendC::LogicalAnds<config>(dst, src0, src1, count);
 [ True,  True,  False,  True,  True,  False,  True,  True,  False,  True,
   True,  False,  True,  True,  False,  True,  True,  False,  ...  False]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogicalAndsMaxMinTmpSize](get_logical_ands_max_min_tmp_size.md)（`related`）：输入矢量每个元素与标量进行逻辑与操作。当数据类型不是bool时，零视为False，非零视为True。；host侧Tiling接口，用于获取LogicalAnds接口所需的最大和最小临时空间大小。前者定义 Kernel 计算，后者给出为该接口准备临时空间的 Host Tiling 契约。
-- [GetLogicalAndsTmpBufferFactorSize](get_logical_ands_tmp_buffer_factor_size.md)（`related`）：输入矢量每个元素与标量进行逻辑与操作。当数据类型不是bool时，零视为False，非零视为True。；获取LogicalAnds接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。后者把固定缓冲预算换算为前者一次可处理的元素量。
-<!-- cannbot:related:end -->

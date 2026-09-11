@@ -209,9 +209,3 @@ platforms: ["950"]
 ## 误诊
 
 曾把 `VSEL_TENSOR_SCALAR_MODE` 视为 int64 索引选择失败的根因，并改为先 `Duplicate` 再做张量到张量选择。修复后立即复测仍有非零 mismatch，因此该假设被工具结果否定；继续检查缓冲分配表才找到真正缺失的 `InitBuffer`。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TBuf 三参数 InitBuffer 触发 isTQue 静态断言](../compilation/tbuf_initbuffer_uses_two_arguments.md)（`related`）：同一初始化分支漏掉 `tmpIdx2Buf_` 的 `TPipe::InitBuffer`，后续 `.Get<int64_t>()` 因而不指向该分支受管的有效 UB 空间，NaN 索引合并的写入与读取出现未定义行为并静默污染索引。；保留 `TQue` 的 `(queue, depth, bytes)` 三参数调用；仅对 `TBuf` 删除队列深度参数，改用 `(buffer, bytes)` 两参数调用。以下 before/after 均由事件流中的完整首次写入与精确 edit 机械恢复，代码未做改写。。focal 根因是 TBuf 成员在实际分支漏做 InitBuffer，候选给出补分配时必须区分 TQue 三参数与 TBuf 两参数重载的编译合同，可直接指导正确补齐该 scratch 缓冲。
-<!-- cannbot:related:end -->

@@ -1064,9 +1064,3 @@ CrossCoreSetFlag<SYNC_MODE, PIPE_FIX>(16 + SYNC_C1_TO_V2_FLAG[taskId & 1]);
 | 同步 | parity CrossCore flags与pipe events | flag编号/两侧wait-set | Kernel::Process |
 | 精度与尾块 | FP32累加、post cast、actualSeq prefix | 不跨段/不提前cast | Blocks/Post |
 | 失败边界 | varlen900优先、split fallback | sink平台限制；`same_as_input` 由varlen接管 | IsCapable/SetSplitAxis |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FlashAttentionUnpaddingScoreGrad A2/A3 ACLNN 算子知识](flash_attention_unpadding_score_grad.md)（`same_topic`）：固定仓公开文档把 V5 标为 A2、A3 和 Ascend 950 支持；V5 相对 V4 增加 `sinkInOptional/dsinkOut`，是这些平台当前公开的最新 Unpadding 版本。；固定 Commit 同时声明基础版、V2、V3、V4、V5；V5 是最新公开 Unpadding 版本。。两端共同闭合 V5 FlashAttentionUnpaddingScoreGrad 的 TND 变长反向语义，分别记录 A2/A3 arch22 与 950 arch35 RegBase 路线，可直接用于平台 route 和功能边界对照。
-<!-- cannbot:related:end -->

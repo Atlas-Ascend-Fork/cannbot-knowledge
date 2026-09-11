@@ -64,11 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetAcoshMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetAcoshTmpBufferFactorSize](get_acosh_tmp_buffer_factor_size.md)（`related`）：本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用；maxTmpBuffer = maxLiveNodeCount * inputSize * typeSize + extraBuffer。前者给出 Acosh 临时空间的 host 上下界，后者给出 kernel 侧由元素量和类型推算最大容量的因子公式，二者服务同一 Tiling 容量选择。
-- [Acosh](acosh.md)（`same_topic`）：用于Acosh内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAcoshMaxMinTmpSize。 本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。 Host helper 产生 sharedTmpBuffer 的合法容量范围，Acosh 本体在 Kernel 中直接消费该缓存。
-<!-- cannbot:related:end -->

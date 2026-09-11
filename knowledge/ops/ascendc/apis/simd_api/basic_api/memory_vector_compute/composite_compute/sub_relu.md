@@ -169,10 +169,3 @@ Atlas 推理系列产品AI Core，支持的数据类型为：int16_t、half、fl
 输入数据src1Local：[0 1 4 ... 513]
 输出数据dstLocal：[1 1 0 ... 0]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscSubRelu](../../../c_api/vector_compute/vector_fused/asc_sub_relu.md)（`same_topic`）：“按元素求差，再进行Relu计算（结果和0对比取较大值）。”与“按元素求差，再进行Relu计算（结果和0对比取较大值），并提供转换最终结果的数据类型的功能(s162s8、f322f16、f162s8)。计算公式如下：”是双方正文中的具体合同。二者核心都是逐元素差后 ReLU；C API 版本额外提供结果类型转换，互读能判断是否需要融合转换以及对应平台接口。
-<!-- cannbot:related:end -->

@@ -101,10 +101,3 @@ AscendC::CubeGroupMsgHead headA = {AscendC::CubeMsgState::VALID, 0};
 AscendC::CubeMsgBody msgA = {headA, 1, 0, 0, false, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0};
 auto offset = handle.PostMessage(msgPtr, msgA);           // 在msgPtr指针位置，填充用户自定义的消息结构体，并发送
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [PostFakeMsg](post_fake_msg.md)（`related`）：在消息合并场景中由 AIV 发送假消息，通知 AIC 跳过重复消息的读取和处理。需先通过 AllocMessage 获取消息空间地址。；通过 AllocMessage 获取消息空间地址后，构造 CubeMsgType 消息结构体并发送。两接口共享 AllocMessage 分配与 offset 协议，分别提交需跳过的假消息和需处理的真实消息，闭合消息合并生产端选择。
-<!-- cannbot:related:end -->

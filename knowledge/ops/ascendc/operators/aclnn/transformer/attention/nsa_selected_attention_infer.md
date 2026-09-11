@@ -668,9 +668,3 @@ Kernel 不先物化完整 gathered KV；它在 C1/C2 的 L1 搬入阶段扫描 t
 | 同步 | flag7/8/9与L1/L0 event ping-pong | AIC:AIV=1:2、mode2、wait/set、pipe可见性 | `Process`、`ComputeMm1/2` |
 | 精度与尾块 | FP32 Mmad/softmax/PV，V1 cast，最终按dtype round | streaming max/sum/exp、C2实际K tail、有效G×128输出 | softmax/V2/cast helpers |
 | 失败边界 | Host只产生key0/1，非法shape/dtype/page失败 | 不补造unknown key、非paged或950 fallback | `Check*`、`GenTilingKey`、entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NsaSelectedAttention A2 ACLNN 算子知识](nsa_selected_attention.md)（`related`）：对每个 query token 和 KV head 按 `topkIndices` 聚合 `C=selectedBlockCount` 个、每个长 `L_b=selectedBlockSize` 的 KV block，计算 `Softmax(mask(scale·QKᵀ))V`；用 `topkIndices` 选出逻辑 KV 区间，经 `blockTable` 映射到 paged KV cache，计算 `Softmax(scaleValue × QKᵀ) × V`。多 token 时按 query token 收缩可见 KV 尾部。。两卡都实现 NSA 的 topk 选块后 QK、Softmax、PV 注意力链；基础版本直接聚合 TND 连续 KV block，Infer 版本经 blockTable 访问 paged KV cache，联合阅读可完成训练式连续存储与推理式分页存储选型。
-<!-- cannbot:related:end -->

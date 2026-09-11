@@ -58,11 +58,3 @@ uint32_t reduceType = 0; // BatchWrite无归约语义，此处占位
 AscendC::Mc2CcTilingConfig mc2CcTilingConfig(groupName, opType, algConfig, reduceType);
 mc2CcTilingConfig.SetCommBlockNum(24U);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BatchWrite](../hccl_kernel/batch_write.md)（`related`）：设置参与BatchWrite通信的核数。；集合通信BatchWrite的任务下发接口，返回该任务的标识handleId给用户。；Tiling 接口生产 BatchWrite 的参与核数，Kernel 接口消费该配置下发点对点批量通信任务，形成参数生产到任务执行的直接合同。
-- [SetQueueNum](set_queue_num.md)（`related`）：参与通信的核数*队列数量支持设置的取值范围为［0, 40］；设置参与BatchWrite通信的核数；两接口的乘积共同决定合法 BatchWrite 队列配置。
-<!-- cannbot:related:end -->

@@ -1021,10 +1021,6 @@ MM 输出保持紧凑，A2A recv、ReduceSum 和 AG shard 使用固定对齐 tur
 | 精度与尾块 | ASW HF32=false；A2A FP32 accumulate→CAST_RINT；DataCopyPad tail | 不得把A2A按Y dtype直接链式累加；只写有效tail bytes | ASW kernel / `ReduceSumForAlltoAll` |
 | 失败边界 | 严格 dtype/shape/attr/topology、workspace非空、ASW tiling成功 | 不得把量化、A2/A3 key或未注册 template当 fallback | API checks / 950 key / APT selector |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [AllReduce](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/all_reduce.md)（`related`）：算子路线说明“其它 rank 直接 `AllReduce(C1)`。”；接口卡规定“调用本接口前确保已调用过InitV2和SetCcTilingV2接口。”，将普通 rank 的通信节点落到 AllReduce 的前置初始化与 tiling 配置合同。
-- [InitV2](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/init_v2.md)（`related`）：算子 POD 表记录“｜ 950 POD ｜ `mc2InitTiling` ｜ 外部结构 ｜ offset 0；pack/align 8 ｜ 通信初始化 ｜ `Mc2CcTilingConfig::GetTiling` ｜ `Hccl::InitV2` ｜ 数值 sizeof 固定仓不可见 ｜”；接口卡定义“HCCL客户端初始化接口。该接口默认在所有核上工作，用户也可以在调用前通过GetBlockIdx指定其在某一个核上运行。”，明确该 POD 的 Device 消费者及核范围。
-- [SetCcTilingV2](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/set_cc_tiling_v2.md)（`related`）：算子 POD 表注明“｜ 950 POD ｜ `mc2CcTiling` ｜ 外部结构 ｜ offset `sizeof(Mc2InitTiling)` ｜ 通信描述 ｜ AllReduce 或 AllToAll config ｜ `SetCcTilingV2` ｜ opType 随 topology ｜”；接口卡说明“用于设置HCCL客户端中某个通信算法配置的TilingData地址。”，闭合 topology 选择后的通信配置地址安装。
-<!-- cannbot:related:end -->
+- [AllReduce](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/all_reduce.md)
+- [InitV2](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/init_v2.md)
+- [SetCcTilingV2](../../../../apis/simd_api/adv_api/hccl_communication/hccl_kernel/set_cc_tiling_v2.md)

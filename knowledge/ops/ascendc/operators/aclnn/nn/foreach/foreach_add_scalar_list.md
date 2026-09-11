@@ -631,9 +631,3 @@ if (castTimesRemainder > 0) {
 | 同步 | Queue 生命周期+Adds 前后 V barrier | scratch 覆盖前须完成 output Cast | `InnerComputer::Compute` |
 | 精度与尾块 | native routes；BF16 FP32+RINT | INT64→int 窄化、tail valid count | `ProcessPlusInLoop/ComputePerCast` |
 | 失败边界 | Tiling 失败阻断；unknown key 无 body | 不得把无分支当 fallback | `foreach_add_scalar_list` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddScalarList 950 ACLNN 算子知识](foreach_add_scalar_list_950.md)（`same_topic`）：｜ 计算语义 ｜ 对列表位置 `i`：`y_i［j］ = x_i［j］ + scalars_i`，只覆盖 `x_i` 的元素域。 ｜；｜ 计算语义 ｜ 对列表位置 `i`：`y_i［j］ = x_i［j］ + scalars_i`，有效域为 `x_i` 元素域。 ｜。两卡实现同一 aclnnForeachAddScalarListV2 的逐列表位置标量加法语义，分别覆盖 A2/A3 与 950。
-<!-- cannbot:related:end -->

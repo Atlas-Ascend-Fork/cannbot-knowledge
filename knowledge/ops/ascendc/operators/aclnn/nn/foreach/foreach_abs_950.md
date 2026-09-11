@@ -530,9 +530,3 @@ if (totalElements <= static_cast<int64_t>(INT32_MAX)) {
 | 同步 | 独占元素无需 atomic/barrier | 不得引入输出写冲突 | `OpForeachAbsSimtKernel` |
 | 精度与尾块 | 32/64 位 index specialization | BF16 FP32 中间值、`flat<total` | `AbsCompute`/`Process` |
 | 失败边界 | Tensor≤256、UB>128KiB | 不得把 Host 失败改成 silent truncation | `ForeachAbsTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAbs A2/A3 ACLNN 算子知识](foreach_abs.md)（`same_topic`）：令 `x=［x_0,...,x_(n-1)］`，输出对每个输入 storage element 执行 `y_i［j］=Abs(x_i［j］)`。FP16/FP32 直接调用对应 dtype 的 AscendC `Abs`；BF16 逐 cast tile 转 FP32，调用 FP32 `Abs`，以 `RoundMode::CAST_RINT` 转回 BF16。Kernel 只写与输入元素数相同的输出前缀；输出 storage 容量可以更大，剩余区域不写。；令 `x=［x_0,...,x_(n-1)］`、`y=［y_0,...,y_(n-1)］`，每个有效输入元素满足 `y_i［j］=abs(x_i［j］)`。950 实体用比较与减法实现：普通类型返回 `v>=0 ? v : 0-v`；BF16 先转 FP32，执行同一表达式，再转回 BF16。由此，源码对 `-0` 的行为是保留 `-0`，NaN 走 `0-NaN` 分支；固定仓没有给出 NaN payload/sign 的额外承诺。。两卡实现同一 TensorList 逐元素绝对值接口，分别给出 A2/A3 Vector/TQue 与 950 SIMT/直接 GM 的实体和数值边界。
-<!-- cannbot:related:end -->

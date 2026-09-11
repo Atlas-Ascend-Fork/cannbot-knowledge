@@ -223,12 +223,3 @@ AscendC::PipeBarrier<PIPE_V>();
 AscendC::SetMaskNorm();
 ...
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSystemCycle](../../../../apis/simd_api/basic_api/tool_interface/system_resources_and_variables/get_system_cycle_isasi.md)（`explains`）：“输入shape为30000，数据类型为float时，如下示例的性能数据对比如下，数据单位为cycle，使用GetSystemCycle接口获取。”；“获取系统计数器当前的cycle值。通过计算代码段前后cycle值的差值，可得到代码段消耗的系统cycle数，再通过换算即可获得代码段的执行时间。”。GetSystemCycle 是指南中比较归约方案 cycle 的直接测量接口，并给出平台频率换算合同。
-- [ReduceDataBlock](../../../../apis/simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_data_block.md)（`explains`）：“进一步测试分析可知，单指令ReduceDataBlock的执行效率优于ReduceRepeat，因此，根据不同的shape，通过不同的指令组合，可以达到更佳的执行性能。”；“对输入数据以DataBlock为单位进行归约操作，根据reduceType对每个DataBlock内数据求和、求最大值或求最小值。”。指南明确用 ReduceDataBlock 与 ReduceRepeat 的组合选择降低归约延迟，接口卡界定 DataBlock 级计算。
-- [ReduceRepeat](../../../../apis/simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_repeat.md)（`explains`）：“当二分累加后的数据量小于等于256Byte（一条指令一个Repeat的数据操作量），使用ReduceRepeat指令，一次执行得到归约结果。”；“对每个repeat内所有数据进行归约操作，支持求和、求最大值和求最小值，可返回最值索引。”。指南给出 ReduceRepeat 在二分累加尾段的具体选用条件，接口卡提供该调用的归约语义。
-<!-- cannbot:related:end -->

@@ -553,9 +553,3 @@ depth 从2降到1释放一半 Queue 容量，使 `maxTileLen` 增大；但 Host 
 | 同步 | Queue+PIPE_V | TBuf复用前barrier | `Compute*` |
 | 精度与尾块 | 低精度FP32计算；四类tile | cast round、pad lane不写回 | `SwiGluGradBF16`、tile helper |
 | 失败边界 | Host失败/unknown key | 不得补自定义fallback | `Tiling4SwiGlu`、entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SwiGluGrad 950 ACLNN 算子知识](swi_glu_grad_950.md)（`same_topic`）：“｜ 计算语义 ｜ 将 `x` 沿 `dim` 等分为 A/B，计算 `dA=yGrad*sigmoid(A)*(1+(1-sigmoid(A))*A)*B` 与 `dB=yGrad*sigmoid(A)*A` 后按原布局拼接 ｜”与“｜ 计算语义 ｜ `x=［A,B］`；`outA=yGrad*sigmoid(A)*(1+(1-sigmoid(A))*A)*B`，`outB=yGrad*sigmoid(A)*A` ｜”是双方正文中的具体合同。两端给出相同的 SwiGLU 反向两支公式，A2/A3 卡强调按 dim 切分与拼接，950 卡记录对应 outA/outB，能用于跨平台核对数学语义。
-<!-- cannbot:related:end -->

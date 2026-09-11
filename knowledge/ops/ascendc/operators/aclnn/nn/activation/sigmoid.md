@@ -531,10 +531,3 @@ this->inOutQueue_.template EnQue<QuePosition::VECOUT, QuePosition::GM, T>(xLocal
 | 同步 | 绑定 Queue 的 GM→VECIN→VECOUT→GM 状态流可复用 | EnQue/DeQue/Free 次序不可改变 | `CopyInBase/CopyOutBase/ComputeBase` |
 | 精度与尾块 | FP32 原计算；16 位升 FP32 后 `CAST_RINT`；DataCopyPad 有效 tail | 不能删除两次 Cast 或以分配容量代替 `curTileLength` | 两个 `ComputeBase`、`ProcessBase` |
 | 失败边界 | 参数错误、core/UB 无效、Tiling 空指针均有显式失败 | 不得为不支持 dtype/A3 构造 fallback | `CheckParams`、`GetPlatformInfo`、`SigmoidTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceSigmoid A2 ACLNN 算子知识](inplace_sigmoid.md)（`related`）：“核心 Sigmoid Kernel 写 executor 分配的连续中间张量，并不直接覆盖输入；随后 `ViewCopy(tmp, selfRef)` 才完成 ACLNN 的原地语义。”；“｜ 计算语义 ｜ 逐元素 `y = 1 / (1 + exp(-x))`。 ｜”。InplaceSigmoid 复用同一 Sigmoid 计算节点，并在其后增加 ViewCopy 才形成原地 API 语义。
-- [Sigmoid 950 Direct Invoke 算子知识](../../../direct/nn/activation/sigmoid_950.md)（`same_topic`）：“｜ 实际入口 ｜ Python 动态 wrapper `cann_bench.sigmoid`，PyTorch custom op `cann_bench::sigmoid`，PrivateUse1 实现 `sigmoid_npu`，C ABI launcher `launch_sigmoid_kernel_half`、`launch_sigmoid_kernel_bfloat16`、`launch_sigmoid_kernel_float`；入口类型为 `Direct Invoke`。 ｜”定义 950 Direct route；“｜ 实际入口 ｜ `aclnnSigmoidGetWorkspaceSize` + `aclnnSigmoid`，公开 ACLNN 两段式接口；采用活动 experimental 候选 `sigmoid_v2`。 ｜”定义 A2 ACLNN route，两卡围绕同一逐元素 Sigmoid 提供可直接对照的空域、workspace、dtype 与 Kernel 实现。
-<!-- cannbot:related:end -->

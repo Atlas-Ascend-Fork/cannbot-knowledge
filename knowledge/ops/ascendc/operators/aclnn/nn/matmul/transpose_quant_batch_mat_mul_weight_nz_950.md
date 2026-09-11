@@ -655,10 +655,3 @@ Host 保留 x2 的 NZ storage shape，Device 依据 `bTrans` 选择 NZ batch str
 | 同步 | AIC-only、tile GM 区域不重叠 | 不引入 AIV flag 协议；那只属于非 MX branch | `Init/Process` |
 | 精度与尾块 | scale 交给 MatmulWithScale，M/N real tail | FP16/BF16 cType、bTrans、NZ offset 必须匹配 key | `MMCompute/CalcGMOffset` |
 | 失败边界 | 无 template fallback | 平台/format/dtype/group/perm 任一不满足即失败 | `CheckParams/CheckArgs/MMTilingRegistry` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [weightNZ Format](../../../../../../model/inference/concepts/techniques/weight_nz.md)（`related`）：它与 `aclnnTransposeQuantBatchMatMul` 共用内部 `TransposeQuantBatchMatMul` L0 op，但独有“x2 必须 FRACTAL_NZ”校验，不能把 ND 权重接口视为 WeightNz 版本。；将 Matmul 类算子的权重 Tensor 转成昇腾 NPU 亲和的 **NZ 分形布局**（512 字节对齐），提升硬件访存带宽效率，加速 DeepSeek-R1 等模型的 Prefill / Decode Matmul 计算。算子格式校验由 Weight NZ 概念卡补充制备目的与布局语义。
-- [TransposeQuantBatchMatMul 950 ACLNN 算子知识](transpose_quant_batch_mat_mul_950.md)（`same_topic`）：本卡只覆盖公开 `aclnnTransposeQuantBatchMatMul` 的 ND x2 路线；`WeightNz` 变体与 FRACTAL_NZ binary 明确排除。；它与 `aclnnTransposeQuantBatchMatMul` 共用内部 `TransposeQuantBatchMatMul` L0 op，但独有“x2 必须 FRACTAL_NZ”校验，不能把 ND 权重接口视为 WeightNz 版本。。两卡共享同一个 TransposeQuantBatchMatMul 核心 L0 操作，且互相以 ND 与 FRACTAL_NZ 的 x2 格式边界区分，是同一算子的权重布局变体。
-<!-- cannbot:related:end -->

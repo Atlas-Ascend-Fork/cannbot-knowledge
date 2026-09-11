@@ -797,10 +797,3 @@ source、bias、scale三路使用同一`validK`重排，`ProcessExpandXBiasScale
 | 同步 | Queue/S_V/MTE2_S/PIPE_ALL/LocalMemBar | producer→consumer与Free时点 | 四body/base helper |
 | 精度与尾块 | FP32路由累计、末端RINT | constant先T计算；row/K/H/VL前缀 | `LoadInputData/ProcessConstantExpert/CastYOutput` |
 | 失败边界 | Host/Tiling失败阻止launch | userWS null/unknown key/空输出/依赖缺失 | `DoGetShapeAttrsInfo/entry/L0` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeInitRoutingV3 950 ACLNN 算子知识](moe_init_routing_950.md)（`related`）：对 `(n,k)`，`expert=expertIdx［n,k］`；mode 0/1 从 `expandedRowIdx［n+k*N］` 取 `p`，mode 2/3 从 `expandedRowIdx［n*K+k］` 取 `p`。；`expandedRowIdx` ｜ 路由展开域/ND ｜ INT32 ｜ gather 逆索引或 scatter 原索引；InitRouting 产生的展开索引是 FinalizeRouting 恢复和累加 token 行的直接输入。
-- [double-routing：MoE 从 TP 切 EP 把 routing/finalizing 开销降到 1/ep_size 的 8 步 AllToAll 骨架（相对 AllGather 更省峰值内存/通信）](../../../../../../model/inference/optimizations/experience/rules/moe_ep_double_routing_skeleton.md)（`related`）：CANN 9.1.0 中 950 最新公开 `aclnnMoeFinalizeRoutingV3GetWorkspaceSize/aclnnMoeFinalizeRoutingV3`；内部 OpType 为 `MoeFinalizeRoutingV2`；8. **FinalizeRouting**（`npu_moe_finalize_routing`，`drop_pad_mode=2`）累加专家结果。；候选把该算子放入 EP double-routing 的最终回排和累加步骤。
-<!-- cannbot:related:end -->

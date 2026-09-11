@@ -1124,10 +1124,4 @@ Sub(dataOutLocal[varOffset_], dataOutLocal[varOffset_], dataLocal[varOffset_], d
 | 精度与尾块 | 16位升FP32；BF16 ROUND、FP16 RINT；I64 step转F32 | Cast顺序与`numLastLoop`有效count | B16/Mix `Compute`, all `Process` |
 | 失败边界 | 空Tensor成功无kernel；未知key/userWS空静默不写 | 不得把静默return解释为成功更新 | API entry/kernel entry |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ApplyAdamW 950 Direct Invoke 算子知识](../../../direct/nn/optim/apply_adam_w_950.md)（`related`）：“更新写回原 `var/m/v/maxGradNorm`”定义 ACLNN A2/A3 的原地状态更新，“只写新张量 `y`；不回写 `var/m/v`”定义 950 直调版本的非原地输出，对照可避免按算子名误用状态合同。
-- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](apply_adam_w_quant.md)（`related`）：按 256 元素块由 `uint8` 索引与 qmap/absmax 反量化 m、v，执行 AdamW 更新，再按块求 absmax、归一化并量化回索引。；原地更新 `var/m/v`；`amsgrad=true` 时还原地更新 `maxGradNorm`；`maximize` 可先反转梯度。V2 从标量 `step` 在 Device 侧生成 bias correction。；量化算子在 AdamW 更新前后加入块级反量化与重量化，基础算子给出非量化状态、amsgrad 与 maximize 合同，可用于核对状态布局和算法差异。
-- [Power（数学计算）](../../../../apis/simd_api/adv_api/math_compute/power_interface/power.md)（`related`）：“每个模板在 `Init` 中读取单元素 `step`、绑定本核 GM基址、初始化 Queue/TBuf、每核只计算一次两个 bias correction”需要幂运算形成 beta 的 step 次方，“按元素做幂运算（dst = src0 ^ src1）”提供可对照的 Power 计算合同。
-<!-- cannbot:related:end -->
+- [Power（数学计算）](../../../../apis/simd_api/adv_api/math_compute/power_interface/power.md)

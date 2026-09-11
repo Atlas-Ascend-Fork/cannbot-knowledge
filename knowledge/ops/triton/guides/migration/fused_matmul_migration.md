@@ -134,19 +134,3 @@ NPU 版新增 `benchmark_compare_close` + `eval_standard`（fp32 rtol 1e-6 / fp1
 ## 迁移检查清单
 
 移除 `num_stages`/`num_warps` → BLOCK 收窄为 2 的幂次（优先 128）→ bias 提前加载 + `tl.broadcast_to` → 指针改基地址+偏移（禁 `+=`）→ 移除 `%` 取余（配 early return）→ mask 拆独立变量 → fwd 配 CV 融合参数集、bwd 配 `enable_auto_bind_sub_block=False` → bwd_w SPLIT_K 简化为单 program 循环 → 设备 API 换 `torch_npu` → 装饰器换 `triton.autotune` → 910_95 显式 `multibuffer=True`。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatMul / GEMM 高性能算子](../operator_design/matmul.md)（`related`）：“MatMul/GEMM 算子经验路由与 Tiling 策略”
-- [Fused SwiGLU GPU→NPU 迁移对照](fused_swiglu_migration.md)（`related`）：“Fused SwiGLU 迁移对照（同套四 kernel 模式）”
-- [NPU 编译参数速查（含 910_95 差异）](../../optimizations/techniques/compile_params.md)（`related`）：“NPU 编译参数速查”
-- [NPU Autotune 配置与 AutoTilingTuner](../../optimizations/techniques/autotune_on_npu.md)（`related`）：“NPU Autotune 配置指南”
-- [FixPipe 随路操作与 Bias 融合优化](../../optimizations/techniques/fixpipe_bias_fusion.md)（`related`）：“FixPipe 随路操作与 Bias 融合”
-- [数据搬运与内存访问模式优化](../../optimizations/techniques/data_movement_optimization.md)（`related`）：“数据搬运优化”
-- [GPU→NPU 迁移概览：架构差异与迁移工作流](../workflows/gpu_migration_overview.md)（`related`）：“GPU→NPU 迁移概览”
-- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 硬件规格”
-- [Triton API 在 Ascend NPU 上的差异对照](../workflows/migration_api_differences.md)（`related`）：“指针运算/mask 等 API 差异对照”
-- [数据类型与精度保护（910_95 平台）](../../optimizations/techniques/data_type_precision.md)（`related`）：“fp16/bf16 精度保护与 rtol 评估标准”
-
-<!-- cannbot:related:end -->

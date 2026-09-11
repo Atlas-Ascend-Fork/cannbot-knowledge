@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetFracTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetFracMaxMinTmpSize](get_frac_max_min_tmp_size.md)（`related`）：获取Frac接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。maxLiveNodeCount表示临时空间是单次计算数据量所占空间的倍数；extraBuf表示额外临时空间大小（字节）。；host侧Tiling接口，用于获取Frac接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。两接口围绕同一 Frac 临时空间合同工作：前者由既定空间反推单次处理量，后者在 Host Tiling 侧给出可选空间上下界，可连续用于空间预算和 tile 大小求解。
-<!-- cannbot:related:end -->

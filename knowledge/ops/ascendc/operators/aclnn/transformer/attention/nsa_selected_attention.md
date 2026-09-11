@@ -726,9 +726,3 @@ bool useLoop = this->selectedBlockSize > UL_BIT_COUNT ||
 | 同步 | Matmul wait+HardEvent | 不以Host顺序代替单kernel协议 | wait/SoftMax |
 | 精度与尾块 | FP32 BMM1/SoftMax→INPUT_T | causal有限负值、大stride loop | ProcessSoftmax/Mask |
 | 失败边界 | 参数/资源失败关闭 | 不发布 keys90/92/94、A3/950 | Tiling/entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NsaSelectedAttentionInfer A2/A3 ACLNN 算子知识](nsa_selected_attention_infer.md)（`related`）：对每个 query token 和 KV head 按 `topkIndices` 聚合 `C=selectedBlockCount` 个、每个长 `L_b=selectedBlockSize` 的 KV block，计算 `Softmax(mask(scale·QKᵀ))V`；用 `topkIndices` 选出逻辑 KV 区间，经 `blockTable` 映射到 paged KV cache，计算 `Softmax(scaleValue × QKᵀ) × V`。多 token 时按 query token 收缩可见 KV 尾部。。两卡都实现 NSA 的 topk 选块后 QK、Softmax、PV 注意力链；基础版本直接聚合 TND 连续 KV block，Infer 版本经 blockTable 访问 paged KV cache，联合阅读可完成训练式连续存储与推理式分页存储选型。
-<!-- cannbot:related:end -->

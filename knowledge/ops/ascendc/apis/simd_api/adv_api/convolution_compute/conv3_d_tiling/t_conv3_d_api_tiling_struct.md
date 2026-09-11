@@ -75,11 +75,3 @@ TConv3DApiTiling结构体包含Conv3D算子规格信息及Tiling切分算法的�
 
 **图3**  卷积3D正向NFirst示意图  
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv3d_nfirst.png "卷积3D正向NFirst示意图")
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Conv3D Tiling使用说明](conv3_d_tiling_usage.md)（`related`）：结构体卡指出“用户通过调用GetTiling接口获取TConv3DApiTiling结构体，具体流程请参考Conv3D Tiling使用说明。”；使用说明给出“调用API接口，即可获取Init中TConv3DApiTiling结构体中的相关参数。”，把结构体字段接到对象创建、参数设置、GetTiling 和 Kernel Init 的完整调用顺序。
-- [GetTiling](get_tiling.md)（`related`）：结构体卡说明“TConv3DApiTiling结构体包含Conv3D算子规格信息及Tiling切分算法的相关参数，被传递给Conv3D Kernel侧，用于数据切分、数据搬运和计算等。”；GetTiling 卡规定“tiling（输出）：Conv3D的Tiling结构体，用于存储最终的Tiling结果。”，明确了该结构体的 Host 生产接口。
-<!-- cannbot:related:end -->

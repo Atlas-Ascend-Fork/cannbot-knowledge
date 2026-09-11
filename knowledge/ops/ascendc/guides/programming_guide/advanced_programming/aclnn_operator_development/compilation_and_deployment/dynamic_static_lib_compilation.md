@@ -261,10 +261,3 @@ set_target_properties(${package_name} PROPERTIES
 
 - [编译与部署基本流程](basic_process.md) — 基础编译配置和`npu_op_package`用法。
 - [单算子API调用](../invocation/single_operator_api_call.md) — 使用生成的aclnn接口调用算子。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [多算子包组织](multi_operator_package.md)（`related`）：焦点卡写明“默认建议放在同一个算子包中。”，候选卡写明“算子包：TYPE RUN：custom_opp_*.run：安装到OPP的vendors/路径，供运行环境使用。”。多算子卡决定一个或多个 RUN 包，编译卡给出 RUN 与 SHARED/STATIC 的产物差异，衔接拆包与构建选择。
-<!-- cannbot:related:end -->

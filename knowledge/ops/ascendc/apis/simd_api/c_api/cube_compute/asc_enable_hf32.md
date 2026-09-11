@@ -226,12 +226,3 @@ int main()
 }
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscEnableHf32Trans](asc_enable_hf32_trans.md)（`related`）：舍入接口要求“设置HF32模式舍入方式。使用该接口前需要先使用asc_enable_hf32开启HF32模式。”；HF32 开启接口进一步限定“须在本接口之后调用该配套接口配置舍入模式，否则舍入模式沿用上次配置或默认值。”，两端共同确定先启用、后配置舍入的顺序。
-- [AscSetHf32RoundMode](asc_set_hf32_round_mode.md)（`related`）：HF32模式启用后，FP32转换为HF32格式的舍入模式由配套的asc_set_hf32_round_mode接口配置，须在本接口之后调用该配套接口配置舍入模式，否则舍入模式沿用上次配置或默认值。；设置HF32模式舍入方式。使用该接口前需要先使用asc_enable_hf32开启HF32模式。两卡给出相互一致的先启用 HF32、再配置舍入模式的有序调用合同。
-- [AscSetFp32Mode](asc_set_fp32_mode.md)（`same_topic`）：如需开启HF32模式，请重新调用asc_enable_hf32接口。；如需关闭HF32模式，请重新调用asc_set_fp32_mode接口。。两个配置接口在正文中互相声明为 FP32/HF32 模式切换的反向操作，共同决定后续 asc_mmad 的输入舍入状态。
-<!-- cannbot:related:end -->

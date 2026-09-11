@@ -170,9 +170,3 @@ RmsNorm 的 fp32 用例出现约 `1e-2` 最大输出差，而 fp16/bf16 因容�
 ## 误诊
 
 若 rstd 误差随 D、行号或输入地址随机变化，先查规约、同步和索引；本问题的特征是同一数学输入得到稳定、整齐的低精度量化值。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Rsqrt](../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/rsqrt.md)（`exemplifies`）：本轨迹中不带 config 的 `Rsqrt<float>` 在 dav-2201 上产生约 9-bit 量级的快速倒数结果。；单目矢量计算接口，按元素计算平方根倒数。头文件 `basic_api/kernel_operator_vec_unary_intf.h`。计算公式 dst_i = 1/sqrt(src_i)。API 卡定义被调用的运算，runbook 给出 dav-2201 上该调用形态的精度失败信号与 Sqrt+标量倒数替代方案。
-<!-- cannbot:related:end -->

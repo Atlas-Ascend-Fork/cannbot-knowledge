@@ -78,18 +78,4 @@ AscendC::GlobalTensor<int16_t> interpreTensor = inputGlobal.template Reinterpret
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [FreeTensor早释使队列别名被下一轮DMA覆盖](../../../../../runbooks/precision/reinterpret_tensor_alias_must_outlive_queue_release.md)（`exemplifies`）：“转换后的Tensor与原Tensor地址及内容完全相同，Tensor的内存大小（比特数）保持不变。”给出焦点端事实；“xT = xIO.ReinterpretCast<CT>()”给出候选端事实。API 的同地址重解释合同解释了 runbook 中 xT 仍别名 xIO 的事实，并直接支撑 FreeTensor 早释后别名被复用内存覆盖的根因判断。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)（`related`）：算子声明的固定版本源码包含对 `ReinterpretCast(...)` 的直接调用（第 665 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_v2.h#L665)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)

@@ -149,30 +149,9 @@ AscendC::Tanh<half, false, config>(dstLocal, srcLocal, sharedTmpBuffer, 512);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTanhMaxMinTmpSize](get_tanh_max_min_tmp_size.md)（`related`）：Host 接口说明“host侧Tiling接口，用于获取Tanh接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”；Tanh 卡明确“临时空间大小通过GetTanhMaxMinTmpSize获取。”，两端形成 Tanh sharedTmpBuffer 的容量选择与调用链，但 Host Tiling 规划和 Kernel 双曲正切计算是两个主题。
-- [GetTanhTmpBufferFactorSize](get_tanh_tmp_buffer_factor_size.md)（`related`）：Factor 接口说明“获取Tanh接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”；Tanh 卡说明“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。”，前者为后者显式缓冲、带 calCount 重载推导单次 tile 上限，属于 Host 推导到 Kernel 调用的跨主题任务链。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [MishBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/mish_backward.md)（`related`）：算子声明的固定版本源码包含对 `Tanh(...)` 的直接调用（第 71 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.h#L71)
-- [LSTM A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/lstm.md)（`related`）：算子声明的固定版本源码包含对 `Tanh(...)` 的直接调用（第 245 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP16.cpp#L245)
-- [ThnnFusedLstmCell A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/thnn_fused_lstm_cell.md)（`related`）：算子声明的固定版本源码包含对 `Tanh(...)` 的直接调用（第 296 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/thnn_fused_lstm_cell/op_kernel/thnn_fused_lstm_cell.h#L296)
-- [ThnnFusedLstmCellBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/thnn_fused_lstm_cell_backward.md)（`related`）：算子声明的固定版本源码包含对 `Tanh(...)` 的直接调用（第 479 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/thnn_fused_lstm_cell_grad/op_kernel/thnn_fused_lstm_cell_grad.h#L479)
-- [LSTM 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/lstm_950.md)（`related`）：算子声明的固定版本源码包含对 `Tanh(...)` 的直接调用（第 120 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp#L120)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ForeachTanh A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tanh.md)（`related`）：算子正文包含对 `Tanh(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MishBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/mish_backward.md)
+- [LSTM A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/lstm.md)
+- [ThnnFusedLstmCell A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/thnn_fused_lstm_cell.md)
+- [ThnnFusedLstmCellBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/thnn_fused_lstm_cell_backward.md)
+- [LSTM 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/lstm_950.md)
+- [ForeachTanh A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tanh.md)

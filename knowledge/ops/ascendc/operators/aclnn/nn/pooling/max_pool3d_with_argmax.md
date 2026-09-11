@@ -590,10 +590,3 @@ __aicore__ inline void MaxPool3DWithArgmaxBigKernel<T1, T2, IS_MASK, MaskType>::
 | 同步 | Queue 与 HardEvent 协议 | V/S/MTE producer-consumer 方向 | Device `SetFlag/WaitFlag` |
 | 精度与尾块 | BF16 FP32 升降精度、`-inf` padding、former/tail | NaN/index选择顺序与只写 real extent | `Cast*/Compute/*Tail` |
 | 失败边界 | R-001→R-002 fallback | dilation/format/index/DHW API gate | `CheckParamsValid/IsCapable` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MaxPool3dWithArgmaxBackward A2/A3 ACLNN 算子知识](max_pool3d_with_argmax_backward.md)（`related`）：“值是每个 NC 平面内展平 DHW 坐标”与“`indices` 是获胜坐标的 `d*H*W+h*W+w`”明确了前向输出 indices 到反向散射输入的同一坐标契约。
-- [MaxPool3dWithArgmax 950 ACLNN 算子知识](max_pool3d_with_argmax_950.md)（`same_topic`）：对输出 `(n,c,od,oh,ow)`，起点为 `(od*sD-pD,oh*sH-pH,ow*sW-pW)`；窗口采样 `(startD+kd*dD,startH+kh*dH,startW+kw*dW)` 中落在输入域的值。；令窗口起点为 `(od*sD-pD, oh*sH-pH, ow*sW-pW)`，有效采样坐标为起点加 `(kd*dD, kh*dH, kw*dW)` 且落在输入域内。；两卡定义同一 MaxPool3dWithArgmax 的三维窗口采样、最大值和 DHW 线性索引语义，分别闭合 950 Vector/SIMT routes 与 A2/A3 两条 AIV routes。
-<!-- cannbot:related:end -->

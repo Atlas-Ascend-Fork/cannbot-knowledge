@@ -163,9 +163,4 @@ auto ptr = desc.GetDataPtr();
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [如何开发动态输入算子](../../../../guides/programming_guide/appendix/common_operations/develop_dynamic_input_operator.md)（`explains`）：“核函数的入参采用ListTensorDesc的结构存储输入数据信息”指出动态输入 kernel 的 ABI 容器；“提供构造函数创建空列表，通过AppendTensorDesc添加Tensor描述符，通过GetTensorDesc获取指定位置的描述符，通过GetNum获取列表大小。”给出构造、访问和计数该容器的接口操作。
-- [ForeachTan 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)（`related`）：“每个 block 都构造 x/y `ListTensorDesc`，按 `tensorNum` 顺序遍历列表；”给出 950 Kernel 对 TensorList 描述符的实际使用；“ListTensorDesc是Tensor描述符列表，用于管理多个Tensor的描述信息。”说明该结构在列表遍历中的职责。
-<!-- cannbot:related:end -->
+- [ForeachTan 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)

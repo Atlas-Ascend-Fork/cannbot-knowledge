@@ -79,9 +79,3 @@ BUILD=0
 - **误诊 2**：`Compares` 破坏 `tempX`（maskBuf 与 tempXBuf 物理重叠）→ 后续增大 maskBuf 无效，真因是 gIn 在 V 读时被下一 tile 的 MTE2 覆盖（数据竞争），非 Compares 破坏。
 - **误诊 3**：`Duplicate(mask, 0)` 测试时误以为 mask 已清零，实际 `Duplicate(mask,0)` 自身破坏 tempX（buffer 重叠），导致“mask 清零后 Div 正确”的假象。
 - **真发现**：double buffer 下 V 异步未完成时下一 tile 的 MTE2 覆盖 gIn slot（数据竞争），需 V_MTE2 同步或限段单次 1D + 三缓冲规避——本卡判别方法的根因即由此澄清得出。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [跨行子块误作连续 slab 导致分块结果错](noncontiguous_row_subtiles_require_per_row_copy.md)（`same_topic`）：3. 反查 `CopyInOne` 广播分支：若用单次 1D `DataCopyPad(ub, gm［srcOff］, blockLen=tileLen)` 且 `tileLen > innerContig - (offset % innerContig)`，则 `gm［srcOff .. srcOff+tileLen)` 必然读出广播输入 GM 缓冲边界（广播输入在 GM 里只有 innerContig 个元素）之外的内存——越界读成立。；- 每次把二维/三维子块压成一次 DMA 前，写出相邻行地址差：若 `row_stride != copied_row_width`，它就不是连续块；两条 runbook 都裁定逻辑子块带物理间隔时单次连续 1D DMA 会越过当前行或广播段，修复决策是按真实连续边界切 tile 或逐行搬运后再验证。
-<!-- cannbot:related:end -->

@@ -172,10 +172,3 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscSyncBlockWait](asc_sync_block_wait.md)（`related`）：每个flag_id对应一个初始值为0的计数器，执行asc_sync_block_arrive后flag_id对应的计数器增加1；执行asc_sync_block_wait时如果对应的计数器数值为0则阻塞不执行；如果对应的计数器大于0，则计数器减一，同时后续指令开始执行。；和asc_sync_block_arrive配合使用（通过flag_id关联），用于等待所有同步对象到达flag_id对应的同步点。。两接口共享 flag_id 计数器，但 arrive 负责发布到达信号，wait 负责等待并消费信号；它们是同步协议中有顺序的互补动作。
-<!-- cannbot:related:end -->

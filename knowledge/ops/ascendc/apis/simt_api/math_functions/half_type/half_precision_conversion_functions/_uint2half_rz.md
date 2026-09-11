@@ -83,10 +83,3 @@ inline half __uint2half_rz(const unsigned int x)
         dst[idx] = __uint2half_rz(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__uint2half_rz_sat](_uint2half_rz_sat.md)（`related`）：“特殊值：2049→2048；4097→4096；ASCRT_MAX_NORMAL_FP16→ASCRT_MAX_NORMAL_FP16”给出焦点端事实；“本接口的饱和模式不生效。”给出候选端事实。普通 RZ 卡给出截断与最大值行为，RZ_SAT 卡明确 SAT 在 SIMT 场景不生效；联合阅读可避免把后缀误当作额外饱和保证。
-<!-- cannbot:related:end -->

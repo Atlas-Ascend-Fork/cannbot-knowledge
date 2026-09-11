@@ -101,9 +101,3 @@ MTP / 投机解码下每个 decode 请求的 `query_len = 1 + num_speculative_to
 
 - diff 事实 + reviewer 确认（merge sha `8b3a7a9e874c484a28efe89ce25b47e6eb809349`）：`sfa_v1.py` 的 `get_cudagraph_support()` 单行由 `UNIFORM_SINGLE_TOKEN_DECODE` 改为 `UNIFORM_BATCH`，与 `mla_v1.py:276` 已返回 `UNIFORM_BATCH` 对齐；根因据上游 `AttentionCGSupport` docstring（`UNIFORM_BATCH` 明确覆盖 spec-decode 的 `1+num_speculative_tokens`）+ reviewer 确认。溯源下探 [vllm-ascend-pr-5679-bugfix-support-dsv3-2-enable-both-mtp-and-full-decode-only](https://github.com/vllm-project/vllm-ascend/pull/5679)
 - diff 事实 + reviewer 确认（merge sha `5b179c53f1669d9dfceeba1ff105423678be7004`）：`sfa_v1.py` 改用 `num_input_tokens` 切片、sin/cos in-place 固定缓冲、forward 侧删除 `[:num_actual_tokens]` 二次切片、`model_runner_v1.py` 的 `query_start_loc` padding 与 cos/sin 缓冲脱离 graph-mode 分配；失败签名（build 与 forward 切片口径不一致 → infer shape errors）由 reviewer 在 `sfa_v1.py:275` 独立佐证。溯源下探 [vllm-ascend-pr-4706-feat-support-deepseek-v3-2-with-full-decode-only-mode](https://github.com/vllm-project/vllm-ascend/pull/4706)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MTP 投机解码接图模式的前置与坑：独立 decode 入口避免重编译 + FIA GQA 要求 + aclgraph 取舍](mtp_speculative_decode_graph_mode_prereqs.md)（`related`）：MTP 的 ［FIA］(../../concepts/kernels/fused_infer_attention_score.md) 解码分支在 graph mode 下只支持 GQA 布局；在昇腾上要让某注意力后端在 `FULL_DECODE_ONLY` 图模式下**同时支持 MTP** 时，先确认该后端 `get_cudagraph_support()` 申报的是 `UNIFORM_BATCH`；接入 MTP 全图 decode 时，前者要求 FIA 路线先满足 Q/K 头布局，后者要求稀疏注意力后端覆盖多 token uniform batch，两项构成同一次图捕获上线检查的独立必备条件。
-<!-- cannbot:related:end -->

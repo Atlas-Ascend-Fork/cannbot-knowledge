@@ -54,10 +54,3 @@ __aicore__ inline void SetHcclContext(__gm__ uint8_t* context)
 // 给GROUP_0设置消息区地址
 AscendC::SetHcclContext<0>(contextGM);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetHcclContext](get_hccl_context.md)（`related`）：设置通算融合算子每个通信域对应的context（消息区）地址。；获取指定Index通信域的context（消息区）地址。。Set 生产按 index 保存的消息区地址，Get 读取同一通信域地址，构成明确的写入/取回合同。
-<!-- cannbot:related:end -->

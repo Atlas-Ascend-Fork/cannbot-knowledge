@@ -285,10 +285,3 @@ __aicore__ inline void Init(__gm__ uint8_t* x, __gm__ uint8_t* y, __gm__ uint8_t
     // 释放LocalTensor
     outQueueZ.FreeTensor(zLocal);
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [入门功能落地](../../typical_operator_cases/simd_operator_impl/add_vector_operator/getting_started.md)（`same_topic`）：“完成核函数的内部实现，包括3个基本任务：CopyIn，Compute，CopyOut”给出基础矢量算子的实现骨架，“Add算子的计算逻辑遵循"搬入-计算-搬出"三段式流水结构”提供该骨架的具体 Add 落地。
-<!-- cannbot:related:end -->

@@ -194,9 +194,3 @@ path: `operators/cummin/cummin.asc`；symbols: `KernelCummin<T>::StoreOut`、`Ke
 ## 误诊
 
 该错误不是某个 dtype 缺少特化；四种实例化同时失败正说明共同的 helper 签名违反了地址空间类型约束。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reg LoadAlign 不接受 const __ubuf__ 指针](reg_loadalign_requires_nonconst_ubuf_pointer.md)（`related`）：焦点卡指出“bisheng 把 `__ubuf__` 地址空间编码进指针类型，`__ubuf__ T*` 不能隐式转换为普通 `T*` 形参。”；LoadAlign 排障卡进一步限定“该版本 RegBase 两参数 `LoadAlign` / `StoreAlign` 与 `asc_vf_call` 接口链要求 `__ubuf__ T *`”，把通用地址空间不匹配收窄到还必须去除 const 的具体 ABI。
-<!-- cannbot:related:end -->

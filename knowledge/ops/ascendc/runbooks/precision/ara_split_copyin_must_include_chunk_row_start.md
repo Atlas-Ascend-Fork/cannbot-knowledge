@@ -142,9 +142,3 @@ supports: `rowStart * A0_` 进入 GM 起点，允许每次 gather 读取当前 c
 ## 误诊
 
 最初把“和为 1 但分布错误”归因于跨 chunk 的 max/sum 数值累积。全零通过与随机输入失败并不能单独证明数值问题；应先核对每个 pass 的实际 GM 起点。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ARA 多 group 共用 max/sum 污染后续输出](ara_group_statistics_must_reset_per_group.md)（`related`）：把 group 循环提到最外层；进入每个 group 时将 `maxBuf` 重新置为 `-inf`、`sumBuf` 重新置零，然后仅为该 group 完成 max、sum、output 三趟；给 gather helper 增加 `rowStart` 参数，并把 GM 起点写成 `a1Base + rowStart * A0_ + a0Start`。前者修复同一 ARA 三趟流程的跨 group 状态污染，后者修复分块三趟的输入地址推进；多 group、跨 chunk 精度排障需分别核对状态生命周期与 GM 起点。
-<!-- cannbot:related:end -->

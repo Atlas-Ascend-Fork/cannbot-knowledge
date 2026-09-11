@@ -94,12 +94,3 @@ fp32 case15（slice=2048，firstLen=819）：`819 * 4 = 3276`，`3276 % 32 = 327
 
 - 用多块 DataCopyPad 搬运跨 stride 数据时，**每个块的 dst 基址字节偏移必须 = 块索引 × ceil(blockLen/32)*32**，不要让 dst 偏移随非对齐长度累积。
 - tiling 阶段就算 `alignUpS = AlignUp(slice*es, 32)/es`，让 tile 步长与 dst 步长都按 alignUpS 取，从源头保证每块 dst 基址 32B 对齐。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)（`exemplifies`）：**API 路径**：`AscendC::DataCopyPad(dst LocalTensor, src GlobalTensor, DataCopyExtParams, DataCopyPadExtParams)`，多块搬运（`blockCount>1`，`DataCopyExtParams.blockLen`/`srcStride`/`dstStride` 均以字节为单位）。；DataCopyPad（GMToUB非对齐数据搬运）从Global Memory将数据非对齐搬运至Unified Buffer时，可根据开发者的需要自行填充数据。SetPadValue用于设置DataCopyPad需要填充的数值。 具体支持的数据通路为（以逻辑位置TPosition表示）： - Global Memory -> Unified Buffer - GM -> VECIN - GM -> VECOUT；runbook 的多块 dst 基址故障实际调用该 GM 到 UB 非对齐搬运接口，API 卡用于核对方向和能力边界。
-- [DataCopyPad 尾块改逐行一维搬入](../precision/datacopypad_partial_2d_blocks_use_per_row_copy.md)（`related`）：机制链：多块 DataCopyPad 跨 slice 聚合 → head 块拷贝后 dst 偏移随非对齐长度累积 → middle/tail 块 dst 基址字节偏移 = `firstLen*sizeof(T)` 非 32B 倍数 → MTE 访问未对齐地址 → vector core exception。这不是"算子逻辑错"或"算力不够"，而是"多块 dst 基址必须 32B 对齐"的硬件级约束被 head 累积偏移破坏。；改成每个 `r` 单独一次 `blockCount=1` 的一维搬入后，不再使用 stride 字段；GM 和 UB 起点都由显式索引给出，消除了语义歧义。；两端都把多块 DataCopyPad 收敛为显式单块起点，但分别解决 dst 基址对齐和 2D stride 落点错行。
-- [SwiGLU 高级 API 在非32B对齐 slice 上精度失败](../precision/swiglu_adv_api_fails_non_32b_aligned_slice.md)（`related`）：“禁用 adv_api、回退手写 SiLU 链（`Muls(-1)→Exp→Adds(1)→Mul→Div→Cast`）后全 20 case 通过。”说明计算侧回退结果；“多块 `DataCopyPad` 的**每个数据块的 dst 起始地址必须 32B 对齐**”补足该结果成立前已经修复的搬运侧条件。
-- [跨 slice 批量 vector 源地址非 32B 对齐触发 507035](slice_vector_32b_507035.md)（`related`）：多块 `DataCopyPad` 的**每个数据块的 dst 起始地址必须 32B 对齐**（`DataCopyPadGm2UBImpl` 断言 `TransUBAddr % 32 == 0`）。优化版把一个 tile 的 x0 分成 head(firstLen) + middle（逐 slice，`blockLen=slice*es`）+ tail 三段，head 拷贝写入 `dst［0..firstLen)` 后，middle 的 dst 基址取 `dst［firstLen］`。当 `firstLen * sizeof(T)` 不是 32B 整数倍时，middle 块的 dst 基址非 32B 对齐 → MTE 指令访问地址未对齐 → vector core exception。；c220 vector 指令要求源 tensor 物理地址 32B（C0Size）对齐。跨 slice 批量路径中，逐组计算的源地址是 `xIn［b］`，偏移 `b = g * 2 * slice`，单位是元素；当 `slice*sizeof(T)` 不是 32B 整数倍时，`b*sizeof(T)` 不是 32B 对齐，vector 指令读取非对齐源地址触发 vector core exception（507035）。；两端给出同一 SwiGlu 优化链中 MTE dst 与 vector src 两种 32B 地址故障，可按失败指令阶段分流。
-<!-- cannbot:related:end -->

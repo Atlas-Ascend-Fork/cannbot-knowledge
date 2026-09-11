@@ -102,10 +102,3 @@ int __ffs(long x)
         dst[idx] = __ffs(x[idx]);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_ffs（标量计算）](../../../simd_api/c_api/scalar_compute/scalar_bit/asc_ffs.md)（`same_topic`）：FindFirstSet接口，输入数据的二进制表示中从最低位向最高位查找第一个值为1的位，并返回其位置，如果没找到则返回-1。；查找首位 1 的位置。从二进制输入数据的最低位开始，查找第一个值为 1 的比特位的位置并返回其索引（索引从 1 开始计数）；若数据中没有 1，则返回 0。。两张卡都定义从最低位寻找首个 1 的 ffs 操作，但分别采用未命中返回 -1 与返回 0 的契约。
-<!-- cannbot:related:end -->

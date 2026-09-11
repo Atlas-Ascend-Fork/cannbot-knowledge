@@ -70,20 +70,5 @@ auto coord = AscendC::MakeCoord(blockCoordM, blockCoordN);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Coordinate简介](coordinate_intro.md)（`related`）：通过MakeCoord构造，可用于Tensor的元素索引和位置计算。；构造Coordinate坐标结构体。；简介给出的 Coordinate 生产步骤由 MakeCoord 的构造合同具体实现。
-- [Crd2Idx](crd2_idx.md)（`related`）：将Coordinate坐标转换为Tensor中的线性索引（index）；构造Coordinate坐标结构体。MakeCoord 生成 Crd2Idx 的 Coordinate 输入，Crd2Idx 再结合 shape 计算线性偏移；联合阅读即可完成从多维坐标构造到 Tensor 索引的调用链。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [WeightQuantBatchMatmulNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/weight_quant_batch_matmul_nz_950.md)（`related`）：算子声明的固定版本源码包含对 `MakeCoord(...)` 的直接调用（第 535 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/common/cmct/prologue/block_prologue_b_antiquant_scmc_nd_nk_nz_kn.h#L535)
-- [WeightQuantBatchMatmul 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/matmul/weight_quant_batch_matmul_950.md)（`related`）：算子声明的固定版本源码包含对 `MakeCoord(...)` 的直接调用（第 144 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/common/cmct/block/block_mmad_a_prefetch_b_prologue.h#L144)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [WeightQuantBatchMatmulNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/weight_quant_batch_matmul_nz_950.md)
+- [WeightQuantBatchMatmul 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/matmul/weight_quant_batch_matmul_950.md)

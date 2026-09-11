@@ -54,9 +54,3 @@ quant_method.process_weights_after_loading(
 - `diff 事实`（@843c3dd61a35）：`modeling_qwen3_5_moe.py` 的 `process_weights_after_loading`——`is_nz = enable_weight_nz and not use_mm_all_reduce_base`、`mm_all_reduce_suffixes` 列表、MC2 判定条件链；`qwen3_5_prefill_mm_all_reduce` 的回退逻辑与 `npu_mm_all_reduce_base(input_, weight.data, hcom, reduce_op="sum")`。
 - `diff 行为 + commit 陈述意图`：「NZ 与 MC2 布局冲突、MC2 要 ND」＝ 代码强制关 NZ 的行为 + commit `078b23406e21` 标题「规避 weight 转 NZ」；非独立算子规格确认，按「converter 产出 ≠ 算子合约」措辞为「本仓当前这么门控」。
 - 溯源下探：[cann-recipes-infer-pr-402-feat-support-qwen3-5](https://gitcode.com/cann/cann-recipes-infer/merge_requests/402)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [weightNZ Format](../../../concepts/techniques/weight_nz.md)（`related`）：将 Matmul 类算子的权重 Tensor 转成昇腾 NPU 亲和的 **NZ 分形布局**（512 字节对齐），提升硬件访存带宽效率，加速 DeepSeek-R1 等模型的 Prefill / Decode Matmul 计算。；**凡走 MC2 融合的 RowParallelLinear 层，其权重必须留 ND、不转 NZ**；非 MC2 层照常按 `enable_weight_nz` 转 NZ。前者定义 NZ 优化，后者给出与 MC2 融合同时启用时必须逐层排除的布局边界。
-<!-- cannbot:related:end -->

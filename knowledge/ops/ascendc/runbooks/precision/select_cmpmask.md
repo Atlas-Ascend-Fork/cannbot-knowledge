@@ -54,13 +54,3 @@ platforms: ["950"]
 - 判别后据此改用纯算术掩码折叠分支，L1 失败从 115/578 降至 58/578（57 个 mask 分支反转用例全部修复、0 回归）、C++ ST 57/57 通过，反证判别正确（来源平台:950；证据等级:tool_observed）
 
 剩余 58 个失败均为极端值边界用例（±FLT_MAX/inf/nan/subnormal threshold），在原始 baseline 同样失败，为独立问题，非本机制。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [arch35 Select 异步SIMT同步失效致分支错选](arch35_select_simt.md)（`related`）：bMask 正确、Select 不一致；插入 PRINTF（GetValue 多缓冲区）后，全部原失败用例 PASS；前卡定位多 repeat mask 指针复用，后卡给出执行顺序敏感时用标量排空区分异步 CMPMASK 同步缺口的探针。
-- [arch35 Select 超64 cmpmask 残缺判别](arch35_select_64_cmpmask.md)（`related`）：n=129 起 2 mismatches；PASS/FAIL 边界恰落在 `ONE_REPEAT_ELE_NUM = 256B/sizeof(elem)`（fp32=64）；两卡的规模边界探针共同把大 count 分支错选收敛到单 repeat cmpmask 容量及复用路径。
-- [arch35 count Compare Select 异步VF 存读 RAW](arch35_count_compare_select_vf_raw.md)（`related`）：非首块元素的分支选择被首块 mask bit 覆盖；Compare 后插 `bMask.GetValue(0)` 探针后 F1=2.5、F2=2.19 全过；两卡为同一 Compare→Select 精度链分别提供跨 repeat 复用与异步 VF 存读 RAW 的区分证据。
-- [arch35 分块 Select 掩码偏移非 32B 对齐崩溃 507035](../compilation/arch35_select_32b_507035.md)（`related`）：后续 repeat 始终从 mask 张量首块加载 cmpmask；n=64（单块）通过；n>=128（多块）崩溃；后卡是针对前卡首块复用缺陷实施 64 元素分块后触发非 32B 对齐 507035 的失败路线。
-- [Select CMPMASK_SPR 模式致混合分支误选](select_cmpmask_spr.md)（`same_topic`）：`VselImpl` 的 repeatRounding 循环不偏移 `sel` 指针；分块循环对 `sel`（mask 指针）不做偏移；两卡独立定位同一高层 Select CMPMASK_SPR 多 repeat 复用首块 mask 的核心缺陷。
-<!-- cannbot:related:end -->

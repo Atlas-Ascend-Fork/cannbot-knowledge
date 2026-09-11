@@ -70,10 +70,3 @@ for (uint32_t i = 0; i < desc.GetDim(); i++)
 }
 auto ptr = desc.GetDataPtr();
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetDataObj](get_data_obj.md)（`related`）：获取储存Tensor数据地址。；将数据指针置于 GlobalTensor 中并返回该 GlobalTensor。；两接口都在 TensorDesc 与底层 Tensor 数据之间建立访问入口；前者返回原始地址，后者把相同数据指针封装成后续搬运或计算可消费的 GlobalTensor。
-<!-- cannbot:related:end -->

@@ -812,10 +812,3 @@ for (int32_t topKId = 0; topKId < topK; topKId++) {
 | 同步 | schedule1、SyncAll、merge/gather events。 | 换区、第二排序、UB复用前同步。 | `PostTiling/VMSProcess/Process` |
 | 精度与尾块 | int→FP32负key、32 mask、core/list/D tail。 | 16777215精确域、只写L/O有效域。 | `SortCompute/UBSortCompute` |
 | 失败边界 | Host拒绝非法输入，Device空返回。 | 不补 fallback，不混入 950 body。 | `GetShapeAttrsInfo/moe_token_permute` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeTokenPermuteGrad A2/A3 ACLNN 算子知识](moe_token_permute_grad.md)（`related`）：“对 `flatten(indices)` 两次 argsort 得逆置换，再把第 `i` 个 token 的 `topK` 个副本散写到排序位置”生成前向置换及索引，“以每个输出 token 对应的连续 `numTopk` 个 `sortedIndices` 为索引，从 `permutedOutputGrad` gather 行并沿 top-k 维求和”消费该索引完成梯度回收。
-- [MoeTokenUnpermute A2/A3 ACLNN 算子知识](moe_token_unpermute.md)（`related`）：“用 `sortedIndices` 从 `permutedTokens` 恢复输出 token”消费逆置换，“对 `flatten(indices)` 两次 argsort 得逆置换”说明该 sortedIndices 如何由前向 permute 生成，二者构成 MoE 路由往返。
-<!-- cannbot:related:end -->

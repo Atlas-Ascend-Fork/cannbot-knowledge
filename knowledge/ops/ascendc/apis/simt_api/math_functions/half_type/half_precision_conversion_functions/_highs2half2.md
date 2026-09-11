@@ -104,10 +104,3 @@ inline half2 __highs2half2(const half2 x, const half2 y)
         asc_vf_call<simt_highs2half2>(dim3(1024), (__gm__ half2*)input1, (__gm__ half2*)input2, (__gm__ half2*)output, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__high2half2](_high2half2.md)（`same_topic`）：“功能：将输入数据的高16位填充到half2并返回结果。”与“功能：分别提取两个half2输入的高16位，并填充到half2中，返回填充后的数据。”是双方正文中的具体合同。两端都提取高 16 位构造 half2，单输入版本复制一个来源，高位双输入版本分别组合两个来源，互读可确认打包来源。
-<!-- cannbot:related:end -->

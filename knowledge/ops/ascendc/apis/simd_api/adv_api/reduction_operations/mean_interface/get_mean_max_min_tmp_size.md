@@ -64,10 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetMeanMaxMinTmpSize(n, srcTypeSize, accTypeSize, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Mean](mean.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetMeanMaxMinTmpSize获取。；host侧Tiling接口，用于获取Mean接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。Mean 明确要求用该 Host 查询选择临时空间，二者闭合执行前容量规划。
-<!-- cannbot:related:end -->

@@ -134,11 +134,3 @@ struct IsNanConfig {
 输入数据(src):[1.0 nan 3.0 4.0 nan 6.0 nan 8.0]
 输出数据(dst):[false true false false true false true false]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetIsNanMaxMinTmpSize](get_is_nan_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取IsNan接口所需的最大和最小临时空间大小；临时空间大小通过GetIsNanMaxMinTmpSize获取。。左卡返回 IsNan 可用临时空间范围，右卡明确由该查询结果为 sharedTmpBuffer 定容；两端直接衔接 950 Host Tiling 与按元素 NaN 判定 Kernel。
-- [GetIsNanTmpBufferFactorSize](get_is_nan_tmp_buffer_factor_size.md)（`related`）：参数：ascendcPlatform为平台信息；typeSize为输入数据类型字节数（half传2）；maxLivedNodeCount输出最大存活节点数；extraBuf输出额外临时空间大小。推算公式：currentShapeSize = (currBuff - extraBuf) / maxLivedNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetIsNanMaxMinTmpSize获取。。前者给出固定临时空间下 IsNan 单次处理量的反推公式，后者是实际消费 sharedTmpBuffer 的逐元素 NaN 判断接口。
-<!-- cannbot:related:end -->

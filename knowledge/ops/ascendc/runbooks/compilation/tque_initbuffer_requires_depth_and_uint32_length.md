@@ -115,9 +115,3 @@ platforms: ["a3"]
 ## 失效边界
 
 本卡不证明任意 `int64_t` 字节值都可安全收窄；调用者仍须先保证长度不超过 UB 和 `uint32_t`。也不覆盖 TBuf、TQueBind 或其他架构的不同重载。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TBuf 三参数 InitBuffer 触发 isTQue 静态断言](tbuf_initbuffer_uses_two_arguments.md)（`related`）：保留 `TQue` 的 `(queue, depth, bytes)` 三参数调用；仅对 `TBuf` 删除队列深度参数，改用 `(buffer, bytes)` 两参数调用。；TQue 固定写成 `InitBuffer(queue, depth, uint32_bytes)`，TBuf 再使用对应两参数形式；两张 runbook 从 TBuf 与 TQue 两侧闭合同名 InitBuffer 的重载选择。
-<!-- cannbot:related:end -->

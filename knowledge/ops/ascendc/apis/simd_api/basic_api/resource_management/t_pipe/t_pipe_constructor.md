@@ -71,10 +71,3 @@ extern "C" __global__ __aicore__ void example_kernel(...) {
     ...
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Destroy](destroy.md)（`related`）：如果需要使用多个TPipe时，请先调用Destroy接口释放前一个TPipe；创建tpipe对象后，可调用Destroy手动释放资源。构造卡明确同一时刻只能有一个 TPipe，并把再次创建前的释放指向 Destroy；Destroy 卡给出对应资源回收操作，形成直接生命周期合同。
-<!-- cannbot:related:end -->

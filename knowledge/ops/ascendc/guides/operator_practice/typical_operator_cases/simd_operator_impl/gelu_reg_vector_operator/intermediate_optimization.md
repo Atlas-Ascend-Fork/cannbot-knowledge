@@ -74,11 +74,3 @@ Load → Div → Store                    → Div → StoreAlign
 > 本样例为MTE2 bound，数据搬运占比超过90%，因此端到端收益不明显，但向量计算耗时的优化效果显著。
 
 详细内容请参见[Gelu性能调优样例 Case 1](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_high_performance/README.md#case-1-启用regbase-api和vf融合能力)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [入门功能落地](getting_started.md)（`related`）：本节以GELU（高斯误差线性单元）激活函数为例，介绍基于Ascend C RegBase编程模型实现向量算子的基本方法，帮助开发者快速入门Reg矢量算子开发。；本节在入门功能落地的基础上，介绍GELU算子的中级性能优化方法。。入门卡提供 GELU RegBase 基线实现，中级卡明确以该功能落地为优化起点。
-- [高阶极限打磨](extreme_optimization.md)（`related`）：本节在中级性能优化的基础上，介绍GELU算子的高阶极限打磨方法。；本节在入门功能落地的基础上，介绍GELU算子的中级性能优化方法。。中级页以 RegBase+VF 融合建立优化基线，高阶页在该基线上用循环展开继续提高 ILP，构成同一 GELU 调优阶段链。
-<!-- cannbot:related:end -->

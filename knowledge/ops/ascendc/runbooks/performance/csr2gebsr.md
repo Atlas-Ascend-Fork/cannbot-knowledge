@@ -189,9 +189,3 @@ __simt_callee__ __aicore__ inline void FillBlockValues(
 
 - 用"单组大矩阵 perf 数据"宣布双指针法为通用优化——会掩盖窄矩阵退化，正是本 trace 一度犯的错误（先看到 1000×1000 改善即采用，跑 PerfSweep 全场景后才暴露 10000×10 退化 489×）。
 - 主会话最初把大矩阵退化归因于 P5 核数分配公式；后续隔离测试表明 P5 非元凶，真正根因是 P3 双指针在窄/小矩阵的退化。窄矩阵 10000×10 退化 489× 才是决定性信号。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMT VF 栈数组动态索引致输出全零](../precision/simt_vf.md)（`related`）：回退双指针法、仅保留 P4+P11，窄矩阵恢复至噪声范围，退化消除；移除局部数组、Pass1 直读 __gm__ csrRowPtrA 后：64/64 PASSED；两卡记录同一 csr2gebsr Convert 优化链中相互独立的性能回退与正确性修复，可共同确定最终安全补丁集合。
-<!-- cannbot:related:end -->

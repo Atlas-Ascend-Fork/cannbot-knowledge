@@ -95,10 +95,3 @@ inline long long int llroundf(float x)
 x：0.25, 0.75, 1.25, 1.75
 result: 0 1 1 2
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Lroundf](lroundf.md)（`same_topic`）：函数原型：long int lroundf(float x)；函数原型：long long int llroundf(float x)。两者对同一 float 执行四舍五入并返回整数，区别是 long 与 long long 返回宽度，构成调用时的直接类型选择。
-<!-- cannbot:related:end -->

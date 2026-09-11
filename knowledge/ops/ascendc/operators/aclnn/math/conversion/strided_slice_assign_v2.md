@@ -550,8 +550,4 @@ Host 对最后一维 stride 的强制条件把每个外层坐标转化为一段�
 | 精度与尾块 | 所有 dtype 都是等字节复制；64-bit 用 int32 视图；尾部按实际 bytes | 64-bit GM offset 必须乘 2，blockLen 必须仍为 `copyNum*8`；不得引入 cast/round | `KernelStridedSliceAssignV2::Init/Process` |
 | 失败边界 | rank/shape/last-stride/core/UB-positive 失败均阻断 launch；未知 key 无输出 | 不得假设非末维 stride、axes 范围、空 Tensor 或低 UB fallback 已在本地实现 | `Tiling4*`、`TilingPrepare4*`、entry key guard |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ValueDepend](../../../../apis/utils_api/prototype_register_management/op_param_def/value_depend.md)（`related`）：OpDef 对所有输入、输出标记 `AutoContiguous()`；`begin/end/strides/axes` 同时标记 `ValueDepend(REQUIRED)`，使 Tiling 在 Host 侧取得常量值。；标识该输入是否为“数据依赖输入”，数据依赖输入是指在Tiling/InferShape等函数实现时依赖该输入的具体数据。该输入数据为host侧数据，开发者在Tiling函数/InferShape函数中可以通过TilingContext类的GetInputTensor/InferShapeContext类的GetInputTensor获取这个输入数据。。算子卡实际把 begin/end/strides/axes 声明为 ValueDepend(REQUIRED)，API 卡解释该声明使 Host Tiling/InferShape 能读取输入具体值，形成注册到 Host 消费的合同。
-<!-- cannbot:related:end -->
+- [ValueDepend](../../../../apis/utils_api/prototype_register_management/op_param_def/value_depend.md)

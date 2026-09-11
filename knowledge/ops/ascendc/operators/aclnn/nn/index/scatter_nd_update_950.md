@@ -852,9 +852,3 @@ Host只粗筛shape，Device再对真实offset分布采样。重复度高时sort+
 | 同步 | hard event/queue/UB barrier/atomic/SyncAll | producer-consumer对应层级 | common与各body |
 | 精度与尾块 | OFFSET位宽、magic division、runtime sort threshold | key/storage guard、tail count | router/math/sort |
 | 失败边界 | shape、UB、unknown key、empty return | 不得将non-det route描述为确定性 | Host/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ScatterNdUpdate A2/A3 ACLNN 算子知识](scatter_nd_update.md)（`same_topic`）：“`aclnnScatterNdUpdateGetWorkspaceSize` + `aclnnScatterNdUpdate`，公开两段式 ACLNN。”与“`aclnnScatterNdUpdateGetWorkspaceSize` + `aclnnScatterNdUpdate`，公开两段式 ACLNN，无更高公开版本。”共享同一入口和覆盖更新语义，两卡分别闭合 950 与 A2/A3 实现。
-<!-- cannbot:related:end -->

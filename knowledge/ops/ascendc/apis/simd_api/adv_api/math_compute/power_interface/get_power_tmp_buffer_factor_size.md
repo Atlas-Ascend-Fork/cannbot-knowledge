@@ -69,22 +69,7 @@ AscendC::GetPowerTmpBufferFactorSize(true, true, true, 4, maxLiveNodeCount, extr
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetPowerMaxMinTmpSize](get_power_max_min_tmp_size.md)（`related`）：“currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize”解决固定空间下的最大计算量；“在minValue到maxValue范围内，临时空间越大性能越好。”解决固定计算量下的空间范围与性能取舍，两者是 Power tiling 的互补 sizing 路线。
-- [Power（数学计算）](power.md)（`related`）：“currentShapeSize = (currBuff - extraBuffer) / maxLiveNodeCount / typeSize”从固定 UB 预算反推单次元素数；“临时空间大小通过GetPowerMaxMinTmpSize获取。”说明 Power kernel 的另一种显式临时空间获取入口，两者构成 host 分块与 kernel 调用的选型链。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 4 / 4 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [InplaceExp2 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_exp2_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPowerTmpBufferFactorSize(...)` 的直接调用（第 87 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tensor_scalar_tiling_arch35.cpp#L87)
-- [InplacePowTensorScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_pow_tensor_scalar_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPowerTmpBufferFactorSize(...)` 的直接调用（第 87 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tensor_scalar_tiling_arch35.cpp#L87)
-- [InplacePowTensorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_pow_tensor_tensor_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPowerTmpBufferFactorSize(...)` 的直接调用（第 146 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tensor_tensor_tiling_arch35.cpp#L146)
-- [PowTensorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/pow_tensor_tensor_950.md)（`related`）：算子声明的固定版本源码包含对 `GetPowerTmpBufferFactorSize(...)` 的直接调用（第 87 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tensor_scalar_tiling_arch35.cpp#L87)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [InplaceExp2 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_exp2_950.md)
+- [InplacePowTensorScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_pow_tensor_scalar_950.md)
+- [InplacePowTensorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/inplace_pow_tensor_tensor_950.md)
+- [PowTensorTensor 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/pow_tensor_tensor_950.md)

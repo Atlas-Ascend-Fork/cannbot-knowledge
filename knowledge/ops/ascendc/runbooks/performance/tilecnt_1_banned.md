@@ -85,9 +85,3 @@ tileCnt 越大越慢，与"流水掩盖收益"的预期完全相反。
 - 已验证：Atlas A2（ascend910b）4 卡，4P M=2048 N=3584 K=5120，tileCnt>1 流水 banned。
 - 未验证，推断可迁移：同算子在通信量远大于计算量、或 Pattern A（先通后计/无依赖通信）的 shape 下，tileCnt 流水可能有收益，本卡结论不得外推到那些场景。
 - Ascend950（950）与 A3（a3）未实测，推断可迁移。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulReduceScatter 950 ACLNN 算子知识](../../operators/aclnn/transformer/mc2/matmul_reduce_scatter_950.md)（`related`）：各 rank 的完整结果按 `sum` 归约后沿 M 轴等分，本 rank 输出 `y:［M/rankSize,N］`。；tileCnt=1（无流水，单次 batch matmul）是基线参照路线；后者以同一 MatMul 后 ReduceScatter 链验证多 tile 流水性能反降并给出回退基线。
-<!-- cannbot:related:end -->

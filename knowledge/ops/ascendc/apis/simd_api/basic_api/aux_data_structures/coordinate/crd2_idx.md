@@ -182,11 +182,3 @@ auto stride = AscendC::MakeStride(AscendC::MakeStride(basestrideM, basestrideM),
 
 auto index = AscendC::Crd2Idx(coord, shape, stride); // decltype(index)::value = 192
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Coordinate简介](coordinate_intro.md)（`related`）：Coordinate与Crd2Idx配合使用：Crd2Idx将坐标转换为线性索引，用于在Tensor中定位元素。；将Coordinate坐标转换为Tensor中的线性索引（index）。；简介与 API 卡共同给出 Coordinate 到 Tensor 线性位置的消费链。
-- [MakeCoord](make_coord.md)（`related`）：将Coordinate坐标转换为Tensor中的线性索引（index）；构造Coordinate坐标结构体。MakeCoord 生成 Crd2Idx 的 Coordinate 输入，Crd2Idx 再结合 shape 计算线性偏移；联合阅读即可完成从多维坐标构造到 Tensor 索引的调用链。
-<!-- cannbot:related:end -->

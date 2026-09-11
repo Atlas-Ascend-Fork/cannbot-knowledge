@@ -510,9 +510,3 @@ for (uint64_t sid = 0; sid < num_slice_; sid++) {
 | 同步 | Queue 与 MTE/V/S event 可复用 | 标量和 TBuf 覆盖前的等待不可省 | `FastCompute/GetScaleAndOffset` |
 | 精度与尾块 | FP32 归约/仿射、half 后量化 | INT8 clamp、INT4 RINT、有效 n | `Compute/ComputeNormandQuant` |
 | 失败边界 | 大行切片 fallback | dtype/shape/溢出/INT4 guard | `CheckParams/NormCommonTiling` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RmsNormQuant 950 ACLNN 算子知识](rms_norm_quant_950.md)（`same_topic`）：A2/A3 的公开产品表明确支持 `aclnnRmsNormQuant`，而 `aclnnRmsNormQuantV3` 的公开产品表明确不支持 A2/A3；公开产品表中 `aclnnRmsNormQuantV3` 只支持 Ascend 950PR/950DT，并明确不支持 A2/A3。两端共同划定 RmsNormQuant 的平台版本入口：A2/A3 使用无后缀接口，950 使用 V3。
-<!-- cannbot:related:end -->

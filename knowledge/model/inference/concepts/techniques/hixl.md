@@ -81,11 +81,3 @@ guide 性能数据（A3 超节点，HIXL+SHMEM）：
 
 - **实现与证据范围**：HIXL 库本体（`OPTION_ENABLE_USE_FABRIC_MEM`、SDMA 引擎、全局物理地址池构建等）由独立的 `cann/hixl` 提供，其内部机制依据 guide 文档，未作源码级验证。cann-recipes-infer 实现的是 Mooncake `protocol="ascend"` 后端对 HIXL 的接入封装（`MooncakeAscendTransferEngine` + 2 MiB 对齐契约），其具体行为见「在 cann-recipes-infer 中的落地」节。
 - **memfabric vs mooncake**：默认后端 `memfabric`（`AscendTransferEngine` 基于 `memfabric_hybrid`）非 HIXL 路径；mooncake 为 opt-in 的 HIXL 路径。区别详见 [online-pd-inference](../frameworks/online_pd_inference.md)「传输后端」节。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CANN SHMEM 通信编程模型](cann_shmem.md)（`related`）：HIXL 基于 SHMEM 全局统一编址，通过 SDMA 直接访问远端 DRAM。
-- [HIXL/HCCS IPC KV 传输须 2 MiB 内存对齐（分配点 over-allocate + narrow）](../../optimizations/experience/rules/hixl_hccs_ipc_2mib_alignment.md)（`related`）：**HIXL（Huawei Xfer Library）** 是面向集群场景的昇腾**单边通信库**，提供点对点数据传输能力，并以极简 API 开放给用户。它**基于 SHMEM 机制**（见 ［cann-shmem］(cann_shmem.md)），针对超长序列 LLM 推理把 KVCache 卸载到 CPU 侧 DRAM 后产生的 **PUT D2rH（Device→Remote Host）/ GET rH2D（Remote Host→Device）** 高频数据交互痛点设计。核心优势三点：；online PD 分离推理走 ［HIXL］(../../../concepts/techniques/hixl.md) / HCCS IPC 的 KV 传输后端（［KVTransferManager］(../../../concepts/frameworks/kv_cache_manager.md)，`mooncake.engine.TransferEngine` protocol=`ascend`，对应 Atlas A3 超节点场景）时：**所有要向传输引擎 `register_memory` 的 NPU HBM 基址必须 2 MiB 对齐**。。HIXL 概念卡定义 KVCache 单边传输，规则卡补齐该传输在 HCCS IPC 注册 NPU HBM 时必须满足的 2 MiB 地址合同。
-- [Mooncake（protocol=ascend / HIXL）KV 传输后端在昇腾的三个非显式前置约束](../../runbooks/runtime/mooncake_ascend_hixl_kv_transfer_bringup.md)（`related`）：**HIXL（Huawei Xfer Library）** 是面向集群场景的昇腾**单边通信库**，提供点对点数据传输能力，并以极简 API 开放给用户。它**基于 SHMEM 机制**（见 ［cann-shmem］(cann_shmem.md)），针对超长序列 LLM 推理把 KVCache 卸载到 CPU 侧 DRAM 后产生的 **PUT D2rH（Device→Remote Host）/ GET rH2D（Remote Host→Device）** 高频数据交互痛点设计。核心优势三点：；在昇腾上启用 cann-recipes-infer 的 mooncake（protocol=`ascend` / ［HIXL］(../../concepts/techniques/hixl.md)）KV 传输后端（online ［PD 分离］(../../concepts/frameworks/online_pd_inference.md)推理，`--engine_backend mooncake`）时，有三个非显式前置约束，违反会在 bringup 期直接失败：。HIXL 概念卡给出通信库和 KVCache 传输定位，Runbook 给出 Mooncake Ascend 后端启用该库时的构建、NPU 绑定与初始化前置。
-<!-- cannbot:related:end -->

@@ -701,10 +701,3 @@ if (extraInfo1.isValid) {
 | 同步 | flags3~9 与 L1/L0 events | set/wait/PIPE 类型 | `ProcessBalance/ProcessVec1L` |
 | 精度与尾块 | FP32 MM/softmax，cast/mask/page tail | BF16 RINT、有效前缀 | `AmlaVecCompute/Bmm2CastAndCopyOut` |
 | 失败边界 | Host fail closed；V stride fallback | 不启用 inactive FD/unknown key | `SFATilingCheck/CopyInKv` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ascendc SparseFlashAttention 非 PA(无 block table)decode 路由到未优化模板、慢于 tilelang](../../../../../../model/inference/runbooks/runtime/ascendc_sparse_flash_attention_non_pa_slow.md)（`related`）：该非 PA 场景在 ascendc `SparseFlashAttention` 中会**路由到未优化的模板**，故性能差；R-001 C 连续 KV；R-002 C PageAttention；R-003 V 连续 KV；R-004 V PageAttention。运行手册定位连续 KV 与 PageAttention 的性能分叉，算子卡给出四条 Host 可达 Route，支持继续核对该分叉的 Tiling 与 Device 实现。
-- [SparseFlashAttention 950 ACLNN 算子知识](sparse_flash_attention_950.md)（`same_topic`）：对 `sparseIndices` 选出的 K/V token 计算 `softmax(scaleValue·(Q,Qrope)·(K,Krope)^T)·V`；`sparseMode=3` 再施加右下因果有效域；按 sparseIndices 收集 K/K-rope，计算 softmax(scaleValue·QKᵀ) 后与收集数据的前 512 维相乘；sparseMode=3 再施加右下因果边界。两卡描述同一 SparseFlashAttention 的稀疏索引收集、缩放 QK softmax、与 V 相乘及 sparseMode 3 因果边界；另一端补充 950 执行闭包。
-<!-- cannbot:related:end -->

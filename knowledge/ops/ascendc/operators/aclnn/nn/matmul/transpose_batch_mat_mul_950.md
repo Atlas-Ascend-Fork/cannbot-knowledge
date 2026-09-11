@@ -934,9 +934,3 @@ if (rowIdx % 2 != 0) {
 | 同步 | Matmul primitive pipe + Kernel末尾全 barrier | HF32必须复位，输出前完成Mmad | `AswKernel::Process` |
 | 精度与尾块 | HF32 attr、scale向量、M/N actual | scale offset=b*N+nTile*baseN；factor只改C布局 | `SetQuantVector/UpdateBlockParams` |
 | 失败边界 | 参数/tiling/unknown key失败 | 不把WeightNZ或未实例化组合并入 | `CheckParams/ASCENDC_TPL_SEL` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TransposeBatchMatMul A2/A3 ACLNN 算子知识](transpose_batch_mat_mul.md)（`same_topic`）：｜ 计算语义 ｜ 将 `permX1`、`permX2` 解释后的三维张量视为 `A［B,M,K］`、`B［B,K,N］`，计算 `C［b,m,n］=Σ_k A［b,m,k］B［b,k,n］`，再按 `permY=［1,0,2］` 物理写成 M-B-N；`batchSplitFactor>1` 时写成 `factor × M × (B*N/factor)`。 ｜；｜ 计算语义 ｜ 解析 `A［B,M,K］`、`B［B,K,N］` 后做逐 batch 矩阵乘，常规输出 M-B-N；factor>1 时输出 factor-M-(B*N/factor)；scale 路线为 FP16×FP16→INT8。 ｜。两卡实现同一 TransposeBatchMatMul 输出语义，分别给出 A2/A3 旧 selector 与 950 advanced selector 的路由和资源合同。
-<!-- cannbot:related:end -->

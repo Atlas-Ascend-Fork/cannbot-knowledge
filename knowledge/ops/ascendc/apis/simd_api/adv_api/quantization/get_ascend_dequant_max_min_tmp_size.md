@@ -63,10 +63,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetAscendDequantMaxMinTmpSize(srcShape, typeSize, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendDequant](ascend_dequant.md)（`related`）：先用“host侧Tiling接口，用于获取AscendDequant接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”在 max/min 范围内选择空间，再遵守“提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持标量/矢量scale场景。临时空间大小通过GetAscendDequantMaxMinTmpSize获取。”把空间交给标量或矢量 scale 重载，可直接排查临时空间和 isReuseSource 配置。
-<!-- cannbot:related:end -->

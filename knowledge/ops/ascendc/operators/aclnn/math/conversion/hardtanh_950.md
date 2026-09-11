@@ -653,9 +653,3 @@ if (is_scalar) {
 | 同步 | Queue EnQue/DeQue/Free与executor同stream | 不得提前覆盖 Queue slot；AICPU ParallelFor必须完成后返回 | `Process/DispatchParallel` |
 | 精度与尾块 | AIV原dtype Maxs→Mins；AICPU DOUBLE显式NaN；独占tail | 不能擅自交换比较顺序或假设 Vector NaN语义；只写有效len/end | `Compute/ClampScalar` |
 | 失败边界 | L0按dtype一次选择，Tiling/launch/ParallelFor错误上抛 | unknown key不是fallback；A2/A3核心缺失不能推测补齐 | `ClipByValueV2/clip_by_value_v2/DispatchParallel` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceHardtanh 950 ACLNN 算子知识](inplace_hardtanh_950.md)（`same_topic`）：非原地接口最终经 `ViewCopy` 写入独立 `out`；本卡不覆盖 `aclnnInplaceHardtanh`。；对 `selfRef` 的每个逻辑元素执行 `min(max(x, clipValueMin), clipValueMax)`，最后把结果写回 `selfRef` 的原 view。。两卡共享 Hardtanh 裁剪公式和底层计算主题，差异集中在结果写入独立 out 还是写回 selfRef 原 view，属于原地性变体。
-<!-- cannbot:related:end -->

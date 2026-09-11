@@ -143,9 +143,3 @@ static __aicore__ inline float ReadScalarFloat(
 - 设计 Kernel 时，凡单标量输入默认用 `GetValue` 读、`SetValue` 写，不走 DMA。
 - 凡数组走 `DataCopy`，host 侧 GM 分配字节数一律按 `32B`（fp32=8 元素）取整对齐，kernel 侧 count 同步取 8 倍数；尾块用 `DataCopyPad(isPad=true, rightPadding)` 显式补齐。
 - 评审 Kernel 实现时，对 `DataCopy(dst, src, count)` 中 `count < NUM_PER_BLK` 或 `alignedCount * sizeof(T) > GM 实际分配字节数` 的写法直接打回。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad CopyIn 小输入 32B DMA 越界](datacopypad_copyin_32b_dma.md)（`related`）：Ascend950 的 GM↔UB DMA 引擎以 32 字节（一个 block）为最小传输粒度，fp32 下即 8 个元素。；`DataCopyPad` 的 CopyIn 不论 `DataCopyExtParams.blockLen` 写多少，**底层 DMA 引擎以 32 字节（1 DataBlock）为最小读取粒度**访问 GM。前者给出平台级标量/数组 DMA 规则，后者给出 Host 仅分配 4B 时 CopyIn 越界并报 507035 的具体复现。
-<!-- cannbot:related:end -->

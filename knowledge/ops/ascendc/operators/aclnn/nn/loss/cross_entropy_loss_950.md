@@ -656,10 +656,3 @@ __global__ __aicore__ void cross_entropy_loss(
 | 同步 | queue、V/S/MTE events、SyncAll | workspace读前全核同步；queue释放后复用 | `Process/ComputeNLast` |
 | 精度与尾块 | FP32中间、16-bit最终RINT；C/N mask/pad | padding值、有效C写回、mean denominator | `VfReduceMax/ComputeSub*/DataCopyOut*` |
 | 失败边界 | empty→full→big优先级，full db fallback | shape/dtype gates、正常grid恰为realCoreNum | `GetTilingKey/IsAllC` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CrossEntropyLoss 950 Direct Invoke 算子知识](../../../direct/nn/loss/cross_entropy_loss_950.md)（`same_topic`）：稳定 log-softmax + class-index cross entropy；支持 weight、ignoreIndex、label smoothing 和 none/mean/sum，同时写完整 logProb；公开 zloss 功能当前不支持。；类别轴固定为 dim 1；hard target 计算稳定 `-log_softmax(input)［target］`，soft target 计算 `-sum(target*log_softmax(input), C)`，再执行 `none/mean/sum`。。两卡都在 950 上实现稳定 CrossEntropyLoss 与 none/mean/sum；ACLNN 卡覆盖公开 weight、smoothing 和 logProb，Direct 卡覆盖 hard/soft target 融合路线，互读可完成同一算子的调用面选型。
-- [CrossEntropyLoss A2/A3 ACLNN 算子知识](cross_entropy_loss.md)（`same_topic`）：对每行 logits 做稳定 `log_softmax`，按 class-index target、可选 FP32 weight、`ignoreIndex` 和 label smoothing 产生 loss；同时输出完整 `logProbOut`。公开 zloss 参数/输出当前不生效。；稳定 log-softmax + class-index cross entropy；支持 weight、ignoreIndex、label smoothing 和 none/mean/sum，同时写完整 logProb；公开 zloss 功能当前不支持。。两卡闭合同一 ACLNN CrossEntropyLoss 的稳定 log-softmax、class-index、weight、ignoreIndex、label smoothing 与 logProb 语义，分别给出 A2/A3 和 950 的 Host/Kernel 路线。
-<!-- cannbot:related:end -->

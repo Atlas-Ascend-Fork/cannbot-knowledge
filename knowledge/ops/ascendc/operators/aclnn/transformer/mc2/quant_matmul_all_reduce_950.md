@@ -516,9 +516,3 @@ if (commMode == Mc2Comm::COMM_MODE_CCU && k >= QUANT_A2APATH_CRITICAL_K &&
 | 同步 | SyncAll+notify+handle | Commit/Wait/Finalize顺序 | route bases/bodies |
 | 精度与尾块 | QBMM模式和低比特路径 | INT8/FP8 round、scale payload、pad/crop | quant bodies |
 | 失败边界 | guard失败为终点或调tile | 不补造fallback | `CheckHCCLSize`,`IsCapable` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [QuantMatmulAllReduce A2 ACLNN 算子知识](quant_matmul_all_reduce.md)（`same_topic`）：｜ 计算语义 ｜ A8W8、FP8/HIF8、MXFP4/MXFP8 QuantMatmul+x3+SUM；通信可为原 dtype、INT8或FP8 per-tile ｜；｜ 计算语义 ｜ A8W8 QuantMatmul（可带 bias、per-token scale、x3）后 SUM；可压成 INT8 通信 ｜。两卡闭合同一 QuantMatmul+AllReduce SUM 算子族，950 在 A2 的 A8W8/INT8 通信基础上扩展 FP8、HIF8、MX 与 per-tile 通信路线。
-<!-- cannbot:related:end -->

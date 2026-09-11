@@ -78,10 +78,3 @@ platforms: ["950"]
 ## 坏实践
 
 - "exp 输入双 clamp 防 exp 溢出"——下界 clamp 破坏 sigmoid 大负数下溢，是数值稳定性误区。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Maxs 下限 clamp 阻止 exp 自然下溢残留](maxs_clamp_exp.md)（`same_topic`）：根因是 `Maxs(bx, -50.0)` 下限 clamp 阻止了 exp(z) 的自然下溢。；最小复现：`z = beta*self = -1105`，`gradOutput = 3.4e38`（接近 FLT_MAX）。golden = `gradOutput * sigmoid(z) = 3.4e38 * 0 = 0`（sigmoid 在大负数处下溢为 0）。NPU 输出 `6.56e16`，正好等于 `gradOutput × exp(-50) ≈ 3.4e38 × 1.9e-22 ≈ 6.5e16`——即 exp 输入被 clamp 到 -50 后，`exp(-50)≈1.9e-22` 本应下溢为 0，却被人为抬高，再乘大 gradOutput 放大成可见误差。。两张 Runbook 都定位 SoftplusV2Grad 的 Maxs -50 下限 clamp 阻断负大 z 的 exp 自然下溢，并以大梯度把 exp(-50) 残留放大为可见误差，核心故障机制、修复方向和验证信号一致。
-- [exp 输入 clamp 上界用 threshold 用户参数致溢出](exp_clamp_upper_bound_must_decouple_from_user_threshold.md)（`same_topic`）：“根因是对 exp 函数溢出方向的误解：exp 仅对正输入溢出，对负输入只会下溢到 0（正确值）；为"防溢出"加双向 clamp 时，下界 clamp 反而破坏了 sigmoid 大负数下溢的正确结果。”与“正确上界应是固定安全值：`exp(50)=5.18e21` 不溢出 fp32（fp32 max ≈ 3.4e38）。”提供双方正文证据。两卡审计同一 SoftplusV2Grad sigmoid 分支的 exp clamp：第一卡证明负向下界 clamp 应移除，第二卡证明正向上界必须是与用户 threshold 解耦的固定安全常数，共同闭合双边数值策略。
-<!-- cannbot:related:end -->

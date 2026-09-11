@@ -97,10 +97,3 @@ __simd_vf__ inline void StoreUnAlignVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr,
 }
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [StoreUnAlignContinuous](store_un_align_continuous.md)（`same_topic`）：StoreUnAlign能够实现数据从MaskReg连续搬运至非对齐Unified Buffer（UB），利用非对齐寄存器UnalignRegForStore作为临时缓存区，暂存跨对齐边界的数据，从而实现高效的连续非对齐数据传输。；StoreUnAlign能够实现数据从RegTensor连续搬运至非对齐Unified Buffer（UB），利用非对齐寄存器UnalignRegForStore作为临时缓存区，暂存跨对齐边界的数据，从而实现高效的连续非对齐数据传输。。两卡描述同一 StoreUnAlign 非对齐连续搬运契约，并共享 UnalignRegForStore 跨边界暂存机制；差别仅在源操作数是 MaskReg 还是 RegTensor。
-<!-- cannbot:related:end -->

@@ -227,12 +227,3 @@ struct QuantizeParams {
 输出数据（dstLocal）:
 [-4, 3, -3, -3, -1, -5, 2, 4, 5, 1, -3, 1, ... 2]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendQuant](ascend_quant.md)（`related`）：“推荐使用Quantize替代本接口”；“推荐使用本接口替代AscendQuant，因其在PER_TENSOR/PER_CHANNEL场景扩展了舍入模式配置”。两卡明确给出从 AscendQuant 到 Quantize 的迁移方向和新增能力。
-- [GetQuantizeMaxMinTmpSize](get_quantize_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Quantize接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetQuantizeMaxMinTmpSize获取。。前者计算 Quantize 所需的临时空间上下界，后者明确 Quantize 的 sharedTmpBuffer 重载依赖该 helper，二者闭合 Host Tiling 选空间与 kernel 量化调用的任务链。
-- [GetQuantizeTmpBufferFactorSize](get_quantize_tmp_buffer_factor_size.md)（`related`）：“获取Quantize接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”给出固定 UB 下的容量因子，而“提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetQuantizeMaxMinTmpSize获取。”给出 Quantize 的临时缓存调用合同；组合后可安全推导量化 tile 的最大元素数。
-<!-- cannbot:related:end -->

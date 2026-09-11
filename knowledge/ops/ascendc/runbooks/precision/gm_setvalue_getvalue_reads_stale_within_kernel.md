@@ -169,9 +169,3 @@ platforms: ["950"]
 - 设计多阶段 Kernel 时，默认原则：跨阶段复用的中间量一律走 UB 局部缓冲传递，仅在最终输出点写 GM；不在同 Kernel 内回读自己刚写入的 GM 地址。
 - 若必须跨 GM 传递中间结果，应拆分为两个 Kernel 实例并用 `SyncAll`/`aclrtSynchronizeStream` 在 Kernel 边界保证可见性，而非在同一 Kernel 内回读。
 - 评审 Kernel 实现时，对 `GlobalTensor.SetValue` 后同函数内 `GlobalTensor.GetValue` 读同一地址的模式直接打回。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetValue](../../apis/simd_api/basic_api/data_structures/global_tensor/set_value.md)（`exemplifies`）：“关键点：ProcessR 用 `CopyOutArray(rOutLocal, rOutGm_, n_)`（即 `rOutGm_.SetValue(...)`）把 r_out 写回 GM，ProcessC 同样把 c_out 写回 GM；ProcessU 随后用 `rOutGm_.GetValue(i)` 与 `CopyInArray(cOutLocal, cOutGm_, m_)` 再从 GM 读回。读回的值并未反映本 Kernel 刚写入的更新。”复现同 Kernel 写后读旧值，而“设置 GlobalTensor 指定偏移位置的元素值。操作先写入 DCache，需配合 DataCacheCleanAndInvalid 确保数据一致性。”给出 SetValue 的 DCache 一致性合同；runbook 直接示范违反该合同的故障。
-<!-- cannbot:related:end -->

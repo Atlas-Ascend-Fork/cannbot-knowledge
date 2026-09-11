@@ -591,9 +591,3 @@ for (uint64_t idx = tid; idx < static_cast<uint64_t>(count); idx += stride) {
 | 同步 | 元素唯一 writer，无 barrier/atomic | 只能复用于无跨元素依赖表达式 | `OpForeachSubListSimt` |
 | 精度与尾块 | FP16/BF16 升 FP32；grid-stride `idx<count` | BF16 alpha 读取类型必须先对齐；降精度模式固定源码未显式命名 | 同上 |
 | 失败边界 | `tensorNum<=256`、四 dtype、core/UB 非零 | 无未知 key fallback；tiling 失败必须向上返回 | `GetPlatformInfo`、`ForeachSubListTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachSubList A2/A3 ACLNN 算子知识](foreach_sub_list.md)（`same_topic`）：设列表长度为 `n`，`E_i = numel(x1_i)`。有效域为 `0 <= i < n`、`0 <= j < E_i`：；设列表长度 `n`，第 `i` 个 Tensor 元素数为 `E_i`。在 `0<=i<n`、`0<=j<E_i` 上：；两卡随后给出相同的 y_i 等于 x1_i 减 alpha 乘 x2_i 语义与 V2 ACLNN 入口，分别实现 950 SIMT 路线和 A2/A3 AIV Vector 路线。
-<!-- cannbot:related:end -->

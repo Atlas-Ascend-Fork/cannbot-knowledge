@@ -574,9 +574,3 @@ Host 不按列表总元素数扩大 grid，而按最大 tensor 选择 grid；Dev
 | 同步 | 无共享写、无 atomic/barrier | grid-stride 必须保证 y[j] 唯一 | three SIMT kernels |
 | 精度与尾块 | FP16/BF16 在 FP32 计算；FP32直算；predicate tail | 低精度 cast顺序、512 threads、64-bit index | SIMT header |
 | 失败边界 | tensor≤256、UB>128KiB、公开 dtype guard | 非法 dtype default0、仓外 ACLNN校验不能省略 | Host Tiling; OpDef/docs |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddcdivScalarList A2/A3 ACLNN 算子知识](foreach_addcdiv_scalar_list.md)（`same_topic`）：`y_i［j］ = x1_i［j］ + scalars［i］ * (x2_i［j］ / x3_i［j］)`；对列表下标 `i` 与张量元素 `j` 计算 `y_i［j］ = x1_i［j］ + (x2_i［j］ / x3_i［j］) * scalars［i］`。两个公式仅交换标量乘法的书写顺序，均定义列表逐项 addcdiv 并使用每张量独立 scalars［i］，两卡是同一 ForeachAddcdivScalarList 算子的 950 与 A2/A3 实现。
-<!-- cannbot:related:end -->

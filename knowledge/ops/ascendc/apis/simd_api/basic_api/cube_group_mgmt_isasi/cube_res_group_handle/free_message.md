@@ -81,10 +81,3 @@ __aicore__ inline static typename IsEqual<funcId, 1>::Type CubeGroupCallBack(
        auto tmpId = handle.FreeMessage(rcvMsg);
 };
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CubeResGroupHandle](cube_res_group_handle_usage.md)（`related`）：在回调函数中完成消息处理后，刷新消息状态为 FREE。；使用流程：CreateCubeResGroup 创建资源组 → AIV 调用 AllocMessage 申请消息空间 → 构造 CubeMsgType 消息并 PostMessage 发送 → AIC 通过回调函数处理消息 → FreeMessage 释放 → AIV 调用 Wait 等待处理完成。；FreeMessage 的状态刷新只有放入 CubeResGroupHandle 的申请、发送、回调、释放和等待生命周期后才能正确使用，usage 卡提供这一额外状态机合同。
-<!-- cannbot:related:end -->

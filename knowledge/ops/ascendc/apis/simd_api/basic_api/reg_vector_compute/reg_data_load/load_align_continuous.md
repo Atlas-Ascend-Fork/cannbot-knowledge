@@ -283,10 +283,3 @@ RegTensor的模板参数regTrait支持RegTraitNumOne及RegTraitNumTwo，具体�
     }
     ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Reg LoadAlign 不接受 const __ubuf__ 指针](../../../../../runbooks/compilation/reg_loadalign_requires_nonconst_ubuf_pointer.md)（`exemplifies`）：“LoadAlign能够实现数据从Unified Buffer（UB）连续搬运至RegTensor。支持单搬入模式和双搬入模式”定义连续 UB→RegTensor 的接口族；“candidate function template not viable: 2nd argument ('const __ubuf__ __bf16 *') would lose const qualifier”记录该两参数重载遇到 const `__ubuf__` 指针时的真实编译拒绝。该实例把 API 的地址空间签名落到可诊断的报错与去 const 修法。
-<!-- cannbot:related:end -->

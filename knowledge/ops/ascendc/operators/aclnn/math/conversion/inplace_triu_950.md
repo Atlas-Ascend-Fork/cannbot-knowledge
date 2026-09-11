@@ -937,9 +937,3 @@ if (info.position == ON_LINE) {
 | 同步 | TBuf route 用显式 event，queue route用 EnQue/DeQue/FreeTensor | 零 buffer在 MTE3 前完成；ping-pong 覆盖前等待前一 MTE3 | `SplitAll::ProcessPerLoop`；各 Route `Process` |
 | 精度与尾块 | DtypeByte carrier 做 bitwise copy/zero/select；high/row/col/loop tail 均显式 | carrier 宽度必须等于 D；DMA 只提交有效 bytes；Triu 使用 `IS_LOWER=false` | `ComputeTilingKey`；`triangulatorEntry`；各 CopyOut |
 | 失败边界 | ACLNN 参数错、Tiling 资源/容量错、launcher null 均有 Host 终点 | Device unknown key/user workspace null 是静默 return，不能视为成功输出 | `CheckParams`；`PostTiling`；`triangulatorEntry` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Triu 950 ACLNN 算子知识](triu_950.md)（`related`）：｜ 计算语义 ｜ 对最后两维的每个 `(i,j)`，`i + diagonal <= j` 时保留 `self`，否则置零；前导维视为批量维。 ｜；｜ 计算语义 ｜ 原地更新最后二维：若列号 `j >= i + diagonal` 则保留 `selfRef［..., i, j］`，否则写零 ｜。两卡共享上三角 diagonal 谓词和 950 AIV 路由族，目标卡补齐原地结果经 ViewCopy 提交到 selfRef 的生命周期。
-<!-- cannbot:related:end -->

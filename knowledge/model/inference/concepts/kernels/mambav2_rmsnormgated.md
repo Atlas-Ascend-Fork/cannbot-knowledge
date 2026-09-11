@@ -60,9 +60,3 @@ AscendC 实现的 Mamba v2 风格 RMSNorm + SiLU(z) + Mul 融合算子，Qwen3-N
 - [ascendc](../frameworks/ascendc.md)
 - [atlas-a3](../platforms/atlas_a3.md)
 - [mamba-ssm-train](../../../training/concepts/modules/mamba_ssm_train.md)（训练侧 Mamba2 SSM：mamba_mixer / SSD chunk 矩阵化 / SSM 上下文并行）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Gated DeltaNet (GDN)](../modules/gated_deltanet.md)（`related`）：“AscendC 实现的 Mamba v2 风格 RMSNorm + SiLU(z) + Mul 融合算子，Qwen3-Next ［gated-deltanet］(../modules/gated_deltanet.md) 输出段使用。BF16 输入输出（`x`, `z`, `w`），FP32 内部计算，单 AIV kernel 完成归一化、门控激活、权重缩放和逐元素相乘，消除三次独立 kernel launch 和两次中间 BF16 转存。”与“**输出 Norm 变体**：Qwen3-Next 用 AscendC `mambav2_rmsnormgated` 融合算子；Qwen3.5-MoE 用 `Qwen3_5MoeRMSNormGated`（`torch_npu.npu_rms_norm` + 门控相乘）。”分别给出双端正文事实；模块卡明确把该融合算子指定为 Qwen3-Next GDN 输出 Norm 路径，算子卡给出 RMSNorm、SiLU 与 Mul 的实现合同，二者连接模块阶段与具体 kernel。
-<!-- cannbot:related:end -->

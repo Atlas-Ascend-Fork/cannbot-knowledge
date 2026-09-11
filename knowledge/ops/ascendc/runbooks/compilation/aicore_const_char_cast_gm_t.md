@@ -107,10 +107,3 @@ CCE 设备编译器对 aicore 函数（带 `__aicore__`/`__global__ __aicore__` 
 ## 误诊
 
 最初以为是 `reinterpret_cast` 的常规 C++ 用法问题，但 host 侧 tiling 代码用相同写法能过——根因是 aicore 函数的地址空间限定约束，不是通用 C++ cast 规则。判别时若只看 "reinterpret_cast 失败" 而忽略 "源类型非 __gm__"，会误判为普通 C++ cast 错误。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GET_TILING_DATA_WITH_STRUCT](../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data_with_struct.md)（`exemplifies`）：若只需读 TilingData struct 内字段，`GET_TILING_DATA_WITH_STRUCT` 已把 struct 从 GM `memcpy` 到栈局部变量，直接用 `tilingData->field` 即可，无需手算 GM 偏移；用于获取算子kernel入口函数传入的Tiling信息，并填入注册的TilingData结构体中，此函数会以宏展开的方式进行编译。。Runbook把宏产生的局部 TilingData 作为避免非法 GM 指针转换的首选修法，API 卡给出该宏的确切填充合同。
-- [GetPhyAddr](../../apis/simd_api/basic_api/data_structures/global_tensor/get_phy_addr.md)（`exemplifies`）：在 aicore kernel 中访问 GM 时，始终从 `__gm__` 限定的来源（`GM_ADDR` 入参、`GlobalTensor<T>::GetPhyAddr()`）派生指针，不要用 `reinterpret_cast` 把非 `__gm__` 指针升级为 `__gm__ T*`。；GlobalTensor::GetPhyAddr 接口，用于获取全局数据的物理地址，支持全平台。。Runbook要求从 `GlobalTensor<T>::GetPhyAddr()` 派生合法 GM 指针，API 卡定义获取该全局数据物理地址的接口。
-<!-- cannbot:related:end -->

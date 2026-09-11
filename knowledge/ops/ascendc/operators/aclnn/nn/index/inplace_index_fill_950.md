@@ -596,10 +596,5 @@ for (int64_t i = start; i < static_cast<int64_t>(end); i++) {
 | 精度与尾块 | x 原 dtype 位写；indices 负值加 N | 越界跳过、tail length 传 Sort | 各 SIMT body |
 | 失败边界 | 前处理空域短路、模板兜底 | 不绕过 ACLNN 假定空 index 可达 Tiling | API + Tiling base |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GatherMask](../../../../apis/simd_api/basic_api/memory_vector_compute/compare_and_select/gather_mask.md)（`related`）：“每个 indices 分块在 UB 中 radix sort，以相邻比较和 `GatherMask` 只保留唯一位置，再由 SIMT 写 mask；对大量重复索引减少共享 mask 的同地址写次数。”；“根据 mask 从源 tensor 中收集有效元素到目的 tensor。头文件 `basic_api/kernel_operator_vec_cmpsel_intf.h`。支持 950/a2/a3。”。相邻比较产生的唯一位置 mask 由 GatherMask 压缩成 uniqueIdBuff，随后 SIMT 只写去重后的索引位置。
-- [Sort](../../../../apis/simd_api/adv_api/sort_operations/sort.md)（`related`）：“Dense 路线在 mask 前增加 `GM indices → VECIN TQue → Sort/MicroAPI Unique → mask`。”；“排序函数，按照数值大小进行降序排序。支持带和不带SortConfig模板参数两种原型。”。950 极密索引路线先排序再去重以减少共享 mask 同址写，Sort API 提供该 Dense route 的排序原语合同。
-- [InplaceIndexFill A2/A3 ACLNN 算子知识](inplace_index_fill.md)（`same_topic`）：“｜ Kernel/资源 ｜ arch32 AIV Vector、5 keys ｜ 同 A2 ｜ arch35 SIMT/Sort+Unique 三模板、N-byte mask ｜”；“｜ Kernel/资源 ｜ 五 key AIV Vector ｜ 与 A2 共用 ｜ 三模板 SIMT/Sort，N-byte mask ｜”。两卡覆盖同一 aclnnInplaceIndexFill 语义并明确 A2/A3 与 950 的 route 替换，便于跨平台迁移 selector、mask 和 workspace。
-<!-- cannbot:related:end -->
+- [GatherMask](../../../../apis/simd_api/basic_api/memory_vector_compute/compare_and_select/gather_mask.md)
+- [Sort](../../../../apis/simd_api/adv_api/sort_operations/sort.md)

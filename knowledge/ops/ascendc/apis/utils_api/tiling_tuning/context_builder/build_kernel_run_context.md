@@ -45,10 +45,3 @@ auto kernelContextHolder = context_ascendc::ContextBuilder().Inputs().Outputs().
 gert::KernelContext* tilingParseContext = kernelContextHolder->GetContext<gert::KernelContext>();
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BuildTilingContext](build_tiling_context.md)（`related`）：“构造KernelRunContext并返回KernelRunContextHolder的智能指针，该对象可通过GetContext接口获取KernelContext类型的对象。”与“构造KernelRunContextHolder的对象，该对象可通过GetContext接口获取TilingContext类型的对象。”是双方正文中的具体合同。两端都构造 KernelRunContextHolder 并通过 GetContext 暴露上下文，分别服务 KernelContext 与 TilingContext，互读能完成调测上下文构造链选型。
-<!-- cannbot:related:end -->

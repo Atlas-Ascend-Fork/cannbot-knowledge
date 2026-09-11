@@ -639,9 +639,3 @@ Host/Init 让 BF16 data Queue 单槽达到 `9U`，但只分配一个 `U` 字节 
 | 同步 | Queue 管 MTE2→V，HardEvent 管 V→MTE3→MTE2 | 不得提前 Free/复用 data Queue；BF16 窗口 barrier 不可删 | `KernelForeachUnary`; `InnerComputer`; `ForeachImplictOutput` |
 | 精度与尾块 | FP16/FP32 原 dtype；BF16 FP32 计算、RINT 回写 | tail 搬运只提交 valid 字节；BF16 cast window `U/4` | `Log2Adapter`; `InnerComputer::ComputePerCast`; `CopyIn` |
 | 失败边界 | Host 正常只生成 1/2/4 | 未知 key 无 fallback；Tensor/core POD 容量 50；输出额外区域不写 | `GetTilingKeyByDtypeOnly`; `foreach_log2`; `MAX_*_CONT` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLog2 950 ACLNN 算子知识](foreach_log2_950.md)（`same_topic`）：A2/A3 卡的“｜ Kernel 路线 ｜ R-001 FP16 原地 Vector；R-002 FP32 原地 Vector；R-003 BF16→FP32→BF16 Vector ｜”与 950 卡的“｜ Kernel 路线 ｜ R-001 FP32 SIMT；R-002 FP16→FP32 SIMT；R-003 BF16→FP32 SIMT ｜”在同一 aclnnForeachLog2 合同下给出跨平台互斥实现，迁移时必须对照 Vector Queue 与 SIMT grid-stride 路线。
-<!-- cannbot:related:end -->

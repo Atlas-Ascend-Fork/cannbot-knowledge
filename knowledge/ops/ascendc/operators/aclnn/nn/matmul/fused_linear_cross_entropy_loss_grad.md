@@ -669,9 +669,3 @@ for (uint32_t step = 0; step < baseTaskEpochCnt + SIZE_3; step++) {
 | 同步 | R-001 flags0..3；R-002 flags0..4 与 hard events | flag id、CV mode 2、PIPE 类型、wait/set 轮次不可混用 | sync helpers |
 | 精度与尾块 | FP32 softmax/update，CAST_RINT，R-002 FP32 accumulator | 不得提前降精度；保持 M/N/K 与 H-cycle tail | Vector helpers、`SetSingleShape` |
 | 失败边界 | 平台/shape/Tiling/UB guard 与 unknown key | 不得把失败分支补造成 fallback；950 不支持 | `CheckPlatformSupported`、Tiling、entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FusedLinearOnlineMaxSum A2/A3 ACLNN 算子知识](fused_linear_online_max_sum.md)（`related`）：“省显存路线不物化完整 softmax 输入，而是按 `［baseBT,baseV］` 块执行：”明确给出左端事实；“｜ 输入输出 ｜ input/weight 为 FP16 或 BF16 ND；target 为 INT32/INT64；三个统计输出 FP32，mask UINT8，masked target 同 target，可选完整 logits 同 input dtype ｜”明确给出右端事实。OnlineMaxSum 生成行 max、sum-exp、target mask 与 masked target；Grad 的省显存路线直接消费这些统计量重建 softmax 梯度并计算 input/weight grad。
-<!-- cannbot:related:end -->

@@ -73,11 +73,3 @@ __simd_vf__ inline static void GeluVfMethod2(
 | 2 | 循环展开优化 | VF函数内循环为简单for循环，编译器无法充分调度指令级并行 | 使用`#pragma unroll N`展开循环，提高指令发射并行度和IPC，在VF融合基础上向量指令耗时可进一步减少约**4.6%** |
 | 3 | 流水线串行执行 | 搬入、计算、搬出三个阶段严格串行执行，各硬件单元（MTE2/V/MTE3）无法同时工作 | 采用多缓冲机制，使搬入、计算、搬出可并行执行，提升硬件利用率 |
 | 4 | 核数固定 | 固定使用2个核，未根据实际可用核数动态分配 | 动态获取可用核数，充分利用多核并行能力 |
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [中级性能优化](intermediate_optimization.md)（`related`）：本节以GELU（高斯误差线性单元）激活函数为例，介绍基于Ascend C RegBase编程模型实现向量算子的基本方法，帮助开发者快速入门Reg矢量算子开发。；本节在入门功能落地的基础上，介绍GELU算子的中级性能优化方法。。入门卡提供 GELU RegBase 基线实现，中级卡明确以该功能落地为优化起点。
-- [高阶极限打磨](extreme_optimization.md)（`related`）：本节以GELU（高斯误差线性单元）激活函数为例，介绍基于Ascend C RegBase编程模型实现向量算子的基本方法，帮助开发者快速入门Reg矢量算子开发。；本节在中级性能优化的基础上，介绍GELU算子的高阶极限打磨方法。。入门卡定义同一 GELU RegBase 实现对象，极限卡说明其依赖中级阶段继续打磨的进阶链。
-<!-- cannbot:related:end -->

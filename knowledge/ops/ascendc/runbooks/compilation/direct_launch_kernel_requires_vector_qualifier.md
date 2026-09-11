@@ -133,11 +133,3 @@ __global__ __aicore__ __vector__ void gather_kernel(
 
 - 只写 `__global__ __aicore__`，期待链接器从模板函数体自动推导 AIV kernel type；该写法已在本轨迹对全部实例化稳定触发链接失败；
 - 看到多个 dtype 实例化同时失败就逐一修改模板分发；它们共享同一入口签名，逐实例排查会掩盖共同根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [函数执行空间限定符](../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/function_execution_space_qualifier.md)（`exemplifies`）：SIMT VF 启动 shell 只写 `__global__ __aicore__` 而缺少 `__vector__` 函数类型属性，使 `ld.lld` 无法为模板实例化确定 AIV kernel type，因而链接失败。；主要限定符：__global__ __aicore__（算子入口，协调 VF 执行，Host 通过 <<<>>> 调用）、__aicore__（Device 侧辅助函数）、__simt_vf__（线程级并行计算任务，通过 asc_vf_call 调用）、__simd_vf__（向量级并行计算任务）、__simt_callee__（SIMT VF 子函数）、__simd_callee__（SIMD VF 子函数）、__callee__（编译期 Device 侧辅助函数）。；该链接故障是函数执行空间与 VF 调用层级配置错误的实例，API 卡提供入口、SIMT VF 与 asc_vf_call 的规范角色。
-- [空 Ascend C kernel 骨架需显式标注 Vector 执行类型](empty_kernel_requires_explicit_vector_type.md)（`related`）：空函数体没有设备操作可供 Bisheng 自动判断 AIV、AIC 或 mix 任务类型。；SIMT VF 启动 shell 只写 `__global__ __aicore__` 而缺少 `__vector__` 函数类型属性，使 `ld.lld` 无法为模板实例化确定 AIV kernel type，因而链接失败。；两份运行手册命中同一 kernel type auto derivate failed 诊断，并都以显式 __vector__ 固化 AIV 类型；一个覆盖空 Vector 骨架，另一个覆盖启动 SIMT VF 的 950 shell。
-- [CANN 9.0.1 SIMT 入口类型无法派生—改混合 VF](mixed_simt_requires_vector_shell_and_simt_vf.md)（`same_topic`）：SIMT VF 启动 shell 只写 `__global__ __aicore__` 而缺少 `__vector__` 函数类型属性，使 `ld.lld` 无法为模板实例化确定 AIV kernel type，因而链接失败。；`__vector__` 不是给纯 SIMT 入口“补链接属性”的孤立修饰符；一旦采用它，就要同步改为三参数入口并把线程维放入 `asc_vf_call`；。两卡处理同一 kernel type 派生故障与 Vector shell 决策，右卡补充了从纯 SIMT 四参数入口迁移时必须同步调整 launch 契约的边界。
-<!-- cannbot:related:end -->

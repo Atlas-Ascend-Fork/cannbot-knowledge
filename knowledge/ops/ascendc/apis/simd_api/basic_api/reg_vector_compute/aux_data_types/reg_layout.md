@@ -95,10 +95,3 @@ def cast_b4_to_b16(src, dst, layout):
     dst[0:128:2] = src[2*layout    : 512 : 8].astype(np.int16)
     dst[1:128:2] = src[2*layout + 1: 512 : 8].astype(np.int16)
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cast](../type_conversion/cast.md)（`related`）：源操作数和目的操作数位宽不同时，单条指令计算量以位宽更大的数据类型为准，RegLayout用于控制位宽小的元素在寄存器中的排布方式。更多特性说明请参考Cast。；RegLayout：源操作数和目的操作数位宽不同时，单条指令计算量以位宽更大的数据类型为准，RegLayout用于控制位宽小的元素在寄存器中的排布方式。。候选 Cast 通过 CastTrait 实际消费焦点枚举来控制窄位元素布局。
-<!-- cannbot:related:end -->

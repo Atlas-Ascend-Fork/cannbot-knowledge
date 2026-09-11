@@ -55,11 +55,3 @@ matmul_tiling::MultiCoreMatmulTiling tiling(ascendcPlatform);
 
 tiling.EnableMultiCoreSplitK(true); // 开启切K轴
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Matmul高阶API开启多核切K](../../../../../guides/operator_practice/best_practices/matmul_tuning_cases/matmul_multi_core_split_k.md)（`explains`）：开启多核切K功能的方式为：在GetTiling接口前调用EnableMultiCoreSplitK接口，开启多核切K，并在Kernel实现中，对C矩阵的Global Memory地址清零后开启AtomicAdd。；多核场景，通过该接口开启切K轴。不调用该接口的情况下，默认不切K轴。在GetTiling接口调用前使用。指南给出完整 Host/Kernel 操作链，API 卡固定其中开关时序与默认行为。
-- [SetSplitK](set_split_k.md)（`same_topic`）：EnableMultiCoreSplitK接口功能与该接口相同，建议使用EnableMultiCoreSplitK。；多核场景，通过该接口开启切K轴。不调用该接口的情况下，默认不切K轴。在GetTiling接口调用前使用。。SetSplitK 明确指定同功能推荐接口，后者给出切 K 的调用时序与默认关闭契约。
-<!-- cannbot:related:end -->

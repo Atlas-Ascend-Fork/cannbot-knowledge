@@ -183,10 +183,3 @@ AscendC::LogSoftMax<DTYPE_X, false>(
  [ -3.022131    -2.8049836   -2.3706892   -1.9363947   -1.5021002   -1.0678058   -0.6335113   -0.1992168 ]
  [-30.834908   -30.400614   -28.229141   -26.057669   -21.714724   -13.028834    -8.685889     0.        ]]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LogSoftMaxTiling](log_soft_max_tiling.md)（`same_topic`）：const LogSoftMaxTiling& tiling；kernel侧LogSoftMax接口的计算需要开发者预留 申请临时空间，以下接口用于在host侧获取预留 申请的最大最小临时空间大小；LogSoftMax Kernel 原型直接消费 LogSoftMaxTiling，Tiling 卡负责在 Host 侧选择临时空间并生成 reduceSize、splitSize 等同一调用所需参数。
-<!-- cannbot:related:end -->

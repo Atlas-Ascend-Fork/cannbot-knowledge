@@ -59,12 +59,3 @@ triton-op-generator Phase 4 开启 IR 多轮迭代后，IR（优化点 31）允�
 - **建议命中历史优化点时**：已执行过 → 重新执行并诊断为何之前未生效；未命中过 → 执行并分析未命中原因；无对应优化点 → 直接应用 IR 分析建议。
 
 > ⚠️ **流程差异**：本卡的 Step 1/Step 2 出自迁移向导流（msprof 作为 IR 的补充验证）；而 triton-op-generator Phase 4 流程规定**优化耗尽前严禁使用 msprof**（simulator 采集是 latency-optimizer 普通点 + IR 点均耗尽且未达 target 后的分支）。两者上下文不同，按所属流程执行，不要混用顺序。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IR 提取（run_and_extract.sh）](ir_extraction.md)（`related`）：“`last_pass.mlir` 的产出流程与验证诊断”
-- [HIVM 方言总览（hir 前缀、操作分类与核心属性枚举）](../../apis/ir/hivm/overview.md)（`related`）：“分析 IR 时查 op 语义（HIVM/HFusion/HACC）”
-- [编译流水线总览（TTIR → HFusion → HIVM → LLVM）](../../apis/ir/compilation_pipeline/overview.md)（`related`）：“IR 各阶段变换与 pass 依赖”
-
-<!-- cannbot:related:end -->

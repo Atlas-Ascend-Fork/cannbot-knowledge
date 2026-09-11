@@ -176,11 +176,3 @@ source_headers:
     ...
     pipe.ReadSpmBuffer(writeLocal, dataSize, offset); // 当UB空间足够时，将暂存在SPM Buffer的数据读回到UB
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InitSpmBuffer](init_spm_buffer.md)（`related`）：初始化SPM Buffer。SPM Buffer是一块在GM上的空间，当UB空间不足时可以将溢出数据存放在SPM Buffer上。；将因为UB空间不足而需要溢出暂存的数据拷贝到SPM Buffer中。；焦点提供 GM 溢出空间，目标接口把 UB 溢出数据写入该空间。
-- [ReadSpmBuffer](read_spm_buffer.md)（`same_topic`）：从SPM Buffer读回到local数据中。 将因为UB空间不足而需要溢出暂存的数据拷贝到SPM Buffer中。 WriteSpmBuffer 是 SPM 暂存的 producer，ReadSpmBuffer 是同一数据的 consumer，组成 UB 不足时的写入/回读链。
-<!-- cannbot:related:end -->

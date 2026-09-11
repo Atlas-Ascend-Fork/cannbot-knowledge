@@ -140,10 +140,3 @@ AscendC::LoadData3DParamsV2<half> param = {
 AscendC::Load3DBitModeParam paramBitMode(param);
 AscendC::LoadData<AscendC::TPosition::A2, AscendC::TPosition::A1, half>(featureMapA2, featureMapA1, paramBitMode);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LoadData](load_data_3_d.md)（`same_topic`）：LoadData 3D的位宽模式变体，支持int4等特定位宽数据类型的高维数据搬运。；将数据从L1 Buffer搬运到L0A或L0B Buffer的3D模式搬运接口。。BitMode 端是同一 L1 到 L0A/L0B 三维搬运的特定位宽变体，基础端给出共同的数据通路与分块语义，互读可按常规数据类型或 int4 等位宽选择接口。
-<!-- cannbot:related:end -->

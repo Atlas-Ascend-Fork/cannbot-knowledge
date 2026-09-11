@@ -69,10 +69,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetAscendQuantTmpBufferFactorSize(maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscendQuant](ascend_quant.md)（`related`）：获取AscendQuant接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供多种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，支持不同量化场景和舍入模式配置。。FactorSize 卡给出固定 buffer 下 AscendQuant 的最大单次元素数公式，计算卡说明各量化重载如何消费 sharedTmpBuffer；二者闭合 UB 预算到分块调用链。
-<!-- cannbot:related:end -->

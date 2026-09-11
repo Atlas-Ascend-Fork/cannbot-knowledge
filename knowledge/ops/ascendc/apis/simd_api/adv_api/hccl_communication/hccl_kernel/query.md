@@ -71,10 +71,3 @@ if (AscendC::g_coreType == AIC) {
     hccl.Finalize(); // 后续无其他通信任务，通知服务端执行上述ReduceScatter任务之后即可以退出
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HCCL集合通信Wait](wait.md)（`related`）：Query 用于“查询handleId对应的通信任务已经完成的轮次，最多返回repeat轮。”；Wait 用于“等待handleId对应的通信任务完成”。二者分别支持非阻塞进度观测和阻塞完成，是同一 handle 生命周期的两种同步策略。
-<!-- cannbot:related:end -->

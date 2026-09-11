@@ -537,21 +537,7 @@ qidB1_.FreeTensor(rightMatrix);
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cube计算(ISASI)总体说明](overall_description.md)（`related`）：“将数据从L1 Buffer搬运到L0A或L0B Buffer，支持在搬运过程中执行转置操作。用于需要在数据搬入时改变矩阵行列排布的场景。”描述通用目的端，而“Ascend 950PR/950DT 删除了 GM 到 L0A/L0B 的直连通路，需拆分为 GM→L1→L0A/L0B 两步搬运；该型号下 LoadDataWithTranspose 仅支持 L1→L0B 通路。”补上 950 的关键收窄；联合阅读可避免在 950 选择 L0A 目的端。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 4 / 4 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)（`related`）：算子声明的固定版本源码包含对 `LoadDataWithTranspose(...)` 的直接调用（第 1101 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/matmul.h#L1101)
-- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)（`related`）：算子声明的固定版本源码包含对 `LoadDataWithTranspose(...)` 的直接调用（第 414 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress_attention_infer/op_kernel/nsa_compress_attention_infer.h#L414)
-- [SparseFlashAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/sparse_flash_attention_950.md)（`related`）：算子声明的固定版本源码包含对 `LoadDataWithTranspose(...)` 的直接调用（第 1101 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/matmul.h#L1101)
-- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)（`related`）：算子声明的固定版本源码包含对 `LoadDataWithTranspose(...)` 的直接调用（第 1249 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_kernel/grouped_matmul_autotiling_a8w4.h#L1249)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)
+- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_compress_attention_infer.md)
+- [SparseFlashAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/sparse_flash_attention_950.md)
+- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)

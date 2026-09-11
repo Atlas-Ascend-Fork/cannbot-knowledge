@@ -141,10 +141,3 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscAbsSync](../deprecated_interface/asc_abs_sync_deprecated.md)（`related`）：该接口废弃，请通过asc_abs和同步接口asc_sync实现精细化调优，达成最优性能。；等待所有流水线操作完成。。废弃接口把同步职责拆给 asc_sync，目标卡说明其等待全部流水线及性能代价，从而补齐拆分迁移后的顺序保证和调优边界。
-<!-- cannbot:related:end -->

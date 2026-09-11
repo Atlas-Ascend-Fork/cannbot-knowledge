@@ -961,9 +961,3 @@ for (uint64_t mid = 0; mid < td.midAxis; ++mid) {
 | 同步 | MTE/Vector用 PipeBarrier；跨kernel同stream；冲突用atomic或owner | 不得提前覆盖alias TBuf或打乱同流节点 | copy/init/cast/atomic helpers |
 | 精度与尾块 | FP16 add在 FP32 累加后一次 RINT；owned浮点按源码每步cast；MTE pad | cast顺序、NaN规则、atomic顺序、tail guard | `OwnedScatter`、R-005 entries |
 | 失败边界 | key/tag 失配可能 no-launch、部分 launch 或当作 I64；index/overflow/UB 由 Host/caller 保证 | 不能把静默 no-launch、错类型解读说成通用 fallback | launch wrappers与 Host 校验 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Scatter 非散射维可缩小，更新量须按 indices 计算](../../../../runbooks/precision/scatter_update_count_must_follow_indices_shape.md)（`related`）：故障卡要求“kernel 实际循环次数应为 `totalUpdates=indices.numel()=Midx×Ku`”；Scatter 950 实现卡则规定“`dataNum=product(dataShape)`，`updatesNum=product(indexShape)`。”，两端共同把输出域容量和更新域次数分离，可直接核查 Host tiling 是否错误地用 data 行数展开 indices/updates。
-<!-- cannbot:related:end -->

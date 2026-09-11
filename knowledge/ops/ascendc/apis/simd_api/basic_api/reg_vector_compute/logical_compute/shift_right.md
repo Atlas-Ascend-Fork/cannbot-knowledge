@@ -109,10 +109,3 @@ __simd_vf__ inline void ShiftRightVF(__ubuf__ T* dstAddr, __ubuf__ T* src0Addr, 
     }
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ShiftRights](shift_rights.md)（`same_topic`）：“ShiftRight指令根据mask对源操作数srcReg0，按照srcReg1对应元素进行右移操作，将结果写入目的操作数dstReg。根据源操作数的数据类型，右移操作分为以下两种情况”与“ShiftRights指令根据mask对源操作数srcReg，按照scalarValue进行右移操作，将结果写入目的操作数dstReg。根据源操作数的数据类型，右移操作分为以下两种情况”是双方正文中的具体合同。二者执行相同的掩码右移语义，唯一关键选型是位移量来自逐元素寄存器还是单一 scalarValue。
-<!-- cannbot:related:end -->

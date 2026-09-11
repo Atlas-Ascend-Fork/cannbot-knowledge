@@ -377,9 +377,3 @@ UB 始终只为 `spAlloc<=16` 个槽分配。首批用一个 dummy slot 加 15 �
 | 同步 | Queue + PIPE_V/ALL | EnQue/DeQue/FreeTensor 与临时 TBuf barrier 次序 | `CopyInSp/Compute/CopyOut` |
 | 精度与尾块 | FP32 LSE/累加、非 FP32 输入输出 cast | +INF 替换、log-sum-exp 顺序、DataCopyPad tail | `ProcessLseInfReplacement/Compute` |
 | 失败边界 | Host 拒绝非法参数，空 Tensor 快返 | 不得让未识别 dtype 进入 key=0 | `CheckParams/GetTilingKey` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AttentionUpdate 950 ACLNN 算子知识](attention_update_950.md)（`same_topic`）：“｜ 计算语义 ｜ 以稳定 log-sum-exp 权重合并 SP 分片的局部 LSE 和局部 attention 输出 ｜”与“｜ 计算语义 ｜ 对 SP 分片的局部 LSE 先做稳定 log-sum-exp，再以 `exp(lse_i-lse_m)` 加权合并局部 attention 输出 ｜”是双方正文中的具体合同。两端都合并 SP 分片的局部 LSE 与 attention 输出，A2/A3 卡展开稳定权重公式，950 卡给出同一核心归约，互读可核对跨分片数值稳定性。
-<!-- cannbot:related:end -->

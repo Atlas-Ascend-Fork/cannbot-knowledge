@@ -789,9 +789,3 @@ for (uint32_t jOuterIdx = 0; jOuterIdx < jOuterMax - 1; jOuterIdx++) {
 | 同步 | Queue/Pipe/V_S/S_V | scalar partial/rstd读写顺序不可删 | `SetFlag/WaitFlag` |
 | 精度与尾块 | 16-bit升FP32、FP32 reduce、最后cast | valid D、padding、BF16 rint不可改 | reduce/ComputeY helpers |
 | 失败边界 | selector按优先级下落 | A3不可凭 key2 entry声称Host可达；unknown key无输出 | Tiling/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RmsNorm 950 ACLNN 算子知识](rms_norm_950.md)（`same_topic`）：`rstd=1/sqrt(sum(x_i^2)/D+epsilon)`；`y_i=x_i*rstd*gamma_i`。两卡闭合相同 RmsNorm 数学与 ACLNN 输入输出契约，但 A2/A3 有五条 AIV 路线，950 使用两条 RegBase 路线，能直接支撑跨平台实现选择和资源核对。
-<!-- cannbot:related:end -->

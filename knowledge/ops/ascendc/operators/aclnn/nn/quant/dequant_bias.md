@@ -1152,12 +1152,8 @@ Host 始终按 FP32 结果大小分配 `nAlign*4` 字节。低精度输入只需
 | 精度与尾块 | FP32 缩放、`CAST_RINT` 输出；只输出 N/nProcess | bias 顺序、64 B nAlign、末行/末列有效长度 | `Compute*`、`CopyOut` |
 | 失败边界 | shape/dtype/UB/M/key/platform边界明确 | 不绕过 Host；不向 950 发布；Multi 需单行前提 | `CheckParamsValidity*`、router |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [FetchEventID](../../../../apis/simd_api/basic_api/resource_management/t_pipe/fetch_event_id.md)（`related`）：“event_t eventMTE2V = static_cast<event_t>(GetTPipePtr()->FetchEventID(HardEvent::MTE2_V));”给出 DequantBias 的 MTE2→V 临时事件取得方式；“此接口不会申请TEventID，仅提供可用的TEventID。”提示该调用不占用事件 ID，连续复用时需由实现保证安全。
-- [GET_TILING_DATA](../../../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data.md)（`related`）：“Host `SaveToBuffer` 与 Device `GET_TILING_DATA` 使用同一注册结构，字段顺序不得改变。”给出 DequantBias 的 POD ABI 闭环；“获取算子 kernel 入口函数传入的 Tiling 信息，填入注册的 TilingData 结构体。”说明 Device 宏在该闭环中的消费职责。
-- [GetCoreMemSize](../../../../apis/utils_api/platform_info/platform_ascend_c/get_core_mem_size.md)（`related`）：“平台对象产生 `aivNum=GetCoreNumAiv()` 与 `ubSize=GetCoreMemSize(UB)`。”说明 DequantBias Tiling 以平台 UB 容量计算分核和 tile；“获取硬件平台存储空间的内存大小，例如L1、L0_A、L0_B、L2等”给出平台查询接口的职责。
-- [GetTPipePtr](../../../../apis/simd_api/basic_api/resource_management/get_t_pipe_ptr.md)（`related`）：“event_t eventMTE2V = static_cast<event_t>(GetTPipePtr()->FetchEventID(HardEvent::MTE2_V));”显示 DequantBias 通过全局 TPipe 指针取事件；“本接口用于获取该指针，获取该指针后，可进行TPipe相关的操作。”说明 GetTPipePtr 的返回用途。
-- [GetWithOffset](../../../../apis/simd_api/basic_api/resource_management/t_buf/get_with_offset.md)（`related`）：“LocalTensor<WSTYPE> tmpBuf = wsBuf_.GetWithOffset<WSTYPE>(wsTypeNum, wsBufferSize_ / 2);”给出 DequantBias 将 TBuf 一分为二的实际调用；“size*sizeof(T) + bufOffset不能超过TBuf初始化时的长度。”给出该 offset 子视图的越界条件。
-<!-- cannbot:related:end -->
+- [FetchEventID](../../../../apis/simd_api/basic_api/resource_management/t_pipe/fetch_event_id.md)
+- [GET_TILING_DATA](../../../../apis/simd_api/basic_api/kernel_tiling/get_tiling_data.md)
+- [GetCoreMemSize](../../../../apis/utils_api/platform_info/platform_ascend_c/get_core_mem_size.md)
+- [GetTPipePtr](../../../../apis/simd_api/basic_api/resource_management/get_t_pipe_ptr.md)
+- [GetWithOffset](../../../../apis/simd_api/basic_api/resource_management/t_buf/get_with_offset.md)

@@ -1391,9 +1391,3 @@ DataSyncBarrier<MemDsbT::UB>();
 | 同步 | Queue用于普通/Gather；UB2UB显式events；B64 SIMT barrier | 原地覆盖前后的event/barrier不得删 | `ProcessWithDataCopyGather`、`ProcessBigShape` |
 | 精度与尾块 | 按位搬运；同宽dtype共享模板；tail独立POD值 | B8 Gather pack、64-bit T 按uint32 halves翻转、tail mask/loop size | router wrappers、Gather/Base helpers |
 | 失败边界 | ACLNN只950；MoveAlign位宽fallback；稀疏转SIMT | 不得用README/CMake信号发布A2/A3 ACLNN，不得让unknown key静默执行 | `CheckDtypeValid`、selector、router if-chain |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Slice 950 ACLNN 算子知识](slice_950.md)（`related`）：｜ 核心链路 ｜ `aclnnSlice` → `l0op::StridedSliceV3` → `StridedSliceV3` arch35 Tiling → `strided_slice_v3` router → 共用 `strided_slice` arch35 body ｜；｜ 计算语义 ｜ 对归一化后的每个输出坐标 `o［d］`，读取 `x［begin［d］ + o［d］ * strides［d］］`；mask 会在 InferShape 阶段扩展省略号、插入新轴或收缩轴。 ｜。Slice 卡的公开入口落到 StridedSliceV3 并共用 arch35 body，StridedSlice 卡给出一般化多轴 begin/stride/mask 坐标合同。
-<!-- cannbot:related:end -->

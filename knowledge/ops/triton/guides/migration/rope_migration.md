@@ -109,17 +109,3 @@ sin/cos 不依赖 head 维度，经 `[:, None, :]` 广播。`inv_freq = libdevic
 1. **3D Block Pointer 的 UB 压力**：`block_shape=(BLOCK_M, head, DIM//2)` 一次加载全部 head。FP16 估算 `BLOCK_M=100, head=32, DIM//2=32` → 约 200KB，接近 910_95 UB（256KB）上限。head 更大时须减小 BLOCK_M 或将 head 维也做循环切分。
 2. **multibuffer 与 UB**：910_95 默认 `multibuffer=False`；autotune 选中 `True` 时 UB 可用减半（128KB）。大 head 场景优先 `multibuffer=False` 或减小 BLOCK_M。
 3. **libdevice.pow 精度**：pow 在 Vector 单元执行（Cube 不支持），与 GPU 精度可能有微小差异。用 `rtol=1e-3` 验证；不满足则预计算 inv_freq 表传入 kernel。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [RoPE 位置编码](../operator_design/rope.md)（`related`）：“RoPE 算子（标准/Partial/Multi-RoPE 变体与向量化旋转）”
-- [Tiling 与 Grid 分核策略（910_95 平台）](../../optimizations/techniques/tiling_and_grid_910_95.md)（`related`）：“910_95 Tiling 与 Grid 配置”
-- [NPU 编译参数速查（含 910_95 差异）](../../optimizations/techniques/compile_params.md)（`related`）：“NPU 编译参数速查”
-- [NPU Autotune 配置与 AutoTilingTuner](../../optimizations/techniques/autotune_on_npu.md)（`related`）：“NPU Autotune 配置指南”
-- [GPU→NPU 迁移概览：架构差异与迁移工作流](../workflows/gpu_migration_overview.md)（`related`）：“GPU→NPU 迁移概览”
-- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 硬件规格”
-- [Block Pointer 迁移注意事项](../workflows/block_pointer_migration.md)（`related`）：“make_block_ptr 多维迁移注意事项”
-- [Triton API 在 Ascend NPU 上的差异对照](../workflows/migration_api_differences.md)（`related`）：“libdevice.pow 等 API 差异对照”
-
-<!-- cannbot:related:end -->

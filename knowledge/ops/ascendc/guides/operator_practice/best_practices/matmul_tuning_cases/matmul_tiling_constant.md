@@ -160,10 +160,3 @@ Matmul API开启Tiling全量常量化的完整样例请参考[Matmul Tiling常�
 ## 总结<a name="section252011820413"></a>
 
 算子在调用Matmul API完成矩阵乘计算时，若Matmul初始化时的Scalar计算较多，影响了指令头开销，或Matmul迭代间的Scalar计算较多，阻塞了MTE2流水。在这两类场景下，满足上文提及的Tiling常量化开启条件（[全量常量化](#li159920538152)或[部分常量化](#li98655581816)），可以考虑开启Tiling常量化，减少Scalar计算开销，提升算子性能。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Matmul Tiling类使用说明](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/matmul_tiling_usage.md)（`explains`）：使用MatmulApiStaticTiling参数替代TCubeTiling变量参数；调用API接口，即可获取到Init中TCubeTiling结构体中的相关参数；连接常量化替代方案与常规动态 Tiling 基线。
-<!-- cannbot:related:end -->

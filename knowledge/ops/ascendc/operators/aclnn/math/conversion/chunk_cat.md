@@ -442,9 +442,3 @@ Trans2(ubLoopInfo, dstLocalT1_, this->srcLocal_);
 | 同步 | V→MTE2、MTE2→V、V→MTE3、MTE3→MTE2 | 不可在 DMA/Vector consumer 完成前覆盖 TBuf | `dupToZero/Compute/CopyOut` |
 | 精度与尾块 | cross16 经 FP32+RINT，widen 直接 Cast；短 chunk 零填充 | cast 顺序、splitColAlign、有效 CopyOut 矩形不可改变 | `DoCast/DoLastRowsCopy` |
 | 失败边界 | dim/dtype/shape/Tiling/launcher 失败均停止 | 不得把 key 0 无 fallback 误写成自动降级 | `CheckParams/Tiling4ChunkCat/chunk_cat` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ChunkCat 950 ACLNN 算子知识](chunk_cat_950.md)（`same_topic`）：每个输入沿 `dim=0` 切为 `numChunks` 个上界等宽块，逐块横向拼接，短尾块补零，并转换到 `out` dtype；把每个输入沿 `dim=0` 切为 `numChunks` 个等宽上界块，逐块横向拼接并把短尾块补零，最后转换到 `out` dtype。两卡定义完全相同的 dim=0 分块、横向拼接、短尾补零与输出类型转换语义，差别是分别记录 950 与 A2/A3 实现，属于同一 ChunkCat 算子的架构分支。
-<!-- cannbot:related:end -->

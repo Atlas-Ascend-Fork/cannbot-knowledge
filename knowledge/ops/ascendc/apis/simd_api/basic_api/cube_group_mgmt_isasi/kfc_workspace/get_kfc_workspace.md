@@ -50,11 +50,3 @@ AscendC::KfcWorkspace desc(workspaceGM);
 GM_ADDR workspace = desc.GetKfcWorkspace();
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [UpdateKfcWorkspace](update_kfc_workspace.md)（`related`）：更新用于 CubeResGroupHandle 消息通信区的 GM 内存地址。用户使用 CubeResGroupHandle 构造函数时需用此接口自主管理空间地址。；获取用于 CubeResGroupHandle 消息通信区的 GM 内存地址。用户使用 CubeResGroupHandle 构造函数时需用此接口自主管理空间地址。；UpdateKfcWorkspace 改写 CubeResGroupHandle 消息区的 GM 地址，GetKfcWorkspace 读取同一地址；二者构成自主管理 KfcWorkspace 状态的写入与读取生命周期。
-- [构造函数与析构函数](constructor_and_destructor.md)（`related`）：创建 KfcWorkspace 对象，Kfc（kernel function call）表示核间通信调用，用于管理 CubeResGroupHandle 消息通信区的 GM 空间。；获取用于 CubeResGroupHandle 消息通信区的 GM 内存地址。用户使用 CubeResGroupHandle 构造函数时需用此接口自主管理空间地址。；构造函数建立管理核间通信 GM 空间的 KfcWorkspace 对象，GetKfcWorkspace 从同一对象取得 CubeResGroupHandle 所需地址。
-<!-- cannbot:related:end -->

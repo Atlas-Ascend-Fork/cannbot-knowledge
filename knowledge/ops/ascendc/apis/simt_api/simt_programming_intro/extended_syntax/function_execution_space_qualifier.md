@@ -29,10 +29,3 @@ platforms: []
 函数调用关系如下图所示：
 
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/function_call_hierarchy.png)
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [核函数调用未标__aicore__的纯算术辅助函数](../../../../runbooks/compilation/aicore_helper_requires_device_qualifier.md)（`exemplifies`）：__aicore__（Device 侧执行，只能被 __global__ 或其他 __aicore__ 函数调用）。；在 `.asc` 中，普通 `static inline` 并不会自动获得 device 调用属性。；Runbook 将限定符调用合同落到 host helper 被 device kernel 拒绝的编译故障。
-<!-- cannbot:related:end -->

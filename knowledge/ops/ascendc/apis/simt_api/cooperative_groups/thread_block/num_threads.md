@@ -67,9 +67,3 @@ static unsigned int num_threads()
         ...
     }
     ```
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ThreadBlock协作组size](size.md)（`same_topic`）：获取当前线程所属线程块内的线程总数。；获取当前线程所属线程块内的线程总数，与接口num_threads功能相同。。size 正文明确声明与 num_threads 功能相同，两卡是同一 thread_block 线程数查询的两个接口名。
-<!-- cannbot:related:end -->

@@ -139,10 +139,3 @@ __simt_callee__ inline bool is_nan_t(T x)
 ## 误诊
 
 错误在多个 dtype 实例化点重复出现，容易被误判为模板重载或 NaN 位模式实现问题；编译器 note 已明确指出候选不可调用的原因是函数属性，不应先改模板参数或函数体。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [函数执行空间限定符](../../apis/simt_api/simd_simt_hybrid_programming_intro/extended_syntax/function_execution_space_qualifier.md)（`exemplifies`）：保留被 `asc_vf_call` 直接启动的顶层函数为 `__simt_vf__`，只把它调用的辅助函数改为 `__simt_callee__`；不要改函数模板参数、返回值或业务函数体。；__simt_callee__：SIMT VF 内部辅助函数，可使用 SIMT 内置变量，返回值和入参仅支持内置数据类型及指针，只能调用 __simt_callee__ 或 __callee__ 函数。。运行手册针对 SIMT VF 辅助函数的编译失败给出 __simt_callee__ 修复，限定符卡解释该函数类型的调用关系与参数边界，是语法合同的具体排障实例。
-- [核函数与VF函数（SIMD与SIMT混合编程）](../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md)（`related`）：simt vf函数：使用__simt_vf__标记，能被核函数或者__aicore__函数通过asc_vf_call接口调用。simt vf函数内只能调用__simt_callee__函数和__callee__函数。；note: candidate function not viable: simt_vf function can only call simt_callee function。指南规定 SIMT VF 只能调用 __simt_callee__/__callee__，runbook 保留违反该层级时的编译诊断，构成合同到错误信号的排障链。
-<!-- cannbot:related:end -->

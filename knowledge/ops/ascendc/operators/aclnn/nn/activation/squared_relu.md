@@ -569,9 +569,3 @@ if (std::is_same_v<T, bfloat16_t> || std::is_same_v<T, half>) {
 | 同步 | 双event + `MTE2_V/V_MTE3/PIPE_V` | 等待不可删除 | 三个helper |
 | 精度与尾块 | 16-bit升FP32；BF16 RINT、half NONE | Relu后原地Mul；`calNum` | `Compute/CastAndCopyOut` |
 | 失败边界 | dtype失败；未知key无body；空域零循环 | 不补造fallback | `RunBigKernelTiling/squared_relu/Process` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SquaredRelu 950 ACLNN 算子知识](squared_relu_950.md)（`same_topic`）：“｜ 计算语义 ｜ `y［i］ = max(x［i］, 0)^2` ｜”与“对每个有效元素先计算 `r=max(x［i］,0)`，再计算 `y［i］=r*r`。公开契约规定 NaN→NaN、`+Inf`→`+Inf`、`-Inf`→0；Kernel 顺序是 FP32 `Relu` 后原地 `Mul`。”是双方正文中的具体合同。A2/A3 卡的速览公式与 950 卡的逐元素和特殊值合同描述同一 SquaredRelu 算子语义；互读用于跨平台实现核对。
-<!-- cannbot:related:end -->

@@ -152,9 +152,3 @@ NLP（DeltaNet）下 CUDA 与 TLA（昇腾）两套实现在标准语言建模�
 - [deepseek-v3-low-precision-pretrain](deepseek_v3_low_precision_pretrain.md)（同域并列：另一条 pretrain 阶段训练实践）
 - [qwen2.5-rl](qwen2_5_rl.md)（同域并列：cann-train recipe 入门样例标杆，RL 阶段）
 - [gdn-chunk-kernels](../../concepts/kernels/gdn_chunk_kernels.md)（同域：门控 DeltaNet chunk-parallel Triton 算子族，本样例 DeltaNet chunk 递推算子的 gated 形式对应）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Gated DeltaNet 训练（Chunk 并行 / Flash 递归 / GDN 上下文并行）](../../concepts/modules/gated_deltanet_train.md)（`related`）：样例卡将自身限定为“本样例聚焦 **Delta Rule / DeltaNet** 路径及 **NLP** 侧训练与 Notebook，不包含通用 Linear Attention 算子目录”；训练概念卡说明“GDN 的概念定义（in_proj → Causal Conv1d → 门控 → Delta Rule 递推 → 输出 RMSNorm+Gate）见推理侧”，为从无门控 DeltaNet 样例迁移到 Gated DeltaNet 训练时补上门控、递推与归一化差异。
-<!-- cannbot:related:end -->

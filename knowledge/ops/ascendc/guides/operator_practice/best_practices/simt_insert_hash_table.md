@@ -173,10 +173,3 @@ for (uint32_t i = 0; i < capacity; i++) {
 ## 总结<a name="section8281219125011"></a>
 
 本案例展示了基于SIMT编程实现向hash table中批量插入元素，重点介绍了如何通过原子指令解决多线程写冲突，以及如何使用asc\_threadfence\(\)接口实现核间数据同步。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscAtomicCas](../../../apis/simd_api/c_api/atomic/scalar_atomic/asc_atomic_cas.md)（`explains`）：案例卡说明“线程通过原子指令asc_atomic_cas修改flag来获取桶的写权限。”；接口卡给出“如果address上的数值等于指定数值compare，则对address赋值为指定数值val，否则address的数值不变。”，该 compare-and-swap 语义正是开放寻址插入时竞争桶所有权的实现原语。
-<!-- cannbot:related:end -->

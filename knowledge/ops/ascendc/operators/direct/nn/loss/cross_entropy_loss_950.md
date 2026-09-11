@@ -1088,9 +1088,3 @@ else:
 | 同步 | SIMT barriers、lean UB DSB、official events+SyncAll、跨 kernel same stream | 任何别名覆盖都必须晚于等待点 | `asc_syncthreads`、`DataSyncBarrier`、`SyncAll` |
 | 精度与尾块 | max-shift、FP32 sum/log、最终降精度；mask/rowActive/curTileLen | 不得把 padding lane、ignored row 或 inactive warp计入结果 | SIMT bodies、FullLoad/BigC MicroAPI |
 | 失败边界 | 4095 DMA gate、UB capability、int64 CheckedMul、unknown/invalid参数失败 | 不得把 valid fallback 改成非法 Vector launch | direct selector（交付件） |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CrossEntropyLoss 950 ACLNN 算子知识](../../../aclnn/nn/loss/cross_entropy_loss_950.md)（`same_topic`）：稳定 log-softmax + class-index cross entropy；支持 weight、ignoreIndex、label smoothing 和 none/mean/sum，同时写完整 logProb；公开 zloss 功能当前不支持。；类别轴固定为 dim 1；hard target 计算稳定 `-log_softmax(input)［target］`，soft target 计算 `-sum(target*log_softmax(input), C)`，再执行 `none/mean/sum`。。两卡都在 950 上实现稳定 CrossEntropyLoss 与 none/mean/sum；ACLNN 卡覆盖公开 weight、smoothing 和 logProb，Direct 卡覆盖 hard/soft target 融合路线，互读可完成同一算子的调用面选型。
-<!-- cannbot:related:end -->

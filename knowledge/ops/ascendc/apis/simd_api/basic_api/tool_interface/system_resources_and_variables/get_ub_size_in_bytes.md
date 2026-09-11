@@ -66,19 +66,6 @@ this->tileNum = this->totalLength / this->tileLength;
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GatherV2 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/gather_v2_950.md)（`related`）：“与 R-001 的行/列搬运相同，但分核与 `ubAvailable` 在 Device 用 `GetBlockNum/GetUBSizeInBytes-128KiB` 重算，避免 PCIe 地址由 SIMT 直接解引用。”记录 UB 可用量计算；“获取UB空间的大小，单位为Byte。开发者根据UB的大小来计算循环次数等参数值。”给出 GetUBSizeInBytes 的字节单位和用途，直接支撑减去 128 KiB 后的 buffer 分配。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Embedding 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/embedding_950.md)（`related`）：算子声明的固定版本源码包含对 `GetUBSizeInBytes(...)` 的直接调用（第 76 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_v2/op_kernel/arch35/gather_v2_simd_two_dim_pcie.h#L76)
-- [Take 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/take_950.md)（`related`）：算子声明的固定版本源码包含对 `GetUBSizeInBytes(...)` 的直接调用（第 76 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_v2/op_kernel/arch35/gather_v2_simd_two_dim_pcie.h#L76)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [GatherV2 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/gather_v2_950.md)
+- [Embedding 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/embedding_950.md)
+- [Take 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/take_950.md)

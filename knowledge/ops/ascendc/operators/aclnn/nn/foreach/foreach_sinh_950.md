@@ -541,9 +541,4 @@ __simt_callee__ inline T ComputeSinh(T val)
 | 精度与尾块 | 统一 FP32 `sinhf`；idx guard | cast 顺序与有效域不可变 | `ComputeSinh` |
 | 失败边界 | Host 拒绝平台/dtype/tensorNum 错误 | 不存在 Device fallback | `GetPlatformInfo/ForeachSinhTilingFunc` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Sinhf](../../../../apis/simt_api/math_functions/float_math_functions/sinhf.md)（`related`）：｜ 计算语义 ｜ 对 TensorList 每个 Tensor 逐元素计算 `sinh`；SIMT body 统一以 FP32 `sinhf` 求值。 ｜；功能：获取输入数据的双曲正弦值。；950 ForeachSinh 的 SIMT body 明确把每个元素交给 FP32 sinhf，API 卡因此直接补齐该叶子调用的输入范围、特殊值与必需头文件。
-- [ForeachSinh A2/A3 ACLNN 算子知识](foreach_sinh.md)（`same_topic`）：对 TensorList 中每个输入张量逐元素计算 `y_i［j］ = sinh(x_i［j］) = (exp(x_i［j］) - exp(-x_i［j］)) / 2`。；对 TensorList 每个 Tensor 逐元素计算 `sinh`；SIMT body 统一以 FP32 `sinhf` 求值。；两卡实现同一 ForeachSinh ACLNN 语义，分别闭合 A2/A3 向量公式与 950 SIMT sinhf 路线，可比较 dtype、精度和分块差异。
-<!-- cannbot:related:end -->
+- [Sinhf](../../../../apis/simt_api/math_functions/float_math_functions/sinhf.md)

@@ -197,11 +197,3 @@ Ascend C提供一组Conv3D高阶API，方便用户快速实现3维卷积正向�
 ```
 #include "lib/conv/conv3d/conv3d_api.h"
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Conv3D Tiling使用说明](../conv3_d_tiling/conv3_d_tiling_usage.md)（`related`）：Ascend C提供一组Conv3D高阶API，方便用户快速实现3维卷积正向矩阵运算。；Ascend C提供一组Conv3D Tiling API，方便用户获取Conv3D正向算子Kernel计算时所需的Tiling参数。Kernel 使用说明与 Tiling 使用说明共同覆盖 Host 参数生产和 Device 计算消费。
-- [SetBias](set_bias.md)（`related`）：bias（输入）：Bias在Global Memory上的地址。类型为GlobalTensor。偏置矩阵Bias支持的数据类型为：half、bfloat16_t。；B为Conv3D卷积的偏置矩阵Bias。 - Y为完成卷积及偏置操作之后的结果矩阵Output。。SetBias 的输入合同把 usage 中卷积偏置 B 的 GM 地址和支持 dtype 落到具体配置接口。
-<!-- cannbot:related:end -->

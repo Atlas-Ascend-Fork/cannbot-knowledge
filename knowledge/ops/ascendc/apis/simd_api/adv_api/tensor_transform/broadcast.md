@@ -241,34 +241,13 @@ axis：1
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Broadcast场景](../../../../guides/operator_practice/simd_operator_impl/vector_programming/broadcast_scenario.md)（`explains`）：接口卡给出“将输入按照输出shape进行广播。例如将shape为(m,1)的数据广播到(m,k)，即将一列扩展为相同的k列。”；场景卡落实为“在Compute函数中，调用Add接口前需要先对输入进行Broadcast。”，说明怎样计算 shape 并把广播结果接到 Add。
-- [GetBroadCastMaxMinTmpSize](get_broad_cast_max_min_tmp_size.md)（`related`）：临时空间大小通过GetBroadCastMaxMinTmpSize获取。；host侧Tiling接口，用于获取Broadcast接口所需的最大和最小临时空间大小。。Broadcast 直接指定右侧接口为其临时空间来源，右侧为计算接口返回可选范围；两者分别承担 Kernel 计算与 Host 资源查询，是明确的前后任务链。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 8 / 8 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 409 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_quant/op_kernel/apply_adam_w_quant_fp16.h#L409)
-- [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 468 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/chunk_gated_delta_rule/op_kernel/chunk_gated_delta_rule_stage1.h#L468)
-- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 233 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_kernel/arch35/matmul_all_reduce_mixed_dequant_reduce_quant.h#L233)
-- [MhcPostBackward A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mhc/mhc_post_backward.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 433 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/arch22/mhc_post_backward.h#L433)
-- [RopeWithSinCosCache A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rope_with_sin_cos_cache.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 202 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rope_with_sin_cos_cache/op_kernel/arch35/rope_with_sin_cos_cache_f_bf16.h#L202)
-- [RopeWithSinCosCache 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rope_with_sin_cos_cache_950.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 202 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rope_with_sin_cos_cache/op_kernel/arch35/rope_with_sin_cos_cache_f_bf16.h#L202)
-- [RotaryPositionEmbedding A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rotary_position_embedding.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 660 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_matrix.h#L660)
-- [EngramGateFusion 950 Direct Invoke 算子知识](../../../../operators/direct/transformer/attention/engram_gate_fusion_950.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 393 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/masked_causal_conv1d/op_kernel/arch35/masked_causal_conv1d.h#L393)
-
-### 知识正文中的调用示例（部分算子）
-
-展示 2 / 6 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [Atan2 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/atan2_950.md)（`related`）：算子正文包含对 `Broadcast(...)` 的直接调用；本卡提供该接口契约。
-- [BitwiseOrTensor 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)（`related`）：算子正文包含对 `Broadcast(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)
+- [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)
+- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)
+- [MhcPostBackward A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mhc/mhc_post_backward.md)
+- [RopeWithSinCosCache A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rope_with_sin_cos_cache.md)
+- [RopeWithSinCosCache 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rope_with_sin_cos_cache_950.md)
+- [RotaryPositionEmbedding A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rotary_position_embedding.md)
+- [EngramGateFusion 950 Direct Invoke 算子知识](../../../../operators/direct/transformer/attention/engram_gate_fusion_950.md)
+- [Atan2 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/atan2_950.md)
+- [BitwiseOrTensor 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)

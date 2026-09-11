@@ -118,11 +118,3 @@ AscendC::RmsNorm<dataType, isBasicBlock>(dstLocal, srcLocal, gammaLocal, epsilon
 [ 0.          0.11359233  0.4543693   1.022331    1.8174772   2.8398082   4.089324    5.566024
   7.269909    9.200979   11.359233   13.744672   16.357296   19.197104   22.264095   25.558275 ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyExtParams blockLen 窄化编译失败](../../../../runbooks/compilation/datacopyextparams_block_len_requires_uint32.md)（`exemplifies`）：在 Ascend950 `dav-3510` 的 Flash 单文件算子工程中构建 `rms_norm.asc` 时，Kernel 的 `Process`、`CopyIn`、`CopyOut` 都用 `D_ * sizeof(T)` 初始化 `AscendC::DataCopyExtParams::blockLen`。 对shape为［B,S,H］的输入数据做RmsNorm归一化。 Runbook 在 RmsNorm 直调实现中暴露 H 轴搬运字节表达式到 uint32_t 的编译窄化，API 卡界定同一归一化任务。
-- [RmsNorm Tiling](rms_norm_tiling.md)（`related`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过RmsNorm Tiling获取。模板参数isBasicBlock在满足基本块要求（H为64的倍数且小于2048，B*S为8的倍数）时可设为true提升性能。”与“host侧Tiling接口，用于获取RmsNorm kernel计算所需的Tiling参数，分两步：通过GetRmsNormMaxMinTmpSize获取最大和最小临时空间大小；通过GetRmsNormNDTilingInfo获取kernel侧所需tiling参数。”提供双方正文证据。RmsNorm kernel 明确消费 RmsNorm Tiling，tiling 卡给出先求临时空间再生成参数的两步 Host 流程。
-<!-- cannbot:related:end -->

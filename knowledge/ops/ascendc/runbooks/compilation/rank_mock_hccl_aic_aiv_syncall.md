@@ -57,9 +57,3 @@ atcoss `all_gather_quant_matmul` kernel 是 `KERNEL_TYPE_MIX_AIC_1_2`（1 AIC : 
 
 - AIC+AIV 通算融合 kernel 的 ST 优先用真实多卡 HCCL（环境有卡时），不要用 mock。
 - 若必须单卡 mock，需接入 `tests/mc2_mock_test_frame` 的完整 `MockHcclServer` 模拟跨核同步信号，并保证 `totalCores` 与 AIC/AIV 配比正确。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SyncAll](../../apis/simd_api/basic_api/sync_control/inter_core_sync/sync_all.md)（`exemplifies`）：“kernel 内 AIC 核走 `Run()` 的 matmul 路径、AIV 核走 prologue 路径，两者的 `SyncAll<true>()` 需要所有核都到达配对。”；“- 融合算子的全核同步，一次性实现三个核间同步能力（参考CrossCoreSetFlag的关键特性说明）：首先完成单个AI Core内，AIC与所有AIV同步（AIC等AIV）；接着完成多个AI Core间，所有AIC的同步；最后完成单个AI Core内，所有AIV与AIC同步（AIV等AIC）。”。runbook 的单 rank mock 死锁正由 SyncAll 的 AIC/AIV 全核到达和三阶段配对合同解释。
-<!-- cannbot:related:end -->

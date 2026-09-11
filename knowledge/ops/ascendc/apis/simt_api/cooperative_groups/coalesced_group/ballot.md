@@ -75,10 +75,3 @@ unsigned int ballot(int predicate) const
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CoalescedGroup协作组any](any.md)（`related`）：“返回值：当coalesced_group组内所有线程的输入均为0，返回0，否则返回1。”与“返回值：32-bit的无符号整数：若coalesced_group组内线程输入的predicate不为0，则返回值中与线程rank对应的bit位为1，否则为0。”是双方正文中的具体合同。两端观察同一 coalesced_group 内各线程 predicate；Any 折叠为组级布尔值，Ballot 保留逐 rank 位图，互读可按后续分支需求选择结果粒度。
-<!-- cannbot:related:end -->

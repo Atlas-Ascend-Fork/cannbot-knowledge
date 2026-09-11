@@ -63,9 +63,3 @@ Invalid L1/L0 relation: nL0=128, nL1=64, require nL0 <= nL1 && nL1 % nL0 == 0
 - 已验证：950/DAV_3510 + CANN 9.1.0，kL1a=256、nL1=64。
 - 未验证，推断可迁移：950 上其他 cube matmul 算子受同一上限约束（platform_wide），但各算子的 L1a/L1 实际上限可能因 `pass_options`（如 `cube_l1_reuse_setting`）而变化，未实测。
 - 未验证：a3/a2 平台的 L1/L0 上限数值不同，不可直接外推 256/64。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MLA Prolog decode 950 tile 调优配方](../performance/mla_prolog_decode_950_tile_tuning_recipe.md)（`related`）：950 上 cube tile k 的有效上限就是 256（kL1a），n 的有效上限是 64（nL1）；超出即报 INVALID_TILE。；1. **pre_quant_cube_tile k 顶到 256（L1a 上限）而非更大**：K=3584 的 matmul，k 越大迭代越少，但 k 受 kL1a=256 硬约束（k=512 报 INVALID_TILE）。k=256 是合法上限、迭代次数 1/4，是本算子最大单步收益（相对 stitch baseline 约 0.88x）。被放弃的候选：k=512（硬件约束拒绝）、k=128（收益不足，回归）。。编译故障卡给出 k/n 的硬件合法域，调优配方据此把 pre_quant_cube_tile k 设到合法上限 256 并用实测收益选择该点。
-<!-- cannbot:related:end -->

@@ -104,11 +104,3 @@ AscendC::LogicalOrs<config>(dst, src0, src1, count);
 [ True,  True,  False,  True,  True,  False,  True,  True,  False,  True,
   True,  False,  True,  True,  False,  True,  True,  False,  ...  False]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetLogicalOrsMaxMinTmpSize](get_logical_ors_max_min_tmp_size.md)（`related`）：输入矢量每个元素与标量进行逻辑或操作。；host侧Tiling接口，用于获取LogicalOrs接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。计算接口定义 LogicalOrs 的逐元素逻辑或语义，该 Host Tiling 接口提供执行它所需的临时空间上下界。
-- [GetLogicalOrsTmpBufferFactorSize](get_logical_ors_tmp_buffer_factor_size.md)（`related`）：输入矢量每个元素与标量进行逻辑或操作。；获取LogicalOrs接口的maxLivedNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。。计算接口定义 LogicalOrs 的逐元素逻辑或语义，固定临时空间时该接口给出反推单次处理元素数的因子。
-<!-- cannbot:related:end -->

@@ -829,9 +829,3 @@ return y;
 | 同步 | MTE2/V/MTE3 按 bufId Lock/Unlock；AICPU ParallelFor 完成后返回 | 同 parity buffer 未释放不得覆盖；stream 保持节点顺序 | `GetTensor/ReleaseTensor`；`ComputeCeil` |
 | 精度与尾块 | 原 dtype `CAST_CEIL`、输入 sign bit OR 回、mask tail；DOUBLE Eigen ceil | 16/32 位 sign mask 不可混用；CopyOut 只写 `count` | `CeilCustom<T>`；`ElementwiseSch::Process` |
 | 失败边界 | 空 Tensor成功；非法 dtype/rank、Tiling、launcher、ParallelFor 失败各自终止 | 不把 AIV Tiling 失败改成 AICPU fallback；只由 Host dtype selector 选择 | `ExecCeilGetWorkspaceSize`；`RunTiling`；`CeilCpuKernel::Compute` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Ceil 950 ACLNN 算子知识](ceil_950.md)（`same_topic`）：｜ 计算语义 ｜ 对 `selfRef` 的每个逻辑元素执行向正无穷取整，并把结果写回同一用户 Tensor 的逻辑视图 ｜；｜ 计算语义 ｜ 对每个逻辑元素计算 `out［i］ = ceil(self［i］)`，即取不小于输入的最小整数值，并以输入 dtype 表示。 ｜。两算子共享逐元素 ceil 核心语义，InplaceCeil 在相同内部计算之上增加 selfRef 原地别名与写回契约。
-<!-- cannbot:related:end -->

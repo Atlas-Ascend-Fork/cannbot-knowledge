@@ -111,9 +111,3 @@ VAE 的隐空间维度/压缩比与下游 DiT 的 latent 形状强绑定（如�
 - [mindspeed-mm](../frameworks/mindspeed_mm.md)（同域·框架：套件双后端装配、`ae`/`predictor`/`diffusion` 子包组织、DCP 检查点）
 - [hetero-parallel](../parallelism/hetero_parallel.md)（同域·并行：多模态分组并行 + 动态 DP-CP + 非对齐 Ulysses，DiT 序列并行之上的拓扑层）
 - [vlm-multimodal-training](vlm_multimodal_training.md)（同套 MindSpeed-MM 的 VLM 理解训练，互为生成/理解两支）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [VAE（多模态生成）](../../../inference/concepts/modules/vae.md)（`related`）：多模态生成模型（HunyuanVideo、HunyuanImage-3.0、Wan2.2-I2V、Sana-Video）中的 VAE（Variational AutoEncoder）负责把 DiT 预测的 latent 还原为像素域图像/视频（Decoder），以及把原始像素压缩为低分辨率 latent（Encoder，训练用）。；MindSpeed-MM 的视频/图像生成训练把一张 DiT 主干放进扩散去噪框架里训练：原始像素先经 VAE 编码进低分辨率隐空间，再在隐空间上加噪、由 DiT 预测去噪目标、与解析目标算 MSE。。推理模块卡定义 VAE 编解码角色，训练卡说明冻结 VAE encoder 如何产出 DiT 训练 latent，闭合跨阶段使用链。
-<!-- cannbot:related:end -->

@@ -105,18 +105,6 @@ result: -0.8480784 -0.2526802 0.2526802 0.8480784
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 3 / 3 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Asin 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/asin_950.md)（`related`）：算子声明的固定版本源码包含对 `asinf(...)` 的直接调用（第 48 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel/arch35/asin_dag.h#L48)
-- [ForeachAsin 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_asin_950.md)（`related`）：算子声明的固定版本源码包含对 `asinf(...)` 的直接调用（第 41 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_asin/op_kernel/arch35/foreach_asin_simt.h#L41)
-- [InplaceAsin 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_asin_950.md)（`related`）：算子声明的固定版本源码包含对 `asinf(...)` 的直接调用（第 48 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel/arch35/asin_dag.h#L48)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Asin 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/asin_950.md)
+- [ForeachAsin 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_asin_950.md)
+- [InplaceAsin 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_asin_950.md)

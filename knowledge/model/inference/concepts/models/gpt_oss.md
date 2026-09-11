@@ -151,9 +151,3 @@ export HCCL_OP_EXPANSION_MODE=AIV
 - [tensor-parallel](../parallelism/tensor_parallel.md)
 - [fused-infer-attention-score](../kernels/fused_infer_attention_score.md)
 - [ascendc](../frameworks/ascendc.md)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [npu_fused_infer_attention_score (v1 / v2)](../kernels/fused_infer_attention_score.md)（`related`）：“**Softmax Attention + GQA + 可学习 attention sink**：QKV 头数通过 HuggingFace `configuration_gpt_oss.py` 配置决定，支持 MQA/GQA（`num_key_value_heads <= num_heads`）。每个 attention 头额外持有一个可学习 sink 标量 `self.sinks = nn.Parameter(empty(num_attention_heads_per_rank))`，作为 `learnable_sink` 入参传给 `npu_fused_infer_attention_score_v2`，相当于在 softmax 分母里挂一个常驻的"无 token"通道；该参数按 rank 切分（`load_weights` 里 `"sinks" in name` 分支按 `head_start / heads_per_rank` narrow）。attention sink 是 GPT-OSS 的标志性设计，并非裸 softmax attention。”与“昇腾推理侧的通用 FlashAttention 融合算子（简称 **FIA**），覆盖 Softmax-Attention 的主体计算：`softmax(QKᵀ/√d)·V`，支持 Paged KVCache、Block-Table、分离的 NoPE/RoPE Query/Key 输入、以及 Query / Key / Value 三端的动态 Int8 反量化（dequant_scale_*）。在 DeepSeek-R1 decode 路径中作为 ［mla-prolog］(mla_prolog.md) 之后的主 FA 算子。”提供双方正文证据。GPT-OSS 模型卡给出实际 `npu_fused_infer_attention_score_v2` 调用及 `learnable_sink` 特有入参，FIA 卡补齐该调用所属融合注意力算子的主体计算与缓存能力，能直接支撑该模型注意力路径的实现核对。
-<!-- cannbot:related:end -->

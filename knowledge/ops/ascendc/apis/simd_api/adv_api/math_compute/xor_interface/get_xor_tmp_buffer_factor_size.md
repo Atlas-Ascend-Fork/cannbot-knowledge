@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetXorTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetXorMaxMinTmpSize](get_xor_max_min_tmp_size.md)（`same_topic`）：host侧Tiling接口，用于获取Xor接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。获取Xor接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。两端共同定义 Xor 临时空间规划的两个方向：先由 shape 确定可选空间范围，或由既定空间反推单次处理量，Host 可据此检查 Tiling 是否自洽。
-<!-- cannbot:related:end -->

@@ -142,10 +142,3 @@ platforms: []
 **核间同步**
 
 该硬件架构不支持核间同步。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NPU架构版本2002](../hardware_constraints/npu_arch_2002.md)（`same_topic`）：NPU架构版本2002不支持Generic Addressing通用寻址（针对UB、stack、GM等地址空间），因此语言层面地址空间必须匹配。；本节介绍__NPU_ARCH__版本号为2002的硬件架构和其功能说明。；两卡以同一 NPU_ARCH 2002 为核心对象，分别给出硬件组成与由其产生的地址空间编程约束。
-<!-- cannbot:related:end -->

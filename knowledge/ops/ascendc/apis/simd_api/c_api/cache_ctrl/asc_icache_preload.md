@@ -59,10 +59,3 @@ int64_t prefetch_length = 7;
 int64_t pc = asc_get_program_counter() & 0xFFFFFFFFFFFF;
 asc_icache_preload(reinterpret_cast<void *>(pc), prefetch_length);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscGetIcachePreloadStatus](asc_get_icache_preload_status.md)（`related`）：开发者手动调用该接口，能够从指令所在GM地址预加载指令到ICache中。；该接口为调试接口，在asc_icache_preload后调用，用于获取ICache的PreLoad的状态。前者发起预加载，后者在同一调用链中判定完成状态。
-<!-- cannbot:related:end -->

@@ -580,9 +580,4 @@ GM 仍按 2-byte dtype 搬运，数学阶段提升到 FP32，只在最终用 `CA
 | 精度与尾块 | FP32 数学、低精度 RINT 降精度、`i<count` 和 DataCopyPad 精确字节 | 系数、FMA 顺序、阈值、1024 stride、former/tail 字段不可擅改 | `Expm1SimtCompute`、`Vec::Cast`、`Process` |
 | 失败边界 | 空 Tensor 在 ACLNN 成功短路；非法 dtype/shape/UB 在对应层失败 | 不得让零维进入 `Process`，不得为未知 dtype/key猜测 fallback | `aclnnExpm1Common`、`RunTiling`、`ElewiseTiling` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Expm1 950 ACLNN 算子知识](expm1_950.md)（`related`）：第一段先执行 `CheckInplaceParamsExpm1`，随后以 `(selfRef,selfRef)` 调用共享的 `aclnnExpm1Common`；这只是代码复用，不把本卡合并为非原地 Expm1。；第一段在 `aclnnExpm1Common` 中组装：`Contiguous`→条件输入 `Cast`→`l0op::Expm1`→输出 `Cast`→`ViewCopy`；第二段直接调用 `CommonOpExecutorRun`。；原地入口复用非原地 Expm1 的公共构图链，但以同一 tensor 作为输入输出，逻辑语义保持不同。
-- [Expm1f](../../../../apis/simt_api/math_functions/float_math_functions/expm1f.md)（`related`）：SIMT body 对每个 FP32 元素先保留库函数 `expm1f(x)` 结果。`｜x｜ <= 2` 时使用源码中的 ln2 约化、五阶系数组合及 `exp2f` 重建；`｜x｜ > 2` 时选回 `expm1f`。；函数原型：float expm1f(float x)；算子核心在大幅值分支直接消费 SIMT expm1f，API 卡提供该调用的标量合同。
-<!-- cannbot:related:end -->
+- [Expm1f](../../../../apis/simt_api/math_functions/float_math_functions/expm1f.md)

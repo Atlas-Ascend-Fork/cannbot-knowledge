@@ -376,11 +376,3 @@ int main()
 
 更多场景使用样例请参考[asc_mmad样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/03_c_api/03_matrix_compute/mmad)。
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AscSetMmadDirectionM](asc_set_mmad_direction_m.md)（`related`）：本接口是Ascend C面向昇腾AI芯片的矩阵乘加（Mmad）核心计算接口；本接口需在矩阵乘加指令（asc_mmad、asc_mmad_mx）执行前调用，以此来确保模式配置在矩阵乘加计算过程中生效。；方向 M 配置是 asc_mmad 执行前的持久前置状态，直接决定结果分形生成顺序。
-- [AscSetMmadDirectionN](asc_set_mmad_direction_n.md)（`related`）：本接口是Ascend C面向昇腾AI芯片的矩阵乘加（Mmad）核心计算接口；本接口需在矩阵乘加指令（asc_mmad、asc_mmad_mx）执行前调用，以此来确保模式配置在矩阵乘加计算过程中生效。；方向 N 配置同样是 asc_mmad 的显式前置合同，并在 NZ2ND 或 Channel Merge 组合下改变生成方向。
-<!-- cannbot:related:end -->

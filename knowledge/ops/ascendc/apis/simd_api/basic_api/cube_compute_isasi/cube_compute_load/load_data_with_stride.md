@@ -115,10 +115,3 @@ AscendC::SetLoadDataRepeatWithStride(repeatParams);
 
 AscendC::LoadDataWithStride(a2Local, a1Local, loadDataParams);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetLoadDataRepeatWithStride](../cube_load_aux_config/set_load_data_repeat_with_stride.md)（`related`）：将数据从L1 Buffer搬运到L0A或L0B Buffer，支持源侧带步长的数据搬运。；设置 LoadDataWithStride 接口的 repeat 参数，通过一次调用完成多个迭代的数据搬运，并配置输出矩阵 K 轴方向偏移。。前者执行源侧带 stride 的 L1 到 L0A/L0B 搬运，后者直接配置该接口的 repeat 次数与 K 轴偏移，组成多迭代 stride 搬运的参数设置和执行链。
-<!-- cannbot:related:end -->

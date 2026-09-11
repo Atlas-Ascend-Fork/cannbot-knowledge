@@ -192,9 +192,3 @@ revision: 未提交工作树快照（group 隔离修复后、a0 双维 tiling �
 ## 误诊
 
 地址对齐问题修复后仍有精度错，若继续沿对齐方向加 barrier 会偏离根因；单 group 正确、多 group 错是状态生命周期泄漏的更强信号。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ARA 分块重复首块：CopyIn 传递 rowStart](ara_split_copyin_must_include_chunk_row_start.md)（`related`）：把 group 循环提到最外层；进入每个 group 时将 `maxBuf` 重新置为 `-inf`、`sumBuf` 重新置零，然后仅为该 group 完成 max、sum、output 三趟；给 gather helper 增加 `rowStart` 参数，并把 GM 起点写成 `a1Base + rowStart * A0_ + a0Start`。前者修复同一 ARA 三趟流程的跨 group 状态污染，后者修复分块三趟的输入地址推进；多 group、跨 chunk 精度排障需分别核对状态生命周期与 GM 起点。
-<!-- cannbot:related:end -->

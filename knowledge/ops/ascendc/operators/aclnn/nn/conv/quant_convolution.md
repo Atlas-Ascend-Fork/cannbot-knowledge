@@ -577,9 +577,3 @@ if (scaleAndBiasDTypeSize * tilingIns_->shapeInfo.singleCo <= maxLoadSize) {
 | 同步 | C2V 0..3、V2C 4..7、slot 四轮 | wait/set 方向与 slot 更新不能改变 | `GetTensorC/VecCompute` |
 | 精度与尾块 | int32→FP32→Mul→Add→CAST_RINT→output | bias Host cast、scale FP32、有效 nCurSize | `oneVecCompute/CopyOut` |
 | 失败边界 | checker/Tiling/launch 任一失败终止 | 不得将错误改写为静默 fallback | `CheckQuantConvParams/CommonOpExecutorRun` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [QuantConvolution 950 ACLNN 算子知识](quant_convolution_950.md)（`same_topic`）：“固定 Commit 的公开文档明确支持 Atlas A2 与 A3；实现通过 `TemporaryLimitChecker` 接受 `ASCEND910B` 与 `ASCEND910_93`。`IsSocSupportND()==false` 时只允许五维输入，并选择 `QuantConv3d6HdInt8ToNCDHWFp16/Bf16`，二者均进入最新 `Conv3DV2` 实现。950 的 2D、FP8/HIF8 与独立 `QuantConv3D/ExtendConv2D` 不属于本卡。”界定 A2/A3 只走 3D Conv3DV2，而“公开产品表支持 Ascend 950PR/950DT。实现以 `GetCurNpuArch()==DAV_3510` 选择 950 路线；2D 创建 `ExtendConv2dImpl`，3D 创建 `QuantConv3dImpl`。本卡只记录 `aclnnQuantConvolution`，不包含语义独立的 `aclnnQuantConvolutionWeightNz`。”界定 950 的 2D/3D 分流；二者共同覆盖同一公开入口的平台选型。
-<!-- cannbot:related:end -->

@@ -710,9 +710,4 @@ BF16 在所有算术前进入 FP32，避免 BF16 缩放与 mask 常量量化；F
 | 精度与尾块 | FP32 Softmax、RINT 降精度、`oriK=W` | mask 常量 `-10000`、有效宽度与最后 iter 行数 | `Compute/SoftmaxX/Process` |
 | 失败边界 | API/shape/UB guards 与 unknown-key no-op | 不得把 `Init()` 失败传播或 950 公开支持补齐 | `CheckParams/SetUbSplitInfo/TilingScaledMaskedSoftmaxV2/scaled_masked_softmax_v2` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ScaledMaskedSoftmaxBackward A2/A3 ACLNN 算子知识](scaled_masked_softmax_backward.md)（`related`）：“对末轴逐行计算 `q=g*y`、`z=(q-sum_D(q)*y)*scale`，再按 bool `mask` 将真值位置清零”中的 y 是正向 Softmax 结果；“对每个 `［B,N,S1］` 行先缩放 `x`，由布尔 `mask` 在缩放值与 `-10000` 间选择，再沿末轴执行 Softmax。”给出 y 的生成合同，两卡闭合训练正反向。
-- [SoftMax/SimpleSoftMax Tiling](../../../../apis/simd_api/adv_api/activation_functions/soft_max_interface/soft_max_simple_soft_max_tiling.md)（`related`）：“`SetPaddingInfo/SetUbSplitInfo/SetSoftmaxTiling/SetTilingKey`”；“void SoftMaxTilingFunc(const AscendC::TensorShape& srcShape, const uint32_t dataTypeSize, const uint32_t localWorkSpaceSize, optiling::SoftMaxTiling& softmaxTiling)”。算子 Host Tiling 直接调用该高阶 API 生产 SoftMaxTiling POD。
-<!-- cannbot:related:end -->
+- [SoftMax/SimpleSoftMax Tiling](../../../../apis/simd_api/adv_api/activation_functions/soft_max_interface/soft_max_simple_soft_max_tiling.md)

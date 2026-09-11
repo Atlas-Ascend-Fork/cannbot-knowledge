@@ -234,14 +234,3 @@ platforms: ["950"]
 ## 误诊
 
 开发过程中曾把规模增大后的无进展主要归因于逐行 `GetValue` 同步开销，并先引入跨行批量路径。后续定向探针显示：超过少量循环后稳定无进展，代码审计又发现输入侧唯一缺少 `FreeTensor`；补齐后同类探针立即全部完成。因此“标量同步慢”不能替代本卡的生命周期根因。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AllocTensor](../../apis/simd_api/basic_api/resource_management/t_que/alloc_tensor.md)（`exemplifies`）：同一个TPosition上的所有Queue，连续调用AllocTensor接口申请的Tensor数量，根据AI处理器型号的不同，有数量约束。；`DeQue` 只把已入队 Tensor 交给消费者，不等于把底层 buffer 归还给队列；有限申请数与未归还缓冲共同解释循环中后续 AllocTensor 无进展的失败签名。
-- [FreeTensor](../../apis/simd_api/basic_api/resource_management/t_que/free_tensor.md)（`exemplifies`）：Runbook 说明“`DeQue` 只把已入队 Tensor 交给消费者，不等于把底层 buffer 归还给队列”；FreeTensor API执行“释放Que中的指定Tensor。”。该动作正是修复循环中输入 buffer 不归还导致的队列耗尽。
-- [ACL 507035 — 空 TQue DeQue 触发 B16 路径异常](tque_dequeue_requires_prior_enqueue_507035.md)（`related`）：焦点 Runbook 要求“每个 `DeQue` 得到的 Tensor 都要沿所属队列闭合生命周期。”；507035 Runbook 要求“TQue 的 `DeQue` 是消费者动作，必须对应此前生产者对同一队列的 `EnQue`。”。两条规则分别校验 DeQue 的前置生产和后置释放，能完整审计同一队列状态链。
-- [FreeTensor早释使队列别名被下一轮DMA覆盖](../precision/reinterpret_tensor_alias_must_outlive_queue_release.md)（`related`）：把 `FreeTensor(xIO)` 从别名创建后移动到本 tile 所有 V 计算完成之后、输出搬运之前。生命周期边界应围绕“最后一次实际消费”，而不是围绕“最后一次 C++ 变量赋值”。；`DeQue` 只把已入队 Tensor 交给消费者，不等于把底层 buffer 归还给队列；循环在消费完成后遗漏 `FreeTensor`，有限 depth 的输入 buffer 被逐轮占用，后续 `AllocTensor` 无空闲 buffer 可分配而无进展。；两张卡给出同一 TQue 生命周期的两端失败：过早释放造成覆盖竞态，遗漏释放造成队列耗尽。
-- [TQue tensor 所有权只能 DeQue 一次](tque_tensor_ownership_single_dequeue.md)（`related`）：队列所有权还要求一个已入队 tensor 只被一个消费者出队一次；如果 `Compute` 已消费 x，外层循环再次 `DeQue` 就破坏 `Alloc→EnQue→DeQue→Free` 的一一对应关系。；`DeQue` 只把已入队 Tensor 交给消费者，不等于把底层 buffer 归还给队列；循环在消费完成后遗漏 `FreeTensor`，有限 depth 的输入 buffer 被逐轮占用，后续 `AllocTensor` 无空闲 buffer 可分配而无进展。两卡分别覆盖重复出队/临时值编译错误与漏释放运行期卡死，共同闭合同一 TQue 所有权生命周期审计。
-- [运行验证时AllocTensor/FreeTensor失败](../../guides/programming_guide/appendix/faq/alloc_free_tensor_failure.md)（`related`）：通过NPU进行核函数的运行验证时，出现挂死现象；通过CPU进行核函数的运行验证时，出现AllocTensor/FreeTensor失败的报错，日志报错和调用栈打印如下：；`DeQue` 只把已入队 Tensor 交给消费者，不等于把底层 buffer 归还给队列；循环在消费完成后遗漏 `FreeTensor`，有限 depth 的输入 buffer 被逐轮占用，后续 `AllocTensor` 无空闲 buffer 可分配而无进展。。候选为焦点同类挂死信号提供另一项必须排查的逐轮 buffer 泄漏机制。
-<!-- cannbot:related:end -->

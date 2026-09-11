@@ -98,22 +98,9 @@ static __simd_vf__ inline void AxpyVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, 
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [DepthwiseConv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/depthwise_conv_2d_950.md)（`related`）：“一个 padded plane 每 plane 只搬一次，输出向量在 9/25 次 Axpy 中驻留寄存器，避免逐 tap 重复 GM patch 搬运。”；“该接口根据mask对dstReg、srcReg和标量scalarValue按元素执行乘加操作，将结果写入dstReg。”。operator 的 3×3/5×5 Vector 路线用寄存器 Axpy 累加每个 tap，API 定义 dstReg 原位乘加和 mask 行为。
-- [ForeachLerpScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_lerp_scalar_950.md)（`related`）：950 算子 Device body 逐字调用“Axpy(tensorOneRegToFloat, tensorTwoRegToFloat, weightVal_, maskReg);”；Reg API 定义“该接口根据mask对dstReg、srcReg和标量scalarValue按元素执行乘加操作”，这正对应 `x1 + weight*(x2-x1)` 中差值寄存器与标量 weight 的乘加步骤。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 4 / 4 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Atan2 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/atan2_950.md)（`related`）：算子声明的固定版本源码包含对 `Axpy(...)` 的直接调用（第 268 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/atan2/op_kernel/arch35/atan2_dag.h#L268)
-- [GeluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/gelu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Axpy(...)` 的直接调用（第 210 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h#L210)
-- [Gelu 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/activation/gelu_950.md)（`related`）：算子声明的固定版本源码包含对 `Axpy(...)` 的直接调用（第 210 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h#L210)
-- [DynamicQuant 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/quant/dynamic_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Axpy(...)` 的直接调用（第 210 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h#L210)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [DepthwiseConv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/depthwise_conv_2d_950.md)
+- [ForeachLerpScalar 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_lerp_scalar_950.md)
+- [Atan2 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/atan2_950.md)
+- [GeluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/gelu_quant_950.md)
+- [Gelu 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/activation/gelu_950.md)
+- [DynamicQuant 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/quant/dynamic_quant_950.md)

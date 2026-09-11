@@ -479,9 +479,3 @@ for (uint64_t idx = tid; idx < static_cast<uint64_t>(count); idx += stride) {
 | 同步 | 每 idx 独占，无 barrier | 不可引入重叠输出或跨线程依赖 | `Op...Simt` |
 | 精度与尾块 | FP32 rintf、FP16 hrint、BF16 FP32 中转 | 当前 body 不消费 mode；`idx<count` | `Op...Simt` |
 | 失败边界 | UB>128KiB、Tensor<=256 | dtype default 0 依赖上层校验 | Host Tiling/API checks |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachRoundOffNumber A2/A3 ACLNN 算子知识](foreach_round_off_number.md)（`same_topic`）：“｜ 计算语义 ｜ 公开语义为按 `roundMode` 舍入；固定 950 body 实际忽略 `roundMode`，三种 dtype 均只做 ties-to-even ｜”与“｜ 计算语义 ｜ 对列表中每个张量逐元素按 `roundMode` 舍入；V2 将标量转换成一个 `DT_INT8` Tensor 后启动 `ForeachRoundOffNumber` ｜”分别来自双方当前正文。两端讨论同一 V2 舍入算子，但 950 body 忽略 roundMode，而 A2/A3 实际按模式分派；该对照直接影响跨平台正确性和测试预期。
-<!-- cannbot:related:end -->

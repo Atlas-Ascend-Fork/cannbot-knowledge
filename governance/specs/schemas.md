@@ -32,7 +32,7 @@
 
 `local_sources` 以 `kind: git` 声明固定源码资源，包含安全的仓库相对 `root`、可执行 `fetch_script`、规范 `repository` 和非空、去重、排序的 40 位 `revisions`；Git 根可多级组织，根之间必须唯一且无祖先/后代重叠，规范仓库身份也不能重复，不得使用知识或治理设施目录。无 `kind` 或 `kind: archive` 保持归档顶层根语义，Git 定义不能混入归档字段。Contract 共用完整来源根匹配、来源解析和 checkout 校验；源码不属于 Bundle，不形成图谱节点。离线缺根允许校验路径形状，根已存在时必须检查版本与文件。
 
-固定归档 `mirror` 的转换策略同样由 Registry 声明。当前 `navigation_policy: index_only` 表示 README、发布占位、纯链接目录和接口清单不形成 Concept，来源链接改到最近的有效目录 `index.md`；`omit_section_title_contains` 声明只进入结构化元数据、不在知识正文重复保留的章节标题片段。`api_operator_display_limit` 是正整数，只限制自动 API→Operator 导航与对应图谱边的展示投影，全部明确调用证据保存在 ignored 审计产物，不限制人工或 Agent 语义关系。同步器和 Lint 必须共同消费这些声明，不能各自维护隐藏例外。
+固定归档 `mirror` 的转换策略同样由 Registry 声明。当前 `navigation_policy: index_only` 表示 README、发布占位、纯链接目录和接口清单不形成 Concept，来源链接改到最近的有效目录 `index.md`；`omit_section_title_contains` 声明只进入结构化元数据、不在知识正文重复保留的章节标题片段。`api_operator_display_limit` 是正整数，只限制按需 API 引用建议的展示数量，完整调用证据保存在 ignored 审计报告中，不限制现有正文链接或图谱边。同步器和 Lint 必须共同消费这些声明，不能各自维护隐藏例外。
 
 Contract 对 API/Guide 的归档镜像识别只采用 `primary` 来源；未声明 `role` 的旧来源保留原有匹配行为。显式标为 `supporting`、`example` 等非主来源的归档引用不把整张蒸馏卡变成镜像：卡片仍遵守普通正文约束，也不从辅助文档推导整卡平台。镜像可以保留原文多个 H1，但无 H1 仍失败。正文、平台和文档回归共同调用这一判定；实际镜像的来源绑定、正文保真和元数据仍由固定归档复验检查，不通过改写来源角色跳过复验。
 
@@ -60,7 +60,7 @@ technology 与 scope 的 ID 不得重叠；每个 route 必须声明允许出现
                               本地图谱构建前校验
 ```
 
-图谱不是第四套规则解释器；它只接收通过同一 Contract 的 Concept/Index、可解析人工链接和通过当前语料指纹校验的 ignored 本地关系判定缓存，在 `artifacts/graphs/` 生成本地图谱产物，并向知识卡同步可提交的 `cannbot:related` 受管导航块。
+图谱复用同一 Contract 校验知识卡和正文链接，仅以 Concept 为节点、卡片间已有 Markdown 链接为有向 `links_to` 边；API 与算子关联也使用这些链接。Index 不进入图谱，不从目录或语义相似性推断边。构图按需执行，只在 ignored 的 `artifacts/graphs/` 写派生产物，不依赖判定缓存或回写知识卡。
 
 ## 为什么需要 Contract
 

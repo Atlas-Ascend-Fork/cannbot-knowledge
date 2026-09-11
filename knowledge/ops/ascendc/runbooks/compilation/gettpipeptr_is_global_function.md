@@ -412,10 +412,3 @@ __global__ __aicore__ void gather_kernel(
 ## 误诊
 
 修复后构建仍出现 host 侧 `GM_ADDR` 的 `cce_global attribute ignored` 警告，但构建目标成功生成；该警告不是本次名字查找失败的根因，不能用它解释修复前的三处硬错误。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FetchEventID](../../apis/simd_api/basic_api/resource_management/t_pipe/fetch_event_id.md)（`exemplifies`）：“未改 `AscendC::HardEvent`、`FetchEventID` 或同步事件种类，因为报错只指向函数名的命名空间查找；”说明修复后事件调用合同保持不变；“根据HardEvent（硬件类型的同步事件）获取相应可用的TEventID，此接口不会申请TEventID，仅提供可用的TEventID。”定义该成员调用的语义。
-- [GetTPipePtr](../../apis/simd_api/basic_api/resource_management/get_t_pipe_ptr.md)（`exemplifies`）：“`GetTPipePtr` 的函数标识符声明在全局命名空间，只有返回类型是 `AscendC::TPipe*`，因此给函数名添加 `AscendC::` 会在该命名空间内查找一个不存在的成员。”给出编译失败的命名空间根因；“创建TPipe对象时，对象初始化会设置全局唯一的TPipe指针。”提供对应 API 的全局指针合同。
-<!-- cannbot:related:end -->

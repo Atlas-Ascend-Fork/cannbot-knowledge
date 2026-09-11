@@ -100,9 +100,3 @@ __out_pipe__(MTE3) void InitOutput(GlobalTensor<T> gmWorkspaceAddr, uint32_t siz
 
 - **未验证，推断可迁移**：a3 / a2 平台同 CANN asc/impl 头，`InitOutput` 与 `Duplicate` 签名预计一致；本 trace 仅 ascend950 build 实测。
 - **不适用**：GM 工作区清零（`InitOutput` 的本职场景）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Duplicate](../../apis/simd_api/basic_api/memory_vector_compute/data_padding/duplicate.md)（`exemplifies`）：“将变量或立即数复制多次并填充到向量中，支持前n个数据计算和高维切分计算两种方式。”明确给出左端事实；“UB 侧 LocalTensor 清零的正确 API 是 `Duplicate`（Vector 通道，按 mask 清零整个/部分 VReg），不是 `InitOutput`。”明确给出右端事实。API 的 LocalTensor 填充值能力正是排障页修复 InitOutput(GlobalTensor) 类型不匹配时采用的 UB 清零路径。
-<!-- cannbot:related:end -->

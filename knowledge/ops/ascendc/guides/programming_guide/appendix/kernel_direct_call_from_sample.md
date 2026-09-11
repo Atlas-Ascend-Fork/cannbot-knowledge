@@ -558,10 +558,3 @@ bash run.sh -r npu  -v <soc_version> -i <install_path> -b Debug -p <install-pref
 >        aclInit、aclFinalize、aclrtGetVersion。
 >    - 运行时管理
 >        aclrtSetDevice、aclrtResetDevice、aclrtCreateStream、aclrtCreateStreamWithConfig、aclrtDestroyStream、aclrtDestroyStreamForce、aclrtSynchronizeStream、aclrtCreateContext、aclrtDestroyContext。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [核函数直调算子额外适配说明](../advanced_programming/super_kernel/kernel_direct_call_adaptation.md)（`related`）：完成算子kernel侧实现；需要在算子Kernel入口侧增加SuperKernel入口函数。样例工程卡给出普通 Kernel 直调的构建、Host 调用和验证流程，适配卡说明把这类直调算子纳入 SuperKernel 时必须增加 SK 入口、参数结构和 SK_BIND 的差异步骤。
-<!-- cannbot:related:end -->

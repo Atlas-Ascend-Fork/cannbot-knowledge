@@ -176,10 +176,3 @@ MC<sup>2</sup>算子收益 = \(融合前算子串行耗时 - 融合后MC<sup>2</
 ## 总结<a name="section15200958526"></a>
 
 MC<sup>2</sup>算子通过数据切分后计算和通信的并行执行，获得性能收益，但受数据切分后执行时间膨胀的影响。对MC<sup>2</sup>算子进行性能调优的主要方式是制定数据切分策略，开发人员需要根据理论推导找到理想切分策略，然后根据实测结果调整，最终找到最优切分策略。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MatmulReduceScatter 950 ACLNN 算子知识](../../../operators/aclnn/transformer/mc2/matmul_reduce_scatter_950.md)（`related`）：各 rank 的完整结果按 `sum` 归约后沿 M 轴等分，本 rank 输出 `y:［M/rankSize,N］`。；MC2通算融合算子的性能收益主要来自于通信、计算的并行执行；指南给出该 MatMul 加 ReduceScatter 融合算子的切分与流水调优依据。
-<!-- cannbot:related:end -->

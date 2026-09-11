@@ -87,17 +87,5 @@ source_headers:
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AddLayerNormQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `NegativeInfinity(...)` 的直接调用（第 77 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_quant/op_kernel/arch35/add_layer_norm_quant_empty_input_kernel.h#L77)
-- [MaxPool3dWithArgmax 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/max_pool3d_with_argmax_950.md)（`related`）：算子声明的固定版本源码包含对 `NegativeInfinity(...)` 的直接调用（第 116 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/arch35/max_pool3d_with_argmax_v2_simt.h#L116)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AddLayerNormQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant_950.md)
+- [MaxPool3dWithArgmax 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/max_pool3d_with_argmax_950.md)

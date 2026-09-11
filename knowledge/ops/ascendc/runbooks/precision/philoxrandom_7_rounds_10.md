@@ -95,14 +95,3 @@ Custom first 16: [1.8045962  2.4804842  0.6825031  0.73629117 1.2446185  0.60963
 ## 误诊
 
 早期一度以为 decode 不一致是"基线本身乱码/temperature=1.0 随机性高"的正常表现（基线 3 次运行输出完全相同但内容是多语言乱码）。这是 `agent_reported` 的误判——基线 3 次一致正说明 seed 固定下序列稳定，替换后输出不同只能是 RNG 序列差异，不是"随机性的正常表现"。该误判未进入验证信号。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [PhiloxRandom](../../apis/simd_api/adv_api/random_functions/philox_random.md)（`exemplifies`）：基于Philox算法生成随机数，支持生成half/float/int32_t类型的随机数。通过seed和subsequence初始化随机数生成器，可在counter基础上生成指定数量的随机数。；自定义 kernel 调用 `AscendC::PhiloxRandom` 时沿用了 CANN 公共头文件 `philox.h` 的模板默认值 `Rounds=7`，但原生 `aclnnSimThreadExponential` 实际使用 PyTorch 标准 **Philox-4x32-10**（10 rounds）。rounds 数直接决定 Philox 单轮轮函数的迭代次数，7 vs 10 产出的 32 位输出完全不同，因此即使 seed/offset/counter 完全相同，单次调用也 0% 匹配。。API 卡提供 PhiloxRandom 的 seed/subsequence/counter 使用面，runbook 给出与原生 exponential 对齐时必须显式选择 10 rounds 的已验证排障边界。
-- [Philox offset 须放 counter[2:3] 而非 [0:1]](philox_offset_counter_2_3_0_1.md)（`related`）：三个根因（Rounds=10、increment=12、counter［2:3］）须同时满足；仅修 counter［2:3］ 而不修 Rounds/increment 不会得到一致输出。；改为显式 `PhiloxRandom<10, uint32_t>` 后单次调用逐元素一致。。offset/counter 卡要求 rounds、increment、counter 布局共同闭合，Rounds 卡提供其中 7 改 10 的单次调用验证，联合使用才能覆盖连续调用精度对齐。
-- [SimThreadExponential A2/A3 ACLNN 算子知识](../../operators/aclnn/math/random/sim_thread_exponential.md)（`related`）：“每个 handle 初始化 Philox counter，执行 10 轮 Philox”与“`PhiloxRandom<10>` `Exact match: True`、`Matching 128/128`”把算子源码的 10-round 实现连接到可执行的逐元素验证。
-- [Uint32ToFloat 须用 IEEE754 位操作而非位移乘法](uint32tofloat_ieee754.md)（`related`）：逐元素核对发现 custom 的 uniform 值本身就与 native 不同，根因之一在 uint32→float 的转换方式。；自定义 kernel 调用 `AscendC::PhiloxRandom` 时沿用了 CANN 公共头文件 `philox.h` 的模板默认值 `Rounds=7`，但原生 `aclnnSimThreadExponential` 实际使用 PyTorch 标准 **Philox-4x32-10**（10 rounds）。rounds 数直接决定 Philox 单轮轮函数的迭代次数，7 vs 10 产出的 32 位输出完全不同，因此即使 seed/offset/counter 完全相同，单次调用也 0% 匹配。；目标先保证 Philox uint32 流正确，焦点再校验 uint32 到 float 的位级转换，两步按顺序排除随机序列差异。
-- [philox offset 推进量须固定 12 而非元素数](philox_offset_12.md)（`related`）：焦点卡以“在用 `PhiloxRandom<10>` 修复单次调用一致性后，单次调用逐元素一致。”作为 offset 诊断前提，候选卡证明“改为显式 `PhiloxRandom<10, uint32_t>` 后单次调用逐元素一致。”；先对齐 rounds，再观察第二次调用错位，才能把剩余故障归因到 generator offset。
-- [多核 numPerCore 须对齐 Philox group 4](numpercore_philox_group_4.md)（`related`）：Philox4x32-10 按 4 元素 group 推进 counter。；10 rounds 多 shape 验证：`128/1024/129280/387840` 元素全部 `Exact match: True (100.0%)`。tool_observed（compare_exponential.py qrun 输出）。focal 的 group 边界修复以候选已校准的 10 rounds 为前置，共同组成 bit-exact 修复集。
-<!-- cannbot:related:end -->

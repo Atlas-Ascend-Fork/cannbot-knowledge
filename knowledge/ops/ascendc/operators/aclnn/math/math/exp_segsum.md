@@ -927,9 +927,3 @@ FP32 与 16 位路线的关键差异：FP32 总共四份 `S*4B`；FP16/BF16 为�
 | 同步 | Queue 生命周期和 Vector pipe barrier | last/current/cast 不得提前覆盖 | `Compute/ComputeBatches/processY` |
 | 精度与尾块 | FP32 状态/Exp，最终 16 位 cast；MODE0 cal tail、MODE1 active tail | ToFloat/CAST_ROUND 顺序、32B padded batch stride | `processCurrent/processY/CopyOutBatch` |
 | 失败边界 | 空 Tensor bypass、资源检查、unknown key return | 平台公开支持、数组/窄化边界、workspace null guard | ACLNN 入口、TilingPrepare、`segsum` router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ExpSegsumBackward A2/A3 ACLNN 算子知识](exp_segsum_backward.md)（`related`）：输出每个前缀 batch 的 `N×N` 下三角半可分矩阵；`gradSelf` ｜ 与 `gradOutput` 同 shape、`ND` ｜ 公开约束要求与 `gradOutput` 同 dtype ｜ 正向 `aclnnExpSegsum` 的输出；支持非连续 tensor并先连续化。实际 `CheckParams` 只检查它属于支持集合，没有显式比较两输入 dtype，见限制。。正向页定义 ExpSegsum 的矩阵输出，反向页明确把该正向输出作为 gradSelf 消费，形成训练中的前向/反向接口链。
-<!-- cannbot:related:end -->

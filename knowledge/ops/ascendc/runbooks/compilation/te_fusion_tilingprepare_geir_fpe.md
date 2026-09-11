@@ -103,9 +103,3 @@ GE 日志路径分流：干净 build 走 `PreRun`（`graph_manager.cc:1335` 附�
 - 首跑看到 `multiprocess_util.py:68 task_q.get()` 抛 `EOFError`，一度归因为"TBE Python 多进程框架崩溃、Python 3.12 兼容性问题、CANN SDK 问题、与算子无关"（agent_reported）——被 `add_custom_package` GEIR 56/56 PASSED 的对照实验推翻，同环境 add_custom 不崩，证明根因在 Xdivy 算子侧。该 EOFError 是 te_fusion 子路径崩溃的伴生现象，不是根因。
 - 一度认为"GE 编译 dry-run 传 -1 动态 shape 触发除零"（agent_reported）——后查 GEIR 测试 shape 是 (4,8) FP16 正常 static shape，排除动态 shape 假设。
 - 早期结论"算子本身正确、GEIR 失败是 TBE 多进程框架/Python 兼容性问题"（agent_reported，非实测根因）——已被 add_custom 对照实验推翻，不进入验证信号。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [561002：TilingParse 未生效，CompileInfo 为空](561002_tilingparse_compileinfo.md)（`related`）：调用链是：GE 编译图 → FE → TBE → vendor 安装的 `xdivy_apt.py:248 xdivy()` → `op_tiling.py:380 do_op_tiling()` → 通过 ctypes 调 C++ `TilingFuncXdivy`（在 `libcust_optiling.so`）→ 除以零。；smoke test 或 aclnn runtime 调用 `aclnxxxGetWorkspaceSize` 返回 561002（`ACLNN_ERR_INNER_TILING_ERROR`），且 tiling 函数已注册（`IMPL_OP_OPTILING.Tiling` 被调用）但返回非 SUCCESS，而 kernel binary 与构建均成功。。两卡都沿 TilingParse/CompileInfo 缺失排障：一张覆盖 GEIR 路径中零值 CompileInfo 导致 FPE，另一张覆盖 ACLNN 路径中空 CompileInfo 导致 561002，可用于区分编译子路径和选择回退。
-<!-- cannbot:related:end -->

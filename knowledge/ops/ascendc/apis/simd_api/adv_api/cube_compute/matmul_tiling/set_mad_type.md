@@ -67,10 +67,3 @@ tiling.SetTraverse(MatrixTraverse::FIRSTM); // 设置遍历方式
 tiling.SetMadType(MatrixMadType::MXMODE);   // 开启MxMatmul场景
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MxMatmul场景](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/mx_matmul_scenario.md)（`explains`）：MxMatmul（全称Microscaling Matmul）为带有量化系数的矩阵乘法；在MxMatmul场景，必须调用该接口并配置为开启MxMatmul场景。场景卡定义带 scaleA/scaleB 的 MxMatmul 语义，SetMadType 卡给出该场景生成正确 Tiling 的强制开关；实现 MxMatmul 时必须把场景识别落实到该 Host Tiling 调用。
-<!-- cannbot:related:end -->

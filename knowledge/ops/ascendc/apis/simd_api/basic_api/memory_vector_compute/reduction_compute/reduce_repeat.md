@@ -397,11 +397,3 @@ source_headers:
     // 根据以上信息，推断出repeatTime为4，dstRepStride为1，srcBlkStride为1，srcRepStride为8
     AscendC::ReduceRepeat<AscendC::ReduceType::SUM, half>(dstLocal, srcLocal, mask, 4, 1, 1, 8);
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [选择低延迟指令，优化归约操作性能](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md)（`explains`）：“当二分累加后的数据量小于等于256Byte（一条指令一个Repeat的数据操作量），使用ReduceRepeat指令，一次执行得到归约结果。”；“对每个repeat内所有数据进行归约操作，支持求和、求最大值和求最小值，可返回最值索引。”。指南给出 ReduceRepeat 在二分累加尾段的具体选用条件，接口卡提供该调用的归约语义。
-- [GetReduceRepeatMaxMinSpr](../reduction_compute_aux_config/get_reduce_repeat_max_min_spr_isasi.md)（`related`）：获取ReduceRepeat或ReduceMax/ReduceMin计算的最值及索引，结果以全局变量形式存储。；对每个repeat内所有数据进行归约操作，支持求和、求最大值和求最小值，可返回最值索引。。辅助接口读取 ReduceRepeat MAX/MIN 写入全局状态的最值与内部索引，计算接口定义每个 repeat 的归约域与索引语义。
-<!-- cannbot:related:end -->

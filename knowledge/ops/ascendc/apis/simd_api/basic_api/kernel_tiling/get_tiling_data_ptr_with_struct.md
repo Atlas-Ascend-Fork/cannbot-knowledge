@@ -109,27 +109,13 @@ extern "C" __global__ __aicore__ void add_custom(__gm__ uint8_t *x, __gm__ uint8
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [直调不可用 GET_TILING_DATA_WITH_STRUCT 宏](../../../../runbooks/compilation/direct_invoke_unavailable_get_tiling_data_with_struct.md)（`exemplifies`）：约束：该宏需在算子Kernel代码处使用，并且传入的dst_ptr参数无需声明类型。；动态Shape场景下，获取到的dst_ptr是指向Global Memory变量的指针；静态Shape场景下，获取到的dst_ptr是指向局部变量的指针，需确保在合理的作用域范围内使用。；暂不支持Kernel直调工程。；- **原始观测**：本 trace 中 `grep` 命中宏只在 host 侧 tiling 生成路径，ASC 编译器对直调 `.asc` 不注入该宏；改为逐字段拷贝后编译通过（仅余 `__gm__` cast 在 host 侧被忽略的无害 warning）。；焦点声明 PTR_WITH_STRUCT 的直调限制，目标卡给出同族宏在直调工程中缺失及逐字段读取的实测绕行。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 15 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [ReplicationPad2d 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/replication_pad_2d_950.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_PTR_WITH_STRUCT(...)` 的直接调用（第 131 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3/op_kernel/arch35/pad_edge_simt.h#L131)
-- [MishBackward A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/mish_backward.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_PTR_WITH_STRUCT(...)` 的直接调用（第 25 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish_grad/op_kernel/mish_grad_apt.cpp#L25)
-- [ReplicationPad3d 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/replication_pad_3d_950.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_PTR_WITH_STRUCT(...)` 的直接调用（第 131 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3/op_kernel/arch35/pad_edge_simt.h#L131)
-- [Gelu 950 Direct Invoke 算子知识](../../../../operators/direct/nn/activation/gelu_950.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_PTR_WITH_STRUCT(...)` 的直接调用（第 29 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/gelu_v2_apt.cpp#L29)
-- [Slice 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/slice_950.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_PTR_WITH_STRUCT(...)` 的直接调用（第 150 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice/op_kernel/arch35/strided_slice_simt.h#L150)
-- [Gather 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/gather_950.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_PTR_WITH_STRUCT(...)` 的直接调用（第 71 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_kernel/arch35/gather_elements.h#L71)
-- [SliceV2 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/slice_v2_950.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_PTR_WITH_STRUCT(...)` 的直接调用（第 150 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice/op_kernel/arch35/strided_slice_simt.h#L150)
-- [StridedSlice 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/strided_slice_950.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_PTR_WITH_STRUCT(...)` 的直接调用（第 150 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice/op_kernel/arch35/strided_slice_simt.h#L150)
-- [InplaceLog10 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_log10_950.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_PTR_WITH_STRUCT(...)` 的直接调用（第 28 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/log/op_kernel/log_apt.cpp#L28)
-- [InplaceLog2 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_log2_950.md)（`related`）：算子声明的固定版本源码包含对 `GET_TILING_DATA_PTR_WITH_STRUCT(...)` 的直接调用（第 28 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/log/op_kernel/log_apt.cpp#L28)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ReplicationPad2d 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/replication_pad_2d_950.md)
+- [MishBackward A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/mish_backward.md)
+- [ReplicationPad3d 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/replication_pad_3d_950.md)
+- [Gelu 950 Direct Invoke 算子知识](../../../../operators/direct/nn/activation/gelu_950.md)
+- [Slice 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/slice_950.md)
+- [Gather 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/gather_950.md)
+- [SliceV2 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/slice_v2_950.md)
+- [StridedSlice 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/strided_slice_950.md)
+- [InplaceLog10 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_log10_950.md)
+- [InplaceLog2 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_log2_950.md)

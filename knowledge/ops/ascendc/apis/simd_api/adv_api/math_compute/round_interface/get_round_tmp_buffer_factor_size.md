@@ -74,10 +74,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetRoundTmpBufferFactorSize(plat, typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetRoundMaxMinTmpSize](get_round_max_min_tmp_size.md)（`same_topic`）：host侧Tiling接口，用于获取Round接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。 获取Round接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。 一个从 shape 求空间区间，一个从固定空间预算反推处理规模，是 Round Host Tiling 的两种互补容量计算。
-<!-- cannbot:related:end -->

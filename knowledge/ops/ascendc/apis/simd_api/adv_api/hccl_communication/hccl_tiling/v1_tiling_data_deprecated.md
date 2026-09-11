@@ -236,10 +236,3 @@ tiling.msg.set_commAlg(1);
 tiling.msg.set_useBufferType(1);
 tiling.msg.set_hasCommOut(1);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HcclTilingData](tiling_data_struct.md)（`related`）：AI CPU启动下发通信任务前，需获取固定的通信配置［Mc2Msg］(#table4835205712588)。在算子实现中，由Tiling组装通信配置项，通过配置固定参数和固定参数顺序的Tiling Data，将通信配置信息在调用AI CPU通信接口时传递给AI CPU。；在算子实现中，由Tiling组装通信配置项，核函数实现时将Tiling配置项通过入参传递给Kernel侧通信API做通信计算。；目标卡给出废弃 v1 配置迁移到当前 Kernel 通信 API 的 TilingData 生产消费合同。
-<!-- cannbot:related:end -->

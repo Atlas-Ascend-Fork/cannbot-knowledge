@@ -280,9 +280,3 @@ __global__ __aicore__ __vector__ void gather_kernel(
 - 本配方只证明 Ascend950/dav-3510、CANN 9.0.1 上这组流水关系；其他平台注册值必须重新验证事件类型和 Queue 语义。
 - 若错误来自索引越界、stride/shape 解码或 GM 地址计算，增加同步不会修复，应另行检查 host 参数和边界约束。
 - 若 slot 地址或搬运长度违反目标平台对齐要求，应先修正布局；正确同步不能替代合法搬运参数。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [随机 Gather 每元素 DMA 过慢—改 SIMT 直访 GM](../performance/random_gather_per_element_dma_should_switch_to_simt_direct_gm.md)（`related`）：- DMA 路线不删除：若目标 dtype 的 SIMT 标量 GM 访问、工具链或 direct-launch wrapper 探针失败，可以回退到已经验证的 32B 槽与双向事件路线。；修复分两层：索引缓冲使用 `TQue<VECIN>`，以 `EnQue/DeQue` 建立 MTE2→S 的生产消费关系；载荷 slot 保持对齐并在每个批次使用 `MTE2_MTE3` 事件等待搬入完成，再用 `MTE3_MTE2` 事件等待搬出完成后复用 slot。以下 before/after 是从轨迹中的完整写入和唯一命中的顺序编辑机械恢复的函数级原文。；目标卡正是焦点保留的 DMA fallback 所需双向事件同步合同。
-<!-- cannbot:related:end -->

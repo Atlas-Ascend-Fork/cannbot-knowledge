@@ -175,9 +175,3 @@ before 中“Vector 写 LocalTensor 后立即 `DataCopyPad` 到 GM”的路径�
 
 - 把首元素垃圾值和一拍滞后当成累计公式或平局规则错误，会在 compute 上反复试错，却不改变异步搬出时序。
 - 只把 buffer position 改成 VECOUT、但不形成 `AllocTensor → EnQue → DeQue → FreeTensor` 生命周期，也不能完整表达队列事件。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TBuf 跨 MTE2 与 Vector 须队列交接](tbuf_mte2_to_vector_requires_queue_handoff.md)（`related`）：形成完整所有权与事件链：为本轮输出分配 VECOUT tensor，在 Vector 流水写入后 `EnQue`，由搬出侧 `DeQue` 后再 `DataCopyPad`，最后 `FreeTensor`；改为 VECIN TQue 的 EnQue/DeQue 交接后，各轨迹的定向或完整测试均闭合。焦点给出 Vector→MTE3 的 VECOUT 交接，候选给出 MTE2→Vector 的 VECIN 交接；二者从相反方向覆盖 DMA 与 Vector 之间的标准 Queue 生命周期。
-<!-- cannbot:related:end -->

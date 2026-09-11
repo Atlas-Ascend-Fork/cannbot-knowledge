@@ -595,9 +595,3 @@ if constexpr(isInt32 == 1) {
 | 同步 | queue 或全核 barrier+atomic | 不能删除 non-deter `SyncAll` | DataCopy/SIMT `Process` |
 | 精度与尾块 | deterministic FP32 gather；non-deter T atomic | 两种窄化顺序、core/thread/support tail | SIMT base headers |
 | 失败边界 | Tiling 失败终止，无 Device fallback | 不把 A2/A3 scale guard误加到 950 | `CheckInputParams/CheckInputShapeAndAttr` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [UpsampleBicubic2dAAGrad A2/A3 ACLNN 算子知识](upsample_bicubic_2d_aa_grad.md)（`same_topic`）：“｜ 执行类型 ｜ 单个可达 `__aicore__` Kernel；同一 body 先由 AIV Vector 生成权重矩阵，再由 `matmul::Matmul` 执行 AIC_CUBE 宽/高方向乘法，属于单 Kernel CV 路线。 ｜”与“｜ 执行类型 ｜ R-001 为 AIV_VECTOR 数据搬运；R-002/R-003 为 SIMT。950 全部 Host 可达 Device 路线均不含 Cube/AIC 或 MIX_CV。 ｜”记录同一 ACLNN 入口在 A2/A3 与 950 的互斥实现；联合阅读才能按平台选择 Cube 或 SIMT/Vector 路线。
-<!-- cannbot:related:end -->

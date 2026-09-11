@@ -61,11 +61,3 @@ Iter2: Load→Mul→...→Store       ...（无循环控制开销，指令可交
 **进一步提升IPC的方向**：将过长的loop循环切分为多个短循环，在长latency指令（如Exp、Div）结束点进行拆分，使每组依赖链更短，双发效率更高。本样例loop循环较短，不适用于该优化项。
 
 详细内容请参见[Gelu性能调优样例 Case 2](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_high_performance/README.md#case-2-启用regbase-apivf融合能力和循环展开优化)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [中级性能优化](intermediate_optimization.md)（`related`）：本节在中级性能优化的基础上，介绍GELU算子的高阶极限打磨方法。；本节在入门功能落地的基础上，介绍GELU算子的中级性能优化方法。。中级页以 RegBase+VF 融合建立优化基线，高阶页在该基线上用循环展开继续提高 ILP，构成同一 GELU 调优阶段链。
-- [入门功能落地](getting_started.md)（`related`）：本节以GELU（高斯误差线性单元）激活函数为例，介绍基于Ascend C RegBase编程模型实现向量算子的基本方法，帮助开发者快速入门Reg矢量算子开发。；本节在中级性能优化的基础上，介绍GELU算子的高阶极限打磨方法。。入门卡定义同一 GELU RegBase 实现对象，极限卡说明其依赖中级阶段继续打磨的进阶链。
-<!-- cannbot:related:end -->

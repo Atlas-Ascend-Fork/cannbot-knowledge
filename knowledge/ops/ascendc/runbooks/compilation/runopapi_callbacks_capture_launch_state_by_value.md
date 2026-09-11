@@ -129,10 +129,3 @@ Host 为 TensorList 预先收集 GM pointer 和 tiling 参数，再用一个 `Op
 ## 误诊
 
 多 dtype、多个输出同时异常且复现位置随运行变化时，应先检查 callback 生命周期；单个 AscendC 指令精度问题通常不会让 Host vector 的控制数据失效。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DepthwiseConv2D 950 Direct Invoke 算子知识](../../operators/direct/nn/conv/depthwise_conv_2d_950.md)（`related`）：“Host 固定 `blocks=56`。`x/weight/bias/y` 的 data pointer、所有 scalar 与当前 stream 被值捕获进同步构造的 launch lambda；`OpCommand::RunOpApi("DepthwiseConv2DDirect", launch)` 调用恰好一个 launcher。”；“唯一根因是延迟执行的 lambda 通过引用捕获局部 vector。包装函数结束后，vector 对象及其 storage 已失效；回调再读取 `size()`、pointer 或 tiling 参数即产生悬空访问。”。Direct launcher 的按值捕获实现满足 RunOpApi 回调生命周期规则，目标 runbook可用于审查未来把单 launch 扩成局部 vector 时的悬空风险。
-- [RunOpApi 后缺 synchronize 致 .to 越序错](runopapi_requires_synchronize_before_tensor_ops.md)（`related`）：“- 在 op_plugin 中，凡 `RunOpApi` 后紧跟对同一输出张量的 torch 侧操作（`.to` / `.contiguous` / `transpose` / `view`），默认在二者间显式 `c10_npu::getCurrentNPUStream().synchronize()`。”明确给出左端事实；“唯一根因是延迟执行的 lambda 通过引用捕获局部 vector。包装函数结束后，vector 对象及其 storage 已失效；回调再读取 `size()`、pointer 或 tiling 参数即产生悬空访问。捕获标量按值而只对 vector 用引用，并不能保证 vector 生命周期。”明确给出右端事实。两页覆盖 RunOpApi Host 发射链的两个独立生命周期条件：消费输出前需完成 stream 排序，延迟 lambda 又必须按值保存 launch vectors，联合排除越序读写和悬空捕获。
-<!-- cannbot:related:end -->

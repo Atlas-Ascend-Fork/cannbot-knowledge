@@ -79,10 +79,3 @@ tiling.SetBufferSpace(-1, -1, -1);
 optiling::TCubeTiling tilingData;
 int ret = tiling.GetTiling(tilingData);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [矩阵乘输出的量化/反量化](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_quant_dequant.md)（`explains`）：同一系数的量化/反量化：SetDequantType(DequantType::SCALAR)：SetQuantScalar(gmScalar)；SCALAR：表示同一系数的量化或反量化模式。/TENSOR：表示向量的量化或反量化模式。指南给出 Tiling 侧 SCALAR/TENSOR 与 Kernel 侧 SetQuantScalar/SetQuantVector 的配对，API 卡定义 dequantType 枚举语义和返回状态。
-<!-- cannbot:related:end -->

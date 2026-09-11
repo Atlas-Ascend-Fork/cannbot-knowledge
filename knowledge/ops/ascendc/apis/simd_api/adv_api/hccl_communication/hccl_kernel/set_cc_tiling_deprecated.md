@@ -53,20 +53,5 @@ __aicore__ inline int32_t SetCcTiling(__gm__ void* ccOpTilingData)
 -   若调用本接口，必须使用标准C++语法定义TilingData结构体的开发方式。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Init（废弃）](init_deprecated.md)（`related`）：若调用本接口时传入initTiling参数，则必须与SetCcTiling接口配合使用。；若调用本接口，必须与传initTiling地址的Init接口配合使用，且Init接口在本接口前被调用。。Init 与 SetCcTiling 双方正文互相规定配套调用及先后顺序，组成同一 deprecated 初始化合同。
-- [SetCcTilingV2](set_cc_tiling_v2.md)（`same_topic`）：用于设置HCCL客户端通信算法的Tiling地址。；用于设置HCCL客户端中某个通信算法配置的TilingData地址。两卡核心对象与决策都是 HCCL 通信算法 Tiling 地址设置，旧接口传 GM 指针且已废弃，V2 改为相对 Mc2InitTiling 的 offset。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)（`related`）：算子声明的固定版本源码包含对 `SetCcTiling(...)` 的直接调用（第 203 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/allto_all_all_gather_batch_mat_mul/op_kernel/allto_all_all_gather_batch_mat_mul.h#L203)
-- [BatchMatMulReduceScatterAlltoAll A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/batch_mat_mul_reduce_scatter_allto_all.md)（`related`）：算子声明的固定版本源码包含对 `SetCcTiling(...)` 的直接调用（第 272 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/batch_mat_mul_reduce_scatter_allto_all/op_kernel/batch_mat_mul_reduce_scatter_allto_all.h#L272)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AlltoAllAllGatherBatchMatMul A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_all_gather_batch_mat_mul.md)
+- [BatchMatMulReduceScatterAlltoAll A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/batch_mat_mul_reduce_scatter_allto_all.md)

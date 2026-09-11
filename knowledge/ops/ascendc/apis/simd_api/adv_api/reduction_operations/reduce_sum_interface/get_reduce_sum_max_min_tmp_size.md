@@ -91,19 +91,5 @@ AscendC::GetReduceSumMaxMinTmpSize(
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceSum](reduce_sum.md)（`related`）：host侧Tiling接口，用于获取ReduceSum接口所需的最大和最小临时空间大小；临时空间大小通过GetReduceSumMaxMinTmpSize获取。。左卡按 ReduceSum 的 shape、dtype 与复用配置返回缓冲范围，右卡明确使用该结果为 sharedTmpBuffer 定容；两端衔接 Host 空间规划与 AR/RA 归约执行。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [ExpSegsumBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/math/exp_segsum_backward.md)（`related`）：算子声明的固定版本源码包含对 `GetReduceSumMaxMinTmpSize(...)` 的直接调用（第 119 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/exp_segsum_grad_tiling.cpp#L119)
-- [CrossEntropyLoss 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss_950.md)（`related`）：算子声明的固定版本源码包含对 `GetReduceSumMaxMinTmpSize(...)` 的直接调用（第 216 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_host/cross_entropy_loss_tiling_arch35.cpp#L216)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ExpSegsumBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/math/exp_segsum_backward.md)
+- [CrossEntropyLoss 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss_950.md)

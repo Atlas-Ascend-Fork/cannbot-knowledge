@@ -63,7 +63,7 @@ knowledge/ops/ascendc/runbooks/
 - **文件名** = title 的稳定英文 slug，纯 `snake_case`、无前导序号、无 session 前缀；**无 `id` 字段**——卡片唯一性由 slug 文件名保证。
 - **错误码进文件名**：现象有关键编译/运行报错码（如 `561002`/`507035`/`161001`）时，slug 应包含该错误码——错误码是精确检索锚点，按码检索直接命中。
 - **撞名兜底**：同 area 内 slug 冲突 → 追加 `__<hash6>`。
-- **跨 area/跨树关系**：关系候选可跨 area，也可跨至 `knowledge/` 其他分类树；候选不是边，须经全量图谱 reviewer 判定与聚合。知识卡中的 `cannbot:related` 受管块只由判定缓存派生，不手工维护。
+- **跨 area/跨树链接**：可在正文中引用 `knowledge/` Bundle 内其他卡片，包括其他 area 和分类树。只在有助于理解结论时添加普通 Markdown 链接，不单独做图谱判定。
 
 ## 3. frontmatter schema
 
@@ -137,9 +137,9 @@ frontmatter **不设 `confidence`/`reproduce_count` 字段**：证据强度由 *
 3. **必填字段**：`type`/`title`/`description`/`tags`/`status`/`sources`/`created_at`/`updated_at`/`platforms` 齐全；`sources` 可为空，`platforms` 仅 draft 可为空，stable/deprecated 必须有实际平台范围。`title` 不超过 40 个 Unicode 字符。
 4. **正文须含 `## 适用场景`**（统一准入基准——完整场景描述，语言+代码双通道）：正文开段写清工程形态/API 路径/验证过的平台与版本/适用粒度/路线优先级/不适用场景（§8 模板）。lint 对缺失报 **warn（聚合为单条输出，不阻塞退出码；存量卡容忍；新卡由审查门禁按 blocker 拦截）**。
 5. **验证信号逐条标注**：`## 验证信号` 每条信号必须标来源平台 + 可用证据等级（`tool_observed`/`artifact_verified`）；缺失即 HARD 违反。
-6. **关系导航归图谱管理**：新卡只在 ledger 中提交关系候选，不手写 `## 相关`。只有完整 Agent 判定缓存可派生 `<!-- cannbot:related:start -->` 受管块，由 `knowledge_graph.py finalize/verify` 同步和校验；该块不是技术事实源。
+6. **普通跨卡引用**：需要时在正文中添加可解析的 Markdown 链接，不维护专用关系块，也不要求每张卡都有相关链接。
 7. **无嵌入图片**：`!\[[^\]]*\]\(` 与 `<img` 双查均无命中。
-8. **无静默删除**：常规 ingest/upgrade 中，废弃卡使用通用生命周期字段并填 `replaced_by` 后保留（`replaced_by` 与 `status: deprecated` 联动），不得直接删文件。**全量重建例外**：仅当用户明确授权"清空现有 runbooks 并从完整轨迹重新提取"时，允许在 Git 可恢复基线上整树删除；删除前必须记录旧卡数、当前 commit、原始输入 inventory 及图谱/索引基线，并在同一重建运行中精确移除图谱失效 endpoint、重建图谱与检索索引并写当日 log。重建不得继承旧卡文本、slug 或复现计数；复现只按本轮 inventory 中不同 source SHA-256 的独立轨迹计数。
+8. **无静默删除**：常规 ingest/upgrade 中，废弃卡使用通用生命周期字段并填 `replaced_by` 后保留（`replaced_by` 与 `status: deprecated` 联动），不得直接删文件。**全量重建例外**：仅当用户明确授权"清空现有 runbooks 并从完整轨迹重新提取"时，允许在 Git 可恢复基线上整树删除；删除前必须记录旧卡数、当前 commit、原始输入 inventory 及导航/检索索引基线，并在同一重建运行中清理指向已删除卡片的正文链接、更新导航与检索索引并写当日 log。重建不得继承旧卡文本、slug 或复现计数；复现只按本轮 inventory 中不同 source SHA-256 的独立轨迹计数。
 9. **跨算子禁止内容（默认生效）**：runbook 卡默认面向跨算子复用，卡内一律不得含源算子常量、checkpoint、shape 列表、**绝对**单跑性能分数（score/latency/speedup 的绝对值）。**相对性能代价允许**：`## 验证信号` / `## 性能影响` 可写同一算子内部两条路线的**相对**对比（如"相对 SIMT 路线约 0.05x"），相对代价必须成对出现（写明参照路线）与来源平台，**不得单独报绝对分数、不得写成通用预期收益**。被标 `safety_fallback` 的路线必须保留该相对代价表述。
 10. **环境故障纪律**：根因是环境（device unavailable/quota/网络/评测 harness 故障）的知识不得写成 Runbook 卡；无独立 kernel 因果证据时只进 meta。
 11. **反投机取巧**：`repair_recipe`/`validated_pattern` 不得以"测试侧放松"为解法——放宽容差、修改 oracle、删减/跳过失败用例或固定随机种子绕过，即使因此"通过"也不得作为正向知识。若轨迹客观证明其危害，可作为明确 `banned` 的 `negative_result`（内部 taxonomy）；否则只作附属坏实践。
@@ -148,15 +148,11 @@ frontmatter **不设 `confidence`/`reproduce_count` 字段**：证据强度由 *
 14. **平台标注**：`platforms` 为**必填**字段，取值必须在注册平台词表内；miner draft 无法定位平台时写空表 `[]`（不伪造值），**空表/缺省不代表通用平台**；curate 遇到空平台必须 defer，不能发布 stable。**`platforms` 只填实际验证过的平台**——推断可迁移的平台不得写入，须在正文 `## 失效边界` 标注“未验证，推断可迁移”；`## 验证信号` 每个数字必须标注来源平台，与 `platforms` 严格一致。
 15. **附件机制弃用**：正文**不得出现 `okf:attachment` 引用**；核心 artifact 一律正文内联，无法恢复时按约束⑫ defer。lint 对存量遗留标记报 warn，新落库卡由审查门禁按 blocker 拦截。
 
-## 7. 受管关系导航
+## 7. 普通跨卡链接
 
-卡片正文末尾可以包含由图谱判定缓存派生的 `## 相关` 导航，但必须位于 `<!-- cannbot:related:start --> ... <!-- cannbot:related:end -->` 受管块中。**不在 frontmatter 设 `related` 字段，也不由 trace curator 手写或修改该块**。
+同根因不同现象、同码不同根因或不同方案的卡片，可以在相关技术叙述中使用普通 Markdown 链接。不在 frontmatter 设 `related` 字段，不维护专用图谱块或固定关系章节，也不要求卡片必须包含链接。
 
-典型关系：同根因·不同现象；同现象·不同切入层；同码不同根因；正知识↔坏实践；方案演进（同问题域不同方案）；冲突主张（显式标注）。
-
-**冲突/方案关系必须显式提交判定**：同一问题域出现两条路线（如 `safety_fallback` 与 `recommended_fastpath`）时，curator 在 ledger 的 `related_suggestions` 中记录两个 Concept ID、候选关系和选用条件；之后仍必须经图谱候选、全文 Agent 判定与聚合，不能由 curator 直接成边。
-
-受管块的目标链接、关系类型和理由格式由 `knowledge-ingest/scripts/knowledge_graph.py` 统一渲染。人工正文仍可在技术叙述中链接 Bundle 内卡片，但这类链接不放入受管块，也不代替 Agent 语义判定。
+同问题域存在冲突或不同方案时，在正文说明选用条件、适用范围和失败边界，必要时链接对应卡片。Curator 可在 ledger 的 `related_suggestions` 中留下待核对的引用建议，该字段可省略或为空，不要求全库扫描；采用的链接进入 staged card 并随正文一起审查。图谱仅按需从最终链接派生，不增加关系判定门禁。
 
 ## 8. 正文规范（蒸馏，非照搬源文）
 
@@ -207,8 +203,6 @@ frontmatter **不设 `confidence`/`reproduce_count` 字段**：证据强度由 *
 ## 遗留问题
 <未解决的遗留问题；未追到根因的卡必须把根因深挖列为优先项>
 
-## 相关
-<不在草稿中手写；落库后由图谱判定缓存派生 `cannbot:related` 受管块，见 §7>
 ```
 
 ### 8.1 证据准入：来源模式 × 内部知识形态

@@ -528,9 +528,3 @@ x1Scale 只通信/转置一次，存入独立 `transX1Scale` slice；后续所�
 | 同步 | HCCL Wait、KC SyncAll、MX flag8/9 | server type、flag ID、AIC:AIV=1:2 | pipelines/communicator |
 | 精度与尾块 | E4/E5 max、E8M0 MX scales、head/tail POD | cast、group、task offsets | quant/MatMul wrappers |
 | 失败边界 | KC/MX IsCapable 无跨 route fallback | mode/dtype/group/comm/layout | Host checks |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AlltoAllQuantMatmul A2 ACLNN 算子知识](allto_all_quant_matmul.md)（`same_topic`）：｜ Kernel 路线 ｜ R-001 K-C per-token 动态 FP8；R-002 MX FP8/FP4 ｜；｜ Kernel 路线 ｜ R-001 A16W8 动态量化；R-002 A16W4 动态量化；R-003 A4W4 静态量化 ｜两卡实现同一 AlltoAllQuantMatmulV2 逻辑算子，分别闭合 950 FP8/FP4 HCCL 与 A2 INT8/INT4 window 路线，是直接的平台选型对照。
-<!-- cannbot:related:end -->

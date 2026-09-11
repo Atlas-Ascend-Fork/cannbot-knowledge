@@ -222,9 +222,3 @@ platforms: ["950"]
 ## 误诊
 
 早期尝试把前批 carry 直接复制到续批 row 0，能让部分数据通过，却会丢失本批原始 row 0；数据恰好不小于 carry 时会产生假阳性。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cummin 950 Direct Invoke 算子知识](../../operators/direct/math/math/cummin_950.md)（`related`）：RN 不可装但能容纳至少两行时保持完整 N、沿 R 分批并跨批保留 carry。续批沿用“row 0 是初始 carry”的首批约定，先用前批 carry 覆盖当前 `yTensor［0］` 再只扫描 `rows - 1` 行，导致续批首个真实输入永远未与 carry 比较。算子卡的 R 分批 carry 路线正是该错误的触发结构；精度卡给出的首批与续批不同起点可直接约束 Device 循环，并以跨批首行用例验证修复。
-<!-- cannbot:related:end -->

@@ -515,9 +515,3 @@ for (int64_t i = localStart + static_cast<int64_t>(Simt::GetThreadIdx());
 | 同步 | 单线程程序顺序，无 barrier/atomic | 核区间与 thread 索引必须唯一覆盖 | `ForeachAsinSimtKernel` |
 | 精度与尾块 | FP16/BF16 以 FP32 `asinf` 计算 | conversion intrinsic、`i<localEnd`、不越界 | `ComputeAsin`, thread loop |
 | 失败边界 | Host null/dtype/UB 检查阻断 launch | >256 tensor、算术溢出无显式处理 | `ForeachAsinTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAsin A2/A3 ACLNN 算子知识](foreach_asin.md)（`same_topic`）：｜ 计算语义 ｜ 对 tensor list 中每个有效元素执行 `y［t］［i］ = asin(x［t］［i］)`。 ｜；｜ 支持状态 ｜ 支持；README/API、ascend910b config ｜ 支持；README/API、ascend910_93 config ｜ 支持，但使用独立 `_950` 卡 ｜。两卡共同覆盖 aclnnForeachAsin 的逐元素语义，并按 950 的 arch35 SIMT 与 A2/A3 的 arch22 Vector 实现分开记录平台路线。
-<!-- cannbot:related:end -->

@@ -109,10 +109,3 @@ AscendC::ReduceMean<T, AscendC::Pattern::Reduce::AR, isReuse>(
 输入shape：(2,8)
 输出数据(dst): [1.625 1.125]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetReduceMeanMaxMinTmpSize](get_reduce_mean_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取ReduceMean接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetReduceMeanMaxMinTmpSize获取。模板参数isReuseSource预留（传false）。。Host Tiling 卡给出 ReduceMean 临时空间上下界的取得方式，Kernel API 卡明确 sharedTmpBuffer 重载必须使用该结果，形成调用前预算到实际参数传递的直接契约。
-<!-- cannbot:related:end -->

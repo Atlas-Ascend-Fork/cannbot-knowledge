@@ -63,10 +63,3 @@ context_ascendc::ContextBuilder builder;
              .IrInstanceNum({1, 1, 3, 1, 1});  // 算子实例化时，index为2的动态类型输入tensor有3个实例
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AddInputTd](add_input_td.md)（`related`）：“输入的index需要基于算子IR定义，按照IrInstanceNum声明顺序来排布”；“参数 instanceNum 为按输入 index 顺序声明的实例化个数向量”。IrInstanceNum 生产动态输入实例顺序，AddInputTd 必须按该顺序消费 index。
-<!-- cannbot:related:end -->

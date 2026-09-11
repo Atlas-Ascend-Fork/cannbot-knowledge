@@ -749,9 +749,3 @@ Host 把宽尾轴切成 `ubFactor`、以 `ubPerCount` 分给核。Device 对 inp
 | 同步 | SIMT call boundary；huge parity events；normal queues；gather V_S | 双分区 `idx+2` 不可提前覆盖 | route bodies |
 | 精度与尾块 | ACLNN core FP32；mask/grid-stride/exact byte tail | 不得让无效 gather index 参与 Add | `mirror_simt/huge/normal/gather` |
 | 失败边界 | reflect pad、shape、resource 失败 | 不得把 AICPU 或 A2/A3 PadV4 body 混入 950 route | `CheckModeInputParam/PadV3Grad` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReflectionPad2dBackward A2/A3 ACLNN 算子知识](reflection_pad_2d_backward.md)（`same_topic`）：设前向原输入空间高宽为 `(Ho,Wo)`，`gradOutput` 高宽为 `(Hi,Wi)=(Ho+top+bottom, Wo+left+right)`。对每个输出坐标 `(h,w)`，反向结果是所有在 reflect 前向中映射到 `(h,w)` 的 padded 坐标求和：；对 collapse 后第 `d` 轴，设 padded `gradOutput` 长为 `I［d］`，原输入/结果长 `O［d］=I［d］-L［d］-R［d］`。给定输出坐标 `o［d］`，正文输入坐标是 `o［d］+L［d］`；reflect 左/右候选分别是 `L［d］-o［d］` 与 `2*O［d］-o［d］+L［d］-2`，仅在左/右 pad 区条件成立时加入。多轴取候选笛卡尔积：。两卡描述同一 ReflectionPad2DBackward 反向聚合契约，分别闭合 A2/A3 与 Ascend 950 的 Device 实现。
-<!-- cannbot:related:end -->

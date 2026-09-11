@@ -925,9 +925,3 @@ Host 用真实 in-UB 轴数生成不同 key，Device 无需在单一 body 内动
 | 同步 | Queue EnQue/DeQue/Free 管理四级流水 | 广播缓存依赖 depth=2及槽内容保留，不能提前覆盖 | `CopyIn*/Compute3/CopyOut4` |
 | 精度与尾块 | 低精度升 FP32、阈值双公式、末端 RINT；FP32原生；UpdateMask tail | `weight<0.5` 与 Select输入顺序、`NO_SAT/CAST_RINT`、`ubTail` | 各 body `Compute3/CopyOut4` |
 | 失败边界 | dtype/shape/API错误阻断 launch；轴数/UB失败返回；未知 key无写出 | mixed dtype key不属于本ACLNN；AIC不可执行 | `CheckParams`, `DoDimensionCollapse`, `lerp` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InplaceLerp 950 ACLNN 算子知识](inplace_lerp_950.md)（`related`）：｜ 计算语义 ｜ `selfRef <- selfRef + weight * (end - selfRef)`，逐元素 broadcast，最终结果写回 `selfRef` ｜；｜ 计算语义 ｜ 广播后逐元素计算 `out=start+weight*(end-start)`；Device 按 `weight<0.5` 选择等价的 start-anchored 或 end-anchored 公式 ｜；两端共享 Lerp 数值公式与 950 广播实现，但分别定义原地 owner 与非原地 out 合同。
-<!-- cannbot:related:end -->

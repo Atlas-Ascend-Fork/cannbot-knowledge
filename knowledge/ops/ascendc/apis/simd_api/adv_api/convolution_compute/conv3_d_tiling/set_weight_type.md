@@ -53,10 +53,3 @@ conv3dApiTiling.SetWeightType(
     ConvCommonApi::TPosition::GM, ConvCommonApi::ConvFormat::FRACTAL_Z_3D, ConvCommonApi::ConvDtype::BF16);
 ```
 
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Conv3D Tiling使用说明](conv3_d_tiling_usage.md)（`related`）：设置Weight在内存上的位置、数据格式和数据类型；设置Input、Weight、Bias、Output的参数类型信息以及Shape信息；使用说明把 SetWeightType 放入生成 Conv3D 单核 tiling 的完整配置步骤。
-<!-- cannbot:related:end -->

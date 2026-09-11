@@ -316,10 +316,3 @@ host侧实现GenerateTiling函数，在该函数中自动获取Tiling参数，�
 >    } 
 >    ```
 >    完整样例请参考[matmul_fused_manual样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_fused_manual)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [入门功能落地](../../../typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/getting_started.md)（`same_topic`）：下文将以Matmul+LeakyRelu融合算子的实现为例，介绍Mix融合算子的设计和实现流程。；本样例基于C++ Tensor编程模式实现Matmul和LeakyRelu融合计算，展示Cube单元（矩阵计算单元）和Vector单元（向量计算单元）协同计算的编程模式。；两页围绕同一个 Matmul+LeakyRelu Mix 算子，前者给出设计流程，后者给出可执行入门实现。
-<!-- cannbot:related:end -->

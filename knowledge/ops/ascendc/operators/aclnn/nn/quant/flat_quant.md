@@ -718,9 +718,3 @@ out_empty.release();
 | 同步 | flags 4/0/5/6 + DEvent ping/pong | AIV:AIC=2:1、轮次 | `Process`、`DEvent` |
 | 精度与尾块 | FP32 MMAD/scale、T handoff、RINT | cast 次序、real M/N/K | `Quant`、`ProcessSplit*` |
 | 失败边界 | Host 校验/selector；unknown key无输出 | 不补设备 fallback | `CheckParams`、`flat_quant` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FlatQuant 950 ACLNN 算子知识](flat_quant_950.md)（`same_topic`）：“｜ 计算语义 ｜ 对每个 batch `k` 计算 `z_k = P1 @ (x_k @ P2)`，再按该 `M×N` token 的绝对值最大值做 INT4 per-token 量化 ｜”与“｜ 计算语义 ｜ `z_k=P1@(x_k@P2)`（per-group 允许 P2 为空），随后做 INT4 per-token 或 FLOAT4_E2M1、32 元素一组的 MX 量化；V2 新增 `dstTypeMax` ｜”分别给出两端正文事实；两卡共享 FlatQuant 的双 Kronecker 投影核心对象，A2/A3 卡给出 V1 INT4，950 卡给出 V2 的 INT4/FP4 扩展，联合阅读可完成版本与平台选型。
-<!-- cannbot:related:end -->

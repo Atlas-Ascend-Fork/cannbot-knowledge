@@ -137,26 +137,5 @@ constexpr static MatmulConfig mmConfig = GetMMConfig<configMode>(shapeParams, qu
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetMatmulApiTiling](get_matmul_api_tiling.md)（`related`）：返回值：MatmulConfig结构体。；mmCFG（输入）：获取的MatmulConfig模板。；GetMMConfig 的产物可直接作为 GetMatmulApiTiling 的输入，闭合编译期常量化 tiling 的生产消费链。
-- [MatmulConfig](matmul_config.md)（`related`）：返回值：MatmulConfig结构体。；模板参数MatmulConfig，用于配置Matmul模板信息以及相关的配置参数。；前者是自定义配置的构造入口，后者定义其返回对象及模板语义。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AlltoAllMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_matmul.md)（`related`）：算子声明的固定版本源码包含对 `GetMMConfig(...)` 的直接调用（第 76 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/3rd/mat_mul_v3/op_kernel/mat_mul_v3_common.h#L76)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [WeightQuantBatchMatmul 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/matmul/weight_quant_batch_matmul_950.md)（`related`）：算子正文包含对 `GetMMConfig(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AlltoAllMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_matmul.md)
+- [WeightQuantBatchMatmul 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/matmul/weight_quant_batch_matmul_950.md)

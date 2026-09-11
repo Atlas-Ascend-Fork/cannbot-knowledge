@@ -304,10 +304,3 @@ optype_collector工具用于采集内置/自定义算子包中指定AI处理器�
       Custom vs Custom       : 0 group(s)
       Result                 : No duplicate OpType conflicts found.
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ACLNN 507035 — opType 与内置 ops_legacy 同名碰](../../../runbooks/compilation/aclnn_optype_collision_built_in_ops_legacy_507035.md)（`related`）：检测自定义算子包与内置算子包、自定义算子包之间的OpType重名问题；built-in 路径优先于 vendor 路径。工具卡提供交付前的 OpType 重名探测，runbook 解释重名后 C++ runtime 会优先命中 built-in binary；联合可从预检结果直接判断 507035 与错误 kernel 加载的根因。
-<!-- cannbot:related:end -->

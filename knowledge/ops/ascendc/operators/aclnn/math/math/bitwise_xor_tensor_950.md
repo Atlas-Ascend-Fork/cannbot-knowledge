@@ -748,9 +748,3 @@ trigger是 `promoteType==BOOL`。BOOL逻辑 XOR恰等价于不相等，Host直�
 ### 实现复用检查
 
 复用 NotEqual、Cast 和 ATvoss broadcast 是源码直接调用/包含关系，不是相似实现推断。BOOL只复用NotEqual，不并入独立 NotEqual 逻辑算子语义；Cast只作为本公开图的可达直接依赖展开；Scalar与Inplace入口均没有纳入。未发现任何可达 Cube/AIC/MIX_CV body，NDDMA与INT64→DOUBLE的SIMT均按VV Skill归类。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BitwiseXorScalar 950 ACLNN 算子知识](bitwise_xor_scalar_950.md)（`same_topic`）：｜ 计算语义 ｜ `out［i］ = self［i］ XOR other`；BOOL×BOOL 用逻辑异或，源码等价为 `NotEqual` ｜；｜ 核心语义 ｜ 整数按提升后的定宽整数逐位 XOR；两输入均为 BOOL 时以 `NotEqual` 实现逻辑 XOR。两输入先 broadcast。 ｜。两卡记录 950 上 BitwiseXor 的 Scalar 与 Tensor 两种 ACLNN 重载，共享整数逐位 XOR 和 BOOL NotEqual 核心，但 broadcast 输入形态不同。
-<!-- cannbot:related:end -->

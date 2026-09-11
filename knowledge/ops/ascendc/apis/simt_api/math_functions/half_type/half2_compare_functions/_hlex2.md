@@ -106,10 +106,3 @@ half2 __hlex2(half2 x, half2 y)
         asc_vf_call<simt_hlex2>(dim3(1024), (__gm__ half2*)x, (__gm__ half2*)y, (__gm__ half2*)dst, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hlex2_mask](_hlex2_mask.md)（`same_topic`）：功能：比较两个half2类型数据的两个分量，如果分量满足第一个数小于或等于第二个数，则对应比较结果为1.0，否则为0.0。；功能：比较两个half2类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量满足第一个数小于或等于第二个数，则对应16位掩码为0xFFFF，否则为0x0。。两端执行相同的有序 half2 逐分量小于等于比较，分别返回 half2 数值 1/0 与 packed uint mask；互读可按下游消费格式选择接口。
-<!-- cannbot:related:end -->

@@ -527,9 +527,3 @@ if constexpr (modelOrd == POSITIVE_INF_SCALAR_NORM_MODEL_CODE) {
 | 同步 | Queue与`SyncAll` | Stage1 DMA必须全体完成 | `Process` |
 | 精度与尾块 | load升FP32、UpdateMask、最终RINT store | +Inf/L1/L2操作次序与中性元 | `DoCompute`, `ReduceComputeImpl`, load/store utils |
 | 失败边界 | x列表1–256、维数≤8、scalar shape1 | 其它scalar默认L2；unknown key无body | Tiling checks, arch35 entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachNorm 950 Direct Invoke 算子知识](../../../direct/nn/foreach/foreach_norm_950.md)（`same_topic`）：“空 Tensor 由其输出核直接写零。所有输入路线在寄存器中使用 FP32 聚合；FP16/BF16 输入先升为 FP32，输出以 `CAST_RINT` 降回原 dtype。”与“每个输入 Tensor 全元素归约成一个同 dtype 输出。MicroAPI 始终把 FP16/BF16 load 后转为 FP32，FP32也在寄存器中计算；跨 tile、跨核 partial 均为 FP32，最后才按 `StoreOneTensorForDtypeT` 的 RINT/zeroing cast 降精度。”分别给出双端正文事实；两卡都实现 TensorList 独立范数归约并在 FP32 累加后回写原 dtype，分别给出 Direct 扩展 mode 与 ACLNN 公开 route，可用于同一逻辑算子的 ABI 和模式选型。
-<!-- cannbot:related:end -->

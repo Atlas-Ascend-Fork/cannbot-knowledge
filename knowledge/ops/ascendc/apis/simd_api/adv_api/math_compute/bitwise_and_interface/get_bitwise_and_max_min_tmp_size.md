@@ -66,11 +66,3 @@ uint32_t minValue = 0;
 auto plat = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
 AscendC::GetBitwiseAndMaxMinTmpSize(plat, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BitwiseAnd](bitwise_and.md)（`related`）：__aicore__ inline void BitwiseAnd(const LocalTensor<T>& dst, const LocalTensor<T>& src0, const LocalTensor<T>& src1, const uint32_t count)；Kernel侧BitwiseAnd接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小；Kernel API 以 count 定义本次工作量，Host 查询为其底层实现提供合法临时空间范围，调用方据此同时确定分块元素数与 Tiling buffer 容量。
-- [GetBitwiseAndTmpBufferFactorSize](get_bitwise_and_tmp_buffer_factor_size.md)（`same_topic`）：Kernel侧BitwiseAnd接口的计算需要开发者预留 申请临时空间，本接口用于在Host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到Kernel侧使用。；该接口用于获取maxLivedNodeCount和extraBuf，在固定空间大小的情况下，通过maxLivedNodeCount和extraBuf可以推算算子单次最大计算元素数量。前者按计算规模选择空间，后者在空间固定时反推 tile，闭合同一 BitwiseAnd sharedTmpBuffer sizing 合同。
-<!-- cannbot:related:end -->

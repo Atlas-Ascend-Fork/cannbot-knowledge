@@ -68,10 +68,3 @@ __aicore__ inline void UpdateKfcWorkspace(uint32_t offset)
 AscendC::KfcWorkspace desc(workspaceGM);
 desc.UpdateKfcWorkspace(1024);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetKfcWorkspace](get_kfc_workspace.md)（`related`）：更新用于 CubeResGroupHandle 消息通信区的 GM 内存地址。用户使用 CubeResGroupHandle 构造函数时需用此接口自主管理空间地址。；获取用于 CubeResGroupHandle 消息通信区的 GM 内存地址。用户使用 CubeResGroupHandle 构造函数时需用此接口自主管理空间地址。；UpdateKfcWorkspace 改写 CubeResGroupHandle 消息区的 GM 地址，GetKfcWorkspace 读取同一地址；二者构成自主管理 KfcWorkspace 状态的写入与读取生命周期。
-<!-- cannbot:related:end -->

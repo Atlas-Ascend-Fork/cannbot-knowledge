@@ -239,10 +239,3 @@ GM 继续使用真实跨行 gap；UB 端使用 gap=0，并用对齐后的元素�
 ## 误诊
 
 只盯 int64 转换逻辑会误诊；values 与 indices 同时从第二位置开始损坏，指向共享的搬运/行寻址层。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)（`exemplifies`）：这里的 stride 字段是相邻 block 有效 payload 之间的额外 gap。DataCopyPad 已按硬件块粒度组织 UB 行；再写入 `padRowBytes-rowBytes` 会把对齐差重复计入地址推进。以有效字节数 `L`、对齐后行宽 `P` 为例，正确下一行地址是当前行起点加 `P`；错误配置又加 `(P-L)`，实际推进变成 `P+(P-L)`，因此从第二行开始访问错误位置。；DataCopyPad（GMToUB非对齐数据搬运）从Global Memory将数据非对齐搬运至Unified Buffer时，可根据开发者的需要自行填充数据。SetPadValue用于设置DataCopyPad需要填充的数值。 具体支持的数据通路为（以逻辑位置TPosition表示）： - Global Memory -> Unified Buffer - GM -> VECIN - GM -> VECOUT。runbook 的错误正发生在 GM 到 UB 的多行 DataCopyPad 参数上，API 卡限定了该搬运方向和填充语义，便于把 stride 修复放到正确重载。
-- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm.md)（`exemplifies`）：这里的 stride 字段是相邻 block 有效 payload 之间的额外 gap。DataCopyPad 已按硬件块粒度组织 UB 行；再写入 `padRowBytes-rowBytes` 会把对齐差重复计入地址推进。以有效字节数 `L`、对齐后行宽 `P` 为例，正确下一行地址是当前行起点加 `P`；错误配置又加 `(P-L)`，实际推进变成 `P+(P-L)`，因此从第二行开始访问错误位置。；该接口提供将数据从Unified Buffer非对齐搬运至Global Memory的功能。 具体支持的数据通路为（以逻辑位置TPosition表示）： - Unified Buffer -> Global Memory - VECIN -> GM - VECOUT -> GM - 如图1所示，对于32字节对齐搬运场景，从Unified Buffer读取的所有数据都会搬运至Global Memory。 - 如图2所示，对于非32字节对齐的场景，在读取Unified Buffer数据时会填入dummy假数据，对齐到32B，搬入Global Memory时会将dummy空数据丢弃，从而实现Unified Buffer到Global Memory的非对齐搬运。。runbook 同时修正 UB 到 GM 写回的多行 stride，API 卡明确非对齐写回时 dummy 对齐数据会被丢弃，说明不能再把补齐差重复计入 gap。
-<!-- cannbot:related:end -->

@@ -118,9 +118,3 @@ VF 融合（P=3，中间值留寄存器）相对同步向量 API（P=4，中间�
 ## 误诊
 
 agent 第一反应归因"asc_vf_call async + 3510 无 asc_sync_vec + V_MTE3 flag 无法捕获 async VF 完成"——这是把真实存在的架构约束误当成本例根因，跳过了非 VF 因素（CopyOut slot）的排查。错误路径：PRINTF 在 `__simd_vf__` 内显示 UB 全零 → 误推"编译器优化掉 StoreAlign" → 尝试 PipeBarrier/noinline"无效" → 误断"双 VF 必须合并为单 VF"，全程未做控制变量实验、未排除 CopyOut slot。复盘（5 个控制变量实验全通过）证伪了"必须合并"结论。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [VfFusionOptimization](../../guides/operator_practice/simd_operator_optimization/vector_compute/vf_optimization/vf_fusion_optimization.md)（`related`）：真因是 CopyOut slot 指向错误 buffer（B2 而非 B1）；编译器首先会做融合前的合法性检查。指南说明 VF 融合的合法性、收益与自动同步，Runbook 则给出融合实现输出异常时先排 CopyOut 映射和禁用 VF 内 PRINTF 的验证顺序，避免把非 VF 错误误判为融合机制缺陷。
-<!-- cannbot:related:end -->

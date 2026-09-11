@@ -130,10 +130,3 @@ bfloat16x2_t __hneux2(bfloat16x2_t x, bfloat16x2_t y)
         asc_vf_call<simt_hneux2>(dim3(1024), (__gm__ bfloat16x2_t*)x, (__gm__ bfloat16x2_t*)y, (__gm__ bfloat16x2_t*)dst, input_total_length);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__hneux2_mask](_hneux2_mask.md)（`same_topic`）：满足时对应结果为1.0，不满足时对应结果为0.0；满足时对应16位掩码结果为0xFFFF，不满足时对应16位掩码结果为0x0。两接口执行相同的 bfloat16x2 无序不等比较和 NaN 判定，差别是前者返回数值分量，后者返回可供掩码消费的两个 16 位字段。
-<!-- cannbot:related:end -->

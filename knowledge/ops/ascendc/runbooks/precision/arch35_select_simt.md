@@ -147,12 +147,3 @@ PRINTF 在 arch35 由 `PrintfImpl` 实现，其参数（GetValue 调用）必须
   2. 除法优先重排 `ratio = positive_diff / max(positive_diff, eps)` 再乘——仍失败，疑似 `Adds(标量 1e38)` 或 `Mul` 大数路径产出 0（未确证）。
   3. `PipeBarrier<PIPE_V>`/`PipeBarrier<PIPE_ALL>`/`SetFlag/WaitFlag<V_MTE3>`/单缓冲 `GetValue(0)`——均不能使失败用例通过；仅多缓冲区同时 GetValue（PRINTF 副作用）有效。
 - **当前方案属哪档路线**：`banned`——`VSEL_CMPMASK_SPR` 在 arch35 做依赖性选择已实测失败；生产级替代路线在本 trace 内未 validated。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Select cmpmask 不偏移致分支反转诊断](select_cmpmask.md)（`related`）：bMask 正确、Select 不一致；插入 PRINTF（GetValue 多缓冲区）后，全部原失败用例 PASS；前卡定位多 repeat mask 指针复用，后卡给出执行顺序敏感时用标量排空区分异步 CMPMASK 同步缺口的探针。
-- [arch35 Select cmpmask SPR 跨调用泄漏致非确定失败](arch35_select_cmpmask_spr.md)（`same_topic`）：arch35 上 `Select` 的 `VSEL_CMPMASK_SPR` 模式内部流程为：先把 mask 张量 `vector_dup` 到临时 buffer，再 `set_cmpmask(cmpMaskPtr)` 加载 CMPMASK 寄存器，然后 `vsel` 依据 CMPMASK 在 src0/src1 间选择。；失败用例单独跑 PASS、被 L0 前置后 FAIL，是典型跨调用状态泄漏，非逐 case 数值逻辑错误。；两卡针对同一 arch35 Compare+Select 非确定分支错选，后一张用隔离执行与套件前置差异收窄到跨调用 cmpmask 状态泄漏。
-- [arch35 VSEL_CMPMASK_SPR 标量批跑 mask 污染](arch35_vsel_cmpmask_spr_mask.md)（`same_topic`）：在 arch35 上用 `Compare`+`Select(VSEL_CMPMASK_SPR)` 做依赖性敏感的逐元素分支选择是禁用路线（无有效生产级同步手段保证 CMPMASK 在 vsel 前就绪，见 `## 失效边界`）。；本卡只提供故障签名与对照实验；标量/极小 count 场景尚无已验证修复。；总览卡给出平台级禁用结论，小 count 专题卡提供 581 例的模式切换与批跑对照，并明确该子场景仍没有可交付修复。
-- [arch35 count Compare Select 异步VF 存读 RAW](arch35_count_compare_select_vf_raw.md)（`same_topic`）：在 arch35 上用 `Compare`+`Select(VSEL_CMPMASK_SPR)` 做依赖性敏感的逐元素分支选择是禁用路线（无有效生产级同步手段保证 CMPMASK 在 vsel 前就绪，见 `## 失效边界`）。；mask 写入本身正确（GetValue 读回值正确），错在 Select 的 VEC_LOAD 早于 Compare 的 VEC_STORE 提交；任何不强制标量排空的 sync 都无法解决，需改走 mask 不出寄存器的 `__simd_vf__` Reg:: 融合实现（设计意图），或把 Compare/Select 包进同一 `__simd_vf__` 函数内并按需 `Reg::LocalMemBar<VEC_STORE,VEC_LOAD>`。；总览卡禁用该依赖链，RAW 专题卡把故障进一步落实为 count-based Compare 写 UB 与 Select 读 UB 的存读时序，并给出寄存器融合修复方向。
-<!-- cannbot:related:end -->

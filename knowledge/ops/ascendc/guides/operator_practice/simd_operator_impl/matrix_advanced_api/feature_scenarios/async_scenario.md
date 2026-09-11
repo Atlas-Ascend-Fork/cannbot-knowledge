@@ -104,11 +104,3 @@ Matmul的[Iterate](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kern
 
 -   Iterate&GetTensorC的异步场景的完整样例请参考[异步场景样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_fused)、[Iterate异步场景样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_async_iterate)。
 -   IterateAll的异步场景的完整样例请参考[IterateAll异步场景样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_async_iterate_all)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [IterateAll](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/iterate_all.md)（`explains`）：“获取C矩阵过程分为同步和异步两种模式”与“需要IterateAll的结果时，调用WaitIterateAll等待IterateAll异步接口返回”把接口参数选择落实为完整异步使用步骤。
-- [启用Iterate或IterateAll异步接口避免AIC/AIV同步依赖](../../../simd_operator_optimization/pipeline_scheduling/enable_iterate_avoid_sync.md)（`related`）：异步：通过设置Iterate接口的模板参数开启异步模式。调用Iterate后，无需立即调用GetTensorC同步等待矩阵C分块搬运完成，可以先执行其它操作，待需要获取结果时再调用GetTensorC。异步模式可以减少同步等待，提高并行度，开发者对计算性能要求较高时，可以选用该方式。异步场景时，需要使用一块临时空间来缓存Iterate计算结果，否则会覆盖计算结果，调用GetTensorC时会在该临时空间中获取C的矩阵分片。临时空间通过SetWorkspace接口进行设置。SetWorkspace接口需要在Iterate接口之前调用。；MIX场景推荐使用Iterate或者IterateAll异步接口（注意：使用异步接口时需要设置Workspace）。。场景指南给出完整同步/异步调用顺序，优化指南说明选择异步能减少 AIC/AIV 消息与等待。
-<!-- cannbot:related:end -->

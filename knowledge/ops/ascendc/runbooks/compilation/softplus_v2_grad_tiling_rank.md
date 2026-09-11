@@ -95,11 +95,3 @@ platforms: ["950"]
 
 - tiling 选 `PadAndSqueeze` + `CheckBroadcastShape` 两段式：先左填充 1 对齐到 max_rank、再逐维校验兼容性——这本就是处理不同 rank 广播的正解，raw rank 一致性校验是与该设计自相矛盾的冗余插入。
 - per_buf 按 fp32 粒度（`dtype_size_ = 4`）固定，与 rank 校验无关；rank 校验是独立插入的防御性检查，非 tiling 切分逻辑必需。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [561103: beta 属性按 float 读致 GRAPH_FAILED](561103_beta_float_graph_failed.md)（`related`）：“rank(gradOutput)=0 != rank(self)=2”给出焦点端事实；“GetAttrPointer<double>”给出候选端事实。两张卡都定位 softplus_v2_grad Host tiling 的 GRAPH_FAILED，但一张是 raw rank 过严校验，另一张是 beta 按错误类型读取；联合阅读提供同一 561103/GRAPH_FAILED 的分支诊断。
-- [反量化 561103 实为 CheckBroadcastShape 过严](561103_checkbroadcastshape.md)（`related`）：“正确做法是只校验“每个输入和输出都能广播到 `max_bro_shape`”，不要求各输入之间两两互兼容。”明确给出左端事实；“- **判读（interpretation，根因分析）**：raw rank 一致性校验是**冗余且自相矛盾**的插入。”明确给出右端事实。两页分别定位广播 tiling 的逐维兼容校验过严和 raw-rank 前置校验过严；排障时应先补 1 对齐，再校验每个输入能否广播到输出，而不是拒绝合法异 rank/外积广播。
-- [标量输入被赋非标量 shape 致 561002 判别](shape_561002.md)（`related`）：“根因排查发现：spec.yaml 明确规定 `w_square_sum` / `g_square_sum` / `weight_decay` / `learning_rate` 的 `role: scalar`（synthesize shape 为 `［］`/`()`/`(1,)`），但黑盒用例 gen_data 把这些标量输入赋了非标量大形状（如一维大 shape），违反 spec role:scalar，导致 host `TilingFunc`（`PadAndSqueeze`/`CheckBroadcastShape`）无法处理 → tiling 失败 → 561002 → NO_OUTPUT。”明确给出左端事实；“- **判读（interpretation，根因分析）**：raw rank 一致性校验是**冗余且自相矛盾**的插入。”明确给出右端事实。两页都要求按广播契约处理标量：一页修正测试输入必须真是 scalar，另一页删除在 PadAndSqueeze 前拒绝 scalar-vs-tensor 的 raw-rank 检查。
-<!-- cannbot:related:end -->

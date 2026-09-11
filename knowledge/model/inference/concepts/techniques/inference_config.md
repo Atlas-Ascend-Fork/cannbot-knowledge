@@ -162,9 +162,3 @@ PD 分离运行时配置，由 `executor/online/server.py` 启动时按 CLI 参�
 ## 已知冲突
 
 - [kvp](../parallelism/kvp.md)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CANN Executor（cann-recipes-infer 自研 executor）](../frameworks/cann_executor.md)（`related`）：`InferenceConfig` 是 ［cann-executor］(../frameworks/cann_executor.md) 的统一配置入口类，以结构化 `dataclass` 取代早期的 `runner_settings` 字典，提供类型检查、嵌套子配置与自动验证。；**统一配置入口 `InferenceConfig`**：`dataclass` 结构化替代 `runner_settings` 字典，YAML 驱动，聚合 `DataConfig` / `ModelConfig` / `ParallelConfig` / `SchedulerConfig` 四子配置，PD 分离另由启动入口注入 `DisaggConfig`。字段语义详见 ［inference-config］(../techniques/inference_config.md)。前者提供字段与推导合同，后者明确其在新执行器中的装配位置，可直接完成配置到执行框架的定位。
-<!-- cannbot:related:end -->

@@ -168,9 +168,3 @@ ASCENDC_TPL_SEL(
 - Ascend950 / CANN 9.1.0 实测；Ascend310、Ascend910B 等其他 SoC 的 asc_opc 行为未在本 trace 验证，**未验证，推断可迁移**（asc_opc 的 TPL 发现机制是工具链通用的文本解析 + apt.cpp include 树预处理，与具体 SoC 无关）。
 - 非 TPL 算子（单一 kernel、无模板参数）不涉及本坑。
 - CANN 大版本若改变 TPL 发现机制（例如改为独立扫描 `*_struct.h`），本卡前提变化——届时须重新核验。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [缺 ASCENDC_TPL_SEL 致运行时分发静默 no-op 跳过](ascendc_tpl_sel_no_op.md)（`related`）：由 `ASCENDC_TPL_SEL` 在 `*_struct.h` 内声明 5 个 sub-kernel 实例；`*_kernel.h` 未 `#include *_struct.h`，导致 asc_opc 在 apt.cpp 的预处理 include 树里看不到 `ASCENDC_TPL_ARGS_DECL`；两卡分别覆盖 TPL 声明缺失和声明不可见，组成同一编译期分发排障链。
-<!-- cannbot:related:end -->

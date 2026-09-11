@@ -213,9 +213,3 @@ __simt_vf__ __aicore__ inline void scatter_simd(
 ## 误诊
 
 最初把问题理解为“还缺一个正确的全缓存事件枚举”。编译器候选重载表已经否定了这一点：该版本接口的关键契约是显式 Tensor 目标，而不只是枚举拼写。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DataCacheCleanAndInvalid](../../apis/simd_api/basic_api/cache_control/data_cache_clean_and_invalid.md)（`exemplifies`）：当前 CANN 头文件暴露的是以 `LocalTensor<T>` 或 `GlobalTensor<T>` 为目标的函数重载，因此模板枚举解析和实参数量同时不满足契约。；函数原型提供基于GM地址和长度的清除方式。参数包含GM地址指针和数据长度。。运行手册的无参编译失败必须回到候选接口的显式目标范围契约，而不能臆造全缓存事件。
-<!-- cannbot:related:end -->

@@ -613,9 +613,3 @@ const __gm__ ForeachAtanTilingData* tilingGm)
 | 同步 | 每元素唯一writer，无barrier/atomic | 输出仅在stream完成后Host可见 | grid-stride loop, AUTO_SYNC false |
 | 精度与尾块 | FP32 atanf；FP16/BF16先升FP32再降；idx<count | 转换顺序、64位tid/stride和count guard不变 | `OpForeachAtanSimt*` |
 | 失败边界 | >256、平台0值、unsupported dtype失败 | 不得补成fallback；空列表/溢出/rounding缺失不得推测 | `ForeachAtanTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAtan A2/A3 ACLNN 算子知识](foreach_atan.md)（`same_topic`）：｜ 计算语义 ｜ 对 TensorList 中每个张量逐元素计算 `y_i［j］ = atan(x_i［j］)` ｜；｜ 计算语义 ｜ 对 TensorList 每项逐元素计算 `out_i［j］=atan(x_i［j］)` ｜。两卡覆盖同一 aclnnForeachAtan 逻辑算子，并把 A2/A3 arch22 Vector 与 950 arch35 SIMT 的启动和资源路线分开。
-<!-- cannbot:related:end -->

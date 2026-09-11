@@ -132,18 +132,4 @@ AscendC::Xor(dstLocal, src0Local, src1Local);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetXorMaxMinTmpSize](get_xor_max_min_tmp_size.md)（`related`）：提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetXorMaxMinTmpSize获取。；host侧Tiling接口，用于获取Xor接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；Xor 计算接口消费临时空间，Host Tiling 查询接口给出可传给 Kernel 的上下界，两者构成同一临时空间配置链。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)（`related`）：算子声明的固定版本源码包含对 `Xor(...)` 的直接调用（第 656 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h#L656)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [SimThreadExponential A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential.md)

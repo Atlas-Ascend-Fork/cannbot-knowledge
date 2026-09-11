@@ -49,10 +49,3 @@ __aicore__ inline uint32_t GetCurAddr()
 ## 调用示例<a name="section1234017553610"></a>
 
 请参考[调用示例](extern_impl_bufpool.md#section1234017553610)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetCurAddr](set_cur_addr.md)（`related`）：SetCurAddr“设置自定义TBufPool已经被分配完的地址”；GetCurAddr“获取当前已经被自定义TBufPool分配的地址，用户可以从该地址值开始向后分配内存块。”。两者管理同一自定义池的分配游标。
-<!-- cannbot:related:end -->

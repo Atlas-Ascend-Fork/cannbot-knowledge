@@ -106,11 +106,3 @@ AscendC::Digamma<float, false>(dstLocal, srcLocal, sharedTmpBuffer, 1024);
 输入数据(srcLocal): [5.3675685 0.26528683 -2.872628 ... 2.9387941 9.001339]
 输出数据(dstLocal): [1.5843406 -3.978809 -6.2081366 ... 0.8983184 2.1407988]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetDigammaMaxMinTmpSize](get_digamma_max_min_tmp_size.md)（`related`）：“host侧Tiling接口，用于获取Digamma接口所需的最大和最小临时空间大小”；“临时空间大小通过GetDigammaMaxMinTmpSize获取”。前者生产临时空间上下界，Digamma 的 sharedTmpBuffer 重载直接消费该规划结果。
-- [GetDigammaTmpBufferFactorSize](get_digamma_tmp_buffer_factor_size.md)（`related`）：“获取Digamma接口的maxLiveNodeCount和extraBuffer，用于在固定临时空间下推算算子单次最大计算元素数量。”提供固定 buffer 的反向容量公式；“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。”说明 Digamma 的临时空间入口，联合阅读可从已有 UB 容量推导可处理元素数。
-<!-- cannbot:related:end -->

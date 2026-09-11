@@ -533,9 +533,3 @@ workspace_total = 32 B reserved, unused
 | 同步 | Queue生命周期；无显式event/atomic | Alloc/EnQue/DeQue/Free顺序 | CRTP base methods |
 | 精度与尾块 | FP16/BF16经FP32/RINT；FP32直通；float mask | cast traits、VL/4、UpdateMask链 | `Compute`、load/store helpers |
 | 失败边界 | capability、列表/dtype/shape检查、key0 | 不得给unknown key补造fallback | Host checks、router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachDivScalarList A2/A3 ACLNN 算子知识](foreach_div_scalar_list.md)（`same_topic`）：｜ 计算语义 ｜ 对列表位置 `i` 的每个有效元素 `j` 计算 `out［i］［j］ = x［i］［j］ / scalars［i］` ｜；｜ 执行类型 ｜ 单 Kernel `foreach_div_scalar_list`：`AIV_VECTOR`（arch35 regbase MicroAPI） ｜。两卡共享 ForeachDivScalarList 的逐 Tensor 标量列表除法合同；目标卡进一步闭合 950 RegBase MicroAPI 路线，与 A2/A3 Level-0 实现分开。
-<!-- cannbot:related:end -->

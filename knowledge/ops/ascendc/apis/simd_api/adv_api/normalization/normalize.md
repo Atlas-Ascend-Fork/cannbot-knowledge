@@ -206,19 +206,5 @@ AscendC::Normalize<DTYPE_Y, DTYPE_X, false, CONFIG>(
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Normalize Tiling](normalize_tiling.md)（`related`）：Tiling参数通过Normalize Tiling获取。；host侧Tiling接口，用于获取Normalize kernel计算所需的Tiling参数，分两步：通过GetNormalizeMaxMinTmpSize获取最大和最小临时空间大小；通过GetNormalizeNDTilingInfo获取kernel侧所需tiling参数。。Normalize Kernel 明确消费 Normalize Tiling 生成的参数，右侧又完整描述临时空间和 ND Tiling 两步准备；这是 Host 参数生产到 Kernel 计算消费的互补任务链。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [LayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `Normalize(...)` 的直接调用（第 315 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/arch35/layer_norm_v4_welford.h#L315)
-- [LayerNormWithImplMode 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_with_impl_mode_950.md)（`related`）：算子声明的固定版本源码包含对 `Normalize(...)` 的直接调用（第 315 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/arch35/layer_norm_v4_welford.h#L315)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [LayerNorm 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_950.md)
+- [LayerNormWithImplMode 950 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_with_impl_mode_950.md)

@@ -164,12 +164,3 @@ mHC `HcPre` / `HcPost` 的分核**基于 shape 即可确定（非值依赖）**�
 运行于 Atlas A3（arch_support 已覆盖 A3 / ascend-950）。
 - [deepseek-v4-continue-pretrain](../../../training/guides/recipes/deepseek_v4_continue_pretrain.md)（跨域·训练：mHC 在 V4 训练侧(AutoFuse 融合小算子)）
 - [mhc-train](../../../training/concepts/kernels/mhc_train.md)（跨域·训练：MindSpeed-LLM 的 mHC 训练正反向 Triton BMM + Sinkhorn 算子，与本页 AscendC 正向算子对照）
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MHC 训练算子（DeepSeek-V4 Manifold-Constrained Hyper-Connections：Triton BMM + Sinkhorn）](../../../training/concepts/kernels/mhc_train.md)（`related`）：补齐推理侧只有正向的 `HcPre`/`HcPost` 所缺的**训练正反向**。；`HcPre`（多路 → 一路）**：融合 RMSNorm → `mixes = linear(x, hc_fn)·rsqrt` → Sinkhorn-Knopp 三段切分 → 用 Pre 系数把多路残差加权求和为一路，同时输出 `post` / `comb` 系数透传给 `HcPost`。。训练卡补齐 HcPre/HcPost 的反向与 Triton BMM/Sinkhorn 链，推理 kernel 卡闭合成对正向融合算子的输入输出与流水；二者可对照验证前向合同和梯度实现。
-- [MhcPost A2/A3 ACLNN 算子知识](../../../../ops/ascendc/operators/aclnn/transformer/mhc/mhc_post.md)（`related`）：把 TND 的 `T` 或 BSND 的 `B*S` 统一记为 `Q`。每个 `q,i,d` 先以 FP32 标量 `hPost［q,i］` 缩放 `hOut［q,d］`，再按 `j` 顺序用 `hRes［q,j,i］` 对 `x［q,j,d］` 做 `Axpy`。索引 `j*n+i` 实现 `hRes` 转置乘法；输入先转 FP32，累加保持 FP32，最终以 `CAST_RINT` 转回 FP16/BF16，只提交真实 D 域。；**`HcPost`（一路输出 → 多路 + 残差融合）**：把子层一路输出经 Post 扩展回多路，与经 `comb` 混合的多路残差加和。融合的核心价值是**消除小算子下的内存墙**——数据不出核内 buffer（UBuffer）即完成计算，大幅减少 HBM 访存。；算子卡给出 hPost/hRes 的具体 Axpy 实现，概念卡解释其在 mHC 前后处理链中的残差融合角色和优化目的。
-- [MhcPreSinkhorn A2/A3 ACLNN 算子知识](../../../../ops/ascendc/operators/aclnn/transformer/mhc/mhc_pre_sinkhorn.md)（`related`）：RMSNorm(x) 与 FP32 投影生成 hPre/hPost/hRes/hIn，再对 hRes 做 20 轮 Sinkhorn；融合 RMSNorm → `mixes = linear(x, hc_fn)·rsqrt` → Sinkhorn-Knopp 三段切分；两卡描述同一 HcPre 融合核心，算子卡闭合 A2/A3 源码 Route，概念卡补充模型接口与 A3/950 使用语境。
-- [mHC (Manifold-Constrained Hyper-Connections)](../modules/mhc.md)（`related`）：“`HcPre` 与 `HcPost` 是 DeepSeek-V4 为 **mHC（Manifold-Constrained Hyper-Connections）** 残差结构发布的两个全新融合算子，承载 ［mhc］(../modules/mhc.md) 在每层 Attention / MoE 子层前后的多路↔单路残差转换计算：”与“mHC 的结构语义与计算公式：多路残差如何替代单残差、三映射各自作用、Sinkhorn-Knopp 如何约束混合矩阵。mHC 由 **`HcPre` / `HcPost` 两个融合算子**承载（`HcPre` 提供 Native / AscendC / PyPTO 三版，`HcPost` 提供 Native / AscendC 两版）；这两个算子的 A3 分离架构 CV 流水、Decode 切 K / Prefill 分 token 双模板、Tiling、性能 us 表属算子实现层面，见 ［mhc-hcpre-hcpost］(../kernels/mhc_hcpre_hcpost.md)。”分别给出双端正文事实；模块卡定义 mHC 的多路残差与 Pre/Post/comb 结构语义，算子卡实现这些映射并给出 CV 流水，二者连接模型模块合同与 HcPre/HcPost 的具体执行。
-<!-- cannbot:related:end -->

@@ -595,9 +595,3 @@ Base::Base::maxCastDataCount = Base::Base::inputsTensorUbSize / sizeof(float);
 | 同步 | queue + PIPE_V + V_MTE3/MTE3_MTE2 | 输出完成前不得覆盖 x1 slot | adapters, `Compute` |
 | 精度与尾块 | low precision FP32 slices/CAST_RINT；tail byte copy | cast 顺序、maxCastDataCount、valid bytes | `ComputerPerCast...`, `SingleTensorProcess` |
 | 失败边界 | Host checks + compile guards | >50 tensors/全空域/unknown key 无安全 fallback | `Init`, `CheckOpInfo`, router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachAddcmulScalarList 950 ACLNN 算子知识](foreach_addcmul_scalar_list_950.md)（`same_topic`）：“单 AIV_VECTOR Kernel；R-001/R-002/R-003 均无 Cube/AIC/MIX_CV。”给出焦点端事实；“Kernel 内按 tensor 顺序发起 SIMT `VF_CALL`，无 AIC/Cube/MIX_CV。”给出候选端事实。两卡实现同一个 aclnnForeachAddcmulScalarList 合同，但 A2/A3 走 AIV Vector 队列路线，950 走顺序 SIMT VF_CALL；联合阅读支持按平台选择实现与资源模型。
-<!-- cannbot:related:end -->

@@ -627,9 +627,3 @@ __simt_vf__ __aicore__ LAUNCH_BOUND(THREAD_NUM) inline void ForeachMulListSimtFp
 | 同步 | 每元素唯一 writer，无显式 barrier/atomic | 分核区间、Tensor 交集和 thread idx 必须互斥 | `Process`、leaf loop |
 | 精度与尾块 | FP16/BF16 升 FP32；FP32/INT32 直算；`idx<cnt` | conversion 顺序与 dtype leaf | 四个 SIMT leaf |
 | 失败边界 | 256 Tensor、平台资源、四 dtype | 其它 dtype 不得静默映射；空域仍一 block | `ForeachMulListTilingFunc` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachMulList A2/A3 ACLNN 算子知识](foreach_mul_list.md)（`same_topic`）：实际入口 ｜ `aclnnForeachMulListGetWorkspaceSize` + `aclnnForeachMulList`，无版本后缀的公开两段式 ACLNN；实际入口 ｜ `aclnnForeachMulListGetWorkspaceSize` + `aclnnForeachMulList`，无版本后缀公开 ACLNN。两卡闭合同一公开入口在 A2/A3 与 950 上的不同 Host、Tiling 和 Device 路线。
-<!-- cannbot:related:end -->

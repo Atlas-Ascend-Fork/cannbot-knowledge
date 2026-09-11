@@ -838,10 +838,3 @@ temp1I = tempSum;
 | 同步 | queue events、Atomic、`SyncAll` | Atomic 模式必须及时恢复 `SetAtomicNone` | store helpers |
 | 精度与尾块 | FP32 中间；16 位末端 cast；mode3补偿 | mask/q/tail 与 cast 顺序不可改变 | `Compute_Mode_3`、stage2 helpers |
 | 失败边界 | q=0、shape/dtype/UB 检查失败 | 不得把 unknown key 当 fallback | Tiling/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupNorm A2/A3 ACLNN 算子知识](group_norm.md)（`related`）：`xHat=(x-mean)*rstd`；输出 `(x-mean)*rstd*gamma+beta`、`mean`、`rstd=1/sqrt(var+eps)`。反向算子直接消费前向 GroupNorm 定义并输出的 mean 与 rstd 来构造 xHat，前向卡补齐这些统计量的生成语义。
-- [GroupNormBackward 950 ACLNN 算子知识](group_norm_backward_950.md)（`same_topic`）：对 `［N,C,HxW］` 按 `G=group` 分组；`xHat=(x-mean)*rstd`，输出 `dbeta=sum(dy)`、`dgamma=sum(dy*xHat)` 与 `dx=rstd*gamma*(dy-(dbeta+xHat*dgamma)/(C/G*HxW))`。；与 GroupNorm 反向一致：`dbeta=sum(dy)`，`dgamma=sum(dy*(x-mean)*rstd)`，`dx=rstd*gamma*(dy-(dbeta+xhat*dgamma)/(C/G*HXW))`。。两张卡描述同一 GroupNormBackward 梯度公式，分别闭合 A2/A3 与 950 的 Host、Tiling 和 Kernel 路线。
-<!-- cannbot:related:end -->

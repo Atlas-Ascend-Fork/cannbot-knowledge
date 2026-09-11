@@ -88,9 +88,3 @@ after:
 
 - 注释声明"防 exp 溢出"但 clamp 上界用 user-supplied threshold——clamp 边界与被防的溢出来源同源，等于没防。
 - C++ ST 只用固定小值域（threshold=20）就声明精度通过，未覆盖 user 参数极端值域。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [exp 下界 clamp -50 破坏 sigmoid 大负数下溢](exp_clamp_50_sigmoid.md)（`same_topic`）：“根因是对 exp 函数溢出方向的误解：exp 仅对正输入溢出，对负输入只会下溢到 0（正确值）；为"防溢出"加双向 clamp 时，下界 clamp 反而破坏了 sigmoid 大负数下溢的正确结果。”与“正确上界应是固定安全值：`exp(50)=5.18e21` 不溢出 fp32（fp32 max ≈ 3.4e38）。”提供双方正文证据。两卡审计同一 SoftplusV2Grad sigmoid 分支的 exp clamp：第一卡证明负向下界 clamp 应移除，第二卡证明正向上界必须是与用户 threshold 解耦的固定安全常数，共同闭合双边数值策略。
-<!-- cannbot:related:end -->

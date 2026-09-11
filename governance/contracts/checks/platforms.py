@@ -32,10 +32,7 @@ SUBJECT_CARD_SCOPE_RE = re.compile(
     r"(?:\u652f\u6301(?:\u5728)?|\u9488\u5bf9|\u9762\u5411)"
     r"(?P<scope>[^\u3002\uff1b;\n]{1,180})"
 )
-MANAGED_RE = re.compile(
-    r"(?ms)^<!-- cannbot:related:start -->\n.*?"
-    r"^<!-- cannbot:related:end -->(?:\n)?\Z"
-)
+
 MIRROR_PLATFORM_PATTERNS = {
     "950": re.compile(r"Ascend\s*950"),
     "a2": re.compile(r"Atlas\s*A2|AtlasA2|200I/500\s*A2|200I/500A2"),
@@ -101,7 +98,7 @@ def fixed_archive_platforms(body: str) -> list[str] | None:
     function does not take effect are not treated as runtime support.
     """
 
-    body = mask_code(MANAGED_RE.sub("", body), inline=False)
+    body = mask_code(body, inline=False)
     match = PRODUCT_SUPPORT_RE.search(body)
     if match is None:
         return _explicit_narrative_platforms(body)

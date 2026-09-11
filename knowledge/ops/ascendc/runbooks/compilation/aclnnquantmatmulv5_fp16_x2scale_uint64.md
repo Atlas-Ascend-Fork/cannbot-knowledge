@@ -77,10 +77,3 @@ the dtype of x2Scale(scale) must be in dtype support list [DT_UINT64,DT_INT64,]
 ## 误诊
 
 - 初始误判 161002 为"V4 不支持某些参数组合"的笼统参数错误，未区分 L0C→out 与 L0C→UB 路径差异；SLOG 探针后才定位到 x2Scale dtype 与具体 checker。此误诊过程说明：遇到 161002 时不应笼统归因为"参数组合不支持"，须用 SLOG 探针取逐字 checker 名与 dtype 约束原文再判路径。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclnnQuantMatmulV4 直调 161002 根因判别](aclnnquantmatmulv4_161002.md)（`related`）：焦点卡写明“符号存在 + 同一 NPU 上经 torch_npu 内部构造 `aclTensor` 调同一算子成功”，候选卡写明“x2Scale(scale) must be in dtype support list ［DT_UINT64,DT_INT64,］”。前者以成功对照收敛到手构 tensor 契约，后者用 SLOG 定位 FP16 直出路径的 x2Scale dtype。
-- [aclnnQuantMatmulV5 L0C2out 三约束判别](aclnnquantmatmulv5_l0c2out.md)（`same_topic`）：`aclnnQuantMatmulV5` 的 L0C→out 直出路径（int8 输入、uint64 scale、输出 dtype 在 int8 之外）是硬件直出量化路径，其参数合同为：；即 V4/V5 在该芯片上对 int8 输入走 L0C→out 直出路径时，强制 x2Scale 必须为 `DT_UINT64` 或 `DT_INT64`，不接受 `DT_FLOAT`。两张 runbook 是同一 L0C 直出参数合同的互补部分。
-<!-- cannbot:related:end -->

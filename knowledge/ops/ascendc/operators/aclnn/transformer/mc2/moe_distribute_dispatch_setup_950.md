@@ -791,9 +791,3 @@ SendJFSDoorBell(jfsDoorBellU8, sqInfoU8, sqPiLinear);
 | 同步 | TQue、HardEvent、SyncAll、CQ reclaim、doorbell | `--cce-auto-sync=off` 下不能删源码显式同步 | `SyncFunc/PutCommSQE/Process` |
 | 精度与尾块 | UNQUANT bit-copy；MX shared exponent+SAT/RINT | E4M3/E5M2 maxExp不同；H tail mask与zero pad不可省 | `QuantDynamicMxFp8/Compute*` |
 | 失败边界 | Tiling GRAPH_FAILED；unknown key无 body；CQ异常assert | 不得把1014、commCmdInfo producer或globalBs=0回填行为补造出来 | `SetTilingKey` / entry / `CheckCqeStatus` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MoeDistributeDispatchTeardown 950 ACLNN 算子知识](moe_distribute_dispatch_teardown_950.md)（`related`）：`SetStatus` 为每个专家生成 8 个 INT32（32 B）状态记录，其中偏移 1 是发送 token 数。`Communication` 把本 rank 数据写到本地 window，或为远端 rank 组装数据 SQE 和状态 SQE，写入 HBM SQ 后敲 JFS doorbell。公开文档明确 Setup 只发数据和状态，指令发出后立即退出；接收与后处理属于配套的 Teardown 算子。；｜ 计算语义 ｜ 等待 `MoeDistributeDispatchSetup` 发起的 EP AllToAllV 数据到达；按本 rank 的专家窗口重排收到的 token，拆出 MX scale，生成 combine 辅助前缀计数和本地专家 token 数 ｜Setup 的发送与状态协议由 Teardown 等待和消费，二者构成同一 950 EP AllToAllV dispatch 生命周期的生产者与消费者。
-<!-- cannbot:related:end -->

@@ -46,10 +46,3 @@ pipe.InitBuffer(inQueueX, 2, 256);
 -   又如，当原始数据较小且Vector可一次性完成所有计算时，强行使用DoubleBuffer会降低Vector计算资源的利用率，最终效果可能适得其反。
 
 因此，DoubleBuffer的性能收益需综合考虑Vector算力、数据量大小、搬运与计算时间占比等多种因素。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [开启DoubleBuffer](../../../operator_practice/simd_operator_optimization/pipeline_scheduling/enable_double_buffer.md)（`same_topic`）：“DoubleBuffer是基于MTE指令队列与Vector指令队列的独立性和可并行性，通过将数据搬运与Vector计算并行执行以隐藏数据搬运时间并降低Vector指令的等待时间”与“DoubleBuffer是基于MTE指令队列与Vector指令队列的独立性和可并行性，通过将数据搬运与Vector计算并行执行以隐藏大部分的数据搬运时间”描述同一流水机制，实践卡进一步给出队列块数为 2 和不收益边界。
-<!-- cannbot:related:end -->

@@ -293,9 +293,3 @@ LongCat-Flash 独有的 Decode 极致时延优化。在非分离场景中，Atte
 ## 已知冲突
 
 - [kvp](../parallelism/kvp.md)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LongCat-Flash-Lite](longcat_flash_lite.md)（`related`）：“LongCat-Flash 是美团 2025 年开源（arXiv 2509.01322）的 **560B MoE** 大语言模型，核心架构特色是 **ScMoE（Shortcut-connected MoE）**，每个 Transformer Block 内部存在 "第一段 Attention → FFN → 第二段 Attention → MoE" 的双段结构，天然存在可并行的计算路径。”与“LongCat-Flash-Lite 是 ［longcat-flash］(longcat_flash.md) 的**减配验证模型**：保留 **MoE + MLA + N-gram Embedding** 核心结构，但层数、expert 数与若干配置缩小到适合**单节点 8 卡（A2 / A3）冷启动优化**的规模（顶层类 `LongcatFlashNgramForCausalLM`，`model_type="longcat_flash_ngram"`）。”是双方正文中的具体合同。满配卡定义 ScMoE 双段结构，Lite 卡明确自己由该模型缩小并保留 MoE、MLA 与 N-gram 核心，互读可区分共享架构与不同部署规模。
-<!-- cannbot:related:end -->

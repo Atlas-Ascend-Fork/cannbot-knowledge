@@ -135,24 +135,9 @@ source_headers:
 参考[InitBufPool](init_buf_pool.md)。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [InitBufPool](init_buf_pool.md)（`related`）：调用TBufPool::InitBuffer接口为TQue/TBuf进行内存分配；整块TbufPool资源可以继续通过TBufPool::InitBufPool接口划分成小块资源；先划分子池再从子池为队列或临时缓冲分配内存，构成同一资源生命周期的相邻步骤。
-- [InitBufPool](../t_pipe/init_buf_pool.md)（`related`）：TBufPool::InitBuffer接口分配Buffer；调用TBufPool::InitBuffer接口为TQue/TBuf进行内存分配。。焦点接口先从整体内存划分子资源池，候选接口再从该 TBufPool 向 TQue/TBuf 分配具体 Buffer。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 6 / 6 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [SwigluGroupQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/swiglu_group_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `InitBuffer(...)` 的直接调用（第 49 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant/op_kernel/arch35/swiglu_group_quant_perf.h#L49)
-- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)（`related`）：算子声明的固定版本源码包含对 `InitBuffer(...)` 的直接调用（第 929 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_v2_full_mesh.h#L929)
-- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)（`related`）：算子声明的固定版本源码包含对 `InitBuffer(...)` 的直接调用（第 350 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/fused_linear_cross_entropy_loss_grad/op_kernel/fused_linear_cross_entropy_loss_grad_mem_friendly.h#L350)
-- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)（`related`）：算子声明的固定版本源码包含对 `InitBuffer(...)` 的直接调用（第 929 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/moe_distribute_dispatch_v2_full_mesh.h#L929)
-- [NormRopeConcatGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad.md)（`related`）：算子声明的固定版本源码包含对 `InitBuffer(...)` 的直接调用（第 36 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat_grad/op_kernel/norm_rope_concat_grad.h#L36)
-- [NormRopeConcatGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `InitBuffer(...)` 的直接调用（第 36 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat_grad/op_kernel/norm_rope_concat_grad.h#L36)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [SwigluGroupQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/swiglu_group_quant_950.md)
+- [MoeDistributeDispatch A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch.md)
+- [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)
+- [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)
+- [NormRopeConcatGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad.md)
+- [NormRopeConcatGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad_950.md)

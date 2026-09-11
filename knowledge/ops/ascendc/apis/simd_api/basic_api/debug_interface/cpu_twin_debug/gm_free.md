@@ -58,10 +58,3 @@ void GmFree(void *ptr)
 ```cpp
 AscendC::GmFree((void*)x);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GmAlloc](gm_alloc.md)（`related`）：CPU 侧运行验证时创建共享内存，在 /tmp 目录下创建共享文件并返回映射指针。参数 bufferSize 为申请的内存大小（字节）。仅 CPU 调测使用。支持 950/a2/a3。；CPU侧运行验证时释放通过GmAlloc申请的共享内存。两接口是 CPU 孪生调测共享内存的申请与释放生命周期。
-<!-- cannbot:related:end -->

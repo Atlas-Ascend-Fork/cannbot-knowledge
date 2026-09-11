@@ -72,11 +72,3 @@ AscendC::CosConfig config;
 config.algo = AscendC::CosAlgo::RADIAN_REDUCTION;
 AscendC::GetCosMaxMinTmpSize(config, shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetCosTmpBufferFactorSize](get_cos_tmp_buffer_factor_size.md)（`related`）：“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize，其中currBuff为可用临时空间（需去除输入输出空间）。”；“在minValue到maxValue范围内，临时空间越大性能越好。约束：无。”。factor 接口用于从现有 buffer 反推切片，max/min 接口则给出可申请字节范围，两者共同闭合 Cos tiling 预算。
-- [Cos](cos.md)（`same_topic`）：“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetCosMaxMinTmpSize获取。”与“host侧Tiling接口，用于获取Cos接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。”分别给出双端正文事实；Cos Kernel 明确由 GetCosMaxMinTmpSize 确定临时空间，Host Tiling 卡输出该范围，二者是同一余弦高阶 API 的空间规划与计算合同。
-<!-- cannbot:related:end -->

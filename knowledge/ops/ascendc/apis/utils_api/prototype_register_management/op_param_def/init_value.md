@@ -151,8 +151,4 @@ this->Output("z")
 
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [LinalgCholesky A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/math/linalg_cholesky.md)（`related`）：Cholesky 卡说明“Kernel 只写被选三角；`Cholesky` OpDef 为临时输出声明 `.InitValue(0)`”；InitValue 页说明“设置后会在算子执行前对算子输出的GM空间进行清零操作或者插入memset类算子进行初始值设置。”，该 Host 初始化为未写的相反三角提供零值。
-<!-- cannbot:related:end -->
+- [LinalgCholesky A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/math/linalg_cholesky.md)

@@ -616,9 +616,3 @@ UB只保留原 dtype的 input/output双 Queue；每个 Vector repeat在 load hel
 | 同步 | Queue EnQue/DeQue/FreeTensor | input消费与output DMA完成前不得复用 | `ForeachRegbaseUnary` |
 | 精度与尾块 | FP32 reciprocal/Muls；低精度RINT；UpdateMask与byte tail | ±0/±Inf分支、Newton条件、mask和ScalarT不变 | `Compute`；load/store helper |
 | 失败边界 | 校验/Tiling失败不launch；unknown key无body | 不添加不存在的fallback，不把内部宽松条件当公开支持 | API/Tiling/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachDivScalar A2/A3 ACLNN 算子知识](foreach_div_scalar.md)（`same_topic`）：｜ 计算语义 ｜ TensorList 内逐元素 `out［i］［j］ = x［i］［j］ / scalar`。 ｜；｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `out［i］［j］ = x［i］［j］ / scalar`。 ｜。两卡实现同一 ForeachDivScalar V2 列表逐元素除标量契约，分别闭合 950 RegBase 与 A2/A3 Vector 路线。
-<!-- cannbot:related:end -->

@@ -89,8 +89,4 @@ AscendC::DataCopy(yLocal, yGlobal, DATA_SIZE);
 完整样例请参考[scalar_atomic_operations样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/06_atomic/scalar_atomic_operations)。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Unique 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/unique_950.md)（`related`）：在指定GM地址上进行原子取最小值操作。将address指向的GM地址上的旧值与输入值进行原子取最小值运算，将结果写回GM地址，返回修改前的旧值。仅Ascend 950PR/950DT支持。；range==1只写first［0］，否则AtomicMin(first［x-min］,i)；Unique 的稠密标记阶段直接以 AtomicMin 保留每个值首次出现的位置。
-<!-- cannbot:related:end -->
+- [Unique 950 Direct Invoke 算子知识](../../../../operators/direct/nn/index/unique_950.md)

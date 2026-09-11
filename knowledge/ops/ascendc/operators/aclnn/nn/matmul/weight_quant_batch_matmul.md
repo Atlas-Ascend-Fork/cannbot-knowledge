@@ -472,9 +472,3 @@ AIV 完成低比特 B 的反量化及 L1 写入后通知 AIC；AIC 消费该 pin
 | 同步 | AIV↔AIC flags，HardEvent，必要时 SyncAll | flag ID/pipe/轮次/ack | common/body headers |
 | 精度与尾块 | 反量化→FP32 Mmad→bias→quant | cast/round、K/N mask、split-K reduce | Route `Process` |
 | 失败边界 | priority fallback | 不可跳过 `IsCapable`/Matmul tiling failure | registry/classes |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [WeightQuantBatchMatmul 950 ACLNN 算子知识](weight_quant_batch_matmul_950.md)（`same_topic`）：`y = x @ ((weight + antiquantOffset) * antiquantScale) + bias`；配置 `quantScale` 时再做输出量化；`y=x@((weight+antiquantOffset)*antiquantScale)+bias`；950 公开 dtype 表不支持带角标 1 的输出量化参数/INT8 y。两卡闭合同一 WeightQuantBatchMatmul V3 入口与反量化矩阵乘语义，分别给出 A2/A3 和 950 的 route、dtype 与输出量化边界。
-<!-- cannbot:related:end -->

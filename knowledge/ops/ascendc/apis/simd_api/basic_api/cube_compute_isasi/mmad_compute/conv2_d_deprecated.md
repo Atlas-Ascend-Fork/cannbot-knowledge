@@ -130,10 +130,3 @@ __aicore__ inline Conv2dTilling GetConv2dTiling(Conv2dParams& conv2dParams)
 ## 调用示例
 
 该接口已废弃，请使用Mmad接口替代。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Mmad](mmad.md)（`related`）：该接口已废弃，将在后续版本移除，请勿使用。计算输入张量和权重张量的 2D 卷积，输出结果张量，多用于图像识别中的特征提取。；Ascend C 矩阵乘加核心接口，实现 C=A×B+C。头文件 `basic_api/kernel_operator_mm_intf.h`。矩阵 A 位于 L0A Buffer（M×K，950 格式 Nz/a2/a3 格式 Zz），矩阵 B 位于 L0B Buffer（K×N，Zn），结果 C 位于 L0C Buffer（M×N，Nz），可选用 Bias（1×N）初始化。；焦点明确要求用 Mmad 替代废弃 Conv2D，目标补齐替代接口的矩阵与 L0 缓冲合同。
-<!-- cannbot:related:end -->

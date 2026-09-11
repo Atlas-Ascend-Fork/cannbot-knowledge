@@ -63,27 +63,13 @@ static ge::graphStatus TilingFunc(gert::TilingContext* context)
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSysWorkSpacePtr](../../../simd_api/basic_api/resource_management/workspace/get_sys_work_space_ptr.md)（`related`）：获取AscendC API需要的workspace空间大小。；获取系统workspace指针。部分高阶API如Matmul需要使用系统workspace，相关接口需要传入系统workspace指针，此时可以通过该接口获取。使用系统workspace时，host侧开发者需要自行申请系统workspace的空间，其预留空间大小可以通过GetLibApiWorkSpaceSize接口获取。。GetLibApiWorkSpaceSize 给出 Host 侧预留容量，GetSysWorkSpacePtr 明确该容量由 Host 申请后在 Kernel 侧取得系统 workspace 指针，二者是同一 workspace 生命周期的容量端与地址端。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例（部分算子）
-
-展示 10 / 82 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [Im2colBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/im2col_backward_950.md)（`related`）：算子正文包含对 `GetLibApiWorkSpaceSize(...)` 的直接调用；本卡提供该接口契约。
-- [ChunkCat A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/chunk_cat.md)（`related`）：算子正文包含对 `GetLibApiWorkSpaceSize(...)` 的直接调用；本卡提供该接口契约。
-- [Celu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/celu_950.md)（`related`）：算子正文包含对 `GetLibApiWorkSpaceSize(...)` 的直接调用；本卡提供该接口契约。
-- [FusedCausalConv1d 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/fused_causal_conv1d_950.md)（`related`）：算子正文包含对 `GetLibApiWorkSpaceSize(...)` 的直接调用；本卡提供该接口契约。
-- [RoiPoolingWithArgMax 950 ACLNN 算子知识](../../../../operators/aclnn/cv/objdetect/roi_pooling_with_arg_max_950.md)（`related`）：算子正文包含对 `GetLibApiWorkSpaceSize(...)` 的直接调用；本卡提供该接口契约。
-- [ChunkCat 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/chunk_cat_950.md)（`related`）：算子正文包含对 `GetLibApiWorkSpaceSize(...)` 的直接调用；本卡提供该接口契约。
-- [ClippedSwiglu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/clipped_swiglu_950.md)（`related`）：算子正文包含对 `GetLibApiWorkSpaceSize(...)` 的直接调用；本卡提供该接口契约。
-- [NsaCompress A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/nsa_compress.md)（`related`）：算子正文包含对 `GetLibApiWorkSpaceSize(...)` 的直接调用；本卡提供该接口契约。
-- [CircularPad3d A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/circular_pad_3d.md)（`related`）：算子正文包含对 `GetLibApiWorkSpaceSize(...)` 的直接调用；本卡提供该接口契约。
-- [HardswishBackwardV2 A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/hardswish_backward_v2.md)（`related`）：算子正文包含对 `GetLibApiWorkSpaceSize(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Im2colBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/im2col_backward_950.md)
+- [ChunkCat A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/chunk_cat.md)
+- [Celu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/celu_950.md)
+- [FusedCausalConv1d 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/fused_causal_conv1d_950.md)
+- [RoiPoolingWithArgMax 950 ACLNN 算子知识](../../../../operators/aclnn/cv/objdetect/roi_pooling_with_arg_max_950.md)
+- [ChunkCat 950 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/chunk_cat_950.md)
+- [ClippedSwiglu 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/clipped_swiglu_950.md)
+- [NsaCompress A2 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/nsa_compress.md)
+- [CircularPad3d A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/circular_pad_3d.md)
+- [HardswishBackwardV2 A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/hardswish_backward_v2.md)

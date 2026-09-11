@@ -441,12 +441,3 @@ DataCopyPad(inputTokensGm_[offset + 1], specTokenLocal, specTokenDataCopyParams)
 | 同步 | Queue + V/S/MTE HardEvent + PIPE_V | 不得在 producer/consumer 间删除或重排 event/barrier | `Compute/ComputeSlotMapping/ComputeInputTokens` |
 | 精度与尾块 | INT32 中间计算、FP32 仅选索引；lastCore/lastLoop | int32 范围、正 token sentinel 前提、只写 K 有效列 | `Init/Process/Compute*` |
 | 失败边界 | Host 检查失败不 launch；V2 无 fallback | optional 缺失进入旧版，不得当成 V2 Route；unknown key 不写输出 | `DoTiling`、`advance_step` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [950 循环内 ReduceMin 取索引致 vector core 异常](../../../../runbooks/precision/950_reducemin_vector_core.md)（`related`）：`numSeqs` 越大（`ComputeInputTokens` 的 `for` 循环迭代越多、`ReduceMin` 调用越频繁）崩溃率越高。；在 sampledTokenIds［s,0:K］ 后补 -1，经 ReduceMin 找到最小值索引 m：；算子卡给出触发 ReduceMin 的实际 token 选择阶段，Runbook 给出该阶段迁移到 950 时的故障判据和回退。
-- [advance_step in-place kernel FATBIN wrap](../../../../runbooks/compilation/fatbin_wrapper_param_count_matches_opdef_input_plus_output.md)（`related`）：FATBIN 生成的 wrapper kernel 调用 `advance_step()` 时传了 14 个实参（8 input + 4 output + workspace + tiling），但 kernel 函数只声明 10 个形参（8 input + workspace + tiling，没有 output 参数）。；四个输出通过输入 GM 原地更新；OpDef 的图输出只用于形状/类型传播。；排障卡证明 950 wrapper 即使面对原地算子也会机械传入四个 output，Operator 卡说明 AdvanceStep 的四个逻辑输出通过输入 GM 原地更新，二者共同解释实现仍须保留输出形参以满足生成 ABI。
-- [kernel 输出=输入：binary 不随源码变化即守卫吞体](../../../../runbooks/precision/kernel_binary.md)（`related`）：AdvanceStep 适配 950（Ascend950, arch 3510）后，TTK 跑 250 用例全部 FAIL，且所有输出 tensor 与输入逐字节相同——kernel 被 launch 了但没做任何事。plog 显示 `tilingKey is 0, functionEntry=0, Kernel launch successfully`，确认 kernel 已加载执行。binary 文件 `AdvanceStep_..._high_performance.o` 只有 2136 字节，对包含 DataCopyPad/循环/算术的 kernel 异常小。；最新 V2 只有 R-001。`advance_step` 解析 POD，在 `__CCE_AICORE__==220` 且 key=2 时构造本地 `TPipe` 和 `KernelAdvanceStepSpec<int64_t>`。每核绑定连续 request 行；每 loop 严格执行位置/长度更新→slot 更新→token 更新，前一阶段通过同一 Queue/TBuf 和显式 HardEvent 向下一阶段交接。没有多 Kernel、跨节点 workspace 或通信边。。故障卡在 950 观察到空执行，算子卡揭示 body 被 `__CCE_AICORE__==220` 守卫且只接受 key=2，直接支撑迁移诊断。
-- [optional input 未连接触发 InferShape 失败](../../../../runbooks/compilation/optional_input_infershape.md)（`related`）：“在 Ascend950PR（CANN 9.0.0）上用 GEIR 测试程序调用 `advance_step`（已补 Output 声明、kernel 签名、buffer 拷贝），`RunGraph` 仍在 InferShape pass 失败。”与“｜ 输入输出 ｜ 8 个 `INT64/ND` Tensor：6 个必选输入/原地对象与 V2 的 `specToken`、`acceptedNum`；属性为 `numSeqs`、`numQueries`、`blockSize` ｜”提供双方正文证据。runbook 在 AdvanceStep 图只连六路必选输入时复现 context 构造失败，算子卡明确 V2 还具有 specToken 与 acceptedNum 两个槽位；二者连接故障签名与真实输入合同。
-<!-- cannbot:related:end -->

@@ -715,9 +715,3 @@ Direct 交付件保留这一 950 idiom：FP16/BF16 从已分配的完整 UB 子�
 | 同步 | scheduler 的 VECIN/VECCALC/VECOUT Get/ReleaseTensor 协议 | producer 完成前不得让同 buffer id 被同 parity tile 覆盖 | `ElementwiseSch::CopyIn/RunNormalOp/CopyOut` |
 | 精度与尾块 | FP16/BF16 边界 cast、主体 FP32、最终 RINT；64-lane mask | raw load 只能读已分配 UB span；`UpdateMask` 必须贯穿 promote cast/compute/masked store；GM 只写有效 `tileLength` | `LoadAsFloat/CalcTargetAdamW/StoreFromFloat` |
 | 失败边界 | plugin 拒绝 shape/dtype/rank/contiguous 错误 | 不得把 invalid dtype launcher default、无 launch 检查当作安全 fallback | `apply_adam_w_meta/apply_adam_w_npu/launch_apply_adam_w_direct` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ApplyAdamW A2/A3 ACLNN 算子知识](../../../aclnn/nn/optim/apply_adam_w.md)（`related`）：“更新写回原 `var/m/v/maxGradNorm`”定义 ACLNN A2/A3 的原地状态更新，“只写新张量 `y`；不回写 `var/m/v`”定义 950 直调版本的非原地输出，对照可避免按算子名误用状态合同。
-<!-- cannbot:related:end -->

@@ -233,10 +233,3 @@ UB gather 的复杂度从“每核扫描一次更新流”变成“每输出 chu
 ## 误诊
 
 最初把所有失败笼统归为“标量 GM store 在大规模必然丢写”。后续对照显示，无重复目标的置换路线可以稳定通过；真正需要优先规避的是重复目标下的随机写/RMW 与交错 GM load 组合。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TQue简介](../../apis/simd_api/basic_api/resource_management/t_que/t_que_intro.md)（`exemplifies`）：“实际代码必须保持 `AllocTensor → EnQue → DeQue → FreeTensor` 的所有权顺序”与“全部重复更新都在 UB 内按原始 `k` 顺序合并，最后只以连续 DMA 写回 GM”把 TQue 生命周期约束落实到重复更新的有序 UB 合并实现。
-- [ScatterNdUpdate A2/A3 ACLNN 算子知识](../../operators/aclnn/nn/index/scatter_nd_update.md)（`related`）：“重复索引最终保留后出现的 update”；“把每个连续目标块先搬入 UB 后，全部重复更新都在 UB 内按原始 `k` 顺序合并，最后只以连续 DMA 写回 GM”。Runbook 提供维护 ScatterNdUpdate last-wins 时避免随机 GM 写 winner 不确定性的安全实现。
-<!-- cannbot:related:end -->

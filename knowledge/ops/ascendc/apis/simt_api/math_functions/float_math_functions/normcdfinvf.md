@@ -100,10 +100,3 @@ inline float normcdfinvf(float x)
 x：-0.75, -0.25, 0.25, 0.75
 result: nan nan -0.6744897 0.6744897
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Normcdff](normcdff.md)（`related`）：功能：获取输入数据x的标准正态分布的累积分布函数值。；功能：获取输入数据x的标准正态累积分布的逆函数。两页提供标准正态 CDF 的正向与逆向变换，是概率值和分位点互相转换的同一任务链。
-<!-- cannbot:related:end -->

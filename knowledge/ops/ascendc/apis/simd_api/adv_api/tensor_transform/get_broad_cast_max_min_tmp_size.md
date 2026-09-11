@@ -70,19 +70,5 @@ AscendC::GetBroadCastMaxMinTmpSize(ascendcPlatform, srcShape, dstShape, 2, false
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Broadcast（张量变换）](broadcast.md)（`related`）：临时空间大小通过GetBroadCastMaxMinTmpSize获取。；host侧Tiling接口，用于获取Broadcast接口所需的最大和最小临时空间大小。。Broadcast 直接指定右侧接口为其临时空间来源，右侧为计算接口返回可选范围；两者分别承担 Kernel 计算与 Host 资源查询，是明确的前后任务链。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [MatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/matmul_all_reduce_950.md)（`related`）：算子声明的固定版本源码包含对 `GetBroadCastMaxMinTmpSize(...)` 的直接调用（第 297 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_host/op_tiling/arch35/quant_matmul_all_reduce_tiling_950.cpp#L297)
-- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)（`related`）：算子声明的固定版本源码包含对 `GetBroadCastMaxMinTmpSize(...)` 的直接调用（第 297 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_host/op_tiling/arch35/quant_matmul_all_reduce_tiling_950.cpp#L297)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [MatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/matmul_all_reduce_950.md)
+- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)

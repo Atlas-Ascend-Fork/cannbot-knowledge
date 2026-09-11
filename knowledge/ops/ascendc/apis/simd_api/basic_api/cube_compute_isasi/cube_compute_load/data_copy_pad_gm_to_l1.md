@@ -179,10 +179,3 @@ padParams.paddingValue = static_cast<int8_t>(0);
 
 AscendC::DataCopyPad<int8_t, AscendC::PaddingMode::Compact>(dstLocal, srcGm, copyParams, padParams);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMD算子实现分离模式](../../../../../guides/operator_practice/simd_operator_impl/matrix_basic_api/decoupled_mode.md)（`explains`）：分离模式 Matmul 规格要求“DataCopy（GMToL1随路转换-ND2NZ搬运）：Global Memory到L1 Buffer数据搬运 + ND转NZ格式转换接口”；DataCopyPad 页定义“将Global Memory中的数据搬运到L1 Buffer，支持在搬运过程中对数据进行Padding（补齐）。”，后者是非对齐输入进入前者 GM→L1 阶段的具体实现选择。
-<!-- cannbot:related:end -->

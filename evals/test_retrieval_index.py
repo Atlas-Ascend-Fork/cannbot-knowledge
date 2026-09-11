@@ -276,7 +276,7 @@ class RetrievalIndexTests(unittest.TestCase):
             self.assertEqual(missing_platform.returncode, 2)
             self.assertIn("platform is required", missing_platform.stderr)
 
-    def test_literal_search_prioritizes_title_and_ignores_managed_related_block(self) -> None:
+    def test_literal_search_prioritizes_title_and_includes_ordinary_links(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             make_root(root)
@@ -302,9 +302,7 @@ class RetrievalIndexTests(unittest.TestCase):
             ).replace(
                 "This fixture verifies indexed API lookup and audit behavior without depending on\n"
                 "repository knowledge cards.",
-                "<!-- cannbot:related:start -->\n\n"
-                "# Related\n\n- [GetCurNpuArch](get_cur_npu_arch.md)\n\n"
-                "<!-- cannbot:related:end -->",
+                "参见 [GetCurNpuArch](get_cur_npu_arch.md)。",
             )
             (api_root / "related_navigation.md").write_text(related, encoding="utf-8")
 
@@ -333,11 +331,11 @@ class RetrievalIndexTests(unittest.TestCase):
             self.assertEqual(query.returncode, 0, query.stderr)
             results = json.loads(query.stdout)["results"]
             self.assertEqual("GetCurNpuArch", results[0]["title"])
-            self.assertEqual("Platform API usage", results[1]["title"])
-            self.assertNotIn("Related navigation only", [item["title"] for item in results])
+            self.assertIn("Platform API usage", [item["title"] for item in results[1:]])
+            self.assertIn("Related navigation only", [item["title"] for item in results[1:]])
 
             # A literal query is one contiguous phrase, not an AND of keywords.
-            for match, expected_count in (("literal", 0), ("text", 2)):
+            for match, expected_count in (("literal", 0), ("text", 3)):
                 with self.subTest(match=match):
                     combined = subprocess.run(
                         [
@@ -853,8 +851,7 @@ class RetrievalAuditTests(unittest.TestCase):
             original = api_root / "synthetic_api.md"
             original.write_text(
                 original.read_text(encoding="utf-8")
-                + "\n<!-- cannbot:related:start -->\n## 相关\n\n"
-                + "- [NeighborContract](neighbor.md)\n<!-- cannbot:related:end -->\n",
+                + "\n\n- [NeighborContract](neighbor.md)\n",
                 encoding="utf-8",
             )
             built = run_index(root, "build")
@@ -867,7 +864,7 @@ class RetrievalAuditTests(unittest.TestCase):
             second = self.create_search_receipt(
                 root, second_path, platform="a2", query_text="NeighborContract",
             )
-            self.assertEqual(1, second["result"]["count"])
+            self.assertEqual(2, second["result"]["count"])
             neighbor_hit = second["result"]["results"][0]
             state = work / "state.json"
             self.write_state(state, first_path, first, platform="a2")

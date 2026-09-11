@@ -102,10 +102,3 @@ inline float lgammaf(float x)
 x：0.25, 0.75, 1.25, 1.75
 result: 1.288023 0.203281 -0.09827184 -0.08440112
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Lgamma](../../../simd_api/adv_api/math_compute/lgamma_interface/lgamma.md)（`same_topic`）：功能：获取输入数据x伽马值的绝对值并求自然对数。；按元素计算x的gamma函数绝对值的自然对数（lgamma(x) = ln(｜gamma(x)｜)）。模板参数T支持half/float。两卡核心数学对象均为 lgamma，分别覆盖 SIMT 标量 float 与高阶 LocalTensor 逐元素接口。
-<!-- cannbot:related:end -->

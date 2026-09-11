@@ -213,10 +213,3 @@ __simd_vf__ inline void ComputeModeVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, 
     }
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [VfFusionOptimization](vf_fusion_optimization.md)（`related`）：“如果多个VF函数的控制流等价，且满足均为Hardware Loop循环，编译器会执行VF融合优化特性。”与“当VF函数中的循环满足Hardware Loop编码规范时，会被编译器优化为Hardware Loop，提升整体执行性能；否则循环逻辑会由迭代变量和条件判断语句构成Software Loop，无法开启VF循环优化。”提供双方正文证据。融合指南把两端均为 Hardware Loop 作为自动 VF 融合条件，循环指南给出生成 Hardware Loop 的成功与回退判据，组成先规范循环再获得融合的优化链。
-<!-- cannbot:related:end -->

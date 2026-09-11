@@ -112,16 +112,3 @@ for i in tl.static_range(BLOCK_SIZE):
 **阶段五 高级**：Memory-Bound 算子融合为 Compute-Bound；矩阵乘+后处理用 CV 融合；`tl.constexpr`/`tl.static_range`；归约升 FP32、矩阵乘混合精度保精度。
 
 **阶段六 910_95 专项**：显式开 multibuffer；利用 fixpipe L0C→UB 直通；UB 248KB 允许更大分块；Vector 核数翻倍，grid 可用更多核。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [性能调优方法论](performance_tuning.md)（`related`）：“性能调优总流程”
-- [数据搬运与内存访问模式优化](data_movement_optimization.md)（`related`）：“存算并行与访存模式”
-- [CV 流水线优化（Cube-Vector 融合）](cv_pipeline_optimization.md)（`related`）：“CV 融合”
-- [NPU Autotune 配置与 AutoTilingTuner](autotune_on_npu.md)（`related`）：“autotune 配置”
-- [FixPipe 随路操作与 Bias 融合优化](fixpipe_bias_fusion.md)（`related`）：“FixPipe 与 Bias 融合”
-- [标量降级规避（910_95 / 910B）](scalar_degradation_avoidance.md)（`related`）：“aiv_scalar_ratio 偏高时的标量退化修复”
-- [Tiling 与 Grid 分核策略（910_95 平台）](tiling_and_grid_910_95.md)（`related`）：“增大分块 / Grid 调整的平台约束”
-
-<!-- cannbot:related:end -->

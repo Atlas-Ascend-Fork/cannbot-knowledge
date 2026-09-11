@@ -484,14 +484,9 @@ Host 只生成一次 launch grid，并用最大 Tensor 控制 blockDim；Device 
 | 精度与尾块 | FP32 `tanf`；FP16/BF16 升精度 | conversion 顺序与 `idx<count` guard 不得改变 | `OpForeachTan*Simt` |
 | 失败边界 | dtype/平台/POD 检查失败不 launch | >256、非法 dtype、空平台信息必须保持失败关闭 | `ForeachTanTilingFunc` |
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [ListTensorDesc](../../../../apis/simd_api/basic_api/aux_data_structures/list_tensor_desc.md)（`related`）：“每个 block 都构造 x/y `ListTensorDesc`，按 `tensorNum` 顺序遍历列表；”给出 950 Kernel 对 TensorList 描述符的实际使用；“ListTensorDesc是Tensor描述符列表，用于管理多个Tensor的描述信息。”说明该结构在列表遍历中的职责。
-- [__bfloat162float](../../../../apis/simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162float.md)（`related`）：将bfloat16类型数据转换为浮点数，返回转换后的值。；float val_f32=__bfloat162float(val)。API 卡定义单值 BF16 到 float 转换，ForeachTan 950 的 BF16 route 直接以该 intrinsic 产生 tanf 的 FP32 输入，构成实现与接口的调用关系。
-- [__float2bfloat16](../../../../apis/simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_float2bfloat16.md)（`related`）：“yPtr［idx］=__float2bfloat16(result_f32)”是 BF16 route 写回前的实际转换；“遵循CAST_RINT模式，将浮点数转换为bfloat16精度，返回转换后的值。”给出缩精度和舍入合同。
-- [__float2half](../../../../apis/simt_api/math_functions/half_type/half_precision_conversion_functions/_float2half.md)（`related`）：“yPtr［idx］=__float2half(result_f32)”是 FP16 route 写回前的实际转换；“功能：遵循CAST_RINT模式，将浮点数转换为半精度浮点数，返回转换后的值。”给出缩精度合同。
-- [__half2float](../../../../apis/simt_api/math_functions/half_type/half_precision_conversion_functions/_half2float.md)（`related`）：“float val_f32=__half2float(val)”是 FP16 route 进入 tanf 前的实际转换；“功能：将half类型数据转换为浮点数，返回转换后的值。”给出扩精度方向。
-- [数学函数tanf](../../../../apis/simt_api/math_functions/float_math_functions/tanf.md)（`related`）：“950 FP32 路线直接执行 `tanf(float)`；FP16/BF16 路线严格按 source 顺序执行低精度→FP32、`tanf`、FP32→低精度。”明确三条 950 route 的共同计算 primitive；“函数原型：float tanf(float x)”给出该 primitive 的标量签名。
-- [ForeachTan A2/A3 ACLNN 算子知识](foreach_tan.md)（`same_topic`）：“950 FP32 路线直接执行 `tanf(float)`；FP16/BF16 路线严格按 source 顺序执行低精度→FP32、`tanf`、FP32→低精度。”描述 950 的实现 route；“对每个 `i` 及 `0 <= j < numel(x_i)`，写 `y_i［j］=tan(x_i［j］)`。”给出 A2/A3 卡的同一 ACLNN 逻辑算子合同，二者共同支持按平台核验 ForeachTan。
-<!-- cannbot:related:end -->
+- [ListTensorDesc](../../../../apis/simd_api/basic_api/aux_data_structures/list_tensor_desc.md)
+- [__bfloat162float](../../../../apis/simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162float.md)
+- [__float2bfloat16](../../../../apis/simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_float2bfloat16.md)
+- [__float2half](../../../../apis/simt_api/math_functions/half_type/half_precision_conversion_functions/_float2half.md)
+- [__half2float](../../../../apis/simt_api/math_functions/half_type/half_precision_conversion_functions/_half2float.md)
+- [数学函数tanf](../../../../apis/simt_api/math_functions/float_math_functions/tanf.md)

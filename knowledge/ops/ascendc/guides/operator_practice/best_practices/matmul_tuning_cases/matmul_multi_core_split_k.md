@@ -136,10 +136,3 @@ platforms: []
 ## 总结<a name="section8281219125011"></a>
 
 当算子使用Matmul API完成矩阵计算时，原始矩阵的M和N方向无法进行有效切分，且结果输出到Global Memory时，可以考虑开启多核切K功能，实现多核并行，提升计算效率。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [EnableMultiCoreSplitK](../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/enable_multi_core_split_k.md)（`explains`）：开启多核切K功能的方式为：在GetTiling接口前调用EnableMultiCoreSplitK接口，开启多核切K，并在Kernel实现中，对C矩阵的Global Memory地址清零后开启AtomicAdd。；多核场景，通过该接口开启切K轴。不调用该接口的情况下，默认不切K轴。在GetTiling接口调用前使用。指南给出完整 Host/Kernel 操作链，API 卡固定其中开关时序与默认行为。
-<!-- cannbot:related:end -->

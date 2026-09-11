@@ -50,9 +50,3 @@ platforms: ["950"]
 - 本卡结论绑定 950/3510 的 28:56 配比；A3/c220 的核配比不同（platforms 不含 a3）。
 - 推断 `KERNEL_TYPE_MIX_AIC_1_2`（1:2）可占满 56 AIV，但**本 trace 未实测其带宽饱和度，推断可迁移**，需独立验证后才能作为推荐路线。
 - `SetL2CacheHint` 在 950/arch35 需带模板参数 `SetL2CacheHint<CacheRwMode::READ>(CacheMode::CACHE_MODE_DISABLE)`（非模板形式搜不到定义）；本卡不展开其调用细节。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [L2 读写端口独立并行 HBM 总线串行共享](l2_hbm.md)（`related`）：“并发带宽只能用 NPU event 实测并发时间 + 总数据量算；单路相加只用于验证各路是否独立达标。”规定 L2/HBM 并发测量口径；“只启用了 28 个 AIV，另外 28 个 AIV 空闲（核利用率 50%）。”揭示 MIX 1:1 路线会把同一带宽实验的并发执行资源减半。
-<!-- cannbot:related:end -->

@@ -195,11 +195,3 @@ AscendC::TQue<AscendC::TPosition::VECOUT, 1, &conf> outQueue;
 pipe.InitBuffer(inQueueX, 1, dataSize * sizeof(srcType));
 pipe.InitBuffer(outQueue, 1, dataSize * sizeof(int8_t));
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [重复目标随机写丢失 — 在 UB 内按序合并后 DMA 写回](../../../../../runbooks/precision/repeated_overwrite_updates_need_ordered_ub_merge.md)（`exemplifies`）：“实际代码必须保持 `AllocTensor → EnQue → DeQue → FreeTensor` 的所有权顺序”与“全部重复更新都在 UB 内按原始 `k` 顺序合并，最后只以连续 DMA 写回 GM”把 TQue 生命周期约束落实到重复更新的有序 UB 合并实现。
-- [VacantInQue](vacant_in_que.md)（`related`）：查询队列是否已满。 约束：该接口不支持Tensor原地操作，即TQue的depth设置为0的场景。；队列深度与 double buffer 是不同维度：深度为 1 时仍可开启 double buffer。非 Tensor 原地操作通常建议将深度设为 1；Tensor 原地操作按接口约束将深度设为 0。；VacantInQue 的可用性取决于 depth 是否为 0，TQue 概念卡给出原地操作与 depth 取值的配置边界。
-<!-- cannbot:related:end -->

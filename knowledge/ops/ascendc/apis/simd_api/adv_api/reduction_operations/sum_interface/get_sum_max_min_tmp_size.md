@@ -61,10 +61,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetSumMaxMinTmpSize(n, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Sum](sum.md)（`related`）：提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。临时空间大小通过GetSumMaxMinTmpSize获取。模板参数isReuseSource预留（传false）；isBasicBlock在满足基本块要求时可提升性能；reduceDim指定reduce维度（默认-1为最后一轴）。；host侧Tiling接口，用于获取Sum接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。。Sum 本体明确临时空间通过 GetSumMaxMinTmpSize 获取，目标 API 给出 host 侧最大/最小预算，形成直接调用合同。
-<!-- cannbot:related:end -->

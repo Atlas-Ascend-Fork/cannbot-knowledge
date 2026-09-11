@@ -305,31 +305,13 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 矩阵乘的样例请参考[Mmad样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad)。
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [Conv2D（废弃）](conv2_d_deprecated.md)（`related`）：该接口已废弃，将在后续版本移除，请勿使用。计算输入张量和权重张量的 2D 卷积，输出结果张量，多用于图像识别中的特征提取。；Ascend C 矩阵乘加核心接口，实现 C=A×B+C。头文件 `basic_api/kernel_operator_mm_intf.h`。矩阵 A 位于 L0A Buffer（M×K，950 格式 Nz/a2/a3 格式 Zz），矩阵 B 位于 L0B Buffer（K×N，Zn），结果 C 位于 L0C Buffer（M×N，Nz），可选用 Bias（1×N）初始化。；焦点明确要求用 Mmad 替代废弃 Conv2D，目标补齐替代接口的矩阵与 L0 缓冲合同。
-- [Gemm（废弃）](gemm_deprecated.md)（`related`）：请使用 Mmad 等接口替代。；Ascend C 矩阵乘加核心接口，实现 C=A×B+C。废弃 Gemm 卡给出明确替代方向，Mmad 卡提供替代接口的计算语义、输入 Buffer 与对齐契约。
-- [K方向对齐约束](../mmad_compute_key_features/k_direction_alignment_constraint.md)（`related`）：通过 MmadParams.kDirectionAlign 控制 float 数据类型时 L0A/L0B Buffer 矩阵 K 方向对齐方式。；mmadParams 为 MmadParams 结构体，含 mSize/kSize/nSize 等矩阵维度参数。。对齐页定义 MmadParams 中 kDirectionAlign 的布局契约，核心 Mmad 页说明该参数结构体正由矩阵乘加接口消费。
-- [MmadBitMode](mmad_bit_mode.md)（`related`）：Mmad 的 BitMode 变体，使用 union 与 bit-field 结构体 MmadBitModeParams 传参，将多参数融合为单个入参，减少 scalar 计算开销。；Ascend C 矩阵乘加核心接口，实现 C=A×B+C。BitMode 保持 Mmad 的矩阵乘加核心语义，只改变参数编码并针对 scalar 流水瓶颈优化。
-- [Mmad](../../../tensor_api/matrix_compute/mmad_compute/mmad.md)（`same_topic`）：完成L0A Buffer上左矩阵A和L0B Buffer上右矩阵B的矩阵乘加，结果写入L0C Buffer上结果矩阵C；Ascend C 矩阵乘加核心接口，实现 C=A×B+C。两端均定义 L0A/L0B 输入、L0C 输出的矩阵乘加操作，分别是 950 Tensor API 与基础 API 形态。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子（部分算子）
-
-展示 10 / 21 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AddLora A2 ACLNN 算子知识](../../../../../operators/aclnn/math/math/add_lora.md)（`related`）：算子声明的固定版本源码包含对 `Mmad(...)` 的直接调用（第 429 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_base.h#L429)
-- [ConvDepthwise2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/conv_depthwise2d_950.md)（`related`）：算子声明的固定版本源码包含对 `Mmad(...)` 的直接调用（第 204 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/common/op_kernel/arch35/conv_instr_impl.h#L204)
-- [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `Mmad(...)` 的直接调用（第 222 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/block_sparse_attention_grad/op_kernel/arc35/cube_op.h#L222)
-- [QuantConvolution 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/quant_convolution_950.md)（`related`）：算子声明的固定版本源码包含对 `Mmad(...)` 的直接调用（第 204 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/common/op_kernel/arch35/conv_instr_impl.h#L204)
-- [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)（`related`）：算子声明的固定版本源码包含对 `Mmad(...)` 的直接调用（第 420 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/matmul.h#L420)
-- [DualLevelQuantMatmulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/dual_level_quant_matmul_weight_nz_950.md)（`related`）：算子声明的固定版本源码包含对 `Mmad(...)` 的直接调用（第 172 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/dual_level_quant_batch_matmul/op_kernel/arch35/dual_level_quant_batch_matmul_cube_compute_tools.h#L172)
-- [FlashAttentionScoreGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_grad.md)（`related`）：算子声明的固定版本源码包含对 `Mmad(...)` 的直接调用（第 1263 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_kernel/arch22/flash_attention_score_grad_s1s2_bn2gs1s2_sab.h#L1263)
-- [QuantBatchMatmulInplaceAdd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_batch_matmul_inplace_add_950.md)（`related`）：算子声明的固定版本源码包含对 `Mmad(...)` 的直接调用（第 455 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/common/cmct/block/block_mmad_a8w8_fixpipe_quant.h#L455)
-- [FlashAttentionUnpaddingScoreGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_unpadding_score_grad.md)（`related`）：算子声明的固定版本源码包含对 `Mmad(...)` 的直接调用（第 1263 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/flash_attention_score_grad/op_kernel/arch22/flash_attention_score_grad_s1s2_bn2gs1s2_sab.h#L1263)
-- [RotateQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/rotate_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Mmad(...)` 的直接调用（第 259 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/common/cmct/block/block_rotate_quant.h#L259)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AddLora A2 ACLNN 算子知识](../../../../../operators/aclnn/math/math/add_lora.md)
+- [ConvDepthwise2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/conv_depthwise2d_950.md)
+- [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)
+- [QuantConvolution 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/conv/quant_convolution_950.md)
+- [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)
+- [DualLevelQuantMatmulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/dual_level_quant_matmul_weight_nz_950.md)
+- [FlashAttentionScoreGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_grad.md)
+- [QuantBatchMatmulInplaceAdd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_batch_matmul_inplace_add_950.md)
+- [FlashAttentionUnpaddingScoreGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_unpadding_score_grad.md)
+- [RotateQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/rotate_quant_950.md)

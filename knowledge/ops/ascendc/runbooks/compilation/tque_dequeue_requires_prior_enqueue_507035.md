@@ -275,9 +275,3 @@ TQue 的 `DeQue` 是消费者动作，必须对应此前生产者对同一队列
 ## 误诊
 
 轨迹中先后怀疑 UB 预算、block 数、逐行 DMA、stream 生命周期和 pipeline depth。对照实验中 float32 大规模通过、B16 大规模失败，最终才把差异收敛到 B16 独有的 `cosRawQ_ → Cast → cosfQ_` 路径。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [TQue 输入未释放导致循环 AllocTensor 卡死](tque_dequeue_must_end_with_freetensor.md)（`related`）：焦点 Runbook 要求“每个 `DeQue` 得到的 Tensor 都要沿所属队列闭合生命周期。”；507035 Runbook 要求“TQue 的 `DeQue` 是消费者动作，必须对应此前生产者对同一队列的 `EnQue`。”。两条规则分别校验 DeQue 的前置生产和后置释放，能完整审计同一队列状态链。
-<!-- cannbot:related:end -->

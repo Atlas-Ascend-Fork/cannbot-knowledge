@@ -141,11 +141,3 @@ source_headers:
 ## 调用示例<a name="section642mcpsimp"></a>
 
 调用样例请参考[SPMBuffer调用示例](write_spm_buffer.md#section642mcpsimp)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InitSpmBuffer](init_spm_buffer.md)（`related`）：初始化SPM Buffer。SPM Buffer是一块在GM上的空间，当UB空间不足时可以将溢出数据存放在SPM Buffer上。；从SPM Buffer读回到local数据中。；焦点建立溢出缓冲，目标接口消费该缓冲并把数据读回 local。
-- [WriteSpmBuffer](write_spm_buffer.md)（`same_topic`）：从SPM Buffer读回到local数据中。 将因为UB空间不足而需要溢出暂存的数据拷贝到SPM Buffer中。 WriteSpmBuffer 是 SPM 暂存的 producer，ReadSpmBuffer 是同一数据的 consumer，组成 UB 不足时的写入/回读链。
-<!-- cannbot:related:end -->

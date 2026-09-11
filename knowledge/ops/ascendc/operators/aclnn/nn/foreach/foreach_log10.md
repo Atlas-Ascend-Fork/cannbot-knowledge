@@ -481,9 +481,3 @@ WaitFlag<HardEvent::V_MTE3>(eventIDVToMTE3);
 | 同步 | Queue + V_MTE3 + MTE3_MTE2；BF16 PIPE_V | 不能提前复用 slot/scratch | `ForeachImplictOutput::Compute`; `ComputePerCast` |
 | 精度与尾块 | 原生 dtype 或 BF16→FP32→RINT；GM 尾按字节 | cast 顺序、round mode、有效字节数 | `InnerComputer`; `CopyIn`; `Compute` |
 | 失败边界 | dtype/shape/维数/UB/TensorList 上限 | 不得给无源码 fallback；>50 不得视为闭合 | `CheckOpInfo`; `ForeachCommonTiling::Init` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachLog10 950 ACLNN 算子知识](foreach_log10_950.md)（`same_topic`）：｜ 计算语义 ｜ 对列表中每个张量逐元素计算 `y_i［j］ = log10(x_i［j］)` ｜；｜ 执行类型 ｜ 单 Kernel，`AIV_VECTOR` ｜。两卡覆盖同一 aclnnForeachLog10 公开语义；950 采用 SIMT outer entry，而 A2/A3 卡明确采用 AIV_VECTOR，构成跨代际实现对照。
-<!-- cannbot:related:end -->

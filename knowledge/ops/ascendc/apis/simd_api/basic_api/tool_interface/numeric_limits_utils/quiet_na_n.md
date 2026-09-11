@@ -87,20 +87,8 @@ source_headers:
     ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [AddRmsNormDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_dynamic_mx_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `QuietNaN(...)` 的直接调用（第 73 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_dynamic_mx_quant/op_kernel/arch35/add_rms_norm_dynamic_mx_quant_reduce_empty.h#L73)
-- [BatchNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/batch_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `QuietNaN(...)` 的直接调用（第 52 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_block_split_r.h#L52)
-- [RmsNormDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/rms_norm_dynamic_mx_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `QuietNaN(...)` 的直接调用（第 73 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_dynamic_mx_quant/op_kernel/arch35/rms_norm_dynamic_mx_quant_reduce_empty.h#L73)
-- [RmsNormGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/rms_norm_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `QuietNaN(...)` 的直接调用（第 65 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad/op_kernel/arch35/rms_norm_grad_empty_dgamma.h#L65)
-- [RmsNormGradQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/rms_norm_grad_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `QuietNaN(...)` 的直接调用（第 65 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_empty_dgamma.h#L65)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [AddRmsNormDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_dynamic_mx_quant_950.md)
+- [BatchNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/batch_norm_950.md)
+- [RmsNormDynamicMxQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/rms_norm_dynamic_mx_quant_950.md)
+- [RmsNormGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/rms_norm_grad_950.md)
+- [RmsNormGradQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/rms_norm_grad_quant_950.md)

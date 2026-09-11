@@ -189,10 +189,3 @@ __aicore__ inline void RpSort16(const LocalTensor<T>& dst, const LocalTensor<T>&
      -98.7   0.      0.      0.
      ]
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MrgSort4（排序与合并）](mrg_sort4.md)（`related`）：根据Region Proposals中的score域对其进行排序（score大的排前面），每次排16个Region Proposals；将已经排好序的最多4条Region Proposals队列，排列并合并成1条队列；RpSort16 产生已排序的小队列，MrgSort4 明确消费已排序队列完成归并。
-<!-- cannbot:related:end -->

@@ -99,9 +99,3 @@ platforms: ["950"]
 - **Python tiling 脚本路径解析**：怀疑 `tikcpp_path` 计算错误或缺 `{'valueDepend': {}}`。替换为 Relu6D 风格仍崩，排除。
 
 以上误诊均为 `agent_reported` / `inferred` 的早期假设，已被 `tool_observed` 实验排除，不进验证信号。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DynamicShapeSupportFlag](../../apis/utils_api/prototype_register_management/op_ai_core_config/dynamic_shape_support_flag.md)（`exemplifies`）：算子 def.cpp 设 `DynamicRankSupportFlag(true)` + `DynamicShapeSupportFlag(true)`，kernel 入口为 `extern "C"`（非 template），kernel 内用 `DTYPE_*` 宏区分 dtype；GEIR 用动态 shape（`-1`/`-2`）调 `RunGraph` 触发 TBE 重编译。；用于标识该算子是否支持入图时的动态Shape场景。。运行手册以 DynamicShapeSupportFlag 开启后的动态 shape TBE 重编译崩溃为实例，接口卡界定该标志声明的入图能力。
-<!-- cannbot:related:end -->

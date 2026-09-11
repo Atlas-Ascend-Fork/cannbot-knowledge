@@ -443,11 +443,3 @@ retainPrior = (isnan(prior) || prior < current) && !isnan(current)
 5. 每个 override 对基础 POD producer 的依赖证明。
 
 其中第 5 点是这份 Direct 实现最重要的边界：覆盖 key 不等于覆盖数据生产。任何特殊 Route 在改写 `tilingKey` 前，都应验证它要消费的 split 字段已经由相应 producer 填充。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [cummin 非末维 batch-inner 跨步扫描 banned](../../../../runbooks/performance/cummin_batch_inner_banned.md)（`related`）：把连续 ND 输入按 `dim` 展平为 `［M,R,N］`，对每个 `(m,n)` 沿 `r` 做 inclusive cumulative minimum，同时输出产生当前前缀最小值的位置。客观失败：batch-inner 相对 transpose 参照路线在大 dimSize case 退化 37-78×，整体评分相对 transpose 路线下降；仅 Case 14（dimSize 极小）约为 transpose 的 2×（唯一受益）。随即回退到 transpose 路线。性能卡针对同一 Cummin 前缀扫描任务给出必须排除的非末维替代路线，可用于审查搬运与 Tiling 改写是否引入实测退化。
-- [半精度索引错位—拆分双 int32 掩码](../../../../runbooks/precision/b16_value_mask_must_split_for_two_int32_index_registers.md)（`related`）：索引在 Vector UB 中用 `int32` 计算，输出前在同一 argmin buffer 内 cast 为 `int64`；SIMT Route 直接写 `int64` GM。一个 256B 的 fp16/bf16 寄存器有 128 个 value lane，而一个 int32 寄存器只有 64 个 index lane，单个 int32 RegTensor 与单个未拆分 MaskReg 无法覆盖同一批 128 个逻辑元素。算子卡的低精度 value 与 int32 工作索引形成二比一 lane 宽度；精度卡给出双寄存器和双 mask 的具体实现与验证合同。
-- [跨批首行漏比较—续批从 row 0 扫描](../../../../runbooks/precision/prefix_scan_continuation_batch_must_compare_first_row.md)（`related`）：RN 不可装但能容纳至少两行时保持完整 N、沿 R 分批并跨批保留 carry。续批沿用“row 0 是初始 carry”的首批约定，先用前批 carry 覆盖当前 `yTensor［0］` 再只扫描 `rows - 1` 行，导致续批首个真实输入永远未与 carry 比较。算子卡的 R 分批 carry 路线正是该错误的触发结构；精度卡给出的首批与续批不同起点可直接约束 Device 循环，并以跨批首行用例验证修复。
-<!-- cannbot:related:end -->

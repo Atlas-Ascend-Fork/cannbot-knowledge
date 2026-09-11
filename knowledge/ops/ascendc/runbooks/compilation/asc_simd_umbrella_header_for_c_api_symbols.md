@@ -120,9 +120,3 @@ __global__ __aicore__ void test_kernel(__ubuf__ int64_t* dst, __ubuf__ float* sr
 ## 误诊
 
 Build-2 的错误出现在 `vector_compute.h` 内部，容易被误认为 CANN 安装损坏。实际是把叶子声明头当成了公共入口；同一安装下改用 umbrella 后完整工程可成功构建。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMD语言扩展层C API](../../guides/programming_guide/language_extension/simd_language_extension_c_api.md)（`related`）：包含asc_simd.h文件来调用C API相应接口。如无特殊说明，包含该头文件即可满足接口调用需求。；保留调用点与数据流不变，只把叶子声明头替换为 public C-API umbrella。；指南给出公共入口头，排障卡证明叶子声明头缺少 umbrella 前置定义并给出不改调用点的替换方式，形成 C API 头文件选择到编译修复的直接链路。
-<!-- cannbot:related:end -->

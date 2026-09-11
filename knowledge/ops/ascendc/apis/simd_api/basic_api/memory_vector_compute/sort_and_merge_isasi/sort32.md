@@ -111,19 +111,5 @@ inQueueSrc1.FreeTensor(srcLocal1);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [MrgSort](mrg_sort.md)（`related`）：Sort32 卡说明“Sort32接口实现一次迭代内对32个数的降序排列操作。”；MrgSort 卡规定“将已排序的最多4条队列合并为1条队列，结果按score域由大到小排序，通常处理Sort32预处理的数据。”，形成先局部 32 元素排序、后最多四路归并的流水线。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [Sort 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/sort_950.md)（`related`）：算子声明的固定版本源码包含对 `Sort32(...)` 的直接调用（第 204 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/sort/op_kernel/arch35/sort_merge_sort.h#L204)
-- [MoeGatingTopKSoftmax 950 Direct Invoke 算子知识](../../../../../operators/direct/transformer/moe/moe_gating_top_k_softmax_950.md)（`related`）：算子声明的固定版本源码包含对 `Sort32(...)` 的直接调用（第 356 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/arch35/moe_gating_top_k_softmax_fullload_generalized_regbase.h#L356)
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [Sort 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/sort_950.md)
+- [MoeGatingTopKSoftmax 950 Direct Invoke 算子知识](../../../../../operators/direct/transformer/moe/moe_gating_top_k_softmax_950.md)

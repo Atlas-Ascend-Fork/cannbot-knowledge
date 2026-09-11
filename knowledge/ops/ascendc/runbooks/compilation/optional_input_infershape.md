@@ -77,9 +77,3 @@ inputs: 8
 - **误诊 A：去掉 `.Version(ADVANCE_STEP_VERSION_TWO)` 声明以让 optional input 在 v1 可用**。尝试后 `ConstructInferShapeContextInputs` 仍失败——根因不在 Version 声明，而在框架层 input 数量不匹配。
 - **误诊 B：在 GEIR 测试图中连接全部 8 个 input（含 spec_token/accepted_num）**。尝试后出现独立的 `forward compatibility` 错误，说明该对照没有验证 optional-input 缺失问题；内置与自定义定义的加载优先级需另行核实。
 - **误诊 C：修改 `advance_step_infershape.cpp` 处理 optional 缺失**。无效——失败在 `ConstructInferShapeContextInputs`（context 构造阶段），InferShape 函数根本未被调用到。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [AdvanceStep A2/A3 ACLNN 算子知识](../../operators/aclnn/nn/optim/advance_step.md)（`related`）：“在 Ascend950PR（CANN 9.0.0）上用 GEIR 测试程序调用 `advance_step`（已补 Output 声明、kernel 签名、buffer 拷贝），`RunGraph` 仍在 InferShape pass 失败。”与“｜ 输入输出 ｜ 8 个 `INT64/ND` Tensor：6 个必选输入/原地对象与 V2 的 `specToken`、`acceptedNum`；属性为 `numSeqs`、`numQueries`、`blockSize` ｜”提供双方正文证据。runbook 在 AdvanceStep 图只连六路必选输入时复现 context 构造失败，算子卡明确 V2 还具有 specToken 与 acceptedNum 两个槽位；二者连接故障签名与真实输入合同。
-<!-- cannbot:related:end -->

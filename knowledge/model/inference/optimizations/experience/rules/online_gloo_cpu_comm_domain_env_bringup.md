@@ -57,9 +57,3 @@ export GLOO_SOCKET_IFNAME=${GLOO_SOCKET_IFNAME:-$(ip route show default | awk '{
 
 - `diff 事实`（@1df57b2052e7）：`function.sh` 的 `launch_infer_task()` online 分支新增上述两个 env export、`init_cpu_groups` 从 `CommManager` 构造迁到 online 专属 `OnlineInference.__init__` 调用（附注释「Gloo CPU groups are online-only」），均逐字对上。核心断言（online 分支导出这两个 gloo env、`GLOO_SOCKET_IFNAME` 缺省取默认路由网卡）为 diff 事实；「否则绑错网卡 / IPv6 → 初始化失败 / 挂起」的因果为基于 gloo 标准语义的推断、未并入事实面。
 - 溯源下探：[cann-recipes-infer-pr-424-refactor-online-cpu](https://gitcode.com/cann/cann-recipes-infer/merge_requests/424)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [在线 PD 分离推理执行机制（Online PD-Disaggregated Inference）](../../../concepts/frameworks/online_pd_inference.md)（`related`）：做 ［online PD 分离］(../../../concepts/frameworks/online_pd_inference.md)服务化 bringup、需要在 HCCL / NPU 集合通信之外再起一组 **gloo 后端的 CPU 进程组**用于跨进程协调时。；请求经 TP 内 Gloo `sender.poll_and_all_reduce(group=tp_cpu_group)`。前者给出 online PD 启动前必须固定的 Gloo 网卡与协议栈条件，后者给出在线调度实际依赖的 tp_cpu_group 集合协商点，二者闭合 CPU 通信域从部署到运行时消费的任务链。
-<!-- cannbot:related:end -->

@@ -306,11 +306,3 @@ __simd_vf__ inline void cummin_scan_vf(
 ## 误诊
 
 错误同时覆盖多种源/目标类型，若把它当成某个 dtype 不受支持，会在 Cast 组合上反复试错；编译器给出的关键定位其实是模板参数 `trait` 无效。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [CastTrait 文件域声明触发命名空间编译失败](reg_casttrait_define_inside_simd_vf.md)（`related`）：“- 路线优先级：`recommended_fastpath`。把 trait 保持为 `__simd_vf__` 内的 `static constexpr`，继续走原生 Reg Cast 路径；本轨迹没有对声明位置做独立性能比较。”与“在一个 PyTorch NPU 自定义算子的 `cummin.asc` 中编写原生 `AscendC::Reg` SIMD 扫描函数时，开发者把三组 `CastTrait` 放进 `__simd_vf__`，并以函数内普通 `constexpr` 对象作为 `AscendC::Reg::Cast<Dst, Src, trait>` 的第三个模板实参。通过远程构建脚本编译后，所有这些 `Cast` 调用都报：”。两卡共同约束 CastTrait 的声明位置与 static storage，才能作为引用型模板实参。
-- [Reg CastTrait RoundMode 命名空间编译失败](casttrait_roundmode_is_in_ascendc.md)（`related`）：只把两个 `RoundMode` 限定名从 `AscendC::Reg` 提升到 `AscendC`；其余 Reg 枚举、trait 的函数内 `static constexpr` 形态和三段计算逻辑全部保留。；函数内普通 `constexpr CastTrait` 仍具有自动存储期，不能作为该 `const CastTrait&` 非类型模板参数的有效地址常量，所以编译器拒绝显式模板实参。；目标 runbook 给出焦点保留 static constexpr 的模板参数存储期原因。
-- [CastTrait 按值 NTTP 在 C++17 编译失败](casttrait_nttp_uses_reference_in_cxx17.md)（`same_topic`）：保留文件级 `static constexpr CastTrait` 对象，但把 VF 的非类型模板参数改成 `AscendC::Reg::CastTrait const &traitDown`；函数体仍把该引用作为 `AscendC::Reg::Cast<T, float, traitDown>` 的编译期 trait。；函数内普通 `constexpr CastTrait` 仍具有自动存储期，不能作为该 `const CastTrait&` 非类型模板参数的有效地址常量，所以编译器拒绝显式模板实参。改成函数内 `static constexpr` 后，对象获得静态存储期，同时仍位于只由 device pass 解析的 `__simd_vf__` 内。两卡闭合同一 C++17 Reg Cast 引用型 NTTP 修复：模板参数必须改为 const 引用，实参对象还必须具有静态存储期。
-<!-- cannbot:related:end -->

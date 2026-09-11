@@ -190,12 +190,3 @@ DumpTensor: desc=5, addr=0, data_type=float16, position=UB, dump_size=32
         [2.820312,2.835938,2.957031,2.398438,4.449219,0.516113,4.796875,0.786133],
         [-,-,-,-,-,-,-,-]]
         ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [稀疏反卷积精度误差源隔离配方](../../../../../runbooks/precision/cube_simt_fp32_precision_error_source_isolation.md)（`exemplifies`）：“**kIdx=0 DumpTensor 直接对比**：在 kernel 内对 kIdx=0 dump Cube MatMul 的输入与输出，与 CPU 同 kIdx 的 partial 逐元素对比，直接量化 Cube 累加差异。”给出实际探针；“该接口可以打印Tensor的内容，同时支持打印自定义的标签（仅支持uint32_t数据类型的信息），比如打印当前行号等。”给出 DumpTensor 的数据与标签合同，直接支撑误差层级定位。
-- [ShowKernelDebugData工具](../../../../../guides/programming_guide/appendix/show_kernel_debug_data_tool.md)（`explains`）：本工具提供了对调测信息的离线解析能力；打印Tensor内容并支持自定义标签。DumpTensor 在 Kernel 侧生成带标签的 Tensor 调测数据，ShowKernelDebugData 再把导出的 bin 离线解析为可读内容；指南把具体 API 输出接到完整调试查看流程。
-- [DumpAccChkPoint](dump_acc_chk_point.md)（`related`）：DumpAccChkPoint 卡说明“区别于 DumpTensor，支持指定偏移位置开始打印。”；DumpTensor 卡提供“打印Tensor内容并支持自定义标签，可选传入Shape信息按指定维度排列展示数据。”，两者共同给出按偏移截取与按 shape 展示之间的调试接口选型。
-<!-- cannbot:related:end -->

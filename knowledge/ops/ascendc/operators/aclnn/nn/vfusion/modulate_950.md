@@ -857,9 +857,3 @@ if (minMultiRowSize < ubSize_) {
 | 同步 | Queue DeQue/EnQue/Free；Reg scope mask | 参数每次Compute后re-EnQue，tile末才Free | `Compute/FreeScaleShift` |
 | 精度与尾块 | BF16 FP32+RINT；half/float native；mask与有效DMA | VL、row stride、D/core/chunk尾不可改变 | `Compute*`, load/store helper |
 | 失败边界 | TilingBase任一步失败停止；无Device fallback | optional null缺陷、key/GM一致性、窄化边界 | `DoTiling`, `CheckShape`, entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Modulate A2/A3 ACLNN 算子知识](modulate.md)（`same_topic`）：“scale/shift 沿 L 广播，实际 Kernel 对存在的 scale 先加 1，再乘 self；存在 shift 时再加 shift。”与“令 `self∈R［B,L,D］`，scale/shift 在 L 维广播。公开文档和 Kernel 实体均实现 `self * (1 + scale) + shift`。”提供双方正文证据。两端核心公式、L 维广播和可选 scale/shift 语义一致，分别覆盖 950 与 A2/A3 的同一 Modulate 算子合同。
-<!-- cannbot:related:end -->

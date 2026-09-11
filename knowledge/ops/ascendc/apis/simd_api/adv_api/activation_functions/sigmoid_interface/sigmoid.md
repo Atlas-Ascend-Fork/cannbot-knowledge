@@ -143,27 +143,7 @@ AscendC::Sigmoid(dstLocal, srcLocal, sharedTmpBuffer, 32);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSigmoidMaxMinTmpSize](get_sigmoid_max_min_tmp_size.md)（`related`）：sharedTmpBuffer（输入）：临时缓存。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 用于Sigmoid内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetSigmoidMaxMinTmpSize。；kernel侧Sigmoid接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；Host 侧容量查询直接为 Kernel 侧 Sigmoid 的 sharedTmpBuffer 选取合法大小，构成同一次调用的 Tiling 与执行链。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 3 / 3 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [LSTM A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/lstm.md)（`related`）：算子声明的固定版本源码包含对 `Sigmoid(...)` 的直接调用（第 204 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP16.cpp#L204)
-- [ThnnFusedLstmCell A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/thnn_fused_lstm_cell.md)（`related`）：算子声明的固定版本源码包含对 `Sigmoid(...)` 的直接调用（第 280 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/thnn_fused_lstm_cell/op_kernel/thnn_fused_lstm_cell.h#L280)
-- [LSTM 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/lstm_950.md)（`related`）：算子声明的固定版本源码包含对 `Sigmoid(...)` 的直接调用（第 96 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp#L96)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ForeachSigmoid A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_sigmoid.md)（`related`）：算子正文包含对 `Sigmoid(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [LSTM A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/lstm.md)
+- [ThnnFusedLstmCell A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/thnn_fused_lstm_cell.md)
+- [LSTM 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/lstm_950.md)
+- [ForeachSigmoid A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_sigmoid.md)

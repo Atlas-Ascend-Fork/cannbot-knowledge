@@ -72,10 +72,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetTruncTmpBufferFactorSize(typeSize, maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Trunc](trunc.md)（`same_topic`）：获取Trunc接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；按元素做浮点数截断，即向零取整操作（Trunc(3.9)=3, Trunc(-3.9)=-3）。模板参数T支持half/float。；factor 查询依据固定空间推导 Trunc 单次 calCount，计算卡以该 calCount 对 half 或 float 执行向零取整。
-<!-- cannbot:related:end -->

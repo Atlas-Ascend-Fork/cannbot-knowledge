@@ -64,10 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetSinhMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Sinh](sinh.md)（`related`）：host侧Tiling接口，用于获取Sinh接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetSinhMaxMinTmpSize获取。；Sinh 正文明确把该 Tiling 接口作为临时空间大小来源，构成 Host 选参到 kernel 重载的直接合同。
-<!-- cannbot:related:end -->

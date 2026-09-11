@@ -62,9 +62,3 @@ return res, res1, res2      # 让图观测到 inplace 更新后的 cache
 - diff 事实（@1a16834994ef）：4 维预分配 cache、去逐前向 unsqueeze、就地写 cache 算子、decode 从 cache 读回 K、`"a8" in` 子串门控；"aclgraph 要求 4 维"为作者归因、测试覆盖为作者自报。溯源下探 [cann-recipes-infer-pr-206-fix-ds-r1-replace-non-standard-inplace-ops-with-standard-ops](https://gitcode.com/cann/cann-recipes-infer/merge_requests/206)
 - diff 事实 + 维护者确认（@deb929389f32）：C8 `kr_cache` 由 forward `hidden_states.unsqueeze(0)` 改 `__init__` 预分配 `torch.empty((1,2,1,0),int8,npu)` 复用；任一维为 0 即可 / tensormove 消除 / 基本无性能影响为维护者确认。溯源下探 [cann-recipes-infer-pr-179-fix-c8-mlaprolog-kr-cache-tensor](https://gitcode.com/cann/cann-recipes-infer/merge_requests/179)
 - diff 事实 + 维护者确认（@87f244c）：PyPTO 融合算子后对 `idx_k_cache`/`idx_k_scale_cache` 各 `torch.add(x,0)` 并返回以看护 inplace 更新。溯源下探 [cann-recipes-infer-pr-64-feat-lip-li-dia-pypto](https://gitcode.com/cann/cann-recipes-infer/merge_requests/64)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NPU 图模式（ge_graph / npugraph_ex）](../../../concepts/techniques/npu_graph_mode.md)（`related`）：逐前向 unsqueeze 升维、或依赖算子返回可变形状的 K 都会破坏静态图；预分配静态 cache + 就地写把形状固定在建 cache 时，前向只做定形读写。固定 KV cache 与常驻 buffer 地址/shape，明确 `actual_seq_lengths` 的类型来源。优化卡给出 MLA-prolog 中把通用静态地址约束实现为四维预分配、就地写和 cache 回读的操作方法，图模式卡给出其要防止的 graph break 与重编译条件；两卡连成具体改造与通用验收标准。
-<!-- cannbot:related:end -->

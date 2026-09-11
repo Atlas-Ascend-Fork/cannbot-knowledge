@@ -139,10 +139,3 @@ void GetWelfordFinalizeMaxMinTmpSize(const AscendC::TensorShape& srcShape, const
         }
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [WelfordFinalize](welford_finalize.md)（`same_topic`）：“提供两种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请。Tiling参数通过WelfordFinalize Tiling获取。接口接收WelfordUpdate输出的均值和方差中间结果，计算最终的均值和方差。”与“host侧Tiling接口，用于获取WelfordFinalize kernel计算所需的Tiling参数，分两步：通过GetWelfordFinalizeMaxMinTmpSize获取最大和最小临时空间大小；通过GetWelfordFinalizeNDTilingInfo获取kernel侧所需tiling参数。”提供双方正文证据。Finalize kernel 明确消费 WelfordFinalize Tiling，目标卡给出临时空间与 ND tiling 的两步 Host 生成流程。
-<!-- cannbot:related:end -->

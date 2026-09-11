@@ -45,9 +45,3 @@ aliases: ["mix_graph", "CV_path"]
 
 - Cube 输出本就是 BF16/FP16 的算子不受此约束，可正常扩展 mix合图覆盖 CV 通路。
 - a2/a3 平台未验证（L0C→UB 的 FP32 限制是 950 架构特性，跨 A 系列一致的概率高，但未实测）。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [flash在线softmax JIT重排致精度超阈](../precision/flash_softmax_jit.md)（`related`）：Mix CV 卡给出同一算子的 dtype 通路边界“950 Mix合图 CV 通路（L0C→UB）只支持 FP16/BF16，不支持 FP32。”；JIT 卡给出顺序边界“在线 softmax 的 `mi/li/oi` 跨迭代循环依赖对执行顺序敏感”，共同要求 sparse_flash_attention_quant_d_950 的优化同时通过 CV dtype 与在线 softmax 顺序两道 gate。
-<!-- cannbot:related:end -->

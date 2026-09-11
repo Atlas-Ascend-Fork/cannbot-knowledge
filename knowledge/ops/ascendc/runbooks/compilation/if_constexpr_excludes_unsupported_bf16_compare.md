@@ -169,10 +169,3 @@ C++ 普通 `if` 只控制运行时执行，不控制模板实例化：编译器�
 ## 误诊
 
 错误栈指向 `nanmax_` 的 `a != a`，但根因不是 NaN 传播公式写错，而是 UPDATE-only bf16 实例仍生成了本不需要的归约 helper。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [三元返回 B16 让 cast 失效触发 i64 setcc](ternary_b16_return_penetrates_float_cast.md)（`related`）：换句话说：**`float` cast 在"比较 + 返回 B16"的三元里被编译器穿透失效**。；C++ 普通 `if` 只控制运行时执行，不控制模板实例化：编译器实例化 `Kernel<AccT=bfloat16_t>` 时，仍会编译 `else` 中的 `nanmax_(cur, v)`/`nanmin_(cur, v)`；helper 里的 `a != a` 被 lowering 为 unordered compare `setuo`，需要 bf16 `setcc`，而该版本 dav-3510 BiSheng 后端没有可选指令，于是以 `Cannot select` 终止。。两卡覆盖同一 950 BiSheng B16 比较后端失败链的两个入口：三元返回 B16 会穿透 float cast，运行时 if 又不能阻止不支持分支实例化；联合修法是收窄模板并用 if constexpr 剔除该路径。
-- [BiSheng bf16 类型转换失败——隔离模板实例化](if_constexpr_excludes_unsupported_bf16_cast.md)（`same_topic`）：选择编译期隔离，而不是继续添加运行时 guard：根因发生在模板实例化阶段，只有从源码中移除不支持的 specialization 才能阻止 BiSheng 进入 BF16 cast 后端路径。；选择 `if constexpr`，因为问题发生在模板实例化而不是运行时分支选择；普通 `if`、提前设置 `reduceMode_` 或依赖 Host 永不分发都无法阻止后端编译该表达式。。两卡针对同一 scatter BF16 模板实例化决策，分别在 Host 分发 specialization 和 Device 函数体分支两层执行编译期剔除，避免生成不支持的 cast 或 compare。
-<!-- cannbot:related:end -->

@@ -61,11 +61,3 @@ __aicore__ inline void NotifyNextBlock(GlobalTensor<int32_t>& gmWorkspace, Local
 ## 调用示例<a name="section177231425115410"></a>
 
 完整样例请参考[调用示例](init_determine_compute_workspace.md#section177231425115410)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [InitDetermineComputeWorkspace](init_determine_compute_workspace.md)（`related`）：“完成初始化后才可以调用WaitPreBlock和NotifyNextBlock”明确初始化前置；“WaitPreBlock和NotifyNextBlock必须与InitDetermineComputeWorkspace接口配合使用”从通知接口侧确认三者必须组合，构成升序核执行的完整调用合同。
-- [WaitPreBlock](wait_pre_block.md)（`related`）：按“NotifyNextBlock通过写全局内存来通知其他核当前核已执行完成，其他核可以继续往下执行；WaitPreBlock通过读取全局内存，判断当前核是否可以继续往下执行。”把每次写通知与后序核读等待组成握手，并用“如果调用了NotifyNextBlock没有与之配对的WaitPreBlock，会导致非确定性计算、输出结果可能不符合预期；如果调用了WaitPreBlock没有与之配对的NotifyNextBlock，会导致程序卡死。”检查所有核的调用次数相同，能定位漏 Notify 或漏 Wait 的具体故障。
-<!-- cannbot:related:end -->

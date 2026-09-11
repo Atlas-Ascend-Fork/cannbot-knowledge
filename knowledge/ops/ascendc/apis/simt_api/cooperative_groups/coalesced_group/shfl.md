@@ -82,10 +82,3 @@ T shfl(T var, int src_rank) const
         ...
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ShflDown](shfl_down.md)（`same_topic`）：coalesced_group组内线程的数据交换接口，不通过共享内存实现直接读取组内指定线程的寄存器中的值。；获取coalesced_group组内当前线程向后偏移delta的线程的数据。。前者定义 coalesced_group 的指定线程寄存器读取原语，后者是以当前线程加 delta 计算来源线程的方向性变体，联合阅读可在同一组内交换任务中选择绝对 rank 或相对偏移。
-<!-- cannbot:related:end -->

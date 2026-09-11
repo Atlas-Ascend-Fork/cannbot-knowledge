@@ -68,10 +68,3 @@ __aicore__ inline int64_t GetTaskRatio()
 int64_t ratio = AscendC::GetTaskRatio(); // 返回AIC或AIV与逻辑AI Core数量的比例
 AscendC::printf("task ratio is %ld", ratio);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSubBlockIdx](get_sub_block_idx_isasi.md)（`related`）：GetSubBlockIdx在使用__mix__(1, 2)作为函数执行空间限定符的场景下，可以用于区分同一个核上的两个不同Vector Core，取值分别为0和1。；分离模式下，获取任务启动的Cube Core（AIC）或者Vector Core（AIV）的数量与逻辑AI Core数量的比例。。GetTaskRatio 给出 MIX 分离任务中 AIC/AIV 数量比例，GetSubBlockIdx 再区分同一逻辑核内的两个 Vector Core，联合可解释分核与子核身份。
-<!-- cannbot:related:end -->

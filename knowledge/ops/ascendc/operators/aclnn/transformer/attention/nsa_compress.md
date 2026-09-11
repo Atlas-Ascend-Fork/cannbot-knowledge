@@ -670,9 +670,3 @@ M 个 context 保存各窗口的 sample 起点、已处理长度、weight offset
 | 同步 | input/output Queue ownership，Vector 阶段 PipeBarrier，输出 PIPE_ALL | Free/覆盖只能发生在 consumer 完成后；无跨核同步是因为输出不重叠 | `CopyIn/Compute/UpdateResult/CopyOut` |
 | 精度与尾块 | T→FP32 Mul/Add→`CAST_ROUND` T；D%64 mask、sample 最后 chunk 缩短 | 树形 Add 顺序、只读 current `subSeqLen`、只在 L 完成时输出 | `VecMulBlkMat/ReduceBlock/UpdateResult/CopyIn` |
 | 失败边界 | API/Tiling 失败关闭、空 core return、唯一 key 0 | 不得为 A3/950、空输出、未知 key 或资源不足推测 fallback | `CheckParams/GetSplitInfo/nsa_compress`; ACLNN 产品表 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [NsaCompressAttentionInfer A2/A3 ACLNN 算子知识](nsa_compress_attention_infer.md)（`related`）：“｜ Kernel 路线 ｜ R-001：key 0 通用滑窗压缩；FP16/BF16 仅模板类型不同，启动拓扑相同 ｜”明确给出左端事实；“令压缩 KV 长度为 `Scmp`，GQA 分组 `G=numHeads/numKeyValueHeads`。AIC 先以 FP32 累加生成 `QKᵀ`；AIV 依次乘 `scaleValue`、在 `attenMaskFlag==1` 时按实际 Q/选择前 KV 长度把需要屏蔽行的最后一个压缩位置写为 `-3e38`、执行 FP32 Softmax，并同时输出 FP32 概率到 importance-score 路径和 FP16/BF16 概率到第二次 MMAD。AIC 将后者与 V 相乘、FP32 累加后转回输入 dtype。AIV 按源码权重三角窗累计 `Pslc`，再对每个 KV head 的 `G` 个 Q head 求和；边界候选写入 FP32 正无穷位型，最后 `TopK<float,...TOPK_NORMAL>` 输出 `int32` 索引。”明确给出右端事实。NsaCompress 以窗口和步长产出压缩序列，AttentionInfer 将压缩 KV 长度 Scmp 用于 QK、Softmax、PV 与选择块 TopK，前者产物进入后者的压缩注意力阶段。
-<!-- cannbot:related:end -->

@@ -519,9 +519,3 @@ TSCM-A 先做 ND→NZ，把 A 驻留在 TSCM，采用 `baseK=512/baseN=128/depth
 | 同步 | events、SyncAll、flag 5/3 与 Atomic scope | flag producer/consumer、PIPE_FIX/PIPE_MTE2 和 slot 复用周期 | `MMCompute/VectorCompute` |
 | 精度与尾块 | INT8→high/low INT4；FP16 C→FP32 `low+16*high`→offset/scale→perToken×logit→scatter | CAST_FLOOR、low 减 8、量化组累加、M/N mask 与 rowIndex 地址 | `ProcessPerToken/ComputeDequantAndActivate` |
 | 失败边界 | 不满足 L1 谓词可回 GM-A；API/tiling/body 无任意 dtype fallback | K 大于 18432、缺必选输入、未知 key 均失败；不得混用 GM-A 与 TSCM-A | `V3GetWorkspaceSize/W4A8TilingProcess/router` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GroupedMatmulFinalizeRouting 950 ACLNN 算子知识](grouped_matmul_finalize_routing_950.md)（`same_topic`）：焦点卡写明“A8W4 MSD GMM：INT8 X 拆成高/低 INT4 两路”，候选卡写明“同位宽 MXFP8/MXFP4 直接进 Cube”。两卡实现同一 V3 核心，A2/A3 采用整数 MSD，950 采用 MX 路线，可按平台与量化格式选型。
-<!-- cannbot:related:end -->

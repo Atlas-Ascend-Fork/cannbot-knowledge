@@ -77,9 +77,3 @@ aliases: ["DOUBLE_BUFFER"]
 - 全 double buffer 不先算 UB 占用直接上，触发 507035。
 - 把"TQue 重构"当成"治一切写丢失 bug 的银弹"。TQue 自动管理的是**单次迭代内** MTE2→V→MTE3 同步；它不会修复 host 侧 GM 写入竞争。
 - 看到"输出 new 区整行 0 + 非确定性 + 仅批量触发 + cache/同类写出路径正常"时，直接归因 kernel 流水 fence 而不先查 host 侧输出 tensor 分配 stream 与 kernel launch stream 是否同步。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [at::zeros 异步零初始化跨 stream 覆盖 kernel 写出](../precision/at_zeros_stream_kernel.md)（`related`）：真正修复来自 host 侧 `allocate_xpu_zeros_like` → `allocate_xpu_tensor_like`（`at::zeros`→`at::empty`，消除跨 stream 零初始化竞争），属 host 侧 `op_host` 层而非本卡 `kernel` 层。；`allocate_xpu_zeros_like` 底层是 `at::zeros(shape, options)`，在 **torch 默认 NPU stream** 上异步执行零初始化（一次整段 GM 写入）；kernel launch 走 `runtime::XpuRuntimeManager::get_ins<aclrtStream>()` 拿到的 **xpu_ops stream**，两条 stream 之间没有显式同步。。失败路线卡证伪 TQue 重构，精度 Runbook闭合真正的 host 双流覆盖机制、分区探针和输出分配修法。
-<!-- cannbot:related:end -->

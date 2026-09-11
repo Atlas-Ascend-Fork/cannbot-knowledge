@@ -47,9 +47,3 @@ platforms:
 
 - `diff 事实`（@f1b12b68）：online 保留全量 IP 列表 + `MASTER_ADDR` 的 per-instance 下取整计算，与同 sha 全量 `function.sh` 的 `mode`/`SERVER_NUM`/`VC_TASK_INDEX`/`PD_ROLE` 语义对上。"修前多实例 rendezvous 指向实例 0 → 各实例无法独立建组"为据代码逻辑的推断（源未附故障日志），故 `distributed_timeout` 仅作可迁移失败面向标注、不断言具体报错串。
 - 溯源下探：[cann-recipes-infer-pr-483-fix-online-fix-multi-device-bug](https://gitcode.com/cann/cann-recipes-infer/merge_requests/483)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [在线 PD 分离推理执行机制（Online PD-Disaggregated Inference）](../../../concepts/frameworks/online_pd_inference.md)（`related`）：每节点的 `MASTER_ADDR` 应按「本节点全局序号下取整到每实例节点数边界」选本实例组长，且**不得把该扁平列表裁剪到单实例长度**：；**服务实例（service instance）**：一组并行运行的 rank 构成一个 Prefill 或 Decode 实例，持有一份完整的 TP × CP × DP 并行拓扑；实例可跨节点。。规则卡给出多实例节点列表中 rendezvous 地址的分组算法，机制卡定义每个 Prefill/Decode 服务实例及其可跨节点拓扑；联合阅读可把 MASTER_ADDR 计算绑定到正确实例边界。
-<!-- cannbot:related:end -->

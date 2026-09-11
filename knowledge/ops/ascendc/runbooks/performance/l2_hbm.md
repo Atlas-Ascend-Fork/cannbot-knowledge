@@ -59,9 +59,3 @@ platforms: ["950"]
 ## 坏实践
 
 - 把"纯读 msprof MTE2 带宽 + 纯写 msprof MTE3 带宽"当成并发读写总带宽报——L2 会高估、HBM 会近 2 倍高估，虚高达标率无物理意义。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MIX_AIC_1_1 仅启用 28/56 AIV 带宽不饱和](mix_aic_1_1_underutilizes_aiv_on_1_to_2_topology.md)（`related`）：“并发带宽只能用 NPU event 实测并发时间 + 总数据量算；单路相加只用于验证各路是否独立达标。”规定 L2/HBM 并发测量口径；“只启用了 28 个 AIV，另外 28 个 AIV 空闲（核利用率 50%）。”揭示 MIX 1:1 路线会把同一带宽实验的并发执行资源减半。
-<!-- cannbot:related:end -->

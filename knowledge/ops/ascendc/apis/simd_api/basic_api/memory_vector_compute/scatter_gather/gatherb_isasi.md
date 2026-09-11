@@ -166,10 +166,3 @@ AscendC::Gatherb<uint16_t>(y_buf, x_buf, offset_buf, repeatTime, params); // rep
 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 ]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [BilinearInterpolation](../basic_arithmetic/bilinear_interpolation_isasi.md)（`related`）：BilinearInterpolation 的实现流程第一步是“通过 Gatherb 按 DataBlock 粒度收集 src0 到临时 Buffer”；Gatherb 定义“根据DataBlock偏移张量将输入张量按DataBlock粒度收集到结果张量中，每次迭代完成8个DataBlock的数据收集。”，后者是前者非规则源数据收集阶段的直接原语。
-<!-- cannbot:related:end -->

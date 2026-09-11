@@ -135,10 +135,3 @@ __aicore__ inline void EuclideanNormKernel<DType, isTailR>::ReduceRPattern()
 ## 预防
 
 在 950 上用 `ReduceSum<AR|RA>` 时，若发现"部分用例值接近但错、且失败集合恰为外维行数>1 的用例"，优先怀疑单次多行 ReduceSum 的多行分割；用逐行调用作为最小语义等价规避。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReduceSum](../../apis/simd_api/adv_api/reduction_operations/reduce_sum_interface/reduce_sum.md)（`exemplifies`）：对多维向量按指定维度进行数据累加。定义指定计算维度为R轴，非指定维度为A轴。支持指定第一维或最后一维进行reduce。模板参数T支持half/float，pattern指定reduce模式。；`ReduceSum<float, Pattern::Reduce::AR>` 在 `srcShape={aBundle, rBundle}`（`aBundle>1`）且 `srcInnerPad=true` 时，3510 上的归约实现在多行间做了错误的分割/重排——总体量近似保留但逐行结果错位。。API 卡定义 AR/RA 多维规约合同，runbook 给出 950 上 AR 多行调用的精度失败签名与逐行规约修法。
-- [ReduceSum](../../apis/simd_api/basic_api/memory_vector_compute/reduction_compute/reduce_sum.md)（`exemplifies`）：对所有输入数据进行求和操作。；关键相关性：所有 `aLen=1`（即 `aBundle=1`）的用例全部通过；所有 `aLen>1`（`aBundle>1`）的用例全部失败。失败集合与 aBundle 是否大于 1 严格对应。。API 卡给出 ReduceSum 的归约语义，runbook 用 aBundle 大于 1 的严格失败分界限定 Ascend950 AR 多行调用的诊断路径。
-<!-- cannbot:related:end -->

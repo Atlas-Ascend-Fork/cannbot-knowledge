@@ -80,10 +80,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetGeluMaxMinTmpSize(srcShape, typeSize, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [FasterGeluV2](faster_gelu_v2.md)（`related`）：不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。；kernel侧Gelu、FasterGelu、FasterGeluV2接口的计算需要开发者预留 申请临时空间；FasterGeluV2 的 Kernel 调用既要为 sharedTmpBuffer 分配独立地址，又要用 Host 查询得到的上下界确定容量，二者合起来形成可执行的临时空间合同。
-<!-- cannbot:related:end -->

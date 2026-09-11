@@ -242,10 +242,3 @@ inline half2 asc_ldca(half2* address)
         dst[idx] = asc_ldca(src + idx);
     }
     ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [asc_ldcg（内存访问函数）](asc_ldcg.md)（`related`）：从 Data Cache 加载数据的函数。优先从 Data Cache 读取，未命中则尝试 L2 Cache，均未命中则从 Global Memory 读取并缓存到 L2 Cache 和 Data Cache。L2 Cache 与 Global Memory 间一致性由硬件保证，Data Cache 与 Global Memory 间不保证。默认访存底层实现与本接口等价（dst［idx］ = src［idx］ 等价于 dst［idx］ = asc_ldca(src + idx)）。；从 L2 Cache 加载数据的函数。若 L2 Cache 命中则直接返回，未命中则从 Global Memory 读取并缓存到 L2 Cache。L2 Cache 与 Global Memory 间一致性由硬件保证。不会写入 Data Cache。两页给出 SIMT 加载在 Data Cache 与仅 L2 Cache 间的直接策略选择，一致性与缓存污染差异影响访存实现。
-<!-- cannbot:related:end -->

@@ -80,10 +80,3 @@ CANN Runtime内置默认计算流，所有未显式指定计算流的运算操�
 
 ## 更多的Runtime高级特性
 更多的Runtime编程方式及接口，可以参考[《应用开发（C&C++）》](https://hiascend.com/document/redirect/CannCommunityadev)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [aclrtMemcpyAsync 局部源生命周期缺陷](../../../runbooks/compilation/aclrtmemcpyasync_use_after_free.md)（`related`）：绑定在指定计算流内的API接口调用、核函数下发操作，相对于主机CPU线程均为异步执行。；`aclrtMemcpyAsync` 返回时并不保证拷贝完成，而 `p1` 在函数返回时析构，因此源码缺少“host 源存活到拷贝完成”的保证，这是独立且可确认的生命周期缺陷。；候选给出异步执行合同下 Host 源生命周期失配的具体诊断。
-<!-- cannbot:related:end -->

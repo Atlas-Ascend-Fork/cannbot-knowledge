@@ -44,7 +44,7 @@ parsed/context/**/*.md（千级）
 .build/ops-knowledge-trace-ingest/<date>/<trace_id>/{reconstruction.json, manifest.json, DRAFT-*.md}
    │
    ▼ ④ curate 聚合（LLM：全局去重 + 落库；分域并行 + 统一收口）
-knowledge/ops/ascendc/runbooks/** + batch ledger + 全量图谱重建（多 reviewer，必做） + log
+knowledge/ops/ascendc/runbooks/** + batch ledger + Lint 与检索验证 + log
 ```
 
 ### ① 批量 normalize（0 LLM）
@@ -93,7 +93,7 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + 全量图谱重建（多 revi
    │
    ▼ ④f receipt 批准 + 主 agent 单一收口（唯一写者）
    approved validator → receipt-aware 原字节发布/check → sync indexes
-     → 图谱 candidates/review/aggregate/finalize → log + meta
+     → lint + query → log + meta
 ```
 
 **④a 确定性预聚类（必须 0 LLM）**
@@ -109,7 +109,7 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + 全量图谱重建（多 revi
 **④c 簇级门控与去重（LLM）**
 - 簇主卡 = 证据最全/代码最完整者；门控锁（实测锚定/防作弊/价值/代码完整/验证信号禁 hearsay）在**主卡**判；
 - **批量天然含 upgrade 语义**：簇内跨 trace 复现 ≥2 且主卡上板信号 `tool_observed`/`artifact_verified` → 一次落库直接升内部 `verified` tier（不放松双门槛，逐簇过证据锁）；
-- 对近邻库卡：同 nugget → upvote/merge；同现象不同根因 → 写图谱关系候选，不手工维护受管关系块；
+- 对近邻库卡：同 nugget → upvote/merge；同现象不同根因 → 必要时在 staged card 中补充普通链接和区分条件；
 - reject/defer 成员（低价值/作弊/证据不足）记 ledger reason，供用户人工复审。
 
 **④e 审查按待发布卡，不按原始草稿**
@@ -117,8 +117,8 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + 全量图谱重建（多 revi
 - 审查成本 = O(staged 卡数)，不是 O(原始草稿数)。receipt 只证明字节未变，不能替代 reviewer 对每张待发布卡的实质阅读。
 
 **④f 单一收口（写库唯一入口）**
-- 分域 curator 只产出 ledger，**不直接写知识卡目录**；index 由主 agent 串行落盘，关系候选留在 ledger，受管关系块由后续 graph finalize 统一写入；
-- 图谱全量重建一次（必做，非条件式）：生成当前全库候选 → 多个 reviewer 分片覆盖全部 focal 并阅读当前正文 → aggregate（冲突时独立裁决）→ finalize/viz/verify；runbooks 与其他知识树的关系由图谱流程产生，不手写受管关系块。
+- 分域 curator 只产出 ledger，**不直接写知识卡目录**；index 由主 agent 串行落盘，普通链接随 staged card 一起审查与发布；
+- 图谱仅在需要查看关系时按需构建，不属于批量入库的必做步骤。
 
 **规模参考（500 草稿示例）**：④a/b 确定性秒级；④c ~100-200 簇 × 每簇 5~10 近邻对 ≈ 1000-2000 对语义判定（分域 curator 并行）；④d 生成约 50-100 张 staged 新增/修改卡，④e 逐张独立审查。curator 判定量级约为 mine 的 1/50——**token 不限，但判定对规模收敛仍保证同 nugget 判定一致可审计**。
 
@@ -147,7 +147,7 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + 全量图谱重建（多 revi
 - 输入：`clusters.json`（④a 预聚类）+ 库特征索引（④b）+ 近邻比对对清单 + 现有库根。
 - 权限：read/glob/bash + **write 仅限 `.build/`**（写 ledger）；**禁读 trace 长文**；**不直接写知识卡目录**（写库由主 agent 收口）。
 - 职责（按簇级门控，见 §2.④c）：簇主卡选择 → 跨 trace 复现计数（reproduce_count / 批量 upgrade 语义）→ 对近邻库卡判 new/upvote/merge/covered/reject → 门控锁在簇主卡判。
-- 输出：分域 `ledger.json`（每簇终态 + reason + 主卡/合并字段/关系候选建议）。
+- 输出：分域 `ledger.json`（每簇终态 + reason + 主卡/合并字段/可选引用建议）。
 
 **C. `subagents/ops-knowledge-trace-reviewer.md`（独立审查，按待发布卡不按原始草稿）**
 - 输入：全部 staged 新增/修改卡最终稿 + 簇判定记录 + ledger + SPEC 摘要（不给无关 trace、不给草稿全量）。
@@ -156,8 +156,8 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + 全量图谱重建（多 revi
 - 输出：`findings.json`；修订后重审，blocker+major 清零才放行。
 
 ### 主 agent 角色变化
-- 单条模式：main → 门禁 subagent → miner subagent → curator subagent（pending ledger）→ main 生成 staged cards → reviewer subagent → receipt 批准 → main 收口（发布/索引/图谱/log）。
-- 批量模式：main → 批量 normalize（脚本）→ 门禁扇出 → mine 扇出（并行 N）→ 预聚类（脚本）→ curator（分域并行，产出 pending ledger）→ main 生成 staged cards → reviewer（审新增/升级/合并卡）→ receipt 批准 → **main 单一收口发布** → 全量图谱重建（多 reviewer，必做） → log。
+- 单条模式：main → 门禁 subagent → miner subagent → curator subagent（pending ledger）→ main 生成 staged cards → reviewer subagent → receipt 批准 → main 收口（发布/索引/Lint/Query/log）。
+- 批量模式：main → 批量 normalize（脚本）→ 门禁扇出 → mine 扇出（并行 N）→ 预聚类（脚本）→ curator（分域并行，产出 pending ledger）→ main 生成 staged cards → reviewer（审新增/升级/合并卡）→ receipt 批准 → **main 单一收口发布** → Lint 与检索验证 → log。
 - 主 agent 上下文只装：batch manifest、gates.json、clusters.json、各 subagent 结构化返回、各域 ledger。
 
 ### 与 reference 文档的关系
@@ -175,7 +175,7 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + 全量图谱重建（多 revi
 | 4 | 全量 parsed/context/（千级）试点 + 分批策略调优 | 产出率/成本报告 |
 
 ## 5. 风险与对策
-- **并行写库冲突**：curate 库写入由主 agent 单一收口，分域 subagent 只产出 ledger，不直接写库；受管关系块由后续 graph finalize 单点写入。
+- **并行写库冲突**：curate 库写入由主 agent 单一收口，分域 subagent 只产出 ledger，不直接写库；正文链接随已审查卡片统一发布。
 - **subagent 写权限失控**：write 权限限定 `.build/`（curator 写 ledger）；落库写权限只在主 agent；reviewer 零写权限。
 - **并发稳定性**：海量并行受环境并发 task 上限与 API 限流约束——batch_manifest 状态机 + 失败重试 + 断点续跑保证可恢复；限流时降低并发 N。
 - **预聚类误并/漏并**：簇清单可抽查；漏并后果轻（同 nugget 落两次 → 下次 upgrade 合并）；误并在簇级判定时拆出。

@@ -29,13 +29,6 @@ from urllib.parse import quote
 import yaml
 
 
-MANAGED_START = "<!-- cannbot:related:start -->"
-MANAGED_END = "<!-- cannbot:related:end -->"
-API_OPERATOR_START = "<!-- cannbot:api-operator:start -->"
-API_OPERATOR_END = "<!-- cannbot:api-operator:end -->"
-MANAGED_RE = re.compile(
-    rf"(?ms)^{re.escape(MANAGED_START)}\n.*?^{re.escape(MANAGED_END)}(?:\n)?\Z"
-)
 FRONTMATTER_RE = re.compile(r"\A---\n(?P<metadata>.*?)\n---\n\n", re.DOTALL)
 IDENTIFIER_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_:]*\Z")
 TEMPLATE_ARGUMENTS = r"<(?:[^<>;()\n]|<[^<>;()\n]{0,400}>){0,400}>"
@@ -47,7 +40,6 @@ CALL_RE = re.compile(
     r"(?P<name>(?:AscendC::)?[A-Za-z_][A-Za-z0-9_:]*)[ \t]*"
     rf"(?:{TEMPLATE_ARGUMENTS})?[ \t]*\("
 )
-AUTO_REASON_PREFIX = "算子正文包含对 `"
 NEGATED_CALL_RE = re.compile(
     r"(?:不|未|没有)(?:会|再|直接|实际)?(?:调用|使用)[^。；;\n]{0,40}$|"
     r"(?:does\s+not|doesn't|do\s+not|don't|without)\s+(?:call(?:ing)?|use|using)"
@@ -167,7 +159,7 @@ def split_card(path: Path, root: Path) -> Card:
         isinstance(value, str) for value in platforms
     ):
         raise ValueError(f"invalid card platforms: {path.relative_to(root)}")
-    body = strip_managed(text[framing.end() :], path.relative_to(root))
+    body = text[framing.end() :]
     return Card(
         path=path.resolve(),
         relative=path.relative_to(root).as_posix(),
@@ -176,19 +168,6 @@ def split_card(path: Path, root: Path) -> Card:
         platforms=tuple(platforms),
         sources=tuple(str(source["resource"]) for source in metadata.get("sources", [])),
     )
-
-
-def strip_managed(text: str, context: object) -> str:
-    match = MANAGED_RE.search(text)
-    if match is None:
-        if MANAGED_START in text or MANAGED_END in text:
-            raise ValueError(f"malformed managed related block: {context}")
-        return text
-    start = match.start()
-    delimiter = "\n\n"
-    if text[max(0, start - len(delimiter)) : start] != delimiter:
-        raise ValueError(f"managed related block has no exact delimiter: {context}")
-    return text[: start - len(delimiter)]
 
 
 def source_mirror(root: Path) -> dict[str, object]:
@@ -958,7 +937,7 @@ def artifact_payload(
             "Comments, literals, directives and known #if 0 arms are excluded; this is syntactic evidence, "
             "not proof of runtime reachability or exhaustive transitive include coverage. Source evidence binds "
             "repository, revision, path, SHA-256, physical line and exact source anchor. Full accepted pairs "
-            "are audited, while managed navigation and automatic graph edges share a deterministic bounded "
+            "are audited, while optional link suggestions use a deterministic bounded "
             "projection, source-first and round-robin by Operator family. Body-only matches remain separately labeled. "
             "The operator body must contain non-negated, non-declaration call syntax with balanced "
             "template brackets and the identifier, optional template arguments, and opening "
@@ -1002,7 +981,7 @@ def artifact_payload(
             {
                 "api": item.api.relative,
                 "operator": item.operator.relative,
-                "relation": "related",
+                "relation": "suggested_link",
                 "symbol": item.symbol,
                 "api_fingerprint": item.api.fingerprint,
                 "operator_fingerprint": item.operator.fingerprint,
@@ -1016,55 +995,13 @@ def artifact_payload(
     }
 
 
-def _managed_semantic_lines(raw: str, context: str) -> list[str]:
-    match = MANAGED_RE.search(raw)
-    if match is None:
-        if MANAGED_START in raw or MANAGED_END in raw:
-            raise ValueError(f"malformed managed related block: {context}")
-        return []
-    block = match.group(0).rstrip("\n")
-    inner = block[len(MANAGED_START) : -len(MANAGED_END)].strip("\n")
-    nested = re.compile(
-        rf"(?ms)^\s*{re.escape(API_OPERATOR_START)}\n.*?"
-        rf"^{re.escape(API_OPERATOR_END)}\s*"
-    )
-    inner = nested.sub("", inner)
-    lines = inner.splitlines()
-    result: list[str] = []
-    for line in lines:
-        if line == "## 相关":
-            continue
-        if line.startswith("- [") and AUTO_REASON_PREFIX in line:
-            continue
-        result.append(line)
-    while result and not result[0].strip():
-        result.pop(0)
-    while result and not result[-1].strip():
-        result.pop()
-    return result
-
-
-def _semantic_targets(api: Card, lines: list[str]) -> set[Path]:
-    targets: set[Path] = set()
-    for line in lines:
-        match = re.search(r"\[[^]]+\]\(([^)#?]+\.md)(?:#[^)]*)?\)", line)
-        if match is not None:
-            targets.add((api.path.parent / match.group(1)).resolve())
-    return targets
-
-
 def displayed_invocations(apis: list[Card], items: list[Invocation], limit: int) -> list[Invocation]:
-    """One bounded, source-first projection shared by card rendering and graph edges."""
+    """Bound optional suggestions; graph edges always come from actual card links."""
     if type(limit) is not int or limit < 1:
         raise ValueError("API Operator display limit must be a positive integer")
-    semantic = {
-        api.path: _semantic_targets(api, _managed_semantic_lines(read_utf8(api.path), api.relative))
-        for api in apis
-    }
     grouped: dict[Path, list[Invocation]] = defaultdict(list)
     for item in items:
-        if item.operator.path not in semantic.get(item.api.path, set()):
-            grouped[item.api.path].append(item)
+        grouped[item.api.path].append(item)
     result = []
     for path in sorted(grouped):
         selected = []
@@ -1082,90 +1019,24 @@ def displayed_invocations(apis: list[Card], items: list[Invocation], limit: int)
     return result
 
 
-def expected_api_cards(
-    apis: list[Card], operators: list[Card], items: list[Invocation], limit: int
-) -> dict[Path, str]:
-    by_api: dict[Path, list[Invocation]] = defaultdict(list)
-    for item in items:
-        by_api[item.api.path].append(item)
-    selected_by_api: dict[Path, list[Invocation]] = defaultdict(list)
-    for item in displayed_invocations(apis, items, limit):
-        selected_by_api[item.api.path].append(item)
-    rendered: dict[Path, str] = {}
-    for api in apis:
-        raw = read_utf8(api.path)
-        managed_free = strip_managed(raw, api.relative)
-        semantic = _managed_semantic_lines(raw, api.relative)
-        semantic_targets = _semantic_targets(api, semantic)
-        relations = by_api.get(api.path, [])
-        relations = [item for item in relations if item.operator.path not in semantic_targets]
-        if not relations and not semantic:
-            rendered[api.path] = managed_free
-            continue
-        block_lines = [MANAGED_START, "## 相关"]
-        if semantic:
-            block_lines.extend(["", *semantic])
-        selected = selected_by_api.get(api.path, [])
-        if selected:
-            block_lines.extend(["", API_OPERATOR_START])
-            for source_backed, title in ((True, "源码中使用此 API 的算子"), (False, "知识正文中的调用示例")):
-                subset = [item for item in selected if (item.source is not None) == source_backed]
-                if not subset:
-                    continue
-                total = sum((item.source is not None) == source_backed for item in relations)
-                partial = "（部分算子）" if len(subset) < total else ""
-                block_lines.extend([f"### {title}{partial}", "", f"展示 {len(subset)} / {total} 个已匹配算子；每个 API 最多展示 {limit} 个自动关联。"])
-                if source_backed:
-                    block_lines.append("范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。")
-                else:
-                    block_lines.append("以下仅有知识正文中的调用证据，未作为源码调用结果。")
-                block_lines.append("")
-                for item in subset:
-                    href = quote(os.path.relpath(item.operator.path, api.path.parent), safe="/._-")
-                    line = f"- [{item.operator.title}]({href})（`related`）：{reason(item.symbol, item.source)}"
-                    if item.source is not None:
-                        root = api.path.parents[len(Path(api.relative).parts) - 1]
-                        source_href = quote(os.path.relpath(root / str(item.source['resource']), api.path.parent), safe="/._-")
-                        line += f" [源码]({source_href}#L{item.source['line']})"
-                    block_lines.append(line)
-                block_lines.append("")
-            block_lines.append(API_OPERATOR_END)
-        block_lines.append(MANAGED_END)
-        block = "\n".join(block_lines)
-        rendered[api.path] = managed_free + "\n\n" + block + "\n"
-    return rendered
-
-
 def command(args: argparse.Namespace) -> int:
     root = ingest.resolve_root(args.knowledge_root)
     report_path = ingest.graph_artifact_path(root, args.report)
     apis, operators, items, ambiguous, audit_counts = invocations(root)
     limit = source_mirror(root)["api_operator_display_limit"]
     payload = artifact_payload(apis, operators, items, ambiguous, audit_counts, limit)
-    expected = expected_api_cards(apis, operators, items, limit)
-    changed = [path for path, text in expected.items() if read_utf8(path) != text]
-    if args.command == "verify":
-        if report_path.is_file():
-            current = json.loads(read_utf8(report_path))
-            if current != payload:
-                raise ValueError(f"stale API-to-Operator audit artifact: {report_path}")
-        if changed:
-            for path in changed[:100]:
-                print(f"stale API related block: {path.relative_to(root)}", file=sys.stderr)
-            print(f"checked_api_cards={len(apis)} stale={len(changed)}")
-            return 1
-        print(
-            f"checked_api_cards={len(apis)} accepted_invocations={len(items)} "
-            f"api_cards_with_relations={payload['counts']['api_cards_with_relations']} stale=0"
-        )
-        return 0
-    for path in changed:
-        ingest.atomic_write(path, expected[path])
+    payload["suggested_markdown"] = [
+        {
+            "card": item.api.relative,
+            "link": f"[{item.operator.title}]({quote(os.path.relpath(item.operator.path, item.api.path.parent), safe='/._-')})",
+            "evidence": invocation_evidence(item),
+        }
+        for item in displayed_invocations(apis, items, limit)
+    ]
     ingest.atomic_write(report_path, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
     print(
         f"checked_api_cards={len(apis)} accepted_invocations={len(items)} "
-        f"api_cards_with_relations={payload['counts']['api_cards_with_relations']} "
-        f"changed={len(changed)} report={report_path.relative_to(root)}"
+        f"suggestions={len(payload['suggested_markdown'])} report={report_path.relative_to(root)}"
     )
     return 0
 
@@ -1177,8 +1048,7 @@ def parser() -> argparse.ArgumentParser:
         "--report", default="artifacts/graphs/api_operator_links.json"
     )
     sub = result.add_subparsers(dest="command", required=True)
-    sub.add_parser("sync", help="synchronize API managed related blocks")
-    sub.add_parser("verify", help="verify relation evidence and managed blocks")
+    sub.add_parser("suggest", help="write optional source-backed link suggestions without editing cards")
     return result
 
 

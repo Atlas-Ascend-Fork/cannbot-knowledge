@@ -56,9 +56,3 @@ banned：Mix合图 (sg_set_scope) 对 `mla_prolog_quant_d` decode 算子不可�
 - 已验证不可应用：Ascend950/DAV_3510 + CANN 9.1.0 + `mla_prolog_quant_d` decode (含 rms_norm + NZ matmul)。
 - 未验证，推断可迁移：其他含 rms_norm 归约 + NZ 格式 matmul 的 950 decode 算子（如 MLA/attention 族）大概率命中同一编译复杂度问题，未实测。
 - 未验证：非 950 平台 (a3/a2) 的 mix 编译器 pass 行为不同，本限制不可直接外推。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MLA Prolog decode 950 tile 调优配方](../performance/mla_prolog_decode_950_tile_tuning_recipe.md)（`related`）：- **路线优先级**：`banned`（对本算子族 Mix合图不可应用，单 mix kernel 即超编译门槛）。；6. **当前方案属 recommended_fastpath**：tile shape 调优是本算子在 950 上最直接有效的路线；Mix合图/vf_options/sg_set_tunevf_mode/ooo_sched_mode 等 pass 选项路线均 banned 或回归。。编译 runbook 明确禁止 MLA decode 的 Mix 合图路线，性能 runbook 给出同一算子的已验证替代路线：保留 tile-shape fastpath。
-<!-- cannbot:related:end -->

@@ -69,10 +69,3 @@ uint32_t maxLiveNodeCount = 0;
 uint32_t extraBuf = 0;
 AscendC::GetQuantizeTmpBufferFactorSize(maxLiveNodeCount, extraBuf);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Quantize](quantize.md)（`related`）：“获取Quantize接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。”给出固定 UB 下的容量因子，而“提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetQuantizeMaxMinTmpSize获取。”给出 Quantize 的临时缓存调用合同；组合后可安全推导量化 tile 的最大元素数。
-<!-- cannbot:related:end -->

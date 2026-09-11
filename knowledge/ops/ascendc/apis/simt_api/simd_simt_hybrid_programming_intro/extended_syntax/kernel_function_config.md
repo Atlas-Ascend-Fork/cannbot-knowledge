@@ -120,11 +120,3 @@ __global__ __vector__ void add_custom(__gm__ float* x, __gm__ float* y, __gm__ f
     asc_vf_call<add_simt>(dim3{1024, 1, 1}, z, x, y);
 }
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [纯 SIMT kernel 形参 __gm__ 导致编译失败](../../../../runbooks/compilation/pure_simt_parameters_do_not_use_gm_qualifier.md)（`exemplifies`）：核函数是 SIMD 与 SIMT 混合编程的 Device 侧入口函数，使用 __global__ __vector__ 修饰。返回值必须为 void，入参支持指针类型（需 __gm__ 修饰）和内置数据类型。；CANN 9.0.1 的纯 SIMT 编译前端把 `__gm__` 展开成变量级 `__attribute__((device))`，该 attribute 不能修饰 `__global__` 函数的非静态形参。；API 规定混合入口需 __gm__，runbook 给出纯 SIMT 编译模式必须移除该限定的具体编译原因。
-- [核函数配置](../../simt_programming_intro/extended_syntax/kernel_function_config.md)（`related`）：核函数是 SIMT 编程的 Device 侧入口函数，使用 __global__ 修饰符定义；核函数是 SIMD 与 SIMT 混合编程的 Device 侧入口函数，使用 __global__ __vector__ 修饰。两端给出纯 SIMT 与混合编程的 Device 入口定义，迁移执行模式时必须同时调整修饰符与 GM 指针约束。
-<!-- cannbot:related:end -->

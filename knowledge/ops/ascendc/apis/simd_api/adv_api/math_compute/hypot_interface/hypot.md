@@ -121,10 +121,3 @@ AscendC::Hypot(
 输入数据(src1Local): [ 2.12526834  3.09347812  -0.327234  ...  5.64334232 5.97345923]
 输出数据(dstLocal): [ 2.1907718 7.08962502  5.5437528 ...  12.461647  13.1176214]
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetHypotMaxMinTmpSize](get_hypot_max_min_tmp_size.md)（`related`）：host侧Tiling接口，用于获取Hypot接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；按元素计算两个浮点数平方和的平方根（dst = sqrt(src0^2 + src1^2)，Hypot(3.0, 4.0)=5.0）。模板参数T支持half/bfloat16_t/float。仅Ascend 950PR/950DT支持。。前者专门计算 Hypot Kernel 所需临时空间的 Tiling 上下界，后者定义实际逐元素平方和开方运算，二者连接 Host 空间预算与 Kernel 调用。
-<!-- cannbot:related:end -->

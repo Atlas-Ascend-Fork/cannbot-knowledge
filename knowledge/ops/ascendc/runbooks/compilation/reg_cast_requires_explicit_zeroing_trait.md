@@ -270,11 +270,3 @@ __simd_vf__ inline void rms_norm_vf(__ubuf__ T *xAddr, __ubuf__ T *gAddr, __ubuf
 ## 误诊
 
 “widening 是无损转换，所以默认 UNKNOWN 应可用”是错误假设：转换数值是否无损与 mask merge mode 是否为设备支持枚举是两个独立契约。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Cast](../../apis/simd_api/basic_api/reg_vector_compute/type_conversion/cast.md)（`exemplifies`）：CANN 9.0.1 的默认 `castTrait` 将 `MaskMergeMode` 置为 `UNKNOWN`，而 dav-3510 的 `Reg::Cast` 实现静态约束只接受 `ZEROING` 或 `MERGING`。；trait: CastTrait类型，类型转换模式结构体。包括RegLayout、SatMode、MaskMergeMode、RoundMode。 struct CastTrait { RegLayout layoutMode = RegLayout::UNKNOWN; SatMode satMode = SatMode::UNKNOWN; MaskMergeMode mrgMode = MaskMergeMode::UNKNOWN; RoundMode roundMode = RoundMode::UNKNOWN; };。Runbook 复现默认 UNKNOWN merge mode 在 dav-3510 被静态断言拒绝并要求显式 ZEROING/MERGING，API 卡给出 CastTrait 的默认字段，形成接口默认值到编译失败再到显式 trait 修复的验证链。
-- [MaskMergeMode](../../apis/simd_api/basic_api/reg_vector_compute/aux_data_types/mask_merge_mode.md)（`exemplifies`）：- `ZEROING`：mask 未选择的 lane 在目的寄存器中置零。；CANN 9.0.1 的默认 `castTrait` 将 `MaskMergeMode` 置为 `UNKNOWN`，而 dav-3510 的 `Reg::Cast` 实现静态约束只接受 `ZEROING` 或 `MERGING`。。运行手册展示 Reg::Cast 在 dav-3510 上如何实际选择枚举卡定义的 ZEROING，以修复默认 UNKNOWN 被静态约束拒绝的问题。
-- [CastTrait 文件域声明触发命名空间编译失败](reg_casttrait_define_inside_simd_vf.md)（`related`）：“AscendC::Reg::MaskMergeMode::ZEROING,”与“不要依赖默认 `castTrait`；为 widening 和 narrowing 分别构造显式 `CastTrait`，至少把 `mrgMode` 设为目标语义对应的 `ZEROING` 或 `MERGING`，并把 trait 作为第三个模板参数传入所有低精度转换调用。”。focal 的可编译 trait 显式选择 ZEROING，配套 Runbook 解释默认 UNKNOWN 不能通过 dav-3510 约束。
-<!-- cannbot:related:end -->

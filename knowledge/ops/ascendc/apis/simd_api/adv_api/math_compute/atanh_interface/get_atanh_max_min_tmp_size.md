@@ -64,10 +64,3 @@ uint32_t maxValue = 0;
 uint32_t minValue = 0;
 AscendC::GetAtanhMaxMinTmpSize(shape, 2, false, maxValue, minValue);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [Atanh](atanh.md)（`related`）：kernel侧Atanh接口的计算需要开发者预留 申请临时空间，本接口用于在host侧获取预留 申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。；用于Atanh内部复杂计算时存储中间变量，由开发者提供。 临时空间大小BufferSize的获取方式请参考GetAtanhMaxMinTmpSize。；Atanh 的 sharedTmpBuffer 大小明确由 Host 侧范围接口产生，形成 Tiling 参数到 kernel 临时缓存的直接合同。
-<!-- cannbot:related:end -->

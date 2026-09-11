@@ -192,11 +192,3 @@ sparse:
 ## 已知冲突
 
 - 块稀疏 Attention Ring 支持：@2c45117 记载不支持 Ring；@46485be 改为支持 Ring（Ring+TopK 含 overlap）。以最新版本为准。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [HunyuanVideo](../models/hunyuan_video.md)（`related`）：“部署经统一拉起架构 ［mm-inference-launch］(../frameworks/mm_inference_launch.md)：`models/hunyuan-video/infer.sh` + YAML 场景切换”；“MM Inference Launch 是 cann-recipes-infer 中 4 个多模态生成模型（Wan2.2-I2V / HunyuanVideo / SANA-Video / HunyuanImage-3.0）的统一推理拉起架构”。前者把 HunyuanVideo 的入口和配置交给后者，形成直接部署合同。
-- [Wan2.2-I2V](../models/wan2_2_i2v.md)（`related`）：“部署经统一拉起架构 ［mm-inference-launch］(../frameworks/mm_inference_launch.md)：`models/wan2.2-i2v/infer.sh` + YAML 场景切换（统一拉起 refactor，commit 06656b0，晚于上文融合算子内容钉定的 2f82d10）。config 变体（`config/`）：`14b_single`（单卡基线，`dit_cache.method` 注释切 NoCache/FBCache/TeaCache）、`14b_cfg2_ulysses4`（8 卡，CFG2 × Ulysses4 + VAE 并行 + DiT/T5 FSDP，多卡侧固定 NoCache）。”与“MM Inference Launch 是 cann-recipes-infer 中 4 个多模态生成模型（Wan2.2-I2V / HunyuanVideo / SANA-Video / HunyuanImage-3.0）的统一推理拉起架构：每个模型以 `infer.sh` 为入口，切换 YAML 选择推理场景；YAML 集中管理公共字段、启动器、环境变量、Dit-Cache、块稀疏 Attention 与模型透传参数；统一函数库 `executor/scripts/mm_function.sh` 负责校验、解析、环境设置与启动。启动器支持 `torchrun` 与 `accelerate`；日志统一输出到 `models/{MODEL_DIR}/res/{YYYYMMDD}/{model_name}/`。这是一套**拉起与配置体系**——Dit-Cache、块稀疏 Attention、序列并行的方法细节各有专页（见下文链接），此处描述它们作为 YAML 段如何被框架检测与透传。”。模型卡的 infer.sh 与 YAML 场景切换正是统一拉起框架为 Wan2.2 提供的部署入口。
-- [一站式平台/未激活环境拉起多模推理的环境与运行期坑（torchrun PATH / cv2 static-TLS / TBE 首调缺依赖 / 退出双重释放）](../../runbooks/runtime/multimodal_launch_and_runtime_env_pitfalls.md)（`related`）：MM Inference Launch 是 cann-recipes-infer 中 4 个多模态生成模型（Wan2.2-I2V / HunyuanVideo / SANA-Video / HunyuanImage-3.0）的统一推理拉起架构：每个模型以 `infer.sh` 为入口，切换 YAML 选择推理场景；YAML 集中管理公共字段、启动器、环境变量、Dit-Cache、块稀疏 Attention 与模型透传参数；统一函数库 `executor/scripts/mm_function.sh` 负责校验、解析、环境设置与启动。；在 CANNLab 一站式平台默认环境（未 `conda activate`）或 aarch64 上拉起多模态推理（［mm 推理启动链］(../../concepts/frameworks/mm_inference_launch.md)：`infer.sh → executor/scripts/mm_function.sh`）时，几类**报错发生在意外阶段、易误读为算子/CANN 问题**，实为环境未就绪。对号入座即可。；启动架构定义 infer.sh 到 mm_function.sh 的配置与执行链，运行手册针对同一链路的环境未就绪故障给出定位方式。
-<!-- cannbot:related:end -->

@@ -156,25 +156,5 @@ AscendC::Sin<half, false, config>(dstLocal, srcLocal, sharedTmpBuffer, 512);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetSinTmpBufferFactorSize](get_sin_tmp_buffer_factor_size.md)（`related`）：GetSinTmpBufferFactorSize 给出“推算公式：currentShapeSize = (currBuff - extraBuf) / maxLiveNodeCount / typeSize”；Sin 页说明“提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。”，前者正用于为后者带 calCount 的显式缓冲重载推导单次计算量。
-
-<!-- cannbot:api-operator:start -->
-### 源码中使用此 API 的算子
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
-
-- [SimThreadExponential 950 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)（`related`）：算子声明的固定版本源码包含对 `Sin(...)` 的直接调用（第 277 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h#L277)
-
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ForeachSin A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_sin.md)（`related`）：算子正文包含对 `Sin(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [SimThreadExponential 950 ACLNN 算子知识](../../../../../operators/aclnn/math/random/sim_thread_exponential_950.md)
+- [ForeachSin A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_sin.md)

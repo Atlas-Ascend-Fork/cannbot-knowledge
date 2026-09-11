@@ -97,9 +97,3 @@ __global__ __aicore__ __vector__ void rms_norm_kernel(GM_ADDR x, GM_ADDR gamma, 
 - 把 `__vector__` 机械添加到 Cube 或 mix kernel。
 - 用“共享库可加载”代替目标算子的数值验证。
 - 看到自动推导失败就先改参数 ABI，却不检查函数体是否完全为空。
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SIMT 核类型推导失败 — 补 __vector__](direct_launch_kernel_requires_vector_qualifier.md)（`related`）：空函数体没有设备操作可供 Bisheng 自动判断 AIV、AIC 或 mix 任务类型。；SIMT VF 启动 shell 只写 `__global__ __aicore__` 而缺少 `__vector__` 函数类型属性，使 `ld.lld` 无法为模板实例化确定 AIV kernel type，因而链接失败。；两份运行手册命中同一 kernel type auto derivate failed 诊断，并都以显式 __vector__ 固化 AIV 类型；一个覆盖空 Vector 骨架，另一个覆盖启动 SIMT VF 的 950 shell。
-<!-- cannbot:related:end -->

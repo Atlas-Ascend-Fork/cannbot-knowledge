@@ -725,9 +725,3 @@ mean/rstd 为下一个 tile 预取；dy Cast 后留在 queue3，同时用于 dbe
 | 同步 | queue/pipe + `SyncAll` | partial 写入先于归并 | deterministic helper |
 | 精度与尾块 | FP32 中间，BF16 round | valid N、row/core tail | Cast/tail methods |
 | 失败边界 | priority fallback | unknown key 与 UB fail 不得静默替换 | selector/router |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [LayerNormBackward 950 ACLNN 算子知识](layer_norm_backward_950.md)（`same_topic`）：实际入口 ｜ `aclnnLayerNormBackwardGetWorkspaceSize` / `aclnnLayerNormBackward`，公开 ACLNN；A2/A3 经 `DAV_2201` 选择合一 `LayerNormGradV3`。；实际入口 ｜ `aclnnLayerNormBackwardGetWorkspaceSize` / `aclnnLayerNormBackward`，950 由 `IsRegbase(curArch)` 进入融合 `LayerNormGradV3`。。两卡共享 ACLNN 入口与融合逻辑算子，但分别闭合 A2/A3 和 950 的代际实现。
-<!-- cannbot:related:end -->

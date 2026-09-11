@@ -81,10 +81,3 @@ __aicore__ inline void LoadDataWithSparse(const LocalTensor<T>& dst, const Local
 ## 调用示例<a name="zh-cn_topic_0000002512171654_section088124295117"></a>
 
 本接口用于配合Sparse Mmad使用，完整示例请参考：[MmadWithSparse调用样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_with_sparse)。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MmadWithSparse](../mmad_compute/mmad_with_sparse.md)（`related`）：将稀疏矩阵数据从L1 Buffer搬运到L0A或L0B Buffer，支持稀疏数据的压缩搬运。；B 矩阵需通过 LoadDataWithSparse 载入并同时加载索引矩阵（uint8，分形(32,16)，每个元素含 4 个 uint2 索引）。。前者提供稀疏数据从 L1 到 L0A/L0B 的解压搬运，后者把 LoadDataWithSparse 明确规定为 MmadWithSparse 的 B 矩阵与索引矩阵装载前置，组成稀疏矩阵乘的直接数据通路。
-<!-- cannbot:related:end -->

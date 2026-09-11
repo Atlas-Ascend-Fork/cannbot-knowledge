@@ -561,9 +561,3 @@ if constexpr (roundMode == AscendC::RoundMode::CAST_RINT) {
 | 同步 | TQue EnQue/DeQue/Free 管理 MTE2/V/MTE3 | input 两次 VF 读取结束前不得 Free；输出 DMA 完成前不得覆盖 slot | `CopyIn`、`Compute`、`CopyOut` |
 | 精度与尾块 | fp32 max/scale/div；epsilon seed；ODD→RINT；GM 仅写 H | mask ZEROING、scale=amax/127、padding 0、有效字节数不可改 | `ComputeScaleVF`、`ComputeYVF` |
 | 失败边界 | Direct full-load 子域可独立复用 | rank/dtype/contiguous/uint32/UB guard；无 large-shape fallback | `dynamic_quant_meta`、`calc_dynamic_quant_tiling` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DynamicQuant 950 ACLNN 算子知识](../../../aclnn/nn/quant/dynamic_quant_950.md)（`same_topic`）：“｜ 实际入口 ｜ `aclnnDynamicQuantV4GetWorkspaceSize` / `aclnnDynamicQuantV4`；950 上版本族最新公开入口 V4，新增 `dstTypeMax`。 ｜”给出 950 ACLNN 完整入口；“｜ 实际入口 ｜ PyTorch 注册名 `cann_bench::dynamic_quant(Tensor x)`；NPU 实现 `dynamic_quant_npu`；Direct launcher 为 `launch_dynamic_quant_half` / `launch_dynamic_quant_bfloat16`。 ｜”给出同一 DynamicQuant 逻辑算子的 Direct 子域入口，对照可直接完成启动 route、功能域和 workspace 选型。
-<!-- cannbot:related:end -->

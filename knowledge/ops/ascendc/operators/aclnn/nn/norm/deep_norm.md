@@ -1280,9 +1280,3 @@ FP32 resident body 直接在 `gx_local` 写 `alpha*x+gx`，复制到输出 Queue
 | 同步 | Queue + PIPE_V + V_S/S_V/S_MTE3/MTE3_S | 标量读写和原地复用前 barrier 不得省略 | `ReduceSumCustom`、Compute/CopyOut helpers |
 | 精度与尾块 | FP16/BF16 升 FP32；BF16 RINT；D mask、row_tail、lsize | cast mode、`1/D`、epsilon 顺序和有效写范围 | `Compute*`、`CopyOut/CommonCopyOutRes` |
 | 失败边界 | shape gate、12 legal keys、950 文档不支持 | 不发布 950，不把 empty tensor 文档声明覆盖 Tiling 实际失败 | `CheckInputOutputShape*`、README/API 平台表 |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [DeepNormGrad A2/A3 ACLNN 算子知识](deep_norm_grad.md)（`related`）：｜ 计算语义 ｜ 对每个归一化行先算 `x' = alpha*x + gx`，再算 `mean=Σx'/D`、`rstd=1/sqrt(Σ(x'-mean)^2/D+epsilon)`、`y=(x'-mean)*rstd*gamma+beta`。 ｜；｜ 计算语义 ｜ 将输入展平为 `［N,D］`，计算 DeepNorm 对 `x/gx/gamma/beta` 的反向梯度 `dx/dgx/dgamma/dbeta` ｜。DeepNorm 卡定义前向归一化与 mean/rstd，DeepNormGrad 卡消费该运算语义并计算 x、gx、gamma、beta 的反向梯度，是同一训练算子链的前后向节点。
-<!-- cannbot:related:end -->

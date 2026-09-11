@@ -141,19 +141,4 @@ AscendC::Tan(dstLocal, srcLocal, sharedTmpBuffer, 512);
 ```
 
 
-<!-- cannbot:related:start -->
-## 相关
-
-- [GetTanMaxMinTmpSize](get_tan_max_min_tmp_size.md)（`related`）：提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetTanMaxMinTmpSize获取。；host侧Tiling接口，用于获取Tan接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。；Kernel 侧重载明确把临时空间容量交给 GetTanMaxMinTmpSize，Host 侧查询再把容量作为 Tiling 参数回传，闭合 Tan 的分块与 buffer 规划。
-- [GetTanTmpBufferFactorSize](get_tan_tmp_buffer_factor_size.md)（`related`）：获取Tan接口的maxLiveNodeCount和extraBuf，用于在固定临时空间下推算算子单次最大计算元素数量。；提供四种重载：通过sharedTmpBuffer传入临时空间或由接口框架申请，每种再区分源操作数全部参与计算（无calCount参数）和部分参与计算（带calCount参数）。临时空间大小通过GetTanMaxMinTmpSize获取。；factor helper 从可用空间反推 Tan 单次规模，Tan 卡给出 buffer 与 calCount 重载，二者用于同一 kernel 的 Tiling 和调用组装。
-
-<!-- cannbot:api-operator:start -->
-### 知识正文中的调用示例
-
-展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
-以下仅有知识正文中的调用证据，未作为源码调用结果。
-
-- [ForeachTan A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tan.md)（`related`）：算子正文包含对 `Tan(...)` 的直接调用；本卡提供该接口契约。
-
-<!-- cannbot:api-operator:end -->
-<!-- cannbot:related:end -->
+- [ForeachTan A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tan.md)

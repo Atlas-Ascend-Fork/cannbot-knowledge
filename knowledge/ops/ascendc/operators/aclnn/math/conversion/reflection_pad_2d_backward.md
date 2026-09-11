@@ -806,9 +806,3 @@ workspace_total = blockNum*alignWidth*64*4 bytes
 | 同步 | queue 所有权 + MTE3_MTE2 hard event | workspace 写后读不可省略 wait | `pad_v4_grad_*_pad.h` |
 | 精度与尾块 | ACLNN FP16/BF16 核心 FP32，DataCopyPad 按 valid byte | 不可把 padding lane 写回 GM | `commonPad2dBackward`, `CopyOut*` |
 | 失败边界 | UB<=0、shape/padding/dtype 不合法失败 | 不得把 AICPU fallback 补为 PadV4Grad | `Tiling4PadV4Grad`, `PadV3Grad` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ReflectionPad2dBackward 950 ACLNN 算子知识](reflection_pad_2d_backward_950.md)（`same_topic`）：设前向原输入空间高宽为 `(Ho,Wo)`，`gradOutput` 高宽为 `(Hi,Wi)=(Ho+top+bottom, Wo+left+right)`。对每个输出坐标 `(h,w)`，反向结果是所有在 reflect 前向中映射到 `(h,w)` 的 padded 坐标求和：；对 collapse 后第 `d` 轴，设 padded `gradOutput` 长为 `I［d］`，原输入/结果长 `O［d］=I［d］-L［d］-R［d］`。给定输出坐标 `o［d］`，正文输入坐标是 `o［d］+L［d］`；reflect 左/右候选分别是 `L［d］-o［d］` 与 `2*O［d］-o［d］+L［d］-2`，仅在左/右 pad 区条件成立时加入。多轴取候选笛卡尔积：。两卡描述同一 ReflectionPad2DBackward 反向聚合契约，分别闭合 A2/A3 与 Ascend 950 的 Device 实现。
-<!-- cannbot:related:end -->

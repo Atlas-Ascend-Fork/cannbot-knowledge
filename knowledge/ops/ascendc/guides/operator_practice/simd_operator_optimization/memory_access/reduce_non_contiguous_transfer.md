@@ -153,10 +153,3 @@ __aicore__ inline void CopyIn6(){
 ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/copy_data_56.png "搬运前后数据-56")
 
 【总结】使用多维数据搬运在部分场景下能够减少搬运指令的条数，从而提升性能。
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [跨行子块误作连续 slab 导致分块结果错](../../../../runbooks/precision/noncontiguous_row_subtiles_require_per_row_copy.md)（`related`）：在非连续搬运场景可以使用DataCopyPad接口的Loop模式和DataCopy的多维数据搬运接口来减少搬运次数，优化搬运性能。；- `nCur < N_` 改用逐行 DMA，放弃未核实字段语义的 2D `srcStride` 一次搬运，优先保证正确性；指南给出非连续二维块在已核实参数下减少搬运指令的优化路径，运行手册给出行宽小于物理步长时先按行搬运的正确性基线，二者共同指导先证明 stride 合同再选择批量搬运。
-<!-- cannbot:related:end -->

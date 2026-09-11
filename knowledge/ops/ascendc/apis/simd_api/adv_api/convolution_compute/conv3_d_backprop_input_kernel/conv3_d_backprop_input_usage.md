@@ -150,11 +150,3 @@ Conv3DBackpropInput的计算公式为：
 ```
 #include "lib/conv_backprop/conv3d_bp_input_api.h"
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SetGradOutput](set_grad_output.md)（`related`）：设置卷积反向计算的输入矩阵GradOutput。；Conv3DBackpropInput 以 GradOutput 和转置后的 Weight 为输入，计算特征矩阵的反向传播误差 GradInput。。SetGradOutput 卡指定写入卷积反向计算的 GradOutput 输入，使用说明卡给出该输入与转置 Weight 共同计算 GradInput 的数学角色，因此参数设置可直接落到完整反向运算链。
-- [卷积计算End](end.md)（`related`）：Ascend C提供一组Conv3DBackpropInput高阶API，便于用户快速实现卷积的反向运算，求解反向传播的误差。；在Conv3DBackpropInput卷积反向计算完成后，必须调用一次End，以清除EventID并释放内部申请的临时内存。。用法卡覆盖 Conv3DBackpropInput 任务，End 卡规定该任务完成后的必需清理步骤。
-<!-- cannbot:related:end -->

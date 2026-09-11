@@ -453,9 +453,3 @@ GM tile 容量扩大为 `9B`，但 FP32 临时只保留两个各 `B` 的片段�
 | 同步 | Queue 生命周期与 V barrier | FP32 子区覆盖前必须完成消费者 | `ComputerPerCast` |
 | 精度与尾块 | 16 位升 FP32 舍入再降精度 | 降精度固定 `CAST_RINT`；tail 按有效字节 | `InnerComputer<T>` |
 | 失败边界 | dtype/shape/format/编译 guard | 未知 key 与 BF16 guard 无 fallback | `CheckParams/foreach_round_off_number` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [ForeachRoundOffNumber 950 ACLNN 算子知识](foreach_round_off_number_950.md)（`same_topic`）：“｜ 计算语义 ｜ 公开语义为按 `roundMode` 舍入；固定 950 body 实际忽略 `roundMode`，三种 dtype 均只做 ties-to-even ｜”与“｜ 计算语义 ｜ 对列表中每个张量逐元素按 `roundMode` 舍入；V2 将标量转换成一个 `DT_INT8` Tensor 后启动 `ForeachRoundOffNumber` ｜”分别来自双方当前正文。两端讨论同一 V2 舍入算子，但 950 body 忽略 roundMode，而 A2/A3 实际按模式分派；该对照直接影响跨平台正确性和测试预期。
-<!-- cannbot:related:end -->

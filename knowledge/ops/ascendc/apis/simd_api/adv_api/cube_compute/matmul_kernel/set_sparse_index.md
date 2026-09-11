@@ -59,11 +59,3 @@ mm.SetSparseIndex(gm_index); //设置索引矩阵
 mm.SetBias(gm_bias);
 mm.IterateAll(gm_c);
 ```
-
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [4:2稀疏矩阵乘](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/4_2_sparse_matmul.md)（`explains`）：通过SetSparseIndex接口传入稠密化过程中生成的索引矩阵。；设置稀疏矩阵稠密化过程生成的索引矩阵。 索引矩阵在稠密化中的作用请参考MmadWithSparse。。实践指南把 SetSparseIndex 放到 4:2 稀疏 Matmul 的索引生成与传入步骤中，说明该接口在完整 Kernel 流程中的使用位置。
-- [MmadWithSparse](../../../basic_api/cube_compute_isasi/mmad_compute/mmad_with_sparse.md)（`related`）：设置稀疏矩阵稠密化过程生成的索引矩阵。 索引矩阵在稠密化中的作用请参考MmadWithSparse。；4:2 结构化稀疏矩阵乘加接口，实现 C=A×B+C。左矩阵 A 为稀疏矩阵（L0A，M×K，Zz，int8_t），右矩阵 B 为经 4:2 稀疏过滤后的稠密矩阵（L0B，K/2×N，Zn，int8_t），结果 C 位于 L0C（M×N，Nz，int32_t）。头文件 `basic_api/kernel_operator_mm_intf.h`。；SetSparseIndex 提供 MmadWithSparse 稠密化阶段消费的索引矩阵，连接索引配置与 4:2 稀疏矩阵乘加。
-<!-- cannbot:related:end -->

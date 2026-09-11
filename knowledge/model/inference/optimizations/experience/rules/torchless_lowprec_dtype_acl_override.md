@@ -62,10 +62,3 @@ if (kv_quant_mode == 10) {                 // 10 for hif8 kv quant
 
 - **diff 事实**（clone `@a34ce8e16efb`）：`npu_kv_quant_sparse_attn_sharedkv.cpp` 的 `make_wrapper` + `kv_quant_mode == 10` 分支 + `ACL_HIFLOAT8` 覆写、以及「fp8 走透传 / hif8 走覆写」的对比，均为读到的真实 diff。
   - 溯源下探：[cann-recipes-infer-issue-196-requirement-950-qsas-kv-quant-fp8-e4m3-hifp8-kv-quant](https://gitcode.com/cann/cann-recipes-infer/issues/196)
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [SparseAttnSharedKV (SAS) Kernel](../../../concepts/kernels/sparse_attn_sharedkv.md)（`related`）：参考实现在稀疏注意力 KV 量化算子 QSAS（`aclnnKvQuantSparseAttnSharedkv`，对应 ［sparse-attn-sharedkv］(../../../concepts/kernels/sparse_attn_sharedkv.md)）；代码侧入口为 `torch.ops.custom.npu_sparse_attn_sharedkv`（伪量化版 `npu_kv_quant_sparse_attn_sharedkv`），并配套独立的 AICPU Scheduler 算子 `npu_sparse_attn_sharedkv_metadata`。。前者给出 QSAS 在 torch 缺少 HiFloat8 dtype 时的 acl 调用边界覆写，后者给出同一 SparseAttnSharedKV 伪量化入口与执行角色。
-- [量化权重格式 / dtype 组合的可用性受 SoC 平台与 CANN 算子包版本双重约束（非量化配置 bug）](../../../runbooks/precision/quant_format_dtype_platform_cann_version_gating.md)（`related`）：在昇腾 ［torch_ops_extension］(../../../concepts/frameworks/ascendc.md) 里给自定义 aclnn 算子喂一种**硬件低精度格式**（如 hif8 / HiFloat8）的张量，而 PyTorch / torch_npu **没有对应的张量 dtype** 时；一个量化权重格式 / dtype 组合并非到处可用，它受两道**相互独立**的门控——(a) 运行的 **SoC 平台**，(b) 已装的 **CANN 二进制算子包版本**。。两卡把低精度 dtype 故障分层：先核对 SoC 与 CANN 是否支持，再在 torch 表达层缺 dtype 时使用 TensorWrapper 覆写 acl dtype。
-<!-- cannbot:related:end -->

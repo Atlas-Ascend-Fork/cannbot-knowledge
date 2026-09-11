@@ -468,9 +468,3 @@ row phase 把 GM sum 当作 `n` 个连续、每块 `perloopSize` 个 FP32 的二
 | 同步 | Queue协议+local barrier | G scatter后再入队；index store后再读 | `Calc*Backward`、`CreateGatherIndex` |
 | 精度与尾块 | FP32、双mask、多级tail | 普通除S、最终乘N；只写有效前缀 | 三个body、`Process` |
 | 失败边界 | API/Tiling/空早退/workspace guard | 不补造fallback、除零保护或A2/A3支持 | `CheckParams`、`CheckShape`、entry |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MhcSinkhorn 950 ACLNN 算子知识](mhc_sinkhorn_950.md)（`related`）：逆序回放 Sinkhorn 列/行归一化反向；再交替做列、行归一化。正向卡定义 softmax 后列/行交替归一化并可保存 norm/sum，反向卡按相反顺序消费这些状态计算梯度；联合可核对训练调用中正向保存量的长度、顺序和反向 phase。
-<!-- cannbot:related:end -->
