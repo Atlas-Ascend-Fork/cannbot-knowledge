@@ -5,32 +5,32 @@ description: "说明 MoeReRouting 在 950 上从 Torch Host、Direct selector、
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/README.md"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/README.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_tiling.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_tiling.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_tiling_base.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_tiling_base.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_re_tiling.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_re_tiling.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_re_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_re_tiling.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_r_tiling.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_r_tiling.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_r_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/moe_re_routing_r_tiling.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_kernel/moe_re_routing_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_kernel/moe_re_routing_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_kernel/arch35/moe_re_routing_re_regbase.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_kernel/arch35/moe_re_routing_re_regbase.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_kernel/arch35/moe_re_routing_r_regbase.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_kernel/arch35/moe_re_routing_r_regbase.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/config/ascend950/moe_re_routing_binary.json"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_re_routing/op_host/config/ascend950/moe_re_routing_binary.json"
     role: implementation
 created_at: "2026-08-25T19:38:59Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---

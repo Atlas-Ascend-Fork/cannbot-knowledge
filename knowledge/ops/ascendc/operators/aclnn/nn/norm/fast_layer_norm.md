@@ -5,66 +5,66 @@ description: "说明 aclnnFastLayerNorm 在 A2/A3 上的接口语义、Host/Laun
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/docs/aclnnFastLayerNorm.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/docs/aclnnFastLayerNorm.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/op_api/aclnn_fast_layer_norm.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/op_api/aclnn_fast_layer_norm.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/op_api/layer_norm_v4.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/op_api/layer_norm_v4.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_tiling_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_tiling_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_transpose_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_transpose_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_single_read_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_single_read_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_merge_n_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_merge_n_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_common_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_common_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_transpose.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_transpose.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_single_read.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_single_read.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_align.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_align.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_align_limit.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_align_limit.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_one.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_one.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/kernel/kernel_layer_norm.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/kernel/kernel_layer_norm.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/block/block_layer_norm_copy_in_x.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/block/block_layer_norm_copy_in_x.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/block/block_layer_norm_copy_out.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/block/block_layer_norm_copy_out.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/subblock/sub_block_layer_norm_copy_in_x.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/subblock/sub_block_layer_norm_copy_in_x.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/subblock/sub_block_layer_norm_copy_out.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/subblock/sub_block_layer_norm_copy_out.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/tile/tile_copy.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/tile/tile_copy.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/tile/tile_copy_out.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/tile/tile_copy_out.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/config/ascend910b/layer_norm_v4_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/config/ascend910b/layer_norm_v4_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/config/ascend910_93/layer_norm_v4_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/config/ascend910_93/layer_norm_v4_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/layer_norm_v4_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
     role: implementation
 created_at: "2026-08-25T17:58:58Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -773,7 +773,7 @@ dynamic_ub=N/A; workspace_total(core)=32 B requested, 0 B body access
 
 - 适用 Route：R-002
 - 触发条件：BF16/BF16、`N∈{1024,4096}`，且 SingleRead UB guard 成立
-- Golden 来源：[`norm/layer_norm_v4/op_kernel/layer_norm_v4_single_read.h:203-229`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_single_read.h#L203-L229)
+- Golden 来源：[`norm/layer_norm_v4/op_kernel/layer_norm_v4_single_read.h:203-229`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_single_read.h#L203-L229)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -817,7 +817,7 @@ for (uint32_t rowIdx = 0; rowIdx < nRow; ++rowIdx) {
 
 - 适用 Route：R-001
 - 触发条件：A2/A3、`N<=64 && N!=rowAlign`
-- Golden 来源：[`norm/layer_norm_v4/op_kernel/layer_norm_v4_transpose.h:668-681`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_transpose.h#L668-L681)
+- Golden 来源：[`norm/layer_norm_v4/op_kernel/layer_norm_v4_transpose.h:668-681`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_v4/op_kernel/layer_norm_v4_transpose.h#L668-L681)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

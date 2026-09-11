@@ -2,31 +2,78 @@
 type: API
 title: GetDataPtr
 description: 获取储存Tensor数据地址。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.development_mode.tensor_programming]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.development_mode.tensor_programming
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/aux_data_structures/TensorDesc/GetDataPtr.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: [a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- a2
+- a3
+- 310p
+source_headers:
+- include/basic_api/kernel_operator_list_tensor_intf.h
 ---
 
-# GetDataPtr
+# GetDataPtr<a name="ZH-CN_TOPIC_0000002306338962"></a>
+
+## 功能说明<a name="zh-cn_topic_0000002078447573_zh-cn_topic_0000001576806829_zh-cn_topic_0000001339187720_section36583473819"></a>
 
 获取储存Tensor数据地址。
 
-获取储存Tensor数据地址。
+## 函数原型<a name="zh-cn_topic_0000002078447573_zh-cn_topic_0000001576806829_zh-cn_topic_0000001339187720_section13230182415108"></a>
 
-本接口属于 Tensor 数据结构操作接口。
+```cpp
+T* GetDataPtr()
+```
 
-返回值：返回储存Tensor数据地址。T数据类型。
+## 参数说明<a name="zh-cn_topic_0000002078447573_zh-cn_topic_0000001576806829_zh-cn_topic_0000001339187720_section75395119104"></a>
 
-支持的硬件型号：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 推理系列产品AI Core, Atlas 推理系列产品Vector Core。
+无
+
+## 返回值说明<a name="zh-cn_topic_0000002078447573_zh-cn_topic_0000001576806829_zh-cn_topic_0000001339187720_section25791320141317"></a>
+
+返回储存Tensor数据地址。T数据类型。
+
+## 约束说明<a name="zh-cn_topic_0000002078447573_zh-cn_topic_0000001576806829_zh-cn_topic_0000001339187720_section19165124931511"></a>
+
+无
+
+## 调用示例<a name="zh-cn_topic_0000002078447573_zh-cn_topic_0000001576806829_zh-cn_topic_0000001339187720_section320753512363"></a>
+
+示例中待解析的srcGm内存排布如下图所示：
+
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_image_0000002340320301.png)
+
+```cpp
+AscendC::ListTensorDesc listTensorDesc(reinterpret_cast<__gm__ void *>(srcGm)); // srcGm为待解析的gm地址
+uint32_t size = listTensorDesc.GetSize();                                       // size = 2
+auto dataPtr0 = listTensorDesc.GetDataPtr<int32_t>(0);                          // 获取ptr0
+auto dataPtr1 = listTensorDesc.GetDataPtr<int32_t>(1);                          // 获取ptr1
+
+uint64_t buf[100] = {0}; // 示例中Tensor的dim为3,此处的100表示预留足够大的空间
+AscendC::TensorDesc<int32_t> desc;
+desc.SetShapeAddr(buf);          // 为desc指定用于储存shape信息的地址
+listTensorDesc.GetDesc(desc, 0); // 获取索引0的shape信息
+
+uint64_t dim = desc.GetDim();   // dim = 3
+uint64_t idx = desc.GetIndex(); // idx = 0
+uint64_t shape[3] = {0};
+for (uint32_t i = 0; i < desc.GetDim(); i++)
+{
+    shape[i] = desc.GetShape(i); // GetShape(0) = 1, GetShape(1) = 2, GetShape(2) = 3
+}
+auto ptr = desc.GetDataPtr();
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [ForeachTan 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_tan_950.md)（`related`）：“xPtr=xList.GetDataPtr<float>(i); yPtr=yList.GetDataPtr<float>(i)”给出 FP32 route 从列表描述符取 GM 地址的实际调用；“获取储存Tensor数据地址。”定义 GetDataPtr 返回的数据。
 - [GetDataObj](get_data_obj.md)（`related`）：获取储存Tensor数据地址。；将数据指针置于 GlobalTensor 中并返回该 GlobalTensor。；两接口都在 TensorDesc 与底层 Tensor 数据之间建立访问入口；前者返回原始地址，后者把相同数据指针封装成后续搬运或计算可消费的 GlobalTensor。
 <!-- cannbot:related:end -->

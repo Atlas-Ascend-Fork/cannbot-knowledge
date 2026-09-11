@@ -2,25 +2,50 @@
 type: API
 title: SetAlgConfig
 description: uint32_t SetAlgConfig(const std::string& algConfig)
-tags: [task.lookup, topic.implementation.api_layer.high_level_api, topic.data_movement.communication.collective_communication]
-status: stable
+tags:
+- task.lookup
+- topic.implementation.api_layer.high_level_api
+- topic.data_movement.communication.collective_communication
+status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Tiling/SetAlgConfig.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-04T01:25:11Z'
+platforms: []
+source_headers:
+- include/adv_api/hccl/hccl_tiling.h
 ---
 
 # SetAlgConfig
 
-uint32_t SetAlgConfig(const std::string& algConfig)
+## 功能说明
 
 设置通信算法。
 
-本接口属于 HCCL 集合通信 Tiling 接口，用于配置多卡通信参数。
+## 函数原型
 
-参数说明：algConfig：输入 通信算法配置。string类型，支持的最大长度为128字节。
+```
+uint32_t SetAlgConfig(const std::string& algConfig)
+```
 
-返回值：-   0表示设置成功。
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| algConfig | 输入 | 通信算法配置。string类型，支持的最大长度为128字节。 |
+
+## 返回值说明
+
+-   0表示设置成功。
 -   非0表示设置失败。
+
+## 约束说明
+
+无
+
+## 调用示例
+
+本接口的调用示例请见[调用示例](set_op_type.md#调用示例)。

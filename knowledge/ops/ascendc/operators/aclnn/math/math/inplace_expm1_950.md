@@ -5,27 +5,27 @@ description: "说明 aclnnInplaceExpm1 在 950 上的接口语义、Host/Launche
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/docs/aclnnExpm1%26aclnnInplaceExpm1.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/docs/aclnnExpm1&aclnnInplaceExpm1.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_api/aclnn_expm1.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_api/aclnn_expm1.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_api/aclnn_expm1.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_api/aclnn_expm1.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_api/expm1.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_api/expm1.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_host/arch35/expm1_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_host/arch35/expm1_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_kernel/arch35/expm1_struct.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_kernel/arch35/expm1_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_kernel/arch35/expm1_dag.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_kernel/arch35/expm1_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_kernel/expm1_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_kernel/expm1_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_host/config/ascend950/expm1_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_host/config/ascend950/expm1_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/cmake/third_party/opbase.cmake
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/cmake/third_party/opbase.cmake
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/ee5334d157016d2afa736d4a23381855dbf1fe37/pkg_inc/op_common/atvoss/elewise/elewise_base_struct.h
     role: implementation
@@ -44,7 +44,7 @@ sources:
   - resource: https://gitcode.com/cann/opbase/blob/ee5334d157016d2afa736d4a23381855dbf1fe37/pkg_inc/op_common/atvoss/util/sync.h
     role: implementation
 created_at: "2026-08-25T10:59:26Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -436,7 +436,7 @@ workspace_total(self Expm1 node) = 16777216 bytes（Kernel 不读取）
 
 - 适用 Route：R-001、R-002
 - 触发条件：每个 SIMT lane；`|x|<=2` 采用约化重建，源码随后处理指数边界和零；`|x|>2` 选择预先计算的 `expm1f(x)`。
-- Golden 来源：[`math/expm1/op_kernel/arch35/expm1_dag.h:81-94`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_kernel/arch35/expm1_dag.h#L81-L94)
+- Golden 来源：[`math/expm1/op_kernel/arch35/expm1_dag.h:81-94`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_kernel/arch35/expm1_dag.h#L81-L94)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -477,7 +477,7 @@ y[i] = fabsf(x[i]) > FLOAT_2 ? f0 : f32;
 
 - 适用 Route：R-002
 - 触发条件：`U` 为 `half` 或 `bfloat16_t`，使两次 Cast 都不是编译期 NoOp。
-- Golden 来源：[`math/expm1/op_kernel/arch35/expm1_dag.h:110-120`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_kernel/arch35/expm1_dag.h#L110-L120)
+- Golden 来源：[`math/expm1/op_kernel/arch35/expm1_dag.h:110-120`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expm1/op_kernel/arch35/expm1_dag.h#L110-L120)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

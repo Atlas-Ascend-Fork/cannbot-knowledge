@@ -1,4 +1,4 @@
-# SIMD算子优化内存访问
+# 内存访问
 
 - [避免同地址访问](avoid_same_address_access.md)：>该性能优化指导适用于如下产品型号：
 - [避免UB的bank冲突](avoid_ub_bank_conflict/index.md)：>该性能优化建议适用于如下产品型号：
@@ -11,4 +11,4 @@
 - [ReduceShapeInfoOptimizeStack](reduce_shapeinfo_optimize_stack.md)：通过缩减Tensor的ShapeInfo维度来减小栈空间占用，减少scalar指令和cache miss，提升算子性能。
 - [算子与高阶API共享临时Buffer](shared_temp_buffer.md)：【描述】如果算子使用的高阶API需要传入临时Buffer，如SoftMax，该临时空间会挤占算子其他计算的空间，从而导致单次计算搬运的数据量变少，搬运的次数变多。此场景可通过共享临时Buffer空间，提升单次搬运的数据量，减少搬运的次数，提升内存使用效率。
 - [尽量一次搬运较大的数据块](transfer_larger_data_blocks.md)：【描述】搬运不同大小的数据块时，对带宽的利用率（有效带宽/理论带宽）不一样。根据实测经验，单次搬运数据长度16KB以上时，通常能较好地发挥出带宽的最佳性能。因此对于单次搬运，应考虑尽可能的搬运较大的数据块。下图展示了某款AI处理器上实测的不同搬运数据量下带宽的变化图。
-- [纯搬运类算子VECIN和VECOUT建议复用](vecin_vecout_reuse.md)：【描述】纯搬运类算子在执行时并不涉及实际vector计算，若存在冗余的vector指令，会导致算子整体执行时间变长。这种场景可以使用Ascend C针对纯搬运类算子提供的TQueBind接口，该接口可以将UB（VECIN）与UB（VECOUT）绑定，省略将数据从UB（VECIN）拷贝到UB（V...
+- [纯搬运类算子VECIN和VECOUT建议复用](vecin_vecout_reuse.md)：【描述】纯搬运类算子在执行时并不涉及实际vector计算，若存在冗余的vector指令，会导致算子整体执行时间变长。这种场景可以使用Ascend C针对纯搬运类算子提供的TQueBind接口，该接口可以将UB（VECIN）与UB（VECOUT）绑定，省略将数据从UB（VECIN）拷贝到UB（VECOUT）的步骤，从而避免vector的无谓消耗。

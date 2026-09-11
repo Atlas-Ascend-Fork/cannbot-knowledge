@@ -5,32 +5,32 @@ description: "说明 aclnnGroupedDynamicBlockQuant 在 950 上的接口语义、
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/docs/aclnnGroupedDynamicBlockQuant.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/docs/aclnnGroupedDynamicBlockQuant.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_host/grouped_dynamic_block_quant_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_host/grouped_dynamic_block_quant_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_host/grouped_dynamic_block_quant_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_host/grouped_dynamic_block_quant_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_host/grouped_dynamic_block_quant_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_host/grouped_dynamic_block_quant_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_host/grouped_dynamic_block_quant_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_host/grouped_dynamic_block_quant_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_kernel/grouped_dynamic_block_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_kernel/grouped_dynamic_block_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_kernel/arch35/grouped_dynamic_block_quant_small_block.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_kernel/arch35/grouped_dynamic_block_quant_small_block.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_kernel/arch35/grouped_dynamic_block_quant_large_block.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_kernel/arch35/grouped_dynamic_block_quant_large_block.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_host/config/ascend950/grouped_dynamic_block_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_host/config/ascend950/grouped_dynamic_block_quant_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_kernel/platform.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_kernel/platform.h
     role: implementation
 created_at: "2026-08-25T18:28:58Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -454,7 +454,7 @@ Host 的 `maxUbRow=r*floor((UB-vfLen)/2)/E` 把 scale 的 32-byte 单缓冲项�
 
 - 适用 Route：R-001
 - 触发条件：`rowBlockSize <= maxUbAvailableRows`。
-- Golden 来源：[`grouped_dynamic_block_quant_small_block.h:349-395`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_kernel/arch35/grouped_dynamic_block_quant_small_block.h#L349-L395)
+- Golden 来源：[`grouped_dynamic_block_quant_small_block.h:349-395`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_kernel/arch35/grouped_dynamic_block_quant_small_block.h#L349-L395)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -496,7 +496,7 @@ for (uint16_t stepBlock = 0; stepBlock < static_cast<uint16_t>(tailBlockIdx); st
 
 - 适用 Route：R-002
 - 触发条件：一个 row block 被切成 `ubLoopNum>1` 个 `maxUbRow` 分段。
-- Golden 来源：[`grouped_dynamic_block_quant_large_block.h:251-295`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_kernel/arch35/grouped_dynamic_block_quant_large_block.h#L251-L295)
+- Golden 来源：[`grouped_dynamic_block_quant_large_block.h:251-295`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_block_quant/op_kernel/arch35/grouped_dynamic_block_quant_large_block.h#L251-L295)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

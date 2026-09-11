@@ -132,16 +132,6 @@ result_rtz  = al.cast(data, tl.float16, fp_downcast_rounding="rtz")
 2. **fp8/fp64 限制**：非 910_95 平台不支持 fp8 和 fp64。
 3. **saturate 使用场景**：量化中从大范围整数（int32）转小范围（int8）时避免溢出异常值。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
-- [parallel / compile_hint / multibuffer 辅助操作](./ascend_ext_aux_ops.md)（`related`）：“compile_hint（overflow_mode 提示）”
-- [内存操作扩展（index_put / gather_out_to_ub / scatter_ub_to_out / index_select_simd）](./ascend_ext_mem_ops.md)（`related`）：“内存操作”
-- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -154,3 +144,14 @@ result_rtz  = al.cast(data, tl.float16, fp_downcast_rounding="rtz")
 - [vec_ops.py#L179-L277](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/vec_ops.py#L179-L277)
 - [vec_ops.py#L524-L562](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/vec_ops.py#L524-L562)
 - [vec_ops.py#L400-L522](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/vec_ops.py#L400-L522)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
+- [parallel / compile_hint / multibuffer 辅助操作](./ascend_ext_aux_ops.md)（`related`）：“compile_hint（overflow_mode 提示）”
+- [内存操作扩展（index_put / gather_out_to_ub / scatter_ub_to_out / index_select_simd）](./ascend_ext_mem_ops.md)（`related`）：“内存操作”
+- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
+
+<!-- cannbot:related:end -->

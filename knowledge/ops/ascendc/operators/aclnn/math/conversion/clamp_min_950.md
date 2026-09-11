@@ -5,42 +5,42 @@ description: "说明 aclnnClampMin 在 950 上的接口语义、Host/Launcher �
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/docs/aclnnClampMin.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/docs/aclnnClampMin.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_api/aclnn_clamp.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_api/aclnn_clamp.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_api/aclnn_clamp.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_api/aclnn_clamp.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_api/clip_by_value.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_api/clip_by_value.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_host/clip_by_value_v2_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_host/clip_by_value_v2_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_host/clip_by_value_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_host/clip_by_value_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_host/arch35/clip_by_value_v2_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_host/arch35/clip_by_value_v2_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_host/arch35/clip_by_value_v2_single_dim_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_host/arch35/clip_by_value_v2_single_dim_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value/op_host/arch35/clip_by_value_single_dim_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value/op_host/arch35/clip_by_value_single_dim_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value/op_host/arch35/clip_by_value_single_dim_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value/op_host/arch35/clip_by_value_single_dim_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/op_host/math_tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/op_host/math_tiling_templates_registry.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel/clip_by_value_v2_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel/clip_by_value_v2_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel/arch35/clip_by_value_v2_ass.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel/arch35/clip_by_value_v2_ass.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel_aicpu/clip_by_value_v2_aicpu_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel_aicpu/clip_by_value_v2_aicpu_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel_aicpu/clip_by_value_v2_aicpu.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel_aicpu/clip_by_value_v2_aicpu.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_host/config/ascend950/clip_by_value_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_host/config/ascend950/clip_by_value_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T23:52:19Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -462,7 +462,7 @@ task descriptor / framework staging = 固定仓不可见
 
 - 适用 Route：R-001。
 - 触发条件：priority 1 合轴单维，`minDim==1 && maxDim==1`，key `2001100`。
-- Golden 来源：[`conversion/clip_by_value_v2/op_kernel/arch35/clip_by_value_v2_ass.h:84-94`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel/arch35/clip_by_value_v2_ass.h#L84-L94)
+- Golden 来源：[`conversion/clip_by_value_v2/op_kernel/arch35/clip_by_value_v2_ass.h:84-94`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel/arch35/clip_by_value_v2_ass.h#L84-L94)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -496,7 +496,7 @@ pipe->InitBuffer(outQueue, bufferNum, tilingData->ubFormer * sizeof(T));
 
 - 适用 Route：R-001。
 - 触发条件：ASS `Compute(len)` 的所有 tile，包括尾 tile。
-- Golden 来源：[`conversion/clip_by_value_v2/op_kernel/arch35/clip_by_value_v2_ass.h:114-123`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel/arch35/clip_by_value_v2_ass.h#L114-L123)
+- Golden 来源：[`conversion/clip_by_value_v2/op_kernel/arch35/clip_by_value_v2_ass.h:114-123`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel/arch35/clip_by_value_v2_ass.h#L114-L123)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -530,7 +530,7 @@ outQueue.EnQue(yLocal);
 
 - 适用 Route：R-002。
 - 触发条件：`min/max` 均为单元素；`data_num>1`；是否并行由 `data_num*sizeof(T) >= 200 KiB` 决定。
-- Golden 来源：[`conversion/clip_by_value_v2/op_kernel_aicpu/clip_by_value_v2_aicpu.cpp:163-178`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel_aicpu/clip_by_value_v2_aicpu.cpp#L163-L178)
+- Golden 来源：[`conversion/clip_by_value_v2/op_kernel_aicpu/clip_by_value_v2_aicpu.cpp:163-178`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/clip_by_value_v2/op_kernel_aicpu/clip_by_value_v2_aicpu.cpp#L163-L178)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -176,8 +176,15 @@ def _attn_fwd(Q, K, V, sm_scale, M, Out,
 - **进一步优化**：`al.compile_hint(x, "dot_pad_only_k")`、`al.multibuffer(buf, 2)` 存算并行、`al.sync_block_set/wait` 做 Cube/Vector 同步（CV 融合）。
 - causal 结果错误时先查 STAGE 参数：causal=True 应传 STAGE=3。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [06-fused-attention.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/06-fused-attention.py)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Flash Attention Causal 代码骨架](./flash_attention_causal.md)（`related`）：“生产骨架（GQA/MQA、经验加速数据）”
@@ -186,9 +193,3 @@ def _attn_fwd(Q, K, V, sm_scale, M, Out,
 - [Matmul 教学 Walkthrough（GPU 基线 → NPU 对角线分核）](./matmul_walkthrough.md)（`related`）：“tl.dot 教学”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [06-fused-attention.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/06-fused-attention.py)

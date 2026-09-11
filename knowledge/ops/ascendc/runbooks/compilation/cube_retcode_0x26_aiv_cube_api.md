@@ -81,5 +81,5 @@ The extend info: errcode:(0, 0x200000000000000, 0) errorStr: The address for the
 <!-- cannbot:related:start -->
 ## 相关
 
-- [LoadData](../../apis/simd_api/basic_api/cube_compute/cube_compute_load/load_data_2_d.md)（`exemplifies`）：函数体调用 Cube 专属 API（`AscendC::LoadData` / `AscendC::Mmad` / `AscendC::Fixpipe`）；将数据从L1 Buffer搬运到L0A或L0B Buffer的2D模式搬运接口。。运行手册把 LoadData 这类 L1→L0 Cube API 放入 AIV 核导致 0x26 的失败路线，直接展示接口所属执行单元约束在编译排障中的应用。
+- [LoadData](../../apis/simd_api/basic_api/cube_compute_isasi/cube_compute_load/load_data_2_d.md)（`exemplifies`）：函数体调用 Cube 专属 API（`AscendC::LoadData` / `AscendC::Mmad` / `AscendC::Fixpipe`）；将数据从L1 Buffer搬运到L0A或L0B Buffer的2D模式搬运接口。。运行手册把 LoadData 这类 L1→L0 Cube API 放入 AIV 核导致 0x26 的失败路线，直接展示接口所属执行单元约束在编译排障中的应用。
 <!-- cannbot:related:end -->

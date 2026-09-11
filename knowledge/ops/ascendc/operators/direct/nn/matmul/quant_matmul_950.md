@@ -5,18 +5,22 @@ description: "说明 cann_bench::quant_matmul 在 950 上的 shape/量化契约�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/matmul/quant_batch_matmul_v3/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_batch_matmul_v3/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/matmul/quant_batch_matmul_v3/op_api/quant_matmul_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_batch_matmul_v3/op_api/quant_matmul_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/matmul/quant_batch_matmul_v3/op_host/op_tiling/arch35/quant_batch_matmul_v3_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_batch_matmul_v3/op_host/op_tiling/arch35/adaptive_sliding_window_cube_basic_api_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/matmul/quant_batch_matmul_v3/op_kernel/arch35/quant_batch_matmul_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_batch_matmul_v3/op_kernel/arch35/quant_batch_matmul_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/matmul/quant_batch_matmul_v3/op_kernel/arch35/quant_batch_matmul_v3_basic.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_batch_matmul_v3/op_kernel/arch35/qbmm_cube_basic_api_cmct.h
+    role: implementation
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_batch_matmul_v3/op_kernel/arch35/qbmm_cube_on_the_fly.h
+    role: implementation
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/common/cmct/block/block_mmad_a8w8_fixpipe_quant.h
     role: implementation
 created_at: "2026-08-24T19:34:50Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -37,7 +41,8 @@ cann_versions: ["9.1.0"]
 
 ### 来源与 Direct 适配边界
 
-- 官方原生事实：固定版本 QuantBatchMatmulV3 arch35 源码支撑 `MatMulASWKernel`、ASW batch/tail 调度、FP19 Fixpipe scalar 与 tiling POD；固定 CATLASS 源码支撑 128×256×256 / 128×256×128 ping-pong MMAD 和 typed dequant epilogue。
+- 来源范围：Frontmatter 仅固定官方 QuantBatchMatmulV3 相关实现，该 Commit 的本地文件已恢复并核对。Direct 交付快照及其 CATLASS 文件不在这些官方 sources 中；下文保留交付实现的文件定位，复用前仍需取得相应快照并固定内容哈希，不能用官方文件身份核对替代 Direct 实现复核。
+- 官方原生事实：固定版本 QuantBatchMatmulV3 arch35 源码支撑 `MatMulASWKernel`、ASW batch/tail 调度、FP19 Fixpipe scalar 与 tiling POD；128×256×256 / 128×256×128 ping-pong MMAD 和 typed dequant epilogue 则属于交付记录中的 CATLASS 实现，不据本卡官方 sources 声称其已核验。
 - Direct Invoke 适配：Torch schema、输入校验、100 B Host POD、workspace 计算、current-stream launcher、Route selector 与 CATLASS Params 组装是本入口的 Host 边界，不等同于官方 ACLNN 或生产 registry 分发。
 - Device 派生路线：`SafeRawMatmul`、无 padding INT32 workspace 和 `SupplementalEpilogue` 是为公开 shape/有序后处理契约补充的 Device 路线；它们复用官方 Matmul/AscendC primitive，但不是官方原生 entry。
 

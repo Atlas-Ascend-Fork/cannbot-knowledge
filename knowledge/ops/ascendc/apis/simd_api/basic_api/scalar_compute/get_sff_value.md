@@ -2,30 +2,98 @@
 type: API
 title: GetSFFValue
 description: 查找uint64_t数值二进制表示中从最低有效位开始的首个指定比特值位置，未找到则返回-1。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.execution_unit.scalar]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.execution_unit.scalar
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/scalar_compute/GetSFFValue.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+- 310p
+- kirin_x90
+- kirin_9030
+source_headers:
+- include/basic_api/kernel_operator_scalar_intf.h
 ---
-# GetSFFValue
 
-头文件路径为："basic_api/kernel_operator_scalar_intf.h"。
+# GetSFFValue<a name="ZH-CN_TOPIC_0000001787630014"></a>
 
-查找uint64_t类型数值的二进制表示中从最低有效位开始的首个指定比特值（0或1）的位置，如果没找到则返回-1。
+## 功能说明<a name="section618mcpsimp"></a>
 
-以如下GetSFFValue调用为例
-其计算结果如下图所示
+头文件路径为：`"basic_api/kernel_operator_scalar_intf.h"`。
 
-参数：countValue: 指定要查找的比特值，取值为0或1。；valueIn(输入): 被查找的二进制数字。
+查找uint64\_t类型数值的二进制表示中从最低有效位开始的首个指定比特值（0或1）的位置，如果没找到则返回-1。
 
-仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030 支持。
+以如下GetSFFValue调用为例：
+
+```cpp
+int64_t sffValue = AscendC::GetSFFValue<1>(0x1000000000000100ULL); // 返回8
+```
+
+其计算结果如下图所示：
+
+**图1** 使用GetSFFValue查找从最低有效位开始首个1的位置<a name="fig1"></a>
+
+![使用GetSFFValue查找从最低有效位开始首个1的位置](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/GetSFFValue.png "使用GetSFFValue查找从最低有效位开始首个1的位置")
+
+## 函数原型<a name="section620mcpsimp"></a>
+
+```cpp
+template <int countValue>
+__aicore__ inline int64_t GetSFFValue(uint64_t valueIn)
+```
+
+## 参数说明<a name="section622mcpsimp"></a>
+
+**表1** 模板参数说明
+
+| 参数名 | 描述 |
+| ------ | ------ |
+| countValue | 指定要查找的比特值，取值为0或1。 |
+
+**表2** 参数说明
+
+| 参数名称 | 输入/输出 | 描述 |
+| ------ | ------ | ------ |
+| valueIn | 输入 | 被查找的二进制数字。 |
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+返回valueIn中第一个0或1出现的位置。
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+无
+
+## 调用示例<a name="section837496171220"></a>
+
+```cpp
+int64_t sffValue;
+uint64_t valueIn = 0xFFFFFFFFFFFFFFFFULL;    // 二进制表示全为1
+sffValue = AscendC::GetSFFValue<0>(valueIn); // 返回-1
+
+valueIn = 0;                                 // 二进制表示全为0
+sffValue = AscendC::GetSFFValue<1>(valueIn); // 返回-1
+
+valueIn = 0xFF00ULL;
+sffValue = AscendC::GetSFFValue<0>(valueIn); // 返回0
+sffValue = AscendC::GetSFFValue<1>(valueIn); // 返回8
+
+valueIn = 0x00FFULL;
+sffValue = AscendC::GetSFFValue<0>(valueIn); // 返回8
+sffValue = AscendC::GetSFFValue<1>(valueIn); // 返回0
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_ffs（标量计算）](../../c_api/scalar_compute/asc_ffs.md)（`same_topic`）：FindFirstSet接口，输入数据的二进制表示中从最低位向最高位查找第一个值为1的位，并返回其位置，如果没找到则返回-1。；查找uint64_t类型数值的二进制表示中从最低有效位开始的首个指定比特值（0或1）的位置，如果没找到则返回-1。。两张接口卡共享从低位搜索首个目标 bit 的核心契约，GetSFFValue 将 asc_ffs 的固定查 1 扩展为可指定查 0 或 1。
+- [asc_ffs（标量计算）](../../c_api/scalar_compute/scalar_bit/asc_ffs.md)（`same_topic`）：FindFirstSet接口，输入数据的二进制表示中从最低位向最高位查找第一个值为1的位，并返回其位置，如果没找到则返回-1。；查找uint64_t类型数值的二进制表示中从最低有效位开始的首个指定比特值（0或1）的位置，如果没找到则返回-1。。两张接口卡共享从低位搜索首个目标 bit 的核心契约，GetSFFValue 将 asc_ffs 的固定查 1 扩展为可指定查 0 或 1。
 <!-- cannbot:related:end -->

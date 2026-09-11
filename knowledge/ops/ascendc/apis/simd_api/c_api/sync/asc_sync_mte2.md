@@ -2,18 +2,72 @@
 type: API
 title: AscSyncMte2
 description: 针对PIPE_MTE2流水线执行同步操作，保证其前序指令全部完成后，PIPE_MTE3与PIPE_V流水线的后续指令才能执行。
-tags: [task.lookup, topic.implementation.synchronization]
+tags:
+- task.lookup
+- topic.implementation.synchronization
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/sync/asc_sync_mte2.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
 ---
 
-# AscSyncMte2
+# asc_sync_mte2
 
-针对PIPE_MTE2流水线执行同步操作。其作用是保证PIPE_MTE2流水线中前序指令（如GM到UB的数据搬运）全部完成后，PIPE_MTE3与PIPE_V流水线的后续指令才能开始执行。
-函数原型：void asc_sync_mte2(int id)
-支持平台：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品；不支持：Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core, Atlas 推理系列产品Vector Core等
+## 功能说明
+
+针对PIPE_MTE2流水线执行同步操作。其作用是保证PIPE_MTE2流水线中前序指令（如GM到Unified Buffer（UB）的数据搬运）全部完成后，PIPE_MTE3与PIPE_V流水线的后续指令才能开始执行。
+
+## 函数原型
+
+```cpp
+__aicore__ inline void asc_sync_mte2(int id)
+```
+
+## 参数说明
+
+**表1** 参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| :--- | :--- | :--- |
+| id | 输入 | 同步ID。 |
+
+## 返回值说明
+
+无
+
+## 流水类型
+
+PIPE_S
+
+## 约束说明
+
+无
+
+## 调用示例
+
+```cpp
+// 本例中total_length指参与计算的数据总长度。src0_gm，src1_gm，dst_gm是外部输入的float类型的源操作数、目的操作数，指向GM内存空间。
+constexpr uint32_t total_length = 128;
+__ubuf__ float src0[total_length];
+__ubuf__ float src1[total_length];
+__ubuf__ float dst[total_length];
+
+asc_copy_gm2ub(src0, src0_gm, total_length * sizeof(float));
+asc_copy_gm2ub(src1, src1_gm, total_length * sizeof(float));
+
+// 同步操作：数据搬运操作（GM到UB，PIPE_MTE2流水）完成后才能启动后续操作。
+asc_sync_mte2(0);
+
+asc_add(dst, src1, src0, total_length);
+
+// 同步操作：前置操作完成后才能启动后续操作。
+asc_sync();
+
+asc_copy_ub2gm(dst_gm, dst, total_length * sizeof(float));
+```

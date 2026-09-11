@@ -5,72 +5,72 @@ description: "说明 aclnnRotaryPositionEmbeddingV2GetWorkspaceSize/aclnnRotaryP
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/docs/aclnnRotaryPositionEmbeddingV2.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/docs/aclnnRotaryPositionEmbeddingV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/op_api/aclnn_rotary_position_embedding_v2.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/op_api/aclnn_rotary_position_embedding_v2.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/op_api/aclnn_rotary_position_embedding.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/op_api/aclnn_rotary_position_embedding.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/op_api/rotary_position_embedding.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/op_api/rotary_position_embedding.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rotary_position_embedding_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rotary_position_embedding_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rotary_position_embedding_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rotary_position_embedding_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rotary_position_embedding_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rotary_position_embedding_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_templates_registry.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/src/op_host/tiling_util.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/src/op_host/tiling_util.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_rotate_matrix_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_rotate_matrix_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_rotate_matrix_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_rotate_matrix_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_rotate_half_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_rotate_half_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_rotate_half_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_rotate_half_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_interleaved_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_interleaved_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_interleaved_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_interleaved_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotary_position_embedding.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotary_position_embedding.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_matrix.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_matrix.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_half_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_half_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_half.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_half.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_half_bf16.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_half_bf16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_common.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_s.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_s.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_s_pad.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_s_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_bs.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_bs.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_bs_pad.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_bs_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_bsn.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_bsn.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_bsn_pad.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_split_bsn_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/config/ascend910b/rotary_position_embedding_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/config/ascend910b/rotary_position_embedding_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/config/ascend910_93/rotary_position_embedding_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/config/ascend910_93/rotary_position_embedding_binary.json
     role: implementation
 created_at: "2026-08-24T17:02:50Z"
-updated_at: '2026-08-28T06:56:32Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1265,7 +1265,7 @@ user_workspace = 0; workspace_total = 16 MiB system workspace
 
 - 适用 Route：R-001
 - 触发条件：A2/A3、V2 `rotate` 非空、key 3011/3012/3013，`cvParallNum=8`
-- Golden 来源：[`op_kernel/rotate_matrix.h:323-341`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_matrix.h#L323-L341)
+- Golden 来源：[`op_kernel/rotate_matrix.h:323-341`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_matrix.h#L323-L341)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1313,7 +1313,7 @@ __aicore__ inline void RotateMatrixAll<inType, outType, MT>::MMCompute(uint32_t 
 
 - 适用 Route：R-002、R-003
 - 触发条件：A2、`rotate` 空、`mode!=1`，以 FP32 或 FP16/BF16 执行 Half body
-- Golden 来源：[`op_host/rope_rotate_half_tiling.cpp:272-282`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_rotate_half_tiling.cpp#L272-L282)
+- Golden 来源：[`op_host/rope_rotate_half_tiling.cpp:272-282`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_rotate_half_tiling.cpp#L272-L282)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1352,7 +1352,7 @@ Host 先扣 2 KiB，再把 FP32 UB 视为 8 份，把 FP16/BF16 UB 视为 24 份
 
 - 适用 Route：R-004～R-009
 - 触发条件：A2、`rotate` 空、mode=1；根据 UB 与 D 对齐选择 split 级别和 Pad bit
-- Golden 来源：[`op_host/rope_interleaved_tiling.cpp:223-250`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_interleaved_tiling.cpp#L223-L250)
+- Golden 来源：[`op_host/rope_interleaved_tiling.cpp:223-250`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_host/rope_interleaved_tiling.cpp#L223-L250)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1408,7 +1408,7 @@ Tiling 先从 UB 扣除 gather-offset 表，再按三个 I/O 队列和低精度�
 
 - 适用 Route：R-004～R-009
 - 触发条件：mode=1，物理 tile 元素数满足 body 传入的对齐计数
-- Golden 来源：[`op_kernel/rotate_interleaved_common.h:100-114`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_common.h#L100-L114)
+- Golden 来源：[`op_kernel/rotate_interleaved_common.h:100-114`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_interleaved_common.h#L100-L114)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -2,28 +2,73 @@
 type: API
 title: SetFixSplit
 description: 设置固定的baseM、baseN、baseK，单位为元素个数。
-tags: [task.lookup, topic.implementation.api_layer.high_level_api, topic.programming_model.execution_unit.cube]
-status: stable
+tags:
+- task.lookup
+- topic.implementation.api_layer.high_level_api
+- topic.programming_model.execution_unit.cube
+status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Tiling/SetFixSplit.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T03:58:17Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-04T01:25:11Z'
+platforms: []
+source_headers:
+- include/adv_api/matmul/matmul_tiling_base.h
 ---
-
 
 # SetFixSplit
 
+## 功能说明
+
 设置固定的baseM、baseN、baseK，单位为元素个数。
 
-参数：
-- baseMIn（输入）：设置固定的baseM，默认值为-1，表示不设置固定baseM，由tiling函数进行计算。
-- baseNIn（输入）：设置固定的baseN，默认值为-1，表示不设置固定baseN，由tiling函数进行计算。
-- baseKIn（输入）：当前仅支持取值为-1，暂不支持设置其它值。
+## 函数原型
 
-返回值：-1表示设置失败；0表示设置成功。
+```
+int32_t SetFixSplit(int32_t baseMIn = -1, int32_t baseNIn = -1, int32_t baseKIn = -1)
+```
 
-约束：
-- baseM*baseN个输出元素所占的存储空间大小不能超过L0C Buffer大小，即baseM * baseN * sizeof(C_TYPE) <= L0CSize。
-- baseM需要小于等于singleM按16个元素向上对齐后的值（如ceil(singleM/16)*16），baseN需要小于等于singleN以C0_size个元素向上对齐的值，其中singleM为单核内M轴长度，singleN为单核内N轴长度，half/bfloat16_t数据类型的C0_size为16，float数据类型的C0_size为8，int8_t数据类型的C0_size为32，int4b_t数据类型的C0_size为64。
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| baseMIn | 输入 | 设置固定的baseM，默认值为-1，表示不设置固定baseM，由tiling函数进行计算。 |
+| baseNIn | 输入 | 设置固定的baseN，默认值为-1，表示不设置固定baseN，由tiling函数进行计算。 |
+| baseKIn | 输入 | 当前仅支持取值为-1，暂不支持设置其它值。 |
+
+## 返回值说明
+
+-1表示设置失败；0表示设置成功。
+
+## 约束说明
+
+-   baseM\*baseN个输出元素所占的存储空间大小不能超过L0C Buffer大小，即baseM \* baseN \* sizeof\([C\_TYPE](../matmul_kernel/matmul_usage.md#table1188045714378)\) <= L0CSize。
+-   baseM需要小于等于singleM按16个元素向上对齐后的值（如ceil\(singleM/16\)\*16），baseN需要小于等于singleN以C0\_size个元素向上对齐的值，其中singleM为单核内M轴长度，singleN为单核内N轴长度，half/bfloat16\_t数据类型的C0\_size为16，float数据类型的C0\_size为8，int8\_t数据类型的C0\_size为32，int4b\_t数据类型的C0\_size为64。例如singleM=12，则baseM需要小于等于16，同时baseM需要满足[分形对齐](../../../basic_api/cube_compute_isasi/mmad_compute/mmad.md#约束说明)的要求，所以baseM只能取16；如果baseM取其他超过16的值，获取Tiling将失败。
+
+## 调用示例
+
+```
+auto ascendcPlatform = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
+matmul_tiling::MatmulApiTiling tiling(ascendcPlatform);
+
+tiling.SetFixSplit(16, 16, -1); // 设置固定的baseM、baseN
+```
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+<!-- cannbot:api-operator:start -->
+### 知识正文中的调用示例
+
+展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
+以下仅有知识正文中的调用证据，未作为源码调用结果。
+
+- [FusedLinearOnlineMaxSum A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_online_max_sum.md)（`related`）：算子正文包含对 `SetFixSplit(...)` 的直接调用；本卡提供该接口契约。
+- [RotaryPositionEmbedding A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/rotary_position_embedding.md)（`related`）：算子正文包含对 `SetFixSplit(...)` 的直接调用；本卡提供该接口契约。
+
+<!-- cannbot:api-operator:end -->
+<!-- cannbot:related:end -->

@@ -2,26 +2,107 @@
 type: API
 title: __popc（整数数学函数）
 description: 统计输入数据从二进制的高位到低位比特位为1的数量。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.arithmetic]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.arithmetic
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__popc.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/device_functions.h
 ---
 
-# __popc
+# \_\_popc
 
-位计数函数（population count）。统计输入数据二进制中比特位为 1 的数量。
+## 功能说明
 
-函数原型（重载）：int __popc(unsigned int x)、int __popc(unsigned long long x)、int __popc(unsigned long x)
+统计输入数据从二进制的高位到低位比特位为1的数量。
 
-参数 x 为源操作数。返回二进制中 1 的位数。仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/device_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。
+## 函数原型
+
+```cpp
+int __popc(unsigned int x)
+```
+
+```cpp
+int __popc(unsigned long long x)
+```
+
+```cpp
+int __popc(unsigned long x)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+输入数据二进制中比特位为1的数量。
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/device_functions.h`头文件。
+
+```cpp
+#include "simt_api/device_functions.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelPopc(int* dst, unsigned int* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __popc(x[idx]);
+    }
+    ```
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelPopc(int* dst, unsigned long long* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __popc(x[idx]);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelPopc(__gm__ int* dst, __gm__ unsigned int* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __popc(x[idx]);
+    }
+    ```
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelPopc(__gm__ int* dst, __gm__ unsigned long long* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __popc(x[idx]);
+    }
+    ```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_popc（标量计算）](../../../simd_api/c_api/scalar_compute/asc_popc.md)（`same_topic`）：获取一个uint64_t类型数字的二进制中1的个数。；位计数函数（population count）。统计输入数据二进制中比特位为 1 的数量。两页给出同一 uint64 位计数任务的 C scalar 与 SIMT 入口，可互作接口选型参照。
+- [asc_popc（标量计算）](../../../simd_api/c_api/scalar_compute/scalar_bit/asc_popc.md)（`same_topic`）：获取一个uint64_t类型数字的二进制中1的个数。；位计数函数（population count）。统计输入数据二进制中比特位为 1 的数量。两页给出同一 uint64 位计数任务的 C scalar 与 SIMT 入口，可互作接口选型参照。
 <!-- cannbot:related:end -->

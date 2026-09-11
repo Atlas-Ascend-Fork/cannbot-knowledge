@@ -5,42 +5,42 @@ description: "说明 aclnnCircularPad2dBackward 在 950 上的接口语义、Hos
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/circular_pad_grad/docs/aclnnCircularPad2dBackward.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/circular_pad_grad/docs/aclnnCircularPad2dBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/circular_pad_grad/op_api/aclnn_circular_pad2d_backward.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/circular_pad_grad/op_api/aclnn_circular_pad2d_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/circular_pad_grad/op_api/aclnn_circular_pad2d_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/circular_pad_grad/op_api/aclnn_circular_pad2d_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_api/padv3grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_api/padv3grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_host/pad_v3_grad_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_host/pad_v3_grad_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_host/arch35/pad_v3_grad_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_host/arch35/pad_v3_grad_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_struct.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_tilingkey.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_tilingkey.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/pad_v3_grad_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/pad_v3_grad_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_simt.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_huge_width.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_huge_width.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_common.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_simt.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_simd.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_simd.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_host/pad_v3_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_host/pad_v3_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_host/config/ascend950/pad_v3_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_host/config/ascend950/pad_v3_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T23:50:40Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -517,7 +517,7 @@ workspace_body = 0 B
 
 - 适用 Route：R-001、R-002。
 - 触发条件：所有 circular SIMT 场景；每个 `idx` 由唯一 grid-stride thread 处理。
-- Golden 来源：[`conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_simt.h:121-151`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_simt.h#L121-L151)
+- Golden 来源：[`conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_simt.h:121-151`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_kernel/arch35/pad_v3_grad_circular_simt.h#L121-L151)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -551,7 +551,7 @@ for (GmOffsetType idx = blockIdx * blockDim.x + threadIdx.x; idx < outputSize;
 
 - 适用 Route：R-003；不满足时回 R-001/R-002。
 - 触发条件：全非负、输入元素数大于 48 Ki、对齐尾轴宽大于按 UB 推得的 `bufferSize`。
-- Golden 来源：[`conversion/pad_v3_grad/op_host/arch35/pad_v3_grad_tiling_arch35.cpp:334-356`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_host/arch35/pad_v3_grad_tiling_arch35.cpp#L334-L356)
+- Golden 来源：[`conversion/pad_v3_grad/op_host/arch35/pad_v3_grad_tiling_arch35.cpp:334-356`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_host/arch35/pad_v3_grad_tiling_arch35.cpp#L334-L356)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

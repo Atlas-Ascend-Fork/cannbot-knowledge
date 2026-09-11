@@ -5,64 +5,64 @@ description: "说明 aclnnNsaCompress 在 A2 上的接口语义、Host/Launcher 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/docs/aclnnNsaCompress.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/docs/aclnnNsaCompress.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/docs/zh/op_api_list.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/docs/zh/op_api_list.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/op_api/aclnn_nsa_compress.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/op_api/aclnn_nsa_compress.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/op_api/aclnn_nsa_compress.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/op_api/aclnn_nsa_compress.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/op_api/nsa_compress.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/op_api/nsa_compress.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_tiling_common.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_tiling_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_tiling_general.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_tiling_general.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress_common.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress_seq_manager.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress_seq_manager.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_templates_registry.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_kernel/util.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_kernel/util.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/cmake/func.cmake
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/cmake/func.cmake
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/cmake/obj_func.cmake
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/cmake/obj_func.cmake
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/cmake/rty_obj_func.cmake
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/cmake/rty_obj_func.cmake
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910b/ops_transformer_operator_list.yaml
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910b/ops_transformer_operator_list.yaml
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T19:45:34Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -476,7 +476,7 @@ S = min(L, floor((ubSize-fixedUB)/tokenBytes))
 
 - 适用 Route：R-001
 - 触发条件：依升序 `divHeadNum` 因子尝试；当前因子的固定 weight/overlap/output 区能放入 UB，且剩余空间至少容纳一个 input/cast/subResult token。
-- Golden 来源：[`attention/nsa_compress/op_host/nsa_compress_tiling_general.cpp:259-274`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_tiling_general.cpp#L259-L274)
+- Golden 来源：[`attention/nsa_compress/op_host/nsa_compress_tiling_general.cpp:259-274`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_host/nsa_compress_tiling_general.cpp#L259-L274)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -514,7 +514,7 @@ Host 先计算与 chunk 长度无关的四份 weight 表、overlap 环和 output
 
 - 适用 Route：R-001
 - 触发条件：FP16/BF16 weight `[L,N]`，本核连续 head slice C；每个权重标量要作用于该 head 的 D 个 FP32 feature。
-- Golden 来源：[`attention/nsa_compress/op_kernel/nsa_compress.h:261-288`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress.h#L261-L288)
+- Golden 来源：[`attention/nsa_compress/op_kernel/nsa_compress.h:261-288`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress.h#L261-L288)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -553,7 +553,7 @@ for (uint32_t headIdx = 0; headIdx < headNum; headIdx++) {
 
 - 适用 Route：R-001
 - 触发条件：`d<=L`，当前 input chunk 与一个或多个未完成 `[windowStart,windowStart+L)` 相交。
-- Golden 来源：[`attention/nsa_compress/op_kernel/nsa_compress.h:440-468`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress.h#L440-L468)
+- Golden 来源：[`attention/nsa_compress/op_kernel/nsa_compress.h:440-468`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_compress/op_kernel/nsa_compress.h#L440-L468)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

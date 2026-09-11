@@ -78,8 +78,16 @@ export TRITON_DEBUG=1 TRITON_DISABLE_CACHE=1 MLIR_ENABLE_DUMP=1 TRITON_ENABLE_LL
 4. msProf（上板 + 仿真）是性能调试核心；
 5. 调试时务必 `TRITON_DISABLE_CACHE=1` 避免缓存干扰。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [debugging.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/debugging.md)
+- [profiling.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/profiling.md)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [调试、稳定性与 API 规范](./debugging.md)（`related`）：“调试、稳定性与 API 规范速查”
@@ -92,10 +100,3 @@ export TRITON_DEBUG=1 TRITON_DISABLE_CACHE=1 MLIR_ENABLE_DUMP=1 TRITON_ENABLE_LL
 - [数据搬运与内存访问模式优化](../../optimizations/techniques/data_movement_optimization.md)（`related`）：“离散访存/MTE2 过长的修复方向”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [debugging.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/debugging.md)
-- [profiling.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/profiling.md)

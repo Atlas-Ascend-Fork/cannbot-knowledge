@@ -2,34 +2,240 @@
 type: API
 title: GetTensorC
 description: Iterate后获取C矩阵分片，可输出到GM或UB，支持同步与异步两种模式。
-tags: [task.lookup, topic.implementation.api_layer.high_level_api, topic.programming_model.execution_unit.cube]
+tags:
+- task.lookup
+- topic.implementation.api_layer.high_level_api
+- topic.programming_model.execution_unit.cube
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/GetTensorC.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+- 310p
+- kirin_x90
+- kirin_9030
 ---
-
 
 # GetTensorC
 
-Iterate后，获取一块或者两块C矩阵片，可以直接输出到GM tensor中，也可以输出到UB（VECIN）tensor中。当MatmulConfig参数中的ScheduleType取值为ScheduleType::INNER_PRODUCT时，获取一块C矩阵片；当MatmulConfig参数中的ScheduleType取值为ScheduleType::OUTER_PRODUCT时，获取两块C矩阵片。
+## 功能说明
 
-函数原型：template <bool sync = true>
+Iterate后，获取一块或者两块C矩阵片，可以直接输出到GM tensor中，也可以输出到Unified Buffer（UB，VECIN）tensor中。当[MatmulConfig](matmul_config.md#matmulconfig-params)参数中的ScheduleType取值为ScheduleType::INNER\_PRODUCT时，获取一块C矩阵片；当[MatmulConfig](matmul_config.md#matmulconfig-params)参数中的ScheduleType取值为ScheduleType::OUTER\_PRODUCT时，获取两块C矩阵片。
 
-参数：
-- sync：设置同步或者异步模式：同步模式设置为true；异步模式设置为false。
-- c/co2Local（输出）：取出C矩阵到UB（VECIN）。不同型号支持的数据类型请参考支持的数据类型。不同型号支持的数据格式请参考支持的数据格式。
-- gm（输出）：取出C矩阵到GM，数据格式可以为ND或NZ。不同型号支持的数据类型请参考支持的数据类型。
+该接口和[Iterate](iterate.md)接口配合使用，用于在调用Iterate完成迭代计算后，根据[MatmulConfig](matmul_config.md#matmulconfig-params)参数中的ScheduleType取值获取一块或两块baseM \* baseN大小的矩阵分片。
 
-约束：
-- 传入的C矩阵地址空间大小需要保证不小于baseM * baseN。
-- 异步场景时，需要使用一块临时空间来缓存Iterate计算结果，调用GetTensorC时会在该临时空间中获取C的矩阵分片。临时空间通过SetWorkspace接口进行设置。
-- 当开启MixDualMaster（双主模式）场景时，即模板参数enableMixDualMaster设置为true，不支持使用该接口。
+迭代获取C矩阵分片的过程分为同步和异步两种模式：
 
-适用平台：Ascend 950PR/Ascend 950DT、Atlas A2 系列、Atlas A3 系列。未列出的产品形态不在本卡已确认范围内；详细支持矩阵以固定来源的“产品支持情况”为准。
+-   **同步**：执行完一次Iterate后执行一次GetTensorC，需要同步等待C矩阵分片获取完成。
+<a id="li17508136205415"></a>
+-   **异步**：调用Iterate后，无需立即调用GetTensorC同步等待，可以先执行其他逻辑，待需要获取结果时再调用GetTensorC。异步方式可以减少同步等待，提高并行度，开发者对计算性能要求较高时，可以选用该方式。
+
+## 函数原型
+
+-   获取C矩阵，输出至UB（VECIN）
+
+    ```
+    template <bool sync = true>
+    __aicore__ inline void GetTensorC(const LocalTensor<DstT>& co2Local, uint8_t enAtomic = 0, bool enSequentialWrite = false)
+    ```
+
+    -   支持同步模式
+    -   支持异步模式
+
+-   获取C矩阵，输出至GM
+
+    ```
+    template <bool sync = true>
+    __aicore__ inline void GetTensorC(const GlobalTensor<DstT>& gm, uint8_t enAtomic = 0, bool enSequentialWrite = false)
+    ```
+
+    -   支持同步模式
+    -   支持异步模式
+
+-   获取C矩阵，同时输出至GM和UB（VECIN）
+
+    ```
+    template <bool sync = true>
+    __aicore__ inline void GetTensorC(const GlobalTensor<DstT>& gm, const LocalTensor<DstT>& co2Local, uint8_t enAtomic = 0, bool enSequentialWrite = false)
+    ```
+
+    -   支持同步模式
+    -   支持异步模式
+    -   纯Cube模式（只有矩阵计算）模式暂不支持该接口
+        
+    -   Atlas 200I/500 A2 推理产品暂不支持同时输出至GM和UB（VECIN）
+        
+
+-   获取异步场景用于缓存结果的Workspace上的C矩阵，后续使用过程由开发者自行控制
+
+    C矩阵输出到UB（VECIN）时，分配给UB（VECIN）的空间大小会影响Matmul计算的力度，分配给UB（VECIN）的空间过小时，无法充分利用硬件算力。提供该接口支持返回缓存在Workspace上的C矩阵，由开发者自行控制后续使用过程。
+
+    注意，在初始化时，C矩阵的逻辑位置应设置为TPosition::VECIN，调用该接口获取缓存的C矩阵后，自行拷贝到UB。
+
+    ```
+    template <bool sync = true>
+    __aicore__ inline GlobalTensor<DstT> GetTensorC(uint8_t enAtomic = 0, bool enSequentialWrite = false)
+    ```
+
+    -   支持异步模式
+
+以下接口中的doPad、height、width、srcGap、dstGap参数待废弃，使用过程中无需传入，保持默认值即可；上文介绍的输出至UB（VECIN）的原型实际为不传入默认值的函数原型。
+
+```
+template <bool sync = true, bool doPad = false>
+__aicore__ inline void GetTensorC(const LocalTensor<DstT>& c, uint8_t enAtomic = 0, bool enSequentialWrite = false, uint32_t height = 0, uint32_t width = 0, uint32_t srcGap = 0, uint32_t dstGap = 0)
+```
+
+## 参数说明
+
+**表1**  模板参数说明
+
+| 参数名 | 描述 |
+| --- | --- |
+| sync | 设置同步或者异步模式：同步模式设置为true；异步模式设置为false。 |
+
+**表2**  接口参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| c/co2Local | 输出 | 取出C矩阵到UB（VECIN）。不同型号支持的数据类型请参考[支持的数据类型](#li12616155731720)。不同型号支持的数据格式请参考[支持的数据格式](#li12616155731721)。 |
+| gm | 输出 | 取出C矩阵到GM，数据格式可以为ND或NZ。不同型号支持的数据类型请参考[支持的数据类型](#li12616155731720)。 |
+| enAtomic | 输入 | 是否开启Atomic操作，默认值为0。<br><br>参数取值：<br><br>0：不开启Atomic操作<br><br>1：开启AtomicAdd累加操作<br><br>2：开启AtomicMax求最大值操作<br><br>3：开启AtomicMin求最小值操作 |
+| enSequentialWrite | 输入 | 是否开启连续写模式（连续写，写入[baseM, baseN]；非连续写，写入[singleCoreM, singleCoreN]中对应的位置），默认值false（非连续写模式）。<br><br>注意：非连续写模式，内部会按照迭代顺序算好偏移，开发者不需要关注；如果开发者需要决定排布顺序，可以选择连续写模式，自行按照设定的偏移进行搬运操作。 |
+
+<a name="fig322951853119"></a>
+**图1**  非连续写模式示意图  
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/non_continuous_write_mode.png "非连续写模式示意图")
+
+<a name="fig580415103338"></a>
+**图2**  连续写模式示意图  
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/continuous_write_mode.png "连续写模式示意图")
+
+## 返回值说明
+
+无
+
+## 约束说明
+
+-   传入的C矩阵地址空间大小需要保证不小于baseM \* baseN。
+-   异步场景时，需要使用一块临时空间来缓存Iterate计算结果，调用GetTensorC时会在该临时空间中获取C的矩阵分片。临时空间通过[SetWorkspace](set_workspace.md)接口进行设置。SetWorkspace接口需要在Iterate接口之前调用。
+-   当开启MixDualMaster（双主模式）场景时，即模板参数[enableMixDualMaster](matmul_config.md#matmulconfig-params)设置为true，不支持使用该接口。
+
+-   支持的数据类型<a id="li12616155731720"></a>
+
+    
+    Ascend 950PR/Ascend 950DT，支持的数据类型为：half、float、bfloat16_t、int32_t、int8_t、fp8_e4m3fn_t、hifloat8_t。
+    
+
+    
+    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：half、float、bfloat16_t、int32_t、int8_t。
+    
+
+    
+    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：half、float、bfloat16_t、int32_t、int8_t。
+    
+
+    
+    Atlas 推理系列产品AI Core，支持的数据类型为：half、float、int8_t、int32_t。
+    
+
+    
+    Atlas 200I/500 A2 推理产品，支持的数据类型为：half、float、bfloat16_t、int32_t。
+    
+
+    
+    Kirin X90，支持的数据类型为：half、int8_t、int32_t。
+    
+
+    
+    Kirin 9030，支持的数据类型为：half。
+    
+
+-   支持的数据格式<a id="li12616155731721"></a>
+
+    
+    Ascend 950PR/Ascend 950DT，支持的数据类型为：ND、NZ。
+    
+
+    
+    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：ND、NZ。
+    
+
+    
+    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：ND、NZ。
+    
+
+    
+    Atlas 推理系列产品AI Core，支持的数据类型为：NZ。
+    
+
+    
+    Atlas 200I/500 A2 推理产品，支持的数据类型为：ND、NZ。
+    
+
+
+
+
+## 调用示例
+
+-   获取C矩阵，输出至UB（VECIN）
+
+    ```
+    // 同步模式样例
+    while (mm.Iterate()) {
+        mm.GetTensorC(ubCmatrix);
+    }
+
+    // 异步模式样例
+    mm.template Iterate<false>();
+    // 其他操作
+    for (int i = 0; i < singleM / baseM * singleN / baseN; ++i) {
+        mm.template GetTensorC<false>(ubCmatrix);
+        // 其他操作
+    }
+    ```
+
+-   获取C矩阵，输出至GM，同步模式样例
+
+    ```
+    while (mm.Iterate()) {
+        mm.GetTensorC(gm);
+    }
+    ```
+
+-   获取C矩阵，同时输出至GM和UB（VECIN），同步模式样例
+
+    ```
+    while (mm.Iterate()) {
+        mm.GetTensorC(gm, ubCmatrix);
+    }
+    ```
+
+-   获取API接口返回的GM上的C矩阵，手动拷贝至UB，异步模式样例
+
+    ```
+    // BaseM * BaseN = 128 *256
+    mm.SetTensorA(gmA);
+    mm.SetTensorB(gmB);
+    mm.SetTail(singleM, singleN, singleK);
+    mm.template Iterate<false>();
+    // 其他操作
+    for (int i = 0; i < singleM / baseM * singleN / baseN; ++i) {
+        // 获取每次计算的BaseM*BaseN的数据128*256
+        GlobalTensor<T> global = mm.template GetTensorC<false>();
+        for (int j = 0; j < 4; ++j) {
+            LocalTensor local = que.AllocTensor<half>();     // 分配64*128大小的UB空间
+            DataCopy(local, global[64 * 128 * i], 64 * 128); // 将GM的数据拷贝进UB中，进行后续的Vector操作
+            // 其他Vector操作
+        }
+    }
+    ```
+
 
 <!-- cannbot:related:start -->
 ## 相关
@@ -37,4 +243,18 @@ Iterate后，获取一块或者两块C矩阵片，可以直接输出到GM tensor
 - [单次矩阵乘局部输出](../../../../../guides/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/single_matmul_local_output.md)（`explains`）：用户可以通过GetTensorC接口获取对应的单片数据；Iterate后，获取一块或者两块C矩阵片。场景卡要求 Partial Output 后从 GetTensorC 取得单片并自行累加 K 轴，接口卡给出 INNER/OUTER_PRODUCT 返回一片或两片的合同；联合可写出正确取片与累加循环。
 - [WaitGetTensorC](wait_get_tensor_c.md)（`related`）：GetTensorC 的参数合同写明“sync：设置同步或者异步模式：同步模式设置为true；异步模式设置为false。”；WaitGetTensorC 明确规定“当使用GetTensorC异步接口将结果矩阵从GM拷贝到UB，且UB后续需要进行Vector计算时，需要调用WaitGetTensorC进行同步。”，后者正是前者 sync=false 路线在 UB 被 Vector 消费前的完成等待步骤，但发起取数与等待同步是任务链上的两个接口主题。
 - [AsyncGetTensorC](async_get_tensor_c.md)（`same_topic`）：获取Iterate接口异步计算的结果矩阵。该接口功能已被GetTensorC覆盖，建议直接使用GetTensorC异步接口。；sync：设置同步或者异步模式：同步模式设置为true；异步模式设置为false。。焦点接口明确迁移到候选接口的异步重载，候选接口给出对应 sync 参数与 workspace 约束。
+
+<!-- cannbot:api-operator:start -->
+### 知识正文中的调用示例
+
+展示 5 / 5 个已匹配算子；每个 API 最多展示 10 个自动关联。
+以下仅有知识正文中的调用证据，未作为源码调用结果。
+
+- [QuantMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul.md)（`related`）：算子正文包含对 `GetTensorC(...)` 的直接调用；本卡提供该接口契约。
+- [RotaryPositionEmbedding A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/rotary_position_embedding.md)（`related`）：算子正文包含对 `GetTensorC(...)` 的直接调用；本卡提供该接口契约。
+- [QuantMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_950.md)（`related`）：算子正文包含对 `GetTensorC(...)` 的直接调用；本卡提供该接口契约。
+- [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)（`related`）：算子正文包含对 `GetTensorC(...)` 的直接调用；本卡提供该接口契约。
+- [TransposeQuantBatchMatMulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_quant_batch_mat_mul_weight_nz_950.md)（`related`）：算子正文包含对 `GetTensorC(...)` 的直接调用；本卡提供该接口契约。
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

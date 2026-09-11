@@ -5,59 +5,59 @@ description: "说明 aclnnInplacePowTensorScalar 在 950 上的接口语义、Ho
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/docs/aclnnPowTensorScalar%26aclnnInplacePowTensorScalar.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/docs/aclnnPowTensorScalar&aclnnInplacePowTensorScalar.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_api/aclnn_pow.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_api/aclnn_pow.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_api/aclnn_pow.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_api/aclnn_pow.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_api/pow.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_api/pow.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tensor_scalar_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/arch35/pow_tensor_scalar_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/pow_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/pow_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/arch35/pow_tensor_scalar_float.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/arch35/pow_tensor_scalar_float.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/arch35/pow_tensor_scalar_integer.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/arch35/pow_tensor_scalar_integer.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel_aicpu/pow_aicpu.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel_aicpu/pow_aicpu.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel_aicpu/pow.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel_aicpu/pow.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/pow_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/pow_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/config/ascend950/pow_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_host/config/ascend950/pow_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_api/square.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_api/square.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_host/arch35/square_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_host/arch35/square_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_kernel/square_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_kernel/square_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_kernel/arch35/square_dag.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_kernel/arch35/square_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_kernel/arch35/square_tiling_struct.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_kernel/arch35/square_tiling_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_kernel_aicpu/square_aicpu.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_kernel_aicpu/square_aicpu.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_kernel_aicpu/square_aicpu_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_kernel_aicpu/square_aicpu_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_host/square_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_host/square_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_host/config/ascend950/square_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/op_host/config/ascend950/square_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/square/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/aicpu/aicpu_op_def.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/aicpu/aicpu_op_def.h
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/elewise/elewise_base_struct.h
     role: implementation
@@ -74,7 +74,7 @@ sources:
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/util/vec.h
     role: implementation
 created_at: "2026-08-25T12:45:11Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -865,7 +865,7 @@ UB_total=N/A; dynamic_ub=N/A; configured workspace=100 B
 
 - 适用 Route：R-001、R-002、R-003
 - 触发条件：`float(exponent)==2`，且 950 的 `P` 属 `{FLOAT,BF16,FLOAT16,INT64,COMPLEX64,COMPLEX128}`。
-- Golden 来源：[`math/pow/op_api/aclnn_pow.cpp:427-450`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_api/aclnn_pow.cpp#L427-L450)
+- Golden 来源：[`math/pow/op_api/aclnn_pow.cpp:427-450`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_api/aclnn_pow.cpp#L427-L450)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -903,7 +903,7 @@ Host 在建立 executor 时直接把通用 Pow 核心换成 Square。AIV Square 
 
 - 适用 Route：R-004、R-005
 - 触发条件：浮点 `e∈{0,1,0.5,-0.5,2,3,-1,-2}` 或整数 `e∈{0,1,2,3}`；整数已通过非负 Host guard。
-- Golden 来源：[`math/pow/op_kernel/arch35/pow_tensor_scalar_float.h:76-116`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/arch35/pow_tensor_scalar_float.h#L76-L116)
+- Golden 来源：[`math/pow/op_kernel/arch35/pow_tensor_scalar_float.h:76-116`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_kernel/arch35/pow_tensor_scalar_float.h#L76-L116)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -943,7 +943,7 @@ scalar 每核只读取一次，随后整个核的 tile循环使用同一分支�
 
 - 适用 Route：全部非空 Route
 - 触发条件：原地入口把 `out` 绑定为 `self`，公共建图先产生临时结果，最后 ViewCopy。
-- Golden 来源：[`math/pow/op_api/aclnn_pow.cpp:462-488`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_api/aclnn_pow.cpp#L462-L488)
+- Golden 来源：[`math/pow/op_api/aclnn_pow.cpp:462-488`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/pow/op_api/aclnn_pow.cpp#L462-L488)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

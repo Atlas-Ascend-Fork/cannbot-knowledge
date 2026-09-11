@@ -174,6 +174,8 @@ Curator 先做 active 轨迹证据合同门禁：缺双 SHA/record 锚点、形�
 
 ## 收尾校验
 
+证据角色、artifact 类型、重建方式和连续 sequence 校验由 `scripts/validate_curated_output.py` 统一提供；相关物化与复审工具直接复用。文件 SHA-256 由 `scripts/validate_review_receipt.py` 统一计算，发布目录范围从仓库 Contract 获取。
+
 1. review 前对每张 staged card 跑 `python3 <SKILL_DIR>/scripts/field_notes_lint.py --staged-card <path>`；发布并完成 `publish_reviewed_cards.py --check` 后，再对每张目标卡跑 `--card <repo-relative-path>`，最后无参数运行一次 AscendC Runbook 全库兼容检查，三者 HARD 都为 0。任何发布后修订都必须回到 staging 并重新审查。
 2. `knowledge/ops/ascendc/runbooks/<area>/index.md` 只列本层直接卡。`field_notes_lint.py` 不复制图谱规则；`cannbot:related` 受管块的端点、类型、指纹和幂等性由 `knowledge_graph.py verify` 统一校验。
 3. **反投机取巧抽检**：无卡把放宽容差/改测试/改期望当解决配方（正知识）；`## 验证信号` 无"前序 LOG.md/本 trace 未复现"字样。

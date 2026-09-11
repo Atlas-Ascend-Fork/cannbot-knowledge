@@ -5,36 +5,36 @@ description: "说明 aclnnGroupedBiasAddGradV2 在 A2/A3 上的接口语义、Ho
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/docs/aclnnGroupedBiasAddGradV2.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/docs/aclnnGroupedBiasAddGradV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_api/aclnn_grouped_bias_add_grad.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_api/aclnn_grouped_bias_add_grad.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_api/aclnn_grouped_bias_add_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_api/aclnn_grouped_bias_add_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_api/grouped_bias_add_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_api/grouped_bias_add_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_host/grouped_bias_add_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_host/grouped_bias_add_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_host/arch32/grouped_bias_add_grad_tiling_def.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_host/arch32/grouped_bias_add_grad_tiling_def.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_host/arch32/grouped_bias_add_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_host/arch32/grouped_bias_add_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/grouped_bias_add_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/grouped_bias_add_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_base.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_equal_c.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_equal_c.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_unequal_c.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_unequal_c.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_unequal_c_perf.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_unequal_c_perf.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_host/config/ascend910b/grouped_bias_add_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_host/config/ascend910b/grouped_bias_add_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T11:07:13Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1122,7 +1122,7 @@ workspace_total = 32MiB+usedCoreNum*wsUnit*512
 
 - 适用 Route：R-001/R-003/R-005/R-007/R-009；WS key 的短组也动态使用。
 - 触发条件：Host `wsUnitNum<=8` 选择 UB key；变长 WS 模板内部当前组 `loopCNum_<=8` 时同样走 `ComputePerGUb`。
-- Golden 来源：[`op_host/arch32/grouped_bias_add_grad_tiling.cpp:252-273`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_host/arch32/grouped_bias_add_grad_tiling.cpp#L252-L273)
+- Golden 来源：[`op_host/arch32/grouped_bias_add_grad_tiling.cpp:252-273`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_host/arch32/grouped_bias_add_grad_tiling.cpp#L252-L273)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1159,7 +1159,7 @@ auto tilingKey = ComputeTiling(
 
 - 适用 Route：全部。
 - 触发条件：每次一级/二级 C 方向归约。
-- Golden 来源：[`op_kernel/arch32/grouped_bias_add_grad_base.h:213-232`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_base.h#L213-L232)
+- Golden 来源：[`op_kernel/arch32/grouped_bias_add_grad_base.h:213-232`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_base.h#L213-L232)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1195,7 +1195,7 @@ Add(dst[0], dst[0], src[0], cols);
 
 - 适用 Route：R-007～R-010。
 - 触发条件：`G>=200`、用满 AIV、G 偶数、H tile 数足以覆盖半数核且 `GB<INT32_MAX`。
-- Golden 来源：[`op_kernel/arch32/grouped_bias_add_grad_unequal_c_perf.h:159-179`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_unequal_c_perf.h#L159-L179)
+- Golden 来源：[`op_kernel/arch32/grouped_bias_add_grad_unequal_c_perf.h:159-179`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/grouped_bias_add_grad/op_kernel/arch32/grouped_bias_add_grad_unequal_c_perf.h#L159-L179)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

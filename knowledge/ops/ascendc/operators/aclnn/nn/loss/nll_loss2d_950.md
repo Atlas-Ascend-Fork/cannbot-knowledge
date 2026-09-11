@@ -5,38 +5,38 @@ description: "说明 aclnnNLLLoss2d 在 950 上的接口语义、Host/Launcher �
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/docs/aclnnNLLLoss2d.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/docs/aclnnNLLLoss2d.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_api/aclnn_nll_loss2d.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_api/aclnn_nll_loss2d.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_api/aclnn_nll_loss2d.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_api/aclnn_nll_loss2d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_api/nll_loss.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_api/nll_loss.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_api/aclnn_util.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_api/aclnn_util.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_host/arch35/nll_loss_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_host/arch35/nll_loss_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_host/arch35/nll_loss_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_host/arch35/nll_loss_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_host/nll_loss_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_host/nll_loss_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_host/nll_loss_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_host/nll_loss_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/nll_loss.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/nll_loss.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/arch35/nll_loss_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/arch35/nll_loss_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/arch35/nll_loss_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/arch35/nll_loss_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_host/config/ascend950/nll_loss_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_host/config/ascend950/nll_loss_binary.json
     role: implementation
 created_at: "2026-08-25T17:17:10Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -631,7 +631,7 @@ Tiling reservation = 16 MiB + 2*maxCoreNum*4 bytes
 
 - 适用 Route：R-002、R-003、R-004
 - 触发条件：`IsRegbase()==true`（固定仓定义为 `DAV_3510`）且输入非空。
-- Golden 来源：[`loss/nll_loss/op_api/aclnn_nll_loss2d.cpp:343-355`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_api/aclnn_nll_loss2d.cpp#L343-L355)
+- Golden 来源：[`loss/nll_loss/op_api/aclnn_nll_loss2d.cpp:343-355`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_api/aclnn_nll_loss2d.cpp#L343-L355)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -672,7 +672,7 @@ Tiling reservation = 16 MiB + 2*maxCoreNum*4 bytes
 
 - 适用 Route：R-003、R-004
 - 触发条件：非空 4D 且 `reduction` 为 sum 或 mean。
-- Golden 来源：[`loss/nll_loss/op_kernel/arch35/nll_loss_simt.h:287-313`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/arch35/nll_loss_simt.h#L287-L313)
+- Golden 来源：[`loss/nll_loss/op_kernel/arch35/nll_loss_simt.h:287-313`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss/op_kernel/arch35/nll_loss_simt.h#L287-L313)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

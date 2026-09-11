@@ -5,62 +5,62 @@ description: "说明 aclnnFusedInferAttentionScoreV5 在 950 上的接口语义�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/docs/aclnnFusedInferAttentionScoreV5.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/docs/aclnnFusedInferAttentionScoreV5.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_v5.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_v5.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_v5.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_v5.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_inner.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_inner.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/fused_infer_attention_score_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/fused_infer_attention_score_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/arch35/fused_infer_attention_score_tiling_v4.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/arch35/fused_infer_attention_score_tiling_v4.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/arch35/fused_infer_attention_score_tiling_impl.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/arch35/fused_infer_attention_score_tiling_impl.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch35/fia_tiling_nonquant_gqa.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch35/fia_tiling_nonquant_gqa.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch35/fia_tiling_fullquant_mx.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch35/fia_tiling_fullquant_mx.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/fia_tiling_data_public.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/fia_tiling_data_public.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_tiling_data_noquant_gqa.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_tiling_data_noquant_gqa.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_tiling_data_fullquant_mx.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_tiling_data_fullquant_mx.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_kernel/fused_infer_attention_score_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_kernel/fused_infer_attention_score_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_kernel/fused_infer_attention_score_template_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_kernel/fused_infer_attention_score_template_tiling_key.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/prompt_flash_attention/op_kernel/arch35/prompt_flash_attention_entry_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/prompt_flash_attention/op_kernel/arch35/prompt_flash_attention_entry_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/incre_flash_attention/op_kernel/arch35/incre_flash_attention_entry_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/incre_flash_attention/op_kernel/arch35/incre_flash_attention_entry_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_template_dispatcher.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_template_dispatcher.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_kernel_noquant_gqa.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_kernel_noquant_gqa.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_kernel_fullquant_mx.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_kernel_fullquant_mx.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_antiquant_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_antiquant_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_kernel_infer.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_kernel_infer.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_noquant_kernel_infer.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_noquant_kernel_infer.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_kernel_infer_mla_fullquant.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_kernel_infer_mla_fullquant.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_kernel_infer_gqa_fullquant.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_kernel_infer_gqa_fullquant.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_kernel_infer_mx_fullquant.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_score_kernel_infer_mx_fullquant.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_kernel_noquant_mla.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/flash_attention_kernel_noquant_mla.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -626,7 +626,7 @@ Normal fallback 为 `Wsys+3*core*(bmm2Bytes+vec2Bytes)+FD`，PA 再加两 BMM×�
 
 - 适用 Route：R-001、R-002、R-004、R-005
 - 触发条件：`Parse` 和 `FIAChecker::Process` 成功后，registry 按 priority 28/210 尝试重构模板；registry 未成功才进入 legacy `FusedInferAttentionScoreTilingImpl::DoOpTiling`。重构模板生成 `isReconstructTemp=true`，legacy 生成 false。
-- Golden 来源：[`fused_infer_attention_score_tiling_v4.cpp:45-52`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/arch35/fused_infer_attention_score_tiling_v4.cpp#L45-L52)
+- Golden 来源：[`fused_infer_attention_score_tiling_v4.cpp:45-52`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/arch35/fused_infer_attention_score_tiling_v4.cpp#L45-L52)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -663,7 +663,7 @@ if (fiav4.DoOpTiling(context, fiaInfo) != ge::GRAPH_SUCCESS) {
 
 - 适用 Route：R-001、R-002
 - 触发条件：重构模板完成 split-core 后，`SetSplitOutput` 将 FA 区间写入 `FAMetadata[36][8]`，并从同一 split 结果写入 `FDMetadata[72][8]`。
-- Golden 来源：[`fia_tiling_nonquant_gqa.cpp:490-520`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch35/fia_tiling_nonquant_gqa.cpp#L490-L520)
+- Golden 来源：[`fia_tiling_nonquant_gqa.cpp:490-520`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch35/fia_tiling_nonquant_gqa.cpp#L490-L520)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -718,7 +718,7 @@ Host 可根据实际 B/N2/G/S1/S2 与 FD split 生成不规则工作区间，Dev
 
 - 适用 Route：R-002；R-001 作为固定 `bmm2Write2Ub=true,splitD=false` 的对照。
 - 触发条件：MX dispatcher 根据完整模板的 `dVTemplateType`、S1/S2 tile、mask/PSE/RoPE 条件计算 C2 落点；`dVTemplateType>Aligned256` 时编译期启用 split-D。
-- Golden 来源：[`fia_template_dispatcher.h:99-106`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_template_dispatcher.h#L99-L106)
+- Golden 来源：[`fia_template_dispatcher.h:99-106`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch35/fia_template_dispatcher.h#L99-L106)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

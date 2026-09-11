@@ -5,28 +5,28 @@ description: "说明 aclnnSwiGluGrad 在 950 上的接口语义、Host/Launcher 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/docs/aclnnSwiGluGrad.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/docs/aclnnSwiGluGrad.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_host/swi_glu_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_host/swi_glu_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_host/swi_glu_grad_tiling_regbase.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_host/swi_glu_grad_tiling_regbase.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu/op_host/swi_glu_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu/op_host/swi_glu_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/arch35/swi_glu_grad_regbase_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/arch35/swi_glu_grad_regbase_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/swi_glu_grad_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/swi_glu_grad_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/arch35/swi_glu_grad_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/arch35/swi_glu_grad_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/arch35/swi_glu_grad_move_align.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/arch35/swi_glu_grad_move_align.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/arch35/swi_glu_grad_ub_rearrange.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_kernel/arch35/swi_glu_grad_ub_rearrange.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_host/config/ascend950/swi_glu_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_host/config/ascend950/swi_glu_grad_binary.json
     role: implementation
 created_at: "2026-08-25T19:03:22Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -464,7 +464,7 @@ UB_total=14S+256B<=UB; workspace_total同R-003; dynamic_ub=N/A
 
 - 适用 Route：R-001–R-004
 - 触发条件：`colTotalNum_ * dataSize_ < 1024` 选择 UB_REARRANGE，否则 MOVEALIGN
-- Golden 来源：[`activation/swi_glu_grad/op_host/swi_glu_grad_tiling_regbase.cpp:178-204`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_host/swi_glu_grad_tiling_regbase.cpp#L178-L204)
+- Golden 来源：[`activation/swi_glu_grad/op_host/swi_glu_grad_tiling_regbase.cpp:178-204`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swi_glu_grad/op_host/swi_glu_grad_tiling_regbase.cpp#L178-L204)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

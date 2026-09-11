@@ -5,28 +5,28 @@ description: "说明 aclnnEmbeddingBag 在 A2/A3 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/docs/aclnnEmbeddingBag.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/docs/aclnnEmbeddingBag.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/op_api/aclnn_embedding_bag.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/op_api/aclnn_embedding_bag.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/op_api/embedding_bag.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/op_api/embedding_bag.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/embedding_bag_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/embedding_bag_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/embedding_bag_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/embedding_bag_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/embedding_bag_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/embedding_bag_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/embedding_bag.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/embedding_bag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/embedding_bag_fp16.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/embedding_bag_fp16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/embedding_bag_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/embedding_bag_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/config/ascend910b/embedding_bag_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_host/config/ascend910b/embedding_bag_binary.json
     role: implementation
 created_at: "2026-08-25T16:24:42Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -439,7 +439,7 @@ UB_total、workspace_total与R-002相同；compile guard是额外成立条件。
 
 - 适用 Route：R-001/R-002/R-003
 - 触发条件：任意非空 bag；`D>A` 或 bag 长度>1024 时形成多级 tile
-- Golden 来源：[`index/embedding_bag/op_kernel/embedding_bag.h:353-379`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/embedding_bag.h#L353-L379)
+- Golden 来源：[`index/embedding_bag/op_kernel/embedding_bag.h:353-379`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/embedding_bag.h#L353-L379)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -484,7 +484,7 @@ Host 用 UB 余量决定 A，Device 再把 D 切为 A 宽特征片，同时把�
 
 - 适用 Route：R-002/R-003
 - 触发条件：weight 为 FP16/BF16
-- Golden 来源：[`index/embedding_bag/op_kernel/embedding_bag_fp16.h:188-211`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/embedding_bag_fp16.h#L188-L211)
+- Golden 来源：[`index/embedding_bag/op_kernel/embedding_bag_fp16.h:188-211`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/embedding_bag/op_kernel/embedding_bag_fp16.h#L188-L211)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

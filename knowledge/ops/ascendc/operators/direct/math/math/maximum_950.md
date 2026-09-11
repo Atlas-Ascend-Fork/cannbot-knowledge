@@ -5,22 +5,22 @@ description: "说明 cann_bench::maximum 在 950 上的右对齐广播语义、�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/README.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/maximum/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/op_host/maximum_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/maximum/op_host/maximum_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/op_host/arch35/maximum_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/maximum/op_host/arch35/maximum_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/op_kernel/arch35/maximum_dag.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/maximum/op_kernel/arch35/maximum_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/op_kernel/maximum_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/maximum/op_kernel/maximum_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/op_host/config/ascend950/maximum_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/maximum/op_host/config/ascend950/maximum_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/maximum/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:29:47Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -678,7 +678,7 @@ physical_register_bytes = 固定源码不可见；仅能证明局部标量的单
 
 - 适用 Route：P1/R-003、P2/R-002 窄后缀分支。
 - 触发条件：官方相关算法需要 `CopyInBrc`；转换件进一步要求 R-003 的单轴谓词与 wrap-bounded batch，或 R-002 的 `rowLength<=tileElements && rowLength*d<16384`。
-- 官方固定来源：[`math/maximum/op_kernel/arch35/maximum_dag.h:28-36`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/op_kernel/arch35/maximum_dag.h)
+- 官方固定来源：[`math/maximum/op_kernel/arch35/maximum_dag.h:28-36`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/maximum/op_kernel/arch35/maximum_dag.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -1,25 +1,6 @@
 # 标量计算
 
-- [AscAtomicAdd](asc_atomic_add.md)：对Global Memory中的数据执行原子加操作，将val累加到address指向的数据元素上，返回修改前的值。
-- [AscAtomicAnd](asc_atomic_and.md)：对Global Memory中的数据执行原子按位与操作，将val按位与到address指向的数据元素上，返回修改前的值。
-- [AscAtomicCas](asc_atomic_cas.md)：对Global Memory中address指向的元素执行原子比较赋值操作，若当前值等于compare则赋值为val，否则不变。
-- [AscAtomicDec](asc_atomic_dec.md)：对Global Memory中address指向的计数器执行原子递减操作，若值为0或大于val则赋值为val，否则减1。
-- [AscAtomicExch](asc_atomic_exch.md)：对Global Memory中address指向的元素执行原子赋值操作，将该元素值设置为val，返回修改前的值。
-- [AscAtomicInc](asc_atomic_inc.md)：对Global Memory中address指向的计数器执行原子递增操作，若值大于等于val则赋值为0，否则加1。
-- [AscAtomicMax](asc_atomic_max.md)：对Global Memory中的数据执行原子求最大值操作，将address指向的数据元素与val中的最大值写回该地址。
-- [AscAtomicMin](asc_atomic_min.md)：对Global Memory中的数据执行原子求最小值操作，将address指向的数据元素与val中的最小值写回该地址。
-- [AscAtomicOr](asc_atomic_or.md)：对Global Memory中的数据执行原子按位或操作，将val按位或到address指向的数据元素上。
-- [AscAtomicSub](asc_atomic_sub.md)：对Global Memory中的数据执行原子减操作，将val从address指向的数据元素上减去，返回修改前的值。
-- [AscAtomicXor](asc_atomic_xor.md)：对Global Memory中的数据执行原子按位异或操作，将val按位异或到address指向的数据元素上。
-- [AscClearNthbit](asc_clear_nthbit.md)：将一个uint64_t整数的第idx位设置为0，其余位保持不变。
-- [asc_clz（标量计算）](asc_clz.md)：计算一个uint64_t类型整数在二进制表示下的前导零个数，即从二进制最高位开始，到第一个出现二进制1为止，中间连续的0的数量。
-- [asc_ffs（标量计算）](asc_ffs.md)：FindFirstSet接口，输入数据的二进制表示中从最低位向最高位查找第一个值为1的位，并返回其位置，如果没找到则返回-1。
-- [asc_ffz（标量计算）](asc_ffz.md)：获取一个uint64_t类型数字的二进制表示中从最低有效位开始的第一个0出现的位置，如果没找到则返回-1。
-- [AscFloat2Int32](asc_float2int32.md)：将float类型转换为int32_t类型，支持RINT、ROUND、FLOOR、CEIL四种舍入模式。
-- [AscLoadDev](asc_load_dev.md)：不经过DCache直接从Global Memory地址读取整型数据，避免多核操作未对齐Cache Line时的数据覆盖问题。
-- [asc_popc（标量计算）](asc_popc.md)：获取一个uint64_t类型数字的二进制中1的个数。
-- [AscSetNthbit](asc_set_nthbit.md)：将一个uint64_t类型数字的指定二进制位置为1，其余位保持不变。
-- [AscSflbits](asc_sflbits.md)：计算一个int64_t类型数字的二进制中，从最高数值位开始与符号位相同的连续比特位的个数。
-- [AscStoreDev](asc_store_dev.md)：不经过DCache直接向Global Memory地址写数据，避免多核操作未对齐Cache Line时的数据随机覆盖问题。
-- [AscZeroBitsCnt](asc_zero_bits_cnt.md)：获取一个uint64_t类型数字的二进制中0的个数。
-- [标量计算](scalar_compute.md)：标量计算类接口汇总，提供位操作、前导零计数、数据加载存储及标量原子操作等能力。
+- [位运算](scalar_bit/index.md)：对一个64位无符号整数执行位清除操作，将bits中第idx位清零，其余位保持不变。返回修改后的64位无符号整数。
+- [类型转换](scalar_convert/index.md)：将float类型的标量转换为int32_t类型并返回。
+- [数据搬入](scalar_load/index.md)：不经过DCache直接从GM地址读取整型数据。 当多核操作GM地址且数据无法对齐到Cache Line时，经过DCache读写可能引入Cache Line粒度的数据覆盖。此时，可使用本接口绕过DCache读取GM数据。
+- [数据搬出](scalar_store/index.md)：不经过DCache向GM地址上写数据。 当多核操作GM地址时，如果数据无法对齐到Cache Line，经过DCache的方式下，由于按照Cache Line大小进行读写，会导致多核数据随机覆盖的问题。此时，可以采用不经过DCache直接读写GM地址的方式，从而避免上述随机覆盖的问题。

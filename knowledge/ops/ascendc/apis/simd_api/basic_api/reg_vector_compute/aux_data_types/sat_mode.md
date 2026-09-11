@@ -2,21 +2,24 @@
 type: API
 title: SatMode
 description: SatMode 用于设置 Cast 类型转换的饱和与不饱和模式，包括 UNKNOWN、NO_SAT 和 SAT。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.execution_unit.vector]
-status: stable
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.execution_unit.vector
+status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/aux_data_types/SatMode.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-27T12:23:11Z'
-platforms: [agnostic]
+updated_at: '2026-09-04T01:25:11Z'
+platforms: []
 ---
 
-# SatMode
+# SatMode<a name="ZH-CN_TOPIC_0000001956862301"></a>
 
-SatMode 用于设置 Cast 类型转换的饱和与不饱和模式。
-
-本接口属于 Reg 矢量计算辅助数据类型定义。
+| 参数名 | 描述 |
+| :-- | :-- | 
+| SatMode | 用于设置Cast类型转换饱和与不饱和模式。<br>enum class SatMode { <br>    UNKNOWN = -1, <br>    NO_SAT, <br>    SAT <br>};<br>&bull;&nbsp;&nbsp;UNKNOWN：当转换类型不支持SatMode时，选择该模式；<br>&bull;&nbsp;&nbsp;NO_SAT：不饱和模式；<br>&bull;&nbsp;&nbsp;SAT：饱和模式。 |
 
 ```cpp
 enum class SatMode {
@@ -26,11 +29,6 @@ enum class SatMode {
 };
 ```
 
-- `UNKNOWN`：转换类型不支持显式 SatMode 时使用。
-- `NO_SAT`：不饱和模式。
-- `SAT`：饱和模式；溢出和非有限值行为仍需按具体 Cast 接口与数据类型核对。
-
-临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
 
 <!-- cannbot:related:start -->
 ## 相关

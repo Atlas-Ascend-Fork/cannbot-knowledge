@@ -5,38 +5,38 @@ description: "说明 aclnnApplyAdamWV2 在 A2/A3 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/docs/aclnnApplyAdamWV2.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/docs/aclnnApplyAdamWV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/op_api/aclnn_apply_adam_w_v2.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/op_api/aclnn_apply_adam_w_v2.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/op_api/aclnn_apply_adam_w_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/op_api/aclnn_apply_adam_w_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/op_api/apply_adam_w_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/op_api/apply_adam_w_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/apply_adam_w_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/apply_adam_w_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/apply_adam_w_v2_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/apply_adam_w_v2_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/apply_adam_w_v2_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/apply_adam_w_v2_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_b16.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_b16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_fp.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_fp.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_mix_dtype.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_mix_dtype.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/config/ascend910b/apply_adam_w_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/config/ascend910b/apply_adam_w_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/config/ascend910_93/apply_adam_w_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_host/config/ascend910_93/apply_adam_w_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:11:22Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -958,7 +958,7 @@ UB_total=184896B; dynamic_ub=N/A; workspace core slice=0B used
 
 - 适用 Route：R-001～R-010。
 - 触发条件：每次 Kernel 初始化，任意非空输入。
-- Golden 来源：[`op_kernel/apply_adam_w_v2_b16.h:167-180`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_b16.h#L167-L180)
+- Golden 来源：[`op_kernel/apply_adam_w_v2_b16.h:167-180`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_b16.h#L167-L180)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -996,7 +996,7 @@ float result = outLocal.GetValue(0);
 
 - 适用 Route：R-001～R-004。
 - 触发条件：状态 dtype 为 FP16 或 BF16。
-- Golden 来源：[`op_kernel/apply_adam_w_v2_b16.h:277-285`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_b16.h#L277-L285)
+- Golden 来源：[`op_kernel/apply_adam_w_v2_b16.h:277-285`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_b16.h#L277-L285)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1033,7 +1033,7 @@ if (isBfloat16_) {
 
 - 适用 Route：R-005/R-006；B16与Mix body也使用同类生命周期复用。
 - 触发条件：单tile内严格串行Vector管线。
-- Golden 来源：[`op_kernel/apply_adam_w_v2_fp.h:247-253`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_fp.h#L247-L253)
+- Golden 来源：[`op_kernel/apply_adam_w_v2_fp.h:247-253`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_v2/op_kernel/apply_adam_w_v2_fp.h#L247-L253)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

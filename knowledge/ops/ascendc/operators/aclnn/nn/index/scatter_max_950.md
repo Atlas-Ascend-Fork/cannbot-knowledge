@@ -5,30 +5,30 @@ description: "说明 aclnnScatterMax 在 950 上的接口语义、Host/Launcher 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/docs/aclnnScatterMax.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/docs/aclnnScatterMax.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/op_host/scatter_max_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/op_host/scatter_max_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/op_host/scatter_max_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/op_host/scatter_max_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/op_host/arch35/scatter_max_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/op_host/arch35/scatter_max_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_reduce_common/op_host/arch35/scatter_reduce_common_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_reduce_common/op_host/arch35/scatter_reduce_common_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_struct.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/op_kernel/arch35/scatter_max.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/op_kernel/arch35/scatter_max.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_max/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:59:40Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -439,7 +439,7 @@ logical lane bytes = sizeof(T) = 2 (half) or 1 (int8/uint8)
 
 - 适用 Route：R-001、R-002。
 - 触发条件：非空 slice；每个有效 AIV block 的 `Process`；与 dtype 无关。
-- Golden 来源：[`index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_simt.h:163-174`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_simt.h#L163-L174)
+- Golden 来源：[`index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_simt.h:163-174`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_simt.h#L163-L174)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -479,7 +479,7 @@ Host 只按 index 项把 `M*S` 元素范围划给 AIV core；Device 不为 tile 
 
 - 适用 Route：R-002。
 - 触发条件：`PARAMS_T` 为 half/int8/uint8，即 `sizeof(T)` 为 2 或 1；`SimtComputeReduce` 的 compile-time else 分支。
-- Golden 来源：[`index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_simt.h:63-95`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_simt.h#L63-L95)
+- Golden 来源：[`index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_simt.h:63-95`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_reduce_common/op_kernel/arch35/scatter_reduce_common_simt.h#L63-L95)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

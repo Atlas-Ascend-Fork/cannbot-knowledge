@@ -5,28 +5,28 @@ description: "说明 aclnnUpsampleTrilinear3d* 在 950 上的接口语义、Host
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/docs/aclnnUpsampleTrilinear3d.md
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/docs/aclnnUpsampleTrilinear3d.md
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/op_api/aclnn_upsample_trilinear_3d.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/op_api/aclnn_upsample_trilinear_3d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/op_api/upsample_trilinear_3d.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/op_api/upsample_trilinear_3d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/resize_upsample_trilinear_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/resize_upsample_trilinear_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/resize_upsample_trilinear_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/resize_upsample_trilinear_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_kernel/resize_upsample_trilinear_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_kernel/resize_upsample_trilinear_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_kernel/arch35/resize_upsample_trilinear_simt.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_kernel/arch35/resize_upsample_trilinear_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_kernel/arch35/resize_upsample_trilinear_simt_base.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_kernel/arch35/resize_upsample_trilinear_simt_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/config/ascend950/resize_upsample_trilinear_binary.json
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/config/ascend950/resize_upsample_trilinear_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-24T20:52:50Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -333,7 +333,7 @@ workspace_reported = 16 MiB; main kernel consumed = 0
 
 - 适用 Route：R-001/R-002
 - 触发条件：input/output 总元素及输入/输出 D*H*W 是否全部≤UINT32_MAX
-- Golden 来源：[`resize_upsample_trilinear_tiling_arch35.cpp:202-206`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/resize_upsample_trilinear_tiling_arch35.cpp#L202-L206)
+- Golden 来源：[`resize_upsample_trilinear_tiling_arch35.cpp:202-206`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_host/resize_upsample_trilinear_tiling_arch35.cpp#L202-L206)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -365,7 +365,7 @@ Host 覆盖全部 Device 地址乘积后把位宽编码进模板 key。常见范
 
 - 适用 Route：R-001/R-002
 - 触发条件：进入 `Process`，D/H/W 在 block 内恒定
-- Golden 来源：[`resize_upsample_trilinear_simt.h:75-96`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_kernel/arch35/resize_upsample_trilinear_simt.h#L75-L96)
+- Golden 来源：[`resize_upsample_trilinear_simt.h:75-96`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_upsample_trilinear/op_kernel/arch35/resize_upsample_trilinear_simt.h#L75-L96)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

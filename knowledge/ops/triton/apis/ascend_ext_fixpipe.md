@@ -154,8 +154,17 @@ def cube_vector_matmul_kernel(a_ptr, b_ptr, c_ptr, M, N, K,
 2. **与直接 load/store 的区别**：fixpipe 是硬件级搬运，L0C 直读直写 UB 并支持格式转换与融合后处理；load/store 需经 GM 中转，效率低。
 3. **dual_dst_mode 用途**：将一个 Cube 结果拆为两个输出写入不同 UB 缓冲区（按列/按行），某些融合算子中可减少搬运次数。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [core.py#L273-L333](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L273-L333)
+- [core.py#L247-L270](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L247-L270)
+- [semantic.py#L132-L148](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/semantic.py#L132-L148)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
@@ -165,11 +174,3 @@ def cube_vector_matmul_kernel(a_ptr, b_ptr, c_ptr, M, N, K,
 - [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [core.py#L273-L333](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L273-L333)
-- [core.py#L247-L270](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L247-L270)
-- [semantic.py#L132-L148](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/semantic.py#L132-L148)

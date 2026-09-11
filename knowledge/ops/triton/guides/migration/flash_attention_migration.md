@@ -174,8 +174,20 @@ dq += tl.dot(ds, k)
 
 Config 移除 `num_stages`/`num_warps` → Grid 3D→1D+核内循环 → `return` 改 `if` 守卫 → mask_fn 改预计算 mask_tensor → 前向 softmax exp2→exp → `tl.dot(p,v)` 提前 → 加 `propagate_nan` → 按 CV/Vector 类型配编译参数 → `bwd_preprocess_ifmn` 替换 → `bwd_qkv` 融合+atomic_add → 插 `break_vf` → 910_95 显式 `multibuffer=True`。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [Config.h#L351-L363](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Tools/bishengir-compile/Config.h#L351-L363)
+- [core.py#L22](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/core.py#L22)
+- [core.py#L1957](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/core.py#L1957)
+- [standard.py#L174](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/standard.py#L174)
+- [aux_ops.py#L135-L151](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/aux_ops.py#L135-L151)
+- [compiler.py#L846](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/backend/compiler.py#L846)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Attention 算子](../operator_design/attention.md)（`related`）：“Attention 算子经验路由与优化策略”
@@ -189,14 +201,3 @@ Config 移除 `num_stages`/`num_warps` → Grid 3D→1D+核内循环 → `return
 - [Triton API 在 Ascend NPU 上的差异对照](../workflows/migration_api_differences.md)（`related`）：“load_if 等 NPU 特有 API 差异对照”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [Config.h#L351-L363](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Tools/bishengir-compile/Config.h#L351-L363)
-- [core.py#L22](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/core.py#L22)
-- [core.py#L1957](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/core.py#L1957)
-- [standard.py#L174](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/standard.py#L174)
-- [aux_ops.py#L135-L151](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/aux_ops.py#L135-L151)
-- [compiler.py#L846](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/backend/compiler.py#L846)

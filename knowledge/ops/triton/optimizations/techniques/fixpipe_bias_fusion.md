@@ -157,17 +157,6 @@ with al.scope(core_mode="vector"):
 | 预量化/预 ReLU | Cube 结果需转换/激活 | 随路量化/激活（内部语义层） | 仅 910_95 支持 L0C→UB |
 | 双目标输出 | 拆分 Cube 结果到两 UB | `dual_dst_mode` | 仅 910_95，仅 L0C→UB |
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [fixpipe 操作（L0C → UB 搬运与融合后处理）](../../apis/ascend_ext_fixpipe.md)（`related`）：“fixpipe API 参考”
-- [CV 流水线优化（Cube-Vector 融合）](cv_pipeline_optimization.md)（`related`）：“CV 融合整体策略”
-- [同步与 Barrier（NPU 三层同步机制）](sync_and_barrier.md)（`related`）：“sync_block 同步配对”
-- [PIPE / CORE / MODE / IteratorType 枚举](../../apis/ascend_ext_pipe_core.md)（`related`）：“FIX Pipe 与 Cube/Vector Core 枚举定义”
-- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 L0C→UB 直通的硬件背景”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -179,3 +168,15 @@ with al.scope(core_mode="vector"):
 - [HIVMDMAOps.td#L246-L326](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/IR/HIVMDMAOps.td#L246-L326)
 - [HIVMAttrs.td#L783-L859](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/IR/HIVMAttrs.td#L783-L859)
 - [HIVMDMAOps.cpp#L848-L891](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/lib/Dialect/HIVM/IR/HIVMDMAOps.cpp#L848-L891)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [fixpipe 操作（L0C → UB 搬运与融合后处理）](../../apis/ascend_ext_fixpipe.md)（`related`）：“fixpipe API 参考”
+- [CV 流水线优化（Cube-Vector 融合）](cv_pipeline_optimization.md)（`related`）：“CV 融合整体策略”
+- [同步与 Barrier（NPU 三层同步机制）](sync_and_barrier.md)（`related`）：“sync_block 同步配对”
+- [PIPE / CORE / MODE / IteratorType 枚举](../../apis/ascend_ext_pipe_core.md)（`related`）：“FIX Pipe 与 Cube/Vector Core 枚举定义”
+- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 L0C→UB 直通的硬件背景”
+
+<!-- cannbot:related:end -->

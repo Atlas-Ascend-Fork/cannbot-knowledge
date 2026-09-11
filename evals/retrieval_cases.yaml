@@ -176,12 +176,23 @@ cases:
     filters:
       technology: ascendc
       type: apis
-      platform: a2
-      status: stable
+      status: draft
+      include_unlocated: true
       match: literal
       k: 3
     expected:
       - ops/ascendc/apis/utils_api/tiling_template_programming/get_tpl_tiling_key
+  - id: exclude_unsupported_expf_from_a2
+    query: expf
+    filters:
+      technology: ascendc
+      type: apis
+      platform: a2
+      status: stable
+      match: literal
+      k: 10
+    excluded:
+      - ops/ascendc/apis/simt_api/math_functions/float_math_functions/expf
   - id: repository_rtc_create_program_exact_title
     query: aclrtcCreateProg
     filters:
@@ -198,8 +209,8 @@ cases:
     filters:
       technology: ascendc
       type: guides
-      platform: a2
-      status: stable
+      status: draft
+      include_unlocated: true
       match: literal
       k: 3
     expected:
@@ -276,7 +287,41 @@ cases:
       platform: a2
       status: stable
     expected_count: 0
-  - id: empty_common_planned_route_search
+  - id: triton_memory_api_search
+    query: 内存操作 API（tl.load / tl.store / block_ptr）
+    filters:
+      domain: ops
+      technology: triton
+      type: apis
+      platform: a2
+      status: stable
+      match: literal
+      k: 3
+    expected:
+      - ops/triton/apis/tl_memory_ops
+  - id: triton_memory_api_excludes_unsupported_platform
+    query: 内存操作 API（tl.load / tl.store / block_ptr）
+    filters:
+      domain: ops
+      technology: triton
+      type: apis
+      platform: "950"
+      status: stable
+      match: literal
+    expected_count: 0
+  - id: common_platform_hardware_search
+    query: Ascend 910B2/910B3 硬件规格
+    filters:
+      domain: common
+      technology: platforms
+      type: concepts
+      platform: a2
+      status: stable
+      match: literal
+      k: 3
+    expected:
+      - common/platforms/concepts/ascend_910b
+  - id: common_platform_unmatched_terms_search
     query: platform mapping
     filters:
       domain: common

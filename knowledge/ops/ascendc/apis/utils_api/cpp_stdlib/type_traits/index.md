@@ -1,4 +1,4 @@
-# Utils API类型特性
+# 类型特性
 
 - [add_const](add_const.md)：在程序编译时，为指定类型添加const限定符，可以用于在编译时进行类型转换。
 - [add_cv](add_cv.md)：在程序编译时，为指定类型添加const和volatile限定符，可以用于在编译时进行类型转换。

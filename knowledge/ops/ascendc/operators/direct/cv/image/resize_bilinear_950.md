@@ -5,26 +5,26 @@ description: "说明 cann_bench::resize_bilinear、calc_resize_bilinear_config �
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/README.md"
+  - resource: "cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/README.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_api/resize_bilinear_v2.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_api/resize_bilinear_v2.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_host/arch35/resize_bilinear_v2_tiling_arch35.h"
+  - resource: "cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_host/arch35/resize_bilinear_v2_tiling_arch35.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/resize_bilinear_v2_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/resize_bilinear_v2_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_base.h"
+  - resource: "cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_base.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h"
+  - resource: "cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_nchw.h"
+  - resource: "cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_nchw.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/CMakeLists.txt"
+  - resource: "cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/CMakeLists.txt"
     role: implementation
 created_at: "2026-08-25T19:31:34Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -620,7 +620,7 @@ GM_live=I*sizeof(T)+O*sizeof(T)
 
 - 适用 Route：R-001、R-003。
 - 触发条件：NCHW、输入不为单元素、输入输出空间不同，且 `outH*outW >= coreNum*(i32?1024:512)`。
-- 固定源码：[`op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp:607-615`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp)
+- 固定源码：[`op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp:607-615`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -657,7 +657,7 @@ NCHW body 对每个输出元素解码 N/C/H/W；HW body 只对每个空间点解
 
 - 适用 Route：R-001～R-004。
 - 触发条件：Route 已选定，domain 不能被 `realCoreNum` 整除时 `splitBlockTailFactor>0`。
-- 固定源码：[`op_kernel/arch35/resize_bilinear_v2_simt_hw.h:133-140`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h)
+- 固定源码：[`op_kernel/arch35/resize_bilinear_v2_simt_hw.h:133-140`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -693,7 +693,7 @@ Host 只传商 `q` 和余数 `r`；Device 以 `start=block*q+min(block,r)` 重�
 
 - 适用 Route：R-002、R-004；R-001/R-003 也对 H/W 使用两级版本。
 - 触发条件：正的 N/C/outH/outW，`T_IDX` 与 Route index 宽度一致。
-- 固定源码：[`op_kernel/arch35/resize_bilinear_v2_simt_nchw.h:60-75`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_nchw.h)
+- 固定源码：[`op_kernel/arch35/resize_bilinear_v2_simt_nchw.h:60-75`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_nchw.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -735,7 +735,7 @@ N = tmp - tmpRes * lenN;
 
 - 适用 Route：R-001～R-004 的 `mode=0` 插值 body。
 - 触发条件：源坐标落在整数点或半像素负边界，尤其输入邻点含 NaN/Inf 时差异可观察。
-- 固定源码（被转换的官方基线）：[`op_kernel/arch35/resize_bilinear_v2_simt_hw.h:79-86`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h)
+- 固定源码（被转换的官方基线）：[`op_kernel/arch35/resize_bilinear_v2_simt_hw.h:79-86`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

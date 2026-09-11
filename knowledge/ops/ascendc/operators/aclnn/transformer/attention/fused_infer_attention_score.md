@@ -5,44 +5,44 @@ description: "说明 aclnnFusedInferAttentionScoreV4 在 A2/A3 上的接口语�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/docs/aclnnFusedInferAttentionScoreV4.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/docs/aclnnFusedInferAttentionScoreV4.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_v4.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_v4.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_v4.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_v4.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_inner.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_api/aclnn_fused_infer_attention_score_inner.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/fused_infer_attention_score_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/fused_infer_attention_score_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/fused_infer_attention_score_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/fused_infer_attention_score_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/arch22/fused_infer_attention_score_tiling_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/arch22/fused_infer_attention_score_tiling_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch22/fia_tiling_nonquant.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch22/fia_tiling_nonquant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch22/fia_tiling_nonquant_mla.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch22/fia_tiling_nonquant_mla.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_kernel/fused_infer_attention_score.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_kernel/fused_infer_attention_score.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_kernel/flash_attention_interface.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_kernel/flash_attention_interface.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch22/fia_kernel_nonquant.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch22/fia_kernel_nonquant.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch22/fia_kernel_nonquant_mla.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_kernel/arch22/fia_kernel_nonquant_mla.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/incre_flash_attention/op_kernel/incre_flash_attention_arch22.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/incre_flash_attention/op_kernel/incre_flash_attention_arch22.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/incre_flash_attention/op_host/incre_flash_attention_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/incre_flash_attention/op_host/incre_flash_attention_tiling.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/prompt_flash_attention/op_kernel/prompt_flash_attention_arch22.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/prompt_flash_attention/op_kernel/prompt_flash_attention_arch22.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/prompt_flash_attention/op_host/prompt_flash_attention_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/prompt_flash_attention/op_host/prompt_flash_attention_tiling.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -527,7 +527,7 @@ workspace_total = PromptFlashAttentionTilingData selected-route workspace
 
 - 适用 Route：R-001/R-002/R-003/R-004
 - 触发条件：按 `RouteToFia`、`IsUsingFAI`、`IsUsingIFA` 顺序。
-- Golden 来源：[`fused_infer_attention_score_tiling.cpp:2191-2247`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/fused_infer_attention_score_tiling.cpp#L2191-L2247)
+- Golden 来源：[`fused_infer_attention_score_tiling.cpp:2191-2247`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_host/fused_infer_attention_score_tiling.cpp#L2191-L2247)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -566,7 +566,7 @@ if (usingFAI) {
 
 - 适用 Route：R-001 MLA
 - 触发条件：D=512、ropeD=64、N2=1 以及完整 feature guard。
-- Golden 来源：[`fia_tiling_nonquant_mla.cpp:111-128`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch22/fia_tiling_nonquant_mla.cpp#L111-L128)
+- Golden 来源：[`fia_tiling_nonquant_mla.cpp:111-128`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/common/op_host/arch22/fia_tiling_nonquant_mla.cpp#L111-L128)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -604,7 +604,7 @@ if ((fiaInfo_->qkHeadDim != fiaInfo_->vHeadDim) ||
 
 - 适用 Route：R-002
 - 触发条件：完整 `IsUsingFAI` guards。
-- Golden 来源：[`flash_attention_interface.cpp:55-91`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_kernel/flash_attention_interface.cpp#L55-L91)
+- Golden 来源：[`flash_attention_interface.cpp:55-91`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_infer_attention_score/op_kernel/flash_attention_interface.cpp#L55-L91)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

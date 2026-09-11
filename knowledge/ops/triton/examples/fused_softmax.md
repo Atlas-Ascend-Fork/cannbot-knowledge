@@ -82,8 +82,16 @@ assert torch.allclose(y_triton, y_torch), (y_triton, y_torch)
 4. **精度**：NPU 上 `tl.exp` 为近似计算；fp16 输入建议 kernel 内部转 fp32 计算、写回时再转回。
 5. causal 变体：load 时叠加 `causal_mask = col_offsets <= row_idx`，padding 值仍为 `-inf`。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [02-fused-softmax.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/02-fused-softmax.py)
+- [02_fused_softmax_example.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/examples/02_fused_softmax_example.md)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Softmax / LogSoftmax 算子](../guides/operator_design/softmax.md)（`related`）：“softmax 算子规格”
@@ -92,10 +100,3 @@ assert torch.allclose(y_triton, y_torch), (y_triton, y_torch)
 - [归约操作模式集（行/列/全局归约与 NPU atomic 限制）](./reduction_pattern.md)（`related`）：“归约操作模式汇总”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [02-fused-softmax.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/02-fused-softmax.py)
-- [02_fused_softmax_example.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/examples/02_fused_softmax_example.md)

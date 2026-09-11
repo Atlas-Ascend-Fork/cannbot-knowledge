@@ -172,6 +172,11 @@ def synchronized_index(directory: Path, knowledge_root: Path) -> str:
     seen: set[str] = set()
     first_navigation: int | None = None
     after_navigation: int | None = None
+    relative = directory.relative_to(knowledge_root)
+    refresh_mirror_entries = relative.parts[:3] in {
+        ("ops", "ascendc", "apis"),
+        ("ops", "ascendc", "guides"),
+    }
     for line in lines:
         target = direct_entry_target(line, reference_definitions)
         if target is None:
@@ -180,7 +185,11 @@ def synchronized_index(directory: Path, knowledge_root: Path) -> str:
         if first_navigation is None:
             first_navigation = len(preserved)
         if target in desired and target not in seen:
-            preserved.append(refreshed_entry(line, desired[target]))
+            preserved.append(
+                desired[target]
+                if refresh_mirror_entries
+                else refreshed_entry(line, desired[target])
+            )
             seen.add(target)
             after_navigation = len(preserved)
 

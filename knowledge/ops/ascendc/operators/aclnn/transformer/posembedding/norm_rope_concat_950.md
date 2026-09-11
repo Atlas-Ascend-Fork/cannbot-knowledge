@@ -5,44 +5,44 @@ description: "说明 aclnnNormRopeConcatGetWorkspaceSize/aclnnNormRopeConcat 在
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/docs/aclnnNormRopeConcat.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/docs/aclnnNormRopeConcat.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/op_api/aclnn_norm_rope_concat.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/op_api/aclnn_norm_rope_concat.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/op_api/aclnn_norm_rope_concat.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/op_api/aclnn_norm_rope_concat.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/norm_rope_concat_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/norm_rope_concat_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/norm_rope_concat_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/norm_rope_concat_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/norm_rope_concat_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/norm_rope_concat_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/norm_rope_concat_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/norm_rope_concat_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/norm_rope_concat_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/norm_rope_concat_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/config/ascend950/norm_rope_concat_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/config/ascend950/norm_rope_concat_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/config/ascend950/norm_rope_concat_simplified_key.ini
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/config/ascend950/norm_rope_concat_simplified_key.ini
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/cmake/obj_func.cmake
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/cmake/obj_func.cmake
     role: implementation
 created_at: "2026-08-24T16:30:02Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -410,7 +410,7 @@ UB_exact = (8*h*q + 256)                    # 主 TBuf
 
 - 适用 Route：R-001 中 `N=2` 或 `AN=2` 对应的 q/k 或 encoder q/k 分支。
 - 触发条件：`__NPU_ARCH__==3510` 且 `actualNormType==LAYER_NORM_AFFINE`。
-- Golden 来源：[`posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h:136-150`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h#L136-L150)
+- Golden 来源：[`posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h:136-150`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h#L136-L150)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -454,7 +454,7 @@ for (uint32_t i = 0; i < heads; ++i) {
 
 - 适用 Route：R-001 中 R=1/2 且当前 `outputSeq+s<ropeActualSeq`。
 - 触发条件：`PreProcess` 位于 batch/head 循环外，且 `ropeNum=avgHeads`。
-- Golden 来源：[`posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h:649-659`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h#L649-L659)
+- Golden 来源：[`posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h:649-659`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h#L649-L659)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -493,7 +493,7 @@ for (uint32_t s = startSeq; s < endSeq; ++s) {
 
 - 适用 Route：R-001 全部 tuple，包括 value 的 NONE/NONE 分支。
 - 触发条件：branch 的 `outputSeq` 已由 `concatOrder` 决定，`totalSeq` 为拼接后 S。
-- Golden 来源：[`posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h:399-405`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h#L399-L405)
+- Golden 来源：[`posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h:399-405`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat/op_kernel/norm_rope_concat.h#L399-L405)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

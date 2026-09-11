@@ -5,32 +5,32 @@ description: "说明 aclnnXlog1py 在 950 上的接口语义、Host/Launcher 参
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/docs/aclnnXlog1py.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/docs/aclnnXlog1py.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_api/aclnn_xlog1py.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_api/aclnn_xlog1py.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_api/xlog1py.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_api/xlog1py.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_host/arch35/xlog1py_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_host/arch35/xlog1py_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_host/arch35/xlog1py_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_host/arch35/xlog1py_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_tiling_struct.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_tiling_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_struct.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/xlog1py_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/xlog1py_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_host/xlog1py_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_host/xlog1py_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_host/config/ascend950/xlog1py_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_host/config/ascend950/xlog1py_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T14:37:43Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -588,7 +588,7 @@ workspace core reservation = 16 MiB，Kernel读取0 B
 
 - 适用 Route：R-002、R-004
 - 触发条件：`NEED_CAST = !std::is_same_v<T,float>`，即 FLOAT16/BFLOAT16 binary
-- Golden 来源：[`op_kernel/arch35/xlog1py_kernel.h:212-226`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_kernel.h#L212-L226)
+- Golden 来源：[`op_kernel/arch35/xlog1py_kernel.h:212-226`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_kernel.h#L212-L226)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -628,7 +628,7 @@ AscendC::Cast(buf_[B_TEMP_X].template Get<T>(), buf_[B_X].template Get<float>(),
 
 - 适用 Route：全部；R-003/R-004 在 suffix 超过 5D 时额外触发 outer loop
 - 触发条件：输入归一化 shape 某维为 1 时 Host stride 为 0；rank8 且 `RANK-split.axis>5` 时 `nddmaOuterIters>1`
-- Golden 来源：[`op_kernel/arch35/xlog1py_kernel.h:252-267`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_kernel.h#L252-L267)
+- Golden 来源：[`op_kernel/arch35/xlog1py_kernel.h:252-267`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_kernel.h#L252-L267)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -673,7 +673,7 @@ Host 预先把 broadcast 维 stride 设为 0，Device 将目标 broadcast shape 
 
 - 适用 Route：全部
 - 触发条件：每个 tile 在升为/本来就是 FP32 后调用 `Xlog1pyVF<float>`
-- Golden 来源：[`op_kernel/arch35/xlog1py_kernel.h:306-328`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_kernel.h#L306-L328)
+- Golden 来源：[`op_kernel/arch35/xlog1py_kernel.h:306-328`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/xlog1py/op_kernel/arch35/xlog1py_kernel.h#L306-L328)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

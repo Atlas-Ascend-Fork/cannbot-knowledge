@@ -5,44 +5,44 @@ description: "说明 aclnnQkvRmsNormRopeCacheGetWorkspaceSize/aclnnQkvRmsNormRop
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/op_api/aclnn_qkv_rms_norm_rope_cache.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/op_api/aclnn_qkv_rms_norm_rope_cache.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/docs/aclnnQkvRmsNormRopeCache.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/docs/aclnnQkvRmsNormRopeCache.md
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/op_api/aclnn_qkv_rms_norm_rope_cache.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/op_api/aclnn_qkv_rms_norm_rope_cache.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/op_api/qkv_rms_norm_rope_cache.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/op_api/qkv_rms_norm_rope_cache.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_def.cpp
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_base_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_base_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_templates_registry.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_b16_pa_nz_quant.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_b16_pa_nz_quant.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_comm.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_comm.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/config/ascend910b/qkv_rms_norm_rope_cache_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/config/ascend910b/qkv_rms_norm_rope_cache_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/config/ascend910_93/qkv_rms_norm_rope_cache_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/config/ascend910_93/qkv_rms_norm_rope_cache_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:30:02Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -473,7 +473,7 @@ workspace_total = 0B 算子私有切片 + GetLibApiWorkSpaceSize()B 系统切片
 
 - 适用 Route：R-001。
 - 触发条件：所有通过校验的 A2/A3 调用；`Nk=Nv`，但 K 比 V 多 RMSNorm/RoPE，Host 将 KV 候选核的约 60% 给 K，V 取剩余核，Q 再使用总 AIV 核中未被实际 K/V 占用的部分。
-- Golden 来源：[`posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_tiling.cpp:355-367`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_tiling.cpp#L355-L367)
+- Golden 来源：[`posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_tiling.cpp:355-367`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_host/qkv_rms_norm_rope_cache_tiling.cpp#L355-L367)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -514,7 +514,7 @@ blockDimQ_ = (tokenSumQ + blockFactorQ_ - 1) / blockFactorQ_; // Q使用的核�
 
 - 适用 Route：R-001 的 V 核与 Q/K 核。
 - 触发条件：`isV` 由 `blockIdx` 落在中间 V 核区间决定；V 不执行 RMSNorm/RoPE，因此不分配 `inQueueY` 和 `gammaBuf`，且 `locBuf0/2` 都从双倍容量缩为单倍。
-- Golden 来源：[`posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_b16_pa_nz_quant.h:103-110`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_b16_pa_nz_quant.h#L103-L110)
+- Golden 来源：[`posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_b16_pa_nz_quant.h:103-110`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_b16_pa_nz_quant.h#L103-L110)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -550,7 +550,7 @@ Host 与 Device 使用完全对应的两套系数：Q/K 每行 `36D` 字节并�
 
 - 适用 Route：R-001 的 K/V cache 写出；低精度实例取 `D1=8,D0=16`，INT8 实例取 `D1=4,D0=32`。
 - 触发条件：`pageOffset>=0` 且 cache shape/BlockSize 已通过 Host 校验。
-- Golden 来源：[`posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_b16_pa_nz_quant.h:545-550`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_b16_pa_nz_quant.h#L545-L550)
+- Golden 来源：[`posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_b16_pa_nz_quant.h:545-550`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/qkv_rms_norm_rope_cache/op_kernel/qkv_rms_norm_rope_cache_b16_pa_nz_quant.h#L545-L550)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

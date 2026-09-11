@@ -5,36 +5,36 @@ description: "说明 aclnnSwigluMxQuantWithDualAxis 在 950 上的接口语义�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/docs/aclnnSwigluMxQuantWithDualAxis.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/docs/aclnnSwigluMxQuantWithDualAxis.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_host/swiglu_mx_quant_with_dual_axis_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_host/swiglu_mx_quant_with_dual_axis_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_host/arch35/swiglu_mx_quant_with_dual_axis_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_host/arch35/swiglu_mx_quant_with_dual_axis_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_host/arch35/swiglu_mx_quant_with_dual_axis_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_host/arch35/swiglu_mx_quant_with_dual_axis_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_tilingdata.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_tilingdata.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/swiglu_mx_quant_with_dual_axis_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/swiglu_mx_quant_with_dual_axis_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_host/config/ascend950/swiglu_mx_quant_with_dual_axis_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_host/config/ascend950/swiglu_mx_quant_with_dual_axis_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_kernel/platform.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_kernel/platform.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_kernel/kernel_utils.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_kernel/kernel_utils.h
     role: implementation
 created_at: "2026-08-25T18:33:57Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -810,7 +810,7 @@ BLOCK only changes task ownership; CuBLAS TBuf alias protocol remains amax→rec
 
 - 适用 Route：R-001～R-006。
 - 触发条件：所有合法调用；单 Kernel task 已完成左右半输入 DMA。
-- Golden 来源：[`op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h:366-390`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h#L366-L390)
+- Golden 来源：[`op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h:366-390`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h#L366-L390)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -855,7 +855,7 @@ inQueue_.template FreeTensor(xLocal);
 
 - 适用 Route：R-002、R-005。
 - 触发条件：group 存在且 `ceil(N/256)<totalAivCoreNum`。
-- Golden 来源：[`op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h:313-335`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h#L313-L335)
+- Golden 来源：[`op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h:313-335`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h#L313-L335)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -903,7 +903,7 @@ if constexpr (mode == TPL_MODE_ROTATE) {
 
 - 适用 Route：R-001～R-003。
 - 触发条件：`scaleAlg=0`；当前 32×256 swiglu 子块已在 UB。
-- Golden 来源：[`op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h:738-767`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h#L738-L767)
+- Golden 来源：[`op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h:738-767`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h#L738-L767)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -954,7 +954,7 @@ for (uint16_t i = 0; i < blockCount; i++) {
 
 - 适用 Route：R-001～R-006。
 - 触发条件：64 行 tile 被拆为两个 32 行 scale 块。
-- Golden 来源：[`op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h:446-452`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h#L446-L452)
+- Golden 来源：[`op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h:446-452`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swiglu_mx_quant_with_dual_axis/op_kernel/arch35/swiglu_mx_quant_with_dual_axis_regbase.h#L446-L452)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

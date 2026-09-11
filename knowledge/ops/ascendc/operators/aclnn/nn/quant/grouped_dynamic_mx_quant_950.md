@@ -5,32 +5,32 @@ description: "说明 aclnnGroupedDynamicMxQuantV2 在 950 上的接口语义、H
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/docs/aclnnGroupedDynamicMxQuantV2.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/docs/aclnnGroupedDynamicMxQuantV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_api/aclnn_grouped_dynamic_mx_quant_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_api/aclnn_grouped_dynamic_mx_quant_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_api/grouped_dynamic_mx_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_api/grouped_dynamic_mx_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_host/grouped_dynamic_mx_quant_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_host/grouped_dynamic_mx_quant_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_host/arch35/grouped_dynamic_mx_quant_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_host/arch35/grouped_dynamic_mx_quant_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_tilingdata.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_tilingdata.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_struct.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/grouped_dynamic_mx_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/grouped_dynamic_mx_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_not_tail_axis_fp8.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_not_tail_axis_fp8.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_host/config/ascend950/grouped_dynamic_mx_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_host/config/ascend950/grouped_dynamic_mx_quant_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:30:14Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -412,7 +412,7 @@ workspace_total = 32 B
 
 - 适用 Route：R-001、R-002
 - 触发条件：每个 32-row scale block 的寄存器列片归约。
-- Golden 来源：[`grouped_dynamic_mx_quant_not_tail_axis_fp8.h:342-359`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_not_tail_axis_fp8.h#L342-L359)
+- Golden 来源：[`grouped_dynamic_mx_quant_not_tail_axis_fp8.h:342-359`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_not_tail_axis_fp8.h#L342-L359)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -447,7 +447,7 @@ for (uint16_t j = 0; j <= static_cast<uint16_t>(blockCountLoop); j++) {
 
 - 适用 Route：R-001、R-002
 - 触发条件：一个 row chunk 的 `ceil(blockCount/32)` 个 scale 平面产生后。
-- Golden 来源：[`grouped_dynamic_mx_quant_not_tail_axis_fp8.h:247-255`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_not_tail_axis_fp8.h#L247-L255)
+- Golden 来源：[`grouped_dynamic_mx_quant_not_tail_axis_fp8.h:247-255`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/grouped_dynamic_mx_quant/op_kernel/arch35/grouped_dynamic_mx_quant_not_tail_axis_fp8.h#L247-L255)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -540,5 +540,5 @@ this->mxScaleQueue_.template EnQue(mxScale);
 <!-- cannbot:related:start -->
 ## 相关
 
-- [Interleave](../../../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange/interleave.md)（`related`）：“｜ Scale layout ｜ `Duplicate`+`Interleave` ｜ calcBuf ｜ mxScaleQueue ｜ 两个 32-row scale 平面 ｜ 奇数平面补零；行尾按实际 `blockCount` ｜”；“将两个源操作数中的元素交织存入两个结果操作数中，要求元素个数为偶数。”。operator 用 Interleave 把成对 E8M0 scale 平面排成 mxscale 尾维 2，奇数平面补零正好满足接口偶数约束。
+- [Interleave](../../../../apis/simd_api/basic_api/memory_vector_compute/data_rearrange_isasi/interleave.md)（`related`）：“｜ Scale layout ｜ `Duplicate`+`Interleave` ｜ calcBuf ｜ mxScaleQueue ｜ 两个 32-row scale 平面 ｜ 奇数平面补零；行尾按实际 `blockCount` ｜”；“将两个源操作数中的元素交织存入两个结果操作数中，要求元素个数为偶数。”。operator 用 Interleave 把成对 E8M0 scale 平面排成 mxscale 尾维 2，奇数平面补零正好满足接口偶数约束。
 <!-- cannbot:related:end -->

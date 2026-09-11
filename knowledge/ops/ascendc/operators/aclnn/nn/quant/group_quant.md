@@ -5,32 +5,32 @@ description: "说明 aclnnGroupQuant 在 A2/A3 上的接口语义、Host/Launche
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/docs/aclnnGroupQuant.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/docs/aclnnGroupQuant.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/op_api/aclnn_group_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/op_api/aclnn_group_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/op_api/group_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/op_api/group_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/group_quant_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/group_quant_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/group_quant_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/group_quant_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_kernel/group_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_kernel/group_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_kernel/group_quant_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_kernel/group_quant_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/group_quant_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/group_quant_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/config/ascend910b/group_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/config/ascend910b/group_quant_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/config/ascend910_93/group_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/config/ascend910_93/group_quant_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:28:28Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -342,7 +342,7 @@ workspace_total(core node) = 32 B；ACLNN executor 总 workspace 另含按需框
 
 - 适用 Route：R-001。
 - 触发条件：当前专家与本核相交的一个 S 批 `perSSize>1`；`scaleExpandLoop` 就是该批行数。
-- Golden 来源：[`quant/group_quant/op_kernel/group_quant_base.h:589-600`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_kernel/group_quant_base.h#L589-L600)
+- Golden 来源：[`quant/group_quant/op_kernel/group_quant_base.h:589-600`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_kernel/group_quant_base.h#L589-L600)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -382,7 +382,7 @@ workspace_total(core node) = 32 B；ACLNN executor 总 workspace 另含按需框
 
 - 适用 Route：R-001。
 - 触发条件：`T3==int32_t` 使用 Vector cast/reduce；否则公开可达的 INT64 使用 Scalar 循环。
-- Golden 来源：[`quant/group_quant/op_kernel/group_quant_base.h:239-253`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_kernel/group_quant_base.h#L239-L253)
+- Golden 来源：[`quant/group_quant/op_kernel/group_quant_base.h:239-253`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/group_quant/op_kernel/group_quant_base.h#L239-L253)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

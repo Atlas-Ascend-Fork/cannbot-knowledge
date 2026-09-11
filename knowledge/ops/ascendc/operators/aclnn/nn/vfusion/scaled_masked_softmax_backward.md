@@ -5,38 +5,38 @@ description: "说明 aclnnScaledMaskedSoftmaxBackward 在 A2/A3 上的接口语�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/docs/aclnnScaledMaskedSoftmaxBackward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/docs/aclnnScaledMaskedSoftmaxBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/op_api/aclnn_scaled_masked_softmax_backward.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/op_api/aclnn_scaled_masked_softmax_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/op_api/aclnn_scaled_masked_softmax_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/op_api/aclnn_scaled_masked_softmax_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/scaled_masked_softmax_grad_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/scaled_masked_softmax_grad_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/scaled_masked_softmax_grad_v2_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/scaled_masked_softmax_grad_v2_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/scaled_masked_softmax_grad_v2_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/scaled_masked_softmax_grad_v2_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/scaled_masked_softmax_grad_v2_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/scaled_masked_softmax_grad_v2_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2_norm_headdim.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2_norm_headdim.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2_large_headdim.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2_large_headdim.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/config/ascend910b/scaled_masked_softmax_grad_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/config/ascend910b/scaled_masked_softmax_grad_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/config/ascend910_93/scaled_masked_softmax_grad_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/config/ascend910_93/scaled_masked_softmax_grad_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:41:05Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -666,7 +666,7 @@ workspace_total = GetLibApiWorkSpaceSize(); body 不索引
 
 - 适用 Route：R-001、R-002
 - 触发条件：`P<=1024`；`selectSize=max(W1*M,18KiB)` 已由 Host 预算
-- Golden 来源：[`scaled_masked_softmax_grad_v2_norm_headdim.h:154-174`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2_norm_headdim.h#L154-L174)
+- Golden 来源：[`scaled_masked_softmax_grad_v2_norm_headdim.h:154-174`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2_norm_headdim.h#L154-L174)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -696,7 +696,7 @@ SoftmaxGrad<float, false, false>(
 
 - 适用 Route：R-003、R-004
 - 触发条件：`P>1024`，`P` 为 64 倍数
-- Golden 来源：[`scaled_masked_softmax_grad_v2_large_headdim.h:196-206`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2_large_headdim.h#L196-L206)
+- Golden 来源：[`scaled_masked_softmax_grad_v2_large_headdim.h:196-206`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_kernel/scaled_masked_softmax_grad_v2_large_headdim.h#L196-L206)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -727,7 +727,7 @@ WholeReduceSum(
 
 - 适用 Route：R-001–R-004
 - 触发条件：mask 前两维分别为 `B或1`、`N或1`，后两维等于 `S,D`
-- Golden 来源：[`scaled_masked_softmax_grad_v2_tiling.cpp:312-325`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/scaled_masked_softmax_grad_v2_tiling.cpp#L312-L325)
+- Golden 来源：[`scaled_masked_softmax_grad_v2_tiling.cpp:312-325`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/scaled_masked_softmax_grad_v2/op_host/scaled_masked_softmax_grad_v2_tiling.cpp#L312-L325)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

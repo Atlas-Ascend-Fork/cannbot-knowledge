@@ -5,42 +5,42 @@ description: "说明 aclnnOneHot 在 950 上的接口语义、Host/Launcher 参�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/docs/aclnnOneHot.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/docs/aclnnOneHot.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_api/aclnn_one_hot.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_api/aclnn_one_hot.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_api/aclnn_one_hot.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_api/aclnn_one_hot.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_api/one_hot.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_api/one_hot.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/op_api/aclnn_check.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/op_api/aclnn_check.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/one_hot_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/one_hot_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/one_hot_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/one_hot_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/arch35/one_hot_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/arch35/one_hot_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/arch35/one_hot_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/arch35/one_hot_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/arch35/one_hot_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/arch35/one_hot_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/arch35/one_hot_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/arch35/one_hot_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_kernel/one_hot_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_kernel/one_hot_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_kernel/arch35/one_hot.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_kernel/arch35/one_hot.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_kernel/arch35/one_hot_mix.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_kernel/arch35/one_hot_mix.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/config/ascend950/one_hot_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/config/ascend950/one_hot_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T11:36:45Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -449,7 +449,7 @@ workspace_kernel_slot = 16*1024*1024 bytes（system workspace）
 
 - 适用 Route：R-002
 - 触发条件：`depth_ > 3 && inputTotalDimNum_ * uint64(depth_) > 1024`
-- Golden 来源：[`math/one_hot/op_host/arch35/one_hot_tiling_arch35.cpp:143-164`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/arch35/one_hot_tiling_arch35.cpp#L143-L164)
+- Golden 来源：[`math/one_hot/op_host/arch35/one_hot_tiling_arch35.cpp:143-164`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_host/arch35/one_hot_tiling_arch35.cpp#L143-L164)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -487,7 +487,7 @@ if (depth_ > DEPTH_THRESHHOLD && inputTotalDimNum_ * static_cast<uint64_t>(depth
 
 - 适用 Route：R-001、R-002 的普通地址子路径
 - 触发条件：R-001 `startOffset<=INT32_MAX`；R-002 `endOffset<=INT32_MAX`
-- Golden 来源：[`math/one_hot/op_kernel/arch35/one_hot.h:101-106`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_kernel/arch35/one_hot.h#L101-L106)
+- Golden 来源：[`math/one_hot/op_kernel/arch35/one_hot.h:101-106`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/one_hot/op_kernel/arch35/one_hot.h#L101-L106)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

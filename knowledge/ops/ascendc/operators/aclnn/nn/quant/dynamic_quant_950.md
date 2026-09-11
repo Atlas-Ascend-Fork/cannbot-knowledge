@@ -5,48 +5,48 @@ description: "说明 aclnnDynamicQuantV4 在 950 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/docs/aclnnDynamicQuantV4.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/docs/aclnnDynamicQuantV4.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/op_api/aclnn_dynamic_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/op_api/aclnn_dynamic_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/dynamic_quant_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/dynamic_quant_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_arch35_tilingdata.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_arch35_tilingdata.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant_v2/op_kernel/dynamic_quant_v2_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant_v2/op_kernel/dynamic_quant_v2_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_struct.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_full_load.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_full_load.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_large_shape_db.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_large_shape_db.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_moe_full_load.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_moe_full_load.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_moe_large_shape.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_moe_large_shape.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_full_load_pertensor.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_full_load_pertensor.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_large_shape_db_pertensor.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_large_shape_db_pertensor.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_moe_full_load_pertensor.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_moe_full_load_pertensor.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_moe_large_shape_pertensor.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_moe_large_shape_pertensor.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_perchannel_full_load.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_perchannel_full_load.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_perchannel_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_perchannel_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_perchannel_recompute.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_perchannel_recompute.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_perchannel_split_m.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_perchannel_split_m.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant_v2/op_host/config/ascend950/dynamic_quant_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant_v2/op_host/config/ascend950/dynamic_quant_v2_binary.json
     role: implementation
 created_at: "2026-08-25T18:23:59Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -1066,7 +1066,7 @@ workspace_private=coreNum*4*(sym?1:2); UB chunk capacity from `innerLoopEle`
 
 - 适用 Route：R-001–R-006。
 - 触发条件：非 per-channel；由 `calcSize`、`calcDbSize` 与 `ubSize-1024` 比较决定。
-- Golden 来源：[`dynamic_quant_tiling_arch35.cpp:541-562`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/dynamic_quant_tiling_arch35.cpp#L541-L562)
+- Golden 来源：[`dynamic_quant_tiling_arch35.cpp:541-562`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/dynamic_quant_tiling_arch35.cpp#L541-L562)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1103,7 +1103,7 @@ Host 在编译期 tuple key 中固化 DB 与执行族：能双缓冲则给 queue
 
 - 适用 Route：R-007/R-008/R-009。
 - 触发条件：`quantMode=perchannel`；依次调用三个 capability 函数。
-- Golden 来源：[`dynamic_quant_tiling_arch35.cpp:704-713`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/dynamic_quant_tiling_arch35.cpp#L704-L713)
+- Golden 来源：[`dynamic_quant_tiling_arch35.cpp:704-713`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/dynamic_quant_tiling_arch35.cpp#L704-L713)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1135,7 +1135,7 @@ full-load 保留 x 避免重读；装不下完整 M 但 N-block 足以占满 AIV
 
 - 适用 Route：R-005/R-006。
 - 触发条件：`quantMode=pertensor`，Host 设置 schedule mode 1，并分配 `coreNum`（或两倍）FP32 槽。
-- Golden 来源：[`dynamic_quant_tiling_arch35.cpp:818-822`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/dynamic_quant_tiling_arch35.cpp#L818-L822)
+- Golden 来源：[`dynamic_quant_tiling_arch35.cpp:818-822`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/dynamic_quant_tiling_arch35.cpp#L818-L822)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

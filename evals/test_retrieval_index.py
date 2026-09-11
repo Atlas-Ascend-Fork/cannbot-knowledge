@@ -21,6 +21,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from urllib.parse import unquote
 
 from evals.run_retrieval import run_cases
 
@@ -335,6 +336,167 @@ class RetrievalIndexTests(unittest.TestCase):
             self.assertEqual("Platform API usage", results[1]["title"])
             self.assertNotIn("Related navigation only", [item["title"] for item in results])
 
+            # A literal query is one contiguous phrase, not an AND of keywords.
+            for match, expected_count in (("literal", 0), ("text", 2)):
+                with self.subTest(match=match):
+                    combined = subprocess.run(
+                        [
+                            sys.executable, str(QUERY), "--knowledge-root", str(root),
+                            "search", "--query", "GetCurNpuArch architecture",
+                            "--technology", "ascendc", "--type", "apis",
+                            "--platform", "a2", "--match", match,
+                        ],
+                        check=False, text=True, capture_output=True,
+                    )
+                    self.assertEqual(combined.returncode, 0, combined.stderr)
+                    self.assertEqual(expected_count, json.loads(combined.stdout)["count"])
+
+    def test_platform_workflow_filters_and_unlocated_fallback_are_read_only(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            api_root = root / "knowledge/ops/ascendc/apis"
+            fixtures = {
+                "a3": ("stable", "[a3]"),
+                "common": ("stable", "[a2, a3]"),
+                "neutral": ("stable", "[agnostic]"),
+                "unlocated": ("draft", "[]"),
+                "located_draft": ("draft", "[a2]"),
+                "950": ("stable", '["950"]'),
+                "310p": ("stable", "[310p]"),
+                "910": ("stable", '["910"]'),
+                "kirin_x90": ("stable", "[kirin_x90]"),
+                "kirin_9030": ("stable", "[kirin_9030]"),
+            }
+            for name, (status, platforms) in fixtures.items():
+                (api_root / f"fixture_{name}.md").write_text(
+                    SYNTHETIC_CARD.replace("status: stable", f"status: {status}")
+                    .replace("platforms: [a2]", f"platforms: {platforms}"),
+                    encoding="utf-8",
+                )
+            built = run_index(root, "build")
+            self.assertEqual(built.returncode, 0, built.stderr)
+
+            def snapshot() -> dict[str, str]:
+                return {
+                    path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                    for path in root.rglob("*") if path.is_file()
+                }
+
+            before = snapshot()
+            cases = [
+                (["--platform", "a2"], {"synthetic_api", "fixture_common", "fixture_neutral"}),
+                (["--platform", "a3"], {"fixture_a3", "fixture_common", "fixture_neutral"}),
+                (["--platform", "a2", "--platform", "a3"], {"fixture_common", "fixture_neutral"}),
+                (["--platform", "agnostic"], {"fixture_neutral"}),
+                (["--include-unlocated", "--status", "draft"], {"fixture_unlocated"}),
+                (["--platform", "a2", "--status", "draft"], {"fixture_located_draft"}),
+                (["--platform", "a2", "-k", "1"], None),
+            ]
+            cases.extend(
+                (["--platform", platform], {f"fixture_{platform}", "fixture_neutral"})
+                for platform in ("950", "310p", "910", "kirin_x90", "kirin_9030")
+            )
+            command = [
+                sys.executable, str(QUERY), "--knowledge-root", str(root), "search",
+                "--query", "Synthetic API", "--domain", "ops", "--technology", "ascendc",
+                "--type", "apis", "--match", "literal", "-k", "20",
+            ]
+            for arguments, expected in cases:
+                with self.subTest(arguments=arguments):
+                    result = subprocess.run(
+                        [*command, *arguments], check=False, text=True, capture_output=True,
+                    )
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    payload = json.loads(result.stdout)
+                    if expected is None:
+                        self.assertEqual(1, payload["count"])
+                    else:
+                        self.assertEqual(expected, {Path(hit["path"]).name for hit in payload["results"]})
+                        self.assertEqual(len(expected), payload["count"])
+                    concise = subprocess.run(
+                        [*command, *arguments, "--text"], check=False, text=True, capture_output=True,
+                    )
+                    self.assertEqual(0, concise.returncode, concise.stderr)
+                    self.assertEqual(
+                        [hit["path"] for hit in payload["results"]],
+                        [line.removeprefix("  path: ") for line in concise.stdout.splitlines()
+                         if line.startswith("  path: ")],
+                    )
+                    for hit in payload["results"]:
+                        self.assertIn(hit["title"], concise.stdout)
+                        self.assertIn(hit["description"], concise.stdout)
+                        self.assertIn(hit["local_path"], concise.stdout)
+                    citations = [
+                        line.split("](<", 1)[1].removesuffix(">)")
+                        for line in concise.stdout.splitlines() if line.startswith("[")
+                    ]
+                    self.assertEqual(
+                        [hit["local_path"] for hit in payload["results"]],
+                        [unquote(target) for target in citations],
+                    )
+                    self.assertNotIn('"sources"', concise.stdout)
+
+            empty = subprocess.run(
+                [*command, "--platform", "a2", "--query", "absent-symbol", "--text"],
+                check=False, text=True, capture_output=True,
+            )
+            self.assertEqual(0, empty.returncode, empty.stderr)
+            self.assertEqual("no matches\n", empty.stdout)
+
+            invalid = [
+                [],
+                ["--platform", "a5"],
+                ["--platform", "310b"],
+                ["--platform", "DAV_2201"],
+                ["--platform", "ASCEND910B"],
+                ["--platform", "a2", "--include-unlocated", "--status", "draft"],
+                ["--include-unlocated", "--status", "stable"],
+            ]
+            for arguments in invalid:
+                for output_mode in ("--json", "--text"):
+                    with self.subTest(invalid=arguments, output=output_mode):
+                        result = subprocess.run(
+                            [*command, *arguments, output_mode], check=False, text=True, capture_output=True,
+                        )
+                        self.assertEqual(result.returncode, 2, result.stderr)
+                        self.assertEqual("", result.stdout)
+            self.assertEqual(before, snapshot(), "Search must not mutate cards, governance or index")
+
+    def test_text_citation_escapes_title_and_round_trips_special_root_path(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "space # > % ?mode=rw 中文"
+            make_root(root)
+            card = root / "knowledge/ops/ascendc/apis/synthetic_api.md"
+            title = r"Synthetic API [name] <T> \suffix"
+            card.write_text(
+                SYNTHETIC_CARD.replace("title: Synthetic API contract", "title: " + json.dumps(title)),
+                encoding="utf-8",
+            )
+            built = run_index(root, "build")
+            self.assertEqual(0, built.returncode, built.stderr)
+
+            def snapshot():
+                return {
+                    path.relative_to(temporary).as_posix(): (path.read_bytes(), path.stat().st_mtime_ns)
+                    for path in Path(temporary).rglob("*") if path.is_file()
+                }
+
+            before = snapshot()
+            result = subprocess.run(
+                [sys.executable, str(QUERY), "--knowledge-root", str(root), "search",
+                 "--query", "Synthetic API", "--platform", "a2", "--match", "literal", "--text"],
+                check=False, text=True, capture_output=True,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            citation = result.stdout.splitlines()[0]
+            label, target = citation.split("](<", 1)
+            self.assertEqual(r"[1] [Synthetic API \[name\] &lt;T&gt; \\suffix", label)
+            self.assertEqual(card, Path(unquote(target.removesuffix(">)"))))
+            self.assertNotIn("#", target)
+            self.assertNotIn("file://", target)
+            self.assertEqual(before, snapshot(), "Reading special paths must not create a different database")
+
 
 class RetrievalAuditTests(unittest.TestCase):
     @staticmethod
@@ -347,6 +509,7 @@ class RetrievalAuditTests(unittest.TestCase):
         path: Path,
         *,
         platform: str,
+        query_text: str = "Synthetic API",
     ) -> dict[str, object]:
         query = subprocess.run(
             [
@@ -356,7 +519,9 @@ class RetrievalAuditTests(unittest.TestCase):
                 str(root),
                 "search",
                 "--query",
-                "Synthetic API",
+                query_text,
+                "--match",
+                "literal",
                 "--decision",
                 "api-contract",
                 "--technology",
@@ -673,6 +838,57 @@ class RetrievalAuditTests(unittest.TestCase):
         self.assertEqual(checked.returncode, 1)
         self.assertFalse(payload["ready"])
         self.assertIn("receipt.platform", {item["code"] for item in payload["errors"]})
+
+    def test_linked_card_needs_a_bound_matching_receipt_before_ready(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            work = Path(temporary)
+            root = work / "repository"
+            make_root(root)
+            api_root = root / "knowledge/ops/ascendc/apis"
+            neighbor = api_root / "neighbor.md"
+            neighbor.write_text(
+                SYNTHETIC_CARD.replace("Synthetic API contract", "NeighborContract"),
+                encoding="utf-8",
+            )
+            original = api_root / "synthetic_api.md"
+            original.write_text(
+                original.read_text(encoding="utf-8")
+                + "\n<!-- cannbot:related:start -->\n## 相关\n\n"
+                + "- [NeighborContract](neighbor.md)\n<!-- cannbot:related:end -->\n",
+                encoding="utf-8",
+            )
+            built = run_index(root, "build")
+            self.assertEqual(built.returncode, 0, built.stderr)
+            first_path = work / "first.json"
+            first = self.create_search_receipt(root, first_path, platform="a2")
+            self.assertEqual(1, first["result"]["count"])
+            first_hash = self.sha256(first_path)
+            second_path = work / "neighbor.json"
+            second = self.create_search_receipt(
+                root, second_path, platform="a2", query_text="NeighborContract",
+            )
+            self.assertEqual(1, second["result"]["count"])
+            neighbor_hit = second["result"]["results"][0]
+            state = work / "state.json"
+            self.write_state(state, first_path, first, platform="a2")
+            payload = json.loads(state.read_text(encoding="utf-8"))
+            payload["decisions"][0]["evidence"].append({
+                "path": neighbor_hit["path"],
+                "card_sha256": neighbor_hit["card_sha256"],
+            })
+            state.write_text(json.dumps(payload), encoding="utf-8")
+            rejected = self.validate_state(root, state)
+            self.assertEqual(rejected.returncode, 1, rejected.stderr)
+            self.assertEqual({"evidence.receipt"}, {
+                error["code"] for error in json.loads(rejected.stdout)["errors"]
+            })
+
+            payload["decisions"][0]["receipts"].append(str(second_path))
+            state.write_text(json.dumps(payload), encoding="utf-8")
+            accepted = self.validate_state(root, state)
+            self.assertEqual(accepted.returncode, 0, accepted.stderr + accepted.stdout)
+            self.assertTrue(json.loads(accepted.stdout)["ready"])
+            self.assertEqual(first_hash, self.sha256(first_path))
 
     def test_state_rejects_wrong_current_index_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

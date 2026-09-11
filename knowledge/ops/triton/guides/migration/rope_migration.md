@@ -111,7 +111,6 @@ sin/cos 不依赖 head 维度，经 `[:, None, :]` 广播。`inv_freq = libdevic
 3. **libdevice.pow 精度**：pow 在 Vector 单元执行（Cube 不支持），与 GPU 精度可能有微小差异。用 `rtol=1e-3` 验证；不满足则预计算 inv_freq 表传入 kernel。
 
 <!-- cannbot:related:start -->
-
 ## 相关
 
 - [RoPE 位置编码](../operator_design/rope.md)（`related`）：“RoPE 算子（标准/Partial/Multi-RoPE 变体与向量化旋转）”

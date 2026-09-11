@@ -158,8 +158,17 @@ def index_select_kernel(src_ptr, index_ptr, out_ptr, N, dim, BLOCK: tl.constexpr
 2. **调试**：可设 `source` 属性指定源码路径、`compile` 属性指定编译选项。
 3. **bitcode 生成**：需用 CANN 算子开发工具链将 C/C++ 算子编译为 bitcode，参考 CANN 自定义算子开发文档。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [custom_op.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/custom_op.py)
+- [builtin_custom_ops.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/builtin_custom_ops.py)
+- [core.py#L93-L101](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L93-L101)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
@@ -169,11 +178,3 @@ def index_select_kernel(src_ptr, index_ptr, out_ptr, N, dim, BLOCK: tl.constexpr
 - [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [custom_op.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/custom_op.py)
-- [builtin_custom_ops.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/builtin_custom_ops.py)
-- [core.py#L93-L101](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L93-L101)

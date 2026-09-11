@@ -5,32 +5,32 @@ description: "说明 cann_bench::sparse_flash_attention、sparse_flash_attention
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_host/sparse_flash_attention_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_host/sparse_flash_attention_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_host/sparse_flash_attention_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_host/sparse_flash_attention_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/sparse_flash_attention_template_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/sparse_flash_attention_template_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/sparse_flash_attention.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/sparse_flash_attention.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_common_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_common_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/common/util_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/common/util_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_kernel_mla.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_kernel_mla.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_kvcache.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_kvcache.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_cube_mla.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_cube_mla.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_vector_mla.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_vector_mla.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:44:07Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -1470,7 +1470,7 @@ adapter_GM = qNope+qRope+kNope+kRope+indices+validCounts
 
 - 适用 Route：P0 R-010、P1 R-009、P2 R-003、P3 R-004、P4 R-005、P5 R-008、P6 R-012、P7 R-011、P8 R-001、P9 R-002、P10 R-007、P11 R-006。
 - 触发条件：两个 sparse token 均有效、`keySrcStride∈[0,INT32_MAX)` 且 950 `sparseBlockSize=1`。
-- 固定来源：[`attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_vector_mla.h:292-319`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_vector_mla.h#L292-L319)
+- 固定来源：[`attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_vector_mla.h:292-319`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_vector_mla.h#L292-L319)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1526,7 +1526,7 @@ if (unlikely(keyOffset1 < 0)) {
 
 - 适用 Route：P0 R-010、P1 R-009、P2 R-003、P3 R-004、P4 R-005、P5 R-008、P6 R-012、P7 R-011、P8 R-001、P9 R-002、P10 R-007、P11 R-006。
 - 触发条件：有效 task，`taskId` 达到各预取阈值。
-- 固定来源：[`attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_kernel_mla.h:574-614`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_kernel_mla.h#L574-L614)
+- 固定来源：[`attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_kernel_mla.h:574-614`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_kernel_mla.h#L574-L614)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1595,7 +1595,7 @@ for (int64_t s2LoopCount = 0; s2LoopCount <= s2LoopLimit; ++s2LoopCount) {
 
 - 适用 Route：P0 R-010、P1 R-009、P2 R-003、P3 R-004、P4 R-005、P5 R-008、P6 R-012、P7 R-011、P8 R-001、P9 R-002、P10 R-007、P11 R-006。
 - 触发条件：`S2/topK` 一个或多个 128-token tile。
-- 固定来源：[`attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_vector_mla.h:521-536`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_vector_mla.h#L521-L536)
+- 固定来源：[`attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_vector_mla.h:521-536`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/sparse_flash_attention/op_kernel/arch35/sparse_flash_attention_service_vector_mla.h#L521-L536)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

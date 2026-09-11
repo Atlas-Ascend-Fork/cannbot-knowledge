@@ -5,34 +5,34 @@ description: "说明 aclnnAddRmsNormQuantV2 在 A2/A3 上的接口语义、Host/
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/docs/aclnnAddRmsNormQuantV2.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/docs/aclnnAddRmsNormQuantV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_host/op_api/aclnn_add_rms_norm_quant_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_host/op_api/aclnn_add_rms_norm_quant_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/op_api/add_rms_norm_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/op_api/add_rms_norm_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_kernel/add_rms_norm_quant_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_kernel/add_rms_norm_quant_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_split_d.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_split_d.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_single_n.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_single_n.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_host/add_rms_norm_quant_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_host/add_rms_norm_quant_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_host/config/ascend910b/add_rms_norm_quant_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_host/config/ascend910b/add_rms_norm_quant_v2_binary.json
     role: implementation
 created_at: "2026-08-25T17:50:39Z"
-updated_at: '2026-08-28T06:56:32Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -874,7 +874,7 @@ UB_total = 191KiB (+ zeroPoints1 aliases inside unitBuf design)；workspace_tota
 
 - 适用 Route：R-001～R-009
 - 触发条件：V2 快路要求无 s2/z2、divMode=true、gamma 与标量量化参数形状及 beta/output 组合同时成立；否则 xOut 非空时回退 V1。
-- Golden 来源：[`norm/add_rms_norm_quant_v2/op_host/op_api/aclnn_add_rms_norm_quant_v2.cpp:555-597`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_host/op_api/aclnn_add_rms_norm_quant_v2.cpp#L555-L597)
+- Golden 来源：[`norm/add_rms_norm_quant_v2/op_host/op_api/aclnn_add_rms_norm_quant_v2.cpp:555-597`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant_v2/op_host/op_api/aclnn_add_rms_norm_quant_v2.cpp#L555-L597)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -906,7 +906,7 @@ PT 模板以编译期 `PT=true` 屏蔽第二组量化和 x/rms 二选一之外�
 
 - 适用 Route：R-003、R-006、R-009
 - 触发条件：`blockFactor==1 && D<=singleUbFactor`。
-- Golden 来源：[`norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_single_n.h:124-143`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_single_n.h#L124-L143)
+- Golden 来源：[`norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_single_n.h:124-143`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_single_n.h#L124-L143)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

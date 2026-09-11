@@ -8,4 +8,3 @@
 - [__hmul](_hmul.md)：计算两个half类型数据相乘的结果，并遵循CAST_RINT模式对结果进行舍入处理。
 - [__hneg](_hneg.md)：获取输入half类型数据的负值。
 - [__hsub](_hsub.md)：计算两个half类型数据相减的结果，并遵循CAST_RINT模式对结果进行舍入处理。
-- [half类型算术函数](half_arithmetic_functions.md)：提供half类型数据的四则运算、取绝对值、取负与乘加运算接口。

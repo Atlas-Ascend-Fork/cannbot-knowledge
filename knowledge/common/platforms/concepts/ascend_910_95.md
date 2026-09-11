@@ -111,8 +111,16 @@ Pipeline 选择逻辑：950 且开启布局优化 → `InsertCVDataMovement`；9
 
 操作级 `TCoreType`：`CUBE` / `VECTOR` / `CUBE_OR_VECTOR` / `CUBE_AND_VECTOR`（需 CV 同时执行）。函数级 `TFuncCoreType`：`AIC` / `AIV` / `MIX`。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [NPUTargetSpec.td](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HACC/Targets/NPUTargetSpec.td)
+- [HIVMAttrs.td](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/IR/HIVMAttrs.td)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Ascend 910B2/910B3 硬件规格](ascend_910b.md)（`related`）：“910B2/910B3（dav-c220，Mem-based）硬件规格”
@@ -123,10 +131,3 @@ Pipeline 选择逻辑：950 且开启布局优化 → `InsertCVDataMovement`；9
 - [数据布局详解（ND/nZ/zN/Fractal、DataLayoutAttr、nd2nz/nz2nd 转换）](../../../ops/triton/apis/ir/architecture/data_layout.md)（`related`）：“数据布局（ND/NZ/zN/nZ/Fractal）”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [NPUTargetSpec.td](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HACC/Targets/NPUTargetSpec.td)
-- [HIVMAttrs.td](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/IR/HIVMAttrs.td)

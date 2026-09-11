@@ -2,20 +2,89 @@
 type: API
 title: binary_partition
 description: 根据标签将父组划分为两个子组，标签相同的线程被分配到同一组中。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.programming_model.cooperative_groups]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.programming_model.cooperative_groups
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/binary_partition.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/cooperative_groups.h
 ---
 
 # binary_partition
 
-binary_partition API用于根据一个标签（0或1）将父组划分为两个子组，标签相同的线程会被分配到同一组中。
-函数原型：coalesced_group binary_partition(const coalesced_group& g, bool pred)
-返回值：返回划分出的子组coalesced_group对象。
-约束：当g为thread_block_tile类型时，g必须满足Size小于等于32，否则编译报错。
-支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+## 功能说明
+
+`binary_partition` API用于根据一个标签（0或1）将父组划分为两个子组，标签相同的线程会被分配到同一组中。
+
+## 函数原型
+
+```cpp
+coalesced_group binary_partition(const coalesced_group& g, bool pred)
+```
+
+```cpp
+template <unsigned int Size, typename ParentT>
+coalesced_group binary_partition(const thread_block_tile<Size, ParentT>& g, bool pred)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| g | 输入 | 被划分的父组，类型可以是`coalesced_group`或`thread_block_tile`。 |
+| pred | 输入 | 标签，用于划分子组。 |
+
+## 返回值说明
+
+返回包含当前调用线程的子组。当前线程及所有与其具有相同`pred`标签的线程会被划分到同一子组。返回类型为`coalesced_group`。
+
+## 约束说明
+
+- 组内所有线程必须共同调用该接口，否则行为未定义。
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    using namespace cooperative_groups;
+    __global__ void simt_kernel(int *inputArr, ...)
+    {
+        auto block = this_thread_block();
+        auto tile32 = tiled_partition<32>(block);
+
+        // inputArr中是随机的整数
+        int elem = inputArr[block.thread_rank()];
+        // 根据elem&1是否为true将tile32划分为两个子组
+        auto subtile = binary_partition(tile32, (elem & 1));
+        ...
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    using namespace cooperative_groups;
+    __simt_vf__ inline void simt_kernel(__gm__ int *inputArr, ...)
+    {
+        ...
+        auto block = this_thread_block();
+        auto tile32 = tiled_partition<32>(block);
+
+        // inputArr中是随机的整数
+        int elem = inputArr[block.thread_rank()];
+        // 根据elem&1是否为true将tile32划分为两个子组
+        auto subtile = binary_partition(tile32, (elem & 1));
+        ...
+    }
+    ```

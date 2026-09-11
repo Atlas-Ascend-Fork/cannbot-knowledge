@@ -6,8 +6,8 @@
 
 | 你要做什么 | 使用模式 | 可用 Skill |
 |---|---|---|
-| 查询知识、回答技术问题 | `consumer` | `knowledge-query` |
-| 新增或修改知识 | `contributor` | 三项基础 Skill，以及源码级算子使用的 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest`；仓内 trace 生产另用不安装到业务项目的 `ops-knowledge-trace-ingest` |
+| 查询知识、回答技术问题 | `consumer` | `knowledge-query`、`ascendc-api-knowledge-query` |
+| 新增或修改知识 | `contributor` | 三项基础 Skill、`ascendc-api-knowledge-query`，以及源码级算子使用的 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest`；仓内 trace 生产另用不安装到业务项目的 `ops-knowledge-trace-ingest` |
 
 使用模式只决定安装哪些 Skill，不会改变知识卡的内容或可信程度。
 
@@ -37,6 +37,8 @@
 6. **整理回答。** 说明结论适用于什么范围、依据是什么、还有哪些内容需要验证。
 
 完整检查步骤见[形成可追溯回答](../recipes/answer_with_evidence.md)。具体查询方式见 [`knowledge-query`](../.agents/skills/knowledge-query/SKILL.md)。
+
+Ascend C API 问题可直接使用 [`ascendc-api-knowledge-query`](../.agents/skills/ascendc-api-knowledge-query/SKILL.md)。它先识别目标硬件并按平台检索，阅读全文后根据当前问题选择相关卡片或头文件，不遍历全部链接。需要本机声明/实现时，提供工程使用的 CANN 版本和包路径；相对头文件线索必须结合正确的 AscendC 包布局解析，不能按知识仓目录打开。
 
 ## 怎样理解查询结果
 

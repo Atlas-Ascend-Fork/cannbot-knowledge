@@ -5,30 +5,30 @@ description: "说明 aclnnThreeInterpolateBackward 在 A2/A3 上的接口语义�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/docs/aclnnThreeInterpolateBackward.md
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/docs/aclnnThreeInterpolateBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/op_api/aclnn_three_interpolate_backward.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/op_api/aclnn_three_interpolate_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/op_api/aclnn_three_interpolate_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/op_api/aclnn_three_interpolate_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/op_api/three_interpolate_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/op_api/three_interpolate_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/three_interpolate_backward_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/three_interpolate_backward_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/three_interpolate_backward_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/three_interpolate_backward_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_kernel/three_interpolate_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_kernel/three_interpolate_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/three_interpolate_backward_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/three_interpolate_backward_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/config/ascend910b/three_interpolate_backward_binary.json
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/config/ascend910b/three_interpolate_backward_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/config/ascend910_93/three_interpolate_backward_binary.json
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/config/ascend910_93/three_interpolate_backward_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-24T20:50:40Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -739,7 +739,7 @@ workspace_total = 16 MiB system workspace；operator-owned user slice = 0
 
 - 适用 Route：R-001～R-006
 - 触发条件：FP32 使用 `B>=6*N` 选择 B 轴，否则 N 轴；FP16 的 force flag 令条件恒真。
-- Golden 来源：[`image/three_interpolate_backward/op_host/three_interpolate_backward_tiling.cpp:104-116`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/three_interpolate_backward_tiling.cpp#L104-L116)
+- Golden 来源：[`image/three_interpolate_backward/op_host/three_interpolate_backward_tiling.cpp:104-116`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_host/three_interpolate_backward_tiling.cpp#L104-L116)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -781,7 +781,7 @@ B 很大时按 batch 分核，每个核持有完整 N 域，避免 N 太短导�
 
 - 适用 Route：全部 Route
 - 触发条件：每个 N tile 最多 16 个 n，通道 chunk 为 `c_move_num`；对每个 n 的三个权重分别执行一次跨 C1 repeat 的 `Muls`。
-- Golden 来源：[`image/three_interpolate_backward/op_kernel/three_interpolate_backward.cpp:258-287`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_kernel/three_interpolate_backward.cpp#L258-L287)
+- Golden 来源：[`image/three_interpolate_backward/op_kernel/three_interpolate_backward.cpp:258-287`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_kernel/three_interpolate_backward.cpp#L258-L287)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -823,7 +823,7 @@ for (auto n_idx = 0u; n_idx < compute_n_cnt; n_idx++) {
 
 - 适用 Route：全部 Route
 - 触发条件：所有非空计算；block 0 先清零完整输出并跨核同步，每个 `(n,i)` 直接 atomic-add 到 GM。
-- Golden 来源：[`image/three_interpolate_backward/op_kernel/three_interpolate_backward.cpp:316-333`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_kernel/three_interpolate_backward.cpp#L316-L333)
+- Golden 来源：[`image/three_interpolate_backward/op_kernel/three_interpolate_backward.cpp:316-333`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/three_interpolate_backward/op_kernel/three_interpolate_backward.cpp#L316-L333)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

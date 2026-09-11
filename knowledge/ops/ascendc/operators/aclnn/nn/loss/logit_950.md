@@ -5,24 +5,24 @@ description: "说明 aclnnLogit 在 950 上的接口语义、Host/Launcher 参�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/docs/aclnnLogit.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/docs/aclnnLogit.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_host/logit_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_host/logit_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_host/logit_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_host/logit_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_host/logit_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_host/logit_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/logit.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/logit.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/logit.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/logit.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_host/config/ascend950/logit_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_host/config/ascend950/logit_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:13:26Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -380,7 +380,7 @@ UB_total=196608 B；dynamic_ub=N/A；workspace_total=16 MiB（Kernel 不消费�
 
 - 适用 Route：R-001～R-003
 - 触发条件：任意非空 tile，`pingPongFlag` 交替
-- Golden 来源：[`loss/logit/op_kernel/logit.h:118-139`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/logit.h#L118-L139)
+- Golden 来源：[`loss/logit/op_kernel/logit.h:118-139`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/logit.h#L118-L139)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -429,7 +429,7 @@ WaitFlag<HardEvent::MTE3_MTE2>(EVENT_ID1);
 
 - 适用 Route：R-001～R-003
 - 触发条件：`eps>=0`，尤其 `dataCount%64!=0`
-- Golden 来源：[`loss/logit/op_kernel/logit.h:187-205`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/logit.h#L187-L205)
+- Golden 来源：[`loss/logit/op_kernel/logit.h:187-205`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/logit/op_kernel/logit.h#L187-L205)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

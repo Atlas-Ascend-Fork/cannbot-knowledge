@@ -14,6 +14,5 @@
 - [GetResGroupBarrierWorkSpaceSize](get_res_group_barrier_work_space_size.md)：获取GroupBarrier所需要的workspace空间大小。
 - [GetSocVersion](get_soc_version.md)：获取当前硬件平台版本型号。
 - [GetVecRegLen](get_vec_reg_len.md)：获取当前硬件平台芯片架构Vec计算单元位宽。
-- [PlatformAscendC](platform_ascend_c.md)：PlatformAscendC平台信息查询接口索引。
 - [PlatformAscendC简介](platform_ascend_c_intro.md)：在实现Host侧的Tiling函数时，可能需要获取一些硬件平台的信息，来支撑Tiling的计算，比如获取硬件平台的核数等信息。PlatformAscendC类提供获取这些平台信息的功能。
 - [ReserveLocalMemory](reserve_local_memory.md)：该函数用于在Unified Buffer中预留指定大小的内存空间。调用该接口后，使用GetCoreMemSize可以获取实际可用的剩余Unified Buffer空间大小。

@@ -140,5 +140,4 @@ __aicore__ inline void masked_scale_reg_compute_float(
 ## 相关
 
 - [GetPhyAddr](../../apis/simd_api/basic_api/data_structures/local_tensor/get_phy_addr.md)（`exemplifies`）：边界与回退：void* 桥接路线 banned，整体回退；改让 wrapper 直接以 `const AscendC::LocalTensor<T>&` 形参接收队列出队的 tensor（dst、x 共用 T；mask 用独立固定类型 `const AscendC::LocalTensor<float>&`），在 wrapper 内部 `GetPhyAddr()` 取 `__ubuf__` 指针——地址空间转换由 LocalTensor 封装负责，不暴露 `void*` 中转。该路线编译推进到下一处错误，证明 void* 根因被消除。；返回LocalTensor的地址或指定偏移量后的地址。。Runbook的修法直接依赖 LocalTensor::GetPhyAddr 保留 UB 地址空间类型，API 卡给出该地址获取合同。
-- [MaskedScale 950 Direct Invoke 算子知识](../../operators/direct/math/math/masked_scale_950.md)（`related`）：masked_scale 的 b16 路线需要 dst 为 `LocalTensor<half>`、x 为 `LocalTensor<half>`、mask 为 `LocalTensor<float>`（mask 在 plugin 侧已转 float32）。为绕开「一个模板 T 同时绑定 half 与 float」的推导冲突，尝试把 Reg wrapper 改成 `void*` 形参、内部再 `(__ubuf__ T*)` 强转：；｜ 计算语义 ｜ 对连续展平后的每个元素执行 `y［i］ = cast_x(x［i］ * mask［i］ * scale)`，输出 dtype 与 `x` 相同 ｜。Runbook在 MaskedScale B16 Direct wrapper 上复现混合 dtype 地址桥接失败，算子卡闭合相同 x/mask/scale 计算与 Direct 路线边界。
 <!-- cannbot:related:end -->

@@ -41,4 +41,3 @@
 - [__hnex2](_hnex2.md)：比较两个bfloat16x2_t类型数据的两个分量，如果分量不相等，则对应比较结果为1.0，否则为0.0。
 - [__hnex2_mask](_hnex2_mask.md)：比较两个bfloat16x2_t类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量不相等，则对应16位掩码为0xFFFF，否则为0x0。
 - [__isnanx2](_isnanx2.md)：判断bfloat16x2_t类型数据的两个分量是否为nan。
-- [bfloat16x2类型比较函数](bfloat16x2_compare_functions.md)：bfloat16x2类型数据的比较函数集合，包括相等、不等、大小比较及掩码版本。

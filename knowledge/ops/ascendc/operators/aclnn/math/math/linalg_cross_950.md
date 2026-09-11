@@ -5,35 +5,35 @@ description: "说明 aclnnLinalgCross 在 950 上的接口语义、Host/Launcher
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/docs/aclnnLinalgCross.md"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/docs/aclnnLinalgCross.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_api/aclnn_linalg_cross.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_api/aclnn_linalg_cross.h"
     role: header
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_api/aclnn_linalg_cross.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_api/aclnn_linalg_cross.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_api/cross.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_api/cross.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_host/cross_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_host/cross_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_host/arch35/cross_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_host/arch35/cross_tiling.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel/arch35/cross_struct.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel/arch35/cross_struct.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel/arch35/cross.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel/arch35/cross.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel/cross_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel/cross_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_host/config/ascend950/cross_binary.json"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_host/config/ascend950/cross_binary.json"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel_aicpu/cross_aicpu.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel_aicpu/cross_aicpu.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel_aicpu/cross_aicpu_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel_aicpu/cross_aicpu_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/aicpu/aicpu_op_def.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/aicpu/aicpu_op_def.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/CMakeLists.txt"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/CMakeLists.txt"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/cmake/func.cmake"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/cmake/func.cmake"
     role: implementation
   - resource: "https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/include/op_common/op_host/tiling_base_class.h"
     role: implementation
@@ -46,7 +46,7 @@ sources:
   - resource: "https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/aicpu_common/context/common/device_sharder.cc"
     role: implementation
 created_at: "2026-08-25T10:29:34Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -610,7 +610,7 @@ workspace_total(core config) = 100 B
 
 - 适用 Route：R-001、R-002。
 - 触发条件：950、两输入 rank 相同；非叉积轴上维度相等或一侧为 1；叉积轴两侧均为 3。
-- Golden 来源：[`cross_tiling.cpp:108-133`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_host/arch35/cross_tiling.cpp#L108-L133)
+- Golden 来源：[`cross_tiling.cpp:108-133`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_host/arch35/cross_tiling.cpp#L108-L133)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -642,7 +642,7 @@ ACLNN 在 950 用 `!IsRegBase()` 阻止 shape 不同输入先做 `BroadcastTo` �
 
 - 适用 Route：R-001、R-002。
 - 触发条件：Host 已按 vector ordinal 分核；thread id 落在当前 block 的 `count` 内。
-- Golden 来源：[`cross.h:105-129`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel/arch35/cross.h#L105-L129)
+- Golden 来源：[`cross.h:105-129`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cross/op_kernel/arch35/cross.h#L105-L129)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

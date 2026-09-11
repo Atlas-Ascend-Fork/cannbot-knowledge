@@ -2,28 +2,179 @@
 type: API
 title: Not
 description: 对LocalTensor中的元素做按位取反运算，支持前n个数据连续计算和高维切分计算两种调用方式。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.execution_unit.vector]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.execution_unit.vector
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/logical_compute/Not.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+- 310p
+- '910'
+- kirin_x90
+- kirin_9030
+source_headers:
+- include/basic_api/kernel_operator_vec_unary_intf.h
 ---
 
-# Not
+# Not<a name="ZH-CN_TOPIC_0000001379083606"></a>
 
-对LocalTensor中的元素做按位取反运算，支持前n个数据连续计算和高维切分计算两种调用方式。
+## 功能说明<a name="section618mcpsimp"></a>
 
-本接口用于在矢量计算时设置mask。 - 当模板参数isSetMask = false时，推荐使用本接口。使用前需要先调用SetMaskCount/SetMaskNorm手动设置Mask模式，并通过调用本接口设置Counter/Normal模式下的mask。在不同的模式下，mask的含义不同： - Normal模式下，mask参数用来控制单次迭代内参与计算的元素个数。此时又可以划分为如下两种模式： - 连续模式：表示前面连续的多少个元素参与计算。取值范围和操作数的数据类型有关，数据类型不同，每次迭代内能够处理的元素个数最大值不同。当操作数为16位时，mask∈[0, 128]；当操作数为32位时，mask∈[0, 64]；当操作数为64位时，mask∈[0, 32]。 - 逐比特模式：可以按位控制哪些元素参与计算，bit位的值为1表示参与计算，0表示不参与。分为maskHigh
+头文件路径为：`"basic_api/kernel_operator_vec_unary_intf.h"`。
 
-本接口组包含 SetVectorMask, 通用地址对齐约束, 通用地址对齐约束, 连续计算, 掩码。
+对元素做按位取反。计算公式如下：
 
-本接口属于 UB 矢量计算逻辑运算接口。
+$dst_i = \sim src_i$
 
-约束：该接口仅在矢量计算API的isSetMask模板参数为false时生效，使用完成后需要使用ResetMask将mask恢复为默认值。；针对Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品，mask = 0表示指令不会执行计算操作，该接口将被视为NOP（空操作）。
+## 函数原型<a name="section620mcpsimp"></a>
 
-支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品 AI Core。
+- tensor前n个数据连续计算
 
-临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+    ```cpp
+    template <typename T>
+    __aicore__ inline void Not(const LocalTensor<T>& dst, const LocalTensor<T>& src, const int32_t& count)
+    ```
+
+- tensor高维切分计算
+    - mask逐bit模式
+
+        ```cpp
+        template <typename T, bool isSetMask = true>
+        __aicore__ inline void Not(const LocalTensor<T>& dst, const LocalTensor<T>& src, uint64_t mask[], const uint8_t repeatTime, const UnaryRepeatParams& repeatParams)
+        ```
+
+    - mask连续模式
+
+        ```cpp
+        template <typename T, bool isSetMask = true>
+        __aicore__ inline void Not(const LocalTensor<T>& dst, const LocalTensor<T>& src, uint64_t mask, const uint8_t repeatTime, const UnaryRepeatParams& repeatParams)
+        ```
+
+## 参数说明<a name="section622mcpsimp"></a>
+
+**表1**  模板参数说明
+
+| 参数名 | 描述 |
+|---|---|
+| T | 操作数数据类型。 |
+| isSetMask | 是否在接口内部设置mask。<br>&bull; true，表示在接口内部设置mask。<br>&bull; false，表示在接口外部设置mask，开发者需要使用[SetVectorMask](../mask_operations/set_vector_mask.md)接口设置mask值。这种模式下，接口入参中的mask值设置为占位符`MASK_PLACEHOLDER`，用于占位，无实际含义。 |
+
+**表2**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+|---|---|---|
+| dst | 输出 | 目的操作数。<br>类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。<br>地址对齐约束参考[通用地址对齐约束](../../../general_description_and_constraints.md)。 |
+| src | 输入 | 源操作数。<br>类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。<br>地址对齐约束参考[通用地址对齐约束](../../../general_description_and_constraints.md)。 |
+| count | 输入 | 参与计算的元素个数。关于该参数的具体说明请参考[连续计算](../simd_compute/continuous_compute.md)。 |
+| mask[]/mask | 输入 | mask用于控制每次迭代内参与计算的元素。详细设置参考[掩码](../simd_compute/mask.md)。 |
+| repeatTime | 输入 | 重复迭代次数。矢量计算单元，每次读取连续的256Bytes数据进行计算，为完成对输入数据的处理，必须通过多次迭代（repeat）才能完成所有数据的读取与计算。repeatTime表示迭代的次数。<br>关于该参数的具体说明请参考[高维切分](../simd_compute/high_dim_split.md)。 |
+| repeatParams | 输入 | 控制操作数地址步长的参数。[UnaryRepeatParams](../../aux_data_structures/unary_repeat_params.md)类型，包含操作数相邻迭代间相同DataBlock的地址步长，操作数同一迭代内不同DataBlock的地址步长等参数。<br>相邻迭代间的地址步长参数说明请参考[repeatStride](../simd_compute/high_dim_split.md)；同一迭代内DataBlock的地址步长参数说明请参考[dataBlockStride](../simd_compute/high_dim_split.md)。 |
+
+## 数据类型
+
+
+- 针对Ascend 950PR/Ascend 950DT，T支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、int32_t、uint32_t、float、int64_t、uint64_t。数据类型int8_t、uint8_t、int64_t、uint64_t仅支持tensor前n个数据计算接口。
+
+
+- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，T支持的数据类型为：int16_t、uint16_t。
+
+
+- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，T支持的数据类型为：int16_t、uint16_t。
+
+
+- 针对Atlas 200I/500 A2 推理产品，T支持的数据类型为：int16_t、uint16_t。
+
+
+- 针对Atlas 推理系列产品AI Core，T支持的数据类型为：int16_t、uint16_t。
+
+
+- 针对Atlas 训练系列产品，T支持的数据类型为：int16_t、uint16_t。
+
+
+- 针对Kirin X90，T支持的数据类型为：int16_t、uint16_t。
+
+
+- 针对Kirin 9030，T支持的数据类型为：int16_t、uint16_t。
+
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+无
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+- 操作数地址对齐要求请参见[通用地址对齐约束](../../../general_description_and_constraints.md)。
+- 操作数地址重叠约束请参考[通用地址重叠约束](../../../general_description_and_constraints.md)。
+
+- 当参数count或repeatTime取值为0时，该接口的行为如下：
+  
+  - 针对如下型号，该接口不会执行计算操作，不会对目的操作数进行写入，该接口将被视为NOP（空操作）。
+    
+    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    
+    
+    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    
+  
+  
+  - 针对Ascend 950PR/Ascend 950DT，该接口通过VF调用[Reg矢量计算API](../../reg_vector_compute/index.md)实现兼容，当参数count或repeatTime取值为0时，不保证该接口将被视为NOP（空操作）。
+  
+
+
+## 调用示例<a name="section642mcpsimp"></a>
+
+- tensor高维切分计算样例-mask连续模式
+
+    ```cpp
+    uint64_t mask = 256 / sizeof(int16_t);
+    // repeatTime = 4, 128 elements one repeat, 512 elements total.
+    // dstBlkStride, srcBlkStride = 1, no gap between blocks in one repeat.
+    // dstRepStride, srcRepStride = 8, no gap between repeats.
+    AscendC::Not(dstLocal, srcLocal, mask, 4, { 1, 1, 8, 8 });
+    ```
+
+- tensor高维切分计算样例-mask逐bit模式
+
+    ```cpp
+    uint64_t mask[2] = { UINT64_MAX, UINT64_MAX };
+    // repeatTime = 4, 128 elements one repeat, 512 elements total.
+    // dstBlkStride, srcBlkStride = 1, no gap between blocks in one repeat.
+    // dstRepStride, srcRepStride = 8, no gap between repeats.
+    AscendC::Not(dstLocal, srcLocal, mask, 4, { 1, 1, 8, 8 });
+    ```
+
+- tensor前n个数据计算接口样例
+
+    ```cpp
+    AscendC::Not(dstLocal, srcLocal, 512);
+    ```
+
+结果示例如下：
+
+```plain
+输入数据(srcLocal): [9 -2 8 ... 9 0]
+输出数据(dstLocal): [-10 1 -9 ... -10 -1]
+```
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+<!-- cannbot:api-operator:start -->
+### 知识正文中的调用示例
+
+展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
+以下仅有知识正文中的调用证据，未作为源码调用结果。
+
+- [BitwiseNot 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/bitwise_not_950.md)（`related`）：算子正文包含对 `Not(...)` 的直接调用；本卡提供该接口契约。
+
+<!-- cannbot:api-operator:end -->
+<!-- cannbot:related:end -->

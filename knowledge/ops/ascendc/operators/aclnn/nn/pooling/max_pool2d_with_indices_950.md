@@ -5,54 +5,54 @@ description: "说明 aclnnMaxPool2dWithIndices 在 950 上的接口语义、Host
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/docs/aclnnMaxPool2dWithIndices.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/docs/aclnnMaxPool2dWithIndices.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_api/aclnn_max_pool2d_with_indices.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_api/aclnn_max_pool2d_with_indices.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_api/max_pool_with_argmax_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_api/max_pool_with_argmax_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_tiling_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_tiling_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_gather_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_gather_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_big_kernel_mul_core_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_big_kernel_mul_core_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_big_kernel_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_big_kernel_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_nhwc_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_nhwc_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_simt_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_simt_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_gather_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_gather_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_big_kernel_mul_core_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_big_kernel_mul_core_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_big_kernel_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_big_kernel_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_nhwc_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_nhwc_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_simt_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_simt_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/max_pool_with_argmax_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/max_pool_with_argmax_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_gather_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_gather_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_big_kernel_mul_core.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_big_kernel_mul_core.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_big_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_big_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_nhwc_big_c.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_nhwc_big_c.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_nhwc_small_c.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_nhwc_small_c.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/config/ascend950/max_pool_with_argmax_v3_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/config/ascend950/max_pool_with_argmax_v3_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
     role: implementation
 created_at: "2026-08-25T18:19:46Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -658,7 +658,7 @@ workspace_total=16 MiB system workspace
 
 - 适用 Route：R-001
 - 触发条件：NCHW、dilation1、`kW*inputBytes<128`、最小 tile `<=UB/32`。
-- Golden 来源：[`max_pool_with_argmax_v3_gather_tiling.cpp:73-89`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_gather_tiling.cpp#L73-L89)
+- Golden 来源：[`max_pool_with_argmax_v3_gather_tiling.cpp:73-89`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_gather_tiling.cpp#L73-L89)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -694,7 +694,7 @@ Host 只在一行窗口小于 128 B 且 UB 足以承载至少 32 份最小输出
 
 - 适用 Route：R-002
 - 触发条件：pad0/dilation1/NCHW、输出少于 core 且少于16、窗口面积至少1024。
-- Golden 来源：[`max_pool_with_argmax_v3_big_kernel_mul_core.h:249-278`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_big_kernel_mul_core.h#L249-L278)
+- Golden 来源：[`max_pool_with_argmax_v3_big_kernel_mul_core.h:249-278`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_kernel/arch35/max_pool_with_argmax_v3_big_kernel_mul_core.h#L249-L278)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -730,7 +730,7 @@ if (cBlockIdx < coreNums) {
 
 - 适用 Route：R-004
 - 触发条件：NHWC、dilation1。
-- Golden 来源：[`max_pool_with_argmax_v3_nhwc_tiling.cpp:75-89`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_nhwc_tiling.cpp#L75-L89)
+- Golden 来源：[`max_pool_with_argmax_v3_nhwc_tiling.cpp:75-89`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_with_argmax_v3/op_host/arch35/max_pool_with_argmax_v3_nhwc_tiling.cpp#L75-L89)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

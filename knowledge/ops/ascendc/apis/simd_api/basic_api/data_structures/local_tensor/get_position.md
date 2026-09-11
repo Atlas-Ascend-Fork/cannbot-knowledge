@@ -2,22 +2,64 @@
 type: API
 title: GetPosition
 description: 获取LocalTensor所在的TPosition逻辑位置，支持TPosition为VECIN、VECOUT、VECCALC、A1、A2、B1、B2、CO1、CO2。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.development_mode.tensor_programming]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.development_mode.tensor_programming
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_structures/LocalTensor/GetPosition.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+- 310p
+- '910'
+source_headers:
+- include/basic_api/kernel_tensor.h
 ---
 
-# GetPosition
+# GetPosition<a name="ZH-CN_TOPIC_0000002364845741"></a>
 
-获取 LocalTensor 所在的 TPosition 逻辑位置。函数签名为 __aicore__ inline int32_t GetPosition() const，无入参。
-返回值为 TPosition 枚举，支持 VECIN、VECOUT、VECCALC、A1、A2、B1、B2、CO1、CO2 等逻辑位置。
-用于在运行时查询 Tensor 所处的缓冲区位置，从而选择不同的处理逻辑。
-支持 Ascend 950PR/950DT、Atlas A2、Atlas A3、Atlas 200I/500 A2 推理产品、Atlas 推理系列产品 AI Core 与 Vector Core 以及 Atlas 训练系列产品。
+## 功能说明<a name="section618mcpsimp"></a>
+
+获取LocalTensor所在的TPosition逻辑位置，支持TPosition为VECIN、VECOUT、VECCALC、A1、A2、B1、B2、CO1、CO2。
+
+## 函数原型<a name="section620mcpsimp"></a>
+
+```cpp
+__aicore__ inline int32_t GetPosition() const
+```
+
+## 参数说明<a name="section622mcpsimp"></a>
+
+无
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+LocalTensor所在的[TPosition](../../aux_data_structures/t_position.md)逻辑位置。
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+无
+
+## 调用示例<a name="section17531157161314"></a>
+
+```cpp
+// 示例
+AscendC::TPosition srcPos = (AscendC::TPosition)inputLocal.GetPosition();
+if (srcPos == AscendC::TPosition::VECCALC) {
+    // 处理逻辑1
+} else if (srcPos == AscendC::TPosition::A1) {
+    // 处理逻辑2
+} else {
+    // 处理逻辑3
+}
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关

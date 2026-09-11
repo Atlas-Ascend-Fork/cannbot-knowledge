@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -25,9 +26,40 @@ QUERY_RELATIVE = Path(".agents/skills/knowledge-query/scripts/knowledge_query.py
 
 
 class InstallerTests(unittest.TestCase):
+    def test_default_resource_preparation_precedes_project_mutations(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "repo"
+            root.mkdir()
+            shutil.copy2(INSTALLER, root / "init.sh")
+            (root / "knowledge").mkdir()
+            registry = root / "governance/schemas/registries.yaml"
+            registry.parent.mkdir(parents=True)
+            registry.write_text("{}\n", encoding="utf-8")
+            query = root / ".agents/skills/knowledge-query"
+            (query / "scripts").mkdir(parents=True)
+            (query / "SKILL.md").write_text("fixture\n", encoding="utf-8")
+            (query / "scripts/knowledge_index.py").write_text("raise SystemExit(0)\n", encoding="utf-8")
+            api = root / ".agents/skills/ascendc-api-knowledge-query"
+            api.mkdir()
+            (api / "SKILL.md").write_text("fixture\n", encoding="utf-8")
+            project = Path(temporary) / "project"
+            project.mkdir()
+            command = ["bash", str(root / "init.sh"), "agents", str(project)]
+            resource_script = root / "get_resources.sh"
+            resource_script.write_text("#!/usr/bin/env bash\necho 'resource fixture failed' >&2\nexit 9\n", encoding="utf-8")
+            failed = subprocess.run(command, check=False, capture_output=True, text=True)
+            self.assertEqual(9, failed.returncode)
+            self.assertIn("resource fixture failed", failed.stderr)
+            self.assertEqual([], list(project.iterdir()))
+            resource_script.write_text("#!/usr/bin/env bash\necho 'resource fixture restored'\n", encoding="utf-8")
+            succeeded = subprocess.run(command, check=False, capture_output=True, text=True)
+            self.assertEqual(0, succeeded.returncode, succeeded.stderr)
+            self.assertIn("resource fixture restored", succeeded.stdout)
+            self.assertTrue((project / ".agents/skills/knowledge-query").is_symlink())
+
     def run_installer(self, project: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
-            ["bash", str(INSTALLER), *arguments[:1], str(project), *arguments[1:]],
+            ["bash", str(INSTALLER), *arguments[:1], str(project), *arguments[1:], "--skip-resources"],
             check=False,
             text=True,
             capture_output=True,
@@ -37,7 +69,7 @@ class InstallerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             result = subprocess.run(
-                ["bash", str(INSTALLER), "agents", str(project), "contributor"],
+                ["bash", str(INSTALLER), "agents", str(project), "contributor", "--skip-resources"],
                 check=False,
                 text=True,
                 capture_output=True,
@@ -49,6 +81,7 @@ class InstallerTests(unittest.TestCase):
                 {
                     "knowledge-ingest",
                     "knowledge-query",
+                    "ascendc-api-knowledge-query",
                     "knowledge-lint",
                     "ops-knowledge-vv-ingest",
                     "ops-knowledge-cv-ingest",
@@ -72,34 +105,27 @@ class InstallerTests(unittest.TestCase):
             self.assertIn("ops-knowledge-cv-ingest", prompt)
             self.assertIn("### 贡献者附加流程", prompt)
 
-    def test_consumer_prompt_preserves_query_execution_contract(self) -> None:
+    def test_consumer_prompt_routes_to_installed_skill_sources(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             result = self.run_installer(project, "agents", "consumer")
             self.assertEqual(result.returncode, 0, result.stderr)
             prompt = (project / "AGENTS.md").read_text(encoding="utf-8")
-            required_contract = (
-                "### 入口硬门禁",
-                "### 知识库中有什么",
-                "`discover`",
-                "`common`",
-                "`ascendc`、`triton`、`tilelang`、`pypto`、`shared`",
-                "`inference`、`training`、`spatial`、`embodied`",
-                "`graph`、`runtime`",
-                "### 什么时候调用或重新调用",
-                "### 每次执行的基本流程",
-                "`local_path`",
-                "search receipt",
-                "outcome manifest",
-                "### 需要立即纠正的行为",
-                "索引缺失或 stale 后改为遍历知识树",
+            routes = re.findall(r"\]\((\.agents/skills/[^)]+/SKILL\.md)\)", prompt)
+            self.assertEqual(2, len(routes))
+            self.assertEqual(
+                {"knowledge-query", "ascendc-api-knowledge-query"},
+                {Path(route).parent.name for route in routes},
             )
-            for expected in required_contract:
-                with self.subTest(expected=expected):
-                    self.assertIn(expected, prompt)
-            self.assertNotIn("当前都没有知识卡", prompt)
-            self.assertNotIn("当前没有知识卡", prompt)
-            self.assertNotIn("### 贡献者附加流程", prompt)
+            for route in routes:
+                with self.subTest(route=route):
+                    installed_source = project / route
+                    self.assertTrue(installed_source.is_file())
+                    self.assertEqual((ROOT / route).resolve(), installed_source.resolve())
+            self.assertEqual(
+                {"knowledge-query", "ascendc-api-knowledge-query"},
+                {path.name for path in (project / ".agents/skills").iterdir()},
+            )
 
     def test_conflict_does_not_leave_partial_install(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -133,13 +159,43 @@ class InstallerTests(unittest.TestCase):
                 project = Path(temporary)
                 result = self.run_installer(project, agent, "consumer")
                 self.assertEqual(result.returncode, 0, result.stderr)
-                canonical = project / ".agents/skills/knowledge-query"
-                self.assertTrue(canonical.is_symlink())
-                self.assertEqual(canonical.resolve(), ROOT / ".agents/skills/knowledge-query")
-                if adapter is not None:
-                    agent_link = project / adapter / "knowledge-query"
-                    self.assertTrue(agent_link.is_symlink())
-                    self.assertEqual(agent_link.resolve(), canonical.resolve())
+                for skill in ("knowledge-query", "ascendc-api-knowledge-query"):
+                    canonical = project / ".agents/skills" / skill
+                    self.assertTrue(canonical.is_symlink())
+                    self.assertEqual(canonical.resolve(), ROOT / ".agents/skills" / skill)
+                    if adapter is not None:
+                        agent_link = project / adapter / skill
+                        self.assertTrue(agent_link.is_symlink())
+                        self.assertEqual(agent_link.resolve(), canonical.resolve())
+
+    def test_api_skill_conflict_prevents_partial_consumer_install(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            conflict = project / ".agents/skills/ascendc-api-knowledge-query"
+            conflict.mkdir(parents=True)
+            marker = conflict / "user-content.md"
+            marker.write_text("preserve user content\n", encoding="utf-8")
+            result = self.run_installer(project, "agents", "consumer")
+            self.assertEqual(2, result.returncode)
+            self.assertFalse((project / ".agents/skills/knowledge-query").exists())
+            self.assertFalse((project / ".cannbot/knowledge.env").exists())
+            self.assertEqual("preserve user content\n", marker.read_text(encoding="utf-8"))
+
+    def test_existing_query_only_install_can_add_api_skill(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            query = project / ".agents/skills/knowledge-query"
+            query.parent.mkdir(parents=True)
+            query.symlink_to(ROOT / ".agents/skills/knowledge-query", target_is_directory=True)
+            before = query.lstat().st_ino
+            for _ in range(2):
+                result = self.run_installer(project, "agents", "consumer")
+                self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual(before, query.lstat().st_ino)
+            self.assertEqual(
+                ROOT / ".agents/skills/ascendc-api-knowledge-query",
+                (project / ".agents/skills/ascendc-api-knowledge-query").resolve(),
+            )
 
     def test_config_conflict_does_not_leave_skill_links(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

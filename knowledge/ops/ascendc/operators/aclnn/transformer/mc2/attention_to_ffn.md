@@ -5,44 +5,44 @@ description: "说明 aclnnAttentionToFFN 在 A3 上的接口语义、Host/Launch
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/docs/aclnnAttentionToFFN.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/docs/aclnnAttentionToFFN.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_api/aclnn_attention_to_ffn.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_api/aclnn_attention_to_ffn.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_api/aclnn_attention_to_ffn.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_api/aclnn_attention_to_ffn.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/attention_to_ffn_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/attention_to_ffn_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/op_tiling/attention_to_ffn_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/op_tiling/attention_to_ffn_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_host/op_tiling/mc2_tiling_utils.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_host/op_tiling/mc2_tiling_utils.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_graph/attention_to_ffn_gen_task.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_graph/attention_to_ffn_gen_task.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_graph/mc2_gen_task_ops_utils.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_graph/mc2_gen_task_ops_utils.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_graph/mc2_moe_gen_task_ops_utils.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_graph/mc2_moe_gen_task_ops_utils.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/arch22/attention_to_ffn.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/arch22/attention_to_ffn.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/mc2_kernel_utils.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/mc2_kernel_utils.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/moe_distribute_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/moe_distribute_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/config/ascend910_93/attention_to_ffn_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/config/ascend910_93/attention_to_ffn_binary.json
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -909,7 +909,7 @@ workspace_total = libApiWorkspace + A*align128(F*4); L1/L0*=0
 
 - 适用 Route：R-001～R-008
 - 触发条件：对端 token-info 表头 flag 为 0，当前 route 有待发送副本
-- Golden 来源：[`mc2/attention_to_ffn/op_kernel/attention_to_ffn.h:419-425`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L419-L425)
+- Golden 来源：[`mc2/attention_to_ffn/op_kernel/attention_to_ffn.h:419-425`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L419-L425)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -943,7 +943,7 @@ SyncFunc<AscendC::HardEvent::S_MTE3>();
 
 - 适用 Route：R-001～R-008
 - 触发条件：Host 从 `quantMode==2`、`syncFlag==1`、optional mask presence 生成 key
-- Golden 来源：[`mc2/attention_to_ffn/op_host/op_tiling/attention_to_ffn_tiling.cpp:621-639`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/op_tiling/attention_to_ffn_tiling.cpp#L621-L639)
+- Golden 来源：[`mc2/attention_to_ffn/op_host/op_tiling/attention_to_ffn_tiling.cpp:621-639`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_host/op_tiling/attention_to_ffn_tiling.cpp#L621-L639)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -980,7 +980,7 @@ if (activeMaskFlag) {
 
 - 适用 Route：R-002、R-004、R-006、R-008
 - 触发条件：`quantMode=2`；若 `scalesOptional` 非空再乘专家平滑系数
-- Golden 来源：[`mc2/attention_to_ffn/op_kernel/attention_to_ffn.h:332-357`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L332-L357)
+- Golden 来源：[`mc2/attention_to_ffn/op_kernel/attention_to_ffn.h:332-357`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L332-L357)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1013,7 +1013,7 @@ dynamicScale = float(INT8_MAX_VALUE) / floatLocalAbsTemp.GetValue(0);
 
 - 适用 Route：R-003、R-004、R-007、R-008
 - 触发条件：公开 `syncFlag=1`，即 template `isSync=true`
-- Golden 来源：[`mc2/attention_to_ffn/op_kernel/attention_to_ffn.h:546-558`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L546-L558)
+- Golden 来源：[`mc2/attention_to_ffn/op_kernel/attention_to_ffn.h:546-558`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L546-L558)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1047,7 +1047,7 @@ AscendC::ReduceSum<float, AscendC::Pattern::Reduce::RA, true>(ffnStatusTensorFlo
 
 - 适用 Route：R-005～R-008；其中 R-006/R-008 复用量化 FP32 buffers
 - 触发条件：`activeMaskOptional` 非空且满足 true 前置
-- Golden 来源：[`mc2/attention_to_ffn/op_kernel/attention_to_ffn.h:243-263`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L243-L263)
+- Golden 来源：[`mc2/attention_to_ffn/op_kernel/attention_to_ffn.h:243-263`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/attention_to_ffn/op_kernel/attention_to_ffn.h#L243-L263)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

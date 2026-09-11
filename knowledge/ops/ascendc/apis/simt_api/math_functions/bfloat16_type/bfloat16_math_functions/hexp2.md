@@ -2,20 +2,87 @@
 type: API
 title: Hexp2
 description: 计算bfloat16_t输入x的2的x次方。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_math_functions/hexp2.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_bf16.h
 ---
 
-# Hexp2
+# hexp2
+
+## 功能说明
 
 指定输入x，获取2的x次方。
-函数原型：bfloat16_t hexp2(bfloat16_t x)
-返回值：2的x次方。本接口受全局饱和模式影响，特殊值如下：
-约束：针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。
-支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002576421045.png)
+
+## 函数原型
+
+```cpp
+inline bfloat16_t hexp2(bfloat16_t x)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+2的x次方。本接口受全局饱和模式影响，特殊值如下：
+
+| x值 | 非饱和模式返回值 | 饱和模式返回值 |
+| --- | --- | --- |
+| inf | inf | ASCRT_MAX_NORMAL_BF16（饱和到bfloat16_t最大有限值） |
+| -inf | 0 | 0 |
+| nan | nan | 0（nan被饱和为0） |
+| 其他 | 2的x次方，当结果超出bfloat16_t最大有限值时，结果为inf | 2的x次方，当结果超出bfloat16_t最大有限值时，结果为ASCRT_MAX_NORMAL_BF16 |
+
+## 约束说明
+
+
+针对Ascend 950PR/Ascend 950DT，本接口不支持Subnormal场景：处于Subnormal范围内的输入和输出值，都会被刷新为保留符号的0。
+
+
+## 需要包含的头文件
+
+使用bfloat16_t类型接口需要包含`simt_api/asc_bf16.h`头文件。
+
+```cpp
+#include "simt_api/asc_bf16.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelExp2(bfloat16_t* dst, bfloat16_t* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = hexp2(x[idx]);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelExp2(__gm__ bfloat16_t* dst, __gm__ bfloat16_t* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = hexp2(x[idx]);
+    }
+    ```

@@ -5,33 +5,33 @@ description: "说明 aclnnAsin 在 950 上的接口语义、Host/Launcher 参数
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/docs/aclnnAsin%26aclnnInplaceAsin.md"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/docs/aclnnAsin&aclnnInplaceAsin.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_api/aclnn_asin.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_api/aclnn_asin.h"
     role: header
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_api/aclnn_asin.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_api/aclnn_asin.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_api/asin.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_api/asin.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_host/asin_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_host/asin_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_host/arch35/asin_tiling_arch35.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_host/arch35/asin_tiling_arch35.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel/arch35/asin_tilingdata.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel/arch35/asin_tilingdata.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel/arch35/asin_dag.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel/arch35/asin_dag.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel/asin_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel/asin_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_host/config/ascend950/asin_binary.json"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_host/config/ascend950/asin_binary.json"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel_aicpu/asin_aicpu.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel_aicpu/asin_aicpu.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel_aicpu/asin_aicpu_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel_aicpu/asin_aicpu_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/CMakeLists.txt"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/CMakeLists.txt"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/cmake/func.cmake"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/cmake/func.cmake"
     role: implementation
   - resource: "https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/elewise/elewise_base_struct.h"
     role: implementation
@@ -52,7 +52,7 @@ sources:
   - resource: "https://gitcode.com/cann/asc-devkit/blob/7a7156352f594b5ca79b533f72c5a99f19b87983/impl/basic_api/utils/kernel_utils_mode.h"
     role: implementation
 created_at: "2026-08-25T10:08:22Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -572,7 +572,7 @@ ACLNN workspace_total = executor 汇总值，不能仅以 100 bytes 代替
 
 - 适用 Route：R-001（原始 FLOAT）、R-002（FLOAT16/BFLOAT16）
 - 触发条件：`GetCurNpuArch()==DAV_3510` 且连续输入 dtype 为 BF16/F16/F32
-- Golden 来源：[`math/asin/op_api/aclnn_asin.cpp:139-160`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_api/aclnn_asin.cpp#L139-L160)
+- Golden 来源：[`math/asin/op_api/aclnn_asin.cpp:139-160`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_api/aclnn_asin.cpp#L139-L160)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -621,7 +621,7 @@ Host 在组 executor 时直接让 `selfCast` 别名 `selfContiguous`，因此原
 
 - 适用 Route：R-002
 - 触发条件：AICore L0 dtype 为 FLOAT16 或 BFLOAT16
-- Golden 来源：[`math/asin/op_kernel/arch35/asin_dag.h:75-85`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel/arch35/asin_dag.h#L75-L85)
+- Golden 来源：[`math/asin/op_kernel/arch35/asin_dag.h:75-85`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/asin/op_kernel/arch35/asin_dag.h#L75-L85)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

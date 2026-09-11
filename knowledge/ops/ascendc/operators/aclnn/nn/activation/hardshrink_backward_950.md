@@ -5,30 +5,30 @@ description: "说明 aclnnHardshrinkBackward 在 950 上的接口语义、Host/L
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/docs/aclnnHardshrinkBackward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/docs/aclnnHardshrinkBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_api/aclnn_hardshrink_backward.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_api/aclnn_hardshrink_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_api/aclnn_hardshrink_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_api/aclnn_hardshrink_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_api/hardshrink_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_api/hardshrink_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_host/hard_shrink_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_host/hard_shrink_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_host/arch35/hard_shrink_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_host/arch35/hard_shrink_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/arch35/hard_shrink_grad_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/arch35/hard_shrink_grad_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/arch35/hard_shrink_grad_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/arch35/hard_shrink_grad_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/hard_shrink_grad_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/hard_shrink_grad_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/arch35/hard_shrink_grad.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/arch35/hard_shrink_grad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:46:11Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -736,7 +736,7 @@ dynamic_ub=N/A; workspace_total(core node)=0
 
 - 适用 Route：R-001～R-006。
 - 触发条件：完成 `abs(self)` 与 `Compares` 后，原 self 数值不再需要。
-- Golden 来源：[`op_kernel/arch35/hard_shrink_grad.h:174-184`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/arch35/hard_shrink_grad.h#L174-L184)
+- Golden 来源：[`op_kernel/arch35/hard_shrink_grad.h:174-184`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/arch35/hard_shrink_grad.h#L174-L184)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -775,7 +775,7 @@ BF16 Route 把 `selfFloatBuf_` 依次作为 `abs(self)`、比较源和全零 Sel
 
 - 适用 Route：`N<=1024` 进入 R-001/R-003/R-005；`N>1024` 进入 R-002/R-004/R-006。
 - 触发条件：`useDoubleBuffer = totalIdx > MIN_SPLIT_THRESHOLD`。
-- Golden 来源：[`op_host/arch35/hard_shrink_grad_tiling.cpp:195-211`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_host/arch35/hard_shrink_grad_tiling.cpp#L195-L211)
+- Golden 来源：[`op_host/arch35/hard_shrink_grad_tiling.cpp:195-211`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_host/arch35/hard_shrink_grad_tiling.cpp#L195-L211)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -821,7 +821,7 @@ Host 不只切换模板位；它把三条 Queue 的 depth 精确乘入每元素�
 
 - 适用 Route：R-001～R-006 的每个 tile，尤其最后一 tile `currentNum<U`。
 - 触发条件：Tiling 将 `ubFactor` 对齐；`Compute` 固定 `computeNum=ubLength_`，`CopyOut` 使用真实 `currentNum`。
-- Golden 来源：[`op_kernel/arch35/hard_shrink_grad.h:215-220`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/arch35/hard_shrink_grad.h#L215-L220)
+- Golden 来源：[`op_kernel/arch35/hard_shrink_grad.h:215-220`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hard_shrink_grad/op_kernel/arch35/hard_shrink_grad.h#L215-L220)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

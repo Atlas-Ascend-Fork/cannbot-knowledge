@@ -4,7 +4,6 @@
 - [IsBasicBlockInSoftMax](is_basic_block_in_soft_max.md)：用于判断SoftMaxTiling结构是否符合基本块特征。
 - [SimpleSoftMax](simple_soft_max.md)：使用预先计算好的sum和max数据对输入tensor按行做Softmax计算，内部不含reduce过程。
 - [SoftMax](soft_max.md)：对输入tensor按行做Softmax计算，内部包含reducemax、exp、reducesum和div过程，可输出sum和max中间结果，支持ND和NZ格式。
-- [SoftMax接口](soft_max_interface.md)：提供SoftMax及其变体接口，包含SoftMax、SimpleSoftMax、SoftmaxFlash、SoftmaxGrad等以及Tiling使用说明。
 - [SoftMax/SimpleSoftMax Tiling](soft_max_simple_soft_max_tiling.md)：用于获取SoftMax/SimpleSoftMax Tiling参数。
 - [SoftMax Tiling使用说明](soft_max_tiling_usage.md)：Ascend C提供一组SoftMax Tiling API，方便用户获取SoftMax kernel计算时所需的Tiling参数。
 - [SoftmaxFlash](softmax_flash.md)：Softmax增强版本，可根据上一次Softmax计算的sum和max更新本次结果，适用于last轴切轴场景，不开启update时等同于SoftMax。即将废弃，建议使用SoftmaxFlashV2。

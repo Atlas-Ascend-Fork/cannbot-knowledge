@@ -2,25 +2,115 @@
 type: API
 title: Tanhf
 description: 获取输入数据的双曲正切值。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.math_function]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.math_function
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/tanhf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/math_functions.h
 ---
-# Tanhf
 
-功能：获取输入数据的三角函数双曲正切值。
+# tanhf
 
-函数原型：float tanhf(float x)
+## 功能说明
 
-参数：x（输入）源操作数。
+获取输入数据的三角函数双曲正切值。
 
-返回值：输入数据的双曲正切值。特殊值：inf→1.0；-inf→-1.0；nan→nan。
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002484776370.png)
 
-约束：无。需包含头文件 simt_api/math_functions.h。
+## 函数原型
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+```cpp
+inline float tanhf(float x)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+输入数据的双曲正切值。
+
+-   当x为inf时，返回值为1.0。
+-   当x为-inf时，返回值为-1.0。
+-   当x为nan时，返回值为nan。
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/math_functions.h`头文件。
+
+```cpp
+#include "simt_api/math_functions.h"
+```
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(256) void compute_tanhf(float *result, const float *x, uint32_t count)
+    {
+        const uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if (idx >= count) {
+            return;
+        }
+        result[idx] = tanhf(x[idx]);
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(256) inline void compute_tanhf_vf(__gm__ float *result, __gm__ const float *x, uint32_t count)
+    {
+        const uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if (idx >= count) {
+            return;
+        }
+        result[idx] = tanhf(x[idx]);
+    }
+
+    __global__ __vector__ void run_tanhf(__gm__ float *result, __gm__ const float *x, uint32_t count)
+    {
+        asc_vf_call<compute_tanhf_vf>(dim3(256), result, x, count);
+    }
+    ```
+
+输入输出示例如下：
+
+```
+x：0.25, 0.75, 1.25, 1.75
+result: 0.2449186 0.6351489 0.8482836 0.9413756
+```
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [ForeachTanh 950 ACLNN 算子知识](../../../../operators/aclnn/nn/foreach/foreach_tanh_950.md)（`related`）：算子声明的固定版本源码包含对 `tanhf(...)` 的直接调用（第 46 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tanh/op_kernel/arch35/foreach_tanh_simt.h#L46)
+
+<!-- cannbot:api-operator:end -->
+<!-- cannbot:related:end -->

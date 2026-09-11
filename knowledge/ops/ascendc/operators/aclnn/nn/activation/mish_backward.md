@@ -5,40 +5,40 @@ description: "说明 aclnnMishBackward 在 A2/A3 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/docs/aclnnMishBackward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/docs/aclnnMishBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_host/op_api/aclnn_mish_backward_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_host/op_api/aclnn_mish_backward_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_host/op_api/mish_grad_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_host/op_api/mish_grad_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_host/mish_grad_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_host/mish_grad_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_host/mish_grad_v2_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_host/mish_grad_v2_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish_grad/docs/aclnnMishBackward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish_grad/docs/aclnnMishBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish_grad/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish_grad/op_host/arch35/mish_grad_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish_grad/op_host/arch35/mish_grad_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish_grad/op_kernel/mish_grad_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish_grad/op_kernel/mish_grad_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/gen_ops_info.cmake
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/gen_ops_info.cmake
     role: implementation
 created_at: "2026-08-25T18:52:15Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -475,7 +475,7 @@ workspace_total = executor framework total；Kernel workspace 指针未读
 
 - 适用 Route：R-001、R-002。
 - 触发条件：公开 `aclnnMishBackward` 固定把 `tanhx=nullptr` 传给 `MishGradV2`，POD `haveTanhx=0`，两 body 调用 `ComputeTanhxCommon`。
-- Golden 来源：[`experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.h:64-71`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.h#L64-L71)
+- Golden 来源：[`experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.h:64-71`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/mish_grad_v2/op_kernel/mish_grad_v2.h#L64-L71)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

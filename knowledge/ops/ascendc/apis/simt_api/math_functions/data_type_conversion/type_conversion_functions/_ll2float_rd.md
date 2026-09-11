@@ -2,29 +2,95 @@
 type: API
 title: __ll2float_rd
 description: 遵循CAST_FLOOR模式，将int64类型数据转换为浮点数，返回转换后的值。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/data_type_conversion/type_conversion_functions/__ll2float_rd.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/device_functions.h
 ---
 
-# __ll2float_rd
+# \_\_ll2float\_rd
 
-功能：遵循CAST_FLOOR模式，将int64类型数据转换为浮点数，返回转换后的值。
+## 功能说明
 
-函数原型：float __ll2float_rd(const long long int x)
+遵循CAST\_FLOOR模式，将int64类型数据转换为浮点数，返回转换后的值。
 
-参数：x（输入）源操作数。
+## 函数原型
 
-返回值：输入遵循CAST_FLOOR模式转换成的浮点数。特殊值：9223372036854775807（INT64_MAX）→9.223372e+18；-9223372036854775808（INT64_MIN）→-9.223372e+18；16777217（2^24+1 ）→ASCRT_TWO_TO_24_F；-16777217（-2^24-1）→-1.67772e+07；9007199254740993（2^53+1）→9.0072e+15；-9007199254740993（-2^53-1）→-9.0072e+15。
+```cpp
+inline float __ll2float_rd(const long long int x)
+```
 
-约束：无。需包含头文件 simt_api/device_functions.h。
+## 参数说明
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+输入遵循CAST\_FLOOR模式转换成的浮点数。特殊值如下：
+
+| x值 | 返回值 |
+|---|---|
+| 9223372036854775807（INT64_MAX） | 9.223371e+18（2^63减2^40） |
+| -9223372036854775808（INT64_MIN） | -9.223372e+18 |
+| 16777217（2^24+1 ） | ASCRT_TWO_TO_24_F |
+| -16777217（-2^24-1） | -1.67772e+07 |
+| 9007199254740993（2^53+1） | 9.0072e+15 |
+| -9007199254740993（-2^53-1） | -9.0072e+15 |
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/device_functions.h`头文件。
+
+```cpp
+#include "simt_api/device_functions.h"
+```
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void kernel__ll2float_rd(float* dst, int64_t* x, uint32_t total_length)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        if (idx >= total_length) {
+            return;
+        }
+        dst[idx] = __ll2float_rd(x[idx]);
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void kernel__ll2float_rd(__gm__ float* dst, __gm__ int64_t* x, uint32_t total_length)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        if (idx >= total_length) {
+            return;
+        }
+        dst[idx] = __ll2float_rd(x[idx]);
+    }
+    ```
+
 
 <!-- cannbot:related:start -->
 ## 相关

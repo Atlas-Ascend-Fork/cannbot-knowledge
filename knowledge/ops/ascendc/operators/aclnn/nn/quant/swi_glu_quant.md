@@ -5,36 +5,36 @@ description: "说明 aclnnSwiGluQuantV2 在 A2/A3 上的接口语义、Host/Laun
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/docs/aclnnSwiGluQuantV2.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/docs/aclnnSwiGluQuantV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_tiling_utils.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_tiling_utils.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_kernel/swi_glu_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_kernel/swi_glu_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_kernel/swi_glu_quant_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_kernel/swi_glu_quant_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_kernel/swi_glu_quant.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_kernel/swi_glu_quant.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_kernel/swi_glu_quant_static.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_kernel/swi_glu_quant_static.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/config/ascend910b/swi_glu_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/config/ascend910b/swi_glu_quant_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/config/ascend910_93/swi_glu_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/config/ascend910_93/swi_glu_quant_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:31:14Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -501,7 +501,7 @@ workspace_total = platformLibApiWorkspace + realCoreNum*32
 
 - 适用 Route：R-001、R-002、R-003。
 - 触发条件：完整列对齐后至少一行可驻留，即 `(ubSize/25)/alignedColLen>=1`。
-- Golden 来源：[`quant/swi_glu_quant/op_host/swi_glu_quant_tiling_utils.h:343-368`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_tiling_utils.h#L343-L368)
+- Golden 来源：[`quant/swi_glu_quant/op_host/swi_glu_quant_tiling_utils.h:343-368`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_host/swi_glu_quant_tiling_utils.h#L343-L368)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -540,7 +540,7 @@ Host 把融合 body 中两路输入、FP32 中间、输出和参数队列的每�
 
 - 适用 Route：R-001、R-003。
 - 触发条件：相邻行仍落在同一个累计 group 边界内。
-- Golden 来源：[`quant/swi_glu_quant/op_kernel/swi_glu_quant.h:287-300`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_kernel/swi_glu_quant.h#L287-L300)
+- Golden 来源：[`quant/swi_glu_quant/op_kernel/swi_glu_quant.h:287-300`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/swi_glu_quant/op_kernel/swi_glu_quant.h#L287-L300)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

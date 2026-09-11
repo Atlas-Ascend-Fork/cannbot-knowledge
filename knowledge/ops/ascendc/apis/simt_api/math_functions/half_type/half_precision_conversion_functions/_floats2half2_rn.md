@@ -2,26 +2,103 @@
 type: API
 title: __floats2half2_rn
 description: 将输入数据x、y遵循CAST_RINT模式分别转换为half类型，并填充到half2的前后两部分，返回转换后的half2类型数据。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__floats2half2_rn.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_fp16.h
 ---
 
-# __floats2half2_rn
+# \_\_floats2half2\_rn
 
-功能：将输入数据x、y遵循CAST_RINT模式分别转换为half类型，并填充到half2的前后两部分，返回转换后的half2类型数据。
+## 功能说明
 
-函数原型：half2 __floats2half2_rn(const float x, const float y)
+将输入数据x、y遵循CAST\_RINT模式分别转换为half类型，并填充到half2的前后两部分，返回转换后的half2类型数据。
 
-参数：x（输入）源操作数，y（输入）源操作数。
+## 函数原型
 
-返回值：将输入float类型数据遵循CAST_RINT模式分别转换为half类型，并填充到half2的前后两部分的结果。本接口受全局饱和寄存器影响，。特殊值：0→0；-0→-0；nan→0；inf→ASCRT_MAX_NORMAL_FP16；-inf→-ASCRT_MAX_NORMAL_FP16。
+```cpp
+inline half2 __floats2half2_rn(const float x, const float y)
+```
 
-约束：无。需包含头文件 simt_api/asc_fp16.h。
+## 参数说明
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+| y | 输入 | 源操作数。 |
+
+## 返回值说明
+
+将输入float类型数据遵循CAST\_RINT模式分别转换为half类型，并填充到half2的前后两部分的结果。本接口受全局饱和寄存器影响，特殊值如下：
+
+| x值 | 非饱和模式返回值 | 饱和模式返回值 |
+| --- | --- | --- |
+| 0 | 0 | 0 |
+| -0 | -0 | -0 |
+| nan | nan | 0 |
+| inf | inf | ASCRT\_MAX\_NORMAL\_FP16 |
+| x>ASCRT\_MAX\_NORMAL\_FP16 | inf | ASCRT\_MAX\_NORMAL\_FP16 |
+| -inf | -inf | -ASCRT\_MAX\_NORMAL\_FP16 |
+| x<-ASCRT\_MAX\_NORMAL\_FP16 | -inf | -ASCRT\_MAX\_NORMAL\_FP16 |
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/asc_fp16.h`头文件。
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    // 使用短向量可提升数据搬运效率
+    __aicore__ void simt_floats2half2_rn(float* input1, float* input2, half2* output, uint32_t input_total_length)
+    {
+        uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if (idx > input_total_length) {
+            return;
+        }
+        output[idx] = __floats2half2_rn(input1[idx], input2[idx]);
+    }
+    __global__ __launch_bounds__(1024) void cast_kernel(float* input1, float* input2, half* output, uint32_t input_total_length)
+    {
+        simt_floats2half2_rn(input1, input2, (half2*)output, input_total_length);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    // 使用短向量可提升数据搬运效率
+    __simt_vf__ __launch_bounds__(1024) inline void simt_floats2half2_rn(__gm__ float* input1, __gm__ float* input2, __gm__ half2* output, uint32_t input_total_length)
+    {
+        uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if (idx > input_total_length) {
+            return;
+        }
+        output[idx] = __floats2half2_rn(input1[idx], input2[idx]);
+    }
+    __global__ __vector__ void cast_kernel(__gm__ float* input1,  __gm__ float* input2, __gm__ half* output, uint32_t input_total_length)
+    {
+        asc_vf_call<simt_floats2half2_rn>(dim3(1024), input1, input2, (__gm__ half2*)output, input_total_length);
+    }
+    ```

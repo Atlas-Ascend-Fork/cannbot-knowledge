@@ -5,32 +5,32 @@ description: "说明 aclnnNLLLoss2dBackward 在 950 上的接口语义、Host/La
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/docs/aclnnNLLLoss2dBackward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/docs/aclnnNLLLoss2dBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_api/aclnn_nll_loss2d_backward.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_api/aclnn_nll_loss2d_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_api/aclnn_nll_loss2d_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_api/aclnn_nll_loss2d_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_api/nll_loss_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_api/nll_loss_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_host/nll_loss_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_host/nll_loss_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_host/arch35/nll_loss_grad_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_host/arch35/nll_loss_grad_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_host/arch35/nll_loss_grad_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_host/arch35/nll_loss_grad_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_kernel/nll_loss_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_kernel/nll_loss_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_kernel/arch35/nll_loss_grad.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_kernel/arch35/nll_loss_grad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_host/config/ascend950/nll_loss_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_host/config/ascend950/nll_loss_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:15:57Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -562,7 +562,7 @@ workspace_total(core node) = 16777216 B
 
 - 适用 Route：R-001、R-002、R-003。
 - 触发条件：950 2d backward 的 `xDims==4`，每个 `target[i]` 唯一决定一个类别输出。
-- Golden 来源：[`op_kernel/arch35/nll_loss_grad.h:178-198`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_kernel/arch35/nll_loss_grad.h#L178-L198)
+- Golden 来源：[`op_kernel/arch35/nll_loss_grad.h:178-198`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_kernel/arch35/nll_loss_grad.h#L178-L198)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -610,7 +610,7 @@ __simt_vf__ __aicore__ LAUNCH_BOUND(THREAD_DIM) inline void SimtComputeNoReduce4
 
 - 适用 Route：R-002；R-003复用 scalar grad 但不消费归一化商。
 - 触发条件：reduction=mean，`gradOutput` 与 `totalWeight` 都只有一个元素。
-- Golden 来源：[`op_kernel/arch35/nll_loss_grad.h:243-251`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_kernel/arch35/nll_loss_grad.h#L243-L251)
+- Golden 来源：[`op_kernel/arch35/nll_loss_grad.h:243-251`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/nll_loss_grad/op_kernel/arch35/nll_loss_grad.h#L243-L251)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

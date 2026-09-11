@@ -2,26 +2,94 @@
 type: API
 title: Hfloor
 description: 获取小于或等于输入half数据的最大整数值。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_math_functions/hfloor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_fp16.h
 ---
 
-# Hfloor
+# hfloor
 
-功能：获取小于或等于输入数据的最大整数值。
+## 功能说明
 
-函数原型：half hfloor(half x)
+获取小于或等于输入数据的最大整数值。
 
-参数：x（输入）源操作数。
+## 函数原型
 
-返回值：小于或等于输入数据的最大整数值。本接口受全局饱和寄存器的影响，。特殊值：±0→0；nan→0；inf→ASCRT_MAX_NORMAL_FP16；-inf→-ASCRT_MAX_NORMAL_FP16。
+```cpp
+inline half hfloor(half x)
+```
 
-约束：无。需包含头文件 simt_api/asc_fp16.h。
+## 参数说明
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+小于或等于输入数据的最大整数值。本接口受全局饱和寄存器的影响，特殊值如下：
+
+| x值 | 非饱和模式返回值 | 饱和模式返回值 |
+| --- | --- | --- |
+| ±0 | 0 | 0 |
+| nan | nan | 0 |
+| inf | inf | ASCRT\_MAX\_NORMAL\_FP16 |
+| -inf | -inf | -ASCRT\_MAX\_NORMAL\_FP16 |
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用half类型接口需要包含`simt_api/asc_fp16.h`头文件。
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void kernel_hfloor(half* dst, half* x, uint32_t total_length)
+    {
+        uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;
+        if (idx >= total_length) {
+            return;
+        }
+        dst[idx] = hfloor(x[idx]);
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void kernel_hfloor(__gm__ half* dst, __gm__ half* x, uint32_t total_length)
+    {
+        uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;
+        if (idx >= total_length) {
+            return;
+        }
+        dst[idx] = hfloor(x[idx]);
+    }
+
+    __global__ __vector__ void run_hfloor(__gm__ half* dst, __gm__ half* x, uint32_t total_length)
+    {
+        asc_vf_call<kernel_hfloor>(dim3(1024), dst, x, total_length);
+    }
+    ```

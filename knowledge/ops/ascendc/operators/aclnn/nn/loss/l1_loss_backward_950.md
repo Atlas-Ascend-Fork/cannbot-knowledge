@@ -5,33 +5,33 @@ description: "说明 aclnnL1LossBackward 在 950 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/docs/aclnnL1LossBackward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/docs/aclnnL1LossBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_api/aclnn_l1_loss_backward.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_api/aclnn_l1_loss_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_api/aclnn_l1_loss_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_api/aclnn_l1_loss_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_api/l1_loss_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_api/l1_loss_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_host/arch35/l1_loss_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_host/arch35/l1_loss_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_kernel/arch35/l1_loss_grad_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_kernel/arch35/l1_loss_grad_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_kernel/arch35/l1_loss_grad_dag.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_kernel/arch35/l1_loss_grad_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_kernel/l1_loss_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_kernel/l1_loss_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_host/l1_loss_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_host/l1_loss_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_host/config/ascend950/l1_loss_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_host/config/ascend950/l1_loss_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/broadcast/broadcast_base_struct.h
     role: implementation
@@ -56,7 +56,7 @@ sources:
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/src/nnopbase/composite_op/aclnn_engine/op_executor.cpp
     role: implementation
 created_at: "2026-08-25T17:16:52Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -460,7 +460,7 @@ workspace_total(core declaration) = 16*1024*1024 bytes
 
 - 适用 Route：R-002
 - 触发条件：`IsRegbase()` 且 `gradOutput->GetViewShape().IsScalar()`；核心 Tiling 将归一化后的 `[1]` 标记为 scalar。
-- Golden 来源：[`loss/l1_loss_grad/op_api/aclnn_l1_loss_backward.cpp:210-215`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_api/aclnn_l1_loss_backward.cpp#L210-L215)
+- Golden 来源：[`loss/l1_loss_grad/op_api/aclnn_l1_loss_backward.cpp:210-215`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_api/aclnn_l1_loss_backward.cpp#L210-L215)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -493,7 +493,7 @@ ACLNN 不建立 `BroadcastTo(gradOutput→B)` 临时张量，核心 scheduler �
 
 - 适用 Route：R-001、R-002
 - 触发条件：核心 dtype 为 FP16/BF16/FP32；模板第二类型固定为 `float`。
-- Golden 来源：[`loss/l1_loss_grad/op_kernel/arch35/l1_loss_grad_dag.h:41-55`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_kernel/arch35/l1_loss_grad_dag.h#L41-L55)
+- Golden 来源：[`loss/l1_loss_grad/op_kernel/arch35/l1_loss_grad_dag.h:41-55`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/l1_loss_grad/op_kernel/arch35/l1_loss_grad_dag.h#L41-L55)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

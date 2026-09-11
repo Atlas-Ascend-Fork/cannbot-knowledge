@@ -2,19 +2,89 @@
 type: API
 title: Htrunc
 description: 获取对输入bfloat16_t数据浮点数截断后的整数。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_math_functions/htrunc.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_bf16.h
 ---
 
-# Htrunc
+# htrunc
+
+## 功能说明
 
 获取对输入数据的浮点数截断后的整数。
-函数原型：bfloat16_t htrunc(bfloat16_t x)
-返回值：输入数据浮点数截断后的整数。本接口受全局饱和模式影响，特殊值如下：
-支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+## 函数原型
+
+```cpp
+inline bfloat16_t htrunc(bfloat16_t x)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+输入数据浮点数截断后的整数。本接口受全局饱和模式影响，特殊值如下：
+
+| x值 | 非饱和模式返回值 | 饱和模式返回值 |
+| --- | --- | --- |
+| ±0 | 0 | 0 |
+| inf | inf | ASCRT_MAX_NORMAL_BF16 |
+| -inf | -inf | -ASCRT_MAX_NORMAL_BF16 |
+| nan | nan | 0 |
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用bfloat16\_t类型接口需要包含`simt_api/asc_bf16.h`头文件。
+
+```cpp
+#include "simt_api/asc_bf16.h"
+```
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void kernel_trunc(bfloat16_t* dst, bfloat16_t* x, uint32_t total_length)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        if (idx >= total_length) {
+            return;
+        }
+        dst[idx] = htrunc(x[idx]);
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void kernel_trunc(__gm__ bfloat16_t* dst, __gm__ bfloat16_t* x, uint32_t total_length)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        if (idx >= total_length) {
+            return;
+        }
+        dst[idx] = htrunc(x[idx]);
+    }
+    ```

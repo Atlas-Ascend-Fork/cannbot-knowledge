@@ -5,30 +5,30 @@ description: "说明 aclnnDeformableConv2d 在 A2/A3 上的接口语义、Host/L
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/docs/aclnnDeformableConv2d.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/docs/aclnnDeformableConv2d.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/op_api/aclnn_deformable_conv2d.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/op_api/aclnn_deformable_conv2d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/op_api/deformable_conv2d.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/op_api/deformable_conv2d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/deformable_conv2d_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/deformable_conv2d_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/deformable_conv2d_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/deformable_conv2d_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_kernel/deformable_conv2d.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_kernel/deformable_conv2d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_kernel/deformable_conv2d_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_kernel/deformable_conv2d_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_kernel/deformable_conv2d_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_kernel/deformable_conv2d_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/deformable_conv2d_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/deformable_conv2d_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T16:25:24Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -376,7 +376,7 @@ workspace_total 与 UB 总分配同 R-001；R-002 只改变 inputBuf 内的阶�
 
 - 适用 Route：R-001、R-002
 - 触发条件：所有通过 Tiling 的 shape；`deformableGroups*kH*kW>2048` 时强制宽度 1 并切 group，否则优先保留完整 group 并均衡 outW
-- Golden 来源：[`deformable_conv2d_tiling.cpp:SplitCore`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/deformable_conv2d_tiling.cpp)
+- Golden 来源：[`deformable_conv2d_tiling.cpp:SplitCore`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_host/deformable_conv2d_tiling.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -412,7 +412,7 @@ xy/offset/index/weight TBuf 都以 2048 采样点为硬上限。Host 同时切�
 
 - 适用 Route：R-002
 - 触发条件：`deformableGroups==1 && inC%blockNum==0 && kSize*inC<=1024` 及二次 group 容量检查
-- Golden 来源：[`deformable_conv2d_base.h:ParseTilingData`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_kernel/deformable_conv2d_base.h)
+- Golden 来源：[`deformable_conv2d_base.h:ParseTilingData`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_kernel/deformable_conv2d_base.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -448,7 +448,7 @@ if (deformableGroups == 1 && inC % blockNum == 0 && kSize * inC <= MAX_INPUT_SIZ
 
 - 适用 Route：R-001、R-002
 - 触发条件：全部有效 tile
-- Golden 来源：[`deformable_conv2d_base.cpp:CopyOut`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_kernel/deformable_conv2d_base.cpp)
+- Golden 来源：[`deformable_conv2d_base.cpp:CopyOut`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/deformable_conv2d/op_kernel/deformable_conv2d_base.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

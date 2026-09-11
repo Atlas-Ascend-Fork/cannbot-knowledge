@@ -2,26 +2,87 @@
 type: API
 title: GetBroadCastMaxMinTmpSize
 description: 在host侧获取Broadcast接口计算所需的最大和最小临时空间大小。
-tags: [task.lookup, topic.implementation.api_layer.high_level_api, topic.data_movement.layout_transform]
-status: stable
+tags:
+- task.lookup
+- topic.implementation.api_layer.high_level_api
+- topic.data_movement.layout_transform
+status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/tensor_transform/GetBroadCastMaxMinTmpSize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-04T01:25:11Z'
+platforms: []
+source_headers:
+- include/adv_api/pad/broadcast_tiling.h
 ---
 
 # GetBroadCastMaxMinTmpSize
 
-host侧Tiling接口，用于获取Broadcast接口所需的最大和最小临时空间大小。
+## 功能说明
 
-函数原型：void GetBroadCastMaxMinTmpSize(const AscendC::TensorShape& srcShape, const uint32_t typeSize, const bool isReuseSource, uint32_t& maxValue, uint32_t& minValue)
+kernel侧Broadcast接口的计算需要开发者预留/申请临时空间，本接口用于在host侧获取预留/申请的最大和最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。
 
-参数：srcShape为输入shape；typeSize为数据类型字节数；isReuseSource预留传false；maxValue/minValue输出临时空间范围。在minValue到maxValue范围内临时空间越大性能越好。约束：无。
+-   为保证功能正确，预留/申请的临时空间大小不能小于最小临时空间大小；
+-   在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。
+
+## 函数原型
+
+```
+void GetBroadCastMaxMinTmpSize(const platform_ascendc::PlatformAscendC& ascendcPlatform, const AscendC::TensorShape& srcShape,const AscendC::TensorShape& dstShape, uint32_t typeSize, const bool isReuseSource, uint32_t& maxValue, uint32_t& minValue)
+```
+
+## 参数说明
+
+**表1**  接口参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| ascendcPlatform | 输入 | 执行的平台信息 |
+| srcShape | 输入 | 输入的shape信息，参数类型为[AscendC::TensorShape](../data_structures/tensor_shape.md)。 |
+| dstShape | 输入 | 输出的shape信息，参数类型为[AscendC::TensorShape](../data_structures/tensor_shape.md)。 |
+| typeSize | 输入 | 输入的数据类型大小，单位为字节。比如输入的数据类型为half，此处应传入2。 |
+| isReuseSource | 输入 | 是否复用源操作数输入的空间，与kernel侧接口一致。 |
+| maxValue | 输出 | Broadcast接口能完成计算所需的最大临时空间大小，超出该值的空间不会被该接口使用。在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。最大空间大小为0表示计算不需要临时空间。<br>maxValue仅作为参考值，有可能大于Unified Buffer（UB）剩余空间的大小，该场景下，开发者需要根据UB剩余空间的大小来选取合适的临时空间大小。 |
+| minValue | 输出 | Broadcast接口能完成计算所需最小临时空间大小。为保证功能正确，接口计算时预留/申请的临时空间不能小于该数值。最小空间大小为0表示计算不需要临时空间。 |
+
+## 返回值说明
+
+无
+
+## 约束说明
+
+无
+
+## 调用示例
+
+```
+// 输入shape信息为(1024,1);算子输入的数据类型为half;不允许修改源操作数
+auto platformInfo = context_->GetPlatformInfo();
+auto ascendcPlatform = platform_ascendc::PlatformAscendC(platformInfo);
+std::vector<int64_t> srcShapeVec = {1024, 1};
+std::vector<int64_t> dstShapeVec = {1024, 16};
+AscendC::TensorShape srcShape(srcShapeVec);
+AscendC::TensorShape dstShape(dstShapeVec);
+uint32_t maxValue{0};
+uint32_t minValue{0};
+AscendC::GetBroadCastMaxMinTmpSize(ascendcPlatform, srcShape, dstShape, 2, false, maxValue, minValue);
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
 - [Broadcast（张量变换）](broadcast.md)（`related`）：临时空间大小通过GetBroadCastMaxMinTmpSize获取。；host侧Tiling接口，用于获取Broadcast接口所需的最大和最小临时空间大小。。Broadcast 直接指定右侧接口为其临时空间来源，右侧为计算接口返回可选范围；两者分别承担 Kernel 计算与 Host 资源查询，是明确的前后任务链。
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [MatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/matmul_all_reduce_950.md)（`related`）：算子声明的固定版本源码包含对 `GetBroadCastMaxMinTmpSize(...)` 的直接调用（第 297 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_host/op_tiling/arch35/quant_matmul_all_reduce_tiling_950.cpp#L297)
+- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)（`related`）：算子声明的固定版本源码包含对 `GetBroadCastMaxMinTmpSize(...)` 的直接调用（第 297 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_host/op_tiling/arch35/quant_matmul_all_reduce_tiling_950.cpp#L297)
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

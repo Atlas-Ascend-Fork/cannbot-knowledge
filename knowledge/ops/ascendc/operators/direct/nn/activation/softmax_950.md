@@ -5,28 +5,28 @@ description: "说明 cann_bench::softmax、softmax_npu 与 launch_softmax 在 95
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/README.md"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/README.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_host/softmax_v2_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_host/softmax_v2_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_host/arch35/softmax_v2_base_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_host/arch35/softmax_v2_base_tiling.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/softmax_v2_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/softmax_v2_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/arch35/softmax_v2_base.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/arch35/softmax_v2_base.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/arch35/softmax_v2_ar_small_r.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/arch35/softmax_v2_ar_small_r.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/arch35/softmax_v2_ar_full_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/arch35/softmax_v2_ar_full_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/arch35/softmax_v2_ar_recompute.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/arch35/softmax_v2_ar_recompute.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/arch35/softmax_v2_ara_full_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/arch35/softmax_v2_ara_full_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/arch35/softmax_v2_ara_recompute.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/arch35/softmax_v2_ara_recompute.h"
     role: implementation
 created_at: "2026-08-24T19:32:45Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -67,7 +67,7 @@ cann_versions: ["9.1.0"]
 
 `TORCH_LIBRARY_FRAGMENT` 声明 `cann_bench::softmax(Tensor x, int dim=-1)`；Meta 实现完成 rank、dim、dtype 校验并返回同形空张量；PrivateUse1 绑定到 `softmax_npu`。后者再次要求连续布局，调用 `calc_softmax_tiling`，再通过 `OpCommand::RunOpApi("SoftmaxDirect", aclCall)` 在当前 stream 调用 `launch_softmax`。卡片目标版本是 CANN 9.1.0；交付件 CMake 明确接受 `ascend950` 并映射为 `dav-3510`，这是直调构建声明。
 
-限定官方映射仓的指定 40 位 Commit `ceb4536a2bd6fc99b85aec9d0fdcc0f470376292` 不在本地对象库中，因此没有把另一 Commit 的 `activation/softmax_v2` 内容写成该版本官方事实。本文的算法、Route 和 ABI 均标为交付件转换事实；这一官方相关映射缺口不反向否定交付件的 950 直调构建声明。
+限定官方映射仓的指定 40 位 Commit `955f8b33985b6d72989ebff341bb9c2c564a51bc` 不在本地对象库中，因此没有把另一 Commit 的 `activation/softmax_v2` 内容写成该版本官方事实。本文的算法、Route 和 ABI 均标为交付件转换事实；这一官方相关映射缺口不反向否定交付件的 950 直调构建声明。
 
 ## Host/Launcher 执行流程
 
@@ -1215,7 +1215,7 @@ UB_total=0; dynamic_ub=0/null launch config; workspace_total=0
 
 - 适用 Route：R-006，尤其 `R>8`。
 - 触发条件：`BinaryAddTiling` 成功并产生 8 路 tail offsets。
-- 转换片段定位：`softmax_kernel.cpp:313-315`；相关官方入口：[`softmax_v2_apt.cpp`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/softmax_v2_apt.cpp)
+- 转换片段定位：`softmax_kernel.cpp:313-315`；相关官方入口：[`softmax_v2_apt.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/softmax_v2_apt.cpp)
 
 **交付件源码（转换事实）**：
 
@@ -1246,7 +1246,7 @@ Host 把超出尾行的读取地址统一指向 `validNumInXUb` 后的额外零�
 
 - 适用 Route：R-005。
 - 触发条件：FP16、`A1<=4`、`R<=512` 且全 tile 的输入与 FP32 exp 可同时驻 UB。
-- 转换片段定位：`softmax_v2_ara_one_load.h:90-115`；相关官方源码：[`softmax_v2_ara_recompute.h`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/arch35/softmax_v2_ara_recompute.h)
+- 转换片段定位：`softmax_v2_ara_one_load.h:90-115`；相关官方源码：[`softmax_v2_ara_recompute.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/arch35/softmax_v2_ara_recompute.h)
 
 **交付件源码（转换事实）**：
 
@@ -1283,7 +1283,7 @@ DataCopyPad<T, PaddingMode::Normal>(yGm_[offset], x, cp);
 
 - 适用 Route：R-004。
 - 触发条件：`A0!=1 && R>=4096 && maxInner>=1`，固定 `rChunk=256`。
-- 转换片段定位：`softmax_v2_ara_stream.h:115-138`；相关官方源码：[`softmax_v2_ara_full_load.h`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/arch35/softmax_v2_ara_full_load.h)
+- 转换片段定位：`softmax_v2_ara_stream.h:115-138`；相关官方源码：[`softmax_v2_ara_full_load.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/arch35/softmax_v2_ara_full_load.h)
 
 **交付件源码（转换事实，不伪称指定 Commit 官方原文）**：
 

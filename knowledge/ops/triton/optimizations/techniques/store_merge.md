@@ -75,7 +75,6 @@ data = tl.where(offs_n == 1, data1, data)
 910_95 上 MTE3 搬运要求 32B 对齐。合并后的连续 store 天然更易满足对齐，是额外收益；但合并后总字节数仍可能不足 32B（如 3×int32=12B），此时主要收益是减少搬运次数。
 
 <!-- cannbot:related:start -->
-
 ## 相关
 
 - [数据搬运与内存访问模式优化](data_movement_optimization.md)（`related`）：“连续访存 vs 离散访存、MTE3 带宽共享”

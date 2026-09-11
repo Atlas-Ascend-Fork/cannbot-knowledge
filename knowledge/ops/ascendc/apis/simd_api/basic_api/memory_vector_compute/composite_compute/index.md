@@ -6,7 +6,6 @@
 - [AddReluCast](add_relu_cast.md)：按元素求和，结果和0对比取较大值，并根据源操作数和目的操作数Tensor的数据类型进行精度转换。
 - [Axpy](axpy.md)：计算向量和标量的乘积，并将乘积结果逐元素加到的输出向量上。
 - [CastDequant](cast_dequant.md)：对输入做量化并进行精度转换，对输出结果的溢出采用饱和处理。需与SetDeqScale接口配合使用。
-- [复合计算](composite_compute.md)：矢量复合计算接口集，包含 Axpy、MulAddDst、MulCast、AddRelu、FusedMulAdd 等融合算子接口。
 - [ExpSub](exp_sub_isasi.md)：将src0与src1相减，以差值作为指数计算自然常数e的幂次，并将结果写入dst。
 - [FusedMulAdd](fused_mul_add.md)：按元素将src0和dst相乘并加上src1，最终结果存放入dst。
 - [MulAddDst](mul_add_dst.md)：按元素将src0和src1相乘并和dst相加，将最终结果存放进dst中。

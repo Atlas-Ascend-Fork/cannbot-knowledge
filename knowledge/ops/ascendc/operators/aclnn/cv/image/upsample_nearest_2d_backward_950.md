@@ -5,42 +5,42 @@ description: "说明 aclnnUpsampleNearest2dBackwardGetWorkspaceSize/aclnnUpsampl
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest2d_grad/docs/aclnnUpsampleNearest2dBackward.md
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest2d_grad/docs/aclnnUpsampleNearest2dBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest2d_grad/op_host/op_api/aclnn_upsample_nearest_2d_backward.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest2d_grad/op_host/op_api/aclnn_upsample_nearest_2d_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest2d_grad/op_host/op_api/aclnn_upsample_nearest_2d_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest2d_grad/op_host/op_api/aclnn_upsample_nearest_2d_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_api/resize_nearest_neighbor_v2_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_api/resize_nearest_neighbor_v2_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/resize_nearest_neighbor_v2_grad_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/resize_nearest_neighbor_v2_grad_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_simt_base.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_simt_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_all_copy.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_all_copy.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_simt_determine.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_simt_determine.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_simt_determine_1d.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_simt_determine_1d.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_simt_determine_hw.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_kernel/arch35/resize_nearest_neighbor_v2_grad_simt_determine_hw.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/resize_nearest_neighbor_v2_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/resize_nearest_neighbor_v2_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/config/ascend950/resize_nearest_neighbor_v2_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/config/ascend950/resize_nearest_neighbor_v2_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T20:57:20Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -594,7 +594,7 @@ workspace_total(core node)=16MiB（仅 ABI 检查）
 
 - 适用 Route：R-001
 - 触发条件：`lenSrcH==lenDstH && lenSrcW==lenDstW`
-- Golden 来源：[`resize_nearest_neighbor_v2_grad_tiling_base.cpp:441-470`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling_base.cpp#L441-L470)
+- Golden 来源：[`resize_nearest_neighbor_v2_grad_tiling_base.cpp:441-470`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling_base.cpp#L441-L470)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -626,7 +626,7 @@ if ((lenSrcH_ == lenDstH_ && lenSrcW_ == lenDstW_)) {
 
 - 适用 Route：R-003
 - 触发条件：NCHW、`lenDstW>=2048`、`1/scaleW>=12`、`lenSrcH*lenSrcW>=4096`
-- Golden 来源：[`resize_nearest_neighbor_v2_grad_tiling_base.cpp:389-409`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling_base.cpp#L389-L409)
+- Golden 来源：[`resize_nearest_neighbor_v2_grad_tiling_base.cpp:389-409`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling_base.cpp#L389-L409)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -663,7 +663,7 @@ if (1.0f / scaleW_ < SIMT_DETERMINE_DST_Y_W_RATIO) {
 
 - 适用 Route：R-002
 - 触发条件：非同尺寸，且一个不变空间轴长度为 1；W 不变且为 1 时交换 H/W POD
-- Golden 来源：[`resize_nearest_neighbor_v2_grad_tiling_base.cpp:546-571`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling_base.cpp#L546-L571)
+- Golden 来源：[`resize_nearest_neighbor_v2_grad_tiling_base.cpp:546-571`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/resize_nearest_neighbor_v2_grad/op_host/arch35/resize_nearest_neighbor_v2_grad_tiling_base.cpp#L546-L571)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

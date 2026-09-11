@@ -8,10 +8,12 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # ----------------------------------------------------------------------------------------------------------
 
-"""Pinned source registration, offline links and safe resource restoration."""
+"""Pinned source provenance, extraction and bounded API navigation regressions."""
 
 from __future__ import annotations
 
+from dataclasses import replace
+import hashlib
 import importlib
 import os
 from pathlib import Path
@@ -25,12 +27,14 @@ from unittest import mock
 
 import yaml
 
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / ".agents/skills/knowledge-ingest/scripts"))
+api_links = importlib.import_module("api_operator_links")
 resource_tool = importlib.import_module("source_resources")
-resources = resource_tool.resources
-Contract = resource_tool.ingest.contract_module().Contract
-link_checks = importlib.import_module(f"{resource_tool.ingest.contract_package().__name__}.checks.links")
+resources = api_links.resources
+Contract = api_links.ingest.contract_module().Contract
+link_checks = resource_tool.links
 
 
 class SourceResourceTests(unittest.TestCase):
@@ -55,7 +59,7 @@ class SourceResourceTests(unittest.TestCase):
         self.checkout = destination
         self.definition = {
             "description": "Pinned fixture", "kind": "git", "root": "cann-ops-raw/ascendc/ops-nn",
-            "repository": "https://gitcode.com/cann/ops-nn", "fetch_script": ".agents/skills/knowledge-ingest/scripts/source_resources.py",
+            "repository": "https://gitcode.com/cann/ops-nn", "fetch_script": "get_resources.sh",
             "revisions": [self.revision],
         }
         self.registry_path = self.root / "governance/schemas/registries.yaml"
@@ -65,79 +69,29 @@ class SourceResourceTests(unittest.TestCase):
         self.save_registry()
         self.contract = Contract(self.root)
 
-
     def git(self, *args):
         return subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "-C", str(self.checkout), *args], check=True, capture_output=True, text=True).stdout.strip()
-
 
     def save_registry(self):
         self.registry_path.write_text(yaml.safe_dump(self.registry, allow_unicode=True, sort_keys=False))
 
-    def test_invalid_git_definitions_fail_closed(self):
-        valid = dict(self.definition)
-        cases = [
-            {"revisions": []}, {"revisions": ["main"]},
-            {"revisions": [self.revision, self.revision]},
-            {"repository": "https://example.invalid/ops-nn"},
-            {"archive_sha256": "a" * 64}, {"kind": "unknown"},
-        ]
-        for fields in cases:
-            with self.subTest(fields=fields):
-                self.definition.clear()
-                self.definition.update(valid | fields)
-                self.save_registry()
-                with self.assertRaises(ValueError):
-                    Contract(self.root)
-
-    def test_index_and_unregistered_links_cannot_leave_bundle(self):
-        card = self.operator()
-        for name, destination in (
-            ("index.md", self.checkout / "kernel.h"),
-            ("fixture.md", self.root / "governance/contracts/knowledge.py"),
-        ):
-            path = card.path.with_name(name)
-            path.write_text(f"# Fixture\n\n[code]({os.path.relpath(destination, path.parent)})\n")
-            document = SimpleNamespace(path=path, parse_error=None)
-            issues = link_checks.check(self.contract, document, SimpleNamespace(checked_local_roots=set()))
-            self.assertIn("link.outside_bundle", {issue.code for issue in issues})
-
-    def test_missing_file_and_invalid_line_fragment_are_rejected(self):
-        card = self.operator()
-        for filename, fragment in (("missing.h", "#L71"), ("kernel.h", "#invalid")):
-            path = os.path.relpath(self.checkout / filename, card.path.parent)
-            card.path.write_text(f"# Fixture\n\n[code]({path}{fragment})\n")
-            document = SimpleNamespace(path=card.path, parse_error=None)
-            self.assertTrue(link_checks.check(self.contract, document, SimpleNamespace(checked_local_roots=set())))
-
-    def test_fetch_refuses_unmanaged_directory_without_running_git(self):
-        with mock.patch.object(resource_tool, "run_git") as run:
-            with self.assertRaisesRegex(ValueError, "unmanaged"):
-                resource_tool.fetch_repository(self.root, self.definition)
-        run.assert_not_called()
-        self.assertEqual(self.raw, (self.checkout / "kernel.h").read_text())
-
-    def test_verify_cli_is_read_only_and_contract_mismatch_fails_before_fetch(self):
-        script = ROOT / ".agents/skills/knowledge-ingest/scripts/source_resources.py"
-        command = [sys.executable, str(script), "--knowledge-root", str(self.root)]
-        before = (self.checkout / "kernel.h").read_bytes()
-        result = subprocess.run([*command, "verify"], capture_output=True, text=True)
-        self.assertEqual(0, result.returncode, result.stderr)
-        self.assertIn("verified Git snapshots=1", result.stdout)
-        self.assertEqual(before, (self.checkout / "kernel.h").read_bytes())
-        target = self.root / "governance/contracts/knowledge.py"
-        target.write_text(target.read_text() + "\nraise RuntimeError('must not execute')\n")
-        result = subprocess.run([*command, "fetch"], capture_output=True, text=True)
-        self.assertEqual(2, result.returncode)
-        self.assertIn("contract does not match", result.stderr)
-        self.assertNotIn("Traceback", result.stderr)
-        self.assertFalse((self.checkout.parent / ".objects.git").exists())
-
-
-    def operator(self):
-        path = self.root / "knowledge/ops/ascendc/operators/aclnn/nn/activation/fixture.md"
+    def card(self, relative, body, *, title="Fixture", sources=()):
+        path = self.root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("# Fixture\n")
-        return SimpleNamespace(path=path, sources=[f"{self.definition['root']}/{self.revision}/kernel.h"])
+        metadata = {"type": "Operator" if "/operators/" in relative else "API", "title": title,
+                    "description": "Fixture", "tags": ["task.lookup", "topic.compilation"],
+                    "status": "stable", "sources": [{"resource": value, "role": "implementation"} for value in sources],
+                    "platforms": ["a2"], "created_at": "2026-08-18T00:00:00Z", "updated_at": "2026-08-18T00:00:00Z"}
+        path.write_text("---\n" + yaml.safe_dump(metadata, sort_keys=False) + "---\n\n" + body)
+        return api_links.split_card(path, self.root)
+
+    def api(self):
+        return self.card("knowledge/ops/ascendc/apis/system/get_block_idx.md", "# GetBlockIdx\n\n## 函数原型\n\n```cpp\nint GetBlockIdx(void);\n```\n", title="GetBlockIdx")
+
+    def operator(self, number=0, body="# Fixture\n", sources=None, family="nn"):
+        if sources is None:
+            sources = [f"cann-ops-raw/ascendc/ops-nn/{self.revision}/kernel.h"]
+        return self.card(f"knowledge/ops/ascendc/operators/aclnn/{family}/fixture/op_{number}.md", body, title=f"Operator {number}", sources=sources)
 
     def test_remote_variants_and_local_paths_keep_identical_revision(self):
         expected = f"cann-ops-raw/ascendc/ops-nn/{self.revision}/kernel.h"
@@ -145,12 +99,24 @@ class SourceResourceTests(unittest.TestCase):
             self.assertEqual(expected, resources.git_source(self.contract, spelling).resource)
         self.assertIsNone(resources.git_source(self.contract, "https://gitcode.com/cann/opbase/blob/" + "a" * 40 + "/file.h"))
 
-
     def test_source_paths_reject_unknown_commit_traversal_and_git_internals(self):
         for value in (f"cann-ops-raw/ascendc/ops-nn/{'a' * 40}/kernel.h", f"cann-ops-raw/ascendc/ops-nn/{self.revision}/../kernel.h", f"cann-ops-raw/ascendc/ops-nn/{self.revision}/.git/config", f"https://gitcode.com/cann/ops-nn/blob/{self.revision}/%2e%2e/kernel.h"):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 resources.git_source(self.contract, value)
 
+    def test_git_registry_and_display_limit_have_acceptance_and_rejection_cases(self):
+        Contract(self.root)
+        for value in (0, -1, True, "10"):
+            self.registry["local_sources"]["cann_docs_raw"]["mirror"]["api_operator_display_limit"] = value
+            self.save_registry()
+            with self.assertRaisesRegex(ValueError, "positive integer"):
+                Contract(self.root)
+        self.registry["local_sources"]["cann_docs_raw"]["mirror"]["api_operator_display_limit"] = 10
+        for revisions in ([], ["main"], [self.revision, self.revision]):
+            self.definition["revisions"] = revisions
+            self.save_registry()
+            with self.assertRaisesRegex(ValueError, "40-hex revisions"):
+                Contract(self.root)
 
     def test_checkout_reuse_is_read_only_and_rejects_dirty_origin_and_hidden_entries(self):
         before = (self.checkout / "kernel.h").read_bytes()
@@ -169,12 +135,10 @@ class SourceResourceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "hidden or sparse"):
             resources.validate_checkout(self.root, self.definition, self.revision)
 
-
     def test_source_symlink_escape_is_rejected(self):
         (self.checkout / "escape.h").symlink_to(self.root / "outside.h")
         with self.assertRaisesRegex(ValueError, "escapes"):
             resources.git_source(self.contract, f"cann-ops-raw/ascendc/ops-nn/{self.revision}/escape.h")
-
 
     def test_registry_refuses_reserved_roots_and_duplicate_repositories(self):
         for root in ("/", "knowledge", "../escape", ".git", "knowledge/ops-nn", "cann-ops-raw/../ops-nn", "cann-ops-raw//ops-nn", "cann-ops-raw/.git/ops-nn"):
@@ -187,7 +151,6 @@ class SourceResourceTests(unittest.TestCase):
         self.save_registry()
         with self.assertRaisesRegex(ValueError, "repositories must be unique"):
             Contract(self.root)
-
 
     def test_nested_source_roots_are_distinct_and_cannot_overlap(self):
         resource = f"{self.definition['root']}/{self.revision}/kernel.h"
@@ -203,10 +166,9 @@ class SourceResourceTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "must not overlap"):
                 Contract(self.root)
 
-
     def test_nested_frontmatter_sources_check_restored_checkout_and_offline_shape(self):
-        source_checks = importlib.import_module(f"{resource_tool.ingest.contract_package().__name__}.checks.sources")
-        restored_checks = importlib.import_module(f"{resource_tool.ingest.contract_package().__name__}.checks.local_sources")
+        source_checks = importlib.import_module(f"{api_links.ingest.contract_package().__name__}.checks.sources")
+        restored_checks = importlib.import_module(f"{api_links.ingest.contract_package().__name__}.checks.local_sources")
         card = self.operator()
         resource = card.sources[0]
         self.assertTrue(source_checks.is_safe_local_resource(self.contract, resource))
@@ -219,7 +181,6 @@ class SourceResourceTests(unittest.TestCase):
         self.assertEqual([], restored_checks.check(self.contract, document, SimpleNamespace(checked_local_roots=set())))
         self.assertTrue(source_checks.is_safe_local_resource(self.contract, resource))
         self.assertFalse(source_checks.is_safe_local_resource(self.contract, resource.replace(self.revision, "a" * 40)))
-
 
     def test_fetch_creates_nested_parents_without_following_ancestor_symlinks(self):
         definition = {**self.definition, "root": "new-raw/ascendc/ops-nn"}
@@ -240,6 +201,24 @@ class SourceResourceTests(unittest.TestCase):
         run.assert_not_called()
         self.assertEqual([], list(outside.iterdir()))
 
+    def test_audit_destinations_reject_escape_and_symlinks(self):
+        expected = self.root / "artifacts/graphs/evidence.json"
+        self.assertEqual(expected, api_links.ingest.graph_artifact_path(self.root, "artifacts/graphs/evidence.json"))
+        for target in ("knowledge/overwritten.md", "artifacts/graphs/../../../outside.json"):
+            with self.assertRaises(ValueError):
+                api_links.ingest.graph_artifact_path(self.root, target)
+        (self.root / "artifacts").symlink_to(self.checkout, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            api_links.ingest.graph_artifact_path(self.root, "artifacts/graphs/evidence.json")
+
+    def test_local_sources_bind_reference_inventory_without_losing_revision(self):
+        inventory = importlib.import_module("reference_inventory")
+        record = {"source": {"repo": self.definition["repository"], "commit": self.revision}}
+        resource = f"cann-ops-raw/ascendc/ops-nn/{self.revision}/kernel.h"
+        self.assertTrue(inventory.source_binds_entry(resource, record, "kernel.h", self.contract))
+        self.assertFalse(inventory.source_binds_entry(resource, record, "notes.md", self.contract))
+        record["source"]["commit"] = "a" * 40
+        self.assertFalse(inventory.source_binds_entry(resource, record, "kernel.h", self.contract))
 
     def test_offline_links_validate_registered_revision_without_fetching(self):
         card = self.operator()
@@ -251,3 +230,367 @@ class SourceResourceTests(unittest.TestCase):
         self.assertEqual([], link_checks.check(self.contract, document, context))
         card.path.write_text(card.path.read_text().replace(self.revision, "a" * 40))
         self.assertTrue(link_checks.check(self.contract, document, context))
+
+    def graph_fixture(self, count=12, limit=10):
+        graph = importlib.import_module("knowledge_graph")
+        api = self.api()
+        operators = [self.operator(index) for index in range(count)]
+        source = {"resource": f"cann-ops-raw/ascendc/ops-nn/{self.revision}/kernel.h", "line": 3}
+        items = [api_links.Invocation(api, op, "GetBlockIdx", "int GetBlockIdx(void);", "", "high", source) for op in operators]
+        cards = {}
+        for card in [api, *operators]:
+            relative = Path(card.relative).relative_to("knowledge")
+            cards[relative.with_suffix("").as_posix()] = SimpleNamespace(path=card.path, doc_id=relative.with_suffix("").as_posix(), body=card.body, profile="apis" if card == api else "operators", title=card.title, metadata={"sources": [{"resource": value} for value in card.sources]})
+            parent = card.path.parent
+            while parent.is_relative_to(self.root / "knowledge"):
+                (parent / "index.md").write_text("# Index\n")
+                parent = parent.parent
+        api.path.write_text(api_links.expected_api_cards([api], operators, items, limit)[api.path])
+        return graph, api, operators, cards
+
+    def test_graph_consumes_committed_projection_without_sources_or_scanning(self):
+        graph, api, _, cards = self.graph_fixture()
+        before = {card.path: card.path.read_bytes() for card in cards.values()}
+        (self.root / "cann-ops-raw/ascendc/ops-nn").rename(self.root / "offline-backup")
+        with (
+            mock.patch.object(api_links, "invocations", side_effect=AssertionError("graph must not scan sources")),
+            mock.patch.object(resources, "validate_checkout", side_effect=AssertionError("graph must not require checkouts")),
+            mock.patch.object(graph, "corpus_fingerprint", return_value="fixture"),
+        ):
+            payload = graph.graph_payload(self.root, cards, {"judgments": []})
+            self.assertEqual(payload, graph.graph_payload(self.root, cards, {"judgments": []}))
+        automatic = [edge for edge in payload["edges"] if edge.get("generated_by") == "committed-api-operator-navigation-v1"]
+        self.assertEqual(10, len(automatic))
+        self.assertTrue(all(edge["confidence"] == "unverified" and edge["strength"] == "navigation" for edge in automatic))
+        self.assertFalse(any("cann-ops-raw/" in node["id"] for node in payload["nodes"]))
+        self.assertFalse((self.root / "cann-ops-raw/ascendc/ops-nn").exists())
+        self.assertEqual(before, {path: path.read_bytes() for path in before})
+        self.assertIn("部分算子", api.path.read_text())
+
+    def test_committed_api_navigation_rejects_invalid_structure_and_provenance(self):
+        graph, api, operators, cards = self.graph_fixture(count=1)
+        valid = api.path.read_text()
+        line = next(line for line in valid.splitlines() if line.startswith("- ["))
+        href = os.path.relpath(operators[0].path, api.path.parent)
+        (self.root / "cann-ops-raw/ascendc/ops-nn").rename(self.root / "offline-backup")
+        invalid = {
+            "dangling": valid.replace(href, "missing.md"),
+            "self": valid.replace(href, api.path.name),
+            "wrong relation": valid.replace("（`related`）", "（`explains`）"),
+            "unsupported relation": valid.replace("（`related`）", "（`links_to`）"),
+            "duplicate": valid.replace(line, line + "\n" + line),
+            "missing end": valid.replace(graph.API_OPERATOR_END, ""),
+            "duplicate start": valid.replace(graph.API_OPERATOR_START, graph.API_OPERATOR_START + "\n" + graph.API_OPERATOR_START),
+            "outside marker": graph.API_OPERATOR_START + "\n" + valid,
+            "duplicate outer": valid.replace(graph.MANAGED_START, graph.MANAGED_START + "\n" + graph.MANAGED_START),
+            "unknown revision": valid.replace(self.revision, "a" * 40),
+            "undeclared file": valid.replace("/kernel.h#L3", "/notes.md#L3"),
+            "no line": valid.replace("#L3", ""),
+            "no source": valid.replace(line, line.split(" [源码]")[0]),
+            "unparsed link": valid.replace(line, line.removeprefix("- ")),
+            "wrong section": valid.replace("### 源码中使用此 API 的算子", "### 知识正文中的调用示例"),
+            "empty block": valid.replace(line, ""),
+        }
+        for name, raw in invalid.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                api.path.write_text(raw)
+                graph.committed_managed_relations(self.root, cards)
+        api.path.write_text(valid)
+        operator_id = operators[0].path.relative_to(self.root / "knowledge").with_suffix("").as_posix()
+        cards[operator_id].profile = "guides"
+        with self.assertRaisesRegex(ValueError, "endpoints/type"):
+            graph.committed_managed_relations(self.root, cards)
+        cards[operator_id].profile = "operators"
+        api_card = next(card for card in cards.values() if card.profile == "apis")
+        api_card.profile = "guides"
+        with self.assertRaisesRegex(ValueError, "malformed API-to-Operator"):
+            graph.committed_managed_relations(self.root, cards)
+
+    def test_committed_api_navigation_enforces_display_limit(self):
+        graph, _, _, cards = self.graph_fixture(count=11, limit=11)
+        with self.assertRaisesRegex(ValueError, "exceeds display limit"):
+            graph.committed_managed_relations(self.root, cards)
+
+    def test_committed_body_only_projection_supports_partial_operator_label(self):
+        graph, api, operators, cards = self.graph_fixture()
+        items = [api_links.Invocation(api, op, "GetBlockIdx", "int GetBlockIdx(void);", "AscendC::GetBlockIdx();", "high") for op in operators]
+        api.path.write_text(api_links.expected_api_cards([api], operators, items, 10)[api.path])
+        self.assertIn("### 知识正文中的调用示例（部分算子）", api.path.read_text())
+        edges, _ = graph.committed_managed_relations(self.root, cards)
+        self.assertEqual(10, len(edges))
+
+    def test_committed_navigation_preserves_reviewed_reason_and_body_only_examples(self):
+        graph, api, operators, cards = self.graph_fixture(count=1)
+        raw = api.path.read_text()
+        source_line = next(line for line in raw.splitlines() if line.startswith("- ["))
+        reviewed_line = source_line.split("：", 1)[0] + "：Reviewed reason."
+        raw = raw.replace(graph.API_OPERATOR_START, reviewed_line + "\n\n" + graph.API_OPERATOR_START)
+        api.path.write_text(raw)
+        edges, _ = graph.committed_managed_relations(self.root, cards)
+        self.assertEqual(1, len(edges))
+        self.assertEqual("Reviewed reason.", edges[0]["reason"])
+        self.assertEqual("committed-managed-navigation-v1", edges[0]["generated_by"])
+        item = api_links.Invocation(api, operators[0], "GetBlockIdx", "int GetBlockIdx(void);", "AscendC::GetBlockIdx();", "high")
+        api.path.write_text(graph.strip_managed(raw))
+        api.path.write_text(api_links.expected_api_cards([api], operators, [item], 10)[api.path])
+        edges, _ = graph.committed_managed_relations(self.root, cards)
+        self.assertEqual(1, len(edges))
+        self.assertEqual("committed-api-operator-navigation-v1", edges[0]["generated_by"])
+
+    def test_source_verification_still_requires_restored_clean_checkouts(self):
+        self.api()
+        self.operator()
+        (self.checkout / "kernel.h").write_text(self.raw + "// local change\n")
+        with self.assertRaisesRegex(ValueError, "local changes"):
+            api_links.invocations(self.root)
+        (self.root / "cann-ops-raw/ascendc/ops-nn").rename(self.root / "offline-backup")
+        with self.assertRaisesRegex(ValueError, "missing pinned Git checkout"):
+            api_links.invocations(self.root)
+
+    def test_source_verification_still_rejects_stale_committed_navigation(self):
+        api = self.api()
+        self.operator()
+        args = SimpleNamespace(knowledge_root=str(self.root), report="artifacts/graphs/api_operator_links.json", command="verify")
+        self.assertEqual(1, api_links.command(args))
+        args.command = "sync"
+        self.assertEqual(0, api_links.command(args))
+        args.command = "verify"
+        self.assertEqual(0, api_links.command(args))
+        api.path.write_text(api.path.read_text().replace("#L3)", "#L4)"))
+        self.assertEqual(1, api_links.command(args))
+
+    def test_source_links_allow_registered_files_but_not_indexes_or_unknown_roots(self):
+        card = self.operator()
+        target = os.path.relpath(self.checkout / "kernel.h", card.path.parent) + "#L3"
+        card.path.write_text(f"# Fixture\n\n[code]({target})\n")
+        document = SimpleNamespace(path=card.path, parse_error=None)
+        context = SimpleNamespace(checked_local_roots=set())
+        self.assertEqual([], link_checks.check(self.contract, document, context))
+        index = card.path.with_name("index.md")
+        index.write_text(card.path.read_text())
+        document.path = index
+        self.assertIn("link.outside_bundle", {item.code for item in link_checks.check(self.contract, document, None)})
+        document.path = card.path
+        card.path.write_text("# Fixture\n\n[x](../../../../../../../../governance/specs/okf.md)\n")
+        self.assertTrue(link_checks.check(self.contract, document, None))
+
+    def test_lexer_masks_comments_literals_continuations_and_inactive_arms(self):
+        raw = ('// Fake(); \\\nFake();\n/* Fake(); */\n"Fake()"; R"x(Fake())x";\n'
+               '#define F Fake() \\\nFake()\n#if 0\nFake();\n#else\nReal();\n#endif\n')
+        masked = api_links.mask_source(raw)
+        self.assertEqual(len(raw), len(masked))
+        self.assertEqual(raw.count("\n"), masked.count("\n"))
+        self.assertNotIn("Fake", api_links.call_names(masked))
+        self.assertIn("Real", api_links.call_names(masked))
+
+    def test_source_calls_bind_exact_file_hash_line_and_anchor(self):
+        self.api()
+        self.operator()
+        _, _, items, _, audit = api_links.invocations(self.root)
+        self.assertEqual(1, len(items))
+        evidence = items[0].source
+        self.assertEqual(self.revision, evidence["revision"])
+        self.assertEqual(3, evidence["line"])
+        self.assertEqual(self.raw.splitlines()[2].strip(), evidence["anchor"])
+        self.assertEqual(hashlib.sha256(self.raw.encode()).hexdigest(), evidence["sha256"])
+        self.assertEqual(1, audit["counts"]["source_backed_invocations"])
+
+    def test_missing_declared_source_does_not_create_source_evidence(self):
+        self.api()
+        self.operator(sources=[f"cann-ops-raw/ascendc/ops-nn/{self.revision}/missing.h"])
+        _, _, items, _, audit = api_links.invocations(self.root)
+        self.assertEqual([], items)
+        self.assertEqual(1, audit["counts"]["missing_source_files"])
+
+    def test_source_receiver_requires_type_namespace_and_global_family_uniqueness(self):
+        api = self.card("knowledge/ops/ascendc/apis/local_tensor/get_size.md", "# GetSize\n\n## 函数原型\n\nint GetSize();\n", title="GetSize")
+        for body, expected in (("AscendC::LocalTensor<int> x;\nx.GetSize();", True), ("Other::LocalTensor<int> x;\nx.GetSize();", False), ("localTensor.GetSize();", False)):
+            match = api_links.call_names(body)["GetSize"][-1]
+            self.assertEqual(expected, api_links.source_identity(api, body, match, set(), api_links.source_receivers(body)))
+        body = "using namespace AscendC;\nOther::LocalTensor::GetSize();"
+        self.assertFalse(api_links.source_identity(api, body, api_links.call_names(body)["GetSize"][0], set(), {}))
+        # Identical same-name families cannot be disambiguated by arity or platform.
+        first = self.api()
+        second = replace(first, path=first.path.with_name("other.md"), relative=first.relative.replace("get_block_idx", "other"), platforms=("950",))
+        op = self.operator()
+        with mock.patch.object(api_links, "cards_below", side_effect=[[first, second], [op]]):
+            self.assertEqual([], api_links.invocations(self.root)[2])
+
+    def test_projection_is_bounded_source_first_diverse_and_preserves_full_audit(self):
+        api = self.api()
+        operators = [self.operator(number, family="nn" if number < 12 else "math") for number in range(14)]
+        source = {"resource": f"cann-ops-raw/ascendc/ops-nn/{self.revision}/kernel.h", "line": 3}
+        items = [api_links.Invocation(api, op, "GetBlockIdx", "int GetBlockIdx(void);", "", "high", source if index else None) for index, op in enumerate(operators)]
+        displayed = api_links.displayed_invocations([api], items, 10)
+        self.assertEqual(10, len(displayed))
+        self.assertTrue(all(item.source for item in displayed))
+        self.assertTrue(any("/math/" in item.operator.relative for item in displayed))
+        rendered = api_links.expected_api_cards([api], operators, items, 10)[api.path]
+        self.assertIn("源码中使用此 API 的算子（部分算子）", rendered)
+        self.assertIn("展示 10 / 13", rendered)
+        self.assertEqual(api_links.read_utf8(api.path), api_links.strip_managed(rendered, api.relative))
+        api.path.write_text(rendered)
+        self.assertEqual(rendered, api_links.expected_api_cards([api], operators, items, 10)[api.path])
+        payload = api_links.artifact_payload([api], operators, items, [], {"counts": {}, "source_files": []}, 10)
+        self.assertEqual(14, len(payload["relations"]))
+        self.assertEqual(10, sum(item["displayed"] for item in payload["relations"]))
+
+    def test_semantic_links_are_preserved_and_body_only_examples_labeled(self):
+        api = self.api()
+        op = self.operator()
+        second = self.operator(1)
+        href = os.path.relpath(op.path, api.path.parent)
+        semantic = f"- [reviewed]({href})（`related`）：Reviewed reason."
+        api.path.write_text(api_links.read_utf8(api.path) + f"\n\n{api_links.MANAGED_START}\n## 相关\n\n{semantic}\n{api_links.MANAGED_END}\n")
+        items = [api_links.Invocation(api, target, "GetBlockIdx", "prototype", "GetBlockIdx()", "medium") for target in (op, second)]
+        rendered = api_links.expected_api_cards([api], [op, second], items, 10)[api.path]
+        self.assertIn(semantic, rendered)
+        self.assertIn("知识正文中的调用示例", rendered)
+        self.assertEqual(1, len(api_links.displayed_invocations([api], items, 10)))
+
+    def test_localization_preserves_code_fences_roles_and_missing_remote_sources(self):
+        remote = f"https://gitcode.com/cann/ops-nn/blob/{self.revision}/kernel.h"
+        missing = remote.replace("kernel.h", "missing.h")
+        fenced = f"```markdown\n[not a link]({remote})\n```\n"
+        op = self.operator(body=f"# Fixture\n\n[code]({remote}#L3)\n\n" + fenced, sources=[remote, missing])
+        self.assertEqual(1, resource_tool.localize(self.root, "2026-08-18T00:00:00Z"))
+        raw = api_links.read_utf8(op.path)
+        self.assertIn(fenced, raw)
+        self.assertIn(missing, raw)
+        self.assertIn(f"cann-ops-raw/ascendc/ops-nn/{self.revision}/kernel.h#L3", raw)
+        self.assertIn("role: implementation", raw)
+        self.assertEqual(0, resource_tool.localize(self.root, "2026-08-18T00:00:00Z"))
+        self.assertEqual(raw, api_links.read_utf8(op.path))
+
+    def test_source_frontmatter_preserves_unrelated_yaml_formatting(self):
+        raw = 'title: "Fixture"\ntags: [a, b] # retain comment\nsources:\n  - resource: "https://example.invalid/code"\n    role: implementation\nupdated_at: "2026-08-18T00:00:00Z"'
+        metadata = yaml.safe_load(raw)
+        metadata["sources"][0]["resource"] = "cann-ops-raw/ascendc/ops-nn/" + self.revision + "/kernel.h"
+        metadata["updated_at"] = "2026-08-19T00:00:00Z"
+        result = resource_tool.source_frontmatter(raw, metadata)
+        self.assertEqual(raw.replace("https://example.invalid/code", metadata["sources"][0]["resource"]).replace("2026-08-18T00:00:00Z", "2026-08-19T00:00:00Z"), result)
+
+    def test_fetch_refuses_unmanaged_or_symlink_roots_without_mutation(self):
+        before = (self.checkout / "kernel.h").read_bytes()
+        with self.assertRaisesRegex(ValueError, "unmanaged"):
+            resource_tool.fetch_repository(self.root, self.definition)
+        self.assertEqual(before, (self.checkout / "kernel.h").read_bytes())
+        definition = {**self.definition, "root": "alias-src"}
+        (self.root / "alias-src").symlink_to(self.root / "cann-ops-raw/ascendc/ops-nn", target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "symlink"):
+            resource_tool.fetch_repository(self.root, definition)
+
+
+    def test_invalid_git_definitions_fail_closed(self):
+        valid = dict(self.definition)
+        cases = [
+            {"revisions": []}, {"revisions": ["main"]},
+            {"revisions": [self.revision, self.revision]},
+            {"repository": "https://example.invalid/ops-nn"},
+            {"archive_sha256": "a" * 64}, {"kind": "unknown"},
+        ]
+        for fields in cases:
+            with self.subTest(fields=fields):
+                self.definition.clear()
+                self.definition.update(valid | fields)
+                self.save_registry()
+                with self.assertRaises(ValueError):
+                    Contract(self.root)
+
+
+    def test_index_and_unregistered_links_cannot_leave_bundle(self):
+        card = self.operator()
+        for name, destination in (
+            ("index.md", self.checkout / "kernel.h"),
+            ("fixture.md", self.root / "governance/contracts/knowledge.py"),
+        ):
+            path = card.path.with_name(name)
+            path.write_text(f"# Fixture\n\n[code]({os.path.relpath(destination, path.parent)})\n")
+            document = SimpleNamespace(path=path, parse_error=None)
+            issues = link_checks.check(self.contract, document, SimpleNamespace(checked_local_roots=set()))
+            self.assertIn("link.outside_bundle", {issue.code for issue in issues})
+
+
+    def test_missing_file_and_invalid_line_fragment_are_rejected(self):
+        card = self.operator()
+        for filename, fragment in (("missing.h", "#L71"), ("kernel.h", "#invalid")):
+            path = os.path.relpath(self.checkout / filename, card.path.parent)
+            card.path.write_text(f"# Fixture\n\n[code]({path}{fragment})\n")
+            document = SimpleNamespace(path=card.path, parse_error=None)
+            self.assertTrue(link_checks.check(self.contract, document, SimpleNamespace(checked_local_roots=set())))
+
+
+    def test_fetch_refuses_unmanaged_directory_without_running_git(self):
+        with mock.patch.object(resource_tool, "run_git") as run:
+            with self.assertRaisesRegex(ValueError, "unmanaged"):
+                resource_tool.fetch_repository(self.root, self.definition)
+        run.assert_not_called()
+        self.assertEqual(self.raw, (self.checkout / "kernel.h").read_text())
+
+
+    def test_verify_cli_is_read_only_and_contract_mismatch_fails_before_fetch(self):
+        script = ROOT / ".agents/skills/knowledge-ingest/scripts/source_resources.py"
+        command = [sys.executable, str(script), "--knowledge-root", str(self.root)]
+        before = (self.checkout / "kernel.h").read_bytes()
+        result = subprocess.run([*command, "verify"], capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("verified Git snapshots=1", result.stdout)
+        self.assertEqual(before, (self.checkout / "kernel.h").read_bytes())
+        target = self.root / "governance/contracts/knowledge.py"
+        target.write_text(target.read_text() + "\nraise RuntimeError('must not execute')\n")
+        result = subprocess.run([*command, "fetch"], capture_output=True, text=True)
+        self.assertEqual(2, result.returncode)
+        self.assertIn("contract does not match", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertFalse((self.checkout.parent / ".objects.git").exists())
+
+
+
+class OperatorSourceCorpusTests(unittest.TestCase):
+    """Keep the checked-in Operator corpus aligned with its restored baseline."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.contract = Contract(ROOT)
+        cls.operators = api_links.cards_below(ROOT, "knowledge/ops/ascendc/operators")
+        cls.definitions = {
+            item["repository"]: item for item in cls.contract.local_sources.values()
+            if item.get("kind") == "git"
+        }
+
+    def test_direct_and_aclnn_share_one_registered_baseline_per_repository(self):
+        revisions = {name: {"aclnn": set(), "direct": set()} for name in self.definitions}
+        for card in self.operators:
+            route = Path(card.relative).parts[4]
+            for value in card.sources:
+                source = resources.git_source(self.contract, value)
+                if source is not None:
+                    revisions[source.repository][route].add(source.revision)
+        for repository, definition in self.definitions.items():
+            with self.subTest(repository=repository):
+                self.assertEqual(1, len(definition["revisions"]))
+                expected = set(definition["revisions"])
+                self.assertEqual(expected, revisions[repository]["aclnn"])
+                self.assertEqual(expected, revisions[repository]["direct"])
+
+    def test_all_registered_operator_sources_exist_in_restored_snapshots(self):
+        # Offline unit runs remain possible; check.sh restores every snapshot first.
+        for definition in self.definitions.values():
+            for revision in definition["revisions"]:
+                if not (ROOT / definition["root"] / revision / ".git").exists():
+                    self.skipTest("source snapshots not restored; run get_resources.sh --code")
+                resources.validate_checkout(ROOT, definition, revision)
+        checked = set()
+        for card in self.operators:
+            for value in card.sources:
+                source = resources.git_source(self.contract, value)
+                if source is None or source.resource in checked:
+                    continue
+                checked.add(source.resource)
+                with self.subTest(card=card.relative, source=value):
+                    self.assertTrue(source.local_path(ROOT).exists(), "declared source missing in pinned commit")
+        self.assertTrue(checked, "no registered Operator sources checked")
+
+
+if __name__ == "__main__":
+    unittest.main()

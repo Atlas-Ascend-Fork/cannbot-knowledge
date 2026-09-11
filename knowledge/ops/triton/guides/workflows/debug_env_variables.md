@@ -103,16 +103,6 @@ platforms: [a2, a3]
 - `TRITON_INTERPRET=1` 很慢 → 正常，仅用于精度验证。
 - device_print 输出截断 → 每线程 GM 缓冲 16 KB 上限，减少打印量。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Triton-Ascend 调试方法总览](./debug_overview.md)（`related`）：“调试方法总览”
-- [错误码参考（报错信息对照表）](./error_codes.md)（`related`）：“错误码参考”
-- [Triton-Ascend 常见问题速查（FAQ）](./triton_ascend_faq.md)（`related`）：“常见问题速查”
-- [Triton-Ascend 性能分析与瓶颈定位指南](./profiling_guide.md)（`related`）：“性能分析指南”
-
-<!-- cannbot:related:end -->
 
 ## 相关源
 
@@ -124,3 +114,14 @@ platforms: [a2, a3]
 
 - [environment_variable_reference.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/environment_variable_reference.md)
 - [debugging.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/debugging.md)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Triton-Ascend 调试方法总览](./debug_overview.md)（`related`）：“调试方法总览”
+- [错误码参考（报错信息对照表）](./error_codes.md)（`related`）：“错误码参考”
+- [Triton-Ascend 常见问题速查（FAQ）](./triton_ascend_faq.md)（`related`）：“常见问题速查”
+- [Triton-Ascend 性能分析与瓶颈定位指南](./profiling_guide.md)（`related`）：“性能分析指南”
+
+<!-- cannbot:related:end -->

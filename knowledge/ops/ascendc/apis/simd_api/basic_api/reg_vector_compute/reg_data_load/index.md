@@ -9,4 +9,3 @@
 - [LoadUnAlign](load_un_align_continuous.md)：将数据从非32字节对齐的UB地址连续搬运至RegTensor，利用UnalignRegForLoad暂存跨对齐边界数据，需配合LoadUnAlignPre使用。移
 - [MaskGenWithRegTensor](mask_gen_with_reg_tensor_mask_reg.md)：将数据从RegTensor搬运至MaskReg，通过offset参数选择数据块，b16类型每个bit广播为2bit，b32类型每个bit广播为4bit。
 - [Move](move.md)：将srcReg中的有效元素逐个复制写入dstReg对应位置，无效位置保留dstReg原值，支持传入mask参数控制有效元素。
-- [Reg数据搬入](reg_data_load.md)：Reg数据搬入接口索引页，涵盖LoadAlign连续/非连续、LoadUnAlign、MaskReg搬入、Gather离散搬入及Load/Move。

@@ -5,34 +5,34 @@ description: "说明 cann_bench::group_norm、calc_group_norm_tiling 与 launch_
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm/docs/aclnnGroupNorm.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm/docs/aclnnGroupNorm.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm/op_host/op_api/aclnn_group_norm.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm/op_host/op_api/aclnn_group_norm.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_host/group_norm_silu_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_host/group_norm_silu_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_host/group_norm_silu_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_host/group_norm_silu_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_host/group_norm_silu_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_host/group_norm_silu_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/group_norm_silu_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_kernel/group_norm_silu_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_welford.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_welford.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_welford_generalized.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_welford_generalized.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_two_pass.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_two_pass.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_two_pass_generalized.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_two_pass_generalized.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_host/config/ascend950/group_norm_silu_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_host/config/ascend950/group_norm_silu_binary.json
     role: implementation
 created_at: "2026-08-25T19:31:46Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -87,7 +87,7 @@ R-001 用 `sum(x)` 和 `sum(x²)` 合成 `variance=max(sumSq/R-mean²,0)`；R-00
 
 `TORCH_LIBRARY_FRAGMENT` 注册 `cann_bench::group_norm(Tensor x, Tensor gamma, Tensor beta, int num_groups, float epsilon) -> Tensor`，Meta 实现分配 `empty_like`，PrivateUse1 绑定 `group_norm_npu`。`OpCommand::RunOpApi("GroupNormDirect", launch)` 内的 lambda 直接把当前 stream 交给 `launch_group_norm_direct`，没有调用 ACLNN 数学算子。
 
-本卡以最终交付中的 `csrc/ops/group_norm` 为 Direct 事实源。官方固定仓 `ops-nn@26311e64257d6d54e5876cf1cc95104a3f378860` 只负责转换映射：950 上公开 GroupNorm 由 `aclnn_group_norm.cpp` 调用 `GroupNormSilu(..., activate_silu=false)`；交付机械保留 184-byte RegBase POD、四个 key 及四个 arch35 body，并用运行时平台查询、by-value POD 与 typed entry 替换官方注册/opaque tiling/workspace 壳。Torch 包装、R-001 和 BF16 修复节点是交付新增，不能反推为官方接口或官方性能 Route。官方 README、OpDef 的 `ascend950` config 与 binary config共同证明被映射 body 的 950/950 来源；本 Direct 载荷目标版本为 CANN 9.1.0。
+本卡以最终交付中的 `csrc/ops/group_norm` 为 Direct 事实源。官方固定仓 `ops-nn@955f8b33985b6d72989ebff341bb9c2c564a51bc` 只负责转换映射：950 上公开 GroupNorm 由 `aclnn_group_norm.cpp` 调用 `GroupNormSilu(..., activate_silu=false)`；交付机械保留 184-byte RegBase POD、四个 key 及四个 arch35 body，并用运行时平台查询、by-value POD 与 typed entry 替换官方注册/opaque tiling/workspace 壳。Torch 包装、R-001 和 BF16 修复节点是交付新增，不能反推为官方接口或官方性能 Route。官方 README、OpDef 的 `ascend950` config 与 binary config共同证明被映射 body 的 950/950 来源；本 Direct 载荷目标版本为 CANN 9.1.0。
 
 ## Host/Launcher 执行流程
 
@@ -914,7 +914,7 @@ dynamic_ub=N/A; workspace_total=0
 
 - 适用 Route：R-002、R-003、R-005、R-006
 - 触发条件：full-load 谓词失败；Host 产生 `parallelN`、`dichotomyAddPower/K/LastNum`。
-- 固定官方来源：[`group_norm_silu_regbase_welford.h:122-129`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_welford.h)
+- 固定官方来源：[`group_norm_silu_regbase_welford.h:122-129`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_welford.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -947,7 +947,7 @@ VFWelfordParallelUpdate<T1>(x1Local, tmpMeanLocal, tmpVarLocal, i, welfordLen, s
 
 - 适用 Route：R-004
 - 触发条件：`HW<=32`；Direct 中 gamma/beta 均存在，`isFold=true`。
-- 固定官方来源：[`group_norm_silu_regbase_two_pass.h:235-245`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_two_pass.h)
+- 固定官方来源：[`group_norm_silu_regbase_two_pass.h:235-245`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_two_pass.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -981,7 +981,7 @@ if (isFold) {
 
 - 适用 Route：R-002–R-007 的官方适配 base 节点
 - 触发条件：mean/variance 归约完成，调用 `CalRstdByHighPrecision(var,rstd,epsilon)`。
-- 固定官方来源：[`group_norm_silu_regbase_base.h:200-217`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_base.h)
+- 固定官方来源：[`group_norm_silu_regbase_base.h:200-217`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_base.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

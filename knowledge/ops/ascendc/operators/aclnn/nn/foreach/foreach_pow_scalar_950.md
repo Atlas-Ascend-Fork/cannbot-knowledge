@@ -5,34 +5,34 @@ description: "说明 aclnnForeachPowScalarV2 在 950 上的接口语义、Host/L
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/docs/aclnnForeachPowScalarV2.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/docs/aclnnForeachPowScalarV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/op_api/aclnn_foreach_pow_scalar_v2.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/op_api/aclnn_foreach_pow_scalar_v2.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/op_api/aclnn_foreach_pow_scalar_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/op_api/aclnn_foreach_pow_scalar_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/op_api/foreach_pow_scalar_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/op_api/foreach_pow_scalar_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/foreach_pow_scalar_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/foreach_pow_scalar_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/arch35/foreach_pow_scalar_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/arch35/foreach_pow_scalar_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/config/ascend950/foreach_pow_scalar_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_host/config/ascend950/foreach_pow_scalar_binary.json
     role: implementation
 created_at: "2026-08-25T15:47:57Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -421,7 +421,7 @@ POD GM = 2064 bytes, read-only during Kernel
 
 - 适用 Route：R-001、R-002、R-003
 - 触发条件：任意非空 tensor；`blockDim=min(coreNum,ceil(totalElements/1024))`，每 block 1024 threads。
-- Golden 来源：[`foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_simt.h:104-120`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_simt.h#L104-L120)
+- Golden 来源：[`foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_simt.h:104-120`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_simt.h#L104-L120)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -466,7 +466,7 @@ for (int32_t t = 0; t < tensorCount; t++) {
 
 - 适用 Route：R-002、R-003
 - 触发条件：`T` 为 `half` 或 `bfloat16_t`，`ComputeType<T>::type` 特化为 float。
-- Golden 来源：[`foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_simt.h:47-53`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_simt.h#L47-L53)
+- Golden 来源：[`foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_simt.h:47-53`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_pow_scalar/op_kernel/arch35/foreach_pow_scalar_simt.h#L47-L53)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

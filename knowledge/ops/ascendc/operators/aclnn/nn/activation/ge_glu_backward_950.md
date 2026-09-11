@@ -5,22 +5,22 @@ description: "说明 aclnnGeGluV3Backward 在 950 上的接口语义、Host/Laun
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/docs/aclnnGeGluV3Backward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/docs/aclnnGeGluV3Backward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_host/op_api/aclnn_geglu_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_host/op_api/aclnn_geglu_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_host/ge_glu_grad_v2_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_host/ge_glu_grad_v2_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_kernel/ge_glu_grad_v2_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_kernel/ge_glu_grad_v2_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_kernel/arch35/ge_glu_grad_v2_tanh_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_kernel/arch35/ge_glu_grad_v2_tanh_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_kernel/arch35/ge_glu_grad_v2_erf_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_kernel/arch35/ge_glu_grad_v2_erf_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_host/config/ascend950/ge_glu_grad_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_host/config/ascend950/ge_glu_grad_v2_binary.json
     role: implementation
 created_at: "2026-08-25T14:59:55Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -994,7 +994,7 @@ key902→`ErfFP32::ProcessGreater`。
 
 - 适用 Route：全部 950 Route
 - 触发条件：950 arch35 body；Tanh/Erf 与 dtype 决定 buffer count
-- Golden 来源：[`op_kernel/arch35/ge_glu_grad_v2_tanh_fp16.h:56-70`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_kernel/arch35/ge_glu_grad_v2_tanh_fp16.h#L56-L70)
+- Golden 来源：[`op_kernel/arch35/ge_glu_grad_v2_tanh_fp16.h:56-70`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_kernel/arch35/ge_glu_grad_v2_tanh_fp16.h#L56-L70)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1029,7 +1029,7 @@ pipe->InitBuffer(outQueueDX2, DB_BUFFER, maxProcCount * sizeof(half));
 
 - 适用 Route：R-010–R-015
 - 触发条件：950 arch35 Erf BF16/FP16
-- Golden 来源：[`op_kernel/arch35/ge_glu_grad_v2_erf_fp16.h:70-100`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_kernel/arch35/ge_glu_grad_v2_erf_fp16.h#L70-L100)
+- Golden 来源：[`op_kernel/arch35/ge_glu_grad_v2_erf_fp16.h:70-100`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_grad_v2/op_kernel/arch35/ge_glu_grad_v2_erf_fp16.h#L70-L100)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

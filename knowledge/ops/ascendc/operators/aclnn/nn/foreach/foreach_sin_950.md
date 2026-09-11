@@ -5,30 +5,30 @@ description: "说明 aclnnForeachSin 在 950 上的接口语义、Host/Launcher 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/docs/aclnnForeachSin.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/docs/aclnnForeachSin.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_host/foreach_sin_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_host/foreach_sin_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_utils/op_host/foreach_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_utils/op_host/foreach_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_host/arch35/foreach_sin_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_host/arch35/foreach_sin_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_host/config/ascend950/foreach_sin_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_host/config/ascend950/foreach_sin_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:20:33Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -384,7 +384,7 @@ register_bytes=固定仓不可见
 
 - 适用 Route：R-001、R-002、R-003
 - 触发条件：任一非空Tensor进入 `OpForeachSinSimt<T>`；grid由列表最大Tensor的Host分核结果决定。
-- Golden 来源：[`foreach/foreach_sin/op_kernel/arch35/foreach_sin_simt.h:53-59`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin_simt.h#L53-L59)
+- Golden 来源：[`foreach/foreach_sin/op_kernel/arch35/foreach_sin_simt.h:53-59`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin_simt.h#L53-L59)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -419,7 +419,7 @@ Host无需为每个Tensor产生独立核区POD，只以最大Tensor选择统一b
 
 - 适用 Route：R-001、R-003；R-002也复用同一函数但cast为恒等类型。
 - 触发条件：`ComputeSin<T>`被每个有效idx调用。
-- Golden 来源：[`foreach/foreach_sin/op_kernel/arch35/foreach_sin_simt.h:37-43`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin_simt.h#L37-L43)
+- Golden 来源：[`foreach/foreach_sin/op_kernel/arch35/foreach_sin_simt.h:37-43`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sin/op_kernel/arch35/foreach_sin_simt.h#L37-L43)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -5,18 +5,18 @@ description: "说明 aclnnGeGluV3 在 A2/A3 上的接口语义、Host/Launcher �
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/docs/aclnnGeGluV3.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/docs/aclnnGeGluV3.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/op_api/aclnn_geglu.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/op_api/aclnn_geglu.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/ge_glu_v2_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/ge_glu_v2_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/ge_glu_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/ge_glu_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/ge_glu_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/ge_glu_v2_def.cpp
     role: implementation
 created_at: "2026-08-25T15:01:22Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -608,7 +608,7 @@ block-beta
 
 - 适用 Route：R-001、R-004
 - 触发条件：`ny==1`
-- Golden 来源：[`ge_glu_v2_base.h:314-334`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/ge_glu_v2_base.h#L314-L334)
+- Golden 来源：[`ge_glu_v2_base.h:314-334`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/ge_glu_v2_base.h#L314-L334)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -640,7 +640,7 @@ GatherMask(ubX2, ubX, vreduce_srcPattern_x2, false, 0, {1, repeat, 8, 0}, rsvdCn
 
 - 适用 Route：A2/A3 的 R-002/R-003/R-005/R-006 FP16/FP32 body
 - 触发条件：GELU 与乘积需要同一激活值
-- Golden 来源：[`ge_glu_v2_fp16_align.h:147-163`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/tanh/ge_glu_v2_fp16_align.h#L147-L163)
+- Golden 来源：[`ge_glu_v2_fp16_align.h:147-163`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/tanh/ge_glu_v2_fp16_align.h#L147-L163)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

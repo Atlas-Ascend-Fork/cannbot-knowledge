@@ -2,19 +2,66 @@
 type: API
 title: Reset
 description: 切换TBufPool资源池时使用，结束当前资源池相关事件，资源池及Buffer仍然存在。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.implementation.memory_management]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.implementation.memory_management
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TBufPool/Reset.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+- 310p
+- '910'
+- kirin_x90
+- kirin_9030
+source_headers:
+- include/basic_api/kernel_tpipe.h
 ---
-# Reset
 
-头文件路径为："basic_api/kernel_tpipe.h"。
+# Reset<a name="ZH-CN_TOPIC_0000001912722605"></a>
+
+## 功能说明<a name="section618mcpsimp"></a>
+
+头文件路径为：`"basic_api/kernel_tpipe.h"`。
 
 在切换TBufPool资源池时使用，结束当前TbufPool资源池正在处理的相关事件。调用后当前资源池及资源池分配的Buffer仍然存在，只是Buffer内容可能会被改写。可以切换回该资源池后，重新开始使用该Buffer，无需再次分配。
 
-仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Atlas 训练系列产品、Kirin X90、Kirin 9030 支持。
+## 函数原型<a name="section620mcpsimp"></a>
+
+```cpp
+__aicore__ inline void Reset()
+```
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+无
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+无
+
+## 调用示例<a name="section642mcpsimp"></a>
+
+参考[InitBufPool](init_buf_pool.md)。
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [NormRopeConcatGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad.md)（`related`）：算子声明的固定版本源码包含对 `Reset(...)` 的直接调用（第 914 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat_grad/op_kernel/norm_rope_concat_grad.h#L914)
+- [NormRopeConcatGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad_950.md)（`related`）：算子声明的固定版本源码包含对 `Reset(...)` 的直接调用（第 914 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/norm_rope_concat_grad/op_kernel/norm_rope_concat_grad.h#L914)
+
+<!-- cannbot:api-operator:end -->
+<!-- cannbot:related:end -->

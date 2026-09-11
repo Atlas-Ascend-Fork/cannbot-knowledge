@@ -84,8 +84,17 @@ def kernel(x_ptr, out_ptr, N, BLOCK_SIZE: tl.constexpr):
 2. 逻辑正确后 `unset TRITON_INTERPRET`，`TRITON_DEVICE_PRINT=1` 在 NPU 上对比中间结果。
 3. 解释器正确但 NPU 错误时：检查数据类型一致性、NPU 不支持的操作、mask/boundary 差异。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [interpreter.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/runtime/interpreter.py)
+- [ascend_interpreter.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/runtime/ascend_interpreter.py)
+- [debugging.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/debugging.md)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Triton-Ascend 调试方法总览](./debug_overview.md)（`related`）：“调试方法总览”
@@ -96,11 +105,3 @@ def kernel(x_ptr, out_ptr, N, BLOCK_SIZE: tl.constexpr):
 - [数据类型支持矩阵（Data Type Support Matrix）](../../apis/data_type_matrix.md)（`related`）：“解释器与 NPU 数据类型支持差异”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [interpreter.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/runtime/interpreter.py)
-- [ascend_interpreter.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/runtime/ascend_interpreter.py)
-- [debugging.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/debugging.md)

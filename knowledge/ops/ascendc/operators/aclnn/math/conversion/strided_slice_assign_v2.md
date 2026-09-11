@@ -5,40 +5,40 @@ description: "说明 aclnnStridedSliceAssignV2 在 A2/A3 上的接口语义、Ho
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/docs/aclnnStridedSliceAssignV2.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/docs/aclnnStridedSliceAssignV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/docs/zh/context/%E4%B8%A4%E6%AE%B5%E5%BC%8F%E6%8E%A5%E5%8F%A3.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/docs/zh/context/两段式接口.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/README.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_kernel/strided_slice_assign_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_kernel/strided_slice_assign_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_kernel/strided_slice_assign_v2.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_kernel/strided_slice_assign_v2.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/cmake/func.cmake
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/cmake/func.cmake
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/cmake/gen_ops_info.cmake
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/cmake/gen_ops_info.cmake
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/util/tiling_data_def_build.py
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/util/tiling_data_def_build.py
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/config/ascend910b/strided_slice_assign_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/config/ascend910b/strided_slice_assign_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/config/ascend910_93/strided_slice_assign_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/config/ascend910_93/strided_slice_assign_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/config/ascend950/strided_slice_assign_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_host/config/ascend950/strided_slice_assign_v2_binary.json
     role: implementation
 created_at: "2026-08-25T09:33:46Z"
-updated_at: '2026-08-28T06:56:32Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -442,7 +442,7 @@ workspace_total = 16777216 bytes system workspace；Kernel 数据 workspace = 0
 
 - 适用 Route：R-001、R-002
 - 触发条件：Host 已保证最后一维 stride 为 1；`inputShape[last]>0`；`GetBlockNum()>0`。
-- Golden 来源：[`conversion/strided_slice_assign_v2/op_kernel/strided_slice_assign_v2.h:68-84`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_kernel/strided_slice_assign_v2.h#L68-L84)
+- Golden 来源：[`conversion/strided_slice_assign_v2/op_kernel/strided_slice_assign_v2.h:68-84`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice_assign_v2/op_kernel/strided_slice_assign_v2.h#L68-L84)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

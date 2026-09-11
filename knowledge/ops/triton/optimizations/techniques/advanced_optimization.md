@@ -114,7 +114,6 @@ for i in tl.static_range(BLOCK_SIZE):
 **阶段六 910_95 专项**：显式开 multibuffer；利用 fixpipe L0C→UB 直通；UB 248KB 允许更大分块；Vector 核数翻倍，grid 可用更多核。
 
 <!-- cannbot:related:start -->
-
 ## 相关
 
 - [性能调优方法论](performance_tuning.md)（`related`）：“性能调优总流程”

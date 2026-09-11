@@ -2,20 +2,242 @@
 type: API
 title: asc_stwt（内存访问函数）
 description: 将指定数据存储到Global Memory的地址address中，并缓存至Data Cache和L2 Cache。
-tags: [task.lookup, topic.data_movement.memory_access]
+tags:
+- task.lookup
+- topic.data_movement.memory_access
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/memory_access_functions/asc_stwt.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/device_functions.h
+- include/simt_api/asc_fp16.h
+- include/simt_api/asc_bf16.h
 ---
 
-# asc_stwt
+# asc\_stwt
 
-存储数据到 Global Memory 并缓存至 Data Cache 和 L2 Cache。适用于写入后可能很快被当前核再次读取的场景。
+## 功能说明
 
-函数原型支持 30+ 种标量和向量类型的重载，包括 long、int、short、char、float、half、bfloat16_t 及对应的 unsigned 和向量类型（int2/int4/float2/float4 等）。参数 address 为 Global Memory 地址，val 为源操作数。无返回值。
+将指定数据存储到Global Memory的地址`address`中，并缓存至Data Cache和L2 Cache。
 
-仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/device_functions.h"；half/half2 需 "simt_api/asc_fp16.h"，bfloat16_t/bfloat16x2_t 需 "simt_api/asc_bf16.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景，混合编程时需使用 __gm__ 地址空间限定符。
+## 函数原型
+
+```cpp
+inline void asc_stwt(long int* address, long int val)
+```
+
+```cpp
+inline void asc_stwt(unsigned long int* address, unsigned long int val)
+```
+
+```cpp
+inline void asc_stwt(long long int* address, long long int val)
+```
+
+```cpp
+inline void asc_stwt(unsigned long long int* address, unsigned long long int val)
+```
+
+```cpp
+inline void asc_stwt(long2* address, long2 val)
+```
+
+```cpp
+inline void asc_stwt(ulong2* address, ulong2 val)
+```
+
+```cpp
+inline void asc_stwt(long4* address, long4 val)
+```
+
+```cpp
+inline void asc_stwt(ulong4* address, ulong4 val)
+```
+
+```cpp
+inline void asc_stwt(longlong2* address, longlong2 val)
+```
+
+```cpp
+inline void asc_stwt(ulonglong2* address, ulonglong2 val)
+```
+
+```cpp
+inline void asc_stwt(longlong4* address, longlong4 val)
+```
+
+```cpp
+inline void asc_stwt(ulonglong4* address, ulonglong4 val)
+```
+
+```cpp
+inline void asc_stwt(signed char* address, signed char val)
+```
+
+```cpp
+inline void asc_stwt(unsigned char* address, unsigned char val)
+```
+
+```cpp
+inline void asc_stwt(char* address, char val)
+```
+
+```cpp
+inline void asc_stwt(char2* address, char2 val)
+```
+
+```cpp
+inline void asc_stwt(uchar2* address, uchar2 val)
+```
+
+```cpp
+inline void asc_stwt(char4* address, char4 val)
+```
+
+```cpp
+inline void asc_stwt(uchar4* address, uchar4 val)
+```
+
+```cpp
+inline void asc_stwt(short* address, short val)
+```
+
+```cpp
+inline void asc_stwt(unsigned short* address, unsigned short val)
+```
+
+```cpp
+inline void asc_stwt(short2* address, short2 val)
+```
+
+```cpp
+inline void asc_stwt(ushort2* address, ushort2 val)
+```
+
+```cpp
+inline void asc_stwt(short4* address, short4 val)
+```
+
+```cpp
+inline void asc_stwt(ushort4* address, ushort4 val)
+```
+
+```cpp
+inline void asc_stwt(int* address, int val)
+```
+
+```cpp
+inline void asc_stwt(unsigned int* address, unsigned int val)
+```
+
+```cpp
+inline void asc_stwt(int2* address, int2 val)
+```
+
+```cpp
+inline void asc_stwt(uint2* address, uint2 val)
+```
+
+```cpp
+inline void asc_stwt(int4* address, int4 val)
+```
+
+```cpp
+inline void asc_stwt(uint4* address, uint4 val)
+```
+
+```cpp
+inline void asc_stwt(float* address, float val)
+```
+
+```cpp
+inline void asc_stwt(float2* address, float2 val)
+```
+
+```cpp
+inline void asc_stwt(float4* address, float4 val)
+```
+
+```cpp
+inline void asc_stwt(bfloat16_t* address, bfloat16_t val)
+```
+
+```cpp
+inline void asc_stwt(bfloat16x2_t* address, bfloat16x2_t val)
+```
+
+```cpp
+inline void asc_stwt(half* address, half val)
+```
+
+```cpp
+inline void asc_stwt(half2* address, half2 val)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| address | 输入 | Global Memory的地址。 |
+| val | 输入 | 源操作数。 |
+
+## 返回值说明
+
+无
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用除half、half2、bfloat16\_t、bfloat16x2\_t类型之外的接口需要包含`simt_api/device_functions.h`头文件，使用half和half2类型接口需要包含`simt_api/asc_fp16.h`头文件，使用bfloat16\_t和bfloat16x2\_t类型接口需要包含`simt_api/asc_bf16.h`头文件。
+
+```cpp
+#include "simt_api/device_functions.h"
+```
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+```cpp
+#include "simt_api/asc_bf16.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void kernel_asc_stwt(float* dst, float* val, uint32_t input_total_length)
+    {
+        uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;
+        if (idx >= input_total_length) {
+            return;
+        }
+        asc_stwt(dst + idx, val[idx]);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    SIMD与SIMT混合编程场景，需要显式使用地址空间限定符表示地址空间：`__gm__`表示Global Memory内存空间。
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void kernel_asc_stwt(__gm__ float* dst, __gm__ float* val, uint32_t input_total_length)
+    {
+        uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;
+        if (idx >= input_total_length) {
+            return;
+        }
+        asc_stwt(dst + idx, val[idx]);
+    }
+    ```

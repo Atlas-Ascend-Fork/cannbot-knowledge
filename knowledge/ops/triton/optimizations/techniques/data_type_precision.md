@@ -116,16 +116,6 @@ torch.testing.assert_close(result[~mask], golden[~mask], atol=0, rtol=2**-6)
 
 其他：UB 256KB（double buffer 时不超 128KB）；fixpipe L0C→UB 直通；multiBuffer 默认关闭需显式开启。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [数据类型优化：避免 Scalar Fallback](data_types.md)（`related`）：“Scalar Fallback 修复与 profiling 指标”
-- [NPU 数据类型支持矩阵与约束](data_types_ascend.md)（`related`）：“NPU 数据类型支持矩阵与隐式提升规则”
-- [care_padding 优化](care_padding.md)（`related`）：“care_padding 完整说明”
-- [标量降级规避（910_95 / 910B）](scalar_degradation_avoidance.md)（`related`）：“int64/整数比较降级规避”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -136,3 +126,14 @@ torch.testing.assert_close(result[~mask], golden[~mask], atol=0, rtol=2**-6)
 - [semantic.py#L61-L100](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/semantic.py#L61-L100)
 - [core.py#L1621-L1638](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/core.py#L1621-L1638)
 - [semantic.py#L46-L100](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/semantic.py#L46-L100)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [数据类型优化：避免 Scalar Fallback](data_types.md)（`related`）：“Scalar Fallback 修复与 profiling 指标”
+- [NPU 数据类型支持矩阵与约束](data_types_ascend.md)（`related`）：“NPU 数据类型支持矩阵与隐式提升规则”
+- [care_padding 优化](care_padding.md)（`related`）：“care_padding 完整说明”
+- [标量降级规避（910_95 / 910B）](scalar_degradation_avoidance.md)（`related`）：“int64/整数比较降级规避”
+
+<!-- cannbot:related:end -->

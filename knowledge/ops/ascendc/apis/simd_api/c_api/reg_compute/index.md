@@ -1,0 +1,21 @@
+# Reg矢量计算
+
+- [Reg数据搬入](load/index.md)：从Unified Buffer（UB）中按dtype对齐的起始地址读取VL长度数据，并通过函数返回值返回或写入目的矢量数据寄存器，搬运过程中数据格式和内容保持不变。连续搬入时，需要在每次调用前手动更新源地址。该接口为易用性接口，对性能有要求时可使用asc_loadunalign或asc_loadunalign_postupdate。
+- [地址寄存器操作](reg_addr_reg/index.md)：该接口已废弃，请使用asc_update_addr_reg实现此功能。
+- [基础算术](reg_arith/index.md)：根据mask对源操作数src按元素取绝对值，得到计算结果。计算公式如下：
+- [广播操作](reg_broadcast/index.md)：将源操作数src的最低位元素（即下标为0的元素）广播到目的操作数dst中被mask筛选的位置。mask仅用于筛选dst中的元素位置，不影响从src中读取的元素；dst中未被mask筛选的位置置零。
+- [比较计算](reg_compare/index.md)：eq表示相等（equal to），该接口用于逐元素比较两个源操作数是否相等，若相等则目的操作数对应结果位为1，否则为0。每个元素的比较结果占一个比特。计算公式如下：
+- [类型转换](reg_convert/index.md)：将bfloat16_t类型转化为fp4x2_e1m2_t类型，并支持多种舍入模式。
+- [Reg间搬运](reg_copy/index.md)：完成数据在寄存器间的搬运，支持以下三种模式：
+- [复合计算](reg_fused/index.md)：根据mask对源操作数src0、src1按元素相减后取绝对值，得到计算结果。计算公式如下：
+- [reg gather](reg_gather/index.md)：根据索引位置index将源操作数src按元素收集到目的操作数dst中。
+- [直方图](reg_histogram/index.md)：对输入矢量数据寄存器中的元素进行累计频率统计，生成累计直方图。统计结果在目的矢量数据寄存器原有数据基础上累加。支持配置掩码用于指示参与统计的元素，掩码位为1时，对应元素参与统计；为0时不统计。掩码不影响目的矢量数据寄存器的写入行为。本接口在Vector Function（__simd_vf__标记的函数）内使用。
+- [索引操作](reg_index/index.md)：以传入的value为起始值，生成递增/递减的索引，并将生成的索引保存在dst中，Vector Length (VL)表示矢量数据寄存器的位宽，VL_T表示该寄存器可存储的元素数量。算法逻辑表示如下：
+- [逻辑计算](reg_logic/index.md)：根据mask对源操作数src0、src1执行按位与（&）操作，将结果作为返回值返回或写入目的操作数dst。
+- [掩码寄存器操作](reg_mask/index.md)：根据传入的pat_mode生成对应的掩码寄存器，支持b8、b16、b32三种位宽模式。pat_mode参数指定mask的模式，即指定哪些位置的元素参与计算。
+- [排布变换](reg_permute_sel/index.md)：该接口已废弃。请使用asc_squeeze_and_storeunalign_init实现此功能。
+- [归约计算](reg_reduce/index.md)：根据mask将源操作数src中每两个相邻元素相加，得到计算结果。结果连续保存在目的操作数dst的低半部分，dst的高半部分置0。以half数据类型为例，相加示意图如下：
+- [同步控制](reg_sync/index.md)：Reg矢量计算内不同流水线之间的同步指令。该同步指令指定源流水线和目的流水线，如下图所示，目的流水线将等待源流水线上所有指令完成才进行执行。 读写场景下，当读指令使用的寄存器和写指令使用的寄存器相同时，可以触发寄存器保序，指令将会按照代码顺序执行，不需要插入同步指令，而当使用的寄存器不同时，如果要确保读写指令执行，则需要插入同步指令。写写场景同理。
+- [Reg离散搬出](scatter/index.md)：根据索引寄存器中的索引值，将源矢量数据寄存器中的元素分散搬出到Unified Buffer（UB）。mask用于指示参与搬出的元素，掩码为1的源元素写入dst中对应索引位置，掩码为0的源元素不写入目的地址，保留目的地址原数据。搬运过程中数据格式与内容保持不变。本接口在Vector Function（__simd_vf__标记的函数）内使用。
+- [Reg数据搬出](store/index.md)：将矢量数据寄存器中的数据搬出到Unified Buffer（UB），目的地址需按照dtype对齐。底层经非对齐搬出指令完成单次连续写入，搬运过程中数据格式和内容保持不变。在追求极致性能时，对齐场景推荐使用asc_storealign接口。本接口在Vector Function（__simd_vf__标记的函数）内使用。本接口提供两种参数列表不同的功能模式：
+- [ub gather](ub_gather/index.md)：根据索引位置index将源操作数src按元素收集到目的操作数dst中。

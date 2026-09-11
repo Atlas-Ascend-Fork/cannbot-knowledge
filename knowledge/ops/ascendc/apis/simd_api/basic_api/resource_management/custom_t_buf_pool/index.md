@@ -1,6 +1,5 @@
 # 自定义TBufPool
 
-- [自定义TBufPool](custom_t_buf_pool.md)：自定义TBufPool接口索引页，汇总EXTERN_IMPL_BUFPOOL宏、Reset、Init、GetBufHandle及地址与大小管理方法。
 - [ExternImplBufpool](extern_impl_bufpool.md)：辅助开发者自定义TBufPool以管理Unified Buffer和L1 Buffer内存的宏，支持不连续内存块和跨TQue共享等自定义分配需求。
 - [GetBufHandle](get_buf_handle.md)：根据offset取出自定义TBufPool中管理的内存块，返回TBufHandle类型的内存块句柄。
 - [GetCurAddr](get_cur_addr.md)：获取自定义TBufPool当前已分配的内存地址，用户可从该地址向后继续分配内存块。

@@ -345,17 +345,3 @@ def validate_ci_result(
     if check_exit_code != expected_exit_code(core):
         raise ContentProtocolError("check_exit_code does not match the result")
     return {**core, "check_exit_code": check_exit_code}
-
-
-def attach_exit_code(
-    result: dict[str, object],
-    check_exit_code: int,
-    *,
-    plan: dict[str, object] | None = None,
-    repo_root: Path | None = None,
-) -> dict[str, object]:
-    return validate_ci_result(
-        {**result, "check_exit_code": check_exit_code},
-        plan=plan,
-        repo_root=repo_root,
-    )

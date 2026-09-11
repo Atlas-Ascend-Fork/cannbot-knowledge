@@ -5,30 +5,30 @@ description: "说明 aclnnForeachLog 在 950 上的接口语义、Host/Launcher 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/docs/aclnnForeachLog.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/docs/aclnnForeachLog.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/foreach_log_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/foreach_log_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_utils/op_host/foreach_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_utils/op_host/foreach_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/arch35/foreach_log_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/arch35/foreach_log_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/config/ascend950/foreach_log_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/config/ascend950/foreach_log_binary.json
     role: implementation
 created_at: "2026-08-25T15:45:22Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -372,7 +372,7 @@ GM traffic per valid element=2 B load+2 B store
 
 - 适用 Route：R-001、R-002、R-003
 - 触发条件：`tensorCount<=256`，每项元素独立，launch 为 `needCoreNum` blocks×1024 threads。
-- Golden 来源：[`foreach/foreach_log/op_kernel/arch35/foreach_log_simt.h:71-89`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log_simt.h#L71-L89)
+- Golden 来源：[`foreach/foreach_log/op_kernel/arch35/foreach_log_simt.h:71-89`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_kernel/arch35/foreach_log_simt.h#L71-L89)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -417,7 +417,7 @@ Host 只保存每项 count，不生成 256×core 的切片表。每个 Tensor �
 
 - 适用 Route：全部
 - 触发条件：`N>0` 时 `needCoreNum=min(C,ceil(N/1024))`；N=0 固定1。
-- Golden 来源：[`foreach/foreach_log/op_host/arch35/foreach_log_tiling.cpp:95-111`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/arch35/foreach_log_tiling.cpp#L95-L111)
+- Golden 来源：[`foreach/foreach_log/op_host/arch35/foreach_log_tiling.cpp:95-111`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_log/op_host/arch35/foreach_log_tiling.cpp#L95-L111)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

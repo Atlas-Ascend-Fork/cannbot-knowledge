@@ -5,22 +5,22 @@ description: "说明 cann_bench::cross_entropy_loss、calc_cross_entropy_loss_ti
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss.cpp"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_tiling_data.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_tiling_data.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_ar_big_c.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_ar_big_c.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/arch35/softmax_v2_base.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_v2/op_kernel/arch35/softmax_v2_base.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/CMakeLists.txt"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/CMakeLists.txt"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_host/config/ascend950/cross_entropy_loss_binary.json"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_host/config/ascend950/cross_entropy_loss_binary.json"
     role: implementation
 created_at: "2026-08-25T19:31:25Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -935,7 +935,7 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0
 
 - 适用 Route：R-006。
 - 触发条件：Direct `TryFullLoad` 先证明 db=2 的 UB 容量；不足时重算 db=1；两者都要求一次至少处理 `32/sizeof(T)` rows。
-- 固定源码来源：[`loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h:154-162`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h#L154-L162)
+- 固定源码来源：[`loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h:154-162`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h#L154-L162)
 
 **官方源码（固定 Commit 节选；省略号表示未展示的连续行）**：
 
@@ -967,7 +967,7 @@ pipe_->InitBuffer(inputQueue_, db, ncOnce * sizeof(T1));
 
 - 适用 Route：R-007。
 - 触发条件：C 被切成多个 `cOnceNum` chunk，Host 生产 `kTimes/kTimesTail/cacheStart`，Device 对每个 chunk 的 FP32 exp sum 调用 `UpdateCache`。
-- 固定源码来源：[`loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_ar_big_c.h:431-453`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_ar_big_c.h#L431-L453)
+- 固定源码来源：[`loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_ar_big_c.h:431-453`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_ar_big_c.h#L431-L453)
 
 **官方源码（固定 Commit 节选；省略号表示未展示的连续行）**：
 

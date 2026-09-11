@@ -2,41 +2,167 @@
 type: API
 title: Atan
 description: 按元素做反正切运算，支持泰勒展开和多项式逼近两种算法配置
-tags: [task.lookup, topic.implementation.api_layer.high_level_api, topic.compute.elementwise.math_function]
+tags:
+- task.lookup
+- topic.implementation.api_layer.high_level_api
+- topic.compute.elementwise.math_function
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/Atan_interface/Atan.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+- 310p
+- kirin_x90
+- kirin_9030
+source_headers:
+- include/adv_api/math/atan.h
 ---
 
 # Atan
 
+## 功能说明
+
 按元素做三角函数反正切运算，计算公式如下：
 
-函数原型：
-template <typename T, bool isReuseSource = false, const AtanConfig& config = defaultAtanConfig>
-__aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor, const LocalTensor<uint8_t>& sharedTmpBuffer, const uint32_t calCount)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002183047940.png)
 
-参数：
-- T：操作数的数据类型。支持的数据类型为：half、float。
-- isReuseSource：是否允许修改源操作数。该参数预留，传入默认值false即可。
-- config：Atan算法的相关配置。此参数可选配，AtanConfig类型，具体定义如下方代码所示，其中参数的含义为：algo：Atan内部实现使用的算法。AtanAlgo类型，支持的取值如下：TAYLOR_EXPANSION：默认值。该算法使用6阶泰勒展开实现Atan，支持的数据类型为half、float。POLYNOMIAL_APPROXIMATION：该算法是17次多项式逼近算法，支持的数据类型为float。
-- dstTensor（输出）：目的操作数。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。
-- srcTensor（输入）：源操作数。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 源操作数的数据类型需要与目的操作数保持一致。
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002227268389.png)
 
-约束：
-- 不支持源操作数与目的操作数地址重叠。
-- 不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。
-- 操作数地址对齐要求请参见通用地址对齐约束。
+## 函数原型
 
-支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90、Kirin 9030。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品。
+-   通过sharedTmpBuffer入参传入临时空间
+    -   源操作数Tensor全部/部分参与计算
+
+        ```
+        template <typename T, bool isReuseSource = false, const AtanConfig& config = defaultAtanConfig>
+        __aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor, const LocalTensor<uint8_t>& sharedTmpBuffer, const uint32_t calCount)
+        ```
+
+    -   源操作数Tensor全部参与计算
+
+        ```
+        template <typename T, bool isReuseSource = false, const AtanConfig& config = defaultAtanConfig>
+        __aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor, const LocalTensor<uint8_t>& sharedTmpBuffer)
+        ```
+
+-   接口框架申请临时空间
+    -   源操作数Tensor全部/部分参与计算
+
+        ```
+        template <typename T, bool isReuseSource = false, const AtanConfig& config = defaultAtanConfig>
+        __aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor, const uint32_t calCount)
+        ```
+
+    -   源操作数Tensor全部参与计算
+
+        ```
+        template <typename T, bool isReuseSource = false, const AtanConfig& config = defaultAtanConfig>
+        __aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor)
+        ```
+
+由于该接口的内部实现中涉及复杂的数学计算，需要额外的临时空间来存储计算过程中的中间变量。临时空间支持开发者**通过sharedTmpBuffer入参传入**和**接口框架申请**两种方式。
+
+-   通过sharedTmpBuffer入参传入，使用该tensor作为临时空间进行处理，接口框架不再申请。该方式开发者可以自行管理sharedTmpBuffer内存空间，并在接口调用完成后，复用该部分内存，内存不会反复申请释放，灵活性较高，内存利用率也较高。
+-   接口框架申请临时空间，开发者无需申请，但是需要预留临时空间的大小。
+
+通过sharedTmpBuffer传入的情况，开发者需要为tensor申请空间；接口框架申请的方式，开发者需要预留临时空间。临时空间大小BufferSize的获取方式如下：通过[GetAtanMaxMinTmpSize](get_atan_max_min_tmp_size.md)中提供的接口获取需要预留空间范围的大小。
+
+## 参数说明
+
+**表1**  模板参数说明
+
+| 参数名 | 描述 |
+| --- | --- |
+| T | 操作数的数据类型。支持的数据类型为：half、float。 |
+| isReuseSource | 是否允许修改源操作数。该参数预留，传入默认值false即可。 |
+| config | Atan算法的相关配置。此参数可选配，AtanConfig类型，具体定义如下方代码所示，其中参数的含义为：<br>algo：Atan内部实现使用的算法。AtanAlgo类型，支持的取值如下：TAYLOR_EXPANSION：默认值。该算法使用6阶泰勒展开实现Atan，支持的数据类型为half、float。POLYNOMIAL_APPROXIMATION：该算法是17次多项式逼近算法，支持的数据类型为float。 |
+
+```
+enum class AtanAlgo {
+    TAYLOR_EXPANSION = 0,
+    POLYNOMIAL_APPROXIMATION,
+};
+
+struct AtanConfig {
+    AtanAlgo algo = AtanAlgo::TAYLOR_EXPANSION;
+};
+```
+
+**表2**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| dstTensor | 输出 | 目的操作数。<br><br>类型为[LocalTensor](../../../basic_api/data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。 |
+| srcTensor | 输入 | 源操作数。<br><br>类型为[LocalTensor](../../../basic_api/data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。<br><br>源操作数的数据类型需要与目的操作数保持一致。 |
+| sharedTmpBuffer | 输入 | 临时缓存。<br><br>类型为[LocalTensor](../../../basic_api/data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。<br><br>临时空间大小BufferSize的获取方式请参考[GetAtanMaxMinTmpSize](get_atan_max_min_tmp_size.md)。 |
+| calCount | 输入 | 参与计算的元素个数。 |
+
+## 返回值说明
+
+无
+
+## 约束说明
+
+-   **不支持源操作数与目的操作数地址重叠。**
+-   不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。
+-   操作数地址对齐要求请参见[通用地址对齐约束](../../../general_description_and_constraints.md#section796754519912)。
+
+
+-   针对Ascend 950PR/Ascend 950DT，接口内部计算对Subnormal的处理方式受编译选项`--cce-ftz`控制（默认值为`true`）：
+    -   配置为`false`时，计算过程中保留Subnormal，并按照其实际数值参与后续计算。
+    -   配置为`true`时，启用FTZ（Flush-To-Zero）模式，计算过程中产生或参与运算的Subnormal将按0处理，可能导致计算结果与保留Subnormal时存在精度差异。
+
+
+## 调用示例
+
+```
+// dstLocal: 存放Atan计算结果的Tensor
+// srcLocal: 存放Atan计算输入的Tensor
+// sharedTmpBuffer: 存放Atan计算过程中临时缓存的Tensor
+
+// 接口框架申请临时空间，全部参与计算
+AscendC::Atan(dstLocal, srcLocal);
+// 接口框架申请临时空间，部分参与计算,需要参与计算的元素个数为512
+AscendC::Atan(dstLocal, srcLocal, 512);
+
+// 通过sharedTmpBuffer入参传入临时空间，全部参与计算
+AscendC::Atan(dstLocal, srcLocal, sharedTmpBuffer);
+// 通过sharedTmpBuffer入参传入临时空间，部分参与计算,需要参与计算的元素个数为512
+AscendC::Atan(dstLocal, srcLocal, sharedTmpBuffer, 512);
+
+// 指定输入算法为POLYNOMIAL_APPROXIMATION,输入的数据类型为float,实际计算个数为512
+static constexpr AscendC::AtanConfig atanConfig = {AscendC::AtanAlgo::POLYNOMIAL_APPROXIMATION};
+AscendC::Atan<float, false, atanConfig>(dstLocal, srcLocal, sharedTmpBuffer, 512);
+```
+
+示例数据如下：
+
+```
+输入数据(srcLocal):
+[-2.56 -2.55 -2.54 ... 0. ... 2.53  2.54  2.55]
+输出数据(dstLocal):
+[-1.19847027, -1.19717361, -1.19560622 ... 0. ... 1.19429046, 1.19560622, 1.19717361]
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
 - [GetAtanMaxMinTmpSize](get_atan_max_min_tmp_size.md)（`related`）：不支持sharedTmpBuffer与源操作数和目的操作数地址重叠。；kernel侧Atan接口的计算需要开发者预留 申请临时空间。左卡的 Atan Kernel 需要独立 sharedTmpBuffer，右卡在 Host 侧按 shape、dtype 与复用配置给出其合法空间范围；右卡结果直接决定左卡缓冲区的申请大小。
 - [GetAtanTmpBufferFactorSize](get_atan_tmp_buffer_factor_size.md)（`related`）：该接口用于获取maxLiveNodeCount和extraBuf，在固定空间大小的情况下，通过maxLiveNodeCount和extraBuf可以推算算子单次最大计算元素数量。；template <typename T, bool isReuseSource = false, const AtanConfig& config = defaultAtanConfig> __aicore__ inline void Atan(const LocalTensor<T>& dstTensor, const LocalTensor<T>& srcTensor, const LocalTensor<uint8_t>& sharedTmpBuffer, const uint32_t calCount)；Host 侧系数用于反推单次元素上限，恰好约束带 sharedTmpBuffer 与 calCount 的 Atan 重载如何切分计算。
+
+<!-- cannbot:api-operator:start -->
+### 知识正文中的调用示例
+
+展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
+以下仅有知识正文中的调用证据，未作为源码调用结果。
+
+- [ForeachAtan A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_atan.md)（`related`）：算子正文包含对 `Atan(...)` 的直接调用；本卡提供该接口契约。
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

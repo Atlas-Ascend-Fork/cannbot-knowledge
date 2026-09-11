@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-VERSION="0.4.2"
+VERSION="0.4.3"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 KNOWLEDGE_ROOT="$(realpath "$SCRIPT_DIR")"
 INDEX_TOOL="$KNOWLEDGE_ROOT/.agents/skills/knowledge-query/scripts/knowledge_index.py"
@@ -27,11 +27,14 @@ Usage:
     <project-path> [consumer|contributor] [options]
 
 Profiles:
-  consumer       Install knowledge-query only (default).
-  contributor    Install the three base skills and both operator ingest skills.
+  consumer       Install knowledge-query and ascendc-api-knowledge-query (default).
+  contributor    Install the three base skills, ascendc-api-knowledge-query and both operator ingest skills.
                  The repository-internal trace ingest skill is not installed.
 
 Options:
+  --skip-resources
+                  Skip restoring local documentation and pinned source snapshots.
+                  Use only for an explicitly offline, knowledge-only installation.
   --prompt-action <uninstall|reinstall>
                   Only remove or refresh the managed project instructions. Reinstall
                   reuses the profile recorded by the previous installation unless a
@@ -163,104 +166,32 @@ generate_prompt() {
   cat <<'EOF'
 ## cannbot-knowledge 使用入口
 
-`cannbot-knowledge` 把 CANN、昇腾 NPU、算子 DSL、图、模型和 Runtime 的受治理知识整理成
-可检索、可溯源的知识卡。`knowledge-query` 是统一消费入口：它从经过校验的持久化索引返回
-候选标题、摘要、平台、版本、信任信息和 `local_path`；有命中时负责当前任务的 Agent 必须打开
-正文并按需核验固定来源，零命中时必须明确记录覆盖缺口，再用固定权威来源和当前工程证据推进。
+本项目已安装可检索、可溯源的 CANN 知识库消费 Skill。负责整体任务的 Agent 在 CANN、昇腾 NPU、
+算子 DSL、图、模型或 Runtime 的首次领域决策前，通过 Skill 能力加载对应入口：
 
-### 入口硬门禁
-
-- 以下规则约束负责整体任务的主 Agent。收到明确子任务的子 Agent 可直接使用主 Agent 提供的
-  证据；只有子任务本身是知识检索，或出现阻塞子任务的新领域缺口时才调用 `knowledge-query`，
-  否则把缺口和新事实返回主 Agent。
-- 只要任务涉及 CANN、昇腾 NPU、算子生成或实现、Ascend C/Triton/TileLang/PyPTO、图编译、
-  模型训练或推理、Runtime，以及相关 API 核验、调试、优化、测试、迁移、评审或技术问答，
-  必须在首次领域决策前通过 Agent 的 Skill 能力加载 `knowledge-query`。调用了其他 Skill 也
-  不能跳过或推迟这个入口。
-- 加载 Query 前，只读取用户任务、任务规格和用于确定目标平台的设备信息。平台确定后，下一项
-  领域动作应是加载 Query；首次完成检索前，不探索参考实现或工程源码，不创建设计文档、
-  STATE 或任务清单，也不开始 API 选型、编码和调试。
-- 只加载 Skill、只看候选摘要或只取得文件路径，都不算完成入口。有命中时至少打开与第一个
-  decision 相关的 `local_path`，核对正文范围和 sources；零命中时保留查询条件并明确报告知识
-  缺口，然后才转向固定权威来源或工程证据。
-- Query 只消费已准备且未过期的索引。索引缺失或陈旧时停止检索，向用户或知识仓维护者报告，
-  由项目安装器或维护流程构建；不得临时扫描全库、静默重建或取消过滤来绕过失败。
-- 本段与项目内其他非用户级调用顺序冲突时，以本段为准；系统、开发者和用户明确指令仍然
-  优先。只有用户明确要求不使用知识库时，才跳过该入口。
-
-### 知识库中有什么
-
-必须用 Query 的 `discover` 读取当前真实覆盖；不要从本提示词、Registry、`index.md` 或目录是否存在
-推断卡片数量。安装提示词只说明稳定分类，不嵌入会随知识合入而过期的覆盖快照。
-
-| 领域或路径 | 稳定分类 | 覆盖判定方式 |
-|---|---|---|
-| `common` | 公共平台、工具链、可观测性和术语入口 | 查看 `discover` 的 `common` 计数；零计数表示当前无卡片 |
-| `ops` | `ascendc`、`triton`、`tilelang`、`pypto`、`shared` route | 按目标 DSL 查看对应 technology 计数，不把预建 route 当成证据 |
-| `model` | `inference`、`training`、`spatial`、`embodied` route | 按模型场景查看对应 scope 计数 |
-| `graph`、`runtime` | 图与 Runtime 领域入口 | 查看对应 domain 计数；零命中时再转向固定权威来源或工程证据 |
-
-知识卡是蒸馏后的入口，不是原始资料镜像。正文用于技术判断，人工链接和由本地 Agent 判定派生的受管关系块组成仓内导航。
-`sources` 指向固定版本的文档或代码。候选、判定缓存和完整图谱是 ignored 的本地产物，受管关系块可随卡片提交；回答仍需核对人工正文与来源。
-默认只消费 `stable`；draft、deprecated、未定位平台
-内容以及 shared 追加都必须显式请求。没有 `verified` 不是已验证，machine-confirmed 也不等于
-human-reviewed。零命中只表示当前过滤条件下未召回，不证明技术或能力不存在。
-
-### 什么时候调用或重新调用
-
-| 触发场景 | 本轮要查的重点 | 要支持的 decision |
-|---|---|---|
-| 新需求、算子、图、模型或 Runtime 任务 | 同名/相似知识、语义、平台和工程边界 | 明确输入输出、shape/dtype/layout、版本、失败边界和候选路线 |
-| 只给出芯片型号、SocVersion 或 NPU 架构 | 平台识别参考、用户/设备事实和固定权威来源 | 得到可证明的目标平台；无法唯一映射时向用户确认 |
-| 新增、替换或不确定 API | 目标 technology 的 API、概念、样例和固定来源 | 核验名称、签名、参数单位、内存位置、dtype、平台/版本与替代接口 |
-| Kernel、Tiling、图优化或执行流程设计 | concepts、operators、examples、interoperability | 选择数据流、切分、内存、同步、模板或跨技术路线，并保留验证点 |
-| 编译、链接、加载、运行、越界、卡死或超时 | 原始错误短语、runbook、相关 API 和平台约束 | 根据完整信号缩小声明、资源、地址、同步、切分或兼容性根因 |
-| 精度或一致性失败 | 失败 workload、语义、数据搬运、累积精度和边界知识 | 区分公式、布局、搬运、数值精度和平台行为问题 |
-| 性能优化 | 先取得基线或 Profiling 信号，再查优化、样例和硬件概念 | 把瓶颈映射为可测量的搬运、流水、内存、指令、并行或模板候选 |
-| 版本、平台或 DSL 迁移 | 平台、版本、interoperability 和受影响 API | 识别弃用、替代、架构差异和不能跨环境照搬的实现 |
-| 代码评审、测试设计或技术问答 | 与具体结论对应的语义、契约、平台和验证依据 | 判断结论是否有目标范围证据，并指出风险、缺口和验证方式 |
-
-任务任一阶段出现新的 API 契约、实现分支、错误信号、精度现象、性能瓶颈、平台差异或用户约束
-时，带着新增事实定向重入 `knowledge-query`。已有证据足以支持当前 decision 时结束本轮检索，
-不要为了增加查询次数重复搜索。
-
-### 每次执行的基本流程
-
-1. 把当前任务拆成一个明确的知识问题和一个待决定的 decision，并取得目标平台证据。只有产品
-   型号、SocVersion 或 NPU 架构时，按 Skill 的平台识别流程映射；不得凭记忆猜测，也不得通过
-   省略 `--platform` 扩大搜索。
-2. 先运行 `discover`，再按 domain、technology、路径 Profile 和 platform 使用最窄
-   过滤条件。跨领域问题拆成独立查询，不把关键词相似的其他 DSL 自动作为证据。
-3. 根据候选的标题、摘要、平台、版本、信任信息和路径选卡，并用原生文件工具打开相关
-   `local_path`。摘要只用于选卡，未打开的链接和正文行数都不是技术结论；零命中时记录完整
-   过滤条件和覆盖缺口，不虚构候选卡。
-4. 正文足够时，提取公式、API 契约、适用范围、候选方案、风险和验证方法；正文不足时先沿
-   显式关系或 `sources` 定向读取固定上游，再考虑已安装 SDK 或其他外部资料。
-5. 区分硬约束和候选实现：语义、API 契约、平台/版本限制需要遵守；生产卡、样例和优化卡只是
-   候选路线，不自动等于当前工程或 workload 的最优方案。
-6. 回到工程任务，在目标平台执行构建、正确性、边界和必要的 Profiling 验证。工程结果产生新
-   知识问题时重新查询，不能用任务开头的旧搜索替代。
-7. 复杂实现、故障、性能、多 decision 或需要交接的任务，为每个 decision 保存独立且不可覆盖
-   的 search receipt；按 Query 工作流冻结 state、生成 ready receipt，并在工程验证后校验
-   outcome manifest。只针对未解决 gap 改变查询角度。
-
-### 需要立即纠正的行为
-
-| 错误行为 | 应执行的动作 |
+| 当前问题 | 入口 |
 |---|---|
-| 准备先调用其他技术 Skill、读参考实现或写方案 | 只取得任务规格和平台事实，先加载 Query、搜索并打开相关卡 |
-| 看到芯片型号或 NPU 架构后凭经验选择平台 | 打开平台识别参考；共享架构不能单独证明具体产品平台 |
-| 查询时省略平台，或用 `--include-unlocated` 扩大普通搜索 | 恢复平台硬过滤；未定位 draft 只用于明确的受控研究 |
-| 索引缺失或 stale 后改为遍历知识树 | 停止并报告，由安装器或维护者构建索引，不在查询路径静默修复 |
-| 把候选摘要、标题或未打开链接当作结论 | 打开 `local_path`，核对正文和固定来源 |
-| 任务开始查过一次，后续不再查 | 新 API、分支、失败证据、性能信号或平台信息出现时定向重入 |
-| 因同名或算法相似使用其他平台、版本或 DSL 的卡 | 停止套用，按目标平台和 DSL 重新过滤并从正文核对版本；跨技术只使用显式 shared/interoperability 证据 |
-| 有生产实现或样例就直接照搬 | 保留约束，将实现作为候选，与工程形态、workload 和测量结果比较 |
-| 卡片没展开完整签名或源码就全盘搜索 SDK | 先沿卡片固定 source 定向核验缺失细节，并记录实际版本和路径 |
-| 没有同名卡就宣称知识不存在 | 改查语义、关键 API、平台、Runbook 或相似机制，并明确零命中的边界 |
+| Ascend C API 的契约、选型、相关知识或本地头文件 | [ascendc-api-knowledge-query](.agents/skills/ascendc-api-knowledge-query/SKILL.md) |
+| 其他 CANN 知识、算子实现、调试、优化、测试或跨技术问题 | [knowledge-query](.agents/skills/knowledge-query/SKILL.md) |
 
-具体命令、输出 schema、过滤规则、平台识别和审计步骤以 `knowledge-query` 的 `SKILL.md` 及其
-渐进式 references/modes 为准。
+两个入口共用 Query 的索引和平台规则，不需要重复启动。缺少入口时由项目安装流程补齐，不用
+扫描知识树替代 Skill。收到明确子任务的 Agent 可以复用主 Agent 已取得的适用证据；只有检索子任务
+或出现新的领域证据缺口时，才再次进入检索。
+
+### 使用边界
+
+- 加载入口前只取得任务需求和目标环境信息，不先凭经验做 API 选型、读参考实现或设计实现方案。
+  目标平台确认、候选召回、选卡全文阅读及按需补证，依照所选 Skill 进行；加载入口本身不算完成检索。
+- 知识仓通过项目配置定位，不把业务工程当成知识仓。实际覆盖由 Query 确认，目录占位、导航数量或
+  搜索零命中都不证明技术能力是否存在。
+- 消费流程保持只读：必要权限被拒绝、索引缺失或陈旧时停止并报告，不绕过检索、不临时重建索引，
+  也不自动下载、编译或修改知识、源码、SDK 与全局环境。
+- 已读证据足够回答当前问题时结束；出现新的领域证据缺口时定向重入。需要工程实验或贡献知识时，
+  必须属于用户本次授权，不因为检索 Skill 提到验证方法就自动执行。
+
+平台识别、草稿补搜、相关链接、来源路径、输出范围和复杂任务审计的具体规则只在对应 Skill 及其
+按需参考中维护。本安装提示仅负责触发、路由和使用边界，不另定义检索步骤；用户明确要求不使用
+知识库时遵从该要求。
 EOF
   if [[ "$profile" == "contributor" ]]; then
     cat <<'EOF'
@@ -397,6 +328,7 @@ shift 2
 profile="consumer"
 profile_explicit="false"
 prompt_action=""
+skip_resources="false"
 if [[ "${1:-}" == "consumer" || "${1:-}" == "contributor" ]]; then
   profile="$1"
   profile_explicit="true"
@@ -404,6 +336,10 @@ if [[ "${1:-}" == "consumer" || "${1:-}" == "contributor" ]]; then
 fi
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
+    --skip-resources)
+      skip_resources="true"
+      shift
+      ;;
     --prompt-action)
       [[ "$#" -ge 2 ]] || fail "--prompt-action requires a value"
       prompt_action="$2"
@@ -461,8 +397,8 @@ if [[ "$prompt_action" == "reinstall" && "$profile_explicit" == "false" ]]; then
   profile="$(installed_profile "$knowledge_env" "$canonical_root")"
 fi
 case "$profile" in
-  consumer) skills=(knowledge-query) ;;
-  contributor) skills=(knowledge-ingest knowledge-query knowledge-lint ops-knowledge-vv-ingest ops-knowledge-cv-ingest) ;;
+  consumer) skills=(knowledge-query ascendc-api-knowledge-query) ;;
+  contributor) skills=(knowledge-ingest knowledge-query knowledge-lint ascendc-api-knowledge-query ops-knowledge-vv-ingest ops-knowledge-cv-ingest) ;;
   *) fail "unknown profile: $profile" ;;
 esac
 
@@ -497,6 +433,9 @@ for skill in "${skills[@]}"; do
   fi
 done
 
+if [[ "$skip_resources" != "true" ]]; then
+  bash "$KNOWLEDGE_ROOT/get_resources.sh"
+fi
 prepare_search_index
 for skill in "${skills[@]}"; do
   source_path="$KNOWLEDGE_ROOT/.agents/skills/$skill"

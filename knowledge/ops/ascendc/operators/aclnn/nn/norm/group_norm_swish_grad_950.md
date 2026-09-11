@@ -5,32 +5,32 @@ description: "说明 aclnnGroupNormSwishGrad 在 950 上的接口语义、Host/L
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/docs/aclnnGroupNormSwishGrad.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/docs/aclnnGroupNormSwishGrad.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_host/group_norm_swish_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_host/group_norm_swish_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_host/group_norm_swish_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_host/group_norm_swish_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_host/group_norm_swish_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_host/group_norm_swish_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/group_norm_swish_grad_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/group_norm_swish_grad_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_utils.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_utils.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_group_fit_ub.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_group_fit_ub.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_channel_fit_ub.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_channel_fit_ub.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_channel_split_ub.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_channel_split_ub.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_host/config/ascend950/group_norm_swish_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_host/config/ascend950/group_norm_swish_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T17:55:27Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -453,7 +453,7 @@ stage2/workspace same R-001; dynamic_ub=N/A
 
 - 适用 Route：R-001/R-002/R-003 的 950 deterministic stage-2。
 - 触发条件：`IsArch3510 && N>2`，compile key 10/11/12。
-- Golden 来源：[`group_norm_swish_grad_utils.h:445-455`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_utils.h#L445-L455)
+- Golden 来源：[`group_norm_swish_grad_utils.h:445-455`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_utils.h#L445-L455)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -492,7 +492,7 @@ KahanAccumulateVf(
 
 - 适用 Route：全部 stage-1，R-001 另有 UnAlign VF。
 - 触发条件：arch35 apt body，`calCount>0`。
-- Golden 来源：[`group_norm_swish_grad_utils.h:692-706`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_utils.h#L692-L706)
+- Golden 来源：[`group_norm_swish_grad_utils.h:692-706`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish_grad/op_kernel/arch35/group_norm_swish_grad_utils.h#L692-L706)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

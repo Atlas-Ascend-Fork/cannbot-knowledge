@@ -5,33 +5,33 @@ description: "说明 aclnnInplaceNanToNum 在 950 上的接口语义、Host/Laun
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/docs/aclnnNanToNum%26aclnnInplaceNanToNum.md"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/docs/aclnnNanToNum&aclnnInplaceNanToNum.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_api/aclnn_nan_to_num.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_api/aclnn_nan_to_num.h"
     role: header
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_api/aclnn_nan_to_num.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_api/aclnn_nan_to_num.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_api/nan_to_num.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_api/nan_to_num.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/op_api/level2_base.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/op_api/level2_base.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/external/aclnn_kernels/contiguous.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/external/aclnn_kernels/contiguous.h"
     role: header
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_host/arch35/nan_to_num_tiling_arch35.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_host/arch35/nan_to_num_tiling_arch35.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/arch35/nan_to_num_tiling_struct.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/arch35/nan_to_num_tiling_struct.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/arch35/nan_to_num_struct.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/arch35/nan_to_num_struct.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/arch35/nan_to_num_dag.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/arch35/nan_to_num_dag.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/nan_to_num_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/nan_to_num_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_host/nan_to_num_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_host/nan_to_num_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_host/config/ascend950/nan_to_num_binary.json"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_host/config/ascend950/nan_to_num_binary.json"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/CMakeLists.txt"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/CMakeLists.txt"
     role: implementation
   - resource: "https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/elewise/elewise_base_struct.h"
     role: implementation
@@ -50,7 +50,7 @@ sources:
   - resource: "https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/util/sync.h"
     role: implementation
 created_at: "2026-08-25T11:36:05Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -671,7 +671,7 @@ workspace_total(operator request) = 16 MiB；Kernel body 使用量=0
 
 - 适用 Route：R-003、R-004
 - 触发条件：`NanToNumDAG<T>` 的唯一计算结果只被 `CopyOut` 消费，且显式选择 `MemOptCfg<MemLevel::LEVEL_2>`。
-- Golden 来源：[`math/nan_to_num/op_kernel/arch35/nan_to_num_dag.h:120-129`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/arch35/nan_to_num_dag.h#L120-L129)
+- Golden 来源：[`math/nan_to_num/op_kernel/arch35/nan_to_num_dag.h:120-129`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/arch35/nan_to_num_dag.h#L120-L129)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -709,7 +709,7 @@ ATVOSS 的 LEVEL_2 统计对该三节点 DAG得到一个输入 MTE2、一个输�
 
 - 适用 Route：R-004
 - 触发条件：模板 `T` 为 `half` 或 `bfloat16_t`，进入 `if constexpr (std::is_same_v<T,float>)` 的 `else` 分支。
-- Golden 来源：[`math/nan_to_num/op_kernel/arch35/nan_to_num_dag.h:96-111`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/arch35/nan_to_num_dag.h#L96-L111)
+- Golden 来源：[`math/nan_to_num/op_kernel/arch35/nan_to_num_dag.h:96-111`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_kernel/arch35/nan_to_num_dag.h#L96-L111)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -752,7 +752,7 @@ for (uint16_t loopIdx = 0; loopIdx < loopNum; loopIdx++) {
 
 - 适用 Route：R-003、R-004；R-002 也复用最终 ViewCopy 机制但没有核心计算临时输出。
 - 触发条件：`aclnnInplaceNanToNumGetWorkspaceSize` 把 `selfRef` 同时传作通用实现输入/输出，且 dtype 为浮点。
-- Golden 来源：[`math/nan_to_num/op_api/aclnn_nan_to_num.cpp:90-113`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_api/aclnn_nan_to_num.cpp#L90-L113)
+- Golden 来源：[`math/nan_to_num/op_api/aclnn_nan_to_num.cpp:90-113`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/nan_to_num/op_api/aclnn_nan_to_num.cpp#L90-L113)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

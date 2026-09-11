@@ -12,7 +12,6 @@
 
 ## 不适用场景
 
-- 需要看官方文档原文或具体行号
 - 知识库索引不可用或对应 API 未收录
 
 ## 前置条件与输入
@@ -21,15 +20,17 @@
 - 明确的 API 名称和关键约束（如 `Div count 对齐`）
 - 目标平台标识（如 `a2`、`a3`、`950`）
 - `knowledge-query` Skill 或 `knowledge_query.py` 可用
+- Ascend C 专用流程使用与 Query 同装的 `ascendc-api-knowledge-query`；需要本机头文件证据时提供当前工程的 CANN 版本和包路径，详细定位流程以该 Skill 为准。
 
 ## 步骤
 
 1. **构造查询。** 直接使用"实体 + 关键约束"，例如 `Div count 前n个元素`。不要在 query 里塞"帮我看看参数签名"这类填充词——去掉它们，召回立刻翻倍。
 2. **执行查询。** `knowledge_query.py --knowledge-root <仓库> search --query "<实体> <约束>" --technology ascendc --type apis --platform <平台>`。
 3. **选择候选卡。** 根据标题、摘要、路径和状态选择要阅读的卡片。优先选择平台匹配、状态为 `stable` 的卡片。
-4. **打开卡片正文。** 阅读签名、参数含义、约束条件、示例和平台范围。不要直接使用搜索摘要作答。
+4. **打开卡片正文。** 阅读完整保留的官方文档正文，包括签名、参数含义、约束条件、示例和平台范围；再沿 `相关` 区块查看实际使用该 API 的算子设计卡。不要直接使用搜索摘要作答。
 5. **核对来源。** 确认来源确实支持准备采用的结论。如果多张卡片冲突，先比较它们的平台、版本和来源。
-6. **降级路径。** 知识库未命中时，降级到 ascendc-docs-search 翻官方文档原文。
+6. **补搜未定位卡。** 精确 API 名在目标平台的 stable 查询零命中时，单独执行 `knowledge_query.py --knowledge-root <仓库> search --query "<API 名>" --technology ascendc --type apis --match literal --include-unlocated --status draft`。该结果只能说明官方卡已入库但平台尚未定位，必须阅读正文或固定来源确认目标平台；不要和主查询使用同一 receipt。
+7. **降级路径。** 未定位 draft 补搜仍未命中时，降级到官方来源核对原文。
 
 ## 预期产物
 
@@ -99,7 +100,7 @@
 ## 失败或停止条件
 
 - 索引缺失、损坏或 stale：停止查询，请维护者重建索引。
-- 零命中：报告知识缺口，不把它解释为 API 不存在。
+- 目标平台 stable 查询和未定位 draft 补搜都零命中：报告知识缺口，不把它解释为 API 不存在。
 - 候选平台、版本或来源互相冲突：停止给出确定性结论，先核对固定来源或目标环境。
 
 
@@ -107,3 +108,4 @@
 
 - [知识库用户指南](../docs/user_guide.md)
 - [`knowledge-query` Skill](../.agents/skills/knowledge-query/SKILL.md)
+- [`ascendc-api-knowledge-query` Skill](../.agents/skills/ascendc-api-knowledge-query/SKILL.md)

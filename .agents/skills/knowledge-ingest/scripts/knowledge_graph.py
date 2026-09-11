@@ -43,7 +43,16 @@ ingest = load_ingest_module()
 MANAGED_START = "<!-- cannbot:related:start -->"
 MANAGED_END = "<!-- cannbot:related:end -->"
 MANAGED_RE = re.compile(
-    rf"(?ms)^\s*{re.escape(MANAGED_START)}\n.*?^{re.escape(MANAGED_END)}\s*"
+    rf"(?ms)^{re.escape(MANAGED_START)}\n.*?^{re.escape(MANAGED_END)}(?:\n)?\Z"
+)
+API_OPERATOR_START = "<!-- cannbot:api-operator:start -->"
+API_OPERATOR_END = "<!-- cannbot:api-operator:end -->"
+API_OPERATOR_RE = re.compile(
+    rf"(?ms)^{re.escape(API_OPERATOR_START)}\n.*?^{re.escape(API_OPERATOR_END)}"
+)
+MANAGED_LINK_RE = re.compile(
+    r"^- \[.*?\]\((?P<href>[^)]+)\)"
+    r"（`(?P<relation>[a-z_]+)`）：(?P<reason>.+)$"
 )
 TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9_:]*|\d{3,}")
 SHORT_TECHNICAL = {"ai", "api", "cv", "ge", "gm", "l0", "l1", "l2", "ub", "vf"}
@@ -224,7 +233,14 @@ def validate_agent_evidence(
 
 def strip_managed(text: str) -> str:
     """Remove only graph-owned related blocks, preserving authored content."""
-    return MANAGED_RE.sub("\n", text).rstrip() + "\n"
+    match = MANAGED_RE.search(text)
+    if match is None:
+        return text
+    start = match.start()
+    delimiter = "\n\n"
+    if text[max(0, start - len(delimiter)) : start] != delimiter:
+        raise ValueError("managed related block is missing its exact delimiter")
+    return text[: start - len(delimiter)]
 
 
 def normalized_term(raw: str) -> str | None:
@@ -357,8 +373,8 @@ def load_cards(root: Path) -> dict[str, Card]:
         if issues:
             details = "; ".join(f"{issue.code}: {issue.message}" for issue in issues)
             raise ValueError(f"invalid card {relative}: {details}")
-        doc_id = ingest.doc_id(root, path)
         card_relative = path.relative_to(knowledge_root)
+        doc_id = card_relative.with_suffix("").as_posix()
         cards[doc_id] = Card(
             doc_id=doc_id,
             path=path,
@@ -1169,6 +1185,14 @@ def validate_judgments(root: Path, cards: dict[str, Card]) -> dict[str, object]:
     return payload
 
 
+def optional_judgments(root: Path, cards: dict[str, Card]) -> dict[str, object]:
+    """Use current Agent judgments when present, otherwise build the structural graph."""
+
+    if judgment_path(root).is_file():
+        return validate_judgments(root, cards)
+    return {"judgments": []}
+
+
 def related_lines(card: Card, cards: dict[str, Card], judgments: dict[str, object]) -> list[str]:
     items: list[tuple[str, Card, str]] = []
     for edge in judgments["judgments"]:
@@ -1195,12 +1219,59 @@ def related_lines(card: Card, cards: dict[str, Card], judgments: dict[str, objec
     return lines
 
 
+def api_operator_subblock(raw: str, card: Card) -> str | None:
+    block_match = MANAGED_RE.search(raw)
+    if block_match is None:
+        if API_OPERATOR_START in raw or API_OPERATOR_END in raw:
+            raise ValueError(f"API-to-Operator subblock is outside managed block: {card.doc_id}")
+        return None
+    block = block_match.group(0)
+    start_count = raw.count(API_OPERATOR_START)
+    end_count = raw.count(API_OPERATOR_END)
+    if start_count == end_count == 0:
+        return None
+    if start_count != 1 or end_count != 1 or card.profile != "apis":
+        raise ValueError(f"malformed API-to-Operator subblock: {card.doc_id}")
+    nested = API_OPERATOR_RE.search(block)
+    if nested is None:
+        raise ValueError(f"malformed API-to-Operator subblock: {card.doc_id}")
+    return nested.group(0)
+
+
+def validate_committed_api_source(contract, card: Card, operator: Card, reason: str, source_section: bool) -> None:
+    """Validate committed source navigation without opening a checkout or proving a call."""
+    targets = ingest.contract_module().markdown_targets(reason)
+    if not source_section:
+        if targets:
+            raise ValueError(f"unexpected source link in body-only API navigation: {card.doc_id}")
+        return
+    if len(targets) != 1 or targets[0][1] or not re.search(r"#L[1-9][0-9]*$", targets[0][0]):
+        raise ValueError(f"API source navigation requires one pinned file/line link: {card.doc_id}")
+    resources = importlib.import_module(f"{ingest.contract_package().__name__}.source_resources")
+    source = resources.local_source_link(contract, card.path, targets[0][0])
+    declared = {
+        resolved.resource
+        for item in operator.metadata.get("sources", [])
+        if (resolved := resources.git_source(contract, item["resource"])) is not None
+    }
+    if source is None or source.resource not in declared:
+        raise ValueError(f"API source navigation is not declared by its Operator: {card.doc_id} -> {operator.doc_id}")
+
+
 def desired_card_text(card: Card, cards: dict[str, Card], judgments: dict[str, object]) -> str:
-    clean = strip_managed(card.path.read_text(encoding="utf-8")).rstrip()
+    raw = card.path.read_text(encoding="utf-8")
+    clean = strip_managed(raw)
     lines = related_lines(card, cards, judgments)
-    if not lines:
-        return clean + "\n"
-    block = "\n".join([MANAGED_START, "## 相关", "", *lines, MANAGED_END])
+    automatic = api_operator_subblock(raw, card) if card.profile == "apis" else None
+    if not lines and automatic is None:
+        return clean
+    block_lines = [MANAGED_START, "## 相关"]
+    if lines:
+        block_lines.extend(["", *lines])
+    if automatic is not None:
+        block_lines.extend(["", automatic])
+    block_lines.append(MANAGED_END)
+    block = "\n".join(block_lines)
     return clean + "\n\n" + block + "\n"
 
 
@@ -1243,8 +1314,116 @@ def local_markdown_targets(card: Card, knowledge_root: Path) -> list[Path]:
     return targets
 
 
+def committed_managed_relations(
+    root: Path, cards: dict[str, Card]
+) -> tuple[list[dict[str, object]], set[str]]:
+    """Validate and consume committed navigation; source calls are verified by ingestion."""
+
+    path_to_id = {card.path.resolve(): card.doc_id for card in cards.values()}
+    relations: dict[tuple[str, str, str], dict[str, object]] = {}
+    automatic: dict[tuple[str, str, str], dict[str, object]] = {}
+    contract = None
+    managed_cards: set[str] = set()
+    for card in sorted(cards.values(), key=lambda value: value.doc_id):
+        raw = card.path.read_text(encoding="utf-8")
+        api_block = api_operator_subblock(raw, card)
+        block_match = MANAGED_RE.search(raw)
+        if block_match is None:
+            if MANAGED_START in raw or MANAGED_END in raw:
+                raise ValueError(f"malformed managed block: {card.doc_id}")
+            continue
+        if raw.count(MANAGED_START) != 1 or raw.count(MANAGED_END) != 1:
+            raise ValueError(f"malformed managed block: {card.doc_id}")
+        if api_block is not None and contract is None:
+            contract = ingest.load_contract(root)
+        inside_api_operator = False
+        source_section = None
+        automatic_targets: set[str] = set()
+        for line in block_match.group(0).splitlines():
+            if line == API_OPERATOR_START:
+                inside_api_operator = True
+                continue
+            if line == API_OPERATOR_END:
+                inside_api_operator = False
+                continue
+            if inside_api_operator and line.startswith("### "):
+                heading = line.removesuffix("（部分算子）")
+                if heading == "### 源码中使用此 API 的算子":
+                    source_section = True
+                elif heading in {"### 知识正文中的调用示例", "### 使用此 API 的算子"}:
+                    source_section = False
+                else:
+                    raise ValueError(f"unknown API navigation section: {card.doc_id}: {line}")
+                continue
+            if not line.startswith("- ["):
+                if inside_api_operator and ingest.contract_module().markdown_targets(line):
+                    raise ValueError(f"invalid API navigation line in {card.doc_id}: {line}")
+                continue
+            match = MANAGED_LINK_RE.fullmatch(line)
+            if match is None:
+                raise ValueError(f"invalid managed relation line in {card.doc_id}: {line}")
+            relation = match.group("relation")
+            if relation not in ALLOWED_RELATIONS - {"links_to", "part_of"}:
+                raise ValueError(
+                    f"unsupported managed relation in {card.doc_id}: {relation}"
+                )
+            clean = unquote(match.group("href").split("#", 1)[0])
+            target_path = (card.path.parent / clean).resolve()
+            target_id = path_to_id.get(target_path)
+            if target_id is None:
+                raise ValueError(
+                    f"managed relation target is not a governed card: "
+                    f"{card.doc_id} -> {match.group('href')}"
+                )
+            if target_id == card.doc_id:
+                raise ValueError(f"managed relation is self-referential: {card.doc_id}")
+            if inside_api_operator:
+                if (
+                    relation != "related" or source_section is None
+                    or not card.doc_id.startswith("ops/ascendc/apis/")
+                    or cards[target_id].profile != "operators"
+                    or not target_id.startswith("ops/ascendc/operators/")
+                ):
+                    raise ValueError(f"invalid API-to-Operator navigation endpoints/type: {card.doc_id} -> {target_id}")
+                if target_id in automatic_targets:
+                    raise ValueError(f"duplicate API-to-Operator navigation: {card.doc_id} -> {target_id}")
+                automatic_targets.add(target_id)
+                limit = contract.local_sources["cann_docs_raw"]["mirror"]["api_operator_display_limit"]
+                if len(automatic_targets) > limit:
+                    raise ValueError(f"API-to-Operator navigation exceeds display limit: {card.doc_id}")
+                validate_committed_api_source(contract, card, cards[target_id], match.group("reason"), source_section)
+                key = (card.doc_id, relation, target_id)
+                automatic[key] = {
+                    "source": key[0], "relation": key[1], "target": key[2],
+                    "reason": match.group("reason"), "confidence": "unverified",
+                    "strength": "navigation", "generated_by": "committed-api-operator-navigation-v1",
+                }
+                managed_cards.add(card.doc_id)
+                continue
+            key = normalize_agent_relation(cards, card.doc_id, target_id, relation)
+            relations.setdefault(
+                key,
+                {
+                    "source": key[0],
+                    "relation": key[1],
+                    "target": key[2],
+                    "reason": match.group("reason"),
+                    "confidence": "reviewed",
+                    "strength": "navigation",
+                    "generated_by": "committed-managed-navigation-v1",
+                },
+            )
+            managed_cards.add(card.doc_id)
+        if api_block is not None and not automatic_targets:
+            raise ValueError(f"empty API-to-Operator navigation: {card.doc_id}")
+    # General reviewed navigation wins if it describes the same displayed pair.
+    for key, item in automatic.items():
+        relations.setdefault(key, item)
+    return [relations[key] for key in sorted(relations)], managed_cards
+
+
 def index_id(root: Path, path: Path) -> str:
-    return ingest.doc_id(root, path)
+    return path.relative_to(root / "knowledge").with_suffix("").as_posix()
 
 
 def graph_payload(root: Path, cards: dict[str, Card], judgments: dict[str, object]) -> dict[str, object]:
@@ -1282,6 +1461,11 @@ def graph_payload(root: Path, cards: dict[str, Card], judgments: dict[str, objec
                 key = (card.doc_id, "links_to", target_id)
                 edges[key] = {"source": key[0], "relation": key[1], "target": key[2]}
 
+    managed_relations, _ = committed_managed_relations(root, cards)
+    for item in managed_relations:
+        key = (str(item["source"]), str(item["relation"]), str(item["target"]))
+        edges[key] = item
+
     for item in judgments["judgments"]:
         key = (str(item["source"]), str(item["relation"]), str(item["target"]))
         edges[key] = {
@@ -1318,7 +1502,9 @@ def graph_payload(root: Path, cards: dict[str, Card], judgments: dict[str, objec
         "generated_from": [
             "governed concepts and indexes under knowledge/",
             "authored Markdown links excluding managed related blocks",
-            "ignored Agent judgments under artifacts/graphs/",
+            "committed bounded API-to-Operator navigation (source calls verified separately during ingestion)",
+            "committed reviewed navigation in managed related blocks",
+            "optional Agent judgments under artifacts/graphs/",
         ],
         "corpus_fingerprint": corpus_fingerprint(cards),
         "nodes": ordered_nodes,
@@ -1334,7 +1520,7 @@ def graph_payload(root: Path, cards: dict[str, Card], judgments: dict[str, objec
 def build_command(args: argparse.Namespace) -> int:
     root = ingest.resolve_root(args.knowledge_root)
     cards = load_cards(root)
-    judgments = validate_judgments(root, cards)
+    judgments = optional_judgments(root, cards)
     payload = graph_payload(root, cards, judgments)
     output = root / "artifacts/graphs/graph.json"
     ingest.atomic_write(output, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
@@ -1383,7 +1569,7 @@ def viz_command(args: argparse.Namespace) -> int:
 def verify_command(args: argparse.Namespace) -> int:
     root = ingest.resolve_root(args.knowledge_root)
     cards = load_cards(root)
-    judgments = validate_judgments(root, cards)
+    judgments = optional_judgments(root, cards)
     expected = graph_payload(root, cards, judgments)
     graph_path = root / "artifacts/graphs/graph.json"
     if not graph_path.is_file():
@@ -1402,16 +1588,21 @@ def verify_command(args: argparse.Namespace) -> int:
             raise ValueError(f"graph edge has a missing endpoint: {edge}")
         if edge["relation"] not in ALLOWED_RELATIONS:
             raise ValueError(f"graph edge has an unsupported relation: {edge}")
-    stale_blocks = [
-        card.doc_id
-        for card in cards.values()
-        if card.path.read_text(encoding="utf-8") != desired_card_text(card, cards, judgments)
-    ]
+    _, managed_cards = committed_managed_relations(root, cards)
+    stale_blocks = []
+    if judgment_path(root).is_file():
+        stale_blocks = [
+            card.doc_id
+            for card in cards.values()
+            if card.path.read_text(encoding="utf-8")
+            != desired_card_text(card, cards, judgments)
+        ]
     if stale_blocks:
         raise ValueError(f"managed related blocks are stale: {', '.join(stale_blocks[:5])}")
     print(
         f"verified nodes={len(actual['nodes'])} edges={len(actual['edges'])} "
-        f"managed_cards={sum(bool(related_lines(card, cards, judgments)) for card in cards.values())}"
+        f"managed_cards={len(managed_cards)} "
+        f"judged_managed_cards={sum(bool(related_lines(card, cards, judgments)) for card in cards.values())}"
     )
     return 0
 

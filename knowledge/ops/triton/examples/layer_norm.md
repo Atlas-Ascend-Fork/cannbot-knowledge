@@ -160,8 +160,15 @@ num_warps = min(max(BLOCK_SIZE // 256, 1), 8)
 - **BLOCK_SIZE 上限**：`MAX_FUSED_SIZE = 65536 // element_size`，N 更大需列分块。
 - 精度：kernel 内部全程 fp32，写回再转原 dtype；核对 eps 与 PyTorch 一致。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [05-layer-norm.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/05-layer-norm.py)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Normalization 归一化算子](../guides/operator_design/normalization.md)（`related`）：“normalization 算子规格”
@@ -170,9 +177,3 @@ num_warps = min(max(BLOCK_SIZE // 256, 1), 8)
 - [归约操作模式集（行/列/全局归约与 NPU atomic 限制）](./reduction_pattern.md)（`related`）：“归约与 atomic 限制汇总”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [05-layer-norm.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/05-layer-norm.py)

@@ -5,40 +5,40 @@ description: "说明 aclnnSparse4to2QuantMatmulWeightNz 在 A2/A3 上的接口�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/docs/aclnnSparse4to2QuantMatmulWeightNz.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/docs/aclnnSparse4to2QuantMatmulWeightNz.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/op_api/aclnn_sparse4to2quant_matmul_weight_nz.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/op_api/aclnn_sparse4to2quant_matmul_weight_nz.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/op_api/aclnn_sparse4to2quant_matmul_weight_nz.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/op_api/aclnn_sparse4to2quant_matmul_weight_nz.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/op_api/sparse4to2quant_matmul.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/op_api/sparse4to2quant_matmul.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/sparse4to2quant_matmul_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/sparse4to2quant_matmul_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/op_tiling/sparse4to2quant_matmul_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/op_tiling/sparse4to2quant_matmul_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul_block.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul_block.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul_update.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul_update.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/sparse4to2quant_matmul_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/sparse4to2quant_matmul_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/config/ascend910b/sparse4to2quant_matmul_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/config/ascend910b/sparse4to2quant_matmul_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/config/ascend910_93/sparse4to2quant_matmul_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/config/ascend910_93/sparse4to2quant_matmul_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:40:05Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -356,7 +356,7 @@ Host CalcUbTiling 用 needUbSize + ubCalc*uM <= ubSize 的保守公式选择 uM�
 
 - 适用 Route：R-001
 - 触发条件：唯一 key 0 MIX_CV entry；每逻辑 block 1 个 AIC 配 2 个 AIV；至少一个 base tile。
-- Golden 来源：[`op_kernel/sparse4to2quant_matmul.h:141-172`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul.h#L141-L172)
+- Golden 来源：[`op_kernel/sparse4to2quant_matmul.h:141-172`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul.h#L141-L172)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -389,7 +389,7 @@ pongSwitch = !pongSwitch;
 
 - 适用 Route：R-001
 - 触发条件：公开 dtype 组合；weight scale 与 xScale 非空；bias 分支可选。
-- Golden 来源：[`op_kernel/sparse4to2quant_matmul.h:265-289`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul.h#L265-L289)
+- Golden 来源：[`op_kernel/sparse4to2quant_matmul.h:265-289`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_kernel/sparse4to2quant_matmul.h#L265-L289)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -424,7 +424,7 @@ Cast(dstLocal, tmpdstLocal, RoundMode::CAST_RINT, curAivM * ubResAlignedN);
 
 - 适用 Route：R-001
 - 触发条件：所有合法非空 M/N/K；从候选 base 集合动态选择。
-- Golden 来源：[`op_host/op_tiling/sparse4to2quant_matmul_tiling.cpp:689-730`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/op_tiling/sparse4to2quant_matmul_tiling.cpp#L689-L730)
+- Golden 来源：[`op_host/op_tiling/sparse4to2quant_matmul_tiling.cpp:689-730`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/sparse4to2quant_matmul/op_host/op_tiling/sparse4to2quant_matmul_tiling.cpp#L689-L730)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

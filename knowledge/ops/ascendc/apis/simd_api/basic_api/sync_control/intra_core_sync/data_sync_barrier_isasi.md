@@ -2,30 +2,106 @@
 type: API
 title: DataSyncBarrier
 description: 阻塞后续指令执行，直到所有之前的内存访问指令执行结束，可通过模板参数控制需要等待的内存位置，用于解决Scalar的内存依赖。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.implementation.synchronization]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.implementation.synchronization
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/DataSyncBarrier_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+source_headers:
+- include/basic_api/kernel_operator_block_sync_intf.h
 ---
-# DataSyncBarrier
 
-头文件路径为："basic_api/kernel_operator_block_sync_intf.h"。
+# DataSyncBarrier\(ISASI\)<a name="ZH-CN_TOPIC_0000001787873298"></a>
+
+## 功能说明<a name="section618mcpsimp"></a>
+
+头文件路径为：`"basic_api/kernel_operator_block_sync_intf.h"`。
 
 阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束，用于解决Scalar的内存依赖。
 
-参数：arg0: 模板参数，表示需要等待的内存位置，类型为MemDsbT，可取值为： &bull; ALL，等待GM和UB的访问指令（不包括其他内存位置，例如L0C Buf。
+## 函数原型<a name="section620mcpsimp"></a>
 
-约束：等待的内存位置取值为ALL时，只能等待GM和UB的访问指令，不包括其他内存位置，例如L0C Buffer、L1 Buffer。
+```cpp
+template <MemDsbT arg0>
+__aicore__ inline void DataSyncBarrier()
+```
 
-仅 Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 200I/500 A2 推理产品 支持。
+## 参数说明<a name="section622mcpsimp"></a>
+
+**表1**  模板参数说明
+
+| 参数名 | 描述 |
+| --- | --- |
+| arg0 | 模板参数，表示需要等待的内存位置，类型为MemDsbT，可取值为：<br>&bull; ALL，等待GM和UB的访问指令（不包括其他内存位置，例如L0C Buffer、L1 Buffer）。<br>&bull; DDR，等待GM访问指令。<br>&bull; UB，等待UB访问指令。<br>&bull; SEQ，等待SEQ访问指令。 |
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+无
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+等待的内存位置取值为ALL时，只能等待GM和Unified Buffer（UB）的访问指令，不包括其他内存位置，例如L0C Buffer、L1 Buffer。
+
+## 调用示例<a name="section837496171220"></a>
+
+```cpp
+    if (blockIdx == 0) {
+        // 先写入被依赖数据，再通过DataSyncBarrier等待GM访问完成。
+        AscendC::WriteGmByPassDCache<T>(reinterpret_cast<__gm__ T *>(srcGm) + 1, DATA_VALUE);
+        // DataSyncBarrier<DDR>阻塞后续GM写，确保上一条GM写对其他核可见。
+        AscendC::DataSyncBarrier<AscendC::MemDsbT::DDR>();
+        // 最后写入同步标记，block 1读到该标记后即可安全读取srcGm[1]。
+        AscendC::WriteGmByPassDCache<T>(reinterpret_cast<__gm__ T *>(srcGm), SYNC_FLAG);
+    }
+
+    if (blockIdx == 1) {
+        while (true) {
+            __gm__ T *addr = const_cast<__gm__ T *>(srcGlobal.GetPhyAddr());
+            // 轮询GM第0个元素，等待block 0写入同步标记。
+            T flagValue = AscendC::ReadGmByPassDCache<T>(addr);
+            if (flagValue == SYNC_FLAG) {
+                // DataSyncBarrier保证同步标记之前的srcGm[1]写入已完成。
+                T dataValue = AscendC::ReadGmByPassDCache<T>(addr + 1);
+                AscendC::WriteGmByPassDCache<T>(reinterpret_cast<__gm__ T *>(dstGm), 2 * dataValue);
+                return;
+            }
+        }
+    }
+```
+
+完整样例请参考[DataSyncBarrier接口样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/data_sync_barrier)。
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
 - [DepthwiseConv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/depthwise_conv_2d_950.md)（`related`）：“｜ index ｜ `DataSyncBarrier<UB>` ｜ scalar writes ｜ VF ｜ index table ｜ exact uint32 index ｜”；“阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束，用于解决Scalar的内存依赖。”。stride-2 Gather route 在 Scalar 写 index table 后用 UB barrier 再让 VF 读取，API 合同解释该依赖为何必要。
 - [GatherNd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/gather_nd_950.md)（`related`）：shape helper ｜ `DataSyncBarrier<UB>` ｜ scalar SetValue ｜ SIMD ｜ helpTBuf ｜ T3 int32/64 exact阻塞后续的指令执行，直到所有之前的内存访问指令（需要等待的内存位置可通过参数控制）执行结束，用于解决Scalar的内存依赖。GatherNd 的 shape helper 表明确实由 Scalar 写 `helpTBuf`、随后交给 SIMD 消费，接口卡定义屏障等待先前内存访问完成；在该位置插入 UB 屏障正好闭合生产者到消费者的数据依赖。
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 9 / 9 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [StridedSlice 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/strided_slice_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 508 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/strided_slice/op_kernel/arch35/strided_slice_simt_big_shape.h#L508)
+- [InplaceScatterUpdate 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/inplace_scatter_update_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 429 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter/op_kernel/arch35/scatter.h#L429)
+- [ScatterNd 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/scatter_nd_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 179 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_nd_update/op_kernel/arch35/scatter_nd_update_simt.h#L179)
+- [ScatterNdUpdate 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/index/scatter_nd_update_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 179 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_nd_update/op_kernel/arch35/scatter_nd_update_simt.h#L179)
+- [AvgPool2d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/avg_pool2d_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 107 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_simt.h#L107)
+- [AvgPool3d 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/avg_pool3d_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 138 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/avg_pool_3d_simt.h#L138)
+- [Gather 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/index/gather_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 447 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_kernel/arch35/gather_elements.h#L447)
+- [Scatter 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/index/scatter_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 1028 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_kernel/arch35/scatter_elements.h#L1028)
+- [AdaptiveAvgPool3D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/pooling/adaptive_avg_pool_3d_950.md)（`related`）：算子声明的固定版本源码包含对 `DataSyncBarrier(...)` 的直接调用（第 191 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_simt.h#L191)
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

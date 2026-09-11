@@ -160,18 +160,6 @@ dq += tl.dot(ds, k)
 
 不适用场景：纯 Vector 算子（无 Cube 计算）；矩阵乘无后处理；后处理依赖全局信息（跨核心同步开销大）。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Ascend CV 融合算子生成方法论 — CV 融合篇](../operator_optimization/cv_fusion.md)（`related`）：“CV 融合工程实践”
-- [FixPipe 随路操作与 Bias 融合优化](fixpipe_bias_fusion.md)（`related`）：“fixpipe API 与 Bias 融合”
-- [同步与 Barrier（NPU 三层同步机制）](sync_and_barrier.md)（`related`）：“同步机制详解”
-- [compile_hint 与 Ascend 扩展 API 速查](compile_hint_extension.md)（`related`）：“compile_hint 与扩展 API”
-- [PIPE / CORE / MODE / IteratorType 枚举](../../apis/ascend_ext_pipe_core.md)（`related`）：“PIPE/CORE/MODE 枚举（al.scope 的 core/pipe 取值）”
-- [NPU 编译参数速查（含 910_95 差异）](compile_params.md)（`related`）：“enable_mixed_cv 等 CV 融合编译参数速查”
-
-<!-- cannbot:related:end -->
 
 ## 相关源
 
@@ -186,3 +174,16 @@ dq += tl.dot(ds, k)
 - [sync_block.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Extension_Ops/sync_block.md)
 - [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py)
 - [programming_guide.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/programming_guide.md)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend CV 融合算子生成方法论 — CV 融合篇](../operator_optimization/cv_fusion.md)（`related`）：“CV 融合工程实践”
+- [FixPipe 随路操作与 Bias 融合优化](fixpipe_bias_fusion.md)（`related`）：“fixpipe API 与 Bias 融合”
+- [同步与 Barrier（NPU 三层同步机制）](sync_and_barrier.md)（`related`）：“同步机制详解”
+- [compile_hint 与 Ascend 扩展 API 速查](compile_hint_extension.md)（`related`）：“compile_hint 与扩展 API”
+- [PIPE / CORE / MODE / IteratorType 枚举](../../apis/ascend_ext_pipe_core.md)（`related`）：“PIPE/CORE/MODE 枚举（al.scope 的 core/pipe 取值）”
+- [NPU 编译参数速查（含 910_95 差异）](compile_params.md)（`related`）：“enable_mixed_cv 等 CV 融合编译参数速查”
+
+<!-- cannbot:related:end -->

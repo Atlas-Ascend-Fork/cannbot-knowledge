@@ -5,34 +5,34 @@ description: "说明 aclnnLinalgCholesky 在 A2/A3 上的接口语义、Host/Lau
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/docs/aclnnLinalgCholesky.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/docs/aclnnLinalgCholesky.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/op_api/aclnn_linalg_cholesky.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/op_api/aclnn_linalg_cholesky.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/op_api/aclnn_linalg_cholesky.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/op_api/aclnn_linalg_cholesky.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/op_api/cholesky.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/op_api/cholesky.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/cholesky_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/cholesky_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/cholesky_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/cholesky_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/cholesky_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/cholesky_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_kernel/cholesky.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_kernel/cholesky.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_kernel/cholesky.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_kernel/cholesky.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/config/ascend910b/cholesky_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/config/ascend910b/cholesky_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/config/ascend910_93/cholesky_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_host/config/ascend910_93/cholesky_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cast/op_api/cast.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cast/op_api/cast.cpp
     role: implementation
 created_at: "2026-08-25T10:19:23Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -450,7 +450,7 @@ workspace_total(core slice) = 16*1024*1024 bytes
 
 - 适用 Route：R-001 全部列搬运；R-002 历史列点积。
 - 触发条件：矩阵非空；`B=min(N,256)`；搬运方向在 row-major GM 中不连续。
-- Golden 来源：[`math/cholesky/op_kernel/cholesky.h:168-175`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_kernel/cholesky.h#L168-L175)
+- Golden 来源：[`math/cholesky/op_kernel/cholesky.h:168-175`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_kernel/cholesky.h#L168-L175)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -485,7 +485,7 @@ for (uint32_t blockStart = 0; blockStart < matSizeN_; blockStart += blockSize_) 
 
 - 适用 Route：R-001 `FirstColumn/SecondToNColumn`；R-002 `FirstRow/SecondToNRow`。
 - 触发条件：`blockStart==0` 时计算 `1/sqrt(pivot)`；同一 index 后续 `blockStart>0`。
-- Golden 来源：[`math/cholesky/op_kernel/cholesky.h:178-195`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_kernel/cholesky.h#L178-L195)
+- Golden 来源：[`math/cholesky/op_kernel/cholesky.h:178-195`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cholesky/op_kernel/cholesky.h#L178-L195)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -595,6 +595,6 @@ Cholesky 同一列/行的所有元素共享对角主元的逆平方根。源码�
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscendcAssert](../../../../apis/simd_api/basic_api/debug_interface/exception_detection/ascendc_assert.md)（`related`）：Cholesky 实现规定“Device 仅在每个对角主元/Schur 残差处执行 `ascendc_assert(value>0)`。”；AscendcAssert 页说明“断言条件不满足时输出断言信息并格式化打印，NPU 模式下还会触发 Trap 中断。”，后者给出非正定主元在设备侧的失败传播机制。
+- [assert/ascendc_assert](../../../../apis/utils_api/tuning_interface/assert.md)（`related`）：Cholesky 实现规定“Device 仅在每个对角主元/Schur 残差处执行 `ascendc_assert(value>0)`。”；assert/ascendc_assert 页说明断言条件不成立时打印失败信息并触发异常，后者给出非正定主元在设备侧的失败传播机制。
 - [InitValue（OpParamDef）](../../../../apis/utils_api/prototype_register_management/op_param_def/init_value.md)（`related`）：Cholesky 卡说明“Kernel 只写被选三角；`Cholesky` OpDef 为临时输出声明 `.InitValue(0)`”；InitValue 页说明“设置后会在算子执行前对算子输出的GM空间进行清零操作或者插入memset类算子进行初始值设置。”，该 Host 初始化为未写的相反三角提供零值。
 <!-- cannbot:related:end -->

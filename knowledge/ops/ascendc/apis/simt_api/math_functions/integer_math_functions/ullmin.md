@@ -2,20 +2,79 @@
 type: API
 title: ullmin（整数数学函数）
 description: 获取两个输入数据中的最小值。 !
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.arithmetic]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.arithmetic
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/ullmin.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/math_functions.h
 ---
 
 # ullmin
 
-unsigned long long 类型最小值函数。获取两个输入数据中的最小值。
+## 功能说明
 
-函数原型：inline unsigned long long int ullmin(const unsigned long long int x, const unsigned long long int y)
+获取两个输入数据中的最小值。
 
-参数 x、y 为源操作数。返回两者中的最小值。仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/math_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002521590974.png)
+
+## 函数原型
+
+```cpp
+inline unsigned long long int ullmin(const unsigned long long int x, const unsigned long long int y)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+| y | 输入 | 源操作数。 |
+
+## 返回值说明
+
+两个输入数据中的最小值。
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/math_functions.h`头文件。
+
+```cpp
+#include "simt_api/math_functions.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelUllmin(unsigned long long int* dst, unsigned long long int* x, unsigned long long int* y)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = ullmin(x[idx], y[idx]);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelUllmin(__gm__ unsigned long long int* dst, __gm__ unsigned long long int* x, __gm__ unsigned long long int* y)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = ullmin(x[idx], y[idx]);
+    }
+    ```

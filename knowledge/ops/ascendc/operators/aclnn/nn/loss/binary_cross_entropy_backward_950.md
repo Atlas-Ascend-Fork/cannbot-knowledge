@@ -5,27 +5,27 @@ description: "说明 aclnnBinaryCrossEntropyBackward 在 950 上的接口语义�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/docs/aclnnBinaryCrossEntropyBackward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/docs/aclnnBinaryCrossEntropyBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_api/aclnn_binary_cross_entropy_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_api/aclnn_binary_cross_entropy_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_api/binary_cross_entropy_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_api/binary_cross_entropy_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_host/arch35/binary_cross_entropy_grad_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_host/arch35/binary_cross_entropy_grad_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_host/binary_cross_entropy_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_host/binary_cross_entropy_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_kernel/binary_cross_entropy_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_kernel/binary_cross_entropy_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_kernel/arch35/binary_cross_entropy_grad_dag.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_kernel/arch35/binary_cross_entropy_grad_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_kernel/arch35/binary_cross_entropy_grad_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_kernel/arch35/binary_cross_entropy_grad_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_host/config/ascend950/binary_cross_entropy_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_host/config/ascend950/binary_cross_entropy_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_kernel/CMakeLists.txt
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/broadcast/broadcast_base_struct.h
     role: implementation
@@ -48,7 +48,7 @@ sources:
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/util/vec.h
     role: implementation
 created_at: "2026-08-25T17:16:09Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -848,7 +848,7 @@ UB_total = B_U * elemNum * 4 <= ubSize; workspace_total = 16 MiB
 
 - 适用 Route：全部 ACLNN Route
 - 触发条件：`weightOptional==nullptr`
-- Golden 来源：[`loss/binary_cross_entropy_grad/op_api/aclnn_binary_cross_entropy_backward.cpp:240-264`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_api/aclnn_binary_cross_entropy_backward.cpp#L240-L264)
+- Golden 来源：[`loss/binary_cross_entropy_grad/op_api/aclnn_binary_cross_entropy_backward.cpp:240-264`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_api/aclnn_binary_cross_entropy_backward.cpp#L240-L264)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -883,7 +883,7 @@ CHECK_RET(weightTensor != nullptr, ACLNN_ERR_INNER_NULLPTR);
 
 - 适用 Route：全部
 - 触发条件：任意非空输入；FP16/BF16升到FP32，FP32保持FP32
-- Golden 来源：[`loss/binary_cross_entropy_grad/op_kernel/arch35/binary_cross_entropy_grad_dag.h:43-55`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_kernel/arch35/binary_cross_entropy_grad_dag.h#L43-L55)
+- Golden 来源：[`loss/binary_cross_entropy_grad/op_kernel/arch35/binary_cross_entropy_grad_dag.h:43-55`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/binary_cross_entropy_grad/op_kernel/arch35/binary_cross_entropy_grad_dag.h#L43-L55)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

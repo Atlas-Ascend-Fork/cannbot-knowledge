@@ -1,6 +1,6 @@
 # cannbot-knowledge
 
-`cannbot-knowledge` 是 CANNBot 使用的知识库。它不保存算子工程或模型代码，而是把经过整理、能够追溯到固定来源或卡内原始观测的工程知识保存成 Markdown 知识卡，例如：
+`cannbot-knowledge` 是 CANNBot 使用的知识库。它不把算子工程或模型代码作为知识正文提交，而是把经过整理、能够追溯到固定来源或卡内原始观测的工程知识保存成 Markdown 知识卡，例如：
 
 - 某个 CANN API 的语义和使用限制；
 - 某种算子 DSL 的编程模型；
@@ -17,24 +17,32 @@ CANNBot 通过本仓提供的 Skill 生产、检索和检查这些知识，从�
 
 ## 当前知识状态
 
-当前 `knowledge/` 共有 4,495 张知识卡，覆盖 Ascend C 与模型场景：
+当前 `knowledge/` 共有 4,856 张知识卡，覆盖 Ascend C、Triton-Ascend、公共平台与模型场景：
 
-- 2,810 张 API 卡；
-- 304 张 Guide 卡，其中 Ascend C 270 张、模型场景 34 张；
-- 612 张 Operator 卡，其中 559 张 ACLNN 全链路卡、53 张 Direct Invoke 卡；
-- 471 张 Runbook 卡，其中 Ascend C 377 张、模型场景 94 张；
-- 188 张 Concept 卡和 110 张 Optimization 卡，均位于模型各 route；
-- Ascend C API/Guide 来源指向 Registry 登记的 `cann-docs-raw/` 固定归档，恢复时必须通过 SHA-256 校验；模型 Guide 来源固定到托管仓 40 位 Commit 和具体文件，Operator 来源固定到 CANN 官方 Git 仓 40 位 Commit 和具体文件。
+- 2,809 张 API 卡，其中 Ascend C 2,681 张、Triton 128 张；
+- 465 张 Guide 卡，其中 Ascend C 274 张、Triton 157 张、模型场景 34 张；
+- 611 张 Operator 卡，其中 559 张 ACLNN 全链路卡、52 张 Direct Invoke 卡；
+- 565 张 Runbook 卡，其中 Ascend C 459 张、Triton 12 张、模型场景 94 张；
+- 193 张 Concept 卡，其中公共平台 5 张、模型场景 188 张；
+- 202 张 Optimization 卡，其中 Triton 92 张、模型场景 110 张；
+- 11 张 Triton Example 卡；
+- Ascend C API/Guide 来源指向 Registry 登记的 `cann-docs-raw/` 固定归档，恢复时必须同时通过归档和最终内容树 SHA-256 校验；模型 Guide 来源固定到托管仓 40 位 Commit 和具体文件，Operator 来源固定到 CANN 官方 Git 仓 40 位 Commit 和具体文件。
 
-上述数量是当前版本快照。五个 domain 根目录始终保留；`ops` 和 `model` 额外预建已注册 route，其他领域的下一层路径由领域维护者在首批真实知识落库时创建。只有 `index.md` 的结构入口不算正式知识卡，也不会出现在 Query 的实际覆盖统计中。“存在目录”不表示“已有知识”，实时数量以 Query `discover` 为准。
+上述数量是当前版本快照。Registry 中注册的所有 domain 根目录始终保留；`ops` 和 `model` 额外预建已注册 route，其他领域的下一层路径由领域维护者在首批真实知识落库时创建。只有 `index.md` 的结构入口不算正式知识卡，也不会出现在 Query 的实际覆盖统计中。“存在目录”不表示“已有知识”，实时数量以 Query `discover` 为准。
 
 本地来源不提交到 Git。需要核对卡片证据时，在仓库根执行：
 
 ```bash
-bash fetch-cann-docs.sh
+bash get_resources.sh
 ```
 
-脚本校验固定归档 SHA-256 后恢复到 `cann-docs-raw/`；带有匹配完成标记的目标会直接复用，其他已有目标会失败关闭。怀疑本地内容被修改时，应先检查并移走该目录，再重新获取固定归档。
+脚本默认恢复文档及 `ops-nn`、`ops-math`、`ops-transformer`、`ops-cv` 源码；也可用 `--docs` 或 `--code` 单独恢复。源码按 Registry 中的固定 40 位提交统一放在 `cann-ops-raw/ascendc/<仓库名>/<commit>/`，当前每仓只登记一个提交，Direct Invoke 与 ACLNN 共用同仓基线；复用前校验提交、来源和工作区，拒绝覆盖本地修改。Operator 的本地 `sources` 路径相对于知识仓根，本地化只改写可用文件，对缺失来源明确报告，不自动切换版本。安装器默认准备这些资源；显式离线安装可传 `--skip-resources`。源码与归档均不提交。
+
+API 的相关区块区分“源码中使用此 API 的算子”和仅有正文证据的调用示例，前者可继续打开对应固定源码行。每个 API 最多展示 10 个自动关联，超出时标注“部分算子”；这不是全量调用图，也不表示每个编译分支都会执行调用。
+
+普通构图与 CI 校验已提交导航，不要求下载源码；源码调用证据仍由知识更新和完整门禁重新扫描、校验。
+
+文档恢复时，脚本校验固定归档 SHA-256 后恢复到 `cann-docs-raw/`，并以固定文件、token 和数量幂等修复该批发布器误扩展到代码围栏中的链接；即使完成标记匹配，复用前也会重新计算整个最终内容树的 SHA-256，其他已有目标失败关闭。官方 API/Guide 只为含独立技术事实的来源页建卡，README、发布占位、纯链接目录和接口清单由逐层 `index.md` 统一导航；保留页的“产品支持情况”先写入 Frontmatter `platforms` 再从正文省略，其余正文保持完整并修正失效链接，再通过 `cannbot:related` 导航到使用相关 API 的算子知识。
 
 ## 这个仓库如何工作
 
@@ -55,11 +63,12 @@ bash fetch-cann-docs.sh
           CANNBot 读取正文并核对来源
 ```
 
-本仓维护六项 Skill：五项是可安装的通用贡献能力，`ops-knowledge-trace-ingest` 只用于本知识仓内的 trace → Runbook 生产。
+本仓维护七项 Skill：六项可安装到业务项目，`ops-knowledge-trace-ingest` 只用于本知识仓内的 trace → Runbook 生产。
 
 | Skill | 作用 | 是否修改知识仓 |
 |---|---|---|
 | `knowledge-query` | 查看实际知识覆盖，检索知识卡，并可保存不可覆盖的审计 receipt | 除指定 receipt 外只读 |
+| `ascendc-api-knowledge-query` | 复用 Query 按硬件平台检索 Ascend C API，阅读全文并按需追踪相关卡片和本地 CANN 头文件 | 否 |
 | `knowledge-ingest` | 统一路由新来源、增量、版本升级、通用建卡和图谱完整生命周期 | 可以创建候选卡并同步可提交的受管关系块；图谱 JSON 等产物始终 ignored |
 | `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航和日志；整理 Issue 材料 | 否 |
 | `ops-knowledge-trace-ingest` | 从算子开发 trace 蒸馏 Runbook，并按当前 Schema、索引和全库图谱门禁收口 | 仓内使用；只写经审查的 Runbook、导航和日志 |
@@ -103,7 +112,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 | `governance/schemas/` | 机器可读的字段、路径 Profile 和受控值规则 |
 | `governance/specs/` | 对治理规则的完整文字说明 |
 | `governance/contracts/` | Ingest、Query、Lint 和图谱共同使用的校验实现 |
-| `.agents/skills/` | 三项基础 Skill、仓内 trace producer 与两项源码级 Operator producer 的规范源 |
+| `.agents/skills/` | 三项基础 Skill、Ascend C API 专用消费流程、仓内 trace producer 与两项源码级 Operator producer 的规范源 |
 | `docs/` | 知识库设计原则和用户指南 |
 | `recipes/` | 面向具体任务的知识库最佳实践 |
 | `evals/` | 检索、治理、文档和安装回归 |
@@ -118,7 +127,8 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 安装 Skill 后，可以直接向 Agent 描述任务：
 
 - “使用 `knowledge-query` 查看当前知识库包含哪些内容。”
-- “使用 `knowledge-query` 检索目标平台上的某项 CANN API；零命中时明确报告当前知识缺口。”
+- “使用 `ascendc-api-knowledge-query` 查询目标硬件上的 Ascend C API；必要时沿相关卡片和当前 CANN 包头文件核验。”
+- “使用 `knowledge-query` 检索目标平台上的某项 CANN API；精确 API 名零命中时独立补搜未定位 draft，仍无结果再明确报告当前知识缺口。”
 - “使用 `knowledge-ingest` 把这份固定版本文档整理成候选知识卡。”
 - “使用 `ops-knowledge-vv-ingest` 从固定源码提取非 Cube Operator 卡。”
 - “使用 `ops-knowledge-cv-ingest` 从固定源码提取含 Cube/MIX_CV 的 Operator 卡。”
@@ -131,6 +141,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 - [设计原则](docs/design_principles.md)：知识根、治理分层、范围隔离、证据和失败关闭等关键取舍。
 - [用户指南](docs/user_guide.md)：consumer 与 contributor 的使用方式，以及如何理解查询结果。
 - [形成可追溯回答](recipes/answer_with_evidence.md)、[贡献知识](recipes/contribute_knowledge.md)和[使用知识库查询 API](recipes/api_search.md)：面向具体任务的场景化实践。
+- [使用知识库进行算子开发](recipes/operator_development.md)：把知识检索、实现与验证串联到算子开发任务中。
 
 ## 环境准备
 
@@ -148,7 +159,7 @@ python3 -m pip install -r requirements-dev.txt
 
 ## 安装到项目
 
-使用知识仓根目录的 `init.sh` 时，目标项目必须已经存在。`consumer` 只安装查询 Skill，`contributor` 安装三项基础 Skill 和两项 Operator producer，共5项。仓内专用的 `ops-knowledge-trace-ingest` 不安装到业务项目：
+使用知识仓根目录的 `init.sh` 时，目标项目必须已经存在。`consumer` 安装 `knowledge-query` 和 `ascendc-api-knowledge-query`；`contributor` 安装三项基础 Skill、`ascendc-api-knowledge-query` 和两项 Operator producer，共6项。仓内专用的 `ops-knowledge-trace-ingest` 不安装到业务项目：
 
 ```bash
 bash init.sh claude /path/to/project consumer
@@ -169,7 +180,7 @@ bash init.sh agents /path/to/project contributor
 bash check.sh
 ```
 
-该入口覆盖本仓知识 Lint（含严格 Git 来源导航）、Ascend C Runbook 正文门禁、检索回归、单元测试、Ruff、Shell 语法、基于现有 Agent 判定缓存的图谱合成/校验和 `git diff --check`。官方 `LICENSE` 原文中的空白由确定性摘要回归保护，不参与通用差异空白检查。重新产生关系判定时，仍须按 Ingest 的多 Agent 全量流程执行。
+该入口先恢复并校验固定归档，再覆盖本仓知识 Lint（含严格 Git 来源导航）、固定归档受控转换复验、API→Operator 明确调用关系复验、Ascend C Runbook 正文门禁、检索回归、单元测试、Ruff、Shell 语法和本地图谱合成/校验。官方 `LICENSE` 原文不参与通用差异空白检查；固定归档 API/Guide 只对保留的来源正文行豁免 Git 空白提示，Frontmatter 与受管关系块仍执行通用检查，完整卡片再由确定性同步器复验。重新产生一般语义关系判定时，仍须按 Ingest 的多 Agent 全量流程执行。
 
 ## 治理规范
 

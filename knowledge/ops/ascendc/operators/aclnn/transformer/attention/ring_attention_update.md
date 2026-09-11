@@ -5,28 +5,28 @@ description: "说明 aclnnRingAttentionUpdateV2 在 A2/A3 上的接口语义、H
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/docs/aclnnRingAttentionUpdateV2.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/docs/aclnnRingAttentionUpdateV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/op_api/aclnn_ring_attention_update.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/op_api/aclnn_ring_attention_update.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/op_api/ring_attention_update.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/op_api/ring_attention_update.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/ring_attention_update_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/ring_attention_update_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/ring_attention_update_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/ring_attention_update_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/ring_attention_update_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/ring_attention_update_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_kernel/ring_attention_update.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_kernel/ring_attention_update.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_kernel/ring_attention_update.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_kernel/ring_attention_update.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_kernel/ring_attention_update_tnd.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_kernel/ring_attention_update_tnd.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -429,7 +429,7 @@ workspace_total=16*1024*1024 system workspace（body不读写）
 
 - 适用 Route：R-002、R-003
 - 触发条件：TND 且 N/D/对齐 guard 通过
-- Golden 来源：[`ring_attention_update_tiling.cpp:595-600`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/ring_attention_update_tiling.cpp#L595-L600)
+- Golden 来源：[`ring_attention_update_tiling.cpp:595-600`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_host/ring_attention_update_tiling.cpp#L595-L600)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -463,7 +463,7 @@ workspace_total=16*1024*1024 system workspace（body不读写）
 
 - 适用 Route：R-001
 - 触发条件：一个 S tile 有多个 D tile
-- Golden 来源：[`ring_attention_update.h:67-73`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_kernel/ring_attention_update.h#L67-L73)
+- Golden 来源：[`ring_attention_update.h:67-73`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/ring_attention_update/op_kernel/ring_attention_update.h#L67-L73)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

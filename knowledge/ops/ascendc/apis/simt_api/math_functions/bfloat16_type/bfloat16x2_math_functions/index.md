@@ -1,6 +1,5 @@
 # bfloat16x2类型数学库函数
 
-- [bfloat16x2类型数学库函数](bfloat16x2_math_functions.md)：bfloat16x2双精度类型数学库函数集合，涵盖h2tanh、h2exp、h2log、h2cos、h2sin、h2sqrt等运算。
 - [H2Ceil](h2ceil.md)：获取大于或等于输入数据各元素的最小整数值。
 - [H2Cos](h2cos.md)：获取输入数据各元素的三角函数余弦值。
 - [H2Exp](h2exp.md)：指定输入x，对x的各元素，获取e的该元素次方。

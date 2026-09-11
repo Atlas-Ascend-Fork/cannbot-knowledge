@@ -5,28 +5,28 @@ description: "说明 lstm_npu/launch_lstm_* 在 950 上的接口语义、Direct 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/docs/aclnnLSTM.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/docs/aclnnLSTM.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_host/op_api/aclnn_lstm.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_host/op_api/aclnn_lstm.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_host/dynamic_lstm_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_host/dynamic_lstm_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_host/dynamic_lstm_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_host/dynamic_lstm_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/dynamic_rnn_910b.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/dynamic_rnn_910b.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/dynamic_rnn_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/dynamic_rnn_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnnv2/op_kernel/dynamic_rnn_v2_910b.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnnv2/op_kernel/dynamic_rnn_v2_910b.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:41:28Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -776,7 +776,7 @@ simtThreads = min(1024, align_up(4BH,32))
 
 - 适用 Route：R-001、R-002；R-003/R-004首层也复用输入 Matmul。
 - 触发条件：输入可按 `[S*B,I]×[4H,I]^T` 预计算；hidden product仍依赖前一步状态。
-- 固定官方源码：[`LstmFP32.cpp:19-63`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp#L19-L63)
+- 固定官方源码：[`LstmFP32.cpp:19-63`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp#L19-L63)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -808,7 +808,7 @@ __aicore__ inline void LstmMmSplitNDNDFP32<T>::ProcessInputMM()
 
 - 适用 Route：所有可达 AIC Matmul节点。
 - 触发条件：`M` 或 `N` 不能被每核分片整除。
-- 固定官方源码：[`LstmFP32.cpp:29-37`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp#L29-L37)
+- 固定官方源码：[`LstmFP32.cpp:29-37`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp#L29-L37)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -839,7 +839,7 @@ Direct body直接从 POD计算每块 `tailM/tailN` 并把 K原值一起交给 `S
 
 - 适用 Route：R-001、R-002的 AIC/SIMT 多 Kernel转换；固定官方源码中的单 kernel AIC/AIV 流程是同步映射依据。
 - 触发条件：input/hidden Matmul结果由门控阶段读取，且 `h_t/c_t` 是下步生产者输入。
-- 固定官方源码：[`LstmFP32.cpp:574-614`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp#L574-L614)
+- 固定官方源码：[`LstmFP32.cpp:574-614`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp#L574-L614)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -875,7 +875,7 @@ Direct body直接从 POD计算每块 `tailM/tailN` 并把 K原值一起交给 `S
 
 - 适用 Route：R-001、R-002。
 - 触发条件：`step==0 && !h0`；按 `c0` 存在性继续分流。
-- 固定官方源码：[`LstmFP32.cpp:574-593`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp#L574-L593)
+- 固定官方源码：[`LstmFP32.cpp:574-593`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/rnn/dynamic_rnn/op_kernel/LstmFP32.cpp#L574-L593)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

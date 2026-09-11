@@ -5,32 +5,32 @@ description: "说明 aclnnForeachTan 在 950 上的接口语义、Host/Launcher 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/docs/aclnnForeachTan.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/docs/aclnnForeachTan.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/README.md
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_host/foreach_tan_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_host/foreach_tan_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_host/arch35/foreach_tan_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_host/arch35/foreach_tan_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_utils/op_host/foreach_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_utils/op_host/foreach_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/arch35/foreach_tan_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/arch35/foreach_tan_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/arch35/foreach_tan_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/arch35/foreach_tan_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/arch35/foreach_tan.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/arch35/foreach_tan.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/arch35/foreach_tan_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/arch35/foreach_tan_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_host/config/ascend950/foreach_tan_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_host/config/ascend950/foreach_tan_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:22:21Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -397,7 +397,7 @@ workspace_total=16777216 bytes
 
 - 适用 Route：R-001、R-002、R-003
 - 触发条件：`tensorNum<=256`，Host 根据最大成员产生一个 `needCoreNum`，Kernel 对每个非空成员使用相同 block grid 和 512-thread VF。
-- Golden 来源：[`foreach_tan_simt.h:89-110`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/arch35/foreach_tan_simt.h#L89-L110)
+- Golden 来源：[`foreach_tan_simt.h:89-110`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_tan/op_kernel/arch35/foreach_tan_simt.h#L89-L110)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -487,7 +487,6 @@ Host 只生成一次 launch grid，并用最大 Tensor 控制 blockDim；Device 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetDataPtr](../../../../apis/simd_api/basic_api/aux_data_structures/tensor_desc/get_data_ptr.md)（`related`）：“xPtr=xList.GetDataPtr<float>(i); yPtr=yList.GetDataPtr<float>(i)”给出 FP32 route 从列表描述符取 GM 地址的实际调用；“获取储存Tensor数据地址。”定义 GetDataPtr 返回的数据。
 - [ListTensorDesc](../../../../apis/simd_api/basic_api/aux_data_structures/list_tensor_desc.md)（`related`）：“每个 block 都构造 x/y `ListTensorDesc`，按 `tensorNum` 顺序遍历列表；”给出 950 Kernel 对 TensorList 描述符的实际使用；“ListTensorDesc是Tensor描述符列表，用于管理多个Tensor的描述信息。”说明该结构在列表遍历中的职责。
 - [__bfloat162float](../../../../apis/simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_bfloat162float.md)（`related`）：将bfloat16类型数据转换为浮点数，返回转换后的值。；float val_f32=__bfloat162float(val)。API 卡定义单值 BF16 到 float 转换，ForeachTan 950 的 BF16 route 直接以该 intrinsic 产生 tanf 的 FP32 输入，构成实现与接口的调用关系。
 - [__float2bfloat16](../../../../apis/simt_api/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/_float2bfloat16.md)（`related`）：“yPtr［idx］=__float2bfloat16(result_f32)”是 BF16 route 写回前的实际转换；“遵循CAST_RINT模式，将浮点数转换为bfloat16精度，返回转换后的值。”给出缩精度和舍入合同。

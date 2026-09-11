@@ -2,26 +2,89 @@
 type: API
 title: H2Rint
 description: 获取与输入数据各元素最接近的整数，若存在两个同样接近的整数，则取其中的偶数。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half2_math_functions/h2rint.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_fp16.h
 ---
 
-# H2Rint
+# h2rint
 
-功能：获取与输入数据各元素最接近的整数，若存在两个同样接近的整数，则取其中的偶数。
+## 功能说明
 
-函数原型：half2 h2rint(half2 x)
+获取与输入数据各元素最接近的整数，若存在两个同样接近的整数，则取其中的偶数。
 
-参数：x（输入）源操作数。
+## 函数原型
 
-返回值：与输入各元素最接近的整数值。本接口受全局饱和寄存器影响，。特殊值：±0→0；nan→0；inf→ASCRT_MAX_NORMAL_FP16；-inf→-ASCRT_MAX_NORMAL_FP16；ASCRT_MAX_NORMAL_FP16→ASCRT_MAX_NORMAL_FP16；-ASCRT_MAX_NORMAL_FP16→-ASCRT_MAX_NORMAL_FP16；±0.5→0；(1.5,2)→2。
+```cpp
+inline half2 h2rint(half2 x)
+```
 
-约束：无。需包含头文件 simt_api/asc_fp16.h。
+## 参数说明
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+与输入各元素最接近的整数值。本接口受全局饱和寄存器影响，特殊值如下：
+
+| x值 | 非饱和模式返回值 | 饱和模式返回值 |
+| --- | --- | --- |
+| ±0 | 0 | 0 |
+| nan | nan | 0 |
+| inf | inf | ASCRT\_MAX\_NORMAL\_FP16 |
+| -inf | -inf | -ASCRT\_MAX\_NORMAL\_FP16 |
+| ASCRT\_MAX\_NORMAL\_FP16 | ASCRT\_MAX\_NORMAL\_FP16 | ASCRT\_MAX\_NORMAL\_FP16 |
+| -ASCRT\_MAX\_NORMAL\_FP16 | -ASCRT\_MAX\_NORMAL\_FP16 | -ASCRT\_MAX\_NORMAL\_FP16 |
+| ±0.5 | 0 | 0 |
+| 1.5 | 2 | 2 |
+| -1.5 | -2 | -2 |
+| 2.5 | 2 | 2 |
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用half2类型接口需要包含`simt_api/asc_fp16.h`头文件。
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelRint(half2* dst, half2* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = h2rint(x[idx]);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelRint(__gm__ half2* dst, __gm__ half2* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = h2rint(x[idx]);
+    }
+    ```

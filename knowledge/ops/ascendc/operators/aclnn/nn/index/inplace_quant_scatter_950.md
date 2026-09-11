@@ -5,46 +5,46 @@ description: "说明 aclnnInplaceQuantScatterV2 在 950 上的接口语义、Hos
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/docs/aclnnInplaceQuantScatterV2.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/docs/aclnnInplaceQuantScatterV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_api/aclnn_quant_scatter_v2.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_api/aclnn_quant_scatter_v2.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_api/aclnn_quant_scatter_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_api/aclnn_quant_scatter_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_api/quant_update_scatter.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_api/quant_update_scatter.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_host/quant_update_scatter_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_host/quant_update_scatter_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_host/arch35/quant_update_scatter_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_host/arch35/quant_update_scatter_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_host/arch35/quant_update_scatter_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_host/arch35/quant_update_scatter_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/quant_update_scatter_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/quant_update_scatter_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_struct.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_tpl_def.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_tpl_def.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_large_batch_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_large_batch_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_large_ele_little_quant_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_large_ele_little_quant_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_large_ele_large_quant_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_large_ele_large_quant_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_large_batch_little_quant_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_large_batch_little_quant_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_large_batch_large_quant_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_large_batch_large_quant_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_host/config/ascend950/quant_update_scatter_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_host/config/ascend950/quant_update_scatter_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:57:50Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -750,7 +750,7 @@ dynamic_ub=N/A; workspace_total=16MiB + framework temporaries
 
 - 适用 Route：R-001–R-006
 - 触发条件：先判断完整 axis×quant 面是否超过 UB，再比较 `u0*u1` 与 `u2` 决定沿 batch 或 axis 分核，最后判断一个 tile 能否容纳完整 quant 行。
-- Golden 来源：[`index/quant_update_scatter/op_host/arch35/quant_update_scatter_tiling_arch35.cpp:193-240`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_host/arch35/quant_update_scatter_tiling_arch35.cpp#L193-L240)
+- Golden 来源：[`index/quant_update_scatter/op_host/arch35/quant_update_scatter_tiling_arch35.cpp:193-240`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_host/arch35/quant_update_scatter_tiling_arch35.cpp#L193-L240)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -806,7 +806,7 @@ if (updateNewShape_.GetDim(DIM_0) * updateNewShape_.GetDim(DIM_1) < updateNewSha
 
 - 适用 Route：R-001–R-006
 - 触发条件：Host 令 `quantZeroPointsElements==0`，选择 `ZeroPointsType=TPL_NONE`，entry 把它映射为占位 `bool`。
-- Golden 来源：[`index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_regbase.h:71-89`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_regbase.h#L71-L89)
+- Golden 来源：[`index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_regbase.h:71-89`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/quant_update_scatter/op_kernel/arch35/quant_update_scatter_regbase.h#L71-L89)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

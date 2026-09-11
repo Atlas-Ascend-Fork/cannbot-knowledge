@@ -5,16 +5,16 @@ description: "说明 calc_moe_gating_top_k_softmax_tiling 与三个 dtype 直调
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/moe_gating_top_k_softmax_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/moe_gating_top_k_softmax_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/arch35/moe_gating_top_k_softmax_tiling_def.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/arch35/moe_gating_top_k_softmax_tiling_def.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/arch35/moe_gating_top_k_softmax_fullload_generalized_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/arch35/moe_gating_top_k_softmax_fullload_generalized_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_host/moe_gating_top_k_softmax_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_host/moe_gating_top_k_softmax_tiling_arch35.cpp
     role: implementation
 created_at: "2026-08-25T19:39:15Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -509,7 +509,7 @@ for each owned row tile:
 
 - 适用 Route：P0 R-001～P3 R-004，所有 dtype。
 - 触发条件：每个有效 row tile；FP16/BF16 由 `LoadOneTensorForDtypeT` 升到 FP32。
-- 固定官方源码：[`moe_gating_top_k_softmax_fullload_generalized_regbase.h:272-281`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/arch35/moe_gating_top_k_softmax_fullload_generalized_regbase.h)
+- 固定官方源码：[`moe_gating_top_k_softmax_fullload_generalized_regbase.h:272-281`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/arch35/moe_gating_top_k_softmax_fullload_generalized_regbase.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -547,7 +547,7 @@ for (uint16_t j = 0; j < expertCountLoops; j++) {
 
 - 适用 Route：P0 R-001～P3 R-004 的内部子支。
 - 触发条件：`expertCountAlign==32 && k==1 && expertCount<=8`。
-- 固定官方源码：[`moe_gating_top_k_softmax_fullload_generalized_regbase.h:335-357`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/arch35/moe_gating_top_k_softmax_fullload_generalized_regbase.h)
+- 固定官方源码：[`moe_gating_top_k_softmax_fullload_generalized_regbase.h:335-357`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_kernel/arch35/moe_gating_top_k_softmax_fullload_generalized_regbase.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -597,7 +597,7 @@ if (k_ == 1 && expertCount_ <= B32_BLOCK_COUNT) {
 
 - 适用 Route：P0 R-001～P3 R-004。
 - 触发条件：计算 `maxRowCountInUb`。
-- 固定官方源码：[`moe_gating_top_k_softmax_tiling_arch35.cpp:92-97`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_host/moe_gating_top_k_softmax_tiling_arch35.cpp)
+- 固定官方源码：[`moe_gating_top_k_softmax_tiling_arch35.cpp:92-97`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_gating_top_k_softmax/op_host/moe_gating_top_k_softmax_tiling_arch35.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

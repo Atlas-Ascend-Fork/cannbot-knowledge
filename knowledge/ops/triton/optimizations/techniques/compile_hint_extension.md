@@ -143,17 +143,6 @@ extension.sync_block_all(mode, event_id)   # mode: all_cube/all_vector/all/all_s
 - `libdevice.rint`：910_95 用 HMF 硬件实现（`__hmf_rint`）；其他平台软件实现（银行家舍入）
 - 非 910_95 平台 `cast` 不支持 fp8/fp64
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Ascend 扩展 API 总览与导入方式](../../apis/ascend_ext_overview.md)（`related`）：“扩展 API 总览”
-- [同步与 Barrier（NPU 三层同步机制）](sync_and_barrier.md)（`related`）：“同步机制详解”
-- [FixPipe 随路操作与 Bias 融合优化](fixpipe_bias_fusion.md)（`related`）：“fixpipe 详解”
-- [Where 条件优化（单位置 False 场景）](where_optimization.md)（`related`）：“get_element/insert_slice 的典型应用”
-- [PIPE / CORE / MODE / IteratorType 枚举](../../apis/ascend_ext_pipe_core.md)（`related`）：“extension.scope 的 core_mode/pipe 枚举定义”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -171,3 +160,15 @@ extension.sync_block_all(mode, event_id)   # mode: all_cube/all_vector/all/all_s
 - [core.py#L166-L171](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L166-L171)
 - [custom_op.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/custom_op.py)
 - [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/extension/buffer/language/core.py)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 扩展 API 总览与导入方式](../../apis/ascend_ext_overview.md)（`related`）：“扩展 API 总览”
+- [同步与 Barrier（NPU 三层同步机制）](sync_and_barrier.md)（`related`）：“同步机制详解”
+- [FixPipe 随路操作与 Bias 融合优化](fixpipe_bias_fusion.md)（`related`）：“fixpipe 详解”
+- [Where 条件优化（单位置 False 场景）](where_optimization.md)（`related`）：“get_element/insert_slice 的典型应用”
+- [PIPE / CORE / MODE / IteratorType 枚举](../../apis/ascend_ext_pipe_core.md)（`related`）：“extension.scope 的 core_mode/pipe 枚举定义”
+
+<!-- cannbot:related:end -->

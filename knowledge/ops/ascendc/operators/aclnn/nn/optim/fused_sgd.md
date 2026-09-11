@@ -5,38 +5,38 @@ description: "说明 aclnnFusedSgd 在 A2/A3 上的接口语义、Host/Launcher 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/docs/aclnnFusedSgd.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/docs/aclnnFusedSgd.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_api/aclnn_fused_sgd.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_api/aclnn_fused_sgd.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_api/aclnn_fused_sgd.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_api/aclnn_fused_sgd.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_api/fused_sgd.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_api/fused_sgd.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_host/fused_sgd_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_host/fused_sgd_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_host/fused_sgd_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_host/fused_sgd_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd_f32.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd_f32.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd_f16_bf16.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd_f16_bf16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_host/config/ascend910b/fused_sgd_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_host/config/ascend910b/fused_sgd_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_host/config/ascend910_93/fused_sgd_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_host/config/ascend910_93/fused_sgd_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/custom_kernel.cmake
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/custom_kernel.cmake
     role: implementation
 created_at: "2026-08-25T18:10:28Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -525,7 +525,7 @@ workspace_total(core node) = sysWorkspaceSize；Kernel 未访问
 
 - 适用 Route：R-002。
 - 触发条件：binary dtype 为 FLOAT16 或 BFLOAT16，entry 实例化 `FusedSgdF16Bf16<T>`。
-- Golden 来源：[`optim/fused_sgd/op_kernel/fused_sgd_f16_bf16.h:136-153`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd_f16_bf16.h#L136-L153)
+- Golden 来源：[`optim/fused_sgd/op_kernel/fused_sgd_f16_bf16.h:136-153`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_kernel/fused_sgd_f16_bf16.h#L136-L153)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -571,7 +571,7 @@ if (hasGradScale) {
 
 - 适用 Route：R-001、R-002。
 - 触发条件：Tiling 成功取得平台 UB；按输入 dtype 选择每元素资源公式。
-- Golden 来源：[`optim/fused_sgd/op_host/fused_sgd_tiling.cpp:264-280`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_host/fused_sgd_tiling.cpp#L264-L280)
+- Golden 来源：[`optim/fused_sgd/op_host/fused_sgd_tiling.cpp:264-280`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/fused_sgd/op_host/fused_sgd_tiling.cpp#L264-L280)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

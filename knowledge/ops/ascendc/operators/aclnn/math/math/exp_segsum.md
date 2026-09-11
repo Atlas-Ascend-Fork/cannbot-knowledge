@@ -5,34 +5,34 @@ description: "说明 aclnnExpSegsum 在 A2/A3 上的接口语义、Host/Launcher
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/docs/aclnnExpSegsum.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/docs/aclnnExpSegsum.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/op_api/aclnn_segsum.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/op_api/aclnn_segsum.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/op_api/aclnn_segsum.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/op_api/aclnn_segsum.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/op_api/segsum.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/op_api/segsum.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/segsum_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/segsum_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/segsum_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/segsum_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/segsum_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/segsum_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_kernel/segsum.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_kernel/segsum.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_kernel/segsum.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_kernel/segsum.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/config/ascend910b/segsum_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/config/ascend910b/segsum_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/config/ascend910_93/segsum_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/config/ascend910_93/segsum_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T14:26:10Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -788,7 +788,7 @@ dynamic_ub=N/A; workspace_total=32 MiB
 
 - 适用 Route：R-004、R-005、R-006。
 - 触发条件：`tailDimSize <= maxSlideSize`，Host 选择 key `1001`；`batchNum = slideSize / align32B(N)` 至少为 1。
-- Golden 来源：[`math/segsum/op_host/segsum_tiling.cpp:95-109`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/segsum_tiling.cpp#L95-L109)
+- Golden 来源：[`math/segsum/op_host/segsum_tiling.cpp:95-109`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_host/segsum_tiling.cpp#L95-L109)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -824,7 +824,7 @@ MODE1 不再沿列轴切 tile，而把每个 batch 的完整 N 元素行按 32B 
 
 - 适用 Route：R-002、R-003、R-005、R-006。
 - 触发条件：模板 `T` 为 `half` 或 `bfloat16_t`。
-- Golden 来源：[`math/segsum/op_kernel/segsum.h:198-213`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_kernel/segsum.h#L198-L213)
+- Golden 来源：[`math/segsum/op_kernel/segsum.h:198-213`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/segsum/op_kernel/segsum.h#L198-L213)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

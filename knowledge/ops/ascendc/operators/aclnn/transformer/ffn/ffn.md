@@ -5,52 +5,52 @@ description: "说明 aclnnFFNV3GetWorkspaceSize/aclnnFFNV3 在 A2 上的接口�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/docs/aclnnFFNV3.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/docs/aclnnFFNV3.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/op_api/aclnn_ffn_v3.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/op_api/aclnn_ffn_v3.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/op_api/aclnn_ffn.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/op_api/aclnn_ffn.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/op_api/ffn.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/op_api/ffn.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_high_performence.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_high_performence.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_high_precision.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_high_precision.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_glu.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_glu.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_glu.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_glu.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_quant.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_quant.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_antiquant.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_antiquant.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_antiquant_msd.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_antiquant_msd.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:03:45Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -1186,7 +1186,7 @@ workspace_total = MM1_A+MM1_C+MM2_A+MM2_C+reduce+64*aicNum+16 MiB
 
 - 适用 Route：R-001、R-004。
 - 触发条件：非 310P，基础 key 是高性能 0 或标准量化 1，且 `isTilingDataValid`、MM1/MM2 的 `baseM/baseN/baseK` 全相等；量化中若再满足平均 token≤64 与两段 `stepN=2`，选 key2002。
-- Golden 来源：[`ffn/ffn/op_host/ffn_tiling.cpp:1919-1932`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_tiling.cpp#L1919-L1932)
+- Golden 来源：[`ffn/ffn/op_host/ffn_tiling.cpp:1919-1932`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_tiling.cpp#L1919-L1932)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1228,7 +1228,7 @@ key2000/2001 在 router 中只注册一个 `Matmul` 对象，并把同一引用�
 
 - 适用 Route：R-001–R-010。
 - 触发条件：公共两片之外，高精度/BF16 把 workspace1 扩为 FP32；R-006 使两片 64 B 对齐并附加两段 uint64 scale；R-005 附加 `M*N2*4`；R-008–R-010 附加两个展开权重上界。
-- Golden 来源：[`ffn/ffn/op_host/ffn_tiling.cpp:1950-1981`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_tiling.cpp#L1950-L1981)
+- Golden 来源：[`ffn/ffn/op_host/ffn_tiling.cpp:1950-1981`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_tiling.cpp#L1950-L1981)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1268,7 +1268,7 @@ Host 先固定 MM1 结果和 MM2 输入的 dtype/容量；非 GLU Device route �
 
 - 适用 Route：R-003。
 - 触发条件：`activeType` 为 GEGLU/SWIGLU/REGLU，FP16、无 expert、`innerPrecise=1`、`N1` 为偶数、`K2=N1/2`。
-- Golden 来源：[`ffn/ffn/op_kernel/ffn_glu.cpp:136-143`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_glu.cpp#L136-L143)
+- Golden 来源：[`ffn/ffn/op_kernel/ffn_glu.cpp:136-143`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_kernel/ffn_glu.cpp#L136-L143)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1305,7 +1305,7 @@ __aicore__ inline void FFNGlu<T>::Process()
 
 - 适用 Route：R-010。
 - 触发条件：`N1%512=0,N1>1024,K1%512=0,K1>2048`，`x=FP16/BF16,W1=INT8`，`M<=512`，并且 `ceil(M/E)` 不超过由 `N1/2560*16` 得到的阈值。
-- Golden 来源：[`ffn/ffn/op_host/ffn_tiling.cpp:433-440`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_tiling.cpp#L433-L440)
+- Golden 来源：[`ffn/ffn/op_host/ffn_tiling.cpp:433-440`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/ffn/ffn/op_host/ffn_tiling.cpp#L433-L440)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

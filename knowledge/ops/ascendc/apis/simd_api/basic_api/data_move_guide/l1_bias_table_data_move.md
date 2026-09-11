@@ -2,23 +2,71 @@
 type: API
 title: L1与BiasTable Buffer数据搬运
 description: DataCopy能够实现L1 Buffer至BiasTable Buffer的连续数据搬运，数据搬运时格式和内容保持不变。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.data_movement.data_copy]
-status: stable
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.data_movement.data_copy
+status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_move_guide/L1_BiasTable_data_move.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: [agnostic]
+updated_at: '2026-09-04T01:25:11Z'
+platforms: []
 ---
 
 # L1与BiasTable Buffer数据搬运
 
-DataCopy 实现 L1 Buffer 到 BiasTable Buffer 的连续数据搬运，格式和内容保持不变。用于将矩阵计算的 bias 参数从 L1 搬运至 BiasTable Buffer。BiasTable Buffer 地址需 64B 对齐，L1 Buffer 地址需 32B 对齐。
+## DataCopy（L1ToBiasTable Buffer连续数据搬运）<a name="ZH-CN_TOPIC_0000002574022837"></a>
+
+DataCopy能够实现L1 Buffer至BiasTable Buffer的连续数据搬运，数据搬运时格式和内容保持不变。
+
+具体支持的数据通路为（以[逻辑位置TPosition](../aux_data_structures/t_position.md)表示）：
+
+- L1 Buffer -> BiasTable Buffer
+    - C1 -> C2
+
+搬运的数据用于矩阵计算，接口具体介绍请参考：[DataCopy（L1ToBiasTable-Buffer数据搬运）](../cube_compute_isasi/cube_compute_load/data_copy_l1_to_bias_table.md)。
+
+src和dst分别为源操作数和目的操作数；count为连续搬运的元素个数。
+
+```cpp
+template <typename T>
+__aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>& src, const uint32_t count)
+```
+
+## DataCopy（L1ToBiasTable Buffer高维切分数据搬运）<a name="ZH-CN_TOPIC_0000002543262936"></a>
+
+DataCopy能够实现L1 Buffer至BiasTable Buffer的连续数据搬运和非连续数据搬运，数据搬运时格式和内容保持不变。
+
+高维切分是指能够通过配置数据块个数、单个数据块长度、地址偏移等搬运参数实现非连续搬运。
+
+具体支持的数据通路为（以[逻辑位置TPosition](../aux_data_structures/t_position.md)表示）：
+
+- L1 Buffer -> BiasTable Buffer
+    - C1 -> C2
+
+搬运的数据用于矩阵计算，接口具体介绍请参考：[DataCopy（L1ToBiasTable-Buffer数据搬运）](../cube_compute_isasi/cube_compute_load/data_copy_l1_to_bias_table.md)。
+
+src和dst分别为源操作数和目的操作数；repeatParams为搬运参数。
+
+- 连续或非连续搬运场景（高维切分）
+
+    ```cpp
+    template <typename T>
+    __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>& src, const DataCopyParams& repeatParams)
+    ```
+
+- 连续或非连续搬运场景，支持源操作数和目的操作数数据类型不一致
+
+    ```cpp
+    template <typename T, typename U>
+    __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<U>& src, const DataCopyParams& repeatParams)
+    ```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CopyL1ToBiasTable](../cube_compute_tensor_api/cube_compute_load/copy_l1_to_bias_table.md)（`related`）：通过统一Copy接口将L1 Buffer数据搬运到BiasTable，用于矩阵计算的bias输入。搬运参数由Tensor Layout自动推导。仅Ascend 950PR/950DT支持。试验接口。；DataCopy 实现 L1 Buffer 到 BiasTable Buffer 的连续数据搬运，格式和内容保持不变。用于将矩阵计算的 bias 参数从 L1 搬运至 BiasTable Buffer。BiasTable Buffer 地址需 64B 对齐，L1 Buffer 地址需 32B 对齐。；指南为该 Copy 接口补齐两端地址对齐和连续搬运条件。
-- [DataCopy](../cube_compute/cube_compute_load/data_copy_l1_to_bias_table.md)（`same_topic`）：“将L1 Buffer中的bias数据搬运到BiasTable，用于Mmad计算的bias输入。”；“DataCopy 实现 L1 Buffer 到 BiasTable Buffer 的连续数据搬运，格式和内容保持不变。”。目标页给出焦点 API 的连续搬运语义和不变性。
+- [DataCopy](../cube_compute_isasi/cube_compute_load/data_copy_l1_to_bias_table.md)（`same_topic`）：“将L1 Buffer中的bias数据搬运到BiasTable，用于Mmad计算的bias输入。”；“DataCopy 实现 L1 Buffer 到 BiasTable Buffer 的连续数据搬运，格式和内容保持不变。”。目标页给出焦点 API 的连续搬运语义和不变性。
 <!-- cannbot:related:end -->

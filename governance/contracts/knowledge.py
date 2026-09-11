@@ -297,6 +297,13 @@ class Contract:
                 raise ValueError(
                     f"local_sources.{source_id}.archive_sha256 must be lowercase SHA-256"
                 )
+            tree_sha256 = source.get("tree_sha256")
+            if not isinstance(tree_sha256, str) or not re.fullmatch(
+                r"[0-9a-f]{64}", tree_sha256
+            ):
+                raise ValueError(
+                    f"local_sources.{source_id}.tree_sha256 must be lowercase SHA-256"
+                )
             mirror = source.get("mirror")
             if mirror is None:
                 continue
@@ -312,6 +319,96 @@ class Contract:
             ):
                 raise ValueError(
                     f"local_sources.{source_id}.mirror.source_root must be a safe relative path"
+                )
+            for field in ("api_roots", "guide_roots", "guide_files", "exclude"):
+                values = mirror.get(field)
+                if not isinstance(values, list) or any(
+                    not isinstance(value, str)
+                    or not value
+                    or Path(value).is_absolute()
+                    or ".." in Path(value).parts
+                    or "\\" in value
+                    for value in values
+                ):
+                    raise ValueError(
+                        f"local_sources.{source_id}.mirror.{field} must contain safe relative paths"
+                    )
+            if mirror.get("navigation_policy") != "index_only":
+                raise ValueError(
+                    f"local_sources.{source_id}.mirror.navigation_policy "
+                    "must be index_only"
+                )
+            display_limit = mirror.get("api_operator_display_limit")
+            if type(display_limit) is not int or display_limit < 1:
+                raise ValueError(f"local_sources.{source_id}.mirror.api_operator_display_limit must be a positive integer")
+            omitted_sections = mirror.get("omit_section_title_contains")
+            if (
+                not isinstance(omitted_sections, list)
+                or not omitted_sections
+                or any(
+                    not isinstance(value, str) or not value.strip()
+                    for value in omitted_sections
+                )
+                or omitted_sections != sorted(set(omitted_sections))
+            ):
+                raise ValueError(
+                    f"local_sources.{source_id}.mirror.omit_section_title_contains "
+                    "must be a non-empty, sorted list of unique heading fragments"
+                )
+            ambiguous_symbols = mirror.get("ambiguous_relation_symbols")
+            if (
+                not isinstance(ambiguous_symbols, list)
+                or not ambiguous_symbols
+                or any(
+                    not isinstance(symbol, str)
+                    or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_:]*", symbol)
+                    for symbol in ambiguous_symbols
+                )
+                or ambiguous_symbols != sorted(set(ambiguous_symbols))
+            ):
+                raise ValueError(
+                    f"local_sources.{source_id}.mirror.ambiguous_relation_symbols "
+                    "must be a non-empty, sorted list of unique identifiers"
+                )
+            rejected_relations = mirror.get("reviewed_relation_rejections", [])
+            if not isinstance(rejected_relations, list) or any(
+                not isinstance(item, dict)
+                or set(item) != {"api", "operator"}
+                or not all(
+                    isinstance(item[field], str)
+                    and self._safe_repository_path(item[field]).is_absolute()
+                    for field in ("api", "operator")
+                )
+                for item in rejected_relations
+            ):
+                raise ValueError(
+                    f"local_sources.{source_id}.mirror.reviewed_relation_rejections "
+                    "must contain safe API and Operator paths"
+                )
+            relation_pairs = [
+                (str(item["api"]), str(item["operator"]))
+                for item in rejected_relations
+            ]
+            if len(relation_pairs) != len(set(relation_pairs)):
+                raise ValueError(
+                    f"local_sources.{source_id}.mirror.reviewed_relation_rejections "
+                    "must be unique"
+                )
+            repository = mirror.get("upstream_repository")
+            if (
+                not isinstance(repository, str)
+                or not repository.startswith("https://gitcode.com/")
+                or repository.endswith("/")
+            ):
+                raise ValueError(
+                    f"local_sources.{source_id}.mirror.upstream_repository must be a canonical GitCode repository"
+                )
+            revision = mirror.get("upstream_revision")
+            if not isinstance(revision, str) or not re.fullmatch(
+                r"[0-9a-f]{40}", revision
+            ):
+                raise ValueError(
+                    f"local_sources.{source_id}.mirror.upstream_revision must be a lowercase 40-hex commit"
                 )
         roots = [source["root"] for source in self.local_sources.values()]
         if len(roots) != len(set(roots)):
@@ -389,11 +486,6 @@ class Contract:
         from .checks.navigation import validate_index_tree
 
         return validate_index_tree(self)
-
-    def validate_repository_infrastructure(self) -> list[tuple[Path, Issue]]:
-        from .checks.local_sources import check_repository
-
-        return check_repository(self)
 
     def fixed_archive_mirror(self, metadata: dict) -> tuple[dict, Path] | None:
         """Locate an API/Guide mirror, not a supporting archive reference."""

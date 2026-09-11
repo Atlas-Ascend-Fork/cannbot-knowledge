@@ -7,18 +7,24 @@
 - Git 来源固定 canonical repo、ref、40 位 commit 和纳入范围；没有固定 commit 时不开始批量摄入。
 - 本地固定归档在 Registry 登记顶层 root、fetch script 和 archive SHA-256；先运行获取脚本恢复来源。不要为归档增加逐文件清单。
 
-## 登记源码资源的恢复
+## 既有 Operator 来源本地化
 
-Registry 中的 `kind: git` 资源使用可执行的 `scripts/source_resources.py` 恢复与验证：
+已有卡仅恢复声明的固定源码并等价改写来源路径时，不属于新 Git Reference 摄入批次，不重新蒸馏技术正文或建立 inventory/ledger。先在 Registry 登记 `kind: git`、root、fetch script、规范 repository 与卡片已使用的 40 位 revisions；不得自动换成最新分支。源码与对象缓存放入 ignored 来源根，不执行上游代码。
+
+四个算子仓的 Git 根统一为 `cann-ops-raw/ascendc/<仓库名>/`，提交快照放在其 `<40位commit>/` 下。完整根路径用于来源匹配，不能只取路径第一段；恢复时拒绝根本身或任一祖先为软链接。目录迁移必须保持 repository/revision/文件不变，并同步 Frontmatter、正文及 API 自动导航中的源码链接；本地旧索引和图谱审计不得冒充已更新结果。
 
 ```bash
 python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> fetch
 python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> verify
+python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> \
+  localize --updated-at <UTC-second>
 ```
 
-`fetch` 只按 Registry 的仓库与固定提交恢复 ignored 来源目录；多个仓库可并行获取，但不会跟随分支，不执行源码或 Git hooks。`verify` 不联网、不改文件。已有目录若非工具管理、来源/提交不符、有本地修改、隐藏索引项或符号链接逃逸，都失败且保留现场，不 reset、删除或覆盖。此入口不迁移知识卡来源、不升级文档归档；首次知识摄入仍按下面的批次流程执行。
+`fetch` 只恢复 Registry 声明的固定提交，不执行源码或 Git hooks；`verify` 不联网、不改文件。已有目录若非工具管理、来源/提交不符、有本地修改、隐藏索引项或符号链接逃逸，都失败且保留现场，不 reset、删除或覆盖。仅恢复或验证资源不迁移知识卡，也不升级来源。
 
-知识卡的 `sources[].resource` 相对于知识仓根，正文源码链接相对于卡片目录；两者必须指向同一登记根和固定提交。离线 Lint 不会自动执行获取脚本，无法证明未恢复文件存在。
+知识卡的 `sources[].resource` 相对于知识仓根，正文源码链接相对于卡片目录；两者必须指向同一登记根和固定提交。离线 Lint 不会自动获取源码，也无法证明未恢复文件存在。
+
+统一根入口同时恢复固定归档和这些源码。`localize` 在全部 checkout 通过校验后，将可用的固定远程来源及正文文件链接改为本地等价路径，不改角色、技术正文、代码围栏或语义关系块；原提交缺失文件保留远程路径，并写 `artifacts/graphs/source_resources.json`。随后按[本地图谱](local-graphs.md)同步 API 自动关系，检查幂等与块外正文不变，运行全库 Lint、目标 Query 和统一门禁。新增技术断言或升级 revision 仍走对应 producer/版本流程。
 
 ## Git 批次
 
@@ -31,11 +37,11 @@ python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> verify
 ## 固定归档批次
 
 1. 从 Registry 读取 source ID 与 archive SHA-256，运行登记的获取脚本并完整读取本批相关源文件。
-2. 先用 query 查重，再按语义实体决定 create、update、merge、deprecate 或 defer；不要按文件名机械建卡。
-3. 先完成一个中等复杂度实体，核对正文、平台、来源和边界后再扩大范围。
+2. 先用 query 查重，再按语义实体决定 create、update、merge、deprecate 或 defer；Registry 明确登记的官方 API/Guide 由其受控转换策略筛除导航页和声明的冗余章节，其他材料不要按文件名机械建卡。
+3. 先完成一个中等复杂度实体，核对正文、平台、来源和边界后再扩大范围；固定归档转换还要验证导航页只落到 `index.md`，声明章节已省略，且其余正文只发生链接目标、Frontmatter 和受管关系块变化。
 4. 更新导航和当天日志；日志记录 source ID、archive SHA-256、created/updated/deferred 数和关键裁决，再运行全库 lint 与目标 query。
 
-固定归档批次不生成 inventory、ledger 或 verification receipt。当前流程也不自动处理 archive SHA-256 切换；遇到新归档版本时 defer，不静默替换 Registry 中的现有摘要。
+固定归档批次不生成 inventory、ledger 或 verification receipt。archive SHA-256 切换必须遵循版本升级流程：先记录并审查候选归档，再显式更新 Registry，重新通过获取脚本校验；不得在未完成卡片、导航、关系和验证时静默替换已登记摘要。
 
 ## 结构边界
 

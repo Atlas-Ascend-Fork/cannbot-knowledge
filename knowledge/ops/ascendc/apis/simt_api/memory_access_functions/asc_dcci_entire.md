@@ -3,25 +3,108 @@ type: API
 title: asc_dcci_entire
 description: 该接口用于刷新核内的整个Data Cache，保证数据读取时Cache的一致性。 在SIMT编程中，写入数据时会立即写入Global Memory，使其他核可见，因此不存在核间一致性问题。当从Global
   Memory读取数据时，该数据可能已被其他核修改，此时应使用dcci接口直接访问Global Memory，以获取最新数据。 请注意，该接口耗时较大，性能敏感的场景慎用。
-tags: [task.lookup, topic.data_movement.memory_access]
+tags:
+- task.lookup
+- topic.data_movement.memory_access
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/memory_access_functions/asc_dcci_entire.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/device_functions.h
 ---
 
-# asc_dcci_entire
+# asc\_dcci\_entire
 
-刷新核内整个 Data Cache，保证后续从 Global Memory 读取数据时 Cache 一致性。SIMT 编程中写入数据会立即写入 Global Memory 使其他核可见，但当读取的数据可能已被其他核修改时，需使用 dcci 接口刷新 Data Cache 以获取最新数据。
+## 功能说明
 
-函数原型：inline void asc_dcci_entire(void *dst)
+该接口用于刷新核内的整个Data Cache，保证数据读取时Cache的一致性。
 
-参数 dst 为 Global Memory 地址。无返回值。该接口耗时较大，性能敏感场景慎用。输入必须为有效的 Global Memory 地址，否则不能保证刷新行为有效。
+在SIMT编程中，写入数据时会立即写入Global Memory，使其他核可见，因此不存在核间一致性问题。当从Global Memory读取数据时，该数据可能已被其他核修改，此时应使用`asc_dcci_entire()`接口直接访问Global Memory，以获取最新数据。
 
-仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。需包含头文件 "simt_api/device_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。
+与通过地址定位并刷新指定Cache Line的`asc_dcci_single()`接口不同，`asc_dcci_entire()`刷新的是核内整个Data Cache，参数`dst`不参与刷新范围的定位，因此在`asc_dcci_entire()`中该参数没有实际意义。
+
+请注意，该接口耗时较大，**性能敏感的场景慎用**。
+
+## 函数原型
+
+```cpp
+inline void asc_dcci_entire(void *dst)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| dst | 输入 | Global Memory的地址。 |
+
+## 返回值说明
+
+无
+
+## 约束说明
+
+输入必须为有效的Global Memory地址。传入非Global Memory地址或无效地址时，不能保证Cache刷新行为有效。
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/device_functions.h`头文件。
+
+```cpp
+#include "simt_api/device_functions.h"
+```
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void kernel_dcci_entire(uint32_t* data, uint32_t* output) {
+        // 线程块0的线程0进行数据写操作
+        if (blockIdx.x == 0 && threadIdx.x == 0) {
+            data[1] = 10;      // 写入数据
+            asc_threadfence(); // 确保数据写入完成
+            data[0] = 1;       // 标志位，数据已就绪
+        }
+
+        // 线程块1的线程0进行数据读操作
+        if (blockIdx.x == 1 && threadIdx.x == 0) {
+            while (data[0] != 1) {
+                asc_dcci_entire((void*)(data)); // 从Global Memory读标志位
+            }
+            output[0] = data[1]; // 数据就绪，获取数据
+        }
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void kernel_dcci_entire(__gm__ uint32_t* data, __gm__ uint32_t* output)
+    {
+        // 线程块0的线程0进行数据写操作
+        if (blockIdx.x == 0 && threadIdx.x == 0) {
+            data[1] = 10;      // 写入数据
+            asc_threadfence(); // 确保数据写入完成
+            data[0] = 1;       // 标志位，数据已就绪
+        }
+
+        // 线程块1的线程0进行数据读操作
+        if (blockIdx.x == 1 && threadIdx.x == 0) {
+            while (data[0] != 1) {
+                asc_dcci_entire((__gm__ void*)(data)); // 从Global Memory读标志位
+            }
+            output[0] = data[1]; // 数据就绪，获取数据
+        }
+    }
+    ```
+
 
 <!-- cannbot:related:start -->
 ## 相关

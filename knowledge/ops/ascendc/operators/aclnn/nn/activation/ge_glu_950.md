@@ -5,18 +5,18 @@ description: "说明 aclnnGeGluV3 在 950 上的接口语义、Host/Launcher 参
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/docs/aclnnGeGluV3.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/docs/aclnnGeGluV3.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/op_api/aclnn_geglu.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/op_api/aclnn_geglu.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/ge_glu_v2_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/ge_glu_v2_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/ge_glu_v2_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/ge_glu_v2_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/ge_glu_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_host/ge_glu_v2_def.cpp
     role: implementation
 created_at: "2026-08-25T15:01:22Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -383,7 +383,7 @@ block-beta
 
 - 适用 Route：R-004/R-005/R-006
 - 触发条件：`approximate==0` 且 950 arch35 body
-- Golden 来源：[`arch35/ge_glu_v2_base.h:274-284`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/arch35/ge_glu_v2_base.h#L274-L284)
+- Golden 来源：[`arch35/ge_glu_v2_base.h:274-284`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/arch35/ge_glu_v2_base.h#L274-L284)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -417,7 +417,7 @@ AscendC::Mul(gelu_out, ubx2_fp32, tmpBuf2, length);
 
 - 适用 Route：全部 950 Route
 - 触发条件：arch35 body `bufferNum=2`
-- Golden 来源：[`arch35/tanh/ge_glu_v2_fp16_align.h:59-65`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/arch35/tanh/ge_glu_v2_fp16_align.h#L59-L65)
+- Golden 来源：[`arch35/tanh/ge_glu_v2_fp16_align.h:59-65`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/ge_glu_v2/op_kernel/arch35/tanh/ge_glu_v2_fp16_align.h#L59-L65)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

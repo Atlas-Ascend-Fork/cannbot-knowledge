@@ -102,16 +102,6 @@ platforms: [a2, '950']
 6. 验证迭代（重采集对比，未达标回步骤 4）
 ```
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [性能调优方法论](performance_tuning.md)（`related`）：“性能调优实战”
-- [NPU 分块策略（Tiling）](tiling_strategy.md)（`related`）：“分块策略详解”
-- [care_padding 优化](care_padding.md)（`related`）：“care_padding 优化”
-- [SPMD 模型在 NPU 上的映射](spmd_on_npu.md)（`related`）：“Grid 物理核绑定”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -120,3 +110,14 @@ platforms: [a2, '950']
 - [programming_guide.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/programming_guide.md)
 - [performance_guidelines.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/performance_guidelines.md)
 - [migrate_from_gpu.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/migrate_from_gpu.md)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [性能调优方法论](performance_tuning.md)（`related`）：“性能调优实战”
+- [NPU 分块策略（Tiling）](tiling_strategy.md)（`related`）：“分块策略详解”
+- [care_padding 优化](care_padding.md)（`related`）：“care_padding 优化”
+- [SPMD 模型在 NPU 上的映射](spmd_on_npu.md)（`related`）：“Grid 物理核绑定”
+
+<!-- cannbot:related:end -->

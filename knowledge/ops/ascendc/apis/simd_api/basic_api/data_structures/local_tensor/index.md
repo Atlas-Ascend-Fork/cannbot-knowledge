@@ -7,7 +7,6 @@
 - [GetSize](get_size.md)：获取当前LocalTensor Size大小。
 - [GetUserTag](get_user_tag.md)：获取指定Tensor块的Tag信息，用户可以根据Tag信息对Tensor进行不同操作。
 - [GetValue](get_value.md)：获取LocalTensor指定索引的数值。 该接口仅在LocalTensor的TPosition为VECIN/VECCALC/VECOUT时支持。
-- [LocalTensor](local_tensor.md)：LocalTensor 数据结构接口集，提供 UB 侧局部张量管理能力，含构造函数、SetValue、GetValue、GetSize 等。
 - [LocalTensor构造函数](local_tensor_constructor.md)：LocalTensor构造函数。
 - [LocalTensor简介](local_tensor_intro.md)：LocalTensor表达AI Core中Local Memory（内部存储）内的L1/L0A/L0B/L0C Buffer及Unified Buffer中的数据。
 - [OperatorSubscript](operator.md)：获取距原LocalTensor起始地址偏移量为offset的新LocalTensor，offset不能超过原有LocalTensor的size大小。

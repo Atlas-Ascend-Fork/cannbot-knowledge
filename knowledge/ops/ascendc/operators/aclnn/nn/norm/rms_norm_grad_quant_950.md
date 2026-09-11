@@ -5,56 +5,56 @@ description: "说明 aclnnRmsNormGradQuant 在 950 上的接口语义、Host/Lau
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/docs/aclnnRmsNormGradQuant.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/docs/aclnnRmsNormGradQuant.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_api/aclnn_rms_norm_grad_quant.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_api/aclnn_rms_norm_grad_quant.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_api/aclnn_rms_norm_grad_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_api/aclnn_rms_norm_grad_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_api/rms_norm_grad_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_api/rms_norm_grad_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_regbase_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_regbase_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_regbase_big_m_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_regbase_big_m_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_empty_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_empty_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/rms_norm_grad_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/rms_norm_grad_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dx_full_load.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dx_full_load.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dx_split_d.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dx_split_d.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dgamma.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dgamma.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dgamma_helper.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dgamma_helper.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dgamma_big_m.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dgamma_big_m.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_empty_dgamma.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_empty_dgamma.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/config/ascend950/rms_norm_grad_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/config/ascend950/rms_norm_grad_quant_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:07:30Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -827,7 +827,7 @@ UB_peak=max(splitDxUB,dgLargeUB); workspace_total=libApiWorkspace
 
 - 适用 Route：R-002–R-007。
 - 触发条件：非空，按 `DIV_MODE/HAS_OFFSET_X/T_DX` 编译实例。
-- Golden 来源：[`rms_norm_grad_quant_dx_full_load.h:188-219`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dx_full_load.h#L188-L219)
+- Golden 来源：[`rms_norm_grad_quant_dx_full_load.h:188-219`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dx_full_load.h#L188-L219)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -866,7 +866,7 @@ if constexpr (HAS_OFFSET_X){
 
 - 适用 Route：R-002、R-003。
 - 触发条件：Big-M 三 shape 谓词及两个 UB gate 均成立。
-- Golden 来源：[`rms_norm_grad_quant_dgamma_big_m.h:98-114`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dgamma_big_m.h#L98-L114)
+- Golden 来源：[`rms_norm_grad_quant_dgamma_big_m.h:98-114`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_kernel/arch35/rms_norm_grad_quant_dgamma_big_m.h#L98-L114)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -903,7 +903,7 @@ M 很大而 D 较小时，stage-0 沿 M 分给多核，每核只向 workspace �
 
 - 适用 Route：R-006、R-007。
 - 触发条件：dgamma full-load UB 判据失败。
-- Golden 来源：[`rms_norm_grad_quant_regbase_tiling.cpp:562-585`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_regbase_tiling.cpp#L562-L585)
+- Golden 来源：[`rms_norm_grad_quant_regbase_tiling.cpp:562-585`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_grad_quant/op_host/rms_norm_grad_quant_regbase_tiling.cpp#L562-L585)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

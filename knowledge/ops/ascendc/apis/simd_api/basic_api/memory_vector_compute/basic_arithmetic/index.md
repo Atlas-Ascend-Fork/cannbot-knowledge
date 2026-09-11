@@ -4,7 +4,6 @@
 - [Add](add.md)：双目矢量计算接口，对两个输入tensor按元素求和。
 - [Adds](adds.md)：双目矢量标量计算接口，将矢量tensor每个元素与标量求和。
 - [Adds（灵活标量位置）](adds_flexible_scalar.md)：矢量元素与标量做加法，支持标量在前或在后两种场景，标量可配置为LocalTensor单点元素。
-- [基础算术](basic_arithmetic.md)：矢量基础算术接口集，包含 Exp、Ln、Abs、Reciprocal、Add、Sub、Mul、Div 等单双目计算接口。
 - [BilinearInterpolation](bilinear_interpolation_isasi.md)：双目矢量计算接口，通过水平+垂直双层循环完成乘累加，适用于非规则数据访问+权重乘加场景。软仿接口。
 - [Div](div.md)：双目矢量计算接口，对两个输入tensor按元素求商。
 - [Divs（灵活标量位置）](divs_flexible_scalar.md)：矢量元素与标量做除法，支持标量在前或在后两种场景，标量可配置为LocalTensor单点元素。

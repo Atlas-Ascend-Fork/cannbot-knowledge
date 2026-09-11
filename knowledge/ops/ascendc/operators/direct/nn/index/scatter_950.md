@@ -5,20 +5,20 @@ description: "说明 cann_bench::scatter、scatter_npu 与 Host 可达 launch_sc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/scatter_elements_v2/README.md"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/README.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/scatter_elements_v2/op_api/aclnn_scatter.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_api/aclnn_scatter.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/scatter_elements_v2/op_host/arch35/scatter_elements_v2_asc_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_host/arch35/scatter_elements_v2_asc_tiling.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/scatter_elements_v2/op_kernel/scatter_elements_v2_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_kernel/scatter_elements_v2_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/scatter_elements_v2/op_kernel/arch35/scatter_elements.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_kernel/arch35/scatter_elements.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/scatter_elements_v2/op_kernel/arch35/scatter_elements_deterministic.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_kernel/arch35/scatter_elements_deterministic.h"
     role: implementation
 created_at: "2026-08-24T19:31:26Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -800,7 +800,7 @@ workspace_total=0 B（launch_scatter 的 workspace 参数被忽略）
 
 - 适用 Route：R-001
 - 触发条件：winner predicate 命中。
-- 转换片段定位：`scatter_kernel.cpp:400-440`；相关官方源码：[`scatter_elements.h`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/scatter_elements_v2/op_kernel/arch35/scatter_elements.h)
+- 转换片段定位：`scatter_kernel.cpp:400-440`；相关官方源码：[`scatter_elements.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_kernel/arch35/scatter_elements.h)
 
 **交付件源码（连续逐字摘录，不归因于官方映射）**：
 
@@ -837,7 +837,7 @@ Duplicate(winnerLocal, static_cast<int32_t>(-1), elems);
 
 - 适用 Route：R-005。
 - 触发条件：ADD 且 data dtype 为 FP16。
-- 转换片段定位：`scatter_kernel.cpp:963-1004`；相关官方入口：[`scatter_elements_v2_apt.cpp`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/scatter_elements_v2/op_kernel/scatter_elements_v2_apt.cpp)
+- 转换片段定位：`scatter_kernel.cpp:963-1004`；相关官方入口：[`scatter_elements_v2_apt.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_kernel/scatter_elements_v2_apt.cpp)
 
 **交付件源码（连续逐字摘录，不归因于官方映射）**：
 
@@ -871,7 +871,7 @@ S0 直接从 self 生成 FP32 accumulator，避免单独初始化 output；S1 �
 
 - 适用 Route：R-002/R-004/R-007/R-008/R-009/R-011，以及 R-005 owned S1。
 - 触发条件：使用 serial POD 的 owner 路线。
-- 转换片段定位：`scatter_kernel.cpp:120-178`；相关官方源码：[`scatter_elements_deterministic.h`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/scatter_elements_v2/op_kernel/arch35/scatter_elements_deterministic.h)
+- 转换片段定位：`scatter_kernel.cpp:120-178`；相关官方源码：[`scatter_elements_deterministic.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/scatter_elements_v2/op_kernel/arch35/scatter_elements_deterministic.h)
 
 **交付件源码（连续逐字摘录，不归因于官方映射）**：
 
@@ -949,7 +949,7 @@ for (uint64_t mid = 0; mid < td.midAxis; ++mid) {
 | 算子接线 | `csrc/ops/scatter/CMakeLists.txt` | `register_direct_launch_op` | Device/Host TU 注册 |
 | 平台构建 | `CMakeLists.txt` | `NPU_ARCH`、`BISHENG_NPU_ARCH`、targets | ascend950→dav-3510 与共享库 |
 
-官方相关映射固定为 `cann/ops-nn@ceb4536a2bd6fc99b85aec9d0fdcc0f470376292:index/scatter_elements_v2`，不作为上表交付件实现链路的一环。
+官方相关映射固定为 `cann/ops-nn@955f8b33985b6d72989ebff341bb9c2c564a51bc:index/scatter_elements_v2`，不作为上表交付件实现链路的一环。
 
 ### 实现复用检查
 

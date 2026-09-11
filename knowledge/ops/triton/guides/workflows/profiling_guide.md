@@ -81,8 +81,17 @@ latency = 4 * 4096 * 4096 / 1.8e12   # fp32 4096x4096 ≈ 37.28 us
 
 `TRITON_PRINT_AUTOTUNING=1`（打印调优结果）、`TRITON_ALL_BLOCKS_PARALLEL=1`（grid 超物理核数时自动收敛）、`TRITON_DEBUG=1`（保存 `~/.triton/cache/*.ttadapter`，可用 `bishengir-compile --target=Ascend910B3 --enable-auto-multi-buffer=True --enable-hfusion-compile=true --enable-hivm-compile=true --enable-triton-kernel-compile=true` 离线分析 IR 中是否有纯 scalar 搬运/计算）、`TRITON_BENCH_METHOD=npu`。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [profiling.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/profiling.md)
+- [performance_guidelines.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/performance_guidelines.md)
+- [migrate_from_gpu.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/migrate_from_gpu.md)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Profiling 方法论](./profiling.md)（`related`）：“Profiling 方法论（指标速查版）”
@@ -94,11 +103,3 @@ latency = 4 * 4096 * 4096 / 1.8e12   # fp32 4096x4096 ≈ 37.28 us
 - [NPU 分块策略（Tiling）](../../optimizations/techniques/tiling_strategy.md)（`related`）：“Tiling 不合理时的分块调整策略”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [profiling.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/profiling.md)
-- [performance_guidelines.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/performance_guidelines.md)
-- [migrate_from_gpu.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/migrate_from_gpu.md)

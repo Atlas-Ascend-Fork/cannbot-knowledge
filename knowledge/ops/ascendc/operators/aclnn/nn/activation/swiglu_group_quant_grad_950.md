@@ -5,34 +5,34 @@ description: "说明 aclnnSwigluGroupQuantGrad 在 950 上的接口语义、Host
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/docs/aclnnSwigluGroupQuantGrad.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/docs/aclnnSwigluGroupQuantGrad.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_tiling_utils.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_tiling_utils.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/config/ascend950/swiglu_group_quant_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/config/ascend950/swiglu_group_quant_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/gen_ops_info.cmake
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/gen_ops_info.cmake
     role: implementation
 created_at: "2026-08-25T19:04:05Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -626,7 +626,7 @@ UB_zero/workspace/dynamic_ub = 同 R-003
 
 - 适用 Route：R-001～R-004
 - 触发条件：由 `hasClampLimit/hasWeight` 形成 UB factor；完整 H token 超出 `ubAvailable` 时切 Split-H
-- Golden 来源：[`activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_tiling_utils.h:400-435`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_tiling_utils.h#L400-L435)
+- Golden 来源：[`activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_tiling_utils.h:400-435`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_host/swiglu_group_quant_grad_tiling_utils.h#L400-L435)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -664,7 +664,7 @@ Host 把条件计算需要的额外 UB 纳入 tile 决策：Full-H 可把一行�
 
 - 适用 Route：R-002、R-004
 - 触发条件：`hasClampLimit==1`
-- Golden 来源：[`activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.h:295-327`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.h#L295-L327)
+- Golden 来源：[`activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.h:295-327`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.h#L295-L327)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -695,7 +695,7 @@ Clamp 前保存的 x 原值只需存活到三个严格比较完成；随后同�
 
 - 适用 Route：R-001～R-004 的 FP16/BF16 binary instance
 - 触发条件：`T` 不是 `float`
-- Golden 来源：[`activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.h:450-467`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.h#L450-L467)
+- Golden 来源：[`activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.h:450-467`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad.h#L450-L467)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -728,7 +728,7 @@ CopyIn 后 FP16/BF16 输入在 queue 的同一物理 slot 中转成 FP32，所�
 
 - 适用 Route：R-001～R-004 的 `groupIndex` 子模式且 `trunc<totalTokens`
 - 触发条件：`0<trunc<totalTokens`，有效区完成并经过 `SyncAll()`
-- Golden 来源：[`activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad_base.h:85-91`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad_base.h#L85-L91)
+- Golden 来源：[`activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad_base.h:85-91`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/swiglu_group_quant_grad/op_kernel/swiglu_group_quant_grad_base.h#L85-L91)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

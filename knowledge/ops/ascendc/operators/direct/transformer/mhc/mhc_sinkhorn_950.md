@@ -5,32 +5,32 @@ description: "说明 mhc_sinkhorn 在 950 上的接口语义、四条 Direct Rou
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_host/mhc_sinkhorn_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_host/mhc_sinkhorn_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_host/mhc_sinkhorn_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_host/mhc_sinkhorn_tiling.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_host/mhc_sinkhorn_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_host/mhc_sinkhorn_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn_common/op_host/arch35/mhc_sinkhorn_base_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_common/op_host/arch35/mhc_sinkhorn_base_tiling.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn_common/op_host/arch35/mhc_sinkhorn_base_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_common/op_host/arch35/mhc_sinkhorn_base_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_kernel/mhc_sinkhorn_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_kernel/mhc_sinkhorn_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn_struct.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn_struct.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn_tiling_key.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_host/config/ascend950/mhc_sinkhorn_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_host/config/ascend950/mhc_sinkhorn_binary.json
     role: implementation
 created_at: "2026-08-25T19:32:39Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -677,7 +677,7 @@ AIV TQue/TBuf = N/A；实际替代路径为线程私有 dynamic UB
 
 - 适用 Route：R-003（R-001 沿用同类稳定归约思想）。
 - 触发条件：官方 direct Route `n=8`，每个 vector loop 处理最多 `blockCnt` 个矩阵。
-- 固定来源：[`mhc_sinkhorn.h:212-234`](https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn.h)
+- 固定来源：[`mhc_sinkhorn.h:212-234`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -715,7 +715,7 @@ for (uint16_t nIdx = 0; nIdx < static_cast<uint16_t>(tilingData_.n); nIdx++) {
 
 - 适用 Route：R-003。
 - 触发条件：所有官方 Host tiling；`BaseSplitCores` 同时估算两套共享实现的 UB 上界。
-- 固定来源：[`mhc_sinkhorn_base_tiling.cpp:34-46`](https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn_common/op_host/arch35/mhc_sinkhorn_base_tiling.cpp)
+- 固定来源：[`mhc_sinkhorn_base_tiling.cpp:34-46`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_common/op_host/arch35/mhc_sinkhorn_base_tiling.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -756,7 +756,7 @@ Host 不仅按当前 forward Queue 估算 tile，还计算共享 backward 资源
 
 - 适用 Route：R-003。
 - 触发条件：Direct selector 固定 `OUT_FLAG=false`，对应官方 `TEMPLATE_MODE=0`。
-- 固定来源：[`mhc_sinkhorn_apt.cpp:31-40`](https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_kernel/mhc_sinkhorn_apt.cpp)
+- 固定来源：[`mhc_sinkhorn_apt.cpp:31-40`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn/op_kernel/mhc_sinkhorn_apt.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

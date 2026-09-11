@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Create knowledge cards and rebuild deterministic ingest-side artifacts."""
+"""Create governed knowledge cards and synchronize directory indexes."""
 
 from __future__ import annotations
 
 import argparse
 import importlib
 import importlib.util
-import json
 import os
+import subprocess
 import sys
 import tempfile
 from datetime import datetime, timezone
@@ -88,6 +88,17 @@ def utc_now() -> str:
         .isoformat()
         .replace("+00:00", "Z")
     )
+
+
+def graph_artifact_path(root: Path, relative: str) -> Path:
+    path = root / relative
+    if path.resolve() != path or not path.is_relative_to(root / "artifacts/graphs") or path == root / "artifacts/graphs":
+        raise ValueError("graph audit output must be a regular path under artifacts/graphs/")
+    if (root / ".git").exists():
+        result = subprocess.run(["git", "-C", str(root), "check-ignore", "--no-index", "--quiet", str(path)], check=False)
+        if result.returncode:
+            raise ValueError(f"graph audit output must be ignored: {path}")
+    return path
 
 
 def source_objects(urls: list[str]) -> list[dict[str, str]]:
@@ -216,69 +227,19 @@ def sync_indexes(args: argparse.Namespace) -> int:
     return 0
 
 
-def doc_id(root: Path, path: Path) -> str:
-    return path.relative_to(root / "knowledge").with_suffix("").as_posix()
-
-
-def graph_data(root: Path) -> tuple[list[dict[str, object]], list[dict[str, str]]]:
-    contract = load_contract(root)
-    module = contract_module()
-    knowledge_root = contract.root / "knowledge"
-    nodes: list[dict[str, object]] = []
-    edge_keys: set[tuple[str, str]] = set()
-    for path in sorted(knowledge_root.rglob("*.md")):
-        if path.name == "index.md":
-            continue
-        metadata, body = module.split_frontmatter(path.read_text(encoding="utf-8"))
-        if metadata is None:
-            raise ValueError(f"missing frontmatter: {path}")
-        issues = contract.validate_card(path.relative_to(contract.root), metadata, body)
-        if issues:
-            details = "; ".join(f"{issue.code}: {issue.message}" for issue in issues)
-            raise ValueError(f"invalid card {path}: {details}")
-        source_id = doc_id(contract.root, path)
-        nodes.append(
-            {
-                "id": source_id,
-                "type": metadata.get("type"),
-                "profile": contract.derive_card_path(
-                    path.relative_to(contract.root)
-                ).card_type,
-                "title": metadata.get("title"),
-                "status": metadata.get("status"),
-                "tags": metadata.get("tags", []),
-            }
-        )
-        for _, target in module.relative_markdown_links(path, knowledge_root):
-            try:
-                target.relative_to(knowledge_root)
-            except ValueError:
-                continue
-            if (
-                target.is_file()
-                and target.suffix == ".md"
-                and target.name != "index.md"
-            ):
-                edge_keys.add((source_id, doc_id(contract.root, target)))
-    edges = [
-        {"source": source, "relation": "links_to", "target": target}
-        for source, target in sorted(edge_keys)
-    ]
-    return nodes, edges
-
-
 def build_graph(args: argparse.Namespace) -> int:
+    """Keep the existing CI command wired to this Skill's graph builder."""
     root = resolve_root(args.knowledge_root)
-    nodes, edges = graph_data(root)
-    output = root / "artifacts/graphs/graph.json"
-    payload = {
-        "schema_version": 1,
-        "nodes": nodes,
-        "edges": edges,
-    }
-    atomic_write(output, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
-    print(f"output={output} nodes={len(nodes)} edges={len(edges)}")
-    return 0
+    return subprocess.run(
+        [
+            sys.executable,
+            str(Path(__file__).resolve().with_name("knowledge_graph.py")),
+            "--knowledge-root",
+            str(root),
+            "build",
+        ],
+        check=False,
+    ).returncode
 
 
 def parser() -> argparse.ArgumentParser:
@@ -317,7 +278,7 @@ def parser() -> argparse.ArgumentParser:
     indexes.set_defaults(handler=sync_indexes)
     graph = sub.add_parser(
         "build-graph",
-        help="rebuild the ignored graph from explicit knowledge links",
+        help="compatibility entry for the shared graph builder",
     )
     graph.set_defaults(handler=build_graph)
     return result

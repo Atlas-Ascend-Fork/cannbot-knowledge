@@ -5,24 +5,24 @@ description: "说明 aclnnExpandIntoJaggedPermute 在 A2/A3 上的接口语义�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/docs/aclnnExpandIntoJaggedPermute.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/docs/aclnnExpandIntoJaggedPermute.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_kernel/expand_into_jagged_permute.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_kernel/expand_into_jagged_permute.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_kernel/expand_into_jagged_permute.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_kernel/expand_into_jagged_permute.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T16:35:02Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -436,7 +436,7 @@ workspace_total(operator-owned) = 0；system workspace declaration = 16 MiB
 
 - 适用 Route：R-001、R-002。
 - 触发条件：任意 `L_i>0` 的输出段；每个 128 元素 tile 仅由满足 `taskidA % realCoreNum == blockIdx` 的核写回。
-- Golden 来源：[`op_kernel/expand_into_jagged_permute.h:193-213`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_kernel/expand_into_jagged_permute.h#L193-L213)
+- Golden 来源：[`op_kernel/expand_into_jagged_permute.h:193-213`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_kernel/expand_into_jagged_permute.h#L193-L213)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -476,7 +476,7 @@ for(int32_t taskid = 0; taskid < tasklen; taskid++){
 
 - 适用 Route：R-001（UB 驻留）和 R-002（GM 标量 fallback）。
 - 触发条件：`inputOffset.shape[0] <= 512` 选择 R-001，否则选择 R-002。
-- Golden 来源：[`op_host/expand_into_jagged_permute_tiling.cpp:118-126`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_tiling.cpp#L118-L126)
+- Golden 来源：[`op_host/expand_into_jagged_permute_tiling.cpp:118-126`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/expand_into_jagged_permute/op_host/expand_into_jagged_permute_tiling.cpp#L118-L126)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

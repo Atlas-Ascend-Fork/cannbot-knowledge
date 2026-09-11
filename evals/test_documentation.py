@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import importlib.util
 import re
@@ -20,6 +21,7 @@ import tempfile
 import unittest
 from argparse import ArgumentParser, _SubParsersAction
 from pathlib import Path
+from unittest import mock
 from urllib.parse import unquote
 
 import yaml
@@ -30,13 +32,14 @@ TAG_RE = re.compile(r"\b(?:task|topic|paradigm)(?:\.[a-z][a-z0-9_]*)+\b")
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from governance.contracts.knowledge import markdown_targets  # noqa: E402
+from governance.contracts.knowledge import Contract, markdown_targets  # noqa: E402
 
 
 class DocumentationContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.root = Path(__file__).resolve().parents[1]
+        cls.contract = Contract(cls.root)
         cls.registries = yaml.safe_load(
             (cls.root / "governance/schemas/registries.yaml").read_text(encoding="utf-8")
         )
@@ -77,6 +80,15 @@ class DocumentationContractTests(unittest.TestCase):
                 result.extend(path.rglob("*.md"))
         return sorted(result)
 
+    def is_fixed_archive_mirror(self, text: str) -> bool:
+        framing = re.match(r"\A---\n(?P<metadata>.*?)\n---\n", text, re.DOTALL)
+        if framing is None:
+            return False
+        metadata = yaml.safe_load(framing.group("metadata"))
+        if not isinstance(metadata, dict):
+            return False
+        return self.contract.fixed_archive_mirror(metadata) is not None
+
     def test_local_markdown_links_resolve(self) -> None:
         failures: list[str] = []
         for document in self.documentation_files():
@@ -106,7 +118,20 @@ class DocumentationContractTests(unittest.TestCase):
         recipe = (self.root / "recipes/api_search.md").read_text(encoding="utf-8")
         self.assertIn("--technology ascendc", recipe)
         self.assertIn("--type apis", recipe)
+        self.assertIn("--include-unlocated --status draft", recipe)
         self.assertNotIn("--scope", recipe)
+
+    def test_api_query_mode_requires_a_separate_unlocated_draft_fallback(self) -> None:
+        skill = (
+            self.root / ".agents/skills/knowledge-query/SKILL.md"
+        ).read_text(encoding="utf-8")
+        mode = (
+            self.root / ".agents/skills/knowledge-query/modes/api-selection/MODE.md"
+        ).read_text(encoding="utf-8")
+        for text in (skill, mode):
+            self.assertIn("--include-unlocated", text)
+            self.assertIn("--status draft", text)
+            self.assertIn("不能", text)
 
     def test_governance_specs_keep_five_focused_entries(self) -> None:
         expected = {"okf.md", "paths.md", "frontmatter.md", "schemas.md", "skills.md"}
@@ -190,9 +215,9 @@ class DocumentationContractTests(unittest.TestCase):
 
     def test_knowledge_cards_only_use_well_formed_managed_related_blocks(self) -> None:
         managed = re.compile(
-            r"(?ms)^<!-- cannbot:related:start -->\n"
+            r"(?ms)(?<=\n\n)^<!-- cannbot:related:start -->\n"
             r"## 相关\n.*?"
-            r"^<!-- cannbot:related:end -->\s*"
+            r"^<!-- cannbot:related:end -->(?:\n)?\Z"
         )
         failures: list[str] = []
         for card in sorted((self.root / "knowledge").rglob("*.md")):
@@ -206,6 +231,158 @@ class DocumentationContractTests(unittest.TestCase):
             if len(blocks) > 1 or marker_count != 2 * len(blocks):
                 failures.append(f"{card.relative_to(self.root)}: malformed managed block")
         self.assertEqual([], failures)
+
+    def test_fixed_archive_uses_indexes_as_its_only_navigation_documents(self) -> None:
+        mirror_roots = (
+            self.root / "knowledge/ops/ascendc/apis",
+            self.root / "knowledge/ops/ascendc/guides",
+        )
+        failures: list[str] = []
+        support_heading = re.compile(r"(?m)^#{1,6}\s+[^\n]*产品支持情况")
+        for base in mirror_roots:
+            for card in sorted(base.rglob("*.md")):
+                if card.name == "index.md":
+                    continue
+                text = card.read_text(encoding="utf-8")
+                if not self.is_fixed_archive_mirror(text):
+                    continue
+                if card.name.casefold() == "readme.md":
+                    failures.append(f"{card.relative_to(self.root)}: README card")
+                if "本文件为文档发布时所需的索引文件" in text:
+                    failures.append(f"{card.relative_to(self.root)}: publisher placeholder")
+                if support_heading.search(text):
+                    failures.append(f"{card.relative_to(self.root)}: product support section")
+        self.assertEqual([], failures)
+
+        api_root = self.root / "knowledge/ops/ascendc/apis"
+        absent_navigation = (
+            api_root / "readme.md",
+            api_root / "api_list.md",
+            api_root / "ai_cpu_api/ai_cpu_api_list.md",
+            api_root / "simd_api/adv_api/adv_api.md",
+            api_root / "simd_api/adv_api/adv_api_list.md",
+        )
+        retained_knowledge = (
+            api_root / "simd_api/basic_api/kernel_tiling/tiling_key_list.md",
+            api_root
+            / "utils_api/prototype_register_management/op_param_def/data_type_list.md",
+            api_root
+            / "simd_api/basic_api/data_move_guide/overview/overview.md",
+            api_root / "simd_api/c_api/c_api_reference.md",
+        )
+        self.assertTrue(all(not path.exists() for path in absent_navigation))
+        self.assertTrue(all(path.is_file() for path in retained_knowledge))
+
+    def body_invocation_pairs(self):
+        cached = getattr(type(self), "_body_invocation_pairs", None)
+        if cached is None:
+            module = self.load_module(
+                self.root / ".agents/skills/knowledge-ingest/scripts/api_operator_links.py",
+                "documentation_body_invocations",
+            )
+            with mock.patch.object(module, "source_inputs", return_value=[]):
+                items = module.invocations(self.root)[2]
+            cached = {(item.api.path, item.operator.path) for item in items}
+            type(self)._body_invocation_pairs = cached
+        return cached
+
+    def test_api_operator_invocation_navigation_examples_are_present(self) -> None:
+        cases = (
+            (
+                self.root
+                / "knowledge/ops/ascendc/apis/utils_api/tiling_template_programming/get_tpl_tiling_key.md",
+                "../../../operators/aclnn/cv/objdetect/roi_pooling_with_arg_max_950.md",
+            ),
+            (
+                self.root
+                / "knowledge/ops/ascendc/apis/simd_api/basic_api/kernel_tiling/tiling_key_is.md",
+                "../../../../operators/aclnn/transformer/moe/moe_token_permute_grad.md",
+            ),
+        )
+        for card, target in cases:
+            with self.subTest(card=card.relative_to(self.root)):
+                text = card.read_text(encoding="utf-8")
+                self.assertIn("<!-- cannbot:related:start -->", text)
+                # A valid body example may now be outside the source-first display cap.
+                self.assertIn((card, (card.parent / target).resolve()), self.body_invocation_pairs())
+                self.assertIn("源码中使用此 API 的算子（部分算子）", text)
+                automatic = text.split("<!-- cannbot:api-operator:start -->", 1)[1].split("<!-- cannbot:api-operator:end -->", 1)[0]
+                self.assertEqual(10, len(re.findall(r"(?m)^- \[", automatic)))
+
+    def test_api_operator_navigation_regressions(self) -> None:
+        api_root = self.root / "knowledge/ops/ascendc/apis"
+        positive_cases = (
+            (
+                api_root
+                / "simd_api/basic_api/data_structures/global_tensor/"
+                "set_global_buffer.md",
+                "../../../../../operators/aclnn/nn/matmul/"
+                "quant_batch_matmul_inplace_add_950.md",
+            ),
+            (
+                api_root
+                / "simd_api/adv_api/cube_compute/matmul_kernel/init.md",
+                "../../../../../operators/aclnn/nn/matmul/"
+                "sparse4to2_quant_matmul_weight_nz.md",
+            ),
+        )
+        for card, target in positive_cases:
+            with self.subTest(card=card.relative_to(self.root), target=target):
+                self.assertIn((card, (card.parent / target).resolve()), self.body_invocation_pairs())
+
+        negative_cases = (
+            (
+                api_root
+                / "simt_api/math_functions/float_math_functions/expf.md",
+                "foreach_expm1_950.md",
+            ),
+            (
+                api_root
+                / "simt_api/math_functions/float_math_functions/isfinite.md",
+                "hardsigmoid_backward_950.md",
+            ),
+            (
+                api_root
+                / "simt_api/math_functions/float_math_functions/isfinite.md",
+                "swiglu_group_quant_950.md",
+            ),
+            (
+                api_root
+                / "simt_api/math_functions/float_math_functions/isfinite.md",
+                "exp_950.md",
+            ),
+            (
+                api_root
+                / "simd_api/basic_api/reg_vector_compute/type_conversion/cast.md",
+                "logical_not_950.md",
+            ),
+            (
+                api_root
+                / "simd_api/basic_api/data_structures/global_tensor/"
+                "set_l2_cache_hint.md",
+                "mhc_post_950.md",
+            ),
+        )
+        for card, target in negative_cases:
+            with self.subTest(card=card.relative_to(self.root), target=target):
+                self.assertNotIn(target, card.read_text(encoding="utf-8"))
+                self.assertFalse(any(api == card and operator.name == target for api, operator in self.body_invocation_pairs()))
+
+    def test_generic_guides_do_not_inherit_subsection_platform_limits(self) -> None:
+        paths = (
+            "knowledge/ops/ascendc/guides/getting_started/quick_start/"
+            "heterogeneous_system_and_programming_model.md",
+            "knowledge/ops/ascendc/guides/programming_guide/programming_model/"
+            "programming_model_overview.md",
+            "knowledge/ops/ascendc/guides/programming_guide/advanced_programming/"
+            "hardware_implementation/basic_architecture.md",
+        )
+        for relative in paths:
+            with self.subTest(card=relative):
+                text = (self.root / relative).read_text(encoding="utf-8")
+                metadata = yaml.safe_load(text.split("---", 2)[1])
+                self.assertEqual("draft", metadata["status"])
+                self.assertEqual([], metadata["platforms"])
 
     def test_ascendc_runbooks_do_not_use_legacy_or_unmanaged_related_sections(self) -> None:
         managed = re.compile(
@@ -288,6 +465,7 @@ class DocumentationContractTests(unittest.TestCase):
             "knowledge-ingest",
             "knowledge-query",
             "knowledge-lint",
+            "ascendc-api-knowledge-query",
             "ops-knowledge-trace-ingest",
             "ops-knowledge-vv-ingest",
             "ops-knowledge-cv-ingest",
@@ -304,6 +482,7 @@ class DocumentationContractTests(unittest.TestCase):
         ):
             text = (self.root / relative).read_text(encoding="utf-8")
             self.assertIn("ops-knowledge-trace-ingest", text, relative)
+            self.assertIn("ascendc-api-knowledge-query", text, relative)
         skills_spec = (self.root / "governance/specs/skills.md").read_text(encoding="utf-8")
         self.assertIn("仓内 trace producer", skills_spec)
 
@@ -375,7 +554,9 @@ class DocumentationContractTests(unittest.TestCase):
     def test_markdown_structure(self) -> None:
         failures: list[str] = []
         for document in self.documentation_files():
-            lines = document.read_text(encoding="utf-8").splitlines()
+            text = document.read_text(encoding="utf-8")
+            lines = text.splitlines()
+            fixed_archive_mirror = self.is_fixed_archive_mirror(text)
             content_start = 0
             if lines and lines[0] == "---":
                 try:
@@ -386,9 +567,26 @@ class DocumentationContractTests(unittest.TestCase):
             first = next((line for line in lines[content_start:] if line.strip()), "")
             if not first.startswith("# "):
                 failures.append(f"{document.relative_to(self.root)}: first content heading is not H1")
-            if sum(line.startswith("```") for line in lines) % 2:
+            if (
+                sum(line.startswith("```") for line in lines) % 2
+                and not fixed_archive_mirror
+            ):
                 failures.append(f"{document.relative_to(self.root)}: unbalanced fenced code blocks")
-            if any(line != line.rstrip() for line in lines):
+            whitespace_lines = lines
+            if fixed_archive_mirror:
+                marker = next(
+                    (
+                        index
+                        for index, line in enumerate(lines)
+                        if line == "<!-- cannbot:related:start -->"
+                    ),
+                    len(lines),
+                )
+                # Source-authored body bytes are guarded by fixed_archive_docs.py.
+                # Keep the generic hygiene check on generated Frontmatter and the
+                # managed relation envelope instead of exempting the whole card.
+                whitespace_lines = lines[:content_start] + lines[marker:]
+            if any(line != line.rstrip() for line in whitespace_lines):
                 failures.append(f"{document.relative_to(self.root)}: trailing whitespace")
         self.assertEqual([], failures)
 
@@ -412,6 +610,9 @@ class DocumentationContractTests(unittest.TestCase):
         forbidden = ("NPU-Kernel-Wiki", "NPU Kernel Wiki", "迁移 pilot", "首批迁移", "旧仓")
         failures: list[str] = []
         for document in self.external_documentation_files():
+            # Logs preserve actual source/audit history, not repository positioning.
+            if document.is_relative_to(self.root / "logs"):
+                continue
             text = document.read_text(encoding="utf-8")
             for token in forbidden:
                 if token in text:
@@ -419,7 +620,7 @@ class DocumentationContractTests(unittest.TestCase):
         self.assertEqual([], failures)
 
     def test_local_source_fetch_uses_fixed_archive_and_is_ignored(self) -> None:
-        script = (self.root / "fetch-cann-docs.sh").read_text(encoding="utf-8")
+        script = (self.root / "get_resources.sh").read_text(encoding="utf-8")
         ignored = (self.root / ".gitignore").read_text(encoding="utf-8").splitlines()
         self.assertIn("cann-docs-raw/", ignored)
         self.assertIn('${BASH_SOURCE[0]}', script)
@@ -427,18 +628,25 @@ class DocumentationContractTests(unittest.TestCase):
         self.assertIn("EXPECTED_SHA256=", script)
         self.assertIn('sha256sum "$TMP_TAR"', script)
         self.assertIn('archive_sha256=$EXPECTED_SHA256', script)
+        self.assertIn("repair_published_code_links", script)
+        self.assertIn("repair_fixed_archive.py", script)
         self.assertIn("Refusing to overwrite incomplete source directory", script)
 
     def test_local_source_fetch_reuses_only_matching_archive_marker(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            shutil.copy2(self.root / "fetch-cann-docs.sh", root / "fetch-cann-docs.sh")
+            shutil.copy2(self.root / "get_resources.sh", root / "get_resources.sh")
             source = root / "cann-docs-raw/docs/example.md"
             source.parent.mkdir(parents=True)
             source.write_text("fixed source\n", encoding="utf-8")
             archive_sha256 = "9bc4341ac90740121a20b0ab9d30c6020784bd5969a119e77ab9402a4e6b68c4"
+            tree_digest = hashlib.sha256()
+            tree_digest.update(b"docs/example.md\0")
+            tree_digest.update(hashlib.sha256(b"fixed source\n").digest())
+            tree_digest.update(b"\0")
+            tree_sha256 = tree_digest.hexdigest()
             (source.parents[1] / ".complete").write_text(
-                f"archive_sha256={archive_sha256}\n",
+                f"archive_sha256={archive_sha256}\ntree_sha256={tree_sha256}\n",
                 encoding="utf-8",
             )
             registries = root / "governance/schemas/registries.yaml"
@@ -446,12 +654,13 @@ class DocumentationContractTests(unittest.TestCase):
             registries.write_text(
                 "local_sources:\n"
                 "  cann_docs_raw:\n"
-                f"    archive_sha256: {archive_sha256}\n",
+                f"    archive_sha256: {archive_sha256}\n"
+                f"    tree_sha256: {tree_sha256}\n",
                 encoding="utf-8",
             )
 
             verified = subprocess.run(
-                ["bash", str(root / "fetch-cann-docs.sh")],
+                ["bash", str(root / "get_resources.sh"), "--docs"],
                 check=False,
                 text=True,
                 capture_output=True,
@@ -459,13 +668,25 @@ class DocumentationContractTests(unittest.TestCase):
             self.assertEqual(0, verified.returncode, verified.stderr)
             marker = (root / "cann-docs-raw/.complete").read_text(encoding="utf-8")
             self.assertIn("archive_sha256=", marker)
+            self.assertIn("tree_sha256=", marker)
+
+            source.write_text("locally changed source\n", encoding="utf-8")
+            mutated = subprocess.run(
+                ["bash", str(root / "get_resources.sh"), "--docs"],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertNotEqual(0, mutated.returncode)
+            self.assertIn("Extracted tree SHA-256 mismatch", mutated.stderr)
+            source.write_text("fixed source\n", encoding="utf-8")
 
             (root / "cann-docs-raw/.complete").write_text(
                 "archive_sha256=" + "0" * 64 + "\n",
                 encoding="utf-8",
             )
             mismatched = subprocess.run(
-                ["bash", str(root / "fetch-cann-docs.sh")],
+                ["bash", str(root / "get_resources.sh"), "--docs"],
                 check=False,
                 text=True,
                 capture_output=True,
@@ -495,7 +716,8 @@ class DocumentationContractTests(unittest.TestCase):
         self.assertIn("固定归档批次不生成 inventory、ledger 或 verification receipt", onboarding)
         self.assertIn("固定归档批次不生成 inventory、ledger 或 verification receipt", reference)
         self.assertIn("固定归档不走本流程", incremental)
-        self.assertIn("固定归档的 archive SHA-256 切换当前尚未实现", version)
+        self.assertIn("固定归档的 archive SHA-256 推进", version)
+        self.assertIn("固定归档升级先保留旧摘要", version)
         self.assertIn("固定归档批次以 Registry 中的 archive SHA-256 固定来源", spec)
 
     def test_documented_tags_are_registered(self) -> None:
@@ -620,6 +842,14 @@ class DocumentationContractTests(unittest.TestCase):
                         self.root / ".agents/skills/knowledge-ingest/scripts/reference_inventory.py",
                         "parser",
                     ),
+                    (
+                        self.root / ".agents/skills/knowledge-ingest/scripts/fixed_archive_docs.py",
+                        "parser",
+                    ),
+                    (
+                        self.root / ".agents/skills/knowledge-ingest/scripts/api_operator_links.py",
+                        "parser",
+                    ),
                 ),
                 self.root / ".agents/skills/knowledge-ingest",
             ),
@@ -644,6 +874,20 @@ class DocumentationContractTests(unittest.TestCase):
                     ),
                 ),
                 self.root / ".agents/skills/knowledge-query",
+            ),
+            (
+                "ascendc_api",
+                (
+                    (
+                        self.root / ".agents/skills/knowledge-query/scripts/knowledge_query.py",
+                        "build_parser",
+                    ),
+                    (
+                        self.root / ".agents/skills/ascendc-api-knowledge-query/scripts/resolve_resources.py",
+                        "build_parser",
+                    ),
+                ),
+                self.root / ".agents/skills/ascendc-api-knowledge-query",
             ),
             (
                 "lint",

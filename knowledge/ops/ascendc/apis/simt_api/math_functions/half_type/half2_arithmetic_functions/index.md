@@ -9,4 +9,3 @@
 - [__hmulx2](_hmulx2.md)：计算两个half2类型数据各分量的相乘结果，并遵循CAST_RINT模式对结果进行舍入。
 - [__hnegx2](_hnegx2.md)：获取输入half2类型数据各分量的负值。
 - [__hsubx2](_hsubx2.md)：计算两个half2类型数据各分量的相减结果，并遵循CAST_RINT模式对结果进行舍入。
-- [half2类型算术函数](half2_arithmetic_functions.md)：提供half2类型数据的加减乘除、绝对值、取负、乘加及ReLU等算术运算函数列表。

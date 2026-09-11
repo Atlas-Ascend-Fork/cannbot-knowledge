@@ -2,29 +2,108 @@
 type: API
 title: GetReduceSumMaxMinTmpSize
 description: 在host侧获取ReduceSum接口所需的最大和最小临时空间大小，当前最大值等于最小值，供开发者选择Tiling参数。
-tags: [task.lookup, topic.implementation.api_layer.high_level_api, topic.compute.reduction]
-status: stable
+tags:
+- task.lookup
+- topic.implementation.api_layer.high_level_api
+- topic.compute.reduction
+status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/reduction_operations/ReduceSum_interface/GetReduceSumMaxMinTmpSize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-04T01:25:11Z'
+platforms: []
+source_headers:
+- include/adv_api/reduce/reduce_tiling.h
 ---
-
 
 # GetReduceSumMaxMinTmpSize
 
-host侧Tiling接口，用于获取ReduceSum接口所需的最大和最小临时空间大小，开发者据此选择合适的Tiling参数传入kernel侧。
+## 功能说明
 
-函数原型：void GetReduceSumMaxMinTmpSize(const AscendC::TensorShape& srcShape, const uint32_t typeSize, const bool isReuseSource, uint32_t& maxValue, uint32_t& minValue)
+kernel侧ReduceSum接口的计算需要开发者预留/申请临时空间，本接口用于在host侧获取预留/申请的最大最小临时空间大小，开发者基于此范围选择合适的空间大小作为Tiling参数传递到kernel侧使用。
 
-参数：srcShape为输入shape；typeSize为数据类型字节数（half传2）；isReuseSource与ReduceSum接口保持一致；maxValue输出最大临时空间大小（超出不被使用，为0表示无需临时空间，可能大于Unified Buffer剩余空间）；minValue输出最小临时空间大小（实际预留不能小于该值，为0表示无需临时空间）。
+-   为保证功能正确，预留/申请的临时空间大小不能小于最小临时空间大小。
+-   在最小临时空间-最大临时空间范围内，随着临时空间增大，kernel侧接口计算性能会有一定程度的优化提升。为了达到更好的性能，开发者可以根据实际的内存使用情况进行空间预留/申请。该接口**最大临时空间当前等于最小临时空间**。
 
-在minValue到maxValue范围内，临时空间越大性能越好。约束：无。
+## 函数原型
+
+```
+void GetReduceSumMaxMinTmpSize(const AscendC::TensorShape& srcShape, const AscendC::TensorDataType dataType, ReducePattern pattern, bool isSrcInnerPad, bool isReuseSource, uint32_t& maxValue, uint32_t& minValue)
+```
+
+## 参数说明
+
+**表1**  接口参数列表
+
+| 参数名 | 输入/输出 | 功能 |
+| --- | --- | --- |
+| srcShape | 输入 | 输入的shape信息，参数类型为[AscendC::TensorShape](../../data_structures/tensor_shape.md)，参数取值与ReduceSum接口的srcShape参数保持一致。 |
+| dataType | 输入 | 输入的数据类型，参数类型为[AscendC::TensorDataType](../../data_structures/tensor_data_type.md)，当前支持的数据类型与ReduceSum接口的模板参数T保持一致。 |
+| pattern | 输入 | 用于指定ReduceSum的计算轴。ReducePattern类型，该类型的定义如下代码所示，包括Reduce轴和Normal轴。pattern由与输入向量维度数量相同的A、R字母组合形成，字母A表示Normal轴，R表示Reduce轴。该参数的取值与ReduceSum接口的pattern参数保持一致，当前只支持取值为AscendC::ReducePattern::AR，AscendC::ReducePattern::RA。 |
+| isSrcInnerPad | 输入 | 表示实际需要计算的最内层轴数据是否32Bytes对齐，参数取值与ReduceSum接口的isSrcInnerPad参数保持一致。 |
+| isReuseSource | 输入 | 是否复用源操作数输入的空间，参数取值与ReduceSum接口的isReuseSource参数保持一致。 |
+| maxValue | 输出 | ReduceSum接口能完成计算所需最大临时空间大小，超出该值的空间不会被该接口使用。<br> 说明： <br>maxValue仅作为参考值，有可能大于UB剩余空间的大小，该场景下，开发者需要根据UB剩余空间的大小来选取合适的临时空间大小。 |
+| minValue | 输出 | ReduceSum接口能完成计算所需最小临时空间大小。为保证功能正确，接口计算时预留/申请的临时空间不能小于该数值。 |
+
+```
+enum class ReducePattern : uint32_t {
+    AR = 0,
+    RA = 1,
+    R,
+    ARA,
+    ARAR,
+    ARARA,
+    ARARAR,
+    ARARARA,
+    ARARARAR,
+    ARARARARA,
+    RAR,
+    RARA,
+    RARAR,
+    RARARA,
+    RARARAR,
+    RARARARA,
+};
+```
+
+## 返回值说明
+
+无
+
+## 约束说明
+
+无
+
+## 调用示例
+
+完整的调用样例请参考[更多样例](../../math_compute/more_examples.md)。
+
+```
+// 输入shape信息为1024;算子输入的数据类型为float;不允许修改源操作数
+auto shape = AscendC::TensorShape({16, 32});
+uint32_t maxValue = 0;
+uint32_t minValue = 0;
+bool isSrcInnerPad = true;
+bool isReuseSource = false;
+AscendC::GetReduceSumMaxMinTmpSize(
+    shape, AscendC::TensorDataType::DT_FLOAT, AscendC::ReducePattern::AR, isSrcInnerPad, isReuseSource, maxValue, minValue);
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
 - [ReduceSum](reduce_sum.md)（`related`）：host侧Tiling接口，用于获取ReduceSum接口所需的最大和最小临时空间大小；临时空间大小通过GetReduceSumMaxMinTmpSize获取。。左卡按 ReduceSum 的 shape、dtype 与复用配置返回缓冲范围，右卡明确使用该结果为 sharedTmpBuffer 定容；两端衔接 Host 空间规划与 AR/RA 归约执行。
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [ExpSegsumBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/math/exp_segsum_backward.md)（`related`）：算子声明的固定版本源码包含对 `GetReduceSumMaxMinTmpSize(...)` 的直接调用（第 119 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/exp_segsum_grad_tiling.cpp#L119)
+- [CrossEntropyLoss 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/loss/cross_entropy_loss_950.md)（`related`）：算子声明的固定版本源码包含对 `GetReduceSumMaxMinTmpSize(...)` 的直接调用（第 216 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_host/cross_entropy_loss_tiling_arch35.cpp#L216)
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

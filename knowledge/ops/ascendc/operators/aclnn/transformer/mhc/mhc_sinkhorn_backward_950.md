@@ -5,42 +5,42 @@ description: "说明 aclnnMhcSinkhornBackward 在 950 上的接口语义、Host/
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/op_api/aclnn_mhc_sinkhorn_backward.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/op_api/aclnn_mhc_sinkhorn_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/docs/aclnnMhcSinkhornBackward.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/docs/aclnnMhcSinkhornBackward.md
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/op_api/aclnn_mhc_sinkhorn_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/op_api/aclnn_mhc_sinkhorn_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/op_api/mhc_sinkhorn_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/op_api/mhc_sinkhorn_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/mhc_sinkhorn_backward_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/mhc_sinkhorn_backward_def.cpp
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/mhc_sinkhorn_backward_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/mhc_sinkhorn_backward_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/mhc_sinkhorn_backward_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/mhc_sinkhorn_backward_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_common/op_host/arch35/mhc_sinkhorn_base_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_common/op_host/arch35/mhc_sinkhorn_base_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_tiling_data.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_tiling_key.h
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/mhc_sinkhorn_backward_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/mhc_sinkhorn_backward_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_simd.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_simd.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/config/ascend950/mhc_sinkhorn_backward.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/config/ascend950/mhc_sinkhorn_backward.json
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/config/ascend950/mhc_sinkhorn_backward_simplified_key.ini
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_host/config/ascend950/mhc_sinkhorn_backward_simplified_key.ini
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend950/ops_transformer_operator_list.yaml
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend950/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T17:25:07Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -323,7 +323,7 @@ workspace_total(op) = 0 B；executor 的框架 workspace 分项不可见
 
 - 适用 Route：R-001。
 - 触发条件：一个 core-local tile 的普通列/行阶段完成、最终 softmax 尚未执行。
-- Golden 来源：[`mhc_sinkhorn_backward_simd.h:395-412`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_simd.h#L395-L412)
+- Golden 来源：[`mhc_sinkhorn_backward_simd.h:395-412`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_simd.h#L395-L412)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -369,7 +369,7 @@ gradY 每 tile 只从 GM 搬一次。列/行 body 将新 G scatter 回同一 Loc
 
 - 适用 Route：R-001。
 - 触发条件：row phase 且 `perloopSize % 8 != 0`。
-- Golden 来源：[`mhc_sinkhorn_backward_simd.h:321-330`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_simd.h#L321-L330)
+- Golden 来源：[`mhc_sinkhorn_backward_simd.h:321-330`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_sinkhorn_backward/op_kernel/arch35/mhc_sinkhorn_backward_simd.h#L321-L330)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

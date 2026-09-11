@@ -5,28 +5,28 @@ description: "说明 aclnnGeluMul 在 A2/A3 上的接口语义、Host/Launcher �
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/docs/aclnnGeluMul.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/docs/aclnnGeluMul.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/gelu_mul_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/gelu_mul_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/gelu_mul_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/gelu_mul_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/gelu_mul_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/gelu_mul_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/gelu_mul_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/gelu_mul_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_kernel/gelu_mul.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_kernel/gelu_mul.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_kernel/gelu_mul.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_kernel/gelu_mul.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/config/ascend910b/gelu_mul_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/config/ascend910b/gelu_mul_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/config/ascend910_93/gelu_mul_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/config/ascend910_93/gelu_mul_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T14:59:51Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -600,7 +600,7 @@ UB_total=196608 B; dynamic_ub=N/A; workspace=16 MiB declared/0 B consumed
 
 - 适用 Route：R-001～R-006
 - 触发条件：`approximate==none/tanh`
-- Golden 来源：[`op_host/gelu_mul_tiling.cpp:115-125`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/gelu_mul_tiling.cpp#L115-L125)
+- Golden 来源：[`op_host/gelu_mul_tiling.cpp:115-125`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_host/gelu_mul_tiling.cpp#L115-L125)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -635,7 +635,7 @@ ERF 每 bank 需要 x1/x2/temp/xSquared 四个 FP32 区，tanh 只需前三个�
 
 - 适用 Route：R-001/R-003/R-004/R-006
 - 触发条件：`T` 为 half 或 bfloat16_t
-- Golden 来源：[`op_kernel/gelu_mul.h:180-190`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_kernel/gelu_mul.h#L180-L190)
+- Golden 来源：[`op_kernel/gelu_mul.h:180-190`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_mul/op_kernel/gelu_mul.h#L180-L190)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

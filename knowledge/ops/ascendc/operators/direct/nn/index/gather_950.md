@@ -5,22 +5,22 @@ description: "说明 cann_bench::gather、gather_npu 与 launch_gather 在 950 �
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/README.md"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/README.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_host/gather_elements_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_host/gather_elements_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_host/arch35/gather_elements_tiling_arch35.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_host/arch35/gather_elements_tiling_arch35.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_kernel/gather_elements_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_kernel/gather_elements_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_kernel/arch35/gather_elements.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_kernel/arch35/gather_elements.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_kernel/arch35/gather_elements_full_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_kernel/arch35/gather_elements_full_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_host/config/ascend950/gather_elements_binary.json"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_host/config/ascend950/gather_elements_binary.json"
     role: implementation
 created_at: "2026-08-24T19:32:06Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -83,7 +83,7 @@ y[p]   = x[src(p)]
 
 ### 入口与版本
 
-Python 入口只转发注册算子；Meta/PrivateUse1 分派分别绑定 `gather_meta/gather_npu`。本卡固定 CANN 9.1.0、950/Ascend 950，不把它补写成 ACLNN。Direct README 明列 Ascend 950，CMake 将 `ascend950` 映射为 `dav-3510`。官方 Commit `ceb4536a2bd6fc99b85aec9d0fdcc0f470376292` 的 `index/gather_elements` 仅是算法与 950 binary 配置的相关映射；Direct wrapper、补充 selector 与 key244 图以本卡闭合的 Direct 源码为事实边界，不伪称官方入口。
+Python 入口只转发注册算子；Meta/PrivateUse1 分派分别绑定 `gather_meta/gather_npu`。本卡固定 CANN 9.1.0、950/Ascend 950，不把它补写成 ACLNN。Direct README 明列 Ascend 950，CMake 将 `ascend950` 映射为 `dav-3510`。官方 Commit `955f8b33985b6d72989ebff341bb9c2c564a51bc` 的 `index/gather_elements` 仅是算法与 950 binary 配置的相关映射；Direct wrapper、补充 selector 与 key244 图以本卡闭合的 Direct 源码为事实边界，不伪称官方入口。
 
 ## Host/Launcher 执行流程
 
@@ -830,7 +830,7 @@ N/A：线程直接访问 GM。
 
 - 适用 Route：R-001、R-002。
 - 触发条件：完整 full-load guard 且 key1210/1320。
-- 相关官方源码：[`index/gather_elements/op_kernel/arch35/gather_elements_full_load.h:74-76`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_kernel/arch35/gather_elements_full_load.h#L74-L76)
+- 相关官方源码：[`index/gather_elements/op_kernel/arch35/gather_elements_full_load.h:74-76`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_kernel/arch35/gather_elements_full_load.h#L74-L76)
 
 **官方相关映射源码（固定 Commit；Direct 路线选择以本卡闭合源码为准）**：
 
@@ -861,7 +861,7 @@ Host 若生成非1210/1320的 full-load key，Direct router 会抛 `Unexpected G
 
 - 适用 Route：R-003。
 - 触发条件：R-003 的完整规模、dtype、uint32、三次CUT_TWICE与UB guard。
-- 官方相关映射：[`index/gather_elements/op_kernel/arch35/gather_elements_full_load.h:144-163`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_kernel/arch35/gather_elements_full_load.h#L144-L163)
+- 官方相关映射：[`index/gather_elements/op_kernel/arch35/gather_elements_full_load.h:144-163`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/gather_elements/op_kernel/arch35/gather_elements_full_load.h#L144-L163)
 
 **官方相关映射源码（固定 Commit；四节点组合是本卡闭合的 Direct 实现事实）**：
 

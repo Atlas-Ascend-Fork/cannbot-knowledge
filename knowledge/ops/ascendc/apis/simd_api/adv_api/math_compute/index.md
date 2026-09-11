@@ -12,7 +12,7 @@
 - [BitwiseOr接口](bitwise_or_interface/index.md)：逐比特对两个输入进行或操作。 !
 - [BitwiseXor接口](bitwise_xor_interface/index.md)：逐比特对两个输入进行异或操作。 !
 - [Ceil接口](ceil_interface/index.md)：获取大于或等于输入值的最小整数，即向正无穷方向取整
-- [Clamp接口](clamp_interface/index.md)：将输入中除nan值以外大于max的数替换为max，小于min的数替换为min，小于等于max和大于等于min的数保持不变，作为输出。当min大于max时，将除nan值外所有值替换为max。min和max可以为标量或LocalTenso...
+- [Clamp接口](clamp_interface/index.md)：将输入中除nan值以外大于max的数替换为max，小于min的数替换为min，小于等于max和大于等于min的数保持不变，作为输出。当min大于max时，将除nan值外所有值替换为max。min和max可以为标量或LocalTensor。 ! !
 - [Cos接口](cos_interface/index.md)：按元素做余弦运算，支持多项式逼近和周期约减两种算法配置
 - [Cosh接口](cosh_interface/index.md)：按元素做双曲余弦函数计算
 - [CumSum接口](cum_sum_interface/index.md)：对输入二维张量按行或列进行累加和操作，输出每个位置及之前所有行或列元素的累加结果，支持逐行和Sklansky二分两种算法。
@@ -25,7 +25,7 @@
 - [Fmod接口](fmod_interface/index.md)：按元素计算两个浮点数相除后的余数，Trunc为向零取整
 - [Frac接口](frac_interface/index.md)：按元素做取小数计算，返回输入数据的小数部分，支持half和float数据类型。
 - [Hypot接口](hypot_interface/index.md)：在host侧获取Hypot接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
-- [IsFinite](is_finite_interface/index.md)：按元素判断输入浮点数是否非NAN、非±INF，输出结果为浮点数或布尔值，支持half、bfloat16_t、float数据类型。
+- [IsFinite接口](is_finite_interface/index.md)：按元素判断输入浮点数是否非NAN、非±INF，输出结果为浮点数或布尔值，支持half、bfloat16_t、float数据类型。
 - [IsInf接口](is_inf_interface/index.md)：在host侧获取IsInf接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
 - [IsNan接口](is_nan_interface/index.md)：在host侧获取IsNan接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
 - [Lgamma接口](lgamma_interface/index.md)：在host侧获取Lgamma接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
@@ -36,7 +36,6 @@
 - [LogicalOr接口](logical_or_interface/index.md)：在host侧获取LogicalOr接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。
 - [LogicalOrs接口](logical_ors_interface/index.md)：在host侧获取LogicalOrs接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
 - [LogicalXor接口](logical_xor_interface/index.md)：在host侧获取LogicalXor接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。
-- [数学计算](math_compute.md)：AscendC SIMD高级数学计算接口导航页，涵盖三角函数、指数对数、取整、逻辑运算等按元素计算接口。
 - [更多样例（数学计算）](more_examples.md)：下面的样例展示了数学库kernel侧API和Tiling API GetXxxMaxMinTmpSize的配套使用方法，具体流程如下：
 - [Power接口](power_interface/index.md)：在host侧获取Power接口所需的最大和最小临时空间大小，根据输入shape自动适配不同Power调用形式。
 - [Rint接口](rint_interface/index.md)：在host侧获取Rint接口预留或申请临时空间的最大和最小值，用于Tiling参数传递

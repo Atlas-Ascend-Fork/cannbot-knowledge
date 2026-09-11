@@ -5,25 +5,25 @@ description: "说明 aclnnMaskedScale 在 950 上的接口语义、Host/Launcher
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/docs/aclnnMaskedScale.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/docs/aclnnMaskedScale.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_api/aclnn_masked_scale.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_api/aclnn_masked_scale.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_api/masked_scale.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_api/masked_scale.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_host/arch35/masked_scale_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_host/arch35/masked_scale_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_tiling_struct.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_tiling_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_dag.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/masked_scale_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/masked_scale_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_host/masked_scale_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_host/masked_scale_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_host/config/ascend950/masked_scale_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_host/config/ascend950/masked_scale_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/CMakeLists.txt
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/elewise/elewise_base_struct.h
     role: implementation
@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/src/op_common/atvoss/elewise/elewise_tiling.cpp
     role: implementation
 created_at: "2026-08-25T11:33:42Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -655,7 +655,7 @@ UB_total=28u<=U; dynamic_ub=N/A; core workspace reserve=16MiB
 
 - 适用 Route：R-001～R-006。
 - 触发条件：8-bit mask用 `MaskedScaleMaskCastTwo`；F16/F32 mask用 `MaskedScaleMaskCastOne`；其中源目标同 dtype 的 Cast由 `DAGSch` 的 CastNoOp分析删除。
-- Golden 来源：[`math/masked_scale/op_kernel/arch35/masked_scale_dag.h:25-55`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_dag.h#L25-L55)
+- Golden 来源：[`math/masked_scale/op_kernel/arch35/masked_scale_dag.h:25-55`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_dag.h#L25-L55)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -781,9 +781,3 @@ Host用 `U/(B*4)` 计算tile，Device用完全相同的乘积一次分配pool；
 | 同步 | MTE2/V/MTE3 mutex + tile parity | buffer id/liveness与DAG一致 | `GetTensor/ReleaseTensor`; `GetBufferIds` |
 | 精度与尾块 | 8bit→half→float；FP32数学；RINT输出；tail len | 不更改Cast顺序/round mode/有效len | `MaskedScaleMaskCastOne/Two`; `Process` |
 | 失败边界 | empty无Kernel；dtype/key/UB失败；entry null无写出 | 不把未知key当fallback | `CheckParams`; `Tiling4DoTilingDag`; `masked_scale` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [MaskedScale 950 Direct Invoke 算子知识](../../../direct/math/math/masked_scale_950.md)（`same_topic`）：固定仓只公开 `aclnnMaskedScale` 两段式版本。；本文入口是转换交付件中的 Direct Invoke，而不是官方 ACLNN 两段式接口。；两张卡围绕同一 MaskedScale 逐元素乘缩放语义，分别闭合官方 ACLNN executor 路线和转换件 Direct launch 路线，可对照接口约束、dtype 扩展、精度与资源差异。
-<!-- cannbot:related:end -->

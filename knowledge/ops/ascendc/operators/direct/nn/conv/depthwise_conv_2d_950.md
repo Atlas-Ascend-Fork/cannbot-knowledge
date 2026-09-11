@@ -5,26 +5,26 @@ description: "说明 cann_bench::depthwise_conv_2d 在 950 上的接口语义、
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/op_host/config/ascend950/conv2d_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/op_host/config/ascend950/conv2d_v2_binary.json
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/op_kernel/conv2d_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/op_kernel/conv2d_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/op_kernel/arch35/conv2d_v2_group.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/op_kernel/arch35/conv2d_v2_group.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/avg_pool_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/avg_pool_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel_pad.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_host/config/ascend950/avg_pool.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_host/config/ascend950/avg_pool.json
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:32:50Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -1104,7 +1104,7 @@ UB_total=0 explicit bytes; dynamic_ub=0; workspace_total=0
 
 - 适用 Route：R-010；R-008/R-009 继承相同的 block/thread 基础。
 - 触发条件：复杂 Vector/plane4 predicate 均不成立，或进入 plane4 的 SIMT 路线。
-- 固定官方源码依据：[`pooling/avg_pool/op_kernel/arch35/avg_pool_simt.h:133-145`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_simt.h#L133-L145)
+- 固定官方源码依据：[`pooling/avg_pool/op_kernel/arch35/avg_pool_simt.h:133-145`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_simt.h#L133-L145)
 
 **官方源码节选（固定 Commit；省略号表示未展示的前后文）**：
 
@@ -1136,7 +1136,7 @@ for (DIV_T i = blockIdx.x * blockDim.x + threadIdx.x; i < outSize;
 
 - 适用 Route：R-006、R-007。
 - 触发条件：Host 命中 FP16 K3 非 strideW1 大 plane，或 FP32 K5 stride2 大 plane。
-- 固定官方源码依据：[`pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel.h:289-303`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel.h#L289-L303)
+- 固定官方源码依据：[`pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel.h:289-303`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel.h#L289-L303)
 
 **官方源码节选（固定 Commit；省略号表示后续分支未展示）**：
 
@@ -1169,7 +1169,7 @@ if constexpr (GATHER_MODE == GATHER_SINGLE_ROW) {
 
 - 适用 Route：R-001～R-005，尤其 R-001～R-003。
 - 触发条件：K3/K5 inner selector 命中；否则使用 queue+acc+term 的通用布局。
-- 固定官方源码依据：[`pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel_pad.h:103-109`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel_pad.h#L103-L109)
+- 固定官方源码依据：[`pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel_pad.h:103-109`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool/op_kernel/arch35/avg_pool_nchw_small_kernel_pad.h#L103-L109)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

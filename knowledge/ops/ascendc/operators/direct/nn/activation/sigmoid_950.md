@@ -5,28 +5,28 @@ description: "说明 cann_bench::sigmoid、sigmoid_npu 与 launch_sigmoid_kernel
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_host/sigmoid_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_host/sigmoid_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_host/config/ascend950/sigmoid_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_host/config/ascend950/sigmoid_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_host/arch35/sigmoid_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_host/arch35/sigmoid_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_host/arch35/sigmoid_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_host/arch35/sigmoid_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/sigmoid_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/sigmoid_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f16.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_bf16.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_bf16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f32.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f32.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:28:52Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -488,7 +488,7 @@ workspace_total = 0
 
 - 适用 Route：P0 R-002。
 - 触发条件：FP16 或 BF16；VF 每轮以 `UpdateMask<float>` 处理最多 64 个有效 lane。
-- 固定官方源码依据：[`activation/sigmoid/op_kernel/arch35/sigmoid_f16.h:94-99`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f16.h)
+- 固定官方源码依据：[`activation/sigmoid/op_kernel/arch35/sigmoid_f16.h:94-99`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f16.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -521,7 +521,7 @@ AscendC::MicroAPI::Cast<half, float, castTrait1>(vreg7, vreg6, preg0);
 
 - 适用 Route：P0 R-002、P1 R-001；`loopNum>=2` 时能够交叠不同 tile，`loopNum==1` 时仍按同一同步协议正确退化。
 - 触发条件：Host 保证 `4*T*s<=U`，Device 以 tile parity 绑定 `EVENT_ID0/1`。
-- 固定官方源码依据：[`activation/sigmoid/op_kernel/arch35/sigmoid_f16.h:39-42`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f16.h)
+- 固定官方源码依据：[`activation/sigmoid/op_kernel/arch35/sigmoid_f16.h:39-42`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f16.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -609,7 +609,6 @@ pipePtr_->InitBuffer(queOut0_, DOUBLE_BUFFER, BUFFER_SIZE_0);
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CeilDiv](../../../../apis/utils_api/cpp_stdlib/math_functions/ceil_div.md)（`related`）：“`totalLength==0` 会令 `blockDim==0`，之后 `CeilDiv(totalLength, blockDim)` 除零，因此空 tensor 不在该 Direct Invoke 的有效域内。”给出 Sigmoid 的具体失败调用；“计算两个整数a和b相除后向上取整的结果。该接口可在Host侧和AI Core侧使用。”给出 ceil_div 合同，直接支撑非零除数 guard 的实现与验证。
 - [GetCoreMemSize](../../../../apis/utils_api/platform_info/platform_ascend_c/get_core_mem_size.md)（`related`）：“令 `N=numel`、`s=elementBytes`、`C=max(GetCoreNumAiv(),1)`、`U=GetCoreMemSize(UB)`：”显示 Sigmoid 用该接口取得 UB 容量；“获取硬件平台存储空间的内存大小，例如L1、L0_A、L0_B、L2等，支持的存储空间类型定义如下：”给出平台内存查询合同，直接决定四段 UB tile 上界。
 - [PlatformAscendCManager](../../../../apis/utils_api/platform_info/platform_ascend_c_manager.md)（`related`）：“`calc_sigmoid_tiling_params(totalLength, elementBytes)` 查询 AIV 核数和 UB 字节数；AIV 核数非正时回退为 1。”给出 Direct Host 的平台信息需求；“基于Kernel Launch算子工程，通过Kernel直调（Kernel Launch）方式调用算子的场景下，可能需要获取硬件平台相关信息，比如获取硬件平台的核数。PlatformAscendCManager类提供获取平台信息的功能：通过该类的GetInstance方法可以获取一个PlatformAscendC类的指针，再通过该指针获取硬件平台相关信息，支持获取的信息可参考PlatformAscendC。”给出直调场景的获取入口。
 - [Sigmoid A2 ACLNN 算子知识](../../../aclnn/nn/activation/sigmoid.md)（`same_topic`）：“｜ 实际入口 ｜ Python 动态 wrapper `cann_bench.sigmoid`，PyTorch custom op `cann_bench::sigmoid`，PrivateUse1 实现 `sigmoid_npu`，C ABI launcher `launch_sigmoid_kernel_half`、`launch_sigmoid_kernel_bfloat16`、`launch_sigmoid_kernel_float`；入口类型为 `Direct Invoke`。 ｜”定义 950 Direct route；“｜ 实际入口 ｜ `aclnnSigmoidGetWorkspaceSize` + `aclnnSigmoid`，公开 ACLNN 两段式接口；采用活动 experimental 候选 `sigmoid_v2`。 ｜”定义 A2 ACLNN route，两卡围绕同一逐元素 Sigmoid 提供可直接对照的空域、workspace、dtype 与 Kernel 实现。

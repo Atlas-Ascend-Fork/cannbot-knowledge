@@ -120,15 +120,6 @@ i64 累积任何维度都降级，应避免。
 - argmax/argmin 仅对齐不合法时降级；缺 `StridedLayoutAttr` 默认不合法
 - 910_95 系列均属 Reg-based：910_950z/9579/957b/957d/9581/9589/958a/958b/9599 等
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Scalar 转 Vector 优化模式](../operator_optimization/scalar_to_vector.md)（`related`）：“标量转向量实战 runbook”
-- [数据类型优化：避免 Scalar Fallback](data_types.md)（`related`）：“int64/int32→fp32 修复与 aiv_scalar_ratio 指标”
-- [NPU 数据类型支持矩阵与约束](data_types_ascend.md)（`related`）：“NPU 数据类型支持矩阵”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -141,3 +132,13 @@ i64 累积任何维度都降级，应避免。
 - [LowerToLoops.cpp](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/lib/Dialect/HIVM/IR/ImplByScalarOpInterface/LowerToLoops.cpp)
 - [ImplByScalarOpInterface.td](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/Interfaces/ImplByScalarOpInterface.td)
 - [Utils.cpp](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/lib/Dialect/HACC/Utils/Utils.cpp)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Scalar 转 Vector 优化模式](../operator_optimization/scalar_to_vector.md)（`related`）：“标量转向量实战 runbook”
+- [数据类型优化：避免 Scalar Fallback](data_types.md)（`related`）：“int64/int32→fp32 修复与 aiv_scalar_ratio 指标”
+- [NPU 数据类型支持矩阵与约束](data_types_ascend.md)（`related`）：“NPU 数据类型支持矩阵”
+
+<!-- cannbot:related:end -->

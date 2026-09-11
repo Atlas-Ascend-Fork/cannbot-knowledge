@@ -2,26 +2,83 @@
 type: API
 title: __hltu
 description: 比较两个half类型数据，当第一个数小于第二个数时，返回true。若任一输入为nan，返回true。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_compare_functions/__hltu.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_fp16.h
 ---
 
-# __hltu
+# \_\_hltu
 
-功能：比较两个half类型数据，当第一个数小于第二个数时，返回true。若任一输入为nan，返回true。
+## 功能说明
 
-函数原型：bool __hltu(half x, half y)
+比较两个half类型数据，当第一个数小于第二个数时，返回true。若任一输入为nan，返回true。
 
-参数：x（输入）源操作数，y（输入）源操作数。
+## 函数原型
 
-返回值：比较输入的第一个数是否小于第二个数的结果。任一输入为nan时返回true。
+```cpp
+bool __hltu(half x, half y)
+```
 
-约束：无。需包含头文件 simt_api/asc_fp16.h。
+## 参数说明
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+| y | 输入 | 源操作数。 |
+
+## 返回值说明
+
+比较输入的第一个数是否小于第二个数的结果。任一输入为nan时返回true。
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/asc_fp16.h`头文件。
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void kernel_hltu(bool* dst, half* x, half* y, uint32_t total_length)
+    {
+        uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if (idx >= total_length) {
+            return;
+        }
+        dst[idx] = __hltu(x[idx], y[idx]);
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void kernel_hltu(__gm__ bool* dst, __gm__ half* x, __gm__ half* y, uint32_t total_length)
+    {
+        uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if (idx >= total_length) {
+            return;
+        }
+        dst[idx] = __hltu(x[idx], y[idx]);
+    }
+    ```

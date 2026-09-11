@@ -5,26 +5,26 @@ description: "说明 aclnnForeachSinh 在 950 上的接口语义、Host/Launcher
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/docs/aclnnForeachSinh.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/docs/aclnnForeachSinh.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_host/foreach_sinh_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_host/foreach_sinh_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_host/arch35/foreach_sinh_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_host/arch35/foreach_sinh_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_host/config/ascend950/foreach_sinh_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_host/config/ascend950/foreach_sinh_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:20:50Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -415,7 +415,7 @@ workspace_total = 16 MiB reserve / 0 B body slice
 
 - 适用 Route：R-001/R-002/R-003。
 - 触发条件：950 arch35 路线；每个非空 Tensor 调用同一 512-thread VF。
-- Golden 来源：[`foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_simt.h:49-58`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_simt.h#L49-L58)
+- Golden 来源：[`foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_simt.h:49-58`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_simt.h#L49-L58)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -454,7 +454,7 @@ Host 只按最大 Tensor 计算 block 数；对每个 Tensor，所有 block/thre
 
 - 适用 Route：R-001/R-002/R-003。
 - 触发条件：`ComputeSinh<T>` 被 SIMT body 调用。
-- Golden 来源：[`foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_simt.h:36-42`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_simt.h#L36-L42)
+- Golden 来源：[`foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_simt.h:36-42`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sinh/op_kernel/arch35/foreach_sinh_simt.h#L36-L42)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

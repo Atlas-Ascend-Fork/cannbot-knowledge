@@ -4,7 +4,6 @@
 - [GetShapeInfo](get_shape_info.md)：获取GlobalTensor的shape信息。注意：Shape信息没有默认值，只有通过SetShapeInfo设置过Shape信息后，才可以调用该接口获取正确的ShapeInfo。
 - [GetSize](get_size.md)：获取GlobalTensor的元素个数。
 - [GetValue](get_value.md)：获取GlobalTensor的相应偏移位置的值。
-- [GlobalTensor](global_tensor.md)：GlobalTensor 数据结构接口集，提供全局张量管理能力，含构造函数、SetGlobalBuffer、GetPhyAddr、GetValue 等。
 - [GlobalTensor构造函数](global_tensor_constructor.md)：GlobalTensor构造函数。
 - [GlobalTensor简介](global_tensor_intro.md)：GlobalTensor用来存放Global Memory（外部存储）的全局数据。
 - [Operator](operator.md)：根据输入的offset偏移返回新的GlobalTensor，用于获取指定偏移量起始的子张量。

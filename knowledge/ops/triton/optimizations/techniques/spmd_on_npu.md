@@ -113,14 +113,6 @@ tl.store(ptr + offsets, result, mask=mask)
 - 核间存在数据依赖、必须按 program_id 顺序执行的 kernel：不能用 `TRITON_ALL_BLOCKS_PARALLEL`
 - 使用 `tl.barrier()` / `tl.NamedBarrier` 的跨核同步策略：不适用 Grid 收缩
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Grid/Program ID 与 AI Core 对应关系](grid_and_program_id.md)（`related`）：“program_id/num_programs 语义与 Grid 合并机制”
-- [NPU 分块策略（Tiling）](tiling_strategy.md)（`related`）：“二级分块与 UB 容量约束”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -130,3 +122,12 @@ tl.store(ptr + offsets, result, mask=mask)
 - [migrate_from_gpu.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/migrate_from_gpu.md)
 - [architecture_difference.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/architecture_difference.md)
 - [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/core.py)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Grid/Program ID 与 AI Core 对应关系](grid_and_program_id.md)（`related`）：“program_id/num_programs 语义与 Grid 合并机制”
+- [NPU 分块策略（Tiling）](tiling_strategy.md)（`related`）：“二级分块与 UB 容量约束”
+
+<!-- cannbot:related:end -->

@@ -7,5 +7,4 @@
 - [GetIndex](get_index.md)：获取TensorDesc在ListTensorDesc中对应的索引值。
 - [GetShape](get_shape.md)：获取对应维度的shape信息。
 - [SetShapeAddr](set_shape_addr.md)：配置用于储存shape信息的地址。
-- [TensorDesc](tensor_desc.md)：TensorDesc 辅助数据结构用于描述张量描述信息，提供 SetShapeAddr、GetDim、GetShape、GetDataPtr 等接口。
 - [TensorDesc简介](tensor_desc_intro.md)：TensorDesc用于储存ListTensorDesc.GetDesc\(\)中根据index获取对应的Tensor描述信息。

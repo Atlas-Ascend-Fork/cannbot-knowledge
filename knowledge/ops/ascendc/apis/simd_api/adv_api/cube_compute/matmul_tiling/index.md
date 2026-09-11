@@ -1,7 +1,7 @@
 # Matmul Tiling类
 
 - [EnableBias](enable_bias.md)：设置Bias是否参与运算，设置的信息必须与Kernel侧保持一致。
-- [EnableL1BankConflictOptimise](enable_l1_bank_conflict_optimise.md)：根据GetTiling接口计算出的Tiling参数，获取是否可以开启L1 Bank冲突优化功能。若可以开启该功能，则与TilingKey机制配合使用，通过增加TilingKey，关联Host侧与Kernel侧实现，并在Kernel侧增加代码实现分支，将MatmulConfig中的enableL...
+- [EnableL1BankConflictOptimise](enable_l1_bank_conflict_optimise.md)：根据GetTiling接口计算出的Tiling参数，获取是否可以开启L1 Bank冲突优化功能。若可以开启该功能，则与TilingKey机制配合使用，通过增加TilingKey，关联Host侧与Kernel侧实现，并在Kernel侧增加代码实现分支，将MatmulConfig中的enableL1BankConflictOptimise设置为true，即可优化L1上的Bank冲突。
 - [EnableMultiCoreSplitK](enable_multi_core_split_k.md)：多核场景，通过该接口开启切K轴。不调用该接口的情况下，默认不切K轴。在GetTiling接口调用前使用。
 - [GetBaseK](get_base_k.md)：获取Tiling计算得到的baseK值。baseK参数的说明请参考表1。
 - [GetBaseM](get_base_m.md)：获取Tiling计算得到的baseM值。baseM参数的说明请参考表1。
@@ -9,9 +9,8 @@
 - [GetCoreNum](get_core_num.md)：获得多核切分所使用的NumBlocks参数。
 - [GetSingleShape](get_single_shape.md)：获取计算后的singleCoreM/singleCoreN/singleCoreK。
 - [GetTiling](get_tiling.md)：获取Tiling参数。
-- [Matmul Tiling类](matmul_tiling.md)：提供Matmul矩阵乘的Host侧Tiling类，包含TCubeTiling结构体、GetTiling及形状、类型、切分等参数设置方法。
 - [Matmul Tiling类构造函数](matmul_tiling_constructor.md)：用于创建一个Matmul单核Tiling对象，或者多核Tiling对象，或者BatchMatmul Tiling对象。
-- [Matmul Tiling类使用说明](matmul_tiling_usage.md)：Ascend C提供一组Matmul Tiling API，方便用户获取Matmul kernel计算时所需的Tiling参数。用户只需要传入A/B/C矩阵的Position位置、Format格式和DType数据类型等信息，调用API接口，即可获取到Init中TCubeTiling结构体中的相...
+- [Matmul Tiling类使用说明](matmul_tiling_usage.md)：Ascend C提供一组Matmul Tiling API，方便用户获取Matmul kernel计算时所需的Tiling参数。用户只需要传入A/B/C矩阵的Position位置、Format格式和DType数据类型等信息，调用API接口，即可获取到Init中TCubeTiling结构体中的相关参数。
 - [SetALayout](set_a_layout.md)：设置A矩阵的Layout轴信息，包括B、S、N、G、D轴。对于BSNGD、SBNGD、BNGS1S2 Layout格式，调用IterateBatch接口之前，需要在Host侧Tiling实现中通过本接口设置A矩阵的Layout轴信息。
 - [SetAType](set_a_type.md)：设置A矩阵的位置，数据格式，数据类型，是否转置等信息，这些信息需要和kernel侧的设置保持一致。
 - [SetAlignSplit](set_align_split.md)：多核切分时，设置singleCoreM/singleCoreN/singleCoreK的对齐值。比如设置singleCoreM的对齐值为64（单位为元素），切分出的singleCoreM为64的倍数。
@@ -28,7 +27,7 @@
 - [SetDim](set_dim.md)：设置多核Matmul参与运算的核数，区分纯Cube模式和MIX模式的分离与耦合场景
 - [SetDoubleBuffer](set_double_buffer.md)：设置A/B/C/Bias是否开启double buffer功能，以及是否需要做ND2NZ或者NZ2ND的转换，主要用于Tiling函数内部调优。 该接口为预留接口，当前版本暂不支持。
 - [SetFixSplit](set_fix_split.md)：设置固定的baseM、baseN、baseK，单位为元素个数。
-- [SetMadType](set_mad_type.md)：设置是否开启HF32模式。当前版本暂不支持。 对于Ascend 950PR/Ascend 950DT，本接口可用于设置是否开启HF32模式（当前版本暂不支持）、设置是否开启MxMatmul场景。在MxMatmul场景，必须调用该接口并配置为开启MxMatmul场景，从而保证该场景下正确计算并返...
+- [SetMadType](set_mad_type.md)：设置是否开启HF32模式。当前版本暂不支持。 对于Ascend 950PR/Ascend 950DT，本接口可用于设置是否开启HF32模式（当前版本暂不支持）、设置是否开启MxMatmul场景。在MxMatmul场景，必须调用该接口并配置为开启MxMatmul场景，从而保证该场景下正确计算并返回Tiling参数。
 - [SetMatmulConfigParams](set_matmul_config_params.md)：在计算Tiling时，用于自定义设置表1中的MatmulConfig参数。本接口中配置的参数对应的功能在Tiling与Kernel中需要保持一致，所以本接口中的参数取值，需要与Kernel侧对应的MatmulConfig参数值保持一致，详细MatmulConfig参数请见表2。
 - [SetOrgShape](set_org_shape.md)：设置Matmul计算时的原始完整的形状M、N、K或Ka/Kb，单位均为元素个数。
 - [SetScaleAType](set_scale_a_type.md)：MxMatmul场景，设置scaleA矩阵的位置、数据格式、是否转置等信息，这些信息需要和Kernel侧的设置保持一致。如果不调用本接口，scaleA矩阵的信息将与SetAType中设置的A矩阵的信息保持一致。

@@ -5,28 +5,28 @@ description: "说明 aclnnForeachAddcmulScalarList 在 950 上的接口语义、
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/docs/aclnnForeachAddcmulScalarList.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/docs/aclnnForeachAddcmulScalarList.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_host/foreach_addcmul_scalar_list_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_host/foreach_addcmul_scalar_list_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_host/arch35/foreach_addcmul_scalar_list_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_host/arch35/foreach_addcmul_scalar_list_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_host/arch35/foreach_addcmul_scalar_list_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_host/arch35/foreach_addcmul_scalar_list_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/arch35/foreach_addcmul_scalar_list.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/arch35/foreach_addcmul_scalar_list.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/arch35/foreach_addcmul_scalar_list_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/arch35/foreach_addcmul_scalar_list_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/arch35/foreach_addcmul_scalar_list_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/arch35/foreach_addcmul_scalar_list_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/arch35/foreach_addcmul_scalar_list_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/arch35/foreach_addcmul_scalar_list_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:30:28Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -393,7 +393,7 @@ UB_total=0; dynamic_ub=0; operator_workspace_total=0
 
 - 适用 Route：R-001/R-002/R-003。
 - 触发条件：`maxTensorElements > 0`；`perCoreElements` 先取 `max(1024,ceil(M/C))` 再按 32 元素向上对齐。
-- Golden 来源：[`foreach_addcmul_scalar_list_tiling.cpp:130-145`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_host/arch35/foreach_addcmul_scalar_list_tiling.cpp#L130-L145)
+- Golden 来源：[`foreach_addcmul_scalar_list_tiling.cpp:130-145`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_host/arch35/foreach_addcmul_scalar_list_tiling.cpp#L130-L145)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -425,7 +425,7 @@ Host 不按 tensor 总和分块，而以最大单 tensor 选择一次网格，�
 
 - 适用 Route：R-001。
 - 触发条件：模板 `CalcT=float`，输入 `T=half/bfloat16_t`。
-- Golden 来源：[`foreach_addcmul_scalar_list_simt.h:76-89`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/arch35/foreach_addcmul_scalar_list_simt.h#L76-L89)
+- Golden 来源：[`foreach_addcmul_scalar_list_simt.h:76-89`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_addcmul_scalar_list/op_kernel/arch35/foreach_addcmul_scalar_list_simt.h#L76-L89)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

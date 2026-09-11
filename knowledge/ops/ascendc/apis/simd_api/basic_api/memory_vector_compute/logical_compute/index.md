@@ -2,7 +2,6 @@
 
 - [And](and.md)：对LocalTensor中的元素做按位与运算，支持整个tensor、前n个数据连续计算和高维切分计算三种调用方式。
 - [Ands](ands.md)：矢量内每个元素和标量间做按位与操作，支持标量在前和标量在后两种场景，标量输入支持配置LocalTensor单点元素。
-- [逻辑计算](logical_compute.md)：Memory矢量计算逻辑运算接口索引页，汇总Not、And、Or、Ands、Ors及ShiftLeft/ShiftRight系列。
 - [Not](not.md)：对LocalTensor中的元素做按位取反运算，支持前n个数据连续计算和高维切分计算两种调用方式。
 - [Or](or.md)：对LocalTensor中的每对元素做按位或运算，支持整个tensor、前n个数据连续计算和高维切分计算三种调用方式。
 - [Ors](ors.md)：矢量内每个元素和标量间做按位或操作，支持标量在前和标量在后两种场景，标量输入支持配置LocalTensor单点元素。

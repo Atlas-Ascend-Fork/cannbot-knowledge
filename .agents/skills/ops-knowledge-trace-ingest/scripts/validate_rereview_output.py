@@ -2,42 +2,26 @@
 """Validate typed re-review miner output against a rereview queue."""
 
 import argparse
-import hashlib
 import json
-import re
 import sys
 from collections import Counter
 from pathlib import Path
 
+from validate_curated_output import (
+    ANCHOR_RE,
+    ARTIFACT_KINDS,
+    RECONSTRUCTION_METHODS,
+    ROLE_SETS,
+    SHA256_RE,
+)
+from validate_review_receipt import sha256_file
 
-ROLE_SETS = {
-    "repair_recipe": {"failure", "before", "repair_after", "validation_after"},
-    "diagnostic_rule": {"trigger", "probe", "observation", "interpretation"},
-    "negative_result": {"attempt", "observation", "boundary"},
-    "validated_pattern": {"implementation", "validation"},
-}
 FORM_SECTIONS = {
     "repair_recipe": "## 解决配方",
     "diagnostic_rule": "## 判别方法",
     "negative_result": "## 失败路线",
     "validated_pattern": "## 完整实现",
 }
-ARTIFACT_KINDS = {"code", "config", "command", "output", "probe"}
-RECONSTRUCTION_METHODS = {
-    "full_snapshot",
-    "base_plus_complete_edit_chain",
-    "self_contained_event",
-}
-SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-ANCHOR_RE = re.compile(r"^([0-9a-f]{12})#([1-9][0-9]*)$")
-
-
-def sha256_file(path):
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
 
 
 def normalized_sequences(path):

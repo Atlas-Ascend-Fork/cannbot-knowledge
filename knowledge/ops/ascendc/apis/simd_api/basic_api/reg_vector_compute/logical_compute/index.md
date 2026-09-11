@@ -1,7 +1,6 @@
 # 逻辑计算
 
 - [And](and.md)：根据mask对两个RegTensor或MaskReg执行按位与操作，将结果写入目的操作数，支持ZEROING模式。
-- [逻辑计算](logical_compute.md)：Reg矢量计算逻辑运算接口索引页，汇总Not、And、Or、Xor及ShiftLeft/ShiftRight系列。
 - [Not](not.md)：根据mask对RegTensor或MaskReg执行按位取反操作，将结果写入目的操作数，支持ZEROING模式。
 - [Or](or.md)：根据mask对两个RegTensor或MaskReg执行按位或操作，将结果写入目的操作数，支持ZEROING模式。
 - [Reg矢量计算概述](overview.md)：逻辑计算支持以下接口：

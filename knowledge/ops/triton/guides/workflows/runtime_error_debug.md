@@ -100,8 +100,16 @@ msProf 采集失败检查项：CANN 环境变量、`--soc-version` 与硬件匹�
 3. Scalar 退化是性能问题常见原因，优先查数据类型。
 4. 解释器对而 NPU 错不一定是硬件 bug：浮点精度、mask、类型转换、编译器优化差异皆可能。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [profiling.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/profiling.md)
+- [performance_guidelines.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/performance_guidelines.md)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [错误码参考（报错信息对照表）](./error_codes.md)（`related`）：“错误码参考（报错对照表）”
@@ -113,10 +121,3 @@ msProf 采集失败检查项：CANN 环境变量、`--soc-version` 与硬件匹�
 - [数据类型支持矩阵（Data Type Support Matrix）](../../apis/data_type_matrix.md)（`related`）：“精度异常/类型不支持时核对”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [profiling.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/debug_guide/profiling.md)
-- [performance_guidelines.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/performance_guidelines.md)

@@ -1,4 +1,3 @@
-# Reg矢量计算离散操作
+# 离散操作
 
 - [Gather](gather.md)：根据索引值将源操作数按元素收集到目的操作数中，支持b8、b16、b32数据类型。
-- [Reg矢量计算离散操作](scatter_operations.md)：寄存器矢量离散操作接口集合，包含Gather接口。

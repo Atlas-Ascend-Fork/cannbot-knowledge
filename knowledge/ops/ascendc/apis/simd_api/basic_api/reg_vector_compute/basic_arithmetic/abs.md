@@ -2,30 +2,169 @@
 type: API
 title: Abs
 description: 对srcReg中有效元素逐个取绝对值并写入dstReg，复数类型取模。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.execution_unit.vector]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.execution_unit.vector
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/basic_arithmetic/Abs.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/basic_api/reg_compute/kernel_reg_compute_vec_unary_intf.h
 ---
 
-# Abs
+# Abs<a name="ZH-CN_TOPIC_0000001956810269"></a>
 
-对srcReg中有效元素逐个取绝对值并写入dstReg，复数类型取模。
+## 功能说明<a name="section618mcpsimp"></a>
 
-RegTensor寄存器是矢量计算基本单元，RegTensor位宽为VL（Vector Length），长度为256B。b64或complex32类型下，支持通过RegTrait模板参数扩展存储2VL用于复杂计算。
+头文件路径：`"basic_api/reg_compute/kernel_reg_compute_vec_unary_intf.h"`。
 
-本接口组包含 MaskMergeMode, RegTensor, RegTensor, MaskReg。
+- 对实数类型
 
-本接口属于 Reg 矢量计算基础算术接口，操作 RegTensor 寄存器数据，直接在寄存器级别执行矢量运算。
+    对srcReg中的有效元素逐个取绝对值，并将结果写入dstReg对应位置，计算公式如下：
 
-支持的数据类型为 b8、b16、b32、b64。操作数类型为 LocalTensor，支持的 TPosition 为 VECIN/VECCALC/VECOUT。
+    $$
+    dstReg_i = |srcReg_i|
+    $$
 
-约束：RegTensor寄存器数量上限为32。超出限制上限的寄存器数据会写入预留的8KUB内存中，可能会引起性能劣化。编译器会自动复用生命周期结束的寄存器和预留内存，若寄存器与预留内存均存在可用空间，将优先复用寄存器。；寄存器的生命周期限定于单个VF内部。
+- 对复数类型
 
-支持的硬件型号：Ascend 950PR/Ascend 950DT。
+    对srcReg中有效元素逐个取模，并将结果写入dstReg对应位置，计算公式如下：
 
-临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+    $$
+    dstReg_i = |srcReg_i| = (\alpha^2 + \beta^2)^{1/2}
+    $$
+
+    其中$srcReg_i = \alpha + \beta i$，α为复数的实部，β为复数的虚部。
+
+## 函数原型<a name="section620mcpsimp"></a>
+
+- 实数计算
+
+    ```cpp
+    template <typename T = DefaultType, MaskMergeMode mode = MaskMergeMode::ZEROING, typename U>
+    __simd_callee__ inline void Abs(U& dstReg, U& srcReg, MaskReg& mask)
+    ```
+
+- 复数计算
+
+    ```cpp
+    template <typename T = DefaultType, typename U = DefaultType, MaskMergeMode mode = MaskMergeMode::ZEROING, typename S, typename V>
+    __simd_callee__ inline void Abs(S& dstReg, V& srcReg, MaskReg& mask)
+    ```
+
+## 参数说明<a name="section622mcpsimp"></a>
+
+**表 1**  模板参数说明
+
+| 参数名 | 描述 |
+| --- | --- |
+| T | 目的操作数数据类型。支持的数据类型请参考[数据类型](#数据类型)。 |
+| U | 源操作数数据类型。支持的数据类型请参考[数据类型](#数据类型)。 |
+| mode | [MaskMergeMode](../aux_data_types/mask_merge_mode.md)枚举类型，选择MERGING模式或ZEROING模式。<br>&bull; ZEROING模式下，mask未筛选的元素在dstReg中置零。<br>&bull; MERGING模式当前不支持。 |
+| S | 目的操作数的RegTensor类型，例如RegTensor&lt;half&gt;，由编译器自动推导，用户不需要填写。 |
+| V | 源操作数的RegTensor类型，例如RegTensor&lt;half&gt;，由编译器自动推导，用户不需要填写。 |
+
+**表 2**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| dstReg | 输出 | 目的操作数。<br>类型为[RegTensor](../register_data_types/reg_tensor.md)。 |
+| srcReg | 输入 | 源操作数。<br>类型为[RegTensor](../register_data_types/reg_tensor.md)。 |
+| mask | 输入 | 源操作数元素操作的有效指示，详细说明请参考[MaskReg](../register_data_types/mask_reg.md)。 |
+
+## 数据类型
+
+**表 3**  数据类型组合
+
+| srcReg | dstReg |
+| --- | --- |
+| int8_t | int8_t |
+| int16_t | int16_t |
+| half | half |
+| int32_t | int32_t |
+| float | float |
+| complex32 | half |
+| int64_t | int64_t |
+| complex64 | float |
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+无
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+- 当目的操作数和源操作数数据类型不一致时，目的操作数和源操作数不可重叠。
+- 整型数据的计算结果如果超出数据类型的表示范围会采取非饱和截断，比如int8_t类型，srcReg为-128，其绝对值128会被截断成-128。
+
+- 针对Ascend 950PR/Ascend 950DT，仅complex32和complex64类型的接口内部计算涉及Subnormal，处理方式受编译选项--cce-ftz控制（默认值为true）：
+    - --cce-ftz=false时，计算过程中保留Subnormal，并按照其实际数值参与后续计算。
+    - --cce-ftz=true时，启用FTZ（Flush-To-Zero）模式，计算过程中产生或参与运算的Subnormal将按0处理，可能导致计算结果与保留Subnormal时存在精度差异。
+
+
+## 调用示例<a name="section642mcpsimp"></a>
+
+- 实数计算
+
+    ```cpp
+    template<typename T>
+    __simd_vf__ inline void AbsVF(__ubuf__ T* dstAddr, __ubuf__ T* srcAddr, uint32_t count, uint16_t oneRepeatSize, uint16_t repeatTimes)
+    {
+        AscendC::Reg::RegTensor<T> srcReg;
+        AscendC::Reg::RegTensor<T> dstReg;
+        AscendC::Reg::MaskReg mask;
+        for (uint16_t i = 0; i < repeatTimes; i++) {
+            mask = AscendC::Reg::UpdateMask<T>(count);
+            AscendC::Reg::LoadAlign(srcReg, srcAddr + i * oneRepeatSize);
+            AscendC::Reg::Abs(dstReg, srcReg, mask);
+            AscendC::Reg::StoreAlign(dstAddr + i * oneRepeatSize, dstReg, mask);
+        }
+    }
+    ```
+
+- 复数计算
+
+    ```cpp
+    template<typename T, typename U>
+    __simd_vf__ inline void AbsVF(__ubuf__ U* dstAddr, __ubuf__ T* srcAddr, uint32_t count, uint16_t oneRepeatSize, uint16_t repeatTimes)
+    {
+        AscendC::Reg::RegTensor<T> srcReg;
+        AscendC::Reg::RegTensor<U> dstReg;
+        AscendC::Reg::MaskReg mask;
+        for (uint16_t i = 0; i < repeatTimes; i++) {
+            mask = AscendC::Reg::UpdateMask<T>(count);
+            AscendC::Reg::LoadAlign(srcReg, srcAddr + i * oneRepeatSize);
+            AscendC::Reg::Abs(dstReg, srcReg, mask);
+            AscendC::Reg::StoreAlign(dstAddr + i * oneRepeatSize, dstReg, mask);
+        }
+    }
+    ```
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子（部分算子）
+
+展示 10 / 12 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [Atan2 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/atan2_950.md)（`related`）：算子声明的固定版本源码包含对 `Abs(...)` 的直接调用（第 289 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/atan2/op_kernel/arch35/atan2_dag.h#L289)
+- [GeluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/activation/gelu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Abs(...)` 的直接调用（第 314 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_dynamic_quant_regbase.h#L314)
+- [grouped_matmul_swiglu_quant 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_swiglu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Abs(...)` 的直接调用（第 464 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/common/cgmct/epilogue/block_epilogue_pertoken_quant.h#L464)
+- [DequantSwigluQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dequant_swiglu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Abs(...)` 的直接调用（第 661 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant.h#L661)
+- [AlltoAllQuantMatmul 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/allto_all_quant_matmul_950.md)（`related`）：算子声明的固定版本源码包含对 `Abs(...)` 的直接调用（第 509 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/mc2_templates/quantization/fp8/fp8_dynamic_quant_pertoken.h#L509)
+- [DynamicQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/dynamic_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Abs(...)` 的直接调用（第 324 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_full_load.h#L324)
+- [MoeDistributeDispatchSetup 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_setup_950.md)（`related`）：算子声明的固定版本源码包含对 `Abs(...)` 的直接调用（第 491 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/moe_distribute_dispatch_v2/op_kernel/quantize_functions.h#L491)
+- [QuantMax 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/quant_max_950.md)（`related`）：算子声明的固定版本源码包含对 `Abs(...)` 的直接调用（第 192 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quant_max/op_kernel/arch35/quant_max_per_tensor_regbase.h#L192)
+- [MoeInitRoutingV3 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/moe/moe_init_routing_950.md)（`related`）：算子声明的固定版本源码包含对 `Abs(...)` 的直接调用（第 155 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v3/op_kernel/arch35/moe_v3_full_load_dynamic_quant.h#L155)
+- [DequantSwigluQuant 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/quant/dequant_swiglu_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `Abs(...)` 的直接调用（第 661 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant.h#L661)
+
+<!-- cannbot:api-operator:end -->
+<!-- cannbot:related:end -->

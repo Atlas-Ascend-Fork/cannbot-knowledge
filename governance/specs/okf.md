@@ -32,7 +32,7 @@ OKF 规定通用交换格式；CANNBot Profile 规定本仓允许哪些路径、
 
 例如 `knowledge/ops/ascendc/apis/datacopypad_gm_to_ub.md` 的 Concept ID 是 `ops/ascendc/apis/datacopypad_gm_to_ub`。
 
-Concept 和索引的本地导航必须解析到同一 `knowledge/` Bundle。知识卡可以额外引用 Registry 登记的固定提交 Git 源码文件；这是来源导航，不形成 Concept 或图谱边，也不允许索引跳出 Bundle。其他外部材料使用 HTTP(S) 来源，不能链接本地治理设施。
+Concept 间的本地 Markdown 链接必须解析到同一 `knowledge/` Bundle；索引也只能导航 Bundle 内文件。知识卡可额外链接 Registry 登记的固定提交本地源码文件（可带 `#L行号`），这类链接只是来源导航，不是 Concept Link，不生成源码节点或图谱边。其他 Bundle 外材料使用 HTTP(S) 来源，不用仓库相对路径把 Concept 绑定到治理设施。行内代码和代码围栏中的 Markdown-like 片段不构成 Link；列表容器缩进后的围栏同样按代码处理。
 
 正文图片不形成 Concept Link 或图谱边，必须使用带 40 位 commit 和具体文件路径的 HTTPS Git raw URL；Lint 仅离线校验 URL 形状。
 

@@ -5,46 +5,46 @@ description: "说明 aclnnAvgPool3d 在 950 上的接口语义、Host/Launcher �
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/docs/aclnnAvgPool3d.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/docs/aclnnAvgPool3d.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_api/aclnn_avgpool3d.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_api/aclnn_avgpool3d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_api/avgpool3d.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_api/avgpool3d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_host/avg_pool3_d_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_host/avg_pool3_d_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_host/avg_pool3_d_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_host/avg_pool3_d_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_host/arch35/pool_tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_host/arch35/pool_tiling_templates_registry.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_host/arch35/pool_3d_one_kize_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_host/arch35/pool_3d_one_kize_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_host/arch35/pool_3d_ncdhw_small_kernel_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_host/arch35/pool_3d_ncdhw_small_kernel_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_host/arch35/pool_3d_ncdhw_big_kernel_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_host/arch35/pool_3d_ncdhw_big_kernel_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_host/arch35/pool_3d_simt_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_host/arch35/pool_3d_simt_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_kernel/avg_pool3_d_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_kernel/avg_pool3_d_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ksize_one_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ksize_one_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ncdhw_small_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ncdhw_small_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ncdhw_small_kernel_pad.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ncdhw_small_kernel_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ncdhw_big_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ncdhw_big_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/avg_pool_3_d_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/avg_pool_3d_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_host/config/ascend950/avg_pool3_d_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/avg_pool3_d/op_host/config/ascend950/avg_pool3_d_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:17:48Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T09:59:09Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -192,7 +192,7 @@ else -> R-004
 | R-001 | `100001` | `pool_3d_one_kize_tiling.cpp` | `Pool3DOneKsizeTilingData` | `avg_pool3_d_apt.cpp::avg_pool3_d` | `pool_3d_ksize_one_kernel.h` | OpDef `avg_pool3_d_apt` + binary config |
 | R-002 | `300001..4` | `pool_3d_ncdhw_small_kernel_tiling.cpp` | `Pool3DNcdhwSmallKernelTilingData` | 同上 | `pool_3d_ncdhw_small_kernel{,_pad}.h`, `pool_3d_common.h` | 同上 |
 | R-003 | `511110` | `pool_3d_ncdhw_big_kernel_tiling.cpp` | `Pool3DNcdhwBigKernelTilingData` | 同上 | `pool_3d_ncdhw_big_kernel.h` | 同上 |
-| R-004 | `911100/911110` | `pool_3d_simt_tiling.cpp` | `Pool3DSimtTilingData` | 同上 | `avg_pool_3_d_simt.h` | 同上 |
+| R-004 | `911100/911110` | `pool_3d_simt_tiling.cpp` | `Pool3DSimtTilingData` | 同上 | `avg_pool_3d_simt.h` | 同上 |
 
 ## Kernel 实现
 
@@ -530,7 +530,7 @@ workspace_total = 16 MiB
 |---|---|---|---|
 | Host/Tiling producer | `pool_3d_simt_tiling.cpp` | `GetTilingKey/PostTiling` | 索引位宽、blockDim、dynamic UB |
 | Kernel entry/router | `avg_pool3_d_apt.cpp` | `911100/911110` | NCDHW int32/int64 |
-| Device body/helper | `avg_pool_3_d_simt.h` | `AvgPool3dNcSimtCompute` | 512-thread grid-stride 标量窗口归约 |
+| Device body/helper | `avg_pool_3d_simt.h` | `AvgPool3dNcSimtCompute` | 512-thread grid-stride 标量窗口归约 |
 
 ## 算子特定优化
 
@@ -540,7 +540,7 @@ workspace_total = 16 MiB
 
 - 适用 Route：R-001
 - 触发条件：`kD==kH==kW==1`
-- Golden 来源：[`pool_3d_ksize_one_kernel.h:116-152`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ksize_one_kernel.h#L116-L152)
+- Golden 来源：[`pool_3d_ksize_one_kernel.h:116-152`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ksize_one_kernel.h#L116-L152)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -572,7 +572,7 @@ loopInfo.loopDstStride[ZERO] = 1;
 
 - 适用 Route：R-003
 - 触发条件：窗口有效体积超过 `maxCount`
-- Golden 来源：[`pool_3d_ncdhw_big_kernel.h:338-378`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ncdhw_big_kernel.h#L338-L378)
+- Golden 来源：[`pool_3d_ncdhw_big_kernel.h:338-378`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch35/pool_3d_ncdhw_big_kernel.h#L338-L378)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -647,7 +647,7 @@ if (curkHW <= maxCount) {
 | big Tiling | `pooling/pool_3d_common/op_host/arch35/pool_3d_ncdhw_big_kernel_tiling.cpp` | `IsCapable` | R-003 |
 | SIMT Tiling | `pooling/pool_3d_common/op_host/arch35/pool_3d_simt_tiling.cpp` | `GetTilingKey` | R-004 |
 | Kernel entry/body | `pooling/avg_pool3_d/op_kernel/avg_pool3_d_apt.cpp` | `avg_pool3_d` | 950 router |
-| SIMT body | `pooling/pool_3d_common/op_kernel/arch35/avg_pool_3_d_simt.h` | `AvgPool3dNcSimtCompute` | fallback body |
+| SIMT body | `pooling/pool_3d_common/op_kernel/arch35/avg_pool_3d_simt.h` | `AvgPool3dNcSimtCompute` | fallback body |
 | 构建接线 | `pooling/avg_pool3_d/op_host/avg_pool3_d_def.cpp` | `AddConfig("ascend950")` | `avg_pool3_d_apt` |
 | binary config | `pooling/avg_pool3_d/op_host/config/ascend950/avg_pool3_d_binary.json` | `op_type=AvgPool3D` | 950 三 dtype 二进制项 |
 | kernel config | `scripts/kernel/binary_config/ascendc_config.json` | `name=AvgPool3D` | `ascend950` 编译单元 |

@@ -5,34 +5,34 @@ description: "说明 aclnnAntiMxQuant 在 950 上的接口语义、Host/Launcher
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/docs/aclnnAntiMxQuant.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/docs/aclnnAntiMxQuant.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_api/aclnn_anti_mx_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_api/aclnn_anti_mx_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_api/anti_mx_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_api/anti_mx_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_host/anti_mx_quant_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_host/anti_mx_quant_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_host/arch35/anti_mx_quant_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_host/arch35/anti_mx_quant_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_host/arch35/anti_mx_quant_tail_axis_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_host/arch35/anti_mx_quant_tail_axis_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tilingdata.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tilingdata.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_struct.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/anti_mx_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/anti_mx_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tail_axis.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tail_axis.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_host/config/ascend950/anti_mx_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_host/config/ascend950/anti_mx_quant_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:21:21Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -703,7 +703,7 @@ UB_total 与 Host bytesPer512=2624 同 R-005；workspace_total=0
 
 - 适用 Route：R-001..R-006
 - 触发条件：非空输入通过尾轴检查，`usedCoreNum=min(totalAiv,M*ceil(C/512))` 后存在合法 `(m,n)` 切分。
-- Golden 来源：[`quant/anti_mx_quant/op_host/arch35/anti_mx_quant_tail_axis_tiling_arch35.cpp:102-120`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_host/arch35/anti_mx_quant_tail_axis_tiling_arch35.cpp#L102-L120)
+- Golden 来源：[`quant/anti_mx_quant/op_host/arch35/anti_mx_quant_tail_axis_tiling_arch35.cpp:102-120`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_host/arch35/anti_mx_quant_tail_axis_tiling_arch35.cpp#L102-L120)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -750,7 +750,7 @@ Host 不把所有核只切在展平元素轴，而是把 `M` 行与 `ceil(C/512)
 
 - 适用 Route：R-001..R-006
 - 触发条件：binary config 已把 `DTYPE_X/DTYPE_Y` 固化，`IsFp8Type<T>()` 在编译期成立或不成立。
-- Golden 来源：[`quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tail_axis.h:130-148`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tail_axis.h#L130-L148)
+- Golden 来源：[`quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tail_axis.h:130-148`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tail_axis.h#L130-L148)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -797,7 +797,7 @@ FP4 x 保持一字节两元素的 packed UB 表示，scale 只扩为 BF16；FP8 
 
 - 适用 Route：R-001..R-006 的列尾 chunk，尤其 32 元素块数为奇数或 `C` 非 32 对齐时。
 - 触发条件：`ubFactorColBlockNum%2!=0` 或最后 32 元素块不满。
-- Golden 来源：[`quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tail_axis.h:331-350`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tail_axis.h#L331-L350)
+- Golden 来源：[`quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tail_axis.h:331-350`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/anti_mx_quant/op_kernel/arch35/anti_mx_quant_tail_axis.h#L331-L350)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

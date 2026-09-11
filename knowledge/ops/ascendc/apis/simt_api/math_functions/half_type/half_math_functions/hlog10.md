@@ -2,25 +2,86 @@
 type: API
 title: Hlog10
 description: 计算half输入数据以10为底的对数。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_math_functions/hlog10.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_fp16.h
 ---
-# Hlog10
 
-功能：获取以10为底，输入数据的对数。
+# hlog10
 
-函数原型：half hlog10(half x)
+## 功能说明
 
-参数：x（输入）源操作数。
+获取以10为底，输入数据的对数。
 
-返回值：以10为底的x的对数。本接口受全局饱和寄存器的影响，。特殊值：±0→-ASCRT_MAX_NORMAL_FP16；nan→0；inf→ASCRT_MAX_NORMAL_FP16；-inf→0。
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002533360283.png)
 
-约束：无。需包含头文件 simt_api/asc_fp16.h。
+## 函数原型
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+```cpp
+inline half hlog10(half x)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+以10为底的x的对数。本接口受全局饱和寄存器的影响，特殊值如下：
+
+| x值 | 非饱和模式的返回值 | 饱和模式的返回值 |
+| --- | --- | --- |
+| ±0 | -inf | -ASCRT\_MAX\_NORMAL\_FP16 |
+| nan | nan | 0 |
+| inf | inf | ASCRT\_MAX\_NORMAL\_FP16 |
+| -inf | nan | 0 |
+| x<0 | nan | 0 |
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用half类型接口需要包含`simt_api/asc_fp16.h`头文件。
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelLog10(half* dst, half* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = hlog10(x[idx]);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelLog10(__gm__ half* dst, __gm__ half* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = hlog10(x[idx]);
+    }
+    ```

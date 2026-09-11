@@ -4,7 +4,6 @@
 - [Add](add.md)：对srcReg0和srcReg1按元素求和，结果写入dstReg，可选保留进位。
 - [AddC](add_c.md)：对srcReg0、srcReg1及输入进位按元素求和，结果写入dstReg和carry。
 - [Adds](adds.md)：对srcReg按元素与标量求和，结果写入dstReg。
-- [基础算术](basic_arithmetic.md)：Reg矢量计算基础算术接口索引页，涵盖Abs、Exp、Sqrt、Ln、Log、Add、Sub、Mul、Max、Min及Relu/LeakyRelu等。
 - [Div](div.md)：对srcReg0和srcReg1按元素相除，结果写入dstReg。
 - [Exp](exp.md)：对srcReg按元素进行指数运算，结果写入dstReg。
 - [LeakyRelu](leaky_relu.md)：按元素执行Leaky ReLU操作，大于0的元素直接写入目的操作数，否则乘以标量scalarValue后写入。

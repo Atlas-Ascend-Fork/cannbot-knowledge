@@ -5,46 +5,46 @@ description: "说明 aclnnMoeFinalizeRoutingV2Grad 在 A2/A3 上的接口语义�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/README.md
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/docs/aclnnMoeFinalizeRoutingV2Grad.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/docs/aclnnMoeFinalizeRoutingV2Grad.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/op_api/aclnn_moe_finalize_routing_v2_grad.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/op_api/aclnn_moe_finalize_routing_v2_grad.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/op_api/aclnn_moe_finalize_routing_v2_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/op_api/aclnn_moe_finalize_routing_v2_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/op_api/moe_finalize_routing_v2_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/op_api/moe_finalize_routing_v2_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_def.cpp
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_tiling_membase.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_tiling_membase.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_without_scale_not_cut_h.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_without_scale_not_cut_h.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_without_scale_cut_h.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_without_scale_cut_h.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_with_scale_not_cut_h.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_with_scale_not_cut_h.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_with_scale_cut_h.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_with_scale_cut_h.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/config/ascend910b/moe_finalize_routing_v2_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/config/ascend910b/moe_finalize_routing_v2_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/config/ascend910_93/moe_finalize_routing_v2_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/config/ascend910_93/moe_finalize_routing_v2_grad_binary.json
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -736,7 +736,7 @@ workspace_total(Device)=0; dynamic_ub=N/A
 
 - 适用 Route：R-001、R-002；R-003～R-006 使用同一整 H/切 H 选择框架，但采用含 scale/bias 的独立字节公式
 - 触发条件：Membase 且无 scale；以平台 `ubSize` 扣除 row Queue 后计算 `hiddenPrePart`，再比较 `H<=P`
-- Golden 来源：[`moe_finalize_routing_v2_grad_tiling_membase.cpp:54-64`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_tiling_membase.cpp#L54-L64)
+- Golden 来源：[`moe_finalize_routing_v2_grad_tiling_membase.cpp:54-64`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_host/moe_finalize_routing_v2_grad_tiling_membase.cpp#L54-L64)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -775,7 +775,7 @@ if (isScalesExist_) {
 
 - 适用 Route：R-003～R-006
 - 触发条件：`T1` 为 `half` 或 `bfloat16_t`，`orgF16OBf16UbOffset_=P`
-- Golden 来源：[`moe_finalize_routing_v2_grad_base.h:272-290`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_base.h#L272-L290)
+- Golden 来源：[`moe_finalize_routing_v2_grad_base.h:272-290`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_base.h#L272-L290)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -824,7 +824,7 @@ gradY、expandedX、bias Queue 都按 `P*sizeof(float)` 分配。对 16 bit 输�
 
 - 适用 Route：R-003～R-006；切 H 时收益机制跨 tile 延续
 - 触发条件：`innerLoopCopyNum` 任意正长度，按64元素/repeat；repeat超过255时分段
-- Golden 来源：[`moe_finalize_routing_v2_grad_base.h:293-325`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_base.h#L293-L325)
+- Golden 来源：[`moe_finalize_routing_v2_grad_base.h:293-325`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2_grad/op_kernel/moe_finalize_routing_v2_grad_base.h#L293-L325)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

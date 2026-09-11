@@ -5,26 +5,26 @@ description: "说明 aclnnGroupNormBackward 在 A2/A3 上的接口语义、Host/
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/docs/aclnnGroupNormBackward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/docs/aclnnGroupNormBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/op_api/aclnn_group_norm_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/op_api/aclnn_group_norm_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/op_api/group_norm_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/op_api/group_norm_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/group_norm_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/group_norm_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/group_norm_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/group_norm_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_kernel/group_norm_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_kernel/group_norm_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_kernel/group_norm_grad.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_kernel/group_norm_grad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/config/ascend910b/group_norm_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/config/ascend910b/group_norm_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/config/ascend910_93/group_norm_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/config/ascend910_93/group_norm_grad_binary.json
     role: implementation
 created_at: "2026-08-25T17:56:20Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -685,7 +685,7 @@ q=floor((UB-reserve)/(dtypeBytes*3),elePerBlock*8)
 
 - 适用 Route：R-001–R-005
 - 触发条件：按 `H`、整组/单通道 UB capacity 的有序判断。
-- Golden 来源：[`group_norm_grad_tiling.cpp:366-389`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/group_norm_grad_tiling.cpp#L366-L389)
+- Golden 来源：[`group_norm_grad_tiling.cpp:366-389`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_host/group_norm_grad_tiling.cpp#L366-L389)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -723,7 +723,7 @@ if (tilingParams->hxw == 1) {
 
 - 适用 Route：所有非空 Route 的 runtime key 10/11/12
 - 触发条件：`N>2`。
-- Golden 来源：[`group_norm_grad.h:1225-1244`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_kernel/group_norm_grad.h#L1225-L1244)
+- Golden 来源：[`group_norm_grad.h:1225-1244`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_kernel/group_norm_grad.h#L1225-L1244)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -755,7 +755,7 @@ Host 用 `ceil(N/2)*C` 为每种参数梯度分片，Device 把相邻 batch 对�
 
 - 适用 Route：R-005
 - 触发条件：`mode1UbCapCNum<=0`，每 channel 必须切 H。
-- Golden 来源：[`group_norm_grad.h:637-676`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_kernel/group_norm_grad.h#L637-L676)
+- Golden 来源：[`group_norm_grad.h:637-676`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_grad/op_kernel/group_norm_grad.h#L637-L676)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

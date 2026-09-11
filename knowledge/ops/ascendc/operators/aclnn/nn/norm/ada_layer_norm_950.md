@@ -5,36 +5,36 @@ description: "说明 aclnnAdaLayerNormV2 在 950 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/docs/aclnnAdaLayerNormV2.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/docs/aclnnAdaLayerNormV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/op_api/aclnn_ada_layer_norm_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/op_api/aclnn_ada_layer_norm_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/op_api/ada_layer_norm_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/op_api/ada_layer_norm_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/ada_layer_norm_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/ada_layer_norm_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_host/ada_layer_norm_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_host/ada_layer_norm_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_host/ada_layer_norm_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_host/ada_layer_norm_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_kernel/ada_layer_norm_v2_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_kernel/ada_layer_norm_v2_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_full_load.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_full_load.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_welford.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_welford.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_impl.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_impl.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/config/ascend950/ada_layer_norm_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/config/ascend950/ada_layer_norm_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:42:35Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -551,7 +551,7 @@ dynamic_ub=N/A; workspace node=16 MiB unused by V2 body
 
 - 适用 Route：R-001、R-002 FullLoad。
 - 触发条件：一个 batch 的多个连续 S 行落入当前 `range`，`repeatNum>1`。
-- Golden 来源：[`norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_impl.h:169-181`](https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_impl.h#L169-L181)
+- Golden 来源：[`norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_impl.h:169-181`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_impl.h#L169-L181)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -587,7 +587,7 @@ scale/shift 按 B 广播。源码对每个 batch 只从 GM 读取一行，然后
 
 - 适用 Route：R-003、R-004。
 - 触发条件：先完成整行 Welford finalize，再进入逐片 Normalize/Adaption。
-- Golden 来源：[`norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_impl.h:24-72`](https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_impl.h#L24-L72)
+- Golden 来源：[`norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_impl.h:24-72`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/arch35/ada_layer_norm_impl.h#L24-L72)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

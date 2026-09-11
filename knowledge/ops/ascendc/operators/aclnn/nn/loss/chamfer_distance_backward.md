@@ -5,32 +5,32 @@ description: "说明 aclnnChamferDistanceBackward 在 A2/A3 上的接口语义�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/docs/aclnnChamferDistanceBackward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/docs/aclnnChamferDistanceBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/op_api/aclnn_chamfer_distance_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/op_api/aclnn_chamfer_distance_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/op_api/chamfer_distance_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/op_api/chamfer_distance_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/chamfer_distance_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/chamfer_distance_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/chamfer_distance_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/chamfer_distance_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/chamfer_distance_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/chamfer_distance_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/chamfer_distance_grad.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/chamfer_distance_grad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/chamfer_distance_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/chamfer_distance_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/config/ascend910b/chamfer_distance_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/config/ascend910b/chamfer_distance_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/config/ascend910_93/chamfer_distance_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_host/config/ascend910_93/chamfer_distance_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T17:13:44Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -377,7 +377,7 @@ workspace_used_by_body = 0 bytes
 
 - 适用 Route：R-001。
 - 触发条件：所有非空任务；输出已由 block 0 清零并完成 `SyncAll`。
-- Golden 来源：[`op_kernel/chamfer_distance_grad.h:367-383`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/chamfer_distance_grad.h#L367-L383)
+- Golden 来源：[`op_kernel/chamfer_distance_grad.h:367-383`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/chamfer_distance_grad.h#L367-L383)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -411,7 +411,7 @@ SetAtomicNone();
 
 - 适用 Route：R-001。
 - 触发条件：每个 d1/d2 chunk 完成 CopyIn 后，`calCount=align_up(len,t_per_block)`。
-- Golden 来源：[`op_kernel/chamfer_distance_grad.h:398-425`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/chamfer_distance_grad.h#L398-L425)
+- Golden 来源：[`op_kernel/chamfer_distance_grad.h:398-425`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/chamfer_distance_grad.h#L398-L425)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -443,7 +443,7 @@ Muls(dstLocal[tensor_offset], srcLocal[tensor_offset], scalarValue, mask, repeat
 
 - 适用 Route：R-001。
 - 触发条件：`ub_size=platformUB-1024`，构造任意非空 core。
-- Golden 来源：[`op_kernel/chamfer_distance_grad.h:77-85`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/chamfer_distance_grad.h#L77-L85)
+- Golden 来源：[`op_kernel/chamfer_distance_grad.h:77-85`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/chamfer_distance_grad/op_kernel/chamfer_distance_grad.h#L77-L85)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

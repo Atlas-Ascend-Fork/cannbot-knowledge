@@ -5,46 +5,46 @@ description: "说明 aclnnApplyRotaryPosEmbV2GetWorkspaceSize/aclnnApplyRotaryPo
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/op_api/aclnn_apply_rotary_pos_emb_v2.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/op_api/aclnn_apply_rotary_pos_emb_v2.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/op_api/aclnn_apply_rotary_pos_emb_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/op_api/aclnn_apply_rotary_pos_emb_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/docs/aclnnApplyRotaryPosEmbV2.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/docs/aclnnApplyRotaryPosEmbV2.md
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/README.md
     role: primary
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_small.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_small.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_compute_ab.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_compute_ab.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_compute_ab_cast.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_compute_ab_cast.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/config/ascend910b/apply_rotary_pos_emb_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/config/ascend910b/apply_rotary_pos_emb_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/config/ascend910_93/apply_rotary_pos_emb_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/config/ascend910_93/apply_rotary_pos_emb_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/cmake/level2_ops_list
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/cmake/level2_ops_list
     role: implementation
 created_at: "2026-08-24T16:30:02Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -728,7 +728,7 @@ UB_total = 3*(B*Q) + 4*(B*C) + 2*(B*Q) + 2*(B*S)
 
 - 适用 Route：R-003；R-004/R-005 是该机制不成立时的真实去向。
 - 触发条件：small 路线未命中；`oneLoop` 合法；非 BF16；基础 `times` 分配后剩余 UB 还能容纳至少一个 `3*qPart1Ub+4*cosPart1Ub` 扩展批次，即 `shengMte>0`。
-- Golden 来源：[`apply_rotary_pos_emb_tiling.cpp:325-346`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_tiling.cpp)
+- Golden 来源：[`apply_rotary_pos_emb_tiling.cpp:325-346`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_host/apply_rotary_pos_emb_tiling.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -778,7 +778,7 @@ ge::graphStatus ApplyRotaryPosEmbTiling::ComputeAB(gert::TilingContext *context,
 
 - 适用 Route：R-001/R-002；R-003/R-004/R-005 使用等价的 `CopyInPartialRotation/CopyOutPartialRotation`。
 - 触发条件：`qDim3>lastDim`，即完整 head 维 D 大于 `D_r=cos.shape[-1]`。
-- Golden 来源：[`apply_rotary_pos_emb_small.h:127-145`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_small.h)
+- Golden 来源：[`apply_rotary_pos_emb_small.h:127-145`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_small.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -825,7 +825,7 @@ partial 路线把 `blockCount` 设为 QN/KN、`blockLen=blockMoveQ=D_r/oneBlock`
 
 - 适用 Route：R-003；R-004/R-005 的 `ComputeTotary` 保留同一分支结构。
 - 触发条件：比较 `qkcNum` 与当前计算子轮 `comBatchBB`；两边分别选择沿 head 或沿 batch 做 repeat。
-- Golden 来源：[`apply_rotary_pos_emb_compute_ab.h:215-233`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_compute_ab.h)
+- Golden 来源：[`apply_rotary_pos_emb_compute_ab.h:215-233`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_compute_ab.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -872,7 +872,7 @@ __aicore__ inline void ARPEComputeAB<T1, T2>::CTotaryBF32(
 
 - 适用 Route：R-002/R-005。
 - 触发条件：编译期 `ORIG_DTYPE_QUERY==DT_BF16`；Host 使用 `castDtypeSize=4`、FP32 mask和额外 cos/sin TBuf。
-- Golden 来源：[`apply_rotary_pos_emb_compute_ab_cast.h:250-284`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_compute_ab_cast.h)
+- Golden 来源：[`apply_rotary_pos_emb_compute_ab_cast.h:250-284`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/apply_rotary_pos_emb/op_kernel/apply_rotary_pos_emb_compute_ab_cast.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

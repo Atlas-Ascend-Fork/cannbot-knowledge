@@ -5,34 +5,34 @@ description: "说明 aclnnRoiPoolingWithArgMax 在 950 上的接口语义、Host
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/docs/aclnnRoiPoolingWithArgMax.md
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/docs/aclnnRoiPoolingWithArgMax.md
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_api/aclnn_roi_pooling_with_arg_max.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_api/aclnn_roi_pooling_with_arg_max.h
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_api/aclnn_roi_pooling_with_arg_max.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_api/aclnn_roi_pooling_with_arg_max.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_api/roi_pooling_with_arg_max.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_api/roi_pooling_with_arg_max.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_host/roi_pooling_with_arg_max_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_host/roi_pooling_with_arg_max_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_host/arch35/roi_pooling_with_arg_max_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_host/arch35/roi_pooling_with_arg_max_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/roi_pooling_with_arg_max.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/roi_pooling_with_arg_max.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_simt.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_host/roi_pooling_with_arg_max_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_host/roi_pooling_with_arg_max_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_host/config/ascend950/roi_pooling_with_arg_max_binary.json
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_host/config/ascend950/roi_pooling_with_arg_max_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T21:00:14Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -381,7 +381,7 @@ register_bytes = 固定仓不可见
 
 - 适用 Route：R-001、R-002。
 - 触发条件：所有非空有效调用；`poolW/poolH/channels` 均为正并可安全窄化到 uint32。
-- Golden 来源：[`objdetect/roi_pooling_with_arg_max/op_kernel/roi_pooling_with_arg_max.cpp:35-38`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/roi_pooling_with_arg_max.cpp#L35-L38)
+- Golden 来源：[`objdetect/roi_pooling_with_arg_max/op_kernel/roi_pooling_with_arg_max.cpp:35-38`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/roi_pooling_with_arg_max.cpp#L35-L38)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -413,7 +413,7 @@ entry 每个 block 只计算一次三组除数的 magic/shift，再将它们作�
 
 - 适用 Route：R-001、R-002。
 - 触发条件：所有非空输出；每个 grid-stride `idx` 唯一映射到一个 `(n,c,ph,pw)`。
-- Golden 来源：[`objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_simt.h:91-104`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_simt.h#L91-L104)
+- Golden 来源：[`objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_simt.h:91-104`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_pooling_with_arg_max/op_kernel/arch35/roi_pooling_with_arg_max_simt.h#L91-L104)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

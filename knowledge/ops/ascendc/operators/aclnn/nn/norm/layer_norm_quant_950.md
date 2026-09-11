@@ -5,38 +5,38 @@ description: "说明 aclnnLayerNormQuant 在 950 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/docs/aclnnLayerNormQuant.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/docs/aclnnLayerNormQuant.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/op_api/aclnn_layer_norm_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/op_api/aclnn_layer_norm_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/op_api/layer_norm_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/op_api/layer_norm_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_util.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_util.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/layer_norm_quant_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/layer_norm_quant_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/arch35/layer_norm_quant_regbase_normal.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/arch35/layer_norm_quant_regbase_normal.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/arch35/layer_norm_quant_regbase_spilt_d.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/arch35/layer_norm_quant_regbase_spilt_d.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/arch35/utils.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/arch35/utils.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/config/ascend950/layer_norm_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/config/ascend950/layer_norm_quant_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T17:58:11Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -674,7 +674,7 @@ workspace_total=LibApi workspace；Kernel自身0
 
 - 适用 Route：R-001 至 R-006
 - 触发条件：950 `_apt` entry 被调度；core type 为 AIC 时立即返回
-- Golden 来源：[`norm/layer_norm_quant/op_kernel/layer_norm_quant_apt.cpp:18-25`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/layer_norm_quant_apt.cpp#L18-L25)
+- Golden 来源：[`norm/layer_norm_quant/op_kernel/layer_norm_quant_apt.cpp:18-25`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/layer_norm_quant_apt.cpp#L18-L25)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -710,7 +710,7 @@ LayerNorm、归约、仿射和量化全部由 Vector primitive 实现，不需�
 
 - 适用 Route：全部；容量不足时落到 R-004/R-005/R-006
 - 触发条件：`UB-256 < singleRowBufferSize+multiRowBufferSize`
-- Golden 来源：[`norm/layer_norm_quant/op_host/layer_norm_quant_tiling_arch35.cpp:68-92`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_tiling_arch35.cpp#L68-L92)
+- Golden 来源：[`norm/layer_norm_quant/op_host/layer_norm_quant_tiling_arch35.cpp:68-92`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_host/layer_norm_quant_tiling_arch35.cpp#L68-L92)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -763,7 +763,7 @@ ge::graphStatus LayerNormQuantRegTiling::GetTilingSliceInfo()
 
 - 适用 Route：R-004、R-005、R-006
 - 触发条件：`sliceNum>1`
-- Golden 来源：[`norm/layer_norm_quant/op_kernel/arch35/layer_norm_quant_regbase_spilt_d.h:66-91`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/arch35/layer_norm_quant_regbase_spilt_d.h#L66-L91)
+- Golden 来源：[`norm/layer_norm_quant/op_kernel/arch35/layer_norm_quant_regbase_spilt_d.h:66-91`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/layer_norm_quant/op_kernel/arch35/layer_norm_quant_regbase_spilt_d.h#L66-L91)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

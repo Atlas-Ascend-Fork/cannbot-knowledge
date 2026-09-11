@@ -5,26 +5,26 @@ description: "说明 aclnnSimThreadExponential 在 950 上的接口语义、Host
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/docs/aclnnSimThreadExponential.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/docs/aclnnSimThreadExponential.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_host/sim_thread_exponential_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_host/sim_thread_exponential_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_host/arch35/sim_thread_exponential_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_host/arch35/sim_thread_exponential_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_host/arch35/random_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_host/arch35/random_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_unified_tiling_data_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_unified_tiling_data_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/arch35/sim_thread_exponential_simt.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/arch35/sim_thread_exponential_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:23:17Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -392,7 +392,7 @@ thread-local logical arrays = 56 B plus scalars；编译器物理寄存器占用
 
 - 适用 Route：R-001、R-002
 - 触发条件：整个输出的元素数或最大字节 offset 超过 `INT32_MAX`
-- Golden 来源：[`random_common/op_host/arch35/random_tiling_arch35.cpp:145-177`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_host/arch35/random_tiling_arch35.cpp#L145-L177)
+- Golden 来源：[`random_common/op_host/arch35/random_tiling_arch35.cpp:145-177`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_host/arch35/random_tiling_arch35.cpp#L145-L177)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -428,7 +428,7 @@ Host 先折叠连续维度，再沿字节 extent 最大的维度二分，直至�
 
 - 适用 Route：R-001、R-002
 - 触发条件：`UNROLL=4`，所有 950 SIMT route
-- Golden 来源：[`random_common/op_kernel/arch35/random_kernel_base.h:650-667`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h#L650-L667)
+- Golden 来源：[`random_common/op_kernel/arch35/random_kernel_base.h:650-667`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h#L650-L667)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -468,7 +468,7 @@ for (uint64_t loopIdx = 0; loopIdx < repeatTime; loopIdx++) {
 
 - 适用 Route：R-001、R-002
 - 触发条件：每次 `Philox4x32Round`
-- Golden 来源：[`random_common/op_kernel/arch35/random_kernel_base.h:402-414`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h#L402-L414)
+- Golden 来源：[`random_common/op_kernel/arch35/random_kernel_base.h:402-414`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/random_common/op_kernel/arch35/random_kernel_base.h#L402-L414)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

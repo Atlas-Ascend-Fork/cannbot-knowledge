@@ -5,26 +5,26 @@ description: "说明 aclnnAmpUpdateScale 在 A2/A3 上的接口语义、Host/Lau
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/docs/aclnnAmpUpdateScale.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/docs/aclnnAmpUpdateScale.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/amp_update_scale_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/amp_update_scale_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/amp_update_scale_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/amp_update_scale_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/amp_update_scale_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/amp_update_scale_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_kernel/amp_update_scale.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_kernel/amp_update_scale.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_kernel/amp_update_scale.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_kernel/amp_update_scale.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/config/ascend910b/amp_update_scale_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/config/ascend910b/amp_update_scale_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/config/ascend910_93/amp_update_scale_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/config/ascend910_93/amp_update_scale_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T10:04:08Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -403,7 +403,7 @@ workspace_total = body 0 B；ACLNN 框架精确值固定仓不可见
 
 - 适用 Route：R-003 分配；R-001/R-002 编译期消除。
 - 触发条件：`IsSameType<T, bfloat16_t>::value`。
-- Golden 来源：[`math/amp_update_scale/op_kernel/amp_update_scale.h:49-58`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_kernel/amp_update_scale.h#L49-L58)
+- Golden 来源：[`math/amp_update_scale/op_kernel/amp_update_scale.h:49-58`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/amp_update_scale/op_kernel/amp_update_scale.h#L49-L58)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

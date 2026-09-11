@@ -5,30 +5,30 @@ description: "说明 cann_bench::adaptive_avg_pool_3d、calc_adaptive_avg_pool_3
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_pool3d_tiling_struct.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_pool3d_tiling_struct.h"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_avg_pool3d/op_kernel/adaptive_avg_pool3d_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_avg_pool3d/op_kernel/adaptive_avg_pool3d_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_simt.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_simt.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_pool3d_big_kernel.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_pool3d_big_kernel.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_big_kernel.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_big_kernel.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_parall_pool.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_parall_pool.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_host/arch35/adaptive_pool3d_tiling.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_host/arch35/adaptive_pool3d_tiling.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_host/arch35/adaptive_pool3d_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_host/arch35/adaptive_pool3d_tiling.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_host/arch35/adaptive_avg_pool3d_simt_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_host/arch35/adaptive_avg_pool3d_simt_tiling.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_host/arch35/adaptive_avg_pool3d_big_kernel_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_host/arch35/adaptive_avg_pool3d_big_kernel_tiling.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_host/arch35/adaptive_avg_pool3d_para_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_host/arch35/adaptive_avg_pool3d_para_tiling.cpp"
     role: implementation
 created_at: "2026-08-25T19:30:49Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -882,7 +882,7 @@ dynamic_ub=N/A; workspace_total=0
 
 - 适用 Route：R-005/R-007；R-003 仅复用输出索引解码。
 - 触发条件：Host/entry 已为每个输出维度生成 magic/shift；R-007 依据最大乘积选择 u64。
-- 固定来源：[`adaptive_avg_pool3d_simt.h:66-74`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_simt.h#L66-L74)
+- 固定来源：[`adaptive_avg_pool3d_simt.h:66-74`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_simt.h#L66-L74)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -919,7 +919,7 @@ dynamic_ub=N/A; workspace_total=0
 
 - 适用 Route：R-006。
 - 触发条件：真实对齐窗口超过 `maxCount`；若 `AlignHW<=maxCount` 切 D，否则若 `AlignW<=maxCount` 切 H，否则切 W。
-- 固定来源：[`adaptive_avg_pool3d_big_kernel.h:296-302`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_big_kernel.h#L296-L302)
+- 固定来源：[`adaptive_avg_pool3d_big_kernel.h:296-302`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_big_kernel.h#L296-L302)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -954,7 +954,7 @@ dynamic_ub=N/A; workspace_total=0
 
 - 适用 Route：R-004。
 - 触发条件：parallel capability 全部成立，`ncFactor=256/dtypeBytes`，tile 满足 UB 与 W 尾 guard。
-- 固定来源：[`adaptive_avg_pool3d_parall_pool.h:667-674`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_parall_pool.h#L667-L674)
+- 固定来源：[`adaptive_avg_pool3d_parall_pool.h:667-674`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_pool3d_common/op_kernel/arch35/adaptive_avg_pool3d_parall_pool.h#L667-L674)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

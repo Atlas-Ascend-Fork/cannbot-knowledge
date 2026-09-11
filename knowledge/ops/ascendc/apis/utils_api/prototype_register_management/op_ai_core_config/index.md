@@ -7,7 +7,6 @@
 - [ExtendCfgInfo](extend_cfg_info.md)：用于扩展算子相关参数配置，提供更灵活的参数配置能力。
 - [Input（原型注册管理）](input.md)：某些场景下，同一个算子在不同的AI处理器型号上，其支持的原型输入不同。 通过该接口，可针对不同的AI处理器型号注册差异化的算子原型。调用该接口后会返回一个OpParamDef结构，后续可通过该结构配置算子输入信息。
 - [NeedCheckSupportFlag](need_check_support_flag.md)：标识是否在算子融合阶段调用算子参数校验函数进行data type与shape的校验。 - 若配置为"true"，框架会调用通过SetCheckSupport设置的算子参数校验函数，检查算子是否支持指定输入，此场景下需要自行实现算子参数校验的回调函数。 - 若配置为"false"，表示不需要进行校验。
-- [OpAICoreConfig](op_ai_core_config.md)：OpAICoreConfig算子配置接口索引。
 - [OpAICoreConfig构造函数](op_ai_core_config_constructor.md)：OpAICoreConfig构造函数。
 - [operator =](operator.md)：赋值运算符重载，实现OpAICoreConfig类对象的深拷贝
 - [Output（原型注册管理）](output.md)：某些场景下，同一个算子在不同的AI处理器型号上，其支持的原型输出不同。 通过该接口，可针对不同的AI处理器型号注册差异化的算子输出。调用该接口后会返回一个OpParamDef结构，后续可通过该结构配置算子输出信息。

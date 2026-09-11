@@ -2,23 +2,68 @@
 type: API
 title: GetStride
 description: 返回描述内存访问步长的Stride对象，与Shape的维度信息一一对应。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.development_mode.tensor_programming]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.development_mode.tensor_programming
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/aux_data_structures/Layout/GetStride.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: [a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- a2
+- a3
 ---
 
+# GetStride<a name="ZH-CN_TOPIC_0000002331573721"></a>
 
-# GetStride
+## 功能说明<a name="zh-cn_topic_0000002042526794_zh-cn_topic_0000001602767550_zh-cn_topic_0000001600123102_section36583473819"></a>
 
-获取Layout的Stride信息。返回Layout中描述的各维度步长。函数原型：Stride GetStride() const。返回Stride结构体，包含各维度步长。用于查询Tensor的内存步长信息。
+返回描述内存访问步长的Stride对象，与Shape的维度信息一一对应。
+
+## 函数原型<a name="zh-cn_topic_0000002042526794_zh-cn_topic_0000001602767550_zh-cn_topic_0000001600123102_section13230182415108"></a>
+
+```cpp
+__aicore__ inline constexpr decltype(auto) GetStride() {}    
+__aicore__ inline constexpr decltype(auto) GetStride() const {}
+```
+
+## 参数说明<a name="zh-cn_topic_0000002042526794_zh-cn_topic_0000001602767550_zh-cn_topic_0000001600123102_section75395119104"></a>
+
+无
+
+## 返回值说明<a name="zh-cn_topic_0000002042526794_zh-cn_topic_0000001602767550_zh-cn_topic_0000001600123102_section25791320141317"></a>
+
+描述内存访问步长的Stride对象，Stride结构类型（[Std::tuple](../../../../utils_api/cpp_stdlib/container_functions/index.md)类型的别名），定义如下：
+
+```cpp
+template <typename... Strides>
+using Stride = Std::tuple<Strides...>;
+```
+
+## 约束说明<a name="zh-cn_topic_0000002042526794_zh-cn_topic_0000001602767550_zh-cn_topic_0000001600123102_section19165124931511"></a>
+
+无
+
+## 调用示例<a name="zh-cn_topic_0000002042526794_zh-cn_topic_0000001602767550_zh-cn_topic_0000001600123102_section320753512363"></a>
+
+```cpp
+// 初始化Layout数据结构，获取对应数值
+AscendC::Shape<int,int,int> shape = AscendC::MakeShape(10, 20, 30);
+AscendC::Stride<int,int,int> stride = AscendC::MakeStride(1, 100, 200);
+
+AscendC::Layout<AscendC::Shape<int, int, int>, AscendC::Stride<int, int, int>> layoutInit(shape, stride);
+
+int value = AscendC::Std::get<0>(layoutInit.GetStride()); // value = 1
+value = AscendC::Std::get<1>(layoutInit.GetStride()); // value = 100
+value = AscendC::Std::get<2>(layoutInit.GetStride()); // value = 200
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [GetStride](../../data_structure_tensor_api/layout_structure/get_stride.md)（`same_topic`）：获取Layout的Stride信息。返回Layout中描述的各维度步长；从 Layout 中提取 Stride 部分。两端均定义从 Layout 读取 Stride 的同一操作，候选进一步给出 950 Tensor API 的 tuple 索引形态。
+- [GetStride](../../../tensor_api/layout/get_stride.md)（`same_topic`）：获取Layout的Stride信息。返回Layout中描述的各维度步长；从 Layout 中提取 Stride 部分。两端均定义从 Layout 读取 Stride 的同一操作，候选进一步给出 950 Tensor API 的 tuple 索引形态。
 <!-- cannbot:related:end -->

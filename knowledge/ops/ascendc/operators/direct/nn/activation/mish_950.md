@@ -5,18 +5,18 @@ description: "说明 cann_bench::mish、mish_npu 与 launch_mish_kernel_{float,h
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_host/arch35/mish_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_host/arch35/mish_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_kernel/arch35/mish_struct.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_kernel/arch35/mish_struct.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_kernel/mish_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_kernel/mish_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_kernel/arch35/mish_dag.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_kernel/arch35/mish_dag.h
     role: implementation
 created_at: "2026-08-25T19:29:31Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -708,7 +708,7 @@ workspace_total = 0
 
 - 适用 Route：P0 R-001、P1 R-002、P2 R-004、P3 R-005、P4 R-003。
 - 触发条件：所有合法非空 FP32/FP16/BF16 Direct 输入；cap 按模板 dtype 固定。
-- 相关官方来源：[`mish_dag.h:81-100`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_kernel/arch35/mish_dag.h#L81-L100)。
+- 相关官方来源：[`mish_dag.h:81-100`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_kernel/arch35/mish_dag.h#L81-L100)。
 - 归因边界：以下摘录是固定官方四 Exp/两 Div 分段基线；单 Exp/单 Div 与 cap 是 Direct 转换事实。
 
 **官方源码（固定 Commit 连续逐字摘录）**：
@@ -743,7 +743,7 @@ Direct body 把官方分段表达式代数化为 `u=exp(min(x,cap)); v=u*(u+2); 
 
 - 适用 Route：P1 R-002 与 P4 R-003 使用原生 FP16；P2 R-004 与 P3 R-005 使用 BF16 widening。
 - 触发条件：模板 `kIsHalf` 决定 `ComputeT=half`；BF16 命中 `!kIsFloat&&!kIsHalf` 时分配 `xFloatBuf_`。
-- 相关官方来源：[`mish_dag.h:73-80`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_kernel/arch35/mish_dag.h#L73-L80)。
+- 相关官方来源：[`mish_dag.h:73-80`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_kernel/arch35/mish_dag.h#L73-L80)。
 - 归因边界：官方摘录显示 16-bit 输入升 FP32 的相关基线；Direct 仅 BF16 升精度、FP16 保持原生是转换特化。
 
 **官方源码（固定 Commit 连续逐字摘录）**：
@@ -780,7 +780,7 @@ FP16 Route 让 `sp/tmp` 都是 half，省去输入、输出 Cast 和一个 32KiB
 
 - 适用 Route：P1 R-002、P2 R-004、P3 R-005、P4 R-003。
 - 触发条件：窄类型 `blockLength<131072` 选 PD2，`>=131072` 选 PD4；FP32 固定 PD4。
-- 相关官方来源：[`mish_tiling_arch35.cpp:110-136`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_host/arch35/mish_tiling_arch35.cpp#L110-L136)。
+- 相关官方来源：[`mish_tiling_arch35.cpp:110-136`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/mish/op_host/arch35/mish_tiling_arch35.cpp#L110-L136)。
 - 归因边界：官方摘录使用 `ElewiseBaseTiling` 和官方 tiling key；显式 4096 core span、16-tile 阈值及 PD2/PD4 模板是 Direct 转换事实。
 
 **官方源码（固定 Commit 连续逐字摘录）**：

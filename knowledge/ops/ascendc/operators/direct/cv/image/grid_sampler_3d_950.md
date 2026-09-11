@@ -5,36 +5,34 @@ description: "说明 cann_bench::grid_sampler_3d、grid_sampler_3d_npu 与 Direc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sample/docs/aclnnGridSampler3D.md
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/grid_sample/docs/aclnnGridSampler3D.md
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sample/op_host/grid_sample_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/grid_sample/op_host/grid_sample_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sample/op_kernel/arch35/grid_sampler_3d_bilinear_smit.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/grid_sample/op_kernel/arch35/grid_sampler_3d_bilinear_smit.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sample/op_kernel/arch35/grid_sampler_bilinear_smit_common.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/grid_sample/op_kernel/arch35/grid_sampler_bilinear_smit_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sampler3_d_grad/op_kernel/arch35/grid_sampler3_d_grad_simt.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/grid_sampler3_d_grad/op_kernel/arch35/grid_sampler3_d_grad_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sampler3_d_grad/op_kernel/arch35/grid_sampler3_d_grad_simt_base.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/grid_sampler3_d_grad/op_kernel/arch35/grid_sampler3_d_grad_simt_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sampler2_d/op_kernel/arch35/grid_sampler2_d_simt.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/grid_sample/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sample/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/transpose_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_kernel/transpose_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_small_shape.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_kernel/arch35/transpose_small_shape.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h
-    role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:29:53Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -72,7 +70,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-转换交付注册 Torch schema，并分别绑定 Meta 与 `PrivateUse1` 实现；它不是 ACLNN 两段式接口。相关官方 `image/grid_sample` 的 arch35 三维 bilinear body 与 common helper 被保持，普通 Tiling 宏、注册式 key router 和 `gert::TilingContext` 被 Direct POD、显式 entry 与 `PlatformAscendCManager` 替代。nearest forward、NHWC-input sampler、2,000,000 元素 selector 和 Direct launch glue 是交付派生路线；nearest 只复用官方 3D-grad/2D-forward 中可核对的坐标与 `rintf` 语义。固定官方 transpose 源码的 `TryVCONVTiling` 同时包含 2-byte VCONV key 10007 和支持 B8/B16/B32（含 FP32）的 021 VCONV key 10008，并在 last-axis gather 之前尝试、成功即短路。canonical 保留了与固定官方 commit 字节一致的 `transpose_transdata_5hd_021.h`，但该 body header 未被 include、未实例化；从生效闭包删除的是 021 Host `Is021VConvValid`/Tiling producer、POD、entry 与 10008 router，只保留 2-byte VCONV 路线。因此不能把“FP32 没有 VCONV 分支”归因于官方源码。目标构建为 CANN 9.1.0、950/Ascend 950（`dav-3510`）。
+转换交付注册 Torch schema，并分别绑定 Meta 与 `PrivateUse1` 实现；它不是 ACLNN 两段式接口。相关官方 `image/grid_sample` 的 arch35 三维 bilinear body 与 common helper 被保持，普通 Tiling 宏、注册式 key router 和 `gert::TilingContext` 被 Direct POD、显式 entry 与 `PlatformAscendCManager` 替代。nearest forward、NHWC-input sampler、2,000,000 元素 selector 和 Direct launch glue 是交付派生路线；nearest 的坐标处理与 `rintf` 语义可在官方 3D-grad 的 helper 和 `ComputeNearest` 中核对，这不证明官方存在同名 Direct forward 入口。固定官方 transpose 源码的 `TryVCONVTiling` 同时包含 2-byte VCONV key 10007 和支持 B8/B16/B32（含 FP32）的 021 VCONV key 10008，并在 last-axis gather 之前尝试、成功即短路。canonical 保留了与固定官方 commit 字节一致的 `transpose_transdata_5hd_021.h`，但该 body header 未被 include、未实例化；从生效闭包删除的是 021 Host `Is021VConvValid`/Tiling producer、POD、entry 与 10008 router，只保留 2-byte VCONV 路线。因此不能把“FP32 没有 VCONV 分支”归因于官方源码。目标构建为 CANN 9.1.0、950/Ascend 950（`dav-3510`）。
 
 ## Host/Launcher 执行流程
 
@@ -445,7 +443,7 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0
 |---|---|---|---|
 | Host/router | `op_kernel/grid_sampler_3d_kernel.cpp` | `launch_grid_sampler_3d_direct_*` | nearest/u32-u64分发 |
 | Device body | `op_kernel/arch35/grid_sampler_3d_nearest_simt.h` | `ComputeGridSampler3dNearest` | Direct派生forward body |
-| Official related | `image/grid_sampler3_d_grad/...simt*.h`、`image/grid_sampler2_d/...simt.h` | nearest source-index helpers | `rintf`、padding语义参照，不是本forward入口 |
+| Official related | `image/grid_sampler3_d_grad/op_kernel/arch35/grid_sampler3_d_grad_simt.h`、`grid_sampler3_d_grad_simt_base.h` | `ComputeNearest`、source-index helpers | `rintf`、padding语义参照，不是本forward入口 |
 
 ### Route R-004：CUT_ONCE NDDMA transpose + NHWC SIMT
 
@@ -716,7 +714,7 @@ workspace_total=0; intermediate_GM=I*4 B
 
 - 适用 Route：R-001；R-002、R-004、R-005、R-003 的 sampler 沿用同一调度形态。
 - 触发条件：所有非空输出；Host 令 `blockDim<=ceil(O/512)`。
-- 固定官方源码依据：[`image/grid_sample/op_kernel/arch35/grid_sampler_3d_bilinear_smit.h:139-147`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sample/op_kernel/arch35/grid_sampler_3d_bilinear_smit.h)
+- 固定官方源码依据：[`image/grid_sample/op_kernel/arch35/grid_sampler_3d_bilinear_smit.h:139-147`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/grid_sample/op_kernel/arch35/grid_sampler_3d_bilinear_smit.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -745,7 +743,7 @@ for (T_IDX index = blockId_ * VF_MAX_THREAD_NUM_3D + threadIdx.x; index < outImg
 
 - 适用 Route：R-004、R-005、R-003。
 - 触发条件：Direct派生谓词`FP32 && bilinear && padding!=reflection && O>=2,000,000`，canonical剩余2-byte VCONV与gather前置tiler未成功，且普通transpose tiler产出白名单key。固定官方源码另有先于gather的FP32 021 key10008；canonical只孤立保留其body header，没有021生效闭包。
-- 固定官方源码依据：[`conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h:312-330`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h)
+- 固定官方源码依据：[`conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h:312-330`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -774,7 +772,7 @@ CopyOut(loopIdx, loopSizeMain_, loopSrcStrideMain_, loopDstStrideMain_);
 
 - 适用 Route：R-005。
 - 触发条件：transpose key 10003，input/output切轴不同并可能同时出现余数。
-- 固定官方源码依据：[`conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h:102-129`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h)
+- 固定官方源码依据：[`conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h:102-129`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -841,7 +839,6 @@ Host 把 main、input-tail、output-tail、both-tail写成互斥区间和四组5
 | Related helper | `image/grid_sample/op_kernel/arch35/grid_sampler_bilinear_smit_common.h` | `Clip/reflectCoordinates` | padding/非有限坐标 |
 | Related nearest | `image/grid_sampler3_d_grad/op_kernel/arch35/grid_sampler3_d_grad_simt.h` | nearest `rintf`路径 | Direct nearest语义参照 |
 | Related nearest helper | `image/grid_sampler3_d_grad/op_kernel/arch35/grid_sampler3_d_grad_simt_base.h` | source-index helper | 3-D padding边界参照 |
-| Related 2-D forward | `image/grid_sampler2_d/op_kernel/arch35/grid_sampler2_d_simt.h` | forward nearest | forward数据流交叉核对 |
 | Related build | `image/grid_sample/CMakeLists.txt` | GridSample target | 官方相关构建接线 |
 | Transpose Tiling | `conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp` | `TryVCONVTiling/Is021VConvValid/TransposeNddmaTiling` | 官方2-byte key10007与含FP32的021 key10008优先于gather；canonical删除021 producer后保留10001/2/3、POD与UB/core公式 |
 | Transpose 021 Tiling | `conversion/transpose/op_host/arch35/transpose_tiling_with_021vconv_arch35.h/.cpp` | `Transpose021VCONVTilingData/Transpose021VCONVTiling` | 官方10008专用POD与Host tiler；canonical生效闭包未保留 |

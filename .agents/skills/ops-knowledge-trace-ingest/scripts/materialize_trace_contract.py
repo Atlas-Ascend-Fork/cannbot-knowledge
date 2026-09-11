@@ -30,48 +30,12 @@ Usage:
 
 import argparse
 import copy
-import hashlib
 import json
 import sys
 from pathlib import Path
 
-from validate_review_receipt import validate_receipt
-
-
-ROLE_SETS = {
-    "repair_recipe": ["failure", "before", "repair_after", "validation_after"],
-    "diagnostic_rule": ["trigger", "probe", "observation", "interpretation"],
-    "negative_result": ["attempt", "observation", "boundary"],
-    "validated_pattern": ["implementation", "validation"],
-}
-ARTIFACT_KINDS = {"code", "config", "command", "output", "probe"}
-RECONSTRUCTION_METHODS = {
-    "full_snapshot",
-    "base_plus_complete_edit_chain",
-    "self_contained_event",
-}
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
-
-
-def trace_length(path: Path) -> int:
-    n = 0
-    with path.open("r", encoding="utf-8") as stream:
-        for line in stream:
-            event = json.loads(line)
-            seq = event.get("sequence", event.get("seq"))
-            if not isinstance(seq, int):
-                raise ValueError(f"{path}: non-integer sequence at line {n + 1}")
-            n += 1
-            if seq != n:
-                raise ValueError(f"{path}: sequence not contiguous 1..N (got {seq} at {n})")
-    return n
+from validate_curated_output import ROLE_SETS, trace_length
+from validate_review_receipt import sha256_file, validate_receipt
 
 
 def anchor(sha12: str, seq) -> str:

@@ -5,60 +5,60 @@ description: "说明 aclnnBatchNorm 在 950 上的接口语义、Host/Launcher �
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/docs/aclnnBatchNorm.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/docs/aclnnBatchNorm.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/op_api/aclnn_batch_norm.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/op_api/aclnn_batch_norm.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/op_api/aclnn_batch_norm.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/op_api/aclnn_batch_norm.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/op_api/batch_norm.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/op_api/batch_norm.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_block_split_r_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_block_split_r_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_ra_welford_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_ra_welford_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_rar_block_split_r_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_rar_block_split_r_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_welford_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_welford_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_infer_last_channel_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_infer_last_channel_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_infer_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_infer_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/batch_norm_v3_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/batch_norm_v3_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_ra_full_reduce.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_ra_full_reduce.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_block_split_r.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_block_split_r.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_ra_welford.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_ra_welford.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_rar_block_split_r.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_rar_block_split_r.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_welford.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_welford.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_infer_last_channel.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_infer_last_channel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_infer_last_channel_continuous_a.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_infer_last_channel_continuous_a.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_infer_last_channel_small_a.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_infer_last_channel_small_a.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_infer.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_infer.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_infer_small_ab1.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_infer_small_ab1.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/config/ascend950/batch_norm_v3_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/config/ascend950/batch_norm_v3_binary.json
     role: implementation
 created_at: "2026-08-25T17:55:52Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -1199,7 +1199,7 @@ dynamic_ub=N/A; workspace_total=16 MiB
 
 - 适用 Route：R-001～R-011
 - 触发条件：Kernel invocation 的 `g_coreType == AIC`
-- Golden 来源：[`op_kernel/batch_norm_v3_apt.cpp:46-54`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/batch_norm_v3_apt.cpp#L46-L54)
+- Golden 来源：[`op_kernel/batch_norm_v3_apt.cpp:46-54`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/batch_norm_v3_apt.cpp#L46-L54)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1232,7 +1232,7 @@ KERNEL_TASK_TYPE_DEFAULT(KERNEL_TYPE_MIX_AIV_1_0);
 
 - 适用 Route：R-001、R-004
 - 触发条件：RA 为 `currentANum*sizeof(T)<=32`；RAR 为 `r0*sizeof(T)<=32`
-- Golden 来源：[`op_kernel/arch35/batch_norm_v3_ra_full_reduce.h:208-229`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_ra_full_reduce.h#L208-L229)
+- Golden 来源：[`op_kernel/arch35/batch_norm_v3_ra_full_reduce.h:208-229`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_kernel/arch35/batch_norm_v3_ra_full_reduce.h#L208-L229)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1263,7 +1263,7 @@ if (currentANum * sizeof(T) <= NDDMA_THRESHOLD) {
 
 - 适用 Route：R-002、R-005
 - 触发条件：Host 选择 BlockSplitR/RARBlockSplitR，多核沿 R 分片
-- Golden 来源：[`op_host/batch_norm_v3_tiling_block_split_r_arch35.cpp:225-242`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_block_split_r_arch35.cpp#L225-L242)
+- Golden 来源：[`op_host/batch_norm_v3_tiling_block_split_r_arch35.cpp:225-242`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/batch_norm_v3/op_host/batch_norm_v3_tiling_block_split_r_arch35.cpp#L225-L242)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

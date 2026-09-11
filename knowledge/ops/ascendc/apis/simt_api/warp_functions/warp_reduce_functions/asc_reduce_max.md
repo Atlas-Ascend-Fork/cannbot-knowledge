@@ -2,26 +2,97 @@
 type: API
 title: asc_reduce_max
 description: 对Warp内所有活跃线程输入的val求最大值。Warp内所有活跃线程返回相同的结果。
-tags: [task.lookup, topic.programming_model.cooperative_groups]
+tags:
+- task.lookup
+- topic.programming_model.cooperative_groups
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/Warp_functions/Warp_reduce_functions/asc_reduce_max.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/device_warp_functions.h
+- include/simt_api/asc_fp16.h
 ---
 
-# asc_reduce_max
+# asc\_reduce\_max
+
+## 功能说明
 
 对Warp内所有活跃线程输入的val求最大值。Warp内所有活跃线程返回相同的结果。
 
-函数原型：inline int32_t asc_reduce_max(int32_t val)；inline uint32_t asc_reduce_max(uint32_t val)；inline float asc_reduce_max(float val) 等4种重载
+## 函数原型
 
-参数：val（输入）：源操作数。
+```cpp
+inline int32_t asc_reduce_max(int32_t val)
+```
 
-返回值：Warp内所有活跃线程输入val的最大值。
+```cpp
+inline uint32_t asc_reduce_max(uint32_t val)
+```
 
-仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。
-需包含头文件 "simt_api/device_warp_functions.h"。
-支持 SIMT 与 SIMD/SIMT 混合编程场景。
+```cpp
+inline float asc_reduce_max(float val)
+```
+
+```cpp
+inline half asc_reduce_max(half val)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| val | 输入 | 源操作数。 |
+
+## 返回值说明
+
+Warp内所有活跃线程输入val的最大值。
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用除half类型之外的接口需要包含`simt_api/device_warp_functions.h`头文件，使用half类型接口需要包含`simt_api/asc_fp16.h`头文件。
+
+```cpp
+#include "simt_api/device_warp_functions.h"
+```
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelReduceMax(int32_t* dst)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        int32_t laneId = idx % 32;
+        int32_t result = asc_reduce_max(laneId); // 返回值为31
+        dst[idx] = result;
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelReduceMax(__gm__ int32_t* dst)
+    {
+        // asc_vf_call参数：dim3{1024, 1, 1}
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        int32_t laneId = idx % 32;
+        int32_t result = asc_reduce_max(laneId); // 返回值为31
+        dst[idx] = result;
+    }
+    ```

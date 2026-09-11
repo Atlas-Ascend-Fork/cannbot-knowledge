@@ -5,36 +5,36 @@ description: "说明 aclnnAngleV2 在 A2/A3 上的接口语义、Host/Launcher �
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/docs/aclnnAngleV2.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/docs/aclnnAngleV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/angle_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/angle_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/angle_v2_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/angle_v2_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/angle_v2_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/angle_v2_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/config/ascend910b/angle_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/config/ascend910b/angle_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/config/ascend910_93/angle_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_host/config/ascend910_93/angle_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_base.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_u8.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_u8.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_int.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_int.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_complex.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_complex.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T10:05:46Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -870,7 +870,7 @@ dynamic_ub=N/A; workspace_total=16 MiB
 
 - 适用 Route：R-004
 - 触发条件：输入 dtype 为 BOOL 或 UINT8，Host 分别产生 key 4/5，两者 router 均实例化 `AngleV2U8<float>`。
-- Golden 来源：[`math/angle_v2/op_kernel/angle_v2_u8.h:50-77`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_u8.h#L50-L77)
+- Golden 来源：[`math/angle_v2/op_kernel/angle_v2_u8.h:50-77`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_u8.h#L50-L77)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -912,7 +912,7 @@ BOOL/UINT8 数学域不含负数，相位恒为 0。该 Route 完全不绑定 `x
 
 - 适用 Route：R-001、R-005、R-006、R-008
 - 触发条件：最后一核，且 Host 的 `totalLengthAligned` 与按实际输入/输出 32B 元素数重新对齐的长度存在 `diffLength`。
-- Golden 来源：[`math/angle_v2/op_kernel/angle_v2_int.h:73-81`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_int.h#L73-L81)
+- Golden 来源：[`math/angle_v2/op_kernel/angle_v2_int.h:73-81`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/angle_v2/op_kernel/angle_v2_int.h#L73-L81)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

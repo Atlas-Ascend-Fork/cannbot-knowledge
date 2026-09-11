@@ -2,31 +2,101 @@
 type: API
 title: SetPadValue
 description: 设置DataCopyPad非对齐搬运时需要填充的数值，支持GM到UB的填充数据自定义。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.execution_unit.vector]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.execution_unit.vector
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move_aux_config/SetPadValue_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+source_headers:
+- include/basic_api/kernel_operator_data_copy_intf.h
 ---
 
-# SetPadValue
+# SetPadValue\(ISASI\)<a name="ZH-CN_TOPIC_0000001786582454"></a>
 
-设置DataCopyPad非对齐搬运时需要填充的数值，支持GM到UB的填充数据自定义。
+## 功能说明<a name="section618mcpsimp"></a>
 
-该接口提供将数据从Global Memory非对齐搬运至Unified Buffer的功能，可以根据开发者的需要自行填充数据。 当每个搬运的数据块长度（blockLen）非32字节对齐时，每一个数据块都需要填充数据至32字节对齐。 特别地，针对Ascend 950PR/Ascend 950DT，支持Compact模式，该模式支持单个数据块非32字节对齐，将所有数据块合并成一个连续数据块，在该数据块右侧填充数据至32字节对齐。 具体支持的数据通路为（以逻辑位置TPosition表示）： - Global Memory -> Unified Buffer - GM -> VECIN - GM -> VECOUT - GM -> VECCALC（仅Ascend 950PR/Ascend 950DT支持） 填充的数据有两种配置方式： - 配置结构体DataCopyPadExtParams的参数pa
+头文件路径为：`"basic_api/kernel_operator_data_copy_intf.h"`。
 
-本接口组包含 DataCopyPad（GMToUB非对齐数据搬运）, 逻辑位置TPosition。
+[DataCopyPad（GMToUB非对齐数据搬运）](../data_move/data_copy_pad_gm_to_ub.md)从Global Memory将数据非对齐搬运至Unified Buffer（UB）时，可根据开发者的需要自行填充数据。SetPadValue用于设置DataCopyPad需要填充的数值。
 
-本接口属于 UB 矢量计算数据搬移接口，用于不同存储间的数据拷贝。
+具体支持的数据通路为（以[逻辑位置TPosition](../../aux_data_structures/t_position.md)表示）：
 
-约束：结构体DataCopyPadExtParams的参数取值范围需要考虑不要超过UB空间大小。；当DataCopyExtParams结构体参数blockCount、blockLen任意一个值为0时，该接口将被视为NOP（空操作）。该说明针对如下型号生效：；Atlas A3 训练系列产品/Atlas A3 推理系列产品；Atlas A2 训练系列产品/Atlas A2 推理系列产品
+- Global Memory -> UB
+    - GM -> VECIN
+    - GM -> VECOUT
 
-支持的硬件型号：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Ascend 950PR/Ascend 950DT。
+## 函数原型<a name="section620mcpsimp"></a>
 
-临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+```cpp
+template <typename T, TPosition pos = TPosition::MAX>
+__aicore__ inline void SetPadValue(T paddingValue)
+```
+
+## 参数说明<a name="section622mcpsimp"></a>
+
+**表1**  模板参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| :--- | :---: | :--- |
+| T | 输入 | 填充值的数据类型，与DataCopyPad接口搬运的数据类型一致。 |
+| pos | 输入 | 用于指定DataCopyPad接口搬运过程中从Global Memory搬运数据到哪一个目的地址，目的地址通过逻辑位置来表达。默认值为TPosition::MAX，等效于TPosition::VECIN或TPosition::VECOUT。<br>支持的取值为：<br>&bull; TPosition::VECIN、TPosition::VECOUT、TPosition::MAX |
+
+**表2**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| :--- | :---: | :--- |
+| paddingValue | 输入 | DataCopyPad接口填充的数值，数据类型与DataCopyPad接口搬运的数据类型一致。 |
+
+## 数据类型
+
+
+- Ascend 950PR/Ascend 950DT，支持的数据类型为：bool、int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、complex32、int64_t、uint64_t、double、complex64。
+
+
+
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。
+
+
+
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t、double。
+
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+无
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+无
+
+## 调用示例<a name="section1227835243314"></a>
+
+```cpp
+// 场景1：使用SetPadValue进行自定义填充。
+// DataCopyExtParams参数：blockCount=1, blockLen=20*sizeof(half), srcStride=0, dstStride=0, rsv=0。
+// DataCopyPadExtParams参数：isPad=false, leftPadding=0, rightPadding=12。
+// SetPadValue设置填充值为1，配合isPad=false使用。
+AscendC::DataCopyExtParams copyParams{1, srcCols * sizeof(T), 0, 0, 0};
+AscendC::DataCopyPadExtParams<T> padParams;
+padParams.isPad = false;
+padParams.leftPadding = 0;
+padParams.rightPadding = dstCols - srcCols;
+
+AscendC::SetPadValue((T)1);
+AscendC::DataCopyPad(srcLocal, srcGlobal, copyParams, padParams);
+```
+
+完整样例请参考[DataCopyPad样例场景1](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_pad_gm2ub_ub2gm)。
+
 
 <!-- cannbot:related:start -->
 ## 相关

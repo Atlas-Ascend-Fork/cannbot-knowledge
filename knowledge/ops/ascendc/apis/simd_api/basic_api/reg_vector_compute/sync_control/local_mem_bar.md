@@ -2,28 +2,112 @@
 type: API
 title: LocalMemBar
 description: Reg矢量计算宏函数内不同流水线之间的同步指令，目的流水线等待源流水线上所有指令完成才执行。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.implementation.synchronization]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.implementation.synchronization
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/sync_control/LocalMemBar.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/basic_api/reg_compute/kernel_reg_compute_membar_intf.h
 ---
-# LocalMemBar
 
-头文件路径为："basic_api/reg_compute/kernel_reg_compute_membar_intf.h"。
+# LocalMemBar<a name="ZH-CN_TOPIC_0000002222134221"></a>
 
-Reg矢量计算宏函数内不同流水线之间的同步指令。该同步指令指定src源流水线和dst目的流水线，如下图所示，目的流水线将等待源流水线上所有指令完成才进行执行。读写场景下，当读指令使用的寄存器和写指令使用的寄存器相同时，可以触发寄存器保序，指令将会按照代码顺序执行，不需要插入同步指令，而当使用的寄存器不同时，如果要确保读写指令顺序执行，则需要插入同步指令，写写场景同理。MemType用于标识不同的流水线类型，其具体取值与含义
+## 功能说明<a name="section618mcpsimp"></a>
 
-参数：src: 源流水线，类型为MemType，具体参见表2 MemType取值说明。；dst: 目的流水线，类型为MemType，具体参见表2 MemType取值说明。；VEC_STORE: SIMD_VF函数内矢量写UB流水线。 对应寄存器到UB的搬运指令，如StoreAlign、StoreUnAlign、Store。；VEC_LOAD: SIMD_VF函数内矢量读UB流水线。 对应UB到寄存器的搬运指令，如LoadAlign、LoadUnAlign、Load。；SCALAR_STORE: SIMD_VF函数内标量写UB流水线。 对应标量写入UB的指令。；SCALAR_LOAD: SIMD_VF函数内标量读UB流水线。 对应UB读取标量的指令。；VEC_ALL: SIMD_VF函数内所有矢量读写UB流水线。；SCALAR_ALL: SIMD_VF函数内所有标量读写UB流水线。
+头文件路径为：`"basic_api/reg_compute/kernel_reg_compute_membar_intf.h"`。
 
-支持数据类型：无。
+Reg矢量计算宏函数内不同流水线之间的同步指令。该同步指令指定src源流水线和dst目的流水线，如下图所示，目的流水线将等待源流水线上所有指令完成才进行执行。读写场景下，当读指令使用的寄存器和写指令使用的寄存器相同时，可以触发寄存器保序，指令将会按照代码顺序执行，不需要插入同步指令，而当使用的寄存器不同时，如果要确保读写指令顺序执行，则需要插入同步指令，写写场景同理。MemType用于标识不同的流水线类型，其具体取值与含义详见[表 MemType取值说明](#table2_memtype)。
 
-约束：读写依赖的场景下，如果读指令和写指令使用的寄存器相同，会触发寄存器保序，指令将会按照代码顺序执行，无需额外插入同步指令。
+**图1**  流水线等待示意图<a name="fig2635167165614"></a>  
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/pipeline_wait.png "流水线等待示意图")
 
-仅 Ascend 950PR/Ascend 950DT 支持。
+## 函数原型<a name="section620mcpsimp"></a>
+
+```cpp
+template <MemType src, MemType dst> 
+__simd_callee__ inline void LocalMemBar()
+```
+
+## 参数说明<a name="section622mcpsimp"></a>
+
+**表1**  模板参数说明
+
+| 参数名称 | 描述 |
+| ------ | ------ |
+| src | 源流水线，类型为MemType，具体参见[表2 MemType取值说明](#table2_memtype)。 |
+| dst | 目的流水线，类型为MemType，具体参见[表2 MemType取值说明](#table2_memtype)。 |
+
+**表 2**  MemType取值说明<a name="table2_memtype"></a>
+
+| MemType取值 | 含义 |
+| ------ | ------ |
+| VEC_STORE | SIMD_VF函数内矢量写UB流水线。<br>对应寄存器到UB的搬运指令，如StoreAlign、StoreUnAlign、Store。 |
+| VEC_LOAD | SIMD_VF函数内矢量读UB流水线。<br>对应UB到寄存器的搬运指令，如LoadAlign、LoadUnAlign、Load。 |
+| SCALAR_STORE | SIMD_VF函数内标量写UB流水线。<br>对应标量写入UB的指令。 |
+| SCALAR_LOAD | SIMD_VF函数内标量读UB流水线。<br>对应UB读取标量的指令。 |
+| VEC_ALL | SIMD_VF函数内所有矢量读写UB流水线。 |
+| SCALAR_ALL | SIMD_VF函数内所有标量读写UB流水线。 |
+
+**表3**  src和dst组合取值说明
+
+| src | dst |
+| ------ | ------ |
+| MemType::VEC_STORE | MemType::VEC_LOAD |
+| MemType::VEC_LOAD | MemType::VEC_STORE |
+| MemType::VEC_STORE | MemType::VEC_STORE |
+| MemType::VEC_STORE | MemType::SCALAR_LOAD |
+| MemType::VEC_STORE | MemType::SCALAR_STORE |
+| MemType::VEC_LOAD | MemType::SCALAR_STORE |
+| MemType::SCALAR_STORE | MemType::VEC_LOAD |
+| MemType::SCALAR_STORE | MemType::VEC_STORE |
+| MemType::SCALAR_LOAD | MemType::VEC_STORE |
+| MemType::VEC_ALL | MemType::VEC_ALL |
+| MemType::VEC_ALL | MemType::SCALAR_ALL |
+| MemType::SCALAR_ALL | MemType::VEC_ALL |
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+无
+
+## 数据类型
+
+无
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+读写依赖的场景下，如果读指令和写指令使用的寄存器相同，会触发寄存器保序，指令将会按照代码顺序执行，无需额外插入同步指令。
+
+## 调用示例<a name="section642mcpsimp"></a>
+
+如下示例中dstPtr和src0Ptr为同一个Unified Buffer（UB）地址，for循环的第二次迭代中读UB矢量搬运和第一次迭代中写UB矢量搬运操作了同一块UB地址空间，因此第二次循环中读UB矢量搬运需要等待第一次循环中写UB矢量搬运执行完成后才能执行，需要插入VEC_LOAD等待VEC_STORE的同步。
+
+```cpp
+template<typename T>
+__simd_vf__ inline void AddVF(__ubuf__ T* dstAddr, __ubuf__ T* src0Addr, __ubuf__ T* src1Addr, uint32_t count, uint32_t oneRepeatSize, uint16_t repeatTimes)
+{
+    AscendC::Reg::RegTensor<T> srcReg0;
+    AscendC::Reg::RegTensor<T> srcReg1;
+    AscendC::Reg::RegTensor<T> dstReg;
+    AscendC::Reg::MaskReg mask;   
+    for (uint16_t i = 0; i < repeatTimes; i++) {
+        mask = AscendC::Reg::UpdateMask<T>(count);
+        AscendC::Reg::LocalMemBar<AscendC::Reg::MemType::VEC_STORE, AscendC::Reg::MemType::VEC_LOAD>();
+        AscendC::Reg::LoadAlign(srcReg0, src0Addr);
+        AscendC::Reg::LoadAlign(srcReg1, src1Addr + i * oneRepeatSize);
+        AscendC::Reg::Add(dstReg, srcReg0, srcReg1, mask);
+        AscendC::Reg::StoreAlign(dstAddr, dstReg, mask);
+    }
+}
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
@@ -31,4 +115,23 @@ Reg矢量计算宏函数内不同流水线之间的同步指令。该同步指�
 - [arch35 __aicore__ 调 LocalMemBar 报 507035](../../../../../runbooks/compilation/arch35_aicore_localmembar_507035.md)（`exemplifies`）：Reg矢量计算宏函数内不同流水线之间的同步指令。；从 `__aicore__` 常规函数调 `Reg::LocalMemBar<VEC_STORE,VEC_LOAD>` 触发 507035 (AIV error)，两次独立代码版本（旧 4-buffer、新 5-buffer 重排）重编重跑均复现（来源平台:950；证据等级:tool_observed）。API 同步语义受 VF 调用上下文约束，runbook 给出错误上下文的可复现失败。
 - [arch35 count Compare Select 异步VF 存读 RAW](../../../../../runbooks/precision/arch35_count_compare_select_vf_raw.md)（`exemplifies`）：读写场景下，当读指令使用的寄存器和写指令使用的寄存器相同时，可以触发寄存器保序，指令将会按照代码顺序执行，不需要插入同步指令，而当使用的寄存器不同时，如果要确保读写指令顺序执行，则需要插入同步指令，写写场景同理。；arch35 count-based Compare 为 `__simd_vf__`、经 `Reg::StoreAlign/StoreUnAlign` (VEC_STORE) 写 bMask 且内部无 LocalMemBar；count-based Select 经 `Reg::LoadAlign<DIST_US>` (VEC_LOAD) 读 bMask（来源平台：950；证据等级: tool_observed）。通用依赖规则解释该 Compare 到 Select 的具体 RAW 隐患。
 - [NMS 950 Direct Invoke 算子知识](../../../../../operators/direct/cv/image/nms_950.md)（`related`）：“每次 Vector 更新必须在下一标量读取前完成”与“目的流水线将等待源流水线上所有指令完成才进行执行”把 NMS alive buffer 的生产消费顺序连接到 LocalMemBar 的流水线等待语义。
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子（部分算子）
+
+展示 10 / 40 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [ChunkCat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 199 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/chunk_cat/op_kernel/chunk_cat_arch35.h#L199)
+- [AddLayerNormQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 430 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_quant/op_kernel/arch35/add_layer_norm_quant_regbase_helper.h#L430)
+- [FusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/fused_causal_conv1d_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 54 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_causal_conv1d/op_kernel/arch35/vf/fused_causal_conv1d_state_single_tail.h#L54)
+- [ReplicationPad2d 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/replication_pad_2d_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 358 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3/op_kernel/arch35/pad_edge_gather.h#L358)
+- [AddRmsNorm 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 420 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm/op_kernel/arch35/add_rms_norm_regbase_common.h#L420)
+- [InplaceFusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/inplace_fused_causal_conv1d_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 54 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/fused_causal_conv1d/op_kernel/arch35/vf/fused_causal_conv1d_state_single_tail.h#L54)
+- [ReplicationPad3d 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/replication_pad_3d_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 358 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3/op_kernel/arch35/pad_edge_gather.h#L358)
+- [AddRmsNormCast 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_rms_norm_cast_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 94 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/norm_common/op_kernel/reduce_common_regbase.h#L94)
+- [QuantLightningIndexer 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/quant_lightning_indexer_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 520 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/quant_lightning_indexer/op_kernel/arch35/vf/quant_lightning_indexer_vector1.h#L520)
+- [Cumsum 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/cumsum_950.md)（`related`）：算子声明的固定版本源码包含对 `LocalMemBar(...)` 的直接调用（第 739 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cumsum/op_kernel/arch35/cumsum_4_int.h#L739)
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

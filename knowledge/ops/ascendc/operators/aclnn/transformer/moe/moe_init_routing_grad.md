@@ -5,50 +5,50 @@ description: "说明 aclnnMoeInitRoutingV2Grad 在 A2/A3 上的接口语义、Ho
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/docs/aclnnMoeInitRoutingV2Grad.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/docs/aclnnMoeInitRoutingV2Grad.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/op_api/aclnn_moe_init_routing_v2_grad.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/op_api/aclnn_moe_init_routing_v2_grad.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/op_api/aclnn_moe_init_routing_v2_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/op_api/aclnn_moe_init_routing_v2_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/op_api/moe_init_routing_v2_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/op_api/moe_init_routing_v2_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/op_host/tiling_templates_registry.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/src/op_host/tiling_util.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/src/op_host/tiling_util.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad_with_dropless.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad_with_dropless.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad_with_activate.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad_with_activate.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad_with_pos_drop_and_pad_zero.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad_with_pos_drop_and_pad_zero.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/config/ascend910b/moe_init_routing_v2_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/config/ascend910b/moe_init_routing_v2_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/config/ascend910_93/moe_init_routing_v2_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/config/ascend910_93/moe_init_routing_v2_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: '2026-08-28T06:56:32Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -718,7 +718,7 @@ ACLNN_workspace_total = operator_workspace + executor 框架切片（固定仓�
 
 - 适用 Route：R-001–R-006。
 - 触发条件：`K>=128` 固定 `exp=6,bin=64,tmp=64`；否则 `exp=max(floor(log2(K))-1,0),bin=2^exp,tmp=1`。
-- Golden 来源：[`moe_init_routing_v2_grad_tiling.cpp:175-182`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling.cpp#L175-L182)
+- Golden 来源：[`moe_init_routing_v2_grad_tiling.cpp:175-182`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_host/moe_init_routing_v2_grad_tiling.cpp#L175-L182)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -754,7 +754,7 @@ Host 用 K 直接生产 `binaryAddBufferNum/tmpBufferNum/exponentOfBinary`。Dev
 
 - 适用 Route：R-002、R-004、R-006。
 - 触发条件：`T` 为 FP16/BF16，Host 设 `coe=2`，Device 设 `cpyOffset=perBuff/2`。
-- Golden 来源：[`moe_init_routing_v2_grad_with_dropless.h:111-117`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad_with_dropless.h#L111-L117)
+- Golden 来源：[`moe_init_routing_v2_grad_with_dropless.h:111-117`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_init_routing_v2_grad/op_kernel/moe_init_routing_v2_grad_with_dropless.h#L111-L117)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

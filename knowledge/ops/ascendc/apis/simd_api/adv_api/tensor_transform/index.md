@@ -6,7 +6,6 @@
 - [GetTransDataMaxMinTmpSize](get_trans_data_max_min_tmp_size.md)：在host侧获取TransData接口计算所需的最大和最小临时空间大小。
 - [Pad](pad.md)：对二维Tensor在width方向上pad到32B对齐，或对已对齐但含冗余数据的列填充设定值。
 - [Pad Tiling](pad_tiling.md)：用于获取Pad Tiling参数。
-- [张量变换](tensor_transform.md)：张量变换接口导航页，涵盖Transpose、TransData、Pad、Broadcast等张量形状与排布变换接口。
 - [TransData](trans_data.md)：将输入数据的排布格式转换为目标排布格式，支持NCDHW与NDC1HWC0、FRACTAL_Z_3D之间的转换。
 - [Transpose](transpose.md)：对输入数据进行数据排布及Reshape操作，支持NZ与ND格式间的多种轴互换和转置场景。
 - [Transpose Tiling](transpose_tiling.md)：用于获取Transpose Tiling参数。

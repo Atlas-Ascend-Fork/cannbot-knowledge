@@ -97,8 +97,15 @@ platforms: [a2, a3, '950']
 └── 精度：不一致→TRITON_INTERPRET=1；fp16→内部 fp32；Softmax→exp 近似；matmul→atol/rtol
 ```
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [FAQ.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/FAQ.md)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [错误码参考（报错信息对照表）](./error_codes.md)（`related`）：“错误码参考”
@@ -110,9 +117,3 @@ platforms: [a2, a3, '950']
 - [数据类型支持矩阵（Data Type Support Matrix）](../../apis/data_type_matrix.md)（`related`）：“各平台数据类型支持对照”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [FAQ.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/FAQ.md)

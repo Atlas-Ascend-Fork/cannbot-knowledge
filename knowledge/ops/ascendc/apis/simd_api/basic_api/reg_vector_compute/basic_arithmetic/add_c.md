@@ -2,38 +2,110 @@
 type: API
 title: AddC
 description: 对srcReg0、srcReg1及输入进位按元素求和，结果写入dstReg和carry。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.execution_unit.vector]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.execution_unit.vector
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/basic_arithmetic/AddC.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/basic_api/reg_compute/kernel_reg_compute_vec_binary_intf.h
 ---
 
-# AddC
+# AddC<a name="ZH-CN_TOPIC_0000002008389964"></a>
 
-对srcReg0、srcReg1及输入进位按元素求和，结果写入dstReg和carry。
+## 功能说明<a name="section618mcpsimp"></a>
 
-头文件引用路径为"basic_api/reg_compute/kernel_reg_compute_maskreg_intf.h"。 MaskReg寄存器用于指示在计算过程中哪些元素参与计算，宽度为 RegTensor 的八分之一（VL/8）。如下图所示，当操作数类型为b8时，每一个element对应1bit MaskReg；当操作数类型为b16时，每一个element对应2bit MaskReg，且仅2bit中的最低位是有效的；当操作数类型为b32时，每一个element对应4bit MaskReg，且仅4bit中的最低位是有效的。 图1 MaskReg计算过程
+头文件路径：`"basic_api/reg_compute/kernel_reg_compute_vec_binary_intf.h"`。
 
-本接口组包含 MaskReg, RegTensor, RegTensor, RegTensor, MaskReg。
+该接口根据mask，对源操作数srcReg0、srcReg1及输入进位carrySrc进行按元素求和操作，将结果写入目的操作数dstReg，同时将每个元素的进位结果写入carry（存放进位的MaskReg寄存器）。
 
-本接口属于 Reg 矢量计算基础算术接口，操作 RegTensor 寄存器数据，直接在寄存器级别执行矢量运算。
+Carry flag（进位/借位标志）用于表示加法进位或者减法无借位。若srcReg0，srcReg1，carrySrc输入按位相加后最高位有进位，在carry中对应位置每4bit设置1，否则写0。
 
-支持的数据类型为 b8/b16/b32/b64。操作数类型为 LocalTensor，支持的 TPosition 为 VECIN/VECCALC/VECOUT。
+计算公式如下：
 
-返回值：MaskReg
+$$
+\{carry_i, dstReg_i\} = srcReg0_i + srcReg1_i + carrySrc_i
+$$
 
-约束：MaskReg寄存器数量上限为8。超出限制上限的寄存器数据会写入预留的8KUB内存中，可能会引起性能劣化。编译器会自动复用生命周期结束的寄存器和预留内存，若寄存器与预留内存均存在可用空间，将优先复用寄存器。
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_addc_1.png)
 
-支持的硬件型号：Ascend 950PR/Ascend 950DT。
+以int64_t类型数据计算-1 + 8 = 7为例，Add/AddC接口的适用场景如下图：
 
-临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_addc_2.png)
+
+## 函数原型<a name="section620mcpsimp"></a>
+
+```cpp
+template <typename T = DefaultType, typename U>
+__simd_callee__ inline void AddC(MaskReg& carry, U& dstReg, U& srcReg0, U& srcReg1, MaskReg& carrySrc, MaskReg& mask)
+```
+
+## 参数说明<a name="section622mcpsimp"></a>
+
+**表1**  模板参数说明
+
+| 参数名 | 描述 |
+| --- | --- |
+| T | 操作数数据类型。支持的数据类型请参考[数据类型](#数据类型)。 |
+| U | 目的操作数的RegTensor类型，例如RegTensor&lt;half&gt;，由编译器自动推导，用户不需要填写。 |
+
+**表2**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| carry | 输出 | 目的操作数。输出进位值。<br>类型为[MaskReg](../register_data_types/mask_reg.md)。 |
+| dstReg | 输出 | 目的操作数。<br>类型为[RegTensor](../register_data_types/reg_tensor.md)。 |
+| srcReg0 | 输入 | 源操作数。<br>类型为[RegTensor](../register_data_types/reg_tensor.md)。 |
+| srcReg1 | 输入 | 源操作数。<br>类型为[RegTensor](../register_data_types/reg_tensor.md)。 |
+| carrySrc | 输入 | 输入进位寄存器。<br>类型为[MaskReg](../register_data_types/mask_reg.md)。 |
+| mask | 输入 | 源操作数元素操作的有效指示，详细说明请参考[MaskReg](../register_data_types/mask_reg.md)。 |
+
+## 数据类型
+
+目的操作数与源操作数的数据类型需要保持一致。支持的数据类型为：int32_t、uint32_t。
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+无
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+无
+
+## 调用示例<a name="section642mcpsimp"></a>
+
+```cpp
+template <typename T>
+static __simd_vf__ inline void AddVF(__ubuf__ T* dst0Addr, __ubuf__ T* dst1Addr, __ubuf__ T* src0Addr, __ubuf__ T* src1Addr, uint32_t count, uint16_t repeatTimes, uint16_t oneRepeatSize){
+    
+    AscendC::Reg::RegTensor<T> srcReg0;
+    AscendC::Reg::RegTensor<T> srcReg1;
+    AscendC::Reg::RegTensor<T> dstReg0;
+    AscendC::Reg::MaskReg mask;
+    AscendC::Reg::MaskReg maskZero = AscendC::Reg::CreateMask<T, AscendC::Reg::MaskPattern::ALLF>();
+    AscendC::Reg::MaskReg carry = AscendC::Reg::CreateMask<uint8_t>();
+    for (uint16_t i = 0; i < repeatTimes; i++) {
+        mask = AscendC::Reg::UpdateMask<T>(count);
+        AscendC::Reg::LoadAlign(srcReg0, src0Addr + i * oneRepeatSize);
+        AscendC::Reg::LoadAlign(srcReg1, src1Addr + i * oneRepeatSize);
+        AscendC::Reg::AddC(carry, dstReg0, srcReg0, srcReg1, maskZero, mask);
+        // 8*4B=32B align
+        AscendC::Reg::StoreAlign<uint32_t, AscendC::Reg::MaskDist::DIST_NORM>((__ubuf__ uint32_t*)dst1Addr + i * 8, carry);
+        AscendC::Reg::StoreAlign(dst0Addr + i * oneRepeatSize, dstReg0, mask);
+    }
+}
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAddc](../../../c_api/reg/arithmetic_compute/asc_addc.md)（`same_topic`）：对srcReg0、srcReg1及输入进位按元素求和，结果写入dstReg和carry；该接口根据mask，对源操作数src0、src1及输入进位carry_src进行按元素求和操作，将结果写入目的操作数dst，同时将每个元素的进位结果写入carry（存放进位的掩码寄存器）。两卡描述同一带输入进位的寄存器逐元素加法；候选补充 uint32_t、mask 置零和完整进位输出合同。
+- [AscAddc](../../../c_api/reg_compute/reg_arith/asc_addc.md)（`same_topic`）：对srcReg0、srcReg1及输入进位按元素求和，结果写入dstReg和carry；该接口根据mask，对源操作数src0、src1及输入进位carry_src进行按元素求和操作，将结果写入目的操作数dst，同时将每个元素的进位结果写入carry（存放进位的掩码寄存器）。两卡描述同一带输入进位的寄存器逐元素加法；候选补充 uint32_t、mask 置零和完整进位输出合同。
 <!-- cannbot:related:end -->

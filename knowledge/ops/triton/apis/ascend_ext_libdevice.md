@@ -129,15 +129,6 @@ def softcap_fwd_kernel(x_ptr, y_ptr, n_elements, softcap, BLOCK_SIZE: tl.constex
 5. **SIMD 下的表现**：libdevice extern 函数在 SIMD 编译路径下被识别为 Vector 操作，自动参与 CV 融合与流水线优化；SIMT 下可用但性能可能较差。
 6. **与 tl.math 的关系**：libdevice 是补充而非替代——add/mul/exp/log/sin/cos/sqrt 等基础运算继续用 tl 原生 API。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
-- [数学运算 API 及 NPU 精度提升规则](./tl_math_ops.md)（`related`）：“标准 Triton 数学运算 API”
-- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -147,3 +138,13 @@ def softcap_fwd_kernel(x_ptr, y_ptr, n_elements, softcap, BLOCK_SIZE: tl.constex
 - [__init__.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/__init__.py)
 - [math_ops.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/math_ops.py)
 - [utils.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/backend/utils.py)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
+- [数学运算 API 及 NPU 精度提升规则](./tl_math_ops.md)（`related`）：“标准 Triton 数学运算 API”
+- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
+
+<!-- cannbot:related:end -->

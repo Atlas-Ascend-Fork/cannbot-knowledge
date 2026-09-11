@@ -2,25 +2,93 @@
 type: API
 title: H2Sqrt
 description: 获取输入数据x各元素的平方根。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half2_math_functions/h2sqrt.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_fp16.h
 ---
-# H2Sqrt
 
-功能：获取输入数据x各元素的平方根。
+# h2sqrt
 
-函数原型：half2 h2sqrt(half2 x)
+## 功能说明
 
-参数：x（输入）源操作数，输入数据。
+获取输入数据x各元素的平方根。
 
-返回值：输入数据各元素的平方根。本接口受全局饱和寄存器影响，。特殊值：0→0；-0→-0；nan→0；inf→ASCRT_MAX_NORMAL_FP16；-inf→0。
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002513334406.png)
 
-约束：本接口支持的输入数据各元素范围为x大于等于0，否则返回值为nan。需包含头文件 simt_api/asc_fp16.h。
+## 函数原型
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+```cpp
+inline half2 h2sqrt(half2 x)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数，输入数据。 |
+
+## 返回值说明
+
+输入数据各元素的平方根。本接口受全局饱和寄存器影响，特殊值如下：
+
+| x值 | 非饱和模式返回值 | 饱和模式返回值 |
+| --- | --- | --- |
+| 0 | 0 | 0 |
+| -0 | -0 | -0 |
+| nan | nan | 0 |
+| inf | inf | ASCRT\_MAX\_NORMAL\_FP16 |
+| -inf | nan | 0 |
+| x<0 | nan | 0 |
+
+## 约束说明
+
+本接口支持的输入数据各元素范围为`x`大于等于0，否则在非饱和模式下返回值为`nan`。
+
+## 需要包含的头文件
+
+使用half2类型接口需要包含`simt_api/asc_fp16.h`头文件。
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void kernel_sqrt(half2* dst, half2* x, uint32_t total_length)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        if (idx >= total_length) {
+            return;
+        }
+        dst[idx] = h2sqrt(x[idx]);
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void kernel_sqrt(__gm__ half2* dst, __gm__ half2* x, uint32_t total_length)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        if (idx >= total_length) {
+            return;
+        }
+        dst[idx] = h2sqrt(x[idx]);
+    }
+    ```

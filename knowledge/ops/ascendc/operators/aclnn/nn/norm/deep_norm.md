@@ -5,28 +5,28 @@ description: "说明 aclnnDeepNorm 在 A2/A3 上的接口语义、Host/Launcher 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/docs/aclnnDeepNorm.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/docs/aclnnDeepNorm.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/deep_norm_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/deep_norm_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/deep_norm_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/deep_norm_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/deep_norm_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/deep_norm_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/deep_norm_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/deep_norm_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_kernel/deep_norm.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_kernel/deep_norm.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/config/ascend910b/deep_norm_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/config/ascend910b/deep_norm_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/config/ascend910_93/deep_norm_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/config/ascend910_93/deep_norm_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/config/ascend950/deep_norm_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/config/ascend950/deep_norm_binary.json
     role: implementation
 created_at: "2026-08-25T17:51:52Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -1114,7 +1114,7 @@ dynamic_ub=N/A; workspace_total=1 byte
 
 - 适用 Route：R-001～R-003。
 - 触发条件：`D<=500`；Host 将 `firstDimPerTime` 截断到 255。
-- Golden 来源：[`op_host/deep_norm_tiling.cpp:271-274`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/deep_norm_tiling.cpp#L271-L274)
+- Golden 来源：[`op_host/deep_norm_tiling.cpp:271-274`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_host/deep_norm_tiling.cpp#L271-L274)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1146,7 +1146,7 @@ short body 的 `ReduceSumShort` 把行数作为 Vector repeat，把列方向按 
 
 - 适用 Route：R-007～R-012。
 - 触发条件：D>4096；当 FP16/BF16 D≤15360 或 FP32 D≤8192 使用 Extra，否则 Common。
-- Golden 来源：[`op_kernel/deep_norm.cpp:201-222`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_kernel/deep_norm.cpp#L201-L222)
+- Golden 来源：[`op_kernel/deep_norm.cpp:201-222`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_kernel/deep_norm.cpp#L201-L222)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1196,7 +1196,7 @@ __aicore__ inline void InitCommon(
 
 - 适用 Route：R-003、R-006，并在 R-009/R-012 使用无 cast helper。
 - 触发条件：输入 dtype=FP32。
-- Golden 来源：[`op_kernel/deep_norm.cpp:638-660`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_kernel/deep_norm.cpp#L638-L660)
+- Golden 来源：[`op_kernel/deep_norm.cpp:638-660`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm/op_kernel/deep_norm.cpp#L638-L660)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

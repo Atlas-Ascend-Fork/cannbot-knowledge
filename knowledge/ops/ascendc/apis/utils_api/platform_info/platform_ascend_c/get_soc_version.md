@@ -2,41 +2,108 @@
 type: API
 title: GetSocVersion
 description: 获取当前硬件平台版本型号。
-tags: [task.lookup, topic.implementation.api_layer.utils_api, topic.programming_model.system_variable]
-status: stable
+tags:
+- task.lookup
+- topic.implementation.api_layer.utils_api
+- topic.programming_model.system_variable
+status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetSocVersion.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-04T01:25:11Z'
+platforms: []
+source_headers:
+- include/utils/tiling/platform/platform_ascendc.h
 ---
 
-# GetSocVersion
+# GetSocVersion<a name="ZH-CN_TOPIC_0000002078653638"></a>
 
-## 功能说明
+## 功能说明<a name="zh-cn_topic_0000001664705472_zh-cn_topic_0000001442758437_section36583473819"></a>
+
 获取当前硬件平台版本型号。
-## 函数原型
-## 参数说明
+
+## 函数原型<a name="zh-cn_topic_0000001664705472_zh-cn_topic_0000001442758437_section13230182415108"></a>
+
+```
+SocVersion GetSocVersion(void) const
+```
+
+## 参数说明<a name="zh-cn_topic_0000001664705472_zh-cn_topic_0000001442758437_section189014013619"></a>
+
 无
-## 返回值
-当前硬件平台版本型号的枚举类。该枚举类和AI处理器型号的对应关系请通过CANN软件安装后文件存储路径下include/tiling/platform/platform_ascendc.h头文件获取。
+
+## 返回值<a name="zh-cn_topic_0000001664705472_zh-cn_topic_0000001442758437_section25791320141317"></a>
+
+当前硬件平台版本型号的枚举类。该枚举类和AI处理器型号的对应关系请通过CANN软件安装后文件存储路径下include/tiling/platform/platform\_ascendc.h头文件获取。
+
 AI处理器的型号请通过如下方式获取：
--   针对如下产品：在安装AI处理器的服务器执行npu-smi info命令进行查询，获取Name信息。实际配置值为AscendName，例如Name取值为xxxyy，实际配置值为Ascendxxxyy。
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
-Atlas 200I/500 A2 推理产品
-Atlas 推理系列产品
-Atlas 训练系列产品
--   针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，在安装AI处理器的服务器执行npu-smi info -t board -i  -c 命令进行查询，获取Chip Name和NPU Name信息，实际配置值为Chip Name_NPU Name。例如Chip Name取值为Ascendxxx，NPU Name取值为1234，实际配置值为Ascendxxx_1234。其中：
--   id：设备id，通过npu-smi info -l命令查出的NPU ID即为设备id，命令中表示为`。
--   chip_id：芯片id，通过npu-smi info -m命令查出的Chip ID即为芯片id，命令中表示为。
--   针对Ascend 950PR/Ascend 950DT，在安装AI处理器的服务器执行npu-smi info -t board -i 命令进行查询，获取Chip Name和NPU Name信息，实际配置值为Chip Name_NPU Name。例如Chip Name取值为Ascendxxx，NPU Name取值为1234，实际配置值为Ascendxxx_1234。
-其中，id为设备id，通过npu-smi info -l命令查出的NPU ID即为设备id，命令中表示为`。
-## 约束说明
+
+
+-   针对如下产品：在安装AI处理器的服务器执行`npu-smi info`命令进行查询，获取**Name**信息。实际配置值为AscendName，例如**Name**取值为xxxyy，实际配置值为Ascendxxxyy。
+
+    
+    Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    
+
+    
+    Atlas 200I/500 A2 推理产品
+    
+
+    
+    Atlas 推理系列产品
+    
+
+    
+    Atlas 训练系列产品
+    
+
+
+
+-   针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，在安装AI处理器的服务器执行`npu-smi info -t board -i <id> -c <chip_id>`命令进行查询，获取**Chip Name**和**NPU Name**信息，实际配置值为`Chip Name_NPU Name`。例如**Chip Name**取值为Ascendxxx，**NPU Name**取值为1234，实际配置值为Ascendxxx_1234。其中：
+    -   `id`：设备id，通过`npu-smi info -l`命令查出的NPU ID即为设备id，命令中表示为`<id>`。
+    -   `chip_id`：芯片id，通过`npu-smi info -m`命令查出的Chip ID即为芯片id，命令中表示为`<chip_id>`。
+
+
+
+-   针对Ascend 950PR/Ascend 950DT，在安装AI处理器的服务器执行`npu-smi info -t board -i <id>`命令进行查询，获取**Chip Name**和**NPU Name**信息，实际配置值为`Chip Name_NPU Name`。例如**Chip Name**取值为Ascendxxx，**NPU Name**取值为1234，实际配置值为Ascendxxx_1234。
+
+    其中，`id`为设备id，通过`npu-smi info -l`命令查出的NPU ID即为设备id，命令中表示为`<id>`。
+
+
+## 约束说明<a name="zh-cn_topic_0000001664705472_zh-cn_topic_0000001442758437_section19165124931511"></a>
+
 为了满足算子二进制复用，使用Atlas A3 训练系列产品/Atlas A3 推理系列产品时，调用GetSocVersion接口返回的枚举值与Atlas A2 训练系列产品/Atlas A2 推理系列产品相同；如果需要区分，可使用接口aclrtGetSocName接口。
+
+## 调用示例<a name="zh-cn_topic_0000001664705472_zh-cn_topic_0000001442758437_section320753512363"></a>
+
+```
+ge::graphStatus TilingXXX(gert::TilingContext* context) {
+    auto ascendcPlatform = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
+    auto socVersion = ascendcPlatform.GetSocVersion();
+    // 根据所获得的版本型号自行设计Tiling策略
+    // ASCENDXXX请替换为实际的版本型号
+    if (socVersion == platform_ascendc::SocVersion::ASCENDXXX) {
+        // ...
+    }
+    return ret;
+}
+```
+
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
 - [ASCEND350 非 SocVersion 枚举成员致编译失败](../../../../runbooks/compilation/ascend350_socversion.md)（`exemplifies`）：观测（tool_observed）：`platform_ascendc::SocVersion` 枚举的合法成员含 `ASCEND950`，无 `ASCEND350`；`build.sh` 的 `SOC_TO_ARCH` 把 `ascend350` 与 `ascend950` 都映射到同一个 arch 字符串 `3510`（运行时落到同一 SoC），但 C++ 侧枚举没有 `ASCEND350` 这个成员。；获取当前硬件平台版本型号。runbook 的编译排障必须以平台接口返回的实际 SocVersion 枚举合同为准，不能把构建别名当枚举。
+
+<!-- cannbot:api-operator:start -->
+### 知识正文中的调用示例
+
+展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
+以下仅有知识正文中的调用证据，未作为源码调用结果。
+
+- [GroupNormSwish A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/group_norm_swish.md)（`related`）：算子正文包含对 `GetSocVersion(...)` 的直接调用；本卡提供该接口契约。
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

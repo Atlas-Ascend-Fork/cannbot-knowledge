@@ -5,34 +5,34 @@ description: "说明 aclnnDeepNormGrad 在 A2/A3 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/docs/aclnnDeepNormGrad.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/docs/aclnnDeepNormGrad.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/deep_norm_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/deep_norm_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/deep_norm_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/deep_norm_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/deep_norm_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/deep_norm_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_merge_n.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_merge_n.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_cut_d.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_cut_d.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_large_n_small_d.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_large_n_small_d.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/config/ascend910b/deep_norm_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/config/ascend910b/deep_norm_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/config/ascend910_93/deep_norm_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/config/ascend910_93/deep_norm_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:53:11Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -906,7 +906,7 @@ workspace_total = 36 MiB reported
 
 - 适用 Route：R-001～R-009
 - 触发条件：先判 `D<500`，否则比较 `D` 与按真实 dtype buffer 计数得到的 `cutStageMergeN`
-- Golden 来源：[`deep_norm_grad_tiling.cpp:167-178`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/deep_norm_grad_tiling.cpp#L167-L178)
+- Golden 来源：[`deep_norm_grad_tiling.cpp:167-178`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_host/deep_norm_grad_tiling.cpp#L167-L178)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -945,7 +945,7 @@ if (dDimNum < SMALL_D_STAGE) {
 
 - 适用 Route：R-007～R-009
 - 触发条件：`D<500`，一个 merge tile 含 `processNCount` 行
-- Golden 来源：[`deep_norm_grad_large_n_small_d.h:409-430`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_large_n_small_d.h#L409-L430)
+- Golden 来源：[`deep_norm_grad_large_n_small_d.h:409-430`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_large_n_small_d.h#L409-L430)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -979,7 +979,7 @@ this->Level0MulFp32Short(outputDgx, inputDy, inputGamma, elemWithDInUB, processN
 
 - 适用 Route：全部路线
 - 触发条件：Host 固定写 `fixedOutputFlag=1`
-- Golden 来源：[`deep_norm_grad_merge_n.h:215-239`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_merge_n.h#L215-L239)
+- Golden 来源：[`deep_norm_grad_merge_n.h:215-239`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/deep_norm_grad/op_kernel/deep_norm_grad_merge_n.h#L215-L239)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

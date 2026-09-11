@@ -5,68 +5,68 @@ description: "说明 aclnnBatchNormGatherStatsWithCounts 在 950 上的接口语
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/docs/aclnnBatchNormGatherStatsWithCounts.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/docs/aclnnBatchNormGatherStatsWithCounts.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/op_host/op_api/aclnn_batch_norm_gather_stats_with_counts.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/op_host/op_api/aclnn_batch_norm_gather_stats_with_counts.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/op_host/op_api/aclnn_batch_norm_gather_stats_with_counts.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/op_host/op_api/aclnn_batch_norm_gather_stats_with_counts.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/op_host/op_api/sync_batch_norm_gather_stats_with_counts.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/op_host/op_api/sync_batch_norm_gather_stats_with_counts.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/op_api/sync_batch_norm_gather_stats_fused.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/op_api/sync_batch_norm_gather_stats_fused.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/op_api/sync_batch_norm_gather_stats_fused.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/op_api/sync_batch_norm_gather_stats_fused.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_tiling_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_tiling_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_common_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_common_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_workspace_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_workspace_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_first_axis_common_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_first_axis_common_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_first_axis_workspace_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/sync_batch_norm_gather_stats_fused_first_axis_workspace_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_common.inl
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_common.inl
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_workspace.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_workspace.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_first_axis_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_first_axis_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_first_axis_common.inl
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_first_axis_common.inl
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_first_axis_workspace.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_first_axis_workspace.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_counts_sum.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_counts_sum.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_deterministic.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_deterministic.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_compute.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_compute.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/config/ascend950/sync_batch_norm_gather_stats_fused_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/config/ascend950/sync_batch_norm_gather_stats_fused_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
     role: implementation
 created_at: "2026-08-25T18:17:20Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -745,7 +745,7 @@ dynamic_ub = N/A
 
 - 适用 Route：R-001–R-004
 - 触发条件：`IsSocVersion950()`
-- Golden 来源：[`aclnn_batch_norm_gather_stats_with_counts.cpp:448-455`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/op_host/op_api/aclnn_batch_norm_gather_stats_with_counts.cpp#L448-L455)
+- Golden 来源：[`aclnn_batch_norm_gather_stats_with_counts.cpp:448-455`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_with_counts/op_host/op_api/aclnn_batch_norm_gather_stats_with_counts.cpp#L448-L455)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -776,7 +776,7 @@ if (IsSocVersion950()) {
 
 - 适用 Route：R-001、R-003
 - 触发条件：对应 Common Route；N tile与对齐C块满足Host UB搜索
-- Golden 来源：[`sync_batch_norm_gather_stats_fused_common.h:210-228`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_common.h#L210-L228)
+- Golden 来源：[`sync_batch_norm_gather_stats_fused_common.h:210-228`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_common.h#L210-L228)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -807,7 +807,7 @@ counts 只搬入 N 向量，再由 `Brcb` 展开为每行可广播布局；mean/
 
 - 适用 Route：R-003、R-004
 - 触发条件：`C<N && N>255`
-- Golden 来源：[`sync_batch_norm_gather_stats_fused_first_axis_common.h:109-134`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_first_axis_common.h#L109-L134)
+- Golden 来源：[`sync_batch_norm_gather_stats_fused_first_axis_common.h:109-134`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats_fused/op_kernel/sync_batch_norm_gather_stats_fused_first_axis_common.h#L109-L134)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -5,22 +5,22 @@ description: "说明 cann_bench::dequant_swiglu_quant 在 950 上的接口语义
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/README.md"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/README.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/op_host/dequant_swiglu_quant_tiling_arch35.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_host/dequant_swiglu_quant_tiling_arch35.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/op_kernel/dequant_swiglu_quant_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/dequant_swiglu_quant_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_dynamic_not_full.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_dynamic_not_full.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_dynamic_not_full_vf.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_dynamic_not_full_vf.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/op_host/config/ascend950/dequant_swiglu_quant_binary.json"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_host/config/ascend950/dequant_swiglu_quant_binary.json"
     role: implementation
 created_at: "2026-08-24T19:34:12Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -492,7 +492,7 @@ Device 地址、容量和“同一 core 当前 row 两遍完成后可覆盖 slic
 
 - 适用 Route：P0 R-002、P1 R-001、P2 R-004、P3 R-006、P4 R-005、P5 R-003、P6 R-008、P7 R-007、P8 R-010、P9 R-012、P10 R-011、P11 R-009。
 - 触发条件：`H<=5120` 选 FL，否则选 NF。
-- 转换片段定位：`op_kernel/dequant_swiglu_quant_kernel.cpp:329-383`；相关官方源码：[`dequant_swiglu_quant_apt.cpp`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/op_kernel/dequant_swiglu_quant_apt.cpp)
+- 转换片段定位：`op_kernel/dequant_swiglu_quant_kernel.cpp:329-383`；相关官方源码：[`dequant_swiglu_quant_apt.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/dequant_swiglu_quant_apt.cpp)
 
 **转换源码（主事实源；与官方映射边界分开）**：
 
@@ -523,7 +523,7 @@ FL 把整行 H 的中间结果留在 UB，从而不物化 GM 中间值；当 H �
 
 - 适用 Route：P0 R-002、P2 R-004、P3 R-006、P6 R-008、P8 R-010、P9 R-012。
 - 触发条件：`quant_scale` 存在，shape 为 `[1,H]`。
-- 转换片段定位：`dequant_swiglu_quant_dynamic_not_full_vf.h:464-501`；相关官方源码：[`dequant_swiglu_quant_dynamic_not_full_vf.h`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_dynamic_not_full_vf.h)
+- 转换片段定位：`dequant_swiglu_quant_dynamic_not_full_vf.h:464-501`；相关官方源码：[`dequant_swiglu_quant_dynamic_not_full_vf.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_dynamic_not_full_vf.h)
 
 **转换源码（主事实源）**：
 
@@ -554,7 +554,7 @@ if constexpr (HasQuantScale) {
 
 - 适用 Route：P6 R-008、P7 R-007、P8 R-010、P9 R-012、P10 R-011、P11 R-009。
 - 触发条件：`H>5120`。
-- 转换片段定位：`dequant_swiglu_quant_dynamic_not_full.h:305-390`；相关官方源码：[`dequant_swiglu_quant_dynamic_not_full.h`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_dynamic_not_full.h)
+- 转换片段定位：`dequant_swiglu_quant_dynamic_not_full.h:305-390`；相关官方源码：[`dequant_swiglu_quant_dynamic_not_full.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_swiglu_quant/op_kernel/arch35/dequant_swiglu_quant_dynamic_not_full.h)
 
 **转换源码（主事实源）**：
 

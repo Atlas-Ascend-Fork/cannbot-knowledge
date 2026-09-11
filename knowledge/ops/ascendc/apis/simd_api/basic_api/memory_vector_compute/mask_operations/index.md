@@ -1,6 +1,5 @@
 # 掩码操作
 
-- [掩码操作](mask_operations.md)：Memory矢量计算掩码操作接口索引页，包含SetMaskCount、SetMaskNorm、SetVectorMask与ResetMask。
 - [ResetMask](reset_mask.md)：恢复mask值为默认值（全1），表示矢量计算中每次迭代内所有元素都参与运算。
 - [SetMaskCount](set_mask_count.md)：设置Mask模式为Counter模式，直接传入计算数据量，实际迭代次数由Vector计算单元自动推断。
 - [SetMaskNorm](set_mask_norm.md)：设置Mask模式为Normal模式（系统默认），支持开发者配置迭代次数和掩码。

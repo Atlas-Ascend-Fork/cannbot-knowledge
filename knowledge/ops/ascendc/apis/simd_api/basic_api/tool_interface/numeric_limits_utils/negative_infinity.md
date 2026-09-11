@@ -2,25 +2,102 @@
 type: API
 title: NegativeInfinity
 description: 返回指定数据类型的负无穷大值，支持标量和矢量两种接口，矢量接口为dstLocal前count个元素赋负无穷大值。
-tags: [task.lookup, topic.implementation.api_layer.basic_api]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/tool_interface/NumericLimits_utils/NegativeInfinity.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/basic_api/kernel_operator_limits_intf.h
 ---
+
 # NegativeInfinity
 
-头文件路径为："basic_api/kernel_operator_limits_intf.h"。
+## 功能说明
+
+头文件路径为：`"basic_api/kernel_operator_limits_intf.h"`。
 
 返回指定数据类型的负无穷大值。
 
-参数：dstLocal(输出): 目的操作数。 类型为LocalTensor，支持的TPosition为VECIN/VECCALC/VECOUT。 LocalTensor的起始地址需要32字节对齐。；count(输入): 输入数据元素个数。
+## 函数原型
 
-支持数据类型：half、bfloat16_t、float。
+- 标量接口，返回值为标量：
 
-约束：标量接口无约束，矢量接口使用duplicate填充前count个元素赋负无穷大值，参照Memory矢量计算下的数据填充接口duplicate约束。
+    ```cpp
+    constexpr __aicore__ static inline T NegativeInfinity()
+    ```
 
-仅 Ascend 950PR/Ascend 950DT 支持。
+- 矢量接口，为dstLocal前count个元素赋负无穷大值：
+
+    ```cpp
+    __aicore__ static inline void NegativeInfinity(const LocalTensor<T>& dstLocal, uint32_t count)
+    ```
+
+## 参数说明
+
+**表1** 参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| dstLocal | 输出 | 目的操作数。<br><br>类型为[LocalTensor](../../data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。<br><br>LocalTensor的起始地址需要32字节对齐。 |
+| count | 输入 | 输入数据元素个数。 |
+
+## 数据类型
+
+
+针对Ascend 950PR/Ascend 950DT，支持的数据类型为：half、bfloat16_t、float。
+
+
+## 返回值说明
+
+标量接口返回值为对应数据类型的[负无穷大值](../../data_structures/builtin_data_types.md)。
+
+矢量接口无返回值。
+
+**表 2**  NegativeInfinity各数据类型输出
+
+| 数据类型 | 十进制数 | 二进制各bit位 |
+| --- | --- | --- |
+| half | -inf | 1 11111 0000000000 |
+| bfloat16_t | -inf | 1 11111111 0000000 |
+| float | -inf | 1 11111111 00000000000000000000000 |
+
+## 约束说明
+
+标量接口无约束，矢量接口使用[duplicate](../../memory_vector_compute/data_padding/duplicate.md)填充前count个元素赋负无穷大值，参照Memory矢量计算下的数据填充接口duplicate约束。
+
+## 调用示例
+
+- 标量接口：
+
+    ```cpp
+    float value = AscendC::NumericLimits<float>::NegativeInfinity();
+    ```
+
+- 矢量接口：
+
+    ```cpp
+    AscendC::NumericLimits<float>::NegativeInfinity(dstLocal, 256);// 返回256个float类型的负无穷大值
+    ```
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [AddLayerNormQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/norm/add_layer_norm_quant_950.md)（`related`）：算子声明的固定版本源码包含对 `NegativeInfinity(...)` 的直接调用（第 77 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_quant/op_kernel/arch35/add_layer_norm_quant_empty_input_kernel.h#L77)
+- [MaxPool3dWithArgmax 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/pooling/max_pool3d_with_argmax_950.md)（`related`）：算子声明的固定版本源码包含对 `NegativeInfinity(...)` 的直接调用（第 116 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/arch35/max_pool3d_with_argmax_v2_simt.h#L116)
+
+<!-- cannbot:api-operator:end -->
+<!-- cannbot:related:end -->

@@ -7,4 +7,3 @@
 - [ReducePairElem](reduce_pair_elem.md)：对相邻两个元素进行归约求和操作，结果按顺序写入目标地址。
 - [ReduceRepeat](reduce_repeat.md)：对每个repeat内所有数据进行归约操作，支持求和、求最大值和求最小值，可返回最值索引。
 - [ReduceSum](reduce_sum.md)：对所有输入数据进行求和操作。
-- [归约计算](reduction_compute.md)：Memory矢量计算归约接口索引页，汇总ReduceDataBlock、ReduceRepeat、ReducePairElem及ReduceMax/Min/Sum。

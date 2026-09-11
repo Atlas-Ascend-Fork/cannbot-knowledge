@@ -5,30 +5,30 @@ description: "说明 aclnnForeachRoundOffNumberV2 在 950 上的接口语义、H
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/docs/aclnnForeachRoundOffNumberV2.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/docs/aclnnForeachRoundOffNumberV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/op_api/aclnn_foreach_round_off_number_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/op_api/aclnn_foreach_round_off_number_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/op_api/foreach_round_off_number_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/op_api/foreach_round_off_number_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/arch35/foreach_round_off_number_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/arch35/foreach_round_off_number_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/foreach_round_off_number_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/foreach_round_off_number_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/config/ascend950/foreach_round_off_number_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_host/config/ascend950/foreach_round_off_number_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_kernel/arch35/foreach_round_off_number_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_kernel/arch35/foreach_round_off_number_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_kernel/arch35/foreach_round_off_number.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_kernel/arch35/foreach_round_off_number.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_kernel/arch35/foreach_round_off_number_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_kernel/arch35/foreach_round_off_number_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:59:38Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -392,7 +392,7 @@ register_bytes = 固定仓不可见，仅能证明生命周期局限于当前 th
 
 - 适用 Route：R-001/R-002/R-003
 - 触发条件：任意非空 Tensor；blockDim 由总元素数按 1024 元素/核估算
-- Golden 来源：[`foreach_round_off_number_simt.h:67-73`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_kernel/arch35/foreach_round_off_number_simt.h#L67-L73)
+- Golden 来源：[`foreach_round_off_number_simt.h:67-73`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_round_off_number/op_kernel/arch35/foreach_round_off_number_simt.h#L67-L73)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

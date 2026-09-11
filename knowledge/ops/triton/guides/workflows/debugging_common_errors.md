@@ -77,7 +77,6 @@ platforms: [a2, a3, '950']
 | bishengir 目标 | `--target=Ascend910B3` | `--target=Ascend910_95` |
 
 <!-- cannbot:related:start -->
-
 ## 相关
 
 - [调试、稳定性与 API 规范](./debugging.md)（`related`）：“调试、稳定性与 API 规范速查”

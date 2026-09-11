@@ -2,12 +2,13 @@
 """Validate typed curator coverage and evidence audits."""
 
 import argparse
-import hashlib
 import json
 import re
 import sys
 from collections import Counter
 from pathlib import Path
+
+from validate_review_receipt import sha256_file
 
 
 ROLE_SETS = {
@@ -45,26 +46,18 @@ def as_list(value):
     return [] if value in (None, "") else [value]
 
 
-def sha256_file(path):
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
-
-
 def trace_length(path):
-    sequences = []
+    count = 0
     with path.open("r", encoding="utf-8") as stream:
         for line_number, line in enumerate(stream, 1):
             event = json.loads(line)
             sequence = event.get("sequence", event.get("seq"))
             if not isinstance(sequence, int):
                 raise ValueError(f"{path}:{line_number} lacks integer sequence")
-            sequences.append(sequence)
-    if sequences != list(range(1, len(sequences) + 1)):
-        raise ValueError(f"{path}: sequence is not exactly 1..N")
-    return len(sequences)
+            if sequence != line_number:
+                raise ValueError(f"{path}: sequence is not exactly 1..N")
+            count = line_number
+    return count
 
 
 def validate_anchor(anchor, sources):

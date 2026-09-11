@@ -18,4 +18,3 @@
 - [__hmin_nan](_hmin_nan.md)：获取两个输入数据中的最小值。任一输入为nan时，结果为nan。
 - [__hne](_hne.md)：比较两个bfloat16类型数据是否不相等，不相等时返回true。
 - [__hneu](_hneu.md)：比较两个bfloat16类型数据是否不相等，不相等时返回true。若任一输入为nan，返回true。
-- [bfloat16类型比较函数](bfloat16_compare_functions.md)：bfloat16类型比较函数集合，包括最大最小值、无穷与NaN判断及有序和无序比较运算。

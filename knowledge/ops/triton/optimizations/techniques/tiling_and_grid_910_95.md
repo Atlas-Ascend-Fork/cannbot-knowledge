@@ -120,15 +120,6 @@ def kernel(X_ptr, Y_ptr, X_stride, Y_stride, total_rows,
 | SIMD 利用率低 | 每 program 1 行 | BLOCK_ROWS 多行 |
 | Autotune 无效 | Config 含 num_stages/num_warps | 移除 GPU 专属参数 |
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Tiling 策略](tiling.md)（`related`）：“三级 Tiling 层次与块大小选择”
-- [NPU 分块策略（Tiling）](tiling_strategy.md)（`related`）：“存算并行、multiBuffer 与对齐要求详解”
-- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 硬件速查（UB/核数/对齐）”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -138,3 +129,13 @@ def kernel(X_ptr, Y_ptr, X_stride, Y_stride, total_rows,
 - [utils.py#L48-L49](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/backend/runtime/utils.py#L48-L49)
 - [utils.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/backend/runtime/utils.py)
 - [programming_guide.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/programming_guide.md)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Tiling 策略](tiling.md)（`related`）：“三级 Tiling 层次与块大小选择”
+- [NPU 分块策略（Tiling）](tiling_strategy.md)（`related`）：“存算并行、multiBuffer 与对齐要求详解”
+- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 硬件速查（UB/核数/对齐）”
+
+<!-- cannbot:related:end -->

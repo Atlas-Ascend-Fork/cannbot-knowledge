@@ -5,34 +5,34 @@ description: "说明 aclnnExpSegsumBackward 在 A2/A3 上的接口语义、Host/
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/docs/aclnnExpSegsumBackward.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/docs/aclnnExpSegsumBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/op_api/aclnn_exp_segsum_backward.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/op_api/aclnn_exp_segsum_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/op_api/aclnn_exp_segsum_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/op_api/aclnn_exp_segsum_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/op_api/exp_segsum_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/op_api/exp_segsum_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/external/aclnn_kernels/contiguous.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/common/inc/external/aclnn_kernels/contiguous.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/exp_segsum_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/exp_segsum_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/exp_segsum_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/exp_segsum_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/exp_segsum_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/exp_segsum_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_kernel/exp_segsum_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_kernel/exp_segsum_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_kernel/exp_segsum_grad.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_kernel/exp_segsum_grad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/config/ascend910b/exp_segsum_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/config/ascend910b/exp_segsum_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/config/ascend910_93/exp_segsum_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/config/ascend910_93/exp_segsum_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T10:56:08Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -495,7 +495,7 @@ workspace_kernel_slice = 32 MiB；algorithm workspace touched = 0 bytes
 
 - 适用 Route：R-001、R-002。
 - 触发条件：先按平台 UB 与 `ReduceSum` 最小临时空间修正 `maxSlideSize`，再比较 `L<=maxSlideSize`。
-- Golden 来源：[`op_host/exp_segsum_grad_tiling.cpp:111-132`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/exp_segsum_grad_tiling.cpp#L111-L132)
+- Golden 来源：[`op_host/exp_segsum_grad_tiling.cpp:111-132`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_host/exp_segsum_grad_tiling.cpp#L111-L132)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -532,7 +532,7 @@ if (tailDimLength <= maxSlideSize) {
 
 - 适用 Route：R-001、R-002。
 - 触发条件：任意非空合法输入；每个输出行只需严格下三角列 `c<r`。
-- Golden 来源：[`op_kernel/exp_segsum_grad.h:159-188`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_kernel/exp_segsum_grad.h#L159-L188)
+- Golden 来源：[`op_kernel/exp_segsum_grad.h:159-188`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/exp_segsum_grad/op_kernel/exp_segsum_grad.h#L159-L188)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

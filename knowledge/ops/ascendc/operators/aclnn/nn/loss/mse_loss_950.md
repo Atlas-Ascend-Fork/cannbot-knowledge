@@ -5,35 +5,35 @@ description: "说明 aclnnMseLoss 在 950 上的接口语义、Host/Launcher 参
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_api/aclnn_mse_loss.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_api/aclnn_mse_loss.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/docs/aclnnMseLoss.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/docs/aclnnMseLoss.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_api/aclnn_mse_loss.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_api/aclnn_mse_loss.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_api/mse_loss.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_api/mse_loss.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/common/level2_base_loss.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/common/level2_base_loss.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_host/mse_loss_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_host/mse_loss_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_host/arch35/mse_loss_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_host/arch35/mse_loss_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_host/arch35/mse_loss_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_host/arch35/mse_loss_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/arch35/mse_loss_tiling_def.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/arch35/mse_loss_tiling_def.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/arch35/mse_loss_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/arch35/mse_loss_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/arch35/mse_loss_dag.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/arch35/mse_loss_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/mse_loss.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/mse_loss.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/third_party/opbase.cmake
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/third_party/opbase.cmake
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/b8bd9e6600eb4fc11d59586bc1712cbc9d87c3ed/pkg_inc/op_common/atvoss/elewise/elewise_base_struct.h
     role: implementation
@@ -68,7 +68,7 @@ sources:
   - resource: https://gitcode.com/cann/opbase/blob/b8bd9e6600eb4fc11d59586bc1712cbc9d87c3ed/pkg_inc/op_common/atvoss/reduce/reduce_operator.h
     role: implementation
 created_at: "2026-08-25T17:21:38Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -819,7 +819,7 @@ UB_total=preBuf+postBuf+resultBlock+16KiB; workspace=16MiB reserve
 
 - 适用 Route：R-002~R-008（R-001 的 Cast 在同类型实例中等价保留/消去由模板实现决定）。
 - 触发条件：输入 FP16/BF16，或 sum/mean 使用归约 DAG。
-- Golden 来源：[`mse_loss_dag.h:48-78`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/arch35/mse_loss_dag.h#L48-L78)
+- Golden 来源：[`mse_loss_dag.h:48-78`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/arch35/mse_loss_dag.h#L48-L78)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -853,7 +853,7 @@ Host 用 FP16 DAG 算 UB、Device 却实例化 BF16/FP32 不同生命周期时�
 
 - 适用 Route：R-004、R-007。
 - 触发条件：通用 Reduce Tiling 生成 AR_GROUP（`groupR>1`）。
-- Golden 来源：[`mse_loss_tiling_key.h:54-62`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/arch35/mse_loss_tiling_key.h#L54-L62)
+- Golden 来源：[`mse_loss_tiling_key.h:54-62`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/mse_loss/op_kernel/arch35/mse_loss_tiling_key.h#L54-L62)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -5,42 +5,42 @@ description: "说明 aclnnExpand 在 950 上的接口语义、Host/Launcher 参�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/docs/aclnnExpand.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/docs/aclnnExpand.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_api/aclnn_expand.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_api/aclnn_expand.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_api/expand.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_api/expand.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_host/expand_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_host/expand_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_host/arch35/expand_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_host/arch35/expand_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_kernel/expand_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_kernel/expand_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_host/arch35/broadcast_to_tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_host/arch35/broadcast_to_tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_host/arch35/broadcast_to_tiling_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_host/arch35/broadcast_to_tiling_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_base.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_dma.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_dma.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_copypad.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_copypad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_tailAxis.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_tailAxis.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_ub.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_ub.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_host/config/ascend950/expand_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_host/config/ascend950/expand_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T10:55:57Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -899,7 +899,7 @@ workspace_total(core node) = 16 MiB
 
 - 适用 Route：R-003、R-007
 - 触发条件：`isUNotB==0`，即选中的 U 首轴是 B 轴
-- Golden 来源：[`conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_dma.h:88-94`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_dma.h#L88-L94)
+- Golden 来源：[`conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_dma.h:88-94`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_kernel/arch35/broadcast_to_with_dma.h#L88-L94)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -932,7 +932,7 @@ if (copySwitch > 0) {
 
 - 适用 Route：R-003–R-008
 - 触发条件：相邻轴的 `inShape[i]!=outShape[i]` 标志相同
-- Golden 来源：[`math/expand/op_host/arch35/expand_tiling_arch35.cpp:142-155`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_host/arch35/expand_tiling_arch35.cpp#L142-L155)
+- Golden 来源：[`math/expand/op_host/arch35/expand_tiling_arch35.cpp:142-155`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/expand/op_host/arch35/expand_tiling_arch35.cpp#L142-L155)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -971,7 +971,7 @@ for (size_t oIdx = 1; oIdx < dimNum; oIdx++) {
 
 - 适用 Route：R-008
 - 触发条件：初选 11001、末轴 A、U 轴数大于 1，且 `out[d-2]*ceilAlign(lastDim*S,blockSize)<=vRegSize`
-- Golden 来源：[`conversion/broadcast_to/op_host/arch35/broadcast_to_tiling_base.cpp:309-320`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_host/arch35/broadcast_to_tiling_base.cpp#L309-L320)
+- Golden 来源：[`conversion/broadcast_to/op_host/arch35/broadcast_to_tiling_base.cpp:309-320`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/broadcast_to/op_host/arch35/broadcast_to_tiling_base.cpp#L309-L320)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -5,38 +5,38 @@ description: "说明 cann_bench::arg_max_npu / launch_arg_max_* 在 950 上的�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_v2/README.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_v2/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_v2/op_kernel/arg_max_v2_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_v2/op_kernel/arg_max_v2_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_v2/op_host/arch35/arg_max_v2_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_v2/op_host/arch35/arg_max_v2_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_host/arch35/arg_common_base_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_host/arch35/arg_common_base_tiling_arch35.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_host/arch35/arg_common_base_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_host/arch35/arg_common_base_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_base.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_copy.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_copy.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ar.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ar.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ar_gather.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ar_gather.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ra.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ra.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ara.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ara.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ara_gather.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ara_gather.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ara_cut_a_and_next_a.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_ara_cut_a_and_next_a.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_group_reduce.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_group_reduce.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_v2/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_v2/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:30:59Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -874,7 +874,7 @@ workspace_total = 0 effective + 16MiB runtime reserve
 
 - 适用 Route：P1 R-005/R-006、P4 R-011/R-012、P6 R-004。
 - 触发条件：小 R、大输出并行域；AR Gather 额外排除 32B 整倍步长。
-- Golden 来源：[`arg_common_base_tiling_arch35.cpp:289-307`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_host/arch35/arg_common_base_tiling_arch35.cpp)
+- Golden 来源：[`arg_common_base_tiling_arch35.cpp:289-307`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_host/arch35/arg_common_base_tiling_arch35.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -907,7 +907,7 @@ if (tilingData_.get_aSize() == 1) {
 
 - 适用 Route：P2 R-014 及调用 `ArgMaxAraUnAlign` 的相同布局。
 - 触发条件：`R>=16 && 2*dimA1Src<=VL`。
-- Golden 来源：[`arg_max_with_value_base.h:1099-1106`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_base.h)
+- Golden 来源：[`arg_max_with_value_base.h:1099-1106`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_base.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -939,7 +939,7 @@ compact body 把相邻两条 R chain 拼进同一寄存器，分别归约后以 
 
 - 适用 Route：P3 R-015/R-016。
 - 触发条件：大 R、小 `A*nextA` 的 GROUP 谓词；AR/RA 再由 128B/256B 条件选择。
-- Golden 来源：[`arg_max_with_value_group_reduce.h:251-278`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_group_reduce.h)
+- Golden 来源：[`arg_max_with_value_group_reduce.h:251-278`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/arg_max_with_value/op_kernel/arch35/arg_max_with_value_group_reduce.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

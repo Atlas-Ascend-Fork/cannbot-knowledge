@@ -5,37 +5,37 @@ description: "说明 aclnnLerp 在 950 上的接口语义、Host/Launcher 参数
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/docs/aclnnLerp%26aclnnInplaceLerp.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/docs/aclnnLerp&aclnnInplaceLerp.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/aclnn_lerp_tensor.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/aclnn_lerp_tensor.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/aclnn_lerp_tensor.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/aclnn_lerp_tensor.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/lerp.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/lerp.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/arch35/lerp_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/arch35/lerp_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/arch35/lerp_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/arch35/lerp_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/lerp_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/lerp_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f16_nddma_without_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f16_nddma_without_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f16_nddma_with_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f16_nddma_with_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f32_nddma_without_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f32_nddma_without_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f32_nddma_with_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f32_nddma_with_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_bf16_nddma_without_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_bf16_nddma_without_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_bf16_nddma_with_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_bf16_nddma_with_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/lerp_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/lerp_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/config/ascend950/lerp_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/config/ascend950/lerp_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/CMakeLists.txt
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/broadcast/broadcast_tiling_base.h
     role: implementation
@@ -46,7 +46,7 @@ sources:
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/util/broadcast_utils.h
     role: implementation
 created_at: "2026-08-25T11:07:40Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -754,7 +754,7 @@ outer NDDMA slices share the same allocated Queue slot
 
 - 适用 Route：R-001..R-006
 - 触发条件：每个有效 lane 的 `weight<0.5` 选 start-anchored，否则选 end-anchored
-- Golden 来源：[`math/lerp/op_kernel/arch35/lerp_f16_nddma_without_loops.h:159-176`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f16_nddma_without_loops.h#L159-L176)
+- Golden 来源：[`math/lerp/op_kernel/arch35/lerp_f16_nddma_without_loops.h:159-176`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f16_nddma_without_loops.h#L159-L176)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -789,7 +789,7 @@ AscendC::MicroAPI::Select<float>(vreg9, vreg5, vreg3, preg2);
 
 - 适用 Route：R-001..R-006 的任一输入
 - 触发条件：该输入 `inputStride[ubSplitAxis]==0`；仅各 depth-2 槽首次及新 `ubOuter` 周期前两 tile 执行实际 CopyIn
-- Golden 来源：[`math/lerp/op_kernel/arch35/lerp_f16_nddma_without_loops.h:76-88`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f16_nddma_without_loops.h#L76-L88)
+- Golden 来源：[`math/lerp/op_kernel/arch35/lerp_f16_nddma_without_loops.h:76-88`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f16_nddma_without_loops.h#L76-L88)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

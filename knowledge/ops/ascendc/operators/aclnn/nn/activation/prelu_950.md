@@ -5,21 +5,21 @@ description: "说明 aclnnPrelu 在 950 上的接口语义、Host/Launcher 参�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/docs/aclnnPrelu.md"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/docs/aclnnPrelu.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_api/aclnn_prelu.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_api/aclnn_prelu.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_api/prelu.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_api/prelu.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_host/arch35/p_relu_tiling_arch35.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_host/arch35/p_relu_tiling_arch35.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_kernel/arch35/p_relu_dag.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_kernel/arch35/p_relu_dag.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_kernel/p_relu_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_kernel/p_relu_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/CMakeLists.txt"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/CMakeLists.txt"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_host/config/ascend950/p_relu.json"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_host/config/ascend950/p_relu.json"
     role: implementation
   - resource: "https://gitcode.com/cann/opbase/blob/b8bd9e6600eb4fc11d59586bc1712cbc9d87c3ed/pkg_inc/op_common/atvoss/broadcast/broadcast_base_struct.h"
     role: implementation
@@ -36,7 +36,7 @@ sources:
   - resource: "https://gitcode.com/cann/opbase/blob/b8bd9e6600eb4fc11d59586bc1712cbc9d87c3ed/pkg_inc/op_common/atvoss/util/vec.h"
     role: implementation
 created_at: "2026-08-25T18:52:58Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -770,7 +770,7 @@ UB_total=elemNum*MaxDtypeBytes*GetBufferNum<false,true>()<=UB; workspace=16 MiB
 
 - 适用 Route：R-001–R-008。
 - 触发条件：每个 scheduler tile 的 `count>0`。
-- Golden 来源：[`activation/p_relu/op_kernel/arch35/p_relu_dag.h:50-64`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_kernel/arch35/p_relu_dag.h#L50-L64)
+- Golden 来源：[`activation/p_relu/op_kernel/arch35/p_relu_dag.h:50-64`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/p_relu/op_kernel/arch35/p_relu_dag.h#L50-L64)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

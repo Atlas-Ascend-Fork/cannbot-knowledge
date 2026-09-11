@@ -1,6 +1,5 @@
 # Reg数据搬出
 
-- [Reg数据搬出](reg_data_store.md)：Reg数据搬出接口索引页，涵盖StoreAlign连续/非连续、StoreUnAlign、MaskReg搬出、Scatter离散搬出及Store。
 - [ScatterDiscrete](scatter_discrete.md)：根据索引值index将源操作数srcReg中的元素分散到目的操作数UB中。
 - [Store](store.md)：从RegTensor搬出至非32字节对齐的UB地址，支持搬出VL或指定count个数据。
 - [StoreAlignContinuous](store_align_continuous.md)：将数据从RegTensor连续搬运至Unified Buffer，支持单搬出和双搬出模式。

@@ -5,36 +5,36 @@ description: "说明 aclnnAscendQuantV3 在 950 上的接口语义、Host/Launch
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/docs/aclnnAscendQuantV3.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/docs/aclnnAscendQuantV3.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_host/op_api/aclnn_ascend_quant_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_host/op_api/aclnn_ascend_quant_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_host/ascend_quant_v2_regbase_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_host/ascend_quant_v2_regbase_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_kernel/ascend_quant_v2_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_kernel/ascend_quant_v2_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_kernel/arch35/ascend_quant_v2_struct.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_kernel/arch35/ascend_quant_v2_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_tilingdata.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_tilingdata.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_channel_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_channel_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_channel_no_offset_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_channel_no_offset_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_tensor_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_tensor_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_tensor_no_offset_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_tensor_no_offset_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_head_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_head_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_head_no_offset_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_head_no_offset_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_host/ascend_quant_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_host/ascend_quant_v2_def.cpp
     role: implementation
 created_at: "2026-08-25T18:21:59Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -667,7 +667,7 @@ workspace_total = 16 MiB declared; kernel bytes touched = 0
 
 - 适用 Route：R-002、R-004、R-006。
 - 触发条件：公开入口 `offset==nullptr`，Host 生成 `TPL_NO_OFFSET`。
-- Golden 来源：[`ascend_quant_v2_apt.cpp:109-125`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_kernel/ascend_quant_v2_apt.cpp#L109-L125)
+- Golden 来源：[`ascend_quant_v2_apt.cpp:109-125`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/ascend_quant_v2/op_kernel/ascend_quant_v2_apt.cpp#L109-L125)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -702,7 +702,7 @@ if constexpr (perMode == TPL_PER_TENSOR) {
 
 - 适用 Route：R-001..R-006。
 - 触发条件：所有 RegBase body；Host UB 公式已将 `BUFF_NUM=2` 计入。
-- Golden 来源：[`quantize_per_channel_regbase.h:75-80`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_channel_regbase.h#L75-L80)
+- Golden 来源：[`quantize_per_channel_regbase.h:75-80`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/quantize/op_kernel/arch35/quantize_per_channel_regbase.h#L75-L80)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

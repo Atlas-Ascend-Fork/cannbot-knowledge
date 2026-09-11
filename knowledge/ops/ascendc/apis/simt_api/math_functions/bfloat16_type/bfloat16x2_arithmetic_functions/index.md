@@ -9,4 +9,3 @@
 - [__hmulx2](_hmulx2.md)：计算两个bfloat16x2_t类型数据各分量的相乘结果，并遵循CAST_RINT模式对结果进行舍入。
 - [__hnegx2](_hnegx2.md)：获取输入bfloat16x2_t类型数据各分量的负值。
 - [__hsubx2](_hsubx2.md)：计算两个bfloat16x2_t类型数据各分量的相减结果，并遵循CAST_RINT模式对结果进行舍入。
-- [bfloat16x2类型算术函数](bfloat16x2_arithmetic_functions.md)：bfloat16x2类型算术函数列表，包含加减乘除、绝对值、负值、乘加及复数乘加等运算。

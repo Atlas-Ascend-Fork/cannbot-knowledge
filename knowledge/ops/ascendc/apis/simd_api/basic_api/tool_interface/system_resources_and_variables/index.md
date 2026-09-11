@@ -13,4 +13,3 @@
 - [GetTaskRatio](get_task_ratio.md)：分离模式下获取AIC或AIV数量与逻辑AI Core数量的比例，耦合模式固定返回1。
 - [GetUBSizeInBytes](get_ub_size_in_bytes.md)：获取UB空间的大小，单位为Byte。
 - [GetVecLen](get_vec_len.md)：获取RegTensor位宽VL（Vector Length）的大小。
-- [系统资源与变量](system_resources_and_variables.md)：系统资源与变量查询接口索引页，汇总GetTaskRatio、GetUBSizeInBytes、GetVecLen、GetBlockNum/Idx及GetArchVersion等。

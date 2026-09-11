@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import json
 import os
 import re
@@ -22,7 +23,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from knowledge_ingest import contract_module, load_contract  # noqa: E402
+from knowledge_ingest import contract_module, contract_package, load_contract  # noqa: E402
 
 
 SCHEMA = "cannbot-reference-inventory.v1"
@@ -279,9 +280,18 @@ def target_contract(value: str):
     return root, contract, contract_module().split_frontmatter
 
 
-def source_binds_entry(resource: object, inventory: dict[str, Any], path: str) -> bool:
+def source_binds_entry(resource: object, inventory: dict[str, Any], path: str, contract=None) -> bool:
     if not isinstance(resource, str):
         return False
+    if contract is not None and not resource.startswith(("http://", "https://")):
+        resources = importlib.import_module(f"{contract_package().__name__}.source_resources")
+        try:
+            local = resources.git_source(contract, resource)
+        except ValueError:
+            return False
+        if local is None:
+            return False
+        resource = local.url
     source = inventory["source"]
     repository = str(source["repo"]).rstrip("/")
     if repository.endswith(".git"):
@@ -345,7 +355,7 @@ def validate_produced_cards(
                     for source in source_values
                     if isinstance(source, dict)
                     and source.get("role") == role
-                    and source_binds_entry(source.get("resource"), inventory_data, source_path)
+                    and source_binds_entry(source.get("resource"), inventory_data, source_path, contract)
                 ),
                 None,
             )

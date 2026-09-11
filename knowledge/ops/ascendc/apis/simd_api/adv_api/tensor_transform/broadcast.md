@@ -2,27 +2,273 @@
 type: API
 title: Broadcast（张量变换）
 description: 将输入按照输出shape进行广播。 比如A的shape为\(2,1\)，广播的目标shape为\(2,16\)，则会将原来的一列扩展为相同的16列。
-tags: [task.lookup, topic.implementation.api_layer.high_level_api, topic.data_movement.layout_transform]
+tags:
+- task.lookup
+- topic.implementation.api_layer.high_level_api
+- topic.data_movement.layout_transform
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/tensor_transform/Broadcast.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+- 310p
+- kirin_x90
+- kirin_9030
 ---
 
 # Broadcast
 
-将输入按照输出shape进行广播。例如将shape为(m,1)的数据广播到(m,k)，即将一列扩展为相同的k列。模板参数T支持half/float。
+## 功能说明
 
-提供通过sharedTmpBuffer传入临时空间或由接口框架申请两种重载。临时空间大小通过GetBroadCastMaxMinTmpSize获取。接口参数：dstTensor输出广播结果；srcTensor输入数据；sharedTmpBuffer临时缓存；broadcastInfo含输入输出shape信息。TPosition支持VECIN/VECCALC/VECOUT。
+将输入按照输出shape进行广播。
 
-约束：遵循通用地址对齐约束。
+比如A的shape为\(2,1\)，广播的目标shape为\(2,16\)，则会将原来的一列扩展为相同的16列。
+
+```
+输入数据：
+[[ 1]
+ [ 2]]
+输出数据：
+[[ 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1]
+ [ 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2]]
+```
+
+## 实现原理
+
+以float类型，ND格式，\[m, 1\]广播到\[m, k\]为例，描述Broadcast高阶API内部算法框图，如下图所示。
+
+**图1**  Broadcast算法框图  
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/broadcast_algorithm_diagram.png "Broadcast算法框图")
+
+计算过程分为如下几步，均在Vector上进行：
+
+1.  brcb步骤：将每个元素广播为一个datablock；
+2.  Copy步骤：将每个datablock均复制为多个datablock，k对齐场景下即为结果y；
+3.  对于k非对齐的场景，再使用GatherMask截取\[m, k\]个元素，其中k'表示k向上对齐32B的大小。
+
+## 函数原型
+
+-   通过sharedTmpBuffer入参传入临时空间
+
+    ```
+    template <typename T, int32_t dim, int32_t axis, bool isReuseSource = false>
+    __aicore__ inline void Broadcast(const LocalTensor<T>& dstLocal, const LocalTensor<T>& srcLocal, const uint32_t dstShape[dim], const uint32_t srcShape[dim], LocalTensor<uint8_t>& sharedTmpBuffer)
+    ```
+
+-   接口框架申请临时空间
+
+    ```
+    template <typename T, int32_t dim, int32_t axis, bool isReuseSource = false>
+    __aicore__ inline void Broadcast(const LocalTensor<T>& dstLocal, const LocalTensor<T>& srcLocal, const uint32_t dstShape[dim], const uint32_t srcShape[dim])
+    ```
+
+-   支持动态shape
+
+    
+    仅在Ascend 950PR/Ascend 950DT上支持。
+    
+
+    ```
+    template<class T, int constRank=-1, uint32_t* constDstShape = nullptr, uint32_t* constSrcShape = nullptr, bool constSrcInnerPad = false>
+    __aicore__ inline void Broadcast(const LocalTensor<T>& dst, const LocalTensor<T>& src, const uint32_t* dstShape, const uint32_t* srcShape, BroadcastTiling* tiling)
+    ```
+
+该接口需要额外的临时空间来存储计算过程中的中间变量。临时空间支持开发者**通过sharedTmpBuffer入参传入**和**接口框架申请**两种方式。
+
+-   通过sharedTmpBuffer入参传入，使用该tensor作为临时空间进行处理，接口框架不再申请。该方式开发者可以自行管理sharedTmpBuffer内存空间，并在接口调用完成后，复用该部分内存，内存不会反复申请释放，灵活性较高，内存利用率也较高。
+-   接口框架申请临时空间，开发者无需申请，但是需要预留临时空间的大小。
+
+通过sharedTmpBuffer传入的情况，开发者需要为tensor申请空间；接口框架申请的方式，开发者需要预留临时空间。临时空间大小BufferSize的获取方式如下：通过[GetBroadCastMaxMinTmpSize](get_broad_cast_max_min_tmp_size.md)中提供的接口获取需要预留空间范围的大小。
+
+另外，提供了一个核函数（Kernel）侧计算Tiling的接口，针对Broadcast的实现计算Tiling，获取Tiling结果。该接口的模板参数功能与支持动态shape的Broadcast接口模板参数相同，其余参数说明请参见[表5](#table5458981523)。
+
+-   **kernel侧tiling计算接口**
+
+    
+    仅在Ascend 950PR/Ascend 950DT上支持。
+    
+
+    ```
+    template<class T, int constRank=-1, uint32_t* constDstShape = nullptr, uint32_t* constSrcShape = nullptr>
+    __aicore__ inline void GetBroadcastTilingInfo(uint32_t rank, const uint32_t* dstShape, const uint32_t* srcShape, bool srcInnerPad, BroadcastTiling& tiling)
+    ```
+
+## 参数说明
+
+**表1**  模板参数说明
+
+| 参数名称 | 功能 |
+| --- | --- |
+| T | 操作数的数据类型。不同型号支持的数据类型请参考[支持的数据类型](#li12616155731718)。 |
+| dim | 输入/输出tensor的维度，目前仅支持1维和2维。 |
+| axis | 要广播的维度，目前仅支持0和1。参数取值为0代表要广播第1维，取值为1代表要广播第2维。 |
+| isReuseSource | 是否允许修改源操作数。该参数预留，传入默认值false即可。 |
+
+**表2**  支持动态shape接口的模板参数说明
+
+| 参数名称 | 功能 |
+| --- | --- |
+| T | 操作数的数据类型，目前支持int8_t、uint8_t、int16_t、uint16_t、half、bfloat16_t、int32_t、uint32_t、float、int64_t、uint64_t。 |
+| constRank | 输入/输出tensor的维度数目。<br>默认值-1为动态shape场景，内部按照GetBroadcastTilingInfo接口中的参数rank计算；<br>constRank大于0时，必须与GetBroadcastTilingInfo接口中的参数rank取值相同。rank当前支持的范围为[1, 9]。 |
+| constDstShape | 输出tensor的shape。uint32_t类型的数组。<br>该数组中任一维度取值为0，表示该维度为动态场景，该维度实际取值由参数dstShape对应维度取值决定。<br>该数组中任一维度取值大于0，表示该维度为静态场景，该维度取值与参数dstShape中对应维度取值相同。<br><br>该参数预留，传入默认值nullptr即可。 |
+| constSrcShape | 输入tensor的shape。uint32_t类型的数组。<br>该数组中任一维度取值为0，表示该维度为动态场景，实际shape由参数srcShape决定。<br>该数组中任一维度取值大于0，表示该维度为静态场景，与参数srcShape中对应维度取值相同。<br><br>该参数预留，传入默认值nullptr即可。 |
+| constSrcInnerPad | 表示输入的最后一维srcShape[rank-1]是否32B对齐，其中rank为输入/输出tensor的维度数目。<br><br>该参数预留，传入默认值false即可。 |
+
+**表3**  接口参数说明
+
+| 参数名称 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| dstLocal | 输出 | 目的操作数。<br><br>类型为[LocalTensor](../../basic_api/data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。 |
+| srcLocal | 输入 | 源操作数。<br><br>源操作数的数据类型需要与目的操作数保持一致。<br><br>类型为[LocalTensor](../../basic_api/data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。 |
+| dstShape | 输入 | 输出tensor的shape：uint32_t类型的数组，长度为1或者2，输入/输出的shape维度数目必须一致。 |
+| srcShape | 输入 | 输入tensor的shape：uint32_t类型的数组，长度为1或者2，输入/输出的shape维度数目必须一致。 |
+| sharedTmpBuffer | 输入 | 临时缓存。<br><br>类型为[LocalTensor](../../basic_api/data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。<br><br>用于Broadcast内部复杂计算时存储中间变量，由开发者提供。<br><br>临时空间大小BufferSize的获取方式请参考[GetBroadCastMaxMinTmpSize](get_broad_cast_max_min_tmp_size.md)。 |
+
+**表4**  支持动态shape接口的参数说明
+
+| 参数名称 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| dst | 输出 | 目的操作数。<br><br>类型为[LocalTensor](../../basic_api/data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。 |
+| src | 输入 | 源操作数。<br><br>源操作数的数据类型需要与目的操作数保持一致。<br><br>类型为[LocalTensor](../../basic_api/data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。 |
+| dstShape | 输入 | 输出tensor的shape：uint32_t类型的数组，长度取值范围为[1, 9]。输入/输出的shape维度数目必须一致，且满足条件dstShape[i] >= srcShape[i]。 |
+| srcShape | 输入 | 输入tensor的shape：uint32_t类型的数组，长度取值范围为[1, 9]。输入/输出的shape维度数目必须一致，且满足条件dstShape[i] >= srcShape[i]。<br><br>当srcShape[i]的值为1，且dstShape[i]不等于srcShape[i]时，表示i轴为广播轴。 |
+| tiling | 输入 | Broadcast接口所需的Tiling信息。BroadcastTiling*类型，通过调用核函数（Kernel）侧的tiling计算接口GetBroadcastTilingInfo获取。 |
+
+**表5**  kernel侧tiling计算接口参数说明
+
+<a name="table5458981523"></a>
+| 参数名称 | 输入/输出 | 功能 |
+| --- | --- | --- |
+| rank | 输入 | 输入/输出tensor的维度数目，目前支持的取值为[1, 9]。 |
+| dstShape | 输入 | 输出tensor的shape：uint32_t类型的数组，长度取值范围为[1, 9]。输入/输出的shape维度数目必须一致，且满足条件dstShape[i] >= srcShape[i]。 |
+| srcShape | 输入 | 输入tensor的shape：uint32_t类型的数组，长度取值范围为[1, 9]。输入/输出的shape维度数目必须一致，且满足条件dstShape[i] >= srcShape[i]。<br><br>当srcShape[i]的值为1，且dstShape[i]不等于srcShape[i]时，表示i轴为广播轴。 |
+| srcInnerPad | 输入 | 表示输入的最后一维srcShape[rank-1]是否32B对齐。<br><br>当前仅支持取值为false。 |
+| tiling | 输出 | 计算返回的Tiling信息。BroadcastTiling&类型。 |
+
+## 返回值说明
+
+无
+
+## 约束说明
+
+-   操作数地址对齐要求请参见[通用地址对齐约束](../../general_description_and_constraints.md#section796754519912)。
+-   **不支持源操作数与目的操作数地址重叠。**
+-   当前仅支持ND格式的输入，不支持其他格式。
+-   dim目前仅支持1或者2， axis目前仅支持0或者1。
+
+-   对于Atlas 推理系列产品AI Core，在dim=2且axis=1时，srcShape\[0\]必须为32B对齐，即当输入/输出Tensor的维度为2维，且广播的维度为1时，输入Tensor的第0维数据需为32字节的倍数。
+
+-   在dim=2，axis=0时，要求srcShape\[1\]必须32B对齐。
+
+-   对于Ascend 950PR/Ascend 950DT，输入/输出tensor支持的维度数目，即rank支持的取值范围为\[1, 9\]。
+
+-   支持的数据类型<a id="li12616155731718"></a>
+
+    
+    Ascend 950PR/Ascend 950DT，支持的数据类型为：b8、b16、b32、b64位宽对应的数据类型，具体数据类型请参考[不同位宽对应的数据类型](../../basic_api/data_structures/builtin_data_types.md#section16395539499)。
+    
+    
+    Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型为：int8\_t、uint8\_t、half、float。
+    
+    
+    Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的数据类型为：int8\_t、uint8\_t、half、float。
+    
+    
+    Atlas 推理系列产品AI Core，支持的数据类型为：int8\_t、uint8\_t、half、float。
+    
+    
+    Kirin X90，支持的数据类型为：int8\_t、uint8\_t、half、float。
+    
+    
+    Kirin 9030，支持的数据类型为：int8\_t、uint8\_t、half、float。
+    
+
+## 调用示例
+
+```
+// dstLocal：输出Tensor
+// srcLocal：输入Tensor
+const uint32_t srcShape[2] = {16, 1};  // 源数据shape
+const uint32_t dstShape[2] = {16, 16}; // broadcast数据shape
+AscendC::Broadcast<float, 2, 1>(
+    dstLocal, srcLocal, dstShape, srcShape); // broadcast数据类型为float，源数据是2维， broadcast第1维度
+```
+
+结果示例如下：
+
+```
+输入数据（srcLocal）:
+[[ 1]
+ [ 2]
+ [ 3]
+ [ 4]
+ [ 5]
+ [ 6]
+ [ 7]
+ [ 8]
+ [ 9]
+ [10]
+ [11]
+ [12]
+ [13]
+ [14]
+ [15]
+ [16]]
+dim：2
+axis：1
+输出数据（dstLocal）:
+[[ 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1]
+ [ 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2]
+ [ 3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3]
+ [ 4  4  4  4  4  4  4  4  4  4  4  4  4  4  4  4]
+ [ 5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5]
+ [ 6  6  6  6  6  6  6  6  6  6  6  6  6  6  6  6]
+ [ 7  7  7  7  7  7  7  7  7  7  7  7  7  7  7  7]
+ [ 8  8  8  8  8  8  8  8  8  8  8  8  8  8  8  8]
+ [ 9  9  9  9  9  9  9  9  9  9  9  9  9  9  9  9]
+ [10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10]
+ [11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11]
+ [12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12]
+ [13 13 13 13 13 13 13 13 13 13 13 13 13 13 13 13]
+ [14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14]
+ [15 15 15 15 15 15 15 15 15 15 15 15 15 15 15 15]
+ [16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16]]
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
 - [Broadcast场景](../../../../guides/operator_practice/simd_operator_impl/vector_programming/broadcast_scenario.md)（`explains`）：接口卡给出“将输入按照输出shape进行广播。例如将shape为(m,1)的数据广播到(m,k)，即将一列扩展为相同的k列。”；场景卡落实为“在Compute函数中，调用Add接口前需要先对输入进行Broadcast。”，说明怎样计算 shape 并把广播结果接到 Add。
 - [GetBroadCastMaxMinTmpSize](get_broad_cast_max_min_tmp_size.md)（`related`）：临时空间大小通过GetBroadCastMaxMinTmpSize获取。；host侧Tiling接口，用于获取Broadcast接口所需的最大和最小临时空间大小。。Broadcast 直接指定右侧接口为其临时空间来源，右侧为计算接口返回可选范围；两者分别承担 Kernel 计算与 Host 资源查询，是明确的前后任务链。
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 8 / 8 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [ApplyAdamWQuant A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/optim/apply_adam_w_quant.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 409 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w_quant/op_kernel/apply_adam_w_quant_fp16.h#L409)
+- [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 468 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/chunk_gated_delta_rule/op_kernel/chunk_gated_delta_rule_stage1.h#L468)
+- [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 233 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/matmul_all_reduce/op_kernel/arch35/matmul_all_reduce_mixed_dequant_reduce_quant.h#L233)
+- [MhcPostBackward A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/mhc/mhc_post_backward.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 433 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/arch22/mhc_post_backward.h#L433)
+- [RopeWithSinCosCache A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rope_with_sin_cos_cache.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 202 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rope_with_sin_cos_cache/op_kernel/arch35/rope_with_sin_cos_cache_f_bf16.h#L202)
+- [RopeWithSinCosCache 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rope_with_sin_cos_cache_950.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 202 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rope_with_sin_cos_cache/op_kernel/arch35/rope_with_sin_cos_cache_f_bf16.h#L202)
+- [RotaryPositionEmbedding A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/posembedding/rotary_position_embedding.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 660 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/posembedding/rotary_position_embedding/op_kernel/rotate_matrix.h#L660)
+- [EngramGateFusion 950 Direct Invoke 算子知识](../../../../operators/direct/transformer/attention/engram_gate_fusion_950.md)（`related`）：算子声明的固定版本源码包含对 `Broadcast(...)` 的直接调用（第 393 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/masked_causal_conv1d/op_kernel/arch35/masked_causal_conv1d.h#L393)
+
+### 知识正文中的调用示例（部分算子）
+
+展示 2 / 6 个已匹配算子；每个 API 最多展示 10 个自动关联。
+以下仅有知识正文中的调用证据，未作为源码调用结果。
+
+- [Atan2 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/atan2_950.md)（`related`）：算子正文包含对 `Broadcast(...)` 的直接调用；本卡提供该接口契约。
+- [BitwiseOrTensor 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)（`related`）：算子正文包含对 `Broadcast(...)` 的直接调用；本卡提供该接口契约。
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

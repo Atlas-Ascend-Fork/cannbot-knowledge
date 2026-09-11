@@ -5,7 +5,7 @@
 ## 查询路线
 
 1. 先查目标 technology 的同名 `operators`、`concepts` 和目标 platform，明确公式、shape/dtype/layout 与边界。
-2. 按每个实现 decision 分别查询 `apis`、`examples`、`optimizations` 或 `runbooks`，避免一条宽查询承载全部设计。
+2. 按每个实现 decision 选择有实际覆盖的 `apis`、`guides`、`examples`、`optimizations` 或 `runbooks`，避免一条宽查询承载全部设计。先完整读卡并沿已有链接补证，不对空分类机械轮询；Ascend C API 子决策复用专用 Skill。
 3. 跨 technology 迁移只显式加入 `shared` 和匹配 source/target 的 `interoperability`；保留问题定义，重新推导目标 DSL 参数。
 4. 将采用卡片和 receipt 冻结到 retrieval state，再开始形成需要交接的实现方案。
 

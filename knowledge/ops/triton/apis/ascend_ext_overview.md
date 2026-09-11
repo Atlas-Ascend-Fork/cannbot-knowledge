@@ -136,8 +136,17 @@ from triton.language.extra.cann import libdevice
 | `bl.to_buffer` / `bl.to_tensor` | Tensor ↔ Buffer 零拷贝视图转换 |
 | `bl.subview` | 创建缓冲区子视图（32 字节对齐约束） |
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [__init__.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/__init__.py)
+- [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py)
+- [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/extension/buffer/language/core.py)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [PIPE / CORE / MODE / IteratorType 枚举](./ascend_ext_pipe_core.md)（`related`）：“PIPE/CORE/MODE/IteratorType 枚举详解”
@@ -153,11 +162,3 @@ from triton.language.extra.cann import libdevice
 - [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [__init__.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/__init__.py)
-- [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py)
-- [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/extension/buffer/language/core.py)

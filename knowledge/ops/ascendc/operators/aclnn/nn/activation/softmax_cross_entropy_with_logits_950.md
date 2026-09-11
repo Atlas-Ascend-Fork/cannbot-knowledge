@@ -5,34 +5,34 @@ description: "说明 aclnnSoftmaxCrossEntropyWithLogits 在 950 上的接口语�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/docs/aclnnSoftmaxCrossEntropyWithLogits.md"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/docs/aclnnSoftmaxCrossEntropyWithLogits.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_api/aclnn_softmax_cross_entropy_with_logits.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_api/aclnn_softmax_cross_entropy_with_logits.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_api/softmax_cross_entropy_with_logits.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_api/softmax_cross_entropy_with_logits.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_host/softmax_cross_entropy_with_logits_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_host/softmax_cross_entropy_with_logits_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_host/arch35/softmax_cross_entropy_with_logits_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_host/arch35/softmax_cross_entropy_with_logits_tiling.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_tiling_data.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_tiling_data.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_tiling_key.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_tiling_key.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/softmax_cross_entropy_with_logits_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/softmax_cross_entropy_with_logits_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_full_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_full_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_split_r.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_split_r.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_host/config/ascend950/softmax_cross_entropy_with_logits_binary.json"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_host/config/ascend950/softmax_cross_entropy_with_logits_binary.json"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/CMakeLists.txt"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/CMakeLists.txt"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json"
     role: implementation
 created_at: "2026-08-25T19:03:16Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -444,7 +444,7 @@ workspace_total(K0 backend)=16 MiB; body workspace use=0
 
 - 适用 Route：R-001、R-002。
 - 触发条件：`R>0`；FP16/BFLOAT16 输入先 unpack/cast，FLOAT 直接装入 FP32 RegTensor。
-- Golden 来源：[`op_kernel/arch35/softmax_cross_entropy_with_logits_full_load.h:477-500`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_full_load.h#L477-L500)
+- Golden 来源：[`op_kernel/arch35/softmax_cross_entropy_with_logits_full_load.h:477-500`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_full_load.h#L477-L500)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -477,7 +477,7 @@ AscendC::MicroAPI::Mul(temp2Reg, temp2Reg, labelsReg32, pregMain);
 
 - 适用 Route：R-002。
 - 触发条件：FullLoad UB gate 失败；`kTimes` 取不超过主 tile 数的最大 2 次幂，`kTimesTail=rLoopTime-kTimes`。
-- Golden 来源：[`op_kernel/arch35/softmax_cross_entropy_with_logits_split_r.h:403-434`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_split_r.h#L403-L434)
+- Golden 来源：[`op_kernel/arch35/softmax_cross_entropy_with_logits_split_r.h:403-434`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_kernel/arch35/softmax_cross_entropy_with_logits_split_r.h#L403-L434)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -511,7 +511,7 @@ AscendC::MicroAPI::DataCopy(cahUbAddr, aReg, srcOffset, pMask);
 
 - 适用 Route：R-001、R-002。
 - 触发条件：Tiling 选择 tile；SplitR 固定预留 63 个 FP32 vector level，FullLoad 比实际 body 多计一个 R×A FP32 buffer。
-- Golden 来源：[`op_host/arch35/softmax_cross_entropy_with_logits_tiling.cpp:240-248`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_host/arch35/softmax_cross_entropy_with_logits_tiling.cpp#L240-L248)
+- Golden 来源：[`op_host/arch35/softmax_cross_entropy_with_logits_tiling.cpp:240-248`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_cross_entropy_with_logits/op_host/arch35/softmax_cross_entropy_with_logits_tiling.cpp#L240-L248)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

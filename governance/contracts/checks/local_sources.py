@@ -61,9 +61,10 @@ def check(contract: Contract, document, context) -> list[Issue]:
         if relative.parts[0] not in context.checked_local_roots:
             context.checked_local_roots.add(relative.parts[0])
             marker = source_root / ".complete"
-            expected = {f"archive_sha256={definition.get('archive_sha256', '')}"}
-            if "tree_sha256" in definition:
-                expected.add(f"tree_sha256={definition['tree_sha256']}")
+            expected = {
+                f"archive_sha256={definition.get('archive_sha256', '')}",
+                f"tree_sha256={definition.get('tree_sha256', '')}",
+            }
             if not source_root.is_dir() or not marker.is_file():
                 issues.append(
                     Issue(

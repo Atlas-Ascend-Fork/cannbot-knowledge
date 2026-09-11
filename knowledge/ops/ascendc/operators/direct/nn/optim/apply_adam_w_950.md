@@ -5,18 +5,18 @@ description: "说明 cann_bench::apply_adam_w 在 950 上的接口语义、Direc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/optim/apply_adam_w/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/optim/apply_adam_w/op_host/arch35/apply_adam_w_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w/op_host/arch35/apply_adam_w_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/optim/apply_adam_w/op_kernel/arch35/apply_adam_w.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w/op_kernel/arch35/apply_adam_w.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/optim/apply_adam_w/op_kernel/arch35/apply_adam_w_dag.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w/op_kernel/arch35/apply_adam_w_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/optim/apply_adam_w/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:29:35Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -623,7 +623,7 @@ workspace_total = 0
 
 - 适用 Route：按重要性依次为 R-002、R-001、R-004、R-003 的 FP16/BF16 entry。
 - 触发条件：模板 `T` 非 float；每个 tile/repeat 均使用相同有效 lane mask。
-- 固定官方源码依据：[`optim/apply_adam_w/op_kernel/arch35/apply_adam_w_dag.h:44-57`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/optim/apply_adam_w/op_kernel/arch35/apply_adam_w_dag.h)
+- 固定官方源码依据：[`optim/apply_adam_w/op_kernel/arch35/apply_adam_w_dag.h:44-57`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_adam_w/op_kernel/arch35/apply_adam_w_dag.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

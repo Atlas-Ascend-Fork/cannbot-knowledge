@@ -5,23 +5,23 @@ description: "说明 aclnnMlaPrologV3WeightNz 在 950 上的接口语义、Host/
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/README.md", role: header}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/docs/aclnnMlaPrologV3WeightNz.md", role: header}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_api/aclnn_mla_prolog_v3_weight_nz.h", role: header}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_api/aclnn_mla_prolog_v3_weight_nz.cpp", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_host/mla_prolog_v3_def.cpp", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_host/mla_prolog_tiling.cpp", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_host/mla_prolog_tiling_check.cpp", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/mla_prolog_tiling_data.h", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/mla_prolog_template_tiling_key.h", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_kernel/mla_prolog_v3.cpp", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/arch35/kernel_mla_prolog_split_n.h", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/arch35/kernel_mla_prolog_split_m.h", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/arch35/mla_prolog_comm.h", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/arch35/service_matmul.h", role: implementation}
-  - {resource: "https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_host/CMakeLists.txt", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/README.md", role: header}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/docs/aclnnMlaPrologV3WeightNz.md", role: header}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_api/aclnn_mla_prolog_v3_weight_nz.h", role: header}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_api/aclnn_mla_prolog_v3_weight_nz.cpp", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_host/mla_prolog_v3_def.cpp", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_host/mla_prolog_tiling.cpp", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_host/mla_prolog_tiling_check.cpp", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/mla_prolog_tiling_data.h", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/mla_prolog_template_tiling_key.h", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_kernel/mla_prolog_v3.cpp", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/arch35/kernel_mla_prolog_split_n.h", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/arch35/kernel_mla_prolog_split_m.h", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/arch35/mla_prolog_comm.h", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_kernel/arch35/service_matmul.h", role: implementation}
+  - {resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog_v3/op_host/CMakeLists.txt", role: implementation}
 created_at: "2026-08-24T00:00:00Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -530,7 +530,7 @@ R-005 固定 N=128，因而 `Hckv+Dr <= N*(D+Dr)`，清零不越出已分配 QcQ
 
 - 适用 Route：R-004、R-005
 - 触发条件：wq3,T≥8192,CV1:2,He∈{7168,7680},N=128
-- Golden 来源：[`mla_prolog_tiling.cpp:272-280`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_host/mla_prolog_tiling.cpp#L272-L280)
+- Golden 来源：[`mla_prolog_tiling.cpp:272-280`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/mla_prolog/op_host/mla_prolog_tiling.cpp#L272-L280)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

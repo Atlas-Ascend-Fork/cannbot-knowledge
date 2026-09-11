@@ -2,31 +2,71 @@
 type: API
 title: GetReduceRepeatSumSpr
 description: 获取ReduceSum接口前n个数据连续计算的结果，以全局变量形式存储。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.execution_unit.vector]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.execution_unit.vector
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute_aux_config/GetReduceRepeatSumSpr_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+source_headers:
+- include/basic_api/kernel_operator_vec_reduce_intf.h
 ---
 
-# GetReduceRepeatSumSpr
+# GetReduceRepeatSumSpr(ISASI)
 
-获取ReduceSum接口前n个数据连续计算的结果，以全局变量形式存储。
+## 功能说明
 
-ReduceSum接口对所有输入数据进行求和，计算过程如下。 图1 ReduceSum计算示意图
+头文件路径为：`"basic_api/kernel_operator_vec_reduce_intf.h"`。
 
-本接口组包含 ReduceSum。
+获取[ReduceSum](../reduction_compute/reduce_sum.md)接口的计算结果，仅支持tensor前n个数据连续计算接口使用。计算结果以全局变量形式存储，可以随时调用获取。
 
-本接口属于 UB 矢量计算归约接口。
+## 函数原型
 
-约束：源操作数及sharedTmpBuffer的地址对齐约束请参考通用地址对齐约束，起始地址需要32字节对齐；目的操作数的起始地址对齐约束请参考ReduceRepeat-表3。；操作数地址重叠约束请参考通用地址重叠约束。；需要使用sharedTmpBuffer的情况下，支持dst与sharedTmpBuffer地址重叠（通常情况下dst比sharedTmpBuffer所需的空间要小），此时sharedTmpBuffer必须满足所需空间要求，详情请参考关键特性说明。；当参数count或repeatTime取值为0时，该接口的行为如下：
+```cpp
+template <typename T>
+__aicore__ inline T GetReduceRepeatSumSpr()
+```
 
-支持的硬件型号：Ascend 950PR/Ascend 950DT, Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品, Atlas 推理系列产品AI Core。
+## 参数说明
 
-临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+**表1**  模板参数说明
+
+| 参数名 | 描述 |
+| --- | --- |
+| T | 操作数数据类型。 |
+
+## 数据类型
+
+操作数支持的数据类型为：`half`、`float`。
+
+## 返回值说明
+
+`ReduceSum`接口的计算结果。
+
+## 约束说明
+
+仅支持配合`ReduceSum`的tensor前n个数据连续计算接口使用。
+
+## 调用示例
+
+具体可参考[GetReduceRepeatSumSpr样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/reduce_computation)。
+
+```cpp
+AscendC::LocalTensor<float> src;
+AscendC::LocalTensor<float> work;
+AscendC::LocalTensor<float> dst;
+AscendC::ReduceSum(dst, src, work, 128);
+float res = AscendC::GetReduceRepeatSumSpr<float>(); // 返回前128个数的和
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关

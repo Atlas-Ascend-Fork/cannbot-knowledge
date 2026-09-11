@@ -1,7 +1,6 @@
 # conv3 d tiling
 
-- [Conv3D Tiling使用说明](conv3_d_tiling_usage.md)：Ascend C提供一组Conv3D Tiling API，方便用户获取Conv3D正向算子Kernel计算时所需的Tiling参数。用户只需要传入Input/Weight/Bias/Output的Position位置、Format格式和DType数据类型及相关参数等信息，调用API接口，即可...
-- [Conv3D Tiling侧接口](conv3d_tiling.md)：提供Conv3D前向计算的Host侧Tiling接口，包含TConv3DApiTiling结构体、GetTiling及形状与类型设置方法。
+- [Conv3D Tiling使用说明](conv3_d_tiling_usage.md)：Ascend C提供一组Conv3D Tiling API，方便用户获取Conv3D正向算子Kernel计算时所需的Tiling参数。用户只需要传入Input/Weight/Bias/Output的Position位置、Format格式和DType数据类型及相关参数等信息，调用API接口，即可获取Init中TConv3DApiTiling结构体中的相关参数。
 - [Conv3D Tiling构造函数](conv3d_tiling_constructor.md)：用于创建一个Conv3D单核Tiling对象。
 - [GetTiling](get_tiling.md)：获取Tiling参数。
 - [SetBiasType](set_bias_type.md)：设置Bias在内存上的位置、数据格式和数据类型。

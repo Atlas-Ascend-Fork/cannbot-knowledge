@@ -175,7 +175,6 @@ __aicore__ inline void ComputeLoadX(const AscendC::LocalTensor<float> &fBuf,
 <!-- cannbot:related:start -->
 ## 相关
 
-- [VF调用](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`exemplifies`）：提供 asc_vf_call 接口，用于在 SIMD 编程场景下启动 SIMD VF（Vector Function）子任务。通过模板参数 funcPtr 指定入口核函数，可变参数 Args 传递实参。；- API 路径：`LocalTensor::GetPhyAddr` → chunk pointer arithmetic → `asc_vf_call` → `LoadAlign`/`StoreAlign`。。API定义 asc_vf_call 的入口与实参传递，Runbook说明 wrapper 传已偏移 UB 指针时 callee 不得再次叠加同一 offset。
 - [asc_vf_call](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/asc_vf_call.md)（`exemplifies`）：在SIMD编程场景下使用。用于启动SIMD VF（Vector Function）子任务。；为每个 `asc_vf_call` 写出有效地址代数；调用前后的 offset 总和必须恰好出现一次。API 定义 VF 启动点，runbook 约束 wrapper 与 callee 的地址责任，可直接诊断多 chunk 从第二块开始错位。
 - [AR 跨块循环放在 __simd_vf__ 只执行首块](simd_vf_chunk_loop_must_be_driven_by_aicore_wrapper.md)（`related`）：Ascend C Reg kernel 直调，以 `__aicore__` wrapper 循环调用 `__simd_vf__` callee。；将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。；后者确立逐块 VF 调用的正确调度边界，前者进一步约束该边界内 offset 只能由 wrapper 或 callee 一侧负责。
 - [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：第三个 pass 重新计算 `exp(x-max)`，不再回读第二个 pass 写出的整行指数 UB。；固定单一寻址责任：wrapper 传已按 chunk 前移的 `fAddr`/`xAddr`；callee 删除 `offset` 参数，对收到的指针直接 `LoadAlign`。；拆分 wrapper 后，目标卡给出每块地址只前移一次的必要寻址合同。

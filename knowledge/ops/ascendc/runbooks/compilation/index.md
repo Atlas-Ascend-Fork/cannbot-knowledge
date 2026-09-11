@@ -107,6 +107,7 @@
 - [GMM A8W4 561000 缺 binary entry 无 JIT 回退](gmm_a8w4_561000_binary_entry_jit.md)：GroupedMatmulWeightNz 新增 MX A8W4 Blaze tensor API dispatch 分支后，tiling 生成新 key 91308033，但预编译 kernel binary 无此 entry；ascend950 未设 jitCompile.flag 致无 JIT 回退，ACLNN 返回 561000。
 - [奇数 H 致 B 视图 UB 地址非 32B 对齐](h_b_ub_32b.md)：bf16/fp16 路径在 H 为奇数时对 B 视图或 Cast 输出做 VEC 计算会触发 UB 地址未 32 字节对齐的向量核异常；根因是 B 视图起始字节偏移 H×dtype_size 不满足 32 字节对齐。
 - [Host workspace 需先 CPU 暂存再 H2D](host_workspace_uses_cpu_staging_before_h2d.md)：torch_npu direct-launch host 用输入张量 options 创建 workspace 时继承 NPU device，随后 CPU 代码直接写 device pointer 导致进程崩溃；以 CPU staging 填充并在当前 stream 异步复制到 NPU 后恢复。
+- [Host Tiling UT 基础设施故障诊断](host_tiling_ut_infrastructure_failures.md)：按编译、链接、动态加载、Registry、ContextBuilder、平台资源 mock 和测试结果分层定位 Tiling gtest 故障，明确符号排查的适用边界。
 - [BiSheng bf16 类型转换失败——隔离模板实例化](if_constexpr_excludes_unsupported_bf16_cast.md)：运行时 guard 不能阻止通用分发宏实例化不支持的 BF16 规约模板；为更新型 dtype 使用独立模板入口。
 - [bf16 未编译剔除触发 backend Cannot select](if_constexpr_excludes_unsupported_bf16_compare.md)：运行时 dtype 分支仍实例化 bf16 标量比较，BiSheng backend Cannot select；用 if constexpr 编译期剔除不支持分支。
 - [InitOutput GM 专用，UB 清零用 Duplicate](initoutput_gm_ub_duplicate.md)：AscendC InitOutput(GlobalTensor<T>, uint32_t, T) 是 GM 专用清零 API，把 LocalTensor 作为第一参数传入会触发 'no known conversion from LocalTensor to GlobalTensor'；UB LocalTensor 清零应改用 Duplicate(local, value, mask)。判别依据为编译器候选函数 note 显示 InitOutput 唯一签名第一参数为 GlobalTensor<T>。

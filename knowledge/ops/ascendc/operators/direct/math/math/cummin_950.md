@@ -5,18 +5,18 @@ description: "说明 cann_bench::cummin 在 950 上的语义、Host checked arit
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/math/cummin/README.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cummin/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/math/cummin/op_host/cummin_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cummin/op_host/cummin_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/math/cummin/op_host/arch35/cummin_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cummin/op_host/arch35/cummin_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/math/cummin/op_kernel/arch35/cummin.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cummin/op_kernel/arch35/cummin.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/math/cummin/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cummin/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T19:31:28Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---

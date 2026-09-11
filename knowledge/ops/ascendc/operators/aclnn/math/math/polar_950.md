@@ -5,34 +5,34 @@ description: "说明 aclnnPolarGetWorkspaceSize/aclnnPolar 在 950 上的接口�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/docs/aclnnPolar.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/docs/aclnnPolar.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_api/aclnn_polar.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_api/aclnn_polar.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_api/aclnn_polar.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_api/aclnn_polar.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_api/polar.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_api/polar.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_host/polar_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_host/polar_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_host/arch35/polar_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_host/arch35/polar_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_host/arch35/polar_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_host/arch35/polar_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_kernel/polar_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_kernel/polar_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_kernel/arch35/polar_struct.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_kernel/arch35/polar_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_kernel/arch35/polar_simt.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_kernel/arch35/polar_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_host/config/ascend950/polar_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_host/config/ascend950/polar_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/CMakeLists.txt
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/include/op_common/op_host/tiling_base_class.h
     role: implementation
 created_at: "2026-08-25T11:36:45Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -355,7 +355,7 @@ API_workspace_total = executor.GetWorkspaceSize()  # 框架切片固定仓不可
 
 - 适用 Route：R-001。
 - 触发条件：任意合法的 rank≤8 标准广播；Host 对输入 size-1 维写 stride 0。
-- Golden 来源：[`polar_simt.h:97-108`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_kernel/arch35/polar_simt.h#L97-L108)
+- Golden 来源：[`polar_simt.h:97-108`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_kernel/arch35/polar_simt.h#L97-L108)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -391,7 +391,7 @@ Host 已把广播维编码成 stride 0，Device 用同一次输出坐标解码�
 
 - 适用 Route：R-001。
 - 触发条件：任意非空输出；`C=GetCoreNumAiv()>0`，外层 blockDim 为 `min(N,C)`。
-- Golden 来源：[`polar_simt.h:65-78`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_kernel/arch35/polar_simt.h#L65-L78)
+- Golden 来源：[`polar_simt.h:65-78`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/polar/op_kernel/arch35/polar_simt.h#L65-L78)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

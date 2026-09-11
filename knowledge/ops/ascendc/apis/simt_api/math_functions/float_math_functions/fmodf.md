@@ -2,26 +2,116 @@
 type: API
 title: Fmodf
 description: 获取输入数据x除以y的余数。求余数时，商取x除以y浮点数结果的整数部分。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.math_function]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.math_function
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/fmodf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/math_functions.h
 ---
 
-# Fmodf
+# fmodf
 
-功能：获取输入数据x除以y的余数。求余数时，商取x除以y浮点数结果的整数部分。
+## 功能说明
 
-函数原型：float fmodf(float x, float y)
+获取输入数据x除以y的余数。求余数时，商取x除以y浮点数结果的整数部分。
 
-参数：x（输入）源操作数，y（输入）源操作数。
+## 函数原型
 
-返回值：输入数据x除以y的余数。
+```cpp
+inline float fmodf(float x, float y)
+```
 
-约束：无。需包含头文件 simt_api/math_functions.h。
+## 参数说明
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+| y | 输入 | 源操作数。 |
+
+## 返回值说明
+
+输入数据x除以y的余数。
+
+-   x为0时，y不为0时，返回值为0。
+-   x为有限数，y为inf或-inf时，返回值为x。
+-   x为inf或-inf，或y为0时，返回值为nan。
+-   x，y任意一个为nan时，返回值为nan。
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/math_functions.h`头文件。
+
+```cpp
+#include "simt_api/math_functions.h"
+```
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(256) void compute_fmodf(float *result, const float *x, const float *y, uint32_t count)
+    {
+        const uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if (idx >= count) {
+            return;
+        }
+        result[idx] = fmodf(x[idx], y[idx]);
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(256) inline void compute_fmodf_vf(__gm__ float *result, __gm__ const float *x, __gm__ const float *y, uint32_t count)
+    {
+        const uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if (idx >= count) {
+            return;
+        }
+        result[idx] = fmodf(x[idx], y[idx]);
+    }
+
+    __global__ __vector__ void run_fmodf(__gm__ float *result, __gm__ const float *x, __gm__ const float *y, uint32_t count)
+    {
+        asc_vf_call<compute_fmodf_vf>(dim3(256), result, x, y, count);
+    }
+    ```
+
+输入输出示例如下：
+
+```
+x：0.25, 0.75, 1.25, 1.75
+y：1.25, 2.25, 3.25, 4.25
+result: 0.25 0.75 1.25 1.75
+```
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [GridSampler3D 950 Direct Invoke 算子知识](../../../../operators/direct/cv/image/grid_sampler_3d_950.md)（`related`）：算子声明的固定版本源码包含对 `fmodf(...)` 的直接调用（第 56 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/grid_sample/op_kernel/arch35/grid_sampler_bilinear_smit_common.h#L56)
+
+<!-- cannbot:api-operator:end -->
+<!-- cannbot:related:end -->

@@ -86,16 +86,6 @@ if base_m <= y_m < base_m + BLOCK_M and base_n <= y_n < base_n + BLOCK_N:
 - `get_element`/`insert_slice` dtype 支持：int8/16/32/64、uint8/16/32/64、fp16、fp32、bf16 均支持；**bool 不支持**（A/B 为 bool 时不能用此优化）
 - `insert_slice` 约束：`offsets`/`sizes`/`strides` 长度必须等于张量维度数；`sub` 的 shape 必须与 `sizes` 匹配；插入区域不得越界
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [数据搬运与内存访问模式优化](data_movement_optimization.md)（`related`）：“离散访存 vs 连续访存”
-- [compile_hint 与 Ascend 扩展 API 速查](compile_hint_extension.md)（`related`）：“get_element/insert_slice API 参数规格”
-- [Store 合并优化](store_merge.md)（`related`）：“同为减少离散访存的优化”
-- [标量降级规避（910_95 / 910B）](scalar_degradation_avoidance.md)（`related`）：“标量退化的通用识别与规避方法”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -104,3 +94,14 @@ if base_m <= y_m < base_m + BLOCK_M and base_n <= y_n < base_n + BLOCK_N:
 - [get_element.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Extension_Ops/get_element.md)
 - [insert_slice.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Extension_Ops/insert_slice.md)
 - [vec_ops.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/vec_ops.py)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [数据搬运与内存访问模式优化](data_movement_optimization.md)（`related`）：“离散访存 vs 连续访存”
+- [compile_hint 与 Ascend 扩展 API 速查](compile_hint_extension.md)（`related`）：“get_element/insert_slice API 参数规格”
+- [Store 合并优化](store_merge.md)（`related`）：“同为减少离散访存的优化”
+- [标量降级规避（910_95 / 910B）](scalar_degradation_avoidance.md)（`related`）：“标量退化的通用识别与规避方法”
+
+<!-- cannbot:related:end -->

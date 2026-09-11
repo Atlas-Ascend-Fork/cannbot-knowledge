@@ -142,7 +142,6 @@ result = tl.reduce(data, axis=0, combine_fn=my_reduce)
 - 精度：归约内部用 fp32 累加（fp16 直接 sum 有精度损失），写回时再转目标 dtype。
 
 <!-- cannbot:related:start -->
-
 ## 相关
 
 - [归约算子](../guides/operator_design/reduction.md)（`related`）：“reduction 算子规格”

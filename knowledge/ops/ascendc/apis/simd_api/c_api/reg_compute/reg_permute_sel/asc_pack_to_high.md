@@ -1,0 +1,62 @@
+---
+type: API
+title: asc_pack_to_high
+description: 将源操作数中的元素选取低8位（b16）、低16位（b32）、低32位（b64）写入目的操作数的高半部分。 当源操作数为vector_bool时，其按bit位进行压缩，每2bit将其中的低位bit存储至目的操作数的高半部分。
+tags:
+- task.lookup
+- topic.implementation.api_layer.c_api
+status: stable
+sources:
+- resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_permute_sel/asc_pack_to_high.md
+  role: primary
+created_at: '2026-09-03T08:52:46Z'
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/c_api/reg_compute/compute/reg_permute_sel.h
+---
+
+# asc_pack_to_high
+
+## 功能说明
+
+将源操作数中的元素选取低8位（b16）、低16位（b32）、低32位（b64）写入目的操作数的高半部分。
+当源操作数为vector_bool时，其按bit位进行压缩，每2bit将其中的低位bit存储至目的操作数的高半部分。
+
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/pack_high_draft.png)
+
+## 函数原型
+
+```cpp
+__simd_callee__ inline void asc_pack_to_high(vector_uint8_t& dst, vector_uint16_t src)
+__simd_callee__ inline void asc_pack_to_high(vector_uint16_t& dst, vector_uint32_t src)
+__simd_callee__ inline void asc_pack_to_high(vector_bool& dst, vector_bool src)
+```
+
+## 参数说明
+
+**表1** 参数说明
+
+| 参数名       | 输入/输出 | 描述               |
+| --------- | ----- | ---------------- |
+| dst       | 输出    | 目的操作数（矢量数据寄存器/掩码寄存器）。            |
+| src | 输入    | 源操作数（矢量数据寄存器/掩码寄存器）。            |
+
+矢量数据寄存器和掩码寄存器的详细说明请参见[reg数据类型定义](../../defs/type/data_type_definition.md)。
+
+## 返回值说明
+
+无
+
+## 约束说明
+
+无
+
+## 调用示例
+
+```cpp
+vector_uint8_t dst;
+vector_uint16_t src;
+asc_pack_to_high(dst, src);    // 将src的低8位写入dst的高半部分
+```

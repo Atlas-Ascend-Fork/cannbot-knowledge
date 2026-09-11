@@ -5,32 +5,32 @@ description: "说明 aclnnQuantizedBatchNorm 在 950 上的接口语义、Host/L
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/docs/aclnnQuantizedBatchNorm.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/docs/aclnnQuantizedBatchNorm.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/op_api/aclnn_quantized_batch_norm.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/op_api/aclnn_quantized_batch_norm.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/op_api/quantized_batch_norm.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/op_api/quantized_batch_norm.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_tiling_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_tiling_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_welford_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_welford_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_kernel/quantized_batch_norm.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_kernel/quantized_batch_norm.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_kernel/quantized_batch_norm_welford.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_kernel/quantized_batch_norm_welford.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/config/ascend950/quantized_batch_norm_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/config/ascend950/quantized_batch_norm_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:04:29Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -682,7 +682,7 @@ workspace declaration=16 MiB; Kernel consumption=0
 
 - 适用 Route：R-003～R-006
 - 触发条件：`patternR0Align <= r0UbFactor/2 && patternR1 > 1`
-- Golden 来源：[`op_host/quantized_batch_norm_welford_tiling.cpp:103-120`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_welford_tiling.cpp#L103-L120)
+- Golden 来源：[`op_host/quantized_batch_norm_welford_tiling.cpp:103-120`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_host/quantized_batch_norm_welford_tiling.cpp#L103-L120)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -720,7 +720,7 @@ if ((commonParams.patternR0Align <= (r0UbFactor / TWO_NUM)) && commonParams.patt
 
 - 适用 Route：全部
 - 触发条件：每个 a-tile 搬入逐 C 参数后
-- Golden 来源：[`op_kernel/quantized_batch_norm_welford.h:121-147`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_kernel/quantized_batch_norm_welford.h#L121-L147)
+- Golden 来源：[`op_kernel/quantized_batch_norm_welford.h:121-147`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/quantized_batch_norm/op_kernel/quantized_batch_norm_welford.h#L121-L147)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -11,13 +11,17 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from argparse import Namespace
+from contextlib import redirect_stdout, redirect_stderr
 from pathlib import Path
+from unittest import mock
 
 import yaml
 
@@ -30,6 +34,10 @@ from governance.contracts.knowledge import (  # noqa: E402
     markdown_targets,
     relative_markdown_links,
 )
+from governance.contracts.checks.platforms import (  # noqa: E402
+    fixed_archive_platforms,
+)
+from governance.contracts.checks import Document, RunContext, body  # noqa: E402
 
 
 INGEST = ROOT / ".agents/skills/knowledge-ingest/scripts/knowledge_ingest.py"
@@ -71,6 +79,7 @@ class RouteContractTests(unittest.TestCase):
         cases = {
             "knowledge/common/platforms/concepts/architecture.md": ("common", "platforms"),
             "knowledge/common/toolchains/runbooks/compilation/environment.md": ("common", "toolchains"),
+            "knowledge/contrib/ascendc/apis/example.md": ("contrib", "ascendc"),
             "knowledge/graph/torch_compile/concepts/capture.md": ("graph", "torch_compile"),
             "knowledge/graph/ge/apis/graph_api.md": ("graph", "ge"),
             "knowledge/ops/ascendc/apis/basic_api/data_copy/example.md": ("ops", "ascendc"),
@@ -112,53 +121,154 @@ class RouteContractTests(unittest.TestCase):
         self.assertIn("950", self.contract.platforms)
         self.assertNotIn("a5", self.contract.platforms)
 
-    def test_kirin_platforms_are_registered_without_allowing_unknown_values(self) -> None:
-        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
-        for platform in ("kirin_x90", "kirin_9030", "kirin_unknown"):
-            metadata = dict(SYNTHETIC_API_METADATA, platforms=[platform])
-            issues = self.contract.validate_card(relative, metadata, "# API\n")
-            self.assertEqual(platform == "kirin_unknown", "platform.unknown" in {issue.code for issue in issues})
+    def test_fixed_archive_mirror_declares_index_only_navigation_and_body_omission(self) -> None:
+        mirror = self.contract.local_sources["cann_docs_raw"]["mirror"]
+        self.assertEqual("index_only", mirror["navigation_policy"])
+        self.assertEqual(
+            ["产品支持情况"], mirror["omit_section_title_contains"]
+        )
 
-    def test_mirror_body_exception_requires_primary_archive_api_or_guide(self) -> None:
-        from governance.contracts.checks import Document, RunContext, body
-
-        resource = "cann-docs-raw/asc-devkit/docs/zh/example.md"
-        for kind, profile in (("API", "apis"), ("Guide", "guides"), ("Concept", "concepts")):
-            for role in (None, "primary", "supporting", "header", "implementation"):
-                source = {"resource": resource}
-                if role is not None:
-                    source["role"] = role
-                metadata = dict(SYNTHETIC_API_METADATA, type=kind, sources=[source])
-                relative = Path(f"knowledge/ops/ascendc/{profile}/synthetic.md")
-                allowed = kind in {"API", "Guide"} and role in (None, "primary")
-                for text in ("# First\n\n# Second\n", "No heading.\n"):
-                    with self.subTest(kind=kind, role=role, text=text):
-                        document = Document.create(self.contract, ROOT / relative, relative, "", metadata, text)
-                        issues = body.check(self.contract, document, RunContext())
-                        self.assertEqual(not allowed or not text.startswith("#"), "body.h1_count" in {issue.code for issue in issues})
-
-    def test_invalid_mirror_source_root_is_rejected(self) -> None:
+    def test_archive_source_roles_distinguish_mirrors_from_references(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             shutil.copytree(ROOT / "governance", root / "governance")
-            path = root / "governance/schemas/registries.yaml"
-            registry = yaml.safe_load(path.read_text())
-            for value in (None, "", "/absolute", "../escape", "docs/../escape", "docs\\escape"):
-                registry["local_sources"]["cann_docs_raw"]["mirror"]["source_root"] = value
-                path.write_text(yaml.safe_dump(registry, allow_unicode=True, sort_keys=False))
-                with self.subTest(value=value), self.assertRaisesRegex(ValueError, "mirror.source_root"):
-                    Contract(root)
+            resource = "cann-docs-raw/asc-devkit/docs/zh/example.md"
+            source_path = root / resource
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text("# Source without platform scope\n", encoding="utf-8")
+            contract = Contract(root)
+            for kind, profile in (("API", "apis"), ("Guide", "guides")):
+                for role in (None, "primary", "supporting", "example", "constraint",
+                             "header", "implementation", "evidence"):
+                    with self.subTest(kind=kind, role=role):
+                        source = {"resource": resource}
+                        if role is not None:
+                            source["role"] = role
+                        metadata = {
+                            **SYNTHETIC_API_METADATA,
+                            "type": kind,
+                            "sources": [
+                                {"resource": "https://example.com/core", "role": "primary"},
+                                source,
+                            ],
+                        }
+                        relative = Path(f"knowledge/ops/ascendc/{profile}/synthetic.md")
+                        is_mirror = role in (None, "primary")
+                        self.assertEqual(
+                            is_mirror, contract.fixed_archive_mirror(metadata) is not None
+                        )
+                        issues = contract.validate_card(relative, metadata, "# Topic\n\nBody.\n")
+                        self.assertEqual(
+                            {"platform.source_unknown"} if is_mirror else set(),
+                            {issue.code for issue in issues},
+                        )
+                        document = Document.create(
+                            contract, root / relative, relative, "", metadata,
+                            "# Topic\n\n# Second\n",
+                        )
+                        issues = body.check(contract, document, RunContext())
+                        self.assertEqual(
+                            set() if is_mirror else {"body.h1_count"},
+                            {issue.code for issue in issues},
+                        )
 
-    def test_malformed_mirror_sources_report_findings_without_crashing(self) -> None:
-        from governance.contracts.checks import Document, RunContext, body
+    def test_invalid_fixed_archive_navigation_policy_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(ROOT / "governance", root / "governance")
+            registry = root / "governance/schemas/registries.yaml"
+            payload = yaml.safe_load(registry.read_text(encoding="utf-8"))
+            payload["local_sources"]["cann_docs_raw"]["mirror"][
+                "navigation_policy"
+            ] = "mirror_every_markdown"
+            registry.write_text(
+                yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "must be index_only"):
+                Contract(root)
 
-        relative = Path("knowledge/ops/ascendc/apis/synthetic.md")
-        for sources in (None, 1, "invalid", {"resource": "invalid"}):
-            metadata = dict(SYNTHETIC_API_METADATA, sources=sources)
-            document = Document.create(self.contract, ROOT / relative, relative, "", metadata, "# First\n\n# Second\n")
-            with self.subTest(sources=sources):
-                issues = body.check(self.contract, document, RunContext())
-                self.assertIn("body.h1_count", {issue.code for issue in issues})
+    def test_invalid_fixed_archive_omitted_sections_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(ROOT / "governance", root / "governance")
+            registry = root / "governance/schemas/registries.yaml"
+            payload = yaml.safe_load(registry.read_text(encoding="utf-8"))
+            payload["local_sources"]["cann_docs_raw"]["mirror"][
+                "omit_section_title_contains"
+            ] = ["产品支持情况", "产品支持情况"]
+            registry.write_text(
+                yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "sorted list of unique"):
+                Contract(root)
+
+    def test_fixed_archive_platforms_only_include_supported_product_rows(self) -> None:
+        body = """# API
+
+## 产品支持情况
+
+- Ascend 950PR/Ascend 950DT：支持
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：不支持
+- Atlas 200I/500 A2 推理产品：不支持
+- Atlas 推理系列产品AI Core：支持，但实际功能不生效
+- Atlas 训练系列产品：支持
+
+## 功能说明
+"""
+        self.assertEqual(["950", "a3", "910"], fixed_archive_platforms(body))
+
+    def test_fixed_archive_platforms_support_explicit_scope_without_guessing(self) -> None:
+        self.assertEqual(
+            ["a3"],
+            fixed_archive_platforms(
+                "# API\n\n## 约束说明\n\n目前仅支持Atlas A3训练系列产品。\n"
+            ),
+        )
+        self.assertEqual(
+            ["a2"],
+            fixed_archive_platforms(
+                "# Guide\n\n本性能优化手段仅针对Atlas A2训练系列产品生效。\n"
+            ),
+        )
+        self.assertIsNone(
+            fixed_archive_platforms(
+                "# API\n\n以下示例在Atlas A3训练系列产品上运行。\n"
+            )
+        )
+        self.assertIsNone(
+            fixed_archive_platforms(
+                "# Guide\n\nAscend 950之前仅支持SIMD；从Ascend 950开始支持SIMT。\n"
+            )
+        )
+        self.assertIsNone(
+            fixed_archive_platforms(
+                "# Guide\n\n### SIMT\n- **限制**：当前仅支持Ascend 950芯片架构。\n"
+            )
+        )
+        self.assertIsNone(
+            fixed_archive_platforms(
+                "# Guide\n\n针对Atlas A2推理产品，硬件支持两种模式。"
+                "Ascend C场景下仅支持耦合模式。\n"
+            )
+        )
+        self.assertIsNone(
+            fixed_archive_platforms(
+                "# API\n\n范围未知。\n\n"
+                "<!-- cannbot:related:start -->\n"
+                "## 相关\n\n"
+                "- [Other](other.md)（`related`）：目前仅支持Atlas A3训练系列产品。\n"
+                "<!-- cannbot:related:end -->\n"
+            )
+        )
+        self.assertIsNone(
+            fixed_archive_platforms(
+                "# API\n\n```markdown\n## 产品支持情况\n"
+                "- Atlas A2 训练系列产品：支持\n```\n"
+            )
+        )
 
     def test_invalid_route_shapes_are_rejected(self) -> None:
         cases = (
@@ -171,6 +281,8 @@ class RouteContractTests(unittest.TestCase):
             "knowledge/ops/ascendc/operators/aclnn/cv/mc2/family_category_mismatch.md",
             "knowledge/ops/ascendc/interoperability/not_shared.md",
             "knowledge/common/platforms/chip.md",
+            "knowledge/contrib/apis/no_route.md",
+            "knowledge/contrib/triton/apis/unregistered_route.md",
             "knowledge/model/shared/concepts/cross_scope.md",
             "knowledge/ops/ascendc/runbooks/timeout.md",
         )
@@ -184,6 +296,7 @@ class RouteContractTests(unittest.TestCase):
     def test_registered_structure_is_materialized(self) -> None:
         expected = {
             "knowledge/common",
+            "knowledge/contrib",
             "knowledge/graph",
             "knowledge/model",
             "knowledge/model/inference",
@@ -200,6 +313,7 @@ class RouteContractTests(unittest.TestCase):
         self.assertEqual(expected | {"knowledge/ops/ascendc", "knowledge/ops/shared"}, actual)
         self.assertTrue(all((ROOT / path / "index.md").is_file() for path in expected))
         not_precreated = {
+            "knowledge/contrib/ascendc",
             "knowledge/common/toolchains",
             "knowledge/common/observability",
             "knowledge/common/glossaries",
@@ -223,7 +337,7 @@ class RouteContractTests(unittest.TestCase):
         ]
         apis = [path for path in ascendc_cards if "apis" in path.parts]
         guides = [path for path in ascendc_cards if "guides" in path.parts]
-        self.assertGreaterEqual(len(apis), 2810)
+        self.assertGreaterEqual(len(apis), 2600)
         self.assertGreaterEqual(len(guides), 270)
         self.assertTrue(
             all(path.parts[1:3] == ("ops", "ascendc") for path in [*apis, *guides])
@@ -422,7 +536,6 @@ class RouteContractTests(unittest.TestCase):
         ]
         self.assertEqual([], self.contract.validate_card(relative, metadata, "# Synthetic API\n"))
 
-
     def test_api_source_headers_reject_invalid_shape(self) -> None:
         relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
         for value in ([123], "not-a-list", [""], ["include/a.h", "include/a.h"]):
@@ -432,7 +545,6 @@ class RouteContractTests(unittest.TestCase):
                 issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
                 self.assertIn("frontmatter.schema", {issue.code for issue in issues})
 
-
     def test_source_headers_is_rejected_outside_api_profile(self) -> None:
         relative = Path("knowledge/ops/ascendc/guides/synthetic_guide.md")
         metadata = dict(SYNTHETIC_API_METADATA)
@@ -440,7 +552,6 @@ class RouteContractTests(unittest.TestCase):
         metadata["source_headers"] = ["include/c_api/asc_simd.h"]
         issues = self.contract.validate_card(relative, metadata, "# Synthetic Guide\n")
         self.assertIn("frontmatter.extra", {issue.code for issue in issues})
-
 
     def test_stable_runbook_can_use_empty_sources(self) -> None:
         relative = Path("knowledge/ops/ascendc/runbooks/compilation/trajectory_finding.md")
@@ -532,6 +643,257 @@ auto fn = [](int value) { return value; };
             (root / "knowledge/index.md").write_text("# Knowledge\n", encoding="utf-8")
             issues = Contract(root).validate_index_tree()
             self.assertIn("index.missing", {issue.code for _, issue in issues})
+
+
+    def test_kirin_platforms_are_registered_without_allowing_unknown_values(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        for platform in ("kirin_x90", "kirin_9030", "kirin_unknown"):
+            metadata = dict(SYNTHETIC_API_METADATA, platforms=[platform])
+            issues = self.contract.validate_card(relative, metadata, "# API\n")
+            self.assertEqual(platform == "kirin_unknown", "platform.unknown" in {issue.code for issue in issues})
+
+
+    def test_mirror_body_exception_requires_primary_archive_api_or_guide(self) -> None:
+        from governance.contracts.checks import Document, RunContext, body
+
+        resource = "cann-docs-raw/asc-devkit/docs/zh/example.md"
+        for kind, profile in (("API", "apis"), ("Guide", "guides"), ("Concept", "concepts")):
+            for role in (None, "primary", "supporting", "header", "implementation"):
+                source = {"resource": resource}
+                if role is not None:
+                    source["role"] = role
+                metadata = dict(SYNTHETIC_API_METADATA, type=kind, sources=[source])
+                relative = Path(f"knowledge/ops/ascendc/{profile}/synthetic.md")
+                allowed = kind in {"API", "Guide"} and role in (None, "primary")
+                for text in ("# First\n\n# Second\n", "No heading.\n"):
+                    with self.subTest(kind=kind, role=role, text=text):
+                        document = Document.create(self.contract, ROOT / relative, relative, "", metadata, text)
+                        issues = body.check(self.contract, document, RunContext())
+                        self.assertEqual(not allowed or not text.startswith("#"), "body.h1_count" in {issue.code for issue in issues})
+
+
+    def test_invalid_mirror_source_root_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(ROOT / "governance", root / "governance")
+            path = root / "governance/schemas/registries.yaml"
+            registry = yaml.safe_load(path.read_text())
+            for value in (None, "", "/absolute", "../escape", "docs/../escape", "docs\\escape"):
+                registry["local_sources"]["cann_docs_raw"]["mirror"]["source_root"] = value
+                path.write_text(yaml.safe_dump(registry, allow_unicode=True, sort_keys=False))
+                with self.subTest(value=value), self.assertRaisesRegex(ValueError, "mirror.source_root"):
+                    Contract(root)
+
+
+    def test_malformed_mirror_sources_report_findings_without_crashing(self) -> None:
+        from governance.contracts.checks import Document, RunContext, body
+
+        relative = Path("knowledge/ops/ascendc/apis/synthetic.md")
+        for sources in (None, 1, "invalid", {"resource": "invalid"}):
+            metadata = dict(SYNTHETIC_API_METADATA, sources=sources)
+            document = Document.create(self.contract, ROOT / relative, relative, "", metadata, "# First\n\n# Second\n")
+            with self.subTest(sources=sources):
+                issues = body.check(self.contract, document, RunContext())
+                self.assertIn("body.h1_count", {issue.code for issue in issues})
+
+
+class FixedArchiveHeaderTests(unittest.TestCase):
+    def load_module(self):
+        path = ROOT / ".agents/skills/knowledge-ingest/scripts/fixed_archive_docs.py"
+        spec = importlib.util.spec_from_file_location("fixed_archive_docs_test", path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"cannot load {path}")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_archive_selection_and_whitespace_exceptions_share_source_roles(self) -> None:
+        module = self.load_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(ROOT / "governance", root / "governance")
+            contract = Contract(root)
+            definition = contract.local_sources["cann_docs_raw"]
+            prefix = f"{definition['root']}/{definition['mirror']['source_root']}/"
+            expected = set()
+            for kind, profile in (("API", "apis"), ("Guide", "guides")):
+                for role in (None, "primary", "supporting", "example", "constraint",
+                             "header", "implementation", "evidence"):
+                    with self.subTest(kind=kind, role=role):
+                        source = {"resource": f"{prefix}example.md"}
+                        if role is not None:
+                            source["role"] = role
+                        metadata = {**SYNTHETIC_API_METADATA, "type": kind, "sources": [source]}
+                        managed = f"{module.MANAGED_START}\n## 相关\n{module.MANAGED_END}"
+                        text = module.render_card(metadata, "# Topic\n\nBody.  \n", managed)
+                        path = root / f"knowledge/ops/ascendc/{profile}/{role or 'unroled'}.md"
+                        path.parent.mkdir(parents=True, exist_ok=True)
+                        path.write_text(text, encoding="utf-8")
+                        is_mirror = role in (None, "primary")
+                        if is_mirror:
+                            expected.add(path)
+                        offsets = module.mirror_authored_offsets(text, prefix, contract)
+                        self.assertEqual(is_mirror, offsets is not None)
+                        if offsets is not None:
+                            self.assertEqual("# Topic\n\nBody.  \n", text[slice(*offsets)])
+                        self.assertIsNone(module.mirror_authored_offsets(
+                            text, "cann-docs-raw/other/", contract
+                        ))
+            self.assertEqual(expected, module.mirror_card_paths(root, definition))
+
+    def test_archive_sync_preserves_supporting_guide_and_verify_checks_expected_cards(self) -> None:
+        module = self.load_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(ROOT / "governance", root / "governance")
+            base = root / "knowledge/ops/ascendc/guides"
+            base.mkdir(parents=True)
+            metadata = {
+                **SYNTHETIC_API_METADATA, "type": "Guide",
+                "sources": [{"resource": "cann-docs-raw/asc-devkit/docs/zh/example.md", "role": "primary"}],
+            }
+            mirror_text = module.render_card(metadata, "# Source\n\nSource body.\n", "")
+            metadata["sources"][0]["role"] = "supporting"
+            guide_text = module.render_card(metadata, "# Authored\n\nAuthored body.\n", "")
+            mirror, stale, guide = (base / f"{name}.md" for name in ("mirror", "stale", "guide"))
+            mirror.write_text(mirror_text, encoding="utf-8")
+            stale.write_text(mirror_text, encoding="utf-8")
+            guide.write_text(guide_text, encoding="utf-8")
+            args = Namespace(knowledge_root=str(root), source_id="cann_docs_raw",
+                             command="verify", updated_at="2026-09-11T00:00:00Z", report=None)
+            with mock.patch.object(module, "expected_cards", return_value=({mirror: mirror_text}, {}, set())), \
+                    redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(1, module.command(args))
+                args.command = "sync"
+                self.assertEqual(0, module.command(args))
+                self.assertFalse(stale.exists())
+                for _ in range(2):
+                    self.assertEqual(0, module.command(args))
+                    self.assertEqual(guide_text, guide.read_text(encoding="utf-8"))
+                    self.assertEqual(mirror_text, mirror.read_text(encoding="utf-8"))
+                args.command = "verify"
+                self.assertEqual(0, module.command(args))
+                mirror.write_text(guide_text, encoding="utf-8")
+                self.assertEqual(1, module.command(args))
+
+    def test_api_headers_extracts_declared_and_include_paths(self) -> None:
+        module = self.load_module()
+        body = (
+            "头文件路径为：`\"c_api/reg_compute/compute/reg_arith.h\"`。\n\n"
+            "#include \"c_api/asc_simd.h\"\n"
+            "#include \"acl/acl.h\"\n"
+        )
+        self.assertEqual(
+            ["include/c_api/reg_compute/compute/reg_arith.h", "include/c_api/asc_simd.h"],
+            module.api_headers(body),
+        )
+
+    def test_api_headers_normalize_include_prefix_and_drop_non_public(self) -> None:
+        module = self.load_module()
+        body = (
+            "头文件路径为：`\"include/tensor_api/experimental/arch/vector/data_reorder.h\"`。\n"
+            "#include \"tools/cpudebug/include/stub_def.h\"\n"
+            "#include \"kernel_operator.h\"\n"
+        )
+        self.assertEqual(
+            ["include/tensor_api/experimental/arch/vector/data_reorder.h"],
+            module.api_headers(body),
+        )
+
+    def test_api_headers_deduplicates(self) -> None:
+        module = self.load_module()
+        body = (
+            "#include \"simt_api/device_warp_functions.h\"\n"
+            "#include \"simt_api/device_warp_functions.h\"\n"
+        )
+        self.assertEqual(
+            ["include/simt_api/device_warp_functions.h"], module.api_headers(body)
+        )
+
+    def metadata(self, module, *, old=None, body="# Probe\n", profile="apis"):
+        return module.metadata_for(
+            source=Path("/archive/source/api/Probe.md"),
+            source_root=Path("/archive/source"),
+            output=Path(f"/repo/knowledge/ops/ascendc/{profile}/probe.md"),
+            body=body,
+            definition={"root": "cann-docs-raw", "_archive_root": Path("/archive")},
+            old=old,
+            stamp="2026-09-08T00:00:00Z",
+        )
+
+    def test_metadata_retains_reviewed_headers_and_render_is_idempotent(self) -> None:
+        module = self.load_module()
+        body = '# Probe\n\n正文与空白保持。  \n\n```cpp\n#include "kernel_operator.h"\n```\n'
+        old = self.metadata(module, body=body)
+        old["source_headers"] = ["include/basic_api/probe.h"]
+        managed = f"{module.MANAGED_START}\n- [关联](other.md)\n{module.MANAGED_END}"
+        expected = module.render_card(old, body, managed)
+        for _ in range(2):
+            new = self.metadata(module, old=old, body=body)
+            self.assertEqual(old, new)
+            self.assertIsNot(old["source_headers"], new["source_headers"])
+            self.assertEqual(expected, module.render_card(new, body, managed))
+            old = new
+
+    def test_metadata_doc_headers_override_existing_enrichment(self) -> None:
+        module = self.load_module()
+        old = self.metadata(module)
+        old["source_headers"] = ["include/basic_api/old.h"]
+        body = '# Probe\n\n#include "basic_api/new.h"\n'
+        new = self.metadata(module, old=old, body=body)
+        self.assertEqual(["include/basic_api/new.h"], new["source_headers"])
+        self.assertEqual(["include/basic_api/old.h"], old["source_headers"])
+
+    def test_metadata_does_not_invent_headers_or_add_them_to_guides(self) -> None:
+        module = self.load_module()
+        self.assertNotIn("source_headers", self.metadata(module))
+        old = self.metadata(module)
+        old["source_headers"] = []
+        self.assertNotIn("source_headers", self.metadata(module, old=old))
+        self.assertNotIn(
+            "source_headers",
+            self.metadata(module, body='# Probe\n#include "basic_api/probe.h"\n', profile="guides"),
+        )
+
+    def test_metadata_rejects_invalid_retained_headers(self) -> None:
+        module = self.load_module()
+        header = "include/basic_api/probe.h"
+        for value in (
+            None, header, [None], [{}], [""], [header, header],
+            ["/include/basic_api/probe.h"], ["basic_api/probe.h"],
+            ["include/basic_api/../probe.h"], ["include/basic_api/./probe.h"],
+            ["include/basic_api//probe.h"], ["include/basic_api/probe.h#anchor"],
+            ["include/basic_api\\probe.h"], ["include/basic_api/probe.so"],
+            ["include/private_api/probe.h"], ["include/kernel_operator.h"],
+        ):
+            with self.subTest(value=value):
+                old = self.metadata(module)
+                old["source_headers"] = value
+                with self.assertRaisesRegex(ValueError, "invalid retained source_headers"):
+                    self.metadata(module, old=old)
+
+    def test_metadata_rejects_transferring_enrichment_to_another_source(self) -> None:
+        module = self.load_module()
+        for sources in (
+            None, [], "not-a-list",
+            [{"resource": "cann-docs-raw/source/api/Other.md", "role": "primary"}],
+            [{"resource": "cann-docs-raw/source/api/Probe.md", "role": "supporting"}],
+        ):
+            with self.subTest(sources=sources):
+                old = self.metadata(module)
+                old["source_headers"] = ["include/basic_api/probe.h"]
+                old["sources"] = sources
+                with self.assertRaisesRegex(ValueError, "source_headers source changed"):
+                    self.metadata(module, old=old)
+
+    def test_api_headers_drop_unsafe_source_paths(self) -> None:
+        module = self.load_module()
+        self.assertEqual([], module.api_headers(
+            '#include "basic_api/../../probe.h"\n'
+            '#include "basic_api//probe.h"\n'
+            '#include "basic_api/./probe.h"\n'
+        ))
+
 
 class IngestContractTests(unittest.TestCase):
     def run_ingest(
@@ -792,7 +1154,10 @@ platforms: [a2]
             root = self.make_root(temporary)
             result = self.run_lint(
                 root,
-                self.render_card(body="```markdown\n# Example\n| A | B | | --- | --- |\n```"),
+                self.render_card(
+                    body="````markdown\n```nested example\n# Example\n"
+                    "| A | B | | --- | --- |\n```\n````"
+                ),
                 "--json",
             )
         self.assertEqual(0, result.returncode, result.stderr)
@@ -823,6 +1188,50 @@ platforms: [a2]
             {finding["code"] for finding in payload["findings"]},
         )
 
+    def test_fixed_archive_mirror_rejects_product_support_in_card_body(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            result = self.run_lint(
+                root,
+                self.render_card(
+                    sources=(
+                        "  - resource: cann-docs-raw/asc-devkit/docs/zh/example.md\n"
+                        "    role: primary"
+                    ),
+                    body=(
+                        "## 产品支持情况\n\n"
+                        "- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持"
+                    ),
+                ),
+                "--json",
+            )
+        self.assertEqual(1, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn(
+            "platform.redundant_body_scope",
+            {finding["code"] for finding in payload["findings"]},
+        )
+
+    def test_non_mirror_source_under_archive_root_does_not_get_h1_exception(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            result = self.run_lint(
+                root,
+                self.render_card(
+                    sources=(
+                        "  - resource: cann-docs-raw/other/example.md\n"
+                        "    role: primary"
+                    ),
+                    body="# Second source topic\n\nSource text.",
+                ),
+                "--json",
+            )
+        self.assertEqual(1, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn(
+            "body.h1_count",
+            {finding["code"] for finding in payload["findings"]},
+        )
 
     def test_index_entry_without_summary_is_a_nonblocking_finding(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1065,9 +1474,11 @@ platforms: [a2]
             root = self.make_root(temporary)
             source_root = root / "cann-docs-raw"
             source_root.mkdir()
-            archive_sha256 = Contract(root).local_sources["cann_docs_raw"]["archive_sha256"]
+            source_definition = Contract(root).local_sources["cann_docs_raw"]
+            archive_sha256 = source_definition["archive_sha256"]
+            tree_sha256 = source_definition["tree_sha256"]
             (source_root / ".complete").write_text(
-                f"archive_sha256={archive_sha256}\n",
+                f"archive_sha256={archive_sha256}\ntree_sha256={tree_sha256}\n",
                 encoding="utf-8",
             )
             (source_root / "source.md").write_text("# Source\n", encoding="utf-8")
@@ -1103,7 +1514,7 @@ platforms: [a2]
             missing.validate_full_tree()
             missing_codes = {finding["code"] for finding in missing.findings}
 
-            fetch_script = root / "fetch-cann-docs.sh"
+            fetch_script = root / "get_resources.sh"
             fetch_script.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
             fetch_script.chmod(0o644)
             non_executable = module.Linter(root, False)

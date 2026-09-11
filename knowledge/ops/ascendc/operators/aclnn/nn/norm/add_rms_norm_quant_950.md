@@ -5,38 +5,38 @@ description: "说明 aclnnAddRmsNormQuant 在 950 上的接口语义、Host/Laun
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/docs/aclnnAddRmsNormQuant.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/docs/aclnnAddRmsNormQuant.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/op_api/aclnn_add_rms_norm_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/op_api/aclnn_add_rms_norm_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/op_api/add_rms_norm_quant.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/op_api/add_rms_norm_quant.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/add_rms_norm_quant_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase_perf.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase_perf.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase_split_reduce.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase_split_reduce.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/norm_common/op_kernel/reduce_common_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/norm_common/op_kernel/reduce_common_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/config/ascend950/add_rms_norm_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/config/ascend950/add_rms_norm_quant_binary.json
     role: implementation
 created_at: "2026-08-25T17:50:39Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -482,7 +482,7 @@ UB_total <= maxUbSize；workspace_total=LibApi workspace；dynamic_ub=N/A
 
 - 适用 Route：R-001～R-003
 - 触发条件：先检查 `fullLoadBaseM>=1 && N<=16384`，再检查整 N UB，最后检查最小切列 UB。
-- Golden 来源：[`norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling_arch35.cpp:605-619`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling_arch35.cpp#L605-L619)
+- Golden 来源：[`norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling_arch35.cpp:605-619`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_host/add_rms_norm_quant_tiling_arch35.cpp#L605-L619)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -518,7 +518,7 @@ selector 用精确 UB 字节公式把可全载的多行送入双缓冲 perf body
 
 - 适用 Route：所有 key 子路由。
 - 触发条件：s2/zp1/zp2 的存在位形成 q，router 只编译与 binary optional 宏一致的分支。
-- Golden 来源：[`norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase_common.h:128-157`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase_common.h#L128-L157)
+- Golden 来源：[`norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase_common.h:128-157`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_quant/op_kernel/arch35/add_rms_norm_quant_regbase_common.h#L128-L157)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -550,7 +550,7 @@ optional 位同时控制 GM 绑定、`InitBuffer`、参数 DMA、ComputeY 分支
 
 - 适用 Route：所有 950 routes，输出 TY 为 FP8/HIFLOAT8 时生效。
 - 触发条件：`GetOverflowMode<TY>` 在 3510 保存控制位，量化期间置 0，结束恢复。
-- Golden 来源：[`norm/rms_norm/op_kernel/arch35/rms_norm_regbase_common.h:47-67`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_common.h#L47-L67)
+- Golden 来源：[`norm/rms_norm/op_kernel/arch35/rms_norm_regbase_common.h:47-67`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_common.h#L47-L67)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

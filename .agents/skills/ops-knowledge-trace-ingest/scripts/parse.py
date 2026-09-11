@@ -31,10 +31,6 @@ SESSION_DIR_RE = re.compile(r"^session=(ses_[A-Za-z0-9]+)$")
 PART_FILE_RE = re.compile(
     r"^ls\.s3\.[0-9a-f-]+\.(\d{4}-\d{2}-\d{2})T(\d{2})\.(\d{2})\.part(\d+)\.txt$"
 )
-TOOL_NAMES = {
-    "bash", "edit", "glob", "grep", "question", "read",
-    "skill", "task", "todowrite", "webfetch", "write",
-}
 
 
 def human_size(n: int) -> str:

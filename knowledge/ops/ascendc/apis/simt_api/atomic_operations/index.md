@@ -11,5 +11,4 @@
 - [asc_atomic_or](asc_atomic_or.md)：对Unified Buffer或Global Memory上address的数值与指定数值val进行原子或（ ）操作，即将address数值或（ ）val的结果赋值到Unified Buffer或Global Memory上。
 - [asc_atomic_sub](asc_atomic_sub.md)：对Unified Buffer或Global Memory上的数据与指定数据执行原子减操作，即在这些内存区域的数据中减去指定数据。
 - [asc_atomic_xor](asc_atomic_xor.md)：对Unified Buffer或Global Memory上address的数值与指定数值val进行原子异或（^）操作，即将address数值异或（^）val的结果赋值到Unified Buffer或Global Memory上。
-- [原子操作](atomic_operations.md)：SIMT API原子操作类接口汇总，提供add、sub、exch、max、min、inc、dec、cas等原子运算能力。
 - [原子操作简介](atomic_operations_intro.md)：SIMT原子操作用于保证对同一地址的一次读-改-写过程具有原子性，可避免多个线程并发更新同一地址时出现更新丢失。原子操作常用于计数、状态抢占、直方图统计、归约计算和共享状态位更新等场景。

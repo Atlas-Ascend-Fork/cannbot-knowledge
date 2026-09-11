@@ -21,16 +21,12 @@ SEVERITIES = {"blocker", "major", "minor"}
 REVIEWER_RE = re.compile(r"^subagent:[A-Za-z0-9_./-]+$")
 
 
-def _sha256(path: Path) -> str:
+def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def _sha256_bytes(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
 
 
 def _canonical(value) -> bytes:
@@ -82,14 +78,14 @@ def build_subject(
         cards = [
             {
                 "path": path.relative_to(cards_root).as_posix(),
-                "sha256": _sha256(path),
+                "sha256": sha256_file(path),
             }
             for path in sorted(cards_root.rglob("*.md"))
             if path.is_file()
         ]
     else:
         cards = [
-            {"path": path, "sha256": _sha256_bytes(data)}
+            {"path": path, "sha256": hashlib.sha256(data).hexdigest()}
             for path, data in sorted(card_bytes.items())
         ]
     if not cards:

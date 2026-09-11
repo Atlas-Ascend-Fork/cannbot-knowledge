@@ -5,28 +5,28 @@ description: "说明 aclnnForeachSign 在 950 上的接口语义、Host/Launcher
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/docs/aclnnForeachSign.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/docs/aclnnForeachSign.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_host/foreach_sign_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_host/foreach_sign_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_utils/op_host/foreach_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_utils/op_host/foreach_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_host/arch35/foreach_sign_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_host/arch35/foreach_sign_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/arch35/foreach_sign_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/arch35/foreach_sign_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/arch35/foreach_sign_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/arch35/foreach_sign_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/arch35/foreach_sign.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/arch35/foreach_sign.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/arch35/foreach_sign_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/arch35/foreach_sign_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:21:40Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -299,7 +299,7 @@ workspace_total = 16 MiB（当前 K0 不读写）
 
 - 适用 Route：R-001
 - 触发条件：950 arch35；`count>0`；Host 以最大 Tensor 元素数计算 `blockDim`。
-- Golden 来源：[`foreach/foreach_sign/op_kernel/arch35/foreach_sign_simt.h:45-52`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/arch35/foreach_sign_simt.h#L45-L52)
+- Golden 来源：[`foreach/foreach_sign/op_kernel/arch35/foreach_sign_simt.h:45-52`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_kernel/arch35/foreach_sign_simt.h#L45-L52)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -335,7 +335,7 @@ Host 只启动一个 Kernel；`Process` 在 Device 侧逐项解析 TensorList，
 
 - 适用 Route：R-001
 - 触发条件：所有 shape；当 `ceil(M/C)<1024` 时最小阈值生效，随后按 32 元素对齐。
-- Golden 来源：[`foreach/foreach_sign/op_host/arch35/foreach_sign_tiling.cpp:84-88`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_host/arch35/foreach_sign_tiling.cpp#L84-L88)
+- Golden 来源：[`foreach/foreach_sign/op_host/arch35/foreach_sign_tiling.cpp:84-88`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sign/op_host/arch35/foreach_sign_tiling.cpp#L84-L88)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

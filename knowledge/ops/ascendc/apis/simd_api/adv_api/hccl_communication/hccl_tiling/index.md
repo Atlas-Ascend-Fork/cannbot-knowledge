@@ -1,7 +1,6 @@
 # HCCL Tiling侧接口
 
 - [GetTiling](get_tiling.md)：获取Mc2InitTiling参数和Mc2CcTiling参数。
-- [HCCL Tiling侧接口](hccl_tiling.md)：提供HCCL集合通信的Host侧Tiling接口，包含TilingData结构体、GetTiling及通信类型、分组、队列等参数设置方法。
 - [HCCL Tiling构造函数](hccl_tiling_constructor.md)：用于创建一个Mc2CcTilingConfig对象。
 - [HCCL Tiling使用说明](hccl_tiling_usage.md)：说明 HCCL 通信任务的 TilingData、Mc2InitTiling、Mc2CcTiling 及临时空间配置方式。
 - [SetAlgConfig](set_alg_config.md)：uint32_t SetAlgConfig(const std::string& algConfig)

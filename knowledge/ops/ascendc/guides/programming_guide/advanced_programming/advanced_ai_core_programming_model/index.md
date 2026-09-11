@@ -1,3 +1,3 @@
-# advanced ai core programming model
+# 高级AI-Core编程模型
 
-- [simd simt hybrid programming](simd_simt_hybrid_programming/index.md)：Ascend C支持SIMD与SIMT混合编程，实现向量级并行与线程级并行的高效协同。AI Core包含AIC和AIV，其中AIV核支持SIMT、SIMD两种工作模式，因此可以实现AIV内SIMD与SIMT的混合编程，也支持AIV的S...
+- [simd simt hybrid programming](simd_simt_hybrid_programming/index.md)：Ascend C支持SIMD与SIMT混合编程，实现向量级并行与线程级并行的高效协同。AI Core包含AIC和AIV，其中AIV核支持SIMT、SIMD两种工作模式，因此可以实现AIV内SIMD与SIMT的混合编程，也支持AIV的SIMT与AIC的SIMD融合编程，整体硬件架构如下图所示：

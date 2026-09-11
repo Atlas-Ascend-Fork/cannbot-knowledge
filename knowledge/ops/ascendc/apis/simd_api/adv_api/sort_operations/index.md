@@ -9,6 +9,5 @@
 - [GetSortTmpSize](get_sort_tmp_size.md)：获取Sort接口所需的临时空间大小。
 - [MrgSort](mrg_sort.md)：将已排好序的最多4条队列合并排列成1条队列，结果按照score域由大到小排序。
 - [Sort](sort.md)：排序函数，按照数值大小进行降序排序，排序结果以score和index结构存储。
-- [排序操作](sort_operations.md)：排序操作接口导航页，涵盖TopK、Sort、MrgSort、Concat、Extract等排序与拼接接口。
 - [TopK](top_k.md)：获取最后一个维度的前k个最大值或最小值及其对应的索引，最多支持二维输入。整数倍，所以当n不是32的
 - [TopKTiling](top_k_tiling.md)：获取TopK kernel计算时所需的Tiling参数，包括临时空间大小和tiling信息。

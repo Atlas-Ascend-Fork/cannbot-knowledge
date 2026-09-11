@@ -5,24 +5,24 @@ description: "说明 aclnnPrelu 在 A2 上的接口语义、Host/Launcher 参数
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/docs/aclnnPrelu.md"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/docs/aclnnPrelu.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_host/prelu_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_host/prelu_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_host/prelu_tiling.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_host/prelu_tiling.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu_tiling_data.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu_tiling_data.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu_tiling_key.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu_tiling_key.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_host/CMakeLists.txt"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_host/CMakeLists.txt"
     role: implementation
 created_at: "2026-08-25T18:52:58Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -710,7 +710,7 @@ UB_total=ubFactor*{24,12,20}<=usableUb; workspace_total=0
 
 - 适用 Route：R-002、R-003。
 - 触发条件：`preferWeightReuseByRow && C>1 && N>0 && ncMaxTileElements>=alignedRowElements`。
-- Golden 来源：[`experimental/activation/prelu/op_kernel/prelu.h:803-819`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu.h#L803-L819)
+- Golden 来源：[`experimental/activation/prelu/op_kernel/prelu.h:803-819`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu.h#L803-L819)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -748,7 +748,7 @@ for (int64_t rowProgress = 0; rowProgress < blockRowNum; rowProgress += rowsPerT
 
 - 适用 Route：全部。
 - 触发条件：`T=bfloat16_t`。
-- Golden 来源：[`experimental/activation/prelu/op_kernel/prelu.h:535-545`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu.h#L535-L545)
+- Golden 来源：[`experimental/activation/prelu/op_kernel/prelu.h:535-545`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/prelu/op_kernel/prelu.h#L535-L545)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

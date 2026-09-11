@@ -156,16 +156,6 @@ def index_select_static_kernel(src_ptr, output_ptr, indices_ptr):
 4. **gather_out_to_ub vs index_select_simd**：前者通用（多维索引+边界检查+other 默认值）；后者更高效零拷贝但限制多（index 必须 1D、dim 不能最后一维、不查越界）。
 5. **dtype 限制**：`ptr.dtype` 仅 fp16/bf16/fp32，不支持整数类型直接 scatter/gather。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
-- [自定义算子注册与调用（register_custom_op / custom）](./ascend_ext_custom_op.md)（`related`）：“内置自定义算子（SIMT 版本）”
-- [Buffer 编程模型（bl.alloc / to_buffer / to_tensor / subview）](./ascend_ext_buffer_model.md)（`related`）：“Buffer 编程模型（UB 内存操作）”
-- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -176,3 +166,14 @@ def index_select_static_kernel(src_ptr, output_ptr, indices_ptr):
 - [mem_ops.py#L332-L482](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/mem_ops.py#L332-L482)
 - [mem_ops.py#L485-L636](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/mem_ops.py#L485-L636)
 - [builtin_custom_ops.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/builtin_custom_ops.py)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
+- [自定义算子注册与调用（register_custom_op / custom）](./ascend_ext_custom_op.md)（`related`）：“内置自定义算子（SIMT 版本）”
+- [Buffer 编程模型（bl.alloc / to_buffer / to_tensor / subview）](./ascend_ext_buffer_model.md)（`related`）：“Buffer 编程模型（UB 内存操作）”
+- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
+
+<!-- cannbot:related:end -->

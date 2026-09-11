@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
-"""Restore and verify Registry-pinned source worktrees without changing knowledge."""
+"""Restore pinned source worktrees and localize existing Operator provenance."""
 
 from __future__ import annotations
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 import importlib
+import json
+import os
 from pathlib import Path
+import re
 import subprocess
 import sys
+from urllib.parse import quote, urldefrag
 
 import yaml
 
@@ -17,6 +22,7 @@ import knowledge_ingest as ingest
 
 sys.dont_write_bytecode = True
 resources = importlib.import_module(f"{ingest.contract_package().__name__}.source_resources")
+links = importlib.import_module(f"{ingest.contract_package().__name__}.checks.links")
 
 
 def run_git(*args: str) -> None:
@@ -49,12 +55,116 @@ def fetch_repository(root: Path, definition: dict) -> None:
         print(f"Verified {definition['root']}/{revision}", flush=True)
 
 
+def source_frontmatter(original: str, metadata: dict) -> str:
+    """Replace only source resources and updated_at, preserving YAML layout."""
+    nodes = dict((key.value, value) for key, value in yaml.compose(original).value)
+    replacements = []
+
+    def replace_scalar(node, value):
+        if node.value == value:
+            return
+        if node.style == '"':
+            rendered = json.dumps(value, ensure_ascii=False)
+        elif node.style == "'":
+            rendered = "'" + value.replace("'", "''") + "'"
+        elif node.style is None:
+            rendered = value
+        else:
+            rendered = json.dumps(value, ensure_ascii=False)
+        replacements.append((node.start_mark.index, node.end_mark.index, rendered))
+
+    replace_scalar(nodes["updated_at"], metadata["updated_at"])
+    for node, source in zip(nodes["sources"].value, metadata["sources"], strict=True):
+        fields = dict((key.value, value) for key, value in node.value)
+        replace_scalar(fields["resource"], source["resource"])
+    previous = len(original) + 1
+    for start, end, replacement in sorted(replacements, reverse=True):
+        if end > previous:
+            raise ValueError("overlapping YAML source scalars are not supported")
+        original = original[:start] + replacement + original[end:]
+        previous = start
+    if yaml.safe_load(original) != metadata:
+        raise ValueError("source rewrite would change unrelated frontmatter fields")
+    return original
+
+
+def localize(root: Path, stamp: str) -> int:
+    report = ingest.graph_artifact_path(root, "artifacts/graphs/source_resources.json")
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", stamp):
+        raise ValueError("updated-at must be a UTC timestamp YYYY-MM-DDTHH:MM:SSZ")
+    if datetime.fromisoformat(stamp.replace("Z", "+00:00")) > datetime.now(timezone.utc):
+        raise ValueError("updated-at must not be in the future")
+    contract = ingest.load_contract(root)
+    # Source rewrites are allowed only after all declared snapshots are available.
+    for definition in contract.local_sources.values():
+        if definition.get("kind") == "git":
+            for revision in definition["revisions"]:
+                resources.validate_checkout(root, definition, revision)
+    pending: dict[Path, str] = {}
+    missing: list[dict[str, str]] = []
+    for path in sorted((root / "knowledge/ops/ascendc/operators").rglob("*.md")):
+        if path.name == "index.md":
+            continue
+        raw = path.read_bytes().decode("utf-8")
+        framing = re.match(r"\A---\n(.*?)\n---\n\n", raw, re.S)
+        if framing is None:
+            raise ValueError(f"missing Operator frontmatter: {path}")
+        metadata = yaml.safe_load(framing.group(1))
+        updated = False
+        for source in metadata["sources"]:
+            resolved = resources.git_source(contract, source["resource"])
+            if resolved is not None and source["resource"] != resolved.resource:
+                if not resolved.local_path(root).exists():
+                    missing.append({"card": path.relative_to(root).as_posix(), "resource": source["resource"], "reason": "absent from pinned commit"})
+                    continue
+                source["resource"] = resolved.resource
+                updated = True
+        body = raw[framing.end():]
+        managed_offset = body.find("<!-- cannbot:related:start -->")
+        authored = body if managed_offset < 0 else body[:managed_offset]
+        masked = links.mask_code(authored)
+        destinations = [(match.start(3), match.end(3), match.group(3)) for match in links.INLINE_LINK_RE.finditer(masked) if not match.group(1)]
+        destinations.extend((match.start(2 if match.group(2) else 3), match.end(2 if match.group(2) else 3), match.group(2) or match.group(3)) for match in links.REFERENCE_DEFINITION_RE.finditer(masked))
+        for start, end, original in sorted(destinations, reverse=True):
+            target = original.split()[0].strip("<>")
+            base, fragment = urldefrag(target)
+            resolved = resources.git_source(contract, base)
+            if resolved is None or not base.startswith("https://"):
+                continue
+            destination = resolved.local_path(root)
+            if not destination.exists():
+                missing.append({"card": path.relative_to(root).as_posix(), "resource": target, "reason": "body link absent from pinned commit"})
+                continue
+            # Directory URLs remain remote navigation; source files become local links.
+            if not destination.is_file() or (fragment and not re.fullmatch(r"L[1-9][0-9]*(?:-L[1-9][0-9]*)?", fragment)):
+                continue
+            local = quote(os.path.relpath(destination, path.parent), safe="/._-")
+            if fragment:
+                local += "#" + fragment
+            replacement = authored[:start] + original.replace(target, local, 1) + authored[end:]
+            updated |= replacement != authored
+            authored = replacement
+        if not updated:
+            continue
+        metadata["updated_at"] = stamp
+        body = authored if managed_offset < 0 else authored + body[managed_offset:]
+        rendered = "---\n" + source_frontmatter(framing.group(1), metadata) + "\n---\n\n" + body
+        pending[path] = rendered
+    for path, rendered in pending.items():
+        ingest.atomic_write(path, rendered)
+    ingest.atomic_write(report, json.dumps({"missing_sources": missing}, ensure_ascii=False, indent=2) + "\n")
+    print(f"unavailable source references={len(missing)} report={report.relative_to(root)}")
+    return len(pending)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--knowledge-root")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("fetch")
     commands.add_parser("verify")
+    local = commands.add_parser("localize")
+    local.add_argument("--updated-at", required=True)
     args = parser.parse_args()
     try:
         root = ingest.resolve_root(args.knowledge_root)
@@ -67,6 +177,8 @@ def main() -> int:
                 for revision in definition["revisions"]:
                     resources.validate_checkout(root, definition, revision)
             print(f"verified Git snapshots={sum(len(item['revisions']) for item in definitions)}")
+        else:
+            print(f"localized Operator cards={localize(root, args.updated_at)}")
     except (OSError, ValueError, subprocess.CalledProcessError, yaml.YAMLError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

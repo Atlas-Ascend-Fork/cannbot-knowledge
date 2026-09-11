@@ -87,7 +87,6 @@ if __name__ == "__main__":
 3. **AscendNPU-IR 编译器文档**（IR 语义、pass 定义）：已收录为本分区 [architecture/](../../apis/ir/architecture/index.md)、[hivm/](../../apis/ir/hivm/index.md) 等卡片，分析提取的 IR 时查阅。
 
 <!-- cannbot:related:start -->
-
 ## 相关
 
 - [IR 分析工作流（IR 优先的性能分析决策）](ir_analysis_workflow.md)（`related`）：“Phase 2 瓶颈定位方法”

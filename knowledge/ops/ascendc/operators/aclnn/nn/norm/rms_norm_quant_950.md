@@ -5,48 +5,48 @@ description: "说明 aclnnRmsNormQuantV3 在 950 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/docs/aclnnRmsNormQuantV3.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/docs/aclnnRmsNormQuantV3.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_api/aclnn_rms_norm_quant_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_api/aclnn_rms_norm_quant_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_api/rms_norm_quant_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_api/rms_norm_quant_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_host/rms_norm_quant_v3_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_host/rms_norm_quant_v3_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_host/rms_norm_quant_v2_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_host/rms_norm_quant_v2_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_host/rms_norm_quant_v2_tiling_regbase_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_host/rms_norm_quant_v2_tiling_regbase_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_host/rms_norm_quant_v2_tiling_regbase_full_load.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_host/rms_norm_quant_v2_tiling_regbase_full_load.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_host/rms_norm_quant_v2_tiling_regbase_recompute.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_host/rms_norm_quant_v2_tiling_regbase_recompute.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_kernel/arch35/rms_norm_quant_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_kernel/arch35/rms_norm_quant_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/rms_norm_quant_v2_apt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/rms_norm_quant_v2_apt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_full_load.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_full_load.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_recompute.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_recompute.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/norm_common/op_kernel/reduce_common_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/norm_common/op_kernel/reduce_common_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_host/rms_norm_quant_v3_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_host/rms_norm_quant_v3_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_host/config/ascend950/rms_norm_quant_v3_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v3/op_host/config/ascend950/rms_norm_quant_v3_binary.json
     role: implementation
 created_at: "2026-08-25T18:08:48Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -453,7 +453,7 @@ workspace_total = 0 user bytes + LibApi system workspace
 
 - 适用 Route：R-001
 - 触发条件：`R<=16384 && ubFactor>=1`
-- Golden 来源：[`norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_full_load.h:242-251`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_full_load.h#L242-L251)
+- Golden 来源：[`norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_full_load.h:242-251`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_full_load.h#L242-L251)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -487,7 +487,7 @@ gamma、scale、可选 zero-point/beta 被打包进一个 depth1 Queue，并在 
 
 - 适用 Route：R-002
 - 触发条件：FULL_LOAD 不可用且 `R>=64`
-- Golden 来源：[`norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_recompute.h:342-381`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_recompute.h#L342-L381)
+- Golden 来源：[`norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_recompute.h:342-381`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_recompute.h#L342-L381)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -524,7 +524,7 @@ for (int64_t r = 0; r < powerSplit_; ++r) {
 
 - 适用 Route：R-001、R-002
 - 触发条件：`outputRstd=false`
-- Golden 来源：[`norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_full_load.h:232-236`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_full_load.h#L232-L236)
+- Golden 来源：[`norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_full_load.h:232-236`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm_quant_v2/op_kernel/arch35/rms_norm_quant_v2_regbase_full_load.h#L232-L236)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -5,32 +5,32 @@ description: "说明 aclnnAddLayerNormGrad 在 950 上的接口语义、Host/Lau
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/docs/aclnnAddLayerNormGrad.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/docs/aclnnAddLayerNormGrad.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/add_layer_norm_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/add_layer_norm_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/add_layer_norm_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/add_layer_norm_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/add_layer_norm_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/add_layer_norm_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad_cut_n.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad_cut_n.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad_cut_d.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad_cut_d.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_determinstic_compute.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_determinstic_compute.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad_utils.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad_utils.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/config/ascend950/add_layer_norm_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/config/ascend950/add_layer_norm_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T17:43:20Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -1038,7 +1038,7 @@ UB_explicit=R-011+Da16*2+Da32*4
 
 - 适用 Route：R-001～R-012
 - 触发条件：Cut-N coexist 公式不能容纳至少一行时切换 Cut-D。
-- Golden 来源：[`op_host/add_layer_norm_grad_tiling.cpp:141-178`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/add_layer_norm_grad_tiling.cpp#L141-L178)
+- Golden 来源：[`op_host/add_layer_norm_grad_tiling.cpp:141-178`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_host/add_layer_norm_grad_tiling.cpp#L141-L178)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1073,7 +1073,7 @@ if (tilingStruct.nAvailInUb < 1 || ndAvailUb < 0) {
 
 - 适用 Route：全部，`isDeterministicKey!=0`
 - 触发条件：运行上下文开启确定性。
-- Golden 来源：[`op_kernel/add_layer_norm_grad_cut_n.h:213-225`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad_cut_n.h#L213-L225)
+- Golden 来源：[`op_kernel/add_layer_norm_grad_cut_n.h:213-225`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_layer_norm_grad/op_kernel/add_layer_norm_grad_cut_n.h#L213-L225)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

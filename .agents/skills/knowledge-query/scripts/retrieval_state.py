@@ -15,9 +15,12 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from retrieval.index import load_cards, load_contract, open_index  # noqa: E402
 from retrieval.root import (  # noqa: E402
+    Audit,
     atomic_create_json,
     canonical_json_sha256,
     extract_knowledge_root,
+    nonempty,
+    read_json,
     resolve_root,
     sha256_file,
 )
@@ -53,46 +56,13 @@ REPLAY_FIELDS = (
 )
 
 
-class Audit:
-    def __init__(self) -> None:
-        self.errors: list[dict[str, str]] = []
-
-    def error(self, code: str, location: str, message: str) -> None:
-        self.errors.append({"code": code, "location": location, "message": message})
-
-
-def read_json(path: Path, audit: Audit, location: str) -> dict[str, Any]:
-    if not path.is_absolute():
-        audit.error("path.absolute", location, "path must be absolute")
-        return {}
-    if not path.is_file():
-        audit.error("path.exists", location, f"file does not exist: {path}")
-        return {}
-    try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        audit.error("json.invalid", location, str(exc))
-        return {}
-    if not isinstance(value, dict):
-        audit.error("json.object", location, "top-level JSON must be an object")
-        return {}
-    return value
-
-
-def string(value: Any, audit: Audit, location: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        audit.error("value.string", location, "must be a non-empty string")
-        return ""
-    return value.strip()
-
-
 def string_list(value: Any, audit: Audit, location: str) -> list[str]:
     if not isinstance(value, list):
         audit.error("value.list", location, "must be a list")
         return []
     result = []
     for index, item in enumerate(value):
-        result.append(string(item, audit, f"{location}[{index}]"))
+        result.append(nonempty(item, audit, f"{location}[{index}]"))
     if len(result) != len(set(result)):
         audit.error("value.duplicate", location, "must not contain duplicates")
     return [item for item in result if item]
@@ -115,7 +85,7 @@ def validate_state(
     if not isinstance(target, dict):
         audit.error("target.object", "state.target", "must be an object")
         target = {}
-    string(target.get("entity"), audit, "state.target.entity")
+    nonempty(target.get("entity"), audit, "state.target.entity")
     platforms = string_list(target.get("platforms"), audit, "state.target.platforms")
     contract, _ = load_contract(root)
     known_platforms = set(contract.platforms)
@@ -141,12 +111,12 @@ def validate_state(
         if not isinstance(decision, dict):
             audit.error("decision.object", location, "must be an object")
             continue
-        decision_id = string(decision.get("id"), audit, location + ".id")
-        string(decision.get("question"), audit, location + ".question")
+        decision_id = nonempty(decision.get("id"), audit, location + ".id")
+        nonempty(decision.get("question"), audit, location + ".question")
         if decision_id in decision_ids:
             audit.error("decision.duplicate", location + ".id", f"duplicate decision: {decision_id}")
         decision_ids.add(decision_id)
-        status = string(decision.get("status"), audit, location + ".status")
+        status = nonempty(decision.get("status"), audit, location + ".status")
         if status not in DECISION_STATUSES:
             audit.error(
                 "decision.status",
@@ -301,8 +271,8 @@ def validate_state(
             if not isinstance(item, dict):
                 audit.error("evidence.object", item_location, "must be an object")
                 continue
-            path = string(item.get("path"), audit, item_location + ".path")
-            fingerprint = string(
+            path = nonempty(item.get("path"), audit, item_location + ".path")
+            fingerprint = nonempty(
                 item.get("card_sha256"), audit, item_location + ".card_sha256"
             )
             if receipt_evidence.get(path) != fingerprint:

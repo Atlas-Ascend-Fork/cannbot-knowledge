@@ -116,7 +116,6 @@ grid = lambda META: (triton.cdiv(numel, META["BLOCK_SIZE"] * META["BLOCK_NUM"]),
 6. **`debug=True` 仅限调试阶段**，生产环境移除。
 
 <!-- cannbot:related:start -->
-
 ## 相关
 
 - [Attention 算子](../operator_design/attention.md)（`related`）：“Attention 算子（softcap 是 attention score 的软截断变体）”

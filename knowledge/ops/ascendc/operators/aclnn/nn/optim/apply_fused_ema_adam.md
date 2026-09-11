@@ -5,32 +5,32 @@ description: "说明 aclnnApplyFusedEmaAdam 在 A2/A3 上的接口语义、Host/
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/docs/aclnnApplyFusedEmaAdam.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/docs/aclnnApplyFusedEmaAdam.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_host/apply_fused_ema_adam_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_host/apply_fused_ema_adam_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_host/apply_fused_ema_adam_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_host/apply_fused_ema_adam_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_host/apply_fused_ema_adam_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_host/apply_fused_ema_adam_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_f32.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_f32.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_f_bf16.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_f_bf16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_host/config/ascend910b/apply_fused_ema_adam_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_host/config/ascend910b/apply_fused_ema_adam_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_host/config/ascend910_93/apply_fused_ema_adam_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_host/config/ascend910_93/apply_fused_ema_adam_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:11:02Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -553,8 +553,8 @@ workspace_total = 0 B operator-owned
 
 - 适用 Route：R-001、R-003
 - 触发条件：`mode==1`
-- Golden 来源（FP32）：[`apply_fused_ema_adam_f32.h:92-102`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_f32.h#L92-L102)
-- Golden 来源（FP16/BF16）：[`apply_fused_ema_adam_f_bf16.h:84-97`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_f_bf16.h#L84-L97)
+- Golden 来源（FP32）：[`apply_fused_ema_adam_f32.h:92-102`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_f32.h#L92-L102)
+- Golden 来源（FP16/BF16）：[`apply_fused_ema_adam_f_bf16.h:84-97`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_f_bf16.h#L84-L97)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -612,7 +612,7 @@ AdamW 不在开头同时需要 `var` 与 `grad`：先在 slot0 保存 grad 完�
 
 - 适用 Route：R-003、R-004
 - 触发条件：dtype 为 FP16 或 BF16
-- Golden 来源：[`apply_fused_ema_adam_f_bf16.h:142-146`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_f_bf16.h#L142-L146)
+- Golden 来源：[`apply_fused_ema_adam_f_bf16.h:142-146`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/optim/apply_fused_ema_adam/op_kernel/apply_fused_ema_adam_f_bf16.h#L142-L146)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

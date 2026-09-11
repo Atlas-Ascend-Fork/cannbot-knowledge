@@ -1,5 +1,55 @@
 # 废弃接口
 
 - [AscAbsSync](asc_abs_sync_deprecated.md)：已废弃的按元素取绝对值同步计算接口，请改用asc_abs和asc_sync实现精细化调优。
-- [asc_set_atomic_add_int（废弃）](asc_set_atomic_add_int_deprecated.md)：该接口已废弃，请使用asc_set_atomic_add_int32替代。 头文件路径："c_api/atomic/atomic.h"。 设置对后续的从Unified Buffer/L0C Buffer/L1 Buffer到Global Memory的数据传输开启原子累加。累加的数据类型为in...
+- [asc_bfloat162float（废弃）](asc_bfloat162float_deprecated.md)：该接口通过接口后缀来控制源操作数读取位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_bfloat162float的显式位置参数重载替代。
+- [asc_bfloat162int32（废弃）](asc_bfloat162int32_deprecated.md)：该接口通过接口后缀来控制源操作数读取位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_bfloat162int32的显式位置参数重载替代。
+- [asc_exp_sub（废弃）](asc_exp_sub_deprecated.md)：输入数据类型为half且不带src_pos参数的asc_exp_sub原型以及asc_exp_sub_v2原型已废弃。新接口请参见asc_exp_sub。
+- [asc_float2bfloat16（废弃）](asc_float2bfloat16_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_float2bfloat16的显式位置参数重载替代。
+- [asc_float2half（废弃）](asc_float2half_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_float2half的显式位置参数重载替代。
+- [asc_float2int16（废弃）](asc_float2int16_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_float2int16的显式位置参数重载替代。
+- [asc_float2int64（废弃）](asc_float2int64_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_float2int64的显式位置参数重载替代。
+- [asc_get_block_idx（废弃）](asc_get_block_idx_deprecated.md)：该接口已废弃，请使用内置变量block_idx结合asc_get_sub_block_num和asc_get_sub_block_id接口替代。
+- [asc_get_block_num（废弃）](asc_get_block_num_deprecated.md)：该接口已废弃，请使用内置变量block_num替代。
+- [asc_half2float（废弃）](asc_half2float_deprecated.md)：该接口通过接口后缀来控制源操作数读取位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_half2float的显式位置参数重载替代。
+- [asc_half2hif8（废弃）](asc_half2hif8_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_half2hif8的显式位置参数重载替代。
+- [asc_half2int32（废弃）](asc_half2int32_deprecated.md)：该接口通过接口后缀来控制源操作数读取位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_half2int32的显式位置参数重载替代。
+- [asc_half2int8（废弃）](asc_half2int8_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_half2int8的显式位置参数重载替代。
+- [asc_half2uint8（废弃）](asc_half2uint8_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_half2uint8的显式位置参数重载替代。
+- [asc_hif82half（废弃）](asc_hif82half_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_hif82half的显式位置参数重载替代。
+- [asc_int162float（废弃）](asc_int162float_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int162float的显式位置参数重载替代。
+- [asc_int162int32（废弃）](asc_int162int32_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int162int32的显式位置参数重载替代。
+- [asc_int162uint32（废弃）](asc_int162uint32_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int162uint32的显式位置参数重载替代。
+- [asc_int162uint8（废弃）](asc_int162uint8_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int162uint8的显式位置参数重载替代。
+- [asc_int322int16（废弃）](asc_int322int16_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int322int16的显式位置参数重载替代。
+- [asc_int322int64（废弃）](asc_int322int64_deprecated.md)：该接口通过接口后缀来控制源操作数读取位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int322int64的显式位置参数重载替代。
+- [asc_int322uint16（废弃）](asc_int322uint16_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int322uint16的显式位置参数重载替代。
+- [asc_int642float（废弃）](asc_int642float_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int642float的显式位置参数重载替代。
+- [asc_int642int32（废弃）](asc_int642int32_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int642int32的显式位置参数重载替代。
+- [asc_int82half（废弃）](asc_int82half_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int82half的显式位置参数重载替代。
+- [asc_int82int16（废弃）](asc_int82int16_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_int82int16的显式位置参数重载替代。
+- [asc_loadalign (废弃)](asc_loadalign_v1_deprecated.md)：该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。
+- [asc_loadalign (废弃)](asc_loadalign_v2_deprecated.md)：该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。
+- [asc_loadalign (废弃)](asc_loadalign_v3_deprecated.md)：该接口已废弃。其中asc_loadalign_brc_v2请使用asc_loadalign_brc_datablock，asc_loadalign_brc_v3请使用asc_loadalign_brc_elem2datablock，asc_loadalign_unpack_v2请使用asc_loadalign_unpack4实现此功能。
+- [asc_loadalign (废弃)](asc_loadalign_v4_deprecated.md)：该接口已废弃。其中asc_loadalign_brc_postupdate_v2请使用asc_loadalign_brc_datablock_postupdate，asc_loadalign_brc_postupdate_v3请使用asc_loadalign_brc_elem2datablock_postupdate，asc_loadalign_unpack_postupdate_v2请使用asc_loadalign_unpack4_postupdate实现此功能。
+- [asc_mmad（废弃）](asc_mmad_deprecated.md)：入参unit_flag类型为uint8_t的asc_mmad接口以及asc_mmad_sync接口已废弃。请使用入参unit_flag_mode类型为asc_unit_flag_mode的asc_mmad接口替代；原同步功能请通过新接口和asc_sync()实现，具体请参见asc_sync。
+- [asc_mmad_mx（废弃）](asc_mmad_mx_deprecated.md)：入参unit_flag类型为uint8_t的asc_mmad_mx接口和asc_mmad_mx_sync接口已废弃。请使用入参unit_flag_mode类型为asc_unit_flag_mode的asc_mmad_mx接口替代；原asc_mmad_mx_sync接口的同步功能请通过新asc_mmad_mx接口和asc_sync()实现，具体请参见asc_sync。
+- [asc_mmad_sparse（废弃）](asc_mmad_sparse_deprecated.md)：入参unit_flag类型为uint8_t的asc_mmad_sparse接口和asc_mmad_sparse_sync接口已废弃。请使用入参unit_flag_mode类型为asc_unit_flag_mode的asc_mmad_sparse接口替代；原asc_mmad_sparse_sync接口的同步功能请通过新asc_mmad_sparse接口和asc_sync()实现，具体请参见asc_sync。
+- [asc_scatter（废弃）](asc_scatter_deprecated.md)：该接口已废弃。请使用asc_scatter实现此功能。
+- [asc_set_atomic_add_int（废弃）](asc_set_atomic_add_int_deprecated.md)：该接口已废弃，请使用asc_set_atomic_add_int32替代。 头文件路径："c_api/atomic/atomic.h"。 设置对后续的从Unified Buffer/L0C Buffer/L1 Buffer到Global Memory的数据传输开启原子累加。累加的数据类型为int32_t。
+- [asc_set_atomic_max_int（废弃）](asc_set_atomic_max_int_deprecated.md)：该接口已废弃，请使用asc_set_atomic_max_int32替代。
+- [asc_set_atomic_min_int（废弃）](asc_set_atomic_min_int_deprecated.md)：该接口已废弃，请使用asc_set_atomic_min_int32替代。
+- [asc_set_atomic_none（废弃）](asc_set_atomic_none_deprecated.md)：该接口已废弃，请使用asc_disable_dma_atomic替代。
+- [asc_set_store_atomic_config_v2（废弃）](asc_set_store_atomic_config_v2_deprecated.md)：该接口已废弃。原子加操作请使用asc_atomic_add实现。
+- [asc_storealign_pack_v2（废弃）](asc_storealign_v1_deprecated.md)：该接口已废弃。请使用asc_storealign_pack_quarter实现此功能。
+- [asc_storealign_pack_v2（废弃）](asc_storealign_v2_deprecated.md)：该接口已废弃。请使用asc_storealign_pack_quarter实现此功能。
+- [asc_storealign_pack_v2（废弃）](asc_storealign_v3_deprecated.md)：该接口已废弃。请使用asc_storealign_pack_quarter实现此功能。
+- [asc_storealign_pack_postupdate_v2（废弃）](asc_storealign_v4_deprecated.md)：该接口已废弃。请使用asc_storealign_pack_quarter_postupdate实现此功能。
+- [asc_storeunalign_post（废弃）](asc_storeunalign_post_deprecated.md)：该接口已废弃。请使用asc_squeeze_and_storeunalign_finalize实现此功能。
+- [asc_storeunalign_postupdate（废弃）](asc_storeunalign_postupdate_deprecated.md)：该接口不指定存储偏移量的原型已废弃，请使用asc_squeeze_and_storeunalign实现此功能。掩码寄存器搬出模式的b8数据类型原型已废弃，请使用b16或b32数据类型原型。
+- [asc_uint162uint32（废弃）](asc_uint162uint32_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_uint162uint32的显式位置参数重载替代。
+- [asc_uint162uint8（废弃）](asc_uint162uint8_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_uint162uint8的显式位置参数重载替代。
+- [asc_uint322int16（废弃）](asc_uint322int16_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_uint322int16的显式位置参数重载替代。
+- [asc_uint322uint16（废弃）](asc_uint322uint16_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_uint322uint16的显式位置参数重载替代。
+- [asc_uint82half（废弃）](asc_uint82half_deprecated.md)：该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_uint82half的显式位置参数重载替代。
+- [asc_uint82uint16（废弃）](asc_uint82uint16_deprecated.md)：该接口通过接口后缀来控制源操作数读取位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用asc_uint82uint16的显式位置参数重载替代。
 - [废弃接口](deprecated_interface.md)：废弃接口索引页，汇总矢量计算asc_abs_sync与原子操作asc_set_atomic_add_int等已废弃接口。

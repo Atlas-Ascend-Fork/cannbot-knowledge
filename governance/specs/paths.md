@@ -25,6 +25,7 @@ route 是 technology 或 scope 的统称。当前允许的组合如下：
 | Domain | Technology/scope route | Direct profile |
 |---|---|---|
 | `common` | `platforms`, `toolchains`, `observability` | `glossaries` |
+| `contrib` | `ascendc` | 无 |
 | `ops` | `ascendc`, `triton`, `tilelang`, `pypto`, `shared` | 无 |
 | `graph` | `torch_compile`, `ge`, `shared` | 无 |
 | `model` | `inference`, `training`, `spatial`, `embodied` | 无 |
@@ -32,7 +33,7 @@ route 是 technology 或 scope 的统称。当前允许的组合如下：
 
 route 后必须出现路径 Profile，例如 `knowledge/common/platforms/concepts/`。`interoperability` 只能放在同一 domain 的 `shared/` 下。
 
-Registry 允许某种组合，只表示工具能够识别它，不表示仓库已有相应知识。Contract 只要求五个 domain 根目录始终存在；domain Registry 中设置 `precreate_routes: true` 的 `ops` 和 `model` 还预建各自注册 route。`common`、`graph`、`runtime` 不预建没有真实知识的下一层路径，由领域维护者随首张卡物化。所有 index-only 入口都不计入 Query 覆盖，route 下的具体 Profile 也不全量预建。
+Registry 允许某种组合，只表示工具能够识别它，不表示仓库已有相应知识。Contract 要求 Registry 中注册的所有 domain 根目录始终存在；domain Registry 中设置 `precreate_routes: true` 的 `ops` 和 `model` 还预建各自注册 route。`common`、`contrib`、`graph`、`runtime` 不预建没有真实知识的下一层路径，由领域维护者随首张卡物化。所有 index-only 入口都不计入 Query 覆盖，route 下的具体 Profile 也不全量预建。
 
 当前路径 Profile 是全局集合：经过 route 的路径默认可以选择任一已注册 Profile，但内容必须符合该 Profile 的职责。机器规则另行限制 `interoperability` 只能位于 `shared`，并限制 Operator 与 Runbook 的附加层级。若以后需要禁止某个 domain-route 与 Profile 的组合，应在 Registry、Contract 和接受/拒绝测试中明确增加规则，不能只写在文档里。
 

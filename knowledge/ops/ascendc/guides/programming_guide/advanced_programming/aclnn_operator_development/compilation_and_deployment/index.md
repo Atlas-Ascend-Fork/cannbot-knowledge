@@ -6,3 +6,4 @@
 - [高级编程交叉编译](cross_compilation.md)：本文是扩展内容，介绍当编译平台与运行平台架构不同时（例如在x86_64开发机上编译、再部署到aarch64边缘设备），如何对算子工程进行交叉编译。
 - [算子动态库和静态库编译](dynamic_static_lib_compilation.md)：介绍将自定义算子工程编译为动态库或静态库的方法，支持应用直接链接或集成到其他工程中。
 - [多算子包组织](multi_operator_package.md)：本文是扩展内容，介绍开发多个自定义算子时，如何决定这些算子的发布与部署方式——是全部放在一个算子包中，还是拆成多个算子包。
+- [simplified key二进制配置JSON](simplified_key_json_configuration.md)：本文介绍在自定义算子工程中如何提供核函数（Kernel）二进制配置JSON，以及该JSON如何驱动按自定义simplified key编译多份binary。该机制适用于一个OpType需要按dtype、format、shape分档或属性组合预编译多份binary，并由运行时根据GenSimplifiedKey回调选择的场景。

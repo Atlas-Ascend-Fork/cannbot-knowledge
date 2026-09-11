@@ -156,16 +156,6 @@ export TRITON_AUTOTUNE_PARALLEL_COMPILE=1 # 并行编译加速调优（默认开
 
 常见问题：调优时间过长 → 减少配置数 / 并行编译 / `prune_configs_by` 预剪枝；自动生成配置数为 0 → 检查 key 映射并开 `TRITON_PRINT_AUTOTUNING` 看解析日志；强制重调 → 重启进程或清 Triton 缓存（结果按 key 进程内缓存）。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [性能调优方法论](performance_tuning.md)（`related`）：“性能调优总流程”
-- [Tiling 策略](tiling.md)（`related`）：“三级 Tiling 层次与 UB 容量约束”
-- [Tiling 与 Grid 分核策略（910_95 平台）](tiling_and_grid_910_95.md)（`related`）：“910_95 平台 Tiling 与 Grid 分核策略（候选配置取值约束）”
-- [NPU 编译参数速查（含 910_95 差异）](compile_params.md)（`related`）：“num_stages/num_warps 等编译参数在 NPU 的差异”
-
-<!-- cannbot:related:end -->
 
 ## 相关源
 
@@ -182,3 +172,14 @@ export TRITON_AUTOTUNE_PARALLEL_COMPILE=1 # 并行编译加速调优（默认开
 - [tile_generator.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/backend/runtime/tile_generator.py)
 - [autotuner.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/backend/runtime/autotuner.py)
 - [utils.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/backend/runtime/utils.py)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [性能调优方法论](performance_tuning.md)（`related`）：“性能调优总流程”
+- [Tiling 策略](tiling.md)（`related`）：“三级 Tiling 层次与 UB 容量约束”
+- [Tiling 与 Grid 分核策略（910_95 平台）](tiling_and_grid_910_95.md)（`related`）：“910_95 平台 Tiling 与 Grid 分核策略（候选配置取值约束）”
+- [NPU 编译参数速查（含 910_95 差异）](compile_params.md)（`related`）：“num_stages/num_warps 等编译参数在 NPU 的差异”
+
+<!-- cannbot:related:end -->

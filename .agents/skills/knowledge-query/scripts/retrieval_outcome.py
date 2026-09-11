@@ -14,7 +14,13 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from retrieval.root import atomic_create_json, sha256_file  # noqa: E402
+from retrieval.root import (  # noqa: E402
+    Audit,
+    atomic_create_json,
+    nonempty,
+    read_json,
+    sha256_file,
+)
 
 
 sys.dont_write_bytecode = True
@@ -23,39 +29,6 @@ READY_SCHEMA = "cannbot-retrieval-ready.v1"
 RECEIPT_SCHEMA = "cannbot-retrieval-outcome-receipt.v1"
 OUTCOMES = {"verified", "rejected", "inconclusive", "not_run"}
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-
-
-class Audit:
-    def __init__(self) -> None:
-        self.errors: list[dict[str, str]] = []
-
-    def error(self, code: str, location: str, message: str) -> None:
-        self.errors.append({"code": code, "location": location, "message": message})
-
-
-def read_json(path: Path, audit: Audit, location: str) -> dict[str, Any]:
-    if not path.is_absolute():
-        audit.error("path.absolute", location, "path must be absolute")
-        return {}
-    if not path.is_file():
-        audit.error("path.exists", location, f"file does not exist: {path}")
-        return {}
-    try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        audit.error("json.invalid", location, str(exc))
-        return {}
-    if not isinstance(value, dict):
-        audit.error("json.object", location, "top-level JSON must be an object")
-        return {}
-    return value
-
-
-def nonempty(value: Any, audit: Audit, location: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        audit.error("value.string", location, "must be a non-empty string")
-        return ""
-    return value.strip()
 
 
 def validate_manifest(path: Path, require_complete: bool) -> tuple[dict[str, Any], Audit]:

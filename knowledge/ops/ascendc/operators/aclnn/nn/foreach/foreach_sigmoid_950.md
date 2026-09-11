@@ -5,30 +5,30 @@ description: "说明 aclnnForeachSigmoid 在 950 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/docs/aclnnForeachSigmoid.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/docs/aclnnForeachSigmoid.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_host/foreach_sigmoid_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_host/foreach_sigmoid_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_host/arch35/foreach_sigmoid_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_host/arch35/foreach_sigmoid_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_host/config/ascend950/foreach_sigmoid_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_host/config/ascend950/foreach_sigmoid_binary.json
     role: implementation
 created_at: "2026-08-25T16:20:27Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -421,7 +421,7 @@ register bytes 固定仓不可见
 
 - 适用 Route：R-001、R-002、R-003
 - 触发条件：Tensor 非空；blockDim 由最大 Tensor 计算，VF 固定 512 threads。
-- Golden 来源：[`foreach_sigmoid_simt.h:53-64`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid_simt.h#L53-L64)
+- Golden 来源：[`foreach_sigmoid_simt.h:53-64`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid_simt.h#L53-L64)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -456,7 +456,7 @@ Host 只根据最大 Tensor 选择一次 blockDim；每个 Tensor 复用该 grid
 
 - 适用 Route：R-001、R-003（R-002 也经过相同 float 表达式但无升精度）
 - 触发条件：`ComputeSigmoid<T>` 的 T 为 half 或 bfloat16_t。
-- Golden 来源：[`foreach_sigmoid_simt.h:39-47`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid_simt.h#L39-L47)
+- Golden 来源：[`foreach_sigmoid_simt.h:39-47`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_sigmoid/op_kernel/arch35/foreach_sigmoid_simt.h#L39-L47)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

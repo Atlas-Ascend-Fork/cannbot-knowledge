@@ -1,6 +1,5 @@
 # CPU孪生调试
 
-- [CPU孪生调试](cpu_twin_debug.md)：CPU 孪生调试接口集，包含 GmAlloc、ICPU_RUN_KF、ICPU_SET_TILING_KEY、SetKernelMode 等。
 - [GmAlloc](gm_alloc.md)：CPU侧运行验证时创建共享内存，在/tmp目录下创建共享文件并返回映射指针。
 - [GmFree](gm_free.md)：CPU侧运行验证时释放通过GmAlloc申请的共享内存。
 - [IcpuRunKf](icpu_run_kf.md)：CPU调测总入口，完成CPU侧的算子程序调用。

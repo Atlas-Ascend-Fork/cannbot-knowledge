@@ -5,54 +5,54 @@ description: "说明 aclnnSoftmaxBackward 在 950 上的接口语义、Host/Laun
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/docs/aclnnSoftmaxBackward.md"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/docs/aclnnSoftmaxBackward.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_api/aclnn_softmax_backward.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_api/aclnn_softmax_backward.h"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_api/aclnn_softmax_backward.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_api/aclnn_softmax_backward.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_api/softmax_grad.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_api/softmax_grad.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/softmax_grad_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/softmax_grad_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_base.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_base.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ar_small_r.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ar_small_r.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ar_full_load.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ar_full_load.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ar_recompute.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ar_recompute.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ara_full_load.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ara_full_load.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ara_recompute.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ara_recompute.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/softmax_grad_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/softmax_grad_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_base.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_base.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_small_r.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_small_r.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_full_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_full_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_recompute.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_recompute.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ara_full_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ara_full_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ara_recompute.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ara_recompute.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/CMakeLists.txt"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/CMakeLists.txt"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/config/ascend950/softmax_grad_binary.json"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/config/ascend950/softmax_grad_binary.json"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h"
     role: implementation
 created_at: "2026-08-25T19:04:52Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -859,7 +859,7 @@ dynamic_ub=N/A; workspace_total=16MiB placeholder, unused
 
 - 适用 Route：R-001。
 - 触发条件：`A0==1 && R<=16 && !(R>8 && dtype==FP32)`，且小R UB容量式可放下至少一个 `VL32` A tile。
-- Golden 来源：[`activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ar_small_r.cpp:17-21`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ar_small_r.cpp#L17-L21)
+- Golden 来源：[`activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ar_small_r.cpp:17-21`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_host/arch35/softmax_grad_tiling_ar_small_r.cpp#L17-L21)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -893,7 +893,7 @@ bool SoftmaxGradTilingARSmallR::IsCapable()
 
 - 适用 Route：R-003。
 - 触发条件：AR 全载不适用，输入按 R tile 两遍读取。
-- Golden 来源：[`activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_recompute.h:140-181`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_recompute.h#L140-L181)
+- Golden 来源：[`activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_recompute.h:140-181`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_ar_recompute.h#L140-L181)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -926,7 +926,7 @@ for (uint64_t basicBlockIdx = 0; basicBlockIdx < tl_->basicBlockLoop; basicBlock
 
 - 适用 Route：R-003、R-005。
 - 触发条件：R被切成多个UB块，`basicBlockLoop>0`；单块时直接使用slot 0/独立sum。
-- Golden 来源：[`activation/softmax_grad/op_kernel/arch35/softmax_grad_base.h:882-908`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_base.h#L882-L908)
+- Golden 来源：[`activation/softmax_grad/op_kernel/arch35/softmax_grad_base.h:882-908`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/softmax_grad/op_kernel/arch35/softmax_grad_base.h#L882-L908)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1031,5 +1031,4 @@ Host 和 Device 用同一 `GetCacheID(idx)=popcount(idx^(idx+1))-1` 协议：新
 <!-- cannbot:related:start -->
 ## 相关
 
-- [SoftmaxGrad](../../../../apis/simd_api/adv_api/activation_functions/soft_max_interface/softmax_grad.md)（`related`）：“把逻辑 shape 沿 `dim` 融合为 `［A1, R, A0］`：`R=shape［dim］`，`A1=prod(shape［:dim］)`，`A0=prod(shape［dim+1:］)`。对每个 `(a1,a0)`，先以 FP32（FP32 输入直接使用；FP16/BF16 body 先升精度）计算”与“当输入shape为ND格式时，内部的reduce过程按last轴进行；当输入shape为NZ格式时，内部的reduce过程按照last轴和first轴进行，reduce过程可以参考SoftMax中的图示说明。”提供双方正文证据。950 ACLNN 算子把任意 dim 规约重排为 A1/R/A0 并在 FP32 中完成梯度归约，SoftmaxGrad API 给出 ND/NZ 下实际 reduce 轴规则；两端描述同一 Softmax 反向核心计算的算子级与 API 级合同。
 <!-- cannbot:related:end -->

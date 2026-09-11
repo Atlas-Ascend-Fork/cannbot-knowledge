@@ -5,34 +5,34 @@ description: "说明 aclnnAdaLayerNormV2 在 A2/A3 上的接口语义、Host/Lau
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/docs/aclnnAdaLayerNormV2.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/docs/aclnnAdaLayerNormV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/op_api/aclnn_ada_layer_norm_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/op_api/aclnn_ada_layer_norm_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/op_api/ada_layer_norm_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/op_api/ada_layer_norm_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/ada_layer_norm_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/ada_layer_norm_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_host/ada_layer_norm_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_host/ada_layer_norm_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_host/ada_layer_norm_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_host/ada_layer_norm_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_kernel/ada_layer_norm_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_kernel/ada_layer_norm_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/ada_layer_norm_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/ada_layer_norm_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/ada_layer_norm_base_v1.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/ada_layer_norm_base_v1.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/ada_layer_norm_util.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/ada_layer_norm_util.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/config/ascend910b/ada_layer_norm_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/config/ascend910b/ada_layer_norm_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/config/ascend910_93/ada_layer_norm_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/config/ascend910_93/ada_layer_norm_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm_v2/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:42:35Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -376,7 +376,7 @@ workspace_total(node) = 16 MiB（Device不读）
 
 - 适用 Route：R-001、R-002 的 FastProcess。
 - 触发条件：相邻工作批的 `batchStart`、`batchEnd` 同时与上批相等。
-- Golden 来源：[`norm/ada_layer_norm/op_kernel/ada_layer_norm_base.h:319-325`](https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/ada_layer_norm_base.h#L319-L325)
+- Golden 来源：[`norm/ada_layer_norm/op_kernel/ada_layer_norm_base.h:319-325`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/ada_layer_norm_base.h#L319-L325)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -410,7 +410,7 @@ scale/shift 只随 B 变化而不随 S 行变化。缓存区间不变时跳过�
 
 - 适用 Route：R-001、R-002，尤其 SliceProcess。
 - 触发条件：固定 `tmpBuf` 初始化后按不同阶段建立 x、参数、临时值和 y 视图。
-- Golden 来源：[`norm/ada_layer_norm/op_kernel/ada_layer_norm_base.h:221-243`](https://gitcode.com/cann/ops-nn/-/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/ada_layer_norm_base.h#L221-L243)
+- Golden 来源：[`norm/ada_layer_norm/op_kernel/ada_layer_norm_base.h:221-243`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/ada_layer_norm/op_kernel/ada_layer_norm_base.h#L221-L243)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

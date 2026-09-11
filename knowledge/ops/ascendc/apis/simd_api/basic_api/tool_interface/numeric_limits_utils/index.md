@@ -7,6 +7,5 @@
 - [Max](max.md)：返回指定数据类型的最大有限值，支持标量和矢量两种接口，矢量接口为dst前count个元素赋最大有限值。
 - [Min](min.md)：返回指定数据类型的最小有限值，浮点类型返回最小规约正数，支持标量和矢量两种接口。
 - [NegativeInfinity](negative_infinity.md)：返回指定数据类型的负无穷大值，支持标量和矢量两种接口，矢量接口为dstLocal前count个元素赋负无穷大值。
-- [NumericLimits](numericlimits_utils.md)：NumericLimits工具类接口索引页，包含Max、Min、Lowest、Infinity、NaN及DeNormMin等数值极值方法。
 - [QuietNaN](quiet_na_n.md)：返回指定数据类型的安静NaN值，支持标量和矢量两种接口，矢量接口为dstLocal前count个元素赋安静NaN值。
 - [SignalingNaN](signaling_na_n.md)：返回指定数据类型的发信NaN值（浮点尾数最高位为0），提供标量和矢量两种接口。

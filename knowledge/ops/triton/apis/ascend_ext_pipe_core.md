@@ -119,8 +119,16 @@ class my_matmul_reduce:
 4. **PIPE_M vs PIPE_FIX**：`PIPE_M` 执行矩阵乘法计算；`PIPE_FIX` 负责把 Cube 结果从 L0C 搬到 GM/L1/UB，是 Cube 侧的不同阶段。A2/A3 上 fixpipe 仅支持 L0C→GM/L1，910_95 额外支持 L0C→UB。
 5. **SIMT vs SIMD**：复杂控制流（条件分支、动态索引）用 SIMT；纯数据并行用 SIMD。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py)
+- [semantic.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/semantic.py)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
@@ -130,10 +138,3 @@ class my_matmul_reduce:
 - [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py)
-- [semantic.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/semantic.py)

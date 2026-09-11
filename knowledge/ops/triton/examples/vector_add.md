@@ -74,15 +74,6 @@ print(f'The maximum difference between torch and triton is '
 4. **benchmark**：NPU 上用 `do_bench_npu`，或设 `export TRITON_BENCH_METHOD=npu`。
 5. 简单 elementwise 手动选 BLOCK_SIZE 即可；如需 autotune，`key=['n_elements']`，configs 扫 `{256, 512, 1024, 2048}`。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [融合 Softmax 示例（Fused Softmax on NPU）](./fused_softmax.md)（`related`）：“融合 Softmax 示例（行归约 + fusion）”
-- [归约操作模式集（行/列/全局归约与 NPU atomic 限制）](./reduction_pattern.md)（`related`）：“归约操作模式”
-- [Elementwise 算子优化](../guides/operator_design/elementwise.md)（`related`）：“elementwise 算子规格”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -90,3 +81,13 @@ print(f'The maximum difference between torch and triton is '
 
 - [01-vector-add.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/01-vector-add.py)
 - [01-vector-add.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/01-vector-add.py)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [融合 Softmax 示例（Fused Softmax on NPU）](./fused_softmax.md)（`related`）：“融合 Softmax 示例（行归约 + fusion）”
+- [归约操作模式集（行/列/全局归约与 NPU atomic 限制）](./reduction_pattern.md)（`related`）：“归约操作模式”
+- [Elementwise 算子优化](../guides/operator_design/elementwise.md)（`related`）：“elementwise 算子规格”
+
+<!-- cannbot:related:end -->

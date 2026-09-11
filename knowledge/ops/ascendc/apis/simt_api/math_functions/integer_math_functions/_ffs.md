@@ -2,28 +2,110 @@
 type: API
 title: __ffs（整数数学函数）
 description: 从二进制输入数据的最低位开始，查找第一个值为1的比特位的位置，并返回该位置的索引，索引从1开始计数；如果二进制数据中没有1，则返回0。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.arithmetic]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.arithmetic
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__ffs.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/device_functions.h
 ---
 
-# __ffs
+# \_\_ffs
 
-查找首位 1 的位置。从二进制输入数据的最低位开始，查找第一个值为 1 的比特位的位置并返回其索引（索引从 1 开始计数）；若数据中没有 1，则返回 0。
+## 功能说明
 
-函数原型（重载）：int __ffs(int x)、int __ffs(long long x)、int __ffs(long x)
+从二进制输入数据的最低位开始，查找第一个值为1的比特位的位置，并返回该位置的索引，索引从1开始计数；如果二进制数据中没有1，则返回0。
 
-参数 x 为源操作数。返回二进制低位起第一个为 1 的比特位位置。x=0 时返回 0，x=1 时返回 1。
+## 函数原型
 
-仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。无约束。需包含头文件 "simt_api/device_functions.h"。支持 SIMT 与 SIMD/SIMT 混合编程场景。
+```cpp
+int __ffs(int x)
+```
+
+```cpp
+int __ffs(long long x)
+```
+
+```cpp
+int __ffs(long x)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+数据二进制低位开始的第一个比特位为1的位置。
+
+-   当x=0时，返回0。
+-   当x=1时，返回1。
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/device_functions.h`头文件。
+
+```cpp
+#include "simt_api/device_functions.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelFfs(int* dst, int* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __ffs(x[idx]);
+    }
+    ```
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelFfs(int* dst, long long* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __ffs(x[idx]);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelFfs(__gm__ int* dst, __gm__ int* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __ffs(x[idx]);
+    }
+    ```
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelFfs(__gm__ int* dst, __gm__ long long* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __ffs(x[idx]);
+    }
+    ```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [asc_ffs（标量计算）](../../../simd_api/c_api/scalar_compute/asc_ffs.md)（`same_topic`）：FindFirstSet接口，输入数据的二进制表示中从最低位向最高位查找第一个值为1的位，并返回其位置，如果没找到则返回-1。；查找首位 1 的位置。从二进制输入数据的最低位开始，查找第一个值为 1 的比特位的位置并返回其索引（索引从 1 开始计数）；若数据中没有 1，则返回 0。。两张卡都定义从最低位寻找首个 1 的 ffs 操作，但分别采用未命中返回 -1 与返回 0 的契约。
+- [asc_ffs（标量计算）](../../../simd_api/c_api/scalar_compute/scalar_bit/asc_ffs.md)（`same_topic`）：FindFirstSet接口，输入数据的二进制表示中从最低位向最高位查找第一个值为1的位，并返回其位置，如果没找到则返回-1。；查找首位 1 的位置。从二进制输入数据的最低位开始，查找第一个值为 1 的比特位的位置并返回其索引（索引从 1 开始计数）；若数据中没有 1，则返回 0。。两张卡都定义从最低位寻找首个 1 的 ffs 操作，但分别采用未命中返回 -1 与返回 0 的契约。
 <!-- cannbot:related:end -->

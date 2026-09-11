@@ -2,37 +2,113 @@
 type: API
 title: GetMDLConfig
 description: 用于配置MDL模板的参数，获取自定义MDL模板。MDL模板的介绍请参考表模板特性。
-tags: [task.lookup, topic.implementation.api_layer.high_level_api, topic.programming_model.execution_unit.cube]
+tags:
+- task.lookup
+- topic.implementation.api_layer.high_level_api
+- topic.programming_model.execution_unit.cube
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/GetMDLConfig.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T03:58:17Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a2
+- a3
+- 310p
+- kirin_x90
+source_headers:
+- include/adv_api/matmul/tiling.h
 ---
-
 
 # GetMDLConfig
 
-用于配置MDL模板的参数，获取自定义MDL模板。MDL模板的介绍请参考表模板特性。
+## 功能说明
 
-函数原型：__aicore__ constexpr MatmulConfig GetMDLConfig(const bool intrinsicsLimit = false, const bool batchLoop = false, const uint32_t doMTE2Preload = 0, const bool isVecND2NZ = false, bool isPerTensor = false, bool hasAntiQuantOffset = false, const bool enUnitFlag = false, const bool isMsgReuse = true, const bool enableUBReuse = true, const bool enableL1CacheUB = false, const bool enableMixDualMaster = false, const bool enableKdimReorderLoad = false)
+用于配置MDL模板的参数，获取自定义MDL模板。MDL模板的介绍请参考[表模板特性](matmul_config.md#template-features)。
 
-参数：
-- intrinsicsLimit（输入）：用于设置参数intrinsicsCheck。 当左矩阵或右矩阵在单核上内轴（即尾轴）大于等于65535（元素个数）时，是否开启循环执行数据从Global Memory到L1 Buffer的搬入。
-- batchLoop（输入）：用于设置参数isNBatch。 是否多Batch输入多Batch输出。仅对BatchMatmul有效，开启多Batch后，仅支持Norm模板，且需调用IterateNBatch实现多Batch输入多Batch输出。
-- doMTE2Preload（输入）：用于设置参数doMTE2Preload。 在MTE2流水间隙较大，且M/N数值较大时可通过该参数开启对应M/N方向的预加载功能，开启后能减小MTE2间隙，提升性能。预加载功能仅在MDL模板有效（不支持SpecialMDL模板）。
-- isVecND2NZ（输入）：用于设置参数enVecND2NZ。 开启通过vector指令进行ND2NZ。开启时需要设置SetLocalWorkspace。参数取值如下：false：不开启通过vector指令进行ND2NZ（默认值）。
-- isPerTensor（输入）：用于设置参数isPerTensor。 A矩阵half类型输入且B矩阵int8_t类型输入场景，开启B矩阵量化时是否为per tensor。/true：per tensor量化。/false：per channel量化。
+## 函数原型
 
-返回值：MatmulConfig结构体。
+```
+__aicore__ constexpr MatmulConfig GetMDLConfig(const bool intrinsicsLimit = false, const bool batchLoop = false, const uint32_t doMTE2Preload = 0, const bool isVecND2NZ = false, bool isPerTensor = false, bool hasAntiQuantOffset = false, const bool enUnitFlag = false, const bool isMsgReuse = true, const bool enableUBReuse = true, const bool enableL1CacheUB = false, const bool enableMixDualMaster = false, const bool enableKdimReorderLoad = false)
+```
 
-支持：Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas 推理系列产品AI Core、Kirin X90。不支持：Atlas 200I/500 A2 推理产品、Atlas 推理系列产品Vector Core、Atlas 训练系列产品、Kirin 9030。
+## 参数说明
+
+本接口的所有参数用于设置[MatmulConfig结构体](matmul_config.md#matmulconfig-params)中的参数，其中互相对应的参数的功能作用相同。
+
+**表1**  接口参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| intrinsicsLimit | 输入 | 用于设置参数intrinsicsCheck。<br><br>当左矩阵或右矩阵在单核上内轴（即尾轴）大于等于65535（元素个数）时，是否开启循环执行数据从Global Memory到L1 Buffer的搬入。例如，左矩阵A[M, K]，单核上的内轴数据singleCoreK大于65535，配置该参数为true后，API内部通过循环执行数据的搬入。参数取值如下：<br>false：当左矩阵或右矩阵在单核上内轴大于等于65535时，不开启循环执行数据的搬入（默认值）。<br>true：当左矩阵或右矩阵在单核上内轴大于等于65535时，开启循环执行数据的搬入。 |
+| batchLoop | 输入 | 用于设置参数isNBatch。<br><br>是否多Batch输入多Batch输出。仅对BatchMatmul有效，开启多Batch后，仅支持Norm模板，且需调用[IterateNBatch](iterate_n_batch.md)实现多Batch输入多Batch输出。参数取值如下：<br>false：不开启多Batch（默认值）。<br>true：开启多Batch。 |
+| doMTE2Preload | 输入 | 用于设置参数doMTE2Preload。<br><br>在MTE2流水间隙较大，且M/N数值较大时可通过该参数开启对应M/N方向的预加载功能，开启后能减小MTE2间隙，提升性能。预加载功能仅在MDL模板有效（不支持SpecialMDL模板）。参数取值如下：<br>0：不开启（默认值）。1：开启M方向preload。2：开启N方向preload。<br><br>注意：开启M/N方向的预加载功能时需保证K全载且M/N方向开启DoubleBuffer；其中，M方向的K全载条件为：singleCoreK/baseK <= stepKa；N方向的K全载条件为：singleCoreK/baseK <= stepKb。 |
+| isVecND2NZ | 输入 | 用于设置参数enVecND2NZ。<br><br>开启通过vector指令进行ND2NZ。开启时需要设置[SetLocalWorkspace](set_local_workspace.md)。参数取值如下：<br>false：不开启通过vector指令进行ND2NZ（默认值）。<br>true：开启通过vector指令进行ND2NZ。 |
+| isPerTensor | 输入 | 用于设置参数isPerTensor。<br><br>A矩阵half类型输入且B矩阵int8_t类型输入场景，开启B矩阵量化时是否为per tensor。<br>true：per tensor量化。<br>false：per channel量化。 |
+| hasAntiQuantOffset | 输入 | 用于设置参数hasAntiQuantOffset。<br><br>A矩阵half类型输入且B矩阵int8_t类型输入场景，开启B矩阵量化时是否使用offset系数。 |
+| enUnitFlag | 输入 | 用于设置参数enUnitFlag。<br><br>开启UnitFlag功能，使计算与搬运流水并行，提高性能。Norm, IBShare下默认开启，MDL下默认不开启。参数取值如下：<br>false：不开启UnitFlag功能。<br>true：开启UnitFlag功能。 |
+| isMsgReuse | 输入 | 用于设置参数enableReuse。<br><br>[SetSelfDefineData](set_self_define_data.md)函数设置的回调函数中的dataPtr是否直接传递计算数据。若未调用SetSelfDefineData设置dataPtr，该参数仅支持默认值true。参数取值如下：<br>true：直接传递计算数据，仅限单个值。<br>false：传递GM上存储的数据地址信息。 |
+| enableUBReuse | 输入 | 用于设置参数enableUBReuse。<br><br>是否开启UB复用。在UB空间足够的条件下（UB空间大于4倍TCubeTiling的[transLength](../matmul_tiling/t_cube_tiling_struct.md#p1620315053211)参数），设置开启UB复用后，UB空间分为互不重叠的两份，分别存储Matmul计算相邻前后两轮迭代的数据，后一轮迭代数据的搬入将不必等待前一轮迭代的UB空间释放，从而优化流水。参数取值如下：<br>true：开启UB复用。<br>false：不开启UB复用。 |
+| enableL1CacheUB | 输入 | 用于设置参数enableL1CacheUB 。<br><br>是否开启L1 Buffer缓存UB计算块。建议在MTE3和MTE2流水串行较多的场景使用。参数取值如下：<br>true：开启L1 Buffer缓存UB计算块。<br>false：不开启L1 Buffer缓存UB计算块。<br><br>若要开启L1 Buffer缓存UB计算块，必须在Tiling实现中调用[SetMatmulConfigParams](../matmul_tiling/set_matmul_config_params.md)接口将参数enableL1CacheUBIn设置为true。 |
+| enableMixDualMaster | 输入 | 用于设置参数enableMixDualMaster。<br><br>是否开启MixDualMaster（双主模式）。区别于MIX模式（包含矩阵计算和矢量计算）通过消息机制驱动AIC运行，双主模式为AIC和AIV独立运行代码，不依赖消息驱动，用于提升性能。该参数默认值为false，仅能在以下场景设置为true：<br>核函数（Kernel）的类型为MIX，同时AIC核数 : AIV核数为1:1。<br>核函数（Kernel）的类型为MIX，同时AIC核数 : AIV核数为1:2，且A矩阵和B矩阵同时开启[IBSHARE](matmul_usage.md#table1188045714378)参数。<br><br>注意，开启MixDualMaster场景，需要满足：<br>同一算子中所有Matmul对象的该参数取值必须保持一致。<br>A/B/Bias矩阵只支持从GM搬入。<br>获取矩阵计算结果只支持调用[IterateAll](iterate_all.md)接口输出到GlobalTensor或者LocalTensor，即计算结果放置于Global Memory或者Local Memory的地址，不能调用[GetTensorC](get_tensor_c.md)等接口获取结果。 |
+| enableKdimReorderLoad | 输入 | 用于设置参数enableKdimReorderLoad。<br><br>是否开启K轴错峰加载数据。基于相同Tiling参数，执行Matmul计算时，如果多核的左矩阵或者右矩阵相同，且存储于Global Memory，多个核一般会同时访问相同地址以加载矩阵数据，引发同地址访问冲突，影响性能。开启K轴错峰加载数据后，多核执行Matmul时，将尽量在相同时间访问矩阵的不同Global Memory地址，减少地址访问冲突概率，提升性能。该参数功能只支持MDL模板，建议K轴较大且左矩阵和右矩阵均非全载场景开启该功能。参数取值如下。<br>false：默认值，关闭K轴错峰加载数据的功能。<br>true：开启K轴错峰加载数据的功能。 |
+
+## 返回值说明
+
+[MatmulConfig结构体](matmul_config.md#matmulconfig-params)。
+
+## 约束说明
+
+无
+
+
+
+## 调用示例
+
+```
+// 配置MDL模板的参数，获取自定义MDL模板
+constexpr MatmulConfig MM_CFG = GetMDLConfig(
+    /* intrinsicsLimit      */ false,
+    /* batchLoop            */ false,
+    /* doMTE2Preload        */ 0,
+    /* isVecND2NZ           */ false,
+    /* isPerTensor          */ false,
+    /* hasAntiQuantOffset   */ false,
+    /* enUnitFlag           */ false,
+    /* isMsgReuse           */ true,
+    /* enableUBReuse        */ true,
+    /* enableL1CacheUB      */ false,
+    /* enableMixDualMaster  */ false,
+    /* enableKdimReorderLoad*/ false);
+// 常规Matmul计算，最后输出使用自定义MDL模板的计算结果
+AscendC::Matmul<A_TYPE, B_TYPE, C_TYPE, BIAS_TYPE, MM_CFG> mm;
+REGIST_MATMUL_OBJ(&pipe, GetSysWorkSpacePtr(), mm, &tiling);
+mm.SetTensorA(gm_a);
+mm.SetTensorB(gm_b);
+if (tiling.isBias) {
+    mm.SetBias(gmBias);
+}
+mm.IterateAll(gm_c);
+mm.End();
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
 - [GetMatmulApiTiling](get_matmul_api_tiling.md)（`same_topic`）：mmCFG（输入）：获取的MatmulConfig模板；返回值：MatmulConfig结构体。GetMDLConfig 生成 MatmulConfig，而 GetMatmulApiTiling 把该结构作为 mmCFG 输入生成编译期静态 Tiling；这是直接的生产者到消费者接口契约。
 - [GetNormalConfig](get_normal_config.md)（`same_topic`）：用于配置Norm模板的参数，获取自定义Norm模板；用于配置MDL模板的参数，获取自定义MDL模板。两端是同一 Matmul Kernel 模板工厂中的 Norm 与 MDL 配置入口，对照可在普通模板和 MDL 模板之间选择正确的 config 构造函数，避免把模板参数交给错误入口。
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)（`related`）：算子声明的固定版本源码包含对 `GetMDLConfig(...)` 的直接调用（第 37 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_matmul_reduce_sum/op_kernel/quant_matmul_reduce_sum_utils.h#L37)
+- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)（`related`）：算子声明的固定版本源码包含对 `GetMDLConfig(...)` 的直接调用（第 163 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_kernel/grouped_matmul_utils.h#L163)
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

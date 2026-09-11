@@ -1,8 +1,7 @@
 # Ascend C API
 
-
-- [ai cpu api](ai_cpu_api/index.md)：汇总 AI CPU Kernel 调试和内存操作相关的 printf、assert 与 data_store_barrier 接口。
+- [AI CPU API](ai_cpu_api/index.md)：该接口实现AI CPU算子Kernel调试场景下的assert断言功能。 算子执行中，如果assert内部条件判断不为真，则输出assert条件、触发文件名、行号等信息。
 - [附录](appendix/index.md)：本节汇总介绍了一些主要的API的流水类型，以下内容针对如下型号生效：
-- [simd api](simd_api/index.md)：AI Core内外包含多级存储单元，各存储单元的主要用途如下：
-- [simt api](simt_api/index.md)：将输入的指针转换为其指向的Global Memory内存空间的地址值并返回。
-- [utils api](utils_api/index.md)：提供C++标准库函数导航，包含算法、数学函数、容器函数、类型特性和通用工具。
+- [SIMD API](simd_api/index.md)：说明 SIMD 基础与高阶 API 的头文件、链接方式、存储单元对齐要求及 TPosition 内存映射。
+- [SIMT API](simt_api/index.md)：SIMT API是面向AI处理器的并行计算编程接口，可以实现高效的数据并行计算。SIMT API支持两种编程模型：SIMT编程、SIMD与SIMT混合编程，用户可先阅读SIMT编程简介和SIMD与SIMT混合编程简介，以了解编程基础，后续章节将详细介绍API接口。
+- [Utils API](utils_api/index.md)：比较相同数据类型的两个数，返回最大值。

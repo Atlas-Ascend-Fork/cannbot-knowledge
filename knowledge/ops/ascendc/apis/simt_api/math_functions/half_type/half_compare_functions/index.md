@@ -18,4 +18,3 @@
 - [__hmin_nan](_hmin_nan.md)：获取两个输入数据中的最小值。任一输入为nan时结果为nan。
 - [__hne](_hne.md)：比较两个half类型数据是否不相等，不相等时返回true。
 - [__hneu](_hneu.md)：比较两个half类型数据是否不相等，不相等时返回true。若任一输入为nan，返回true。
-- [half类型比较函数](half_compare_functions.md)：提供half类型数据的大小比较、最值获取与NaN/无穷判断接口。

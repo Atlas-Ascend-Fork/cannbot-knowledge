@@ -49,4 +49,3 @@
 - [__ull2float_rna](_ull2float_rna.md)：遵循CAST_ROUND模式，将uint64类型数据转换为浮点数，返回转换后的值。
 - [__ull2float_ru](_ull2float_ru.md)：遵循CAST_CEIL模式，将uint64类型数据转换为浮点数，返回转换后的值。
 - [__ull2float_rz](_ull2float_rz.md)：遵循CAST_TRUNC模式，将uint64类型数据转换为浮点数，返回转换后的值。
-- [类型转换函数](type_conversion_functions.md)：提供浮点数与整数（int、uint、ll、ull）之间遵循不同舍入模式的类型转换，以及位级重新解释函数列表。

@@ -5,32 +5,32 @@ description: "说明 aclnnSwish 在 A2 上的接口语义、Host/Launcher 参数
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/docs/aclnnSwish.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/docs/aclnnSwish.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/op_api/aclnn_swish.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/op_api/aclnn_swish.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/op_api/aclnn_swish.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/op_api/aclnn_swish.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/op_api/swish.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/op_api/swish.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/swish_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/swish_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/swish_v2_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/swish_v2_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_kernel/swish_v2_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_kernel/swish_v2_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_kernel/swish_v2_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_kernel/swish_v2_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_kernel/swish_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_kernel/swish_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_kernel/swish_v2.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_kernel/swish_v2.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:59:58Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -414,7 +414,7 @@ workspace_total(core node) = GetLibApiWorkSpaceSize()
 
 - 适用 Route：R-001、R-002。
 - 触发条件：正常非空 Tiling；`tileLength=align_down(ubSize/16,32/sizeof(dtype))`。
-- Golden 来源：[`experimental/activation/swish_v2/op_host/swish_v2_tiling.cpp:131-136`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/swish_v2_tiling.cpp#L131-L136)
+- Golden 来源：[`experimental/activation/swish_v2/op_host/swish_v2_tiling.cpp:131-136`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_host/swish_v2_tiling.cpp#L131-L136)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -448,7 +448,7 @@ R-001 每元素需要 Queue 双块 `2×4 B` 加两个 FP32 TBuf `2×4 B`，合�
 
 - 适用 Route：R-001；R-002 同样复用 Queue tensor 作为降精度输出载体。
 - 触发条件：当前 tile 已从 Queue DeQue，原输入已复制到 `tmpBufInput_`。
-- Golden 来源：[`experimental/activation/swish_v2/op_kernel/swish_v2.h:120-134`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_kernel/swish_v2.h#L120-L134)
+- Golden 来源：[`experimental/activation/swish_v2/op_kernel/swish_v2.h:120-134`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/swish_v2/op_kernel/swish_v2.h#L120-L134)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

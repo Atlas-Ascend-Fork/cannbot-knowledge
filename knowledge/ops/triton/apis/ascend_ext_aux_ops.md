@@ -158,16 +158,6 @@ result = al.cast(x, tl.int8, overflow_mode="saturate")
 4. **SIMT 模式下 compile_hint 无效**。
 5. **自定义 hint_name 需后端编译器支持**才生效。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
-- [sub_vec_id / sub_vec_num 子向量核操作](./ascend_ext_sub_vec_ops.md)（`related`）：“sub_vec_id/sub_vec_num（bind_sub_block 配合）”
-- [向量操作扩展（insert_slice / extract_slice / get_element / sort / flip / cast）](./ascend_ext_vec_ops.md)（`related`）：“cast 操作（overflow_mode 提示）”
-- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -178,3 +168,14 @@ result = al.cast(x, tl.int8, overflow_mode="saturate")
 - [aux_ops.py#L153-L162](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/aux_ops.py#L153-L162)
 - [compile_hint.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Extension_Ops/compile_hint.md)
 - [multibuffer.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Extension_Ops/multibuffer.md)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
+- [sub_vec_id / sub_vec_num 子向量核操作](./ascend_ext_sub_vec_ops.md)（`related`）：“sub_vec_id/sub_vec_num（bind_sub_block 配合）”
+- [向量操作扩展（insert_slice / extract_slice / get_element / sort / flip / cast）](./ascend_ext_vec_ops.md)（`related`）：“cast 操作（overflow_mode 提示）”
+- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
+
+<!-- cannbot:related:end -->

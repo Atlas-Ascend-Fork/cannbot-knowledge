@@ -223,6 +223,8 @@ upgrade 扫描发现**同一问题域出现更优/替代方案**（新轨迹证�
 
 ---
 
+实现共享 `validate_curated_output.py` 中的审阅角色、证据枚举和轨迹序列校验，以及 `validate_review_receipt.py` 中的文件摘要计算。发布器直接读取 Contract 的 Runbook 分类，不另行解释 Registry；这些复用不改变审阅收据、只读验证和发布授权边界。
+
 ## 验证（离线单测）
 
 1. **ingest schema 合规**：落盘卡跑 runbooks-contract validator HARD=0（含必填 platforms、guide 卡完整性、代码完整、反投机取巧、验证信号禁 hearsay）。

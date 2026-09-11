@@ -5,36 +5,36 @@ description: "说明 aclnnDequantBias 在 A2/A3 上的接口语义、Host/Launch
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/docs/aclnnDequantBias.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/docs/aclnnDequantBias.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/dequant_bias_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/dequant_bias_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/dequant_bias_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/dequant_bias_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/dequant_bias_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/dequant_bias_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/dequant_bias_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/dequant_bias_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_kernel/dequant_bias.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_kernel/dequant_bias.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_kernel/dequant_bias_impl.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_kernel/dequant_bias_impl.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_kernel/dequant_bias_multi.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_kernel/dequant_bias_multi.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/config/ascend910b/dequant_bias_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/config/ascend910b/dequant_bias_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/config/ascend910_93/dequant_bias_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/config/ascend910_93/dequant_bias_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:22:44Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -967,7 +967,7 @@ UB_total = R-009；dynamic_ub=N/A；workspace Kernel-used=0。
 
 - 适用 Route：R-001～R-005。
 - 触发条件：`N<=8192` 且 `baseIn+ws+as+bias<UB`；Host 用剩余 UB 计算每轮行数。
-- Golden 来源：[`quant/dequant_bias/op_host/dequant_bias_tiling.cpp:428-442`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/dequant_bias_tiling.cpp#L428-L442)
+- Golden 来源：[`quant/dequant_bias/op_host/dequant_bias_tiling.cpp:428-442`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_host/dequant_bias_tiling.cpp#L428-L442)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1010,7 +1010,7 @@ inBuffSize *= perCoreLoopRow;
 
 - 适用 Route：R-006～R-010。
 - 触发条件：`N>8192`。
-- Golden 来源：[`quant/dequant_bias/op_kernel/dequant_bias_multi.h:156-166`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_kernel/dequant_bias_multi.h#L156-L166)
+- Golden 来源：[`quant/dequant_bias/op_kernel/dequant_bias_multi.h:156-166`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_kernel/dequant_bias_multi.h#L156-L166)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1049,7 +1049,7 @@ for (int64_t colIdx = 0; colIdx < (N_ + PART_LEN - 1) / PART_LEN; colIdx++) {
 
 - 适用 Route：所有 `WSTYPE=BF16` 子实例，以及 R-004/R-005/R-009/R-010。
 - 触发条件：输入 scale 或 bias 不是 FP32。
-- Golden 来源：[`quant/dequant_bias/op_kernel/dequant_bias_impl.h:329-347`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_kernel/dequant_bias_impl.h#L329-L347)
+- Golden 来源：[`quant/dequant_bias/op_kernel/dequant_bias_impl.h:329-347`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dequant_bias/op_kernel/dequant_bias_impl.h#L329-L347)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

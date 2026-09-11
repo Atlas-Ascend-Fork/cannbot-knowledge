@@ -2,17 +2,25 @@
 type: API
 title: LanemaskEq
 description: 获取当前线程的32位掩码，在所属Warp中只有当前线程所在的Lane位被置1，其余为0。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.programming_model.cooperative_groups]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.programming_model.cooperative_groups
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/Warp_functions/lane_id_functions/lanemask_eq.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/device_functions.h
 ---
 
-# lanemask_eq
+# lanemask\_eq
+
+## 功能说明
 
 获取当前线程的一个32位掩码，在当前线程所属的Warp中，只有当前线程所在的Lane位被置为1，其余位为0。
 
@@ -20,10 +28,64 @@ platforms: ['950']
 
 如Lane ID为31的线程，调用本接口获取到32位掩码：1000 0000 0000 0000 0000 0000 0000 0000。
 
-函数原型：int32_t lanemask_eq()
+**图1**  lanemask\_eq示意图
 
-返回值：返回一个32位整数的位掩码。
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/lanemask_eq.png "lanemask_eq图示")
 
-仅 Ascend 950PR/950DT 支持，其他 Atlas 系列产品不支持。
-需包含头文件 "simt_api/device_functions.h"。
-支持 SIMT 与 SIMD/SIMT 混合编程场景。
+## 函数原型
+
+```cpp
+int32_t lanemask_eq()
+```
+
+## 参数说明
+
+无
+
+## 返回值说明
+
+返回一个32位整数的位掩码。
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/device_functions.h`头文件。 
+
+```cpp
+#include "simt_api/device_functions.h" 
+```
+
+## 调用示例
+
+下面示例使用`lanemask_eq()`获取当前Lane对应的位掩码，并根据掩码将Warp内偶数Lane和奇数Lane的数据分别重排到输出Warp的前16个位置和后16个位置。示例中使用[asc_shfl](../warp_shfl_functions/asc_shfl.md)，需另外包含`simt_api/device_warp_functions.h`头文件，其中`srcLane`的取值范围为[0, 15]。
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void kernel_lanemask_eq(int32_t* dst, int32_t* src, int32_t srcLane)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        int32_t self_mask = lanemask_eq();
+        int32_t group_leader_lane = ((self_mask & 0x0000FFFFU) != 0) ? srcLane : (srcLane + 16);
+        int32_t value = src[idx];
+        value = asc_shfl(value, group_leader_lane, 32);
+        dst[idx] = value;
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) void kernel_lanemask_eq(__gm__ int32_t* dst, __gm__ int32_t* src, int32_t srcLane)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        int32_t self_mask = lanemask_eq();
+        int32_t group_leader_lane = ((self_mask & 0x0000FFFFU) != 0) ? srcLane : (srcLane + 16);
+        int32_t value = src[idx];
+        value = asc_shfl(value, group_leader_lane, 32);
+        dst[idx] = value;
+    }
+    ```

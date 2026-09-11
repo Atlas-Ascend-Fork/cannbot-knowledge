@@ -19,9 +19,11 @@ python3 <skill-dir>/scripts/knowledge_lint.py --knowledge-root <repo> --sample 1
 
 检查项、等级、模式和错误边界见 [checks](references/checks.md)。退出码 `0` 表示完整执行且没有 P0，`1` 表示至少存在一个 P0，`2` 表示命令、规则或仓库不可用；P1/P2 完整报告但不阻断。
 
-正文和链接检查共用 Contract 的代码围栏解析；归档主来源 API/Guide 镜像由 Contract 统一识别，允许保留原文的多个 H1。辅助来源引用、普通卡片和无 H1 正文不获得例外。
+正文、链接、图片和平台检查共用 Contract 的代码围栏解析；固定归档识别也由 Contract 统一提供，避免各检查器对同一段正文采用不同边界。仅固定归档主来源的 API/Guide 镜像可保留多个 H1；辅助来源引用、普通卡片和无 H1 正文不获得例外。
 
 ### 工作流
+
+日常修改只运行与变更相关的局部检查；完整检查流程集中在提交或推送上库前执行，除非用户明确要求提前全量验证。
 
 1. 改动卡先用 `--card` 检查 Profile、tag、source、平台、正文和时间；有代码来源的新卡或实质更新卡同时使用 `--strict-navigation`。
 2. 全库运行以检查 domain 根、`ops`/`model` route 骨架、逐层导航、Bundle 内链接和日志；统一 `check.sh` 会启用严格来源导航。`--sample` 只做确定性抽样，不代替全库门禁。
@@ -63,6 +65,4 @@ python3 <skill-dir>/scripts/knowledge_lint.py --knowledge-root <repo> --sample 1
 
 ## 边界
 
-Lint 不联网验证 URL，不证明来源充分支持结论，也不判断技术语义、实验复现、shared 泛化或跨 DSL 等价性。全库模式要求 Registry 的本地来源获取脚本存在且可执行；来源根不存在时允许离线检查，根已恢复时才核对归档完成标记和在用文件。Lint 只执行本 Skill 所属仓的 Contract，并在目标根 Contract 版本不一致时失败，不执行目标根提供的 Python。Issue 工作流只整理事实与复现材料，不直接裁决知识正确性。
-
-登记的 Git 本地来源在根已恢复时还核对固定提交、远程来源、干净工作区及被引用文件。知识卡允许登记的固定提交源码文件链接，索引仍限于 Bundle；源码链接不形成 Concept。Lint 不自动获取、清理或修复源码。
+Lint 不联网验证 URL，不证明来源充分支持结论，也不判断技术语义、实验复现、shared 泛化或跨 DSL 等价性。全库模式要求 Registry 的本地来源获取脚本存在且可执行；来源根不存在时允许离线检查，根已恢复时才核对归档完成标记和在用文件；Git 本地根还验证固定提交、远程来源、干净工作区及被引用文件，Lint 不自动获取、清理或修复源码。知识卡可链接登记的固定提交源码文件，索引仍限于 Bundle；源码链接不形成 Concept。Lint 只执行本 Skill 所属仓的 Contract，并在目标根 Contract 版本不一致时失败，不执行目标根提供的 Python。Issue 工作流只整理事实与复现材料，不直接裁决知识正确性。

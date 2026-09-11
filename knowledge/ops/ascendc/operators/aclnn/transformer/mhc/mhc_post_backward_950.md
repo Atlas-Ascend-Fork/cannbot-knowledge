@@ -5,38 +5,38 @@ description: "说明 aclnnMhcPostBackward 在 950 上的接口语义、Host/Laun
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/docs/aclnnMhcPostBackward.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/docs/aclnnMhcPostBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_api/aclnn_mhc_post_backward.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_api/aclnn_mhc_post_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_api/aclnn_mhc_post_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_api/aclnn_mhc_post_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_api/mhc_post_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_api/mhc_post_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/mhc_post_backward_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/mhc_post_backward_def.cpp
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_tiling/mhc_post_backward_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_tiling/mhc_post_backward_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_tiling/arch35/mhc_post_backward_tiling_base_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_tiling/arch35/mhc_post_backward_tiling_base_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/arch35/mhc_post_backward_tiling_data_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/arch35/mhc_post_backward_tiling_data_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/arch35/mhc_post_backward_tiling_key_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/arch35/mhc_post_backward_tiling_key_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/mhc_post_backward_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/mhc_post_backward_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/arch35/mhc_post_backward_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/arch35/mhc_post_backward_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/config/ascend950/mhc_post_backward_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/config/ascend950/mhc_post_backward_binary.json
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/config/ascend950/mhc_post_backward_simplified_key.ini
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/config/ascend950/mhc_post_backward_simplified_key.ini
     role: constraint
 created_at: "2026-08-24T16:30:00Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -285,7 +285,7 @@ Host 的 `smallBufferBytes` 比本算子 AIV `InitBuffer` 可见常量部分多�
 
 - 适用 Route：R-001
 - 触发条件：950 `DAV_3510`、key 1、`MIX_AIC_1_2`。
-- Golden 来源：[`mhc_post_backward_kernel.h:225-259`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/arch35/mhc_post_backward_kernel.h#L225-L259)
+- Golden 来源：[`mhc_post_backward_kernel.h:225-259`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_kernel/arch35/mhc_post_backward_kernel.h#L225-L259)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -341,7 +341,7 @@ AIV 对 D tile 执行逐元素乘、归约和小 n×n 权重应用，写 `gradX/
 
 - 适用 Route：R-001 的 AIV 节点
 - 触发条件：所有 `n∈{4,6,8}` 与任意正 D；平台提供 UB size。
-- Golden 来源：[`mhc_post_backward_tiling_base_arch35.cpp:694-715`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_tiling/arch35/mhc_post_backward_tiling_base_arch35.cpp#L694-L715)
+- Golden 来源：[`mhc_post_backward_tiling_base_arch35.cpp:694-715`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mhc/mhc_post_backward/op_host/op_tiling/arch35/mhc_post_backward_tiling_base_arch35.cpp#L694-L715)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

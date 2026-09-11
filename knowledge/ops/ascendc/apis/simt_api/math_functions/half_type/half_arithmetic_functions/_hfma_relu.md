@@ -2,29 +2,133 @@
 type: API
 title: __hfma_relu
 description: 对输入half类型数据x、y、z，计算x与y相乘加上z的结果，并遵循CAST_RINT模式对结果进行舍入。负数结果置为0。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_arithmetic_functions/__hfma_relu.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_fp16.h
 ---
 
-# __hfma_relu
+# \_\_hfma\_relu
 
-功能：对输入half类型数据x、y、z，计算x与y相乘加上z的结果，并遵循CAST_RINT模式对结果进行舍入。负数结果置为0。
+## 功能说明
 
-函数原型：half __hfma_relu(const half x, const half y, const half z)
+对输入half类型数据x、y、z，计算x与y相乘加上z的结果，并遵循CAST\_RINT模式对结果进行舍入。负数结果置为0。
 
-参数：x（输入）源操作数，y（输入）源操作数，z（输入）源操作数。
+## 函数原型
 
-返回值：x * y + z的值，若结果为负数，置为0。本接口受全局饱和模式影响，。特殊值：(x*y = inf,-inf,nan)→0；(x*y = -inf,inf,nan)→0；(x*y+z超出ASCRT_MAX_NORMAL_FP16,inf)→ASCRT_MAX_NORMAL_FP16；(x*y+z小于ASCRT_MIN_NORMAL_FP16,0)→0；(x、y、z任意一个为nan,nan)→0。
+```cpp
+half __hfma_relu(const half x, const half y, const half z)
+```
 
-约束：无。需包含头文件 simt_api/asc_fp16.h。
+## 参数说明
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+| y | 输入 | 源操作数。 |
+| z | 输入 | 源操作数。 |
+
+## 返回值说明
+
+x \* y + z的值，若结果为负数，置为0。本接口受全局饱和模式影响，特殊值如下：
+
+<table>
+  <tr>
+    <th>x值</th>
+    <th>y值</th>
+    <th>z值</th>
+    <th>非饱和模式返回值</th>
+    <th>饱和模式返回值</th>
+  </tr>
+  <tr>
+    <td>±inf</td>
+    <td>±0</td>
+    <td>—</td>
+    <td>nan</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>±0</td>
+    <td>±inf</td>
+    <td>—</td>
+    <td>nan</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td colspan="2">x*y = inf</td>
+    <td>-inf</td>
+    <td>nan</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td colspan="2">x*y = -inf</td>
+    <td>inf</td>
+    <td>nan</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td colspan="3">x*y+z超出ASCRT_MAX_NORMAL_FP16</td>
+    <td>inf</td>
+    <td>ASCRT_MAX_NORMAL_FP16</td>
+  </tr>
+  <tr>
+    <td colspan="3">x*y+z小于ASCRT_MIN_NORMAL_FP16</td>
+    <td>0</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td colspan="3">x、y、z任意一个为nan</td>
+    <td>nan</td>
+    <td>0</td>
+  </tr>
+</table>
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/asc_fp16.h`头文件。
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelHfma_relu(half* dst, half* x, half* y, half* z)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __hfma_relu(x[idx], y[idx], z[idx]);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelHfma_relu(__gm__ half* dst, __gm__ half* x, __gm__ half* y, __gm__ half* z)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __hfma_relu(x[idx], y[idx], z[idx]);
+    }
+    ```
+
 
 <!-- cannbot:related:start -->
 ## 相关

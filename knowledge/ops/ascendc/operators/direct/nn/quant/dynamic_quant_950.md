@@ -5,26 +5,26 @@ description: "说明 cann_bench::dynamic_quant / dynamic_quant_npu 在 950 上�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/quant/dynamic_quant/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/quant/dynamic_quant/op_host/config/ascend950/dynamic_quant_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/config/ascend950/dynamic_quant_binary.json
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/quant/dynamic_quant/op_host/dynamic_quant_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_host/dynamic_quant_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_arch35_tilingdata.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_arch35_tilingdata.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/quant/dynamic_quant/op_kernel/dynamic_quant_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/dynamic_quant_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_full_load.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_full_load.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/quant/dynamic_quant/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:31:39Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -441,7 +441,7 @@ workspace_total = 0
 
 - 适用 Route：R-001。
 - 触发条件：`hasSmooth=false`、`isSymmetrical=true`、`useBufferNum=2`、输出 int8。
-- Golden 来源：[`dynamic_quant_regbase_full_load.h:115-125`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_full_load.h#L115-L125)
+- Golden 来源：[`dynamic_quant_regbase_full_load.h:115-125`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/quant/dynamic_quant/op_kernel/arch35/dynamic_quant_regbase_full_load.h#L115-L125)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -474,7 +474,7 @@ pPipe->InitBuffer(scaleQueue, useBufferNum, sizeFloatLen * sizeof(float));
 
 - 适用 Route：R-001。
 - 触发条件：输出 `int8`，量化商为 fp32，要求最终 `CAST_RINT`；交付件采用 `fp32 -> fp16(CAST_ODD) -> int8(CAST_RINT)`。
-- Golden 来源：[`gelu_quant_base_regbase.h:280-285`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h#L280-L285)
+- Golden 来源：[`gelu_quant_base_regbase.h:280-285`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h#L280-L285)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

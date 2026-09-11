@@ -2,34 +2,94 @@
 type: API
 title: NdDmaDci
 description: 刷新NDDMA DataCache，确保多核场景下DataCopy多维搬运前缓存数据为最新状态。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.programming_model.execution_unit.vector]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.programming_model.execution_unit.vector
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move_aux_config/NdDmaDci.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/basic_api/kernel_operator_data_copy_intf.h
 ---
 
-# NdDmaDci
+# NdDmaDci<a name="ZH-CN_TOPIC_0000002414107834"></a>
 
-刷新NDDMA DataCache，确保多核场景下DataCopy多维搬运前缓存数据为最新状态。
+## 功能说明<a name="section618mcpsimp"></a>
 
-多维数据搬运接口，相比于基础数据搬运接口，可更加自由配置搬入的维度信息以及对应的Stride。 具体支持的数据通路为（以逻辑位置TPosition表示）： - Global Memory -> Unified Buffer - GM -> VECIN
+头文件路径为：`"basic_api/kernel_operator_data_copy_intf.h"`。
 
-本接口组包含 DataCopy（GMToUB多维数据搬运NDDMA）, DataCopy（GMToUB多维数据搬运NDDMA）, DataCopy（GMToUB多维数据搬运NDDMA）。
+刷新NDDMA DataCache。在多核场景下，当多个AI Core读取同一块GM（Global Memory）地址时，NDDMA DataCache中可能缓存了旧数据，导致部分核读取到错误的数据。因此，在使用[DataCopy（GMToUB多维数据搬运NDDMA）](../data_move/data_copy_gm_to_ub_nddma.md)前，需要调用NdDmaDci接口刷新NDDMA DataCache，确保缓存中的数据为最新状态。
 
-本接口属于 UB 矢量计算数据搬移接口，用于不同存储间的数据拷贝。
+## 函数原型<a name="section620mcpsimp"></a>
 
-约束：一条指令所能获取的所有数据的地址范围宽度不能超过40位（1TB），即：；源操作数的每一次循环的大小为：(loopLpSize + loopSize + loopRpSize -1 ) * loopSrcSize，目的操作数的每一次循环的大小为：(loopLpSize + loopSize + loopRpSize -1 ) * loopDstSize，所有的循环的大小加起来不超过2的40次方位。；当每层循环的dstStride为升序序列，则不同循环间的地址空间不能交织或者重叠。以一个2D Padding场景为例，loopSrcStride、loopDstStride第二个维度的stride值最小是3，数据3不能落在维度1的循环中。；该接口通过NDDMA进行数据搬运，对应的NDDMA Cache大小为32KB，在使用DataCopy接口进行数据搬运前，需要使用NdDmaDci接口刷新缓存，否则多核场景下读写同一块Global Memory地址可能会导致部分核读取数据错误。
+```cpp
+__aicore__ inline void NdDmaDci()
+```
 
-支持的硬件型号：Ascend 950PR/Ascend 950DT。
+## 参数说明<a name="section622mcpsimp"></a>
 
-临时空间支持通过 sharedTmpBuffer 入参传入或接口框架申请两种方式，空间大小通过对应的 GetMaxMinTmpSize 接口获取。
+无
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+无
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+该接口仅在使用[DataCopy（GMToUB多维数据搬运NDDMA）](../data_move/data_copy_gm_to_ub_nddma.md)前调用，用于刷新NDDMA DataCache。
+
+## 调用示例<a name="section1227835243314"></a>
+
+完整算子用例请参考：[多维数据搬运样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2ub_nddma)。
+
+以2D Padding场景为例，将GM上shape为[2, 8]的数据搬运至Unified Buffer（UB）并Padding为[4, 16]，左Padding 3，上Padding 1，右Padding 5，下Padding 1，Padding值填充为0。在调用[DataCopy（GMToUB多维数据搬运NDDMA）](../data_move/data_copy_gm_to_ub_nddma.md)前，需要先调用NdDmaDci刷新NDDMA DataCache。
+
+```cpp
+// T：搬运数据的类型
+// xGm：保存DataCopy搬入数据
+// xLocal：保存DataCopy搬出数据
+
+// 2D Padding场景
+// xGmShape：[2, 8]，搬运8列2行数据，左Padding 3，上Padding 1，右Padding 5，下Padding 1，xLocalShape：[4, 16]
+AscendC::NdDmaLoopInfo<2> loopInfo{{1, 8}, {1, 16}, {8, 2}, {3, 1}, {5, 1}};
+AscendC::NdDmaParams<T, 2> params{loopInfo, 0}; // padding的值为0
+AscendC::NdDmaDci(); // 刷新NDDMA DataCache，保证多核场景下数据一致性
+static constexpr AscendC::NdDmaConfig dmaConfig; // 使用默认参数，也可以不传
+AscendC::DataCopy<T, 2, dmaConfig>(xLocal, xGm, params);
+```
+
+结果示例如下：
+
+```plain
+输入数据（xGm）:
+[[ 1. 2. 3. 4. 5. 6. 7. 8.]
+[ 9. 10. 11. 12. 13. 14. 15. 16.]]
+搬运至Local的数据（xLocal）:
+[[ 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+[ 0. 0. 0. 1. 2. 3. 4. 5. 6. 7. 8. 0. 0. 0. 0. 0.]
+[ 0. 0. 0. 9. 10. 11. 12. 13. 14. 15. 16. 0. 0. 0. 0. 0.]
+[ 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]]
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
 - [DataCopy](../data_move/data_copy_gm_to_ub_nddma.md)（`related`）：“刷新NDDMA DataCache，确保多核场景下DataCopy多维搬运前缓存数据为最新状态。”定义 NdDmaDci 是多核 DataCopy 前的缓存刷新动作；“该接口通过NDDMA进行数据搬运，对应的NDDMA Cache大小为32KB，在使用DataCopy接口进行数据搬运前，需要使用NdDmaDci接口刷新缓存，否则多核场景下读写同一块Global Memory地址可能会导致部分核读取数据错误。”在 GM→UB NDDMA 搬运页给出不刷新会读旧 GM 数据的失败条件。两端构成必须先 flush 再 DataCopy 的顺序合同。
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 1 / 1 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [Cumsum 950 ACLNN 算子知识](../../../../../operators/aclnn/math/math/cumsum_950.md)（`related`）：算子声明的固定版本源码包含对 `NdDmaDci(...)` 的直接调用（第 246 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/cumsum/op_kernel/arch35/cumsum_base/cumsum_core_sklansky.h#L246)
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

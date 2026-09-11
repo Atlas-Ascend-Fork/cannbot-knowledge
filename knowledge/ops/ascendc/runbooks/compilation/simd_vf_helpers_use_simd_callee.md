@@ -113,7 +113,6 @@ __simd_callee__ inline void load_fp32_chunk(AscendC::Reg::RegTensor<float> &dst,
 <!-- cannbot:related:start -->
 ## 相关
 
-- [VF调用](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`exemplifies`）：提供 asc_vf_call 接口，用于在 SIMD 编程场景下启动 SIMD VF（Vector Function）子任务。通过模板参数 funcPtr 指定入口核函数，可变参数 Args 传递实参。；`__simd_vf__` 是由 `asc_vf_call` 进入的顶层 VF 函数属性，被另一个 `__simd_vf__` 直接调用不满足编译器调用约束；可复用的 VF 内部 helper 必须声明为 `__simd_callee__`。。API要求 asc_vf_call 入口使用 __simd_vf__，Runbook进一步区分顶层 __simd_vf__ 与内部 __simd_callee__ 的调用层级。
 - [asc_vf_call](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/asc_vf_call.md)（`exemplifies`）：在SIMD编程场景下使用。用于启动SIMD VF（Vector Function）子任务。；顶层函数继续保留 `__simd_vf__` 并由 `asc_vf_call` 进入；API 给出顶层 VF 启动，runbook 明确被启动入口与内部 `__simd_callee__` helper 的调用层级，能闭合编译器属性诊断。
 - [核函数与VF函数（SIMD与SIMT混合编程）](../../guides/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md)（`related`）：simd vf函数：能被核函数或者__aicore__函数通过asc_vf_call接口调用。simd vf函数内只能调用__simd_callee__函数和__callee__函数。；candidate function not viable: simd_vf function can only call simd_callee function。指南规定 SIMD VF 只能调用 __simd_callee__/__callee__，runbook 给出违反该层级时的编译器原始诊断，可直接从报错回到修复合同。
 <!-- cannbot:related:end -->

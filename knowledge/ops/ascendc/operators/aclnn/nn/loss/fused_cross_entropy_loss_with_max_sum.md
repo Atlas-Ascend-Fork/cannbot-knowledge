@@ -5,30 +5,30 @@ description: "说明 aclnnFusedCrossEntropyLossWithMaxSum 在 A2/A3 上的接口
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/docs/aclnnFusedCrossEntropyLossWithMaxSum.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/docs/aclnnFusedCrossEntropyLossWithMaxSum.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/op_api/aclnn_fused_cross_entropy_loss_with_max_sum.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/op_api/aclnn_fused_cross_entropy_loss_with_max_sum.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/op_api/fused_cross_entropy_loss_with_max_sum.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/op_api/fused_cross_entropy_loss_with_max_sum.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/fused_cross_entropy_loss_with_max_sum_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/fused_cross_entropy_loss_with_max_sum_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/fused_cross_entropy_loss_with_max_sum_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/fused_cross_entropy_loss_with_max_sum_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/fused_cross_entropy_loss_with_max_sum_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/fused_cross_entropy_loss_with_max_sum_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_kernel/fused_cross_entropy_loss_with_max_sum.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_kernel/fused_cross_entropy_loss_with_max_sum.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_kernel/fused_cross_entropy_loss_with_max_sum.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_kernel/fused_cross_entropy_loss_with_max_sum.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/config/ascend910b/fused_cross_entropy_loss_with_max_sum_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/config/ascend910b/fused_cross_entropy_loss_with_max_sum_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/config/ascend910_93/fused_cross_entropy_loss_with_max_sum_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/config/ascend910_93/fused_cross_entropy_loss_with_max_sum_binary.json
     role: implementation
 created_at: "2026-08-25T17:19:24Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -572,7 +572,7 @@ workspace_total = sysWorkspaceSize
 
 - 适用 Route：R-003。
 - 触发条件：Tiling 的 optional input 5 为 `nullptr`。
-- Golden 来源：[`op_host/fused_cross_entropy_loss_with_max_sum_tiling.cpp:96-99`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/fused_cross_entropy_loss_with_max_sum_tiling.cpp#L96-L99)
+- Golden 来源：[`op_host/fused_cross_entropy_loss_with_max_sum_tiling.cpp:96-99`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_host/fused_cross_entropy_loss_with_max_sum_tiling.cpp#L96-L99)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -604,7 +604,7 @@ Host 在可选 vocab 缺省时直接选择 key 3；Device 只搬入 `sumExpLogit
 
 - 适用 Route：R-002。
 - 触发条件：vocab dtype 为 FP16 或 BF16，router 实例化非 float 模板。
-- Golden 来源：[`op_kernel/fused_cross_entropy_loss_with_max_sum.h:146-156`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_kernel/fused_cross_entropy_loss_with_max_sum.h#L146-L156)
+- Golden 来源：[`op_kernel/fused_cross_entropy_loss_with_max_sum.h:146-156`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/fused_cross_entropy_loss_with_max_sum/op_kernel/fused_cross_entropy_loss_with_max_sum.h#L146-L156)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

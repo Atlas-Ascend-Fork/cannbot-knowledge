@@ -56,7 +56,6 @@ Ascend Grid 与 GPU CUDA Grid 有根本区别：
 - `TRITON_CACHE_DIR` — autotune 缓存目录
 
 <!-- cannbot:related:start -->
-
 ## 相关
 
 - [Ascend 910_95（dav-c310）硬件速查](ascend_910_95.md)（`related`）：“910_95（dav-c310，Reg-based）硬件速查”

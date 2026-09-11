@@ -182,17 +182,6 @@ def kernel(A, B, M, N,
 - UB 248KB（910B 192KB）；L0C 256KB（910B 128KB）；L1/L0C/UB 对齐分别 32B/512B/32B
 - multibuffer 默认 False，需显式开启；开启后 UB 可用减半为 124KB
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [内存访问优化](memory_access_optimization.md)（`related`）：“内存访问优化专项”
-- [NPU Autotune 配置与 AutoTilingTuner](autotune_on_npu.md)（`related`）：“multibuffer 变体自动调优”
-- [Tiling 策略](tiling.md)（`related`）：“UB 容量约束与块大小选择”
-- [Tiling 与 Grid 分核策略（910_95 平台）](tiling_and_grid_910_95.md)（`related`）：“910_95 平台 Tiling 与 Grid 分核策略”
-- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 硬件速查（UB/L0C 容量、对齐约束）”
-
-<!-- cannbot:related:end -->
 
 ## 相关源
 
@@ -206,3 +195,15 @@ def kernel(A, B, M, N,
 - [multibuffer.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Extension_Ops/multibuffer.md)
 - [programming_guide.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/programming_guide.md)
 - [performance_guidelines.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/performance_guidelines.md)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [内存访问优化](memory_access_optimization.md)（`related`）：“内存访问优化专项”
+- [NPU Autotune 配置与 AutoTilingTuner](autotune_on_npu.md)（`related`）：“multibuffer 变体自动调优”
+- [Tiling 策略](tiling.md)（`related`）：“UB 容量约束与块大小选择”
+- [Tiling 与 Grid 分核策略（910_95 平台）](tiling_and_grid_910_95.md)（`related`）：“910_95 平台 Tiling 与 Grid 分核策略”
+- [Ascend 910_95（dav-c310）硬件速查](../../../../common/platforms/concepts/ascend_910_95.md)（`related`）：“910_95 硬件速查（UB/L0C 容量、对齐约束）”
+
+<!-- cannbot:related:end -->

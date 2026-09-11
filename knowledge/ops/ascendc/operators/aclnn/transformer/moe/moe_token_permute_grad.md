@@ -5,44 +5,44 @@ description: "说明 aclnnMoeTokenPermuteGradGetWorkspaceSize/aclnnMoeTokenPermu
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/op_api/aclnn_moe_token_permute_grad.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/op_api/aclnn_moe_token_permute_grad.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/op_api/aclnn_moe_token_permute_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/op_api/aclnn_moe_token_permute_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/docs/aclnnMoeTokenPermuteGrad.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/docs/aclnnMoeTokenPermuteGrad.md
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/moe_token_permute_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/moe_token_permute_grad_def.cpp
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/moe_token_permute_grad_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/moe_token_permute_grad_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/moe_token_permute_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/moe_token_permute_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/moe_token_permute_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/moe_token_permute_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute_common.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/config/ascend910b/moe_token_permute_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/config/ascend910b/moe_token_permute_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/config/ascend910_93/moe_token_permute_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/config/ascend910_93/moe_token_permute_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910b/ops_transformer_operator_list.yaml
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910b/ops_transformer_operator_list.yaml
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -447,7 +447,7 @@ workspace_total(native visible) = GetLibApiWorkSpaceSize() + 0 user bytes
 
 - 适用 Route：R-001、R-002。
 - 触发条件：hidden tile 已由 `TilingHiddenSize` 确定；从 depth 4 开始，当 `hiddenTiling.length>ComputeMaxHiddenSize(param,bufferNum)` 时递减，但不低于 2。
-- Golden 来源：[`moe/moe_token_permute_grad/op_host/moe_token_permute_grad_tiling.cpp:163-170`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/moe_token_permute_grad_tiling.cpp#L163-L170)
+- Golden 来源：[`moe/moe_token_permute_grad/op_host/moe_token_permute_grad_tiling.cpp:163-170`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_host/moe_token_permute_grad_tiling.cpp#L163-L170)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -484,7 +484,7 @@ static inline void SetBufferNum(MoeTokenUnpermuteParam &param)
 
 - 适用 Route：R-002。
 - 触发条件：`T1=float`，即 key 4 的 `KernelMoeTokenUnpermute<float,int32_t,float,false>`。
-- Golden 来源：[`moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.h:231-237`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.h#L231-L237)
+- Golden 来源：[`moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.h:231-237`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.h#L231-L237)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -519,7 +519,7 @@ R-002 不把 accumulator 物化到独立 `TBuf`：`token_tensor0` 直接指向 `
 
 - 适用 Route：R-001。
 - 触发条件：`T1` 为 BF16 或 FP16，且当前为首行之后的有效 top-k 索引。
-- Golden 来源：[`moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.h:318-332`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.h#L318-L332)
+- Golden 来源：[`moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.h:318-332`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_permute_grad/op_kernel/moe_token_permute_grad.h#L318-L332)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -29,6 +29,7 @@ from retrieval.root import (  # noqa: E402
     atomic_create_json,
     canonical_json_sha256,
     extract_knowledge_root,
+    local_markdown_link,
     repository_state,
     resolve_root,
 )
@@ -489,10 +490,7 @@ def search(
         atomic_create_json(Path(args.receipt), receipt)
     if args.text:
         for hit in results:
-            print(
-                f"[{hit['rank']} score={hit['score']:.3f}] {hit['title']} "
-                f"status={hit['status']} trust={hit['trust_tier']}"
-            )
+            print(f"[{hit['rank']}] {local_markdown_link(hit['title'], hit['local_path'])}")
             print(f"  path: {hit['path']}")
             print(f"  local_path: {hit['local_path']} ({hit['card_lines']} lines)")
             print(f"  description: {hit['description']}")

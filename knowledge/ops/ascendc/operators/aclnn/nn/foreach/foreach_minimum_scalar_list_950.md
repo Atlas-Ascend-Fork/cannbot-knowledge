@@ -5,30 +5,30 @@ description: "说明 aclnnForeachMinimumScalarList 在 950 上的接口语义、
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/docs/aclnnForeachMinimumScalarList.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/docs/aclnnForeachMinimumScalarList.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_host/foreach_minimum_scalar_list_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_host/foreach_minimum_scalar_list_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_utils/op_host/foreach_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_utils/op_host/foreach_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_host/arch35/foreach_minimum_scalar_list_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_host/arch35/foreach_minimum_scalar_list_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_host/config/ascend950/foreach_minimum_scalar_list_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_host/config/ascend950/foreach_minimum_scalar_list_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T16:07:57Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -474,7 +474,7 @@ UB_total=N/A；dynamic_ub=N/A；workspace_total=0
 
 - 适用 Route：R-001～R-004。
 - 触发条件：`tensorCount<=256`，任意非空 Tensor；空 Tensor 被跳过。
-- Golden 来源：[`foreach_minimum_scalar_list_simt.h:81-90`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list_simt.h#L81-L90)
+- Golden 来源：[`foreach_minimum_scalar_list_simt.h:81-90`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list_simt.h#L81-L90)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -513,7 +513,7 @@ Host 只 launch 一次 Kernel；Device 每个线程对每个 Tensor 使用相同
 
 - 适用 Route：R-002、R-003、R-004。
 - 触发条件：T 为 half、int32_t 或 bfloat16_t。
-- Golden 来源：[`foreach_minimum_scalar_list_simt.h:43-55`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list_simt.h#L43-L55)
+- Golden 来源：[`foreach_minimum_scalar_list_simt.h:43-55`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_minimum_scalar_list/op_kernel/arch35/foreach_minimum_scalar_list_simt.h#L43-L55)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

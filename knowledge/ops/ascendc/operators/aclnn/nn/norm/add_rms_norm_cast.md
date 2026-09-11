@@ -5,30 +5,30 @@ description: "说明 aclnnAddRmsNormCast 在 A2/A3 上的接口语义、Host/Lau
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/docs/aclnnAddRmsNormCast.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/docs/aclnnAddRmsNormCast.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/add_rms_norm_cast_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/add_rms_norm_cast_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/add_rms_norm_cast_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/add_rms_norm_cast_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/add_rms_norm_cast_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/add_rms_norm_cast_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast_split_d.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast_split_d.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast_single_n.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast_single_n.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/rms_norm_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/rms_norm_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/config/ascend910b/add_rms_norm_cast_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/config/ascend910b/add_rms_norm_cast_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:46:01Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -428,7 +428,7 @@ workspace_total = 256 B user + 16 MiB system；body 不读 user slice
 
 - 适用 Route：R-002
 - 触发条件：`N>8704`
-- Golden 来源：[`op_kernel/add_rms_norm_cast_split_d.h:148-153`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast_split_d.h#L148-L153)
+- Golden 来源：[`op_kernel/add_rms_norm_cast_split_d.h:148-153`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast_split_d.h#L148-L153)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -461,7 +461,7 @@ outQueueY.FreeTensor(x_out);
 
 - 适用 Route：R-003
 - 触发条件：一核一行且 `N<=8704`
-- Golden 来源：[`op_kernel/add_rms_norm_cast_single_n.h:89-104`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast_single_n.h#L89-L104)
+- Golden 来源：[`op_kernel/add_rms_norm_cast_single_n.h:89-104`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/add_rms_norm_cast/op_kernel/add_rms_norm_cast_single_n.h#L89-L104)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

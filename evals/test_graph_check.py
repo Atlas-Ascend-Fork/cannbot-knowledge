@@ -15,7 +15,9 @@ import contextlib
 import importlib.util
 import io
 import json
+import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -24,6 +26,8 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 ENTRYPOINT = ROOT / ".gitcode/scripts/graph_check.py"
+INGEST = ROOT / ".agents/skills/knowledge-ingest/scripts/knowledge_ingest.py"
+GRAPH = INGEST.with_name("knowledge_graph.py")
 MISSING = object()
 
 
@@ -38,7 +42,7 @@ def load_entrypoint():
 
 def builder_graph():
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "nodes": [{"id": "source"}, {"id": "target"}],
         "edges": [{"source": "source", "relation": "links_to", "target": "target"}],
     }
@@ -59,7 +63,17 @@ class GraphCheckAdapterTests(unittest.TestCase):
         self.temporary.cleanup()
 
     def run_adapter(self, *, returncode=0, output="", artifact=MISSING):
-        def run_builder(*_args, **_kwargs):
+        def run_builder(command, **_kwargs):
+            self.assertEqual(
+                [
+                    self.entrypoint.sys.executable,
+                    ".agents/skills/knowledge-ingest/scripts/knowledge_ingest.py",
+                    "--knowledge-root",
+                    str(self.root),
+                    "build-graph",
+                ],
+                command,
+            )
             if artifact is not MISSING:
                 self.generated.parent.mkdir(parents=True, exist_ok=True)
                 content = (
@@ -157,6 +171,103 @@ class GraphCheckAdapterTests(unittest.TestCase):
         self.assertEqual("builder stopped\n", log)
         self.assertIn("构图失败，未提供具体原因", summary)
         self.assertNotIn("17", summary)
+
+
+class GraphBuildCompatibilityTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name) / "knowledge root"
+        (self.root / "knowledge").mkdir(parents=True)
+
+    def run_ingest(self, *arguments):
+        return subprocess.run(
+            [sys.executable, str(INGEST), "--knowledge-root", str(self.root), *arguments],
+            cwd=self.temporary.name,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def prepare_corpus(self) -> Path:
+        for name in ("contracts", "schemas"):
+            shutil.copytree(
+                ROOT / "governance" / name,
+                self.root / "governance" / name,
+                ignore=shutil.ignore_patterns("__pycache__"),
+            )
+        card = self.root / "knowledge/runtime/concepts/probe.md"
+        card.parent.mkdir(parents=True)
+        card.write_text(
+            "---\ntype: Concept\ntitle: Probe\ndescription: Graph compatibility fixture.\n"
+            "tags: [task.lookup, topic.compilation]\nstatus: draft\nsources: []\n"
+            "created_at: '2026-09-11T00:00:00Z'\nupdated_at: '2026-09-11T00:00:00Z'\n"
+            "platforms: [a2]\n---\n\n# Probe\n\nSynthetic fixture only.\n",
+            encoding="utf-8",
+        )
+        result = self.run_ingest("sync-indexes")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        return card
+
+    def test_compatibility_build_matches_shared_builder_without_running_target_code(self) -> None:
+        card = self.prepare_corpus()
+        before = card.read_bytes()
+        target_builder = self.root / ".agents/skills/knowledge-ingest/scripts/knowledge_graph.py"
+        target_builder.parent.mkdir(parents=True)
+        target_builder.write_text("raise RuntimeError('target code must not run')\n", encoding="utf-8")
+        result = self.run_ingest("build-graph")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        output = self.root / "artifacts/graphs/graph.json"
+        compatible = json.loads(output.read_text(encoding="utf-8"))
+        result = subprocess.run(
+            [sys.executable, str(GRAPH), "--knowledge-root", str(self.root), "build"],
+            cwd=self.temporary.name,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual(compatible, json.loads(output.read_text(encoding="utf-8")))
+        self.assertIn("runtime/concepts/probe", {node["id"] for node in compatible["nodes"]})
+        self.assertTrue(any(edge["relation"] == "part_of" for edge in compatible["edges"]))
+        self.assertEqual(before, card.read_bytes())
+
+    def test_compatibility_build_preserves_child_exit_code_and_output_streams(self) -> None:
+        spec = importlib.util.spec_from_file_location("graph_compat_ingest_test", INGEST)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with mock.patch.object(module.subprocess, "run", return_value=mock.Mock(returncode=17)) as run:
+            result = module.build_graph(argparse.Namespace(knowledge_root=str(self.root)))
+        self.assertEqual(17, result)
+        run.assert_called_once_with(
+            [sys.executable, str(GRAPH), "--knowledge-root", str(self.root), "build"],
+            check=False,
+        )
+
+    def test_compatibility_build_rejects_mismatched_contract_without_artifacts(self) -> None:
+        self.prepare_corpus()
+        target_contract = self.root / "governance/contracts/knowledge.py"
+        target_contract.write_text("raise RuntimeError('target contract must not run')\n", encoding="utf-8")
+        result = self.run_ingest("build-graph")
+        self.assertEqual(2, result.returncode, result.stdout + result.stderr)
+        self.assertIn("target governance contract does not match", result.stderr)
+        self.assertFalse((self.root / "artifacts").exists())
+
+    def test_compatibility_build_rejects_missing_root(self) -> None:
+        self.root = self.root / "missing"
+        result = self.run_ingest("build-graph")
+        self.assertEqual(2, result.returncode)
+        self.assertIn("not a cannbot-knowledge root", result.stderr)
+        self.assertFalse(self.root.exists())
+
+    def test_compatibility_build_does_not_accept_new_modes_or_output_paths(self) -> None:
+        for extra in (("--output", "outside.json"), ("--reset",), ("finalize",)):
+            with self.subTest(extra=extra):
+                result = self.run_ingest("build-graph", *extra)
+                self.assertEqual(2, result.returncode)
+                self.assertIn("unrecognized arguments", result.stderr)
+        self.assertFalse((self.root / "artifacts").exists())
+        self.assertFalse((Path(self.temporary.name) / "outside.json").exists())
 
 
 if __name__ == "__main__":

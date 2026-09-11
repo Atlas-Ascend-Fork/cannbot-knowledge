@@ -12,4 +12,3 @@
 - [DataCopy](data_copy_ub_to_gm_nz2_nd.md)：软仿接口，支持从UB到GM搬运过程中进行NZ到ND格式的转换。
 - [DataCopy](data_copy_ub_to_ub_continuous.md)：支持UB之间的连续数据搬运，数据传输过程中保持原始格式和内容不变。
 - [DataCopy](data_copy_ub_to_ub_highdim_split.md)：支持UB之间的高维切分数据搬运，支持非连续和连续的数据搬运。
-- [数据搬运](data_move.md)：矢量数据搬运接口集，涵盖 DataCopy、DataCopyPad、Copy 等 GM/UB 间连续、高维切分、非对齐搬运接口。

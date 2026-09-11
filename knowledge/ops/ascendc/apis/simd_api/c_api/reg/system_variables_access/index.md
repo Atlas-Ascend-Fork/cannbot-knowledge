@@ -1,5 +1,0 @@
-# 系统变量访问
-
-- [asc_clear_ar_spr](asc_clear_ar_spr_deprecated.md)：该接口已废弃，请使用asc_squeeze_and_storeunalign_init替代。用于对AR特殊寄存器清零，配合asc_squeeze_with_status记录有效元素字节数。
-- [AscSqueezeAndStoreunalignInit](asc_squeeze_and_storeunalign_init.md)：对AR特殊寄存器清零，用于配合asc_squeeze_and_storeunalign进行地址自动偏移，首次调用前需初始化。
-- [系统变量访问](system_variables_access.md)：寄存器侧系统变量访问类接口汇总，提供squeeze_and_storeunalign_init初始化及已废弃的clear_ar_spr等能力。

@@ -87,7 +87,7 @@ local_sources:
     description: 固定到算子知识来源提交的 CANN ops-cv 源码
     kind: git
     root: cann-ops-raw/ascendc/ops-cv
-    fetch_script: .agents/skills/knowledge-ingest/scripts/source_resources.py
+    fetch_script: get_resources.sh
     repository: https://gitcode.com/cann/ops-cv
     revisions:
       - bb717d075d129fd1fc7b96b2886824a1d153ed2f
@@ -95,7 +95,7 @@ local_sources:
     description: 固定到算子知识来源提交的 CANN ops-math 源码
     kind: git
     root: cann-ops-raw/ascendc/ops-math
-    fetch_script: .agents/skills/knowledge-ingest/scripts/source_resources.py
+    fetch_script: get_resources.sh
     repository: https://gitcode.com/cann/ops-math
     revisions:
       - 165d41f02a43a62324b434cb6bda7c533b14da3e
@@ -103,7 +103,7 @@ local_sources:
     description: 固定到算子知识来源提交的 CANN ops-nn 源码
     kind: git
     root: cann-ops-raw/ascendc/ops-nn
-    fetch_script: .agents/skills/knowledge-ingest/scripts/source_resources.py
+    fetch_script: get_resources.sh
     repository: https://gitcode.com/cann/ops-nn
     revisions:
       - 955f8b33985b6d72989ebff341bb9c2c564a51bc
@@ -111,17 +111,108 @@ local_sources:
     description: 固定到算子知识来源提交的 CANN ops-transformer 源码
     kind: git
     root: cann-ops-raw/ascendc/ops-transformer
-    fetch_script: .agents/skills/knowledge-ingest/scripts/source_resources.py
+    fetch_script: get_resources.sh
     repository: https://gitcode.com/cann/ops-transformer
     revisions:
       - be33d95bb755cedec3108f70805c1874d1792540
   cann_docs_raw:
     description: 按固定归档校验和恢复的 Ascend C 官方文档
     root: cann-docs-raw
-    fetch_script: fetch-cann-docs.sh
-    archive_sha256: 9bc4341ac90740121a20b0ab9d30c6020784bd5969a119e77ab9402a4e6b68c4
+    fetch_script: get_resources.sh
+    archive_sha256: 753dcc2cc22f04de3805e8a56ef7a7b7373e5c69c85cf64e5f63bc24d716180d
+    tree_sha256: f98ebfd6bfcbab0f68ce08353bb182a21906a67c7fdef61aba022daa0ea8dc92
     mirror:
       source_root: asc-devkit/docs/zh
+      api_roots: [api]
+      guide_roots: [guide]
+      guide_files: [quick_start.md, asc_how_to_choose_api.md]
+      exclude: [guide/figures/image_compression_guide.md]
+      navigation_policy: index_only
+      api_operator_display_limit: 10
+      omit_section_title_contains: [产品支持情况]
+      upstream_repository: https://gitcode.com/cann/asc-devkit
+      upstream_revision: 885973fe9fd42a600e3551af9bc11a279e6f183b
+      ambiguous_relation_symbols:
+        - Alloc
+        - Commit
+        - DataType
+        - Destroy
+        - Extract
+        - Finalize
+        - Get
+        - GetDataPtr
+        - GetDim
+        - GetIndex
+        - Init
+        - InitValue
+        - Load
+        - Query
+        - RoundMode
+        - Scalar
+        - ScalarList
+        - SetDim
+        - SetShape
+        - SetTail
+        - SetTiling
+        - Store
+        - Tensor
+        - Version
+        - assert
+        - cast
+        - ceil_div
+        - ceil_division
+        - conditional
+        - end
+        - fill
+        - get_tensor_c
+        - load
+        - log
+        - max
+        - min
+        - or
+        - rank
+        - select
+        - shape
+        - size
+        - slice
+        - sqrt
+        - store
+        - stride
+        - tensor
+        - transpose
+        - tuple
+        - wait
+        - workspace
+        - xor
+      reviewed_relation_rejections:
+        - api: knowledge/ops/ascendc/apis/simt_api/math_functions/float_math_functions/expf.md
+          operator: knowledge/ops/ascendc/operators/aclnn/nn/foreach/foreach_expm1_950.md
+        - api: knowledge/ops/ascendc/apis/simt_api/math_functions/float_math_functions/isfinite.md
+          operator: knowledge/ops/ascendc/operators/aclnn/nn/activation/hardsigmoid_backward_950.md
+        - api: knowledge/ops/ascendc/apis/simt_api/math_functions/float_math_functions/isfinite.md
+          operator: knowledge/ops/ascendc/operators/aclnn/nn/activation/swiglu_group_quant_950.md
+        - api: knowledge/ops/ascendc/apis/simt_api/math_functions/float_math_functions/isfinite.md
+          operator: knowledge/ops/ascendc/operators/direct/math/math/exp_950.md
+        - api: knowledge/ops/ascendc/apis/simd_api/basic_api/reg_vector_compute/type_conversion/cast.md
+          operator: knowledge/ops/ascendc/operators/aclnn/math/math/logical_not_950.md
+        - api: knowledge/ops/ascendc/apis/simd_api/basic_api/data_structures/global_tensor/set_l2_cache_hint.md
+          operator: knowledge/ops/ascendc/operators/aclnn/transformer/mhc/mhc_post_950.md
+        - api: knowledge/ops/ascendc/apis/simd_api/adv_api/math_compute/bitwise_or_interface/bitwise_or.md
+          operator: knowledge/ops/ascendc/operators/aclnn/math/math/bitwise_or_tensor_950.md
+        - api: knowledge/ops/ascendc/apis/simd_api/adv_api/activation_functions/soft_max_interface/softmax_grad.md
+          operator: knowledge/ops/ascendc/operators/aclnn/nn/activation/softmax_backward_950.md
+        - api: knowledge/ops/ascendc/apis/simd_api/adv_api/reduction_operations/reduce_all_interface/reduce_all.md
+          operator: knowledge/ops/ascendc/operators/aclnn/math/math/all_950.md
+        - api: knowledge/ops/ascendc/apis/simd_api/basic_api/aux_data_structures/tensor_desc/get_data_ptr.md
+          operator: knowledge/ops/ascendc/operators/aclnn/nn/foreach/foreach_tan_950.md
+        - api: knowledge/ops/ascendc/apis/utils_api/cpp_stdlib/math_functions/ceil_div.md
+          operator: knowledge/ops/ascendc/operators/direct/nn/activation/sigmoid_950.md
+        - api: knowledge/ops/ascendc/apis/utils_api/cpp_stdlib/math_functions/ceil_division.md
+          operator: knowledge/ops/ascendc/operators/direct/nn/activation/sigmoid_950.md
+        - api: knowledge/ops/ascendc/apis/simd_api/adv_api/activation_functions/sigmoid_interface/sigmoid.md
+          operator: knowledge/ops/ascendc/operators/aclnn/nn/activation/inplace_sigmoid.md
+        - api: knowledge/ops/ascendc/apis/utils_api/prototype_register_management/op_def/aicpu.md
+          operator: knowledge/ops/ascendc/operators/aclnn/transformer/mc2/allto_all_matmul.md
 
 paths:
   operator_call_modes: [aclnn, direct]

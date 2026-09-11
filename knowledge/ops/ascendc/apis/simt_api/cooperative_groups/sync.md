@@ -2,22 +2,89 @@
 type: API
 title: sync（协作组）
 description: 同步指定协作组内的所有线程，功能等价于调用该协作组对象的成员函数sync()。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.programming_model.cooperative_groups]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.programming_model.cooperative_groups
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/sync.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
 ---
 
-# sync（协作组）
+# sync
 
-同步指定协作组内的所有线程，功能等价于调用该协作组对象的成员函数sync()。
-函数原型：void sync(const GroupType& g)
-约束：对于grid_group，该接口仅支持SIMT编程场景，不支持SIMD与SIMT混合编程场景。；必须保证协作组内所有线程都能执行到同一个sync(g)调用，否则是未定义行为。
-支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+## 功能说明
+
+同步指定协作组内的所有线程，功能等价于调用该协作组对象的成员函数`sync()`。
+
+## 函数原型
+
+```cpp
+template <typename GroupType>
+void sync(const GroupType& g)
+```
+
+## 参数说明
+
+**表1**  模板参数说明
+
+| 参数名 | 描述 |
+| --- | --- |
+| GroupType | 协作组对象的类型。 |
+
+**表2**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| g | 输入 | 待同步的协作组对象。 |
+
+## 返回值说明
+
+无
+
+## 约束说明
+
+- 对于`grid_group`，该接口仅支持SIMT编程场景，不支持SIMD与SIMT混合编程场景。
+- 必须保证协作组内所有线程都能执行到同一个`sync(g)`调用，否则是未定义行为。
+- 使用`grid_group`执行跨线程块同步时，需确保Grid中的线程块总数不超过设备的AIV物理核数，以避免程序卡死。
+- `grid_group`的同步仅保证线程指令执行的同步，不保证各线程块的Data Cache和Global Memory间的缓存一致性。
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    using namespace cooperative_groups;
+    __global__ void simt_kernel(...)
+    {
+        ...
+        thread_block block = this_thread_block();
+        sync(block); // 等价于block.sync()
+
+        grid_group grid = this_grid();
+        sync(grid); // 等价于grid.sync()
+        ...
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    using namespace cooperative_groups;
+    __simt_vf__ inline void simt_kernel(...)
+    {
+        ...
+        thread_block block = this_thread_block();
+        sync(block); // 等价于block.sync()
+        ...
+    }
+    ```
+
 
 <!-- cannbot:related:start -->
 ## 相关

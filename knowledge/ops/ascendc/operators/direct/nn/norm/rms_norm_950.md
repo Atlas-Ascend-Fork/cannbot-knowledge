@@ -5,24 +5,24 @@ description: "说明 cann_bench::rms_norm、rms_norm_npu 与 launch_rms_norm_{fl
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/README.md"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/README.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/op_host/rms_norm_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_host/rms_norm_def.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/op_host/rms_norm_tiling_arch35.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_host/rms_norm_tiling_arch35.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/op_kernel/rms_norm_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/rms_norm_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_perf.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_perf.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_split_d.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_split_d.h"
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/op_host/config/ascend950/rms_norm_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_host/config/ascend950/rms_norm_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/op_kernel/arch35/rms_norm_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/arch35/rms_norm_regbase.h
     role: implementation
 created_at: "2026-08-24T19:32:25Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -73,7 +73,7 @@ y_ij   = cast_dtype(FP32(x_ij) * rstd_i * FP32(gamma_j))
 
 `TORCH_LIBRARY_FRAGMENT` 注册 `cann_bench::rms_norm(Tensor x, Tensor gamma, float epsilon=1e-6) -> Tensor`；Meta 实现只返回 `empty_like(x)`，PrivateUse1 实现绑定 `rms_norm_npu`。这是转换交付件提供的 Direct Invoke 入口，不是 ACLNN 入口。`OpCommand::RunOpApi("RmsNorm", acl_call)` 只承载 stream 上的直接 launch lambda；lambda 内没有调用 ACLNN 数学算子。
 
-本卡以转换交付件为 Direct 实现事实源。固定官方仓 `ops-nn@ceb4536a2bd6fc99b85aec9d0fdcc0f470376292` 的 `norm/rms_norm` 仅作相关实现映射；不能用转换增加的 Torch 包装、Launcher 或 BF16 `D=2` SIMT 特化反推官方接口，也不能把官方平台声明当作否决本转换 950 载荷的条件。目标构建映射把 `NPU_ARCH=ascend950` 设为 `--npu-arch=dav-3510`，CANN 版本为 `9.1.0`。
+本卡以转换交付件为 Direct 实现事实源。固定官方仓 `ops-nn@955f8b33985b6d72989ebff341bb9c2c564a51bc` 的 `norm/rms_norm` 仅作相关实现映射；不能用转换增加的 Torch 包装、Launcher 或 BF16 `D=2` SIMT 特化反推官方接口，也不能把官方平台声明当作否决本转换 950 载荷的条件。目标构建映射把 `NPU_ARCH=ascend950` 设为 `--npu-arch=dav-3510`，CANN 版本为 `9.1.0`。
 
 ## Host/Launcher 执行流程
 
@@ -692,7 +692,7 @@ R-002 的模板参数 `NEED_MAX=false`，因此不会执行 helper 中的 `max(v
 
 - 适用 Route：R-002
 - 触发条件：`Ucandidate>=1 && Cfull<=16384`
-- 转换片段定位：`op_kernel/rms_norm_regbase_perf.h:87-125`；相关官方源码：[`rms_norm_regbase_perf.h`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_perf.h)
+- 转换片段定位：`op_kernel/rms_norm_regbase_perf.h:87-125`；相关官方源码：[`rms_norm_regbase_perf.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_perf.h)
 
 **转换交付件源码（事实源连续摘录）**：
 
@@ -728,7 +728,7 @@ gamma 在核开始时只搬入一次，并跨全部 UB row batch 保持有效；
 
 - 适用 Route：R-001
 - 触发条件：`dtype==bfloat16 && D==2`
-- 转换片段定位：`op_kernel/rms_norm_kernel.cpp:196-225`；相关官方入口：[`rms_norm_apt.cpp`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/op_kernel/rms_norm_apt.cpp)
+- 转换片段定位：`op_kernel/rms_norm_kernel.cpp:196-225`；相关官方入口：[`rms_norm_apt.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/rms_norm_apt.cpp)
 
 **转换交付件源码（事实源连续摘录）**：
 
@@ -766,7 +766,7 @@ for (; row + stride < numRow; row += pairStride) {
 
 - 适用 Route：R-003
 - 触发条件：full-load Route 不可用；`U` 通常为满足 `B(U)<UB` 的最大 2 的幂，初始 `U=1` 需另做实际容量 guard
-- 转换片段定位：`op_kernel/rms_norm_regbase_split_d.h:152-196`；相关官方源码：[`rms_norm_regbase_split_d.h`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_split_d.h)
+- 转换片段定位：`op_kernel/rms_norm_regbase_split_d.h:152-196`；相关官方源码：[`rms_norm_regbase_split_d.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/rms_norm/op_kernel/arch35/rms_norm_regbase_split_d.h)
 
 **转换交付件源码（事实源连续摘录）**：
 

@@ -8,11 +8,53 @@ import os
 import shlex
 import subprocess
 import tempfile
+from html import escape
 from pathlib import Path
 from typing import Any, Iterable
+from urllib.parse import quote
 
 
 ENV_KEY = "CANNBOT_KNOWLEDGE_ROOT"
+
+
+def local_markdown_link(title: str, path: str | Path) -> str:
+    """Format a selected local file without turning path characters into URL syntax."""
+    label = escape(" ".join(title.splitlines()), quote=False)
+    label = label.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
+    return f"[{label}](<{quote(str(path), safe='/ ')}>)"
+
+
+class Audit:
+    def __init__(self) -> None:
+        self.errors: list[dict[str, str]] = []
+
+    def error(self, code: str, location: str, message: str) -> None:
+        self.errors.append({"code": code, "location": location, "message": message})
+
+
+def read_json(path: Path, audit: Audit, location: str) -> dict[str, Any]:
+    if not path.is_absolute():
+        audit.error("path.absolute", location, "path must be absolute")
+        return {}
+    if not path.is_file():
+        audit.error("path.exists", location, f"file does not exist: {path}")
+        return {}
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        audit.error("json.invalid", location, str(exc))
+        return {}
+    if not isinstance(value, dict):
+        audit.error("json.object", location, "top-level JSON must be an object")
+        return {}
+    return value
+
+
+def nonempty(value: Any, audit: Audit, location: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        audit.error("value.string", location, "must be a non-empty string")
+        return ""
+    return value.strip()
 
 
 def canonical_json_sha256(value: Any) -> str:

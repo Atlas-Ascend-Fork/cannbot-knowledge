@@ -5,31 +5,31 @@ description: "说明 aclnnHardtanhBackward 在 950 上的接口语义、Host/Lau
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/docs/aclnnHardtanhBackward.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/docs/aclnnHardtanhBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_api/aclnn_hardtanh_backward.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_api/aclnn_hardtanh_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_api/aclnn_hardtanh_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_api/aclnn_hardtanh_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_api/hardtanh_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_api/hardtanh_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_host/hardtanh_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_host/hardtanh_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_host/arch35/hardtanh_grad_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_host/arch35/hardtanh_grad_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_tilingdata.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_tilingdata.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_struct.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_dag.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/hardtanh_grad_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/hardtanh_grad_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_host/config/ascend950/hardtanh_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_host/config/ascend950/hardtanh_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/func.cmake
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/cmake/func.cmake
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/elewise/elewise_base_struct.h
     role: implementation
@@ -50,7 +50,7 @@ sources:
   - resource: https://gitcode.com/cann/asc-devkit/blob/7a7156352f594b5ca79b533f72c5a99f19b87983/include/utils/tiling/template_argument.h
     role: implementation
 created_at: "2026-08-25T18:48:46Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -520,7 +520,7 @@ workspace_total(core) = 16,777,216 B；body消费0 B
 
 - 适用 Route：R-001、R-002。
 - 触发条件：所有非空 950 核心调用；`self`、`gradOutput` 与输出满足同元素域。
-- Golden 来源：[`activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_dag.h:41-55`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_dag.h#L41-L55)
+- Golden 来源：[`activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_dag.h:41-55`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_dag.h#L41-L55)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -563,7 +563,7 @@ workspace_total(core) = 16,777,216 B；body消费0 B
 
 - 适用 Route：R-002。
 - 触发条件：`U` 为 `half` 或 `bfloat16_t`，模板第二参数保持默认 `T=float`。
-- Golden 来源：[`activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_dag.h:36-53`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_dag.h#L36-L53)
+- Golden 来源：[`activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_dag.h:36-53`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/hardtanh_grad/op_kernel/arch35/hardtanh_grad_dag.h#L36-L53)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

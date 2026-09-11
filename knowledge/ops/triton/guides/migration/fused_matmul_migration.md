@@ -136,7 +136,6 @@ NPU 版新增 `benchmark_compare_close` + `eval_standard`（fp32 rtol 1e-6 / fp1
 移除 `num_stages`/`num_warps` → BLOCK 收窄为 2 的幂次（优先 128）→ bias 提前加载 + `tl.broadcast_to` → 指针改基地址+偏移（禁 `+=`）→ 移除 `%` 取余（配 early return）→ mask 拆独立变量 → fwd 配 CV 融合参数集、bwd 配 `enable_auto_bind_sub_block=False` → bwd_w SPLIT_K 简化为单 program 循环 → 设备 API 换 `torch_npu` → 装饰器换 `triton.autotune` → 910_95 显式 `multibuffer=True`。
 
 <!-- cannbot:related:start -->
-
 ## 相关
 
 - [MatMul / GEMM 高性能算子](../operator_design/matmul.md)（`related`）：“MatMul/GEMM 算子经验路由与 Tiling 策略”

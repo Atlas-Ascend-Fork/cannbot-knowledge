@@ -11,6 +11,7 @@
 - 只修改当前任务需要的文件。开始前检查工作区，保留用户已有修改；不要顺手格式化或重写无关内容。
 - 根目录 Shell、`governance/` 与 `evals/` 中的非空 Python/YAML 文件必须保留仓库标准的 CANN 2.0 版权许可头；带 shebang 的文件先写 shebang 再写许可头。根 `LICENSE` 必须保持官方 CANN 2.0 原文，包括原文中的空白；不要用通用格式化器改写。根 `OAT.xml` 是开源扫描策略和 CANN 2.0 matcher 的机器事实源，修改许可范围或模板时同步更新扫描回归。
 - 未经用户明确要求，不执行 commit、push、merge、tag、release、发布或修改用户全局环境。
+- 未经用户明确要求，不修改 `.gitcode/`；核对 PR 是否涉及该目录时，必须检查相对目标分支的完整差异，不能只看最新提交。CI 命令的兼容适配放在该目录之外。
 
 ## 维护本文件
 
@@ -25,7 +26,7 @@
 |---|---|
 | 字段白名单、数据类型、数组形状和基础枚举 | `governance/schemas/frontmatter.schema.json` |
 | 八个公共必选字段、路径 Profile 到 OKF `type` 的映射、Profile 字段组合 | `governance/schemas/profiles.yaml` |
-| domain、route、platform、tag、受控附加路径值和固定归档本地来源 | `governance/schemas/registries.yaml` |
+| domain、route、platform、tag、受控附加路径值和固定归档/提交本地来源 | `governance/schemas/registries.yaml` |
 | 路径推导、跨字段/文件关系、索引和链接 | `governance/contracts/` |
 
 `governance/specs/` 解释这些规则的语义和边界：修改知识卡重点阅读 `paths.md` 与 `frontmatter.md`；修改机器规则阅读 `schemas.md`；修改 Bundle/OKF 行为阅读 `okf.md`；修改 Skill 阅读 `skills.md`。目标目录的 `index.md` 提供当前内容导航。
@@ -37,19 +38,20 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 1. 先用 `knowledge-query` 搜索同一主题，阅读候选卡和来源，再明确采用 create、update、merge、split、deprecate 或 defer。不要只因标题不同就新建卡片，也不要自动覆盖已有卡片。
 2. 按 `governance/specs/paths.md` 选择 domain、technology/scope 和路径 Profile。算子知识必须区分 DSL；只有真正不依赖单一技术实现的结论才能进入 `shared/`，跨技术映射进入同领域的 `shared/interoperability/`。
 3. 按 `governance/specs/frontmatter.md` 填写字段。不要重复写可从路径推导的 domain、route、Profile 或 Concept ID，也不要为单张卡临时增加字段、标签或注册值。
-4. `draft` 的 `sources` 可以为空，非 Glossary 的 `platforms` 也可以为空，但这些必选字段不能省略；轨迹沉淀的 `Runbook` 可使用 `sources: []`，但正文必须保留与结论强度相匹配的触发、探针、原始观测和验证信号；其他 `stable` 和 `deprecated` 必须有可核验来源。非 Glossary 还必须有明确平台范围。已知 Git 文件或目录来源必须固定到 40 位 commit；GitCode/GitHub PR 与 Issue 使用其规范工作项 URL；本地来源必须位于 Registry 登记根目录，本地来源获取脚本必须存在且可执行；固定提交 Git 来源还需登记仓库、来源根和允许的提交，不能跟随分支或覆盖有本地修改的源码。
+4. `draft` 的 `sources` 可以为空，非 Glossary 的 `platforms` 也可以为空，但这些必选字段不能省略；轨迹沉淀的 `Runbook` 可使用 `sources: []`，但正文必须保留与结论强度相匹配的触发、探针、原始观测和验证信号；其他 `stable` 和 `deprecated` 必须有可核验来源。非 Glossary 还必须有明确平台范围。已知 Git 文件或目录来源必须固定到 40 位 commit；GitCode/GitHub PR 与 Issue 使用其规范工作项 URL；本地来源必须位于 Registry 登记根目录，资源获取脚本必须存在且可执行；Git 本地来源使用 Registry 登记的 root、40 位 revision 和具体路径，恢复后验证远程来源、提交和干净工作区。
 5. `status` 表示生命周期，`verified` 表示真实发生的复核事件，两者相互独立。不要因来源固定、Lint 通过或卡片进入 `stable` 而伪造 `verified`；`replaced_by` 只允许出现在 `deprecated` 卡片中，用于指向当前替代 Concept。
-6. 正文通常应蒸馏可复用结论，并说明适用条件、失效边界和验证方式；Registry 固定归档的主来源 API/Guide 镜像可保留原文格式和多个一级标题，辅助来源引用不获得此例外。不要大段复制来源，也不要把搜索摘要、聊天记录或模型记忆作为唯一技术证据。正文图片使用带 40 位 commit 和具体文件路径的 HTTPS Git raw URL，不提交本地图片副本或引用分支地址。
+6. 正文通常应蒸馏可复用结论，并说明适用条件、失效边界和验证方式；Registry 固定归档中的官方 API/Guide 文档是受控例外：只摄入含独立技术事实的来源页，README、发布占位、纯链接目录和接口清单等导航页不建卡，其链接改指向对应目录的 `index.md`；保留页除 Registry 声明的冗余章节、失效链接目标、Frontmatter 和 `cannbot:related` 受管区块外，完整保留来源正文。当前“产品支持情况”只用于推导 `platforms`，不重复写入正文。只有主来源 API/Guide 镜像可保留原文多个一级标题，辅助来源引用不获得此例外。其他知识不要大段复制来源，也不要把搜索摘要、聊天记录或模型记忆作为唯一技术证据。正文图片使用带 40 位 commit 和具体文件路径的 HTTPS Git raw URL，不提交本地图片副本或引用分支地址。
 7. 新增、删除或移动卡片时同步受影响的每一级 `knowledge/**/index.md` 和正文链接。移动会改变 Concept ID，还必须同步所有 `replaced_by` 引用。
 8. 实质知识变更按“日志”一节记录；纯排版和错别字修复不记日志。
 
 ## 目录与导航
 
-- 文件名使用小写 `snake_case`，自由主题的集合目录使用复数；Registry 控制的 Operator 源码分类保持其注册 ID。五个 domain 根目录必须保留 `index.md`；只有 `ops` 和 `model` 预建注册 route，其他领域的下一层目录随首张真实知识创建。
+- 文件名使用小写 `snake_case`，自由主题的集合目录使用复数；Registry 控制的 Operator 源码分类保持其注册 ID。Registry 中注册的所有 domain 根目录必须保留 `index.md`；只有 `ops` 和 `model` 预建注册 route，其他领域的下一层目录随首张真实知识创建。
 - Operator 和 Runbook 只能使用 Registry 中声明的附加层级；`concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可增加小写 `snake_case` 主题层级，其他路径 Profile 默认直接放卡片。
 - `index.md` 只存在于 `knowledge/`。每个目录都必须有一个索引，完整且无重复地列出直接子目录和直接知识卡，并为每项提供摘要；domain 根和 `ops`/`model` 预建 route 可只有 index，且不表示已有知识覆盖。
 - 只有 `knowledge/index.md` 声明 `okf_version: "0.2"`，其他索引不带 Frontmatter，所有索引均不参与知识检索。
-- Concept 和索引的本地导航必须解析到 `knowledge/` Bundle 内的现有文件；知识卡可额外链接 Registry 登记的固定提交 Git 源码文件，此类来源链接不形成 Concept 或图谱边，索引不得跳出 Bundle。图谱从通过 Contract 的卡片、逐层 Index、人工链接和本地 Agent 判定状态构建；候选召回不能直接成边，词法规则和节点度数也不能代替 Agent 判定。全量关系构建必须由多个 subagent 以可审计的小批次阅读正文；每项接受或显式拒绝都要用双方 Concept ID 为键，分别从去除受管关系块后的对应卡片正文逐字锚定具体事实，再提供桥接理由和范围；模板、截断、非正文锚点或自相矛盾的证据失败关闭。未明确决定表示 abstain；接受/显式拒绝或关系类型冲突必须由未参与对应 pair 原判定的 subagent 裁决。聚合器只做覆盖、指纹、证据形状、类型和一致性校验。候选、review、冲突裁决、判定缓存、完整图谱和可视化全部保存在 ignored 的 `artifacts/graphs/`，不得提交；知识卡内由判定缓存派生的 `cannbot:related` 受管导航块可以提交，但不是技术事实源，也不进入 Query 语料。
+- Concept 间和索引中的本地 Markdown 链接必须解析到 `knowledge/` Bundle 内的现有文件；知识卡可另行链接 Registry 登记的固定提交本地源码文件，源码链接只用于来源导航，不生成 Concept、索引或图谱边。图谱从通过 Contract 的卡片、逐层 Index、人工链接和本地 Agent 判定状态构建；候选召回不能直接成边，词法规则和节点度数也不能代替 Agent 判定。全量关系构建必须由多个 subagent 以可审计的小批次阅读正文；每项接受或显式拒绝都要用双方 Concept ID 为键，分别从去除受管关系块后的对应卡片正文逐字锚定具体事实，再提供桥接理由和范围；模板、截断、非正文锚点或自相矛盾的证据失败关闭。未明确决定表示 abstain；接受/显式拒绝或关系类型冲突必须由未参与对应 pair 原判定的 subagent 裁决。聚合器只做覆盖、指纹、证据形状、类型和一致性校验。候选、review、冲突裁决、判定缓存、完整图谱和可视化全部保存在 ignored 的 `artifacts/graphs/`，不得提交；知识卡内由判定缓存派生的 `cannbot:related` 受管导航块可以提交，但不是技术事实源，也不进入 Query 语料。
+- 本地判定缓存缺失时，图谱仍必须消费并验证已提交的受管导航，不得静默跳过。普通构图与 CI 不下载或重新扫描源码；知识更新与完整门禁仍必须复验源码调用，不能以导航结构校验代替。固定归档 API→Operator 自动关系只管理 `cannbot:related` 内的 `cannbot:api-operator` 子区块；同名 API 的强归属必须在平台和参数数量过滤前、面向完整同名卡集合唯一成立，平台和参数数量不能单独证明家族或方向，Registry 泛化符号按大小写与分隔符不敏感方式匹配。自动关系优先使用算子卡声明的固定版本源码中的直接调用证据，注明扫描范围，不把语法调用当作运行时可达性证明；仅有正文证据的调用示例必须分区标注。自动导航及对应图谱边按 Registry 上限一致截取，超出时注明“部分算子”，完整证据留在 ignored 审计产物；此展示限制不适用于一般语义关系。一般语义判定仍须同步 API 端外层受管块，并原样合并该自动子区块。
 
 ## 修改治理和文档
 
@@ -64,10 +66,13 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 ## 修改 Skill
 
-- 当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、知识仓内的 `ops-knowledge-trace-ingest`（trace → runbooks 生产），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。新增其他 Skill 仍需证明现有职责无法承载并完成架构评审。
+- 当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、复用 Query 的只读 Ascend C API 专用消费流程 `ascendc-api-knowledge-query`、知识仓内的 `ops-knowledge-trace-ingest`（trace → runbooks 生产），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。新增其他 Skill 仍需证明现有职责无法承载并完成架构评审。
 - `.agents/skills/` 是本仓 Skill 的规范源。Skill 的实现、说明、参考资料和测试都在本仓维护与验证。
+- 治理、安装、检索与 CI 回归集中于 `evals/`；Ingest 通过全库确定性命令和仓库级回归验证，trace producer 保留其专用脚本回归。图谱构建由 Ingest 的同一实现供本地门禁和 CI 使用。
+- 安装器默认恢复登记的文档与固定版本源码，再准备 Query 索引；显式离线模式可以跳过资源获取，Query/Lint 本身不得自动联网。资源只放在 ignored 来源根，不执行上游源码或覆盖有本地修改的 checkout。
 - Skill 保存生产、查询和治理知识的工作流、工具及必要的小型参考资料；可被复用的技术事实必须写入 `knowledge/`。Ingest 图谱流程只能同步明确标记的受管关系块，不得改动其他人工正文。
 - `consumer` 和 `contributor` 是安装模式，不是路径 Profile、OKF `type` 或知识分类。
+- `ascendc-api-knowledge-query` 与 `knowledge-query` 一起安装，复用同一索引、平台识别和审计契约；API 头文件线索以已确认的 AscendC 包根解析，不能按知识仓根拼接或跨版本猜测。相关链接只帮助按需补齐证据，不要求遍历全部邻接卡片。
 - 修改 Skill 时同步更新其 `SKILL.md`、`references/`、确定性实现和测试。规范源保持 Agent 平台中立，不在 Skill 内保存 `agents/openai.yaml` 等单一客户端元数据；客户端适配由本仓安装器在 Skill 外处理。
 
 ## 日志
@@ -79,8 +84,9 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 ## 验证与交付
 
-- 知识变更至少完成全库 Lint，并用一个与目标场景一致的查询验证召回；新增、删除或移动卡片不能只做单卡检查。
+- 日常修改只做与本次变更直接相关的定向检查，不在每轮修改后重复完整测试流程；以下全库门禁集中在提交或推送上库前执行，用户明确要求提前全量验证时除外。
+- 上库前，知识变更至少完成全库 Lint，并用一个与目标场景一致的查询验证召回；新增、删除或移动卡片不能只做单卡检查。
 - 治理规则变更必须覆盖接受与拒绝行为；Query 行为变更必须覆盖过滤、排序或失败关闭语义。
 - Skill 变更必须验证结构、正常路径、错误路径和权限边界。图谱流程还必须验证多个 Agent review 完整覆盖、重复运行幂等、缓存 stale 失败关闭、未声明或指纹不匹配的候选外关系拒绝、Agent 显式发现可接入、无图谱 degree 上限、边端点/类型、父索引闭包、受管关系块与缓存一致且注入幂等，以及除关系块外的人工正文不变和全部图谱产物位于 ignored 目录。
-- 所有变更在交付前运行 `bash check.sh`。
+- 提交或推送上库前统一运行 `bash check.sh`；普通修改交付说明已做的定向检查和留待上库前执行的完整验证。
 - 最终说明实际修改的文件、关键语义变化、运行过的检查及结果；未执行或失败的检查要明确说明原因。

@@ -5,33 +5,33 @@ description: "说明 aclnnInplaceLerps 在 950 上的接口语义、Host/Launche
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/docs/aclnnLerps%26aclnnInplaceLerps.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/docs/aclnnLerps&aclnnInplaceLerps.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/aclnn_lerp_scalar.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/aclnn_lerp_scalar.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/lerp.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/lerp.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/lerp_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/lerp_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/arch35/lerp_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/arch35/lerp_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/arch35/lerp_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_host/arch35/lerp_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/lerp_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/lerp_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f32_nddma_without_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f32_nddma_without_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f32_nddma_with_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f32_nddma_with_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_0_nddma_without_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_0_nddma_without_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_0_nddma_with_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_0_nddma_with_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_1_nddma_without_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_1_nddma_without_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_1_nddma_with_loops.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_1_nddma_with_loops.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/CMakeLists.txt
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/broadcast/broadcast_tiling_base.h
     role: implementation
@@ -42,7 +42,7 @@ sources:
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/pkg_inc/op_common/atvoss/util/broadcast_utils.h
     role: implementation
 created_at: "2026-08-25T11:10:07Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -813,7 +813,7 @@ workspace_total = 32 B；外循环不改变 owner/lifetime
 
 - 适用 Route：R-001–R-006。
 - 触发条件：当前 NPU `IsRegBase(npuArch)`，即本卡 950 平台。
-- Golden 来源：[`math/lerp/op_api/aclnn_lerp_scalar.cpp:128-134`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/aclnn_lerp_scalar.cpp#L128-L134)
+- Golden 来源：[`math/lerp/op_api/aclnn_lerp_scalar.cpp:128-134`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_api/aclnn_lerp_scalar.cpp#L128-L134)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -848,7 +848,7 @@ static inline op::DataType InferScalarTensorDtype(const aclTensor* self) {
 
 - 适用 Route：R-001–R-006。
 - 触发条件：逐 FP32 lane 比较 `weight<0.5`。
-- Golden 来源：[`math/lerp/op_kernel/arch35/lerp_dtype_comb_1_nddma_without_loops.h:166-175`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_1_nddma_without_loops.h#L166-L175)
+- Golden 来源：[`math/lerp/op_kernel/arch35/lerp_dtype_comb_1_nddma_without_loops.h:166-175`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_dtype_comb_1_nddma_without_loops.h#L166-L175)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -881,7 +881,7 @@ AscendC::MicroAPI::Select<float>(vreg8, vreg4, vreg2, preg97);
 
 - 适用 Route：R-001–R-006 的任一 input；标量 weight 必然具有广播 stride 0。
 - 触发条件：`inputStride[ubSplitAxis]==0`，且当前 tile 不处于 Queue 两槽初始化或新 `ubOuter` 周期的前两槽。
-- Golden 来源：[`math/lerp/op_kernel/arch35/lerp_f32_nddma_without_loops.h:79-88`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f32_nddma_without_loops.h#L79-L88)
+- Golden 来源：[`math/lerp/op_kernel/arch35/lerp_f32_nddma_without_loops.h:79-88`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/lerp/op_kernel/arch35/lerp_f32_nddma_without_loops.h#L79-L88)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

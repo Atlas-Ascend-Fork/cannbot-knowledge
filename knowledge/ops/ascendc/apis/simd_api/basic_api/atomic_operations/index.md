@@ -5,8 +5,7 @@
 - [AtomicExch](atomic_exch.md)：对GM地址执行原子交换，将输入标量值写入并返回修改前的旧值。
 - [AtomicMax](atomic_max.md)：对GM地址上的值执行原子取大操作，将旧值与输入标量比较后写入较大值，返回旧值。
 - [AtomicMin](atomic_min.md)：对GM地址上的值执行原子取小操作，将旧值与输入标量比较后写入较小值，返回旧值。
-- [原子操作](atomic_operations.md)：AscendC 矢量计算基础 API 的原子操作接口集，包含 SetAtomicAdd、SetAtomicType、AtomicAdd、AtomicCas 等原子算子配置与计算接口。
-- [原子操作概述](atomic_operations_overview.md)：数据搬运随路原子操作接口用于对后续目的地址为GM的数据搬运开启原子操作，涉及的接口请参见表1。如下图1的左侧子图所示，未开启原子操作时，写入GM的数据搬运完成后，GM中原始数据将被新搬运数据完全覆盖。如图1右侧子图所示，当数据搬运随路原子操作接口被调用后，系统将为后续写入GM的数据搬运开启原子...
+- [原子操作概述](atomic_operations_overview.md)：数据搬运随路原子操作接口用于对后续目的地址为GM的数据搬运开启原子操作，涉及的接口请参见表1。如下图1的左侧子图所示，未开启原子操作时，写入GM的数据搬运完成后，GM中原始数据将被新搬运数据完全覆盖。如图1右侧子图所示，当数据搬运随路原子操作接口被调用后，系统将为后续写入GM的数据搬运开启原子操作。此时，数据搬运完成后，GM中的最终数据由原始GM数据与新搬运数据共同决定。
 - [DisableDmaAtomic](disable_dma_atomic.md)：关闭数据搬运随路原子操作，后续搬运时GM原始数据将被新数据完全覆盖。
 - [GetStoreAtomicConfig](get_store_atomic_config_isasi.md)：获取当前原子操作的开启状态和数据类型配置。
 - [关键特性说明（原子操作）](key_features.md)：确定性计算是指在相同输入条件下，无论执行次数或执行环境如何变化，总能产生完全一致输出结果的计算过程。确定性计算为系统稳定性和实验可验证性提供保障。

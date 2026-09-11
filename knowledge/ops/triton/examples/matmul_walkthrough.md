@@ -184,8 +184,16 @@ def triton_matmul(mat_a, mat_b):
 - **对角线分核适用条件**：M、N 方向块数均 ≥ 阈值（如 8）才有优势；小矩阵用顺序分核。
 - **输出 dtype**：NPU 上 bf16 优于 fp16；fp32 累加下 bf16/fp16 输入的 matmul 与 PyTorch 差 1e-2 内属正常。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [03-matrix-multiplication.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/03-matrix-multiplication.py)
+- [09-persistent-matmul.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/09-persistent-matmul.py)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [GEMM 基础代码骨架](./gemm_basic.md)（`related`）：“生产用 GEMM 骨架（block_ptr 版，经验沉淀）”
@@ -194,10 +202,3 @@ def triton_matmul(mat_a, mat_b):
 - [自定义算子示例（register_custom_op / al.custom / builtin ops）](./custom_op_example.md)（`related`）：“compile_hint 之外的 NPU 扩展用法”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [03-matrix-multiplication.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/tutorials/03-matrix-multiplication.py)
-- [09-persistent-matmul.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/09-persistent-matmul.py)

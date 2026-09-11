@@ -5,28 +5,28 @@ description: "说明 aclnnCrossEntropyLossGrad 在 A2/A3 上的接口语义、Ho
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/docs/aclnnCrossEntropyLossGrad.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/docs/aclnnCrossEntropyLossGrad.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_host/cross_entropy_loss_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_host/cross_entropy_loss_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_host/cross_entropy_loss_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_host/cross_entropy_loss_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_host/cross_entropy_loss_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_host/cross_entropy_loss_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad_weight_none.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad_weight_none.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad_weight_not_none.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad_weight_not_none.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_host/config/ascend910b/cross_entropy_loss_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_host/config/ascend910b/cross_entropy_loss_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:14:45Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -694,7 +694,7 @@ workspace 用户片不访问
 
 - 适用 Route：R-001～R-006
 - 触发条件：Tiling 计算出的 UB 候选 tile 小于或覆盖 C，均向下取 512B 对齐主块；`C%alignColLoopNum!=0` 时进入尾块。
-- Golden 来源：[`loss/cross_entropy_loss_grad/op_host/cross_entropy_loss_grad_tiling.cpp:178-205`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_host/cross_entropy_loss_grad_tiling.cpp#L178-L205)
+- Golden 来源：[`loss/cross_entropy_loss_grad/op_host/cross_entropy_loss_grad_tiling.cpp:178-205`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_host/cross_entropy_loss_grad_tiling.cpp#L178-L205)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -729,7 +729,7 @@ uint64_t colLoopNumTail = GetDivRem(colVal, alignColLoopNum);
 
 - 适用 Route：R-002、R-005
 - 触发条件：`reduction==REDUCTION_MEAN`。
-- Golden 来源：[`loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad_weight_not_none.h:92-103`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad_weight_not_none.h#L92-L103)
+- Golden 来源：[`loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad_weight_not_none.h:92-103`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss_grad/op_kernel/cross_entropy_loss_grad_weight_not_none.h#L92-L103)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -5,42 +5,42 @@ description: "说明 aclnnMoeTokenUnpermuteGradGetWorkspaceSize/aclnnMoeTokenUnp
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/op_api/aclnn_moe_token_unpermute_grad.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/op_api/aclnn_moe_token_unpermute_grad.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/op_api/aclnn_moe_token_unpermute_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/op_api/aclnn_moe_token_unpermute_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/docs/aclnnMoeTokenUnpermuteGrad.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/docs/aclnnMoeTokenUnpermuteGrad.md
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/moe_token_unpermute_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/moe_token_unpermute_grad_def.cpp
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/moe_token_unpermute_grad_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/moe_token_unpermute_grad_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/moe_token_unpermute_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/moe_token_unpermute_grad_tiling.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/moe_token_unpermute_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/moe_token_unpermute_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_prob_none.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_prob_none.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_prob_not_none.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_prob_not_none.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/config/ascend910b/moe_token_unpermute_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/config/ascend910b/moe_token_unpermute_grad_binary.json
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/config/ascend910_93/moe_token_unpermute_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/config/ascend910_93/moe_token_unpermute_grad_binary.json
     role: constraint
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910b/ops_transformer_operator_list.yaml
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910b/ops_transformer_operator_list.yaml
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -484,7 +484,7 @@ register/scalar storage = indicesArray[512] 的 int64_t + probsArray[512] 的 fl
 
 - 适用 Route：R-001。
 - 触发条件：`probsOptional==nullptr`、key 0；当前 H tile 已搬入 `inOutque`。
-- Golden 来源：[`moe_token_unpermute_grad_prob_none.h:104-119`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_prob_none.h#L104-L119)
+- Golden 来源：[`moe_token_unpermute_grad_prob_none.h:104-119`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_prob_none.h#L104-L119)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -528,7 +528,7 @@ inOutque.FreeTensor(inOutLocal);
 
 - 适用 Route：R-002 的 H 无需切片分支。
 - 触发条件：UB 预算得到 `inputReserveNumMax>=1`。
-- Golden 来源：[`moe_token_unpermute_grad_tiling.cpp:223-227`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/moe_token_unpermute_grad_tiling.cpp#L223-L227)
+- Golden 来源：[`moe_token_unpermute_grad_tiling.cpp:223-227`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_host/moe_token_unpermute_grad_tiling.cpp#L223-L227)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -561,7 +561,7 @@ Host 不是直接使用 UB 能容纳的任意 token 数，而是选择不超过�
 
 - 适用 Route：R-002；prob 输入的每个 index tile。
 - 触发条件：进入 `indicesLoop`，由 `pingPongFlagProbs` 选择两份 `RIA*sP` 槽之一。
-- Golden 来源：[`moe_token_unpermute_grad_prob_not_none.h:162-180`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_prob_not_none.h#L162-L180)
+- Golden 来源：[`moe_token_unpermute_grad_prob_not_none.h:162-180`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_prob_not_none.h#L162-L180)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -608,7 +608,7 @@ event 2/3 分别保护两个物理子区。`V_MTE2` 确认上一轮 Vector 已�
 
 - 适用 Route：R-002 的每个 `(token,k,H-tile)` 点积。
 - 触发条件：`ReduceSumFunc(dst,tmp,hiddensizeLen)`；按 4096、512、64 三个阈值选择路径。
-- Golden 来源：[`moe_token_unpermute_grad_base.h:125-145`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_base.h#L125-L145)
+- Golden 来源：[`moe_token_unpermute_grad_base.h:125-145`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute_grad/op_kernel/moe_token_unpermute_grad_base.h#L125-L145)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

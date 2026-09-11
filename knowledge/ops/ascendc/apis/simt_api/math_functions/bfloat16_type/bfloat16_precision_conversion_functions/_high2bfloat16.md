@@ -2,19 +2,104 @@
 type: API
 title: __high2bfloat16
 description: 从bfloat16x2_t类型输入数据中提取高16位，作为bfloat16_t类型返回。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__high2bfloat16.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_bf16.h
 ---
 
-# __high2bfloat16
+# \_\_high2bfloat16
+
+## 功能说明
 
 提取输入bfloat16x2的高16位，并返回。
-函数原型：bfloat16_t __high2bfloat16(const bfloat16x2_t x)
-返回值：返回输入bfloat16x2的高16位。特殊值如下：
-支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+
+## 函数原型
+
+```cpp
+inline bfloat16_t __high2bfloat16(const bfloat16x2_t x)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+返回输入bfloat16x2的高16位。特殊值如下：
+
+| x值高16位 | 返回值 |
+|---|---|
+| 0 | 0 |
+| -0 | -0 |
+| nan | nan |
+| inf | inf |
+| -inf | -inf |
+| ASCRT_MAX_NORMAL_BF16 | ASCRT_MAX_NORMAL_BF16 |
+| -ASCRT_MAX_NORMAL_BF16 | -ASCRT_MAX_NORMAL_BF16 |
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/asc_bf16.h`头文件。
+
+```cpp
+#include "simt_api/asc_bf16.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    // 使用短向量可提升数据搬运效率
+    __aicore__ void simt_high2bfloat16(bfloat16x2_t* input, bfloat16_t* output, uint32_t input_total_length)
+    {
+        uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+        // 每个线程处理1个bfloat16x2_t类型的数据，即2个bfloat16_t类型的数据，因此idx >= input_total_length / 2的线程不处理数据
+        if (idx > input_total_length / 2) {
+            return;
+        }
+        output[idx] = __high2bfloat16(input[idx]);
+    }
+    __global__ __launch_bounds__(1024) void cast_kernel(bfloat16_t* input, bfloat16_t* output, uint32_t input_total_length)
+    {
+        simt_high2bfloat16(( bfloat16x2_t*)input, output, input_total_length);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    // 使用短向量可提升数据搬运效率
+    __simt_vf__ __launch_bounds__(1024) inline void simt_high2bfloat16(__gm__ bfloat16x2_t* input, __gm__ bfloat16_t* output, uint32_t input_total_length)
+    {
+        uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+        // 每个线程处理1个bfloat16x2_t类型的数据，即2个bfloat16_t类型的数据，因此idx >= input_total_length / 2的线程不处理数据
+        if (idx > input_total_length / 2) {
+            return;
+        }
+        output[idx] = __high2bfloat16(input[idx]);
+    }
+    __global__ __vector__ void cast_kernel(__gm__ bfloat16_t* input, __gm__ bfloat16_t* output, uint32_t input_total_length)
+    {
+        asc_vf_call<simt_high2bfloat16>(dim3(1024), (__gm__ bfloat16x2_t*)input, output, input_total_length);
+    }
+    ```

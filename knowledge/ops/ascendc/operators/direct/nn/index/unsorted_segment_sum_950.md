@@ -5,32 +5,32 @@ description: "说明 launch_unsorted_segment_sum 在 950 上的接口语义、La
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_host/unsorted_segment_sum_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_host/unsorted_segment_sum_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_tiling_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_tiling_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_simt_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_simt_tiling.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_simt_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_simt_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_simd_non_sort_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_simd_non_sort_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_kernel/arch35/unsorted_segment_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_kernel/arch35/unsorted_segment_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_kernel/arch35/unsorted_segment_sum.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_kernel/arch35/unsorted_segment_sum.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_kernel/arch35/uss_simd_non_sort.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_kernel/arch35/uss_simd_non_sort.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_kernel/arch35/uss_simd_split_col.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_kernel/arch35/uss_simd_split_col.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_kernel/unsorted_segment_sum_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_kernel/unsorted_segment_sum_apt.cpp
     role: implementation
 created_at: "2026-08-25T19:30:50Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -1292,7 +1292,7 @@ peak UB=32 KiB; workspace=0
 
 - 适用 Route：所有 init→compute Route。
 - 触发条件：Direct scaffold 不复刻官方 <code>SetScheduleMode(1)</code>。
-- 固定官方源码/相关映射：[<code>op_kernel/arch35/unsorted_segment_base.h:109-124</code>](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_kernel/arch35/unsorted_segment_base.h)
+- 固定官方源码/相关映射：[<code>op_kernel/arch35/unsorted_segment_base.h:109-124</code>](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_kernel/arch35/unsorted_segment_base.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1330,7 +1330,7 @@ for (COM_T inputIndex = block_idx * blockDim.x + threadIdx.x; inputIndex < input
 
 - 适用 Route：R-006～R-009、R-011。
 - 触发条件：wide tail 且前序列所有权未命中。
-- 固定官方源码/相关映射：[<code>op_kernel/arch35/uss_simd_non_sort.h:91-109</code>](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_kernel/arch35/uss_simd_non_sort.h)
+- 固定官方源码/相关映射：[<code>op_kernel/arch35/uss_simd_non_sort.h:91-109</code>](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_kernel/arch35/uss_simd_non_sort.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1366,7 +1366,7 @@ SetAtomicAdd<X_T>();
 
 - 适用 Route：R-001～R-003。
 - 触发条件：small N/S wide tail，或 INT64 A≥512。
-- 固定官方源码/相关映射：[<code>op_kernel/arch35/uss_simd_split_col.h:98-113</code>](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_kernel/arch35/uss_simd_split_col.h)
+- 固定官方源码/相关映射：[<code>op_kernel/arch35/uss_simd_split_col.h:98-113</code>](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_kernel/arch35/uss_simd_split_col.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1401,7 +1401,7 @@ for (uint64_t i = 0; i < rows; i++) {
 
 - 适用 Route：全部。
 - 触发条件：同 launcher 同时覆盖 input compute 与 output init。
-- 固定官方源码/相关映射：[<code>op_host/arch35/unsorted_segment_sum_simt_tiling.cpp:45-54</code>](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_simt_tiling.cpp)
+- 固定官方源码/相关映射：[<code>op_host/arch35/unsorted_segment_sum_simt_tiling.cpp:45-54</code>](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unsorted_segment_sum/op_host/arch35/unsorted_segment_sum_simt_tiling.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

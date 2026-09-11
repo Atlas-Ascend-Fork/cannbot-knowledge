@@ -1,37 +1,37 @@
 ---
 type: Operator
 title: "MaskedScale 950 Direct Invoke 算子知识"
-description: "说明 cann_bench::masked_scale 在 950 上的接口语义、Direct Launcher 参数生成、三条 active Route、单 Kernel 启动图与逐节点实现闭包。"
+description: "整理 cann_bench::masked_scale 在 950 上的 Direct Invoke 路线；FP16 补充实现来源未闭合，保留为待复核草稿。"
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
-status: stable
+status: draft
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/README.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_host/masked_scale_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_host/masked_scale_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_host/arch35/masked_scale_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_host/arch35/masked_scale_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_tiling_struct.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_tiling_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_dag.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/masked_scale_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/masked_scale_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/CMakeLists.txt
-    role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/experimental/math/masked_scale/op_kernel/arch35/masked_scale_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/CMakeLists.txt
     role: implementation
   - resource: https://gitcode.com/cann/opbase/blob/d574f5571391390f8b619c6a134b65c819842318/src/op_common/atvoss/elewise/elewise_tiling.cpp
     role: implementation
   - resource: https://gitcode.com/cann/asc-devkit/blob/7a7156352f594b5ca79b533f72c5a99f19b87983/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/add.asc
     role: implementation
 created_at: "2026-08-25T19:27:57Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
 
 # MaskedScale 950 Direct Invoke 算子知识
+
+> 来源边界：固定提交仅能核对公开的 MaskedScale DAG、Tiling 和平台声明；原卡归因于官方 experimental `ComputeFp16` 的文件在该提交中不存在。R-001 的 FP16 补充路线保留为交付设计记录，尚不能作为已核验的官方实现或完整 Direct 源码闭包使用。本卡保持草稿，不进入默认稳定知识检索。
 
 ## 算子速览
 
@@ -43,8 +43,8 @@ cann_versions: ["9.1.0"]
 | 执行类型 | R-003/R-002/R-001 均为单节点 `AIV_VECTOR`；entry 显式标注 `KERNEL_TYPE_AIV_ONLY`，无可达 Cube/AIC 或 MIX_CV 节点 |
 | Kernel 路线 | 三条均为 production `active`：P0 为 R-003 通用 FP32 中间，P1 为 R-002 整数 mask 双级 cast，P2 为 R-001 FP16 原生；没有 `conditional` 或 `dormant` Route，Route ID 与 Host dtype key 保持不变 |
 | 核心资源 | 输入/输出 GM、一个 `TBuf<VECCALC>` tensor pool、DAG 编译期 buffer slot、`TPipe`/位置同步协议；L1/L0/workspace 均无分配或数据边 |
-| 来源闭包 | `direct_implementation_closed`：转换交付件闭合 `cann_bench::masked_scale`→Meta/PrivateUse1→route/tiling→15 个 direct entry→本地化 `ElementwiseSch`→DAG body；官方固定 Commit 提供 950、DAG、Tiling 与原生 FP16/L2 指导映射，Direct ABI 和扩展路线均明确归于转换交付件 |
-| 证据边界 | 卡片只把固定官方源码直接支持的事实归为官方原生；Direct ABI、BF16-mask 扩展、FP16 DAG 改写和 L2 hint 落点均按转换或派生事实表达。 |
+| 来源闭包 | 未闭合：官方固定 Commit 提供 950、DAG 和 Tiling 基线，但不能支持 R-001 原生 FP16 路线的原有来源归因；Direct ABI 和扩展路线仅保留为交付设计记录。 |
+| 证据边界 | 来源核对确认 R-001 的原有官方文件不存在，撤回完整源码闭包结论；下文 active Route、POD、数据流与同步描述均为待复核的交付设计记录，不表示在固定官方版本完成 Direct 编译、真机、数值或性能验证。 |
 
 ## 接口与语义
 
@@ -71,18 +71,18 @@ y[i] = cast<x.dtype>(x[i] * cast(mask[i]) * cast(scale))
 
 本文入口是转换交付件中的 Direct Invoke，而不是官方 ACLNN 两段式接口。`TORCH_LIBRARY_FRAGMENT(cann_bench)` 声明 schema，Meta 实现完成校验与输出分配，`TORCH_LIBRARY_IMPL(..., PrivateUse1)` 绑定 `masked_scale_npu`。官方固定源码的 `README.md` 明确 950/Ascend 950 支持，`masked_scale_def.cpp` 和 `CMakeLists.txt` 把 `ascend950` 接到 `arch35`；交付件据此保留官方 DAG/Tiling 主体，并把框架 tiling/workspace entry 转为一份按值传递 POD、15 个具体全局符号和一次 current-stream direct launch。
 
-官方基线支持 12 个 `x×mask` 组合（mask 不含 BF16）。交付件新增 `51/52/53` 三个 BF16-mask key，并把 `11/21/31` 替换为映射自官方 experimental `ComputeFp16` 的 FP16 原生 DAG；这些扩展不能反向归因于官方公开 ACLNN 契约。
+官方基线支持 12 个 `x×mask` 组合（mask 不含 BF16）。本卡记录的交付设计新增 `51/52/53` 三个 BF16-mask key，并把 `11/21/31` 改为 FP16 原生 DAG；该 FP16 补充路线缺少可核验的固定源码，不能归因于官方 experimental 实现，也不能反向归因于官方公开 ACLNN 契约。
 
 ### 来源与转换关系
 
 | 层级 | 固定来源直接支持的事实 | 本 Direct 实现中的转换边界 |
 |---|---|---|
 | 官方 950 主线 | `README`/definition/CMake 的 Ascend 950 范围，arch35 Host tiling，`MaskedScaleTilingData` 形状，`MaskCastOne/Two` DAG 与 AIV-only router | Direct 不复用框架 tiling/workspace 指针；Host 重新生成普通按值 POD、具体符号和 current-stream launcher |
-| 官方 experimental 路线 | `ComputeFp16` 的 `mask→half`、FP16 `Mul`、`scale→half`、FP16 `Muls` 顺序 | key 11/21/31 被派生为三个 `ScalarT=half` atvoss DAG；这是语义映射，不是官方主线 entry 的逐字移植 |
+| FP16 补充设计 | 固定提交不存在原先引用的 experimental 文件，不能据此核验 `ComputeFp16` 或官方映射 | key 11/21/31 的三个 `ScalarT=half` atvoss DAG 仅保留为待复核交付设计，不归因于官方主线或 experimental 实现 |
 | 官方通用指导 | elementwise 的 4 KiB/core、512 元素分块公式；950 一次性流式输入的 L2 bypass 模式 | 本地 `CalcTiling<OpDag>` 以 Direct DAG 元数据重算 `U/F/T`；本地 scheduler 只对 x/mask 输入设置 cache hint |
 | Direct 派生补充 | 无官方公开主线依据覆盖 BF16 mask 的三组组合 | key 51/52/53 复用 `MaskCastOne<Tx,bfloat16_t>`；其接口域与等价性只属于转换实现，不扩大官方契约 |
 
-固定 HTTP `sources` 用于回到官方源码核验原生算法、平台和模板关系；本文对 Direct Host/POD/C ABI/launcher、本地 scheduler 与派生 dtype 路线的描述来自转换源码闭包，不能由这些 HTTP 链接单独推出。
+固定 `sources` 用于回到官方源码核验原生算法、平台和模板关系；本文对 Direct Host/POD/C ABI/launcher、本地 scheduler 与派生 dtype 路线的描述保留自交付设计记录，不能由这些官方来源单独推出完整 Direct 源码闭包。
 
 ## Host/Launcher 执行流程
 
@@ -539,7 +539,7 @@ workspace_total = 0
 
 - 适用 Route：R-003/R-002；R-001 的转换 DAG 沿用相同 `MemOptCfg<LEVEL_2>` 机制。
 - 触发条件：DAG 拓扑固定，buffer ID 由最后消费关系安全生成；Host 必须用同一 `OpDag::BufferNum/MaxDtypeBytes` 计算 `U`。
-- Golden 来源：[`math/masked_scale/op_kernel/arch35/masked_scale_dag.h:25-38`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_dag.h)
+- Golden 来源：[`math/masked_scale/op_kernel/arch35/masked_scale_dag.h:25-38`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/masked_scale/op_kernel/arch35/masked_scale_dag.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -610,43 +610,6 @@ __aicore__ inline void ProcessDoubleBufferL2Bypass()
 
 把 cache bypass 无条件迁移到存在跨 Kernel/跨 tile 重用的输入，会破坏该机制的源码前提；固定仓未提供此类 MaskedScale 反例。
 
-### Trick T-001：只在语义匹配组合采用 FP16 原生乘缩放
-
-#### 触发与源码依据
-
-- 适用 Route：R-001。
-- 触发条件：`x=float16` 且 `mask∈{uint8,int8,float16}`；其它组合不得复用该计算顺序。
-- Golden 来源：[`experimental/math/masked_scale/op_kernel/arch35/masked_scale_kernel.h:149-157`](https://gitcode.com/cann/ops-math/blob/d8e25e8162872e66830b19c5659f401894b44c0e/experimental/math/masked_scale/op_kernel/arch35/masked_scale_kernel.h)
-
-**官方源码（固定 Commit 连续逐字摘录）**：
-
-```cpp
-__aicore__ inline void ComputeFp16(uint32_t count)
-{
-    LocalTensor<half> selfLocal = selfBuf.Get<half>();
-    LocalTensor<half> outLocal = outBuf.Get<half>();
-    LocalTensor<half> maskHalf = MaskAsHalf(count);
-    const uint32_t alignedCount = AlignElemCount<half>(count);
-    Mul(outLocal, selfLocal, maskHalf, alignedCount);
-    Muls(outLocal, outLocal, static_cast<half>(scaleFloat), alignedCount);
-}
-```
-
-#### 机制与设计原因
-
-交付转换把官方 `ComputeFp16` 的 `mask→half、Mul<half>、Muls<half>` 顺序表达为 atvoss DAG，仅为 key 11/21/31 生成 `ScalarT=half` entry。这样不物化 FP32 中间，也省掉 x 的升精度和输出降精度节点；收益描述仅限源码可证明的少 cast、少 FP32 中间。两者只在算法顺序上对应，不能据此断言官方 `alignedCount` 与 production scheduler 的 `tileLength` 数值相等：官方 `AlignElemCount<half>(count)` 让 UB vector 算术覆盖对齐后的 lane，production DAG 则把当前 tile 的有效元素数作为 `tileLength` 传给各 Vec 节点，CopyOut 也只向 GM 写这 `tileLength` 个有效元素。
-
-#### 迁移边界
-
-- 适用：输出与 FP16 表达式语义一致、mask 可安全先转 half 的逐元素乘缩放。
-- 前提：950、x 为 FP16、mask 为 uint8/int8/FP16，scale 允许先转 half。
-- 失效：x 为 BF16/FP32 或 mask 为 FP32/BF16 时必须使用 R-003/R-002 的 FP32 中间；否则会改变 cast 和舍入顺序。
-- 证据边界：固定源码证明 cast/乘/缩放顺序；若改变框架表达式或允许新的 dtype 组合，必须重新推导数值等价边界。
-
-#### 错误做法
-
-把所有 15 个 dtype 组合都强制套用 FP16 原生路线会改变交付实现已经区分的提升规则；固定源码给出的 FP32/BF16 分支即为可验证反例。
-
 ## 模板与实现对比
 
 | 对比维度 | R-003 通用 FP32 中间 | R-002 整数 mask 双级 cast | R-001 FP16 原生 | 设计选择依据 |
@@ -691,7 +654,6 @@ __aicore__ inline void ComputeFp16(uint32_t count)
 | Kernel DAG | `math/masked_scale/op_kernel/arch35/masked_scale_dag.h` | `MaskedScaleMaskCastOne/Two` | FP32 中间 DAG与 LEVEL_2 memory config |
 | Kernel entry/router | `math/masked_scale/op_kernel/masked_scale_apt.cpp` | `masked_scale` | AIV-only、key→DAG、Init/Process 基线 |
 | 构建接线 | `math/masked_scale/CMakeLists.txt` | `SUPPORT_COMPUTE_UNIT/SUPPORT_TILING_DIR` | ascend950→arch35 |
-| FP16 路线来源 | `experimental/math/masked_scale/op_kernel/arch35/masked_scale_kernel.h` | `ComputeFp16` | FP16 Mul/Muls 转换映射 |
 | Tiling 公式来源 | `src/op_common/atvoss/elewise/elewise_tiling.cpp` | `ElewiseBaseTiling::DoTiling` | 4 KiB/core、512 元素 block、former/tail 公式 |
 | L2 提示来源 | `examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/add.asc` | `ProcessDoubleBufferL2Bypass` | 950 流式输入 cache bypass 模式 |
 
@@ -705,10 +667,3 @@ __aicore__ inline void ComputeFp16(uint32_t count)
 | 同步 | tensor-position Get/Release 管理 MTE2/V/MTE3 顺序 | 不能删除消费前的 Get/Release 或破坏 ping/pong 映射 | `CopyIn/ConvertArgs/TryReleaseArgs/CopyOut` |
 | 精度与尾块 | R-003/R-002 使用 FP32，R-001 使用 FP16；末 tile 传有效长度 | 不得合并 mask 双 cast；不得把 FP16 scale 顺序扩到其它 key；只写 valid | 三个 DAG、`Process` |
 | 失败边界 | Meta 封闭 dtype/shape/device/contiguous；tiling unknown key 抛错 | 不得直接依赖 launcher default，因为它静默返回 | `masked_scale_meta/GetRoute/calc_masked_scale_tiling_params` |
-
-<!-- cannbot:related:start -->
-## 相关
-
-- [__aicore__ 禁止 void* 转 __ubuf__ 桥接](../../../../runbooks/compilation/aicore_void_ubuf.md)（`related`）：masked_scale 的 b16 路线需要 dst 为 `LocalTensor<half>`、x 为 `LocalTensor<half>`、mask 为 `LocalTensor<float>`（mask 在 plugin 侧已转 float32）。为绕开「一个模板 T 同时绑定 half 与 float」的推导冲突，尝试把 Reg wrapper 改成 `void*` 形参、内部再 `(__ubuf__ T*)` 强转：；｜ 计算语义 ｜ 对连续展平后的每个元素执行 `y［i］ = cast_x(x［i］ * mask［i］ * scale)`，输出 dtype 与 `x` 相同 ｜。Runbook在 MaskedScale B16 Direct wrapper 上复现混合 dtype 地址桥接失败，算子卡闭合相同 x/mask/scale 计算与 Direct 路线边界。
-- [MaskedScale 950 ACLNN 算子知识](../../../aclnn/math/math/masked_scale_950.md)（`same_topic`）：固定仓只公开 `aclnnMaskedScale` 两段式版本。；本文入口是转换交付件中的 Direct Invoke，而不是官方 ACLNN 两段式接口。；两张卡围绕同一 MaskedScale 逐元素乘缩放语义，分别闭合官方 ACLNN executor 路线和转换件 Direct launch 路线，可对照接口约束、dtype 扩展、精度与资源差异。
-<!-- cannbot:related:end -->

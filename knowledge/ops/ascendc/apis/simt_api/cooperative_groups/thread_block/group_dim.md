@@ -2,22 +2,71 @@
 type: API
 title: GroupDim
 description: 获取当前线程所属线程块的线程配置，与接口dim_threads功能相同。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.programming_model.cooperative_groups]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.programming_model.cooperative_groups
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/thread_block/group_dim.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
 ---
 
-# GroupDim
+# group_dim
 
-获取当前线程所属线程块的线程配置，与接口dim_threads功能相同。
-函数原型：static dim3 group_dim()
-返回值：当前线程所属线程块的线程配置。
-支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+## 功能说明
+
+获取当前线程所属线程块的线程配置，与接口[dim_threads](dim_threads.md)功能相同。
+
+## 函数原型
+
+```cpp
+static dim3 group_dim()
+```
+
+## 参数说明
+
+无
+
+## 返回值说明
+
+当前线程所属线程块的线程配置。
+
+## 约束说明
+
+无
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    using namespace cooperative_groups;
+    __global__ void simt_kernel(...)
+    {
+        ...
+        thread_block g = this_thread_block();
+        dim3 block_dim = g.group_dim();
+        ...
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    using namespace cooperative_groups;
+    __simt_vf__ inline void simt_kernel(...)
+    {
+        ...
+        thread_block g = this_thread_block();
+        dim3 block_dim = g.group_dim();
+        ...
+    }
+    ```
 
 <!-- cannbot:related:start -->
 ## 相关

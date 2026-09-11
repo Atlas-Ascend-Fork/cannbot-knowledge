@@ -271,7 +271,6 @@ line segment: 函数全体
 <!-- cannbot:related:start -->
 ## 相关
 
-- [VF调用](../../apis/simd_api/basic_api/reg_vector_compute/vf_call/vf_call.md)（`exemplifies`）：提供 asc_vf_call 接口，用于在 SIMD 编程场景下启动 SIMD VF（Vector Function）子任务。通过模板参数 funcPtr 指定入口核函数，可变参数 Args 传递实参。；- API 路径：`asc_vf_call` 调用 `__simd_vf__`，VF 内通过固定 `accAddr` 做 `LoadAlign→计算→StoreAlign` 的跨 chunk 累加；。API提供逐次 VF 调用及 UB 指针参数合同，Runbook利用调用边界在固定 UB 累加器的多 chunk 调用间插入 PipeBarrier。
 - [Reg 同 wrapper 回读 UB 引发尺寸相关漂移](split_multi_pass_vf_at_ub_producer_consumer_boundaries.md)（`related`）：调用之间由 `PipeBarrier<PIPE_V>` 建立可见性；把“一个 VF 内循环所有 chunk”改成“一个 VF 只处理一个 chunk”；在 `__aicore__` 的 chunk 循环中，每次调用后执行 `PipeBarrier<PIPE_V>()`，再进入下一块。；目标卡把焦点的 pass 间 barrier 规则具体化为固定 UB 累加地址的逐 chunk 调用边界。
 - [AR 跨块循环放在 __simd_vf__ 只执行首块](simd_vf_chunk_loop_must_be_driven_by_aicore_wrapper.md)（`same_topic`）：“把“一个 VF 内循环所有 chunk”改成“一个 VF 只处理一个 chunk”；在 `__aicore__` 的 chunk 循环中，每次调用后执行 `PipeBarrier<PIPE_V>()`，再进入下一块。”与“将块循环上移到 `__aicore__` wrapper，每个块执行一次 `asc_vf_call`。”描述同一跨块 Softmax 状态修复，后一张补齐症状、边界验证和 barrier 仅用于同址 RMW 的限制。
 <!-- cannbot:related:end -->

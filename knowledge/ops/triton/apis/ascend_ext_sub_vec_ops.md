@@ -131,8 +131,17 @@ def dynamic_workload_kernel(input_ptr, output_ptr, total_elements, BLOCK_SIZE: t
 4. **负载均衡**：多 Vector 核场景需均匀划分数据量，避免负载不均浪费性能。
 5. **防写冲突**：通过 `sub_vec_id()` 保证各核写不同内存区域；可用 `sync_block_all("all_sub_vector", event_id)` 同步所有子 Vector 核。
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [core.py#L166-L171](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L166-L171)
+- [core.py#L359-L368](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L359-L368)
+- [semantic.py#L90-L91](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/semantic.py#L90-L91)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
@@ -142,11 +151,3 @@ def dynamic_workload_kernel(input_ptr, output_ptr, total_elements, BLOCK_SIZE: t
 - [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [core.py#L166-L171](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L166-L171)
-- [core.py#L359-L368](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L359-L368)
-- [semantic.py#L90-L91](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/semantic.py#L90-L91)

@@ -5,32 +5,32 @@ description: "说明 aclnnForeachAbs 在 950 上的接口语义、Host/Launcher 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/docs/aclnnForeachAbs.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/docs/aclnnForeachAbs.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/foreach_abs_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/foreach_abs_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/arch35/foreach_abs_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/arch35/foreach_abs_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/arch35/foreach_abs_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/arch35/foreach_abs_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs_simt.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/config/ascend950/foreach_abs_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_host/config/ascend950/foreach_abs_binary.json
     role: implementation
 created_at: "2026-08-25T15:28:45Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -398,7 +398,7 @@ UB_total=0; dynamic_ub_data=0; workspace_total=0
 
 - 适用 Route：R-001～R-003
 - 触发条件：950 arch35 的全部合法 TensorList；`tensorCount<=256`。
-- Golden 来源：[`foreach/foreach_abs/op_kernel/arch35/foreach_abs_simt.h:63-84`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs_simt.h#L63-L84)
+- Golden 来源：[`foreach/foreach_abs/op_kernel/arch35/foreach_abs_simt.h:63-84`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs_simt.h#L63-L84)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -441,7 +441,7 @@ Host 只生成一个前缀和 POD 与一个 Kernel launch；`blockDim×1024` 个
 
 - 适用 Route：R-001～R-003
 - 触发条件：`totalElements<=INT32_MAX` 走 int32，否则走 int64。
-- Golden 来源：[`foreach/foreach_abs/op_kernel/arch35/foreach_abs_simt.h:98-109`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs_simt.h#L98-L109)
+- Golden 来源：[`foreach/foreach_abs/op_kernel/arch35/foreach_abs_simt.h:98-109`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/foreach/foreach_abs/op_kernel/arch35/foreach_abs_simt.h#L98-L109)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

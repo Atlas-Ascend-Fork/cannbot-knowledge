@@ -106,8 +106,18 @@ CV 混合路径：**910_95 支持 L0C -> UB 直通**（`hivm.fixpipe` 输出直�
    - `sync_block_set/wait/all`：Cube-Vector 同步（event_id 0~15）
    - `sub_vec_id()` / `sub_vec_num()`：每个 AI Core 含 2 个 Vector Core
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [core.py](https://github.com/triton-lang/triton-ascend/tree/b4db1e9e45c14f708fa5cbd05d50efa49c023a94/third_party/ascend/language/cann/extension/core.py)
+- [programming_guide.md](https://github.com/triton-lang/triton-ascend/tree/b4db1e9e45c14f708fa5cbd05d50efa49c023a94/docs/zh/programming_guide.md)
+- [NPUTargetSpec.td](https://gitcode.com/Ascend/AscendNPU-IR/blob/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HACC/Targets/NPUTargetSpec.td)
+- [HIVMDMAOps.td](https://gitcode.com/Ascend/AscendNPU-IR/blob/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/IR/HIVMDMAOps.td)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [Ascend 910B2/910B3 硬件规格](ascend_910b.md)（`related`）：“910B2/910B3 硬件规格”
@@ -119,12 +129,3 @@ CV 混合路径：**910_95 支持 L0C -> UB 直通**（`hivm.fixpipe` 输出直�
 - [NPU 数据类型支持矩阵与约束](../../../ops/triton/optimizations/techniques/data_types_ascend.md)（`related`）：“数据类型支持矩阵与约束”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [core.py](https://github.com/triton-lang/triton-ascend/tree/b4db1e9e45c14f708fa5cbd05d50efa49c023a94/third_party/ascend/language/cann/extension/core.py)
-- [programming_guide.md](https://github.com/triton-lang/triton-ascend/tree/b4db1e9e45c14f708fa5cbd05d50efa49c023a94/docs/zh/programming_guide.md)
-- [NPUTargetSpec.td](https://gitcode.com/Ascend/AscendNPU-IR/blob/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HACC/Targets/NPUTargetSpec.td)
-- [HIVMDMAOps.td](https://gitcode.com/Ascend/AscendNPU-IR/blob/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/IR/HIVMDMAOps.td)

@@ -5,22 +5,22 @@ description: "说明 aclnnSimThreadExponential 在 A2/A3 上的接口语义、Ho
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/docs/aclnnSimThreadExponential.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/docs/aclnnSimThreadExponential.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_host/sim_thread_exponential_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_host/sim_thread_exponential_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_host/arch32/sim_thread_exponential_tiling_arch32.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_host/arch32/sim_thread_exponential_tiling_arch32.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_host/arch32/sim_thread_exponential_tiling_arch32.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_host/arch32/sim_thread_exponential_tiling_arch32.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:23:17Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -403,7 +403,7 @@ workspace_total = ceil(count/1536)*4 + GetLibApiWorkSpaceSize()
 
 - 适用 Route：R-001、R-002
 - 触发条件：所有 arch32 dtype；`unroll_factor=4`，`stepBlock=batchNumTotal*4`
-- Golden 来源：[`op_kernel/sim_thread_exponential.h:295-320`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h#L295-L320)
+- Golden 来源：[`op_kernel/sim_thread_exponential.h:295-320`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h#L295-L320)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -437,7 +437,7 @@ Philox4x32 每个 counter 产生 4 个 uint32。代码把四路结果保持在�
 
 - 适用 Route：R-001、R-002
 - 触发条件：完成当前轮 Philox 后进入 uint32→uniform→exponential 阶段
-- Golden 来源：[`op_kernel/sim_thread_exponential.h:317-345`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h#L317-L345)
+- Golden 来源：[`op_kernel/sim_thread_exponential.h:317-345`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/random/sim_thread_exponential/op_kernel/sim_thread_exponential.h#L317-L345)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

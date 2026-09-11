@@ -2,25 +2,85 @@
 type: API
 title: Htanh
 description: 计算half输入数据的双曲正切值。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_math_functions/htanh.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_fp16.h
 ---
-# Htanh
 
-功能：获取输入数据的三角函数双曲正切值。
+# htanh
 
-函数原型：half htanh(half x)
+## 功能说明
 
-参数：x（输入）源操作数。
+获取输入数据的双曲正切值。
 
-返回值：输入数据的双曲正切值。本接口受全局饱和寄存器的影响，。特殊值：±0→0；nan→0；inf→1；-inf→-1。
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002501372254.png)
 
-约束：无。需包含头文件 simt_api/asc_fp16.h。
+## 函数原型
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+```cpp
+inline half htanh(half x)
+```
+
+## 参数说明
+
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+输入数据的双曲正切值。本接口受全局饱和寄存器的影响，特殊值如下：
+
+| x值 | 非饱和模式返回值 | 饱和模式返回值 |
+| --- | --- | --- |
+| ±0 | 0 | 0 |
+| nan | nan | 0 |
+| inf | 1 | 1 |
+| -inf | -1 | -1 |
+
+## 约束说明
+
+无
+
+## 需要包含的头文件
+
+使用half类型接口需要包含`simt_api/asc_fp16.h`头文件。
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+## 调用示例
+
+-   SIMT编程场景：
+
+    ```cpp
+    __global__ __launch_bounds__(1024) void KernelTanh(half* dst, half* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = htanh(x[idx]);
+    }
+    ```
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void KernelTanh(__gm__ half* dst, __gm__ half* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = htanh(x[idx]);
+    }
+    ```

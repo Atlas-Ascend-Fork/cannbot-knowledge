@@ -1,6 +1,5 @@
 # Conv3DBackpropInput Tiling侧接口
 
-- [Conv3DBackpropInput Tiling侧接口](conv3_d_backprop_input_tiling.md)：提供Conv3D反向卷积输入梯度的Host侧Tiling接口，包含TConv3DBackpropInputTiling结构体、GetTiling及形状与类型设置方法。
 - [Conv3DBackpropInput Tiling构造函数](conv3_d_backprop_input_tiling_constructor.md)：用于创建一个Conv3DBackpropInput单核Tiling对象。
 - [Conv3DBackpropInputTiling](conv3_d_backprop_input_tiling_usage.md)：提供获取Conv3DBackpropInput Kernel计算所需Tiling参数的API，用户传入输入输出参数后调用GetTiling接口获取Tiling信息。
 - [GetTiling](get_tiling.md)：获取Tiling参数。
@@ -14,4 +13,4 @@
 - [SetStride](set_stride.md)：设置Stride信息。
 - [SetWeightShape](set_weight_shape.md)：设置权重矩阵Weight的形状。
 - [SetWeightType](set_weight_type.md)：设置权重矩阵Weight的位置、数据格式、数据类型信息，这些信息必须与Kernel侧的设置保持一致。
-- [TConv3DBackpropInputTiling结构体](t_conv3_d_backprop_input_tiling_struct.md)：TConv3DBackpropInputTiling结构体包含Conv3DBackpropInput算子规格信息及Tiling切分算法的相关参数，被传递给Conv3DBackpropInput Kernel侧，用于数据切分、数据搬运和计算等。TConv3DBackpropInputTiling...
+- [TConv3DBackpropInputTiling结构体](t_conv3_d_backprop_input_tiling_struct.md)：TConv3DBackpropInputTiling结构体包含Conv3DBackpropInput算子规格信息及Tiling切分算法的相关参数，被传递给Conv3DBackpropInput Kernel侧，用于数据切分、数据搬运和计算等。TConv3DBackpropInputTiling结构体的参数说明见下表。

@@ -5,32 +5,32 @@ description: "说明 aclnnReluV3 在 A2 上的接口语义、Host/Launcher 参�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/docs/aclnnReluV3.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/docs/aclnnReluV3.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_host/relu_v3_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_host/relu_v3_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_host/relu_v3_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_host/relu_v3_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_host/relu_v3_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_host/relu_v3_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu/docs/aclnnRelu%26aclnnInplaceRelu.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu/docs/aclnnRelu&aclnnInplaceRelu.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu/op_host/relu_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu/op_host/relu_def.cpp
     role: implementation
 created_at: "2026-08-25T18:53:24Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -688,7 +688,7 @@ workspace_total = 0
 
 - 适用 Route：R-001～R-005。
 - 触发条件：key 0 的任一支持 dtype；每个 tile 在 x Queue 中就绪。
-- Golden 来源：[`experimental/activation/relu_v3/op_kernel/relu_v3.h:131-154`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3.h#L131-L154)
+- Golden 来源：[`experimental/activation/relu_v3/op_kernel/relu_v3.h:131-154`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3.h#L131-L154)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -723,7 +723,7 @@ mask_t_que.EnQue(mask);
 
 - 适用 Route：R-003～R-005，R-004/R-005收益路径最完整。
 - 触发条件：INT32 需要 FP32 mask 比较；8-bit 使用 FP16；BF16 使用 FP32。
-- Golden 来源：[`experimental/activation/relu_v3/op_kernel/relu_v3.h:161-171`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3.h#L161-L171)
+- Golden 来源：[`experimental/activation/relu_v3/op_kernel/relu_v3.h:161-171`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_kernel/relu_v3.h#L161-L171)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -759,7 +759,7 @@ else if constexpr (std::is_same_v<T, bfloat16_t>)
 
 - 适用 Route：R-001～R-005。
 - 触发条件：Tiling 成功后，根据 `N*sizeof(dtype)` 命中 `<32 KiB`、`<4 MiB` 或其他档。
-- Golden 来源：[`experimental/activation/relu_v3/op_host/relu_v3_tiling.cpp:35-46`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_host/relu_v3_tiling.cpp#L35-L46)
+- Golden 来源：[`experimental/activation/relu_v3/op_host/relu_v3_tiling.cpp:35-46`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/experimental/activation/relu_v3/op_host/relu_v3_tiling.cpp#L35-L46)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -1,6 +1,6 @@
 ---
 name: knowledge-ingest
-description: 将所有 cannbot-knowledge 摄入请求统一路由，并把官方文档、固定版本源码或人工材料蒸馏为符合 OKF v0.2 与 CANNBot Profile 的候选卡。接入 Git 或固定归档来源、按 commit 增量同步、升级来源版本、创建或更新知识、整理错误经验，或执行关系候选召回、判定聚合、关系块注入、本地图谱合成和校验时使用；当前内置通用建卡、官方 Reference 和本地图谱完整流程，未接入 producer 明确 defer。
+description: 将所有 cannbot-knowledge 摄入请求统一路由，把官方固定归档 API/Guide 受控转换为知识卡，或将固定版本源码、人工材料蒸馏为符合 OKF v0.2 与 CANNBot Profile 的候选卡。接入 Git 或固定归档来源、按 commit 增量同步、升级来源版本、创建或更新知识、整理错误经验，或执行关系候选召回、判定聚合、关系块注入、本地图谱合成和校验时使用；当前内置通用建卡、官方 Reference 和本地图谱完整流程，未接入 producer 明确 defer。
 ---
 
 # Knowledge Ingest
@@ -22,6 +22,8 @@ description: 将所有 cannbot-knowledge 摄入请求统一路由，并把官方
 
 ## 通用建卡
 
+`scripts/knowledge_ingest.py` 负责 `create` 和 `sync-indexes`，并保留既有 CI 的 `build-graph` 兼容入口；构图始终委派给本 Skill 内[本地图谱](references/local-graphs.md)中的 `scripts/knowledge_graph.py`，不修改 `.gitcode/` 的调用约定。普通构图消费并校验已提交导航，不下载或重新扫描源码；源码调用证据由知识更新和完整收尾门禁复验。
+
 先查重并完整读取固定来源。确定 domain、technology/scope 和路径 Profile，再把来源事实、推导结论和待验证假设分开；证据不足时保持 `draft`。
 
 ```bash
@@ -36,15 +38,19 @@ python3 <skill-dir>/scripts/knowledge_ingest.py --knowledge-root <repo> create \
 
 ## 收尾门禁
 
+- Ingest 的验证由全库确定性命令和仓库 `evals/` 承担，不维护 Skill 内独立测试目录；统一入口仍为根 `bash check.sh`。日常修改仅做必要的定向检查，以下完整收尾流程在提交或推送上库前统一执行，用户明确要求提前全量验证时除外。
 - 更新目标目录到 Bundle 根的全部 `index.md`；可运行 `scripts/knowledge_ingest.py --knowledge-root <repo> sync-indexes` 同步直接子项并保留已有说明及行内/显式引用式导航，再用 `--check` 确认没有陈旧导航。domain 根和 `ops`/`model` 预建 route 保留自己的 index，但不冒充实际覆盖。其他领域不为未来分类提前建空目录。
 - 使用系统时间在 `logs/YYYY-MM-DD.md` 顶部记录操作、来源 revision、created/updated/deferred 数和关键裁决。
 - Git Reference 批次先生成不可覆盖的 verification receipt；固定归档批次只在日志记录 source ID、归档 SHA-256 和 created/updated/deferred 数。两类批次随后都运行全库 `knowledge-lint`，并以目标 platform/technology 执行 `knowledge-query`。
+- 固定归档 API 的头文件字段区分文档显式路径与源码审阅补充；无显式路径时保留同来源的合法补充，不把缺少 `include/` 的归档校验当作源码声明验证。维护与升级边界见[官方 Reference 摄入](references/official-reference-ingest.md)。
+- 镜像清理与正文空白例外共用 Contract 的来源角色判定；仅以非主来源引用归档的蒸馏卡不属于过期镜像，不得随同步删除，仍按普通卡片校验。
+- Registry 声明 `mirror` 的固定归档 API/Guide 先由获取脚本恢复成通过最终 tree SHA-256 的来源树，再使用 `scripts/fixed_archive_docs.py sync --updated-at <UTC>` 重建，并以 `verify` 复验来源树、导航页过滤、声明章节删除、保留正文、链接目标、Frontmatter 和受管区块；`index_only` 导航策略不为 README、发布占位、纯链接目录或接口清单建卡，所有目录入口统一使用 `index.md`。配置为省略的“产品支持情况”仍先用于推导并复验 Frontmatter `platforms`，随后才从正文删除。获取脚本只可在归档 SHA-256 已通过后执行已审计、计数固定且幂等的发布器错误修复，任一输入或修复数量漂移都失败关闭。没有产品支持表、能力枚举或明确限定整张卡片/本接口范围的“仅支持/仅针对…生效”等证据时不得自动写为 `agnostic`，必须使用 `draft` 与空平台范围，章节内局部能力限制不能提升为整卡平台。API 自动关联使用 `scripts/api_operator_links.py sync/verify`，优先核验算子卡声明的固定提交源码，正文调用示例单独标注；完整证据、同名歧义与受限展示契约见[本地图谱](references/local-graphs.md)。已有来源的等价本地化和资源恢复见[新来源接入](references/source-onboarding.md)，不作为新 Git Reference 批次重建 inventory/ledger，不改技术断言。
 - 图谱没有确定性 judge 或自动 `full` 捷径。全量重建先用 `reset` 清除 ignored 的旧产物，再依次运行 `candidates`、`make-shards`，由多个 subagent 以每次一至两个 shard 的小批次覆盖全部 focal，主 Agent 使用 `aggregate` 聚合全部 review，再运行 `finalize`。每个接受或显式拒绝的双端 anchor 必须逐字存在于对应卡片的非受管正文。召回分数只帮助定位候选，不决定是否成边；不得用规则输出冒充 Agent 语义判定。接受/显式拒绝冲突和关系类型冲突必须交给未参与对应 pair 原判定的 subagent 裁决，裁决分片必须互不重叠且合并后恰好覆盖完整冲突集；聚合失败会使旧缓存失效，语料或候选产物变化后也拒绝复用缓存。
 
 ## 边界
 
 - 不自动 commit、push、提 PR 或发布 Skill。
 - 对独立知识根只执行本 Skill 自带的 Contract；目标根 Contract 与当前版本不一致时失败，不导入目标根 Python。
-- 更新前完整读取原卡并做增量融合；不整体覆盖，不按上游文件一对一复制知识卡。图谱流程只能改写 `cannbot:related` 受管区块，不得改动其他正文；关系目标渲染为导航链接，Agent 理由只渲染为去活化链接语法后的单行纯文本，不能把理由中引用的 Markdown 变成新的人工链接。这些区块作为卡片导航提交，候选、review、冲突裁决、判定缓存、JSON 和 HTML 则都只保存在 ignored 的 `artifacts/graphs/`，不得提交。
+- 更新前完整读取原卡并做增量融合；除 Registry 固定归档的官方 API/Guide 受控转换外，不整体覆盖或机械复制上游文件。固定归档只选择含独立技术事实的页面；保留正文只能删除 Registry 声明的冗余章节并改写因入库路径变化或导航页过滤而失效的链接目标。图谱流程只能改写 `cannbot:related` 受管区块，不得改动其他正文。关系目标渲染为导航链接，Agent 理由只渲染为去活化链接语法后的单行纯文本，不能把理由中引用的 Markdown 变成新的人工链接。这些区块作为卡片导航提交，候选、review、冲突裁决、判定缓存、JSON 和 HTML 则都只保存在 ignored 的 `artifacts/graphs/`，不得提交。
 - 不把固定来源、脚本成功或 lint 通过等同于人工复核。
 - 未迁移 producer 必须 defer；不要用通用建卡脚本声称完成其专用语义分析。

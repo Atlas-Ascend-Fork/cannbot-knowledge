@@ -5,38 +5,38 @@ description: "说明 aclnnUpsampleNearest3d 在 950 上的接口语义、Host/La
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/docs/aclnnUpsampleNearest3d.md
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/docs/aclnnUpsampleNearest3d.md
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/op_api/aclnn_upsample_nearest_3d.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/op_api/aclnn_upsample_nearest_3d.h
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/op_api/aclnn_upsample_nearest_3d.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/op_api/aclnn_upsample_nearest_3d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/op_api/upsample_nearest_3d.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/op_api/upsample_nearest_3d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/upsample_nearest3d_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/upsample_nearest3d_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/upsample_nearest3d_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/upsample_nearest3d_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/upsample_nearest3d_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/upsample_nearest3d_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/arch35/upsample_nearest3d_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/arch35/upsample_nearest3d_tiling_data.h
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/arch35/upsample_nearest3d_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/arch35/upsample_nearest3d_tiling_key.h
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/upsample_nearest3d_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/upsample_nearest3d_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/arch35/upsample_nearest3d_data_copy.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/arch35/upsample_nearest3d_data_copy.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/arch35/upsample_nearest3d_simt.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/arch35/upsample_nearest3d_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/arch35/upsample_nearest3d_simt_base.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_kernel/arch35/upsample_nearest3d_simt_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/config/ascend950/upsample_nearest3d_binary.json
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/config/ascend950/upsample_nearest3d_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T20:56:47Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -591,7 +591,7 @@ workspace_total = 16 * 1024 * 1024 B（未消费）
 
 - 适用 Route：R-001
 - 触发条件：输入输出 D/H/W 相同，且三个 Device scale 与 1 的绝对差都不超过 `1e-8`。
-- Golden 来源：[`image/upsample_nearest3d/op_host/upsample_nearest3d_tiling_arch35.cpp:231-241`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/upsample_nearest3d_tiling_arch35.cpp#L231-L241)
+- Golden 来源：[`image/upsample_nearest3d/op_host/upsample_nearest3d_tiling_arch35.cpp:231-241`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/upsample_nearest3d_tiling_arch35.cpp#L231-L241)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -630,7 +630,7 @@ Host 在插值比例和空间 shape 都恒等时完全绕过 `floorf`、除法 m
 
 - 适用 Route：R-002～R-004
 - 触发条件：非恒等；依次比较 `DHW`、`CDHW` 与 `coreNum*2048`，并由 shape/元素总数决定 uint32 或 uint64 索引。
-- Golden 来源：[`image/upsample_nearest3d/op_host/upsample_nearest3d_tiling_arch35.cpp:243-263`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/upsample_nearest3d_tiling_arch35.cpp#L243-L263)
+- Golden 来源：[`image/upsample_nearest3d/op_host/upsample_nearest3d_tiling_arch35.cpp:243-263`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest3d/op_host/upsample_nearest3d_tiling_arch35.cpp#L243-L263)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

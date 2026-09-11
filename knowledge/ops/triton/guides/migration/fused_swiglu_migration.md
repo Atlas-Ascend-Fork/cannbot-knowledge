@@ -137,7 +137,6 @@ tl.store(dw_g_ptrs, dw_g, mask=dw_mask)
 | SPLIT_K | 仅支持 SPLIT_K=1 |
 
 <!-- cannbot:related:start -->
-
 ## 相关
 
 - [融合算子综合](../operator_design/fused_ops.md)（`related`）：“融合算子综合（GEMM+Activation 等 8 种融合模式）”

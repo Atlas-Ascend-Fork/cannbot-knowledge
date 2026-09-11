@@ -5,50 +5,50 @@ description: "说明 aclnnMaxPool 在 950 上的接口语义、Host/Launcher 参
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/docs/aclnnMaxPool.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/docs/aclnnMaxPool.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_api/aclnn_max_pool.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_api/aclnn_max_pool.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_api/aclnn_max_pool.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_api/aclnn_max_pool.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_api/max_pool_v3.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_api/max_pool_v3.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/max_pool_v3_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/max_pool_v3_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_tiling_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_tiling_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_small_kernel_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_small_kernel_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_small_kernel_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_small_kernel_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_big_kernel_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_big_kernel_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_big_kernel_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_big_kernel_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/max_pool_v3_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/max_pool_v3_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_small_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_small_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_small_kernel_pad.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_small_kernel_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_big_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_big_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_templates_registry.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_host/tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_api/aclnn_util.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_api/aclnn_util.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/config/ascend950/max_pool_v3_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/config/ascend950/max_pool_v3_binary.json
     role: implementation
 created_at: "2026-08-25T18:21:23Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -575,7 +575,7 @@ workspace_total(MaxPoolV3 node) = 16 MiB system workspace
 
 - 适用 Route：R-001、R-002。
 - 触发条件：初始 `nLoop*hLoop*wLoop < coreNum` 且非空；每轮仍有 `availableUb_ > 4096/dtypeSize`。
-- Golden 来源：[`pooling/max_pool_v3/op_host/arch35/max_pool_v3_small_kernel_tiling.cpp:278-287`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_small_kernel_tiling.cpp#L278-L287)
+- Golden 来源：[`pooling/max_pool_v3/op_host/arch35/max_pool_v3_small_kernel_tiling.cpp:278-287`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_host/arch35/max_pool_v3_small_kernel_tiling.cpp#L278-L287)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -611,7 +611,7 @@ Host 不固定追求最大 tile，而是每轮减少 4096 字节等价的元素�
 
 - 适用 Route：R-002。
 - 触发条件：key 300002；每 tile 先计算 `hLower/hUpper/wLower/wUpper`。
-- Golden 来源：[`pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_small_kernel_pad.h:158-178`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_small_kernel_pad.h#L158-L178)
+- Golden 来源：[`pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_small_kernel_pad.h:158-178`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_small_kernel_pad.h#L158-L178)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -647,7 +647,7 @@ Device 从 GM 只取窗口并集与真实输入的交集，再把它复制/散�
 
 - 适用 Route：R-003。
 - 触发条件：`kH*kW > maxCount`；每个窗口沿 H 或 W 分段。
-- Golden 来源：[`pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_big_kernel.h:239-269`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_big_kernel.h#L239-L269)
+- Golden 来源：[`pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_big_kernel.h:239-269`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool_v3/op_kernel/arch35/max_pool_v3_big_kernel.h#L239-L269)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

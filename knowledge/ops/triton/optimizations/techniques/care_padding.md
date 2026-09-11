@@ -96,15 +96,6 @@ result = tl.sum(x, axis=0)
 
 对比优化前后计算结果完全一致即安全；或分析逻辑：padding 值是否被 store 写出、是否参与 reduction 等全局计算。不确定时保持默认 `care_padding=True`。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [数据类型与精度保护（910_95 平台）](data_type_precision.md)（`related`）：“910_95 视角的 care_padding 与精度保护”
-- [NPU 分块策略（Tiling）](tiling_strategy.md)（`related`）：“for 循环 Tiling 与存算并行条件”
-- [NPU 性能优化策略总览](perf_optimization_overview.md)（`related`）：“优化策略总览”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -113,3 +104,13 @@ result = tl.sum(x, axis=0)
 - [core.py#L1621-L1638](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/core.py#L1621-L1638)
 - [semantic.py#L1198-L1213](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/language/semantic.py#L1198-L1213)
 - [performance_guidelines.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/migration_guide/performance_guidelines.md)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [数据类型与精度保护（910_95 平台）](data_type_precision.md)（`related`）：“910_95 视角的 care_padding 与精度保护”
+- [NPU 分块策略（Tiling）](tiling_strategy.md)（`related`）：“for 循环 Tiling 与存算并行条件”
+- [NPU 性能优化策略总览](perf_optimization_overview.md)（`related`）：“优化策略总览”
+
+<!-- cannbot:related:end -->

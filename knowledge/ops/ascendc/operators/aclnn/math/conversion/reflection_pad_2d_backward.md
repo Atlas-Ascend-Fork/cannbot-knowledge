@@ -5,42 +5,42 @@ description: "说明 aclnnReflectionPad2dBackward 在 A2/A3 上的接口语义�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/docs/aclnnReflectionPad2dBackward.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/docs/aclnnReflectionPad2dBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad_replicate/op_host/op_api/aclnn_pad2d_backward.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad_replicate/op_host/op_api/aclnn_pad2d_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad_replicate/op_host/op_api/aclnn_pad2d_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad_replicate/op_host/op_api/aclnn_pad2d_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_api/padv3grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v3_grad/op_api/padv3grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/pad_v4_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/pad_v4_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/pad_v4_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/pad_v4_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_base.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_mini_h_w_pad.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_mini_h_w_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_h_pad.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_h_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_w_pad.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_w_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_small_h_large_w_pad.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_small_h_large_w_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_large_h_small_w_pad.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_large_h_small_w_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_h_w_pad.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_h_w_pad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/pad_v4_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/pad_v4_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/config/ascend910b/pad_v4_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/config/ascend910b/pad_v4_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/config/ascend910_93/pad_v4_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_host/config/ascend910_93/pad_v4_grad_binary.json
     role: implementation
 created_at: "2026-08-25T09:32:37Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -714,7 +714,7 @@ workspace_total = blockNum*alignWidth*64*4 bytes
 
 - 适用 Route：R-001
 - 触发条件：FP32 core，`Hi<=128 && Wi<=112`
-- Golden 来源：[`conversion/pad_v4_grad/op_kernel/pad_v4_grad_mini_h_w_pad.h:45-58`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_mini_h_w_pad.h#L45-L58)
+- Golden 来源：[`conversion/pad_v4_grad/op_kernel/pad_v4_grad_mini_h_w_pad.h:45-58`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/pad_v4_grad/op_kernel/pad_v4_grad_mini_h_w_pad.h#L45-L58)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

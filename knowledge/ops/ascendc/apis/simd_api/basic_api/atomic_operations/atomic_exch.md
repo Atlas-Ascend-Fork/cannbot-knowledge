@@ -2,27 +2,95 @@
 type: API
 title: AtomicExch
 description: 对GM地址执行原子交换，将输入标量值写入并返回修改前的旧值。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.implementation.atomic]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.implementation.atomic
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/atomic_operations/AtomicExch.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/basic_api/kernel_operator_atomic_intf.h
 ---
 
+# AtomicExch<a name="ZH-CN_TOPIC_0000002598784433"></a>
 
-# AtomicExch
+## 功能说明<a name="section163431416121118"></a>
 
-在指定GM地址上进行原子交换操作。将address指向的GM地址上的旧值与输入值进行原子交换运算，将结果写回GM地址，返回修改前的旧值。仅Ascend 950PR/950DT支持。
+头文件路径为：`"basic_api/kernel_operator_atomic_intf.h"`。
 
-函数原型通过模板参数T指定数据类型（支持int32_t/uint32_t/int64_t/uint64_t/float等）。接口参数：address为GM地址指针；value为输入标量值。返回值为修改前的旧值。
+该接口用于在GM内存中执行原子交换操作，读取**address**指向的GM地址上的旧值（**old_value**），并将输入的标量值（**value**）替换旧值存储回同一地址，返回该地址修改前的值（**old_value**）。
 
-约束：仅支持标量操作；遵循通用地址对齐约束。头文件：basic_api/kernel_operator_atomic_intf.h。
+计算公式如下：
+
+$$
+new\_value = value
+$$
+
+## 函数原型<a name="section1171112415119"></a>
+
+```cpp
+template <typename T>
+__aicore__ inline T AtomicExch(__gm__ T *address, T value)
+```
+
+## 参数说明<a name="section086962912112"></a>
+
+**表1**  模板参数说明
+
+| 参数名 | 描述 |
+| --- | --- |
+| T | 操作数数据类型。 |
+
+**表2**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| address | 输入 | 输入GM的地址。 |
+| value | 输入 | 标量值，支持数据类型和address指向的数据类型保持一致。 |
+
+## 数据类型<a name="section832119018128"></a>
+
+address、value、返回值的数据类型相同，支持的数据类型为uint32_t、uint64_t。
+
+## 返回值说明<a name="section97313820116"></a>
+
+GM地址上做原子操作前的数据。
+
+## 约束说明<a name="section24727811123"></a>
+
+- 毕昇编译器能够在一部分属于PIPE_S的接口与属于PIPE_V、PIPE_MTE2、PIPE_MTE3的接口之间自动插入同步（详见[使用约束](../sync_control/intra_core_sync/key_features.md#使用约束-1)）。但标量原子操作接口均不在该范围内，因此AtomicExch与搬运接口（属于PIPE_MTE2、PIPE_MTE3）在读写GM时存在数据依赖时，毕昇编译器无法自动插入同步，开发者需根据实际情况手动插入同步。
+- Scalar原子操作会绕过DCache，需要调用[DataCacheCleanAndInvalid](../cache_control/data_cache_clean_and_invalid.md)接口确保GM与DCache的一致性。
+
+## 调用示例<a name="section191505489122"></a>
+
+```cpp
+AscendC::LocalMemAllocator<AscendC::Hardware::UB> ubAllocator;
+AscendC::LocalTensor<uint32_t> yLocal = ubAllocator.Alloc<uint32_t>(DATA_SIZE);
+
+AscendC::GlobalTensor<uint32_t> yGlobal;
+yGlobal.SetGlobalBuffer(reinterpret_cast<__gm__ uint32_t*>(y), DATA_SIZE);
+
+// AtomicExch：三个核分别对GM首个元素原子交换。
+uint32_t value = 1;
+AscendC::AtomicExch(reinterpret_cast<__gm__ uint32_t*>(y), value);
+
+// 原子操作后插入同步。
+AscendC::SetFlag<AscendC::HardEvent::S_MTE2>(EVENT_ID0);
+AscendC::WaitFlag<AscendC::HardEvent::S_MTE2>(EVENT_ID0);
+AscendC::DataCopy(yLocal, yGlobal, DATA_SIZE);
+```
+
+完整样例请参考[scalar_atomic_operations样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/06_atomic/scalar_atomic_operations)。
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [AscAtomicExch](../../c_api/scalar_compute/asc_atomic_exch.md)（`same_topic`）：在指定GM地址上进行原子交换操作。将address指向的GM地址上的旧值与输入值进行原子交换运算，将结果写回GM地址，返回修改前的旧值。仅Ascend 950PR/950DT支持。；对Global Memory中address指向的元素执行原子赋值操作，即将该元素值设置为val。两页描述同一 GM 原子交换语义，C scalar 页进一步给出流水同步与 DCache 一致性约束，能直接支撑接口选型和正确使用。
+- [AscAtomicExch](../../c_api/atomic/scalar_atomic/asc_atomic_exch.md)（`same_topic`）：在指定GM地址上进行原子交换操作。将address指向的GM地址上的旧值与输入值进行原子交换运算，将结果写回GM地址，返回修改前的旧值。仅Ascend 950PR/950DT支持。；对Global Memory中address指向的元素执行原子赋值操作，即将该元素值设置为val。两页描述同一 GM 原子交换语义，C scalar 页进一步给出流水同步与 DCache 一致性约束，能直接支撑接口选型和正确使用。
 <!-- cannbot:related:end -->

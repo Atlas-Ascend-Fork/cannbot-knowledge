@@ -5,30 +5,30 @@ description: "说明 cann_bench::moe_finalize_routing、moe_finalize_routing_npu
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/docs/aclnnMoeFinalizeRoutingV2.md"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/docs/aclnnMoeFinalizeRoutingV2.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_graph/moe_finalize_routing_v2_proto.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_graph/moe_finalize_routing_v2_proto.h"
     role: header
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_host/moe_finalize_routing_v2_tiling_arch35.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_host/moe_finalize_routing_v2_tiling_arch35.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_kernel/moe_finalize_routing_v2_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_kernel/moe_finalize_routing_v2_apt.cpp"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_base.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_base.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_row_k_h_full_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_row_k_h_full_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_k_h_full_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_k_h_full_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_h_full_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_h_full_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_h_partial_load.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_h_partial_load.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_tiling_struct.h"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_tiling_struct.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_host/config/ascend950/moe_finalize_routing_v2_binary.json"
+  - resource: "cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_host/config/ascend950/moe_finalize_routing_v2_binary.json"
     role: implementation
 created_at: "2026-08-25T19:37:34Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -950,7 +950,7 @@ workspace_total=0; dynamic_ub=N/A
 
 - 适用 Route：R-001 至 R-006。
 - 触发条件：按 ROW-K-H、K-H、H 的完整 UB 公式依次判断；第一次成立即停止，三者都失败才切 H。
-- 固定源码：[`op_host/moe_finalize_routing_v2_tiling_arch35.cpp:968-985`](https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_host/moe_finalize_routing_v2_tiling_arch35.cpp#L968-L985)
+- 固定源码：[`op_host/moe_finalize_routing_v2_tiling_arch35.cpp:968-985`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_host/moe_finalize_routing_v2_tiling_arch35.cpp#L968-L985)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -986,7 +986,7 @@ Route 优先级把最大的可复用域优先留在 UB：R-001 整张 expanded/b
 
 - 适用 Route：全部 Route。
 - 触发条件：`T` 为 FP16/BF16 时 load 先升 FP32；每个有效 K 依次执行 bias、scale、累加，最终一次降精度。
-- 固定源码：[`op_kernel/arch35/moe_finalize_routing_v2_base.h:274-311`](https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_base.h#L274-L311)
+- 固定源码：[`op_kernel/arch35/moe_finalize_routing_v2_base.h:274-311`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_base.h#L274-L311)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1028,7 +1028,7 @@ for (uint16_t k = 0; k < validK; k++) {
 
 - 适用 Route：R-002、R-003、R-004。
 - 触发条件：R-003 对每个 row tile 批量搬入 row/expert index；R-002 在两个固定 H/K/dtype/mask guard 下搬入动态 `ROW*K` 整表；R-004 仅在固定 H/K/E guard 内缓存完整 bias。
-- 固定源码：[`op_kernel/arch35/moe_finalize_routing_v2_k_h_full_load.h:430-454`](https://gitcode.com/cann/ops-transformer/blob/c77c0829f1f0f0b8f882db1d9b051a758b605472/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_k_h_full_load.h#L430-L454)
+- 固定源码：[`op_kernel/arch35/moe_finalize_routing_v2_k_h_full_load.h:430-454`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_finalize_routing_v2/op_kernel/arch35/moe_finalize_routing_v2_k_h_full_load.h#L430-L454)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

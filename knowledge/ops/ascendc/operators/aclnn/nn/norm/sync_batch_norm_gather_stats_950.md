@@ -5,38 +5,38 @@ description: "说明 aclnnSyncBatchNormGatherStats 在 950 上的接口语义、
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/docs/aclnnSyncBatchNormGatherStats.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/docs/aclnnSyncBatchNormGatherStats.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_api/aclnn_sync_batch_norm_gather_stats.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_api/aclnn_sync_batch_norm_gather_stats.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_api/aclnn_sync_batch_norm_gather_stats.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_api/aclnn_sync_batch_norm_gather_stats.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_api/sync_batch_norm_gather_stats.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_api/sync_batch_norm_gather_stats.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_host/arch35/sync_batch_norm_gather_stats_tiling_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_host/arch35/sync_batch_norm_gather_stats_tiling_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_host/arch35/sync_batch_norm_gather_stats_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_host/arch35/sync_batch_norm_gather_stats_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/sync_batch_norm_gather_stats_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/sync_batch_norm_gather_stats_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/arch35/sync_batch_norm_gather_stats_n_full_load.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/arch35/sync_batch_norm_gather_stats_n_full_load.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/arch35/sync_batch_norm_gather_stats_n_not_full_load.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/arch35/sync_batch_norm_gather_stats_n_not_full_load.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/arch35/sync_batch_norm_gather_stats_struct.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/arch35/sync_batch_norm_gather_stats_struct.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_kernel/platform.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_kernel/platform.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_kernel/kernel_utils.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/common/inc/op_kernel/kernel_utils.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_host/sync_batch_norm_gather_stats_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_host/sync_batch_norm_gather_stats_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_host/config/ascend950/sync_batch_norm_gather_stats_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_host/config/ascend950/sync_batch_norm_gather_stats_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:14:43Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -662,7 +662,7 @@ workspace_total(owned Kernel实际读取) = 0；Host登记 16 MiB
 
 - 适用 Route：R-001～R-004
 - 触发条件：key10001 的 dtype-specific `cTileNum_` 计算结果是否为正且至少覆盖 128 字节。
-- Golden 来源：[`op_host/arch35/sync_batch_norm_gather_stats_tiling_arch35.cpp:656-668`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_host/arch35/sync_batch_norm_gather_stats_tiling_arch35.cpp#L656-L668)
+- Golden 来源：[`op_host/arch35/sync_batch_norm_gather_stats_tiling_arch35.cpp:656-668`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_host/arch35/sync_batch_norm_gather_stats_tiling_arch35.cpp#L656-L668)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -703,7 +703,7 @@ Host 将 N×C 双输入 queue、running/output queue、count buffer 与 B16 FP32
 
 - 适用 Route：R-002
 - 触发条件：`T` 为 `float16_t` 或 `bfloat16_t`。
-- Golden 来源：[`op_kernel/arch35/sync_batch_norm_gather_stats_n_full_load.h:141-154`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/arch35/sync_batch_norm_gather_stats_n_full_load.h#L141-L154)
+- Golden 来源：[`op_kernel/arch35/sync_batch_norm_gather_stats_n_full_load.h:141-154`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/arch35/sync_batch_norm_gather_stats_n_full_load.h#L141-L154)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -742,7 +742,7 @@ B16 Route 为两个 N×C tile 各分配 FP32 scratch，`Cast(..., CAST_NONE)` �
 
 - 适用 Route：R-003/R-004
 - 触发条件：key20001；每个 `basicBlockIdx` 完成一份局部 ReduceSum 后。
-- Golden 来源：[`op_kernel/arch35/sync_batch_norm_gather_stats_n_not_full_load.h:245-259`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/arch35/sync_batch_norm_gather_stats_n_not_full_load.h#L245-L259)
+- Golden 来源：[`op_kernel/arch35/sync_batch_norm_gather_stats_n_not_full_load.h:245-259`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/sync_batch_norm_gather_stats/op_kernel/arch35/sync_batch_norm_gather_stats_n_not_full_load.h#L245-L259)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

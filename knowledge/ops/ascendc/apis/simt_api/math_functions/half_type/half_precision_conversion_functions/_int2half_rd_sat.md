@@ -2,26 +2,75 @@
 type: API
 title: __int2half_rd_sat
 description: 按照CAST_FLOOR模式将int32类型数据转换为half类型数据。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.compute.elementwise.type_conversion]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.compute.elementwise.type_conversion
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__int2half_rd_sat.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+source_headers:
+- include/simt_api/asc_fp16.h
 ---
 
-# __int2half_rd_sat
+# \_\_int2half\_rd\_sat
 
-功能：按照CAST_FLOOR模式将int32类型数据转换为half类型数据。
+## 功能说明
 
-函数原型：half __int2half_rd_sat(const int x)
+按照CAST\_FLOOR模式将int32类型数据转换为half类型数据。
 
-参数：x（输入）源操作数。
+## 函数原型
 
-返回值：遵循CAST_FLOOR模式，将输入int32数据转换成的half数据。特殊值：2147483647（int32_t最大值）→ASCRT_MAX_NORMAL_FP16；-2147483648（int32_t最小值）→-ASCRT_MAX_NORMAL_FP16；2049→2048；-2049→-2050。
+```cpp
+inline half __int2half_rd_sat(const int x)
+```
 
-约束：SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效。需包含头文件 simt_api/asc_fp16.h。
+## 参数说明
 
-支持平台：仅 Ascend 950PR/Ascend 950DT 支持，其他 Atlas 系列产品不支持。
+**表1**  参数说明
+
+| 参数名 | 输入/输出 | 描述 |
+| --- | --- | --- |
+| x | 输入 | 源操作数。 |
+
+## 返回值说明
+
+遵循CAST\_FLOOR模式，将输入int32数据转换成的half数据。特殊值如下：
+
+| x值 | 返回值 |
+| --- | --- |
+| x>ASCRT\_MAX\_NORMAL\_FP16 | ASCRT\_MAX\_NORMAL\_FP16 |
+| x<-ASCRT\_MAX\_NORMAL\_FP16 | -ASCRT\_MAX\_NORMAL\_FP16 |
+| 2147483647（int32_t最大值） | ASCRT\_MAX\_NORMAL\_FP16 |
+| -2147483648（int32_t最小值） | -ASCRT\_MAX\_NORMAL\_FP16 |
+| 2049 | 2048 |
+| -2049 | -2050 |
+
+## 约束说明
+
+SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效。
+
+## 需要包含的头文件
+
+使用该接口需要包含`simt_api/asc_fp16.h`头文件。
+
+```cpp
+#include "simt_api/asc_fp16.h"
+```
+
+## 调用示例
+
+-   SIMD与SIMT混合编程场景：
+
+    ```cpp
+    __simt_vf__ __launch_bounds__(1024) inline void kernel__int2half_rd_sat(__gm__ half* dst, __gm__ int32_t* x)
+    {
+        int idx = threadIdx.x + blockIdx.x * blockDim.x;
+        dst[idx] = __int2half_rd_sat(x[idx]);
+    }
+    ```

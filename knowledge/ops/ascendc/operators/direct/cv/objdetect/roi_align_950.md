@@ -5,20 +5,20 @@ description: "说明 cann_bench::roi_align、roi_align_npu 与 launch_roi_align 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/docs/aclnnRoiAlignV2.md
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/docs/aclnnRoiAlignV2.md
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_graph/roi_align_proto.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_graph/roi_align_proto.h
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/aclnn_roi_align_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/aclnn_roi_align_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/aclnn_roi_align.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/aclnn_roi_align.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/roi_align.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/roi_align.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:39:32Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -667,7 +667,7 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0; inter_kernel_GM=48R B
 
 - 适用 Route：R-001～R-004。
 - 触发条件：调用接口已提供 `[R,5]` 的 `(batch,x0,y0,x1,y1)` 且 dtype 与 features 相同。
-- 固定源码依据：[`objdetect/roi_align/op_host/op_api/aclnn_roi_align_v2.cpp:191-192`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/aclnn_roi_align_v2.cpp)
+- 固定源码依据：[`objdetect/roi_align/op_host/op_api/aclnn_roi_align_v2.cpp:191-192`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/aclnn_roi_align_v2.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -697,7 +697,7 @@ CHECK_RET(boxesContiguous != nullptr, ACLNN_ERR_INNER_NULLPTR);
 
 - 适用 Route：R-001～R-004。
 - 触发条件：同一 ROI 的几何量被 `C*OH*OW` 个输出复用，且两个 Kernel 在同一 stream 顺序提交。
-- 固定源码依据：[`objdetect/roi_align_grad/op_kernel/arch35/roi_align_grad_simt.h:64-68`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/objdetect/roi_align_grad/op_kernel/arch35/roi_align_grad_simt.h)
+- 固定源码依据：[`objdetect/roi_align_grad/op_kernel/arch35/roi_align_grad_simt.h:64-68`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align_grad/op_kernel/arch35/roi_align_grad_simt.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

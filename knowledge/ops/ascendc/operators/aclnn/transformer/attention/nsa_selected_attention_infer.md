@@ -5,44 +5,44 @@ description: "说明 aclnnNsaSelectedAttentionInfer 在 A2/A3 上的接口语义
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/docs/aclnnNsaSelectedAttentionInfer.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/docs/aclnnNsaSelectedAttentionInfer.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/docs/zh/op_api_list.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/docs/zh/op_api_list.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/cmake/level2_ops_list
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/cmake/level2_ops_list
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/op_api/aclnn_nsa_selected_attention_infer.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/op_api/aclnn_nsa_selected_attention_infer.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/op_api/aclnn_nsa_selected_attention_infer.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/op_api/aclnn_nsa_selected_attention_infer.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/op_api/nsa_selected_attention_infer.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/op_api/nsa_selected_attention_infer.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling_check.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling_check.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling_register.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling_register.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_selected_attention_infer.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_selected_attention_infer.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_selected_attention_infer.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_selected_attention_infer.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_public_define.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_public_define.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: '2026-08-28T06:56:32Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -475,7 +475,7 @@ workspace_total、L1_total、L0_total、UB_total与R-001相同。
 
 - 适用 Route：R-001、R-002。
 - 触发条件：所有 Host 可达 key；`PRE_LOAD_NUM=4`，MIX blockDim 为每 AIC 两个 AIV。
-- Golden 来源：[`op_kernel/nsa_selected_attention_infer.h:1601-1619`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_selected_attention_infer.h#L1601-L1619)
+- Golden 来源：[`op_kernel/nsa_selected_attention_infer.h:1601-1619`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_selected_attention_infer.h#L1601-L1619)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -522,7 +522,7 @@ for (uint32_t i = 0; i < bn2s2LoopTimes; i = i + PRE_LOAD_NUM) {
 
 - 适用 Route：R-001、R-002。
 - 触发条件：`actualLenDims!=1 && taskCount>coreNum && !isWorkspace`；否则简单连续均分。
-- Golden 来源：[`op_host/nsa_selected_attention_infer_tiling.cpp:505-512`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling.cpp#L505-L512)
+- Golden 来源：[`op_host/nsa_selected_attention_infer_tiling.cpp:505-512`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_host/nsa_selected_attention_infer_tiling.cpp#L505-L512)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -558,7 +558,7 @@ for (uint32_t idx = 0; idx < MAX_CORE_NUM; ++idx) {
 
 - 适用 Route：R-001、R-002。
 - 触发条件：paged attention；topk项非`-1`；pageBlockSize 64/128；selectedBlockSize 16对齐且≤128。
-- Golden 来源：[`op_kernel/nsa_selected_attention_infer.h:1203-1221`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_selected_attention_infer.h#L1203-L1221)
+- Golden 来源：[`op_kernel/nsa_selected_attention_infer.h:1203-1221`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/attention/nsa_selected_attention_infer/op_kernel/nsa_selected_attention_infer.h#L1203-L1221)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -2,22 +2,74 @@
 type: API
 title: NumThreads
 description: 获取当前线程所属的thread_block_tile组内的线程总数。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.programming_model.cooperative_groups]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.programming_model.cooperative_groups
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/thread_block_tile/num_threads.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
 ---
 
-# NumThreads
+# num_threads
 
-获取当前线程所属的thread_block_tile组内的线程总数。
-函数原型：unsigned long long num_threads() const
-返回值：当前线程所属的thread_block_tile组内的线程总数。
-支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+## 功能说明
+
+获取当前线程所属的`thread_block_tile`组内的线程总数。
+
+## 函数原型
+
+```cpp
+unsigned int num_threads() const
+```
+
+## 参数说明
+
+无
+
+## 返回值说明
+
+当前线程所属的`thread_block_tile`组内的线程总数。
+
+## 约束说明
+
+无
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    using namespace cooperative_groups;
+    __global__ void simt_kernel(...)
+    {
+        ...
+        thread_block block = this_thread_block();
+        auto tile4 = tiled_partition<4>(block);
+        unsigned int thread_num = tile4.num_threads();    // 返回4
+        ...
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    using namespace cooperative_groups;
+    __simt_vf__ inline void simt_kernel(...)
+    {
+        ...
+        thread_block block = this_thread_block();
+        auto tile4 = tiled_partition<4>(block);
+        unsigned int thread_num = tile4.num_threads();    // 返回4
+        ...
+    }
+    ```
+
 
 <!-- cannbot:related:start -->
 ## 相关

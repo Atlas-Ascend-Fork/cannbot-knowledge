@@ -5,28 +5,28 @@ description: "说明 cann_bench::transpose、transpose_npu 与 launch_transpose_
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/README.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_host/transpose_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_host/transpose_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_host/arch35/transpose_tiling_with_gather_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_host/arch35/transpose_tiling_with_gather_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_host/arch35/transpose_tiling_with_nchwconv_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_host/arch35/transpose_tiling_with_nchwconv_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_kernel/transpose_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/transpose_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_kernel/arch35/transpose_with_gather.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_with_gather.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_kernel/arch35/transpose_transdata_5hd.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_transdata_5hd.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T19:32:10Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -1044,7 +1044,7 @@ workspace_total=0 on Device
 
 - 适用 Route：R-001
 - 触发条件：950、reduced 2-D swap、2 B 元素、R>5，且 UB 能容纳至少一个 16 宽 block。
-- 源码锚点：[`transpose_tiling_arch35.cpp:112-130`](https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp)
+- 源码锚点：[`transpose_tiling_arch35.cpp:112-130`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp)
 
 **选择器最小骨架**：
 
@@ -1075,7 +1075,7 @@ selector 在通用 gather/NDDMA 前选择专用 vconv。Device 把矩阵补齐�
 
 - 适用 Route：R-002
 - 触发条件：gather Host guard 成功；输入/输出切轴分别可能有 tail。
-- 源码锚点：[`transpose_with_gather.h:546-579`](https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_kernel/arch35/transpose_with_gather.h)
+- 源码锚点：[`transpose_with_gather.h:546-579`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_with_gather.h)
 
 **索引相位最小骨架**：
 
@@ -1106,7 +1106,7 @@ outUbTailFactor_ = td_->outUbCutAxisSize % td_->outUbCutAxisFactor;
 
 - 适用 Route：R-006
 - 触发条件：输入切轴和输出切轴不同，且 `outCutIndex>FindOutIndex(inCutIndex)`。
-- 源码锚点：[`transpose_cut_two_axis.h:752-824`](https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h)
+- 源码锚点：[`transpose_cut_two_axis.h:752-824`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h)
 
 **四区间调度最小骨架**：
 

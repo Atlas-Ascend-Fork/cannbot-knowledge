@@ -5,34 +5,34 @@ description: "说明 aclnnMultiScaleDeformableAttentionGrad 在 A2/A3 上的接�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/docs/aclnnMultiScaleDeformableAttentionGrad.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/docs/aclnnMultiScaleDeformableAttentionGrad.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/op_api/aclnn_multi_scale_deformable_attention_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/op_api/aclnn_multi_scale_deformable_attention_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/op_api/multi_scale_deformable_attention_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/op_api/multi_scale_deformable_attention_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/multi_scale_deformable_attention_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/multi_scale_deformable_attention_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/multi_scale_deformable_attention_grad_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/multi_scale_deformable_attention_grad_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_kernel/multi_scale_deformable_attention_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_kernel/multi_scale_deformable_attention_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_kernel/multi_scale_deformable_attention_grad.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_kernel/multi_scale_deformable_attention_grad.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/multi_scale_deformable_attention_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/multi_scale_deformable_attention_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/config/ascend910b/multi_scale_deformable_attention_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/config/ascend910b/multi_scale_deformable_attention_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/config/ascend910_93/multi_scale_deformable_attention_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/config/ascend910_93/multi_scale_deformable_attention_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_kernel/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_kernel/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T18:37:57Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -372,7 +372,7 @@ workspace_total(self kernel) = 16 MiB system workspace 声明；算法读取 0 B
 
 - 适用 Route：R-001。
 - 触发条件：所有非空公开 ACLNN 调用；内部固定 FP32，`data_align=32/4=8`。
-- Golden 来源：[`multi_scale_deformable_attention_grad_tiling.cpp:108-114`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/multi_scale_deformable_attention_grad_tiling.cpp#L108-L114)
+- Golden 来源：[`multi_scale_deformable_attention_grad_tiling.cpp:108-114`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_host/multi_scale_deformable_attention_grad_tiling.cpp#L108-L114)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -407,7 +407,7 @@ Host 用与 `InitBuffer` 完全对应的系数反推最大 query tile：`3L_a` �
 
 - 适用 Route：R-001。
 - 触发条件：采样在有效域内；若 `hLow>=0 && wLow>=0 && hLow<h-1 && wLow<w-1` 走合并路，否则逐邻点判断。
-- Golden 来源：[`multi_scale_deformable_attention_grad.h:388-400`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_kernel/multi_scale_deformable_attention_grad.h#L388-L400)
+- Golden 来源：[`multi_scale_deformable_attention_grad.h:388-400`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/vfusion/multi_scale_deformable_attention_grad/op_kernel/multi_scale_deformable_attention_grad.h#L388-L400)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

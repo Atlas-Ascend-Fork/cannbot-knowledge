@@ -41,4 +41,3 @@
 - [__hnex2](_hnex2.md)：比较两个half2类型数据的两个分量，如果分量不相等，则对应比较结果为1.0，否则为0.0。
 - [__hnex2_mask](_hnex2_mask.md)：比较两个half2类型数据的两个分量，结果以unsigned int形式返回，低16位为第一个分量的掩码结果，高16位为第二个分量的掩码结果。如果分量不相等，则对应16位掩码为0xFFFF，否则为0x0。
 - [__isnanx2](_isnanx2.md)：判断half2类型数据的两个分量是否为nan。
-- [half2类型比较函数](half2_compare_functions.md)：提供half2类型数据的分量比较、最值获取与NaN判断接口。

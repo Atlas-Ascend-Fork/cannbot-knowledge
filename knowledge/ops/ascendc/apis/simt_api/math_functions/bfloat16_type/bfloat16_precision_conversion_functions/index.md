@@ -7,6 +7,7 @@
 - [__bfloat162bfloat16_rna](_bfloat162bfloat16_rna.md)：将bfloat16_t数据遵循CAST_ROUND模式取整。
 - [__bfloat162bfloat16_ru](_bfloat162bfloat16_ru.md)：将bfloat16_t数据遵循CAST_CEIL模式取整。
 - [__bfloat162bfloat16_rz](_bfloat162bfloat16_rz.md)：将bfloat16_t数据遵循CAST_TRUNC模式取整。
+- [__bfloat162char_rz](_bfloat162char_rz.md)：遵循CAST_TRUNC模式，将bfloat16_t类型数据转换为signed char类型数据，返回转换后的值。
 - [__bfloat162float](_bfloat162float.md)：将bfloat16类型数据转换为浮点数，返回转换后的值。
 - [__bfloat162int_rd](_bfloat162int_rd.md)：遵循CAST_FLOOR模式，将bfloat16类型数据转换为有符号整数，返回转换后的值。
 - [__bfloat162int_rn](_bfloat162int_rn.md)：遵循CAST_RINT模式，将bfloat16类型数据转换为有符号整数，返回转换后的值。
@@ -18,6 +19,11 @@
 - [__bfloat162ll_rna](_bfloat162ll_rna.md)：遵循CAST_ROUND模式，将bfloat16类型数据转换为64位有符号整数，返回转换后的值。
 - [__bfloat162ll_ru](_bfloat162ll_ru.md)：遵循CAST_CEIL模式，将bfloat16类型数据转换为64位有符号整数，返回转换后的值。
 - [__bfloat162ll_rz](_bfloat162ll_rz.md)：遵循CAST_TRUNC模式，将bfloat16类型数据转换为64位有符号整数，返回转换后的值。
+- [__bfloat162short_rd](_bfloat162short_rd.md)：遵循CAST_FLOOR模式，将bfloat16_t类型数据转换为short int类型数据，返回转换后的值。
+- [__bfloat162short_rn](_bfloat162short_rn.md)：遵循CAST_RINT模式，将bfloat16_t类型数据转换为short int类型数据，返回转换后的值。
+- [__bfloat162short_ru](_bfloat162short_ru.md)：遵循CAST_CEIL模式，将bfloat16_t类型数据转换为short int类型数据，返回转换后的值。
+- [__bfloat162short_rz](_bfloat162short_rz.md)：遵循CAST_TRUNC模式，将bfloat16_t类型数据转换为short int类型数据，返回转换后的值。
+- [__bfloat162uchar_rz](_bfloat162uchar_rz.md)：遵循CAST_TRUNC模式，将bfloat16_t类型数据转换为unsigned char类型数据，返回转换后的值。
 - [__bfloat162uint_rd](_bfloat162uint_rd.md)：遵循CAST_FLOOR模式，将bfloat16类型数据转换为无符号整数，返回转换后的值。
 - [__bfloat162uint_rn](_bfloat162uint_rn.md)：遵循CAST_RINT模式，将bfloat16类型数据转换为无符号整数，返回转换后的值。
 - [__bfloat162uint_rna](_bfloat162uint_rna.md)：遵循CAST_ROUND模式，将bfloat16类型数据转换为无符号整数，返回转换后的值。
@@ -28,6 +34,12 @@
 - [__bfloat162ull_rna](_bfloat162ull_rna.md)：遵循CAST_ROUND模式，将bfloat16类型数据转换为64位无符号整数，返回转换后的值。
 - [__bfloat162ull_ru](_bfloat162ull_ru.md)：遵循CAST_CEIL模式，将bfloat16类型数据转换为64位无符号整数，返回转换后的值。
 - [__bfloat162ull_rz](_bfloat162ull_rz.md)：遵循CAST_TRUNC模式，将bfloat16类型数据转换为64位无符号整数，返回转换后的值。
+- [__bfloat162ushort_rd](_bfloat162ushort_rd.md)：遵循CAST_FLOOR模式，将bfloat16_t类型数据转换为unsigned short int类型数据，返回转换后的值。
+- [__bfloat162ushort_rn](_bfloat162ushort_rn.md)：遵循CAST_RINT模式，将bfloat16_t类型数据转换为unsigned short int类型数据，返回转换后的值。
+- [__bfloat162ushort_ru](_bfloat162ushort_ru.md)：遵循CAST_CEIL模式，将bfloat16_t类型数据转换为unsigned short int类型数据，返回转换后的值。
+- [__bfloat162ushort_rz](_bfloat162ushort_rz.md)：遵循CAST_TRUNC模式，将bfloat16_t类型数据转换为unsigned short int类型数据，返回转换后的值。
+- [__bfloat16_as_short](_bfloat16_as_short.md)：将bfloat16_t类型数据按位重新解释为short int类型数据。
+- [__bfloat16_as_ushort](_bfloat16_as_ushort.md)：将bfloat16_t类型数据按位重新解释为unsigned short int类型数据。
 - [__float22bfloat162_rd](_float22bfloat162_rd.md)：将float2类型数据的两个分量遵循CAST_FLOOR模式转换为bfloat16精度，返回转换后的bfloat16x2_t类型数据。
 - [__float22bfloat162_rd_sat](_float22bfloat162_rd_sat.md)：饱和模式下，将float2类型数据的两个分量遵循CAST_FLOOR模式转换为bfloat16精度，返回转换后的bfloat16x2_t类型数据。
 - [__float22bfloat162_rn](_float22bfloat162_rn.md)：将float2类型数据遵循CAST_RINT模式转换为bfloat16x2类型，返回转换后的bfloat16x2类型数据。
@@ -76,6 +88,11 @@
 - [__low2float](_low2float.md)：将bfloat16x2_t输入数据的低16位转换为float类型并返回结果。
 - [__lowhigh2highlow](_lowhigh2highlow.md)：将bfloat16x2_t输入数据的高低16位进行交换，返回交换后的bfloat16x2_t数据。
 - [__lows2bfloat162](_lows2bfloat162.md)：分别提取两个bfloat162输入的低16位，并填充到bfloat162中，返回填充后的数据。
+- [__short2bfloat16_rd](_short2bfloat16_rd.md)：遵循CAST_FLOOR模式，将short int类型数据转换为bfloat16_t类型数据，返回转换后的值。
+- [__short2bfloat16_rn](_short2bfloat16_rn.md)：遵循CAST_RINT模式，将short int类型数据转换为bfloat16_t类型数据，返回转换后的值。
+- [__short2bfloat16_ru](_short2bfloat16_ru.md)：遵循CAST_CEIL模式，将short int类型数据转换为bfloat16_t类型数据，返回转换后的值。
+- [__short2bfloat16_rz](_short2bfloat16_rz.md)：遵循CAST_TRUNC模式，将short int类型数据转换为bfloat16_t类型数据，返回转换后的值。
+- [__short_as_bfloat16](_short_as_bfloat16.md)：将short int类型数据按位重新解释为bfloat16_t类型数据。
 - [__uint2bfloat16_rd](_uint2bfloat16_rd.md)：遵循CAST_FLOOR模式，将uint32类型数据转换为bfloat16类型数据，返回转换后的值。
 - [__uint2bfloat16_rn](_uint2bfloat16_rn.md)：遵循CAST_RINT模式，将uint32类型数据转换为bfloat16类型数据，返回转换后的值。
 - [__uint2bfloat16_rna](_uint2bfloat16_rna.md)：遵循CAST_ROUND模式，将uint32类型数据转换为bfloat16类型数据，返回转换后的值。
@@ -86,5 +103,8 @@
 - [__ull2bfloat16_rna](_ull2bfloat16_rna.md)：遵循CAST_ROUND模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。
 - [__ull2bfloat16_ru](_ull2bfloat16_ru.md)：遵循CAST_CEIL模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。
 - [__ull2bfloat16_rz](_ull2bfloat16_rz.md)：遵循CAST_TRUNC模式，将uint64类型数据转换为bfloat16类型数据，返回转换后的值。
+- [__ushort2bfloat16_rd](_ushort2bfloat16_rd.md)：遵循CAST_FLOOR模式，将unsigned short int类型数据转换为bfloat16_t类型数据，返回转换后的值。
+- [__ushort2bfloat16_rn](_ushort2bfloat16_rn.md)：遵循CAST_RINT模式，将unsigned short int类型数据转换为bfloat16_t类型数据，返回转换后的值。
+- [__ushort2bfloat16_ru](_ushort2bfloat16_ru.md)：遵循CAST_CEIL模式，将unsigned short int类型数据转换为bfloat16_t类型数据，返回转换后的值。
+- [__ushort2bfloat16_rz](_ushort2bfloat16_rz.md)：遵循CAST_TRUNC模式，将unsigned short int类型数据转换为bfloat16_t类型数据，返回转换后的值。
 - [__ushort_as_bfloat16](_ushort_as_bfloat16.md)：将unsigned short int的数据按位重新解释为bfloat16，即将unsigned short int的数据存储的位按照bfloat16的格式进行读取。
-- [bfloat16类型精度转换函数](bfloat16_precision_conversion_functions.md)：bfloat16类型精度转换函数列表，包含bfloat16与float、half、int、uint、ull等类型间的相互转换。

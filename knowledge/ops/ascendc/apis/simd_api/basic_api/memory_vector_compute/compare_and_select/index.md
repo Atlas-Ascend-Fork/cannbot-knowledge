@@ -1,7 +1,6 @@
 # 比较与选择
 
 - [Compare](compare.md)：逐元素比较两个tensor大小，结果为真的对应比特位为1，否则为0，支持LT、GT、GE、EQ、NE、LE六种比较模式。
-- [比较与选择](compare_and_select.md)：矢量比较与选择接口集，包含 Compare、Compares、Select、GatherMask 及 GetCmpMask/SetCmpMask 等。
 - [CompareStoreToRegister](compare_store_to_register.md)：逐元素比较两个tensor大小，结果存入CmpMask 128bit寄存器，可用于后续Select计算。
 - [Compares](compares.md)：逐元素比较一个tensor中的元素和另一个标量的大小，结果为真的对应比特位为1，否则为0。
 - [ComparesFlexibleScalar](compares_flexible_scalar.md)：提供灵活标量位置的Compares接口，支持标量在前和标量在后两种场景，标量可配置为LocalTensor单点元素。

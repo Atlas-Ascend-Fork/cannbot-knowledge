@@ -5,46 +5,46 @@ description: "说明 cann_bench::conv_3d_backprop_filter、conv3d_bpf_npu 与 la
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/config/ascend950/conv3d_backprop_filter_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/config/ascend950/conv3d_backprop_filter_v2_binary.json
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_stream_k_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_stream_k_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/conv3d_backprop_filter_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/conv3d_backprop_filter_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2_arch35.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2_arch35.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2/conv3d_backprop_filter_v2_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2/conv3d_backprop_filter_v2_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2/conv3d_backprop_filter_v2_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2/conv3d_backprop_filter_v2_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2/conv3d_dw_v2_basic_block.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2/conv3d_dw_v2_basic_block.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/conv_bp_func_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/conv_bp_func_common.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/conv_bp_func.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/conv_bp_func.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_gm_to_l1.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_gm_to_l1.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_a1.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_a1.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_b1.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_b1.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_l1_to_l0.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_l1_to_l0.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_store_l0c.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_store_l0c.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_sub_func_deterministic_calculate.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_sub_func_deterministic_calculate.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_sub_func_deterministic_common.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_sub_func_deterministic_common.h
     role: implementation
 created_at: "2026-08-25T19:34:00Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -914,7 +914,7 @@ current Direct reachable router:
 
 - 适用 Route：R-001、R-003
 - 触发条件：`0<totalCnt%AIC<=AIC/2`，且选定切分维度大于 1、L1 重校验通过。
-- 固定官方源码依据：[`conv3d_backprop_filter_v2_stream_k_tiling.cpp:337-377`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_stream_k_tiling.cpp)
+- 固定官方源码依据：[`conv3d_backprop_filter_v2_stream_k_tiling.cpp:337-377`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_stream_k_tiling.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -950,7 +950,7 @@ if (streamkCnt == CONST_ZERO) {
 
 - 适用 Route：R-001、R-002、R-003 的全部 `split/enlarge` specialization。
 - 触发条件：初始 A1/B1 depth=16、DB=2 时 `AL1_bytes+BL1_bytes>L1`。
-- 固定官方源码依据：[`conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp:491-524`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp)
+- 固定官方源码依据：[`conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp:491-524`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -985,7 +985,7 @@ tiler 先保吞吐所需的双缓冲并同步降低 A/B depth；接近深度 2 �
 
 - 适用 Route：所有 `group_enlarge=1` specialization。
 - 触发条件：`groups>1`、LCM 得到 `mag_factor>1`，且合并后的 L0C、UB、basic-block≤256 与 L1 均通过。
-- 固定官方源码依据：[`conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp:167-221`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp)
+- 固定官方源码依据：[`conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp:167-221`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1020,7 +1020,7 @@ LCM 合并若干小 group，使合并后的 Cin/Cout 同时对齐 C0=16；Device
 
 - 适用 Route：全部 Direct 主 Route。
 - 触发条件：绕过 registry executor，直接 `<<<aic_cores,stream>>>` 启动 arch35 entry。
-- 固定官方源码依据：[`conv3d_backprop_filter_v2_arch35.h:31-60`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2_arch35.h)
+- 固定官方源码依据：[`conv3d_backprop_filter_v2_arch35.h:31-60`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2_arch35.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

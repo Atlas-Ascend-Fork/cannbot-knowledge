@@ -2,34 +2,147 @@
 type: API
 title: SetNextTaskStart
 description: 在SuperKernel子Kernel中调用，使其后指令与后续子Kernel并行执行，提升整体性能。
-tags: [task.lookup, topic.implementation.api_layer.basic_api, topic.implementation.synchronization]
+tags:
+- task.lookup
+- topic.implementation.api_layer.basic_api
+- topic.implementation.synchronization
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_task_sync/SetNextTaskStart.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950', a2, a3]
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
+- a3
+source_headers:
+- include/basic_api/kernel_operator_common_intf.h
 ---
-# SetNextTaskStart
 
-头文件路径为："basic_api/kernel_operator_common_intf.h"。
+# SetNextTaskStart<a name="ZH-CN_TOPIC_0000002337763421"></a>
+
+> [!NOTE]说明 
+>本接口为试验接口，在后续版本中可能会调整或改进，不保证后续兼容性。请开发者在使用过程中关注后续版本更新。
+
+## 功能说明<a name="section618mcpsimp"></a>
+
+头文件路径为：`"basic_api/kernel_operator_common_intf.h"`。
 
 算子层面支持SuperKernel特性Early-Start能力的接口，调用后在TorchAir层面：1.GE图模式下进行默认启用; 2.npugraph_ex后端通过early_start选项进行控制启用。
 
-在SuperKernel的子Kernel中调用，调用后的指令可以和后续其他的子Kernel实现并行，提升整体性能。如图1所示，SuperKernel按序调用子Kernel，为保证子Kernel之间数据互不干扰，会在子Kernel间插入算子间同步进行保序，子KernelN-1调用该接口后，之后的指令会和后续子KernelN实现并行。
+在[SuperKernel](../../../../../guides/programming_guide/advanced_programming/super_kernel/principles.md)的子核函数（Kernel）中调用，调用后的指令可以和后续其他的子核函数（Kernel）实现并行，提升整体性能。如[图1](#fig37581010773)所示，SuperKernel按序调用子核函数（Kernel），为保证子核函数（Kernel）之间数据互不干扰，会在子核函数（Kernel）间插入算子间同步进行保序，子核函数（Kernel）<sub>N-1</sub>调用该接口后，之后的指令会和后续子核函数（Kernel）<sub>N</sub>实现并行。
 
-参数：AIV_PIPE: SetNextTaskStart之后运行的指令，如果位于AIV上的AIV_PIPE流水，可以与后序算子并行。AIV_PIPE的取值范围为PIPE_MTE2、PIPE_MTE3、PIPE_S、PIPE_V。；AIC_PIPE: SetNextTaskStart之后运行的指令，如果位于AIC上的AIC_PIPE流水，可以与后序算子并行。AIC_PIPE的取值范围为PIPE_MTE1、PIPE_MTE2、PIPE_MTE3、PIPE_FIX、PIPE_M。；FORCE: 离线编译时是否强制启用Early-Start能力，不影响在线编译。 false：离线编译时不强制启用Early-Start能力； true：离线编译时启用Early-Start能力，适用于无在线编译流程的算子（如 >>开发的算子）。
+SuperKernel是一种算子的二进制融合技术，与源码融合不同，它聚焦于核函数（Kernel） \(核函数（Kernel）\)的二进制的调度方案，展开深度优化，于已编译的二进制代码基础上融合创建一个超级核函数（Kernel）（SuperKernel），以调用子函数的方式调用多个其他核函数（Kernel），也就是子核函数（Kernel）。相对于单算子下发，SuperKernel技术可以减少任务调度等待时间和调度开销，同时利用Task间隙资源进一步优化算子头开销。
 
-约束：- 该接口适用于TorchAir图模式开发场景，且需在启用SuperKernel特性后方可生效。
+**开发者需要自行保证调用此接口后的指令不会与后序算子互相干扰而导致精度问题，推荐在整个算子最后一条搬运指令后调用此接口。**
+
+**图1**  通过SetNextTaskStart实现并行示意图<a name="fig37581010773"></a>  
+![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/set_next_task_start_parallel_diagram.png "通过SetNextTaskStart实现并行示意图")
+
+## 函数原型<a name="section620mcpsimp"></a>
+
+
+- 该原型支持如下产品型号：
+
+    
+    Ascend 950PR/Ascend 950DT 
+    
+
+    
+    Atlas A3 训练系列产品/Atlas A3 推理系列产品 
+    
+
+    
+    Atlas A2 训练系列产品/Atlas A2 推理系列产品 
+    
+
+    
+    Atlas 200I/500 A2 推理产品 
+    
+
+    
+    Kirin X90 
+    
+
+    
+    Kirin 9030 
+    
+
+    ```cpp
+    template<pipe_t AIV_PIPE = PIPE_MTE3, pipe_t AIC_PIPE = PIPE_FIX, bool FORCE = false>
+    __aicore__ inline void SetNextTaskStart()
+    ```
+
+
+
+- 该原型支持如下产品型号：
+
+    
+    Atlas 推理系列产品AI Core 
+    
+
+    
+    Atlas 推理系列产品Vector Core 
+    
+
+    
+    Atlas 训练系列产品 
+    
+
+    ```cpp
+    template<pipe_t AIV_PIPE = PIPE_MTE3, pipe_t AIC_PIPE = PIPE_MTE3, bool FORCE = false>
+    __aicore__ inline void SetNextTaskStart()
+    ```
+
+
+## 参数说明<a name="section622mcpsimp"></a>
+
+**表1**  模板参数说明
+
+| 参数名 | 描述 |
+| --- | --- |
+| AIV_PIPE | SetNextTaskStart之后运行的指令，如果位于AIV上的AIV_PIPE流水，可以与后序算子并行。AIV_PIPE的取值范围为PIPE_MTE2、PIPE_MTE3、PIPE_S、PIPE_V。 |
+| AIC_PIPE | SetNextTaskStart之后运行的指令，如果位于AIC上的AIC_PIPE流水，可以与后序算子并行。AIC_PIPE的取值范围为PIPE_MTE1、PIPE_MTE2、PIPE_MTE3、PIPE_FIX、PIPE_M。 |
+| FORCE | 离线编译时是否强制启用Early-Start能力，不影响在线编译。<br>false：离线编译时不强制启用Early-Start能力；<br>true：离线编译时启用Early-Start能力，适用于无在线编译流程的算子（如<<<>>>开发的算子）。 |
+
+> [!NOTE]说明 
+>不同的硬件架构，每一种硬件流水类型包含的具体流水会有所差异，流水类型详细介绍请参考[硬件流水类型](../intra_core_sync/intra_core_sync_overview.md#zh-cn_topic_0000002542725361_section1272612276459)。
+
+## 返回值说明<a name="section640mcpsimp"></a>
+
+无
+
+## 约束说明<a name="section633mcpsimp"></a>
+
+- 该接口适用于TorchAir图模式开发场景，且需在启用SuperKernel特性后方可生效。具体内容请参考[图内标定SuperKernel范围](https://www.hiascend.com/document/detail/zh/Pytorch/latest/devguide/TorchAir/docs/zh/ascend_ir/features/advanced/super_kernel_scope.md)。
 - 在算子运行过程中，需要保证此接口在每个核上都被调用，且每个核上仅被调用一次。
-- 若子Kernel某个TilingKey分支调用了此接口，则开发者需要保证当前算子可能会运行的所有TilingKey均调用了此接口，否则会出现因同步指令数量不匹配而卡住的现象。
+- 若子核函数（Kernel）某个TilingKey分支调用了此接口，则开发者需要保证当前算子可能会运行的所有TilingKey均调用了此接口，否则会出现因同步指令数量不匹配而卡住的现象。
 
-仅 Ascend 950PR/Ascend 950DT，该接口生效、Atlas A3 训练系列产品/Atlas A3 推理系列产品，该接口生效、Atlas A2 训练系列产品/Atlas A2 推理系列产品，仅保证编译兼容，实际功能不生效。、Atlas 200I/500 A2 推理产品，仅保证编译兼容，实际功能不生效。、Atlas 推理系列产品AI Core，仅保证编译兼容，实际功能不生效。、Atlas 推理系列产品Vector Core，仅保证编译兼容，实际功能不生效。、Atlas 训练系列产品，仅保证编译兼容，实际功能不生效。、Kirin X90，仅保证编译兼容，实际功能不生效。、Kirin 9030，仅保证编译兼容，实际功能不生效。 支持。
+## 调用示例<a name="section837496171220"></a>
+
+```cpp
+AscendC::DataCopy(dstGlobal, dstLocal, TOTAL_LENGTH);
+// 在最后一条搬运指令后调用，使之后的指令可与后续子kernel并行执行。
+AscendC::SetNextTaskStart();
+```
+
+完整样例请参考[TaskSync样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/task_sync)。
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
 - [SuperKernel原理介绍](../../../../../guides/programming_guide/advanced_programming/super_kernel/principles.md)（`explains`）：算子间流水并行：通过SuperKernel内提供的任务间同步接口（SetNextTaskStart、WaitPreTaskEnd），可以让子Kernel之间的部分指令实现并行执行，进一步压缩端到端耗时。；在SuperKernel的子Kernel中调用，调用后的指令可以和后续其他的子Kernel实现并行，提升整体性能。；目标接口实现焦点所述的后向子 Kernel 并行起点。
 - [WaitPreTaskEnd](wait_pre_task_end.md)（`related`）：在SuperKernel的子Kernel中调用，调用后的指令可以和后续其他的子Kernel实现并行，提升整体性能。；在SuperKernel的子Kernel中调用，调用前的指令可以和前序其他的子Kernel实现并行，提升整体性能。。SetNextTaskStart 放开当前子 Kernel 尾部与后继并行，WaitPreTaskEnd 放开当前子 Kernel 头部与前序并行；二者从相邻两侧共同定义 SuperKernel Early-Start 重叠区间。
+
+<!-- cannbot:api-operator:start -->
+### 源码中使用此 API 的算子
+
+展示 2 / 2 个已匹配算子；每个 API 最多展示 10 个自动关联。
+范围为算子卡声明的固定版本源码文件中的直接调用，不代表所有编译分支均执行，也不保证覆盖间接调用。
+
+- [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)（`related`）：算子声明的固定版本源码包含对 `SetNextTaskStart(...)` 的直接调用（第 220 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/quant_matmul_reduce_sum/op_kernel/quant_matmul_reduce_sum.h#L220)
+- [GroupedMatmul A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul.md)（`related`）：算子声明的固定版本源码包含对 `SetNextTaskStart(...)` 的直接调用（第 317 行）；不表示所有编译分支均执行该调用。 [源码](../../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul/op_kernel/grouped_matmul.h#L317)
+
+<!-- cannbot:api-operator:end -->
 <!-- cannbot:related:end -->

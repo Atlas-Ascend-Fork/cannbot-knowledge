@@ -5,24 +5,24 @@ description: "说明 cann_bench::gelu、gelu_npu 与六个 gelu_{none|tanh}_{fp1
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/CMakeLists.txt
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_host/config/ascend950/gelu_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_host/config/ascend950/gelu_v2_binary.json
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_host/gelu_v2_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_host/gelu_v2_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_host/arch35/gelu_v2_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_host/arch35/gelu_v2_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_struct.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_struct.h
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/gelu_v2_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/gelu_v2_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h
     role: implementation
 created_at: "2026-08-25T19:29:57Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -814,7 +814,7 @@ workspace_total = 0
 
 - 适用 Route：P0 R-006、P1 R-004、P2 R-002、P3 R-003、P4 R-005、P5 R-001。
 - 触发条件：合法 `approximate × dtype`；Direct launcher 已产生 code。
-- 官方固定来源：[`activation/gelu_v2/op_kernel/gelu_v2_apt.cpp:25-43`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/gelu_v2_apt.cpp)
+- 官方固定来源：[`activation/gelu_v2/op_kernel/gelu_v2_apt.cpp:25-43`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/gelu_v2_apt.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -851,7 +851,7 @@ __global__ __aicore__ void gelu_v2(GM_ADDR x, GM_ADDR y, GM_ADDR workspace, GM_A
 
 - 适用 Route：P1 R-004、P2 R-002、P3 R-003、P4 R-005、P5 R-001；其中 BF16 的 P2 R-002/P4 R-005 还包含 dtype 桥接。
 - 触发条件：`GeluV2ErfPolyFusedDag<U>` 或 `GeluV2TanhFusedDag<U>`。
-- 官方固定来源：[`activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h:150-162`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h)
+- 官方固定来源：[`activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h:150-162`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -886,7 +886,7 @@ struct GeluV2TanhDag {
 
 - 适用 Route：P1 R-004、P2 R-002、P4 R-005；P3 R-003/P5 R-001 共享 NaN 恢复思想。
 - 触发条件：16-bit `Exp/Div` 路线及远离中央近似区的输入。
-- 官方固定来源：[`activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h:28-39`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h)
+- 官方固定来源：[`activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h:28-39`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -923,7 +923,7 @@ constexpr float ERF_MAX = -13.15f;
 
 - 适用 Route：P0 R-006。
 - 触发条件：FP32 + `tanh`，每个 ATVOSS tile 至少分配完整 `ubFormer` 容量。
-- 官方固定来源：[`activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h:76-108`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h)
+- 官方固定来源：[`activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h:76-108`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

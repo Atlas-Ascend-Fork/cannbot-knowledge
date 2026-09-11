@@ -491,7 +491,6 @@ def adapt_generic(record: RawRecord, fallback_session: str):
 #   legacy: top-level `type` directly in {user, assistant, summary, tool_call, tool_result}
 CLAUDE_META_TYPES = {"mode", "permission-mode", "file-history-snapshot", "file-history-delta",
                      "ai-title", "last-prompt", "agent-name", "attachment"}
-CLAUDE_BLOCK_TYPES = {"text", "thinking", "tool_use", "tool_result"}
 
 
 def _arg_text(value) -> str:
@@ -749,8 +748,6 @@ def adapt_codex(record: RawRecord, fallback_session: str):
 
 # Header line of the readable transcript: "# Session Transcript: <ses_id>"
 MD_TRANSCRIPT_HEAD = re.compile(r"^# Session Transcript:\s*(\S+)")
-# Subagent section banner: "## Subagent Sessions of <parent> (N)"
-MD_SUBAGENTS_BANNER = re.compile(r"^## Subagent Sessions of\s+\S+\s*\((\d+)\)")
 # Subagent block header: "### <ses_id>  (agent_type: xxx)"
 MD_SUBAGENT_HEAD = re.compile(r"^###\s+(ses_[A-Za-z0-9]+)\s*(?:\([^)]*\))?\s*$")
 # Session header: "# Session Transcript: <ses_id>" (main) or "### Session Transcript: <id>" (subagent)
@@ -975,10 +972,6 @@ def adapt_markdown_transcript(record: RawRecord, fallback_session: str):
         return None, "markdown_transcript requires a text blob"
     events, warnings = _adapt_markdown_text(value["text"], record.source, record.raw_sha256)
     return events, warnings
-
-
-def _has_structure(value, shapes) -> bool:
-    return isinstance(value, dict) and any(isinstance(value.get(key), list) for key in shapes)
 
 
 def detect_adapter(records: list[RawRecord]) -> tuple[str, dict]:

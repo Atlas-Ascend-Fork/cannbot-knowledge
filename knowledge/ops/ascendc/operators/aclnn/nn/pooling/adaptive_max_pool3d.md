@@ -5,60 +5,60 @@ description: "说明 aclnnAdaptiveMaxPool3d 在 A2/A3 上的接口语义、Host/
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/docs/aclnnAdaptiveMaxPool3d.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/docs/aclnnAdaptiveMaxPool3d.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/aclnn_adaptive_max_pool3d.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/aclnn_adaptive_max_pool3d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/adaptive_max_pool3d.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/adaptive_max_pool3d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_small_pool_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_small_pool_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_big_pool_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_big_pool_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_small_pool.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_small_pool.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_big_pool.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_big_pool.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch32/pool_3d_memory_optimized_utils.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch32/pool_3d_memory_optimized_utils.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_api/max_pool3d_with_argmax_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_api/max_pool3d_with_argmax_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_no_expand_indices_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_no_expand_indices_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_bigkernel.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_bigkernel.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2_no_expand_indices.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2_no_expand_indices.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_big_kernel.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_big_kernel.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/config/ascend910b/adaptive_max_pool3d_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/config/ascend910b/adaptive_max_pool3d_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/config/ascend910_93/adaptive_max_pool3d_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/config/ascend910_93/adaptive_max_pool3d_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910b/max_pool3d_with_argmax_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910b/max_pool3d_with_argmax_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910_93/max_pool3d_with_argmax_v2_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910_93/max_pool3d_with_argmax_v2_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T18:17:47Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -808,7 +808,7 @@ maxCount = 10240 elements per segment
 
 - 适用 Route：R-001、R-002。
 - 触发条件：`dValueRemainder == 0 && hValueRemainder == 0 && wValueRemainder == 0`。
-- Golden 来源：[`aclnn_adaptive_max_pool3d.cpp:426-440`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/aclnn_adaptive_max_pool3d.cpp#L426-L440)
+- Golden 来源：[`aclnn_adaptive_max_pool3d.cpp:426-440`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/aclnn_adaptive_max_pool3d.cpp#L426-L440)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -840,7 +840,7 @@ return DoAdaptiveMaxPool3D(self, outputSize3, out, indices, executor);
 
 - 适用 Route：R-003、R-004。
 - 触发条件：计算每个输出 bin 的自适应起止位置。
-- Golden 来源：[`adaptive_max_pool3d_small_pool.h:32-52`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_small_pool.h#L32-L52)
+- Golden 来源：[`adaptive_max_pool3d_small_pool.h:32-52`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_small_pool.h#L32-L52)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -878,7 +878,7 @@ __aicore__ inline int64_t PoolStartIndex(int64_t v, int64_t inLen, int64_t outLe
 
 - 适用 Route：R-001；不满足时转 R-002。
 - 触发条件：整除分支进入 priority 10 NoExpand，且最小 tile 字节账不超过 188160 B。
-- Golden 来源：[`max_pool3d_with_argmax_v2_no_expand_indices_tiling.cpp:248-265`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_no_expand_indices_tiling.cpp#L248-L265)
+- Golden 来源：[`max_pool3d_with_argmax_v2_no_expand_indices_tiling.cpp:248-265`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_no_expand_indices_tiling.cpp#L248-L265)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -915,7 +915,7 @@ Host 先求最小 tile 字节账，再以二分方式优先扩大 W、继而 H�
 
 - 适用 Route：R-002、R-004。
 - 触发条件：单个输入窗口的对齐元素数大于 `maxCount=10240`。
-- Golden 来源：[`adaptive_max_pool3d_big_pool.h:646-665`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_big_pool.h#L646-L665)
+- Golden 来源：[`adaptive_max_pool3d_big_pool.h:646-665`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_big_pool.h#L646-L665)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -987,32 +987,32 @@ for (int32_t dhwLoop = 0; dhwLoop < dhwLoops; dhwLoop++) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
-| 入口声明/约束 | [`pooling/adaptive_max_pool3d/README.md`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/README.md) | 平台支持表 | A2/A3 支持；950 README 冲突侧证 |
-| 入口声明/约束 | [`pooling/adaptive_max_pool3d/docs/aclnnAdaptiveMaxPool3d.md`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/docs/aclnnAdaptiveMaxPool3d.md) | ACLNN 约束表 | dtype、shape、平台、indices 限制 |
-| 入口实现 | [`pooling/adaptive_max_pool3d/op_api/aclnn_adaptive_max_pool3d.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/aclnn_adaptive_max_pool3d.cpp) | `GetWorkspaceSize,SelectAdaptiveMaxPool3D` | 校验、4D/5D、整除选择、executor |
-| 入口实现 | [`pooling/adaptive_max_pool3d/op_api/adaptive_max_pool3d.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/adaptive_max_pool3d.cpp) | `l0op::AdaptiveMaxPool3D` | Adaptive level-0 launcher |
-| Host/Tiling/Launcher | [`pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_def.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_def.cpp) | `AdaptiveMaxPool3D` OpDef | 平台 AICore config |
-| Host/Tiling/Launcher | [`pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.cpp) | Tiling base | shape/dtype/workspace 公共处理 |
-| Host/Tiling/Launcher | [`pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.h`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.h) | Small/Big POD | Device ABI 字段 |
-| Host/Tiling/Launcher | [`pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_small_pool_tiling.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_small_pool_tiling.cpp) | `CalKernelMax,IsCapable,DoOpTiling` | R-003 guard/factor/key |
-| Host/Tiling/Launcher | [`pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_big_pool_tiling.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_big_pool_tiling.cpp) | `IsCapable,DoOpTiling` | R-004 分核/key |
-| Kernel entry/body | [`pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d.cpp) | `adaptive_max_pool3d` | 六个 adaptive key 路由 |
-| Kernel entry/body | [`pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_small_pool.h`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_small_pool.h) | `AdaptiveMaxPool3dSmallPool` | 转置、三级归约、NaN/tail |
-| Kernel entry/body | [`pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_big_pool.h`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_big_pool.h) | `AdaptiveMaxPool3dBigPool` | 单输出、10240 分段 |
-| Kernel entry/body | [`pooling/pool_3d_common/op_kernel/arch32/pool_3d_memory_optimized_utils.h`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch32/pool_3d_memory_optimized_utils.h) | memory optimized helper | R-003 转置依赖 |
-| 入口实现 | [`pooling/max_pool3d_with_argmax_v2/op_api/max_pool3d_with_argmax_v2.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_api/max_pool3d_with_argmax_v2.cpp) | `l0op::MaxPool3DWithArgmaxV2` | 整除分支 level-0 launcher |
-| Host/Tiling/Launcher | [`pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.h`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.h) | NoExpand/Big POD | 整除分支 ABI |
-| Host/Tiling/Launcher | [`pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.cpp) | MaxPool Tiling base | shape/dtype/16 MiB workspace 公共处理 |
-| Host/Tiling/Launcher | [`pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_no_expand_indices_tiling.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_no_expand_indices_tiling.cpp) | `IsCapable,DoUBTiling` | R-001 priority 10/UB/key |
-| Host/Tiling/Launcher | [`pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_bigkernel.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_bigkernel.cpp) | `IsCapable,DoOpTiling` | R-002 priority 11/dtype keys |
-| Kernel entry/body | [`pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2.cpp`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2.cpp) | `max_pool3d_with_argmax_v2` | NoExpand/BigKernel router |
-| Kernel entry/body | [`pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2_no_expand_indices.h`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2_no_expand_indices.h) | NoExpand body | 双缓冲/转置/值索引归约 |
-| Kernel entry/body | [`pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_big_kernel.h`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_big_kernel.h) | BigKernel body | 单输出/分段归约 |
-| 构建接线 | [`pooling/adaptive_max_pool3d/op_host/config/ascend910b/adaptive_max_pool3d_binary.json`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/config/ascend910b/adaptive_max_pool3d_binary.json) | A2 adaptive entries | R-003/R-004 binary |
-| 构建接线 | [`pooling/adaptive_max_pool3d/op_host/config/ascend910_93/adaptive_max_pool3d_binary.json`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/config/ascend910_93/adaptive_max_pool3d_binary.json) | A3 adaptive entries | R-003/R-004 binary |
-| 构建接线 | [`pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910b/max_pool3d_with_argmax_v2_binary.json`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910b/max_pool3d_with_argmax_v2_binary.json) | A2 MaxPool entries | R-001/R-002 binary |
-| 构建接线 | [`pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910_93/max_pool3d_with_argmax_v2_binary.json`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910_93/max_pool3d_with_argmax_v2_binary.json) | A3 MaxPool entries | R-001/R-002 binary |
-| 构建接线 | [`pooling/adaptive_max_pool3d/CMakeLists.txt`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/CMakeLists.txt) | `DEPENDENCIES` | 接入 `pool_3d_common` 与 MaxPool |
+| 入口声明/约束 | [`pooling/adaptive_max_pool3d/README.md`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/README.md) | 平台支持表 | A2/A3 支持；950 README 冲突侧证 |
+| 入口声明/约束 | [`pooling/adaptive_max_pool3d/docs/aclnnAdaptiveMaxPool3d.md`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/docs/aclnnAdaptiveMaxPool3d.md) | ACLNN 约束表 | dtype、shape、平台、indices 限制 |
+| 入口实现 | [`pooling/adaptive_max_pool3d/op_api/aclnn_adaptive_max_pool3d.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/aclnn_adaptive_max_pool3d.cpp) | `GetWorkspaceSize,SelectAdaptiveMaxPool3D` | 校验、4D/5D、整除选择、executor |
+| 入口实现 | [`pooling/adaptive_max_pool3d/op_api/adaptive_max_pool3d.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_api/adaptive_max_pool3d.cpp) | `l0op::AdaptiveMaxPool3D` | Adaptive level-0 launcher |
+| Host/Tiling/Launcher | [`pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_def.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_def.cpp) | `AdaptiveMaxPool3D` OpDef | 平台 AICore config |
+| Host/Tiling/Launcher | [`pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.cpp) | Tiling base | shape/dtype/workspace 公共处理 |
+| Host/Tiling/Launcher | [`pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_tiling.h) | Small/Big POD | Device ABI 字段 |
+| Host/Tiling/Launcher | [`pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_small_pool_tiling.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_small_pool_tiling.cpp) | `CalKernelMax,IsCapable,DoOpTiling` | R-003 guard/factor/key |
+| Host/Tiling/Launcher | [`pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_big_pool_tiling.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/adaptive_max_pool3d_big_pool_tiling.cpp) | `IsCapable,DoOpTiling` | R-004 分核/key |
+| Kernel entry/body | [`pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d.cpp) | `adaptive_max_pool3d` | 六个 adaptive key 路由 |
+| Kernel entry/body | [`pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_small_pool.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_small_pool.h) | `AdaptiveMaxPool3dSmallPool` | 转置、三级归约、NaN/tail |
+| Kernel entry/body | [`pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_big_pool.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_kernel/adaptive_max_pool3d_big_pool.h) | `AdaptiveMaxPool3dBigPool` | 单输出、10240 分段 |
+| Kernel entry/body | [`pooling/pool_3d_common/op_kernel/arch32/pool_3d_memory_optimized_utils.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/pool_3d_common/op_kernel/arch32/pool_3d_memory_optimized_utils.h) | memory optimized helper | R-003 转置依赖 |
+| 入口实现 | [`pooling/max_pool3d_with_argmax_v2/op_api/max_pool3d_with_argmax_v2.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_api/max_pool3d_with_argmax_v2.cpp) | `l0op::MaxPool3DWithArgmaxV2` | 整除分支 level-0 launcher |
+| Host/Tiling/Launcher | [`pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.h) | NoExpand/Big POD | 整除分支 ABI |
+| Host/Tiling/Launcher | [`pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_base.cpp) | MaxPool Tiling base | shape/dtype/16 MiB workspace 公共处理 |
+| Host/Tiling/Launcher | [`pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_no_expand_indices_tiling.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_no_expand_indices_tiling.cpp) | `IsCapable,DoUBTiling` | R-001 priority 10/UB/key |
+| Host/Tiling/Launcher | [`pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_bigkernel.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/max_pool3d_with_argmax_v2_tiling_bigkernel.cpp) | `IsCapable,DoOpTiling` | R-002 priority 11/dtype keys |
+| Kernel entry/body | [`pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2.cpp`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2.cpp) | `max_pool3d_with_argmax_v2` | NoExpand/BigKernel router |
+| Kernel entry/body | [`pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2_no_expand_indices.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_v2_no_expand_indices.h) | NoExpand body | 双缓冲/转置/值索引归约 |
+| Kernel entry/body | [`pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_big_kernel.h`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_kernel/max_pool3d_with_argmax_big_kernel.h) | BigKernel body | 单输出/分段归约 |
+| 构建接线 | [`pooling/adaptive_max_pool3d/op_host/config/ascend910b/adaptive_max_pool3d_binary.json`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/config/ascend910b/adaptive_max_pool3d_binary.json) | A2 adaptive entries | R-003/R-004 binary |
+| 构建接线 | [`pooling/adaptive_max_pool3d/op_host/config/ascend910_93/adaptive_max_pool3d_binary.json`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/op_host/config/ascend910_93/adaptive_max_pool3d_binary.json) | A3 adaptive entries | R-003/R-004 binary |
+| 构建接线 | [`pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910b/max_pool3d_with_argmax_v2_binary.json`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910b/max_pool3d_with_argmax_v2_binary.json) | A2 MaxPool entries | R-001/R-002 binary |
+| 构建接线 | [`pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910_93/max_pool3d_with_argmax_v2_binary.json`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/max_pool3d_with_argmax_v2/op_host/config/ascend910_93/max_pool3d_with_argmax_v2_binary.json) | A3 MaxPool entries | R-001/R-002 binary |
+| 构建接线 | [`pooling/adaptive_max_pool3d/CMakeLists.txt`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/pooling/adaptive_max_pool3d/CMakeLists.txt) | `DEPENDENCIES` | 接入 `pool_3d_common` 与 MaxPool |
 
 ### 实现复用检查
 

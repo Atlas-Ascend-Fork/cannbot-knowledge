@@ -145,8 +145,16 @@ with al.scope(core_mode="vector"):
 | sender == receiver | 编译错误 | 同核心内部用 `debug_barrier` |
 | TRITON_ALL_BLOCKS_PARALLEL 与同步冲突 | 死锁 | 有同步操作时不能开该选项 |
 
-<!-- cannbot:related:start -->
 
+## 参考
+
+官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
+
+- [HIVMSynchronizationOps.td](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/IR/HIVMSynchronizationOps.td)
+- [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py)
+
+
+<!-- cannbot:related:start -->
 ## 相关
 
 - [sync_block_set / wait / all 同步操作](../../apis/ascend_ext_sync.md)（`related`）：“同步 API 参考”
@@ -155,10 +163,3 @@ with al.scope(core_mode="vector"):
 - [PIPE / CORE / MODE / IteratorType 枚举](../../apis/ascend_ext_pipe_core.md)（`related`）：“MTE/M/V/FIX Pipe 与 Core 枚举定义”
 
 <!-- cannbot:related:end -->
-
-## 参考
-
-官方源码参考（链接已锁定 2026-08-17 上游 HEAD；行号锚点继承自源文档，上游演进后可能漂移）：
-
-- [HIVMSynchronizationOps.td](https://gitcode.com/Ascend/AscendNPU-IR/tree/d2a6661365ef65ca738cb66299449b2740c857eb/bishengir/include/bishengir/Dialect/HIVM/IR/HIVMSynchronizationOps.td)
-- [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py)

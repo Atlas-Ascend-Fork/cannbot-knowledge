@@ -1,4 +1,4 @@
-# 优秀实践（最佳实践）
+# 优秀实践
 
 - [FlashAttention算子性能调优案例](flash_attention_tuning.md)：本案例中的算子FlashAttentionScoreGrad，用于训练场景下计算注意力的反向输出，即FlashAttentionScore算子的反向计算。
 - [GroupedMatmul算子性能调优案例](grouped_matmul_tuning.md)：本案例对分组Matmul即GroupedMatmul算子的per-token量化场景进行性能分析和优化，GroupedMatmul算子计算过程（通过python代码表达）为：

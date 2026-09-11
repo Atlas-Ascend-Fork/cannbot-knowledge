@@ -5,18 +5,28 @@ description: "说明 cann_bench::top_k 在 950 上的接口边界、Host 安全 
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/math/top_k_v2/README.md"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/README.md"
     role: header
-  - resource: "https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/math/top_k_v2/op_kernel/arch35/top_k_v2.h"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_kernel/arch35/radix_sort_top_k.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/math/top_k_v2/op_host/arch35/top_k_v2_tiling_arch35.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_kernel/arch35/top_k_merge_sort.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/math/top_k_v2/op_kernel/top_k_v2_apt.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_kernel/arch35/radix_sort_top_k_single_block.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/math/top_k_v2/op_host/top_k_v2_def.cpp"
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_kernel/arch35/radix_sort_top_k_single_core.h"
+    role: implementation
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_kernel/arch35/radix_sort_top_k_inter_core_template_optimization.h"
+    role: implementation
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_kernel/arch35/top_k_non_last_small_non_transpose.h"
+    role: implementation
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_host/arch35/top_k_v2_tiling_arch35.cpp"
+    role: implementation
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_kernel/top_k_v2_apt.cpp"
+    role: implementation
+  - resource: "cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/top_k_v2/op_host/top_k_v2_def.cpp"
     role: implementation
 created_at: "2026-08-24T19:33:22Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -522,7 +532,7 @@ launch_same_stream_graph(x, values, indices, workspace, p, stream);
 
 ## 证据边界
 
-本卡闭合的是 Direct 交付实现的 Host selector、Device body、launch graph 与构建接线，并以固定官方 TopKV2/950 源码解释被复用的 arch35 body。streaming/sharded heap、64 位 SIMT 转置、安全 override 与动态窄化属于 Direct 实现扩展，不应归因于官方 TopKV2。官方链接对应对象未在当前本地浅克隆中独立做 blob 身份复核；若更新 CANN 版本，需重新核验 compact POD、tmp 查询与 official body 的 NaN/稳定索引行为。
+本卡记录 Direct 交付实现的 Host selector、Device body、launch graph 与构建接线，并以固定官方 TopKV2/950 源码解释被复用的 arch35 body。streaming/sharded heap、64 位 SIMT 转置、安全 override 与动态窄化属于 Direct 实现扩展，不应归因于官方 TopKV2。Frontmatter 固定的是已恢复并核对的官方 Commit 文件；Direct 交付文件不在这些官方 sources 中，其内容哈希仍未记录，不能用官方文件身份核对替代 Direct 实现复核。复用前需取得相应交付快照；若更新 CANN 版本，需重新核验 compact POD、tmp 查询与 official body 的 NaN/稳定索引行为。
 
 <!-- cannbot:related:start -->
 ## 相关

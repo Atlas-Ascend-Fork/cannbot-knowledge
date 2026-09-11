@@ -2,19 +2,70 @@
 type: API
 title: coalesced_group构造函数
 description: coalesced_group不提供默认的构造函数，用户使用coalesced_threads函数创建coalesced_group对象。
-tags: [task.lookup, topic.implementation.api_layer.simt_api, topic.programming_model.cooperative_groups]
+tags:
+- task.lookup
+- topic.implementation.api_layer.simt_api
+- topic.programming_model.cooperative_groups
 status: stable
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/coalesced_group/coalesced_group_constructor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: ['950']
+updated_at: '2026-09-08T03:31:04Z'
+platforms:
+- '950'
 ---
 
 # coalesced_group构造函数
 
-coalesced_group不提供默认的构造函数，用户使用coalesced_threads函数创建coalesced_group对象。
-函数原型：coalesced_group coalesced_threads()
-返回值：返回一个coalesced_group对象，该对象包含当前Warp内所有活跃的线程。
-支持平台：Ascend 950PR/Ascend 950DT；不支持：Atlas A3 训练系列产品/Atlas A3 推理系列产品, Atlas A2 训练系列产品/Atlas A2 推理系列产品, Atlas 200I/500 A2 推理产品等
+## 功能说明
+
+`coalesced_group`不提供默认的构造函数，用户使用`coalesced_threads`函数创建`coalesced_group`对象。
+
+## 函数原型
+
+```cpp
+coalesced_group coalesced_threads()
+```
+
+## 参数说明
+
+无
+
+## 返回值说明
+
+返回一个`coalesced_group`对象，该对象包含当前Warp内所有活跃的线程。
+
+## 约束说明
+
+无
+
+## 调用示例
+
+- SIMT编程场景：
+
+    ```cpp
+    using namespace cooperative_groups;
+    __global__ void simt_kernel(...)
+    {
+        ...
+        if (threadIdx.x % 2 == 0) {
+            coalesced_group active = coalesced_threads(); // 该coalesced_group中包含当前warp内所有线程id为偶数的线程
+        }
+        ...
+    }
+    ```
+
+- SIMD与SIMT混合编程场景：
+
+    ```cpp
+    using namespace cooperative_groups;
+    __simt_vf__ inline void simt_kernel(...)
+    {
+        ...
+        if (threadIdx.x % 2 == 0) {
+            coalesced_group active = coalesced_threads(); // 该coalesced_group中包含当前warp内所有线程id为偶数的线程
+        }
+        ...
+    }
+    ```

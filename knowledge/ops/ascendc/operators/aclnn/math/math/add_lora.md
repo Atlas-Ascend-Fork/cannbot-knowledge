@@ -5,32 +5,32 @@ description: "说明 aclnnAddLora 在 A2 上的接口语义、Host/Launcher 参�
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/docs/aclnnAddLora.md
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/docs/aclnnAddLora.md
     role: header
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/add_lora_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/add_lora_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/add_lora_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/add_lora_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/add_lora_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/add_lora_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/add_lora_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/add_lora_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora.cpp
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_base.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_normal_core.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_normal_core.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_single_core.h
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_single_core.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/config/ascend910b/add_lora_binary.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/config/ascend910b/add_lora_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
+  - resource: cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/scripts/kernel/binary_config/ascendc_config.json
     role: implementation
 created_at: "2026-08-25T10:05:01Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2]
 cann_versions: ["9.1.0"]
 ---
@@ -704,7 +704,7 @@ tmp slice inactive but reserved
 
 - 适用 Route：R-001～R-004。
 - 触发条件：`batchSize_<=coreNum_` 选 single，否则选 normal；A2 soc offset 固定 100000。
-- Golden 来源：[`math/add_lora/op_host/add_lora_tiling.cpp:355-372`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/add_lora_tiling.cpp#L355-L372)
+- Golden 来源：[`math/add_lora/op_host/add_lora_tiling.cpp:355-372`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_host/add_lora_tiling.cpp#L355-L372)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -742,7 +742,7 @@ uint64_t AddLoraTiling::GetTilingKey() const
 
 - 适用 Route：R-001～R-004；R-003 额外使用 AIC-only flag1。
 - 触发条件：entry 选择 `KERNEL_TYPE_MIX_AIC_1_2`；AIV 与 AIC 共享 POD/workspace。
-- Golden 来源：[`math/add_lora/op_kernel/add_lora_normal_core.h:88-153`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_normal_core.h#L88-L153)
+- Golden 来源：[`math/add_lora/op_kernel/add_lora_normal_core.h:88-153`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_normal_core.h#L88-L153)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -781,7 +781,7 @@ AIV 先完成不规则按组重排并通过 mode0 全 AIV flag0 收口，再用 
 
 - 适用 Route：R-001～R-004。
 - 触发条件：每个 MM2 tile 已由 Fixpipe 写成 FP16 `mm2Gm_`，AIV 获得 flag8。
-- Golden 来源：[`math/add_lora/op_kernel/add_lora_base.h:643-659`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_base.h#L643-L659)
+- Golden 来源：[`math/add_lora/op_kernel/add_lora_base.h:643-659`](../../../../../../../cann-ops-raw/ascendc/ops-math/165d41f02a43a62324b434cb6bda7c533b14da3e/math/add_lora/op_kernel/add_lora_base.h#L643-L659)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

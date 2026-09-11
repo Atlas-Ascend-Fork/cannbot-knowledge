@@ -5,40 +5,40 @@ description: "说明 aclnnMoeTokenUnpermute 在 A2/A3 上的接口语义、Host/
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/op_api/aclnn_moe_token_unpermute.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/op_api/aclnn_moe_token_unpermute.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/docs/aclnnMoeTokenUnpermute.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/docs/aclnnMoeTokenUnpermute.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/op_api/aclnn_moe_token_unpermute.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/op_api/aclnn_moe_token_unpermute.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/common/include/external/aclnn_kernels/aclnn_platform.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/common/include/external/aclnn_kernels/aclnn_platform.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/moe_token_unpermute_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/moe_token_unpermute_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/moe_token_unpermute_infershape.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/moe_token_unpermute_infershape.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/moe_token_unpermute_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/moe_token_unpermute_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/moe_token_unpermute_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/moe_token_unpermute_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/config/ascend910b/moe_token_unpermute_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/config/ascend910b/moe_token_unpermute_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/config/ascend910_93/moe_token_unpermute_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/config/ascend910_93/moe_token_unpermute_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/CMakeLists.txt
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910b/ops_transformer_operator_list.yaml
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910b/ops_transformer_operator_list.yaml
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/scripts/ci/ascend910_93/ops_transformer_operator_list.yaml
     role: implementation
 created_at: "2026-08-24T00:00:00Z"
-updated_at: '2026-08-28T06:56:32Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -745,7 +745,7 @@ dynamic_ub=N/A；workspace_total(operator-owned)=0
 
 - 适用 Route：R-001～R-006。
 - 触发条件：所有合法输入；H与UB决定分片。
-- Golden 来源：[`moe_token_unpermute_tiling.cpp:193-205`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/moe_token_unpermute_tiling.cpp#L193-L205)
+- Golden 来源：[`moe_token_unpermute_tiling.cpp:193-205`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_host/moe_token_unpermute_tiling.cpp#L193-L205)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -786,7 +786,7 @@ Host 先用最小双缓冲求最大 H tile，再在相同 H tile 下把 token Qu
 
 - 适用 Route：全部；零权重条件仅R-003～006。
 - 触发条件：`idx>=M`或有P且`prob==0`。
-- Golden 来源：[`moe_token_unpermute.h:238-255`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute.h#L238-L255)
+- Golden 来源：[`moe_token_unpermute.h:238-255`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute.h#L238-L255)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -831,7 +831,7 @@ idx/P已在UB，先用标量谓词可避免无贡献项的 Hcur随机GM gather�
 
 - 适用 Route：T1=FP32的R-002/R-005/R-006消除H TBuf；T3=FP32的R-004/R-006消除P TBuf。
 - 触发条件：编译期 `IsSameType<T1,float>` / `IsSameType<T3,float>`。
-- Golden 来源：[`moe_token_unpermute.h:139-148`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute.h#L139-L148)
+- Golden 来源：[`moe_token_unpermute.h:139-148`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/moe/moe_token_unpermute/op_kernel/moe_token_unpermute.h#L139-L148)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

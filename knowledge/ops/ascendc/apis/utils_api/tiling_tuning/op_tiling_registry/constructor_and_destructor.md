@@ -2,15 +2,47 @@
 type: API
 title: 构造和析构函数
 description: 创建与释放OpTilingRegistry对象。
-tags: [task.lookup, topic.implementation.api_layer.utils_api]
-status: stable
+tags:
+- task.lookup
+- topic.implementation.api_layer.utils_api
+status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/Tiling_tuning/OpTilingRegistry/constructor_and_destructor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-18T14:51:00Z'
-platforms: [agnostic]
+updated_at: '2026-09-04T01:25:11Z'
+platforms: []
 ---
-# OpTilingRegistry构造和析构函数
 
-创建与释放OpTilingRegistry对象。函数原型：OpTilingRegistry()（构造函数）和~OpTilingRegistry()（析构函数）。无参数、无返回值、无约束。OpTilingRegistry用于Tiling调优场景下注册和管理算子的Tiling策略，通过构造函数创建实例后可进行Tiling策略的注册和查询，析构时自动释放资源。调用示例：context_ascendc::OpTilingRegistry tmpIns;
+# 构造和析构函数<a name="ZH-CN_TOPIC_0000002299419704"></a>
+
+## 功能说明<a name="zh-cn_topic_0000002078486173_zh-cn_topic_0000001576727153_zh-cn_topic_0000001389787297_section36583473819"></a>
+
+创建与释放OpTilingRegistry对象。
+
+## 函数原型<a name="zh-cn_topic_0000002078486173_zh-cn_topic_0000001576727153_zh-cn_topic_0000001389787297_section13230182415108"></a>
+
+```
+OpTilingRegistry()
+~OpTilingRegistry()
+```
+
+## 参数说明<a name="zh-cn_topic_0000002078486173_zh-cn_topic_0000001576727153_zh-cn_topic_0000001389787297_section75395119104"></a>
+
+无
+
+## 返回值说明<a name="zh-cn_topic_0000002078486173_zh-cn_topic_0000001576727153_zh-cn_topic_0000001389787297_section25791320141317"></a>
+
+无
+
+## 约束说明<a name="zh-cn_topic_0000002078486173_zh-cn_topic_0000001576727153_zh-cn_topic_0000001389787297_section19165124931511"></a>
+
+无
+
+## 调用示例<a name="zh-cn_topic_0000002078486173_zh-cn_topic_0000001576727153_zh-cn_topic_0000001389787297_section320753512363"></a>
+
+```
+context_ascendc::OpTilingRegistry tmpIns;
+// ... ...
+```
+

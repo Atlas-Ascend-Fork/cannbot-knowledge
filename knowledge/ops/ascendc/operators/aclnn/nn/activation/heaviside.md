@@ -5,32 +5,32 @@ description: "说明 aclnnHeaviside 在 A2/A3 上的接口语义、Host/Launcher
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/docs/aclnnHeaviside.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/docs/aclnnHeaviside.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/README.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/op_api/aclnn_heaviside.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/op_api/aclnn_heaviside.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/op_api/heaviside.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/op_api/heaviside.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/heaviside_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/heaviside_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/heaviside_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/heaviside_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/heaviside_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/heaviside_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_kernel/heaviside.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_kernel/heaviside.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_kernel/heaviside.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_kernel/heaviside.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/config/ascend910b/heaviside_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/config/ascend910b/heaviside_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/config/ascend910_93/heaviside_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/config/ascend910_93/heaviside_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T15:01:44Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a2, a3]
 cann_versions: ["9.1.0"]
 ---
@@ -497,7 +497,7 @@ workspace_total(Heaviside node) = 16777216 B requested; consumed = 0 B
 
 - 适用 Route：R-001、R-002、R-003
 - 触发条件：每核 `loopNum>0`；`pingPongFlag` 每轮翻转并选择 event 0/1
-- Golden 来源：[`op_kernel/heaviside.h:123-142`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_kernel/heaviside.h#L123-L142)
+- Golden 来源：[`op_kernel/heaviside.h:123-142`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_kernel/heaviside.h#L123-L142)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -543,7 +543,7 @@ for (int64_t i = 0; i < loopNum; i++) {
 
 - 适用 Route：R-003
 - 触发条件：`std::is_same_v<T, bfloat16_t>`
-- Golden 来源：[`op_kernel/heaviside.h:156-178`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_kernel/heaviside.h#L156-L178)
+- Golden 来源：[`op_kernel/heaviside.h:156-178`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/heaviside/op_kernel/heaviside.h#L156-L178)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

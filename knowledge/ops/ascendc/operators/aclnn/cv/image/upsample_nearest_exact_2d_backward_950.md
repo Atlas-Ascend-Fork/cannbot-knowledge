@@ -5,38 +5,38 @@ description: "说明 aclnnUpsampleNearestExact2dBackwardGetWorkspaceSize/aclnnUp
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/docs/aclnnUpsampleNearestExact2dBackward.md
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/docs/aclnnUpsampleNearestExact2dBackward.md
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/op_api/aclnn_upsample_nearest_exact2d_backward.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/op_api/aclnn_upsample_nearest_exact2d_backward.h
     role: header
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/op_api/aclnn_upsample_nearest_exact2d_backward.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/op_api/aclnn_upsample_nearest_exact2d_backward.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/op_api/upsample_nearest_exact2d_grad.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/op_api/upsample_nearest_exact2d_grad.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling_arch35.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling_arch35.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_tiling_data.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_tiling_data.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_tiling_key.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_tiling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/upsample_nearest_exact2d_grad_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/upsample_nearest_exact2d_grad_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_data_copy.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_data_copy.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_simt.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_simt.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_simt_base.h
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_simt_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/config/ascend950/upsample_nearest_exact2d_grad_binary.json
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/config/ascend950/upsample_nearest_exact2d_grad_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T20:55:58Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -763,7 +763,7 @@ UB_total=0 explicit; dynamic_ub=0; workspace=16 MiB reserved; private bytes固�
 
 - 适用 Route：R-002～R-007
 - 触发条件：非 identity Route；按 `outHW`、`outCHW` 是否达到 `aivCoreNum*2048` 依次选择粒度。
-- Golden 来源：[`image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling_arch35.cpp:118-145`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling_arch35.cpp#L118-L145)
+- Golden 来源：[`image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling_arch35.cpp:118-145`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling_arch35.cpp#L118-L145)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -809,7 +809,7 @@ HW 足够大时每线程负责一个空间位置并在内部遍历 NC，减少�
 
 - 适用 Route：R-002～R-007
 - 触发条件：输入、输出总元素同时不超过 `UINT32_MAX` 使用 uint32，否则使用 uint64。
-- Golden 来源：[`image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_simt.h:78-87`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_simt.h#L78-L87)
+- Golden 来源：[`image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_simt.h:78-87`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_kernel/arch35/upsample_nearest_exact2d_grad_simt.h#L78-L87)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -845,7 +845,7 @@ Host 先证明 32 位地址范围，模板再让坐标、offset、magic division
 
 - 适用 Route：R-001
 - 触发条件：输入输出 H/W 完全相同且两个 scale 在 `1e-8` 内等于 1。
-- Golden 来源：[`image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling_arch35.cpp:108-123`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling_arch35.cpp#L108-L123)
+- Golden 来源：[`image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling_arch35.cpp:108-123`](../../../../../../../cann-ops-raw/ascendc/ops-cv/bb717d075d129fd1fc7b96b2886824a1d153ed2f/image/upsample_nearest_exact2d_grad/op_host/upsample_nearest_exact2d_grad_tiling_arch35.cpp#L108-L123)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -1,4 +1,4 @@
-# rtc
+# RTC
 
 - [aclrtcAddNameExpr](aclrtc_add_name_expr.md)：注册指定的名称表达式，该表达式代表了一个__global__函数。 主要用于__global__函数为模板函数的场景，调用本接口后，可以通过aclrtcGetLoweredName接口获取函数的mangling name，在launch阶段调用对应的模板__global__函数。
 - [aclrtcCompileProg](aclrtc_compile_prog.md)：编译接口，编译指定的程序。

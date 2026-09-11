@@ -5,42 +5,42 @@ description: "说明 aclnnFFNToAttention 在 A3 上的接口语义、Host/Launch
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/README.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/README.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/docs/aclnnFFNToAttention.md
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/docs/aclnnFFNToAttention.md
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_api/aclnn_ffn_to_attention.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_api/aclnn_ffn_to_attention.h
     role: header
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_api/aclnn_ffn_to_attention.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_api/aclnn_ffn_to_attention.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/ffn_to_attention_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/ffn_to_attention_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/op_tiling/ffn_to_attention_tilling.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/op_tiling/ffn_to_attention_tilling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/ffn_to_attention_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/ffn_to_attention_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/ffn_to_attention_tilling_key.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/ffn_to_attention_tilling_key.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/arch22/ffn_to_attention.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/arch22/ffn_to_attention.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/ffn_to_attention.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/ffn_to_attention.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_graph/ffn_to_attention_gen_task.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_graph/ffn_to_attention_gen_task.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_graph/mc2_moe_gen_task_ops_utils.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_graph/mc2_moe_gen_task_ops_utils.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_graph/mc2_gen_task_ops_utils.cpp
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_graph/mc2_gen_task_ops_utils.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/moe_distribute_base.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/moe_distribute_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/mc2_kernel_utils.h
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/common/op_kernel/mc2_kernel_utils.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/config/ascend910_93/ffn_to_attention_binary.json
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/config/ascend910_93/ffn_to_attention_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T16:28:55Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: [a3]
 cann_versions: ["9.1.0"]
 ---
@@ -447,7 +447,7 @@ dynamic_ub = N/A；其余 window/L1/L0 字节账与 R-001 相同
 
 - 适用 Route：R-001、R-002
 - 触发条件：A3 且 optional `attnRankTable` 的存在性决定 `rankTableMode`。
-- Golden 来源：[`ffn_to_attention_tilling.cpp:507-520`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/op_tiling/ffn_to_attention_tilling.cpp#L507-L520)
+- Golden 来源：[`ffn_to_attention_tilling.cpp:507-520`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_host/op_tiling/ffn_to_attention_tilling.cpp#L507-L520)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -488,7 +488,7 @@ Host 把 optional 输入存在性编码进模板 key，entry 直接实例化 `FF
 
 - 适用 Route：R-001、R-002
 - 触发条件：所有合法 `actualTokenNum`；A3 `aivNum` 个 Vector 核。
-- Golden 来源：[`ffn_to_attention.h:169-195`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/ffn_to_attention.h#L169-L195)
+- Golden 来源：[`ffn_to_attention.h:169-195`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/ffn_to_attention.h#L169-L195)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -541,7 +541,7 @@ Host 把 optional 输入存在性编码进模板 key，entry 直接实例化 `FF
 
 - 适用 Route：R-001、R-002
 - 触发条件：每个有效 token 的 remote window 写入。
-- Golden 来源：[`ffn_to_attention.h:204-219`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/ffn_to_attention.h#L204-L219)
+- Golden 来源：[`ffn_to_attention.h:204-219`](../../../../../../../cann-ops-raw/ascendc/ops-transformer/be33d95bb755cedec3108f70805c1874d1792540/mc2/ffn_to_attention/op_kernel/ffn_to_attention.h#L204-L219)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

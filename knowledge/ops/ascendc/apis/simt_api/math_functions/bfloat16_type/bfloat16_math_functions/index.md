@@ -1,6 +1,5 @@
 # bfloat16类型数学库函数
 
-- [bfloat16类型数学库函数](bfloat16_math_functions.md)：bfloat16类型数学库函数集合，涵盖htanh、hexp、hlog、hcos、hsin、hsqrt等常用数学运算。
 - [Hceil](hceil.md)：获取大于或等于输入bfloat16_t数据的最小整数值。
 - [BFloat16数学函数hcos](hcos.md)：获取输入数据的三角函数余弦值。 !
 - [BFloat16数学函数hexp](hexp.md)：指定输入x，获取e的x次方。 !

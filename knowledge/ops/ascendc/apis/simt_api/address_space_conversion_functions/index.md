@@ -6,4 +6,3 @@
 - [__cvta_global_to_generic](_cvta_global_to_generic.md)：将Global Memory内存空间的地址值转换为对应的指针并返回。
 - [__cvta_local_to_generic](_cvta_local_to_generic.md)：将栈空间的地址值转换为对应的指针并返回。
 - [__cvta_ubuf_to_generic](_cvta_ubuf_to_generic.md)：将Unified Buffer内存空间的地址值转换为对应的指针并返回。
-- [地址空间转换函数](address_space_conversion_functions.md)：SIMT API地址空间转换函数汇总，提供generic与Global、UBuf、Local间指针与地址值的双向转换能力。

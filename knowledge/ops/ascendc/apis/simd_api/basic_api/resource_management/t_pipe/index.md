@@ -12,7 +12,6 @@
 - [ReadSpmBuffer](read_spm_buffer.md)：从SPM Buffer读回数据到local内存中。
 - [ReleaseEventID](release_event_id.md)：用于释放HardEvent硬件同步事件的TEventID，通常与AllocEventID搭配使用。
 - [Reset](reset.md)：完成资源的释放与eventId等变量的初始化操作，恢复到TPipe的初始化状态。
-- [TPipe](t_pipe.md)：TPipe接口索引页，包含简介、构造函数、Init/Destroy、InitBuffer、事件ID管理及SpmBuffer读写等。
 - [TPipe](t_pipe_constructor.md)：构造用来管理内存和同步的TPipe对象。
 - [TPipe简介](t_pipe_intro.md)：TPipe用于统一管理Device端内存等资源，一个Kernel函数必须且只能初始化一个TPipe对象。其主要功能包括：
 - [WriteSpmBuffer](write_spm_buffer.md)：将UB空间不足时需要溢出暂存的数据拷贝到SPM Buffer中。

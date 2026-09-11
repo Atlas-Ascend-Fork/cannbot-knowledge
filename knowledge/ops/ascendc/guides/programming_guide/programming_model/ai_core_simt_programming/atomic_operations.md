@@ -3,19 +3,21 @@ type: Guide
 title: 原子操作（AI Core SIMT编程）
 description: SIMT编程模型中，一个Grid由多个Thread Block组成，每个Thread Block又包含多个Thread。不同Thread可以并发访问同一段Global
   Memory或Unified Buffer。当多个线程同时对同一地址执行读-改-写操作时，如果没有同步保护，可能出现数据竞争，导致最终结果不符合预期。
-tags: [task.lookup, topic.programming_model.execution_model.simt]
-status: stable
+tags:
+- task.lookup
+- topic.programming_model.execution_model.simt
+status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simt_programming/atomic_operations.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: [agnostic]
+updated_at: '2026-09-04T01:25:11Z'
+platforms: []
 ---
 
 # 原子操作
 
-SIMT编程模型中，一个Grid由多个Thread Block组成，每个Thread Block又包含多个Thread。不同Thread可以并发访问同一段Global Memory或Unified Buffer。当多个线程同时对同一地址执行读-改-写操作时，如果没有同步保护，可能出现数据竞争，导致最终结果不符合预期。
+SIMT编程模型中，一个Grid由多个Thread Block组成，每个Thread Block又包含多个Thread。不同Thread可以并发访问同一段Global Memory或Unified Buffer（UB）。当多个线程同时对同一地址执行读-改-写操作时，如果没有同步保护，可能出现数据竞争，导致最终结果不符合预期。
 
 原子操作用于保证同一地址上的一次读-改-写过程不可被其他线程打断。典型场景包括计数、状态抢占、直方图统计和并行归约等。
 
@@ -25,7 +27,7 @@ SIMT编程模型中，一个Grid由多个Thread Block组成，每个Thread Block
 
 原子操作不保证多个线程到达该原子操作的先后顺序，也不是线程同步屏障。多个Thread、Warp或Thread Block同时访问同一地址时，硬件会对这些原子请求进行串行化处理，但串行化顺序通常不由程序指定。
 
-Ascend C SIMT提供`asc_atomic_add`、`asc_atomic_sub`、`asc_atomic_cas`等原子操作接口，可用于Global Memory或Unified Buffer中的数据更新。不同接口支持的数据类型、访问空间和返回值约束不同，详细说明请参见原子操作接口。
+Ascend C SIMT提供`asc_atomic_add`、`asc_atomic_sub`、`asc_atomic_cas`等原子操作接口，可用于Global Memory或UB中的数据更新。不同接口支持的数据类型、访问空间和返回值约束不同，详细说明请参见[原子操作接口](../../../../apis/simt_api/atomic_operations/atomic_operations_intro.md)。
 
 ## 使用建议
 
@@ -33,6 +35,7 @@ Ascend C SIMT提供`asc_atomic_add`、`asc_atomic_sub`、`asc_atomic_cas`等原�
 - 不要将原子操作等同于线程同步；需要线程到达同一执行点时，应使用同步接口。
 - 避免大量线程频繁原子更新同一个Global Memory地址，必要时先在Thread Block内做局部聚合。
 - 不要依赖原子操作返回值表达稳定的线程执行顺序。
+
 
 <!-- cannbot:related:start -->
 ## 相关

@@ -1,6 +1,5 @@
 # 激活函数
 
-- [激活函数](activation_functions.md)：汇总Ascend C SIMD高阶API中各类激活函数接口，包括SoftMax、LogSoftMax、Gelu、SwiGLU、Silu、Swish、GeGLU、ReGlu、Sigmoid等。
 - [GeGLU接口](ge_glu_interface/index.md)：采用GELU作为激活函数的GLU变体，按元素对两源Tensor计算GeGLU结果
 - [Gelu接口](gelu_interface/index.md)：GELU激活函数的FastGelu化简版本，通过公式化简大幅提升计算性能，支持高精度和高性能模式。
 - [LogSoftMax接口](log_soft_max_interface/index.md)：对输入tensor做LogSoftmax计算。

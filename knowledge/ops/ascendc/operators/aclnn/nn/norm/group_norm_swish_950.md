@@ -5,40 +5,40 @@ description: "说明 aclnnGroupNormSwish 在 950 上的接口语义、Host/Launc
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/docs/aclnnGroupNormSwish.md
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/docs/aclnnGroupNormSwish.md
     role: header
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/group_norm_swish_def.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/group_norm_swish_def.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/group_norm_swish_tiling.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/group_norm_swish_tiling.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/group_norm_swish_tiling.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/group_norm_swish_tiling.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/group_norm_swish_apt.cpp
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/group_norm_swish_apt.cpp
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_base.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_base.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_hw1_b16.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_hw1_b16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_hw1_b32.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_hw1_b32.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_small_b16.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_small_b16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_small_b32.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_small_b32.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_norm_b16.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_norm_b16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_norm_b32.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_norm_b32.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_large_b16.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_large_b16.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_large_b32.h
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_large_b32.h
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/config/ascend950/group_norm_swish_binary.json
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/config/ascend950/group_norm_swish_binary.json
     role: implementation
-  - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/CMakeLists.txt
+  - resource: cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T17:56:05Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-08T06:54:09Z'
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -793,7 +793,7 @@ UB_total=163840+8*(256+256+3584)=196608 B
 
 - 适用 Route：R-004…R-012
 - 触发条件：H≠1，按 M 和 `CAlign+GAlign` 与统计 slot 资源式选择。
-- Golden 来源：[`norm/group_norm_swish/op_host/group_norm_swish_tiling.cpp:238-255`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/group_norm_swish_tiling.cpp#L238-L255)
+- Golden 来源：[`norm/group_norm_swish/op_host/group_norm_swish_tiling.cpp:238-255`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_host/group_norm_swish_tiling.cpp#L238-L255)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -830,7 +830,7 @@ Small 整组物化，Norm 只物化 8192 tile 但保留 `2*loopTimesAlign` 统�
 
 - 适用 Route：R-010…R-012
 - 触发条件：Large；每次加载 256 通道 affine。
-- Golden 来源：[`norm/group_norm_swish/op_kernel/arch35/group_norm_swish_large_b32.h:183-209`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_large_b32.h#L183-L209)
+- Golden 来源：[`norm/group_norm_swish/op_kernel/arch35/group_norm_swish_large_b32.h:183-209`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_large_b32.h#L183-L209)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -866,7 +866,7 @@ gamma/beta 原地变为 scale/bias，同一通道的多个 H tile 不重复组�
 
 - 适用 Route：全部
 - 触发条件：`#if __CCE_AICORE__ == 220 or __CCE_AICORE__ == 310`；其余编译值进入 aligned DataCopy/Atomic tail helper。
-- Golden 来源：[`norm/group_norm_swish/op_kernel/arch35/group_norm_swish_base.h:195-215`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_base.h#L195-L215)
+- Golden 来源：[`norm/group_norm_swish/op_kernel/arch35/group_norm_swish_base.h:195-215`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/norm/group_norm_swish/op_kernel/arch35/group_norm_swish_base.h#L195-L215)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

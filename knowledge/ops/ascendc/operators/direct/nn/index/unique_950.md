@@ -5,16 +5,16 @@ description: "说明 cann_bench::unique、unique_npu 与 launch_unique 在 950 �
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_constant.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_constant.h"
     role: header
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_kernel.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_kernel.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt.h"
     role: implementation
-  - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h"
+  - resource: "cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h"
     role: implementation
 created_at: "2026-08-25T19:40:24Z"
-updated_at: "2026-09-08T14:24:40Z"
+updated_at: "2026-09-11T03:05:58Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -939,7 +939,7 @@ block-beta
 
 - 适用 Route：P1/R-008、P3/R-006 与 P4/R-005 的宽域 official 分支、P6/R-007。
 - 触发条件：进入字节一致的 `UniqueDimKernel<T,RETURN_INVERSE,false>`；`tileSize=512`。
-- 固定源码：[`index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h:188-214`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h#L188-L214)
+- 固定源码：[`index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h:188-214`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h#L188-L214)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -971,7 +971,7 @@ for (int j = 0; j < ITEMS_PER_THREAD; ++j) {
 
 - 适用 Route：同 T-001。
 - 触发条件：`elementsPerCore < N`，存在跨核 merge round。
-- 固定源码：[`index/unique_dim/op_kernel/arch35/unique_dim_kernel.h:340-368`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_kernel.h#L340-L368)
+- 固定源码：[`index/unique_dim/op_kernel/arch35/unique_dim_kernel.h:340-368`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_kernel.h#L340-L368)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -1004,7 +1004,7 @@ __gm__ uint32_t *dst = (round % 2 == 0) ?
 
 - 适用 Route：P1/R-008、P6/R-007 的 fp32，及 dense 宽域 official fallback 的通用模板语义。
 - 触发条件：相邻已排序行执行 `SimtRowCompareDedup`。
-- 固定源码：[`index/unique_dim/op_kernel/arch35/unique_dim_simt.h:110-135`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt.h#L110-L135)
+- 固定源码：[`index/unique_dim/op_kernel/arch35/unique_dim_simt.h:110-135`](../../../../../../../cann-ops-raw/ascendc/ops-nn/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt.h#L110-L135)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 

@@ -1,6 +1,5 @@
 # half类型数学库函数
 
-- [half类型数学库函数](half_math_functions.md)：提供half类型的数学库函数列表，包括指数、对数、三角函数、开方及取整等运算接口。
 - [Hceil](hceil.md)：获取大于或等于输入half数据的最小整数值。
 - [Half数学函数hcos](hcos.md)：获取输入数据的三角函数余弦值。 !
 - [Half数学函数hexp](hexp.md)：指定输入x，获取e的x次方。 !

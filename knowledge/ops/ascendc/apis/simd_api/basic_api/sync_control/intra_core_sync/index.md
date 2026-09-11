@@ -2,7 +2,6 @@
 
 - [AllocMutexID](alloc_mutex_id_isasi.md)：从框架获取并占用一个MutexID，与ReleaseMutexID配合使用，获取的MutexID可传入Mutex::Lock/Unlock接口用于流水同步。
 - [DataSyncBarrier](data_sync_barrier_isasi.md)：阻塞后续指令执行，直到所有之前的内存访问指令执行结束，可通过模板参数控制需要等待的内存位置，用于解决Scalar的内存依赖。
-- [核内同步](intra_core_sync.md)：核内同步接口索引页，汇总TQueSync模板参数、SetFlag/WaitFlag、PipeBarrier、DataSyncBarrier、Mutex及Lock/Unlock等。
 - [核内同步能力概述](intra_core_sync_overview.md)：AI Core内部的执行单元（如MTE2搬运单元、Vector计算单元等）以异步并行的方式运行，在读写同一存储资源时可能存在数据依赖关系。为确保数据一致性及计算正确性，需通过同步控制协调操作时序。
 - [关键特性说明](key_features.md)：自动同步功能可减少开发者手动插入同步的工作量，自动同步特性需要了解以下要点：
 - [Lock](lock.md)：根据MutexID获取Mutex锁，若Mutex已被锁定则阻塞后续指定流水指令队列，直到对应MutexID的Mutex被Unlock，需与Unlock严格成对使用。

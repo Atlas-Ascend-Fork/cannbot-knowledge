@@ -155,15 +155,6 @@ def builtin_ops_kernel(x_ptr, y_ptr, out_ptr, n, BLOCK: tl.constexpr):
 
 自定义算子可与标准 Triton 操作自由组合（如 `x + y` 后进 custom op 再 `tl.where`）。注意 NPU 原子操作（`atomic_or/xor/and/xchg/cas`）暂不支持在 loop 中使用。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [自定义算子注册与调用（register_custom_op / custom）](../apis/ascend_ext_custom_op.md)（`related`）：“custom op API 参考”
-- [Gather/Scatter 算子](../guides/operator_design/gather_scatter.md)（`related`）：“gather/scatter 算子规格”
-- [Matmul 教学 Walkthrough（GPU 基线 → NPU 对角线分核）](./matmul_walkthrough.md)（`related`）：“compile_hint 等 NPU 扩展用法”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -173,3 +164,13 @@ def builtin_ops_kernel(x_ptr, y_ptr, out_ptr, n, BLOCK: tl.constexpr):
 - [builtin_ops_demo.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/unittest/custom_op/builtin_ops_demo.py)
 - [custom_op_extra_buffer_demo.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/unittest/custom_op/custom_op_extra_buffer_demo.py)
 - [custom_op_indexing_map_complex_demo.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/unittest/custom_op/custom_op_indexing_map_complex_demo.py)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [自定义算子注册与调用（register_custom_op / custom）](../apis/ascend_ext_custom_op.md)（`related`）：“custom op API 参考”
+- [Gather/Scatter 算子](../guides/operator_design/gather_scatter.md)（`related`）：“gather/scatter 算子规格”
+- [Matmul 教学 Walkthrough（GPU 基线 → NPU 对角线分核）](./matmul_walkthrough.md)（`related`）：“compile_hint 等 NPU 扩展用法”
+
+<!-- cannbot:related:end -->

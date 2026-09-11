@@ -2,6 +2,7 @@
 
 - [__fdividef](_fdividef.md)：获取两个输入数据相除的结果。
 - [__saturatef](_saturatef.md)：将输入数据转换至0.0到1.0区间。小于等于0返回0，大于等于1返回1，区间内返回原值。
+- [abs](abs.md)：获取float类型输入数据的绝对值。
 - [Acosf](acosf.md)：获取输入数据的反余弦值。
 - [Acoshf](acoshf.md)：获取输入数据的双曲反余弦值。
 - [Asinf](asinf.md)：获取输入数据的反正弦值。
@@ -29,7 +30,6 @@
 - [Fabsf](fabsf.md)：获取输入数据的绝对值。
 - [Fdimf](fdimf.md)：获取两个输入数据的差值，差值小于0时返回0。
 - [Fdividef](fdividef.md)：获取两个输入数据相除的结果。
-- [float类型数学库函数](float_math_functions.md)：提供float类型的三角、指数、对数、取整、比较及特殊运算等常用数学库函数列表。
 - [Floorf](floorf.md)：获取小于或等于输入数据的最大整数值。
 - [数学函数fmaf](fmaf.md)：对输入数据x、y、z，计算x与y相乘加上z的结果。 !
 - [Fmaxf](fmaxf.md)：获取两个输入数据中的最大值。
@@ -55,7 +55,10 @@
 - [数学函数logf](logf.md)：获取以e为底，输入数据的对数。 !
 - [Lrintf](lrintf.md)：获取与输入数据最接近的整数，若存在两个同样接近的整数，则获取其中的偶数。
 - [Lroundf](lroundf.md)：获取对输入数据四舍五入后的整数。
+- [max](max.md)：获取两个输入数据中的最大值。
+- [min](min.md)：获取两个输入数据中的最小值。
 - [Modff](modff.md)：将输入参数分解为小数部分和整数部分。
+- [nanf](nanf.md)：根据输入的字符串生成一个float类型的安静NaN值（浮点尾数最高位为1），并将tagp解析值的低22位写入该NaN值的低22位。
 - [Nearbyintf](nearbyintf.md)：获取与输入浮点数最接近的整数，输入浮点数与左右整数的距离相等时，返回偶数。
 - [Nextafterf](nextafterf.md)：返回从x朝向y方向的下一个可表示浮点值，若x等于y则返回x。
 - [Norm3df](norm3df.md)：获取输入数据a、b、c平方和的平方根。

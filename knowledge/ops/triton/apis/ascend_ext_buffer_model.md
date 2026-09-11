@@ -156,16 +156,6 @@ al.copy(data_ub, l1_buf)
 4. **不支持 int1**：硬件限制，无法分配 bool 缓冲区。
 5. **bind_buffer 生命周期**：buffer 由分配点决定，kernel 结束自动释放。
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
-- [fixpipe 操作（L0C → UB 搬运与融合后处理）](./ascend_ext_fixpipe.md)（`related`）：“fixpipe 操作（Buffer 在 fixpipe 中的使用）”
-- [sync_block_set / wait / all 同步操作](./ascend_ext_sync.md)（`related`）：“同步操作（Buffer 在 Cube-Vector 间共享）”
-- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -174,3 +164,14 @@ al.copy(data_ub, l1_buf)
 - [core.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/extension/buffer/language/core.py)
 - [semantic.py](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/python/triton/extension/buffer/language/semantic.py)
 - [core.py#L143-L163](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/language/cann/extension/core.py#L143-L163)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [Ascend 扩展 API 总览与导入方式](./ascend_ext_overview.md)（`related`）：“扩展 API 总览”
+- [fixpipe 操作（L0C → UB 搬运与融合后处理）](./ascend_ext_fixpipe.md)（`related`）：“fixpipe 操作（Buffer 在 fixpipe 中的使用）”
+- [sync_block_set / wait / all 同步操作](./ascend_ext_sync.md)（`related`）：“同步操作（Buffer 在 Cube-Vector 间共享）”
+- [Triton Ascend API 速查](./triton_api_cheatsheet.md)（`related`）：“Triton Ascend API 速查”
+
+<!-- cannbot:related:end -->

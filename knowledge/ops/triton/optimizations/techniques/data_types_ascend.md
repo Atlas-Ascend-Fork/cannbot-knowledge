@@ -98,14 +98,6 @@ full_offsets = large_offset + tl.arange(0, BLOCK_SIZE).to(tl.int64)
 4. bool 内部转 int8 运算，大量 bool tensor 易致 UB 溢出
 5. int64 的 ADD/CMP/MUL/DIV 退化为 scalar，见标量降级规避卡
 
-<!-- cannbot:related:start -->
-
-## 相关
-
-- [数据类型优化：避免 Scalar Fallback](data_types.md)（`related`）：“数据类型优化：避免 Scalar Fallback（int64→fp32 修复模式）”
-- [数据类型与精度保护（910_95 平台）](data_type_precision.md)（`related`）：“910_95 数据类型与精度保护规则”
-
-<!-- cannbot:related:end -->
 
 ## 参考
 
@@ -120,3 +112,12 @@ full_offsets = large_offset + tl.arange(0, BLOCK_SIZE).to(tl.int64)
 - [dot.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Linear_Algebra_Ops/dot.md)
 - [tl.load.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Memory_Pointer_Ops/tl.load.md)
 - [cast.md](https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Creation_Ops/cast.md)
+
+
+<!-- cannbot:related:start -->
+## 相关
+
+- [数据类型优化：避免 Scalar Fallback](data_types.md)（`related`）：“数据类型优化：避免 Scalar Fallback（int64→fp32 修复模式）”
+- [数据类型与精度保护（910_95 平台）](data_type_precision.md)（`related`）：“910_95 数据类型与精度保护规则”
+
+<!-- cannbot:related:end -->

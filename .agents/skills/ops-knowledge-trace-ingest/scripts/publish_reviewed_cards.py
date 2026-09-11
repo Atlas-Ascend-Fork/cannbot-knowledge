@@ -13,25 +13,11 @@ import tempfile
 import yaml
 
 from governance.contracts.knowledge import Contract, split_frontmatter
-from validate_review_receipt import validate_receipt
+from validate_review_receipt import sha256_file, validate_receipt
 
 
 ACCEPTED_STATUSES = {"published", "merged"}
 MERGE_OPERATIONS = {"upvote", "merge", "downvote"}
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def load_runbook_areas(repository_root: Path) -> set[str]:
-    registry = repository_root / "governance/schemas/registries.yaml"
-    data = yaml.safe_load(registry.read_text(encoding="utf-8"))
-    return set((data.get("paths") or {}).get("runbook_areas") or [])
 
 
 def require_approved_audits(ledger: dict) -> None:
@@ -89,7 +75,7 @@ def publish(
     ledger = json.loads(ledger_bytes.decode("utf-8"))
     require_approved_audits(ledger)
     contract = Contract(repository_root)
-    areas = load_runbook_areas(repository_root)
+    areas = contract.runbook_areas
     operations = {}
     for entry in ledger.get("entries") or []:
         if entry.get("status") not in ACCEPTED_STATUSES:

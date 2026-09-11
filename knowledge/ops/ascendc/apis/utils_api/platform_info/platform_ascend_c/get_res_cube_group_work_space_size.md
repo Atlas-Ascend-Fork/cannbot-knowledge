@@ -2,30 +2,74 @@
 type: API
 title: GetResCubeGroupWorkSpaceSize
 description: 基于CreateCubeResGroup进行AI Core分组计算需要传入workspace用于消息通信，在Host侧提供本接口用于获取CreateCubeResGroup所需要的workspace空间大小。
-tags: [task.lookup, topic.implementation.api_layer.utils_api, topic.programming_model.system_variable]
-status: stable
+tags:
+- task.lookup
+- topic.implementation.api_layer.utils_api
+- topic.programming_model.system_variable
+status: draft
 sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetResCubeGroupWorkSpaceSize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-08-21T07:32:01Z'
-platforms: [agnostic]
+updated_at: '2026-09-04T01:25:11Z'
+platforms: []
+source_headers:
+- include/utils/tiling/platform/platform_ascendc.h
 ---
 
-# GetResCubeGroupWorkSpaceSize
+# GetResCubeGroupWorkSpaceSize<a name="ZH-CN_TOPIC_0000002114052985"></a>
 
-## 功能说明
-基于CreateCubeResGroup进行AI Core分组计算需要传入workspace用于消息通信，在Host侧提供本接口用于获取CreateCubeResGroup所需要的workspace空间大小。
-## 函数原型
-## 参数说明
+## 功能说明<a name="zh-cn_topic_0000001969965338_zh-cn_topic_0000001391767420_section36583473819"></a>
+
+基于[CreateCubeResGroup](../../../simd_api/basic_api/cube_group_mgmt_isasi/cube_res_group_handle/create_cube_res_group.md)进行AI Core分组计算需要传入workspace用于消息通信，在Host侧提供本接口用于获取CreateCubeResGroup所需要的workspace空间大小。
+
+## 函数原型<a name="zh-cn_topic_0000001969965338_zh-cn_topic_0000001391767420_section13230182415108"></a>
+
+```
+uint32_t GetResCubeGroupWorkSpaceSize(void) const
+```
+
+## 参数说明<a name="zh-cn_topic_0000001969965338_zh-cn_topic_0000001391767420_section189014013619"></a>
+
 无
-## 返回值说明
-当前CreateCubeResGroup所需要的workspace空间大小。
-## 约束说明
+
+## 返回值说明<a name="zh-cn_topic_0000001969965338_zh-cn_topic_0000001391767420_section25791320141317"></a>
+
+当前CreateCubeResGroup所需要的workspace空间大小。接口正常返回workspace大小，当返回`std::numeric_limits<uint32_t>::max()`（即`UINT32_MAX`）则接口异常。
+
+## 约束说明<a name="zh-cn_topic_0000001969965338_zh-cn_topic_0000001391767420_section19165124931511"></a>
+
 无。
+
+## 调用示例<a name="zh-cn_topic_0000001969965338_zh-cn_topic_0000001391767420_section320753512363"></a>
+
+```
+// 用户自定义的tiling函数
+static ge::graphStatus TilingFunc(gert::TilingContext* context)
+{
+    AddApiTiling tiling;
+    ...
+    // 如需要使用系统workspace需要调用GetLibApiWorkSpaceSize获取系统workspace的大小。
+    auto ascendcPlatform = platform_ascendc:: PlatformAscendC(context->GetPlatformInfo());
+    uint32_t sysWorkspaceSize = ascendcPlatform.GetLibApiWorkSpaceSize();
+    if (sysWorkspaceSize == std::numeric_limits<uint32_t>::max()) {
+        return ge::GRAPH_FAILED;
+    }
+    // 设置用户需要使用的workspace和CreateCubeResGroup需要的大小作为usrWorkspace的总大小。
+    uint32_t cubeGroupWorkspaceSize = ascendcPlatform.GetResCubeGroupWorkSpaceSize();
+    if (cubeGroupWorkspaceSize == std::numeric_limits<uint32_t>::max()) {
+        return ge::GRAPH_FAILED;
+    }
+    size_t usrSize = 256 + cubeGroupWorkspaceSize;
+    size_t *currentWorkspace = context->GetWorkspaceSizes(1); // 通过框架获取workspace的指针，GetWorkspaceSizes入参为所需workspace的块数。当前限制使用一块。
+    currentWorkspace[0] = usrSize + sysWorkspaceSize; // 设置总的workspace的数值大小，总的workspace空间由框架来申请并管理。
+    ...
+}
+```
+
 
 <!-- cannbot:related:start -->
 ## 相关
 
-- [CreateCubeResGroup](../../../simd_api/basic_api/cube_group_mgmt/cube_res_group_handle/create_cube_res_group.md)（`related`）：快速创建 CubeResGroupHandle 对象，内部完成消息队列空间和同步事件分配。；基于CreateCubeResGroup进行AI Core分组计算需要传入workspace用于消息通信，在Host侧提供本接口用于获取CreateCubeResGroup所需要的workspace空间大小。；创建接口分配队列与同步资源，而 Host 查询接口给出该分组通信所需 workspace 的字节容量，调用方必须先按查询值分配再创建资源组。
+- [CreateCubeResGroup](../../../simd_api/basic_api/cube_group_mgmt_isasi/cube_res_group_handle/create_cube_res_group.md)（`related`）：快速创建 CubeResGroupHandle 对象，内部完成消息队列空间和同步事件分配。；基于CreateCubeResGroup进行AI Core分组计算需要传入workspace用于消息通信，在Host侧提供本接口用于获取CreateCubeResGroup所需要的workspace空间大小。；创建接口分配队列与同步资源，而 Host 查询接口给出该分组通信所需 workspace 的字节容量，调用方必须先按查询值分配再创建资源组。
 <!-- cannbot:related:end -->
