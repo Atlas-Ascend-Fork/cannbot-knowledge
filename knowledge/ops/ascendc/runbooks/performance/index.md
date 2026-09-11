@@ -26,3 +26,7 @@
 - [按行均分 tiling 致 nnz 倾斜时约半数核空闲](tiling_nnz.md)：稀疏算子 Host 按行数均分多核（不按 nnz），nnz 前重后轻时后半核约半数空闲，逐核 cycle 差距 20×+；用 msprof sample-based + ai_vector_core.db task_cyc 判别。
 
 - [MLA Prolog decode 950 tile 调优配方](mla_prolog_decode_950_tile_tuning_recipe.md)：950/Ascend950 上 mla_prolog_quant_d decode 算子通过 4 项独立 tile_config 旋钮调优 (pre_quant_cube_tile k=256 / q_vec/k_vec 翻倍 / cube_wuk_tile k=64 / stitch_function_max_num=128) 使 E2E 相对初始 baseline 约 0.85x，精度全 PASS。
+
+- [launch floor触底目标不可达：pipe body标定偏低](launch_floor_bottomed_target_unreachable_on_device.md)：理论评估 pipe body 全部低于设备 launch floor 使目标一律触底 1.6μs；上板实测 pipe body 全部超 floor 标定区间上沿、达成率 19%–58% 全未达标——触底口径仅在真实 body < floor 时有效。
+- [上板首跑warmup偏慢：TTK取后N-1次中位数](task_prof_warmup_first_run_median_of_rest.md)：TTK kernel 模式 --task-prof 上板实测中首跑系统性偏慢（相对稳态中位数 +24%～+69%）；bin_perf_us 的口径=丢弃首跑、取其余 N-1 次 Task Duration 的中位数——单跑或含首跑会高估耗时。
+- [理论MTE3 bound落空：半精度链Scalar pipe被低估](theory_bound_missing_scalar_pipe_candidate.md)：ascendc-performance-evaluation 预测 MTE3 写侧 bound，上板 msprof 实测 7/7 落空——fp32 实测 Vector 主导、半精度 Cast 链 Scalar 主导（占比最高 53%），Scalar 是理论遗漏的 bound 候选。

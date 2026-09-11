@@ -151,7 +151,7 @@ FP16 路径以 `CopyIn(FP16) → Cast(FP16→FP32, CAST_NONE) → VF(FP32) → C
 
 - 为何选"提升到 FP32 计算-回退 FP16"而非"全程 FP16 VF"：Adam 优化器有 `m_t = β1·m + (1-β1)·g`、`v_t = β2·v + (1-β2)·g²` 等累加与平方运算，FP16 动态范围小、累加易溢出且精度损失大；FP32 中间计算保证精度，仅输入/输出边界做 FP16 转换，是该类优化器算子的标准做法。
 - 为何 Cast 提升用 `CAST_NONE`、回退用 `CAST_RINT`：`CAST_NONE` 在 FP16→FP32 是无损位扩展（不引入误差）；`CAST_RINT` 在 FP32→FP16 做就近舍入（round to nearest even），比截断 `CAST_TRUNC` 引入更小偏置。若回退用截断，大数会被系统性偏小。
-- 为何 VF 函数用 `ComputeT = std::conditional<IS_FP16, float, T>` 模板：FP32 与 FP16 路径复用同一份 VF 实现，仅在 buffer 类型与是否 Cast 上分叉，避免维护两份算法代码导致公式不一致（见 mbart_adam step_size 卡的教训）。
+- 为何 VF 函数用 `ComputeT = std::conditional<IS_FP16, float, T>` 模板：FP32 与 FP16 路径复用同一份 VF 实现，仅在 buffer 类型与是否 Cast 上分叉，避免维护两份算法代码导致公式不一致。
 - 被放弃的设计：曾考虑 FP16 直接用 FP16 VF 指令并做 Kahan 补偿；因复杂度高、动态范围仍不足、收益不明确而放弃。
 - 当前方案属哪档路线：`recommended_fastpath`（FP32 中间计算 + 边界 Cast）。
 

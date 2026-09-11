@@ -200,3 +200,34 @@
 - [DAV_2201 element-wise unary kernel 骨架 多核](dav2201_elementwise_unary_kernel_skeleton_relu.md)：在 DAV_2201（Ascend 910B3）上用 ops-direct-invoke 实现单入单出 element-wise unary 算子（以 ReLU fp16 为例）的完整 kernel 骨架：运行时取核数→尾核 tailing→TQue 双缓冲→DataCopyPad Ext 搬运→AscendC::Relu 矢量计算→GlobalTensor 显式偏移。
 - [HardSwish 逐元素 kernel 的 TQue 双缓冲实现配方](elementwise_tque_double_buffer_inplace_recipe.md)：ascend910b 上 HardSwish 算子的可复用实现：2 个 TQue in-place、单 tile 快速路径、5 指令序列、remainder 均衡分块；15 测试点全部 Pass。
 - [带主元 Thomas 求解器 SIMT 直访 GM kernel](gtsv2_partial_pivoting_thomas_simt_direct_gm_kernel.md)：串行前向消元有行间数据依赖的求解器在昇腾 SIMT 上用"每线程一列 RHS + grid-stride + 中间量直写 GM workspace（d'd+du'd+du2' 三段）"模式实现；不用 AIV/UB，不依赖 math 库。
+
+- [561002：torch_npu GE 初始化干扰 aclnn tiling](561002_torch_npu_ge_init_tiling_interference.md)：同进程 import torch_npu 触发 GE 初始化，劫持 aclnn 自定义算子 tiling 属性访问报 561002；验证脚本改用 ctypes 直调 aclnn C API（aclCreateTensor 在 libnnopbase.so）绕过。
+- [多输出算子 aclnn 适配器签名须逐参对齐生成头](aclnn_multi_output_adapter_signature_autogen_header.md)：多输出 aclnn 算子的 Torch 适配器必须按生成头文件参数序（输入+attr+全部输出+ws+exec）逐参调用；照抄 2 入 1 出模板必然签名不匹配。
+- [aclnn 冒烟测试以 autogen 生成头为签名源](aclnn_signature_source_autogen_header.md)：多输出+属性算子的 aclnn 两段式签名以 build/autogen 生成头为事实源（输入→属性→输出 Out→ws→executor）；附完整冒烟测试。
+- [aclnn 测试链接的是 OPP 安装目录的 libcust_opapi.so](aclnn_test_links_installed_vendors_opapi.md)：tests/aclnn 的 run.sh 先把 run 包装进 $ASCEND_OPP_PATH/vendors/<OpType>/ 再编译运行测试；ldd/objdump/nm 三探针确认测试加载的是安装目录库而非 build 树。
+- [workspace 与 aclnn 保留名冲突：按孪生先例改名 storage](aten_workspace_name_collides_aclnn_reserved.md)：torch 侧 workspace 参数名与 CANN aclnn 二段接口的运行时保留形参 void *workspace 冲突；按 LSTM 孪生 aclnn 头与 910b 信息库先例改用 storage，需求期一次定名避免全链路返工。
+- [b16 DataCopyPad UB→GM 源非 32B 对齐致硬件 fault](b16_datacopypad_ub_gm_32b_fault.md)：fp16/bf16 下 DataCopyPad UB→GM blockCount=1 用非 32B 对齐的 UB 源地址（如 postBuf[104]=208B）直接硬件 fault（aclrtSynchronizeStream 失败、无 kernel 报错）；治本办法是选整除输出边界的切分因子让源恒对齐。
+- [CANN 内置无 GRU Cell 融合反向算子（9.0.0-beta.2）](check_builtin_op_proto_before_porting.md)：CANN 9.0.0-beta.2 内置注册表检索无 ThnnFusedGruCellGrad；vendors/ 下同名包属前代开发安装而非内置权威，据此裁定须自定义开发。
+- [重装算子包前清理 OPP vendors 旧安装残留](cleanup_vendors_before_reinstall.md)：上一轮安装的 vendors/<OpType> 旧产物会污染重装后的 .o 计数与安装树核验；重装前先删该目录再构建。
+- [CPack 失败—binary/config 需 binary 聚合目标](cpack_binary_config_requires_binary_target.md)：AscendC 算子包只构建 <OpType>_<soc> 目标就 cpack 会报 file INSTALL cannot find binary/config；须改 build binary 聚合目标拉起 gen_ops_config。
+- [DataCopyPad UB→GM 不收 padParams，3 参重载](datacopypad_ub_to_gm_no_pad_params_3arg.md)：AscendC DataCopyPad 的 UB→GM 方向只有 (gm, ub, DataCopyExtParams) 三参重载；照搬 GM→UB 的第四参 DataCopyPadExtParams 报 no matching function 编译错。
+- [EZ9999 找不到 infer 回调 — 补 IMPL_OP 注册](ez9999_infer_impl_op.md)：GEIR 图模式全量 EXEC_FAILURE：OpDef SetInferDataType 绑定不进运行时注册表；在注册单元补 IMPL_OP V2 注册后恢复。
+- [GEIR check-route标记缺失：CANN日志差异验V2路由](geir_check_route_cann_v2.md)：CANN 9.0.0-beta.2 GE 日志缺 "registered first" 标记致 check-route 误报 staging 未选中；用 CallInferFunc V2 + RegisterOpImplToRegistry 日志证据判读真实路由。
+- [GEIR负向SUPPRESSED：InferDataType缺输出dtype校验](geir_inferdatatype_output_dtype_validation.md)：L2 负向用例输出 dtype 与输入不一致时 GEIR 图编译照常通过致 SUPPRESSED 放行；InferDataType 补 GetOutputDataType 显式设置校验，不一致返回 GRAPH_FAILED。
+- [GEIR 图模式 V2 推理注册与构建接线配方](geir_v2_infer_shape_datatype_impl_op_wiring.md)：不改 REG_OP/OP_DEF，在 V2 文件实现 InferShape（属性按索引读）+ InferDataType + IMPL_OP 双注册，配 CMake 双目标编译；GEIR 用例输出 shape/dtype 全对。
+- [GetCoreNumAiv运行时少于INI核数，分支边界漂移](getcorenumaiv_runtime_below_ini_core_count.md)：Ascend950PR 实机 aclnn 运行时 GetCoreNumAiv()≈56-57（平台 INI vector_core_cnt=64 为物理核数），含 coreNum/2 阈值的 tiling 分支谓词实际边界从 32 收窄到 28；用未实现分支桩的毒化输出做边界 shape 扫描实测标定。
+- [自定义算子host的OP_LOGI不进stdout与plog](host_op_logi_stdout_plog.md)：CANN 9.0.0-beta.2 + Ascend950PR 实测：opp/vendors 安装的自定义算子 host 侧 OP_LOGI（INFO 级 tiling 日志）在 ASCEND_GLOBAL_LOG_LEVEL=0 + ASCEND_SLOG_PRINT_TO_STDOUT=1 下不出现在 stdout（22.5 万行全为 GE WARNING），测试进程也无 plog 文件；tiling 运行时值调试应改走行为探测。
+- [IR 属性名误改判别：IR 名与 aclnn ABI 名两层对照](ir_attr_name_vs_aclnn_abi_name_layers.md)：GEIR/V2 改造后用 git diff 圈改文件、WORKFLOW_PROVENANCE 的 attr_abi_name 约定仲裁、attr index 访问假阴性排查，判别 IR 属性名是否被误改为 aclnn ABI 名。
+- [kernel binary .o 定位：build/packages 不存在](kernel_o_location_not_build_packages.md)：CPack 日志里的 ./packages/ 路径是 .run 自解包 staging 内部布局；常驻交付 kernel binary 在 build/ascendc_kernels/binary/<soc>/<op>/，安装后在 $ASCEND_OPP_PATH/vendors/<OpType>/ 下。
+- [host UT 链接 PlatformAscendC 需静态库+dlog](platformascendc_host_ut_link_static_tiling_api.md)：host 侧 UT 调 PlatformAscendC 平台查询时连续三错（头文件名/符号未定义/DSO missing）；符号仅在 libtiling_api.a，链接需前置该静态库并补 unified_dlog。
+- [proto 输出序以 spec/aten 序为准，勿照抄 vendor 基线](proto_output_order_follows_spec_aten_order.md)：前代 vendor/旧工作区 IR 输出序 grad_hx 在首（校验器不变量挂首输出），新 spec 按 aten 返回序；OpDef 与 kernel 签名输出序必须同源于权威 spec。
+- [TilingData 注册核验：strings .o 查 mocker 符号](register_tiling_default_kernel_entry_mocker_probe.md)：REGISTER_TILING_DEFAULT 的注册以 __AUX__STRUCT_ascendc_struct_mocker_ 符号串物化进 kernel binary；源级 + 二进制级两级探针确认 TilingData 注册未因重构/桩化丢失。
+- [OpDef 骨架 ge::InferShape 无字面，绑定走 IMPL_OP](setinfershape_ge_notation_not_literal_symbol.md)：proto OpDef 骨架行的 ge::InferShape/ge::InferDataType 在 CANN register 头文件 grep 不到字面符号属预期；实际 infershape/datatype 绑定经 IMPL_OP 宏在 op_host/op_graph 注册。
+- [OpDef SetTiling 与 IMPL_OP_OPTILING 二选一](tiling_registration_settiling_vs_impl_op_optiling.md)：host 侧 tiling 注册双通道等价：样例 IMPL_OP_OPTILING 与契约 OpDef .SetTiling 二选一，并存有双重注册风险；SetTiling 跨文件绑定实测通过。
+- [TilingData 编入构建四探针：opParaSize=8+sizeof](tilingdata_compiled_into_build_four_probes.md)：改动 TilingData 结构体后用四个构建产物探针确认真正编入：构建日志无注册警告、每 .o mocker 串 ≥1、kernel json opParaSize=8+sizeof(struct)、.ascendc_tiling section 内 sizeof 元数据。
+- [TilingUT 悬垂指针—CreateCap 缓冲需 fixture 持有](tilingdata_createcap_dangling_pointer.md)：TilingUT 把 GetRawTilingData 裸指针存成员，CreateCap 局部缓冲随 InvokeTiling 返回释放，断言读前被堆复用成乱码；应在调用后立即快照进 fixture 向量。
+- [TilingData 结构体落地——类内初始化器与注册兼容](tilingdata_dual_struct_nsmdi_registration.md)：多分支 TilingData 双 struct（base/group 共用 + empty 独立）带类内默认初始化器落地：设备侧 GET_TILING_DATA_WITH_STRUCT 为裸字节反序列化不依赖构造语义，REGISTER_TILING_DEFAULT 只取类型名求 sizeof，构建与 aclnn 冒烟实测通过。
+- [TORCH_LIBRARY 多输出返回须 std::tuple 非 vector](torch_library_multi_output_return_tuple_not_vector.md)：TORCH_LIBRARY 注册的多输出 C++ kernel 返回 std::vector<Tensor> 会被推断成单一 Tensor[] 返回，在 dlopen 注册期以「The number of returns is different. 5 vs 1」abort；必须返回 std::tuple。
+- [TPL 双 bool 模板入口与 sub-kernel 实例化验证](tpl_template_entry_subkernel_instantiation_verify.md)：入口改为 template <bool,bool> 后 ASCENDC_TPL_SEL 才生效，3 dtype × 3 行 = 9 sub-kernel；用 inspect_build 与 mocker 字符串逐项验证实例化。
+- [InferShape/InferDataType 模板：attr 驱动可选输出](v2_infershape_inferdtype_bool_attr_optional_outputs.md)：V2 推导回调完整模板：GetBool(index) 读属性、has_bias 决定 bias 输出 (3H,)/(0,)、UNKNOWN_DIM 传播、非法输入 GRAPH_FAILED 拒收、OpDef+IMPL_OP 双注册。
+- [vendor 包 aclnn 装载链路验证探针清单](vendor_package_aclnn_loading_four_probes.md)：build.sh 安装后用 nm/ldd/objdump/find 四探针验证 aclnn 装载链路：符号对导出、链接指向安装目录、入口引用计数、.o 数==dtype 组合数。

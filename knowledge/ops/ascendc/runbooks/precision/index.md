@@ -154,3 +154,20 @@
 
 - [稀疏反卷积精度误差源隔离配方](cube_simt_fp32_precision_error_source_isolation.md)：用 K=1/inChannels=1/单核/SIMT 线程=1 退化测试与 kIdx=0 DumpTensor 对比，逐层隔离 Cube MatMul 与 SIMT ScatterAdd 的 FP32 误差贡献。
 - [FP16 算子 Cast 提升-计算-回退链设计](fp16_cast_up_fp32_compute_cast_down_chain.md)：FP16 输入算子用 Cast(FP16→FP32, CAST_NONE) 提升到 FP32 做 VF 计算、Cast(FP32→FP16, CAST_RINT) 回退输出；AscendC::Cast 在 CANN 9.0.0/Ascend950 须带 RoundMode:: 前缀。ApplyAdamV2 穿刺与 ST 全量验证。
+
+- [b16常量零填充StoreAlign无需DIST_PACK_B32](b16_duplicate_storealign_plain_vs_cast_dist_pack_b32.md)：AscendC Reg 级 VF 中 Reg::Duplicate 产出的 b16 寄存器用不带 StoreDist 的 StoreAlign 落 UB 即位级正确（常量 0 实测）；DIST_PACK_B32 是 Cast fp32→b16 输出（b16 驻留 fp32 lane）路径的打包需求，两者不可混用直觉。
+- [bias 双路拷出偏移未 clamp，负偏移 uint32 回绕](bias_dual_path_copyout_offset_clamp_uint32_wraparound.md)：按 3H 边界二分拷出两路 bias 时 GM/UB 偏移未做非负 clamp：负 GM 偏移越界写、负 postBuf 偏移经 uint32_t 回绕成巨大 UB 偏移，致 grad_hidden_bias 全垃圾甚至硬件 fault。
+- [bias 噪声证据失真：write_evidence 复用 input 真值](bias_evidence_json_cross_output_fp64_truth_reuse.md)：证据 JSON 中 grad_hidden_bias 噪声数百量级值系生成脚本对两路 bias 输出复用同一 input-gates fp64 真值所致伪影；位流 diff+口径复算+生成脚本审计三步判别。
+- [ST bias mare 预算噪声自适应 max(10×th,10×noise)](bias_reduction_mare_noise_adaptive_budget.md)：归约主导 bias 输出 mare 预算由固定 10×th 改为 max(10×th,10×golden fp64 噪声)：期望值生成时逐用例现算噪声落盘 meta.json，C++ 判读逐输出预算并报告，重跑 20/20。
+- [门梯度整体错位 — CopyOut srcStride 误用行距](datacopypad_unified_segment_burst_srcstride_is_segment_gap.md)：DataCopyPad 多段统一 burst 搬出时 srcStride 应为段距而误按逻辑行距传参，每 burst 多跳 2×aUnit 致 UB 读源漂移、门梯度两路全错位而 grad_hx 全过。
+- [空batch归约：bias输出为(3H,)精确零非空张量](empty_batch_bias_output_zero_fill_not_empty_tensor.md)：B==0 且 has_bias 时 bias 梯度输出是 (3H,) 全零（空维归约=单位元 0）而非空张量，kernel 必须零填充；FAIL mere=3.0e37(fp32)=poison×1e7 可判别"未写"。
+- [bias 归约 NaN/Inf 不匹配：±FLT_MAX 输入溢出非精度缺陷](extreme_range_bias_reduction_nan_inf_sum_order_mismatch.md)：黑盒极端 grad_hy 数据范围（±FLT_MAX/±bf16_max）下 fp32 batch 归约溢出，NaN/Inf 分类随求和顺序变化，比较器逐位检查 FAIL；有限位置达标即非 kernel 缺陷。
+- [GEIR bf16 mere~1e11：近零误诊，量级比判别](geir_bf16_mere_explosion_engine_path_divergence.md)：GEIR 图模式 bf16 用例相对误差爆炸时，先用 compare 钩子统计探针对比 actual/golden 量级（~100×偏移=GE 引擎路径分歧，非近零伪影），再按证据链登记已知阻断。
+- [ReduceSum RA(c310)累加序：16宽平衡寄存器树](reducesum_ra_pattern_tree_order_bitwise.md)：dav_c310（Ascend950PR/NpuArch 3510）上ReduceSum<float,RA>的逐位累加序可从CANN impl头文件精确推导：dimA分档调度、CalculateMainR取最大2幂、tail行先并main行、16宽平衡寄存器树交错配对；4行小shape可位级锚定验证。
+- [红基线 mere~1e33＝poison 保持：stub 未写输出](st_poison_red_baseline_unwritten_output_signature.md)：aclnn ST 每次调用前往输出缓冲预填有限毒值（fp32=3.0e30）；stub kernel 零 IO 早退使输出保持毒值，比对产生 1e30~1e37 量级 mere/mare、位级确定、nan_inf_mismatch=0 的特征真红签名。
+- [近零 golden 相对误差 — 分母改用 max(|g|, th)](stat_rel_err_near_zero_floor_denominator.md)：TTK stat_rel_err 镜像钩子的相对误差分母 |g|+1e-7 在近零 golden 时数值不稳定（bf16 th=2^-7≈0.0078 远大于 1e-7）；改用 max(|g|, th) 作分母，mere<th / mare<10×th 阈值不变。
+- [numpy复刻torch sum序：16行块级联bitwise等golden](torch_cpu_sum_dim0_16row_block_cascade_bitwise.md)：torch CPU fp32 sum(dim=0) 可用 16 行块内顺序累加+块间顺序合并 bitwise 复刻；用于证明 golden 求和序与 mare 门限可达性。
+- [torch fp32 sum(dim=0)逐列序：大N稳定为casc16级联](torch_fp32_sum_dim0_casc16_column_order.md)：torch CPU fp32 sum(dim=0)的逐列累加序随work与列数N变化：work≤~2048纯顺序、≤~16K为16行块级联、大N实际shape（work 20万+）下逐列恒为casc16且跨线程数稳定；预判golden误差或评估bitwise对齐可行性前必读。
+- [expect_error 用例被判 FAIL：host 拒收非缺陷](ttk_expect_error_negative_case_invalid_tiling_fail.md)：TTK kernel 模式无预期失败语义：expect_error 负向用例被 host tiling 正确拒收（OPTILING_FAILURE）仍记 precision FAIL；判框架限制登记豁免，勿改 kernel/用例凑绿。
+- [TTK stat_rel_err 默认阈值 fp32 2^-13](ttk_stat_rel_err_default_threshold_table.md)：golden 不写 threshold 时 TTK 按 dtype 默认表取阈值（fp32=2^-13≈1.22e-4）并以 mere<th AND mare<10×th 判定，spec numerical_tolerance 不直接生效。
+- [TTK 输入无固定 seed，同用例两跑 mare 可不同](ttk_unseeded_random_input_mare_instance_dependence.md)：TTK kernel 模式不带 --seed 时输入走全局 numpy 随机状态，相消敏感的归约输出 mare 强实例依赖，同用例两套/两跑结果可翻转，勿误诊 kernel 非确定性。

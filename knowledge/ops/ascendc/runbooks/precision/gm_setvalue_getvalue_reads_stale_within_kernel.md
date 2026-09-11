@@ -111,7 +111,7 @@ platforms: ["950"]
 
 **触发条件**：Kernel 编译通过、单测输出 r_out/c_out 正确，但下游 u/sum_square_u 等依赖「回读中间结果」的输出出现系统性小偏差（与 `(1-beta2)` 修正项量级一致），且偏差在多 shape 上一致、非随机噪声。
 
-**可执行探针**：在写 GM 之后、回读处之前，用 `PRINTF` 打印写入值与回读值做配对对比；并打印由回读值参与计算的下游量（如本例 `ri`、`coeff`）。PRINTF 必须配合「验证是否新 binary 生效」使用——本平台存在 kernel binary 缓存，单纯的源码改动可能不生效（见相关卡 *NPU kernel binary 缓存*）；PRINTF 改变 device 侧 binary hash，可同时兼作「强制加载新 binary」的开关。
+**可执行探针**：在写 GM 之后、回读处之前，用 `PRINTF` 打印写入值与回读值做配对对比；并打印由回读值参与计算的下游量（如本例 `ri`、`coeff`）。PRINTF 必须配合「验证是否新 binary 生效」使用——本平台存在 kernel binary 缓存，单纯的源码改动可能不生效（见相关卡 [kernel binary 缓存](../compilation/kernel_binary_cache_printf_hash_toggle.md)）；PRINTF 改变 device 侧 binary hash，可同时兼作「强制加载新 binary」的开关。
 
 ```cpp
 // ProcessR 内 r_out 写回后：
@@ -162,7 +162,7 @@ platforms: ["950"]
 ## 误诊
 
 - 初判曾怀疑 `ComputeSumR` 用 `DataCopy` 读 r 局部缓冲的方式有误，把 `ComputeSumR` 改为 `GetValue` 直读 GM——未消除偏差。PRINTF 探针随后表明 `sumR_` 本就正确，偏差源在 ProcessU 对 `r_out`/`c_out` 的 GM 回读（证据等级: agent_reported；非实测结论，仅记录调试路径）。
-- 初判曾怀疑 NPU 运行旧 kernel binary（见相关卡 *NPU kernel binary 缓存*）。该怀疑在「源码改动但输出不变」阶段成立且已用 PRINTF 验证并解决；但在 binary 已确认更新（sumR_ 正确）后偏差仍存，说明 binary 缓存只是第一层干扰，真正根因是 GM 回读可见性——两层问题叠加，需逐变量探针分离。
+- 初判曾怀疑 NPU 运行旧 kernel binary（见相关卡 [kernel binary 缓存](../compilation/kernel_binary_cache_printf_hash_toggle.md)）。该怀疑在「源码改动但输出不变」阶段成立且已用 PRINTF 验证并解决；但在 binary 已确认更新（sumR_ 正确）后偏差仍存，说明 binary 缓存只是第一层干扰，真正根因是 GM 回读可见性——两层问题叠加，需逐变量探针分离。
 
 ## 预防
 

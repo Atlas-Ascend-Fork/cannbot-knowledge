@@ -126,10 +126,10 @@ platforms: []
 
 ## 验证信号
 
-来源：本轮算子精度联调的 clamp 修复迭代。修复后（Abs 修复 + 本 clamp 修复一并生效）M=128,N=4096,fp16 实测差异分布：`diff=-1` 共 956 元素、`diff=0` 共 522340 元素、`diff=+1` 共 992 元素，`|diff|<=1` 占 100.00%、`|diff|==0` 占 99.63%、max abs diff=1.0。剩余 ±1 为 FP32 vs FP64 量化边界（见独立诊断卡 DRAFT-precision-03），非本卡根因。（来源平台：未定位；证据等级: tool_observed）
+来源：本轮算子精度联调的 clamp 修复迭代。修复后（Abs 修复 + 本 clamp 修复一并生效）M=128,N=4096,fp16 实测差异分布：`diff=-1` 共 956 元素、`diff=0` 共 522340 元素、`diff=+1` 共 992 元素，`|diff|<=1` 占 100.00%、`|diff|==0` 占 99.63%、max abs diff=1.0。剩余 ±1 为 FP32 vs FP64 量化边界，非本卡根因。（来源平台：未定位；证据等级: tool_observed）
 ## 失效边界
 
-本卡覆盖“标量广播 clamp 的正确实现与广播 buffer 容量约束”。剩余 ±1 拼差属 FP32 vs FP64 边界（见 DRAFT-precision-03），不在此卡。本 trace 验证平台为 ascend910b（dav-2201）；count-based Max/Min 与 Duplicate 的语义在其它 AICore 微架构推断一致——未验证，推断可迁移。
+本卡覆盖“标量广播 clamp 的正确实现与广播 buffer 容量约束”。剩余 ±1 拼差属 FP32 vs FP64 边界，不在此卡。本 trace 验证平台为 ascend910b（dav-2201）；count-based Max/Min 与 Duplicate 的语义在其它 AICore 微架构推断一致——未验证，推断可迁移。
 
 ## 误诊
 

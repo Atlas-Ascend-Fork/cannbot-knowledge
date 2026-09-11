@@ -1,0 +1,24 @@
+# validations
+
+- [aclnn 条件输出用 (0,) 空张量非零填充](aclnn_conditional_output_zero_shape_entity.md)：aten 未定义张量输出（如 has_bias=false 的 bias 梯度）在 aclnn 固定输出槽位下用 (0,) 空张量实体表达，不省略、不零填充；ST 场景须双态枚举，B=0 退化场景锁无 bias 态。
+- [aclnn ST 自研 TTK stat_rel_err 比较器](aclnn_st_cxx_stat_rel_err_comparator_port.md)：TTK stat_rel_err 语义（FLOOR=1e-7、mere 与 mare 双阈值、NaN 同位/Inf 同号）在 C++ aclnn ST 中的逐字复刻实现与红基线实测。
+- [aclnn ST 空张量用例接入：0 字节分配与拷贝守卫](aclnn_st_empty_tensor_case_zero_byte_guards.md)：为空张量分支（B==0 或 H==0）扩展 aclnn ST 桩——manifest 放行 0 维、输入按 32B 占位分配、0 字节 memcpy 跳过；0 维 aclCreateTensor 描述符与空输出比对短路均实测可用。
+- [manifest 驱动 aclnn ST 框架（独立 oracle）](aclnn_st_manifest_oracle_harness_recipe.md)：自研 aclnn ST 三件套配方：用例 manifest + 独立 golden 生成器 + C++ 执行器；两端同源位流、确定性合成、红基线可验证。
+- [fp16/bf16 位流转 float 零依赖转换](cxx_fp16_bf16_bitstream_to_float_conversion.md)：C++ 侧 fp16/bf16 设备位流→float 的位级转换（含 subnormal 规格化推导）与 python bf16 uint16 位桥，避免链接 CANN 转换库。
+- [全空输出用例不构成红基线：空张量比对短路恒过](empty_output_cases_cannot_form_red_baseline.md)：测试先行阶段，预期输出全为空张量（0 字节）的用例结构上必然 PASS——poison 跳过+读回跳过+比对 n==0 短路；红基线信号只能来自 kernel 必须写入的输出。
+- [GEIR 负向拒绝签名 — RunGraph rc=255 EZ9999](geir_negative_reject_rungraph_rc255_ez9999.md)：GEIR 图模式负向非法输入在图执行阶段以 PRECISION_STATUS: ERROR（RunGraph failed -1, EZ9999 Inner Error）真实拒绝且 Kernel 未执行；勿当框架故障，勿把 PASS/SKIP/INVALID/精度 FAIL 当拒绝。
+- [aclnn L2 负向须真实违约并锁错误码](l2_negative_true_violation_lock_error_code.md)：黑盒 ACLNN ST 的 L2 负向用例每行必须真实违反至少一条 proto 契约、remark 锁定期望 ACL 错误码；缺必选参数用 None 形状锁原始输入，不造派生量。
+- [OOM 插桩是编译期：release 套件 OOB=UNKNOWN 属预期](oom_debug_config_compile_time_instrumentation.md)：op_debug_config=oom 为编译期插桩，不能附在 -b release 上冒充已检测；OOB 证据须 -d true 动态编译套件单独产出，UNKNOWN 不得当 PASS，且要与 tiling 拒收型 UNKNOWN 区分。
+- [TilingContext 独立探针配方（builder 双坑）](optilingcontextbuilder_probe_deleted_copy_compileinfo.md)：用 gert::OpTilingContextBuilder 构造 standalone TilingContext 探针；Tensor 不可拷贝须传指针，Build 前必须喂 CompileInfo 否则得到空 context；附完整探针代码与编译链接命令。
+- [ST 红基线输出 poison 防 stub 巧合命中](st_red_baseline_poison_prefill_exact_zero.md)：接口桩 kernel 不写输出时，输出设备缓冲预填有限哨兵（fp32 3e30/fp16 30000/bf16 截断 3e30），防全零期望用例在红基线意外通过。
+- [自定义算子 TilingFunc 无设备 gtest 单测范式](tilingfunc_no_device_gtest_registry_mock_oracle.md)：对安装 run 包 op_host .so 里的 TilingFunc 做无 NPU 设备的 gtest 单测：gert 注册表解析被测函数 + mock PlatFormInfos 平台参数 + 手搓 TilingContext，期望值来自独立 oracle。
+- [TilingUT独立oracle双钉：全字段比对+字面常数防同源漂移](tilingut_oracle_common_mode_dual_pin.md)：TilingUT 独立 oracle 与被测 TilingFunc 同源于同一设计文档，全字段一致性比对无法发现共同错误；每例再以设计文档手算 worked example 的字面常数钉死实际捕获值，并用 grep 门禁强制 oracle 不调被测实现命名空间。
+- [aclnn CSV attributes 键用 ABI 名 hasBias](ttk_aclnn_csv_keys_follow_deployment_header_abi.md)：TTK/aclnn 用例 CSV 的 attributes 键必须用部署头 ABI 参数名（小驼峰 hasBias），不是 IR/OpDef 的 snake_case 属性名 has_bias；optional attr 显式传值不生成缺省态。
+- [白盒精度失败为过期产物：TTK compare 钩子生效判别](ttk_compare_hook_stale_result_csv_four_checks.md)：golden.py 已实现修订容差 compare 钩子但 result.csv 仍报精度失败——结果是旧 golden 生成的过期产物；四判别法确认钩子是否实调。
+- [TTK CSV attributes 需 Python 字面量，JSON 被拒](ttk_csv_attributes_python_literal_not_json.md)：TTK aclnn 黑盒执行的 CSV attributes 字段由 process_dict 以 eval 解析，JSON 布尔值 false/true 触发 ValueError；对合并执行 CSV 做 JSON→Python 字面量归一化后全量执行恢复。
+- [TTK 白盒 CSV op_name 蛇形与 golden 注册键不一致](ttk_csv_op_name_snake_case_golden_registration_key.md)：TTK kernel 模式 CSV op_name 必须是 OpType 蛇形（驼峰/aclnn 名会 SOC_NOT_SUPPORT），而 golden TestSpec 的 __spec__ 若只注册驼峰/aclnn 键则 golden 查找不到，精度全 FAIL。
+- [GEIR 多输出精度串无法过 verify 严格 PASS 判定](ttk_geir_verify_multi_output_empty_cst_precision.md)：多输出+空输出算子 cst_precision 为逐输出逗号串（如 PASS,PASS,PASS,100%,100%），verify 要求严格 PASS；TestSpec compare 钩子返回聚合单结果并重生成冻结插件后通过。
+- [TTK 采样将 nan→0、inf→±max，CSV 非有限值域不物化](ttk_random_data_digitizes_inf_nan_ranges.md)：TTK CSV input_data_ranges 保留 nan/inf 字面量，但 RandomData._digitize_inf_nan 采样时数字化为有限值，NaN/Inf 传播用例在 TTK 执行层永不触发。
+- [TTK 取值域仅整张量语义，单元素NaN/Inf注入用例壳不物化](ttk_value_range_no_single_element_nan_inf_injection.md)：TTK CSV input_data_ranges 只有整张量 (lo,hi) 值域，单元素特殊值用例只落 shape/dtype 壳；精确注入须走 manual_input_binaries 或 C++ ST。
+- [UT mock PlatFormInfos 控制 AIV 核数与 UB](ut_mock_platforminfos_socinfo_aicorespec_mapping.md)：fe::PlatFormInfos::SetPlatformRes 写 SoCInfo/AICoreSpec/version 三组即可让 PlatformAscendC 的 GetCoreNumAiv/GetCoreMemSize(UB) 返回可控值；sysWs 恒 16MB。
+- [白盒生成输出形状全错：golden 探测静默回退 shape_rule](whitebox_gen_shape_rule_fallback_wrong_shapes.md)：白盒统一入口设 golden_path 后，golden 形状探测对 TestSpec 类 golden 不生效，output_shapes 静默落入 broadcast/placeholder 占位且 CSV 格式校验全过；改用 spec outputs[].shape_rule 并以 _shape_source 审计交付。

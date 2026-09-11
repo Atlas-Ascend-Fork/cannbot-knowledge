@@ -20,7 +20,7 @@ aliases: ["FormB", "FormA", "exp_overflow"]
 - 验证过的平台与 CANN 版本：Ascend950（dav-3510 / arch35），CANN 9.0.0-beta.2。仅本平台实测。
 - 适用粒度：`operator_family`（适用于所有含 sigmoid/exp 反向梯度、在 bf16/fp16 Vector 寄存器内做 exp 的逐元素算子）。
 - 路线优先级：`diagnostic_only`——本卡只提供 Form B 正向 exp 溢出的判别方法（触发/探针/原始观测/根因解释），不含 verbatim 修复 after（Form A 函数体可核于 trace seq 2215）。
-- 不适用或未验证场景：fp32 VF 链（exp 输入上界 ~88.7，常规 θ 不溢出，属另一漂移族，见 `softplusv2grad_vf` 卡）；a2/a3 未验证（见 `## 失效边界`）。
+- 不适用或未验证场景：fp32 VF 链（exp 输入上界 ~88.7，常规 θ 不溢出，属另一漂移族，见 [SoftplusV2Grad 非默认θ线性区分支缺失致超差卡](softplusv2grad.md)）；a2/a3 未验证（见 `## 失效边界`）。
 
 ## 判别方法
 
@@ -68,7 +68,7 @@ AscendC::Reg::Select(resReg, gReg, prReg, maskReg);        // S10: res = mask ? 
 ## 失效边界
 
 - Ascend950（dav-3510 / arch35）/ CANN 9.0.0-beta.2、bf16/fp16/fp32 实测有效；仅覆盖 sigmoid-导数类算子 VF 链在 bf16/fp16 实例化时的正向 exp 溢出。
-- fp32 VF 链不适用：fp32 exp 输入上界 ~88.7，常规 `θ`(<88) 下 `Exp(cbx)` 不溢出，属另一数值漂移族（见 `softplusv2grad_vf` 卡的四区漂移）。
+- fp32 VF 链不适用：fp32 exp 输入上界 ~88.7，常规 `θ`(<88) 下 `Exp(cbx)` 不溢出，属另一数值漂移族（见 [SoftplusV2Grad 非默认θ线性区分支缺失致超差卡](softplusv2grad.md)的四区漂移）。
 - a2/a3 平台 `Reg::Exp` 的输入上界与舍入未验证；Form A 是纯数学等价改写，推断可迁移，但 exp 输入上界随硬件版本变化，迁移后须重测 `θ` 与 dtype 的溢出边界。
 - `θ` 取极大值（bf16 接近 88、fp16 接近 11）时即便 Form A 的 `exp(-cbx)` 输入 `-cbx` 仍可能达 `-θ`，若 `θ` 超过 dtype 的 exp 输入上界 Form A 仍会溢出——须在上游约束 `θ` 取值域或加额外 clamp。
 

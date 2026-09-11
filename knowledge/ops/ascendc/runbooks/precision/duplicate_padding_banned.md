@@ -15,7 +15,7 @@ aliases: ["softplus_v2_grad"]
 
 ## 现象
 
-SoftplusV2Grad arch35 kernel 在修复 Select 模式0→模式2（见姊妹卡 `arch35_select_vsel_cmpmask_spr_mask_reuse_count_over_64`）后，仍残留 8 例 `Actual≈Golden/2`，全部 `mismatch=1/1`（单元素用例），ratio 恒为 0.5。场景是 `count=1` 但 `count_padded=64`（Select/Compare 按 256B=64 float 对齐）：模式2 每 64 元素连续消耗 selMask 的不同部分，但 `Compare` 只对 `count_padded=64` bit 写了 mask，其中后 63 bit 对应 padding 区域是未初始化垃圾值；padding 的垃圾 mask 经模式2 连续消耗污染了第 0 个有效元素的选择，使其错走 sigmoid（输出 g×0.5）。
+SoftplusV2Grad arch35 kernel 在修复 Select 模式0→模式2（见姊妹卡 [arch35 Select VSEL_CMPMASK_SPR 每 64 元素复用](arch35_select_vsel_cmpmask_spr_mask_reuse_count_over_64.md)）后，仍残留 8 例 `Actual≈Golden/2`，全部 `mismatch=1/1`（单元素用例），ratio 恒为 0.5。场景是 `count=1` 但 `count_padded=64`（Select/Compare 按 256B=64 float 对齐）：模式2 每 64 元素连续消耗 selMask 的不同部分，但 `Compare` 只对 `count_padded=64` bit 写了 mask，其中后 63 bit 对应 padding 区域是未初始化垃圾值；padding 的垃圾 mask 经模式2 连续消耗污染了第 0 个有效元素的选择，使其错走 sigmoid（输出 g×0.5）。
 
 为消除 padding 垃圾，尝试用 `Duplicate(buf, 0, count_padded)` 把 padding 区域填 0，但该全量清零路线客观回归，banned。
 

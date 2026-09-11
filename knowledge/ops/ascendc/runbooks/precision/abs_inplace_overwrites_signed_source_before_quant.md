@@ -32,7 +32,7 @@ FAIL: M= 128, N=4096, dtype=torch.bfloat16       | int8_match=False, mismatch=0.
 - **验证平台与版本**：ascend910b（dav-2201），CANN 9.0.0。不在注册平台集合 {950,a3,a2}，`platforms` 为空表。
 - **适用粒度**：`operator_family`（任何“先取绝对值求 scale、再量化带符号原值”的动态量化算子）。
 - **路线优先级**：`recommended_fastpath`（Abs 写独立 buffer，量化原值）。
-- **不适用/未验证场景**：scale 仅由绝对值决定、输出本就是绝对值（无符号）的算子不受此坑；FP32 vs FP64 边界 ±1 残差见独立诊断卡。
+- **不适用/未验证场景**：scale 仅由绝对值决定、输出本就是绝对值（无符号）的算子不受此坑；FP32 vs FP64 边界 ±1 残差不在本卡范围。
 
 ## 根因
 
@@ -101,10 +101,10 @@ FAIL: M= 128, N=4096, dtype=torch.bfloat16       | int8_match=False, mismatch=0.
 
 ## 验证信号
 
-来源：本轮算子精度联调。修复后重测，大 N 的 mismatch 从约 0.46 降至约 0.018（M=16,N=4096,fp16：0.4624→0.0180），xOut/scale 保持精确匹配。小 N 仍高（M=1,N=16：0.9375）——此为另一独立根因（clamp 的 Max/Min 广播，见独立卡），本卡只主张“Abs 丢符号”这一根因的消除。（来源平台：未定位；证据等级: tool_observed）
+来源：本轮算子精度联调。修复后重测，大 N 的 mismatch 从约 0.46 降至约 0.018（M=16,N=4096,fp16：0.4624→0.0180），xOut/scale 保持精确匹配。小 N 仍高（M=1,N=16：0.9375）——此为另一独立根因（clamp 的 Max/Min 广播），本卡只主张“Abs 丢符号”这一根因的消除。（来源平台：未定位；证据等级: tool_observed）
 ## 失效边界
 
-本卡仅覆盖“Abs in-place 丢符号致量化坍缩”。修复后小 N 仍存的 mismatch 属 clamp 的 Max/Min 广播与 buffer 问题（见独立卡 DRAFT-precision-02），不在此卡范围。本 trace 验证平台为 ascend910b（dav-2201），FP32 中间计算路径推断在其它 AICore 微架构同行为——未验证，推断可迁移。
+本卡仅覆盖“Abs in-place 丢符号致量化坍缩”。修复后小 N 仍存的 mismatch 属 clamp 的 Max/Min 广播与 buffer 问题，不在此卡范围。本 trace 验证平台为 ascend910b（dav-2201），FP32 中间计算路径推断在其它 AICore 微架构同行为——未验证，推断可迁移。
 
 ## 误诊
 
