@@ -34,7 +34,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:29:53Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -51,7 +51,7 @@ cann_versions: ["9.1.0"]
 | 执行类型 | R-001/R-002 为单节点 SIMT；R-004/R-005 为 NDDMA+AIV 搬运 transpose + SIMT sampler；R-003 为 SIMT transpose + SIMT sampler；无可达 Cube/AIC 或 MIX_CV |
 | Kernel 路线 | R-001 NCDHW trilinear；R-002 NCDHW nearest；R-004 CUT_ONCE transpose+NHWC；R-005 CUT_TWICE transpose+NHWC；R-003 small-shape transpose+NHWC |
 | 核心资源 | Grid sampler 直接 GM→寄存器→GM，无 AIV UB/dynamic UB；R-004/R-005 transpose 各有一个 depth=1、容量 `ubSize` 的 bind Queue；R-003 以中间 GM Tensor 交接且无 UB；无 Device workspace |
-| 来源闭包 | `direct_implementation_closed`：转换交付件闭合 schema、Meta/PrivateUse1、Direct Tiling/POD、route selector、全部可达 entry/body、同流多 Kernel 边和构建；固定官方源码只支撑相关 bilinear、坐标 helper、nearest primitive 与 transpose 实现来源，不把 Direct 派生符号表述为官方 API |
+| 来源闭包 | `direct_implementation_closed`：Direct 转换实现闭合 schema、Meta/PrivateUse1、Direct Tiling/POD、route selector、全部可达 entry/body、同流多 Kernel 边和构建；固定官方源码只支撑相关 bilinear、坐标 helper、nearest primitive 与 transpose 实现来源，不把 Direct 派生符号表述为官方 API |
 
 ## 接口与语义
 
@@ -72,7 +72,7 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-转换交付注册 Torch schema，并分别绑定 Meta 与 `PrivateUse1` 实现；它不是 ACLNN 两段式接口。相关官方 `image/grid_sample` 的 arch35 三维 bilinear body 与 common helper 被保持，普通 Tiling 宏、注册式 key router 和 `gert::TilingContext` 被 Direct POD、显式 entry 与 `PlatformAscendCManager` 替代。nearest forward、NHWC-input sampler、2,000,000 元素 selector 和 Direct launch glue 是交付派生路线；nearest 只复用官方 3D-grad/2D-forward 中可核对的坐标与 `rintf` 语义。目标构建为 CANN 9.1.0、950/Ascend 950（`dav-3510`）。
+转换交付注册 Torch schema，并分别绑定 Meta 与 `PrivateUse1` 实现；它不是 ACLNN 两段式接口。相关官方 `image/grid_sample` 的 arch35 三维 bilinear body 与 common helper 被保持，普通 Tiling 宏、注册式 key router 和 `gert::TilingContext` 被 Direct POD、显式 entry 与 `PlatformAscendCManager` 替代。nearest forward、NHWC-input sampler、2,000,000 元素 selector 和 Direct launch glue 是交付派生路线；nearest 只复用官方 3D-grad/2D-forward 中可核对的坐标与 `rintf` 语义。固定官方 transpose 源码的 `TryVCONVTiling` 同时包含 2-byte VCONV key 10007 和支持 B8/B16/B32（含 FP32）的 021 VCONV key 10008，并在 last-axis gather 之前尝试、成功即短路。canonical 保留了与固定官方 commit 字节一致的 `transpose_transdata_5hd_021.h`，但该 body header 未被 include、未实例化；从生效闭包删除的是 021 Host `Is021VConvValid`/Tiling producer、POD、entry 与 10008 router，只保留 2-byte VCONV 路线。因此不能把“FP32 没有 VCONV 分支”归因于官方源码。目标构建为 CANN 9.1.0、950/Ascend 950（`dav-3510`）。
 
 ## Host/Launcher 执行流程
 
@@ -90,7 +90,7 @@ blockDim = max(1, min(platformAivCores, requiredCores))
 useUint64 = (I > INT32_MAX || O > INT32_MAX || G > INT32_MAX)
 ```
 
-POD 与 launch 参数在 Host 栈上生成，按值传给 Kernel。R-001/R-002 无 workspace。R-004、R-005、R-003 的 `xNhwc` 是 Torch 持有的 GM Tensor，大小为 `I*sizeof(T)`，从 transpose 提交起存活到 sampler 提交完成；它不是 opaque workspace。transpose Tiling 会保留官方 `workspaceSize` 值，但 launcher 不分配、不传 workspace，三个 transpose entry 也没有 workspace 参数，故 Device workspace 为 0。
+POD 与 launch 参数在 Host 栈上生成，按值传给 Kernel。R-001/R-002 无 workspace；entry 为适配官方 `Init` 签名把 `y` 同时传入未读取的 `workspace` 形参，这不产生 workspace 别名读写。R-004、R-005、R-003 的 `xNhwc` 是 Torch 持有的 GM Tensor，大小为 `I*sizeof(T)`，它不是 opaque workspace。局部 Tensor 在 `RunOpApi` 回调执行、transpose 与 sampler 两次提交期间仍在词法作用域内；lambda 实际只使用并捕获 `samplerInputPtr` 裸指针，没有捕获 `xNhwc` 对象。函数返回后的异步保活依赖 Torch NPU 当前流 allocator 语义，转换源码没有显式 `record_stream` 或 event，不能表述成“lambda capture 保活”。transpose Tiling 会保留 16 MiB 的 `workspaceSize` 声明值，但 launcher 不分配、不传 workspace，三个白名单 transpose entry 也没有 workspace 参数，故这条 Direct Device 图的显式 workspace 为 0。
 
 ### 启动图与失败传播
 
@@ -99,47 +99,81 @@ grid_sampler_3d_npu
   -> calc_grid_sampler_3d_tiling
   -> useNhwc = FP32 && bilinear && padding!=reflection && O>=2,000,000
      false -> K-001 direct NCDHW bilinear/nearest SIMT -> y
-     true  -> query core/UB -> calc_transpose_tiling([N,C,DHW],[0,2,1])
-             -> require key in {10001,10002,10003}
+     true  -> query core/UB -> calc_transpose_tiling([N,C,S],[0,2,1])
+             -> remove size-1 axes / merge axes
+             -> canonical VCONV attempt (仅保留2-byte分支，FP32 predicate false)
+             -> if last axis moves, try gather key 10006
+             -> otherwise/if gather rejects: key 10000/10001/10002/10003/...
+             -> require final key in {10001,10002,10003}
              -> K-001 transpose x[N,C,S] -> xNhwc[N,S,C]
              -> same stream ordering
              -> K-002 NHWC-input trilinear SIMT -> y[N,C,Dout,Hout,Wout]
 ```
 
-K-001 与 K-002 在当前 NPU stream 顺序提交；转换层没有跨流 event，因此 GM 可见性与 `xNhwc` 生命周期依赖同流顺序和 Tensor capture。transpose Tiling/平台查询失败或产生其它 key 时，`TORCH_CHECK` 阻止两个节点。Device launcher 返回 `void`，没有逐节点返回码。
+K-001 与 K-002 在当前 NPU stream 顺序提交；转换层没有跨流 event，因此 GM 可见性依赖同流顺序，临时 Tensor 生命周期边界如上一节所述。transpose Tiling/平台查询失败或产生其它 key 时，`TORCH_CHECK` 在 `xNhwc` 分配和两个 Device 节点之前终止；它不会回退到 NCDHW。Device launcher 返回 `void`，`RunOpApi` 回调固定返回 0，没有逐节点提交状态回传或运行时 Route 重试。
 
 ## Route 与参数设计
 
 ### 分核与资源计算
 
-两个 sampler body 都把输出展平为 `O`，每个 AIV block 内启动 512 个 SIMT lane；lane `t` 从 `blockIdx*512+t` 开始，以 `blockDim*512` 递增。整除由 `GetUintDivMagicAndShift` 预生成 magic/shift。R-004、R-005、R-003 的 transpose Host 先移除 size-1 轴、合并连续轴，再由官方 arch35 tiler产生 `realCoreNum/blkFactor/blkTailFactor`。key 10002/10003 以硬件 UB 字节数为 `tiling.ubSize`，单个 depth-1 bind Queue 占满该容量；key 10001 直接 GM→GM。
+两个 sampler body 都把输出展平为 `O`，每个 AIV block 内启动 512 个 SIMT lane；lane `t` 从 `blockIdx*512+t` 开始，以 `blockDim*512` 递增。整除由 `GetUintDivMagicAndShift` 预生成 magic/shift。R-004、R-005、R-003 的 transpose Host 先移除 size-1 轴、合并连续轴，再产生 `realCoreNum/blkFactor/blkTailFactor`。key 10002/10003 以硬件 UB 字节数为 `tiling.ubSize`，单个 depth-1 bind Queue 占满该容量；key 10001 直接 GM→GM，并在非 FPGA 编译下为每核启动 2048 个 SIMT lane，每核 span 按 128 B 对齐后由 `idx<coreFactor` 收尾。
 
 ### Route 重要性
 
-P 等级用于组织知识阅读顺序，不参与 Host 分支判定，也不改变 Route ID。
+P 等级综合合法输入覆盖、生产 selector 优先级、性能价值和安全终点价值，只用于组织知识阅读，不参与 Host 分支判定，也不改变 Route ID。`active` 表示生产入口直接覆盖合法域；`conditional` 表示只有 NHWC 优化总谓词和 transpose capability 同时成立才成功发射。这里把“tiler 产生但被白名单拒绝”的结果列为失败边，不伪造成 Route。
 
-| 重要性 | Route | Route 特征 | 适用范围 | 实现前提 |
-|---:|---|---|---|---|
-| P0 | R-001 | 单 Kernel NCDHW trilinear SIMT，是未启用 NHWC 路线时的 bilinear 主路径 | FP16 bilinear；或不满足 NHWC 谓词的 FP32 bilinear，包括 reflection 与较小输出 | Direct sampler body、FP32 坐标与累加、u32/u64 索引模板闭合 |
-| P1 | R-002 | 单 Kernel NCDHW nearest SIMT，是 nearest 的唯一可达路径 | FP16/FP32、全部 padding 与 align-corners 组合的 nearest | nearest 坐标处理与 `rintf`、三轴边界检查、u32/u64 索引模板闭合 |
-| P2 | R-004 | CUT_ONCE NDDMA transpose 后接 NHWC trilinear sampler | NHWC 谓词成立，transpose tiler 选择 key 10002 | CUT_ONCE Tiling/POD、depth-1 bind Queue、中间 GM Tensor 与同流节点顺序闭合 |
-| P3 | R-005 | CUT_TWICE NDDMA transpose 后接 NHWC trilinear sampler | NHWC 谓词成立，且双切轴关系使 transpose tiler 选择 key 10003 | 四个互斥 phase、单 Queue 串行复用、中间 GM Tensor 与同流节点顺序闭合 |
-| P4 | R-003 | small-shape SIMT transpose 后接 NHWC trilinear sampler | NHWC 谓词成立，且 transpose reduced bytes 低于 small-shape 阈值并选择 key 10001 | small-shape 地址变换 body、中间 GM Tensor 与同流节点顺序闭合 |
+| 重要性 | 状态 | Route | Route 特征 | 适用范围 | 实现前提 |
+|---:|---|---|---|---|---|
+| P0 | active | R-001 | 单 Kernel NCDHW trilinear SIMT，是 NHWC 总谓词为 false 时的 bilinear 终点 | FP16 bilinear；或不满足 NHWC 谓词的 FP32 bilinear，包括 reflection 与较小输出 | Direct sampler body、FP32 坐标与累加、u32/u64 索引模板闭合 |
+| P1 | active | R-002 | 单 Kernel NCDHW nearest SIMT，是 nearest 的唯一成功 Route | FP16/FP32、全部 padding 与 align-corners 组合的 nearest | nearest 坐标处理与 `rintf`、三轴边界检查、u32/u64 索引模板闭合 |
+| P2 | conditional | R-004 | CUT_ONCE NDDMA transpose 后接 NHWC trilinear sampler | NHWC 总谓词成立，canonical 2-byte VCONV/gather 未成功，普通 tiler选择key 10002 | CUT_ONCE Tiling/POD、depth-1 bind Queue、中间 GM Tensor与同流节点顺序闭合 |
+| P3 | conditional | R-005 | CUT_TWICE NDDMA transpose 后接 NHWC trilinear sampler | 同上，双切轴关系使普通 tiler选择 key 10003 | 四个互斥 phase、单 Queue 串行复用、中间 GM Tensor 与同流节点顺序闭合 |
+| P4 | conditional | R-003 | small-shape SIMT transpose 后接 NHWC trilinear sampler | NHWC 总谓词成立，canonical 2-byte VCONV/gather 未成功、约简 `permSize` 为 2 或 3、输入 transpose 字节数 `<1,000,000`，产生 key 10001；如 `N=1,C>1,S>1`，移除 N 轴后为 2-D | `permSize==2/3` 分派 2048-lane 地址变换、中间 GM Tensor与同流节点顺序闭合 |
+
+### active、conditional、失败边与 dormant 代码
+
+| 分类 | 枝叶 | 生产可达性与重新启用条件 |
+|---|---|---|
+| active | R-001、R-002 | `useNhwc=false` 后按 bilinear/nearest 二分；对各自接受域是 terminal，不依赖 transpose capability |
+| conditional | R-003、R-004、R-005 | `useNhwc=true` 后必须让完整 transpose tiler 最终产生 10001/10002/10003；成功时固定 transpose→NHWC sampler 两节点 |
+| Host 失败边 | key 10000 tensor-move | `[N,C,S]→[N,S,C]` 经 size-1 消除/合并退化为约简 rank 1 时可产生；plugin 白名单拒绝，两个 Kernel 都不提交。若要支持，应给 10000 接 entry，或在等价 identity 域跳过物理 transpose后继续 sampler |
+| Host 失败边 | key 10006 gather | canonical FP32 使仅存的2-byte VCONV失败后，last-axis-transpose 域尝试gather；其MTE/bank/半核guard成功即可产生10006，但当前plugin白名单拒绝且Device router没有gather entry。重新启用必须同时接Gather POD与body，不能只放宽key白名单 |
+| Host 失败边 | 其它 key/tiling failure | 10004/10005/10007 对本固定 3-D、FP32 transpose 构造不可由普通 shape 分类命中；平台、POD、tiler错误同样 launch 前失败，无 NCDHW 回退 |
+| 来源同步失败边 | 官方 key 10008 FP32 021 VCONV | 固定官方源码的10008在`TryVCONVTiling`内先于gather；canonical保留孤立且字节一致的body header，但从生效闭包删除Host producer/POD/entry/router，因此当前不可产生。重新启用需恢复Host/POD、include并实例化保留body、补entry/router并扩展plugin白名单；若只恢复Host/POD，仍在`xNhwc`分配和Device launch前被拒绝 |
+| dormant Device family | `launch_grid_sampler_3d_float*` 及 half2/tiled sampler | plugin 永远只调 `launch_grid_sampler_3d_direct_*` 或 `launch_grid_sampler_3d_nhwc_*`；需新增生产 selector 才能启用 |
+| dormant Device family | `launch_grid_sampler_3d_transpose_ncs_nsc` 与专用 half2/标量 SIMT transpose | 当前 NHWC 图只调 `launch_transpose_kernel`；需显式替换 K-001 launcher 并重新闭合尺寸的 `uint32_t` 边界 |
+| dormant 孤立 header | `transpose_transdata_5hd_021.h::KernelTransDataTo5HD021` | canonical文件与固定官方commit字节一致，但未include、未实例化且没有021 Host producer/POD/entry/router。重新启用需恢复Host/POD、include并实例化保留body、补entry/router并扩展plugin白名单 |
+| dormant template leaves | NHWC FP16/nearest entries、wide/spatial/half2 非 tiled headers | `useNhwc` 固定要求 FP32+bilinear；部分 headers 甚至未被 translation unit include/实例化。只有扩展 Host 谓词和对应 entry/router 后才可成为 Route |
 
 ### 真实 Host selector 顺序、短路与 fallback
 
-下表和伪码记录真实执行顺序，不代表 P 等级。Host 先短路判断 NHWC 谓词；命中后由 transpose tiler 决定 R-003/R-004/R-005，未知 key 直接失败，不回退到 R-001。未命中 NHWC 谓词时才按插值模式落到 R-001 或 R-002。
+下表和伪码记录 canonical 的真实执行顺序，不代表 P 等级。Host 先短路判断 NHWC 谓词；命中后 canonical transpose tiler 的 2-byte VCONV→gather→普通模板顺序不能省略。固定官方源码在同一 VCONV 槽还会尝试 FP32-capable 021 key 10008，且优先于 gather；canonical保留其孤立body header，但从生效闭包删除Host/POD/entry/router。只有 canonical 最终 key 10001/2/3 分别进入 R-003/R-004/R-005；其它 key 直接失败，不回退到 R-001。未命中 NHWC 谓词时才按插值模式落到 R-001 或 R-002。
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | R-003/R-004/R-005 NHWC hybrid | transpose key 10001/10002/10003；sampler `<float,u32/u64,true>` | `dtype==FP32 && interpolation==bilinear && padding!=reflection && O>=2000000`；随后 transpose tiler key 必须为 10001/2/3 | 条件 false 到 R-001/R-002；key 非白名单则失败 |
-| 2 | R-001 NCDHW trilinear | `<half/float,u32/u64>` | `interpolation==bilinear` 且未命中第 1 行 | 终点 |
-| 3 | R-002 NCDHW nearest | `<half/float,u32/u64>` | `interpolation==nearest`；因此总不命中 NHWC | 终点 |
+| 1 | NHWC 候选 | transpose producer pipeline | `dtype==FP32 && interpolation==bilinear && padding!=reflection && O>=2000000`；固定输入 `[N,C,S]`、perm `[0,2,1]` | false 按模式到 R-001/R-002；true 进入第2行 |
+| 2 | R-003/R-004/R-005 | transpose key 10001/10002/10003；sampler `<float,u32/u64,true>` | canonical 仅存的 VCONV 2-byte guard失败；gather capability失败；普通 tiler分别满足 small/CUT_ONCE/CUT_TWICE | key 10000/10006/其它值或 tiling 失败均 Host 终止；若同步官方10008而不扩白名单，也在 launch 前终止 |
+| 3 | R-001 NCDHW trilinear | `<half/float,u32/u64>` | `interpolation==bilinear` 且第1行 false | 终点 |
+| 4 | R-002 NCDHW nearest | `<half/float,u32/u64>` | `interpolation==nearest`；因此第1行恒 false | 终点 |
 
 ```text
 if FP32 && bilinear && padding != reflection && O >= 2,000,000:
-    transposeKey = official_arch35_transpose_tiler([N,C,D*H*W], [0,2,1])
-    if key==10001: R-003
+    reduced = RemoveAxisAndMerge([N,C,D*H*W], [0,2,1])
+    # official fixed source: TryVCONV = 2-byte key10007 or FP32-capable 021 key10008;
+    # it returns before gather. canonical retained an un-included/uninstantiated body header,
+    # but removed 021 Host/POD/entry/router from the effective closure.
+    assert canonical_remaining_2byte_VCONV is false because elementSize==4
+    if reduced.last_axis_moves and GatherTiling(reduced) succeeds:
+        transposeKey = 10006
+    else if reduced.rank == 1:
+        transposeKey = 10000
+    else if reduced.bytes < 1,000,000:
+        transposeKey = 10001
+    else:  # reduced rank <= 3; BIG_DIM impossible; moving last axis excludes N-last
+        transposeKey = NDDMA_split(reduced)  # 10002 or 10003
+    if key==10001:
+        R-003  # K1 Process dispatches permSize 2 -> SimtComputeDimTwo,
+               #                       permSize 3 -> SimtComputeDimThree
     else if key==10002: R-004
     else if key==10003: R-005
     else: fail before launch
@@ -153,20 +187,21 @@ else: R-002
 |---|---|---|---|---|---|---|
 | R-001 | direct bilinear | bilinear 且 NHWC 谓词 false；FP16/FP32；u32/u64 由三体积上界选 | 单 SIMT | `GridSampler3dBilinearSimt<T,T_IDX,U_IDX>` | GM+线程寄存器；512 lanes | grid-stride 尾界 `index<O` |
 | R-002 | direct nearest | nearest；FP16/FP32；u32/u64 同上 | 单 SIMT | `GridSampler3dNearestSimt<T,T_IDX,U_IDX>` | GM+线程寄存器；512 lanes | `rintf` 后三轴边界检查 |
-| R-004 | 10002 + NHWC | NHWC 谓词 true；前置vconv/gather不命中；大shape进入NDDMA且 `outCutIndex<=FindOutIndex(inCutIndex)` | NDDMA/AIV→SIMT | `TransposeCutOneAxis<int32_t>`；同上 sampler | depth-1 bind Queue=`ubSize`；GM 边、同流 | main/tail shape |
-| R-005 | 10003 + NHWC | NHWC 谓词 true；前置vconv/gather不命中；大shape进入NDDMA且 `outCutIndex>FindOutIndex(inCutIndex)` | NDDMA/AIV→SIMT | `TransposeCutTwoAxis<int32_t>`；同上 sampler | 同一 bind Queue串行复用四 phase；GM 边、同流 | main/input-tail/output-tail/both-tail |
-| R-003 | 10001 + NHWC | NHWC 谓词 true，transpose reduced bytes `<1,000,000` 并选 small shape | SIMT transpose→SIMT sampler | `TransposeSmallShape<int32_t>`；`GridSampler3dNhwcSimt<float,...,true>` | `xNhwc` GM 边；同流；无 UB | 最后一核 `blkTailFactor`；sampler grid-stride tail |
+| R-004 | 10002 + NHWC | NHWC谓词true；canonical剩余2-byte VCONV与gather capability均失败；bytes≥1,000,000，NDDMA split且`outCutIndex<=FindOutIndex(inCutIndex)` | NDDMA/AIV→SIMT | `TransposeCutOneAxis<int32_t>`；同上sampler | depth-1 bind Queue=`ubSize`；GM边、同流 | main/tail shape；无Route retry |
+| R-005 | 10003 + NHWC | 同 R-004 前置；NDDMA split 且 `outCutIndex>FindOutIndex(inCutIndex)` | NDDMA/AIV→SIMT | `TransposeCutTwoAxis<int32_t>`；同上 sampler | 同一 bind Queue串行复用四 phase；GM 边、同流 | main/input-tail/output-tail/both-tail；无 Route retry |
+| R-003 | 10001 + NHWC | NHWC 谓词 true；canonical 2-byte VCONV与gather均失败；约简 `permSize∈{2,3}` 且 bytes `<1,000,000`。`N=1,C>1,S>1` 会移除 N 轴并走 2-D 分支 | SIMT transpose→SIMT sampler | `TransposeSmallShape<int32_t>::Process` 按 2-D/3-D 分派，均为2048 lanes；`GridSampler3dNhwcSimt<float,...,true>` 为512 lanes | `xNhwc` GM 边；同流；无 UB | K1每核 `idx<coreFactor`/末核 `blkTailFactor`；K2 grid-stride tail |
 
-### 隐藏性能 Guard
+### 扩展输入域性能 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | 32/64 位索引 | `I/O/G` 任一超过 `INT32_MAX` | flat offset 和 magic division 必须避免 32 位溢出 | 全部 sampler | u64 模板 | `calc_grid_sampler_3d_tiling` |
 | block 上界 | `blockDim=min(AIV cores,ceil(O/512))` 且至少 1 | 每 block 512 lane，避免启动超过工作量需要的核 | 全部 sampler | 参数失败时不启动 | `calc_grid_sampler_3d_tiling` |
 | NHWC crossover | FP32、bilinear、非 reflection、`O>=2,000,000` | 先转为 channel-contiguous，使相邻 lane 的 8 邻点读取相邻 channel；代价是一次全量 transpose | R-004、R-005、R-003 | R-001/R-002 | `grid_sampler_3d_npu::useNhwc`（Direct 派生） |
+| transpose producer 优先级 | canonical 为仅2-byte `TryVCONV`→last-axis gather→普通模板；固定官方 `TryVCONV` 还含 FP32-capable 021 key10008并先于gather | canonical 的FP32只会让剩余2-byte guard失败；gather可产10006。10008 body header虽保留但未include/实例化，且无Host/POD/entry/router/白名单 | NHWC候选 | 10006/10000/其它key失败；不完整同步10008也失败 | `RunTranposelTiling/TryVCONVTiling`、plugin key白名单 |
 | transpose key 白名单 | `key∈{10001,10002,10003}` | Direct router只闭合这三个 body | R-004、R-005、R-003 | Host 失败 | `grid_sampler_3d_npu`、`launch_transpose_kernel` |
 | NDDMA UB | `ubSize>0`；10002/3 `InitBuffer(...,1,ubSize)` | 单 tile 必须容纳在一个 bind Queue slot；NDDMA destination stride按 32 B 对齐 | R-004/R-005 | Tiling 失败 | `TransposeCutOneAxis/TransposeCutTwoAxis::Init/SetupLoopInfo` |
-| small threshold | reduced bytes `<1,000,000` | 小数据直接 SIMT 地址变换，不分配 UB | R-003 | 大 shape 到 NDDMA selector | `TransposeNddmaTiling::EntryTilingTemplate` |
+| small threshold | gather未成功、`permSize∈{2,3}` 且 reduced bytes `<1,000,000` | 小数据直接SIMT地址变换；`Process`按2-D/3-D专用函数分派，不分配UB；每核span按128 B对齐 | R-003 | 大shape到NDDMA selector；rank1产10000并失败 | `EntryTilingTemplate/CalcBlockSplitInfoForSmallShape/TransposeSmallShape::Process` |
 
 ### POD/ABI
 
@@ -198,7 +233,7 @@ else: R-002
 
 | 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
 |---|---|---|---|---|---|---|---|
-| TransposeOpTilingData | `permSize` | int64/64 | off 0 | axis | reduced rank | 三个 body | 1..8；Direct仅接受可产出白名单key的结果 |
+| TransposeOpTilingData | `permSize` | int64/64 | off 0 | axis | reduced rank | 三个body；10001据此分派DimTwo/DimThree | 1..8；R-003实际为2或3，rank1先产10000而失败 |
 | 同上 | `inCutIndex` | int64/64 | off 8 | axis | UB split | 10003 | inactive于10001 |
 | 同上 | `outCutIndex` | int64/64 | off 16 | axis | UB split | 10002/3 | 同上 |
 | 同上 | `inUbFactor` | int64/64 | off 24 | element | UB split | tail/shape | key相关 |
@@ -242,19 +277,19 @@ else: R-002
 
 ### Route 源码闭包
 
-| Route | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
+| Route/状态 | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
 |---|---|---|---|---|---|---|
-| R-001 | Direct bilinear | `op_plugin/grid_sampler_3d_plugin.cpp::grid_sampler_3d_npu`；`op_kernel/grid_sampler_3d_kernel.cpp::calc_grid_sampler_3d_tiling` | `GridSampler3DLaunchInfo` | `launch_grid_sampler_3d_direct_*`→4 bilinear entries | official-related `GridSampler3dBilinearSimt`、`Clip` | `csrc/ops/grid_sampler_3d/CMakeLists.txt::register_direct_launch_op` |
-| R-002 | Direct nearest | 同上 | 同上 | 同 launcher→4 nearest entries | derived `GridSampler3dNearestSimt` + official-related common/grad primitive | 同上 |
-| R-004 | 10002 | plugin→official-related NDDMA tiler | 两个 POD | cut-one entry→NHWC entry | `TransposeCutOneAxis`；derived NHWC body | 同上 |
-| R-005 | 10003 | 同上 | 两个 POD | cut-two entry→NHWC entry | `TransposeCutTwoAxis`；derived NHWC body | 同上 |
-| R-003 | 10001 | plugin→`calc_transpose_tiling` | 两个 POD | transpose small entry→NHWC entry | `TransposeSmallShape`；derived `GridSampler3dNhwcSimt` | 同上 |
+| R-001 active | Direct bilinear | `op_plugin/grid_sampler_3d_plugin.cpp::grid_sampler_3d_npu`；`op_kernel/grid_sampler_3d_kernel.cpp::calc_grid_sampler_3d_tiling` | `GridSampler3DLaunchInfo` | `launch_grid_sampler_3d_direct_*`→4 bilinear entries | official-related `GridSampler3dBilinearSimt`、`Clip` | `csrc/ops/grid_sampler_3d/CMakeLists.txt::register_direct_launch_op` |
+| R-002 active | Direct nearest | 同上 | 同上 | 同 launcher→4 nearest entries | derived `GridSampler3dNearestSimt` + official-related common/grad primitive | 同上 |
+| R-004 conditional | 10002 | plugin→`calc_transpose_tiling`；canonical 2-byte VCONV false、gather failed→NDDMA CUT_ONCE | `TransposeLaunchParams`+`GridSampler3DLaunchInfo` | cut-one entry→NHWC entry | `TransposeCutOneAxis<int32_t>`；derived NHWC body | 同上 |
+| R-005 conditional | 10003 | 同上，CUT_TWICE | 同上 | cut-two entry→NHWC entry | `TransposeCutTwoAxis<int32_t>`；derived NHWC body | 同上 |
+| R-003 conditional | 10001 | plugin→`calc_transpose_tiling`；canonical 2-byte VCONV false、gather failed→SMALL_SHAPE | 同上 | transpose small entry→NHWC entry | `TransposeSmallShape<int32_t>::Process`→`SimtComputeDimTwo/Three`；derived `GridSampler3dNhwcSimt<float,...,true>` | 同上 |
 
 ## Kernel 实现
 
 ### 公共执行流程
 
-所有 sampler entry 都声明 AIV-only wrapper，再在每个 block 内用 `asc_vf_call(...dim3{512,1,1})` 执行 SIMT。坐标从 `grid[...,0:3]` 读取为 FP32，按 `alignCorners` 反归一化，进入共享 `Clip`，最后取 8 邻点或 `rintf` 单点。没有 shared/dynamic UB、barrier 或 atomic；每个 lane只写唯一 `y[index]`。R-004、R-005、R-003 在 sampler 前增加一个 transpose 节点，唯一跨节点边为 `xNhwc` GM Tensor。
+所有 sampler entry 都声明 AIV-only wrapper，再在每个 block 内用 `asc_vf_call(...dim3{512,1,1})` 执行 SIMT。坐标从 `grid[...,0:3]` 读取为 FP32，按 `alignCorners` 反归一化，进入共享 `Clip`，最后取 8 邻点或 `rintf` 单点。sampler 没有 shared/dynamic UB、barrier 或 atomic；每个 lane只写唯一 `y[index]`。R-003 的 K-001 例外地使用 2048-lane `TransposeSmallShape`，但仍是无 UB 的 GM→GM SIMT。R-004/R-005 的 K-001 使用 NDDMA bind Queue。三条 conditional Route 的唯一跨节点边都是 `xNhwc` GM Tensor。
 
 ### Route R-001：NCDHW trilinear SIMT
 
@@ -421,6 +456,7 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Direct selector | `op_plugin/grid_sampler_3d_plugin.cpp` | `useNhwc` | NHWC完整谓词 | transpose tiling |
+| Tiling pre-router | `transpose_tiling_arch35.cpp` | `TryVCONVTiling/RunTranposelTiling` | canonical仅存2-byte VCONV，elementSize=4使其失败；last-axis gather capability也必须失败 | 进入普通模板；若gather成功则10006被Host拒绝；021 body header孤立保留，10008 Host/POD/entry/router不在生效闭包 |
 | Tiling | `transpose_tiling_arch35.cpp` | `DoSplitUB/GetIntervalInfo` | `outCutIndex<=FindOutIndex(inCutIndex)` | 10002 |
 | Router | `grid_sampler_3d_kernel.cpp` | `launch_transpose_kernel` | key10002, elementSize4 | cut-one entry |
 
@@ -508,6 +544,7 @@ intermediate_GM=I*4 B
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Direct selector | `op_plugin/grid_sampler_3d_plugin.cpp` | `useNhwc` | NHWC完整谓词 | transpose tiling |
+| Tiling pre-router | `transpose_tiling_arch35.cpp` | `TryVCONVTiling/RunTranposelTiling` | canonical仅存2-byte VCONV，elementSize=4使其失败；last-axis gather capability也必须失败 | 进入普通模板；若gather成功则10006被Host拒绝；021 body header孤立保留，10008 Host/POD/entry/router不在生效闭包 |
 | Tiling | `transpose_tiling_arch35.cpp` | `DoSplitUB/GetIntervalInfoForCutTwice` | `outCutIndex>FindOutIndex(inCutIndex)` | 10003与四区间 |
 | Router | `grid_sampler_3d_kernel.cpp` | `launch_transpose_kernel` | key10003, elementSize4 | cut-two entry |
 
@@ -596,7 +633,8 @@ intermediate_GM=I*4 B
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Direct selector | `op_plugin/grid_sampler_3d_plugin.cpp` | `useNhwc` | 完整 NHWC 谓词 | transpose tiling |
-| Tiling | `transpose_tiling_arch35.cpp` | `EntryTilingTemplate` | reduced bytes `<1,000,000` | key 10001 |
+| Tiling pre-router | `transpose_tiling_arch35.cpp` | `TryVCONVTiling/RunTranposelTiling` | canonical仅存2-byte VCONV，elementSize=4使其失败；last-axis gather capability也必须失败 | 进入普通模板；若gather成功则10006被Host拒绝；021 body header孤立保留，10008 Host/POD/entry/router不在生效闭包 |
+| Tiling | `transpose_tiling_arch35.cpp` | `EntryTilingTemplate` | reduced `permSize∈{2,3}` 且bytes `<1,000,000`；例如`N=1,C>1,S>1`移除N轴后`permSize=2` | key10001；rank1先产10000并失败 |
 | Router | `grid_sampler_3d_kernel.cpp` | `launch_transpose_kernel` | key 10001、elementSize=4 | `TransposeSmallShape<int32_t>` |
 
 #### Device 数据流
@@ -604,7 +642,9 @@ intermediate_GM=I*4 B
 ##### 函数级调用链
 
 ```text
-K-001 TransposeSmallShape<int32_t>::Process -> SimtComputeDimThree
+K-001 TransposeSmallShape<int32_t>::Process
+  -> if permSize==2: SimtComputeDimTwo    # size-1轴移除后，如N=1且C,S>1
+  -> if permSize==3: SimtComputeDimThree  # N,C,S均保留
   -> xNhwc[N,S,C]
 same stream
 K-002 GridSampler3dNhwcSimt<float,u32/u64,int32/int64,true>::Process
@@ -614,7 +654,10 @@ K-002 GridSampler3dNhwcSimt<float,u32/u64,int32/int64,true>::Process
 ##### 源码等价伪码
 
 ```text
-K1: per core span [coreOffset,coreOffset+coreFactor), SIMT decode y[n,s,c], copy x[n,c,s]
+K1: per core 128B-aligned span [coreOffset,coreOffset+coreFactor), 2048-lane SIMT
+    if permSize==2: SimtComputeDimTwo decodes reduced y[s,c] -> x[c,s]
+    if permSize==3: SimtComputeDimThree decodes y[n,s,c] -> x[n,c,s]
+    both use u32 magic division and copy int32 bits into xNhwc
 K2: flat work order [n,spatial,c]; adjacent lanes tend to adjacent c
     load common grid point, read 8 NHWC neighbors, FP32 weighted sum
     store y[(n*C+c)*outSpatial+spatial]
@@ -627,7 +670,7 @@ K2: flat work order [n,spatial,c]; adjacent lanes tend to adjacent c
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
 | xNhwc GM edge | `(n*S+s)*C+c` | `I*4` B | FP32/NSC | K-001 | K-002 | Torch temp until both submissions complete | 不与x/y别名 |
-| K-001 registers | decoded indices | fixed | uint32 | transpose lane | GM store | lane | no UB |
+| K-001 registers | decoded indices/magic/stride | fixed | uint32 | transpose lane | GM store | lane | no UB；bytes<1,000,000 B保证u32容量 |
 | K-002 registers | 8 neighbors/weights | fixed | FP32 | sampler lane | y store | lane | no UB |
 
 ##### 分层内存布局
@@ -643,7 +686,7 @@ workspace_total=0; intermediate_GM=I*4 B
 
 | 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
 |---|---|---|---|---|---|
-| xNhwc | K-001 | K-002 | 调用结束后Tensor析构可回收 | same stream ordering + captured Tensor lifetime | K-002提交前不可释放 |
+| xNhwc | K-001 | K-002 | `RunOpApi` 回调期间由局部 Tensor 持有；返回后依赖当前流 allocator | same stream ordering；无显式event/`record_stream` | 两次提交期间对象仍在作用域；不能宣称被lambda捕获 |
 
 #### 同步、精度与尾块
 
@@ -652,7 +695,7 @@ workspace_total=0; intermediate_GM=I*4 B
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
 | K1→K2 | same NPU stream | transpose store | sampler load | xNhwc | bitwise FP32 transpose |
-| K1 tail | core span + `blkTailFactor` | tiler | lane loop | xNhwc | last core exact extent |
+| K1 tail | 128 B core span + `blkTailFactor` + `idx<coreFactor` | tiler | 2048-lane loop | xNhwc | last core exact extent；无padding store |
 | K2 tail | grid-stride `index<O` | blockDim | store | y | FP32计算/输出 |
 
 #### 关键实现
@@ -662,7 +705,7 @@ workspace_total=0; intermediate_GM=I*4 B
 | 阶段 | 文件 | 符号/模板实例 | 实现事实 |
 |---|---|---|---|
 | Tiling | `transpose_host/transpose_tiling_arch35.cpp` | `EntryTilingTemplate/FillTilingData` | 10001与core span |
-| K1 body | `op_kernel/transpose_nddma/arch35/transpose_small_shape.h` | `TransposeSmallShape::Process/SimtComputeDimThree` | GM→GM transpose |
+| K1 body | `op_kernel/transpose_nddma/arch35/transpose_small_shape.h` | `TransposeSmallShape::Process`→`SimtComputeDimTwo/SimtComputeDimThree` | `permSize==2/3`专用GM→GM transpose；覆盖N轴等size-1轴被移除后的2-D分支 |
 | K2 body | `op_kernel/arch35/grid_sampler_3d_nhwc_simt.h` | `ComputeGridSampler3dNhwc` | Direct派生NHWC读取、NCDHW写出 |
 
 ## 算子特定优化
@@ -673,7 +716,7 @@ workspace_total=0; intermediate_GM=I*4 B
 
 - 适用 Route：R-001；R-002、R-004、R-005、R-003 的 sampler 沿用同一调度形态。
 - 触发条件：所有非空输出；Host 令 `blockDim<=ceil(O/512)`。
-- Golden 来源：[`image/grid_sample/op_kernel/arch35/grid_sampler_3d_bilinear_smit.h:139-147`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sample/op_kernel/arch35/grid_sampler_3d_bilinear_smit.h)
+- 固定官方源码依据：[`image/grid_sample/op_kernel/arch35/grid_sampler_3d_bilinear_smit.h:139-147`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/grid_sample/op_kernel/arch35/grid_sampler_3d_bilinear_smit.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -701,8 +744,8 @@ for (T_IDX index = blockId_ * VF_MAX_THREAD_NUM_3D + threadIdx.x; index < outImg
 #### 触发与源码依据
 
 - 适用 Route：R-004、R-005、R-003。
-- 触发条件：Direct 派生谓词 `FP32 && bilinear && padding!=reflection && O>=2,000,000`，且 transpose tiler产出白名单key。
-- Golden 来源：[`conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h:312-330`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h)
+- 触发条件：Direct派生谓词`FP32 && bilinear && padding!=reflection && O>=2,000,000`，canonical剩余2-byte VCONV与gather前置tiler未成功，且普通transpose tiler产出白名单key。固定官方源码另有先于gather的FP32 021 key10008；canonical只孤立保留其body header，没有021生效闭包。
+- 固定官方源码依据：[`conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h:312-330`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -731,7 +774,7 @@ CopyOut(loopIdx, loopSizeMain_, loopSrcStrideMain_, loopDstStrideMain_);
 
 - 适用 Route：R-005。
 - 触发条件：transpose key 10003，input/output切轴不同并可能同时出现余数。
-- Golden 来源：[`conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h:102-129`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h)
+- 固定官方源码依据：[`conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h:102-129`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -764,7 +807,7 @@ Host 把 main、input-tail、output-tail、both-tail写成互斥区间和四组5
 | 内存总占用与复用 | workspace 0 | workspace 0 | `UB=ubSize`+中间GM=`I*4` | 中间GM=`I*4` | transpose queue按迭代/phase复用 |
 | 搬运/Vector/SIMT/NDDMA API | 8个标量GM load/输出 | 1个标量GM load/输出 | 5-D NDDMA→DataCopyPad + 8邻点 | SIMT GM transpose + 8邻点 | channel连续性换全量transpose |
 | 同步、精度与 tail | 独立lane；FP32累加 | 独立lane；rintf | Queue + 同流 | 同流K1→K2 | 输出tail均由边界谓词保护 |
-| fallback/失败边界 | 终点 | 终点 | key终点 | key终点 | 非白名单key Host失败，不静默回退 |
+| fallback/失败边界 | 成功终点 | 成功终点 | conditional成功终点 | conditional成功终点 | NHWC 前置 tiler 的 10000/10006/其它非白名单key在Host失败，不静默回退 |
 
 ## 平台差异
 
@@ -778,9 +821,12 @@ Host 把 main、input-tail、output-tail、both-tail写成互斥区间和四组5
 
 - 仅接受 rank-5 contiguous `x/grid`、同设备同dtype FP16/FP32、正维、`grid[-1]=3`；不会隐式修复非连续布局。
 - `Product5` 先在 `uint64_t` 中连乘但没有显式乘法溢出检查；超过 `uint64_t` 表示范围的极端shape不闭合。输出 Tensor 分配会更早受框架/设备容量约束。
+- NHWC 总谓词成立不保证有成功 Route：约简 rank 1 会产生 key 10000；gather capability成功会抢先产生 key 10006；两者都被 plugin 白名单拒绝并在任何 Device launch 前报错。该失败边不能写成到 R-001 的 fallback。
+- 固定官方transpose含先于gather的FP32 021 VCONV key10008；canonical保留与官方固定commit字节一致的`transpose_transdata_5hd_021.h`，但未include、未实例化，并从生效闭包删除Host producer/POD/entry/router。重新启用必须恢复Host/POD、include并实例化保留body、补entry/router与白名单；不完整同步仍会在`xNhwc`分配及launch前失败，不能视作新增Route。
 - R-004、R-005、R-003 当前由 `!isFloat16` 保证 elementSize=4；虽然 launcher保留FP16 NHWC符号，该符号从实际入口不可达，不进入正式Route。
-- `launch_grid_sampler_3d_float*`、half2/tiled sampler和专用SIMT transpose entry被编入源码但不由当前 PrivateUse1 调用链到达，属于 dormant 实现，不作为可达Route。
+- `launch_grid_sampler_3d_float*`、half2/tiled sampler和专用SIMT transpose entry被编入源码但不由当前 PrivateUse1 调用链到达，属于 dormant 实现，不作为可达Route；wide/spatial等仅留在源码树但未由当前 translation unit 实例化的模板更不能据此推导资源事实。
 - transpose Tiling声明的 workspace 不传Device；若未来官方body开始消费该workspace，当前Direct ABI必须同步扩展，不能沿用“0 Device workspace”结论。
+- `xNhwc` 没有被 lambda 捕获；源码只证明局部 Tensor 跨越同步的 `RunOpApi` 回调和两次提交。若集成改变回调执行/allocator 的当前流语义，必须补显式 Tensor capture、`record_stream` 或 event 后再宣称异步生命周期闭合。
 - 固定官方源码只证明相关算法与实现来源；Direct selector、POD替换、nearest forward、NHWC sampler、Torch生命周期和构建 glue 均为转换交付事实。
 
 ## 源码索引
@@ -797,9 +843,11 @@ Host 把 main、input-tail、output-tail、both-tail写成互斥区间和四组5
 | Related nearest helper | `image/grid_sampler3_d_grad/op_kernel/arch35/grid_sampler3_d_grad_simt_base.h` | source-index helper | 3-D padding边界参照 |
 | Related 2-D forward | `image/grid_sampler2_d/op_kernel/arch35/grid_sampler2_d_simt.h` | forward nearest | forward数据流交叉核对 |
 | Related build | `image/grid_sample/CMakeLists.txt` | GridSample target | 官方相关构建接线 |
-| Transpose Tiling | `conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp` | `TransposeNddmaTiling` | key10001/2/3、POD与UB/core公式 |
-| Transpose router | `conversion/transpose/op_kernel/transpose_apt.cpp` | key router | 官方key到body映射参照 |
-| Transpose body | `conversion/transpose/op_kernel/arch35/transpose_small_shape.h` | `TransposeSmallShape` | small SIMT |
+| Transpose Tiling | `conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp` | `TryVCONVTiling/Is021VConvValid/TransposeNddmaTiling` | 官方2-byte key10007与含FP32的021 key10008优先于gather；canonical删除021 producer后保留10001/2/3、POD与UB/core公式 |
+| Transpose 021 Tiling | `conversion/transpose/op_host/arch35/transpose_tiling_with_021vconv_arch35.h/.cpp` | `Transpose021VCONVTilingData/Transpose021VCONVTiling` | 官方10008专用POD与Host tiler；canonical生效闭包未保留 |
+| Transpose router | `conversion/transpose/op_kernel/transpose_apt.cpp` | `VCONV_021_TRANSPOSE/Transpose021VconvProcess`与key router | 官方10008→021 body映射；canonical生效router删除该分支，只接10001/2/3 |
+| Transpose 021 body | `conversion/transpose/op_kernel/arch35/transpose_transdata_5hd_021.h` | `KernelTransDataTo5HD021` | 官方10008 body；canonical保留字节一致header但未include/实例化，属于孤立dormant资产 |
+| Transpose body | `conversion/transpose/op_kernel/arch35/transpose_small_shape.h` | `TransposeSmallShape::Process/SimtComputeDimTwo/SimtComputeDimThree` | small SIMT按约简permSize分派 |
 | Transpose body | `conversion/transpose/op_kernel/arch35/transpose_cut_one_axis.h` | `TransposeCutOneAxis` | single-cut NDDMA |
 | Transpose body | `conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h` | `TransposeCutTwoAxis` | four-phase NDDMA |
 | Transpose build | `conversion/transpose/CMakeLists.txt` | transpose target | 官方相关构建接线 |
@@ -811,8 +859,8 @@ Host 把 main、input-tail、output-tail、both-tail写成互斥区间和四组5
 | 检查项 | 可复用事实 | 不得改变的约束 | 源码符号 |
 |---|---|---|---|
 | ABI/POD | GridSample 17×int64与transpose 928B POD | 字段顺序、offset、u32/u64选择和inactive字段读取边界 | `GridSampleTilingData`、`TransposeOpTilingData` |
-| 调用顺序 | NHWC路线固定transpose→sampler | 两节点必须同流且temp存活 | `grid_sampler_3d_npu::launch` |
+| 调用顺序 | NHWC路线固定transpose→sampler | 两节点必须同流；局部temp跨回调提交，不能误写为lambda capture | `grid_sampler_3d_npu::launch` |
 | workspace/内存 | sampler workspace 0；transpose单Queue；GM temp `I*4` | 不得把声明workspace当已传Device；不能提前释放xNhwc | launchers、`InitBuffer` |
 | 同步 | sampler lane独立；NDDMA Queue串行；节点同流 | Queue lifecycle和same-stream ordering不可删除 | `asc_vf_call`、`EnQue/DeQue/FreeTensor` |
 | 精度与尾块 | FP32坐标/权重/累加；nearest `rintf`；grid-stride tail | FP16仅末端cast；padding后仍做bounds check | `ComputeBilinear`、`ComputeGridSampler3dNearest` |
-| 失败边界 | 非法shape/mode、平台失败、transpose非白名单key均launch前失败 | 不得把未知key静默改为direct，否则改变调度契约 | `calc_grid_sampler_3d_tiling`、`grid_sampler_3d_npu` |
+| 失败边界 | 非法shape/mode、平台失败、transpose key 10000/10006/其它非白名单值均launch前失败 | 不得把未知key静默改为direct；放宽白名单还必须补对应POD/entry/body | `calc_grid_sampler_3d_tiling`、`grid_sampler_3d_npu` |

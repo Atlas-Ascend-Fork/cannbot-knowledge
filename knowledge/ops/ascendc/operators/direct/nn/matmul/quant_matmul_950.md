@@ -1,7 +1,7 @@
 ---
 type: Operator
 title: "QuantMatmul 950 Direct Invoke 算子知识"
-description: "说明 cann_bench::quant_matmul、quant_matmul_npu 与 launch_quant_matmul 在 950 上的接口语义、Host/Launcher 参数生成、Route 选择与 Kernel 实现。"
+description: "说明 cann_bench::quant_matmul 在 950 上的 shape/量化契约、Host POD 与 checked arithmetic、CATLASS/官方 OTF/raw-safe Cube 路由、分层数据流、尾块、精度和 fallback。"
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
@@ -16,7 +16,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/matmul/quant_batch_matmul_v3/op_kernel/arch35/quant_batch_matmul_v3_basic.h
     role: implementation
 created_at: "2026-08-24T19:34:50Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -27,869 +27,413 @@ cann_versions: ["9.1.0"]
 
 | 项目 | 内容 |
 |---|---|
-| 实际入口 | `cann_bench::quant_matmul`（Torch schema）→`quant_matmul_npu`→`launch_quant_matmul`，Direct Invoke |
-| 计算语义 | `acc=Σ_k int8(x1)*int8(x2)+bias_int32`；再按顺序执行 `float(acc)*scale + offset`、`* pertoken_scale`、`+ bias_float`，最后转为 FP16/BF16；不存在的项跳过 |
-| 输入输出 | `x1[...,M,K]`、`x2[...,K,N]` 为 contiguous ND INT8；batch 右对齐广播；`y[...,M,N]` 为 contiguous ND FP16/BF16 |
-| 执行类型 | `AIC_CUBE`；同一 Host launch graph 中按 Route 可达 `AIV_VECTOR` 与 ND→NZ layout DataCopy（NDDMA/MTE 搬运能力）；无 Host 可达 `MIX_CV` 节点 |
-| Kernel 路线 | P0 R-005 raw Cube + ordered AIV epilogue；P1 R-003 buffered packed-scale；P2 R-004 redundant packed-scale；P3 R-001 标量 on-the-fly；P4 R-002 CMCT Basic |
-| 核心资源 | GM 输入/输出；Route 专属 workspace；Cube 的 L1/L0A/L0B/L0C；packed/epilogue 的 UB 或标量寄存器 |
-| 来源闭包 | `direct_implementation_closed`：Torch schema、校验/分配、Host POD、workspace、launcher selector、全部可达 kernel/body/helper 与构建接线闭合；通用 AscendC Matmul primitive 内部为库边界 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 实际入口 | `cann_bench::quant_matmul`（Torch schema）→`quant_matmul_npu`→`launch_quant_matmul` |
+| 数学主干 | contiguous ND `INT8×INT8`，以 INT32 累加；INT32 bias 在反量化前加入，浮点 bias 在反量化链末加入 |
+| 输出 | contiguous ND FP16/BF16，shape 为右对齐广播 batch + `[M,N]` |
+| 可达 Route | P0 raw Cube + ordered AIV（含 official raw producer 与 safe raw fallback）；P1 CATLASS fused per-channel；P2 official scalar OTF |
+| 不可达编译体 | Basic、packed-scale producer/consumer、MIX_CV entry 仍可能参与编译，但当前 launcher 没有到它们的分发边 |
+| 核心内存 | GM；raw Route 的 `[batchC,M,N]` INT32 workspace；Cube 的 L1/L0A/L0B/L0C；CATLASS/AIV epilogue 的 UB |
+| 平台 | Ascend 950 / dav-3510；Direct Invoke，不是 ACLNN 调用 |
 
-## 接口与语义
+### 来源与 Direct 适配边界
 
-### 计算语义
+- 官方原生事实：固定版本 QuantBatchMatmulV3 arch35 源码支撑 `MatMulASWKernel`、ASW batch/tail 调度、FP19 Fixpipe scalar 与 tiling POD；固定 CATLASS 源码支撑 128×256×256 / 128×256×128 ping-pong MMAD 和 typed dequant epilogue。
+- Direct Invoke 适配：Torch schema、输入校验、100 B Host POD、workspace 计算、current-stream launcher、Route selector 与 CATLASS Params 组装是本入口的 Host 边界，不等同于官方 ACLNN 或生产 registry 分发。
+- Device 派生路线：`SafeRawMatmul`、无 padding INT32 workspace 和 `SupplementalEpilogue` 是为公开 shape/有序后处理契约补充的 Device 路线；它们复用官方 Matmul/AscendC primitive，但不是官方原生 entry。
 
-设广播后的 batch 索引为 `b`，`0<=m<M`、`0<=n<N`：
+## 语义、shape、layout 与 transpose 契约
+
+### 数学次序
+
+令 `b` 为输出的展平 batch，`bA/bB` 为右对齐广播后对应的输入 batch，`biasBatch` 为 0 或 `b`：
 
 ```text
-acc[b,m,n] = Σ_k int32(x1[bA,m,k]) * int32(x2[bB,k,n])
-if bias.dtype == int32: acc += bias[biasBatch,n]
-v = float32(acc) * float32(scale[scale_count == 1 ? 0 : n])
-if offset:         v += offset[scale_count == 1 ? 0 : n]
-if pertoken_scale: v *= pertoken_scale[m]
-if bias.dtype != int32: v += float32(bias[biasBatch,n])
+acc[b,m,n] = Σ(k) int32(x1[bA,m,k]) * int32(x2[bB,k,n])
+if bias.dtype == INT32:
+    acc += bias[biasBatch,n]
+
+v = fp32(acc) * fp32(scale[scale_count == 1 ? 0 : n])
+if offset:          v += offset[scale_count == 1 ? 0 : n]
+if pertoken_scale:  v *= pertoken_scale[m]
+if floating_bias:   v += fp32(bias[biasBatch,n])
 y = cast_rint<FP16/BF16>(v)
 ```
 
-P0 R-005 让 `yType=int32_t` 的 Cube specialization 写出原始累加面，再由 AIV 严格按上式完成 epilogue；P1 R-003、P2 R-004、P3 R-001 与 P4 R-002 则把可表达的反量化与 cast 融入 Cube Fixpipe。FP32/BF16 scale 进入 Fixpipe 时使用高 19 位表示：FP32 位模式与 `0xffffe000`，BF16 先左移 16 位；packed 路线再与 `1ULL<<46` 组合成 `uint64_t` 量化参数。
+`pertoken_scale` 没有 batch 维，对每个 batch 重用同一 `[M]` 向量。bias 的 batch 规则不是任意广播：只能共享一份，或按展平顺序与 `batchC` 一一对应。
 
-### 输入、输出与属性
+### 输入输出契约
 
-| 参数 | shape/layout | dtype | 约束、默认值与语义 |
+| 参数 | shape | dtype | 必要约束 |
 |---|---|---|---|
-| `x1` | rank 2..6，`[...,M,K]`，contiguous ND | INT8 | `1<=M<=4096`，`16<=K<=16384` |
-| `x2` | rank 2..6，`[...,K,N]`，contiguous ND | INT8 | `K` 与 `x1` 相等，`16<=N<=65535` |
-| `scale` | `[1]` 或 `[N]`，contiguous ND | FP32/BF16 | BF16 scale 只允许 BF16 输出 |
-| `offset` | 可选 `[1]` 或 `[N]`，模式须与 scale 相同 | FP32 | 在 scale 后相加 |
-| `pertoken_scale` | 可选 `[M]` | FP32 | 对每个 batch 复用，按 `row % M` 取值 |
-| `bias` | `[N]`、`[1,N]` 或 `[...,1,N]` | INT32/FP32/FP16/BF16 | batch 数只能为 1 或输出 batch；INT32 在 Cube 累加前加入，浮点 bias 在 scale/offset/pertoken 后加入 |
-| `output_dtype` | 字符串 | `"float16"`/`"bfloat16"` | 默认 `"float16"` |
-| `y` | 广播 batch + `[M,N]`，contiguous ND | FP16/BF16 | 新分配输出 |
+| `x1` | rank 2..6，`[...,M,K]` | INT8 | strided + contiguous；`M,K>=1` 且各自不超过 `INT32_MAX` |
+| `x2` | rank 2..6，`[...,K,N]` | INT8 | 与 `x1` 同设备、contiguous；K 必须相等；`N>=1` 且不超过 `INT32_MAX` |
+| `scale` | `[1]` 或 `[N]` | FP32/BF16 | contiguous；BF16 scale 只允许 BF16 输出 |
+| `offset` | 可选 `[1]` 或 `[N]` | FP32 | 元素数必须与 scale 相同，即两者同为 scalar 或同为 per-channel |
+| `pertoken_scale` | 可选 `[M]` | FP32 | contiguous；跨 batch 复用 |
+| `bias` | `[N]`、`[1,N]` 或 `[...,1,N]` | INT32/FP32/FP16/BF16 | leading product 只能为 1 或 `batchC`；最后一维必须为 N |
+| `output_dtype` | 可选字符串 | `float16`/`bfloat16` | 默认 `float16` |
+| `y` | broadcast batch + `[M,N]` | FP16/BF16 | 新分配 contiguous ND Tensor |
 
-batch 维最多 4 个，右对齐到 `batch_*_dims[4]`；输出 batch 乘积不超过 256，三个 batch 乘积均受 `uint32_t` ABI 上界约束。
+### batch 广播和展平
 
-### 入口与版本
-
-入口不是 ACLNN：`TORCH_LIBRARY_FRAGMENT` 声明 `cann_bench::quant_matmul`，Meta 实现只校验并分配，PrivateUse1 实现为 `quant_matmul_npu`。后者在当前 NPU stream 上通过 `OpCommand::RunOpApi("QuantMatmulDirect", direct_call)` 同步完成 Host 侧 launch 提交，实际 Device 入口由 `launch_quant_matmul` 选择。目标版本为 CANN 9.1.0、950/950；构建时必须选择 `NPU_ARCH=ascend950`，对应 Bisheng `--npu-arch=dav-3510`。
-
-限定官方目录只提供 QuantBatchMatmulV3 arch35 服务的相关映射；本卡的 Torch schema、selector、workspace 切片和补充 AIV epilogue 均来自 Direct Invoke 交付快照，不声明为官方 ACLNN 行为。
-
-## Host/Launcher 执行流程
-
-### 参数校验与前处理
-
-`quant_matmul_npu` 的顺序为：设备/contiguous ND 检查→INT8/rank/MNK 检查→右对齐 batch 广播检查→scale/output_dtype 检查→可选 offset/pertoken/bias 检查→填充 `QuantMatmulHostParams`→分配输出→按同一 selector 计算 workspace→取得当前 NPU stream→调用 `launch_quant_matmul`。不执行 Contiguous、View、TransData 或 Host 数学；不连续输入直接失败。
-
-### 参数、Workspace 与生命周期
-
-`QuantMatmulHostParams` 在 `CheckedInputs` 内生成，随后按值复制到 lambda 的 `params`；launcher 在 Host 调用期间立即解引用，Device kernel 接收的 `BasicTiling`、`MixTiling` 或 `QuantMatmulHostParams` 均为 by-value 参数。workspace 是当前设备上的 `uint8` Tensor，实际分配至少 32 B：
+`x1/x2` 最多有四个 batch 维。Host 将两者 batch 维右对齐，缺失轴补 1；每轴要求 `a==b || a==1 || b==1`，输出轴取 `max(a,b)`。Device safe raw 用输出坐标逐轴还原输入坐标：输入轴为 1 时坐标固定为 0，否则取输出坐标。
 
 ```text
-P0 R-005: raw_acc = batchC * M * N * 4 B，offset=0，ND int32
-P1 R-003 / P2 R-004: packed_scale = align_up(N,32) * 8 B，offset=0
-P3 R-001 / P4 R-002: logical workspace = 32 B（服务实参可为该地址，算法不切片）
+out_coord = unravel(flat_batch, batch_c_dims[4])
+in_coord[i] = input_dims[i] == 1 ? 0 : out_coord[i]
+flat_input = ravel(in_coord, input_dims[4])
 ```
 
-所有节点使用同一 current stream。workspace Tensor 由框架分配器拥有；源码没有显式 event、`recordStream` 或手工释放，异步存活依赖 `RunOpApi`/NPU allocator 的 stream 语义。
+这套映射是 shape 语义的一部分，不能用 `flat_batch % batch_a` 或仅比较 batch product 替代；不同四维 shape 可以有相同 product，却有不同广播结果。
 
-### 启动图与失败传播
+### transpose 与物理 layout
+
+公开接口没有 `transpose_x1/transpose_x2` 属性。全部可达实例都固定：
 
 ```text
-cann_bench::quant_matmul
-  -> quant_matmul_npu / CheckInputs / AllocateOutput
-  -> quant_matmul_workspace_bytes
-  -> launch_quant_matmul
-     ├─ P0 / Host 5 / R-005: AIC raw int32 -> workspace[raw_acc] -> AIV ordered epilogue -> y
-     ├─ P1 / Host 1 / R-003: AIV buffered pack -> workspace[packed_scale] -> AIC on-the-fly Fixpipe -> y
-     ├─ P2 / Host 2 / R-004: AIV redundant pack -> workspace[packed_scale] -> AIC on-the-fly Fixpipe -> y
-     ├─ P3 / Host 3 / R-001: AIC on-the-fly -> y
-     └─ P4 / Host 4 / R-002: AIC CMCT Basic -> y
+x1: RowMajor/ND [M,K], aTrans=false
+x2: RowMajor/ND [K,N], bTrans=false
+y : RowMajor/ND [M,N]
 ```
 
-Host 校验、空 platform、零 AIC、L1 不足或无效 L1 step 以异常终止。kernel launch 语句没有逐节点返回值检查；多 Kernel 路线按同一 stream 提交，源码没有在首个 launch 后查询状态，因此后继是否被阻止属于 runtime 边界。`direct_call` 在提交后固定返回 0，异步 Device 错误由 stream/runtime 报告。
+Host 不调用 `transpose`、`TransData` 或 `Contiguous`。一个普通转置 view 通常不连续，会直接校验失败；即使调用方把转置结果重新 contiguous，它也只会被当作新的逻辑 `[M,K]` 或 `[K,N]` Tensor，不会触发转置 kernel。CATLASS、official OTF 和 safe raw 的 layout/stride 必须一起保持非转置，不能只改 `SetTensorA/B(..., false)` 中的布尔值。
 
-## Route 与参数设计
+## Host、checked arithmetic 与生命周期
 
-### 分核与资源计算
-
-P0 R-005、P1 R-003、P2 R-004 与 P3 R-001 共用 Mix tiling 主体：`baseM=min(256,align_up(M,16))`，`baseN=min(256,align_up(N,32))`，`baseK=min(128,align_up(K,32))`；`usedCoreNum=min(AIC,ceil(M/baseM)*ceil(N/baseN))`。先从 L1 扣除 `bias_bytes` 与 per-channel `scale_bytes`，再令 `stepKa=floor((leftL1/2/baseM/baseK)/2)`、`stepKb=floor((leftL1/2/baseN/baseK)/2)`，裁到 K 循环并互相整除；`depthA1=2*stepKa`、`depthB1=2*stepKb`。其中 `dbL0C` 仅在 `2*baseM*baseN*4<=L0C` 且 bias/scale guard 满足时为 2，否则为 1。
-
-P0 R-005 的 AIV 侧使用 `nTiles=ceil(N/2048)`、`jobs=batchC*M*nTiles`、`vectorDim=min(AIV,jobs)`，每核 grid-stride 遍历 job。P1 R-003 固定一个 AIV block；P2 R-004 使用 `min(AIV,ceil(N/64))`。P3 R-001 不增加 AIV 节点。
-
-P4 R-002 使用 Basic tiling：`baseM=min(128,align_up(M,16))`，`baseN=min(256,align_up(N,32))`，`baseK=min(128,align_up(K,32))`，`stepKa=stepKb=1`，`nBufferNum=4`，`dbL0C=1`；`cubeDim=min(AIC, batchC*ceil(M/baseM)*ceil(N/baseN))`。
-
-### Route 特征
-
-下表按复用重要性降序组织；`Host 顺序`单独记录 launcher 的真实判定先后。优先级不改变 selector 控制流。
-
-| 重要性 | Route | 特征 | 适用域 | 实现前提 | Host 顺序 |
-|---:|---|---|---|---|---|
-| P0 | R-005 raw Cube + AIV | 先物化 exact INT32 累加面，再以 FP32 向量链执行完整有序 epilogue；语义覆盖最宽 | 未命中 packed，且 per-channel scale、offset、pertoken 或浮点 bias 任一使复杂后处理成立 | `batchC*M*N*4` workspace；raw AIC 与 AIV 同 stream；epilogue 严格保持 scale→offset→pertoken→floating-bias→cast | 5：前置 fast path 全部未返回后进入；作为合法复杂语义的终点，不再转入其他数学 Route |
-| P1 | R-003 buffered packed-scale | 单 AIV 以 UB 分块连续生成 packed FP19 参数，随后 AIC Fixpipe 融合反量化 | per-channel；无 offset/pertoken/floating bias；且 `M>=2048 || N%512!=0` | packed workspace 为 `align_up(N,32)*8`；AIV 发布先于 AIC 消费；L1 能容纳 A/B 与参数面 | 1：`official_mix=false` 后首个可达短路；命中即完成并返回 |
-| P2 | R-004 redundant packed-scale | 多 AIV 分片标量写 packed 参数，以邻域重复覆盖和 DCCI 发布换取并行生成 | packed 公共域内，`M<2048 && N%512==0`，且 `3584<=N<4096 || N>=8192` | 同 P1 的 packed ABI 与 Fixpipe 消费约定；覆盖值必须一致，发布必须在 AIC 前可见 | 2：仅在 packed 公共谓词成立而 buffered 条件为假时选择；命中即完成并返回 |
-| P3 | R-001 标量 on-the-fly | 不物化参数面，Cube Fixpipe 直接消费 FP19 scalar 并写最终输出 | `scale_count=1`、无 offset/pertoken、无 bias | Mix tiling 有效；scale/output dtype specialization 完整；标量量化值可由 Fixpipe 表达 | 3：packed 分支未返回后检查；命中即完成并返回 |
-| P4 | R-002 CMCT Basic | ND→NZ L1 搬运、四路 L1 与两路 L0 复用，INT32 bias 在 Cube 累加前加入 | scalar scale、无 offset/pertoken、bias 为 INT32 | Basic tiling 与 RowMajor specialization 匹配；bias BT/stride、HardEvent 和 Fixpipe 约定完整 | 4：R-001 未命中且 `supplemental=false` 时选择；命中即完成并返回 |
-
-### Host 选择链
-
-`official_mix` 固定为 `false`，因此不形成可达 Route。launcher 先计算 packed 与 supplemental 谓词，再依照下列真实顺序短路；重要性只用于本文组织。
+### Host 流程
 
 ```text
-Host 1: if packed_fixpipe && buffered_pack_domain: R-003; return
-Host 2: if packed_fixpipe && !buffered_pack_domain: R-004; return
-Host 3: if scale_count==1 && !offset && !pertoken && bias==none: R-001; return
-Host 4: if !supplemental: R-002; return
-Host 5: R-005
+CheckDenseNpuTensor / dtype / rank / K match
+ -> right-aligned batch broadcast
+ -> scale, offset, pertoken, bias, output dtype checks
+ -> fill QuantMatmulHostParams
+ -> allocate y
+ -> quant_matmul_workspace_bytes(params)
+ -> allocate uint8 workspace (at least 32 B)
+ -> capture pointers + params by value
+ -> current NPU stream
+ -> launch_quant_matmul
 ```
 
-其中：
+Host 不读取 tensor 数值，也没有 CPU/ATen 数学 fallback。
+
+### checked arithmetic
+
+| 位置 | 检查 | 目的 |
+|---|---|---|
+| 单维 | batch 维及 M/N/K 必须为正且 `<=INT32_MAX` | 安全写入 uint32 Device ABI，同时避免有符号 shape 越界 |
+| batch product | `value <= UINT32_MAX/factor` | `batch_a/b/c` 可写入 uint32 |
+| output numel | product `<=INT64_MAX/sizeof(uint16_t)` | `torch::empty` 的有符号 allocator 范围 |
+| raw workspace | 依次 checked-mul `batchC*M*N*4` 于 uint64 | 防止 workspace 字节数静默回绕 |
+| allocator 边界 | `workspace_bytes<=INT64_MAX` | 转为 Tensor shape 前保持可表示 |
+| tile/grid | M/N tile product和 batch tile product用 uint64 checked-mul | 防止 block grid 公式回绕 |
+
+`M<=4096、K<=16384、N<=65535、batchC<=256` 是 fast envelope，不是公开 shape 上限。超出 envelope 的合法输入会选择 safe raw；但仍可能因为 workspace、L1、UB 或 allocator 资源不足而在 Host 阶段失败。
+
+### Host POD
+
+`QuantMatmulHostParams` 固定为 25 个 `uint32_t`，`sizeof=100`、`alignof=4`，launcher 先复制 `*params`，Device 再按值接收。
+
+| offset | 字段 | 含义 |
+|---:|---|---|
+| 0/4/8 | `m,n,k` | 逻辑矩阵维度，单位为元素 |
+| 12/16/20 | `batch_a,batch_b,batch_c` | 展平 batch product |
+| 24/40/56 | `batch_a_dims[4]`,`batch_b_dims[4]`,`batch_c_dims[4]` | 右对齐四轴 batch shape |
+| 72 | `scale_count` | 1 或 N |
+| 76/80/88 | `scale_dtype`,`bias_dtype`,`output_dtype` | 0=FP32，1=FP16，3=INT32，27=BF16，`0xffffffff`=无 bias |
+| 84 | `bias_batches` | 1 或 batchC |
+| 92/96 | `has_offset`,`has_pertoken` | 0/1 presence flag |
+
+不要把 C++ `bool` 放进该 POD，也不要重排 dtype 与 presence 字段；AIV epilogue 按固定 offset 读取整份结构。
+
+### workspace 与 stream 生命周期
 
 ```text
-packed_fixpipe =
-    (buffered_pack_domain || redundant_pack_domain)
-    && scale_count>1 && !offset && !pertoken && bias∈{none,int32}
-buffered_pack_domain = M>=2048 || N%512!=0
-redundant_pack_domain = (3584<=N<4096) || N>=8192
-supplemental =
-    !official_mix && !packed_fixpipe
-    && (scale_count>1 || offset || pertoken || floating_bias)
+CATLASS fused          : logical 32 B placeholder
+official scalar OTF    : logical 32 B placeholder
+official/safe raw+AIV  : batchC * M * N * sizeof(int32_t)
 ```
 
-### 模板/实现执行矩阵
+raw workspace 从 offset 0 开始，严格是无行 padding 的 ND `[batchC,M,N]`。raw AIC 先写 workspace，AIV 后读；两个 launch 在同一 current stream，顺序构成交接。workspace Tensor 由框架 allocator 持有，源码没有显式 event、`recordStream` 或手工 free，异步存活依赖 `RunOpApi` 与 NPU allocator 的 stream 语义。
 
-| 重要性 | Route | Host 顺序 | Key/selector | dtype/shape/platform 完整命中条件 | 执行族与 kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
-|---:|---|---:|---|---|---|---|---|---|
-| P0 | R-005 supplemental | 5 | supplemental 终点 | 其余合法复杂 epilogue | AIC raw→AIV epilogue | `MatMulASWKernel<...,float,int32,...>`→九种 dtype specialization | exact ND int32 workspace；同 stream；AIV 48 KiB UB | N tile 2048，8 元素对齐，GM 仅写 count；无后续数学 fallback |
-| P1 | R-003 packed buffered | 1 | packed/buffered | per-channel；无 offset/pertoken/floating bias；buffered domain | AIV pack→AIC OTF | `PackFixpipeScaleBuffered`→`MatMulASWKernel<...,int64_t,...>` | workspace packed scale；同 stream producer→consumer；64 KiB UB | pack 8192-element tail；AIC ASW tail；命中后短路 |
-| P2 | R-004 packed redundant | 2 | packed/redundant | packed 公共条件且 redundant-only domain | AIV redundant pack→AIC OTF | `PackFixpipeScale`→同 AIC 模板 | scalar GM stores+DCCI；邻域重复覆盖；同 stream | shard `ceil(N/blockCount)`；边界截断；命中后短路 |
-| P3 | R-001 标量 OTF | 3 | scalar/no-bias | 950；scale FP32/BF16；out FP16/BF16；表中谓词 | AIC：`quant_matmul_otf_*` | `MatMulASWKernel<...,FusedOpType::NONE>` | GM→Matmul L1/L0→L0C→Fixpipe→GM；单 stream | ASW tail；空 tile continue；Host 校验排除零维；未命中继续 |
-| P4 | R-002 Basic | 4 | scalar/int32-bias | 950；bias INT32 | AIC：`quant_matmul_basic_*` | `QuantMmBatchCube` + `BlockMmadA8W8FixpipeQuant` | ND→NZ L1 DataCopy；L0 ping-pong；Mmad+BT bias；Fixpipe | scheduler tail split；命中后短路 |
+## Route 选择与退化关系
 
-### 隐藏性能 Guard
+### Route 重要性
 
-| 重要性 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | Host 顺序/不满足去向 | 源码符号 |
-|---:|---|---|---|---|---|---|
-| P0 | supplemental gate | 未命中 packed，且 `scale_count>1 || offset || pertoken || floating_bias` | Fixpipe 不能完整表达既定有序 epilogue 时，保留 exact INT32 中间面 | R-005 | Host 5；终点，资源无效则 Host 异常 | `launch_quant_matmul::supplemental` |
-| P0 | AIV epilogue UB | 固定 `2048*6*4=49152 B` | 六个逻辑 2048 元素分区 | R-005 | Host 5；N tail 缩短 count | `SupplementalEpilogue::kTileN` |
-| P1 | packed 公共域 | per-channel、无 offset/pertoken/floating bias | Fixpipe 可直接消费 packed per-channel 参数 | R-003/R-004 | Host 1/2；域外继续 Host 3 | `launch_quant_matmul::packed_fixpipe` |
-| P1 | buffered 优先 | `M>=2048 || N%512!=0` | 单 AIV 以 UB+MTE3 发布完整参数面 | R-003 | Host 1；不满足检查 R-004 | `buffered_pack_domain` |
-| P2 | redundant-only | `M<2048 && N%512==0` 且 N 区间命中 | 多 AIV 标量写、邻域覆盖与 DCCI 可见性 | R-004 | Host 2；不满足继续 Host 3 | `redundant_pack_domain` |
-| P3 | scalar on-the-fly | scalar scale、无 offset/pertoken/bias | Fixpipe 直接消费标量，无需参数预处理与中间面 | R-001 | Host 3；不满足继续 Host 4 | `official_on_the_fly` |
-| P4 | Basic L0 tile | `baseM<=128,baseN<=256,baseK<=128` | int32 L0C 与 A/B L0 容量 | R-002 | Host 4；cap 后执行 | `MakeBasicTiling` |
-| shared | mixed gate | `official_mix=false` | 编译出的 MIX_CV entry 不进入 launcher 图 | 全部 | Host 0；继续可达 Route | `official_mix` |
-| shared | L1 可容纳参数 | `L1>bias_bytes+scale_bytes` 且 `stepKa,stepKb>0` | A/B 双深度与 bias/scale 共享 L1 | R-005/R-003/R-004/R-001 | 对应 Host 分支；失败为 Host 异常 | `MakeMixTiling` |
-| shared | L0C 双缓冲 | `2*baseM*baseN*4<=L0C && bias_ok_db && scale_ok_db` | 两个 int32 累加 tile | R-005/R-003/R-004/R-001 | `dbL0C=1` | `MakeMixTiling::dbL0C` |
+下表按知识复用价值排序；Host 顺序另列，不能把文档重要性改写成 selector 顺序。
 
-### Route 源码闭包
+| 重要性 | Route | 适用特征 | 价值 | 边界/退化 | Host 顺序 |
+|---:|---|---|---|---|---:|
+| P0 | R-001 official raw Cube + AIV | fast envelope、无 batch broadcast、无 offset、`M%16=N%32=K%32=0`，且未命中 fused/scalar | 以官方 ASW Cube 物化 INT32，再统一承接 per-channel、pertoken、bias 等有序后处理 | 不满足 raw producer envelope 时退到 R-002；没有 device-error 后的运行时重试 | 3a |
+| P0 | R-002 safe raw Cube + AIV | 其余未命中前两条的合法输入；尤其 batch broadcast、offset、任一对齐尾块、超 fast envelope | 独立 tile ownership、64-bit GM offset、显式广播；是完整 shape/后处理域的选择期 fallback | 需要 O(batchMN) workspace；资源失败直接报错 | 3b |
+| P1 | R-003 CATLASS fused per-channel | 单 batch；`M>=128`、`N%256=0`、`K%256=0`；scale `[N]`；无 bias/offset/pertoken | 单 kernel 内 AIC MMAD + AIV FP32 dequant，避免 raw GM 中间面 | 任一谓词不满足继续 scalar 或 raw，不转成 packed-scale | 1 |
+| P2 | R-004 official scalar OTF | fast envelope；A/B batch shape都与 C 完全相同；scale `[1]`；无 bias/offset/pertoken | L0C→Fixpipe→GM，workspace 最小 | batch 广播或附加后处理转 raw；scalar scale 使用 FP19 Fixpipe 表示 | 2 |
 
-| 重要性 | Route | Host 顺序 | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router | Kernel body/直接依赖 | 构建接线 |
-|---:|---|---:|---|---|---|---|---|---|
-| P0 | R-005 | 5 | `supplemental` | `MakeMixTiling(true)/VectorBlockDim` | `MixTiling` + 100 B HostParams | `quant_matmul_otf_raw_i32`→`quant_matmul_epi_*` | `MatMulASWKernel<...,int32_t>` + `SupplementalEpilogue::Kernel` | `CMakeLists.txt` + op CMake |
-| P1 | R-003 | 1 | `packed_fixpipe&&buffered` | `MakeMixTiling` | `MixTiling` + scalar args | `quant_matmul_pack_scale_*`→`quant_matmul_otf_qparam_*` | `PackFixpipeScaleBuffered` + `MatMulASWKernel` | 同上 |
-| P2 | R-004 | 2 | `packed_fixpipe&&!buffered` | `MakeMixTiling` | 同上 | `quant_matmul_pack_scale_redundant_*`→`quant_matmul_otf_qparam_*` | `PackFixpipeScale` + `MatMulASWKernel` | 同上 |
-| P3 | R-001 | 3 | `official_on_the_fly` | `quant_matmul_kernel.cpp::MakeMixTiling` | `MixTiling` | `quant_matmul_otf_*` | `qbmm_cube_on_the_fly.h::MatMulASWKernel` | 同上 |
-| P4 | R-002 | 4 | `!supplemental` after OTF miss | `MakeBasicTiling/CubeBlockDim` | `BasicTiling` | `quant_matmul_basic_*` | `QbmmCubeBasicApiKernel`→`QuantMmBatchCube`→`BlockMmadA8W8FixpipeQuant` | 同上 |
+### 精确 selector
 
-### POD/ABI
+```text
+catlass = fast_envelope
+    && batch_a == batch_b == batch_c == 1
+    && M >= 128 && N % 256 == 0 && K % 256 == 0
+    && scale_count == N
+    && bias == none && !offset && !pertoken
 
-| 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
-|---|---|---|---|---|---|---|---|
-| `QuantMatmulHostParams` | `m,n,k` | `uint32_t` | sizeof=100, alignof=4；offset 0/4/8 | 元素 | `CheckInputs` | tiling、AIV epilogue | 已校验范围 |
-| 同上 | `batch_a,batch_b,batch_c` | `uint32_t` | offset 12/16/20 | batch 数 | `Product` | batch offset/scheduler | `batch_c<=256` |
-| 同上 | `batch_a_dims[4]` | 4×`uint32_t` | offset 24 | 维度 | `RightAlignFour` | Basic/Mix tiling | 左侧补 1 |
-| 同上 | `batch_b_dims[4]` | 4×`uint32_t` | offset 40 | 维度 | 同上 | 同上 | 左侧补 1 |
-| 同上 | `batch_c_dims[4]` | 4×`uint32_t` | offset 56 | 维度 | 同上 | 同上 | 广播结果 |
-| 同上 | `scale_count` | `uint32_t` | offset 72 | 元素 | `scale.numel()` | selector、epilogue | 1 或 N |
-| 同上 | `scale_dtype` | `uint32_t` | offset 76 | enum | `DTypeCode` | template dispatch/epilogue | 0 或 27 |
-| 同上 | `bias_dtype` | `uint32_t` | offset 80 | enum | `DTypeCode` | selector、tiling、epilogue | NO_DTYPE/0/1/3/27 |
-| 同上 | `bias_batches` | `uint32_t` | offset 84 | batch 数 | bias shape 检查 | Cube/AIV bias offset | 1 或 batchC |
-| 同上 | `output_dtype` | `uint32_t` | offset 88 | enum | output string | template dispatch | 1 或 27 |
-| 同上 | `has_offset` | `uint32_t` | offset 92 | bool ABI | optional presence | selector/AIV | 0/1 |
-| 同上 | `has_pertoken` | `uint32_t` | offset 96 | bool ABI | optional presence | selector/AIV | 0/1 |
-| `BasicTiling` | `params.batch* / dims / quantMode / bias*` | `uint32_t` | `params` 88 B；逐字段 4 B，pack(8) | batch/enum | `MakeBasicTiling` | `QbmmCubeBasicApiKernel` | 未写 group 字段保持 0 |
-| 同上 | `matmulTiling` | 混合定宽字段 | offset 88，size 40 B | 元素/flag | `MakeBasicTiling` | scheduler/MMAD/Fixpipe | `BasicTiling` size 152 B |
-| 同上 | `adaptiveSlidingWin` | 6×`uint32_t` | offset 128，size 24 B | tile/flag | `MakeBasicTiling` | scheduler | 六字段均显式写 |
-| `MixTiling` | `params` | 32×`uint32_t` | offset 0，size 128 B，pack(8) | batch/flag/UB 元素 | `MakeMixTiling` | ASW block | 未写字段零初始化 |
-| 同上 | `matmulTiling` | SDK `TCubeTiling` | offset 128；固定交付未提供 `sizeof/offsetof` 静态断言 | 元素/core/flag | `MakeMixTiling` | `MatMulASWKernel/mm_` | by-value ABI 必须与 CANN 9.1.0 SDK 一致 |
-| 同上 | `tileL2cacheTiling` | 6×`uint32_t` | 位于 `TCubeTiling` 后，size 24 B | tile/flag | 零初始化 | 当前 body 未读 | inactive |
-| 同上 | `adaptiveSlidingWin` | 6×`uint32_t` | 尾部 size 24 B | tile/flag | `MakeMixTiling` | ASW block | 六字段显式写 |
+scalar_otf = fast_envelope
+    && batch_a_dims == batch_c_dims
+    && batch_b_dims == batch_c_dims
+    && scale_count == 1
+    && bias == none && !offset && !pertoken
 
-## Kernel 实现
+if catlass: launch R-003; return
+if scalar_otf: launch R-004; return
 
-### 公共执行流程
+use_safe_raw = !fast_envelope
+    || has_batch_broadcast || offset
+    || K % 32 != 0 || N % 32 != 0 || M % 16 != 0
 
-所有 Route 先按右对齐四维 batch 计算 A/B/C 偏移，再把 `(M,N)` tile 映射到 AIC。Cube 公共数学路径是 `GM int8 ND→L1/L0A/L0B→int32 Mmad→L0C`。fused Route 从 L0C 经 Fixpipe 反量化/cast 写 GM；R-005 写 exact ND int32 workspace 后由 AIV 消费。多 Kernel 边仅依赖同一 stream 顺序；kernel 内使用 MTE/M/FIX/V pipe flag 或 barrier 保护局部 buffer。
+launch (use_safe_raw ? R-002 : R-001) raw producer
+launch ordered AIV epilogue
+```
 
-### Route R-005：raw Cube 与有序 AIV epilogue
+`fast_envelope` 定义为 `M<=4096 && K<=16384 && N<=65535 && batchC<=256`。scale/output dtype 组合已经在入口校验，因此 CATLASS 的三个模板实例只需覆盖 FP32→FP16、FP32→BF16 与 BF16→BF16。
 
-#### 适用条件
+### Active/conditional Route 闭包矩阵
 
-##### 选择证据
+下表只列 launcher 可达的 active/conditional Route；详细伪码和资源公式仍以后的对应章节为准。
 
-| 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
+| Route | selector / workspace | POD、entry 与 template | L1/L0/UB/GM 数据流 | tail、precision 与 fallback |
 |---|---|---|---|---|
-| Launcher | `op_kernel/quant_matmul_kernel.cpp` | `supplemental` | 未命中 packed，且复杂 epilogue 任一存在 | raw AIC→AIV |
-| AIC | 同上 | `quant_matmul_otf_raw_i32` | `yType=int32_t`，`MakeMixTiling(raw=true)` | exact ND accumulator |
-| AIV | 同上 | `DEFINE_EPILOGUE_KERNEL` | scale/bias/out dtype 矩阵 | 九种 specialization |
+| R-003 CATLASS fused | `IsCatlassAligned`；32 B placeholder | `KernelT::Params`；`quant_matmul_catlass_{f32_f16,f32_bf16,bf16_bf16}`；`KernelMatmulDequant<BlockMmadTla<MmadPingpong<...>>,BlockEpilogueDequant,BlockSchedulerAswt>` | GM ND→L1 A/B 双缓冲→L0A/B 双缓冲→L0C INT32→共享 UB；scale GM→UB→FP32 AIV→双缓冲 UB→GM | 无余数型 N/K tail，M tail及可选 M/N split；typed scale 保留到 FP32 向量乘，RINT 输出；selector miss 依次检查 R-004、raw |
+| R-004 scalar OTF | `IsScalarOnTheFly`；32 B placeholder | by-value `MixTiling`；`quant_matmul_otf_{f32_f16,f32_bf16,bf16_bf16}`；`RunOfficialOnTheFly<ScaleT,OutT>`→`MatMulASWKernel<...,FusedOpType::NONE>` | GM ND→Matmul L1/L0A/L0B→L0C INT32→Fixpipe→GM；无独立 UB epilogue | ASW `SetSingleShape` 承接 M/N/K tail；scale 截为 FP19，Fixpipe cast；selector miss 进入 raw，不运行时重试 |
+| R-001 official raw + AIV | `!UseSafeRaw` 且前两条 miss；`batchC*M*N*4` | producer: by-value `MixTiling`，`quant_matmul_otf_raw_i32`→`RunOfficialOnTheFly<float,int32_t>`；consumer: by-value `QuantMatmulHostParams`，九个 `quant_matmul_epi_*`→`SupplementalEpilogue::Kernel<ScaleT,BiasT,OutT>` | producer GM ND→L1/L0→L0C INT32→GM raw workspace；consumer raw/scale/offset/pertoken/bias GM→48 KiB UB→FP32 vector→GM | producer 限 16/32 对齐域，AIV 处理 2048-N tail且只写 count；完整 FP32 ordered chain；producer envelope miss 在 launch 前改选 R-002 |
+| R-002 safe raw + AIV | `UseSafeRaw` 且前两条 miss；`batchC*M*N*4` | producer: by-value `QuantMatmulHostParams+TCubeTiling`，`quant_matmul_safe_raw_i32`→`SafeRawMatmul::Kernel`→`MatmulImpl`；consumer 与 R-001 相同 | 每个 AIC 独占 `(batch,mTile,nTile)`，GM ND→L1/L0→L0C INT32→GM raw；随后同一 48 KiB AIV epilogue | actual M/N、Matmul K tail、四轴 broadcast与64-bit GM offset；FP32 ordered chain；合法域的最终选择期 fallback，资源/Device 失败不再退化 |
 
-#### Device 数据流
+九个 AIV entry 覆盖完整合法 dtype 条件域：FP32 scale→FP16、FP32 scale→BF16、BF16 scale→BF16 各按 bias BF16、bias FP16、`{FP32,INT32,none}` 分三支。第三支的 `BiasT=float` 同时承载 FP32 bias；`p.bias_dtype` 决定实际执行浮点加法还是跳过 none/INT32，INT32 bias 已在 raw Cube 中注入。
 
-##### 函数级调用链
+### Dormant 编译体（与 active Route 分离）
 
-```text
-quant_matmul_otf_raw_i32
- -> RunOfficialOnTheFly<float,int32_t>
- -> MatMulASWKernel (skip SetQuantScalar/Vector)
- -> workspace int32 ND
- -> quant_matmul_epi_*
- -> SupplementalEpilogue::Kernel::Init/Process/ComputeTile
- -> GM y
-```
+| 符号组 | 状态与边界 |
+|---|---|
+| `quant_matmul_basic_*`、`quant_matmul_basic_raw_i32` | Basic/CMCT body 可编译，但 `launch_quant_matmul` 没有调用边，不消费当前 selector 的 `BasicTiling` |
+| `quant_matmul_pack_scale_*`、`quant_matmul_pack_scale_redundant_*`、`quant_matmul_otf_qparam_*`、`quant_matmul_otf_packed_*` | packed-scale producer/consumer 保留为编译体；workspace selector 不生成 packed ABI，launcher 不分发 |
+| `quant_matmul_mix_*` | MIX_CV body 保留，但 registry graph schedule 未在 Direct launcher 重建，因此不可达 |
 
-##### 源码等价伪码
+### Route 间不变量
 
-```text
-AIC: workspace = int32_matmul(x1,x2) + optional_int32_bias
-AIV for job in blockIdx..batchC*M*ceil(N/2048) step blockNum:
-    row,n0,count = decode(job)
-    value = cast_rint_fp32(workspace[row*N+n0 : +count])
-    value *= scalar_or_channel_scale
-    if offset: value += scalar_or_channel_offset
-    if pertoken: value *= pertoken[row % M]
-    if floating_bias: value += cast_fp32(bias[(shared_or_batch)*N+n0])
-    y[...] = cast_rint<OutT>(value)  // GM only writes count, not aligned tail
-```
+- A/B/C 始终是非转置 ND RowMajor；任何 Route 都不得私自改变逻辑 K 轴。
+- INT32 bias 始终在反量化前；浮点 bias 始终在 `scale→offset→pertoken` 之后。
+- raw producer 不得提前量化或 cast；AIV 只消费无 padding `[batchC,M,N]` INT32。
+- CATLASS/scalar 的 32 B workspace 不能与 raw workspace 公式混用；workspace selector 必须和 launch selector使用同一谓词。
+- fallback 是 Host 选择期的路线退化，不是前一 kernel 失败后的重试；异步 device 错误不会切换 Route。
+- Route 在实数语义上等价，但不承诺 bitwise 一致：scalar Fixpipe 截断 scale 到 FP19，CATLASS/raw AIV 使用 FP32 运算链。
 
-#### 内存与数据搬运
+## Tiling 与 launch POD
 
-##### 资源与搬运表
-
-| 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
-|---|---|---|---|---|---|---|---|
-| Cube L1/L0 | Mix tiling | 同 R-001 | INT8/internal | Matmul | Mmad | AIC | raw 禁用浮点 bias |
-| workspace raw_acc | `(batch*M*N+m*N+n)*4` | `batchC*M*N*4` B | INT32 ND exact stride N | AIC | AIV | workspace until epilogue completes | 无隐藏 row padding |
-| AIV UB storage | 六个 `kTileN` 分区 | 2048×6×4=49152 B | reinterpreted int32/FP32/ScaleT/BiasT/OutT | MTE2/scalar | Vector/MTE3 | AIV kernel | count 向上对齐 8 计算 |
-| scale/offset/bias GM | scalar或`n0`，bias含 batch offset | count elements | declared dtype ND | caller | AIV | caller | DataCopyPad tail |
-| output GM | `row*N+n0` | count×sizeof(OutT) | FP16/BF16 ND | AIV | caller | output | 只写 count |
-
-##### 分层内存布局
-
-```mermaid
-flowchart LR
-  X["GM x1/x2"] --> C["AIC L1/L0 -> Mmad"] --> W["workspace INT32 ND"]
-  W --> A["AIV UB acc/value"]
-  S["GM scale/offset/pertoken/bias"] --> A
-  A --> R["Vector FP32 ordered epilogue"] --> O["UB OutT"] --> Y["GM y"]
-```
-
-##### 字节账、交接边与复用顺序
+### official OTF / raw 的 Mix tiling
 
 ```text
-workspace_total = batchC*M*N*4
-UB_total = 2048*6*4 = 49152
-register/local temporaries = scalar scale/offset/pertoken and vector API registers (physical count library-defined)
+baseM = min(align_up(M,16), 256)
+baseN = min(align_up(N,32), 256)
+baseK = min(align_up(K,32), 128)
+MNblocks = ceil(M/baseM) * ceil(N/baseN)
+usedCoreNum = min(AIC, MNblocks)
 ```
 
-| 边/复用子区 | producer | offset/extent | dtype/layout | consumer | ordering/sync | owner/lifetime | 安全条件 |
-|---|---|---|---|---|---|---|---|
-| AIC→AIV raw | raw Matmul GetTensorC | 0/`batchC*M*N*4` | INT32 ND | `CopyInInt` | same stream | workspace Tensor | AIC specialization不执行反量化 |
-| UB aliases | `storage` | 六个 8192 B logical spans | mixed reinterpret | `ComputeTile` stages | `PIPE_ALL/PIPE_V` | AIV kernel | 顺序 barrier 防覆盖 |
-| AIV→y | cast OutT | `gm_offset/count` | FP16/BF16 ND | MTE3 | `PIPE_ALL` | output | aligned lane 不写 GM |
+先从 L1 总量扣除 bias 与 per-channel scale 预留：
 
-#### 同步、精度与尾块
+```text
+biasBytes  = bias ? baseN * sizeof(bias_dtype) : 0
+scaleBytes = scale_count == 1 ? 0 : baseN * sizeof(scale_dtype)
+leftL1 = L1 - biasBytes - scaleBytes
+stepKa = floor((leftL1 / 2 / (baseM*baseK)) / 2)
+stepKb = floor((leftL1 / 2 / (baseN*baseK)) / 2)
+stepK* = min/adjust to K loops, then made mutually divisible
+depthA1 = 2*stepKa; depthB1 = 2*stepKb
+```
 
-##### 同步与数值边界表
+`dbL0A=dbL0B=2`。`dbL0C` 仅在 `2*baseM*baseN*4<=L0C` 且 bias/scale guard 允许时取 2，否则取 1。`adaptiveSlidingWin` 的 M/N tail 标志和 split count 均初始化为 1；未使用字段保持零初始化。
 
-| 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
+`MixTiling` 按值传入 kernel：
+
+| 子结构 | Host 写入 | Device 消费 |
+|---|---|---|
+| `params` | batch product/四轴 dims、`isPerTensor`、`isPertoken`、bias dtype/batch flag | ASW batch offset、scale 模式和 epilogue 元数据 |
+| `matmulTiling` (`TCubeTiling`) | M/N/K、base、singleCore、step/depth、usedCore、bias、double buffer | `MatmulImpl`、ASW scheduler、safe raw tile shape |
+| `tileL2cacheTiling` | 零初始化 | 当前可达 body 不依赖 |
+| `adaptiveSlidingWin` | tail/split 六字段 | ASW block scheduler |
+
+`TCubeTiling` 是 CANN SDK ABI，跨版本不得凭字段同名假设二进制兼容；需要与编译使用的 9.1.0 header 一起固定。
+
+### CATLASS Params
+
+CATLASS 不消费 `MixTiling`。Host 由模板 `ToUnderlyingArguments` 生成 by-value `Kernel::Params`：
+
+```text
+problemShape = {M,N,K}
+mmad = {x1,x2,y}
+epilogue = {
+  y, x2Scale=scale, x1Scale=null, bias=null,
+  baseM=128, baseN=256,
+  x1QuantMode=DEFAULT, x2QuantMode=PERCHANNEL,
+  isBiasEpilogue=false
+}
+```
+
+该 Params 含模板类型和嵌套枚举，不应手写 byte offset；正确做法是由同一 CATLASS 版本的 `Arguments→Params` 生成。
+
+### block/core 映射
+
+| Route | blockDim | job 映射 |
+|---|---|---|
+| R-003 CATLASS | `min(AIC, ceil(M/128)*ceil(N/256))` | ASWT scheduler 以 128×256 L1 tile 在 M/N 网格蛇形遍历，空闲核可分割尾 tile |
+| R-004 scalar OTF | `usedCoreNum` | official ASW 每核多轮处理 M/N tile；batch 在 kernel 内循环 |
+| R-001 official raw | `usedCoreNum` | 与 scalar OTF 相同，输出改为 INT32 workspace |
+| R-002 safe raw | `min(AIC, batchC*ceil(M/baseM)*ceil(N/baseN))` | grid-stride job 解码为 `(batch,mTile,nTile)`，每个 tile 只有一个 AIC owner |
+| raw 后 AIV | `min(AIV, batchC*M*ceil(N/2048))` | grid-stride job 解码为 `(flatRow,nTile)` |
+
+## Kernel 数据流
+
+### R-003 CATLASS fused per-channel
+
+固定 tile：L1=`128×256×256`，L0=`128×256×128`；A/B 的 L1 与 L0 都是两级 ping-pong，L0C 为一份 128×256 INT32 tile。
+
+```text
+GM A/B ND
+ -> MTE2, L1 A/B ping-pong
+ -> MTE1, L0A/L0B ping-pong
+ -> MMAD, L0C INT32
+ -> shared UB INT32 tile
+ -> AIV: GM scale[N] -> UB, int32->fp32, mul, cast_rint
+ -> output UB double buffer -> MTE3 -> GM y ND
+```
+
+资源账：
+
+```text
+L1 A = 2 * 128 * 256 * 1 B = 64 KiB
+L1 B = 2 * 256 * 256 * 1 B = 128 KiB
+L0A  = 2 * 128 * 128 * 1 B = 32 KiB
+L0B  = 2 * 128 * 256 * 1 B = 64 KiB
+L0C  = 1 * 128 * 256 * 4 B = 128 KiB
+
+mVec = ceil(128 / taskRatio)
+UB int32 share = mVec * 256 * 4
+UB scale       = 256 * sizeof(scaleT)
+UB out double  = 2 * ceil(mVec/4) * 256 * sizeof(outT)
+```
+
+AIC/AIV 通过 CrossCore flag 交接 UB；AIC 在复用 UB 前等待 AIV，AIV 在 dequant 前等待 AIC。AIV 内又以 `V_MTE2/MTE2_V` 保护 scale、以两组 `V_MTE3/MTE3_V` 保护输出双缓冲。
+
+CATLASS 要求 N/K 已是完整 256 倍数，因此没有余数型 N/K tail；M 末块可小于 128。scheduler 将最后一个 tile 收缩为实际 M，并在空闲核较多时进一步沿 M/N split；AIV 按 task ratio 分半行，零行 sub-block 直接返回。GM 写回使用 `blockLen=actualN*sizeof(outT)`、`dstStride=(N-actualN)*sizeof(outT)`。
+
+### R-004 official scalar OTF
+
+```text
+GM A/B ND -> official Matmul L1/L0 -> L0C INT32
+scalar scale GM -> high-19-bit Fixpipe quant scalar
+L0C -> Fixpipe dequant/cast -> GM y ND
+```
+
+FP32 scale 的位模式与 `0xffffe000`；BF16 scale 左移到 FP32 高 16 位后再走相同 scalar 表示。`SetSingleShape(actualM,actualN,K)` 在每个 ASW tile 前设置 tail，零 M/N tile跳过。K 的内部循环和 tail 由 `MatmulImpl` 消费 `TCubeTiling`；输出 stride 为逻辑 N。该 Route无 bias、offset、pertoken，也不物化 UB epilogue。
+
+### R-001 official raw producer
+
+模板把 `yType` 改为 INT32。official body 因而跳过 `SetQuantScalar/SetQuantVector`，只做：
+
+```text
+GM A/B ND -> L1/L0 -> MMAD INT32 (+ optional INT32 bias)
+ -> GM workspace[batch,m,n] INT32
+```
+
+`MakeMixTiling(raw=true)` 只允许 INT32 bias 设置 `isBias`；浮点 bias 不进入 Cube。ASW 负责 batch 和 M/N tile，alignment guard 把不完整的 16/32 物理尾块留给 safe raw。
+
+### R-002 safe raw producer
+
+safe raw 使用 `MatmulImpl<GM ND int8, GM ND int8, GM ND int32>`。每核 grid-stride 取得独立 tile，先用四轴广播函数求 `batch_a/b`，再使用 64-bit 元素 offset：
+
+```text
+A = (batchA*M + m0) * K
+B = batchB*K*N + n0
+C = (batchC*M + m0) * N + n0
+actualM = min(baseM, M-m0)
+actualN = min(baseN, N-n0)
+SetSingleShape(actualM, actualN, K)
+SetTensorA(..., false); SetTensorB(..., false)
+optional SetBias(INT32 bias[biasBatch*N+n0])
+IterateAll(C, 0); End()
+```
+
+该 ownership 不需要跨 AIC barrier，也不依赖 registry 的混合核调度元数据。M/N/K 非对齐、batch 广播、offset 和超 fast envelope 都选择此 producer；它是 shape-safe fallback，不是低精度 fallback。
+
+### raw Route 的 ordered AIV epilogue
+
+AIV tile 固定 `kTileN=2048`，一块 48 KiB UB 被划为六个 2048×4 B 逻辑区，并按 barrier 顺序别名复用：acc、FP32 value、FP32 operand、scale source、bias source、output。
+
+```text
+for job = blockIdx; job < batchC*M*ceil(N/2048); job += blockNum:
+    row, n0 = decode(job)
+    count = min(2048, N-n0)
+    aligned = align_up(count, 8)
+    DataCopyPad INT32 GM -> UB
+    cast_rint INT32 -> FP32
+    mul scalar/per-channel scale
+    add scalar/per-channel offset if present
+    mul pertoken[row % M] if present
+    add shared/batched floating bias if present
+    cast_rint FP32 -> OutT
+    DataCopyPad exactly count elements -> GM
+```
+
+所有向量计算使用 `aligned` lane，输入 tail 由 `DataCopyPad` 补齐；GM 输出的 `blockLen` 只含 `count*sizeof(OutT)`，不会写越界的对齐 lane。AIC→AIV 只依赖同 stream launch order；AIV 内使用 `PIPE_ALL/PIPE_V` barrier 保护 GM copy、cast、mul/add 和 UB 别名生命周期。
+
+## 精度、溢出与尾块总表
+
+| Route | accumulator | scale 计算 | 后处理顺序 | cast | tail |
 |---|---|---|---|---|---|
-| 跨 kernel | same stream | raw AIC | AIV launch | workspace | INT32 exact ND |
-| GM→UB | `DataCopyPad` + `PIPE_ALL` | MTE2 | Vector | acc/operand | count tail，aligned=(count+7)&~7 |
-| Vector chain | `PIPE_V` | Cast/Mul/Add | 下一算子 | FP32 value | 固定 scale→offset→pertoken→bias 顺序 |
-| UB→GM | `PIPE_ALL` | OutT cast | MTE3 | output local | `blockLen=count*sizeof(OutT)` |
-
-#### 关键实现
-
-##### 符号证据表
-
-| 阶段 | 文件 | 符号/模板实例 | 实现事实 |
-|---|---|---|---|
-| Host/Tiling producer | `op_kernel/quant_matmul_kernel.cpp` | `MakeMixTiling(true)/VectorBlockDim` | raw bias flag、AIV jobs |
-| Kernel entry/router | 同上 | `quant_matmul_otf_raw_i32` + `quant_matmul_epi_*` | 两节点与 dtype 矩阵 |
-| Device body/helper | 同上 | `SupplementalEpilogue::Kernel::ComputeTile` | 精确运算序、UB、tail、barrier |
-
-### Route R-003：buffered packed-scale
-
-#### 适用条件
-
-##### 选择证据
-
-| 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
-|---|---|---|---|---|
-| Launcher | `op_kernel/quant_matmul_kernel.cpp` | `packed_fixpipe/buffered_pack_domain` | packed 公共域且 `M>=2048||N%512!=0` | 单 AIV pack→AIC |
-| AIV | 同上 | `PackFixpipeScaleBuffered` | `kTileElems=8192` | UB→GM packed scale |
-| AIC | 同上 | `quant_matmul_otf_qparam_*` | `inputScaleType=int64_t` | per-channel Fixpipe |
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-quant_matmul_pack_scale_{f32|bf16}
- -> PackFixpipeScaleBuffered
- -> [same stream]
-quant_matmul_otf_qparam_{f16|bf16}
- -> RunOfficialOnTheFly<int64_t,OutT>
- -> MatMulASWKernel::SetQuantVector -> mm_.Iterate/GetTensorC
-```
-
-##### 源码等价伪码
-
-```text
-for base in [0,N) step 8192:
-    local[i] = uint64(fp19(scale[base+i])) | (1<<46)
-    barrier; DataCopyPad UB -> workspace[base:base+length]; barrier
-same_stream AIC:
-    Mmad x1*x2 (+ optional int32 bias)
-    Fixpipe per-channel(workspace[n]) -> y
-```
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-| 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
-|---|---|---|---|---|---|---|---|
-| AIV UB | 0 | 8192×8=65536 B | uint64 | scalar conversion | MTE3 | pack kernel | 单 TBuf，tile 复用 |
-| workspace packed | `8*n` | `align_up(N,32)*8` B | uint64[N] | AIV | AIC Fixpipe | workspace Tensor | 尾部仅容量，不消费 |
-| Cube L1/L0 | 同 R-001 | Mix tiling 公式 | INT8/internal | Matmul | Mmad/Fixpipe | AIC | per-channel参数另占 L1 |
-| GM y | tile offset | output | FP16/BF16 ND | Fixpipe | caller | output | ASW tail |
-
-##### 分层内存布局
-
-```mermaid
-flowchart LR
-  S["GM scale FP32/BF16"] --> U["AIV UB 64 KiB"] --> P["GM workspace uint64 packed"]
-  A["GM x1/x2 ND"] --> C["AIC L1/L0 -> Mmad L0C"]
-  P --> F["Fixpipe vector dequant"]
-  C --> F --> Y["GM y"]
-```
-
-##### 字节账、交接边与复用顺序
-
-```text
-workspace_total = align_up(N,32)*8
-UB_pack = 8192*8 = 65536
-Cube L1/L0 = R-001 formulas + baseN*8 per-channel scale staging when selected by Matmul
-```
-
-| 边/复用子区 | producer | offset/extent | dtype/layout | consumer | ordering/sync | owner/lifetime | 安全条件 |
-|---|---|---|---|---|---|---|---|
-| packed scale | AIV MTE3 | 0/N×8 | uint64 vector | AIC Fixpipe | same stream launch order；AIV 内 `PIPE_ALL` | workspace until AIC completes | AIV 写全 N 后 kernel 结束 |
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-| 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
-|---|---|---|---|---|---|
-| pack tile | `PipeBarrier<PIPE_ALL>` | scalar UB writes | MTE3/next tile | 64 KiB UB | 最后 tile length 精确 |
-| 跨 kernel | same stream | pack kernel | AIC kernel | workspace | FP19 截断后 uint64 |
-| Cube | Matmul/Fixpipe | Mmad | GM y | L0C/scale | INT32→FP16/BF16 |
-
-#### 关键实现
-
-##### 符号证据表
-
-| 阶段 | 文件 | 符号/模板实例 | 实现事实 |
-|---|---|---|---|
-| Host/Tiling producer | `op_kernel/quant_matmul_kernel.cpp` | `buffered_pack_domain/MakeMixTiling` | selector、workspace、core |
-| Kernel entry/router | 同上 | `quant_matmul_pack_scale_*`→`quant_matmul_otf_qparam_*` | 两节点同 stream |
-| Device body/helper | 同上 + `official/arch35/qbmm_cube_on_the_fly.h` | `PackFixpipeScaleBuffered/MatMulASWKernel` | UB pack、per-channel Fixpipe |
-
-### Route R-004：redundant packed-scale
-
-#### 适用条件
-
-##### 选择证据
-
-| 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
-|---|---|---|---|---|
-| Launcher | `op_kernel/quant_matmul_kernel.cpp` | `redundant_pack_domain` | packed 公共域、buffered=false、N 区间命中 | 多 AIV pack→AIC |
-| AIV | 同上 | `PackFixpipeScale` | `block_count=min(AIV,ceil(N/64))`，radius=8 | 重复标量写+DCCI |
-| AIC | 同上 | `quant_matmul_otf_qparam_*` | workspace 为 packed vector | Fixpipe 输出 |
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-quant_matmul_pack_scale_redundant_{f32|bf16}
- -> PackFixpipeScale(scale,workspace,N,blockIdx,blockCount)
- -> DataCacheCleanAndInvalid<CACHELINE_OUT>
- -> [same stream] quant_matmul_otf_qparam_*
-```
-
-##### 源码等价伪码
-
-```text
-perBlock=ceil(N/blockCount)
-each AIV covers logical blocks [blockIdx-8, blockIdx+8]
-for each covered i: workspace[i]=fp19(scale[i])|(1<<46)
-DCCI entire destination tensor
-same_stream AIC Mmad + per-channel Fixpipe
-```
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-| 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
-|---|---|---|---|---|---|---|---|
-| AIV 寄存器/标量 cache | per element | O(1) per core | FP bits/uint64 | scalar load | GM store | AIV kernel | 邻域重复写相同值 |
-| workspace packed | `i*8` | `align_up(N,32)*8` | uint64 | 多 AIV | AIC Fixpipe | workspace | DCCI publish |
-| Cube L1/L0/y | 同 R-003 | 同 R-003 | 同 R-003 | 同 R-003 | 同 R-003 | AIC/output | 同 R-003 |
-
-##### 分层内存布局
-
-```mermaid
-flowchart LR
-  S["GM scale"] --> R["AIV scalar/reg conversion"] -->|"identical overlap + DCCI"| P["GM packed workspace"]
-  X["GM x1/x2"] --> C["AIC Cube"]
-  P --> F["Fixpipe"]
-  C --> F --> Y["GM y"]
-```
-
-##### 字节账、交接边与复用顺序
-
-```text
-workspace_total = align_up(N,32)*8
-UB = N/A（标量 GetValue/SetValue）
-```
-
-| 边/复用子区 | producer | offset/extent | dtype/layout | consumer | ordering/sync | owner/lifetime | 安全条件 |
-|---|---|---|---|---|---|---|---|
-| overlapping shards | neighbor AIVs | shard±8 | uint64 | packed workspace | identical stores | workspace | 所有写入值由同一 scale[i] 决定 |
-| packed→AIC | AIV + DCCI | N×8 | uint64 | Fixpipe | same stream | workspace | DCCI 在 producer 退出前执行 |
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-| 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
-|---|---|---|---|---|---|
-| AIV publish | `DataCacheCleanAndInvalid` | cached scalar stores | stream 后继 AIC | packed GM | FP19 |
-| shard tail | begin/end clamp | 每 AIV | GM | `[0,N)` | `end=min(begin+perBlock,N)` |
-| AIC | Fixpipe vector quant | L0C | y | tile | ASW M/N tail |
-
-#### 关键实现
-
-##### 符号证据表
-
-| 阶段 | 文件 | 符号/模板实例 | 实现事实 |
-|---|---|---|---|
-| Host/Tiling producer | `op_kernel/quant_matmul_kernel.cpp` | `redundant_pack_domain` | reduced Route 与 blockDim |
-| Kernel entry/router | 同上 | `quant_matmul_pack_scale_redundant_*` | dtype entry |
-| Device body/helper | 同上 | `PackFixpipeScale` | 邻域、FP19、DCCI |
-
-### Route R-001：标量 on-the-fly
-
-#### 适用条件
-
-##### 选择证据
-
-| 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
-|---|---|---|---|---|
-| Launcher | `op_kernel/quant_matmul_kernel.cpp` | `launch_quant_matmul` | `!offset&&!pertoken&&scale_count==1&&bias==NO_DTYPE` | `quant_matmul_otf_*` |
-| Tiling | 同上 | `MakeMixTiling` | ND、非转置，base/step/depth 公式 | `MixTiling` |
-| Device | `official/arch35/qbmm_cube_on_the_fly.h` | `MatMulASWKernel` | `isPerTensor=1` | `SetQuantScalar`→`Iterate/GetTensorC` |
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-quant_matmul_otf_{f32_f16|f32_bf16|bf16_bf16}
-  -> RunOfficialOnTheFly<ScaleT,OutT>
-    -> MatMulASWKernel::Init
-    -> MatMulASWKernel::Process
-      -> ComputeBasicOptiLoop / ComputeBmmOptiLoop
-      -> SetMMParaAndCompute
-        -> mm_.SetQuantScalar / SetTensorA / SetTensorB
-        -> mm_.Iterate -> mm_.GetTensorC
-```
-
-##### 源码等价伪码
-
-```text
-scaleScalar = fp19(scale[0])
-for batch and ASW round assigned to this AIC:
-    derive broadcast A/B/C offsets and valid tail M/N
-    mm.set_shape(validM, validN, K)
-    mm.set_quant_scalar(scaleScalar)
-    mm.set_A(x1[offsetA]); mm.set_B(x2[offsetB])
-    mm.iterate_int8_to_int32()
-    mm.get_C_fixpipe_cast(y[offsetC])
-```
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-| 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
-|---|---|---|---|---|---|---|---|
-| GM A/B | batch broadcast + tile offset | logical A/B tensor | INT8 ND | caller | Matmul GM prologue | caller | M/N/K 由 base 对齐处理 tail |
-| L1 | Matmul specialization internal | `depthA1*baseM*baseK + depthB1*baseN*baseK`，另有参数区 | INT8 NZ/internal | GM prologue | L0 load | AIC kernel | depth=2*step |
-| L0A/L0B | tile ping-pong | 2×base tile，上界由 SDK Matmul 资源检查 | INT8 cube layout | L1 load | Mmad | AIC kernel | `dbL0A=dbL0B=2` |
-| L0C | tile | `dbL0C*baseM*baseN*4` | INT32 | Mmad | Fixpipe | AIC kernel | db 为 1/2 |
-| UB/寄存器 | N/A | N/A | N/A | N/A | N/A | N/A | 标量 scale 直接供 Fixpipe |
-| GM y | `batch*M*N + tileM*N + tileN` | output tensor | FP16/BF16 ND | Fixpipe | caller | output Tensor | `dstStride=N` |
-
-##### 分层内存布局
-
-```mermaid
-flowchart LR
-  A["GM x1/x2 INT8 ND"] --> L1["L1 Matmul tiles"]
-  L1 --> L0["L0A/L0B -> Mmad -> L0C INT32"]
-  S["GM scalar scale"] --> F["Fixpipe FP19 dequant + cast"]
-  L0 --> F --> Y["GM y ND"]
-```
-
-##### 字节账、交接边与复用顺序
-
-```text
-workspace_total = 32 B logical placeholder
-L1_active = depthA1*baseM*baseK + depthB1*baseN*baseK + parameter slices
-L0_active = 2*baseM*baseK + 2*baseN*baseK + dbL0C*baseM*baseN*4
-UB = N/A
-```
-
-| 边/复用子区 | producer | offset/extent | dtype/layout | consumer | ordering/sync | owner/lifetime | 安全条件 |
-|---|---|---|---|---|---|---|---|
-| L1 ping-pong | GM prologue | step/depth tile | INT8 internal | L0 load | Matmul pipe protocol | kernel | depth 与 K loop 一致 |
-| L0C→y | Mmad | validM×validN | INT32→OutT ND | Fixpipe | unitFlag final accumulation | output Tensor | tail shape 先传给 `SetSingleShape` |
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-| 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
-|---|---|---|---|---|---|
-| GM→Cube | Matmul 内部 MTE flag | GM copy | L0/Mmad | L1/L0 tile | K tail 由 single shape |
-| 累加→输出 | final accumulation/Fixpipe | Mmad | GM y | L0C | INT32 累加，FP19 scale，FP16/BF16 cast |
-| ASW tail | `UpdateBlockParams` | scheduler | `SetSingleShape` | M/N tile | 零 tile continue |
-
-#### 关键实现
-
-##### 符号证据表
-
-| 阶段 | 文件 | 符号/模板实例 | 实现事实 |
-|---|---|---|---|
-| Host/Tiling producer | `op_kernel/quant_matmul_kernel.cpp` | `MakeMixTiling` | base/step/depth/core/ASW |
-| Kernel entry/router | 同上 | `quant_matmul_otf_*` | dtype 到模板映射 |
-| Device body/helper | `official/arch35/qbmm_cube_on_the_fly.h` | `MatMulASWKernel::SetMMParaAndCompute` | 标量 Fixpipe、batch offset、tail |
-
-### Route R-002：CMCT Basic 标量反量化
-
-#### 适用条件
-
-##### 选择证据
-
-| 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
-|---|---|---|---|---|
-| Launcher | `op_kernel/quant_matmul_kernel.cpp` | `!supplemental` | scalar、无 offset/pertoken、bias INT32 | `quant_matmul_basic_*` |
-| Tiling | 同上 | `MakeBasicTiling` | base 128×256×128 cap，四 L1 buffer | `BasicTiling` |
-| Router | `official/arch35/qbmm_cube_basic_api_cmct.h` | `QbmmCubeBasicApiKernel` | RowMajor/RowMajor/RowMajorAlign，fullLoad=0 | CMCT Cube |
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-quant_matmul_basic_*
- -> RunOfficialBasic
- -> QbmmCubeBasicApiKernel
- -> QuantMmBatchCube::Run / ProcessSingleBatch
- -> BlockMmadA8W8FixpipeQuant::operator()
-    -> DataCopyA/CopyBInL1 (ND->NZ)
-    -> CopyInL0A/CopyInL0B -> Mmad
-    -> CopyFixpipeScalar -> GM y
-```
-
-##### 源码等价伪码
-
-```text
-for scheduled batch,M,N tile:
-    ND2NZ x1/x2 GM -> four-way L1 buffers
-    copy int32 bias GM -> L1 -> BT for first K tile
-    for K-L1 tile and K-L0 tile:
-        LoadData L1 -> ping-pong L0A/L0B
-        Mmad(int8,int8,int32, optional BT bias)
-    Fixpipe(L0C, fp19(scale[0]), validM,validN,dstStride=N) -> y
-```
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-| 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
-|---|---|---|---|---|---|---|---|
-| GM A/B | batch/tile/K offset | logical tensors | INT8 RowMajor ND | caller | `DataCopyA/B` | caller | `Nd2NzParams` |
-| L1 A | half-L1 parity + `AOne*(id>>1)` | `4*baseM*baseK` B logical | INT8 NZ | NDDMA/MTE2 | L0A | kernel | 4-way，id=`loop&3` |
-| L1 B | A region 后的 parity 分区 | `4*baseN*baseK` B logical | INT8 NZ | NDDMA/MTE2 | L0B | kernel | 4-way |
-| L1 bias | scale region 后 | `2*baseN*4` B | INT32 ND | MTE2 | BT | kernel | 2-way |
-| L0A/L0B | `HALF_L0_SIZE*(pingpong&1)` | active `baseM*baseK` / `baseN*baseK` B each | INT8 cube layout | LoadData | Mmad | kernel | 2-way |
-| BT | `baseN*biasBufId` | 2×aligned baseN INT32 | INT32 | L1 copy | first Mmad | kernel | 2-way |
-| L0C | offset 0（`dbL0C=1`） | `baseM*baseN*4` B active | INT32 | Mmad | Fixpipe | kernel | final unitFlag |
-| GM y | tile C offset | output tensor | FP16/BF16 RowMajorAlign，stride N | Fixpipe | caller | output | valid M/N |
-
-##### 分层内存布局
-
-```mermaid
-flowchart LR
-  GM["GM A/B ND"] -->|"Nd2NzParams"| L1["L1 A/B 4-way NZ"]
-  BI["GM bias INT32"] --> BL1["L1 bias 2-way"] --> BT["BT"]
-  L1 --> L0["L0A/L0B ping-pong"]
-  BT --> MM["Mmad INT32"]
-  L0 --> MM --> C["L0C"] --> F["Fixpipe scalar dequant"] --> Y["GM y"]
-```
-
-##### 字节账、交接边与复用顺序
-
-```text
-workspace_total = 32 B logical placeholder
-L1_logical = 4*baseM*baseK + 4*baseN*baseK + 2*baseN*4
-L0_active = 2*baseM*baseK + 2*baseN*baseK + baseM*baseN*4
-```
-
-| 边/复用子区 | producer | offset/extent | dtype/layout | consumer | ordering/sync | owner/lifetime | 安全条件 |
-|---|---|---|---|---|---|---|---|
-| GM→L1 | `DataCopyA/B` | current M/N/K tile | INT8 ND→NZ | LoadData | `MTE1_MTE2`/`MTE2_MTE1` flag 0..3 | kernel | buffer id 不覆写未消费 tile |
-| L1→L0 | `CopyInL0A/B` | K-L0 tile | INT8 cube layout | Mmad | `M_MTE1`/`MTE1_M` ping-pong | kernel | 两半交替 |
-| L0C→GM | final Mmad | valid tile | INT32→OutT | Fixpipe | `unitFlag=FINAL_ACCUMULATION` | output | dst stride N |
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-| 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
-|---|---|---|---|---|---|
-| L1 循环 | HardEvent flags 0..3 | MTE2 ND→NZ | MTE1 LoadData | A/B buffer | K tail=`K-iter*baseK` |
-| bias | flags 4/5 | GM→L1 | BT/Mmad | bias buffer | 仅首个 K tile注入 INT32 |
-| L0 循环 | flags 0/1 | LoadData | Mmad | L0A/B halves | odd N1 时分段 LoadData+barrier |
-| Fixpipe | `DEQF16`/`QS322BF16_PRE` | L0C | GM | valid tile | scale 高19位；M/N tail 精确 |
-
-#### 关键实现
-
-##### 符号证据表
-
-| 阶段 | 文件 | 符号/模板实例 | 实现事实 |
-|---|---|---|---|
-| Host/Tiling producer | `op_kernel/quant_matmul_kernel.cpp` | `MakeBasicTiling` | tile 与四 buffer |
-| Kernel entry/router | `official/arch35/qbmm_cube_basic_api_cmct.h` | `QbmmCubeBasicApiKernel<...,0>` | 完整 layout/类型/scheduler |
-| Device body/helper | `cmct/block/block_mmad_a8w8_fixpipe_quant.h` | `DataCopyA/CopyBInL1/Iterate/CopyFixpipeScalar` | ND→NZ、L0/Mmad、Fixpipe、同步 |
-
-## 算子特定优化
-
-### Trick T-001：按可表达 epilogue 选择 fused Fixpipe 或 raw-AIV
-
-#### 触发与源码依据
-
-- 适用 Route：全部可达 Route
-- 触发条件：packed、scalar on-the-fly、Basic 与 supplemental 谓词按固定优先级判断
-- 转换片段定位：`op_kernel/quant_matmul_kernel.cpp:799-809`；相关官方源码：[`quant_batch_matmul_v3.cpp`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/matmul/quant_batch_matmul_v3/op_kernel/arch35/quant_batch_matmul_v3.cpp)
-
-**交付源码（固定快照连续逐字摘录）**：
-
-```cpp
-const bool floating_bias = p.bias_dtype != QUANT_MATMUL_NO_DTYPE && p.bias_dtype != QUANT_MATMUL_INT32;
-const bool official_mix = false;
-const bool buffered_pack_domain = p.m >= 2048U || p.n % 512U != 0U;
-const bool redundant_pack_domain =
-    (p.n >= 3584U && p.n < 4096U) || p.n >= 8192U;
-const bool packed_fixpipe = (buffered_pack_domain || redundant_pack_domain) &&
-    p.scale_count != 1U && p.has_offset == 0U &&
-    p.has_pertoken == 0U && !floating_bias;
-```
-
-#### 机制与设计原因
-
-Fixpipe 能直接表达的 scalar/per-channel 反量化保留在 L0C→GM 路径；offset、pertoken 或浮点 bias 需要严格次序时才物化 int32 workspace。selector 同时决定 workspace 公式，不能只改 launch 而不改 `quant_matmul_workspace_bytes`。
-
-#### 迁移边界
-
-- 适用：INT8×INT8、FP16/BF16 输出、相同 ordered epilogue。
-- 前提：selector 与 workspace producer 完全一致。
-- 失效：新增 activation、不同 bias 顺序或其它 output dtype 时须增加显式 Route。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
-
-#### 错误做法
-
-把浮点 bias 作为 Cube int32 bias 传入会改变运算顺序与 dtype；必须走 R-005。
-
-### Trick T-004：exact ND raw accumulator 保留有序 epilogue
-
-#### 触发与源码依据
-
-- 适用 Route：R-005
-- 触发条件：复杂 epilogue 且未命中 packed
-- 转换片段定位：`op_kernel/quant_matmul_kernel.cpp:457-519`；相关官方源码：[`quant_batch_matmul_v3.cpp`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/matmul/quant_batch_matmul_v3/op_kernel/arch35/quant_batch_matmul_v3.cpp)
-
-**交付源码（固定快照连续逐字摘录）**：
-
-```cpp
-CopyInInt(acc_local, gm_offset, count);
-AscendC::PipeBarrier<PIPE_ALL>();
-AscendC::Cast(value, acc_local, AscendC::RoundMode::CAST_RINT, aligned);
-AscendC::PipeBarrier<PIPE_V>();
-
-if (p_.scale_count == 1U) {
-    float scalar;
-```
-
-#### 机制与设计原因
-
-`yType=int32_t` 使 on-the-fly Cube body跳过 `SetQuantScalar/SetQuantVector`，workspace 用精确 N stride 保存累加值；AIV 用一个 48 KiB TBuf 的六个逻辑分区串行复用，显式 barrier 保证 cast/mul/add/GM copy 的依赖，并只把有效 count 写回。
-
-#### 迁移边界
-
-- 适用：需要 scale→offset→pertoken→floating-bias 次序。
-- 前提：workspace 足够容纳 exact `[batchC,M,N]` INT32，所有节点同 stream。
-- 失效：改变 epilogue 顺序、广播规则或中间精度必须同步修改 Host 校验和 AIV body。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
-
-#### 错误做法
-
-让 raw Cube 先执行 scale 或把浮点 bias 传入 `mm.isBias` 会破坏规定次序。
-
-### Trick T-003：小参数面先 pack 再由 Fixpipe 消费
-
-#### 触发与源码依据
-
-- 适用 Route：R-003、R-004
-- 触发条件：per-channel、无 offset/pertoken/floating bias，且 shape domain 命中
-- 转换片段定位：`op_kernel/quant_matmul_kernel.cpp:219-247`；相关官方源码：[`quant_batch_matmul_v3.cpp`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/matmul/quant_batch_matmul_v3/op_kernel/arch35/quant_batch_matmul_v3.cpp)
-
-**交付源码（固定快照连续逐字摘录）**：
-
-```cpp
-for (uint32_t base = 0U; base < count; base += kTileElems) {
-    const uint32_t length = kTileElems < count - base ? kTileElems : count - base;
-    for (uint32_t i = 0U; i < length; ++i) {
-        uint32_t bits = 0U;
-        if constexpr (AscendC::IsSameType<ScaleT, bfloat16_t>::value) {
-            bfloat16_t value = src.GetValue(base + i);
-            const uint16_t value_bits = *(reinterpret_cast<uint16_t*>(&value));
-            bits = static_cast<uint32_t>(value_bits) << 16;
-```
-
-#### 机制与设计原因
-
-只物化 `O(N)` 的 packed scale，而不是 `O(batch*M*N)` 的 raw accumulator。buffered 路线用 64 KiB UB 和 MTE3 连续发布；redundant 路线用相同写值的邻域覆盖并以 DCCI 发布，二者都让后续 AIC Fixpipe消费 `uint64_t` per-channel 参数。
-
-#### 迁移边界
-
-- 适用：scale count=N 且 epilogue 可完全由 Fixpipe 表达。
-- 前提：workspace 8 B/元素、FP19 mask 与量化位保持不变。
-- 失效：存在 offset、pertoken 或浮点 bias 时走 R-005。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
-
-#### 错误做法
-
-省略 AIV→AIC 的 stream ordering 或 DCCI/MTE3 发布会使 AIC 可能消费未可见参数。
-
-### Trick T-002：ND→NZ 与四路 L1、两路 L0 复用
-
-#### 触发与源码依据
-
-- 适用 Route：R-002
-- 触发条件：CMCT Basic、`nBufferNum=4`、`stepKa=stepKb=1`
-- 转换片段定位：`cmct/block/block_mmad_a8w8_fixpipe_quant.h:271-321`；相关官方源码：[`quant_batch_matmul_v3_basic.h`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/matmul/quant_batch_matmul_v3/op_kernel/arch35/quant_batch_matmul_v3_basic.h)
-
-**交付源码（固定快照连续逐字摘录）**：
-
-```cpp
-nd2nzParams.nValue = nDim;
-nd2nzParams.dValue = dDim;
-nd2nzParams.srcNdMatrixStride = 1;
-nd2nzParams.srcDValue = transA ? m_ : k_;
-nd2nzParams.dstNzC0Stride = Cmct::Gemm::CeilAlign(transA ? curKL1 : curML1, BLOCK_CUBE);
-nd2nzParams.dstNzNStride = 1;
-nd2nzParams.dstNzMatrixStride = 1;
-AscendC::DataCopy(aL1Local_[offsetAL1], aGlobal[offsetA], nd2nzParams);
-```
-
-#### 机制与设计原因
-
-输入保持公开 ND，搬入 L1 时用 ND→NZ 参数完成 Cube 需要的物理布局；四个 L1 buffer 以 parity 半区和 `id>>1` 组合寻址，L0A/L0B 再以两个 half-L0 交替，MTE2、MTE1 与 Mmad 用 HardEvent 解耦。
-
-#### 迁移边界
-
-- 适用：RowMajor INT8 A/B、非转置 specialization。
-- 前提：`baseM/baseN/baseK`、L1 四路布局与 flag ID 保持一致。
-- 失效：NZ 输入、转置或 full-load specialization 需要重算 stride/offset。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
-
-#### 错误做法
-
-直接把 ND GM 指针当作 L1 NZ tile 会让 LoadData 的 C0/stride 解释错误。
-
-## 模板与实现对比
-
-| 对比维度 | P0 R-005 raw+AIV | P1 R-003 buffered packed | P2 R-004 redundant packed | P3 R-001 标量 OTF | P4 R-002 Basic | 设计选择依据 |
-|---|---|---|---|---|---|---|
-| Host 顺序 | 5，复杂语义终点 | 1，命中短路 | 2，命中短路 | 3，命中短路 | 4，命中短路 | selector 真实控制流 |
-| 命中条件 | 其余合法复杂 epilogue | per-channel 简单 epilogue，buffered domain | per-channel 简单 epilogue，redundant-only domain | scalar/no-bias | scalar/int32-bias | selector 布尔式 |
-| 执行族/节点图 | AIC→AIV | AIV→AIC | AIV→AIC | AIC | AIC+ND→NZ | 是否需参数预处理/补充 epilogue |
-| M/N/K、tile 与 scheduler | Mix/ASW + AIV N=2048 | Mix/ASW | Mix/ASW | Mix 256×256×128 cap/ASW | 128×256×128 cap/CMCT scheduler | 实例资源约束 |
-| workspace/L1/L0/UB | batchMN×4；48 KiB UB | alignN×8；64 KiB pack UB | alignN×8；标量 pack | 32 B；Matmul 层级 | 32 B；4-way L1/2-way L0 | 只物化必要中间量 |
-| AIC/AIV 或 kernel 交接 | INT32 ND accumulator，same stream | uint64 scale，same stream | uint64 scale，same stream | N/A | N/A | producer/consumer dtype |
-| 同步、精度与 tail | stream+PIPE barriers | barrier+stream | DCCI+stream | Matmul/Fixpipe | HardEvent+Fixpipe | FP19 或 FP32 ordered epilogue |
-| fallback/失败边界 | 资源异常/runtime | 不满足转 Host 2 | 不满足转 Host 3 | 不满足转 Host 4 | `supplemental=true` 时转 Host 5 | 无隐式数学 fallback |
-
-## 平台差异
-
-| 项目 | A2 | A3 | 950 |
-|---|---|---|---|
-| 支持状态 | 本 Direct Invoke 交付未接线 | 本 Direct Invoke 交付未接线 | 目标交付接线为 950 |
-| Host/Launcher | N/A | N/A | `NPU_ARCH=ascend950`、`dav-3510` |
-| Kernel/资源 | N/A | N/A | arch35 service、AIC/AIV、C310 Fixpipe、ND→NZ DataCopy |
-
-## 限制与失败边界
-
-- 仅支持 contiguous ND INT8 输入、规定 scale/bias/output dtype 与 shape 范围；不自动做 Contiguous 或 layout 转换。
-- launcher 中 `official_mix` 固定为 `false`；源码中的 `quant_matmul_mix_*` 和 `QuantBmmPertokenRegbaseKernel` 不属于 Host 可达 Route，不能据其声明 MIX_CV 行为。
-- R-005/R-003/R-004/R-001 的通用 `matmul::MatmulImpl` 内部 buffer 物理常量与部分 Fixpipe 细节来自 CANN 9.1.0 SDK；交付快照闭合了实际模板、tiling、调用序和输出行为，但没有复制整套库实现。
-- `MixTiling` 内 `TCubeTiling` 的完整 `sizeof/offsetof` 由 SDK 头定义，交付快照未提供静态 ABI 断言；跨 CANN 版本复用前必须重新核对。
-- source snapshot 所在转换仓未把该目录纳入 Git 索引；Frontmatter 中转换来源 revision URL 是快照定位，不能替代内容哈希。限定本地官方仓也未包含所给 `ceb4536a2bd6fc99b85aec9d0fdcc0f470376292` 对象，因此本卡不据该对象补写公开 ACLNN 支持结论。
-- 本次知识提取未执行编译、真机、数值或性能测试。
-
-## 源码索引
-
-### 链路索引
-
-| 链路阶段 | 文件 | 关键符号 | 支撑内容 |
-|---|---|---|---|
-| 入口声明/约束 | `csrc/ops/quant_matmul/op_kernel/quant_matmul_launch.h` | `QuantMatmulHostParams`、`launch_quant_matmul` | Direct ABI |
-| 入口实现 | `csrc/ops/quant_matmul/op_plugin/quant_matmul_plugin.cpp` | `cann_bench::quant_matmul`、`quant_matmul_npu` | 校验、分配、stream 与调用 |
-| Host/Tiling/Launcher | `csrc/ops/quant_matmul/op_kernel/quant_matmul_kernel.cpp` | `MakeBasicTiling/MakeMixTiling/launch_quant_matmul` | selector、workspace、launch graph |
-| Kernel entry/body | `csrc/ops/quant_matmul/op_kernel/official/arch35/qbmm_cube_on_the_fly.h` | `MatMulASWKernel` | OTF/raw Cube body |
-| Kernel entry/body | `csrc/ops/quant_matmul/op_kernel/cmct/block/block_mmad_a8w8_fixpipe_quant.h` | `BlockMmadA8W8FixpipeQuant` | Basic ND→NZ、L0/Mmad/Fixpipe |
-| 构建接线 | `CMakeLists.txt` | `NPU_ARCH/BISHENG_NPU_ARCH/all_kernels_obj` | 950 编译目标 |
-| 官方相关映射 | `matmul/quant_batch_matmul_v3/op_kernel/arch35/quant_batch_matmul_v3.cpp` | arch35 entry/router | 相关服务映射；不等于本 Direct Invoke 入口 |
-
-转换交付快照行对应 Frontmatter 的转换来源；官方相关映射行对应固定 Commit URL。由于转换目录未纳入该仓 Git 索引，revision URL 仅用于来源命名，复用时应另行固定内容哈希。
-
-### 实现复用检查
-
-| 检查项 | 可复用事实 | 不得改变的约束 | 源码符号 |
-|---|---|---|---|
-| ABI/POD | 100 B HostParams；152 B BasicTiling | 字段顺序、位宽、batch 右对齐、by-value 参数 | `quant_matmul_launch.h`、tiling header |
-| 调用顺序 | Host selector 与五条 launch graph | packed/raw producer 必须先于 consumer且同 stream | `launch_quant_matmul` |
-| workspace/内存 | packed=`alignN*8`；raw=`batchMN*4` | offset 0、dtype/layout、owner/lifetime | `quant_matmul_workspace_bytes` |
-| 同步 | Basic HardEvent；pack barrier/DCCI；跨 kernel stream | flag ID、wait/set方向、发布点 | `BlockMmadA8W8FixpipeQuant`、pack helpers |
-| 精度与尾块 | INT32 accumulate；FP19 fused scale；FP32 AIV ordered chain | scale→offset→pertoken→floating-bias→cast；GM仅写count | `ComputeTile`、Fixpipe helpers |
-| 失败边界 | Host shape/resource异常；无数学 fallback | 不把 disabled MIX body当 Route；不吞异步 runtime 错误 | `CheckInputs/MakeMixTiling/launch_quant_matmul` |
+| CATLASS | INT32 L0C→UB | typed FP32/BF16 scale 转 FP32后向量乘 | 仅 scale | FP32→OutT RINT | M tail；N/K 由 selector排除 |
+| scalar OTF | INT32 L0C | FP19 Fixpipe scalar | 仅 scale | Fixpipe FP16/BF16 | ASW M/N/K tail |
+| official raw+AIV | INT32 GM workspace | FP32 vector；BF16先扩为 FP32 | scale→offset→pertoken→float bias | OutT RINT | producer只收 16/32 对齐域；AIV N=2048 tail |
+| safe raw+AIV | INT32 GM workspace | 同上 | 同上 | 同上 | actual M/N；Matmul K tail；AIV count tail |
+
+Host 没有证明 `Σ int8*int8 + bias` 必然落在 INT32 范围，也没有声明溢出饱和语义。fast envelope 的 K 上界降低风险但不替代数值范围证明；超大合法 K 走 safe raw 时尤其不能把“INT32 中间面”误写成无限精度整数。
+
+## 失败、fallback 与不可达边界
+
+- null params、platform 为空、AIC/AIV 为零、L1/UB 不足、无效 L1 step、checked-mul 溢出或 allocator 范围越界都在 Host 侧抛异常；不会改走另一个数学实现。
+- kernel launch 语句没有逐节点同步状态检查，`direct_call` 提交后返回 0；异步 device 错误由 runtime/stream 传播，不触发 retry。
+- `UseSafeRaw` 只在 launch 前选择 producer；official raw 已提交后不会自动重放 safe raw。
+- Basic、packed qparam、redundant pack 与 MIX_CV 的 dormant 符号组见前述独立表；不得把这些 body、tile 或 workspace 公式写成可达 Route。
+- CATLASS entry 的 AIC/AIV task type 依赖该版本编译器对混合 body 的推导；跨编译器版本复用时要重新核对 task ratio 与 CrossCore flag 配对。
+- official `MatmulImpl` 内部物理 buffer 和 Fixpipe 指令属于 CANN SDK 边界；`TCubeTiling` 与 SDK 版本必须成套。
+- 本 Direct Invoke 只接线 950/950；A2/A3 没有对应 launcher 或资源参数。
+
+## 实现检查清单
+
+| 检查点 | 必须保持的事实 |
+|---|---|
+| shape/layout | 右对齐四轴广播；A/B/C contiguous ND RowMajor；三条实现族均 `trans=false` |
+| selector | CATLASS→scalar OTF→raw；raw 内再选 official/safe；workspace 使用同一前两条谓词 |
+| POD | HostParams 100 B；MixTiling 与 9.1.0 `TCubeTiling` 同 ABI；CATLASS Params 由模板生成 |
+| GM offset | safe raw 和 AIV 使用 64-bit 元素 offset；raw workspace 无 row padding |
+| Cube dataflow | GM→L1→L0A/L0B→L0C；INT32 bias只在 Cube 累加前注入 |
+| epilogue | 浮点链严格 `scale→offset→pertoken→floating-bias→cast` |
+| tail | safe raw actual M/N + K Matmul tail；CATLASS 无余数型 N/K tail；AIV 只写 count |
+| sync | CATLASS CrossCore + HardEvent；raw 跨 kernel 同 stream；AIV UB barrier |
+| fallback | 选择期 fallback，无 device-error retry，无 CPU/ACLNN 数学 fallback |
+
+## 源码定位
+
+| 阶段 | 文件 | 关键符号 |
+|---|---|---|
+| Torch/Host | `op_plugin/quant_matmul_plugin.cpp` | `CheckInputs`、`CheckedProduct`、`RightAlignFour`、`quant_matmul_npu` |
+| Host ABI | `op_kernel/quant_matmul_launch.h` | `QuantMatmulHostParams` |
+| selector/tiling | `op_kernel/quant_matmul_kernel.cpp` | `IsCatlassAligned`、`IsScalarOnTheFly`、`UseSafeRaw`、`MakeMixTiling`、`launch_quant_matmul` |
+| official OTF/raw | `official/arch35/qbmm_cube_on_the_fly.h` | `MatMulASWKernel`、`SetMMParaAndCompute` |
+| safe raw | `op_kernel/quant_matmul_kernel.cpp` | `SafeRawMatmul::BroadcastBatchOffset`、`SafeRawMatmul::Kernel` |
+| ordered epilogue | 同上 | `SupplementalEpilogue::Kernel::ComputeTile` |
+| CATLASS kernel | `catlass/gemm/kernel/matmul_full_dequant.hpp` | `KernelMatmulDequant` |
+| CATLASS Cube | `catlass/gemm/block/block_mmad_pingpong_tla.hpp` | `BlockMmadTla<MmadPingpong<...>>` |
+| CATLASS vector | `catlass/epilogue/block/block_epilogue_dequant.hpp` | `BlockEpilogueDequant::VFDoDequant` |
 
 <!-- cannbot:related:start -->
 ## 相关

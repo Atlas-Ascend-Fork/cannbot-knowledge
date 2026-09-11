@@ -44,7 +44,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop/impl/conv_bp_sub_func_deterministic_common.h
     role: implementation
 created_at: "2026-08-25T19:34:00Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -59,10 +59,10 @@ cann_versions: ["9.1.0"]
 | 计算语义 | 对 `N×Dout×Ho×Wo` 做乘积归约，生成 `[Cout,Cin/groups,Kd,Kh,Kw]` 的 filter gradient；主 Kernel 以 FP32 累加，Direct 图最后 cast 为输入 dtype |
 | 输入输出 | contiguous NCDHW；`x`/`grad` 同为 FP16 或 BF16；Direct 输出同 dtype，shape 由 `filter_size` 指定 |
 | 执行类型 | 主节点 `MIX_CV`（AIC Cube + AIV 初始化/Stream-K 确定性归约）；后继 cast 与 BF16 条件修正节点为 `AIV_VECTOR/SIMT` |
-| Kernel 路线 | P0/R-001 纯 Stream-K；P1/R-002 MN/no-Stream；P2/R-003 MN+尾轮 Stream-K；P3/R-004 BF16 nonfinite 扩展；P4/R-005 BF16 cancellation 扩展 |
+| Kernel 路线 | active：P0/R-001 纯 Stream-K、P1/R-002 MN/no-Stream、P2/R-003 MN+尾轮 Stream-K；conditional：P3/R-004 BF16 nonfinite、P4/R-005 BF16 cancellation；dormant：P5/R-006 Winograd |
 | 核心资源 | GM 输入/FP32 中间/最终输出；16 MiB system workspace；Stream-K 双片 workspace；L1/L0A/L0B/L0C；整块 UB；SIMT 寄存器 |
 | 来源闭包 | `direct_implementation_closed`：Direct schema/launcher、显式 tiling/POD、8 个官方 arch35 模板实例、MIX_CV body、条件 AIV 节点与构建平台映射闭合；官方源码 URL 使用固定提交映射，Direct 改写关系在正文逐项说明 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 证据边界 | 正文闭合固定官方源码与 Direct 转换源码可静态追踪的关系；运行时等价性、时延与吞吐不由源码阅读单独推出。 |
 
 ## 接口与语义
 
@@ -100,7 +100,7 @@ dxw[co,ci_local,kd,kh,kw] =
 
 ### 入口与版本
 
-该入口不是 ACLNN。`TORCH_LIBRARY_FRAGMENT` 声明 schema，PrivateUse1 实现 `conv3d_bpf_npu` 完成校验、分配、tiling 与同 stream launch；`OpCommand::RunOpApi("Conv3DBackpropFilterDirectA5", aclCall)` 只包裹 Direct 提交。目标为 CANN 9.1.0、950/950、`dav-3510`。
+该入口不是 ACLNN。`TORCH_LIBRARY_FRAGMENT` 声明 schema，PrivateUse1 实现 `conv3d_bpf_npu` 完成校验、分配、tiling 与同 stream launch；`OpCommand::RunOpApi("Conv3DBackpropFilterDirect950", aclCall)` 只包裹 Direct 提交。目标为 CANN 9.1.0、950/950、`dav-3510`。
 
 转换来源以最终 Direct 载荷为准：其中 `official_arch35/**` 是官方 `conv/conv3d_backprop_filter_v2/op_kernel/arch35` 的当前源码闭包；context-free tiler转写官方 basic-block/Stream-K Host 算法，去掉 registry、knowledge-bank 与 `TilingContext`；Device 侧把官方 `GET_TPL_TILING_KEY` 变成三个显式值 `route/split_kernel_hw/group_enlarge`。固定提交映射仍保留 `stepM/stepN` 两个 POD 字段，而最终 Direct POD 对应更新后的官方 ABI，二者固定为 1 后已移除；因此不得把旧 POD 按字节传给 Direct entry。官方接口输出 FP32，而该 Direct 包装额外创建 FP32 中间并 cast 为输入 dtype，这是 Direct contract，不外推为官方 ACLNN 行为。
 
@@ -166,15 +166,16 @@ totalCnt = mCnt * nCnt * kd * realGroup
 
 ### Route 选择
 
-重要性只规定本文的阅读与迁移顺序，不改写 selector 或 launcher 的源码次序。R-001、R-002、R-003 是互斥主 Route；R-004、R-005 是在已选主 Route 上独立附着的 BF16 扩展。
+重要性只规定本文的阅读与迁移顺序，不改写 selector 或 launcher 的源码次序。可达性按最终 Direct Host、POD、启动器和 Device TU 的交集分类：R-001、R-002、R-003 是 active 且互斥的主 Route；R-004、R-005 是 conditional，可在已选主 Route 上附着；R-006 只有随包源码与官方 key 枚举，没有 Direct producer 或 entry，故为 dormant。
 
-| 重要性 | Route | 关键特征 | 重要性说明 | Host 顺序 |
-|---|---|---|---|---|
-| P0 | R-001 纯 Stream-K | 纯 Stream-K 调度；AIC partial；AIV 确定性归约；双片 user workspace | 同时决定主 Cube 路径、跨核交接与 workspace 协议，是迁移时最先闭合的完整执行族 | H1 生成 `route/streamkType`；H4 主 router 首分支 `route==1`；随后 H6 cast |
-| P1 | R-002 MN/no-Stream | MN grid-stride；FP32 atomic/Fixpipe；无 Stream-K user workspace | 承担无尾轮归约的主路径，也是 Stream-K 关闭或退化后的唯一安全落点 | H1 生成 `route=2,streamkType=0`；H4 主 router 的 `route!=1` 分支；随后 H6 cast |
-| P2 | R-003 MN+尾轮 Stream-K | MN 完整轮加 Stream-K 尾轮；主输出与双片 workspace 串接 | 复合两种调度与两套写回协议，必须在前两条主 Route 闭合后验证其相位连接 | H1 生成 `route=2,streamkType=1/2`；H4 与 R-002 共用 `route!=1` 分支并由 body 读取 `streamkType`；随后 H6 cast |
-| P3 | R-004 BF16 nonfinite 扩展 | channel tail、padding、HWout Stream-K；特殊值位级分类与修正 | 改变特殊值语义且跨越主 Cube 前后，但只在独立 BF16 guard 命中时附着 | H2 计算 flag；H3a clear/detect；H4 主 Route；H5b fix；H6 cast |
-| P4 | R-005 BF16 cancellation 扩展 | groups=1；大归约和大输出；幅值扫描与补偿重算 | 不改变主 tile，只对低幅有限输出做条件重算，属于最窄的数值扩展 | H2 计算 flag；H3b clear/detect；H4 主 Route；H5a refine；H6 cast |
+| 重要性 | 可达性 | Route | 关键特征 | 排序依据 | Host 顺序 |
+|---|---|---|---|---|---|
+| P0 | active | R-001 纯 Stream-K | 纯 Stream-K 调度；AIC partial；AIV 确定性归约；双片 user workspace | selector 的独立首分支，同时决定 Cube/Vector 交接、workspace 与性能调度 | H1 生成 `route=1,streamkType=1/2`；H4 router 首分支；随后 H6 cast |
+| P1 | active | R-002 MN/no-Stream | MN grid-stride；FP32 atomic/Fixpipe；无 Stream-K user workspace | 覆盖所有关闭或退化 Stream-K 的合法主域，是唯一主路径安全落点 | H1 生成 `route=2,streamkType=0`；H4 `route!=1`；随后 H6 cast |
+| P2 | active | R-003 MN+尾轮 Stream-K | MN 完整轮加 Stream-K 尾轮；主输出与双片 workspace 串接 | 在大于等于一整轮时保留小尾轮并行，需要前两条协议共同闭合 | H1 生成 `route=2,streamkType=1/2`；H4 MN 主轮后读 `streamkType`；随后 H6 cast |
+| P3 | conditional | R-004 BF16 nonfinite 扩展 | channel tail、padding、HWout Stream-K；特殊值位级分类与修正 | 改变特殊值语义并跨越主 Cube 前后，只在精确 guard 命中时附着 | H2 flag；H3a clear/detect；H4 主 Route；H5b fix；H6 cast |
+| P4 | conditional | R-005 BF16 cancellation 扩展 | groups=1；大归约和大输出；幅值扫描与补偿重算 | 不改变主 tile，只对低幅有限输出条件重算 | H2 flag；H3b clear/detect；H4 主 Route；H5a refine；H6 cast |
+| P5 | dormant | R-006 Winograd | canonical 随包较新闭包存在 Winograd 顶层模板分支；Direct TU 未纳入 | 不在 Direct selector 可达域，不参与运行排序；仅保留恢复入口所需边界 | 无 Host 顺序；当前从 H0 即不可选 |
 
 真实 Host selector/launcher 次序如下；表中短路只发生在当前阶段，不能把 R-004/R-005 误当成替代主 Route 的 fallback。
 
@@ -188,6 +189,8 @@ totalCnt = mCnt * nCnt * kd * realGroup
 | H5 | BF16 后置 launch | 先判断 R-005 并可提交 refine，再判断 R-004 并可提交 fix；两者均不替换主 Route。FP16 跳过整个 H5 |
 | H6 | final cast | FP16 直接在 H4 后 cast；BF16 在 H5 后 cast。此前任一 `if` 为假只短路该条件节点，不短路 cast |
 
+R-006 不在上表的 H0–H6 图中：Direct main TU 直接包含 `conv3d_dw_v2_basic_block.h`，并按 `route/split_kernel_hw/group_enlarge` 实例化 8 组 basic-block 模板；它没有纳入 canonical 随包较新闭包中承载 Winograd 分支的 arch35 entry，也没有生成 Winograd 编译期 key。Frontmatter 固定到 `955f8b33985b6d72989ebff341bb9c2c564a51bc` 的 key 与 router 不含 Winograd，不能用来证明 R-006；本 Route 只陈述 canonical 转换载荷中的较新随包源码事实。
+
 ```text
 validate -> groupEnlarge guard -> normal/splitW/splitKernelHW tiling
 totalCnt = ceil(M/singleM)*ceil(N/singleN)*Kd*realGroup
@@ -196,21 +199,24 @@ else choose BatchDout(1) vs HWout(2)
      if split invalid or dimension==1: route=MN, streamkType=0
      else route = totalCnt<AIC ? STREAM_K : MN_STREAM_K
 attach BF16 nonfinite/cancellation pre/post nodes by their independent guards
+Winograd template flags exist only in the canonical newer bundled closure;
+Direct selector emits no corresponding key
 ```
 
 每个主 Route 再由 `split_kernel_hw∈{0,1}` 与 `group_enlarge∈{0,1}` 唯一实例化，共 8 个官方 arch35 compile-time key；dtype 再选择 `T=half` 或 `T=bfloat16_t`，输出模板固定为 `float`。
 
 ### 模板/实现执行矩阵
 
-| 重要性 | Route | key/selector | dtype/shape/platform 完整命中条件 | Host 顺序 | 执行族与 kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
-|---|---|---|---|---|---|---|---|---|
-| P0 | R-001 纯 Stream-K | `route=1 × split{0,1} × enlarge{0,1}` | 950；FP16/BF16；表中 Stream 条件 | H1→H4 `route==1`→H6 | MIX_CV main→AIV cast；BF16 可附加修正节点 | `Conv3dDwBasicBlockStreamK<T,NCDHW,T,NCDHW,float,NCDHW,split,enlarge>` | AIC partial→per-core workspace；AIV deterministic reduce；CrossCore flags | K/BatchDout tail；Stream-K 失效改 R-002 |
-| P1 | R-002 MN/no-Stream | `route=2,streamkType=0 × split × enlarge` | 合法输入且 Stream-K 关闭 | H1 fallback→H4 `route!=1` 且 body 读 `streamkType=0`→H6 | MIX_CV main→AIV cast | `Conv3dDwBasicBlockMNStreamK<...>` 的主轮 | output 先清零；AIC FP32 atomic/Fixpipe 写 GM；group enlarge 时 AIV 重排 | M/N/group/channel/Kd/Ho 尾块；tiling 无安全块则失败 |
-| P2 | R-003 MN+尾轮 Stream-K | `route=2,streamkType∈{1,2} × split × enlarge` | `totalCnt>=AIC` 且有效尾轮 | H1→H4 `route!=1` 且 body 读 `streamkType!=0`→H6 | MIX_CV main+tail→AIV cast | 同 R-002，`CalBasicBlock` 后 `CalcStreamK` | 主轮写 output；尾轮 workspace+确定性归约；同 launch flags | 主轮 round + 尾轮；Stream-K 无效改 R-002 |
-| P3 | R-004 BF16 nonfinite | R-001/R-003 + nonfinite guard | BF16、channel tail、padding、HWout Stream-K | H2 flag→H3a clear/detect→H4→H5b fix→H6 | AIV clear→AIV SIMT detect→MIX_CV→AIV SIMT fix→AIV cast | `DetectNonfiniteBf16Vf`、主模板、`FixNonfiniteBf16Vf` | 32 B flag；1024 threads/block；修正输出单元逐点标量归约 | guard false 省略扩展；`flag==0` 时 fixer 立即返回；主 Route 不变 |
-| P4 | R-005 BF16 cancellation | R-001/R-003 + cancellation guard | BF16、大 dense 归约、groups=1、Stream-K | H2 flag→H3b clear/detect→H4→H5a refine→H6 | AIV clear→AIV SIMT magnitude→MIX_CV→AIV SIMT compensated refine→cast | `DetectMagnitudeBf16Vf`、主模板、`RefineCancellationBf16Vf` | stats 两个 AtomicMax；仅低幅有限值做 Kahan 风格重算 | guard false 省略扩展；幅值阈值外保留 Cube 结果；主 Route 不变 |
+| 重要性 | 可达性 | Route | key/selector | dtype/shape/platform 完整命中条件 | Host 顺序 | 执行族与 kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
+|---|---|---|---|---|---|---|---|---|---|
+| P0 | active | R-001 纯 Stream-K | `route=1 × split{0,1} × enlarge{0,1}` | 950；FP16/BF16；`totalCnt<AIC` 且 `0<tail<=AIC/2`，切分维有效且资源复核通过 | H1→H4 `route==1`→H6 | MIX_CV main→AIV cast；BF16 可附加修正节点 | `Conv3dDwBasicBlockStreamK<T,NCDHW,T,NCDHW,float,NCDHW,split,enlarge>` | AIC partial→per-core workspace；AIV deterministic reduce；CrossCore flags | K/BatchDout tail；Stream-K 失效改 R-002 |
+| P1 | active | R-002 MN/no-Stream | `route=2,streamkType=0 × split × enlarge` | 合法输入且无合格 Stream-K 尾轮 | H1 fallback→H4 `route!=1` 且 body 读 `streamkType=0`→H6 | MIX_CV main→AIV cast | `Conv3dDwBasicBlockMNStreamK<...>` 的主轮 | `enlarge=false`：AIC Fixpipe/atomic→GM；`enlarge=true`：AIC L0C→UB，mode-4 flags 5/6 交给 AIV 重排并 atomic→GM | M/N/group/channel/Kd/Ho 尾块；enlarge 资源 guard 失败改 `false`；tiling 无安全块则失败 |
+| P2 | active | R-003 MN+尾轮 Stream-K | `route=2,streamkType∈{1,2} × split × enlarge` | `totalCnt>=AIC` 且 `0<tail<=AIC/2`，切分维有效且资源复核通过 | H1→H4 `route!=1` 且 body 读 `streamkType!=0`→H6 | MIX_CV main+tail→AIV cast | 同 R-002，`CalBasicBlock` 后 `CalcStreamK` | 主轮沿用 R-002 的 direct-GM 或 group UB 重排；尾轮使用双片 workspace 与确定性归约 | 主轮 round + 尾轮；enlarge guard 失败改 `false`；Stream-K 无效改 R-002 |
+| P3 | conditional | R-004 BF16 nonfinite | R-001/R-003 + nonfinite guard | BF16、channel tail、padding、`streamkType=2` | H2 flag→H3a clear/detect→H4→H5b fix→H6 | AIV clear→AIV SIMT detect→MIX_CV→AIV SIMT fix→AIV cast | `DetectNonfiniteBf16Vf`、主模板、`FixNonfiniteBf16Vf` | 32 B flag；1024 threads/block；修正输出单元逐点标量归约 | guard false 省略扩展；`flag==0` 时 fixer 立即返回；主 Route 不变 |
+| P4 | conditional | R-005 BF16 cancellation | R-001/R-003 + cancellation guard | BF16、groups=1、reduction≥65536、output≥2097152、`streamkType!=0` | H2 flag→H3b clear/detect→H4→H5a refine→H6 | AIV clear→AIV SIMT magnitude→MIX_CV→AIV SIMT compensated refine→cast | `DetectMagnitudeBf16Vf`、主模板、`RefineCancellationBf16Vf` | stats 两个 AtomicMax；仅低幅有限值做 Kahan 风格重算 | guard false 省略扩展；幅值阈值外保留 Cube 结果；主 Route 不变 |
+| P5 | dormant | R-006 Winograd | canonical 新闭包的 `WinoTilingFlag/WinoResidentFlag` 为编译期模板量；Direct 无对应 key/实例 | 当前 Direct 输入域无可达谓词 | 无 | 无 Direct launch | 随包 `Conv2dDwWinograd` 源码未被 main TU 实例化 | 复用 248 B official POD；变换 workspace 未进入 Direct sizing；保持不可选 |
 
-### 隐藏性能 Guard
+### 生产 Guard 与退化边
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -225,10 +231,11 @@ attach BF16 nonfinite/cancellation pre/post nodes by their independent guards
 | skipped flag count | 连续 skip 每 14 次 `PipeBarrier<PIPE_ALL>` | CrossCoreSetFlag 计数器最多 15 次 | R-001/R-003 | 原 route 内节流 | `CalcIterate::barrierThreshold` |
 | BF16 nonfinite | channel tail、任一 padding、`streamkType==2` | padding/tail special-value 语义修正 | R-004 | 不启动 sidecar | `useBf16NonfiniteFix` |
 | BF16 cancellation | groups=1、大 reduction/output、Stream-K | 只重算可能被抵消的低幅输出 | R-005 | 不启动 sidecar | `useBf16CancellationFix` |
+| Winograd selector | Direct tiler 不生成 canonical 新闭包的 tile/resident 编译期 key，main TU 不实例化 Winograd entry，workspace 未按 shape 计入 | 现有 248 B official POD 已提供 shape；缺口在 key、entry 与容量，不在 POD 字段 | R-006 | 保持 dormant；不猜测映射到 basic-block key | canonical 新闭包顶层模板与 Direct `RunSelectedOfficialConv3dBpf` 对照 |
 
 ### POD/ABI
 
-`Conv3dBpfProblem`：`sizeof=208`、`alignof=8`；前 25 个字段为连续 `int64_t`，最后两个 core 字段为 `uint32_t`。`Conv3dBpfLaunchTiling`：最终 Direct `official` 为 248 B，整个结构 `sizeof=304`、`alignof=8`。固定提交官方 POD 含额外 `stepM/stepN`，为旧 ABI；Direct 不接收它。
+`Conv3dBpfProblem`：`sizeof=208`、`alignof=8`；前 25 个字段为连续 `int64_t`，最后两个 core 字段为 `uint32_t`。`Conv3dBpfLaunchTiling`：最终 Direct `official` 为 248 B，整个结构 `sizeof=304`、`alignof=8`。固定提交官方 POD 含额外 `stepM/stepN`，为旧 ABI；Direct 不接收它。canonical 新闭包的 Winograd body 同样读取现有 248 B `TConv3DDwTiling` 中的 batch/channel/H/W/pad/hf32 字段；tile 组合与 resident 目标由 `WinoTilingFlag/WinoResidentFlag` 编译期模板参数决定，`transX/transDy/nk1c1k0c0/tailGm` offsets 由这些 shape 和模板量在 Device 推导。故 R-006 的不可达原因不是 304 B launch POD 缺少变换字段，也不要求扩展 POD。
 
 | 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
 |---|---|---|---|---|---|---|---|
@@ -333,25 +340,26 @@ attach BF16 nonfinite/cancellation pre/post nodes by their independent guards
 
 ### Route 源码闭包
 
-| 重要性 | Route | Key/selector | Host 顺序 | Host/Tiling producer | POD/参数 | Kernel entry/router | Kernel body/直接依赖 | 构建接线 |
-|---|---|---|---|---|---|---|---|---|
-| P0 | R-001 | `route=1,split,enlarge` | H1→H4 stream 分支→H6 | Direct `OfficialArch35Tiler`；官方映射 `DoStreamKTiling/GetTilingKey` | `Conv3dBpfLaunchTiling` + 248 B official POD | `conv3d_bpf_{half|bf16}_entry`→`RunSelectedOfficialConv3dBpf` | `Conv3dDwBasicBlockStreamK`→ConvBp helper | ascend950 binary config |
-| P1 | R-002 | `route=2,streamkType=0,split,enlarge` | H1 fallback→H4 MN 分支→H6 | `MultiCoreSplitMN/DoStreamKTiling` | 同上 | 同上，MN 分支 | `Conv3dDwBasicBlockMNStreamK::CalBasicBlock/CalSingleBasicBlock` | 同上 |
-| P2 | R-003 | `route=2,streamkType=1/2,split,enlarge` | H1→H4 MN 主轮与尾轮→H6 | 同上 | 同上 + user workspace | 同上，MN 分支 | 主轮 + `CalcStreamK/DeterministicReduceKInUb` | 同上 |
-| P3 | R-004 | 主 key + nonfinite flag | H2→H3a→H4→H5b→H6 | Direct correction guard | `Conv3dBpfProblem` + flag slice | clear/detect→main→fix→cast entries | SIMT detectors/fixer + 官方 main body | Direct 950 target + official ascend950 config |
-| P4 | R-005 | 主 key + cancellation flag | H2→H3b→H4→H5a→H6 | Direct correction guard | `Conv3dBpfProblem` + stats slice | clear/magnitude→main→refine→cast | SIMT AtomicMax/Kahan-like refine + 官方 main body | 同上 |
+| 重要性 | 可达性 | Route | Key/selector | Host 顺序 | Host/Tiling producer | POD/参数 | Kernel entry/router | Kernel body/直接依赖 | 构建接线 |
+|---|---|---|---|---|---|---|---|---|---|
+| P0 | active | R-001 | `route=1,split,enlarge` | H1→H4 stream 分支→H6 | Direct `OfficialArch35Tiler`；官方映射 `DoStreamKTiling/GetTilingKey` | `Conv3dBpfLaunchTiling` + 248 B official POD | `conv3d_bpf_{half|bf16}_entry`→`RunSelectedOfficialConv3dBpf` | `Conv3dDwBasicBlockStreamK`→ConvBp helper | ascend950 binary config |
+| P1 | active | R-002 | `route=2,streamkType=0,split,enlarge` | H1 fallback→H4 MN 分支→H6 | `MultiCoreSplitMN/DoStreamKTiling` | 同上 | 同上，MN 分支 | `CalBasicBlock/IterateAll`；enlarge 时 `LoadL0c2UbForGroup/Rearrange2Gm` | 同上 |
+| P2 | active | R-003 | `route=2,streamkType=1/2,split,enlarge` | H1→H4 MN 主轮与尾轮→H6 | 同上 | 同上 + user workspace | 同上，MN 分支 | 同 R-002 主轮 + `CalcStreamK/DeterministicReduceKInUb` | 同上 |
+| P3 | conditional | R-004 | 主 key + nonfinite flag | H2→H3a→H4→H5b→H6 | Direct correction guard | `Conv3dBpfProblem` + flag slice | clear/detect→main→fix→cast entries | SIMT detectors/fixer + 官方 main body | Direct 950 target + official ascend950 config |
+| P4 | conditional | R-005 | 主 key + cancellation flag | H2→H3b→H4→H5a→H6 | Direct correction guard | `Conv3dBpfProblem` + stats slice | clear/magnitude→main→refine→cast | SIMT AtomicMax/Kahan-like refine + 官方 main body | 同上 |
+| P5 | dormant | R-006 | canonical 新闭包有 tile/resident 模板组合，Direct 无 selector/key | 无 | 无 Direct producer | 复用现有 248 B official POD | 无 Direct entry/router | 随包 Winograd body 未被 main TU 引用 | 不进入 Direct target 的可达调用图；固定 `955f` 来源不承载该 Route |
 
 ## Kernel 实现
 
 ### 公共执行流程
 
-主 entry 使用 `KERNEL_TYPE_MIX_AIC_1_2`。AIV 先以 `Conv3dDwInitOutput<float>` 按最多 `blockDim` 核清零 FP32 输出，并经 AIV all-core flag→flag 9 通知 AIC；AIC 等待后进入官方模板。公共 Cube 链为 `grad GM→A1`、`x GM→B1(load3d/padding)`、`A1/B1→L0A/L0B→Mmad(float)→L0C`。非 Stream 主轮经 Fixpipe/atomic 写 `outputFloat`；Stream-K partial 先写 user workspace，由 AIV 从 GM 搬入 UB 做确定性归约并提交 FP32 输出。主 launch 完成后独立 AIV SIMT kernel cast 到对外 dtype。
+主 entry 使用 `KERNEL_TYPE_MIX_AIC_1_2`。AIV 先以 `Conv3dDwInitOutput<float>` 按最多 `blockDim` 核清零 FP32 输出，并经 AIV all-core flag→flag 9 通知 AIC；AIC 等待后进入官方模板。公共 Cube 链为 `grad GM→A1`、`x GM→B1(load3d/padding)`、`A1/B1→L0A/L0B→Mmad(float)→L0C`。非 Stream 主轮在 `group_enlarge=false` 时由 AIC Fixpipe/atomic 直接写 `outputFloat`；`group_enlarge=true` 时由 AIC Fixpipe 把 L0C 写到共享 UB，再经 mode-4 flags 5/6 交给 AIV `Rearrange2Gm(...,enAtomic=1)` 写 GM。Stream-K partial 先写 user workspace，由 AIV 从 GM 搬入 UB 做确定性归约并提交 FP32 输出。主 launch 完成后独立 AIV SIMT kernel cast 到对外 dtype。
 
 ### Route R-001：纯 Stream-K MIX_CV
 
 #### 适用条件
 
-重要性：P0。Host 顺序：H1 选择 `route=1`，H4 Device router 首分支执行 Stream-K specialization，BF16 条件扩展完成后由 H6 cast。若 Stream-K tail gate、切分维或 HWout L1 回调不成立，H1 短路到 R-002。
+重要性：P0；可达性：active。Host 顺序：H1 在 `totalCnt<AIC`、`0<tail<=AIC/2` 且所选切分有效时产生 `route=1,streamkType=1/2`，H4 Device router 首分支执行 Stream-K specialization，BF16 条件扩展完成后由 H6 cast。若 Stream-K tail gate、切分维或 HWout L1 回调不成立，H1 短路到 R-002。
 
 ##### 选择证据
 
@@ -461,7 +469,7 @@ UB_total = TOTAL_UB_SIZE
 
 #### 适用条件
 
-重要性：P1。Host 顺序：H1 将关闭、退化或无有效尾轮的 Stream-K 统一落到 `route=2,streamkType=0`；H4 进入 MN specialization，body 只执行主轮，随后 H6 cast。若 `MultiCoreSplitMN` 的完整降级链仍找不到安全 tile，则在 H0 返回 invalid，不启动 Kernel。
+重要性：P1；可达性：active。Host 顺序：H1 将关闭、退化或无有效尾轮的 Stream-K 统一落到 `route=2,streamkType=0`；H4 进入 MN specialization，body 只执行主轮，随后 H6 cast。若 `MultiCoreSplitMN` 的完整降级链仍找不到安全 tile，则在 H0 返回 invalid，不启动 Kernel。
 
 ##### 选择证据
 
@@ -482,6 +490,9 @@ main entry -> InitOutput<float>
  -> CalcOffset/ReCalDkCinSingleCoreShape
  -> dw.SetSingleShape/SetFmap/SetOutBackprop
  -> dw.IterateAll(outputFloat, atomic=1)
+    enlarge=false: AIC GetTensorC -> LoadL0c2Gm* -> outputFloat
+    enlarge=true : AIV flag5 -> AIC LoadL0c2UbForGroup -> flag6
+                   -> AIV Rearrange2Gm(outputFloat,enAtomic=1)
  -> AIV SIMT cast
 ```
 
@@ -494,7 +505,14 @@ repeat ceil(totalCnt/AIC):
   for BatchDout segments and Ho segments:
     derive A/B/C offsets; trim M/N/channel tails; skip padded D
     GM->L1->L0; FP32 Mmad
-    Fixpipe/atomic add FP32 tile into outputFloat
+    if group_enlarge == false:
+      AIC Fixpipe/atomic add FP32 tile directly into outputFloat
+    else:
+      AIV set mode4 flag5 (UB ready); AIC wait flag5
+      AIC Fixpipe L0C(NZ) -> vecOutBuf source region; set mode4 flag6
+      AIV subblock0 wait flag6
+      AIV rearrange source -> tail-trimmed destination region
+      AIV Rearrange2Gm(outputFloat,enAtomic=1)
   basicBlock += AIC
 cast full outputFloat to T
 ```
@@ -507,15 +525,19 @@ cast full outputFloat to T
 |---|---|---|---|---|---|---|---|
 | GM/L1/L0A/B/C | 同 R-001 | 同 R-001 | 同 R-001 | 同 R-001 | 同 R-001 | kernel | 不分配 Stream-K partial |
 | Stream-K user workspace | N/A | 0 B | N/A | N/A | N/A | N/A | 仅保留 16 MiB system prefix |
-| GM outputFloat | filter C offset | `output_elements*4` | FP32/ND | Fixpipe + atomic | cast | Tensor | 先清零；多 segment 累加 |
-| UB | 整块 `vecBuf_` | `TOTAL_UB_SIZE` | FP32/重排 | group enlarge AIV 路径 | GM output | kernel | 非 enlarge 普通主轮 AIV 计算可跳过 |
+| GM outputFloat | filter C offset | `output_elements*4` | FP32/ND | non-enlarge：AIC Fixpipe/atomic；enlarge：AIV `Rearrange2Gm` atomic | cast | Tensor | 先清零；多 segment 累加 |
+| UB source | `vecOutBuf_[0]` | 至多 `blockBaseN*blockBaseM*4` B | FP32/NZ | AIC `LoadL0c2UbForGroup` | AIV rearrange | `vecBuf_`，当前 Iterate | mode-4 flag6 前不可读；下一 flag5 前不可覆写 |
+| UB rearranged destination | `vecOutBuf_[baseUseN*ceil(baseUseM/16)*16]` | Host 预留至多 `useBaseN*blockBaseM*4` B | FP32/group-filter ND staging | AIV scatter/gather | AIV MTE3→GM | `vecBuf_`，当前 Iterate | M/N/Cin/Cout/Kd/HkWk tail 后仅搬有效区 |
+| UB index scratch | `TOTAL_UB_SIZE-VECTOR_REG_WIDTH` | `VECTOR_REG_WIDTH` B | int32 indices | AIV | AIV scatter/gather | `vecBuf_`，当前 Iterate | 不与 source/destination 区重叠 |
 
 ##### 分层内存布局
 
 ```mermaid
 flowchart LR
   G["GM grad/x"] --> L1["L1 A/B"] --> L0["L0A/L0B -> Mmad -> L0C"]
-  L0 --> F["Fixpipe FP32 atomic"] --> O32["GM outputFloat"]
+  L0 --> F["enlarge=false: AIC Fixpipe atomic"] --> O32["GM outputFloat"]
+  L0 --> U0["enlarge=true: AIC Fixpipe -> UB NZ"]
+  U0 --> U1["AIV group rearrange"] --> A["AIV atomic MTE3"] --> O32
   O32 --> V["AIV SIMT cast"] --> O["GM output"]
 ```
 
@@ -523,13 +545,18 @@ flowchart LR
 
 ```text
 workspace_total = 16 MiB + optional correction 32 B
-L1/L0/UB = 与 R-001 相同的当前 specialization 容量
+group_enlarge UB guard:
+  (blockBaseN + useBaseN)*blockBaseM*4 + VECTOR_REG_WIDTH <= UB_bytes
+non-enlarge does not consume the group source/destination/index layout
 ```
 
 | 边/复用子区 | producer | offset/extent | dtype/layout | consumer | ordering/sync | owner/lifetime | 安全条件 |
 |---|---|---|---|---|---|---|---|
-| init→Cube | AIV InitOutput | entire FP32 output | FP32 ND | AIC atomic writer | flag 9 | outputFloat Tensor | 所有 AIC 等待清零完成 |
-| segment accumulation | each L0C | valid M×N tile | FP32 | outputFloat | Fixpipe atomic | output Tensor | padding/empty segment skip |
+| init→Cube | AIV InitOutput | entire FP32 output | FP32 ND | AIC/AIV main writer | flag 9 | outputFloat Tensor | 所有 AIC 等待清零完成 |
+| non-enlarge accumulation | each L0C | valid M×N tile | FP32 | outputFloat | AIC Fixpipe atomic | output Tensor | padding/empty segment skip |
+| enlarge UB ready | previous AIV Iterate | whole group staging layout | FP32 | next AIC Fixpipe | AIV→AIC mode-4 flag5：AIV `PIPE_MTE3` set，AIC `PIPE_FIX` wait | `vecBuf_` | 首轮也由 AIV 先发 flag5；防止 AIC 覆写仍被消费的 UB |
+| enlarge UB full | AIC `LoadL0c2UbForGroup` | source region | FP32/NZ | AIV subblock0 | AIC→AIV mode-4 flag6：AIC `PIPE_FIX` set，AIV `PIPE_V` wait | `vecBuf_` | Fixpipe 完成后才开始 scatter/gather；subblock1 return |
+| enlarge accumulation | AIV `Rearrange2Gm` | tail-trimmed destination region | FP32/ND staging | outputFloat | `enAtomic=1`，MTE3 atomic add | output Tensor | `baseUseM/baseUseN` 与 per-group channel extent裁尾；函数退出恢复 atomic none |
 | outputFloat→cast | main MIX | full extent | FP32 ND | cast VF | same stream | two tensors | main completes first |
 
 #### 同步、精度与尾块
@@ -540,8 +567,9 @@ L1/L0/UB = 与 R-001 相同的当前 specialization 容量
 |---|---|---|---|---|---|
 | Init | flag 9 | AIV | AIC | outputFloat | clear tail |
 | L1/L0 | pipe events | MTE | Mmad/Fixpipe | ping-pong tile | base/tail shape |
-| GM accumulate | Fixpipe atomic | L0C | outputFloat | overlapping BatchDout/Ho segments | FP32；输出初值 0 |
-| group tail | `ReCalSingleShapeWithGroup` | scheduler | Compute | last real group | trim Cin/Cout；空 tile return |
+| non-enlarge GM accumulate | Fixpipe atomic | L0C | outputFloat | overlapping BatchDout/Ho segments | FP32；输出初值 0 |
+| enlarge Cube→Vector | mode-4 flags 5/6 | AIV ready→AIC Fixpipe→AIV wait | shared UB | one handshake per `Iterate` | L0C FP32 NZ→UB；AIV 负责布局恢复和 atomic GM |
+| group/MN tail | `ReCalSingleShapeWithGroup` + `baseUseM/baseUseN` | scheduler/AIV rearrange | Compute/MTE3 | last real group and last M/N tile | trim Cin/Cout/M/N；空 tile return；guard 失败在 Host 改 `group_enlarge=false` |
 
 #### 关键实现
 
@@ -551,13 +579,13 @@ L1/L0/UB = 与 R-001 相同的当前 specialization 容量
 |---|---|---|---|
 | Host/Tiling producer | basic-block/stream-k Host files | `MultiCoreSplitMN/DoStreamKTiling` | MN route与资源降级 |
 | Kernel entry/router | arch35 router | `TPL_MN_STREAM_K` | MN specialization |
-| Device body/helper | basic-block header + store helper | `CalSingleBasicBlock/LoadL0c2Gm*` | block map、atomic FP32 输出、tail |
+| Device body/helper | basic-block header + store/helper | `CalSingleBasicBlock/IterateAll/LoadL0c2UbForGroup/Rearrange2Gm` | non-enlarge direct GM；enlarge mode-4 交接、UB 重排、atomic GM 与 tail |
 
 ### Route R-003：MN 主轮加尾轮 Stream-K
 
 #### 适用条件
 
-重要性：P2。Host 顺序：H1 产生 `route=2,streamkType=1/2`；H4 先执行 MN 完整轮，再由同一 body 读取非零 `streamkType` 执行尾轮，随后 H6 cast。尾轮选择失效时 H1 短路到 R-002，不保留半配置的 R-003。
+重要性：P2；可达性：active。Host 顺序：H1 在 `totalCnt>=AIC`、`0<tail<=AIC/2` 且所选切分有效时产生 `route=2,streamkType=1/2`；H4 先执行 MN 完整轮，再由同一 body 读取非零 `streamkType` 执行尾轮，随后 H6 cast。尾轮选择失效时 H1 短路到 R-002，不保留半配置的 R-003。
 
 ##### 选择证据
 
@@ -573,7 +601,9 @@ L1/L0/UB = 与 R-001 相同的当前 specialization 容量
 
 ```text
 MN Process -> CalBasicBlock
- -> calRound times CalSingleBasicBlock -> outputFloat
+ -> calRound times CalSingleBasicBlock
+    enlarge=false: AIC Fixpipe/atomic -> outputFloat
+    enlarge=true : AIC L0C->UB --mode4 flags5/6--> AIV rearrange/atomic -> outputFloat
  -> CalcStreamK(basicBlockIdx)
     -> AIC workspace partial <-> AIV deterministic reduce -> outputFloat
  -> cast
@@ -582,11 +612,15 @@ MN Process -> CalBasicBlock
 ##### 源码等价伪码
 
 ```text
-run floor(totalCnt/AIC) full MN rounds exactly as R-002
+run floor(totalCnt/AIC) full MN rounds exactly as R-002:
+  group_enlarge=false uses AIC direct-GM Fixpipe/atomic
+  group_enlarge=true uses AIV flag5 -> AIC L0C-to-UB -> flag6
+  -> AIV Rearrange2Gm(outputFloat,enAtomic=1)
 if streamkType!=0:
   distribute only final tail basic blocks across K or BatchDout
   use the R-001 AIC/AIV handshake and workspace
-  deterministically add tail partials into the same outputFloat tile
+  deterministically add tail partials into the same outputFloat tile;
+  when group_enlarge=true, tail reduce also performs group-aware UB rearrange before atomic GM
 cast once after both phases
 ```
 
@@ -596,15 +630,17 @@ cast once after both phases
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| Cube hierarchy | R-002 then R-001 | same specialization | T/FP32 | main and tail AIC | Fixpipe/AIV | one MIX launch | sequential phase reuse |
+| Cube hierarchy | R-002 then R-001 | same specialization | T/FP32 | main and tail AIC/AIV | Fixpipe/AIV | one MIX launch | sequential phase reuse |
+| main group UB | 与 R-002 相同的 source/destination/index layout | Host group-enlarge UB guard | FP32 NZ→ND staging | main AIC | main AIV | `vecBuf_`，仅主轮当前 Iterate | flags 5/6 控制复用；主轮结束后才进入 tail |
 | user workspace | after 16 MiB | `2*AIC*L0C_bytes` | FP32 | tail AIC | tail AIV | workspace Tensor | 主轮不占该 slice |
-| outputFloat | full logical output | `output_elements*4` | FP32 | main atomic + tail reduce | cast | Tensor | clear once before both phases |
+| outputFloat | full logical output | `output_elements*4` | FP32 | main direct-GM 或 group AIV atomic + tail reduce | cast | Tensor | clear once before both phases |
 
 ##### 分层内存布局
 
 ```mermaid
 flowchart LR
-  C["AIC main MN"] --> O["GM outputFloat"]
+  C["main MN Cube"] --> D["enlarge=false: AIC direct GM"] --> O["GM outputFloat"]
+  C --> U["enlarge=true: AIC UB -> AIV rearrange"] --> O
   T["AIC tail Stream-K"] --> W["GM partial workspace"] --> V["AIV deterministic reduce"] --> O
   O --> X["AIV cast"]
 ```
@@ -618,8 +654,9 @@ local memory = same L1/L0/UB allocation reused first by main, then tail
 
 | 边/复用子区 | producer | offset/extent | dtype/layout | consumer | ordering/sync | owner/lifetime | 安全条件 |
 |---|---|---|---|---|---|---|---|
-| main→tail phase | `CalSingleBasicBlock` | outputFloat | FP32 ND | tail reduce | same program order | MIX launch | `CalBasicBlock` loops finish first |
-| tail partial→output | AIC/AIV | per-core workspace | FP32/NZ→ND | outputFloat | cross-core flags | workspace/output | R-001 protocol |
+| main enlarge handoff | main AIC/AIV | group UB layout | FP32/NZ→ND | outputFloat | 每 Iterate 使用 mode-4 flag5 AIV→AIC、flag6 AIC→AIV | UB/output | 最后一次 AIV `Rearrange2Gm` 返回后主轮才完成 |
+| main→tail phase | `CalSingleBasicBlock` | outputFloat + released main UB | FP32 ND | tail reduce | same program order | MIX launch | `CalBasicBlock` 全部循环以及相应 AIV post-process 完成后才调用 `CalcStreamK` |
+| tail partial→output | AIC/AIV | per-core workspace | FP32/NZ→ND | outputFloat | Stream-K flags 2/4/6/8 | workspace/output | R-001 protocol；与主轮 mode-4 flag6 分属不同相位 |
 
 #### 同步、精度与尾块
 
@@ -627,9 +664,10 @@ local memory = same L1/L0/UB allocation reused first by main, then tail
 
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
-| 主轮 | pipe/atomic | AIC | outputFloat | full rounds | FP32 |
+| 主轮 non-enlarge | pipe/Fixpipe atomic | AIC | outputFloat | full rounds | FP32；M/N/group/channel tail由 store 参数裁剪 |
+| 主轮 enlarge | mode-4 flags 5/6 + AIV atomic MTE3 | AIC L0C→UB | AIV `Rearrange2Gm`→outputFloat | shared UB/full rounds | FP32；`baseUseM/baseUseN` 与 per-group extent裁尾；Host guard 失败改 non-enlarge |
 | phase order | control flow | `CalBasicBlock` main loop | `CalcStreamK` | local buffers/output | tail only |
-| 尾轮 | flags 2/4/6/8 | AIC/AIV | reciprocal waits | workspace partial | deterministic FP32 reduction |
+| 尾轮 | flags 2/4/6/8 | AIC/AIV | reciprocal waits | workspace partial | deterministic FP32 reduction；group-enlarge specialization保持 group-aware 输出重排 |
 
 #### 关键实现
 
@@ -639,13 +677,13 @@ local memory = same L1/L0/UB allocation reused first by main, then tail
 |---|---|---|---|
 | Host/Tiling producer | stream-k Host file | `DoStreamKTiling/GetWorkspaceSize` | tail gate与workspace |
 | Kernel entry/router | arch35 router | `TPL_MN_STREAM_K` | 同一模板容纳主轮和尾轮 |
-| Device body/helper | basic-block header | `CalBasicBlock/CalcStreamK` | phase order与交接 |
+| Device body/helper | basic-block/header/store helper | `CalBasicBlock/IterateAll/LoadL0c2UbForGroup/Rearrange2Gm/CalcStreamK` | 主轮两种 store 分支、mode-4 交接、phase order 与 tail |
 
 ### Route R-004：BF16 nonfinite 修正扩展
 
 #### 适用条件
 
-重要性：P3。Host 顺序：H2 在主 Route 确定后生成 flag；H3a 先于 R-005 的前置判断执行 clear/detect；H4 执行原主 Route；H5b 在 R-005 refine 之后执行 fix；H6 cast。guard 为假时只省略本扩展，不改变主 Route，也不阻止 R-005。
+重要性：P3；可达性：conditional。Host 顺序：H2 在 BF16、`Cin%16!=0 || Cout%16!=0`、至少一个 pad 非零且 `streamkType==2` 时生成 flag；H3a 先于 R-005 的前置判断执行 clear/detect；H4 执行原主 Route；H5b 在 R-005 refine 之后执行 fix；H6 cast。guard 为假时只省略本扩展，不改变主 Route，也不阻止 R-005。
 
 ##### 选择证据
 
@@ -661,7 +699,9 @@ local memory = same L1/L0/UB allocation reused first by main, then tail
 
 ```text
 clear_nonfinite_flag -> DetectNonfiniteBf16Vf
+ -> if R-005 also selected: clear_same_slice -> DetectMagnitudeBf16Vf
  -> R-001/R-003 main FP32 graph
+ -> if R-005 selected: RefineCancellationBf16Vf
  -> FixNonfiniteBf16Vf
  -> cast_bf16
 ```
@@ -671,8 +711,11 @@ clear_nonfinite_flag -> DetectNonfiniteBf16Vf
 ```text
 flag[0:2]=0
 parallel scan concat(x,grad): if bf16 exponent==0xff then flag=1
+if cancellation route is also selected:
+  clear the same flag/stats slice
+  stats={maxFiniteMagnitude(x),maxFiniteMagnitude(grad)}
 run official Cube path
-if flag:
+if word0_of_shared_slice != 0:
   per output cell classify padded zero*special, NaN, +/-Inf products
   write exact FP32 NaN/+Inf/-Inf;
   if official output is nonfinite but exact classification finite, scalar FP32 recompute
@@ -710,8 +753,9 @@ threadsPerBlock = 1024; blocks = aiv_cores
 
 | 边/复用子区 | producer | offset/extent | dtype/layout | consumer | ordering/sync | owner/lifetime | 安全条件 |
 |---|---|---|---|---|---|---|---|
-| detect→fix | detect kernel | flag offset/4 B active | uint32 | fix kernel | same stream，跨 main 保留 | workspace | cancellation detector不得覆写 |
-| Cube→fix | main | full outputFloat | FP32 | fix | same stream | outputFloat | flag nonzero才遍历重算 |
+| detect→fix | detect kernel | flag offset/4 B active | uint32 | fix kernel | same stream，跨 main 保留 | workspace | 仅 R-004 命中时 flag 保留；若 R-005 同时命中则被 stats 覆写 |
+| overlap gate | magnitude detector | stats[0] | finite x 最大幅值 bits | nonfinite fixer | same stream | shared slice | 两 Route 同时命中时 fixer 实际以 `stats[0]!=0` 为门；没有独立 nonfinite flag fallback |
+| Cube→fix | main | full outputFloat | FP32 | fix | same stream | outputFloat | 门值非零才遍历重算 |
 
 #### 同步、精度与尾块
 
@@ -720,6 +764,7 @@ threadsPerBlock = 1024; blocks = aiv_cores
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
 | detection | volatile GM flag，非原子同值写 1 | SIMT threads | fixer | global predicate | early return allowed；chunk tail |
+| shared-slice overlap | second clear + magnitude AtomicMax | R-005 pre-node | R-004 fixer gate | flag/stats word0 | 若 finite x 最大幅值为 0，R-004 即使早先发现 special 也会被跳过；当前无旁路 |
 | special fix | same stream | main FP32 | fixer | output cell | bf16 bit exact classification；finite fallback FP32 scalar sum |
 | thread map | block chunk + thread grid-stride | Host `aiv_cores` | VF | concatenated input/output | `begin>=total` return |
 
@@ -737,7 +782,7 @@ threadsPerBlock = 1024; blocks = aiv_cores
 
 #### 适用条件
 
-重要性：P4。Host 顺序：H2 在 R-004 predicate 与 official POD 写入之后生成 flag；H3b 在 R-004 前置节点之后执行 clear/detect；H4 执行原主 Route；H5a 先于 R-004 fix 执行 refine；H6 cast。guard 为假时只省略本扩展，不改变主 Route，也不阻止 R-004。
+重要性：P4；可达性：conditional。Host 顺序：H2 在 BF16、`groups==1`、`N*Dout*Ho*Wo>=65536`、`output_elements>=2097152` 且 `streamkType!=0` 时生成 flag；H3b 在 R-004 前置节点之后执行 clear/detect；H4 执行原主 Route；H5a 先于 R-004 fix 执行 refine；H6 cast。guard 为假时只省略本扩展，不改变主 Route，也不阻止 R-004。
 
 ##### 选择证据
 
@@ -828,6 +873,39 @@ dynamic UB = 0; threadsPerBlock = 1024; blocks = aiv_cores
 | Kernel entry/router | Direct main TU | magnitude/refine entries | 同 stream 节点图 |
 | Device body/helper | Direct main TU | `DetectMagnitudeBf16Vf/RefineCancellationBf16Vf` | AtomicMax 阈值与补偿求和 |
 
+### Route R-006：Winograd（dormant）
+
+重要性：P5；可达性：dormant。该 Route 只作为“源码存在但当前 Direct 不可达”的边界记录，不计入 active/conditional 主图。
+
+不可达原因：canonical 随包较新闭包的 `conv3d_backprop_filter_v2_arch35` 顶层按 `WinoTilingFlag/WinoResidentFlag` 编译期模板量选择 `Conv2dDwWinograd`；但 Direct main TU 绕过该顶层，只显式实例化 `route × split_kernel_hw × group_enlarge` 的 8 组 basic-block 模板。Direct Host tiler 不生成 Winograd selector/key，launcher 没有 Winograd entry 实例，workspace 也只覆盖 system prefix、Stream-K 双片与 BF16 共享 slice。Winograd body 本可复用同一 248 B official POD，并从 shape 推导各 workspace offset；缺少的不是 POD 字段，而是 selector/key、entry 实例化和 workspace sizing。
+
+来源边界：固定 HTTP sources 全部落在 commit `955f8b33985b6d72989ebff341bb9c2c564a51bc`，该提交的 tiling-key/router 不含 Winograd。下面只记录 canonical 转换载荷中较新随包闭包的 Direct 可达性事实，不把任何固定 HTTP source 归因为 Winograd 依据。
+
+```text
+canonical newer bundled top-level capability:
+  if constexpr (WinoTilingFlag != DISABLE):
+    Conv2dDwWinograd<T,float,WinoTilingFlag,WinoResidentFlag>(official248)
+  else: basic-block / large-kernel route
+
+  transX = userWorkspace
+  transDy = transX + N*ceil(Cin/C0)*Hi*Wi*C0
+  nk1c1k0c0 = transDy + N*ceil(Cout/C0)*Ho*Wo*C0
+  tailGm = nk1c1k0c0 + shape(compile_time_tile,resident,input_shape)
+
+current Direct reachable router:
+  if route == STREAM_K: BasicBlockStreamK<T,split,enlarge>
+  else:                 BasicBlockMNStreamK<T,split,enlarge>
+  # no winograd selector/key, entry instance, or workspace sizing branch
+```
+
+重新启用必须同时满足以下接线条件，不能只添加一个模板调用：
+
+- Host 为 canonical 新闭包的 Winograd body补齐 eligibility、tile/resident key 与失败回落规则；任一 shape、资源或格式 guard 不成立时在 launch 前回落 R-001/R-002/R-003，而不是进入半配置分支。若要把该选择称为官方映射，必须另补真正包含 Winograd 的固定 HTTP 源。
+- 保持现有 248 B official POD 与 304 B Direct launch ABI；tile/resident 继续作为编译期实例参数，workspace offsets 继续由 POD shape 和模板量推导，不新增伪字段。
+- workspace sizing 覆盖 x/dy 的 NC1HWC0 `transX/transDy`、`nk1c1k0c0`、Cube/逆变换 tail 区；Host 总字节账须与 Device 上述 shape-derived offset 的最后一个 extent 一致，且不得覆盖 16 MiB system prefix 或 BF16 slice。
+- launcher 实例化 `Conv2dDwWinograd<T,float,WinoTilingFlag,WinoResidentFlag>` 所在 entry 及匹配 task type，补齐 Cube 变换乘法与 Vector 转置/逆变换之间的同步；核数、block/subblock 映射沿用该实例的编译期配置与现有 shape POD。
+- Device 闭合 GM↔UB/L1/L0 的变换数据流、`N/K/C0` 尾块、3×3 filter 输出裁剪与 FP32 累加/最终 cast；BF16 sidecar 是否允许叠加必须重新推导共享 slice 与节点顺序。
+
 ## 算子特定优化
 
 ### Trick T-001：尾轮 Stream-K 按 BatchDout/HWout 自适应切分
@@ -836,7 +914,7 @@ dynamic UB = 0; threadsPerBlock = 1024; blocks = aiv_cores
 
 - 适用 Route：R-001、R-003
 - 触发条件：`0<totalCnt%AIC<=AIC/2`，且选定切分维度大于 1、L1 重校验通过。
-- Golden 来源：[`conv3d_backprop_filter_v2_stream_k_tiling.cpp:337-377`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_stream_k_tiling.cpp)
+- 固定官方源码依据：[`conv3d_backprop_filter_v2_stream_k_tiling.cpp:337-377`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_stream_k_tiling.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -860,7 +938,7 @@ if (streamkCnt == CONST_ZERO) {
 - 适用：NCDHW、FP16/BF16→FP32、尾块不超过半核、可提供双片 workspace 的 950 Cube 算子。
 - 前提：完整 cross-core flag 协议、每核 L0C-sized workspace、K 切分保持整 Wo 行。
 - 失效：无尾块、尾块超过半核、切分维度为 1 或 HWout 改写后 L1 无效，必须回退 R-002。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：该机制的运行时等价性、时延与吞吐不由源码关系单独推出。
 
 #### 错误做法
 
@@ -872,7 +950,7 @@ if (streamkCnt == CONST_ZERO) {
 
 - 适用 Route：R-001、R-002、R-003 的全部 `split/enlarge` specialization。
 - 触发条件：初始 A1/B1 depth=16、DB=2 时 `AL1_bytes+BL1_bytes>L1`。
-- Golden 来源：[`conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp:491-524`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp)
+- 固定官方源码依据：[`conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp:491-524`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -895,7 +973,7 @@ tiler 先保吞吐所需的双缓冲并同步降低 A/B depth；接近深度 2 �
 - 适用：L1 A/B 共存且 Host 可精确计算物理 load bound 的 Cube 路线。
 - 前提：Device `InitBuffer` 与 Host 的 half-L1 ping/pong布局一致。
 - 失效：最小 16×16×16 与 split kernel+W 仍越界时只能 tiling 失败。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：该机制的运行时等价性、时延与吞吐不由源码关系单独推出。
 
 #### 错误做法
 
@@ -907,7 +985,7 @@ tiler 先保吞吐所需的双缓冲并同步降低 A/B depth；接近深度 2 �
 
 - 适用 Route：所有 `group_enlarge=1` specialization。
 - 触发条件：`groups>1`、LCM 得到 `mag_factor>1`，且合并后的 L0C、UB、basic-block≤256 与 L1 均通过。
-- Golden 来源：[`conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp:167-221`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp)
+- 固定官方源码依据：[`conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp:167-221`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_host/op_tiling/arch35/conv3d_backprop_filter_v2_basic_block_tiling_arch35.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -923,14 +1001,14 @@ if (exceedUbSize || exceedBasicBlock || IsCurBlockL1Invalid(blockTilingTmp)) {
 
 #### 机制与设计原因
 
-LCM 合并若干小 group，使合并后的 Cin/Cout 同时对齐 C0=16；Device 以 `realGroup` 调度，末 real group 再裁 Cin/Cout，并在需要时由 AIV 做 L0C→UB→GM 重排。该优化同时改变模板布尔值、M/N、offset 与 Vector 参与度，因此不能只修改 `realGroup`。
+LCM 合并若干小 group，使合并后的 Cin/Cout 同时对齐 C0=16；Device 以 `realGroup` 调度，末 real group 再裁 Cin/Cout。主轮由 AIC 把 L0C Fixpipe 到 UB source 区，经 mode-4 flags 5/6 交给 AIV subblock0；AIV 在 UB destination 区恢复 group layout，并以 `Rearrange2Gm(...,enAtomic=1)` 累加到 GM。该优化同时改变模板布尔值、M/N、offset、UB 双区布局与 Vector 参与度，因此不能只修改 `realGroup`。
 
 #### 迁移边界
 
 - 适用：grouped filter-gradient，合并后 basic block 可全载。
 - 前提：FP32 L0C、完整 UB 重排空间、输出 group layout 与 tail 裁剪一致。
 - 失效：任一 L0C/UB/L1/256 guard 失败时使用 `group_enlarge=0`。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：该机制的运行时等价性、时延与吞吐不由源码关系单独推出。
 
 #### 错误做法
 
@@ -942,7 +1020,7 @@ LCM 合并若干小 group，使合并后的 Cin/Cout 同时对齐 C0=16；Device
 
 - 适用 Route：全部 Direct 主 Route。
 - 触发条件：绕过 registry executor，直接 `<<<aic_cores,stream>>>` 启动 arch35 entry。
-- Golden 来源：[`conv3d_backprop_filter_v2_arch35.h:31-60`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2_arch35.h)
+- 固定官方源码依据：[`conv3d_backprop_filter_v2_arch35.h:31-60`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv3d_backprop_filter_v2/op_kernel/arch35/conv3d_backprop_filter_v2_arch35.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -963,7 +1041,7 @@ if (user1 == nullptr) {
 - 适用：能够保证 950 system prefix、POD ABI 和 MIX task type 的 raw launch。
 - 前提：workspace 非空、user offset 恰为 16 MiB、task type 为 MIX AIC 1:2、Host 与 Device 使用同一 248 B official POD。
 - 失效：旧固定提交的 256 B POD（含 `stepM/stepN`）、其它平台 system workspace 约定或 registry launch 不得直接套用。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：该机制的运行时等价性、时延与吞吐不由源码关系单独推出。
 
 #### 错误做法
 
@@ -971,16 +1049,16 @@ if (user1 == nullptr) {
 
 ## 模板与实现对比
 
-| 对比维度 | P0/R-001 纯 Stream-K | P1/R-002 MN/no-Stream | P2/R-003 MN+尾 Stream-K | P3/R-004 BF16 nonfinite | P4/R-005 BF16 cancellation | 设计选择依据 |
+| 对比维度 | P0/R-001 纯 Stream-K | P1/R-002 MN/no-Stream | P2/R-003 MN+尾 Stream-K | P3/R-004 BF16 nonfinite | P4/R-005 BF16 cancellation | P5/R-006 Winograd |
 |---|---|---|---|---|---|---|
-| 命中条件/重要性 | `totalCnt<AIC` 且小尾块；首要完整执行族 | 无/大尾块或回退；安全主落点 | `totalCnt>=AIC` 且小尾块；复合调度 | channel tail+padding+HWout Stream-K；特殊值扩展 | groups=1+大归约/输出+Stream-K；低幅重算扩展 | 重要性不覆盖源码 selector |
-| Host 顺序 | H1→H4 stream→H6 | H1 fallback→H4 MN no-tail→H6 | H1→H4 MN main+tail→H6 | H2→H3a→H4→H5b→H6 | H2→H3b→H4→H5a→H6 | 前置时 R-004 先于 R-005；后置时 R-005 先于 R-004 |
-| 执行族/节点图 | MIX_CV→AIV cast | MIX_CV→AIV cast | MIX_CV main+tail→AIV cast | 增加 AIV SIMT detect/fix | 增加 AIV SIMT magnitude/refine | Cube 始终可达，CV Skill 准入成立 |
-| M/N/K、tile 与 scheduler | 全部核服务一个或少量 tail basic block | MN grid-stride 完整轮 | MN 完整轮+尾轮切 K | 主 tile 不变，逐输出特殊值修正 | 主 tile 不变，逐输出条件补偿 | 保持官方 Cube specialization |
-| workspace/L1/L0/UB | 16 MiB+双片；完整 hierarchy | 仅 16 MiB；完整 hierarchy | 16 MiB+双片；完整 hierarchy | 再加共享 32 B；SIMT 无动态 UB | 再加共享 32 B；SIMT 无动态 UB | `streamkType` 决定 user workspace；两扩展复用末尾 slice |
-| AIC/AIV 或 kernel 交接 | flags 2/4/6/8 | init flag9；group route 可用 AIV | init+tail flags | same-stream GM flag/output | same-stream GM stats/output | launch 内显式 flag，launch 间同 stream |
-| 同步、精度与 tail | deterministic FP32 reduce | FP32 atomic segments | 主 FP32+deterministic tail | bit-exact special classification/fix | compensated FP32 refine | 最后统一 cast T |
-| fallback/失败边界 | Stream-K 失效→R-002 | 最小 tile 仍失败→拒绝 | tail 策略失效→R-002 | guard false 省略；不替换主 Route | guard false 省略；不替换主 Route | 两扩展共享 slice 有重叠边界；无 ACLNN/其它算子 fallback |
+| 可达性/命中 | active；`totalCnt<AIC` 且小尾块 | active；无/大尾块或回落 | active；`totalCnt>=AIC` 且小尾块 | conditional；channel tail+padding+HWout Stream-K | conditional；groups=1+大归约/输出+Stream-K | dormant；无 Direct 命中谓词 |
+| Host 顺序 | H1→H4 stream→H6 | H1 fallback→H4 MN no-tail→H6 | H1→H4 MN main+tail→H6 | H2→H3a→H4→H5b→H6 | H2→H3b→H4→H5a→H6 | 无；H0 前即不可选 |
+| 执行族/节点图 | MIX_CV→AIV cast | MIX_CV→AIV cast | MIX_CV main+tail→AIV cast | 增加 AIV SIMT detect/fix | 增加 AIV SIMT magnitude/refine | 随包 body 无 Direct entry |
+| M/N/K、tile 与 scheduler | 全部核服务一个或少量 tail basic block | MN grid-stride 完整轮；enlarge 分支增加 AIC→UB→AIV 重排 | MN 完整轮沿用同一 enlarge 分支，再做尾轮切 K | 主 tile 不变，逐输出特殊值修正 | 主 tile 不变，逐输出条件补偿 | Winograd tile 是 canonical 新闭包的编译期模板量，不是 POD 字段 |
+| workspace/L1/L0/UB | 16 MiB+双片；完整 hierarchy | 仅 16 MiB；完整 hierarchy | 16 MiB+双片；完整 hierarchy | 再加共享 32 B；SIMT 无动态 UB | 再加共享 32 B；SIMT 无动态 UB | 变换 workspace 未计入 Direct 字节账 |
+| AIC/AIV 或 kernel 交接 | flags 2/4/6/8 | init flag9；enlarge 使用 mode-4 flags 5/6 | init；主轮 enlarge flags 5/6；尾轮 flags 2/4/6/8 | same-stream GM flag/output | same-stream GM stats/output | Direct 未实例化 canonical 新闭包 entry |
+| 同步、精度与 tail | deterministic FP32 reduce | non-enlarge AIC atomic；enlarge AIV atomic 与 group tail | 主轮同左+deterministic tail | bit-exact special classification/fix | compensated FP32 refine | 重启前闭合转置/变换/逆变换尾块；workspace offsets 按 shape 推导 |
+| fallback/失败边界 | Stream-K 失效→R-002 | 最小 tile 仍失败→拒绝 | tail 策略失效→R-002 | guard false 省略；不替换主 Route | guard false 省略；不替换主 Route | 保持 dormant；重启后任一 guard 失败须回落 active 主 Route |
 
 ## 平台差异
 
@@ -996,10 +1074,11 @@ if (user1 == nullptr) {
 - `Conv3dBpfLaunchTiling` 的 248 B official POD 与固定提交的旧 256 B POD 不兼容；字段名相同也不能混传。
 - Direct `workspace==nullptr`、`userWorkspace==nullptr` 会让 Device 直接返回；Host 正常路径分配至少 16 MiB，外部 raw caller 必须自行满足。
 - 最小 tile/split-kernel-W 仍不能满足 L1 时 tiler 返回 invalid；没有 ACLNN、CPU 或其它算子 fallback。
-- 两个 BF16 策略复用同一个 32 B slice。源码按 nonfinite detect→magnitude detect→main→cancellation refine→nonfinite fix 排序，却没有证明两个 guard 互斥；外部扩展 shape 域前必须补互斥或分离 slice。
+- 两个 BF16 策略复用同一个 32 B slice。源码按 nonfinite detect→再次清零→magnitude detect→main→cancellation refine→nonfinite fix 排序；同时命中时原 nonfinite flag 被 stats 覆写，fixer 以 `stats[0]!=0` 为门。若 finite x 最大幅值为 0，先前发现的 special 仍可能被跳过，当前没有 fallback；扩大 shape 域前必须证明 guard 互斥、分离 slice，或保留独立 OR flag。
+- Winograd 仅在 canonical 较新随包闭包中可见；固定 `955f` key/router 不含该分支。Direct 缺 selector/key、entry 实例和 workspace sizing，但不缺新的 POD 字段；不得用现有 HTTP sources 或 8 个 basic-block key 推出该 Route 已启用。
 - SIMT detect 对 flag 的多线程写是同值 1 的 volatile store，不是原子 OR；其正确性依赖只需“是否存在”的幂等语义和 same-stream consumer。
 - 直接 wrapper 不检查每次 kernel launch 返回值；异步失败传播属于 runtime 边界。
-- 本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：运行时等价性、时延与吞吐不由源码关系单独推出。
 
 ## 源码索引
 
@@ -1014,18 +1093,18 @@ if (user1 == nullptr) {
 | Kernel entry | `op_kernel/conv3d_backprop_filter_v2.cpp` | `conv3d_backprop_filter_v2` | arch35 dispatch 边界 |
 | Kernel router | `op_kernel/arch35/conv3d_backprop_filter_v2_arch35.h` | `conv3d_backprop_filter_v2_arch35` | system workspace、init、模板实例 |
 | POD | `op_kernel/arch35/conv3d_backprop_filter_v2/conv3d_backprop_filter_v2_tiling_data.h` | `TConv3DDwTiling` | 官方固定提交 ABI 对照 |
-| Tiling key | `op_kernel/arch35/conv3d_backprop_filter_v2/conv3d_backprop_filter_v2_tiling_key.h` | `TPL_STREAM_K/TPL_MN_STREAM_K` | 8 个 specialization |
+| Tiling key | `op_kernel/arch35/conv3d_backprop_filter_v2/conv3d_backprop_filter_v2_tiling_key.h` | `TPL_STREAM_K/TPL_MN_STREAM_K` | 固定 `955f` 来源只支撑 Direct 可达的 8 个 basic-block specialization；不支撑 R-006 |
 | Kernel body | `op_kernel/arch35/conv3d_backprop_filter_v2/conv3d_dw_v2_basic_block.h` | `CalBasicBlock/CalcStreamK/CalcIterate` | 主轮、尾轮、AIC/AIV sync |
 | Cube mainloop | `op_kernel/arch35/conv3d_backprop/conv_bp_func_common.h` | `ComputeLoop/ExecuteMmad` | L1→L0、Mmad、pipe |
-| Cube orchestration | `op_kernel/arch35/conv3d_backprop/conv_bp_func.h` | `ComputeNormal/IterateAll/GetTensorC` | GM/L1/L0 调用序与输出分发 |
+| Cube orchestration | `op_kernel/arch35/conv3d_backprop/conv_bp_func.h` | `ComputeNormal/IterateAll/GetTensorC/VecPostProcess` | GM/L1/L0 调用序；group-enlarge mode-4 flags 5/6 与 AIC/AIV 输出分发 |
 | local memory | `op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func.h` | `InitTque/MmadLocal` | L1/L0/UB allocation |
 | GM→L1 dispatch | `op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_gm_to_l1.h` | `LoadToA1/LoadToB1` | A/B load gate、ping-pong 与源地址 |
 | GM→A1 body | `op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_a1.h` | `LoadToA1*` | grad ND/DN→NZ 与 M/K tail |
 | GM→B1 body | `op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_b1.h` | `LoadToB1*` | fmap Load3D、padding、Cin/H/W tail |
 | L1→L0 | `op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_load_l1_to_l0.h` | `LoadL12L0a/LoadL12L0b` | LoadData offset/stride 与 ping-pong |
-| Cube output | `op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_store_l0c.h` | `LoadL0c2Gm*` | Fixpipe、layout、tail |
+| Cube output | `op_kernel/arch35/conv3d_backprop/impl/conv_bp_filter_sub_func_store_l0c.h` | `LoadL0c2Gm*/LoadL0c2UbForGroup` | non-enlarge Fixpipe→GM；enlarge Fixpipe→UB、layout 与 tail |
 | deterministic reduce | `op_kernel/arch35/conv3d_backprop/impl/conv_bp_sub_func_deterministic_calculate.h` | `DeterministicAddFunc` | workspace→UB→GM 归约 |
-| deterministic helper | `op_kernel/arch35/conv3d_backprop/impl/conv_bp_sub_func_deterministic_common.h` | `MovOutL0cForDeterministicRefactor/DeterministicUb2Gm` | partial layout、UB/GM 搬运与 atomic 状态 |
+| deterministic helper | `op_kernel/arch35/conv3d_backprop/impl/conv_bp_sub_func_deterministic_common.h` | `Rearrange2Gm/MovOutL0cForDeterministicRefactor/DeterministicUb2Gm` | group UB scatter/gather、partial layout、UB/GM 搬运与 atomic 状态 |
 
 每行只写一个文件，且均存在于 Frontmatter `sources`；Direct 转换文件没有可用的固定官方 blob URL，因此不把本地或不可达地址写入 `sources`。
 

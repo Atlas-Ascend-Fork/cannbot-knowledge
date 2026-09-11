@@ -20,7 +20,7 @@ sources:
   - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/quant/dequant_swiglu_quant/op_host/config/ascend950/dequant_swiglu_quant_binary.json"
     role: implementation
 created_at: "2026-08-24T19:34:12Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -38,7 +38,6 @@ cann_versions: ["9.1.0"]
 | Kernel 路线 | 重要性顺序：P0 R-002、P1 R-001、P2 R-004、P3 R-006、P4 R-005、P5 R-003、P6 R-008、P7 R-007、P8 R-010、P9 R-012、P10 R-011、P11 R-009。R-001～R-006 为 FL（full-load，`H <= 5120`），R-007～R-012 为 NF（dynamic-not-full，`H > 5120`）；Route ID 保持 Host 叶节点身份。 |
 | 核心资源 | GM、AIV UB、`TQue`、`TBuf`、MicroAPI 寄存器；NF 额外使用 `usedCoreNum * H * sizeof(float)` 的用户 workspace。 |
 | 来源闭包 | `direct_implementation_closed`：schema/校验/分配 → PrivateUse1 → 三个 named launcher → Host tiling → 12 个 entry → FL/NF body/helper → 构建接线闭合。转换交付件是执行事实主来源；官方固定 Commit 仅作 950 支持、arch35 Route 与 body 相关映射，不把转换入口伪称为官方入口。 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
 
 ## 接口与语义
 
@@ -59,7 +58,21 @@ scale[r] = max(max_k(abs(v[r,k])) / 127, 1e-12)
 y[r,k] = saturating_int8_cast(v[r,k] / scale[r])
 ```
 
-本直调固定 `quantMode=1`、`dstType=2`、`swiGluMode=0`、无 bias/group/quant_offset。INT8 cast 的真实顺序是 FP32→INT16（`CAST_RINT`）→FP16（`CAST_ROUND`）→INT8（`CAST_TRUNC`、饱和），不能简化为任意语言默认取整。
+本直调固定 `quantMode=1`、`dstType=2`、`swiGluMode=0`、无 bias/group_index/quant_offset。INT8 cast 的真实顺序是 FP32→INT16（`CAST_RINT`、`NO_SAT`）→FP16（`CAST_ROUND`）→INT8（`CAST_TRUNC`、`SAT`），不能简化为任意语言默认取整。对有限输入，行 scale 的构造使理想商落在 `[-127,127]`，因此第一段不会依赖 INT16 饱和；其后 INT16 整数可被 FP16 精确表示，最后一段的饱和仍是舍入误差与异常值的安全边界。
+
+### Scale、单组语义与半部选择
+
+交付接口没有 group 参数，但 Device body 来自可分组的通用模板。此处 Host 通过模板类型和 POD 把它收缩为 `G=1`，因此不能把通用 body 中的 `[G,*]` 地址公式误当成公开能力。
+
+| 对象 | 通用 body 地址语义 | 本直调固定语义 | 与 `activate_left` 的关系 |
+|---|---|---|---|
+| `x` | row-major `[M,2H]` | 每行两个连续 H 半部；不做转置或广播 | `actRight=activate_left?0:1`；0 取左半为 act，1 取右半为 act，另一半为 gate |
+| `weight_scale` | `groupIdx*2H + halfOffset + k` | INT32 路线固定 `groupIdx=0`，所以是逐输入列 `[1,2H]`；act/gate 与 `x` 使用相同 halfOffset | 切换激活半部时，scale 半部必须同步切换 |
+| `activation_scale` | `activation_scale[row]` | INT32 路线逐行标量 `[M]`，同时广播乘 act 与 gate；不是逐组或逐列 scale | 与左右选择无关 |
+| `quant_scale` | `groupIdx*H+k` | 固定 `groupIdx=0`，是逐输出列 `[1,H]`；乘法而非除法 | 作用于 `Swish(act)*gate` 之后，不再区分半部 |
+| `scale` | 每个输出 row 一个动态 scale | `max(maxabs(post_qscale_value)/127,1e-12)`；不是输入 dequant scale 的回传 | 左右选择改变数值，因而可改变行 scale |
+
+模板实例把 `TGroup=bool`，`hasGroupIndex_` 在编译期为 false；`Process()` 直接调用 `ProcessSingleGroup(0,M,0)`。POD 中 `inGroupNum/groupIndexMode/speGroupType/isSpecialCoreCut` 虽保留 ABI 位置，但在 12 条可达 Route 中不参与寻址。`quantIsOne` 也不是本动态量化路径的标量广播开关：Q/NQ 已由不同模板实例裁剪，Q 路线始终读取 H 个 FP32 元素。
 
 ### 输入、输出与属性
 
@@ -72,6 +85,8 @@ y[r,k] = saturating_int8_cast(v[r,k] / scale[r])
 | `activate_left` | scalar | bool | 默认 `false`；Host 写 `actRight = activate_left ? 0 : 1`。 |
 | `y` | `[M,H]`，contiguous | INT8 | 由 Device 完整写出。 |
 | `scale` | `[M]`，contiguous | FP32 | 每行一个动态量化 scale，下限固定为 `1e-12`。 |
+
+Host 只校验 scale 的 shape/dtype/layout/device，不校验正值或有限性。零或负 `quant_scale` 按普通乘法参与计算，最终 max 使用绝对值；`weight_scale`、`activation_scale`、`quant_scale` 中的 NaN/Inf 以及非线性溢出的传播由 950 MicroAPI 的 `Exp/Div/Abs/Max/ReduceMax` 决定，源码没有定义额外清洗或有限值 fallback。全零且有限的行得到 `scale=1e-12`、`y=0`。
 
 ### 入口与版本
 
@@ -89,13 +104,29 @@ y[r,k] = saturating_int8_cast(v[r,k] / scale[r])
 4. `dequant_swiglu_quant_workspace_bytes` 调用与真实 launch 相同的 `CalcDirectTiling`；请求为零时仍分配 32B 占位 tensor，非零时按请求字节分配。
 5. 取输入/输出/workspace GM 指针与当前 stream；按 `dtypeTag` 进入三个 named launcher。未知 dtype tag 在 `ParseDType` 抛出；平台查询、AIV/UB 资源或 tiling 因子非法也抛出。
 
+### Host 整数边界与重复规划契约
+
+公开 PyTorch 入口先完成范围校验，再窄化或相乘；在该调用链内可建立以下上界：
+
+| Host 表达式 | 上界/类型 | 闭合理由 |
+|---|---|---|
+| `inDimy=2*H` | `<=16384`，写入 int64 POD | `CheckInputs` 先验证偶数尾轴 `[2,16384]` |
+| `blockDim=usedCore` | `<=M<=65536`，窄化 uint32 | FL/NF 都有 `usedCore<=M` |
+| `workspace=usedCore*H*4` | `<=65536*8192*4=2147483648` bytes | NF 仅在已校验的 M/H 域计算，结果可由 uint64 与 tensor 的 int64 长度表示 |
+| `row*2H`、`row*H` | 分别小于 `65536*16384`、`65536*8192` elements | GM offset 使用 int64/size_t，当前 shape 域内不溢出 |
+| `AlignUp(H,{8,16,32})` | `<=8224` elements | `H<=8192`，加法与乘法均远小于 int64 上界 |
+
+源码的 `DivCeilHost/AlignUpHost` 和 workspace 乘法本身不是通用 checked-arithmetic 库；安全性依赖上述 Plugin 前置域。若独立调用 C ABI launcher/workspace API，必须在边界外补回 `rows<=65536`、`hidden<=8192` 与 `checked_mul`，不能把当前静态转换当成任意 uint64 输入都安全。
+
+workspace 规划和 launch 各调用一次 `CalcDirectTiling`：第一次只返回字节数，第二次重新查询 AIV/UB、重建 POD 和 blockDim。两次必须使用同一组 `rows/hidden/dtypeTag/hasQuantScale/activateLeft`；调用侧按此固定参数，并在同一 `directCall` 前完成 workspace 分配。若资源查询失败或第二次规划需要的空间与先前请求不一致，源码没有扩容/重试路径。
+
 ### 参数、Workspace 与生命周期
 
 设 `C=GetCoreNumAiv()`、`U=UB bytes`、`A32(n)=ceil(n/32)*32`、`A16(n)=ceil(n/16)*16`、`A8(n)=ceil(n/8)*8`。
 
 - FL：`H <= 5120`，workspace 请求为 0；插件分配的 32B 只作非空占位，entry 不接收 workspace。
 - NF：`H > 5120`，`usedCore=min(C,M)`，workspace 为 `usedCore*H*4` 字节。Device 以 `blockIdx*H` 为每核私有 slice；同一核处理下一行前，前一行的两遍处理已经完成，可安全覆盖。
-- workspace tensor 由 PrivateUse1 调用侧分配，并与当前 stream 上的单次 direct launch 同生命周期；NF entry 直接把用户区映射为 `xTempGm_`，没有官方 runtime system-workspace 前缀。
+- NF entry 直接把用户 workspace 地址映射为 `xTempGm_`，没有 registered runtime 的 system-workspace 前缀。workspace tensor 是 `dequant_swiglu_quant_npu` 的局部对象；`directCall` 使用并按值捕获的是从它导出的 `workspacePtr`，而返回的 `(y,scale)` 不持有该 tensor。源码没有显式 `recordStream`、completion event 或 host wait。因此 per-core 地址/容量及核内覆盖时刻由 Device 源码闭合，而 workspace storage 是否延续到 Kernel 完成依赖 `RunOpApi` 与 NPU allocator 的同流延迟回收契约，Direct 文件本身没有完成 owner 证明。
 - 所有 Route 只有一个 Device launch，没有跨 Kernel workspace 边。
 
 ### 启动图与失败传播
@@ -103,8 +134,10 @@ y[r,k] = saturating_int8_cast(v[r,k] / scale[r])
 ```text
 cann_bench::dequant_swiglu_quant (PrivateUse1)
   -> CheckInputs -> AllocateOutputs -> workspace_bytes
+     -> CalcDirectTiling #1 (只返回 workspaceBytes)
+  -> allocate workspace (0B 请求映射为 32B 占位)
   -> launch_dequant_swiglu_quant_{int32|half|bfloat16}
-     -> CalcDirectTiling
+     -> CalcDirectTiling #2 (重建 POD/blockDim/Route)
      -> {FL/NF}_{dtype}_{q/nq}<<<blockDim, nullptr, stream>>>
         -> AIV class::Init -> Process
         -> GM y[M,H] + GM scale[M]
@@ -113,6 +146,8 @@ cann_bench::dequant_swiglu_quant (PrivateUse1)
 | 节点 | Host 启动函数 | entry | blockDim/POD | 输入输出/workspace | ordering 与失败 |
 |---|---|---|---|---|---|
 | K-001 | `LaunchInt32/LaunchHalf/LaunchBfloat16` | 12 个 `dequant_swiglu_quant_{fl,nf}_*` 之一 | FL `min(C,ceil(M/Fx))`；NF `min(C,M)`；POD 为 `DequantSwigluQuantV35BaseTilingData` 值传递 | 输入 GM → `y/scale` GM；仅 NF 使用 per-core workspace | 当前 NPU stream 单 launch；Host 校验/tiling 抛出会阻断 launch。entry 在非 AIV core 返回，不另行 fallback。 |
+
+`directCall` 在执行 `<<<...>>>` 后固定返回 0，不做 stream synchronize 或显式 launch-status 查询。因此 shape、平台查询和 tiling 异常是同步 Host 失败；Kernel enqueue 之后的设备错误保持 current-stream 异步语义，只能由后续 runtime 同步点传播。输出 tensor 立即返回但其 GM 写入受同一 stream 顺序保护；调用方不得在无 stream 依赖的上下文中提前复用其存储。
 
 ## Route 与参数设计
 
@@ -126,6 +161,8 @@ Fx  = min(M, floor((U - 1024 - 12*XF32) / Dfl))
 usedCore = min(C, ceil(M/Fx))
 ```
 
+这里 `XF32` 与 `XX` 是两套不同的行对齐：FP32 tmp/scale 使用 `XF32=A8(H)`，16-bit x 使用 `XX=A16(H)`。Host 的容量式按 `Fx*XF32` 预留 tmp；但 FL body 的当前源码在生成、归约和 cast 时用 `i*xTypeUbAlignB32_`（即 `i*XX`）寻址 tmp。于是 FP16/BF16 且 `A16(H)>A8(H)` 时，只有 `xDimPerLoop=1` 能由现有分配直接证明安全；多行 resident tile 需要的末地址为 `(xDimPerLoop-1)*XX+H`，可能超过 `Fx*XF32`。源码未提供相等性 guard 或额外 padding，这一对齐一致性是实现边界，复用时应统一 tmp 的“分配容量、Host denominator、Device stride”三者，不能沿用卡内较早的单一 `XF32` 描述掩盖差异。
+
 NF 令 `reserve=1024+32`。INT32 的保守 `split=50`，FP16/BF16 为 `split=26`：
 
 ```text
@@ -136,6 +173,8 @@ usedCore=min(C,M), workspace=usedCore*H*4
 ```
 
 `L<=0`、`Fx<1`、`C==0` 或 `U<=1056` 均为 Host 失败。输入范围保证 `M,H` 可窄化到 POD 的 int64；`blockDim` 由不超过平台 AIV 核数的 `usedCore` 窄化到 uint32。
+
+FL 分核还与 inScaleQueue 生命周期耦合。令 `B=ceil(M/usedCore)` 为普通 core 的连续行数：仅当 `ceil(M/Fx)<=C`、AIV 核数上限没有截断 `usedCore` 时，才有 `B<=Fx` 和 `ubDimxLoop=ceil(B/Fx)=1`。若 `ceil(M/Fx)>C`，则 `usedCore=C`、`B` 可能大于 `Fx`，同一 core 会执行多个 row batch。当前 body 把 weight/quant scale tensor 放在 batch 循环外只分配/DeQue 一次，却在每个 batch 末 `FreeTensor(inScaleLocal)`；多 batch 下第二次及后续迭代继续使用已释放 local，并重复释放同一 Queue 对象，源码没有给出安全证明。复用时应把释放移到循环后，或每个 batch 成对重新分配/搬入；不能把“FL”自动等同于“每 core 恒单 batch”。
 
 ### Route 选择
 
@@ -163,24 +202,17 @@ ParseDType(dtypeTag)
   -> dtype-specific named entry
 ```
 
-### 模板/实现执行矩阵
+### Route 退化与失败关系
 
-| 重要性 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
-|---|---|---|---|---|---|---|---|
-| P0 | R-002 | `fl_i32_q` | INT32、`H<=5120`、有 qscale、950 | 单 AIV K-001 | `Base<float,float,bool,bool,int32_t,int8_t>` | FL UB；Queue 同步；qscale 搬入/乘入；无 workspace | MicroAPI mask；无 fallback |
-| P1 | R-001 | `fl_i32_nq` | INT32、`H<=5120`、无 qscale、950 | 单 AIV K-001 | `Base<float,bool,bool,bool,int32_t,int8_t>` | FL UB；Queue 同步；无 workspace | MicroAPI mask；无 fallback |
-| P2 | R-004 | `fl_half_q` | FP16、`H<=5120`、有 qscale、950 | 单 AIV K-001 | `Base<bool,float,bool,bool,half,int8_t>` | 16-bit x UB，升至 FP32 + qscale | MicroAPI mask；无 fallback |
-| P3 | R-006 | `fl_bfloat16_q` | BF16、`H<=5120`、有 qscale、950 | 单 AIV K-001 | `Base<bool,float,bool,bool,bfloat16_t,int8_t>` | 16-bit x UB，升至 FP32 + qscale | MicroAPI mask；无 fallback |
-| P4 | R-005 | `fl_bfloat16_nq` | BF16、`H<=5120`、无 qscale、950 | 单 AIV K-001 | `Base<bool,bool,bool,bool,bfloat16_t,int8_t>` | 16-bit x UB，升至 FP32 | MicroAPI mask；无 fallback |
-| P5 | R-003 | `fl_half_nq` | FP16、`H<=5120`、无 qscale、950 | 单 AIV K-001 | `Base<bool,bool,bool,bool,half,int8_t>` | 16-bit x UB，升至 FP32 | MicroAPI mask；无 fallback |
-| P6 | R-008 | `nf_i32_q` | INT32、`H>5120`、有 qscale、950 | 单 AIV K-001，内含两遍 | `DynamicNotFull<float,float,bool,bool,int32_t,int8_t>` | NF UB + per-core workspace + HardEvent；第一遍 qscale 原地乘入 | `tail` tile；无 fallback |
-| P7 | R-007 | `nf_i32_nq` | INT32、`H>5120`、无 qscale、950 | 单 AIV K-001，内含两遍 | `DynamicNotFull<float,bool,bool,bool,int32_t,int8_t>` | NF UB + per-core workspace + HardEvent | `tail` tile；无 fallback |
-| P8 | R-010 | `nf_half_q` | FP16、`H>5120`、有 qscale、950 | 单 AIV K-001，内含两遍 | `DynamicNotFull<bool,float,bool,bool,half,int8_t>` | 16-bit x + qscale + workspace + HardEvent | `tail` tile；无 fallback |
-| P9 | R-012 | `nf_bfloat16_q` | BF16、`H>5120`、有 qscale、950 | 单 AIV K-001，内含两遍 | `DynamicNotFull<bool,float,bool,bool,bfloat16_t,int8_t>` | 16-bit x + qscale + workspace + HardEvent | `tail` tile；无 fallback |
-| P10 | R-011 | `nf_bfloat16_nq` | BF16、`H>5120`、无 qscale、950 | 单 AIV K-001，内含两遍 | `DynamicNotFull<bool,bool,bool,bool,bfloat16_t,int8_t>` | 16-bit x + workspace + HardEvent | `tail` tile；无 fallback |
-| P11 | R-009 | `nf_half_nq` | FP16、`H>5120`、无 qscale、950 | 单 AIV K-001，内含两遍 | `DynamicNotFull<bool,bool,bool,bool,half,int8_t>` | 16-bit x + workspace + HardEvent | `tail` tile；无 fallback |
+| 变化 | Route 关系 | 是否为 runtime fallback |
+|---|---|---|
+| `H` 穿过 5120 | 同 dtype/Q 标志在 FL 与 NF 之间切换；拓扑从整行 UB 变成分片两遍 + workspace | 否；这是 Host 主选择器，FL 资源失败不会再试 NF |
+| `quant_scale` 有/无 | Q/NQ 使用不同 entry 与模板实例，分别编译进/裁掉 qscale Queue 消费和乘法 | 否；空指针只允许进入 NQ entry，Q entry 不做判空降级 |
+| dtype 改变 | INT32 路线启用逐列 weight scale 和逐行 activation scale；FP16/BF16 只做升 FP32 | 否；三者由 Plugin 分发，不在 Device 中互转兜底 |
+| UB/AIV/tiling 因子非法 | `CalcDirectTiling` 抛出 | 无其他 Device、scalar 或 registered-op fallback |
+| entry 落在非 AIV core | 当前 core 立即返回 | 只是 core-type guard，不是替代计算路径 |
 
-### 隐藏性能 Guard
+### 性能与资源 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -238,662 +270,219 @@ ParseDType(dtypeTag)
 
 FL 在一个 UB resident tile 内完成 `CopyIn → dequant/Swiglu → optional qscale → ReduceMax/scale → quant/cast → CopyOut`。NF 仍是单 Kernel，但对一行分两遍：第一遍逐 H tile 算 FP32 值、更新全行 scale 并写 per-core GM workspace；第二遍逐 tile 回读，用最终 scale 量化写 y。
 
-下列逐 Route 章节按重要性 P0→P11 排列，Route ID 保持不变；该顺序不替代 Host 的 dtype→FL/NF→qscale 嵌套短路。
-
-### P0 / Route R-002：FL-I32-Q
-
-#### 适用条件
-
-##### 选择证据
-
-同 R-001，但 `hasQuantScale=true`，entry 为 `fl_i32_q`，模板为 `Base<float,float,bool,bool,int32_t,int8_t>`。
-
-#### Device 数据流
-
-##### 函数级调用链
+### 融合顺序与不可交换项
 
 ```text
-R-001 chain -> load quant_scale[0:H] into inScaleQueue[2XF32] -> tmp*=qscale -> reduce/quant
+INT32: x_i32 --RINT cast--> x_f32 --*w[k]-->*a[row]--+
+FP16/BF16: x_b16 ---------cast----------------------+
+                                                       -> swish(act_f32) * gate_f32
+                                                       -> [* qscale[k]]
+                                                       -> abs/max/127 -> clamp_min(1e-12)
+                                                       -> divide -> RINT int16 -> fp16 -> SAT int8
 ```
 
-##### 源码等价伪码
+- `weight_scale` 在左右两半上各自逐列乘，`activation_scale` 对同一 row 的 act/gate 共用；二者必须在 Swish 之前完成，因为 Swish 非线性不允许把 scale 移到其后。
+- `quant_scale` 必须在行 max 之前乘入，并将乘后值原地保留。若只影响 max 或只在最终除法前乘一次，会破坏 `scale` 与被量化值来自同一 `v` 的不变量。
+- 对有限 `v`，`scale>=maxabs(v)/127`；因此理论上 `abs(v/scale)<=127`。最后 cast 的 `SAT` 是边缘舍入保护，不是用来弥补错误 scale 的常规截断策略。
+- INT32→FP32 在 `|x|>2^24` 时可能失去整数低位；源码选择“先 cast，再乘两个 FP32 scale”，没有 FP64 或分段高精度反量化路径。
+- `DIV_MODE` 启用高精度除法模式；Exp、乘法、归约也都保持 FP32。源码不做 NaN/Inf 特判，因此只对有限输入建立上述幅值不变量。
 
-```text
-tmp=swish(dequant(act))*dequant(gate); tmp*=qscale; scale=max(maxabs(tmp)/127,1e-12); y=cast(tmp/scale)
-```
+### UB 流水、同步与对象生命周期
 
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-R-001 的同一物理布局；`inScaleQueue[2XF32:3XF32]` 由 qscale GM 写入并被 scale 阶段逐 VF chunk 读取，tmp 在原位写回缩放值。
-
-##### 分层内存布局
-
-同 R-001，inScaleQueue 第三区由 inactive 变为 active。
-
-##### 字节账与复用顺序
-
-UB 总量与 R-001 相同；tmp 的写入者顺序变为 Swiglu → qscale 乘入 → reduce/quant，后一步不得在乘入前读取。
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-qscale 通过 Queue 进入 UB，在 FP32 中乘入；尾 VF 使用 `maskTail`，只有有效 H 元素参与 max 与写回。
-
-#### 关键实现
-
-##### 符号证据表
-
-Host/entry 分别为 `LaunchInt32/fl_i32_q`；body 为 `ProcessSingleGroupPerCore` 中 `hasQuantScale_` 分支。
-
-### P1 / Route R-001：FL-I32-NQ
-
-#### 适用条件
-
-##### 选择证据
-
-| 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
+| 家族 | 搬运/计算对象 | 源码同步 | 可安全覆盖时刻 | 实际流水边界 |
 |---|---|---|---|---|
-| Plugin | `op_plugin/dequant_swiglu_quant_plugin.cpp` | `CheckInputs/directCall` | INT32 且 qscale 缺省 | `launch_*_int32` |
-| Launcher | `op_kernel/dequant_swiglu_quant_kernel.cpp` | `CalcDirectTiling/LaunchInt32` | `H<=5120 && !hasQuantScale` | `fl_i32_nq` |
-| Entry | 同上 | `dequant_swiglu_quant_fl_i32_nq` | AIV | `Base<float,bool,bool,bool,int32_t,int8_t>` |
+| FL | x/y Queue 各初始化 2 个 slot；inScale、scale 各 1 个 slot；tmp 为 TBuf | `AllocTensor→EnQue→DeQue→FreeTensor`；tmp 内阶段按 Vector 程序序 | x 在 Swiglu 后释放；scale 在量化完成后释放；y 在 MTE3 CopyOut 后释放 | row batch 顺序执行，源码没有展示跨 batch 的稳定态重叠；core 上多 batch 时存在 inScaleLocal 提前/重复释放边界 |
+| NF 第一遍 | x/activation/y Queue 预留双 slot，w/q/scale 单 slot，tmp 单 TBuf | `S_MTE2`、`MTE2_V`、`V_MTE2`、`V_MTE3` HardEvent | tmp 只有在写 workspace 完成后才可被下一 tile 的 MTE2/Vector 复用 | 每 tile 显式 set/wait，重点是确定性生命周期，不应宣称已形成无等待搬运/计算重叠 |
+| NF 两遍边 | per-core GM workspace、scaleLocal | `CopyOutScale` 后 `MTE3_MTE2` | 第二遍 MTE2 只能在第一遍整行 workspace 与 scale 输出的 MTE3 完成后开始 | 没有跨 core 同步；`blockIdx*H` 私有 slice 消除核间依赖 |
+| NF 第二遍 | workspace→tmp→y | `MTE2_V`、`V_MTE2` + y Queue | tmp 被 QuantAndCast 读完、y 被 MTE3 搬出后进入下一 tile | 同一 core 必须完成当前 row 两遍后才可覆盖 slice 处理下一 row |
 
-#### Device 数据流
+NF 的 `Process()` 以 `row=blockIdx; row<M; row+=maxCoreNum` 轮询；POD 中 NF `maxCoreNum=C` 而 launch `blockDim=min(C,M)`。因此 `M<C` 时每个已启动 core 至多一行，`M>=C` 时所有 C 个 core 以步长 C 分行；workspace 仍按已启动的 `usedCore` 分配，且 `blockIdx<usedCore` guard 保证 slice 不越界。
 
-##### 函数级调用链
+### 12 个 active 叶的完整实现差分
 
-```text
-LaunchInt32 -> fl_i32_nq -> Base::Init -> Base::Process
-  -> ProcessSingleGroup -> ProcessSingleGroupPerCore
-  -> GM x/wscale/ascale -> UB -> FP32 tmp -> scale/y -> GM
-```
+当前公开合法域的笛卡尔积是 3 种 dtype × 2 种 H family × 2 种 qscale 状态，12 个组合都由生产 Host selector 到达，均为 `active`，没有 `conditional` 叶。下表按知识重要性 P0→P11 排列，Host 的真实判断仍是 dtype→FL/NF→Q/NQ。
 
-##### 源码等价伪码
+通用 body 中的 group_index/bias、`swiGluMode!=0`、静态量化/quant_offset 以及 FP8/FP4/HiFloat8 输出分支属于 `dormant` 能力，不是本卡的额外 Route：Plugin schema 不接收这些输入/属性，POD 固定 inactive 值，12 个 entry 也只实例化 bool group/bias 与 INT8 输出。重新启用任一分支都需要同时扩展 schema/校验/输出分配、Host POD producer、named entry 模板和 UB 预算，不能只改某个 POD 字段。
 
-```text
-core rows = ceil(M/usedCore), last core takes tail rows
-load weight_scale act/gate halves once
-load x act/gate halves and activation_scale for this core tile
-for row, vf chunk: fp32(x)*wscale*broadcast(ascale); swish(act)*gate -> tmp
-scale=max(maxabs(tmp)/127,1e-12); y=cast_int8(tmp/scale)
-copy scale and valid H bytes of y
-```
+缩写：`w=weight_scale`、`a=activation_scale`、`q=quant_scale`、`s=scale`。FL 固定分配 `XA[2],IS[1],Y[2],S[1],TMP`：XA 是 x+可选 a 的 Queue，IS 是 w/q 共用 Queue；NF 固定分配 `X[2],W[1],A[2],Q[1],Y[2],S[1],TMP`。方括号是 InitBuffer slot 数；表内“active”只表示实际搬入/消费，模板裁掉的 Queue 容量仍计入 UB。
 
-#### 内存与数据搬运
+| 重要性 / Route | 精确谓词与 Host 叶 | entry / Device 模板 | active GM → 输出 | Queue active 差分 | workspace | 输入与 qscale 精度差分；共同输出 cast |
+|---|---|---|---|---|---|---|
+| P0 R-002 FL-I32-Q | `dtypeTag=0 && H<=5120 && hasQuantScale`；`LaunchInt32` | `fl_i32_q`；`Base<float,float,bool,bool,int32_t,int8_t>` | `x,w,a,q → y,s` | XA:`x+a`；IS:`w+q`；Y/S/TMP active | 无 | INT32 RINT→FP32，`*w[k]*a[row]`；Swiglu 后 `*q[k]` 再 max；共同三段 INT8 cast |
+| P1 R-001 FL-I32-NQ | `dtypeTag=0 && H<=5120 && !hasQuantScale`；`LaunchInt32` | `fl_i32_nq`；`Base<float,bool,bool,bool,int32_t,int8_t>` | `x,w,a → y,s`；q 为 null | XA:`x+a`；IS:`w`；Y/S/TMP active | 无 | 同 R-002 的 dequant；无 q 乘法；共同三段 INT8 cast |
+| P2 R-004 FL-F16-Q | `dtypeTag=1 && H<=5120 && hasQuantScale`；`LaunchHalf` | `fl_half_q`；`Base<bool,float,bool,bool,half,int8_t>` | `x,q → y,s`；w/a 为 null | XA:`x`；IS:`q`；Y/S/TMP active | 无 | `DIST_UNPACK_B16` FP16→FP32；`*q[k]` 再 max；共同三段 INT8 cast |
+| P3 R-006 FL-BF16-Q | `dtypeTag=2 && H<=5120 && hasQuantScale`；`LaunchBfloat16` | `fl_bfloat16_q`；`Base<bool,float,bool,bool,bfloat16_t,int8_t>` | `x,q → y,s`；w/a 为 null | XA:`x`；IS:`q`；Y/S/TMP active | 无 | `DIST_UNPACK_B16` BF16→FP32；`*q[k]` 再 max；共同三段 INT8 cast |
+| P4 R-005 FL-BF16-NQ | `dtypeTag=2 && H<=5120 && !hasQuantScale`；`LaunchBfloat16` | `fl_bfloat16_nq`；`Base<bool,bool,bool,bool,bfloat16_t,int8_t>` | `x → y,s`；w/a/q 为 null | XA:`x`；IS 无 active 输入；Y/S/TMP active | 无 | BF16→FP32；无 q 乘法；共同三段 INT8 cast |
+| P5 R-003 FL-F16-NQ | `dtypeTag=1 && H<=5120 && !hasQuantScale`；`LaunchHalf` | `fl_half_nq`；`Base<bool,bool,bool,bool,half,int8_t>` | `x → y,s`；w/a/q 为 null | XA:`x`；IS 无 active 输入；Y/S/TMP active | 无 | FP16→FP32；无 q 乘法；共同三段 INT8 cast |
+| P6 R-008 NF-I32-Q | `dtypeTag=0 && H>5120 && hasQuantScale`；`LaunchInt32` | `nf_i32_q`；`DynamicNotFull<float,float,bool,bool,int32_t,int8_t>` | `x,w,a,q → y,s` | X/W/A/Q/Y/S/TMP 全 active | `usedCore*H*4` | INT32→FP32、`*w*a`；第一遍 `*q` 后写 workspace；共同三段 INT8 cast |
+| P7 R-007 NF-I32-NQ | `dtypeTag=0 && H>5120 && !hasQuantScale`；`LaunchInt32` | `nf_i32_nq`；`DynamicNotFull<float,bool,bool,bool,int32_t,int8_t>` | `x,w,a → y,s`；q 为 null | X/W/A/Y/S/TMP active；Q inactive | `usedCore*H*4` | INT32→FP32、`*w*a`；无 q 乘法；共同三段 INT8 cast |
+| P8 R-010 NF-F16-Q | `dtypeTag=1 && H>5120 && hasQuantScale`；`LaunchHalf` | `nf_half_q`；`DynamicNotFull<bool,float,bool,bool,half,int8_t>` | `x,q → y,s`；w/a 为 null | X/Q/Y/S/TMP active；W/A inactive | `usedCore*H*4` | FP16→FP32；第一遍 `*q` 后写 workspace；共同三段 INT8 cast |
+| P9 R-012 NF-BF16-Q | `dtypeTag=2 && H>5120 && hasQuantScale`；`LaunchBfloat16` | `nf_bfloat16_q`；`DynamicNotFull<bool,float,bool,bool,bfloat16_t,int8_t>` | `x,q → y,s`；w/a 为 null | X/Q/Y/S/TMP active；W/A inactive | `usedCore*H*4` | BF16→FP32；第一遍 `*q` 后写 workspace；共同三段 INT8 cast |
+| P10 R-011 NF-BF16-NQ | `dtypeTag=2 && H>5120 && !hasQuantScale`；`LaunchBfloat16` | `nf_bfloat16_nq`；`DynamicNotFull<bool,bool,bool,bool,bfloat16_t,int8_t>` | `x → y,s`；w/a/q 为 null | X/Y/S/TMP active；W/A/Q inactive | `usedCore*H*4` | BF16→FP32；无 q 乘法；共同三段 INT8 cast |
+| P11 R-009 NF-F16-NQ | `dtypeTag=1 && H>5120 && !hasQuantScale`；`LaunchHalf` | `nf_half_nq`；`DynamicNotFull<bool,bool,bool,bool,half,int8_t>` | `x → y,s`；w/a/q 为 null | X/Y/S/TMP active；W/A/Q inactive | `usedCore*H*4` | FP16→FP32；无 q 乘法；共同三段 INT8 cast |
 
-##### 资源与搬运表
+共同输出 cast 是 `FP32 quotient → INT16(CAST_RINT,NO_SAT) → FP16(CAST_ROUND) → INT8(CAST_TRUNC,SAT)`。Q/NQ 差异由第二个模板实参 `float/bool` 编译期裁剪；INT32/16-bit 的 dequant 差异由第一个与第五个模板实参裁剪。任何叶在其资源规划失败后都不会跳到表中另一叶。
 
-| 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
-|---|---|---|---|---|---|---|---|
-| GM x | `row*2H + {actRight*H,H-actRight*H}` | each H | INT32 split halves | caller | DataCopyPad | caller | H valid, UB A8 |
-| xActQueue | second half at `Fx*XX`；ascale at reinterpret offset `2*Fx*XX` | per buffer `2Fx*XX*4 + Fx*8*4` | INT32 + FP32 | MTE2 | Vector | pipe/tile | depth 2 |
-| inScaleQueue | `0, XF32, 2XF32` | `3XF32*4` | FP32 | MTE2 | Vector | pipe/launch | depth 1；qscale区 inactive |
-| tmpBuffer | `row*XF32` | `Fx*XF32*4` | FP32 | Swiglu | reduce/quant | pipe/tile | 原地 q 区不使用 |
-| yQueue | `row*Y8` | per buffer `Fx*Y8` | INT8 | cast | MTE3 | pipe/tile | depth 2 |
-| scaleQueue | `row*8` | `Fx*8*4` | FP32 | reduce | MTE3/quant | pipe/tile | depth 1 |
+### FL body family：整行 resident、无 workspace
 
-##### 分层内存布局
-
-```mermaid
-block-beta
-  columns 5
-  xq["xActQueue · depth=2 · 2*(2Fx*XX*4+Fx*32)"]:2
-  iq["inScaleQueue · 12*XF32"]:1
-  tmp["tmpBuffer · 4Fx*XF32"]:1
-  yq["yQueue · depth=2 · 2Fx*Y8"]:1
-  sq["scaleQueue · 32Fx"]:1
-```
-
-##### 字节账与复用顺序
+适用 P0～P5。Host/POD 固定关系是：
 
 ```text
-UB_total = 2*(2Fx*XX*4+32Fx) + 12XF32 + 2Fx*Y8 + 32Fx + 4Fx*XF32 <= U-1024
-dynamic_ub = N/A
-workspace_total = 0
+Fx = min(M, floor((U - 1024 - 12*A8(H)) / Dfl))
+usedCore = min(C, ceil(M/Fx))
+POD = {
+  inDimx=M, inDimy=2H, outDimy=H,
+  UbFactorDimx=Fx, UbFactorDimy=H,
+  usedCoreNum=usedCore, maxCoreNum=usedCore,
+  loopTimesPerRow=0, tailPerRow=0,
+  actRight=activateLeft ? 0 : 1
+}
+launch fl_{dtype}_{q|nq}<<<usedCore, nullptr, stream>>>
 ```
 
-| 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
-|---|---|---|---|---|---|
-| tmpBuffer row | dequant/Swiglu | reduce、quant | 下一 tile | 同一 Vector 顺序 | quant 完成后覆盖 |
-| x/y Queue slot | MTE2/Vector | Vector/MTE3 | 下一 slot | EnQue/DeQue/FreeTensor | depth 2 生命周期完整 |
+#### 核、行与 GM 地址
 
-#### 同步、精度与尾块
+`ProcessSingleGroup(0,M,0)` 先计算 `B=ceil(M/usedCore)`、`realCore=ceil(M/B)`。仅 `blockIdx<realCore` 执行；普通 core 取连续 `B` 行，最后一个 core 取剩余行，再以最多 `Fx` 行为一个 batch。对 batch 起点 `r0`：
 
-##### 同步与数值边界表
+```text
+actOff  = actRight * H
+gateOff = H - actOff
+xAct GM  = x[(r0+i)*2H + actOff : +H]
+xGate GM = x[(r0+i)*2H + gateOff : +H]
+wAct/wGate = w[actOff:+H], w[gateOff:+H]          # 仅 INT32
+aRow = a[r0+i]                                     # 仅 INT32
+qCol = q[0:H]                                      # 仅 Q
+y GM = y[(r0+i)*H : +H], s GM = s[r0+i]
+```
 
-| 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
-|---|---|---|---|---|---|
-| CopyIn→Vector | TQue | MTE2 | DeQue | x/scales | DataCopyPad + MicroAPI mask |
-| FP32 compute | Vector order | dequant | reduce | tmp | INT32→FP32；`H` 尾 mask |
-| Vector→CopyOut | TQue | cast/reduce | MTE3 | y/scale | scale clamp `1e-12`; INT8 饱和 |
+weight/q scale 由每个 core 搬入一次；x 与逐行 activation scale 按 batch 搬入。公开模板无 group/bias，因此所有 `groupIdx` 均为 0，左右半部与对应 weight scale 使用相同 offset。
 
-#### 关键实现
+#### UB 物理布局、流水与尾块
 
-##### 符号证据表
-
-| 阶段 | 文件 | 符号/模板实例 | 实现事实 |
+| 区域 | 初始化容量 | active producer→consumer | 尾块/释放 |
 |---|---|---|---|
-| Host/Tiling producer | `op_kernel/dequant_swiglu_quant_kernel.cpp` | `CalcDirectTiling` | FL UB/分核与 POD |
-| Kernel entry/router | 同上 | `fl_i32_nq` | named entry 到模板 |
-| Device body/helper | `op_kernel/dequant_swiglu_quant_full_load.h` | `ProcessSingleGroupPerCore` | 搬运、FP32 计算、scale/cast/tail |
+| XA Queue | 2 slots；每 slot `2*Fx*XX*sizeof(X)+Fx*8*4` | MTE2 搬 x；INT32 另搬 a → Vector | DataCopyPad 只搬 H；Swiglu 后释放当前 x tensor |
+| IS Queue | 1 slot；`3*A8(H)*4` | INT32 的 w 占前 2 段；Q 的 q 占第 3 段 → Vector | 每个 VF 用 H full/tail mask；生命周期风险见下 |
+| TMP TBuf | `Fx*A8(H)*4` | dequant/Swiglu → 可选 q 原地乘 → max/quant | Vector 程序序；16-bit stride 风险见下 |
+| S Queue | 1 slot；`Fx*8*4` | max/127/floor → MTE3 与 broadcast quant | 每行只写 1 个有效 FP32；量化结束后释放 |
+| Y Queue | 2 slots；每 slot `Fx*A32(H)` bytes | cast → MTE3 | mask 只生成 H 个值，DataCopyPad 只写 H bytes |
 
-### P2 / Route R-004：FL-F16-Q
+这里 `XX=A8(H)`（INT32）或 `A16(H)`（FP16/BF16）。x/y 的 2 slots 是物理容量；源码在每个 batch 内立即 EnQue/DeQue，未证明跨 batch 的搬运—计算稳态重叠。FL 不使用 L1/L0、SIMT、NDDMA 或通信窗口。
 
-#### 适用条件
+尾 VF 的有效宽度是 `H-V*(ceil(H/V)-1)`，Swiglu、q 乘法、Abs/Max、除法与 cast 都只对 mask 内 lane 生效；GM CopyOut 的 blockLen 也是精确 H，而不是对齐容量。
 
-##### 选择证据
+#### 关键叶 P0 R-002 的可落地伪码
 
-R-003 条件改为 qscale 存在；entry `fl_half_q`；模板 `Base<bool,float,bool,bool,half,int8_t>`。
+R-002 同时覆盖 INT32 双 scale、左右选择和 qscale，是 FL 的超集叶；其余五叶由模板裁掉相应阶段：
 
-#### Device 数据流
+```cpp
+if (g_coreType != AIV) return;
+Base<float, float, bool, bool, int32_t, int8_t> op(&pipe);
+op.Init(x, w, a, nullptr, q, nullptr, nullptr, y, s, &pod);
+copy(wAct, wGate, q);                     // 每 core 一次的 IS local
+for (each row batch owned by blockIdx) {
+    copy(xAct, xGate, aRow);
+    tmp = swish(float(xAct)*wAct*aRow) * (float(xGate)*wGate*aRow);
+    tmp *= q;                             // 原地，必须早于 max
+    sRow = max(reduce_max(abs(tmp))/127.0f, 1.0e-12f);
+    yRow = int8_cast_chain(tmp / sRow);
+    copy_exact_H(yRow); copy_one(sRow);
+}
+```
 
-##### 函数级调用链
+#### FL 两项源码未闭合边界
+
+1. **A8/A16 tmp 一致性**：Host/TBuf 按 `Fx*A8(H)` 个 FP32 分配 tmp，但 FP16/BF16 body 以 `i*A16(H)` 作为 tmp 行 stride。当 `A16(H)>A8(H)` 且 batch 行数大于 1 时，需要的末地址 `(rows-1)*A16(H)+H` 可能越过分配容量；源码没有 guard 或 padding 证明。
+2. **多 batch inScaleLocal 生命周期**：只有 `ceil(M/Fx)<=C` 时每 core 才恒为一个 batch。若 AIV 核上限截断 usedCore，body 会多 batch；IS tensor 在循环外只 Alloc/DeQue 一次，却在每个 batch 末 Free，同一 local 后续继续使用并重复释放，源码没有闭合该域。
+
+这两项是当前 body 的实现边界，不是新增 Route；资源或生命周期不满足时也没有转 NF/scalar fallback。
+
+### NF body family：H 分片、单 Kernel 两遍
+
+适用 P6～P11。Host 先按 dtype 取 `split=50`（INT32）或 `26`（FP16/BF16），再生成：
 
 ```text
-R-003 chain -> qscale CopyIn -> FP32 tmp*=qscale -> scale/cast
+L = floor((U-1056)/split/32)*32
+loops = ceil(H/L)
+tail = H - (loops-1)*L
+usedCore = min(C,M)
+POD = {
+  UbFactorDimx=1, UbFactorDimy=L,
+  usedCoreNum=usedCore, maxCoreNum=C,
+  loopTimesPerRow=loops, tailPerRow=tail,
+  actRight=activateLeft ? 0 : 1
+}
+workspaceBytes = usedCore*H*4
+launch nf_{dtype}_{q|nq}<<<usedCore, nullptr, stream>>>
 ```
 
-##### 源码等价伪码
+`L` 是 32 元素对齐的普通 tile；最后一 tile 用 `tail∈(0,L]`。INT32 的实际已分配 UB 账为 `34L+96`，16-bit 为 `26L+96`；Host 对 INT32 保留更保守的 50-way 上界，不能仅按实际账放大 L。
 
-`half→FP32; tmp=Swiglu; tmp*=qscale; scale=maxabs(tmp)/127 clamp; y=cast(tmp/scale)`。
+#### 核、workspace 与两遍伪码
 
-#### 内存与数据搬运
+NF 以 `row=blockIdx; row<M; row+=C` 轮询，每个已启动 core 独占 `workspace[blockIdx*H:(blockIdx+1)*H]`。以超集叶 P6 R-008 为例：
 
-##### 资源与搬运表
-
-R-003 固定布局，启用 inScaleQueue qscale 区。
-
-##### 分层内存布局
-
-同 R-003。
-
-##### 字节账与复用顺序
-
-同 R-003；tmp 增加 qscale 原地覆盖阶段。
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-FP32 qscale 乘法发生在归约前，尾 mask 同时保护乘法、max 与写回。
-
-#### 关键实现
-
-##### 符号证据表
-
-`LaunchHalf` → `fl_half_q` → FL `hasQuantScale_` 分支。
-
-### P3 / Route R-006：FL-BF16-Q
-
-#### 适用条件
-
-##### 选择证据
-
-R-005 条件改为 qscale 存在；entry `fl_bfloat16_q`；模板 `Base<bool,float,bool,bool,bfloat16_t,int8_t>`。
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-R-005 chain -> qscale CopyIn -> tmp*=qscale -> reduce/quant
+```cpp
+if (g_coreType != AIV) return;
+DynamicNotFull<float,float,bool,bool,int32_t,int8_t> op(&pipe);
+for (row = blockIdx; row < M; row += C) {
+    sLocal = 0;
+    // pass 1: 先得到最终全行 scale，并保存“已乘 q”的同一物理值
+    for (t = 0; t < loops; ++t) {
+        n = (t == loops-1 ? tail : L);
+        off = t*L;
+        actOff  = actRight ? H+off : off;
+        gateOff = actRight ? off : H+off;
+        MTE2_copy(x halves, w halves, a[row], q[off:off+n]);
+        wait(MTE2_V);
+        tmp = swish(float(xAct)*wAct*a[row]) * (float(xGate)*wGate*a[row]);
+        tmp *= q[off:off+n];
+        sLocal = max(sLocal, maxabs(tmp)/127.0f, 1.0e-12f);
+        wait(V_MTE3);
+        MTE3_copy(workspace[blockIdx*H+off], tmp, n);
+    }
+    MTE3_copy(s[row], sLocal, 1);
+    wait(MTE3_MTE2);                      // 第一遍 GM 对第二遍可见
+    // pass 2: 只用最终 scale 量化
+    for (t = 0; t < loops; ++t) {
+        n = (t == loops-1 ? tail : L);
+        MTE2_copy(tmp, workspace[blockIdx*H+t*L], n);
+        wait(MTE2_V);
+        yTile = int8_cast_chain(tmp / sLocal);
+        MTE3_copy(y[row*H+t*L], yTile, n);
+    }
+}
 ```
 
-##### 源码等价伪码
+NQ 叶移除 Q Queue 的搬入与 `tmp*=q`；FP16/BF16 叶再移除 W/A Queue 消费并把输入 load/cast 替换为 `DIST_UNPACK_B16→FP32`。地址、两遍顺序、workspace 和输出 cast 不变。
 
-`BF16→FP32; tmp=Swiglu; tmp*=qscale; scale=maxabs(tmp)/127 clamp; y=cast(tmp/scale)`。
+#### NF UB、事件和 owner 边界
 
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-R-005 固定布局，启用 qscale 区与 tmp 原地覆盖。
-
-##### 分层内存布局
-
-同 R-005。
-
-##### 字节账与复用顺序
-
-同 R-005，增加 qscale 写回顺序约束。
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-同 R-004，仅输入 cast 为 BF16→FP32。
-
-#### 关键实现
-
-##### 符号证据表
-
-`LaunchBfloat16` → `fl_bfloat16_q` → FL `hasQuantScale_` 分支。
-
-### P4 / Route R-005：FL-BF16-NQ
-
-#### 适用条件
-
-##### 选择证据
-
-`dtypeTag=2 && H<=5120 && !hasQuantScale`；entry `fl_bfloat16_nq`；模板 `Base<bool,bool,bool,bool,bfloat16_t,int8_t>`。
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-LaunchBfloat16 -> fl_bfloat16_nq -> BF16 unpack/cast FP32 -> Swiglu -> scale/cast
-```
-
-##### 源码等价伪码
-
-同 R-003，只把输入 load/cast 类型替换为 BF16。
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-与 R-003 完全同容量公式，x 的逻辑 dtype 为 BF16。
-
-##### 分层内存布局
-
-同 R-003。
-
-##### 字节账与复用顺序
-
-同 R-003。
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-BF16→FP32 后执行全部非线性、归约和量化；tail mask 与 Queue 协议同 R-003。
-
-#### 关键实现
-
-##### 符号证据表
-
-`LaunchBfloat16` → `fl_bfloat16_nq` → FL `ifXBf16Index_` 分支。
-
-### P5 / Route R-003：FL-F16-NQ
-
-#### 适用条件
-
-##### 选择证据
-
-`dtypeTag=1 && H<=5120 && !hasQuantScale`；entry `fl_half_nq`；模板 `Base<bool,bool,bool,bool,half,int8_t>`。
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-LaunchHalf -> fl_half_nq -> Base::Init/Process -> half unpack/cast FP32 -> Swiglu -> scale/cast
-```
-
-##### 源码等价伪码
-
-与 R-001 相同，但不搬 weight/activation scale，`half` 以 `DIST_UNPACK_B16` 读入后升到 FP32。
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-同 FL 布局，取 `sX=2, XX=A16(H)`；inScaleQueue 与 activation-scale 区仍按固定容量分配但不读取。
-
-##### 分层内存布局
-
-同 R-001 参数化图，将 `4` 字节 x 替换为 `2`。
-
-##### 字节账与复用顺序
-
-`UB_total=2*(2Fx*XX*2+32Fx)+12XF32+2FxY8+32Fx+4FxXF32`；复用顺序同 R-001。
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-FP16→FP32 使用 `CAST_BF16_FP16_TO_FP32` trait；其后全为 FP32，tail 由 mask 保护。
-
-#### 关键实现
-
-##### 符号证据表
-
-Host/entry 为 `LaunchHalf/fl_half_nq`；body 为 FL `ifXFloat16Index_` 编译期分支。
-
-### P6 / Route R-008：NF-I32-Q
-
-#### 适用条件
-
-##### 选择证据
-
-R-007 改为 qscale 存在；entry `nf_i32_q`；模板 `DynamicNotFull<float,float,bool,bool,int32_t,int8_t>`。
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-R-007 first pass -> quantScaleQueue DeQue -> CalculateReduceMax<true> 原地 tmp*=qscale -> workspace -> second pass
-```
-
-##### 源码等价伪码
-
-第一遍每 tile 在归约前执行 `tmp*=qscale[tile]` 并回写 tmp，workspace 因而保存缩放后值；第二遍直接用最终 scale 量化。
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-R-007 的 quantScaleQueue 由 inactive 变为 active，容量不变；workspace extent/offset 不变。
-
-##### 分层内存布局
-
-同 R-007，quantQueue 标记 active。
-
-##### 字节账与复用顺序
-
-`UB_total=34L+96`；tmp 顺序为 Swiglu → qscale 原地乘 → reduce → workspace。
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-qscale CopyIn 受 `MTE2_V` 保护；乘法、max 与回写都使用 full/tail mask。
-
-#### 关键实现
-
-##### 符号证据表
-
-`LaunchInt32` → `nf_i32_q` → `CalculateReduceMax<true>`。
-
-### P7 / Route R-007：NF-I32-NQ
-
-#### 适用条件
-
-##### 选择证据
-
-| 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
-|---|---|---|---|---|
-| Launcher | `op_kernel/dequant_swiglu_quant_kernel.cpp` | `CalcDirectTiling/LaunchInt32` | `H>5120 && !hasQuantScale` | `nf_i32_nq` |
-| Entry | 同上 | `nf_i32_nq` | AIV + workspace | `DynamicNotFull<float,bool,bool,bool,int32_t,int8_t>` |
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-LaunchInt32 -> nf_i32_nq -> DynamicNotFull::Init/Process
-  -> ProcessSingleRow first pass:
-     CopyIn -> PreProcess/DequantAndSwiGlu -> UpdateReduceMax -> CopyOutForXTemp
-  -> CopyOutScale -> MTE3_MTE2
-  -> second pass: CopyInForXTemp -> QuantAndCast -> CopyOutY
-```
-
-##### 源码等价伪码
-
-```text
-for row=blockIdx; row<M; row+=C:
-  scale=0
-  for tile in H: tmp=Swiglu(dequant(x,w,a)); scale=max(scale,maxabs(tmp)/127,1e-12); workspace[blockIdx,tile]=tmp
-  write scale[row]; wait workspace writes visible to MTE2
-  for tile in H: tmp=workspace[blockIdx,tile]; y[row,tile]=cast(tmp/scale)
-```
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-| 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
-|---|---|---|---|---|---|---|---|
-| xQueue | halves at `0,L` | per buffer `2L*4` | INT32 | MTE2 | Vector | tile | depth 2 |
-| weightScaleQueue | halves `0,L` | `2L*4` | FP32 | MTE2 | Vector | tile | depth 1 |
-| activationScaleQueue | 0 | per buffer `8*4` | FP32 | MTE2 | Vector | tile | depth 2 |
-| quantScaleQueue | 0 | `L*4` | FP32 | inactive | inactive | pipe | allocated, not read |
-| tmpBuffer | 0 | `L*4` | FP32 | Swiglu/MTE2 | reduce/cast/MTE3 | tile | 两遍复用 |
-| yQueue | 0 | per buffer `L` | INT8 | cast | MTE3 | tile | depth 2 |
-| scaleQueue | 0 | `8*4` | FP32 | reduce | cast/MTE3 | row | depth 1 |
-| workspace | `blockIdx*H + tile*L` | per core `H*4` | FP32 flat | first pass | second pass | caller/kernel | per-core 私有，逐行复用 |
-
-##### 分层内存布局
-
-```mermaid
-block-beta
-  columns 6
-  xq["xQueue · depth=2 · 16L"]:1
-  wq["weightQueue · 8L"]:1
-  aq["actScaleQueue · 64"]:1
-  qq["quantQueue · 4L inactive"]:1
-  tmp["tmpBuffer · 4L"]:1
-  yq["yQueue · depth=2 · 2L"]:1
-  sq["scaleQueue · 32"]:1
-  ws["GM workspace · usedCore*H*4"]:5
-```
-
-##### 字节账与复用顺序
-
-```text
-UB_total = 16L+8L+64+4L+2L+32+4L = 34L+96
-Host conservative bound uses split=50 and reserve=1056, so UB_total <= U
-workspace_total = usedCore*H*4
-```
-
-| 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
-|---|---|---|---|---|---|
-| tmpBuffer | PreProcess | Reduce/MTE3；第二遍 MTE2/Quant | 下一 tile | `V_MTE3`、`MTE2_V` | 对应搬运完成 |
-| workspace core slice | first pass MTE3 | second pass MTE2 | 同 core 下一 row | `MTE3_MTE2`；整行 second pass 完成 | blockIdx 私有 |
-| scaleLocal | ReduceMax | CopyOut/Quant | 下一 row | scaleQueue EnQue/DeQue | 第二遍结束后 Free |
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-| 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
-|---|---|---|---|---|---|
-| CopyIn→Vector | `MTE2_V` | MTE2 | PreProcess | x/scales | tileData mask |
-| Vector→workspace | `V_MTE3` | Vector | MTE3 | tmp UB | tail length `tailPerRow` |
-| first→second pass | `MTE3_MTE2` | workspace MTE3 | workspace MTE2 | per-core slice | 全行 scale 已最终化 |
-| workspace→Vector | `MTE2_V` | MTE2 | QuantAndCast | tmp UB | FP32 |
-| Vector→reuse | `V_MTE2` | Vector | next MTE2 | tmp/y | 防止过早覆盖 |
-
-#### 关键实现
-
-##### 符号证据表
-
-| 阶段 | 文件 | 符号/模板实例 | 实现事实 |
+| 区域 | 固定容量 | active 差分 | 同步/尾块 |
 |---|---|---|---|
-| Host/Tiling producer | `op_kernel/dequant_swiglu_quant_kernel.cpp` | `CalcDirectTiling` | NF L/loop/tail/workspace |
-| Kernel entry/router | 同上 | `nf_i32_nq` | workspace 直传模板 |
-| Device body/helper | `op_kernel/dequant_swiglu_quant_dynamic_not_full.h` | `ProcessSingleRow` | 两遍、事件、per-core slice |
-| Device helper | `op_kernel/dequant_swiglu_quant_dynamic_not_full_vf.h` | `DequantAndSwiGlu/CalculateReduceMax/QuantAndCast` | FP32 计算与 tail |
-
-### P8 / Route R-010：NF-F16-Q
-
-#### 适用条件
-
-##### 选择证据
-
-R-009 改为 qscale 存在；entry `nf_half_q`；模板 `DynamicNotFull<bool,float,bool,bool,half,int8_t>`。
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-R-009 flow -> qscale CopyIn -> CalculateReduceMax<true> -> scaled workspace -> second pass
-```
-
-##### 源码等价伪码
-
-`half→FP32; tmp=Swiglu; tmp*=qscale; update scale; workspace=tmp; y=cast(workspace/scale)`。
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-R-009 固定布局，启用 quantScaleQueue。
-
-##### 分层内存布局
-
-同 R-009。
-
-##### 字节账与复用顺序
-
-`UB_total=26L+96`；qscale 原地阶段位于 workspace CopyOut 前。
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-同 R-008，输入 cast 为 half→FP32。
-
-#### 关键实现
-
-##### 符号证据表
-
-`LaunchHalf` → `nf_half_q` → `CalculateReduceMax<true>`。
-
-### P9 / Route R-012：NF-BF16-Q
-
-#### 适用条件
-
-##### 选择证据
-
-R-011 改为 qscale 存在；entry `nf_bfloat16_q`；模板 `DynamicNotFull<bool,float,bool,bool,bfloat16_t,int8_t>`。
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-R-011 flow -> qscale CopyIn -> scaled tmp/workspace -> final-scale quantization
-```
-
-##### 源码等价伪码
-
-`BF16→FP32; tmp=Swiglu; tmp*=qscale; update scale; workspace=tmp; y=cast(tmp/scale)`。
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-R-011 固定布局，quantScaleQueue active。
-
-##### 分层内存布局
-
-同 R-011。
-
-##### 字节账与复用顺序
-
-`UB_total=26L+96`；qscale 乘入发生在 workspace 提交前。
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-同 R-010，仅输入 cast 为 BF16→FP32。
-
-#### 关键实现
-
-##### 符号证据表
-
-`LaunchBfloat16` → `nf_bfloat16_q` → `CalculateReduceMax<true>`。
-
-### P10 / Route R-011：NF-BF16-NQ
-
-#### 适用条件
-
-##### 选择证据
-
-`dtypeTag=2 && H>5120 && !hasQuantScale`；entry `nf_bfloat16_nq`；模板 `DynamicNotFull<bool,bool,bool,bool,bfloat16_t,int8_t>`。
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-LaunchBfloat16 -> nf_bfloat16_nq -> BF16 unpack/cast -> NF two-pass workspace flow
-```
-
-##### 源码等价伪码
-
-同 R-009，只替换输入 load/cast dtype。
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-容量、offset、workspace 与 R-009 相同，逻辑 x dtype 为 BF16。
-
-##### 分层内存布局
-
-同 R-009。
-
-##### 字节账与复用顺序
-
-`UB_total=26L+96`；复用顺序同 R-009。
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-BF16 升 FP32 后执行全部计算；事件/tail 同 R-007。
-
-#### 关键实现
-
-##### 符号证据表
-
-`LaunchBfloat16` → `nf_bfloat16_nq` → `DequantAndSwiGlu` 的 `IsXBfloat16` 分支。
-
-### P11 / Route R-009：NF-F16-NQ
-
-#### 适用条件
-
-##### 选择证据
-
-`dtypeTag=1 && H>5120 && !hasQuantScale`；entry `nf_half_nq`；模板 `DynamicNotFull<bool,bool,bool,bool,half,int8_t>`。
-
-#### Device 数据流
-
-##### 函数级调用链
-
-```text
-LaunchHalf -> nf_half_nq -> half unpack/cast -> NF two-pass workspace flow
-```
-
-##### 源码等价伪码
-
-R-007 去掉 wscale/ascale 计算，输入 half 升 FP32 后进入相同 Swiglu、归约、workspace 与 cast。
-
-#### 内存与数据搬运
-
-##### 资源与搬运表
-
-xQueue 为 `8L`；weightQueue `8L` 仍固定分配但 inactive；其余同 R-007。
-
-##### 分层内存布局
-
-```text
-xQueue 8L + weightQueue 8L + actScaleQueue 64 + quantQueue 4L + tmp 4L + yQueue 2L + scaleQueue 32
-```
-
-##### 字节账与复用顺序
-
-`UB_total=26L+96`，Host `split=26`；workspace 与复用同 R-007。
-
-#### 同步、精度与尾块
-
-##### 同步与数值边界表
-
-half 用 unpack B16 load 并升 FP32；事件图与 tail tile 同 R-007。
-
-#### 关键实现
-
-##### 符号证据表
-
-`LaunchHalf` → `nf_half_nq` → `DequantAndSwiGlu` 的 `IsXFloat16` 分支。
+| X Queue | 2 slots，`2L*sizeof(X)`/slot | 全叶 active | tail 先按 X dtype 对齐到 UB，VF/GM 只消费 n |
+| W Queue | 1 slot，`2L*4` | 仅 I32 active | 与 X 同一 MTE2_V 边 |
+| A Queue | 2 slots，`8*4`/slot | 仅 I32 active | 搬 1 个 FP32，寄存器广播 |
+| Q Queue | 1 slot，`L*4` | 仅 Q active | q 乘法用 full/tail mask并原地写 tmp |
+| TMP TBuf | `L*4` | 全叶 active | `V_MTE2` 防下一搬入过早覆盖，`V_MTE3` 保护写 workspace |
+| S Queue | 1 slot，`8*4` | 全叶 active | 跨 tile 更新；`MTE3_MTE2` 位于两遍边 |
+| Y Queue | 2 slots，`L` bytes/slot | 全叶 active | cast 后精确搬 n bytes |
+| GM workspace | 每 core H 个 FP32 | 全 NF 叶 active | `blockIdx*H+t*L`；当前 row 第二遍完成后才能覆盖 |
+
+无跨 core 通信；workspace 私有 slice 消除了核间同步。第一遍的 `S_MTE2/MTE2_V/V_MTE2/V_MTE3` 和两遍间 `MTE3_MTE2` 是源码显式 HardEvent，不能仅用“Queue 自动同步”代替。NF 同样不使用 L1/L0、SIMT、NDDMA 或通信窗口。
+
+Device 地址、容量和“同一 core 当前 row 两遍完成后可覆盖 slice”由源码闭合；workspace tensor 的完成期 owner 不由这张表推出。它是 Plugin 局部 tensor，lambda 只使用其 raw GM pointer，返回输出也不持有它；是否在异步 Kernel 完成前延迟回收属于 `RunOpApi`/NPU allocator 外部契约。
+
+### 两个 body family 的不变量与 fallback
+
+| 不变量 | FL | NF |
+|---|---|---|
+| 语义 | dequant/cast→Swish×gate→可选 q→全行 max/127/floor→同值量化 | 完全相同；仅用 workspace 两遍解决全行 max 依赖 |
+| half selection | x 与 w 使用同一 `actRight` 半部；a 按 row | 相同，tile offset 额外加 `t*L` |
+| block mapping | 连续行块，再按 Fx batch | blockIdx 起始、步长 C 的 row 轮询 |
+| tail | H 的 VF mask + 精确 GM blockLen | 最后一 tile n=tail，再叠加 VF tail mask |
+| workspace | entry 签名不接收；Plugin 32B 仅占位 | per-core H×FP32；完成期 owner 属框架边界 |
+| 失败出边 | `Fx<1`、平台资源非法即 Host 异常；不尝试 NF | `L<=0`、workspace 分配/设备执行失败无 scalar fallback |
 
 ## 算子特定优化
 
@@ -923,11 +512,10 @@ FL 把整行 H 的中间结果留在 UB，从而不物化 GM 中间值；当 H �
 - 适用：需要按整行 max 动态量化、且 H 可能超过单次 UB 常驻能力的融合算子。
 - 前提：AIV、可查询 UB/core、NF 有 `coreNum*H*4` 用户 workspace。
 - 失效：若 workspace 不可用或 L 为 0，不能退化为本实现未提供的 scalar fallback。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
-固定仓未提供可验证反例；但源码明确要求第二遍只能在最终 scale 与 workspace 可见后开始。
+不能在第一遍的某个 tile 得到局部 max 后立即量化该 tile；后续 tile 可能抬高全行 scale，使同一行输出使用不一致的除数。第二遍必须等待最终 scale 与整行 workspace 对 MTE2 可见。
 
 ### Trick T-002：quant_scale 在 FP32 中间值上原地乘入
 
@@ -955,11 +543,10 @@ if constexpr (HasQuantScale) {
 - 适用：scale 变换必须同时影响动态量化幅值与最终被量化值。
 - 前提：tmp 在归约和 cast 完成前不被别的阶段覆盖；qscale 为逐列 FP32。
 - 失效：若 qscale 语义是除法、标量广播或不应影响动态 scale，不能复用此顺序。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
-固定仓未提供可验证反例。
+不能先对未乘 q 的 tmp 求 max、再只在最终 cast 前乘 q；这样输出 scale 不再描述真正被量化的值。也不能把本接口的逐列乘法替换成通用 helper 中其他模式的除法语义。
 
 ### Trick T-003：NF workspace 按 core 而不是按 row 分配
 
@@ -987,11 +574,10 @@ uint64_t gmOffset = blockIdx_ * yLength_ + loop * blockLength_;
 - 适用：同一 core 上的行处理串行、每行两遍闭合的实现。
 - 前提：第二遍结束前不得调度同 core 的下一行覆盖 slice。
 - 失效：若同一 core 并发多行或跨 Kernel 异步消费 workspace，必须扩大 slice 或增加更强生命周期协议。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
-固定仓未提供可验证反例。
+不能在只分配 `usedCore*H` 元素时按 `rowIndex*H` 寻址 workspace；当一核轮询多行会越界。也不能在当前行第二遍结束前让下一行覆盖 `blockIdx*H` slice。
 
 ## 模板与实现对比
 
@@ -1020,10 +606,12 @@ uint64_t gmOffset = blockIdx_ * yLength_ + loop * blockLength_;
 - `M`、`H`、可选 scale 的 shape/dtype/device 不满足约束时在 Host 失败；unknown dtype、平台/UB 查询异常、`Fx/L` 为零也没有 Device fallback。
 - entry 的非 AIV core 直接返回；所有可达计算节点均为 AIV_VECTOR，未发现 Cube/AIC 或 MIX_CV。
 - FL 的无 qscale/16-bit 路线仍保留固定 inScale/activation-scale UB 容量，这是实际分配，不应按逻辑活跃输入扣除。
+- FL 16-bit 路线的 tmp 分配/Host 字节账按 `A8(H)`，Device 多行寻址却按 `A16(H)`；`A16(H)>A8(H)` 且 resident row 数大于 1 时，源码层面未闭合容量证明。
+- FL 在 AIV 核数截断 `usedCore`、单 core 需要多个 `Fx` row batch 时，inScaleLocal 在循环外只分配一次、循环内却每次释放；当前生命周期同样缺少多 batch 安全证明。
 - NF Host 对 INT32 使用比实际 Queue 字节账更保守的 `split=50`；实现复用时不得只按 `34L+96` 放大 L 而绕过 Host 上界。
 - Direct workspace 去除了官方 registered runtime 的 system-workspace 前缀；迁移回注册式入口时必须恢复对应 `GetUserWorkspace` 语义。
 - 转换实现相对官方相关 body 增加 scale 的 `clamp_min(1e-12)`；该事实不得表述成官方固定 Commit 的原生语义。
-- 本次知识提取未执行编译、真机、数值或性能测试。
+- Host 不检查 scale 数值有限性，directCall 也不在 enqueue 后同步查询设备状态；异常值传播和异步设备错误均没有备用计算路径。
 
 ## 源码索引
 
@@ -1056,7 +644,7 @@ uint64_t gmOffset = blockIdx_ * yLength_ + loop * blockLength_;
 |---|---|---|---|
 | ABI/POD | 值传递 plain POD | 字段顺序、64/32 位宽、184B 布局；inactive 字段仍初始化 | `DequantSwigluQuantV35BaseTilingData`, `CalcDirectTiling` |
 | 调用顺序 | schema→PrivateUse1→launcher→entry→body | dtype 与 q flag 必须选择匹配模板 | `directCall`, `Launch*` |
-| workspace/内存 | FL 0；NF per-core H×FP32 | NF offset=`blockIdx*H`、extent=`usedCore*H*4`、两遍完成前不可覆盖 | `SetGlobalTensor`, `ProcessSingleRow` |
+| workspace/内存 | FL 0；NF per-core H×FP32 | NF offset=`blockIdx*H`、extent=`usedCore*H*4`、两遍完成前不可覆盖；完成期 owner 依赖 `RunOpApi`/allocator 外部契约 | `SetGlobalTensor`, `ProcessSingleRow` |
 | 同步 | FL Queue；NF Queue + HardEvent | NF `MTE3_MTE2` 必须位于两遍之间 | `ProcessSingleRow` |
 | 精度与尾块 | FP32 compute/reduce，scale floor，固定 INT8 cast 链 | qscale 乘入必须早于 max；tail mask 只覆盖有效元素 | `CalculateReduceMax`, `QuantAndCast`, FL Vector scope |
 | 失败边界 | Host 资源/shape/dtype 失败 | 不得虚构 scalar fallback；非 AIV entry 返回 | `CheckInputs`, `CalcDirectTiling`, entry guard |

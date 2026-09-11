@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:28:52Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -40,11 +40,11 @@ cann_versions: ["9.1.0"]
 | 实际入口 | Python 动态 wrapper `cann_bench.sigmoid`，PyTorch custom op `cann_bench::sigmoid`，PrivateUse1 实现 `sigmoid_npu`，C ABI launcher `launch_sigmoid_kernel_half`、`launch_sigmoid_kernel_bfloat16`、`launch_sigmoid_kernel_float`；入口类型为 `Direct Invoke`。 |
 | 计算语义 | 逐元素计算 `y = 1 / (1 + exp(-x))`。 |
 | 输入输出 | 输入、输出同 shape；Direct Invoke 支持 FP16、BF16、FP32，并按线性 `numel` 访问 GM。 |
-| 执行类型 | P0 R-002、P1 R-001 均为单节点 `AIV_VECTOR`；三个 entry 都声明 `KERNEL_TYPE_AIV_ONLY`，无可达 Cube/AIC 或 `MIX_CV` 节点。 |
-| Kernel 路线 | 重要性降序为 P0 R-002 FP16/BF16 升 FP32 RegBase、P1 R-001 FP32 RegBase。Route ID 保持 dtype launcher 身份；Host 仍按 FP16→BF16→已校验 FP32 的真实顺序短路，不使用 Device TilingKey router。 |
-| 核心资源 | 输入/输出 GM、四段显式 `VECCALC` UB ping/pong、MicroAPI RegTensor、两组 hard-event ID；无 workspace、NDDMA buffer 或通信 window。 |
-| 来源闭包 | `direct_implementation_closed`：交付件闭合 dispatcher、tiling POD、dtype launcher、三个 entry、`KernelSigmoidManual<T>` body、同步/tail 与构建接线；固定官方源码闭合其 950 平台、POD 与数值基线。 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 执行类型 | P0 R-002、P1 R-001 均为 `active` 单节点 `AIV_VECTOR`；三个 entry 都声明 `KERNEL_TYPE_AIV_ONLY`，无可达 Cube/AIC 或 `MIX_CV` 节点。 |
+| Kernel 路线 | 重要性降序为 P0 R-002 FP16/BF16 升 FP32 RegBase、P1 R-001 FP32 RegBase；无 `conditional` Route。三份 Queue body 头文件是不可达的 D-001 `dormant` 源码族，不占用 R-ID。 |
+| 核心资源 | 输入/输出 GM、四段显式 `VECCALC` UB ping/pong、MicroAPI RegTensor、两组 hard-event ID；不经 L1/L0，无 workspace、NDDMA buffer 或通信 window。 |
+| 来源闭包 | `direct_implementation_closed`：转换快照闭合 dispatcher、tiling POD、dtype launcher、三个 entry、`KernelSigmoidManual<T>` body、同步/tail 与构建接线；固定官方源码闭合 950 平台、POD 与官方数值基线。 |
+| 证据边界 | 本卡只把固定 HTTP 源归因为官方事实；Direct Host/POD/C ABI/current-stream、显式 UB 地址和 hard-event 流水均是转换快照事实。 |
 
 ## 接口与语义
 
@@ -86,7 +86,7 @@ Python 包加载 `_C.abi3.so`，并在 `torch.ops.cann_bench.sigmoid` 确实存�
 
 ### 参数、Workspace 与生命周期
 
-令 `N=numel`、`s=elementBytes`、`C=max(GetCoreNumAiv(),1)`、`U=GetCoreMemSize(UB)`：
+令 `N=numel`、`s=elementBytes`、`C=max(GetCoreNumAiv(),1)`、`U=ubSize`（由 `GetCoreMemSize(UB, ubSize)` 写入）：
 
 ```text
 blockDim_initial = min(C, N)
@@ -98,7 +98,7 @@ while blockDim > 1 and blockFormer * (blockDim - 1) >= N:
 blockTail = N - blockFormer * (blockDim - 1)
 ```
 
-`SigmoidLaunchParams` 与 `SigmoidTilingData` 都在 Host 栈上构造；lambda 按值捕获，launch 再把 tiling POD 按值传给 Device entry。输入和输出 GM 由 tensor 持有，当前 stream 提供提交顺序。Direct Invoke launch 配置的 workspace 参数为 `nullptr`，`workspace_total=0`。这与固定官方 Host 为框架预留 32B workspace 不同：交付件 Device body 不读取 workspace，因此直调层删除了该框架预留。
+`SigmoidLaunchParams` 与 `SigmoidTilingData` 都在 Host 栈上构造；lambda 按值捕获，launch 再把 tiling POD 按值传给 Device entry。输入和输出 GM 由 tensor 持有，当前 stream 提供提交顺序。`<<<blockDim, nullptr, stream>>>` 的第二配置槽是 `l2ctrl`，`nullptr` 不是 workspace 实参。`workspace_total=0` 由另一条链证明：三个 entry 签名只接收 `x,y,tilingData`，`KernelSigmoidManual<T>` 也不绑定或读取 workspace。这与固定官方 Host 为框架预留 32B workspace 不同；Direct 路线不携带该预留。
 
 ### 启动图与失败传播
 
@@ -118,9 +118,9 @@ cann_bench.sigmoid
 
 | 节点 | Host 启动函数 | Kernel entry | blockDim/POD | 输入→输出 | workspace/ordering |
 |---|---|---|---|---|---|
-| K1 | `launch_sigmoid_kernel_*` | `sigmoid_f16_entry` / `sigmoid_bf16_entry` / `sigmoid_f32_entry` | `blockDim`；`SigmoidTilingData` 按值 | `x GM -> 四段 UB -> y GM` | workspace N/A；supplied stream + kernel 内 hard events |
+| K1 | `launch_sigmoid_kernel_*` | `sigmoid_f16_entry` / `sigmoid_bf16_entry` / `sigmoid_f32_entry` | `blockDim`；`l2ctrl=nullptr`；`SigmoidTilingData` 按值 | `x GM -> x UB -> Reg -> y UB -> y GM`；旁路 L1/L0 | entry 无 workspace 参数，`workspace_total=0`；supplied stream + kernel 内 hard events |
 
-这是单节点启动图，没有 Kernel 间 workspace 边。Host dtype 失败在 output 分配前由 `TORCH_CHECK` 终止；空 tensor 则会在 tiling 算术中失败。`GetCoreMemSize` 返回状态未检查，launch wrapper 返回 `void`，`aclCall` 固定返回 0，因而源码没有把平台查询失败或异步 Kernel 提交错误转换成非零 lambda 返回值。
+这是单节点启动图，没有 Kernel 间 workspace 边。Host dtype 失败在 output 分配前由 `TORCH_CHECK` 终止；空 tensor 则会在 tiling 算术中失败。`PlatformAscendCManager::GetInstance()` 结果没有 null guard；`GetCoreMemSize` 返回 `void`，不存在可检查的返回状态；Host 在调用后没有检查 `ubSize>=4*64*s`。launch wrapper 返回 `void`，`aclCall` 固定返回 0，因而源码也没有把异步 Kernel 提交错误转换成非零 lambda 返回值。
 
 ## Route 与参数设计
 
@@ -145,14 +145,49 @@ tailTail    = blockTail - (tailLoops-1)*T
 
 非末核覆盖 `[blockIdx*blockFormer, blockIdx*blockFormer+blockFormer)`；末核覆盖同一起点后的 `blockTail`。每个 tile 的 GM 起点为 `blockFormer*blockIdx + loopIdx*T`。`blockFormer` 先按 32B 元素数对齐，while 循环减少核数直到最后一核元素数为正。`T` 按 64 个 FP32 lane 对齐，并由 `U/(4s)` 约束四段 UB；但源码把 `T` 强制至少 64，未显式拒绝 `U < 4*64*s` 的异常平台查询结果。
 
-### Route 特征与重要性
+### Route 分类、合法域与重要性
 
-P0→P1 只规定本卡的阅读与复用顺序，不改变 Host 的 dtype 判断。后续 Route 选择、执行矩阵、源码闭包、逐 Route 章节与实现对比均按此顺序展开。
+P0→P1 只规定本卡的阅读与复用顺序，不改变 Host 的 dtype 判断。令公开调用契约内的实现域为：
 
-| 重要性 | Route | Route 特征 | 适用域 | 实现前提 |
+```text
+D = 950 && PrivateUse1 && N>0 && linear_dense(x,y)
+    && dtype in {FP16,BF16,FP32}
+    && core_query_usable && U >= 4*64*sizeof(dtype)
+D_R002 = D && dtype in {FP16,BF16}
+D_R001 = D && dtype == FP32
+D_R002 union D_R001 = D; D_R002 intersect D_R001 = empty
+```
+
+`linear_dense(x,y)` 要求 kernel 的线性物理顺序与输入/输出逻辑顺序一致。`core_query_usable` 包含可用的 UB 容量；AIV 核数非正时 Host 有回退 1 核，但 UB 查询状态没有对等的失败出边。
+
+| 重要性 | 分类 | Route/源码族 | 特征与适用域 | 实现前提或不可达原因 |
 |---|---|---|---|---|
-| P0 | R-002 FP16/BF16 升 FP32 RegBase | 以同一 T16 body 覆盖两种窄 dtype；GM/UB 保持 16-bit，寄存器中完成 unpack、FP32 非线性与 RINT pack | FP16 或 BF16；`N>0`；线性 dense；950 | `sizeof(T)==2`；平台支持 B16 unpack/pack、双向 cast 与 FP32 `FusedExpSub/Adds/Div`；四段 UB 和 hard-event 前提成立 |
-| P1 | R-001 FP32 RegBase | FP32 norm load/store 与全 FP32 非线性，省去窄类型转换 | FP32；`N>0`；线性 dense；950 | `T=float`；FP32 RegBase primitive、四段 UB 和 hard-event 前提成立 |
+| P0 | `active` | R-002 FP16/BF16 升 FP32 RegBase | 以同一 T16 body 覆盖 `D_R002`；GM/UB 保持 16-bit，寄存器中完成 unpack、FP32 非线性与 RINT pack | `sizeof(T)==2`；平台支持 B16 unpack/pack、双向 cast 与 FP32 `FusedExpSub/Adds/Div`；四段 UB 和 hard-event 前提成立 |
+| P1 | `active` | R-001 FP32 RegBase | 覆盖 `D_R001`；FP32 norm load/store 与全 FP32 非线性，省去窄类型转换 | `T=float`；FP32 RegBase primitive、四段 UB 和 hard-event 前提成立 |
+| P2 | `dormant` | D-001 `SigmoidF16/SigmoidBf16/SigmoidF32` Queue body 族 | 头文件保留 Queue 多 buffer body；canonical dormant 声明输入 `TQue<...,2>`、输出 `TQue<...,1>`，两个 Queue 都用 `InitBuffer(...,2,T*s)` 注册缓冲；它不是生产 Route，不占 R-ID | `sigmoid_entry.h` 只 include/construct `KernelSigmoidManual<T>`；无 Queue entry、C launcher 或 Host selector producer，构建链也不单独编译这三个头文件 |
+
+P0 先于 P1，因为它同时覆盖两种合法 dtype，且携带窄类型→FP32→窄类型的精度边界；P1 闭合剩余 FP32 域。D-001 排在最后，只保留不可达性与重启条件，不与 active Route 竞争 selector 优先级。
+
+没有 `conditional` Route。`DataCopy`/`DataCopyPad`、单 tile/多 tile 以及 former/tail core 是两条 active Route 内部的条件边，不会改变 launcher、entry 或 Device body 身份。D-001 有两种不同的重启方式：
+
+- **直接替换 manual body**：可复用现有 dtype branch、三个 C launcher 和三个 entry 签名。在 entry 中 include 对应 Queue 头文件，构造 `TPipe`，再以 `Init(x,y,nullptr,&tilingData,&pipe) -> Process()` 替代 `KernelSigmoidManual<T>` 调用即可建立可达边；Queue body 不读 workspace，这里的第三实参可为 null。
+- **与 manual body 并存为新 Route**：必须新建可证明的判别边，例如 Host/POD key 加 entry router，或独立 entry。新 launcher 只是实现选项，不是必要条件；两个 body 仍可通过同一 launcher 进入带 key 的 entry router。
+
+两种方式都要重新闭合 `TQue` 模板深度与 `InitBuffer` 注册数的关系、`4*T*s` UB、current-stream、tail、dtype 精度顺序与 workspace 契约。仅 include 头文件或修改 POD 不能自动使 D-001 成为可达 Route。
+
+```text
+# 当前唯一可达关系
+dtype branch -> launch_sigmoid_kernel_* -> sigmoid_*_entry
+             -> KernelSigmoidManual<T>::Init/Process
+
+# D-001 当前没有入边；直接替换时复用现有链
+existing dtype branch/launcher/entry -> TPipe
+                                     -> Sigmoid{F16|Bf16|F32}::Init/Process
+
+# 仅并存为新 Route 时才要求新判别边
+new selector/key -> existing or new launcher -> routed entry + TPipe
+                 -> Sigmoid{F16|Bf16|F32}::Init/Process
+```
 
 ### Route 选择
 
@@ -178,7 +213,7 @@ sigmoid_npu dtype dispatch:
 | P0 | R-002 FP16/BF16 升 FP32 | half/bfloat16 launcher/entry | FP16 或 BF16；`N>0`；线性 dense；950 | 单 K1 `AIV_VECTOR` | `KernelSigmoidManual<T16>::Process -> ComputeB16` | 四段 16-bit UB；寄存器升 FP32；同一 hard-event 图 | extent 字节 32B 对齐走 `DataCopy`，否则 `DataCopyPad`；VF 用 `UpdateMask`；尾结果 `CAST_RINT` 后 pack B32 |
 | P1 | R-001 FP32 RegBase | float launcher/entry | FP32；`N>0`；线性 dense；950 | 单 K1 `AIV_VECTOR` | `KernelSigmoidManual<float>::Process -> ComputeFloat` | 四段 `float` UB；两 event IDs 管理 MTE2/V/MTE3；全 FP32 | extent 字节 32B 对齐走 `DataCopy`，否则 `DataCopyPad`；VF 用 `UpdateMask` |
 
-### 隐藏性能 Guard
+### 性能 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -209,10 +244,11 @@ sigmoid_npu dtype dispatch:
 
 ### Route 源码闭包
 
-| 重要性 | Route | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
-|---|---|---|---|---|---|---|---|
-| P0 | R-002 FP16/BF16 | Host dtype branch | 交付件 `sigmoid_plugin.cpp::sigmoid_npu`、`sigmoid_kernel.cpp::calc_sigmoid_tiling_params`；官方基线 `SigmoidTiling::{GetOpKey,DoOpTiling}` | `SigmoidTilingData`、`SigmoidLaunchParams` | `sigmoid_f16_entry` / `sigmoid_bf16_entry`；官方 keys `100000000000100` / `200000000000100` | `KernelSigmoidManual<T16>::{Process,ComputeB16}`；官方 `SigmoidF16/SigmoidBf16` | 交付件算子/顶层 CMake + `register_direct_launch_op`；官方 `activation/sigmoid/CMakeLists.txt` |
-| P1 | R-001 FP32 | Host dtype branch | 同上 | 同上 | `sigmoid_f32_entry`；官方映射 `sigmoid` key `300000000000100` | `KernelSigmoidManual<float>::{Process,ComputeFloat}`；官方 `SigmoidF32` | 同上 |
+| 重要性 | 分类 | Route/源码族 | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
+|---|---|---|---|---|---|---|---|---|
+| P0 | `active` | R-002 FP16/BF16 | Host dtype branch | 转换件 `sigmoid_plugin.cpp::sigmoid_npu`、`sigmoid_kernel.cpp::calc_sigmoid_tiling_params`；官方基线 `SigmoidTiling::{GetOpKey,DoOpTiling}` | `SigmoidTilingData`、`SigmoidLaunchParams` | `sigmoid_f16_entry` / `sigmoid_bf16_entry`；官方 keys `100000000000100` / `200000000000100` | `KernelSigmoidManual<T16>::{Process,ComputeB16}`；官方 `SigmoidF16/SigmoidBf16` | 转换件算子/顶层 CMake + `register_direct_launch_op`；官方 `activation/sigmoid/CMakeLists.txt` |
+| P1 | `active` | R-001 FP32 | Host dtype branch | 同上 | 同上 | `sigmoid_f32_entry`；官方映射 `sigmoid` key `300000000000100` | `KernelSigmoidManual<float>::{Process,ComputeFloat}`；官方 `SigmoidF32` | 同上 |
+| P2 | `dormant` | D-001 Queue body 族 | 无 producer | 仅共用 POD 定义 | 可读取同一 `SigmoidTilingData`，但无按值 launch 消费者 | 无 entry/router 节点 | `SigmoidF16/SigmoidBf16/SigmoidF32`；`TQue/TPipe` | 头文件未被可达 entry include；无单独 translation unit |
 
 ## Kernel 实现
 
@@ -281,6 +317,7 @@ for each tile j on this core:
 | `yPing` | UB `2*T*2` | `T*2` B | T16 | Vector | MTE3 | 偶数 tile | MTE3 free 后覆盖 |
 | `yPong` | UB `3*T*2` | `T*2` B | T16 | Vector | MTE3 | 奇数 tile | MTE3 free 后覆盖 |
 | RegTensor | 寄存器 | 2 个 T16 + 6 个 FP32 数据寄存器 + mask；确切字节固定源码不可见 | unpacked T16/FP32 | `ComputeB16` | 同一 VF iteration | 单 VF iteration | 中间 exp/den/result 不进 UB |
+| L1/L0/workspace | N/A | 0 B | N/A | 无 | 无 | 未分配 | GM↔UB↔Reg 直连，不能借用官方 32B 框架预留 |
 | output GM | 同 input offset | `extent` 元素 | FP16/BF16 linear ND | `CopyOut` | caller | output tensor | 只写有效 tail |
 
 ##### 分层内存布局
@@ -393,6 +430,7 @@ drain V_MTE2 and MTE3_V for both event IDs
 | `yPing` | UB `2*T*4` | `T*4` B | FP32 | Vector | MTE3 | kernel block；偶数 tile | 上次 MTE3 完成后覆盖 |
 | `yPong` | UB `3*T*4` | `T*4` B | FP32 | Vector | MTE3 | kernel block；奇数 tile | 上次 MTE3 完成后覆盖 |
 | RegTensor | 寄存器 | 6 个 FP32 数据寄存器 + mask；确切字节固定源码不可见 | FP32 | `ComputeFloat` | 同一 VF iteration | 单 VF iteration | 不跨 tile 物化 |
+| L1/L0/workspace | N/A | 0 B | N/A | 无 | 无 | 未分配 | GM↔UB↔Reg 直连，不能借用官方 32B 框架预留 |
 | output GM | 同 input offset | `extent` 元素 | FP32 linear ND | `CopyOut` | caller | output tensor | 仅写有效 tail |
 
 ##### 分层内存布局
@@ -450,7 +488,7 @@ workspace_total = 0
 
 - 适用 Route：P0 R-002。
 - 触发条件：FP16 或 BF16；VF 每轮以 `UpdateMask<float>` 处理最多 64 个有效 lane。
-- Golden 来源：[`activation/sigmoid/op_kernel/arch35/sigmoid_f16.h:94-99`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f16.h)
+- 固定官方源码依据：[`activation/sigmoid/op_kernel/arch35/sigmoid_f16.h:94-99`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f16.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -472,7 +510,6 @@ AscendC::MicroAPI::Cast<half, float, castTrait1>(vreg7, vreg6, preg0);
 - 适用：逐元素含指数/除法、输入输出为 FP16/BF16、可在寄存器中保留 FP32 中间值的 AIV kernel。
 - 前提：平台支持对应 unpack/cast/pack 与 FP32 `FusedExpSub/Adds/Div`；tail mask 以 FP32 lane 数推进。
 - 失效：若目标平台不支持该 fused primitive，恢复固定官方 `Muls(-1)` 后接 `Exp`；若输出必须保留 FP32，则使用 P1 R-001 的 norm load/store。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
@@ -484,7 +521,7 @@ AscendC::MicroAPI::Cast<half, float, castTrait1>(vreg7, vreg6, preg0);
 
 - 适用 Route：P0 R-002、P1 R-001；`loopNum>=2` 时能够交叠不同 tile，`loopNum==1` 时仍按同一同步协议正确退化。
 - 触发条件：Host 保证 `4*T*s<=U`，Device 以 tile parity 绑定 `EVENT_ID0/1`。
-- Golden 来源：[`activation/sigmoid/op_kernel/arch35/sigmoid_f16.h:39-42`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f16.h)
+- 固定官方源码依据：[`activation/sigmoid/op_kernel/arch35/sigmoid_f16.h:39-42`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/sigmoid/op_kernel/arch35/sigmoid_f16.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -497,14 +534,13 @@ pipePtr_->InitBuffer(queOut0_, DOUBLE_BUFFER, BUFFER_SIZE_0);
 
 #### 机制与设计原因
 
-固定官方 body 用输入、输出 Queue 各 depth 2 表达双缓冲，总量同样是 `4*T*s`。交付件保持这份字节账，但将物理区域固定为 x/y 各 ping/pong 两段，并显式建立 `MTE2_V/V_MTE2` 与 `V_MTE3/MTE3_V` 依赖；先预取两个输入，消费后把同一 x 子区填入 `j+2`，再提交当前 y。这样源码直接显露 MTE2、Vector、MTE3 的 owner、覆盖点和同步关系。显式地址、两组 event ID 及 refill 顺序是交付件补充，不应归因于上面的官方原生 Queue 实现。
+固定官方 body 的输入、输出成员都声明为 `TQue<...,1>`，但两次 `InitBuffer` 都以 `DOUBLE_BUFFER=2`、`BUFFER_SIZE_0=T*s` 为每个 Queue 注册两个缓冲，因此总量仍是 `2*T*s + 2*T*s = 4*T*s`。canonical dormant 头文件的模板声明不同：输入为 `TQue<...,2>`，输出为 `TQue<...,1>`，但其两个 `InitBuffer` 同样各注册两个 `T*s` 缓冲。交付件保持 `4*T*s` 字节账，将物理区域固定为 x/y 各 ping/pong 两段，并显式建立 `MTE2_V/V_MTE2` 与 `V_MTE3/MTE3_V` 依赖；先预取两个输入，消费后把同一 x 子区填入 `j+2`，再提交当前 y。这样源码直接显露 MTE2、Vector、MTE3 的 owner、覆盖点和同步关系。显式地址、两组 event ID 及 refill 顺序是交付件补充，不应归因于上面的官方原生 Queue 实现。
 
 #### 迁移边界
 
 - 适用：单输入单输出、每个 tile 独立、能以 parity 复用两份输入和两份输出的逐元素 AIV kernel。
 - 前提：四段 UB 不重叠，event ID 在核内专用，MTE2/V/MTE3 的 set/wait 方向保持一致，最后 drain 两组 free-event。
 - 失效：只有一份输入或输出 buffer、跨 tile 有数据依赖、或 event ID 与其它代码冲突时，应回到 Queue 管理或重新证明同步图。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
@@ -535,11 +571,10 @@ pipePtr_->InitBuffer(queOut0_, DOUBLE_BUFFER, BUFFER_SIZE_0);
 
 - Direct Invoke 有效域要求 `numel>0` 且输入/输出按线性 ND 存储；dispatcher 没有 empty 或 contiguous guard，调用方必须补齐。
 - `numel`、block/tile/POD 均为 `int64_t`，但 `tileElems/tileBytes` 在 Device 窄化为 `uint32_t`，VF loop 数窄化为 `uint16_t`；Host 的正常 UB 上界使实际 tile 很小，但源码没有独立窄化断言。
-- `GetCoreMemSize` 状态未检查；当查询得到过小/零 UB 时，`elemNum>=64` 可能破坏 `4*T*s<=U`。复用时应把平台查询成功与最小 UB 写成显式 Host guard。
+- `PlatformAscendCManager::GetInstance()` 结果无 null guard；`GetCoreMemSize` 返回 `void`，没有返回状态可供检查。Host 只使用被写入的 `ubSize`，没有检查 `ubSize>=4*64*s`；当 `ubSize` 过小或为零时，`elemNum>=64` 可能破坏 `4*T*s<=U`。复用时应对 manager 指针和最小 UB 容量增加显式 Host guard。
 - `DataCopyExtParams` 只显式赋值 `blockCount` 与 `blockLen`；其余字段依赖 SDK 类型的默认语义，本算子源码没有额外设置 stride。
 - `launch_sigmoid_kernel_*` 返回 `void`，外层 lambda 固定返回 0，异步 launch/Device 错误不在本闭包中转换为 Host 返回码。
 - 固定官方 Sigmoid 使用 Queue 双缓冲、`Muls+Exp` 和框架 32B workspace；交付件的 direct entry、POD 按值 ABI、显式 hard-event、`FusedExpSub` 与 workspace 删除均是适配/补充，不得描述成官方原生实现。
-- 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
 
@@ -566,7 +601,7 @@ pipePtr_->InitBuffer(queOut0_, DOUBLE_BUFFER, BUFFER_SIZE_0);
 |---|---|---|---|
 | ABI/POD | 八个 `int64_t` elementwise 字段可机械转为 plain POD | 字段顺序、位宽、元素单位；`dim0` 虽 inactive 仍保留 | 官方 `SigmoidTilingData`；交付件同名 POD |
 | 调用顺序 | dtype Host 分发后只启动一个 AIV entry | tiling 必须在 launch 前完成，entry 的 T 必须与 tensor dtype 一致 | `sigmoid_npu`、`launch_sigmoid_kernel_*`、`sigmoid_*_entry` |
-| workspace/内存 | 官方 depth-2 输入/输出总量可映射为四段 `T*s` UB | `4*T*s<=U`、子区不得重叠；Direct workspace 为 0，不照搬官方 32B 框架预留 | `SigmoidF16::Init`、`KernelSigmoidManual::Process` |
+| workspace/内存 | 固定官方输入/输出成员均为 `TQue<...,1>`，每个 Queue 的 `InitBuffer(...,2,T*s)` 各注册两个缓冲，总量可映射为四段 `T*s` UB；canonical dormant 则为输入 depth 2、输出 depth 1，注册数仍均为 2 | `4*T*s<=U`、子区不得重叠；Direct workspace 为 0，不照搬官方 32B 框架预留 | `SigmoidF16::Init`、`KernelSigmoidManual::Process` |
 | 同步 | Queue producer/consumer 可改写为显式 MTE2/V/MTE3 event 图 | 每次覆盖前必须等待对应 free-event，末尾必须 drain | `KernelSigmoidManual::Process` |
 | 精度与尾块 | T16 unpack→FP32 compute→RINT pack；FP32 norm；mask tail | 不能提前窄化，`UpdateMask<float>` 与 64-lane 地址步长必须一致 | 官方 `SigmoidF16/Bf16/F32::Compute1`；交付 `ComputeFloat/ComputeB16` |
 | 失败边界 | dtype 和非空/线性 dense 条件应在 Direct Host 收口 | 不得把未校验的空域、stride 或平台查询失败交给当前 tiling/body | `sigmoid_meta`、`calc_sigmoid_tiling_params` |

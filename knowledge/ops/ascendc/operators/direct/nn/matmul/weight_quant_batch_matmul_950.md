@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/weight_quant_batch_matmul_v2/op_kernel/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:47:04Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -45,7 +45,7 @@ cann_versions: ["9.1.0"]
 | 计算语义 | `Y = cast_X(X_fp32 @ ((W_int8+offset)_fp32*scale_fp32) + bias_fp32)`；offset/bias 可空，scale/offset 为 per-channel |
 | 输入输出 | `X[M,K]` FP16/BF16 ND，`W[K,N]` INT8 ND，scale/offset `[N]` 或 `[1,N]` 且同 X dtype，bias 为 FP16（X=FP16）或 FP32（X=BF16），`Y[M,N]` 同 X dtype |
 | 执行类型 | R-001：AIV_VECTOR → MIX_CV（AIC:AIV=1:2）→ AIV_VECTOR；R-002：AIV_VECTOR → AIC_CUBE/AIV_VECTOR 多 Kernel 循环 → AIV_VECTOR |
-| Kernel 路线 | P0 / R-001 `M<16` factorized exact-operands CMCT；P1 / R-002 `M>=16` FP32 dequant + K=16 Cube partial + Kahan。P0/P1 表示实现复用重要性，不替代 Host 判断顺序 |
+| Kernel 路线 | 两条 active 且互斥的生产 Route：P0 / R-001 `M<16` factorized exact-operands CMCT；P1 / R-002 `M>=16` FP32 dequant + K=16 Cube partial + Kahan。dtype、offset、bias 只是 Route 内条件分支；无第三条 fallback Route |
 | 核心资源 | GM、三段 route-specific workspace、R-001 的 UB/寄存器与 512 KiB L1/L0A/B/C、R-002 的 FP32 GM intermediates 与 Matmul `CONFIG_MDL` L1/L0A/B/C |
 | 来源闭包 | `direct_implementation_closed`：Direct 校验/分核/分配 → launcher selector → 全部 AIV/MIX_CV/AIC 节点及 stream 边 → CMCT arch35 specialization、Cube 层级、同步、精度和 tail → 950 构建来源 |
 | 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
@@ -86,7 +86,7 @@ R-002 严格保持 FP32 反量化顺序：先把 X 转 FP32，把 `(W+offset)*sc
 
 ### 参数校验与前处理
 
-Direct binding 依序检查：所有 tensor defined、同设备、strided contiguous ND；x/weight 为二维；x 为 FP16/BF16、weight 为 INT8；K 相等；M/K/N 范围；scale 为同 x dtype 的 channel shape；可选 offset 同 dtype 且 shape 与 scale 相同；bias channel shape 与 dtype 合法。无 transpose、reformat、broadcast materialization 或外部算子前处理。缺省 offset/bias 的指针占位为 x，但 `has_antiquant_offset/has_bias` 与模板布尔确保不读占位地址。
+Direct binding 依序检查：所有 tensor defined、同设备、strided contiguous ND；x/weight 为二维；x 为 FP16/BF16、weight 为 INT8；K 相等；M/K/N 范围；scale 为同 x dtype 的 channel shape；可选 offset 同 dtype 且 shape 与 scale 相同；bias channel shape 与 dtype 合法。Meta 与 PrivateUse1 注册都走 `CheckInputs`/`AllocateOutput`；NPU 路径额外建立 `OptionalDeviceGuard`，通过 `OpCommand::RunOpApi("WeightQuantBatchMatmulDirect", direct_call)` 在 current stream 提交 Direct launcher。无 transpose、reformat、broadcast materialization 或外部算子前处理。缺省 offset/bias 的指针占位为 x，但 `has_antiquant_offset/has_bias` 与运行时布尔确保不读占位地址。
 
 Host 还生成 R-002 Cube grid：
 
@@ -111,7 +111,7 @@ else:
   ws2 = 3*M*N*4                            # accumulator | compensation | partial
 ```
 
-三块独立分配，无 alias。输出和 workspace 由 binding 捕获进 direct callback；同一 current stream 上最后一个 kernel 完成前均不得释放。R-001 的 16 MiB `workspace2` 传入 CMCT entry，但当前 `ScmcKernel` 的参数构造未读取该指针；它仍是 Direct ABI 保留区，不能复作其它活跃对象。R-002 的三个 `M×N` slice 连续、不对齐填缝，offset 分别为 `0`、`M*N*4`、`2*M*N*4`。
+三块独立分配，无 alias。`direct_call` 只 odr-use 并按值捕获九个 GM 裸指针、HostParams 副本和 stream，没有捕获 `torch::Tensor` 对象；workspace 局部 tensor 对象仅明确活到 `RunOpApi` 返回。适配层没有显式 event 或 `recordStream`，因此提交后的存储复用安全性依赖 NPU allocator/current-stream 语义；独立复制 C ABI 时，调用方必须保持输入、输出和 workspace 到 stream 中最后一个消费者完成。R-001 的 16 MiB `workspace2` 传入 CMCT entry，但当前 `ScmcKernel` 的参数构造未读取该指针；它仍是 Direct ABI 保留区，不能复作其它活跃对象。R-002 的三个 `M×N` slice 连续、不对齐填缝，offset 分别为 `0`、`M*N*4`、`2*M*N*4`。
 
 ### 启动图与失败传播
 
@@ -128,24 +128,25 @@ Direct binding / current stream
          -> finish_{f16|bf16}<<<72>>> [AIV, VF_CALL 256 threads]
          -> return（短路，不落入 R-001）
        fallthrough, therefore M<16:
-         prepare_factor_{f16|bf16}<<<M>>> [AIV, VF_CALL 256 threads]
+         MakeRawAdaptiveSplitTiling(p) [Host；平台资源检查，按值生成 AS POD]
+         -> prepare_factor_{f16|bf16}<<<M>>> [AIV, VF_CALL 256 threads]
          -> raw_{f16|bf16}<<<cubeM*cubeN>>> [MIX_CV 1:2]
          -> finish_factor_{f16|bf16}<<<72>>> [AIV, VF_CALL 256 threads]
 ```
 
-同 stream launch 顺序提供跨 kernel GM 可见性；R-001 的 MIX_CV 内部另用 CrossCore flag 和 HardEvent。空域在 binding 被 `M,K,N>=1` 拒绝。校验和平台资源异常抛错并停止；Direct callback 固定返回 0，TU 未显式查询每次 `<<<>>>` 的 launch status，因此异步 launch/device 错误依赖 runtime/stream 层上报，不能宣称逐节点同步失败会被 launcher 立即截获。
+同 stream launch 顺序提供跨 kernel GM 交接；R-001 的 MIX_CV 内部另用 CrossCore flag 和 HardEvent。空域在 binding 被 `M,K,N>=1` 拒绝，launcher 另有 `params==nullptr` Host guard。校验和平台资源异常抛错并停止；Direct callback 固定返回 0，TU 未显式查询每次 `<<<>>>` 的 launch status，因此异步 launch/device 错误依赖 runtime/stream 层上报，不能宣称逐节点失败会被 launcher 立即截获。
 
 ## Route 与参数设计
 
 ### 分核与资源计算
 
-R-001 的 raw CMCT tiling 从平台读取 AIC、L0A/L0B。`cubeNumBlocksN=min(aicNum,ceil(N/256))`；因 `M<16`，`cubeNumBlocksM=1`。`singleCoreM=M`，`baseM=min(256,align16(M))`；`singleCoreN=baseN=min(256,align16(ceil(N/cubeNumBlocksN)))`；`baseK=64`，初始 `stepKa=stepKb=ceil(256/64)=4`、`depthA1=depthB1=8`、`dbL0A=dbL0B=2`、`dbL0C=1`。若 `baseM*align16(K)*2<=256 KiB`，A 可全载，`stepKa=ceil(align16(K)/64)`、`depthA1=stepKa`。main/first-tail 由 N 和 `singleCoreN` 计算，second-tail 为 0。
+R-001 的 raw CMCT tiling 从平台读取 AIC、L0A/L0B。`cubeNumBlocksN=min(aicNum,ceil(N/256))`；因 `M<16`，`cubeNumBlocksM=1`。`singleCoreM=M`，`baseM=min(256,align16(M))`；`singleCoreN=baseN=min(256,align16(ceil(N/cubeNumBlocksN)))`；`baseK=64`，初始 `stepKa=stepKb=ceil(256/64)=4`、`depthA1=depthB1=8`、`dbL0A=dbL0B=2`、`dbL0C=1`。若 `baseM*align16(K)*2<=256 KiB`，tiling 会把 `stepKa=ceil(align16(K)/64)`、`depthA1=stepKa`；Device 只在 `stepKa>stepKb` 时选 A single-buffer/full-load，其余仍走 DB 分支。main/first-tail 由 N 和 `singleCoreN` 计算，second-tail 为 0。
 
 R-002 的 AIV 节点固定 72 blocks，每 block 以 256 SIMT threads 做 grid-stride。AIC `block = nIndex*mCoreCount+mIndex`，每 shard 的 `M<=singleCoreM`、`N<=singleCoreN`，尾块为 `min(remaining,singleCore*)`。静态 Matmul specialization 为 `GM ND float × GM ND float(transB=true) -> GM ND float`、`CONFIG_MDL`、shape params `(64,512,32768; base 64,128,64)`；实际 contraction tail `chunkK<=16`，`SetHF32(false,0)`。
 
 ### Route 选择
 
-P0/P1 是知识复用重要性：P0 先列小 M 的低物化、MIX_CV 主路线，P1 再列大 M 的精度保守路线。`Host 顺序` 单独保留 launcher 源码真实控制流；因此表格展示顺序不等同于 `if` 的检查顺序。
+Route 穷尽以“Host 可达 launch site”为边界：本 TU 定义 12 个 `__global__` entry，全部只被下表两条节点图引用；其它 CMCT header 仅提供模板库，没有第三个 launcher 出边。P0/P1 综合可达输入域、小 M 低物化复用价值、大 M 安全路线价值与实现复用性；`Host 顺序` 则单独保留 launcher 源码真实控制流，所以 P0/P1 不改写 `if` 的判断顺序。
 
 | 优先级 | Route | Route 特征 | 适用域 | 实现前提 | Host 顺序、短路与 fallback |
 |---|---|---|---|---|---|
@@ -164,6 +165,16 @@ else:                                    # Host 顺序 2 / fallthrough
 
 offset/bias 不是 Route：它们由 `has_*` 控制可选 FP32 correction；dtype 仅选择类型实例，不改变节点图。
 
+#### Route 分类与 dormant 边界
+
+| 分类 | 候选族 | 生产可达性 | 不另立 Route 的原因 / 重新启用条件 |
+|---|---|---|---|
+| active | R-001 | `M<16` 时必达；dtype 选 f16/bf16 命名 entry | 两个 dtype entry 共用同一 selector、POD、tiling 和节点图，不拆 Route |
+| active | R-002 | `M>=16` 时必达并 `return` | prepare/finish 的 dtype entry 与 offset/bias runtime 布尔不改变 Cube→Kahan 主图 |
+| conditional | offset / bias | 两 Route 内可选；R-001 raw CMCT 总是 no-offset/no-bias，correction 在 finish；R-002 offset 在 prepare、bias 在 finish | 只改变对应 AIV body 中的 `if (p.has_*)`，没有独立 launch/key/workspace |
+| dormant | CMCT per-tensor/per-group/MX、NZ、INT4/FP8、bias/fixpipe/stream-K/iter-batch 等已打包模板 | Host 不产生其 key，Direct TU 唯一 `InvokeKernel` 实例固定 `int8_t`、ND、`PER_CHANNEL(2)`、`TransA/B=false`、`HasOffset=false`、`IsBiasFp32=false`、`IsWeightNz=false` | header 存在不构成生产 Route；重启必须同时增加接口校验、Host selector、POD/tiling producer、命名 entry/launch site、workspace 与精度/tail 审计 |
+| fallback | CPU、ACLNN、其它算子或 Route 间退避 | 不存在 | 校验/资源异常直接失败；已命中 R-002 不会落入 R-001 |
+
 ### 模板/实现执行矩阵
 
 | 优先级 / Route | Host 顺序 / key | dtype/shape/platform 完整命中条件 | 执行族与 kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
@@ -171,7 +182,7 @@ offset/bias 不是 Route：它们由 `has_*` 控制可选 FP32 correction；dtyp
 | P0 / R-001 factorized CMCT | 2 / first guard false，`M<16` + f16/bf16 | 950；接口表约束；per-channel INT8 ND；无 transpose；raw specialization固定无 offset/bias、FP32 C | AIV prepare → 单 MIX_CV raw（AIC:AIV 1:2）→ AIV finish | `PrepareFactorized`；`ScmcKernel<256,4,false,false,PER_CHANNEL,false,false,false>`；`FinishFactorized` | ws0 unit scale/row sum、ws1 raw FP32、ws2 16MiB；MIX 内 UB→L1 flag，跨 kernel 同 stream | K row-sum grid-stride；CMCT K/N/M tail；无 fallback |
 | P1 / R-002 compensated FP32 | 1 / `if (M>=16)`，完成后 return | 950；接口表约束；`blockDim<=36`；每个 chunk `1..16`；静态模板上界见 Guard | AIV prepare → `ceil(K/16)`×(AIC Cube→AIV Kahan) → AIV finish | `PrepareFp32`；`WqbmmFp32Matmul::Process`；`AccumulateFp32Chunk`；`FinishFp32` | ws0/1 全 FP32；ws2 三个 M×N FP32 slice；跨节点同 stream | M/N shard tail，末 K chunk；无 fallback且不落入R-001 |
 
-### 隐藏性能 Guard
+### 实现 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -188,7 +199,7 @@ offset/bias 不是 Route：它们由 `has_*` 控制可选 FP32 correction；dtyp
 
 ### POD/ABI
 
-`WeightQuantBatchMatmulHostParams` 是 12 个连续 `int32_t`：`sizeof=48`、`alignof=4`，offset 每项递增 4。它在 Direct launch 中按值复制到各 kernel；launcher 入口先解引用 caller pointer，因此 caller pointer 只需活到 launcher 完成同步提交。各字段如下。
+`WeightQuantBatchMatmulHostParams` 是 12 个连续 `int32_t`：`sizeof=48`、`alignof=4`，offset 每项递增 4。Binding 先生成 `checked.params`，再把 `params` 副本按值捕获进 callback；callback 传 `&params`，launcher 入口立即检查并复制成局部 `p`，最后每个 kernel 又按值获得 `p` 或 `chunk_p`。因此 Host pointer 不跨异步 Device 寿命；它只需在 launcher 调用期间有效。各字段如下。
 
 | 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
 |---|---|---|---|---|---|---|---|
@@ -233,6 +244,14 @@ R-001 另按值传 `WeightQuantBatchMatmulV2ASTilingDataParams`。固定头用 p
 | P0 / R-001 factorized CMCT | 2 / first guard false，`M<16`、dtype entry、TemplateCustom 3 | Direct `CheckInputs` + `MakeRawAdaptiveSplitTiling`；公式映射自官方 AdaptiveSplit | HostParams + arch35 AS POD | `wqbmm_prepare_factor_*` → `wqbmm_raw_*` → `wqbmm_finish_factor_*` | `PrepareFactorized`/`FinishFactorized` + arch35 `cmct_convertor` → `KernelMatmulAPrefetchBAntiquant` → prologue/BlockMmad/scheduler | Direct registration；官方来源 target 为 `op_kernel/CMakeLists.txt` 的 ascend950 arch35/CMCT closure |
 | P1 / R-002 compensated FP32 | 1 / `M>=16` 后 return、dtype entry、K=16 | Direct `CheckInputs` + launcher K loop | HostParams by value | `wqbmm_prepare_*` → (`wqbmm_fp32_matmul` → `wqbmm_accumulate_fp32_chunk`)* → `wqbmm_finish_*` | SIMT VF bodies + `WqbmmFp32Matmul::Process` + AscendC Matmul API | Direct registration；950 Matmul primitive能力由同固定官方构建族锚定 |
 
+#### 官方原生与 Direct 转换边界
+
+| 层次 | 实际关系 | 可复用结论 | 不得外推 |
+|---|---|---|---|
+| 官方原生 | 固定 ops-nn 中的 AdaptiveSplit 公式、arch35 AS POD、CMCT scheduler/prologue/BlockMmad 和 950 构建接线 | DAV3510 上 ND per-channel antiquant 的模板类型、L1/L0/UB 分层、tail 与 AIV↔AIC 协议 | 官方源未定义本 Direct 的 `M<16`/`M>=16` selector、workspace 或 Kahan 节点图 |
+| Direct-invoke 适配 | Host 新增 Torch schema/校验/分配/current-stream callback 与 48-byte POD；converter 把原来的 `DTYPE_*` 编译宏改为显式类型模板参数，把 GM tiling 解包改为 AS POD by-value，并把 `KERNEL_TASK_TYPE_DEFAULT` 从 converter 移到 `wqbmm_raw_*` entry | 同一 CMCT body 可被 f16/bf16 命名 entry 复用，Host 和 Device 的 POD 字段生产/消费可直接对照 | 这些是转换适配，不是官方原 entry 的逐字实现 |
+| Device 派生补充 | R-001 的 unit-scale raw + row-sum correction，以及 R-002 的 FP32 materialization、K=16 partial 和 Kahan，均由 Direct TU 新增 | 可复用其明确的代数分解、节点图、workspace 交接和顺序约束 | 固定官方 CMCT 只能锚定其 raw Cube 子图，不自动证明 Direct 派生路线的数值等价性 |
+
 ## Kernel 实现
 
 ### 公共执行流程
@@ -257,6 +276,8 @@ R-001 另按值传 `WeightQuantBatchMatmulV2ASTilingDataParams`。固定头用 p
 ##### 函数级调用链
 
 ```text
+Host MakeRawAdaptiveSplitTiling
+  -> PlatformAscendCManager AIC/L0A/L0B -> WqbmmTiling by value
 prepare_factor_{f16|bf16}
   -> DispatchPrepareFactorized -> VF_CALL<PrepareFactorized>(256)
 raw_{f16|bf16}
@@ -305,8 +326,8 @@ y[i] = cast_X(v)
 | ws2 reserve | 0 | 16 MiB | bytes | caller | current CMCT不读取 | call | 不可与活跃对象混用 |
 | prepare UB | core-local | `256*4=1024 B` | FP32 | SIMT threads | tree reduce | prepare kernel | one row/core；barrier |
 | prologue UB | policy offsets | 4×INT8 input slices + 2×high-bit output + scale/offset slices | INT8/X/register layout | MTE2/VF | VF/MTE3 | K/N tile | TemplateCustom=3，inner=256 |
-| L1 B | parity `cvLoop&1` | each `baseN*stepKb*baseK*2`; two parity regions in 512KiB L1 | X/B1 NZ-like | AIV MTE3 | AIC MTE1 | K tile | AIC ack 后覆盖 |
-| L1 A | weight/bias region后 | physical capacity from 512KiB partition；logical `align16(M)*stepKa*baseK*2` | X/A1 NZ | AIC MTE2 | L0A | tile/call | full-load或double |
+| L1 B | parity `cvLoop&1` | 每块 `baseN*stepKb*baseK*2`；P0 从 0 起，P1 从 `(512KiB/2B-weightL1Space)` 个 half 起 | X/B1 NZ-like | AIV MTE3 | AIC MTE1 | K tile | AIC ACK 后覆盖 |
+| L1 A | `weightL1Space` 个 half 后 | 无 bias/raw C 下，两个 A 半区与两端 B 区共分 512KiB；logical `align16(M)*stepKa*baseK*2` | X/A1 NZ | AIC MTE2 | L0A | tile/call | `stepKa>stepKb` 选 single-buffer/full-load，否则 DB |
 | L0A | Matmul API internal | logical tile `baseM*baseK*2`, dbL0A=2 | X | L1 load | Mmad | K tile | tail pad to 16 |
 | L0B | Matmul API internal | logical tile `baseK*baseN*2`, dbL0B=2 | X | L1 load | Mmad | K tile | tail pad to 16 |
 | L0C | Matmul API internal | `baseM*baseN*4`, dbL0C=1 | FP32 | Mmad | output/fixpipe stage | output tile | only valid M/N stored |
@@ -339,8 +360,8 @@ CMCT_UB = 174KiB INT8 input + 66KiB high-bit output + 4KiB scale + 4KiB reserved
 |---|---|---|---|---|---|---|---|
 | prepare→raw unit scale | prepare AIV | ws0 `[0,2N)` | X/[N] | CMCT AIV | same stream | binding/call | prepare完成后raw启动 |
 | prepare→finish row sum | prepare AIV | ws0 `[align32(2N),+4M)` | FP32/[M] | finish AIV | same stream | binding/call | one row由一block归约 |
-| AIV→AIC B tile | CMCT prologue | L1 parity/valid N×K tile | X/B1 | BlockMmad | `SYNC_MODE4`, flags 8 与 `8+FLAG_ID_MAX`, PIPE_MTE1 | MIX kernel/tile | 两 AIV 都 signal |
-| AIC→AIV reuse ack | BlockMmad | control only | flag | prologue next parity reuse | flags 9 与 `9+FLAG_ID_MAX`, PIPE_MTE1/MTE3 | MIX kernel/tile | AIC消费后覆盖 |
+| AIV→AIC B tile ready | CMCT prologue | L1 parity/valid N×K tile | X/B1 | BlockMmad | `SYNC_MODE4`，AIV 在 `PIPE_MTE3` set flag 9/25，AIC 在 `PIPE_MTE1` wait 9/25 | MIX kernel/tile | 两 AIV 都 signal |
+| AIC→AIV reuse ACK | BlockMmad | control only | flag | prologue next parity reuse | AIC 在 `PIPE_MTE1` set flag 8/24，AIV 在 `PIPE_MTE3` wait 8/24 | MIX kernel/tile | AIC 消费后才可覆盖 |
 | raw→finish | MIX AIC | ws1 `[0,4MN)` | FP32/ND | finish AIV | same stream | binding/call | raw kernel完成可见 |
 
 #### 同步、精度与尾块
@@ -352,7 +373,7 @@ CMCT_UB = 174KiB INT8 input + 66KiB high-bit output + 4KiB scale + 4KiB reserved
 | row sum | `asc_syncthreads` 每级 | 256 threads | next tree level | UB partial[256] | per-thread Kahan + balanced FP32 tree；K grid tail |
 | GM→UB/VF | `MTE2_V`、`V_MTE2` HardEvent | MTE2/VF | VF/next MTE2 | prologue UB ring | K/N real sizes；无效 second AIV也推进 flag index |
 | VF→L1 | `V_MTE3`、`MTE3_V` | VF/MTE3 | store/reuse | high-bit UB | INT8→X exact；unit scale 不改值 |
-| AIV↔AIC | CrossCore flags 8/9，两 subblock IDs | AIV/AIC | peer wait | L1 B parity | K tail align16；防半 tile/覆盖 |
+| AIV↔AIC | CrossCore ready 9/25、ACK 8/24，两 subblock IDs | AIV/AIC | peer wait | L1 B parity | K tail align16；防半 tile/覆盖 |
 | Cube | Matmul `SetTail/Iterate/GetTensorC` | L1/L0/Mmad | GM raw | L0C/output tile | FP32 accumulate/output；M/N/K tail |
 | kernel edges | same stream | preceding kernel | next launch | GM ws0/ws1 | no event needed；无跨 stream |
 | epilogue | SIMT grid-stride | raw/rowSum | y store | each output element | FP32 correction→scale→bias→single X cast |
@@ -428,9 +449,9 @@ v=sum[m,n]; if hasBias: v += FP32(bias[n]); y=cast_X(v)
 | GM inputs | x `[m*K+k]`, W `[k*N+n]`, channel n | contract extents | source dtypes/ND | caller | prepare AIV | call | contiguous |
 | ws0 Xf | 0 | `M*K*4` | FP32/[M,K] ND | prepare AIV | AIC | call | chunk base `m*K+kOffset` |
 | ws1 WfT | 0 | `K*N*4` | FP32/[N,K] ND | prepare AIV | AIC B transposed | call | shard base `nOffset*K+kOffset`，N shard align16 |
-| ws2 accumulator | 0 | `M*N*4` | FP32/ND | Kahan AIV | finish AIV | call | persists all chunks |
-| ws2 compensation | `M*N*4` | `M*N*4` | FP32/ND | Kahan AIV | next Kahan | call | initialized on kOffset 0 |
-| ws2 partial | `2*M*N*4` | `M*N*4` | FP32/ND | AIC | Kahan AIV | one chunk | overwritten only after consumer |
+| ws2 accumulator | 0 | `M*N*4` | FP32/ND | Kahan AIV | finish AIV | stream DAG | persists all chunks |
+| ws2 compensation | `M*N*4` | `M*N*4` | FP32/ND | Kahan AIV | next Kahan | stream DAG | initialized on kOffset 0 |
+| ws2 partial | `2*M*N*4` | `M*N*4` | FP32/ND | AIC | Kahan AIV | one chunk | overwritten only after consumer；slice 间无额外对齐 padding |
 | AIC L1 | MatmulImpl-owned | logical A tile <=`64*64*4`、B tile <=`64*128*4` per base stage | FP32/internal Cube layout | GM MTE | L0 load | kernel/tile | CONFIG_MDL buffer depth is library boundary |
 | L0A | MatmulImpl-owned | logical `64*64*4=16KiB` per base tile | FP32 | L1 | Mmad | tile | actual K<=16，padding internal |
 | L0B | MatmulImpl-owned | logical `64*128*4=32KiB` per base tile | FP32 | L1 | Mmad | tile | B transposed |
@@ -461,8 +482,8 @@ AIV explicit UB queue = N/A; SIMT lane registers only
 
 | 边/复用子区 | producer | offset/extent | dtype/layout | consumer | ordering/sync | owner/lifetime | 安全条件 |
 |---|---|---|---|---|---|---|---|
-| prepare→AIC Xf/WfT | prepare AIV | ws0 whole/ws1 whole | FP32 ND/[M,K],[N,K] | every AIC chunk | same stream | binding/call | prepare先完成 |
-| AIC→Kahan partial | AIC | ws2 `2*4MN`, extent `4MN` | FP32/ND | immediately following AIV | same stream | one chunk | Kahan完成后下一AIC方可覆盖 |
+| prepare→AIC Xf/WfT | prepare AIV | ws0 whole/ws1 whole | FP32 ND/[M,K],[N,K] | every AIC chunk | same stream | framework allocator / stream DAG | prepare先完成 |
+| AIC→Kahan partial | AIC | ws2 offset `2*4MN`, extent `4MN` | FP32/ND | immediately following AIV | same stream | one chunk | Kahan完成后下一AIC方可覆盖 |
 | Kahan state | AIV | ws2 slice0/1 | FP32/ND | next AIV or finish | same stream | all K chunks | kOffset 0 initializes both |
 | sum→finish | last Kahan | ws2 slice0 | FP32/ND | finish AIV | same stream | call | all `ceil(K/16)` chunks consumed |
 
@@ -498,7 +519,7 @@ AIV explicit UB queue = N/A; SIMT lane registers only
 
 - 适用 Route：R-001
 - 触发条件：`M<16`，INT8 ND per-channel，Direct 传单位 scale，模板固定无 offset/bias、FP32 C。
-- Golden 来源：[`cmct_convertor.h:488-510`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/weight_quant_batch_matmul_v2/op_kernel/arch35/cmct_convertor.h#L488-L510)
+- 固定来源：[`cmct_convertor.h:488-510`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/weight_quant_batch_matmul_v2/op_kernel/arch35/cmct_convertor.h#L488-L510)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -530,7 +551,7 @@ Direct 适配保留 `TemplateCustom=3` 的 256-inner、4-buffer CMCT specializat
 
 - 适用 Route：R-001
 - 触发条件：DAV3510 非 310R6，`SUB_BLOCK_NUM=2`，每个 K-L1 tile 由两个 AIV 子核共同生产。
-- Golden 来源：[`block_mmad_a_prefetch_b_prologue.h:424-437`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/common/cmct/block/block_mmad_a_prefetch_b_prologue.h#L424-L437)
+- 固定来源：[`block_mmad_a_prefetch_b_prologue.h:424-437`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/common/cmct/block/block_mmad_a_prefetch_b_prologue.h#L424-L437)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -543,12 +564,12 @@ CrossCoreWaitFlag<SYNC_MODE4, PIPE_MTE1>(SYNC_AIC_AIV_FLAG);
 
 #### 机制与设计原因
 
-AIV0/AIV1 各自产生 B tile 的一个 K 子区并发往同一 parity L1 区写；AIC 等待普通 flag 与 `+FLAG_ID_MAX` 才启动 MTE1/Matmul。AIC 消费后对两个子核分别回 ACK，AIV 才复用 parity 区。HardEvent 再约束各 AIV 内部 MTE2→VF→MTE3，形成 GM→UB→L1→L0 的完整 happens-before。
+AIV0/AIV1 各自产生 B tile 的一个 K 子区并发往同一 parity L1 区写；AIV 在 `PIPE_MTE3` set ready flag 9 与 `9+FLAG_ID_MAX=25`，AIC 在 `PIPE_MTE1` 等待两者后才启动 Matmul。AIC 消费后在 `PIPE_MTE1` set ACK 8/24，两个 AIV 在 `PIPE_MTE3` wait 后才复用 parity 区。HardEvent 再约束各 AIV 内部 MTE2→VF→MTE3，形成 GM→UB→L1→L0 的完整 happens-before。注意常量名以“等待方←发送方”命名；不能把 8/9 的方向按字面猜反。
 
 #### 迁移边界
 
 - 适用：MIX_AIC_1_2 且两个 AIV 共同生产一个 B tile。
-- 前提：flag 8/9、`FLAG_ID_MAX`、PIPE_MTE1/MTE3、subBlock K offset 和 parity `cvLoop&1` 全部保持一致。
+- 前提：ready 9/25、ACK 8/24、`FLAG_ID_MAX=16`、PIPE_MTE1/MTE3、subBlock K offset 和 parity `cvLoop&1` 全部保持一致。
 - 失效：AIC-only R-002、1:1 kernel 或每 AIV 独占 tile 的设计需要另一同步图。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
@@ -561,8 +582,8 @@ AIV0/AIV1 各自产生 B tile 的一个 K 子区并发往同一 parity L1 区写
 #### 触发与源码依据
 
 - 适用 Route：R-001
-- 触发条件：`baseM*align16(K)*sizeof(X)<=256 KiB` 时 Direct tiling 把 A 的 `stepKa/depthA1` 改为全 K；否则保持 AdaptiveSplit 双缓冲 K tile。
-- Golden 来源：[`weight_quant_batch_matmul_v2_adaptive_split_tiling.cpp:209-246`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/weight_quant_batch_matmul_v2/op_host/op_tiling/arch35/weight_quant_batch_matmul_v2_adaptive_split_tiling.cpp#L209-L246)
+- 触发条件：`baseM*align16(K)*sizeof(X)<=256 KiB` 时 Direct tiling 把 A 的 `stepKa/depthA1` 改为覆盖全 K；Device 再以 `stepKa>stepKb` 选 single-buffer/full-load，否则保持 DB 分支。
+- 固定来源：[`weight_quant_batch_matmul_v2_adaptive_split_tiling.cpp:209-246`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/matmul/weight_quant_batch_matmul_v2/op_host/op_tiling/arch35/weight_quant_batch_matmul_v2_adaptive_split_tiling.cpp#L209-L246)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -574,7 +595,7 @@ tilingData_->matmulTiling.dbL0C = SINGLE_BUFFER_NUM;
 
 #### 机制与设计原因
 
-raw CMCT 的 A 不需要反量化。小 M 时若完整 K 能放进分给 A 的 L1 半区，A 只装入一次，B 继续按 K tile 与 AIV prologue 流水；否则 A 用 parity double buffer 与 B 同步推进。该选择减少重复 A GM→L1，但不改变 B 的双 AIV producer 或 FP32 L0C 精度。
+raw CMCT 的 A 不需要反量化。容量 guard 先令 `stepKa=ceil(align16(K)/64)`、`depthA1=stepKa`；当该 `stepKa>stepKb(=4)` 时，`BlockMmad` 的 `al1DbNum_` 才变为 1，完整 A 以 single-buffer 装入后按 K offset 取块。对 `K<=256` 的容量命中，`stepKa<=stepKb`，Device 仍在 DB 分支，但本来只有一个 `kbL1Size=256` 的有效 K loop，不会引入额外重载。容量不命中时 A 用 parity DB 与 B 同步推进。该选择不改变 B 的双 AIV producer 或 FP32 L0C 精度。
 
 #### 迁移边界
 
@@ -616,7 +637,8 @@ raw CMCT 的 A 不需要反量化。小 M 时若完整 K 能放进分给 A 的 L
 - R-001 的 factorized 公式在实数上等价，但 FP32 运算结合顺序不同；卡只记录源码机制，不把它外推成逐 bit 等价。
 - R-002 的 K=16 是 Direct 数值 guard，不是官方 AdaptiveSplit key；改变 chunk 必须同时重审 partial 切分、Kahan顺序、workspace lifetime 与误差。
 - R-002 Matmul API 的物理 L1/L0 buffer depth、内部 load/fixpipe 指令由固定 CANN Matmul library specialization拥有；本卡闭合了当前 type traits、base tile、HF32、GM交接和 tail，不伪造库内未公开 offset。官方 `BlockEpilogueFixpipe` 是同 CMCT 库的输出阶段参考，R-001 当前实例实际经 `MatmulImpl::GetTensorC` 写 FP32 raw，并未实例化该类。
-- Direct callback 固定返回 0，未逐 launch 查询同步 status；异步错误依赖 runtime/stream 上报。平台资源无效或输入校验失败时则在 launch 前抛错。
+- Direct callback 固定返回 0，未逐 launch 查询同步 status；异步错误依赖 runtime/stream 上报。平台资源无效、`params==nullptr` 或输入校验失败时则在相应 Host 阶段抛错。
+- Callback 捕获的是 GM 裸指针而非 tensor owner；本适配依赖 current-stream allocator 防止局部 workspace 存储在消费者完成前被不安全复用。若脱离该框架直调 C ABI，必须由调用方持有所有 GM 对象至 stream 完成。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -647,7 +669,7 @@ raw CMCT 的 A 不需要反量化。小 M 时若完整 K 能放进分给 A 的 L
 | ABI/POD | 48-byte HostParams、pack(8) AS POD前缀 | 12字段顺序/位宽、AS `matmulTiling` offset 80、by-value kernel参数 | `WeightQuantBatchMatmulHostParams`/`ASTiling` |
 | 调用顺序 | R-001 三节点；R-002 prepare→成对循环→finish | 同 current stream、K chunk必须紧邻其Kahan consumer | launcher |
 | workspace/内存 | 两 Route 精确三块公式和 ws2 slices | offset、extent、不 alias、owner活到stream完成 | binding allocation/launcher slicing |
-| 同步 | same-stream跨kernel；R-001双AIV flags+HardEvent | 两个 producer flag、ACK后覆盖、parity/event ID | `BlockMmad/BlockPrologue` |
+| 同步 | same-stream跨kernel；R-001 双 AIV ready 9/25 + ACK 8/24 + HardEvent | 两个 producer ready 都到达、ACK 后覆盖、parity/event ID | `BlockMmad/BlockPrologue` |
 | 精度与尾块 | R-001 exact raw + FP32 correction；R-002 FP32 dequant/HF32 off/K=16 Kahan | offset→scale→bias顺序、一次最终cast、M/N/K有效域 | `Prepare*/Process/Accumulate*/Finish*` |
 | 失败边界 | 校验/资源错误终止，无外部算子 fallback | 不把缺省指针占位当有效tensor；不扩展到batch/NZ/group | `CheckInputs/MakeRawAdaptiveSplitTiling` |
 

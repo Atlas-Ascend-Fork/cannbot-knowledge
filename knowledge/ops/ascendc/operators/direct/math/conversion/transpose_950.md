@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/CMakeLists.txt
     role: implementation
 created_at: "2026-08-24T19:32:10Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -42,9 +42,9 @@ cann_versions: ["9.1.0"]
 | 输入输出 | rank 1..8；输入、输出均为连续 dense layout；输出 shape 为 `x.shape[perm[k]]`；支持 1/2/4/8 字节元素 |
 | 执行类型 | 单 Device Kernel；R-001 为 AIV_VECTOR vconv，R-002 为 AIV_VECTOR MicroAPI gather，R-007/R-003 为 AIV 搬运，R-004 为 SIMT，R-005/R-006/R-008 为 NDDMA + AIV 搬运；无可达 Cube/AIC 或 MIX_CV 节点。 |
 | Kernel 路线 | P0：R-001 VCONV、R-002 gather、R-007 N-last；P1：R-003 tensor move、R-004 small-shape SIMT、R-005 CUT_ONCE、R-006 CUT_TWICE、R-008 BIG_DIM |
-| 核心资源 | GM；vconv 路线双缓冲输入/输出 Queue；gather 路线双缓冲输入/输出 Queue 与索引 TBuf；N-last/tensor-move 使用 depth-2 bind Queue；CUT/BIG_DIM 使用单个 bind Queue；SIMT 直接 GM→GM；声明 workspace 为 16 MiB、Device 不消费 |
-| 来源闭包 | `direct_implementation_closed`：直调注册、参数校验、平台查询、Tiling、POD、key router、全部可达 body、单节点 launch 与构建接线均由交付件闭合；官方固定路径仅作相关算法映射，不代表这些直调符号是官方 API |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 核心资源 | GM 与 UB；vconv 路线双缓冲输入/输出 Queue；gather 路线双缓冲输入/输出 Queue 与索引 TBuf；N-last/tensor-move 使用 depth-2 bind Queue；CUT/BIG_DIM 使用单个 bind Queue；SIMT 直接 GM→GM；无 L1/L0/Cube 数据边；声明 workspace 为 16 MiB、Device 不消费 |
+| 实现闭包 | `direct_implementation_closed`：直调注册、参数校验、Tiling、POD、key router、八条 active Route 的 body、单节点 launch 与构建接线均已闭合；平台 manager 空对象和异步输入 owner 属明确的源码外/未受控边界；官方固定路径是算法家族依据，不表示直调符号是公开 API |
+| 边界 | 实现依赖 Host 侧 shape 乘积与 Device 窄化值可表示；源码未对这些乘法做统一 checked arithmetic，复用时必须保留该限制或补齐溢出拒绝 |
 
 ## 接口与语义
 
@@ -62,17 +62,44 @@ cann_versions: ["9.1.0"]
 
 ### 入口与版本
 
-交付件注册 schema `transpose(Tensor x, int[] perm) -> Tensor`，Meta 实现只校验排列并创建 shape；PrivateUse1 实现 `transpose_npu` 完成连续性、dtype、shape、平台信息和 Tiling 校验，然后经当前 NPU stream 调用 `launch_transpose_kernel`。`launch_transpose_kernel` 不是 ACLNN，也不是官方 Host/Tiling 入口。官方 `conversion/transpose` 固定路径只提供同算法家族的映射；本卡的 Direct Invoke 接口、转换层与构建接线均以交付件为事实源。目标版本为 CANN 9.1.0、950（`950`）。
+直调层注册 schema `transpose(Tensor x, int[] perm) -> Tensor`，Meta 实现校验 rank/排列并创建 output shape；PrivateUse1 实现 `transpose_npu` 完成连续性、dtype、shape、平台信息和 Tiling 校验，再经当前 NPU stream 调用 `launch_transpose_kernel`。`launch_transpose_kernel` 不是 ACLNN，也不是公开 Host/Tiling API。目标版本为 CANN 9.1.0、950（`950`）。
 
 ## Host/Launcher 执行流程
 
 ### 参数校验与前处理
 
-调用顺序为：`validate_and_get_output_shape` 检查 rank、perm 长度、归一化与去重；`transpose_npu` 检查 contiguous 和 dtype；创建输出；将 shape 与归一化 perm 拷入 `std::vector<int64_t>`；`get_transpose_platform_info` 读取 AIV 核数与 UB 字节；`calc_transpose_tiling` 再检查指针、rank、数组长度、core/UB 正值，构造本地 TilingContext，执行 `TransposeNddmaTiling::Init/RunTranposelTiling`，最后把 blockDim、key、workspaceSize 和 POD 字节复制到 2048 字节 launch 参数。任一步失败均在 Kernel 启动前终止。
+调用顺序为：`validate_and_get_output_shape` 检查 rank、perm 长度、归一化与去重；`transpose_npu` 检查 contiguous 和 dtype；创建输出；将 shape 与归一化 perm 拷入 `std::vector<int64_t>`；`get_transpose_platform_info` 读取 AIV 核数与 UB 字节；`calc_transpose_tiling` 再检查指针、rank、数组长度、core/UB 正值，构造本地 TilingContext，执行 `TransposeNddmaTiling::Init/RunTranposelTiling`，最后把 blockDim、key、workspaceSize 和 POD 字节复制到 2048 字节 launch 参数。显式校验失败、core/UB 非正或 Tiling 失败都会在 Kernel 启动前终止；但平台 manager 指针在解引用前没有判空，这一异常不属于可返回 `false` 的受控失败，详见“限制与失败边界”。
+
+#### Shape 约简与语义不变式
+
+Tiling 的 Route 判定对约简 shape 进行，Device 也只消费约简后的 `inputShape/outputShape/perm`：
+
+```text
+1. 删除 input shape 中 size=1 的轴，同步重编 perm；若全为 1，折叠为 [1], perm=[0]。
+2. 按 output 顺序扫描 reducedPerm；相邻项若是连续 input 轴 a,a+1，合并为一轴，长度相乘。
+3. reducedOut[k] = reducedIn[reducedPerm[k]]，且 ∏ reducedIn = ∏ originalIn。
+```
+
+这一不变式使 identity、只移动 size-1 轴或可整段合并的排列落到 reduced rank=1 的 tensor-move，而不需要独立 identity Kernel。合并条件必须是 input 轴号连续，不能只根据两轴长度或 output 位置相邻判定。
+
+#### Checked arithmetic 契约
+
+当前 Host 路径用 `int64_t` 直接计算 `vol *= dim`、轴合并乘积、stride、`totalBytes=vol*elementSize` 与分核工作量，没有逐项溢出检查；`calc_transpose_tiling` 也只验证指针、数组长度和 core/UB 正值。因此，对该路线做新的 Host 落地时，应在进入 Tiling 前将下列条件作为同一个拒绝门：
+
+```text
+checked_product(dims, int64_max) -> numel
+checked_mul(numel, elementSize, int64_max) -> totalBytes
+checked strides/products used by reduced shape, block count and GM offsets
+require every value narrowed by a route to fit that route's Device type
+```
+
+SIMT 的 `coreFactor/coreOffset/outputShape/dstStride/xIdx`、gather 的部分 UB size/offset、vconv 的 `BaseProcess` R/C 参数会窄化到 32 位；gather 对 1/2 B 元素使用 16 位 index lane。现有路径依赖可表示前置，不得把 `int64_t` Host 字段视为 Device 端同宽保证。
 
 ### 参数、Workspace 与生命周期
 
-`TransposeLaunchParams` 由 `transpose_npu` 栈上创建并在同步提交 launcher 前只读；`data` 8 字节对齐、最大 2048 B。Host 根据平台产生 `coreNum` 与 `ubSize`。所有成功 Route 都把 workspace 声明为 `16*1024*1024` B，但直调 launcher 不分配、不传递 workspace，三个 Kernel entry 也没有 workspace 参数，因此该字段仅保留 Tiling ABI 信息，不构成 Device 边。输入与输出 Tensor 持有 GM；stream 来自当前 NPU stream，输出生命周期由 Torch Tensor 管理。
+`TransposeLaunchParams` 由 `transpose_npu` 栈上创建；lambda 以 `[=]` 捕获它并在调用 `launch_transpose_kernel` 时只读，POD 随 Kernel 参数按值提交。`data` 8 字节对齐、最大 2048 B。Host 根据平台产生 `coreNum` 与 `ubSize`。所有成功 Route 都把 workspace 声明为 `16*1024*1024` B，但直调 launcher 不分配、不传递 workspace，三个 Kernel entry 也没有 workspace 参数，因此该字段仅保留 Tiling ABI 信息，不构成 Device 边。
+
+GM owner 必须分开陈述：返回的 `y` Tensor 持有输出 storage；lambda 因调用 `x.element_size()` 而按值捕获输入 Tensor `x`。源码只显示 `RunOpApi` 在当前 NPU stream 上提交后返回，没有显式 `recordStream`、completion event、Host callback 或同步等待。因此，输入 capture 是否覆盖 Device 完成期，以及输入/输出 storage 的延迟回收，依赖 `RunOpApi` 与 NPU allocator 的同流生命周期契约；这不能由该 Direct 源码单独证明。同一 stream 只证明提交与设备执行的顺序，不等同于 owner 生命周期证明。
 
 ### 启动图与失败传播
 
@@ -88,11 +115,60 @@ cann_bench::transpose_npu
 
 | 节点 | Host 启动 | entry/grid/POD | 输入→输出 | ordering / lifetime / 失败 |
 |---|---|---|---|---|
-| K-001 | `launch_by_type<T>` | `<<<params.blockDim,nullptr,stream>>>`；按 key 解释三种 POD | `x GM → y GM`；无中间边 | 单 stream 提交；Tensor 覆盖整个 Kernel 生命周期；Host 校验/Tiling 失败阻断 launch；Device 无返回值 |
+| K-001 | `launch_by_type<T>` | `<<<params.blockDim,nullptr,stream>>>`；按 key 解释三种 POD | `x GM → y GM`；无中间边 | 同 stream 保证提交顺序；返回 `y` 持有输出，输入 capture/完成期回收依赖 `RunOpApi`/allocator 契约；受控 Host 校验或 Tiling 失败阻断 launch，平台 manager 空对象除外；Device 无返回值 |
 
-单 Route 仅有 K-001，没有 Kernel 间 workspace/GM edge。`elementSize` 仅接受 1/2/4/8；其它值不启动任何 Kernel，但入口 dtype 白名单保证正常路径不会命中该终点。未知 NDDMA key 在 router 中不执行 body。
+单 Route 仅有 K-001，没有 Kernel 间 workspace/GM edge。`elementSize` 仅接受 1/2/4/8；其它值不启动任何 Kernel，但入口 dtype 白名单保证正常路径不会命中该终点。未知 key 仍会进入普通 `transpose_nddma_kernel<T>` entry，但 Device router 不构造任何 body；这是静默空操作，不是 fallback。
+
+#### Key/POD 互锁
+
+| key | Host 必须产生的 raw POD | launcher 解释 | Device entry |
+|---:|---|---|---|
+| 10007 | `TransposeVCONVTilingData`，完整 struct | VCONV POD | `transpose_vconv_kernel` |
+| 10006 | `GatherTransposeTilingData`，完整 struct | gather POD | `transpose_gather_kernel<T>` |
+| 10000..10005 | `TransposeTilingData{TransposeOpTilingData}`，完整 struct | 普通 POD | `transpose_nddma_kernel<T>` |
+
+Host/Device 只用 `static_assert(sizeof(host)==sizeof(device))` 锁定三对 struct 总大小，launcher 没有按 key 复核 `dataSize==sizeof(expected)`。因此 key、POD 类型、`blockDim` 和 raw data 必须由同一次成功 Tiling 原子产生；不能缓存旧 POD 只替换 key，也不能把 `dataSize<=2048` 误当成结构匹配证明。
 
 ## Route 与参数设计
+
+### 生产可达性分类与穷尽证明
+
+Direct adapter 固定构造 `TransposeNddmaTiling(&context)`，成员 `isReleatedTranspsoe_` 保持默认 `false`，再调用 `Init(coreNum, ubSize)` 与 `RunTranposelTiling()`。因此生产 selector 的可达分类如下；“capability 可失败”只表示该 active Route 有 fallback 出边，不会把它降为 conditional。
+
+| Route | 类别 | 生产可达证据 | 终止 key/body 与 fallback 出边 |
+|---|---|---|---|
+| R-001 VCONV | `active` | H1 在 950 2-D swap、2 B、`R>5` 上直接调用 VCONV tiler，存在 guard 全部成功的合法输入 | 10007/`KernelTransDataTo5HD<int16_t>`；capability 失败到 H2 |
+| R-002 gather | `active` | H1 未返回且 last-axis transpose 时调用 gather tiler，MTE/bank/用核 guard 可满足 | 10006/`TransposeWithGather<T>`；失败到 H3 |
+| R-007 N-last | `active` | H1/H2 未返回、rank>1、大 shape、末轴固定且长度至少 32 | 10004/`TransposeNLast<T>`；终点，无 Device fallback |
+| R-003 tensor move | `active` | H1/H2 未返回且约简 rank=1 | 10000/`TransposeTensorMove<T>`；终点 |
+| R-004 small-shape | `active` | H1/H2 未返回、rank>1 且总字节小于阈值 | 10001/`TransposeSmallShape<T>`；普通 selector 最终兜底 |
+| R-005 CUT_ONCE | `active` | 大 shape、非 N-last、rank≤5，`DoSplitUB` 得到 `outCutIndex<=FindOutIndex(inCutIndex)` | 10002/`TransposeCutOneAxis<T>`；终点 |
+| R-006 CUT_TWICE | `active` | 与 R-005 同一 NDDMA_BASE 入口，且上述 cut-index 关系取反 | 10003/`TransposeCutTwoAxis<T>`；终点 |
+| R-008 BIG_DIM | `active` | 大 shape、非 N-last且约简 rank>5 | 10005/`TransposeBigDim<T>`；终点 |
+
+本直调合法域没有独立的 `conditional` terminal Route：VCONV/gather 的 tiler 成败、各 body 的 main/tail phase 都是 active Route 内部的条件边，不产生额外 key/body。源码中的 `TilingForReleatedTranspose`（将 `isReleatedTranspsoe_=true`）以及静态 `TransposeTilingForAscendC`/`TilingPrepareTransposeForAscendC` 属 `dormant` Host 模式：`transpose_npu → calc_transpose_tiling` 不调用或注册这些入口，related 模式还依赖外部传入的 `ShapeInfo`、已有 POD 与 compiler info。重新启用必须另接 framework tiling registration/call site，并补齐这些输入和平台编译信息；它们复用现有普通 key/body，不构成本直调链的第九条 Route。
+
+对任一通过入口校验且 Tiling 成功的输入，下列分割是穷尽且互斥的：H1 成功/失败覆盖 VCONV 候选，失败后 H2 成功/失败覆盖 gather 候选；再按 `dim==1`/`dim>1`、`totalBytes<threshold`/`>=threshold`、N-last 谓词真/假、`dim<=5`/`dim>5`，最后以 cut-index 的 `<=`/`>` 二分。因而合法成功链恰好产生八个 key 之一：
+
+```text
+if TryVCONVTiling()==SUCCESS:                         key=10007
+else if lastAxisTransposed && GatherTiling()==SUCCESS:key=10006
+else if dim==1:                                      key=10000
+else if totalBytes<threshold:                        key=10001
+else if !lastAxisTransposed && inShape[dim-1]>=32:   key=10004
+else if dim>5:                                       key=10005
+else:
+    DoSplitUB()
+    key = outCutIndex>FindOutIndex(inCutIndex) ? 10003 : 10002
+
+launch:
+  10006 -> transpose_gather_kernel<T>(Gather POD)
+  10007 -> transpose_vconv_kernel(VCONV POD)
+  10000..10005 -> transpose_nddma_kernel<T>(Transpose POD, key)
+                   -> exact one of move/SIMT/CUT_ONCE/CUT_TWICE/N-last/BIG_DIM
+```
+
+`calc_transpose_tiling` 返回失败会阻断 launch，不是 scalar/CPU conditional fallback；未知 key 的 no-body 和非法 elementSize 的 no-launch 也不是合法 Route。
 
 ### Route 特征与重要性
 
@@ -101,7 +177,7 @@ cann_bench::transpose_npu
 | 重要性 | Route | Route 特征 | 适用域 | 实现前提 |
 |---|---|---|---|---|
 | P0 | R-001 VCONV | 二维 16-bit swap 的 16×16 `TransDataTo5HD` 专用路线；按 R/C 与 UB 容量形成 full、单轴切分或双轴切分 | 950；约简后 2-D `[1,0]`；元素 2 B；首轴大于 5 | `TryVCONVTiling` 与全部 R/C/core/UB guard 成功；固定 `int16_t` body，保持比特搬运 |
-| P0 | R-002 gather | last-axis transpose 的 MTE 搬入 + MicroAPI register gather；覆盖 1/2/4/8 B 元素 | 非 related；约简后最后输出轴来自非最后输入轴 | UB/MTE、bank-conflict 与用核率 guard 全部成立；四组 index 相位与双切 main/tail 参数闭合 |
+| P0 | R-002 gather | last-axis transpose 的 MTE 搬入 + MicroAPI register gather；覆盖 1/2/4/8 B 元素 | 非 related；约简后最后输出轴来自非最后输入轴 | UB/MTE、bank-conflict 与用核率 guard 全部成立；按实际 tail 组合生成 1..4 组 index 相位 |
 | P0 | R-007 N-last | 大 shape 且输入末轴保持连续的 MoveAlign 路线；双缓冲搬入后以 loop-mode scatter 写回 | 约简后 rank>1；总字节达到阈值；末轴固定且长度至少 32 | `inCutIndex/inUbFactor/inTailFactor` 与 loop-mode shape 一致；bind Queue 深度 2 |
 | P1 | R-003 tensor move | 约简后一维的连续位拷贝；按核连续分段并在核内按 UB 循环 | 约简后 rank=1 | 双缓冲容量按 `ubSize/(2*sizeof(T))` 计算；尾核与尾 UB loop 只搬有效字节 |
 | P1 | R-004 small-shape SIMT | 前置专用路线均未接受时的通用小 shape 兜底；线程独占输出元素并直接 GM→GM | 约简后 rank 2..8；总字节低于 950 阈值 | 2048-thread VF、magic-division 地址解码和 `blkTailFactor` 覆盖完整输出域 |
@@ -112,6 +188,19 @@ cann_bench::transpose_npu
 ### 分核与资源计算
 
 Host 先移除 size-1 轴，再合并输出排列中连续的输入轴。`totalVolumeActual=∏reducedInShape[i]`。普通 NDDMA 可用元素数为 `ubSize/sizeof(T)`；tensor-move 与 N-last 因 bind queue 深度 2 使用 `ubSize/(2*sizeof(T))`。SMALL_SHAPE 每核元素按 128 B 对齐并由 `realCoreNum/blkFactor/blkTailFactor` 划分。CUT 路线以 `sqrt(ubElement)` 起始，分别求输入与输出切轴，利用 90% 核使用率目标调整 factor；BIG_DIM 最多把 5 个维度放入 NDDMA。Gather 的 UB 账由 dtype 分支给出；vconv 先取 `AvailableUbSize=ubSize/4`，再以 16 元素块拆 R/C 与 main/tail core。
+
+#### Block/core 映射不变式
+
+不同 body 对 `blkTailFactor` 的语义不完全相同，落地时必须与对应 Host producer 成对复用：
+
+| Route | 核 `c` 的工作量 | 起始位置 | tail 语义 |
+|---|---|---|---|
+| R-003/R-005/R-006/R-007/R-008 | `n_c=blkFactor+(c<blkTailFactor)` | `start_c=c*blkFactor+min(c,blkTailFactor)` | 前 `blkTailFactor` 个核各多 1 个 tile/element span |
+| R-004 SIMT | 非末核为 `blkFactor`；末核在 `blkTailFactor!=0` 时改为该值 | `start_c=c*blkFactor` | 只表示最后一核有效元素数，不做前核余数分散 |
+| R-002 gather | 非末核为 `blkFactor`，末核为 `blkTailFactor` | `blkBeg=c*blkFactor` | `blkTailFactor=totalTiles-(usedCoreCnt-1)*blkFactor` |
+| R-001 VCONV | R-split 或 C-split 下的 main core loop；`UsedCoreNum-1` 号核使用 tail-core 参数 | 由 `BlockFactor` 与 R/C GM stride 共同给出 | core tail 内部还可有 UB-loop tail，两层 tail 不得合并 |
+
+普通 NDDMA 类 Route 的 `realCoreNum` 是唯一 Device block guard；gather 使用 `usedCoreCnt`，vconv 使用 `UsedCoreNum`。Host 可以启动大于有效核数的 grid 的一般写法在这些 body 中是安全的，但本实现实际将 `blockDim` 设为该 Route 的有效核数。
 
 ### Route 选择
 
@@ -130,7 +219,7 @@ Host 先移除 size-1 轴，再合并输出排列中连续的输入轴。`totalV
 
 ```text
 normalize shape/perm
--> if A5 && dim=2 && perm=[1,0] && bytesPerElem=2 && R>5 && vconv capable: 10007
+-> if 950 && dim=2 && perm=[1,0] && bytesPerElem=2 && R>5 && vconv capable: 10007
 -> else if last-axis-transposed && gather capable: 10006
 -> else if dim==1: 10000
 -> else if totalBytes>=1,000,000:
@@ -145,7 +234,7 @@ normalize shape/perm
 | 重要性 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|---|
 | P0 | R-001 VCONV | 10007 | 950、2-D swap、2 B、R>5、tiling capable | K-001 | `transpose_vconv_kernel` → `KernelTransDataTo5HD<int16_t>` | 双输入/输出 Queue，各 depth=2 | R/C/core/UB main-tail；capability 失败转后续 |
-| P0 | R-002 gather | 10006 | last-axis transpose；MTE≥32768 B；bank guard false；used cores≥core/2 | K-001 | `transpose_gather_kernel<T>` → `TransposeWithGather<T>` | xIn/xOut depth=2 + index TBuf；Queue 同步 | 预生成 4 组 index 覆盖双切 main/tail |
+| P0 | R-002 gather | 10006 | last-axis transpose；MTE≥32768 B；bank guard false；used cores≥core/2 | K-001 | `transpose_gather_kernel<T>` → `TransposeWithGather<T>` | xIn/xOut depth=2 + index TBuf；Queue 同步 | 按实际 tail 组合预生成 1..4 组 index phase |
 | P0 | R-007 N-last | 10004 | 大 shape、末轴固定且末轴至少 32 元素 | K-001 | `TransposeNLast<T>` | bind Queue depth2 | 输入切轴 main/tail |
 | P1 | R-003 move | 10000 | reduced dim=1 | K-001 | `TransposeTensorMove<T>` | bind Queue depth=2 | 每核与 UB loop tail |
 | P1 | R-004 SIMT | 10001 | totalBytes<1,000,000，且未被前置路线接收 | K-001 | `TransposeSmallShape<T>` → `SimtComputeDim{2..8}` | 无显式 UB；GM 直读直写 | 最后一核 `blkTailFactor`；rank=1 已由 move 接收 |
@@ -153,7 +242,20 @@ normalize shape/perm
 | P1 | R-006 cut twice | 10003 | 大 shape、dim≤5，双切关系 | K-001 | `TransposeCutTwoAxis<T>` | 单 bind Queue，1×ubSize；四阶段区间 | main/input-tail/output-tail/both-tail |
 | P1 | R-008 BIG_DIM | 10005 | 大 shape、非 N-last、reduced dim>5 | K-001 | `TransposeBigDim<T>` | 单 bind Queue；外层 mixed-radix + 内层 5-D NDDMA | 输出切轴 main/tail |
 
-### 隐藏性能 Guard
+### Route 间共同契约
+
+| 契约 | 所有 Route 必须保持的事实 | Route 特例 |
+|---|---|---|
+| 语义 | 每个 output 线性位置只由一个 block/thread 写，对应唯一 input 位置 | R-003 在约简后是 identity bit-copy；其它 Route 执行等价的轴重排 |
+| dtype/精度 | launcher 按 1/2/4/8 B 实例化整数 `T`，全路径不做数值 cast | R-001 固定 `int16_t`；R-002 的 int8 在寄存器内以 B16 gather，再 `DIST_PACK_B16` 写回原字节 |
+| 内存层级 | 输入/输出边只是 GM；需要 tile 的 Route 只在 UB Queue/TBuf 停留 | 无 L1/L0 配置、无 Cube 进入口；R-004 连 UB 也不分配 |
+| tail | padding 只能存在 UB；GM 读写 extent 由 tail factor/shape/blockLen 裁成有效区 | VCONV 用 16 元素对齐 shape；CUT 用独立 tail shape；SIMT 用 loop bound；gather 用 phase + vector mask |
+| 同步 | 单 stream 只提交一个 Kernel；Kernel 内 Queue 以 `Alloc→EnQue→DeQue→Free` 建立 MTE/V 顺序 | R-004 无 Queue，依靠输出下标独占；CUT_TWICE 四 phase 串行复用同一 slot |
+| fallback | Device body 不再选 Route | 仅 R-001/R-002 的 Host tiler 可失败并继续；普通 selector 定 key 后不退化 |
+
+Gather 的 mask 有一个必须原样保留的 dtype 差异：逻辑输出长度为 `outLen`，非 int8 路线以 `UpdateMask<T>(outLen)` 限定有效 lane；int8 的 gather 寄存器元素是 16 位，因此 mask 计数先变为 `2*outLen`，store 时再 pack 为原字节。不能将 int8 分支简化为与其它 dtype 相同的 mask/store。
+
+### 性能与能力 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -168,7 +270,7 @@ normalize shape/perm
 
 ### POD/ABI
 
-所有 offset 均以结构起点为 0、单位 B；布局按交付件 C++ 定义推导并由 Host/Device `static_assert(sizeof)` 锁定。公共 launch envelope 先列；Route 专属 POD 按 R-001→R-002 排列，随后列出 R-007 与 P1 普通路线共享的 `TransposeOpTilingData`。
+所有 offset 均以结构起点为 0、单位 B；布局按 Host/Device C++ 定义推导，三对 POD 由 `static_assert(sizeof)` 锁定总大小。公共 launch envelope 先列；Route 专属 POD 按 R-001→R-002 排列，随后列出 R-007 与 P1 普通路线共享的 `TransposeOpTilingData`。
 
 | 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
 |---|---|---|---|---|---|---|---|
@@ -288,16 +390,16 @@ normalize shape/perm
 
 ### Route 源码闭包
 
-| 重要性 | Route | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
+| 重要性 | Route/类别 | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 关键伪码与构建接线 |
 |---|---|---|---|---|---|---|---|
-| P0 | R-001 | 10007 | `TryVCONVTiling` + `TransposeVCONVTiling` | VCONV POD | `transpose_vconv_kernel` | `KernelTransDataTo5HD` | direct registration + ascend950→dav-3510 |
-| P0 | R-002 | 10006 | `TransposeGatherTiling::DoTiling` | Gather POD | `transpose_gather_kernel<T>` | `TransposeWithGather<T>` | 同上 |
-| P0 | R-007 | 10004 | `EntryTilingTemplate` + N-last split builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeNLast<T>` | 同上 |
-| P1 | R-003 | 10000 | `EntryTilingTemplate` + move split builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeTensorMove<T>` | 同上 |
-| P1 | R-004 | 10001 | `EntryTilingTemplate` + small split builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeSmallShape<T>` | 同上 |
-| P1 | R-005 | 10002 | `EntryTilingTemplate` + single-cut builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeCutOneAxis<T>` | 同上 |
-| P1 | R-006 | 10003 | `EntryTilingTemplate` + double-cut/interval builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeCutTwoAxis<T>` | 同上 |
-| P1 | R-008 | 10005 | `EntryTilingTemplate` + BigDim builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeBigDim<T>` | 同上 |
+| P0 | R-001 / active | 10007 | `TryVCONVTiling` + `TransposeVCONVTiling` | VCONV POD | `transpose_vconv_kernel` | `KernelTransDataTo5HD` | R-001“源码等价伪码”；direct registration + ascend950→dav-3510 |
+| P0 | R-002 / active | 10006 | `TransposeGatherTiling::DoTiling` | Gather POD | `transpose_gather_kernel<T>` | `TransposeWithGather<T>` | R-002“源码等价伪码”；同上 |
+| P0 | R-007 / active | 10004 | `EntryTilingTemplate` + N-last split builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeNLast<T>` | R-007“源码等价伪码”；同上 |
+| P1 | R-003 / active | 10000 | `EntryTilingTemplate` + move split builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeTensorMove<T>` | R-003“源码等价伪码”；同上 |
+| P1 | R-004 / active | 10001 | `EntryTilingTemplate` + small split builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeSmallShape<T>` | R-004“源码等价伪码”；同上 |
+| P1 | R-005 / active | 10002 | `EntryTilingTemplate` + single-cut builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeCutOneAxis<T>` | R-005“源码等价伪码”；同上 |
+| P1 | R-006 / active | 10003 | `EntryTilingTemplate` + double-cut/interval builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeCutTwoAxis<T>` | R-006“源码等价伪码”；同上 |
+| P1 | R-008 / active | 10005 | `EntryTilingTemplate` + BigDim builders | Transpose POD | `transpose_nddma_kernel<T>` | `TransposeBigDim<T>` | R-008“源码等价伪码”；同上 |
 
 ## Kernel 实现
 
@@ -315,6 +417,19 @@ normalize shape/perm
 |---|---|---|---|---|
 | Host | `op_host/transpose_tiling_arch35.cpp` | `TryVCONVTiling` | 950、2-D `[1,0]`、2 B、R>5、非 related | 调 `TransposeVCONVTiling::DoTiling` |
 | Tiling | `op_host/transpose_tiling_with_nchwconv_arch35.cpp` | `CalcBlockAndUbSplitInfo` | C full / R full / RC split 依次判断 UB | key 10007 或失败 |
+
+##### Host 字段关系
+
+```text
+RB=ceil(R/16), CB=ceil(C/16), Rp=16*RB, Cp=16*CB
+slot=AvailableUbSize=ubSize/4
+if 16*Cp*2 <= slot:       split R across cores; C full; optionally tile R again in UB
+else if 16*Rp*2 <= slot:  split C across cores; R full; optionally tile C again in UB
+else:                     split R across cores and C in UB;
+                          require rBlockFactor*16*2 <= slot
+```
+
+`IsRSplit` 只在第一/第三分支为 true，`IsRCSplit` 只在第三分支为 true。`UsedCoreNum` 来自 R 或 C 的 16-element block split；每核再由 `MainCoreLoopCount/TailCoreLoopCount` 和对应 `UbSplitPara` 分成 UB loop。三组 flag/参数必须整体产生，不能只切换 `IsRCSplit`。
 
 #### Device 数据流
 
@@ -399,6 +514,20 @@ workspace_total = 0（声明 16 MiB 未传 Device）
 | Host | `op_host/transpose_tiling_arch35.cpp` | `RunTranposelTiling` | VCONV 未成功且最后轴发生转置 | 尝试 gather |
 | Tiling | `op_host/transpose_tiling_with_gather_arch35.cpp` | `DoTiling` | MTE/bank/core guard 成功 | 10006，否则普通 selector |
 
+##### Host 字段关系
+
+Gather 从 input 末尾和 output 末尾各取最多 3 个轴，去重后 `ubAxesCnt<=6`；两组最外轴可分别成为 input/output UB cut axis。Host 先按 dtype 分配 data/index 容量，再同时闭合 MTE compact shape、gather `ubPerm` 和 MTE3 output shape。
+
+```text
+totalTiles = product(blkAxes[0:blkAxesCnt])
+usedCoreCnt = ceil(totalTiles / ceil(totalTiles/coreNum))
+require usedCoreCnt >= floor(coreNum/2)
+blkFactor = ceil(totalTiles/usedCoreCnt)
+blkTailFactor = totalTiles - (usedCoreCnt-1)*blkFactor
+```
+
+`blkAxesInAOffset/blkAxesOutAOffset` 是同一 mixed-radix tile 在输入/输出 GM 的基址增量；`blkInUbCutPos/blkOutUbCutPos=-1` 表示该 cut 轴整除或未切，Device 不生成对应 tail phase。
+
 #### Device 数据流
 
 ##### 函数级调用链
@@ -462,8 +591,8 @@ workspace_total = 0 on Device
 
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
-| MTE2→V→MTE3 | Queues | CopyIn/gather | DeQue | input/output slot | mask=`outLen`; int8 用 B16 gather 与 packed store，保持原始字节 |
-| tail | phase index | Host factors | `UpdateUbAxes` | cut axes | 四种 `gIndexId` 覆盖 main/input/output/both tail |
+| MTE2→V→MTE3 | Queues | CopyIn/gather | DeQue | input/output slot | 非 int8 的 mask=`outLen`；int8 用 mask=`2*outLen` 的 B16 gather 与 packed store，保持原始字节 |
+| tail | phase index | Host factors | `UpdateUbAxes` | cut axes | 按实际存在的 tail 启用 `gIndexId=0..3`，至多覆盖 main/input/output/both tail |
 
 #### 关键实现
 
@@ -485,6 +614,10 @@ workspace_total = 0 on Device
 |---|---|---|---|---|
 | Tiling | `op_host/transpose_tiling_arch35.cpp` | `EntryTilingTemplate` | totalBytes≥1,000,000、末轴固定、末轴≥32 | key 10004 |
 
+##### Host 字段关系
+
+Host 从 input 最内层向外扫描，以 `ubSize/(2*sizeof(T))` 为单 slot 元素上限，定位 `inCutIndex`。`inUbFactor` 是该轴每 tile 长度，`inTailFactor=inputShape[inCutIndex] % inUbFactor`；分核单位是该 cut 轴 tile 与所有外层坐标的组合，并以 90% 用核率目标回调 `inUbFactor`。该 Route 不消费 `outUbFactor/outTailFactor`。
+
 #### Device 数据流
 
 ##### 函数级调用链
@@ -497,7 +630,11 @@ transpose_nddma_kernel<T> -> TransposeNLast<T>::ProcessPerCore
 ##### 源码等价伪码
 
 ```text
-slice contiguous input around inCutIndex, compact to UB, then use up to nested loop7..loop4 plus两级 loop mode 将 UB tile scatter 到输出；输入切轴尾循环改用 tail shape/stride。
+slice contiguous input around inCutIndex into UB
+if innermost contiguous bytes are 32-B aligned: one compact CopyIn block
+else: split CopyIn into rows so each row copies only valid innermost bytes
+scatter UB tile to output with loop7..loop4 software loops + two hardware loop-mode levels
+select main/tail UB shape when the cut-axis tile is the final tile of that axis
 ```
 
 #### 内存与数据搬运
@@ -907,9 +1044,9 @@ workspace_total=0 on Device
 
 - 适用 Route：R-001
 - 触发条件：950、reduced 2-D swap、2 B 元素、R>5，且 UB 能容纳至少一个 16 宽 block。
-- Golden 来源：[`transpose_tiling_arch35.cpp:112-130`](https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp)
+- 源码锚点：[`transpose_tiling_arch35.cpp:112-130`](https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_host/arch35/transpose_tiling_arch35.cpp)
 
-**交付件源码（与固定官方路径相关映射，直调转换本身不归为官方）**：
+**选择器最小骨架**：
 
 ```cpp
 if (!isReleatedTranspsoe_ && shapeInfo_.reducedPerm[0] == 1 && shapeInfo_.reducedPerm[1] == 0 &&
@@ -927,11 +1064,10 @@ selector 在通用 gather/NDDMA 前选择专用 vconv。Device 把矩阵补齐�
 - 适用：2-D 16-bit 矩阵转置。
 - 前提：950、`perm=[1,0]`、R>5、UB guard 成功。
 - 失效：回到 gather，再回到普通 NDDMA/SIMT selector。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
-固定仓未提供可验证反例；源码明确表明不能把其它字节宽、非二维或非交换排列强行送入该 body。
+不能把其它字节宽、非二维或非交换排列强行送入该 body；Kernel 固定实例化 `int16_t`，不会在 Device 端自行纠正 dtype。
 
 ### Trick T-002：Gather 索引四相预生成并跨 tile 复用
 
@@ -939,9 +1075,9 @@ selector 在通用 gather/NDDMA 前选择专用 vconv。Device 把矩阵补齐�
 
 - 适用 Route：R-002
 - 触发条件：gather Host guard 成功；输入/输出切轴分别可能有 tail。
-- Golden 来源：[`transpose_with_gather.h:546-579`](https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_kernel/arch35/transpose_with_gather.h)
+- 源码锚点：[`transpose_with_gather.h:546-579`](https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_kernel/arch35/transpose_with_gather.h)
 
-**交付件源码（相关官方映射）**：
+**索引相位最小骨架**：
 
 ```cpp
 GenGatherIndex(0);
@@ -959,11 +1095,10 @@ outUbTailFactor_ = td_->outUbCutAxisSize % td_->outUbCutAxisFactor;
 - 适用：tile 形状只有两条切轴形成至多四种稳定相位的 gather 转置。
 - 前提：TBuf 足够容纳索引相位；MTE 与 bank guard 成功。
 - 失效：gather tiling 失败时使用普通 NDDMA。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
-固定仓未提供可验证反例；相位 offset 未按 index 元素块对齐会破坏后续相位地址。
+相位 offset 未按 index 元素块对齐会破坏后续相位地址；无 tail 的组合不应伪造空 phase，`gIndexId_` 必须与 `UpdateUbAxes` 的两个 switch 同源。
 
 ### Trick T-003：双切四区间只物化一个 UB tile
 
@@ -971,9 +1106,9 @@ outUbTailFactor_ = td_->outUbCutAxisSize % td_->outUbCutAxisFactor;
 
 - 适用 Route：R-006
 - 触发条件：输入切轴和输出切轴不同，且 `outCutIndex>FindOutIndex(inCutIndex)`。
-- Golden 来源：[`transpose_cut_two_axis.h:752-824`](https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h)
+- 源码锚点：[`transpose_cut_two_axis.h:752-824`](https://gitcode.com/cann/ops-math/blob/c821871ee4bccb0c564a582d1b362072c356a88d/conversion/transpose/op_kernel/arch35/transpose_cut_two_axis.h)
 
-**交付件源码（相关官方映射）**：
+**四区间调度最小骨架**：
 
 ```cpp
 if (offsetRangeMainRes.end != 0 || blockIdx_ == 0) ProcessMain(offsetRangeMainRes.start, offsetRangeMainRes.end);
@@ -991,11 +1126,10 @@ Host 先把扁平工作域分成四个不重叠区间，Device 与本核 span �
 - 适用：两个独立 cut axis、main/tail 组合可静态枚举的 layout transform。
 - 前提：Host/Device 使用相同区间边界、shape 与 base offset。
 - 失效：单切必须使用 CUT_ONCE；大于 5 维使用 BIG_DIM。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
-固定仓未提供可验证反例；若把四区间合并后仍复用 main shape，输入尾、输出尾或双尾会读写越界/错误 stride。
+若把四区间合并后仍复用 main shape，输入尾、输出尾或双尾会读写越界/错误 stride；四个区间是闭包区间，Device 与本核 span 求交时必须保持这一约定。
 
 ## 模板与实现对比
 
@@ -1014,18 +1148,19 @@ Host 先把扁平工作域分成四个不重叠区间，Device 与本核 span �
 
 | 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 本卡不覆盖；固定映射对象内容不可解析 | 本卡不覆盖；固定映射对象内容不可解析 | Direct Invoke 交付件构建目标 `ascend950`；未发现公开“不支持”冲突 |
-| Host/Launcher | 不提取 | 不提取 | 平台查询 AIV core/UB；950 threshold=1,000,000 B；vconv selector 可达 |
-| Kernel/资源 | 不提取 | 不提取 | `--npu-arch=dav-3510`；AIV-only，含 SIMT/NDDMA/gather/vconv |
+| 支持状态 | 本卡不覆盖 | 本卡不覆盖 | Direct Invoke 构建目标 `ascend950` |
+| Host/Launcher | 本卡不给出迁移结论 | 本卡不给出迁移结论 | `GetInstance()` 后查询 AIV core/UB；manager 未判空，只有空输出参数或非正资源值是受控 `false`；950 threshold=1,000,000 B；vconv selector 可达 |
+| Kernel/资源 | 本卡不给出迁移结论 | 本卡不给出迁移结论 | `--npu-arch=dav-3510`；AIV-only，含 SIMT/NDDMA/gather/vconv |
 
 ## 限制与失败边界
 
 - 仅支持 rank 1..8、正维、合法排列、连续输入和列出的 dtype；不执行隐式 Contiguous。
-- shape 乘积、若干 Device 地址与 SIMT参数会窄化到 `uint32_t`；交付件未提供独立的大地址溢出 guard。
+- `get_transpose_platform_info` 只对空输出参数、查询后 `coreNum<=0` 或 `ubSize<=0` 返回受控 `false`；`PlatformAscendCManager::GetInstance()` 的结果在源码中未判空即解引用。manager 为空不是受控 fallback，可能在进入 `TORCH_CHECK` 前直接失效。
+- shape 乘积、stride 与 total-bytes 的 Host 算术没有统一溢出 guard；SIMT 参数和若干 vconv/gather 局部量还会窄化到 32 位。大 shape 复用必须先完成 checked arithmetic 与可表示性审计。
 - `workspaceSize=16 MiB` 是继承的 Tiling 声明，直调 entry 无 workspace 参数；不得把它当作可读写中间边。
-- launcher 无 Device 返回码，未知 key、非 1/2/4/8 字节 elementSize 会静默不启动 body；正常入口由前置检查避免。
-- 官方映射仓当前无法解析指定对象 `c821871ee4bccb0c564a582d1b362072c356a88d`；因此本卡不据此声称 Direct Invoke 符号为官方接口，也不扩展 A2/A3 结论。算法与直调事实以交付件闭包为准。
-- 本次知识提取未执行编译、真机、数值或性能测试。
+- launcher 无 Device 返回码；未知 key 会启动普通 entry 但不执行 body，非 1/2/4/8 字节 elementSize 则不启动 Kernel。两者都是静默终点，正常入口依赖前置检查避免。
+- `dataSize` 只检查 `1..2048`，没有按 key 校验精确 POD 大小；key/POD 失配不在 Device 端报错。
+- A2/A3 不在本卡的 Host selector、UB 容量或 Kernel 构建结论范围内，不能从 950 的 `DAV_5102` 分支直接外推。
 
 ## 源码索引
 
@@ -1051,6 +1186,6 @@ Host 先把扁平工作域分成四个不重叠区间，Device 与本核 span �
 | ABI/POD | 三种 POD 按 key 复用 | 字段顺序、位宽、array 长度、8 B 对齐、2048 B 上限 | `calc_transpose_tiling` static_assert |
 | 调用顺序 | validate→platform→tiling→single launch | VCONV/gather/普通 selector 优先级 | `transpose_npu`, `RunTranposelTiling` |
 | workspace/内存 | 单节点无需 workspace edge | 声明 16 MiB 不得被 Device 假读；UB depth 必须计入 | `SetTilingKeyAndCore`, InitBuffer |
-| 同步 | Queue 生命周期与单 stream launch | phase/loop 未消费前不得覆盖 Queue slot | 各 `Process` |
+| 同步/owner | Queue 生命周期与单 stream launch；返回 `y` 持有输出 | phase/loop 未消费前不得覆盖 Queue slot；同 stream 不等于输入 capture/allocator 完成期 owner 证明 | 各 `Process`, `transpose_npu` |
 | 精度与尾块 | bitwise transpose；main/tail shape | int8 gather pack、vconv 16 对齐、CUT 四相不可混用 | gather/vconv/cut bodies |
-| 失败边界 | Host validation 和 route fallback | 未知 key/宽度无 body；不能伪造 fallback | launcher/router |
+| 失败边界 | Host validation 和 route fallback | 未知 key/宽度无 body；平台 manager 空对象未受控；不能伪造 fallback | platform helper/launcher/router |

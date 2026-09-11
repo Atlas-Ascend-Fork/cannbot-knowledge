@@ -22,7 +22,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h
     role: implementation
 created_at: "2026-08-25T19:29:57Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -33,14 +33,14 @@ cann_versions: ["9.1.0"]
 
 | 项目 | 内容 |
 |---|---|
-| 实际入口 | dispatcher `cann_bench::gelu` → `gelu_npu` → `launch_gelu_kernel` → 六个 `gelu_{none|tanh}_{fp16|bf16|fp32}` entry；入口类型为 Direct Invoke。 |
+| 实际入口 | dispatcher `cann_bench::gelu` → `gelu_npu` → `launch_gelu_kernel` → 六个 `gelu_{none,tanh}_{fp16,bf16,fp32}` entry；入口类型为 Direct Invoke。 |
 | 计算语义 | `none`：`y=x·Φ(x)=0.5x(1+erf(x/√2))`；`tanh`：`y=0.5x(1+tanh(√(2/π)(x+0.044715x³)))`，交付件以等价 logistic 形式实现。 |
 | 输入输出 | 连续 NPU Tensor；任意 rank 按 `numel()` 扁平；FP16、BF16、FP32；输出 shape、dtype 与输入相同。 |
 | 执行类型 | 六条可达 Route 均为单节点 `AIV_VECTOR`；无 Cube/AIC、MIX_CV、SIMT、NDDMA 或通信节点。 |
-| Kernel 路线 | 重要性顺序：P0 R-006 tanh FP32 pair；P1 R-004 tanh FP16；P2 R-002 none BF16；P3 R-003 none FP32；P4 R-005 tanh BF16；P5 R-001 none FP16。Route ID 保持 launcher 映射。 |
-| 核心资源 | 输入/输出 GM，ATVOSS `ElementwiseSch16B<1,DAG>` 管理的双缓冲 UB，MicroAPI `RegTensor/MaskReg`；Device workspace 为 0。 |
-| 来源闭包 | `direct_implementation_closed`：插件校验、Direct tiling、按值 POD、六 entry、实际 fused body、tail/NaN、单 Kernel launch 与构建接线均闭合。 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| Kernel 路线 | Host 合法非空域保留六条 `active` Route；Device 内另有被 `useFloatRational=false` 编译期关闭的两类变体和未被六 entry 实例化的原始 DAG family，均归为 `dormant`。active 导航顺序：P0 R-006、P1 R-004、P2 R-002、P3 R-003、P4 R-005、P5 R-001。 |
+| 核心资源 | 输入/输出 GM，ATVOSS `ElementwiseSch16B<1,DAG>` 管理的双缓冲 UB，MicroAPI `RegTensor/MaskReg`；Device workspace=0，L1=0，L0A=0，L0B=0，L0C=0。 |
+| 来源关系 | Frontmatter 的固定 HTTP 源码证明官方 950 接口、模板 DAG、公式与系数参考；Direct Host/POD/entry/fused body 只经 canonical 交付件静态对照，不作为 Frontmatter 来源，因而不声明 Direct provenance 闭包。 |
+| 复核状态 | 已完成官方模板与 canonical Direct 链路的静态映射；本次知识提取未执行编译、真机、数值或性能测试。 |
 
 ## 接口与语义
 
@@ -58,7 +58,7 @@ approximate == "tanh":
        = x[i] / (1 + exp(-1.595769121 * (x[i] + 0.044715*x[i]^3)))
 ```
 
-交付件保持这两个模式的语义，但 Device body 并非逐字复制官方 DAG：`none` 使用按 dtype 派生的 logit/多项式近似，`tanh` 使用稳定 logistic；这些融合、系数压缩与双寄存器组调度均是交付件事实。官方固定提交仅证明转换起点、950 路线、模板语义和系数参考，不能把派生实现反向表述成官方原码。
+交付件保持这两个模式的语义，但 Device body 并非逐字复制官方 DAG：`none` 使用按 dtype 派生的 logit/多项式近似，`tanh` 使用稳定 logistic；这些融合、系数压缩与双寄存器组调度只是 canonical 交付件静态对照所见的 Direct 派生事实。它们未加入 Frontmatter `sources`，不具有与官方 HTTP 源码相同的 provenance 强度。官方固定提交仅证明转换起点、950 路线、模板语义和系数参考，不能把派生实现反向表述成官方原码。
 
 ### 输入、输出与属性
 
@@ -78,21 +78,28 @@ approximate == "tanh":
 
 ### 参数校验与前处理
 
-1. `gelu_meta` 先检查 `approximate∈{"none","tanh"}`，再检查 dtype 为 FP16、BF16 或 FP32；成功后 `empty_like(x)`。
-2. `gelu_npu` 安装 `OptionalDeviceGuard(x.device())`，取得当前 NPU stream，令 `N=x.numel()`。
-3. `N==0` 直接返回输出；否则调用 `calc_gelu_tiling_params(N)`。
-4. `approximate` 映射为 `GELU_APPROX_NONE=1` 或 `GELU_APPROX_TANH=2`；dtype 映射为 FP16=1、BF16=2、FP32=3。
-5. `OpCommand::RunOpApi("GeluDirect", aclCall)` 调用 `launch_gelu_kernel`；闭包内无 Host 输入回读和数值 fallback。
+1. `gelu_npu` 先按 `x.device()` 安装 `OptionalDeviceGuard`。
+2. 随后调用 `gelu_meta`：依次检查 `approximate∈{"none","tanh"}` 与 dtype∈{FP16,BF16,FP32}，再以 `empty_like(x)` 分配输出。
+3. 输出分配后才取得当前 NPU stream，再令 `N=x.numel()`；生产顺序是 `guard→meta/output→stream→N`。
+4. `N==0` 直接返回输出；否则调用 `calc_gelu_tiling_params(N)`。
+5. `approximate` 映射为 `GELU_APPROX_NONE=1` 或 `GELU_APPROX_TANH=2`；dtype 映射为 FP16=1、BF16=2、FP32=3。
+6. `OpCommand::RunOpApi("GeluDirect", aclCall)` 调用 `launch_gelu_kernel`；callback 内无 Host 输入回读和数值 fallback。
 
 ### 参数、Workspace 与生命周期
 
-令 `H=GetCoreNumAiv()`，若查询值非正则按 1 处理。Launcher 生成 `GeluLaunchConfig`，再复制其中前三个字段到 Device 可见的 `EleBaseTilingData16B`：
+令 `H=GetCoreNumAiv()`，若查询值非正则按 1 处理。Launcher 生成 `GeluLaunchConfig`，再复制其中前三个字段到 Device 可见的 `EleBaseTilingData16B`。以下伪码保留了源码中“逻辑核数可继续增加，物理 block 数不超过 `selectedCoreNum`”的关系：
 
 ```text
 selectedCoreNum = max(min(H, ceil(N / 512)), 1)
-logicalCoreNum  = selectedCoreNum，随后按源码循环增加，直到
-                  blockDim = ceil(N / align_up(ceil(N/logicalCoreNum),512))
-                  尽量达到 selectedCoreNum，且物理 launch 不越过它
+logicalCoreNum  = selectedCoreNum
+blockFormer     = align_up(ceil(N / logicalCoreNum), 512)
+blockDim        = ceil(N / blockFormer)
+while blockDim < selectedCoreNum:
+  nextLogical   = logicalCoreNum + 1
+  nextFormer    = align_up(ceil(N / nextLogical), 512)
+  nextBlockDim  = ceil(N / nextFormer)
+  if nextBlockDim > selectedCoreNum: break
+  logicalCoreNum, blockFormer, blockDim = nextLogical, nextFormer, nextBlockDim
 ubFormer        = (N >= 8*1024*1024) ? 8192 : 4096       # 元素
 workspace_total = 0
 ```
@@ -103,7 +110,9 @@ workspace_total = 0
 
 ```text
 cann_bench::gelu
-  -> gelu_npu: validate + empty_like + current stream + N
+  -> gelu_npu: device guard
+    -> gelu_meta: validate + empty_like
+    -> current stream + N
     -> N==0 ? return y
     -> calc_gelu_tiling_params(N)
     -> launch_gelu_kernel(dtypeCode, approximateCode, config)
@@ -134,20 +143,24 @@ tileLength  = ubFormer；末 tile 为 blockLength % ubFormer（整除时为 ubFo
 gmBase(core)= core * blockFormer                           # 元素；实际字节乘 sizeof(dtype)
 ```
 
-`N<8 Mi` 使用 4096 元素 tile，否则使用 8192。每个 fused DAG 是 `CopyIn<U>→单个 Reg/VF 计算节点→CopyOut<U>`，`MemOptCfg<LEVEL_2>` 让 ATVOSS 对输入和输出 tile 做 ping/pong。逻辑字节账为 `UB_total=4*ubFormer*sizeof(U)`：FP16/BF16 为 32768/65536 B，FP32 为 65536/131072 B（小/大 tile）。计算中间值只驻留 `RegTensor`，没有额外 TBuf 物化。
+`N<8,388,608` 个元素时使用 4096 元素 tile，否则使用 8192。每个 fused DAG 是 `CopyIn<U>→单个 Reg/VF 计算节点→CopyOut<U>`，`MemOptCfg<LEVEL_2>` 让 ATVOSS 对输入和输出 tile 做 ping/pong。逻辑字节账为 `UB_total=4*ubFormer*sizeof(U)`：FP16/BF16 为 32768/65536 B，FP32 为 65536/131072 B（小/大 tile）。计算中间值只驻留 `RegTensor`，没有额外 TBuf 物化。
+
+当前六条 active Route 的分层资源帐为 `GM=x+y`、`UB=4*ubFormer*sizeof(U)`、`workspace=0`、`L1=0`、`L0A=0`、`L0B=0`、`L0C=0`。它们都是 AIV Vector task，没有 AIC/Cube 分支或 L1/L0 中间结果。
 
 ### Route 特征与重要性
 
-P0～P5 只表示实现知识的阅读与复用重要性，不改变 Route ID，也不改变 Host 的真实判断顺序、短路关系或 fallback。
+P0～P5 只是语义/复用导航，不是生产 selector 优先级，也不表示一条 Route 会在另一条失败后被尝试。P0 优先展开唯一的 FP32 pair 调度；P1～P5 依次突出 native-half stable logistic、BF16 cast/transcendental 桥接、FP32 非对称 none 近似、BF16 tanh 恢复链和基础 FP16 none 路线。该顺序不改变 Route ID，也不改变 Host 的真实判断顺序、短路关系或 fallback。
 
-| 重要性 | Route | Route 特征 | 适用域 | 实现前提 |
-|---|---|---|---|---|
-| P0 | R-006 tanh FP32 pair | 两组独立 FP32 RegTensor 交错覆盖长 `Exp/Div` 依赖链；第二向量由完整 UB tile padding 承接 | FP32、`approximate="tanh"`、`N>0`、950 | ATVOSS 按 `ubFormer` 分配完整 tile；GM 仅发布 live count；两组寄存器不别名 |
-| P1 | R-004 tanh FP16 | 原生 128-lane FP16 stable logistic；中央区计算后按原 dtype 恢复远尾与 NaN | FP16、`approximate="tanh"`、`N>0`、950 | 950 FP16 `Exp/Div` 可用；clamp、符号 numerator 与恢复次序保持一致 |
-| P2 | R-002 none BF16 | BF16 载入后转 FP16 执行短 logit 多项式与 stable logistic，再转回 BF16 | BF16、`approximate="none"`、`N>0`、950 | BF16 `Exp/Div` 不直接可用；BF16↔FP16 cast trait、远尾和 NaN 恢复保持一致 |
-| P3 | R-003 none FP32 | FP32 压缩 logit 多项式、clamp、`Exp/Div` 与 NaN 恢复 | FP32、`approximate="none"`、`N>0`、950 | 64-lane masked VF；中央近似区和特殊值边界保持一致 |
-| P4 | R-005 tanh BF16 | BF16→FP16 stable logistic→BF16；保留 128-lane B16 宽度 | BF16、`approximate="tanh"`、`N>0`、950 | BF16↔FP16 cast trait、原 dtype tail/NaN restore 与 live mask 保持一致 |
-| P5 | R-001 none FP16 | 原生 128-lane FP16 多项式与 `Exp/Div`，中间量全驻留寄存器 | FP16、`approximate="none"`、`N>0`、950 | clamp 与 NaN 恢复保持一致；无额外 TBuf |
+| 重要性 | Route | 可达性 | Route 特征 | 适用域 | 实现前提 |
+|---|---|---|---|---|---|
+| P0 | R-006 tanh FP32 pair | active | 两组独立 FP32 RegTensor 交错覆盖长 `Exp/Div` 依赖链；第二向量由完整 UB tile padding 承接 | FP32、`approximate="tanh"`、`N>0`、950 | ATVOSS 按 `ubFormer` 分配完整 tile；GM 仅发布 live count；两组寄存器不别名 |
+| P1 | R-004 tanh FP16 | active | 原生 128-lane FP16 stable logistic；中央区计算后按原 dtype 恢复远尾与 NaN | FP16、`approximate="tanh"`、`N>0`、950 | 950 FP16 `Exp/Div` 可用；clamp、符号 numerator 与恢复次序保持一致 |
+| P2 | R-002 none BF16 | active | BF16 载入后转 FP16 执行短 logit 多项式与 stable logistic，再转回 BF16 | BF16、`approximate="none"`、`N>0`、950 | BF16 `Exp/Div` 不直接可用；BF16↔FP16 cast trait、远尾和 NaN 恢复保持一致 |
+| P3 | R-003 none FP32 | active | FP32 压缩 logit 多项式、非对称截断、`Exp/Div` 与 NaN 恢复 | FP32、`approximate="none"`、`N>0`、950 | 64-lane masked VF；下界 -13.15 与上界 5.75 不得误改成对称 clamp |
+| P4 | R-005 tanh BF16 | active | BF16→FP16 stable logistic→BF16；保留 128-lane B16 宽度 | BF16、`approximate="tanh"`、`N>0`、950 | BF16↔FP16 cast trait、原 dtype tail/NaN restore 与 live mask 保持一致 |
+| P5 | R-001 none FP16 | active | 原生 128-lane FP16 多项式与 `Exp/Div`，中间量全驻留寄存器 | FP16、`approximate="none"`、`N>0`、950 | 先下界截断至 -13.15，再对多项式自变量夹到 ±5.75；NaN 恢复；无额外 TBuf |
+
+这六条 active Host Route 构成合法非空输入域上的完备且互斥分区，不存在 production `conditional` Host Route。空域返回、Host 拒绝与非法裸 C ABI 的 `else` 误落都是边界，不是新 Route。Device 源码仍保留编译期关闭变体和未实例化 DAG；它们在下文单列为 `dormant` Device 变体，不冒充第七条 Host Route。
 
 ### Route 选择
 
@@ -173,6 +186,52 @@ else:
   else -> R-006
 ```
 
+### Production 可达性与 fallback 出边
+
+Torch Host 先把公开输入收窄到 `approximateCode∈{1,2}` 与 `dtypeCode∈{1,2,3}`。在这个前提下，launcher 的两层决策树等价于下表；每条命中后只发射一个 entry，Device body 内无二次 selector 或算法 fallback。
+
+| Route | 生产触发谓词 | selector/key/template | 未命中出边 | 命中后失败边界 |
+|---|---|---|---|---|
+| R-006 | `N>0 && mode=tanh && dtype=FP32` | H2.3 / code 2,3 / `GeluV2TanhPairFloatDag` | H2.1/H2.2 先后承接 FP16/BF16；只有 FP32 到本 Route | 无 Device fallback；异步启动/运行错误交给 stream/runtime 传播 |
+| R-004 | `N>0 && mode=tanh && dtype=FP16` | H2.1 / code 2,1 / `GeluV2TanhFusedDag<half>` | dtype 不命中则继续 H2.2/H2.3 | 无 Device fallback；精度依赖 FP16 `Exp/Div` 及尾值恢复顺序 |
+| R-002 | `N>0 && mode=none && dtype=BF16` | H1.2 / code 1,2 / `GeluV2ErfPolyFusedDag<bfloat16_t>` | H1.1 未命中后到本路；若仍不命中则到 H1.3 | 无 BF16 native-transcendental 或 FP32 备选 body |
+| R-003 | `N>0 && mode=none && dtype=FP32` | H1.3 / code 1,3 / `GeluV2ErfPolyFusedDag<float>` | 合法域中是 none 树的最终分支 | 无 Device fallback；非法 dtype code 也会误落此路，不是受支持退化 |
+| R-005 | `N>0 && mode=tanh && dtype=BF16` | H2.2 / code 2,2 / `GeluV2TanhFusedDag<bfloat16_t>` | H2.1 未命中后到本路；若仍不命中则到 H2.3 | 无 BF16 native-transcendental 或 FP32 备选 body |
+| R-001 | `N>0 && mode=none && dtype=FP16` | H1.1 / code 1,1 / `GeluV2ErfPolyFusedDag<half>` | dtype 不命中则继续 H1.2/H1.3 | 无 Device fallback；精度依赖 FP16 多项式/`Exp/Div` 同序 |
+
+决策树外的出边只有三类：`gelu_meta` 拒绝非法 mode/dtype；`N==0` 在 tiling 前返回空输出；合法非空输入启动某一 Route 后，callback 固定返回 0，源码不同步取回 Device 状态。绕过 Torch Host 直接传非法 code 时，`approximateCode!=1` 会进 tanh 树，`dtypeCode` 非 1/2 会进 FP32 末分支；这是裸 C ABI 的 fail-open 边界，不得当作 R-003/R-006 的 fallback 能力。
+
+### Dormant Device 变体与重启条件
+
+`launch_gelu_kernel` 仍只有六个 active Host 出边。下表的变体位于 Device 模板内部：前两类被函数内 `constexpr bool useFloatRational=false` 使 `if constexpr` 分支在编译期不生成，后两类虽有 DAG 定义，但六个 `DEFINE_GELU_ENTRY` 都没有实例化它们。因此它们均为 `dormant`，不是当前非空输入能命中的 conditional fallback。
+
+| Dormant Device 变体 | 当前不可达证据 | 若重启时影响的 dtype/entry | 最小重启条件 | 资源与精度变化 |
+|---|---|---|---|---|
+| D-NONE-RAT：`GeluV2ErfPolyFused<U>` 内 Gaussian-tail rational | `useFloatRational=false`；`if constexpr(useFloatRational)` 整段被删除 | 修改后会切换 R-001/`gelu_none_fp16`、R-002/`gelu_none_bf16`、R-003/`gelu_none_fp32` 的同名 entry body | 不能只把 flag 改为 true；必须把 `ERF_RAT_P0..P5/Q0..Q5` 全部绑定到对应 RegTensor，再重新构建。当前初始化只写 `ERF_32_FAST_POLY_0..4`，`erfP5` 与 `erfQ0..5` 在该 dormant body 中没有完整 producer | 三 dtype 都改用 64-lane FP32 计算；FP16/BF16 增加 widen/RINT-narrow，不再保留 128-lane B16 路径；去掉 `Exp`但保留 `Div`，增加 P/Q 系数寄存器。fused DAG 的 input/output UB 字节账可不变，寄存器压力与 `abs(x)>4.5` 渐近分支必须重审 |
+| D-TANH-DIR：`GeluV2TanhFused<U>` 内 anchored direct polynomial | `useFloatRational=false`；`TANH_DIR_R0..R9` 的 branch 不生成 | 仅影响当前实例化该模板的 R-004/`gelu_tanh_fp16` 与 R-005/`gelu_tanh_bf16`；R-006 绑定 `GeluV2TanhPairFloatDag`，不受 flag 影响 | 把该模板内 flag 改为 true 并重新构建；若要影响 FP32，还必须显式把 `gelu_tanh_fp32` 改绑 `GeluV2TanhFusedDag<float>` | FP16/BF16 从 128-lane native-half `Exp/Div` 变为 64-lane FP32 widen/direct-polynomial/narrow；去掉 `Exp/Div`，但增加十个系数及临时 RegTensor。`abs(x)>4.2` 直接用渐近值，尾部、NaN 与 RINT 语义需重新对照 |
+| D-ORIG-ERF：`GeluV2Erf16BDag<U,float>` / `GeluV2Erf32BDag<float,float>` | DAG family 存在，但 R-001/R-002/R-003 的 entry 全部绑定 `GeluV2ErfPolyFusedDag` | 16-bit DAG 对应 FP16/BF16 none；32-bit DAG 对应 FP32 none | 逐 entry 改写 `DEFINE_GELU_ENTRY` 的 DAG 类型并重新构建；同时重算 scheduler UB，确认 `ErfFast`/`Vec::Erf` 所需 API 临时区，不得直接沿用 fused body 的纯 input/output 字节账 | 回到 `CopyIn→Cast(16-bit)→x/√2→Erf→erf-post→Cast→CopyOut` 或 FP32 无 cast 链；中间 DAG 节点可物化额外 FP32 UB，`Erf` 临时资源需重算。仍为 AIV，L1/L0A/B/C 为 0，但当前 Direct tiling 不证明新 UB 容量安全 |
+| D-ORIG-TANH：`GeluV2TanhDag<U,float>` | DAG family 未被 R-004/R-005/R-006 任一 entry 实例化 | 可替换 FP16/BF16 tanh；若取代 pair DAG 也可影响 FP32 tanh | 逐 entry 把 DAG 重绑到 `GeluV2TanhDag`并重新构建；FP32 还会显式放弃 pair 发射 | 恢复 `CopyIn→Cast→GeluV2Tanh<float>→Cast→CopyOut`；16-bit 使用 FP32 中间值与 RINT，可增加 UB/Reg 占用并降低向量宽度；FP32 会丢失两寄存器组交错。仍无 Cube/L1/L0，但需重做尾块和特殊值对照 |
+
+D-NONE-RAT 的可实现数据流是：
+
+```text
+a=abs(x); u=2*min(a,4.5)/4.5-1
+q=P5(u)/Q5(u); q=(a>4.5)?0:q
+y=(x>0)?x*(1-q):x*q
+y=isnan(x)?x:y
+```
+
+D-TANH-DIR 的 dormant body 不是 P/Q 相除，而是 anchored direct polynomial：
+
+```text
+a=abs(x); u=2*min(a,4.2)/4.2-1; t=u+1
+q=0.5+t*R9(u); q=(a>4.2)?0:q
+y=(x>0)?x*(1-q):x*q
+y=isnan(x)?x:y
+```
+
+`TANH_RAT_P*/Q*`、`INV_ONE_PLUS_E_*` 与 `TANH_TAIL_*` 在 canonical Device 文本中只有常量定义，没有 active 或上述 dormant body 消费它们。它们是 dormant 设计残留，不能只靠开关重启；必须先新增完整 producer/consumer 链和 entry 绑定，才能升格为可审计变体。
+
 ### 模板/实现执行矩阵
 
 | 重要性/Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
@@ -183,6 +242,18 @@ else:
 | P3/R-003 | none/FP32 | N>0、FP32、none、950 | 单 K1 AIV | `...<GeluV2ErfPolyFusedDag<float>::OpDag>` | FP32 Reg，4×tile×4B | clamp、mask、NaN 恢复 |
 | P4/R-005 | tanh/BF16 | N>0、BF16、tanh、950 | 单 K1 AIV | `...<GeluV2TanhFusedDag<bfloat16_t>::OpDag>` | BF16→FP16 Reg→BF16 | ±5.75 tail、NaN 恢复 |
 | P5/R-001 | none/FP16 | N>0、FP16、none、950 | 单 K1 AIV | `ElementwiseSch16B<1,GeluV2ErfPolyFusedDag<half>::OpDag>` → `GeluV2ErfPolyFused<half>` | 16-bit Reg，4×tile×2B UB | masked VF；NaN 恢复 |
+
+### `none` 三 dtype 特殊值实际分支
+
+下表按 active body 的指令顺序描述，不用数学公式的极限替代实现。`Select` 恢复 NaN 时重新选中原输入寄存器；源码没有额外的 NaN payload canonicalization。
+
+| Route/dtype | `+Inf` | `-Inf` | `NaN` | `+0` | `-0` | 形成原因 |
+|---|---|---|---|---|---|---|
+| R-001 none FP16 | `+Inf` | `-0` | 选回原 NaN | `+0` | `-0` | `Maxs(x,-13.15)` 把 `-Inf` 改成有限负值，多项式自变量再夹到 ±5.75；负端 `Exp` 使分母溢向 `+Inf`，有限负分子相除得 `-0`；最后 `input!=input` 恢复 NaN |
+| R-002 none BF16 | `+Inf` | `NaN` | 选回原 NaN | `+0` | `-0` | 中央区 BF16→FP16 stable logistic→BF16；正尾按原 BF16 选回 `x`，负尾显式计算原 dtype `x*0`，因而有限负值得带符号零，`-Inf*0` 得 NaN |
+| R-003 none FP32 | `+Inf` | `-0` | 选回原 NaN | `+0` | `-0` | 先以 `Maxs` 把下界收到 -13.15，上界只在多项式输入处收到 5.75；`-Inf` 因此以有限负分子除以溢向 `+Inf` 的分母得 `-0`；最后显式恢复 NaN |
+
+这三条 Route 对 `-Inf` 并不具有相同行为：R-002 的原 dtype `x*0` 保留 `-Inf` 参与运算所得的 NaN，R-001/R-003 则在除法前已将输入下界收到 -13.15。迁移时不能把“都有 NaN restore”误解为所有无穷值也统一。
 
 ### 隐藏性能 Guard
 
@@ -210,7 +281,7 @@ else:
 | 同上 | `coreNum` | `int32_t`/32 | offset 8 | logical core | `config.coreNum` | scheduler 计算 `blockFormer` | 可大于物理 `blockDim`，用于对齐分块 |
 | 同上 | `ubFormer` | `int32_t`/32 | offset 12 | 元素/tile | `config.ubFormer` | scheduler 计算 UB loop/tail | 4096 或 8192 |
 
-### Route 源码闭包
+### Route canonical 静态映射
 
 | 重要性/Route | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
 |---|---|---|---|---|---|---|
@@ -221,13 +292,15 @@ else:
 | P4/R-005 | tanh/BF16 | 同上 | 同上 | `gelu_tanh_bf16` | `GeluV2TanhFused<bfloat16_t>` | 同上 |
 | P5/R-001 | none/FP16 | 同上 | 同上 | `gelu_none_fp16` | `GeluV2ErfPolyFused<half>` + ATVOSS scheduler | 同上 |
 
-上表中的 Direct entry、fused body 与构建宏是交付件源码事实；官方 `gelu_v2_apt.cpp`、tiling 与 DAG 只作为转换对应关系，不冒充这些派生符号的官方出处。
+上表中的 Direct entry、fused body 与构建宏是 canonical 交付件静态对照可见的映射，但 Frontmatter 没有为它们声明交付件定位来源。官方 `gelu_v2_apt.cpp`、tiling 与 DAG 只证明官方模板、算法和转换起点，不冒充这些 Direct 派生符号的官方出处，也不证明 Direct 等价性或性能。
 
 ## Kernel 实现
 
 ### 公共执行流程
 
-六条 Route 共享 `ElementwiseSch16B<1,DAG>`：每个 block 的 GM base 为 `blockIdx*blockFormer`，逐 `ubFormer` 元素 tile 交替 ping/pong，执行 `Vec::CopyIn<U>→fused unary Reg body→Vec::CopyOut<U>`。entry 先声明 `KERNEL_TYPE_AIV_ONLY`，按值 POD 构造 scheduler，再调用 `Init(x,y)` 与 `Process()`。所有数值中间量驻留 MicroAPI 寄存器；单节点图没有 workspace、event 或跨 Kernel owner/lifetime。
+六条 Route 共享 `ElementwiseSch16B<1,DAG>`：每个物理 AIV block 唯一拥有逻辑分片 `[blockIdx*blockFormer, min(N,(blockIdx+1)*blockFormer))`，逐 `ubFormer` 元素 tile 交替 ping/pong，执行 `Vec::CopyIn<U>→fused unary Reg body→Vec::CopyOut<U>`。`blockDim=ceil(N/blockFormer)` 保证不发射空 block；`coreNum` 是 scheduler 重算 `blockFormer` 所用的逻辑除数，可大于 `blockDim`，但不会额外产生 task。entry 先声明 `KERNEL_TYPE_AIV_ONLY`，按值 POD 构造 scheduler，再调用 `Init(x,y)` 与 `Process()`。所有数值中间量驻留 MicroAPI 寄存器；单节点图没有 workspace、跨 Kernel event 或跨 Kernel owner/lifetime。
+
+`MemOptCfg<LEVEL_2>` 与 `ElementwiseSch16B::Process()` 是交付源码直接调用的 CANN 9.1 SDK 边界；本地交付件不包含该 scheduler 实现。因而本卡可闭合 ping/pong 所有权、`CopyIn→VF→CopyOut` 依赖与有效 extent，但不伪造 SDK 内部 event ID 或 queue 指令序列。迁移到不同 scheduler 时，必须重新证明“同 parity UB slot 只在前一消费者完成后覆盖”，不能仅复制 DAG 类型。
 
 以下逐 Route 章节按重要性 P0→P5 展开；Route ID 不变，Host 的 H1/H2 判断与短路关系以“Route 选择”表为准。
 
@@ -258,12 +331,18 @@ gelu_tanh_fp32 -> ElementwiseSch16B<1,GeluV2TanhPairFloatDag::OpDag>
 vl=VECTOR_REG_WIDTH/4; pairCount=ceil(ceil(count/vl)/2)
 for pairIdx:
   x0=load(offset0); x1=load(offset0+vl)
-  interleave for group0/group1:
-    square=x*x; tmp=square*x; tmp+=x/0.044715
-    tmp*=-1.595769121*0.044715; tmp=exp(tmp); tmp+=1; out=x/tmp
+  square0=x0*x0;                         square1=x1*x1
+  tmp0=square0*x0;                       tmp1=square1*x1
+  tmp0+=x0/0.044715;                     tmp1+=x1/0.044715
+  tmp0*=-1.595769121*0.044715;           tmp1*=-1.595769121*0.044715
+  tmp0=exp(tmp0);                        tmp1=exp(tmp1)
+  tmp0+=1;                               tmp1+=1
+  out0=x0/tmp0;                          out1=x1/tmp1
   store both padded UB vectors
 scheduler CopyOut publishes only count live elements
 ```
+
+这里的左/右两列对应源码“同一类指令先 group0 后 group1”的发射顺序，不能改写成先算完 group0 再算 group1。此 Route 没有 clamp、cast 或显式 NaN restore；NaN/Inf 只经 FP32 `Mul/Axpy/Muls/Exp/Adds/Div` 顺序传播。
 
 #### 内存与数据搬运
 
@@ -302,7 +381,7 @@ UB_total = 65536 B 或 131072 B; dynamic_ub=N/A; workspace_total=0
 
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
-| pair VF | group0/group1 交错指令 | 两组 LoadAlign | 两组 StoreAlign | independent Reg | FP32，无 cast |
+| pair VF | group0/group1 同指令交错 | 两组 LoadAlign | 两组 StoreAlign | independent Reg | FP32，无 cast/clamp/restore；特殊值按算术链自然传播 |
 | pair tail | `pairCount=ceil(vecCount/2)` | scheduler padded UB | VF | 奇数末 vector | VF 用 ALL mask，但仅触及已分配 UB |
 | GM tail | scheduler CopyOut count | output UB | GM | live elements | padding 永不发布 |
 
@@ -735,7 +814,7 @@ workspace_total = 0
 
 - 适用 Route：P0 R-006、P1 R-004、P2 R-002、P3 R-003、P4 R-005、P5 R-001。
 - 触发条件：合法 `approximate × dtype`；Direct launcher 已产生 code。
-- Golden 来源：[`activation/gelu_v2/op_kernel/gelu_v2_apt.cpp:25-43`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/gelu_v2_apt.cpp)
+- 官方固定来源：[`activation/gelu_v2/op_kernel/gelu_v2_apt.cpp:25-43`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/gelu_v2_apt.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -772,7 +851,7 @@ __global__ __aicore__ void gelu_v2(GM_ADDR x, GM_ADDR y, GM_ADDR workspace, GM_A
 
 - 适用 Route：P1 R-004、P2 R-002、P3 R-003、P4 R-005、P5 R-001；其中 BF16 的 P2 R-002/P4 R-005 还包含 dtype 桥接。
 - 触发条件：`GeluV2ErfPolyFusedDag<U>` 或 `GeluV2TanhFusedDag<U>`。
-- Golden 来源：[`activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h:150-162`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h)
+- 官方固定来源：[`activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h:150-162`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -807,7 +886,7 @@ struct GeluV2TanhDag {
 
 - 适用 Route：P1 R-004、P2 R-002、P4 R-005；P3 R-003/P5 R-001 共享 NaN 恢复思想。
 - 触发条件：16-bit `Exp/Div` 路线及远离中央近似区的输入。
-- Golden 来源：[`activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h:28-39`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h)
+- 官方固定来源：[`activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h:28-39`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -844,7 +923,7 @@ constexpr float ERF_MAX = -13.15f;
 
 - 适用 Route：P0 R-006。
 - 触发条件：FP32 + `tanh`，每个 ATVOSS tile 至少分配完整 `ubFormer` 容量。
-- Golden 来源：[`activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h:76-108`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h)
+- 官方固定来源：[`activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h:76-108`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -897,11 +976,13 @@ MicroAPI::Div(vregOutput, vregInput, vregInputCub, mask);
 ## 限制与失败边界
 
 - Direct 插件只校验 mode/dtype；连续性是调用约定，源码没有 `is_contiguous()` 检查或 `Contiguous` 转换。
+- `CeilDivI64(x,y)` 直接计算 `x+y-1`，Host 没有对近 `INT64_MAX` 的 `numel()` 做 checked-add；不能将 `dim0` 是 `int64_t` 误当作极端大 tensor 的溢出证明。
 - `GeluLaunchConfig` 的 `coreNum/blockDim` 从 `int64_t` 窄化到 `int32_t`，源码依赖 AIV 核数远小于该上限，没有独立溢出检查。
 - 512 是 scheduler 的元素对齐单位，不随 dtype 转为字节；迁移时不能误写为 512B。
 - 六个 entry 都没有 unknown-key body；绕过插件调用 C ABI 时未知 code 会静默落到 FP32/tanh。
 - P0 R-006 使用 ALL mask 成对访问 UB padding；只有完整 tile 分配与 live-count CopyOut 同时成立才安全。
 - ATVOSS scheduler 是 CANN 9.1 SDK 依赖，未复制到交付件；本卡按交付件锁定的 `ElementwiseSch16B`/`EleBaseTilingData16B` ABI 描述，不把 SDK 内部当作算子自有源码。
+- `RunOpApi` callback 在提交 launch 后固定返回 0，不同步读取 Device 完成状态；启动后错误的观测与 tensor 生命期延长依赖 Torch NPU stream/runtime 契约。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
@@ -919,14 +1000,14 @@ MicroAPI::Div(vregOutput, vregInput, vregInputCub, mask);
 | Kernel DAG | `activation/gelu_v2/op_kernel/arch35/gelu_v2_dag.h` | `GeluV2*Dag` | 官方计算 DAG 与 MicroAPI 公式 |
 | 系数参考 | `activation/gelu_quant/op_kernel/arch35/gelu_quant_base_regbase.h` | `ERF_PARAM*` | exact-mode 转换系数/边界参考 |
 
-每行均对应 Frontmatter 中固定 40 位 Commit 的官方 blob。Direct 插件、launcher、fused body 与构建接线来自交付件事实，因此只在正文中以“交付件”标识，不加入 `sources`。
+每行均对应 Frontmatter 中固定 40 位 Commit 的官方 blob，证明官方 950 接口/模板/算法与系数参考。Direct 插件、launcher、fused body 与构建接线由 canonical 交付件做静态对照，但任务政策不将该定位线索加入 `sources`。因而本卡只声明“Direct 链路已静态映射”，不声明其 provenance 与 Frontmatter 官方来源同强或已闭包。
 
 ### 实现复用检查
 
 | 检查项 | 可复用事实 | 不得改变的约束 | 源码符号 |
 |---|---|---|---|
 | ABI/POD | `EleBaseTilingData16B={int64 dim0,int32 coreNum,int32 ubFormer}` 按值 | 16B、offset 0/8/12、单位均为元素/core | 交付件 `GeluLaunchConfig`、`EleBaseTilingData16B` |
-| 调用顺序 | validate→empty_like→tiling→single launch | `N==0` 必须在 tiling/launch 前返回 | `gelu_npu` |
+| 调用顺序 | guard→meta/empty_like→current stream→N/tiling→single launch | `N==0` 必须在 tiling/launch 前返回，但 stream 已在空域判断前取得 | `gelu_npu` |
 | workspace/内存 | workspace=0；input/output UB ping-pong | `UB_total=4*ubFormer*sizeof(dtype)`；P0 R-006 需完整 padding | fused DAG + ATVOSS scheduler |
 | 同步 | 单 stream、scheduler tensor acquire/release | 不能跨 stream 提前复用 Tensor/UB | `RunOpApi`、`ElementwiseSch16B::Process` |
 | 精度与尾块 | mode/dtype 专门化；mask、cast、tail/NaN restore | cast trait、阈值、恢复顺序、CopyOut live count不能变 | 两个 fused body、pair body |

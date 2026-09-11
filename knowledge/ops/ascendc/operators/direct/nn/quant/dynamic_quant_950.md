@@ -24,7 +24,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/quant/dynamic_quant/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:31:39Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -39,7 +39,7 @@ cann_versions: ["9.1.0"]
 | 计算语义 | 对最后一维逐行做对称动态量化：`amax=max(1e-12, max(abs(fp32(x))))`，`scale=amax/127`，`y=RINT(fp16_odd(fp32(x)/scale))` 后写 `int8`。 |
 | 输入输出 | 连续 ND `x`，rank 2..8，`float16`/`bfloat16`；`y` 与 `x` 同 shape、`int8`；`scale` 为 `x.shape[:-1]`、`float32`。 |
 | 执行类型 | 单 Kernel `AIV_VECTOR`；无 Cube/AIC、SIMT、NDDMA、通信或 Hybrid 节点。 |
-| Kernel 路线 | P0：R-001 `cast2-full-load-db2`，包含 fp16 与 bf16 两个同构模板实例。 |
+| Kernel 路线 | 生产可达仅 P0：R-001 `cast2-full-load-db2`，包含 fp16 与 bf16 两个同构模板实例；源码还保留 3 个 dormant 家族。 |
 | 核心资源 | GM `x/y/scale`；每 AIV core 的 depth=2 `VECIN inQueue`、`VECOUT outQueue/scaleQueue`；MicroAPI 寄存器；无算子 workspace。 |
 | 来源闭包 | `direct_implementation_closed`：已从 Direct 注册/校验、平台查询、tiling、dtype launcher、Kernel entry、公共基类、适配 body、队列与构建接线闭合活动调用链。 |
 | 证据状态 | 官方固定提交与 Direct 交付源码已闭合到活动调用链；特殊值指令语义与 launch 同步报错协议保持边界说明。 |
@@ -96,7 +96,7 @@ y[r,c] = int8_rint(fp16_odd(q32[r,c]))
 
 ### 参数、Workspace 与生命周期
 
-记平台 AIV core 数为 `V`，UB 字节数为 `U`，`A=align_up(H,16)`，`B=align_up(H,32)`：
+记平台 AIV core 数为 `V`，UB 字节数为 `U`，`A=align_up(H,16)`，`B=align_up(H,32)`。下式是数学意图；源码中 `rowPerHeadCore` 具体写成 32-bit 的 `(rows+V-1U)/V`，其近上界溢出风险见“限制与失败边界”：
 
 ```text
 headCoreNum    = N % V
@@ -140,13 +140,31 @@ cann_bench::dynamic_quant
 
 每个正常循环处理 `M_b` 行，尾循环处理 `remainRow` 行。GM 基址均由 `baseRow` 推导；x/y 行跨度为 `H`，scale 行跨度为 1。UB 为最大 `M_b` 预分配，尾循环复用相同 buffer，只缩短 `DataCopyPad.blockCount` 与有效输出长度。
 
-### Route 重要性（高到低）
+### 生产可达 Route 重要性（高到低）
 
-| 重要性 | Route | Route 特征 | 适用范围 | 实现前提 |
-|---:|---|---|---|---|
-| P0 | R-001 `cast2-full-load-db2` | 单 AIV full-load；每核按行切分；三条 depth=2 Queue；fp32 行归约与除法后执行 `fp32 -> fp16(CAST_ODD) -> int8(CAST_RINT)` | 连续 ND、rank 2..8、fp16/bf16 输入、对称 per-token int8；最后一维整行可装入 UB 的 950 子域 | `0<N,H<=UINT32_MAX`；平台 AIV/UB 信息有效；`11*align16(H)<=U-1024`；Host producer 生成 `useDoubleBuffer=1`；POD、Queue depth 与 UB 字节账一致 |
+| 重要性 | Route | 状态 | Route 特征 | 适用范围 | 实现前提 |
+|---:|---|---|---|---|---|
+| P0 | R-001 `cast2-full-load-db2` | active | 单 AIV full-load；每核按行切分；三条 depth=2 Queue；fp32 行归约与除法后执行 `fp32 -> fp16(CAST_ODD) -> int8(CAST_RINT)` | 连续 ND、rank 2..8、fp16/bf16 输入、对称 per-token int8；最后一维整行可装入 UB 的 950 子域 | `0<N,H<=UINT32_MAX`；平台 AIV/UB 信息有效；`11*align16(H)<=U-1024`；Host producer 生成 `useDoubleBuffer=1`；POD、Queue depth 与 UB 字节账一致 |
 
-P0 表示实现与复用时的优先级，不表示 Host 的判断先后。当前入口闭包只有 R-001；fp16 与 bf16 是该 Route 的两个互斥模板实例，不拆分为新 Route。
+P0 表示实现与复用时的优先级，不表示 Host 的判断先后。当前生产入口没有 conditional Route，只有 active 的 R-001；fp16 与 bf16 是该 Route 的两个互斥模板实例，不拆分为新 Route。源码中另有三个 dormant 家族，见下表；它们不参与 active Route 排序。
+
+#### Dormant Route 清单与重新启用条件
+
+| Route | 源码 selector/关键代码关系 | 生产链不可达原因 | 重新启用条件 |
+|---|---|---|---|
+| R-D01 `cast2-full-load-db1` | `launch_dynamic_quant_{half|bfloat16}` 的 `config.useDoubleBuffer == 0` 分支，实例化 `DynamicQuantRegbaseFullLoadCast2<xDtype,int8_t,false,1,true>` | 唯一 Host producer `calc_dynamic_quant_tiling` 在 `calcDbSize>maxUseUbSize` 与其 `else` 分支中都写 `useDoubleBuffer=1`；注册 wrapper 没有第二个 config producer | 修改并证明 Host UB selector，使其在 DB1 字节账成立时产出 0；同时保持 dtype、POD、行分核和 current-stream launcher 链不变 |
+| R-D02 `official-full-load-db2` | 两个 `dynamic_quant_{half|bfloat16}_db2_entry` 实例化 `DynamicQuantRegbaseFullLoad<xDtype,int8_t,false,2,true>` | entry 虽参与编译，但两个 launcher 的非零分支只引用 `*_cast2_db2_entry`，注册表也没有直达节点 | 显式增加 DB2 launcher/selector 出边，并先处理原 body 的 scale 初值和三段 cast 与 Direct 语义差异；不能只凭符号存在恢复 |
+| R-D03 `official-full-load-db1` | 两个 `dynamic_quant_{half|bfloat16}_db1_entry` 实例化 `DynamicQuantRegbaseFullLoad<xDtype,int8_t,false,1,true>` | entry 虽参与编译，但两个 launcher 的零值分支只引用 `*_cast2_db1_entry`；活动 producer 还不会产出零 | 同时增加 DB1 producer 与 launcher 出边，重做 depth=1 UB 字节账，并处理原 body 与 Direct 的数值语义差异 |
+
+```text
+# dormant 代码关系；不是当前调用图的运行时 fallback
+if producer_can_emit(useDoubleBuffer=0):
+    dtype_launcher -> *_cast2_db1_entry -> DynamicQuantRegbaseFullLoadCast2<...,1,true>
+
+if launcher_is_rewired_to_official_body:
+    *_db2_entry -> DynamicQuantRegbaseFullLoad<...,2,true>  # R-D02
+    *_db1_entry -> DynamicQuantRegbaseFullLoad<...,1,true>  # R-D03
+```
 
 ### Host selector 顺序、短路与 fallback
 
@@ -155,7 +173,7 @@ P0 表示实现与复用时的优先级，不表示 Host 的判断先后。当�
 1. `dynamic_quant_meta` 依次约束 rank、`H`、dtype 与 contiguous，并分配 `y/scale`；任一条件失败即短路，不进入 tiling。
 2. `calc_dynamic_quant_tiling` 检查 uint32 行域、平台对象、AIV/UB 数据与单行 full-load 上界；任一条件失败即抛异常，不启动 Kernel。
 3. `dynamic_quant_npu` 先按 dtype 选择 half 或 bfloat16 launcher；前置校验已排除其它 dtype，因此此处两个分支互斥且完备。
-4. 选定的 launcher 再判断 `config.useDoubleBuffer != 0`：非零进入 cast2 DB2 entry，零进入同 dtype 的 cast2 DB1 entry。活动 producer 在两个 UB 资源分支中都写 1，所以标准 wrapper 流程只到达 R-001 DB2；DB1 是 launcher 面向外部构造 config 保留的源码 fallback，不属于标准 wrapper 的正式 Route。
+4. 选定的 launcher 再判断 `config.useDoubleBuffer != 0`：非零进入 cast2 DB2 entry，零进入同 dtype 的 cast2 DB1 entry。活动 producer 在两个 UB 资源分支中都写 1，所以注册 wrapper 流程只到达 R-001 DB2；DB1 归入 R-D01 dormant，不是 R-001 失败后的运行时 fallback。
 5. 官方原样 `DynamicQuantRegbaseFullLoad` 的 fp16/bf16 DB1/DB2 entry 同样编译在翻译单元内，但 launcher 不选择它们；单行 full-load 上界失败时也没有 large-shape Route 接管。
 
 ```text
@@ -164,16 +182,18 @@ validate rank/H/dtype/contiguous
   -> if 11*align16(H) > U-1024: fail
   -> calculate M_head/M_tail; useDoubleBuffer = 1
   -> dtype selector: half launcher | bfloat16 launcher
-  -> DB selector: nonzero -> cast2 DB2 | zero -> cast2 DB1 fallback
+  -> DB selector: nonzero -> cast2 DB2 | zero -> dormant R-D01（仅替代 producer 可启用）
 ```
+
+R-001 的 fallback 出边是封闭的：rank/H/dtype/contiguous、uint32 域、平台信息或单行 UB guard 任一失败都以 Host 异常结束；Kernel 启动后也没有转入 R-D01/R-D02/R-D03 的 Device 分支。R-D01 只是 launcher 中保留的零值分支，R-D02/R-D03 只有已编译符号，三者都不是 active Route 的失败接管路径。
 
 ### Route 执行矩阵（P0→低优先级）
 
 | 重要性 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---:|---|---|---|---|---|---|---|
-| P0 | R-001 `cast2-full-load-db2` | dtype selector + `useDoubleBuffer=1` | fp16/bf16、rank 2..8、contiguous、非空行域、uint32 N/H、950 AIV/UB 有效、单行满足 11A 上界 | 单节点 K-001 `AIV_VECTOR` | `DynamicQuantRegbaseFullLoadCast2<xDtype,int8_t,false,2,true>::Init/Process/LoopProcess/CopyIn/Compute/ComputeVF/ComputeScaleVF/ComputeYVF/CopyOut` | 三个 depth=2 TQue；Queue 同步；无 workspace | 行尾由 pad+mask+有效字节 CopyOut；标准 wrapper 无 Route fallback；launcher 的 DB1 源码 fallback 仅在外部 config 置零时可达 |
+| P0 | R-001 `cast2-full-load-db2` | dtype selector + `useDoubleBuffer=1` | fp16/bf16、rank 2..8、contiguous、非空行域、uint32 N/H、950 AIV/UB 有效、单行满足 11A 上界；可靠复用还须满足下文窄整数边界 | 单节点 K-001 `AIV_VECTOR` | `DynamicQuantRegbaseFullLoadCast2<xDtype,int8_t,false,2,true>::Init/Process/LoopProcess/CopyIn/Compute/ComputeVF/ComputeScaleVF/ComputeYVF/CopyOut` | 三个 depth=2 TQue；Queue 同步；无 workspace | 行尾由 pad+mask+有效字节 CopyOut；注册 wrapper 无 Route fallback；R-D01 只有替代 producer 产出 0 后才可达 |
 
-### 隐藏性能 Guard
+### 隐式性能 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -188,7 +208,7 @@ validate rank/H/dtype/contiguous
 
 ### POD/ABI
 
-`DynamicQuantTilingDataArch35` 的交付件头文件与 source mapping 指向的官方版本字节一致。自然 ABI 下 `alignof=8`、`sizeof=248`；26 个 `uint32_t` 占前 104 B，17 个 `int64_t` 占后续 136 B，末尾 float 后补齐。`DynamicQuantLaunchConfig` 为 Host-only 包装：`tiling` offset 0/248 B，`useDoubleBuffer` offset 248/32-bit，`sizeof=256`；Device 只收到内部 tiling POD。
+`DynamicQuantTilingDataArch35` 的交付件头文件与固定官方版本字节一致。自然 ABI 下 `alignof=8`、`sizeof=248`；26 个 `uint32_t` 占前 104 B，17 个 `int64_t` 占后续 136 B，末尾 float 后补齐。`DynamicQuantLaunchConfig` 为 Host-only 包装：`tiling` offset 0/248 B，`useDoubleBuffer` offset 248/32-bit，`sizeof=256`；Device 只收到内部 tiling POD。
 
 | 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
 |---|---|---|---|---|---|---|---|
@@ -197,7 +217,7 @@ validate rank/H/dtype/contiguous
 | `DynamicQuantTilingDataArch35` | `coreNum` | `uint32_t`/32 | offset 0 | AIV core | `max(min(V,N),1)` | `Process` 越界保护；launch grid | `1..min(V,N)` |
 | 同上 | `rowLen` | `uint32_t`/32 | offset 4 | element/row | `H` | 对齐、DMA、VF 循环 | `H>0` 且单行 UB 可容纳 |
 | 同上 | `headCoreNum` | `uint32_t`/32 | offset 8 | core | `N%V` | head/tail core 分支 | 可为 0 |
-| 同上 | `rowPerHeadCore` | `uint32_t`/32 | offset 12 | row/core | `ceil_div(N,V)` | head core 行数/GM 基址 | 活动 head core 时 >0 |
+| 同上 | `rowPerHeadCore` | `uint32_t`/32 | offset 12 | row/core | `(rows+V-1U)/V` | head core 行数/GM 基址 | 活动 head core 时 >0；加法没有上溢检查 |
 | 同上 | `rowPerTailCore` | `uint32_t`/32 | offset 16 | row/core | `floor(N/V)` | tail core 行数/GM 基址 | `N<V` 时为 0 且无 tail block |
 | 同上 | `multiRowNumHeadCore` | `uint32_t`/32 | offset 20 | row/UB loop | `min(ubAvail,255,rowPerHeadCore)` | head `loopCnt/remainRow`、队列容量 | 活动 head core 时 >0 |
 | 同上 | `multiRowNumTailCore` | `uint32_t`/32 | offset 24 | row/UB loop | `min(ubAvail,255,rowPerTailCore)` | tail `loopCnt/remainRow`、队列容量 | 无 tail block 时可为 0 |
@@ -503,7 +523,8 @@ if constexpr (roundMode == AscendC::RoundMode::CAST_RINT) {
 ## 限制与失败边界
 
 - Direct 只接受连续 fp16/bf16、rank 2..8、最后维非零；零前导维会导致 `rowNum==0` 并在 tiling 失败。
-- `rowNum`、`rowLen` 必须分别落入 `uint32_t`；另外 Device 的 `lenHead/lenTail/lenMultiRow/lenGMMultiRow/outLen` 是 `uint32_t`，固定源码未显式检查其乘法溢出，复用时必须保证每核元素数和对齐后队列元素数不溢出。
+- `rowNum`、`rowLen` 只在入口检查为不超过 `UINT32_MAX`，但 Host 的 `(rows+V-1U)/V` 在 32-bit 无符号域计算，未检查 `rows+V-1` 上溢。可靠复用须额外满足 `N<=UINT32_MAX-(V-1)`，或把该式提升到 64-bit 后再窄化。
+- Device 的 `baseRow` 是 `int32_t`，`lenHead/lenTail/lenMultiRow/lenGMMultiRow/outLen` 是 `uint32_t`，`loopCnt` 还由 `int32_t` 循环变量遍历；固定源码未显式检查行偏移、元素乘积和循环计数的窄化/溢出。可靠子域必须保证每核 GM offset、对齐后 Queue 元素数与循环数分别落入对应类型。
 - `rowLen*sizeof(xDtype)` 和输出 DMA blockLen 使用 32-bit 字段；950 实际 full-load UB guard 会给出远小于该上限的 H，但移植到异常大 UB 平台时仍需重审窄化。
 - 单行不满足 `11*align16(H)<=U-1024` 时直接失败；Direct 没有接入官方 large-shape、多核切 H、空 Tensor、MoE 或 per-channel Route。
 - `useDoubleBuffer` 的实际 producer 恒写 1，DB1 entry 不在入口可达图中；不得将保留代码误当运行时 fallback。

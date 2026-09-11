@@ -1,7 +1,7 @@
 ---
 type: Operator
 title: "Unique 950 Direct Invoke 算子知识"
-description: "说明 cann_bench::unique、unique_npu 与 launch_unique 在 950 上的接口语义、Launcher 参数生成、Route 选择、多 Kernel 启动图与逐节点实现。"
+description: "说明 cann_bench::unique、unique_npu 与 launch_unique 在 950 上的接口语义、Host/POD/selector、Route 选择、GM/UB/workspace 交接、排序去重与逐节点实现。"
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
@@ -14,7 +14,7 @@ sources:
   - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h"
     role: implementation
 created_at: "2026-08-25T19:40:24Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -26,19 +26,19 @@ cann_versions: ["9.1.0"]
 | 项目 | 内容 |
 |---|---|
 | 实际入口 | `cann_bench.unique` → `torch.ops.cann_bench.unique` → `cann_bench::unique_npu` → `calc_unique_tiling` → `launch_unique`；Direct Invoke。 |
-| 计算语义 | 把 contiguous ND 输入按存储顺序展平，返回按路线比较序排列的唯一值 `y`；可选 `inverse` 满足 `y[inverse.reshape(-1)] == x.reshape(-1)`。无 NaN 时 y 严格升序。 |
+| 计算语义 | 把 contiguous ND 输入按存储顺序展平；在各 Route 的完整语义域内返回按比较序排列的唯一值 `y`，可选 `inverse` 满足 `y[inverse.reshape(-1)] == x.reshape(-1)`。FP32 official 的完整 unique 保证限定到无 NaN 输入。 |
 | 输入输出 | 输入 rank 1–8、元素数 `[1,UINT32_MAX]`；dtype 为 uint8/int8/int32/int64/fp16/fp32/bf16；`y` 与输入同 dtype，`inverse` 为 int64 且 shape 与输入相同。 |
 | 执行类型 | 固定域与稠密整数：多 Kernel AIV carrier + SIMT VF，稠密 extrema 节点含 AIV_VECTOR；官方 fallback：单 AIV carrier 内 SIMT sort/scan/gather 与 AIV UB/MTE。无可达 Cube/AIC 或 `MIX_CV`。 |
 | Kernel 路线 | 重要性顺序为 P0 R-003、P1 R-008、P2 R-002、P3 R-006、P4 R-005、P5 R-004、P6 R-007、P7 R-001。P 级只组织知识；运行时仍按 Host dtype 顺序分派，并在 dense Route 内按 value-domain 短路。 |
 | 核心资源 | 固定域 `first/rank` 两张 uint32 表；稠密整数为官方 workspace + 128 B 对齐的 `first/rank/partial/meta` 尾区；官方路线为 indices/sort/flags/scan GM 与双半区 sort UB、shape UB。 |
 | 来源闭包 | `direct_implementation_closed`：Direct binding、plain POD、selector、全部 Host 可达 entry/body/helper、多 Kernel GM 边、同步、生命周期与构建接线闭合；固定官方 Commit 只锚定字节一致的 UniqueDim body，不伪称 Direct wrapper 为官方入口。 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 证据边界 | 正文结论来自固定官方源码与 Direct 转换源码的静态闭包；不把构建产物、运行记录或转换交付状态写成算子机制。 |
 
 ## 接口与语义
 
 ### 计算语义
 
-令 `v=x.reshape(-1)`、`N=v.numel()`。实现产生按路线比较序排列的不同值序列 `y`；无 NaN 时严格升序：
+令 `v=x.reshape(-1)`、`N=v.numel()`。在各 Route 的完整语义域内，实现产生按路线比较序排列的不同值序列 `y`；浮点输入无 NaN 时严格升序：
 
 ```text
 y = sorted(distinct(v))
@@ -49,7 +49,7 @@ return_inverse=true : result=[y,inverse], inverse.shape=x.shape,
 
 Direct 任务语义与官方 `UniqueDim` 变体不同：这里没有 `dim`、`sorted` 或 counts 输出，永远按整个 contiguous 存储展平，且只暴露可选 inverse。适配器把官方 POD 固定为 `rowLen=1, dim=0, outerSize=innerSize=1, returnCounts=0`，所以官方 body 被复用为一维标量去重。固定域与稠密整数路线是 Direct 派生补充：它们用数值域表代替比较排序，但保持升序输出与 inverse 语义。
 
-浮点边界按源码分两类。FP16/BF16 固定域把 `+0/-0` 合成一个 key，并在输出保留首个零的符号；其映射假定任务域不含 NaN。FP32 官方 fallback 的普通比较用 `<`/`>`，dedup 额外把任一 NaN 判为不相等，因此 NaN 不被合并；`+0/-0` 比较相等。
+浮点边界按源码分两类。FP16/BF16 固定域把 `+0/-0` 合成一个 key，并在输出保留首个零的符号；其映射假定任务域不含 NaN。FP32 official 的排序比较只用 `<`/`>`，所以 NaN 与任意值都得到 compare-equal；dedup 比较却把任一含 NaN 的相邻对判为不等。于是 NaN 会保留且还可能隔断本应相邻的普通等值类，例如 `[1, NaN, 1]` 的稳定排序次序可能不变，compact 可产生 `[1, NaN, 1]`，两个 1 还会取得不同 inverse rank。Host 没有 NaN guard 或下一 fallback，故 R-007/R-008 的完整 unique 语义只在无 NaN 域成立；在该域内 `+0/-0` compare-equal，稳定 merge 与 gather 保留首个零的符号。
 
 ### 输入、输出与属性
 
@@ -64,7 +64,7 @@ Direct 任务语义与官方 `UniqueDim` 变体不同：这里没有 `dim`、`so
 
 ### 入口与版本
 
-`TORCH_LIBRARY_FRAGMENT` 声明 `unique(Tensor x, bool return_inverse=False) -> Tensor[]`；Meta 与 PrivateUse1 分别绑定 `unique_meta/unique_npu`。`unique_npu` 直接取得当前 NPU stream 并调用 `launch_unique`，随后 `aclrtMemcpyAsync` 读取 `shapeScratch+8` 的输出个数并同步，再收缩 `y`。它不是 ACLNN、不是 runtime registry lookup，也没有外部算子二进制或 CPU 实现。
+Python 包装层 `cann_bench.unique` 在 `return_inverse=false` 时从 dispatcher 的 `Tensor[]` 解包为单 Tensor，属性为 true 时转为二元 tuple。`TORCH_LIBRARY_FRAGMENT` 声明 `unique(Tensor x, bool return_inverse=False) -> Tensor[]`；Meta 与 PrivateUse1 分别绑定 `unique_meta/unique_npu`。Meta 只能返回最大 y 与完整 inverse shape，真实 y 长度由 Device 数据决定。`unique_npu` 直接取得 current NPU stream 并调用 `launch_unique`，随后 `aclrtMemcpyAsync` 读取 `shapeScratch+8` 的输出个数并同步，再收缩 `y`；inverse 不 resize。它不是 ACLNN、不是 runtime registry lookup，也没有外部算子二进制或 CPU 实现。
 
 本卡固定 CANN 9.1.0、950/Ascend 950。source mapping 证明候选中的 `unique_dim_{constant,kernel,simt,simt_sort}.h` 与固定 Commit `955f8b33985b6d72989ebff341bb9c2c564a51bc` 字节一致；Direct wrapper、plain POD、固定域/稠密整数 selector 与多 Kernel 图由转换候选派生，不能外推为官方 `UniqueDim` 的公开接口或官方变体。
 
@@ -131,6 +131,27 @@ all routes -> D2H shape[1] -> synchronize stream -> validate 1<=numOut<=N -> res
 
 所有 Host Kernel 以同一个 current stream 顺序提交，GM/workspace 是节点间交接介质；因此 consumer 等待其前序 producer。wrapper 为 `void` 且没有逐个 `<<<>>>` 的 Host 返回检查；异步 Device 错误最终在 D2H/stream synchronize 边界暴露。D2H 或同步失败立即抛错，不执行 resize。稠密宽域仍会提交 clear/mark/compact/optional inverse，但这些 body 读 `meta` 后提前返回；最后 pending 节点才运行官方实现。
 
+### 节点级 launch、读写集与完成关系
+
+`config.blockDim=C`，但 compact/finalize/prefix 这类全域串行汇总节点固定只发 1 个 AIV block。下表同时给出 grid、线程主体与跨节点 GM 边；这也是多 Kernel 图不能任意重排的最小闭包。
+
+| 节点 | Host launch grid | Device 线程/执行单元 | 主要读取 | 主要写入 | 后继与完成关系 |
+|---|---:|---|---|---|---|
+| `unique_clear_u32` | C | AIV carrier → 512-thread VF | `total,value` | fixed `first[0:D)` | same-stream 后 `mark8/16`；各 block 清自己的 domain 分片 |
+| `unique_fixed_mark8/16` | C | AIV carrier → 512-thread VF | x、first sentinel | first presence/first-zero index | same-stream 后单 block compact；跨 block 冲突由幂等 0 或 `AtomicMin` 收敛 |
+| `unique_fixed_compact` | 1 | AIV carrier + 256-thread VF + 1 KiB TBuf | first，zero 类还读 x | y、rank、`shape[1]` | inverse 可选消费 rank；Host 最终消费 shape |
+| `unique_fixed_inverse8/16` | C | AIV carrier → 512-thread VF | x、rank | inverse | Host 最终 stream 同步 |
+| `unique_dense_reduce_i32/i64` | C | AIV Vector/MTE，非 VF 主体 | x tiles | `partial[4*b:4*b+4)` | same-stream 后 finalize MTE2 搬入全部 C 条记录 |
+| `unique_dense_finalize` | 1 | MTE2 → 512-thread VF → MTE3 | partial | `meta={min,max}`、`shape[0:4]={0,UINT64_MAX,routeFlag,0}` | clear/mark/compact 读 meta；pending 以 MTE2 读完整 route block |
+| `unique_dense_clear` | C | AIV carrier → 512-thread VF | meta | `first[0:range)` | valid range 才写；same-stream 后 mark |
+| `unique_dense_mark_i32/i64` | C | AIV carrier → 512-thread VF | x、meta、first | first | valid 且 range>1 时 `AtomicMin`；range=1 只由首分片发布 `first[0]=0` |
+| `unique_dense_compact_i32/i64` | 1 | AIV carrier + 256-thread VF + 1 KiB TBuf | meta、first | y、rank、`shape[1]` | valid 时完成 dense y；inverse 可选消费 rank |
+| `unique_dense_inverse_i32/i64` | C | AIV carrier → 512-thread VF | x、meta、rank | inverse | 仅 R-006/V1 有效；V2 立即返回 |
+| `unique_pending_i{32,64}_{noinv,inv}` | C | AIV entry；先 MTE2 route，必要时 official phases | `shape[0:4]`；V2 再读 x/official workspace | V1 无写；V2 写 y/[inverse]/shape | 每个 core 取得同一 flag；V2 在 `TPipe::Reset` 后进入含 `SyncAll` 的 official body |
+| `unique_f32_{noinv,inv}` | C | AIV entry → official SIMT/UB phases | x、plain POD | y/[inverse]、official workspace、27 槽 shape | 单 entry 内以 `SyncAll` 闭合；Host D2H 等待 entry |
+
+`unique_dense_finalize` 对 `meta[0:2]` 使用 SIMT 标量 GM 写，对 route block 使用 32 B MTE3；因此二者不能混称为同一发布方式。fixed/dense compact 只保证 `shape[1]` 有效，official Phase8 才会覆盖完整 27 槽描述符。Host 对所有 Route 始终只复制 `shape[1]` 的 8 B。
+
 ## Route 与参数设计
 
 ### 分核与资源计算
@@ -144,12 +165,12 @@ all routes -> D2H shape[1] -> synchronize stream -> validate 1<=numOut<=N -> res
 | 优先级 | Route | Route 特征 | 适用域 | 实现前提 | Host 顺序 | 短路/fallback |
 |---:|---|---|---|---|---|---|
 | P0 | R-003 16-bit fixed/noinv | 65536 key 固定域表、三 Kernel、无 inverse | fp16/bf16，`returnInverse=false` | 无 NaN 的 Direct 输入域；两张 256 KiB 表；AIV core 可用 | H2a：H1 未命中后，`else if dtype∈{fp16,bf16}`，再按属性选 noinv | dtype 分支一旦命中不再尝试后续 Route；无 Device fallback |
-| P1 | R-008 fp32 official/inv | 官方比较排序单 Kernel，编译期启用 inverse | fp32，`returnInverse=true` | official workspace、plain POD、跨核 `SyncAll` | H4b：H1/H2/H3 均未命中；合法 dtype 只剩 fp32，再选 inv | `launch_unique` 的 dormant radix 分支不可达；直接进入 official |
+| P1 | R-008 fp32 official/inv | 官方比较排序单 Kernel，编译期启用 inverse | fp32，`returnInverse=true`；完整 unique 需无 NaN | official workspace、plain POD、跨核 `SyncAll`；Host 不筛 NaN | H4b：H1/H2/H3 均未命中；合法 dtype 只剩 fp32，再选 inv | `launch_unique` 的 dormant radix 分支不可达；含 NaN 也直接进入 official，无语义 fallback |
 | P2 | R-002 8-bit fixed/inv | 256 key 固定域表、四 Kernel、rank lookup | uint8/int8，`returnInverse=true` | 两张 1 KiB 表；first/rank 的 same-stream 可见性 | H1b：首个 `if dtype∈{u8,i8}` 命中，再按属性选 inv | 首个 dtype 分支短路；无 fallback |
 | P3 | R-006 dense integer/inv | extrema 预检、稠密表、可选 official body、启用 inverse | int32/int64，`returnInverse=true` | 213024 B reduce UB；official/dense 区不别名；32 B route publish | H3b：H1/H2 未命中后，`else if dtype∈{i32,i64}`，再按属性选 inv | V1：`max-min<2^20` 完成 dense；V2：否则前序 body 早退，pending official fallback |
 | P4 | R-005 dense integer/noinv | 与 R-006 相同的 value-domain 分流，裁掉 inverse 节点 | int32/int64，`returnInverse=false` | 同 R-006，但不分配正式 inverse 输出 | H3a：同一 H3 dtype 分支，再按属性选 noinv | V1/V2 与 R-006 相同；wide 进入 noinv official fallback |
 | P5 | R-004 16-bit fixed/inv | 65536 key 固定域表、四 Kernel、canonical rank | fp16/bf16，`returnInverse=true` | R-003 的固定域前提 + inverse GM | H2b：H2 dtype 分支命中后选 inv | H2 短路；无 fallback |
-| P6 | R-007 fp32 official/noinv | 官方比较排序单 Kernel，裁掉 inverse | fp32，`returnInverse=false` | official workspace、plain POD、跨核同步 | H4a：前三个 dtype 分支均未命中，再选 noinv | dormant radix 不可达；直接 official |
+| P6 | R-007 fp32 official/noinv | 官方比较排序单 Kernel，裁掉 inverse | fp32，`returnInverse=false`；完整 unique 需无 NaN | official workspace、plain POD、跨核同步；Host 不筛 NaN | H4a：前三个 dtype 分支均未命中，再选 noinv | dormant radix 不可达；含 NaN 也直接 official，无语义 fallback |
 | P7 | R-001 8-bit fixed/noinv | 256 key 固定域表、三 Kernel、裁掉 inverse | uint8/int8，`returnInverse=false` | R-002 的固定域前提；rank 表仍由 compact 产生 | H1a：首个 dtype 分支命中后选 noinv | H1 短路；无 fallback |
 
 ```text
@@ -173,15 +194,15 @@ other: CheckInput failure before selector
 | 优先级/Route | Host 顺序 | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|---|
 | P0/R-003 | H2a | fixed D65536/noinv | 950、N合法、fp16/bf16、无NaN域、noinv | 3 Kernel | `ClearU32→MarkFixed<uint16_t>→CompactFixed` | first/rank各256KiB；零key atomic；same stream | domain/线程span tail；无fallback |
-| P1/R-008 | H4b | official/inv | fp32+inverse | 单 Kernel | `UniqueDimKernel<float,true,false>` | official GM workspace；8416B UB；`SyncAll` | core/tile/merge tail；radix dormant |
+| P1/R-008 | H4b | official/inv | fp32+inverse；完整语义需无NaN | 单 Kernel | `UniqueDimKernel<float,true,false>` | official GM workspace；8416B UB；`SyncAll` | core/tile/merge tail；含NaN无fallback；radix dormant |
 | P2/R-002 | H1b | fixed D256/inv | 950、N合法、u8/i8+inverse | 4 Kernel | `ClearU32→MarkFixed<uint8_t>→CompactFixed→InverseFixed<uint8_t>` | first/rank各1KiB；mark atomic；same stream | core/domain tail；无fallback |
 | P3/R-006 | H3b+V1/V2 | dense/inv | i32/i64+inverse | 6 前置节点 + 1 pending节点 | `DenseRangeVectorReducer<T>`、dense SIMT、`InverseDense<T>`、conditional official | 8MiB表+32C+16B；official独立区；route block | wide 前序早退，pending official |
 | P4/R-005 | H3a+V1/V2 | dense/noinv | i32/i64+noinv | 5 前置节点 + 1 pending节点 | 同上但裁掉 `InverseDense<T>` | 同 R-006 | wide 进入 noinv official |
 | P5/R-004 | H2b | fixed D65536/inv | fp16/bf16、无NaN域+inverse | 4 Kernel | R-003 主体 + `InverseFixed<uint16_t>` | R-003 资源 + inverse GM | core/domain tail；无fallback |
-| P6/R-007 | H4a | official/noinv | fp32+noinv | 单 Kernel | `UniqueDimKernel<float,false,false>` | official GM workspace；8416B UB；`SyncAll` | core/tile/merge tail；radix dormant |
+| P6/R-007 | H4a | official/noinv | fp32+noinv；完整语义需无NaN | 单 Kernel | `UniqueDimKernel<float,false,false>` | official GM workspace；8416B UB；`SyncAll` | core/tile/merge tail；含NaN无fallback；radix dormant |
 | P7/R-001 | H1a | fixed D256/noinv | 950、N合法、u8/i8+noinv | 3 Kernel | `ClearU32→MarkFixed<uint8_t>→CompactFixed` | first/rank各1KiB；same stream | core/domain tail；无fallback |
 
-### 隐藏性能 Guard
+### 隐式资源 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -236,6 +257,21 @@ Direct `UniqueDimTilingData` 是 32 个连续 `int64_t`：`sizeof=256`、`aligno
 
 `UniqueLaunchConfig` 是 Host-only 聚合：`tiling`、dormant `sortTiling`、`blockDim`、总/dense/official/radix workspace 字节及 offset、`route`、`fixedDomain`。它按 C++ 引用传给 launcher，不序列化给某一个 Device entry；可达 consumer 只有 `tiling/blockDim/workspaceBytes/denseWorkspaceBytes/denseWorkspaceOffset/officialWorkspaceBytes/route/fixedDomain`，全部 radix 字段在正式 Route inactive。
 
+### shape scratch 协议
+
+`shapeScratch` 是独立的 27×uint64 GM 缓冲，不是 `tiling.shapeOutOffset` 指向的 official workspace 预留区；Direct entry 收到的是独立 Tensor 指针。27 槽沿用三组 `1+8` 的动态 shape 描述，但 Host 只消费 `shape[1]`：
+
+| 槽 | official Phase8 写值 | fixed/dense 写值 | Direct Host 是否读取 |
+|---:|---|---|---|
+| 0 | `0x80000000 | inputDimNum`，Direct 恒为 `0x80000001` | finalize 暂写 0；fixed 不写 | 否 |
+| 1 | y 的 `numOut` | compact 写 `numOut`；dense finalize 先写 `UINT64_MAX` 防止旧值冒充结果 | 是，D2H 8 B |
+| 2..8 | y 的其余维，Direct rank1 因而保持初始化值 | dense 槽2暂作 `routeFlag`；其余不保证 | 否 |
+| 9/10 | inverse 描述；槽10为 `N` 或 noinv 时 1 | 不保证 | 否 |
+| 18/19 | counts 描述；Direct counts=false，槽19为1 | 不保证 | 否 |
+| 20..26 | 其余维初始化值 | 不保证 | 否 |
+
+这解释了两个必要边界：一是 dense pending 必须在 official fallback 可能覆盖 shape 前先读取槽2；二是 Host 不能把 fixed/dense 路线未初始化的其余 26 槽当作公开 shape 元数据。`numOut` 用 uint64 写、int64 读，但由 `1<=numOut<=N<=UINT32_MAX` 保证位模式和值域一致。
+
 ### Route 源码闭包
 
 | 优先级/Route | Host 顺序 | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
@@ -248,6 +284,23 @@ Direct `UniqueDimTilingData` 是 32 个连续 `int64_t`：`sizeof=256`、`aligno
 | P5/R-004 | H2b | fixed D65536 | `calc_unique_tiling` | scalar args + config | clear/mark16/compact/inverse16 | `ClearU32/MarkFixed<uint16_t>/CompactFixed/InverseFixed<uint16_t>` | 同上 |
 | P6/R-007 | H4a | official/noinv | 同上 | plain `UniqueDimTilingData` | `unique_f32_noinv` | 官方 `UniqueDimKernel<float,false,false>` 与 simt/sort helpers | 同上 |
 | P7/R-001 | H1a | fixed D256 | 同上 | scalar args + config | clear/mark8/compact | `ClearU32/MarkFixed<uint8_t>/CompactFixed` | 同上 |
+
+### 编译存在性不等于 Route 可达性
+
+从 `calc_unique_tiling → launch_unique → Launch*` 反向核对全部 enum、entry 与 helper 后，可达叶子严格只有 R-001..R-008；以下符号不产生额外 Route：
+
+| 编译驻留符号 | 为什么不可达 | 不得据此推出的能力 |
+|---|---|---|
+| `ConfigureFloat32Radix`、`UNIQUE_ROUTE_RADIX_FLOAT32`、`LaunchFloat32Radix`、四个 `unique_radix_*` entry | 配置函数无调用点，selector 从不产生 route=3 | fp32 radix 不是 fallback，也不是 R-007/R-008 的子分支 |
+| `unique_dense_meta → InitDenseMeta` | `LaunchDenseInteger` 直接从 Vector reducer 开始，无 launch 调用该 entry | 运行图没有独立 meta-init 节点 |
+| `ReduceDenseRange<T>` | 没有任何 entry 或 helper 调用它；可达 extrema 是 `DenseRangeVectorReducer<T>` | 不能把 warp-shuffle/每 warp 两次 atomic 写进 R-005/R-006 的真实 reduce 路径 |
+| `unique_{u8,i8,f16,bf16}_{noinv,inv}` official entries | 对应 dtype 在 Host 先命中 fixed route，且 fixed 无 Device fallback | fixed 域没有隐含 official 兜底 |
+| `unique_{i32,i64}_{noinv,inv}` official entries | int dtype 先命中 dense；宽域由四个 `unique_pending_*` entry 内嵌 official body，不调用这些普通 entry | V2 fallback 的 route-reader/`TPipe::Reset` 不能省略 |
+| official `Phase_transpose/Phase_transpose_back` | Direct POD 固定 `dim=0` | Direct 只实现 flatten，不公开任意 dim |
+| official `Phase7_ComputeCounts`、`positions` 写入 | 模板第三参数固定 false，POD `returnCounts=0` | countsScratch 只是 ABI 占位，不是隐藏输出 |
+| official `OutputEmptyShape` | Host 在 tiling 前拒绝 `N=0` | 不支持空输入 shortcut |
+
+`launch_unique_official` 的 switch 具备七 dtype × 两种 inverse 的语法实例，不代表十四条运行 Route；在当前 selector 中只有 `unique_f32_noinv/unique_f32_inv` 从该 switch 可达。dense 宽域走的是另外四个 pending 实例。
 
 ## Kernel 实现
 
@@ -333,7 +386,7 @@ block-beta
 
 ### Route R-008（P1）：fp32 official/inv
 
-Route 特征为官方比较排序单 Kernel 并启用 inverse phase；适用 fp32、`returnInverse=true`；实现前提是完整 official workspace、256 B plain POD 与跨核同步协议。Host 顺序为 H4b：H1/H2/H3 均未命中后由合法 dtype 余项 fp32 进入 official；radix body 没有 selector producer，不参与 fallback。
+Route 特征为官方比较排序单 Kernel 并启用 inverse phase；Host 适用域是全部 fp32、`returnInverse=true`，但完整 unique/inverse 语义域须进一步限定为无 NaN。实现前提是完整 official workspace、256 B plain POD 与跨核同步协议。Host 顺序为 H4b：H1/H2/H3 均未命中后由合法 dtype 余项 fp32 进入 official；它不检查 NaN，radix body 也没有 selector producer，因此含 NaN 时没有语义 fallback。
 
 #### 适用条件
 
@@ -485,6 +538,8 @@ valid range: for i inverse[i]=int64(rank[uint64(x[i])-uint64(min)])
 wide range: dense inverse早退；pending official执行Phase5_ScatterInverse
 ```
 
+这里的 key 与 R-005 相同，`uint64(value)-uint64(min)` 以无符号模运算表达有符号差；range 先经 `<2^20` 约束，所以 lookup 严格落在 rank 有效前缀。
+
 #### 内存与数据搬运
 
 ##### 资源与搬运表
@@ -554,9 +609,11 @@ routeFlag=!valid
 if valid:
   clear first[0:range]=sentinel
   range==1只写first[0]，否则AtomicMin(first[x-min],i)
-  compact按key升序写 y=min+key、rank[key]、shape[1]
+  compact按key升序写 y=T(uint64(min)+key)、rank[key]、shape[1]
 pending读取routeFlag：valid直接return；wide则Reset pipe并执行官方比较排序
 ```
+
+`uint64(value)-uint64(min)` 与 `uint64(min)+key` 都依赖无符号模运算表达有符号差/和，随后 cast 回 T；这样跨过 0 的小范围不触发有符号溢出。range 判定先要求 `max>=min`，再要求同一无符号差 `<2^20`，因此所有实际 key 都落在 `[0,range)`。
 
 #### 内存与数据搬运
 
@@ -689,7 +746,7 @@ for i: inverse[i]=int64(rank[CanonicalFixedKey(raw16(x[i]))])
 
 ### Route R-007（P6）：fp32 official/noinv
 
-Route 特征为官方比较排序单 Kernel并编译期裁掉 inverse；适用 fp32、`returnInverse=false`；实现前提为 official workspace、plain POD 与跨核同步。Host 顺序为 H4a：前三个 dtype 分支均未命中后进入 official；radix 不可达且无下一 Route。
+Route 特征为官方比较排序单 Kernel并编译期裁掉 inverse；Host 适用域是全部 fp32、`returnInverse=false`，但完整 unique 语义域须进一步限定为无 NaN。实现前提为 official workspace、plain POD 与跨核同步。Host 顺序为 H4a：前三个 dtype 分支均未命中后进入 official；它不检查 NaN，radix 不可达且无下一 Route。
 
 #### 适用条件
 
@@ -721,6 +778,8 @@ unique_f32_noinv -> UniqueDimKernel<float,false,false>::Init/Process
 局部inclusive scan；core0扫每核和；各核加global prefix
 每个新组写首个原索引，按输出元素域gather x到y；末核MTE3写shape
 ```
+
+排序稳定性来自三处同向约束：两元素网络只在 `cmp>0` 时交换；UB merge 与 GM merge 在比较相等时取左段；初始 key 是递增原索引。因此普通相等类的 `compactKeys[group]` 是最早输入位置，gather 保留首个值的位模式。Phase0 的显式 identity 初始化仍不能删除：`coreLen<=1` 时 Phase1 直接返回，只有 Phase0 为该分片提供有效索引；`coreLen>1` 时 Phase1 会重新构造 identity，避免 tile sort 依赖跨 VF_CALL 的旧 GM cache。
 
 #### 内存与数据搬运
 
@@ -769,7 +828,7 @@ dynamic_ub=N/A
 |---|---|---|---|---|---|
 | tile sort | `__syncthreads`+dcci | UB rounds | next round/GM | UB/GM | sentinel -1排末，tileLen裁尾 |
 | cross merge | `PipeBarrier<PIPE_ALL>+SyncAll` | pair merge | next pair/round | indices/sort | 未配对tail显式copy |
-| scan/gather | `SyncAll` | flags/prefix/keys | next phase | GM workspace | uint32 group≤N；NaN不合并 |
+| scan/gather | `SyncAll` | flags/prefix/keys | next phase | GM workspace | uint32 group≤N；无NaN时完整；NaN可能隔断普通等值类 |
 | shape | V_S + S_MTE3 | scalar/vector shape | Host D2H | shapeScratch | 只槽1被Host读取 |
 
 #### 关键实现
@@ -812,11 +871,15 @@ launch_unique -> LaunchFixedDomain
 
 ```text
 parallel clear first[0:256]=UINT32_MAX
-for i in block interval: key = u8(raw) or (u8(raw)^0x80 order decode for i8 compact)
-  if i < first[key]: AtomicMin(first[key],i)
-single block: each thread counts present keys in numeric-order span
+for i in block interval: raw = uint8 bit pattern of x[i]
+  markKey=raw                              # u8/i8 都不做 ^0x80
+  if i < first[markKey]: AtomicMin(first[markKey],i)
+single block scans numeric order:
+  raw = order                              # uint8
+  raw = order ^ 0x80                       # int8，仅 compact 顺序变换
+  present = first[raw] != UINT32_MAX
 thread0 exclusive-scans 256 local counts and writes shape[1]
-each thread emits present raw values and rank[key]
+each thread emits present raw bit pattern and writes rank[raw]
 ```
 
 #### 内存与数据搬运
@@ -876,7 +939,7 @@ block-beta
 
 - 适用 Route：P1/R-008、P3/R-006 与 P4/R-005 的宽域 official 分支、P6/R-007。
 - 触发条件：进入字节一致的 `UniqueDimKernel<T,RETURN_INVERSE,false>`；`tileSize=512`。
-- Golden 来源：[`index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h:188-214`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h#L188-L214)
+- 固定源码：[`index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h:188-214`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt_sort.h#L188-L214)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -897,11 +960,10 @@ for (int j = 0; j < ITEMS_PER_THREAD; ++j) {
 - 适用：比较 key 可由原索引回查，且 512×int64×2 加 shape buffer 可放入 UB。
 - 前提：256 threads、每线程2项、双半区与每轮 `__syncthreads` 不变。
 - 失效：UB 不足或不允许跨核 `SyncAll` 时需重新 tiling/拆 Kernel；fixed/dense有效分支不使用此 trick。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
-固定仓未提供可验证反例；但源码明确依赖两半区交替与 barrier，不能把它误改成单缓冲原地 merge。
+固定源码未附独立反例；但实现明确依赖两半区交替与 barrier，不能把它误改成单缓冲原地 merge。
 
 ### Trick T-002：跨核归并以 indices/sortBuf 轮换并显式处理奇尾
 
@@ -909,7 +971,7 @@ for (int j = 0; j < ITEMS_PER_THREAD; ++j) {
 
 - 适用 Route：同 T-001。
 - 触发条件：`elementsPerCore < N`，存在跨核 merge round。
-- Golden 来源：[`index/unique_dim/op_kernel/arch35/unique_dim_kernel.h:340-368`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_kernel.h#L340-L368)
+- 固定源码：[`index/unique_dim/op_kernel/arch35/unique_dim_kernel.h:340-368`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_kernel.h#L340-L368)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -931,7 +993,6 @@ __gm__ uint32_t *dst = (round % 2 == 0) ?
 - 适用：全局稳定排序、两张等长索引表可用、平台支持跨核同步。
 - 前提：src/dst 不别名；每个 pair 后 barrier；tail copy 与最终奇轮 copy-back 保留。
 - 失效：无 gang-style 全核同步时应拆成多个 Host Kernel，不得只删除 `SyncAll`。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
@@ -943,7 +1004,7 @@ __gm__ uint32_t *dst = (round % 2 == 0) ?
 
 - 适用 Route：P1/R-008、P6/R-007 的 fp32，及 dense 宽域 official fallback 的通用模板语义。
 - 触发条件：相邻已排序行执行 `SimtRowCompareDedup`。
-- Golden 来源：[`index/unique_dim/op_kernel/arch35/unique_dim_simt.h:110-135`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt.h#L110-L135)
+- 固定源码：[`index/unique_dim/op_kernel/arch35/unique_dim_simt.h:110-135`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/index/unique_dim/op_kernel/arch35/unique_dim_simt.h#L110-L135)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -958,30 +1019,29 @@ if (SimtIsNan<T>(valA) || SimtIsNan<T>(valB)) {
 
 #### 机制与设计原因
 
-排序阶段允许 NaN 比较为相等以保持稳定位置；相邻去重阶段则在普通比较未分出大小后再检测位模式，只要一方是 NaN 就判为不同。因此不需要改变排序网络或为 NaN 单独分桶，也不会错误把多个 NaN 合并。FP32 的检测直接检查 exponent/mantissa 位。
+排序阶段的 FP32 普通比较把 NaN 与任意值都视为 compare-equal，稳定 merge 因而可以保留原相对位置；相邻去重阶段则在普通比较未分出大小后检测位模式，只要一方是 NaN 就判为不同。这个分离确实令 NaN 本身不被合并，但不能保证所有普通等值元素在排序后相邻：`[1, NaN, 1]` 可能保持原序，两个 1 被 NaN 隔开后都成为新组。故该机制是含 NaN 时的语义缺口，不是完整 unique 的可复用技巧；FP32 的完整保证须限定到无 NaN 域。
 
 #### 迁移边界
 
-- 适用：要求 NaN 各自保留的 unique 语义。
-- 前提：sort comparator 与 dedup comparator 必须成对复用；dtype 的 NaN 位模式准确。
-- 失效：若目标语义要求 NaN 合并，必须同时调整 dedup；固定域 fp16/bf16 派生路线假定无NaN任务域，不能照搬本结论。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 适用：仅用于审计 official comparator/dedup 的差异；不能作为含 NaN 的完整 unique 方案。
+- 前提：R-007/R-008 若要保持完整 unique，输入域必须无 NaN。
+- 失效：若 NaN 属合法输入域，应建立能把普通等值类排到连续区间的 total-order/bucket 规则，再按目标 NaN 合并语义调整 dedup；只改 dedup 不足以修复被 NaN 隔开的普通重复值。
 
 #### 错误做法
 
-不能只用 `lhs<rhs/lhs>rhs` 的结果判断 equality；NaN 的两个比较都为 false，会被误当作相同值。
+不能把“排序 compare-equal、dedup 判不等”当成完整 NaN 处理；该组合会破坏“所有相等普通值排序后连续”这一相邻去重前提。
 
 ## 模板与实现对比
 
 | 优先级/Route | Host 顺序 | Route 特征 | 适用域 | 实现前提与资源 | 搬运/计算/同步 | tail 与 fallback |
 |---|---|---|---|---|---|---|
 | P0/R-003 | H2a | D65536、noinv、三 Kernel | fp16/bf16，无NaN域 | fixed16；compact 1KiB UB；使用512KiB，实际分配取 officialBytes 最大值 | SIMT GM、零类 atomic、presence publish、same-stream | core/domain/span tail；无fallback |
-| P1/R-008 | H4b | official compare、inv、单 Kernel | fp32 | `UniqueDimKernel<float,true,false>`；8416B UB；officialBytes | 512 tile、GM merge-path、scan、inverse、gather、`SyncAll` | core/tile/merge tail；radix不可达 |
+| P1/R-008 | H4b | official compare、inv、单 Kernel | fp32；完整语义需无NaN | `UniqueDimKernel<float,true,false>`；8416B UB；officialBytes | 512 tile、GM merge-path、scan、inverse、gather、`SyncAll` | 含NaN可能重复普通值且无fallback；radix不可达 |
 | P2/R-002 | H1b | D256、inv、四 Kernel | uint8/int8 | fixed8；compact 1KiB UB；使用2KiB，实际分配取 officialBytes 最大值 | SIMT GM、`AtomicMin`、rank lookup、same-stream | core/domain tail；无fallback |
 | P3/R-006 | H3b+V1/V2 | extrema+稠密表+inv+pending | int32/int64 | 213024B reduce UB；official区+8MiB+32C+16B | `DataCopyPad/ReduceMin/ReduceMax`、MTE3/MTE2、dense SIMT、pipe Reset | value-domain宽时 pending official；两分支均有core/tile tail |
 | P4/R-005 | H3a+V1/V2 | 与R-006同图但裁掉inverse | int32/int64 | 同R-006，正式inverse资源inactive | 同R-006但无inverse节点/phase | value-domain宽时 noinv official |
 | P5/R-004 | H2b | D65536、inv、四 Kernel | fp16/bf16，无NaN域 | R-003资源 + inverse GM | R-003主体 + canonical rank lookup | core/domain tail；无fallback |
-| P6/R-007 | H4a | official compare、noinv、单 Kernel | fp32 | `UniqueDimKernel<float,false,false>`；8416B UB；officialBytes | 与R-008共用sort/scan/gather，编译期裁掉inverse | core/tile/merge tail；radix不可达 |
+| P6/R-007 | H4a | official compare、noinv、单 Kernel | fp32；完整语义需无NaN | `UniqueDimKernel<float,false,false>`；8416B UB；officialBytes | 与R-008共用sort/scan/gather，编译期裁掉inverse | 含NaN可能重复普通值且无fallback；radix不可达 |
 | P7/R-001 | H1a | D256、noinv、三 Kernel | uint8/int8 | R-002 fixed8资源，rank仍生成 | clear/mark/compact，裁掉inverse节点 | core/domain tail；无fallback |
 
 ## 平台差异
@@ -999,6 +1059,7 @@ if (SimtIsNan<T>(valA) || SimtIsNan<T>(valB)) {
 - 仅七种 dtype；官方源中其它 dtype 能力不自动成为 Direct 能力。
 - `N<=UINT32_MAX` 是硬约束，所有索引/rank/scan count 都以 uint32 表示；输出 `inverse` 才扩为 int64。
 - FP16/BF16 fixed 派生路线假定无 NaN 的任务域；NaN bit patterns 会按编码 presence 处理，不具备官方 dedup comparator 的“NaN各自唯一”语义。
+- FP32 R-007/R-008 的 Host selector 接受 NaN，但 sort comparator 把 NaN 与任意值视为相等，dedup comparator 又把含 NaN 对视为不等；`[1,NaN,1]` 可能产生重复 1，故含 NaN 是 candidate 语义缺口而非受保证域。
 - `first[key]` 的非零 16-bit key 用 guarded普通写作为 presence publish；该协议只依赖幂等值0，不能改成保存首次索引后再据此读输入。
 - dense extrema 固定分配约 208KiB UB，但 Host 只查询 core 数，未查询/检查 UB 上限；迁移到不同 950 配置时需重新闭合。
 - dense 宽域仍提交若干会早退的节点，真正结果由最后 pending official entry 产生；不得把前序 compact 的旧 shape 当最终 shape。
@@ -1008,7 +1069,6 @@ if (SimtIsNan<T>(valA) || SimtIsNan<T>(valB)) {
 - wrapper 没有逐 Kernel launch 返回检查；错误在最终 D2H/stream synchronize 边界传播。
 - 临时 Tensor 的异步生命周期依赖 torch_npu allocator；源码没有独立 event/recordStream 证明。
 - fixed/dense selector 与 wrapper 是 Direct 派生补充；固定官方 Commit 只证明四个 UniqueDim 文件的相关 body，不能证明派生 Route 为官方实现。
-- 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引
 
@@ -1016,6 +1076,7 @@ if (SimtIsNan<T>(valA) || SimtIsNan<T>(valB)) {
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
+| Python 包装入口 | `cann_bench/__init__.py` | `unique` | false 时返回单 Tensor，true 时把 dispatcher `Tensor[]` 转成二元 tuple；派生事实源。 |
 | 入口声明/约束 | `csrc/ops/unique/op_plugin/unique_plugin.cpp` | schema/`CheckInput/unique_npu` | Direct 参数、输出、D2H、stream；派生事实源。 |
 | Host/Tiling/Launcher | `csrc/ops/unique/op_kernel/unique_launch.h` | `UniqueLaunchConfig/launch_unique` | Host config 与入口；派生事实源。 |
 | POD/ABI | `csrc/ops/unique/op_kernel/unique_tilingdata.h` | `UniqueDimTilingData` | 256B plain POD；派生自官方字段像。 |
@@ -1033,10 +1094,10 @@ Frontmatter `sources` 只列固定 Commit 下转换实际参考且可公开定�
 | 检查项 | 可复用事实 | 不得改变的约束 | 源码符号 |
 |---|---|---|---|
 | ABI/POD | 32×int64、256B、align8 | 字段顺序/offset；counts/dim inactive值；by-value传参 | `UniqueDimTilingData/static_assert` |
-| 调用顺序 | fixed 3/4节点；dense 7/8节点；official单节点 | same-stream；dense pending永远最后；最终D2H之后才resize | `LaunchFixedDomain/LaunchDenseInteger/unique_npu` |
+| 调用顺序 | fixed noinv/inv 为 3/4 节点；dense noinv/inv 为 6/7 节点；official 为单节点 | same-stream；dense pending 永远最后；最终 D2H 之后才 resize | `LaunchFixedDomain/LaunchDenseInteger/unique_npu` |
 | workspace/内存 | fixed两表；dense official+独立尾区；official三索引表与scan | 128B offset、depth、C×32 partial、两区不alias | `calc_unique_tiling/InitBuffer` |
 | 同步 | stream、SIMT barrier/dcci、Vector events、MTE3/MTE2、SyncAll/pipe Reset | route block完整32B；pending Reset；merge每pair barrier | `FinalizeDenseRange/DEFINE_PENDING/UniqueDimKernel` |
-| 精度与尾块 | signed key顺序、zero canonical、unsigned dense delta、NaN dedup | fp16/bf16无NaN前提；current而非aligned参与Reduce；所有core/tile tail | `CanonicalFixedKey/DenseRangeValid/SimtRowCompareDedup` |
+| 精度与尾块 | signed key顺序、zero canonical、unsigned dense delta、official comparator/dedup 差异 | fp16/bf16 与 fp32 完整语义均需无NaN；current而非aligned参与Reduce；所有core/tile tail | `CanonicalFixedKey/DenseRangeValid/SimtRowCompareDedup` |
 | 失败边界 | 非法输入Host失败；dense宽域Device fallback；radix dormant | 不扩dtype/rank/空域；不把body存在当可达 | `CheckInput/calc_unique_tiling` |
 
 <!-- cannbot:related:start -->

@@ -16,7 +16,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/optim/apply_adam_w/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:29:35Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -31,10 +31,10 @@ cann_versions: ["9.1.0"]
 | 计算语义 | 由输入 `m/v` 计算 bias-corrected moment，只写新张量 `y`；不回写 `var/m/v`；`maximize` 改变最终更新方向 |
 | 输入输出 | `var/grad/m/v` 同 shape、同 dtype、连续 ND；rank 1～8；dtype 为 FP32/FP16/BF16；输出 `y` 与 `var` 同 shape/dtype |
 | 执行类型 | 所有 R-001～R-004 均为单节点 `AIV_VECTOR`；无可达 Cube/AIC、MIX_CV、SIMT、NDDMA 或通信节点 |
-| Kernel 路线 | 按重要性为 R-002 有 decay/minimize、R-001 无 decay/minimize、R-004 有 decay/maximize、R-003 无 decay/maximize；每条 Route 各有 FP32、FP16、BF16 entry |
+| Kernel 路线 | 四条均为 `active`，无 `conditional`/`dormant` Route。按重要性为 R-002 有 decay/minimize、R-001 无 decay/minimize、R-004 有 decay/maximize、R-003 无 decay/maximize；每条 Route 各有 FP32、FP16、BF16 entry |
 | 核心资源 | 5 路 GM、一个由 ATVOSS 划成 4×2 个输入 ping/pong 子区和 1×2 个输出 ping/pong 子区的 `TBuf`、MicroAPI 寄存器；workspace 为 0 |
 | 来源闭包 | `direct_implementation_closed`：转换交付件已闭合 schema→Meta/PrivateUse1→Host tiling→Direct launcher→12 个 entry→`ElementwiseSch`→寄存器 body；官方固定 Commit 仅支撑 950、ATVOSS、AIV 与低精度转换机制，Direct 输出语义和 ABI 明确归于转换交付件 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 证据边界 | 固定来源闭合源码链路；本卡不主张编译、真机、数值或性能结论。 |
 
 ## 接口与语义
 
@@ -60,10 +60,10 @@ FP16/BF16 输入在寄存器中提升到 FP32 完成上述流水，最后以 `CA
 
 | 参数 | shape/layout | dtype | 约束、默认值与语义 |
 |---|---|---|---|
-| `var` | rank 1～8，连续 ND | FP32/FP16/BF16 | 参数基值；不被修改 |
-| `grad` | 与 `var` 完全相同，连续 ND | 与 `var` 相同 | 当前梯度；不被修改 |
-| `m` | 与 `var` 完全相同，连续 ND | 与 `var` 相同 | 旧一阶 moment；不被修改 |
-| `v` | 与 `var` 完全相同，连续 ND | 与 `var` 相同 | 旧二阶 moment；不被修改 |
+| `var` | rank 1～8，非空时连续 ND | FP32/FP16/BF16 | 参数基值和 device guard 锚点；不被修改 |
+| `grad` | 与 `var` 完全相同，非空时连续 ND | 与 `var` 相同 | 当前梯度；不被修改；实现未显式校验 device 等于 `var.device()` |
+| `m` | 与 `var` 完全相同，非空时连续 ND | 与 `var` 相同 | 旧一阶 moment；不被修改；实现未显式校验 device 等于 `var.device()` |
+| `v` | 与 `var` 完全相同，非空时连续 ND | 与 `var` 相同 | 旧二阶 moment；不被修改；实现未显式校验 device 等于 `var.device()` |
 | `lr` | Host 标量 | schema 为 double，Device 为 float | 学习率；launcher 显式窄化为 FP32 |
 | `beta1` | Host 标量 | double→float | 一阶衰减系数 |
 | `beta2` | Host 标量 | double→float | 二阶衰减系数 |
@@ -72,6 +72,8 @@ FP16/BF16 输入在寄存器中提升到 FP32 完成上述流水，最后以 `CA
 | `step` | Host 标量 | int64 | 默认 1；Device 用整数快速幂求 `beta^step` |
 | `maximize` | Host 标量 | bool | 默认 false；true 时 `signed_lr=+lr` |
 | `y` | 与 `var` 相同，连续 ND | 与 `var` 相同 | `empty_like(var)` 新分配，只写有效元素 |
+
+受支持执行域要求四个输入位于 `var` 所在的同一 NPU device。源码只安装 `var.device()` guard，并校验 shape/dtype/contiguous；它不比较 `grad/m/v` 的 device。因此“同 device”是调用方必须满足、但 Host 未证明的安全前提，不能把混合 device 输入归入任何 Route。空域在读取其余输入地址前返回，仍不把混合 device 扩展为受支持语义。
 
 ### 入口与版本
 
@@ -83,7 +85,7 @@ FP16/BF16 输入在寄存器中提升到 FP32 完成上述流水，最后以 `CA
 
 ### 参数校验与前处理
 
-真实顺序为：安装 `var.device()` guard→调用 Meta 检查四个 Tensor shape/dtype 完全相同、rank 1～8、dtype 属于 FP32/FP16/BF16→分配 `y=empty_like(var)`→读取 `total_length=var.numel()`。若元素数为 0，立即返回 `y`；非空时再逐一要求 `var/grad/m/v.is_contiguous()`。
+真实顺序为：安装 `var.device()` guard→调用 Meta 检查四个 Tensor shape/dtype 完全相同、rank 1～8、dtype 属于 FP32/FP16/BF16→分配 `y=empty_like(var)`→读取 `total_length=var.numel()`。若元素数为 0，立即返回 `y`；非空时再逐一要求 `var/grad/m/v.is_contiguous()`。这条链没有 `grad/m/v.device()==var.device()` 检查；合法调用必须由上层保证同一 NPU device。
 
 随后由 dtype 生成 `dtype_code`（0/1/2），调用 `calc_apply_adam_w_tiling_params`，取得 `num_blocks/block_former/ub_former`，抓取当前 stream 和五个 GM 地址，并以 `weight_decay != 0.0` 生成 `has_weight_decay`。所有 double 属性在调用 launcher 时才静态转换为 float。
 
@@ -123,20 +125,22 @@ cann_bench::apply_adam_w / PrivateUse1
 
 先按至少 2048 元素/核估算 block 数，再把每个 former block 向上对齐到 256B DMA 粒度，最后重新计算实际 `num_blocks`，所以最后一个 block 的元素数为 `tail_block=N-block_former*(num_blocks-1)`。每个 core 的 GM 基址为 `blockIdx*block_former`；非尾核处理 `block_former`，尾核处理 `tail_block`。
 
-每核又按 `ub_former` 切 tile：former/tail block 的循环数分别为 `ceil(block_length/ub_former)`，末 tile 分别由 `ubTailOfFormerBlock/ubTailOfTailBlock` 给出。ATVOSS `Process` 用 `i&1` 在两套 input/output 子区间切换；tile 内每个 MicroAPI repeat 固定覆盖 `256/sizeof(float)=64` 个 FP32 lane，`UpdateMask<float>(remaining)` 保护最后不足 64 lane 的尾部。
+每核又按 `ub_former` 切 tile：former/tail block 的循环数分别为 `ceil(block_length/ub_former)`，末 tile 分别由 `ubTailOfFormerBlock/ubTailOfTailBlock` 给出。ATVOSS `Process` 用 `i&1` 在两套 input/output 子区间切换；tile 内每个 MicroAPI repeat 固定覆盖 `256/sizeof(float)=64` 个 FP32 lane。raw UB→Reg `DataCopy` 读取完整寄存器跨度，安全性来自完整 UB 子区；`UpdateMask<float>(remaining)` 从低精度 promote cast/FP32 算术延续到 masked store，防止最后不足 64 lane 的值参与或发布。
 
 ### Route 选择
 
 #### Route 特征表（重要性降序）
 
-| 重要性 | Route | Key/模板 | 精确选择条件 | 计算特征 | Host 顺序、短路与 fallback |
-|---:|---|---|---|---|---|
-| P0 | R-002 有 decay/minimize | `T,true,false` | `has_weight_decay==true && maximize==false` | FP32 update 中保留 decay `Axpy`，最终 `signed_lr=-lr` | 空域已在 router 前短路；dtype 按 0→1→`else`，每个 dtype 内布尔顺序第 2；`maximize` 的 false 分支命中 |
-| P1 | R-001 无 decay/minimize | `T,false,false` | `has_weight_decay==false && maximize==false` | 编译期删除 decay `Axpy`，最终 `signed_lr=-lr` | 空域已在 router 前短路；dtype 按 0→1→`else`，每个 dtype 内布尔顺序第 4；两个 false 分支命中 |
-| P2 | R-004 有 decay/maximize | `T,true,true` | `has_weight_decay==true && maximize==true` | FP32 update 中保留 decay `Axpy`，最终 `signed_lr=+lr` | 空域已在 router 前短路；dtype 按 0→1→`else`，每个 dtype 内布尔顺序第 1；两个 true 分支命中 |
-| P3 | R-003 无 decay/maximize | `T,false,true` | `has_weight_decay==false && maximize==true` | 编译期删除 decay `Axpy`，最终 `signed_lr=+lr` | 空域已在 router 前短路；dtype 按 0→1→`else`，每个 dtype 内布尔顺序第 3；wd0 后命中 maximize true |
+| 重要性 | Route | 可达性 | Key/模板 | 精确选择条件 | 计算特征 | Host 顺序、短路与 fallback |
+|---:|---|---|---|---|---|---|
+| P0 | R-002 有 decay/minimize | active | `T,true,false` | `has_weight_decay==true && maximize==false` | 覆盖完整 optimizer update：FP32 update 中保留 decay `Axpy`，最终 `signed_lr=-lr` | 空域已在 router 前短路；dtype 按 0→1→`else`，每个 dtype 内布尔树先进入 wd1、再由 `maximize=false` 命中第二个叶子 |
+| P1 | R-001 无 decay/minimize | active | `T,false,false` | `has_weight_decay==false && maximize==false` | 编译期删除 decay `Axpy`，避免在无 decay 语义下执行 `0*var`；最终 `signed_lr=-lr` | 空域已短路；wd1 子树不命中后进入 wd0，`maximize=false` 命中第四个叶子 |
+| P2 | R-004 有 decay/maximize | active | `T,true,true` | `has_weight_decay==true && maximize==true` | 完整 decay update，最终 `signed_lr=+lr` | 空域已短路；每个 dtype 布尔树的第一个叶子 |
+| P3 | R-003 无 decay/maximize | active | `T,false,true` | `has_weight_decay==false && maximize==true` | 编译期删除 decay `Axpy`，最终 `signed_lr=+lr` | 空域已短路；wd1 子树不命中后进入 wd0，命中第三个叶子 |
 
-表中 P0～P3 仅表示本文的维护与阅读优先级，不改写 launcher 的控制流。Host 的 dtype `else` 是 BF16 fallback：正常 Plugin 已限制 dtype，外部直接调用 launcher 时，非 0/1 的值仍会落入该分支。
+四条 Route 对合法 shape/dtype 的覆盖宽度相同；重要性先按常规 minimize 方向，再在同一方向中优先保留算术更完整的 wd1 body、随后保留为无 decay 提供数值隔离的 wd0 specialization，最后放置两条 maximize 镜像路线。P0～P3 只表示维护与复用优先级，不改写 launcher 的真实控制流。四条 Route 构成合法非空输入域上的完备互斥分区：源码没有失败后再尝试另一 body 的 `conditional` 路线，也没有编译但被生产 selector 永久关闭的 `dormant` entry。空域返回、Host 拒绝和非法裸 C ABI 的误落都不是新 Route。
+
+Host 的 dtype `else` 在合法 Plugin 域内只承接 BF16；若绕过 Plugin 直接调用 C ABI，非 0/1 的码也会误落 BF16 entry。这是 fail-open 边界，不是受支持的 BF16 fallback。
 
 ```text
 if dtype_code == 0: T=float
@@ -149,6 +153,30 @@ else:
   launch Maximize ? entry<T,false,true> : entry<T,false,false>
 ```
 
+### Production 可达性与 fallback 出边
+
+Plugin 先把 Torch API 输入收窄到 `dtype_code∈{0,1,2}`，并在非空域证明四个 Tensor 同 shape、同 dtype、连续；同一 NPU device 是未被 Host 检查的共同安全前提。launcher 随后只读 `dtype_code/has_weight_decay/maximize`。每条命中后恰好发射一个 entry，Device 不再选择算法，也没有跨 Route fallback。
+
+| Route | 生产可达谓词 | selector/key/template consumer | 不命中时的真实下一跳 | 命中后的出边 |
+|---|---|---|---|---|
+| R-002 | `N>0 && dtype∈{FP32,FP16,BF16} && weight_decay!=0.0 && !maximize` | dtype 树→wd1→min；`{f32,f16,bf16}_wd1_min`；`<T,true,false>` | `maximize=true` 转同 dtype 的 R-004；`weight_decay==0.0` 转 wd0 子树 | 单 entry→单 `AIV_VECTOR` body；无 Device fallback |
+| R-001 | `N>0 && dtype∈{FP32,FP16,BF16} && weight_decay==0.0 && !maximize` | dtype 树→wd0→min；`{f32,f16,bf16}_wd0_min`；`<T,false,false>` | `maximize=true` 转同 dtype 的 R-003；wd1 已由 R-002/R-004 承接 | 单 entry→单 body；无 Device fallback |
+| R-004 | `N>0 && dtype∈{FP32,FP16,BF16} && weight_decay!=0.0 && maximize` | dtype 树→wd1→max；`{f32,f16,bf16}_wd1_max`；`<T,true,true>` | `maximize=false` 转同 dtype 的 R-002；`weight_decay==0.0` 转 wd0 子树 | 单 entry→单 body；无 Device fallback |
+| R-003 | `N>0 && dtype∈{FP32,FP16,BF16} && weight_decay==0.0 && maximize` | dtype 树→wd0→max；`{f32,f16,bf16}_wd0_max`；`<T,false,true>` | `maximize=false` 转同 dtype 的 R-001；wd1 已由 R-002/R-004 承接 | 单 entry→单 body；无 Device fallback |
+
+决策树外只有三类边界：Meta/contiguous 检查在 launch 前抛错；`N==0` 直接返回空 `y`；合法非空输入提交 kernel 后，lambda 固定返回 0，源码不同步读取 Device 状态。非法裸 C ABI dtype 会误落 BF16，不能把它记作兼容或精度 fallback。
+
+### 逐 Route 实现闭包
+
+下表把共同的 scheduler 不变量显式展开到每条 Route；“本地 tiling”指 kernel 内按 direct scalar 参数构造的 `EleBaseTilingData`，不是 Host 序列化 POD。
+
+| 重要性/Route | Host producer→POD/consumer→launch | Device entry/body 与核/任务映射 | GM/片上存储/workspace | 同步、生命周期与 tail | 优化器精度顺序与 fallback |
+|---:|---|---|---|---|---|
+| P0 R-002 | `apply_adam_w_npu` 生成合法 `dtype_code`、`has_weight_decay=true`、`maximize=false`、三元 tiling 和 FP32 标量→direct scalar ABI→`RunTargetAdamW` 构造本地 tiling→`*_wd1_min<<<num_blocks,...,stream>>>` | `RunTargetAdamW<T,true,false>`→ATVOSS→`CalcTargetAdamW`；`blockIdx` 映射一个连续 former/tail block，tile 顺序映射该核任务 | 4 路 GM 读+1 路 GM 写；单 `TBuf` 划成 10 个 `ub_former*S` 子区；寄存器中间值；L1/L0/workspace 均无分配或访问 | 当前 stream 保序；`Get/ReleaseTensor` 约束 VECIN→VECCALC→VECOUT；无跨核同步；kernel/`TPipe` 结束即释放；core tail→tile tail→64-lane live mask | double 属性先窄化 FP32；power/系数、moment、sqrt/add/div、decay Axpy、负 lr Axpy 均 FP32；低精度仅边界 cast，最后 RINT；无 Device fallback |
+| P1 R-001 | `apply_adam_w_npu` 生成合法 `dtype_code`、`has_weight_decay=false`、`maximize=false`、三元 tiling 和 FP32 标量→direct scalar ABI→Device 本地 tiling→`*_wd0_min<<<num_blocks,...,stream>>>` | `RunTargetAdamW<T,false,false>`→ATVOSS→`CalcTargetAdamW`；每个 `blockIdx` 处理自己的连续 former/tail block，块内顺序切 tile | 4 路 GM 读+1 路 GM 写；单 `TBuf` 的 10 个子区和寄存器中间值；无 L1/L0/workspace；`if constexpr` 删除 decay 但不改变 UB 账 | 当前 stream；VECIN→VECCALC→VECOUT Get/Release；无跨核同步；kernel 末释放 `TPipe`；core/tile/64-lane 三级 tail | FP32 power/系数→moment→sqrt/add/div→负 lr Axpy，跳过 decay 以避免 `0*var`；低精度仅边界 cast/RINT；无 Device fallback |
+| P2 R-004 | `apply_adam_w_npu` 生成合法 `dtype_code`、`has_weight_decay=true`、`maximize=true`、三元 tiling 和 FP32 标量→direct scalar ABI→Device 本地 tiling→`*_wd1_max<<<num_blocks,...,stream>>>` | `RunTargetAdamW<T,true,true>`→ATVOSS→`CalcTargetAdamW`；`blockIdx` 连续分块，块内 former/tail tile 顺序执行 | 4 路 GM 读+1 路 GM 写；单 `TBuf` 的 10 个子区和寄存器中间值；decay 不增加 UB；无 L1/L0/workspace | 当前 stream 与 Get/Release producer-consumer 协议；无跨核同步；资源限于单 kernel；core/tile/64-lane 三级 tail | FP32 power→moment→sqrt/add/div→decay Axpy→正 lr Axpy；maximize 不在 moment 前翻转 grad；低精度最终 RINT；无 Device fallback |
+| P3 R-003 | `apply_adam_w_npu` 生成合法 `dtype_code`、`has_weight_decay=false`、`maximize=true`、三元 tiling 和 FP32 标量→direct scalar ABI→Device 本地 tiling→`*_wd0_max<<<num_blocks,...,stream>>>` | `RunTargetAdamW<T,false,true>`→ATVOSS→`CalcTargetAdamW`；`blockIdx` 连续分块，块内 former/tail tile 顺序执行 | 4 路 GM 读+1 路 GM 写；单 `TBuf` 的 10 个子区和寄存器中间值；无 decay 指令、L1、L0 或 workspace | 当前 stream 与 VECIN/VECCALC/VECOUT Get/Release；无跨核同步；kernel 末释放资源；core/tile/64-lane 三级 tail | FP32 power/系数→moment→sqrt/add/div→正 lr Axpy，跳过 decay；FP16/BF16 仅边界 promote/RINT；无 Device fallback |
+
 四条 Route 是 source mapping 冻结的语义路线；每条保留三个精确 dtype entry。FP16/BF16 共享 unpack→FP32→pack 流水，FP32 entry 删除这两端转换；这项 dtype 子路径差异在矩阵、内存和精度表中逐项列出，不把不同 entry 隐去。
 
 ### 模板/实现执行矩阵
@@ -160,7 +188,7 @@ else:
 | P2 | R-004 | `*_wd1_max` | `weight_decay!=0.0 && maximize=true` | 单 AIV Kernel | `RunTargetAdamW<T,true,true>` | decay Axpy；`signed_lr=+lr` | 同上 |
 | P3 | R-003 | `*_wd0_max` | `weight_decay==0.0 && maximize=true` | 单 AIV Kernel | `RunTargetAdamW<T,false,true>` | 无 decay；`signed_lr=+lr` | 同上 |
 
-### 隐藏性能 Guard
+### 隐式性能 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -177,7 +205,7 @@ else:
 
 Direct entry 不接收序列化 tiling POD；下表的 “direct scalar ABI” 是独立 kernel 参数，故无结构 `offsetof/sizeof`。entry 在 Device 上构造自然对齐的 `EleBaseTilingData`：`sizeof=80`、`alignof=8`，字段 offset 如表。
 
-| 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
+| 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | producer | consumer | 边界 |
 |---|---|---|---|---|---|---|---|
 | direct scalar ABI | `var` | GM_ADDR/指针宽度 | 独立参数 | GM 地址 | `var.data_ptr()` | scheduler `In0` | 连续 N 元素 |
 | 同上 | `grad` | GM_ADDR | 独立参数 | GM 地址 | `grad.data_ptr()` | `In1` | 同上 |
@@ -194,17 +222,21 @@ Direct entry 不接收序列化 tiling POD；下表的 “direct scalar ABI” �
 | 同上 | `weight_decay` | float/32 | 独立参数 | 数值 | Host cast | Var 5；wd1 body | wd0 body 不读计算路径 |
 | 同上 | `epsilon` | float/32 | 独立参数 | 数值 | Host cast | Var 6、`Adds` | 无非负校验 |
 | 同上 | `step` | int64/64 | 独立参数 | 次数 | schema 属性 | `DeviceIntegerPower` | 允许 0/负数，未校验 |
-| `EleBaseTilingData` | `dim0` | int64/64 | off 0 | 元素 | `total_length` | 元数据；scheduler 主路径不用于地址 | 非空 |
-| 同上 | `coreNum` | int32/32 | off 8 | core | `(int32)num_blocks` | 元数据 | 窄化未检查 |
-| 同上 | `ubFormer` | int32/32 | off 12 | 元素/tile | `ub_former` | `Init/Process` | 需为正 |
-| 同上 | `blockFormer` | int64/64 | off 16 | 元素/非尾核 | `block_former` | GM core offset | 尾核另算 |
-| 同上 | `blockNum` | int64/64 | off 24 | core | `num_blocks` | 尾核判断 | 与 launch grid 相同 |
-| 同上 | `ubLoopOfFormerBlock` | int64/64 | off 32 | tile loop | `ceil(block_former/ub_former)` | 非尾核循环 | 至少 1 |
-| 同上 | `ubLoopOfTailBlock` | int64/64 | off 40 | tile loop | `ceil(tail_block/ub_former)` | 尾核循环 | 至少 1 |
-| 同上 | `ubTailOfFormerBlock` | int64/64 | off 48 | 元素 | remainder，整除时为 `ub_former` | former 最后 tile | 非零 |
-| 同上 | `ubTailOfTailBlock` | int64/64 | off 56 | 元素 | tail remainder | tail 最后 tile | 非零 |
-| 同上 | `elemNum` | int64/64 | off 64 | 元素 | `total_length` | 元数据 | 与 dim0 相同 |
-| 同上 | `scheMode` | uint64/64 | off 72 | 枚举 | 常量 1 | scheduler 模板固定为 1，字段不参与分派 | 固定值 |
+| launcher-only control | `dtype_code` | int32/32 | 独立参数，不进入 kernel 参数表 | selector 枚举 | Host 从 `var.scalar_type()` 生成 0/1/2 | `launch_apply_adam_w_direct` 外层 dtype 树 | 非 0/1 会误落 BF16；正常 Host 只产生 0/1/2 |
+| 同上 | `has_weight_decay` | C++ `bool` | 独立参数，不序列化 | selector 布尔 | Host 以 double `weight_decay!=0.0` 生成 | launcher wd0/wd1 树→模板常量 | 与窄化后 Device float 可能不一致 |
+| 同上 | `maximize` | C++ `bool` | 独立参数，不序列化 | selector 布尔 | schema 属性 | launcher min/max 树→模板常量 | 只决定最终 `signed_lr` 符号 |
+| launch config | `stream` | `void*`/指针宽度 | 独立参数，不进入 kernel 参数表 | runtime stream | `getCurrentNPUStream().stream(false)` | `entry<<<num_blocks,nullptr,stream>>>` | callback 不同步、不取回异步状态 |
+| `EleBaseTilingData` | `dim0` | int64/64 | off 0 | 元素 | Device `RunTargetAdamW←total_length` | 元数据；scheduler 主路径不用于地址 | 非空 |
+| 同上 | `coreNum` | int32/32 | off 8 | core | Device `RunTargetAdamW←(int32)num_blocks` | 元数据 | 窄化未检查 |
+| 同上 | `ubFormer` | int32/32 | off 12 | 元素/tile | Device `RunTargetAdamW←ub_former` | scheduler `Init/Process` | 需为正 |
+| 同上 | `blockFormer` | int64/64 | off 16 | 元素/非尾核 | Device `RunTargetAdamW←block_former` | scheduler GM core offset | 尾核另算 |
+| 同上 | `blockNum` | int64/64 | off 24 | core | Device `RunTargetAdamW←num_blocks` | scheduler 尾核判断 | 与 launch grid 相同 |
+| 同上 | `ubLoopOfFormerBlock` | int64/64 | off 32 | tile loop | Device `RunTargetAdamW` 计算 `ceil(block_former/ub_former)` | scheduler 非尾核循环 | 至少 1 |
+| 同上 | `ubLoopOfTailBlock` | int64/64 | off 40 | tile loop | Device `RunTargetAdamW` 计算 `ceil(tail_block/ub_former)` | scheduler 尾核循环 | 至少 1 |
+| 同上 | `ubTailOfFormerBlock` | int64/64 | off 48 | 元素 | Device 计算 remainder，整除时为 `ub_former` | scheduler former 最后 tile | 非零 |
+| 同上 | `ubTailOfTailBlock` | int64/64 | off 56 | 元素 | Device 计算 tail remainder | scheduler tail 最后 tile | 非零 |
+| 同上 | `elemNum` | int64/64 | off 64 | 元素 | Device `RunTargetAdamW←total_length` | 元数据 | 与 dim0 相同 |
+| 同上 | `scheMode` | uint64/64 | off 72 | 枚举 | Device 常量 1 | scheduler 模板固定为 1，字段不参与分派 | 固定值 |
 
 ### Route 源码闭包
 
@@ -296,7 +328,7 @@ workspace_total = 0
 
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
-| DMA/调度 | 公共 `DataCopyPad` 与 Get/ReleaseTensor 协议 | GM/Calc | Calc/GM | 10 个子区 | 64-lane mask 保护 tail |
+| DMA/调度 | 公共 `DataCopyPad` 与 Get/ReleaseTensor 协议 | GM/Calc | Calc/GM | 10 个子区 | GM 搬运只提交 `tileLength*S`；raw Reg load 可读满 UB span，live mask 从 cast/算术延续到写回 |
 | decay | `Axpy(reg_update,reg_var,weight_decay,mask)` | Div 与原始 var | final Axpy | update RegTensor | FP32，tail mask 一致 |
 | 降精度/写回 | 公共 RINT/pack 与 `DataCopyPad` 路径 | final Axpy | GM y | y 子区 | FP16/BF16 仅最终一次 RINT |
 
@@ -341,7 +373,8 @@ for tile in this core's [blockIdx*block_former, block_length):
   DMA var/grad/m/v GM -> four ping-or-pong UB regions
   for 64-lane repeat in valid tile:
     mask = UpdateMask<float>(remaining)
-    load four T vectors; if T is FP16/BF16: unpack and cast to FP32
+    raw-load four full register spans from the allocated UB regions
+    if T is FP16/BF16: unpack, then cast to FP32 under mask
     mReg = beta1*c1*mReg + (1-beta1)*c1*gradReg
     vReg = beta2*c2*vReg + ((1-beta2)*c2*gradReg)*gradReg
     update = mReg / (sqrt(vReg)+epsilon)
@@ -363,7 +396,7 @@ for tile in this core's [blockIdx*block_former, block_length):
 | m ping/pong | 同上 | 每区 `ub_former*S` B | T | CopyIn | Calc | 同上 | 两区交替 |
 | v ping/pong | 同上 | 每区 `ub_former*S` B | T | CopyIn | Calc | 同上 | 两区交替 |
 | y ping/pong | 同上 | 每区 `ub_former*S` B | T | Calc | CopyOut | 同上 | 计算结果直接作为 MTE3 源 |
-| RegTensor | 寄存器 | 4 输入+3 中间/结果 FP32，并有低精度 pack 临时 | register layout | load/Vector API | store | 单 repeat | mask 保护尾 lane |
+| RegTensor | 寄存器 | 4 输入+3 中间/结果 FP32，并有低精度 pack 临时 | register layout | raw load/Vector API | store | 单 repeat | raw load 读完整 UB span；mask 保护有效算术 lane 与发布 |
 
 ##### 分层内存布局
 
@@ -400,7 +433,7 @@ workspace_total = 0
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
 | GM→UB | `DataCopyPad` + scheduler `Get/ReleaseTensor<VECIN>` | GM | VECCALC | 四个输入子区 | blockLen 为有效字节；无效 padding 不被 mask store |
-| UB→Reg | `Reg::DataCopy`; 低精度 `UnPack/Cast` | input UB | FP32 算术 | 当前 repeat | FP16/BF16 提升；FP32 直载 |
+| UB→Reg | `Reg::DataCopy`; 低精度 `UnPack/Cast` | input UB | FP32 算术 | 当前 repeat | raw load 固定满跨度；低精度 promote cast 受 live mask；FP32 直载后仅有效 lane 参与算术 |
 | 计算 | MicroAPI 程序顺序 | FP32 RegTensor | store | moment/update | `UpdateMask<float>(remaining)` 保护 64-lane 尾部 |
 | Reg→UB→GM | 低精度 `Cast(CAST_RINT)/Pack/MaskPack`；`DataCopyPad` | FP32 result | GM y | output 子区 | FP32 直写；只提交 tileLength |
 
@@ -477,7 +510,7 @@ workspace_total = 0
 | 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
 |---|---|---|---|---|---|
 | input/y ping-pong | 同 R-001 | 同 R-001 | 下个同 parity tile | ATVOSS Get/ReleaseTensor | 同 R-001 |
-| register values | load/Div | decay Axpy→positive Axpy→store | 下一 repeat | Vector 程序顺序 | 所有 API 使用同一个 mask |
+| register values | load/Div | decay Axpy→positive Axpy→store | 下一 repeat | Vector 程序顺序 | 除 raw load 外，cast/算术/masked store 使用同一 live mask |
 
 #### 同步、精度与尾块
 
@@ -590,7 +623,7 @@ workspace_total = 0
 
 - 适用 Route：按重要性依次为 R-002、R-001、R-004、R-003 的 FP16/BF16 entry。
 - 触发条件：模板 `T` 非 float；每个 tile/repeat 均使用相同有效 lane mask。
-- Golden 来源：[`optim/apply_adam_w/op_kernel/arch35/apply_adam_w_dag.h:44-57`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/optim/apply_adam_w/op_kernel/arch35/apply_adam_w_dag.h)
+- 固定官方源码依据：[`optim/apply_adam_w/op_kernel/arch35/apply_adam_w_dag.h:44-57`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/optim/apply_adam_w/op_kernel/arch35/apply_adam_w_dag.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -613,14 +646,14 @@ __aicore__ inline void LoadOneTensor(MicroAPI::RegTensor<U>& dst, __local_mem__ 
 
 #### 机制与设计原因
 
-Direct 交付件保留这一 950 idiom：FP16/BF16 从 UB 以 packed T 搬入寄存器，`UnPack` 后在 `ZEROING` mask 下转换为 FP32；moment、平方、`sqrt`、除法、decay 与最终 Axpy 全部保持 FP32，最后才以 `NO_SAT + CAST_RINT` 降回 T 并 `Pack/MaskPack`。这样不会在长算术链的每一步反复降精度，也不需要为 FP32 中间值物化额外 UB tensor；关键实参 `oneRepeat=256/4=64` 来自 950 256B vector register，mask 来自当前 tile 的 `remaining`。
+Direct 交付件保留这一 950 idiom：FP16/BF16 从已分配的完整 UB 子区以 packed T 满跨度搬入寄存器，`UnPack` 后在 `ZEROING` live mask 下转换为 FP32；moment、平方、`sqrt`、除法、decay 与最终 Axpy 全部保持 FP32，最后才以 `NO_SAT + CAST_RINT` 降回 T 并 `Pack/MaskPack`。这样不会在长算术链的每一步反复降精度，也不需要为 FP32 中间值物化额外 UB tensor；关键实参 `oneRepeat=256/4=64` 来自 950 256B vector register，mask 来自当前 tile 的 `remaining`。注意 raw `DataCopy` 本身没有 mask 参数：它只能读取已分配 UB，GM tail 的有效字节仍由 scheduler 的 `DataCopyPad(tileLength)` 限定。
 
 #### 迁移边界
 
 - 适用：950 上输入/输出同为 FP16 或 BF16、主体适合 FP32 register elementwise 流水的单输出算子。
-- 前提：UB 中 T 数据连续；每个 repeat 的 mask 同时覆盖 load、算术和 store；最后 cast 的舍入要求允许 `CAST_RINT`。
+- 前提：UB 中 T 数据连续且子区至少覆盖一个完整寄存器读取跨度；每个 repeat 的 live mask 覆盖低精度 promote cast、全部算术与最终 masked store；最后 cast 的舍入要求允许 `CAST_RINT`。
 - 失效：FP32 entry 应直载直存；需要保持中间状态为低精度、不同 round/saturation，或需要跨 tile 中间张量时必须另建实现。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：本卡仅陈述固定来源可证明的接口、Route 与实现事实，不主张编译、真机、数值或性能结论。
 
 #### 错误做法
 
@@ -650,12 +683,13 @@ Direct 交付件保留这一 950 idiom：FP16/BF16 从 UB 以 packed T 搬入寄
 ## 限制与失败边界
 
 - 仅支持四输入 shape/dtype 完全相同、rank 1～8、FP32/FP16/BF16；非空输入还必须全部连续。空域在 contiguous 检查之前直接返回。
+- 非空执行要求四输入位于 `var` 所在的同一 NPU device；Host 没有显式比较 `grad/m/v.device()`，混合 device 可能把不可由当前 stream 安全访问的地址传入 kernel，不属于受支持 Route。
 - 只写 `y`，不更新 `var/m/v`，无 AMSGrad、`max_grad_norm` 或 beta-power Tensor；不得用官方公开 ApplyAdamW 的原位状态语义替换本文 Direct 语义。
 - `lr/beta1/beta2/weight_decay/epsilon` 从 double 窄化到 float；没有有限值或范围检查。`step=0`、`beta1==1`、`beta2==1` 可令 bias-correction 分母为 0；负 step 虽由整数快速幂实现支持，但其优化器有效域未被校验。
 - `weight_decay != 0.0` 在 double 精度决定 Route，Device 收到的是 float；极小非零 double 可能在窄化后变 0，但仍走 wd1 body。NaN 也走 wd1。
 - Direct router 把所有非 0/1 的 `dtype_code` 当 BF16；正常 plugin 已先限制 dtype，但外部直接调用 launcher 不具备独立防护。
 - UB 公式在 `ub_former<A` 时强制一个 256B tile，没有显式复核 `10*A*S<=U`；950 正常 UB 满足，但不能把该兜底外推到任意平台。`num_blocks/coreNum` 与 `ub_former` 存在 int32 窄化，源码无溢出检查。
-- launcher/lambda 不检查异步 kernel 返回码。固定源码未提供性能数字；本次知识提取未执行编译、真机、数值或性能测试。
+- launcher/lambda 不检查异步 kernel 返回码。固定源码不含性能数字，本卡不主张编译、真机、数值或性能结论。
 
 ## 源码索引
 
@@ -679,7 +713,7 @@ Direct 交付件保留这一 950 idiom：FP16/BF16 从 UB 以 packed T 搬入寄
 | 调用顺序 | Meta→tiling→单 entry→系数→Init→Process | 空域先返回；四个系数必须在每核 scheduler 前形成 | `apply_adam_w_npu/RunTargetAdamW` |
 | workspace/内存 | workspace 0；10 个等长 ATVOSS 子区 | `UB_total=10*ub_former*S`、256B 对齐、ping/pong lifetime | `CalcTiling/ElementwiseSch::Init` |
 | 同步 | scheduler 的 VECIN/VECCALC/VECOUT Get/ReleaseTensor 协议 | producer 完成前不得让同 buffer id 被同 parity tile 覆盖 | `ElementwiseSch::CopyIn/RunNormalOp/CopyOut` |
-| 精度与尾块 | FP16/BF16 边界 cast、主体 FP32、最终 RINT；64-lane mask | `UpdateMask` 必须贯穿 load/compute/store；只写有效 tileLength | `LoadAsFloat/CalcTargetAdamW/StoreFromFloat` |
+| 精度与尾块 | FP16/BF16 边界 cast、主体 FP32、最终 RINT；64-lane mask | raw load 只能读已分配 UB span；`UpdateMask` 必须贯穿 promote cast/compute/masked store；GM 只写有效 `tileLength` | `LoadAsFloat/CalcTargetAdamW/StoreFromFloat` |
 | 失败边界 | plugin 拒绝 shape/dtype/rank/contiguous 错误 | 不得把 invalid dtype launcher default、无 launch 检查当作安全 fallback | `apply_adam_w_meta/apply_adam_w_npu/launch_apply_adam_w_direct` |
 
 <!-- cannbot:related:start -->

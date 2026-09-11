@@ -18,7 +18,7 @@ sources:
   - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/scatter_elements_v2/op_kernel/arch35/scatter_elements_deterministic.h"
     role: implementation
 created_at: "2026-08-24T19:31:26Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -31,12 +31,12 @@ cann_versions: ["9.1.0"]
 |---|---|
 | 实际入口 | Python `cann_bench.scatter` → `torch.ops.cann_bench.scatter` → `scatter_npu`；Host 直调子入口为 `launch_scatter`、`launch_scatter_copy`、`launch_scatter_copy_simt`、`launch_scatter_winner`、`launch_scatter_serial`、`launch_scatter_owned`、`launch_scatter_mul_float_fused`、`launch_scatter_add_f32_fast`、`launch_scatter_atomic_max_i32`。入口类型为 `Direct Invoke`。 |
 | 计算语义 | 先以 `data` 初始化 `y`，再沿 `dim` 用 `indices` 把 `updates` 映射到 `y`；重复目标按 `update/add/multiply/amax/amin` 执行覆盖或归并。 |
-| 输入输出 | `data/indices/updates` 为 1–8 维 contiguous 计算视图；`indices` 为 `int32/int64`；`data` 与 `updates` 同 dtype，支持 `float16/float32/bfloat16/int32/int64`；输出 shape 与 `data` 相同。 |
+| 输入输出 | 原始 `data/indices/updates` 可非连续，Device 看到的是各自的 contiguous 副本；`indices` 为 `int32/int64`，`data` 与 `updates` 同 dtype，支持 `float16/float32/bfloat16/int32/int64`；输出 shape 与 `data` 相同，但实际输出是按 `data.contiguous()` 分配的连续张量。 |
 | 执行类型 | AIV MTE/Vector 节点与 AIV 上的 SIMT VF 节点；含 `AtomicAdd/AtomicMax`。没有可达 Cube/AIC 或 `MIX_CV` 节点。 |
 | Kernel 路线 | 按实现重要性为 R-001 winner update；R-005 FP16 add；R-003 atomic int32 amax；R-002 owned update；R-008 FP32 multiply；R-006 FP32 atomic add；R-004 owned extrema；R-007 owned add；R-009 owned multiply；R-012 独立 copy；R-010 通用直调 add；R-011 融合 FP32 multiply。 |
 | 核心资源 | `data/indices/updates/output` GM；winner `int32[dataNum]` GM；FP16 add accumulator `float[dataNum]` GM；固定 16 MiB workspace 对象但当前 body 不消费；AIV copy 32 KiB TBuf；向量 cast 48 KiB TBuf；SIMT dynamic UB 为 N/A。 |
 | 来源闭包 | `direct_implementation_closed`：Python/Torch 注册、`scatter_npu` selector、全部 Host 可达 `launch_scatter*`、POD、entry、SIMT/helper、MTE/Vector body 与构建接线均已闭合。官方 `ScatterElementsV2` 仅是相关语义映射，不是本交付件的实现来源。 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 验证状态 | 已按固定交付源码闭合 schema、Host producer、POD、全部可达 launcher 与 Device body；本卡不把交付报告中的运行现象写成算子契约。 |
 
 ## 接口与语义
 
@@ -66,6 +66,21 @@ dst(pre,mid,after) = (pre * dataMidAxis + indices[src]) * afterAxis + after
 
 owned 路线以 `(pre, after)` 为互斥 owner，在单线程内顺序遍历全部 `mid`，因此不同 owner 不会写同一目标地址。
 
+### 重复索引与归约顺序契约
+
+`indices` 在 `dim` 上的值决定目标 middle 坐标；它不会改变 `pre` 和 `after`。因而两个更新只有在 `(pre, after, indices[src])` 三者都相同时才冲突。实现不能把“`indices` 元素不同”当成无冲突的充分条件。
+
+| mode | 公共入口的冲突消解 | 重复目标的可见顺序/数值特性 |
+|---|---|---|
+| `update` | winner 表对 `winners[dst]` 做 `AtomicMax(linear)`，或 owner 线程串行遍历 `mid` | 两路都以最大 contiguous 源线性位置为最终写者；这个结论依赖单轴替换与 contiguous 线性化不变量。 |
+| `add` FP32 | `AtomicAdd` | 不丢失更新，但浮点加法的合并顺序由 atomic 调度决定，不应声称 bitwise deterministic。 |
+| `add` FP16 | S1 在 FP32 accumulator 上选 atomic tail1/atomic pre1/owned | 只在 S2 降回 FP16；atomic 变体顺序不固定，owned 变体按 `mid` 固定。 |
+| `add` BF16/I32/I64 | owner 串行 `mid` | BF16 每次经 FP32 计算后立即降回 BF16；它不等价于 FP32 中间累加。整数路线不是饱和算术。 |
+| `multiply` | 全 dtype 均用 owner；FP32 只特化了前置 SIMT clone | 按 `mid=0..midAxis-1` 左折叠；FP16/BF16 每次乘法后降回原 dtype。 |
+| `amax/amin` | int32 amax 可用 atomic 快路，其余用 owner | owned 浮点路线遇到第一个 NaN 后保留该 NaN；非 NaN 相等时选后来值，因此 `+0/-0` 的 bit pattern 可受源顺序影响。 |
+
+所有路线都假设 `0 <= indices[s] < dataMidAxis`。源码中的 `static_cast<uint64_t>(indices[s])` 不是边界处理：负值会变成巨大无符号偏移。若上层不能保证值域，安全实现需先行校验 kernel + 错误标志，而不是在写入 kernel 内静默 clamp 或丢弃，否则会改变算子语义。
+
 ### 输入、输出与属性
 
 | 参数 | shape/layout | dtype | 约束、默认值与语义 |
@@ -79,7 +94,7 @@ owned 路线以 `(pre, after)` 为互斥 owner，在单线程内顺序遍历全�
 
 ### 入口与版本
 
-`cann_bench.scatter` 由 Python 包转发到 Torch 自定义算子。`TORCH_LIBRARY_FRAGMENT` 声明 schema，Meta 实现返回 `empty_like(data)`，PrivateUse1 实现绑定 `scatter_npu`。该入口不是 ACLNN，也不是官方 `ScatterElementsV2` 的转换壳。
+`cann_bench.scatter` 由 Python 包转发到 Torch 自定义算子。`TORCH_LIBRARY_FRAGMENT` 声明 schema，Meta 实现返回 `empty_like(data)`，PrivateUse1 实现绑定 `scatter_npu`。该入口不是 ACLNN，也不是官方 `ScatterElementsV2` 的转换壳。对非连续 `data`，Meta 的 `empty_like(data)` 可保留原 memory-format，而 PrivateUse1 返回基于 `data.contiguous()` 的连续输出；因此图编译/形状推导不应把 Meta stride 当成 Device 输出 stride 契约。
 
 本卡冻结 CANN `9.1.0`、950（`ascend950`）。交付件顶层构建把 `ascend950` 映射为 Bisheng `dav-3510` 并把 Device TU 编译为 `-xasc`，因此 950 直调卡由交付件自身接线成立。固定 Commit 的官方 `index/scatter_elements_v2` 只用于语义相关性；不把其平台声明、Host selector 或 kernel body归属于本直调实现。
 
@@ -91,11 +106,33 @@ owned 路线以 `(pre, after)` 为互斥 owner，在单线程内顺序遍历全�
 
 源码没有显式检查三输入是否位于同一设备、索引元素是否在 `[0,data.shape[dim])`、shape 乘积是否溢出 `int64`。这些条件必须由调用者保证，否则 Device 地址计算可能越界。
 
+#### Host checked arithmetic 与安全退化
+
+当把本卡路线落成可靠 Host selector 时，shape 乘积与字节数不能继续沿用源码的未检查 `int64_t` 乘法。最小安全契约是：
+
+```text
+checked_product(shape[lo:hi]) -> uint64 value or reject
+checked_mul(preAxis, afterAxis) -> ownerCount or reject
+checked_mul(midAxis, afterAxis) -> updateStride or reject
+checked_mul(dataNum, sizeof(DATA_T)) -> outputBytes or reject
+winnerBytes = checked_mul(dataNum, 4)
+accBytes    = checked_mul(dataNum, 4)
+```
+
+- 任一 shape 为负、乘积超过 tensor/storage 可表示范围，或中间地址公式不可表示时，应在 launch 前拒绝。这不是 route fallback，因为任何 Device route 都无法安全消费已回绕的 POD。
+- winner 密度谓词中的 `4*updatesNum` 也必须用溢出安全比较，例如改写为 `ceil(dataNum/4) <= updatesNum`；不能先执行可溢出乘法再判断。
+- `updatesNum <= INT32_MAX`、`afterAxis <= UINT32_MAX`和 `midAxis*afterAxis <= UINT32_MAX` 是 winner 紧凑表示 guard；失配可安全退到 owned update。
+- winner copy/init 的 32 KiB 别名 TBuf 无法容纳 8192 个 `int64` data 元素。在不改 Device tile 前，Host 应额外要求 `dataTag != INT64`，失配退到 owned update。
+- Vector FP16 cast 还需平台 UB 不小于 48 KiB；资源不足时应选 count-guarded SIMT cast。MTE copy 需 32 KiB，没有等价的已闭合 Host 退化，因此应视为平台先决条件或补实 SIMT clone selector。
+- `OptionalDeviceGuard(data.device())` 不能代替同设备检查。`indices` 或 `updates` 若在另一设备，其 `.contiguous()` 仍属于原设备，却会把裸指针交给 `data` 的 stream。可靠 Host 必须在取指针前检查三者 device 相同。
+
 ### 参数、Workspace 与生命周期
 
 `dataNum=product(dataShape)`，`updatesNum=product(indexShape)`。AIV 核数 `C=GetCoreNumAiv()`，不可用时按 1；`coresByUpdates=min(ceil(updatesNum/512),C)`；`perCoreData=max(ceil(dataNum/C),1024)`；`coresByData=ceil(dataNum/perCoreData)`；最终 `blockDim=max(coresByUpdates,coresByData,1)`。
 
-每次调用持有 output 与 16 MiB workspace。workspace 指针只传入导出的 `launch_scatter`，该 wrapper 又显式忽略它；`scatter_npu` 当前路线完全不消费 workspace。winner 仅在 winner update 路线分配，生命周期覆盖 copy/init→mark→apply；FP16 accumulator 仅在 FP16 add 路线分配，生命周期覆盖 S0→S1→S2。所有节点使用同一 current stream，临时 tensor 由闭包捕获直至 launcher 提交完成。
+每次调用持有 output 与 16 MiB byte workspace。公共 `scatter_npu` 生成 `wsPtr`，但闭包没有引用它，也不调用 `launch_scatter`；因此当前公共 launch 图只承担分配成本，不消费这块 workspace。独立 caller 传入 `launch_scatter` 的 workspace 参数也被 wrapper 显式忽略。winner 仅在 winner update 路线分配，生命周期覆盖 copy/init→mark→apply；FP16 accumulator 仅在 FP16 add 路线分配，生命周期覆盖 S0→S1→S2。
+
+闭包 `[=]` 仅捕获裸指针与 POD，**没有**捕获 `winners/accumulator/workspace` Tensor 对象。这些局部 Tensor 因 C++ 作用域至少存活到 `RunOpApi` 返回，此时同流节点已提交；返回后的异步存储生命期依赖 Torch NPU allocator/current-stream 契约，源码没有显式 event、`recordStream` 或 host sync。
 
 ### 启动图与失败传播
 
@@ -127,6 +164,20 @@ cann_bench.scatter -> scatter_npu -> same current NPU stream
 
 节点均以 `<<<blockDim, nullptr, stream>>>` 同流提交，GM 临时对象是节点间交接介质；`nullptr` 表示没有 dynamic UB。wrapper 返回 `void`，闭包固定返回 0，没有逐 launch 同步错误检查；异步设备错误由运行时边界传播，而不是阻断 wrapper 中后续提交。
 
+### Direct launcher ABI 与失配行为
+
+公共入口在 Host 层已把 data/index tag 限制在合法集合；独立 launcher 本身不是自校验 ABI。不能统一概括为“未知 tag 不 launch”：
+
+| launcher 族 | 非法 data tag | 非 `INT32` index tag | 非法 mode/key |
+|---|---|---|---|
+| `launch_scatter_copy*` | 不 launch | N/A | N/A |
+| `launch_scatter_winner` | copy/apply 可不 launch，但 mark 仍可提交，属部分图而非安全 no-op | 按 int64 实例解读 | N/A |
+| `launch_scatter_owned` | 不 launch | 按 int64 实例解读 | 不 launch |
+| FP16 serial / FP32 add / int32 amax / fused FP32 multiply | FP16 serial 的非 FP16 data tag 返回；其余 data dtype 由入口固定 | 按 int64 实例解读 | serial 忽略 reduction 实参，因此只能按声明用于 FP16 add |
+| `launch_scatter` | 仅 key 参与分发，data/reduction 实参被忽略 | key `1000100` 强制 body 按 int32 index 解读 | key 非 `1000100` 时不 launch |
+
+因此 direct caller 的安全 fallback 必须发生在进入 wrapper 之前：验证 tag/mode/POD/extent，只在可证明的 selector guard 失配时转到 owned/copy 等闭合路线。不得把部分图、错类型解读或 no-launch 当成计算 fallback。
+
 ## Route 与参数设计
 
 ### 分核与资源计算
@@ -139,9 +190,25 @@ general POD 的 `loopLength` 从 `ubRaw` 经 `min(max(ubRaw-131072,0),65536)-640
 
 下表按阅读与实现复用重要性降序排列；`P0`～`P11` 不是 Host runtime 优先级。真实控制流位置由“Host 顺序”列保留：H0 是入口的 copy/init 前置选择，H1～H5 是 `mode` 的 `if/else if` 短路链，D1～D3 是不经 `scatter_npu` 的独立 launcher 入口。
 
+#### 可达性分层
+
+| 层级 | Route | 可达证据与边界 |
+|---|---|---|
+| `active` | R-001～R-009 | 都由 `scatter_npu` 的 H0～H5 在某一合法 mode/dtype/shape 组合上选中；R-002/R-004 同时承担 winner/atomic guard 失配的语义 fallback。 |
+| `active` 共享节点 / `conditional` 独立入口 | R-012 | MTE copy 是 UPDATE-owned、extrema、FP32 add 和非 FP32 multiply 的 H0 前置节点，SIMT copy 是 FP32 multiply 前置节点；两个 launcher 也可由受控 direct caller 单独调用。 |
+| `conditional` | R-010 | `launch_scatter` 只对 key `1000100` 提交 general FP32/I32 ADD。公共 `scatter_npu` 生成 general POD 但不调该 launcher；只有显式 direct caller 在先初始化 output 并满足 POD 安全契约时可达。 |
+| `conditional` | R-011 | `launch_scatter_mul_float_fused` 是导出的 FP32/I32-or-I64 单 Kernel launcher；公共 selector 未调用，需 direct caller 显式组图。 |
+
+本 TU 还有两个 `dormant` body，不伪装成上表 Route：
+
+| dormant 节点 | 不可达原因 | 重新启用所需条件 |
+|---|---|---|
+| `scatter_winner_init_entry -> InitWinners` | `launch_scatter_winner` 已改用 `scatter_copy_winner_init_entry` 融合 clone + winner=-1，没有 wrapper 提交独立 init entry | 需显式 wrapper/launch 节点，并保持 `init -> mark -> apply` 同流顺序；若拆分后仍需另一节点完成 `data -> output` clone。 |
+| `scatter_mul_float_entry -> SerialMulFloat` | 没有对应 launch 声明/wrapper；公共 FP32 multiply 实际调用 `scatter_owned_entry<float,...,MULTIPLY>` | 需新增 ABI 声明与 wrapper，在它之前完成 output clone，并证明其与已活跃 owned body 的价值差异。 |
+
 | 重要性 | Route | Route 特征 | 适用域与实现前提 | Host 顺序、短路与 fallback |
 |---|---|---|---|---|
-| P0 | R-001 winner update | copy/init、winner mark、apply 三节点；用 `AtomicMax` 保留最大线性更新位置 | UPDATE；compact-indexable；满足 dense 或 small-sparse winner 谓词 | H0 命中 `fusedWinnerInit` 而跳过通用 copy；H1 先判 `useWinner`，命中后短路结束 UPDATE 分支，未命中转 R-002 |
+| P0 | R-001 winner update | copy/init、winner mark、apply 三节点；用 `AtomicMax` 保留最大线性更新位置 | UPDATE；compact-indexable；满足 dense 或 small-sparse winner 谓词；当前 selector 未排除 INT64，但其 32 KiB init TBuf 不能承载满 8192 元素 INT64 tile | H0 命中 `fusedWinnerInit` 而跳过通用 copy；H1 先判 `useWinner`，命中后短路结束 UPDATE 分支；稳健 Host 需把 INT64 或资源 guard 失配退到 R-002 |
 | P1 | R-005 FP16 add | FP16→FP32、FP32 归并、FP32→FP16 三阶段；cast 和 S1 均有 shape guard | ADD + FP16；需 `4*dataNum` 字节 accumulator；Vector cast 需 48 KiB UB | H0 命中 `fusedFp16Add` 而跳过通用 copy；H4 的第一个 dtype 分支，命中后不再检查 R-006/R-007；内部 guard 选 Vector/SIMT 和 tail1/pre1/owned，无跨 Route fallback |
 | P2 | R-003 atomic int32 amax | 1024-thread signed `AtomicMax`；2 幂 tail 用位运算化简地址 | AMAX + INT32；`preAxis==1 && IsPow2(afterAxis)` | H0 走 MTE copy；H2 先检查本 fast path，命中后短路 AMAX 分支，未命中转 R-004 |
 | P3 | R-002 owned update | `(pre,after)` 互斥 owner 并行，单 owner 按 `mid` 顺序覆盖 | UPDATE 且 R-001 的 winner 谓词失败 | H0 走 MTE copy；H1 内层 `else` fallback，执行后结束 UPDATE 分支 |
@@ -152,13 +219,13 @@ general POD 的 `loopLength` 从 `ubRaw` 经 `min(max(ubRaw-131072,0),65536)-640
 | P8 | R-009 owned multiply | MTE clone + owner 互斥累乘 | MULTIPLY + FP16/BF16/INT32/INT64 | H0 未命中 FP32 SIMT-copy 特化而走 MTE copy；H5 与 R-008 共用 owned launcher，dtype 决定本 Route，无后续 fallback |
 | P9 | R-012 独立 copy | 五种 dtype 的 MTE tile copy 或 SIMT grid-stride copy；也是主路线的共享前置节点 | caller 提供合法 dtype tag、extent 和同流 output | H0 由主入口在 fused/simt 特化之后选 MTE 或 SIMT copy，该节点不终止后续 Route；D3 可独立调用，未知 tag 不 launch |
 | P10 | R-010 通用直调 add | general POD 解码 + FP32 atomic add | 独立 `launch_scatter`；key `1000100`；caller 已初始化 output | D1；不经 H0～H5；key 不等时短路为 no-launch，无 fallback |
-| P11 | R-011 融合 FP32 multiply | 单 Kernel 内每 owner 先 clone data-mid，再顺序乘 | 独立 `launch_scatter_mul_float_fused`；FP32 + I32/I64 index | D2；不经 H0～H5；caller 所给 tag/POD 无实例时 no-launch，无 fallback |
+| P11 | R-011 融合 FP32 multiply | 单 Kernel 内每 owner 先 clone data-mid，再顺序乘 | 独立 `launch_scatter_mul_float_fused`；FP32 + I32/I64 index | D2；不经 H0～H5；index tag 非 I32 会按 I64 实例解读，故 caller 必须先校验；无 wrapper 内 fallback |
 
 ### Route 选择
 
 | 重要性 | Route | Host 顺序 | Key/模板 | 精确选择条件 | 短路/fallback |
 |---|---|---|---|---|---|
-| P0 | R-001 winner update | H0 fused init→H1 update 首分支 | `useWinner` | `mode==UPDATE && ((ownerCount<=8192 && dataNum<=4*updatesNum) \|\| (ownerCount<=4 && dataNum<=1100000)) && updatesNum<=INT32_MAX && afterAxis<=UINT32_MAX && midAxis*afterAxis<=UINT32_MAX` | 命中结束 H1；谓词失败转 R-002 |
+| P0 | R-001 winner update | H0 fused init→H1 update 首分支 | `useWinner` | 源码实际谓词为 `mode==UPDATE && ((ownerCount<=8192 && dataNum<=4*updatesNum) \|\| (ownerCount<=4 && dataNum<=1100000)) && updatesNum<=INT32_MAX && afterAxis<=UINT32_MAX && midAxis*afterAxis<=UINT32_MAX`；安全落地还要求计算无溢出且当前 Device tile 下 `dataTag!=INT64` | 命中结束 H1；任一选择/安全 guard 失败转 R-002 |
 | P1 | R-005 FP16 add | H0 skip copy→H4 add 第 1 dtype 分支 | cast + 三种 S1 | `mode==ADD && dataTag==FLOAT16`；内部先按 `dataNum%8192==0` 选 Vector/Scalar cast，再按 `afterAxis==1 && IsPow2(midAxis)`、否则 `preAxis==1`、否则 owned 选 S1 | 命中结束 H4；内部变体互为 fallback，不落到其他 Route |
 | P2 | R-003 atomic int32 amax | H0 MTE copy→H2 amax 首分支 | `AtomicMaxInt32Power2Tail` | `mode==AMAX && dataTag==INT32 && preAxis==1 && IsPow2(afterAxis)` | 命中结束 H2；未命中转 R-004 |
 | P3 | R-002 owned update | H0 MTE copy→H1 update fallback | `OwnedScatter<DATA_T,INDEX_T,UPDATE>` | `mode==UPDATE && !useWinner` | H1 最终 `else`；执行后结束，无后续 fallback |
@@ -169,7 +236,52 @@ general POD 的 `loopLength` 从 `ubRaw` 经 `min(max(ubRaw-131072,0),65536)-640
 | P8 | R-009 owned multiply | H0 MTE copy→H5 multiply | `OwnedScatter<...,MULTIPLY>` | `mode==MULTIPLY && dataTag!=FLOAT32` | H5 的 dtype 通用解读；无 Device fallback |
 | P9 | R-012 独立 copy | H0 共享前置 / D3 | `scatter_copy_mte_entry` / `scatter_copy_simt_entry` | 主入口按 fused/simt guard 选 copy，或 caller 独立调用相应 launcher；dtype tag 必须是五种支持值 | H0 copy 后继续 H1～H5；D3 未知 tag 不 launch |
 | P10 | R-010 通用直调 add | D1 | key `1000100` | 独立调用 `launch_scatter` 且 `tiling.key==1000100`；该 key 对应非大域、FP32 data、int32 index、ADD | key 不等则 no-launch；无 fallback |
-| P11 | R-011 融合 FP32 multiply | D2 | `SerialMulFloatFused<INDEX_T>` | 独立调用 `launch_scatter_mul_float_fused` | tag/POD 无实例时 no-launch；无 fallback |
+| P11 | R-011 融合 FP32 multiply | D2 | `SerialMulFloatFused<INDEX_T>` | 独立调用 `launch_scatter_mul_float_fused`，caller 保证 FP32 data 与 I32/I64 index | 非 I32 index tag 会当 I64；无 wrapper 内 fallback |
+
+general key 的 Host producer 公式必须和 R-010 的唯一 launcher 分支一起阅读：
+
+```text
+suffix = elementBytes
+if mode in {ADD, MULTIPLY}: suffix = (dataTag == FLOAT32 ? 0 : 1)
+key = 1000000 + 100*mode + (indexTag == INT64 ? 1000 : 0) + suffix
+if updatesNum > INT32_MAX or dataNum > INT32_MAX: key += 10000
+
+launch_scatter: key == 1000100 -> GeneralAddF32<int32_t>; otherwise no launch
+```
+
+因此 `1000100` 精确表示 ADD + FP32 + I32 index + 两个 extent 均不超过 `INT32_MAX`。`dataDtype/indexDtype/reduction` 虽仍出现在 launcher ABI 中，body 分发不再校验它们；所以 direct caller 必须保证 key 与实际指针类型相符。
+
+general stride producer 只合并 `dim` 之后 data/index shape 相同的连续尾部：
+
+```text
+j = 从 rank-1 向前找到的最后一个 dataShape[j] != indexShape[j] 的轴；全同则 j=-1
+combAxis = max(j+1, dim+1)
+if combAxis <= rank-1:
+    tail = product(dataShape[combAxis:rank])
+    dataCur  = dataShape[0:combAxis]  + [tail]
+    indexCur = indexShape[0:combAxis] + [tail]
+    reducedRank = combAxis + 1
+else:
+    dataCur/indexCur = 原 shape
+    reducedRank = rank
+
+stride[i] = product(curShape[i+1:reducedRank]); stride[reducedRank-1] = 1
+```
+
+合并不穿过 `dim`，所以 `dim` 字段不需重映射。但 `reducedRank==8` 时 POD 的 7 项 stride 无法容纳末轴；这一 Host producer 安全边界对公共入口也生效，不因 R-010 未被公共 selector launch 而消失。
+
+#### Entry/body/template delta
+
+| Route | entry 与模板实例 | 相对共享 body 的决定性 delta |
+|---|---|---|
+| R-001 | `copy_winner_init<DATA_T>` + `winner_mark<INDEX_T>` + `apply<DATA_T>`；5 data × 2 index | data 类型只影响 clone/apply，index 类型只影响 mark；冲突协议固定为 int32 winner `AtomicMax(linear)`。 |
+| R-005 | S0/S2 固定 half↔float；S1 仅按 `INDEX_T` 实例 I32/I64 | `dataNum%8192` 选 Vector/SIMT cast；`after==1 && pow2(mid)` / `pre==1` / 其他选三个不同 S1 body，但 accumulator 均为 FP32。 |
+| R-003 | `AtomicMaxInt32Power2Tail<INDEX_T>`；data/update/output 固定 int32 | 从通用地址解码改为 `afterMask` + `afterShift`，VF 线程数由 512 增为 1024。 |
+| R-002/R-004/R-007/R-008/R-009 | `OwnedScatter<DATA_T,INDEX_T,MODE>`；MODE 在 wrapper 降为编译期常量 | owner/`mid` 骨架共享；delta 只是 UPDATE/ADD/MULTIPLY/AMAX/AMIN 的 read-modify-write、浮点 cast/NaN 规则，以及 R-008 前置 SIMT clone。 |
+| R-006 | `FastAddF32<INDEX_T>`；data 固定 float | 以 update 元素为并行单元并 `AtomicAdd`，不使用 owner 串行 `mid`。 |
+| R-012 | `copy_mte_entry<DATA_T>` 或 `copy_simt_entry<DATA_T>`；5 data 类型 | MTE 变体有 32 KiB TBuf、32B 分块与 pad tail；SIMT 变体无显式 UB，以 count guard 处理尾部。 |
+| R-010 | `GeneralAddF32<int32_t>` 单一实例 | 使用 general rank/stride POD 逐轴解码，而非 serial pre/mid/after POD；output 必须由 caller 预初始化。 |
+| R-011 | `SerialMulFloatFused<INDEX_T>`；float × I32/I64 | 每个 owner 在同一 VF 线程内先遍历 `dataMidAxis` clone 整个 owner slice，再遍历 `midAxis` 完成乘法，不依赖前置 copy kernel。 |
 
 ```text
 UPDATE -> winner predicate ? R-001 : R-002
@@ -185,7 +297,7 @@ direct fused/copy launchers -> R-011/R-012
 
 | 重要性 | Route | Host 顺序 | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|---|---|
-| P0 | R-001 winner update | H0→H1-first | Host winner predicate | 五种 data、两种 index；满足 compact/dense 或 small-sparse 条件 | 3 Kernel | `scatter_copy_winner_init_entry<DATA_T>` → `MarkWinners<INDEX_T>` → `ApplyWinners<DATA_T>` | 32 KiB alias TBuf；winner GM；同流；mark 用 `AtomicMax` | entry 按 count 防空；不满足转 R-002 |
+| P0 | R-001 winner update | H0→H1-first | Host winner predicate | 五种 data、两种 index 都有模板实例；源码 selector 满足 compact/dense 或 small-sparse 即选 | 3 Kernel | `scatter_copy_winner_init_entry<DATA_T>` → `MarkWinners<INDEX_T>` → `ApplyWinners<DATA_T>` | 32 KiB alias TBuf；winner GM；同流；mark 用 `AtomicMax` | count guard 处理空 tile；INT64 实例存在但容量不安全，应由 Host 退 R-002 |
 | P1 | R-005 FP16 add | H0→H4-first | cast/S1 selector | data FP16 | 3 Kernel，2×3 个图变体 | Vector 或 SIMT cast；S1 为 tail1 atomic/pre1 atomic/owned；Vector 或 SIMT final | accumulator FP32 GM；vector 节点 48 KiB；atomic/owned | `dataNum%8192` 决定 cast tail 策略；变体内 fallback |
 | P2 | R-003 atomic int32 amax | H0→H2-first | pow2 tail | data int32，`pre=1`，after 非零 2 幂 | MTE copy → atomic max | `AtomicMaxInt32Power2Tail<INDEX_T>` | 32 KiB copy；1024-thread `AtomicMax` | 不命中转 R-004 |
 | P3 | R-002 owned update | H0→H1-fallback | mode selector | UPDATE 且非 winner | MTE copy → owned | `OwnedScatter<DATA_T,INDEX_T,UPDATE>` | copy 32 KiB；owner 无 atomic | MTE pad tail；owner count 可为 0 |
@@ -198,7 +310,7 @@ direct fused/copy launchers -> R-011/R-012
 | P10 | R-010 通用直调 add | D1 | `1000100` | caller 提供匹配 POD 与已初始化 output | 1 Kernel | `GeneralAddF32<int32_t>` | 512-thread atomic；workspace 忽略 | 其他 key 无 launch；rank-8 stride 边界见限制 |
 | P11 | R-011 融合 FP32 multiply | D2 | direct launcher | FP32 data、I32/I64 index | 1 Kernel | `SerialMulFloatFused<INDEX_T>` | 每 owner 先复制完整 data-mid，再顺序乘；无 UB | owner count 防空；无 fallback |
 
-### 隐藏性能 Guard
+### 性能与安全 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -218,7 +330,7 @@ direct fused/copy launchers -> R-011/R-012
 
 | 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
 |---|---|---|---|---|---|---|---|
-| `ScatterElementsV2AscTilingData` | `dataStride` | `uint64_t[7]` | offset 0，56 B | 元素 stride | `calc_scatter_tiling` reduced contiguous strides | `GeneralAddF32` | rank 8 未合并时缺第 8 项 |
+| `ScatterElementsV2AscTilingData` | `dataStride` | `uint64_t[7]` | offset 0，56 B | 元素 stride | `calc_scatter_tiling` reduced contiguous strides | `GeneralAddF32` | reduced rank=8 时 producer 与 consumer 都需第 8 项，超出 POD 容量 |
 | 同上 | `indicesStride` | `uint64_t[7]` | offset 56，56 B | 元素 stride | 同上 | `GeneralAddF32` 解码 | 同上 |
 | 同上 | `updatesStride` | `uint64_t[7]` | offset 112，56 B | 元素 stride | 同上 | 当前 body 不读取 | inactive |
 | 同上 | `loopLength` | `int64_t` | offset 168 | 元素 | UB 公式 | 当前 body 不读取 | inactive |
@@ -609,7 +721,7 @@ workspace_total = 0 B
 | Host | `op_plugin/scatter_plugin.cpp` | `scatter_npu` | FP32 multiply | R-008 SIMT copy + owned |
 | Direct | `op_kernel/scatter_kernel.cpp` | copy launchers | caller-selected dtype/extent | R-012 MTE 或 SIMT copy |
 | Direct | 同上 | `launch_scatter` | key==1000100 | R-010 general add，否则 no-launch |
-| Direct | 同上 | fused launcher | caller-selected FP32/index tag | R-011；无实例时 no-launch |
+| Direct | 同上 | fused launcher | caller-selected FP32/index tag | R-011；非 I32 index tag 会按 I64 实例解读，所以 tag 校验是 caller 契约 |
 
 #### Device 数据流
 
@@ -798,7 +910,7 @@ for (uint64_t mid = 0; mid < td.midAxis; ++mid) {
 | 内存总占用与复用 | winner `4D` GM | accumulator `4D` GM + 48 KiB | output + copyBuf | output + copyBuf | 无额外GM或caller管理 | winner/accumulator按路线条件分配 |
 | 搬运/Vector/SIMT API | DataCopyPad/Duplicate/AtomicMax | Cast/DataCopyPad/AtomicAdd | AtomicMax/Add | DataCopy/Pad + scalar SIMT | SIMT/DataCopyPad/AtomicAdd或owner融合 | tail和冲突决定 primitive |
 | 同步、精度与 tail | pipe + same stream；last winner | pipe/atomic/owner；FP32累加；scalar tail | atomic；copy pad | pipe + same stream；source-order | same stream、same kernel或atomic | 只依赖源码明确协议 |
-| fallback/失败边界 | 不满足转 owned | 非对齐转 scalar变体 | guard失败转 owned | 非法 tag无实例 | key/tag不符 no-launch；主 FP32 multiply 无 Device fallback | 不存在隐式通用 fallback |
+| fallback/失败边界 | 不满足转 owned | 非对齐转 scalar变体 | guard失败转 owned | 非法 data/mode 可 no-launch，非 I32 index tag 却会当 I64 | general key 不符 no-launch；fused 的非 I32 index tag 当 I64；主 FP32 multiply 无 Device fallback | 不存在隐式通用 fallback |
 
 ## 平台差异
 
@@ -815,10 +927,10 @@ for (uint64_t mid = 0; mid < td.midAxis; ++mid) {
 - 索引值域未校验；负 `int32/int64` 被转换为 `uint64`，越界值会形成越界 GM 地址。
 - `Product/Numel/ProductRange` 的 `int64` 乘法没有溢出检查，随后还会写入 `uint64` POD。
 - R-001 的 `sharedBuf` 固定 32768 B，但 `tileElems=8192`；`DATA_T=int64` 的满 tile需要 65536 B。这是源码可见容量缺口，int64 winner 路线不能按当前参数安全复用。
-- general POD 只有 7 项 stride；R-010 在 reduced rank 保持 8 时，`GeneralAddF32` 的 axis 7 读取超出数组边界。主 `scatter_npu` 不调用 R-010，但独立直调 caller必须规避该组合。
+- general POD 只有 7 项 stride。reduced rank 保持 8 时，`calc_scatter_tiling` 就会执行 `dataStride[7]=indicesStride[7]=updatesStride[7]=1`，随后 R-010 body 也会读 axis 7。虽然公共 `scatter_npu` 不调用 R-010，它在所有路线选择前都会生成 general tiling，所以这是公共 Host producer 边界，不只是独立 direct body 边界。安全实现应把数组扩到 8 并同步 ABI，或在生成前保证尾维压缩后 `reducedRank<=7`；不能仅依赖“不 launch R-010”。
 - Host 未按固定 32 KiB/48 KiB `InitBuffer` 做 UB capability guard；950 资源必须满足实际 entry 分配。
 - 固定 16 MiB workspace 每次分配但所有已闭合 Device body均不消费；`launch_scatter` 也忽略 workspace 参数。
-- R-010 只有 key `1000100` 有实例，且不负责 `data→output` 初始化；其他 key静默 no-launch。R-011 与 R-012 由 caller负责 dtype/POD/extent一致性。
+- R-010 只有 key `1000100` 有实例，且不负责 `data→output` 初始化；其他 key静默 no-launch。R-011/R-012 由 caller 负责 dtype/POD/extent 一致性；尤其 R-011 的非 I32 index tag 会被当作 I64，而非 no-launch。
 - wrapper 不检查每个异步 launch的即时返回，`acl_call` 固定返回 0；设备错误依赖运行时后续边界暴露。
 - 本地固定仓没有给定官方 Commit 对象，因而未从该对象摘录 `index/scatter_elements_v2` 技术事实；只保留带 Commit 的相关映射指针。此缺口不影响以交付件闭合的 Direct Invoke Route。
 - 本次知识提取未执行编译、真机、数值或性能测试。
@@ -848,7 +960,7 @@ for (uint64_t mid = 0; mid < td.midAxis; ++mid) {
 | workspace/内存 | winner与accumulator按路线独立分配；copy/cast固定 TBuf | extent、alias barrier、32/48 KiB容量 | Host temp分配与 `InitBuffer` |
 | 同步 | MTE/Vector用 PipeBarrier；跨kernel同stream；冲突用atomic或owner | 不得提前覆盖alias TBuf或打乱同流节点 | copy/init/cast/atomic helpers |
 | 精度与尾块 | FP16 add在 FP32 累加后一次 RINT；owned浮点按源码每步cast；MTE pad | cast顺序、NaN规则、atomic顺序、tail guard | `OwnedScatter`、R-005 entries |
-| 失败边界 | unknown key/tag no-launch；index/overflow/UB由caller保证 | 不能把静默 no-launch说成通用fallback | launch wrappers与Host校验 |
+| 失败边界 | key/tag 失配可能 no-launch、部分 launch 或当作 I64；index/overflow/UB 由 Host/caller 保证 | 不能把静默 no-launch、错类型解读说成通用 fallback | launch wrappers与 Host 校验 |
 
 <!-- cannbot:related:start -->
 ## 相关

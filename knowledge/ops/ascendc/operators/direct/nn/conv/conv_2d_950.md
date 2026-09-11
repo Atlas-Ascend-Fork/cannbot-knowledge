@@ -38,7 +38,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:32:01Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -55,8 +55,8 @@ cann_versions: ["9.1.0"]
 | 执行类型 | `AIC_CUBE`；R-003 为单 Kernel `MIX_CV`（AIC + 两个 AIV sub-block）；R-004/R-005 同图含 `SIMT` 节点；无通信节点 |
 | Kernel 路线 | P0/R-001 full-load small；P1/R-002 常规 Conv2dBase Cube；P2/R-005 Cube→FP32 sparse repair；P3/R-003 weight-UB MIX_CV；P4/R-004 FRACTAL_Z pack→Cube |
 | 核心资源 | GM；可选持久化 packed-filter GM；L1、L0A/L0B/L0C；R-003 的 UB/寄存器；SIMT 局部寄存器；Direct user workspace 为 0 |
-| 来源闭包 | `direct_implementation_closed`：Direct Host/POD/launcher、冻结 tiling、全部可达 Cube/AIV/SIMT body、同 stream 交接和构建分 TU 已闭合；官方源码与派生交付事实在正文中明确区分 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 来源闭包 | `direct_implementation_closed`：Direct Host/POD/launcher、20 行 NCHW tiling、1 行 BF16 FZ tiling、全部可达 Cube/AIV/SIMT body、同 stream 交接和三 TU 构建已闭合；官方源码与派生交付事实在正文中明确区分 |
+| 复核边界 | 本卡完成固定源码与 canonical 交付件的静态闭包；frontmatter 不写入复核事件，本次知识改写也未执行构建、设备运行、数值或性能测试。 |
 
 ## 接口与语义
 
@@ -115,22 +115,57 @@ R-004: workspace_total = 0 B
 ```text
 cann_bench::conv_2d
   -> H0 CheckAndInfer / allocate y / exact lookup / derive flags
+  -> H0.5 if dtype==FP32 || useFzWeight:
+          dlopen sibling _conv2d_refine.abi3.so once
+          resolve refine + weightFz symbols as one atomic runtime object
   -> H1 if useFzWeight && cache miss:
           R-004 SIMT pack -> packed_filter_GM
   -> H2 dtype dispatch（真实短路顺序）:
           if useSmallKernel: R-001 AIC-only Conv2dSmallKernel -> y
-          else if useFzWeight: R-004 AIC-only FRACTAL_Z Conv2dBase -> y
-          else if route==WEIGHT_UB: R-003 one MIX_CV launch -> y
-               AIV: filter GM -> UB ND->NZ -> shared L1
-               AIC: x/filter L1 -> L0A/L0B -> Mmad -> L0C -> Fixpipe
-          else: R-002 conventional MIX-typed entry(AIV dormant) -> AIC Conv2dBase -> y
+          else: call dtype launcher
+                if useFzWeight: R-004 AIC-only FRACTAL_Z Conv2dBase -> y
+                else if route==WEIGHT_UB: R-003 one MIX_CV launch -> y
+                     AIV: filter GM -> UB ND->NZ -> shared L1
+                     AIC: x/filter L1 -> L0A/L0B -> Mmad -> L0C -> Fixpipe
+                else: R-002 conventional MIX-typed entry(AIV dormant) -> AIC Conv2dBase -> y
   -> H3 if dtype==FP32:
           call R-005 refine launcher
           if reduction/alignment guard fails: return and preserve H2 output
           else: SIMT sparse repair(in-place y)
 ```
 
-R-004/R-005 节点使用同一 stream，顺序即 producer 对后继的可见性边；无 event 跨 stream。R-003 的同 launch AIC/AIV 由 `CrossCoreSetFlag/WaitFlag` 保护 L1 ping-pong。Host 的 `TORCH_CHECK`、动态库装载/符号解析失败会在提交前终止；launcher 返回 `void`、callback 固定返回 0，源码没有逐 launch 同步错误检查，异步 Device 错误归 runtime/stream 边界。router 的 `default:return` 不报错，但冻结表只产生已实例化 route。
+R-004/R-005 节点使用同一 stream，顺序即 producer 对后继的可见性边；无 event 跨 stream。R-003 的同 launch AIC/AIV 由 `CrossCoreSetFlag/WaitFlag` 保护 L1 ping-pong。所有 FP32 调用都会装载 sibling DSO，即使 R-005 随后因 guard 不满足而不发射 SIMT；BF16 仅在 `useFzWeight!=0` 时需要该 DSO。Host 的 `TORCH_CHECK`、动态库装载/符号解析失败会在提交前终止；launcher 返回 `void`、callback 固定返回 0，源码没有逐 launch 同步错误检查，异步 Device 错误归 runtime/stream 边界。router 的 `default:return` 不报错，但内置 selector 只产生已接线叶实例。
+
+### 调用层、裸 C ABI 与所有权边界
+
+| 层级 | 负责生产/保证 | 不负责 | 失败或生命周期边界 |
+|---|---|---|---|
+| `conv_2d_meta` | 调用 `CheckAndInfer`，按输入 options 创建同 dtype/device 的逻辑输出 | 不做 tiling、stream、cache 或 Device launch | 只表达 shape/dtype 元信息 |
+| `conv_2d_npu` | device guard、三 Tensor 同设备、元数据校验、输出分配、当前 stream、完整 `Conv2dLaunchConfig`、cache owner | 不读取 Tensor 数值，不做 layout 转换，不提供通用 tiler | `TORCH_CHECK` 阻止 callback；`y` 与 cache Tensor 由框架对象持有 |
+| `calc_conv_2d_tiling` | 结构子集检查、20 行 exact lookup、可选 batch 重分解、small/HF32/FZ 派生 | 不校验 GM 指针、stream、Tensor owner，也不接受表外合法卷积 | `-1` 为结构失败，`-2` 为 key miss；只在命中后写完整 config |
+| dtype launcher | 读取 `route/useFzWeight/useSmallKernel`，按 `blockDim` 发射已编译 entry | 不复查 dtype、POD、指针、alias、grid、route/POD 一致性 | 未知 route 静默 return；配置对象只需活到 launcher 读取完成 |
+| sibling DSO | 同时导出 `launch_conv_2d_weight_fz` 与 `launch_conv_2d_float32_refine` | 不持有 Tensor，不管理 cache | `static` runtime 持有 `dlopen` handle 至进程结束；`RTLD_LOCAL` |
+| Device entry | by-value 接收 376 B tiling；在给定 stream 上消费 GM | 不拥有 x/filter/bias/y；无同步错误返回 | 同 stream 顺序保护跨 kernel GM 边；调用方保护 buffer 生命周期与非预期 alias |
+
+裸 C ABI 可直接调用 `calc_*`/`launch_*`，但 launcher 并不是校验层。尤其不能手工把 `useFzWeight=1` 配给 FP16：pack launcher虽会走16-bit位拷贝，FP16 dtype launcher却没有 FRACTAL_Z router，随后仍按 NCHW 解释权重。也不能把已编译但 selector 不产生的 entry 当成内置可达域；只有同时复现完整官方 POD、模板 route、buffer 深度和格式契约时，才属于条件直调。
+
+cache 的状态机是单线程单槽，不是按 filter 建表：
+
+```text
+versionEnabled = filter.version_counter.enabled()
+version = versionEnabled ? current_version : 0
+hit = same TensorImpl identity
+   && packed is defined
+   && same raw stream handle
+   && same versionEnabled
+   && same version
+if miss:
+  allocate packed Tensor; overwrite the one-slot cache metadata
+  inside callback: submit pack on stream
+inside same callback: submit Cube consumer on the same stream
+```
+
+`cache.source` 与 `cache.packed` 都是强引用，故 source/packed GM 不会在异步消费前因局部变量退出而释放；另一个 filter 会替换整槽，跨线程不共享。cache 元数据在 callback 之前更新，而 pack/Cube launch 均无同步返回码，源码依赖 `RunOpApi` 正常执行 callback 并依赖同 stream 的异步顺序；它没有“pack 已成功提交”的独立完成位，也没有跨 stream event。
 
 ## Route 与参数设计
 
@@ -141,14 +176,44 @@ R-004/R-005 节点使用同一 stream，顺序即 producer 对后继的可见性
 Direct 仅对 FP16 full-load row做可选 batch 重分解：`hoParts=32/batch`，`Mcore=align16(ceil(Ho*Wo/hoParts))`，`Cocore=align16(Co)`，`Cialign=align16(Ci)`；用
 
 ```text
-inputRows=(ceil((Mcore+Wo-2)/Wo)+1-1)*strideH+dilationH*(Kh-1)+1
+outputRows=ceil((Mcore+Wo-1)/Wo)
+inputRows=(outputRows-1)*strideH+dilationH*(Kh-1)+1
 fmapBytes=inputRows*Wi*Cialign*2
 weightBytes=Cialign*Kh*Kw*Cocore*2
 biasBytes=Cocore*4
 l0cBytes=Mcore*Cocore*4
 ```
 
-检查 `fmap+weight+bias<=512 KiB` 且 `l0c<=256 KiB`，通过后令每 core 单 batch，`blockDim=batch*(32/batch)`。小卷积还要求 full-load route、`singleCoreBatch=1`、`nL0=nBL1`、各 pad 不大于对应 kernel。
+这两项上界只准入该FP16 multi-batch重分解；通过后令每 core 单 batch，`blockDim=batch*(32/batch)`。普通小卷积不执行这项字节检查，只要求full-load route、`singleCoreBatch=1`、`nL0=nBL1`、各pad不大于对应kernel。
+
+### 冻结 key 全域与最终叶实例
+
+内置 selector 的支持域恰好是 `conv_2d_tiling_table.inc` 的 20 个 key；宏首参只是源码行 token，初始化时被丢弃，不进入 `Conv2dCaseKey`、POD 或 Device 参数。下表穷尽每个 key 在全部二次派生之后的最终叶实例，因而比只看原始 `route` 更准确：full-load 行会先转 small，BF16 FZ 行会整体替换 POD，FP32 repair 是 Cube 后置节点。
+
+| 行 token | dtype | `(N,C,H,W,K,s,p,d)` | 原始 `blockDim/route` | H0 二次派生 | 最终节点图 |
+|---:|---|---|---|---|---|
+| 01 | FP16 | `(2,64,32,32,3,1,1,1)` | `32/r0` | small | R-001 small AIC |
+| 02 | FP32 | `(4,128,64,64,3,1,1,1)` | `32/r1` | aligned moderate repair | R-002 r1 Cube → R-005 warp32 SIMT |
+| 03 | BF16 | `(2,256,128,128,5,1,2,1)` | `32/r2` | weight-UB | R-003 MIX_CV |
+| 04 | FP16 | `(8,512,64,64,3,2,1,1)` | `32/r2` | weight-UB | R-003 MIX_CV |
+| 05 | FP32 | `(4,1024,32,32,3,1,2,2)` | `32/r5` | aligned deep repair | R-002 r5 Cube → R-005 warp32 SIMT |
+| 06 | BF16 | `(2,2048,16,16,1,1,0,1)` | `32/r3` | conventional | R-002 r3 Cube |
+| 07 | FP16 | `(3,63,31,31,3,1,1,1)` | `24/r0` | small | R-001 small AIC |
+| 08 | FP32 | `(2,127,61,61,3,1,1,1)` | `32/r1` | HF32 channel tail | R-002 r1 Cube |
+| 09 | BF16 | `(3,47,23,23,5,2,2,1)` | `27/r0` | small | R-001 small AIC |
+| 10 | FP16 | `(5,97,43,43,3,1,1,2)` | `28/r0` | batch refactor→`30` blocks；small | R-001 small AIC |
+| 11 | FP16 | `(2,65,33,33,3,1,1,1)` | `30/r0` | small | R-001 small AIC |
+| 12 | FP32 | `(3,7,13,13,3,1,1,1)` | `24/r4` | tiny exact small | R-001 small AIC |
+| 13 | FP32 | `(2,63,31,31,3,1,1,1)` | `32/r0` | HF32 small | R-001 small AIC |
+| 14 | FP16 | `(2,11,13,17,3,1,1,1)` | `28/r4` | small | R-001 small AIC |
+| 15 | BF16 | `(4,63,31,31,3,1,1,1)` | `32/r0` | small | R-001 small AIC |
+| 16 | FP16 | `(2,64,31,31,3,1,1,1)` | `32/r0` | small | R-001 small AIC |
+| 17 | FP32 | `(3,127,63,63,5,2,2,1)` | `32/r1` | HF32 channel tail | R-002 r1 Cube |
+| 18 | BF16 | `(2,255,127,127,3,1,1,3)` | `32/r1` | 命中 BF16 FZ 收益式；整行替换为 `32/r5` | R-004 pack→FZ r5 Cube |
+| 19 | FP16 | `(4,31,31,31,3,1,1,1)` | `32/r0` | small | R-001 small AIC |
+| 20 | FP32 | `(2,127,127,127,3,1,1,2)` | `32/r1` | HF32 + FP32 FZ；repair因`C%8!=0`早退 | R-004 pack→FZ r1 Cube |
+
+从内置 selector 的可达集合看，R-001 覆盖 11 行，R-002 conventional 覆盖 5 行，R-003 覆盖 2 行，R-004 覆盖 2 行，R-005 作为后置节点覆盖 2 行；R-002 与 R-005 的覆盖会重叠，因为后者不是 Cube 的替代路线。20 行中没有原始 key miss 后的通用 fallback。
 
 ### Route 选择
 
@@ -156,11 +221,11 @@ l0cBytes=Mcore*Cocore*4
 
 | 重要性 | Route | 路线特征 | 适用域与实现前提 | Host 顺序、短路与 fallback |
 |---:|---|---|---|---|
-| P0 | R-001 full-load small | `Conv2dSmallKernel<T,T,T,T,half,false,false,NCHW,false>`，AIC-only全载 | 精确 key 命中；route∈{AB_FULL_DB,AB_FULL_SINGLE}；batch 重分解后满足 small guard | H0产生`useSmallKernel`；H1仍先处理可能的FZ pack；H2在各dtype分支中先检查small，命中即不走常规route switch；FP32仍进入H3 |
-| P1 | R-002 常规 Cube | route 0/1/3/4/5 的 NCHW `Conv2dBase` specialization | 精确 key 命中；H2未命中small/FZ/weight-UB专用分支 | H2最终fallback；unknown route在launcher内静默return；FP32随后仍调用H3 |
+| P0 | R-001 full-load small | `Conv2dSmallKernel<T,T,T,T,half,false,false,NCHW,false>`，AIC-only全载 | 精确 key 命中；route∈{AB_FULL_DB,AB_FULL_SINGLE}；普通 small 只要求`singleCoreBatch=1`、`nL0=nBL1`及pad guard；仅FP16 multi-batch重分解另需L1/L0C上界准入；当前 key 与 FZ 互斥 | H0产生`useSmallKernel`；H2在各dtype分支中先检查small，命中即不走常规route switch；FP32仍进入H3；非法手工配置若同时置FZ，H1会先做无效pack |
+| P1 | R-002 常规 Cube | route 0/1/3/4/5 的 NCHW `Conv2dBase` specialization；内置 selector 实际到达 r1/r3/r5 | 精确 key 命中；H2未命中small/FZ/weight-UB专用分支；r0/r4只保留条件直调叶 | H2最终fallback；unknown route在launcher内静默return；FP32随后仍调用H3 |
 | P2 | R-005 Cube→FP32 repair | H2 Cube输出后的SIMT条件重算 | FP32；`reduction=C*Kh*Kw>=1024 && C%8==0`；3×3命中特化，否则scalar SIMT | H3仅在FP32分支调用；guard失败立即return并保留H2输出，不回跳其它Cube Route |
 | P3 | R-003 weight-UB MIX_CV | route=WEIGHT_UB，`WeightUbTrans=1`，单launch AIC/AIV交接BL1 | 非small、非FZ；FP16/BF16冻结row选择route 2 | H2在small/FZ短路之后由route switch命中；不命中则落到R-002的其它route |
-| P4 | R-004 FRACTAL_Z pack→Cube | 可选SIMT pack + FZ `Conv2dBase`，cache hit跳过pack | FP32收益式；或BF16非small、route=A_OTHER_B_FULL、收益式成立且存在完整FZ row | H0产生`useFzWeight`；H1先pack/cache；H2在small检查之后选择FZ Cube；BF16缺FZ row则保留原config并走R-002/R-003 |
+| P4 | R-004 FRACTAL_Z pack→Cube | 可选SIMT pack + FZ `Conv2dBase`，cache hit跳过pack | FP32收益式；或BF16非small、route=A_OTHER_B_FULL、收益式成立且存在完整FZ row | H0产生`useFzWeight`；H1先pack/cache；H2在small检查之后选择FZ Cube；BF16缺FZ row则保留原r1 config并走R-002 |
 
 ```text
 H0: if direct structural checks fail: -1
@@ -179,17 +244,35 @@ H3: if dtype==FP32: call R-005 launcher
       if its gate fails: return and preserve the H2 output
 ```
 
+### 已编译 entry 的可达性闭包
+
+`active` 表示 `conv_2d_npu→calc_conv_2d_tiling` 能产生；`conditional-direct` 表示符号和 router 已编译，但内置 selector 不产生该叶，只有外部调用者完整复现 POD/format 契约时才可直调；`dormant-helper` 表示没有任何 launcher 引用，不能算 Route。
+
+| dtype/entry 族 | 已编译 route | 内置 active | conditional-direct | 关键原因 |
+|---|---|---|---|---|
+| FP16 conventional NCHW | r0、r2、r4 | r2 | r0、r4 | 当前 r0/r4 的所有冻结行都被 `useSmallKernel` 截获 |
+| FP32 conventional NCHW | r0、r1、r4、r5 | r1、r5 | r0、r4 | 当前 r0/r4 行被 small 截获；r1/r5 可继续接 R-005 |
+| BF16 conventional NCHW | r0、r1、r2、r3 | r2、r3 | r0、r1 | r0 被 small 截获；唯一 r1 冻结行被完整 BF16 FZ row 替换 |
+| FP32 FRACTAL_Z | r0、r1、r4、r5 | r1 | r0、r4、r5 | 收益式在当前20个 key 中只令 token 20 到达 FZ r1 |
+| BF16 FRACTAL_Z | r1、r5 | r5 | r1 | selector 从原 r1 key 查到的完整 FZ row 自身是 r5 |
+| small NCHW | FP16、FP32、BF16 各一 entry | 三 dtype | 无 | full-load guard 后短路 dtype launcher；FP16 符号名含`fz`但模板 `WeightFmt=NCHW` |
+| repair SIMT | scalar、warp32 | FP32 token 02/05 的 warp32 | scalar仅在未来满足总 gate、但不满足3×3几何时可由同 launcher 到达 | 内置 key 中两条 repair 都满足 warp32 geometry |
+| pack SIMT | FP32位拷贝、16-bit位拷贝 | FP32/BF16 FZ | FP16 pack本身可发射但后继无FZ FP16 router，因此不构成合法路线 | `launch_conv_2d_weight_fz` 的 else 分支只是16-bit pack |
+| warp8 helper | `conv_2d_fp32_compensate_warp8_flat3x3` | 无 | 无，`dormant-helper` | 源码定义但 `launch_conv_2d_float32_refine` 从不引用 |
+
+这一区分还解释了为何“编译了 r0/r4”不能推导“内置 conventional r0/r4 可达”。selector 的 `useSmallKernel` 优先级、BF16 完整 FZ row 替换和 launcher 的 route switch 必须联合审计。
+
 ### 模板/实现执行矩阵
 
 | 重要性 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行族与 kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---:|---|---|---|---|---|---|---|
-| P0 | R-001 small | full-load + small guard | FP16/FP32/BF16；950；NCHW；精确 key | AIC-only 单节点 | `Conv2dSmallKernel<...,NCHW,false>::Init/Process` | GM→L1全载→双缓冲L0A/B→Mmad→L0C→Fixpipe→GM | block/M/N/K tail；inactive core return；guard miss转其它 Route |
-| P1 | R-002 conventional | route 0/1/3/4/5 | 非 small/FZ/weight-UB专用分支；可作为R-005前驱 | entry 标记 MIX 1:2，但当前模板的 AIV 分支无有效工作；AIC Cube | `Conv2dBase` + `Conv2DV1Param`：r0=`<0,0,0,3,...>`，r1=`<2,0,1,3,...>`，r3=`<1,1,3,3,...>`，r4=`<0,0,0,0,...>`，r5=`<2,2,3,3,...>` | L1/L0 depth由模板和 POD；pipe event；无跨族数据边 | dimension/K/tile tail；未知 route 静默 return |
+| P0 | R-001 small | full-load + 结构性 small predicate | FP16/FP32/BF16；950；NCHW；精确 key | AIC-only 单节点 | `Conv2dSmallKernel<...,NCHW,false>::Init/Process` | GM→L1全载→双缓冲L0A/B→Mmad→L0C→Fixpipe→GM | block/M/N/K tail；inactive core return；full-load r0/r4未满足small predicate只转R-002 |
+| P1 | R-002 conventional | route 0/1/3/4/5 | 内置 active 为 FP32 r1/r5、BF16 r3；r0/r4和BF16 r1为conditional-direct | entry 标记 MIX 1:2，但`WeightUbTrans=0`时AIV不生产BL1；AIC Cube | `Conv2dBase` + `Conv2DV1Param`：r0=`<0,0,0,3,...>`，r1=`<2,0,1,3,...>`，r3=`<1,1,3,3,...>`，r4=`<0,0,0,0,...>`，r5=`<2,2,3,3,...>` | L1/L0 depth由模板和 POD；pipe event；无跨族数据边 | dimension/K/tile tail；未知 route 静默 return |
 | P2 | R-005 repair | FP32 aligned deep reduction | `C%8=0 && C*Kh*Kw>=1024`；3×3特化或标量 fallback | H2 Cube→SIMT | Cube specialization + warp32 flat3x3或scalar compensate | `y` 是跨 kernel GM 边；同 stream；SIMT局部数组/warp shuffle | 只改 `abs(y)<gate`；其它元素保持 Cube；不满足早退 |
 | P3 | R-003 weight-UB | route 2 | FP16/BF16；`Conv2DV1Param<2,2,3,3,1,0,0,0,1,...>` | 单 Kernel MIX_CV：1 AIC + 2 AIV sub-block | `WeightUbProcessTools` + `WeightLoadGM2UBTools/WeightND2NZTools/WeightUB2L1Tools` + Cube iterate | AIV GM→UB ND→NZ→L1；AIC wait L1→L0B；flag IDs随 ping-pong/vecId轮换 | UB K/N tail pad；route miss转 R-002 |
-| P4 | R-004 FZ | amortization gate | FP32或BF16；cache hit/miss；FP32复用完整常规row，BF16替换为完整FZ row | miss: SIMT pack→AIC-only Cube；hit: AIC-only Cube | `conv_2d_weight_nchw_to_fz_*` + `RunOfficialConv2dFz<...>` | persistent packed GM；同 stream；Cube从 FZ GM直入 BL1 | C/Co pad置零；cache失效重包；BF16无FZ row则不替换 |
+| P4 | R-004 FZ | amortization gate | FP32或BF16；cache hit/miss；FP32复用完整常规row，BF16替换为完整FZ row | miss: SIMT pack→AIC-only Cube；hit: AIC-only Cube | `conv_2d_weight_nchw_to_fz_*` + `RunOfficialConv2dFz<...>` | persistent packed GM；同 stream；Cube从 FZ GM直入 BL1 | C/Co pad置零；cache失效重包；BF16无FZ row或收益式不成立则保留原r1并走R-002 |
 
-### 隐藏性能 Guard
+### 性能与安全 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -199,7 +282,7 @@ H3: if dtype==FP32: call R-005 launcher
 | small eligibility | full-load、单 batch、`nL0=nBL1`、pad≤kernel | 一次全载的 L1/L0/Fixpipe 路径 | R-001 | R-002 | 派生 `useSmallKernel` |
 | HF32 channel tail | FP32、`C%8!=0`、非 `small && reduction<=128 && output<=8192` | channel tail路线启用HF32并显式建立寄存器状态 | R-001/R-002/R-004 | exact FP32 | 派生 `useHf32`；官方 `InitHf32Mode` |
 | FP32 FZ收益 | `filterElems>=32768 && outputPos*8>=filterElems` | 一次 pack 需要由复用摊销 | R-004 | 常规 weight | 派生 `profitableFp32Fz` |
-| BF16 FZ收益 | 非 small、route1、`filterElems>=32768 && outputPos*64>=filterElems` | 跳过每 spatial core 的 ND→NZ | R-004 | R-002/R-003 | 派生 `profitableBf16Fz` |
+| BF16 FZ收益 | 非 small、route1、`filterElems>=32768 && outputPos*64>=filterElems` | 跳过每 spatial core 的 ND→NZ | R-004 | 保留原r1并走R-002 | 派生 `profitableBf16Fz` |
 | repair | `reduction>=1024 && C%8==0` | 只处理 aligned FP32 cancellation domain | R-005 | launcher return | 派生 `launch_conv_2d_float32_refine` |
 | warp 3×3 | 3×3、H/W≥2、stride1；moderate要求dilation1/pad1，deep要求对称 dilation=pad>0 | 固定有效窗口 2×2/2×3/3×2/3×3，常量除法 | R-005 | scalar SIMT fallback | 派生 `moderateWarp3x3/deepWarp3x3` |
 | L1/L0 depth | `pBufferFlag`、`l1PingPong/l0PingPong`、tile尺寸 | 双缓冲容量与覆盖协议 | R-002/R-003/R-004 | 使用单缓冲 specialization | 官方 `InitBufferWithDoubleBuf` |
@@ -307,17 +390,60 @@ Direct mirror 使用自然 C++ 布局：`Conv2DTilingData sizeof=376,alignof=8`�
 | 同上 | `blockDim` | u32 | off 376 | block | row；可重分解 | launch grid | >0 |
 | 同上 | `route` | i32 | off 380 | enum | row | dtype launcher switch | 0..5且已实例化 |
 | 同上 | `useFzWeight` | u32 | off 384 | bool |收益式/FZ row | pack和FZ router | 0/1 |
-| 同上 | `useSmallKernel` | u32 | off 388 | bool | small guard | small router | 0/1 |
+| 同上 | `useSmallKernel` | u32 | off 388 | bool | full-load结构性small predicate | small router | 0/1 |
+
+POD 不是可独立调参的字段集合，至少要保持下列关系成组成立：
+
+```text
+geometry:
+  orgHixWi == orgHi * orgWi
+  kernelHxkernelW == kernelH * kernelW
+  kernelHxkernelWxkernelD == kernelHxkernelW  # 2D, kd=1
+  hout/orgHo and wout/orgWo describe the same output domain
+
+grid ownership:
+  blockDim covers batchDim * groupDim * nDim * hoDim * woDim
+  singleCore{Batch,Co,Ho,Wo} clip that decomposition without overlap
+  M-mode interprets hoDim as mDim and singleCoreHo as flattened M extent
+
+Cube resource tuple:
+  (kAL1,kBL1,kL0,nBL1,nL0,aL1SpaceSize,pBufferFlag)
+  must match (FmapTiling,WeightTiling,L1PingPong,L0PingPong)
+
+weight-UB tuple:
+  route==2 && WeightUbTrans==1
+  bUbKStep>0 && bUbNStep>0
+  shared BL1 extent == 2 * nBL1 * kBL1 * sizeof(T)
+
+format tuple:
+  useFzWeight==0 -> filter pointer is NCHW ND
+  useFzWeight==1 -> filter pointer is packed FRACTAL_Z
+  BF16 FZ replaces the complete tiling row; never patch only route/format
+```
+
+`calc_conv_2d_tiling` 的事务顺序是“先找到完整 record→整体复制→受限地成组改写 batch/small/HF32/FZ”；key miss 时不产生半成品 config。复用时不能只搬 `M/N/K` 或 `blockDim`，否则最常见的失败不是 shape 立即报错，而是 L1/L0 buffer 深度、block 所有权或 filter layout 与模板发生静默错配。
 
 ### Route 源码闭包
 
 | 重要性 | Route | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router | Kernel body/直接依赖 | 构建接线 |
 |---:|---|---|---|---|---|---|---|
-| P0 | R-001 small | 派生 exact key + small guard | 派生 lookup/batch refactor；官方 row来源为 API tiler | `Conv2DTilingData` by value | 派生 `conv_2d_*_small` | 官方 `Conv2dSmallKernel::Init/Process`（secondary commit） | 派生 small TU；官方 950 binary config为能力来源 |
+| P0 | R-001 small | 派生 exact key + full-load结构性small predicate | 派生 lookup/batch refactor；官方 row来源为 API tiler | `Conv2DTilingData` by value | 派生 `conv_2d_*_small` | 官方 `Conv2dSmallKernel::Init/Process`（secondary commit） | 派生 small TU；官方 950 binary config为能力来源 |
 | P1 | R-002 conventional | 派生 dtype+route switch | 冻结官方 tiling row | 同上 | 派生 `conv_2d_{dtype}_r*` | 官方 `Conv2dBase::RunConv2dKernel`→`IterateAll` | 派生 Cube TU；官方 Conv2DV2 CMake/config |
 | P2 | R-005 repair | 派生 reduction/alignment/geometry gates | POD字段直传SIMT参数 | scalar launch args | 派生 Cube entry→SIMT entry | Cube为官方；repair为派生 SIMT | 派生 Cube TU + SIMT DSO |
 | P3 | R-003 weight-UB | route 2 | 冻结官方 weight-UB row | `bUbNStep/bUbKStep/nBL1/kBL1/pBufferFlag` | 派生 r2 entry，MIX 1:2 | 官方 weight-UB process/instruction + common iterate | 同上，启用CV共享buffer编译选项 |
 | P4 | R-004 FZ | 派生 amortization selector；BF16用完整FZ row | FP32沿用完整常规row；BF16使用official API tiler的完整FZ row | `useFzWeight` + tiling | 派生 SIMT pack entry→FZ Cube entry | pack为派生；Cube body为官方 `Conv2dBase` FZ specialization | 派生 refine DSO + Cube TU |
+
+### 构建、DSO 与符号拓扑
+
+同一份 `conv_2d_kernel.cpp` 由 CMake 生成三个只定义一个宏的 wrapper TU，不能合并为一种执行模式：
+
+| TU | 宏/编译模式 | 产物与符号 | 关键约束 |
+|---|---|---|---|
+| Cube TU | `CONV2D_CUBE_TU`，`-xasc --npu-arch=dav-3510` | `calc_conv_2d_tiling`、三 dtype 常规 launcher、NCHW/FZ Cube entry | 与 small 一起进入主 `_C.abi3.so`；启用 SSBUF/CV 与官方 const-propagation flags |
+| small TU | `CONV2D_SMALL_TU`，AIC-only entry | 三 dtype small launcher/body | 独立 TU 防止 small AIC-only feature set 继承 conventional MIX task type |
+| refine TU | `CONV2D_REFINE_TU --enable-simt` | pack、scalar/warp repair、`launch_conv_2d_weight_fz/refine` | 单独链接 `_conv2d_refine.abi3.so`；cce linker 边界不把标准 AscendC launch 与 SIMT 放入同一 DSO |
+
+Host plugin 位于主 DSO。它用 `dladdr(GetConv2dAuxRuntime)` 定位主 DSO 目录，再 `dlopen(RTLD_NOW|RTLD_LOCAL)` sibling；两个 `dlsym` 任一缺失都不构造 runtime。构建脚本把 sibling 复制到 Python 包目录，所以部署必须把主 DSO 与 sibling 成对保留，不能只复制 `_C.abi3.so`。
 
 ## Kernel 实现
 
@@ -380,7 +506,7 @@ for each M tile:
 | L1 weight | `bl1OffBytes` | `ceil(K/GK0)*ceil(actualCo/16)*16*GK0*sizeof(T)` | NZ B1 | Nd2Nz/Dn2Nz | Load2D | core/launch | 紧随fmap |
 | L1 bias | `align(afterBL1,32)` | `singleCoreCo*sizeof(FP32)` | bias T→BT | GM copy | Mmad source | core/launch | 32B对齐 |
 | L0A/L0B | `buf*(L0A/B_SIZE/2)` | 两份各半，总计 `L0A_SIZE+L0B_SIZE` | Cube layout | LoadData | Mmad | K loop | `kIter&1` |
-| L0C | offset 0 | 256 KiB物理上界；有效`align16(M)*align16(Co)*4` | FP32 | Mmad | Fixpipe | M tile | tile后覆盖 |
+| L0C | offset 0 | 256 KiB物理容量；有效`align16(M)*align16(Co)*4` | FP32 | Mmad | Fixpipe | M tile | tile后覆盖；容量值仅在可选FP16 multi-batch重分解时作为Host准入上界 |
 | UB/寄存器 | N/A | N/A | N/A | N/A | N/A | N/A | small不走AIV |
 | GM y | batch/N/M输出偏移 | output tensor | T NCHW | Fixpipe | caller | output Tensor | validM/actualCo |
 
@@ -398,8 +524,9 @@ flowchart LR
 
 ```text
 workspace_total = 0
-L1_total = fmapBytes + weightBytes + alignedBiasBytes <= 512 KiB（Direct small guard）
+L1_live = fmapBytes + weightBytes + alignedBiasBytes
 L0_total = L0A_SIZE + L0B_SIZE + 256 KiB L0C
+refactor_admission = (L1_live <= 512 KiB && valid_L0C <= 256 KiB)  # 仅FP16 multi-batch重分解
 UB_total = 0
 ```
 
@@ -536,8 +663,9 @@ UB_total = 0
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
 | Direct launcher | 派生 kernel | `launch_conv_2d_float32_refine` | `reduction>=1024 && C%8==0` | SIMT launch |
-| geometry | 同上 | `moderateWarp3x3/deepWarp3x3` | 3×3边界谓词 | warp32或scalar |
-| value gate | SIMT body | `fabsf(cube_value)<limit` | moderate `2^-12`；deep outer `0.046875` | recompute/keep |
+| depth split | 同上 | `kDeepRefineReduction` | moderate `1024<=reduction<=4096`；deep `reduction>4096` | 选择 outer gate 与几何谓词 |
+| geometry | 同上 | `moderateWarp3x3/deepWarp3x3` | 3×3边界谓词 | warp32或scalar；已定义的warp8无调用点 |
+| value gate | SIMT body | `fabsf(cube_value)<limit` | moderate `2^-12`；deep outer `0.046875`；deep inner `2^-8` | recompute/keep与FMA/Kahan分叉 |
 
 #### Device 数据流
 
@@ -561,8 +689,12 @@ for each selected output:
   deep and abs(cube)<1/256: 32 term-mod streams, FMA
   deep otherwise: 32 term-mod streams, per-stream Kahan
   lane0 sums streams in lane order, adds bias, overwrites y
-scalar fallback uses 8 streams for moderate; deep uses 32-FMA or scalar Kahan
+scalar fallback uses 8 streams for moderate;
+  deep inner uses 32 scalar-array FMA streams;
+  deep outer uses one sequential Kahan accumulator
 ```
+
+gate 读取的是已含 bias 的 Cube `y`，而重算从 x/filter 重新形成 reduction 后再加一次原 bias；它不是只根据无 bias partial sum 选候选。`fabsf(NaN)<limit` 与 `fabsf(Inf)<limit` 均为 false，因此这些 Cube 输出保持不写。warp 只让 lane0 写每个候选，scalar grid-stride 则令每个线性 index 只归属于一个线程，二者都不需要 atomic。
 
 #### 内存与数据搬运
 
@@ -818,8 +950,8 @@ Cube L1/L0 = 同R-002
 #### 触发与源码依据
 
 - 适用 Route：R-001
-- 触发条件：Direct small guard成立；Device `kL0MaxIter=ceil(K/kL0)`。
-- Golden 来源：[`conv2d_small_kernel.h:MmadAccumulateTile`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/conv/conv2d_v2/op_kernel/arch35/conv2d_small_kernel.h)
+- 触发条件：full-load、`singleCoreBatch=1`、`nL0=nBL1`及pad guard成立；若该单batch形态来自FP16 multi-batch重分解，重分解还须通过L1/L0C上界准入；Device `kL0MaxIter=ceil(K/kL0)`。
+- 固定来源：[`conv2d_small_kernel.h:MmadAccumulateTile`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/conv/conv2d_v2/op_kernel/arch35/conv2d_small_kernel.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -840,14 +972,14 @@ WaitFlag<HardEvent::MTE1_M>(ev);
 
 #### 机制与设计原因
 
-L0A/L0B 各拆成两个半区，`kIter&1`决定当前搬运/计算槽；Mmad完成后才释放同一 event。Direct Host同时用L1/L0C字节上界筛选 small，避免把不满足全载假设的 row 强行落入此 specialization。
+L0A/L0B 各拆成两个半区，`kIter&1`决定当前搬运/计算槽；Mmad完成后才释放同一 event。普通 full-load row 只用结构性 small predicate；Direct Host 的L1/L0C字节上界只准入可选FP16 multi-batch重分解，不是所有 small row 的附加 selector。
 
 #### 迁移边界
 
-- 适用：可把单 core fmap、weight、bias装入L1，L0C tile也在上界内的 NCHW卷积。
+- 适用：冻结full-load row中`singleCoreBatch=1`、`nL0=nBL1`且pad guard成立的NCHW卷积；其POD仍须与L1/L0C物理容量一致，但普通small选择不重新执行重分解的字节上界检查。
 - 前提：950 AIC-only；POD的M/N/K tile与block映射一致；event 0/1协议保留。
-- 失效：full-load/small guard失败时改用R-002/R-003。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 失效：full-load r0/r4 的small predicate失败时只改用R-002。
+- 复核边界：本次知识改写只做静态源码闭包，不新增构建、设备运行、数值或性能结论。
 
 #### 错误做法
 
@@ -859,7 +991,7 @@ L0A/L0B 各拆成两个半区，`kIter&1`决定当前搬运/计算槽；Mmad完�
 
 - 适用 Route：R-003
 - 触发条件：`WeightUbTrans=1`，POD提供非零 `bUbKStep/bUbNStep`，entry为MIX 1:2。
-- Golden 来源：[`conv2d_v2_weight_ub_trans_impl.h:WeightUbTransVecImpl`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/op_kernel/arch35/conv2d_v2_weight_ub_trans_impl.h)
+- 固定来源：[`conv2d_v2_weight_ub_trans_impl.h:WeightUbTransVecImpl`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/op_kernel/arch35/conv2d_v2_weight_ub_trans_impl.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -884,7 +1016,7 @@ AIV先将NCHW权重分成 `bUbN×bUbK`，用寄存器 gather 变为NZ，再写�
 - 适用：ND权重、官方tiling明确选择weight-UB的FP16/BF16卷积。
 - 前提：同一MIX_CV launch、共享L1可见、完整flag ID与轮次、UB容量公式成立。
 - 失效：FZ权重直接由AIC加载；普通route不应激活AIV变换。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 复核边界：本次知识改写只做静态源码闭包，不新增构建、设备运行、数值或性能结论。
 
 #### 错误做法
 
@@ -896,7 +1028,7 @@ AIV先将NCHW权重分成 `bUbN×bUbK`，用寄存器 gather 变为NZ，再写�
 
 - 适用 Route：R-002、R-003、R-004
 - 触发条件：完整官方 row 与 `Conv2DV1Param` 的 L1/L0 ping-pong实参一致。
-- Golden 来源：[`conv_common_func.h:InitBufferWithDoubleBuf`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/common/op_kernel/arch35/conv_common_func.h)
+- 固定来源：[`conv_common_func.h:InitBufferWithDoubleBuf`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/common/op_kernel/arch35/conv_common_func.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -917,7 +1049,7 @@ Host row不只携带tile，还携带物理buffer深度；Device按同一位分�
 - 适用：复用同一官方Conv2DV2 specialization和POD ABI。
 - 前提：`pBufferFlag`、`aL1SpaceSize`、template L1/L0 ping-pong必须成组迁移。
 - 失效：自行重算tile或改变dtype/layout后必须重新tiling，不能只改单字段。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 复核边界：本次知识改写只做静态源码闭包，不新增构建、设备运行、数值或性能结论。
 
 #### 错误做法
 
@@ -929,7 +1061,7 @@ Host row不只携带tile，还携带物理buffer深度；Device按同一位分�
 
 - 适用 Route：R-001、R-002、R-004 的FP32分支
 - 触发条件：Direct selector写 `hf32Enable/hf32TransMode`；所有FP32 entry在计算前消费。
-- Golden 来源：[`conv2d_v2_common_func.h:InitHf32Mode`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/op_kernel/arch35/conv2d_v2_common_func.h)
+- 固定来源：[`conv2d_v2_common_func.h:InitHf32Mode`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/conv/conv2d_v2/op_kernel/arch35/conv2d_v2_common_func.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -952,7 +1084,7 @@ HF32是core控制状态而非普通局部变量。每次launch显式set/clear，
 - 适用：FP32 950 Conv2D且误差策略允许HF32的route。
 - 前提：Host必须为每次launch写两字段；small entry也必须执行同样建立动作。
 - 失效：aligned exact/repaired FP32应写0，不能继承HF32。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 复核边界：本次知识改写只做静态源码闭包，不新增构建、设备运行、数值或性能结论。
 
 #### 错误做法
 
@@ -962,13 +1094,13 @@ HF32是core控制状态而非普通局部变量。每次launch显式set/clear，
 
 | 对比维度 | P0 / R-001 small | P1 / R-002 conventional | P2 / R-005 repair | P3 / R-003 weight-UB | P4 / R-004 FZ | 设计选择依据 |
 |---|---|---|---|---|---|---|
-| 命中条件/优先级 | full-load+small guard | 其它有效官方row | aligned FP32 reduction≥1024 | route2 | pack收益式 | 先节点图再按route区分 |
+| 命中条件/优先级 | full-load+结构性small predicate | 其它有效官方row | aligned FP32 reduction≥1024 | route2 | pack收益式 | 先节点图再按route区分 |
 | 执行族/节点图 | AIC-only | AIC有效，MIX entry的AIV dormant | AIC→SIMT | 单Kernel MIX_CV | SIMT→AIC | producer/consumer拓扑不同不得合并 |
 | M/N/K、tile与scheduler | full-load M-mode | row指定r0/r1/r3/r4/r5 | Cube row+输出线性SIMT | row指定r2+UB tile | 完整FZ row | 完整row优先于局部重算 |
 | workspace/L1/L0/UB | 0；全载L1；双L0 | 0；POD深度 | 0；SIMT寄存器 | 0；额外双UB+index | cache GM；AIC L1/L0 | packed GM不是workspace |
 | AIC/AIV或kernel交接 | N/A | N/A | y GM+same stream | shared BL1+CrossCore flag | packed GM+same stream | 显式offset/owner/order |
 | 同步、精度与tail | pipe event；FP32/HF32 | queue/pipe；FP32 L0C | ballot/FMA/Kahan | CV双向flag | C/Co zero pad | tail和精度随route闭合 |
-| fallback/失败边界 | guard miss | unknown route return | gate miss早退 | route miss | cache miss重包/无row不选 | exact key miss为Host错误 |
+| fallback/失败边界 | full-load r0/r4 miss→R-002 | unknown route return | gate miss早退 | route miss | cache miss重包；BF16无row/无收益→原r1 R-002 | exact key miss为Host错误 |
 
 ## 平台差异
 
@@ -976,24 +1108,27 @@ HF32是core控制状态而非普通局部变量。每次launch显式set/clear，
 |---|---|---|---|
 | 支持状态 | 官方README明确不支持 | 官方README明确不支持 | 官方README支持950PR/950DT；本卡Direct交付目标为950 |
 | Host/Launcher | N/A | N/A | 派生exact lookup、Direct launch、同stream多节点 |
-| Kernel/资源 | N/A | N/A | arch35/dav-3510；AIC-only、MIX 1:2与SIMT分TU；512 KiB L1/256 KiB L0C guard用于small派生选择 |
+| Kernel/资源 | N/A | N/A | arch35/dav-3510；AIC-only、MIX 1:2与SIMT分TU；512 KiB L1/256 KiB L0C上界只用于可选FP16 multi-batch重分解准入 |
 
 ## 限制与失败边界
 
 - Direct 支持域是冻结 exact-key 集，不是官方 Conv2DV2 全域；同dtype但未列入表的合法卷积也返回 `-2`。
 - 只支持 contiguous NCHW、FP16/FP32/BF16、bias必选、`groups=1`语义，并额外要求 `C=Co`、方形kernel、对称stride/pad/dilation；不执行自动format/contiguous转换。
-- `Ho/Wo`计算发生在Host有符号整数中；属性正数和输出正数已检查，但超大维乘法/窄化到u32只由冻结key事实规避，没有通用溢出证明。
+- `CheckAndInfer` 只要求 stride/dilation 为正，不先拒绝负 pad 或零元素维；这些输入最终不会命中当前正值 key，但 `Ho/Wo` 会先参与有符号运算。
+- `Ho/Wo`计算发生在Host有符号整数中；属性正数和输出正数已检查，但乘加、输出元素数、packed extent 及窄化到u32都没有通用 checked-arithmetic 证明，当前安全性依赖20个冻结 key。
 - Direct router的unknown route只`return`，launch callback固定返回0；闭包依赖exact table永不生成未知route。扩展表时必须同时增加dtype specialization与错误传播。
+- 已编译不等于内置可达：r0/r4 conventional、部分 FZ entry 与 scalar repair 只属于条件直调；warp8 helper没有 launcher 引用。外部调用者若手写 config，不会获得 selector fallback。
 - `Conv2DTilingData` mirror无`static_assert(sizeof/offsetof)`；复用必须保证CANN 9.1.0 Host/Device ABI一致。
 - R-004 cache为thread-local且只记一个source；跨线程不共享，同stream/version约束不满足就重包。源码没有显式event或`recordStream`，异步生命周期依赖框架allocator/stream语义。
+- 主 DSO 依赖同目录 `_conv2d_refine.abi3.so`；所有 FP32 路径都会解析它，缺少 sibling 时即使无需 repair 也会在 Cube launch 前失败。
 - R-005是派生数值修复，不属于官方Conv2DV2；其magnitude gate、FMA/Kahan顺序和warp lane归并均是精度ABI，不能视作可自由调参。
-- 本次知识提取未执行编译、真机、数值或性能测试。
+- 本次知识改写只做静态源码闭包，不新增构建、设备运行、数值或性能结论。
 
 ## 源码索引
 
 ### 链路索引
 
-Frontmatter仅列固定提交的官方转换相关源码。下表中的“派生边界”说明Direct交付在何处改接；这些派生文件没有被伪装为官方URL。
+Frontmatter仅列固定提交的官方转换相关源码。canonical 源树的官方闭包共 54 个 header：`common/arch35` 19 个中 18 个与 primary commit 字节一致，`conv3d_v2/arch35` 14 个全一致，`op_kernel/arch35` 的20个主 Conv2DV2 header 与 primary commit 全一致，`conv2d_small_kernel.h` 与 secondary commit 一致。唯一改写的 `common/arch35/conv_iterate_impl.h` 只删除 NCDHW/NDHWC 条件分支内的 Conv3D-only include，并补文件末尾换行；当前 Direct 模板固定 NCHW，该分支编译期不活跃。下表中的“派生边界”说明Direct交付在何处改接；这些派生文件没有被伪装为官方URL。
 
 | 链路阶段 | 文件 | 关键符号 | 支撑内容 |
 |---|---|---|---|
@@ -1005,6 +1140,7 @@ Frontmatter仅列固定提交的官方转换相关源码。下表中的“派生
 | Kernel entry | `conv/conv2d_v2/op_kernel/conv2d_v2.cpp` | `conv2dv2` | 官方format/task type/template入口；Direct改为by-value多entry |
 | Kernel body | `conv/conv2d_v2/op_kernel/arch35/conv2d_v2.h` | `Conv2dBase` | block映射、GM view、调用序 |
 | Kernel body | `conv/conv2d_v2/op_kernel/arch35/conv2d_v2_common_func.h` | `Init/InitHf32Mode` | tile变量、HF32状态 |
+| Kernel interface | `conv/conv2d_v2/op_kernel/arch35/conv2d_v2_intf.h` | `Conv2dIntf` | compile-time route flags、API到实现分发 |
 | Kernel body | `conv/conv2d_v2/op_kernel/arch35/conv2d_v2_weight_ub_trans_impl.h` | `WeightUbProcessTools` | MIX_CV AIV调度与flag |
 | Kernel helper | `conv/conv2d_v2/op_kernel/arch35/conv2d_v2_instr_weight_ub_trans_impl.h` | GM2UB/ND2NZ/UB2L1 | UB、寄存器、NDDMA、tail |
 | Kernel helper | `conv/common/op_kernel/arch35/conv_common_func.h` | `IterateAll/InitBufferWithDoubleBuf` | AIC buffer与Fixpipe主循环 |

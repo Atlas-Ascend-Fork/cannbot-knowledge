@@ -24,7 +24,7 @@ sources:
   - resource: "https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/CMakeLists.txt"
     role: implementation
 created_at: "2026-08-25T19:31:34Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -39,8 +39,8 @@ cann_versions: ["9.1.0"]
 | 计算语义 | 对连续 NCHW 四维张量的 H/W 两轴做双线性插值，输出保持 N、C 和 dtype，空间大小来自 `output_size` 或 `scale_factor`。 |
 | 输入输出 | `x:[N,C,inH,inW]`、`y:[N,C,outH,outW]`，连续 NCHW；FP16、FP32、BF16，同 dtype 输入输出；所有维非空。 |
 | 执行类型 | R-001～R-004 都是单个 `KERNEL_TYPE_AIV_ONLY` entry 内 `asc_vf_call` 的 SIMT 节点；无 Cube/AIC、MIX_CV、NDDMA 或通信节点。 |
-| Kernel 路线 | R-001 `SIMT_HW/i32`（key 30004）、R-002 `SIMT_NCHW/i32`（30001）、R-003 `SIMT_HW/i64`（30005）、R-004 `SIMT_NCHW/i64`（30003）。每条路线各有 3 dtype × 2 坐标模式的显式 entry。 |
-| 核心资源 | 输入/输出 GM、线程私有标量/寄存器、1024 或 512 个 SIMT thread；无 AIV `TQue/TBuf`、无 dynamic UB、无 workspace、无 atomic/barrier。 |
+| Kernel 路线 | 四条 terminal Route 均为 `active`：R-001 `SIMT_HW/i32`（key 30004）、R-002 `SIMT_NCHW/i32`（30001）、R-003 `SIMT_HW/i64`（30005）、R-004 `SIMT_NCHW/i64`（30003）。每条路线各有 3 dtype × 2 坐标模式的显式 entry；没有独立 `conditional` terminal Route。 |
+| 核心资源 | 输入/输出 GM、线程私有标量/寄存器、1024 或 512 个 SIMT thread；无 AIV `TQue/TBuf`、UB、L1、L0A/L0B/L0C、dynamic UB 或 workspace，也无 atomic/barrier。 |
 | 来源闭包 | `direct_implementation_closed`：最终直调载荷闭合 schema/Meta/PrivateUse1、配置/POD、显式 entry/launcher、两套 SIMT body 和直调构建；官方固定提交闭合其转换基线。 |
 
 ## 接口与语义
@@ -78,7 +78,7 @@ y = (1-dy)*((1-dx)*x[top,left] + dx*x[top,right])
 | `x` | `[N,C,inH,inW]`，物理/逻辑连续 NCHW | FP16、FP32、BF16 | rank 必须为 4，四维均大于 0；拒绝非连续存储。 |
 | `output_size` | 可选长度 2 数组 | `int64` 元数据 | 与 `scale_factor` 必须恰有一个存在；值为正，直接给出 `outH/outW`。 |
 | `align_corners` | 标量，默认 false | bool | true 时两端中心对齐并令 `halfPixelCenters=0`；false 时令其为 1。 |
-| `scale_factor` | 可选长度 2 数组 | Host double，POD 前降为 float | 两值必须有限且大于 0；`outH=floor(inH*factorH)`、`outW=floor(inW*factorW)`，结果至少为 1 且可表示为 int64。 |
+| `scale_factor` | 可选长度 2 数组 | Host double，POD 前降为 float | 两值必须有限且大于 0；代码检查 double 乘积有限、至少为 1 且 `<=static_cast<double>(INT64_MAX)`，随后 `floor` 并转为 int64；该检查本身不证明严格 int64 可表示性。 |
 | `y` | `[N,C,outH,outW]`，连续 NCHW | 与 `x` 相同 | 由 `torch::empty` 分配；每个逻辑元素恰写一次。 |
 | `stream` | 当前 NPU stream | `void*` | `resize_bilinear_npu` 从当前 NPU stream 取得并传入显式 kernel launch。 |
 
@@ -86,14 +86,14 @@ y = (1-dy)*((1-dx)*x[top,left] + dx*x[top,right])
 
 `TORCH_LIBRARY_FRAGMENT` 声明 `cann_bench::resize_bilinear(Tensor x, int[]? output_size=None, bool align_corners=False, float[]? scale_factor=None)`；Meta 路线只检查合同并分配元信息输出，PrivateUse1 绑定 `resize_bilinear_npu`。后者设置 device guard、要求连续 NCHW、分配输出、调用 `calc_resize_bilinear_config`，再在 `OpCommand::RunOpApi("ResizeBilinearDirect", ...)` 中按 dtype 调用三个 launcher 之一。
 
-这是面向 950/Ascend 950、CANN 9.1.0 的 Direct 转换，不是 ACLNN 包装。官方固定提交的 `ResizeBilinearV2With4d` 提供 `half_pixel_centers=!align_corners`、scale 转发与 arch35 实现基线；Direct 转换删除 registry `gert::TilingContext`、`GET_TILING_DATA/TILING_KEY_IS` 和 `size/workspace/tiling` GM 参数，改为 Host 直接生成同序 POD、显式 dtype/half-pixel/index-width entry 以及按值 POD launch。转换还把官方完整 selector 收缩为目标 NCHW 同 dtype域可达的两套 SIMT body；官方 all-copy/broadcast/C-parallel/NHWC 路线不在此 Direct 入口的可达图中。
+这是面向 950/Ascend 950、CANN 9.1.0 的 Direct 转换，不是 ACLNN 包装。官方固定提交的 `ResizeBilinearV2With4d` 提供 `half_pixel_centers=!align_corners`、scale 转发与 arch35 实现基线；Direct 转换删除 registry `gert::TilingContext`、`GET_TILING_DATA/TILING_KEY_IS` 和 `size/workspace/tiling` GM 参数，改为 Host 直接生成同序 POD、显式 dtype/half-pixel/index-width entry 以及按值 POD launch。最终载荷只保留 NCHW 的 SIMT_HW/SIMT_NCHW terminal family，没有保留官方 selector 中先于 SIMT 的特化 family。其中 all-copy 与 NCHW-broadcast 和 Direct 合法输入域重叠；point-copy、NHWC-broadcast、C-parallel 与 SIMT-NHWC 则要求 Direct 合同不接受的 NHWC。所有未保留 family 都不在本入口生产图中，也不是运行时 fallback。
 
 ## Host/Launcher 执行流程
 
 ### 参数校验与前处理
 
 1. `CheckInputContract` 检查 rank=4、dtype 属于 FP16/FP32/BF16、N/C/H/W 全部为正。
-2. `ResolveOutput` 强制 `output_size` 与 `scale_factor` 异或；前者检查长度和正值，后者检查长度、有限正值及乘积生成的输出维可表示。
+2. `ResolveOutput` 强制 `output_size` 与 `scale_factor` 异或；前者检查长度和正值，后者检查长度、有限正值，并对 double 乘积执行 `>=1` 与 `<=static_cast<double>(INT64_MAX)` 检查后再 `floor`/转 int64；不把该 double 上界检查提升为严格可表示性证明。
 3. `resize_bilinear_npu` 设置输入设备 guard，拒绝非连续输入，调用 `AllocateOutput` 创建同 dtype 的 `[N,C,outH,outW]`。
 4. `calc_resize_bilinear_config` 再检查六个维度与显式 scale 正值；`CheckedProduct` 逐级防止 `H*W`、`N*C`、总输入/输出元素数发生 int64 溢出。
 5. 从 `PlatformAscendCManager` 读取 AIV core 数和 UB 字节数；平台对象为空或 AIV core 数为 0 时抛错。UB 值写入 POD，但四条 SIMT 路线不消费它。
@@ -121,7 +121,7 @@ cann_bench::resize_bilinear
         -> SimtCompute -> y
 ```
 
-这是单 Kernel 图，没有 kernel 间 GM/workspace 边。Host 校验、乘积、平台查询失败会在 launch 前抛出；`RunOpApi` lambda 固定返回 0，源码没有把异步 kernel fault 编码进 lambda 返回值。公开 plugin 只能产生合法 enum；若绕过配置函数把非法 `route` 强制塞入 config，launcher 的 `else` 会按 NCHW 处理而非报错。所有正常调用的执行顺序由同一 stream 保证。
+这是单 Kernel 图，没有 kernel 间 GM/workspace 边。Host 校验、乘积、平台查询失败会在 launch 前抛出；`RunOpApi` lambda 固定返回 0，源码没有把异步 kernel fault 编码进 lambda 返回值。正常 plugin 只能产生合法 enum；若绕过配置函数把非法 `route` 强制塞入 config，launcher 的 `else` 会按 NCHW 处理而非报错。所有正常调用的执行顺序由同一 stream 保证。
 
 ## Route 与参数设计
 
@@ -139,22 +139,63 @@ needHWSplit = I != 1 && spatial_shape_changed
 
 HW 路线固定 `realCoreNum=Cores`，以 `q=floor(OHW/Cores)`、`r=OHW-q*Cores` 分空间点；前 `r` 个 block 处理 `q+1` 点，其余处理 `q` 点。NCHW 路线取 `realCoreNum=min(O,Cores)`，同样以商余分整个扁平输出域。两者的 `blockDim=realCoreNum`，每个 block 内线程以 `threadIdx.x` 起步并按内部线程数步进。
 
+### 生产可达性分类与穷尽证明
+
+令 `A=useIdx32`、`H=needHWSplit(A)`；注意 `H` 的阈值依赖 `A`：i32 用 `Cores*1024`，i64 用 `Cores*512`。`calc_resize_bilinear_config` 对所有通过合同与 int64 乘积检查的输入都恰好产生下列一个 config；四个 config 值都有 typed launcher 分支、显式全局 entry 和 Device body，所以四条都是 `active` terminal Route。shape 谓词只是 active Route 的互斥选择条件，不把 i64 Route 降为 `conditional`。
+
+```text
+A  &&  H(A)  -> R-001 / SIMT_HW   / key 30004 / u32 / 1024 threads
+A  && !H(A)  -> R-002 / SIMT_NCHW / key 30001 / u32 / 1024 threads
+!A &&  H(A)  -> R-003 / SIMT_HW   / key 30005 / u64 /  512 threads
+!A && !H(A)  -> R-004 / SIMT_NCHW / key 30003 / u64 /  512 threads
+```
+
+| Route | 类别 | Host producer 与 launch 闭包 | terminal 出边 |
+|---|---|---|---|
+| R-001 | `active` | `A&&H` 写 `route=SIMT_HW,useIndex64=0,key=30004`；typed launcher 命中六个 HW/u32 entry 之一 | selector 终止；Device 无失败重试。`H` 为假才在 launch 前产生 R-002 |
+| R-002 | `active` | `A&&!H` 写 `route=SIMT_NCHW,useIndex64=0,key=30001`；typed launcher 命中六个 NCHW/u32 entry 之一 | selector 终止；Device 无后续 Route。`A` 为假会用 512 阈值重新计算 `H`，再产生 R-003/R-004 |
+| R-003 | `active` | `!A&&H` 写 `route=SIMT_HW,useIndex64=1,key=30005`；typed launcher 命中六个 HW/u64 entry 之一 | selector 终止；Device 无失败重试。`H` 为假才在 launch 前产生 R-004 |
+| R-004 | `active` | `!A&&!H` 写 `route=SIMT_NCHW,useIndex64=1,key=30003`；typed launcher 命中六个 NCHW/u64 entry 之一 | selector 的安全终点；合法 config 没有下一条 Route |
+
+本实现没有独立 `conditional` terminal Route。`halfPixelCenters` 与 dtype 只是每条 Route 内的编译期 entry 轴；它们不改变 ownership、分核域或 key，不能拆成额外 Route。
+
+### Dormant source 与官方图外 family
+
+最终 NCHW header 保留三个 `if constexpr(mode==...)` 分支，但全部 12 个 Direct NCHW entry 都实例化 `mode=0`；它们是生产不可达的 dormant source，不是 terminal Route：
+
+| dormant 分支 | 保留的 Device 语义 | 生产链不可达原因 | 重新启用条件 |
+|---|---|---|---|
+| D-001 `SIMT_SCENE_ALL_COPY=1` | 按解码后的 N/C/H/W 从输入同位置复制 | entry 宏固定模板参数 `mode=0`，Host/launch config 没有 mode 字段，launcher 也没有 mode 分支 | 增加互斥 Host 谓词、mode producer 或独立 route、显式 entry/launcher；证明同 shape、两种坐标模式、dtype 以及零权重 NaN/Inf 的 identity 语义 |
+| D-002 `SIMT_SCENE_INPUT_ONE=2` | 每个输出读取 `input[N*C+C]` | 同上；当前 `1x1` 输入仍由 R-001/R-002 的通用插值 body处理 | 增加 producer/entry/launcher，并闭合 `inH=inW=1` 的索引、分核及零权重 NaN/Inf 语义 |
+| D-003 `SIMT_SCENE_OUTPUT_ONE=3` | 每个输出读取每个 N/C 平面的首元素 | 同上；当前 `outH=outW=1` 仍走通用 body | 增加 producer/entry/launcher，并证明 align/scale、相邻样本与零权重 NaN/Inf 下首元素直拷仍等价 |
+
+官方固定 selector 还有下列六个 family，但最终 Direct ZIP 没有打包其 body，也没有对应 enum、config producer、launcher 或 entry，因此它们属于“官方图外 family”，不能仅凭官方 key 称为 Direct dormant Route。表中“此前未命中”严格指官方 selector 的行序短路：
+
+| 官方 family/key | 精确 selector（按官方优先级） | 官方 entry/body 与数据依赖 | Direct 状态 | 若要纳入 Direct 必须补齐 |
+|---|---|---|---|---|
+| all-copy / 40000 | 首项；`dtypeX==dtypeY && inH==outH && inW==outW`，格式不限 | `ResizeBilinearV2AllCopy<DTYPE_X>`；`TPipe + TQueBind<VECIN,VECOUT>`，消费 `realCoreNum/splitBlockFactor/splitBlockTailFactor/ubCFactor` 做 GM↔UB 双缓冲复制 | NCHW 同 shape 与 Direct 合法域重叠，但 Direct 让它进入 R-002/mode 0 | 打包 body，补 Host producer、entry/launcher 与 UB queue；证明直拷不会改变零权重 NaN/Inf、block/UB 尾块语义 |
+| point-copy / 40001 | all-copy 未命中；`dtypeX==dtypeY && format==NHWC && C*sizeof(X)>=128 && scaleH>=1 && scaleW>=1`；令 `qH=int64(scaleH+1e-6),qW=int64(scaleW+1e-6)`，还要求 `abs(scaleH-qH)<1e-6 && abs(scaleW-qW)<1e-6`，且 `alignCorners!=0 || halfPixelCenters!=1 || (qH,qW均为奇数)` | `ResizeBilinearV2PointCopy<DTYPE_X>`；`TPipe` 与 point-copy UB/分核参数，消费 `n/h/w/cFactor` 及 `ubN/H/W/CFactor` | Direct 固定 NCHW，生产不可达 | 扩展 schema/layout 到 NHWC；移植整数 scale 与奇偶 guard、完整 factor producer、body/entry/launcher、UB/尾块和精度边界 |
+| NCHW-broadcast / 40002 | 前两项未命中；`dtypeX==dtypeY && format==NCHW && outH*outW*sizeof(Y)>=128 && inH==1 && inW==1` | `ResizeBilinearV2BroadcastNCHW<DTYPE_X>`；`xQue/yQue`、`DataCopyPad`、Vector `Duplicate`、MTE2_S/S_V event，消费 N/C/HW 与 UB factor | 与 Direct 的 `1x1` 输入子域重叠；Direct 仍选择 R-001 或 R-002 | 打包 body，恢复 N/C/HW 与 UB tiling producer、POD consumer、entry/launcher；审计重复样本参与 FP32 表达式的 NaN/Inf 边界 |
+| NHWC-broadcast / 40003 | 前三项未命中；`dtypeX==dtypeY && format==NHWC && C*sizeof(X)>=128 && inH==1 && inW==1` | `ResizeBilinearV2BroadcastNHWC<DTYPE_X>`；`TPipe`、NHWC GM↔UB broadcast queues 与 N/HW/C factor | Direct 固定 NCHW，生产不可达 | 扩展 NHWC storage 解释；恢复 factor/UB producer、body/entry/launcher、同步与 C/HW tail |
+| C-parallel / 10000 | 前四项未命中；`format==NHWC && C*sizeof(X)>=128 && scaleH>=2 && scaleW>=2`；此 predicate 不要求输入输出 dtype 相同 | key 先进入二级分派：`cFactor<lenC` 调 `ResizeBilinearV2Nc<DTYPE_X,DTYPE_Y>`，否则调 `ResizeBilinearV2CParallel<DTYPE_X,DTYPE_Y>`；两者消费 C-parallel 的 N/HW/C 与 UB factors | Direct 固定 NCHW 且同 dtype，生产不可达 | 扩展 NHWC/dtype 合同；移植 `DoTilingCParallel`、两套 body、`cFactor<lenC` 二级 router、entry/launcher、UB 账与分派闭包 |
+| SIMT-NHWC / 30000、30002 | 前五项未命中且 `format==NHWC`；`useIdx32` 真取 30000/u32/1024 threads，假取 30002/u64/512 threads | `ResizeBilinearV2SimtNHWC<DTYPE_X,DTYPE_Y,halfPixel,mode,T_IDX>`；`halfPixelCenters>0` 固定 `halfPixel=true,mode=0`，否则按同 shape、输入 1x1、输出 1x1、其余依次选 mode 1/2/3/0 | Direct 固定 NCHW，生产不可达 | 扩展 NHWC schema/layout；打包 SIMT-NHWC body，补 u32/u64、half-pixel/mode 显式 entry 与 launcher，并闭合 NHWC 地址解码和尾块 |
+
 ### Route 重要性
 
 P0 为最高优先级，以下顺序用于组织实现知识，不表示 Host 会按表格顺序逐条尝试 Route。
 
-| 优先级 | Route | Route 特征 | 适用范围 | 实现前提 |
-|---|---|---|---|---|
-| P0 | R-001 SIMT_HW/i32 | 用 `uint32_t` 索引切分 OHW，每个空间点在同一 thread 内循环 N/C；1024 threads | 输入输出总元素可安全用 i32 寻址，空间尺寸改变且 OHW 足以支撑全核空间并行 | `useIdx32 && needHWSplit`；连续 NCHW、同 dtype、AIV core 数有效 |
-| P1 | R-002 SIMT_NCHW/i32 | 用 `uint32_t` 索引切分完整 NCHW 输出域；1024 threads | i32 寻址安全，但空间不变、单元素输入或 OHW 不足以启用 HW ownership | `useIdx32 && !needHWSplit`；连续 NCHW、同 dtype、正的完整输出域 |
-| P2 | R-003 SIMT_HW/i64 | 用 `uint64_t` 索引的 HW ownership；512 threads | i32 寻址不安全，且空间尺寸改变、OHW 达到 i64 特化的全核阈值 | `!useIdx32 && needHWSplit`；所有 Host int64 乘积检查成功 |
-| P3 | R-004 SIMT_NCHW/i64 | 用 `uint64_t` 索引切分完整 NCHW 输出域；512 threads | i32 寻址不安全，且 HW ownership 谓词为假的大索引域 | `!useIdx32 && !needHWSplit`；所有 Host int64 乘积检查成功 |
+| 优先级 | Route | 状态 | Route 特征 | 适用范围 | 实现前提 |
+|---|---|---|---|---|---|
+| P0 | R-001 SIMT_HW/i32 | active | 用 `uint32_t` 索引切分 OHW，每个空间点在同一 thread 内循环 N/C；1024 threads | 输入输出总元素可安全用 i32 寻址，空间尺寸改变且 OHW 足以支撑全核空间并行 | `useIdx32 && needHWSplit`；连续 NCHW、同 dtype、AIV core 数有效 |
+| P1 | R-002 SIMT_NCHW/i32 | active safety | 用 `uint32_t` 索引切分完整 NCHW 输出域；1024 threads | i32 寻址安全，但空间不变、单元素输入或 OHW 不足以启用 HW ownership | `useIdx32 && !needHWSplit`；连续 NCHW、同 dtype、正的完整输出域 |
+| P2 | R-003 SIMT_HW/i64 | active | 用 `uint64_t` 索引的 HW ownership；512 threads | i32 寻址不安全，且空间尺寸改变、OHW 达到 i64 特化的全核阈值 | `!useIdx32 && needHWSplit`；所有 Host int64 乘积检查成功 |
+| P3 | R-004 SIMT_NCHW/i64 | active safety | 用 `uint64_t` 索引切分完整 NCHW 输出域；512 threads | i32 寻址不安全，且 HW ownership 谓词为假的大索引域 | `!useIdx32 && !needHWSplit`；所有 Host int64 乘积检查成功 |
 
-### Host selector 顺序、短路与 fallback
+### Host selector 顺序、短路与未命中备选
 
 Host 的真实决策顺序是：先完成合同、乘积和平台检查；再计算 `useIdx32`，由它选择 1024 或 512 的 `threadThreshold`；随后只计算一次 `needHWSplit`，真则进入 HW 分支，假则进入 NCHW 分支；最后在分支内用 `useIdx32` 定 key 和 index specialization。因此 R-002/R-004 是 `needHWSplit` 的 `else` 结果，R-003/R-004 是 index-width 决策结果，不是前一 Route 启动失败后再试的运行时 fallback。
 
-| Host 步骤 | 判定/短路 | 结果或 fallback |
+| Host 步骤 | 判定/短路 | 结果或未命中时 selector 备选 |
 |---:|---|---|
 | 1 | 合同、正维度、int64 乘积、platform 和 AIV core 检查 | 任一失败立即抛错，不生成 Route，也没有 Device fallback |
 | 2 | `useIdx32 = I<UINT32_MAX && O<UINT32_MAX && H/W extents<=INT32_MAX` | 真时选 1024 threads 和 i32 specialization；假时直接选 512 threads 和 i64 specialization |
@@ -175,14 +216,14 @@ validate/products/platform
 
 | 优先级 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/去向 |
 |---|---|---|---|---|---|---|---|
-| P0 | R-001 SIMT_HW/i32 | 30004 + `route=SIMT_HW,useIndex64=0` | 3 dtype；正的连续 NCHW；i32 安全；空间改变；`OHW>=Cores*1024`；950 | 单 AIV entry→SIMT | `ResizeBilinearV2SimtHW<T,T,HP,0,uint32_t>::Process/SimtCompute` | 无 UB/workspace；1024 threads；每线程固定 H/W 后串行 N、C | block 商余 tail；HW 谓词为假时由 selector 生成 R-002 |
-| P1 | R-002 SIMT_NCHW/i32 | 30001 + `route=SIMT_NCHW,useIndex64=0` | 同 dtype/平台/index，且 HW 谓词为假 | 单 AIV entry→SIMT | `ResizeBilinearV2SimtNCHW<T,T,HP,0,uint32_t>::Process/SimtCompute` | 无 UB/workspace；1024 threads；扁平 NCHW 解码 | block 商余 + thread stride；index 不安全时 selector 生成 i64 Route |
-| P2 | R-003 SIMT_HW/i64 | 30005 + `route=SIMT_HW,useIndex64=1` | 3 dtype；i32 谓词失败；空间改变；`OHW>=Cores*512`；950 | 单 AIV entry→SIMT | `ResizeBilinearV2SimtHW<T,T,HP,0,uint64_t>::Process/SimtCompute` | 无 UB/workspace；512 threads；64-bit magic/index | 同 R-001；HW 谓词为假时由 selector 生成 R-004 |
-| P3 | R-004 SIMT_NCHW/i64 | 30003 + `route=SIMT_NCHW,useIndex64=1` | i32 谓词失败且 HW 谓词为假 | 单 AIV entry→SIMT | `ResizeBilinearV2SimtNCHW<T,T,HP,0,uint64_t>::Process/SimtCompute` | 无 UB/workspace；512 threads；64-bit 扁平解码 | 同 R-002；正常 config 无后续 Route |
+| P0 | R-001 SIMT_HW/i32 | 30004 + `route=SIMT_HW,useIndex64=0` | 3 dtype；正的连续 NCHW；i32 安全；空间改变；`OHW>=Cores*1024`；950 | 单 AIV entry→SIMT | `ResizeBilinearV2SimtHW<T,T,HP,0,uint32_t>::Process/SimtCompute` | 无 UB/L1/L0/workspace；1024 threads；每线程固定 H/W 后串行 N、C | block 商余 + loop-bound tail；`H` 为假时在 launch 前生成 R-002 |
+| P1 | R-002 SIMT_NCHW/i32 | 30001 + `route=SIMT_NCHW,useIndex64=0` | 同 dtype/平台/index，且 HW 谓词为假 | 单 AIV entry→SIMT | `ResizeBilinearV2SimtNCHW<T,T,HP,0,uint32_t>::Process/SimtCompute` | 无 UB/L1/L0/workspace；1024 threads；扁平 NCHW 解码 | block 商余 + loop-bound tail；index 不安全时以 512 阈值重算 `H`，选 R-003/R-004 |
+| P2 | R-003 SIMT_HW/i64 | 30005 + `route=SIMT_HW,useIndex64=1` | 3 dtype；i32 谓词失败；空间改变；`OHW>=Cores*512`；950 | 单 AIV entry→SIMT | `ResizeBilinearV2SimtHW<T,T,HP,0,uint64_t>::Process/SimtCompute` | 无 UB/L1/L0/workspace；512 threads；64-bit magic/index | 同 R-001；`H` 为假时在 launch 前生成 R-004 |
+| P3 | R-004 SIMT_NCHW/i64 | 30003 + `route=SIMT_NCHW,useIndex64=1` | i32 谓词失败且 HW 谓词为假 | 单 AIV entry→SIMT | `ResizeBilinearV2SimtNCHW<T,T,HP,0,uint64_t>::Process/SimtCompute` | 无 UB/L1/L0/workspace；512 threads；64-bit 扁平解码 | 同 R-002；正常 config 无后续 Route |
 
 其中 `T` 分别是 `float/half/bfloat16_t`，`HP=true/false` 分别来自 `halfPixelCenters!=0/==0`。key 写入 POD 用于保持官方映射和诊断；最终 launcher 实际按 `route/useIndex64/halfPixelCenters` 分支，不读取 `tilingKey` 做 router。
 
-### 隐藏性能 Guard
+### 关键性能 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -236,16 +277,16 @@ validate/products/platform
 
 | 优先级 | Route | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
 |---|---|---|---|---|---|---|---|
-| P0 | R-001 SIMT_HW/i32 | 30004 / `useIdx32&&needHWSplit` | 官方 `MatchTilingStrategyAndSetTilingKey/DoTilingSIMT_HW` → Direct `calc_resize_bilinear_config` | 同序 `ResizeBilinearV2TilingData` + config | `resize_bilinear_hw_{f32,f16,bf16}_{hp,corner}_i32` | `ResizeBilinearV2SimtHW<...,uint32_t>::Process/SimtCompute` | 官方 `SUPPORT_COMPUTE_UNIT=ascend950`；Direct registration 单 kernel TU |
-| P1 | R-002 SIMT_NCHW/i32 | 30001 / `useIdx32&&!needHWSplit` | 官方 selector/`DoTilingSIMT` → Direct config | 同上 | `resize_bilinear_nchw_*_{hp,corner}_i32` | `ResizeBilinearV2SimtNCHW<...,uint32_t>` + quick-div helper | 同上 |
+| P0 | R-001 SIMT_HW/i32 | 30004 / `useIdx32&&needHWSplit` | 官方 SIMT 子路径 `MatchTilingStrategyAndSetTilingKey/DoTilingSIMT_HW` → Direct `calc_resize_bilinear_config`；Direct 不保留官方前置特化 | 同序 `ResizeBilinearV2TilingData` + config | `resize_bilinear_hw_{f32,f16,bf16}_{hp,corner}_i32` | `ResizeBilinearV2SimtHW<...,uint32_t>::Process/SimtCompute` | 官方 `SUPPORT_COMPUTE_UNIT=ascend950`；Direct registration 单 kernel TU |
+| P1 | R-002 SIMT_NCHW/i32 | 30001 / `useIdx32&&!needHWSplit` | 官方 SIMT 子路径/`DoTilingSIMT` → Direct config；Direct 将官方前置特化覆盖域并入此路 | 同上 | `resize_bilinear_nchw_*_{hp,corner}_i32` | `ResizeBilinearV2SimtNCHW<...,uint32_t>` + quick-div helper | 同上 |
 | P2 | R-003 SIMT_HW/i64 | 30005 / `!useIdx32&&needHWSplit` | 同 R-001，线程阈值 512 | 同上 | `resize_bilinear_hw_*_{hp,corner}_i64` | `ResizeBilinearV2SimtHW<...,uint64_t>` | 同上 |
-| P3 | R-004 SIMT_NCHW/i64 | 30003 / `!useIdx32&&!needHWSplit` | 同 R-002 | 同上 | `resize_bilinear_nchw_*_{hp,corner}_i64` | `ResizeBilinearV2SimtNCHW<...,uint64_t>` | 同上 |
+| P3 | R-004 SIMT_NCHW/i64 | 30003 / `!useIdx32&&!needHWSplit` | 同 R-002，index/magic 改为 u64 | 同上 | `resize_bilinear_nchw_*_{hp,corner}_i64` | `ResizeBilinearV2SimtNCHW<...,uint64_t>` | 同上 |
 
 ## Kernel 实现
 
 ### 公共执行流程
 
-每个显式 entry 接收 `(x,y,tilingData-by-value)`，声明 `KERNEL_TYPE_AIV_ONLY`，构造对应模板类并执行 `Init→Process`。`Init` 绑定输入/输出 GM 并保存外层 AIV `blockIdx`。`Process` 计算 magic/shift 整除参数和本 block 的商余区间，再以 i32 路线 1024 threads、i64 路线 512 threads 调用 SIMT callee。每线程只处理本 block 区间中的 `idx=threadIdx.x+k*threads`；无共享内存、atomic 或 barrier。坐标 clamp、四点 GM load、FP32 插值及同 dtype store 是所有 Route 的公共计算核心。
+每个显式 entry 接收 `(x,y,tilingData-by-value)`，声明 `KERNEL_TYPE_AIV_ONLY`，构造对应模板类并执行 `Init→Process`。`Init` 绑定输入/输出 GM 并保存外层 AIV `blockIdx`。`Process` 计算 magic/shift 整除参数和本 block 的商余区间，再以 i32 路线 1024 threads、i64 路线 512 threads 调用 SIMT callee。每线程只处理本 block 区间中的 `idx=threadIdx.x+k*threads`；block 商余闭合核尾，循环条件 `idx<blkProcessNum` 闭合线程尾，代码没有额外 Vector mask。无共享内存、atomic 或 barrier。坐标 clamp、四点 GM load、FP32 插值及同 dtype store 是所有 Route 的公共计算核心。
 
 ### P0 · Route R-001：SIMT_HW/i32
 
@@ -255,8 +296,8 @@ validate/products/platform
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host baseline | `op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp` | `MatchTilingStrategyAndSetTilingKey` | i32 安全，NCHW，空间改变且 `OHW>=coreNum*1024` | 官方 key 30004 |
-| Direct selector | Direct 派生层（最终载荷） | `calc_resize_bilinear_config` | 同上，并限定目标合同的连续 NCHW/同 dtype | `route=SIMT_HW,key=30004,blockDim=Cores` |
+| Host baseline | `op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp` | `MatchTilingStrategyAndSetTilingKey` | 官方 all-copy/point/broadcast/C-parallel 均未先命中，且 i32 安全、NCHW、空间改变、`OHW>=coreNum*1024` | 官方 key 30004；前置特化命中时不是此 key |
+| Direct selector | Direct 派生层（最终载荷） | `calc_resize_bilinear_config` | `useIdx32&&needHWSplit`；限定连续 NCHW/同 dtype，但不执行官方前置特化 selector | `route=SIMT_HW,key=30004,blockDim=Cores`；较大 1x1 输入广播子域也可由本 Route 承接 |
 | Router | Direct 派生层（最终载荷） | `LAUNCH_RESIZE_TYPED` | dtype + HW + `useIndex64=0` + half-pixel 标志 | 六个 `*_i32` HW entry 之一 |
 
 #### Device 数据流
@@ -304,7 +345,7 @@ N/A：该 SIMT 节点没有 AIV `TQue/TBuf`、shared/dynamic UB 或 workspace；
 ##### 字节账与复用顺序
 
 ```text
-UB_total = 0
+UB_total = 0; L1_total = 0; L0A/L0B/L0C_total = 0
 dynamic_ub = N/A (asc_vf_call launch 参数不含动态 UB)
 workspace_total = 0
 GM_live = I*sizeof(T) input + O*sizeof(T) output
@@ -344,8 +385,8 @@ GM_live = I*sizeof(T) input + O*sizeof(T) output
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host baseline | `op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp` | `MatchTilingStrategyAndSetTilingKey` | i32 安全且 HW 谓词为假 | 官方 key 30001 |
-| Direct selector | Direct 派生层（最终载荷） | `calc_resize_bilinear_config` | `useIdx32&&!needHWSplit` | `realCoreNum=min(O,Cores)`、key 30001 |
+| Host baseline | `op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp` | `MatchTilingStrategyAndSetTilingKey` | 官方 all-copy/point/broadcast/C-parallel 均未先命中，且 i32 安全、NCHW、HW 谓词为假 | 官方 key 30001；前置特化命中时不是此 key |
+| Direct selector | Direct 派生层（最终载荷） | `calc_resize_bilinear_config` | `useIdx32&&!needHWSplit`；不执行官方前置特化 selector | `realCoreNum=min(O,Cores)`、key 30001；同 shape/1x1 等子域也由本 Route 承接 |
 | Router | Direct 派生层（最终载荷） | `LAUNCH_RESIZE_TYPED` | dtype + NCHW + i32 + half-pixel | 六个 NCHW i32 entry 之一 |
 
 #### Device 数据流
@@ -390,7 +431,8 @@ N/A：无 AIV UB、dynamic UB 或 workspace；使用线程私有标量和 GM。
 ##### 字节账与复用顺序
 
 ```text
-UB_total=0; dynamic_ub=N/A; workspace_total=0
+UB_total=0; L1_total=0; L0A/L0B/L0C_total=0
+dynamic_ub=N/A; workspace_total=0
 GM_live=I*sizeof(T)+O*sizeof(T)
 ```
 
@@ -428,8 +470,8 @@ GM_live=I*sizeof(T)+O*sizeof(T)
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host baseline | `op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp` | `MatchTilingStrategyAndSetTilingKey` | i32 谓词失败，空间改变，`OHW>=coreNum*512` | key 30005 |
-| Direct selector | Direct 派生层（最终载荷） | `calc_resize_bilinear_config` | `!useIdx32&&needHWSplit` | HW/i64，`blockDim=Cores` |
+| Host baseline | `op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp` | `MatchTilingStrategyAndSetTilingKey` | 官方前置特化均未命中，且 i32 谓词失败、NCHW、空间改变、`OHW>=coreNum*512` | key 30005 |
+| Direct selector | Direct 派生层（最终载荷） | `calc_resize_bilinear_config` | `!useIdx32&&needHWSplit`；不执行官方前置特化 selector | HW/i64，`blockDim=Cores` |
 | Router | Direct 派生层（最终载荷） | `LAUNCH_RESIZE_TYPED` | dtype + HW + i64 + half-pixel | 六个 HW i64 entry 之一 |
 
 #### Device 数据流
@@ -466,7 +508,8 @@ N/A：无 UB/dynamic UB/workspace；GM + thread-private 路径。
 ##### 字节账与复用顺序
 
 ```text
-UB_total=0; dynamic_ub=N/A; workspace_total=0
+UB_total=0; L1_total=0; L0A/L0B/L0C_total=0
+dynamic_ub=N/A; workspace_total=0
 GM_live=I*sizeof(T)+O*sizeof(T)
 ```
 
@@ -502,8 +545,8 @@ GM_live=I*sizeof(T)+O*sizeof(T)
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host baseline | `op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp` | `MatchTilingStrategyAndSetTilingKey` | i32 谓词失败且 i64 HW 谓词为假 | key 30003 |
-| Direct selector | Direct 派生层（最终载荷） | `calc_resize_bilinear_config` | `!useIdx32&&!needHWSplit` | NCHW/i64 final route |
+| Host baseline | `op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp` | `MatchTilingStrategyAndSetTilingKey` | 官方前置特化均未命中，且 i32 谓词失败、NCHW、i64 HW 谓词为假 | key 30003 |
+| Direct selector | Direct 派生层（最终载荷） | `calc_resize_bilinear_config` | `!useIdx32&&!needHWSplit`；不执行官方前置特化 selector | NCHW/i64 final route |
 | Router | Direct 派生层（最终载荷） | `LAUNCH_RESIZE_TYPED` | dtype + NCHW + i64 + half-pixel | 六个 NCHW i64 entry 之一 |
 
 #### Device 数据流
@@ -540,7 +583,8 @@ N/A：无 UB/dynamic UB/workspace；GM + thread-private 路径。
 ##### 字节账与复用顺序
 
 ```text
-UB_total=0; dynamic_ub=N/A; workspace_total=0
+UB_total=0; L1_total=0; L0A/L0B/L0C_total=0
+dynamic_ub=N/A; workspace_total=0
 GM_live=I*sizeof(T)+O*sizeof(T)
 ```
 
@@ -576,7 +620,7 @@ GM_live=I*sizeof(T)+O*sizeof(T)
 
 - 适用 Route：R-001、R-003。
 - 触发条件：NCHW、输入不为单元素、输入输出空间不同，且 `outH*outW >= coreNum*(i32?1024:512)`。
-- Golden 来源：[`op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp:607-615`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp)
+- 固定源码：[`op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp:607-615`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_host/arch35/resize_bilinear_v2_tiling_arch35.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -594,7 +638,7 @@ if (useIdx32) {
 
 #### 机制与设计原因
 
-NCHW body 对每个输出元素解码 N/C/H/W；HW body 只对每个空间点解码一次 H/W，然后在同 thread 内循环全部 N/C。对大的 `OHW`，这减少坐标/magic decode 次数并保持足够的 `Cores*threads` 空间并行度。Direct selector机械保留该阈值与 1024/512 specialization，只收缩掉目标合同不可达的 NHWC/其它官方路线。
+NCHW body 对每个输出元素解码 N/C/H/W；HW body 只对每个空间点解码一次 H/W，然后在同 thread 内循环全部 N/C。对大的 `OHW`，这减少坐标/magic decode 次数并保持足够的 `Cores*threads` 空间并行度。Direct selector 机械保留该阈值与 1024/512 specialization，但没有保留官方前置特化；all-copy 与 NCHW-broadcast 的官方覆盖域仍与 Direct 合法输入相交，只是在最终载荷中改由通用 SIMT Route 承接。
 
 #### 迁移边界
 
@@ -613,7 +657,7 @@ NCHW body 对每个输出元素解码 N/C/H/W；HW body 只对每个空间点解
 
 - 适用 Route：R-001～R-004。
 - 触发条件：Route 已选定，domain 不能被 `realCoreNum` 整除时 `splitBlockTailFactor>0`。
-- Golden 来源：[`op_kernel/arch35/resize_bilinear_v2_simt_hw.h:133-140`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h)
+- 固定源码：[`op_kernel/arch35/resize_bilinear_v2_simt_hw.h:133-140`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -649,7 +693,7 @@ Host 只传商 `q` 和余数 `r`；Device 以 `start=block*q+min(block,r)` 重�
 
 - 适用 Route：R-002、R-004；R-001/R-003 也对 H/W 使用两级版本。
 - 触发条件：正的 N/C/outH/outW，`T_IDX` 与 Route index 宽度一致。
-- Golden 来源：[`op_kernel/arch35/resize_bilinear_v2_simt_nchw.h:60-75`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_nchw.h)
+- 固定源码：[`op_kernel/arch35/resize_bilinear_v2_simt_nchw.h:60-75`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_nchw.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -691,7 +735,7 @@ N = tmp - tmpRes * lenN;
 
 - 适用 Route：R-001～R-004 的 `mode=0` 插值 body。
 - 触发条件：源坐标落在整数点或半像素负边界，尤其输入邻点含 NaN/Inf 时差异可观察。
-- Golden 来源（被转换的官方基线）：[`op_kernel/arch35/resize_bilinear_v2_simt_hw.h:79-86`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h)
+- 固定源码（被转换的官方基线）：[`op_kernel/arch35/resize_bilinear_v2_simt_hw.h:79-86`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/image/resize_bilinear_v2/op_kernel/arch35/resize_bilinear_v2_simt_hw.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -732,7 +776,7 @@ bottomY = max(min(static_cast<T_IDX>(ceilf(origHeight)), lenSrcH - 1), static_ca
 | 内存总占用与复用 | GM input/output；坐标跨 N/C 复用 | GM input/output | 同 R-001 | 同 R-002 | 无中间物化 |
 | 搬运/Vector/SIMT/NDDMA/通信 API | scalar GM + `asc_vf_call(1024)` | 同左 + 四维 quick-div | scalar GM + `asc_vf_call(512)` | 同左 + 四维 quick-div | 无 Vector DMA/NDDMA/通信 |
 | 同步、精度与 tail | 唯一 HW owner；FP32；商余 | 唯一 linear owner；FP32；商余 | 同 R-001，u64 | 同 R-002，u64 | 无 atomic/barrier，stream ordering |
-| fallback/失败边界 | 到 R-002 | index 不安全到 i64 | 到 R-004 | 无后续 Route | Host 合同或平台异常直接失败 |
+| 未命中时 selector 备选 | `H` 假则 R-002 | `A` 假后以 512 阈值重算 `H`，选 R-003/R-004 | `H` 假则 R-004 | 无后续 Route | 这些箭头只发生在 launch 前；四条 Route 均无运行时 fallback，Host 合同或平台异常直接失败 |
 
 ## 平台差异
 
@@ -745,7 +789,7 @@ bottomY = max(min(static_cast<T_IDX>(ceilf(origHeight)), lenSrcH - 1), static_ca
 ## 限制与失败边界
 
 - Direct 合同只覆盖 rank-4、连续 NCHW、非空、输入输出同 dtype的 FP16/FP32/BF16；不接受 NHWC、非连续 view、空 tensor、dtype 转换或独立 `size` tensor。
-- `output_size` 与 `scale_factor` 必须恰给一个。scale-derived 输出用 double 乘法后 `floor`，再将 factor 降为 float 进入 POD；坐标与插值也均为 FP32。
+- `output_size` 与 `scale_factor` 必须恰给一个。scale-derived 输出先检查 double 乘积有限、`>=1` 且 `<=static_cast<double>(INT64_MAX)`，随后 `floor`/转 int64；由于该上界本身是 double 转换，本文不宣称它严格证明 int64 可表示性。factor 再降为 float 进入 POD，坐标与插值也均为 FP32。
 - `CheckedProduct` 保护 Host int64 乘积；i32 Route 使用严格 `<UINT32_MAX`，等于上限会走 i64。`lenN/lenC` 没有单独 int32 guard，但总元素数 guard 覆盖其在合法正 shape 下的 i32 乘法域。
 - launcher 返回 `void`，`RunOpApi` lambda 固定返回 0；异步设备错误不由该返回值表达。绕过配置函数传入非法 route/config 没有完整防御性校验。
 - `ubSize`、多个 factor 和 `tilingKey` 是为保持官方同序 POD/映射而保留的 inactive 字段；当前 body 不应据此推导 UB 占用或 Device router 行为。

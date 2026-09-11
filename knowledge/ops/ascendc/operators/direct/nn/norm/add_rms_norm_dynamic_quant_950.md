@@ -22,7 +22,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/add_rms_norm_dynamic_quant/op_host/config/ascend950/add_rms_norm_dynamic_quant_binary.json
     role: implementation
 created_at: "2026-08-24T19:32:38Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -40,7 +40,6 @@ cann_versions: ["9.1.0"]
 | Kernel 路线 | 重要性顺序：P0 R-001 full-load/perf；P1 R-002 normal；P2 R-004 split-reduce；P3 R-003 single-row。Route ID 保持 Host selector 身份，不随阅读顺序改号 |
 | 核心资源 | GM、AIV UB、`TQue/TBuf/RegTensor`；仅 R-004 使用 GM workspace |
 | 来源闭包 | `direct_implementation_closed`：Direct schema/PrivateUse1 → 校验与分配 → workspace producer → dtype launcher → Route selector/POD → 全部 entry/body/helper → 构建接线已闭合 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
 
 ## 接口与语义
 
@@ -49,15 +48,16 @@ cann_versions: ["9.1.0"]
 令 `M=prod(x1.shape[:-1])`、`N=x1.shape[-1]`。对第 `m` 行：
 
 ```text
-s[m,n]      = fp32(x1[m,n]) + fp32(x2[m,n])
-xOut[m,n]   = cast_input_dtype(s[m,n])
-rstd[m]     = 1 / sqrt((Σ_n s[m,n]^2) / N + epsilon)
-z[m,n]      = s[m,n] * rstd[m] * fp32(gamma[n])
-scaleOut[m] = max_n(abs(z[m,n])) / 127
-y[m,n]      = int8(round_to_nearest(z[m,n] / scaleOut[m]))
+s[m,n]    = fp32(x1[m,n]) + fp32(x2[m,n])
+xOut[m,n] = cast_input_dtype_RINT(s[m,n])
+rstd[m]   = 1 / sqrt((Σ_n s[m,n]^2) / N + epsilon)
+z[m,n]    = s[m,n] * rstd[m] * fp32(gamma[n])
+a[m]      = max_n(abs(z[m,n]))
+scale[m]  = a[m] / 127                         # 一般路径
+y[m,n]    = int8(pack_fp16(round_RINT(z[m,n] / scale[m])))
 ```
 
-R-003 对全零行显式令 `scaleOut=1`；R-001/R-002/R-004 的公共 MicroAPI 路径直接计算 `maxAbs/127`，固定交付件未显示同等的零最大值分支。`xOut` 在相加后降回输入 dtype，而 RMSNorm 与量化主计算保留 FP32 中间值。
+`scaleOut` 是反量化尺度，非乘到输入上的量化倍率；非退化行满足 `z≈float(y)*scaleOut`。R-003 对 `a[m]==0` 显式令 `scaleOut=1`、`y=0`；R-001/R-002/R-004 的公共 MicroAPI 路径直接形成 `a/127`，没有同等零最大值分支。公共 INT8 路径没有额外 clip/saturate，正确性依赖非零 `scale` 把有效值约束在约 `[-127,127]`。`xOut` 在相加后降回输入 dtype，而 RMSNorm 与量化主计算保留 FP32 中间值。
 
 ### 输入、输出与属性
 
@@ -71,11 +71,22 @@ R-003 对全零行显式令 `scaleOut=1`；R-001/R-002/R-004 的公共 MicroAPI 
 | `xOut` | 同 `x1` | 同输入 | `x1+x2` 的输入 dtype 输出 |
 | `scaleOut` | `x1.shape[:-1]` | FP32 | 每行一个反量化尺度 |
 
+### 输出契约与跨 Route 不变量
+
+| 对象 | 物理写入 | 数值/shape 契约 | Route 不变量与边界 |
+|---|---|---|---|
+| `xOut` | 每个 core 仅写自己的连续行区间；只回写每行有效 `N` 个元素 | shape、dtype、device 与 `x1` 相同；元素是 FP32 加法结果再按输入 dtype 的 RINT cast | 所有 Route 都从未降精度的 `s` 同时派生 `xOut` 和 RMSNorm 输入；不得改成从低精度 `xOut` 回读归一化 |
+| `y` | 每行有效 `N` 个 INT8；UB 对齐尾部不进入 GM | 与 `x1` 同 shape，row-major contiguous | 都执行逐行动态量化；pack 前为 FP32 RINT，再经 FP16 中转到 INT8；源码未声明跨 Route byte-identical |
+| `scaleOut` | 每行恰有一个 FP32 标量；地址为逻辑行号 | shape=`x1.shape[:-1]`，flatten 后长度 `M` | 一般为 `maxAbs/127`；全零行只有 R-003 明确给出 1，不能把这一分支外推到其他 Route |
+| workspace | 仅 R-004 在单 Kernel 内读写，不是可观察输出 | Host 预留三份 `blockDim*N` FP32 slice | 前两份分别承载量化前 `z` 和 FP32 `s`；第三份只为关闭的第二量化输出保留 |
+
+接口返回是异步的：三个输出 Tensor 和 workspace 都由同一 current stream 上的 global 生产/消费。调用后的同流算子可依赖流顺序；跨流消费仍应遵循框架的 stream 记录与同步契约，本 Direct 源码没有额外 event 导出。
+
 ### 入口与版本
 
 Direct schema 由 `TORCH_LIBRARY_FRAGMENT(cann_bench, m)` 注册，Meta 实现只复用输入校验和输出 shape/dtype 分配；实际 NPU 路径由 `TORCH_LIBRARY_IMPL(cann_bench, PrivateUse1, m)` 绑定到 `add_rms_norm_dynamic_quant_npu`。它不是 ACLNN 包装：`OpCommand::RunOpApi("AddRmsNormDynamicQuantDirect", directCall)` 内直接发射 Ascend C global。
 
-FP16/BF16 分别进入两个 Host launcher；Route body 模板的 `T_X` 分别为 `half`/`bfloat16_t`，`T_Y` 固定为 `int8_t`。本卡描述 CANN 9.1.0、950 的直调交付件；给定官方仓只承担同名算子与 arch35/950 实现的相关映射，不把转换后的 launcher、裁剪依赖或构建接线称为官方接口。
+FP16/BF16 分别进入两个 Host launcher；Route body 模板的 `T_X` 分别为 `half`/`bfloat16_t`，`T_Y` 固定为 `int8_t`。本卡描述 CANN 9.1.0、950 的 Direct 实现；给定官方仓只承担同名算子与 arch35/950 实现的相关映射，不把 Direct launcher、裁剪依赖或构建接线称为官方接口。
 
 ## Host/Launcher 执行流程
 
@@ -85,11 +96,26 @@ FP16/BF16 分别进入两个 Host launcher；Route body 模板的 `T_X` 分别�
 
 `AllocateOutputs` 分配 INT8 `y`、同输入 dtype 的 `xOut` 和 FP32 `scaleOut`。`OptionalDeviceGuard` 固定输入 device，当前 NPU stream 由 `getCurrentNPUStream().stream(false)` 取得。
 
+### Host 算术与窄化边界
+
+现有 Host 公式使用原生无符号加乘，不是 checked arithmetic。知识复用时应把“数学公式成立”与“机器整数计算安全”分开；至少在 launch 前对下表逐项拒绝溢出或窄化失败。
+
+| 计算点 | 当前表达式/窄化 | 已有前提 | 尚未闭合的边界 |
+|---|---|---|---|
+| flatten | `rows=uint64_t(x1.numel())/hidden` | `numel>0`、`hidden>0`，shape 本身保证整除 | PyTorch `numel()` 为有符号范围；转换为 `uint64_t` 前没有独立上界断言 |
+| ceil/align | `(a+b-1)/b`、`ceil*align` | `b>0` 来自 core 数、固定对齐或 VReg | `a+b-1` 与最终乘法无 `checked_add/checked_mul` |
+| 分核 | `blockDim=uint32_t(ceil(M/mPerCore))` | `M,C>0`，数学上 `blockDim<=min(M,C)` | `uint64_t→uint32_t` 依赖实际 AIV core 数可表示，代码无显式检查 |
+| UB 求解 | 多项 `baseM*N*bytes`、`cutN*2` | 先查询 `U>0`，最终比较 `<=U` | 比较发生在乘加之后；若中间先 wrap，guard 会失真 |
+| workspace | `3*blockDim*N*sizeof(float)` | 仅 R-004 使用 | `uint64_t` 乘法、随后 `uint64_t→int64_t` 作为 Torch shape 均未检查 |
+| Device 参数 | `realM→uint16_t`、`N/count→uint32_t`，部分 DMA `blockLen→uint16_t/uint32_t` | 常规张量域与 Route guard | 超大 `M/N` 可静默截断；源码没有统一最大 shape 契约 |
+
+因此，直接复刻 launcher 时应以 checked add/mul、显式 `<=UINT32_MAX/UINT16_MAX/INT64_MAX` 检查闭合这些载荷；当前实现只能把超大 shape 记为未证明域，不能从 UB guard 反推整数安全。
+
 ### 参数、Workspace 与生命周期
 
-`add_rms_norm_dynamic_quant_workspace_bytes(M,N)` 分别以 `allowPerf=true/false` 计算一次 Route，取两者 workspace 上界；R-004 所需字节为 `3 * blockDim * N * sizeof(float)`，其它 Route 为零。请求为零时仍分配 32 字节 `UInt8` Tensor，避免传空地址。
+`add_rms_norm_dynamic_quant_workspace_bytes(M,N)` 分别以 `allowPerf=true/false` 计算一次 Route，取两者 workspace 上界；R-004 所需字节为 `3 * blockDim * N * sizeof(float)`，其它 Route 为零。这里固定传入的 `epsilon=1e-6` 不影响 Route 或容量公式。任意一次 Tiling 抛错都会在 dtype launcher 之前终止，因此“perf 可启动”本身不足以绕过 non-perf 上界计算失败；反过来，即使实际 launch 命中无 workspace 的 R-001，也可能因 non-perf 计算落到 R-004 而预分配 workspace。请求为零时仍分配 32 字节 `UInt8` Tensor，避免传空地址。
 
-workspace 的 Host owner 是局部 Torch Tensor，并由 direct-call lambda 捕获；设备侧只有 R-004 解引用它。流上回收的最终保证属于 PyTorch NPU allocator/framework 边界，交付件内未展开。所有输出和 workspace 指针连同 POD 按值传给单个 global；launcher 没有显式返回码或二次 launch。
+workspace 的 Host owner 是局部 Torch Tensor，并由 direct-call lambda 捕获；设备侧只有 R-004 解引用它。流上回收的最终保证属于 PyTorch NPU allocator/framework 边界，Direct 源码内未展开。所有输出和 workspace 指针连同 POD 按值传给单个 global；launcher 没有显式返回码或二次 launch。
 
 ### 启动图与失败传播
 
@@ -128,6 +154,20 @@ P = align(R/(2V),8)                    # reduce partial FP32 元素数
 
 每个 block 负责连续 `mPerCore` 行，末 block 用 `mLastCore`。P0 R-001/P1 R-002 再按 `baseM` 分外层批次；P2 R-004 每行沿 N 切片；P3 R-003 每次一行并每 128 行批量写 scale。
 
+### 多核地址不变量
+
+对 `b∈[0,blockDim)`，令 `rows_b=(b==blockDim-1 ? mLastCore : mPerCore)`，则该 block 的逻辑行区间与地址为：
+
+```text
+row_begin(b)   = b * mPerCore
+row_end(b)     = row_begin(b) + rows_b              # 半开区间
+xy_gm_begin(b) = row_begin(b) * N                    # 元素偏移
+scale_begin(b) = row_begin(b)                        # FP32 标量偏移
+ws(k,b,n)      = (k * blockDim + b) * N + n          # R-004, k=0/1/2
+```
+
+正数域内 `blockDim<=C`，并且所有 block 都有至少一行；相邻 `[row_begin,row_end)` 首尾相接，覆盖 `[0,M)` 且不重叠。R-004 的三个 workspace plane 也按 `(k,b)` 分离，同一 block 只在完成当前行的 `s→z→y` 三阶段后才复用自己的 N 元素 slice。四条 Route 都没有跨 core reduction、atomic 或全局 barrier：归约只沿单行 N 维发生，因此分核只能切 M，不能把一行的 N 随意分给多个 core。
+
 ### Route 特征与重要性
 
 P0～P3 表示实现知识的阅读与复用重要性，不改变 Route ID，也不改变 Host 的真实判断顺序。运行时短路关系以随后表格的 `Host 顺序`字段为准。
@@ -138,6 +178,8 @@ P0～P3 表示实现知识的阅读与复用重要性，不改变 Route ID，也
 | P1 | R-002 normal | 通用单行 RegBase 主干；一行完成 add、xOut、RMS 归约、尺度与量化，scale/rstd 按行组保存 | R-001 未命中且 normal 单行 UB 可容纳；也是关闭 perf 时优先求解的非 perf 路线 | 512B reduction padding、单行 FP32 temporary 与行组 scale/rstd 同时驻留 UB |
 | P2 | R-004 split-reduce | 沿 N 切片，以每 core GM workspace 串接 sum、max 与最终量化三个阶段 | H1～H3 均未命中，但最小 split 布局可容纳 | workspace slice、三级 reduction buffer 与 MTE event 配对保持一致 |
 | P3 | R-003 single-row | 专用单行 Queue/TBuf 复用，标量 event 读取归约值，并显式处理零最大值 | R-001/R-002 未命中且 `16*align(N,32)+1024<=U` | 128 行尺度批次、`V_S/S_V` event、Queue 复用与尾批成立 |
+
+R-002 命中后会再次由剩余 UB 估算 `baseM`。源码先置 `baseM=1`，但随后在 `64+CalUBTotalSize(0,N,1)<=U` 时用整数除法覆盖它，未做 `max(1,...)`；在刚好只有一行布局容量的边界上，该式可能得到 0。常规 950 资源域是否永远排除该等号情形，当前源码没有显式证明，因此 R-002 的可复用契约应额外要求最终 `baseM>=1`。
 
 ### Host Route 选择
 
@@ -167,7 +209,7 @@ else:                                              fail before launch
 | P2 | R-004 split-reduce | 103 | H1～H3 不成立且 H4 的 split 最小块可容纳 | 单 K-001 | `KernelAddRmsNormDynamicQuantRegbaseSpiltReduce<T_X,int8_t>::Process` | UB 分片 + 每 block GM workspace；MTE event | N 尾片和多级 reduce；无更低 fallback |
 | P3 | R-003 single-row | 102 | H1/H2 不成立且 H3 的专用单行 UB 可容纳 | 单 K-001 | `KernelAddRmsNormDynamicQuantRegbaseSingleRow<T_X,int8_t>::Process` | 复用 3 个 TBuf；标量 event 读取 max/rstd；scale 128 行成批 | 行尾 `rowWork%128`；H3 失败进入 H4 |
 
-### 隐藏性能 Guard
+### 隐式资源与性能 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -181,7 +223,7 @@ else:                                              fail before launch
 
 ### POD/ABI
 
-`AddRmsNormDynamicQuantRegbaseTilingData` 在交付件中是自然对齐的 plain struct：`sizeof=104`、`alignof=8`。前十个 `uint64_t` 连续占 0～79 字节，两个 `float` 位于 80/84，三个 `uint32_t` 位于 88/92/96，末尾补齐到 104 字节。
+`AddRmsNormDynamicQuantRegbaseTilingData` 在 Direct Host/Device 同编译 ABI 下是自然对齐的 plain struct：预期 `sizeof=104`、`alignof=8`。前十个 `uint64_t` 连续占 0～79 字节，两个 `float` 位于 80/84，三个 `uint32_t` 位于 88/92/96，末尾补齐到 104 字节。源码没有 `static_assert(sizeof/offsetof)`；若 Host 与 Device 分离生成或修改编译选项，应补这些断言，不能只凭字段名保证 ABI。
 
 | 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
 |---|---|---|---|---|---|---|---|
@@ -210,6 +252,19 @@ else:                                              fail before launch
 | P2 | R-004 | 103 | 同上 | 同上 | `add_rms_norm_dynamic_quant_split_{half,bfloat16}` | `...regbase_split_reduce.h` 与公共依赖 | 同上 |
 | P3 | R-003 | 102 | 同上 | 同上 | `add_rms_norm_dynamic_quant_single_{half,bfloat16}` | `...regbase_single_row.h` 与公共依赖 | 同上 |
 
+### dtype 叶完整性
+
+FP16/BF16 是接口合法域的全部输入 dtype。下表显式保留八个 `dtype×Route` 叶；它们共用 selector 数值、POD 布局、`blockDim` 和数学契约，但 entry 符号与 `T_X` 模板实例不可合并或互换。
+
+| Route/key | FP16 Device entry → body | BF16 Device entry → body | workspace/叶级差异 |
+|---|---|---|---|
+| R-001 / 100 | `add_rms_norm_dynamic_quant_perf_half` → `RegbasePerf<half,int8_t>` | `add_rms_norm_dynamic_quant_perf_bfloat16` → `RegbasePerf<bfloat16_t,int8_t>` | 两叶均不解引用 workspace；输入 load/cast 与 `xOut` cast 使用各自 `T_X` |
+| R-002 / 101 | `add_rms_norm_dynamic_quant_normal_half` → `Regbase<half,int8_t>` | `add_rms_norm_dynamic_quant_normal_bfloat16` → `Regbase<bfloat16_t,int8_t>` | 两叶 workspace=0；512B reduce padding 以 2B 输入元素计数 |
+| R-004 / 103 | `add_rms_norm_dynamic_quant_split_half` → `RegbaseSpiltReduce<half,int8_t>` | `add_rms_norm_dynamic_quant_split_bfloat16` → `RegbaseSpiltReduce<bfloat16_t,int8_t>` | 两叶都把 workspace 传入 `Init`，布局同为三份 FP32 plane |
+| R-003 / 102 | `add_rms_norm_dynamic_quant_single_half` → `RegbaseSingleRow<half,int8_t>` | `add_rms_norm_dynamic_quant_single_bfloat16` → `RegbaseSingleRow<bfloat16_t,int8_t>` | 两叶 workspace=0；单行标量归约、零 max 分支和 128 行 scale 批次一致 |
+
+两个 Host launcher 的 `if/else if/else` 链都完整覆盖 100→101→102→103：前三个 key 显式比较，最终 `else` 只在 `CalcDirectTiling` 已保证 selector 属于四值集合后承接 R-004。不存在 dtype 级 CPU fallback、默认模板或跨 dtype 重解释路径。
+
 ## Kernel 实现
 
 ### 公共执行流程
@@ -217,6 +272,17 @@ else:                                              fail before launch
 八个 dtype×Route global 都在 Device 分支设置 `KERNEL_TYPE_AIV_ONLY`，栈上创建 `TPipe`，以 `T_X={half|bfloat16_t}`、`T_Y=int8_t` 实例化 Route class，调用 `Init` 后执行 `Process`。Direct 入口没有 smooth/beta/第二量化输出；entry 用 `x1` 占位传递这些地址，但三个 flag 固定为 0，相关 GM 绑定、Queue 分配和 Device 分支均 inactive。
 
 所有 Route 的数学主链为 GM→UB/寄存器 FP32 加法与归约→`xOut` GM，以及 FP32 `rstd*gamma`→逐行 `abs/max`→除 scale→`CAST_RINT`/FP16 中转/INT8 pack→`y` GM。尾部由 `UpdateMask`、`DataCopyPad` 和显式对齐长度处理。
+
+### 归约、倒平方根与量化精度路线
+
+| Route | sum-of-squares 路径 | rstd 路径 | max/scale 路径 | 可见精度边界 |
+|---|---|---|---|---|
+| R-001 perf | `CalculateSquareReduceSum` 按 `powerSplit` 折叠多行 FP32 `s²` | `ComputeRstdNewtonRaphson<true,true>`：先乘 `avgFactor`，再做倒平方根近似与修正 | 每行 RegTensor max，乘 `1/127` 后广播除法 | 多行并行与 Newton-Raphson 次序使其不承诺与其他 Route bitwise 相同 |
+| R-002 normal | `ReduceSumRstd` 在 512B 补零行上二分折叠，padding 在归约前清零 | 同一 helper 内 `Sqrt` 后 `1/x` | 公共 `ComputeYScale`，有效 mask 下 max/除法 | FP32 主链，但 reduction tree 与 R-001 不同 |
+| R-004 split | 各 N chunk 先生成 partial，随后 level1/2/3 逐级合并 | `ComputeMultiLevelRstd<true>` 对整行 partial 做 `sqrt/div` | 多 chunk max 与旧 scale 取 max，最后统一乘 `1/127`，再重读 `z` 量化 | workspace 往返保持 FP32；chunk 合并次序与整行 Route 不同 |
+| R-003 single | 高层 Vector `Mul` 后 `ReduceSumHalfInterval`，标量读取总和 | scalar `1/sqrt(sum*avg+eps)` | 标量 `maxTemp`；非零行用 `127/maxTemp`，零行显式倍率 1 | 标量路径明确闭合零行，但 reduction/rounding 路线仍不保证跨 Route bitwise 一致 |
+
+共同不变量是输入先升 FP32 相加、`gamma` 升 FP32、统计与归一化保持 FP32、`xOut` 单独降回输入 dtype。迁移时可要求数学等价与误差契约一致，不能要求四条 Route 中间值逐位相等；源码也没有给出可据以声明的跨 Route 绝对/相对误差阈值。
 
 以下逐 Route 章节按 P0→P3 展开，顺序为 R-001、R-002、R-004、R-003；Route ID 与 H1→H4 的 Host 短路链保持不变。
 
@@ -655,9 +721,9 @@ workspace_total = 0
 
 - 适用 Route：R-001～R-004。
 - 触发条件：按 `fullLoadBaseM`、normal UB、single-row UB、split minimum UB 的固定短路顺序。
-- Golden 来源：转换交付件 `op_kernel/add_rms_norm_dynamic_quant_kernel.cpp:175-217`；[相关官方 arch35 Tiling 映射](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/add_rms_norm_dynamic_quant/op_host/add_rms_norm_dynamic_quant_tiling_arch35.cpp)。转换内容不是官方接口声明。
+- Direct 源码事实：`op_kernel/add_rms_norm_dynamic_quant_kernel.cpp:175-217`；[相关官方 arch35 Tiling 映射](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/add_rms_norm_dynamic_quant/op_host/add_rms_norm_dynamic_quant_tiling_arch35.cpp)。Direct 转换内容不是官方接口声明。
 
-**交付件源码（最小连续摘录）**：
+**最小源码证据**：
 
 ```cpp
 if (allowPerf && fullLoadBaseM >= 1 && hidden <= FULL_LOAD_R_MAX) {
@@ -677,7 +743,6 @@ if (allowPerf && fullLoadBaseM >= 1 && hidden <= FULL_LOAD_R_MAX) {
 - 适用：同样具有多种 UB 布局且可在 Host 获得平台资源的 AIV 算子。
 - 前提：UB 公式必须与实际 `InitBuffer` 字节一致，Route 优先级不可重排。
 - 失效：平台资源为零、最小 split 布局也不可容纳时必须在 launch 前失败。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
@@ -689,9 +754,9 @@ if (allowPerf && fullLoadBaseM >= 1 && hidden <= FULL_LOAD_R_MAX) {
 
 - 适用 Route：R-001、R-002；R-004 以分片形式采用相同机制。
 - 触发条件：每个有效 vector mask 内执行 x1/x2 升 FP32 后相加。
-- Golden 来源：转换交付件 `op_kernel/add_rms_norm_dynamic_quant_regbase_perf.h:282-290`；[相关官方 perf body 映射](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/add_rms_norm_dynamic_quant/op_kernel/arch35/add_rms_norm_dynamic_quant_regbase_perf.h)。
+- Direct 源码事实：`op_kernel/add_rms_norm_dynamic_quant_regbase_perf.h:282-290`；[相关官方 perf body 映射](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/add_rms_norm_dynamic_quant/op_kernel/arch35/add_rms_norm_dynamic_quant_regbase_perf.h)。
 
-**交付件源码（最小连续摘录）**：
+**最小源码证据**：
 
 ```cpp
 Add(xSum, x1, x2, pregLoop);
@@ -708,7 +773,6 @@ DataCopy<float, StoreDist::DIST_NORM_B32>(xOutTmp + offset, xSum, pregLoop);
 - 适用：融合算子既输出低精度残差和，又继续消费高精度和。
 - 前提：UB 能同时容纳 `xOut` Queue 与 FP32 temporary；mask/row stride 必须一致。
 - 失效：R-004 无法整行驻留时，FP32 temporary 必须落入独立 workspace slice 后再读回。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
@@ -720,9 +784,9 @@ DataCopy<float, StoreDist::DIST_NORM_B32>(xOutTmp + offset, xSum, pregLoop);
 
 - 适用 Route：R-004。
 - 触发条件：整行 normal/single UB 均不满足、最小 split UB 满足。
-- Golden 来源：转换交付件 `op_kernel/add_rms_norm_dynamic_quant_regbase_split_reduce.h:83-105,247-254,397-407`；[相关官方 split body 映射](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/add_rms_norm_dynamic_quant/op_kernel/arch35/add_rms_norm_dynamic_quant_regbase_split_reduce.h)。
+- Direct 源码事实：`op_kernel/add_rms_norm_dynamic_quant_regbase_split_reduce.h:83-105,247-254,397-407`；[相关官方 split body 映射](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/norm/add_rms_norm_dynamic_quant/op_kernel/arch35/add_rms_norm_dynamic_quant_regbase_split_reduce.h)。
 
-**交付件源码（最小连续摘录）**：
+**最小源码证据**：
 
 ```cpp
 y1TmpGm_.SetGlobalBuffer((__gm__ float*)workspace + workSpaceOffset, numN_);
@@ -738,7 +802,6 @@ xOutTmpGm_.SetGlobalBuffer((__gm__ float*)workspace + workSpaceStart + workSpace
 - 适用：量化 scale 依赖整行统计、但单行无法驻留 UB 的向量算子。
 - 前提：workspace 至少 `3*blockDim*N*4` 字节；每 core slice 不重叠；MTE event 必须保留。
 - 失效：workspace 不可用或最小 reduce buffer 超 UB 时不得启动。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
@@ -761,19 +824,19 @@ xOutTmpGm_.SetGlobalBuffer((__gm__ float*)workspace + workSpaceStart + workSpace
 
 | 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 本卡不覆盖 | 本卡不覆盖 | Direct 交付件构建支持；不等价于 ACLNN 平台声明 |
-| Host/Launcher | 未提取 | 未提取 | `NPU_ARCH=ascend950` 映射 `--npu-arch=dav-3510`；运行时查询 UB/AIV/VReg |
-| Kernel/资源 | 未提取 | 未提取 | arch35 风格 AIV-only RegBase，四条单 Kernel Route |
+| 支持状态 | 本卡不覆盖 | 本卡不覆盖 | Direct 构建接线支持；不等价于 ACLNN 平台声明 |
+| Host/Launcher | 本卡范围外 | 本卡范围外 | `NPU_ARCH=ascend950` 映射 `--npu-arch=dav-3510`；运行时查询 UB/AIV/VReg |
+| Kernel/资源 | 本卡范围外 | 本卡范围外 | arch35 风格 AIV-only RegBase，四条单 Kernel Route |
 
 ## 限制与失败边界
 
 - 只接受 rank 2～8、contiguous strided、非空、同 shape/dtype/device 的 FP16/BF16 输入；没有 view/contiguous 自动修复。
-- `epsilon` 从 Host double 窄化为 FP32；`avgFactor=1/float(N)`，多个 Device helper 又把长度窄化为 `uint32_t` 或 `uint16_t`，交付件未给出超大 N/M 的额外溢出 guard。
+- `epsilon` 从 Host double 窄化为 FP32；`avgFactor=1/float(N)`，多个 Device helper 又把长度窄化为 `uint32_t` 或 `uint16_t`，Direct 源码未给出超大 N/M 的额外溢出 guard。
+- R-002 的二次 `baseM` 估算没有下限 clamp；若 UB 恰好卡在单行容量边界，最终 `baseM>=1` 尚未由 Host 代码保证。
 - R-001/R-002/R-004 的公共量化路径未显示 `maxAbs==0` 专门处理；R-003 明确将这种行的 scale 置 1。跨 Route 的全零行语义不能仅凭源码假定完全一致。
 - R-004 Host 预留三份 workspace；Direct flags 固定关闭第二 smooth/第二输出，因此第三份 y2 temporary 不被 Device 使用，但 ABI/容量仍不可擅自缩减。
 - launcher 的 global 发射语句不检查设备侧 launch 状态；异常传播只在校验、平台查询和 Tiling 无 Route 的 Host 终点可见。
-- 给定官方 Commit `ceb4536a2bd6fc99b85aec9d0fdcc0f470376292` 在本地浅克隆中不可解析；官方链接仅记录同名算子、arch35 body 与 ascend950 config 的相关映射。直调入口、转换后的 Host Tiling、局部依赖闭包和构建接线均以交付件为事实来源，未伪称为官方实现。
-- 本次知识提取未执行编译、真机、数值或性能测试。
+- 官方链接只记录同名算子、arch35 body 与 ascend950 config 的相关映射。Direct 入口、转换后的 Host Tiling、局部依赖闭包和构建接线以 Direct 源码为事实来源，不伪称为官方接口。
 
 ## 源码索引
 
@@ -790,7 +853,7 @@ xOutTmpGm_.SetGlobalBuffer((__gm__ float*)workspace + workSpaceStart + workSpace
 | Kernel entry 映射 | `norm/add_rms_norm_dynamic_quant/op_kernel/add_rms_norm_dynamic_quant_apt.cpp` | APT entry/router | 950/arch35 相关映射 |
 | 构建接线映射 | `norm/add_rms_norm_dynamic_quant/op_host/config/ascend950/add_rms_norm_dynamic_quant_binary.json` | ascend950 binary config | 官方平台相关映射；不替代 Direct 构建事实 |
 
-Direct 闭包的事实文件为交付件中的 `op_plugin/add_rms_norm_dynamic_quant_plugin.cpp`、`op_kernel/add_rms_norm_dynamic_quant_{launch,tilingdata}.h`、`op_kernel/add_rms_norm_dynamic_quant_kernel.cpp`、四个 `regbase` Route header、两个实际命中的公共 dependency header、算子 `CMakeLists.txt` 与顶层 950 架构映射；它们是转换交付件，不列作官方 Frontmatter source。
+Direct 闭包的事实文件为 `op_plugin/add_rms_norm_dynamic_quant_plugin.cpp`、`op_kernel/add_rms_norm_dynamic_quant_{launch,tilingdata}.h`、`op_kernel/add_rms_norm_dynamic_quant_kernel.cpp`、四个 `regbase` Route header、两个实际命中的公共 dependency header、算子 `CMakeLists.txt` 与顶层 950 架构映射；它们属于 Direct 转换源码，不列作官方 Frontmatter source。
 
 ### 实现复用检查
 

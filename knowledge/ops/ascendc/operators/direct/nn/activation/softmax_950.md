@@ -26,7 +26,7 @@ sources:
   - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/activation/softmax_v2/op_kernel/arch35/softmax_v2_ara_recompute.h"
     role: implementation
 created_at: "2026-08-24T19:32:45Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -50,7 +50,7 @@ cann_versions: ["9.1.0"]
 
 ### 计算语义
 
-将连续输入按 `[A1,R,A0]` 展平。对每一列 `(a1,a0)`，先求 `m=max_r x[a1,r,a0]`，再以 FP32 计算 `s=sum_r exp(x-m)`，最后输出 `exp(x-m)/s`。减最大值抑制指数上溢；所有 AIV 路线及两条 SIMT 路线均遵守该顺序。`r==1` 时 launcher 将 `(A1,A0)` 合并为新的 `A0`，数学输出仍恒为 1。
+将连续输入按 `[A1,R,A0]` 展平。对每一列 `(a1,a0)`，先求 `m=max_r x[a1,r,a0]`，再以 FP32 计算 `s=sum_r exp(x-m)`，最后输出 `exp(x-m)/s`。减最大值抑制有限输入的指数上溢；所有 AIV 路线及两条 SIMT 路线均遵守该顺序。`r==1` 时 Host 将 `(A1,A0)` 合并为新的 `A0`，有限输入的数学输出为 1；NaN、`+inf` 或 `-inf` 仍经过同一套减最大值算术，不能套用“恒为 1”的有限值结论。
 
 ### 输入、输出与属性
 
@@ -79,9 +79,37 @@ cann_versions: ["9.1.0"]
 4. 从 `PlatformAscendCManager` 读取 UB 字节数与 AIV 核数；任一为零/非正则失败。
 5. 按固定 Host顺序寻找首个 capable AIV Route；成功即短路，找不到时返回 `-1`，`TORCH_CHECK` 抛错。直调 `launch_softmax` 不执行这些检查。
 
+### Host 形状折叠与 checked arithmetic 契约
+
+Host 与 Device 共享的唯一逻辑地址式是
+
+```text
+linear(a1,r,a0) = (a1 * R + r) * A0 + a0
+A1 = product(shape[0:dim])
+R  = shape[dim]
+A0 = product(shape[dim+1:rank])
+```
+
+`A0==1` 表示归约维物理连续，即末轴 AR；`A0!=1` 表示同一 softmax 列的相邻元素相隔 `A0`，即非末轴 ARA。不能用原 rank 或 `dim==rank-1` 在 Device 侧重新判断路线：负 dim 归一化、折叠以及 `R==1` 重写都只发生在 Host。`R==1` 时源码改写为 `A1=1, A0=oldA1*oldA0`，所以除单元素 tensor 外通常进入 ARA 路线；这只改变并行域，不改变输出 shape。
+
+源码使用有符号 `int64_t` 直接相乘，并用 `(a+b-1)/b` 做 ceil-div，没有 checked arithmetic。因而“rank、dim、每维为正”只是语义校验，不足以证明地址与 POD 安全。复用该契约时必须在 route 选择前闭合以下量；当前实现没有补做这些拒绝，因此它们是明确边界，不是已实现校验。
+
+| 需闭合的量 | 消费位置 | 必须成立的不变量 | 当前源码状态 |
+|---|---|---|---|
+| `A1`、`A0`、`oldA1*oldA0` | shape 折叠、`R==1` 重写 | 每次乘法可表示为正 `int64_t` | 直接乘，无溢出拒绝 |
+| `A1*R*A0`、`r*tileA0Len`、`a1*a0Outer` | GM offset、UB extent、`totalTiles` | 元素数、字节数及最终指针偏移均可表示 | 直接乘；不能只检查最终结果为正 |
+| `a+b-1` | 所有 `CeilDiv` | 加法不溢出，且除数正 | helper 未保护加法；各 route 依赖正 divisor |
+| `extent*sizeof(T)`、stride 字节数 | `InitBuffer`、`DataCopyExtParams` | 不超过目标 API 字段与 UB/GM 范围 | route 公式限制容量，但未统一审计字段窄化 |
+| ARA full-load loop/offset | `uint16_t` loop 字段、`uint32_t` offset 字段 | 生产值在对应位宽内 | 赋值时直接窄化 |
+| `blockDim`、SIMT `blockDim*1024` | launch grid、global-thread stride | `blockDim>0` 且乘积可表示，覆盖域非零 | 内置 tiling 产生正值；裸 launch 不检查 |
+
+安全的 Host producer 还应保持“先验证/checked multiply，后写 union，最后一次性提交”的事务性：失败时不允许留下可被 launcher 误用的半成品 key/member。当前 `calc_softmax_tiling` 先将 `*p={}` 清零并在成功分支写入，满足失败不携带旧参数，但不补足上表的溢出证明。
+
 ### 参数、Workspace 与生命周期
 
 `SoftmaxLaunchParams` 在 `softmax_npu` 栈上零初始化并按值捕获进 lambda；kernel launch 将所选 union member 按值传给 Device entry。输入和输出由 torch tensor 持有，stream 上的 op 调度保持其生命周期。所有路线都把 kernel launch 的第二配置参数写为 `nullptr`，没有 workspace 或 dynamic UB；`workspace_total=0`。`launch_softmax` 返回 `void`，lambda 固定返回 0，源码没有把异步 kernel launch 错误转换为该 lambda 的返回值。
+
+这里的 one-load“原地”只指 **UB 中的 xQueue 物理槽被改写为输出**；PyTorch 入口仍用 `empty_like` 创建独立 `y`。裸 ABI 没有声明 GM alias 能力，且 stream/recompute/SIMT 路线会在较晚阶段再次读取 `x`，所以跨路线契约必须取保守交集：`x` 与 `y` 不重叠，不得从 R-005 的 UB 复用推导出 GM in-place 支持。
 
 ### 启动图与失败传播
 
@@ -101,6 +129,18 @@ direct C caller
 
 每条 Route 都是单 Kernel、无节点间 workspace 边。stream 是唯一跨 Host/Device ordering 介质。`calc_softmax_tiling` 失败会阻止 `softmax_npu` launch；未知 key 在 `launch_softmax` 中静默不启动，非法 dtype 会被宏的最终 `else` 当作 BF16（33000 忽略 dtype），空指针也没有 launcher 内保护。
 
+### `calc` 与裸 `launch` 的边界
+
+| 契约层 | 已做的事 | 没有做的事 | 调用方必须保证 |
+|---|---|---|---|
+| `softmax_npu` | device guard、连续性/dtype/rank/dim 检查、输出分配、当前 stream、`calc` 成功后 launch | 非有限值过滤、shape 乘积溢出审计、同步等待 | tensor 生命周期交给框架；结果在同 stream 顺序下消费 |
+| `calc_softmax_tiling` | 清零 POD、折叠 shape、读取 `U/C`、按固定顺序产生 500～31000 中一个 key/member | 不产生 32000/33000；不验证 x/y/stream；不做完整 checked arithmetic | 返回 0 才可 launch；参数字节保持不变直到 launch 读取完成 |
+| `launch_softmax` | 以 key 选择 union member，以 dtype 选择 entry，按 `blockDim` 异步发射一个 kernel | 不校验任何指针、dtype、key/member 对应、shape、grid、alias；无错误返回 | key/member/dtype 必须原子匹配，`x/y` 不重叠，stream 有效 |
+| 32000 direct key | router 有三 dtype entry | 包内无 tiling producer | 完整给出 `araSimt.{totalA1Len,totalRLen,totalA0Len}` 与正 grid |
+| 33000 direct key | 固定发射 FP16 R2 body | dtype 被忽略，`p.r/p.a0` 也不参与校验 | 实际缓冲为 FP16、`R=2,A0=1`，`p.a1=rows`，正 grid |
+
+31000 也体现了 selector 与 router 的差异：kernel/router 存在 FP16、FP32、BF16 三个 entry，`TilingAraOneLoad` 的内部边界是 `R<=2048`；但内置 selector 只在 `dtype==FP16 && A1<=4 && R<=512` 时调用它。知识迁移时应把后者当作闭合的可达域，不能因为 entry 存在就把 FP32/BF16 或更大 R 宣称为内置可用路线。
+
 ## Route 与参数设计
 
 ### 分核与资源计算
@@ -109,19 +149,19 @@ direct C caller
 
 ### Route 特征与重要性
 
-P0～P8 表示维护与迁移时的关注优先级，不改变 Route ID、tiling key 或 Host selector 的短路语义。
+P0～P8 表示维护与迁移时的关注优先级，不改变 Route ID、tiling key 或 Host selector 的短路语义。`active` 表示 `calc_softmax_tiling` 可达，`conditional-direct` 表示内置 selector 不生产该 key/叶变体、但公开 `launch_softmax` 分发与 Device body 已接线且满足完整 caller 契约时可达。九个 Route ID 中没有只有孤立源码、连 launcher 都不可达的 `dormant` route；31000 的非 selector 叶变体单独列为 conditional，不能混入 active 域。
 
-| 重要性 | Route | 特征 | 适用域 | 实现前提 |
-|---|---|---|---|---|
-| P0 | R-002 AR full-load | 末轴整行驻留，双缓冲搬运并保留 FP32 exp | `A0==1` 的三种 dtype；覆盖常见中长 R | `R<=16384`，且 UB 计算得到 `ubFactor>0` |
-| P1 | R-006 ARA full-load | 非末轴全 R 驻留，FP32 tree/binary reduction | `A0!=1` 的三种 dtype；覆盖常见中等 R 与不规则 A0 | `factorMax>0`；`R>8` 时 `BinaryAddTiling` 成功 |
-| P2 | R-005 ARA one-load | 输入只搬入一次，复用 xQueue 原位形成输出 | 小 A1、小 R 的 FP16 非末轴归约 | `dtype==FP16`、`A1<=4`、`R<=512`、`maxInner>=1` |
-| P3 | R-004 ARA stream | 以 256 行分块在线合并 `(max,sum)`，二遍输出 | `A0!=1` 的大 R 跨步归约，三种 dtype | `R>=4096`，且 UB 至少容纳一个 A0 基础 tile |
-| P4 | R-001 AR small-R | 末轴小 R 转置并按列向量化，预取下一 tile | `A0==1 && R<=16`，适合极小或很大行并行域 | 避开 `5C<=A1<=160C`，且 UB 容纳一个 64-column tile |
-| P5 | R-003 AR recompute | 三遍读取 GM，以重算换取更低的整行驻留需求 | R-001/R-002 不可用后的末轴通用兜底 | 固定开销和每元素缓冲可装入 UB；对齐后 `ubFactor` 应为正 |
-| P6 | R-007 ARA recompute | 以 128 行块重算并用 cache tree 合并 | R-004/R-005/R-006 不可用后的非末轴兜底 | UB 计算得到 `factorMax>0` |
-| P7 | R-008 ARA SIMT | 每线程独占一列，三遍标量 GM R 循环 | 包内 selector 不可达的 direct-key 通用路线 | 调用方完整生产 key、正 `blockDim` 与 `araSimt` 三字段 |
-| P8 | R-009 FP16 R2 SIMT | 每线程读取一行的两个 half 并直接归一化 | 包内 selector 不可达的 FP16、R2、末轴特化 | 调用方保证 `R=2,A0=1`，并以 `p.a1` 传 rows |
+| 重要性 | Route | 可达性 | 特征 | 适用域 | 实现前提 |
+|---|---|---|---|---|---|
+| P0 | R-002 AR full-load | active | 末轴整行驻留，双缓冲搬运并保留 FP32 exp | `A0==1` 的三种 dtype；覆盖常见中长 R | `R<=16384`，且 UB 计算得到 `ubFactor>0` |
+| P1 | R-006 ARA full-load | active | 非末轴全 R 驻留，FP32 tree/binary reduction | `A0!=1` 的三种 dtype；覆盖常见中等 R 与不规则 A0 | `factorMax>0`；`R>8` 时 `BinaryAddTiling` 成功 |
+| P2 | R-005 ARA one-load | active + conditional-direct 叶变体 | 输入只搬入一次，复用 xQueue 原位形成输出 | active 为小 A1、小 R 的 FP16；router 另有三 dtype entry | active：FP16、`A1<=4,R<=512`；conditional：精确复现 producer 且 `A0!=1,R<=2048,maxInner>=1` |
+| P3 | R-004 ARA stream | active | 以 256 行分块在线合并 `(max,sum)`，二遍输出 | `A0!=1` 的大 R 跨步归约，三种 dtype | `R>=4096`，且 UB 至少容纳一个 A0 基础 tile |
+| P4 | R-001 AR small-R | active | 末轴小 R 转置并按列向量化，预取下一 tile | `A0==1 && R<=16`，适合极小或很大行并行域 | 避开 `5C<=A1<=160C`，且 UB 容纳一个 64-column tile |
+| P5 | R-003 AR recompute | active | 三遍读取 GM，以重算换取更低的整行驻留需求 | R-001/R-002 不可用后的末轴通用兜底 | 固定开销和每元素缓冲可装入 UB；对齐后 `ubFactor` 应为正 |
+| P6 | R-007 ARA recompute | active | 以 128 行块重算并用 cache tree 合并 | R-004/R-005/R-006 不可用后的非末轴兜底 | UB 计算得到 `factorMax>0` |
+| P7 | R-008 ARA SIMT | conditional-direct | 每线程独占一列，三遍标量 GM R 循环 | 内置 selector 不可达的 direct-key 通用路线 | 调用方完整生产 key、正 `blockDim` 与 `araSimt` 三字段 |
+| P8 | R-009 FP16 R2 SIMT | conditional-direct | 每线程读取一行的两个 half 并直接归一化 | 内置 selector 不可达的 FP16、R2、末轴特化 | 调用方保证 `R=2,A0=1`，并以 `p.a1` 传 rows |
 
 ### Host selector 顺序
 
@@ -148,21 +188,47 @@ launch_softmax direct key dispatch:
   other -> no launch
 ```
 
+### 末轴/非末轴决策闭包
+
+统一 selector 虽然写成一条线，实际由 `A0` 分成两个互斥子图。这个互斥性比任一性能阈值更强，也是 route 间必须保持的首要不变量。
+
+```text
+                         A0 == 1 (AR，连续 R)
+flatten ─────────────────┬─ 500 small-R ─fail─> 1000 full-load ─fail─> 2000 recompute ─fail─> error
+                         │
+                         └─ A0 != 1 (ARA，stride=A0)
+                            30000 stream ─fail─> 31000 one-load [FP16 outer guard]
+                                           └──fail─> 10000 full-load ─fail─> 20000 recompute ─fail─> error
+```
+
+| 不变量 | AR 末轴 | ARA 非末轴 | 违反后的典型后果 |
+|---|---|---|---|
+| GM 地址 | 每行连续 `[row*R,(row+1)*R)` | 每列 `base+r*A0`，tile 内按 A0 连续 | 把 ARA 当 AR 会沿错误维归一化 |
+| 并行域 | `A1` 行；每核连续行块 | `A1*a0Outer` tile；tile 解码为 `(a1Idx,a0Idx)` | block 间重写或漏写列 |
+| UB 布局 | R 连续，必要时对齐/转置 | `[R,tileA0Len]`，DMA 按行 stride | mask 正确也无法修复错误 stride |
+| 尾部 | 尾核/尾行、R chunk 或 R mask | 尾 tile `width=tileA0Tail`，另有 R chunk tail | padded lane 被写回或最后 chunk 漏算 |
+| fallback | 500→1000→2000，只在 AR 内退化 | 30000→31000→10000→20000，只在 ARA 内退化 | 用另一路 POD 解释 union，形成 ABI 错配 |
+
+同一数学列在所有 route 中必须满足：单一 block/thread 拥有该列的完整归约；没有跨 block 的 partial sum、atomic 或二次 kernel。`blockDim` 只改变列/行如何分配，不得把一个 R 归约拆到多核，否则现有单 Kernel launch 图没有合并节点。
+
 ### 模板/实现执行矩阵
 
-| Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | Host顺序/fallback |
-|---|---|---|---|---|---|---|
-| R-002 | 1000 | 见 Host selector 表；3 dtype；950 build | 单 AIV | `SoftmaxV2AR<T,T>::Process` | 双缓冲 x/y，FP32 exp 全载，折叠 reduce | 第 2；`lastUbFactor`、R mask；否则 2000 |
-| R-006 | 10000 | 见 Host selector 表；3 dtype；950 build | 单 AIV | `SoftmaxV2ARA<T,T>::Process` | 全 R load；FP32 exp、tree/binary reduction；局部 barrier | 第 6；`R<=8` 专门树，否则预计算 offsets；失败到 20000 |
-| R-005 | 31000 | 见 Host selector 表；FP16；950 build | 单 AIV | `SoftmaxV2ARAOneLoad<half>::Process` | 一次 GM load，FP32 exp TBuf，结果原地写 xQueue，V→MTE3 event | 第 5；A0 mask；否则 10000 |
-| R-004 | 30000 | 见 Host selector 表；3 dtype；950 build | 单 AIV | `SoftmaxV2ARAStream<T>::Process` | 256-row chunk，在线 `(max,sum)` 合并；第二遍输出 | 第 4；`rTail`、`tileA0Tail`；否则 31000 |
-| R-001 | 500 | 见 Host selector 表；3 dtype；950 build | 单 AIV | `SoftmaxV2ArSmallR<T,T>::Process` | 双份 x/y queue，双份 FP32 exp 临时区，RA reduce，预取下一 tile | 第 1；`tileA0Tail`；否则 1000 |
-| R-003 | 2000 | 见 Host selector 表；3 dtype；950 build | 单 AIV | `SoftmaxV2ArRecompute<T,T>::Process` | x 三缓冲、y 双缓冲；三遍 GM，2048B cache | 第 3；`ubFactorTail`、尾行；否则 ARA 分支/失败 |
-| R-007 | 20000 | 见 Host selector 表；3 dtype；950 build | 单 AIV | `SoftmaxV2ARARecompute<T,T>::Process` | R 以 128 行块重算；double x/y、cache tree | 第 7；`binAddRTail`、A0 mask；否则失败 |
-| R-008 | 32000 | caller-provided | 单 AIV entry→SIMT | `asc_vf_call<SoftmaxV2ARASimt<T>>(1024 threads)` | 无 AIV UB；线程独占一列，三遍 GM R 循环 | 包内无 Host顺序/fallback；`column<A1*A0`、`r<R` |
-| R-009 | 33000 | caller-provided FP16 R2 | 单 AIV entry→SIMT | `asc_vf_call<SoftmaxV2Fp16R2Simt>(1024 threads)` | 无 AIV UB；线程独占一行，读取两个 half | 包内无 Host顺序/fallback；`row<rows`；契约外 shape 会错址 |
+所有 AIV_VECTOR Route 的层级均为 `GM -> UB(TQue/TBuf) -> MicroAPI register -> UB -> GM`；两个 SIMT Route 为 `GM -> thread-private register -> GM`。源码没有 L1、L0A/L0B/L0C、Cube、workspace 或跨核中间结果，因此表中省略这些不存在的层级不能解释为“待补实现”。
 
-### 隐藏性能 Guard
+| Route/叶变体 | 可达性 | key/selector | dtype/shape/platform 完整命中条件 | POD→entry→body | 核/内存/同步与 tail | fallback |
+|---|---|---|---|---|---|---|
+| R-002 | active | 1000，第 2 | 3 dtype；`A0==1,R<=16384,ubFactor>0` | `ar`→`softmax_1000_*`→`SoftmaxV2AR<T,T>::Process` | 行/core；x/y 双缓冲、FP32 exp 全载；尾核、`lastUbFactor`、R mask | 失败→2000 |
+| R-006 | active | 10000，第 6 | 3 dtype；`A0!=1,factorMax>0`；`R>8` 还需 binary tiling 成功 | `ara`→`softmax_10000_*`→`SoftmaxV2ARA<T,T>::Process` | A1×A0 tile/core；全 R exp、tree/barrier；`tileA0Tail` 与 zero-padding offsets | 失败→20000 |
+| R-005-A | active | 31000，第 5 | FP16；`A0!=1,A1<=4,R<=512,maxInner>=1` | `araOneLoad`→`softmax_31000_f16`→`SoftmaxV2ARAOneLoad<half>::Process` | tile/core；一次 GM load，FP32 exp，xQueue 输入槽改输出；`PIPE_V`、V→MTE3、A0 mask | 失败→10000 |
+| R-005-C | conditional-direct | 31000，caller-provided | router 有 f16/f32/bf16；调用方复现 `TilingAraOneLoad`：`A0!=1,R<=2048,maxInner>=1`，并按 dtype 算 `base/maxInner/tileA0Len` | `araOneLoad`→`softmax_31000_{f16,f32,bf16}`→`SoftmaxV2ARAOneLoad<T>::Process` | 与 R-005-A 相同；`totalRLen` 在 body 窄化为 `uint16_t`；caller 保证 POD/UB/offset 合法 | 无自动 fallback；契约失败不得 launch |
+| R-004 | active | 30000，第 4 | 3 dtype；`A0!=1,R>=4096,maxInner>=1` | `araStream`→`softmax_30000_*`→`SoftmaxV2ARAStream<T>::Process` | tile/core；256-row chunk、在线 `(max,sum)`、二遍 GM；`rTail/tileA0Tail` | 失败→31000 外 guard/10000 |
+| R-001 | active | 500，第 1 | 3 dtype；`A0==1,R<=16,!(5C<=A1<=160C)`，且 UB tile 可建 | `arSmallR`→`softmax_500_*`→`SoftmaxV2ArSmallR<T,T>::Process` | 行重解释为 A0 tile/core；双 x/y queue、双 FP32 exp、预取；`tileA0Tail` | 失败→1000 |
+| R-003 | active | 2000，第 3 | 3 dtype；`A0==1` 且固定/每元素 UB 公式可建；aligned `ubFactor` 仍应正 | `arRecompute`→`softmax_2000_*`→`SoftmaxV2ArRecompute<T,T>::Process` | 行/core；x 三缓冲、y 双缓冲、三遍 GM、2048B cache；`ubFactorTail` | 失败→整体 tiling 失败；ARA producer 因 `A0==1` 均拒绝 |
+| R-007 | active | 20000，第 7 | 3 dtype；`A0!=1,factorMax>0` | `araRecompute`→`softmax_20000_*`→`SoftmaxV2ARARecompute<T,T>::Process` | tile/core；128-row 重算、double x/y、cache tree；`binAddRTail/tileA0Tail` | 失败→整体 tiling 失败 |
+| R-008 | conditional-direct | 32000，caller-provided | 3 dtype；正 A1/R/A0、正 grid，全部乘积/offset 可表示 | `araSimt`→`softmax_32000_*`→`asc_vf_call<SoftmaxV2ARASimt<T>>(1024)` | thread/column；无 UB，三遍 GM；`column<A1*A0,r<R` | 无自动 fallback |
+| R-009 | conditional-direct | 33000，caller-provided | 实际 buffer FP16；`R=2,A0=1,p.a1=rows`、正 grid | `p.a1`→`softmax_33000_f16`→`asc_vf_call<SoftmaxV2Fp16R2Simt>(1024)` | thread/row；无 UB，一次读取两个 half；`row<rows` | 无自动 fallback；契约外会错址 |
+
+### 性能与安全 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -301,6 +367,69 @@ launch_softmax direct key dispatch:
 | R-007 | 20000 | `TilingAraRecompute` | `SoftmaxV2ARARecomputeTilingData` | `softmax_20000_*` | `SoftmaxV2ARARecompute` + base reduction/cache | 同上 |
 | R-008 | 32000 | 直调调用方；包内无 producer | `SoftmaxV2ARASimtTilingData` | `softmax_32000_*` | `SoftmaxV2ARASimt<T>` | 同上，`simt_api/asc_simt.h` |
 | R-009 | 33000 | 直调调用方；包内无 producer | `p.a1`→`uint64_t rows` | `softmax_33000_f16` | `SoftmaxV2Fp16R2Simt` | 同上，`simt_api/asc_simt.h` |
+
+## 跨 Route 数值契约
+
+### 有限输入的稳定性不变量
+
+对有限输入，每条 route 都必须先得到整列最大值 `m`，再计算指数；不能在尚未闭合全列 max 时直接累加未经重标定的 exp。由此有 `x-m<=0`，最大项的指数为 1，FP32 分母理论范围为 `[1,R]`。这避免 `exp(x)` 上溢，但不消除 FP32 加法舍入、极小指数下溢或最终 FP16/BF16 cast 误差。
+
+| Route 族 | max/sum 形成方式 | 稳定性闭合点 | 输出方式 | 允许的数值差异 |
+|---|---|---|---|---|
+| 500/1000/10000/31000 full/one-load | 全 R 驻留，先 max 后 exp/sum | 整列 max 已完成后才写 exp | 1000/10000 逐元素除；31000 每个 A0 向量算一次倒数后乘 | reduction tree、`Div` 与 reciprocal+`Mul` 可产生末位差异 |
+| 2000/20000 recompute | 第一遍 max，第二遍重算 exp/sum，第三遍再重算 exp/output | max buffer 跨第二、三遍保持；sum cache 在输出前闭合 | `exp(x-m)/sum` | GM 重读不改变数学式；cache tree 顺序与 full-load 可不同 |
+| 30000 stream | 每个 256-row chunk 形成 `(mc,sc)`，在线合并到 `(M,S)` | `S'=S*exp(M-M')+sc*exp(mc-M')`，`M'=max(M,mc)` | 第二遍以最终 `(M,S)` 输出 | chunk 合并顺序与全载 tree 可不同 |
+| 32000/33000 SIMT | 单线程标量 max pass、sum pass | 同一线程按程序序闭合 | `expf` + scalar divide/cast | 标量 libm/cast 不承诺与 MicroAPI 位级一致 |
+
+route 切换的验收不变量是同 shape/dtype 的语义一致与误差口径一致，不是跨 route bitwise 相等。输入在 kernel 执行期间必须只读且不被并发修改；recompute/stream/SIMT 会重读 GM，否则“重算等价”失效。
+
+### 特殊值与未闭合语义
+
+入口只校验 dtype/shape/连续性，不过滤 NaN、`+inf`、`-inf`，所有 body 也都没有 `isnan/isinf` 分支。因此本实现的源码闭环只足以证明有限输入的稳定 softmax；非有限数表现来自底层 `Max/Sub/Exp/Add/Div` 或 `expf` 的传播规则，不能从有限值公式外推成额外承诺。
+
+| 一列输入 | 由当前算术可推导的路径 | 可依赖程度 |
+|---|---|---|
+| 至少一个有限值，其余含 `-inf` | 有限 max；`exp(-inf-m)=0`，`-inf` 位置趋于 0 | 算术路径明确；仍受底层非有限运算规则约束 |
+| 含 `+inf` | max 可为 `+inf`，对应项出现 `+inf-(+inf)`，随后进入 NaN 算术 | 无“只在 `+inf` 间均分”的专门实现 |
+| 全为 `-inf` | `m=-inf`，每项出现 `-inf-(-inf)` | 无 uniform 特判；不能承诺有限输出 |
+| 含 NaN | 无显式清洗；SIMT 比较可能不更新 max，但 NaN 仍进入 exp/sum；AIV Max 的 NaN 选择规则未在交付源码定义 | 只可声明“未特判”，不可承诺各 route 的 NaN payload/传播位置一致 |
+| `R==1` 且输入有限 | `exp(0)/exp(0)=1` | 跨 route 有限值不变量 |
+| `R==1` 且输入非有限 | 仍发生 `inf-inf` 或 NaN 运算 | 不适用“恒为 1”结论 |
+| 极大有限差值 | max 项保证分母至少含 1；小项的 exp 可下溢到 0 | 稳定且允许 0；subnormal/FTZ 模式未由本源码声明 |
+
+若上层语义要求特定 NaN 传播、多个 `+inf` 均分或 all-`-inf` 的固定结果，应在所有 route 共享的语义层显式规定并实现，不能只给某一快路线加分支，否则 shape 引起的 route 切换会改变结果。
+
+## UB 驻留、复用与重算策略
+
+| Route | x 的 GM 读取 | 跨阶段保留在 UB 的状态 | 复用/重算因果 | 必须保留的生命周期边 |
+|---|---:|---|---|---|
+| 500 AR small-R | 1 次/tile | 转置后的 x、两份 FP32 exp、sum | 双 exp 区把 RA reduce 与输出读取解耦；两槽 queue 预取下一 tile | 当前 exp/sum 消费完才释放 x；y DMA 完成才复用 y 槽 |
+| 1000 AR full-load | 1 次/UB 行块 | FP32 exp + partial sum | 用 UB 换掉 sum/output 阶段的 GM 重读 | exp 直到 div/cast 完成；queue 协议覆盖 MTE2/V/MTE3 |
+| 2000 AR recompute | 约 3 次/行 | max、sum/cache；不保留全 R exp | R 放不下时以 GM 带宽换 UB，三遍分别闭合 max/sum/output | max 跨后两遍，sum 跨输出遍；cache carry 完成前不可覆盖 |
+| 10000 ARA full-load | 1 次/tile | 全 R FP32 exp、zero padding、reduce vector | 全载矩阵支持固定 tree，padding 消除尾分支 | padding store→load barrier；exp 在所有 R 输出完成前存活 |
+| 31000 ARA one-load | 1 次/tile | FP32 exp；xQueue 输入槽后改为输出 | 删除独立 yQueue，并用一次 reciprocal 复用到该 A0 向量 | 先读完输入，再覆盖 xUB；`PIPE_V` 后读 exp；V→MTE3 event 后 DMA |
+| 30000 ARA stream | 2 次/tile | 仅最终 max/sum；chunk x/y 临时槽 | 固定 256 行 UB，在线重标定统计，第二遍生成输出 | `(M,S)` 跨全部 chunk 和输出遍；chunk queue 消费后才复用 |
+| 20000 ARA recompute | 约 3 次/tile | max、sum/cache；128-row x/y | 大 R 下用 128-row 块及 carry tree 控制 UB | max/sum/cache 生命周期与三遍边界一致 |
+| 32000 ARA SIMT | 3 次/列 | 线程私有 max/sum | 不占算子管理的 AIV UB | 同线程程序序；x 在第三遍结束前保持只读 |
+| 33000 FP16 R2 SIMT | 1 次/行的两个 half | 线程私有标量 | 两元素特化直接保留输入/exp | 两个输出地址仅由该线程写 |
+
+“full-load→stream/recompute”是资源退化关系而不是数学 fallback：驻留量从全 R exp 降到 `(max,sum,cache)`，代价依次变为两遍或三遍 GM。任何重构都必须成对更新 Host UB 公式和 Device `InitBuffer`；只缩 tiling factor 或只改 queue depth 都不能证明不越 UB。
+
+## 尾核、尾 tile 与 mask 契约
+
+| 尾部层级 | Host/POD 表达 | Device 消费 | 不允许的简化 |
+|---|---|---|---|
+| 核尾 | `blockDim=ceil(work/perCore)`，每核 `[begin,min(begin+perCore,total))`；AR 用 `aBlockFactor` | 无工作的逻辑域不被访问；最后核只处理剩余行/tile | 假设每核工作量相等并无条件搬满 |
+| 500 的 A1 尾（重解释为 tile A0） | `tileA0Tail`，`rAligned>=R` | transpose/mask 只计算有效行，CopyOut 只写 `curTileA0Len*R` | 把 `tileA0Len` padded 行写回 GM |
+| 1000 的 R 尾 | `rAligned`、`rLoopCount` 与真实 `r` | UB 可 padding/alignment，归约 mask 以 `r` 为准，CopyOut 每行只写 R | 让 padding 参与 max/sum 或按 `rAligned` 写回 |
+| 2000 的 R chunk 尾 | `ubFactorTail=0` 表示整除，否则最后 chunk 的真实长度 | 三个 pass 使用同一 tail 解释 | 把 0 当“空尾”跳过本应完整处理的最后主块 |
+| ARA 的 A0 尾 | `tileA0Tail in [1,tileA0Len]`，`width` 只在最后 A0 tile 变小 | DMA `blockLen=width*sizeof(T)`；寄存器 `UpdateMask(width)`；UB row stride 仍为 `tileA0Len` | 用 width 同时替换 UB stride，导致相邻 R 行错位 |
+| 30000 的 R 尾 | `rTail in [1,256]` | 两遍都用同一 `rows` 和 GM offset | 统计遍与输出遍使用不同 tail |
+| 20000 的 R 尾 | `binAddRTail in [1,128]` | max/sum/output 三阶段一致 | 只给输出阶段 mask，统计仍读满 128 行 |
+| 10000 的 tree 尾 | Host 产生 remainder offsets；越界行指向已清零 padding row | barrier 后固定 8-row/4-way读取 | 指向 padding 但不先清零，或省略 store→load barrier |
+| 32000/33000 线程尾 | `column< A1*A0` / `row<rows` | grid-stride predicate | 用向上对齐后的 thread 数直接访问 GM |
+
+尾部契约分离三个概念：GM 的有效 `width/rows`、UB 的对齐 stride/capacity、寄存器的 lane mask。三者数值经常不同；mask 只能保护向量 lane，不能替代 DMA 的真实 blockLen/stride，也不能为溢出的 Host offset 提供保护。
 
 ## Kernel 实现
 
@@ -492,15 +621,17 @@ dynamic_ub=N/A; workspace_total=0
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Tiling | `softmax_kernel.cpp` | outer guard + `TilingAraOneLoad` | FP16、`A1<=4,R<=512,A0!=1,maxInner>=1` | 31000，否则 10000 |
-| Router | 同上 | `launch_softmax` | 31000 + dtype | selector 仅产生 FP16 entry |
+| Active selector | `softmax_kernel.cpp` | outer guard + `TilingAraOneLoad` | FP16、`A1<=4,R<=512,A0!=1,maxInner>=1` | 31000，否则 10000 |
+| Conditional producer | 同上 | `TilingAraOneLoad` 内部完整谓词 | 三 dtype 均有公式；`A0!=1,R<=2048,maxInner>=1`，但该函数为包内符号且 selector 不会为扩展域调用 | direct caller 必须逐字段复现 `araOneLoad`，无自动 fallback |
+| Router | 同上 | `launch_softmax` | 31000 + dtype `0/1/2` | `softmax_31000_{f16,f32,bf16}`；active 只到 f16，另两叶为 conditional-direct |
 
 #### Device 数据流
 
 ##### 函数级调用链
 
 ```text
-softmax_31000_f16 -> SoftmaxV2ARAOneLoad<half>::Process
+active:      softmax_31000_f16 -> SoftmaxV2ARAOneLoad<half>::Process
+conditional: softmax_31000_{f16,f32,bf16} -> SoftmaxV2ARAOneLoad<T>::Process
   -> CopyIn(full R×A0 tile) -> Compute(max,exp,sum,reciprocal,mul)
   -> overwrite xQueue with output -> V_MTE3 event -> CopyOut
 ```
@@ -510,9 +641,11 @@ softmax_31000_f16 -> SoftmaxV2ARAOneLoad<half>::Process
 ```text
 xUB=GM tile once
 for A0 VL: max=max_r(float(xUB)); expTmp[r]=exp(x-max); sum+=expTmp
-  inv=1/sum; xUB[r]=half(expTmp[r]*inv)
+  inv=1/sum; xUB[r]=cast<T>(expTmp[r]*inv)
 event V->MTE3; DMA xUB to yGM
 ```
+
+该伪码由 active 与 conditional 叶共享；差异只在 producer 可达性、`T`、`base=32/sizeof(T)` 及由此派生的 tile/POD，不能为 conditional 叶复用 active 的 FP16 字节账。
 
 #### 内存与数据搬运
 
@@ -520,23 +653,23 @@ event V->MTE3; DMA xUB to yGM
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| xQueue | 0 | `R*tileA0Len*2` | FP16 | MTE2 then VF overwrite | MTE3 output | pipe/tile | input/output alias |
+| xQueue | 0 | `R*tileA0Len*sT` | T；active `sT=2` | MTE2 then VF overwrite | MTE3 output | pipe/tile | input/output alias |
 | tmpBuf | 0 | `R*tileA0Len*4` | FP32 exp | VF | normalize | pipe/tile | retained until overwrite complete |
-| GM | strided A0 tile | `R*width` | FP16 | copy in/out | kernel/tensor | stream | no intermediate y queue |
+| GM | strided A0 tile | `R*width` | T；active FP16 | copy in/out | kernel/tensor | stream | no intermediate y queue |
 
 ##### 分层内存布局
 
 ```mermaid
 block-beta
   columns 2
-  xy["xQueue input→output alias · R·tileA0Len·2"]:1
+  xy["xQueue input→output alias · R·tileA0Len·sT"]:1
   exp["tmp exp · R·tileA0Len·4"]:1
 ```
 
 ##### 字节账与复用顺序
 
 ```text
-UB_total=R*tileA0Len*(2+4)
+UB_total=R*tileA0Len*(sT+4), active sT=2, conditional FP32 sT=4
 Tiling reserves 2048B and requires total <= U-2048
 dynamic_ub=N/A; workspace_total=0
 ```
@@ -554,7 +687,7 @@ dynamic_ub=N/A; workspace_total=0
 |---|---|---|---|---|---|
 | exp→read | `PipeBarrier<PIPE_V>` | tmp stores | reciprocal multiply loop | tmp | A0 mask |
 | V→MTE3 | `SetFlag/WaitFlag(EVENT_ID0)` | in-place output | DataCopyPad | xQueue | valid width only |
-| precision | FP32 registers/TBuf | half input | half RINT output | values | stable max-sub |
+| precision | FP32 registers/TBuf | T input | T output；16-bit 路径用 RINT pack | values | stable max-sub；FP32 直存 |
 
 #### 关键实现
 
@@ -562,8 +695,8 @@ dynamic_ub=N/A; workspace_total=0
 
 | 阶段 | 文件 | 符号/模板实例 | 实现事实 |
 |---|---|---|---|
-| Host/Tiling producer | `softmax_kernel.cpp` | `TilingAraOneLoad` + outer guard | FP16 small-A1/R specialization |
-| Kernel entry/router | 同上 | `softmax_31000_f16` | key 31000 |
+| Host/Tiling producer | `softmax_kernel.cpp` | `TilingAraOneLoad` + outer guard | active FP16 small-A1/R；conditional 需 caller 复现内部公式 |
+| Kernel entry/router | 同上 | `softmax_31000_{f16,f32,bf16}` | key 31000 三叶均接线，只有 f16 为 selector active |
 | Device body/helper | `arch35/softmax_v2_ara_one_load.h` | `Compute/CopyOut` | one-load、alias、event |
 
 ### Route R-004：ARA stream

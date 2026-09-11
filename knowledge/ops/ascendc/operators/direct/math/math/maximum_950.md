@@ -1,7 +1,7 @@
 ---
 type: Operator
 title: "Maximum 950 Direct Invoke 算子知识"
-description: "说明 cann_bench::maximum 在 950 上的接口语义、Direct Launcher 参数生成、Route 选择、单 Kernel 启动图与逐 Route 实现。"
+description: "说明 cann_bench::maximum 在 950 上的右对齐广播语义、四条生产 Route 的可达性与优先级，以及 Host/POD/Launcher/Device、GM/UB、同步、尾块、精度和 fallback 闭包。"
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
@@ -20,7 +20,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:29:47Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -35,9 +35,19 @@ cann_versions: ["9.1.0"]
 | 计算语义 | 对右对齐广播后的每个输出坐标逐元素计算 `y=max(x1,x2)` |
 | 输入输出 | 连续 ND；输入 dtype 相同；转换交付支持 `float16/bfloat16/float32/int8/int32/int64`，对齐后输出 rank 1–8；输出为广播 shape、同 dtype |
 | 执行类型 | P0/R-001：AIV_VECTOR；P1/R-003：AIV_VECTOR + NDDMA；P2/R-002：AIV_VECTOR，窄后缀分支含 NDDMA；P3/R-004：AIV 上逐元素 GM 标量访问；无 Cube/AIC 或 MIX_CV 节点 |
-| Kernel 路线 | 重要性顺序：P0 R-001 等形平铺；P1 R-003 单轴值扩展；P2 R-002 连续后缀广播；P3 R-004 通用 stride 广播。Route ID 保持 Host selector 身份，不随阅读顺序改号 |
-| 核心资源 | P0/R-001、P1/R-003、P2/R-002 使用 GM、三个 depth-2 `TQue`、192 KiB UB 和寄存器；P3/R-004 使用 GM 与标量寄存器；workspace 为 0 |
-| 来源闭包 | `direct_implementation_closed`：转换交付件闭合 `cann_bench::maximum`→shape/dtype selector→四种 config producer→六 dtype launcher→四种 entry/body；官方固定 Commit 只支撑 Maximum/950、广播 tiling 与 `CopyInBrc→Max→CopyOut` 基线，Direct ABI 和 R-004 均明确归于转换交付件 |
+| Kernel 路线 | 四条 terminal Route 均为 `active`：P0 R-001 等形平铺；P1 R-003 单轴值扩展；P2 R-002 连续后缀广播；P3 R-004 通用 stride 广播。没有独立 `conditional`/`dormant` terminal Route；Route ID 保持 enum 身份，不随阅读顺序改号 |
+| 核心资源 | P0/R-001、P1/R-003、P2/R-002 使用 GM、三个 depth-2 `TQue`、192 KiB UB 和寄存器；P3/R-004 使用 GM 与编译器管理的局部标量，物理寄存器账不可见；workspace 为 0 |
+| 来源闭包 | `direct_implementation_closed`：转换交付源码闭合 `cann_bench::maximum`→shape/dtype selector→四种 config producer→六 dtype launcher→四种 entry/body；官方固定 Commit 只支撑 Maximum/950、广播 tiling 与 `CopyInBrc→Max→CopyOut` 基线，Direct ABI、显式 NDDMA 参数和 R-004 均是转换/派生事实 |
+
+### 来源与转换关系
+
+| 事实层 | 固定来源直接支撑的边界 | 本卡采用方式 |
+|---|---|---|
+| 官方原生事实 | Maximum 的逐元素语义、950/ascend950 注册与 dtype 范围；arch35 tiling 选择 `BroadcastBaseTiling`；DAG 为两路 `CopyInBrc→Vec::Max→CopyOut`；官方 entry 签名接收 workspace/tiling，body 仅消费 tiling，并使用 scheduler mode | 只作为算子语义、平台、算法阶段与官方模板边界，不把官方 POD/router 冒充 Direct ABI |
+| `direct-invoke` 适配 | 官方固定源码不包含 `cann_bench` schema、`PrivateUse1`、`OpCommand::RunOpApi`、current-stream、四个 `Maximum*Config`、六 dtype launcher 宏或四条 named entry | 这些 Host/POD/C ABI/launcher/current-stream 事实全部归于转换源码；闭包必须沿 `MaximumNpu→calc_*→launch_*→maximum_*→Run*` 核对 |
+| Device 派生补充 | 官方没有 R-001/R-002/R-003 的显式 32 KiB Queue/NDDMA 参数，也没有 R-004 的 GM 标量 stride indexer | 三条规则 Route 是对官方 DAG 的显式专化；R-004 是补齐其余合法广播的派生兜底。固定官方来源不自动证明这些 predicate、资源账、等价性或逐位精度 |
+
+因此，正文提到“官方”时只指 `sources` 中固定 Commit 的接口、tiling、DAG、entry 和构建事实；提到 selector、config、NDDMA stride、Direct entry 或 fallback 时均指转换实现。二者共享数学目标，不是逐字移植关系。
 
 ## 接口与语义
 
@@ -65,7 +75,7 @@ y[linear(c)] = maximum(x1[x1Offset], x2[x2Offset])
 
 ### 入口与版本
 
-官方固定 Commit 公开的是 Maximum 算子、950 注册、通用广播 Tiling 和 `maximum<schMode>(x1,x2,y,workspace,tiling)` Kernel。该 entry 依赖 `DTYPE_X1`、模板 `schMode` 和设备 tiling buffer。转换交付以 `TORCH_LIBRARY_FRAGMENT(cann_bench)` 声明 `maximum`，Meta 入口做元数据检查，`PrivateUse1` 绑定 `MaximumNpu`；后者通过 `OpCommand::RunOpApi("MaximumDirect", aclCall)` 提交自包含 Direct launcher。本文不把该入口描述成 ACLNN。
+官方固定 Commit 公开的是 Maximum 算子、950 注册、通用广播 Tiling 和 `maximum<schMode>(x1,x2,y,workspace,tiling)` Kernel。该 entry 的签名接收 workspace 与 tiling，body 仅消费 tiling；实现还依赖 `DTYPE_X1` 与模板 `schMode`。转换交付以 `TORCH_LIBRARY_FRAGMENT(cann_bench)` 声明 `maximum`，Meta 入口做元数据检查，`PrivateUse1` 绑定 `MaximumNpu`；后者把自包含 Direct launcher lambda 交给 `OpCommand::RunOpApi("MaximumDirect", aclCall)`。本文不把该入口描述成 ACLNN。
 
 ## Host/Launcher 执行流程
 
@@ -77,13 +87,18 @@ y[linear(c)] = maximum(x1[x1Offset], x2[x2Offset])
 
 ### 参数、Workspace 与生命周期
 
-`x1/x2/y` 由 Tensor owner 持有；lambda 按值捕获地址、Route、四种 config 和 stream，再在 API wrapper 中完成 launch 提交。四条 Route 都以值参数启动单 Kernel，不分配独立 workspace：
+`MaximumNpu` 从 Tensor 取得三个裸 GM 地址；调用点向 `RunOpApi` 传入按值捕获的 `aclCall` lambda，closure 内保存地址、dtype、Route、四种 config 与 stream，但不保存 `x1/x2/y` Tensor owner。返回的 `y` Tensor 持有输出 storage，输入对象只由调用方持有。转换源码不能证明 `RunOpApi` 是立即调用、延迟调用还是保存 closure，也没有 `recordStream`、完成 event、Host callback 或显式 device synchronize。因此，lambda/config 的实际调用与保存时序、输入 storage 延迟回收、输出可见性和 allocator 安全均属于 `RunOpApi`、NPU allocator 与 current-stream 的外部契约。
+
+四条 Route 都启动一个 Kernel，不分配独立 workspace：
 
 ```text
 workspace_total = 0
 stream = current NPU stream
-owner/lifetime = input/output Tensor；至少覆盖 launch 提交所需生命周期
+Host config capture = lambda closure 按值保存；实际调用/保存时序由 RunOpApi 外部契约决定
+GM owner proof = y 由返回 Tensor 持有；x1/x2 完成期依赖外部 stream-aware allocator 契约
 ```
+
+前三条规则 Route 的 config 仅是 Host 聚合：launcher 通过 `const &` 读取后，把字段拆成标量 Kernel 参数；`MaximumFlatConfig.blockNum`、`MaximumRowsConfig.blockNum` 与 `MaximumAxisConfig.blockNum` 只用于 grid，`MaximumAxisConfig.outerCount` 只用于 Host 生成 `rowCount`。只有 R-004 把完整 `MaximumGenericConfig` 按值传入 entry。不能把前三个 C++ struct 误认为 Device 端读取的 opaque tiling buffer。
 
 R-001/003/002 的 `tileElements=32768/dtypeBytes`，每个 Queue 单 slot 为 32768B、depth=2。R-004 不分配 UB Queue，其 shape/stride 数组随 `MaximumGenericConfig` 按值传入 Kernel。
 
@@ -99,7 +114,7 @@ cann_bench::maximum / PrivateUse1
         -> RunEqual / RunAxisScalar / RunRepeatSuffix / RunGeneric
 ```
 
-每条 Route 都只有一个 Device 节点，无 Kernel 间 edge；输入 GM 是只读 producer，Kernel 写 `y` GM，workspace slice 为 N/A。launcher 返回 `void`，`aclCall` 在调用后无条件返回 0；转换源码没有逐 launch 返回码检查、fallback relaunch 或 cleanup 分支。
+每条 Route 都只有一个 Device 节点，无 Kernel 间 edge；输入 GM 是只读 producer，Kernel 写 `y` GM，workspace slice 为 N/A。同一 current stream 提供该次提交相对同流前后工作的顺序，但源码没有跨流 event 或 Host 完成等待。launcher 返回 `void`，`aclCall` 在调用后无条件返回 0；转换源码没有逐 launch 返回码检查、fallback relaunch 或 cleanup 分支。
 
 ## Route 与参数设计
 
@@ -136,16 +151,40 @@ R-004:
 
 这些长度单位均为元素；Queue 容量在 Device 乘 `sizeof(T)`。R-001 额外把每核段按 512B 元素数对齐以改善核间 GM 起点；最后重算 `blockNum`，避免启动完全空闲的尾核。
 
+### 生产可达性分类与穷尽证明
+
+`MaximumRoute` 的数值身份固定为 `EQUAL=0`、`REPEAT_SUFFIX=1`、`AXIS_SCALAR=2`、`GENERIC=3`。四个值都有 `MaximumNpu` producer、dtype dispatch、launcher、同名 entry 和 Device body，所以均是 `active` terminal Route；“依赖 shape 谓词”只是 active Route 的选择条件，不把它降为 `conditional`。
+
+| Route | 类别 | 生产可达证据 | 安全闭合与出边 |
+|---|---|---|---|
+| R-001 / `EQUAL=0` | `active` | `x1Full && x2Full` 直接生产 flat config，并有六 dtype `launch_maximum_equal_*` | selector 终止；核尾/tile 尾闭合；零元素域未闭合 |
+| R-002 / `REPEAT_SUFFIX=1` | `active` | 恰一 full 且 `IsRepeatSuffix` 为真，先于 axis 检查并生产 rows config | selector 终止；Device 内窄 suffix 走 NDDMA，宽 suffix 走逐行 tile，不回到 Host |
+| R-003 / `AXIS_SCALAR=2` | `active` | 恰一 full、suffix 为假而 `IsAxisScalar` 为真，生产 axis config | selector 终止；`innerLength<=tileElements` 时资源闭合，超宽 inner 子域没有 Host guard 或 Device fallback |
+| R-004 / `GENERIC=3` | `active` | enum 初值；前三个谓词未终止时必保留，并生产完整 generic config | terminal safety Route；合法非空、可表示的其余广播均由 Device stride indexer处理，无 relaunch 出边 |
+
+本实现没有独立 `conditional` terminal Route，也没有“有 launcher/body 但生产 selector 永不可达”的 `dormant` Route。源码中的 `MaximumLocalScalar<T>` 与 `kTileBytes` 没有调用者/consumer，是 dormant helper/constant，不得据此虚构 scalar-fast Route；当前纯标量或全 1 小输入落到 R-004。若要重新启用 scalar-fast family，必须同时增加互斥 Host 谓词、config producer、launcher/entry 调用边、UB/GM 数据流与 fallback，而不是只调用该 helper。
+
+令 `A=x1Full&&x2Full`，`B=x1Full xor x2Full`，`S=IsRepeatSuffix(small)`，`X=IsAxisScalar(small)`。selector 的 terminal 分割是：
+
+```text
+A                         -> R-001
+!A && B && S              -> R-002
+!A && B && !S && X        -> R-003
+!A && (!B || (!S && !X))  -> R-004
+```
+
+四项互斥且穷尽。R-002 与 R-003 还具有结构互斥性：R-003 要求 axis 后 `innerLength>1`，但 small 在这些 trailing 维均为 1；这会破坏 R-002 要求“从首个非 1 维到末维都等于 output”的 suffix 谓词。若第二个输入才是 full，Host 仅为 R-002/R-003 交换 GM 参数；R-004 在生成 config 前恢复原始 operand 地址和 stride。
+
 ### Route 特征与选择
 
-下表按实现知识的重要性 P0→P3 排列，不代表 Host 的判断次序。`Host 顺序、短路与 fallback` 字段保留 `MaximumNpu` 的真实 shape/broadcast selector 顺序。
+下表按实现知识的重要性 P0→P3 排列，不代表 Host 的判断次序：等形路径覆盖最直接的密集主干；单轴与 suffix 路线保存两种不可互换的 NDDMA 广播模板；Generic 虽是性能兜底，却对其余合法广播提供唯一 Device 安全出口。`Host 顺序、短路与 fallback` 字段保留 `MaximumNpu` 的真实 shape/broadcast selector 顺序。
 
 | 重要性 | Route | Key/模板 | Route 特征与完整适用域 | Host 顺序、短路与 fallback |
 |---:|---|---|---|---|
-| P0 | R-001 等形平铺 | `MaximumRoute::EQUAL`；`RunEqual<T>` | 六 dtype、950；两输入都与广播输出同形；连续扁平读写、512B 对齐分核、寄存器 Max | H1：`x1Full && x2Full` 直接命中并结束 shape selector；false 才进入 H2 |
-| P1 | R-003 单轴值扩展 | `AXIS_SCALAR`；`RunAxisScalar<T>` | 六 dtype、950；恰一输入 full，small 恰有一个非 1 维且等于输出对应维，该维后的 `innerLength>1`；NDDMA 把轴值扩成 packed 行 | H3：仅 H2 的 `IsRepeatSuffix` 为 false 后检查；true 命中，false 保持 `GENERIC`；源码没有 Device fallback |
-| P2 | R-002 连续后缀广播 | `REPEAT_SUFFIX`；`RunRepeatSuffix<T>` | 六 dtype、950；恰一输入 full，small 从首个非 1 维至末维都等于输出，且 `rowLength==small.numel()>1`、整除、`rowCount>1` | H2：仅恰一 full 时先规范化 full/small 指针，再优先检查 `IsRepeatSuffix`；true 立即短路 H3，false 才检查 R-003 |
-| P3 | R-004 通用 stride 广播 | `GENERIC`；`RunGeneric<T>` | 六 dtype、950；其余合法 rank 1–8 右对齐广播；逐输出元素按零 stride 恢复两输入地址 | H0：Route 初值；H1 未命中且 H2/H3 不适用或均为 false 时保留；H4 恢复原始 operand 指针并生成 generic stride config；selector 结束 |
+| P0 | R-001 等形平铺 | `MaximumRoute::EQUAL=0`；`RunEqual<T>` | 六 dtype、950；两输入都与广播输出同形；连续扁平读写、512B 对齐分核、寄存器 Max | H1：`x1Full && x2Full` 直接命中并结束 shape selector；false 才进入 H2 |
+| P1 | R-003 单轴值扩展 | `AXIS_SCALAR=2`；`RunAxisScalar<T>` | 六 dtype、950；恰一输入 full，small 恰有一个非 1 维且等于输出对应维，该维后的 `innerLength>1`；NDDMA 把轴值扩成 packed 行 | H3：仅 H2 的 `IsRepeatSuffix` 为 false 后检查；true 命中，false 保持 `GENERIC`；源码没有 Device fallback |
+| P2 | R-002 连续后缀广播 | `REPEAT_SUFFIX=1`；`RunRepeatSuffix<T>` | 六 dtype、950；恰一输入 full，small 从首个非 1 维至末维都等于输出，且 `rowLength==small.numel()>1`、整除、`rowCount>1` | H2：仅恰一 full 时先规范化 full/small 指针，再优先检查 `IsRepeatSuffix`；true 立即短路 H3，false 才检查 R-003 |
+| P3 | R-004 通用 stride 广播 | `GENERIC=3`；`RunGeneric<T>` | 六 dtype、950；其余合法 rank 1–8 右对齐广播；逐输出元素按零 stride 恢复两输入地址 | H0：Route 初值；H1 未命中且 H2/H3 不适用或均为 false 时保留；H4 恢复原始 operand 指针并生成 generic stride config；selector 结束 |
 
 ```text
 route = GENERIC
@@ -163,11 +202,11 @@ dispatch exact dtype-specific launcher
 | 重要性 | Route | Host 顺序 | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---:|---|---|---|---|---|---|---|---|
 | P0 | R-001 | H1 | `EQUAL` | 六 dtype、950、两输入均为输出 shape | 单 AIV_VECTOR Kernel | `maximum_equal_<dtype>`→`RunEqual<T>`→`MaximumLocal<T>` | 三个 depth-2 Queue；Queue producer/consumer 同步 | 核尾与 tile 尾均按 `min`，越界核返回 |
-| P1 | R-003 | H3（H2 false 后） | `AXIS_SCALAR` | 六 dtype、950、small 仅一个非 1 轴且 `innerLength>1` | 单 AIV_VECTOR + NDDMA Kernel | `RunAxisScalar<T>`→`CopyInBroadcast2D`→`MaximumLocal<T>` | 192 KiB UB；NDDMA 内 stride=0；tile 不跨 axis wrap | batch 取 core 尾、axis wrap、tile 容量三者最小；无 Device fallback |
+| P1 | R-003 | H3（H2 false 后） | `AXIS_SCALAR=2` | 六 dtype、950、small 仅一个非 1 轴且 `innerLength>1`；资源安全子域还需 `innerLength<=32768/d` | 单 AIV_VECTOR + NDDMA Kernel | `maximum_axis_<dtype>`→`RunAxisScalar<T>`→`CopyInBroadcast2D`→`MaximumLocal<T>` | 192 KiB UB；NDDMA 内 stride=0；tile 不跨 axis wrap | batch 取 core 尾、axis wrap、tile 容量三者最小；超宽 inner 没有 fallback |
 | P2 | R-002 | H2 | `REPEAT_SUFFIX` | 六 dtype、950、恰一 full、small 为完整连续后缀 | 单 AIV_VECTOR Kernel；窄分支含 NDDMA | `RunRepeatSuffix<T>`；`CopyInBroadcast2D` 或逐行 `CopyIn` | 同样 192 KiB UB；窄分支以 NDDMA 零 outer stride 广播 | `rowLength*d<16384 && rowLength<=tile` 走 NDDMA，否则逐行 tile；Host 命中后不再检查 H3 |
 | P3 | R-004 | H0→H4 | `GENERIC` | 六 dtype、950、其余合法 rank 1–8 广播 | 单 AIV 标量 Kernel | `RunGeneric<T>`→`ScalarMaximum<T>` | 无 Queue/workspace；逐输出元素做 GM Get/Set | 每核 `[begin,end)`；BF16/float/half 显式 NaN 分支；最终 fallback |
 
-### 隐藏性能 Guard
+### 隐式性能与安全 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -177,9 +216,9 @@ dispatch exact dtype-specific launcher
 | 等形 512B 核段 | `alignElements=max(1,512/d)` | 分核段起点保持 cache-line 粒度 | R-001 | 不改变 Route | `calc_maximum_flat_config` |
 | Queue 固定预算 | `tileElements=32768/d` | `3 queues*depth2*32768B=192KiB` | R-001/003/002 | 无动态降级 | `k*TileBytes`、`InitBuffer` |
 | axis wrap | `batchRows<=axisLength-(row%axisLength)` | 保证 NDDMA source axis 值在本 batch 内连续 | R-003 | 缩短当前 batch | `RunAxisScalar` |
-| axis inner 宽度 | 源码缺少 `innerLength<=tileElements` guard | 当 `innerLength>tileElements` 时 `batchRows=1` 仍令 `count>tileElements`，超过 Queue slot | R-003 | 源码没有转入 R-004 | `IsAxisScalar/RunAxisScalar` |
+| axis inner 宽度 | 源码缺少 `innerLength<=tileElements` guard | 当 `innerLength>tileElements` 时 `batchCapacity` 被钳为 1，但 `count=innerLength` 仍超过 Queue slot；这是 active Route 的未闭合子域 | R-003 | 源码没有转入 R-004 | `IsAxisScalar/RunAxisScalar` |
 | 窄后缀 NDDMA | `rowLength<=tileElements && rowLength*d<16384` | 多行一次 materialize，outer source stride 为 0 | R-002 Device 子分支 | 逐行直接复制 | `RunRepeatSuffix` |
-| 空输出 | 无有效 guard | `totalLength==0` 会使后续 `ceil(0,blockLength=0)` 除零 | 全部 | 源码未提供安全 fallback | 四个 config producer |
+| 零维度/空输出 | 无 `dim>=1` 或 `totalLength>0` guard | `(0,0)` 对齐维产生 `totalLength=0`，config 中会出现以 0 为除数；`(0,1)` 又因 `outputDim=max(d1,d2)` 被错误推成 1，而不是空维 | 全部 | 源码未提供空域返回或拒绝 | `BuildBroadcastInfo` 与四个 config producer |
 
 ### POD/ABI
 
@@ -212,6 +251,17 @@ dispatch exact dtype-specific launcher
 | 同上 | `x1Strides` | int64[8]/512 | off 96 | 元素/维 | 连续 stride；广播维置 0 | `x1Offset` | inactive 置 0 |
 | 同上 | `x2Strides` | int64[8]/512 | off 160 | 元素/维 | 连续 stride；广播维置 0 | `x2Offset` | inactive 置 0 |
 
+#### Host config 到 Kernel 参数的精确交接
+
+| Route | Host config producer | launcher 读取/不下传字段 | entry 的实际值参数 | Device consumer |
+|---|---|---|---|---|
+| R-001 | `calc_maximum_flat_config` | `blockNum` 只用于 `<<<grid>>>` | `totalLength,blockLength,tileElements` | `RunEqual<T>` |
+| R-002 | `calc_maximum_rows_config` | `blockNum` 只用于 grid | `rowCount,rowLength,rowsPerBlock,tileElements` | `RunRepeatSuffix<T>` |
+| R-003 | `calc_maximum_axis_config` | `blockNum` 只用于 grid；`outerCount` 不下传 | `axisLength,innerLength,rowCount,rowsPerBlock,tileElements` | `RunAxisScalar<T>` |
+| R-004 | `calc_maximum_generic_config` | `blockNum` 同时用于 grid，且仍保留在按值 struct 中但 body 不读 | 完整 `MaximumGenericConfig cfg`，224 B | `RunGeneric<T>` 读取 total/block/rank/dims/strides |
+
+前三条链没有 Device tiling pointer，也没有把 `Maximum*Config` 整体序列化到 GM/workspace；字段在 C++ launcher 边被显式展开。R-004 的数组与 inactive slot 由 producer 一次性 value-init/填充，必须与 `rank` 原子交接，不能只替换 stride 数组或复用旧 rank。
+
 ### Route 源码闭包
 
 | 重要性 | Route | Host 顺序 | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
@@ -228,6 +278,18 @@ dispatch exact dtype-specific launcher
 ### 公共执行流程
 
 下列逐 Route 章节按重要性 P0→P3 排列；Route ID 不变，真实 Host 顺序见“Route 特征与选择”。六种 dtype 经宏各生成四个 `__vector__` entry 和四个 launcher。R-001/003/002 公共路径为：GM 输入→depth-2 VECIN Queue→寄存器 `Reg::Max`→depth-2 VECOUT Queue→GM 输出。`int64` 使用 `VECTOR_REG_WIDTH_2XVL` 与 `RegTraitNumTwo`，其他 dtype 使用标准 `VECTOR_REG_WIDTH`；`UpdateMask(remain)` 控制最后一个 vReg tail，store 复用同一 mask。R-004 不进入 Queue 公共路径。
+
+| 存储层级 | R-001/R-002/R-003 | R-004 | 生命周期与同步 |
+|---|---|---|---|
+| GM | 两个只读输入、一个 disjoint-core 输出 | 按 broadcast stride 标量读、按 linear 标量写 | Tensor storage；同一 output 元素只由一个核写 |
+| UB | 三个 Queue，各 2×32768 B，总 196608 B | 源码无 `InitBuffer`，显式 UB 为 0 | `AllocTensor→DMA→EnQue→DeQue→VEC→EnQue→DeQue→DMA→FreeTensor`；slot 释放后复用 |
+| register / local scalar | 两个输入 vReg 与一个输出 vReg；int64 使用 two-register trait | 编译器管理的局部标量保存 offset/operand/result，BF16 比较临时转 FP32；物理寄存器账不可见 | 当前 vector chunk/linear iteration；下一轮覆盖 |
+| L1/L0A/L0B/L0C | 0 | 0 | 没有 Cube、Matmul、L1 staging 或 L0 accumulator |
+| workspace | 0 | 0 | 没有 Kernel 间 GM 临时边或 workspace slice |
+
+Queue 的 EnQue/DeQue 负责同一 Kernel 内 MTE2→VEC→MTE3 的 producer/consumer 次序；源码没有 `SyncAll`、跨核 barrier 或 event。核间只靠不重叠的 GM 输出区间消除依赖。双 slot 允许相邻 tile 在流水阶段重叠，但源码仍按每轮 `Alloc/EnQue/DeQue/Free` 生命周期消费，不能在 `FreeTensor` 后保留 LocalTensor 地址。
+
+数值上三条规则 Route 直接对原 dtype 执行 `Reg::Max`，没有显式 cast；R-004 只有 BF16 的比较提升到 FP32，返回的仍是原 BF16 operand。转换源码本身没有展开 `Reg::Max` 对 NaN payload、两个 NaN 的优先级和 `+0/-0` tie 的指令级规定，因此只能把“原 dtype Max 指令”作为规则 Route 的精度事实；R-004 则可由 `ScalarMaximum` 直接证明先检查 `a` 的 NaN、再检查 `b`，非 NaN 相等时返回 `b`。需要逐位兼容时必须额外核验目标 SDK 指令语义，不能从函数名推定。
 
 ### P0 / Route R-001：等形平铺
 
@@ -296,7 +358,7 @@ block-beta
 UB_total = 2*32768 + 2*32768 + 2*32768 = 196608B = 192KiB
 dynamic_ub = N/A
 workspace_total = 0
-=> 依赖 A5 每 AIV 至少 192KiB 可用 UB；Host 未动态查询 UB
+=> 依赖 950 每 AIV 至少 192KiB 可用 UB；Host 未动态查询 UB
 ```
 
 | 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
@@ -363,6 +425,10 @@ while row<rowEnd:
   register max; copy y; row += batchRows
 ```
 
+##### 修复所需前置条件
+
+`innerLength<=tileElements` 是从 Queue 容量反推的修复前置，不是当前生产源码已有的 selector 或 Device 分支。当前 Host 只检查 `innerLength>1`；若该前置不成立仍会 launch R-003，且不会事务式保留 R-004。因此该 Route 的 reachability 仍是 active，但超宽 inner 是明确的未闭合边界。
+
 #### 内存与数据搬运
 
 ##### 资源与搬运表
@@ -388,7 +454,7 @@ block-beta
 
 ```text
 UB_total = 3*2*32768B = 196608B
-NDDMA destination = batchRows*innerLength*d <= 32768B
+NDDMA destination = batchRows*innerLength*d <= 32768B，仅在 innerLength<=tileElements 时成立
 workspace_total = 0
 ```
 
@@ -563,12 +629,12 @@ for linear in [begin,end):
 |---|---|---|---|---|---|---|---|
 | config value | Kernel parameter | 224B | POD | launcher | RunGeneric | launch value | 无 Device workspace |
 | x1/x2 GM | `Σcoord*stride` | 1 scalar/access | T/broadcast ND | Tensor | `GetValue` | Tensor | stride 0 aliases broadcast value |
-| scalar registers | thread-local | 固定源码不暴露字节数 | T/float temp for BF16 | GetValue/Cast | compare | 单迭代 | 下一迭代覆盖 |
+| compiler-managed local scalars | 当前迭代局部状态 | 物理寄存器账不可见 | T/float temp for BF16 | GetValue/Cast | compare | 单迭代 | 下一迭代覆盖 |
 | y GM | `linear` | 1 scalar/write | T/contiguous | `SetValue` | caller | Tensor | 核区间不重叠 |
 
 ##### 分层内存布局
 
-N/A：R-004 不调用 `InitBuffer`，不使用 AIV Queue 或 dynamic UB；实际替代路径是 GM 标量 `GetValue/SetValue` 与局部标量寄存器。
+N/A：R-004 不调用 `InitBuffer`，不使用 AIV Queue 或 dynamic UB；实际替代路径是 GM 标量 `GetValue/SetValue` 与编译器管理的局部标量，物理寄存器账不可见。
 
 ##### 字节账与复用顺序
 
@@ -576,12 +642,12 @@ N/A：R-004 不调用 `InitBuffer`，不使用 AIV Queue 或 dynamic UB；实际
 UB_total = 0（源码无显式 UB 分配）
 dynamic_ub = N/A
 workspace_total = 0
-register_bytes = 固定源码不可见，仅证明单迭代生命周期
+physical_register_bytes = 固定源码不可见；仅能证明局部标量的单迭代生命周期
 ```
 
 | 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
 |---|---|---|---|---|---|
-| scalar locals | current linear iteration | ScalarMaximum/SetValue | next linear iteration | 顺序程序语义 | SetValue 完成后覆盖 |
+| 编译器管理的局部标量 | current linear iteration | ScalarMaximum/SetValue | next linear iteration | 顺序程序语义；物理寄存器账不可见 | SetValue 完成后覆盖 |
 
 #### 同步、精度与尾块
 
@@ -612,7 +678,7 @@ register_bytes = 固定源码不可见，仅证明单迭代生命周期
 
 - 适用 Route：P1/R-003、P2/R-002 窄后缀分支。
 - 触发条件：官方相关算法需要 `CopyInBrc`；转换件进一步要求 R-003 的单轴谓词与 wrap-bounded batch，或 R-002 的 `rowLength<=tileElements && rowLength*d<16384`。
-- Golden 来源：[`math/maximum/op_kernel/arch35/maximum_dag.h:28-36`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/op_kernel/arch35/maximum_dag.h)
+- 官方固定来源：[`math/maximum/op_kernel/arch35/maximum_dag.h:28-36`](https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/maximum/op_kernel/arch35/maximum_dag.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -643,7 +709,7 @@ using MaximumRes = Bind<Vec::Max<T>, InputX1, InputX2>;
 | 命中条件/Host 顺序 | 两输入 full；H1 直接短路 | 恰一 full、单非 1 轴、inner>1；H3 在 H2 false 后检查 | 恰一 full 且完整 suffix；H2 优先于 H3 | 其余合法广播；H0 默认、H4 恢复原顺序 | 重要性顺序不改变 Host selector |
 | 模板与 dtype | `RunEqual<T>`，六 dtype | `RunAxisScalar<T>`，六 dtype | `RunRepeatSuffix<T>`，六 dtype | `RunGeneric<T>`，六 dtype | dtype 只改变 T/entry |
 | 循环与分核 | 元素段/tile | axis 行段、wrap batch | 行段；batch 或 row tile | linear 元素段 | 匹配广播连续性 |
-| Queue/TBuf/寄存器 | 3×depth2 Queue+vReg | 同左 | 同左 | 标量寄存器，无 Queue | 规则路线用 packed UB |
+| Queue/TBuf/寄存器 | 3×depth2 Queue+vReg | 同左 | 同左 | 无 Queue；编译器管理的局部标量，物理寄存器账不可见 | 规则路线用 packed UB |
 | 内存总占用与复用 | 192KiB | 192KiB | 192KiB | 显式 UB 0 | 固定 tile 与 Queue lifecycle |
 | 搬运/Vector/NDDMA API | 2×DataCopyPad+Reg Max | NDDMA+DataCopyPad+Reg Max | NDDMA 或 2×DataCopyPad+Reg Max | GM Get/Set+标量 compare | 广播是否可 packed |
 | 同步、精度与 tail | Queue/mask | Queue/mask/wrap tail | Queue/mask/row tail | 顺序标量/元素 end | 不写无效元素 |
@@ -661,11 +727,13 @@ using MaximumRes = Bind<Vec::Max<T>, InputX1, InputX2>;
 
 - Direct 入口只接受连续输入、相同 dtype、同设备、rank 1–8 与合法右对齐广播；不做隐式 contiguous 修复。
 - 转换 dtype 不含官方 950 声明的 `uint8`，也不含 README 中的 `double`；不得用官方支持表补齐 Direct launcher。
-- 空输出未被安全闭合：config 计算可能以 0 作为 `CeilDivHost` 除数；调用方必须避免总元素数为 0，除非先补充 Host 空域返回。
+- 零维度未被安全闭合：对齐维 `(0,1)` 虽通过 broadcast check，却被 `std::max` 推成输出 1；`(0,0)` 会产生 `totalLength=0`，后续 config 可能以 0 作为 `CeilDivHost` 除数。复用时应在 shape 乘积前显式拒绝零维，或按目标框架语义实现空输出早返；仅增加 Kernel 的 `begin>=total` guard 不足以修复 Host 除零与错误 output shape。
 - R-003 未检查 `innerLength<=tileElements`；当 trailing span 超过 `32768/dtypeBytes` 元素时，单行 batch 仍超过 32768B Queue slot。安全复用该 Route 必须补 guard 并转 R-004，或增加 inner tiling。
 - shape 乘积、`rowCount=outerCount*axisLength` 和 byte-count 窄化到 `uint32_t` 均无显式溢出检查；rank 上限不能代替元素数上限。
 - R-001/003/002 硬编码 192KiB UB，总量未与运行时 `GetCoreMemSize` 比较；迁移到不同 UB 配置必须重算三组 depth-2 Queue。
 - launcher 返回 `void` 且 `aclCall` 固定返回 0，源码未提供单次 launch 的错误传播或重试。
+- lambda 只捕获裸地址，不建立输入 Tensor owner 覆盖 Device 完成期的源码内证明；异步回收安全性依赖外部 current-stream allocator/`RunOpApi` 契约。
+- 规则 Route 的 `Reg::Max` 未在交付源码中定义 NaN payload、双 NaN 优先级或 signed-zero tie 的逐位行为；R-004 的 `ScalarMaximum` 顺序可见，但不同 Route 的逐位一致性仍需目标 SDK 语义证明。
 - 官方 `BroadcastSch` 的具体公共 POD、调度 mode 内部资源账是框架边界；本文不把它们伪造成 Direct config。
 
 ## 源码索引

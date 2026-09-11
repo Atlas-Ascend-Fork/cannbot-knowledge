@@ -1,7 +1,7 @@
 ---
 type: Operator
 title: "MaskedScale 950 Direct Invoke 算子知识"
-description: "说明 cann_bench::masked_scale 在 950 上的接口语义、Direct Launcher 参数生成、Route 选择、单 Kernel 启动图与逐节点实现。"
+description: "说明 cann_bench::masked_scale 在 950 上的接口语义、Direct Launcher 参数生成、三条 active Route、单 Kernel 启动图与逐节点实现闭包。"
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/asc-devkit/blob/7a7156352f594b5ca79b533f72c5a99f19b87983/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/add.asc
     role: implementation
 created_at: "2026-08-25T19:27:57Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -41,10 +41,10 @@ cann_versions: ["9.1.0"]
 | 计算语义 | 对连续展平后的每个元素执行 `y[i] = cast_x(x[i] * mask[i] * scale)`，输出 dtype 与 `x` 相同 |
 | 输入输出 | `x/mask/y` shape 相同、连续 ND；`x/y∈{float16,bfloat16,float32}`；`mask∈{uint8,int8,float16,bfloat16,float32}`；`scale` 在 Direct ABI 中为 `float` |
 | 执行类型 | R-003/R-002/R-001 均为单节点 `AIV_VECTOR`；entry 显式标注 `KERNEL_TYPE_AIV_ONLY`，无可达 Cube/AIC 或 MIX_CV 节点 |
-| Kernel 路线 | P0 为 R-003 通用 FP32 中间，P1 为 R-002 整数 mask 双级 cast，P2 为 R-001 FP16 原生；Route ID 与 Host dtype key 保持不变 |
-| 核心资源 | 输入/输出 GM、一个 `TBuf<VECCALC>` tensor pool、DAG 编译期 buffer slot、`TPipe`/位置事件；无独立 workspace |
+| Kernel 路线 | 三条均为 production `active`：P0 为 R-003 通用 FP32 中间，P1 为 R-002 整数 mask 双级 cast，P2 为 R-001 FP16 原生；没有 `conditional` 或 `dormant` Route，Route ID 与 Host dtype key 保持不变 |
+| 核心资源 | 输入/输出 GM、一个 `TBuf<VECCALC>` tensor pool、DAG 编译期 buffer slot、`TPipe`/位置同步协议；L1/L0/workspace 均无分配或数据边 |
 | 来源闭包 | `direct_implementation_closed`：转换交付件闭合 `cann_bench::masked_scale`→Meta/PrivateUse1→route/tiling→15 个 direct entry→本地化 `ElementwiseSch`→DAG body；官方固定 Commit 提供 950、DAG、Tiling 与原生 FP16/L2 指导映射，Direct ABI 和扩展路线均明确归于转换交付件 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 证据边界 | 卡片只把固定官方源码直接支持的事实归为官方原生；Direct ABI、BF16-mask 扩展、FP16 DAG 改写和 L2 hint 落点均按转换或派生事实表达。 |
 
 ## 接口与语义
 
@@ -73,6 +73,17 @@ y[i] = cast<x.dtype>(x[i] * cast(mask[i]) * cast(scale))
 
 官方基线支持 12 个 `x×mask` 组合（mask 不含 BF16）。交付件新增 `51/52/53` 三个 BF16-mask key，并把 `11/21/31` 替换为映射自官方 experimental `ComputeFp16` 的 FP16 原生 DAG；这些扩展不能反向归因于官方公开 ACLNN 契约。
 
+### 来源与转换关系
+
+| 层级 | 固定来源直接支持的事实 | 本 Direct 实现中的转换边界 |
+|---|---|---|
+| 官方 950 主线 | `README`/definition/CMake 的 Ascend 950 范围，arch35 Host tiling，`MaskedScaleTilingData` 形状，`MaskCastOne/Two` DAG 与 AIV-only router | Direct 不复用框架 tiling/workspace 指针；Host 重新生成普通按值 POD、具体符号和 current-stream launcher |
+| 官方 experimental 路线 | `ComputeFp16` 的 `mask→half`、FP16 `Mul`、`scale→half`、FP16 `Muls` 顺序 | key 11/21/31 被派生为三个 `ScalarT=half` atvoss DAG；这是语义映射，不是官方主线 entry 的逐字移植 |
+| 官方通用指导 | elementwise 的 4 KiB/core、512 元素分块公式；950 一次性流式输入的 L2 bypass 模式 | 本地 `CalcTiling<OpDag>` 以 Direct DAG 元数据重算 `U/F/T`；本地 scheduler 只对 x/mask 输入设置 cache hint |
+| Direct 派生补充 | 无官方公开主线依据覆盖 BF16 mask 的三组组合 | key 51/52/53 复用 `MaskCastOne<Tx,bfloat16_t>`；其接口域与等价性只属于转换实现，不扩大官方契约 |
+
+固定 HTTP `sources` 用于回到官方源码核验原生算法、平台和模板关系；本文对 Direct Host/POD/C ABI/launcher、本地 scheduler 与派生 dtype 路线的描述来自转换源码闭包，不能由这些 HTTP 链接单独推出。
+
 ## Host/Launcher 执行流程
 
 ### 参数校验与前处理
@@ -96,9 +107,9 @@ LF/LT = ceil(F/U), ceil(T/U)                       # former/tail 核循环数
 UF/UT = F-(LF-1)U, T-(LT-1)U                       # 两类核末 tile 元素
 ```
 
-平台查询失败时转换件使用 `64` 个 AIV 核和 `192 KiB` UB 的 fallback。`U` 还会下限钳制为 `A`。交付转换保留官方 opbase 的 4 KiB/core、512 元素 block 对齐、256 B vector 对齐和 former/tail 公式；这里 `512` 是元素粒度，与官方常量名中的 cache-line byte wording不可混用。
+仅当 `GetCoreNumAiv()` 返回 `<=0` 时，转换件把 AIV 核数替换为 `64`；仅当 `GetCoreMemSize(...,UB,ubSize)` 调用后 `ubSize==0` 时，才把 UB 替换为 `192 KiB`。这是返回值无效兜底：源码没有检查 platform manager 空指针，也没有捕获平台 API 异常或错误状态，这些失败不在当前闭包。`U` 还会下限钳制为 `A`。交付转换保留官方 opbase 的 4 KiB/core、512 元素 block 对齐、256 B vector 对齐和 former/tail 公式；这里 `512` 是元素粒度，与官方常量名中的 cache-line byte wording不可混用。
 
-Direct 实现没有用户 workspace：`x/mask/y` 分别由调用方和 `empty_like` Tensor 持有，POD 被 lambda 按值捕获，当前 stream 传给唯一 Kernel launch。`aclCall` 在调用 launcher 后固定返回 0，源码没有逐 launch 返回码检查或 cleanup 分支。
+Direct 实现没有用户 workspace：15 个 entry 的形参只有 `x/mask/y` 与按值 POD，没有 workspace GM 参数；`x/mask/y` 分别由调用方和 `empty_like` Tensor 持有，POD 被 lambda 按值捕获，当前 stream 传给唯一 Kernel launch。启动配置 `<<<blockDim,nullptr,stream>>>` 中的 `nullptr` 是 `l2ctrl`，不是 workspace 证据。`aclCall` 在调用 launcher 后固定返回 0，源码没有逐 launch 返回码检查或 cleanup 分支。
 
 ### 启动图与失败传播
 
@@ -109,7 +120,7 @@ cann_bench::masked_scale / PrivateUse1
     -> GetRoute
     -> calc_masked_scale_tiling_params<selected OpDag>
     -> launch_masked_scale_kernel(route, tiling, current_stream)
-      -> exactly one masked_scale_<x>_<mask><<<tiling.blockNum,nullptr,stream>>>
+      -> exactly one masked_scale_<x>_<mask><<<tiling.blockNum,nullptr(l2ctrl),stream>>>
         -> RunMaskedScaleDag<OpDag,ScalarT>
           -> ElementwiseSch::Init -> ElementwiseSch::Process
 ```
@@ -128,15 +139,24 @@ GM_byte = tensor_base + (b * F + tileOffset) * sizeof(tensor_dtype)
 
 UB 只有一个 `TBuf<VECCALC>`：总容量 `U*Dmax*B` 字节，划分为 `B` 个等长 slot，每 slot `blockLen=U*Dmax` 字节。DAG 的 `GetBufferIds<true,false>()` 决定 ping/pong 与中间结果映射；循环以 `i&1` 选择阶段。Host 用同一 `Dmax/Dmin/B` 反推 `U`，所以正常平台查询下总分配不超过 `UB_hw`。
 
+三条 active Route 共用下列存储层闭包；差异只在 UB slot 中的 dtype 与 DAG 生命周期：
+
+| 存储层 | active 数据与地址 | 容量/生命周期 | 不存在或失效边界 |
+|---|---|---|---|
+| GM | `x/mask/y + (b*F+tileOffset)*sizeof(dtype)` | caller 持有输入，输出 Tensor 持有 y；每 tile 只读/写 `valid` | 不为对齐 padding 读写越界 |
+| UB | 单个 `TBuf<VECCALC>`，`B` 个 DAG slot | `U*Dmax*B<=UB_hw`；按 buffer ID、最后消费点与 `i&1` 复用 | DAG 节点或 dtype 改变时必须由同一模板重算 `B/Dmax/Dmin/U` |
+| L1/L0A/L0B/L0C | 无数据边、无 allocation、无 Cube 节点 | 0B | 不能把 AIV-only elementwise 图推导成 L1/L0 staging |
+| workspace GM | Host 不分配 workspace，15 个 entry 也没有 workspace GM 形参；POD 按值传入 | 0B；launch 配置第二参数 `nullptr` 是 l2ctrl | 新增跨 Kernel 中间或归约时必须重新建立 workspace owner/offset/lifetime |
+
 ### Route 特征与选择
 
-下表按知识重要性排序；`Host 顺序` 单独记录真实的运行顺序，不把 P0/P1/P2 误作运行时判定顺序。共同前序是 Meta 校验与输出分配→空输入短路返回→dtype 编码→按 key 选择 DAG tiling；DAG 选定后才查询 AIV 核数与 UB，查询结果无效时分别采用既定 core/UB fallback，再进入 launcher。
+下表按合法输入域覆盖、特殊精度价值与安全边界综合排序；`P0/P1/P2` 是知识重要性，不是运行时优先级。真实 Host selector 先按 dtype 各自短路编码，再以数值 key 的 `switch` 分发。共同前序是 Meta 校验与输出分配→空输入短路返回→dtype 编码→按 key 选择 DAG tiling；DAG 选定后才查询 AIV 核数与 UB，仅对 `core<=0` 或 `ubSize==0` 的无效返回值采用既定兜底，再进入 launcher。
 
-| 重要性 | Route | Key/模板 | 精确选择条件 | Host 顺序、短路与 fallback |
-|---:|---|---|---|---|
-| P0 | R-003 通用 FP32 中间 | `32/33/41/42/43/51/52/53`；`MaskedScaleMaskCastOne<Tx,Tmask>`；`ScalarT=float` | mask∈{float16,float32,bfloat16} 的已支持组合，但 `x=float16,mask=float16` 使用 R-001 | dtype 编码先对 x 按 f16→bf16→f32 短路，再对 mask 按 u8→i8→f16→f32→bf16 短路；DAG `switch` 在 31 后处理 32/33，再处理 41/42/43、51/52/53；命中立即 `return`，不存在 Route 间 fallback，default 为 tiling 抛错、launcher 静默返回 |
-| P1 | R-002 整数 mask 双级 cast | `12/13/22/23`；`MaskedScaleMaskCastTwo<Tx,Tmask>`；`ScalarT=float` | `x∈{bfloat16,float32} && mask∈{uint8,int8}` | 同一 dtype 编码短路顺序；DAG `switch` 中 12/13 紧随 11，22/23 紧随 21；命中立即 `return`，不存在到 R-003 的 fallback，default 同上 |
-| P2 | R-001 FP16 原生 | `11/21/31`；`MaskedScaleFp16MaskCast<uint8_t/int8_t>` 或 `MaskedScaleFp16Fp16`；`ScalarT=half` | `x=float16 && mask∈{uint8,int8,float16}` | 同一 dtype 编码短路顺序；DAG `switch` 中 11、21、31 分别是 uint8、int8、float16 mask 分组首项；命中立即 `return`，不存在到 R-002/R-003 的 fallback，default 同上 |
+| 重要性 | 可达性 | Route | Key/模板 | 精确选择条件 | Host 顺序、短路与 fallback |
+|---:|---|---|---|---|---|
+| P0 | `active` | R-003 通用 FP32 中间 | `32/33/41/42/43/51/52/53`；`MaskedScaleMaskCastOne<Tx,Tmask>`；`ScalarT=float` | mask∈{float16,float32,bfloat16} 的已支持组合，但 `x=float16,mask=float16` 使用 R-001 | dtype 编码先对 x 按 f16→bf16→f32 短路，再对 mask 按 u8→i8→f16→f32→bf16 短路；DAG `switch` 在 31 后处理 32/33，再处理 41/42/43、51/52/53；命中立即 `return`，不存在 Route 间 fallback，default 为 tiling 抛错、launcher 静默返回 |
+| P1 | `active` | R-002 整数 mask 双级 cast | `12/13/22/23`；`MaskedScaleMaskCastTwo<Tx,Tmask>`；`ScalarT=float` | `x∈{bfloat16,float32} && mask∈{uint8,int8}` | 同一 dtype 编码短路顺序；DAG `switch` 中 12/13 紧随 11，22/23 紧随 21；命中立即 `return`，不存在到 R-003 的 fallback，default 同上 |
+| P2 | `active` | R-001 FP16 原生 | `11/21/31`；`MaskedScaleFp16MaskCast<uint8_t/int8_t>` 或 `MaskedScaleFp16Fp16`；`ScalarT=half` | `x=float16 && mask∈{uint8,int8,float16}` | 同一 dtype 编码短路顺序；DAG `switch` 中 11、21、31 分别是 uint8、int8、float16 mask 分组首项；命中立即 `return`，不存在到 R-002/R-003 的 fallback，default 同上 |
 
 ```text
 if x=f16: xKey=1
@@ -159,15 +179,26 @@ switch key in Host source order:
   default: tiling throws; launcher returns without launch
 ```
 
+三条 Route 都由 `masked_scale_npu` 在合法 dtype 域直接生产，因而全部是 `active`；它们互斥覆盖 15 个 dtype key。当前交付件没有需要外部 caller 才能组图的 `conditional` Route，也没有“有 entry/body 但 production Host 永远不选”的 `dormant` Route。`core<=0`/`ubSize==0` 兜底只替换无效资源返回值，不改变 Route；manager 空指针或 API 异常没有 fallback。unknown-key 分支是越过 Meta/GetRoute 契约后的失败边，不是计算 fallback。
+
+#### Production 链不可达的控制臂
+
+| 控制臂 | 不可达原因 | 若要启用必须闭合的条件 |
+|---|---|---|
+| `CalcTiling(totalLength<=0)` | `masked_scale_npu` 在 `N==0` 时先返回，production 链不会调用 tiling helper | 若修改 Host 让空输入进入 tiling，仍应保持 no-launch，并重新核对当前未填 tail 字段不会被 Device 消费 |
+| launcher `default:return` | Meta 封闭 dtype，`GetRoute` 对合法 dtype 总生成 15 个已知 key，tiling 的 unknown key 还会先抛错 | 若新增 route code，必须同时增加 schema/Meta 域、GetRoute、per-DAG tiling、具体 entry 和 launcher 分支；不能把静默返回当作输出兜底 |
+
+这两个是 dormant 控制臂而非 Route；重新启用条件未满足前，不把它们计入实现覆盖或 fallback 路线。
+
 ### 模板/实现执行矩阵
 
-| Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
+| Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 存储、同步与任务映射 | tail/fallback |
 |---|---|---|---|---|---|---|
-| R-003 通用 FP32 中间 | 32/33/41/42/43/51/52/53 | 950，连续同 shape；上表剩余 dtype 组合 | 单 AIV Kernel | `RunMaskedScaleDag<MaskedScaleMaskCastOne<Tx,Tmask>,float>` | x/mask 各转 FP32，FP32 Mul/Muls，转回 Tx；LEVEL_2 pool | 同上；BF16 mask 无官方 ACLNN fallback |
-| R-002 整数 mask 双级 cast | 12/13/22/23 | 950，连续同 shape；x 为 bf16/f32，mask 为 u8/i8 | 单 AIV Kernel | `RunMaskedScaleDag<MaskedScaleMaskCastTwo<Tx,Tmask>,float>` | mask 先转 half 再转 float；其余 FP32；同一 pool 生命周期复用 | 同上 |
-| R-001 FP16 原生 | 11/21/31 | 950，连续同 shape；`x=f16` 且 mask 为 u8/i8/f16 | 单 AIV Kernel | `RunMaskedScaleDag<MaskedScaleFp16*,half>`→`ElementwiseSch` | LEVEL_2 DAG pool；Mul/Muls FP16；queue-position Get/Release | former/tail 核与末 tile；非法 key 失败 |
+| R-003 通用 FP32 中间 | 32/33/41/42/43/51/52/53 | 950，连续同 shape；上表剩余 dtype 组合 | 单 AIV Kernel | `RunMaskedScaleDag<MaskedScaleMaskCastOne<Tx,Tmask>,float>` | block `b`→`[bF,min((b+1)F,N))`；GM↔单 UB pool；L1/L0/workspace=0；位置协议同步 | former/tail 核、末 tile 精确 `valid`；BF16 mask 无官方 ACLNN fallback |
+| R-002 整数 mask 双级 cast | 12/13/22/23 | 950，连续同 shape；x 为 bf16/f32，mask 为 u8/i8 | 单 AIV Kernel | `RunMaskedScaleDag<MaskedScaleMaskCastTwo<Tx,Tmask>,float>` | 同一 block 映射；GM↔UB，mask 的 half/float slot 按最后消费复用；L1/L0/workspace=0 | 同一 former/tail 公式；exact key，无 Route fallback |
+| R-001 FP16 原生 | 11/21/31 | 950，连续同 shape；`x=f16` 且 mask 为 u8/i8/f16 | 单 AIV Kernel | `RunMaskedScaleDag<MaskedScaleFp16*,half>`→`ElementwiseSch` | 同一 block 映射；GM↔LEVEL_2 UB pool；Mul/Muls FP16；L1/L0/workspace=0 | former/tail 核与末 tile；非法 key 在 launch 前失败 |
 
-### 隐藏性能 Guard
+### 选择与资源 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -175,14 +206,14 @@ switch key in Host source order:
 | dtype key 封闭 | `x∈{f16,bf16,f32}` 且 `mask∈{u8,i8,f16,bf16,f32}` | 只生成 15 个实体 entry | 全部 | Meta 失败；helper 未知 key 抛错 | `IsSupported*Type/GetRoute` |
 | 每核最小数据量 | `C=ceil(N*Dmin/4096)` 并钳到平台核数 | 避免把不足 4 KiB 的最小 dtype 数据继续拆核 | 全部 | 使用更少 block | `CalcTiling` |
 | 512 元素 block 对齐 | `F=align_up(ceil(N/C),512)` | 保留官方 elementwise 分块公式并使连续核边界规则 | 全部 | `blockNum` 可能小于候选 `C` | `CalcTiling` |
-| UB slot 上界 | `U=align_down(UB/(Dmax*B),256/Dmin)` | pool 有 B 个、每个 `U*Dmax` 字节的 DAG slot | 全部 | 降低 tile；查询失败使用 192 KiB fallback | `CalcTiling`、`ElementwiseSch::Init` |
+| UB slot 上界 | `U=align_down(UB/(Dmax*B),256/Dmin)` | pool 有 B 个、每个 `U*Dmax` 字节的 DAG slot | 全部 | 降低 tile；仅 `ubSize==0` 使用 192 KiB 无效返回值兜底 | `CalcTiling`、`ElementwiseSch::Init` |
 | 空域 | `N==0` | 避免 `Process` 的 `loopNum-1` 无符号边界和无意义 launch | 全部 | Host 直接返回空 y | `masked_scale_npu` |
 | L2 bypass | 两个输入每 tile 各只 CopyIn 一次 | 单次流式输入不占用 L2；输出不设置 bypass | 全部 | 无运行时 fallback | `ElementwiseSch::CopyIn` |
 | unknown launch key | launcher `switch default` | 无对应具体符号 | 全部 | 静默返回、不写 y | `launch_masked_scale_kernel` |
 
 ### POD/ABI
 
-`MaskedScaleTilingData` 是标准布局、自然 8B 对齐的按值 POD：`sizeof=80`、`alignof=8`。offset 由字段顺序和自然对齐确定；它先平铺官方 `EleBaseTilingData` 字段，再追加 `float scale`。
+`MaskedScaleTilingData` 是标准布局、自然 8B 对齐的按值 POD：按 LP64 字段布局推导 `sizeof=88`、`alignof=8`。前 80B 恰好是 11 个 `EleBaseTilingData` 字段，`float scale` 位于 offset 80，末尾有 4B 对齐 padding。转换源码未写 `#pragma pack` 或显式 `static_assert`；迁移时应在 Host/device 共用头中补 `sizeof/alignof/offsetof(scale)` 断言，不能沿用旧的 80B 结论。
 
 | 结构 | 字段 | 类型/位宽 | ABI 布局 | 单位 | Host/launcher producer | Device consumer | 边界 |
 |---|---|---|---|---|---|---|---|
@@ -197,7 +228,7 @@ switch key in Host source order:
 | 同上 | `ubTailOfTailBlock` | int64/64 | off 56 | 元素 | `T-(LT-1)U` | 末核末 tile | `1..U` |
 | 同上 | `elemNum` | int64/64 | off 64 | 元素 | `U` | 复制进 base POD；本地 scheduler 不直接读 | 与 `ubFormer` 同值 |
 | 同上 | `scheMode` | uint64/64 | off 72 | enum/key | 常量 `1` | 复制进 base POD；本地 `ElementwiseSch<0UL,...>` 不读取 | inactive 字段仍须保持 ABI |
-| 同上 | `scale` | float/32 | off 76 | 标量 | `static_cast<float>(scale)` | `SetVar<half/float,0>` | R-001 再降为 half |
+| 同上 | `scale` | float/32 | off 80；尾部 padding 4B | 标量 | `static_cast<float>(scale)` | `SetVar<half/float,0>` | R-001 再降为 half；结构总长 88B |
 
 ### Route 源码闭包
 
@@ -539,7 +570,7 @@ struct MaskedScaleMaskCastOne {
 - 适用：静态逐元素 DAG，节点的输入最后消费点可在编译期确定。
 - 前提：Host 与 Device 使用字节一致的 DAG 实例、`Dmax/Dmin/B` 和 buffer-ID算法。
 - 失效：新增分支、多引用或持久中间会改变 `B`；必须重新计算 tiling，不能沿用原 `U`。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：固定 DAG 能证明 buffer-ID 与 Host tile 上界的结构关系，但不单独证明跨 SDK 版本的模板布局保持不变。
 
 #### 错误做法
 
@@ -573,7 +604,7 @@ __aicore__ inline void ProcessDoubleBufferL2Bypass()
 - 适用：单 Kernel、单遍流式输入、同一数据没有可验证重用的 elementwise 算子。
 - 前提：950/CANN 9.1 支持该 `GlobalTensor` cache hint，输入 owner 在 launch 期间有效。
 - 失效：输入会被后续节点或当前 Kernel 重读时应重新评估，不能机械绕过 L2；本实现无动态 fallback。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：固定源码只证明 cache hint 的落点与一次性输入前提，不给出跨 shape 或跨版本的收益幅度。
 
 #### 错误做法
 
@@ -585,7 +616,7 @@ __aicore__ inline void ProcessDoubleBufferL2Bypass()
 
 - 适用 Route：R-001。
 - 触发条件：`x=float16` 且 `mask∈{uint8,int8,float16}`；其它组合不得复用该计算顺序。
-- Golden 来源：[`experimental/math/masked_scale/op_kernel/arch35/masked_scale_kernel.h:149-157`](https://gitcode.com/cann/ops-math/blob/165d41f02a43a62324b434cb6bda7c533b14da3e/experimental/math/masked_scale/op_kernel/arch35/masked_scale_kernel.h)
+- Golden 来源：[`experimental/math/masked_scale/op_kernel/arch35/masked_scale_kernel.h:149-157`](https://gitcode.com/cann/ops-math/blob/d8e25e8162872e66830b19c5659f401894b44c0e/experimental/math/masked_scale/op_kernel/arch35/masked_scale_kernel.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -603,14 +634,14 @@ __aicore__ inline void ComputeFp16(uint32_t count)
 
 #### 机制与设计原因
 
-交付转换把官方 `ComputeFp16` 的 `mask→half、Mul<half>、Muls<half>` 顺序表达为 atvoss DAG，仅为 key 11/21/31 生成 `ScalarT=half` entry。这样不物化 FP32 中间，也省掉 x 的升精度和输出降精度节点；收益描述仅限源码可证明的少 cast、少 FP32 中间。`alignedCount` 在 Direct DAG 中对应 scheduler 传入的 `tileLength`，末 tile 仍由有效长度约束。
+交付转换把官方 `ComputeFp16` 的 `mask→half、Mul<half>、Muls<half>` 顺序表达为 atvoss DAG，仅为 key 11/21/31 生成 `ScalarT=half` entry。这样不物化 FP32 中间，也省掉 x 的升精度和输出降精度节点；收益描述仅限源码可证明的少 cast、少 FP32 中间。两者只在算法顺序上对应，不能据此断言官方 `alignedCount` 与 production scheduler 的 `tileLength` 数值相等：官方 `AlignElemCount<half>(count)` 让 UB vector 算术覆盖对齐后的 lane，production DAG 则把当前 tile 的有效元素数作为 `tileLength` 传给各 Vec 节点，CopyOut 也只向 GM 写这 `tileLength` 个有效元素。
 
 #### 迁移边界
 
 - 适用：输出与 FP16 表达式语义一致、mask 可安全先转 half 的逐元素乘缩放。
 - 前提：950、x 为 FP16、mask 为 uint8/int8/FP16，scale 允许先转 half。
 - 失效：x 为 BF16/FP32 或 mask 为 FP32/BF16 时必须使用 R-003/R-002 的 FP32 中间；否则会改变 cast 和舍入顺序。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：固定源码证明 cast/乘/缩放顺序；若改变框架表达式或允许新的 dtype 组合，必须重新推导数值等价边界。
 
 #### 错误做法
 
@@ -634,7 +665,7 @@ __aicore__ inline void ComputeFp16(uint32_t count)
 | 项目 | A2 | A3 | 950 |
 |---|---|---|---|
 | 支持状态 | 官方 README 明确不支持 | 官方 README 明确不支持 | 官方 README 支持 Ascend 950PR/950DT；本文只发布 950 |
-| Host/Launcher | 不适用 | 不适用 | 转换件查询 AIV core/UB，fallback 64 core/192 KiB，并 direct launch |
+| Host/Launcher | 不适用 | 不适用 | 转换件查询 AIV core/UB；仅 `core<=0`/`ubSize==0` 时使用 64 core/192 KiB 无效返回值兜底，并 direct launch |
 | Kernel/资源 | 不适用 | 不适用 | arch35 AIV-only atvoss DAG；单 TBuf pool；无 workspace |
 
 ## 限制与失败边界
@@ -642,10 +673,10 @@ __aicore__ inline void ComputeFp16(uint32_t count)
 - Direct 入口只接受两输入同 shape、同 device、连续 ND；不同于官方 ACLNN 对部分非连续 Tensor 的框架处理能力。
 - BF16 mask 的 51/52/53 key 是交付转换扩展，不属于固定官方 `math/masked_scale` 公开 dtype 契约。
 - `N*Dmin`、`N+C-1`、`N+F-1` 等 Host `int64` 算术没有显式溢出检查；极端元素数不能仅凭公式宣称安全。
-- `ubFormer` 窄化为 int32，`blockDim` 窄化为 uint32；源码未显式检查窄化。平台 UB 极小时 `max(U,A)` 也会越过按 UB 商得到的初值，正常 950 查询/fallback 是其隐含资源前提。
+- `ubFormer` 窄化为 int32，`blockDim` 窄化为 uint32；源码未显式检查窄化。平台 UB 极小时 `max(U,A)` 也会越过按 UB 商得到的初值；正常 950 资源返回值或 `core<=0`/`ubSize==0` 兜底是其隐含前提，manager 空指针/API 异常不在闭包。
 - launcher 的 unknown route 静默返回，`aclCall` 又固定返回 0；只有遵循 Meta→GetRoute→tiling 的公开 Direct 顺序才能避免未写输出。
 - `B=OpDag::BufferNum` 和 buffer ID 是 CANN 9.1 atvoss 模板在编译期解析的常量；交付源码闭合了其 producer/consumer 和总字节公式，但不把 SDK 模板内部实现伪造成算子自有代码。
-- 本次知识提取未执行编译、真机、数值或性能测试，不给出性能百分比或跨版本结论。
+- 固定源码不足以推出跨版本的性能或兼容性结论；本文仅声明 950/CANN 9.1 范围内的实现关系。
 
 ## 源码索引
 
@@ -668,7 +699,7 @@ __aicore__ inline void ComputeFp16(uint32_t count)
 
 | 检查项 | 可复用事实 | 不得改变的约束 | 源码符号 |
 |---|---|---|---|
-| ABI/POD | 平铺 base tiling 后追加 float scale；Direct POD 80B | 字段顺序、位宽、offset、scale 的 double→float 转换 | 转换件 `MaskedScaleTilingData/RunMaskedScaleDag` |
+| ABI/POD | 平铺 80B base tiling 后追加 float scale；Direct POD 88B | 字段顺序、位宽、`scale@80`、尾部 padding 与 double→float 转换 | 转换件 `MaskedScaleTilingData/RunMaskedScaleDag` |
 | 调用顺序 | Meta→route→per-DAG tiling→current-stream single launch | 空输入必须在 tiling/launch 前返回；一个 key 只启动一个 entry | `masked_scale_npu/launch_masked_scale_kernel` |
 | workspace/内存 | workspace=0；UB=`U*Dmax*B` | Host 与 Device 必须使用同一 DAG 的 Dmax/Dmin/B；slot 最后消费前不得覆盖 | `CalcTiling/ElementwiseSch::Init/GetBufferIds` |
 | 同步 | tensor-position Get/Release 管理 MTE2/V/MTE3 顺序 | 不能删除消费前的 Get/Release 或破坏 ping/pong 映射 | `CopyIn/ConvertArgs/TryReleaseArgs/CopyOut` |

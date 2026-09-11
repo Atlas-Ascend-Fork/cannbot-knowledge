@@ -18,7 +18,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:39:32Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -33,10 +33,10 @@ cann_versions: ["9.1.0"]
 | 计算语义 | 对每个 ROI 的每个 `(channel, pooled_h, pooled_w)` bin 做规则网格双线性采样，再按采样点数求平均 |
 | 输入输出 | `x[B,C,H,W]`、`boxes[R,5]` 与 `y[R,C,OH,OW]`；FP16/FP32、contiguous NCHW/ND |
 | 执行类型 | 四条 Route 均为 `SIMT geometry + SIMT forward` 两节点图；两个 entry 都是 `KERNEL_TYPE_AIV_ONLY` wrapper，无 Cube/AIC 或 MIX_CV |
-| Kernel 路线 | 重要性顺序：P0 R-003 FP32 unaligned；P1 R-001 FP16 unaligned；P2 R-002 FP16 aligned；P3 R-004 FP32 aligned。Route ID 保持 launcher 映射；fixed/adaptive sampling 是各 Route 内部属性分支 |
+| Kernel 路线 | 复用价值顺序：P0 R-003 FP32 unaligned；P1 R-001 FP16 unaligned；P2 R-002 FP16 aligned；P3 R-004 FP32 aligned。四路由 dtype×aligned 唯一决定；fixed/adaptive sampling 与 32/64 位 flat decode 是 Route 内局部分支 |
 | 核心资源 | boxes/features/geometry/output GM 与线程私有标量；geometry 为 `R×12×4` B 的 invocation-local GM Tensor；无 AIV UB、dynamic UB、Device workspace、atomic 或 barrier |
 | 来源闭包 | `direct_implementation_closed`：交付候选闭合 Torch schema、Meta/PrivateUse1、Direct POD、四实例 router、双 Kernel body、同流 GM 边与构建；固定官方源码仅支撑接口/语义/Host 编排相关事实，不把 Direct 派生符号表述为官方实现 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 证据边界 | 已闭合转换载荷的 Host、POD、launcher、可达 Device 实例与构建接线；固定 HTTP 源码只支撑公开接口和 ROIAlignGrad 950 同族契约，不支撑将 Direct forward 派生体称为官方原生实现 |
 
 ## 接口与语义
 
@@ -75,18 +75,20 @@ y[r,c,ph,pw] = Σ bilinear(x[batch,c], sampleY, sampleX) / (gridH*gridW)
 
 交付注册 `roi_align(Tensor x, Tensor boxes, int outputHeight, int outputWidth, float spatial_scale, int sampling_ratio, bool aligned) -> Tensor y`，并绑定 Meta 与 `PrivateUse1`，不是 ACLNN 两段式接口。目标是 CANN 9.1.0、950/Ascend 950。
 
-固定官方提交中的 `aclnnRoiAlignV2` 是最接近的公开语义边界：同样接收 `[K,5] boxes`、FP16/FP32、`aligned` 与平均池化；但其文档明确标记 Ascend 950PR/950DT 不支持，且该提交的 forward `objdetect/roi_align` 没有 `op_host/arch35` 或 `op_kernel/arch35`。因此：
+固定官方版本中的 `aclnnRoiAlignV2` 是最接近的公开 forward 语义边界：同样接收 `[K,5] boxes`、FP16/FP32、`aligned` 与平均池化；其 Host 把 false/true 分别映射到 `roiEndMode=0/2`。但该文档明确标记 Ascend 950PR/950DT 不支持，且该版本的 forward `objdetect/roi_align` 没有 `op_host/arch35` 或 `op_kernel/arch35`。另一固定官方版本中的 `roi_align_grad` 则公开了 950 Tiling、AIV-only SIMT body 和模板 key，可用于核对同族的五列 ROI、mode 0 与 half-pixel mode 2/3 geometry、fixed/adaptive grid、每核最少 1024 元素与 32 元素对齐。因此：
 
-- **官方接口/实现相关来源**：Frontmatter 中的 V1/V2 文档、Op API、L0 launcher 与 OpProto，只证明参数布局、输出 shape、contiguous/格式转换、`aligned` 语义和 launcher 编排；不证明 950 ACLNN 可用或 Direct body 来源。
-- **交付 Direct 适配/补充**：Torch 注册、`ROIAlignTilingData`、950 核数计算、四个模板实例、geometry GM、SIMT 插值、精确舍入 helper 与 direct CMake 均来自转换交付候选；按约束不把本地交付路径或不可达 artifact URL写入 `sources`。
+- **官方 forward 来源**：Frontmatter 中固定到 `bb717d...` 的 V1/V2 文档、Op API、L0 launcher 与 OpProto，只证明参数布局、输出 shape、contiguous/格式转换、`aligned` 语义和 launcher 编排；不证明 950 ACLNN 可用或 Direct body 来源。
+- **官方 950 同族来源**：固定到 `fcc3b3...` 的 ROIAlignGrad arch35 文件直接证明 256-lane AIV-only、`roiEndMode` 编译期派发、五列 ROI geometry 和 Host 分核公式。Direct forward 复用了这些同族契约，但将 lane 数改为 512，且没有复制 backward 的 gather body。
+- **Direct Invoke 适配**：Torch schema/Meta/PrivateUse1、`ROIAlignTilingData`、C ABI launcher、current-stream 双节点和 direct CMake 是转换层适配。
+- **Device 派生补充路线**：四个 forward 模板实例、`geometry[R,12]` GM 协议、输出独占插值、8 路顺序归约、FFMA 乘法舍入与正整数除法修正都是转换实现新增的 forward 体，不是官方 forward 950 原生源码。Frontmatter 仅保留可复核的固定 HTTP 源。
 
 ## Host/Launcher 执行流程
 
 ### 参数校验与前处理
 
-`roi_align_npu` 按顺序执行：设备 guard 绑定 `x.device()`；检查 `x.dim()==4`；检查 `boxes.dim()==2 && boxes.size(1)==5`；检查两输入 dtype 相同且为 FP16/FP32；检查 `OH/OW>0`、`spatialScale>0`、`samplingRatio>=-1`。之后分别执行 `x.contiguous()`、`boxes.contiguous()`，分配 `output[R,C,OH,OW]` 和 `geometry[R,12]`（INT32）。
+`roi_align_meta` 只用 `boxes.size(0)`、`x.size(1)` 与两个 pooled 属性构造输出，不执行 rank、dtype 或属性校验。真实 NPU 路径中，`roi_align_npu` 按顺序执行：设备 guard 绑定 `x.device()`；检查 `x.dim()==4`；检查 `boxes.dim()==2 && boxes.size(1)==5`；检查两输入 dtype 相同且为 FP16/FP32；检查 `OH/OW>0`、`spatialScale>0`、`samplingRatio>=-1`。之后分别执行 `x.contiguous()`、`boxes.contiguous()`，分配 `output[R,C,OH,OW]` 和 `geometry[R,12]`（INT32）。
 
-Host 未检查 `boxes.device()==x.device()`、batch 列整数性/范围、四坐标有序性、`samplingRatio` 上限、int64→int32 窄化范围及乘法溢出；这些属于调用前约束。任一 `TORCH_CHECK` 失败都会在分配/launch 前终止。
+Host 未检查 `boxes.device()==x.device()`、batch 列的有限性/整数性/范围、四坐标的有限性与有序性、正 `B/C/H/W`、`samplingRatio` 上限、int64→int32 窄化范围及乘法溢出。`spatialScale>0` 会拒绝 NaN 和非正值，但会接受 `+Inf`，且 double→float 还可溢为 `+Inf`。任一显式 `TORCH_CHECK` 失败都在 contiguous/分配/launch 之前终止；未编码的条件必须由调用方保证。
 
 ### 参数、Workspace 与生命周期
 
@@ -100,7 +102,9 @@ perCore  = align_up(perCore1, 32)
 blockDim = O==0 ? 1 : max(ceil(O / perCore), 1)
 ```
 
-两个 Kernel 共享同一 POD。K-001 geometry 固定 `blockDim=1`；K-002 forward 使用上式 `blockDim`。无 opaque Device workspace；唯一跨节点中间量是 Torch 持有的 `geometry` GM Tensor，容量 `48R` B，从 K-001 写入前有效，至少保持到 K-002 同流提交完成。输入连续副本、output 与 geometry 的存储均由当前调用的 Tensor/allocator 管理。
+`O` 在 POD 中是 uint64，但分核路径把它转为 int64；源码的 `CeilDiv(x,y)=(x+y-1)/y` 使用普通有符号加法。除分母为正外，三段算术还分别要求：初次均分满足 `O<=INT64_MAX-(maxAiv-1)`，保证 `int64(O)+maxAiv-1` 可表示；令 `p=max(CeilDiv(O,maxAiv),1024)`，32 元素对齐满足 `p<=INT64_MAX-31`，保证 `p+31` 及 `((p+31)/32)*32` 可表示；最终求核数在 `O==0` 时直接取 1，否则满足 `O<=INT64_MAX-(perCore-1)`，保证 `int64(O)+perCore-1` 可表示。源码没有显式 checked/saturating overflow 保护，这些都是有效调用前提。官方 ROIAlignGrad 950 Tiling 直接支撑“核数均分→每核最少 1024→32 元素对齐”这一同族公式；Direct forward 将工作量换成 `O`，并自行添加 `maxAiv<=0` 时的 1-core 保护。
+
+两个 Kernel 共享同一 POD。K-001 geometry 固定 `blockDim=1`；K-002 forward 使用上式 `blockDim`。无 opaque Device workspace；唯一跨节点中间量是 `geometry` GM Tensor，容量 `48R` B。`features`、`rois`、`geometry` 是 `roi_align_npu` 的局部 Tensor，`output` 被返回；`RunOpApi` 回调只按值捕获裸指针、POD 和 stream，并不捕获 Tensor owner。局部 Tensor 在回调执行及两次 launch 提交期间有效；函数返回后的异步保活依赖 Torch NPU 当前流 allocator 语义，源码未显式 `record_stream` 或持有 Tensor 的 event。
 
 ### 启动图与失败传播
 
@@ -118,10 +122,10 @@ roi_align_npu
 | 节点/边 | entry/body | grid/lane | 输入→输出 | ordering、owner/lifetime | 失败传播 |
 |---|---|---|---|---|---|
 | K-001 geometry | `roi_align_geometry_entry<T,ALIGNED>` → `BuildROIGeometry` | 1 AIV block × 512 SIMT lane | boxes→geometry | 当前 stream；geometry Tensor 属于本次调用 | launcher 为 `void`，无逐节点返回码 |
-| E-001 | geometry GM，offset `48*r`、extent `48R` B、word layout | N/A | K-001→K-002 | 同 stream 提交保证 producer 先于 consumer；不得在 K-002 完成前复用 | 无显式 event/错误短路 |
+| E-001 | geometry GM，offset `48*r`、extent `48R` B、12-word layout | N/A | K-001→K-002 | 同 current stream 提交保证 producer 先于 consumer；allocator 必须在 K-002 完成前保留 storage | 无显式 event/错误短路 |
 | K-002 forward | `roi_align_entry<T,ALIGNED>` → `ROIAlignForward` → `EvaluateOutput` | `blockDim` AIV blocks，每块 512 lanes | features+geometry→output | 当前 stream；每 lane 唯一 output owner | 同上 |
 
-`OpCommand::RunOpApi` 只包装 direct-launch lambda 以接入框架 stream/error 机制；lambda 内只调用 `launch_roi_align`。代码没有 ACLNN ROIAlign、ATen compute、CPU 或外部算子 fallback。
+`OpCommand::RunOpApi` 只包装 direct-launch lambda 以接入框架 stream/error 机制；lambda 无条件调用 `launch_roi_align` 并固定返回 0。代码没有 ACLNN ROIAlign、ATen compute、CPU 或外部算子 fallback，也没有 K-001 失败后抑制 K-002 的 launcher 返回码。
 
 ## Route 与参数设计
 
@@ -137,18 +141,20 @@ for local = threadIdx.x; local<count; local+=512:
     outIndex = begin+local
 ```
 
-Host 的 `perCore` 只用于求 `blockDim`；Device 再以实际 `GetBlockNum()` 均分，所以两者不应混为一个 ABI 字段。`O<=UINT32_MAX` 时 entry 为 `OW/OH/C` 生成 magic/shift，并用 `Simt::UintDiv` 解码 `(r,c,ph,pw)`；更大输出退回 uint64 `%`/`/`。两个节点都直接 GM→线程私有标量→GM，不申请 UB。
+Host 的 `perCore` 只用于求 `blockDim`；Device 再以实际 `GetBlockNum()` 均分，所以两者不应混为一个 ABI 字段。`roi_align_entry` 在 `count==0` 时直接返回；任一 `count>0` block 都会在 `asc_vf_call` 前无条件为 `OW/OH/C` 预计算三组 magic/shift。`O<=UINT32_MAX` 只决定 `ROIAlignForward` 是否消费这些参数并用 `Simt::UintDiv` 解码 `(r,c,ph,pw)`；更大输出忽略已预计算的参数，改用 uint64 `%`/`/`。两个节点都直接 GM→线程私有标量→GM，不申请 UB。
 
 ### Route 选择
 
-下表按实现知识的重要性 P0→P3 排列，不代表 Host 判断顺序。`Host 顺序`字段保留 `dtypeTag` 外层分发与 `aligned` 内层分发的真实短路关系。
+可达静态 Route 只由 `dtypeTag×aligned` 的 2×2 直积产生，共四条。R-001…R-004 是本卡的稳定标签，不是源码中的数字 tiling key；可执行的真实 key 是表中的 dtype/bool 对。下表按复用价值 P0→P3 排列，不伪装成 launcher 源码顺序；“实际短路”栏保留 `dtypeTag` 外层、`aligned` 内层的真实判断关系。
 
-| 重要性 | Route | 路线特征 | 适用域与实现前提 | Host 顺序、短路与 fallback |
+| 价值 | Route | Key/静态实例 | 完整命中条件 | 实际短路与不适用去向 |
 |---:|---|---|---|---|
-| P0 | R-003 FP32 unaligned | `<float,false>` 双 SIMT 节点；FP32 GM 与内部算术同精度，无末端降精度 | FP32、`aligned=false`、Host shape/属性校验通过；950 | H0：`dtypeTag!=FLOAT16` 进入 else；H1：`aligned` 判断为 false 才命中。true 先命中 R-004；无 Device fallback |
-| P1 | R-001 FP16 unaligned | `<half,false>` 双 SIMT 节点；输入升 FP32、输出末端降 FP16；extent 最小为1 | FP16、`aligned=false`、Host shape/属性校验通过；950 | H0：`dtypeTag==FLOAT16`；H1：先检查 `aligned`，false 的 else 命中。true 先命中 R-002；无 Device fallback |
-| P2 | R-002 FP16 aligned | `<half,true>` 双 SIMT 节点；FP16 I/O、FP32中间、端点减0.5 | FP16、`aligned=true`、Host shape/属性校验通过；950 | H0：`dtypeTag==FLOAT16`；H1：`aligned` 的首分支直接命中；false 到 R-001；无 Device fallback |
-| P3 | R-004 FP32 aligned | `<float,true>` 双 SIMT 节点；FP32全程、端点减0.5 | FP32、`aligned=true`、Host shape/属性校验通过；950 | H0：`dtypeTag!=FLOAT16` 进入 else；H1：`aligned` 的首分支命中；false 到 R-003；无 Device fallback |
+| P0 | R-003 FP32 unaligned | `FLOAT32/false`→`<float,false>` | `x/boxes` 均为 Float，`aligned=false`，Host 显式校验通过 | H0 走 `dtypeTag!=FLOAT16` else，H1 走 `aligned==false` else；true 去 R-004；其它 dtype 在 Host 失败 |
+| P1 | R-001 FP16 unaligned | `FLOAT16/false`→`<half,false>` | `x/boxes` 均为 Half，`aligned=false`，Host 显式校验通过 | H0 命中 `dtypeTag==FLOAT16`，H1 走 false 分支；true 去 R-002；无 Device fallback |
+| P2 | R-002 FP16 aligned | `FLOAT16/true`→`<half,true>` | `x/boxes` 均为 Half，`aligned=true`，Host 显式校验通过 | H0 命中 FP16，H1 首分支命中 true；false 去 R-001 |
+| P3 | R-004 FP32 aligned | `FLOAT32/true`→`<float,true>` | `x/boxes` 均为 Float，`aligned=true`，Host 显式校验通过 | H0 走 dtype else，H1 首分支命中 true；false 去 R-003 |
+
+排序是知识复用顺序，不是运行时或速度优先级：先放 Python wrapper 默认的 unaligned 语义，以 FP32 作为无末端 cast 的基线，再放 FP16 升/降精度变体；然后保留同样的 FP16/FP32 aligned 配对。launcher 不读 P0–P3，只执行下方决策树。
 
 ```text
 dtypeTag = (features.dtype == Half) ? FLOAT16 : FLOAT32
@@ -159,27 +165,43 @@ else:
 # samplingRatio 不参与 Host Route 分发；进入 K-001 后：
 if samplingRatio > 0: fixed grid
 else: adaptive grid
+# totalOutputElements 不改变 Route；进入 K-002 后：
+if O <= UINT32_MAX: magic/shift UintDiv decode
+else: uint64 / and % decode
 ```
+
+#### 分类穷尽性
+
+| 分支轴 | 可达值 | 是否独立 Route | 理由 |
+|---|---|---|---|
+| dtype | Half / Float | 是 | 改变 GM load/store 类型与末端 cast，launcher 实例不同 |
+| `aligned` | false / true | 是 | 改变 `BuildROIGeometry<T,ALIGNED>` 编译期 body |
+| `samplingRatio` | `>0` fixed / `<=0` adaptive | 否 | 同一 geometry body 内的运行时局部分支，不改 entry、资源或同步图 |
+| flat index | `O<=UINT32_MAX` / `O>UINT32_MAX` | 否 | 同一 forward body 内切换 magic `UintDiv` 与 uint64 `/,%` |
+| 正整数除法 | 2 的幂 / 普通热路修正 / 整数有效数 fallback | 否 | `CorrectedDivByPositiveInt` helper 内的数值分支 |
+| 取样边界 | 无效为 0 / 低端 clamp / 末像素 clamp / 内部四点 | 否 | 逐 sample 的 `BuildBilinearPoint` 分支 |
+| `EXACT` 模板 | true / false | 只有 true 可达 | `ROIAlignForward` 无条件实例化 `EvaluateOutput<...,true>`；false 体、`maxMagnitudeBits` 跟踪与 `ExactMulFloat` 未被现行入口调用，不得列为 fallback Route |
 
 ### 模板/实现执行矩阵
 
 | 重要性 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---:|---|---|---|---|---|---|---|
-| P0 | R-003 | float/false | FP32、unaligned、Host shape/attr 校验通过、950 | geometry→forward SIMT | `BuildROIGeometry<float,false>`；`ROIAlignForward<float,false>` | geometry 48R B；同流；无末端降精度 | width/height clamp≥1；grid-stride tail |
-| P1 | R-001 | half/false | FP16、unaligned、Host shape/attr 校验通过、950 | geometry→forward SIMT | `BuildROIGeometry<half,false>`；`ROIAlignForward<half,false>` | geometry 48R B；同流；FP32 intermediate | width/height clamp≥1；grid-stride tail |
-| P2 | R-002 | half/true | FP16、aligned、其余同上 | 同上 | `<half,true>` 两 body | 同上 | 端点减0.5，不做 extent clamp |
-| P3 | R-004 | float/true | FP32、aligned、其余同上 | 同上 | `<float,true>` 两 body | geometry同上；无末端降精度 | 端点减0.5；grid-stride tail |
+| P0 | R-003 | float/false | FP32、unaligned、Host shape/attr 校验通过、950 | K-001 geometry SIMT→K-002 forward SIMT | `BuildROIGeometry<float,false>`；`ROIAlignForward<float,false>`；`EvaluateOutput<float,false,true>` | 48R B geometry GM；同流；FP32 I/O | extent clamp≥1；ROI/output 双 grid-stride tail；无 fallback |
+| P1 | R-001 | half/false | FP16、unaligned、Host shape/attr 校验通过、950 | K-001→K-002 双 SIMT | `BuildROIGeometry<half,false>`；`ROIAlignForward<half,false>`；`EvaluateOutput<half,false,true>` | 48R B geometry GM；同流；FP32 intermediate→half | extent clamp≥1；双 tail guard；无 fallback |
+| P2 | R-002 | half/true | FP16、aligned、Host shape/attr 校验通过、950 | K-001 geometry SIMT→K-002 forward SIMT | `BuildROIGeometry<half,true>`；`ROIAlignForward<half,true>`；`EvaluateOutput<half,true,true>` | 48R B geometry GM；same-current-stream；FP32 intermediate→half | 端点减0.5、不做 extent clamp；ROI/output 双 tail guard；无 fallback |
+| P3 | R-004 | float/true | FP32、aligned、Host shape/attr 校验通过、950 | K-001 geometry SIMT→K-002 forward SIMT | `BuildROIGeometry<float,true>`；`ROIAlignForward<float,true>`；`EvaluateOutput<float,true,true>` | 48R B geometry GM；same-current-stream；FP32 I/O | 端点减0.5、不做 extent clamp；ROI/output 双 tail guard；无 fallback |
 
-### 隐藏性能 Guard
+### 执行边界与性能保护
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | AIV core floor | `maxCoreNum=max(GetCoreNumAiv(),1)` | 防止平台查询异常造成除零 | 全部 | 退为1 core | Direct `calc_roi_align_tiling` |
 | 每核最小工作 | `perCore=max(ceil(O/maxAiv),1024)` | 限制小任务启动过多 AIV block | 全部 | 用更多每核输出换较少 block | 同上 |
-| 32元素对齐 | `perCore=align_up(perCore,32)` | 保持官方同族调度粒度；只影响 block 数，不分配 UB tile | 全部 | 无其它 Route | 同上 |
+| 32元素对齐 | `perCore=align_up(perCore,32)` | 复用官方 ROIAlignGrad 950 同族调度粒度；只影响 block 数，不分配 UB tile | 全部 | 无其它 Route | Direct `calc_roi_align_tiling`；official `CalcCoreDistribution` |
+| SIMT lane 数 | `kThreadNum=512` | 决定两个 `asc_vf_call` 的 lane 数和循环步长 | 全部 | 无动态 lane Route | Direct `kThreadNum`；文件头历史注释的 256 与现行常量不一致，以常量为准 |
 | 32位 flat decode | `O<=0xffffffff` | `Simt::UintDiv` 的 divisor/index 为 uint32 | 全部 | 大 O 用 uint64 `/`、`%` | `roi_align_entry` |
 | fixed/adaptive | `samplingRatio>0` | fixed 可直接复用属性；非正值需由 ROI/bin 尺寸计算 H/W grid | 全部 | `<=0` 到 adaptive | `BuildROIGeometry` |
-| 空输出 | Host 未禁止 `R==0`；`O==0` 时 `blockDim=1` | K-001/K-002 循环均无迭代 | 全部 | 返回空 output | `calc_roi_align_tiling`、两个 body |
+| 空输出 | `O==0` 时 `blockDim=1` | K-002 `count=0` 直接返回；K-001 仍按 `R` 决定是否生成 geometry | 全部 | `R==0` 时两节点无有效迭代；`R>0,C==0` 时只执行 geometry | `calc_roi_align_tiling`、`BuildROIGeometry`、`roi_align_entry` |
 
 ### POD/ABI
 
@@ -191,30 +213,30 @@ else: adaptive grid
 | 同上 | `channels` | int32/32 | off 4 | element-axis | `features.size(1)` | feature stride、flat decode | 必须正且适合 uint32 divisor |
 | 同上 | `height` | int32/32 | off 8 | element-axis | `features.size(2)` | feature stride、boundary | 有效调用需正 |
 | 同上 | `width` | int32/32 | off 12 | element-axis | `features.size(3)` | feature stride、boundary | 有效调用需正 |
-| 同上 | `numRois` | int32/32 | off 16 | ROI | `rois.size(0)` | K-001 loop | 可为0 |
+| 同上 | `numRois` | int32/32 | off 16 | ROI | `static_cast<int32_t>(rois.size(0))` | K-001 loop，并与 C/OH/OW 生成 O | 可为0；窄化后为负会在 Device 转 uint32，必须由 Host 调用域排除 |
 | 同上 | `pooledHeight` | int32/32 | off 20 | element-axis | `outputHeight` | bin除数、flat decode | Host保证>0，窄化未审计 |
 | 同上 | `pooledWidth` | int32/32 | off 24 | element-axis | `outputWidth` | bin除数、flat decode | 同上 |
-| 同上 | `samplingRatio` | int32/32 | off 28 | samples/axis | `samplingRatio` | fixed/adaptive selector | Host仅保证>=-1 |
+| 同上 | `samplingRatio` | int32/32 | off 28 | samples/axis | `static_cast<int32_t>(samplingRatio)` | fixed/adaptive selector；正值还参与 `gridH*gridW` | Host 只在窄化前保证>=-1；还需 int32 可表示且乘积不溢出 |
 | 同上 | `groupWidth` | int32/32 | off 32 | output/group | 固定1 | 当前 body不读 | inactive 保留字段 |
 | 同上 | `tilesPerChannel` | int32/32 | off 36 | tile/channel | 固定1 | 当前 body不读 | inactive 保留字段 |
 | 同上 | `spatialScale` | float/32 | off 40 | scale | `static_cast<float>(spatialScale)` | K-001 坐标缩放 | Host只检查>0 |
 | 同上 | padding | 4 B | off 44 | byte | ABI 自动填充 | 不读 | 对齐后续 uint64 |
-| 同上 | `totalOutputElements` | uint64/64 | off 48 | output element | `R*C*OH*OW` | 32/64 decode selector | 中间乘法从 uint64 R 开始 |
+| 同上 | `totalOutputElements` | uint64/64 | off 48 | output element | `uint64(numRois)*channels*uint64(pooledHeight)*pooledWidth` | 32/64 decode selector | 所有 int32 维必须先合法且乘积无 uint64 回绕；Host 分核另需可转 int64 |
 | 同上 | `totalWorkItems` | uint64/64 | off 56 | output element | 等于上一字段 | block分段/count | 当前实现一 work item=一 output |
 | ROIAlignLaunchTiling | `data` | struct/512 | off 0 | POD | `calc_roi_align_tiling` | 两 entry 按值接收 | 结构必须字节一致 |
 | 同上 | `blockDim` | uint32/32 | off 64 | AIV block | Host core公式 | K-002 launch grid | 至少1 |
 | 同上 | tail padding | 4 B | off 68 | byte | ABI 自动填充 | 不读 | struct总长72 |
 
-geometry 不是 POD，而是跨节点 GM 协议：每 ROI 12 个 uint32 word。`0=batch`、`1=gridH`、`2=gridW`、`4=startW bits`、`5=startH bits`、`6=binH bits`、`7=binW bits`、`8=stepY bits`、`9=stepX bits`；word 3/10/11 未写也不读。这个稀疏布局不得压缩，否则 K-002 offset ABI 会改变。
+geometry 不是 POD，而是跨节点 GM 协议：每 ROI 分配 12 个 uint32 word，K-001 实际写 9 个。`0=batch`、`1=gridH`、`2=gridW`、`4=startW bits`、`5=startH bits`、`6=binH bits`、`7=binW bits`、`8=stepY bits`、`9=stepX bits`；word 3/10/11 未初始化也不读。这个稀疏布局不得压缩，除非 producer/consumer 的 stride 与 offset 一起原子修改。
 
 ### Route 源码闭包
 
 | 重要性 | Route | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
 |---:|---|---|---|---|---|---|---|
-| P0 | R-003 | float/false | Direct `roi_align_npu`、`calc_roi_align_tiling` | `ROIAlignLaunchTiling` | `launch_roi_align`→两个 `<float,false>` entry | `BuildROIGeometry`、`ROIAlignForward`、bilinear/rounding helpers，T=float | Direct `register_direct_launch_op` |
-| P1 | R-001 | half/false | 同上 | 同上 | 两个 `<half,false>` entry | 同上，T=half、ALIGNED=false | 同上 |
-| P2 | R-002 | half/true | 同上 | 同上 | 两个 `<half,true>` entry | 同上，T=half、ALIGNED=true | 同上 |
-| P3 | R-004 | float/true | 同上 | 同上 | 两个 `<float,true>` entry | 同上，T=float、ALIGNED=true | 同上 |
+| P0 | R-003 | float/false | Direct plugin `roi_align_npu`；kernel TU `calc_roi_align_tiling` | `ROIAlignLaunchTiling`，`dtypeTag=FLOAT32`，`aligned=false` | `launch_roi_align`→`roi_align_geometry_entry<float,false>`→`roi_align_entry<float,false>` | `BuildROIGeometry<float,false>`、`ROIAlignForward<float,false>`、`EvaluateOutput<float,false,true>`、bilinear/rounding helpers | Direct op CMake `register_direct_launch_op`；kernel `-ffp-contract=off` |
+| P1 | R-001 | half/false | Direct plugin `roi_align_npu`；kernel TU `calc_roi_align_tiling` | `ROIAlignLaunchTiling`，`dtypeTag=FLOAT16`，`aligned=false` | `launch_roi_align`→`roi_align_geometry_entry<half,false>`→`roi_align_entry<half,false>` | `BuildROIGeometry<half,false>`、`ROIAlignForward<half,false>`、`EvaluateOutput<half,false,true>`、bilinear/rounding helpers | Direct op CMake `register_direct_launch_op`；kernel `-ffp-contract=off` |
+| P2 | R-002 | half/true | Direct plugin `roi_align_npu`；kernel TU `calc_roi_align_tiling` | `ROIAlignLaunchTiling`，`dtypeTag=FLOAT16`，`aligned=true` | `launch_roi_align`→`roi_align_geometry_entry<half,true>`→`roi_align_entry<half,true>` | `BuildROIGeometry<half,true>`、`ROIAlignForward<half,true>`、`EvaluateOutput<half,true,true>`、bilinear/rounding helpers | Direct op CMake `register_direct_launch_op`；kernel `-ffp-contract=off` |
+| P3 | R-004 | float/true | Direct plugin `roi_align_npu`；kernel TU `calc_roi_align_tiling` | `ROIAlignLaunchTiling`，`dtypeTag=FLOAT32`，`aligned=true` | `launch_roi_align`→`roi_align_geometry_entry<float,true>`→`roi_align_entry<float,true>` | `BuildROIGeometry<float,true>`、`ROIAlignForward<float,true>`、`EvaluateOutput<float,true,true>`、bilinear/rounding helpers | Direct op CMake `register_direct_launch_op`；kernel `-ffp-contract=off` |
 
 这里的 Direct 文件/符号是交付闭包身份，不是 Frontmatter 官方来源；固定官方 `roi_align` 文件仅提供相关接口与编排对照。
 
@@ -222,7 +244,7 @@ geometry 不是 POD，而是跨节点 GM 协议：每 ROI 12 个 uint32 word。`
 
 ### 公共执行流程
 
-下列逐 Route 章节按重要性 P0→P3 排列，R-ID 保持不变；这不是 Host 判断顺序，真实 dtype→aligned 嵌套短路见“Route 选择”。所有 Route 都先在一个 512-lane AIV-only SIMT 节点中把每 ROI 重复使用的端点、bin、grid 与 step 写入 geometry，再在第二节点中让一个 lane 独占一个输出标量。K-002 每个 output 只读一次 geometry，但循环读取 `4*gridH*gridW` 个 feature 标量。两节点均无 UB/shared memory；同步只来自同 stream 的 Kernel 顺序。
+下列逐 Route 章节按复用价值 P0→P3 排列，R-ID 保持不变；这不是 Host 判断顺序，真实 dtype→aligned 嵌套短路见“Route 选择”。所有 Route 共享两节点关系：K-001 的 ROI owner lane 从 boxes GM 读 5 个标量，向 geometry 切片写 9 个 word；K-002 的 output owner lane 从该 ROI 切片读 9 个 word，最多从 feature GM 读 `4*gridH*gridW` 个标量，再只写 1 个 output。两节点均是 512-lane AIV-only SIMT，无显式 UB/shared/atomic/barrier；可见性依赖同 current stream 的 K-001→K-002 提交顺序。
 
 ### P0 / Route R-003：FP32 unaligned
 
@@ -234,6 +256,8 @@ geometry 不是 POD，而是跨节点 GM 协议：每 ROI 12 个 uint32 word。`
 |---|---|---|---|---|
 | Host | Direct plugin | `roi_align_npu` | Float、`aligned=false` | `dtypeTag=FLOAT32` |
 | Router | Direct kernel | `launch_roi_align` | dtypeTag else && !aligned | 两个 `<float,false>` entry |
+| Geometry | Direct kernel | `BuildROIGeometry<float,false>` | `samplingRatio>0` / `<=0` | fixed/adaptive 局部分支；写 geometry |
+| Forward | Direct kernel | `ROIAlignForward<float,false>` | `O<=UINT32_MAX` / `>UINT32_MAX` | magic-u32 / u64 flat decode；两者都调 `EvaluateOutput<...,true>` |
 
 #### Device 数据流
 
@@ -258,19 +282,24 @@ launch_roi_align
 # K-001
 for r = lane; r<R; r+=512:
   batch = int(boxes[5r])
-  endpoints = boxes[5r+1:5r+5] * spatialScale
+  endpoints = ffma(boxes[5r+1:5r+5], spatialScale, 0)
   roiW/H = max(end-start, 1)
-  binW/H = roiW/H / OW/OH
+  binW/H = corrected_div_positive_int(roiW/H, OW/OH)
   gridW/H = ratio>0 ? ratio : max(ceil(binW/H),1)
+  stepX/Y = corrected_div_positive_int(binW/H, gridW/H)
   geometry[12r + {0,1,2,4..9}] = batch, grid, start, bin, step
 # K-002
 for local = lane; local<count; local+=512:
-  outIndex=begin+local; decode -> (r,c,ph,pw)
+  outIndex=begin+local
+  if O<=UINT32_MAX: magic_uint_div_decode(outIndex) -> (r,c,ph,pw)
+  else: uint64_div_mod_decode(outIndex) -> (r,c,ph,pw)
   acc[0..7]=0
   for iy,ix in grid:
     sample = ordered_fp32_bilinear(features, geometry, ph,pw,iy,ix)
     acc[(iy*gridW+ix)&7] += sample
-  output[outIndex] = (acc0+...+acc7)/(gridH*gridW)
+  # EXACT 固定为 true；乘法用 ffma(x,y,0)，加法用 fadd_rn
+  raw = fold_left(acc0..acc7)
+  output[outIndex] = corrected_div_positive_int(raw, uint32(gridH*gridW))
 ```
 
 #### 内存与数据搬运
@@ -279,8 +308,8 @@ for local = lane; local<count; local+=512:
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| boxes GM | `5r` | `20R` B | FP32/ND | caller | K-001 | Tensor | 5 scalar loads |
-| geometry GM | `12r` | `48R` B | uint32 words | K-001 | K-002 | Tensor | 同 ABI |
+| boxes GM | `5r` | `20R` B | FP32/ND | caller | K-001 | contiguous Tensor | 每 ROI 5 scalar loads |
+| geometry GM | `12r` | 分配 `48R` B，每 ROI 写/读 36 B | uint32 words | K-001 | K-002 | invocation-local Tensor | 12-word stride，3 holes |
 | features/output GM | NCHW flat | `4BCHW`/`4O` B | FP32 | caller/K-002 | K-002/caller | Tensor | 唯一输出写 |
 | thread registers | endpoints、weights、4 values、8 accumulators、index magic | 固定标量 | FP32/u32/u64 | 当前 lane | 当前 lane | 单 output iteration | 无跨 lane 共享 |
 
@@ -296,7 +325,7 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0; inter_kernel_GM=48R B
 
 | 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
 |---|---|---|---|---|---|
-| geometry ROI slice | K-001 | K-002 | 调用后 | 同 stream | K-002完成前有效 |
+| geometry `[12r,12r+12)` | K-001 ROI owner lane | 属于 ROI r 的所有 K-002 output owner lanes | allocator 回收后 | same-current-stream K-001→K-002 | K-002 完成前 storage 不得复用 |
 
 #### 同步、精度与尾块
 
@@ -332,6 +361,7 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0; inter_kernel_GM=48R B
 | Host | Direct plugin | `roi_align_npu` | dtype相等且为 Half、`aligned=false` | `dtypeTag=FLOAT16` |
 | Router | Direct kernel | `launch_roi_align` | `dtypeTag==FLOAT16 && !aligned` | 两个 `<half,false>` entry |
 | Geometry | Direct kernel | `BuildROIGeometry<half,false>` | `samplingRatio>0` 或 `<=0` | fixed/adaptive grid |
+| Forward | Direct kernel | `ROIAlignForward<half,false>` | `O<=UINT32_MAX` / `>UINT32_MAX` | 分别解码后都调 `EvaluateOutput<half,false,true>` |
 
 #### Device 数据流
 
@@ -356,19 +386,24 @@ launch_roi_align
 # K-001
 for r = lane; r<R; r+=512:
   batch = int(float(boxes[5r]))
-  endpoints = float(boxes[5r+1:5r+5]) * spatialScale
+  endpoints = ffma(float(boxes[5r+1:5r+5]), spatialScale, 0)
   roiW/H = max(end-start, 1)
-  binW/H = roiW/H / OW/OH
+  binW/H = corrected_div_positive_int(roiW/H, OW/OH)
   gridW/H = ratio>0 ? ratio : max(ceil(binW/H),1)
+  stepX/Y = corrected_div_positive_int(binW/H, gridW/H)
   geometry[12r + {0,1,2,4..9}] = batch, grid, start, bin, step
 # K-002
 for local = lane; local<count; local+=512:
-  outIndex=begin+local; decode -> (r,c,ph,pw)
+  outIndex=begin+local
+  if O<=UINT32_MAX: magic_uint_div_decode(outIndex) -> (r,c,ph,pw)
+  else: uint64_div_mod_decode(outIndex) -> (r,c,ph,pw)
   acc[0..7]=0
   for iy,ix in grid:
     sample = ordered_fp32_bilinear(features, geometry, ph,pw,iy,ix)
     acc[(iy*gridW+ix)&7] += sample
-  output[outIndex] = half((acc0+...+acc7)/(gridH*gridW))
+  raw = fold_left(acc0..acc7)
+  q = corrected_div_positive_int(raw, uint32(gridH*gridW))
+  output[outIndex] = half(q)  # 唯一降精度点
 ```
 
 #### 内存与数据搬运
@@ -377,11 +412,11 @@ for local = lane; local<count; local+=512:
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| boxes GM | `5*r` | `5R` | half/ND | caller | K-001 lane | contiguous Tensor | 每 ROI 读5元素 |
-| geometry GM | `12*r` | `12R=48R B` | uint32 word ABI | K-001 | K-002 | invocation-local Tensor | word 3/10/11 hole |
-| features GM | `batch*C*HW+c*HW+pointOffset` | `B*C*H*W` | half/NCHW | caller | K-002 | input Tensor | 每样点4个不规则读 |
+| boxes GM | `5*r` | `10R` B | half/ND | caller | K-001 lane | contiguous Tensor | 每 ROI 读5元素 |
+| geometry GM | `12*r` | 分配 `48R` B，每 ROI 写/读 36 B | uint32 word ABI | K-001 | K-002 | invocation-local Tensor | word 3/10/11 hole |
+| features GM | `uint64(batch)*C*HW+c*HW+pointOffset` | `2BCHW` B | half/NCHW | caller | K-002 | input Tensor | 每有效 sample 4 个不规则读 |
 | thread registers | endpoints、weights、4 values、8 accumulators、index magic | 固定标量 | FP32/u32/u64 | 当前 lane | 当前 lane | 单 output iteration | 无跨 lane 共享 |
-| output GM | `outIndex` | `O` | half/NCHW | K-002 lane | caller | output Tensor | 唯一写 |
+| output GM | `outIndex` | `2O` B | half/NCHW | K-002 lane | caller | output Tensor | 唯一写 |
 
 ##### 分层内存布局
 
@@ -434,21 +469,45 @@ inter_kernel_GM=alignof(uint32) naturally aligned, 48R bytes
 |---|---|---|---|---|
 | Host | Direct plugin | `roi_align_npu` | Half、`aligned=true` | `dtypeTag=FLOAT16` |
 | Router | Direct kernel | `launch_roi_align` | FP16 && aligned | 两个 `<half,true>` entry |
+| Geometry | Direct kernel | `BuildROIGeometry<half,true>` | `samplingRatio>0` / `<=0` | 端点-0.5 后走 fixed/adaptive grid |
+| Forward | Direct kernel | `ROIAlignForward<half,true>` | `O<=UINT32_MAX` / `>UINT32_MAX` | 两种 flat decode 都进入 `EvaluateOutput<half,true,true>` |
 
 #### Device 数据流
 
 ##### 函数级调用链
 
 ```text
-geometry_entry<half,true> -> BuildROIGeometry<half,true> -> same-stream geometry
-roi_align_entry<half,true> -> ROIAlignForward<half,true> -> EvaluateOutput -> output
+launch_roi_align(Half,true)
+  -> geometry_entry<half,true><<<1>>>
+    -> BuildROIGeometry<half,true>: boxes half→FP32，端点缩放后-0.5→geometry GM
+  -> same current stream
+  -> roi_align_entry<half,true><<<blockDim>>>
+    -> ROIAlignForward<half,true>
+      -> EvaluateOutput<half,true,true>
+      -> BuildBilinearPoint/SampleBilinear→8路归约→corrected divide→half store
 ```
 
 ##### 源码等价伪码
 
 ```text
-同 R-001，但 K-001 在缩放四端点后各减0.5，不执行 roiW/roiH 的 min-1 clamp；
-其余 grid、双线性、8路归约、除法与 half cast 完全相同。
+# K-001, T=half, ALIGNED=true
+for r = lane; r < uint32(R); r += 512:
+  batch = int32(float(boxes[5r]))
+  x0,y0,x1,y1 = ffma(float(boxes[5r+1:5r+5]), scale, 0) - 0.5
+  roiW = x1-x0; roiH = y1-y0                 # 不做 min-1 clamp
+  binW = corrected_div(roiW, OW); binH = corrected_div(roiH, OH)
+  if ratio > 0: gridW=gridH=ratio
+  else: gridW=max(int32(ceil(binW)),1); gridH=max(int32(ceil(binH)),1)
+  stepX=corrected_div(binW,gridW); stepY=corrected_div(binH,gridH)
+  geometry[12r+{0,1,2,4..9}] = bitcast(batch,grid,start,bin,step)
+# K-002
+for local = lane; local < count; local += 512:
+  out = begin+local; magic-u32-or-u64-decode(out) -> (r,c,ph,pw)
+  load geometry[12r+{0,1,2,4..9}]
+  for iy in [0,gridH), ix in [0,gridW):
+    point = boundary_and_four_neighbors(start + bin*(ph,pw) + step*(iy+0.5,ix+0.5))
+    acc[(iy*gridW+ix)&7] = fadd_rn(acc[...], bilinear_ffma_product(point))
+  output[out] = half(corrected_div(fold_left(acc[0..7]), uint32(gridH*gridW)))
 ```
 
 #### 内存与数据搬运
@@ -457,12 +516,15 @@ roi_align_entry<half,true> -> ROIAlignForward<half,true> -> EvaluateOutput -> ou
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| boxes/geometry/features/output | 同 R-001 | `5R/12R/BCHW/O` | half、uint32 | K-001/K-002 | K-002/caller | Tensor | 仅几何公式不同 |
-| thread registers | 同 R-001，加常量0.5 | 固定标量 | FP32 | lane | lane | 单迭代 | 无共享 |
+| boxes GM | `5r` | `10R` B | half/ND | caller | K-001 | contiguous Tensor | 每 ROI 5 标量 |
+| geometry GM | `12r` | 分配 `48R` B，每 ROI 有效 36 B | uint32 words | K-001 | K-002 | invocation-local Tensor | 12-word stride |
+| features GM | `uint64(batch)*C*HW + c*HW + pointOffset` | `2BCHW` B | half/NCHW | caller | K-002 | contiguous Tensor | 每有效 sample 4 scalar loads |
+| output GM | `outIndex` | `2O` B | half/NCHW | K-002 owner lane | caller | returned Tensor | 唯一写 |
+| thread registers | 端点、bin/step、magic/index、4 weights/values、8 accumulators | 固定标量 | FP32/u32/u64 | lane | lane | 单 ROI 或单 output | 无跨 lane 共享 |
 
 ##### 分层内存布局
 
-N/A：同 R-001，GM→线程标量→GM。
+N/A：K-001 为 boxes GM→线程 FP32 标量→geometry GM；K-002 为 geometry/features GM→线程 FP32 标量→half output GM。无 AIV UB/dynamic UB。
 
 ##### 字节账与复用顺序
 
@@ -472,7 +534,8 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0; inter_kernel_GM=48R B
 
 | 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
 |---|---|---|---|---|---|
-| geometry ROI slice | K-001 | K-002 | 调用后 | 同 stream | 同 R-001 |
+| geometry `[12r,12r+12)` | K-001 ROI owner lane | 属于 ROI r 的所有 K-002 output owner lanes | allocator 回收后 | same-current-stream K-001→K-002 | K-002 完成前 storage 不得复用 |
+| `Accumulator8` | 当前 lane 的 sample loop | 当前 lane 的 fold/divide | 下一 output iteration | 单线程程序序 | 一 output 只有一 owner |
 
 #### 同步、精度与尾块
 
@@ -480,8 +543,11 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0; inter_kernel_GM=48R B
 
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
-| alignment | compile-time `if constexpr(ALIGNED)` | scaled endpoints | bin geometry | geometry words | FP32减0.5；不做 extent clamp |
-| 其余 | 同 R-001 | 同 R-001 | 同 R-001 | 同 R-001 | 同 R-001 |
+| K-001→K-002 | current stream ordering | 9-word geometry store | geometry loads | 48R B allocation | 无显式 event/barrier |
+| alignment | compile-time `if constexpr(ALIGNED)` | scaled endpoints | bin geometry | geometry words | FP32 减0.5；不做 extent clamp |
+| 插值/归约 | FFMA product + `__fadd_rn` + 8 accumulators | feature/weight samples | fold | 线程寄存器 | `EXACT=true`，无跨 lane 归约 |
+| 除法/输出 | power-of-two / residual correction / integer-significand fallback | raw FP32 sum | half store | output scalar | 正整数除数；末端唯一 half cast |
+| tail | `r<R`、`local<count`、`count==0` | block/lane split | return/store | geometry/output | K-001 与 K-002 分别守护 |
 
 #### 关键实现
 
@@ -491,7 +557,7 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0; inter_kernel_GM=48R B
 |---|---|---|---|
 | Router | Direct kernel | `launch_roi_align` | true映射 `<half,true>` |
 | Body | Direct kernel | `BuildROIGeometry<half,true>` | 四端点-0.5、无min-1 |
-| Forward | Direct kernel | `ROIAlignForward<half,true>` | 与R-001相同输出协议 |
+| Forward | Direct kernel | `ROIAlignForward<half,true>`→`EvaluateOutput<half,true,true>` | magic-u32/u64 decode、FP32 插值与 8 路归约、corrected divide、末端 half store |
 
 ### P3 / Route R-004：FP32 aligned
 
@@ -503,21 +569,45 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0; inter_kernel_GM=48R B
 |---|---|---|---|---|
 | Host | Direct plugin | `roi_align_npu` | Float、`aligned=true` | `dtypeTag=FLOAT32` |
 | Router | Direct kernel | `launch_roi_align` | dtypeTag else && aligned | 两个 `<float,true>` entry |
+| Geometry | Direct kernel | `BuildROIGeometry<float,true>` | `samplingRatio>0` / `<=0` | 端点-0.5 后走 fixed/adaptive grid |
+| Forward | Direct kernel | `ROIAlignForward<float,true>` | `O<=UINT32_MAX` / `>UINT32_MAX` | 两种 flat decode 都调 `EvaluateOutput<float,true,true>` |
 
 #### Device 数据流
 
 ##### 函数级调用链
 
 ```text
-geometry_entry<float,true> -> BuildROIGeometry<float,true> -> geometry
-roi_align_entry<float,true> -> ROIAlignForward<float,true> -> EvaluateOutput -> FP32 output
+launch_roi_align(Float,true)
+  -> geometry_entry<float,true><<<1>>>
+    -> BuildROIGeometry<float,true>: FP32 端点缩放后-0.5→geometry GM
+  -> same current stream
+  -> roi_align_entry<float,true><<<blockDim>>>
+    -> ROIAlignForward<float,true>
+      -> EvaluateOutput<float,true,true>
+      -> BuildBilinearPoint/SampleBilinear→8路归约→corrected divide→FP32 store
 ```
 
 ##### 源码等价伪码
 
 ```text
-同 R-003，但四端点缩放后减0.5，roiW/roiH 不做min-1；
-其余 boundary、sample loop、8路归约和 corrected division 不变。
+# K-001, T=float, ALIGNED=true
+for r = lane; r < uint32(R); r += 512:
+  batch = int32(boxes[5r])
+  x0,y0,x1,y1 = ffma(boxes[5r+1:5r+5], scale, 0) - 0.5
+  roiW=x1-x0; roiH=y1-y0                       # 不做 min-1 clamp
+  binW=corrected_div(roiW,OW); binH=corrected_div(roiH,OH)
+  if ratio>0: gridW=gridH=ratio
+  else: gridW=max(int32(ceil(binW)),1); gridH=max(int32(ceil(binH)),1)
+  stepX=corrected_div(binW,gridW); stepY=corrected_div(binH,gridH)
+  geometry[12r+{0,1,2,4..9}] = bitcast(batch,grid,start,bin,step)
+# K-002
+for local = lane; local<count; local+=512:
+  out=begin+local; magic-u32-or-u64-decode(out) -> (r,c,ph,pw)
+  load geometry slice; acc[0..7]=0
+  for iy in [0,gridH), ix in [0,gridW):
+    point=boundary_and_four_neighbors(start + bin*(ph,pw) + step*(iy+0.5,ix+0.5))
+    acc[(iy*gridW+ix)&7] = fadd_rn(acc[...], bilinear_ffma_product(point))
+  output[out] = corrected_div(fold_left(acc[0..7]), uint32(gridH*gridW))
 ```
 
 #### 内存与数据搬运
@@ -526,12 +616,15 @@ roi_align_entry<float,true> -> ROIAlignForward<float,true> -> EvaluateOutput -> 
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| boxes/geometry/features/output | 同 R-003 | `20R/48R/4BCHW/4O` B | FP32/uint32 | K-001/K-002 | K-002/caller | Tensor | 仅 aligned geometry不同 |
-| registers | 同 R-003 | 固定标量 | FP32/index | lane | lane | 单迭代 | 无共享 |
+| boxes GM | `5r` | `20R` B | FP32/ND | caller | K-001 | contiguous Tensor | 每 ROI 5 scalar loads |
+| geometry GM | `12r` | 分配 `48R` B，每 ROI 有效 36 B | uint32 words | K-001 | K-002 | invocation-local Tensor | 12-word stride |
+| features GM | `uint64(batch)*C*HW+c*HW+pointOffset` | `4BCHW` B | FP32/NCHW | caller | K-002 | contiguous Tensor | 每有效 sample 4 scalar loads |
+| output GM | `outIndex` | `4O` B | FP32/NCHW | K-002 owner lane | caller | returned Tensor | 唯一写，无 dtype cast |
+| registers | 端点、bin/step、magic/index、4 weights/values、8 accumulators | 固定标量 | FP32/u32/u64 | lane | lane | 单 ROI 或单 output | 无共享 |
 
 ##### 分层内存布局
 
-N/A：无 AIV UB/dynamic UB。
+N/A：K-001 为 boxes GM→线程 FP32 标量→geometry GM；K-002 为 geometry/features GM→线程 FP32 标量→FP32 output GM。无 AIV UB/dynamic UB。
 
 ##### 字节账与复用顺序
 
@@ -541,7 +634,8 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0; inter_kernel_GM=48R B
 
 | 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
 |---|---|---|---|---|---|
-| geometry ROI slice | K-001 | K-002 | 调用后 | 同 stream | 同前 |
+| geometry `[12r,12r+12)` | K-001 ROI owner lane | 属于 ROI r 的 K-002 lanes | allocator 回收后 | same-current-stream K-001→K-002 | K-002 完成前 storage 不得复用 |
+| `Accumulator8` | sample loop | fold/divide | 下一 output iteration | 单线程程序序 | 一 output 只有一 owner |
 
 #### 同步、精度与尾块
 
@@ -549,8 +643,11 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0; inter_kernel_GM=48R B
 
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
-| alignment | compile-time true | scaled endpoints | bin geometry | geometry | FP32减0.5，无min-1 |
-| 其余 | 同 R-003 | 同上 | 同上 | 同上 | 同 R-003 |
+| K-001→K-002 | current stream ordering | 9-word geometry store | geometry loads | 48R B allocation | 无显式 event/barrier |
+| alignment | compile-time true | scaled endpoints | bin geometry | geometry | FP32 减0.5，无 min-1 |
+| 插值/归约 | FFMA product + `__fadd_rn` + 8 accumulators | feature/weight samples | fold | registers | `EXACT=true`，固定顺序 |
+| 除法/输出 | power-of-two / residual correction / integer-significand fallback | raw FP32 sum | FP32 store | output scalar | 无末端降精度 |
+| tail | `r<R`、`local<count`、`count==0` | block/lane split | return/store | geometry/output | K-001/K-002 各自守护 |
 
 #### 关键实现
 
@@ -570,7 +667,7 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0; inter_kernel_GM=48R B
 
 - 适用 Route：R-001～R-004。
 - 触发条件：调用接口已提供 `[R,5]` 的 `(batch,x0,y0,x1,y1)` 且 dtype 与 features 相同。
-- Golden 来源：[`objdetect/roi_align/op_host/op_api/aclnn_roi_align_v2.cpp:191-192`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/aclnn_roi_align_v2.cpp)
+- 固定源码依据：[`objdetect/roi_align/op_host/op_api/aclnn_roi_align_v2.cpp:191-192`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/aclnn_roi_align_v2.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -588,7 +685,7 @@ CHECK_RET(boxesContiguous != nullptr, ACLNN_ERR_INNER_NULLPTR);
 - 适用：上游能稳定提供 `[R,5]`、batch 列与坐标同 dtype 的 ROIAlign 接口。
 - 前提：batch 值是可精确转为 int32 的合法整数；boxes contiguous 或在 launch 前显式物化。
 - 失效：若 ABI 是四列 rois + 独立 INT batchIndices，必须保留转换/拼接，或重写 Device 为双输入；不能按五列越界读取。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：固定 forward 源码只直接支撑五列 boxes 的 contiguous 契约；Direct 固定地址公式是转换实现事实。
 
 #### 错误做法
 
@@ -600,25 +697,27 @@ CHECK_RET(boxesContiguous != nullptr, ACLNN_ERR_INNER_NULLPTR);
 
 - 适用 Route：R-001～R-004。
 - 触发条件：同一 ROI 的几何量被 `C*OH*OW` 个输出复用，且两个 Kernel 在同一 stream 顺序提交。
-- Golden 来源：[`objdetect/roi_align/op_host/op_api/roi_align.cpp:83-84`](https://gitcode.com/cann/ops-cv/blob/bb717d075d129fd1fc7b96b2886824a1d153ed2f/objdetect/roi_align/op_host/op_api/roi_align.cpp)
+- 固定源码依据：[`objdetect/roi_align_grad/op_kernel/arch35/roi_align_grad_simt.h:64-68`](https://gitcode.com/cann/ops-cv/blob/fcc3b33c070c1ad146344f172ca147839b956686/objdetect/roi_align_grad/op_kernel/arch35/roi_align_grad_simt.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
 ```cpp
-auto ret = ADD_TO_LAUNCHER_LIST_AICORE(ROIAlign, OP_INPUT(self, boxes), OP_OUTPUT(out),
-    OP_ATTR(spatialScale, outputHeight, outputWidth, samplingRatio, roiEndMode, mode));
+template <uint32_t ROI_END_MODE>
+__simt_callee__ inline bool ComputeRoiBin(int32_t n, int32_t numRois, int32_t batch, int32_t pooledHeight,
+                                          int32_t pooledWidth, float spatialScale, int32_t sampleNum,
+                                          __gm__ float* rois, RoiBinInfo& info)
 ```
 
 #### 机制与设计原因
 
-官方 L0 只锁定 ROI 数决定输出第0维以及核心 launcher 的参数语义；固定提交没有 forward 950 Kernel。交付 Direct 补充把 ROI-only 的 scaled endpoints、bin、grid、step 先物化为 `48R` B geometry，使 K-002 不再对每个 `(c,ph,pw)` 重算这些值；随后一 lane 独占一个输出，局部完成所有 sample 累加并只写一次 output，消除 atomic、跨 lane reduction 和中间 partial output。代价是一个小 Kernel 与一次 geometry GM 交接。
+官方 ROIAlignGrad 950 的 `ComputeRoiBin` 证明 endpoints、bin 与 grid 是 ROI-only 几何，但 backward body 仍在自己的 gather 循环中计算它；该固定源码不包含 forward geometry-hoist。Direct 派生路线把 scaled endpoints、bin、grid、step 先物化为 `48R` B geometry，使 K-002 不再对每个 `(c,ph,pw)` 重算这些值；随后一 lane 独占一个输出，局部完成所有 sample 累加并只写一次 output，避免 atomic、跨 lane reduction 和 partial-output GM。代价是额外一次 Kernel launch 与 geometry GM 交接。
 
 #### 迁移边界
 
 - 适用：`C*OH*OW` 足以摊薄 geometry Kernel 与 `48R` B 中间量，且 ROI 几何与 channel 无关。
 - 前提：geometry word ABI、同流可见性及 Tensor lifetime 全部保持；每 output 的采样循环可由单 lane承载。
 - 失效：跨 stream 启动必须增加 event；若几何依赖 channel/output value，则不能按 ROI 缓存；极小工作量可能不值得多一次 launch。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：固定同族源码只支撑 ROI-only geometry 的可分离性；双节点 hoist、48R B 协议和 512-lane 选择是 Direct 派生实现事实。
 
 #### 错误做法
 
@@ -651,13 +750,14 @@ auto ret = ADD_TO_LAUNCHER_LIST_AICORE(ROIAlign, OP_INPUT(self, boxes), OP_OUTPU
 
 - Direct Host 仅检查 rank/boxes列数/dtype/属性下界；batch index、ROI 坐标、同设备、正 `B/C/H/W`、有限 `spatialScale` 与 int32 窄化范围由调用方保证。
 - `sampling_ratio=-1` 是 Direct 补充；固定官方 V2 只接受 `>=0`。Direct 中 `-1` 与 `0` 都走 `<=0` adaptive branch。
+- `launch_roi_align` 的 dtype router 把任何非 `ROI_ALIGN_FLOAT16` 值当作 Float；现行 Host 只产生 0/1，所以这不是可达 fallback。绕过 Host 直接调 C ABI 必须保证 tag 与 GM 实际 dtype 一致。
 - geometry 的 word 3/10/11 是未写空洞；consumer也不读。复用实现必须保持12-word stride，或同时原子地修改 producer/consumer ABI。
-- `gridHeight*gridWidth` 在 int32 中相乘后转 uint32；超大自适应网格可能溢出。目标任务范围把 sampling ratio 限在 `[-1,16]`，但 Host 未编码上限。
-- output 总量从 `uint64_t(R)*C*OH*OW` 计算；shape/属性先窄化 int32，超范围调用可能在到达该乘法前改变语义。
+- `gridHeight*gridWidth` 先在 int32 中相乘再转 uint32；过大的 fixed 或 adaptive 网格可能发生有符号溢出。Host 未编码 sampling-ratio 上限，调用方必须保证两轴 grid 及乘积可表示且为正。
+- output 总量从 `uint64_t(numRois)*channels*uint64_t(pooledHeight)*pooledWidth` 计算；shape/属性先窄化 int32，超范围调用可能在乘法前改变语义。分核还把 uint64 总量转 int64，并以 `(x+y-1)/y` 做两次均分和一次 32 元素对齐；有效域须同时满足上文三条有符号加法可表示前提，只有 `O<=INT64_MAX` 并不足够。
 - K-001/K-002 launcher 返回 `void`，无逐节点错误码和 consumer 抑制；依赖框架异步错误机制。
+- `RunOpApi` lambda 只捕获裸指针；若将两节点改到其它 stream，除了添加 event 还必须显式处理 `features/rois/geometry` 的 allocator stream 记录和生命期。
 - 无 CPU、ACLNN、ATen compute 或外部算子 fallback；不合法 dtype 在 Host 已失败，大 output 仅回退到 uint64 解码。
-- 固定官方提交没有 forward 950 Host/Tiling/Kernel body，Direct 的512-lane选择、精确算术和geometry协议是交付补充，不可宣称为官方实现。
-- 本次知识提取未执行编译、真机、数值或性能测试。
+- 固定官方 forward 版本没有 950 Host/Tiling/Kernel body；Direct 的 512-lane、精确算术和 geometry 协议是派生补充，不可宣称为官方 forward 实现。
 
 ## 源码索引
 
@@ -671,8 +771,13 @@ auto ret = ADD_TO_LAUNCHER_LIST_AICORE(ROIAlign, OP_INPUT(self, boxes), OP_OUTPU
 | 相关旧版实现 | `objdetect/roi_align/op_host/op_api/aclnn_roi_align.cpp` | `aclnnRoiAlignGetWorkspaceSize` | V1 Reshape/Cast/ConcatD 对照 |
 | L0 launcher | `objdetect/roi_align/op_host/op_api/roi_align.cpp` | `ROIAlignV2`、`ADD_TO_LAUNCHER_LIST_AICORE` | 输出shape与核心属性顺序 |
 | 构建接线 | `objdetect/roi_align/op_host/CMakeLists.txt` | `add_modules_sources` | 官方 ACLNN Host module接线；非Direct构建 |
+| 950 同族 Tiling | `objdetect/roi_align_grad/op_host/arch35/roi_align_grad_tiling_arch35.cpp` | `CalcCoreDistribution`、`FillTilingData` | 1024 每核下界、32 元素对齐、AIV 核数与 `roiEndMode` key |
+| 950 同族 POD | `objdetect/roi_align_grad/op_kernel/arch35/roi_align_grad_tiling_data.h` | `ROIAlignGradTilingData` | 近邻 backward 算子的 shape/geometry 字段；不是 Direct POD ABI |
+| 950 同族 body | `objdetect/roi_align_grad/op_kernel/arch35/roi_align_grad_simt.h` | `ComputeRoiBin`、`ROIAlignGradSimt` | 256-lane AIV-only、五列 ROI、mode 0 与 half-pixel mode 2/3 geometry、fixed/adaptive sampling |
+| 950 同族 entry | `objdetect/roi_align_grad/op_kernel/roi_align_grad_apt.cpp` | `roi_align_grad<schMode>` | `schMode` 到 SIMT 模板的编译期接线 |
+| 950 同族构建 | `objdetect/roi_align_grad/CMakeLists.txt` | `add_all_modules_sources` | `COMPUTE_UNIT=ascend950`、`TILING_DIR=arch35` 的官方构建范围 |
 
-每行文件均存在于 Frontmatter `sources`。Direct 交付文件按约束不写本机路径，也不伪造公开 blob URL。
+每行文件均存在于 Frontmatter `sources`，且 URL 固定到 40 位 commit。Direct 转换文件不伪造公开 blob URL；本卡对 Direct 符号的描述是转换载荷闭包事实，不提升为官方原生事实。
 
 ### 实现复用检查
 

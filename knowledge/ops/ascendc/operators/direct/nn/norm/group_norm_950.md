@@ -1,7 +1,7 @@
 ---
 type: Operator
 title: "GroupNorm 950 Direct Invoke 算子知识"
-description: "说明 cann_bench::group_norm、calc_group_norm_tiling 与 launch_group_norm_direct 在 950 上的接口语义、Launcher 参数生成、Route 选择、单/多 Kernel 启动图与逐节点实现。"
+description: "说明 cann_bench::group_norm、calc_group_norm_tiling 与 launch_group_norm_direct 在 950 上的接口语义、Launcher 参数生成、七条 active/conditional Route、dormant 源码分支与单/多 Kernel 实现闭包。"
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_host/config/ascend950/group_norm_silu_binary.json
     role: implementation
 created_at: "2026-08-25T19:31:46Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -44,12 +44,13 @@ cann_versions: ["9.1.0"]
 | 项目 | 内容 |
 |---|---|
 | 实际入口 | `cann_bench::group_norm` → `group_norm_npu` → `calc_group_norm_tiling` → `launch_group_norm_direct`；`Direct Invoke` |
-| 计算语义 | 对每个 `(n,g)` 的 `R=(C/G)·HW` 个元素求 `mean` 与 `rstd=(variance+epsilon)^(-1/2)`，输出 `y=(x-mean)·rstd·gamma+beta`；补充 Route 在特定域改用 `scale/bias` 等价式 |
+| 计算语义 | 对每个 `(n,g)` 的 `R=(C/G)·HW` 个元素求 `mean` 与 `rstd=(variance+epsilon)^(-1/2)`，base 输出 `y=(x-mean)·rstd·gamma+beta`；补充 Route 按指定浮点顺序物化 `scale=rstd·gamma`、`bias=-mean·scale+beta`，再算 `y=x·scale+bias`。两种形式在 Inf/NaN 域不保证浮点等价，repair 正依赖该求值顺序 |
 | 输入输出 | 连续 `x:(N,C,...)`、`gamma:(C)`、`beta:(C)`；同 dtype `float16/float32/bfloat16`；公开输出仅 `y:shape(x)` |
 | 执行类型 | P0/R-002、P1/R-004、P4/R-005、P6/R-007 为单 `AIV_VECTOR`；P2/R-003、P5/R-006 为 `AIV_VECTOR→SIMT/InitGlobalMemory`；P3/R-001 为两个顺序 SIMT 节点。无可达 Cube/AIC 或 MIX_CV 节点。 |
-| Kernel 路线 | P0 R-002 Welford perf；P1 R-004 two-pass perf；P2 R-003 Welford perf+BF16 修复；P3 R-001 FP32 大组并行；P4 R-005 Welford generalized；P5 R-006 generalized+修复；P6 R-007 two-pass generalized |
+| Kernel 路线 | P0 R-002 active Welford perf；P1 R-004 active two-pass perf；P2 R-003 conditional Welford+BF16 修复；P3 R-001 active FP32 大组并行；P4 R-005 active Welford generalized；P5 R-006 conditional generalized+修复；P6 R-007 active two-pass generalized |
+| Dormant source | `GroupNormSiluEmpty`、`activateSilu=true` 与 nullable gamma/beta 分支没有完整生产边；它们不计入七条可达 Route，重新启用条件见后文 |
 | 核心资源 | 官方适配 body：GM、整块 `TBuf` UB、MicroAPI `RegTensor` 与硬事件；补充路线：GM partials、1 KiB 每块静态 scratch 或线程寄存器；无显式 workspace |
-| 来源闭包 | `direct_implementation_closed`：Torch Direct 入口、校验、POD、资源查询、7 条可达 Route、全部 entry/body/helper、跨 Kernel GM 边与构建接线闭合 |
+| 来源闭包 | `direct_implementation_closed`：Torch Direct 入口、校验、POD、资源查询、7 条 active/conditional Route、全部 entry/body/helper、跨 Kernel GM 边、dormant 排除证据与构建接线闭合 |
 | 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
 
 ## 接口与语义
@@ -95,7 +96,7 @@ R-001 用 `sum(x)` 和 `sum(x²)` 合成 `variance=max(sumSq/R-mean²,0)`；R-00
 1. `group_norm_meta` 检查 rank、`G>0`、`C>0`、`C%G==0`、`gamma/beta==(C)`、三者同 dtype 且 dtype 属于 FP16/FP32/BF16，然后分配 `y`。
 2. `group_norm_npu` 用 `OptionalDeviceGuard` 切换设备；空输入直接返回 `y`。非空输入要求三 tensor contiguous，且 affine 与 `x` 同设备。
 3. 产生 `dtypeCode∈{0,1,2}`，取 `N=x.size(0)`、`C=x.size(1)`、`HW=numel/(N·C)`，调用 `calc_group_norm_tiling`；失败由 `TORCH_CHECK` 终止。
-4. 通常分配同 dtype `mean/rstd` 各 `N·G` 元素。若 FP32、`N·G<=16` 且 `R>2^18`，`mean` 扩为 2048 元素，承载 `2·totalBlocks·64<=2048` 个 partials。
+4. 通常分配同 dtype `mean/rstd` 各 `N·G` 元素。若 FP32、`N·G<=16` 且 `R>2^18`，`mean` 扩为 2048 元素，承载 `2·totalBlocks·64<=2048` 个 partials。注意这里的 `16` 是插件常量，而 launcher 用运行时 `reserved=A` 判断；在目标 950 的 `A=16` 上二者同域，迁移到 `A>16` 的平台前必须改成同一资源谓词。
 5. 获取当前 NPU stream，按值捕获指针、POD 与 stream，在 `RunOpApi` 中执行 Direct launcher。
 
 Direct 边界比官方 ACLNN 窄：不接受 optional affine、mixed affine dtype、非连续 tensor；空输入只返回未写 `y`，不复用官方 empty kernel 的 mean/rstd 语义。相反，Direct 未检查官方 ACLNN 的 `epsilon>0` 和 rank 上限。
@@ -119,7 +120,7 @@ reserved = A
 | 优先级 | Route | Host 顺序 | Host 启动函数 | Device 节点 | grid/threads | GM 边、ordering 与 owner |
 |---|---|---|---|---|---|---|
 | P0 | R-002 | H5→H6，H7=false | `launch_group_norm_direct` | key 1100 typed AIV entry | `blockDim=realCoreNum`；MicroAPI Vector | 单节点，`x/gamma/beta→y,mean,rstd` |
-| P1 | R-004 | H2/H3→H6 | 同上 | key 1110 typed AIV entry | 同上 | 单节点，无跨节点边 |
+| P1 | R-004 | H2→H6 | 同上 | key 1110 typed AIV entry | 同上 | 单节点，无跨节点边 |
 | P2 | R-003 | H5→H6→H7=true | 同上 | key 1100 AIV → repair | base `blockDim`；repair 每块 2048 threads | `y/mean/rstd` 为同 stream GM 边，repair 可覆盖 `y` |
 | P3 | R-001 | H1，命中即 return | 同上 | `parallel_reduce_f32` → `parallel_normalize_f32` | `totalBlocks=(N·G)·floor(A/(N·G))`；各 2048 threads | `mean[0:2·totalBlocks·64)` partials；同 stream 顺序 |
 | P4 | R-005 | H5→H6，H7=false | 同上 | key 1120 typed AIV entry | `blockDim=realCoreNum` | 单节点，affine 在 UB 按 tile 搬入 |
@@ -147,25 +148,25 @@ maxReduceCount = floor((UB-other)/(2*2*s))
 
 ### Route 选择
 
-下表按实现重要性从 P0 到 P6 排列；“Host 顺序”保留真实判断次序、短路点与 fallback，不表示优先级排序。
+下表按合法域覆盖、复用价值、性能价值与安全兜底价值从 P0 到 P6 排列；P 顺序只规定阅读和复用优先级，“Host 顺序”保留真实判断次序、短路点与 fallback。五条 `active` Route 都有独立生产 selector；两条 `conditional` Route 是 Welford base 后按 dtype/规模追加的语义修复图，不是独立 tiling key。
 
-| 优先级 | Route | 路线特征 | 适用域 | 实现前提 | Host 顺序、短路与 fallback | Key/模板 |
-|---:|---|---|---|---|---|---|
-| P0 | R-002 Welford perf | 全 C affine 常驻，R 分段 Welford，D/HW 双缓冲归一化 | 非 R-001；不能 full-load；`C<=4096`；不追加 BF16 修复 | `parallelN>0`；全 C affine 与 stats 尾区可驻 UB；typed `<T,T>` | H5 选 1100→H6 启动；H7=false 后返回 | 1100 / `GroupNormSiluWelford<T,T>` |
-| P1 | R-004 two-pass perf | R 全载后双遍统计；`HW<=32` 可用 NDDMA 展开 affine | 非 R-001；首轮或 NDDMA retry 的 strict full-load 成立 | `maxReduceCount>R`；X/Y 双缓冲、统计区、dichotomy 与 affine 同驻 UB | H2 首轮成功即短路；否则 H3 retry，成功即短路；均失败→H4 | 1110 / `GroupNormSiluTwoPass<T,T>` |
-| P2 | R-003 Welford perf + BF16 修复 | P0 base 后追加组级非有限值修复 | BF16、`C<=4096`、`R>2^20`，且 base key=1100 | base 必须先写 BF16 `y/mean/rstd`；repair 与 base 同 stream | H5 选1100→H6 base→H7 命中 repair；repair 后结束 | 1100 + `RepairNonFiniteBf16` |
-| P3 | R-001 FP32 large-group parallel | 每组拆 part；先写 warp partial，再合并并归一化 | FP32、`N·G<=A`、`R>2^18` | `parts=floor(A/(N·G))>=1`；两片 partial 总 extent 不超过 2048 FP32 | H1 命中后双节点并立即 return；未命中→H2 | supplemental SIMT selector |
-| P4 | R-005 Welford generalized | R 分段 Welford，gamma/beta 按 D 或 HW tile 搬入 | 非 R-001；不能 full-load；`C>4096`；不追加 BF16 修复 | Host 必须求得正 `parallelN/processSize`；affine tile 与 phase2 双缓冲可共驻 | H2/H3/H4 均失败→H5 选1120→H6；H7=false 后返回 | 1120 / `GroupNormSiluWelfordGeneralized<T,T>` |
-| P5 | R-006 Welford generalized + BF16 修复 | P4 base 后追加与 P2 相同的修复节点 | BF16、`C>4096`、`R>2^20`，且 base key=1120 | P4 全部前提；base/repair 的 GM edge 与同 stream ordering 必须保留 | H5 选1120→H6 base→H7 命中 repair；repair 后结束 | 1120 + `RepairNonFiniteBf16` |
-| P6 | R-007 two-pass generalized | affine 仅保留 D 大小切片，使 full R 可驻 UB | 非 R-001；首轮不全载；`C>4096 || R<=VLbytes/4`；split 后 `newMaxReduceCount>R` | X/Y 双缓冲、stats、dichotomy 与两片 D affine 同驻；逐组 affine 事件完整 | H4 split-affine 成功即短路→H6；失败→H5 Welford fallback | 1130 / `GroupNormSiluTwoPassGeneralized<T,T>` |
+| 优先级 | Route | 状态 | 路线特征 | 适用域 | 实现前提 | Host 顺序、短路与 fallback | Key/模板 |
+|---:|---|---|---|---|---|---|---|
+| P0 | R-002 Welford perf | active fallback | 全 C affine 常驻，R 分段 Welford，D/HW 双缓冲归一化 | 非 R-001；不能 full-load；`C<=4096`；不追加 BF16 修复 | `parallelN>0`；全 C affine 与 stats 尾区可驻 UB；typed `<T,T>` | H5 选 1100→H6 启动；H7=false 后返回 | 1100 / `GroupNormSiluWelford<T,T>` |
+| P1 | R-004 two-pass perf | active fast | R 全载后双遍统计；`HW<=32` 可用 NDDMA 展开 affine | 非 R-001；H2 的 strict full-load 成立 | `maxReduceCount>R`；X/Y 双缓冲、统计区、dichotomy 与 affine 同驻 UB | H2 成功即短路；失败后 H3 只重复同式、不能翻转结果，继续 H4 | 1110 / `GroupNormSiluTwoPass<T,T>` |
+| P2 | R-003 Welford perf + BF16 修复 | conditional semantic | P0 base 后追加组级非有限值修复 | BF16、`C<=4096`、`R>2^20`，且 base key=1100 | base 必须先写 BF16 `y/mean/rstd`；repair 与 base 同 stream | H5 选1100→H6 base→H7 命中 repair；repair 后结束 | 1100 + `RepairNonFiniteBf16` |
+| P3 | R-001 FP32 large-group parallel | active override | 每组拆 part；先写 warp partial，再合并并归一化 | FP32、`N·G<=A`、`R>2^18`；目标 950 上 `A=16` | `parts=floor(A/(N·G))>=1`；插件 scratch 扩容还要求 `N·G<=16`；两片 partial 总 extent不超过 2048 FP32 | H1 命中后双节点并立即 return；未命中→H2 | supplemental SIMT selector |
+| P4 | R-005 Welford generalized | active capacity fallback | R 分段 Welford，gamma/beta 按 D 或 HW tile 搬入 | 非 R-001；不能 full-load；`C>4096`；不追加 BF16 修复 | Host 必须求得正 `parallelN/processSize`；affine tile 与 phase2 双缓冲可共驻 | H2 失败、H3 保持失败、H4 失败→H5 选1120→H6；H7=false 后返回 | 1120 / `GroupNormSiluWelfordGeneralized<T,T>` |
+| P5 | R-006 Welford generalized + BF16 修复 | conditional semantic | P4 base 后追加与 P2 相同的修复节点 | BF16、`C>4096`、`R>2^20`，且 base key=1120 | P4 全部前提；base/repair 的 GM edge 与同 stream ordering 必须保留 | H5 选1120→H6 base→H7 命中 repair；repair 后结束 | 1120 + `RepairNonFiniteBf16` |
+| P6 | R-007 two-pass generalized | active fast | affine 仅保留 D 大小切片，使 full R 可驻 UB | 非 R-001；首轮不全载；`C>4096 || R<=VLbytes/4`；split 后 `newMaxReduceCount>R` | X/Y 双缓冲、stats、dichotomy 与两片 D affine 同驻；逐组 affine 事件完整 | H4 split-affine 成功即短路→H6；失败→H5 Welford fallback | 1130 / `GroupNormSiluTwoPassGeneralized<T,T>` |
 
 ```text
 H0 plugin: if x.numel()==0 -> Host return, no Device Route
 H1 launcher: if FP32 && totalGroups<=A && R>2^18 -> R-001; launch two nodes; return
 H2 tiler: compute NDDMA-affine UB account
     if maxReduceCount>R -> key1110 / R-004; short-circuit tiling selection
-H3 tiler: if HW<=32, execute source-faithful retry
-    if retry maxReduceCount>R -> key1110 / R-004; short-circuit
+H3 tiler: if HW<=32, recompute the same maxReduceCount from unchanged ubRemain
+    H2 was false, so this identical predicate remains false; continue H4
 H4 tiler: switch to ordinary affine account
     if C>4096 || R<=VLbytes/4:
         recompute with D-sized affine slices
@@ -184,14 +185,16 @@ H7 launcher post-step:
 | 优先级 | Route | Host 顺序 | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---:|---|---|---|---|---|---|---|---|
 | P0 | R-002 | H5→H6，H7=false | 1100 | partial load，`C<=4096`，非大 BF16 repair 域 | 单 AIV | `GroupNormSiluWelford<T,T>` | phase1/phase2 同一整 UB TBuf；ping-pong hard events | Welford non-align 三分支；D/HW tail |
-| P1 | R-004 | H2/H3→H6 | 1110 | 首轮或 retry full-load | 单 AIV | `GroupNormSiluTwoPass<T,T>` | X/Y 双缓冲；小 HW 可 NDDMA 复制 affine | group/tile tail；失败继续 H4 |
+| P1 | R-004 | H2→H6 | 1110 | H2 strict full-load | 单 AIV | `GroupNormSiluTwoPass<T,T>` | X/Y 双缓冲；小 HW 可 NDDMA 复制 affine | group/tile tail；失败经冗余 H3 继续 H4 |
 | P2 | R-003 | H5→H6→H7 | 1100 + repair | R-002 base 域且 BF16、`R>2^20` | AIV → repair AIV/SIMT | Welford + `RepairNonFiniteBf16` | `y/mean/rstd` GM 边，同 stream | 坏组全 NaN；其余只重算异常 affine channel |
 | P3 | R-001 | H1，return | supplemental FP32 | FP32，`N·G<=A`，`R>2^18`，950 | SIMT reduce → SIMT normalize | `ReduceLargeGroupF32`、`NormalizeLargeGroupF32` | GM partials；normalize 1 KiB scratch；stream 边 | channel/thread grid-stride tail；未命中去H2 |
 | P4 | R-005 | H5→H6，H7=false | 1120 | partial load、`C>4096`，非大 BF16 repair 域 | 单 AIV | `GroupNormSiluWelfordGeneralized<T,T>` | affine 按 D/HW tile 搬入 | Welford + tile tail |
 | P5 | R-006 | H5→H6→H7 | 1120 + repair | R-005 base 域且 BF16、`R>2^20` | AIV → repair AIV/SIMT | generalized Welford + repair | base affine 为切片；跨节点 GM edge | 同 P2 repair |
 | P6 | R-007 | H4→H6 | 1130 | affine 切片后 full-load | 单 AIV | `GroupNormSiluTwoPassGeneralized<T,T>` | 每组搬 affine；X/Y 双缓冲 | tile tail；H4失败去H5 |
 
-### 隐藏性能 Guard
+`H7` 的源码判断本身不检查 tiling key；但 `R>2^20` 时，仅 X/Y 双缓冲就远超 950 的 253952-byte UB，因而 key 1110/1130 的 strict full-load 谓词不可能成立。由此生产可达的 repair base 只会是 key 1100 或 1120；若迁移到 UB 规模显著不同的平台，必须重新枚举 H7 与全部四个 key 的组合，不能沿用这一 950 可达性结论。
+
+### 关键分发与性能 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -200,7 +203,7 @@ H7 launcher post-step:
 | NDDMA fold | `HW<=32` | 将 `(G,D)` affine 广播成 `(G,D,HW)` UB layout，便于 fold VF | R-004 | ordinary affine copy | `ProcessGammaAndBeta`、`CopyGammaAndBeta2UBByNDDMA` |
 | generalized affine | `C>4096 || R<=VLbytes/4` | 只驻留 `D` 或当前 rows 的 affine，释放 UB | R-005/R-007 | perf Welford | `SetWelfordGeneralizedTiling` |
 | Welford parallel | `parallelN` 以 `32/s` 对齐且 UB 字节账成立 | `x ping/pong + tmpMean/tmpVar FP32 + dichotomy` 同驻 | R-002/R-003/R-005/R-006 | tiling 继续减小 `parallelN` | `SetWelfordParallelN` |
-| supplemental FP32 | `N·G<=A && R>2^18` | 每组分配至少一 part；`partials<=2048 FP32` | R-001 | key route | `launch_group_norm_direct` |
+| supplemental FP32 | launcher：`N·G<=A && R>2^18`；插件扩容：`N·G<=16 && R>2^18` | 每组分配至少一 part；目标 `A=16` 时 `partials<=2048 FP32` | R-001 | key route | `group_norm_npu`、`launch_group_norm_direct` |
 | BF16 repair | `R>2^20` | 限定非有限值求值次序修复的扫描域 | R-003/R-006 | 单 base 节点 | `launch_group_norm_direct` |
 | dtype/entry | code 0/1/2 | typed entry 与 `<T,T>` ABI | 全部 | 参数校验失败；Launcher else 按 BF16，故必须先校验 | `group_norm_meta`、`LAUNCH_GROUP_NORM_ROUTE` |
 | 空域 | `x.numel()==0` 在 tiling 前返回 | 避免 `HW=0`、`R=0` 下 `clz(0)` 与零 tile | Host terminal | 无 Device | `group_norm_npu` |
@@ -243,12 +246,24 @@ H7 launcher post-step:
 | 优先级 | Route | Host 顺序 | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
 |---:|---|---|---|---|---|---|---|---|
 | P0 | R-002 | H5→H6 | 1100 | `calc_group_norm_tiling` | `GroupNormLaunchParams` | `group_norm_1100_{f16,f32,bf16}` | `GroupNormSiluWelford<T,T>`、base helpers | `csrc/ops/group_norm/CMakeLists.txt::register_direct_launch_op` |
-| P1 | R-004 | H2/H3→H6 | 1110 | 同上 | 同上 | `group_norm_1110_*` | `GroupNormSiluTwoPass<T,T>`、base helpers | 同上 |
+| P1 | R-004 | H2→H6 | 1110 | 同上 | 同上 | `group_norm_1110_*` | `GroupNormSiluTwoPass<T,T>`、base helpers | 同上 |
 | P2 | R-003 | H5→H6→H7 | 1100+repair | 同上 + launcher post-step | 同上 | `group_norm_1100_bf16` → repair entry | Welford、base helpers、repair body | 同上 |
 | P3 | R-001 | H1 | FP32 predicate | `launch_group_norm_direct` | 逐值标量；`mean` partials | `group_norm_parallel_{reduce,normalize}_f32` | `ReduceLargeGroupF32`、`NormalizeLargeGroupF32` | 同上 |
 | P4 | R-005 | H5→H6 | 1120 | `calc_group_norm_tiling` | `GroupNormLaunchParams` | `group_norm_1120_*` | `GroupNormSiluWelfordGeneralized<T,T>`、base helpers | 同上 |
 | P5 | R-006 | H5→H6→H7 | 1120+repair | 同上 + launcher post-step | 同上 | `group_norm_1120_bf16` → repair entry | generalized Welford、base helpers、repair | 同上 |
 | P6 | R-007 | H4→H6 | 1130 | `calc_group_norm_tiling` | `GroupNormLaunchParams` | `group_norm_1130_*` | `GroupNormSiluTwoPassGeneralized<T,T>`、base helpers | 同上 |
+
+### Dormant 源码与 Route 内条件分支
+
+| 类别 | 已存在源码 | 生产链不可达证明 | 重新启用条件 |
+|---|---|---|---|
+| dormant empty Route | `group_norm_silu_regbase_empty_tensor.h::GroupNormSiluEmpty<T>` 可把 mean/rstd 置零，且 `group_norm_kernel.cpp` 包含该头文件 | `group_norm_npu` 在 `x.numel()==0` 时先行返回；`calc_group_norm_tiling` 又拒绝 `shapeN<=0 || hwNum<=0`；typed entry 宏没有实例化 Empty，launcher 四个 key 也没有 Empty 分支 | 先定义空输入对公开 `y` 与私有 mean/rstd 的可观察语义，再同时增加 Host selector、合法空域 POD、typed entry 和 launcher；还需证明零 grid、Queue 容量和 `shapeN==0` 的终止条件，不能只删除 Host early-return |
+| dormant SiLU mode | 公共 helper 与四个 class 都保留 `activateSilu=true` 的 normalize-and-SiLU body | `calc_group_norm_tiling` 无条件写 `td.activateSilu=0`，GroupNorm schema 也没有激活属性；没有任何 Host producer 能写 1 | 应作为不同算子语义重新定义接口/输出与 Host 属性，补 selector 和数值闭包；不得在 GroupNorm Route 内直接翻转 POD 位 |
+| dormant nullable affine | 四个 class 的 `hasGamma/hasBeta`、nullable GM 与模板分支可省略 gamma 或 beta | Torch schema、Meta 与 NPU wrapper 都把 gamma/beta 定义为必选 Tensor，并在取指针前检查 shape/dtype/device；当前 launcher从不传 null | 修改 schema 为 optional，重做 Meta/Host 校验和 null pointer ABI，并让 Host UB 账按存在性扣除 affine；随后逐 Route 复核 NDDMA、generalized tile 和 repair 对空指针的分支 |
+| dormant H3 promotion edge | `calc_group_norm_tiling` 在 `!reduceFullLoad && HW<=32` 时再次计算 `maxReduceCount` 并保留一次 key 1110 判断 | H3 使用的 `ubRemain`、dtypeSize、常量与 H2 完全相同，且只有 H2 谓词为 false 才进入；因此 H3 的成功边在当前源码中不可达，不是 R-004 的第二个 producer | 若未来要把它变成有效 retry，必须先改变 UB 账或 affine layout输入，再以新值重算并闭合对应 Device layout；仅保留相同算式不能形成新 Route |
+| active Route 内 Device 条件 | R-003/R-006 的 `badGroup` 与异常 affine channel 判断 | H7 已生产并启动 repair，但 fill、重算或保持原 `y` 由 Device 数据决定；它不是第三条 repair Route | 保持同 stream base→repair GM 边、BF16 位级 exponent 判断和 `scale/bias` 顺序；扩展扫描域时须重新证明内部非有限 X 的检测充分性 |
+
+Empty、SiLU 与 nullable-affine 源码不参与七条 active/conditional Route 的 POD、内存或同步验收。未知 key 落入 1130 是 launcher 的 ABI `else` 行为，不构成第八条安全 fallback；生产调用者只能传 `calc_group_norm_tiling` 产生的四个合法 key。
 
 ## Kernel 实现
 
@@ -568,8 +583,11 @@ warp-reduce; lane0 writes partials[block,warp] and second plane
 next kernel: every block of group reads all parts*64 partials
 warp-reduce -> scratch[warp]; barrier; warp0 combines 64 entries
 lane0 writes scratch mean,rstd; barrier
-for this part's channels and thread-strided spatial:
-  y=x*(rstd*gamma)+(-mean*rstd*gamma+beta)
+for channel in this part's channel-stride assignment:
+  scale=rstd*gamma[channel]
+  bias=-mean*scale+beta[channel]
+  for thread-strided spatial:
+    y=x*scale+bias
 ```
 
 #### 内存与数据搬运
@@ -896,7 +914,7 @@ dynamic_ub=N/A; workspace_total=0
 
 - 适用 Route：R-002、R-003、R-005、R-006
 - 触发条件：full-load 谓词失败；Host 产生 `parallelN`、`dichotomyAddPower/K/LastNum`。
-- Golden 来源：[`group_norm_silu_regbase_welford.h:122-129`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_welford.h)
+- 固定官方来源：[`group_norm_silu_regbase_welford.h:122-129`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_welford.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -929,7 +947,7 @@ VFWelfordParallelUpdate<T1>(x1Local, tmpMeanLocal, tmpVarLocal, i, welfordLen, s
 
 - 适用 Route：R-004
 - 触发条件：`HW<=32`；Direct 中 gamma/beta 均存在，`isFold=true`。
-- Golden 来源：[`group_norm_silu_regbase_two_pass.h:235-245`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_two_pass.h)
+- 固定官方来源：[`group_norm_silu_regbase_two_pass.h:235-245`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_two_pass.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -963,7 +981,7 @@ if (isFold) {
 
 - 适用 Route：R-002–R-007 的官方适配 base 节点
 - 触发条件：mean/variance 归约完成，调用 `CalRstdByHighPrecision(var,rstd,epsilon)`。
-- Golden 来源：[`group_norm_silu_regbase_base.h:200-217`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_base.h)
+- 固定官方来源：[`group_norm_silu_regbase_base.h:200-217`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/norm/group_norm_silu/op_kernel/arch35/group_norm_silu_regbase_base.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -997,7 +1015,7 @@ Mul(rstd, y, t1, pregMerge);
 | 优先级 | Route | 命中条件与 Host 顺序 | 模板与 dtype | 循环与分核 | UB/GM 与复用 | 搬运/计算 | 同步、精度与 tail | fallback/失败边界 |
 |---:|---|---|---|---|---|---|---|---|
 | P0 | R-002 | partial、`C<=4096`；H5→H6 | Welford `<T,T>` | group/core，R segment+D/HW tile | phase1/phase2 lower UB alias；全 C affine | DataCopyPad、Welford/dichotomy | hard events；FP32；三 non-align分支 | 大 BF16转P2；launch错误不显式回传 |
-| P1 | R-004 | strict full-load；H2/H3→H6 | TwoPass `<T,T>` | 多 group batch，full R | X/Y DB+全 affine | DataCopyPad；小 HW NDDMA；two-pass | hard events；FP32；mask/pad | full-load失败继续H4 |
+| P1 | R-004 | strict full-load；H2→H6 | TwoPass `<T,T>` | 多 group batch，full R | X/Y DB+全 affine | DataCopyPad；小 HW NDDMA；two-pass | hard events；FP32；mask/pad | H2 失败经冗余 H3 继续H4 |
 | P2 | R-003 | P0 base+大 BF16；H5→H6→H7 | Welford BF16 + repair | base group/core；repair group/thread | base UB + 跨节点 GM y/stats | base Welford；坏组fill或scale/bias重算 | stream序；B16/FP32；spatial stride tail | repair后结束 |
 | P3 | R-001 | FP32少组大R；H1命中return | FP32 SIMT | group×part block | 两片 GM partials；1 KiB scratch | direct GM、warp reduce | stream+barrier；FP32 sumSq；grid stride | 未命中去H2 |
 | P4 | R-005 | partial、`C>4096`；H5→H6 | WelfordGeneralized `<T,T>` | group/core，R segment+affine tile | phase alias+tile affine | DataCopyPad、Welford | hard events；FP32；D/HW tile tail | 大 BF16转P5 |
@@ -1017,7 +1035,7 @@ Mul(rstd, y, t1, pregMerge);
 - Direct 输入只覆盖 mandatory、同 dtype、连续、同设备 gamma/beta；不等同于官方 ACLNN 的 optional/mixed-dtype/contiguous 转换语义。
 - 空 `x` 在插件层直接返回 `empty_like`，不写 mean/rstd，也不启动官方 empty body；公开只返回 y，空内容无可观察写值保证。
 - `epsilon` 未校验正值或有限值；Host shape/元素数乘法及若干 `int64→uint32/int32/uint16` 参数窄化未做统一溢出检查。
-- R-001 的 `sumSq/R-mean²` 对严重 cancellation 的域没有源码级数值保证；只可按交付公式复用。
+- R-001 的 `sumSq/R-mean²` 对严重 cancellation 的域没有源码级数值保证；只可按交付公式复用。其 launcher 用运行时 `A`，而插件只在 `N·G<=16` 时扩容 partial buffer；目标 950 由 `A=16` 闭合，任何不同 AIV 数的平台都必须统一这两个谓词后才能复用。
 - BF16 repair 只在 `R>2^20` 启用，坏组判定还依赖 mean/rstd 与 X 首尾；更小 R 或内部非有限但边界有限的 adversarial 域不在转换闭包声明内。
 - 合法 tiling key 只有 1100/1110/1120/1130；Launcher 的最终 `else` 映射 1130，没有 unknown-key 报错。调用者不得绕过 `calc_group_norm_tiling` 注入任意 POD。
 - 多 Kernel 依赖同一 stream 的入队顺序；Launcher 为 `void`，没有显式检查 enqueue/Device 错误。allocator 完成期生命周期由框架边界保证，交付源码未展开。

@@ -20,7 +20,7 @@ sources:
   - resource: "https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_host/config/ascend950/gather_elements_binary.json"
     role: implementation
 created_at: "2026-08-24T19:32:06Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -51,7 +51,26 @@ y.shape = index.shape
 y[q] = x[q0,...,q(a-1),index[q],q(a+1),...,q(n-1)]
 ```
 
-非轴维要求 `index.size(i)<=x.size(i)`；Device 不检查 index 值，调用方必须保证 `0<=index[q]<x.size(a)`。算子只搬运 x 的位模式。
+令连续布局步长 `Sx[k]=product(x.shape[k+1:])`、`Si[k]=product(index.shape[k+1:])`，把输出线性位置 `p` 解码为 `q` 后，等价源地址为：
+
+```text
+src(p) = sum(k != a, q[k] * Sx[k]) + index[p] * Sx[a]
+y[p]   = x[src(p)]
+```
+
+这条式子是所有 Route 的共同不变量。SIMT Route 在线程内直接计算它；full-load Route 把相关 x 行搬进 UB 后计算同一相对 offset；key244 先交换二维行列，再按列计算同一映射。非轴维约束 `index.size(k)<=x.size(k)` 保证 `q[k]` 也是 x 的有效坐标，但不约束轴上的 `index[p]`。
+
+### axis、连续布局与越界契约
+
+| 契约 | Host 责任 | Device 假设 | 违反后的实际边界 |
+|---|---|---|---|
+| axis | 接受 `[-n,n)`，负值只加一次 `n` | POD/模板看到规范化后的非负 axis | Host 抛错，不启动。 |
+| layout | x/index 必须 contiguous，y 由 `empty` 创建为 contiguous | 使用逻辑 shape 生成的连续 stride，不读取 Tensor storage stride | 非连续输入在 Host 被拒绝；不能仅传 data pointer 复用此 Kernel。 |
+| 非轴 shape | 等 rank；`index.shape[k]<=x.shape[k]` (`k!=a`) | 输出线性坐标可直接映射到 x 的同名非轴坐标 | Host 抛错。 |
+| index 值域 | 有效输入必须逐元素满足 `0<=index[p]<x.shape[a]` | 所有 Route 均省略逐元素检查 | Direct 实现没有定义越界输出，也不会可靠地产生框架级异常；可能读到 x 之外。 |
+| dtype | index 仅 int32/int64；x 的可启动集合见下表 | Gather 是位模式搬运，不做数值 cast | 未接线 dtype 在 launcher 抛错。 |
+
+负 index 不能按 Python 负下标解释。不同 Route 对 index 的低位提取和整数收窄并不相同：key100 可直接用有符号下标，key200/230/301 转为 `uint32`，full-load/key244 的 MicroAPI 路径会取低 32 位，1/2-byte x 又把 offset 收窄为 16 位。因此越界值的表现是未定义边界，不能把某条 Route 上观察到的回绕行为写入算子语义。若上层语义要求越界报错，应在进入 Direct Kernel 前另做校验；给 index 做 clamp 会静默改变算子语义。
 
 ### 输入、输出与属性
 
@@ -64,7 +83,7 @@ y[q] = x[q0,...,q(a-1),index[q],q(a+1),...,q(n-1)]
 
 ### 入口与版本
 
-Python 入口只转发注册算子；Meta/PrivateUse1 分派分别绑定 `gather_meta/gather_npu`。本卡固定 CANN 9.1.0、950/Ascend 950，不把它补写成 ACLNN。转换 README 明列 Ascend 950，CMake 将 `ascend950` 映射为 `dav-3510`。官方 Commit `ceb4536a2bd6fc99b85aec9d0fdcc0f470376292` 的 `index/gather_elements` 仅是算法与 950 binary 配置的相关映射；Direct wrapper、补充 selector 与 key244 图均以转换交付件为事实源，不伪称官方入口。
+Python 入口只转发注册算子；Meta/PrivateUse1 分派分别绑定 `gather_meta/gather_npu`。本卡固定 CANN 9.1.0、950/Ascend 950，不把它补写成 ACLNN。Direct README 明列 Ascend 950，CMake 将 `ascend950` 映射为 `dav-3510`。官方 Commit `ceb4536a2bd6fc99b85aec9d0fdcc0f470376292` 的 `index/gather_elements` 仅是算法与 950 binary 配置的相关映射；Direct wrapper、补充 selector 与 key244 图以本卡闭合的 Direct 源码为事实边界，不伪称官方入口。
 
 ## Host/Launcher 执行流程
 
@@ -72,9 +91,39 @@ Python 入口只转发注册算子；Meta/PrivateUse1 分派分别绑定 `gather
 
 1. `gather_meta` 检查 rank、dim、index dtype 与非轴维，并创建 y。
 2. `gather_npu` 绑定 x device，要求 x/index contiguous，规范化轴，把 shape 与元素字节数交给 `calc_gather_tiling`。
-3. tiler 检查等 rank、rank 1–8、轴、`AIV coreNum>0`、`UB>32 KiB`；先 full-load，失败后合轴并选 SIMT/NDDMA。
-4. selector 只为 key244 分配 `xTranspose/indexTranspose/yTranspose`。launcher 中 240–243 分支没有 selector producer，均为 dormant。
+3. tiler 检查等 rank、rank 1–8、轴、`AIV coreNum>0`、`UB>32 KiB`；先尝试 full-load，谓词不成立才合轴并生成基础 key，再依次尝试 grid-stride 与 NDDMA 覆盖。
+4. 生产 selector 在 240～244 中只可能产出 key244；`gather_npu` 仍保留 key240/242 的三临时 Tensor、key241 workspace、key243 单 xTranspose 的分配分支，但 240～243 都没有完整 selector producer，属于 dormant。
 5. `OpCommand::RunOpApi("Gather",aclCall)` 用当前 NPU stream 调 `launch_gather`；未知 key/dtype 抛异常。
+
+这里的“失败”要分两类：专用覆盖的 tiling 失败会保留先前可用 key；full-load 一旦谓词成立就提前返回，即使生成的 full-load key 没有 launcher body 也不会回退。当前真正接线的 full-load key 只有 1210、1320。
+
+### Host checked arithmetic 与窄化证明
+
+快照实现使用普通 `int64_t` 连乘、`int` 合轴乘积和 `(a+b-1)/b`，只在 key244 的部分维度上显式检查 `UINT32_MAX`。这些是实现边界，不是可迁移的安全契约。复刻 selector 时应先用 checked arithmetic 形成 64 位事实，再按 Route 证明 POD 和 Device 窄化；检查失败应抛出确定性参数错误，或只在已有可用基础 key 时放弃专用覆盖。
+
+```text
+checked_mul(a,b,L): require a>=0 && b>=0 && (a==0 || b<=L/a); return a*b
+checked_align(v,A,L): require A>0 && v<=L-(A-1); return ((v+A-1)/A)*A
+checked_ceil_div(a,b): require a>=0 && b>0; return a/b + (a%b != 0)
+
+Sx, Si, xNumel, yNumel = checked products in uint64/int64 domain
+if yNumel == 0: use an explicit zero-output Host return; current Device selector is not zero-safe
+normalize/merge shapes using int64, never int
+choose route only after every value consumed as uint32/uint16 is proven representable
+serialize zero-initialized POD; launch only a key with a connected body
+```
+
+| 值/关系 | 生产位置 | 必须证明的条件 | 消费与失败策略 |
+|---|---|---|---|
+| `Sx[k]`,`Si[k]`,`xAfterAxis`,`idxAfterAxis`,`ySize` | shape 连乘 | 非负、无 int64/uint64 溢出；参与 `log2/div` 的 stride 必须 `>0` | 所有地址、magic/shift；零输出应 Host 短路，不能进入当前 `log2(0)`/除零路径。 |
+| `Bx/Bi/By` 与 `2*(Bx+Bi+By)` | 字节乘法+32B align | `dim*elementSize`、align 加法、三项求和和乘2均无溢出，分母非零且不超过 UB | full-load guard；不满足即不选 full-load。 |
+| 合并维 | `MergeAxis` | 每段 product 以 int64 checked multiply 生成 | 当前源码用 `int val`；安全实现不得让溢出后的形状进入 key 选择。 |
+| `usedCore/perCoreNum/tailCoreNum` | 分核 | `1<=usedCore<=coreNum`；ceil-div 分母正；`tail` 在 `(0,perCore]` | `blockDim:uint32` 及 SIMT 参数；不满足不得启动。 |
+| SIMT `i/stride/offset` | key100/200/230/301 | 四路的 yNumel、per-core 区间须可转 uint32；key200/230/301 的 stride、magic 输入和最大源 offset 还须可在32位地址表达式中表示；key100 的 index 则须在自身 INDEX_T 中合法 | 超域不能依赖 launcher cast 或 Device 乘法截断。 |
+| full-load DMA | key1210/1320 | `rows<=UINT16_MAX`；`dataLen*sizeof(T)<=UINT32_MAX`；repeat 数可表示；MicroAPI offset 位宽覆盖最大 UB 内地址 | `DataCopyExtParams` 与 register gather；当前 `x.shape[axis]<=65535` 只覆盖部分证明。 |
+| key244 维度与临时字节 | NDDMA 图 | xRows/outputRows/columns/ySize 及 NDDMA POD 窄字段可表示；三份 Tensor 的 numel×elementSize checked；`bytesPerColumn*2` 无溢出 | 任一专用 guard 失败保留 key230/200；若基础 key 自身也超域则确定性报错。 |
+
+POD 不能承担“晚检查”职责：Host 一旦把 64 位负值或超大值写入字段，launcher/body 中的 `static_cast<uint32_t>` 已经丢失信息。正确顺序是先证明、再写 POD、最后按同一 `key`/dtype 启动。
 
 ### 参数、Workspace 与生命周期
 
@@ -107,25 +156,100 @@ load=floor(UBraw/(2*(Bx+Bi+By)))
 
 full-load：`outputPrefix=product(index[:axis])`，`blockDim=min(coreNum,outputPrefix)`，`perCoreNum=ceil(outputPrefix/blockDim)`，最后核用 `tailCoreNum`。非 full-load 合并轴外连续相等维，令 `ySize=product(mergedIndex)`；小域单核，否则按 `perCoreNum=ceil(ySize/coreNum)` 均分。key244 三次 `[r,c]`、`perm=[1,0]` transpose 的 tiling UB 是 `min(UBraw,192 KiB)`，中间 gather 按 `usedCore=min(columns,coreNum)` 列循环。
 
+### 原坐标到 merged 坐标
+
+`MergeAxis` 只合并“不含 axis 且 x/index 对应维完全相等”的最大连续段。设一段为 `[l,r)`，则：
+
+```text
+mergedX[t] = mergedIndex[t] = product(shape[l:r])
+axis' = axis - sum(位于 axis 前方的每段长度-1)
+```
+
+它保持输出线性序 `p`、连续地址和 axis 替换语义不变。不得跨 axis 合并，也不得合并 `x[k]!=index[k]` 的维；后者虽然满足 `index[k]<=x[k]`，但合并后会丢失 x 与 index 的不同 stride。Host 当前先在原 shape 上判断 full-load，只有未命中时才执行此变换。
+
+| 原始形态 | 合并结果 | 连接 Route | 说明 |
+|---|---|---|---|
+| `x,index:[N]`, axis0 | `[N]`, axis0 | key100 | 1D direct。 |
+| `x:[R,C]`,`index:[K,C]`, axis0 | rank2/axis0 | key200，可能被230/244覆盖 | 非轴列相同但只有单维，不能再降 rank。 |
+| `x:[B,H,S,D]`,`index:[B,H,K,D]`, axis2 | `x:[B*H,S,D]`,`index:[B*H,K,D]`, axis1 | key301 | axis 前连续等长段 `[B,H]` 合并，axis 从2变1；尾部单个 D 保留。 |
+| `x:[B,S]`,`index:[B,K]`, axis1 | rank2/axis1 | full-load 命中时1210；否则基础 key201 | key201 未接线；当前实现不是任意尾轴的 SIMT fallback。 |
+| rank3/axis2 尾轴 | 原 shape 先尝试 full-load | 命中时1320；否则常落到未接线 key | H1 早返回和 H2 接线域必须分别审计。 |
+
+因此“通用 Route”表示三种已连接的 merged 形态，而不是 rank 1–8 全覆盖。对任意输入，应在 Host 明确验证最终 key 属于 `{100,200,230,244,301,1210,1320}`；不能把公式可表达误当作 launcher 已接线。
+
+### 完整合法域与 Route 可达性
+
+这里把“合法”分成两层：接口语义合法只要求前述 rank/shape/dtype/layout/index 值域契约；Direct 可启动还要求 selector 最终生成已接线 key 及其全部位宽/资源条件。语义合法但落入其它 key 的输入会在 launcher 确定性失败，不构成新的 Device Route。
+
+full-load 的生产谓词按源码整数运算精确写为：
+
+```text
+F = load>0
+ && x.shape[a] <= 65535
+ && Iafter > 32
+ && rank-a <= 3
+ && Xprefix/Iprefix <= 2
+ && Xafter/Iafter < 32
+
+F true : key = 1000 + originalRank*100 + originalAxis*10，立即返回
+F false: MergeAxis；baseKey = mergedRank*100 + mergedAxis
+```
+
+`Iprefix`、`Iafter` 和各 stride 必须为正才能安全执行这些除法；当前源码对零域没有完整短路。下表中的 `active` 表示生产 selector 有直接 producer，`conditional` 专指在已有 active 基础 key 上追加 guard 后事务式覆盖、失败可安全保留基础 key；两类都属于可达路线。
+
 ### Route 选择
 
 下表按实现复用的重要性降序排列；P0～P6 不代表 selector 判断顺序。`Host 顺序`独立保留源码中的真实先返回、后覆盖和 fallback 关系：H1 检查 full-load 并直接返回；H2 合轴后写入基础 key；H3 可把 key200 覆盖为 key230；H4 最后尝试 key244，成功时覆盖 H2/H3，失败时保留已有 key；H5 只处理不可达的 key240 准备分支。
 
-| 重要性 | Route | 特征 | 适用域 | 实现前提 | Key/模板 | Host 顺序、短路与 fallback |
-|---|---|---|---|---|---|---|
-| P0 | R-006 2D axis0 direct | 2D axis0 的通用单 Kernel 主干，SIMT 直接从 GM 取 index 与 x | 非 full-load；合轴后 dim2/axis0，且后续专用覆盖均未生效 | 32 位 magic/shift 与 shape 乘积可表示；1024-thread entry 可用 | 200/`GatherDim2Direct<...,0>` | H2 先写 key200；H3 guard 真时转 R-004；H4 成功时再转 R-003，H4 失败保留 key200 或 key230。 |
-| P1 | R-003 CUT_TWICE 图 | 三次 NDDMA 转置包围按列 full-load gather，以 GM 中间 Tensor 串联四节点 | 非 full-load；合轴后 dim2/axis0；`ySize>=2^24`；si∈{4,8}、sx∈{1,4,8}；index 首维为 2 幂；各维与 `ySize` 不超过 UINT32 | 三份 transpose tiling 都成功且 key10003；N3 UB guard 成功；三份 GM 临时 Tensor 已分配 | 244/3×`TransposeCutTwoAxis`+`FullLoad<2,1>` | H4 最后尝试并覆盖 H2 的 key200 或 H3 的 key230；任一 guard 失败都原样保留 H2/H3 结果。 |
-| P2 | R-007 3D axis1 | 合轴后 3D 中轴 SIMT，先在 UB 准备参数再直访 GM | 非 full-load；合轴后 dim3/axis1 | 512 B TBuf 与 UB barrier 可用；2048-thread entry 可用 | 301/`GatherElementsKernel<...,3,1>` | H2 写 key301；H3/H4 仅检查 dim2/axis0，因此不覆盖；launcher 未知 key 才失败。 |
-| P3 | R-001 2D 尾轴 full-load | x/index 行驻 UB，masked register gather 后连续回写 | rank2/axis1，且 full-load 公共谓词成立 | 三个 depth2 TQue 总账可驻 UB；`x[axis]<=65535`；有效 offset 可由 uint16 表示 | 1210/`FullLoad<2,1>` | H1 命中即写 key1210 并返回，不执行合轴及 H2～H5；若 H1 为假才进入后续 selector。 |
-| P4 | R-002 3D 尾轴 full-load | 与 R-001 同族，增加二维 prefix 解码 | rank3/axis2，且 full-load 公共谓词成立 | 同 R-001，并要求 prefix 解码与 stride 乘积有效 | 1320/`FullLoad<3,2>` | H1 命中即写 key1320 并返回；不执行合轴及 H2～H5。 |
-| P5 | R-005 1D direct | 最短 1D SIMT 直接索引路径 | 非 full-load；合轴后 dim1/axis0 | 基础分核参数有效；512-thread entry 可用 | 100/`GatherDim1Direct` | H2 写 key100；H3/H4 均不适用，不再覆盖；launcher 未知 key 才失败。 |
-| P6 | R-004 大 2D grid-stride | 大 2D axis0 的 512-thread grid-stride 中间候选 | 非 full-load；合轴后 dim2/axis0；`ySize>=2^25`；si=4；index 首维为 2 幂 | UINT32 地址域与 magic/shift 有效；R-003 未成功覆盖 | 230/`GatherDim2GridStrideDirect` | H3 在 H2 key200 之后覆盖为 key230；H4 随后仍可覆盖为 R-003，H4 失败则保留 key230。 |
+| 重要性 | 状态 | Route | 特征 | 适用域 | 实现前提 | Key/模板 | Host 顺序、短路与 fallback |
+|---|---|---|---|---|---|---|---|
+| P0 | active | R-006 2D axis0 direct | 2D axis0 的通用单 Kernel 主干，SIMT 直接从 GM 取 index 与 x | `!F`；合轴后 dim2/axis0，且后续专用覆盖均未生效 | 32 位 magic/shift 与 shape 乘积可表示；1024-thread entry 可用 | 200/`GatherDim2Direct<...,0>` | H2 先写 key200；H3 guard 真时转 R-004；H4 成功时再转 R-003，H4 失败保留 key200 或 key230。 |
+| P1 | conditional | R-003 CUT_TWICE 图 | 三次 NDDMA 转置包围按列 full-load gather，以 GM 中间 Tensor 串联四节点 | `!F`；合轴后 dim2/axis0；`ySize>=2^24`；si∈{4,8}、sx∈{1,4,8}；index 首维为 2 幂；各维与 `ySize` 不超过 UINT32 | 三份 transpose tiling 都成功且 key10003；N3 UB guard 成功；三份 GM 临时 Tensor 已分配 | 244/3×`TransposeCutTwoAxis`+`FullLoad<2,1>` | H4 最后尝试并覆盖 H2 的 key200 或 H3 的 key230；任一 guard 失败都原样保留 H2/H3 结果。 |
+| P2 | active | R-007 3D axis1 | 合轴后 3D 中轴 SIMT，先在 UB 准备参数再直访 GM | `!F`；合轴后 dim3/axis1 | 512 B TBuf 与 UB barrier 可用；2048-thread entry 可用 | 301/`GatherElementsKernel<...,3,1>` | H2 写 key301；H3/H4 仅检查 dim2/axis0，因此不覆盖；launcher 未知 key 才失败。 |
+| P3 | active | R-001 2D 尾轴 full-load | x/index 行驻 UB，masked register gather 后连续回写 | 原始 rank2/axis1 且 `F` | 三个 depth2 TQue 总账可驻 UB；`x[axis]<=65535`；有效 offset 可由 uint16/uint32 表示 | 1210/`FullLoad<2,1>` | H1 命中即写 key1210并返回，不执行合轴及 H2～H5；H1 为假会继续到 H2，但常生成未接线 key201，不等于可用 SIMT fallback。 |
+| P4 | active | R-002 3D 尾轴 full-load | 与 R-001 同族，增加二维 prefix 解码 | 原始 rank3/axis2 且 `F` | 同 R-001，并要求 prefix 解码与 stride 乘积有效 | 1320/`FullLoad<3,2>` | H1 命中即写 key1320并返回；H1 为假才合轴，最终 key 若不在已接线集合中会失败。 |
+| P5 | active | R-005 1D direct | 最短 1D SIMT 直接索引路径 | `!F`；合轴后 dim1/axis0 | 基础分核参数有效；512-thread entry 可用 | 100/`GatherDim1Direct` | H2 写 key100；H3/H4 均不适用，不再覆盖；launcher 未知 key 才失败。 |
+| P6 | conditional | R-004 大 2D grid-stride | 大 2D axis0 的 512-thread grid-stride 中间候选 | `!F`；合轴后 dim2/axis0；`ySize>=2^25`；si=4；index 首维为 2 幂 | UINT32 地址域与 magic/shift 有效；R-003 未成功覆盖 | 230/`GatherDim2GridStrideDirect` | H3 在 H2 key200 之后覆盖为 key230；H4 随后仍可覆盖为 R-003，H4 失败则保留 key230。 |
 
 ```text
-H1 full-load? -> key=1000+rank*100+axis*10 -> return -> 1210/1320 or launcher error
-else MergeAxis -> H2 base key=rank*100+axis
--> H3 optional 230 override -> H4 optional 244 override (失败保留 H2/H3)
+H1 full-load? -> key=1000+originalRank*100+originalAxis*10 -> early return
+              -> 1210/1320 可启动；其它 full-load key 在 launcher 失败，无 fallback
+else MergeAxis -> H2 base key=mergedRank*100+mergedAxis
+               -> 只有100/200/301已接线；其它基础 key 无 body
+-> H3 optional 230 override -> H4 optional 244 override (专用失败保留 H2/H3)
 -> H5 dormant 240 preparation -> 244/230/100/200/301 or launcher error
+```
+
+### tail 与 fallback 闭合
+
+| 层级 | tail 所有者 | 关系式/机制 | 不变量 | fallback 边界 |
+|---|---|---|---|---|
+| Host 分核 | `perCoreNum`,`tailCoreNum` | `tail=ySize-(usedCore-1)*perCore` | 各核区间不重叠，区间并集恰为 `[0,ySize)` | 只处理规模尾，不修复 unsupported key。 |
+| SIMT key100/200/301 | 最后核+线程循环 | `end=coreOffset+(last?tail:perCore)`；`i+=threads` | 只在 `i<end` 时读写 | 无 Device fallback；Host 必须先选对 key。 |
+| SIMT key230 | 每线程 grid-stride | `i=block*512+thread; i<total; i+=usedCore*512` | 任意非整 grid 的最后迭代由 `i<total` 裁掉 | H4 key244 成功才覆盖；H4 失败保留230。 |
+| full-load 1210/1320 | 最后核、最后 UB 批、最后 vector repeat | prefix 剩余行决定 `rows`，`UpdateMask` 决定末 repeat 有效 lane，CopyOut 只写有效元素 | pad lane 不得写回 GM；queue slot 消费后才复用 | H1 命中后没有退路；Kernel 内也不降级成 SIMT。 |
+| key244 N1/N2/N4 | CUT_TWICE main/input-tail/output-tail/both-tail | transpose POD 为四类区域给出 factor/offset | 每个边界 tile 只搬有效 blockLen，pad 不进入下一节点的逻辑域 | 只在启动前 tiling 阶段可回退到230/200。 |
+| key244 N3 | 列循环+末 repeat mask | `column=block; column<columns; column+=usedCore`；mask裁 `outputRows` | 每列 x/index 先入队，计算后 y 出队 | N3 已启动后无 fallback；错误只能沿 stream 暴露。 |
+
+Route 间共同不变量是输出的线性顺序不变、每个有效 `p` 恰写一次、只替换 axis 坐标、x 的位模式不变。专用 Route 的 fallback 必须回到已经完整生成的基础 Gather POD。短路求值可能让未激活的 transpose 字段部分写入，但 fallback key 绝不能读取它们；更稳妥的实现是在局部临时 POD 中完成全部专用 tiling 后一次提交。
+
+### Dormant key 240～243
+
+这些 key 在 C ABI launcher 中有 entry/body，但 `calc_gather_tiling` 不会完成相应 key 与 POD 的生产链；它们不是合法输入域中的 conditional fallback。`gather_npu` 的临时区分配分支只说明 wrapper 为这些值留了槽位，不能反推 selector 可达。
+
+| key | 已存在的 launch/body 图 | 不可达原因 | 重新启用必须补齐的契约 |
+|---|---|---|---|
+| 240 | `transpose_i32_index` + `transpose_X` → `gather_transposed_X` → `transpose_Y`；三份 GM temp，同 stream | `if (result.key==240)` 只会填 `transposeX/index/Y`，此前没有语句把 key 设为240 | selector guard；int32 index 验证；三份 `MakeTranspose2DTiling` POD；`blockDim/xRows/outputRows/columns/outputRowsShift`；`outputRows` 的2幂前提；三临时 Tensor 生命周期与三次 transpose tail。 |
+| 241 | 单 `GatherElementsV2TransposeKernel<int32,int32>`，使用 workspace | `MakeGatherElementsV2TransposeTiling` 有定义但无调用，`v2/workspaceBytes/key` 无 producer | 限定 int32 x/index；生成 `v2`、非零 blockDim 和 checked workspaceBytes；plugin 分配 workspace；闭合 V2 内部 UB/workspace tail 后才可设 key241。 |
+| 242 | index/x 两次 `KernelTransDataTo5HD<int32>` → `gather_transposed_i32` → y 反变换；三份 GM temp | `vconvX/index/Y` 从未生成，launcher 也没有 dtype guard | selector 必须限定 int32 x/index；生成三份 VCONV POD、shape/shift/blockDim；补 dtype fail-fast、三临时 Tensor 与四节点 same-stream 生命周期。 |
+| 243 | `TransposeCutTwoAxis<X>(x→xT)` → `GatherFromNddmaTransposedXDirect<X>`；仅 xTranspose | 无 key243 producer，也无 `transposeNddmaX/xRows/outputRows/columns` 生产链 | 限定 int32 index、X∈{int8,int32,fp32位模式}；CUT_TWICE key10003；columns 为2幂以满足 `i&(columns-1)`；checked `outputRows*columns`、单 GM temp、NDDMA tail 与 same-stream handoff。 |
+
+```text
+# launcher 中存在但生产 selector 不会发出的分支
+240: iT=transpose(index); xT=transpose(x); yT=gather_last_dim(xT,iT); y=transpose(yT)
+241: y=GatherElementsV2Transpose<int32,int32>(x,index,workspace)
+242: iT=vconv(index); xT=vconv(x); yT=gather_last_dim(xT,iT); y=vconv(yT)
+243: xT=nddma_transpose(x); y[p]=xT[(p&(columns-1))*xRows+index[p]]
 ```
 
 ### 模板/实现执行矩阵
@@ -140,14 +264,14 @@ else MergeAxis -> H2 base key=rank*100+axis
 | P5 | R-005 | H2 | 100 | 1D axis0 | 单 SIMT | `GatherDim1Direct` | 无UB，512线程 | core tail。 |
 | P6 | R-004 | H3；H4 可覆盖 | 230 | 大2D axis0、int32 index、幂次行；244未覆盖 | 单 SIMT | `GatherDim2GridStrideDirect` | 无UB，512线程 | `i<total`；H4失败保留230。 |
 
-### 隐藏性能 Guard
+### Route 资源 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | CUT_TWICE | 三 transpose key均10003 | launcher 固定 `TransposeCutTwoAxis` | R-003 | 保留230/200 | `DoSplitUB/launch_gather` |
 | transpose UB cap | `min(UBraw,192KiB)` | 避免形状选择非10003 key | R-003 | 回退 | `calc_gather_tiling` |
 | N3 UB | `UBraw>=2*(align32(xRows*sx)+align32(outputRows*si)+align32(outputRows*sx))` | 三个队列与offset范围 | R-003 | 230/200 | `MakeTransposedFullLoadTiling` |
-| full-load UB | `load>0` | 三双队列总量≤UB | R-001/2 | 合轴 | `calc_gather_tiling` |
+| full-load UB | `load>0` | 三双队列总量≤UB | R-001/2 | 继续合轴 selector；最终 key 可能未接线 | `calc_gather_tiling` |
 | offset | `x[axis]<=65535` | 1/2-byte X 用uint16 gather offset | R-001/2/3-N3 | SIMT或失败 | `isFullLoad/GatherValue` |
 | grid | y≥2^25、si=4、幂次行 | 512线程grid-stride | R-004 | 200 | `calc_gather_tiling` |
 | 空域 | 无完整零维guard | 除法/log2/core计算要求正量 | 全部 | 异常或无效参数 | `calc_gather_tiling` |
@@ -179,6 +303,31 @@ else MergeAxis -> H2 base key=rank*100+axis
 
 每个 `TransposeLaunchParams` 含 `blockDim:int64`、`tilingKey:uint64`、`workspaceSize/dataSize:size_t` 与 `alignas(8) data[2048]`。其 payload 是 `TransposeOpTilingData`：19个 int64 标量及 input/output/perm/base/expanded/inUb main/input-tail/output-tail/both-tail 数组；`FillTilingData` 逐字段生产，`TransposeCutTwoAxis` 消费。
 
+#### POD 生产—消费与 ABI 约束
+
+安全复刻时推荐把每条专用 Route 当作事务提交：
+
+```text
+result{}                  # 整体清零，未激活 union-like 分支保持零
+produce result.data      # 基础/full-load Gather POD
+produce optional PODs    # 仅专用 Route guard 内写 transpose payload
+set key last             # key 是有效字段集合的判别器
+dispatch by key+dtype    # 只读取该 key 对应字段
+```
+
+`GatherElementsLaunchTiling` 不是显式 C++ union，但使用方式等价于“key 判别的多分支 POD”。key244 成功时 `result.data` 被 `transposedGatherTiling` 整体替换；失败时不替换，因此 key200/230 的 stride/magic/分核仍保持完整。失败尝试可能在 `transposeNddma*` 留下部分 payload，但基础 key 不读取它们；实现 fallback 时必须维持 `key` 判别与 `data` 的提交点语义。
+
+| ABI/字段组 | Host 表示 | Device/launcher 实际表示 | 落地约束 |
+|---|---|---|---|
+| `data.usedCore/perCore/tail` | int64 | key100/200/230 宏显式 cast uint32；key301 的 `COM_T` 为 uint32 | Host 写入前完成 uint32 证明。 |
+| `data.magic/shift/stride` | uint64/int64 | key200/230 cast uint32；key301 cast `COM_T=uint32` | stride 必须正且可表示；magic 必须按同一 32 位除法算法生成。 |
+| `data.xShape/indexShape` | int64[8] | key230 先相乘再 cast uint32；full-load 按 int64 读 | 应先 checked product；不能依赖 Device 表达式溢出。 |
+| `blockDim` | uint32 | launch grid | 必须非零且不超过平台 AIV 数；和 `data.usedCore` 一致。 |
+| `xRows/outputRows/columns` | uint32 | key244 Kernel 参数 uint32 | 三字段与 transpose POD 的 shape 必须来自同一 merged shape 快照。 |
+| transpose payload | `alignas(8) byte[2048]` | reinterpret 为共享结构 | `dataSize<=2048`、生产者/消费者字段序和对齐一致；建议构建时 `static_assert` size/align/关键 offsetof。 |
+
+Host 与 Kernel 共用 header 只能降低漂移概率，不能替代 ABI 证明。尤其 `size_t` 会受 Host ABI 影响；可移植实现应固定编译目标并对共享 POD 做静态断言，序列化后不得由另一套不同 packing 的声明解释。
+
 ### Route 源码闭包
 
 | 重要性 | Route | Host 顺序 | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
@@ -196,6 +345,8 @@ else MergeAxis -> H2 base key=rank*100+axis
 ### 公共执行流程
 
 torch dtype code 1/3/4/5/6/15 分别分派 int8/int32/int64/half/float/bfloat16，index code 3/4 分派 int32/int64。key244 先走专用多 Kernel router，其余 key 进入生成的 `launch_X_I`。Kernel 标注 AIV_ONLY，但 `asc_vf_call` 内线程算法按 SIMT 族记录；无通信、Cube 或 MIX_CV。
+
+全部 active/conditional Route 的 `L1=0`、`L0A/L0B/L0C=0`：SIMT 路径直接 GM 访存，full-load 与 key244 只使用 UB queue/TBuf；key244 的跨节点介质是 GM 临时 Tensor，NDDMA bound queue 也位于 UB，不应补写 Cube 或 L1 staging。
 
 ### P0 · Route R-006：2D axis0 直接 SIMT
 
@@ -679,9 +830,9 @@ N/A：线程直接访问 GM。
 
 - 适用 Route：R-001、R-002。
 - 触发条件：完整 full-load guard 且 key1210/1320。
-- Golden 来源：[`index/gather_elements/op_kernel/arch35/gather_elements_full_load.h:74-76`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_kernel/arch35/gather_elements_full_load.h#L74-L76)
+- 相关官方源码：[`index/gather_elements/op_kernel/arch35/gather_elements_full_load.h:74-76`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_kernel/arch35/gather_elements_full_load.h#L74-L76)
 
-**官方相关映射源码（固定 Commit；Direct 路线选择以转换交付件为准）**：
+**官方相关映射源码（固定 Commit；Direct 路线选择以本卡闭合源码为准）**：
 
 ```cpp
 pipe_.InitBuffer(xQueue_, BUFFER_NUM, ops::CeilAlign(xAfterAxis_ * sizeof(X_T), static_cast<uint64_t>(blockSize)) * tilingData_->xLoadInUbNum);
@@ -697,7 +848,7 @@ Host 以 `UB/(2*(Bx+Bi+By))` 决定驻留行数，Device 成批驻留 x/index/y 
 
 - 适用：轴后数据可成批入 UB 且同一 x 行被多个 index lane 复用。
 - 前提：双缓冲字节账、x轴≤65535、index合法、offset位宽匹配。
-- 失效：guard 不成立走 SIMT/NDDMA；不能只缩输出 mask 绕过 offset 上限。
+- 失效：guard 不成立只表示继续执行合轴 selector；只有最终 key 落在100/200/230/244/301时才有可用通用路径。典型2D/axis1会得到未接线201，而不是自动转 SIMT；不能只缩输出 mask 绕过 offset 上限。
 - 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
@@ -710,9 +861,9 @@ Host 若生成非1210/1320的 full-load key，Direct router 会抛 `Unexpected G
 
 - 适用 Route：R-003。
 - 触发条件：R-003 的完整规模、dtype、uint32、三次CUT_TWICE与UB guard。
-- Golden 来源：[`index/gather_elements/op_kernel/arch35/gather_elements_full_load.h:144-163`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_kernel/arch35/gather_elements_full_load.h#L144-L163)
+- 官方相关映射：[`index/gather_elements/op_kernel/arch35/gather_elements_full_load.h:144-163`](https://gitcode.com/cann/ops-nn/blob/ceb4536a2bd6fc99b85aec9d0fdcc0f470376292/index/gather_elements/op_kernel/arch35/gather_elements_full_load.h#L144-L163)
 
-**官方相关映射源码（固定 Commit；四节点组合是转换交付件事实）**：
+**官方相关映射源码（固定 Commit；四节点组合是本卡闭合的 Direct 实现事实）**：
 
 ```cpp
 MicroAPI::DataCopyGather(RegY, xPtr, RegGatherIndex, maskRegInput);
@@ -759,13 +910,14 @@ MicroAPI::DataCopy(yPtrOffset, RegY, maskRegInput);
 - Meta 不限制 x dtype，launcher 只接线 fp16/fp32/bf16/int8/int32/int64。
 - tiler 可生成更多 full-load/generic key，但 router 只接线1210/1320/100/200/230/301；其它 key 失败。
 - 240–243 有 launcher/body 无 selector producer，为 dormant。
-- 不检查 index 值域；负值或越界值会形成越界 GM 地址。
+- 不检查 index 值域；负值不具备负下标语义，越界结果未定义，且各 Route 的32/16位收窄行为不同。
 - 零维 guard 不完整；除法、log2、usedCore 依赖正量。
 - shape 连乘未查 int64 溢出；`MergeAxis` 用 `int` 保存合并乘积；key244仅检查自身uint32字段。
 - `blockLen` 收窄uint32、full-load `rows` 收窄uint16，Host未逐处证明乘积位宽。
+- full-load H1 是早返回：生成未接线 key 时不会回到 merged SIMT；专用 H4 失败才会可靠保留 H2/H3。
 - key244 的 fp32 以 int32 模板搬运等宽位模式；不得在该图加入算术。
 - 临时 Tensor 异步回收无显式 event/recordStream，安全性属于 torch_npu allocator 边界。
-- 固定官方 Commit 只作 GatherElements 相关映射，Direct wrapper/selector/key244 来自转换交付件。
+- 固定官方 Commit 只作 GatherElements 相关映射，Direct wrapper/selector/key244 以本卡闭合的 Direct 源码为准。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引

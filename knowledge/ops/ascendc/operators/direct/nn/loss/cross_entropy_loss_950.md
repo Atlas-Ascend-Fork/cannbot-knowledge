@@ -20,7 +20,7 @@ sources:
   - resource: "https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_host/config/ascend950/cross_entropy_loss_binary.json"
     role: implementation
 created_at: "2026-08-25T19:31:25Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -33,7 +33,7 @@ cann_versions: ["9.1.0"]
 |---|---|
 | 实际入口 | PyTorch custom op `cann_bench::cross_entropy_loss`，PrivateUse1 实现 `cross_entropy_loss_npu`，Host producer `calc_cross_entropy_loss_tiling`，C ABI launcher `launch_cross_entropy_loss_{float16,float32,bfloat16}`；入口类型为 `Direct Invoke`。 |
 | 计算语义 | 类别轴固定为 dim 1；hard target 计算稳定 `-log_softmax(input)[target]`，soft target 计算 `-sum(target*log_softmax(input), C)`，再执行 `none/mean/sum`。 |
-| 输入输出 | 连续 `input[N,C,*S]`；hard target 为 `int32/int64 [N,*S]`，soft target 与 input 同 shape/dtype；input/output 为 FP16、FP32 或 BF16。 |
+| 输入输出 | 逻辑 `input[N,C,*S]`；hard target 为 `int32/int64 [N,*S]`，soft target 与 input 同 shape/dtype；input/output 为 FP16、FP32 或 BF16。非连续 view 由 Host 在 launch 前物化为连续 NPU tensor。 |
 | 执行类型 | R-001 为 AIV 标量 GM 写；R-002/R-003/R-004 的 primary 为 AIV entry 内 SIMT，reduced multi-core 时追加 AIV 标量 finalize；R-005 的 primary 为单 Kernel `AIV_VECTOR+SIMT` Hybrid，同条件追加 AIV 标量 finalize；R-006/R-007 为官方来源的 `AIV_VECTOR`。所有 Host 可达节点均无 Cube/AIC 或 `MIX_CV`。 |
 | Kernel 路线 | 按实现重要性：P0 R-007 big-C；P1 R-005 channel-first lean Hybrid；P2 R-006 full-load；P3 R-004 hard target-only SIMT；P4 R-003 soft warp SIMT；P5 R-002 soft scalar SIMT；P6 R-001 empty。Route ID 保持与 Host `route` 枚举映射一致。 |
 | 核心资源 | GM、AIV UB `TQue/TBuf`、MicroAPI 寄存器、SIMT thread scratch；reduced SIMT/Hybrid 使用 `2*lossCoreNum*sizeof(float)` workspace，官方 full-load/big-C 使用 `coreNum*384B` workspace。 |
@@ -50,20 +50,20 @@ cann_versions: ["9.1.0"]
 - soft target `p`：`l_r=sum_c p_c*(m+log(z)-x_c)`；`ignore_index` 不参与 soft 分支。
 - `none` 返回 `[N,*S]`；`sum` 返回 `sum_r l_r`；hard `mean` 除以非 ignore row 数，soft `mean` 除以 `R`。
 
-Direct 融合路线不会物化完整 `log_prob`。full-load/big-C 从官方多输出 body 转换时也删除了 `log_prob` Queue 与 GM CopyOut，只保留 loss 所需的 FP32 UB 中间值；这是交付件转换事实，不是上述固定官方文件的原样行为。
+Direct 融合路线不会物化完整 `log_prob`。两条 official-derived 转换的处理不同：full-load 删除官方 `logPropQueue_` 的分配、入队与完整 GM CopyOut，直接在 FP32 `tempUb_` 中 gather loss；big-C 仍保留 `outQueue_`，因为它承载 chunk 内 FP32 exp/log、fold 与 gather 的 UB 生命周期，只删除/抑制 `DataCopyOut1` 对完整 `log_prob` 的 GM 写回。两者都只向任务返回 loss；这是交付件转换事实，不是上述固定官方文件的原样行为。
 
 ### 输入、输出与属性
 
 | 参数 | shape/layout | dtype | 约束、默认值与语义 |
 |---|---|---|---|
-| `input` | 连续 `[N,C,*S]`，rank 2～8 | FP16、FP32、BF16 | `N>=0`、`C>0`；类别轴固定 dim 1。 |
-| `target` hard | 连续 `[N,*S]` | int32、int64 | rank 比 input 少 1；batch/spatial 逐维相等；除 `ignore_index` 外标签须在 `[0,C)`，Device 未提供越界 fallback。 |
+| `input` | 逻辑 `[N,C,*S]`，rank 2～8 | FP16、FP32、BF16 | `N>=0`、`C>0`；类别轴固定 dim 1；任意合法 stride 可进入，Device 只消费 Host 产生的连续副本。 |
+| `target` hard | 逻辑 `[N,*S]` | int32、int64 | rank 比 input 少 1；batch/spatial 逐维相等；除 `ignore_index` 外标签须在 `[0,C)`。越界标签不属于语义输入域；active body 在形成地址前做 ignore/bounds 处理，避免非法 GM/UB 访问。 |
 | `target` soft | 与 input 完全同 shape/layout | 与 input 相同 | 概率值域/归一性不由插件检查；走 soft SIMT。 |
 | `reduction` | 字符串属性 | `none/mean/sum` | 默认 `mean`；映射为 0/1/2。 |
 | `ignore_index` | 标量属性 | int64 | 默认 `-100`；只影响 hard target。 |
 | `loss` | `none` 为 `[N,*S]`，否则标量 | 与 input 相同 | ignored hard row 写 0；空域 mean 写 NaN，sum 写 0。 |
 | `logProb` | direct ABI 占位 | 与 input 相同 | 插件仅分配 8 元素有效指针；所有 Host 可达交付路线均不写完整 tensor。 |
-| `workspace` | uint8 tensor | byte | 配置为 0 时仍分配 1B 占位；非零时按下文公式分配并记录当前 stream。 |
+| `workspace` | uint8 tensor | byte | 配置为 0 时仍分配 1B 占位；非零时按下文公式分配并记录当前 stream。非连续 input/target 的连续副本也记录到当前 stream。 |
 
 ### 入口与版本
 
@@ -75,16 +75,17 @@ Direct 融合路线不会物化完整 `log_prob`。full-load/big-C 从官方多�
 
 ### 参数校验与前处理
 
-1. `CheckInputs` 检查 input dtype/rank/C、两 tensor 连续性；hard target 检查 rank 和 `[N,*S]`，soft target 检查同 dtype/同 shape。
+1. `CheckInputs` 检查 input dtype/rank/C；hard target 检查 rank 和 `[N,*S]`，soft target 检查同 dtype/同 shape。Meta 还要求 soft target 时 `ignore_index<0`；它不要求原 tensor 连续。
 2. `ReductionCode` 只接受 `none/mean/sum`；Meta 按 reduction 分配输出。
 3. `cross_entropy_loss_npu` 要求同 device，复制最多 8 个 input 维度到固定数组，零初始化 config。
 4. `calc_cross_entropy_loss_tiling` 再检查指针、rank/dtype/reduction/targetType、`N/C`；`CheckedMul` 依次计算 `S`、`R=N*S`、`N*C*S` 并拒绝 int64 溢出。
 5. 从 `PlatformAscendCManager` 读取 UB 字节数 `U` 与 AIV 核数 `P`；任一为 0 则失败。selector 依真实顺序只命中首条 Route。
-6. tiling 非零返回由 `TORCH_CHECK` 阻止 launch；launcher 本身不返回 Device 异步错误。
+6. `CheckHostResourceEnvelope` 在 device guard、输出/临时分配、连续化、取 stream 和 launch 之前，复核 route 范围、`blockDim>0`、workspace/output/input/target 字节乘法及全部新分配字节的无符号加法；非连续 tensor 还计入连续副本字节。
+7. 校验后才建立 device guard，并严格按插件语句顺序执行：先分配 `loss`，再以 `input.contiguous()`、`target.contiguous()` 取得 Device 消费的连续 tensor，最后分配 8-element `logProb` 与 workspace；原本连续时 `contiguous()` 可复用原 storage。tiling 非零返回由 `TORCH_CHECK` 阻止 launch；launcher 本身不返回 Device 异步错误。
 
 ### 参数、Workspace 与生命周期
 
-`CrossEntropyLossLaunchConfig` 在调用栈上零初始化并按值捕获进 `aclCall`；各 kernel 再把 `officialTiling` 或 `channelFirstTiling` 按值传入。input/target/loss 由 torch 持有；临时 `logProb`、workspace 由 caching allocator 分配并显式 `recordStream`，可在 stream 完成后回收。
+`CrossEntropyLossLaunchConfig` 在调用栈上零初始化并按值捕获进 `aclCall`；各 kernel 再把 `officialTiling` 或 `channelFirstTiling` 按值传入。loss 由 torch 持有；临时 `logProb`、workspace 与可能新建的连续 input/target 副本都由 caching allocator 管理并显式 `recordStream`，可在 stream 完成后回收。
 
 - SIMT/Hybrid reduced：`workspaceBytes=2*lossCoreNum*4`，slice 0 为 partial sum，slice `lossCoreNum` 为 partial count。
 - full-load/big-C reduced：`workspaceBytes=P*32*4*3=P*384`；三段分别承载 loss、count/weight、smooth（Direct 固定无 weight/smoothing，第三段仍按官方 ABI 预留）。
@@ -110,7 +111,16 @@ cross_entropy_loss_npu
 | R-005 | fused-vector entry `<<<usedCoreNums,localMemoryBytes>>>`；可选 finalize | Hybrid primary 写 partials；UB 内有 `DataSyncBarrier<UB>`；跨 kernel 由同 stream 排序 | 同上 |
 | R-006/R-007 | official-derived entry `<<<realCoreNum>>>` | 每核写间隔 32 FP32 的三段 workspace，`SyncAll` 后 core 0 汇总并写 loss；owner 为 torch workspace | 单 Kernel 内同步；Host 无第二节点 |
 
-未被 `calc_cross_entropy_loss_tiling` 选择的 `CROSS_ENTROPY_LOSS_CHANNEL_FIRST` 和 `RunChannelFirstFusedVector` 路径是 dormant 交付代码，不进入正式 Route。
+#### Dormant 生产节点
+
+| dormant 节点 | 生产链不可达证据 | 重新启用的必要条件 |
+|---|---|---|
+| `CROSS_ENTROPY_LOSS_CHANNEL_FIRST=2` | selector 从不写 `route=2`，`BuildChannelFirstFullLoad/Recompute` 也无调用者；因此 launcher 中 softmax→NLL→可选 finalize 的 2/3 节点图不可达 | Host 调用对应 builder、完整生产 `softmaxRoute/blockDim/lossCoreNum/workspace`；插件必须把 8-element dummy `logProb` 改为 `N*C*S` 输出，并为 int32 hard target 增加 NLL dispatch 或限定 int64 |
+| `RunChannelFirstFusedVector` | 三个 fused-vector entry 均直接调用 `RunChannelFirstLean`，无 router 指向旧 full-load/recompute fused body | 新 selector/key 与 entry router；按该 body 的 scratch 写入范围分配 GM，闭合 producer→scratch-reduce 消费关系 |
+| `cross_entropy_loss_scratch_reduce_*_entry` | launcher 没有任何 launch 节点指向它们，且 active Route 不生产其所需的完整 row scratch | 增加匹配的 scratch producer、scratch 容量、同 stream launch 顺序和 reduced workspace 协议 |
+| 官方 `CrossEntropyLossEmpty` 类 | folded 进翻译单元但无实例化；R-001 直接调用 `RunCrossEntropyEmpty<T>` | direct empty entry 改为构造官方类并传完整 ABI/POD，或删除重复实现后二选一闭合 |
+
+这些节点只说明源码库存，不计入 active/conditional Route，也不能据其函数存在推断生产可达。
 
 ## Route 与参数设计
 
@@ -118,7 +128,7 @@ cross_entropy_loss_npu
 
 记 `P=GetCoreNumAiv()`、`U=UB bytes`、`b=sizeof(input)`、`bt=sizeof(target)`、`A=32/b`、`R=N*S`。
 
-- SIMT：固定 512 threads/block；hard scalar每线程跨 `lossCoreNum*512` 个 row，soft `C<128` 同理；soft `C>=128` 每 warp 一 row，每 block 16 rows。
+- SIMT：固定 512 threads/block；hard scalar 每线程跨 `lossCoreNum*512` 个 row；soft scalar 覆盖 `C<128` 或 `C>2^24`，每线程一 row；soft warp 只覆盖 `128<=C<=2^24`，每 warp 一 row、每 block 16 rows。上界保证用 FP32 scratch 保存的最大 class index 仍精确。
 - lean Hybrid：`spatialAlign=A`，`maxTile=floor((U-64KiB)/(C*b+8)/A)*A` 再截到 1024；`tileLen=align_up(ceil(S/max(1,ceil(P/N))),A)` 后夹在 `[A,maxTile]`。tile 数 `N*ceil(S/tileLen)`，均匀分给 `usedCoreNums`。
 - rank-2 full-load：`realCoreNum=min(N,P)`，former 核多 1 row；Host 先尝试 `db=2`，不足则 `db=1`，两者都不能容纳至少 `A` rows 才转 big-C。
 - big-C：每次最多 64 rows；`cOnceNum` 从 `(U-fixed)/bytesPerC` 向 32B 对齐，并在 cache tree 超 UB 时逐 block 缩小；`cLoopTimes=ceil(C/cOnceNum)`。
@@ -129,12 +139,12 @@ cross_entropy_loss_npu
 
 | 重要性 | Route | 关键特征 | 适用域 | 实现前提 |
 |---|---|---|---|---|
-| P0 | R-007 big-C | rank-2 hard target 的 class 分块主实现；用二叉 cache 合并 chunk exp sum，单 Kernel 内跨核归约 | rank 2、hard target、full-load UB capability 不成立 | `cOnceNum` 32B 对齐且非零；Host/Device 的 `kTimes/kTimesTail/cacheStart` 一致；reduced workspace 足够 |
-| P1 | R-005 channel-first lean Hybrid | rank-N hard target 主实现；一次 DMA 装入 `[C,tileS]`，AIV 求 max/sum，SIMT 只 gather target | rank>2、未命中前序 hard SIMT、`C<=4095` 且 C-sized tile 可驻 UB | 12-bit `DataCopyPad.blockCount` 合法；64KiB reserve、256B guard、dynamic UB 与 SIMT thread POD 一致 |
-| P2 | R-006 full-load | rank-2 整 C 驻留；Host 在 db=2/db=1 间选择，MicroAPI 一次完成 row softmax 与 target gather | rank 2、hard target、至少一个对齐 row 可 full-load | `TryFullLoad` 资源估算覆盖 Queue/TBuf；`db` 必须乘入 UB；reduced workspace 与 `SyncAll` 协议一致 |
-| P3 | R-004 hard target-only SIMT | 不物化 log-prob、不分配 C-sized UB slab的稳定 streaming 路线；也是 rank-N 安全 fallback | hard `none` 小域、rank-N lean 不可用，或 rank-2 的小 N/二分类特化域 | 512 threads/block；FP32 compensated exp tail；reduced 两段 partial workspace与可选 finalize |
-| P4 | R-003 soft warp SIMT | 每 warp 一 row，lane 跨 class；scratch 分阶段别名复用 | soft target、`C>=128` | 所有 lane 包括 inactive row 都必须到达 block barrier；两块 512-FP32 scratch |
-| P5 | R-002 soft scalar SIMT | 每线程一 row、串行扫描 class | soft target、`C<128` | 512 threads/block；稳定 FP32 class scan；reduced partial/finalize 协议 |
+| P0 | R-007 big-C | rank-2 hard target 的 class 分块高吞吐实现；用二叉 cache 合并 chunk exp sum，单 Kernel 内跨核归约 | rank 2、hard target、先通过 official-fast 总 guard，但 full-load UB/编码 capability 不成立 | `cOnceNum` 32B 对齐且非零；Host/Device 的 `kTimes/kTimesTail/cacheStart` 一致；BigC 编码复核与 reduced workspace 均成立，否则回 R-004 |
+| P1 | R-005 channel-first lean Hybrid | 大工作量 rank-N hard target 主实现；一次 DMA 装入 `[C,tileS]`，AIV 求 max/sum，SIMT 只 gather target | rank>2、`N*C*S>=10^6`、未命中前序 hard SIMT、lean 全部容量/编码 guard 成立 | 12-bit `DataCopyPad.blockCount` 合法；64KiB reserve、256B guard、dynamic UB 与 SIMT thread POD 一致 |
+| P2 | R-006 full-load | rank-2 整 C 驻留；Host 在 db=2/db=1 间选择，MicroAPI 一次完成 row softmax 与 target gather | rank 2、先通过 official-fast 总 guard，且至少一个对齐 row 可 full-load、编码复核成立 | `TryFullLoad` 资源估算覆盖 Queue/TBuf；`db` 必须乘入 UB；FP32/none 的近零 loss 精化与 reduced workspace 协议一致 |
+| P3 | R-004 hard target-only SIMT | 不物化 log-prob、不分配 C-sized UB slab的 int64-index streaming 完整安全兜底 | hard `none` 小域、rank-N 小工作量/lean 不可用、rank-2 小 N/二分类，或任一 official-fast/编码 guard 失败 | 512 threads/block；FP32 compensated exp tail；reduced 两段 partial workspace与可选 finalize；合法 shape 不因 fast-path 编码受限而失败 |
+| P4 | R-003 soft warp SIMT | 每 warp 一 row，lane 跨 class；scratch 分阶段别名复用 | soft target、`128<=C<=2^24` | 所有 lane 包括 inactive row 都必须到达 block barrier；两块 512-FP32 scratch；class index 可由 FP32 精确表示 |
+| P5 | R-002 soft scalar SIMT | 每线程一 row、串行扫描 class，也是超出 warp-index 精确域后的 fallback | soft target、`C<128 || C>2^24` | 512 threads/block；稳定 FP32 class scan；int64 class index；reduced partial/finalize 协议 |
 | P6 | R-001 empty | 仅 core 0 写空域 scalar reduction 结果 | `N*S==0` | grid=1；`none` 不写、`mean` 写 NaN、`sum` 写 0 |
 
 以下才是 Host 的真实判断顺序、短路和 fallback：
@@ -142,36 +152,38 @@ cross_entropy_loss_npu
 | Host 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
 | 1 | R-001 empty | `EMPTY=6` | `R==0` | R-002 |
-| 2 | R-002 soft scalar SIMT | `SOFT_SIMT=5` / scalar body | `targetType==SOFT && C<128` | R-003 |
-| 3 | R-003 soft warp SIMT | `SOFT_SIMT=5` / warp body | `targetType==SOFT && C>=128` | hard selector |
-| 4 | R-004 hard target-only SIMT | `FUSED_SIMT=3` | hard 且首个成立：`reduction==none && N*C*S<=1048576`；或 `rank>2 && BuildChannelFirstLean==false`；或 `rank==2 && (N<32 || C==2)` | R-005/R-006 |
-| 5 | R-005 channel-first lean Hybrid | `FUSED_VECTOR=4` | hard、未命中 R-004、`rank>2`、`C<=4095`，且 `maxTile>=32/b` | R-004 fallback |
-| 6 | R-006 full-load | `FULL_LOAD=1` | hard、未命中前项、`rank==2`，且 `TryFullLoad` 的 db=2 或 db=1 能放至少 `32/b` rows | R-007 |
-| 7 | R-007 big-C | `BIG_C=0` | hard、rank 2、前项均失败 | tiling 参数不可构造时失败 |
+| 2 | R-002 soft scalar SIMT | `SOFT_SIMT=5` / scalar body | `targetType==SOFT && (C<128 || C>2^24)`；Host key 与 warp 共用，第二项由 Device router 判定 | `128<=C<=2^24` 转 R-003 body |
+| 3 | R-003 soft warp SIMT | `SOFT_SIMT=5` / warp body | `targetType==SOFT && 128<=C<=2^24`；Host 用 `C>=128` 计算 16 rows/block，Device 再以 `C<=2^24` 收窄 | 超上界在同 entry 内转 R-002 body；soft 分支在此终止 |
+| 4 | R-004 hard target-only SIMT | `GENERIC_SIMT/FUSED_SIMT=3` | hard 且首个成立：`none && N*C*S<=1048576`；或 `rank>2 && (N*C*S<10^6 || BuildChannelFirstLean/动态 UB 复核失败)`；或 `rank==2 && (N<32 || C==2)`；或 rank-2 official-fast 总 guard/FullLoad/BigC 编码复核失败 | guard 通过则 R-005/R-006/R-007 |
+| 5 | R-005 channel-first lean Hybrid | `FUSED_VECTOR=4` | hard、未命中 `none && N*C*S<=1048576`、`rank>2`、`N*C*S>=10^6`，且 `C<=4095`、`maxTile>=32/b`、full/tail DMA 字段可编码、`localMemoryBytes<=min(U,UINT32_MAX)` | 任一 guard 失败回 R-004 |
+| 6 | R-006 full-load | `FULL_LOAD=1` | hard、未命中 `none && N*C<=1048576`、rank 2、`N>=32`、`C!=2`，且 official-fast 总 guard：`N*C>=10^6, N<=2097152, 2<=C<=16384, ignoreIndex` 可表示为 int32；`TryFullLoad(db2→db1)` 与 `FullLoadEncodingIsSafe` 均成立 | full-load 不成立则尝试 R-007；总 guard 失败直接 R-004 |
+| 7 | R-007 big-C | `BIG_C=0` | 与 R-006 相同的前序/official-fast guard 已成立，full-load capability/编码不成立，且 `BigCEncodingIsSafe` 成立 | BigC 编码复核失败回 R-004 |
 
 ```text
 R==0 -> R-001
-soft -> C<128 ? R-002 : R-003
+soft -> (128<=C<=2^24) ? R-003 : R-002
 hard none && N*C*S<=1Mi elements -> R-004
-rank>2 -> BuildLean(C<=4095 && C-tile fits U) ? R-005 : R-004
+rank>2 -> (N*C*S>=10^6 && BuildLean与dyn-UB编码安全) ? R-005 : R-004
 rank==2 && (N<32 || C==2) -> R-004
-TryFullLoad(db2 then db1) -> R-006
-else -> R-007
+rank2 official-fast总guard失败 -> R-004
+TryFullLoad(db2 then db1) && FullLoadEncodingIsSafe -> R-006
+ComputeBigC && BigCEncodingIsSafe -> R-007
+else -> R-004
 ```
 
 ### 模板/实现执行矩阵
 
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
-| P0 · R-007 | 0 | hard rank2、FullLoad 不 capable | 单 AIV kernel | `CrossEntropyLossBigC<T,TargetT,reduction,0,0,ignorePositive>` | depth2 class chunk、cache tree、workspace+`SyncAll` | C chunk tail、N tail；无后续 fallback |
+| P0 · R-007 | 0 | hard rank2、official-fast 总 guard 成立、FullLoad 不 capable/编码不安全、BigC 编码安全 | 单 AIV kernel | `CrossEntropyLossBigC<T,TargetT,reduction,0,0,ignorePositive>` | depth2 class chunk、cache tree、workspace+`SyncAll` | C chunk tail、N tail；Host 编码失败回 R-004，Device 内无 fallback |
 | P1 · R-005 | 4 | hard rank>2、`C<=4095`、C-sized tile+guard 可放 UB | 单 Hybrid primary；reduced multi-core 时 finalize | `RunChannelFirstLean`→`CrossEntropyLeanStats`→`CrossEntropyLeanGatherSimt` | C×tile Queue、max/sum、thread partial；SIMT→scalar UB DSB | S 尾 tile；失败回 R-004 |
 | P2 · R-006 | 1 | hard rank2、FullLoad capable | 单 AIV kernel | `CrossEntropyLossFullLoad<T,TargetT,reduction,0,0,ignorePositive>` | db1/db2 input Queue；MicroAPI FP32；reduced 用 workspace+`SyncAll` | former/tail core、N tail、C padding |
-| P3 · R-004 | 3 | hard 的三个有序谓词之一 | primary SIMT；reduced multi-core 时 finalize | `CrossEntropyFusedTargetSimt<T,TargetT>` | 两个 512-FP32 TBuf；每 block tree reduce | global-thread stride；ignore row 写 0/不计数 |
-| P4 · R-003 | 5 | soft、`C>=128` | primary SIMT；reduced multi-core 时 finalize | `CrossEntropySoftWarpSimt<T>` | 每 warp 一 row，两个 512-FP32 scratch，block/warp barriers | inactive row 仍参加 barrier；rowActive 守护 |
-| P5 · R-002 | 5 | soft、`C<128` | primary SIMT；reduced multi-core 时 finalize | `CrossEntropySoftScalarSimt<T>` | 2×512 FP32 TBuf，block tree barrier | row grid-stride；无 ignore |
+| P3 · R-004 | 3 | hard 的 accurate-small、rank-N fast guard、rank-2 shape/official/编码 guard 任一有序 fallback | primary SIMT；reduced multi-core 时 finalize | `CrossEntropyFusedTargetSimt<T,TargetT>` | 两个 512-FP32 TBuf；每 block tree reduce | global-thread stride；ignore row 写 0/不计数 |
+| P4 · R-003 | 5 | soft、`128<=C<=2^24` | primary SIMT；reduced multi-core 时 finalize | `CrossEntropySoftWarpSimt<T>` | 每 warp 一 row，两个 512-FP32 scratch，block/warp barriers | inactive row 仍参加 barrier；rowActive 守护；上界外回 scalar body |
+| P5 · R-002 | 5 | soft、`C<128 || C>2^24` | primary SIMT；reduced multi-core 时 finalize | `CrossEntropySoftScalarSimt<T>` | 2×512 FP32 TBuf，block tree barrier | row grid-stride；int64 class index；无 ignore |
 | P6 · R-001 | 6 | `R==0`；3 input dtype；950 | 单 Kernel | `RunCrossEntropyEmpty<T>` | 无 UB Queue/workspace；dcache flush | none 不写；mean NaN；sum 0 |
 
-### 隐藏性能 Guard
+### 性能与安全 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -179,10 +191,13 @@ else -> R-007
 | 12-bit DMA blockCount | `C<=4095` | lean `DataCopyPad.blockCount=C`，DAV-3510 编码宽度为 12 bit | R-005 | R-004 streaming SIMT | `BuildChannelFirstLean`（交付件） |
 | lean UB reserve | `maxTile=floor((U-64KiB)/(C*b+8))` 且 `>=32/b` | C×tile slab、两份 FP32 statistic、guard 与 SIMT scratch | R-005 | R-004 | 同上 |
 | lean tile cap | `maxTile<=1024`，threads 为 `[32,512]` 中覆盖 tileLen 的最小 2 次幂 | 限制单 tile vector/SIMT 工作集和 scratch | R-005 | 同 Route 参数变化 | `BuildChannelFirstLean/calc_cross_entropy_loss_tiling`（交付件） |
+| rank-N 工作量门槛 | `N*C*S>=10^6` | 小工作量不承担 C-slab DMA、动态 UB 与 Hybrid 启动固定成本 | R-005 | R-004 | `kFastPathMinElements`（交付件） |
 | full-load double buffer | db2 capable 优先，失败再 db1 | input Queue depth 影响 UB 与流水 | R-006 | db1 或 R-007 | `TryFullLoad`（交付件）/`FullLoad::Init` |
+| rank-2 official-fast 总 guard | `N*C>=10^6, N<=2097152, 2<=C<=16384, ignoreIndex∈int32` | official body 内含 int32 tile/gather 字段及 DMA 编码边界 | R-006/R-007 | R-004 | `CanUseOfficialRank2FastPath`（交付件） |
+| full/big 编码复核 | 分别检查 blockCount/blockLen、`onceN*C<=INT32_MAX`；BigC 另查三段 workspace stride、loop/cache 字段 | Host 的 int64 POD 最终会落入更窄的 Device/DMA 字段，容量可放不代表可编码 | R-006/R-007 | R-007 或 R-004 | `FullLoadEncodingIsSafe/BigCEncodingIsSafe`（交付件） |
 | positive ignore specialization | `ignoreIndex>=0` | 编译期 `ignorex` 决定目标比较/mask 路径 | R-006/R-007 | 选 `ignorex=0` 实例 | `DispatchOfficial`（交付件） |
 | SIMT accurate-small domain | `reduction==none && N*C*S<=1048576` | 目标值直接以稳定 `log1p` 路径计算，避免物化 log_prob | R-004 | 后续 rank selector | `kAccurateHardMaxElements`（交付件） |
-| soft warp 阈值 | `C>=128` | 每 warp 32 lane 分担类别循环；小 C 用每线程一 row | R-003/R-002 | 两者互切 | `RunCrossEntropySoft`（交付件） |
+| soft warp 精确域 | `128<=C<=2^24` | 每 warp 32 lane 分担类别循环；winning class 暂存 FP32，故上界外必须回到 int64-index scalar body | R-003/R-002 | 两者互切 | `RunCrossEntropySoft`（交付件） |
 | shape 乘法 | 每次 `CheckedMul(a,b)` | 防止 GM extent/offset 的 int64 溢出 | 全部 | error -6/-7/-8 | `cross_entropy_loss_kernel.cpp::CheckedMul`（交付件） |
 
 ### POD/ABI
@@ -255,16 +270,18 @@ else -> R-007
 | P0 · R-007 | 0 | `ComputeBigC`（交付件） | `CrossEntropyLossRegBaseTilingData` | dtype entry→`DispatchOfficial` | 官方 `CrossEntropyLossBigC` 的 direct loss-only 转换 | 官方 950 arch35 CMake + direct CMake |
 | P1 · R-005 | 4 | `BuildChannelFirstLean` | channelFirst+recompute tile fields | `cross_entropy_loss_fused_vector_*_entry` | lean AIV stats + SIMT gather/reduce；官方 softmax cast trait | direct op CMake（交付件） |
 | P2 · R-006 | 1 | `TryFullLoad`（交付件） | `CrossEntropyLossRegBaseTilingData` | dtype entry→`DispatchOfficial` | 官方 `CrossEntropyLossFullLoad` 的 direct loss-only 转换 | 官方 950 arch35 CMake + direct CMake |
-| P3 · R-004 | 3 | 三个有序 hard 谓词 | channelFirst common fields | `cross_entropy_loss_fused_*_entry` | `RunCrossEntropyFusedTarget`→SIMT | direct op CMake（交付件） |
-| P4 · R-003 | 5, `C>=128` | soft branch | channelFirst common fields | `cross_entropy_loss_soft_*_entry` | `RunCrossEntropySoft`→`CrossEntropySoftWarpSimt` | 同上 |
-| P5 · R-002 | 5, `C<128` | soft branch | 同上 | 同 R-003 entry | `RunCrossEntropySoft`→`CrossEntropySoftScalarSimt` | 同上 |
+| P3 · R-004 | 3 | `FillStreamingHardConfig` 的全部有序出口 | channelFirst common fields | `cross_entropy_loss_fused_*_entry` | `RunCrossEntropyFusedTarget`→SIMT | direct op CMake（交付件） |
+| P4 · R-003 | 5, `128<=C<=2^24` | Host soft branch + Device 精确域 router | channelFirst common fields | `cross_entropy_loss_soft_*_entry` | `RunCrossEntropySoft`→`CrossEntropySoftWarpSimt` | 同上 |
+| P5 · R-002 | 5, `C<128 || C>2^24` | Host soft branch + Device fallback router | 同上 | 同 R-003 entry | `RunCrossEntropySoft`→`CrossEntropySoftScalarSimt` | 同上 |
 | P6 · R-001 | 6 | `calc_cross_entropy_loss_tiling`（交付件） | reduction | `cross_entropy_loss_empty_*_entry` | `RunCrossEntropyEmpty<T>` | 同上 |
 
 ## Kernel 实现
 
 ### 公共执行流程
 
-三个 dtype launcher 具有相同 Route 图，只替换 `T=half/float/bfloat16_t`。SIMT 和 Hybrid 将输入升为 FP32，采用 `max + log1p(sum_{c!=argmax} exp(x_c-max))`；小 `expTail<0.25` 使用 12 项交错级数，求和使用补偿变量。BF16 写回以 round-to-nearest-even 位级转换，FP16 用标量 cast；官方-derived Route 也在 FP32 UB 中完成 max/sub/exp/reduce，最终才降精度。
+三个 dtype launcher 具有相同 Route 图，只替换 `T=half/float/bfloat16_t`。R-002/R-003/R-004 的 SIMT body 采用 `max + log1p(sum_{c!=argmax} exp(x_c-max))`：线程/每 lane 的 tail 用补偿加法，`tail<0.25` 时用 12 项交错级数；warp 的跨 lane 合并仍按树序 FP32 相加。R-005 Hybrid 则由 Vector 直接累计包含最大项的 `sum(exp(x-max))`，SIMT gather 使用普通 `logf(sum)`，没有补偿或小 tail 多项式。R-006/R-007 也在 FP32 UB 中完成 max/sub/exp/reduce，R-006 仅对 FP32+none 额外启用 target-excluded 精化。
+
+写回顺序同样随 body 区分：SIMT/lean 的 primary 通过 `CrossEntropySimtFromFloat<T>` 做最终模板转换；跨 block finalize 与 empty helper 的 BF16 路径由 `CrossEntropyFloatToValue<bfloat16_t>` 显式执行 round-to-nearest-even 位级截取；official-derived 路径以 MicroAPI/AscendC cast 在 FP32 计算后降到输出 dtype。不得把某一路的转换方式概括成所有 Route 的统一指令。
 
 reduced SIMT/Hybrid 的 primary 每 block 写 `(partialSum,partialCount)`；单 block 就地写 loss，多 block 由同 stream 的 finalize 顺序汇总。full-load/big-C 在单 kernel 内以 workspace+`SyncAll` 完成跨核归约。
 
@@ -276,7 +293,9 @@ reduced SIMT/Hybrid 的 primary 每 block 写 `(partialSum,partialCount)`；单 
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host | direct kernel | `calc_cross_entropy_loss_tiling` | hard、rank 2、前序 Route 均未命中，`TryFullLoad==false` | `route=BIG_C`，调用 `ComputeBigC` |
+| Host | direct kernel | `CanUseOfficialRank2FastPath` | hard、rank 2、`N>=32,C!=2,N*C>=10^6,N<=2097152,2<=C<=16384,ignoreIndex∈int32` | 允许尝试 official-derived 路线；否则 R-004 |
+| Host | direct kernel | `calc_cross_entropy_loss_tiling` | 上述 guard 成立，且 `TryFullLoad/FullLoadEncodingIsSafe` 未共同成立 | 调用 `ComputeBigC` |
+| Host | direct kernel | `BigCEncodingIsSafe` | chunk/loop/cache/workspace-stride/DMA 字段全部可编码 | `route=BIG_C`；否则 R-004 |
 | Router | direct kernel | `DispatchOfficialRoute` | route 非 full-load | `CrossEntropyLossBigC` 模板实例 |
 
 #### Device 数据流
@@ -315,6 +334,8 @@ for N tile assigned to this core, at most 64 rows:
   reduced: accumulate per-core loss/count
 if reduced: strided workspace write; SyncAll; core0 final mean/sum
 ```
+
+这里的 fallback 只发生在 Host 选择阶段；一旦 R-007 launch，Device body 内不再改 Route。ignore 与 label 范围判断先于 label-derived class 地址：ignore row 写 0/不计数，语义域外 label 被阻止形成非法地址，其数值结果不作为 API 语义保证。
 
 #### 内存与数据搬运
 
@@ -385,8 +406,9 @@ workspace_total = reduced ? P*384 : 0
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host | direct kernel | `BuildChannelFirstLean` | `C<=4095 && maxTile>=32/b` | 生产 channel-first tile POD；否则 R-004 |
-| Host | direct kernel | rank-N branch | hard、rank>2、前序 R-004 未命中 | route 4、dynamic UB bytes |
+| Host | direct kernel | rank-N branch | hard、未命中 `none && N*C*S<=1048576`、rank>2、`N*C*S>=10^6` | 才尝试 lean；小工作量直接 R-004 |
+| Host | direct kernel | `BuildChannelFirstLean` | `C<=4095 && maxTile>=32/b`，且 full/tail `blockLen/srcStride/dstStride` 与 tile/class 窄字段可编码 | 生产 channel-first tile POD；否则 R-004 |
+| Host | direct kernel | dynamic UB复核 | `align32(inputSlab+2*stat+2*thread)<=min(U,UINT32_MAX)` | route 4；否则 R-004 |
 | Router | direct kernel | fused-vector dtype entry | targetType int32/int64 | `RunChannelFirstLean<T,TargetT>` |
 
 #### Device 数据流
@@ -411,8 +433,10 @@ for tile=blockIdx; tile<totalTiles; tile+=usedCoreNums:
   for each FP32 vector segment:
     max[s] = max_c float(local[c,s])
     sum[s] = sum_c exp(float(local[c,s])-max[s])
-  SIMT gathers local[target,tilePosition]
-  loss = log(sum)-(targetValue-max)
+  SIMT reads label before any class-derived UB address
+  ignore -> loss=0 and count+=0; malformed -> loss=NaN without gather
+  valid -> gather local[label,tilePosition]
+           loss = log(sum)-(targetValue-max)
   none: write valid rows; reduced: retain per-thread partial across local tiles
   UB DSB; release input slab
 if reduced: SIMT block tree writes workspace or scalar loss
@@ -462,7 +486,7 @@ workspace_total = reduced ? 8*usedCoreNums : 0
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
 | DMA→Vector | Queue | MTE2 | Vector | input slab | curTileLen 与 dst stride 补尾 |
-| Vector→SIMT | program order/`asc_vf_call` | max/sum | gather | statistic TBuf | B16 unpack→FP32 |
+| Vector→SIMT | program order/`asc_vf_call` | max/sum | gather | statistic TBuf | B16 unpack→FP32；`sum` 含最大项，gather 用普通 `logf(sum)`，无 SIMT accurate-log1p 分支 |
 | SIMT→reuse | `DataSyncBarrier<UB>` | gather threads | FreeTensor/next DMA | input slab | 防止 scalar control 提前释放 |
 | cross-kernel | same stream | primary | finalize | workspace | multi-core reduced only |
 
@@ -484,7 +508,9 @@ workspace_total = reduced ? 8*usedCoreNums : 0
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host | direct kernel | `TryFullLoad` | db=2 优先、失败再 db=1；`aNum>=32/b` | route 1；否则 R-007 |
+| Host | direct kernel | `CanUseOfficialRank2FastPath` | hard、未命中 `none && N*C<=1048576`、rank2、`N>=32,C!=2,N*C>=10^6,N<=2097152,2<=C<=16384,ignoreIndex∈int32` | 才尝试 full-load；否则 R-004 |
+| Host | direct kernel | `TryFullLoad` | db=2 优先、失败再 db=1；`aNum>=32/b` | 继续编码复核；容量失败转 R-007 候选 |
+| Host | direct kernel | `FullLoadEncodingIsSafe` | core/row blockCount、input/target blockLen、`onceN*cOnceNum<=INT32_MAX` | route 1；失败转 R-007 候选 |
 | Router | direct kernel | `DispatchOfficial` | route 1 + reduction + ignore sign + target dtype | FullLoad 模板实例 |
 
 #### Device 数据流
@@ -496,8 +522,11 @@ cross_entropy_loss_<T>_entry
   -> DispatchOfficial<T,TargetT>
   -> RunOfficialVariant<...,FullLoad=true>
   -> CrossEntropyLossFullLoad::Init/Process
-     -> CopyInInput -> VfReduceMax -> VfSubExp -> ReduceSum -> VfComputeLogSub
-     -> CopyInTarget -> VfComputeIgnore/Gather -> VfComputeLossOut
+     -> CopyInInput + CopyInTarget
+     -> VfReduceMax -> VfSubExp -> ReduceSum
+     -> [FP32 && none] accurate near-one log + target-exp exclusion/tail reduce
+     -> VfComputeLogSub -> VfComputeIgnore/safe gather -> VfComputeLossOut
+     -> [FP32 && none] tiny-loss target-relative refinement
      -> none: cast+CopyOut; reduced: workspace -> SyncAll -> core0 final
 ```
 
@@ -508,7 +537,11 @@ rows = former/tail-core assignment
 for N tile:
   DMA [nTail,C], pad C to cOnceNum with dtype minimum
   FP32 max; shifted=x-max; exp; rowSum; shiftedLog=shifted-log(rowSum)
-  gather shiftedLog[row,target], select 0 for ignore, negate
+  FP32+none: for rowSum-1<0.01 use five-term log1p polynomial;
+             save exp(target), zero that lane, reduce target-excluded tail
+  clamp target before gather; select 0 for ignore and NaN for malformed; negate
+  FP32+none and tiny gathered loss: if tail/targetExp<0.01,
+             replace by five-term log1p(tail/targetExp)
   none: cast_rint and GM loss
   reduced: accumulate per-core loss/count
 if reduced: strided workspace write; SyncAll; core0 gather/finalize
@@ -551,7 +584,7 @@ workspace_total = reduced ? P*384 : 0
 | 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
 |---|---|---|---|---|---|
 | input Queue slot | CopyIn | max/subexp | next tile | DeQue/FreeTensor | Host 与 Device `db` 一致 |
-| temp/sub TBuf | exp/shift/log | ReduceSum/gather | next tile | 顺序 MicroAPI | gather 后覆盖 |
+| temp/sub TBuf | exp/shift/log | ReduceSum/gather | next tile | 顺序 MicroAPI | FP32+none 时 temp 中 target exp 被清零后再做 auxiliary tail reduce；gather/refine 后覆盖 |
 | clearUb | per-tile partial | workspace/final | kernel end | V→MTE3 event、`SyncAll` | reduced only |
 
 #### 同步、精度与尾块
@@ -561,7 +594,8 @@ workspace_total = reduced ? P*384 : 0
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
 | Queue | Alloc/EnQue/DeQue/Free | MTE2 | Vector | input/target | C padding=min，mask限定真实 C |
-| Vector | MicroAPI | input | gather/reduce | FP32 TBuf | B16 unpack/cast，最终 CAST_RINT |
+| Vector | MicroAPI | input | gather/reduce | FP32 TBuf | B16 unpack/cast，最终 CAST_RINT；FP32+none 对 `rowSum-1<0.01` 与 `tail/targetExp<0.01` 使用五项交错 Horner 多项式 |
+| Vector→Scalar→Vector | `VToS/MTE2ToS/SToV` | exp tensor + target DMA | target-exp 排除后 auxiliary reduce | temp/max dead buffer alias | 仅 FP32+none；先校验 target 范围再做 UB 索引，ignore/malformed 不形成非法地址 |
 | cross-core | V→MTE3 + `SyncAll` + MTE2→V | each core | core0 | workspace | former/tail cores均写入 |
 
 #### 关键实现
@@ -582,7 +616,7 @@ workspace_total = reduced ? P*384 : 0
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host | direct kernel | `calc_cross_entropy_loss_tiling` | 三个有序 hard 谓词之一成立 | route 3、`lossCoreNum` |
+| Host | direct kernel | `calc_cross_entropy_loss_tiling` | accurate-small、rank-N 工作量/lean/dynamic-UB guard、rank-2 小 shape/official-fast/FullLoad/BigC 编码 guard 任一有序出口 | `FillStreamingHardConfig` 写 route 3、`lossCoreNum` 与 workspace |
 | Router | direct kernel | fused dtype entry | targetType int32/int64 | 对应 `TargetT` 模板 |
 
 #### Device 数据流
@@ -600,6 +634,7 @@ fused_<T>_entry -> RunCrossEntropyFusedTarget<T,TargetT>
 ```text
 for row=globalThread; row<R; row+=grid*512:
   if target==ignore: none writes 0; continue
+  if target<0 or target>=C: write/accumulate NaN; continue
   scan C for max and argmax
   compensated_sum exp(x[c]-max), excluding argmax
   value = accurate_log1p(tail)+(max-x[target])
@@ -667,8 +702,8 @@ workspace_total=reduced ? 8*lossCoreNum : 0
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host | direct kernel | soft branch | `targetType==SOFT && C>=128`；rows/block=16 | route 5、lossCoreNum |
-| Body router | direct kernel | `RunCrossEntropySoft` | `C>=128` | warp SIMT |
+| Host | direct kernel | soft branch | `targetType==SOFT && C>=128` 时按 rows/block=16 生产 `lossCoreNum` | route 5；Host key 与 scalar 共用 |
+| Body router | direct kernel | `RunCrossEntropySoft` | `128<=C<=2^24` | warp SIMT；上界外转 scalar SIMT |
 
 #### Device 数据流
 
@@ -739,7 +774,7 @@ workspace_total=reduced ? 8*lossCoreNum : 0
 | 阶段 | 文件 | 符号/模板实例 | 实现事实 |
 |---|---|---|---|
 | Host/Tiling producer | direct kernel | soft branch | 16 rows/block producer |
-| Kernel entry/router | direct kernel | `RunCrossEntropySoft` | `C>=128` internal branch |
+| Kernel entry/router | direct kernel | `RunCrossEntropySoft` | `128<=C<=2^24` internal branch；上界保证 FP32 class index 精确 |
 | Device body/helper | direct kernel | `CrossEntropySoftWarpSimt<T>` | warp/class mapping与scratch复用 |
 
 ### Route R-002：soft scalar SIMT（P5）
@@ -750,8 +785,8 @@ workspace_total=reduced ? 8*lossCoreNum : 0
 
 | 层级 | 文件 | 符号 | 源码谓词/参数 | 结果/下一跳 |
 |---|---|---|---|---|
-| Host | direct kernel | soft branch | `targetType==SOFT && C<128`；rows/block=512 | route 5、lossCoreNum |
-| Body router | direct kernel | `RunCrossEntropySoft` | `C<128` | scalar SIMT |
+| Host | direct kernel | soft branch | `targetType==SOFT`；`C<128` 时按 rows/block=512，`C>=128` 时按 16 生产 `lossCoreNum` | route 5、lossCoreNum |
+| Body router | direct kernel | `RunCrossEntropySoft` | `C<128 || C>2^24` | scalar SIMT；超上界时虽沿用 Host 的 16 rows/block grid 估算，body 仍以全局 thread stride 覆盖全部 row |
 
 #### Device 数据流
 
@@ -822,7 +857,7 @@ workspace_total=reduced ? 8*lossCoreNum : 0
 | 阶段 | 文件 | 符号/模板实例 | 实现事实 |
 |---|---|---|---|
 | Host/Tiling producer | direct kernel | soft branch | scalar rows/block 512 |
-| Kernel entry/router | direct kernel | `cross_entropy_loss_soft_*_entry` | dtype entry |
+| Kernel entry/router | direct kernel | `cross_entropy_loss_soft_*_entry`→`RunCrossEntropySoft` | `C<128 || C>2^24` scalar branch |
 | Device body/helper | direct kernel | `CrossEntropySoftScalarSimt<T>` | stable row streaming与block reduction |
 
 ### Route R-001：empty（P6）
@@ -900,12 +935,13 @@ UB_total=0; dynamic_ub=N/A; workspace_total=0
 
 - 适用 Route：R-006。
 - 触发条件：Direct `TryFullLoad` 先证明 db=2 的 UB 容量；不足时重算 db=1；两者都要求一次至少处理 `32/sizeof(T)` rows。
-- Golden 来源：[`loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h:149-174`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h)
+- 固定源码来源：[`loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h:154-162`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_full_load.h#L154-L162)
 
-**官方源码（固定 Commit 连续逐字摘录）**：
+**官方源码（固定 Commit 节选；省略号表示未展示的连续行）**：
 
 ```cpp
 int32_t ncOnce = static_cast<int32_t>(tilingData_->onceNSize * tilingData_->cOnceNum);
+// ...
 uint32_t db = tilingData_->db;
 pipe_->InitBuffer(inputQueue_, db, ncOnce * sizeof(T1));
 ```
@@ -931,13 +967,14 @@ pipe_->InitBuffer(inputQueue_, db, ncOnce * sizeof(T1));
 
 - 适用 Route：R-007。
 - 触发条件：C 被切成多个 `cOnceNum` chunk，Host 生产 `kTimes/kTimesTail/cacheStart`，Device 对每个 chunk 的 FP32 exp sum 调用 `UpdateCache`。
-- Golden 来源：[`loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_ar_big_c.h:424-445`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_ar_big_c.h)
+- 固定源码来源：[`loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_ar_big_c.h:431-453`](https://gitcode.com/cann/ops-nn/blob/955f8b33985b6d72989ebff341bb9c2c564a51bc/loss/cross_entropy_loss/op_kernel/arch35/cross_entropy_loss_ar_big_c.h#L431-L453)
 
-**官方源码（固定 Commit 连续逐字摘录）**：
+**官方源码（固定 Commit 节选；省略号表示未展示的连续行）**：
 
 ```cpp
 const int64_t cacheID = ScalarGetCountOfValue<1>(index ^ (index + 1)) - 1;
 auto cahUbAddr = (__ubuf__ float*)dstUb.GetPhyAddr() + cacheID * stride;
+// ...
 for (uint16_t j = 0; j < innerLoopTimes; ++j) {
     AddrReg srcOffsetJ = AscendC::MicroAPI::CreateAddrReg<float>(j, stride);
     AscendC::MicroAPI::DataCopy(bReg, dstUbAddr, srcOffsetJ);
@@ -961,18 +998,49 @@ AscendC::MicroAPI::DataCopy(cahUbAddr, aReg, pMask);
 
 若只分配一个 32B slot，`cacheID>0` 会越界；若 Host 的 `cacheStart` 与 Device 的 popcount 规则不一致，最终 log-normalizer 会遗漏 chunk。
 
+### Trick T-003：FP32 full-load 的 target-excluded 小损失精化
+
+#### 触发与转换依据
+
+- 适用 Route：R-006，且模板条件严格为 `T=float && reduction=none && isWeight=0 && labelS=0`。
+- 第一层：`VfComputeAccurateLogSum` 对 `x=rowSum-1<0.01` 以五项交错 Horner 多项式计算 `log1p(x)`，否则保留 Vector `Log(rowSum)`。
+- 第二层：`PrepareTargetExcludedTail` 在 target 合法且非 ignore 时保存 `targetExp=exp(x_target-max)`、把对应 exp lane 清零，再 ReduceSum 得到 `tail=sum_{c!=target} exp(x_c-max)`；`VfRefineLossFromTargetExcludedTail` 只在初算 loss `<=2^-12`、`tail/targetExp<0.01` 且非 ignore 时，用同一五项多项式替换为 `log1p(tail/targetExp)`。
+- 这是交付件对官方 full-load body 的精度派生补充；固定官方源码只证明原始 full-load 的 Queue/MicroAPI 骨架，不证明这组新增函数。
+
+#### 可落地伪码
+
+```text
+sum = reduce_sum(exp(logits-max))
+logSum = (sum-1 < 0.01) ? poly5_log1p(sum-1) : log(sum)
+loss0 = logSum - (logit[target]-max)
+
+targetExp = exp(logit[target]-max)
+tail = reduce_sum(expValues with target lane set to 0)
+ratio = tail / targetExp
+if loss0 <= 2^-12 && ratio < 0.01 && target is valid/non-ignore:
+    loss = poly5_log1p(ratio)
+else:
+    loss = loss0
+```
+
+#### 存储、同步与边界
+
+不增加 UB：`maxUb` 在 max/sub-exp 后改作每 row `targetExp`，无 smoothing 时闲置的 `smoothLossUb` 改作 `tail`。Vector 产生 exp、MTE2 产生 target，标量索引前执行 `VToS` 与 `MTE2ToS`，清零 target lane 后执行 `SToV` 再归约。合法性判断先于 UB index；ignore/malformed row 写占位 `targetExp=1` 且被最终 mask 排除。
+
+这条精化不能泛化到 reduced、FP16/BF16、weight 或 smoothing 模板：这些实例不满足编译期条件，仍走常规 FP32 `Log(sum)`/gather 路径。也不能在 `sum` 已把微小 tail 舍入为 1 后才简单改用 `log1p(sum-1)`，因此必须保留 target-excluded auxiliary reduction 的先后顺序。
+
 ## 模板与实现对比
 
 | 对比维度 | P0 R-007 big-C | P1 R-005 lean Hybrid | P2 R-006 full-load | P3 R-004 hard SIMT | P4/P5 R-003/R-002 soft SIMT | P6 R-001 empty | 设计选择依据 |
 |---|---|---|---|---|---|---|---|
-| 命中条件/优先级 | rank2整C不可驻留 | hard rank>2且C slab安全 | rank2整C可驻留 | hard 小域/lean fallback/rank2小形状 | soft，C 阈值拆 body | R=0 | Host 仍按空域→target类型→rank/资源短路 |
+| 命中条件/优先级 | rank2通过总 guard、整C不可驻留/编码不安全 | hard rank>2、大工作量且C slab/编码安全 | rank2通过总 guard、整C可驻留且编码安全 | hard 小域/lean或official guard fallback | soft，C 阈值与 `2^24` 精确域拆 body | R=0 | Host 按空域→target类型→rank/资源/编码短路 |
 | 模板与 dtype | 官方模板 T/TargetT | Vector+SIMT T/TargetT | 官方模板 T/TargetT | SIMT T/TargetT | SIMT T | 标量 T | 三种 input dtype、两种 hard target dtype |
 | 循环与分核 | 每核≤64 row、C chunks | tile跨 AIV core | former/tail row core | thread row stride | warp/thread row stride | core0 | 匹配行数、C与UB |
 | Queue/TBuf/寄存器/dynamic UB | depth2 chunk+cache | C×tile Queue+stats+partials | db1/2 input+FP32 NC/row buffers | 2×512 FP32 | 2×512 FP32 | 无 | 资源随实现族改变 |
 | 内存总占用与复用 | O(cOnceNum)+cache | 公式化 dyn UB，64KiB reserve | full C×N tile | 4096B | 4096B | 0 | 避免不安全 C slab |
 | 搬运/Vector/SIMT API | chunk DMA+MicroAPI | DataCopyPad+MicroAPI+SIMT | DataCopyPad+MicroAPI Reduce | GM scalar+SIMT | GM scalar+SIMT | scalar GM | 以空间连续性选择 |
-| 同步、精度与 tail | Queue/events/cache/SyncAll | Queue+UB DSB+stream | Queue/events/SyncAll | barriers/FP32/ignore | barriers/FP32 | dcache | 所有降精度在最终写回 |
-| fallback/失败边界 | 无后续 Route | C>4095/UB不足回 R-004 | 容量不足到 R-007 | 最终 streaming fallback | 无 | 无 | selector 保持合法输入可执行 |
+| 同步、精度与 tail | Queue/events/cache/SyncAll | Queue+UB DSB+stream | Queue/events/SyncAll；FP32 none target-excluded 精化 | barriers/FP32/ignore | barriers/FP32 | dcache | 所有降精度在最终写回 |
+| fallback/失败边界 | 编码失败回 R-004 | 工作量/C/UB/DMA任一 guard 失败回 R-004 | 容量/编码失败先到 R-007，BigC 仍失败则 R-004 | 最终 streaming fallback | warp index超精确域回 scalar body | 无 | selector 保持合法输入可执行 |
 
 ## 平台差异
 
@@ -984,12 +1052,14 @@ AscendC::MicroAPI::DataCopy(cahUbAddr, aReg, pMask);
 
 ## 限制与失败边界
 
-- 只支持连续 layout、class axis=1、rank 2～8、FP16/FP32/BF16；不支持 weight、label smoothing、zloss、alternate axis 或非连续 view。
-- hard 标签除 `ignore_index` 外必须在 `[0,C)`；插件未逐元素校验。所有 hard row 被 ignore 时 mean 的分母为 0，结果按 FP32 除法产生 NaN。
+- Device 只支持连续 dense layout、class axis=1、rank 2～8、FP16/FP32/BF16；Host 接受合法非连续 view 并在 launch 前物化连续副本。不支持 weight、label smoothing、zloss 或 alternate axis。
+- hard 标签除 `ignore_index` 外必须在 `[0,C)`；插件未逐元素校验。各 active body 必须在形成 label-derived 地址前处理 ignore/bounds；语义域外标签的数值结果不是 API 保证。所有 hard row 被 ignore 时 mean 的分母为 0，结果按 FP32 除法产生 NaN。
 - R-005 的 `C<=4095` 是 `DataCopyPad.blockCount` 编码安全边界；不能只凭 UB 足够就放宽。大 C 由 R-004 从 GM streaming。
+- R-006/R-007 还受 `N*C>=10^6`、`N<=2097152`、`2<=C<=16384`、int32 `ignoreIndex` 与各自窄字段编码复核约束；这些是 fast-path capability，不是合法输入上限，失败时走 R-004。
+- soft warp 的 FP32 index scratch 只覆盖 `C<=2^24`；更大的合法 C 在同 key/entry 中回 soft scalar body。
 - `localMemoryBytes`、workspace、POD offset 均依赖 Host/Device ABI 一致；源码没有 static ABI assertions。
 - launcher 返回 `void`，`aclCall` 固定返回 0；异步 kernel 错误不在该返回值中传播。
-- 固定官方来源包含多输出、weight/smoothing 等更宽语义；本卡只描述交付件 Direct 子集。融合 SIMT/Hybrid、direct selector、4095 gate、dummy logProb 与删除 log_prob 物化均是交付件转换事实。
+- 固定官方来源包含多输出、weight/smoothing 等更宽语义；本卡只描述交付件 Direct 子集。融合 SIMT/Hybrid、direct selector、4095 gate、dummy logProb，以及 full-load 删除 `logPropQueue_`、big-C 保留 `outQueue_` 但抑制完整 GM CopyOut，均是交付件转换事实。
 - 本次知识提取未执行编译、真机、数值或性能测试。
 
 ## 源码索引

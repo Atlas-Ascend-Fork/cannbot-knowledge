@@ -36,7 +36,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-math/blob/e8c3c219b98e1c554ff2917ce8b26915fc8abbe0/math/arg_max_v2/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:30:59Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -49,7 +49,7 @@ cann_versions: ["9.1.0"]
 |---|---|
 | 实际入口 | 交付件 `cann_bench::arg_max_npu` → `calc_arg_max_tiling` → `launch_arg_max_{float16,float32,bfloat16,int32,int64}`；入口类型为 Direct Invoke。 |
 | 计算语义 | 将连续 ND 输入折叠为 `[A,R,nextA]`，输出 `y[a,nextA]=argmax_r x[a,r,nextA]`；相等最大值取最小索引，浮点 NaN 按官方 MicroAPI 路线的 first-NaN 规则传播。 |
-| 输入输出 | 输入 ND、rank 0..8、连续，dtype 为 fp16/fp32/bf16/int32/int64；输出 int64，shape 为删除 `dim` 或在 `keepdim=true` 时把该维置 1。 |
+| 输入输出 | 输入 ND、连续，调用前硬前置为 rank 0..8，dtype 为 fp16/fp32/bf16/int32/int64；输出 int64，shape 为删除 `dim` 或在 `keepdim=true` 时把该维置 1。 |
 | 执行类型 | 所有可达节点均为 `AIV_VECTOR`；ARA/ARA_GATHER 的部分 CopyIn 使用 NDDMA primitive，但没有独立 NDDMA Kernel；无 Cube/AIC、无 MIX_CV。 |
 | Kernel 路线 | 重要性顺序：P0 R-002/R-003 AR；P1 R-005/R-006 RA；P2 R-013/R-014 ARA_CUT；P3 R-015/R-016 GROUP_REDUCE；P4 R-011/R-012 ARA_GATHER；P5 R-007..R-010 ARA；P6 R-004 AR_GATHER；P7 R-001 COPY。Route ID 保持 launcher 映射，不随阅读顺序改号。 |
 | 核心资源 | GM 输入/输出、AIV UB `TQue/TBuf`、MicroAPI 寄存器；仅 GROUP_REDUCE 使用 GM workspace 和全核 `SyncAll`。 |
@@ -67,7 +67,7 @@ cann_versions: ["9.1.0"]
 
 | 参数 | shape/layout | dtype | 约束、默认值与语义 |
 |---|---|---|---|
-| `input` | 连续 ND，rank 0..8 | fp16/fp32/bf16/int32/int64 | Direct 转换要求 `is_contiguous()`；各维及 `R` 必须为正，标量按 `[1]` 处理。 |
+| `input` | 连续 ND，调用前须满足 rank 0..8 | fp16/fp32/bf16/int32/int64 | Direct 转换要求 `is_contiguous()`；各维及 `R` 必须为正，标量按 `[1]` 处理。当前包装层未在写定长 shape 数组前检查 `rank<=8`，故该条件不是可依赖的错误返回。 |
 | `dim` | 标量属性 | int64 Host 值 | rank>0 时范围 `[-rank,rank)` 并归一化；标量仅允许 0/-1。 |
 | `keepdim` | 标量属性 | bool | 只决定输出 shape；不进入 Device POD。 |
 | `y` | `input.shape` 删除 `dim`，或该维保留为 1 | int64 | 元素数恒为 `A*nextA`。 |
@@ -81,7 +81,7 @@ cann_versions: ["9.1.0"]
 
 ### 参数校验与前处理
 
-交付件依次设置输入 device guard、检查连续 ND、归一化 `dim`、检查五种 dtype、构造 int64 输出，再把最多 8 维 shape 写入定长数组。`calc_arg_max_tiling` 从 950 平台对象读取 AIV 核数与 UB 字节，构造 `[A,R,nextA]`；null、rank 越界、未知 dtype/非法 shape、selector 无法得到正切块分别返回负错误码，`arg_max_npu` 以 `TORCH_CHECK` 阻断 launch。
+交付件依次设置输入 device guard、检查连续 ND、归一化 `dim`、检查五种 dtype、构造 int64 输出，再把 shape 写入容量为 8 的定长数组。调用方必须先保证 `rank<=8`：当前包装层的逐维写入发生在 tiler 的 rank 检查之前，`rank>8` 可能先越界写，不能把 tiler 的负错误码当作可靠保护。满足该硬前置后，`calc_arg_max_tiling` 从 950 平台对象读取 AIV 核数与 UB 字节，构造 `[A,R,nextA]`；null、未知 dtype/非法 shape、selector 无法得到正切块分别返回负错误码，`arg_max_npu` 以 `TORCH_CHECK` 阻断 launch。
 
 ### 参数、Workspace 与生命周期
 
@@ -113,18 +113,22 @@ cann_bench::arg_max_npu
 
 P0 为最高重要性，后续等级依次降低。该顺序只组织实现知识；`Host 顺序、短路与 fallback`字段独立保留最终 Direct selector 的真实生成、覆盖和改道控制流。
 
-| 重要性 | Route | Route 特征 | 适用域与实现前提 | Host 顺序、短路与 fallback |
-|---:|---|---|---|---|
-| P0 | R-002/R-003 AR full-R/cut-R | 连续 `[A,R]` 行归约；full-R 整轴驻 UB，cut-R 以双半区累积候选 | 末轴或 `nextA==1`，且 selector 最终保留 key 10001；full/cut 取决于 `cutRSize==R` | H0 生成 AR；H2b 可覆盖为 AR_GATHER，H3 可覆盖为 GROUP，H5 又可将稠密 A 的末轴 GROUP 恢复为 AR；H6 中 full-R 命中 R-002，否则 R-003；切分失败即 Host 失败 |
-| P1 | R-005/R-006 RA full-R/cut-R | 以 nextA 列域分核，跨 R 行做 strided DMA；UB 不足时沿 R 合并 | `A==1` 且宽 nextA 或小 R 谓词成立；full/cut 取决于 `cutRSize==R` | H2a 只在 `A==1`分支覆盖为 RA；H3 GROUP 可再覆盖；H6 中 full-R 命中 R-005，否则 R-006；H2a 失配保留 H0 的 ARA，切分失败即 Host 失败 |
-| P2 | R-013/R-014 ARA_CUT flat/normal | A 与 nextA 二维分核；flat 整个 R×nextA 驻 UB，normal 再沿 R/nextA 切片 | H4 的 ARA 并行域/宽度 guard 成立，或 H8 的 mode104 二次改道；flat guard 决定子 Route | H4 只改写 H2/H3 后仍为 ARA 的 key；H8 仅从 mode104 改道；H6 先判 flat 得 R-013，否则 R-014；任一切分公式不成立即 Host 失败 |
-| P3 | R-015/R-016 GROUP_REDUCE AR/RA | 沿 R 分核产生 partial，workspace 交接后 `SyncAll` 归并；RA 子路线分布汇总 nextA | 大 R、小输出域，或 mode104 的移动门槛成立；AR/RA 由 128B/256B 资源谓词决定 | H3 在 H2 之后无条件检查并可覆盖 RA/AR_GATHER/ARA_GATHER/初始路线；H5 可将稠密 A 末轴 GROUP 恢复为 AR；H8 也可从 mode104 改道 GROUP；H6 选 R-015，AR UB 不足 fallback R-016，RA 仍不可行则 Host 失败 |
-| P4 | R-011/R-012 ARA_GATHER cut-A/cut-nextA | 小 R 或 AR span 较大时把 ARA 重排成 RA 友好布局；分 cut-A NDDMA 与 cut-nextA strided DMA | `A>1 && nextA>1`，输出并行域充足，且 gather 的 R/span guard 成立 | H2c 仅在 H2a/H2b 的布局分支之后命中；H3 可覆盖为 GROUP；H6 的 cut-A UB 分支得 R-011，否则 R-012；切分失败即 Host 失败 |
-| P5 | R-007..R-010 ARA modes 101..104 | 通用非末轴主体；按 A 并行度、R×nextA UB 可驻留性和 nextA 宽度选 Gather/NDDMA 四 mode | `A>1 && nextA>1`，且高性能覆盖、GROUP 与 ARA_CUT 均未最终生效 | H0 初始生成 ARA；H2c/H3/H4 依次可覆盖；H7 按 101→102→103→104 的互斥条件选模式；H8 只对 mode104 尝试 ARA_CUT、再尝试 GROUP，均不成立才保留 R-010 |
-| P6 | R-004 AR_GATHER | 连续 AR 载入后以寄存器 Gather 逻辑转置，专门避开 32B 整步长 bank conflict | `A>1 && nextA==1`，R 字节跨度小于 256，A 域充足，且 R 跨度非 32B 整倍 | H2b 在 `nextA==1`分支命中后覆盖初始 AR；H3 可覆盖为 GROUP，H5 又可将稠密 A 的该 GROUP 恢复为 AR；未命中 H2b 则保留 AR |
-| P7 | R-001 COPY | 归约轴长为 1，Device 不读 input，直接生成全 0 索引 | `R==1`；输出域按 `A*nextA` 分核 | H0 直接生成 COPY；H1 使 high-perf selector 立即返回，跳过 H2～H4；H6 只调用 copy split，不存在 Device fallback，切分失败即 Host 失败 |
+| 重要性 | Route | 可达性 | Route 特征 | 适用域与实现前提 | Host 顺序、短路与 fallback |
+|---:|---|---|---|---|---|
+| P0 | R-002/R-003 AR full-R/cut-R | active（shape-conditional） | 连续 `[A,R]` 行归约；full-R 整轴驻 UB，cut-R 以双半区累积候选 | 末轴或 `nextA==1`，且 selector 最终保留 key 10001；full/cut 取决于 `cutRSize==R` | H0 生成 AR；H2b 可覆盖为 AR_GATHER，H3 可覆盖为 GROUP，H5 又可将稠密 A 的末轴 GROUP 恢复为 AR；H6 中 full-R 命中 R-002，否则 R-003；切分失败即 Host 失败 |
+| P1 | R-005/R-006 RA full-R/cut-R | active（shape-conditional） | 以 nextA 列域分核，跨 R 行做 strided DMA；UB 不足时沿 R 合并 | `A==1` 且宽 nextA 或小 R 谓词成立；full/cut 取决于 `cutRSize==R` | H2a 只在 `A==1`分支覆盖为 RA；H3 GROUP 可再覆盖；H6 中 full-R 命中 R-005，否则 R-006；H2a 失配保留 H0 的 ARA，切分失败即 Host 失败 |
+| P2 | R-013/R-014 ARA_CUT flat/normal | active（shape-conditional） | A 与 nextA 二维分核；flat 整个 R×nextA 驻 UB，normal 再沿 R/nextA 切片 | H4 的 ARA 并行域/宽度 guard 成立，或 H8 的 mode104 二次改道；flat guard 决定子 Route | H4 只改写 H2/H3 后仍为 ARA 的 key；H8 仅从 mode104 改道并直接进入目标 split；`useFlatPath` 分 R-013/R-014；任一切分公式不成立即 Host 失败 |
+| P3 | R-015/R-016 GROUP_REDUCE AR/RA | active（shape-conditional） | 沿 R 分核产生 partial，workspace 交接后 `SyncAll` 归并；RA 子路线分布汇总 nextA | 大 R、小输出域，或 mode104 的移动门槛成立；AR/RA 由 128B/256B 资源谓词决定 | H3 在 H2 之后检查并可覆盖当前 key；H5 可将稠密 A 末轴 GROUP 恢复为 AR；H8 也可从 mode104 改道 GROUP 并直接 split；`isRaSplit=0` 得 R-015，初始 AR UB 不足时改为 R-016，RA 仍不可行则 Host 失败 |
+| P4 | R-011/R-012 ARA_GATHER cut-A/cut-nextA | active（shape-conditional） | 小 R 或 AR span 较大时把 ARA 重排成 RA 友好布局；分 cut-A NDDMA 与 cut-nextA strided DMA | `A>1 && nextA>1`，输出并行域充足，且 gather 的 R/span guard 成立 | H2c 命中后 H3 仍可覆盖为 GROUP；H6 调用 `CalcSplitInfoForGatherArA`，Device 再以最终 POD `cutASize!=1` 选 R-011、`cutASize==1` 选 R-012；因此外层 Host 的 cut-A 分支也可在 factor 或 UB 只容纳 1 时落到 R-012 |
+| P5 | R-007..R-010 ARA modes 101..104 | active（shape-conditional） | 通用非末轴主体；按 A 并行度、R×nextA UB 可驻留性和 nextA 宽度选 Gather/NDDMA 四 mode | `A>1 && nextA>1`，且高性能覆盖、GROUP 与 ARA_CUT 均未最终生效 | H0 初始生成 ARA；H2c/H3/H4 依次可覆盖；H7 按 101→102→103→104 的互斥条件选模式；H8 只对 mode104 尝试 ARA_CUT、再尝试 GROUP，均不成立才保留 R-010 |
+| P6 | R-004 AR_GATHER | active（shape-conditional） | 连续 AR 载入后以寄存器 Gather 逻辑转置，专门避开 32B 整步长 bank conflict | `A>1 && nextA==1`，R 字节跨度小于 256，A 域充足，且 R 跨度非 32B 整倍 | H2b 在 `nextA==1`分支命中后覆盖初始 AR；H3 可覆盖为 GROUP，H5 又可将稠密 A 的该 GROUP 恢复为 AR；未命中 H2b 则保留 AR |
+| P7 | R-001 COPY | active（shape-conditional） | 归约轴长为 1，Device 不读 input，直接生成全 0 索引 | `R==1`；输出域按 `A*nextA` 分核 | H0 直接生成 COPY；H1 使 high-perf selector 立即返回，跳过 H2～H4；H6 只调用 copy split，不存在 Device fallback，切分失败即 Host 失败 |
+
+上表八个 key 均由 `ArgMaxTilingBuilder` 生产、由五组 dtype launcher 显式分发，所以是生产链 active Route；full/cut、flat/normal、mode 与 GROUP AR/RA 是由 POD 再细分的 conditional 子 Route。
 
 ### Host selector 顺序
+
+下表以 `N=nextA`、`e=effectiveBytes`、`I=selector 使用的 indexBytes`、`C=动态 coreNum`、`C0=originCores`、`U=UB bytes` 表示源码整数运算；`isInt64` 指 int64 输入。H2c 的 `maxSize=(U/2-1024*(e+I))/256` 与 H8 的除法均保持无符号整数截断语义。
 
 | Host 顺序 | 判断/动作 | 短路与 fallback |
 |---:|---|---|
@@ -132,13 +136,13 @@ P0 为最高重要性，后续等级依次降低。该顺序只组织实现知�
 | H1 | `SetShapeInfoHighPerf` 首先再检查 `R==1` | true 立即返回，COPY 跳过 H2～H4；false 进入 H2 |
 | H2a | `A==1` 时检查 `nextA>=core*256 || (nextA>1 && R<256)` | true 覆盖为 RA；false 保留 H0 初值。该 `if` 命中布局分支后不再检查 H2b/H2c |
 | H2b | 否则 `nextA==1`时检查 AR_GATHER 的 R/A/32B 三项 guard | true 覆盖为 AR_GATHER；false 保留 AR。该分支后不检查 H2c |
-| H2c | 否则仅当 `A*nextA*effectiveBytes>=core*256` 时检查 ARA_GATHER 的小 R 或大 span guard | true 覆盖为 ARA_GATHER；false 保留 ARA |
-| H3 | 独立检查 `R*effectiveBytes>=originCores*256 && R<INT32_MAX` 及小输出域谓词 | true 覆盖 H2 结果为 GROUP；false 保留当前 key |
-| H4 | 仅当当前 key 仍为 ARA 时，检查输出域与 nextA 字节门槛 | true 覆盖为 ARA_CUT；false 保留 ARA |
+| H2c | `A>1 && N>1 && A*N*e>=C*256 && (R*e<256 || (R*N*e>=U/2 && R<maxSize))` | true 覆盖为 ARA_GATHER；false 保留 ARA |
+| H3 | `R*e>=C0*256 && R<INT32_MAX && ((N==1 && A<C0) || (N>1 && A*N<C0*2))` | 两种输出域任一成立即覆盖 H2 结果为 GROUP；false 保留当前 key |
+| H4 | `key==ARA && A*N*e>=C*128 && N*e>=((A>C && !isInt64) ? 64 : 128)` | true 覆盖为 ARA_CUT；门槛按非 int64 且 `A>C` 取 64B，否则取 128B；false 保留 ARA |
 | H5 | 返回 `GetShapeInfo` 后，对末轴/`nextA==1` 且当前为 GROUP 的 key 检查 `A>0.85*originCores` | true 覆盖回 AR；false 保留 GROUP |
 | H6 | `CalcSplitInfo` 按最终 key 分发 COPY/AR/ARA/ARA_CUT/RA/AR_GATHER/ARA_GATHER/GROUP split | 子路线由 full/cut、mode、flat、AR/RA 资源谓词决定；未知 key 或切分失败立即返回失败，不启动 Kernel |
 | H7 | ARA split 按 `A>=core`、`R*nextA<=ubElement`、nextA 字节宽度依次选 mode101、102、103，其余 mode104 | 前三个分支命中即固定 R-007/R-008/R-009；只有 mode104 继续 H8 |
-| H8 | mode104 先检查 cut-nextA 改道 guard；命中后先判 `cutNextA*effectiveBytes>=64`，再判 R 分核移动门槛 | 第一个 true 改道 ARA_CUT 并直接执行其 split；否则第二个 true 改道 GROUP 并直接执行其 split；均 false 保留 R-010 |
+| H8 | 先计算 `cutN=CalcCutNextA(N)`；仅在外层三重 guard `cutN!=N && N*e>=32 && R>=C*4` 全真时，依次检查 `cutN*e>=64` 与 `(R/C0)*N*e>=4096` | 第一项 true 改道 ARA_CUT 并直接执行其 split；否则第二项 true 改道 GROUP 并直接执行其 split；外层 guard 或两项均 false 时保留 R-010 |
 
 ```text
 H0 initial COPY / AR / ARA
@@ -160,20 +164,20 @@ H0 initial COPY / AR / ARA
 | P0 | R-003 AR-cutR | H0→H2b/H3→H5→H6 | 10001 | AR 且 `cutRSize<R` | 单 AIV | `ProcessWithCutR` + `UpdateResult` | 双输出半区保存 chunk 与累计值 | `tailR` 合并 |
 | P1 | R-005 RA-full | H2a→H3→H6 | 20003 | RA 且 `cutRSize==R` | 单 AIV | `ArgMaxWithValueRa::ProcessWithCutA` | strided DMA 行→UB RA | nextA tail |
 | P1 | R-006 RA-cutR | H2a→H3→H6 | 20003 | RA 且 `cutRSize<R` | 单 AIV | `ProcessWithCutR` + `UpdateResult` | 输出 queue 两半保存累计/候选 | nextA、R 双 tail |
-| P2 | R-013 ARA_CUT-flat | H4/H8→H6 | 10012 | `ubNeededFlat<=UB-17*32` | 单 AIV | `ProcessFlat` | 全 R/nextA 连续装入，直接 unaligned VF | A tail |
-| P2 | R-014 ARA_CUT-normal | H4/H8→H6 | 10012 | flat guard 不满足 | 单 AIV | `ProcessInANextALoop` | loop-mode 2D DMA + R chunk合并 | A/N/R tail |
-| P3 | R-015 GROUP-AR | H3/H8→H5→H6 | 30001 | GROUP 且 `nextA*bytes<128 && blkFactor*bytes>=256` 且 UB 可容纳 | 单 AIV | `ProcessTemplate<isAra>` | workspace two planes、`SyncAll`、core0 汇总 | R tail |
-| P3 | R-016 GROUP-RA | H3/H8→H5→H6 | 30001 | GROUP 且 isRaSplit 或 AR UB fallback | 单 AIV | `ProcessRaSplit` | 每 A×core 128B-aligned workspace、全核 chunk 汇总 | R/nextA tail |
-| P4 | R-011 ARA_GATHER-A | H2c→H3→H6 | 20002 | gather key 且 `A>=core && CalcUnitUbSpace*align(nextA)<UB/2` | 单 AIV | `ProcessCutAWithNDDMA` | NDDMA 转置后 `ArgMaxRa` | A tail |
-| P4 | R-012 ARA_GATHER-N | H2c→H3→H6 | 20002 | gather key其余情况 | 单 AIV | `ProcessWithCutNextA` | strided `DataCopyPad` | nextA tail |
+| P2 | R-013 ARA_CUT-flat | H4→H6，或 H6→H7→H8 直达 | 10012 | 最终 key 10012 且 `useFlatPath=1`；即 `ubNeededFlat<=UB-17*32` | 单 AIV | `ProcessFlat` | 全 R/nextA 连续装入，直接 unaligned VF | A tail |
+| P2 | R-014 ARA_CUT-normal | H4→H6，或 H6→H7→H8 直达 | 10012 | 最终 key 10012 且 `useFlatPath=0` | 单 AIV | `ProcessInANextALoop` | loop-mode 2D DMA + R chunk合并 | A/N/R tail |
+| P3 | R-015 GROUP-AR | H3→H5→H6，或 H6→H7→H8 直达 | 30001 | GROUP，初始 `nextA*bytes<128 && blkFactor*bytes>=256`，且 AR UB 核账通过后 `isRaSplit=0` | 单 AIV | `cutNextASize==1 ? ProcessTemplate<false> : ProcessTemplate<true>` | workspace two planes、`SyncAll`、core0 汇总 | R tail；AR UB 失配转 R-016 |
+| P3 | R-016 GROUP-RA | H3→H5→H6，或 H6→H7→H8 直达 | 30001 | GROUP 且初始 `isRaSplit=1`，或 R-015 的 AR UB 核账失配 | 单 AIV | `ProcessRaSplit` | 每 A×core 128B-aligned workspace、可参与核按 chunk 汇总 | R/nextA tail；RA UB 失配则 Host 失败 |
+| P4 | R-011 ARA_GATHER-A | H2c→H3→H6 | 20002 | 最终 key 20002 且 POD `cutASize>1` | 单 AIV | `ProcessCutAWithNDDMA` | NDDMA 转置后 `ArgMaxRa` | A tail |
+| P4 | R-012 ARA_GATHER-N | H2c→H3→H6 | 20002 | 最终 key 20002 且 POD `cutASize==1` | 单 AIV | `ProcessWithCutNextA` | strided `DataCopyPad` | nextA tail |
 | P5 | R-007 ARA-mode101 | H0→H2c/H3/H4→H6→H7 | 10002/101 | `A>=core && R*nextA<=ubElement && nextA*effectiveBytes<64` | 单 AIV | `ProcessGatherARAWithCutA` | 连续载入 + GatherV1 | A/1024 tail |
 | P5 | R-008 ARA-mode102 | H0→H2c/H3/H4→H6→H7 | 10002/102 | 同上但 `nextA*effectiveBytes>=64` | 单 AIV | `ProcessWithCutA` | 3D NDDMA 转 `[A,R,N]→[A*N,R]` | A/1024 tail |
-| P5 | R-009 ARA-mode103 | H0→H2c/H3/H4→H6→H7 | 10002/103 | `A>=core && R*nextA>ubElement && nextA*effectiveBytes<32` | 单 AIV | `ProcessGatherARAWithCutAR` | tempValue/tempIndice 合并 R chunk | R tail |
+| P5 | R-009 ARA-mode103 | H0→H2c/H3/H4→H6→H7 | 10002/103 | `A>=core && R*nextA>ubElement && nextA*effectiveBytes<32` | 单 AIV | `ProcessGatherARAWithCutAR` | tempValue/tempIndice 合并 R chunk | A/R 双 tail |
 | P5 | R-010 ARA-mode104 | H0→H2c/H3/H4→H6→H7→H8 | 10002/104 | 其余 ARA 且未触发二次改道 | 单 AIV | `ProcessWithCutRA` | 3D NDDMA + cutR/cutNextA | A/R/nextA tail |
 | P6 | R-004 AR_GATHER | H2b→H3→H5→H6 | 20001 | gather 谓词且未被 GROUP/AR reset 覆盖 | 单 AIV | `ArgMaxWithValueArGather` | 连续载入 AR；寄存器 Gather 转置 | A tail |
 | P7 | R-001 COPY | H0→H1→H6 | 10003 | `R=1` | 单 AIV | `ArgMaxWithValueCopy<T,T3,false,false>` | bind queue 搬值路径为静态关闭；Duplicate 0 index | 尾输出精确字节 |
 
-### 隐藏性能 Guard
+### 关键性能与安全 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -183,7 +187,8 @@ H0 initial COPY / AR / ARA
 | compact VF | `R>=16 && 2*dimA1Src<=VL` | 两条 R chain 同寄存器并行后再合并 | R-014及调用该 helper 的路线 | 普通 unaligned loop | `ArgMaxAraUnAlign` |
 | GROUP schedule | key 30001 | Kernel 内 `SyncAll` 需要全核一致参与 | R-015/016 | 禁止普通 schedule | official `SetScheduleMode(1)`；Direct entry `__schedmode__(1)` |
 | GROUP workspace | 256B 对齐，且 AR/RA 各自 fixedNeed/queue 公式小于 UB | partial values/indices 跨核可见 | R-015/016 | AR branch回退 RA；仍不足则 tiling失败 | `CalcGroupReduce*` |
-| BF16 | UB 预算按 float 扩大 | 先 cast fp32 后比较，partial workspace也为 float | 所有 BF16 | 无低精度 fallback | `AddExtraBufferNeed`、各 `Init` |
+| BF16 升精度 | selector 中 `effectiveBytes=4`，各 body 预留 `xBuf32/outBuf32` | 先 cast FP32 再比较；GROUP partial workspace 也为 FP32 | R-002..R-012 的 BF16 路线、R-015/016 | 无更低精度 fallback | `AddExtraBufferNeed`、AR/RA/ARA/GATHER/GROUP `Init` |
+| ARA_CUT BF16 | split 按 `valueDtypeSize=2` 核算，body 无 FP32 cast buffer | `ArgMaxAraUnAlign<bfloat16_t,uint16_t>` 直接以 BF16 比较，仍保留 tie/NaN 选择顺序 | R-013/014 | flat 失配转 normal；不自动改到 FP32 body | `ArgMaxWithValueArACutAAndNextA::ComputeVF` |
 
 ### POD/ABI
 
@@ -205,8 +210,8 @@ H0 initial COPY / AR / ARA
 | tiling | `blkNum2nd` | u64 | off 88 | 分片数 | ARA_CUT | 保留兼容 | 默认 1 |
 | tiling | `tilingKey` | u64 | off 96 | enum | selector | launcher router | 八个已知 key |
 | tiling | `aRaMode` | u64 | off 104 | enum | ARA split | ARA Process switch | 101..104 active |
-| tiling | `loopANum` | u16 | off 112 | loop | GROUP split | GROUP | 非 GROUP inactive |
-| tiling | `cutAPerLoop` | u16 | off 114 | A 元素 | GROUP split | GROUP | 非 GROUP inactive |
+| tiling | `loopANum` | u16 | off 112 | loop | Host 的 GROUP AR/RA split 生成并由 launcher ABI 搬运 | 当前 Device body 未读取 | 保留 ABI 字段；非 GROUP 为默认值 |
+| tiling | `cutAPerLoop` | u16 | off 114 | A 元素 | Host 的 GROUP AR/RA split 生成并由 launcher ABI 搬运 | 当前 Device body 未读取 | 保留 ABI 字段；非 GROUP 为默认值 |
 | tiling | `isRaSplit` | u8 | off 116 | bool | GROUP split | GROUP Process | 0/1 |
 | tiling | `gatherBlockSize` | u16 | off 118 | nextA元素 | GROUP RA split | 汇总 chunk | >=1 |
 | tiling | `useFlatPath` | u8 | off 120 | bool | ARA_CUT split | ARA_CUT Process | 0/1 |
@@ -215,14 +220,16 @@ H0 initial COPY / AR / ARA
 | launch | `reserved` | u32 | off 140 | N/A | 置0 | 未读 | inactive |
 | launch | `workspaceBytes` | u64 | off 144 | 字节 | `workSpaceSize+16MiB` | Host allocation | 至少分配1 |
 
+`loopANum/cutAPerLoop` 在 GROUP-AR 分支由 Host 写为 `1/A`，在 GROUP-RA 分支写为 `A/1`，随后进入 POD 并完整穿过 launcher ABI；当前八类 Device body 均未以这两个字段驱动循环，迁移时应保留其布局而不能虚构消费边。
+
 ### Route 源码闭包
 
 | 重要性 | Route | Host 顺序 | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
 |---:|---|---|---|---|---|---|---|---|
 | P0 | R-002/003 | H0→H2b/H3→H5→H6 | 10001 | `CalcSplitInfoForAr` | common POD | `arg_max_ar_*` | `ArgMaxWithValueAr` + base | `arg_max_v2/CMakeLists.txt`；Direct 两 TU |
 | P1 | R-005/006 | H2a→H3→H6 | 20003 | `CalcSplitInfoForRa` | common POD | `arg_max_ra_*` | `ArgMaxWithValueRa` + base | 同上 |
-| P2 | R-013/014 | H4/H8→H6 | 10012 | `CalcSplitInfoForArACutAAndNextA` | `blkFactor2nd/useFlatPath` | `arg_max_ara_cut_*` | `ArgMaxWithValueArACutAAndNextA` + base | 同上 |
-| P3 | R-015/016 | H3/H8→H5→H6 | 30001 | `CalcSplitInfoForGroupReduce` | `isRaSplit/gatherBlockSize/workSpaceSize` | `arg_max_group_*` + schedmode1 | `ArgMaxWithValueGroupReduce` + base | 同上 |
+| P2 | R-013/014 | H4→H6，或 H6→H7→H8 直达 | 10012 | `CalcSplitInfoForArACutAAndNextA` | `blkFactor2nd/useFlatPath` | `arg_max_ara_cut_*` | `ArgMaxWithValueArACutAAndNextA` + base | 同上 |
+| P3 | R-015/016 | H3→H5→H6，或 H6→H7→H8 直达 | 30001 | `CalcSplitInfoForGroupReduce` | `isRaSplit/gatherBlockSize/workSpaceSize` | `arg_max_group_*` + schedmode1 | `ArgMaxWithValueGroupReduce` + base | 同上 |
 | P4 | R-011/012 | H2c→H3→H6 | 20002 | `CalcSplitInfoForGatherArA` | common POD | `arg_max_ara_gather_*` | `ArgMaxWithValueAraGather` + base | 同上 |
 | P5 | R-007..010 | H0→H2c/H3/H4→H6→H7/H8 | 10002 | `CalcSplitInfoForArAAndTryMode4` | `aRaMode` | `arg_max_ara_*` | `ArgMaxWithValueArA` + base | 同上 |
 | P6 | R-004 | H2b→H3→H5→H6 | 20001 | `CalcSplitInfoForGatherRa` | common POD | `arg_max_ar_gather_*` | `ArgMaxWithValueArGather` + base | 同上 |
@@ -232,7 +239,7 @@ H0 initial COPY / AR / ARA
 
 ### 公共执行流程
 
-所有 Route 均单次 launch：entry 在 Device 构造 POD、声明 `KERNEL_TYPE_MIX_AIV_1_0`、创建 `TPipe`，然后 `Init→Process`。`GetBlockIdx` 映射到不重叠输出域；Queue 的 `Alloc→EnQue→DeQue→Free` 提供 MTE2/V/MTE3 阶段顺序。基础 helper 以 256B vector register、mask 和 `startR` 实现 argmax；BF16 先 cast FP32；内部 int32 index 在 CopyOut 前 cast int64。除 GROUP 外 workspace 未读。
+所有 Route 均单次 launch：entry 在 Device 构造 POD、声明 `KERNEL_TYPE_MIX_AIV_1_0`、创建 `TPipe`，然后 `Init→Process`。`GetBlockIdx` 映射到不重叠输出域；Queue 的 `Alloc→EnQue→DeQue→Free` 提供 MTE2/V/MTE3 阶段顺序。基础 helper 以 256B vector register、mask 和 `startR` 实现 argmax；多数 BF16 body 先 cast FP32，但 R-013/014 按 BF16 原位宽直接比较；内部 int32 index 在 CopyOut 前 cast int64。除 GROUP 外 workspace 未读。
 
 下列逐 Route 章节按 P0→P7 及“Route 特征与重要性”的行序展开；Route ID 与 key 保持不变，该展示顺序不是 Host 判断顺序。
 
@@ -272,7 +279,7 @@ for owned a in tiles of <=1024:
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
 | inQueueX | `(a*R+r0)` | `2*(align(cutA*cutR,E)+VL)*sizeof(T)` | T/[A,R] | MTE2 | ArgMaxV1 | pipe/tile | depth2 |
-| out values/index | halves 0/1024 in cutR | `2*1024*sizeof(T)+2*1024*sizeof(T2)` | candidates | reduce | UpdateResult/MTE3 | tile | half reuse |
+| out values/index | halves 0/1024 in cutR | values `2*1024*sizeof(T1)`；indices `2*1024*sizeof(T3)`，且 `T3=int64` | candidates | reduce | UpdateResult/MTE3 | tile | queue depth2；half reuse |
 | BF16 buffers | 0 | `alignNum*4 + 2*1024*4` | fp32 | Cast | reduce/merge | pipe | BF16 only |
 
 ##### 分层内存布局
@@ -281,8 +288,8 @@ for owned a in tiles of <=1024:
 block-beta
   columns 4
   inQ["inQueueX d2 · 2*(align(cutA*cutR,E)+VL)*sizeof(T)"]:2
-  val["outValues · 2*1024*sizeof(T)"]:1
-  idx["outIndice · 2*1024*sizeof(T2)"]:1
+  val["outValues · 2*1024*sizeof(T1)"]:1
+  idx["outIndice · 2*1024*sizeof(T3), T3=int64"]:1
   bf["BF16 x/out fp32 · conditional"]:3
   cast["index cast · conditional 1024*8"]:1
 ```
@@ -290,7 +297,7 @@ block-beta
 ##### 字节账与复用顺序
 
 ```text
-UB_total = inQ + outValues + outIndice + BF16?(alignNum+2048)*4:0 + (T2!=int64?1024*8:0)
+UB_total = inQ + 2*1024*sizeof(T1) + 2*1024*sizeof(T3) + BF16?(alignNum+2048)*4:0 + (T2!=T3?1024*sizeof(T3):0)
 UB_total <= platform UB by CalcSplitInfoForAr
 workspace_total = 0 effective + 16MiB reserve
 ```
@@ -351,7 +358,7 @@ reduce R vertically for all owned columns; merge R chunks using absolute startR
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
 | inQueueX | `blockOffset+loopOffset+r0*nextA` | `2*align(cutNextA,E)*cutR*sizeof(T)` | RA | strided MTE2 | ArgMaxRa | tile | depth2 |
-| output | halves if cutR | `2*alignCutA*(sizeof(T)+sizeof(T2))` | nextA | VF | merge/MTE3 | tile | half alias |
+| output | halves if cutR | 令 `B=align(cutNextA,E)`；full-R 为 `2*B*(sizeof(T1)+sizeof(T2))`，cut-R 为 `4*B*(sizeof(T1)+sizeof(T2))` | nextA | VF | merge/MTE3 | tile | cut-R 每个 queue slot 含累计/候选两半，queue depth2 |
 
 ##### 分层内存布局
 
@@ -365,7 +372,7 @@ block-beta
 ##### 字节账与复用顺序
 
 ```text
-UB_total = 2*align(cutNextA,E)*cutR*sizeof(T) + 2*alignedOut*(sizeof(T)+sizeof(T2)) + dtype buffers
+UB_total = 2*B*cutR*sizeof(T1) + (cutR==R ? 2*B : 4*B)*(sizeof(T1)+sizeof(T2)) + dtype buffers
 ```
 
 | 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
@@ -460,6 +467,7 @@ UB_total = 2*cutA*cutR*alignN*sizeof(T)
 |---|---|---|---|---|---|
 | 2D copy | loop mode + DataCopyPad | GM | queue | A/R/N tile | nextA padding不写回 |
 | compact | two-chain MicroAPI | UB | result | narrow nextA | tie/NaN按较小index合并 |
+| BF16 compare | `ArgMaxAraUnAlign<bfloat16_t,uint16_t>` | BF16 UB | candidate value/index | R chain | 不经 FP32 cast；flat/normal 共用同一比较顺序 |
 
 #### 关键实现
 
@@ -508,8 +516,8 @@ reduce the core dimension, preserving old/equal/NaN candidate; emit y
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| AR value workspace | `core*outAAlign` | `cores*outAAlign*sizeof(T or float)` | core,A*N | per-core reduce | core0 | caller/through SyncAll | total 256B align |
-| AR index workspace | after value plane | `cores*outAAlign*sizeof(T2)` | core,A*N | per-core reduce | core0 | caller | same |
+| AR value workspace | byte offset `core*outAAlign*sizeof(V)`，其中 BF16 的 `V=float`，否则 `V=T1` | `realCores*outAAlign*sizeof(V)` | core,A*N | per-core reduce | core0 | caller/through SyncAll | Device 实际 live value plane |
+| AR index workspace | 同一 workspace 的 `T2` 基址上取元素偏移 `realCores*outAAlign + core*outAAlign`，故 index plane 字节基址为 `realCores*outAAlign*sizeof(T2)` | `realCores*outAAlign*sizeof(T2)` | core,A*N | per-core reduce | core0 | caller | 不是按 value extent 顺延；仅当 `sizeof(V)==sizeof(T2)` 时两者相接 |
 | RA workspace | `[A,core,align128(nextA)]` | `A*cores*(align128(value)+align128(index))` | A,core,N | each core | distributed gather | caller | each row 128B |
 | UB queues | route-dependent | formulas from `Init` using max(partial tile,core gather tile) | partials | MTE/V | workspace/y | pipe | depth1/2 |
 
@@ -527,14 +535,15 @@ block-beta
 ##### 字节账与复用顺序
 
 ```text
-R-015 workspace = align256(2*outAAlign*sizeof(int32)*originCores * (dtype==int64?2:1))
+R-015 Host conservative allocation = align256(2*outAAlign*sizeof(int32)*originCores * (dtype==int64?2:1))
+R-015 Device live layout = value [0, realCores*outAAlign*sizeof(V)); index byte base realCores*outAAlign*sizeof(T2), extent realCores*outAAlign*sizeof(T2)
 R-016 workspace = align256(A*realCores*(align128(nextA*sizeof(value_or_fp32))+align128(nextA*sizeof(T2))))
 UB_total <= UB by CalcGroupReduceArBranch/RaBranch fixedNeed + queueNeed checks
 ```
 
 | 复用子区 | 写入者 | 读取者/消费点 | 下一次覆盖 | 同步或释放依据 | 安全条件 |
 |---|---|---|---|---|---|
-| workspace planes | all cores partial | core0/all-core final reduce | Kernel结束 | `SyncAll` | schedmode1且所有 real cores参与 |
+| workspace planes | all cores partial | core0/all-core final reduce | Kernel结束 | `SyncAll` | schedmode1且所有 real cores参与；R-015 的 Host 分配按 `originCores` 保守计，Device 地址按 `realCores` 与 `T2` 基址计 |
 
 #### 同步、精度与尾块
 
@@ -657,7 +666,8 @@ arg_max_ara_* -> Process switch(aRaMode)
 for owned A or flattened A*ceil(nextA/cutNextA) tile:
   materialize a reduction-friendly UB layout using contiguous DMA or 3D NDDMA
   reduce each (a,n) over one/full R chunk
-  merge chunk candidates; write only valid flattened A*nextA range
+  merge chunk candidates; mode103 covers both the owned-A tail and final-R-chunk tail
+  write only valid flattened A*nextA range
 ```
 
 #### 内存与数据搬运
@@ -963,7 +973,7 @@ ProcessMultiCoreResult();
 | Queue/TBuf/寄存器/dynamic UB/通信 window | 连续输入queue | strided/repacked queue | NDDMA/loop-mode、temp | queue + GM workspace | 均无dynamic UB/通信 window |
 | 内存总占用与复用 | 最小 | 输出双半区 | R chunk temp复用 | partial planes | Host以UB公式约束cut |
 | 搬运/Vector/SIMT/NDDMA/通信 API | DataCopyPad/V1 | DataCopyPad/Ra | NDDMA/Gather/V1 | DMA/SyncAll/VF | 无SIMT/通信 |
-| 同步、精度与 tail | queue；mask | queue；A/R tail | queue；A/R/N tail | SyncAll；workspace | BF16升fp32；tie取先 |
+| 同步、精度与 tail | queue；mask | queue；A/R tail | queue；A/R/N tail | SyncAll；workspace | 多数 BF16 升 FP32，ARA_CUT 保持 BF16；tie取先 |
 | fallback/失败边界 | split失败 | 回一般路线 | mode4可改道 | AR→RA或失败 | 未知key不launch |
 
 ## 平台差异
@@ -976,12 +986,19 @@ ProcessMultiCoreResult();
 
 ## 限制与失败边界
 
-- Direct 转换只接受连续 ND、rank≤8、五种输入 dtype、int64 输出；不等同于官方 ACLNN 更宽的 dtype/非连续输入支持域。
+- Direct 转换只接受连续 ND、rank≤8、五种输入 dtype、int64 输出；`rank≤8` 是调用前硬前置，当前包装层对 `rank>8` 可能在 tiler 返回前写越界，不构成可靠拒绝路径；其余约束也不等同于官方 ACLNN 更宽的 dtype/非连续输入支持域。
 - 不接受任一零维长度或空归约域；乘积使用 uint64，交付件没有独立乘法溢出检查；超大 shape 不可直接迁移。
 - 所有 cut 字段窄化为 uint16；必须先证明选定 tile 在 1..65535 且 ABI field/transport 顺序不变。
 - GROUP 必须保留 `__schedmode__(1)`、全核 `SyncAll`、workspace plane offset 与 current-stream lifetime。
-- `arg_max_supplemental` 虽存在于交付源码，但 launcher 无可达分支，故不属于正式 Route，也不作为算法闭包证据。
 - Direct launcher unknown key 静默不发射 Kernel；上层只检查 tiler返回值，因此新增 key 必须同时更新 tiler、POD与launcher。
+
+### Dormant 实现边界
+
+| 源码符号 | 可达性 | 生产链不可达证据 | 重新启用条件 |
+|---|---|---|---|
+| `arg_max_supplemental<T,VALUE_MODE>` | dormant | 只有 Device 函数模板定义；`ArgMaxTilingBuilder` 的八个 key 不生产它，五个 `launch_arg_max_*` 的 switch 也没有调用边 | 必须同时增加可审计的 Host 谓词/key、必要 POD、dtype 实例化、launcher 分支、资源与精度边界，并定义不命中出边；否则不得当作 fallback |
+
+除上述模板外，其余全局 entry 都一一对应八个 active key。没有 Host key 也没有全局 entry 的未调用 private helper 不单独构成 Route。
 
 ## 源码索引
 
@@ -1011,11 +1028,11 @@ ProcessMultiCoreResult();
 
 | 检查项 | 可复用事实 | 不得改变的约束 | 源码符号 |
 |---|---|---|---|
-| ABI/POD | 19字段与八key | 顺序、位宽、uint64运输后恢复窄字段 | `ArgMaxWithValueTilingData` |
+| ABI/POD | 20字段与八key | 顺序、位宽、uint64运输后恢复窄字段 | `ArgMaxWithValueTilingData` |
 | 调用顺序 | 单 Kernel `Init→Process` | key与模板、dtype T2/T3 | `arg_max_v2` / Direct launcher |
 | workspace/内存 | 仅GROUP有效 | plane offset、128/256B对齐、owner/lifetime | `CalcGroupReduce*`, `CopyOutWorkSpace*` |
 | 同步 | queue与GROUP SyncAll | GROUP schedmode1、所有核到达barrier | `ProcessTemplate/ProcessRaSplit` |
-| 精度与尾块 | BF16 fp32；first tie/NaN；mask | Compare/Select顺序、startR、有效copyNum | base helpers |
+| 精度与尾块 | 多数 BF16 以 FP32 比较；ARA_CUT 以 BF16 比较；first tie/NaN；mask | Compare/Select顺序、startR、有效copyNum，以及 R-013/014 不得擅自插入 cast | base helpers / `ArgMaxWithValueArACutAAndNextA::ComputeVF` |
 | 失败边界 | tiler失败阻断launch | unknown key不得默认为某body；空维不支持 | `Run/CalcSplitInfo/launch_arg_max_*` |
 
 <!-- cannbot:related:start -->

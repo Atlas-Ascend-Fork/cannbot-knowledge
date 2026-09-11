@@ -26,7 +26,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/pooling/dilation2_d/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:30:42Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -41,7 +41,7 @@ cann_versions: ["9.1.0"]
 | 计算语义 | 对每个输出位置和通道，计算有效膨胀窗口内 `x + filter` 的最大值；SAME/CALCULATED 的越界输入按 `-inf` 参与加法语义。 |
 | 输入输出 | `x` 为连续 4-D NHWC/NCHW，`filter` 为对应的 3-D `(fH,fW,C)`/`(C,fH,fW)`，均为 FP16；输出保持 layout 与 dtype。 |
 | 执行类型 | R-001 为补充实现 `AIV_VECTOR`；R-002～R-005 为官方源码适配的 `SIMT`。全部为单 Kernel，均无 Cube/AIC 或 MIX_CV 可达节点。 |
-| Kernel 路线 | P0 R-001 NHWC FP16 行带 Vector；P1 R-002 NHWC SIMT32；P2 R-004 NCHW SIMT32；P3 R-003 NHWC SIMT64；P4 R-005 NCHW SIMT64。P 级是知识组织顺序，不是 Host selector 数值。 |
+| Kernel 路线 | P0 R-001 conditional NHWC FP16 行带 Vector；P1 R-002 active NHWC SIMT32；P2 R-004 active NCHW SIMT32；P3 R-003 conditional NHWC SIMT64；P4 R-005 conditional NCHW SIMT64。另有 D-001 dormant 整数模板分支。P 级是知识组织顺序，不是 Host selector 数值。 |
 | 核心资源 | R-001 使用 GM、三条 depth=1 UB Queue 与 RegTensor；SIMT 路线直接访问 GM、使用线程寄存器，无显式 TQue/TBuf；所有路线 workspace 为 0。 |
 | 来源闭包 | `direct_implementation_closed`：Direct schema/Meta/NPU glue、shape/padding、平台参数、两套 POD、Route selector、三个 entry、Vector/SIMT body、同步/tail 与构建接线均已闭合。 |
 | 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
@@ -95,7 +95,7 @@ Direct schema 为 `cann_bench::dilation_2_d(Tensor x, Tensor filter, int[] strid
 3. Host 以 `int64_t` 计算 `effH/effW`、`oH/oW` 和 `padTop/padLeft`；CALCULATED 额外校验四个 pad。输出尺寸再经 `CheckedI32`。
 4. `torch::empty` 分配输出；`y.numel()==0` 时直接返回，因此空域没有 Device Route。
 5. `calc_dilation_2_d_tiling` 先填 official-adapted SIMT POD 和默认 `route=0`，再查询 AIV 核数/UB 并尝试 supplemental Vector selector；只有完整资源谓词成立才覆盖为 `route=1`。
-6. `launch_dilation_2_d_half` 先按 `route`，再按 `isNCHW` 选择三个 entry 之一，在当前 stream 上提交。
+6. `launch_dilation_2_d_half` 先按 `route`，再按 `isNCHW` 选择三个 entry 之一，在当前 stream 上发射。
 
 任何 shape/属性/收窄/tiling 错误都在 launch 前终止。`OpCommand::RunOpApi("Dilation2DDirect", lambda)` 包装 Direct launch，但 lambda 固定返回 0；转换实现没有把异步 Device 错误映射为该返回值。
 
@@ -165,15 +165,15 @@ ubSize > 2048 && requiredUb <= ubSize-2048
 
 ### Route 选择
 
-下表按实现复用重要性从 P0 到 P4 排列；P 级不改变 Host 判断顺序、短路或 fallback。
+下表按合法域覆盖、selector 优先级、复用价值与兜底价值从 P0 到 P4 排列；P 级不改变 Host 判断顺序、短路或 fallback。“active”表示普通合法输入即可到达的生产兜底，“conditional”表示还需要资源或大索引条件；二者都是真实可达路线。
 
-| 重要性 | Route | 路线特征 | 适用域 | 实现前提 |
+| 重要性 | Route / 状态 | 路线特征 | 完整触发谓词 | fallback / 终点 |
 |---:|---|---|---|---|
-| P0 | R-001 supplemental NHWC FP16 row tile | UB 行带复用、filter 每 core 常驻、四个相邻输出共享 filterReg | 950、Direct FP16、NHWC、非空输出 | `isNCHW==0 && P>0 && C>0`；`fW<=UINT16_MAX`、`K<=UINT16_MAX`、`(rW-1)*C*2<=UINT32_MAX`、`Ca<=UINT32_MAX/2`；宽度搜索命中 `spanW`、并行度和 UB 全部 guard |
-| P1 | R-002 official-adapted NHWC SIMT32 | NHWC GM 直访、32 位 magic division、512-thread grid-stride | R-001 未接收的普通索引域 NHWC 输入 | `route=0 && isNCHW==0 && 0<E<=INT32_MAX` |
-| P2 | R-004 official-adapted NCHW SIMT32 | NCHW GM 直访、W→H→C 坐标分解、32 位索引 | 普通索引域 NCHW 输入 | `route=0 && isNCHW!=0 && 0<E<=INT32_MAX` |
-| P3 | R-003 official-adapted NHWC SIMT64 | NHWC GM 直访，坐标商余数与 grid-stride 扩为 64 位 | 超出 32 位输出索引域的 NHWC 输入 | `route=0 && isNCHW==0 && E>INT32_MAX` |
-| P4 | R-005 official-adapted NCHW SIMT64 | NCHW GM 直访，W→H→C 坐标分解扩为 64 位 | 超出 32 位输出索引域的 NCHW 输入 | `route=0 && isNCHW!=0 && E>INT32_MAX` |
+| P0 | R-001 conditional supplemental NHWC FP16 row tile | UB 行带复用、filter 每 core 常驻、四个相邻输出共享 filterReg | Direct 前置门已保证 950/FP16/非空；再满足 `isNCHW==0 && P>0 && C>0`、`fW<=UINT16_MAX`、`K<=UINT16_MAX`、`(rW-1)*C*2<=UINT32_MAX`、`Ca<=UINT32_MAX/2`，且从宽到窄的搜索首次同时满足 `spanW<=UINT16_MAX`、`totalTiles>=min(P,A)`、`ubSize>2048`、`requiredUb<=ubSize-2048` | 任一标量 guard 失败直接保留 `route=0`；单个宽度失败继续缩窄；全失败按 layout/E 进入 R-002～R-005 |
+| P1 | R-002 active official-adapted NHWC SIMT32 | NHWC GM 直访、32 位 magic division、512-thread grid-stride | `route=0 && isNCHW==0 && 0<E<=INT32_MAX`；其中 `route=0` 来自 R-001 标量 guard 或全部宽度候选未命中 | `E>INT32_MAX` 时不进入本模板而转 R-003；本路线执行后写完 y，无下游 Kernel |
+| P2 | R-004 active official-adapted NCHW SIMT32 | NCHW GM 直访、W→H→C 坐标分解、32 位索引 | `route=0 && isNCHW!=0 && 0<E<=INT32_MAX`；NCHW 在 `vectorSafe` 第一项即排除 | `E>INT32_MAX` 时转 R-005；本路线执行后写完 y |
+| P3 | R-003 conditional official-adapted NHWC SIMT64 | NHWC GM 直访，坐标商余数与 grid-stride 为 64 位 | `route=0 && isNCHW==0 && E>INT32_MAX` | 终点；源码没有更宽索引 Route，Host 乘法溢出也没有恢复边 |
+| P4 | R-005 conditional official-adapted NCHW SIMT64 | NCHW GM 直访，W→H→C 坐标分解为 64 位 | `route=0 && isNCHW!=0 && E>INT32_MAX` | 终点；源码没有更宽索引 Route，Host 乘法溢出也没有恢复边 |
 
 Host 真实选择顺序如下，P 级不参与这些判断：
 
@@ -182,6 +182,19 @@ Host 真实选择顺序如下，P 级不参与这些判断：
 3. 首个可行宽度立即短路搜索，覆盖 `route=1`、Vector POD 与 Vector `blockDim`，launcher 进入 R-001。
 4. 未找到可行宽度则保持 `route=0`；launcher 先判断 `isNCHW`，NHWC 进入 `Process<half,false>`，NCHW 进入 `Process<half,true>`。
 5. 各 `Process` 最后按 `E<=INT32_MAX` 选择 32 位 body，否则选择 64 位 body。
+
+Direct 路径不消费官方图模式 `tilingKey`；它用 `route + isNCHW + E` 完成等价的三级选择。关键代码关系可压缩为：
+
+```cpp
+params->route = 0;                         // general SIMT first
+if (vectorSafe && widestFeasibleTileFound) params->route = 1;
+if (params->route == 1) launch(Vector, vectorTiling);
+else if (params->tiling.isNCHW) launch(NCHW, tiling);
+else launch(NHWC, tiling);
+// Inside either SIMT entry:
+E <= INT32_MAX ? asc_vf_call<...32<uint32_t>>()
+               : asc_vf_call<...64<uint64_t>>();
+```
 
 ```text
 validate -> empty output ? Host return
@@ -202,7 +215,7 @@ validate -> empty output ? Host return
 | P3 | R-003 | `route=0,false,uint64` | 950、FP16、NHWC、`E>INT32_MAX`、非 R-001 | 单 K-001 | `Process<half,false>` → `OpDilation2DSimtKernelNHWC64<half,uint64_t>` | GM 直访；坐标商/余数和 globalIdx 为 64 位 | 同上 |
 | P4 | R-005 | `route=0,true,uint64` | 950、FP16、NCHW、`E>INT32_MAX` | 单 K-001 | `Process<half,true>` → `OpDilation2DSimtKernelNCHW64<half,uint64_t>` | GM 直访；64 位 W→H→C 坐标分解 | 同上 |
 
-### 隐藏性能 Guard
+### Selector、性能与安全 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
@@ -215,6 +228,22 @@ validate -> empty output ? Host return
 | SIMT 索引宽度 | `E<=INT32_MAX` | 允许 magic divider 与 globalIdx 使用 `uint32_t` | P1 R-002 / P2 R-004 | P3 R-003 / P4 R-005 | `NsDilation2D::Process` |
 | layout 模板 | launcher 的 `isNCHW` | 两种 GM/filter 线性地址与坐标分解顺序不同 | R-002～R-005 | 对应 layout entry | `launch_dilation_2_d_half`；`Process<T,IsNCHW>` |
 | SIMT 线程数 | 固定 `THREAD_NUM=512` | `asc_vf_call` 的 block 线程布局；每线程 grid-stride | R-002～R-005 | 无其它线程配置 | `NsDilation2D::THREAD_NUM` |
+
+### Route 穷尽性与 dormant 分支
+
+- **D-001 dormant：整数 SIMT 模板分支。** `ComputeMaxVal<T,IsNCHW>` 保留 `std::is_integral_v<T>` 的饱和加法代码，但 Meta/NPU dtype gate、官方 OpDef 与三个 Direct entry 都只允许或实例化 FP16；因此 selector 不可能把合法输入送到整数 body。重新启用至少需要扩展接口 dtype 合同与 Host dtype gate、增加匹配的 Direct entry 和 launcher dtype selector、核对整型 `lowest`/饱和顺序，并为 layout×索引位宽建立对应实例。未完成这些 producer/consumer 接线前，它不能提升为 Route。
+- **NHWC Vector 的内部条件不另拆 Route。** `interior/boundary` 只切换 input UB 的构造方式，`C==Ca/C!=Ca` 只切换连续 DMA 与 `DataCopyPad`，四列主循环/1～3 列尾循环只处理 tile 内尾部；它们共享同一 Host selector、Vector POD、entry、分核和输出 owner。
+- **不存在 NCHW Vector、Cube/AIC 或多 Kernel dormant Route。** 当前源码没有对应 selector、POD、entry 或 body，不能把“尚未实现”伪装成 dormant 生产路线。官方图模式 Host/Tiling 属于来源链而非本 Direct 调用模式的备用 Route。
+
+整数分支的阻断关系可落成下面的审查式伪码：
+
+```text
+interface contract + meta/npu gates: dtype must be FP16
+launcher: launch *_half only
+entry: Process<half, IsNCHW>
+=> if constexpr(is_integral_v<half>) is false
+=> saturating integer body is compile-time unreachable
+```
 
 ### POD/ABI
 
@@ -387,6 +416,10 @@ workspace_total = 0
 | width tail | `groupedWidth=actualW&~3` | 4-output loop | scalar-width loop | 最后 0～3 个输出点 | 不访问 tileW 外部 |
 | output | Queue + `DataCopy`/`DataCopyPad` | yLocal | GM output | `actualW*C` | 不回写 Ca padding 或 tileW 尾 |
 
+##### Fallback 与失效边界
+
+R-001 只在 Host 完整证明标量窄化、工作项数量和三 Queue UB 总量安全后才会发射；候选宽度从大到小失败时继续缩窄，全部失败或平台 UB 查询返回 0 时保持 `route=0`。进入 Device 后没有二次 Route 判断；POD、Queue 容量或 ABI 若与 Host 推导不一致，只能视为实现错误，不能期待 Kernel 内回退。NCHW 永不进入本路线。
+
 #### 关键实现
 
 ##### 符号证据表
@@ -472,6 +505,10 @@ register_bytes = 固定官方/转换源码未给出；生命周期为单线程�
 | reduction | 线程本地程序顺序 | GM loads/add | `maxVal` | 单输出元素 | FP16；NaN 立即返回；越界按 `-inf+filter` 只检测 NaN |
 | output | unique writer | current thread | 无等待 | `y[globalIdx]` | `globalIdx<E` 是尾保护；无 atomic/barrier |
 
+##### Fallback 与失效边界
+
+R-002 是 `route=0` 的普通 NHWC 兜底。`E>INT32_MAX` 时 `Process<half,false>` 在调用 body 前改选 R-003；一旦进入 NHWC32 body 就没有中途 fallback。`C/oW/oH` 必须为正，空输出已由 Host 返回，否则 magic division 的除数域不成立。
+
 #### 关键实现
 
 ##### 符号证据表
@@ -506,13 +543,18 @@ launch -> dilation_2_d_nchw_half -> Process<half,true>
 ##### 源码等价伪码
 
 ```text
-for globalIdx in grid-stride [0,E):
-  ow,oh,c,b = chained UintDiv/remainders by oW,oH,C
+for globalIdx=blockIdx*512+threadIdx; globalIdx<E; globalIdx+=gridDim*512:
+  afterW=UintDiv(globalIdx,mW,sW); ow=globalIdx-afterW*oW
+  afterH=UintDiv(afterW,mH,sH);    oh=afterW-afterH*oH
+  afterC=UintDiv(afterH,mC2,sC2);  c=afterH-afterC*C; b=afterC
+  maxVal=-inf
   for fh,fw:
     ih=oh*sH+fh*rH-pT; iw=ow*sW+fw*rW-pL
-    xIdx=((b*C+c)*H+ih)*W+iw
     fIdx=(c*fH+fh)*fW+fw
-    apply the same FP16 add, NaN and max rules as R-002
+    val = in_bounds ? x[((b*C+c)*H+ih)*W+iw]+filter[fIdx]
+                    : -inf+filter[fIdx]
+    if isnan(val): return NaN
+    maxVal=max(maxVal,val)
   y[globalIdx]=maxVal
 ```
 
@@ -522,10 +564,10 @@ for globalIdx in grid-stride [0,E):
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| x GM | `((b*C+c)*H+ih)*W+iw` | 单元素 | FP16 NCHW | caller | thread | input Tensor | GM 直访 |
-| filter GM | `(c*fH+fh)*fW+fw` | 单元素 | FP16 CHW | caller | thread | filter Tensor | GM 直访 |
-| y GM | `globalIdx` | 单元素 | FP16 NCHW | thread | caller | output Tensor | unique writer |
-| registers | uint32 coordinates + int64 address + max | 固定仓不可见 | scalar | thread | thread | 当前迭代 | 程序顺序复用 |
+| x GM | `((b*C+c)*H+ih)*W+iw` | 每个有效 filter 点 1 元素 | FP16 NCHW | caller | 当前 SIMT thread | input Tensor | GM 直访；无 UB staging |
+| filter GM | `(c*fH+fh)*fW+fw` | 每个 filter 点 1 元素 | FP16 CHW | caller | 当前 SIMT thread | filter Tensor | 越界 input 点仍读取，用于 `-inf+filter` |
+| y GM | `globalIdx` | 每次迭代 1 元素 | FP16 NCHW | 当前 thread | caller | output Tensor | 每个 `globalIdx` 唯一 writer |
+| registers | uint32 magic/坐标/商余数，int64 `ih/iw/xIdx/fIdx`，half reduction | 源码未声明字节数 | scalar | 当前 thread | 当前 thread | 一个 `globalIdx` 迭代 | 下一次 grid-stride 迭代覆盖 |
 
 ##### 分层内存布局
 
@@ -547,7 +589,13 @@ explicit_UB_total=0; dynamic_ub=N/A; workspace_total=0
 
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
-| 全流程 | `UintDiv` + grid-stride，无 barrier/atomic | thread | thread | 单输出 | FP16/NaN 同 R-002；uint32 坐标；`globalIdx<E` 尾保护 |
+| coordinate | 三次 `Simt::UintDiv` | `Process` 生成的 uint32 magic/shift | 地址计算 | W→H→C 商余数 | 商余数为 uint32；GM 地址表达式显式提升为 int64 |
+| reduction | 单线程程序顺序 | GM load 与 half add | `maxVal` | 一个 NCHW 输出 | 初值 `-inf`；有效/越界都先执行加法语义；任一 NaN 立即返回 |
+| output/tail | unique writer + grid-stride | 当前 thread | 无跨线程等待 | `y[globalIdx]` | `globalIdx<E` 保护最后一个不满 512-thread 的逻辑尾；无 barrier/atomic |
+
+##### Fallback 与失效边界
+
+R-004 是所有非空 NCHW 普通索引域的兜底，Vector selector 不参与。`E>INT32_MAX` 时同一 entry 的 `Process<half,true>` 改选 R-005；进入 NCHW32 body 后无中途 fallback。`C/oH/oW` 的正值前提由非空输出与 Host shape gate 共同建立。
 
 #### 关键实现
 
@@ -581,7 +629,21 @@ launch -> dilation_2_d_nhwc_half -> Process<half,false>
 
 ##### 源码等价伪码
 
-与 R-002 完全相同的 NHWC filter reduction；仅 `globalIdx`、`gridStride`、C/oW/oH 的 magic/shift 和商余数改为 `uint64_t`，循环仍以 `globalIdx<E` 保护。
+```text
+for u64 globalIdx=blockIdx*512+threadIdx; globalIdx<E; globalIdx+=u64(gridDim)*512:
+  afterC=UintDiv(globalIdx,mC,sC);   c=globalIdx-afterC*C
+  afterW=UintDiv(afterC,mOW,sOW);    ow=afterC-afterW*oW
+  afterH=UintDiv(afterW,mOH,sOH);    oh=afterW-afterH*oH; b=afterH
+  half maxVal=-inf
+  for fh in [0,fH), fw in [0,fW):
+    ih=oh*sH+fh*rH-pT; iw=ow*sW+fw*rW-pL
+    fIdx=(fh*fW+fw)*C+c
+    val = in_bounds ? x[((b*H+ih)*W+iw)*C+c]+filter[fIdx]
+                    : -inf+filter[fIdx]
+    if isnan(val): return NaN
+    maxVal=max(maxVal,val)
+  y[globalIdx]=maxVal
+```
 
 #### 内存与数据搬运
 
@@ -589,8 +651,10 @@ launch -> dilation_2_d_nhwc_half -> Process<half,false>
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| x/filter/y GM | 同 R-002 | 每线程逐元素 | FP16 NHWC | caller/thread | thread/caller | Tensor | 64 位索引；无 UB staging |
-| thread registers | uint64 坐标/商余数 + reduction state | 固定仓不可见 | scalar | thread | thread | 当前迭代 | 下一迭代覆盖 |
+| x GM | `((b*H+ih)*W+iw)*C+c` | 每个有效 filter 点 1 元素 | FP16 NHWC | caller | 当前 thread | input Tensor | int64 地址；无 UB staging |
+| filter GM | `(fh*fW+fw)*C+c` | 每个 filter 点 1 元素 | FP16 HWC | caller | 当前 thread | filter Tensor | input 越界时仍读取 |
+| y GM | `globalIdx` | 每次迭代 1 元素 | FP16 NHWC | 当前 thread | caller | output Tensor | uint64 线性索引；unique writer |
+| thread registers | uint64 magic/坐标/商余数与 grid-stride，int64 地址，half reduction | 源码未声明字节数 | scalar | 当前 thread | 当前 thread | 当前 `globalIdx` | 下一迭代覆盖 |
 
 ##### 分层内存布局
 
@@ -612,7 +676,13 @@ explicit_UB_total=0; dynamic_ub=N/A; workspace_total=0
 
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
-| 全流程 | 无 barrier/atomic；grid-stride | 当前线程 | 当前线程 | 单输出 | 与 R-002 相同；索引为 uint64，地址为 int64；`globalIdx<E` 尾保护 |
+| coordinate | `GetUintDivMagicAndShift<uint64_t>` + 三次 `UintDiv` | `Process<half,false>` | 地址计算 | C→W→H 商余数 | `globalIdx/gridStride/magic/quotient` 全为 uint64；轴坐标收窄 int32 前均小于对应 int32 轴长 |
+| reduction | 单线程程序顺序 | GM loads 与 half add | half `maxVal` | 一个 NHWC 输出 | 初值 `-inf`；有效值或 `-inf+filter` 出现 NaN 即返回；否则按源码遍历顺序 Max |
+| output/tail | unique writer + `globalIdx<E` | 当前 thread | 无等待 | y GM | 64 位 loop guard 覆盖 grid-stride 尾；无 barrier/atomic |
+
+##### Fallback 与失效边界
+
+R-003 是 NHWC 的最终大索引路线，没有更宽模板或 Device 恢复边。它只扩大线性索引、magic 与商余数；`b/oh/ow/c` 和各 shape 轴仍是 int32，GM 地址仍是有符号 int64。Host 的 `E=N*oH*oW*C` 未做 checked multiply；若该乘法溢出，64 位 Route 本身不能补救。
 
 #### 关键实现
 
@@ -646,7 +716,21 @@ launch -> dilation_2_d_nchw_half -> Process<half,true>
 
 ##### 源码等价伪码
 
-与 R-004 相同的 NCHW 地址和 reduction；`globalIdx/gridStride` 及 W/H/C 坐标分解改为 `uint64_t`。
+```text
+for u64 globalIdx=blockIdx*512+threadIdx; globalIdx<E; globalIdx+=u64(gridDim)*512:
+  afterW=UintDiv(globalIdx,mW,sW);   ow=globalIdx-afterW*oW
+  afterH=UintDiv(afterW,mH,sH);      oh=afterW-afterH*oH
+  afterC=UintDiv(afterH,mC2,sC2);    c=afterH-afterC*C; b=afterC
+  half maxVal=-inf
+  for fh in [0,fH), fw in [0,fW):
+    ih=oh*sH+fh*rH-pT; iw=ow*sW+fw*rW-pL
+    fIdx=(c*fH+fh)*fW+fw
+    val = in_bounds ? x[((b*C+c)*H+ih)*W+iw]+filter[fIdx]
+                    : -inf+filter[fIdx]
+    if isnan(val): return NaN
+    maxVal=max(maxVal,val)
+  y[globalIdx]=maxVal
+```
 
 #### 内存与数据搬运
 
@@ -654,8 +738,10 @@ launch -> dilation_2_d_nchw_half -> Process<half,true>
 
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
-| x/filter/y GM | 同 R-004 | 每线程逐元素 | FP16 NCHW | caller/thread | thread/caller | Tensor | 64 位索引 |
-| registers | uint64 coordinate + reduction | 固定仓不可见 | scalar | thread | thread | 当前迭代 | 下一迭代覆盖 |
+| x GM | `((b*C+c)*H+ih)*W+iw` | 每个有效 filter 点 1 元素 | FP16 NCHW | caller | 当前 thread | input Tensor | int64 地址；无 UB staging |
+| filter GM | `(c*fH+fh)*fW+fw` | 每个 filter 点 1 元素 | FP16 CHW | caller | 当前 thread | filter Tensor | input 越界时仍读取 |
+| y GM | `globalIdx` | 每次迭代 1 元素 | FP16 NCHW | 当前 thread | caller | output Tensor | uint64 线性索引；unique writer |
+| registers | uint64 magic/商余数/grid-stride，int64 地址，half reduction | 源码未声明字节数 | scalar | 当前 thread | 当前 thread | 当前 `globalIdx` | 下一迭代覆盖 |
 
 ##### 分层内存布局
 
@@ -677,7 +763,13 @@ explicit_UB_total=0; dynamic_ub=N/A; workspace_total=0
 
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
-| 全流程 | grid-stride，无 barrier/atomic | thread | thread | 单输出 | 与 R-004 相同；uint64 坐标；`globalIdx<E` 尾保护 |
+| coordinate | `GetUintDivMagicAndShift<uint64_t>` + 三次 `UintDiv` | `Process<half,true>` | 地址计算 | W→H→C 商余数 | 64 位索引域；坐标收窄 int32 后用于 int64 GM 地址表达式 |
+| reduction | 单线程程序顺序 | GM loads 与 half add | half `maxVal` | 一个 NCHW 输出 | 初值 `-inf`；有效值/越界加法的 NaN 立即返回；否则按 fh→fw 顺序 Max |
+| output/tail | unique writer + `globalIdx<E` | 当前 thread | 无等待 | y GM | 64 位 grid-stride 尾保护；无 barrier/atomic |
+
+##### Fallback 与失效边界
+
+R-005 是 NCHW 的最终大索引路线，没有更宽模板或 Device 恢复边。64 位只覆盖输出线性索引与除法链，POD 轴值仍为 int32、GM 地址仍为 int64；Host `totalElements` 溢出或错误 POD 不会在 Kernel 内被检测。
 
 #### 关键实现
 
@@ -697,7 +789,7 @@ explicit_UB_total=0; dynamic_ub=N/A; workspace_total=0
 
 - 适用 Route：P1 R-002、P2 R-004、P3 R-003、P4 R-005。
 - 触发条件：Host/launcher 已把 NHWC/NCHW 映射到 `schMode` 或 Direct 的独立 entry。
-- Golden 来源：[`op_kernel/arch35/dilation2_d.cpp:29-34`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/pooling/dilation2_d/op_kernel/arch35/dilation2_d.cpp)
+- 官方固定来源：[`op_kernel/arch35/dilation2_d.cpp:29-34`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/pooling/dilation2_d/op_kernel/arch35/dilation2_d.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -730,7 +822,7 @@ if constexpr (schMode == DILATION2D_MODE_NHWC) {
 
 - 适用 Route：P1 R-002 / P2 R-004 使用 32 位；P3 R-003 / P4 R-005 使用 64 位。
 - 触发条件：`totalElements <= INT32_MAX` 选 32 位，否则选 64 位；layout 再决定除数链 C/oW/oH 或 oW/oH/C。
-- Golden 来源：[`op_kernel/arch35/dilation2_d_simt.h:241-263`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/pooling/dilation2_d/op_kernel/arch35/dilation2_d_simt.h)
+- 官方固定来源：[`op_kernel/arch35/dilation2_d_simt.h:241-263`](https://gitcode.com/cann/ops-nn/blob/26311e64257d6d54e5876cf1cc95104a3f378860/pooling/dilation2_d/op_kernel/arch35/dilation2_d_simt.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -799,12 +891,12 @@ R-001 的“输入行带只搬一次、filter 每 core 只搬一次、四个相�
 ## 限制与失败边界
 
 - Direct Invoke 只接受连续 FP16；不执行 `Contiguous`，不支持官方 README 之外的 dtype，也不提供 ACLNN executor/workspace 语义。
-- `CheckedI32` 禁止负维或超过 `INT32_MAX` 的单轴，但 `totalElements=N*oH*oW*C` 的连续乘法没有显式溢出检查；复用时必须补充 checked multiply。
+- `CheckedI32` 禁止负维或超过 `INT32_MAX` 的单轴，但输出尺寸中间式、`totalElements=N*oH*oW*C`、`totalPoints=N*oH*oW` 与 `candidateTiles=rows*tilesPerRow` 没有统一的 checked arithmetic；复用时必须为有符号加乘和收窄补齐溢出检查。
 - Vector 的 Host guard 覆盖主要 `uint16_t/uint32_t` 窄化与 UB 总量，但源码没有 `static_assert` 锁定两个 POD 的 size/offset；跨编译单元复用应显式锁定 ABI。
 - Vector 的 `requiredUb` 只计三条 Queue，并额外保留 2048 B；若平台 `TPipe` 固定开销契约变化，必须重新审计 reserve，不能只沿用常量。
 - official-adapted SIMT 的 NaN 行为不是官方原 body 的逐字复制：转换实现为有效 `x+filter` 的 NaN 和越界 `-inf + +inf` 增加传播；迁回官方图模式时不能假设该差异已经存在。
 - supplemental Vector 只覆盖 NHWC；NCHW 或任一资源 guard 失败都依赖 SIMT fallback。官方固定 commit 不证明该 Vector 路线的性能或跨版本兼容性。
-- 单 stream 保证本次 K-001 的提交顺序；无跨 Kernel 同步。launch wrapper 固定返回 0，异步 Device 错误不在该返回值中闭合。
+- 单 stream 保证本次 K-001 的发射顺序；无跨 Kernel 同步。launch wrapper 固定返回 0，异步 Device 错误不在该返回值中闭合。
 - 本次知识提取未执行编译、真机、数值或性能测试；不提供性能百分比结论。
 
 ## 源码索引

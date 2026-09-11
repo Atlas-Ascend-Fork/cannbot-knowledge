@@ -32,7 +32,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/gmm/grouped_matmul_swiglu_quant_v2/CMakeLists.txt
     role: implementation
 created_at: "2026-08-25T19:41:59Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -47,10 +47,10 @@ cann_versions: ["9.1.0"]
 | 计算语义 | 按累计 `group_list` 做 INT8 GroupedMatmul；INT32 结果乘 FP32 `x_scale`/`weight_scale`，沿 N 二分后做 `Swish(left) * right`，再逐 token 求 `max(abs)/127` 并量化为 INT8。 |
 | 输入输出 | 连续 ND `x:[M,K]`、`weight:[E,K,N]`、`weight_scale:[E,N]`、`x_scale:[M]`；输出 `y:[M,N/2]` INT8、`y_scale:[M]` FP32。 |
 | 执行类型 | 单 Kernel `MIX_CV`：每个逻辑 block 为 1 个 `AIC_CUBE` 与 2 个 `AIV_VECTOR`；无 SIMT、NDDMA 或通信节点。 |
-| Kernel 路线 | P0 / R-001：固定 arch35 INT8/FP32 per-token、RowMajor A/B、ASWT tail-split、`KERNEL_TYPE_MIX_AIC_1_2`。 |
+| Kernel 路线 | P0 / R-001：唯一 active 路线，固定 arch35 INT8/FP32 per-token、RowMajor A/B、ASWT tail-split、`KERNEL_TYPE_MIX_AIC_1_2`；其内保留 L0C DB、L2 hint、空专家、末组 tail split 与 quant 分核等 conditional 分支。 |
 | 核心资源 | GM 输入/输出；FP32 SwiGLU workspace；AIC 的 L1/L0A/L0B/L0C；AIC→AIV 的 VECIN UB；AIV 的寄存器和双缓冲 TQue。 |
-| 来源闭包 | `direct_implementation_closed`：Torch direct 入口、Host 校验/tiling、紧凑 launch ABI、MIX entry、Cube/Vector body、workspace、同步、精度、tail 与构建映射均已闭合。 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 来源闭包 | `direct_implementation_closed`：Torch direct 入口、Host 校验/tiling、POD 与紧凑 launch ABI、MIX entry、Cube/Vector body、workspace、同步、精度、tail、fallback 及捆绑但不可达的 CGMCT 族均已分类。 |
+| 证据边界 | 本卡结论来自固定提交的源码闭包；编译可用性、设备执行、数值正确性与性能不由这些源码证据单独证明。 |
 
 ## 接口与语义
 
@@ -150,34 +150,79 @@ Vector 行量化使用 `rowLen=N/2`、`alignedRowLen=align_up(rowLen,16)`，`ubA
 
 ### Route 选择
 
-本卡只有一个 Host 可达 Route，重要性为 P0；Route 选择表、执行矩阵、源码闭包与 Kernel 展开均按 `P0 / R-001` 的同一顺序展示。
+生产 Host 只有一个可达 Route，重要性为 P0。代码包还携带通用 CGMCT 顶层 Kernel、epilogue 和 TileCopy 模板，但“头文件存在”不等于“Host 可选”：本卡先列 active Route，再列其内 conditional 分支，最后给出 dormant 族的不可达证据与重新启用条件。
 
 | 顺序 | Route | Key/模板 | 精确选择条件与优先级 | 不适用去向 |
 |---:|---|---|---|---|
-| 1 | P0 / R-001 INT8 per-token MIX_CV | 特征：无 runtime tiling key；固定 `RowMajor/RowMajor` CGMCT 与单 Kernel MIX 1:2 实例 | 适用域：950、INT8 X/W、FP32 scales、N 正偶数、累计 group list、`1<=E<=16`、单组 `<=65535`；实现前提：连续 ND、Host 校验通过且 UB/L1/L0C 可构造 tiling；优先级 P0，唯一可达 Route | Host 返回失败；无下一 Route 或 Device fallback |
+| 1 | P0 / R-001 INT8 per-token MIX_CV | 特征：无 runtime tiling key；固定 `RowMajor/RowMajor` CGMCT 与单 Kernel MIX 1:2 实例 | Host 接受域：950、INT8 X/W、FP32 scales、N 正偶数、累计 group list、`1<=E<=16`、单组 `<=65535`、连续 ND且 UB/L1/L0C 可构造 tiling。紧凑 ABI 安全域还要求 M/N/K、`H=N/2`、`ubAvail`、AIC 数与 stage 字段不超过各自 pack 位宽；当前 quant body 的资源安全域还要求 `M>=2*blockDim` | Host 返回失败；无下一 Route 或 Device fallback。Host 已接受但超出 pack 安全域时存在截断/字段串扰；`M<2*blockDim` 时存在 inactive AIV Queue 长度未初始化风险，二者均无自动 fallback |
 
 ```text
 if schema/shape/dtype/contiguous/group-list invalid: fail before launch
 else if AIC/UB/L1/L0C or tiling capacity invalid: fail before launch
+else if M < 2*aicNum: Host still launches, but inactive quant AIV initializes Queues from an undefined row count
+else if compact fields exceed their encoded widths: Host still launches, but R-001 contract is unsafe
 else: P0 / R-001 fixed arch35 per-token MIX_AIC_1_2
 ```
+
+#### R-001 内部 conditional 分支
+
+下表的分支都不改变 entry、模板实例或输出语义，因此不拆成新 Route ID；它们是 R-001 内必须保留的条件路径。
+
+| 顺序 | 分支 | 触发谓词 | 选中动作 | 否则路径/语义边界 |
+|---:|---|---|---|---|
+| 1 | C-001 L0C 双缓冲 | `2*baseM*baseN*4 <= L0C_size` | `dbL0C=2` 写入 `meta[47:40]` | `dbL0C=1`；仍是 R-001，仅管线深度不同 |
+| 2 | C-002 B L2 one-shot | `M_g<=baseM && N%256==0 && baseN%256==0 && (K<=256 || K>=4096)` | B GM Tensor 设 `CACHE_MODE_DISABLE` | `CACHE_MODE_NORMAL`；中等 K 保留 tail split 间的 B 复用 |
+| 3 | C-003 weight-scale L2 one-shot | `M_g<=baseM && N%256==0 && baseN%256==0` | `x2ScaleGlobal_` 设 `CACHE_MODE_DISABLE` | `CACHE_MODE_NORMAL` |
+| 4 | C-004 空专家 | `unpack(groupSize[g])==0` | 更新到专家 g 的 W/weight-scale 基址，但不调 scheduler/MMAD/epilogue | 非空组进入 tile 循环；X/x-scale/workspace 只按已消费 token 推进 |
+| 5 | C-005 末组 tail split | `g==E-1 && remainTile>1` | 以 M/N 最小切分约束调 `UpdateTailTile` | 保留原 tail tile；若最后一个索引组为空，前一非空组不会补做此优化 |
+| 6 | C-006 AIV M 二分 | `subBlockIdx in {0,1}` | sub-block 0 处理 `ceil(singleM/2)` 行，sub-block 1 处理剩余行 | 后半行数为 0 时该 AIV 返回，但仍参与外层 flag 协议 |
+| 7 | C-007 quant 行分核 | `M % (2*blockDim)` 决定 `headCoreNum` | active core 每核取 `ceil(M/V)` 或 `floor(M/V)` 行；每批再被 `min(ubAvail,255,rows/core)` 限制 | `M<V` 时存在 inactive AIV，但当前顺序先 `CalParams→InitParams→InitAndSetBuffer`，后检查 `blockIdx>=coreNum`；inactive AIV 的 `multiRowNum_` 未初始化却已用于三处 `InitBuffer` 长度，因此不是安全直返；`V=2*blockDim`，无 fallback |
+
+```text
+# R-001 内部分支伪码
+dbL0C = 2 if 2*baseM*baseN*4 <= L0C else 1
+for g:
+  M_g = unpack_u16(groupSizePacks, g)
+  advance expert-major W/weight_scale base; advance token-major bases by previous M_g
+  if M_g == 0: continue
+  B.cache = DISABLE if one_shot_B(M_g,N,K,baseM,baseN) else NORMAL
+  Wscale.cache = DISABLE if one_shot_scale(M_g,N,baseM,baseN) else NORMAL
+  if g == E-1: split_last_tail_if_profitable()
+  run_same_R001_tiles()
+partition_quant_rows(V=2*blockDim, batch=min(ubAvail,255,rows_per_core))
+# current body: when M<V, inactive AIV reaches Queue initialization with undefined multiRowNum_ before its return guard
+```
+
+#### Dormant 族与不可达证据
+
+| 分类 | 捆绑实现 | 生产链不可达原因 | 重新启用的必要条件 |
+|---|---|---|---|
+| D-001 MX SwiGLU quant | `kernel_gmm_swiglu_mxquant.h`、`block_mmad_mx.h`、`block_epilogue_swiglu_mx_quant.h` | direct translation unit 不 include/不实例化；Host schema 固定 INT8/FP32，也没有 MX scale/POD/key | 扩展 schema、MX tiling/POD/GM 参数，新建明确 selector 与 launcher 分发，并实例化 MX kernel |
+| D-002 finalize-routing 族 | `kernel_gmm_finalize_routing*.h`、`block_prologue_finalize_routing.h`、对应 epilogue | 无 routing 索引/计数/deterministic workspace 输入，且无 Host key 或 entry 调用 | 定义 routing 语义、workspace 所有权、POD 与跨核同步，再增加独立 Route |
+| D-003 generic GMM/GMM-add | `kernel_grouped_matmul.h`、`kernel_grouped_matmul_add.h`、`block_grouped_matmul_builder.h` | 本入口语义必须融合 dequant、SwiGLU 和逐 token quant；这两个顶层 kernel 未被 include | 只能作为另一逻辑算子/另一 schema路由，不得当作本算子 fallback |
+| D-004 QGMM inplace/fixpipe/online-dynamic | `kernel_qgmm_inplace_add*.h`、`block_mmad_fixpipe_dequant.h`、`block_epilogue_dequant.h` | 无 inplace/add 输入、per-tensor dequant 参数或对应 tiling；无 launcher 分支 | 新增独立语义合同、输出别名规则、Host 选择与完整 ABI |
+| D-005 QGMM MX/per-tile | `kernel_qgmm_mx.h`、`kernel_qgmm_pertile.h`、`block_mmad_pertile*`、`block_epilogue_pertile.h` | 本 Host 只生成 per-token FP32 scale 路线，无 per-tile/MX 的 scale shape、group type 和 tile POD | 增加 dtype/scale/layout 校验、tiling producer、entry 实例和 selector 优先级 |
+| D-006 模板内替代 | `GetTileIdxRowMajor`、其他 `TileCopy` policy、PertokenQuant 的 INT4/FP8/HIF8 分支、DequantSwiglu 的 FP16/BF16 分支 | R-001 的 compile-time type/policy 已固定；没有 runtime 谓词可切换 | 必须形成新的显式模板实例和 Host selector；不能通过改 POD 单字段激活 |
+
+因此，D-001…D-006 只是代码包容量，不是 active/conditional Route，也不是 R-001 失败后的安全兜底。
 
 ### 模板/实现执行矩阵
 
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行族与 kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
-| P0 / R-001 | fixed direct specialization | 表中合法域，950/dav-3510 | 单 Kernel：AIC_CUBE ↔ 两个 AIV_VECTOR；末段仍为同 Kernel AIV | `KernelGmmSwiGluPertokenQuant<MatmulShape,BlockMmadBuilder<int8_t,RowMajor,int8_t,RowMajor,int32_t,RowMajorAlign,float,RowMajor,Shape<_0,_0,_0>,Shape<_0,_0,_0>,GroupedMatmulAswtWithTailSplitScheduler,MatmulMultiBlock<>,TileCopy<DAV3510,CopyInAndCopyOutSplitMWithParams>>,BlockEpilogueDequantSwiglu<Shape<_0,_0,_0>,float,int32_t,float,float,true>,BlockEpiloguePertokenQuant<float,int8_t>,GroupedMatmulAswtWithTailSplitScheduler,float,float>` | AIC/AIV flags 4/20 与 6/22；FP32 workspace；最终 `SyncAll`；量化 TQue 双缓冲 | M/N/K tile tail、末专家 tail split、空组 skip；不满足无 fallback |
+| P0 / R-001 | fixed direct specialization | 表中合法域，950/dav-3510；资源安全还要求 `M>=2*blockDim` | 单 Kernel：AIC_CUBE ↔ 两个 AIV_VECTOR；末段仍为同 Kernel AIV | `KernelGmmSwiGluPertokenQuant<MatmulShape,BlockMmadBuilder<int8_t,RowMajor,int8_t,RowMajor,int32_t,RowMajorAlign,float,RowMajor,Shape<_0,_0,_0>,Shape<_0,_0,_0>,GroupedMatmulAswtWithTailSplitScheduler,MatmulMultiBlock<>,TileCopy<DAV3510,CopyInAndCopyOutSplitMWithParams>>,BlockEpilogueDequantSwiglu<Shape<_0,_0,_0>,float,int32_t,float,float,true>,BlockEpiloguePertokenQuant<float,int8_t>,GroupedMatmulAswtWithTailSplitScheduler,float,float>` | AIC/AIV flags 4/20 与 6/22；FP32 workspace；最终 `SyncAll`；量化 TQue 双缓冲 | M/N/K tile tail、末专家 tail split、空组 skip；`M<2*blockDim` 的 inactive AIV 初始化风险无 fallback |
 
-### 隐藏性能 Guard
+### 性能 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | Cube base | `M,K,N>0`，base tile 可放入 L1/L0C | 固定 int8 Cube tile 与 FP32 L0C | P0 / R-001 | Host fail | `FillCubeTiling` |
-| L1 scale reservation | `L1 > baseN*4` 且剩余 `>=baseA+baseB` | B scale 与 A1/B1 共用 L1 预算 | P0 / R-001 | Host fail | `FillCubeTiling` |
+| L1 scale reservation | `L1 > baseN*4` 且剩余 `>=baseA+baseB` | Host 沿用官方 tiler 的 per-channel scale 扣减后再分 A1/B1 depth；当前 Device 的 weight scale 实际走 GM→AIV UB，不得把该保留量解读为 active L1 scale tensor | P0 / R-001 | Host fail | `FillCubeTiling` |
 | L0C double buffer | `2*baseM*baseN*4<=L0C_size` | 两阶段 INT32 accumulator | P0 / R-001 | 降为 `dbL0C=1` | `FillCubeTiling` |
 | AIV UB 行批 | `ubAvail=(UB-1024)/(align16(H)*14)` | 输入 FP32、INT8 输出、scale 与双缓冲总预算 | P0 / R-001 | `ubAvail==0` 时 Device 行循环不可成立；Host 仅检查 `UB>1024` | `DoOpTilingPertoken` 对应式、`CalParams` |
+| inactive quant AIV | 当前实现需 `M>=V=2*blockDim`，使 `coreNum=V`、不存在 inactive AIV | `M<V` 时 inactive AIV 的 `InitParams` 不写 `multiRowNum_`，但后续先据此计算 Queue 长度并执行三次 `InitBuffer`，之后才检查 `blockIdx>=coreNum` | P0 / R-001 | Host 无检查、Device 无安全 fallback；复用时须把 inactive guard 移到所有参数/Queue 初始化之前，或显式初始化安全的零长度状态 | `CalParams`, `InitParams`, `InitAndSetBuffer`, `operator()` |
 | dequant 固定 UB | 950 UB 至少覆盖 199680 bytes | 两块 INT32/FP32 VECIN、SwiGLU VECOUT与三个 scale buffer使用固定地址 | P0 / R-001 | 转换 Host没有显式容量 fallback | `BlockEpilogueDequantSwiglu::Init` |
-| compact ABI 宽度 | M/N/K 进 16 bit，baseM/深度/step 进 8 bit | raw launch 只传 3 个 uint64 metadata | P0 / R-001 | 转换源码没有溢出 fallback | `launch_grouped_matmul_swiglu_quant_kernel`, `RebuildCubeTiling` |
+| compact ABI 宽度 | M/N/K 和 rowLen 需 `<=65535`，ubAvail 需 `1..65535`，AIC 数、depth/step 需 `<=255` | raw launch 只传 3 个 uint64 metadata；`dims/tile` 显式截断，`meta` 的 rowLen/ubAvail 还可向高位字段串扰 | P0 / R-001 | 转换源码没有溢出 fallback | `launch_grouped_matmul_swiglu_quant_kernel`, `RebuildCubeTiling` |
 | B L2 hint | 单专家 `M_g<=baseM`、`N%256==0`、`baseN%256==0`，且 `K<=256 || K>=4096` | 一次性 B 流关闭 L2；中等 K 保留 cache 供 tail 分片复用 | P0 / R-001 每专家 | normal cache | `UpdateGlobalBuffer` |
 | scale L2 hint | `M_g<=baseM && N%256==0 && baseN%256==0` | 一次性 weight_scale 读取 | P0 / R-001 每专家 | normal cache | `SetX2ScaleL2CacheHint` |
 | schedule mode | 恒设 `schemMode=1` | MIX 1:2 的配对 AIC/AIV flag 协议要求批调度 | P0 / R-001 | 无替代 launch | `launch_grouped_matmul_swiglu_quant_kernel` |
@@ -199,7 +244,7 @@ else: P0 / R-001 fixed arch35 per-token MIX_AIC_1_2
 | 同上 | `cubeTiling[256]` | byte[256], align 8 | offset 64；LP64 推导 `sizeof=320,alignof=8` | POD bytes | `memcpy(TCubeTiling)` | launcher 读取并重打包 | `sizeof(TCubeTiling)<=256` |
 | Device args | `x,weight,weightScale,xScale,y,yScale,workspace` | GM pointer×7 | args 0..55 | addresses | launcher | entry/CGMCT | 各 Tensor 生命周期覆盖 stream work |
 | Device args | `groupSizePack0..3` | uint64×4 | args 56..87 | group sizes | launch params | `GetPackedGroupSize` | E<=16 |
-| Device args | `meta` | uint64 | args 88..95 | packed fields | launcher | entry/Rebuild | group 8b、row 16b、UB 16b、dbL0C 8b、cores 8b |
+| Device args | `meta` | uint64 | args 88..95 | packed fields | launcher | entry/Rebuild | group 8b、row 16b、UB 16b、dbL0C 8b、cores 8b；row/UB producer 未先 mask，超宽会串扰高位 |
 | Device args | `dims` | uint64 | args 96..103 | packed elements | launcher | `RebuildCubeTiling` | M/N/K 16b、baseM 8b |
 | Device args | `tile` | uint64 | args 104..111 | packed tile/stages | launcher | `RebuildCubeTiling` | baseN/baseK 16b；depth/step 8b |
 | rebuilt `TCubeTiling` | `M,N,Ka,Kb` | int32 | SDK ABI；本转换不透传结构 | elements | `RebuildCubeTiling(dims)` | Matmul/scheduler | 来自 16-bit pack |
@@ -208,7 +253,18 @@ else: P0 / R-001 fixed arch35 per-token MIX_AIC_1_2
 | 同上 | `dbL0A,dbL0B,dbL0C` | int32 | SDK ABI | stages | 2、2、`meta` | L0 pipeline | dbL0C 1/2 |
 | 同上 | `usedCoreNum` | int32 | SDK ABI | AIC cores | `meta[55:48]` | scheduler/Matmul | 8-bit pack |
 
-`GMMSQLaunchParams` 的数字布局按声明和 LP64 对齐规则推导；固定转换源码没有单独的 `offsetof` 静态断言。本次提取未编译验证这些推导值。
+`GMMSQLaunchParams` 的数字布局按声明和 LP64 对齐规则推导；固定转换源码没有单独的 `offsetof` 静态断言，因此这些布局值属于声明推导边界，不构成跨编译器或跨 SDK 的 ABI 兼容性保证。
+
+```text
+meta = groupNum | (rowLen<<8) | (ubAvail<<24) | (u8(dbL0C)<<40) | (u8(usedCoreNum)<<48)
+dims = u16(M) | (u16(N)<<16) | (u16(K)<<32) | (u8(baseM)<<48)
+tile = u16(baseN) | (u16(baseK)<<16) | (u8(depthA1)<<32) | (u8(depthB1)<<40)
+     | (u8(stepKa)<<48) | (u8(stepKb)<<56)
+
+Device: mask/unpack -> rebuild TCubeTiling
+```
+
+`dims/tile` 的 producer 显式转为 `uint16_t/uint8_t`，因而超宽是截断；`meta` 中 `rowLen` 和 `ubAvail` 直接左移，超过 16 bit 时不仅 consumer 截断本字段，还可改写相邻高位。这是 launcher contract，不是可由 Device 自动修正的 tail。
 
 ### Route 源码闭包
 
@@ -257,6 +313,17 @@ grouped_matmul_swiglu_quant_direct_kernel
       -> AIV: BlockEpiloguePertokenQuant::operator() -> y/y_scale
 ```
 
+##### Launch 节点与核/任务映射
+
+| 节点 | grid/任务类型 | 索引映射 | 实际职责 | 生命期/结束点 |
+|---|---|---|---|---|
+| Host launch | `grid=blockDim=aicNum`，`schemMode=1` | 当前 stream 上提交一个 MIX entry | 传 7 个 GM 指针、4 个 group pack、3 个 metadata scalar | launcher 没有追加同步；后续存活依赖 stream ordering |
+| AIC task | `KERNEL_TYPE_MIX_AIC_1_2` 中每个 logical block 的 1 个 Cube task | scheduler 用 `GetBlockIdx()/GetTaskRation()` 得到 logical block | 两次 MMAD、L0C→两块 VECIN、生产 flag 4/20，等待 flag 6/22 | 最后一 tile 仍等 AIV；`SyncAll` 后不做 quant |
+| AIV task 0/1 | 每 logical block 的 2 个 Vector task | scheduler 映射到同一 logical block；`GetSubBlockIdx()` 为 0/1 | 分担 tile 的前/后 M 半，读共享 VECIN，写 workspace，回 flag 6/22 | 所有专家结束后到 `SyncAll` |
+| final AIV quant | 仍在同一 MIX entry | 使用物理 Vector `GetBlockIdx()`，因而行域分给 `2*blockDim` 个 AIV | workspace GM→TQue→VF reduce/div/cast→y/y_scale GM | 行域结束即返回；无第二 kernel/event |
+
+`GetTaskRation()` 和 `GetSubBlockIdx()` 是 tile 阶段把 1 AIC 与 2 AIV 配对的核心；final quant 则故意不再除以 task ratio，以便两个 AIV 获得不同行片。
+
 ##### 源码等价伪码
 
 ```text
@@ -264,7 +331,9 @@ grouped_matmul_swiglu_quant_direct_kernel
 rebuild mmTiling(meta,dims,tile)
 for g in [0,E):
   M_g = unpack_u16(groupPack[g/4], g%4)
-  update X/W/scale/workspace base offsets
+  W_base = g*K*N; Wscale_base = g*N
+  token_base = sum(groupSize[0:g])
+  X_base = token_base*K; Xscale_base = token_base; workspace_base = token_base*H
   if M_g == 0: continue
   scheduler.update([M_g,H,K])
   if g == E-1: scheduler.update_tail_tile()
@@ -302,7 +371,7 @@ restore overflow SPR
 | GM W | `g*K*N + tile_n`；右半再 `+H` | `[E,K,N]` | INT8 RowMajor | caller | AIC MTE2/Matmul | input Tensor；全 Kernel | baseK 32、baseN 32 对齐 |
 | GM scales | X：`rowStart_g+tile_m`；W：`g*N+tile_n` 与 `+H` | X `[M]`、W `[E,N]` | FP32 ND | caller | AIV MTE2 | inputs；dequant阶段 | W scale tile `singleN*4` bytes |
 | L1 A1 | Matmul内部 | `depthA1*baseM*baseK` bytes | INT8 | GM X | L0A | Matmul pipeline | depth=2*stepKa |
-| L1 B1 | Matmul内部 | `depthB1*baseN*baseK` bytes | INT8 | GM W | L0B | Matmul pipeline | depth=2*stepKb；另预留 `baseN*4` |
+| L1 B1 | Matmul内部 | `depthB1*baseN*baseK` bytes | INT8 | GM W | L0B | Matmul pipeline | depth=2*stepKb；Host 预算额外扣 `baseN*4`，但 active scale 不驻留 L1 |
 | L0A | Matmul内部 | `2*baseM*baseK` bytes | INT8 | L1 A1 | MMAD | AIC tile | double buffer |
 | L0B | Matmul内部 | `2*baseN*baseK` bytes | INT8 | L1 B1 | MMAD | AIC tile | double buffer |
 | L0C | Matmul内部 | `dbL0C*baseM*baseN*4` bytes | INT32 RowMajorAlign | MMAD | CopyCo1ToOut | AIC tile | dbL0C 1/2 |
@@ -310,9 +379,9 @@ restore overflow SPR
 | AIV SwiGLU VECOUT | offset 128 KiB | `64*256*4=65536` bytes | FP32 | Vector registers | MTE3 | 单 tile | 后接 3 个 256×FP32 scale buffer |
 | scale UB | 192 KiB 后顺排 | `3*256*4=3072` bytes | FP32 | GM scales | Vector dequant | 单 tile | left/right W scale + X scale |
 | GM workspace S | `(rowStart_g*H)+tileOffset` | `M*H*4` bytes | FP32 RowMajor | AIV SwiGLU | AIV per-token quant | workspace Tensor；两阶段之间 | 有效前缀；无专家间重叠 |
-| quant inQueue | 每 core GM base 按 head/tail 行划分 | `2*multiRow*align8(H)*4` bytes | FP32 | workspace GM | Vector registers | quant loop | TQue depth 2；Host 的 `align16(H)*14` 是保守行预算 |
-| quant outQueue | 同一行域 | `2*multiRow*align32(H)` bytes | INT8 | Vector registers | y GM | quant loop | TQue depth 2 |
-| quant scaleQueue | 每批行 | `2*align8(multiRow)*4` bytes | FP32 | ReduceMax | y_scale GM | quant loop | TQue depth 2 |
+| quant inQueue | active core 的 GM base 按 head/tail 行划分 | `2*multiRow*align8(H)*4` bytes | FP32 | workspace GM | Vector registers | quant loop | active core 为 TQue depth 2；`M<V` 时 inactive core 的 `multiRow` 未初始化却先用于该长度 |
+| quant outQueue | 同一 active 行域 | `2*multiRow*align32(H)` bytes | INT8 | Vector registers | y GM | quant loop | active core 为 TQue depth 2；inactive core 同样先执行未定义长度的 `InitBuffer` |
+| quant scaleQueue | active core 的每批行 | `2*align8(multiRow)*4` bytes | FP32 | ReduceMax | y_scale GM | quant loop | active core 为 TQue depth 2；inactive core 同样先执行未定义长度的 `InitBuffer` |
 | 寄存器 | 每 VF repeat | vector register width | FP32/INT16/FP16/INT8 | UB load | UB store | 单 repeat | mask 保护 H tail |
 
 ##### 分层内存布局
@@ -340,7 +409,8 @@ flowchart LR
 ```text
 H = N/2
 workspace_total = 16 MiB + M*H*4
-L1 = depthA1*baseM*baseK + depthB1*baseN*baseK + baseN*4
+Host_L1_budget = depthA1*baseM*baseK + depthB1*baseN*baseK + baseN*4
+active_L1_payload = depthA1*baseM*baseK + depthB1*baseN*baseK
 L0 = 2*baseM*baseK + 2*baseN*baseK + dbL0C*baseM*baseN*4
 dequant_UB = 2*(64*256*4) + (64*256*4) + 3*(256*4) = 199680 bytes
 quant_UB = 2*multiRow*align8(H)*4 + 2*multiRow*align32(H) + 2*align8(multiRow)*4
@@ -352,7 +422,7 @@ quant_UB = 2*multiRow*align8(H)*4 + 2*multiRow*align32(H) + 2*align8(multiRow)*4
 | AIC→AIV second half | second MMAD | VECIN offset 65536，等量 | INT32 RowMajorAlign | AIV dequant right | 同上 | 同上 | `singleM/2<=64`、`singleN<=256` |
 | dequant→SwiGLU | AIV dequant | 同两块 UB 原地转 FP32 | FP32 | AIV SwiGLU | MTE2_V hard event | AIV tile | scale copy 完成且 mask 有效 |
 | SwiGLU→workspace | AIV MTE3 | `(row*H+col)*4` | FP32 RowMajor | final quant | per tile V_MTE3；全局 `SyncAll` | workspace Tensor | 每 tile disjoint；全生产完成后读取 |
-| workspace→quant queues | final AIV | head/tail core 连续行片 | FP32 | ReduceMax/quant | TQue EnQue/DeQue | quant phase | `blockIdx<coreNum`；tail batch单独处理 |
+| workspace→quant queues | final AIV | active head/tail core 连续行片 | FP32 | ReduceMax/quant | TQue EnQue/DeQue | quant phase | active core 的 tail batch 单独处理；`M<V` 时 inactive guard 晚于 Queue 初始化，资源边界未闭合 |
 | dequant UB→quant UB 复用 | dequant epilogue | 同一物理 UB 空间 | phase-dependent | quant TPipe queues | AIC final wait + `SyncAll` | 单 Kernel | 所有 workspace 写完才重新 InitBuffer |
 
 #### 同步、精度与尾块
@@ -368,6 +438,26 @@ quant_UB = 2*multiRow*align8(H)*4 + 2*multiRow*align32(H) + 2*align8(multiRow)*4
 | 两大阶段 | AIC final `WaitForVector` + `SyncAll` | 全部 SwiGLU tiles | per-token quant | workspace 完整可见与 UB phase reuse | 空专家不写；总体 M 由 pack 累加 |
 | per-token quant | TQue depth 2 + VF masks | workspace MTE2 | ReduceMax/Div/Cast/MTE3 | 行批 | `scale=maxabs/127`；F32→I16 RINT→FP16 ROUND→I8 TRUNC，NO_SAT；H tail padding/mask |
 | kernel 范围 | SPR 60 save/set(0)/restore | entry | 全 body/return | float overflow behavior | 没有单独的零行 `scale=0` 分支；固定源码行为保留 |
+
+##### 精度顺序与 tail 落点
+
+```text
+# 对每个有效 (row,col)，顺序不可交换
+i32_left  = MMAD_i8_i8_acc_i32(X[row,:], W[g,:,col])
+i32_right = MMAD_i8_i8_acc_i32(X[row,:], W[g,:,H+col])
+f_left  = cast_f32_rint(i32_left)  * weight_scale[g,col]   * x_scale[row]
+f_right = cast_f32_rint(i32_right) * weight_scale[g,H+col] * x_scale[row]
+s = (f_left / (1.0 + exp(-f_left))) * f_right
+scale = reduce_max(abs(pad_zero(s, align8(H)))) * (1.0/127.0)
+q = cast_i8_trunc(cast_f16_round(cast_i16_rint(s / scale)))
+store q[0:H], scale
+```
+
+- K tail 由 Matmul 的 runtime `TCubeTiling` 和 ND→NZ copy 处理；M/N tile tail 由 `GetBlockShape` 给出实际 `singleM/singleN`。
+- AIV tile 内，N tail 通过 VF `UpdateMask` 保护；M 为奇数时前 AIV 处理 `ceil(Mtile/2)`、后 AIV 处理剩余行。
+- final quant 的 FP32 输入行 pad 到 8 元素，pad 值为 0；INT8 输出 UB 行 stride pad 到 32 元素，GM copy 只写 H 个有效元素。
+- INT32→FP32 在大累加值上可发生 FP32 舍入；后续 scale/SwiGLU 始终为 FP32。量化链使用 `NO_SAT`，安全性依赖有限非零 scale 使归一化值位于 INT8 范围内。
+- 全零行会得到 `scale=0`，源码没有 epsilon、零除或 NaN/Inf 专用分支；不得为其补造确定 INT8 值。
 
 #### 关键实现
 
@@ -390,7 +480,7 @@ quant_UB = 2*multiRow*align8(H)*4 + 2*multiRow*align32(H) + 2*align8(multiRow)*4
 
 - 适用 Route：P0 / R-001。
 - 触发条件：固定 `KERNEL_TYPE_MIX_AIC_1_2`、RowMajor INT8 per-token specialization，当前 tile 非空。
-- Golden 来源：[`gmm/common/cgmct/kernel/kernel_gmm_swiglu_pertoken_quant.h:301`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/gmm/common/cgmct/kernel/kernel_gmm_swiglu_pertoken_quant.h#L301-L316)
+- 固定源码来源：[`gmm/common/cgmct/kernel/kernel_gmm_swiglu_pertoken_quant.h:301`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/gmm/common/cgmct/kernel/kernel_gmm_swiglu_pertoken_quant.h#L301-L316)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -422,7 +512,7 @@ quant_UB = 2*multiRow*align8(H)*4 + 2*multiRow*align32(H) + 2*align8(multiRow)*4
 - 适用：AIC 产生两个等宽门控分支、AIV 紧接非线性 epilogue 的 arch35 MIX 路线。
 - 前提：N 为偶数，AIC:AIV=1:2，`schemMode=1`，两块 VECIN 容量覆盖每个 tile，模板 C 类型/布局与 AIV 读取一致。
 - 失效：AIC-only launch、比例不同、N 不可二分、C 输出到 GM 或 flags 编号/轮次改变时必须重建交接协议。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：该协议由固定源码的模板实例、flag 与调用顺序闭合；不同 SDK、entry 或 schedule 配置不在其证明域。
 
 #### 错误做法
 
@@ -434,7 +524,7 @@ quant_UB = 2*multiRow*align8(H)*4 + 2*multiRow*align32(H) + 2*align8(multiRow)*4
 
 - 适用 Route：P0 / R-001。
 - 触发条件：`dequantDtype=float`、最终输出 INT8、所有专家 SwiGLU tile 已写 workspace。
-- Golden 来源：[`gmm/common/cgmct/epilogue/block_epilogue_pertoken_quant.h:197`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/gmm/common/cgmct/epilogue/block_epilogue_pertoken_quant.h#L197-L205)
+- 固定源码来源：[`gmm/common/cgmct/epilogue/block_epilogue_pertoken_quant.h:197`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/gmm/common/cgmct/epilogue/block_epilogue_pertoken_quant.h#L197-L205)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -457,9 +547,9 @@ SwiGLU 后先写 `[M,H]` FP32 workspace，使逐行 `ReduceMax(abs)` 能在完�
 #### 迁移边界
 
 - 适用：非线性结果需要按完整行生成单 scale 的 per-token quant。
-- 前提：workspace 至少 `M*H*4` bytes，阶段间存在全局可见性，行域连续，UB 公式与实际 TQue dtype/对齐一致。
+- 前提：workspace 至少 `M*H*4` bytes，阶段间存在全局可见性，行域连续，UB 公式与实际 TQue dtype/对齐一致；复用行分核代码时还须把 inactive guard 放到任何参数/Queue 初始化之前，或显式初始化可供三处 `InitBuffer` 使用的安全零长度状态。
 - 失效：per-tile scale、不同输出量化格式或跨 Kernel 实现必须重新定义 workspace 边与 stream/event ordering。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：该分阶段语义由固定源码的 workspace 写回、`SyncAll` 与量化读回顺序闭合；替代资源配置不在其证明域。
 
 #### 错误做法
 
@@ -471,7 +561,7 @@ SwiGLU 后先写 `[M,H]` FP32 workspace，使逐行 `ReduceMax(abs)` 能在完�
 
 - 适用 Route：P0 / R-001。
 - 触发条件：`groupIdx+1==groupNum`；剩余空闲 core 足以使 `remainTile>1`。
-- Golden 来源：[`gmm/common/cgmct/block/block_scheduler_gmm_aswt_with_tail_split.h:151`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/gmm/common/cgmct/block/block_scheduler_gmm_aswt_with_tail_split.h#L151-L176)
+- 固定源码来源：[`gmm/common/cgmct/block/block_scheduler_gmm_aswt_with_tail_split.h:151`](https://gitcode.com/cann/ops-transformer/blob/be33d95bb755cedec3108f70805c1874d1792540/gmm/common/cgmct/block/block_scheduler_gmm_aswt_with_tail_split.h#L151-L176)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -513,7 +603,7 @@ ASWT 在多个专家间轮转起始 core；提前拆某一专家尾块会破坏�
 - 适用：最后一个非后继复用阶段的 ASWT grouped Matmul。
 - 前提：scheduler 的 `endBlockIdx_`、tail count、M/N 最小切分对齐与 `GetBlockShape` 同步更新。
 - 失效：后面仍有共享同一 rotating window 的专家、transpose 改变 inner-axis 最小切分，或输出 offset未包含 split offset时不能直接复用。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
+- 证据边界：尾块策略由固定源码的末专家条件与 ASWT 状态更新闭合；其它 scheduler 或分组约定不在其证明域。
 
 #### 错误做法
 
@@ -535,21 +625,23 @@ ASWT 在多个专家间轮转起始 core；提前拆某一专家尾块会破坏�
 
 | 项目 | A2 | A3 | 950 |
 |---|---|---|---|
-| 支持状态 | 官方公开算子有 INT8 A8W8 描述；本 Direct 转换未构建/验证 | 官方公开算子有 INT8 A8W8 描述；本 Direct 转换未构建/验证 | 本卡 Direct 目标为 Ascend 950/dav-3510；官方 README 的 950 公开合同仅列 MX FP8/FP4，故不得把本路线声明为 ACLNN INT8 支持 |
+| 支持状态 | 官方公开算子有 INT8 A8W8 描述；固定源码未提供本 Direct 目标或兼容性合同 | 官方公开算子有 INT8 A8W8 描述；固定源码未提供本 Direct 目标或兼容性合同 | 本卡 Direct 目标为 Ascend 950/dav-3510；官方 README 的 950 公开合同仅列 MX FP8/FP4，故不得把本路线声明为 ACLNN INT8 支持 |
 | Host/Launcher | 固定仓未提供本 Direct launcher | 固定仓未提供本 Direct launcher | compact 112-byte ABI、schemMode=1、blockDim=aicNum |
 | Kernel/资源 | 本卡不外推 | 本卡不外推 | DAV3510 TileCopy、MIX_AIC_1_2、arch35 tiling、950 UB/L1/L0C 查询 |
 
 ## 限制与失败边界
 
 - Direct 语义固定 INT8 X/W、FP32 scales、RowMajor non-transpose、cumsum group list、INT8 per-token output；官方其它 dtype、NZ/ZN、transpose、MX、bias、smoothScale、稀疏 group list与确定性 router均不在本卡 Route。
-- `E<=16`、每组 token 数 `<=65535`；N 必须正偶数。compact ABI 还把 M/N/K压为 16 bit，baseM/depth/step压为 8 bit，但 Host没有显式检查这些 pack 上界；超出时会截断，不能复用。
-- Host仅检查输入连续性，没有完成通用 device一致性、所有整数乘法溢出、固定 199680-byte dequant UB 容量与 `ubAvail>0` 检查；这些是调用方边界。
+- `E<=16`、每组 token 数 `<=65535`；N 必须正偶数。compact ABI 还要求 M/N/K 与 rowLen 可装入 16 bit，ubAvail 可装入非零 16 bit，AIC 数和 depth/step 可装入 8 bit。Host没有完成这些上界检查；`dims/tile` 会截断，`meta` 还有字段串扰风险。
+- Host仅检查输入连续性，没有完成通用 device一致性、workspace 尺寸乘法溢出、固定 199680-byte dequant UB 容量与 `ubAvail>0` 检查；这些是调用方边界。
+- Host 未约束 `M>=2*blockDim`。当 `M<2*blockDim` 时，inactive quant AIV 在 return guard 前以未初始化的 `multiRowNum_` 派生并提交三段 TQue 长度；当前 Route 对该输入域没有资源安全证明，也没有 Host/Device fallback。复用时必须前移 guard 或显式建立安全零长度初始化。
 - workspace 有效 FP32中间区从基址开始；额外 16 MiB未在 direct body中显式偏移或消费，不得按官方 `GetUserWorkspace` 假设重排。
 - AIC/AIV flag ID、1:2比例与 schemMode 1是 correctness协议，不是可独立调整的性能参数。
+- tail split 只对 `groupIdx==E-1` 调用；累计 group list 若以空组结尾，最后非空组仍保持未拆 tail，这是调度性能边界，不改语义。
 - `scale=max(abs)/127` 对全零行没有单独分支；浮点除零/转换行为按固定 Kernel与 overflow控制执行，本卡不补造数值结果。
 - launcher callable固定返回 0，不独立传播异步 launch错误；workspace没有显式 `recordStream`，生命周期依赖框架当前 stream allocator规则。
 - 官方 950公开文档与此 Direct INT8内部路线边界不同；禁止用本卡代替 ACLNN产品/数据类型支持表。
-- 固定源码中的 `TCubeTiling` 真实 `sizeof/alignof/offsetof` 属 CANN SDK ABI边界；本卡只闭合 direct重建字段。本次知识提取未执行编译、真机、数值或性能测试。
+- 固定源码中的 `TCubeTiling` 真实 `sizeof/alignof/offsetof` 属 CANN SDK ABI边界；本卡只闭合 direct重建字段，不把声明推导外推为编译器、设备执行、数值或性能保证。
 
 ## 源码索引
 

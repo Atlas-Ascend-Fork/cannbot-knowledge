@@ -1,7 +1,7 @@
 ---
 type: Operator
 title: "MhcSinkhorn 950 Direct Invoke 算子知识"
-description: "说明 mhc_sinkhorn 在 950 上的接口语义、Direct Launcher 参数生成、Route 选择、单 Kernel 启动图与逐节点实现。"
+description: "说明 mhc_sinkhorn 在 950 上的接口语义、四条 Direct Route、Host/POD/Tiling/Launcher 闭包及单 Kernel 的内存、同步、尾块与精度边界。"
 tags: [task.implementation, task.lookup, topic.data_movement, topic.memory, topic.precision, topic.programming_model]
 status: stable
 sources:
@@ -30,7 +30,7 @@ sources:
   - resource: https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_host/config/ascend950/mhc_sinkhorn_binary.json
     role: implementation
 created_at: "2026-08-25T19:32:39Z"
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: "2026-09-08T14:24:40Z"
 platforms: ["950"]
 cann_versions: ["9.1.0"]
 ---
@@ -44,11 +44,10 @@ cann_versions: ["9.1.0"]
 | 实际入口 | `torch.ops.cann_bench.mhc_sinkhorn(comb, iter_step=20, eps=1e-6)`；NPU 实现符号 `mhc_sinkhorn_npu`，Direct Invoke。 |
 | 计算语义 | 对每个方阵先做稳定 row-softmax 与带 `eps` 的列归一化，再交替做带 `eps` 的行/列归一化。 |
 | 输入输出 | `comb/output: [B,n,n]`、ND、FP32；输出与输入同 shape/dtype。 |
-| 执行类型 | P0 R-002、P1 R-003、P2 R-001 为单节点 `AIV_VECTOR`；P3 R-004 为单节点 `SIMT`。所有可达节点均无 Cube/AIC 或 MIX_CV。 |
+| 执行类型 | P0 R-002、P1 R-003、P2 R-001 为 `__aicore__` entry 且显式 `KERNEL_TYPE_AIV_ONLY`；P3 R-004 为 `__vector__` entry，内部用 `asc_vf_call` 启动 32-thread SIMT VF。所有可达节点都没有 Cube/AIC 或 MIX_CV。 |
 | Kernel 路线 | P0 R-002 matrix-lane 转置 UB；P1 R-003 官方 arch35 body 直调适配；P2 R-001 寄存器分组；P3 R-004 通用 SIMT fallback。 |
-| 核心资源 | GM 输入/输出；AIV Route 使用 TQue/TBuf/RegTensor；SIMT Route 使用 32 KiB dynamic UB；无外部 workspace。 |
-| 来源闭包 | `direct_implementation_closed`：Direct schema/selector、迭代裁剪、launch 参数、四条 entry/body、UB/dynamic-UB、同步和构建接线均闭合；官方适配边界映射到固定 Commit。 |
-| 验证状态 | 已完成源码闭包检查；本次知识提取未执行编译、真机、数值或性能测试。 |
+| 核心资源 | GM 输入/输出；AIV Route 使用 TQue/TBuf/RegTensor；R-004 使用每 block 32 KiB dynamic UB；四条 Route 的框架 workspace 均为 0。 |
+| 来源闭包 | `direct_implementation_closed`：Direct schema/selector、迭代裁剪、launch 参数、四条可达 entry/body、非生产可达实例/路径、UB/dynamic-UB、同步和构建接线均闭合；官方适配边界映射到固定 Commit。 |
 
 ## 接口与语义
 
@@ -66,26 +65,26 @@ for k = 1 .. K-1:
 y = v
 ```
 
-R-003 的官方 body 在 `CalcSoftmax` 中先保存 `s`，同时累计 `s+eps`；`CalcColNorm<true>` 再把分子变为 `s+eps` 并给列和再加一次 `eps`，与上式一致。所有计算和累加均为 FP32，没有升/降精度 cast。
+R-003 的官方 body 在 `CalcSoftmax` 中先保存 `s`，同时累计 `s+eps`；`CalcColNorm<true>` 再把分子变为 `s+eps` 并给列和再加一次 `eps`，与上式一致。四条 Route 都以 FP32 保存、归约和相除，没有升/降精度 cast；但 R-003/R-001 使用 data-block reduce，R-002 按列显式累加，R-004 按 SIMT 标量循环累加，因此浮点加法顺序不是跨 Route 的逐位契约。
 
 ### 输入、输出与属性
 
 | 参数 | shape/layout | dtype | 约束、默认值与语义 |
 |---|---|---|---|
-| `comb` | `[B,n,n]` / ND | FP32 | 必须 rank=3 且末两维相等；Device 地址公式要求连续存储，wrapper 未主动 contiguous 化。 |
+| `comb` | `[B,n,n]` / ND | FP32 | 必须 rank=3 且末两维相等；PrivateUse1 dispatch 隐含 NPU 输入。Device 地址公式要求连续存储，wrapper 未调用 `contiguous()`。 |
 | `iter_step` | 标量 | int64 Host 参数 | 默认 20，wrapper 检查 `[1,40]`；部分宽度使用 `effective_iters` 裁剪。 |
 | `eps` | 标量 | double Host、float Device | 默认 `1e-6`，wrapper 只检查 `eps >= 0`，launch 前窄化为 FP32。 |
 | `output` | `[B,n,n]` / 与 `empty_like(comb)` 一致 | FP32 | 只返回最终矩阵；无 `norm_out`、`sum_out` 可见输出。 |
 
 ### 入口与版本
 
-本卡只描述 CANN 9.1.0、Ascend 950（950）的 Direct Invoke 交付入口，不补造成官方 ACLNN。官方固定源码公开支持 Ascend 950PR/950DT，并把 `MhcSinkhorn` 注册到 `ascend950`；A2/A3 明确不支持。Direct 实现保留了官方 `MhcSinkhornSimd<float,false>` body，并以按值 tiling 参数与直接 launch 替换框架 tiling 指针；映射记录确认官方 `arch35/mhc_sinkhorn.h` 的完整 namespace body 与交付中的对应区段逐字一致。其余 register、element 和 SIMT 路线是交付层 supplemental 实现，不属于官方固定 Commit。
+本卡只描述 CANN 9.1.0、Ascend 950（950）的 Direct Invoke 交付入口，不补造成官方 ACLNN。官方固定源码公开支持 Ascend 950PR/950DT，并把 `MhcSinkhorn` 注册到 `ascend950`；A2/A3 明确不支持。官方 OpDef/tiling 接受 rank 3/4、`n in {4,6,8}`、`num_iters in [1,100]` 和可选中间输出，而 Direct schema 收窄为 rank 3、`iter_step in [1,40]`、只返回最终矩阵，同时用派生 Route 扩展宽度域。Direct 实现保留 `MhcSinkhornSimd<float,false>` body，以按值 POD 和直接 launch 替换框架 tiling GM；register、element 与 SIMT Route，以及按宽度裁剪迭代数，均是交付层派生补充，不属于官方固定 Commit。
 
 ## Host/Launcher 执行流程
 
 ### 参数校验与前处理
 
-`mhc_sinkhorn_npu` 的顺序为：设备 guard → meta 校验与 `empty_like` 分配 → 读取 `B,n` 与 GM 指针/当前 NPU stream → 按 Host if/else 顺序计算 Route → 计算 `effective_iters` → 仅 R-003 生成官方 tiling → 在 `OpCommand::RunOpApi("MhcSinkhorn", lambda)` 内直接启动一个自定义 Kernel。任何 `TORCH_CHECK` 失败都发生在 launch 前；lambda 固定返回 0，未建立 Device launch 错误的细粒度传播协议。
+`mhc_sinkhorn_npu` 的顺序为：`OptionalDeviceGuard(comb.device())` → 调用 meta 校验并 `empty_like` 分配 → 读取 `B,n`、GM 指针和当前 NPU stream → 先计算三个布尔 selector → 按宽度计算 `effective_iters` → 仅当 `use_official` 为真时在 lambda 外生成 R-003 tiling → 在 `OpCommand::RunOpApi("MhcSinkhorn", lambda)` 内按 `R-001 -> R-002 -> R-003 -> R-004` 启动恰好一个 Kernel。任何 `TORCH_CHECK` 失败都发生在 launch 前；lambda 固定返回 0，源码没有把异步 launch 状态细分后回传。
 
 ### 参数、Workspace 与生命周期
 
@@ -93,7 +92,19 @@ R-003 的官方 body 在 `CalcSoftmax` 中先保存 `s`，同时累计 `s+eps`�
 - R-003 的 `calc_mhc_sinkhorn_official_tiling(B,n,effective_iters,float(eps))` 从 950 platform manager 读取 AIV core 数与 UB 字节，产生 `MhcSinkhornTilingData` 和 `block_dim`。
 - R-001/R-002/R-004 的 launch 参数均由 wrapper/launcher 直接按值传入，不使用 tiling GM。
 - `workspace_total=0`。R-003 为兼容官方 `Init` 参数，把 `output` 同时传为不可达的辅助输出，把 `input` 传为未解引用的 tiling 占位；`OUT_FLAG=false` 编译期裁掉辅助 GM 写出。
+- R-004 的 `32768` B 是 launch 的 dynamic local-memory 参数，归属 Kernel UB，不是框架 workspace；其余三个 launcher 的第二 launch 参数为 `nullptr`。
 - 输入、输出和 stream 由调用者/框架持有到当前 stream 上 Kernel 完成；所有 Route 恰好一次 launch，无跨 Kernel 中间对象。
+
+#### R-003 官方入口到 Direct 入口的适配边界
+
+| 官方固定入口事实 | Direct 替换 | 保留/裁掉关系 |
+|---|---|---|
+| `mhc_sinkhorn<TEMPLATE_MODE>` 接收 `h_res,y,norm_out,sum_out,workSpace,tiling` 六个 GM 参数 | `mhc_sinkhorn_official_entry(input,output,tilingData)` | 输入/最终输出保留；POD 改为按值参数 |
+| entry 先 `GetUserWorkspace(workSpace)`，空指针直接 return | Direct entry 不接收 framework workspace，也不执行该 guard | Direct `workspace_total=0`；不能把官方 workspace guard 误认为仍存在 |
+| `GET_TILING_DATA_WITH_STRUCT` 从 tiling GM 解包 | launcher 直接传 88B `MhcSinkhornTilingData` | 字段顺序与 body 保留，tiling GM 生命周期被消除 |
+| key 0/1 选择 `MhcSinkhornSimd<float,false/true>` | entry 固定实例化 `<float,false>` | key 0 body 保留，key 1 与辅助输出契约裁掉 |
+| 三个独立输出 GM | Direct `Init(input,output,output,output,input)` | `false` 编译分支保证辅助输出与占位 tiling 地址不被用于 GM 写出/解包 |
+| framework 设置 blockDim/local memory | helper 生成 `config.block_dim=usedCoreNum`，launcher 用当前 stream | core split 保留；launch/stream 所有权转到 Direct wrapper |
 
 ### 启动图与失败传播
 
@@ -103,18 +114,18 @@ mhc_sinkhorn_npu
      # Host selector order: R-001 -> R-002 -> R-003 -> R-004 fallback
   -> RunOpApi("MhcSinkhorn", lambda)
        -> exactly one of:
-          R-001 register entry       [AIV_VECTOR]
-          R-002 element entry        [AIV_VECTOR]
-          R-003 official entry       [AIV_VECTOR]
-          R-004 generic SIMT entry   [SIMT]
+          R-001 register entry       [__aicore__, AIV_ONLY]
+          R-002 element entry        [__aicore__, AIV_ONLY]
+          R-003 official entry       [__aicore__, AIV_ONLY]
+          R-004 generic entry        [__vector__ -> 32-thread SIMT VF]
   -> output
 ```
 
 | 节点 | Host launcher | entry/grid | 参数 | 输入/输出 | workspace/ordering/lifetime | 失败传播 |
 |---|---|---|---|---|---|---|
-| P0 R-002（Host 2） | `launch_mhc_sinkhorn_element_fast` | `mhc_sinkhorn_element_n*<<<blockDim,0,stream>>>` | `B,N,K,eps,groups,blockDim` | `comb -> output` | 单 stream；无 workspace；Queue 生命周期限单 Kernel | wrapper lambda 不检查异步 launch 状态 |
-| P1 R-003（Host 3） | `launch_mhc_sinkhorn_official` | `mhc_sinkhorn_official_entry<<<usedCoreNum,0,stream>>>` | `comb,output,tilingData` | `comb -> output` | 同上；辅助指针仅作不可达占位 | 同上 |
-| P2 R-001（Host 1） | `launch_mhc_sinkhorn_register_fast` | `mhc_sinkhorn_register_n2/n3<<<blockDim,0,stream>>>` | `B,N,K,eps,groupsPerCore` | `comb -> output` | 同上 | 同上 |
+| P0 R-002（Host 2） | `launch_mhc_sinkhorn_element_fast` | `mhc_sinkhorn_element_n*<<<blockDim,nullptr,stream>>>` | `B,N,K,eps,groups,blockDim` | `comb -> output` | 单 stream；无 workspace；Queue 生命周期限单 Kernel | wrapper lambda 不检查异步 launch 状态 |
+| P1 R-003（Host 3） | `launch_mhc_sinkhorn_official` | `mhc_sinkhorn_official_entry<<<usedCoreNum,nullptr,stream>>>` | `comb,output,tilingData` | `comb -> output` | 同上；辅助指针仅作不可达占位 | 同上 |
+| P2 R-001（Host 1） | `launch_mhc_sinkhorn_register_fast` | `mhc_sinkhorn_register_n2/n3<<<blockDim,nullptr,stream>>>` | `B,N,K,eps,groupsPerCore` | `comb -> output` | 同上 | 同上 |
 | P3 R-004（Host 4 fallback） | `launch_mhc_sinkhorn_generic` | `mhc_sinkhorn_generic_simt_entry<<<ceil(B/32),32768,stream>>>` | `B,n,iter_step,eps,stride` | `comb -> output` | 32 KiB dynamic UB，线程私有切片；无跨节点边 | 同上 |
 
 ## Route 与参数设计
@@ -122,18 +133,20 @@ mhc_sinkhorn_npu
 ### 分核与资源计算
 
 - P0 R-002：`tile=64`（`N=2,3,6`）或 48（`N=4,12,16`），`groups=ceil(B/tile)`，`blockDim=min(groups,64)`；按 `baseGroups=floor(groups/blockDim)` 与前 `extraGroups=groups%blockDim` 个核多领一组的方式均分。
-- P1 R-003：`tNormCore=ceil(B/C)`、`usedCoreNum=ceil(B/tNormCore)`。Host 分别按 forward/backward 内存估算式求 `tUbFactor`，取较小者；每核循环 `ceil(tNormCore/tUbFactor)`，最后一核和每核最后一轮分别由 tail 字段收口。
-- P2 R-001：`groups=ceil(B/8)`，`blockDim=min(groups,64)`，`groupsPerCore=ceil(groups/blockDim)`；一个 register group 覆盖 8 个矩阵，当前入口只让该 Route 处理 `B<=1`。
-- P3 R-004：`blocks=ceil(B/32)`，每 block 固定 32 个 SIMT thread，线程 `matrix_idx=blockIdx*32+threadIdx`，步长 `blocks*32`。
+- P1 R-003：令 `C=max(platform_AIV_cores,1)`，`tNormCore=ceil(B/C)`、`usedCoreNum=ceil(B/tNormCore)`、`tTailCore=B-tNormCore*(usedCoreNum-1)`。Host 分别按 forward/backward 内存式求 `tUbFactor`，取较小者（相等取 forward）；每核循环 `ceil(core_matrices/tUbFactor)`，最后一核和每核最后一轮由独立 tail 字段收口。
+- P2 R-001：`groups=ceil(B/8)`，`blockDim=min(groups,64)`，`groupsPerCore=ceil(groups/blockDim)`；一个 register group 覆盖最多 8 个矩阵。可达安全域只有 `B=1`，因此实际值恒为 `groups=blockDim=groupsPerCore=1`；通用分组代码是已编译但当前 selector 未扩展的容量。
+- P3 R-004：`blocks=ceil(B/32)`，每 block 固定 32 个 SIMT thread，线程 `matrix_idx=blockIdx*32+threadIdx`，步长 `matrix_stride=blocks*32`。因为 `matrix_stride>=B`，当前 launcher 下每个有效线程最多处理一个矩阵；grid-stride 循环保留了更小 grid 的复用形态，但不会二次迭代。
 
-### Route 选择
+### Route 选择与重要性排序
 
-| 重要性 | Route | Route 特征 | 适用域 | 实现前提 | Host 顺序、短路与 fallback |
+P0→P3 是实现知识的重要性顺序，不是 Host 判断序号：P0 覆盖最多专门化宽度和批量主干，P1 保存唯一官方 body/POD/tiling 适配，P2 只覆盖 tiny batch，P3 是剩余宽度的安全条件式兜底。最后一列独立保存真实 Host 控制流。
+
+| 重要性 | Route | 可达性/分类 | Route 特征 | 精确 selector 域与安全前提 | Host 顺序、短路与 fallback |
 |---:|---|---|---|---|---|
-| P0 | R-002 element-fast | `MhcSinkhornElementFast<N>`；一条 vector lane 负责一个矩阵，`normBuffer_` 使用 `[row,col,matrix_lane]` | `((n==2 || n==3) && B>1) || n in {4,6,12,16}` | FP32 连续方阵、`B>0`、950；48/64-matrix tile 的 UB 容量成立 | Host 第 2 项；仅在 R-001 false 后检查，false 后继续 R-003 |
-| P1 | R-003 official-adapted | 官方 `MhcSinkhornSimd<float,false>`；data-block gather/reduce 与 depth-2 Queue | `n==8` | 官方 POD、950 UB/AIV core 信息、`OUT_FLAG=false` 与 direct entry ABI 一致 | Host 第 3 项；仅在 R-001/R-002 false 后检查，false 后进入 R-004 |
-| P2 | R-001 register-fast | `MhcSinkhornRegisterFast<2/3>`；一个 register group 覆盖 8 个矩阵 | `(n==2 || n==3) && B<=1` | FP32 连续方阵、`B>=1`、950；mask/reduce/norm TBuf 容量成立 | Host 第 1 项；true 时短路其余 selector，false 后继续 R-002 |
-| P3 | R-004 generic-SIMT | 32-thread VF；每线程独占一个 256-FP32 dynamic-UB slice | 前三条 Host 条件均为 false | FP32 连续方阵、`B>0`、`n*n<=256` | Host 第 4 项 final fallback；命中后无更后 Route |
+| P0 | R-002 element-fast | 可达；派生专门化 | `MhcSinkhornElementFast<N>`；一条 vector lane 负责一个矩阵，`normBuffer_=[row,col,matrix_lane]` | selector：`((n in {2,3}) && B>1) || n in {4,6,12,16}`；安全还需连续 FP32、`B>=1` 与静态 UB 容量成立 | Host 第 2 项；R-001 false 后检查；false 后继续 R-003 |
+| P1 | R-003 official-adapted | 可达；官方 body 的 Direct 适配 | `MhcSinkhornSimd<float,false>`；data-block gather/reduce；每个 `TQue<...,1>` 由 `InitBuffer(...,2,...)` 配双槽 | selector：`n==8`；安全还需连续 FP32、`B>=1`、合法 platform AIV/UB 信息、POD 与 body ABI 一致 | Host 第 3 项；前两项 false 后检查；false 后进入 R-004 |
+| P2 | R-001 register-fast | 可达；派生 tiny-batch 专门化 | `MhcSinkhornRegisterFast<2/3>`；一个 register group 覆盖最多 8 个矩阵 | selector：`n in {2,3} && B<=1`；安全域把未拒绝的 `B=0` 排除后为 `B=1` | Host 第 1 项；true 时短路全部后续项；false 后继续 R-002 |
+| P3 | R-004 generic-SIMT | 可达；最终派生 fallback | `__vector__` entry 内 32-thread VF；每线程独占 256 FP32 dynamic-UB slice | selector：`n notin {2,3,4,6,8,12,16}`；已闭合安全域还需连续 FP32、`B>=1`、`1<=n<=16`。`n=0` 机械上循环为空，但零元素 GM/launch 契约未证明 | Host 第 4 项 final fallback；无更后 Route |
 
 ```text
 if ((n == 2 || n == 3) && B <= 1) R-001
@@ -147,21 +160,29 @@ else R-004
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行拓扑与 Kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
 | P0 R-002 element-fast | `N=2,3,4,6,12,16` | FP32、950；N=2/3 还需 `B>1` | 单 AIV Kernel | `MhcSinkhornElementFast<N>::Process/Compute` | `[row,col,matrix_lane]` norm TBuf；每元素跨矩阵向量化 | `UpdateMask(B_tail)`；无更宽模板 fallback |
-| P1 R-003 official-adapted | direct `OUT_FLAG=false` | FP32、950、`n=8` | 单 AIV Kernel | 官方 `MhcSinkhornSimd<float,false>` | depth-2 Queue/TBuf；MTE3→V event 与 MicroAPI local barrier | former/tail core、tail loop、mask；Host tiling 失败无备用 Route |
+| P1 R-003 official-adapted | direct `OUT_FLAG=false` | FP32、950、`n=8` | 单 AIV Kernel | 官方 `MhcSinkhornSimd<float,false>` | 逻辑 Queue depth 参数 1、每 Queue 双槽；MTE3→V event 与 MicroAPI local barrier | normal/tail core、tail loop、mask；Host tiling 异常无备用 Route |
 | P2 R-001 register-fast | `N=2/3` | FP32、`[B,N,N]`、950，`B<=1` | 单 AIV Kernel | `MhcSinkhornRegisterFast<N>::Process/Compute` | depth-1 in/out Queue；mask/reduce/norm TBuf；VEC store→load barrier | lane mask 保护不足 8 个矩阵；`B=0` 是未保护失败边界 |
-| P3 R-004 generic-SIMT | default | FP32、950、方阵、前三条未命中 | 单 Vector entry 内 32-thread SIMT body | `mhc_sinkhorn_generic_simt_vf` | 32 KiB dynamic UB；每线程独占 256 FP32 | `matrix_idx<B` 步进；`n*n>256` 会越过线程切片 |
+| P3 R-004 generic-SIMT | default | FP32、950、方阵、前三条未命中 | 单 `__vector__` entry 内 32-thread SIMT body | `mhc_sinkhorn_generic_simt_vf` | 32 KiB dynamic UB；每线程独占 256 FP32 | `matrix_idx<B` 收口；当前 grid 下有效线程只跑一次；`n*n>256` 越过线程切片 |
 
-### 隐藏性能 Guard
+### 非生产可达实例与路径
+
+| 层级 | 非生产可达实例/路径 | 原因 | 复用边界 |
+|---|---|---|---|
+| R-001 launcher | `mhc_sinkhorn_register_n4/n6/n8`，以及 launcher 最后 `else -> n8` | wrapper 只在 `n in {2,3}` 时调用 register launcher | 不能把这些 entry 计为现行 Route；若扩大 selector，须重新证明 row mask、UB 与精度 |
+| R-002 launcher | `mhc_sinkhorn_element_n8`；terminal `else` 的“非白名单宽度误落 `<16>`”catch-all 语义 | wrapper 把 `n=8` 送 R-003，且只把精确白名单 `{2,3,4,6,12,16}` 送 element launcher | `n=16` 是生产活跃实例并通过 terminal `else` 到达；只有 n8 实例和非白名单 catch-all 语义不可达，不能把 `else -> n16` 整体标成不可达或通用 fallback |
+| 官方源码路径 | `TEMPLATE_MODE=1` / `MhcSinkhornSimd<float,true>` | 固定官方源码存在该路径；Direct entry 未实例化、未接线它，只实例化 `MhcSinkhornSimd<float,false>` | 中间 `norm_out/sum_out` 的 GM/UB/shape 契约不属于本 Direct 入口，不能把 true 路径称为 Direct 已编译实例 |
+
+### 资源与安全 Guard
 
 | Guard | Host/Tiling 条件 | Device/资源原因 | 影响 Route | 不满足时去向 | 源码符号 |
 |---|---|---|---|---|---|
 | element tile | `tile=64` for `n=2,3,6`，否则 48 | norm TBuf 固定 `N*N*64*4`，in/out Queue 随 tile 增长 | R-002 | 固定模板，无运行时备用 |
 | 64 AIV core cap | `blockDim=min(groups,64)` | launcher 显式限制并行核数 | R-002/R-001 | 每核顺序处理更多 group |
 | official width | `n==8` | 官方固定源码只接受 `n in {4,6,8}`，但 direct selector 仅保留 n=8 | R-003 | R-004 仅在 `n!=8` 时可达 |
-| official UB | forward/backward `occupy<=available`，否则按 one-piece 估算并向下 8 对齐 | depth-2 Queue 与 32B/256B 向量粒度 | R-003 | 重新减小 `tUbFactor`；极小 UB 的零因子未显式报错 |
+| official UB | forward/backward `occupy<=available`，否则按 one-piece 估算并向下对齐 | 双槽 Queue、32B block 与 256B vector 粒度 | R-003 | 重新减小 `tUbFactor`；backward 候选可能成为 0 并因取最小值胜出，无显式拒绝 |
 | register tiny-batch | `B<=1 && n in {2,3}` | 8 矩阵/register 的布局在 tiny batch 上仍以 mask 收口 | R-001 | R-002 |
 | SIMT thread slice | `n*n<=256`（Device 必要条件，Host 未校验） | 每线程只分配 256 FP32 | R-004 | 无 fallback；越界 |
-| 非空 batch | `B>=1`（launch 必要条件，Host 未校验） | `groups=0` 会令 R-001/R-002 的 `blockDim=0`，并参与除法 | 全部 | 无安全 fallback |
+| 非空 batch | `B>=1`（launch 必要条件，Host 未校验） | R-001 在 Host 计算 `groupsPerCore` 时除以 0；R-002/R-004 形成 0-block launch；R-003 在 split 中以 `tNormCore=0` 作除数 | 全部 | 无安全 fallback |
 | iteration cap | N 相关上限 8/7/5/3 | 交付 selector 减少归一化轮数，属于可见数值策略 | R-001/R-002/R-003 | n=4/通用 Route 用原始值 |
 
 ### POD/ABI
@@ -182,18 +203,49 @@ else R-004
 | 同上 | `tUbFactorTail` | int64/64 | offset 56 | matrix | `tNormCore-(loops-1)*factor` | normal core 尾轮 `handleNum` | `1..factor` |
 | 同上 | `tTailCoreLoop` | int64/64 | offset 64 | tile-loop | tail split | 最后一核 `loop_` | 尾核 active |
 | 同上 | `tUbTailTail` | int64/64 | offset 72 | matrix | tail core 余数 | 最后一核尾轮 | 尾核 active |
-| 同上 | `tNormCore` | int64/64 | offset 80 | matrix/core | `ceil(B/C)` | 每核 GM base 与 telemetry stride | R-003 active |
+| 同上 | `tNormCore` | int64/64 | offset 80 | matrix/core | `ceil(B/C)` | 每核 GM base 与辅助输出 stride | R-003 active |
 | P2 R-001 独立参数 | `groups_per_core` | int64/64 | 非 POD | group/core | `ceil(ceil(B/8)/blockDim)` | `Process` 的 group 区间 | `blockDim>0` 才定义 |
-| P3 R-004 独立参数 | `matrix_stride` | int64/64 | 非 POD | matrix | `ceil(B/32)*32` | SIMT grid-stride loop | `B>0` 时正数 |
+| P3 R-004 独立参数 | `matrix_stride` | int64/64 | 非 POD | matrix | `ceil(B/32)*32` | SIMT grid-stride loop | `B>0` 时正数且 `>=B` |
+
+### R-003 Direct Tiling 等价伪码
+
+```text
+C = platform.GetCoreNumAiv(); if C <= 0: C = 1
+UB = platform.GetCoreMemSize(UB)
+q = ceil(B / C)
+used = ceil(B / q)
+tail_core = B - q*(used-1)
+
+forward_available = (UB - 64 - 3*256) / 2
+F_fwd = q if ForwardOccupy(q) <= forward_available
+        else floor_align(forward_available / ForwardOccupy(1), 8)
+if F_fwd == 0: F_fwd = 8
+
+backward_available = (UB - 64 - 3*256) / 2
+F_bwd = q if BackwardOccupy(q) <= backward_available
+        else floor_align(backward_available / BackwardOccupy(1), 8)
+# Direct helper保留官方行为：F_bwd==0 不回填
+
+F = F_fwd if F_fwd <= F_bwd else F_bwd
+normal_loops = (F==0 ? 1 : ceil(q/F))
+tail_loops   = (F==0 ? 1 : ceil(tail_core/F))
+normal_tail  = q - (normal_loops-1)*F
+tail_tail    = tail_core - (tail_loops-1)*F
+block_dim = used
+```
+
+`ForwardOccupy` 计一套 `in + out + norm + sumCol`，外层 `/2` 为双槽；`BackwardOccupy` 的 norm/sum 项自身带系数 2，再与同一 half-UB 上界比较。这些式子是 Direct helper 对固定 Host 逻辑的复现，不能用 R-003 Device 的直观有效元素数替代。
 
 ### Route 源码闭包
 
 | Route | Key/selector | Host/Tiling producer | POD/参数 | Kernel entry/router 节点 | Kernel body/直接依赖 | 构建接线 |
 |---|---|---|---|---|---|---|
-| P0 R-002 | element predicate | 交付层 `mhc_sinkhorn_npu` / `launch_mhc_sinkhorn_element_fast` | 独立 scalar 参数 | `mhc_sinkhorn_element_n*` | `MhcSinkhornElementFast<N>`（supplemental） | direct-launch 单算子 target |
-| P1 R-003 | `n=8,OUT_FLAG=false` | `mhc_sinkhorn_tiling.cpp` + common base；direct helper 等价复现 | `MhcSinkhornTilingData` | 官方 `mhc_sinkhorn<TEMPLATE_MODE=0>` 适配为 direct entry | 官方 `MhcSinkhornSimd<float,false>` 完整 body | `op_host/CMakeLists.txt` + ascend950 binary config |
-| P2 R-001 | `n=2/3,B<=1` | 交付层 `mhc_sinkhorn_npu` / `launch_mhc_sinkhorn_register_fast` | 独立 scalar 参数 | `mhc_sinkhorn_register_n2/n3` | `MhcSinkhornRegisterFast<N>`（supplemental） | direct-launch 单算子 target |
-| P3 R-004 | default | 交付层 `launch_mhc_sinkhorn_generic` | 独立 scalar 参数 | `mhc_sinkhorn_generic_simt_entry` | `mhc_sinkhorn_generic_simt_vf`（supplemental） | direct-launch 单算子 target |
+| P0 R-002 | element predicate | 交付层 `mhc_sinkhorn_npu` / `launch_mhc_sinkhorn_element_fast` | 独立 scalar 参数 | 可达 `n2/n3/n4/n6/n12/n16`；`n8` dormant | `MhcSinkhornElementFast<N>`（supplemental） | canonical Direct `csrc/ops/mhc_sinkhorn/CMakeLists.txt` 把 kernel/plugin 交给 `register_direct_launch_op` |
+| P1 R-003 | `n=8,OUT_FLAG=false` | `mhc_sinkhorn_tiling.cpp` + common base；direct helper 等价复现 | `MhcSinkhornTilingData` | 官方 `mhc_sinkhorn<TEMPLATE_MODE=0>` 适配为 direct entry | 官方 `MhcSinkhornSimd<float,false>` 完整 body | 同一 canonical Direct CMake：`mhc_sinkhorn_kernel.cpp` + `mhc_sinkhorn_plugin.cpp` → `register_direct_launch_op` |
+| P2 R-001 | `n=2/3,B<=1` | 交付层 `mhc_sinkhorn_npu` / `launch_mhc_sinkhorn_register_fast` | 独立 scalar 参数 | 可达 `n2/n3`；`n4/n6/n8` dormant | `MhcSinkhornRegisterFast<N>`（supplemental） | 同一 canonical Direct `register_direct_launch_op` target |
+| P3 R-004 | default | 交付层 `launch_mhc_sinkhorn_generic` | 独立 scalar 参数 | `mhc_sinkhorn_generic_simt_entry` | `mhc_sinkhorn_generic_simt_vf`（supplemental） | 同一 canonical Direct `register_direct_launch_op` target |
+
+固定官方 `op_host/CMakeLists.txt` 与 `ascend950/mhc_sinkhorn_binary.json` 只证明上游 MhcSinkhorn 的 950 编译、注册与二进制接口 provenance；它们不参与 canonical Direct adapter 的 target，也不能替代上述 Direct CMake 构建闭包。
 
 ## Kernel 实现
 
@@ -268,7 +320,7 @@ UB_total = 2*tile*N²*4 + N²*64*4
          = 768*N² B when tile=64
          = 640*N² B when tile=48
 N=2/3/4/6/12/16 => 3,072/6,912/10,240/27,648/92,160/163,840 B
-UB_total <= A5 编译目标的可用 UB（launcher 无运行时 UB guard）
+UB_total <= 950 编译目标的可用 UB（launcher 无运行时 UB guard）
 dynamic_ub = N/A
 workspace_total = 0
 ```
@@ -328,7 +380,7 @@ calc_mhc_sinkhorn_official_tiling -> launch_mhc_sinkhorn_official
 ##### 源码等价伪码
 
 ```text
-coreBase = core*tNormCore*64
+coreBase = core*tNormCore*n²                    # n=8, so n²=64
 loop/tail = normal fields; last core switches to tail-core fields
 build n=8 full data-block mask
 for loopIdx:
@@ -338,10 +390,14 @@ for loopIdx:
     gather rows -> reduce-max -> subtract -> exp -> reduce-sum -> divide
     save transposed norm; accumulate softmax+eps column sums
     first col divide: (softmax+eps)/(colSum+eps)
-    for iter=1..K-1: row divide by sum+eps; col divide by sum+eps
+    for iter=1..K-1:
+      row divide by sum+eps; enqueue minimal sumRow token
+      col divide by sum+eps; dequeue/free that token
   scatter transposed norm to packed outputQue
   DMA valid bytes to GM
 ```
+
+`iterCnt_=2*K` 只参与 `OUT_FLAG=true` 时的辅助 GM offset；Direct `false` 路线的计算循环直接读取 `tilingData.num_iters`。`op.Init(input,output,output,output,input)` 中后三个别名/占位地址不会在 `false` 分支解引用为辅助输出或 tiling GM。
 
 #### 内存与数据搬运
 
@@ -352,11 +408,11 @@ for loopIdx:
 | 层级/缓冲区 | offset/地址公式 | extent/容量公式 | dtype/layout | producer | consumer | owner/lifetime | 对齐/复用 |
 |---|---|---|---|---|---|---|---|
 | GM input/output | `core*tNormCore*n² + loopIdx*F*n²` | `handleNum*n²*4` B | FP32 packed | caller/CopyOut | CopyIn/caller | stream | tail 只搬有效字节 |
-| `inputQue_` | Queue | `2*A*4` B | FP32 packed | CopyIn | CalcSoftmax | depth 2 | 32B 对齐 |
-| `outputQue_` | Queue | `2*A*4` B | FP32 packed | Scatter | CopyOut | depth 2 | 32B 对齐 |
-| `normOutQue_` | Queue | `2*F*n*nAlign*4` B | FP32 vectorized | softmax/norm | next norm/scatter | depth 2 | 原地归一化 |
-| `sumColQue_` | Queue | `2*F*nAlign*4` B | FP32 | softmax/row | col norm | depth 2 | 轮间复用 |
-| `sumRowQue_` | Queue | `2*8*4=64` B | FP32 | row norm | Process cleanup | depth 2 | `OUT_FLAG=false` 固定最小区 |
+| `inputQue_` | Queue | `2*A*4` B | FP32 packed | CopyIn | CalcSoftmax | `TQue<...,1>`；2 slots | 32B 对齐 |
+| `outputQue_` | Queue | `2*A*4` B | FP32 packed | Scatter | CopyOut | `TQue<...,1>`；2 slots | 32B 对齐 |
+| `normOutQue_` | Queue | `2*F*n*nAlign*4` B | FP32 vectorized | softmax/norm | next norm/scatter | `TQue<...,1>`；2 slots | DeQue 后同一 tensor 原地修改并 EnQue |
+| `sumColQue_` | Queue | `2*F*nAlign*4` B | FP32 | softmax/row | col norm | `TQue<...,1>`；2 slots | 轮间 DeQue/EnQue 复用 |
+| `sumRowQue_` | Queue | `2*8*4=64` B | FP32 | `CalcRowNorm` 分配/入队 | Process 出队/释放 | `TQue<...,1>`；2 slots | `OUT_FLAG=false` 不写有效 sumRow，只保留 Queue 生命周期 |
 | mask/mid/sum TBuf | 独立 | `64+256+256` B | uint32/FP32 | Process/reduce | MicroAPI | Kernel | reduce store/load scratch |
 
 ##### 分层内存布局
@@ -364,11 +420,11 @@ for loopIdx:
 ```mermaid
 block-beta
   columns 6
-  inQ["inputQ depth=2 · 2*A*4B"]:1
-  outQ["outputQ depth=2 · 2*A*4B"]:1
-  norm["normQ depth=2 · 2*F*n*8*4B"]:1
-  col["sumColQ depth=2 · 2*F*8*4B"]:1
-  row["sumRowQ depth=2 · 64B"]:1
+  inQ["inputQ · logical depth 1 · 2 slots · 2*A*4B"]:1
+  outQ["outputQ · logical depth 1 · 2 slots · 2*A*4B"]:1
+  norm["normQ · logical depth 1 · 2 slots · 2*F*n*8*4B"]:1
+  col["sumColQ · logical depth 1 · 2 slots · 2*F*8*4B"]:1
+  row["sumRowQ · logical depth 1 · 2 slots · 64B"]:1
   fixed["mask+mid+sum · 576B"]:1
 ```
 
@@ -379,7 +435,7 @@ UB_total = 2*A*4 + 2*A*4 + 2*F*n*8*4 + 2*F*8*4 + 64 + 64 + 256 + 256
          = 16*A + 64*F*(n+1) + 640 bytes; n=8
 Host forward_available = (UB_bytes - 64 - 3*256) / 2
 Host 同时计算 forward/backward F，选择较小 tUbFactor
-UB_total <= UB_bytes 是该 Host 选择与 A5 编译资源成立的必要条件
+UB_total <= UB_bytes 是该 Host 选择与 950 编译资源成立的必要条件
 dynamic_ub = N/A
 workspace_total = 0
 ```
@@ -388,7 +444,7 @@ workspace_total = 0
 |---|---|---|---|---|---|
 | `normOutQue_` | softmax/row/col | 下一阶段/scatter | 下一归一化阶段原地写回 | Queue + MTE3→V event + local barrier | `OUT_FLAG=false` 不发生辅助 GM 抽取 |
 | `midBuffer_/sumBuffer_` | reduce store | broadcast reload | 下一 reduce | `LocalMemBar` | reload 后覆盖 |
-| Queue slot | producer | DeQue consumer | `FreeTensor` 后 | depth-2 Queue protocol | Host F 满足 UB 预算 |
+| Queue slot | producer | DeQue consumer | `FreeTensor` 后，或同一 tensor 再 EnQue | logical-depth-1 Queue + two allocated slots | Host F 满足 UB 预算 |
 
 #### 同步、精度与尾块
 
@@ -398,6 +454,7 @@ workspace_total = 0
 |---|---|---|---|---|---|
 | reduce | VEC load/store local barrier | ReduceMax/ReduceSum | broadcast reload | mid/sum TBuf | stable max-shift FP32 |
 | potential MTE3→V | `SetFlag/WaitFlag<HardEvent::MTE3_V>` | 编译期可选辅助 GM store | 后续 Vector norm | norm/sum Queue | Direct 为 false，仍保留 event 序列 |
+| row token lifecycle | `sumRowQue_.EnQue/DeQue/FreeTensor` | `CalcRowNorm` | 同轮 `CalcColNorm<false>` 后 | 最小 64B Queue | false 模板不物化 row sum，但仍必须成对释放 |
 | vector tail | mask TBuf + `UpdateMask` | Host handleNum/n mask | all MicroAPI ops | inactive matrices/lanes | n=8 全 32-bit row mask；matrix tail 动态 |
 | core/tile tail | last-core/last-loop fields | Host tiling | Process branch | GM extent | 只写 `handleNum*n²` |
 
@@ -437,17 +494,24 @@ launch_mhc_sinkhorn_register_fast
 ##### 源码等价伪码
 
 ```text
-group = core * groupsPerCore; each group owns up to 8 matrices
+totalGroups = ceil(B/8)
+firstGroup = core*groupsPerCore
+lastGroup = min(firstGroup+groupsPerCore,totalGroups)
+if firstGroup >= totalGroups: return
 for matrixOffset in this core's range step 128:
   DMA contiguous handleNum*N*N FP32 GM -> inputQue
   for each 8-matrix register group:
-    gather each row of each matrix; validMask clips B tail
+    matrixIndex[lane] = floor(lane/8)*N² + lane%8
+    validMask = rowMask(N*4 low bits) & UpdateMask(remaining_matrices*8)
+    gather each row of each matrix; validMask clips matrix and row-byte tail
     stable row softmax; save rows to normBuffer as [row, register-lane]
     add eps; accumulate and apply first column normalization
     repeat K-1 times: row sum+eps divide; column sum+eps divide
     scatter register lanes to packed outputLocal
   DMA valid packed bytes outputQue -> GM
 ```
+
+在当前 Host 可达域 `B=1` 中，上述通用分组退化为 core 0 处理一个 group、一个矩阵；`B=0` 会在 launcher 计算 `groupsPerCore` 前失败，不能依靠 Device 的 `firstGroup` guard 收口。
 
 #### 内存与数据搬运
 
@@ -480,7 +544,7 @@ block-beta
 UB_total = 2*(128*N²*4) + 64 + N*64*4 + 128*N*8*4
          = 1024*N² + 4352*N + 64 bytes
          = 12,864 B (N=2) or 22,336 B (N=3)
-UB_total <= A5 编译目标的可用 UB（launcher 无运行时 UB guard）
+UB_total <= 950 编译目标的可用 UB（launcher 无运行时 UB guard）
 dynamic_ub = N/A
 workspace_total = 0
 ```
@@ -542,11 +606,16 @@ thread = blockIdx*32 + threadIdx
 values = dynamicUB + threadIdx*256
 for matrix=thread; matrix<B; matrix+=blocks*32:
   scalar copy n² GM -> values
-  stable row softmax; store softmax+eps
+  for each row:
+    rowMax = values[row,0]
+    scan remaining columns; seeing NaN sets rowMax=NaN and keeps it NaN
+    exp(value-rowMax), scalar FP32 sum, then value/sum+eps
   first column divide by colSum+eps
   repeat requested_iter-1 row/column divide by sum+eps
   scalar copy n² values -> GM
 ```
+
+`blocks=ceil(B/32)` 令 stride 为 32 的倍数且不小于 `B`，所以有效 thread 在现行 launch 下至多进入循环一次。`n=0` 时三个维度循环都为空且源码不索引 `values[0]`，但零元素 GM/launch 契约未证明；`n=1` 执行完整标量公式。二者都只是 selector 的机械结果，不是官方宽度契约。
 
 #### 内存与数据搬运
 
@@ -587,7 +656,7 @@ AIV TQue/TBuf = N/A；实际替代路径为线程私有 dynamic UB
 | 阶段 | primitive/机制 | producer | consumer/等待点 | 保护对象 | 精度/尾块 |
 |---|---|---|---|---|---|
 | thread ownership | grid-stride index | launcher | SIMT body | one matrix | `matrix_idx<B` 收口 |
-| normalization | 单线程程序顺序 | scalar store | next scalar load | thread slice | FP32，NaN row-max 显式传播 |
+| normalization | 单线程程序顺序 | scalar store | next scalar load | thread slice | FP32；NaN row-max 显式传播；`+inf-(+inf)` 与 `-inf-(-inf)` 仍可产生 NaN |
 | cross-thread | N/A | 每线程独占矩阵 | N/A | 无共享数据 | 无 barrier/atomic 必要 |
 
 #### 关键实现
@@ -608,7 +677,7 @@ AIV TQue/TBuf = N/A；实际替代路径为线程私有 dynamic UB
 
 - 适用 Route：R-003（R-001 沿用同类稳定归约思想）。
 - 触发条件：官方 direct Route `n=8`，每个 vector loop 处理最多 `blockCnt` 个矩阵。
-- Golden 来源：[`mhc_sinkhorn.h:212-234`](https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn.h)
+- 固定来源：[`mhc_sinkhorn.h:212-234`](https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn.h)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -635,7 +704,6 @@ for (uint16_t nIdx = 0; nIdx < static_cast<uint16_t>(tilingData_.n); nIdx++) {
 - 适用：多个小方阵、每行能映射到固定 data block 的 FP32 stable softmax。
 - 前提：950 MicroAPI、正确 gather index、mask、store→load barrier 和 per-row data-block layout。
 - 失效：任意宽度无法构造官方 mask/layout 时，必须改用重新证明的 element/register Route 或 SIMT。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
@@ -647,7 +715,7 @@ for (uint16_t nIdx = 0; nIdx < static_cast<uint16_t>(tilingData_.n); nIdx++) {
 
 - 适用 Route：R-003。
 - 触发条件：所有官方 Host tiling；`BaseSplitCores` 同时估算两套共享实现的 UB 上界。
-- Golden 来源：[`mhc_sinkhorn_base_tiling.cpp:34-46`](https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn_common/op_host/arch35/mhc_sinkhorn_base_tiling.cpp)
+- 固定来源：[`mhc_sinkhorn_base_tiling.cpp:34-46`](https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn_common/op_host/arch35/mhc_sinkhorn_base_tiling.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -677,7 +745,6 @@ Host 不仅按当前 forward Queue 估算 tile，还计算共享 backward 资源
 - 适用：forward/backward 共用 ABI 或需要统一安全 tile 的小矩阵算子。
 - 前提：两套 `occupySize` 都以真实 depth、对齐和 dtype 字节数计账。
 - 失效：buffer 拓扑变化时必须同步更新两套估算式；不能继承旧公式。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
@@ -689,7 +756,7 @@ Host 不仅按当前 forward Queue 估算 tile，还计算共享 backward 资源
 
 - 适用 Route：R-003。
 - 触发条件：Direct selector 固定 `OUT_FLAG=false`，对应官方 `TEMPLATE_MODE=0`。
-- Golden 来源：[`mhc_sinkhorn_apt.cpp:31-40`](https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_kernel/mhc_sinkhorn_apt.cpp)
+- 固定来源：[`mhc_sinkhorn_apt.cpp:31-40`](https://gitcode.com/cann/ops-transformer/blob/22bc210c35313f6d79d7fe7a546edc49387df8da/mhc/mhc_sinkhorn/op_kernel/mhc_sinkhorn_apt.cpp)
 
 **官方源码（固定 Commit 连续逐字摘录）**：
 
@@ -709,14 +776,13 @@ if constexpr (TEMPLATE_MODE == 0) {
 
 #### 机制与设计原因
 
-`if constexpr` 把是否输出每轮 `norm_out/sum_out` 提升到模板期。Direct 只需要最终 `y`，固定选择 `float,false` 后，辅助 GM copy 分支被消除，`sumRowQue_` 也缩为一个 32B block 的 depth-2 Queue；这减少不需要的 GM 物化和 UB 容量。
+`if constexpr` 把是否输出每轮 `norm_out/sum_out` 提升到模板期。Direct 只需要最终 `y`，固定选择 `float,false` 后，辅助 GM copy 分支被消除；`sumRowQue_` 保持 `TQue<...,1>`，但每个 slot 缩为一个 32B block，`InitBuffer` 仍分配 2 slots、总计 64B。这减少不需要的 GM 物化和 UB 容量。
 
 #### 迁移边界
 
 - 适用：调用方只消费最终迭代结果。
 - 前提：Host key、模板实参、POD `out_flag` 和输出契约一致。
 - 失效：需要中间轨迹时必须使用 `OUT_FLAG=true`，恢复辅助输出 shape、GM owner 与更大 `sumRowQue_`。
-- 未验证：本次知识提取未执行编译、真机、数值或性能测试。
 
 #### 错误做法
 
@@ -734,7 +800,18 @@ if constexpr (TEMPLATE_MODE == 0) {
 | 内存总占用与复用 | `640N²` 或 `768N²` | `16A+64F(n+1)+640` | `1024N²+4352N+64` | 32768 B/block | 由真实分配计账 |
 | 搬运/Vector/SIMT API | DMA + element gather/scatter | DMA + data-block reduce | DMA + gather/reduce/scatter | scalar GM/UB loops | 小矩阵向量化方式不同 |
 | 同步、精度与 tail | local barrier + lane mask | Queue/event/barrier + core/tile mask | local barrier + lane mask | thread-private，无 barrier | 均为 FP32 |
-| fallback/失败边界 | B=0 未保护 | tiling 失败无备用 | B=0 未保护 | n²>256 越界 | wrapper 未补全这些 guard |
+| fallback/失败边界 | 0-block launch | `B=0` split 除零或 `F_bwd=0` | Host 先除零 | `B=0` 0-block launch；n²>256 越界 | selector 命中后均无 Device fallback |
+
+## 迭代归一化、精度与尾块总表
+
+| Route | 实际 K | 初始 row-softmax 与 eps | 首次列归一化 | 后续 K-1 轮 | FP32 顺序与特殊值 | 尾块 |
+|---|---|---|---|---|---|---|
+| R-002 | n2→`min(req,8)`；n3→`min(req,7)`；n4→`req`；n6→`min(req,5)`；n12/16→`min(req,3)` | 每个 element 对 matrix-lane 向量；逐列 `Max`、`Exp`、显式累加；`s+eps` 写 norm | 分母 `sum_row(s+eps)+eps`，再逐元素除 | 每行/列显式累加，分母再加 eps | 每 lane FP32；列次序固定 0→N-1；MicroAPI `Max` 的特殊值规则不能从该交付源码外推 | group tail 用 `handleNum` mask；DMA 只搬有效矩阵 |
+| R-003 | `min(req,5)` | data-block `ReduceMax/ReduceSum`；norm 保存 `s`，sumCol 累计 `s+eps` | `CalcColNorm<true>` 把分子变为 `s+eps`，分母为 sumCol+eps | `CalcRowNorm`→`CalcColNorm<false>` | FP32 data-block reduction；与其余 Route 不承诺逐位相同 | normal/tail core + normal/tail loop + matrix/data-block mask |
+| R-001 | n2→`min(req,8)`；n3→`min(req,7)` | data-block reduce；先 `s`，随后 `Adds(eps)` 写 norm | 跨 row 累加后分母加 eps | data-block row reduce、跨 row 列累加 | FP32 data-block reduction；当前只处理一个有效矩阵 | fresh mask 截到 B=1；DMA 有效字节收口 |
+| R-004 | `req` | 单线程标量 max/exp/sum；`s+eps` 原地写 UB | 标量列和再加 eps | 标量 row→col 顺序 | FP32 标量左结合；源码显式传播 NaN row max | `matrix_idx<B`；每线程 256 FP32 容量边界 |
+
+跨 Route 共同的不变量是 `stable row-softmax -> first column -> (row -> column)^(K-1)`，而不是逐位相同。`eps` 先在 Host 由 double 窄化为 float；Host 比较会拒绝 NaN eps，允许 `+inf`，后者可在 `inf/inf` 中产生 NaN。`eps=0` 合法，源码没有额外零分母保护。
 
 ## 平台差异
 
@@ -747,14 +824,15 @@ if constexpr (TEMPLATE_MODE == 0) {
 ## 限制与失败边界
 
 - Direct wrapper 仅校验 rank=3、内维相等、FP32、`iter_step in [1,40]` 和 `eps>=0`；未校验 contiguous，但所有 Device 地址均按连续 `[B,n,n]` 解释。
-- `B=0` 未被拒绝：R-001/R-002 可产生 `blockDim=0` 并进入除零表达式；调用者必须保证 `B>=1`。
-- R-004 每线程只有 256 FP32，故必须满足 `n*n<=256`；wrapper 未验证这一必要条件。前三条未命中的 `n>16` 会造成线程 UB 越界。
+- `B=0` 未被拒绝：R-001 在 Host 计算 `groupsPerCore` 时除零，R-003 在 split 中除零，R-002/R-004 产生 0-block launch；调用者必须保证 `B>=1`。
+- R-004 每线程只有 256 FP32，故必须满足 `n*n<=256`；wrapper 未验证这一必要条件。前三条未命中的 `n>16` 会造成线程 UB 越界；`n=1` 在内存界内但不属于官方宽度契约，`n=0` 还缺少零元素 GM/launch 契约证明。
+- R-003 的 forward candidate 在零 factor 时回填 8，backward candidate 不回填；最终取较小 factor。异常小 UB 下 `F_bwd=0` 会胜出并生成与 Device 分配不相容的 POD，源码没有错误出口。
 - R-003 只复用官方 `OUT_FLAG=false` body，只有最终 `y`；辅助输出指针虽与 `output` 别名，但编译期分支不可达。
 - 宽度相关 iteration cap 会改变请求的迭代次数；这是 Direct 交付的显式数值/调度策略，不是官方 Host/Tiling 语义。R-004 传原始 `iter_step`。
 - `eps` 从 double 窄化为 float；NaN 会因 `eps>=0` 比较失败而被 Host 拒绝，`+inf` 可通过并在 FP32 计算中传播。
 - lambda 固定返回 0，源码未提供同步 launch 错误回传；输出有效性仍依赖 stream 上 Kernel 成功完成。
-- supplemental register/element/SIMT 路线没有对应官方 blob；本卡仅把它们作为 final candidate 的交付层实现陈述，不将其来源标为官方。
-- 本次知识提取未执行编译、真机、数值或性能测试。
+- supplemental register/element/SIMT 路线没有对应的官方固定源码；本卡只把它们作为 Direct 交付层派生实现陈述，不将其来源标为官方。
+- 源码闭包不构成目标环境的运行保证；修改 selector、POD、资源式、同步或归一化顺序后，必须重新证明编译、资源与数值边界。
 
 ## 源码索引
 
@@ -772,8 +850,8 @@ if constexpr (TEMPLATE_MODE == 0) {
 | 模板 key | `mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn_tiling_key.h` | `MhcSinkhorn` template args | AIV-only key 0/1 |
 | 官方 entry | `mhc/mhc_sinkhorn/op_kernel/mhc_sinkhorn_apt.cpp` | `mhc_sinkhorn<TEMPLATE_MODE>` | key→`OUT_FLAG` body |
 | 官方 body | `mhc/mhc_sinkhorn/op_kernel/arch35/mhc_sinkhorn.h` | `MhcSinkhornSimd` | 完整 Vector pipeline、UB、同步、tail |
-| 构建接线 | `mhc/mhc_sinkhorn/op_host/CMakeLists.txt` | ascend950 compile branch | 950 编译选项与 common tiling 接线 |
-| binary config | `mhc/mhc_sinkhorn/op_host/config/ascend950/mhc_sinkhorn_binary.json` | `MhcSinkhorn` op list | ascend950 binary 接口与 attrs |
+| 上游 950 构建 provenance | `mhc/mhc_sinkhorn/op_host/CMakeLists.txt` | ascend950 compile branch | 官方 950 编译选项与 common tiling 接线；不作为 Direct adapter 构建接线 |
+| 上游 950 binary provenance | `mhc/mhc_sinkhorn/op_host/config/ascend950/mhc_sinkhorn_binary.json` | `MhcSinkhorn` op list | 官方 ascend950 binary 接口与 attrs；不作为 Direct adapter target |
 
 每行只写一个文件，并确保该文件存在于 Frontmatter `sources`。
 
