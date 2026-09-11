@@ -83,11 +83,45 @@ scopes:
     domains: [model]
 
 local_sources:
+  ops_cv:
+    description: 固定到算子知识来源提交的 CANN ops-cv 源码
+    kind: git
+    root: cann-ops-raw/ascendc/ops-cv
+    fetch_script: .agents/skills/knowledge-ingest/scripts/source_resources.py
+    repository: https://gitcode.com/cann/ops-cv
+    revisions:
+      - bb717d075d129fd1fc7b96b2886824a1d153ed2f
+  ops_math:
+    description: 固定到算子知识来源提交的 CANN ops-math 源码
+    kind: git
+    root: cann-ops-raw/ascendc/ops-math
+    fetch_script: .agents/skills/knowledge-ingest/scripts/source_resources.py
+    repository: https://gitcode.com/cann/ops-math
+    revisions:
+      - 165d41f02a43a62324b434cb6bda7c533b14da3e
+  ops_nn:
+    description: 固定到算子知识来源提交的 CANN ops-nn 源码
+    kind: git
+    root: cann-ops-raw/ascendc/ops-nn
+    fetch_script: .agents/skills/knowledge-ingest/scripts/source_resources.py
+    repository: https://gitcode.com/cann/ops-nn
+    revisions:
+      - 955f8b33985b6d72989ebff341bb9c2c564a51bc
+  ops_transformer:
+    description: 固定到算子知识来源提交的 CANN ops-transformer 源码
+    kind: git
+    root: cann-ops-raw/ascendc/ops-transformer
+    fetch_script: .agents/skills/knowledge-ingest/scripts/source_resources.py
+    repository: https://gitcode.com/cann/ops-transformer
+    revisions:
+      - be33d95bb755cedec3108f70805c1874d1792540
   cann_docs_raw:
     description: 按固定归档校验和恢复的 Ascend C 官方文档
     root: cann-docs-raw
     fetch_script: fetch-cann-docs.sh
     archive_sha256: 9bc4341ac90740121a20b0ab9d30c6020784bd5969a119e77ab9402a4e6b68c4
+    mirror:
+      source_root: asc-devkit/docs/zh
 
 paths:
   operator_call_modes: [aclnn, direct]
@@ -109,6 +143,10 @@ platforms:
     description: Ascend 310P 系列
   "910":
     description: 早期 Ascend 910 系列
+  kirin_x90:
+    description: Kirin X90
+  kirin_9030:
+    description: Kirin 9030
   agnostic:
     description: 结论按定义与硬件平台无关，不会随平台注册表扩张而改变含义
 

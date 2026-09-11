@@ -18,6 +18,8 @@ description: 将所有 cannbot-knowledge 摄入请求统一路由，并把官方
 3. 所有 producer 共同遵守[质量与证据约束](references/quality-constraints.md)和[路径 Profile](references/frontmatter-profiles.md)。
 4. 最后统一更新逐层导航与当天日志，按[本地图谱](references/local-graphs.md)执行宽候选召回，并把稳定分片交给多个独立 subagent 阅读全文判定；聚合完成后同步知识卡的受管关系块，并在 ignored 的 `artifacts/graphs/` 合成、可视化和校验本地图谱，最后运行全库 lint、重建 Query 索引并执行目标 query。只读问答不触发这一写入流程。
 
+登记的固定提交本地源码可以按[新来源接入](references/source-onboarding.md)恢复和只读验证；此操作不创建知识卡、不改来源版本，也不触发图谱关系重建。
+
 ## 通用建卡
 
 先查重并完整读取固定来源。确定 domain、technology/scope 和路径 Profile，再把来源事实、推导结论和待验证假设分开；证据不足时保持 `draft`。

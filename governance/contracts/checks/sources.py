@@ -17,6 +17,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from ..knowledge import Contract, Issue
+from ..source_resources import git_source
 
 
 COMMIT_RE = re.compile(r"^[0-9a-fA-F]{40}$")
@@ -107,10 +108,15 @@ def is_safe_local_resource(contract: Contract, resource: str) -> bool:
         (contract.root / relative).resolve().relative_to(contract.root)
     except ValueError:
         return False
-    registered_roots = {
-        str(source["root"]) for source in contract.local_sources.values()
-    }
-    return relative.parts[0] in registered_roots
+    definition = contract.local_source_definition(resource)
+    if definition is None:
+        return False
+    if definition.get("kind") != "git":
+        return True
+    try:
+        return git_source(contract, resource) is not None
+    except ValueError:
+        return False
 
 
 def git_url_is_pinned(url: str) -> bool:

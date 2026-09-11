@@ -16,11 +16,11 @@ import re
 from urllib.parse import urlparse
 
 from ..knowledge import Contract, Issue
+from ..source_resources import git_source, local_source_link
 from .links import markdown_targets
 
 
 def check(contract: Contract, document, context) -> list[Issue]:
-    del contract
     if (
         not context.strict_navigation
         or document.metadata is None
@@ -49,6 +49,26 @@ def check(contract: Contract, document, context) -> list[Issue]:
                     "tree source requires a same-repository, same-revision blob source or body link",
                 )
             )
+        if resource.startswith(("http://", "https://")):
+            continue
+        try:
+            source = git_source(contract, resource)
+            if source is None:
+                continue
+            target = source.local_path(contract.root)
+            if not target.is_dir() and (target.exists() or "." in target.name):
+                continue
+            locations = [git_source(contract, candidate) for candidate in resources]
+            locations.extend(local_source_link(contract, document.path, candidate) for candidate in body_links)
+            if not any(
+                candidate is not None
+                and (candidate.root, candidate.revision) == (source.root, source.revision)
+                and "." in candidate.local_path(contract.root).name
+                for candidate in locations
+            ):
+                issues.append(Issue("source.navigation", "local tree source requires a same-repository, same-revision source file"))
+        except ValueError as exc:
+            issues.append(Issue("source.navigation", str(exc)))
     return issues
 
 

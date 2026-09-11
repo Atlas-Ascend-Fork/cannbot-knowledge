@@ -85,7 +85,8 @@ knowledge/runtime/runbooks/<area>/<runbook>.md
 - `index.md` 只存在于 `knowledge/`，不作为 Concept 参与检索。
 - 只有 Bundle 根 `knowledge/index.md` 带 `okf_version: "0.2"` Frontmatter；其他索引不得带 Frontmatter。
 - 每个目录都必须有索引，并完整、无重复地列出本层直接子目录和知识卡。
-- 每个条目包含简短摘要，索引不能越级链接。Domain 根和 `ops`/`model` 的预建 route 允许只有说明文字的 index；其他目录必须包含合法直接卡或带合法 index 的直接子目录，普通占位文件不算知识内容。
+- 每个条目包含简短摘要，索引不能越级链接，也不得导航 Bundle 外的本地源码。知识卡中 Registry 登记的固定提交源码文件链接是来源导航例外，不建立源码 index 或 Concept。
+- Domain 根和 `ops`/`model` 的预建 route 允许只有说明文字的 index；其他目录必须包含合法直接卡或带合法 index 的直接子目录，普通占位文件不算知识内容。
 - Index-only 入口只保证结构可浏览，不表示存在 Concept、来源覆盖或摄入 watermark。
 
 ## 示例

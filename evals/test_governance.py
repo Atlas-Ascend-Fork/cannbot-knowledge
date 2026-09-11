@@ -112,6 +112,54 @@ class RouteContractTests(unittest.TestCase):
         self.assertIn("950", self.contract.platforms)
         self.assertNotIn("a5", self.contract.platforms)
 
+    def test_kirin_platforms_are_registered_without_allowing_unknown_values(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        for platform in ("kirin_x90", "kirin_9030", "kirin_unknown"):
+            metadata = dict(SYNTHETIC_API_METADATA, platforms=[platform])
+            issues = self.contract.validate_card(relative, metadata, "# API\n")
+            self.assertEqual(platform == "kirin_unknown", "platform.unknown" in {issue.code for issue in issues})
+
+    def test_mirror_body_exception_requires_primary_archive_api_or_guide(self) -> None:
+        from governance.contracts.checks import Document, RunContext, body
+
+        resource = "cann-docs-raw/asc-devkit/docs/zh/example.md"
+        for kind, profile in (("API", "apis"), ("Guide", "guides"), ("Concept", "concepts")):
+            for role in (None, "primary", "supporting", "header", "implementation"):
+                source = {"resource": resource}
+                if role is not None:
+                    source["role"] = role
+                metadata = dict(SYNTHETIC_API_METADATA, type=kind, sources=[source])
+                relative = Path(f"knowledge/ops/ascendc/{profile}/synthetic.md")
+                allowed = kind in {"API", "Guide"} and role in (None, "primary")
+                for text in ("# First\n\n# Second\n", "No heading.\n"):
+                    with self.subTest(kind=kind, role=role, text=text):
+                        document = Document.create(self.contract, ROOT / relative, relative, "", metadata, text)
+                        issues = body.check(self.contract, document, RunContext())
+                        self.assertEqual(not allowed or not text.startswith("#"), "body.h1_count" in {issue.code for issue in issues})
+
+    def test_invalid_mirror_source_root_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(ROOT / "governance", root / "governance")
+            path = root / "governance/schemas/registries.yaml"
+            registry = yaml.safe_load(path.read_text())
+            for value in (None, "", "/absolute", "../escape", "docs/../escape", "docs\\escape"):
+                registry["local_sources"]["cann_docs_raw"]["mirror"]["source_root"] = value
+                path.write_text(yaml.safe_dump(registry, allow_unicode=True, sort_keys=False))
+                with self.subTest(value=value), self.assertRaisesRegex(ValueError, "mirror.source_root"):
+                    Contract(root)
+
+    def test_malformed_mirror_sources_report_findings_without_crashing(self) -> None:
+        from governance.contracts.checks import Document, RunContext, body
+
+        relative = Path("knowledge/ops/ascendc/apis/synthetic.md")
+        for sources in (None, 1, "invalid", {"resource": "invalid"}):
+            metadata = dict(SYNTHETIC_API_METADATA, sources=sources)
+            document = Document.create(self.contract, ROOT / relative, relative, "", metadata, "# First\n\n# Second\n")
+            with self.subTest(sources=sources):
+                issues = body.check(self.contract, document, RunContext())
+                self.assertIn("body.h1_count", {issue.code for issue in issues})
+
     def test_invalid_route_shapes_are_rejected(self) -> None:
         cases = (
             "knowledge/ops/apis/no_dsl.md",
@@ -365,6 +413,35 @@ class RouteContractTests(unittest.TestCase):
         ]
         self.assertEqual([], self.contract.validate_card(relative, metadata, "# Synthetic API\n"))
 
+    def test_api_source_headers_are_accepted(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        metadata = dict(SYNTHETIC_API_METADATA)
+        metadata["source_headers"] = [
+            "include/c_api/asc_simd.h",
+            "include/c_api/reg_compute/compute/reg_arith.h",
+        ]
+        self.assertEqual([], self.contract.validate_card(relative, metadata, "# Synthetic API\n"))
+
+
+    def test_api_source_headers_reject_invalid_shape(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        for value in ([123], "not-a-list", [""], ["include/a.h", "include/a.h"]):
+            with self.subTest(value=value):
+                metadata = dict(SYNTHETIC_API_METADATA)
+                metadata["source_headers"] = value
+                issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
+                self.assertIn("frontmatter.schema", {issue.code for issue in issues})
+
+
+    def test_source_headers_is_rejected_outside_api_profile(self) -> None:
+        relative = Path("knowledge/ops/ascendc/guides/synthetic_guide.md")
+        metadata = dict(SYNTHETIC_API_METADATA)
+        metadata["type"] = "Guide"
+        metadata["source_headers"] = ["include/c_api/asc_simd.h"]
+        issues = self.contract.validate_card(relative, metadata, "# Synthetic Guide\n")
+        self.assertIn("frontmatter.extra", {issue.code for issue in issues})
+
+
     def test_stable_runbook_can_use_empty_sources(self) -> None:
         relative = Path("knowledge/ops/ascendc/runbooks/compilation/trajectory_finding.md")
         metadata = dict(SYNTHETIC_API_METADATA)
@@ -429,14 +506,23 @@ class RouteContractTests(unittest.TestCase):
         )
 
     def test_markdown_targets_ignore_inline_and_fenced_code(self) -> None:
-        text = """[real](target.md) and `[interval, end)`.
+        text = """[real](target.md), [operator\\[\\]](operator.md), and `[interval, end)`.
 
 ```cpp
 auto fn = [](int value) { return value; };
 [fake](inside_fence.md)
 ```
+
+1. Nested list example:
+
+    ```cpp
+    auto path = [capture](inside_indented_fence.md);
+    ```
 """
-        self.assertEqual([("target.md", False)], markdown_targets(text))
+        self.assertEqual(
+            [("target.md", False), ("operator.md", False)],
+            markdown_targets(text),
+        )
 
     def test_missing_index_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -715,6 +801,28 @@ platforms: [a2]
             {"body.h1_count", "body.collapsed_table"}
             & {finding["code"] for finding in payload["findings"]}
         )
+
+    def test_fixed_archive_api_mirror_preserves_multiple_h1_headings(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self.make_root(temporary)
+            result = self.run_lint(
+                root,
+                self.render_card(
+                    sources=(
+                        "  - resource: cann-docs-raw/asc-devkit/docs/zh/example.md\n"
+                        "    role: primary"
+                    ),
+                    body="# Second source topic\n\nSource text.",
+                ),
+                "--json",
+            )
+        self.assertEqual(0, result.returncode, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertNotIn(
+            "body.h1_count",
+            {finding["code"] for finding in payload["findings"]},
+        )
+
 
     def test_index_entry_without_summary_is_a_nonblocking_finding(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

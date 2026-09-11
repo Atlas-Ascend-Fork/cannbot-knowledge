@@ -90,8 +90,8 @@ Lint 是离线、只读、确定性的作者门禁，比 OKF 最小 conformance 
 |---|---|
 | OKF/CANNBot Profile | 根版本、YAML mapping 唯一 key、非空 `type`、路径 Profile 映射、JSON Schema 和字段白名单 |
 | 路径与受控值 | domain-route、附加层级、文件名、platform、Tag、技术端点 |
-| 生命周期与来源 | `status`、有效日历时间、`verified` actor、`replaced_by`、来源形状、Git 文件 commit 固定格式与 GitCode/GitHub PR/Issue URL；本地来源获取脚本存在且可执行，已恢复来源的归档标记和在用文件存在 |
-| 导航、正文与日志 | domain 根和 `ops`/`model` route 骨架完整；每层索引列出直接子项；行内/显式引用式 Markdown 目标是 Bundle 内的现有文件；图片使用固定 commit 的 Git raw 文件 URL；正文非空、围栏外恰有一个 H1、无 Git 冲突标记或压平表格；日志格式、必需 section 与倒序正确 |
+| 生命周期与来源 | `status`、有效日历时间、`verified` actor、`replaced_by`、来源形状、Git 文件 commit 固定格式与 GitCode/GitHub PR/Issue URL；本地来源获取脚本存在且可执行；已恢复归档的标记及在用文件有效，Git 来源的提交、来源、干净工作区及在用文件有效 |
+| 导航、正文与日志 | domain 根和 `ops`/`model` route 骨架完整；每层索引列出直接子项；行内/显式引用式 Markdown 知识导航目标是 Bundle 内的现有文件，知识卡允许登记的固定提交源码文件导航例外；图片使用固定 commit 的 Git raw 文件 URL；正文非空、围栏外恰有一个 H1（固定归档主来源 API/Guide 镜像可保留多个）、无 Git 冲突标记或压平表格；日志格式、必需 section 与倒序正确 |
 
 单卡检查不覆盖父级索引和完整目录树；新增、删除或移动文件后必须执行全库检查。统一门禁启用严格来源导航，要求宽 Git tree 来源由同仓库、同 revision 的 blob 来源或正文链接定位。Lint 只确认链接目标和 Bundle 边界，不验证 Markdown 锚点。
 

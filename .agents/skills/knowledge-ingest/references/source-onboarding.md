@@ -7,6 +7,19 @@
 - Git 来源固定 canonical repo、ref、40 位 commit 和纳入范围；没有固定 commit 时不开始批量摄入。
 - 本地固定归档在 Registry 登记顶层 root、fetch script 和 archive SHA-256；先运行获取脚本恢复来源。不要为归档增加逐文件清单。
 
+## 登记源码资源的恢复
+
+Registry 中的 `kind: git` 资源使用可执行的 `scripts/source_resources.py` 恢复与验证：
+
+```bash
+python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> fetch
+python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> verify
+```
+
+`fetch` 只按 Registry 的仓库与固定提交恢复 ignored 来源目录；多个仓库可并行获取，但不会跟随分支，不执行源码或 Git hooks。`verify` 不联网、不改文件。已有目录若非工具管理、来源/提交不符、有本地修改、隐藏索引项或符号链接逃逸，都失败且保留现场，不 reset、删除或覆盖。此入口不迁移知识卡来源、不升级文档归档；首次知识摄入仍按下面的批次流程执行。
+
+知识卡的 `sources[].resource` 相对于知识仓根，正文源码链接相对于卡片目录；两者必须指向同一登记根和固定提交。离线 Lint 不会自动执行获取脚本，无法证明未恢复文件存在。
+
 ## Git 批次
 
 1. 运行 `reference_inventory.py inventory` 获取完整 tracked-file 清单和选中范围，随后用 `scaffold-ledger` 建决策账本。

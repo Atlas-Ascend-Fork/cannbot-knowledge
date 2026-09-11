@@ -256,14 +256,15 @@ class Contract:
             ):
                 raise ValueError(f"local_sources.{source_id} requires a description")
             source_root = source.get("root")
+            kind = source.get("kind", "archive")
             if (
                 not isinstance(source_root, str)
-                or Path(source_root).parts != (source_root,)
-                or source_root in {"", ".", ".."}
-                or "\\" in source_root
+                or not re.fullmatch(r"[a-z][a-z0-9_-]*(?:/[a-z][a-z0-9_-]*)*", source_root)
+                or (kind != "git" and len(Path(source_root).parts) != 1)
+                or Path(source_root).parts[0] in {"knowledge", "governance", "artifacts", "docs", "recipes", "logs", "evals"}
             ):
                 raise ValueError(
-                    f"local_sources.{source_id}.root must be a top-level relative path"
+                    f"local_sources.{source_id}.root must be a safe relative source path (archives require a top-level root)"
                 )
             fetch_script = source.get("fetch_script")
             if (
@@ -273,6 +274,22 @@ class Contract:
                 raise ValueError(
                     f"local_sources.{source_id}.fetch_script must be a safe repository path"
                 )
+            if kind == "git":
+                repository = source.get("repository")
+                revisions = source.get("revisions")
+                if (
+                    not isinstance(repository, str)
+                    or not re.fullmatch(r"https://gitcode\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_-]+", repository)
+                    or not isinstance(revisions, list)
+                    or not revisions
+                    or any(not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value) for value in revisions)
+                    or revisions != sorted(set(revisions))
+                    or any(field in source for field in ("archive_sha256", "tree_sha256", "mirror"))
+                ):
+                    raise ValueError(f"local_sources.{source_id} requires a canonical Git repository and unique sorted 40-hex revisions")
+                continue
+            if kind != "archive":
+                raise ValueError(f"local_sources.{source_id}.kind must be archive or git")
             archive_sha256 = source.get("archive_sha256")
             if not isinstance(archive_sha256, str) or not re.fullmatch(
                 r"[0-9a-f]{64}", archive_sha256
@@ -280,6 +297,37 @@ class Contract:
                 raise ValueError(
                     f"local_sources.{source_id}.archive_sha256 must be lowercase SHA-256"
                 )
+            mirror = source.get("mirror")
+            if mirror is None:
+                continue
+            if not isinstance(mirror, dict):
+                raise ValueError(f"local_sources.{source_id}.mirror must be a mapping")
+            source_subroot = mirror.get("source_root")
+            if (
+                not isinstance(source_subroot, str)
+                or not source_subroot
+                or Path(source_subroot).is_absolute()
+                or ".." in Path(source_subroot).parts
+                or "\\" in source_subroot
+            ):
+                raise ValueError(
+                    f"local_sources.{source_id}.mirror.source_root must be a safe relative path"
+                )
+        roots = [source["root"] for source in self.local_sources.values()]
+        if len(roots) != len(set(roots)):
+            raise ValueError("local_sources roots must be unique")
+        if any(child.startswith(parent + "/") for child in roots for parent in roots if child != parent):
+            raise ValueError("local_sources roots must not overlap")
+        repositories = [source["repository"] for source in self.local_sources.values() if source.get("kind") == "git"]
+        if len(repositories) != len(set(repositories)):
+            raise ValueError("local_sources Git repositories must be unique")
+
+    def local_source_definition(self, resource: str) -> dict | None:
+        return next(
+            (definition for definition in self.local_sources.values()
+             if resource.startswith(definition["root"] + "/")),
+            None,
+        )
 
     def _safe_repository_path(self, value: str) -> Path:
         if value != value.strip() or "\\" in value:
@@ -346,6 +394,29 @@ class Contract:
         from .checks.local_sources import check_repository
 
         return check_repository(self)
+
+    def fixed_archive_mirror(self, metadata: dict) -> tuple[dict, Path] | None:
+        """Locate an API/Guide mirror, not a supporting archive reference."""
+        if metadata.get("type") not in {"API", "Guide"}:
+            return None
+        sources = metadata.get("sources")
+        if not isinstance(sources, list):
+            return None
+        resources = [
+            source.get("resource")
+            for source in sources
+            if isinstance(source, dict)
+            and source.get("role", "primary") == "primary"
+        ]
+        for definition in self.local_sources.values():
+            mirror = definition.get("mirror")
+            if not isinstance(mirror, dict):
+                continue
+            prefix = f"{definition['root'].rstrip('/')}/{mirror['source_root'].strip('/')}/"
+            for resource in resources:
+                if isinstance(resource, str) and resource.startswith(prefix):
+                    return mirror, self.root / resource
+        return None
 
     def structural_directories(self) -> set[Path]:
         from .checks.navigation import structural_directories

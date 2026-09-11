@@ -42,7 +42,7 @@ platforms: []
 | 路径 Profile | OKF `type` | 额外必选字段 | 可选字段 |
 |---|---|---|---|
 | `concepts` | `Concept` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
-| `apis` | `API` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
+| `apis` | `API` | `platforms` | `cann_versions`, `source_headers`, `aliases`, `verified`, `replaced_by` |
 | `examples` | `Example` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
 | `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
 | `operators` | `Operator` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
@@ -52,6 +52,12 @@ platforms: []
 | `glossaries` | `Glossary` | 无 | `aliases`, `verified`, `replaced_by` |
 
 新增字段必须先有稳定语义和实际消费者，再同时修改 Schema、Profile、Contract、文档和回归；不能为单张卡增加临时字段。
+
+### API 头文件定位（`source_headers`）
+
+`source_headers` 仅用于 API 卡，是去重数组，元素必须是非空字符串，例如 `[include/basic_api/kernel_operator_set_atomic_intf.h]`；字段可省略，空数组不代表 API 没有声明头文件。它为阅读卡片的 Agent 提供声明或内联实现的定位线索，不代替 `sources` 的固定版本证据。
+
+路径相对于本机 CANN 包中的 Ascend C 组件根，读取时需先定位该组件，再拼接成绝对路径；不能直接相对于知识卡或当前工作目录打开。调用方应核对路径不越出组件根、文件实际存在且版本适用，不执行头文件内容。Schema 校验数组形状，不保证本机包内文件存在。
 
 ## 生命周期与信任
 
@@ -105,6 +111,8 @@ sources:
 - GitCode、GitHub、Gitee、GitLab、Bitbucket 和 Codeberg 上的文件、目录和 raw 来源必须固定到 40 位 commit，分支名和裸仓库首页不通过；GitCode/GitHub PR 与 Issue 可以直接使用对应仓库的规范工作项 URL，不要求 commit；
 - 本地来源必须由仓库记录的可复现获取流程提供；全库 Lint 要求获取脚本存在且可执行。当前 `cann-docs-raw/` 由 `fetch-cann-docs.sh` 按固定归档 URL 和 SHA-256 恢复，并保持 Git 忽略；本地根存在时，Lint 还检查 `.complete` 中的归档摘要与被引用文件；
 - Lint 不联网，也不判断来源是否支持结论；本地根尚未恢复时只检查注册路径形状。
+
+固定提交的 Git 本地来源另由 Registry 的 `kind: git`、`root`、`repository`、`revisions` 和 `fetch_script` 声明。`resource` 使用 `<root>/<40位commit>/<源码路径>`，相对于知识仓根；正文中的源码链接则相对于卡片目录，可带 `#L71` 或 `#L71-L80` 行号。仅登记的版本有效，不能用分支名或通过路径穿越访问其他资源。已恢复的 checkout 必须提交、远程来源、工作区和被引用文件一致；不会自动覆盖不匹配或有本地修改的源码。源码文件不成为知识 Concept，索引仍不得链接 Bundle 外。
 
 | `role` | 用途 |
 |---|---|

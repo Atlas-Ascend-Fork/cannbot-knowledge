@@ -15,6 +15,7 @@ from __future__ import annotations
 import re
 
 from ..knowledge import Contract, Issue
+from .links import mask_code
 
 
 CONFLICT_RE = re.compile(r"(?m)^(?:<{7}|={7}|>{7})(?: .*)?$")
@@ -23,32 +24,6 @@ COLLAPSED_TABLE_RE = re.compile(r"(?m)\|[ \t]+\|[ \t]*:?-{3,}")
 WEAK_DESCRIPTION_RE = re.compile(
     r"^(?:本文件为文档发布时所需的索引文件。|> \[![^]]+]|表\s*\d+|以下内容针对如下型号生效)"
 )
-
-
-def _outside_fenced_code(body: str) -> str:
-    """Return body text with fenced-code contents removed."""
-    result: list[str] = []
-    fence: str | None = None
-    for line in body.splitlines(keepends=True):
-        stripped = line.lstrip()
-        marker = (
-            "```"
-            if stripped.startswith("```")
-            else "~~~"
-            if stripped.startswith("~~~")
-            else None
-        )
-        if marker is not None:
-            if fence is None:
-                fence = marker
-            elif fence == marker:
-                fence = None
-            result.append("\n")
-        elif fence is None:
-            result.append(line)
-        else:
-            result.append("\n")
-    return "".join(result)
 
 
 def check(contract: Contract, document, context) -> list[Issue]:
@@ -63,12 +38,16 @@ def check(contract: Contract, document, context) -> list[Issue]:
         issues.append(
             Issue("body.conflict_marker", "body contains a Git conflict marker")
         )
-    prose = _outside_fenced_code(document.body)
-    if len(H1_RE.findall(prose)) != 1:
+    prose = mask_code(document.body, inline=False)
+    h1_count = len(H1_RE.findall(prose))
+    if h1_count == 0 or (
+        h1_count > 1
+        and contract.fixed_archive_mirror(document.metadata) is None
+    ):
         issues.append(
             Issue(
                 "body.h1_count",
-                "knowledge card body must contain exactly one level-1 heading outside fenced code",
+                "knowledge card body must contain a level-1 heading; only fixed-archive API/Guide mirrors may preserve multiple source headings",
             )
         )
     if COLLAPSED_TABLE_RE.search(prose):

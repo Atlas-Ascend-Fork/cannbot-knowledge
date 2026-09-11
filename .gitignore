@@ -10,3 +10,6 @@ __pycache__/
 cann-docs-raw/
 .DS_Store
 **/.DS_Store # 递归忽略子目录中的
+
+# Registry-pinned operator source checkouts (rebuildable)
+cann-ops-raw/

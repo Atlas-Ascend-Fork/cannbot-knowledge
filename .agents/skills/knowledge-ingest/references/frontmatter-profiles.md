@@ -9,7 +9,7 @@
 | 路径 Profile | OKF type | 额外必填 | 允许可选 |
 |---|---|---|---|
 | `concepts` | `Concept` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
-| `apis` | `API` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
+| `apis` | `API` | `platforms` | `cann_versions`, `source_headers`, `aliases`, `verified`, `replaced_by` |
 | `examples` | `Example` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
 | `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
 | `operators` | `Operator` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
@@ -35,7 +35,7 @@ Actor 使用 `human:<id>`、`process:<id>` 或 `<producer>/<version>`。不得�
 ## 路径附加层级
 
 - 路径满足 domain-route 矩阵；Concept ID 相对 `knowledge/`，不带该前缀和 `.md`。
-- 卡片正文和索引中的本地 Markdown 链接只能指向同一 `knowledge/` Bundle。
+- Concept 与索引导航只能指向同一 `knowledge/` Bundle；知识卡还可引用 Registry 登记的 `kind: git` 固定提交源码文件作为本地来源链接，不形成图谱节点。`sources[].resource` 相对于知识仓根，正文链接相对于当前卡目录。
 - `interoperability` 只能位于同领域 `shared`，并声明不同的 source/target technology。
 - `concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可以增加小写 `snake_case` 主题 section。
 - operator 使用 `operators/<call-mode>/<family>/<category>/<operator>.md`；`call-mode` 当前为 `aclnn` 或 `direct`。

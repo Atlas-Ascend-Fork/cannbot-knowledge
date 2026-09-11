@@ -10,7 +10,7 @@
 |---|---|---|
 | `path` | P0 | domain-route、Profile、内容型 section、Operator/Runbook 附加层级和小写 snake_case 卡名合法 |
 | `profile` | P0 | YAML mapping 无重复 key；JSON Schema、公共/Profile 必选字段、非空标题摘要和路径到 OKF type 的映射一致；缺失与空白分别报告 |
-| `body` | P0 | 正文非空且围栏外恰有一个 H1、摘要不含发布占位，正文无 Git 冲突标记或压平到单行的 Markdown 表格 |
+| `body` | P0 | 正文非空且围栏外至少一个 H1；仅 Registry 固定归档主来源的 API/Guide 镜像可保留多个 H1，普通卡仍恰有一个；摘要不含发布占位，正文无 Git 冲突标记或压平到单行的 Markdown 表格 |
 | `images` | P0 | Markdown/HTML 图片使用含 40 位 commit 和具体文件路径的 HTTPS Git raw URL，忽略代码中的伪图片 |
 | `tags` | P0 | 标签受控、无重复，且至少包含一个 task 和一个 topic |
 | `sources` | P0 | 非 draft 有来源；资源安全；Git 文件和目录固定到 40 位 commit，GitCode/GitHub PR/Issue 使用规范工作项 URL |
@@ -22,8 +22,8 @@
 | `source_navigation` | P0 | strict 模式下，宽 tree 来源具有同 revision 的精确 blob 导航 |
 | `navigation` | P0 | Bundle 根、注册 route、逐层 index、缺失/空目录和重复导航合法；非结构目录至少含合法直接卡或合法子 index |
 | `index_entry_description` | P1 | 每个索引条目带有摘要 |
-| `local_sources` | P0 | 本地来源获取脚本、归档标记和已恢复文件合法 |
-| `links` | P0 | 代码块、行内代码和图片之外的 Markdown 本地目标位于 `knowledge/` 且存在并为文件；Finding 保留引用行号和原始目标 |
+| `local_sources` | P0 | 本地来源获取脚本、归档标记或 Git 固定提交/来源/干净工作区、已恢复文件合法 |
+| `links` | P0 | 代码块（含列表缩进围栏）、行内代码和图片之外的 Markdown 本地目标位于 `knowledge/` 且存在并为文件；知识卡可额外链接登记的固定提交源码文件，未恢复时只检查登记路径，索引无此例外；Finding 保留引用行号和原始目标 |
 | `logs` | P0 | 日志文件名、H1、entry、Summary/Details 和倒序合法 |
 | `index_sync` | P0 | 生成式索引与知识树同步；仅在其他检查无 P0 时执行 |
 

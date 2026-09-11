@@ -82,6 +82,27 @@ def run_index(root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
 
 
 class RetrievalIndexTests(unittest.TestCase):
+    def test_kirin_api_filter_keeps_platform_boundaries(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_root(root)
+            for platform in ("kirin_x90", "kirin_9030"):
+                (root / f"knowledge/ops/ascendc/apis/{platform}.md").write_text(
+                    SYNTHETIC_CARD.replace("platforms: [a2]", f"platforms: [{platform}]")
+                )
+            built = run_index(root, "build")
+            self.assertEqual(0, built.returncode, built.stderr)
+            command = [sys.executable, str(QUERY), "--knowledge-root", str(root), "search",
+                       "--query", "Synthetic API", "--technology", "ascendc", "--type", "apis"]
+            for platform in ("kirin_x90", "kirin_9030", "a2"):
+                result = subprocess.run([*command, "--platform", platform], capture_output=True, text=True)
+                self.assertEqual(0, result.returncode, result.stderr)
+                results = json.loads(result.stdout)["results"]
+                self.assertEqual(1, len(results))
+                self.assertEqual([platform], results[0]["platforms"])
+            invalid = subprocess.run([*command, "--platform", "kirin_unknown"], capture_output=True, text=True)
+            self.assertNotEqual(0, invalid.returncode)
+
     def test_quality_metrics_are_not_fabricated_without_positive_cases(self) -> None:
         output = io.StringIO()
         with redirect_stdout(output):

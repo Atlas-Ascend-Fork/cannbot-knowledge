@@ -32,7 +32,7 @@ OKF 规定通用交换格式；CANNBot Profile 规定本仓允许哪些路径、
 
 例如 `knowledge/ops/ascendc/apis/datacopypad_gm_to_ub.md` 的 Concept ID 是 `ops/ascendc/apis/datacopypad_gm_to_ub`。
 
-本地 Markdown 链接必须解析到同一 `knowledge/` Bundle；指向 Bundle 外材料时使用 HTTP(S) 来源，不用仓库相对路径把 Concept 绑定到治理设施。
+Concept 和索引的本地导航必须解析到同一 `knowledge/` Bundle。知识卡可以额外引用 Registry 登记的固定提交 Git 源码文件；这是来源导航，不形成 Concept 或图谱边，也不允许索引跳出 Bundle。其他外部材料使用 HTTP(S) 来源，不能链接本地治理设施。
 
 正文图片不形成 Concept Link 或图谱边，必须使用带 40 位 commit 和具体文件路径的 HTTPS Git raw URL；Lint 仅离线校验 URL 形状。
 
@@ -53,7 +53,7 @@ OKF 规定通用交换格式；CANNBot Profile 规定本仓允许哪些路径、
 | 根索引可声明 `okf_version` | 只有 `knowledge/index.md` 声明 `okf_version: "0.2"` |
 | Index 可选 | 本仓要求每个实际目录都有只列直接子项的索引和摘要 |
 
-`created_at`、`updated_at`、`platforms`、`cann_versions`、`aliases`、`source_technology`、`target_technology`、`replaced_by` 和 `sources[].role` 是 CANNBot Profile 扩展。它们不重定义 OKF 核心字段，并且都有明确消费者。
+`created_at`、`updated_at`、`platforms`、`cann_versions`、`source_headers`、`aliases`、`source_technology`、`target_technology`、`replaced_by` 和 `sources[].role` 是 CANNBot Profile 扩展。它们不重定义 OKF 核心字段，并且都有明确消费者。
 
 本仓暂不使用 OKF 的 `generated`、`stale_after`、Bundle 内 `log.md`、`references/` 和 Attested Computation。没有可靠事实时不通过 Git 时间或经验规则补造这些字段。
 

@@ -26,7 +26,7 @@ profiles:
   apis:
     okf_type: API
     required: [platforms]
-    optional: [cann_versions, aliases, verified, replaced_by]
+    optional: [cann_versions, source_headers, aliases, verified, replaced_by]
   examples:
     okf_type: Example
     required: [platforms]

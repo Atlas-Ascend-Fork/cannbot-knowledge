@@ -17,19 +17,23 @@ from pathlib import Path
 from urllib.parse import unquote
 
 from ..knowledge import Contract, Issue
+from ..source_resources import local_source_link, validate_checkout
 
 
-INLINE_LINK_RE = re.compile(r"(!?)\[[^\]\n]*\]\(([^)\n]+)\)")
-REFERENCE_LINK_RE = re.compile(r"(!?)\[([^\]\n]*)\]\[([^\]\n]*)\]")
-REFERENCE_DEFINITION_RE = re.compile(
-    r"(?m)^[ \t]{0,3}\[([^\]\n]+)\]:[ \t]*(?:<([^>\n]+)>|(\S+))"
+MARKDOWN_LABEL = r"(?:\\.|[^\]\\\n])*"
+INLINE_LINK_RE = re.compile(rf"(!?)\[({MARKDOWN_LABEL})\]\(([^)\n]+)\)")
+REFERENCE_LINK_RE = re.compile(
+    rf"(!?)\[({MARKDOWN_LABEL})\]\[({MARKDOWN_LABEL})\]"
 )
-FENCE_RE = re.compile(r"^[ ]{0,3}(?P<fence>`{3,}|~{3,})")
+REFERENCE_DEFINITION_RE = re.compile(
+    rf"(?m)^[ \t]{{0,3}}\[({MARKDOWN_LABEL})\]:[ \t]*(?:<([^>\n]+)>|(\S+))"
+)
+FENCE_RE = re.compile(r"^[ \t]*(?P<fence>`{3,}|~{3,})")
 INLINE_CODE_RE = re.compile(r"(?P<ticks>`+)[^\n]*?(?P=ticks)")
 
 
-def mask_code(text: str) -> str:
-    """Blank fenced and inline code while retaining source offsets."""
+def mask_code(text: str, *, inline: bool = True) -> str:
+    """Blank fenced code and optionally inline code, retaining source offsets."""
 
     def blank(value: str) -> str:
         return "".join("\n" if char == "\n" else " " for char in value)
@@ -60,11 +64,11 @@ def mask_code(text: str) -> str:
                 fence_char = None
                 fence_length = 0
 
-    return INLINE_CODE_RE.sub(lambda match: blank(match.group()), "".join(lines))
+    masked = "".join(lines)
+    return INLINE_CODE_RE.sub(lambda match: blank(match.group()), masked) if inline else masked
 
 
 def check(contract: Contract, document, context) -> list[Issue]:
-    del context
     if document.parse_error is not None:
         return []
     issues: list[Issue] = []
@@ -83,6 +87,24 @@ def check(contract: Contract, document, context) -> list[Issue]:
         try:
             target.relative_to(knowledge_root)
         except ValueError:
+            try:
+                source = local_source_link(contract, document.path, raw)
+                if source is not None and document.path.name != "index.md":
+                    checkout = source.checkout(contract.root)
+                    if not (contract.root / source.root).exists():
+                        continue
+                    key = f"{source.root}/{source.revision}"
+                    if key not in context.checked_local_roots:
+                        definition = next(item for item in contract.local_sources.values() if item["root"] == source.root)
+                        validate_checkout(contract.root, definition, source.revision)
+                        context.checked_local_roots.add(key)
+                    source_path = source.local_path(contract.root)
+                    if not checkout.is_dir() or not source_path.is_file():
+                        raise ValueError(f"missing local source file: {source.resource}")
+                    continue
+            except (OSError, ValueError) as exc:
+                issues.append(Issue("link.source", str(exc), line=line, details=raw))
+                continue
             issues.append(
                 Issue(
                     "link.outside_bundle",
@@ -124,7 +146,7 @@ def _markdown_destination(value: str) -> str:
 def _targets_with_lines(text: str) -> list[tuple[str, bool, int]]:
     masked = mask_code(text)
     matches: list[tuple[int, str, bool]] = [
-        (match.start(), _markdown_destination(match.group(2)), bool(match.group(1)))
+        (match.start(), _markdown_destination(match.group(3)), bool(match.group(1)))
         for match in INLINE_LINK_RE.finditer(masked)
     ]
     definitions = {

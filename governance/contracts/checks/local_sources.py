@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 
 from ..knowledge import Contract, Issue
+from ..source_resources import git_source, validate_checkout
 
 
 def check(contract: Contract, document, context) -> list[Issue]:
@@ -24,11 +25,6 @@ def check(contract: Contract, document, context) -> list[Issue]:
     sources = document.metadata.get("sources")
     if not isinstance(sources, list):
         return []
-    definitions = {
-        str(definition.get("root")): definition
-        for definition in contract.local_sources.values()
-        if isinstance(definition, dict)
-    }
     issues: list[Issue] = []
     for source in sources:
         if not isinstance(source, dict):
@@ -41,8 +37,23 @@ def check(contract: Contract, document, context) -> list[Issue]:
         relative = Path(resource)
         if relative.is_absolute() or not relative.parts or ".." in relative.parts:
             continue
-        definition = definitions.get(relative.parts[0])
+        definition = contract.local_source_definition(resource)
         if not isinstance(definition, dict):
+            continue
+        if definition.get("kind") == "git":
+            try:
+                location = git_source(contract, resource)
+                if location is None or not (contract.root / location.root).exists():
+                    continue
+                key = f"{location.root}/{location.revision}"
+                if key not in context.checked_local_roots:
+                    validate_checkout(contract.root, definition, location.revision)
+                    context.checked_local_roots.add(key)
+                target = location.local_path(contract.root)
+                if not target.exists() or not (target.is_file() or target.is_dir()):
+                    raise ValueError(f"local Git source does not exist: {resource}")
+            except (OSError, ValueError) as exc:
+                issues.append(Issue("source.git_checkout", str(exc)))
             continue
         source_root = contract.root / relative.parts[0]
         if not source_root.exists():
@@ -50,7 +61,9 @@ def check(contract: Contract, document, context) -> list[Issue]:
         if relative.parts[0] not in context.checked_local_roots:
             context.checked_local_roots.add(relative.parts[0])
             marker = source_root / ".complete"
-            expected = f"archive_sha256={definition.get('archive_sha256', '')}"
+            expected = {f"archive_sha256={definition.get('archive_sha256', '')}"}
+            if "tree_sha256" in definition:
+                expected.add(f"tree_sha256={definition['tree_sha256']}")
             if not source_root.is_dir() or not marker.is_file():
                 issues.append(
                     Issue(
@@ -59,11 +72,13 @@ def check(contract: Contract, document, context) -> list[Issue]:
                         path=marker,
                     )
                 )
-            elif expected not in marker.read_text(encoding="utf-8").splitlines():
+            elif not expected.issubset(
+                set(marker.read_text(encoding="utf-8").splitlines())
+            ):
                 issues.append(
                     Issue(
                         "source.archive_marker",
-                        "restored source archive SHA-256 does not match Registry",
+                        "restored source archive or tree SHA-256 does not match Registry",
                         path=marker,
                     )
                 )

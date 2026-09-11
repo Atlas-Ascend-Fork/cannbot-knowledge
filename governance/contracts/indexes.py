@@ -19,8 +19,12 @@ from pathlib import Path
 from .knowledge import markdown_targets, split_frontmatter
 
 
-DIRECT_ENTRY_RE = re.compile(r"^- \[[^]]+\]\(([^)#]+)(?:#[^)]*)?\)(?:：.*)?$")
-REFERENCE_ENTRY_RE = re.compile(r"^- \[([^]]+)\]\[([^]]*)\](?:：.*)?$")
+DIRECT_ENTRY_RE = re.compile(
+    r"^- \[(?:\\.|[^]\\])+\]\(([^)#]+)(?:#[^)]*)?\)(?:：.*)?$"
+)
+REFERENCE_ENTRY_RE = re.compile(
+    r"^- \[((?:\\.|[^]\\])+)\]\[((?:\\.|[^]\\])*)\](?:：.*)?$"
+)
 REFERENCE_DEFINITION_LINE_RE = re.compile(r"^[ \t]{0,3}\[[^]\n]+\]:")
 WEAK_SUMMARY_RE = re.compile(
     r"^(?:本文件为文档发布时所需的索引文件。|> \[![^]]+]|表\s*\d+|以下内容针对如下型号生效)"
@@ -60,7 +64,18 @@ def section_title(directory: Path) -> str:
     summary_card = directory / f"{directory.name}.md"
     if summary_card.name != "index.md" and summary_card.is_file():
         return read_card_description(summary_card)[0]
+    index = directory / "index.md"
+    if index.is_file():
+        match = re.search(
+            r"(?m)^#\s+(.+?)\s*$", index.read_text(encoding="utf-8")
+        )
+        if match is not None:
+            return match.group(1)
     return directory.name.replace("_", " ")
+
+
+def markdown_link_label(value: str) -> str:
+    return value.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
 
 
 def desired_entries(directory: Path) -> list[tuple[str, str]]:
@@ -76,12 +91,17 @@ def desired_entries(directory: Path) -> list[tuple[str, str]]:
             result.append(
                 (
                     target,
-                    f"- [{section_title(item)}]({target})：{summarize_subdir(item)}",
+                    f"- [{markdown_link_label(section_title(item))}]({target})：{summarize_subdir(item)}",
                 )
             )
         elif item.is_file() and item.suffix == ".md":
             title, description = read_card_description(item)
-            result.append((item.name, f"- [{title}]({item.name})：{description}"))
+            result.append(
+                (
+                    item.name,
+                    f"- [{markdown_link_label(title)}]({item.name})：{description}",
+                )
+            )
     return result
 
 
