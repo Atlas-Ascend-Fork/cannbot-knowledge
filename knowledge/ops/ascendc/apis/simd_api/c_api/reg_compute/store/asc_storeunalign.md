@@ -11,16 +11,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/store/asc_storeunalign.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/store/storeunalign.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_storeunalign
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/store/storeunalign.h"`。
 
 将矢量数据寄存器中的前`count`个元素连续搬出到非32字节对齐的Unified Buffer（UB）地址。`unalign_reg` 为非对齐寄存器，按引用传入并在本接口调用后被更新为本次搬出尾部数据，供下一次本接口或非对齐搬出收尾接口继续拼接使用。每次调用后，用户需手动更新目的操作数在UB中的地址。本接口在Vector Function（`__simd_vf__` 标记的函数）内使用。
 

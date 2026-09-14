@@ -56,7 +56,7 @@ Query 当前不按 CANN 版本执行结构化过滤。卡片仍可记录 `cann_v
 
 `ascendc-api-knowledge-query` 是显式可调用的专业流程，负责通用 Query 之外的全文阅读、按问题追踪多跳关系，以及将 API 卡的 `source_headers` 相对路径解析到已确认的 AscendC 包根。它依赖并复用 Query 的检索、平台识别、索引和审计，不引入第二份检索实现、SDK 索引或 API 事实库；与 Query 同装，避免独立安装缺少底层能力。通用 API 选择模式仍服务其他技术，Ascend C 场景无需重复执行两套流程。
 
-硬件平台先于普通 API 查询确定；相关卡片仍需独立核对范围。已选卡片的本地来源、相对链接和 include 使用只读路径解析，复用 Query 的知识根与既有来源 Contract；解析结果不是已读正文或已验证版本，不扫描源码树寻找替代证据。头文件只在正文不足以回答当前问题时按需读取，实际包版本与文档来源版本必须区分；头文件存在或调用导航不能单独证明平台支持。缺失、冲突或越界保持未确认，消费流程不修改或安装 SDK。
+硬件平台先于普通 API 查询确定；相关卡片仍需独立核对范围。已选卡片的本地来源、本地 Markdown 链接和 include 使用只读路径解析，复用 Query 的知识根与既有来源 Contract。知识链接按统一规则区分当前卡目录相对、Bundle 根相对和同页锚点；解析结果不是已读正文或已验证版本，不扫描源码树寻找替代证据。头文件只在正文不足以回答当前问题时按需读取，实际包版本与文档来源版本必须区分；头文件存在或调用导航不能单独证明平台支持。缺失、冲突或越界保持未确认，消费流程不修改或安装 SDK。
 
 所选卡片的分页阅读保持原文、原始行号和内容指纹，不用摘要代替正文；遇到内容变化要求重新阅读。完成当前页的边界和续读位置在正文之后返回，避免截断前缀仍预告可跳过的范围。页码或文件末尾标志只描述本次返回范围，不是 Agent 已读完整卡片或证据足以支持结论的证明。分页不新增检索、平台豁免或审计状态，也不修改知识文件。
 
@@ -66,19 +66,19 @@ Query 当前不按 CANN 版本执行结构化过滤。卡片仍可记录 `cann_v
 
 ## Ingest
 
-Ingest 是所有摄入请求的唯一入口。通常把可核验材料蒸馏成候选 Concept；Registry 固定归档中的官方 API/Guide 按声明执行导航页过滤、冗余章节省略和其余正文保留。两种模式都不保存中间推理。
+Ingest 是通用摄入路由入口；目标已明确的源码级算子任务也可直接使用对应 VV/CV producer，仓内 trace 支持按其 Skill 直接触发。通常把可核验材料蒸馏成候选 Concept；Registry 文档归档中的官方 API/Guide 按声明执行导航页过滤、冗余章节省略和其余正文保留。各入口都遵守对应 producer 的证据和写入边界，由外层贡献流程完成导航、日志及验证。
 
-1. 先区分 Git 与 Registry 登记的固定归档；Git 再按首次接入、同 ref 增量或版本升级路由，固定归档直接读取恢复后的来源；未迁移 producer 明确 defer。
+1. 先区分 Git 与 Registry 登记的文档归档；Git 再按首次接入、同 ref 增量或版本升级路由，文档归档直接读取恢复后的来源；未迁移 producer 明确 defer。
 2. Query 查重，决定 create、update、merge、split、deprecate 或 defer。
 3. 选择 domain、technology/scope 和路径 Profile；Profile 自动决定 OKF `type` 和允许字段。
 4. 固定并完整读取来源，区分来源事实、合理推导和待验证假设。
-5. 通常将结论、适用范围、失败边界和验证方法写入正文，不复制大段上游内容；固定归档 API/Guide 不为纯导航页建卡，以逐层 `index.md` 作为唯一目录入口。保留页只省略 Registry 声明的冗余章节、增加 Frontmatter、改写失效链接目标；可在文末追加普通链接；“产品支持情况”只进入 `platforms`。
+5. 通常将结论、适用范围、失败边界和验证方法写入正文，不复制大段上游内容；文档归档 API/Guide 不为纯导航页建卡，以逐层 `index.md` 作为唯一目录入口。保留页只省略 Registry 声明的冗余章节、增加 Frontmatter、改写失效链接目标；可在文末追加普通链接；“产品支持情况”只进入 `platforms`。
 6. 新卡默认 `draft`；只有来源、范围和正文满足消费门槛后才使用 `stable`。
 7. 写入前调用统一 Contract，并用排他原子创建拒绝覆盖已有卡。
 8. 创建后由贡献者更新索引和当天日志。
 9. 知识批次完成后执行全库 Lint，重建 Query 索引并运行目标 Query；链接按内容需要添加，图谱和 API 引用建议均按需单独执行。
 
-Git Reference 批次使用 inventory、ledger 和不可覆盖 receipt；固定归档批次以 Registry 中的 archive SHA-256 固定来源，直接执行查重、受控转换或蒸馏建卡，不生成这三类批次产物。固定归档升级时先记录旧/新 SHA-256 并审查完整结构 diff，更新 Registry 后重新通过获取脚本校验，完成卡片、导航、关系、Lint 和 Query 后才记录完成。
+Git Reference 批次使用 inventory、ledger 和不可覆盖 receipt；文档归档批次按 Registry 的官方 URL 获取，不校验归档或内容树 SHA-256，直接执行查重、受控转换或蒸馏建卡，不生成这三类批次产物。本地完成标记记录来源 URL 与准备时间；刷新来源不会自动修改知识卡，须审查新旧正文、结构与平台差异，完成卡片、导航、Lint 和 Query 后才记录批次完成。
 
 `verified` 只在掌握真实 actor 和时间时填写。固定来源或创建成功不自动产生验证事件。Interoperability 必须位于同领域 `shared`，并声明两个不同的已注册技术端点。
 
@@ -88,9 +88,9 @@ API 引用建议仅在明确需要时扫描算子声明的固定提交源码，�
 
 ## Operator producer
 
-两项 Operator producer 处理通用 Ingest 无法用固定模板闭合的源码级 API/Host/Tiling/Kernel 事实。任务必须先冻结唯一逻辑算子、固定 Git Commit、入口类型、平台和目标文件；入口可以是公开 ACLNN/API、官方 Host/Tiling 或 Direct Invoke，Skill 不自行改变调用层。
+两项 Operator producer 处理通用 Ingest 无法用固定模板闭合的源码级 API/Host/Tiling/Kernel 事实。任务必须先冻结唯一逻辑算子、固定 Git Commit、入口类型、平台和目标文件；Skill 不自行改变调用层。当前正式 Operator 卡分别以 `aclnn` 承载公开 ACLNN/API 完整链路、以 `direct` 承载独立 Direct Invoke。仅有官方内部 Host/Tiling 入口的请求缺少对应已注册 call-mode，应报告分类缺口并 defer 写入，不能用已有目录冒充另一调用层。
 
-分流只看 Host/launcher 可达的 Device 节点：全部节点都不含 Cube/AIC 或 MIX_CV 时使用 VV；至少一个节点含 Cube/AIC 或 MIX_CV 时使用 CV。SIMT、NDDMA、通信、Hybrid 和多 Kernel 本身不触发 CV。两项 Skill 都必须闭合公开入口或 launcher、Host selector、Tiling/POD、逐 Route Kernel、内存、同步、构建接线和固定来源；闭包或公开平台证据不足时停止写正式卡。
+分流只看目标范围内全部 Route 的 Host/launcher 可达 Device 节点：全部节点都不含 Cube/AIC 或 MIX_CV 时使用 VV；至少一个节点含 Cube/AIC 或 MIX_CV 时使用 CV。CV 算子的纯非 Cube Route 仍由同一 producer 闭合，不按单条 Route 拆分 Skill。SIMT、NDDMA、通信、Hybrid 和多 Kernel 本身不触发 CV。两项 Skill 都必须闭合公开入口或 launcher、Host selector、Tiling/POD、逐 Route Kernel、内存、同步、构建接线和固定来源；闭包或公开平台证据不足时停止写正式卡。
 
 producer 一次只处理一个逻辑算子并只写任务指定的最终卡，不写 index、Registry、日志、图谱或中间账本，不执行编译、真机、数值或性能测试。外层贡献流程负责查重、导航、日志、Lint、索引和目标 Query。两项 producer 的固定标题、Frontmatter 和正文结构由各自模板定义。
 
@@ -103,11 +103,11 @@ Lint 是离线、只读、确定性的作者门禁，比 OKF 最小 conformance 
 | OKF/CANNBot Profile | 根版本、YAML mapping 唯一 key、非空 `type`、路径 Profile 映射、JSON Schema 和字段白名单 |
 | 路径与受控值 | domain-route、附加层级、文件名、platform、Tag、技术端点 |
 | 生命周期与来源 | `status`、有效日历时间、`verified` actor、`replaced_by`、来源形状、Git 文件 commit 固定格式与 GitCode/GitHub PR/Issue URL；本地来源获取脚本存在且可执行，已恢复来源的归档标记或 Git 提交/来源/工作区合法，在用文件存在 |
-| 导航、正文与日志 | domain 根和 `ops`/`model` route 骨架完整；每层索引列出直接子项；行内/显式引用式 Markdown 知识导航目标是 Bundle 内的现有文件，知识卡另可引用登记的固定提交源码文件；图片使用固定 commit 的 Git raw 文件 URL；正文非空、围栏外恰有一个 H1（固定归档主来源 API/Guide 镜像可保留多个）、无 Git 冲突标记或压平表格；日志格式、必需 section 与倒序正确 |
+| 导航、正文与日志 | domain 根和 `ops`/`model` route 骨架完整；每层索引列出直接子项；行内/显式引用式 Markdown 知识导航目标是 Bundle 内的现有文件，知识卡另可引用登记的固定提交源码文件；图片使用固定 commit 的 Git raw 文件 URL；正文非空、围栏外恰有一个 H1（文档归档主来源 API/Guide 镜像可保留多个）、无 Git 冲突标记或压平表格；日志格式、必需 section 与倒序正确 |
 
 单卡检查不覆盖父级索引和完整目录树；新增、删除或移动文件后必须执行全库检查。统一门禁启用严格来源导航，要求宽 Git tree 来源由同仓库、同 revision 的 blob 来源或正文链接定位。Lint 只确认链接目标和 Bundle 边界，不验证 Markdown 锚点。
 
-Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、实验能否复现、shared 泛化是否合理或跨 DSL 是否等价。Registry 本地来源根不存在时不要求联网恢复；存在时才核对 archive SHA-256 完成标记或 Git 固定提交、远程来源、干净工作区和被引用文件。Lint 固定执行自身版本的 Contract，目标根 Contract 不一致时失败，不导入目标根 Python。结构通过不等于结论正确。知识内容、检索、图谱、编译、治理或下游使用问题的材料整理也由 Lint 承载；它只生成本地 Issue 草稿和 `needs-info`，不会自行向外部系统提交。
+Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、实验能否复现、shared 泛化是否合理或跨 DSL 是否等价。Registry 本地来源根不存在时不要求联网恢复；存在时才核对 文档归档 URL 完成标记或 Git 固定提交、远程来源、干净工作区和被引用文件。Lint 固定执行自身版本的 Contract，目标根 Contract 不一致时失败，不导入目标根 Python。结构通过不等于结论正确。知识内容、检索、图谱、编译、治理或下游使用问题的材料整理也由 Lint 承载；它只生成本地 Issue 草稿和 `needs-info`，不会自行向外部系统提交。
 
 ## 共同约束
 
@@ -124,7 +124,7 @@ Lint 不联网检查 URL，不判断来源是否充分、正文是否正确、�
 | `consumer` | `knowledge-query`、`ascendc-api-knowledge-query` | 只读查阅和技术问答 |
 | `contributor` | 六项可安装 Skill（三项基础 + ascendc-api-knowledge-query + VV/CV） | 贡献知识、治理规则或 Skill；不包含仓内 trace producer |
 
-知识仓安装入口把平台中立的规范源链接到目标项目 `.agents/skills/`，再在 Skill 目录之外创建客户端适配链接；默认恢复登记的文档和固定提交源码后准备索引（显式离线安装可跳过资源），写项目级知识根配置并维护 Agent 提示词入口。复制式安装必须另行配置知识根。两种方式都要求知识仓独立可用，不复制 `knowledge/` 正文或修改用户全局配置。
+知识仓安装入口把平台中立的规范源链接到目标项目 `.agents/skills/`，再在 Skill 目录之外创建客户端适配链接；默认恢复登记的文档和固定提交源码后准备索引（显式离线安装可跳过资源），写项目级知识根配置并维护 Agent 提示词入口。规范源依赖同一 checkout 的 Contract 与相邻 Skill；当前完整安装通过这些链接保留依赖，单独复制 Skill 目录不构成受支持的安装方式。知识根配置只选择数据位置，不提供缺失的脚本依赖，不复制 `knowledge/` 正文或修改用户全局配置。
 
 项目提示词只维护领域任务的触发、入口路由和消费边界；具体平台识别、补搜、阅读、来源核对及审计规则由对应 Skill 维护，不在安装器中复制第二套检索工作流。
 

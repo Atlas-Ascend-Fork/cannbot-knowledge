@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/reduction_operations/ReduceMax_interface/ReduceMax.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -27,10 +27,10 @@ platforms:
 定义指定计算的维度（Reduce轴）为R轴，非指定维度（Normal轴）为A轴。如下图所示，对shape为\(2, 3\)的二维矩阵进行运算，指定在第一维求最大值，输出结果为\[4, 5, 6\]；指定在第二维求最大值，输出结果为\[3, 6\]。第一维是外层轴，简称外轴；第二维是内层轴，简称内轴。
 
 **图1**  ReduceMax按第一个维度计算示例  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reducemax_first_axis.png "ReduceMax按第一个维度计算示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reducemax_first_axis.png "ReduceMax按第一个维度计算示例")
 
 **图2**  ReduceMax按最后一个维度计算示例  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reducemax_last_axis.png "ReduceMax按最后一个维度计算示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reducemax_last_axis.png "ReduceMax按最后一个维度计算示例")
 
 ## 函数原型
 

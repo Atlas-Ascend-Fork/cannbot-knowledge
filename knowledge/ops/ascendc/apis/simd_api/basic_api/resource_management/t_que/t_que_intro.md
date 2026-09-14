@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQue/TQue_intro.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -18,7 +18,7 @@ platforms: []
 
 流水任务之间通过队列（Queue）完成任务间通信和同步。TQue是用来执行队列相关操作、管理相关资源的数据结构。TQue继承自TQueBind父类，继承关系如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/enque.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/enque.png)
 
 ## 模板参数<a name="section18341144185913"></a>
 

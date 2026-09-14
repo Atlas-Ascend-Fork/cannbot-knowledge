@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/math_compute/CumSum_interface/CumSum.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -29,18 +29,18 @@ source_headers:
 
 计算公式如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002340790900.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002340790900.png)
 
 -   逐行累加算法
     -   First轴处理，按行累加和操作，即第一行不变，后面的行依次累加，输出结果的第i行第j列计算公式如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002223791509.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002223791509.png)
 
         以tensor\(\[\[0, 1, 2\], \[3, 4, 5\]\]\)为例，输出结果是tensor\(\[\[0, 1, 2\], \[3, 5, 7\]\]\)
 
     -   Last轴处理，按列累加和操作，即第一列不变，后面的列依次累加，输出结果的第i行第j列计算公式如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002223797889.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002223797889.png)
 
         以tensor\(\[\[0, 1, 2\], \[3, 4, 5\]\]\)为例，输出结果是tensor\(\[\[0, 1, 3\], \[3, 7, 12\]\]\)
 
@@ -51,10 +51,10 @@ source_headers:
     Sklansky二分累加算法是基于Sklansky Adder的并行前缀和逻辑实现的。[图1](#fig45153311379)为一维二进制的并行前缀和算法示意图。将该算法扩展至二维张量的累加和算法，以按行累加为例，[图2](#fig7422174293712)为该算法的执行步骤示意图，通过并行计算多行的加和，实现Sklansky二分累加算法下的按行累加和。
 
     **图1**  Sklansky Adder算法示意图<a name="fig45153311379"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/sklansky_adder_diagram.png "Sklansky-Adder算法示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/sklansky_adder_diagram.png "Sklansky-Adder算法示意图")
 
     **图2**  基于Sklansky的二分累加示意图<a name="fig7422174293712"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/sklansky_binary_accumulation.png "基于Sklansky的二分累加示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/sklansky_binary_accumulation.png "基于Sklansky的二分累加示意图")
 
 ## 函数原型
 
@@ -128,7 +128,7 @@ struct CumSumInfo {
 
 ## 调用示例
 
-完整的调用样例请参考[CumSum样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/10_math/cumsum)。
+完整的调用样例请参考[CumSum样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/10_math/cumsum)。
 
 ```
 // dstLocal: 存放计算结果的Tensor

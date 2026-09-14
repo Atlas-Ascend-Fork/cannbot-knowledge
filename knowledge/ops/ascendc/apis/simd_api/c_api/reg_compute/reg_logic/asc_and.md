@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_logic/asc_and.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_logic.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_and
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_logic.h"`。
 
 根据`mask`对源操作数`src0`、`src1`执行按位与（&）操作，将结果作为返回值返回或写入目的操作数`dst`。
 
@@ -54,9 +57,7 @@ __simd_callee__ inline void asc_and(vector_<dtype>& dst,
 
 #### dtype支持数据类型
 
-通过函数返回值返回结果的函数原型中，`dtype`取值为：`int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`int32_t`、`uint32_t`。
-
-通过引用参数输出结果的函数原型中，`dtype`取值为：`int8_t`、`uint8_t`、`fp8_e5m2_t`、`fp8_e4m3fn_t`、`int16_t`、`uint16_t`、`half`、`bfloat16_t`、`int32_t`、`uint32_t`、`float`。
+`dtype`取值为：`int8_t`、`uint8_t`、`int16_t`、`uint16_t`、`int32_t`、`uint32_t`。
 
 #### 函数原型典型示例
 

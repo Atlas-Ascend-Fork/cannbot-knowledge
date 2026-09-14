@@ -10,24 +10,27 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/spr/asc_set_ctrl.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 source_headers:
 - include/c_api/spr/spr.h
+- include/c_api/asc_simd.h
 ---
 
 # asc_set_ctrl
 
 ## 功能说明
 
+头文件路径为：`"c_api/spr/spr.h"`。
+
 对CTRL寄存器（控制寄存器）的特定比特位进行设置。
 
 ## 函数原型
 
-```cpp
+```c
 __aicore__ inline void asc_set_ctrl(uint64_t config)
 ```
 
@@ -39,7 +42,7 @@ __aicore__ inline void asc_set_ctrl(uint64_t config)
 | :------ | :---  | :------------ |
 |config   |输入   |待设置的寄存器值。常用CTRL寄存器比特位说明参考表2。|
 
-**表2** 常用CTRL寄存器比特位说明
+**表2** 常用CTRL寄存器比特位说明<a id="ctrl_bit_desc"></a>
 
 |CTRL比特位    |功能|
 | :-------     | :---- |
@@ -66,10 +69,77 @@ PIPE_S
 
 ## 调用示例
 
+将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
+
+
+以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
+
+```bash
+bisheng example.asc -o main --npu-arch=dav-3510 && ./main
+```
+
+
 ```cpp
-// 将CTRL[48]设置为非饱和模式
-uint64_t ori_config = asc_get_ctrl();
-uint64_t mask = (static_cast<uint64_t>(1) << 48);
-uint64_t config = ori_config | mask;
-asc_set_ctrl(config);
+#include <cstdint>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+#include "c_api/asc_simd.h"
+#include "acl/acl.h"
+
+namespace {
+constexpr uint32_t ELEMENTS = 16;
+constexpr uint32_t BYTES = ELEMENTS * sizeof(uint64_t);
+
+void print_data(const char* label, const std::vector<uint64_t>& data)
+{
+    std::cout << label << ":";
+    for (uint32_t i = 0; i < 8; ++i) std::cout << ' ' << data[i];
+    std::cout << " ..." << std::endl;
+}
+
+void print_hex(const char* label, const std::vector<uint64_t>& data)
+{
+    std::cout << label << ":" << std::hex;
+    for (uint32_t i = 0; i < 4; ++i) std::cout << " 0x" << data[i];
+    std::cout << std::dec << std::endl;
+}
+
+__global__ __vector__ void asc_set_ctrl_kernel(__gm__ uint64_t* output)
+{
+    asc_init();
+    const uint64_t before = static_cast<uint64_t>(asc_get_ctrl());
+    const uint64_t changed = before ^ (1ULL << 56);
+    asc_set_ctrl(changed);
+    const uint64_t after = static_cast<uint64_t>(asc_get_ctrl());
+    asc_set_ctrl(before);
+    const uint64_t restored = static_cast<uint64_t>(asc_get_ctrl());
+    output[0] = before;
+    output[1] = after;
+    output[2] = restored;
+    asc_dcci_single(output);
+}
+
+} // namespace
+
+int main()
+{
+    std::vector<uint64_t> output(ELEMENTS, ~0ULL);
+    aclInit(nullptr);
+    aclrtSetDevice(0);
+    uint64_t* output_device = nullptr;
+    aclrtMalloc(reinterpret_cast<void**>(&output_device), BYTES, ACL_MEM_MALLOC_HUGE_FIRST);
+    aclrtMemcpy(output_device, BYTES, output.data(), BYTES, ACL_MEMCPY_HOST_TO_DEVICE);
+    asc_set_ctrl_kernel<<<1, 0>>>(output_device);
+    aclrtSynchronizeDevice();
+    aclrtMemcpy(output.data(), BYTES, output_device, BYTES, ACL_MEMCPY_DEVICE_TO_HOST);
+    print_data("Observed", output);
+    print_hex("Observed hex", output);
+    const bool passed = ((output[0] ^ output[1]) & (1ULL << 56)) != 0 && output[2] == output[0];
+    std::cout << (passed ? "[Success] asc_set_ctrl passed." : "[Failed] asc_set_ctrl failed.") << std::endl;
+    aclrtFree(output_device);
+    aclrtResetDevice(0);
+    aclFinalize();
+    return passed ? 0 : 1;
+}
 ```

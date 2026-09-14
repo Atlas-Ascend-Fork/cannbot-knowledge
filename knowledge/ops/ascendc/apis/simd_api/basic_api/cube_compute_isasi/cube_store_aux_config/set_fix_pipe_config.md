@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_store_aux_config/SetFixPipeConfig.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -64,11 +64,13 @@ __aicore__ inline void SetFixPipeConfig(const LocalTensor<T>& preData, bool isUn
 
 ## 约束说明<a name="zh-cn_topic_0000002547729135_section633mcpsimp"></a>
 
+量化参数不能为inf/nan和非规格化数。
+
 quantPre和reluPre必须是Fixpipe Buffer上的tensor。
 
 ## 调用示例<a name="section642mcpsimp"></a>
 
-完整示例可参考[data_copy_l0c2gm](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_l0c2gm)。
+完整示例可参考[data_copy_l0c2gm](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_l0c2gm)。
 
 ```cpp
 __aicore__ inline void SetFPC(const LocalTensor <int32_t>& reluPreTensor, const LocalTensor <int32_t>& quantPreTensor)

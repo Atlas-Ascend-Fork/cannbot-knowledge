@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/debug_interface/onboard_print/DumpAccChkPoint.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -89,7 +89,7 @@ __aicore__ inline void DumpAccChkPoint(const GlobalTensor<T> &tensor, uint32_t i
 
 - 当前仅支持打印存储位置为Unified Buffer（UB）/L1 Buffer/L0C Buffer/Global Memory的Tensor信息。
 
-- 针对Ascend 950PR/Ascend 950DT，使用该接口打印L1 Tensor数据时，HDK版本需要至少升级到25.7.0以上。
+- 针对Ascend 950PR/Ascend 950DT，使用该接口打印L1 Tensor数据时，HDK版本需要至少升级到25.7.RC1.6以上。
 
 - 操作数地址对齐要求请参见[通用地址对齐约束](../../../general_description_and_constraints.md#section796754519912)。
 - 单次调用DumpAccChkPoint打印的数据总量不可超过30KB（还包括少量框架需要的头尾信息，通常可忽略）。使用时应注意，如果超出这个限制，则数据不会被打印。

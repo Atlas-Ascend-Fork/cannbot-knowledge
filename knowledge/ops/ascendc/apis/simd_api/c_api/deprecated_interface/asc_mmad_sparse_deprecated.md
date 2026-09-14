@@ -10,15 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_mmad_sparse_deprecated.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
+source_headers:
+- include/c_api/cube_compute/cube_compute.h
 ---
 
 # asc_mmad_sparse（废弃）
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_compute/cube_compute.h"`。
 
 **入参`unit_flag`类型为`uint8_t`的`asc_mmad_sparse`接口和`asc_mmad_sparse_sync`接口已废弃。请使用入参`unit_flag_mode`类型为`asc_unit_flag_mode`的[asc_mmad_sparse](../cube_compute/asc_mmad_sparse.md)接口替代；原`asc_mmad_sparse_sync`接口的同步功能请通过新`asc_mmad_sparse`接口和`asc_sync()`实现，具体请参见[asc_sync](../sync/asc_sync.md)。**
 

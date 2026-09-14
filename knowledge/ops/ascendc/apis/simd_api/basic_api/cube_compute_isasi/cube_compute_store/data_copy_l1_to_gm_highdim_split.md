@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/DataCopy_L1ToGM_highdim_split.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
@@ -69,7 +69,7 @@ __aicore__ inline void DataCopy(const GlobalTensor<T>& dst, const LocalTensor<T>
 
 下图呈现了DataCopyParams结构体参数的使用方法，样例中完成了2个连续传输数据块的搬运，每个数据块含有8个DataBlock，源操作数相邻数据块之间无间隔，目的操作数相邻数据块尾与头之间间隔1个DataBlock。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/repeat-times.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/repeat-times.png)
 
 ## 数据类型<a id="zh-cn_topic_0000002540558032_section4219135304818"></a>
 
@@ -137,7 +137,7 @@ Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、hal
 
 **图1** 连续搬运示意图<a id="zh-cn_topic_0000002540558032_fig187115784817"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/continuous_data_copy_diagram.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/continuous_data_copy_diagram.png)
 
 **非连续搬运**
 
@@ -152,7 +152,7 @@ Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、hal
 
 **图2** 非连续搬运示意图<a id="zh-cn_topic_0000002540558032_fig123821924175312"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/discontinuous_data_copy_diagram.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/discontinuous_data_copy_diagram.png)
 
 ## 调用示例<a name="zh-cn_topic_0000002540558032_section088124295117"></a>
 

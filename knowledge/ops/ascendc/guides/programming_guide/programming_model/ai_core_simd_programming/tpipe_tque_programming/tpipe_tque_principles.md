@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/tpipe_tque_programming/tpipe_tque_principles.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -41,7 +41,7 @@ Ascend C编程模型的核心架构，深度承袭了传统C/C++并发编程中*
 该范式将复杂的异步并行调度及硬件同步，抽象为开发者熟悉的内存管理与队列操作。以Vector矢量计算为例，这些接口会被编译器转化为底层的指令序列，形成完整的指令流水线，如下图所示：
 
 **图1**  Vector编程范式指令队列示例<a name="fig27113275917"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/vec_queue_ex.png "Vector编程范式指令队列示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/vec_queue_ex.png "Vector编程范式指令队列示例")
 
 指令的生成、分发与执行遵循统一的异步流水线：
 
@@ -62,7 +62,7 @@ Ascend C编程模型的核心架构，深度承袭了传统C/C++并发编程中*
 - **EnQue（生产者信号）**：作为上游任务的收尾操作，调用后底层自动发射`Set`硬件同步指令，标记当前阶段写入已完成，并主动唤醒下游阻塞任务。
 - **DeQue（消费者等待）**：作为下游任务的起始操作，调用后底层发射`Wait`同步指令，当前任务进入阻塞，直至收到上游`Set`信号，确保所需数据完全就绪后才执行读取。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/aicore_28.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/aicore_28.png)
 
 通过信号阻塞与唤醒的精准配合，该机制严格保证了**先写后读**的执行时序，从源头杜绝边写边读的冲突，确保跨Stage数据传输的完整无误。
 
@@ -73,11 +73,11 @@ Ascend C编程模型的核心架构，深度承袭了传统C/C++并发编程中*
 - **AllocTensor（申请与等待）**：当任务申请某块内存时，底层发射`Wait`同步指令，持续等待该内存区域的所有读取操作彻底完成、进入可覆写状态，随后才分配内存并解除任务阻塞。
 - **FreeTensor（释放与通知）**：当任务使用完毕并调用`FreeTensor`时，底层发射`Set`同步指令，通知硬件该内存已无读取依赖，可以安全释放或覆写，供后续任务复用。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/aicore_29.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/aicore_29.png)
 
 此机制精确管控每一块片上内存的读写状态与生命周期，确保覆写只发生在所有读操作完成之后，从底层消除先读后写冲突，实现片上内存的高效、安全复用。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/iter_false_2.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/iter_false_2.png)
 
 由此可见，异步并行程序所面临的复杂同步控制，在Ascend C中被转化为`EnQue`/`DeQue`、`AllocTensor`/`FreeTensor`这类开发者熟悉的资源操作。这种封装既保留了硬件级性能，又极大降低了编程与理解难度。
 

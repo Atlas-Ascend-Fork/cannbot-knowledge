@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_optimization/execution_config/thread_block_config.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -32,7 +32,7 @@ platforms: []
 >
 > 一个可参考的直觉是：全部物理核一次大约能并行处理“物理核数 × 单核最大线程数”个线程。数据量远大于这个量级时，将线程块数量设为物理核数就能充分发挥硬件算力；数据量与之相当甚至更小时，调度固定开销在总耗时中的占比变得敏感，最优线程块数量不再显而易见，需要使用msOpProf工具实测。
 
-本优化方法对应的样例请参见[核函数（Kernel）的启动配置性能调优样例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/01_execution_conf_optimizations/grid_dim_config/README.md)。
+本优化方法对应的样例请参见[核函数（Kernel）的启动配置性能调优样例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/01_execution_conf_optimizations/grid_dim_config/README.md)。
 
 ## 大数据量场景
 下面以Gather算子为例，对比大数据量场景（`1024*2048`，即2097152个元素）下不同线程块数量配置的性能差异。
@@ -100,6 +100,7 @@ gather_strided_kernel<<<64, MAX_THREAD_NUM, 0, stream>>>(
 
 
 上述两种写法的性能数据汇总如下：
+
 | 写法 | 线程块数量 | Task Duration（us） | 
 | :--: | :-------: | :---------------: | 
 | **单线程多数据** | **64** | **58.583** | 
@@ -149,7 +150,7 @@ gather_strided_kernel<<<32, MAX_THREAD_NUM, 0, stream>>>(
 
 下图直观展示了上表中Task Duration随线程块数量的变化趋势：
 
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/griddim_config_small_shape.png" alt="小数据量场景（16384） Task Duration随线程块数量的变化" width="480"/>
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/griddim_config_small_shape.png" alt="小数据量场景（16384） Task Duration随线程块数量的变化" width="480"/>
 
 根据Task Duration数据，在本样例的小数据量场景下，线程块数量从4依次增加到8、16、32时耗时持续下降（10.831 → 6.569 → 4.500 → 3.696us）。这是因为线程块中的线程并不是全部在并行执行，而是以warp为单位调度执行，单核上warp过多时会产生排队等待，线程块数量较小时，每个线程块需要启动更多线程，等待时间更明显；增加线程块数量可以降低单个线程块的线程数并提高并行核数，因此收益明显。当线程块数量从32增加到64时，耗时从3.696us上升到4.133us，说明在该数据规模下继续增加线程块数量带来的调度固定开销超过并行收益。因此，小数据规模场景下需通过实测确定最优线程块数量。
 

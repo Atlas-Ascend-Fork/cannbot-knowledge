@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_load_aux_config/SetFmatrix.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -60,7 +60,7 @@ __aicore__ inline void SetFmatrix(uint16_t l1H, uint16_t l1W, const uint8_t padL
 
 ## 调用示例<a name="section642mcpsimp"></a>
 
-完整调用示例参考[SetLoadDataBoundary样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/06_compatibility_guide/set_loaddata_boundary)，以下为样例中的关键代码片段示例：
+完整调用示例参考[SetLoadDataBoundary样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/06_compatibility_guide/set_loaddata_boundary)，以下为样例中的关键代码片段示例：
 
 ```cpp
     AscendC::LoadData3DParamsV2<U> loadData3dParams;

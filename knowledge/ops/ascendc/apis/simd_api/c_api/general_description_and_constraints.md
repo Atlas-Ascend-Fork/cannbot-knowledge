@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/general_description_and_constraints.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -62,7 +62,7 @@ AI Core内外包含多级存储单元，各存储单元的主要用途如下：
 
 **图1**  地址重叠示例（不支持）
 
-![地址重叠示例（不支持）](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/unsupported_address_overlap_example.png)
+![地址重叠示例（不支持）](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/unsupported_address_overlap_example.png)
 
 > [!NOTE]说明 
 >本节所述地址重叠通用约束适用于一般情况，API参考中如有额外特殊说明的，则以具体API中的说明为准。
@@ -81,35 +81,35 @@ AI Core内外包含多级存储单元，各存储单元的主要用途如下：
 
 **图2** 单次迭代内的8个DataBlock进行Exp计算示意图
 
-![单次迭代内的8个DataBlock进行Exp计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/in_repeat_datablock.png)
+![单次迭代内的8个DataBlock进行Exp计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/in_repeat_datablock.png)
 
 - 矢量计算API支持开发者通过repeatTime来配置迭代次数，从而控制指令的多次迭代执行。假设repeatTime设置为2，矢量计算单元会进行2个迭代的计算，可计算出2 * 8（每个迭代8个DataBlock）* 32Byte（每个DataBlock 32Byte） = 512Byte的结果。如果数据类型为half，则计算了256个元素。下图展示了2次迭代Exp计算的示意图。由于硬件限制，repeatTime不能超过255。<br/>
 <br/>
 
     **图3** 2次迭代Exp计算
 
-    ![2次迭代Exp计算](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/exp_2_repeat.png)
+    ![2次迭代Exp计算](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/exp_2_repeat.png)
 
 - 针对同一个迭代中的数据，可以通过mask参数进行掩码操作来控制实际参与计算的个数。下图为进行Abs计算时通过mask逐比特模式按位控制哪些元素参与计算的示意图，1表示参与计算，0表示不参与计算。<br/>
 <br/>
 
     **图4** 通过mask参数进行掩码操作示意图（以float数据类型为例）
 
-    ![通过mask参数进行掩码操作示意图（以float数据类型为例）](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/mask_proc.png)
+    ![通过mask参数进行掩码操作示意图（以float数据类型为例）](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/mask_proc.png)
 
 - 矢量计算单元还支持带间隔的向量计算，通过dataBlockStride（单次迭代内不同DataBlock间地址步长）和repeatStride（相邻迭代间相同DataBlock的地址步长）来进行配置。
   - dataBlockStride <br/>
     如果需要控制单次迭代内，数据处理的步长，可以通过设置同一迭代内不同DataBlock的地址步长dataBlockStride来实现。下图给出了单次迭代内非连续场景的示意图，示例中源操作数的dataBlockStride配置为2，表示单次迭代内不同DataBlock间地址步长（起始地址之间的间隔）为2个DataBlock。<br/>
     **图5** 单次迭代内非连续场景的示意图
 
-    ![单次迭代内非连续场景的示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/1_repeat.png)
+    ![单次迭代内非连续场景的示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/1_repeat.png)
 
   - repeatStride
     当repeatTime大于1，需要多次迭代完成矢量计算时，您可以根据不同的使用场景合理设置相邻迭代间相同DataBlock的地址步长repeatStride的值。<br/>
     下图给出了多次迭代间非连续场景的示意图，示例中源操作数和目的操作数的repeatStride均配置为9，表示相邻迭代间相同DataBlock起始地址之间的间隔为9个DataBlock。相同DataBlock是指DataBlock在迭代内的位置相同，比如下图中的src1和src9处于相邻迭代，在迭代内都是第一个DataBlock的位置，其间隔即为repeatStride的数值。 <br/>
     **图6** 多次迭代间非连续场景的示意图
 
-    ![多次迭代间非连续场景的示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/multi_repeat.png)
+    ![多次迭代间非连续场景的示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/multi_repeat.png)
 
 下文中给出了dataBlockStride、repeatStride、mask的详细配置说明和示例。
 
@@ -121,7 +121,7 @@ dataBlockStride是指同一迭代内不同DataBlock的地址步长。
 
 **图7** dataBlockStride不同取值举例
 
-![dataBlockStride不同取值举例](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/dataBlockStride_diff.png)
+![dataBlockStride不同取值举例](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/dataBlockStride_diff.png)
 
 ### repeatStride<a name="repeatStride"></a>
 
@@ -129,19 +129,19 @@ repeatStride是指相邻迭代间相同DataBlock的地址步长。
 
 - **连续计算场景：** 假设定义一个Tensor供目的操作数和源操作数同时使用（即地址重叠），repeatStride取值为8。此时，矢量计算单元第一次迭代读取连续8个DataBlock，第二轮迭代读取下一个连续的8个DataBlock，通过多次迭代即可完成所有输入数据的计算。
 
-    ![连续计算场景](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/repeatStride_4.png)
+    ![连续计算场景](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/repeatStride_4.png)
 
 - **非连续计算场景：** repeatStride取值大于8（如取10）时，则相邻迭代间矢量计算单元读取的数据在地址上不连续，出现2个DataBlock的间隔。
 
-    ![非连续计算场景](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/repeatStride_3.png)
+    ![非连续计算场景](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/repeatStride_3.png)
 
 - **反复计算场景：** repeatStride取值为0时，矢量计算单元会对首个连续的8个DataBlock进行反复读取和计算。
 
-    ![反复计算场景](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/repeatStride_2.png)
+    ![反复计算场景](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/repeatStride_2.png)
 
 - **部分重复计算：** repeatStride取值大于0且小于8时，相邻迭代间部分数据会被矢量计算单元重复读取和计算，此种情形一般场景不涉及。
 
-    ![部分重复计算](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/repeatStride_1.png)
+    ![部分重复计算](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/repeatStride_1.png)
 
 ## 掩码操作
 
@@ -175,7 +175,7 @@ asc_add(dstLocal, src0Local, src1Local, repeatTime, dst_block_stride, src0_block
 
 mask过程如下：<br/>
 mask={6148914691236517205, 6148914691236517205}（注：6148914691236517205表示64位二进制数0b010101....01，mask按照低位到高位的顺序排布）
-![int16_t高维切分求和示例](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/mask_proc1.png)
+![int16_t高维切分求和示例](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/mask_proc1.png)
 
 ```cpp
 // 数据类型为int32_t
@@ -202,7 +202,7 @@ asc_add(dstLocal, src0Local, src1Local, repeatTime, dst_block_stride, src0_block
 
 mask过程如下：<br/>
 mask={6148914691236517205, 0}（注：6148914691236517205表示64位二进制数0b010101....01）
-![int32_t高维切分求和示例](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/mask_proc2.png)
+![int32_t高维切分求和示例](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/mask_proc2.png)
 
 ## 以数组方式申请内存<a name="以数组方式申请内存"></a>
 

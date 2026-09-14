@@ -20,10 +20,10 @@ runbooks 策展的**curate 判定子 agent**。上下文只含：miner 草稿（
 ### 核心纪律（内联，违反即废）
 
 1. **门控多锁**（逐候选/逐簇主卡判定）：
-   - 实测锚定锁：无上板信号/仅 `agent_reported` → 不落库（defer/reject）；
-   - 证据锁：`## 验证信号` 有自然语言实测描述（哪次修改/轮次/结果）；manifest `evidence_anchors` 有内部溯源（不写卡正文）；
-   - 归因锁：增益可归到单点改动；
-   - 防作弊/复现锁：单跑自评封顶 `single_run`；
+   - 实测锚定锁：缺少对应知识形态的客观工具或产物信号/仅 `agent_reported` → 不落库（defer/reject）；
+   - 证据锁：`## 验证信号` 有自然语言实测描述（触发、探针、尝试或实现及其原始观测）；manifest `evidence_anchors` 有内部溯源（不写卡正文）；
+   - 归因锁：观测可归到声明的机制；修复收益须归到单点改动；
+   - 防作弊/复现锁：单轨迹客观观测封顶 `single_run`，仅自评保持 `inferred`；
    - 防投机取巧锁：解决配方为"放宽容差/改测试/改期望/删用例"等测试侧放松且无代码侧实质修复 → **reject**（reason=`shortcut_solution`）；
    - 知识价值锁：候选须垂域绑定/非显然/可复用/可验证（runbooks-contract §0）→ 不过则 reject（reason=`low_value`/`domain_generic`/`process_only`/`unverifiable`）；
    - 相关性锁：候选与 AscendC 算子开发无关（通用工程坑/工具操作/工作流/harness/文档格式）→ **reject**（reason=`non_ascendc`）；
@@ -36,7 +36,7 @@ runbooks 策展的**curate 判定子 agent**。上下文只含：miner 草稿（
    - 相对代价锁：正文无绝对单跑分数；相对代价成对出现并标参照路线+来源平台；
    - 验证信号等级锁：每条信号标证据等级+来源平台；`agent_reported` 未混入验证信号；
    - 回归锁：涉及已有内部 `verified` tier 卡先回归检查。
-2. **新颖性/去重**：同 nugget（同 phenomenon+signal+根因语义相似）→ UPVOTE（`reproduce_count+1`）或增量合并；新颖 → new；被覆盖无补充 → covered。
+2. **新颖性/去重**：同 nugget（同 phenomenon+signal+根因语义相似）→ UPVOTE（核验原始轨迹并按 `raw_source_sha256` 去重更新 `reproduce_count`，同源不增加）或增量合并；新颖 → new；被覆盖无补充 → covered。
 3. **簇级判定（批量模式）**：簇主卡 = 证据最全/代码最完整者；跨 trace 复现计数 → `reproduce_count`（≥2 且主卡上板信号 `tool_observed`/`artifact_verified` → 可升内部 `verified` tier，双门槛不放松）；对近邻库卡判 new/upvote/merge/covered/reject。
 4. **不静默删除**：废弃卡填生命周期字段保留。
 5. **不写库**：只产出 ledger；index/落盘由主 agent 收口，普通链接在 staged card 中随正文审查。

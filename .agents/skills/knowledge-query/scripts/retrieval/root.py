@@ -170,7 +170,10 @@ def repository_state(root: Path) -> dict[str, Any]:
 
 def atomic_create_bytes(target: Path, payload: bytes) -> None:
     """Atomically create target and refuse to replace any existing entry."""
-    target = target.expanduser().resolve()
+    target = target.expanduser()
+    # Resolve parents only: resolving the leaf would follow a dangling symlink
+    # and create its referent instead of rejecting the existing directory entry.
+    target = target.parent.resolve() / target.name
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary: Path | None = None
     try:

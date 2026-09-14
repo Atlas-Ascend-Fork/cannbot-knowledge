@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_optimization/overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -90,27 +90,27 @@ SIMT编程模式以线程（Thread）为基本编程单位，由开发者编写�
 
 | 优化建议 | 优先级 | 样例 |
 | --- | :---: | --- |
-| [线程块数量配置优化](execution_config/thread_block_config.md) | 高 | [grid_dim_config](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/01_execution_conf_optimizations/grid_dim_config) |
-| [合理配置最大线程数避免寄存器溢出](execution_config/thread_count_register_overflow.md) | 中 | [max_thread_config](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/01_execution_conf_optimizations/max_thread_config) |
+| [线程块数量配置优化](execution_config/thread_block_config.md) | 高 | [grid_dim_config](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/01_execution_conf_optimizations/grid_dim_config) |
+| [合理配置最大线程数避免寄存器溢出](execution_config/thread_count_register_overflow.md) | 中 | [max_thread_config](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/01_execution_conf_optimizations/max_thread_config) |
 
 表2 最大化存储吞吐量（内存访问）
 
 | 优化建议 | 优先级 | 样例 |
 | --- | :---: | --- |
-| [访存合并](memory_access/memory_access_merge.md) | 高 | [matrix_transpose_practice](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/matrix_transpose_practice) |
-| [避免UB的Bank冲突](memory_access/avoid_ub_bank_conflict_simt.md) | 高 | [matrix_transpose_practice](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/matrix_transpose_practice) |
-| [使用短向量类型提升效率](memory_access/short_vector_efficiency.md) | 中 | [short_vector_add](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/short_vector_add) |
-| [通过类型对齐提升搬运效率](memory_access/type_alignment_transfer.md) | 中 | [aligned_types](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/aligned_types) |
-| [DCache访问优化](memory_access/dcache_access.md) | 中 | [cache_hint](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/cache_hint) |
+| [访存合并](memory_access/memory_access_merge.md) | 高 | [matrix_transpose_practice](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/matrix_transpose_practice) |
+| [避免UB的Bank冲突](memory_access/avoid_ub_bank_conflict_simt.md) | 高 | [matrix_transpose_practice](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/matrix_transpose_practice) |
+| [使用短向量类型提升效率](memory_access/short_vector_efficiency.md) | 中 | [short_vector_add](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/short_vector_add) |
+| [通过类型对齐提升搬运效率](memory_access/type_alignment_transfer.md) | 中 | [aligned_types](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/aligned_types) |
+| [DCache访问优化](memory_access/dcache_access.md) | 中 | [cache_hint](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/cache_hint) |
 
 表3 最大化指令吞吐量（控制流）
 
 | 优化建议 | 优先级 | 样例 |
 | --- | :---: | --- |
-| [同一Warp内避免分支跳转](control_flow/avoid_warp_branch.md) | 高 | [warp_divergence](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/02_control_flow/warp_divergence) |
+| [同一Warp内避免分支跳转](control_flow/avoid_warp_branch.md) | 高 | [warp_divergence](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/02_control_flow/warp_divergence) |
 
 表4 最大化指令吞吐量（指令优化）
 
 | 优化建议 | 优先级 | 样例 |
 | --- | :---: | --- |
-| [原子操作指令优化](instruction_optimization/atomic_instruction_optimization.md) | 高 | [histogram](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/03_instruction_optimizations/atomic_histogram)<br>[atomic_add_perf](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/02_features/01_api_features/02_atomic_operation/atomic_add_perf) |
+| [原子操作指令优化](instruction_optimization/atomic_instruction_optimization.md) | 高 | [histogram](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/03_instruction_optimizations/atomic_histogram)<br>[atomic_add_perf](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/02_features/01_api_features/02_atomic_operation/atomic_add_perf) |

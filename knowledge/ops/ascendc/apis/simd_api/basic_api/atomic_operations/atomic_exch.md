@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/atomic_operations/AtomicExch.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -24,7 +24,7 @@ source_headers:
 
 头文件路径为：`"basic_api/kernel_operator_atomic_intf.h"`。
 
-该接口用于在GM内存中执行原子交换操作，读取**address**指向的GM地址上的旧值（**old_value**），并将输入的标量值（**value**）替换旧值存储回同一地址，返回该地址修改前的值（**old_value**）。
+该接口用于在GM内存中执行原子交换操作，读取`address`指向的GM地址上的旧值（`old_value`），并将输入的标量值（`value`）替换旧值存储回同一地址，返回该地址修改前的值（`old_value`）。
 
 计算公式如下：
 
@@ -86,4 +86,4 @@ AscendC::WaitFlag<AscendC::HardEvent::S_MTE2>(EVENT_ID0);
 AscendC::DataCopy(yLocal, yGlobal, DATA_SIZE);
 ```
 
-完整样例请参考[scalar_atomic_operations样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/06_atomic/scalar_atomic_operations)。
+完整样例请参考[scalar_atomic_operations样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/06_atomic/scalar_atomic_operations)。

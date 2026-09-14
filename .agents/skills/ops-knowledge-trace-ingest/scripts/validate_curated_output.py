@@ -185,6 +185,17 @@ def validate_trace_snapshot(entry, snapshot, errors, approved=True):
                     "last_sequence": last_sequence,
                 }
             )
+    reproduce_count = entry.get("reproduce_count")
+    distinct_sources = len({source["raw_sha"] for source in sources})
+    if (
+        isinstance(reproduce_count, int)
+        and not isinstance(reproduce_count, bool)
+        and reproduce_count > distinct_sources
+    ):
+        errors.append(
+            f"{label}: reproduce_count {reproduce_count} exceeds distinct raw sources "
+            f"{distinct_sources}; repeated drafts or normalizations are not independent runs"
+        )
     if snapshot.get("coverage_verified") is not True:
         errors.append(f"{label}: trace_snapshot coverage is not verified")
     validate_reconstruction(entry, snapshot, sources, errors)

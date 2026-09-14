@@ -10,15 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_convert/asc_float2bfloat16.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
+source_headers:
+- include/c_api/vector_compute/compute/vector_convert.h
 ---
 
 # asc_float2bfloat16
 
 ## 功能说明
+
+头文件路径为：`"c_api/vector_compute/compute/vector_convert.h"`。
 
 将float类型数据转换为bfloat16_t类型，并支持多种舍入模式：
 
@@ -57,21 +61,6 @@ platforms:
     __aicore__ inline void asc_float2bfloat16_ru(__ubuf__ bfloat16_t* dst, __ubuf__ float* src, uint8_t repeat, uint16_t dst_block_stride, uint16_t src_block_stride, uint16_t dst_repeat_stride, uint16_t src_repeat_stride)
     // TRUNC舍入模式
     __aicore__ inline void asc_float2bfloat16_rz(__ubuf__ bfloat16_t* dst, __ubuf__ float* src, uint8_t repeat, uint16_t dst_block_stride, uint16_t src_block_stride, uint16_t dst_repeat_stride, uint16_t src_repeat_stride)
-    ```
-
-- 同步计算
-
-    ```cpp
-    // RINT舍入模式
-    __aicore__ inline void asc_float2bfloat16_rn_sync(__ubuf__ bfloat16_t* dst, __ubuf__ float* src, uint32_t count)
-    //ROUND舍入模式
-    __aicore__ inline void asc_float2bfloat16_rna_sync(__ubuf__ bfloat16_t* dst, __ubuf__ float* src, uint32_t count)
-    // FLOOR舍入模式
-    __aicore__ inline void asc_float2bfloat16_rd_sync(__ubuf__ bfloat16_t* dst, __ubuf__ float* src, uint32_t count)
-    // CEIL舍入模式
-    __aicore__ inline void asc_float2bfloat16_ru_sync(__ubuf__ bfloat16_t* dst, __ubuf__ float* src, uint32_t count)
-    // TRUNC舍入模式
-    __aicore__ inline void asc_float2bfloat16_rz_sync(__ubuf__ bfloat16_t* dst, __ubuf__ float* src, uint32_t count)
     ```
 
 ## 参数说明

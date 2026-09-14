@@ -590,6 +590,33 @@ class RetrievalAuditTests(unittest.TestCase):
             capture_output=True,
         )
 
+    def assert_existing_receipts_rejected(self, command: list[str], work: Path) -> None:
+        work.mkdir()
+        protected = work / "protected.json"
+        protected.write_bytes(b"existing receipt\n")
+        redirected = work / "uncreated" / "redirected.json"
+        dangling = work / "dangling.json"
+        dangling.symlink_to(redirected)
+        linked = work / "linked.json"
+        linked.symlink_to(protected)
+        directory = work / "directory.json"
+        directory.mkdir()
+        for target in (protected, dangling, linked, directory):
+            with self.subTest(command=Path(command[1]).name, target=target.name):
+                result = subprocess.run(
+                    [*command, "--receipt", str(target)],
+                    capture_output=True, text=True, check=False,
+                )
+                self.assertEqual(2, result.returncode, result.stdout + result.stderr)
+                self.assertIn("refusing to overwrite receipt", result.stdout + result.stderr)
+                self.assertEqual(b"existing receipt\n", protected.read_bytes())
+                self.assertTrue(dangling.is_symlink())
+                self.assertEqual(redirected, dangling.readlink())
+                self.assertFalse(redirected.parent.exists())
+                self.assertTrue(linked.is_symlink())
+                self.assertTrue(directory.is_dir())
+                self.assertEqual([], list(work.glob("*.tmp")))
+
     def test_ready_state_and_outcome_chain(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             work = Path(temporary)
@@ -717,6 +744,16 @@ class RetrievalAuditTests(unittest.TestCase):
             self.assertEqual(validate_outcome.returncode, 0, validate_outcome.stderr)
             self.assertTrue(json.loads(validate_outcome.stdout)["complete"])
             self.assertTrue(outcome_receipt.is_file())
+
+            for name, command in (
+                ("search", [sys.executable, str(QUERY), "--knowledge-root", str(root),
+                            "search", "--query", "Synthetic API", "--technology", "ascendc",
+                            "--platform", "a2"]),
+                ("state", [sys.executable, str(STATE), str(state_path), "--knowledge-root",
+                           str(root), "--require-ready"]),
+                ("outcome", [sys.executable, str(OUTCOME), str(manifest), "--require-complete"]),
+            ):
+                self.assert_existing_receipts_rejected(command, work / f"reject_{name}")
 
             search_receipt.write_text(
                 search_receipt.read_text(encoding="utf-8") + "\n",

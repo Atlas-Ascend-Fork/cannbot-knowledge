@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Kernel/AllGather.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -27,7 +27,7 @@ source_headers:
 
 集合通信算子AllGather的任务下发接口，返回该任务的标识handleId给用户。AllGather的功能为：将通信域内所有节点的输入按照rank id重新排序，然后拼接起来，再将结果发送到所有节点的输出。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/allgather.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/allgather.png)
 
 ## 函数原型
 
@@ -56,7 +56,7 @@ __aicore__ inline HcclHandle AllGather(GM_ADDR sendBuf, GM_ADDR recvBuf, uint64_
 | repeat | 输入 | 一次下发的AllGather通信任务个数。repeat取值≥1，默认值为1。当repeat>1时，每个AllGather任务的sendBuf和recvBuf地址由服务端自动算出，计算公式如下：<br><br>sendBuf[i] = sendBuf + sendCount* sizeof(datatype) * i, i∈[0, repeat)<br><br>recvBuf[i] = recvBuf + sendCount* sizeof(datatype) * i, i∈[0, repeat)<br><br>注意：当设置repeat>1时，须与strideCount参数配合使用，规划通信数据地址。 |
 
 **图1**  AllGather通信示例  
-![AllGather通信示例](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/allgather_example.png)
+![AllGather通信示例](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/allgather_example.png)
 
 ## 返回值说明
 
@@ -84,7 +84,7 @@ __aicore__ inline HcclHandle AllGather(GM_ADDR sendBuf, GM_ADDR recvBuf, uint64_
     如下图所示，4张卡上均有sendCount=300个float16数据，每张卡从xGM内存中获取到本卡数据，gather处理各卡的数据后，将结果输出到各卡的yGM。
 
     **图2**  非多轮切分场景下4卡AllGather通信  
-    ![非多轮切分场景下4卡AllGather通信](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/allgather_4rank_no_multisplit.png)
+    ![非多轮切分场景下4卡AllGather通信](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/allgather_4rank_no_multisplit.png)
 
     ```
     extern "C" __global__ __aicore__ void all_gather_custom(GM_ADDR xGM, GM_ADDR yGM, GM_ADDR workspaceGM, GM_ADDR tilingGM)
@@ -119,12 +119,12 @@ __aicore__ inline HcclHandle AllGather(GM_ADDR sendBuf, GM_ADDR recvBuf, uint64_
     开启多轮切分，等效处理上述非多轮切分示例的通信。如下图所示，每张卡的300个float16数据，被切分为2个首块数据，1个尾块数据。每个首块的数据量tileLen为128个float16数据，尾块的数据量tailLen为44个float16数据。在算子内部实现时，需要对切分后的数据分3轮进行AllGather通信任务，将等效上述非多轮切分的通信结果。
 
     **图3**  各卡数据切分示意图  
-    ![各卡数据切分示意图-56](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/per_rank_data_split_56.png)
+    ![各卡数据切分示意图-56](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/per_rank_data_split_56.png)
 
     具体实现为，第1轮通信，每个rank上0-0\\1-0\\2-0\\3-0数据块进行AllGather处理。第2轮通信，每个rank上0-1\\1-1\\2-1\\3-1数据块进行AllGather处理。第3轮通信，每个rank上0-2\\1-2\\2-2\\3-2数据块进行AllGather处理。每一轮通信结果中，各卡上相邻数据块的起始地址间隔的数据个数为strideCount，以第一轮通信结果为例，rank0的0-0数据块和1-0数据块起始地址间隔的数据量strideCount = 2\*tileLen+1\*tailLen=300。
 
     **图4**  第一轮4卡AllGather示意图  
-    ![第一轮4卡AllGather示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/first_round_4rank_allgather.png)
+    ![第一轮4卡AllGather示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/first_round_4rank_allgather.png)
 
     ```
     extern "C" __global__ __aicore__ void all_gather_custom(GM_ADDR xGM, GM_ADDR yGM, GM_ADDR workspaceGM, GM_ADDR tilingGM)

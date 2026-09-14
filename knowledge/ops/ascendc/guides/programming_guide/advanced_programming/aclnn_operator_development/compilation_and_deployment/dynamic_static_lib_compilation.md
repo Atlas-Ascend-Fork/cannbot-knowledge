@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/aclnn_operator_development/compilation_and_deployment/dynamic_static_lib_compilation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -168,7 +168,7 @@ target_link_libraries(op_runner PRIVATE # op_runner需要替换成调用方的�
 )
 ```
 `${vendor_name}::${vendor_name}`在`TYPE STATIC`模式下指向`lib${vendor_name}.a`。
-静态库集成的完整样例可参考[custom_op_static_lib](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op_static_lib)。
+静态库集成的完整样例可参考[custom_op_static_lib](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op_static_lib)。
 
 ### 静态库和动态库混合使用
 

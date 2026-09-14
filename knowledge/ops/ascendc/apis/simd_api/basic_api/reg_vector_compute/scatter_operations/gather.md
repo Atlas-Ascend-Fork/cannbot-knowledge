@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/scatter_operations/Gather.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -27,7 +27,7 @@ source_headers:
 该指令会根据索引值indexReg将源操作数srcReg按元素收集到目的操作数dstReg中。收集过程如下图所示：
 
 **图 1**  Gather功能说明  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_gather_1.png "Gather功能说明")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_gather_1.png "Gather功能说明")
 
 ## 函数原型<a name="section620mcpsimp"></a>
 

@@ -11,16 +11,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_compare/asc_le.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_compare.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_le
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_compare.h"`。
 
 le表示小于等于（less than or equal to），该接口用于逐元素比较两个源操作数大小，将比较结果（$src0_i \leq src1_i$）作为返回值返回或写入目的操作数`dst`对应比特位。如果比较结果为真，则对应比特位为1，否则为0。
 
@@ -36,10 +39,15 @@ $$
 
 ```c
 // 通过函数返回值返回结果（占位符形式）
-__simd_callee__ inline vector_bool asc_le(vector_<dtype> src0, vector_<dtype> src1, vector_bool mask)
+__simd_callee__ inline vector_bool asc_le(vector_<dtype> src0,
+                                          vector_<dtype> src1,
+                                          vector_bool mask)
 
 // 通过引用参数输出结果（占位符形式）
-__simd_callee__ inline void asc_le(vector_bool& dst, vector_<dtype> src0, vector_<dtype> src1, vector_bool mask)
+__simd_callee__ inline void asc_le(vector_bool& dst,
+                                   vector_<dtype> src0,
+                                   vector_<dtype> src1,
+                                   vector_bool mask)
 ```
 
 ### dtype支持数据类型
@@ -50,9 +58,14 @@ __simd_callee__ inline void asc_le(vector_bool& dst, vector_<dtype> src0, vector
 
 ```c
 // 典型示例：half类型逐元素小于等于比较
-__simd_callee__ inline vector_bool asc_le(vector_half src0, vector_half src1, vector_bool mask)
+__simd_callee__ inline vector_bool asc_le(vector_half src0,
+                                          vector_half src1,
+                                          vector_bool mask)
 
-__simd_callee__ inline void asc_le(vector_bool& dst, vector_half src0, vector_half src1, vector_bool mask)
+__simd_callee__ inline void asc_le(vector_bool& dst,
+                                   vector_half src0,
+                                   vector_half src1,
+                                   vector_bool mask)
 ```
 
 ## 参数说明

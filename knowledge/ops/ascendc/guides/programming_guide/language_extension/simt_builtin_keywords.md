@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/language_extension/simt_builtin_keywords.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -50,6 +50,7 @@ SIMT会提供内置的宏方便用户编写程序。预定义宏一节着重介�
 **表1**  函数执行空间限定符概览
 
 <a name="table121121062614"></a>
+
 | 函数执行空间限定符 | 执行空间（Host） | 执行空间（Device） | 允许调用函数空间（Host） | 允许调用函数空间（Device） |
 | --- | --- | --- | --- | --- |
 | \_\_host\_\_，无限定符 | √ | x | √ | x |
@@ -88,6 +89,7 @@ SIMT会提供内置的宏方便用户编写程序。预定义宏一节着重介�
 ## 内置常量<a name="section784531219338"></a>
 
 <a name="table878553753515"></a>
+
 | 常量名 | 取值 | 功能 |
 | --- | --- | --- |
 | constexpr uint64_t ASC_UB_SIZE | 取值由当前AI处理器决定，若该AI处理器不存在这块空间，则默认配置为0。 | 表示当前AI处理器架构下UB的容量，可用于编译期获取UB资源大小。 |
@@ -140,7 +142,7 @@ SIMT会提供内置的宏方便用户编写程序。预定义宏一节着重介�
 
     -   对于一维线程块，其线程ID为blockIdx.x \* blockDim.x + threadIdx.x。
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/thread_id_1.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/thread_id_1.png)
 
     -   对于二维线程块，其线程ID为二维结构，其计算公式为：
 
@@ -170,6 +172,7 @@ SIMT会提供内置的宏方便用户编写程序。预定义宏一节着重介�
 **表2**  标量数据类型
 
 <a name="table114921244133211"></a>
+
 | 类型 | 数据类型 | 描述 | Size（bit） | 取值范围 |
 | --- | --- | --- | --- | --- |
 | 布尔型 | bool | 全0代表false，否则代表true。 | 8 | true, false |
@@ -191,6 +194,7 @@ SIMT会提供内置的宏方便用户编写程序。预定义宏一节着重介�
 短向量数据类型分为Vector X2、Vector X3、Vector X4，表示一个短向量变量有2、3、4个元素，当前支持的类型分布如下：
 
 <a name="table49986503175"></a>
+
 | 元素数据类型 | Vector X2 | Vector X3 | Vector X4 |
 | --- | --- | --- | --- |
 | unsigned char | uchar2 | uchar3 | uchar4 |
@@ -215,6 +219,7 @@ SIMT会提供内置的宏方便用户编写程序。预定义宏一节着重介�
 **表3**  短向量数据类型
 
 <a name="table13856144241"></a>
+
 | 数据类型 | 内存大小（字节） | 地址对齐（字节） |
 | --- | --- | --- |
 | char2、 uchar2 | 2 | 2 |
@@ -240,6 +245,7 @@ SIMT编程提供了一系列运算符，用于执行数学运算。以下是支�
 **表4**  SIMT编程支持的运算符列表
 
 <a name="table11745172843710"></a>
+
 | 类别 | 运算符 | bool | int8_t/uint8_t/int16_t/uint16_t/int32_t/uint32_t/int64_t/uint64_t | half/bfloat16_t/float | half2/bfloat16x2_t | hifloat8_t |
 | --- | --- | --- | --- | --- | --- | --- |
 | 算术运算符 | + | x | √ | √ | √ | x |

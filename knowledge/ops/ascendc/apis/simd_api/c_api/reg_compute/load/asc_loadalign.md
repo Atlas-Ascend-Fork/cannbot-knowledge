@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/load/asc_loadalign.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/load/loadalign.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_loadalign
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/load/loadalign.h"`。
 
 从Unified Buffer（UB）中32字节对齐的起始地址读取数据，并通过函数返回值返回或写入目的矢量数据寄存器或掩码寄存器，搬运过程中数据格式和内容保持不变。本接口提供四种功能模式：
 
@@ -29,6 +32,10 @@ source_headers:
 - **非连续对齐搬入模式**：单条指令非连续搬入8个`DataBlock`，每个`DataBlock`的数据量为32字节。支持配置数据块之间的地址步长和起始读取位置。
 
 连续对齐搬入模式中，通过函数返回值返回掩码寄存器时，请使用[asc_loadalign_mask](asc_loadalign_mask.md)。非连续对齐搬入模式中，通过函数返回值返回矢量数据寄存器时，请使用[asc_loadalign_datablock_strided](asc_loadalign_datablock_strided.md)。
+
+**图1** 连续搬入矢量数据寄存器
+
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/capi_loadalign_norm.png)
 
 本接口仅在AIV上生效，非AIV调用直接返回。
 

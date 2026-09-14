@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/matrix_compute/fp_buffer_quantization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 ---
@@ -26,10 +26,10 @@ platforms:
 >本性能优化手段仅针对Atlas A2 训练系列产品/Atlas A2 推理系列产品生效。
 
 **图1**  反例数据流图<a name="fig1775910202351"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/bad_flow_78.png "反例数据流图-78")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/bad_flow_78.png "反例数据流图-78")
 
 **图2**  正例数据流图<a name="fig14909105811118"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/good_dataflow_79.png "正例数据流图-79")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/good_dataflow_79.png "正例数据流图-79")
 
 【反例】
 

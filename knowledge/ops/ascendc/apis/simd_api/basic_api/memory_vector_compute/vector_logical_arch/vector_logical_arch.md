@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/Vector_logical_arch/Vector_logical_arch.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -25,7 +25,7 @@ Vector计算单元专用于执行向量计算。如下图所示，高亮部分�
 
   **图1** 向量计算单元架构图
 
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/a2a3_npu_arch.png)
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/a2a3_npu_arch.png)
 
   **表1** 向量计算单元关联的存储单元
 
@@ -35,11 +35,12 @@ Vector计算单元专用于执行向量计算。如下图所示，高亮部分�
 
 
 
+
 - 针对Ascend 950PR/Ascend 950DT，Vector逻辑架构如下图2所示。
 
   **图2** 向量计算单元架构图
 
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/npu_3510_hw_arch_vector.png)
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/npu_3510_hw_arch_vector.png)
 
   **表2** 向量计算单元关联的存储单元
 
@@ -47,6 +48,7 @@ Vector计算单元专用于执行向量计算。如下图所示，高亮部分�
   | --- | --- |
   | UB | AI Core内部物理存储单元，通常用于存储向量计算的输入/输出数据。 |
   | SIMD Register File | AI Core内部物理存储单元，在SIMD程序中，数据从UB搬运到Register进行计算，产生的中间结果可以不用传回UB，直接在寄存器计算。 |
+
 
 
 ## UB介绍<a name="ZH-CN_TOPIC_0000002574022839"></a>
@@ -66,7 +68,7 @@ Vector计算单元专用于执行向量计算。如下图所示，高亮部分�
 
     **图3** UB的内存结构图
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/a2a3_ub_memory_structure.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/a2a3_ub_memory_structure.png)
 
     如图3所示，UB总大小为192KB，包含16个bank group（BG0 ~ BG15），每个bank group包含3个bank。每个bank大小为4KB，由128行组成，每行长度为32B。
     - **读写冲突**：读操作和写操作同时尝试访问同一个bank。
@@ -84,7 +86,7 @@ Vector计算单元专用于执行向量计算。如下图所示，高亮部分�
 
     **图4** UB的内存结构图
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/950_ub_memory_structure.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/950_ub_memory_structure.png)
 
     如图4所示，UB总大小为256KB，包含8个bank group（BG0 ~ BG7），每个bank group包含2个bank。每个bank大小为16KB，由512行组成，每行长度为32B。
     - **读写冲突**：读操作和写操作同时尝试访问同一个bank。

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__ushort_as_bfloat16.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_ushort\_as\_bfloat16
 
 ## 功能说明
+
+头文件路径为：`"simt_api/asc_bf16.h"`。
 
 将unsigned short int的数据按位重新解释为bfloat16，即将unsigned short int的数据存储的位按照bfloat16的格式进行读取。
 
@@ -54,19 +56,13 @@ unsigned short int的数据按位重新解释为bfloat16的值。特殊值如下
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/asc_bf16.h`头文件。
-
-```cpp
-#include "simt_api/asc_bf16.h"
-```
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/asc_bf16.h"
+
     __global__ __launch_bounds__(1024) void kernel__ushort_as_bfloat16(bfloat16_t* dst, unsigned short int* x, uint32_t input_total_length)
     {
         uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -80,6 +76,8 @@ unsigned short int的数据按位重新解释为bfloat16的值。特殊值如下
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_bf16.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel__ushort_as_bfloat16(__gm__ bfloat16_t* dst, __gm__ unsigned short int* x, uint32_t input_total_length)
     {
         uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;

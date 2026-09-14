@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/best_practices/matmul_tuning_cases/matmul_l2_cache_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 
 ## 案例介绍<a name="section5590915836"></a>
 
-本案例呈现了在Matmul计算过程中，输入和输出的数据总量超过L2 Cache大小时，通过L2 Cache数据切分对算子性能的提升效果。开启L2 Cache切分的完整样例请参考[L2 Cache切分的算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_l2cache)。
+本案例呈现了在Matmul计算过程中，输入和输出的数据总量超过L2 Cache大小时，通过L2 Cache数据切分对算子性能的提升效果。开启L2 Cache切分的完整样例请参考[L2 Cache切分的算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_l2cache)。
 
 本案例使用的AI处理器的L2 Cache大小为192MB，L2 Cache纯读带宽约为GM的3到4倍，两者之间存在较大差距。在搬入或搬出相同数据量的情况下，访问L2 Cache内的数据比访问GM更快。若数据无法命中L2 Cache，即需要访问的数据不在L2 Cache内，导致需要访问GM进行读写，带宽利用效率较低，最终算子搬入或搬出数据成为算子整个运行过程的性能瓶颈。
 
@@ -71,7 +71,7 @@ platforms: []
 
 当前案例基于Tiling全量常量化进一步优化，Tiling全量常量化请参考[Matmul高阶API开启Tiling全量常量化](matmul_tiling_constant.md)案例。优化前的Profiling数据如下，C列的aic\_time是867us，K列的aic\_mte2\_time是861.9us，MTE2占比为99%，MTE2数据搬运是当前算子性能的瓶颈。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002410305297.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002410305297.png)
 
 ## 设计优化方案<a name="section6251134218311"></a>
 
@@ -81,7 +81,7 @@ platforms: []
     -   优化后，输入数据被切分多次，所有核分多次计算，每个核单次计算只依赖切分后的数据量。L2 Cache切分方案确保单次计算的数据都在L2 Cache缓存中，搬运输入数据的效率更高。
 
     **图1**  优化点一示意图<a name="fig37871937335"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/opt_point_1.png "优化点一示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/opt_point_1.png "优化点一示意图")
 
 -   优化点二：选择拖尾较小的L2 Cache切分方案
 
@@ -90,7 +90,7 @@ platforms: []
     在实际场景中，满足切分后的数据量小于L2 Cache大小的前提下，拖尾越小越好。基于这个原则可以确定L2 Cache切分块数。
 
     **图2**  优化点二示意图<a name="fig187267372095"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/opt_point_2.png "优化点二示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/opt_point_2.png "优化点二示意图")
 
 -   优化点三：错位分核，减少左右矩阵同地址冲突问题
 
@@ -99,9 +99,9 @@ platforms: []
     在M和N方向，将矩阵数据L2 Cache切分为大数据块，然后在数据块间错位分核，即将每个数据块依次沿对角线分配给不同的核处理，从而有效减少同地址冲突的问题。比如，在处理同一行的尾块数据0，1，2，3时，如果顺序分配执行的核，多核会同时读同一行左矩阵数据，导致读读冲突。若按照对角线方式分配执行的核，在对角线上的尾块数据被分配给核0，1，2，3计算，多核访问不同行的左矩阵数据，将减少同地址冲突的次数。
 
     **图3**  优化点三示意图<a name="fig12727153717911"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/opt_point_3.png "优化点三示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/opt_point_3.png "优化点三示意图")
 
-Matmul API开启L2 Cache切分的完整样例请参考[L2 Cache切分的算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_l2cache)。实现L2 Cache切分的关键步骤如下：
+Matmul API开启L2 Cache切分的完整样例请参考[L2 Cache切分的算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_l2cache)。实现L2 Cache切分的关键步骤如下：
 
 1.  判断是否需要进行L2 Cache切分。如果数据总量超过设定的L2 Cache大小，则计算L2 Cache切分数目。
 
@@ -188,7 +188,7 @@ Matmul API开启L2 Cache切分的完整样例请参考[L2 Cache切分的算子�
 
 优化后的Profiling数据如下，C列的aic\_time为805.6us，相比于优化前，总执行时间降低了约7.1%，MTE2搬运时间降低了约10.7%。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002376979814.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002376979814.png)
 
 ## 总结<a name="section1593812115413"></a>
 

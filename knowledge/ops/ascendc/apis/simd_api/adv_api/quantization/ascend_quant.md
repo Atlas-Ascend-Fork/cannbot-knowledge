@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/quantization/AscendQuant.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -32,15 +32,15 @@ source_headers:
 
 -   PER\_TENSOR量化：整个srcTensor对应一个量化参数，量化参数的shape为\[1\]。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000001666705128.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000001666705128.png)
 
 -   PER\_CHANNEL量化：srcTensor的shape为\[m, n\],每个channel维度对应一个量化参数，量化参数的shape为\[n\]。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000001738671878.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000001738671878.png)
 
 -   PER\_TOKEN量化：srcTensor的每组token（token为n方向，共有m组token）中的元素共享一组scale和offset参数，srcTensor的shape为\[m, n\]时，scale和offset的shape为\[m, 1\]。offset是可选输入。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002292403429.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002292403429.png)
 -   PER\_GROUP量化：这里定义group的计算方向为k方向，srcTensor在k方向上每groupSize个元素共享一组scale和offset。srcTensor的shape为\[m, n\]时，如果kDim=0，表示k是m方向，scale和offset的shape为\[\(m + groupSize - 1\) / groupSize, n\]；如果kDim=1，表示k是n方向，scale和offset的shape为\[m，\(n + groupSize - 1\) / groupSize\]。offset是可选输入。
 
     根据输出数据类型的不同，当前PER\_GROUP分为两种场景：fp4x2\_e2m1\_t/fp4x2\_e1m2\_t场景（后续内容中简称为float4场景）和int8\_t/hifloat8\_t/fp8\_e5m2\_t/fp8\_e4m3fn\_t场景（后续内容中简称为b8场景）。
@@ -48,31 +48,31 @@ source_headers:
     -   fp4x2\_e2m1\_t/float4\_e1m2场景（float4场景）
         -   kDim = 0:
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002292493829.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002292493829.png)
 
         -   kDim = 1:
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002292493825.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002292493825.png)
 
     -   int8\_t/hifloat8\_t/fp8\_e5m2\_t/fp8\_e4m3fn\_t场景（b8场景）
         -   kDim=0：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002292493833.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002292493833.png)
 
         -   kDim=1：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002068601638.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002068601638.png)
 
 ## 实现原理
 
 **图1**  AscendQuant算法框图scale和offset都是scalar  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascendquant_scale_offset_scalar.png "AscendQuant算法框图scale和offset都是scalar")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascendquant_scale_offset_scalar.png "AscendQuant算法框图scale和offset都是scalar")
 
 **图2**  AscendQuant算法框图scale和offset都是Tensor  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascendquant_scale_offset_tensor.png "AscendQuant算法框图scale和offset都是Tensor")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascendquant_scale_offset_tensor.png "AscendQuant算法框图scale和offset都是Tensor")
 
 **图3**  AscendQuant算法框图scale是Tensor&offset是Scalar  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascendquant_scale_tensor_offset_scalar.png "AscendQuant算法框图scale是Tensor-offset是Scalar")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascendquant_scale_tensor_offset_scalar.png "AscendQuant算法框图scale是Tensor-offset是Scalar")
 
 如上图所示是AscendQuant内部算法框图，计算过程大致描述为如下几步，均在Vector上进行：
 
@@ -83,10 +83,10 @@ source_headers:
 5.  精度转换：将Tmp2从half转换成int8\_t类型，得到output。
 
 **图4**  AscendQuant算法框图PER\_TOKEN/PER\_GROUP场景scale和offset都是tensor  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascendquant_per_token_per_group_scale_offset_tensor.png "AscendQuant算法框图PER_TOKEN-PER_GROUP场景scale和offset都是tensor")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascendquant_per_token_per_group_scale_offset_tensor.png "AscendQuant算法框图PER_TOKEN-PER_GROUP场景scale和offset都是tensor")
 
 **图5**  AscendQuant算法框图PER\_TOKEN/PER\_GROUP场景scale是tensor&offset是scalar  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascendquant_per_token_per_group_scale_tensor_offset_scalar.png "AscendQuant算法框图PER_TOKEN-PER_GROUP场景scale是tensor-offset是scalar")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascendquant_per_token_per_group_scale_tensor_offset_scalar.png "AscendQuant算法框图PER_TOKEN-PER_GROUP场景scale是tensor-offset是scalar")
 
 PER\_TOKEN/PER\_GROUP场景的计算逻辑如下：
 

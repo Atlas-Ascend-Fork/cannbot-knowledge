@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_optimization/execution_config/thread_count_register_overflow.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -31,7 +31,7 @@ platforms: []
 
 避免寄存器溢出的思路是：先通过`--cce-res-usage`编译选项查看核函数（Kernel）的寄存器使用情况（`Stack size`大于0即表明存在溢出），再根据上表中寄存器与最大线程数的对应关系，选择一档能满足算子单线程寄存器需求的最大线程数，并通过`__launch_bounds__(N)`将其配置给编译器。编译器据此放宽每线程的寄存器配额，从而避免寄存器溢出，将中间数据保留在寄存器中，减少Global Memory访问，提升性能。一般建议计算密集型算子：若需多于32个寄存器（如sincos），建议配置512线程；若不超过32个，可配置1024线程。关于`__launch_bounds__`的详细说明，请参考[SIMT BuiltIn关键字](../../../programming_guide/language_extension/simt_builtin_keywords.md#核函数配置)。
 
-【样例介绍】以[SinCosCompute算子](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/01_execution_conf_optimizations/max_thread_config/sincos_compute)为例，使用`sincosf`接口同时计算sin和cos结果，计算公式为 $output\_sin[i] = sin(input[i])$、$output\_cos[i] = cos(input[i])$。输入数据为float类型，数据规模为393216个元素，配置48个线程块、每个线程块512个线程，每个线程循环计算16个输入值。基线版本与优化版本的核函数（Kernel）计算逻辑完全相同，仅在是否配置`__launch_bounds__`上存在差异。
+【样例介绍】以[SinCosCompute算子](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/01_execution_conf_optimizations/max_thread_config/sincos_compute)为例，使用`sincosf`接口同时计算sin和cos结果，计算公式为 $output\_sin[i] = sin(input[i])$、$output\_cos[i] = cos(input[i])$。输入数据为float类型，数据规模为393216个元素，配置48个线程块、每个线程块512个线程，每个线程循环计算16个输入值。基线版本与优化版本的核函数（Kernel）计算逻辑完全相同，仅在是否配置`__launch_bounds__`上存在差异。
 
   【反例】不配置`__launch_bounds__`，最大线程数取默认值1024，编译器据此分配寄存器，导致寄存器溢出。
 

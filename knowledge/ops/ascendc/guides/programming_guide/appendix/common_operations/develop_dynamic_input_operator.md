@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/appendix/common_operations/develop_dynamic_input_operator.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 动态输入算子是指算子的输入个数是动态的，例如AddN，将N个输入tensor累加到一起，输出一个tensor，输入tensor的个数是不固定的。动态输入算子的开发在构造和解析输入数据方面有差异：核函数（Kernel）的入参采用ListTensorDesc的结构存储输入数据信息，对应的，调用时需构造TensorList结构保存参数信息。下面基于kernel直调和工程化算子开发两种开发方式分别介绍具体开发流程。
 
 >[!NOTE]说明 
->下文仅列出代码片段，完整样例请参考[动态输入算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/04_memory_management/list_tensor_desc_input)。
+>下文仅列出代码片段，完整样例请参考[动态输入算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/04_memory_management/list_tensor_desc_input)。
 
 -   kernel直调
     -   参考[ListTensorDesc](../../../../apis/simd_api/basic_api/aux_data_structures/list_tensor_desc.md)数据结构自行定义ListTensorDesc和TensorDesc结构体，并将实际的输入数据保存至ListTensorDesc结构中。示例如下:

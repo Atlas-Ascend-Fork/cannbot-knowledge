@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reduction_compute/ReduceDataBlock.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 ---
@@ -105,7 +105,7 @@ __simd_callee__ inline void ReduceDataBlock(U& dstReg, U srcReg, MaskReg mask)
 3. 以此类推，得到目的操作数为1个half类型的数据sum。
 
 **图1** ReduceDataBlock示意图<a name="zh-cn_topic_0000002568852247_fig10524085414"></a>  
-![ReduceDataBlock示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_reduce_datablock_index.png "ReduceDataBlock示意图")
+![ReduceDataBlock示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_reduce_datablock_index.png "ReduceDataBlock示意图")
 
 ### mask为空场景及异常值处理
 

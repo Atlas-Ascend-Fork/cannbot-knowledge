@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadData_GMToL1_2DV2.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -75,7 +75,7 @@ LoadData2DParamsV2结构体在不启用转置时，示意图如下，参数设�
 
 **图 1** LoadData2DParamsV2结构体参数示例（以half数据类型，不启用转置为例）<a id="fig13901164574218"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddata2dparamsv2_half_no_transpose.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddata2dparamsv2_half_no_transpose.png)
 
 ## 数据类型<a id="section4219135304818"></a>
 

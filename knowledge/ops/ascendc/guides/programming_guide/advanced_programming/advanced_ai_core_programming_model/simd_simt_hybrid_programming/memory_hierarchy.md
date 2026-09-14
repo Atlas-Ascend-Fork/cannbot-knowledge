@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/memory_hierarchy.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -21,7 +21,7 @@ platforms: []
 在SIMD与SIMT混合编程场景下，整体内存资源如下图所示。核外的Global Memory是所有核的全局内存，容量最大，但访问效率最低。AIC的L1和AIV的Unified Buffer（UB）是单核内的共享内存，容量较小，但访问效率较高。私有内存层最靠近计算单元，容量最小，访问效率最高。
 
 **图1** SIMD与SIMT混合编程内存层级  
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simt_mem.png" alt="内存层级" style="width:70%; height:auto;">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simt_mem.png" alt="内存层级" style="width:70%; height:auto;">
 
 在混合编程场景下，UB内存是SIMT VF和SIMD VF的共享内存。Vector Function切换时，UB上的数据不会被清除，因此可通过UB实现Vector Function间的通信。下文[UB划分](#ub划分)章节详细说明UB如何划分为静态内存、动态内存、Data Cache等区域；[数据通路](#数据通路)章节介绍混合编程场景下的整体数据通路，并说明并行流水间的数据同步和访问GM时的缓存一致性问题。
 
@@ -30,7 +30,7 @@ platforms: []
 UB内存空间总大小为256KB。UB按功能划分为四个主要区域，从低地址到高地址依次为静态内存、动态内存、预留空间和Data Cache，如下图所示。
 
 **图2** SIMD与SIMT混合编程UB内存分配  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simt_ub.png "UB内存分配图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simt_ub.png "UB内存分配图")
 
 ### 内存空间说明<a name="zh-cn_topic_0000002571697985_section19291134194"></a>
 
@@ -77,7 +77,7 @@ UB内存空间总大小为256KB。UB按功能划分为四个主要区域，从�
 混合编程模式下，可在SIMT VF、SIMD VF和MainScalar执行空间申请静态内存和动态内存。MainScalar是指Device侧在VF函数外部的执行空间。下图为不同执行空间申请内存时对应的UB内存排布示意图。
 
 **图3** 不同执行空间的UB内存排布  
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simt_layout.png" alt="内存排布" style="width:80%; height:auto;">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simt_layout.png" alt="内存排布" style="width:80%; height:auto;">
 
 用户在申请静态内存和动态内存时需要注意：
 
@@ -91,7 +91,7 @@ UB内存空间总大小为256KB。UB按功能划分为四个主要区域，从�
 混合编程场景下，AIV核支持在SIMT VF、SIMD VF和MainScalar执行空间访问UB/GM，同时支持独立的UB到GM的MTE通路。整体数据通路如下图所示。
 
 **图4** SIMD与SIMT混合编程数据通路  
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simt_path.png" alt="SIMD与SIMT混合编程数据通路" style="width:90%; height:auto;">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simt_path.png" alt="SIMD与SIMT混合编程数据通路" style="width:90%; height:auto;">
 
 ### 访问UB内存
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/memory_access/avoid_ub_bank_conflict/overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -25,7 +25,7 @@ platforms: []
 
 -   针对[NPU架构版本2201](../../../../programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_pos_65.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_pos_65.png)
 
     UB总大小为192KB，包含16个bank group，每个bank group包含3个bank。每个bank大小为4KB，由128行组成，每行长度为32B。
 
@@ -35,7 +35,7 @@ platforms: []
 
 -   针对[NPU架构版本3510](../../../../programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_pos_66.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_pos_66.png)
 
     UB总大小为256KB，包含8个bank group，每个bank group包含2个bank。每个bank大小为16KB，由512行组成，每行长度为32B。
 

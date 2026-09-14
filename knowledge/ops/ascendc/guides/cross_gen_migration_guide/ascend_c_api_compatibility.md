@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/cross_gen_migration_guide/ascend_c_api_compatibility.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -22,7 +22,7 @@ platforms: []
 若开发者希望在[NPU架构版本3510](../programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)下运行原本在[NPU架构版本2201](../programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)上开发的Ascend C程序，需在3510架构上重新编译并运行，并可能需要根据迁移指导进行代码调整。
 
 **图1**  Ascend C API层次结构<a name="fig1912418519815"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/api_hierarchy.png "Ascend-C-API层次结构")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/api_hierarchy.png "Ascend-C-API层次结构")
 
 
 **表1**  Ascend C API兼容策略

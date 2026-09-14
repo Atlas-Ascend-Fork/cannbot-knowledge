@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/best_practices/matmul_tuning_cases/matmul_tiling_constant.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -88,25 +88,25 @@ Tiling参数如下：
 
 -   优化前的流水图如下，默认不开启Tiling常量化，Tiling参数需要从Host侧拷贝到核函数（Kernel）侧，导致Matmul初始化时的Scalar计算较多，第一个MTE2指令开始于3.536us左右，MTE2前的指令头开销在算子整个流水中占比较大，因此需要优化Scalar计算。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002411422713.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002411422713.png)
 
 -   优化前的Profiling数据如下，从C列的aic\_time数据来看，多个核中最大算子执行耗时为10.62us，从G列的aic\_scalar\_time数据来看，Scalar平均耗时6.32us。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002411018580.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002411018580.png)
 
 ## 设计优化方案<a name="section10569929145417"></a>
 
 如下图所示，默认不开启Tiling常量化功能时，开发者在host侧创建Tiling对象，通过调用API自动获取Tiling参数。然后将Tiling参数从Host侧传递到核函数（Kernel）侧，在核函数（Kernel）侧初始化操作时传入。在算子执行时，使用Tiling变量参数完成矩阵乘操作。
 
 **图1**  默认不开启Tiling常量化的Matmul计算流程示意图<a name="fig1911911419426"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/no_const_matmul.png "默认不开启Tiling常量化的Matmul计算流程示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/no_const_matmul.png "默认不开启Tiling常量化的Matmul计算流程示意图")
 
 如下图所示，开启Tiling常量化功能时，开发者只需要在核函数（Kernel）侧创建Matmul对象时，调用GetMatmulApiTiling接口在编译期获取常量化Tiling信息，即可完成Tiling常量化。在算子执行时，使用常量化的Tiling参数完成矩阵乘操作，减少Scalar计算开销。
 
 **图2**  开启Tiling常量化的Matmul计算流程示意图<a name="fig146371949194314"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/const_matmul.png "开启Tiling常量化的Matmul计算流程示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/const_matmul.png "开启Tiling常量化的Matmul计算流程示意图")
 
-Matmul API开启Tiling全量常量化的完整样例请参考[Matmul Tiling常量化的算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_constant_tiling)。开启Tiling全量常量化功能的步骤如下：
+Matmul API开启Tiling全量常量化的完整样例请参考[Matmul Tiling常量化的算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_constant_tiling)。开启Tiling全量常量化功能的步骤如下：
 
 1.  调用获取MatmulConfig模板的接口GetMMConfig时，使用常数值设置MatmulShapeParams，得到带有常量化参数的自定义MatmulConfig模板CUSTOM\_CFG。
 
@@ -151,11 +151,11 @@ Matmul API开启Tiling全量常量化的完整样例请参考[Matmul Tiling常�
 
 -   优化后的流水图如下，通过开启Tiling全量常量化，无需将Tiling参数从Host侧拷贝到核函数（Kernel）侧，在编译期完成Tiling常量化，减少了Matmul初始化时的Scalar计算。从0us起到第一个MTE2指令发起，这之间的时间为Matmul初始化时间，Matmul初始化时间从优化前的3.536us减少到2.185us，性能有所提升。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002377921500.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002377921500.png)
 
 -   优化后的Profiling数据如下，从C列的aic\_time数据来看，多个核中最大算子执行耗时为7.87us，相较于优化前的10.62us提升了25.9%。从G列的aic\_scalar\_time数据来看，Scalar平均耗时3.38us，相较于优化前的6.32us提升了46.5%。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002411019880.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002411019880.png)
 
 ## 总结<a name="section252011820413"></a>
 

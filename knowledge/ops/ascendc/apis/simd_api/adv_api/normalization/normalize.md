@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/normalization/Normalize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -27,9 +27,9 @@ source_headers:
 
 [LayerNorm](layer_norm.md)中，已知均值和方差，计算shape为\[A，R\]的输入数据的标准差的倒数rstd和y，其计算公式如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002046262966.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002046262966.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002082381949.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002082381949.png)
 
 其中，E和Var分别代表输入在R轴的均值，方差，γ为缩放系数，β为平移系数，ε为防除零的权重系数。
 
@@ -81,6 +81,7 @@ struct NormalizeConfig {
 **表2**  接口参数说明
 
 <a name="table2087718184450"></a>
+
 | 参数名称 | 输入/输出 | 含义 |
 | --- | --- | --- |
 | output | 输出 | 目的操作数，shape为[A, R]，LocalTensor数据结构的定义请参考[LocalTensor](../../basic_api/data_structures/local_tensor/index.md)。<br><br>类型为[LocalTensor](../../basic_api/data_structures/local_tensor/index.md)，支持的TPosition为VECIN/VECCALC/VECOUT。 |

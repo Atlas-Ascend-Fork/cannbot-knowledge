@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_gm2l1_dn2nz.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_copy_gm2l1_dn2nz
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
 将数据从Global Memory搬运到L1 Buffer，并在搬运过程中进行DN到Nz格式的转换，使其满足后续矩阵计算对分形列连续性的要求。
 
@@ -31,7 +34,7 @@ source_headers:
 
 **图1** DN2Nz与ND2Zn示意图<a id="dn2nz_equivalent_conversion"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/gm2l1_dn2nz_concept.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/gm2l1_dn2nz_concept.png)
 
 ## 函数原型
 
@@ -46,14 +49,6 @@ __aicore__ inline void asc_copy_gm2l1_dn2nz(__cbuf__ <dtype>* dst,
                                             uint32_t d_value,
                                             uint64_t loop4_src_stride,
                                             bool smallc0_en)
-__aicore__ inline void asc_copy_gm2l1_dn2nz_sync(__cbuf__ <dtype>* dst,
-                                                 __gm__ <dtype>* src,
-                                                 uint64_t loop1_src_stride,
-                                                 uint8_t l2_cache_ctl,
-                                                 uint16_t n_value,
-                                                 uint32_t d_value,
-                                                 uint64_t loop4_src_stride,
-                                                 bool smallc0_en)
 ```
 
 ### dtype支持的数据类型
@@ -134,7 +129,7 @@ bisheng examples.asc -o main --npu-arch=dav-3510 && ./main
 ```
 
 
-样例单核占用64KB L1 Buffer、32KB L0A Buffer、32KB L0B Buffer和64KB L0C Buffer。样例依次复用`EVENT_ID0`完成MTE2到MTE1、MTE1到M、M到FIX的同步。基础API同类场景可参考[data_copy_gm2l1样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2l1)中的场景3。
+样例单核占用64KB L1 Buffer、32KB L0A Buffer、32KB L0B Buffer和64KB L0C Buffer。样例依次复用`EVENT_ID0`完成MTE2到MTE1、MTE1到M、M到FIX的同步。基础API同类场景可参考[data_copy_gm2l1样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2l1)中的场景3。
 
 ```cpp
 #include <cstdint>

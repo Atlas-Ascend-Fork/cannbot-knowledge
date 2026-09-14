@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_layout_conversion/TransDataTo5HD.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -32,7 +32,7 @@ source_headers:
 
 TransDataTo5HD接口数据格式转换，一般用于将NCHW格式转换成[NC1HWC0格式](../../cube_compute_isasi/cube_compute_fractal_intro/key_fractal_format_details.md#nc1hwc0格式)。特别的，也可以用于二维矩阵数据块的转置。完成转置功能时，相比于Transpose接口，Transpose仅支持16\*16大小的矩阵转置；本接口单次repeat内可处理512Byte的数据（16个DataBlock），根据数据类型不同，支持不同shape的矩阵转置，同时还可以支持多次repeat操作。
 
-为方便开发者理解，真值计算请参考：[TransDataTo5HD真值计算](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/transpose/scripts/gen_data.py)。
+为方便开发者理解，真值计算请参考：[TransDataTo5HD真值计算](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/transpose/scripts/gen_data.py)。
 
 ## 函数原型<a name="zh-cn_topic_0000001521260417_section620mcpsimp"></a>
 
@@ -165,22 +165,22 @@ Kirin 9030，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、
 - 当数据类型位宽为8位时，每个DataBlock包含32个数，从指定的16个DataBlock中的对应位置取值，组成半个DataBlock放入目的地址中，读取和存放是在DataBlock的高半部分还是低半部分由参数srcHighHalf和dstHighHalf决定。
 
   **图1** b8类型矩阵转置
-  ![b8](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/trans_data_to_5hd_b8.png)
+  ![b8](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/trans_data_to_5hd_b8.png)
 
 - 当数据类型位宽为16位时，每个DataBlock包含16个数，从指定的16个DataBlock中的对应位置取值，组成1个新的DataBlock放入目的地址中。
 
   **图2** b16类型矩阵转置
-  ![b16](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/trans_data_to_5hd_b16.png)
+  ![b16](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/trans_data_to_5hd_b16.png)
 
 - 当数据类型位宽为32位时，每个DataBlock包含8个数，从指定的16个DataBlock中的对应位置取值，组成2个新的DataBlock放入目的地址中。
 
   **图3** b32类型矩阵转置
-  ![b32](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/trans_data_to_5hd_b32.png)
+  ![b32](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/trans_data_to_5hd_b32.png)
 
 - 16个DataBlock数据可以不连续，推荐通过GetPhyAddr获取LocalTensor的地址值存入地址数组。
 
   **图4**  单次repeat实现16个DataBlock数据转置<a name="zh-cn_topic_0000002557628265_fig12595141012208"></a>
-  ![单次repeat实现16个DataBlock数据转置](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/trans_data_to_5hd.png)
+  ![单次repeat实现16个DataBlock数据转置](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/trans_data_to_5hd.png)
 
 ### 将NCHW格式转换成NC1HWC0格式<a name="zh-cn_topic_0000002557628265_section3122131914516"></a>
 
@@ -225,11 +225,11 @@ Kirin 9030，支持的数据类型为：int8_t、uint8_t、int16_t、uint16_t、
   }
   ```
 
-  ![nchw2nc1hwc0](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/trans_data_to_5hd_nchw_nc1hwc0.png)
+  ![nchw2nc1hwc0](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/trans_data_to_5hd_nchw_nc1hwc0.png)
 
 ## 调用示例<a name="zh-cn_topic_0000001521260417_section19372434133520"></a>
 
-本样中只展示部分关键代码。如果您需要运行样例代码，请将该代码段拷贝并替换[Transpose类样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/transpose)场景三完整样例模板中Compute函数的部分代码即可。
+本样中只展示部分关键代码。如果您需要运行样例代码，请将该代码段拷贝并替换[Transpose类样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/transpose)场景三完整样例模板中Compute函数的部分代码即可。
 
 - 入参类型是LocalTensor的调用方式：
 

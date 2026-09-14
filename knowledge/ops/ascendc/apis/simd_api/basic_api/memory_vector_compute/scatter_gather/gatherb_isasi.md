@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/scatter_gather/Gatherb_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -48,7 +48,7 @@ def Gatherb(dst, src, offset, repeatTime, repeatParams):
             dst[dstBlockStartIndex : dstBlockEndIndex] = src[srcBlockStartIndex : srcBlockEndIndex]
 ```
 
-完整示例请参考：[Gatherb真值计算](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/gather)。
+完整示例请参考：[Gatherb真值计算](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/gather)。
 
 ## 函数原型<a name="section15660625202219"></a>
 
@@ -145,7 +145,7 @@ Atlas 200I/500 A2 推理产品，支持的数据类型为：int8_t、uint8_t、i
 
 ## 调用示例<a name="section11276201527"></a>
 
-完整使用样例请参见[Gather类样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/gather)场景四。
+完整使用样例请参见[Gather类样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/gather)场景四。
 
 ```cpp
 uint32_t bufferLen = 128;

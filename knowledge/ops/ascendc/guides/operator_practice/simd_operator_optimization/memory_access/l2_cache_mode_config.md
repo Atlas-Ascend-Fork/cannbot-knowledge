@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/memory_access/l2_cache_mode_config.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -32,7 +32,7 @@ platforms: []
 
 【描述】L2 Cache常用于缓存频繁访问的数据，其物理位置如下图所示：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reduce_61.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reduce_61.png)
 
 L2 Cache的带宽相比GM的带宽有数倍的提升，因此当数据命中L2 Cache时，数据的搬运耗时会优化数倍。通常情况下，L2 Cache命中率越高，算子的性能越好，在实际访问中需要通过设置合理的L2 CacheMode来保证重复读取的数据尽量缓存在L2 Cache上。
 
@@ -40,11 +40,11 @@ L2 Cache的带宽相比GM的带宽有数倍的提升，因此当数据命中L2 C
 
 数据通过MTE2搬运单元搬入时，L2 Cache访问的典型流程如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reduce_62.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reduce_62.png)
 
 数据通过MTE3或者Fixpipe搬运单元搬出时，L2 Cache访问的典型流程如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reduce_opt_63.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reduce_opt_63.png)
 
 从上面的流程可以看出，当数据访问总量超出L2 Cache容量时，AI Core会对L2 Cache进行数据替换。由于Cache一致性的要求，替换过程中旧数据需要先写回GM（此过程中会占用GM带宽），旧数据写回后，新的数据才能进入L2 Cache。
 
@@ -54,7 +54,7 @@ L2 Cache的带宽相比GM的带宽有数倍的提升，因此当数据命中L2 C
 
 Ascend C基于GlobalTensor提供了SetL2CacheHint接口，用户可以根据需要指定CacheMode。
 
-考虑如下场景，构造两个Tensor的相加计算，输入x、y和输出z的Shape均为\(8192, 8192\)。下文完整样例请参考[设置合理L2 CacheMode样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance)。
+考虑如下场景，构造两个Tensor的相加计算，输入x、y和输出z的Shape均为\(8192, 8192\)。下文完整样例请参考[设置合理L2 CacheMode样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance)。
 
 <a name="table12921549195512"></a>
 <table><thead align="left"><tr id="row1229364945511"><th class="cellrowborder" valign="top" width="6.813978389954251%" id="mcps1.1.4.1.1"><p id="p2081249145715"><a name="p2081249145715"></a><a name="p2081249145715"></a>实现方案</p>

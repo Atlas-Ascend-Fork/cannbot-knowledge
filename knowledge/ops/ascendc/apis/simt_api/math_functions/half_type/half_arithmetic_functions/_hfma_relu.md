@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_arithmetic_functions/__hfma_relu.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_hfma\_relu
 
 ## 功能说明
+
+头文件路径为：`"simt_api/asc_fp16.h"`。
 
 对输入half类型数据x、y、z，计算x与y相乘加上z的结果，并遵循CAST\_RINT模式对结果进行舍入。负数结果置为0。
 
@@ -99,19 +101,13 @@ x \* y + z的值，若结果为负数，置为0。本接口受全局饱和模式
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/asc_fp16.h`头文件。
-
-```cpp
-#include "simt_api/asc_fp16.h"
-```
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     __global__ __launch_bounds__(1024) void KernelHfma_relu(half* dst, half* x, half* y, half* z)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -122,6 +118,8 @@ x \* y + z的值，若结果为负数，置为0。本接口受全局饱和模式
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void KernelHfma_relu(__gm__ half* dst, __gm__ half* x, __gm__ half* y, __gm__ half* z)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;

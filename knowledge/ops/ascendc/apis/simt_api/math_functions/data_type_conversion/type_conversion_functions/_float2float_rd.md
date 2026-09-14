@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/data_type_conversion/type_conversion_functions/__float2float_rd.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_float2float\_rd
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_functions.h"`。
 
 将浮点数向下取整（向负无穷方向），并遵循CAST\_FLOOR模式。
 
@@ -53,19 +55,13 @@ inline float __float2float_rd(const float x)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_functions.h"
-```
-
 ## 调用示例
 
 SIMT编程场景：
 
 ```cpp
+#include "simt_api/device_functions.h"
+
 __global__ __launch_bounds__(1024) void kernel__float2float_rd(float* dst, float* x, uint32_t total_length)
 {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -79,6 +75,8 @@ __global__ __launch_bounds__(1024) void kernel__float2float_rd(float* dst, float
 SIMD与SIMT混合编程场景：
 
 ```cpp
+#include "simt_api/device_functions.h"
+
 __simt_vf__ __launch_bounds__(1024) inline void kernel__float2float_rd(__gm__ float* dst, __gm__ float* x, uint32_t total_length)
 {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;

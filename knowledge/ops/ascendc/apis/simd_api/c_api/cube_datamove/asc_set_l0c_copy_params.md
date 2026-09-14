@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_set_l0c_copy_params.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
@@ -21,6 +21,8 @@ source_headers:
 # asc_set_l0c_copy_params
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
 DataCopy从L0C Buffer搬运到Global Memory或L1 Buffer过程中进行随路格式转换（NZ格式转换为ND格式）时，通过调用该接口设置格式转换的相关配置。
 

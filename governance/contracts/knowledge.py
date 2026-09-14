@@ -284,25 +284,18 @@ class Contract:
                     or not revisions
                     or any(not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value) for value in revisions)
                     or revisions != sorted(set(revisions))
-                    or any(field in source for field in ("archive_sha256", "tree_sha256", "mirror"))
+                    or any(field in source for field in ("archive_url", "archive_sha256", "tree_sha256", "mirror"))
                 ):
                     raise ValueError(f"local_sources.{source_id} requires a canonical Git repository and unique sorted 40-hex revisions")
                 continue
             if kind != "archive":
                 raise ValueError(f"local_sources.{source_id}.kind must be archive or git")
-            archive_sha256 = source.get("archive_sha256")
-            if not isinstance(archive_sha256, str) or not re.fullmatch(
-                r"[0-9a-f]{64}", archive_sha256
-            ):
+            archive_url = source.get("archive_url")
+            if (not isinstance(archive_url, str)
+                    or not re.fullmatch(r"https://[^\s/?#@]+/[^\s#]+", archive_url)
+                    or any(field in source for field in ("archive_sha256", "tree_sha256"))):
                 raise ValueError(
-                    f"local_sources.{source_id}.archive_sha256 must be lowercase SHA-256"
-                )
-            tree_sha256 = source.get("tree_sha256")
-            if not isinstance(tree_sha256, str) or not re.fullmatch(
-                r"[0-9a-f]{64}", tree_sha256
-            ):
-                raise ValueError(
-                    f"local_sources.{source_id}.tree_sha256 must be lowercase SHA-256"
+                    f"local_sources.{source_id} requires an HTTPS archive_url without pinned SHA-256 fields"
                 )
             mirror = source.get("mirror")
             if mirror is None:

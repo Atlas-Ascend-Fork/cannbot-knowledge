@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reg_data_load/MaskGenWithRegTensor_MaskReg.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -73,10 +73,10 @@ MaskGenWithRegTensor支持b16和b32，搬运原理如[图1](#fig-maskgen-b16)、
 - 当操作数类型为b32时，RegTensor的一个数据块大小为8B，每个bit经过broadcast成4bit后变为32B，即一个MaskReg（32B）。此外，一个RegTensor有256B/8B = 32个数据块，偏移量offset取值范围为[0, 31]。
 
 **图 1**  MaskGenWithRegTensor搬运原理（b16）<a id="fig-maskgen-b16"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_maskgenwithregtensor_b16.png "MaskGenWithRegTensor搬运原理（b16）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_maskgenwithregtensor_b16.png "MaskGenWithRegTensor搬运原理（b16）")
 
 **图 2**  MaskGenWithRegTensor搬运原理（b32）<a id="fig-maskgen-b32"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_maskgenwithregtensor_b32.png "MaskGenWithRegTensor搬运原理（b32）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_maskgenwithregtensor_b32.png "MaskGenWithRegTensor搬运原理（b32）")
 
 ## 约束说明
 

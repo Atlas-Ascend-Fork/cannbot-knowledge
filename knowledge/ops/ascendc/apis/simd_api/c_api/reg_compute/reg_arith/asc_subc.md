@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_arith/asc_subc.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_arith.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_subc
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_arith.h"`。
 
 该接口根据mask，对源操作数src0、src1及输入进位carry_src进行按元素求差操作，减法运算在硬件底层通过补码加法实现，将结果写入目的操作数dst，同时将每个元素的进位结果写入carry（存放进位标志的掩码寄存器）。
 
@@ -31,7 +34,7 @@ $$
 \{carry_i, dst_i\} = \{1'b0, src0_i\} + \{1'b0, \sim src1_i\} + \{32'b0, carry\_src_i\}
 $$
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_subc_1.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_subc_1.png)
 
 本接口仅在AIV上生效。
 
@@ -92,7 +95,7 @@ __simd_callee__ inline void asc_subc(vector_bool& carry,
 
 以uint64_t类型数据计算0xFFFFFFFF FFFFFFFF - 0x00000000 00000008 = 0xFFFFFFFF FFFFFFF7为例，asc_sub/asc_subc接口的适用场景如下图：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_subc_2.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_subc_2.png)
 
 ## 调用示例
 

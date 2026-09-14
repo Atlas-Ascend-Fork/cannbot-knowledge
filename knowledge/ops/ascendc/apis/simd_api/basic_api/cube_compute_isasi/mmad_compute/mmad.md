@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/mmad_compute/Mmad.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -51,7 +51,7 @@ $$
 
 **图1** Mmad接口矩阵乘分形示意图（Ascend 950PR/Ascend 950DT）<a id="zh_cn_topic_mmad_section2_figure1"></a>
 
-![Mmad接口计算分形示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_demo_a5.png)
+![Mmad接口计算分形示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_demo_a5.png)
 
 
 
@@ -177,6 +177,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 
 
+
 **表7** dst、fm、filter支持的精度类型组合（Atlas A2 训练系列产品/Atlas A2 推理系列产品）（Atlas A3 训练系列产品/Atlas A3 推理系列产品）（Atlas 200I/500 A2 推理产品）
 
 | 左矩阵fm type | 右矩阵filter type | 结果矩阵dst type |
@@ -198,6 +199,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 
 
+
 **表9** dst、fm、filter支持的精度类型组合（Atlas 推理系列产品AI Core）
 
 | 左矩阵fm type | 右矩阵filter type | 结果矩阵dst type |
@@ -208,6 +210,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 | half | half | half<br> 说明： <br>该精度类型组合，精度无法达到双千分之一，且后续处理器版本不支持该类型转换，建议直接使用half输入float输出。<br><br>双千分之一是指每个实际数据和真值数据之间的误差不超过千分之一，误差超过千分之一的数据总和不超过总数据数的千分之一。 |
 | half | half | float |
 | int4b_t | int4b_t | int32_t |
+
 
 
 
@@ -223,6 +226,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 
 
+
 **表11** dst、fm、filter、bias支持的精度类型组合（Kirin X90）
 
 | 左矩阵fm type | 右矩阵filter type | bias type | 结果矩阵dst type |
@@ -232,11 +236,13 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 
 
+
 **表12** dst、fm、filter、bias支持的精度类型组合（Kirin 9030）
 
 | 左矩阵fm type | 右矩阵filter type | bias type | 结果矩阵dst type |
 | --- | --- | --- | --- |
 | half | half | half | half |
+
 
 
 ## 返回值说明
@@ -252,7 +258,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
     数据为half类型，当M=30，K=70，N=40的时候，L0A Buffer（A2）中有2x5个16x16矩阵，L0B Buffer（B2）中有5x3个16x16矩阵，L0C Buffer（CO1）中有2x3个16x16矩阵。在这种场景下M、K和N都不是16的倍数，A2中右下角的矩阵实际有效的数据只有14x6个，但是也需要占一个16x16矩阵的空间，其他无效数据在计算中会被忽略。一个16x16分形的数据块中，无效数据与有效数据排布的方式示意如下：
 
-    ![有效数据相乘示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_validshape_demo.png)
+    ![有效数据相乘示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_validshape_demo.png)
 
 - **同步优化说明**
 
@@ -302,7 +308,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 ## 调用示例
 
-矩阵乘的样例请参考[Mmad样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad)。
+矩阵乘的样例请参考[Mmad样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad)。
 
 
 - [AddLora A2 ACLNN 算子知识](../../../../../operators/aclnn/math/math/add_lora.md)

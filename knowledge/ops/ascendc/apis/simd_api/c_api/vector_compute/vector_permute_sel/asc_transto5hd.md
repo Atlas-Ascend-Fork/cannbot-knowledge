@@ -10,30 +10,34 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_permute_sel/asc_transto5hd.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
+source_headers:
+- include/c_api/vector_compute/compute/vector_permute_sel.h
 ---
 
 # asc_transto5hd
 
 ## 功能说明
 
+头文件路径为：`"c_api/vector_compute/compute/vector_permute_sel.h"`。
+
 数据格式转换，一般用于将NCHW格式转换成NC1HWC0格式。特别的，也可以用于二维矩阵数据块的转置。本接口单次Repeat内可处理512Byte的数据（16个DataBlock），根据数据类型不同，支持不同shape的矩阵转置（比如数据类型为half时，单次Repeat可完成16*16大小的矩阵转置），同时还可以支持多次Repeat操作。
 
 单次repeat内转换规则如下：
 
-- 当输入数据类型位宽为16位时，每个DataBlock中包含16个数，指令内部会循环16次，每次循环都会分别从指定的16个DataBlock中的对应位置取值，组成一个新的DataBlock单元放入目的地址中。如下图所示，图中的srcList[0]-srcList[15]代表源操作数的16个DataBlock。![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_transto5hd_b16.png "图1输入数据类型位宽为16位时的转换规则")
+- 当输入数据类型位宽为16位时，每个DataBlock中包含16个数，指令内部会循环16次，每次循环都会分别从指定的16个DataBlock中的对应位置取值，组成一个新的DataBlock单元放入目的地址中。如下图所示，图中的srcList[0]-srcList[15]代表源操作数的16个DataBlock。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_transto5hd_b16.png "图1输入数据类型位宽为16位时的转换规则")
 
-- 当数据类型位宽为32位时，每个DataBlock包含8个数，指令内部会循环8次，每次循环都会分别从指定的16个DataBlock中的对应位置取值，组成2个新的DataBlock放入目的地址中。如下图所示：![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_transto5hd_b32.png "图2 输入数据类型位宽为32位时的转换规则")
+- 当数据类型位宽为32位时，每个DataBlock包含8个数，指令内部会循环8次，每次循环都会分别从指定的16个DataBlock中的对应位置取值，组成2个新的DataBlock放入目的地址中。如下图所示：![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_transto5hd_b32.png "图2 输入数据类型位宽为32位时的转换规则")
 
-- 当数据类型位宽为8位时，每个DataBlock包含32个数，指令内部会循环16次，每次循环都会分别从指定的16个DataBlock中的对应位置取值，组成半个DataBlock放入目的地址中，读取和存放是在DataBlock的高半部还是低半部由参数srcHighHalf和dstHighHalf决定。如下图所示：![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_transto5hd_b8.png "图3 输入数据类型位宽为8位时的转换规则")
+- 当数据类型位宽为8位时，每个DataBlock包含32个数，指令内部会循环16次，每次循环都会分别从指定的16个DataBlock中的对应位置取值，组成半个DataBlock放入目的地址中，读取和存放是在DataBlock的高半部还是低半部由参数srcHighHalf和dstHighHalf决定。如下图所示：![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_transto5hd_b8.png "图3 输入数据类型位宽为8位时的转换规则")
 
 基于以上的转换规则，使用该接口进行NC1HWC0格式转换或者矩阵转置。NC1HWC0格式转换相对复杂，这里给出其具体的转换方法：
 
-NCHW格式转换成NC1HWC0格式时，如果是数据类型的位宽为32位或者16位，则C0=16；如果数据类型的位宽为8位，则C0=32。下图以C0=16为例进行介绍：![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_transto5hd_NCHW2NC1HWC0.png)
+NCHW格式转换成NC1HWC0格式时，如果是数据类型的位宽为32位或者16位，则C0=16；如果数据类型的位宽为8位，则C0=32。下图以C0=16为例进行介绍：![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_transto5hd_NCHW2NC1HWC0.png)
 
 ## 函数原型
 
@@ -44,16 +48,6 @@ __aicore__ inline void asc_transto5hd_b32(ub_addr8_t dst, ub_addr8_t src, uint8_
 __aicore__ inline void asc_transto5hd_b16(ub_addr8_t dst, ub_addr8_t src, uint8_t repeat,
     uint16_t dst_stride, uint16_t src_stride)
 __aicore__ inline void asc_transto5hd_b8(ub_addr8_t dst, ub_addr8_t src, uint8_t repeat,
-    uint16_t dst_stride, uint16_t src_stride, bool dst_high_half, bool src_high_half)
-```
-
-- 同步计算
-```cpp
-__aicore__ inline void asc_transto5hd_b32_sync(ub_addr8_t dst, ub_addr8_t src, uint8_t repeat,
-    uint16_t dst_stride, uint16_t src_stride)
-__aicore__ inline void asc_transto5hd_b16_sync(ub_addr8_t dst, ub_addr8_t src, uint8_t repeat,
-    uint16_t dst_stride, uint16_t src_stride)
-__aicore__ inline void asc_transto5hd_b8_sync(ub_addr8_t dst, ub_addr8_t src, uint8_t repeat,
     uint16_t dst_stride, uint16_t src_stride, bool dst_high_half, bool src_high_half)
 ```
 
@@ -83,6 +77,8 @@ PIPE_V
 
 - 操作数地址对齐约束请参考[存储单元说明](../../general_description_and_constraints.md#存储单元说明)。
 - 操作数地址重叠约束请参考[通用地址重叠约束](../../general_description_and_constraints.md#通用地址重叠约束)。
+- `dst`和`src`不能传入相同的地址寄存器起始位置，即目的地址寄存器对和源地址寄存器对不能重叠。
+- 为获得更优性能，建议`dst`、`src`、`dst_high_half`和`src_high_half`传入编译期常量，例如直接传入VA0、VA2、true或false，或传入由这些常量初始化的局部变量。`dst`和`src`仅支持VA0、VA2、VA4、VA6，且不能相同，配置方式请参考[asc_set_va_reg](asc_set_va_reg.md)；每个地址寄存器存储8个地址，接口会将传入的起始寄存器与相邻寄存器组成一组，处理16个地址。传入运行时变量时，编译器会保留地址寄存器或布尔参数的分支判断，影响性能。
 - 进行NCHW格式到NC1HWC0格式的转换时，一般用法是将src/dst中的每个元素配置为每个HW平面的起点。
 - 为了性能更优，数据类型位宽为8位时建议先固定dst_high_half/src_high_half，再HW方向Repeat后，再改变dst_high_half/src_high_half。
 

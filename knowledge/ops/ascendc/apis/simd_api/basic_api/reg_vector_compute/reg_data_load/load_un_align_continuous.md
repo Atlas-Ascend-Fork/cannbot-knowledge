@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reg_data_load/LoadUnAlign_continuous.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -118,7 +118,7 @@ RegTensor的模板参数regTrait支持RegTraitNumOne及RegTraitNumTwo，具体�
 **1、非对齐数据搬入原理**
 
 **图 1**  非对齐搬入示例<a id="fig-loadunalign-1"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_loadunalign.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_loadunalign.png)
 
 如[图1 非对齐搬入示例](#fig-loadunalign-1)所示，从UB地址srcAddr ~ 304读取数据，并将其搬运至目标寄存器dstReg（256B）。处理流程如下：
 
@@ -129,7 +129,7 @@ RegTensor的模板参数regTrait支持RegTraitNumOne及RegTraitNumTwo，具体�
 **2、连续非对齐搬入搬出示例**
 
 **图 2**  连续非对齐搬入搬出示例（数据类型uint32_t）<a id="fig-loadunalign-2"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_loadstoreunalign.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_loadstoreunalign.png)
 
 **连续非对齐搬入时，LoadUnAlign会将后续未对齐的数据缓存至ureg，所以下一次搬入不需要再次调用LoadUnAlignPre，只需在迭代开始前调用一次LoadUnAlignPre，从而实现非对齐搬入的性能优化。**
 

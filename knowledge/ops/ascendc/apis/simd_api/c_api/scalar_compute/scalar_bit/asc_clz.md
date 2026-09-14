@@ -10,18 +10,21 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/scalar_compute/scalar_bit/asc_clz.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 source_headers:
+- include/c_api/scalar_compute/compute/scalar_bit.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_clz
 
 ## 功能说明
+
+头文件路径为：`"c_api/scalar_compute/compute/scalar_bit.h"`。
 
 计算一个`uint64_t`类型整数在二进制表示下的前导零个数，即从二进制最高位开始，到第一个出现二进制1为止，中间连续的0的数量。
 

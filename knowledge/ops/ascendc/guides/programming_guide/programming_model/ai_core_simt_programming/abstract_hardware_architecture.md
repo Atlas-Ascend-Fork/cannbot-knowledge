@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simt_programming/abstract_hardware_architecture.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -21,7 +21,7 @@ AI Core上的SIMT（Single Instruction Multiple Thread，单指令多线程）�
 如[图1](#fig35720259287)所示，AI处理器内部有多个Vector Core，每个Vector Core包含计算单元、Shared Memory（位于Unified Buffer（UB））、寄存器，核外的Global Memory是全局内存空间，被所有Vector Core共享。
 
 **图1**  SIMT抽象硬件架构图<a name="fig35720259287"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simt_hw.png "SIMT抽象硬件架构图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simt_hw.png "SIMT抽象硬件架构图")
 
 以下是SIMT多线程计算涉及到的硬件资源的说明：
 

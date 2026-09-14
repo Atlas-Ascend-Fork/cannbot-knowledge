@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_permute_sel/asc_unpack.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_permute_sel.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_unpack
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_permute_sel.h"`。
 
 将src中低半部分或高半部分的元素以扩充位宽的方式写入dst或通过函数返回值返回，支持：
 
@@ -36,13 +39,13 @@ source_headers:
 
 **图1** 矢量数据寄存器unpack流程
 
-![矢量数据寄存器unpack流程](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/capi_unpack_reg.png)
+![矢量数据寄存器unpack流程](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/capi_unpack_reg.png)
 
 掩码数据寄存器unpack流程如图2所示：
 
 **图2** 掩码数据寄存器unpack流程
 
-![掩码数据寄存器unpack流程](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/capi_unpack_mask.png)
+![掩码数据寄存器unpack流程](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/capi_unpack_mask.png)
 
 本接口为Reg矢量计算接口，仅在AIV上生效。
 

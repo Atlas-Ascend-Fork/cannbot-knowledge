@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/GetTPipePtr.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -44,7 +44,7 @@ __aicore__ inline AscendC::TPipe* GetTPipePtr()
 
 ## 调用示例<a name="section6191129670"></a>
 
-如下样例中，在核函数（Kernel）入口处创建TPipe对象，对象初始化会设置全局唯一的TPipe指针。在调用KernelAdd类Init函数时，无需显式传入TPipe指针，而是在函数内直接使用GetTPipePtr获取全局TPipe指针，用来做InitBuffer等操作。如需运行，请参考[GetTPipePtr样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/07_tpipe_tque/get_tpipe_ptr)实现完整的代码。
+如下样例中，在核函数（Kernel）入口处创建TPipe对象，对象初始化会设置全局唯一的TPipe指针。在调用KernelAdd类Init函数时，无需显式传入TPipe指针，而是在函数内直接使用GetTPipePtr获取全局TPipe指针，用来做InitBuffer等操作。如需运行，请参考[GetTPipePtr样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/07_tpipe_tque/get_tpipe_ptr)实现完整的代码。
 
 ```cpp
 // inQueueX、inQueueY为VECIN上的TQue，outQueueZ为VECOUT上的TQue

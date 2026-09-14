@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/static_tensor_programming.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -22,11 +22,11 @@ platforms: []
 
 两种编程方式的对比如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/op_flow.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/op_flow.png)
 
 >[!NOTE]说明
 >- 静态Tensor编程的使用约束和限制请参考[使用约束和限制](#section19853161834615)。
->- 本节涉及的完整样例请参考[静态Tensor编程样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance)。
+>- 本节涉及的完整样例请参考[静态Tensor编程样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance)。
 
 ## 编程范式<a name="section1486516584319"></a>
 
@@ -35,7 +35,7 @@ platforms: []
 
 下图是一个典型矢量算子的示意图，开发者首先根据业务计算量进行数据分块处理，之后根据核内的数据依赖关系完成同步事件的插入：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mem_mgmt_5.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mem_mgmt_5.png)
 
 ## 内存管理<a name="section626154143513"></a>
 
@@ -122,7 +122,7 @@ platforms: []
 
 ## 流水优化<a name="section121239188376"></a>
 
-在基于TPipe的编程范式中，开发者只需要在InitBuffer时指定buffer数量为2，即可自动开启DoubleBuffer。但是静态Tensor编程方式下，开发者需要手动开启DoubleBuffer，具体示例如下，完整样例请参考[静态Tensor编程样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance)中的DoubleBuffer示例。
+在基于TPipe的编程范式中，开发者只需要在InitBuffer时指定buffer数量为2，即可自动开启DoubleBuffer。但是静态Tensor编程方式下，开发者需要手动开启DoubleBuffer，具体示例如下，完整样例请参考[静态Tensor编程样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance)中的DoubleBuffer示例。
 
 ```
     // ping
@@ -182,9 +182,9 @@ platforms: []
 
 以下为不开启DoubleBuffer和开启DoubleBuffer的流水示意图。多数情况下，采用DoubleBuffer能有效提升Vector的时间利用率，缩减算子执行时间，详细内容可参考[DoubleBuffer](../../../../technical_appendix/concepts_and_terms/performance_optimization/double_buffer.md)。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/op_flow_6.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/op_flow_6.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/op_flow_7.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/op_flow_7.png)
 
 ## 使用约束和限制<a name="section19853161834615"></a>
 
@@ -743,7 +743,7 @@ platforms: []
 </thead>
 <tbody><tr id="row1298763513418"><td class="cellrowborder" valign="top" width="29.630000000000003%" headers="mcps1.2.4.1.1 "><p id="p15987173524114"><a name="p15987173524114"></a><a name="p15987173524114"></a>基础API &gt; 标量计算</p>
 </td>
-<td class="cellrowborder" valign="top" width="44.519999999999996%" headers="mcps1.2.4.1.2 "><p id="p12167195363614"><a name="p12167195363614"></a><a name="p12167195363614"></a>GetBitCount、CountLeadingZero、CountBitsCntSameAsSignBit、GetSFFValue、Cast（float转half、int32_t）、Cast（float转bfloat16_t）、Cast（多类型转float）、Nop、GetUintDivMagicAndShift、WriteGmByPassDCache、ReadGmByPassDCache</p>
+<td class="cellrowborder" valign="top" width="44.519999999999996%" headers="mcps1.2.4.1.2 "><p id="p12167195363614"><a name="p12167195363614"></a><a name="p12167195363614"></a>GetBitCount、CountLeadingZero、CountBitsCntSameAsSignBit、GetSFFValue、Cast（float转half、int32_t）、Cast（float转bfloat16_t）、Cast（多类型转float）、Nop、GetUintDivMagicAndShift、WriteGmBypassDCache、ReadGmBypassDCache</p>
 </td>
 <td class="cellrowborder" valign="top" width="25.85%" headers="mcps1.2.4.1.3 "><p id="p298711352411"><a name="p298711352411"></a><a name="p298711352411"></a>-</p>
 </td>
@@ -962,6 +962,7 @@ platforms: []
 
 
 
+
 **表6**  针对 [NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md#npu-arch)，使用预留UB空间的API范围
 
 | API类别 | API名 |
@@ -977,4 +978,5 @@ platforms: []
 | 基础API > Kernel-Tiling | GET_TILING_DATA、GET_TILING_DATA_WITH_STRUCT、GET_TILING_DATA_MEMBER |
 | Utils API > 调测接口（SIMD VF） | printf、asc_dump_reg、asc_dump、asc_dump_ubuf |
 | 高阶API | AscendAntiQuant、AdjustSoftMaxRes、TopK |
+
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/compare_and_select/Select.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -32,25 +32,25 @@ source_headers:
 
 给定两个源操作数src0和src1，根据selMask（用于选择的Mask掩码）的比特位值选取元素，得到目的操作数dst。选择规则为：当selMask的比特位是1时，从src0中选取；比特位是0时从src1选取。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/select_selMask.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/select_selMask.png)
 
 对于tensor高维切分计算接口，支持根据mask参数对上述选取结果再次进行过滤，有效位（mask的比特位为1）填入最终的dst，无效位（mask的比特位为0）则保持dst原始值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/select_mask.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/select_mask.png)
 
 本接口功能支持三种模式：
 
 - 模式0（VSEL\_CMPMASK\_SPR）：根据selMask在两个tensor中选取元素。selMask的有效位数限制为256/sizeof\(T\)，多轮迭代均使用相同的selMask有效数值。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/select_mode0.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/select_mode0.png)
 
 - 模式1（VSEL\_TENSOR\_SCALAR\_MODE）：根据selMask在1个tensor（src0）和1个scalar（src1）中选取元素。每次迭代使用selMask的位数为256/sizeof\(T\)，多轮迭代连续消耗selMask的不同部分。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/select_mode1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/select_mode1.png)
 
 - 模式2（VSEL\_TENSOR\_TENSOR\_MODE）：根据selMask在两个tensor中选取元素。每次迭代使用selMask的位数为256/sizeof\(T\)，多轮迭代连续消耗selMask的不同部分。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/select_mode2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/select_mode2.png)
 
 
 Ascend 950PR/Ascend 950DT，支持模式0、1、2。
@@ -249,7 +249,7 @@ Kirin 9030，支持模式0、1、2。
 
 ## 调用示例<a name="section642mcpsimp"></a>
 
-本样中只展示部分关键代码。如果您需要运行样例代码，完整的调用样例可参考[Select样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/select)。
+本样中只展示部分关键代码。如果您需要运行样例代码，完整的调用样例可参考[Select样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/select)。
 
 - Select-tensor高维切分计算样例（模式2）
 

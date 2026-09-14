@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_compare/asc_set_cmp_mask.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
@@ -21,6 +21,8 @@ source_headers:
 # asc_set_cmp_mask
 
 ## 功能说明
+
+头文件路径为：`"c_api/vector_compute/compute/vector_compare.h"`。
 
 为[asc_select](../vector_permute_sel/asc_select.md)操作设置作用于选择的Mask掩码。
 

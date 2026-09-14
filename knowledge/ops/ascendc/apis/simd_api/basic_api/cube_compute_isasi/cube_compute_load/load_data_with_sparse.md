@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadDataWithSparse.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
@@ -33,7 +33,7 @@ source_headers:
 
 **图1** L1 Buffer->L0B Buffer LoadDataWithSparse示意图，LoadData2dParams参数配置startIndex = 1，repeatTimes = 5，表示需要从源操作数src中第1块数据分形开始搬运5块连续的数据分形，从源操作数idx中第1块index分形开始搬运5块连续的index分形。<a name="zh-cn_topic_0000002512171654_fig71111314164414"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithsparse_l12l0b.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithsparse_l12l0b.png)
 
 ## 函数原型<a name="zh-cn_topic_0000002512171654_section82039854412"></a>
 
@@ -80,4 +80,4 @@ __aicore__ inline void LoadDataWithSparse(const LocalTensor<T>& dst, const Local
 
 ## 调用示例<a name="zh-cn_topic_0000002512171654_section088124295117"></a>
 
-本接口用于配合Sparse Mmad使用，完整示例请参考：[MmadWithSparse调用样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_with_sparse)。
+本接口用于配合Sparse Mmad使用，完整示例请参考：[MmadWithSparse调用样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_with_sparse)。

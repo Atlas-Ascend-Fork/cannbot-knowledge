@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_store_key_features/accompanying_quantization.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -76,6 +76,7 @@ VQF322F32_PRE,         // Vector_Quant_Float32_2_Float32: float量化成float，
 
 
 
+
 **表2** 量化参数QUANT\_PRE比特位含义映射表（[NPU架构版本3510](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）<a id="zh-cn_topic_0000002547300781_table1273124313714"></a>
 
 | 模式 | 比特位数 | 变量名 | 作用介绍 |
@@ -89,6 +90,11 @@ VQF322F32_PRE,         // Vector_Quant_Float32_2_Float32: float量化成float，
 
 
 
+
+## 约束说明
+
+量化参数不能为inf/nan和非规格化数。
+
 ## 使用示例
 
-完整样例请参考[fixpipe\_l0c2gm样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2gm)。
+完整样例请参考[fixpipe\_l0c2gm样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2gm)。

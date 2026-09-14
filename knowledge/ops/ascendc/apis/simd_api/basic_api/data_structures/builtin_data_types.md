@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_structures/builtin_data_types.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -86,7 +86,7 @@ bool类型占8比特，全0时代表false，否则代表true。
 
 **图1** int8_t数据类型二进制示意图，值为96
 
-![int8_t数据类型二进制示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/int8_t-binary-96.png)
+![int8_t数据类型二进制示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/int8_t-binary-96.png)
 
 整数数据类型取值范围见下表。
 
@@ -171,7 +171,7 @@ $$
 
     **图2** fp4x2_e2m1_t数据类型二进制示意图
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/f8_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/f8_1.png)
 
 - fp4x2\_e1m2\_t
 
@@ -179,7 +179,7 @@ $$
 
     **图3** fp4x2_e1m2_t数据类型二进制示意图
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/f8_1-0.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/f8_1-0.png)
 
 - fp8\_e8m0\_t（fp8\_e8m0\_t二进制由bfloat16类型舍弃符号位、尾数位得到）
 
@@ -187,7 +187,7 @@ $$
 
     **图4** fp8_e8m0_t数据类型二进制示意图
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/f8_1-1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/f8_1-1.png)
 
 - fp8\_e5m2\_t
 
@@ -195,13 +195,13 @@ $$
 
     **图5** fp8_e5m2_t数据类型二进制示意图
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/f8_1-2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/f8_1-2.png)
 
     fp8\_e5m2\_t的特殊值bit位表示如下：
 
     **图6** fp8_e5m2_t特殊值bit位表示
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/fp8_e5m2_special_values.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/fp8_e5m2_special_values.png)
 
 - fp8\_e4m3fn\_t
 
@@ -209,13 +209,13 @@ $$
 
     **图7** fp8_e4m3fn_t数据类型二进制示意图
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/fp8_e4m3fn_binary.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/fp8_e4m3fn_binary.png)
 
     fp8\_e4m3fn\_t的特殊值bit位表示如下：
 
     **图8** fp8_e4m3fn_t特殊值bit位表示
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/fp8_e4m3fn_special_values.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/fp8_e4m3fn_special_values.png)
 
 - hifloat8\_t
 
@@ -225,13 +225,13 @@ $$
 
     **图9** S、E、M在不同点域D值下的bit位分布<a name="fig261021710100"></a>
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/sem_bit_distribution.png "S-E-M在不同点域D值下的bit位分布")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/sem_bit_distribution.png "S-E-M在不同点域D值下的bit位分布")
 
     下图示例中，其符号位占用1位，指数位占用2位，尾数位占用3位，D字段为2比特b01，$S_v=1$，$E_v=3$，$M_v = 2^{-1} + 2^{-2}$，根据实际取值计算公式$S_v \times 2^{E_v} \times (1 + M_v)$计算得到的结果为14。下标v表示各部分的具体数值。
 
     **图10** hifloat8_t数据类型二进制示意图，值为14
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/hifloat8_binary.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/hifloat8_binary.png)
 
     hifloat8\_t类型的取值范围如下表所示：
 
@@ -252,7 +252,7 @@ $$
 
     **图11**  hifloat8_t特殊值bit位表示
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/hifloat8_special_values.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/hifloat8_special_values.png)
 
     hifloat8\_t数据类型计算公式如下：
 
@@ -315,7 +315,7 @@ $$
 
     **图12** half数据类型二进制示意图，值为1.75
 
-    ![half数据类型二进制示意图-值为1-75](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/half-binary-1-75.png)
+    ![half数据类型二进制示意图-值为1-75](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/half-binary-1-75.png)
 
     **表8** half类型特殊值bit位表示
 
@@ -337,7 +337,7 @@ $$
 
     **图13** bfloat16\_t数据类型二进制示意图，值为1.75<a name="zh-cn_topic_0000002563730205_fig760011915344"></a>
 
-    ![bfloat16_t数据类型二进制示意图-值为1.75](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/bfloat16_t-binary-1-75.png)
+    ![bfloat16_t数据类型二进制示意图-值为1.75](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/bfloat16_t-binary-1-75.png)
     
     **表9** bfloat16\_t类型特殊值
 
@@ -359,7 +359,7 @@ $$
 
     **图14** float数据类型二进制示意图，值为1.75<a name="zh-cn_topic_0000002563730205_fig54861751133412"></a>
     
-    ![float数据类型二进制示意图-值为1-75](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/float-binary-1-75.png)
+    ![float数据类型二进制示意图-值为1-75](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/float-binary-1-75.png)
 
     **表10** float类型特殊值
 

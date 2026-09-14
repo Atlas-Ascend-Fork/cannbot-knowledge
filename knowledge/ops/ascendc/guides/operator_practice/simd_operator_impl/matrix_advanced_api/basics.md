@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/basics.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -28,7 +28,7 @@ Matmul的计算公式为：C = A \* B + bias，其示意图如下。
 -   bias为矩阵乘偏置，形状为\[1, N\]。对A\*B结果矩阵的每一行都采用该bias进行偏置。
 
 **图1**  Matmul矩阵乘示意图<a name="zh-cn_topic_0000001622194138_fig3161943163113"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mm_diag.png "Matmul矩阵乘示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mm_diag.png "Matmul矩阵乘示意图")
 
 ## 矩阵乘法数据流<a name="zh-cn_topic_0000001622194138_section295172162917"></a>
 
@@ -58,7 +58,7 @@ Matmul的计算公式为：C = A \* B + bias，其示意图如下。
 -   CO1数据汇聚到CO2：CO1-\>CO2。
 -   从CO2到输出位置（输出位置可以是GM或者VECIN）：CO2-\>GM/CO2-\>VECIN。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_pos_40.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_pos_40.png)
 
 ## 数据格式<a name="zh-cn_topic_0000001622194138_section1453415011"></a>
 
@@ -76,7 +76,7 @@ Matmul的计算公式为：C = A \* B + bias，其示意图如下。
 
     如下图所示（W，H）大小的矩阵被分为（H1\*W1）个分形，按照列优先排布，形状如N字形；每个分形内部有（H0\*W0）个元素，按照行优先排布，形状如z字形。所以这种数据格式称为NZ（大N小Z）格式。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd2nz_trans_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd2nz_trans_1.png)
 
     下面我们再通过一个具体的例子来深入理解ND和NZ格式的数据排布区别。假设分形格式为2\*2，如下图所示4\*4的矩阵，ND（1，4，4）和NZ（1，2，2，2，2）格式存储的情况下，数据在内存中的排布格式分别为：
 
@@ -84,7 +84,7 @@ Matmul的计算公式为：C = A \* B + bias，其示意图如下。
 
     NZ: 0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd2nz_2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd2nz_2.png)
 
 ## 数据分块（Tiling）<a name="zh-cn_topic_0000001622194138_section68451031218"></a>
 
@@ -98,7 +98,7 @@ Matmul的计算公式为：C = A \* B + bias，其示意图如下。
 
     比如，下图中共有8个核参与计算，将A矩阵沿着M轴划分为4块，将B矩阵沿着N轴切分为两块，单核上仅处理某一分块（比如图中绿色部分为core3上参与计算的数据）：SingleCoreM \* K大小的A矩阵分块和SingleCoreN\* K大小的B矩阵分块相乘得到SingleCoreM \* SingleCoreN大小的C矩阵分块。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd2nz_new.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd2nz_new.png)
 
     另外，单核上处理的K轴长度为SingleCoreK，对于K轴较大的场景，可以沿着K轴进行切分，切分成多份的singleCoreK，详细案例介绍请参考[Matmul高阶API开启多核切K](../../best_practices/matmul_tuning_cases/matmul_multi_core_split_k.md)。
 
@@ -110,7 +110,7 @@ Matmul的计算公式为：C = A \* B + bias，其示意图如下。
     -   对于B矩阵，沿N轴进行切分，将singleCoreN切分成多份的baseN，切分成的份数对应图示的nIter；沿K轴进行切分，切分成多份的baseK。
     -   对于C矩阵，A矩阵中baseM\*baseK大小的分块和B矩阵中baseK\*baseN大小的分块相乘并累加，得到C矩阵中对应位置baseM\*baseN大小的分块。比如，图中结果矩阵中的绿色矩阵块5是通过如下的累加过程得到的：a\*a+b\*b+c\*c+d\*d+e\*e+f\*f。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd2nz_43.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd2nz_43.png)
 
     除了基本块形状baseM, baseN, baseK外，还有一些常用的tiling参数，其含义如下：
 

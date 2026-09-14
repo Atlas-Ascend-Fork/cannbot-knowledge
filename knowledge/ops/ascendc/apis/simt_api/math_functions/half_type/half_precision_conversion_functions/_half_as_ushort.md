@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__half_as_ushort.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -20,6 +20,8 @@ source_headers:
 # \_\_half\_as\_ushort
 
 ## 功能说明
+
+头文件路径为：`"simt_api/asc_fp16.h"`。
 
 将half类型数据按位重新解释为unsigned short int类型数据。
 
@@ -52,19 +54,13 @@ inline unsigned short int __half_as_ushort(const half x)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/asc_fp16.h`头文件。
-
-```cpp
-#include "simt_api/asc_fp16.h"
-```
-
 ## 调用示例
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     __global__ __launch_bounds__(1024) void kernel___half_as_ushort(unsigned short int* dst, half* x, uint32_t input_total_length)
     {
         uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -78,6 +74,8 @@ inline unsigned short int __half_as_ushort(const half x)
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel___half_as_ushort(__gm__ unsigned short int* dst, __gm__ half* x, uint32_t input_total_length)
     {
         uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;

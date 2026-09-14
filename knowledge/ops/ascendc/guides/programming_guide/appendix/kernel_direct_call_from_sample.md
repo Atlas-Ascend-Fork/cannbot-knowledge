@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/appendix/kernel_direct_call_from_sample.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -107,7 +107,7 @@ AddKernelInvocationNeo
 3.  CPU侧运行验证。完成算子核函数（Kernel）CPU侧运行验证的步骤如下：
 
     **图1**  CPU侧运行验证步骤<a name="fig13576112114442"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/cpu_verify.png "CPU侧运行验证步骤")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/cpu_verify.png "CPU侧运行验证步骤")
 
     ```
         // 使用GmAlloc分配共享内存，并进行数据初始化
@@ -132,7 +132,7 @@ AddKernelInvocationNeo
 4.  NPU侧运行验证。完成算子核函数（Kernel）NPU侧运行验证的步骤如下：
 
     **图2**  NPU侧运行验证步骤<a name="fig558132018817"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/npu_verify.png "NPU侧运行验证步骤")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/npu_verify.png "NPU侧运行验证步骤")
 
     ```
         // 初始化
@@ -312,7 +312,7 @@ AddKernelInvocationNeo
 简化的编译流程图如下图所示：将算子核函数（Kernel）源文件编译生成kernel侧的库文件（\*.so或\*.a库文件）；工程框架自动生成核函数（Kernel）调用接口声明头文件；编译main.cpp（算子调用应用程序）时依赖上述头文件，将编译应用程序生成的目标文件和kernel侧的库文件进行链接，生成最终的可执行文件。
 
 **图3**  编译简化流程图<a name="fig744344916358"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/compile_simple.png "编译简化流程图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/compile_simple.png "编译简化流程图")
 
 编译安装结束后在CMAKE\_INSTALL\_PREFIX目录下生成的编译产物示例如下；最终的可执行文件会生成在cmake命令的执行目录下。
 
@@ -387,7 +387,7 @@ if __name__ == '__main__':
 您可以基于样例工程中提供的一键式编译运行脚本进行快速编译，并在CPU侧和NPU侧执行Ascend C算子。一键式编译运行脚本主要完成以下功能：
 
 **图4**  一键式编译运行脚本流程图<a name="fig125041443583"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/one_click.png "一键式编译运行脚本流程图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/one_click.png "一键式编译运行脚本流程图")
 
 >[!NOTE]说明 
 >**样例中提供的一键式编译运行脚本并不能适用于所有的算子运行验证场景，使用时请根据实际情况进行修改。**
@@ -463,7 +463,7 @@ bash run.sh -r npu  -v <soc_version> -i <install_path> -b Debug -p <install-pref
 在非昇腾设备上，开发者可以利用CPU仿真环境先行进行算子开发和测试，并在准备就绪后，利用昇腾设备进行加速计算。在[编译与运行](../compilation_and_execution/operator_compilation/ai_core_operator_compilation.md)章节，我们已经介绍了算子核函数（Kernel）程序NPU域的编译运行。类似地，CPU域调试也是通过毕昇编译器编译算子核函数（Kernel）程序。此时算子核函数（Kernel）程序链接CPU调测库，执行编译生成的可执行文件，可以完成算子CPU域的运行验证。CPU侧的运行程序，通过GDB通用调试工具进行单步调试，可以精准验证程序执行流程是否符合预期。
 
 **图5**  CPU域和NPU域的核函数（Kernel）运行逻辑对比<a name="fig1274642720202"></a><br>
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/cpu_npu_36.png "CPU域和NPU域的核函数（Kernel）运行逻辑对比-36")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/cpu_npu_36.png "CPU域和NPU域的核函数（Kernel）运行逻辑对比-36")
 
 基于核函数（Kernel）直调样例工程，通过ACLRT\_LAUNCH\_KERNEL接口调用核函数（Kernel）时，可实现CPU与NPU域的代码的统一，且该方式仅支持以下型号：
 

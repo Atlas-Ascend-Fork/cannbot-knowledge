@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_GMToL1_DN2NZ.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -30,7 +30,7 @@ DN到NZ的格式转换等价于ND到ZN的格式转换，如下图所示：
 
 **图1** DN到NZ格式转换示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/gm2l1_dn2nz_concept.png "DN到NZ格式转换示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/gm2l1_dn2nz_concept.png "DN到NZ格式转换示意图")
 
 ## 函数原型<a id="section1954364615315"></a>
 
@@ -84,7 +84,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 
 **图2** DN2NZ转换示意图（连续搬运）
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/gm2l1_dn2nz_continuous.png "DN2NZ转换示意图（连续搬运）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/gm2l1_dn2nz_continuous.png "DN2NZ转换示意图（连续搬运）")
 
 **非连续搬运**
 
@@ -101,7 +101,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 
 **图3** DN2NZ转换示意图（非连续搬运）
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/gm2l1_dn2nz.png "DN2NZ转换示意图（非连续搬运）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/gm2l1_dn2nz.png "DN2NZ转换示意图（非连续搬运）")
 
 **SmallC0模式**
 
@@ -111,7 +111,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 
 **图4** DN2NZ转换示意图（SmallC0模式）
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/gm2l1_dn2nz_smallc0.png "DN2NZ转换示意图（SmallC0模式）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/gm2l1_dn2nz_smallc0.png "DN2NZ转换示意图（SmallC0模式）")
 
 ## 数据类型<a id="section4219135304818"></a>
 
@@ -148,9 +148,9 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 
 搬运过程的数据排布变化示意图如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_dn2nz_demo.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_dn2nz_demo.png)
 
-示例代码片段如下，完整示例请参考[data_copy_gm2l1样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2l1)中场景3。
+示例代码片段如下，完整示例请参考[data_copy_gm2l1样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2l1)中场景3。
 
 ```cpp
 // m=40,k=56,fractalShape[0] = 16,fractalShape[1] = 16,fractalSize = 16 * fractalShape[1] 

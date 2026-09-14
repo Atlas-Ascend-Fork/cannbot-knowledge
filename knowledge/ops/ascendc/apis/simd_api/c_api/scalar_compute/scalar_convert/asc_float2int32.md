@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/scalar_compute/scalar_convert/asc_float2int32.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/scalar_compute/compute/scalar_convert.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_float2int32
 
 ## 功能说明
+
+头文件路径为：`"c_api/scalar_compute/compute/scalar_convert.h"`。
 
 将`float`类型的标量转换为`int32_t`类型并返回。
 

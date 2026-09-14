@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/multi_core_unaligned_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -20,7 +20,7 @@ platforms: []
 
 多核场景，对矩阵进行切分时，若M、N、K无法整除singleCoreM 、singleCoreN、 singleCoreK时，就会出现尾块，即多核非对齐场景。如下图矩阵A、B的最后一行和最后一列的矩阵块：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd2nz_new_1.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd2nz_new_1.png)
 
 此时，C矩阵中的R矩阵块，依然是通过A1\*B1+A2\*B2+A3\*B3+A4\*B4累加得到的，处理A1\*B1、A2\*B2、A3\*B3、A4\*B4等尾块时，需在kernel侧设置尾块大小，在不改变原有tiling的情况下，调用[SetTail](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_tail.md)接口重新设置本次计算的singleCoreM/singleCoreN/singleCoreK，在处理尾块的时候按照设置的值也就是tailM/tailN/tailK进行搬运和计算。
 
@@ -34,7 +34,7 @@ platforms: []
 
 ## 调用示例<a name="zh-cn_topic_0000002264134828_section15486294368"></a>
 
-Matmul多核非对齐场景的完整样例请参考[Matmul多核非对齐切分算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_multi_core_unaligned)。该场景的关键代码示例如下。
+Matmul多核非对齐场景的完整样例请参考[Matmul多核非对齐切分算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_multi_core_unaligned)。该场景的关键代码示例如下。
 
 ```
 // 处理尾块

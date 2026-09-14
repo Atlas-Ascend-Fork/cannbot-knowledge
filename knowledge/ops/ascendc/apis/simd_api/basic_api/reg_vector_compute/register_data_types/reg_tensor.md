@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/register_data_types/RegTensor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -52,7 +52,7 @@ template <typename T, const RegTrait& regTrait = RegTraitNumOne> struct RegTenso
 
     **图1** RegTensor搬运complex32<a id="fig1"></a>
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/regtensor_move_complex32.png "RegTensor搬运complex32")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/regtensor_move_complex32.png "RegTensor搬运complex32")
 
     complex32是一个包含两个half（实部real、虚部imag）类型的复合类型，通常是连续存储，低位为实部高位为虚部。
     
@@ -66,7 +66,7 @@ template <typename T, const RegTrait& regTrait = RegTraitNumOne> struct RegTenso
 
     **图2** RegTensor搬运complex64<a id="fig2"></a>
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/regtensor_move_complex64.png "RegTensor搬运complex64")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/regtensor_move_complex64.png "RegTensor搬运complex64")
 
     complex64是一个包含两个float（实部real、虚部imag）类型的复合类型，通常是连续存储，低位为实部高位为虚部。
     
@@ -80,7 +80,7 @@ template <typename T, const RegTrait& regTrait = RegTraitNumOne> struct RegTenso
 
     **图3** RegTensor搬运b64<a id="fig3"></a>
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/regtensor_move_b64.png "RegTensor搬运b64")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/regtensor_move_b64.png "RegTensor搬运b64")
 
     在RegTraitNumOne场景下，从UB（src0Addr）中以DIST_NORM模式搬运VL数据量。
     

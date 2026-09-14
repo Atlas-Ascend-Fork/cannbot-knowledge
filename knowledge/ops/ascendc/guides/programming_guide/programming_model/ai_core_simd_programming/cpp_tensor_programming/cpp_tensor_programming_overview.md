@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/cpp_tensor_programming_overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -26,13 +26,13 @@ C++ Tensor编程是Ascend C SIMD编程路径的基础编程接口，基于Tensor
 
 AI Core采用分级存储架构，Cube矩阵计算采用「Global Memory（以下简称为GM） → L1/L0系列Buffer」两级层级服务于矩阵计算，Vector矢量计算传统架构为「Global Memory → UB」两级层级，而[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)引入寄存器后构建「GM → UB → Register」三级层级，其中GM存放输入输出数据、Unified Buffer（UB）作为矢量计算中间缓存、Register位于Vector计算单元最内层直接与执行单元交互。
 
-![AI Core存储层次结构](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/aicore_mem_2.png)
+![AI Core存储层次结构](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/aicore_mem_2.png)
 
 ### Tensor内存抽象
 
 Tensor本质是基于数组的编程抽象，而非简单的内存地址封装，通过数组方式管理内存并执行计算，更匹配SIMD硬件执行模型。其核心思想是将原始内存地址抽象为Tensor对象，实现从“地址操作”到“对象管理”的编程层次提升。
 
-根据芯片分级存储架构，Tensor分为三类：**GlobalTensor**对应GM，存放算子输入/输出数据；**LocalTensor**对应片上内存（UB、L1 Buffer、L0A Buffer/L0B Buffer/L0C Buffer等缓冲区），承载计算过程数据；**RegTensor**对应寄存器，用于寄存器级矢量计算（[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)引入）。Tensor体系持续演进：基础Tensor仅携带数据指针和大小信息，需手动传递操作参数；扩展Tensor（Tensor API）引入Layout概念，携带Shape和Stride信息，接口可自动推导搬运长度、计算元素数等参数，大幅降低编程复杂度。该能力引入的接口统一通过`AscendC::Te`命名空间调用（如`AscendC::Te::Mmad`）。
+根据芯片分级存储架构，Tensor分为三类：**GlobalTensor**对应GM，存放算子输入/输出数据；**LocalTensor**对应片上内存（UB、L1 Buffer、L0A Buffer/L0B Buffer/L0C Buffer等缓冲区），承载计算过程数据；**RegTensor**对应寄存器，用于寄存器级矢量计算（[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)引入）。Tensor体系持续演进：基础Tensor仅携带数据指针和大小信息，需手动传递操作参数；扩展Tensor（Tensor API）引入Layout概念，携带Shape和Stride信息，接口可自动推导搬运长度、计算元素数等参数，大幅降低编程复杂度。该能力引入的接口统一通过`asc::te`命名空间调用（如`asc::te::mmad`）。
 
 #### 基础Tensor与扩展Tensor抽象定义
 
@@ -57,21 +57,26 @@ Tensor本质是基于数组的编程抽象，而非简单的内存地址封装�
 - 扩展Tensor（Tensor API）封装Shape和Stride信息，接口自动推导操作参数，实现编译期类型安全。开发者无需关注内存布局细节，一行代码即可完成切片、搬运与计算。当前能力赋能于Cube矩阵计算，后续将逐步支持Vector矢量计算。
 
     ```cpp
+    #include "tensor_api/tensor.h"
+
+    using namespace asc::te;
+
     __global__ __cube__ void matmul_custom(__gm__ half* a, __gm__ half* b, __gm__ half* c) {
-        // 实现代码示例，其中M, N, K为单核上GM上左右矩阵的大小, (baseM, K), (baseN, K)为搬运到L1上左右矩阵的大小
+        // 实现代码示例，其中m, n, k为单核上GM上左右矩阵的大小, (base_m, k), (k, base_n)为搬运到L1上左右矩阵的大小
         // 扩展Tensor（Tensor API）携带Layout信息，搬运接口自动推导参数
-        auto gmATensor = AscendC::Te::MakeTensor(AscendC::Te::MakeMemPtr(a), AscendC::Te::MakeFrameLayout<AscendC::Te::NDExtLayoutPtn>(M, K));
-        auto gmBTensor = AscendC::Te::MakeTensor(AscendC::Te::MakeMemPtr(b), AscendC::Te::MakeFrameLayout<AscendC::Te::NDExtLayoutPtn>(K, N));
+        auto gm_a_tensor = make_tensor(make_mem_ptr(a), make_frame_layout<nd_ext_layout_ptn>(m, k));
+        auto gm_b_tensor = make_tensor(make_mem_ptr(b), make_frame_layout<nd_ext_layout_ptn>(k, n));
         ...
         // __cbuf__ 为L1 Buffer的声明修饰符
-        __cbuf__ half l1ABuf[1024];
-        __cbuf__ half l1BBuf[1024];
-        auto l1ATensor = AscendC::Te::MakeTensor(AscendC::Te::MakeMemPtr(l1ABuf), AscendC::Te::MakeFrameLayout<AscendC::Te::NZLayoutPtn>(baseM, K));
-        auto l1BTensor = AscendC::Te::MakeTensor(AscendC::Te::MakeMemPtr(l1BBuf), AscendC::Te::MakeFrameLayout<AscendC::Te::NZLayoutPtn>(baseN, K));
+        __cbuf__ half l1_a_buf[1024];
+        __cbuf__ half l1_b_buf[1024];
+        auto l1_a_tensor = make_tensor(make_mem_ptr(l1_a_buf), make_frame_layout<nz_layout_ptn>(base_m, K));
+        auto l1_b_tensor = make_tensor(make_mem_ptr(l1_b_buf), make_frame_layout<nz_layout_ptn>(k, base_n));
         ...
         // 一行代码完成搬运，无需手动传入size参数
-        AscendC::Te::Copy(l1ATensor, gmATensor);
-        AscendC::Te::Copy(l1BTensor, gmBTensor);
+        auto copy_gm_to_l1_atom = make_copy(copy_gm_to_l1{}, gm_to_l1_trait_default{});
+        copy(copy_gm_to_l1_atom, l1_a_tensor, gm_a_tensor);
+        copy(copy_gm_to_l1_atom, l1_b_tensor, gm_b_tensor);
     }
     ```
 
@@ -170,14 +175,14 @@ __global__ __vector__ void add_custom(__gm__ uint8_t* x, __gm__ uint8_t* y, __gm
 ```
 > 📌 其中AscendC::TPosition::VECCALC为对物理位置的逻辑抽象定义，与物理位置的映射参考文件[逻辑位置和物理存储的映射](../../../../../apis/simd_api/general_description_and_constraints.md)。
 
-相比基础Tensor，[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)引入Layout描述并将其作为Tensor的核心属性，开发者可在Tensor创建时直接关联Shape与Stride信息，简化多维数据的布局管理。通过`MakeTensor`，开发者可灵活指定内存地址和Layout布局，更便捷地描述ND、NZ等典型数据排布。
+相比基础Tensor，[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)引入Layout描述并将其作为Tensor的核心属性，开发者可在Tensor创建时直接关联Shape与Stride信息，简化多维数据的布局管理。通过`make_tensor`，开发者可灵活指定内存地址和Layout布局，更便捷地描述ND、NZ等典型数据排布。
 
 ```cpp
 // UB buffer declaration
-__ubuf__ half ubBuffer[1024];
-auto ubPointer = AscendC::Te::MakeMemPtr(ubBuffer);
-// Extended Tensor: create through MakeTensor
-auto ubTensor = AscendC::Te::MakeTensor(ubPointer, AscendC::Te::MakeLayout(AscendC::Te::MakeShape(128, 64)));
+__ubuf__ half ub_buffer[1024];
+auto ub_ptr = make_mem_ptr(ub_buffer);
+// Extended Tensor: create through make_tensor
+auto ub_tensor = make_tensor(ub_ptr, make_layout(make_shape(128, 64)));
 ```
 > 📌 UB地址必须32字节对齐，以匹配硬件总线粒度和SIMD计算单元并行度，非对齐访问将导致运行时错误。
 
@@ -213,22 +218,22 @@ Cube计算单元专用的缓存为：L0A Buffer存储左矩阵，L0B Buffer存�
 
 以`FRACTAL_Nz`为例，内存排布采用大N外部column major（列主序）+ 小z内部row major（行主序）存放：
 
-![FRACTAL_Nz内存排布示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nz_layout.png)
+![FRACTAL_Nz内存排布示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nz_layout.png)
 
 #### Bank冲突
 
 为了提高数据访问的效率和吞吐量，内部存储采用了bank（大小相等的内存模块）结构设计。以UB为例，[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)产品上，UB总大小为256KB（256 × 1024字节），包含8个bank group，每个bank group包含2个bank。每个bank大小为16KB，由512行组成，每行长度为32B，采用低位地址交织。[NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)的UB容量规格请参考[UB bank结构](../../../../operator_practice/simd_operator_optimization/memory_access/avoid_ub_bank_conflict/avoid_bank_conflict_npu_arch_2201.md)。
 
-![UB Bank冲突示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/ub_conflict.png)
+![UB Bank冲突示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/ub_conflict.png)
 
 该架构地址使用低位编址，地址排布如下图所示，每个bank可以独立地进行数据的读写操作，允许多个数据请求同时进行。然而，当多个读写操作试图同时访问同一个bank时，由于硬件资源的限制，这些操作必须排队等待，会导致bank冲突，引起性能下降。
 
-![低位交织地址排布](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/low_interleave.png)
+![低位交织地址排布](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/low_interleave.png)
 
 每个bank一拍只能完成一读或者一写，每个bank group最多只允许2读0写或者1读1写。根据内存结构，bank冲突主要可以分为以下三种类型：
 - 读写冲突：读操作和写操作同时尝试访问同一个bank，或者两个读操作和一个写操作同时尝试访问同一个bank group。
 - 写写冲突：多个写操作同时尝试访问同一个bank group。
-- 读读冲突：两个读操作访问同一个bank，或两个以上操作同时尝试访问同一个bank group。
+- 读读冲突：两个读操作访问同一个bank，或两个以上读操作同时尝试访问同一个bank group。
 
 以读写冲突为例，当进行一组`dst = src0 + src1`的矢量加法计算时，如果`src0`的起始地址在0x0000，`dst`的起始地址为0x4000，结合Bank的排布，可以看到当前`src0`和`dst`的地址分别属于同一个bank和同一个bank group，则存在读写冲突。
 
@@ -252,11 +257,11 @@ AI Core内部的执行单元（如MTE2搬运单元、Vector计算单元等）以
 2. 进行矢量计算
 3. 通过DMA将数据从Local Memory搬出到GM
 
-![Vector计算数据流](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/vec_flow.png)
+![Vector计算数据流](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/vec_flow.png)
 
 四个执行单元Scalar、Vector、DMA（MTE2）、DMA(MTE3)并行执行，若访问同一片Local Memory，需要同步机制来控制它们的访问时序：保证先搬入Local Memory后再计算，计算完成后再搬出。
 
-![同步顺序示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sync_order.png)
+![同步顺序示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sync_order.png)
 
 > 📌 提示：上例描述的是主要路径，当`Scalar`执行单元读写GM或者UB时，也需要考虑`Scalar`流水与其他流水的同步。
 
@@ -287,11 +292,11 @@ AI Core上的执行单元分别属于不同的执行流水，同步即是保证�
 
 以下图为例，AIC（AI Cube，主要用于Cube计算）需要依赖于AIV（AI Vector，负责Vector计算）的ReduceSum计算结果。由于整体矢量较大，必须拆分为多个部分，由每个AIV分别完成部分计算。每个AIV将其部分计算结果通过原子累加写入GM。AIC需要读取的必须是所有AIV均完成累加后的最终结果。
 
-![核间同步业务场景示例](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/inter_core_sync_ex.png)
+![核间同步业务场景示例](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/inter_core_sync_ex.png)
 
 从上图可以看到，当前AI Core是由AIC核和AIV核组成，其中AIC核主要用于Cube计算，AIV核负责Vector计算。AIC/AIV按group进行划分。一个group内细分block及subblock，block与subblock比例为1:N（N>=1），block表示多少个“主核”，subblock表示一个“主核”带多少个“从核”。
 
-![block和subblock之间关系](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/block_rel.png)
+![block和subblock之间关系](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/block_rel.png)
 
 算子按计算特征可划分为三类：Cube算子（矩阵计算）、Vector算子（矢量计算）和CV融合算子（矩阵与矢量混合计算）。算子类型决定了其核间同步方式与group配置模式的选择。针对不同算子场景，C++ Tensor编程通过[CrossCoreSetFlag](../../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)和[CrossCoreWaitFlag](../../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)两个接口组合实现核间同步，以满足多样化的算子开发需求。
 
@@ -348,7 +353,7 @@ Cube矩阵计算主要涵盖矩阵乘计算与卷积计算，其数据主要来�
 - C为目的操作数，存放矩阵乘结果的矩阵，形状为[M, N]。
 - bias为矩阵乘偏置，形状为[1, N]。对A*B结果矩阵的每一行都采用该bias进行偏置。
 
-![矩阵乘示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/matmul.png)
+![矩阵乘示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/matmul.png)
 
 ```cpp
 // Define Cube matrix operator, marked with __cube__ to execute on Device Cube core, suitable for operators with only Cube computation
@@ -358,7 +363,7 @@ __global__ __cube__ void matmul_kernel(__gm__ float* x, __gm__ float* y, __gm__ 
     AscendC::LocalMemAllocator<AscendC::Hardware::L0A> l0aAllocator;
     AscendC::LocalMemAllocator<AscendC::Hardware::L0B> l0bAllocator;
     AscendC::LocalMemAllocator<AscendC::Hardware::L0C> l0cAllocator;
-    
+
     AscendC::LocalTensor<half> a_l1_buf = l1Allocator.Alloc<half, BLOCK_M * BLOCK_K>();
     AscendC::LocalTensor<half> b_l1_buf = l1Allocator.Alloc<half, BLOCK_K * BLOCK_N>();
     AscendC::LocalTensor<half> l0a_buf = l0aAllocator.Alloc<half, BLOCK_M * BLOCK_K>();
@@ -379,7 +384,7 @@ CV融合计算程序由多个独立的小算子融合而成，其功能与多个
 
 比如对于LLM大模型中最核心的一个融合算子Flash Attention，其核心实现如下图。图中的Matmul算子（Cube）、Scale算子（Vector）、Mask算子（Vector）、SoftMax算子（Vector）融合为一个大的算子Flash Attention。
 
-![Flash Attention核心实现](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/flash_attn.png)
+![Flash Attention核心实现](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/flash_attn.png)
 
 ```cpp
 // Define CV fusion operator, marked with __mix__ to execute on Device, suitable for operators combining Cube and Vector computation
@@ -954,7 +959,7 @@ __global__ __mix__ void mix_kernel(__gm__ float* x, __gm__ float* y, __gm__ floa
 </thead>
 <tbody><tr id="row1298763513418"><td class="cellrowborder" valign="top" width="29.630000000000003%" headers="mcps1.2.4.1.1 "><p id="p15987173524114"><a name="p15987173524114"></a><a name="p15987173524114"></a>基础API &gt; 标量计算</p>
 </td>
-<td class="cellrowborder" valign="top" width="44.519999999999996%" headers="mcps1.2.4.1.2 "><p id="p12167195363614"><a name="p12167195363614"></a><a name="p12167195363614"></a>GetBitCount、CountLeadingZero、CountBitsCntSameAsSignBit、GetSFFValue、Cast（float转half、int32_t）、Cast（float转bfloat16_t）、Cast（多类型转float）、Nop、GetUintDivMagicAndShift、WriteGmByPassDCache、ReadGmByPassDCache</p>
+<td class="cellrowborder" valign="top" width="44.519999999999996%" headers="mcps1.2.4.1.2 "><p id="p12167195363614"><a name="p12167195363614"></a><a name="p12167195363614"></a>GetBitCount、CountLeadingZero、CountBitsCntSameAsSignBit、GetSFFValue、Cast（float转half、int32_t）、Cast（float转bfloat16_t）、Cast（多类型转float）、Nop、GetUintDivMagicAndShift、WriteGmBypassDCache、ReadGmBypassDCache</p>
 </td>
 <td class="cellrowborder" valign="top" width="25.85%" headers="mcps1.2.4.1.3 "><p id="p298711352411"><a name="p298711352411"></a><a name="p298711352411"></a>-</p>
 </td>
@@ -1174,6 +1179,7 @@ __global__ __mix__ void mix_kernel(__gm__ float* x, __gm__ float* y, __gm__ floa
 
 
 
+
 **表6**  针对 [NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md#npu-arch)，使用预留UB空间的API范围
 
 | API类别 | API名 |
@@ -1189,4 +1195,5 @@ __global__ __mix__ void mix_kernel(__gm__ float* x, __gm__ float* y, __gm__ floa
 | 基础API > Kernel-Tiling | GET_TILING_DATA、GET_TILING_DATA_WITH_STRUCT、GET_TILING_DATA_MEMBER |
 | Utils API > 调测接口（SIMD VF） | printf、asc_dump_reg、asc_dump、asc_dump_ubuf |
 | 高阶API | AscendAntiQuant、AdjustSoftMaxRes、TopK |
+
 

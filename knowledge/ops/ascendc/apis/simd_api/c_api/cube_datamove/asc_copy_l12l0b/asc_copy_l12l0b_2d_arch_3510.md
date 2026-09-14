@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_l12l0b/asc_copy_l12l0b_2d_arch_3510.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_copy_l12l0b_arch_3510（2D矩阵搬运）
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
 负责完成矩阵计算所需的2D格式数据的搬运，搬运粒度为大小为512字节的数据分形，支持非转置与转置矩阵从L1 Buffer到L0B buffer的数据搬运。
 
@@ -45,14 +48,6 @@ __aicore__ inline void asc_copy_l12l0b(__cb__ <dtype>* dst,
                                        uint8_t k_step,
                                        int16_t src_stride,
                                        uint16_t dst_stride)
-__aicore__ inline void asc_copy_l12l0b_sync(__cb__ <dtype>* dst,
-                                            __cbuf__ <dtype>* src,
-                                            uint16_t m_start_position,
-                                            uint16_t k_start_position,
-                                            uint8_t m_step,
-                                            uint8_t k_step,
-                                            int16_t src_stride,
-                                            uint16_t dst_stride)
 ```
 
 ### dtype支持的数据类型
@@ -84,14 +79,6 @@ __aicore__ inline void asc_copy_l12l0b_transpose(__cb__ <dtype>* dst,
                                                  uint8_t k_step,
                                                  int16_t src_stride,
                                                  uint16_t dst_stride)
-__aicore__ inline void asc_copy_l12l0b_transpose_sync(__cb__ <dtype>* dst,
-                                                      __cbuf__ <dtype>* src,
-                                                      uint16_t m_start_position,
-                                                      uint16_t k_start_position,
-                                                      uint8_t m_step,
-                                                      uint8_t k_step,
-                                                      int16_t src_stride,
-                                                      uint16_t dst_stride)
 ```
 
 ### dtype支持的数据类型

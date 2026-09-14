@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/performance_analysis/collect_performance_data.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -29,7 +29,7 @@ msopprof --output=$HOME/projects/output $HOME/projects/MyApp/out/main
 如下示例则展示了部分性能数据文件的样例：
 
 **图1**  PipeUtilization.csv（计算单元和搬运单元耗时占比）文件示例<a name="fig10602164732915"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/pipe_util.png "PipeUtilization-csv（计算单元和搬运单元耗时占比）文件示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/pipe_util.png "PipeUtilization-csv（计算单元和搬运单元耗时占比）文件示例")
 
 详细的字段说明和性能分析工具的具体使用方法请参考[《msOpProf用户指南》](https://gitcode.com/Ascend/msopprof/blob/master/docs/zh/user_guide/msopprof_user_guide.md)。
 
@@ -43,12 +43,12 @@ msopprof --output=$HOME/projects/output $HOME/projects/MyApp/out/main
 
     在Chrome浏览器中输入`chrome://tracing`地址，并将通过msopprof simulator生成指令流水图文件（trace.json）拖到空白处打开，键盘上输入快捷键（W：放大，S：缩小，A：左移，D：右移）可进行查看。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002445425429.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002445425429.png)
 
 -   指令流水图支持MindStudio Insight可视化呈现，MindStudio Insight工具以时序图方式为用户提供指令在昇腾AI处理器上的运行情况，用户可通过分析时序图中的指令详情、指令执行时间、指令关联代码的调用栈及指令/流水间同步连线等信息，识别微观指令的时序优化点。
 
     **图2**  时间线界面<a name="fig1949511433715"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/timeline.png "时间线界面")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/timeline.png "时间线界面")
 
 >[!NOTE]说明 
 >本文部分样例中展示的算子仿真流水图和上述两种可视化呈现方式不一致，但是其中的关键字段含义是对应的，开发者可以参考[《msOpProf用户指南》](https://gitcode.com/Ascend/msopprof/blob/master/docs/zh/user_guide/msopprof_user_guide.md)查看具体字段的含义。

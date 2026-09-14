@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_l12gm.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
@@ -22,6 +22,8 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
+
 将数据从L1 Buffer搬运到Global Memory。
 
 ## 函数原型
@@ -30,11 +32,6 @@ source_headers:
 
     ```cpp
     __aicore__ inline void asc_copy_l12gm(__gm__ void* dst, __cbuf__ void* src, uint16_t n_burst, uint16_t len_burst, uint16_t src_gap, uint16_t dst_gap)
-    ```
-- 同步搬运
-
-    ```cpp
-    __aicore__ inline void asc_copy_l12gm_sync(__gm__ void* dst, __cbuf__ void* src, uint16_t n_burst, uint16_t len_burst, uint16_t src_gap, uint16_t dst_gap)
     ```
 
 ## 参数说明

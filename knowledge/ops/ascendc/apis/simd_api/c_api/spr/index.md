@@ -1,6 +1,5 @@
 # 特殊寄存器访问
 
-- [asc_get_ar_spr (废弃)](asc_get_ar_spr_deprecated.md)：该接口已废弃，请使用asc_get_squeeze_status实现此功能。
 - [asc_get_ctrl](asc_get_ctrl.md)：读取CTRL寄存器（控制寄存器）特定比特位上的值。
 - [asc_get_saturation_flag](asc_get_saturation_flag.md)：按饱和模式类型读取当前是否开启饱和，并返回布尔类型的结果。
 - [asc_get_saturation_strategy](asc_get_saturation_strategy.md)：读取当前饱和控制策略，默认为开启全局饱和配置：

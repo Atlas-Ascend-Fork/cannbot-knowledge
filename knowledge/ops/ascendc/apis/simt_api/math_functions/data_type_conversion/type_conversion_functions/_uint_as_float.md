@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/data_type_conversion/type_conversion_functions/__uint_as_float.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_uint\_as\_float
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_functions.h"`。
 
 将无符号整数中的位重新解释为浮点数，即将无符号整数存储的位按照float的格式进行读取。
 
@@ -57,19 +59,13 @@ inline float __uint_as_float(const unsigned int x)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_functions.h"
-```
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __global__ __launch_bounds__(1024) void kernel__uint_as_float(float* dst, uint32_t* x)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -80,6 +76,8 @@ inline float __uint_as_float(const unsigned int x)
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel__uint_as_float(__gm__ float* dst, __gm__ uint32_t* x)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;

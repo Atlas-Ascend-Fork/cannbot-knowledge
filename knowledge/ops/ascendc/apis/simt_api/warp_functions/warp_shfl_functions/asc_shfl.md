@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/Warp_functions/Warp_shfl_functions/asc_shfl.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -22,6 +22,8 @@ source_headers:
 # asc\_shfl
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_warp_functions.h"`（除half、half2、bfloat16_t、bfloat16x2_t类型之外的接口）、`"simt_api/asc_fp16.h"`（half和half2类型接口）、`"simt_api/asc_bf16.h"`（bfloat16_t和bfloat16x2_t类型接口）。
 
 Warp Shfl类接口主要实现Warp级数据交换，能够实现直接读取某个线程的数据，而不需要通过共享内存。这类接口主要通过Warp分组实现组内线程间的数据交换操作。
 
@@ -41,7 +43,7 @@ Warp Shfl类接口主要实现Warp级数据交换，能够实现直接读取某�
 例如，Warp内32个活跃线程调用`asc_shfl(LaneId, 5, 16)`接口，每个线程的返回值为当前线程所在分组内线程编号为5的var值。
 
 **图1**  asc\_shfl结果示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/asc_shfl_result.png "asc_shfl结果示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/asc_shfl_result.png "asc_shfl结果示意图")
 
 ## 函数原型
 
@@ -100,29 +102,15 @@ Warp内指定线程的`var`值。
 -   如果目标线程是非活跃状态，获取到寄存器中未初始化的值。
 -   若入参`width`不是2的倍数或超出32，返回值异常。
 
-## 需要包含的头文件
-
-使用除half、half2、bfloat16_t、bfloat16x2_t类型之外的接口需要包含`simt_api/device_warp_functions.h`头文件，使用half和half2类型接口需要包含`simt_api/asc_fp16.h`头文件，使用bfloat16_t和bfloat16x2_t类型接口需要包含`simt_api/asc_bf16.h`头文件。
-
-```cpp
-#include "simt_api/device_warp_functions.h"
-```
-
-```cpp
-#include "simt_api/asc_fp16.h"
-```
-
-```cpp
-#include "simt_api/asc_bf16.h"
-```
-
 ## 调用示例
 
-完整样例请参考[InsertHashTable算子样例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/02_features/01_api_features/00_memory_access/insert_hash_table/README.md)。
+完整样例请参考[InsertHashTable算子样例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/02_features/01_api_features/00_memory_access/insert_hash_table/README.md)。
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_warp_functions.h"
+
     __global__ __launch_bounds__(1024) void kernel_shfl(int32_t* dst, int32_t total_num)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -139,6 +127,8 @@ Warp内指定线程的`var`值。
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/device_warp_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel_shfl(__gm__ int32_t* dst, int32_t total_num)
     {
         // asc_vf_call参数：dim3{1024, 1, 1}

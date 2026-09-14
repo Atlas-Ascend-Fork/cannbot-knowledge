@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/register_data_types/MaskReg.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 ---
@@ -26,7 +26,7 @@ MaskReg寄存器用于指示在计算过程中哪些元素参与计算，宽度�
 
 **图1** MaskReg计算过程<a id="fig1"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/maskreg_process.png "MaskReg计算过程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/maskreg_process.png "MaskReg计算过程")
 
 ## 函数原型<a name="section620mcpsimp"></a>
 - CreateMask接口
@@ -79,11 +79,11 @@ MaskReg
 
 **图4** b16到b32类型转换过程<a id="fig4"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/b16_to_b32_conversion.png "b16到b32类型转换过程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/b16_to_b32_conversion.png "b16到b32类型转换过程")
 
 **图5** b32到b16类型转换过程<a id="fig5"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/b32_to_b16_conversion.png "b32到b16类型转换过程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/b32_to_b16_conversion.png "b32到b16类型转换过程")
 
 特别的，int4x2_t/fp4x2_e2m1_t/fp4x2_e1m2_t和b16之间的转换，指令会以每2个元素为一对进行读写，大转小时mask有效位以偶数位为准。
 
@@ -91,11 +91,11 @@ MaskReg
 
 **图6** fp4x2_e2m1_t到bfloat16_t类型转换过程<a id="fig6"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/fp4x2_e2m1_to_bfloat16.png "fp4x2_e2m1_t到bfloat16_t类型转换过程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/fp4x2_e2m1_to_bfloat16.png "fp4x2_e2m1_t到bfloat16_t类型转换过程")
 
 **图7** bfloat16_t到fp4x2_e2m1_t类型转换过程<a id="fig7"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/bfloat16_to_fp4x2_e2m1.png "bfloat16_t到fp4x2_e2m1_t类型转换过程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/bfloat16_to_fp4x2_e2m1.png "bfloat16_t到fp4x2_e2m1_t类型转换过程")
 
 ### Mask设置方式
 
@@ -117,13 +117,13 @@ Reg矢量计算中，掩码的配置方式由MaskReg寄存器决定，仅支持�
 
   **图2** b8数据类型下CreateMask接口不同MaskReg的模式下元素选取<a id="fig2"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/b8_createmask_maskreg.png "b8数据类型下CreateMask接口不同MaskReg的模式下元素选取")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/b8_createmask_maskreg.png "b8数据类型下CreateMask接口不同MaskReg的模式下元素选取")
 
 - UpdateMask：根据当前scalarValue的值生成对应长度的有效位掩码，并自动将scalarValue减去当前向量长度以更新剩余待处理元素数量。
 
   **图3** b16数据类型下UpdateMask接口基于scalarValue的掩码生成<a id="fig3"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/b16_updatemask_scalarvalue.png "b16数据类型下UpdateMask接口基于scalarValue的掩码生成")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/b16_updatemask_scalarvalue.png "b16数据类型下UpdateMask接口基于scalarValue的掩码生成")
 
 以基础算术API Add为例介绍Mask设置的不同方式。
 
@@ -259,15 +259,27 @@ __simd_callee__ inline void Add(U& dstReg, U& srcReg0, U& srcReg1, MaskReg& mask
   }
   ```
 
+
 ### NPU架构版本2201与NPU架构版本3510之间Mask机制对比
 
 本节对比[NPU架构版本2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)在Normal模式的逐bit计算中Mask机制，与[NPU架构版本3510](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)基于Reg矢量计算中Mask机制的差异。
 
-- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品
+
+- 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
   - Mask寄存器长度为256bit。
 
   - 每一个element对应1bit的Mask，数据类型不同，每次循环内能够处理的元素个数最大值不同。当操作数类型为b16时，一次循环中最多有128个元素参与计算；当操作数类型为b32时，一次循环中最多有64个元素参与计算；当操作数类型为b64时，一次循环中最多有32个元素参与计算。详细见[掩码相关参数](../../memory_vector_compute/simd_compute/mask.md#sheet2)。
+
+
+
+- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品
+
+  - Mask寄存器长度为256bit。
+
+  - 每一个element对应1bit的Mask，数据类型不同，每次循环内能够处理的元素个数最大值不同。当操作数类型为b16时，一次循环中最多有128个元素参与计算；当操作数类型为b32时，一次循环中最多有64个元素参与计算；当操作数类型为b64时，一次循环中最多有32个元素参与计算。详细见[掩码相关参数](../../memory_vector_compute/simd_compute/mask.md#sheet2)。
+
+
 
 - 针对Ascend 950PR/Ascend 950DT
 
@@ -275,9 +287,11 @@ __simd_callee__ inline void Add(U& dstReg, U& srcReg0, U& srcReg1, MaskReg& mask
 
   - 当操作数类型为b8时，每一个element对应1bit MaskReg；当操作数类型为b16时，每一个element对应2bit MaskReg，且仅2bit中的最低位是有效的；当操作数类型为b32时，每一个element对应4bit MaskReg，且仅4bit中的最低位是有效的。
 
+
 **图8** NPU架构版本2201的Memory矢量计算与NPU架构版本3510的Reg矢量计算Mask机制对比<a id="fig8"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/memory_vs_reg_mask_comparison.png "NPU架构版本2201的Memory矢量计算与NPU架构版本3510的Reg矢量计算Mask机制对比")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/memory_vs_reg_mask_comparison.png "NPU架构版本2201的Memory矢量计算与NPU架构版本3510的Reg矢量计算Mask机制对比")
+
 
 ## 调用示例<a name="section642mcpsimp"></a>
 

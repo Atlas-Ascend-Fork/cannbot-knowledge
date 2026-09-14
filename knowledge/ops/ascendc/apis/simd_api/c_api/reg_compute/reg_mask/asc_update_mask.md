@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_mask/asc_update_mask.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_mask.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_update_mask
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_mask.h"`。
 
 根据元素个数value生成mask，并自动将value减去当前向量处理单元的元素个数。支持b8、b16、b32三种位宽模式，由于VL=256B，各模式的向量处理单元元素个数为：
 
@@ -29,7 +32,7 @@ source_headers:
 
 **图1**  asc_update_mask更新流程
 
-![asc_update_mask更新流程](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/capi_update_mask.png)
+![asc_update_mask更新流程](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/capi_update_mask.png)
 
 本接口为Reg矢量计算接口，仅在AIV上生效。
 

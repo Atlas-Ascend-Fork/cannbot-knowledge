@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/appendix/msobjdump_tool.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -97,6 +97,7 @@ platforms:
     **表3**  参数说明
 
     <a name="table121952819427"></a>
+
     | 参数（区分大小写） | 可选/必选 | 说明 |
     | ---- | ---- | ---- |
     | `--list-elf <elf_file>`，`-l` | 必选 | 获取ELF文件中包含的device信息文件列表，并打印显示。<br>`<elf_file>`表示待打印的ELF文件路径，如`/home/op_api/lib_api.so`。 |
@@ -134,6 +135,7 @@ platforms:
 **表6**  kernel type信息
 
 <a name="table187419221164"></a>
+
 | KERNEL_TYPE | 说明 |
 | ---- | ---- |
 | `AICORE` | **该参数为预留参数，当前版本暂不支持。**<br>算子执行时仅会启动AI Core，比如用户在host侧设置blocknum为5，则会启动5个AI Core。 |
@@ -251,7 +253,7 @@ platforms:
 
 ## 使用样例（自定义算子工程）<a name="section12835815105114"></a>
 
-以[自定义算子工程样例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op/README.md)中的AddCustom算子为例。若样例根目录为`${sample_dir}`，执行如下命令：
+以[自定义算子工程样例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op/README.md)中的AddCustom算子为例。若样例根目录为`${sample_dir}`，执行如下命令：
 
 ```bash
 cd ${sample_dir}

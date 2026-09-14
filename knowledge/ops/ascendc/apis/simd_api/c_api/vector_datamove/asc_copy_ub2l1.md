@@ -10,10 +10,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_datamove/asc_copy_ub2l1.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/vector_datamove/vector_datamove.h
 - include/c_api/asc_simd.h
 ---
 
@@ -21,17 +22,25 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/vector_datamove/vector_datamove.h"`。
+
 提供数据搬运功能，将数据从Unified Buffer (UB)搬运到L1 Buffer。
 
 本接口支持以下两种数据搬运方式：
 
 - 连续数据搬运
 
-    将一段连续数据从UB搬运到L1 Buffer。
+    将一段连续数据从UB搬运到L1 Buffer，如图1所示。
+
+    **图1**  连续搬运示意图
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_copy_ub2l1_continuous.png "连续搬运示意图")
 
 - 高维切分数据搬运
 
-    将多个连续传输数据块从UB搬运到L1 Buffer。每个数据块的长度以及相邻数据块之间的间隔均以DataBlock（32字节）为单位指定。
+    将多个连续传输数据块从UB搬运到L1 Buffer。每个数据块的长度以及相邻数据块之间的间隔均以DataBlock（32字节）为单位指定，如图2所示。
+
+    **图2**  高维切分搬运示意图
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_copy_ub2l1_highdim_split.png "高维切分搬运示意图")
 
 本接口仅在AIV上生效。
 
@@ -64,9 +73,9 @@ __aicore__ inline void asc_copy_ub2l1(__cbuf__ void* dst,
 
 | 参数名 | 输入/输出 | 描述 |
 | :--- | :--- | :--- |
-| dst | 输出 | 目的L1 Buffer的起始地址。 |
-| src | 输入 | 源UB的起始地址。 |
-| size | 输入 | 搬运数据大小，单位为字节。 |
+| dst | 输出 | 目的L1 Buffer的起始地址。需要32字节对齐。 |
+| src | 输入 | 源UB的起始地址。需要32字节对齐。 |
+| size | 输入 | 搬运数据大小，单位为字节。取值范围：[32, 4095×32]，且需为32的整数倍。 |
 
 ### 高维切分数据搬运
 
@@ -74,12 +83,12 @@ __aicore__ inline void asc_copy_ub2l1(__cbuf__ void* dst,
 
 | 参数名 | 输入/输出 | 描述 |
 | :--- | :--- | :--- |
-| dst | 输出 | 目的L1 Buffer的起始地址。 |
-| src | 输入 | 源UB的起始地址。 |
+| dst | 输出 | 目的L1 Buffer的起始地址。需要32字节对齐。 |
+| src | 输入 | 源UB的起始地址。需要32字节对齐。 |
 | burst_count | 输入 | 待搬运的连续传输数据块个数。取值范围：[1, 4095]。 |
-| burst_len | 输入 | 待搬运的每个连续传输数据块的长度，单位为DataBlock（32字节）。取值范围：[1, 65535]。 |
-| src_gap | 输入 | 源操作数相邻连续数据块的间隔（前面一个数据块的尾与后面一个数据块的头的间隔），单位为DataBlock（32字节）。 |
-| dst_gap | 输入 | 目的操作数相邻连续数据块的间隔（前面一个数据块的尾与后面一个数据块的头的间隔），单位为DataBlock（32字节）。 |
+| burst_len | 输入 | 待搬运的每个连续传输数据块的长度，单位为DataBlock（32字节）。取值范围：[1, $2^{16}−1$]。 |
+| src_gap | 输入 | 源操作数相邻连续数据块的间隔（前面一个数据块的尾与后面一个数据块的头的间隔），单位为DataBlock（32字节）。取值范围：[0, $2^{16}−1$]。 |
+| dst_gap | 输入 | 目的操作数相邻连续数据块的间隔（前面一个数据块的尾与后面一个数据块的头的间隔），单位为DataBlock（32字节）。取值范围：[0, $2^{16}−1$]。 |
 
 ## 返回值说明
 
@@ -96,6 +105,10 @@ PIPE_MTE3
 - 本接口在非AIV上调用直接返回。
 - 各存储单元的空间大小和对齐要求请参考[存储单元说明](../general_description_and_constraints.md#存储单元说明)。
 - 如果本指令与其他指令存在UB地址重叠，必须插入同步指令[asc_sync_notify](../sync/asc_sync_notify.md)和[asc_sync_wait](../sync/asc_sync_wait.md)，保证多个指令串行化，防止出现异常数据。
+
+### 连续搬运模式约束
+
+- `size`需为32的整数倍，否则`size/32`截断后实际搬运字节数不足，多出非整32字节部分被丢弃。
 
 ## 调用示例
 

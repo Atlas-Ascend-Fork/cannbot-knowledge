@@ -25,6 +25,10 @@ description: 从固定版本官方源码提取不含可达 Cube/AIC 或 MIX_CV �
 
 缺少必填输入时停止写入并报告缺口。
 
+写入前按 [路径 Spec](../../../governance/specs/paths.md#profile-附加层级)核对任务指定路径与入口语义：公开 ACLNN/API 的完整链路使用 `aclnn`，独立 Direct Invoke 使用 `direct`。当前 Registry 没有仅覆盖官方内部 Host/Tiling 的 call-mode；这类输入可报告源码分析与路径缺口，但必须 defer 最终卡写入，不得借用 `aclnn`、`direct` 或临时创建目录。闭包标签不替代路径准入；后续需先完成分类治理再落库。
+
+模板中的 `<CANN_VERSION>` 使用本任务指定且有固定来源依据的 CANN 版本，不沿用示例或其他任务的版本。输入与来源冲突时先报告缺口，不生成带错误版本范围的正式卡；模板平台标签只对应本次证据范围。
+
 ## 开始前必须完整读取
 
 1. [`references/execution-families.md`](references/execution-families.md)：非 Cube 执行族、单/多 Kernel 拓扑闭包和参数检查表；

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadData_3D.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -35,11 +35,11 @@ LoadData（卷积数据搬运）本质上是用于将NC1HWC0格式的Feature Map
 
 LoadData（卷积数据搬运）仅支持如下数据通路：L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer。
 
-实现原理可参考伪代码：[LoadData（卷积数据搬运）伪代码](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0/scripts/load3d.py)。
+实现原理可参考伪代码：[LoadData（卷积数据搬运）伪代码](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0/scripts/load3d.py)。
 
 **图1** LoadData to L0A Buffer功能示意图<a id="zh-cn_topic_0000002512171652_fig54450833715"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_demo.png "LoadData-to-L0A Buffer功能示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_demo.png "LoadData-to-L0A Buffer功能示意图")
 
 ## 函数原型<a id="zh-cn_topic_0000002512171652_section82039854412"></a>
 
@@ -268,7 +268,7 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const LocalTensor<T>&
 
 对于NC1HWC0格式的数据，当N为1，卷积核width和height为1，padding为0，卷积核在源操作数width维度和height维度滑动的步长为1，卷积核width和height膨胀系数为1，此时经过image to column展开后的数据排布可以看成矩阵计算过程中L1 Buffer上的NZ分形排布，因此该场景下可以使用LoadData（卷积数据搬运）接口进行矩阵计算所需2D格式数据的搬运，示意图如下所示：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_3d22d_demo.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_3d22d_demo.png)
 
 #### 非转置场景
 
@@ -279,7 +279,7 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const LocalTensor<T>&
 
     LoadData（卷积数据搬运）会自动完成分形的变换，从L1 Buffer上的NZ分形排布转换成L0A Buffer中所需的ZZ分形排布，如下b16类型场景的示意图所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b16_nontrans.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b16_nontrans.png)
 
 
 
@@ -287,7 +287,7 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const LocalTensor<T>&
 
     L1 Buffer上的分形排布就是L0A Buffer中所需的NZ分形排布，LoadData（卷积数据搬运）不会进行分形排布转换，如下b16类型场景的示意图所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b16_nontrans_950.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b16_nontrans_950.png)
 
 
 #### 转置场景
@@ -301,21 +301,21 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const LocalTensor<T>&
 
         L1 Buffer->L0A Buffer通路下，转置场景下，除了每个分形矩阵自身会被转置，每个分形矩阵在整个二维特征图中的位置也会被转置，转置示意图如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b16_trans.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b16_trans.png)
 
         L1 Buffer->L0B Buffer通路下，LoadData（卷积数据搬运）接口会自动完成转置，不需要配置enTranspose参数，enTranspose参数此时无效，转置示意图如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0b_b16_trans.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0b_b16_trans.png)
 
     - 对于b32场景：每个分形大小是16×8。
 
         L1 Buffer->L0A Buffer通路下，需要配置enTranspose参数来开启转置功能，转置示意图如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b32_trans.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b32_trans.png)
 
         L1 Buffer->L0B Buffer通路下，LoadData（卷积数据搬运）接口会自动完成转置，不需要配置enTranspose参数，enTranspose参数此时无效，转置示意图如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0b_b32_trans.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0b_b32_trans.png)
 
 
 
@@ -327,31 +327,31 @@ __aicore__ inline void LoadData(const LocalTensor<T>& dst, const LocalTensor<T>&
 
         L1 Buffer->L0A Buffer通路下，转置场景下，2个连续的16×32的分形拼接为一个32×32的方块矩阵，再进行转置并拆分为2个16×32的分形，转置示意图如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b8_trans_950.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b8_trans_950.png)
 
         L1 Buffer->L0B Buffer通路下，LoadData（卷积数据搬运）接口会自动完成转置，不需要配置enTranspose参数，enTranspose参数此时无效，转置示意图如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0b_b8_trans_950.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0b_b8_trans_950.png)
 
     - 对于b16场景：每个分形大小是16×16。
 
         L1 Buffer->L0A Buffer通路下，转置场景下，除了每个分形矩阵自身会被转置，每个分形矩阵在整个二维特征图中的位置也会被转置，转置示意图如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b16_trans_950.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b16_trans_950.png)
 
         L1 Buffer->L0B Buffer通路下，LoadData（卷积数据搬运）接口会自动完成转置，不需要配置enTranspose参数，enTranspose参数此时无效，转置示意图如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0b_b16_trans_950.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0b_b16_trans_950.png)
 
     - 对于b32场景：每个分形大小是16×8。
 
         L1 Buffer->L0A Buffer通路下，转置场景示意图如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b32_trans_950.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b32_trans_950.png)
 
         L1 Buffer->L0B Buffer通路下，LoadData（卷积数据搬运）接口会自动完成转置，不需要配置enTranspose参数，enTranspose参数此时无效，转置示意图如下：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0b_b32_trans_950.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0b_b32_trans_950.png)
 
 
 ### Repeat Mode<a id="zh-cn_topic_0000002512171652_section131671145123912"></a>
@@ -371,19 +371,19 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品；
 
 M方向repeat示意图：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_repeatmode.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_repeatmode.png)
 
 需要注意的是，当我们调用LoadData（卷积数据搬运）接口在M方向进行repeat搬运时，如果我们开启转置，则重复过程中的所有分块矩阵将被视为一个整体大矩阵，并按照我们前文所述的转置场景进行处理。以b32场景为例，下图给出了在M方向进行repeat搬运时的转置示意图，其中repeatMode=0，repeatStride=2，repeatTime=3。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_repeatmode_m.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_repeatmode_m.png)
 
 K方向repeat示意图：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_repeatmode_k.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_repeatmode_k.png)
 
 当我们调用LoadData（卷积数据搬运）接口在K方向进行repeat搬运时，如果我们开启转置，则重复过程中的所有分块矩阵也将被视为一个整体大矩阵，并按照我们前文所述的转置场景进行处理。以b32场景为例，下图给出了在K方向进行repeat搬运时的转置示意图，其中repeatMode=1，repeatStride=2，repeatTime=3。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_repeatmode_k_trans.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_repeatmode_k_trans.png)
 
 
 
@@ -391,19 +391,19 @@ K方向repeat示意图：
 
 **M方向repeat示意图：**
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_repeatmode_m_950.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_repeatmode_m_950.png)
 
 当我们调用LoadData（卷积数据搬运）接口在M方向进行repeat搬运时，如果我们开启转置，则重复过程中的所有分块矩阵将被视为一个整体大矩阵，并按照我们前文所述的转置场景进行处理。以b32场景为例，下图给出了在M方向进行repeat搬运时的转置示意图，其中repeatMode=0，repeatStride=2，repeatTime=3，dstStride=3。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_repeatmode_m_trans_950.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_repeatmode_m_trans_950.png)
 
 **K方向repeat示意图：**
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_repeatmode_k_950.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_repeatmode_k_950.png)
 
 当我们调用LoadData（卷积数据搬运）接口在K方向进行repeat搬运时，如果我们开启转置，则重复过程中的所有分块矩阵也将被视为一个整体大矩阵，并按照我们前文所述的转置场景进行处理。以b32场景为例，下图给出了在K方向进行repeat搬运时的转置示意图，其中repeatMode=1，repeatStride=2，repeatTime=3，dstStride=3。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_repeatmode_k_trans_950.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_repeatmode_k_trans_950.png)
 
 
 ### Feature Map、Pad属性描述寄存器设置<a id="zh-cn_topic_0000002512171652_section1881795134015"></a>
@@ -435,7 +435,7 @@ isSetPadding配置为true，表示在接口内部设置Pad属性描述（即padV
 
 **图2** feature map格式<a id="zh-cn_topic_0000002512171652_fig8137131714319"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/feature_map_format.png "feature-map格式")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/feature_map_format.png "feature-map格式")
 
 对应的filter的格式如下图：
 
@@ -443,13 +443,13 @@ isSetPadding配置为true，表示在接口内部设置Pad属性描述（即padV
 
 **图3** filter的格式<a id="zh-cn_topic_0000002512171652_fig1395194710496"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/filter_format.png "filter的格式")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/filter_format.png "filter的格式")
 
 实际操作中，由于存储空间或者计算能力限制，我们通常会将整个卷积计算分块，一次只搬运并计算一小块数据。
 
 **图4** 卷积计算分块<a id="zh-cn_topic_0000002512171652_fig5278110624"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv_compute_block.png "卷积计算分块")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv_compute_block.png "卷积计算分块")
 
 对于L0A Buffer（A2）中的feature map来说有两种方案，水平分块和垂直分块。分别对应参数中repeatMode的0和1。
 
@@ -459,23 +459,23 @@ repeatMode =0时，每次repeat会改变在filter窗口中读取数据点的位�
 
 **图5** repeatMode = 0时的filter窗口<a id="zh-cn_topic_0000002512171652_fig11710143294513"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/repeatmode_0_filter_window.png "repeatMode-0-时的filter窗口")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/repeatmode_0_filter_window.png "repeatMode-0-时的filter窗口")
 
 repeatMode =1的时候filter窗口中读取数据的位置保持不变，每个repeat在feature map中前进C0个元素。
 
 **图6** repeatMode = 1时的filter窗口<a id="zh-cn_topic_0000002512171652_fig1648315981717"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/repeatmode_1_filter_window.png "repeatMode-1-时的filter窗口")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/repeatmode_1_filter_window.png "repeatMode-1-时的filter窗口")
 
 ## 调用示例<a id="zh-cn_topic_0000002512171652_section088124295117"></a>
 
 如下示例中：A矩阵转置，shape为[k,m]，b32数据类型下，GM->L1 Buffer->L0A Buffer数据排布分别是ND、NZ和ZZ。但是L1 Buffer->L0A Buffer的时候，无法调用LoadDataWithTranspose指令对其进行转置，因为在K轴方向两个连续的分形并不能合并为一个16\*16的方块，示意图如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b32demo.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b32demo.png)
 
 此时可以调用LoadData（卷积数据搬运）接口实现A矩阵转置。调用LoadData（卷积数据搬运） v2接口时，在写入L0A Buffer之前会先分别将A矩阵高度和宽度轴向16、8对齐，接着该指令会将整个A矩阵进行转置并且每一个分形也转置，最终写入到L0A Buffer的A矩阵是ZZ排布
 
-示例代码片段如下，仅展示样例中的部分代码，完整示例请参考：[load_data_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
+示例代码片段如下，仅展示样例中的部分代码，完整示例请参考：[load_data_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
 
 ```cpp
 // LoadData（卷积数据搬运） v2接口完成img2col的过程，可知img2col后A矩阵高度为ho * wo，根据ho和wo的计算公式，代入卷积核宽度、卷积核滑动步长、卷积核膨胀系数等参数可知：A矩阵的高度为CeilAlign(k, fractalShape[0])；img2col后A矩阵宽度为ci * kh * kw，代入kh=1，kw=1，可知A矩阵的宽度为CeilAlign(m, fractalShape[1])。最后，配置loadDataParams.enTranspose = true，将整个A矩阵转置并且将其中每一个分形转置
@@ -512,4 +512,4 @@ loadDataParams.fMatrixCtrl = false;
 AscendC::LoadData(a2Local, a1Local, loadDataParams);
 ```
 
-关于如何使用LoadData（卷积数据搬运）进行2D数据搬运，请参考：[load_data_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)中的对应场景。
+关于如何使用LoadData（卷积数据搬运）进行2D数据搬运，请参考：[load_data_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)中的对应场景。

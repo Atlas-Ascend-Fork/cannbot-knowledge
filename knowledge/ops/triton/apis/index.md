@@ -10,7 +10,7 @@ Triton Ascend API 速查与参考。
 
 ## 核心 API（tl.*）
 
-- [tl_memory_ops](tl_memory_ops.md)：tl.load / tl.store / make_block_ptr / advance：签名、参数语义与 NPU 特有差异（care_padding、离散访存）
+- [内存操作 API（tl.load / tl.store / block_ptr）](tl_memory_ops.md)：Triton-Ascend 内存操作 API：tl.load、tl.store、tl.make_block_ptr、tl.advance 的签名、参数语义、dtype 支持与 NPU 特有差异（care_padding、离散访存）。
 - [tl_math_ops](tl_math_ops.md)：算术、初等函数与融合运算（fma/sigmoid/softmax）签名与 NPU 精度提升规则
 - [tl_reduction_ops](tl_reduction_ops.md)：reduce/sum/max/argmax/xor_sum；窄整数不提升 int32、bf16 提升 fp32 等适配差异
 - [tl_linear_algebra_ops](tl_linear_algebra_ops.md)：tl.dot / tl.dot_scaled：精度模式映射（tf32→hf32）、dtype 约束与 ND2NZ 布局转换

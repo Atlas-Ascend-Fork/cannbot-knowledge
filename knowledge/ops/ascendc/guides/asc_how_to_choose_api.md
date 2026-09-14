@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/asc_how_to_choose_api.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -97,8 +97,8 @@ graph TD
 
 **参考示例**
 
-- [SIMT Gather算子示例（标准编程范式）](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/00_introduction/01_gather/basic_gather/gather_1d/gather_1d.asc)
-- 更多示例详见[examples目录](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples)
+- [SIMT Gather算子示例（标准编程范式）](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/00_introduction/01_gather/basic_gather/gather_1d/gather_1d.asc)
+- 更多示例详见[examples目录](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples)
 
 ---
 ### 语言扩展层SIMD C API
@@ -121,8 +121,8 @@ graph TD
 
 **参考示例**
 
-- [SIMD Add算子示例（同步一体化计算接口）](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/00_introduction/01_add/c_api_sync_add/c_api_add.asc)
-- 更多示例详见[examples目录](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples)
+- [SIMD Add算子示例（同步一体化计算接口）](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/00_introduction/01_add/c_api_sync_add/c_api_add.asc)
+- 更多示例详见[examples目录](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples)
 
 ### Tensor API：带Layout语义的C++底层编程接口（全自主资源管控）
 
@@ -147,7 +147,7 @@ graph TD
 
 **参考示例**
 
-- [基于Tensor API的Matmul示例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/07_tensor_api/mmad_tensor_api/mmad_tensor_api.asc)
+- [基于Tensor API的Matmul示例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/07_tensor_api/mmad_tensor_api/mmad_tensor_api.asc)
 
 ### 基础API（Basic API）：轻量化Tensor编程接口（TPipe/TQue自动化资源管理）
 
@@ -168,8 +168,8 @@ graph TD
 
 **参考示例**
 
-- [基于Tque/Tpipe自动管理内存与同步的SIMD Add算子示例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/01_add/add_tpipe_tque/add_tpipe_tque.asc)
-- [基于LocalMemoryAllocator自主管理内存与同步的SIMD Add算子示例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/01_add/add/add.asc)
+- [基于Tque/Tpipe自动管理内存与同步的SIMD Add算子示例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/01_add/add_tpipe_tque/add_tpipe_tque.asc)
+- [基于LocalMemoryAllocator自主管理内存与同步的SIMD Add算子示例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/01_add/add/add.asc)
 
 ### 高阶API：单核通用算法封装接口
 
@@ -190,8 +190,8 @@ graph TD
 
 **参考示例**
 
-- [Softmax API示例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/01_activation/softmax/softmax.asc)
-- [Matmul API示例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul)
+- [Softmax API示例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/01_activation/softmax/softmax.asc)
+- [Matmul API示例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul)
 
 ### 算子模板库：场景化高性能算子参考实现框架
 
@@ -222,4 +222,4 @@ graph TD
 
 Ascend C多层级接口设计的核心理念是：让您**始终使用最合适的编程范式，而非被动适应单一抽象**。无论您是追求极致性能的底层专家，还是希望快速验证算法的原型开发者，都能在Ascend C的层级化API生态中找到得心应手的工具。
 
-立即开始您的算子编程之旅！如有疑问，欢迎参考[Ascend C详细文档](https://asc.gitcode.com)或[社区示例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples)，我们将持续致力于让NPU的强大算力对您触手可及、高效易用。
+立即开始您的算子编程之旅！如有疑问，欢迎参考[Ascend C详细文档](https://asc.gitcode.com)或[社区示例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples)，我们将持续致力于让NPU的强大算力对您触手可及、高效易用。

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/DataCopy_L1ToGM_continuous.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
@@ -56,7 +56,7 @@ __aicore__ inline void DataCopy(const GlobalTensor<T>& dst, const LocalTensor<T>
 
 **图1** 连续搬运示意图<a id="zh-cn_topic_0000002540198372_fig826614454819"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/continuous_data_copy_diagram.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/continuous_data_copy_diagram.png)
 
 ## 数据类型<a id="zh-cn_topic_0000002540198372_section4219135304818"></a>
 
@@ -99,4 +99,4 @@ Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、hal
 
 ## 调用示例<a name="zh-cn_topic_0000002540198372_section088124295117"></a>
 
-L1到GM连续数据搬运的样例请参考[L1到GM搬运样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/06_compatibility_guide/data_copy_l1togm)。
+L1到GM连续数据搬运的样例请参考[L1到GM搬运样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/06_compatibility_guide/data_copy_l1togm)。

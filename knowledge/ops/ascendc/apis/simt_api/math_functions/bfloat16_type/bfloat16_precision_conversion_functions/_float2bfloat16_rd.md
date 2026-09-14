@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__float2bfloat16_rd.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_float2bfloat16\_rd
 
 ## 功能说明
+
+头文件路径为：`"simt_api/asc_bf16.h"`。
 
 遵循CAST\_FLOOR模式，将浮点数转换为bfloat16精度，返回转换后的值。
 
@@ -58,19 +60,13 @@ inline bfloat16_t __float2bfloat16_rd(const float x)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/asc_bf16.h`头文件。
-
-```cpp
-#include "simt_api/asc_bf16.h"
-```
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/asc_bf16.h"
+
     __global__ __launch_bounds__(1024) void kernel__float2bfloat16_rd(bfloat16_t* dst, float* x)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -81,6 +77,8 @@ inline bfloat16_t __float2bfloat16_rd(const float x)
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_bf16.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel__float2bfloat16_rd(__gm__ bfloat16_t* dst, __gm__ float* x)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;

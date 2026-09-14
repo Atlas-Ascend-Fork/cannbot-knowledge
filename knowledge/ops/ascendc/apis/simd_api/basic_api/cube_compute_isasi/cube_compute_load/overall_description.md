@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/overall_description.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -68,6 +68,7 @@ platforms: []
 | [LoadData（GMToL1-2D矩阵搬运V2）](load_data_gm_to_l1_2_dv2.md) | 使用2DV2指令以512B分形为单位搬运2D格式数据从GM到L1 Buffer。 | GM->L1 Buffer | 矩阵计算2D分形数据从GM搬入L1 Buffer。 |
 
 
+
 ## UB->L1 Buffer的接口分类与使用场景<a name="zh-cn_topic_0000002543771563_section_ub2l1"></a>
 
 **表4** **UB->L1 Buffer接口**
@@ -107,6 +108,7 @@ platforms: []
 
 
 
+
 针对Ascend 950PR/Ascend 950DT，新增L1 Buffer->L0A/B Buffer如下接口，请开发者参考表7。
 
 **表7** **L1 Buffer->L0A/B Buffer接口**
@@ -117,6 +119,7 @@ platforms: []
 | [LoadData（BitMode2D矩阵搬运）](load_data_2_d_bit_mode.md) | LoadData（2D矩阵搬运V2）的bit模式变体，支持按位操作的数据搬运。 | L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer | 用于追求极致Scalar性能的普通矩阵数据搬运。 |
 | [LoadData（MX矩阵搬运）](load_data_2_d_mx.md) | LoadData（2D矩阵搬运V2）的MX格式扩展，支持MX格式矩阵数据搬运。 | L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer | MX浮点格式的矩阵数据搬入。 |
 | [LoadData（BitMode卷积数据搬运）](load_data_3_d_bit_mode.md) | LoadData（卷积数据搬运）的bit模式变体，支持按位操作的3D数据搬运。 | L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer | 用于追求极致Scalar性能的卷积im2col展开与搬入。 |
+
 
 
 ## 辅助配置接口说明<a name="zh-cn_topic_0000002543771563_section_aux"></a>

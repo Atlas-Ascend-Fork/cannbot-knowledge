@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/hardware_implementation/basic_architecture.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -18,7 +18,7 @@ platforms: []
 
 如下图所示，基于Ascend C开发的算子运行在AI Core上。Ascend C编程模型基于AI Core硬件架构的抽象进行介绍，了解硬件架构能够帮助开发者更好的理解编程模型；对于需要完成高性能编程的深度开发者，更需要了解硬件架构相关知识，算子实践参考中很多内容都以本章为基础进行介绍。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/overview.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/overview.png)
 
 AI Core负责执行矩阵、矢量计算密集的任务，其包括以下组成部分：
 
@@ -28,7 +28,7 @@ AI Core负责执行矩阵、矢量计算密集的任务，其包括以下组成�
 
 以Atlas A2 训练系列产品/Atlas A2 推理系列产品为例，硬件架构图如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sep_arch.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sep_arch.png)
 
 本章节首先介绍硬件架构相关的关键概念和术语，以及AI Core的工作模式，为理解后续内容奠定基础。随后以Atlas A2 训练系列产品/Atlas A2 推理系列产品为例，提供AI Core基本架构的介绍：首先介绍计算单元、存储单元和搬运单元的基本功能与结构，然后通过典型的数据流和控制流示例，帮助开发者深入理解硬件架构的工作原理。针对不同产品型号对应的具体架构规格和细节说明需要参考后续[架构规格](architecture_spec/index.md)章节。
 
@@ -65,14 +65,14 @@ AI Core负责执行矩阵、矢量计算密集的任务，其包括以下组成�
     AI Core的一种工作模式，矩阵计算单元、矢量计算单元各自对应独立的Scalar调度单元，分离部署在Cube Core和Vector Core上。将Cube Core和Vector Core按照一定比例（1：N）进行组合，这样的组合视为一个AI Core，AI Core的核数以Cube Core为准。
 
     **图1**  分离模式示意图（N的取值以硬件平台信息获取接口获取的数值为准）<a name="fig4925816477"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sep_mode.png "分离模式示意图（N的取值以硬件平台信息获取接口获取的数值为准）")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sep_mode.png "分离模式示意图（N的取值以硬件平台信息获取接口获取的数值为准）")
 
 -   <a name="li1414517184416"></a>耦合模式
 
     AI Core的一种工作模式，矩阵计算单元、矢量计算单元对应同一个Scalar调度单元，部署在一个AI Core上。
 
     **图2**  耦合模式示意图<a name="fig583116255714"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/coupled_mode.png "耦合模式示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/coupled_mode.png "耦合模式示意图")
 
 >[!NOTE]说明 
 >Ascend C编程中，不同产品的工作模式如下：
@@ -105,7 +105,7 @@ AI Core负责执行矩阵、矢量计算密集的任务，其包括以下组成�
     Cube计算单元负责执行矩阵运算，以float16数据类型为例，Cube每次执行可完成两个float16类型的16x16矩阵的乘法操作。如下图所示，高亮部分为Cube计算单元及其访问的存储单元，其中L0A存储左矩阵，L0B存储右矩阵，L0C存储矩阵乘的结果和中间结果。
 
     **图3**  Cube计算单元数据访问<a name="fig643417174212"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/cube_access.png "Cube计算单元数据访问")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/cube_access.png "Cube计算单元数据访问")
 
 -   Vector
 
@@ -114,7 +114,7 @@ AI Core负责执行矩阵、矢量计算密集的任务，其包括以下组成�
     如下图所示，Vector所有计算的源数据以及目标数据都要求存储在UB中，Vector指令的首地址和操作长度有对齐要求，通常要求32B对齐，具体对齐要求参考API的约束描述。
 
     **图4**  Vector计算单元数据访问<a name="fig172397519590"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/vec_access.png "Vector计算单元数据访问")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/vec_access.png "Vector计算单元数据访问")
 
 -   Scalar
 
@@ -123,7 +123,7 @@ AI Core负责执行矩阵、矢量计算密集的任务，其包括以下组成�
     如下图所示：Scalar执行标量运算指令时，执行标准的ALU\(Arithmetic Logic Unit\)语句，ALU需要的代码段和数据段（栈空间）都来自于GM，ICache\(Instruction Cache\)用于缓存代码段，缓存大小与硬件规格相关，比如为16K或32K，以2K为单位加载；DCache\(Data Cache\)用于缓存数据段，大小也与硬件规格相关，比如为16K，以Cache Line（64Byte）为单位加载。考虑到核内访问效率最高，应尽量保证代码段和数据段被缓存在ICache和DCache，避免核外访问；同时根据数据加载单位不同，编程时可以考虑单次加载数据大小，来提升加载效率。例如在DCache加载数据时，当数据内存首地址与Cache Line（64Byte）对齐时，加载效率最高。
 
     **图5**  Scalar对指令和数据的访问<a name="fig9952125415559"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/scalar_access.png "Scalar对指令和数据的访问")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/scalar_access.png "Scalar对指令和数据的访问")
 
     >[!NOTE]说明 
     >硬件提供L2Cache用于缓存访问GM的数据（包括代码段、数据段），以此加快访问速度，提高访问效率。核外L2Cache以Cache Line为单位加载数据，根据硬件规格不同，Cache Line大小不同（128/256/512Byte等）。
@@ -137,7 +137,7 @@ AI处理器中的计算资源要想发挥强劲算力，必要条件是保证输
 内部存储单元和搬运单元的具体介绍请参考[表1](#table1692510612218)和[表2](#table288493152012)。
 
 **图6**  存储单元<a name="fig2032418113610"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/storage_unit.png "存储单元")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/storage_unit.png "存储单元")
 
 **表1**  存储单元介绍
 
@@ -227,33 +227,33 @@ AI处理器中的计算资源要想发挥强劲算力，必要条件是保证输
 
     GM → UB → Vector → UB → GM
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sep_arch_10.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sep_arch_10.png)
 
 -   Cube计算典型的数据流如下：
 
     -   GM →L1→L0A/L0B →Cube →L0C→FixPipe→GM
     -   GM →L1→L0A/L0B →Cube →L0C→FixPipe→L1→GM
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sep_arch_11.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sep_arch_11.png)
 
 ## 典型的指令流<a name="section1296816241258"></a>
 
 多条指令从系统内存通过总线接口进入到ICache\(Instruction Cache\)中，后续的指令执行过程，根据指令的类型，有两种可能：
 
 -   如果指令是Scalar指令，指令会被Scalar单元直接执行。
--   其他指令会被Scalar单元调度到独立的分类序列（Vector指令序列、Cube指令序列、MTE1/MTE2/MTE3指令序列等），然后再被对应的执行单元执行。
+-   其他指令会被Scalar单元顺序发射到独立的分类队列（Vector指令队列、Cube指令队列、MTE1/MTE2/MTE3指令队列等），然后再被对应的执行单元执行。
 
 **图7**  指令分类处理机制<a name="fig1993349810"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/instr_class.png "指令分类处理机制")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/instr_class.png "指令分类处理机制")
 
-各指令序列存在队列深度限制。队列深度表示同一指令序列中可缓存的待执行指令数量。当待执行指令数量达到队列深度时，Scalar单元继续向该指令序列发射指令会被阻塞，可能影响整体流水并行效率，[NPU架构版本2201](../../language_extension/simd_builtin_keywords.md)各指令序列队列深度参数参考[指令序列深度](architecture_spec/npu_arch_2201.md#指令序列深度)，[NPU架构版本3510](../../language_extension/simd_builtin_keywords.md)各指令序列队列深度参数参考[指令序列深度](architecture_spec/npu_arch_3510.md#指令序列深度)。
+各指令队列存在队列深度限制。队列深度表示同一指令队列中可缓存的待执行指令数量。当其中任一待执行指令（Vector指令队列、Cube指令队列、MTE1/MTE2/MTE3指令队列等）数量达到队列深度时，对应的Scalar单元如果再次向该指令队列发射指令会被阻塞，导致Scalar单元无法继续顺序发射后续指令，可能影响整体流水并行效率，[NPU架构版本2201](../../language_extension/simd_builtin_keywords.md)各指令队列深度参数参考[指令队列深度](architecture_spec/npu_arch_2201.md#指令序列深度)，[NPU架构版本3510](../../language_extension/simd_builtin_keywords.md)各指令队列深度参数参考[指令队列深度](architecture_spec/npu_arch_3510.md#指令序列深度)。其中各待执行指令队列一般包含三类指令：流水线待执行指令、流水线同步指令、搭配指令使用的寄存器设置指令。若待执行指令队列满影响到后续流水并行效率，可尝试减少对应指令队列里的指令数，缓解Scalar单元发射指令的阻塞状态；或者尝试重新编排受影响的并行流水线，将受影响的流水线指令发射提前。
 
-同一个指令序列中的指令是按照进入指令序列的顺序执行的，不同指令序列之间可以并行执行，通过多个指令序列的并行执行可以提升整体执行效率。对于并行执行过程中可能出现的数据依赖，通过事件同步模块插入同步指令来控制流水线的同步，提供PipeBarrier、SetFlag/WaitFlag两种API，保证序列内部以及序列之间按照逻辑关系执行。
+同一个指令队列中的指令是按照进入指令队列的顺序执行的，不同指令队列之间可以并行执行，通过多个指令队列的并行执行可以提升整体执行效率。对于并行执行过程中可能出现的数据依赖，通过事件同步模块插入同步指令来控制流水线的同步，提供PipeBarrier、SetFlag/WaitFlag两种API，保证队列内部以及队列之间按照逻辑关系执行。
 
--   PipeBarrier本身是一条指令，用于在序列内部约束执行顺序（虽然指令是顺序执行，但并不意味着后一条指令开始执行时前一条指令执行结束）。PipeBarrier指令可以保证前序指令中所有数据读写全部完成，后序指令才开始执行。
--   SetFlag/WaitFlag为两条指令，在SetFlag/WaitFlag的指令中，可以指定一对指令序列的关系，表示两个序列之间完成一组“锁”机制，其作用方式为：
+-   PipeBarrier本身是一条指令，用于在队列内部约束执行顺序（虽然指令是顺序执行，但并不意味着后一条指令开始执行时前一条指令执行结束）。PipeBarrier指令可以保证前序指令中所有数据读写全部完成，后序指令才开始执行。
+-   SetFlag/WaitFlag为两条指令，在SetFlag/WaitFlag的指令中，可以指定一对指令队列的关系，表示两个队列之间完成一组“锁”机制，其作用方式为：
     -   SetFlag：当前序指令的所有读写操作都完成之后，当前指令开始执行，并将硬件中的对应标志位设置为1。
-    -   WaitFlag：当执行到该指令时，如果发现对应标志位为0，该序列的后续指令将一直被阻塞；如果发现对应标志位为1，则将对应标志位设置为0，同时后续指令开始执行。
+    -   WaitFlag：当执行到该指令时，如果发现对应标志位为0，该队列的后续指令将一直被阻塞；如果发现对应标志位为1，则将对应标志位设置为0，同时后续指令开始执行。
 
 Ascend C提供同步控制API，开发者可以使用这类API来自行完成同步控制。需要注意的是，通常情况下，开发者基于[编程模型](../../programming_model/programming_model_overview.md)中介绍的编程模型和范式进行编程时不需要关注同步，编程模型帮助开发者完成了同步控制；使用编程模型和范式是我们推荐的编程方式，自行同步控制可能会带来一定的编程复杂度。
 

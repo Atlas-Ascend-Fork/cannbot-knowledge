@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_l12l0a/asc_copy_l12l0a_2d_arch_3510.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_copy_l12l0a_arch_3510（2D矩阵搬运）
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
 负责完成矩阵计算所需的2D格式数据的搬运，搬运粒度为大小为512字节的数据分形，支持非转置与转置矩阵从L1 Buffer到L0A Buffer的数据搬运。
 
@@ -45,14 +48,6 @@ __aicore__ inline void asc_copy_l12l0a(__ca__ <dtype>* dst,
                                        uint8_t k_step,
                                        int16_t src_stride,
                                        uint16_t dst_stride)
-__aicore__ inline void asc_copy_l12l0a_sync(__ca__ <dtype>* dst,
-                                            __cbuf__ <dtype>* src,
-                                            uint16_t m_start_position,
-                                            uint16_t k_start_position,
-                                            uint8_t m_step,
-                                            uint8_t k_step,
-                                            int16_t src_stride,
-                                            uint16_t dst_stride)
 ```
 
 ### dtype支持的数据类型
@@ -84,14 +79,6 @@ __aicore__ inline void asc_copy_l12l0a_transpose(__ca__ <dtype>* dst,
                                                  uint8_t k_step,
                                                  int16_t src_stride,
                                                  uint16_t dst_stride)
-__aicore__ inline void asc_copy_l12l0a_transpose_sync(__ca__ <dtype>* dst,
-                                                      __cbuf__ <dtype>* src,
-                                                      uint16_t m_start_position,
-                                                      uint16_t k_start_position,
-                                                      uint8_t m_step,
-                                                      uint8_t k_step,
-                                                      int16_t src_stride,
-                                                      uint16_t dst_stride)
 ```
 
 ### dtype支持的数据类型
@@ -138,7 +125,7 @@ __aicore__ inline void asc_copy_l12l0a_transpose(__ca__ half* dst,
 
 **图 1**  l12l0a_2d搬运参数示例（以half数据类型，非转置为例）
 
-![l12l0a_2d搬运参数示例](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddata2dparamsv2_half_no_transpose.png)
+![l12l0a_2d搬运参数示例](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddata2dparamsv2_half_no_transpose.png)
 
 ## 返回值说明
 
@@ -191,7 +178,7 @@ $$
 
 **图2** 搬运起始位置示意图
 
-![搬运起始位置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_start_addr_demo.png "搬运起始位置示意图")
+![搬运起始位置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_start_addr_demo.png "搬运起始位置示意图")
 
 ### 转置场景搬入
 
@@ -206,23 +193,23 @@ $$
 
 **图3** b4数据类型转置示意图
 
-![b4数据类型转置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0_trans_b4.png "b4数据类型转置示意图")
+![b4数据类型转置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0_trans_b4.png "b4数据类型转置示意图")
 
 **图4** b8数据类型转置示意图
 
-![b8数据类型转置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0_trans_b8.png "b8数据类型转置示意图")
+![b8数据类型转置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0_trans_b8.png "b8数据类型转置示意图")
 
 **图5** b16数据类型转置示意图
 
-![b16数据类型转置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0_trans_b16.png "b16数据类型转置示意图")
+![b16数据类型转置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0_trans_b16.png "b16数据类型转置示意图")
 
 **图6** b32数据类型转置示意图
 
-![b32数据类型转置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0_trans_b32.png "b32数据类型转置示意图")
+![b32数据类型转置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0_trans_b32.png "b32数据类型转置示意图")
 
 ## 调用示例
 
-仓库中的完整工程样例请参考[mmad样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/03_c_api/03_matrix_compute/mmad)。
+仓库中的完整工程样例请参考[mmad样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/03_c_api/03_matrix_compute/mmad)。
 
 将代码保存为`examples.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[`__NPU_ARCH__`](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 

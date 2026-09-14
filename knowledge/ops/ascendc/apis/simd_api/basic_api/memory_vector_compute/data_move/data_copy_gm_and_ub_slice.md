@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopy_GMAndUB_slice.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -89,7 +89,7 @@ source_headers:
 如[图1](#fig1196816115710)所示，以float数据类型为例，切片搬运接口能从shape为3\*87的源操作中，选取四个不连续的横向切片搬运到目的操作数中，下面结合图示对SliceInfo结构体参数进行解析：
 
 **图1**  参数解析示意图<a name="fig1196816115710"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/slice_datacopy_parameter_analysis_diagram.png "参数解析示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/slice_datacopy_parameter_analysis_diagram.png "参数解析示意图")
 
 - dimValue为2，表示操作数有2维。
 - srcSliceInfo为 {{16, 70, 7, 3, 87},  {0, 2, 1, 1, 3}}
@@ -225,4 +225,4 @@ AscendC::WaitFlag<AscendC::HardEvent::MTE2_MTE3>(EVENT_ID0);
 AscendC::DataCopy(dstGlobal, srcLocal, dstSliceInfo, dstSliceInfo, dimValue);
 ```
 
-完整样例请参考[切片数据搬运样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2ub_slice)。srcSliceInfo、dstSliceInfo参数解析与结果示例请参考[图1](#fig1196816115710)。
+完整样例请参考[切片数据搬运样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2ub_slice)。srcSliceInfo、dstSliceInfo参数解析与结果示例请参考[图1](#fig1196816115710)。

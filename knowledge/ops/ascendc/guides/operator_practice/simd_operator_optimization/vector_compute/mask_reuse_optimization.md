@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/vector_compute/mask_reuse_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -34,6 +34,6 @@ platforms: []
 在这些场景中，掩码配置保持不变的情况下，遵循“**一次性全局配置，后续复用**”的核心原则：在所有连续计算操作执行之前，通过调用**SetVectorMask**接口完成**全局掩码**的一次性、完整设置mask；随后，所有后续的向量计算接口调用均应将**isSetMask**参数设置为**false**，以明确指示接口跳过内部掩码设置流程，直接**复用已预置**的全局掩码状态。
 
 **图1**  代码优化  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/code_optimization.png)<a id="图1-代码优化"></a>
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/code_optimization.png)<a id="图1-代码优化"></a>
 
 理论分析：SetMaskCount、SetMask、ResetMask、SetMaskNorm四个接口，每个接口调用耗时1cycle，连续调用180次Adds计算接口，共节省4×180 = 720cycles。

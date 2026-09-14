@@ -26,7 +26,7 @@
 |---|---|
 | 字段白名单、数据类型、数组形状和基础枚举 | `governance/schemas/frontmatter.schema.json` |
 | 八个公共必选字段、路径 Profile 到 OKF `type` 的映射、Profile 字段组合 | `governance/schemas/profiles.yaml` |
-| domain、route、platform、tag、受控附加路径值和固定归档/提交本地来源 | `governance/schemas/registries.yaml` |
+| domain、route、platform、tag、受控附加路径值和文档归档/提交本地来源 | `governance/schemas/registries.yaml` |
 | 路径推导、跨字段/文件关系、索引和链接 | `governance/contracts/` |
 
 `governance/specs/` 解释这些规则的语义和边界：修改知识卡重点阅读 `paths.md` 与 `frontmatter.md`；修改机器规则阅读 `schemas.md`；修改 Bundle/OKF 行为阅读 `okf.md`；修改 Skill 阅读 `skills.md`。目标目录的 `index.md` 提供当前内容导航。
@@ -40,7 +40,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 3. 按 `governance/specs/frontmatter.md` 填写字段。不要重复写可从路径推导的 domain、route、Profile 或 Concept ID，也不要为单张卡临时增加字段、标签或注册值。
 4. `draft` 的 `sources` 可以为空，非 Glossary 的 `platforms` 也可以为空，但这些必选字段不能省略；轨迹沉淀的 `Runbook` 可使用 `sources: []`，但正文必须保留与结论强度相匹配的触发、探针、原始观测和验证信号；其他 `stable` 和 `deprecated` 必须有可核验来源。非 Glossary 还必须有明确平台范围。已知 Git 文件或目录来源必须固定到 40 位 commit；GitCode/GitHub PR 与 Issue 使用其规范工作项 URL；本地来源必须位于 Registry 登记根目录，资源获取脚本必须存在且可执行；Git 本地来源使用 Registry 登记的 root、40 位 revision 和具体路径，恢复后验证远程来源、提交和干净工作区。
 5. `status` 表示生命周期，`verified` 表示真实发生的复核事件，两者相互独立。不要因来源固定、Lint 通过或卡片进入 `stable` 而伪造 `verified`；`replaced_by` 只允许出现在 `deprecated` 卡片中，用于指向当前替代 Concept。
-6. 正文通常应蒸馏可复用结论，并说明适用条件、失效边界和验证方式；Registry 固定归档中的官方 API/Guide 文档是受控例外：只摄入含独立技术事实的来源页，README、发布占位、纯链接目录和接口清单等导航页不建卡，其链接改指向对应目录的 `index.md`；保留页除 Registry 声明的冗余章节、失效链接目标、Frontmatter 外，完整保留来源正文；可在文末追加普通知识卡链接。当前“产品支持情况”只用于推导 `platforms`，不重复写入正文。只有主来源 API/Guide 镜像可保留原文多个一级标题，辅助来源引用不获得此例外。其他知识不要大段复制来源，也不要把搜索摘要、聊天记录或模型记忆作为唯一技术证据。正文图片使用带 40 位 commit 和具体文件路径的 HTTPS Git raw URL，不提交本地图片副本或引用分支地址。
+6. 正文通常应蒸馏可复用结论，并说明适用条件、失效边界和验证方式；Registry 文档归档中的官方 API/Guide 文档是受控例外：只摄入含独立技术事实的来源页，README、发布占位、纯链接目录和接口清单等导航页不建卡，其链接改指向对应目录的 `index.md`；保留页除 Registry 声明的冗余章节、失效链接目标、Frontmatter 外，完整保留来源正文；可在文末追加普通知识卡链接。当前“产品支持情况”只用于推导 `platforms`，不重复写入正文。只有主来源 API/Guide 镜像可保留原文多个一级标题，辅助来源引用不获得此例外。其他知识不要大段复制来源，也不要把搜索摘要、聊天记录或模型记忆作为唯一技术证据。正文图片使用带 40 位 commit 和具体文件路径的 HTTPS Git raw URL，不提交本地图片副本或引用分支地址。
 7. 新增、删除或移动卡片时同步受影响的每一级 `knowledge/**/index.md` 和正文链接。移动会改变 Concept ID，还必须同步所有 `replaced_by` 引用。
 8. 实质知识变更按“日志”一节记录；纯排版和错别字修复不记日志。
 
@@ -68,7 +68,9 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 
 - 当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、复用 Query 的只读 Ascend C API 专用消费流程 `ascendc-api-knowledge-query`、知识仓内的 `ops-knowledge-trace-ingest`（trace → runbooks 生产），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。新增其他 Skill 仍需证明现有职责无法承载并完成架构评审。
 - `.agents/skills/` 是本仓 Skill 的规范源。Skill 的实现、说明、参考资料和测试都在本仓维护与验证。
+- 项目安装通过本仓安装器链接到完整 checkout，保持 Skill、相邻依赖和 `governance/contracts/` 同版本可用；配置知识根不等于支持独立复制 Skill 目录。
 - 治理、安装、检索与 CI 回归集中于 `evals/`；Ingest 通过全库确定性命令和仓库级回归验证，trace producer 保留其专用脚本回归。按需图谱与 CI 共用 Ingest 的同一链接构图实现。
+- 官方文档归档持续更新，不校验归档或内容树 SHA-256；完成标记记录来源 URL 与准备时间，刷新来源不自动更新知识卡。Git 源码继续固定到登记的 40 位 commit。
 - 安装器默认恢复登记的文档与固定版本源码，再准备 Query 索引；显式离线模式可以跳过资源获取，Query/Lint 本身不得自动联网。资源只放在 ignored 来源根，不执行上游源码或覆盖有本地修改的 checkout。
 - Skill 保存生产、查询和治理知识的工作流、工具及必要的小型参考资料；可被复用的技术事实必须写入 `knowledge/`。Ingest 按需构图只读取现有链接，不回写知识正文。
 - `consumer` 和 `contributor` 是安装模式，不是路径 Profile、OKF `type` 或知识分类。

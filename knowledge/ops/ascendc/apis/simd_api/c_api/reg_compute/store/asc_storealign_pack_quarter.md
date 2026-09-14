@@ -11,16 +11,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/store/asc_storealign_pack_quarter.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/store/storealign.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_storealign_pack_quarter
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/store/storealign.h"`。
 
 将矢量数据寄存器中的数据压缩搬出到Unified Buffer（UB）。`mask`用于指示参与搬出的元素，`mask`对应位置为1时，将`src`中每个32bit的有效元素中低8bit数据写入压缩后对应的目的位置，`mask`对应位置为0时，压缩后对应的目的位置保持原值。本接口在Vector Function（`__simd_vf__`标记的函数）内使用，目的操作数为UB地址。
 
@@ -38,7 +41,7 @@ source_headers:
 
 ```c
 // 占位符形式
-__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ <dtype>* dst_align32b,
+__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ <dtype>* dst,
                                                         vector_<dtype> src,
                                                         vector_bool mask)
 ```
@@ -50,7 +53,7 @@ __simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ <dtype>* dst_al
 #### 函数原型典型示例
 
 ```c
-__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst_align32b,
+__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst,
                                                         vector_int32_t src,
                                                         vector_bool mask)
 ```
@@ -59,7 +62,7 @@ __simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst_al
 
 ```c
 // 占位符形式
-__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ <dtype>* dst_align32b,
+__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ <dtype>* dst,
                                                         vector_<dtype> src,
                                                         int32_t offset,
                                                         vector_bool mask)
@@ -72,7 +75,7 @@ __simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ <dtype>* dst_al
 #### 函数原型典型示例
 
 ```c
-__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst_align32b,
+__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst,
                                                         vector_int32_t src,
                                                         int32_t offset,
                                                         vector_bool mask)
@@ -82,7 +85,7 @@ __simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst_al
 
 ```c
 // 占位符形式
-__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ <dtype>* dst_align32b,
+__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ <dtype>* dst,
                                                         vector_<dtype> src,
                                                         addr_reg offset,
                                                         vector_bool mask)
@@ -95,7 +98,7 @@ __simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ <dtype>* dst_al
 #### 函数原型典型示例
 
 ```c
-__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst_align32b,
+__simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst,
                                                         vector_int32_t src,
                                                         addr_reg offset,
                                                         vector_bool mask)
@@ -110,8 +113,8 @@ __simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst_al
 
 | 参数名 | 输入/输出 | 描述 |
 |---|---|---|
-| dst_align32b | 输出 | 目的操作数的起始地址。类型为`__ubuf__ <dtype>*`，起始地址需32字节对齐。 |
-| src | 输入 | 源操作数（矢量数据寄存器）。`dtype`须与`dst_align32b`一致。 |
+| dst | 输出 | 目的操作数的起始地址。类型为`__ubuf__ <dtype>*`，起始地址需32字节对齐。 |
+| src | 输入 | 源操作数（矢量数据寄存器）。`dtype`须与`dst`一致。 |
 | mask | 输入 | 源操作数掩码（掩码寄存器），用于指示参与搬出的元素。对应位置为1时参与搬出，为0时不参与搬出。需通过掩码设置接口预先赋值后再传入。 |
 
 ### 立即数偏移搬出模式
@@ -120,9 +123,9 @@ __simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst_al
 
 | 参数名 | 输入/输出 | 描述 |
 |---|---|---|
-| dst_align32b | 输出 | 目的操作数的起始地址。类型为`__ubuf__ <dtype>*`，起始地址需32字节对齐。 |
-| src | 输入 | 源操作数（矢量数据寄存器）。`dtype`须与`dst_align32b`一致。 |
-| offset | 输入 | 相对`dst_align32b`起始地址的偏移量，类型为`int32_t`，单位为元素。 |
+| dst | 输出 | 目的操作数的起始地址。类型为`__ubuf__ <dtype>*`，起始地址需32字节对齐。 |
+| src | 输入 | 源操作数（矢量数据寄存器）。`dtype`须与`dst`一致。 |
+| offset | 输入 | 相对`dst`起始地址的偏移量，类型为`int32_t`，单位为元素。 |
 | mask | 输入 | 源操作数掩码（掩码寄存器），用于指示参与搬出的元素。对应位置为1时参与搬出，为0时不参与搬出。需通过掩码设置接口预先赋值后再传入。 |
 
 ### 地址寄存器偏移搬出模式
@@ -131,8 +134,8 @@ __simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst_al
 
 | 参数名 | 输入/输出 | 描述 |
 |---|---|---|
-| dst_align32b | 输出 | 目的操作数的起始地址。类型为`__ubuf__ <dtype>*`，起始地址需32字节对齐。 |
-| src | 输入 | 源操作数（矢量数据寄存器）。`dtype`须与`dst_align32b`一致。 |
+| dst | 输出 | 目的操作数的起始地址。类型为`__ubuf__ <dtype>*`，起始地址需32字节对齐。 |
+| src | 输入 | 源操作数（矢量数据寄存器）。`dtype`须与`dst`一致。 |
 | offset | 输入 | 地址寄存器偏移，类型为`addr_reg`，由配套的地址寄存器构造接口预先构造。 |
 | mask | 输入 | 源操作数掩码（掩码寄存器），用于指示参与搬出的元素。对应位置为1时参与搬出，为0时不参与搬出。需通过掩码设置接口预先赋值后再传入。 |
 
@@ -148,9 +151,9 @@ __simd_callee__ inline void asc_storealign_pack_quarter(__ubuf__ int32_t* dst_al
 
 - 本接口非AIV调用直接返回。
 - 本接口在Vector Function（`__simd_vf__`标记的函数）内调用。
-- `dst_align32b`起始地址需32字节对齐，否则会报错。
+- `dst`起始地址需32字节对齐，否则会报错。
 - `mask`必须为`vector_bool`类型掩码寄存器，需通过掩码设置接口预先赋值后再传入。未赋值的掩码寄存器内容不确定，会导致有效元素位置错误。
-- UB总容量为256KB，用户可用容量随编译选项与编程场景变化（默认预留6KB SIMD VF栈和2KB Ascend C预留空间，可用248KB；SIMD+SIMT混编时再划分32KB~128KB作为Data Cache，可用容量进一步减少）。`dst_align32b`偏移与写出区域对应的UB范围不可超过实际可用容量，否则会报错。
+- UB总容量为256KB，用户可用容量随编译选项与编程场景变化（默认预留6KB SIMD VF栈和2KB Ascend C预留空间，可用248KB；SIMD+SIMT混编时再划分32KB~128KB作为Data Cache，可用容量进一步减少）。`dst`偏移与写出区域对应的UB范围不可超过实际可用容量，否则会报错。
 - 如果本指令与其他指令存在UB地址重叠，需要插入同步指令[asc_mem_bar](../reg_sync/asc_mem_bar.md)，保证多个指令串行化，防止出现异常数据。
 
 ### int32_t偏移压缩搬出场景

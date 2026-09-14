@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/typical_operator_cases/simd_operator_impl/add_vector_operator/intermediate_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -20,7 +20,7 @@ platforms: []
 
 ## 性能瓶颈分析
 
-基于入门级代码的Profiling数据（以[8192×8192 half](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/README.md#case-0-单核标量版本基准程序)为基准），核心性能瓶颈如下：
+基于入门级代码的Profiling数据（以[8192×8192 half](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/README.md#case-0-单核标量版本基准程序)为基准），核心性能瓶颈如下：
 
 > **说明**：入门功能落地版使用float数据类型是为了简化理解；从中级性能优化版起切换至half数据类型，以获得更高的向量计算性能和搬运效率。以下Profiling数据及优化效果均基于half类型测试。
 
@@ -85,7 +85,7 @@ if (blockIdxM < remainderM) {
 
 **原理解析**：采用Ping-Pong双缓冲技术，Ping缓冲区进行计算时，Pong缓冲区进行数据搬运，交替执行实现计算与搬运的流水线并行。
 
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/figures/DoubleBuffer.png" width="50%">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/figures/DoubleBuffer.png" width="50%">
 
 **代码改造点**：
 
@@ -117,4 +117,4 @@ for (uint32_t loopIdx = 0; loopIdx < totalBlocks; loopIdx++) {
 
 **本阶段结论**：经过标量→向量、多核切分、大块搬运、双缓冲四级优化，端到端性能从1.24秒降至264μs，提升4695倍。当前瓶颈在于搬运速度本身，MTE2利用率已达97.3%，进一步优化需要从L2 Cache和UB内存布局入手。
 
-详细内容请参见[Add性能调优样例 Case 1-4](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/README.md#中级性能优化)。
+详细内容请参见[Add性能调优样例 Case 1-4](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/README.md#中级性能优化)。

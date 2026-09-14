@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/appendix/mmad_interface_boundary_value_summary.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -31,6 +31,7 @@ platforms: []
 **表1**  Mmad特殊值/边界值输入的计算结果说明
 
 <a name="table7822641411"></a>
+
 | C矩阵的数据类型 | Mmad子阶段 | A矩阵的元素取值 | B矩阵的元素取值 | dst的元素取值<br>（INF/NAN模式） |
 | --- | --- | --- | --- | --- |
 | float | 乘法阶段 | +inf | norm(> 0.0)/+inf | +inf |

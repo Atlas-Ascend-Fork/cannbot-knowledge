@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/abstract_hardware_architecture.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 Ascend C支持SIMD与SIMT混合编程，实现向量级并行与线程级并行的高效协同。AI Core包含AIC和AIV，其中AIV核支持SIMT、SIMD两种工作模式，因此可以实现AIV内SIMD与SIMT的混合编程，也支持AIV的SIMT与AIC的SIMD融合编程，整体硬件架构如下图所示：
 
 **图1** SIMD与SIMT混合编程硬件架构示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simt_arch.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simt_arch.png)
 
 ## Vector Function工作机制<a name="zh-cn_topic_0000002571695539_section471921191712"></a>
 
@@ -28,7 +28,7 @@ Ascend C支持SIMD与SIMT混合编程，实现向量级并行与线程级并行�
 如下图所示，simt\_func表示在SIMT硬件单元上执行的代码段，simd\_func表示在SIMD硬件单元上执行的代码段，代码段属性通过[\_\_simt\_vf\_\_](kernel_and_vf_functions.md#zh-cn_topic_0000002571578013_section1780955884616)、[\_\_simd\_vf\_\_](../../../language_extension/simd_builtin_keywords.md#section192521344610)来标识。
 
 **图2** SIMD与SIMT混合编程VF示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simt_vf.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simt_vf.png)
 
 AIV执行时，Scalar计算单元会将Vector Function发射到Vector Function Queue中，后续串行执行每个Vector Function，并与MTE异步执行。
 
@@ -46,7 +46,7 @@ Reg矢量执行单元、DMA单元和Aux Scalar虽属于不同的硬件执行单�
 2. Reg矢量执行单元和DMA单元在没有数据依赖时可以**同时发射、并行执行**。
 
 **图3** SIMD Reg矢量计算示意图  
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_exec.png" title="Reg执行单元" style="zoom:80%;"/>
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_exec.png" title="Reg执行单元" style="zoom:80%;"/>
 
 ### SIMT Vector Function
 
@@ -55,4 +55,4 @@ Reg矢量执行单元、DMA单元和Aux Scalar虽属于不同的硬件执行单�
 Warp内线程共享同一条指令流，各线程维护独立的线程索引、寄存器和栈等执行状态。硬件根据线程活跃掩码发射指令：当Warp内线程控制流一致时，可保持较高执行效率；发生分支发散时，硬件会按不同分支路径分批执行活跃线程，有效并行度随之下降。
 
 **图4** SIMT线程架构示意图  
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simt_thread.png" title="SIMT线程结构示意图" style="zoom:80%;"/>
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simt_thread.png" title="SIMT线程结构示意图" style="zoom:80%;"/>

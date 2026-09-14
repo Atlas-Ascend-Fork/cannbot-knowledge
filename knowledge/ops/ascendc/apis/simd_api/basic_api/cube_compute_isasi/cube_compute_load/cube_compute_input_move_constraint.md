@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/cube_compute_input_move_constraint.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -57,63 +57,63 @@ LoadDataWithSparse主要用于搬运以512Byte为单位存放的稠密权重矩�
     - GM->L1 Buffer
         - ND->Nz：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_nd2nz.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_nd2nz.png)
         - Nz->Nz：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_nz2nz.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_nz2nz.png)
         - Zn->Zn：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_zn2zn.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_zn2zn.png)
 - **LoadData（2D矩阵搬运）**
     - GM->L1 Buffer（不支持转置）
         - Nz->Nz：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_gm2l1_nz2nz.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_gm2l1_nz2nz.png)
         - Zn->Zn：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_gm2l1_zn2zn.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_gm2l1_zn2zn.png)
     - GM->L0A Buffer（不支持转置）L1 Buffer->L0A Buffer（不使能转置）（Nz->Zz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_gm2l0a_nz2zz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_gm2l0a_nz2zz.png)
     - GM->L0B Buffer（不支持转置）L1 Buffer->L0B Buffer（不使能转置）（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_gm2l0b_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_gm2l0b_zn2zn.png)
     - L1 Buffer->L0A Buffer（使能转置，仅支持b16数据类型）（Nz->Zz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_nz2zz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_nz2zz.png)
     - L1 Buffer->L0B Buffer（使能转置，仅支持b16数据类型）（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0b_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0b_zn2zn.png)
 - **LoadDataWithTranspose**
     - L1 Buffer->L0A Buffer（b8）（Nz->Zz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtranspose_l12l0a_b8_nz2zz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtranspose_l12l0a_b8_nz2zz.png)
     - L1 Buffer->L0B Buffer（b4/b8）（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b4b8_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b4b8_zn2zn.png)
     - L1 Buffer->L0A Buffer（b16）（Nz->Zz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtranspose_l12l0a_b16_nz2zz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtranspose_l12l0a_b16_nz2zz.png)
     - L1 Buffer->L0B Buffer（b16）（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b16_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b16_zn2zn.png)
     - L1 Buffer->L0A Buffer（b32）（Nz（<span>当且仅当Row==16</span>）->Zz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtranspose_l12l0a_b32_nz2zz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtranspose_l12l0a_b32_nz2zz.png)
     - L1 Buffer->L0B Buffer（b32）（Zn（<span>当且仅当Col==16</span>）->Zn）
         
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b32_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b32_zn2zn.png)
 - **LoadData（卷积数据搬运）**
     - L1 Buffer->L0A Buffer（NC1HWC0->Zz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l12l0a_nc1hwc02zz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l12l0a_nc1hwc02zz.png)
     - L1 Buffer->L0B Buffer（NC1HWC0->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l12l0b_nc1hwc02zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l12l0b_nc1hwc02zn.png)
 - **LoadDataWithSparse**
     - L1 Buffer->L0B Buffer（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithsparse_l12l0b_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithsparse_l12l0b_zn2zn.png)
 
 针对一些不常用的分形转换的支持情况，开发者可参考下表：
 
@@ -150,79 +150,79 @@ LoadData（MX矩阵搬运）在搬运左右矩阵的时候，在不使能转置�
     - GM->L1 Buffer
         - ND->Nz：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_nd2nz.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_nd2nz.png)
         - DN->Nz：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_dn2nz.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_dn2nz.png)
         - Nz->Nz：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_nz2nz.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_nz2nz.png)
         - Zn->Zn：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_zn2zn.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_zn2zn.png)
 - **LoadData（2D矩阵搬运）**
     - GM->L1 Buffer（不支持转置）
         - Nz->Nz：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_gm2l1_nz2nz.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_gm2l1_nz2nz.png)
         - Zn->Zn：
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_gm2l1_zn2zn.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_gm2l1_zn2zn.png)
     - L1 Buffer->L0A Buffer（不使能转置）（Nz->Nz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_nz2nz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_nz2nz.png)
     - L1 Buffer->L0B Buffer（不使能转置）（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0b_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0b_zn2zn.png)
     - L1 Buffer->L0A Buffer（使能转置，仅支持b16数据类型）（Zn->Nz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_zn2nz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_zn2nz.png)
     - L1 Buffer->L0B Buffer（使能转置，仅支持b16数据类型）（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0b_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0b_zn2zn.png)
 - **LoadData（2D矩阵搬运V2）**
     - L1 Buffer->L0A Buffer（Nz->Nz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0a_nz2nz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0a_nz2nz.png)
     - L1 Buffer->L0A Buffer（使能转置）（Zn->Nz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0a_zn2nz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0a_zn2nz.png)
     - L1 Buffer->L0B Buffer（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0b_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0b_zn2zn.png)
     - L1 Buffer->L0B Buffer（使能转置）（Nz->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0b_nz2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0b_nz2zn.png)
 - **LoadData（MX矩阵搬运）**
     - L1 Buffer->L0A Buffer（Nz->Nz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2mx_l12l0a_nz2nz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2mx_l12l0a_nz2nz.png)
     - L1 Buffer->L0A Buffer_MX
             
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2mx_l12l0amx.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2mx_l12l0amx.png)
     - L1 Buffer->L0B Buffer（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2mx_l12l0b_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2mx_l12l0b_zn2zn.png)
     - L1 Buffer->L0B Buffer_MX
             
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2mx_l12l0bmx.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2mx_l12l0bmx.png)
 - **LoadDataWithTranspose**
     - L1 Buffer->L0B Buffer（b4/b8）（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b4b8_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b4b8_zn2zn.png)
     - L1 Buffer->L0B Buffer（b16）（Zn->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b16_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b16_zn2zn.png)
     - L1 Buffer->L0B Buffer（b32）（Zn（<span>当且仅当Col==16</span>）->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b32_zn2zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtranspose_l12l0b_b32_zn2zn.png)
 - **LoadData（卷积数据搬运）**
     - L1 Buffer->L0A Buffer（NC1HWC0->Nz）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l12l0a_nc1hwc02nz.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l12l0a_nc1hwc02nz.png)
     - L1 Buffer->L0B Buffer（NC1HWC0->Zn）
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l12l0b_nc1hwc02zn.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l12l0b_nc1hwc02zn.png)
 
 针对一些不常用的分形转换的支持情况，开发者可参考下表：
 
@@ -281,6 +281,7 @@ LoadData（MX矩阵搬运）在搬运左右矩阵的时候，在不使能转置�
 | LoadDataWithTranspose | L1 Buffer->L0B Buffer | b8（int8_t、uint8_t）；<br>b16（half、bfloat16_t）；<br>b32（int32_t、uint32_t、float）。 |
 | LoadData（卷积数据搬运） | L1 Buffer->L0A Buffer | b8（int8_t、uint8_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t）；<br>b16（half、bfloat16_t）；<br>b32（int32_t、uint32_t、float）。 |
 | LoadData（卷积数据搬运） | L1 Buffer->L0B Buffer | b8（int8_t、uint8_t、hifloat8_t、fp8_e5m2_t、fp8_e4m3fn_t）；<br>b16（half、bfloat16_t）；<br>b32（int32_t、uint32_t、float）。 |
+
 
 
 

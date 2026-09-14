@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_padding/Brcb.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -148,7 +148,7 @@ dstRepStride为8：说明相邻迭代间目的操作数中首尾DataBlock地址�
 
 **图1**  目的操作数连续
 
-![目的操作数连续](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/Brcb_1.png)
+![目的操作数连续](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/Brcb_1.png)
 
 ### 目的操作数非连续
 
@@ -160,11 +160,11 @@ dstRepStride为16：说明相邻迭代间目的操作数中首尾DataBlock地址
 
 **图2**  目的操作数非连续
 
-![目的操作数非连续](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/Brcb_2.png)
+![目的操作数非连续](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/Brcb_2.png)
 
 ## 调用示例<a name="section11276201527"></a>
 
-本调用示例中只展示完整样例中的接口部分代码。如果您需要运行示例代码，请直接参考完整样例[Brcb样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/brcb)进行编译执行。
+本调用示例中只展示完整样例中的接口部分代码。如果您需要运行示例代码，请直接参考完整样例[Brcb样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/brcb)进行编译执行。
 
 ```cpp
 // repeatTime = 2, 128 elements one repeat, 256 elements total

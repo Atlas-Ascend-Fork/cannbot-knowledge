@@ -14,3 +14,5 @@
 - [归约操作](reduction_operations/index.md)：在host侧获取Mean接口计算所需最大和最小临时空间大小，供Tiling参数选择。
 - [排序操作](sort_operations/index.md)：对数据进行预处理，将要排序的源操作数src一一对应的合入目标数据concat中，数据预处理完成后，可以进行Sort。
 - [张量变换](tensor_transform/index.md)：将输入按照输出shape进行广播。 比如A的shape为\(2,1\)，广播的目标shape为\(2,16\)，则会将原来的一列扩展为相同的16列。
+
+- [experimental](experimental/index.md)：本接口为试验接口，在后续版本中可能会调整或改进，不保证后续兼容性。请开发者在使用过程中关注后续版本更新。

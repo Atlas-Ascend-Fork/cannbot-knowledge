@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/AI-CPU-API/printf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -74,7 +74,7 @@ void printf(const char* fmt, ...)
 
 -   该接口仅支持通过<<<...\>\>\>调用，并在异构编译场景使用。
 -   该接口不支持打印除换行符之外的其他转义字符。
--   该接口使用Dump功能，所有使用Dump功能的接口在每个核上Dump的数据总量不可超过1M。请开发者自行控制待打印的内容数据量，超出则不会打印。
+-   该接口使用Dump功能，所有使用Dump功能的接口在每个核上单次Dump的数据量不可超过1M。请开发者自行控制待打印的内容数据量，超出则不会打印。
 -   使用该接口时，若采用bisheng命令行编译，开发者需要手动链接相关的静态库；而使用CMake编译时，框架会自动处理链接问题，无需开发者额外关注。具体编译命令如下：通过--cce-aicpu-laicpu\_api为Device链接libaicpu\_api.a，通过--cce-aicpu-L指定libaicpu\_api.a的库路径。
 
     ```

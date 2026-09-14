@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/atomic_operations/asc_atomic_and.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # asc\_atomic\_and
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_atomic_functions.h"`。
 
 对Unified Buffer（UB）或Global Memory上address的数值与指定数值val进行原子与（&）操作，即将address数值与（&）val的结果赋值到UB或Global Memory上。
 
@@ -72,14 +74,6 @@ UB或Global Memory上的初始数据。
     -   返回值：该接口无对应的性能优化指令，对于所有数据类型，程序中是否使用该接口返回值，接口性能基本一致。
     -   地址分布：Global Memory原子操作经过L2 Cache处理，L2 Cache以512B Cache Line为缓存管理单位，每条Cache Line包含4个128B扇区（Sector），Global Memory原子操作以128B Sector为处理粒度。目标地址集中在同一个Sector内时，处理效率较低；目标地址分布在更多Sector内时，处理效率较高。因此，业务允许时，建议将原子操作的目标地址分散到更多Sector中。
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_atomic_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_atomic_functions.h"
-```
-
 ## 调用示例
 
 示例场景为：多个线程根据各自检测结果清除共享状态字中的某些bit，使用`asc_atomic_and()`接口保证不同线程清除不同bit时不会覆盖彼此的修改。输入参数说明如下：
@@ -95,6 +89,8 @@ UB或Global Memory上的初始数据。
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_atomic_functions.h"
+
     __global__ __launch_bounds__(256) void clear_status_bits(uint32_t *flags,
                                                             uint32_t *clear_bits,
                                                             uint32_t n)
@@ -114,6 +110,8 @@ UB或Global Memory上的初始数据。
     SIMD与SIMT混合编程场景，需要显式使用地址空间限定符表示地址空间：`__gm__`表示Global Memory内存空间，`__ubuf__`表示UB内存空间。
 
     ```cpp
+    #include "simt_api/device_atomic_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void clear_status_bits(__gm__ uint32_t *flags,
                                                                      __gm__ uint32_t *clear_bits,
                                                                      uint32_t n)

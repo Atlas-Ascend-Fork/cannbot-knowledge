@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_store_key_features/L0C_to_UB_dual_target_mode.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -51,7 +51,7 @@ M方向切分：
 
 **图1** NZ2NZ双目标搬运模式设置示意图<a name="fig1386816164556"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nz2nz_l0c2ub_dual_dst.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nz2nz_l0c2ub_dual_dst.png)
 
 在NZ2ND模式下启用双目标模式如下图所示，分为按M维度拆分和按N维度拆分，按M维度拆分M必须为2的倍数，按N维度拆分N必须为2的倍数：
 
@@ -66,6 +66,6 @@ M方向切分：
 
 **图2** NZ2ND参数双搬入模式设置示意图<a name="fig715654093716"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nz2nd_l0c2ub_dual_dst.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nz2nd_l0c2ub_dual_dst.png)
 
-完整样例可参考[fixpipe\_l0c2ub](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2ub)。
+完整样例可参考[fixpipe\_l0c2ub](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2ub)。

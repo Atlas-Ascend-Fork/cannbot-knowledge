@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__umul24.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_umul24
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_functions.h"`。
 
 获取uint32类型数据x和y的低24位乘积的低32位运算结果。x和y的高8位数据被忽略。
 
@@ -47,19 +49,13 @@ unsigned int __umul24(unsigned int x, unsigned int y)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_functions.h"
-```
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __global__ __launch_bounds__(1024) void KernelUmul24(unsigned int* dst, unsigned int* x, unsigned int* y)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -70,6 +66,8 @@ unsigned int __umul24(unsigned int x, unsigned int y)
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void KernelUmul24(__gm__ unsigned int* dst, __gm__ unsigned int* x, __gm__ unsigned int* y)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;

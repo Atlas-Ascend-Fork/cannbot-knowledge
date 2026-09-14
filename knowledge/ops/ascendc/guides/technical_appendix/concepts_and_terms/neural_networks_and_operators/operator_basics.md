@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/technical_appendix/concepts_and_terms/neural_networks_and_operators/operator_basics.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -25,7 +25,7 @@ platforms: []
 算子的名称，用于标识网络中的某个算子，同一网络中算子的名称需要保持唯一。如下图所示Conv1、Pool1、Conv2都是此网络中的算子名称，其中Conv1与Conv2算子的类型为Convolution，表示分别做一次卷积运算。
 
 **图1**  网络拓扑示例<a name="fig129541116161914"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/net_topology.png "网络拓扑示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/net_topology.png "网络拓扑示例")
 
 ## 算子类型（Op Type）<a name="zh-cn_topic_0228422146_zh-cn_topic_0187054064_section44191431191313"></a>
 
@@ -119,7 +119,7 @@ Tensor是算子计算数据的容器，包含如下属性信息。
 假设有一些照片，每个像素点都由红/绿/蓝3色组成，即shape里面3的含义，照片的宽和高都是20，也就是20\*20=400个像素，总共有4张的照片，这就是shape=\(4, 20, 20, 3\)的物理含义。
 
 **图2**  示意图<a name="fig2036333061811"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/diagram.png "示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/diagram.png "示意图")
 
 如果体现在编程上，可以简单把shape理解为操作Tensor的各层循环，比如我们要对shape=\(4, 20, 20, 3\)的A tensor进行操作，循环语句如下：
 
@@ -148,4 +148,4 @@ produce A {
 N维Tensor的轴有：0 , 1, 2,……，N-1。
 
 **图3**  轴示意图<a name="zh-cn_topic_0228422146_fig82601017112413"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/axis.png "轴示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/axis.png "轴示意图")

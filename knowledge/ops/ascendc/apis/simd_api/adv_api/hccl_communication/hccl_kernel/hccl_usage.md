@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Kernel/HCCL_usage.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -29,11 +29,11 @@ HCCL为**集合通信任务客户端**，主要对外提供了集合通信原语
 当后续无通信任务时，调用[Finalize](finalize.md)接口，通知服务端后续无通信任务，执行结束后退出，客户端检测并等待最后一个通信任务执行结束。以上介绍的AI Core下发HCCL通信任务的机制如下图所示。
 
 **图1**  AI Core下发HCCL通信任务机制  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ai_core_hccl_dispatch.png "AI-Core下发HCCL通信任务机制")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ai_core_hccl_dispatch.png "AI-Core下发HCCL通信任务机制")
 
 
 **图2** Ascend 950PR/Ascend 950DT  AI Core下发HCCL通信任务机制  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascend950pr_950dt_ai_core_hccl_dispatch.png "Ascend-950PR-Ascend-950DT-AI-Core下发HCCL通信任务机制")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascend950pr_950dt_ai_core_hccl_dispatch.png "Ascend-950PR-Ascend-950DT-AI-Core下发HCCL通信任务机制")
 
 
 
@@ -92,6 +92,7 @@ HCCL为**集合通信任务客户端**，主要对外提供了集合通信原语
     **表1**  HcclDataType参数说明
 
     <a name="table116710585514"></a>
+
     | 数据类型 | 说明 |
     | --- | --- |
     | HcclDataType | HCCL任务的数据类型。HcclDataType为枚举类型，定义如下代码所示。<br>    HCCL_DATA_TYPE_INT8：int8 <br>    HCCL_DATA_TYPE_INT16：int16 <br>    HCCL_DATA_TYPE_INT32：int32 <br>    HCCL_DATA_TYPE_FP16： half或float16 <br>    HCCL_DATA_TYPE_FP32： float <br>    HCCL_DATA_TYPE_INT64：int64 <br>    HCCL_DATA_TYPE_UINT64：uint64 <br>    HCCL_DATA_TYPE_UINT8：uint8 <br>    HCCL_DATA_TYPE_UINT16：uint16 <br>    HCCL_DATA_TYPE_UINT32：uint32 <br>    HCCL_DATA_TYPE_FP64：float64 <br>    HCCL_DATA_TYPE_BFP16：bfloat16 <br>    HCCL_DATA_TYPE_INT128：int128，预留类型，暂不支持 <br>    HCCL_DATA_TYPE_HIF8：hif8 <br>    HCCL_DATA_TYPE_FP8E4M3：fp8e4m3 <br>    HCCL_DATA_TYPE_FP8E5M2：fp8e5m2 <br>    HCCL_DATA_TYPE_FP8E8M0：fp8e8m0 <br>    HCCL_DATA_TYPE_RESERVED：暂不支持使用  |
@@ -122,6 +123,7 @@ HCCL为**集合通信任务客户端**，主要对外提供了集合通信原语
     **表2**  HcclReduceOp参数说明
 
     <a name="table2469980529"></a>
+
     | 数据类型 | 说明 |
     | --- | --- |
     | HcclReduceOp | Reduce操作类型。HcclReduceOp为枚举类型，定义如下代码所示。<br> HCCL_REDUCE_SUM：sum <br>    HCCL_REDUCE_PROD：prod <br>    HCCL_REDUCE_MAX：max <br>    HCCL_REDUCE_MIN：min <br>    HCCL_REDUCE_RESERVED：暂不支持使用 |
@@ -258,7 +260,7 @@ extern "C" __global__ __aicore__ void reduce_scatter_custom(
 ```
 
 **图3**  ReduceScatter通信示例<a name="fig19780192164210"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reducescatter_example.png "ReduceScatter通信示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reducescatter_example.png "ReduceScatter通信示例")
 
 **表3**  MC2\_BUFFER\_LOCATION参数说明
 

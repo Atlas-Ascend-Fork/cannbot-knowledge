@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_permute_sel/asc_squeeze_and_storeunalign_init.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_permute_sel.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_squeeze_and_storeunalign_init
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_permute_sel.h"`。
 
 对AR特殊寄存器进行清零操作。AR寄存器用于配合[asc_squeeze_and_storeunalign](asc_squeeze_and_storeunalign.md)及[asc_squeeze_and_storeunalign_finalize](asc_squeeze_and_storeunalign_finalize.md)使用：当调用asc_squeeze_and_storeunalign后，有效元素的总字节数会被存入AR寄存器用于asc_squeeze_and_storeunalign接口内自动地址偏移。在首次调用asc_squeeze_and_storeunalign之前，需调用本接口将AR寄存器清零。
 

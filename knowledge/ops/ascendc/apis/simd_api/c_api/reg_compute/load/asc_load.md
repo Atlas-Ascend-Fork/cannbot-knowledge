@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/load/asc_load.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/composite/loadunalign_composite.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_load
 
 ## 功能说明
+
+头文件路径为：`"c_api/composite/loadunalign_composite.h"`。
 
 从Unified Buffer（UB）中按dtype对齐的起始地址读取VL长度数据，并通过函数返回值返回或写入目的矢量数据寄存器，搬运过程中数据格式和内容保持不变。连续搬入时，需要在每次调用前手动更新源地址。该接口为易用性接口，对性能有要求时可使用[asc_loadunalign](asc_loadunalign.md)或[asc_loadunalign_postupdate](asc_loadunalign_postupdate.md)。
 
@@ -81,7 +84,6 @@ __simd_callee__ inline void asc_load(vector_float& dst,
 ## 调用示例
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
-
 
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16x2_compare_functions/__heqx2.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_heqx2
 
 ## 功能说明
+
+头文件路径为：`"simt_api/asc_bf16.h"`。
 
 比较两个bfloat16x2\_t类型数据的两个分量，如果分量相等，则对应比较结果为1.0，否则为0.0。
 
@@ -60,19 +62,13 @@ bfloat16x2_t __heqx2(bfloat16x2_t x, bfloat16x2_t y)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/asc_bf16.h`头文件。
-
-```cpp
-#include "simt_api/asc_bf16.h"
-```
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/asc_bf16.h"
+
     // 使用短向量可提升数据搬运效率
     __global__ __launch_bounds__(1024) void simt_heqx2(bfloat16_t* x, bfloat16_t* y, bfloat16_t* dst, uint32_t input_total_length)
     {
@@ -91,6 +87,8 @@ bfloat16x2_t __heqx2(bfloat16x2_t x, bfloat16x2_t y)
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_bf16.h"
+
     // 使用短向量可提升数据搬运效率
     __simt_vf__ __launch_bounds__(1024) inline void simt_heqx2(__gm__ bfloat16x2_t* x, __gm__ bfloat16x2_t* y, __gm__ bfloat16x2_t* dst, uint32_t input_total_length)
     {

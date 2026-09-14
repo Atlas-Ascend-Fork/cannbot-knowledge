@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_core_sync/SyncAll.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -34,8 +34,8 @@ SyncAll是核间同步控制接口，根据不同的函数原型介绍其功能�
 
 - 硬件同步接口：
     用于多个核之间的同步控制，支持以下同步场景：
-    - 纯Vector算子的全核同步，可参考[CrossCoreSetFlag的模式0](key_features.md#ZH-CN_TOPIC_0000002586300741)。
-    - 融合算子的全核同步，一次性实现三个核间同步能力（参考[CrossCoreSetFlag的关键特性说明](key_features.md#ZH-CN_TOPIC_0000002586300741)）：首先完成单个AI Core内，AIC与所有AIV同步（AIC等AIV）；接着完成多个AI Core间，所有AIC的同步；最后完成单个AI Core内，所有AIV与AIC同步（AIV等AIC）。
+    - 纯Vector算子的全核同步，可参考[CrossCoreSetFlag的模式0](key_features.md)。
+    - 融合算子的全核同步，一次性实现三个核间同步能力（参考[CrossCoreSetFlag的关键特性说明](key_features.md)）：首先完成单个AI Core内，AIC与所有AIV同步（AIC等AIV）；接着完成多个AI Core间，所有AIC的同步；最后完成单个AI Core内，所有AIV与AIC同步（AIV等AIC）。
 
 - 软件同步接口：
     仅支持纯Vector算子的多核（参与同步的核数可通过入参指定）同步。每一个AIV都向全局内存对应位置写入信号值1，接着每一个AIV都持续轮询全局内存中所有AIV对应的信号值，直到所有AIV核对应的信号值都变为1。
@@ -125,6 +125,7 @@ SyncAll硬件同步和软件同步接口的内部实现不同，约束条件也�
             | isAIVOnly=true | 14 | AIV：14 |
             | isAIVOnly=false（核函数（Kernel）使用`__mix__(1, 1)`修饰时） | 11、12、13 | AIC：11、12、13；AIV：12、13 |
             | isAIVOnly=false（核函数（Kernel）使用`__mix__(1, 2)`修饰时） | 11、12、13、28、29 | AIC：11、12、13、28、29；AIV：12、13 |
+
         
         
         - 针对[NPU架构版本2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)，SyncAll硬件同步接口的flagId占用情况如表4所示：
@@ -135,6 +136,7 @@ SyncAll硬件同步和软件同步接口的内部实现不同，约束条件也�
             | :--- | :--- | :--- |
             | isAIVOnly=true | 14 | AIV：14 |
             | isAIVOnly=false | 11、12、13 | AIC：11、12、13；AIV：12、13 |
+
         
 
 - 硬件同步接口和软件同步接口公共约束：使用该接口进行多核控制时，算子调用时指定的逻辑AI Core核数numBlocks必须保证不大于实际运行该算子的AI处理器核数，否则框架进行多轮调度时会插入异常同步，导致核函数（Kernel）“卡死”现象。
@@ -155,7 +157,7 @@ AscendC::DataCopy(workGlobal[blockIdx * perBlockSize], dstLocal, perBlockSize);
 AscendC::SyncAll(syncGlobal, workLocal);
 ```
 
-完整样例请参考[SyncAll样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/sync_all)。
+完整样例请参考[SyncAll样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/sync_all)。
 
 
 - [Rasterizer A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/rasterizer.md)

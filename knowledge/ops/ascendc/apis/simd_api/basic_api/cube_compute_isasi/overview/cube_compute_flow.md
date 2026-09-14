@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/overview/cube_compute_flow.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -20,7 +20,7 @@ platforms: []
 Ascend C针对矩阵计算编程模型提供了四类接口，分别承载Cube核中各个通路的搬运能力和计算能力，如下图所示：
 
 **图1** 普通矩阵基础计算流程图<a name="zh-cn_topic_0000002535567224_fig135639216485"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/matrix_computation_workflow.png "普通矩阵基础计算流程图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/matrix_computation_workflow.png "普通矩阵基础计算流程图")
 
 1. 通过DataCopy接口将A、B原始矩阵的GM数据搬运到L1 Buffer中（如果存在Bias/随路量化，则同样通过DataCopy搬运到L1 Buffer中）。详细内容请参考[矩阵数据搬入至L1 Buffer](../cube_compute_load/index.md)。
 
@@ -38,7 +38,7 @@ Mx矩阵计算仅在Ascend 950PR/Ascend 950DT型号支持。
 MxMmad（全称Microscaling Mmad）为带有量化系数的矩阵乘法，即左矩阵和右矩阵均有对应的量化系数矩阵，左量化系数矩阵scaleA和右量化系数矩阵scaleB。MxMmad场景中，左量化系数矩阵与左矩阵乘积，右量化系数矩阵与右矩阵乘积，对两个乘积的结果做矩阵乘法。Ascend C针对Mx矩阵计算编程模型提供了对应Mx类接口，如下图所示：
 
 **图 2** Mx矩阵基础计算流程图<a name="zh-cn_topic_0000002535567225_fig135639216486"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mx_matrix_computation_workflow.png "Mx矩阵基础计算流程图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mx_matrix_computation_workflow.png "Mx矩阵基础计算流程图")
 
 1. 通过DataCopy接口将A、B原始矩阵、[左系数矩阵scaleA](../cube_compute_fractal_intro/aux_cube_fractal_format_details.md#section_mx_scalea_fractal_format)、[右系数矩阵scaleB](../cube_compute_fractal_intro/aux_cube_fractal_format_details.md#section_mx_scaleb_fractal_format)的GM数据搬运到L1 Buffer中（如果存在Bias/随路量化，则同样通过DataCopy搬运到L1 Buffer中）。详细内容请参考[矩阵数据搬入至L1 Buffer](../cube_compute_load/index.md)。
 
@@ -55,7 +55,7 @@ MxMmad（全称Microscaling Mmad）为带有量化系数的矩阵乘法，即左
 稀疏矩阵是一种特殊类型的矩阵，即矩阵中包含较多的零元素。4选2结构化稀疏矩阵计算，要求一个连续的4个权重或激活值的组（通常是张量中的一行或一列）中，最多只有2个值为非零，其余2个强制为零。针对Atlas A2训练系列产品/Atlas A2推理系列产品和Atlas A3训练系列产品/Atlas A3推理系列产品，Ascend C针对4选2稀疏矩阵计算编程模型提供了对应sparse类接口，如下图所示：
 
 **图 3** 4选2稀疏矩阵基础计算流程图<a name="zh-cn_topic_0000002566526987_fig12280145134813"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/sparse_matrix_computation_workflow.png "4选2稀疏矩阵基础计算流程图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/sparse_matrix_computation_workflow.png "4选2稀疏矩阵基础计算流程图")
 
 1. 首先将原始矩阵B按照固定粒度划分连续4个元素为一组，按照固定结构稠密算法，离线生成对应的稠密矩阵B与[索引矩阵](../cube_compute_fractal_intro/aux_cube_fractal_format_details.md#zh-cn_topic_0000002563445163_section1873692415233)作为输入。
 
@@ -73,7 +73,7 @@ MxMmad（全称Microscaling Mmad）为带有量化系数的矩阵乘法，即左
 Conv2D前向计算的本质是将卷积运算转换为矩阵乘：先通过img2col（Image to Column）将FeatureMap按卷积核滑动窗口展开为左矩阵A，将Weight作为右矩阵B，再做矩阵乘累加得到输出。与[普通矩阵计算流程](#ZH-CN_TOPIC_0000002568950891)的区别在于：A矩阵从GM直接搬入后，由[LoadData（卷积数据搬运）](../cube_compute_load/load_data_3_d.md)在L1 Buffer到L0A Buffer的搬运过程中，根据卷积核尺寸、stride、dilation、padding在线完成img2col空间展开生成，如下图所示：
 
 **图 4** Conv2D前向计算流程图<a name="zh-cn_topic_0000002568950893_fig135639216487"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv2d_forward.png "Conv2D前向计算流程图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv2d_forward.png "Conv2D前向计算流程图")
 
 1. 通过DataCopy接口将FeatureMap、Weight的GM数据搬运到L1 Buffer中。FeatureMap搬运时完成到[NC1HWC0格式](../cube_compute_fractal_intro/key_fractal_format_details.md#zh-cn_topic_0000002545089965_section217615301084)的随路转换；Weight搬运到L1 Buffer得到Nz分形布局。详细内容请参考[矩阵计算的搬入](../cube_compute_load/index.md)。
 

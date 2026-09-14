@@ -10,13 +10,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_simt_hybrid_operator_impl/operator_impl.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
 # 算子实现
 
-以下内容以gather & adds算子为例，介绍SIMD与SIMT混合算子的实现过程。完整代码请参见[SIMD与SIMT混合编程实现gather&adds算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/00_introduction/simd_simt_gather_and_adds)。
+以下内容以gather & adds算子为例，介绍SIMD与SIMT混合算子的实现过程。完整代码请参见[SIMD与SIMT混合编程实现gather&adds算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/00_introduction/simd_simt_gather_and_adds)。
 
 >[!NOTE]说明 
 >本样例的目的是通过一个简单的算子实现展示SIMD与SIMT混合编程方式，仅作为功能介绍。
@@ -36,12 +36,12 @@ output[i] = input[index[i]] + 1
 ## 算子分析
 
 **图 1**  gather & adds算子整体执行流水  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/gather_adds_overall_pipeline.png "gather & adds算子整体执行流水")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/gather_adds_overall_pipeline.png "gather & adds算子整体执行流水")
 
 gather & adds算子整体执行流水如图1所示。simt\_gather和simd\_adds同属Vector流水，按调用顺序执行；将adds结果从UB搬出到GM属于MTE3搬出流水。由于Vector流水与MTE3搬出流水异步并行执行，MTE3搬出操作可能在Vector流水写入adds结果完成前读取UB数据，因此需在搬出前插入同步指令，确保adds结果写入UB后再启动搬出。
 
 **图 2**  gather & adds算子执行流程  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/gather_adds_execution_flow.png "gather & adds算子执行流程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/gather_adds_execution_flow.png "gather & adds算子执行流程")
 
 gather & adds算子的详细执行流程如图2所示。基于该流程，按照输入输出、核函数（Kernel）参数、执行配置和VF函数参数的顺序分析gather & adds算子的实现方式。
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_fractal_intro/key_fractal_format_details.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -47,7 +47,7 @@ platforms: []
   
 
   **图1** 矩阵乘法场景涉及的数据格式<a name="zh-cn_topic_0000002545089965_fig18172115901518"></a>  
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/fractals_involved_in_matrix_calculation_a2a3.png "矩阵乘法场景涉及的数据格式")
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/fractals_involved_in_matrix_calculation_a2a3.png "矩阵乘法场景涉及的数据格式")
 
 
 
@@ -55,7 +55,7 @@ platforms: []
   针对Ascend 950PR/Ascend 950DT，矩阵乘法C = A×B要求：左矩阵A使用Nz格式，右矩阵B使用Zn格式，结果矩阵C使用Nz格式，如图2所示：
 
   **图2** 矩阵乘法场景涉及的数据格式<a name="zh-cn_topic_0000002545089965_fig11172355102017"></a>  
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/fractals_involved_in_matrix_calculation_950.png "矩阵乘法场景涉及的数据格式-27")
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/fractals_involved_in_matrix_calculation_950.png "矩阵乘法场景涉及的数据格式-27")
 
 
 在具体的矩阵乘法场景中，各格式的详细定义与物理成因如下：
@@ -80,13 +80,13 @@ platforms: []
         - Z字流动：每个16 x 16的小方块内部，以及方块之间，均按照特定的Z字形顺序存储（如图中折线箭头所示），完成了从“线性”到“分形”的物理映射，做好了进入Cube计算的准备。
 
 **图3** ND（GM）到Nz（L1 Buffer）的数据转换<a name="zh-cn_topic_0000002545089965_fig1541710246162"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nd2nz_gm2l1_fractals_transform.png "ND-(GM)-到-Nz-(L1-Buffer)-的数据转换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nd2nz_gm2l1_fractals_transform.png "ND-(GM)-到-Nz-(L1-Buffer)-的数据转换")
 
 ## DN格式（Dimension-N）
 
 - 定义：通用的N维张量格式，其物理存储顺序对应于ND格式在内存维度上的转置排列，即ND遵循row major（行主序）规则，DN遵循column major（列主序）。列主序示意图如下所示：
 
-![列优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/column_major_layout.png)
+![列优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/column_major_layout.png)
 - 场景：通常存在于Global Memory（GM）中。若此输入要作为矩阵计算的输入，需要转换成Nz格式。
 
 - 转换示例：针对Ascend 950PR/Ascend 950DT，可以使用[矩阵搬入DataCopy DN2NZ接口](../cube_compute_load/data_copy_gm_to_l1_dn2_nz.md)将其转换为Nz格式以适配Cube单元。
@@ -99,7 +99,7 @@ platforms: []
 
     **图4** Zz格式（以half类型为例）<a name="zh-cn_topic_0000002545089965_fig18376432205510"></a>  
     
-![Zz格式示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zz_fractals_of_half.png)
+![Zz格式示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zz_fractals_of_half.png)
 
 - **物理位置：** 通常位于**L0A Buffer**，作为左矩阵。
 - **设计原理：**
@@ -128,7 +128,7 @@ platforms: []
 - **定义：** 大Z外部row major（行主序）+ 小n内部column major（列主序），见[图5](#zh-cn_topic_0000002545089965_fig9884894817)。
 
     **图5** Zn格式（以half类型为例）<a name="zh-cn_topic_0000002545089965_fig9884894817"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zn_fractals_of_half.png "Zn-格式(以half类型为例)")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zn_fractals_of_half.png "Zn-格式(以half类型为例)")
 
 - **物理位置：**
     - **L0B Buffer：** 作为右乘矩阵。
@@ -153,7 +153,7 @@ platforms: []
 - **定义：** 大N外部column major（列主序）+ 小z内部row major（行主序），见[图6](#zh-cn_topic_0000002545089965_fig583717713334)。
 
     **图6** Nz格式<a name="zh-cn_topic_0000002545089965_fig583717713334"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nz_fractals_of_half_for_cmatrix.png "Nz-格式")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nz_fractals_of_half_for_cmatrix.png "Nz-格式")
 
 - **物理位置：**
     - **L0C Buffer：** 存储矩阵乘法的结果（分形固定为16x16）。
@@ -225,7 +225,7 @@ platforms: []
 
     转换过程示意图如下：
 
-![ND转Nz转换示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nd2nz_transform_demo.png)
+![ND转Nz转换示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nd2nz_transform_demo.png)
 
     转换后Tensor打印如下：
 
@@ -254,7 +254,7 @@ platforms: []
 C0固定为32Byte，C1=C/C0，如果结果不整除，最后一份数据需要padding到C0。
 
 **图7** NHWC->NC1HWC0<a name="zh-cn_topic_0000002545089965_fig4805172135014"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nhwc2nc1hwc0.png "NHWC--NC1HWC0")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nhwc2nc1hwc0.png "NHWC--NC1HWC0")
 
 - **物理位置：** 通常位于Global Memory（GM）或者L1 Buffer中，作为卷积的Feature Map输入。
 
@@ -262,4 +262,4 @@ C0固定为32Byte，C1=C/C0，如果结果不整除，最后一份数据需要pa
 
     通过二维数据排布变换表达格式转换过程：
 
-![NHWC到NC1HWC0分形转换](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nhwc2nc1hwc0_of_fractals.png)
+![NHWC到NC1HWC0分形转换](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nhwc2nc1hwc0_of_fractals.png)

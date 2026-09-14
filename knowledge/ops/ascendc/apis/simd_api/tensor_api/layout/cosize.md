@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/cosize.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -64,12 +64,12 @@ using namespace asc::te;
 
 // 示例1：扁平layout，cosize = coshape
 auto layout = make_layout(make_shape(10, 20), make_stride(1, 100));
-auto cosize = cosize(layout);
+auto cosize_result = cosize(layout);
 // coshape = (10-1)*1 + (20-1)*100 + 1 = 1910
 // cosize = tuple_size(1910) = 1910
 
 // 示例2：指定子维度
-auto cosize0 = cosize<0>(layout);
+auto cosize0_result = cosize<0>(layout);
 // coshape<0> = (10-1)*1 + 1 = 10
 // cosize<0> = tuple_size(10) = 10
 ```

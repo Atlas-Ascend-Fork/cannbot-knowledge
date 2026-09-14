@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/debug_and_tuning/performance_tuning.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -238,6 +238,7 @@ platforms: []
        └──visualize_data.bin   # MindStudio Insight呈现文件
     ```
 **表4 msopprof simulator文件介绍**
+
 | 名称 | 说明 |
 |--|--|
 | dump文件夹 | 原始仿真生成的dump数据存放文件夹。 |

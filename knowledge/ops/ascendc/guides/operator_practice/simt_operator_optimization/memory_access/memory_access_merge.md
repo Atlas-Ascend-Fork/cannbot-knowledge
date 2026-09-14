@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_optimization/memory_access/memory_access_merge.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -22,13 +22,13 @@ platforms: []
 
 **图1**  访存合并对比示意图
 
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mem_merge.png">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mem_merge.png">
 
 访存合并优化适用于两类场景：第一类是数据本身在GM上连续，只是相邻thread被分配处理的数据不连续，导致同一个Warp内相邻线程访问了不连续地址，此时优先调整数据切分方式，使Warp内相邻thread访问连续数据；第二类是算子功能包含转置、重排等布局变换，单纯调整切分方式很难同时保证GM读写都连续，此时考虑引入Unified Buffer（UB）内存空间作为中转，利用UB完成不连续的数据重排过程，从而尽量保证GM侧访问连续。
 
 - 优化数据切分实现访存合并
 
-  【样例介绍】以[Gather算子](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/00_introduction/01_gather/general_gather)为例，算子按行从输入中取数，计算公式可以表示为`output[row, col] = input[index[row], col]`。输出矩阵每一行内部的列方向数据在GM上连续，优化切分时应让同一个Warp内相邻线程尽量访问同一行内的相邻列，而不是只保证单个线程内部连续。
+  【样例介绍】以[Gather算子](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/00_introduction/01_gather/general_gather)为例，算子按行从输入中取数，计算公式可以表示为`output[row, col] = input[index[row], col]`。输出矩阵每一行内部的列方向数据在GM上连续，优化切分时应让同一个Warp内相邻线程尽量访问同一行内的相邻列，而不是只保证单个线程内部连续。
 
   【反例】按thread切分数据，每个thread处理连续的一行数据。
 
@@ -126,7 +126,7 @@ platforms: []
   从Task Duration看，访存合并后的执行耗时为866.103us，相比优化前的4886.076us，下降约82.3%。这说明优化前的主要瓶颈来自Warp内相邻thread访问的GM地址不连续，调整数据切分后，相邻thread在同一次访存指令上访问相邻元素，GM访存效率得到明显改善。
 - 引入UB中转实现访存合并
 
-  【样例介绍】以[矩阵转置](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/matrix_transpose_practice)为例，输入矩阵shape为1024×1024，数据类型为`float`。直接全局内存转置版本按一维线性地址遍历元素，逐元素写入转置后的GM位置，Thread Block数量固定为硬件vector core数，每个Thread Block启动2048个线程；UB中转版本将矩阵划分为32×32的tile，Thread Block数量按`ceil(total_tiles / 2)`设置，每个Thread Block启动2048个线程同时处理两个tile，`threadIdx.x`方向的32个thread对应tile内同一行的32个连续元素，先将tile连续读入UB，再按转置方向读取并连续写回GM。
+  【样例介绍】以[矩阵转置](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/matrix_transpose_practice)为例，输入矩阵shape为1024×1024，数据类型为`float`。直接全局内存转置版本按一维线性地址遍历元素，逐元素写入转置后的GM位置，Thread Block数量固定为硬件vector core数，每个Thread Block启动2048个线程；UB中转版本将矩阵划分为32×32的tile，Thread Block数量按`ceil(total_tiles / 2)`设置，每个Thread Block启动2048个线程同时处理两个tile，`threadIdx.x`方向的32个thread对应tile内同一行的32个连续元素，先将tile连续读入UB，再按转置方向读取并连续写回GM。
 
   【反例】直接按照转置公式写回GM。
 

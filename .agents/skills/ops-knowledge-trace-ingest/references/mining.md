@@ -74,6 +74,7 @@
 ## 输入契约
 
 1. **归一化 trace**（miner 的标准输入）：
+   - normalized trace 对文本赋值及嵌套 JSON 凭据键使用同一敏感名称规则，包含带业务/提供方前缀的名称；具体支持形式见 [normalize 阶段](../SKILL.md#阶段-2--normalize任意轨迹--归一化事件流0-llm)。普通字段与计数保留；仍需检查可疑私有信息，不把零脱敏计数当作安全证明。
    - `session_manifest.json`（**先读这个**）：source sha256、adapter、coverage（unknown/redactions/skipped）、capabilities、event_types。
    - `normalized_trace.jsonl`（完整事件流，每行 `trace.event.v1`，带 provenance）：仅当需原文/原文代码时 drill-down。
    - **进入正文前**：核对 manifest 的 `unknown_events` 占比、`capabilities`（messages/tool_activity/file_changes/metrics 是否具备）；unknown 过多或能力缺失 → 在 `reconstruction.json` 记 limitations，候选相应降级。

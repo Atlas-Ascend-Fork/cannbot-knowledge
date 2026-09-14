@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/spr/asc_set_saturation_strategy.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -20,6 +20,8 @@ source_headers:
 # asc_set_saturation_strategy
 
 ## 功能说明
+
+头文件路径为：`"c_api/spr/spr.h"`。
 
 设置饱和控制策略，默认为开启全局饱和配置：
 

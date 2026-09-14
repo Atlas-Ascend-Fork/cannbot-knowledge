@@ -51,3 +51,10 @@
 - [asc_set_l13d_rpt](asc_set_l13d_rpt.md)：用于设置Load3Dv2接口的repeat参数。
 - [asc_set_l13d_size](asc_set_l13d_size.md)：设置asc_copy_l12l0a/asc_copy_l12l0b的3D格式搬运接口在L1 Buffer的边界值。
 - [asc_set_l3d_rpt_b](asc_set_l3d_rpt_b.md)：用于设置接口asc_copy_l12l0a、asc_copy_l12l0b的2D格式搬运的repeat参数。
+
+- [asc_set_gm2l1_padding](asc_set_gm2l1_padding.md)：头文件路径为："c_api/cube_datamove/cube_datamove.h"。
+- [asc_set_l0c_copy_config](asc_set_l0c_copy_config.md)：头文件路径为："c_api/cube_datamove/cube_datamove.h"。
+- [asc_set_l0c_copy_lrelu_alpha](asc_set_l0c_copy_lrelu_alpha.md)：头文件路径为："c_api/cube_datamove/cube_datamove.h"。
+- [asc_set_l0c_copy_relu_alpha](asc_set_l0c_copy_relu_alpha.md)：头文件路径为："c_api/cube_datamove/cube_datamove.h"。
+- [asc_set_l12l0b_3d_padding](asc_set_l12l0b_3d_padding.md)：头文件路径为："c_api/cube_datamove/cube_datamove.h"。
+- [asc_set_l13d_rpt_b](asc_set_l13d_rpt_b.md)：头文件路径为："c_api/cube_datamove/cube_datamove.h"。

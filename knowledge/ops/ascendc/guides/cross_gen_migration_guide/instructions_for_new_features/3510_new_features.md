@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/cross_gen_migration_guide/instructions_for_new_features/3510_new_features.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -66,7 +66,7 @@ CV融合算子中，UB向L1 Buffer搬运数据不再需要通过GM中转。
 
 #### 典型样例说明<a name="section_ub2l1_sample"></a>
 
-- [data_copy_ub2l1样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_ub2l1)：在Mmad矩阵乘场景下，基于DataCopy实现UB到L1 Buffer数据搬运，通过编译选项`SCENARIO_NUM`切换连续搬运和随路ND2NZ搬运两种场景，取值1表示连续搬运，取值2表示随路ND2NZ搬运。样例完整数据流为GM到UB到L1 Buffer到L0A Buffer、L0B Buffer到Mmad到L0C Buffer到GM。样例编译工程已通过`ascendc_compile_definitions`配置`-DENABLE_CV_COMM_VIA_SSBUF=true`。
+- [data_copy_ub2l1样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_ub2l1)：在Mmad矩阵乘场景下，基于DataCopy实现UB到L1 Buffer数据搬运，通过编译选项`SCENARIO_NUM`切换连续搬运和随路ND2NZ搬运两种场景，取值1表示连续搬运，取值2表示随路ND2NZ搬运。样例完整数据流为GM到UB到L1 Buffer到L0A Buffer、L0B Buffer到Mmad到L0C Buffer到GM。样例编译工程已通过`ascendc_compile_definitions`配置`-DENABLE_CV_COMM_VIA_SSBUF=true`。
 
 ### 新增L1 Buffer到UB搬运数据通路<a name="section_l12ub"></a>
 
@@ -95,7 +95,7 @@ CV融合算子场景，矩阵计算后的结果若需要在Vector核侧进行归
 
 #### 典型样例说明
 
-[fixpipe_l0c2ub样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2ub)：基于Fixpipe实现L0C Buffer到UB数据搬运，完整数据流为GM到L1 Buffer到L0A Buffer、L0B Buffer到Mmad到L0C Buffer到UB。
+[fixpipe_l0c2ub样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2ub)：基于Fixpipe实现L0C Buffer到UB数据搬运，完整数据流为GM到L1 Buffer到L0A Buffer、L0B Buffer到Mmad到L0C Buffer到UB。
 
 ### 新增ND-DMA多维数据搬运<a name="section_nddma"></a>
 
@@ -111,7 +111,7 @@ Vector算子场景，从GM搬运至UB时，若涉及多维矩阵、不规则Stri
 
 #### 典型样例说明
 
-[data_copy_gm2ub_nddma样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2ub_nddma)：基于ND-DMA指令实现GM到UB多维数据搬运，模拟多维Shape下移动窗口的数据搬运，包含Slice、输入Stride和不连续源数据搬运的配置方式。
+[data_copy_gm2ub_nddma样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2ub_nddma)：基于ND-DMA指令实现GM到UB多维数据搬运，模拟多维Shape下移动窗口的数据搬运，包含Slice、输入Stride和不连续源数据搬运的配置方式。
 
 ### 对齐/非对齐数据搬运新增loop模式<a name="section_loop_mode"></a>
 
@@ -140,8 +140,8 @@ MicroScaling（MX）是一种低比特量化数据格式，例如fp4x2_e2m1_t、
 
 #### 典型样例说明
 
-- [load_data_2dmx_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_2dmx_l12l0)：演示MX矩阵数据及其量化系数矩阵的同步搬运。
-- [mmad_mx样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_mx)：演示MmadMx矩阵乘加计算。
+- [load_data_2dmx_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_2dmx_l12l0)：演示MX矩阵数据及其量化系数矩阵的同步搬运。
+- [mmad_mx样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_mx)：演示MmadMx矩阵乘加计算。
 
 ### 2D矩阵搬运（随路转置）能力增强<a name="section_transpose"></a>
 
@@ -181,7 +181,7 @@ L0C Buffer中Mmad计算结果为NZ分形格式，部分算子输出需要列主�
 
 #### 典型样例说明
 
-[load_data_2dv2_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_2dv2_l12l0)：演示使用2D V2指令将矩阵数据从L1 Buffer搬运至L0A Buffer。
+[load_data_2dv2_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_2dv2_l12l0)：演示使用2D V2指令将矩阵数据从L1 Buffer搬运至L0A Buffer。
 
 ### 新增Stride卷积矩阵搬运<a name="section_loaddata_with_stride"></a>
 
@@ -197,7 +197,7 @@ L0C Buffer中Mmad计算结果为NZ分形格式，部分算子输出需要列主�
 
 #### 典型样例说明
 
-[load_data_with_stride样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_with_stride)：演示Stride卷积矩阵搬运。
+[load_data_with_stride样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_with_stride)：演示Stride卷积矩阵搬运。
 
 ### 矩阵计算支持更多数据类型<a name="section_mmad_data_types"></a>
 
@@ -275,9 +275,9 @@ Reg矢量计算相关接口的完整接口清单请参考[Reg矢量计算](../..
 
 #### 典型样例说明
 
-- 数据搬运：[reg_load_store_align样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_load_store_align)、[reg_load_store_mask样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_load_store_mask)、[reg_load_store_unalign样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_load_store_unalign)、[reg_load_gather样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_load_gather)、[reg_store_scatter样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_store_scatter)、[reg_move样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_move)、[reg_auxscalar样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_auxscalar)。
-- Reg计算：[mul样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/02_reg_vector_compute/mul)、[reduce样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/02_reg_vector_compute/reduce)、[reduce_pair样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/02_reg_vector_compute/reduce_pair)等。
-- 高性能算子：[gelu_high_performance样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_high_performance)、[gelu_eltwise_high_performance样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_eltwise_high_performance)、[softmax_high_performance样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/softmax_high_performance)。
+- 数据搬运：[reg_load_store_align样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_load_store_align)、[reg_load_store_mask样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_load_store_mask)、[reg_load_store_unalign样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_load_store_unalign)、[reg_load_gather样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_load_gather)、[reg_store_scatter样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_store_scatter)、[reg_move样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_move)、[reg_auxscalar样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/reg_auxscalar)。
+- Reg计算：[mul样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/02_reg_vector_compute/mul)、[reduce样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/02_reg_vector_compute/reduce)、[reduce_pair样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/02_reg_vector_compute/reduce_pair)等。
+- 高性能算子：[gelu_high_performance样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_high_performance)、[gelu_eltwise_high_performance样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_eltwise_high_performance)、[softmax_high_performance样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/softmax_high_performance)。
 
 ### 原子操作接口扩展<a name="section_atomic_api"></a>
 
@@ -299,7 +299,7 @@ Reg矢量计算相关接口的完整接口清单请参考[Reg矢量计算](../..
 
 #### 典型样例说明
 
-[scalar_atomic_operations样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/06_atomic/scalar_atomic_operations)：基于AtomicAdd和AtomicCas接口，演示在GM地址上进行标量原子加和原子比较交换的实现流程，支持多核并行更新单个内存地址。
+[scalar_atomic_operations样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/06_atomic/scalar_atomic_operations)：基于AtomicAdd和AtomicCas接口，演示在GM地址上进行标量原子加和原子比较交换的实现流程，支持多核并行更新单个内存地址。
 
 ### 新增DCI（数据缓存失效）能力<a name="section_dci"></a>
 
@@ -412,7 +412,7 @@ Reg矢量计算相关接口的完整接口清单请参考[Reg矢量计算](../..
 
 #### 典型样例说明
 
-[mutex样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/mutex)：使用Mutex实现MTE2、V流水与MTE3流水之间的同步，在未使用SetFlag、WaitFlag的情况下正确完成数据搬运与计算。
+[mutex样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/mutex)：使用Mutex实现MTE2、V流水与MTE3流水之间的同步，在未使用SetFlag、WaitFlag的情况下正确完成数据搬运与计算。
 
 ### 新增核间同步控制模式4<a name="section_crosscore"></a>
 
@@ -428,7 +428,7 @@ Reg矢量计算相关接口的完整接口清单请参考[Reg矢量计算](../..
 
 #### 典型样例说明
 
-[cross_core_set_wait_flag样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/cross_core_set_wait_flag)：在Mix算子场景下，使用模式4核间同步，AIV0与AIV1分别单独触发AIC核等待，完成UB到L1 Buffer搬运与Mmad计算的流水协作。
+[cross_core_set_wait_flag样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/cross_core_set_wait_flag)：在Mix算子场景下，使用模式4核间同步，AIV0与AIV1分别单独触发AIC核等待，完成UB到L1 Buffer搬运与Mmad计算的流水协作。
 
 ### 其他增强说明
 
@@ -437,7 +437,7 @@ Reg矢量计算相关接口的完整接口清单请参考[Reg矢量计算](../..
 #### 架构规格
 
 - **AI Core核数增加**：3510架构的AI Core核数较2201架构有所增加，可支持更大的片上并行规模。
-- **UB容量提升**：3510架构的UB总容量提升至256KB，由16个bank组成8个bank group，每个bank group包含2个bank，每个bank大小为16KB。若发生UB冲突，可参考[避免UB的bank冲突](../../operator_practice/simd_operator_optimization/memory_access/avoid_ub_bank_conflict/overview.md)解决；[bank_conflict_3510样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/04_memory_access/bank_conflict_3510)提供了3510架构下UB Bank冲突场景的验证与分析方法。
+- **UB容量提升**：3510架构的UB总容量提升至256KB，由16个bank组成8个bank group，每个bank group包含2个bank，每个bank大小为16KB。若发生UB冲突，可参考[避免UB的bank冲突](../../operator_practice/simd_operator_optimization/memory_access/avoid_ub_bank_conflict/overview.md)解决；[bank_conflict_3510样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/04_memory_access/bank_conflict_3510)提供了3510架构下UB Bank冲突场景的验证与分析方法。
 
 #### 数据类型
 

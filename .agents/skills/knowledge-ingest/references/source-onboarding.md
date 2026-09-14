@@ -1,11 +1,11 @@
 # 新来源接入
 
-首次把一个 Git 上游或固定归档接入本仓时读取本文件。目标是先固定来源身份，再产出少量可校准的候选卡。
+首次把一个 Git 上游或文档归档接入本仓时读取本文件。目标是先固定来源身份，再产出少量可校准的候选卡。
 
 ## 固定来源
 
 - Git 来源固定 canonical repo、ref、40 位 commit 和纳入范围；没有固定 commit 时不开始批量摄入。
-- 本地固定归档在 Registry 登记顶层 root、fetch script 和 archive SHA-256；先运行获取脚本恢复来源。不要为归档增加逐文件清单。
+- 本地文档归档在 Registry 登记顶层 root、fetch script 和 HTTPS `archive_url`；先运行获取脚本恢复来源。不要为归档增加逐文件清单。
 
 ## 既有 Operator 来源本地化
 
@@ -24,7 +24,7 @@ python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> \
 
 知识卡的 `sources[].resource` 相对于知识仓根，正文源码链接相对于卡片目录；两者必须指向同一登记根和固定提交。离线 Lint 不会自动获取源码，也无法证明未恢复文件存在。
 
-统一根入口同时恢复固定归档和这些源码。`localize` 在全部 checkout 通过校验后，将可用的固定远程来源及正文文件链接改为本地等价路径，不改角色、技术正文、代码围栏或普通知识链接；原提交缺失文件保留远程路径，并写 `artifacts/graphs/source_resources.json`。随后运行全库 Lint、目标 Query 和统一门禁；API 引用建议和[本地图谱](local-graphs.md)仅在需要时单独生成。新增技术断言或升级 revision 仍走对应 producer/版本流程。
+统一根入口同时恢复文档归档和这些源码。`localize` 在全部 checkout 通过校验后，将可用的固定远程来源及正文文件链接改为本地等价路径，不改角色、技术正文、代码围栏或普通知识链接；原提交缺失文件保留远程路径，并写 `artifacts/graphs/source_resources.json`。随后运行全库 Lint、目标 Query 和统一门禁；API 引用建议和[本地图谱](local-graphs.md)仅在需要时单独生成。新增技术断言或升级 revision 仍走对应 producer/版本流程。
 
 ## Git 批次
 
@@ -34,14 +34,14 @@ python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> \
 4. 按语义实体分批，不按 commit 或上游文件机械分卡。同一目标卡始终单写者串行更新。
 5. 收尾时生成不可覆盖 receipt，确保 inventory 中每个文件都有唯一决策，且 ingest 决策绑定通过 Contract 的真实候选卡和固定 source。
 
-## 固定归档批次
+## 文档归档批次
 
-1. 从 Registry 读取 source ID 与 archive SHA-256，运行登记的获取脚本并完整读取本批相关源文件。
+1. 从 Registry 读取 source ID 与 `archive_url`，运行登记的获取脚本并完整读取本批相关源文件。
 2. 先用 query 查重，再按语义实体决定 create、update、merge、deprecate 或 defer；Registry 明确登记的官方 API/Guide 由其受控转换策略筛除导航页和声明的冗余章节，其他材料不要按文件名机械建卡。
-3. 先完成一个中等复杂度实体，核对正文、平台、来源和边界后再扩大范围；固定归档转换还要验证导航页只落到 `index.md`，声明章节已省略，且其余正文只发生链接目标、Frontmatter 与可选的普通链接变化。
-4. 更新导航和当天日志；日志记录 source ID、archive SHA-256、created/updated/deferred 数和关键裁决，再运行全库 lint 与目标 query。
+3. 先完成一个中等复杂度实体，核对正文、平台、来源和边界后再扩大范围；文档归档转换还要验证导航页只落到 `index.md`，声明章节已省略，且其余正文只发生链接目标、Frontmatter 与可选的普通链接变化。
+4. 更新导航和当天日志；日志记录 source ID、来源 URL、本地准备时间、created/updated/deferred 数和关键裁决，再运行全库 lint 与目标 query。
 
-固定归档批次不生成 inventory、ledger 或 verification receipt。archive SHA-256 切换必须遵循版本升级流程：先记录并审查候选归档，再显式更新 Registry，重新通过获取脚本校验；不得在未完成卡片、导航、关系和验证时静默替换已登记摘要。
+文档归档批次不生成 inventory、ledger 或 verification receipt，也不校验 SHA-256。默认复用已完成缓存；需要更新时运行 `bash get_resources.sh --docs --refresh`。刷新只替换本地来源，不更新知识卡；正文和平台差异需审阅后再通过镜像同步和知识验证收口。
 
 ## 结构边界
 

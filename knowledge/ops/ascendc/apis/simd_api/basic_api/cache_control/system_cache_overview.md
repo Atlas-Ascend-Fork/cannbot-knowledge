@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cache_control/system_cache_overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -24,14 +24,17 @@ Cache（缓存）的主要作用是在搬运单元或Scalar单元与外部存储
 
 以[NPU架构版本3510](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)为例，图1展示了AI Core中支持的五类Cache（L2 Cache、DCache、ICache、SIMT DCache、NDDMA Cache）在硬件架构中的位置关系。
 
-**图1**  五类Cache在AI Core中的位置关系示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/npu_3510_hw_arch_cache.png "atlas_950_cache_architecture_diagram")
+**图1**  五类Cache在AI Core中的位置关系示意图
+
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/npu_3510_hw_arch_cache.png "atlas_950_cache_architecture_diagram")
+
 
 
 以[NPU架构版本2201](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)为例，图2展示了AI Core中支持的三类Cache（L2 Cache、DCache和ICache）在硬件架构中的位置关系。
 
-**图2**  三类Cache在AI Core中的位置关系示意图<a name="zh-cn_topic_0000002583420201_fig496311278412"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/atlas_a2_a3_cache_architecture_diagram.png "atlas_a2_a3_cache_architecture_diagram")
+**图2**  三类Cache在AI Core中的位置关系示意图<a name="zh-cn_topic_0000002583420201_fig496311278412"></a>
+
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/atlas_a2_a3_cache_architecture_diagram.png "atlas_a2_a3_cache_architecture_diagram")
 
 
 **表1**  Cache类型及功能说明 <a name="table1"></a>
@@ -102,6 +105,9 @@ Cache一致性是多核中确保数据正确性的核心机制。简单来说，
     - ICache：只读，因此不需要考虑多核间数据不一致的问题。
 
 
+
+关于Cache写策略与Cache一致性的更完整介绍，请参考[缓存一致性](../../../../guides/programming_guide/advanced_programming/memory_model/cache_coherence.md)文档。
+
 ## 缓存控制接口汇总<a name="zh-cn_topic_0000002583420201_section489931219616"></a>
 
 表3按照Cache类型（L2 Cache、DCache、ICache、NDDMA Cache）汇总了与缓存控制相关的接口及其功能说明。
@@ -113,7 +119,7 @@ Cache一致性是多核中确保数据正确性的核心机制。简单来说，
 | L2 Cache | [SetL2CacheHint](../data_structures/global_tensor/set_l2_cache_hint.md) | 读写GM的数据都默认被缓存在L2 Cache（默认启用L2 Cache），SetL2CacheHint能够设置GlobalTensor是否启用L2 Cache。 |
 | DCache | [DataCachePreload](data_cache_preload.md) | DataCachePreload接口从源地址所在的特定GM地址预加载数据到DCache中，每次调用只能预加载一个Cache Line大小的数据。 |
 | DCache | [DataCacheCleanAndInvalid](data_cache_clean_and_invalid.md) | 当Scalar单元访问GM时，使用该接口刷新Cache，保证Cache的一致性，使用场景如下：<br>&bull;读取GM的数据，但该数据可能在外部被其余核修改，此时需要使用DataCacheCleanAndInvalid接口，直接访问GM，获取最新数据。<br>&bull;用户通过Scalar单元写GM的数据，希望立刻写出，也需要使用DataCacheCleanAndInvalid接口。 |
-| DCache | [ReadGmByPassDCache](../scalar_compute/read_gm_by_pass_d_cache_isasi.md)/[WriteGmByPassDCache](../scalar_compute/write_gm_by_pass_d_cache_isasi.md) | 不经过DCache向GM地址上**读**/**写**数据。使用场景：<br>&bull;当多个核写入的数据落在同一条Cache Line内时，经过DCache的读写将以64B为粒度，可能引发多核数据随机覆盖问题。使用该接口不经过DCache直接按操作数大小**读**/**写**GM，可避免此问题。<br>&bull;使用该接口不经过DCache直接向GM**读**/**写**数据，可避免由DCache缓存引发的多核间数据不一致问题。 |
+| DCache | [ReadGmBypassDCache](../scalar_compute/read_gm_bypass_d_cache_isasi.md)/[WriteGmBypassDCache](../scalar_compute/write_gm_bypass_d_cache_isasi.md) | 不经过DCache向GM地址上**读**/**写**数据。使用场景：<br>&bull;当多个核写入的数据落在同一条Cache Line内时，经过DCache的读写将以64B为粒度，可能引发多核数据随机覆盖问题。使用该接口不经过DCache直接按操作数大小**读**/**写**GM，可避免此问题。<br>&bull;使用该接口不经过DCache直接向GM**读**/**写**数据，可避免由DCache缓存引发的多核间数据不一致问题。 |
 | ICache | [ICachePreLoad](i_cache_pre_load_isasi.md) | 开发者手动调用ICachePreLoad接口，能够从指令所在GM地址预加载指令到ICache中。 |
 | ICache | [GetICachePreloadStatus](get_i_cache_preload_status_isasi.md) | GetICachePreloadStatus为调试接口，在调用ICachePreLoad后调用，用于获取ICache的PreLoad的状态。当返回值为0时，说明ICache的PreLoad已完成；当返回值为1时，说明ICache的PreLoad未完成。 |
-| NDDMA Cache | NdDmaDci | 在使用[DataCopy（GMToUB多维数据搬运NDDMA）](../memory_vector_compute/data_move/data_copy_gm_to_ub_nddma.md)接口进行数据搬运前，需要使用NdDmaDci接口刷新NDDMA Cache缓存保证为最新状态。 |
+| NDDMA Cache | [NdDmaDci](../memory_vector_compute/data_move_aux_config/nd_dma_dci.md) | 在使用[DataCopy（GMToUB多维数据搬运NDDMA）](../memory_vector_compute/data_move/data_copy_gm_to_ub_nddma.md)接口进行数据搬运前，需要使用NdDmaDci接口刷新NDDMA Cache缓存保证为最新状态。 |

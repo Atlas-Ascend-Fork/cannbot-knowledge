@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/multi_core_aligned_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -28,7 +28,7 @@ platforms: []
 
 比如，下图中共有8个核参与计算，将A矩阵沿着M轴划分为4块，将B矩阵沿着N轴切分为两块，单核上仅处理某一分块（比如图中绿色部分为core5上参与计算的数据）：SingleCoreM \* K大小的A矩阵分块和SingleCoreN \* K大小的B矩阵分块相乘得到SingleCoreM \* SingleCoreN大小的C矩阵分块。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd2nz_new_44.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd2nz_new_44.png)
 
 切分M、N、K轴的策略如下图所示：
 
@@ -38,7 +38,7 @@ platforms: []
 
 比如下图中，C矩阵中的R矩阵块，是通过A1\*B1+A2\*B2+A3\*B3累加得到的，其中，A1\*B1、A2\*B2、A3\*B3可在多个核上并行计算。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd2nz_new_2.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd2nz_new_2.png)
 
 上述的切分策略会在Tiling参数中体现，比如SingleCoreM、SingleCoreN、SingleCoreK，开发者在host侧通过调用API自动获取Tiling参数，与单核场景的不同的是，多核Tiling需要使用[MultiCoreMatmulTiling](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/matmul_tiling_constructor.md)构造多核Tiling对象，并通过[SetDim](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_dim.md)接口设置Matmul计算所用的核数。注意：这里设置的核数为Matmul计算可用的核数，仅在多核场景下设置，用于计算tiling参数；SetSimdNumBlocks为整个算子计算所用核数，是实际会加载的核数，是必须设置的。SetSimdNumBlocks的设置规则请参考[numBlocks的说明](../../../../programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/host_tiling_implementation.md#numblocks)。SetDim的设置规则如下：
 
@@ -58,7 +58,7 @@ platforms: []
 
 ## 调用示例<a name="zh-cn_topic_0000002298767889_section14108832203920"></a>
 
-该场景的关键代码示例如下。Matmul多核对齐场景的完整样例请参考：多核切M、N的样例：[Matmul多核场景的核函数（Kernel）直调样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/02_matrix/matmul_advanced_api)；多核切K的样例：[多核切K场景的算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_splitk)。
+该场景的关键代码示例如下。Matmul多核对齐场景的完整样例请参考：多核切M、N的样例：[Matmul多核场景的核函数（Kernel）直调样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/02_matrix/matmul_advanced_api)；多核切K的样例：[多核切K场景的算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_splitk)。
 
 ```
 // 构造多核Tiling对象

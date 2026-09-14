@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/tool_interface/system_init/InitSocState.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -60,6 +60,7 @@ source_headers:
 
 
 
+
 **表2** 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品本接口执行的初始化项
 
 | 状态类别 | 初始化内容 |
@@ -69,6 +70,7 @@ source_headers:
 | AIC | LoadData（卷积数据搬运）接口调用时Pad填充的数值 |
 | AIC | 使用LoadData（卷积数据搬运）时L1 Buffer（A1/B1）的边界值 |
 | AIV | Mask |
+
 
 
 
@@ -84,11 +86,13 @@ source_headers:
 
 
 
+
 **表4** 针对Atlas 推理系列产品AI Core和Atlas 推理系列产品Vector Core本接口执行的初始化项
 
 | 状态类别 | 初始化内容 |
 | ---- | ---- |
 | 公共状态 | 原子累加状态 |
+
 
 
 ## 函数原型

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_mask_config/asc_set_vector_mask.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -23,6 +23,8 @@ source_headers:
 # asc_set_vector_mask
 
 ## 功能说明
+
+头文件路径为：`"c_api/vector_compute/compute/vector_mask_config.h"`。
 
 本API用于设置Mask值。某些矢量计算接口需要提前设置Mask，用于指示哪些数据参与计算。
 单独使用该API时可引入`c_api/vector_compute/compute/vector_mask_config.h`，整体使用C API时可引入`c_api/asc_simd.h`。
@@ -58,12 +60,14 @@ __aicore__ inline void asc_set_vector_mask(uint64_t mask_high, uint64_t mask_low
 
 
 
+
 **表** 参数说明（[NPU架构版本2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）
 
 |参数名|输入/输出|描述|
 | ------------ | ------------ | ------------ |
 |mask_high|输入|Normal模式：高位mask值。<br>Counter模式：需要置0，本入参不生效。|
 |mask_low|输入|Normal模式：低位mask值。<br>Counter模式：整个矢量计算过程中，参与计算的元素个数。|
+
 
 
 ## 返回值说明

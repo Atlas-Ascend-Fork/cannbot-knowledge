@@ -11,18 +11,21 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_compute/asc_set_fp32_mode.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 source_headers:
+- include/c_api/cube_compute/cube_compute.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_set_fp32_mode
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_compute/cube_compute.h"`。
 
 本接口用于设置Mmad计算关闭HF32模式，其作用与[asc_enable_hf32](asc_enable_hf32.md)相反，两个接口不同时生效。关闭HF32模式后，L0A Buffer与L0B Buffer中的`float`数据在参与Mmad计算之前不做舍入处理。
 
@@ -49,16 +52,17 @@ PIPE_S
 - 本接口需在矩阵乘加指令（[asc_mmad](asc_mmad.md)）执行前调用，以此来确保模式配置在矩阵乘加计算过程中生效。
 - FP32模式启用后会持续生效，不会自动关闭。后续矩阵乘加指令若不显式重新配置，将沿用当前模式。如需开启HF32模式，请重新调用[asc_enable_hf32](asc_enable_hf32.md)接口。
 
-
 ## 调用示例
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
+
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
+
 
 以下调用示例代码仅Ascend 950PR/Ascend 950DT产品支持。
 
@@ -152,4 +156,3 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-

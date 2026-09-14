@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/kernel_function.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -68,7 +68,7 @@ platforms: []
 -   Device侧执行函数：运行于设备端（NPU）的普通函数（除核函数（Kernel）外）。此类函数主要用于封装和复用底层计算逻辑，其调用权限被严格限制在设备侧内部，仅支持被核函数（Kernel）或同类的Device侧执行函数调用。
 
 **图1**  核函数（Kernel）、host侧执行函数、device侧执行函数调用关系<a name="fig321723224511"></a><br>
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/kernel_call.png "核函数（Kernel）-host侧执行函数-device侧执行函数调用关系")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/kernel_call.png "核函数（Kernel）-host侧执行函数-device侧执行函数调用关系")
 
 Host侧通过内核调用符<<<...>>>的语法形式调用核函数（Kernel），如下所示：
 

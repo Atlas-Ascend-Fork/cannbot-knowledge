@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/technical_appendix/concepts_and_terms/neural_networks_and_operators/data_layout.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -43,7 +43,7 @@ platforms: []
     如[图1](#zh-cn_topic_0000001265237150_zh-cn_topic_0228422146_zh-cn_topic_0187054064_fig146585121118)所示，以一张格式为RGB的图片为例，NCHW中，C排列在外层，实际存储的是“RRRRRRGGGGGGBBBBBB”，即同一通道的所有像素值顺序存储在一起；而NHWC中C排列在最内层，实际存储的则是“RGBRGBRGBRGBRGBRGB”，即多个通道的同一位置的像素值顺序存储在一起。
 
     **图1**  NCHW和NHWC存储示例<a name="zh-cn_topic_0000001265237150_zh-cn_topic_0228422146_zh-cn_topic_0187054064_fig146585121118"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nchw_nhwc.png "NCHW和NHWC存储示例")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nchw_nhwc.png "NCHW和NHWC存储示例")
 
     尽管存储的数据相同，但不同的存储顺序会导致数据的访问特性不一致，因此即便进行同样的运算，相应的计算性能也会不同。
 
@@ -51,13 +51,13 @@ platforms: []
 
     NDHWC和NCDHW是五维Tensor，较NHWC和NCHW多了一个D的维度，D代表特征深度（Depth），表示数据在深度方向上的扩展，如视频的时间步或医学图像的深度层，因此该类格式便于在时间维度上进行卷积操作。以NDHWC为例，其数据格式如下图所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/NCDHW.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/NCDHW.png)
 
 ## 矩阵乘相关特殊格式<a name="section184471251122117"></a>
 
 使用Mmad基础API进行矩阵乘计算时，对矩阵输入输出的数据排布格式有一定的要求，如下图所示，要求A矩阵（位于L0A Buffer）为FRACTAL\_ZZ，B矩阵（位于L0B Buffer）为FRACTAL\_ZN，C矩阵（位于L0C Buffer）为FRACTAL\_NZ。这些格式将矩阵划分成了一些分形（Fractal Matrix），适配Cube计算单元每次读取\(16, 16\)× \(16, 16\)的数据进行计算的硬件特点（以half数据类型为例），从而提高矩阵计算的效率。分形的大小和数据类型有关，也和所在的存储位置有关，具体可参见下文的详细介绍。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zn_abc.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zn_abc.png)
 
 -   **FRACTAL\_NZ/NZ**
 <a name="li19960204116136"></a>
@@ -151,7 +151,7 @@ platforms: []
 
     转换过程示意图如下：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/call_example_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/call_example_1.png)
 
     转换后Tensor打印如下：
 
@@ -196,7 +196,7 @@ platforms: []
 
     \(M,  K\)大小的矩阵被分为M1 \* K1个分形，按照row major排布，形状如Z字形；每个分形内部有M0 \* K0个元素，按照row major排布，形状如Z字形，所以这种数据格式称为ZZ格式。其中，\(M0, K0\)表示一个分形的大小，分形Shape为16 x \(32B / sizeof\(Datatype\)\)，大小为512字节。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zz.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zz.png)
 
     通过公式表达转换过程如下：
 
@@ -217,7 +217,7 @@ platforms: []
 
     \(K,  N\)大小的矩阵被分为K1 \* N1个分形，按照row major排布，形状如Z字形；每个分形内部有K0 \* N0个元素，按照column major排布，形状如N字形，所以这种数据格式称为ZN格式。其中，\(K0, N0\)表示一个分形的大小，分形shape为 \(32B / sizeof\(Datatype\)\) x 16，大小为512字节。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zn_half.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zn_half.png)
 
     通过公式表达转换过程如下：
 
@@ -242,7 +242,7 @@ platforms: []
 
     NHWC/NCHW -\> NC1HWC0的转换过程为：将数据在C维度进行分割，变成C1份NHWC0/NC0HW，再将C1份NHWC0/NC0HW在内存中连续排列成NC1HWC0，其格式转换示意图如下图所示。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nc1hwc0.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nc1hwc0.png)
 
     -   NHWC -\> NC1HWC0的转换公式如下：
 
@@ -262,11 +262,11 @@ platforms: []
 
     数据有两层Tiling，如下图所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002335908976.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002335908976.png)
 
     第一层与Cube的Size相关，数据按照列的方向连续（小n）；第二层与矩阵的Size相关，数据按照行的方向连续（大Z）。
 
-    例如：HWCN = \(2, 2, 32, 32\)，将其变成FRACTAL\_Z\(C1HW, N1, N0, C0\) = \(8, 2, 16, 16\)。
+    例如：HWCN也是卷积权重的一种数据排布格式，其中，H和W分别表示卷积核的高度和宽度，C表示输入通道数，N表示输出通道数。需要注意的是，此处N表示输出通道数，不表示输入数据的Batch数量。HWCN = \(2, 2, 32, 32\)，将其变成FRACTAL\_Z\(C1HW, N1, N0, C0\) = \(8, 2, 16, 16\)。
 
     HWCN变换FRACTAL\_Z的过程为：
 
@@ -288,7 +288,7 @@ platforms: []
 
     NDHWC -\> NDC1HWC0的转换过程为：将数据在C维度进行分割，变成C1份NDHWC0，再将C1份NDHWC0在内存中连续排列成NDC1HWC0，其格式转换示意图如下图所示。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/NDC1HWC0.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/NDC1HWC0.png)
 
 -   **FRACTAL\_Z\_3D**
 
@@ -309,48 +309,48 @@ platforms: []
 
     输入一个NDHWC格式的Tensor，Shape大小为\(48, 2, 2, 2, 32\)：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fig_3d_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fig_3d_1.png)
 
     转换后，得到FRACTAL\_Z\_3D格式如下所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fig_3d_2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fig_3d_2.png)
 
 ## Matmul高阶API相关格式<a name="section34223918570"></a>
 
 -   **BSH/SBH**：B：Batch，批处理的大小； S：sequence length，序列长度；H = N \* D，其中，N为head的数量，D为head的大小，此格式通常用于Matmul矩阵乘。数据排布格式如下图所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/skip_write.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/skip_write.png)
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/skip_write_27.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/skip_write_27.png)
 
 -   **BMNK**：通用数据格式；B：Batch，批处理的大小；M、N、K为矩阵乘\[M, K\]\*\[K, N\]的矩阵维度；其数据排布格式如下：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/bmnk.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/bmnk.png)
 
 -   **BSNGD**：为原始BSH shape做reshape后的shape，S和D为单Batch的矩阵乘的M轴（或N轴）和K轴，一个SD为一个batch的计算数据，此格式通常用于Matmul矩阵乘，数据排布格式如下图所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/bsngd.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/bsngd.png)
 
 -   **SBNGD**：为原始SBH shape做reshape后的shape，S和D为单Batch的矩阵乘的M轴（或N轴）和K轴，一个SD为一个Batch的计算数据，此格式通常用于Matmul矩阵乘，数据排布格式如下图所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sbngd.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sbngd.png)
 
 -   **BNGS1S2**：一般为前两种数据排布进行矩阵乘的输出，S1S2数据连续存放，一个S1S2为一个Batch的计算数据，此格式通常用于Matmul矩阵乘，数据排布格式如下图所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/bngs1s2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/bngs1s2.png)
 
 -   **ND\_ALIGN**：ND\_ALIGN是ND数据格式
 <a name="li075920427155"></a>的一种变换数据格式。输出矩阵乘的结果矩阵C时，用于配置C矩阵按照N方向32字节对齐的规则进行输出。
 
     ND-\>ND\_ALIGN变换过程如下图所示，假设矩阵乘结果矩阵C的数据类型是int32\_t，输出到Unified Buffer（UB，VECOUT），原矩阵N方向没有32字节对齐，设置ND\_ALIGN后则在其后补0，将其对齐到32字节。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd2nz.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd2nz.png)
 
 -   **VECTOR**：VECTOR是
 <a name="li51557161818"></a>[GEMV](../../../operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matrix_vector_multiply.md)（矩阵向量乘，General Matrix-Vector Multiply）场景使用的一种数据格式，配置矩阵为VECTOR数据排布格式即代表输入数据是一个向量。
 
     **图2**  GEMV场景输入Vector格式的A矩阵示意图<a name="fig172015331814"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/gemv_vec_a.png "GEMV场景输入Vector格式的A矩阵示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/gemv_vec_a.png "GEMV场景输入Vector格式的A矩阵示意图")
 
 ## COLUMN\_MAJOR<a name="section14365456143720"></a>
 
@@ -361,6 +361,6 @@ ND数据排布格式也称为ROW\_MAJOR（行优先），相应的有COLUMN\_MAJ
 
 两种数据排布格式的示意图如下所示。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/row_major.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/row_major.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/col_major.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/col_major.png)

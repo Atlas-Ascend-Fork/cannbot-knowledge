@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/intermediate_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -45,16 +45,16 @@ GM ──(MTE2)──> L1 ──(MTE1)──> L0A/L0B ──(Cube)──> L0C �
 
 | Case | 优化手段 | 说明 |
 |------|---------|------|
-| [Case 1](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-1-单核tiling优化-single_core_tiling) | 单核Tiling优化 | 优化base块参数，降低访存计算比 |
-| [Case 2](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-2-多核切分-2x12-multi_core_split_2_12) | 多核切分 2x12 | 引入多核并行计算，均衡负载分配 |
-| [Case 3](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-3-多核切分-4x6-multi_core_split_4_6) | 多核切分 4x6 | 优化多核切分策略，地址512B对齐 |
-| [Case 4](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-4-多核使用mdl模板-multi_core_mdl) | 多核使用MDL模板 | 启用L1多块缓存，大包搬运 |
+| [Case 1](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-1-单核tiling优化-single_core_tiling) | 单核Tiling优化 | 优化base块参数，降低访存计算比 |
+| [Case 2](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-2-多核切分-2x12-multi_core_split_2_12) | 多核切分 2x12 | 引入多核并行计算，均衡负载分配 |
+| [Case 3](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-3-多核切分-4x6-multi_core_split_4_6) | 多核切分 4x6 | 优化多核切分策略，地址512B对齐 |
+| [Case 4](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-4-多核使用mdl模板-multi_core_mdl) | 多核使用MDL模板 | 启用L1多块缓存，大包搬运 |
 
 ### Gelu优化手段
 
 | Case | 优化手段 | 说明 |
 |------|---------|------|
-| [Case 1](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_high_performance/README.md#case-1-启用regbase-api和vf融合能力) | RegBase API + VF融合 | 寄存器级计算减少中间Load/Store，利用双发特性提升IPC |
+| [Case 1](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_high_performance/README.md#case-1-启用regbase-api和vf融合能力) | RegBase API + VF融合 | 寄存器级计算减少中间Load/Store，利用双发特性提升IPC |
 
 ### 性能数据
 
@@ -64,4 +64,4 @@ GM ──(MTE2)──> L1 ──(MTE1)──> L0A/L0B ──(Cube)──> L0C �
 
 这表明采用CV融合方式编写时，AIV的Vector计算时间基本被AIC的Cube计算时间完全覆盖，实现了高效的流水并行。
 
-详细内容请参见[Matmul+Gelu中级性能优化](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/03_fusion_compute/matmul_gelu_high_performance/README.md)。
+详细内容请参见[Matmul+Gelu中级性能优化](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/03_fusion_compute/matmul_gelu_high_performance/README.md)。

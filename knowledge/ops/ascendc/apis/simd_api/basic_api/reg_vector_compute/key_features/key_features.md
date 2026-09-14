@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/key_features/key_features.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -54,6 +54,7 @@ VF融合的性能优化详细内容请参考[算子实践参考-VF融合优化](
 
 ## 数据搬运优化
 Reg矢量计算API提供了下表所示多种搬运指令，合理选择搬运接口以及利用接口能力进行优化。连续非对齐场景优化的性能优化详细内容请参考[算子实践参考-连续非对齐场景优化](../../../../../guides/operator_practice/simd_operator_optimization/vector_compute/vf_optimization/continuous_unaligned_optimization.md)。
+
 | 场景 | 描述 |
 | :-- | :-- | 
 | 连续对齐搬入(LoadAlign) | 能够实现数据从起始地址32B对齐的UB连续搬入RegTensor。 |
@@ -72,7 +73,7 @@ Reg矢量计算API提供了下表所示多种搬运指令，合理选择搬运�
 
   **图1** half转int32_t类型转换过程<a id="fig1"></a>
 
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/half_to_int32_conversion.png "half转int32_t类型转换过程")
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/half_to_int32_conversion.png "half转int32_t类型转换过程")
 
   ```cpp
   // 位宽小转大，以half->int32_t为例 
@@ -93,7 +94,7 @@ Reg矢量计算API提供了下表所示多种搬运指令，合理选择搬运�
 
   **图2** float转int16_t类型转换过程<a id="fig2"></a>
 
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/float_to_int16_conversion.png "float转int16_t类型转换过程")
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/float_to_int16_conversion.png "float转int16_t类型转换过程")
 
   ```cpp
   // 位宽大转小，以float->int16_t为例 

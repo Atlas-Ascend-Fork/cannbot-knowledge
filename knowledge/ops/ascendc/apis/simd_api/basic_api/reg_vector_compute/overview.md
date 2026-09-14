@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -21,7 +21,7 @@ Reg矢量计算API是面向Reg矢量计算架构开发的API，用户可以通�
 基于寄存器的编程模型是指将数据从LocalTensor通过Reg搬运指令（Reg数据搬入）加载到寄存器中，进行复杂的数学计算Compute后通过Reg搬运指令（Reg数据搬出）搬出到LocalTensor中，所有的计算逻辑均在寄存器中完成，从而减少LocalTensor间的数据搬运，大大提升了整体性能，具体流程如下所示：
 
 **图1**  Reg矢量计算  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_vector_overview.png "Reg矢量计算")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_vector_overview.png "Reg矢量计算")
 
 以[Reg矢量计算编程示例](#reg矢量计算编程示例)为例，完整的VectorFunction计算过程由以下几部分组成：
 - 编写和调用VectorFunction（向量函数）。这些函数使用__simd_vf__标记，通过[asc\_vf\_call](vf_call/asc_vf_call.md)被调用；

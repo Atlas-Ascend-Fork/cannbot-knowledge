@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_arith/asc_sub.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_arith.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_sub
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_arith.h"`。
 
 该接口根据`mask`，对源操作数`src0`、`src1`进行按元素求差操作，将结果写入目的操作数`dst`。
 
@@ -37,7 +40,7 @@ $$
 \{carry_i, dst_i\} = \{1'b0, src0_i\} + \{1'b0, \sim src1_i\} + 33'b1
 $$
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_sub.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_sub.png)
 
 输出`carry`适用场景请参考[asc_subc功能说明](asc_subc.md#功能说明)。
 

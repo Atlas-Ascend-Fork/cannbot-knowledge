@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_convert/asc_int162half.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/reg_convert.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_int162half
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/reg_convert.h"`。
 
 `src`中int16_t类型的元素转换为half类型（16位浮点数），并将结果写入dst。源操作数和目的操作数位宽相同，转换后元素数量不变。支持5种舍入模式，关于舍入模式的详细说明请参见[舍入模式与饱和模式](rounding_mode.md)。
 
@@ -36,33 +39,15 @@ def asc_int162half_rn(dst, src, mask):
 
 ## 函数原型
 
-```cpp
-// 向负无穷方向舍入（rd）
-__simd_callee__ inline void asc_int162half_rd(vector_half& dst, vector_int16_t src, vector_bool mask)
-// 四舍六入五成双舍入（rn）
-__simd_callee__ inline void asc_int162half_rn(vector_half& dst, vector_int16_t src, vector_bool mask)
-// 四舍五入舍入（rna）
-__simd_callee__ inline void asc_int162half_rna(vector_half& dst, vector_int16_t src, vector_bool mask)
-// 向正无穷方向舍入（ru）
-__simd_callee__ inline void asc_int162half_ru(vector_half& dst, vector_int16_t src, vector_bool mask)
-// 向零方向舍入（rz）
-__simd_callee__ inline void asc_int162half_rz(vector_half& dst, vector_int16_t src, vector_bool mask)
-```
-
 ```c
+// 占位符形式
 __simd_callee__ inline void asc_int162half_<round_mode>(vector_half& dst,
                                                          vector_int16_t src,
                                                          vector_bool mask)
 ```
 
-### 函数原型典型示例
-
-```c
-// 示例：四舍六入五成双舍入（rn）。
-__simd_callee__ inline void asc_int162half_rn(vector_half& dst,
-                                                vector_int16_t src,
-                                                vector_bool mask)
-```
+**占位符说明如下：**
+- `<round_mode>`支持`rd`（FLOOR）、`rn`（RINT）、`rna`（ROUND）、`ru`（CEIL）和`rz`（TRUNC）。
 
 ## 参数说明
 
@@ -88,16 +73,15 @@ __simd_callee__ inline void asc_int162half_rn(vector_half& dst,
 
 ## 调用示例
 
+将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
-
-
-s代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
+
 
 ```c
 #include <cstdint>
@@ -193,5 +177,3 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-
-

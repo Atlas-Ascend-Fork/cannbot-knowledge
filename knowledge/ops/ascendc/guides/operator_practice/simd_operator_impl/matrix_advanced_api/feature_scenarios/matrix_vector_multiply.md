@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matrix_vector_multiply.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -27,14 +27,14 @@ platforms: []
     将A矩阵从L1 Buffer（A1）搬运到L0A Buffer（A2）时，1\*256的向量被当作16\*16的矩阵进行处理，调用[LoadData](../../../../../apis/simd_api/basic_api/cube_compute_isasi/cube_compute_load/index.md)接口一次完成16\*16分形大小的矩阵搬运。B矩阵的搬运以及矩阵乘计算跟基础场景相同，如下图所示。
 
     **图1**  GEMV模式M=1的矩阵乘计算示意图<a name="zh-cn_topic_0000002264077892_fig18149171416184"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/gemv_m1.png "GEMV模式M-1的矩阵乘计算示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/gemv_m1.png "GEMV模式M-1的矩阵乘计算示意图")
 
 -   非GEMV模式
 
     将A矩阵从L1 Buffer（A1）搬运到L0A Buffer（A2）时，1\*256的向量被当作非对齐矩阵数据进行处理，将M方向对齐到32字节后进行搬运。调用[LoadData](../../../../../apis/simd_api/basic_api/cube_compute_isasi/cube_compute_load/index.md)接口每次搬运16\*16分形大小的矩阵，一共搬运K/16=16次，导致搬运数据量增加，性能相较于GEMV模式差，如下图所示。
 
     **图2**  非GEMV模式M=1的矩阵乘计算示意图<a name="zh-cn_topic_0000002264077892_fig15267820101910"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/non_gemv_m1.png "非GEMV模式M-1的矩阵乘计算示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/non_gemv_m1.png "非GEMV模式M-1的矩阵乘计算示意图")
 
 ## 使用场景<a name="zh-cn_topic_0000002264077892_section118051016163613"></a>
 
@@ -50,7 +50,7 @@ platforms: []
 
 ## 调用示例<a name="zh-cn_topic_0000002264077892_section15486294368"></a>
 
-完整的算子样例请参考[matmul\_gemv算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_format_gemv)。
+完整的算子样例请参考[matmul\_gemv算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_format_gemv)。
 
 -   Tiling实现
 

@@ -10,14 +10,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_exp_sub_deprecated.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
+source_headers:
+- include/c_api/reg_compute/compute/reg_fused.h
 ---
 
 # asc_exp_sub（废弃）
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_fused.h"`。
 
 **输入数据类型为`half`且不带`src_pos`参数的`asc_exp_sub`原型以及`asc_exp_sub_v2`原型已废弃。新接口请参见[asc_exp_sub](../reg_compute/reg_fused/asc_exp_sub.md)。**
 

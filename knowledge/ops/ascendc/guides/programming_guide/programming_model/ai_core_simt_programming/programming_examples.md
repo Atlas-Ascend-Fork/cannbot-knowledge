@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simt_programming/programming_examples.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -46,7 +46,7 @@ output[i] = input[index[i]]
     }
     ```
 
-核函数（Kernel）的实现参考如下代码。完整的样例请参考[简单gather算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/00_introduction/01_gather/basic_gather/gather_2d)。
+核函数（Kernel）的实现参考如下代码。完整的样例请参考[简单gather算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/00_introduction/01_gather/basic_gather/gather_2d)。
 
 ```cpp
 template <typename type_data, typename type_idx>

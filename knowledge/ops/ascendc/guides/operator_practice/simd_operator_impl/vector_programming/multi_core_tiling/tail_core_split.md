@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/vector_programming/multi_core_tiling/tail_core_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -18,11 +18,11 @@ platforms: []
 
 在实际算子开发中，受输入数据总量与切分单位的制约，并非所有场景都能将计算完全均匀地分配到每个核上。该场景中，主块均分后存在剩余数据`mainTileRemainder`，但剩余数据无法以DataBlock为最小单位均匀分配到每个核（`tailBlockNumEachCore`为0，`remainingTailLength`不为0），只能继续分配给部分核。获得额外DataBlock的核为整核，其余为尾核；此时核间负载不均衡，需要分别处理整核和尾核。由于`tailBlockNumEachCore`为0，各核未分配到基础尾块，因此尾核内只包含主块，整核比尾核多处理一个DataBlock的尾块。数据切分后，前`formerNum`个核为整核，各处理`formerLength`个元素（含主块和尾块）；其余核为尾核，各处理`tailLength`个元素（仅含主块）。
 
-本场景样例的完整代码请参考[场景2：尾核切分](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/02_tiling_selector/vector_tiling_strategy/README.md#scenario2-main-tile-tail-core)。样例中固定使用8个核，主块长度`mainTileLength`为3200个`half`元素，数据整体长度为256064个`half`元素。数据按DataBlock对齐后，前4个核各处理32016个元素，后4个核各处理32000个元素；整核包含10个主块和16个元素的尾块，尾核只包含10个主块。数据切分示意如下图所示。
+本场景样例的完整代码请参考[场景2：尾核切分](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/02_tiling_selector/vector_tiling_strategy/README.md#scenario2-main-tile-tail-core)。样例中固定使用8个核，主块长度`mainTileLength`为3200个`half`元素，数据整体长度为256064个`half`元素。数据按DataBlock对齐后，前4个核各处理32016个元素，后4个核各处理32000个元素；整核包含10个主块和16个元素的尾块，尾核只包含10个主块。数据切分示意如下图所示。
 
 **图 1**  数据切分示意图
 
-![数据切分示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/tailcore_tiling.png "数据切分示意图")
+![数据切分示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/tailcore_tiling.png "数据切分示意图")
 
 本场景中整核和尾核处理的元素数量、主块数量及尾块情况不同，无法仅用一组`blockLength`、`tileNum`和`lastTileLength`描述所有核。因此Tiling参数新增`formerNum`记录整核数量，并分别使用`former*`和`tail*`参数描述记录整核和尾核相关Tiling信息的参数；由于尾核内只包含主块，无需定义`tailLastTileLength`。Tiling结构体包含以下成员：
 

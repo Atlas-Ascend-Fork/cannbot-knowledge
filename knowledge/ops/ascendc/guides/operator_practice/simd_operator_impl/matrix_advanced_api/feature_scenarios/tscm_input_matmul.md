@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/tscm_input_matmul.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -30,7 +30,7 @@ TSCM表示L1 Buffer空间对应的逻辑内存，L1 Buffer相关内容见[存储
 
 ## 调用示例<a name="zh-cn_topic_0000002298654821_section15486294368"></a>
 
-完整的算子样例请参考[自定义数据来源为GM的TSCM输入的Matmul算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_tscm)。
+完整的算子样例请参考[自定义数据来源为GM的TSCM输入的Matmul算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_tscm)。
 
 ```
 TQue<TPosition::A1, 1> scm; // 队列逻辑位置A1，队列深度为1

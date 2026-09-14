@@ -10,18 +10,21 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/scalar_compute/scalar_bit/asc_ffs.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 source_headers:
+- include/c_api/scalar_compute/compute/scalar_bit.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_ffs
 
 ## 功能说明
+
+头文件路径为：`"c_api/scalar_compute/compute/scalar_bit.h"`。
 
 FindFirstSet接口，用于在输入`uint64_t`数据的二进制表示中，从最低位向最高位查找第一个值为1的比特，并返回其位索引；若未找到，则返回-1。
 

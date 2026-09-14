@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/library_api/basic_api/overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -41,4 +41,4 @@ platforms: []
 下图以矢量加法为例，展示了**连续计算API和高维切分API**的特点。
 
 **图1**  计算API几种计算方式的特点<a name="zh-cn_topic_0000001762058545_fig6847134062319"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/calc_api_feat.png "计算API几种计算方式的特点")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/calc_api_feat.png "计算API几种计算方式的特点")

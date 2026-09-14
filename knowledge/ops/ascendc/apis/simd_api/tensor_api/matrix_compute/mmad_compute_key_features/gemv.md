@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/mmad_compute_key_features/gemv.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/tensor_api/tensor.h
@@ -34,7 +34,7 @@ GEMV的核心功能体现为：当矩阵A的维度M取值为1时，接口可以�
 
 **图1**  GEMV模式矩阵乘示意图
 
-![GEMV模式矩阵乘示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_gemv.png)
+![GEMV模式矩阵乘示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_gemv.png)
 
 ## 使用优势
 
@@ -46,7 +46,7 @@ M=1时开启GEMV模式，则矩阵乘法将M方向作为非对齐场景进行处
 
     **图2**  GEMV模式M=1的矩阵乘计算示意图
 
-    ![GEMV模式M=1的矩阵乘计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_gemv_compare.png)
+    ![GEMV模式M=1的矩阵乘计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_gemv_compare.png)
 
 - 非GEMV模式
 
@@ -54,7 +54,7 @@ M=1时开启GEMV模式，则矩阵乘法将M方向作为非对齐场景进行处
 
     **图3**  非GEMV模式M不等于1的矩阵乘计算示意图
 
-    ![非GEMV模式M不等于1的矩阵乘计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_nongemv_compare.png)
+    ![非GEMV模式M不等于1的矩阵乘计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_nongemv_compare.png)
 
 ## 使用示例
 

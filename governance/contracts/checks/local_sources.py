@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 
 from ..knowledge import Contract, Issue
-from ..source_resources import git_source, validate_checkout
+from ..source_resources import git_source, validate_archive, validate_checkout
 
 
 def check(contract: Contract, document, context) -> list[Issue]:
@@ -61,28 +61,10 @@ def check(contract: Contract, document, context) -> list[Issue]:
         if relative.parts[0] not in context.checked_local_roots:
             context.checked_local_roots.add(relative.parts[0])
             marker = source_root / ".complete"
-            expected = {
-                f"archive_sha256={definition.get('archive_sha256', '')}",
-                f"tree_sha256={definition.get('tree_sha256', '')}",
-            }
-            if not source_root.is_dir() or not marker.is_file():
-                issues.append(
-                    Issue(
-                        "source.archive_marker",
-                        "restored source requires .complete",
-                        path=marker,
-                    )
-                )
-            elif not expected.issubset(
-                set(marker.read_text(encoding="utf-8").splitlines())
-            ):
-                issues.append(
-                    Issue(
-                        "source.archive_marker",
-                        "restored source archive or tree SHA-256 does not match Registry",
-                        path=marker,
-                    )
-                )
+            try:
+                validate_archive(contract.root, definition)
+            except (OSError, ValueError) as exc:
+                issues.append(Issue("source.archive_marker", str(exc), path=marker))
         if not (contract.root / relative).is_file():
             issues.append(
                 Issue(

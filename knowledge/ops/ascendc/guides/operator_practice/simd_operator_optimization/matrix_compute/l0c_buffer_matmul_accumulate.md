@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/matrix_compute/l0c_buffer_matmul_accumulate.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -22,10 +22,10 @@ platforms: []
 【描述】算子实现中对矩阵乘的结果进行累加时（比如矩阵A1 \* B1 + A2 \* B2...结果的累加），可将前一次矩阵乘的结果暂存在L0C Buffer（CO1）上，调用Mmad接口实现矩阵乘结果累加。相比于每次矩阵乘的结果从L0C Buffer（CO1）搬运到GM上，再搬运到Unified Buffer（UB）上进行累加计算，可减少数据搬运的次数，提升内存使用效率。
 
 **图1**  反例数据流图<a name="fig1739115131882"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/bad_flow_80.png "反例数据流图-80")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/bad_flow_80.png "反例数据流图-80")
 
 **图2**  正例数据流图<a name="fig1831565712115"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/good_dataflow_81.png "正例数据流图-81")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/good_dataflow_81.png "正例数据流图-81")
 
 【反例】
 

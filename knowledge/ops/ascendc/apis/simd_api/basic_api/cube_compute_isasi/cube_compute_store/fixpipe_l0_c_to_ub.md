@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/Fixpipe_L0CToUB.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -32,7 +32,7 @@ source_headers:
 
 **图2** L0C2UB流程图<a id="zh-cn_topic_0000002542828493_fig1828513492547"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/L0C2UB_Function_Combination_950.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/L0C2UB_Function_Combination_950.png)
 
 
 ## 函数原型<a name="zh-cn_topic_0000002549846732_section82039854412"></a>
@@ -146,12 +146,14 @@ L0C Buffer到UB数据搬运提供矩阵搬出的组合接口Fixpipe，接口内�
 
 
 
+
 针对Atlas 200I/500 A2 推理产品，支持的数据类型组合如下：
 
 | 源矩阵（L0C Buffer） | 目的矩阵（UB） |
 | ---------- | ---------- |
 | float | int8_t、uint8_t、half、bfloat16_t、float。 |
 | int32_t | int8_t、uint8_t、half、int32_t。 |
+
 
 
 ## 返回值说明
@@ -210,7 +212,7 @@ L0C Buffer到UB数据搬运提供矩阵搬出的组合接口Fixpipe，接口内�
 
 **图1** 不开启NZ2ND参数的单搬运模式设置示意图<a name="fig128961542184620"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/no_nz2nd_single_mode.png "不开启NZ2ND参数的单搬运模式设置示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/no_nz2nd_single_mode.png "不开启NZ2ND参数的单搬运模式设置示意图")
 
 **双目标控制模式：**
 
@@ -232,7 +234,7 @@ M方向切分：
 
 **图2** 不开启NZ2ND参数和NZ2DN参数的双目标搬运模式设置示意图<a name="fig6561154491913"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/no_nz2nd_dual_target_mode.png "不开启NZ2ND参数和NZ2DN参数的双目标搬运模式设置示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/no_nz2nd_dual_target_mode.png "不开启NZ2ND参数和NZ2DN参数的双目标搬运模式设置示意图")
 
 ### 开启NZ2ND随路格式转换
 
@@ -248,7 +250,7 @@ M方向切分：
 
 **图3** 开启NZ2ND参数设置示意图<a name="fig79783143556"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/enable_nz2nd_config.png "开启NZ2ND参数设置示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/enable_nz2nd_config.png "开启NZ2ND参数设置示意图")
 
 **单搬运模式：**
 
@@ -262,7 +264,7 @@ M方向切分：
 
 **图4** 开启NZ2ND参数的单搬入模式设置示意图<a name="fig11991024112516"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/enable_nz2nd_single_load.png "开启NZ2ND参数的单搬入模式设置示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/enable_nz2nd_single_load.png "开启NZ2ND参数的单搬入模式设置示意图")
 
 **双目标控制模式：**
 
@@ -277,7 +279,7 @@ M方向切分：
 
     **图5** 开启NZ2ND参数双搬入模式设置示意图<a name="fig8810182815117"></a>  
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/enable_nz2nd_dual_load.png "开启NZ2ND参数双搬入模式设置示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/enable_nz2nd_dual_load.png "开启NZ2ND参数双搬入模式设置示意图")
 
 ### 开启NZ2DN随路格式转换
 
@@ -299,7 +301,7 @@ M方向切分：
 
 **图6** 开启NZ2DN单搬运模式示意图1<a name="fig19772110476"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/enable_nz2dn_single_mode1.png "开启NZ2DN单搬运模式示意图1")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/enable_nz2dn_single_mode1.png "开启NZ2DN单搬运模式示意图1")
 
 示例二，参数取值说明如下，示意图见[图7](#fig769114585716)：
 
@@ -315,15 +317,15 @@ M方向切分：
 
 **图7** 开启NZ2DN单搬运模式示意图2<a name="fig769114585716"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/enable_nz2dn_single_mode2.png "开启NZ2DN单搬运模式示意图2")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/enable_nz2dn_single_mode2.png "开启NZ2DN单搬运模式示意图2")
 
 
 ## 调用示例<a name="zh-cn_topic_0000002549846732_section088124295117"></a>
 
 
-完整样例请参考[fixpipe\_l0c2ub样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2ub)。
+完整样例请参考[fixpipe\_l0c2ub样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2ub)。
 
-- 示例：通路L0C Buffer-\>UB。输入A矩阵和B矩阵的数据类型为half，输出C矩阵为float，默认配置开启Nz2Nd的格式转换。完整样例可以参考[样例链接](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2ub)。
+- 示例：通路L0C Buffer-\>UB。输入A矩阵和B矩阵的数据类型为half，输出C矩阵为float，默认配置开启Nz2Nd的格式转换。完整样例可以参考[样例链接](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2ub)。
 
     ```cpp
     // L0C Buffer->UB 搬运，目的位置为UB，需将FixpipeConfig的isToUB配置为true。

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/library_api/basic_api/interface_classification/high_dim_split_api.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -27,17 +27,17 @@ platforms: []
 矢量计算通过Vector计算单元完成，矢量计算的源操作数和目的操作数均通过Unified Buffer（UB）来进行存储。Vector计算单元每个迭代会从UB中取出**8**个**datablock**（每个datablock数据块内部地址连续，长度32Byte），进行计算，并写入对应的8个datablock中。下图为单次迭代内的8个datablock进行Exp计算的示意图。
 
 **图1**  单次迭代内的8个datablock进行Exp计算示意图<a name="zh-cn_topic_0000002267504656_zh-cn_topic_0000001764162593_fig143499419171"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/iter_8db_exp.png "单次迭代内的8个datablock进行Exp计算示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/iter_8db_exp.png "单次迭代内的8个datablock进行Exp计算示意图")
 
 -   矢量计算API支持开发者通过**repeatTime**来配置迭代次数，从而控制指令的多次迭代执行。假设repeatTime设置为2，矢量计算单元会进行2个迭代的计算，可计算出2 \* 8（每个迭代8个datablock） \* 32Byte（每个datablock32Byte） = 512Byte的结果。如果数据类型为half，则计算了256个元素。下图展示了2次迭代Exp计算的示意图。由于硬件限制，**repeatTime不能超过255。**
 
     **图2**  2次迭代Exp计算<a name="zh-cn_topic_0000002267504656_zh-cn_topic_0000001764162593_fig148871676180"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/iter2_exp.png "2次迭代Exp计算")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/iter2_exp.png "2次迭代Exp计算")
 
 -   针对同一个迭代中的数据，可以通过**mask**参数进行掩码操作来控制实际参与计算的个数。下图为进行Abs计算时通过mask逐比特模式按位控制哪些元素参与计算的示意图，1表示参与计算，0表示不参与计算。
 
     **图3**  通过**mask**参数进行掩码操作示意图（以float数据类型为例）<a name="zh-cn_topic_0000002267504656_zh-cn_topic_0000001764162593_fig7630131541814"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mask_float.png "通过mask参数进行掩码操作示意图（以float数据类型为例）")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mask_float.png "通过mask参数进行掩码操作示意图（以float数据类型为例）")
 
 -   矢量计算单元还支持带间隔的向量计算，通过**dataBlockStride**（单次迭代内不同datablock间地址步长）和**repeatStride**（相邻迭代间相同datablock的地址步长）来进行配置。
     -   **dataBlockStride**
@@ -45,7 +45,7 @@ platforms: []
         如果需要控制单次迭代内，数据处理的步长，可以通过设置同一迭代内不同datablock的地址步长dataBlockStride来实现。下图给出了单次迭代内非连续场景的示意图，示例中源操作数的dataBlockStride配置为2，表示单次迭代内不同datablock间地址步长（起始地址之间的间隔）为2个datablock。
 
         **图4**  单次迭代内非连续场景的示意图<a name="zh-cn_topic_0000002267504656_zh-cn_topic_0000001764162593_fig744519103222"></a>  
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/iter_discont.png "单次迭代内非连续场景的示意图")
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/iter_discont.png "单次迭代内非连续场景的示意图")
 
     -   **repeatStride**
 
@@ -54,7 +54,7 @@ platforms: []
         下图给出了多次迭代间非连续场景的示意图，示例中源操作数和目的操作数的**repeatStride**均配置为9，表示相邻迭代间相同datablock起始地址之间的间隔为9个datablock。相同datablock是指datablock在迭代内的位置相同，比如下图中的src1和src9处于相邻迭代，在迭代内都是第一个datablock的位置，其间隔即为**repeatStride**的数值。
 
         **图5**  多次迭代间非连续场景的示意图<a name="zh-cn_topic_0000002267504656_zh-cn_topic_0000001764162593_fig7376324392"></a>  
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/multi_iter_disc.png "多次迭代间非连续场景的示意图")
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/multi_iter_disc.png "多次迭代间非连续场景的示意图")
 
 下文中给出了dataBlockStride、repeatStride、mask的详细配置说明和示例。
 
@@ -66,7 +66,7 @@ dataBlockStride是指同一迭代内不同datablock的地址步长。
 -   非连续计算，dataBlockStride值大于1（如取2），同一迭代内不同datablock之间在读取数据时出现一个datablock的间隔，如下图所示。
 
     **图6**  dataBlockStride不同取值举例<a name="zh-cn_topic_0000002267504656_zh-cn_topic_0000001764162593_fig6550124115203"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/db_stride_ex.png "dataBlockStride不同取值举例")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/db_stride_ex.png "dataBlockStride不同取值举例")
 
 ## repeatStride<a name="zh-cn_topic_0000002267504656_zh-cn_topic_0000001764162593_section139459347420"></a>
 
@@ -74,19 +74,19 @@ repeatStride是指相邻迭代间相同datablock的地址步长。
 
 -   **连续计算场景**：假设定义一个Tensor供目的操作数和源操作数同时使用（即地址重叠），repeatStride取值为8。此时，矢量计算单元第一次迭代读取连续8个datablock，第二轮迭代读取下一个连续的8个datablock，通过多次迭代即可完成所有输入数据的计算。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/repeat_stride1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/repeat_stride1.png)
 
 -   **非连续计算场景**：repeatStride取值大于8（如取10）时，则相邻迭代间矢量计算单元读取的数据在地址上不连续，出现2个datablock的间隔。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/repeat_stride2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/repeat_stride2.png)
 
 -   **反复计算场景**：repeatStride取值为0时，矢量计算单元会对首个连续的8个datablock进行反复读取和计算。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/repeat_stride3.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/repeat_stride3.png)
 
 -   **部分重复计算**：repeatStride取值大于0且小于8时，相邻迭代间部分数据会被矢量计算单元重复读取和计算，此种情形一般场景不涉及。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/repeat_stride4.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/repeat_stride4.png)
 
 ## mask参数<a name="zh-cn_topic_0000002267504656_zh-cn_topic_0000001764162593_section4252658182"></a>
 
@@ -157,7 +157,7 @@ mask用于控制每次迭代内参与计算的元素。可通过连续模式和�
 
     mask=\{6148914691236517205, 6148914691236517205\}（注：6148914691236517205表示64位二进制数0b010101....01，mask按照低位到高位的顺序排布）
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mask.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mask.png)
 
     ```
     // 数据类型为int32_t
@@ -180,4 +180,4 @@ mask用于控制每次迭代内参与计算的元素。可通过连续模式和�
 
     mask=\{6148914691236517205, 0\}（注：6148914691236517205表示64位二进制数0b010101....01）
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mask_32bit.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mask_32bit.png)

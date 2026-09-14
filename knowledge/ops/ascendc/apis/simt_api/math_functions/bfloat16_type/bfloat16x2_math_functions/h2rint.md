@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16x2_math_functions/h2rint.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # h2rint
 
 ## 功能说明
+
+头文件路径为：`"simt_api/asc_bf16.h"`。
 
 获取与输入数据各元素最接近的整数，若存在两个同样接近的整数，则取其中的偶数。
 
@@ -54,19 +56,13 @@ inline bfloat16x2_t h2rint(bfloat16x2_t x)
 
 无
 
-## 需要包含的头文件
-
-使用bfloat16x2\_t类型接口需要包含`simt_api/asc_bf16.h`头文件。
-
-```cpp
-#include "simt_api/asc_bf16.h"
-```
-
 ## 调用示例
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/asc_bf16.h"
+
     __global__ __launch_bounds__(1024) void kernel_rint(bfloat16x2_t* dst, bfloat16x2_t* x, uint32_t total_length)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -80,6 +76,8 @@ inline bfloat16x2_t h2rint(bfloat16x2_t x)
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_bf16.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel_rint(__gm__ bfloat16x2_t* dst, __gm__ bfloat16x2_t* x, uint32_t total_length)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__float2bfloat16_ru_sat.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_float2bfloat16\_ru\_sat
 
 ## 功能说明
+
+头文件路径为：`"simt_api/asc_bf16.h"`。
 
 饱和模式下，将浮点数转换为bfloat16精度，并遵循CAST\_CEIL模式，返回转换后的值。
 
@@ -57,19 +59,13 @@ inline bfloat16_t __float2bfloat16_ru_sat(const float x)
 
 SIMT编程场景由于无法设置CTRL寄存器，本接口的饱和模式不生效。
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/asc_bf16.h`头文件。
-
-```cpp
-#include "simt_api/asc_bf16.h"
-```
-
 ## 调用示例
 
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_bf16.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel__float2bfloat16_ru_sat(__gm__ bfloat16_t* dst, __gm__ float* x)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;

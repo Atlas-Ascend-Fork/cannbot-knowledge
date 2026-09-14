@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopyPad_GMToUB.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -45,7 +45,7 @@ source_headers:
 
 填充的数据有两种配置方式：
 
-- 配置结构体[DataCopyPadExtParams](#table_gm2ub_pad_4)的参数paddingValue，此时DataCopyPadExtParams的参数isPad需要设置为true。
+- 配置结构体[DataCopyPadExtParams](#table_gm2ub_pad_5)的参数paddingValue，此时DataCopyPadExtParams的参数isPad需要设置为true。
 - 使用寄存器配置接口[SetPadValue](../data_move_aux_config/set_pad_value_isasi.md)在接口外部设置需要填充的数据，此时DataCopyPadExtParams的参数isPad需要设置为false。
 
 ## 函数原型<a name="section620mcpsimp"></a>
@@ -84,22 +84,54 @@ source_headers:
 | :--- | :---: | :--- |
 | dst | 输出 | 目的操作数，类型为[LocalTensor](../../data_structures/local_tensor/local_tensor_intro.md)，存储位置为UB，目的地址需要32字节对齐。 |
 | src | 输入 | 源操作数，类型为[GlobalTensor](../../data_structures/global_tensor/global_tensor_intro.md)，存储位置为Global Memory，源地址需要1字节对齐。 |
-| dataCopyParams | 输入 | 搬运参数。DataCopyExtParams类型，具体参数说明请参考[表3](#table_gm2ub_pad_3)。 |
-| padParams | 输入 | 从Global Memory搬运数据至Local Memory时，可以根据开发者需要，在搬运数据左边或右边填充数据。padParams是用于控制数据填充过程的参数。DataCopyPadExtParams类型，具体参数请参考[表4](#table_gm2ub_pad_4)。 |
+| dataCopyParams | 输入 | 搬运参数。DataCopyExtParams类型，具体参数说明见下文。 |
+| padParams | 输入 | 从Global Memory搬运数据至Local Memory时，可以根据开发者需要，在搬运数据左边或右边填充数据。padParams是用于控制数据填充过程的参数。DataCopyPadExtParams类型，具体参数请参考[表5](#table_gm2ub_pad_5)。 |
 
 下文表格中列出的结构体参数定义请参考`${INSTALL_DIR}/asc/include/basic_api/kernel_struct_data_copy.h`，`${INSTALL_DIR}`请替换为CANN软件安装后文件存储路径。
+
+
+
+针对Ascend 950PR/Ascend 950DT，DataCopyExtParams结构体参数定义请参考[表3](#table_gm2ub_pad_3)。
 
 **表3**  DataCopyExtParams结构体参数定义<a name="table_gm2ub_pad_3"></a>
 
 | 参数名 | 描述 |
 | :--- | :--- |
-| blockCount | 搬运的数据块个数，数据类型为uint16_t，取值范围：blockCount∈[0, 4095]，默认值为1。 |
-| blockLen | 搬运的每个数据块长度，数据类型为uint32_t，取值范围：blockLen∈[0, 2097151]，单位：1B。<br>**blockLen必须是sizeof(T)的整数倍，需要注意不要超过UB空间大小。** |
-| srcStride | 源操作数相邻数据块之间的间隔（即前一个数据块**结束地址**与后一个数据块**起始地址**的差值），数据类型为uint32_t，取值范围：srcStride∈[0, 2^32 - 1]，单位：1B。不同产品中srcStride的数据类型和支持的取值范围可能不同，详细请参考[约束说明](#section633mcpsimp)。 |
-| dstStride | 目的操作数相邻数据块之间的间隔（即前一个数据块**结束地址**与后一个数据块**起始地址**的差值），数据类型为uint32_t，取值范围：dstStride∈[0, 2^32 - 1]，单位：dataBlock（32B）。不同产品中dstStride的数据类型和支持的取值范围可能不同，详细请参考[约束说明](#section633mcpsimp)。若PaddingMode为Compact模式，该参数无效，默认值为0，取默认值即可。<br>**注：需要注意不要超过UB空间大小**。 |
-| rsv | 保留字段。数据类型为uint16_t，默认值为0。 |
+| blockCount | 搬运的数据块个数，数据类型为uint16_t，取值范围：blockCount∈[0, 65535]，默认值为1。 |
+| blockLen | 搬运的每个数据块长度，数据类型为uint32_t，取值范围：blockLen∈[0, $2^{21}−1$]，单位：1B。<br>**注：blockLen必须是sizeof(T)的整数倍，需要注意不要超过UB空间大小。** |
+| srcStride | 源操作数相邻数据块之间的间隔（即前一个数据块**结束地址**与后一个数据块**起始地址**的差值），数据类型为int64_t，取值范围：srcStride∈[-blockLen, $2^{40}−1$]，单位：1B。当srcStride = -blockLen时，表示每次传输的连续数据块均为同一块，即重复搬运第一个数据块。 |
+| dstStride | 目的操作数相邻数据块之间的间隔（即前一个数据块**结束地址**与后一个数据块**起始地址**的差值），数据类型为int64_t，取值范围：dstStride∈[0, 65535]，单位：dataBlock（32B）。若PaddingMode为Compact模式，该参数无效，默认值为0，取默认值即可。<br>**注：需要注意不要超过UB空间大小**。 |
+| rsv | 预留参数，当前需设置为0。 |
 
-**表4**  DataCopyPadExtParams&lt;T&gt;结构体参数定义<a name="table_gm2ub_pad_4"></a>
+
+
+
+
+针对如下型号，DataCopyExtParams结构体参数定义请参考[表4](#table_gm2ub_pad_4)：
+
+
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+
+
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+
+
+- Atlas 200I/500 A2 推理产品
+
+
+**表4**  DataCopyExtParams结构体参数定义<a name="table_gm2ub_pad_4"></a>
+
+| 参数名 | 描述 |
+| :--- | :--- |
+| blockCount | 搬运的数据块个数，数据类型为uint16_t，取值范围：blockCount∈[0, 4095]，默认值为1。 |
+| blockLen | 搬运的每个数据块长度，数据类型为uint32_t，取值范围：blockLen∈[0, $2^{21}−1$]，单位：1B。<br>**注：blockLen必须是sizeof(T)的整数倍，需要注意不要超过UB空间大小。** |
+| srcStride | 源操作数相邻数据块之间的间隔（即前一个数据块**结束地址**与后一个数据块**起始地址**的差值），数据类型为uint32_t，取值范围：srcStride∈[0, $2^{32}−1$]，单位：1B。 |
+| dstStride | 目的操作数相邻数据块之间的间隔（即前一个数据块**结束地址**与后一个数据块**起始地址**的差值），数据类型为uint32_t，取值范围：dstStride∈[0, $2^{32}−1$]，单位：dataBlock（32B）。若PaddingMode为Compact模式，该参数无效，默认值为0，取默认值即可。<br>**注：需要注意不要超过UB空间大小**。 |
+| rsv | 预留参数，当前需设置为0。 |
+
+
+
+**表5**  DataCopyPadExtParams&lt;T&gt;结构体参数定义<a name="table_gm2ub_pad_5"></a>
 
 | 参数名 | 描述 |
 | :--- | :--- |
@@ -124,7 +156,7 @@ source_headers:
 
         blockLen+leftPadding+rightPadding不满足32字节对齐时，框架会填充一些假数据dummy，保证左右填充的数据和blockLen、假数据为32字节对齐。leftPadding/rightPadding不为0：若isPad为false，左右两侧填充的数据值和dummy值均为随机值；否则为paddingValue。
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopypad1.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopypad1.png)
 
     - 示例2：非32字节对齐场景
 
@@ -134,7 +166,7 @@ source_headers:
 
         blockLen+leftPadding+rightPadding不满足32字节对齐，leftPadding/rightPadding不为0：若isPad为false，左右两侧填充的数据值和dummy值均为随机值；否则为paddingValue。
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopypad2.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopypad2.png)
 
     
 
@@ -146,7 +178,7 @@ source_headers:
 
         blockLen+leftPadding+rightPadding不满足32字节对齐，leftPadding/rightPadding不为0：若isPad为false，左右两侧填充的数据值和dummy值均为随机值；否则为paddingValue。
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopypad.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopypad.png)
 
     
 
@@ -168,7 +200,7 @@ source_headers:
 
         blockLen * blockCount + leftPadding + rightPadding满足32字节对齐，isPad为false，左右两侧填充的数据值会默认为随机值，否则为paddingValue。此处示例中，leftPadding为0，rightPadding为16，在最后一个数据块右侧填充16字节。目的操作数的总长度为160字节。
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/paddingMode.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/paddingMode.png)
 
     
 
@@ -227,25 +259,41 @@ source_headers:
 - leftPadding、rightPadding所占字节数均不能超过32B。
 - blockLen必须是sizeof\(T\)的整数倍。
 - 结构体DataCopyPadExtParams的参数paddingValue数据类型和源操作数保持一致。当数据类型为b64时，paddingValue只能设置为0。
-- DataCopyExtParams结构体参数的值需在取值范围内：
 
-    **表5**  DataCopyExtParams结构体参数取值范围
+- 针对Ascend 950PR/Ascend 950DT，DataCopyExtParams结构体参数的数据类型和取值范围如下：
 
-    | 参数名 | 取值范围 |
-    | --- | --- |
-    | blockCount | [0, 4095] |
-    | blockLen | [0, 2097151] |
-    | srcStride | [0, 2^32 - 1] |
-    | dstStride | [0, 2^32 - 1] |
+    **表6**  DataCopyExtParams结构体参数的数据类型和取值范围
 
-    
+    | 参数名 | 数据类型 | 取值范围 |
+    | --- | --- | --- |
+    | blockCount | uint16_t | [0, 65535] |
+    | blockLen | uint32_t | [0, $2^{21}−1$] |
+    | srcStride | int64_t | [-blockLen, $2^{40}−1$] |
+    | dstStride | int64_t | [0, 65535] |
 
-     > [!NOTE]说明
-     > 特别地，针对Ascend 950PR/Ascend 950DT，srcStride和dstStride的数据类型和取值范围如下：
-     > - srcStride：数据类型为int64_t，取值范围为[-blockLen, 2^40-1]。当srcStride = -blockLen时，表示每次传输的连续数据块均为同一块，即重复搬运第一个数据块。
-     > - dstStride：数据类型为int64_t，取值范围为[0, 65535]。
 
-    
+
+- 针对如下型号，DataCopyExtParams结构体参数的数据类型和取值范围如下：
+  
+  - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+  
+  
+  - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+  
+  
+  - Atlas 200I/500 A2 推理产品
+  
+
+    **表7**  DataCopyExtParams结构体参数的数据类型和取值范围
+
+    | 参数名 | 数据类型 | 取值范围 |
+    | --- | --- | --- |
+    | blockCount | uint16_t | [0, 4095] |
+    | blockLen | uint32_t | [0, $2^{21}−1$] |
+    | srcStride | uint32_t | [0, $2^{32}−1$] |
+    | dstStride | uint32_t | [0, $2^{32}−1$] |
+
+
 
 ## 调用示例<a name="section177231425115410"></a>
 
@@ -368,4 +416,4 @@ source_headers:
     AscendC::ResetLoopModePara(AscendC::DataCopyMVType::OUT_TO_UB);
     ```
 
-完整样例请参考[DataCopyPad样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_pad_gm2ub_ub2gm)。
+完整样例请参考[DataCopyPad样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_pad_gm2ub_ub2gm)。

@@ -63,7 +63,7 @@ platforms: []
 
 本仓要求显式填写 `status`。已确认错误但仍需解释历史行为的卡片也使用 `deprecated`，并在正文和当天日志说明原因。
 
-`replaced_by` 只用于 `deprecated`，填写 Bundle 内、不带 `.md` 的 Concept ID，例如 `ops/ascendc/apis/new_api`。它不能以 `/` 或 `knowledge/` 开头，不能指向自身，目标卡必须存在。
+`replaced_by` 只用于 `deprecated`，填写 Bundle 内、不带 `.md` 的规范 Concept ID，例如 `ops/ascendc/apis/new_api`。它不能以 `/` 或 `knowledge/` 开头，也不能用 `.` 或重复分隔符构造路径别名；目标必须是符合路径 Profile 的现有知识卡，不能指向自身、`index.md` 或经符号链接越出 Bundle。
 
 `verified` 使用 OKF verification event，记录真实 actor 和时间：
 
@@ -89,7 +89,7 @@ sources:
     role: primary
 ```
 
-仓库也可以引用由固定校验和获取、但不提交到 Git 的本地官方资料：
+仓库也可以引用通过登记的获取流程恢复、但不提交到 Git 的本地官方资料：
 
 ```yaml
 sources:
@@ -104,7 +104,7 @@ sources:
 - `resource` 接受 HTTP(S) URL 或已登记的本地来源；本地路径必须位于 Registry 登记的来源根目录中，不得是绝对路径、包含 `..`、反斜杠、查询参数或 fragment；Git 来源根可使用安全的多级相对路径，不能位于知识或治理设施目录中，也不能与其他来源根重叠；
 - GitCode、GitHub、Gitee、GitLab、Bitbucket 和 Codeberg 上的文件、目录和 raw 来源必须固定到 40 位 commit，分支名和裸仓库首页不通过；GitCode/GitHub PR 与 Issue 可以直接使用对应仓库的规范工作项 URL，不要求 commit；
 - Git 本地来源使用 `cann-ops-raw/ascendc/ops-nn/<40位commit>/<文件路径>` 等 Registry 登记路径，相对于知识仓根；四个算子仓统一放在 `cann-ops-raw/ascendc/<仓库名>/` 下。Registry 的 `repository` 与 `revisions` 保留远程来源和版本身份。统一获取入口按固定提交恢复，不跟随分支。正文源码链接相对于卡片目录，可带 `#L71` 或 `#L71-L80` 行号，仅作来源导航，不生成 Concept 或允许索引跳出 Bundle。已恢复 checkout 必须来源、提交、工作区一致，不能覆盖有本地修改的源码；原提交不存在的路径不得伪造或换版本，保留固定远程来源并报告缺口。
-- 本地来源必须由仓库记录的可复现获取流程提供；全库 Lint 要求获取脚本存在且可执行。当前 `cann-docs-raw/` 由 `get_resources.sh` 按固定归档 URL 和 SHA-256 恢复，并保持 Git 忽略；本地根存在时，Lint 还检查 `.complete` 中的归档摘要与被引用文件；
+- 本地来源必须由仓库记录的获取流程提供；全库 Lint 要求获取脚本存在且可执行。当前 `cann-docs-raw/` 由 `get_resources.sh` 按 Registry 的 `archive_url` 恢复，并保持 Git 忽略；官方文档持续更新，不校验归档或内容树 SHA-256。本地根存在时，Lint 检查 `.complete` 的来源 URL 和被引用文件；
 - Lint 不联网，也不判断来源是否支持结论；本地根尚未恢复时只检查注册路径形状。
 
 | `role` | 用途 |
@@ -146,7 +146,7 @@ tags: [task.implementation, topic.data_movement, topic.alignment]
 - `aliases` 只保存稳定检索名称，仅用于 Profile 明确允许的类型。
 - `created_at` 创建后保持不变；正文实质变化时更新 `updated_at`，纯格式调整不更新。
 
-Query 使用标题、摘要、`tags` 和 `aliases` 做词法召回，并用路径 Profile、适用范围和生命周期过滤；Lint 检查字段形状、Profile、注册值、时间、actor 和跨文件引用。结构通过不代表技术结论正确，消费前仍需阅读正文和来源。
+Query 使用标题、摘要、`tags`、`aliases` 和正文做词法召回，并用路径 Profile、适用范围和生命周期过滤；Lint 检查字段形状、Profile、注册值、时间、actor 和跨文件引用。结构通过不代表技术结论正确，消费前仍需阅读正文和来源。
 
 ## 源码头文件（`source_headers`）
 
@@ -162,7 +162,7 @@ source_headers:
 
 - 去重数组，元素必须是非空字符串；没有头文件定位证据时省略该字段，空数组不代表 API 没有声明头文件。该字段不代替 `sources` 的固定版本证据。
 - 读取时先定位本机 CANN 包中的 Ascend C 组件根，再拼接为绝对路径，不能相对于知识卡或当前工作目录打开。调用方核对路径不越出组件根、文件存在且版本适用，不执行头文件内容；Schema 校验数组形状，不保证本机文件存在。
-- 固定归档 API 使用 `adv_api/`、`aicpu_api/`、`basic_api/`、`c_api/`、`simt_api/`、`tensor_api/`、`utils/` 下的公开 `.h` 路径，并统一补全 `include/` 前缀；路径不得含绝对路径、空段、`.`、`..` 或反斜杠。聚合兜底头（如 `kernel_operator.h`）不作为具体 API 的头文件定位信息。
+- 文档归档 API 使用 `adv_api/`、`aicpu_api/`、`basic_api/`、`c_api/`、`simt_api/`、`tensor_api/`、`utils/` 下的公开 `.h` 路径，并统一补全 `include/` 前缀；路径不得含绝对路径、空段、`.`、`..` 或反斜杠。聚合兜底头（如 `kernel_operator.h`）不作为具体 API 的头文件定位信息。
 - 值优先来自源文档正文的「头文件路径为：」声明与 `#include "..."`。缺少明确路径时，可依据固定版本源码审阅补充；必须区分声明与调用、注释及同名符号，不能仅凭符号出现位置判定声明头文件。
 - 文档归档不含 `include/` 源码树。重复同步从文档重算显式路径；没有显式路径时，保留同一 `primary` 文档来源卡片中已有的合法补充，不猜测新路径。归档校验仅验证这些补充的格式和来源绑定，不声称重新扫描或证明源码声明；来源版本升级时须重新审阅补充路径，路径字符串未变也不能视为已验证新版本。
 - 需单独链接的库文件（`.so`/`.a`）信息后续落地，当前不在该字段表达。

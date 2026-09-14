@@ -16,3 +16,5 @@
 - [特殊寄存器访问](special_register_access/index.md)：对指定的特殊寄存器进行清零操作。
 - [同步控制](sync_control/index.md)：在编程中，同步是指协调多个执行单元（如线程、进程等）对共享资源的访问顺序和时机来确保程序的正确性。如果没有同步来严格控制执行顺序，则会出现结果不一致、行为不可预测等多种问题。
 - [工具接口](tool_interface/index.md)：通过模板函数封装AIC与AIV分离模式的硬件条件分支，在指定执行单元下执行特定函数，避免代码中显式使用硬件条件分支。
+
+- [deprecated interface](deprecated_interface/index.md)：该接口已废弃，请使用ReadGmBypassDCache(ISASI)接口替代。

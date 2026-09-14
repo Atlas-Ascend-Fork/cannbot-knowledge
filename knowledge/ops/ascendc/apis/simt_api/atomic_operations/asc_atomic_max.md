@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/atomic_operations/asc_atomic_max.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -23,6 +23,8 @@ source_headers:
 # asc\_atomic\_max
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_atomic_functions.h"`（除half、half2、bfloat16\_t、bfloat16x2\_t类型之外的接口）、`"simt_api/asc_fp16.h"`（half和half2类型接口）、`"simt_api/asc_bf16.h"`（bfloat16\_t和bfloat16x2\_t类型接口）。
 
 对Unified Buffer（UB）或Global Memory数据做原子求最大值操作，即将UB或Global Memory的数据与指定数据中的最大值赋值到UB或Global Memory地址中。
 
@@ -103,22 +105,6 @@ UB或Global Memory上的初始数据。
         业务场景允许时，建议不使用返回值。
     -   地址分布：Global Memory原子操作经过L2 Cache处理，L2 Cache以512B Cache Line为缓存管理单位，每条Cache Line包含4个128B扇区（Sector），Global Memory原子操作以128B Sector为处理粒度。目标地址集中在同一个Sector内时，处理效率较低；目标地址分布在更多Sector内时，处理效率较高。因此，业务允许时，建议将原子操作的目标地址分散到更多Sector中。
 
-## 需要包含的头文件
-
-使用除half、half2、bfloat16\_t、bfloat16x2\_t类型之外的接口需要包含`simt_api/device_atomic_functions.h`头文件，使用half和half2类型接口需要包含`simt_api/asc_fp16.h`头文件，使用bfloat16\_t和bfloat16x2\_t类型接口需要包含`simt_api/asc_bf16.h`头文件。
-
-```cpp
-#include "simt_api/device_atomic_functions.h"
-```
-
-```cpp
-#include "simt_api/asc_fp16.h"
-```
-
-```cpp
-#include "simt_api/asc_bf16.h"
-```
-
 ## 调用示例
 
 示例场景为：多个线程扫描分数数组，使用`asc_atomic_max()`接口将全局最高分写入同一个结果地址。输入参数说明如下：
@@ -134,6 +120,8 @@ UB或Global Memory上的初始数据。
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_atomic_functions.h"
+
     __global__ __launch_bounds__(256) void find_max_score(uint32_t *max_score,
                                                          uint32_t *scores,
                                                          uint32_t n)
@@ -152,6 +140,8 @@ UB或Global Memory上的初始数据。
     SIMD与SIMT混合编程场景，需要显式使用地址空间限定符表示地址空间：`__gm__`表示Global Memory内存空间，`__ubuf__`表示UB内存空间。
 
     ```cpp
+    #include "simt_api/device_atomic_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void find_max_score(__gm__ uint32_t *max_score,
                                                                   __gm__ uint32_t *scores,
                                                                   uint32_t n)

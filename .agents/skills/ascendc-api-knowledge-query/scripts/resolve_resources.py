@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import shlex
 import sys
-from urllib.parse import unquote, urlsplit
+from urllib.parse import urlsplit
 
 sys.dont_write_bytecode = True
 QUERY_SCRIPTS = Path(__file__).resolve().parents[2] / "knowledge-query/scripts"
@@ -210,9 +210,18 @@ def resolve_card_resource(root: Path, card: Path, value: str, *, source: bool) -
         if value not in targets:
             raise ValueError("link must exactly match a Markdown target in the selected card")
         parsed = urlsplit(value)
-        if parsed.scheme or parsed.netloc or parsed.query or value.startswith("/"):
-            raise ValueError("link must be local and relative to the selected card; no network lookup was attempted")
-        target = (card.parent / unquote(parsed.path)).resolve()
+        if parsed.scheme or parsed.netloc or parsed.query:
+            raise ValueError("link must be local to the Bundle or a registered source; no network lookup was attempted")
+        if parsed.path:
+            links = importlib.import_module(
+                f"{type(contract).__module__.rsplit('.', 1)[0]}.checks.links"
+            )
+            targets_by_value = {
+                raw: target for raw, target, _ in links.links_in_text(body, card, bundle)
+            }
+            target = targets_by_value[value]
+        else:
+            target = card
         anchor = parsed.fragment
         if not target.is_relative_to(bundle):
             pinned = module.local_source_link(contract, card, value)

@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/atomic/scalar_atomic/asc_atomic_min.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/atomic/scalar_atomic.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_atomic_min
 
 ## 功能说明
+
+头文件路径为：`"c_api/atomic/scalar_atomic.h"`。
 
 对Global Memory中`address`指向的单个元素执行原子取小操作：读取该地址中的旧值`old_value`，比较`old_value`与输入标量值`val`，将较小值`new_value`写回该地址，并返回`old_value`。整个读取、比较和写回过程为原子操作。
 

@@ -163,11 +163,48 @@ class CardResourceResolutionTests(unittest.TestCase):
 
     def test_index_is_navigation_not_a_card_even_when_linked(self):
         target = self.card.parent / "index.md"
-        self.write_card(body="# Fixture\n[Navigation](index.md)\n")
-        result = self.invoke("link", "index.md")
+        for link in ("index.md", "/" + target.relative_to(self.root / "knowledge").as_posix()):
+            with self.subTest(link=link):
+                self.write_card(body=f"# Fixture\n[Navigation]({link})\n")
+                result = self.invoke("link", link)
+                self.assertEqual(0, result.returncode, result.stderr)
+                self.assertEqual(str(target), json.loads(result.stdout)["absolute_path"])
+                self.assertNotIn("card_lines", json.loads(result.stdout))
+
+    def test_bundle_root_links_follow_the_same_contract_as_navigation(self):
+        target = self.card.parent / "linked.md"
+        target.write_text("# Linked\n")
+        for link in ("/ops/ascendc/apis/linked.md#details", "/ops/ascendc/apis/%6cinked.md"):
+            for body in (f"# Fixture\n[Related]({link})\n", f"# Fixture\n[Related][target]\n\n[target]: {link}\n"):
+                with self.subTest(link=link, body=body):
+                    self.write_card(body=body)
+                    contract, _ = resolver.load_contract(self.root)
+                    knowledge = importlib.import_module(type(contract).__module__)
+                    expected = dict(knowledge.relative_markdown_links(self.card, self.root / "knowledge"))[link]
+                    self.assertEqual(target, expected)
+                    result = self.invoke("link", link)
+                    self.assertEqual(0, result.returncode, result.stderr)
+                    self.assertEqual(str(expected), json.loads(result.stdout)["absolute_path"])
+
+    def test_fragment_only_link_resolves_to_current_card(self):
+        self.write_card(body="# Fixture\n[Details](#details)\n\n## Details\n")
+        result = self.invoke("link", "#details")
         self.assertEqual(0, result.returncode, result.stderr)
-        self.assertEqual(str(target), json.loads(result.stdout)["absolute_path"])
-        self.assertNotIn("card_lines", json.loads(result.stdout))
+        payload = json.loads(result.stdout)
+        self.assertEqual(str(self.card), payload["absolute_path"])
+        self.assertEqual("details", payload["anchor"])
+
+    def test_bundle_root_link_cannot_escape_through_traversal_or_symlink(self):
+        outside = self.root / "outside.md"
+        outside.write_text("# Outside\n")
+        escaped = self.card.parent / "escaped.md"
+        escaped.symlink_to(outside)
+        for link in ("/../outside.md", "/%2e%2e/outside.md", "/ops/ascendc/apis/escaped.md", "//example.invalid/card.md"):
+            with self.subTest(link=link):
+                self.write_card(body=f"# Fixture\n[Invalid]({link})\n")
+                result = self.invoke("link", link)
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertEqual("", result.stdout)
 
     def test_undeclared_source_link_image_and_code_are_not_reading_targets(self):
         self.write_card(body="# Fixture\n![Image](../image.md)\n```\n[Example](../code.md)\n```\n")
@@ -391,15 +428,18 @@ class CardReadingTests(unittest.TestCase):
     def test_read_selected_link_uses_its_exact_target_and_rejects_undeclared_links(self):
         target = self.card.parent / "linked.md"
         target.write_text("---\ntitle: Linked\ntype: API\n---\n# Linked\nOriginal content.\n")
-        self.card.write_text(self.card.read_text() + "\n[Linked](linked.md#detail)\n")
+        root_link = "/" + target.relative_to(self.root / "knowledge").as_posix() + "#detail"
+        self.card.write_text(self.card.read_text() + f"\n[Linked](linked.md#detail)\n[Root]({root_link})\n[Self](#self)\n")
         before = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.rglob("*") if p.is_file()}
         command = [sys.executable, str(SCRIPT), "read", "--knowledge-root", str(self.root), "--card", str(self.card)]
-        result = subprocess.run(command + ["--link", "linked.md#detail"], cwd=self.root, text=True,
-                                capture_output=True, check=False)
-        self.assertEqual(0, result.returncode, result.stderr)
-        metadata, lines, _ = self.unpack(result.stdout)
-        self.assertEqual(str(target), metadata["card"])
-        self.assertEqual(target.read_text().splitlines(), [line for _, line in lines])
+        for link, expected in (("linked.md#detail", target), (root_link, target), ("#self", self.card)):
+            with self.subTest(link=link):
+                result = subprocess.run(command + ["--link", link], cwd=self.root, text=True,
+                                        capture_output=True, check=False)
+                self.assertEqual(0, result.returncode, result.stderr)
+                metadata, lines, _ = self.unpack(result.stdout)
+                self.assertEqual(str(expected), metadata["card"])
+                self.assertEqual(expected.read_text().splitlines(), [line for _, line in lines])
         result = subprocess.run(command + ["--link", "linked.md"], cwd=self.root, text=True,
                                 capture_output=True, check=False)
         self.assertEqual(2, result.returncode)

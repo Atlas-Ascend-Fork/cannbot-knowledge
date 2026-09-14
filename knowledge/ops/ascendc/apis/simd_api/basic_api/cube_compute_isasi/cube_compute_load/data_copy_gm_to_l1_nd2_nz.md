@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_GMToL1_ND2NZ.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -35,7 +35,7 @@ ND到NZ的格式转换等价于DN到ZN的格式转换，如[图1](#zh-cn_topic_0
 
 **图1** ND2NZ与DN2ZN示意图<a id="zh-cn_topic_0000002566538879_fig444462417355"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_nd2nz_copy.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_nd2nz_copy.png)
 
 ## 函数原型<a id="zh-cn_topic_0000002566538879_section82039854412"></a>
 
@@ -165,7 +165,7 @@ Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、hal
 
 **图2** ND2NZ转换示意图（连续搬运）<a id="zh-cn_topic_0000002566538879_fig7420114233419"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_nd2nz_continuous_copy.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_nd2nz_continuous_copy.png)
 
 ### 非连续搬运<a id="zh-cn_topic_0000002566538879_section1721231581717"></a>
 
@@ -182,7 +182,7 @@ Kirin 9030，支持数据类型为：int8_t、uint8_t、int16_t、uint16_t、hal
 
 **图3** ND2NZ转换示意图（非连续搬运）<a id="zh-cn_topic_0000002566538879_fig19978184883316"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_nd2nz_noncontinuous_copy.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_nd2nz_noncontinuous_copy.png)
 
 ### SmallC0模式
 
@@ -190,7 +190,7 @@ enableSmallC0开启模式下的ND2NZ转换示意图如下：
 
 **图4** enableSmallC0开启模式下的ND2NZ转换示意图（half数据类型）<a name="fig07641913195410"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nd2nz_small_c0_half.png "enableSmallC0开启模式下的ND2NZ转换示意图-（half数据类型）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nd2nz_small_c0_half.png "enableSmallC0开启模式下的ND2NZ转换示意图-（half数据类型）")
 
 ## 调用示例<a id="zh-cn_topic_0000002566538879_section088124295117"></a>
 
@@ -198,9 +198,9 @@ enableSmallC0开启模式下的ND2NZ转换示意图如下：
 
 搬运过程的数据排布变化示意图如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_nd2nz_demo.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_nd2nz_demo.png)
 
-示例代码片段如下，仅展示样例中的部分代码，完整示例请参考：[DataCopy_GM2L1样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
+示例代码片段如下，仅展示样例中的部分代码，完整示例请参考：[DataCopy_GM2L1样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
 
 ```cpp
 // m=40,k=56,fractalShape[0] = 16,fractalShape[1] = 16,fractalSize = 16 * fractalShape[1]

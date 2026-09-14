@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_set_l0c_copy_prequant.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_set_l0c_copy_prequant
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
 本接口用于在L0C Buffer搬出过程中进行随路Scalar量化时，配置量化计算所需的缩放系数、偏移量和量化结果符号。配置完成后，由后续调用的[asc_copy_l0c2gm](asc_copy_l0c2gm/asc_copy_l0c2gm_arch_3510.md)、[asc_copy_l0c2l1](asc_copy_l0c2l1/asc_copy_l0c2l1_arch_3510.md)或[asc_copy_l0c2ub](asc_copy_l0c2ub.md)接口使用，并且需要与搬出接口的`quant_pre_mode`搭配使用。
 
@@ -70,7 +73,7 @@ __aicore__ inline void asc_set_l0c_copy_prequant(uint64_t config);
 | 46 | is_signed | 取值为1时，量化结果为int8_t；取值为0时，量化结果为uint8_t。在REQ8/QF322B8_PRE模式下生效。 |
 | 47~63 | - | 无效比特位。 |
 
-当前提供了REQ8量化算法Python示例代码，请参考[\(V\)REQ8量化算法](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2gm/scripts/gen_data_s322s8.py)。
+当前提供了REQ8量化算法Python示例代码，请参考[\(V\)REQ8量化算法](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2gm/scripts/gen_data_s322s8.py)。
 
 ## 返回值说明
 
@@ -82,19 +85,21 @@ PIPE_S
 
 ## 约束说明
 
+- 量化参数不能为inf/nan和非规格化数。
 - 本接口非AIC调用直接返回。
 - 本接口需在对应的L0C Buffer搬出接口执行前调用，并在搬出接口中配置对应的Scalar量化模式。
-
 
 ## 调用示例
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
+
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
+
 
 以下调用示例代码仅Ascend 950PR/Ascend 950DT产品支持。
 
@@ -185,4 +190,3 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-

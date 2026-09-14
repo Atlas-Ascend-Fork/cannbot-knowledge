@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/normalization/WelfordUpdate.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -32,20 +32,20 @@ LayerNorm算法中Reduce轴较大的场景，可以通过切分Reduce轴，联�
 如下图所示，切分数据的Reduce轴，假设切分后每块数据的形状为\[1, k\]，每块数据标号为1，2，3，…，n。
 
 **图1**  Reduce轴切分示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reduce_axis_split.png "Reduce轴切分示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reduce_axis_split.png "Reduce轴切分示意图")
 
 本接口的计算公式如下。进行上述的数据切分后，分n次调用本接口，切分后的每块数据均完成如下公式的计算。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_image_0000002186230593.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000002186230593.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_image_0000002150833386.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000002150833386.png)
 
 上式中，x<sub>i</sub>、Meant<sub>i</sub>、M<sub>i</sub>的形状均为\[1, k\]，x<sub>i</sub>表示切分后的第i块数据，Meant<sub>i</sub>表示第i次调用本接口得到的前i块数据的均值，M<sub>i</sub>表示第i次调用本接口得到的前i块数据的方差中间结果（即为求方差而保存的中间计算结果，本节后续内容中写作方差中间结果）。其中，第一次调用本接口，即i=1时，公式中的Meant<sub>0</sub>和M<sub>0</sub>由用户定义为形状\[1, k\]、取值全0的数据。
 
 Meant<sub>n</sub>的计算过程示意如下图，调用n次本接口后，得到形状为\[1, k\]的Meant<sub>n</sub>和M<sub>n</sub>，Meant<sub>n</sub>和M<sub>n</sub>用于后续[WelfordFinalize](welford_finalize.md)接口的计算。
 
 **图2**  均值Meant<sub>n</sub>计算过程示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/meantn_compute_process.png "均值Meantn计算过程示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/meantn_compute_process.png "均值Meantn计算过程示意图")
 
 ## 函数原型
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/compare_and_select/Compare_store_to_register.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -111,7 +111,7 @@ source_headers:
 
 本样例中，源操作数src0Local和src1Local各存储了64个float类型的数据。样例实现的功能为，逐元素对src0Local和src1Local中的数据进行比较，如果src0Local中的元素小于src1Local中的元素，dstLocal结果中对应的比特位置1；反之，则置0。dstLocal结果使用uint8\_t类型数据存储。
 
-本样中只展示部分关键代码。完整的调用样例可参考[Compare类样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/compare)场景二。
+本样中只展示部分关键代码。完整的调用样例可参考[Compare类样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/compare)场景二。
 
 - mask连续模式
 

@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_permute_sel/asc_intlv.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_permute_sel.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_intlv
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_permute_sel.h"`。
 
 将两个源操作数矢量数据寄存器中的数据交织后分别写入两个目的矢量数据寄存器。根据操作数类型，本接口提供两种功能模式：
 
@@ -28,7 +31,7 @@ source_headers:
 
 **图 1**  int8_t类型交织过程
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_intlv.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_intlv.png)
 
 本接口仅在AIV上生效，非AIV调用直接返回。
 

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/cube_matrix_computation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -74,11 +74,11 @@ __global__ __cube__ void matmul_custom(...)
 为了适配矩阵计算单元的物理读取路径，不同的产品形态有不同的格式要求：
 针对[NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)，矩阵乘法C = A × B要求：左矩阵A使用Zz格式，右矩阵B使用Zn格式，结果矩阵C使用Nz格式，如下图所示：
 
-![矩阵乘法场景涉及的数据格式](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/matmul_data_2.png)
+![矩阵乘法场景涉及的数据格式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/matmul_data_2.png)
 
 针对[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)，矩阵乘法C = A × B要求：左矩阵A使用Nz格式，右矩阵B使用Zn格式，结果矩阵C使用Nz格式，如下图所示：
 
-![矩阵乘法场景涉及的数据格式](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/matmul_data_1.png)
+![矩阵乘法场景涉及的数据格式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/matmul_data_1.png)
 
 #### ND格式（N-Dimension）
 
@@ -88,7 +88,7 @@ ND格式是通用的N维张量格式，数据在内存中连续线性存放，�
 
 Nz格式主要用于L1 Buffer和L0C Buffer中存放数据。针对[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)，L0A Buffer也采用Nz分形格式。该格式采用大N（外部列主序）+ 小z（内部行主序）的方式排布。
 
-![Nz数据排布格式](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nz_format.png)
+![Nz数据排布格式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nz_format.png)
 
 Nz是Ascend架构的中间格式，介于线性数据(ND)和计算专用数据(Zz/Zn)之间，便于格式转换。大N排布（列主序Block）的设计通常是为了配合多核并行或后续算子（如Vector向量计算）在处理通道（Channel）维度数据时的便利性。
 
@@ -101,7 +101,7 @@ Nz是Ascend架构的中间格式，介于线性数据(ND)和计算专用数据(Z
 
 针对[NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)，L0A Buffer使用此格式（[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)使用Nz格式）。该格式采用大Z（外部行主序）+ 小z（内部行主序）。
 
-![Zz格式(以half类型为例)](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zz_half.png)
+![Zz格式(以half类型为例)](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zz_half.png)
 
 在矩阵乘法中，A矩阵逐行读取数据。Zz格式的行主序特性使同一行元素物理地址连续，与计算访问模式匹配，便于Cube单元左侧通道通过DMA连续读取，避免跨步访问，提升数据搬运效率。
 
@@ -109,7 +109,7 @@ Nz是Ascend架构的中间格式，介于线性数据(ND)和计算专用数据(Z
 
 Zn格式主要用于L0B Buffer中存放数据，如果离线处理好的右矩阵数据直接为Zn格式，则在GM和L1 Buffer上存储该格式。该格式采用大Z(外部行主序) + 小n(内部列主序)。
 
-![Zn格式(以half类型为例)](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zn_half.png)
+![Zn格式(以half类型为例)](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zn_half.png)
 
 矩阵乘法需读取B矩阵列向量。普通行主序存储导致列数据在内存中地址不连续。Zn格式在分形内部按列存储，使列数据在L0B中紧凑排列，便于Cube单元右侧通道线性读取完整列向量，避免跨步访问。
 
@@ -117,7 +117,7 @@ Zn格式主要用于L0B Buffer中存放数据，如果离线处理好的右矩�
 
 根据上述信息，Global Memory采用ND格式，L1 Buffer采用Nz格式，因此需进行ND2NZ格式转换。
 
-![ND2NZ格式转换](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd2nz_conv.png)
+![ND2NZ格式转换](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd2nz_conv.png)
 
 以上图为例，图中展示了一个具体的M=40、K=56的矩阵（数据类型为half），在从GM搬运至L1 Buffer并转换为Nz格式时的内存排布变化：
 - 原始数据（ND格式）：左侧GM中存储的是原始矩阵，shape为40×56。数据呈线性连续排布（图中长箭头所示），遵循行主序规则。
@@ -138,9 +138,9 @@ Zn格式主要用于L0B Buffer中存放数据，如果离线处理好的右矩�
 
 | 数据通路 | 功能    | C++ Tensor编程接口  | 分形支持情况 |
 |---------|---------|---------------|-------------|
-| Global Memory → L1 Buffer   | 随路转换ND2NZ搬运  | `DataCopy(dst, src, nd2nzParams)` | ![ND->Nz](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/ND_Nz.png) |
-| L1 Buffer → L0A Buffer  | 将L1 Buffer数据搬运到L0A Buffer中  | `LoadData(dst, src, l12l0Params)` | ![Nz->Zz](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/Nz_Zz.png)<br>[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)上L0A分形为Nz，搬运时为Nz-Nz |
-| L1 Buffer → L0B Buffer  | 将L1 Buffer数据搬运到L0B Buffer中  | `LoadData(dst, src, l12l0Params)` | ![Nz->Zn](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/Nz_Zn.png) |
+| Global Memory → L1 Buffer   | 随路转换ND2NZ搬运  | `DataCopy(dst, src, nd2nzParams)` | ![ND->Nz](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/ND_Nz.png) |
+| L1 Buffer → L0A Buffer  | 将L1 Buffer数据搬运到L0A Buffer中  | `LoadData(dst, src, l12l0Params)` | ![Nz->Zz](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/Nz_Zz.png)<br>[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)上L0A分形为Nz，搬运时为Nz-Nz |
+| L1 Buffer → L0B Buffer  | 将L1 Buffer数据搬运到L0B Buffer中  | `LoadData(dst, src, l12l0Params)` | ![Nz->Zn](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/Nz_Zn.png) |
 
 #### GM2L1 随路转换ND2NZ搬运
 
@@ -148,7 +148,7 @@ Zn格式主要用于L0B Buffer中存放数据，如果离线处理好的右矩�
 
 该能力通过`DataCopy`接口配合`Nd2NzParams`参数实现，配置`ndNum`、`srcDValue`等参数完成GM2L1搬运和ND2NZ格式转换。
 
-![GM到L1的ND2NZ搬运示例](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/gm_l1_nd2nz.png)
+![GM到L1的ND2NZ搬运示例](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/gm_l1_nd2nz.png)
 
 以上图为例，实现A矩阵(Shape(16, 23)，数据类型为half)从GM搬运到L1的能力，针对[NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)，调用接口如下：
 
@@ -173,7 +173,7 @@ AscendC::DataCopy(dst, srcGlobal, intriParams);
 
 该能力主要实现将矩阵从L1 Buffer搬运至L0A/L0B Buffer，并支持从Nz分形转换到Zz或Zn格式。针对[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)，C++ Tensor编程提供了`LoadData`接口配合`LoadData2DParamsV2`参数，以512B数据分形为基本单位完成L1 Buffer到L0A/L0B Buffer的2D搬运，并可通过`ifTranspose`配置分形转置。对于3D搬运场景，需要使用`LoadData`接口配合`LoadData3DParamsV1`或`LoadData3DParamsV2`参数；其中NPU架构版本3510不支持`LoadData3DParamsV1`，需使用`LoadData3DParamsV2`。
 
-![L12L0A非转置搬运](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/l1_l0a_copy.png)
+![L12L0A非转置搬运](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/l1_l0a_copy.png)
 
 通过如下方式调用可完成上述的L1 Buffer到L0A Buffer的搬入操作。
 
@@ -205,7 +205,7 @@ AscendC::LoadData(l0a_buffer, l1_buffer, l12l0Params);
 
 当输入A矩阵（GM）是转置排布（K×M）时，搬入到L1 Buffer后为（K×M）排布的Nz分形。要使L0A Buffer存放（M×K）的矩阵，需要在L1 Buffer到L0A Buffer的搬运过程中进行转置。针对[NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)，可使用`LoadDataWithTranspose`接口，调用示例如下。
 
-![需要转置的处理场景](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/need_transpose.png)
+![需要转置的处理场景](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/need_transpose.png)
 
 ```cpp
 // A矩阵LoadDataWithTranspose: Nz -> Zz
@@ -250,21 +250,21 @@ AscendC::LoadData(l0aTensor, l1aTensor, loadDataParams);
 
 [NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)下的矩阵搬出流程为：
 
-![矩阵搬出流程](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_copy_out_a2a3.png)
+![矩阵搬出流程](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_copy_out_a2a3.png)
 
 [NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)下的矩阵搬出流程为：
 
-![矩阵搬出流程](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_copy_out_950.png)
+![矩阵搬出流程](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_copy_out_950.png)
 
 矩阵搬出接口支持多种随路能力的灵活组合，以L0C Buffer到Global Memory的搬运场景为例：矩阵计算结果暂存于L0C Buffer后需搬运至GM，在此过程中可协同执行随路量化、ReLU激活、格式转换及通道拆分合并等操作。下图分别展示了不同NPU架构版本下这些随路能力的有效组合、中间数据类型及完整数据路径。例如，L0C Buffer中的F32数据可通过QF322B8_PRE随路量化得到B8数据，可选使能ReLU后经NZ2NZ/NZ2ND格式转换输出至GM。图中F32->F16和F32->BF16为数据类型转换，其余路径为随路Scalar/Vector量化模式。
 
 [NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)下的矩阵搬出能力为：
 
-![L0C2GM搬运](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/l0c_gm_a2a3.png)
+![L0C2GM搬运](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/l0c_gm_a2a3.png)
 
 [NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)下的矩阵搬出能力为：
 
-![L0C2GM搬运](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/l0c_gm_950.png)
+![L0C2GM搬运](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/l0c_gm_950.png)
 
 C++ Tensor编程提供了`DataCopy`接口配合`DataCopyCO12DstParams`参数来使能发挥芯片的各种随路能力，通过直接传入配置参数可完成随路搬运的操作。
 示例：Mmad含有矩阵乘偏置，左矩阵和右矩阵的数据类型为int8_t，结果矩阵的数据类型为int32_t。量化模式为DEQF16，Scalar量化参数为2.0，将Mmad计算出的结果由int32_t量化成half并搬出。
@@ -318,7 +318,7 @@ AscendC::SetFixpipePreQuantFlag(deqScalar);
 
 [Mmad](../../../../../apis/simd_api/basic_api/cube_compute_isasi/mmad_compute/mmad.md)是Ascend C封装NPU硬件计算能力的矩阵乘加核心接口，用于全连接层、卷积层等算子开发，实现C = A × B + C的矩阵乘加计算（输入为L0A Buffer和L0B Buffer，输出为L0C Buffer），其中针对[NPU架构版本2201](../../../language_extension/simd_builtin_keywords.md)，L0A Buffer分形为Zz、L0B Buffer分形为Zn、L0C Buffer分形为Nz，而[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)产品L0A Buffer分形为Nz。
 
-![NPU架构版本3510 `Mmad`计算](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mmad_950.png)
+![NPU架构版本3510 `Mmad`计算](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mmad_950.png)
 
 **表 矩阵乘计算A、B、C矩阵说明（[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)）**
 
@@ -435,7 +435,7 @@ __global__ __cube__ void matmul_kernel(__gm__ half* x, __gm__ half* y, __gm__ fl
 
 ### 基于基础Tensor的矩阵计算编程示例
 
-结合上述矩阵计算的搬运与计算能力，开发者可基于C++ Tensor编程实现矩阵类算子。具体开发实践可参考[matmul实现样例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/02_matrix/matmul_basic_api/README.md)。
+结合上述矩阵计算的搬运与计算能力，开发者可基于C++ Tensor编程实现矩阵类算子。具体开发实践可参考[matmul实现样例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/02_matrix/matmul_basic_api/README.md)。
 
 ## 扩展Tensor编程范式
 
@@ -444,7 +444,7 @@ __global__ __cube__ void matmul_kernel(__gm__ half* x, __gm__ half* y, __gm__ fl
 > 📌 扩展Tensor（带有Layout）能力从[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)开始支持。
 
 > [!NOTE]说明
-> 本节扩展Tensor示例以CANN9.1.0接口为准。对于本节使用的Nz布局，`MakeFrameLayout`的类型模板参数可按需省略；示例显式传入`half`，用于确保Layout的类型和C0推导与Tensor数据类型一致，并非接口新增了强制参数。若代码将原始指针直接传入`MakeTensor`，或使用`Copy(dst, src)`形式调用搬运接口，需要分别使用`MakeMemPtr`封装内存指针，并通过`MakeCopy`构造与搬运通路匹配的`CopyAtom`，再调用`Copy(atomCopy, dst, src)`。
+> 本节扩展Tensor示例使用Tensor API接口。对于本节使用的Nz布局，`asc::te::make_frame_layout`的类型模板参数可按需省略；示例显式传入`half`，用于确保Layout的类型和C0推导与Tensor数据类型一致，并非接口新增了强制参数。在使用`asc::te::make_tensor`封装原始指针、以及调用搬运接口时，需遵循如下规范：原始内存指针必须经由`asc::te::make_mem_ptr`做封装处理，禁止直接传入裸指针调用`make_tensor`；执行数据搬运时，应先通过`asc::te::make_copy`构造与搬运通路相匹配的`copy_atom`对象，再以`asc::te::copy(atom, dst, src)`的形式完成搬运。
 
 ### Layout的层次化表述
 
@@ -455,9 +455,9 @@ __global__ __cube__ void matmul_kernel(__gm__ half* x, __gm__ half* y, __gm__ fl
 
 图中每个方格中的数字表示该位置元素在内存中按顺序排列时的下标。对于相同的矩阵位置，排布方式不同时，其在内存中的顺序可能是不同的，例如，矩阵坐标 (1, 0) 在行优先和列优先的情况下，对应元素在内存中的顺序分别是4和1。
 
-![行优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/row_major.png)
+![行优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/row_major.png)
 
-![列优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/col_major.png)
+![列优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/col_major.png)
 
 通常Shape或者Stride中的元素是一个单独的正整数（如上文的示例），但是遇到一些复杂的内存排布情况可能无法表达，所以采用层次化表述法，该方式中，元素也可以是一个元组。元组的第一个元素用于描述不同层次中矩阵的行数，元组的第二个元素用于描述不同层次中矩阵的列数。
 例如在下图中，Layout的Shape和Stride分别为：
@@ -465,7 +465,7 @@ __global__ __cube__ void matmul_kernel(__gm__ half* x, __gm__ half* y, __gm__ fl
 - Shape((2, 3), (2, 4))
 - Stride((1, 4), (2, 12))
 
-![层次化Layout表达](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/hier_layout.png)
+![层次化Layout表达](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/hier_layout.png)
 
 图中展示了两层矩阵：内层矩阵为内部用灰色线包裹的矩阵，外层矩阵为将内层矩阵视为一个元素时黑色线包裹的矩阵。Shape的第一个元素描述行方向的形状，(2, 3)表示内层矩阵和外层矩阵的行数分别为2和3；Shape的第二个元素描述列方向的形状，(2, 4)表示内层矩阵和外层矩阵的列数分别为2和4。Stride中的每个元素与Shape中的元素对应，表示该对应维度下，相邻元素首地址在内存地址上的间隔，图片中用箭头表示了每个维度相邻元素的首地址间隔。
 
@@ -481,7 +481,7 @@ Stride = ((StrideRow0, StrideRow1), (StrideColumn0, StrideColumn1))
 
 以Nz分形为例，Nz分形格式的内层分形Shape中，ShapeRow0固定为16行，ShapeColumn0固定为32Byte / sizeof(T)，内层分形的Stride中，StrideRow0固定为32Byte / sizeof(T)，StrideColumn0也固定为1，即内层分形按z字形组织，外层分形按N字形组织。ShapeRow1需满足row方向16对齐，ShapeColumn1需满足column方向32B对齐。
 
-![Nz数据排布格式](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nz_format.png)
+![Nz数据排布格式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nz_format.png)
 
 下面是一个连续的Nz Layout示例，其中C0_ELEMENT = Std::Int<32>{} / sizeof(T)。
 
@@ -493,84 +493,83 @@ Stride = ((C0_ELEMENT, C0_ELEMENT * Std::Int<16>{}), (Std::Int<1>{}, C0_ELEMENT 
 
 ### Layout的构造
 
-结合如上分形表达的描述，基于Layout的能力，C++ Tensor编程提供了原始的Layout构造接口。例如，需要创建一个形状为（128，256，128）的多维内存排布时，可通过`MakeLayout`接口直接构造。
+结合如上分形表达的描述，基于Layout的能力，C++ Tensor编程提供了原始的Layout构造接口。例如，需要创建一个形状为（128，256，128）的多维内存排布时，可通过`make_layout`接口直接构造。
 
 ```cpp
-auto threeDimLayout = AscendC::Te::MakeLayout(AscendC::Te::MakeShape(128, 256, 128));
+auto three_dim_layout = asc::te::make_layout(asc::te::make_shape(128, 256, 128));
 ```
 
-对于一个Nz分形的排布，也可以通过`MakeLayout`构造层次化的Layout表达。例如，对于外层大小为（128，256），数据类型为`half`的Nz数据，可以通过`MakeLayout`构造四维Layout排布：
+对于一个Nz分形的排布，也可以通过`make_layout`构造层次化的Layout表达。例如，对于外层大小为（128，256），数据类型为`half`的Nz数据，可以通过`make_layout`构造四维Layout排布：
 
 ```cpp
 // Define Nz fractal with shape (128, 256), its 4D representation is: ((16, 128 / 16), (16, 256 / 16))
-auto NzLayout = AscendC::Te::MakeLayout(AscendC::Te::MakeShape(
-    AscendC::Te::MakeShape(16, 8), AscendC::Te::MakeShape(16, 16)));
+auto nz_layout = asc::te::make_layout(
+    asc::te::make_shape(asc::te::make_shape(16, 8), asc::te::make_shape(16, 16)));
 ```
 
-Cube矩阵计算中对于不同的内部存储都有着自己独特的分形结构，为了简化用户的编写，C++ Tensor编程提供了`MakeFrameLayout`来简化用户编写生成如上的四维Layout定义：
+Cube矩阵计算中对于不同的内部存储都有着自己独特的分形结构，为了简化用户的编写，C++ Tensor编程提供了`make_frame_layout`来简化用户编写生成如上的四维Layout定义：
 
 ```cpp
-// Use MakeFrameLayout to simplify Nz fractal definition, user only needs to perceive the fractal structure of corresponding storage, no need to directly express 4D structure
-auto NzLayout = AscendC::Te::MakeFrameLayout<AscendC::Te::NZLayoutPtn, half>(128, 256);
+// Use make_frame_layout to simplify Nz fractal definition, user only needs to perceive the fractal structure of corresponding storage, no need to directly express 4D structure
+auto nz_layout = asc::te::make_frame_layout<asc::te::nz_layout_ptn, half>(128, 256);
 ```
 
 ### 基于Layout的Tensor表达
 
 扩展的Tensor是将上述Layout信息内置到Tensor结构中，由数据指针和数据布局组成。一个Tensor对象同时描述“数据放在哪里”和“数据长什么样”。
-C++ Tensor提供了`MakeTensor`函数，用于构造带有Layout的扩展Tensor结构。例如，定义一个形状为（128，256）、数据类型为`half`的Global Memory数据块，以及一个同等大小的L1 Buffer数据块（Nz分形布局），可表达为：
+C++ Tensor提供了`make_tensor`函数，用于构造带有Layout的扩展Tensor结构。例如，定义一个形状为（128，256）、数据类型为`half`的Global Memory数据块，以及一个同等大小的L1 Buffer数据块（Nz分形布局），可表达为：
 
 ```cpp
 // Construct Layout for Global Memory & L1 Buffer 
-auto globalLayout = AscendC::Te::MakeLayout(AscendC::Te::MakeShape(128, 256));
-auto l1Layout = AscendC::Te::MakeFrameLayout<AscendC::Te::NZLayoutPtn, half>(128, 256);
+auto global_layout = asc::te::make_layout(asc::te::make_shape(128, 256));
+auto l1_layout = asc::te::make_frame_layout<asc::te::nz_layout_ptn, half>(128, 256);
 
-// Construct GlobalTensor & L1 LocalTensor through memory pointer + Layout
-auto globalTensor = AscendC::Te::MakeTensor(AscendC::Te::MakeMemPtr(gmPtr), globalLayout);
-auto l1Tensor = AscendC::Te::MakeTensor(AscendC::Te::MakeMemPtr(l1Ptr), l1Layout);
+// Construct global_tensor & local_tensor through memory pointer + Layout
+auto global_tensor = asc::te::make_tensor(asc::te::make_mem_ptr(gm_ptr), global_layout);
+auto l1_tensor = asc::te::make_tensor(asc::te::make_mem_ptr(l1_ptr), l1_layout);
 ```
 
-扩展Tensor提供了`operator[]`元素访问、`operator()`子Tensor提取和`Slice()`切片提取等布局调整接口，大幅简化多维数据的操作流程。相较于基础Tensor需要手动计算偏移地址、步长参数和搬运长度，扩展Tensor的接口可自动推导这些底层参数，开发者只需关注数据逻辑即可。这种抽象封装方式不仅降低了编程复杂度，也减少了参数配置错误的风险，让开发者能将精力集中于算子性能优化与算法实现，显著提升开发效率。
+扩展Tensor提供了`operator[]`元素访问、`operator()`子Tensor提取和`slice`切片提取等布局调整接口，大幅简化多维数据的操作流程。相较于基础Tensor需要手动计算偏移地址、步长参数和搬运长度，扩展Tensor的接口可自动推导这些底层参数，开发者只需关注数据逻辑即可。这种抽象封装方式不仅降低了编程复杂度，也减少了参数配置错误的风险，让开发者能将精力集中于算子性能优化与算法实现，显著提升开发效率。
 
 ```cpp
 // Construct tensor for Global Memory
-auto globalLayout = AscendC::Te::MakeLayout(AscendC::Te::MakeShape(128, 256));
-auto globalTensor = AscendC::Te::MakeTensor(AscendC::Te::MakeMemPtr(gmPtr), globalLayout);
+auto global_layout = asc::te::make_layout(asc::te::make_shape(128, 256));
+auto global_tensor = asc::te::make_tensor(asc::te::make_mem_ptr(gm_ptr), global_layout);
 
-auto subTensor = globalTensor.Slice(AscendC::Te::MakeCoord(32, 64), AscendC::Te::MakeShape(32, 32));
+auto sub_tensor = global_tensor.slice(asc::te::make_coord(32, 64), asc::te::make_shape(32, 32));
 ```
 
 ### 矩阵搬运和计算
 
-基础搬运接口需手动传入`count`或`DataCopyParams`参数指定搬运长度和搬运模式。扩展Tensor携带Shape、Stride和存储位置信息，编译器自动推断搬运参数和物理通路，简化接口调用。同时提供**Atom定制接口**，开发者可基于`CopyTraits`自定义搬运行为（如自定义搬运模式、随路处理等），满足特殊场景定制需求。
+基础搬运接口需手动传入`count`或`DataCopyParams`参数指定搬运长度和搬运模式。扩展Tensor携带Shape、Stride和存储位置信息，编译器自动推断部分搬运参数和物理通路，简化接口调用。同时提供**Atom定制接口**，开发者可基于`copy_traits`自定义搬运行为（如自定义搬运模式、随路处理等），满足特殊场景定制需求。
 
-- **GM2L1搬运**：`Copy(atomCopy, dst, src)`搬运矩阵数据到L1 Buffer，支持随路格式转换（ND2NZ、DN2NZ、NZ2NZ等）。开发者定义源Tensor和目的Tensor的Layout，并使用`MakeCopy`构造GM到L1 Buffer的搬运原子对象，接口自动推导底层搬运参数和格式转换方式。
+- **GM2L1搬运**：`copy(atom, dst, src)`搬运矩阵数据到L1 Buffer，支持随路格式转换（ND2NZ、DN2NZ、NZ2NZ等）。开发者定义源Tensor和目的Tensor的Layout，并使用`make_copy`构造GM到L1 Buffer的搬运原子对象，接口自动推导底层搬运参数和格式转换方式。
 
 ```cpp
-// Construct GM-to-L1 CopyAtom with the default trait
-auto atomCopy = AscendC::Te::MakeCopy(
-    AscendC::Te::CopyGM2L1{}, AscendC::Te::CopyGM2L1TraitDefault{});
+// Construct GM-to-L1 copy_atom with the default trait
+auto atom = asc::te::make_copy(asc::te::copy_gm_to_l1{}, asc::te::gm_to_l1_trait_default{});
 
 // Copy equal-size tensors, and infer copy parameters from Layout
-AscendC::Te::Copy(atomCopy, l1Tensor, globalTensor);
+asc::te::copy(atom, l1_tensor, global_tensor);
 
 // Specify Global Tensor offset to copy a slice from Global Tensor
-AscendC::Te::Copy(atomCopy, l1BiasTensor,
-    globalBias.Slice(AscendC::Te::MakeCoord(0, j * baseN), AscendC::Te::MakeShape(1, curN)));
+asc::te::copy(atom, l1_bias_tensor,
+    global_bias.slice(asc::te::make_coord(0, j * base_n), asc::te::make_shape(1, cur_n)));
 ```
 
-- **L0C2GM搬出**：基于`CopyTraits`定制随路处理（如Fixpipe量化），将L0C Buffer计算结果搬出至GM。
+- **L0C2GM搬出**：基于`copy_traits`定制随路处理（如Fixpipe量化），将L0C Buffer计算结果搬出至GM。
 
 ```cpp
 // Fixpipe inline quantization example
-float quantValue = 0.5f;
-uint64_t quantScalar = static_cast<uint64_t>(*reinterpret_cast<int32_t*>(&quantValue));
-auto atomCopy = AscendC::Te::MakeCopy(
-    AscendC::Te::CopyL0C2GM{}, AscendC::Te::CopyL0C2GMTraitDefault{}).with(AscendC::Te::FixpipeParams{});
-AscendC::Te::Copy(atomCopy, globalC, l0CTensor, quantScalar);
+float quant_value = 0.5f;
+uint64_t quant_scalar = static_cast<uint64_t>(*reinterpret_cast<int32_t*>(&quant_value));
+auto atom = asc::te::make_copy(asc::te::copy_l0c_to_gm{}, asc::te::l0c_to_gm_trait_default{})
+                .with(asc::te::l0c_to_gm_params{});
+asc::te::copy(atom, global_c, l0c_tensor, quant_scalar);
 ```
 
-同样，L1 Buffer到L0A/L0B Buffer的搬运需要构造对应通路的`CopyAtom`，矩阵计算需要构造`MmadAtom`。开发者传入搬运或计算原子对象以及操作Tensor后，接口可根据Layout推导底层参数。
+同样，L1 Buffer到L0A/L0B Buffer的搬运需要构造对应通路的`copy_atom`，矩阵计算需要构造`mmad_atom`。开发者传入搬运或计算原子对象以及操作Tensor后，接口可根据Layout推导底层参数。
 
 ### 基于扩展Tensor的矩阵计算示例
 
-结合上述矩阵计算的搬运与计算能力，开发者可基于C++ Tensor编程实现矩阵类算子。具体开发实践可参考[matmul实现样例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/07_tensor_api/matmul_tensor_api/README.md)。
+结合上述矩阵计算的搬运与计算能力，开发者可基于C++ Tensor编程实现矩阵类算子。具体开发实践可参考[matmul实现样例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/07_tensor_api/matmul_tensor_api/README.md)。

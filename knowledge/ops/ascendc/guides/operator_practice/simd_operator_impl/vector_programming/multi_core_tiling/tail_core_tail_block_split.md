@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/vector_programming/multi_core_tiling/tail_core_tail_block_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -18,11 +18,11 @@ platforms: []
 
 该场景中，主块均分后存在剩余数据`mainTileRemainder`，剩余数据部分能以DataBlock为最小单位均匀分配到每个核，但仍有少量DataBlock无法均分（`remainingTailLength`不为0），只能继续分配给部分核。获得额外DataBlock的核为整核，其余为尾核；整核和尾核都包含尾块，且整核处理的数据量更多。由于`tailBlockNumEachCore`不为0，各核都分配到基础尾块，因此尾核内也存在尾块；整核在尾核基础上多处理一个DataBlock。数据切分后，前`formerNum`个核为整核，各处理`formerLength`个元素（含主块和较长的尾块）；其余核为尾核，各处理`tailLength`个元素（含主块和较短的尾块）。
 
-本场景样例的完整代码请参考[场景3：尾核尾块切分](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/02_tiling_selector/vector_tiling_strategy/README.md#scenario3-tail-block-tail-core)。样例中固定使用8个核，主块长度`mainTileLength`为3200个`half`元素，数据整体长度为258112个`half`元素。数据按DataBlock对齐后，前4个核各处理32272个元素，后4个核各处理32256个元素；整核包含10个主块和272个元素的尾块，尾核包含10个主块和256个元素的尾块。数据切分示意如下图所示。
+本场景样例的完整代码请参考[场景3：尾核尾块切分](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/02_tiling_selector/vector_tiling_strategy/README.md#scenario3-tail-block-tail-core)。样例中固定使用8个核，主块长度`mainTileLength`为3200个`half`元素，数据整体长度为258112个`half`元素。数据按DataBlock对齐后，前4个核各处理32272个元素，后4个核各处理32256个元素；整核包含10个主块和272个元素的尾块，尾核包含10个主块和256个元素的尾块。数据切分示意如下图所示。
 
 **图 1**  数据切分示意图
 
-![数据切分示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/tailblock_tailcore.png "数据切分示意图")
+![数据切分示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/tailblock_tailcore.png "数据切分示意图")
 
 本场景中整核和尾核处理的元素数量、主块数量及尾块长度均不同，需要分别记录两类核的Tiling参数。与[尾核切分](tail_core_split.md)相比，由于尾核内也存在尾块，Tiling参数在`former*`和`tail*`基础上新增`tailLastTileLength`记录尾核的尾块元素数量。Tiling结构体包含以下成员：
 

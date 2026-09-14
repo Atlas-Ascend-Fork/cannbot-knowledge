@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_datamove/asc_set_ub2gm_loop2_stride.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/vector_datamove/vector_datamove.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_set_ub2gm_loop2_stride
 
 ## 功能说明
+
+头文件路径为：`"c_api/vector_datamove/vector_datamove.h"`。
 
 本接口用于设置[asc_copy_ub2gm_align](asc_copy_ub2gm_align/index.md)使用循环搬运模式时，外层循环中相邻两次迭代源操作数数据块起始地址之间的偏移量，以及目的操作数数据块起始地址之间的偏移量。
 
@@ -29,7 +32,7 @@ source_headers:
 
 以源操作数搬运场景为例，如下图所示。
 
-![源操作数搬运场景示例](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/source_operand_move_example.png)
+![源操作数搬运场景示例](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/source_operand_move_example.png)
 
 ## 函数原型
 
@@ -66,7 +69,6 @@ PIPE_S
 ## 调用示例
 
 将以下代码保存为`example.asc`后，执行对应的编译运行命令。
-
 
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：

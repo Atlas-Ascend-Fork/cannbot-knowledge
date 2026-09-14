@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/operator_graph_development/enable_tiling_sink.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -32,7 +32,7 @@ platforms: []
 >    - Ascend 950PR/Ascend 950DT，暂不支持
 >    
 
-自定义算子开启Tiling下沉的步骤如下，完整样例请参考[Tiling下沉算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op)。
+自定义算子开启Tiling下沉的步骤如下，完整样例请参考[Tiling下沉算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op)。
 
 Tiling下沉场景下，算子工程的op\_host目录结构如下，Tiling实现文件需单独放在一个cpp文件中，示例中为add\_custom\_tiling\_sink\_tiling.cpp。
 

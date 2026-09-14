@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_fractal_intro/aux_cube_fractal_format_details.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -35,12 +35,12 @@ MX格式是一种块数据格式，若干个数据可以组成一个块（或者
 下图为MX格式的浮点数的数据结构，S、E和M分别用于表示浮点数的符号、指数和尾数字段的值。其中，共享缩放因子X是一个用于整个数据块的缩放比例因子，它决定了数据块中所有元素的动态范围。通过引入共享缩放因子，MX格式的数据能够在保持低位宽的同时，灵活地表示不同范围的数据。块大小k指的是组成一个数据块（或组）的低比特数据的数量。私有元素P<sub>i</sub>是指数据块中的每个低比特数据元素。这些元素经过缩放因子X的调整后，共同表示了一个高精度的浮点数或整数。
 
 **图1** MX格式组成示意图<a name="zh-cn_topic_0000002563445163_fig3385175571011"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mx_format.png "MX格式组成示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mx_format.png "MX格式组成示意图")
 
 MXMmad为带有量化系数X的矩阵乘法，即左矩阵和右矩阵均有对应的量化系数矩阵，左量化系数矩阵scaleA和右量化系数矩阵scaleB。计算公式为：C = \(scaleA ⊗ A\) \* \(scaleB ⊗ B\) + Bias，“⊗”表示广播乘法，左/右矩阵与左/右量化系数矩阵做乘积时，K方向上每32个元素共享一个量化因子。如下图所示，其中A为左矩阵，形状为\[M, K\]；scaleA为左量化系数矩阵，形状为\[M, K/32\]；B为右矩阵，形状为\[K, N\]；scaleB为右量化系数矩阵，形状为\[K/32, N\]。
 
 **图2** MX矩阵乘示意图<a name="zh-cn_topic_0000002563445163_fig33303533712"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mx_matrix_computation_demo.png "MX矩阵乘示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mx_matrix_computation_demo.png "MX矩阵乘示意图")
 
 - **MX scaleA系数矩阵分形介绍**<a name="section_mx_scalea_fractal_format"></a>
 
@@ -61,7 +61,7 @@ MXMmad为带有量化系数X的矩阵乘法，即左矩阵和右矩阵均有对�
     如下图所示，若GM上scaleA矩阵为ND排布，可以通过ND2NZ.b16/DN2NZ.b16指令搬运到L1 Buffer，确保L1 Buffer上分形为Zz排布，满足LoadData（MX矩阵搬运）接口要求。
 
     **图3** scaleA矩阵在不同位置上的排布格式<a name="zh-cn_topic_0000002563445163_fig6871154411446"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mx_scaleA_format.png "scaleA矩阵在不同位置上的排布格式")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mx_scaleA_format.png "scaleA矩阵在不同位置上的排布格式")
 
 - **MX scaleB系数矩阵分形介绍**<a name="section_mx_scaleb_fractal_format"></a>
 
@@ -82,9 +82,9 @@ MXMmad为带有量化系数X的矩阵乘法，即左矩阵和右矩阵均有对�
     如下图所示，若Global Memory（GM）上scaleB矩阵为ND排布，可以通过ND2NZ.b16/DN2NZ.b16指令搬运到L1 Buffer，确保L1 Buffer上分形为Nn排布，满足LoadData（MX矩阵搬运）接口要求。
 
     **图4** scaleB矩阵在不同位置上的排布格式<a name="zh-cn_topic_0000002563445163_fig599218260112"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mx_scaleB_format.png "scaleB矩阵在不同位置上的排布格式")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mx_scaleB_format.png "scaleB矩阵在不同位置上的排布格式")
 
-具体实现可参考：[MXmmad样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_2dmx_l12l0)。
+具体实现可参考：[MXmmad样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_2dmx_l12l0)。
 
 
 
@@ -96,13 +96,13 @@ MXMmad为带有量化系数X的矩阵乘法，即左矩阵和右矩阵均有对�
 - 场景：通常存在于Global Memory（GM）中。在进行sparse矩阵运算前，通常需要离线生成并将其转换为大Z小n格式（Zn）以适配Cube单元。
 - 生成过程：如下图所示，对于原始矩阵B中的每4个元素，将在index矩阵中生成2个2位索引，并按照以下规则进行编码。索引必须在\{0, 1, 2\}范围内。
 **图5** index生成示意图<a name="zh-cn_topic_0000002563445163_fig1423214854720"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/index_generation.png "index生成示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/index_generation.png "index生成示意图")
     - 第一个索引用于指示前3个元素中第1个非零元素的相对位置。
     - 第二个索引用于指示第2个非零元素在后3个元素中的相对位置。
     - 索引矩阵中的一个uint8的元素是由4个uint2\_t组合而成的，例如上图：生成的索引数据为1 2 0 1 ，索引数据在Global Memory（GM）地址中的排布从高位到低位为1 0 2 1 ，其中1 0 2 1（对应索引矩阵前四位1 2 0 1）为一个uint8\_t。
 
 **图6** 稠密化B矩阵示意图<a name="zh-cn_topic_0000002563445163_fig1115556103916"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/density_B_matrix_demo.png "稠密化B矩阵示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/density_B_matrix_demo.png "稠密化B矩阵示意图")
 
 稠密化算法规则具体可参考下表。其中，“-”表示不关心该位置上的值，因为其后续Sparse Mmad计算过程中会被过滤。
 

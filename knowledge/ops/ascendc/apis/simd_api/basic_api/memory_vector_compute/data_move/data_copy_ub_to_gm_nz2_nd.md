@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopy_UBToGM_NZ2ND.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -83,7 +83,7 @@ __aicore__ inline void DataCopy(const GlobalTensor<T>& dst, const LocalTensor<T>
 - dstNdMatrixStride = 48，表达dst中第x个目的ND矩阵的起点和第x+1个目的ND矩阵的起点的偏移，即A1和C1之间的距离，即为3个DataBlock，3 \* 16 = 48个元素。
 
 **图1**  NZ2ND转换示意图（half数据类型）<a name="fig15851251122815"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nz2nd_conversion_half.png "NZ2ND转换示意图（half数据类型）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nz2nd_conversion_half.png "NZ2ND转换示意图（half数据类型）")
 
 以float数据类型为例，NZ2ND转换示意图如下，样例中参数设置值和解释说明如下：
 
@@ -96,7 +96,7 @@ __aicore__ inline void DataCopy(const GlobalTensor<T>& dst, const LocalTensor<T>
 - dstNdMatrixStride = 40，表示dst中第x个目的ND矩阵的起点和第x+1个目的ND矩阵的起点的偏移，即A1和C1之间的距离，为5个DataBlock，5 \* 8 = 40个元素。
 
 **图2**  NZ2ND转换示意图（float数据类型）<a name="fig5586175192811"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nz2nd_conversion_float.png "NZ2ND转换示意图（float数据类型）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nz2nd_conversion_float.png "NZ2ND转换示意图（float数据类型）")
 
 ## 数据类型<a name="section4219135304818"></a>
 

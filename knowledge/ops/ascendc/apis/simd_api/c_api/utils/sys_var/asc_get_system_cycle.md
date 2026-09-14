@@ -10,12 +10,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_var/asc_get_system_cycle.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 source_headers:
+- include/c_api/utils/sys_var.h
 - include/c_api/asc_simd.h
 ---
 
@@ -23,7 +24,12 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/utils/sys_var.h"`。
+
 读取当前系统cycle计数器，返回int64_t类型的当前计数值。该计数器为只读系统计数器，宽度64bit，复位值为0，随系统时钟持续递增，反映硬件运行以来的累计cycle数，常用于性能统计、耗时测量与执行序的时序判断。本接口在AIC与AIV上均可调用，返回值含义一致。
+
+> [!NOTE]说明
+> 如需直接获取微秒级时间值（接口内部完成频率换算），推荐使用[asc_get_system_clock](asc_get_system_clock.md)。
 
 
 - 针对Ascend 950PR/Ascend 950DT，若换算成时间需要按照1GHz的频率，时间单位为us，换算公式为：time = (cycle数/1000)us。
@@ -69,7 +75,7 @@ PIPE_S
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
-bisheng example.asc -o main --npu-arch=dav-3510; ./main
+bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
 
 

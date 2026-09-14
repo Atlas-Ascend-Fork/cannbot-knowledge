@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/fusion_operator_programming/general_fusion/basics.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -36,7 +36,7 @@ platforms: []
 如下图所示，串行的通信算子和计算算子的理想执行耗时为两个算子执行时间的加和，而在融合通信和计算任务得到的通算融合算子内，将需要通信和计算的数据进行切分，一次通信和计算的数据量减少，整个通信和计算任务分多次进行，使得计算与通信流水并行，理论执行耗时大大缩短，从而带来性能收益。
 
 **图1**  通信计算融合前后的理论执行耗时对比示意图<a name="zh-cn_topic_0000002366728672_fig861111613812"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/comm_fusion_time.png "通信计算融合前后的理论执行耗时对比示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/comm_fusion_time.png "通信计算融合前后的理论执行耗时对比示意图")
 
 ## 使用场景和优势<a name="zh-cn_topic_0000002366728672_section1467294217389"></a>
 
@@ -47,19 +47,19 @@ platforms: []
     通信或计算的结果不会立即被对方使用，两者虽有依赖，但在两者中间可以调度执行其他无依赖的计算或通信任务。如[图2](#zh-cn_topic_0000002366728672_fig1840354818120)所示，通信1与计算1-2、计算4有依赖关系，通信1与计算1-1、计算2-1、计算2-2、计算3无依赖关系；通信2与计算2-2、计算4有依赖关系，通信2与计算2-1、计算3无依赖关系。因此，通信1和通信2都有较大的流水空间，可以被与它们无依赖的计算任务所掩盖。如[图3](#zh-cn_topic_0000002366728672_fig382061611816)所示，通信1和通信2均可以被无依赖的计算任务掩盖。在模型中，此类无依赖的通信和计算可以实现任务级并行，无需做算子融合。因此，弱依赖计算通信任务不适用通算融合场景。
 
     **图2**  弱依赖计算通信任务示意图<a name="zh-cn_topic_0000002366728672_fig1840354818120"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/weak_task.png "弱依赖计算通信任务示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/weak_task.png "弱依赖计算通信任务示意图")
 
     **图3**  弱依赖计算通信任务的调度模拟示意图<a name="zh-cn_topic_0000002366728672_fig382061611816"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/weak_sched.png "弱依赖计算通信任务的调度模拟示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/weak_sched.png "弱依赖计算通信任务的调度模拟示意图")
 
 -   强依赖计算通信任务
 
     通信或计算的结果立即被对方使用，两者间存在紧密依赖关系。如下图所示，计算通信任务必须串行执行，在通信1和通信2执行过程中，硬件计算资源闲置，此类通信计算模式若在模型中大量出现，将导致算力利用率低，通信成为主要性能瓶颈。强依赖计算通信任务适合融合为通算融合算子，利用通算融合技术提升性能。
 
     **图4**  强依赖计算通信任务示意图<a name="zh-cn_topic_0000002366728672_fig246345165920"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/strong_task.png "强依赖计算通信任务示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/strong_task.png "强依赖计算通信任务示意图")
 
     **图5**  强依赖计算通信任务的调度模拟示意图<a name="zh-cn_topic_0000002366728672_fig12971332388"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/strong_sched.png "强依赖计算通信任务的调度模拟示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/strong_sched.png "强依赖计算通信任务的调度模拟示意图")
 
 通算融合技术与网络模型结构密切相关，一般而言，符合上述强依赖计算通信任务都有可能通过通算融合算子实现性能提升。

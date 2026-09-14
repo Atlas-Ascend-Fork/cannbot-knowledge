@@ -10,23 +10,24 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_simt_hybrid_optimization/compute_optimization/simt_branch_judgment.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
 # 通过SIMT实现分支判断<a name="ZH-CN_TOPIC_0000002552896537"></a>
 
-
 >[!NOTE]说明 
 >该性能优化建议适用于如下型号：
+     
 >-   Ascend 950PR/Ascend 950DT
+     
 
 
 【优先级】高
 
 【描述】基于SIMD编程模型实现的批量数据计算性能很高，但在算子实现逻辑中涉及分支判断时，基于SIMD的计算操作会变得相对复杂，导致性能下降。此时，可以考虑采用SIMT方式，因为SIMT编程更为灵活，更适合处理分支判断的场景。
 
-【样例介绍】以floor\_mod算子为例，算子功能为将输入x的每个元素除以输入y的对应元素，获取余数。该余数应与除数y具有相同的符号，且其绝对值应小于y的绝对值。在计算过程中，需要判断y中每个元素的符号以及余数与该元素绝对值的大小关系。完整的算子实现代码请参考[SIMT与SIMD混合编程高性能优化样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_high_performance)。
+【样例介绍】以floor\_mod算子为例，算子功能为将输入x的每个元素除以输入y的对应元素，获取余数。该余数应与除数y具有相同的符号，且其绝对值应小于y的绝对值。在计算过程中，需要判断y中每个元素的符号以及余数与该元素绝对值的大小关系。完整的算子实现代码请参考[SIMT与SIMD混合编程高性能优化样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_high_performance)。
 
 **表1**  样例规格
 

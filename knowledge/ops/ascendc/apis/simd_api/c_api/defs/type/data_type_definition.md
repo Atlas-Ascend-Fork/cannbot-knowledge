@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/type/data_type_definition.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 ---
@@ -49,7 +49,7 @@ platforms:
 
 **图1**  掩码寄存器
 
-![掩码寄存器](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/capi_mask.png)
+![掩码寄存器](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/capi_mask.png)
 
 `b64`操作数的每个元素对应8 bit掩码，且仅最低有效位有效。由于掩码创建接口不支持`b64`模式，需要先通过[asc_create_mask_b32](../../reg_compute/reg_mask/asc_create_mask.md)创建`b32`掩码，再通过[asc_unpack_lower](../../reg_compute/reg_permute_sel/asc_unpack.md)将其展开为`b64`掩码。例如，创建所有`b64`元素均有效的掩码：
 

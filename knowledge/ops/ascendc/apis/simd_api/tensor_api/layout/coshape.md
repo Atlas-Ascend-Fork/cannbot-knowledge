@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/coshape.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -68,13 +68,13 @@ using namespace asc::te;
 
 // 示例1：基础计算
 auto layout = make_layout(make_shape(10, 20), make_stride(1, 100));
-auto coshape = coshape(layout);
+auto coshape_result = coshape(layout);
 // (10-1)*1 + (20-1)*100 + 1 = 9 + 1900 + 1 = 1910
 
 // 示例2：指定子维度
-auto coshape0 = coshape<0>(layout);
+auto coshape0_result = coshape<0>(layout);
 // (10-1)*1 + 1 = 9 + 1 = 10
 
-auto coshape1 = coshape<1>(layout);
+auto coshape1_result = coshape<1>(layout);
 // (20-1)*100 + 1 = 1900 + 1 = 1901
 ```

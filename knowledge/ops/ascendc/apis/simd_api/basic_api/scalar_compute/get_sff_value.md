@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/scalar_compute/GetSFFValue.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -41,7 +41,7 @@ int64_t sffValue = AscendC::GetSFFValue<1>(0x1000000000000100ULL); // 返回8
 
 **图1** 使用GetSFFValue查找从最低有效位开始首个1的位置<a name="fig1"></a>
 
-![使用GetSFFValue查找从最低有效位开始首个1的位置](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/GetSFFValue.png "使用GetSFFValue查找从最低有效位开始首个1的位置")
+![使用GetSFFValue查找从最低有效位开始首个1的位置](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/GetSFFValue.png "使用GetSFFValue查找从最低有效位开始首个1的位置")
 
 ## 函数原型<a name="section620mcpsimp"></a>
 

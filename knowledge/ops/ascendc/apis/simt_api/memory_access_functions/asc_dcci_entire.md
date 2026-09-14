@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/memory_access_functions/asc_dcci_entire.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # asc\_dcci\_entire
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_functions.h"`。
 
 该接口用于刷新核内的整个Data Cache，保证数据读取时Cache的一致性。
 
@@ -52,19 +54,13 @@ inline void asc_dcci_entire(void *dst)
 
 输入必须为有效的Global Memory地址。传入非Global Memory地址或无效地址时，不能保证Cache刷新行为有效。
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_functions.h"
-```
-
 ## 调用示例
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __global__ __launch_bounds__(1024) void kernel_dcci_entire(uint32_t* data, uint32_t* output) {
         // 线程块0的线程0进行数据写操作
         if (blockIdx.x == 0 && threadIdx.x == 0) {
@@ -86,6 +82,8 @@ inline void asc_dcci_entire(void *dst)
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel_dcci_entire(__gm__ uint32_t* data, __gm__ uint32_t* output)
     {
         // 线程块0的线程0进行数据写操作

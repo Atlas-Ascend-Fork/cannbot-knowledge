@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/convolution_compute/Conv3D_Tiling/TConv3DApiTiling_struct.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -24,6 +24,7 @@ TConv3DApiTiling结构体包含Conv3D算子规格信息及Tiling切分算法的�
 **表1**  TConv3DApiTiling结构说明
 
 <a name="table18244199192620"></a>
+
 | 参数名称 | 数据类型 | 说明 |
 | --- | --- | --- |
 | groups | uint32_t | 预留参数，当前仅支持为1。 |
@@ -68,10 +69,10 @@ TConv3DApiTiling结构体包含Conv3D算子规格信息及Tiling切分算法的�
 注：上述的M轴为卷积正向操作过程中的输入Input在img2col展开后的纵轴，数值上等于Hout \* Wout；K为输入Input在img2col展开后的横轴，数值上等于KD\*C1\*KH\*KW\*C0；KD/KH/KW为Weight的Depth、Height、Width，即kernelD/kernelH/kernelW的简写；N为Weight的Cout，具体请见图1。
 
 **图1**  卷积3D正向MKN示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv3d_mkn.png "卷积3D正向MKN示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv3d_mkn.png "卷积3D正向MKN示意图")
 
 **图2**  卷积3D正向MFirst示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv3d_mfirst.png "卷积3D正向MFirst示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv3d_mfirst.png "卷积3D正向MFirst示意图")
 
 **图3**  卷积3D正向NFirst示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv3d_nfirst.png "卷积3D正向NFirst示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv3d_nfirst.png "卷积3D正向NFirst示意图")

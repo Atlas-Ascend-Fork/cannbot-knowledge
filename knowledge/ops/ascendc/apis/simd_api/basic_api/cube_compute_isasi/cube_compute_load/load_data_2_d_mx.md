@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadData_2D_MX.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -85,13 +85,13 @@ __aicore__ inline void LoadData(const LocalTensor<U>& dst, const LocalTensor<T>&
 
 **图 1** ScaleA在L0A Buffer的分形排布<a id="fig138710913432"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scalea_l0a_fractal.png "ScaleA在L0A Buffer的分形排布")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scalea_l0a_fractal.png "ScaleA在L0A Buffer的分形排布")
 
 下图为ScaleA从L1 Buffer搬运至L0A Buffer过程中的配置参数示意。每一行为32字节，对应着[图1](#fig138710913432)中的一个分形。xStep为M维度分形的个数，如图中的xStep = M / 16 = 3，yStep为K维度32字节的个数，如图中的yStep = K / 32 / 2 = 21，srcStride和dstStride同理，表示在K维度上32字节的个数。
 
 **图 2**  ScaleA从L1 Buffer搬运至L0A Buffer的配置参数示意
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/LoadData_2D_MX_nd2nz.png "ScaleA从L1 Buffer搬运至L0A Buffer的配置参数示意")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/LoadData_2D_MX_nd2nz.png "ScaleA从L1 Buffer搬运至L0A Buffer的配置参数示意")
 
 ## 数据类型
 
@@ -119,8 +119,8 @@ $$
 
 **图3** 量化系数矩阵搬运示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dmx_scale_transfer_demo.png "量化系数矩阵搬运示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dmx_scale_transfer_demo.png "量化系数矩阵搬运示意图")
 
 ## 调用示例
 
-完整调用示例请参考[LoadData（MX矩阵搬运）样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_2dmx_l12l0)。
+完整调用示例请参考[LoadData（MX矩阵搬运）样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_2dmx_l12l0)。

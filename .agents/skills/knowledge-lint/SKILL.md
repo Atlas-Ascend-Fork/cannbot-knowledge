@@ -19,7 +19,9 @@ python3 <skill-dir>/scripts/knowledge_lint.py --knowledge-root <repo> --sample 1
 
 检查项、等级、模式和错误边界见 [checks](references/checks.md)。退出码 `0` 表示完整执行且没有 P0，`1` 表示至少存在一个 P0，`2` 表示命令、规则或仓库不可用；P1/P2 完整报告但不阻断。
 
-正文、链接、图片和平台检查共用 Contract 的代码围栏解析；固定归档识别也由 Contract 统一提供，避免各检查器对同一段正文采用不同边界。仅固定归档主来源的 API/Guide 镜像可保留多个 H1；辅助来源引用、普通卡片和无 H1 正文不获得例外。
+正文、链接、图片和平台检查共用 Contract 的代码围栏解析；文档归档识别也由 Contract 统一提供，避免各检查器对同一段正文采用不同边界。仅文档归档主来源的 API/Guide 镜像可保留多个 H1；辅助来源引用、普通卡片和无 H1 正文不获得例外。
+
+生命周期检查复用 Contract 的路径推导，确认 `replaced_by` 指向 Bundle 内的真实 Concept；现有索引页不能充当替代卡，路径别名和符号链接越界也不能绕过检查。
 
 ### 工作流
 
@@ -27,9 +29,9 @@ python3 <skill-dir>/scripts/knowledge_lint.py --knowledge-root <repo> --sample 1
 
 1. 改动卡先用 `--card` 检查 Profile、tag、source、平台、正文和时间；有代码来源的新卡或实质更新卡同时使用 `--strict-navigation`。
 2. 全库运行以检查 domain 根、`ops`/`model` route 骨架、逐层导航、Bundle 内链接和日志；统一 `check.sh` 会启用严格来源导航。`--sample` 只做确定性抽样，不代替全库门禁。
-3. 执行目标 query，确认新卡可召回、draft 不进入默认结果。
+3. 确认知识仓维护者已按 [Query 索引维护](../knowledge-query/references/cli.md#索引)准备与改动后语料一致的索引，再执行目标 query，确认新卡可召回、draft 不进入默认结果。Lint 本身只报告，不修改或重建索引。
 4. 修改 Skill 时运行 skill-creator 的 quick validation、相关回归和本仓统一质量门禁。
-5. 用户要提交或整理问题时，按 [Issue 报告](references/issue-report.md)收集原始材料；关键材料缺失则输出 `needs-info`，不凭记忆补齐。
+5. 用户要提交或整理问题时，按 [Issue 报告](references/issue-report.md)收集已有运行材料与实际复现率；补充复现仍受当前任务授权和本 Skill 只读边界约束。关键材料缺失则输出 `needs-info`，不凭记忆补齐或虚增运行次数。
 
 ## 页面内容检查
 
@@ -65,4 +67,4 @@ python3 <skill-dir>/scripts/knowledge_lint.py --knowledge-root <repo> --sample 1
 
 ## 边界
 
-Lint 不联网验证 URL，不证明来源充分支持结论，也不判断技术语义、实验复现、shared 泛化或跨 DSL 等价性。全库模式要求 Registry 的本地来源获取脚本存在且可执行；来源根不存在时允许离线检查，根已恢复时才核对归档完成标记和在用文件；Git 本地根还验证固定提交、远程来源、干净工作区及被引用文件，Lint 不自动获取、清理或修复源码。知识卡可链接登记的固定提交源码文件，索引仍限于 Bundle；源码链接不形成 Concept。Lint 只执行本 Skill 所属仓的 Contract，并在目标根 Contract 版本不一致时失败，不执行目标根提供的 Python。Issue 工作流只整理事实与复现材料，不直接裁决知识正确性。
+Lint 不联网验证 URL，不证明来源充分支持结论，也不判断技术语义、实验复现、shared 泛化或跨 DSL 等价性。全库模式要求 Registry 的本地来源获取脚本存在且可执行；来源根不存在时允许离线检查，根已恢复时才核对归档完成标记的来源 URL 和在用文件（不校验 SHA-256）；Git 本地根还验证固定提交、远程来源、干净工作区及被引用文件，Lint 不自动获取、清理或修复源码。知识卡可链接登记的固定提交源码文件，索引仍限于 Bundle；源码链接不形成 Concept。Lint 只执行本 Skill 所属仓的 Contract，并在目标根 Contract 版本不一致时失败，不执行目标根提供的 Python。Issue 工作流只整理事实与复现材料，不直接裁决知识正确性。

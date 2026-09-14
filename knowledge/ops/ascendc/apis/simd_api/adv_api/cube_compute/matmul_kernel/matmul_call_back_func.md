@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/MatmulCallBackFunc.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -28,11 +28,12 @@ platforms:
 MatmulCallBackFunc中包含3个可由用户自定义的回调函数接口，即用户可配置3个函数指针。3个函数指针分别为C矩阵从L0C Buffer（CO1）拷贝到GM，A矩阵从GM拷贝到L1 Buffer（A1），B矩阵从GM拷贝到L1 Buffer（B1）的回调函数指针。3个函数指针的位置固定，不使用自定义搬运函数的函数指针位置需要设为空指针。各个功能回调函数接口定义及参数释义见[表1 MatmulCallBackFunc回调函数接口及参数说明](#table10989848113111)。每个回调函数实现矩阵搬运中单个基本块（A矩阵基本块baseM \* baseK、B矩阵基本块baseK \* baseN、C矩阵基本块baseM \* baseN）的搬运策略，无法对整块内存空间进行管理。Matmul默认的搬运函数实现单核上单个基本块的搬运，搬运的基本块大小是固定的，在完整的Matmul计算过程中，多次调用搬运函数，对连续排布的基本块按顺序逐个搬运，以搬入A矩阵的过程为例，示意图如下。
 
 **图1**  Matmul默认搬入A矩阵示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/matmul_default_load_a.png "Matmul默认搬入A矩阵示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/matmul_default_load_a.png "Matmul默认搬入A矩阵示意图")
 
 **表1**  MatmulCallBackFunc回调函数接口及参数说明
 
 <a name="table10989848113111"></a>
+
 | 回调函数功能 | 回调函数接口 | 参数说明 |
 | --- | --- | --- |
 | 可自定义设置不同的搬出数据片段数目等参数，实现将Matmul计算结果从L0C Buffer（CO1）搬出到GM的功能 | void DataCopyOut(const __gm__ void* gm, const LocalTensor<int8_t>& co1Local, const void* dataCopyOutParams, const uint64_t tilingPtr, const uint64_t dataPtr) | gm：输出的GM地址。<br><br>co1Local: L0C Buffer（CO1）上的计算结果。<br><br>dataCopyOutParams：Matmul定义的DataCopyOutParams结构体指针，具体定义如下方代码所示，供用户参考使用。<br><br>tilingPtr: 用户使用[SetUserDefInfo](set_user_def_info.md)设置的tiling参数地址。<br><br>dataPtr: 用户使用[SetSelfDefineData](set_self_define_data.md)设置的计算数据地址。 |

@@ -10,8 +10,10 @@ sources:
   role: implementation
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/include/Dialect/TritonAscend/IR/TritonAscendOps.td
   role: constraint
+- resource: cann-docs-raw/asc-devkit/docs/zh/guide/technical_appendix/concepts_and_terms/glossary.md
+  role: constraint
 created_at: '2026-08-14T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-09-12T03:07:12Z'
 platforms: [a2, a3, '950']
 ---
 # NPU 内存层次与数据通路模型
@@ -48,7 +50,7 @@ platforms: [a2, a3, '950']
 | PIPE_V | 1 | UB -> UB 向量计算 |
 | PIPE_M | 2 | L0A/L0B -> L0C 矩阵计算 |
 | PIPE_MTE1 | 3 | L1 -> L0A/L0B/BT（单向） |
-| PIPE_MTE2 | 4 | GM/L2 <-> L1/UB（双向） |
+| PIPE_MTE2 | 4 | GM -> L1/UB（搬入；其他目的缓冲区按平台核对） |
 | PIPE_MTE3 | 5 | UB -> GM（单向；910_95 另支持 UB -> L1） |
 | PIPE_FIX | 10 | L0C -> GM/L1/UB（L0C->UB 仅 910_95） |
 

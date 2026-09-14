@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/typical_operator_cases/simd_operator_impl/matmul_leakyrelu_fusion_operator/extreme_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -24,16 +24,16 @@ platforms: []
 
 | Case | 优化手段 | 说明 |
 |------|---------|------|
-| [Case 5](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-5-多核mdl--l1cache优化-multi_core_mdl_l1cache) | MDL + L1Cache优化 | 手动调整Tiling参数，充分利用L1缓存 |
-| [Case 6](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-6-多核mdl--l1cache--l2cache-multi_core_mdl_l1cache_l2cache) | MDL + L1Cache + L2Cache | 分块计算适配L2Cache，提高缓存命中率 |
-| [Case 7](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-7-多核mdl--l1cache--l2cache--constants-tiling-multi_core_mdl_l1cache_l2cache_constants) | + Constants Tiling | Tiling常量化，减少运行时Scalar计算开销 |
-| [Case 8](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-8-多核mdl--l1cache--l2cache--constants-tiling--unitflag-multi_core_mdl_l1cache_l2cache_constants_unitflag) | + UnitFlag | 细粒度流水同步，MMAD与FIXPIPE流水并行 |
+| [Case 5](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-5-多核mdl--l1cache优化-multi_core_mdl_l1cache) | MDL + L1Cache优化 | 手动调整Tiling参数，充分利用L1缓存 |
+| [Case 6](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-6-多核mdl--l1cache--l2cache-multi_core_mdl_l1cache_l2cache) | MDL + L1Cache + L2Cache | 分块计算适配L2Cache，提高缓存命中率 |
+| [Case 7](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-7-多核mdl--l1cache--l2cache--constants-tiling-multi_core_mdl_l1cache_l2cache_constants) | + Constants Tiling | Tiling常量化，减少运行时Scalar计算开销 |
+| [Case 8](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_high_performance/README.md#case-8-多核mdl--l1cache--l2cache--constants-tiling--unitflag-multi_core_mdl_l1cache_l2cache_constants_unitflag) | + UnitFlag | 细粒度流水同步，MMAD与FIXPIPE流水并行 |
 
 ## Gelu高阶优化手段
 
 | Case | 优化手段 | 说明 |
 |------|---------|------|
-| [Case 2](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_high_performance/README.md#case-2-启用regbase-apivf融合能力和循环展开优化) | VF融合 + 循环展开 | `#pragma unroll`展开循环，提高指令级并行度 |
+| [Case 2](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_high_performance/README.md#case-2-启用regbase-apivf融合能力和循环展开优化) | VF融合 + 循环展开 | `#pragma unroll`展开循环，提高指令级并行度 |
 
 ## CV融合：Scenario 2 — CV融合-UB直通
 
@@ -66,4 +66,4 @@ AscendC::Fixpipe<float, float, CFG_ROW_MAJOR_UB>(xUB, cLocal, fixpipeParams);
 - Scenario 2融合后总耗时2573.584μs，相比Scenario 1的2606.91μs进一步减少约33μs
 - Scenario 2中aiv_mte2_time仅为0.005μs，相比Scenario 1的57.145μs几乎降为零
 
-详细内容请参见[Matmul+Gelu高阶极限打磨](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/03_fusion_compute/matmul_gelu_high_performance/README.md)。
+详细内容请参见[Matmul+Gelu高阶极限打磨](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/03_fusion_compute/matmul_gelu_high_performance/README.md)。

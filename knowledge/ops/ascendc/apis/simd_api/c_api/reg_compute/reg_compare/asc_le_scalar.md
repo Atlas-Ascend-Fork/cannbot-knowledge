@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_compare/asc_le_scalar.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_compare.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_le_scalar
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_compare.h"`。
 
 根据`mask`将源操作数`src`按元素与标量`value`进行二进制比较，若$src_i \leq value$则计算结果对应位为1，否则为0。计算结果作为返回值返回或写入目的操作数`dst`，每个元素的比较结果占一个bit。计算公式如下：
 

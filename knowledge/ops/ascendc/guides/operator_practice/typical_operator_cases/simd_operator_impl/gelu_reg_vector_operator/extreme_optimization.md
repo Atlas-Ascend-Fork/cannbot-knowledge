@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/typical_operator_cases/simd_operator_impl/gelu_reg_vector_operator/extreme_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -60,4 +60,4 @@ Iter2: Load→Mul→...→Store       ...（无循环控制开销，指令可交
 
 **进一步提升IPC的方向**：将过长的loop循环切分为多个短循环，在长latency指令（如Exp、Div）结束点进行拆分，使每组依赖链更短，双发效率更高。本样例loop循环较短，不适用于该优化项。
 
-详细内容请参见[Gelu性能调优样例 Case 2](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_high_performance/README.md#case-2-启用regbase-apivf融合能力和循环展开优化)。
+详细内容请参见[Gelu性能调优样例 Case 2](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/02_reg_compute/gelu_high_performance/README.md#case-2-启用regbase-apivf融合能力和循环展开优化)。

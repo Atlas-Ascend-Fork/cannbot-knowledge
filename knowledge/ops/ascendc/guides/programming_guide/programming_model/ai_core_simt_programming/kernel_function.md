@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simt_programming/kernel_function.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -47,7 +47,7 @@ __global__ void vec_add(float* x, float* y, float* z)
 -   device侧执行函数（除核函数（Kernel）之外）使用类型限定符\_\_aicore\_\_标识，可以调用同类的其它device侧执行函数。
 
 **图1**  核函数（Kernel）、host侧执行函数、device侧执行函数调用关系<a name="fig14484835135913"></a><br>
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/op_func_call.png "算子程序中三种函数间的调用关系")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/op_func_call.png "算子程序中三种函数间的调用关系")
 
 Host侧通过核函数（Kernel）调用符<<<...>>>的语法形式调用核函数（Kernel），如下所示：
 

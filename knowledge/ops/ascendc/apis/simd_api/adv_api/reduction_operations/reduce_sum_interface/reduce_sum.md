@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/reduction_operations/ReduceSum_interface/ReduceSum.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -29,10 +29,10 @@ source_headers:
 定义指定计算的维度（Reduce轴）为R轴，非指定维度（Normal轴）为A轴。如下图所示，对shape为\(2, 3\)的二维矩阵进行运算，指定在第一维计算数据的累加，输出结果为\[5, 7, 9\]；指定在第二维计算数据的累加，输出结果为\[6, 15\]。
 
 **图1**  ReduceSum按第一个维度计算示例  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reducesum_first_axis.png "ReduceSum按第一个维度计算示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reducesum_first_axis.png "ReduceSum按第一个维度计算示例")
 
 **图2**  ReduceSum按最后一个维度计算示例  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reducesum_last_axis.png "ReduceSum按最后一个维度计算示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reducesum_last_axis.png "ReduceSum按最后一个维度计算示例")
 
 ## 函数原型
 

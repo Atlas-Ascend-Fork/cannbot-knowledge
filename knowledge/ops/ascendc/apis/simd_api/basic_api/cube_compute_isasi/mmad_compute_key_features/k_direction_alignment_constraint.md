@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/mmad_compute_key_features/k_direction_alignment_constraint.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -29,17 +29,17 @@ K方向对齐的核心功能是通过kDirectionAlign参数控制在使用float�
 
 当设置mmadParams.kDirectionAlign = true时，L0A Buffer/L0B Buffer中的矩阵会将K方向对齐到 \`ceil\(K/16\)\*16\`。
 
-![K方向对齐示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_kdirectionalign.png)
+![K方向对齐示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_kdirectionalign.png)
 
 例如，当K=44和K=36时，都会被对齐到48。在这种情况下，对于K=44，L0A Buffer/L0B Buffer中的12个分形块都会被完整读入CUBE；而对于K=36的情况，虽然对齐后也是48，但只有其中的10个分形块会被读入CUBE。
 
-![K方向对齐到48示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/kdirectionalign_k_is36.png)
+![K方向对齐到48示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/kdirectionalign_k_is36.png)
 
 当设置 \`mmadParams.kDirectionAlign = false\`时，L0A Buffer/L0B Buffer中的矩阵会将K方向对齐到 \`ceil\(K/8\)\*8\`。
 
 例如，当K=44时对齐到48，而K=36时对齐到40。在这种情况下，对于K=44，L0A Buffer/L0B Buffer中的12个分形块都会被完整读入CUBE；而对于K=36的情况，L0A Buffer/L0B Buffer中的10个分形块都会被读取到CUBE中。
 
-![K方向对齐到40示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/kdirectionalign_k_is36_false.png)
+![K方向对齐到40示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/kdirectionalign_k_is36_false.png)
 
 1. A矩阵非转置的场景，无需开启kDirectionAlign。
 
@@ -47,7 +47,7 @@ K方向对齐的核心功能是通过kDirectionAlign参数控制在使用float�
 
 当输入需要进行转置操作时，例如原始矩阵A的维度为K×M，在搬入L1 Buffer后，其存储形式会变为NZ排布（本质上仍为K×M）。此时应调用具备转置能力的LoadData接口。该接口的内部实现如下图所示：在K方向上会进行16的对齐处理（如左图所示）。完成转置后，数据将呈现出如右图所示的ZZ分形形式，存储在L0A Buffer中。为了避免读入无效数据，可以通过开启kDirectionAlign参数，仅读取有效分形的数据。
 
-![K方向对齐转置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/kdirectionalign_demo.png)
+![K方向对齐转置示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/kdirectionalign_demo.png)
 
 **使用示例：**
 

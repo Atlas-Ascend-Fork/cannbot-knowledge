@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/document_structure.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -39,7 +39,7 @@ platforms: []
 优化算子性能是一个持续迭代的流程，将如下步骤不断循环迭代，直至达成性能目标。在[优秀实践](best_practices/index.md)章节，开发者可以进一步了解基于以下四个步骤的具体实践。
 
 **图1**  算子性能优化流程<a name="fig2643134112816"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/op_opt_flow.png "算子性能优化流程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/op_opt_flow.png "算子性能优化流程")
 
 本文档分为如下几个章节，各章的内容以及目标如下：
 

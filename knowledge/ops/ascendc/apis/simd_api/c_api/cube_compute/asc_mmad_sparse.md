@@ -10,15 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_compute/asc_mmad_sparse.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
+source_headers:
+- include/c_api/cube_compute/cube_compute.h
 ---
 
 # asc_mmad_sparse
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_compute/cube_compute.h"`。
 
 完成矩阵乘加操作，传入的左矩阵A为稀疏矩阵，右矩阵B为稠密矩阵。对于矩阵A，在asc_mmad_sparse计算时完成稠密化；对于矩阵B，在计算执行前的输入数据准备时自行完成稠密化（按照下文中介绍的稠密算法进行稠密化）。稠密矩阵B需要通过[asc_copy_l12l0b_sparse](../cube_datamove/asc_copy_l12l0b_sparse.md)载入，同时加载索引矩阵，索引矩阵在矩阵B稠密化的过程中生成，再用于矩阵A的稠密化。
 
@@ -178,7 +182,7 @@ PIPE_M
 </table>
 该索引矩阵用于A矩阵的稠密化，根据索引矩阵从MatrixA中的4个元素中选择2个元素参与计算，如下图所示：
 
-![稠密算法说明图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_mmad_sparse_dense_algorithm.png)
+![稠密算法说明图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_mmad_sparse_dense_algorithm.png)
 
 ## 调用示例
 

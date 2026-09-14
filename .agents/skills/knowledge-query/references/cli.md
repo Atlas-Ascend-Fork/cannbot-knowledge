@@ -6,6 +6,8 @@
 
 Query 按 `--knowledge-root`、`CANNBOT_KNOWLEDGE_ROOT`、当前目录祖先中的 `.cannbot/knowledge.env`、仓内脚本位置依次解析知识仓。全局参数可以放在子命令前后；配置文件同时接受 `export CANNBOT_KNOWLEDGE_ROOT=...` 和不带 `export` 的形式。
 
+这是数据根解析规则，不是独立 Skill 打包接口。完整安装使用仓库 `init.sh` 保留到规范源的链接，脚本由此可找到同一 checkout 的 `governance/contracts/`。单独复制 Query 目录可能仍能做普通索引搜索，但索引构建、完整校验和依赖 Contract 的 API 阅读等流程不完整，不能据此宣称已安装可用的全部能力。
+
 ## 索引
 
 项目安装器默认先恢复文档与固定提交源码，再验证并按需构建 `artifacts/indexes/knowledge.sqlite3`。知识仓维护者在卡片、Registry、Profile、Schema 或 Contract 变化后执行：
@@ -24,7 +26,7 @@ Query 只读索引；索引构建通过统一 Contract 拒绝重复 YAML key 等
 | 位置 / 字段 | 路径基准与读取方式 |
 |---|---|
 | 搜索结果 `path` / `local_path`、`title`、`description` | 先据此选择相关候选；`local_path` 已是绝对路径，选中后打开并阅读全文 |
-| 卡片正文中的相对 Markdown / 源码链接 | 相对当前卡片目录，直接沿链接阅读；锚点用于定位文件中的内容 |
+| 卡片正文中的本地 Markdown / 源码链接 | 普通相对路径以当前卡目录解析；前导 `/` 的知识链接以 Bundle 根解析；`#锚点` 指向当前卡。源码仍须满足登记的固定提交来源规则 |
 | Frontmatter `sources[].resource` 的本地路径 | 知识仓根；按 Registry 核对归档或仓库、commit，不相对当前工程解析 |
 | Ascend C API 的 `source_headers` | CANN 包内对应的 Ascend C 组件根目录；值已带 `include/`。Agent 决定需要查看时再拼接绝对路径并读取 |
 
@@ -73,7 +75,7 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 
 ### Receipt
 
-`--receipt` 原子写入 schema、完整请求、canonical 请求指纹、知识仓状态、索引版本、语料/治理指纹、命中卡片指纹和原始结果。目标必须不存在。审计流程的 `--decision` 使用稳定 ID，并把文件放在调用方实验目录。State 校验会重新计算请求指纹，要求每条 receipt 的平台集合与 state 目标完全相同，核对完整当前索引 provenance，并按原请求重放过滤、评分、排序和命中；ready receipt 绑定每个 search receipt 的文件 SHA-256，outcome 校验会再次确认这些文件未变化。
+`--receipt` 原子写入 schema、完整请求、canonical 请求指纹、知识仓状态、索引版本、语料/治理指纹、命中卡片指纹和原始结果。目标目录项必须不存在；已有文件、目录和符号链接（包括悬空链接）均拒绝，不沿目标链接创建其他文件。这一约定同时适用于 search、state 和 outcome receipt。审计流程的 `--decision` 使用稳定 ID，并把文件放在调用方实验目录。State 校验会重新计算请求指纹，要求每条 receipt 的平台集合与 state 目标完全相同，核对完整当前索引 provenance，并按原请求重放过滤、评分、排序和命中；ready receipt 绑定每个 search receipt 的文件 SHA-256，outcome 校验会再次确认这些文件未变化。
 
 每个命中包含 rank、score、Concept ID、绝对 `local_path`、正文行数、OKF type、Profile、trust tier、范围、生命周期、卡片 SHA-256 及最多两个 source。顶层 `results` 是规范字段，`hits` 是迁移兼容别名。退出码 `0` 包括零命中；非法过滤、索引陈旧、知识根不可用或 receipt 已存在时退出码为 `2`。
 

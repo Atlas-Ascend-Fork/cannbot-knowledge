@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_store_key_features/NZ2NZ.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -100,7 +100,7 @@ for (j = 0; j < mSize; j++) {
 
 **图1** NZ2NZ示意图（[NPU架构版本2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）<a name="zh-cn_topic_0000002515820868_fig199191646174210"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/Fixpipe_NZ2NZ.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/Fixpipe_NZ2NZ.png)
 
 示意图中参数设置示例（通过Fixpipe接口搬运并去除dummy数据）和解释说明如下：
 
@@ -114,7 +114,7 @@ for (j = 0; j < mSize; j++) {
 
 **图2** NZ2NZ示意图（[NPU架构版本3510](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）<a name="zh-cn_topic_0000002515820868_fig199191646174233"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/Fixpipe_NZ2NZ_950.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/Fixpipe_NZ2NZ_950.png)
 
 示意图中参数设置示例（通过Fixpipe接口搬运并去除dummy数据）和解释说明如下：
 

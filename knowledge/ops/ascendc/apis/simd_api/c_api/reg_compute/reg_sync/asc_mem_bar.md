@@ -11,10 +11,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_sync/asc_mem_bar.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/reg_sync.h
 - include/c_api/asc_simd.h
 ---
 
@@ -22,10 +23,12 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/reg_compute/reg_sync.h"`。
+
 Reg矢量计算内不同流水线之间的同步指令。该同步指令指定源流水线和目的流水线，如下图所示，目的流水线将等待源流水线上所有指令完成才进行执行。
 读写场景下，当读指令使用的寄存器和写指令使用的寄存器相同时，可以触发寄存器保序，指令将会按照代码顺序执行，不需要插入同步指令，而当使用的寄存器不同时，如果要确保读写指令执行，则需要插入同步指令。写写场景同理。
 
-![SIMD_VF函数内流水线等待示意图.png](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/simd_vf_pipeline_wait_diagram.png)
+![SIMD_VF函数内流水线等待示意图.png](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/simd_vf_pipeline_wait_diagram.png)
 
 本接口仅在AIV上生效。
 
@@ -38,11 +41,13 @@ __simd_callee__ inline void asc_mem_bar(MEM_TYPE mem_type)
 ## 参数说明
 
 **表1** 参数说明
+
 | 参数名  | 输入/输出 | 描述 |
 | :----- | :------- | :------- |
 | mem_type | 输入 | 同步流水线的类型，类型为`MEM_TYPE`，取值范围见表2 `mem_type`取值说明。 |
 
 **表2** 本接口支持的mem_type取值范围说明（源流水线/目的流水线表示的含义见表3 Reg计算流水线说明）
+
 | 值  | 源流水线 | 目的流水线 |
 | ------ | -------- | -------- |
 | `VV_ALL` | `VEC_ALL` | `VEC_ALL` |
@@ -59,6 +64,7 @@ __simd_callee__ inline void asc_mem_bar(MEM_TYPE mem_type)
 | `ST_VST` | `SCALAR_STORE` | `VEC_STORE` |
 
 **表3** Reg计算流水线说明
+
 | 流水线 | 含义 |
 | ------ | -------- |
 | `VEC_STORE` | `SIMD_VF`函数内矢量写UB流水线。<br>对应寄存器到UB的搬运指令，例如[asc_storealign](../store/asc_storealign.md)。 |

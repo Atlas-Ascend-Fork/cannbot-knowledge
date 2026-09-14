@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/sort_and_merge_ISASI/Sort32.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -37,7 +37,7 @@ src1固定为uint32\_t类型，无论src0是float还是half类型，dst中的（
 
 **图1**  Sort32排序示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/sort32.png)<a id="图1-Sort32排序示意图"></a>
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/sort32.png)<a id="图1-Sort32排序示意图"></a>
 
 ## 函数原型<a name="section620mcpsimp"></a>
 
@@ -97,7 +97,7 @@ __aicore__ inline void Sort32(const LocalTensor<T>& dst, const LocalTensor<T>& s
 
 ## 调用示例<a name="section642mcpsimp"></a>
 
-完整示例请参考[Sort32样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/mrg_sort)。
+完整示例请参考[Sort32样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/mrg_sort)。
 
 ```cpp
 AscendC::LocalTensor<float> srcLocal0 = inQueueSrc0.DeQue<float>();

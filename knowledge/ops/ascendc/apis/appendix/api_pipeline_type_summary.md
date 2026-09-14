@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/appendix/api_pipeline_type_summary.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -35,6 +35,7 @@ platforms: []
 **表1**  Memory矢量计算API流水类型汇总
 
 <a name="table132070121817"></a>
+
 | API类型 | API接口名称 | 执行核（AIC/AIV） | 流水类型 |
 | --- | --- | --- | --- |
 | 基础算术 | Exp | AIV | PIPE_V |
@@ -135,6 +136,7 @@ platforms: []
 **表2**  Cube API流水类型汇总
 
 <a name="table12311219174812"></a>
+
 | API接口名称 | 执行核（AIC/AIV） | 流水类型 |
 | --- | --- | --- |
 | DataCopy(GM->L1) | AIC | PIPE_MTE2 |
@@ -187,6 +189,7 @@ platforms: []
 **表4**  同步指令流水类型汇总
 
 <a name="table1054353913238"></a>
+
 | API接口名称 | 流水类型 |
 | --- | --- |
 | SetFlag/WaitFlag | PIPE_S |
@@ -203,6 +206,7 @@ platforms: []
 **表5**  原子操作流水类型汇总
 
 <a name="table25871912193814"></a>
+
 | API接口名称 | 流水类型 |
 | --- | --- |
 | SetAtomicAdd | PIPE_S |
@@ -221,6 +225,7 @@ platforms: []
 **表6**  工具接口流水类型汇总
 
 <a name="table1147331317457"></a>
+
 | API接口名称 | 流水类型 |
 | --- | --- |
 | InitSocState | PIPE_S |
@@ -243,10 +248,9 @@ platforms: []
 
 | API接口名称 | 流水类型 |
 | --- | --- |
-| ReadGmByPassDCache(ISASI) | PIPE_S |
-| WriteGmByPassDCache(ISASI) | PIPE_S |
+| ReadGmBypassDCache(ISASI) | PIPE_S |
+| WriteGmBypassDCache(ISASI) | PIPE_S |
 | DataCachePreload | PIPE_S |
 | DataCacheCleanAndInvalid | PIPE_S |
 | ICachePreLoad(ISASI) | PIPE_S |
 | GetICachePreloadStatus(ISASI) | PIPE_S |
-

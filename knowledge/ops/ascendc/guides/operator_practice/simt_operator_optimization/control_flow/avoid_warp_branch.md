@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_optimization/control_flow/avoid_warp_branch.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -22,7 +22,7 @@ platforms: []
 
 **图1** 分支发散示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/branch_div.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/branch_div.png)
 
 在一个线程块内，所有线程按线性顺序被硬件自动划分为每32个线程一组的Warp，当控制流条件与线程ID有关时，应尽量保证同一Warp内的线程进入相同分支，减少分支发散。例如，对于一维线程块，当控制条件仅依赖于`threadIdx.x / warpSize`时，同一Warp内的线程走相同分支路径，无分支发散。
 
@@ -30,7 +30,7 @@ platforms: []
 
 对于一些较为简单的分支，编译器可能通过谓词（Predication）优化避免产生分支跳转。此时，所有指令都会被执行，但其最终是否生效由每个线程的谓词决定。通过这种机制，可以减少分支跳转带来的性能损失。
 
-【样例介绍】以[SpMV Warp Divergence样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/02_control_flow/warp_divergence)为例，样例中通过对比"一个线程处理一行数据"和"一个Warp协作处理一行数据"两种方式，展示Warp Divergence对性能的影响。该样例的功能为计算CSR格式存储的稀疏矩阵与稠密向量相乘。
+【样例介绍】以[SpMV Warp Divergence样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/02_control_flow/warp_divergence)为例，样例中通过对比"一个线程处理一行数据"和"一个Warp协作处理一行数据"两种方式，展示Warp Divergence对性能的影响。该样例的功能为计算CSR格式存储的稀疏矩阵与稠密向量相乘。
 
 稀疏矩阵是指大部分元素为零的矩阵。为了节省存储空间，稀疏矩阵通常采用CSR（Compressed Sparse Row）格式存储，仅保存非零元素及其位置信息。CSR格式使用3个数组：
 

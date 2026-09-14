@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_set_gm2l1_nz_para.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_set_gm2l1_nz_para
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
 本接口用于配置从Global Memory搬运至L1 Buffer过程中，ND2Nz或DN2Nz格式转换所需的目的地址布局，包括矩阵数量、目的Nz矩阵中相邻行的步长、相邻Z矩阵的步长以及相邻Nz矩阵的步长。配置完成后，由后续调用的[asc_copy_gm2l1_nd2nz](asc_copy_gm2l1_nd2nz/asc_copy_gm2l1_nd2nz_arch_3510.md)或[asc_copy_gm2l1_dn2nz](asc_copy_gm2l1_dn2nz.md)接口使用。
 
@@ -82,16 +85,17 @@ PIPE_S
 - 搬运至L1 Buffer的数据不能重叠。如果步长配置导致重叠写入，硬件不会产生告警或错误，并且不保证重叠数据的写入顺序。
 - `config`的四个字段均为16bit，接口会将`config`整体写入，不会单独检查字段范围。拼装前需确保各字段满足[表2](#table2)中的取值要求，不得将超出16bit的值直接左移，否则高位会写入相邻字段。
 
-
 ## 调用示例
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
+
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
+
 
 以下调用示例代码仅Ascend 950PR/Ascend 950DT产品支持。
 
@@ -196,4 +200,3 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-

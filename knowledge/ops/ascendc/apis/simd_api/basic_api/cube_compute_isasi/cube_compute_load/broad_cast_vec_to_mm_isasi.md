@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/BroadCastVecToMM_ISASI.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - 310p
 ---
@@ -25,7 +25,7 @@ platforms:
 
 **图1** 功能示例<a name="fig1730933122314"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/function_example.png "功能示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/function_example.png "功能示例")
 
 ## 函数原型<a name="section620mcpsimp"></a>
 
@@ -68,9 +68,9 @@ Atlas 推理系列产品AI Core，支持的数据类型为：half、int32_t、fl
 
 **图2** 调用示例图<a name="fig496292825418"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/call_example.png "调用示例图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/call_example.png "调用示例图")
 
-本示例仅展示样例中的部分代码。如需运行，请参考[BroadCastVecToMM样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/broadcast_ub2l0c)实现完整的代码。
+本示例仅展示样例中的部分代码。如需运行，请参考[BroadCastVecToMM样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/broadcast_ub2l0c)实现完整的代码。
 
 ```cpp
 // brcLocal为TPosition::CO1上的float类型的LocalTensor，srcLocal为TPosition::VECIN上的float类型的LocalTensor

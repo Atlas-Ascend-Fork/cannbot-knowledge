@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/address_space_conversion_functions/__cvta_generic_to_ubuf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_cvta\_generic\_to\_ubuf
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_functions.h"`。
 
 将输入的指针转换为其指向的Unified Buffer（UB）内存空间的地址值并返回。
 
@@ -53,19 +55,13 @@ size_t __cvta_generic_to_ubuf(const void* ptr)
 
 SIMD与SIMT混合编程场景不支持使用该接口。
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_functions.h"
-```
-
 ## 调用示例
 
 SIMT编程场景：
 
 ```cpp
+#include "simt_api/device_functions.h"
+
 __global__ __launch_bounds__(1024) void kernel__cvta_generic_to_ubuf(uint32_t* src, uint32_t total_length)
 {
     __ubuf__ uint32_t ubuf_data[1024];

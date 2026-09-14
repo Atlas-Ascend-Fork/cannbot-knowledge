@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopy_GMToUB_ND2NZ.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -95,12 +95,12 @@ ND2NZ转换示意图如下，样例中参数设置值和解释说明如下：
 - dstNzMatrixStride = 96，表达dst中第x个ND矩阵的起点和第x+1个ND矩阵的起点的偏移，即A1和C1之间的距离，即为6个DataBlock，6 \* 16 = 96个元素。
 
 **图1**  ND2NZ转换示意图（half数据类型）<a name="fig128961542184620"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nd2nz_conversion_half.png "ND2NZ转换示意图（half数据类型）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nd2nz_conversion_half.png "ND2NZ转换示意图（half数据类型）")
 
 enableSmallC0开启模式下的ND2NZ转换示意图如下：
 
 **图2**  enableSmallC0开启模式下的ND2NZ转换示意图（half数据类型）<a name="fig07641913195410"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/enable_smallc0_nd2nz_conversion_half.png "enableSmallC0开启模式下的ND2NZ转换示意图-（half数据类型）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/enable_smallc0_nd2nz_conversion_half.png "enableSmallC0开启模式下的ND2NZ转换示意图-（half数据类型）")
 
 ## 数据类型<a name="section4219135304818"></a>
 

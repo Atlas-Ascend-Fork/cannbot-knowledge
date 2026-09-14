@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/appendix/cube_instruction_theoretical_perf_summary.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -67,6 +67,7 @@ $$
 
 
 
+
 **表2** Mmad计算类指令理论性能计算公式中并行度和k0的取值（[NPU架构版本3510](../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）<a id="table1877123815985"></a>  
 
 | 接口 | 左矩阵A | 右矩阵B | cube<sub>m</sub> | cube<sub>n</sub> | cube<sub>k</sub> | k<sub>0</sub> |
@@ -89,6 +90,7 @@ $$
 | MmadMx | fp8_e4m3fn_t | fp8_e5m2_t | 16 | 16 | 32 | 32 |
 | MmadMx | fp8_e5m2_t | fp8_e4m3fn_t | 16 | 16 | 32 | 32 |
 | MmadMx | fp8_e5m2_t | fp8_e5m2_t | 16 | 16 | 32 | 32 |
+
 
 
 ## 矩阵计算搬入类指令理论性能汇总
@@ -136,6 +138,7 @@ $$
 
 
 
+
 **表5** 矩阵计算搬入类指令理论性能说明（[NPU架构版本3510](../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）<a id="table1877123827112"></a>  
 
 | 接口 | 搬运带宽（单位：Byte/cycle） |
@@ -180,6 +183,7 @@ $$
 | 大于1，且不等于2、4、8 | 任意值 | 32 | 32 |
 
 
+
 ## 矩阵计算搬出类指令理论性能汇总
 
 以下内容为矩阵计算搬出类指令在L0C Buffer->L1 Buffer和L0C Buffer->UB两条数据搬运通路下的理论性能汇总说明。
@@ -210,6 +214,7 @@ $$
 | L0C Buffer->L1 Buffer | float | (V)QF322B8_PRE | NZ2NZ + Channel Merge | int8_t/uint8_t | 64 | 64 |
 | L0C Buffer->L1 Buffer | int32_t | (V)DEQF16 | NZ2NZ | half | 64 | 128 |
 | L0C Buffer->L1 Buffer | int32_t | (V)REQ8 | NZ2NZ + Channel Merge | int8_t/uint8_t | 64 | 64 |
+
 
 
 

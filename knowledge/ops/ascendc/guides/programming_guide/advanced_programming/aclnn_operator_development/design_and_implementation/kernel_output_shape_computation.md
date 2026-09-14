@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/kernel_output_shape_computation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -64,7 +64,7 @@ shape输出按`uint64_t`数组组织。每个待刷新输出固定占9个`uint64
 
 如果有`n`个输出依赖计算，总空间为`n * 9`个`uint64_t`元素。第`i`个输出从`i * 9`开始，顺序与算子原型中的输出声明顺序一致。
 
-![shape信息排布示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/pipe_task_run_33.png)
+![shape信息排布示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/pipe_task_run_33.png)
 
 对于输出Tensor数据类型为`uint64_t`的场景，需要把rank值的第31位设置为1，表示后续维度按`uint64_t`解析：
 

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/vector_compute/vector_counter_mode.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -24,7 +24,7 @@ Counter模式下，用户不需要计算迭代次数以及判断是否存在尾�
 
 提示：Normal模式和Counter模式、掩码的介绍可参考[如何使用掩码操作API](../../../programming_guide/library_api/basic_api/quick_reference/how_to_use_mask_api.md)。
 
-以下反例和正例中的代码均以[AddCustom](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op)算子为例，修改其中Add接口的调用代码，以说明Counter模式的优势。
+以下反例和正例中的代码均以[AddCustom](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op)算子为例，修改其中Add接口的调用代码，以说明Counter模式的优势。
 
 ```
 AscendC::Add(zLocal, xLocal, yLocal, this->tileLength);
@@ -72,9 +72,9 @@ AscendC::ResetMask();  // 还原mask值
 【性能对比】
 
 **图1**  Normal模式和Counter模式下的Scalar执行时间对比<a name="fig7838115891613"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/scalar_time.png "Normal模式和Counter模式下的Scalar执行时间对比")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/scalar_time.png "Normal模式和Counter模式下的Scalar执行时间对比")
 
 **图2**  Normal模式和Counter模式下的Vector执行时间对比<a name="fig1223382352110"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/vector_time.png "Normal模式和Counter模式下的Vector执行时间对比")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/vector_time.png "Normal模式和Counter模式下的Vector执行时间对比")
 
 以上性能数据是分别循环运行1000次反例和正例代码得到的Scalar和Vector执行时间。从上述两幅性能对比图和示例代码可以看到，使用Counter模式能够大幅度简化代码，易于维护，同时能够降低Scalar和Vector计算耗时，获得性能提升。

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_3002.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -24,7 +24,7 @@ platforms: []
 
 ## 硬件架构图<a name="section129231322122015"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/tight_1911.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/tight_1911.png)
 
 ## 计算单元<a name="section8171163594515"></a>
 
@@ -132,7 +132,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
     -   通过Channel merge、Channel split可以实现分形大小的转换，保证输出到L1 Buffer/GM的分形满足诉求。
     -   NZ2ND数据格式转换。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fixpipe_14.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fixpipe_14.png)
 
 上图中，Channel merge支持S8、U8、S4和U4数据类型，而Channel split支持FP32数据类型。
 
@@ -142,7 +142,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 
     如下所示，目标数据类型为S8，M为32，N为48，首先将前2列16x16分形矩阵合并为一个16x32矩阵，然后将剩余的16x16分形矩阵直接移入L1 Buffer。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fixpipe_i8_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fixpipe_i8_1.png)
 
 -   Channel merge（S4和U4数据类型）
 
@@ -152,7 +152,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 
     在这种情况下，N的配置必须是64的倍数。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fixpipe_i4_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fixpipe_i4_1.png)
 
 -   FP32 Channel split：
 
@@ -160,7 +160,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 
     如下图所示，这里的目标数据类型是FP32，M是64，N是32，它将被拆分为16个16x8的分形。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fixpipe_f32_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fixpipe_f32_1.png)
 
 ## 同步控制<a name="section15421223142815"></a>
 
@@ -180,7 +180,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 
     同步控制流程如下图所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/core_sync_final_18.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/core_sync_final_18.png)
 
     上图中，ID1、ID2、ID3、ID4、ID5、ID6表示事件ID（EventID），每个EventID对应一块存储数据的搬运状态，确保数据操作的正确性和一致性。
 

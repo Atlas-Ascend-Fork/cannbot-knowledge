@@ -19,7 +19,7 @@ Schema、Profile、Registry 和 Contract 共同构成机器规则，Spec 是解�
 ## 2. 通用原则
 
 - **可追溯**：技术结论能回到官方文档、固定提交源码、测试或可复核实验。
-- **经过蒸馏或受控转换**：知识卡通常表达可复用结论；Registry 固定归档的官方 API/Guide 只保留含独立技术事实的来源页，并按声明省略冗余章节。
+- **经过蒸馏或受控转换**：知识卡通常表达可复用结论；Registry 文档归档的官方 API/Guide 只保留含独立技术事实的来源页，并按声明省略冗余章节。
 - **范围明确**：正文和 Frontmatter 共同说明技术栈、平台、版本、验证范围和失效边界。
 - **DSL 隔离**：一个 DSL 的接口、编译器行为和实验结果不能直接写成另一个 DSL 的事实。
 - **最小变更**：只修改相关知识、导航、规则、Skill 和测试。
@@ -82,7 +82,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 
 ### 3.4 准备来源
 
-每张卡都必须填写 `sources`。轨迹沉淀的 `Runbook` 可以使用 `sources: []`，但正文必须保留与结论强度相匹配的触发、探针、原始观测和验证信号，且不能把中间整理仓或会话轨迹伪装成权威 resource；其它非 `draft` 卡至少有一个精确 `resource`。Git 来源固定到提交，文档来源优先使用稳定版本页。仓库相对来源必须位于 Registry 登记的本地来源根目录，并由固定归档校验和或登记的 Git repository/40 位 commit 获取流程恢复；不能指向未登记根目录、工作区外部或包含路径穿越。性能、精度、平台限制、默认行为和经验性结论必须有与结论强度相匹配的证据。
+每张卡都必须填写 `sources`。轨迹沉淀的 `Runbook` 可以使用 `sources: []`，但正文必须保留与结论强度相匹配的触发、探针、原始观测和验证信号，且不能把中间整理仓或会话轨迹伪装成权威 resource；其它非 `draft` 卡至少有一个精确 `resource`。Git 来源固定到提交，文档来源优先使用稳定版本页。仓库相对来源必须位于 Registry 登记的本地来源根目录，并由登记的官方文档归档 URL 或 Git repository/40 位 commit 获取流程恢复；不能指向未登记根目录、工作区外部或包含路径穿越。性能、精度、平台限制、默认行为和经验性结论必须有与结论强度相匹配的证据。
 
 搜索摘要、PR 标题、聊天记录或模型记忆不能单独作为技术来源。来源角色、固定格式和人工审阅要求见 [Frontmatter 与证据](governance/specs/frontmatter.md)。
 
@@ -113,7 +113,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 4. 验证方式及证据强度；
 5. 与其他卡片的显式相对链接。
 
-不要求所有卡片使用同一模板：概念卡应突出定义和边界，API 卡应突出语义和约束，Runbook 应突出信号、判断和处置步骤，优化卡应突出触发条件、收益来源和失效边界。Registry 固定归档的官方 API/Guide 过滤导航页，以 `index.md` 作为唯一目录入口；保留页只删除 Registry 声明的冗余章节、添加 Frontmatter、修正失效链接目标，可在文末追加普通卡片链接。产品支持范围只保存在 Frontmatter `platforms` 中。
+不要求所有卡片使用同一模板：概念卡应突出定义和边界，API 卡应突出语义和约束，Runbook 应突出信号、判断和处置步骤，优化卡应突出触发条件、收益来源和失效边界。Registry 文档归档的官方 API/Guide 过滤导航页，以 `index.md` 作为唯一目录入口；保留页只删除 Registry 声明的冗余章节、添加 Frontmatter、修正失效链接目标，可在文末追加普通卡片链接。产品支持范围只保存在 Frontmatter `platforms` 中。
 
 ### 3.7 更新导航与记录
 
@@ -134,7 +134,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 - [ ] 平台和版本没有超出证据范围；`verified` 如存在，actor 与时间真实可核验。
 - [ ] 正文说明结论、适用条件和失效边界。
 - [ ] `index.md`、Bundle 内相对链接和当天日志已按需更新。
-- [ ] `knowledge-lint` 通过，目标查询能够召回新知识。
+- [ ] `knowledge-lint` 通过，已按 Query Skill 的维护流程重建并验证检索索引，目标查询能够召回新知识。
 - [ ] `bash check.sh` 通过。
 
 ## 4. 贡献治理和文档
@@ -154,7 +154,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 
 ## 5. 贡献 Skill
 
-当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、复用 Query 的只读专用消费流程 `ascendc-api-knowledge-query`、知识仓内的 `ops-knowledge-trace-ingest`（trace → runbooks 生产），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。VV 用于全部可达 Device 节点均不含 Cube/AIC 或 MIX_CV 的算子，CV 用于至少存在一个可达 Cube/AIC 或 MIX_CV 节点的算子；两者都由任务决定 ACLNN、Host/Tiling 或 Direct Invoke 入口。新增其他 Skill 需要先证明现有职责无法合理承载，并完成架构和发布评审。
+当前维护 `knowledge-ingest`、`knowledge-query`、`knowledge-lint` 三项基础 Skill、复用 Query 的只读专用消费流程 `ascendc-api-knowledge-query`、知识仓内的 `ops-knowledge-trace-ingest`（trace → runbooks 生产），以及 `ops-knowledge-vv-ingest`、`ops-knowledge-cv-ingest` 两项源码级 Operator producer。VV 用于全部可达 Device 节点均不含 Cube/AIC 或 MIX_CV 的算子，CV 用于至少存在一个可达 Cube/AIC 或 MIX_CV 节点的算子；两者都由任务决定入口，并按现有 call-mode 落库。仅 Host/Tiling 内部入口目前没有对应分类，须先报告缺口，不能套用 ACLNN 或 Direct Invoke 路径；完整边界见 [Knowledge Skills](governance/specs/skills.md)。新增其他 Skill 需要先证明现有职责无法合理承载，并完成架构和发布评审。
 
 本仓 Skill 的规范源位于 `.agents/skills/`，其中维护完整的 `SKILL.md`、`references/`、`scripts/` 及其他运行所需资源。治理、安装、检索与 CI 回归集中于 `evals/`；Ingest 使用全库确定性命令和仓库级回归，trace producer 保留专用脚本回归。规范源不包含 `agents/openai.yaml` 等单一客户端元数据。
 
@@ -181,7 +181,7 @@ Skill 中只保存完成工作所需的流程、工具和小型参考资料。�
 ## 7. 不接受的贡献
 
 - 无可靠来源的 API、平台、精度、性能或默认行为结论；
-- 在固定归档 API/Guide 受控转换之外大段复制上游文档、源码、日志或其他 Skill references；
+- 在文档归档 API/Guide 受控转换之外大段复制上游文档、源码、日志或其他 Skill references；
 - 只适用于个人环境且无法复现或界定范围的经验；
 - 把单一技术实现过度泛化为 shared；
 - 把一个 DSL 的行为写成另一个 DSL 的事实；

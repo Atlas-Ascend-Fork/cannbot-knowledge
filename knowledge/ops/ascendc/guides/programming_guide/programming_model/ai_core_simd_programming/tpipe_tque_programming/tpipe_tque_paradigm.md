@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/tpipe_tque_programming/tpipe_tque_paradigm.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -27,7 +27,7 @@ platforms: []
 流水并行的核心逻辑可通过示意图直观理解：完整算子任务被拆分为多个有序子阶段，不同硬件单元负责不同工序；同一数据分片需在各阶段间串行流动，以保证数据依赖合法；不同数据分片则可在不同阶段同时处理，实现流水线吞吐叠加，与经典C/C++管道程序的执行逻辑完全一致。
 
 **图1**  流水线并行示意图<a name="fig3986112422"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/pipe_parallel.png "流水线并行示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/pipe_parallel.png "流水线并行示意图")
 
 结合上一章的阐述可总结出：Ascend C流水线体系由两大核心模块共同支撑：
 - **[TPipe](../../../../../apis/simd_api/basic_api/resource_management/t_pipe/index.md)** 资源管理器：统一管理系统内存资源和用于同步的事件等；
@@ -41,7 +41,7 @@ platforms: []
 
 ## 矢量编程范式<a name="section116515238815"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_pos.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_pos.png)
 
 如上图所示，矢量编程范式将算子实现流程划分为三个基本任务：CopyIn、Compute和CopyOut。
 
@@ -53,7 +53,7 @@ platforms: []
 
 从编程角度看，具体流程（如下方伪代码所示）及流程图如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/vec_queue.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/vec_queue.png)
 
 ```
 AscendC::TPipe pipe;                                // 创建全局资源管理器
@@ -91,25 +91,25 @@ for-loop {
 队列内存初始化完成后，当需要内存时通过[AllocTensor](../../../../../apis/simd_api/basic_api/resource_management/t_que/alloc_tensor.md)为LocalTensor分配内存；当该LocalTensor完成相关计算不再使用时，再调用[FreeTensor](../../../../../apis/simd_api/basic_api/resource_management/t_que/free_tensor.md)回收其内存。
 
 **图2**  内存管理示意图<a name="fig375042942717"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mem_mgmt.png "内存管理示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mem_mgmt.png "内存管理示意图")
 
 编程过程中使用的临时变量内存同样由TPipe管理。临时变量可使用TBuf数据结构申请指定TPosition上的存储空间。通过TBuf申请的内存仅能参与计算，不可执行队列的入队、出队操作。具体接口使用说明请参见[TBuf](../../../../../apis/simd_api/basic_api/resource_management/t_buf/index.md)。
 
 遵循上述范式编程，即可实现单核数据的并行处理。待处理数据被切分为多个分片，每个并行任务依次完成对所有分片的处理。任务间的箭头表示数据依赖，例如CopyIn完成第一个分片的处理后，Compute才能开始处理该分片。
 
 **图3**  流水任务示意图<a name="fig1556061818199"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/pipe_task.png "流水任务示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/pipe_task.png "流水任务示意图")
 
 上图对应的流水任务运行时序如下图所示。可以看出：对于同一数据分片，CopyIn、Compute、CopyOut之间存在依赖，必须串行执行；对于不同数据分片，同一时刻可有多个任务并行处理，从而以任务级并行提升整体性能。
 
 **图4**  流水任务运行示意图<a name="fig123244111202"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/pipe_task_run.png "流水任务运行示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/pipe_task_run.png "流水任务运行示意图")
 
 ## 矩阵编程范式<a name="section8213173433312"></a>
 
 Cube计算的典型数据流图如下所示：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_pos_2.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_pos_2.png)
 
 与矢量编程一致，矩阵编程同样使用逻辑位置（TPosition）表达数据流，主要使用的TPosition定义如下：
 
@@ -127,7 +127,7 @@ Cube计算的典型数据流图如下所示：
 
 Cube计算流程本质上也可归纳为CopyIn、Compute、CopyOut三个阶段。因其流程相对复杂，Matmul高阶API提供了高阶封装，有效简化了编程范式。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_pos_3.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_pos_3.png)
 
 如图所示：CopyIn阶段对应[SetTensorA](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_tensor_a.md)、[SetTensorB](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_tensor_b.md)、[SetBias](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_bias.md)接口；Compute阶段对应[Iterate](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/iterate.md)接口；CopyOut阶段对应[GetTensorC](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_tensor_c.md)接口。示例如下：
 
@@ -163,12 +163,12 @@ mm.End();
 - Cube的输出可作为Vector的输入：CO2→VECIN
 - Vector的输出也可作为Cube的输入：VECOUT→A1→A2、VECOUT→B1→B2
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_pos_4.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_pos_4.png)
 
 基于Matmul高阶API的融合算子编程范式，将上述数据流简化为以下步骤：
 
 **图5**  融合算子编程范式<a name="fig321783243811"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fusion_paradigm.png "融合算子编程范式")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fusion_paradigm.png "融合算子编程范式")
 
 1. 初始化MatMul对象，将输入数据从Global Memory搬运到Cube核上。
 2. 执行MatMul内部计算。

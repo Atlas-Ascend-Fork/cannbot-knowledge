@@ -10,13 +10,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/vector_programming/tbuf_usage.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
 # TBuf的使用<a name="ZH-CN_TOPIC_0000002500548088"></a>
 
-在大多数算子开发时，核函数（Kernel）计算过程需要使用临时内存来存储运算的中间结果，这些中间结果以临时变量表示，临时变量占用的内存可以使用TBuf数据结构来管理，具体介绍请参考[TBuf](../../../../apis/simd_api/basic_api/resource_management/t_buf/index.md)。下文将以输入的数据类型为bfloat16\_t、在单核上运行的Add算子为例，介绍TBuf的使用方式。本文中介绍的算子完整代码请参见[使用临时内存的Add算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/04_memory_management/tmp_buffer)。
+在大多数算子开发时，核函数（Kernel）计算过程需要使用临时内存来存储运算的中间结果，这些中间结果以临时变量表示，临时变量占用的内存可以使用TBuf数据结构来管理，具体介绍请参考[TBuf](../../../../apis/simd_api/basic_api/resource_management/t_buf/index.md)。下文将以输入的数据类型为bfloat16\_t、在单核上运行的Add算子为例，介绍TBuf的使用方式。本文中介绍的算子完整代码请参见[使用临时内存的Add算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/04_memory_management/tmp_buffer)。
 
 在Atlas A2 训练系列产品/Atlas 800I A2 推理产品上，[Add](../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/add.md)接口不支持对数据类型bfloat16\_t的源操作数进行求和计算。因此，需要先将算子输入的数据类型转换成Add接口支持的数据类型，再进行计算。为保证计算精度，调用[Cast](../../../../apis/simd_api/basic_api/memory_vector_compute/type_conversion/cast.md)接口将输入bfloat16\_t类型转换为float类型，再进行Add计算，并在计算结束后将float类型转换回bfloat16\_t类型。
 
@@ -82,7 +82,7 @@ platforms: []
 该样例的CopyIn，CopyOut任务与[基础矢量算子](basic_vector_operator.md)相同，Compute任务的具体流程如下图所示。
 
 **图1**  输入为bfloat16\_t类型的Add计算流程<a name="zh-cn_topic_0000002201317266_fig816618211471"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/bf16_add_flow.png "输入为bfloat16_t类型的Add计算流程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/bf16_add_flow.png "输入为bfloat16_t类型的Add计算流程")
 
 在计算过程中，表示Cast转换结果、Add计算结果的临时变量均需要使用临时内存存储。与[基础矢量算子实现](basic_vector_operator.md)的KernelAdd算子类相比，本样例新增两个TBuf类型的成员变量tmpBuf0、tmpBuf1，用于管理计算过程中使用的临时内存，因此初始化阶段除原有步骤外，需要调用[InitBuffer](../../../../apis/simd_api/basic_api/resource_management/t_pipe/init_buffer.md)接口为TBuf变量分配内存，具体的初始化阶段代码如下：
 

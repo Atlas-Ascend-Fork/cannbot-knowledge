@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/aclnn_operator_development/appendix/external_sample_links.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -22,7 +22,7 @@ platforms: []
 
 ### 基础算子实现
 
-- [AddCustom算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op)里的AddCustom样例。
+- [AddCustom算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op)里的AddCustom样例。
   - 说明：展示基础的完整算子实现，包括TilingData定义、Tiling函数和核函数（Kernel）代码。
 
 ### msOpGen工具生成自定义算子工程模板
@@ -32,20 +32,20 @@ platforms: []
 
 ### TilingData传递属性
 
-- [LeakyReluCustom](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op/op_host/leaky_relu_custom)里的leaky_relu_custom样例。
+- [LeakyReluCustom](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op/op_host/leaky_relu_custom)里的leaky_relu_custom样例。
   - 说明：通过TilingData传递属性信息。
 
 ### 模板编程算子实现
 
-- [核函数（Kernel）模板编程样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op/op_host/add_custom_template)。
+- [核函数（Kernel）模板编程样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op/op_host/add_custom_template)。
   - 说明：展示使用核函数（Kernel）模板参数实现编译期分支控制的示例。
 
 ### 编译与集成样例
 
-- [静态库集成和使用样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op_static_lib)。
+- [静态库集成和使用样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/00_acl_compilation/custom_op_static_lib)。
   - 说明：展示如何将算子编译为静态库并集成到应用中。
 
-- [aclnn单算子调用样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/99_acl_based/01_acl_invocation/aclnn_invocation)。
+- [aclnn单算子调用样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/01_acl_invocation/aclnn_invocation)。
   - 说明：展示如何通过aclnn API调用自定义算子。
 
 ## API参考

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cache_control/DataCacheCleanAndInvalid.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -32,11 +32,11 @@ source_headers:
 如图1所示，在AI Core内部，Scalar单元和DMA单元都可能对GM进行访问：
 
 - DMA搬运单元读写GM，数据通过DataCopy等接口在Unified Buffer（UB）等Local Memory和GM间交互，没有Cache一致性问题。
-- Scalar单元访问GM，首先会访问每个核内的Data Cache，因此存在Data Cache与GM的Cache一致性问题。
+- Scalar单元访问GM，首先会访问每个核内的Data Cache，因此存在Data Cache与GM的Cache一致性问题，具体原因请参考[缓存一致性](../../../../guides/programming_guide/advanced_programming/memory_model/cache_coherence.md)。
 
 **图1**  DataCache内存层次示意图<a name="zh-cn_topic_0000002530021782_fig1161014168448"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacache.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacache.png)
 
 DataCacheCleanAndInvalid接口用于解决上述一致性问题，其功能可以拆解为两部分：
 

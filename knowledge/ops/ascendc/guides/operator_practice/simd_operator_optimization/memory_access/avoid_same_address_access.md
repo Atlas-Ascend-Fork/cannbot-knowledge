@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/memory_access/avoid_same_address_access.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -36,9 +36,9 @@ platforms: []
 
 如下图所示，AI Core内的各个核对Global Memory的数据同时发出读写请求，尽管addr0\~addr5是多个不同的地址，但因为落在连续的512字节范围内，被视为同一个地址请求，此时这几个数据请求会被串行处理，数据访问效率会降低。同地址访问的影响受同时访问的核数影响，同地址访问的核数越多时，串行导致的性能劣化越严重。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reduce_opt.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reduce_opt.png)
 
-避免同地址访问的方法主要是**调整数据访问顺序**。下文介绍配套的样例请参考[DataCopy最佳实践样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/04_memory_access/data_copy)中的优化点4。
+避免同地址访问的方法主要是**调整数据访问顺序**。下文介绍配套的样例请参考[DataCopy最佳实践样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/04_memory_access/data_copy)中的优化点4。
 
 **调整数据访问顺序**
 
@@ -66,9 +66,9 @@ platforms: []
 </tr>
 <tr id="row6910155119182"><td class="cellrowborder" valign="top" width="8.303319380901392%" headers="mcps1.1.4.1.1 "><p id="p691005117182"><a name="p691005117182"></a><a name="p691005117182"></a>示意图</p>
 </td>
-<td class="cellrowborder" valign="top" width="45.28375352866739%" headers="mcps1.1.4.1.2 "><p id="p469662116417"><a name="p469662116417"></a><a name="p469662116417"></a><a name="image1757423545813"></a><a name="image1757423545813"></a><span><img class="eddx" id="image1757423545813" src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/same_addr_before.png" width="422.94" height="376.36672500000003"></span></p>
+<td class="cellrowborder" valign="top" width="45.28375352866739%" headers="mcps1.1.4.1.2 "><p id="p469662116417"><a name="p469662116417"></a><a name="p469662116417"></a><a name="image1757423545813"></a><a name="image1757423545813"></a><span><img class="eddx" id="image1757423545813" src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/same_addr_before.png" width="422.94" height="376.36672500000003"></span></p>
 </td>
-<td class="cellrowborder" valign="top" width="46.41292709043123%" headers="mcps1.1.4.1.3 "><p id="p2017574513412"><a name="p2017574513412"></a><a name="p2017574513412"></a><a name="image5603194513417"></a><a name="image5603194513417"></a><span><img class="eddx" id="image5603194513417" src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/same_addr_after.png" width="422.94" height="376.36672500000003"></span></p>
+<td class="cellrowborder" valign="top" width="46.41292709043123%" headers="mcps1.1.4.1.3 "><p id="p2017574513412"><a name="p2017574513412"></a><a name="p2017574513412"></a><a name="image5603194513417"></a><a name="image5603194513417"></a><span><img class="eddx" id="image5603194513417" src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/same_addr_after.png" width="422.94" height="376.36672500000003"></span></p>
 </td>
 </tr>
 <tr id="row591018519184"><td class="cellrowborder" valign="top" width="8.303319380901392%" headers="mcps1.1.4.1.1 "><p id="p09108512180"><a name="p09108512180"></a><a name="p09108512180"></a>示例代码</p>

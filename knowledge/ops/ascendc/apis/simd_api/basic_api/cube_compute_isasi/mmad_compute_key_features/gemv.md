@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/mmad_compute_key_features/GEMV.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -29,11 +29,11 @@ Gemv的核心功能体现为：当矩阵A的维度M取值为1时，接口会自�
 
 1. 1×K矩阵A需满足512B地址对齐，K个数据连续存储；以half类型为例，当K=256时，软件侧可视作16\*16分块，配置m=1后硬件解析为1\*256向量，可通过LoadData接口将256个half数据从L1 Buffer搬至L0A Buffer。
 
-2. C矩阵是一个（1\*N）的向量，当1×N向量被划分为多个1×16子向量时，每个子向量在L0C Buffer中占用1024B。但实际有效数据仅占最低32B或64B。例如，当N=50时，共划分4个1\*16子向量，占用4\*512B = 2048B，其中有效数据仅为4\*32B = 128B。
+2. C矩阵是一个（1\*N）的向量，当1×N向量被划分为多个1×16子向量时，每个子向量在L0C Buffer中占用1024B，但实际有效数据仅占最低64B。例如，当N=50时，共划分4个1\*16子向量，占用4\*1024B = 4096B，其中有效数据仅为4\*64B = 256B。
 
 **图1** GEMV模式，矩阵乘示意图
 
-![GEMV模式-矩阵乘示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_gemv.png "GEMV模式-矩阵乘示意图")
+![GEMV模式-矩阵乘示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_gemv.png "GEMV模式-矩阵乘示意图")
 
 **使用优势：**
 
@@ -45,7 +45,7 @@ M=1时自动开启GEMV模式，则矩阵乘法将M方向作为非对齐场景进
 
     **图2** GEMV模式M=1的矩阵乘计算示意图
 
-    ![GEMV模式M=1的矩阵乘计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_gemv_compare.png "GEMV模式M=1的矩阵乘计算示意图")
+    ![GEMV模式M=1的矩阵乘计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_gemv_compare.png "GEMV模式M=1的矩阵乘计算示意图")
 
 - 非GEMV模式
 
@@ -53,7 +53,7 @@ M=1时自动开启GEMV模式，则矩阵乘法将M方向作为非对齐场景进
 
     **图3** 非GEMV模式M=1的矩阵乘计算示意图
 
-    ![非GEMV模式M=1的矩阵乘计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_nongemv_compare.png "非GEMV模式M=1的矩阵乘计算示意图")
+    ![非GEMV模式M=1的矩阵乘计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_nongemv_compare.png "非GEMV模式M=1的矩阵乘计算示意图")
 
 **使用示例：**
 
@@ -71,9 +71,9 @@ C矩阵为1\* 256的向量，共可以划分为16个1 \* 16的子向量，占用
 
 **图4** GEMV模式矩阵乘示意图
 
-![GEMV模式-矩阵乘示意图-demo](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_gemv_demo.png "GEMV模式-矩阵乘示意图-demo")
+![GEMV模式-矩阵乘示意图-demo](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_gemv_demo.png "GEMV模式-矩阵乘示意图-demo")
 
-GEMV功能的完整示例：[GEMV样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_gemv)。
+GEMV功能的完整示例：[GEMV样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_gemv)。
 
 ```cpp
 AscendC::MmadParams mmadParams;

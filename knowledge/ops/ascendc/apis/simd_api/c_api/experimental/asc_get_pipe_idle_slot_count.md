@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/experimental/asc_get_pipe_idle_slot_count.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -20,6 +20,8 @@ source_headers:
 # 指令发射队列空闲槽位查询
 
 ## 功能说明
+
+头文件路径为：`"c_api/experimental/asc_get_pipe_idle_slot_count.h"`。
 
 本接口为试验接口，在后续版本中可能会调整或改进，不保证后续兼容性。请开发者在使用过程中关注后续版本更新。
 
@@ -68,7 +70,6 @@ PIPE_S。
 
 ## 约束说明
 
-- 使用本接口前，需要包含头文件，头文件路径为：`c_api/experimental/asc_get_pipe_idle_slot_count.h`。
 - 使用前需要增加编译选项`-DCANN_ASC_USE_EXPERIMENTAL`开启试验特性。
 - 各接口仅支持[表1 接口、流水线与最大值对应关系](#table1)所列的AI Core类型。在不支持的AI Core类型上调用时，接口返回0。此时无法区分发射队列没有空闲槽位和当前AI Core类型不支持该接口这两种情况。
 

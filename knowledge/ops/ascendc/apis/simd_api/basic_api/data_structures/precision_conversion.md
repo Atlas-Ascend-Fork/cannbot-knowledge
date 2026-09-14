@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_structures/precision_conversion.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -25,7 +25,7 @@ platforms: []
 
 **图1** 二进制精度舍入规则示意图<a name="fig1"></a>
 
-![二进制精度舍入规则示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/binary_rounding.png)
+![二进制精度舍入规则示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/binary_rounding.png)
 
 各精度舍入模式对待舍入部分的判断规则如下表所示：
 
@@ -190,7 +190,7 @@ platforms: []
 
 **图2** int16_t转half
 
-![int16_t转half](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/int16_to_half.png)
+![int16_t转half](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/int16_to_half.png)
 
 由于half只有10bit尾数，因此灰色部分要进行舍入：
 
@@ -449,7 +449,7 @@ platforms: []
 
 **图3** int32_t转float
 
-![int32_t转float](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/int32_to_float.png)
+![int32_t转float](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/int32_to_float.png)
 
 由于float只有23bit尾数，因此灰色部分要进行舍入：
 
@@ -542,7 +542,7 @@ platforms: []
 
 **图4** float转half
 
-![float转half](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/float_to_half.png)
+![float转half](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/float_to_half.png)
 
 half的指数位可以表示出$2^{-1}$，$E_v = -1 + 15 = 14$，但half只有10bit尾数，因此灰色部分要进行舍入：
 
@@ -563,7 +563,7 @@ half的指数位可以表示出$2^{-1}$，$E_v = -1 + 15 = 14$，但half只有10
 
 **图5** float转bfloat16_t
 
-![float转bfloat16_t](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/float_to_bfloat16_t.png)
+![float转bfloat16_t](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/float_to_bfloat16_t.png)
 
 bfloat16_t的指数位位数和float相同，有$E_v = 126$，但bfloat16_t只有7bit尾数，因此灰色部分要进行舍入：
 
@@ -639,7 +639,7 @@ complex64实部和虚部都是float类型，complex32实部和虚部都是half�
 
 **图6** int64_t转float
 
-![int64_t转float](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/int64_t_to_float.png)
+![int64_t转float](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/int64_t_to_float.png)
 
 由于float只有23bit尾数，因此灰色部分要进行舍入：
 
@@ -659,7 +659,7 @@ complex64实部和虚部都是float类型，complex32实部和虚部都是half�
 
 **图7** int64_t转double示意图
 
-![int64_t转double示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/int64.png)
+![int64_t转double示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/int64.png)
 
 由于double只有52bit尾数，因此灰色部分要进行舍入：
 
@@ -679,7 +679,7 @@ complex64实部和虚部都是float类型，complex32实部和虚部都是half�
 
 **图8** double转float示意图
 
-![double转float示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/float.png)
+![double转float示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/float.png)
 
 由于float只有8bit指数，指数部分需要转换，只有23bit尾数，因此灰色部分要进行舍入：
 
@@ -699,7 +699,7 @@ complex64实部和虚部都是float类型，complex32实部和虚部都是half�
 
 **图9** double转bfloat16_t示意图
 
-![double转bfloat16_t示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/double2bfloat16.png)
+![double转bfloat16_t示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/double2bfloat16.png)
 
 由于bfloat16_t只有8bit指数，指数部分需要转换，只有7bit尾数，因此灰色部分要进行舍入：
 

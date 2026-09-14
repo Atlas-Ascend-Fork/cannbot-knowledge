@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/tool_interface/system_resources_and_variables/GetRuntimeUBSize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -49,7 +49,7 @@ Ascend 950PR/Ascend 950DT架构下，[SIMD与SIMT混合场景](../../../../simt_
 
 ## 调用示例
 
-本调用示例通过`GetRuntimeUBSize`获取的UB空间大小，来计算tileNum的值。完整的算子样例参考：[get\_ub\_size样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/09_utils/get_ub_size)。
+本调用示例通过`GetRuntimeUBSize`获取的UB空间大小，来计算tileNum的值。完整的算子样例参考：[get\_ub\_size样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/09_utils/get_ub_size)。
 
 ```cpp
 // totalLength为待处理的总数据长度(元素个数)

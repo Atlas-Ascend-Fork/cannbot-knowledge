@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/tensor/make_mem_ptr.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -111,7 +111,10 @@ constexpr uint64_t gm_offset = 128;
 constexpr uint64_t l1_offset = 128;
 constexpr uint64_t l0a_offset = 128;
 constexpr uint64_t ub_offset = 128;
+constexpr uint32_t m = 32;
+constexpr uint32_t n = 32;
 // 1. 从原始地址构造：指定物理位置和数据类型
+// gm_offset、l1_offset、l0a_offset和ub_offset均为uint64_t类型的地址偏移量。
 auto gm_ptr = make_mem_ptr<location::gm, float>(gm_offset);
 auto l1_ptr = make_mem_ptr<location::l1, float>(l1_offset);
 auto l0a_ptr = make_mem_ptr<location::l0a, half>(l0a_offset);
@@ -122,8 +125,11 @@ auto gm_a = make_tensor(gm_ptr, make_frame_layout<nd_ext_layout_ptn, layout_trai
 auto l1_a = make_tensor(l1_ptr, make_frame_layout<nz_layout_ptn, layout_trait_default<float>>(m, n));
 
 // 3. 从已有指针适配器继承位置（自动推导）
+// gm_ptr为hardware_mem_ptr<location::gm, __gm__ float*>类型的指针适配器。
 auto another_ptr = make_mem_ptr(gm_ptr);
 
 // 4. 从已有迭代器指定新位置
-auto l1_from_iter = make_mem_ptr<location::l1>(some_iterator);
+// l1_iterator为由l1_ptr派生的L1 Buffer地址迭代器。
+auto l1_iterator = l1_ptr + 1;
+auto l1_from_iter = make_mem_ptr<location::l1>(l1_iterator);
 ```

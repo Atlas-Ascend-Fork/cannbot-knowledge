@@ -42,12 +42,29 @@ def check(contract: Contract, document, context) -> list[Issue]:
             )
         ]
 
+    relative = Path("knowledge") / f"{replaced_by}.md"
+    target = contract.root / relative
+    try:
+        info = contract.derive_card_path(relative)
+        if info.doc_id != replaced_by:
+            raise ValueError("replacement must use the canonical Concept ID")
+        resolved = target.resolve()
+        resolved.relative_to((contract.root / "knowledge").resolve())
+        contract.derive_card_path(resolved.relative_to(contract.root.resolve()))
+    except (OSError, RuntimeError, ValueError) as exc:
+        return [
+            Issue(
+                "status.replaced_by",
+                f"replacement must identify a non-index Concept inside knowledge/: {exc}",
+            )
+        ]
+
     issues: list[Issue] = []
-    if replaced_by == document.path_info.doc_id:
+    if replaced_by == document.path_info.doc_id or resolved == document.path.resolve():
         issues.append(
             Issue("status.replaced_by", "replaced_by cannot reference the current card")
         )
-    if not (contract.root / "knowledge" / f"{replaced_by}.md").is_file():
+    if not target.is_file():
         issues.append(
             Issue(
                 "status.replaced_by",

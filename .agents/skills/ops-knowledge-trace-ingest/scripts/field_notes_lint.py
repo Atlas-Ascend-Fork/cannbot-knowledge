@@ -4,12 +4,12 @@
 frontmatter 结构与受控词表校验由本仓统一 Contract（governance/contracts/knowledge.py，
 经 knowledge-lint 执行）承载；本脚本对 ``--card`` / ``--staged-card`` 调用同一
 Contract 做严格卡片校验，并补充 runbook **正文** 专属约束：
-  ㉑ 正文必须含 `## 适用场景`（存量全扫聚合为 warn；`--card` 新/改卡按 HARD 拦截）
-  ⑫ 完整配方类 runbook 完整性（## 系统信息 + ## 完整代码 + ## 设计决策）
-  ⑲ 验证信号逐条标来源平台与证据等级（tool_observed / artifact_verified）
-  ⑳ okf:attachment 禁用（存量全扫记 warn；`--card` 新/改卡按 HARD 拦截）
-  ③ 文件名纯 slug / 无 session 前缀
-  ⑦ 普通正文链接由治理 Contract 校验，不要求图谱块或构图
+  - 正文必须含 `## 适用场景`（存量全扫聚合为 warn；`--card` 新/改卡按 HARD 拦截）
+  - 完整配方类 runbook 完整性（## 系统信息 + ## 完整代码 + ## 设计决策）
+  - 验证信号逐条标来源平台与证据等级（tool_observed / artifact_verified）
+  - okf:attachment 禁用（存量全扫记 warn；`--card` 新/改卡按 HARD 拦截）
+  - 文件名纯 slug / 无 session 前缀
+  - 普通正文链接由治理 Contract 校验，不要求图谱块或构图
 
 违反任一 HARD 约束 → 退出码非零。只读只报。
 frontmatter 不设 evidence/confidence/transfer_scope/quality_score/reproduce_count

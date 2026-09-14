@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/README.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/c_api/asc_simd.h
@@ -89,5 +89,5 @@ NPU内部有不同的计算单元，在计算时往往需要把计算数据搬�
 
 ## 参考样例
 
-Atlas A3 训练系列产品/Atlas A3 推理系列产品的C API样例请参考[C API Add样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/00_introduction/01_add)。
-Ascend 950PR/Ascend 950DT的C API样例请参考[C API Add样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/00_introduction/04_reg_base_add_compute)。
+Atlas A3 训练系列产品/Atlas A3 推理系列产品的C API样例请参考[C API Add样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/00_introduction/01_add)。
+Ascend 950PR/Ascend 950DT的C API样例请参考[C API Add样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/00_introduction/04_reg_base_add_compute)。

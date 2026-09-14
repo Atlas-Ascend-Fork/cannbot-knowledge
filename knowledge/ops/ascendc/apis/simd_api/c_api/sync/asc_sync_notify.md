@@ -10,12 +10,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/sync/asc_sync_notify.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 source_headers:
+- include/c_api/sync/sync.h
 - include/c_api/asc_simd.h
 ---
 
@@ -23,13 +24,15 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/sync/sync.h"`。
+
 如图1所示，与[asc_sync_wait](asc_sync_wait.md)配对使用，用于实现AI Core内部不同流水之间的同步控制，`asc_sync_notify`和`asc_sync_wait`各自的功能如下：
 
 - `asc_sync_notify`：当源流水的前序指令的所有读写操作都完成之后，当前指令开始执行，并将硬件中的对应标志位设置为1。`asc_sync_notify`只是设置硬件中的对应标志位，并不会阻塞源流水中的下一个指令。
 - `asc_sync_wait`：当目的流水执行到该指令时，如果发现硬件中对应标志位为0，目的流水的后续指令将一直被阻塞；如果发现硬件中对应标志位为1，则将硬件中对应标志位设置为0，同时目的流水的后续指令开始执行。
 
 **图1**  `asc_sync_notify`和`asc_sync_wait`接口功能示意图    
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_sync_notify.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_sync_notify.png)
 
 ## 函数原型
 
@@ -45,11 +48,11 @@ __aicore__ inline void asc_sync_notify(pipe_t pipe,
 
 | 参数名 | 输入/输出 | 描述 |
 | --- | --- | --- |
-| pipe | 输入 | 源流水类型，即“等待哪条流水的前序指令完成”。取值范围为`pipe_t`枚举：`PIPE_S`、`PIPE_V`、`PIPE_M`、`PIPE_MTE1`、`PIPE_MTE2`、`PIPE_MTE3`、`PIPE_FIX`。 |
+| pipe | 输入 | 源流水类型，即“等待哪条流水的前序指令完成”。<br>参数的类型是`pipe_t`枚举，各个枚举取值的含义请参考[硬件流水类型](intra_core_sync_overview.md#硬件流水类型)。 |
 | tpipe | 输入 | 目标流水类型，即“解除哪条流水的`asc_sync_wait`阻塞”。取值范围与`pipe`相同，为`pipe_t`枚举。 |
 | id | 输入 | 同步事件ID，每对`pipe`与`tpipe`组合各自拥有8个独立的同步事件ID。取值范围为`event_t`枚举类型。 |
 
-`event_t`枚举定义如下：
+`event_t`枚举定义如下：<a id="event_t_enum"></a>
 
 ```c
 typedef enum {
@@ -70,7 +73,7 @@ typedef enum {
 
 ## 流水类型
 
-`PIPE_S`
+PIPE_S
 
 ## 约束说明
 

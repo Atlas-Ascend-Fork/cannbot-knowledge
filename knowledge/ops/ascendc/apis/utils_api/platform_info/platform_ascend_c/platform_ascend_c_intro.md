@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/PlatformAscendC_intro.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -26,3 +26,35 @@ platforms: []
 #include "tiling/platform/platform_ascendc.h"
 ```
 
+## 常见使用方式
+
+### 自定义算子工程
+
+自定义算子工程通常在Tiling函数中使用。框架通过`gert::TilingContext`传入平台信息，可据此构造`PlatformAscendC`对象后调用平台信息接口。
+
+```cpp
+ge::graphStatus TilingXXX(gert::TilingContext* context)
+{
+    auto ascendcPlatform = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
+    auto coreNum = ascendcPlatform.GetCoreNum();
+    // ... 根据核数自行设计Tiling策略
+    context->SetSimdNumBlocks(coreNum);
+    return ret;
+}
+```
+
+### Kernel直调
+
+Kernel直调不通过`gert::TilingContext`获取平台信息，可通过[PlatformAscendCManager](../platform_ascend_c_manager.md)直接获取`PlatformAscendC`指针后调用相同的平台信息接口。
+
+```cpp
+void GetInfoFun()
+{
+    auto* ascendcPlatform = platform_ascendc::PlatformAscendCManager::GetInstance();
+    if (ascendcPlatform == nullptr) {
+        return;
+    }
+    auto coreNum = ascendcPlatform->GetCoreNum();
+    // ... 根据核数自行设计切分策略
+}
+```

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadDataWithTranspose.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -35,7 +35,7 @@ L1 Buffer->L0A Buffer、L1 Buffer->L0B Buffer。
 针对Ascend 950PR/Ascend 950DT，本接口不支持L1 Buffer->L0A Buffer通路，仅支持L1 Buffer->L0B Buffer通路。
 
 
-实现原理可参考伪代码：[LoadDataWithTranspose伪代码](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0/scripts/load_data_with_transpose.py)。
+实现原理可参考伪代码：[LoadDataWithTranspose伪代码](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0/scripts/load_data_with_transpose.py)。
 
 ## 函数原型<a id="zh-cn_topic_0000002543851571_section82039854412"></a>
 
@@ -105,6 +105,7 @@ __aicore__ inline void LoadDataWithTranspose(const LocalTensor<T>& dst, const Lo
 | addrMode | 输入 | 控制地址更新方式，默认为false：<br>&nbsp;&nbsp;&bull; true：递减，每次迭代在前一个地址的基础上减去srcStride。<br>&nbsp;&nbsp;&bull; false：递增，每次迭代在前一个地址的基础上加上srcStride。 |
 
 
+
 ## 数据类型<a id="zh-cn_topic_0000002543851571_section4219135304818"></a>
 
 
@@ -162,7 +163,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstGap = 1，表示相邻迭代间，目的操作数前一个迭代第一个分形的结束地址到下一个迭代第一个分形起始地址的间隔为1（单位：512字节）；
     - dstFracGap = 0，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为0（单位：512字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_1.png)
 
     如下图示例：
 
@@ -170,7 +171,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstGap = 0，表示相邻迭代间，目的操作数前一个迭代第一个分形的结束地址和下一个迭代第一个分形起始地址无间隔；
     - dstFracGap = 2，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为2（单位：512字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_2.png)
 
 - 对于half/bfloat16\_t数据类型，每次迭代处理16\*16\*2字节数据，可处理1个分形（一个分形512字节），每次迭代中，源操作数中1个16\*16分形将被转置。
 
@@ -179,7 +180,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstGap = 0，表示相邻迭代间，目的操作数前一个迭代第一个分形的结束地址到下一个迭代第一个分形起始地址无间隔；
     - 该场景下，因为其分形即为方块矩阵，每个迭代处理一个分形，不存在迭代内分形的间隔，该参数设置无效。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_3.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_3.png)
 
 - 对于float/int32\_t/uint32\_t数据类型，每次迭代处理16\*16\*4字节数据，可处理2个分形（一个分形512字节），每次迭代中，源操作数2个连续的16\*8分形将被合并为1个16\*16的方块矩阵，基于方块矩阵做转置，转置后分裂为2个16\*8分形，根据目的操作数分形间隔等参数可以有不同的排布。
 
@@ -190,7 +191,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstGap = 1，表示相邻迭代间，目的操作数前一个迭代第一个分形的结束地址到下一个迭代第一个分形起始地址的间隔为1（单位：512字节）；
     - dstFracGap = 0，表示每个迭代内目的操作数前一个分形结束地址与后一个分形起始地址的间隔为0（单位：512字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_4.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_4.png)
 
     如下图示例：
 
@@ -198,13 +199,13 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstGap = 0，表示相邻迭代间，目的操作数前一个迭代第一个分形的结束地址和下一个迭代第一个分形起始地址无间隔；
     - dstFracGap = 2，表示每个迭代内目的操作数前一个分形结束地址与后一个分形起始地址的间隔为2（单位：512字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_5.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_5.png)
 
 - 对于int4b\_t数据类型，每次迭代处理64\*64\*0.5字节数据，可处理4个分形（一个分形512字节），每次迭代中，源操作数中4个连续的16\*64分形将被合并为1个64\*64的方块矩阵，基于方块矩阵做转置，转置后分裂为4个16\*64分形，根据目的操作数分形间隔等参数可以有不同的排布。
 
     int4b\_t数据类型需要两个数拼成一个int8\_t或uint8\_t的数，拼凑的规则如下：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_image_0000001898040113.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000001898040113.png)
 
     如下图示例：
 
@@ -213,7 +214,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstGap = 1，表示相邻迭代间，目的操作数前一个迭代第一个分形的结束地址到下一个迭代第一个分形起始地址的间隔为1（单位：512字节）；
     - dstFracGap = 0，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为0（单位：512字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_6.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_6.png)
 
     如下图示例：
 
@@ -221,7 +222,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstGap = 0，表示相邻迭代间，目的操作数前一个迭代第一个分形的结束地址和下一个迭代第一个分形起始地址无间隔；
     - dstFracGap = 2，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为2（单位：512字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_7.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/LoadDataWithTranspose_nd2nz_7.png)
 
 ### 分形转置<a id="zh-cn_topic_0000002543851571_section10110103802915"></a>
 
@@ -238,7 +239,7 @@ Kirin X90，支持数据类型：int8_t、half。
 
     int4b_t数据类型需要两个数拼成一个int8_t或uint8_t的数，拼凑的规则如下：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_b4_format.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_b4_format.png)
 
     将两个int4b_t值6和7拼接为一个uint8_t时，先取其4位二进制：6为0110，7为0111。将7放在高位、6放在低位拼接，得01110110，对应的十进制为118。
 
@@ -250,7 +251,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstFracGap = 0，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为0（单位：512字节）；
     - 外层for循环的循环次数是2，源操作数的地址偏移量是3（单位：64\*64\*0.5字节），目的操作数的地址偏移量是1（单位：64\*64\*0.5字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b4_demo1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b4_demo1.png)
 
     如下图示例：
 
@@ -259,7 +260,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstFracGap = 2，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为2（单位：512字节）；
     - 外层for循环的循环次数是2，源操作数的地址偏移量是3（单位：64\*64\*0.5字节），目的操作数的地址偏移量是3（单位：64\*64\*0.5字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b4_demo2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b4_demo2.png)
 
 - 对于int8_t数据类型，每次迭代处理32\*32\*1字节数据，可处理2个分形（一个分形512字节），每次迭代中，源操作数中2个连续的16\*32分形将被合并为1个32\*32的方块矩阵，基于方块矩阵做转置，转置后分裂为2个16\*32分形，根据目的操作数分形间隔等参数可以有不同的排布。
 
@@ -271,7 +272,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstFracGap = 0，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为0（单位：512字节）。
     - 外层for循环的循环次数是2，源操作数的地址偏移量是3（单位：32\*32\*1字节），目的操作数的地址偏移量是1（单位：32\*32\*1字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b8_demo1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b8_demo1.png)
 
     如下图示例：
 
@@ -280,7 +281,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstFracGap = 2，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为2（单位：512字节）；
     - 外层for循环的循环次数是2，源操作数的地址偏移量是3（单位：32\*32\*1字节），目的操作数的地址偏移量是3（单位：32\*32\*1字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b8_demo2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b8_demo2.png)
 
 - 对于half数据类型，每次迭代处理16\*16\*2字节数据，可处理1个分形（一个分形512字节），每次迭代中，源操作数中1个16\*16分形将被转置。
 
@@ -290,7 +291,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - 该场景下，因为其分形即为方块矩阵，每个迭代处理一个分形，不存在迭代内分形的间隔，dstFracGap参数设置无效。
     - 外层for循环的循环次数是2，源操作数的地址偏移量是3（单位：16\*16\*2字节），目的操作数的地址偏移量是3（单位：16\*16\*2字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b16.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b16.png)
 
 - 对于float数据类型，每次迭代处理16\*16\*4字节数据，可处理2个分形（一个分形512字节），每次迭代中，源操作数2个连续的16\*8分形将被合并为1个16\*16的方块矩阵，基于方块矩阵做转置，转置后分裂为2个16\*8分形，根据目的操作数分形间隔等参数可以有不同的排布。
 
@@ -302,7 +303,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstFracGap = 0，表示每个迭代内目的操作数前一个分形结束地址与后一个分形起始地址的间隔为0（单位：512字节）。
     - 外层for循环的循环次数是2，源操作数的地址偏移量是3（单位：16\*16\*4字节），目的操作数的地址偏移量是1（单位：16\*16\*4字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b32_demo1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b32_demo1.png)
 
     如下图示例：
 
@@ -311,7 +312,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstFracGap = 2，表示每个迭代内目的操作数前一个分形结束地址与后一个分形起始地址的间隔为2（单位：512字节）；
     - 外层for循环的循环次数是2，源操作数的地址偏移量是3（单位：16\*16\*4字节），目的操作数的地址偏移量是3（单位：16\*16\*4字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b32_demo2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b32_demo2.png)
 
 ### 设置搬运起始位置<a id="zh-cn_topic_0000002543851571_section520575413118"></a>
 
@@ -327,7 +328,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstGap = 1，表示相邻迭代间，目的操作数前一个迭代第一个分形的结束地址到下一个迭代第一个分形起始地址的间隔为1（单位：512字节）；
     - dstFracGap = 0，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为0（单位：512字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_set_strat_pos.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_set_strat_pos.png)
 
 ### 非连续搬入<a id="zh-cn_topic_0000002543851571_section1750533101219"></a>
 
@@ -343,7 +344,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstGap = 2，表示相邻迭代间，目的操作数前一个迭代第一个分形的结束地址到下一个迭代第一个分形起始地址的间隔为2（单位：512字节），间隔2个数据分形；
     - dstFracGap = 1，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为1（单位：512字节），间隔1个数据分形。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_noncontinuous_copy.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_noncontinuous_copy.png)
 
 ### 控制地址更新方式<a id="zh-cn_topic_0000002543851571_section26691915141315"></a>
 
@@ -360,7 +361,7 @@ Kirin X90，支持数据类型：int8_t、half。
     - dstGap = 1，表示相邻迭代间，目的操作数前一个迭代第一个分形的结束地址到下一个迭代第一个分形起始地址的间隔为1（单位：512字节）；
     - dstFracGap = 0，表示每个迭代内目的操作数前一个分形的结束地址与后一个分形起始地址的间隔为0（单位：512字节）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_ctrl_addr_update.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_ctrl_addr_update.png)
 
 ## 调用示例<a id="zh-cn_topic_0000002543851571_section088124295117"></a>
 
@@ -370,9 +371,9 @@ Kirin X90，支持数据类型：int8_t、half。
 
 搬运过程的数据排布变化示意图如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b8.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddatawithtrans_l12l0a_b8.png)
 
-示例代码片段如下，仅展示样例中的部分代码，完整示例请参考：[load\_data\_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
+示例代码片段如下，仅展示样例中的部分代码，完整示例请参考：[load\_data\_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
 
 ```cpp
 // dstoffset要根据A矩阵在L0 Buffer上，宽度方向的对齐来求解
@@ -395,7 +396,7 @@ for (int i = 0; i < CeilDivision(m, fractalShape[1]); ++i) {
 
 ### int8_t数据类型，A、B矩阵需要转置的场景示例
 
-该示例输入a矩阵为int8_t类型，shape为[40,70]，输入b矩阵为int8_t类型，shape为[70,50]，输出c的类型为int32_t。a矩阵从L1 Buffer（A1）搬运到L0A Buffer（A2）并转置，b矩阵从L1 Buffer（B1）搬运到L0B Buffer（B2）并转置，之后进行Mmad计算和Fixpipe计算。示例代码片段如下，仅展示样例中的部分代码，完整使用样例请参见[LoadData_L12L0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
+该示例输入a矩阵为int8_t类型，shape为[40,70]，输入b矩阵为int8_t类型，shape为[70,50]，输出c的类型为int32_t。a矩阵从L1 Buffer（A1）搬运到L0A Buffer（A2）并转置，b矩阵从L1 Buffer（B1）搬运到L0B Buffer（B2）并转置，之后进行Mmad计算和Fixpipe计算。示例代码片段如下，仅展示样例中的部分代码，完整使用样例请参见[LoadData_L12L0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
 
 ```cpp
 uint16_t m = 40, k = 70, n = 50;
@@ -432,7 +433,7 @@ for (int i = 0; i < CeilDivision(k, fractalShape[0] * fractalNum); ++i) {
 
 ### half数据类型，A、B矩阵需要转置的场景示例
 
-该示例输入a矩阵为half类型，shape为[40,70]，输入b矩阵为half类型，shape为[70,50]，输出c的类型为float。a矩阵从L1 Buffer（A1）搬运到L0A Buffer（A2）并转置，b矩阵从L1 Buffer（B1）搬运到L0B Buffer（B2）并转置。示例代码片段如下，仅展示样例中的部分代码，完整使用样例请参见[LoadData_L12L0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
+该示例输入a矩阵为half类型，shape为[40,70]，输入b矩阵为half类型，shape为[70,50]，输出c的类型为float。a矩阵从L1 Buffer（A1）搬运到L0A Buffer（A2）并转置，b矩阵从L1 Buffer（B1）搬运到L0B Buffer（B2）并转置。示例代码片段如下，仅展示样例中的部分代码，完整使用样例请参见[LoadData_L12L0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
 
 ```cpp
 uint16_t m = 40, k = 70, n = 50;
@@ -469,7 +470,7 @@ for (int i = 0; i < CeilDivision(k, fractalShape[0] * fractalNum); ++i) {
 
 ### float数据类型，A、B矩阵需要转置的场景示例
 
-该示例输入a矩阵为float类型，shape为[40,70]，输入b矩阵为float类型，shape为[70,50]，输出c的类型为float。a矩阵从L1 Buffer（A1）搬运到L0A Buffer（A2）并转置，b矩阵从L1 Buffer（B1）搬运到L0B Buffer（B2）并转置。示例代码片段如下，仅展示样例中的部分代码，完整使用样例请参见[LoadData_L12L0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
+该示例输入a矩阵为float类型，shape为[40,70]，输入b矩阵为float类型，shape为[70,50]，输出c的类型为float。a矩阵从L1 Buffer（A1）搬运到L0A Buffer（A2）并转置，b矩阵从L1 Buffer（B1）搬运到L0B Buffer（B2）并转置。示例代码片段如下，仅展示样例中的部分代码，完整使用样例请参见[LoadData_L12L0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
 
 ```cpp
 uint32_t m = 40, k = 70, n = 50;
@@ -507,7 +508,7 @@ for (int i = 0; i < CeilDivision(k, fractalShape[0]); ++i) {
 
 ### 使用LoadData2dTransposeParamsV2结构体作为参数的场景示例
 
-该示例使用了LoadData2dTransposeParamsV2结构体作为参数，输入a矩阵为int8_t类型，shape为[128,128]，输入数据格式为NZ，输入b矩阵为int8_t类型，shape为[128,256]，输入数据格式为NZ，输出c的类型为float。a矩阵从L1 Buffer（A1）搬运到L0A Buffer（A2）且不转置，b矩阵从L1 Buffer（B1）搬运到L0B Buffer（B2）并转置，示例仅展示接口调用过程，其余计算和搬运不作参考。完整示例请参考：[load_data_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
+该示例使用了LoadData2dTransposeParamsV2结构体作为参数，输入a矩阵为int8_t类型，shape为[128,128]，输入数据格式为NZ，输入b矩阵为int8_t类型，shape为[128,256]，输入数据格式为NZ，输出c的类型为float。a矩阵从L1 Buffer（A1）搬运到L0A Buffer（A2）且不转置，b矩阵从L1 Buffer（B1）搬运到L0B Buffer（B2）并转置，示例仅展示接口调用过程，其余计算和搬运不作参考。完整示例请参考：[load_data_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
 
 ```cpp
 uint32_t m = 256;

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/cube_compute_store/copy_l0c_to_gm.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -37,7 +37,7 @@ L0C Buffer到Global Memory搬运支持不量化输出、`float`到`half`或`bflo
 
 **图1**  L0C2GM流程图
 
-![L0C2GM流程图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/L0C2GM_Function_Combination_950.png)
+![L0C2GM流程图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/L0C2GM_Function_Combination_950.png)
 
 ## 函数原型
 
@@ -48,12 +48,26 @@ L0C Buffer到Global Memory搬运支持不量化输出、`float`到`half`或`bflo
     __aicore__ inline void copy(const copy_atom<Atom>& atom, const DstTensor& dst, const SrcTensor& src)
     ```
 
+- 根据源张量和目的张量的存储位置自动推导搬运通路，使用默认trait执行L0C Buffer到Global Memory的非量化搬运。
+
+    ```cpp
+    template <typename DstTensor, typename SrcTensor>
+    __aicore__ inline void copy(const DstTensor& dst, const SrcTensor& src)
+    ```
+
 - 执行L0C Buffer到Global Memory的量化搬运。
 
     ```cpp
     template <typename Atom, typename DstTensor, typename SrcTensor, typename Quant>
     __aicore__ inline void copy(const copy_atom<Atom>& atom, const DstTensor& dst, const SrcTensor& src,
         const Quant& quant)
+    ```
+
+- 根据源张量和目的张量的存储位置自动推导搬运通路，使用默认trait执行L0C Buffer到Global Memory的量化搬运。
+
+    ```cpp
+    template <typename DstTensor, typename SrcTensor, typename Quant>
+    __aicore__ inline void copy(const DstTensor& dst, const SrcTensor& src, const Quant& quant)
     ```
 
 - 按指定源坐标、目的坐标和搬运形状执行非量化搬运。
@@ -66,12 +80,32 @@ L0C Buffer到Global Memory搬运支持不量化输出、`float`到`half`或`bflo
         const CopyShape& copy_shape)
     ```
 
+- 根据源张量和目的张量的存储位置自动推导搬运通路，使用默认trait按指定源坐标、目的坐标和搬运形状执行非量化搬运。
+
+    ```cpp
+    template <typename DstTensor, typename SrcTensor, typename DstCoord,
+        typename SrcCoord, typename CopyShape>
+    __aicore__ inline void copy(const DstTensor& dst,
+        const SrcTensor& src, const DstCoord& dst_coord, const SrcCoord& src_coord,
+        const CopyShape& copy_shape)
+    ```
+
 - 按指定源坐标、目的坐标和搬运形状执行量化搬运。
 
     ```cpp
     template <typename Atom, typename DstTensor, typename SrcTensor, typename Quant,
         typename DstCoord, typename SrcCoord, typename CopyShape>
     __aicore__ inline void copy(const copy_atom<Atom>& atom, const DstTensor& dst,
+        const SrcTensor& src, const Quant& quant, const DstCoord& dst_coord,
+        const SrcCoord& src_coord, const CopyShape& copy_shape)
+    ```
+
+- 根据源张量和目的张量的存储位置自动推导搬运通路，使用默认trait按指定源坐标、目的坐标和搬运形状执行量化搬运。
+
+    ```cpp
+    template <typename DstTensor, typename SrcTensor, typename Quant,
+        typename DstCoord, typename SrcCoord, typename CopyShape>
+    __aicore__ inline void copy(const DstTensor& dst,
         const SrcTensor& src, const Quant& quant, const DstCoord& dst_coord,
         const SrcCoord& src_coord, const CopyShape& copy_shape)
     ```
@@ -240,6 +274,7 @@ L0C Buffer到Global Memory搬运根据是否传入量化参数自动选择量化
 
 ## 约束说明
 
+- 量化和ReLU参数不能为inf/nan和非规格化数。
 - 源矩阵`NZ`格式，地址要求64字节对齐。目的矩阵`DN`或`ND`格式时，地址要求1字节对齐，`NZ`格式时，地址要求32字节对齐。
 - 目的矩阵为`NZ`输出时，N方向大小需要为16的倍数；`b8`类型通道合并场景为32的倍数，`float`使能`enable_channel_split`通道拆分场景为8的倍数。
 - tensor量化参数张量应位于L1 Buffer，元素类型为`uint64_t`，地址要求32字节对齐。详情参见[随路量化](../cube_store_key_features/quant_pre.md)。

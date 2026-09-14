@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_channel_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -23,7 +23,7 @@ platforms: []
 由于1个float类型数据的大小为4字节，16\*8的分形在内轴满足32字节对齐，内轴上的数据量与一条NPU矢量计算指令处理的数据单元一致，这便于后续的其它计算。ChannelSplit功能默认不启用，用户需通过设置[MatmulConfig](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_config.md)中的isEnableChannelSplit参数为true来开启此功能。
 
 **图1**  ChannelSplit功能示意图<a name="zh-cn_topic_0000002264134832_fig38211632121711"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/chan_split.png "ChannelSplit功能示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/chan_split.png "ChannelSplit功能示意图")
 
 ## 使用场景<a name="zh-cn_topic_0000002264134832_section118051016163613"></a>
 
@@ -40,7 +40,7 @@ platforms: []
 
 ## 调用示例<a name="zh-cn_topic_0000002264134832_section15486294368"></a>
 
-完整的算子样例请参考[matmul\_channelsplit算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_channelsplit_output)。
+完整的算子样例请参考[matmul\_channelsplit算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_channelsplit_output)。
 
 ```
 // 指定获取和修改的MatmulConfig模板

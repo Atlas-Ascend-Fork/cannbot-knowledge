@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/register_data_types/AddrReg.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 ---
@@ -97,10 +97,6 @@ __simd_callee__ inline AddrReg CreateAddrReg(uint16_t index0, uint32_t stride0, 
 | stride1 | 每次循环，第二层循环轴对应的地址偏移量，单位为element。 |
 | stride2 | 每次循环，第三层循环轴对应的地址偏移量，单位为element。 |
 | stride3 | 每次循环，第四层循环轴对应的地址偏移量，单位为element。 |
-
-## 支持的型号<a name="section156721693504"></a>
-
-Ascend 950PR/Ascend 950DT
 
 ## 约束说明<a name="section11585101304320"></a>
 

@@ -11,17 +11,21 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/REGISTER_TILING_DEFAULT.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 - 310p
+source_headers:
+- include/utils/base/sys_macros.h
 ---
 
 # REGISTER\_TILING\_DEFAULT<a name="ZH-CN_TOPIC_0000002123262037"></a>
 
 ## 功能说明<a name="zh-cn_topic_0000001526206862_section212607105720"></a>
+
+头文件路径为：`"utils/base/sys_macros.h"`。
 
 用于在kernel侧注册用户使用标准C++语法自定义的默认TilingData结构体。
 

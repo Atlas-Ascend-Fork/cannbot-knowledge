@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/async_scenario.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -25,7 +25,7 @@ Matmul的[Iterate](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kern
 -   Iterate&GetTensorC的同步和异步
     -   同步：执行完一次Iterate迭代计算后，执行[GetTensorC](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/get_tensor_c.md)搬运矩阵C分片，搬运完成后，才能进行下一次计算。如下图所示，C矩阵中，矩阵块1搬走后，才能计算矩阵块2，矩阵块2搬运完成后，才能计算矩阵块3。
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sync_async.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sync_async.png)
 
         Iterate&GetTensorC同步模式的关键代码示例如下：
 
@@ -102,5 +102,5 @@ Matmul的[Iterate](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kern
 
 ## 调用示例<a name="zh-cn_topic_0000002264077888_section15486294368"></a>
 
--   Iterate&GetTensorC的异步场景的完整样例请参考[异步场景样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_fused)、[Iterate异步场景样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_async_iterate)。
--   IterateAll的异步场景的完整样例请参考[IterateAll异步场景样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_async_iterate_all)。
+-   Iterate&GetTensorC的异步场景的完整样例请参考[异步场景样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_fused)、[Iterate异步场景样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_async_iterate)。
+-   IterateAll的异步场景的完整样例请参考[IterateAll异步场景样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_async_iterate_all)。

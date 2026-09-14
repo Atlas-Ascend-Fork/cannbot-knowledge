@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/operator_graph_development/basic_development_flow.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -23,7 +23,7 @@ platforms: []
 下面的网络模型经过shape和datatype推导之后，可以得到灰色底纹框中的推导信息：
 
 **图1**  shape与datatype推导示意图<a name="fig1729122183718"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/shape_dtype.png "shape与datatype推导示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/shape_dtype.png "shape与datatype推导示意图")
 
 除了tiling实现外，算子入图时需要额外提供的实现代码有以下几种：
 

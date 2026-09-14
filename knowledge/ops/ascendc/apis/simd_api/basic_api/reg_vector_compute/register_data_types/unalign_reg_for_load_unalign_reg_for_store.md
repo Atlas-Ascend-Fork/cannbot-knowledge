@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/register_data_types/UnalignRegForLoad-UnalignRegForStore.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 ---
@@ -28,13 +28,8 @@ platforms:
 
 UnalignRegForLoad和UnalignRegForStore的具体使用方式请参考：[连续非对齐搬入（LoadUnAlign）](../reg_data_load/load_un_align_continuous.md)、[连续非对齐搬出（StoreUnAlign）](../reg_data_store/store_un_align_continuous.md)。
 
-## 支持的型号<a name="section156721693504"></a>
-
-Ascend 950PR/Ascend 950DT
-
 ## 约束说明<a name="section11585101304320"></a>
 
 - UnalignRegForLoad寄存器数量上限为4，超出后编译器将报错。
 
 - UnalignRegForStore寄存器数量上限为4，超出后编译器将报错。
-

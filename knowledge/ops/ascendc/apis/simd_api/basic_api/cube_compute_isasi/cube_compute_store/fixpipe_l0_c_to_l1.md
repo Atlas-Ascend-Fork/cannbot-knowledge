@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/Fixpipe_L0CToL1.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -35,13 +35,13 @@ platforms:
 
 **图1** L0C2L1流程图（[NPU架构版本2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）<a id="zh-cn_topic_0000002511188540_fig8956371257"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/L0C2L1_Function_Combination.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/L0C2L1_Function_Combination.png)
 
 
 
 **图2** L0C2L1流程图（[NPU架构版本3510](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）<a id="zh-cn_topic_0000002542828493_fig1828513492547"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/L0C2L1_Function_Combination_950.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/L0C2L1_Function_Combination_950.png)
 
 
 
@@ -148,12 +148,14 @@ platforms:
 
 
 
+
 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的数据类型组合如下：
 
 | 源矩阵（L0C Buffer） | 目的矩阵（L1 Buffer） |
 | ---------- | ---------- |
 | float | int8_t、uint8_t、half、bfloat16_t。 |
 | int32_t | int8_t、uint8_t、half。 |
+
 
 
 
@@ -166,6 +168,7 @@ platforms:
 
 
 
+
 针对Kirin X90，支持的数据类型组合如下：
 
 | 源矩阵（L0C Buffer） | 目的矩阵（L1 Buffer） |
@@ -175,12 +178,14 @@ platforms:
 
 
 
+
 针对Kirin 9030，支持的数据类型组合如下：
 
 | 源矩阵（L0C Buffer） | 目的矩阵（L1 Buffer） |
 | ---------- | ---------- |
 | float | half |
 | int32_t | half |
+
 
 
 ## 返回值说明
@@ -242,7 +247,7 @@ platforms:
 ## 调用示例<a id="zh-cn_topic_0000002511188540_section088124295117"></a>
 
 
-Fixpipe完整样例请参考[fixpipe\_l0c2l1样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2l1)。
+Fixpipe完整样例请参考[fixpipe\_l0c2l1样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/fixpipe_l0c2l1)。
 
 - 示例：通路L0C Buffer->L1 Buffer。输入A矩阵和B矩阵的数据类型为half，输出C矩阵为int8_t，不开启NZ2ND的格式转换，开启scalar量化。
 

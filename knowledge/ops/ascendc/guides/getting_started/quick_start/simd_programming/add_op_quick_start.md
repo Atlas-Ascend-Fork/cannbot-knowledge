@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/getting_started/quick_start/simd_programming/add_op_quick_start.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -18,13 +18,13 @@ platforms: []
 
 本示例是一个入门实践，基于Ascend C SIMD实现Add算子，帮助您快速上手。它完整呈现了Device端核函数（Kernel）实现、Host端调用及编译运行的全流程，助您建立整体认知。开始前，请先参考[环境准备](../../environment_setup.md)安装所需的CANN软件包。
 
-下面分别介绍基于C API与C++ API的Add算子实现，完整示例代码请参考[基于C API实现的Add算子示例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/00_introduction/01_add/c_api_async_add/README.md)和[基于C++ API实现的Add算子示例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/01_add/add/README.md)。
+下面分别介绍基于C API与C++ API的Add算子实现，完整示例代码请参考[基于C API实现的Add算子示例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/00_introduction/01_add/c_api_async_add/README.md)和[基于C++ API实现的Add算子示例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/01_add/add/README.md)。
 
 - **Add算子功能介绍**：
 
   Add算子的数学表达式为：
 
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_formulaimage_0000002501241896.png)
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_formulaimage_0000002501241896.png)
 
   计算逻辑为逐元素完成`z = x + y`。
 
@@ -219,10 +219,10 @@ platforms: []
 
 | API层级 | 矢量计算类型 | Add算子实例 | 说明 |
 |--------------|-----------|--------------|--------------|
-| SIMD C API | 基于指针的Memory矢量计算 | [Memory矢量计算Add算子示例（同上述C API实现样例）](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/00_introduction/01_add/c_api_async_add/README.md) | 贴合C语言开发习惯，易于上手 |
-| SIMD C API | 基于指针和Reg计算的Reg矢量计算 | [Reg矢量计算Add算子示例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/00_introduction/04_reg_base_add_compute/c_api_simd_add/README.md) | 贴合C语言开发习惯，性能上限更高 |
-| 基础API | 基于Tensor的Memory矢量计算 | [Memory矢量计算Add算子示例（同上述C++ Tensor实现样例）](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/01_add/add/README.md) | 匹配Tensor编程习惯，易于上手 |
-| 基础API | 基于Tensor的Reg矢量计算 | [Reg矢量计算Add算子示例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/04_reg_compute/add/README.md) | 匹配Tensor编程习惯，性能上限更高 |
+| SIMD C API | 基于指针的Memory矢量计算 | [Memory矢量计算Add算子示例（同上述C API实现样例）](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/00_introduction/01_add/c_api_async_add/README.md) | 贴合C语言开发习惯，易于上手 |
+| SIMD C API | 基于指针和Reg计算的Reg矢量计算 | [Reg矢量计算Add算子示例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/00_introduction/04_reg_base_add_compute/c_api_simd_add/README.md) | 贴合C语言开发习惯，性能上限更高 |
+| 基础API | 基于Tensor的Memory矢量计算 | [Memory矢量计算Add算子示例（同上述C++ Tensor实现样例）](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/01_add/add/README.md) | 匹配Tensor编程习惯，易于上手 |
+| 基础API | 基于Tensor的Reg矢量计算 | [Reg矢量计算Add算子示例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/04_reg_compute/add/README.md) | 匹配Tensor编程习惯，性能上限更高 |
 
 
 > [!NOTE]说明

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/mmad_compute_aux_config.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -24,6 +24,6 @@ mmad计算辅助配置接口列表如下：
 
 - **[asc_enable_hf32](../../c_api/cube_compute/asc_enable_hf32.md)**
 
-- **[asc_set_fp32_mode](../../c_api/cube_compute/asc_set_fp32_mode.md)**
+- **[asc_disable_hf32](../../c_api/cube_compute/asc_disable_hf32.md)**
 
 - **[asc_set_hf32_round_mode](../../c_api/cube_compute/asc_set_hf32_round_mode.md)**

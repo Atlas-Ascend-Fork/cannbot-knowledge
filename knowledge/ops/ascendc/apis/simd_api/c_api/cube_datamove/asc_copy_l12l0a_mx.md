@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_l12l0a_mx.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_copy_l12l0a_mx
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
 负责完成MX矩阵计算过程中所需的左矩阵对应的量化系数的搬运，数据通路为L1 Buffer->L0A_MX Buffer。其中左量化系数矩阵以32字节（固定数据类型为`fp8_e8m0_t`、分形大小为16×2的）的数据分形为单位进行搬运。
 
@@ -44,15 +47,6 @@ __aicore__ inline void asc_copy_l12l0a_mx(uint64_t dst,
                                           uint8_t y_step,
                                           uint16_t src_stride,
                                           uint16_t dst_stride)
-
-__aicore__ inline void asc_copy_l12l0a_mx_sync(uint64_t dst,
-                                               __cbuf__ fp8_e8m0_t* src,
-                                               uint16_t x_start_pos,
-                                               uint16_t y_start_pos,
-                                               uint8_t x_step,
-                                               uint8_t y_step,
-                                               uint16_t src_stride,
-                                               uint16_t dst_stride)
 ```
 
 ## 参数说明
@@ -74,13 +68,13 @@ __aicore__ inline void asc_copy_l12l0a_mx_sync(uint64_t dst,
 
 **图 1**  ScaleA在L0A_MX Buffer中的分形排布<a id="l12l0a_mx_layout"></a>
 
-![ScaleA在L0A_MX Buffer中的分形排布](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scalea_l0a_fractal.png "ScaleA在L0A_MX Buffer中的分形排布")
+![ScaleA在L0A_MX Buffer中的分形排布](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scalea_l0a_fractal.png "ScaleA在L0A_MX Buffer中的分形排布")
 
 [图2](#fig_l12l0a_mx_params)为ScaleA从L1 Buffer搬运至L0A_MX Buffer过程中的配置参数示意。每一行为32字节，对应[图1](#l12l0a_mx_layout)中的一个分形。`x_step`为M维度分形个数，示例中$x\_step=M/16=3$；`y_step`为K维度32字节数据块的个数，示例中$y\_step=K/32/2=21$；`src_stride`和`dst_stride`表示K维度上相邻数据块起始地址的间隔，单位为32字节。
 
 **图 2**  ScaleA从L1 Buffer搬运至L0A_MX Buffer的配置参数示意<a id="fig_l12l0a_mx_params"></a>
 
-![ScaleA从L1 Buffer搬运至L0A_MX Buffer的配置参数示意](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/LoadData_2D_MX_nd2nz.png "ScaleA从L1 Buffer搬运至L0A_MX Buffer的配置参数示意")
+![ScaleA从L1 Buffer搬运至L0A_MX Buffer的配置参数示意](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/LoadData_2D_MX_nd2nz.png "ScaleA从L1 Buffer搬运至L0A_MX Buffer的配置参数示意")
 
 ## 返回值说明
 
@@ -110,7 +104,7 @@ PIPE_MTE1
 
 ## 调用示例
 
-仓库中的完整工程样例请参考[mmad_mx样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/03_c_api/03_matrix_compute/mmad_mx)。
+仓库中的完整工程样例请参考[mmad_mx样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/03_c_api/03_matrix_compute/mmad_mx)。
 
 将代码保存为`examples.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[`__NPU_ARCH__`](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 

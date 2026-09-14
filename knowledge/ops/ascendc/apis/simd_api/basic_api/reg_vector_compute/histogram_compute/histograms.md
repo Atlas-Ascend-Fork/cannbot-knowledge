@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/histogram_compute/Histograms.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -30,13 +30,13 @@ source_headers:
     如下图所示，dstReg中的第n个元素表示srcReg中数值n的出现次数，并在原始dstReg数据的基础上进行累加。在低位模式下，dstReg用于统计srcReg中index为[0, 127]范围内（前半部分）各个值的出现频率，例如dst[i]表示数值i在src的[0, 127]中出现的次数；而在高位模式下，dstReg则统计[128, 255]范围内（后半部分）的频率，例如dst[i]表示数值i在src的[128, 255]中出现的次数。
 
     **图 1**  频率统计  
-    ![频率统计](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_histograms_1.png)
+    ![频率统计](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_histograms_1.png)
 
 - 累计统计  
     如下图所示，dstReg中的第n个元素表示srcReg中从0到n的所有数值在对应区间中出现的总频率。最终，统计结果会在目的寄存器原始数据的基础上进行累加。在低位模式下，目的寄存器dstReg会统计源寄存器srcReg中值落在低位区间[0, 127]的数据分布情况，例如dst[i]表示数值0~i在src的[0, 127]中出现的次数；在高位模式下，目的寄存器dstReg则会统计srcReg中值落在高位区间[128, 255]的数据分布情况，例如dst[i]表示数值0~i在src的[128, 255]中出现的次数。
 
     **图 2**  累计统计  
-    ![累计统计](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_histograms_2.png)
+    ![累计统计](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_histograms_2.png)
 
 ## 函数原型<a name="section620mcpsimp"></a>
 
@@ -73,6 +73,7 @@ __simd_callee__ inline void Histograms(V& dstReg, S& srcReg, MaskReg& mask)
 ## 数据类型
 
 **表 3**  源操作数和目的操作数的数据类型对应表<a id="table3"></a>  
+
 | T数据类型 | U数据类型 |
 | ------ | ------ |
 | uint8_t | uint16_t |

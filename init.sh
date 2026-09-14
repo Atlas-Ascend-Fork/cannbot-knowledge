@@ -52,6 +52,27 @@ fail() {
   exit 2
 }
 
+preflight_destination() {
+  python3 - "$project_path" "$1" <<'PY'
+import sys
+from pathlib import Path
+
+root, target = map(Path, sys.argv[1:])
+try:
+    # Existing leaf links are checked separately against their intended source.
+    if not target.parent.resolve().is_relative_to(root):
+        raise ValueError(f"destination parent leaves project: {target}")
+    parent = target.parent
+    while parent != root:
+        if (parent.exists() or parent.is_symlink()) and not parent.is_dir():
+            raise ValueError(f"destination parent is not a directory: {parent}")
+        parent = parent.parent
+except (OSError, RuntimeError, ValueError) as exc:
+    print(f"error: {exc}", file=sys.stderr)
+    raise SystemExit(2)
+PY
+}
+
 link_matches() {
   local destination="$1"
   local expected="$2"
@@ -63,6 +84,7 @@ preflight_link() {
   local source="$1"
   local destination="$2"
   local source_may_be_pending="${3:-false}"
+  preflight_destination "$destination"
   if [[ "$source_may_be_pending" != "true" ]]; then
     [[ -d "$source" ]] || fail "missing skill source: $source"
   fi
@@ -207,7 +229,7 @@ EOF
    时使用 Lint 内置的 issue-report 工作流，不新增独立 Skill，也不由 Lint 自动创建外部 Issue。
 4. 知识和治理变更完成后，通过仓库统一质量入口重建并验证持久索引；不要手工编辑 SQLite
    产物。再次使用 Query 验证目标场景能够在正确 platform、technology 和 status 下召回。
-5. 目录占位不代表知识覆盖。新增路径遵守仓库治理：五个 domain 根保持完整，只有 `ops` 和
+5. 目录占位不代表知识覆盖。新增路径遵守仓库治理：所有注册的 domain 根保持完整，只有 `ops` 和
    `model` 预建注册 route，其他领域由对应维护者随首张真实知识创建下一层目录。
 EOF
   fi
@@ -218,6 +240,8 @@ manage_prompt() {
   local target="$2"
   local profile="$3"
   local prompt_tmp
+
+  preflight_destination "$target"
 
   [[ ! -d "$target" ]] || fail "prompt path is a directory: $target"
   [[ ! -L "$target" ]] || fail "refusing to modify symlink prompt path: $target"
@@ -301,6 +325,8 @@ if updated != existing:
             stream.write(updated)
             stream.flush()
             os.fsync(stream.fileno())
+        if target.exists():
+            os.chmod(temporary, target.stat().st_mode & 0o7777)
         os.replace(temporary, target)
     finally:
         try:
@@ -413,6 +439,7 @@ if [[ "$prompt_action" == "reinstall" ]]; then
   exit 0
 fi
 
+preflight_destination "$knowledge_env"
 [[ -d "$KNOWLEDGE_ROOT/knowledge" ]] || fail "invalid knowledge root: $KNOWLEDGE_ROOT"
 [[ -f "$KNOWLEDGE_ROOT/governance/schemas/registries.yaml" ]] || \
   fail "invalid knowledge root: $KNOWLEDGE_ROOT"

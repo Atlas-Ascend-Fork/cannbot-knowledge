@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/SetFlag_WaitFlag_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -33,13 +33,13 @@ source_headers:
 如图1所示，SetFlag/WaitFlag接口用于核内多流水间的同步：
 
 > [!NOTE]说明
->该接口标注为ISASI类别，不能保证跨硬件版本兼容。如需保证跨硬件版本兼容的同步控制接口，请参见[TQueSync SetFlag/WaitFlag](set_flag_wait_flag.md)。二者的区别在于，TQueSync类接口可以保证跨硬件版本兼容。
+>该接口标注为ISASI类别，不能保证跨硬件版本兼容。如需保证跨硬件版本兼容的同步控制接口，请参见[TQueSync类](t_que_sync.md)。二者的区别在于，TQueSync类接口可以保证跨硬件版本兼容。
 
 - SetFlag：当源流水的前序指令的所有读写操作都完成之后，当前指令开始执行，并将硬件中的对应标志位设置为1。SetFlag只是设置硬件中的对应标志位，并不会阻塞源流水中的下一个指令。
 - WaitFlag：当目的流水执行到该指令时，如果发现硬件中对应标志位为0，目的流水的后续指令将一直被阻塞；如果发现硬件中对应标志位为1，则将硬件中对应标志位设置为0，同时目的流水的后续指令开始执行。
 
 **图1**  SetFlag/WaitFlag接口功能示意图<a name="zh-cn_topic_0000002511125384_fig58242463299"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/setflag_waitflag_multi_pipeline_sync.png "SetFlag_WaitFlag_多流水同步示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/setflag_waitflag_multi_pipeline_sync.png "SetFlag_WaitFlag_多流水同步示意图")
 
 ## 函数原型<a name="section620mcpsimp"></a>
 

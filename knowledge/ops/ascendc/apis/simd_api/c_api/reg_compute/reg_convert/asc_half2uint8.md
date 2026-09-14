@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_convert/asc_half2uint8.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/reg_convert.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_half2uint8
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/reg_convert.h"`。
 
 根据`mask`将`src`中的每个参与计算的`half`类型元素转换为`uint8_t`类型，结果写入`dst`。由于源操作数与目的操作数类型位宽比为2:1，写入数据时需要将一个`VL`大小的数据分为两部分，根据参数`dst_pos`选择写入`dst`索引为偶数的位置或奇数的位置。
 
@@ -77,6 +80,7 @@ __simd_callee__ inline vector_uint8_t asc_half2uint8_rd(vector_half src,
 | dst | 输出 | 目的操作数（矢量数据寄存器）。 |
 | src | 输入 | 源操作数（矢量数据寄存器）。 |
 | mask | 输入 | 掩码寄存器，用于控制各元素是否参与计算。`mask`中与元素对应的比特位为1时，该元素参与计算；为0时，该元素不参与计算。 |
+| dst_pos | 输入 | 位置选择标签（编译期标签分发，通过编译期重载选择对应实现），类型为`std::integral_constant<asc_position_mode, asc_position_mode::EVEN>`或`std::integral_constant<asc_position_mode, asc_position_mode::ODD>`。取`ASC_POSITION_EVEN`时选择将结果写入目的操作数索引为偶数的位置，其他位置清零；取`ASC_POSITION_ODD`时选择将结果写入目的操作数索引为奇数的位置，其他位置清零。 |
 
 矢量数据寄存器和掩码寄存器的详细说明请参见[reg数据类型定义](../../defs/type/data_type_definition.md)。
 
@@ -144,7 +148,7 @@ __simd_vf__ inline void convert_vf(__ubuf__ uint8_t* output, __ubuf__ uint8_t* i
     vector_half src;
     asc_loadalign(dst, reinterpret_cast<__ubuf__ uint8_t*>(output));
     asc_loadalign(src, reinterpret_cast<__ubuf__ half*>(input));
-    asc_half2uint8_rd(dst, src, mask);
+    asc_half2uint8_rd(dst, src, mask, ASC_POSITION_EVEN);
     asc_storealign(reinterpret_cast<__ubuf__ uint8_t*>(output), dst, mask);
 }
 

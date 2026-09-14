@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/scatter_gather/Gather.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -40,7 +40,7 @@ def Gather(dst, src, count, srcOffset, srcBaseAddr):
         dst[i] = src[(srcBaseAddr + srcOffset[i]) // inputType.itemsize]
 ```
 
-完整示例请参考：[Gather真值计算](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/gather)。
+完整示例请参考：[Gather真值计算](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/gather)。
 
 ## 函数原型<a name="section15660625202219"></a>
 
@@ -183,7 +183,7 @@ Atlas 推理系列产品AI Core，支持的数据类型为：int16_t、uint16_t�
 
 ## 调用示例<a name="section11276201527"></a>
 
-本样中只展示部分关键代码。如果您需要运行样例代码，请将该代码段拷贝并替换[Gather类样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/gather)场景三中Compute函数的部分代码即可。
+本样中只展示部分关键代码。如果您需要运行样例代码，请将该代码段拷贝并替换[Gather类样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/gather)场景三中Compute函数的部分代码即可。
 
 - tensor高维切分计算样例-mask连续模式。
 

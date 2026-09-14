@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/appendix/atomic_operations_interface_boundary_value_summary.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -44,6 +44,7 @@ platforms: []
 **表1**  SetAtomicAdd特殊值/边界值输入的计算结果
 
 <a name="table15675934145714"></a>
+
 | src/dst的数据类型 | src0的元素取值 | src1的元素取值 | dst的元素取值<br>（INF/NAN模式） | dst的元素取值<br>（饱和模式） |
 | --- | --- | --- | --- | --- |
 | half | -65504.0（MIN） | -65504.0（MIN）/-inf | -inf | **-65504.0** |
@@ -73,6 +74,7 @@ platforms: []
 **表2**  SetAtomicMax特殊值/边界值输入的计算结果
 
 <a name="table57228341577"></a>
+
 | src/dst的数据类型 | src0的元素取值 | src1的元素取值 | dst的元素取值<br>（INF/NAN模式） | dst的元素取值<br>（饱和模式） |
 | --- | --- | --- | --- | --- |
 | half | -65504.0（MIN） | -65504.0（MIN）/-inf | -65504.0 | -65504.0 |
@@ -99,6 +101,7 @@ platforms: []
 **表3**  SetAtomicMin特殊值/边界值输入的计算结果说明
 
 <a name="table673793455714"></a>
+
 | src/dst的数据类型 | src0的元素取值 | src1的元素取值 | dst的元素取值<br>（寄存器非饱和模式） | dst的元素取值<br>（寄存器饱和模式） |
 | --- | --- | --- | --- | --- |
 | half | -65504.0（MIN） | -65504.0（MIN）/65504.0（MAX）/0.0/-0.0/inf | -65504.0 | -65504.0 |

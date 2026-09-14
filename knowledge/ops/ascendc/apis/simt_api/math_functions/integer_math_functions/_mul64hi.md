@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__mul64hi.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -22,9 +22,11 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"simt_api/device_functions.h"`。
+
 获取输入int64类型数据x和y乘积的高64位。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002562010435.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002562010435.png)
 
 ## 函数原型
 
@@ -49,19 +51,13 @@ long long __mul64hi(long long x, long long y)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_functions.h"
-```
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __global__ __launch_bounds__(1024) void KernelMul64hi(long long* dst, long long* x, long long* y)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -72,6 +68,8 @@ long long __mul64hi(long long x, long long y)
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void KernelMul64hi(__gm__ long long* dst, __gm__ long long* x,  __gm__ long long* y)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;

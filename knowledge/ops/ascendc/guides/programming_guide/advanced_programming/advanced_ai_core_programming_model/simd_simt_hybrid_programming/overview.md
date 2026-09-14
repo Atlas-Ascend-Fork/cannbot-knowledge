@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -18,10 +18,11 @@ platforms: []
 
 为提升向量计算在复杂控制流、离散访存等场景下的编程灵活性，在SIMD与SIMT深度融合的混合编程架构中：矩阵计算单元延续SIMD设计，向量计算单元则在SIMD基础上引入SIMT能力。这一设计确立了以SIMD为主、SIMT为辅的混合编程模型。
 
-
 >[!NOTE]说明 
 >该编程模型适用于如下型号：
+     
 >-   Ascend 950PR/Ascend 950DT
+     
 
 
 ## 混合编程的定位
@@ -33,7 +34,7 @@ platforms: []
 
 如上文所述，混合编程适用于算子功能既包含SIMD擅长的连续规整计算，也包含SIMT擅长的离散访问等任务的场景。以下列举部分混合编程的适用场景：
 
--   复杂分支判断的算子，适合使用SIMT完成计算任务，而输入输出的数据搬运较规整连续，适合使用SIMD搬运接口完成数据拷贝。例如[floor_mod样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_high_performance)。
+-   复杂分支判断的算子，适合使用SIMT完成计算任务，而输入输出的数据搬运较规整连续，适合使用SIMD搬运接口完成数据拷贝。例如[floor_mod样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_high_performance)。
 
 -   离散访问场景，适合使用SIMT完成计算任务，当所需访问的数据量远小于Unified Buffer（UB）可用空间时，可以使用SIMD搬运接口完成数据拷贝，使SIMT编程能够直接从UB读取数据，提高内存访问效率。
 

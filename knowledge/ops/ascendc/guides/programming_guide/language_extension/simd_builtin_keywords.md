@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/language_extension/simd_builtin_keywords.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -306,7 +306,7 @@ platforms: []
 
     -   mode = 1 : batch mode，在下发核函数（Kernel）时先进行判断，若空闲物理核数无法满足当前核函数（Kernel）的需要，则等待至空闲物理核数满足该核函数（Kernel）所需要的所有物理核时，同时下发执行，OP1和OP2的执行被切分（split）开，不会出现交叠执行的情况。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/batchmode.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/batchmode.png)
 
     在多流并发场景，多算子并行执行时，若执行总核数超过最大物理核数，且多个算子逻辑使用SyncALL等核间同步接口时，建议设置mode为1，防止多个算子之间互相等待空闲核调度，导致死锁。默认值mode为0。
 
@@ -457,6 +457,7 @@ __ubuf__ int * __gm__ ptr;
 ## 内置常量<a name="section784531219338"></a>
 
 **表2**  内置常量
+
 | 常量名 | 取值 | 功能 |
 |--------|------|------|
 | constexpr int32_t g_coreType | AscendC::AIC<br>AscendC::AIV | 常量值由框架自动设置，AIC核下，配置为AscendC::AIC，AIV核下，配置为AscendC::AIV。可以通过对该常量值的判断，来实现了AIV与AIC核代码的区分和隔离。功能等同于直接使用ASCEND_IS_AIV、ASCEND_IS_AIC。 |

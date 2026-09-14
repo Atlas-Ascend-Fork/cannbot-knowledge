@@ -8,3 +8,5 @@
 - [asc_get_scalar_store_cache_mode](asc_get_scalar_store_cache_mode.md)：读取当前标量写（store）路径的L2 Cache管理策略，并返回asc_store_l2_cache_mode枚举值。
 - [AscIcachePreload](asc_icache_preload.md)：从指令所在GM地址预加载指令到ICache中，支持配置预取长度。
 - [asc_set_scalar_cache_mode](asc_set_scalar_cache_mode.md)：配置标量单元访问Global Memory时的L2 Cache管理策略。接口通过修改CTRL寄存器对应比特域生效：
+
+- [系统缓存概述](system_cache_overview.md)：Cache（缓存）的主要作用是在搬运单元或Scalar单元与外部存储之间提供一层高速缓冲，以降低数据访问延迟并提高带宽利用率。通常情况下，被频繁访问的数据会写入Cache，搬运单元或Scalar单元在执行过程中优先从Cache中读取数据；当Cache未命中时，再从外部存储加载数据并更新到Cache中。

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/layout.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/tensor_api/tensor.h
@@ -319,44 +319,41 @@ private:
 
 using namespace asc::te;
 
-auto layout = layout(make_shape(4, 2), make_stride(4, 1));
+auto layout_obj = layout(make_shape(4, 2), make_stride(4, 1));
 
-auto self = layout.layout();
-// self = layout(make_shape(4, 2), make_stride(4, 1))
-
-auto shape = layout.shape();
+auto shape = layout_obj.shape();
 // shape = (4, 2)
 
-auto shape0 = layout.shape<0>();
+auto shape0 = layout_obj.shape<0>();
 // shape0 = 4
 
-auto stride = layout.stride();
+auto stride = layout_obj.stride();
 // stride = (4, 1)
 
-auto stride1 = layout.stride<1>();
+auto stride1 = layout_obj.stride<1>();
 // stride1 = 1
 
-auto rank = layout.rank();
+auto rank = layout_obj.rank();
 // rank = 2
 
-auto size = layout.size();
+auto size = layout_obj.size();
 // size = 8
 
-auto capacity = layout.capacity();
+auto capacity = layout_obj.capacity();
 // capacity = 16
 
-auto index = layout(make_coord(1, 1));
+auto index = layout_obj(make_coord(1, 1));
 // index = 5
 
-auto shape_info = layout.get<0>();
+auto shape_info = layout_obj.get<0>();
 // shape_info = (4, 2)
 
-auto stride_info = layout.get<1>();
+auto stride_info = layout_obj.get<1>();
 // stride_info = (4, 1)
 
-constexpr auto depth = decltype(layout)::depth;
-// depth = 1
+constexpr auto depth = decltype(layout_obj)::depth;
+// depth = 2
 
-constexpr auto full_rank = decltype(layout)::rank;
+constexpr auto full_rank = decltype(layout_obj)::rank_size;
 // full_rank = 2
 ```

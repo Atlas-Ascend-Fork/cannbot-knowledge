@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/Matmul_usage.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -26,7 +26,7 @@ Matmul的计算公式为：C = A \* B + Bias，其示意图如下。
 -   Bias为矩阵乘偏置，形状为\[1, N\]。对A\*B结果矩阵的每一行都采用该Bias进行偏置。
 
 **图1**  Matmul矩阵乘示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/matmul_matrix_diagram.png "Matmul矩阵乘示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/matmul_matrix_diagram.png "Matmul矩阵乘示意图")
 
 > [!NOTE]说明
 >下文中提及的M轴方向，即为A矩阵纵向；K轴方向，即为A矩阵横向或B矩阵纵向；N轴方向，即为B矩阵横向；尾轴，即为矩阵最后一个维度。
@@ -80,10 +80,11 @@ Matmul的计算公式为：C = A \* B + Bias，其示意图如下。
     **表1**  MatmulType参数说明
 
     <a name="table1188045714378"></a>
+
     | 参数 | 说明 |
     | --- | --- |
     | POSITION | 内存逻辑位置。 |
-    | FORMAT | 数据的物理排布格式。<br>    <br>关于CubeFormat::NZ格式的A矩阵、B矩阵、C矩阵的对齐约束，请参考[表3](#table98851538118)。 |
+    | FORMAT | 数据的物理排布格式。<br>    <br>关于CubeFormat::NZ格式的A矩阵、B矩阵、C矩阵的对齐约束，请参考[NZ格式的矩阵对齐要求](#table98851538118)。 |
     | TYPE | 数据类型。<br>注意：除fp8_e4m3fn_t/fp8_e5m2_t两种数据类型、B矩阵为int8_t数据类型外，A矩阵和B矩阵数据类型需要一致，具体数据类型组合关系请参考[表2](#table1996113269499)。A矩阵和B矩阵为int4b_t数据类型时，矩阵内轴的数据个数必须为偶数。例如，A矩阵为int4b_t数据类型且不转置时，[singleCoreK](../matmul_tiling/t_cube_tiling_struct.md#p11899125875617)必须是偶数。 |
     | ISTRANS | 是否开启支持矩阵转置的功能。<br>    true：开启支持矩阵转置的功能，运行时可以分别通过[SetTensorA](set_tensor_a.md)和[SetTensorB](set_tensor_b.md)中的isTransposeA、isTransposeB参数设置A、B矩阵是否转置。若设置A、B矩阵转置，Matmul会认为A矩阵形状为[K, M]，B矩阵形状为[N, K]。<br>false：默认值，不开启支持矩阵转置的功能，通过[SetTensorA](set_tensor_a.md)和[SetTensorB](set_tensor_b.md)不能设置A、B矩阵的转置情况。Matmul会认为A矩阵形状为[M, K]，B矩阵形状为[K, N]。<br>    <br>注意，由于L1 Buffer上的矩阵数据有分形对齐的约束，A、B矩阵转置和不转置时所需的L1空间可能不相同，在开启支持矩阵转置功能时，必须保证按照[Matmul Tiling参数](../matmul_tiling/t_cube_tiling_struct.md)申请的L1空间不超过L1 Buffer的规格，判断方式为(depthA1*Ceil(baseM/c0Size)*baseK + depthB1*Ceil(baseN/c0Size)*baseK) * db * sizeof(dtype) < L1Size，db表示L1是否开启double buffer，取值1（不开启double buffer）或2（开启double buffer），其余参数的含义请参考[表1](../matmul_tiling/t_cube_tiling_struct.md#tcubetiling-struct)。 |
     | LAYOUT | 表征数据的排布。<br>    <br>NONE：默认值，表示不使用BatchMatmul；其他选项表示使用BatchMatmul。<br>    <br>NORMAL：BMNK的数据排布格式，具体可参考[IterateBatch](iterate_batch.md#功能说明)中对该数据排布的介绍。<br>    <br>BSNGD：原始BSH shape做reshape后的数据排布，具体可参考[IterateBatch](iterate_batch.md#功能说明)中对该数据排布的介绍。<br>    <br>SBNGD：原始SBH shape做reshape后的数据排布，具体可参考[IterateBatch](iterate_batch.md#功能说明)中对该数据排布的介绍。<br>    <br>BNGS1S2：一般为前两种数据排布进行矩阵乘的输出，S1S2数据连续存放，一个S1S2为一个batch的计算数据，具体可参考[IterateBatch](iterate_batch.md#功能说明)中对该数据排布的介绍。 |
@@ -96,6 +97,7 @@ Matmul的计算公式为：C = A \* B + Bias，其示意图如下。
     **表2**  Matmul输入输出数据类型的支持列表
 
     <a name="table1996113269499"></a>
+
     | A矩阵 | B矩阵 | Bias | C矩阵 | 支持平台 |
     | --- | --- | --- | --- | --- |
     | float | float | float/half | float/half/bfloat16_t |  |
@@ -118,6 +120,7 @@ Matmul的计算公式为：C = A \* B + Bias，其示意图如下。
     | bfloat16_t | bfloat16_t | bfloat16_t | float/half/bfloat16_t |  |
     | half | half | bfloat16_t | float/half/bfloat16_t |  |
     | int8_t | int8_t | int32_t | bfloat16_t |  |
+
     
 
     
@@ -270,7 +273,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 以输入矩阵A \(GM, ND, half\)、矩阵B\(GM, ND, half\)，输出矩阵C \(GM, ND, float\)，无Bias场景为例，其中\(GM, ND, half\)表示数据存放在GM上，数据格式为ND，数据类型为half，描述Matmul高阶API典型场景的内部算法框图，如下图所示。
 
 **图2**  Matmul算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/matmul_algorithm_diagram.png "Matmul算法框图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/matmul_algorithm_diagram.png "Matmul算法框图")
 
 计算过程分为如下几步：
 

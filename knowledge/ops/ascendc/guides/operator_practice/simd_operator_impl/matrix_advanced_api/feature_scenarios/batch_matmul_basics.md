@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/batch_matmul_basics.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -28,7 +28,7 @@ Batch Matmul当前支持4种Layout类型：BSNGD、SBNGD、BNGS1S2、NORMAL（BM
 下图为NORMAL数据排布格式的Batch Matmul计算。整个Matmul计算一共包含4个矩阵乘操作：mat\_a1\*mat\_b1、mat\_a2\*mat\_b2、mat\_a3\*mat\_b3、mat\_a4\*mat\_b4，需要单核上计算四个singleCoreM \*singleCoreN。在该场景下，如果shape较小，可以将其视为Batch Matmul场景进行批量处理，以提升性能。一次IterateBatch可同时计算出mat\_c1 = mat\_a1 \* mat\_b1、mat\_c2 = mat\_a2 \* mat\_b2、mat\_c3 = mat\_a3 \* mat\_b3、mat\_c4 = mat\_a4 \* mat\_b4。
 
 **图1**  NORMAL数据排布格式的Batch Matmul示意图<a name="zh-cn_topic_0000001726346562_fig3876163755011"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/norm_batch_mm.png "NORMAL数据排布格式的Batch-Matmul示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/norm_batch_mm.png "NORMAL数据排布格式的Batch-Matmul示意图")
 
 ## 使用场景<a name="zh-cn_topic_0000001726346562_section1672510573541"></a>
 
@@ -49,7 +49,7 @@ Matmul计算需要计算出多个singleCoreM \* singleCoreN大小的C矩阵，�
 
 ## 调用示例<a name="zh-cn_topic_0000001726346562_section18018102212"></a>
 
-以下是NORMAL数据排布格式的Batch Matmul调用示例。BSNDG数据排布格式的Batch Matmul完整示例请参考[BatchMatmul样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/batch_matmul)。
+以下是NORMAL数据排布格式的Batch Matmul调用示例。BSNDG数据排布格式的Batch Matmul完整示例请参考[BatchMatmul样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/batch_matmul)。
 
 -   Tiling实现
 

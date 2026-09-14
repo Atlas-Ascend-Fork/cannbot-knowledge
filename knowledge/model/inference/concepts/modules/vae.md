@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: VAE（多模态生成）
-description: 多模态生成模型（HunyuanVideo、HunyuanImage-3.0、Wan2.2-I2V、Sana-Video）中的 VAE（Variational AutoEncoder）负责把 DiT 预测的 latent 还原为像素域图像/视频（Decoder），以及把原始像素压缩为低分辨率 latent（Encoder，训练用）。推理阶段只跑 Decoder，但对于 720p/1080p 视频这类输入，Decoder 的 3D/2D 卷积极其吃显存与计算。 cann-recipes-infer 对 VAE 的主要优化方向有两条： 1. **空间并行（VAE patch parallel）**：把大尺寸 latent/pixel 张量在 H、W 维度切成 patch，分配到多卡并行计算，辅以边界交换保障卷积感受野与注意力的正确性，见 vae-patch-parallel。 2. **算子与冗余计算优化**：mask 缓存、1×1 conv2d 转 matmul、时序 conv2d 的 HW 轴调换等（Sana-Video 为代表）。
+description: VAE 在生成模型中完成像素与 latent 之间的编解码；图像条件推理也会调用 Encoder。涵盖按模型区分的 VAE 并行、mask 缓存和 offload 调整，并区分 VAE 与去噪网络优化。
 tags:
 - task.design
 - topic.model_architecture
@@ -13,8 +13,16 @@ sources:
   role: primary
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: supporting
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/patches/npu_patches.py
+  role: implementation
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/wan2.2-i2v/wan/image2video.py
+  role: implementation
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/vae/vae_parallel.py
+  role: implementation
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/inference_video_scripts/inference_sana_video.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-12T03:21:42Z'
 platforms:
 - agnostic
 ---
@@ -23,11 +31,11 @@ platforms:
 
 ## Summary
 
-多模态生成模型（HunyuanVideo、HunyuanImage-3.0、Wan2.2-I2V、Sana-Video）中的 VAE（Variational AutoEncoder）负责把 DiT 预测的 latent 还原为像素域图像/视频（Decoder），以及把原始像素压缩为低分辨率 latent（Encoder，训练用）。推理阶段只跑 Decoder，但对于 720p/1080p 视频这类输入，Decoder 的 3D/2D 卷积极其吃显存与计算。
+多模态生成模型（HunyuanVideo、HunyuanImage-3.0、Wan2.2-I2V、Sana-Video）中的 VAE（Variational AutoEncoder）负责把 DiT 预测的 latent 还原为像素域图像/视频（Decoder），以及把原始像素压缩为低分辨率 latent（Encoder）。纯生成的输出阶段使用 Decoder；Wan2.2-I2V 等图像条件推理还需要 Encoder 编码输入图像。对于 720p/1080p 视频这类输入，Decoder 的 3D/2D 卷积极其吃显存与计算。
 
 cann-recipes-infer 对 VAE 的主要优化方向有两条：
-1. **空间并行（VAE patch parallel）**：把大尺寸 latent/pixel 张量在空间维度切成 patch，分配到多卡并行计算，辅以边界交换/补充保障卷积感受野与注意力的正确性，见 [vae-patch-parallel](../parallelism/vae_patch_parallel.md)。切分轴按模型而异：HunyuanImage-3.0 / Wan2.2-I2V 直接沿高度 H、宽度 W 切块，HunyuanVideo 则沿展平后的序列长度 S 切分（latent 展平为序列后切，语义等价于空间切分）。
-2. **算子与冗余计算优化**：mask 缓存、1×1 conv2d 转 matmul、时序 conv2d 的 HW 轴调换等（Sana-Video 为代表）。
+1. **空间并行（VAE patch parallel）**：把大尺寸 latent/pixel 张量在空间维度切成 patch，分配到多卡并行计算，辅以边界交换/补充保障卷积感受野与注意力的正确性，见 [vae-patch-parallel](../parallelism/vae_patch_parallel.md)。切分轴按模型而异：HunyuanImage-3.0 / Wan2.2-I2V 直接沿高度 H、宽度 W 切块，HunyuanVideo 的固定实现沿 latent 最后一维（宽度 W，`z.shape[-1]`）切分，并在两侧补 overlap。
+2. **冗余计算与驻留优化**：HunyuanVideo 的 mask 缓存与取消 VAE offload；适用配置和来源性能见下文。
 
 ## Mechanism
 
@@ -43,47 +51,16 @@ flowchart LR
 - **注意力全局性**：VAE 内部若含 self-attention，K/V 必须全局 gather 才能正确计算
 - **Upsample 边界**：上采样需要扩展边界后再裁剪，避免块间不连续
 
-### 1×1 conv2d → matmul（Sana-Video）
-
-对于 `kernel_size == (1,1)` 的 Conv2d，可直接转为 matmul 实现（`[B, H*W, Ci] @ W^T`），避免 conv2d 的 im2col 额外开销：
-
-```python
-# 来源：models/sana-video/patches/npu_patches.py（patch_conv1x1_matmul）
-if self.conv.kernel_size == (1, 1):
- B, Ci, H, W = x.shape
- Co, *_ = self.conv.weight.shape
- x_trans = x.view(B, Ci, -1).permute(0, 2, 1).contiguous
- kernel_trans = self.conv.weight.view(Co, Ci)
- x = x_trans @ kernel_trans.T
- if self.conv.bias is not None:
- x += self.conv.bias
- x = x.permute(0, 2, 1).contiguous.view(B, Co, H, W)
-else:
- x = self.conv(x)
-```
-
-### 时序 conv2d 的 HW 轴调换（Sana-Video）
-
-对于时序维度 kernel `[1, t_kernel_size]` 的卷积，在 NPU 上 HW 轴顺序会影响访存效率，将权重沿 `(2,3)` 转置、输入同步 `transpose(-1, -2)` 后再算再转回，可命中高效的 conv 布局：
-
-```python
-# 来源：models/sana-video/patches/npu_patches.py（patch_temporal_conv_swap）
-x_reshaped = x.view(batch_size, time_steps, channels, height * width).permute(0, 2, 1, 3)
-x_out = x_reshaped + self.t_conv_swap(x_reshaped.transpose(-1, -2)).transpose(-1, -2)
-```
-
-权重需在加载时同步做一次 `permute(0, 1, 3, 2)`。
-
 ### Mask 缓存（HunyuanVideo）
 
 VAE 内部需要重复构造的 mask（具体类型源未明示）在每帧都需重复构造，HunyuanVideo 用空间换时间将其缓存常驻内存，减少重复计算。
 
 ## Variants
 
-- **HunyuanVideo VAE**：3D 卷积 + 时序上下文补 seqlen；VAE 并行沿展平后的序列长度 S 切分（每卡处理各自序列段，再为每卡序列补充相邻卡部分序列以补足卷积感受野，语义等价空间切分，区别于 HunyuanImage-3.0/Wan2.2-I2V 的显式 H/W 切块）+ mask 缓存 + 虚拟内存取消 offload（见 [hunyuan-video](../models/hunyuan_video.md)）
+- **HunyuanVideo VAE**：3D 卷积；VAE 并行沿宽度 W 切分并补充相邻块的 overlap（区别于 HunyuanImage-3.0/Wan2.2-I2V 的 H/W 二维切块）+ mask 缓存 + 虚拟内存取消 offload（见 [hunyuan-video](../models/hunyuan_video.md)）
 - **HunyuanImage-3.0 VAE**：空间并行（vae_patch_parallel.py）+ CFG 并行搭配
 - **Wan2.2-I2V VAE**：8 卡空间并行
-- **Sana-Video VAE**：1×1 conv matmul 化 + 时序 conv 轴交换 + npu_rms_norm / npu_rotary_mul / npu_fusion_attention 融合算子
+- **Sana-Video 的边界**：已确认的 1×1 卷积、时序卷积和融合算子 patch 用于去噪网络；推理入口单独创建 VAE，不能将这些 patch 当作 VAE 优化。实现片段见 [Sana-Video](../models/sana_video.md)。
 
 ## Performance Characteristics
 
@@ -91,6 +68,10 @@ VAE 内部需要重复构造的 mask（具体类型源未明示）在每帧都�
 - 虚拟内存使能后可取消 VAE CPU-Offload，避免反复 Host↔Device 搬运
 
 ## Evidence
+
+- [Sana-Video 卷积优化实现](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/patches/npu_patches.py)：patch 目标为 `diffusion.model.nets` 中的类，具体调用边界见 Sana-Video 卡。
+- [Wan2.2-I2V 推理入口](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/wan2.2-i2v/wan/image2video.py)：`generate` 在 DiT 前调用 `vae.encode`、在输出阶段调用 `vae.decode`，并为 Encoder/Decoder 配置并行。
+- [HunyuanVideo VAE decode](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/vae/vae_parallel.py)：按 `z.shape[-1]` 切宽度、补 overlap 后解码。
 
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-video/hunyuan_video_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md) VAE并行 / VAE优化 / 取消VAE offload
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-image-3.0/hunyuan_image_3_optimization.md) VAE并行优化

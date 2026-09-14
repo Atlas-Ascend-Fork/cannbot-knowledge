@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/cooperative_groups_intro.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/simt_api/cooperative_groups.h
@@ -22,10 +22,11 @@ source_headers:
 
 当前提供的协作组类型有：
 
-- [thread_block](thread_block/thread_block_intro.md)：对线程块的抽象，提供统一的线程管理接口。
-- [coalesced_group](coalesced_group/coalesced_group_intro.md)：Warp中的活跃线程集合。
-- [thread_block_tile](thread_block_tile/thread_block_tile_intro.md)：手动划分出的线程子组。
 - [grid_group](grid_group/grid_group_intro.md)：对一个核函数（Kernel）启动的所有SIMT线程的抽象，提供跨线程块的查询和同步接口。
+- [thread_block](thread_block/thread_block_intro.md)：对线程块的抽象，提供统一的线程管理接口。
+- [thread_block_tile](thread_block_tile/thread_block_tile_intro.md)：手动划分出的线程子组。
+- [coalesced_group](coalesced_group/coalesced_group_intro.md)：Warp中的活跃线程集合。
+- [thread_group](thread_group/thread_group_intro.md)：所有协作组的基类，提供协作组通用接口。
 
 基于以上协作组类型，提供以下划分操作，支持将一个协作组划分为多个子组：
 
@@ -35,12 +36,6 @@ source_headers:
 基于以上协作组类型，提供以下通用操作：
 
 - [sync](sync.md)：同步指定协作组内的所有线程，功能等价于调用该协作组对象的成员函数`sync()`。
-
-## 需包含的头文件
-
-```cpp
-#include "simt_api/cooperative_groups.h"
-```
 
 > [!NOTE]说明 
 > 所有协作组API均在`cooperative_groups`命名空间下，调用时需添加命名空间。  

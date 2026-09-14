@@ -62,6 +62,7 @@ description: 把一次算子开发会话的原始记录（日志目录 / trace �
 13. **知识价值门槛（宁缺毋滥）**：候选必须垂域绑定（AscendC/NPU/工具链特有行为）+ 非显然 + 可复用 + 本 trace 内可验证（runbooks-contract §0）；agent 编排/工具定位等通用行为、无垂域因果的环境问题、不满足任一知识形态的纯流程描述、转写截断无法验证的闭环、与算子开发无关的工具/工作流/harness 坑（`non_ascendc`）→ **不产卡**（manifest `skipped` 记 reason）。**启动片段/纯问答 trace 产出 0 张是合法结果**。
 14. **相关性预检（relevance gate）**：mine 入口先派**门禁子 agent**（`references/subagents/ops-knowledge-trace-relevance-gate.md`，熟悉 cannbot-skills 的三种 AscendC 算子开发流程（ops-registry-invoke / ops-direct-invoke / ops-direct-invoke-flash），只读 trace 开头几轮）语义判断会话是否涉及算子生成；**`unrelated` 立即退出**（只写最小化退出产物，不 LLM 扫描、不产草稿）；`related`（含意图明确仅启动的会话）继续，价值预筛兜底 0 张——无关日志零浪费，且不靠关键词匹配（防遗漏）。
 15. **active 轨迹证据合同前置**：由开发轨迹生成的 active `single_run` 须满足 runbooks-contract §8.1：每个 adopted claim 有两个来源 SHA-256、可解析 raw record/sequence 锚点、与内部 `knowledge_form` 匹配的角色锚点、逐字机制 artifact、客观 `tool_observed|artifact_verified` 信号、双向 claim mapping 和单点归因。Mine 必须把合同写入 manifest/reconstruction，缺失项列 `provenance_missing`；固定 revision/blob 有则保留并优先，无 remote/blob 不得单独导致 defer，也不得伪造链接。
+16. **复现按来源计数**：对同一结论核验相互独立的原始轨迹，以 `raw_source_sha256` 去重。同源多张草稿、目录副本或重复归一化不增加 `reproduce_count`；预聚类的 `cross_trace` 只是目录身份统计。`validate_curated_output.py` 在待审和批准阶段均拒绝超过已核验不同 raw 来源数的计数；来源数只给出上限，独立复现和结论一致性仍须 reviewer 确认。
 
 ## 阶段 1 · parse（原始日志 → 可读 trace，0 LLM）
 
@@ -86,6 +87,7 @@ python3 <SKILL_DIR>/scripts/trace_normalize.py verify <输出目录>        # �
 - **输入**：parse 产出的 `trace_<ses>/` 目录（adapter=`trace_export`），或任意 Agent 轨迹导出——JSON/JSONL/NDJSON/文本/zip/tar/目录/`-`（adapter=`generic`，自动检测），或 算子开发会话 `parsed/context/ses_*.md` 可读转写——单文件或整个 `parsed/context/` 目录（adapter=`markdown_transcript`；支持 `## Subagent Sessions` 多会话转写，父会话与子 agent 各自独立 session）。**主流 agent 框架专项适配器**：Claude Code `~/.claude/projects/<project>/<session>.jsonl`（adapter=`claude_code`，现代 block 数组 + 旧 flat 记录双格式）、opencode session JSON（数组或 `{messages:[...]}`，adapter=`opencode`）、Codex `~/.codex/sessions/<date>/<session>.jsonl`（adapter=`codex`）——直接喂框架导出即可全自动，无需手工转 markdown（opencode 适配器目前经合成 fixture 验证；真实导出建议先 `detect` 核对 adapter 与 coverage 再 full-run）。
 - **产出**：`normalized_trace.jsonl`（每行一个 `trace.event.v1` 事件：`session_id/sequence/actor/event_type/tool/content`）+ `session_manifest.json`（source sha256、adapter、detector 分数、coverage：raw_records/normalized_events/unknown/redactions/skipped、capabilities、warnings）。
 - **关键不变量**：逐事件 `provenance`（raw_source/raw_record/raw_sha256/adapter）；脱敏凭据；`verify` 校验 schema 必填、sequence 连续、coverage 一致。
+- 归一化阶段对文本中的未加引号、单双引号和 JSON 形式的凭据，以及嵌套对象中的敏感键执行脱敏。文本赋值和结构化键共用敏感名称规则，支持 `_`、`-` 分隔的业务/提供方前缀，包括 `GITCODE_TOKEN`、`HF_TOKEN`、`CI_JOB_TOKEN`、`client_secret`；名称必须以敏感字段结束，保留 `token_count`、`secretary` 等普通字段。重复处理不增加脱敏计数。脱敏计数只表示实际替换次数，不能证明原始材料不含其他形式的敏感信息。
 - **进入 mine 前**：先看 manifest 的 `unknown_events`/`redactions`/`adapter_failures`/`capabilities`——确认无异常再继续。
 
 > `--format trace_export|generic|markdown_transcript|claude_code|opencode|codex` 可强制适配器；不确定时保留 auto 与检测分数，不强行套用。Claude/Codex/opencode 的 tool_call 参数（含 file_path/写内容）与 tool_result 载荷均完整保留进事件（供 mine 阶段代码恢复）。

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/4_2_sparse_matmul.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -27,7 +27,7 @@ platforms: []
     在计算前的数据准备阶段，用户自行对原始为稀疏矩阵的B矩阵完成稠密化，稠密过程请参考[稠密算法说明](../../../../../apis/simd_api/basic_api/cube_compute_isasi/mmad_compute/mmad_with_sparse.md)。稠密化过程结束后，得到4:2稠密化后的右矩阵B和索引矩阵index，稠密化后的右矩阵B和索引矩阵index将作为Sparse Matmul场景的计算输入。
 
     **图1**  对原始稀疏矩阵B进行4:2稠密化过程示意图<a name="zh-cn_topic_0000002298767897_fig107701022221"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sparse_dense.png "对原始稀疏矩阵B进行4-2稠密化过程示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sparse_dense.png "对原始稀疏矩阵B进行4-2稠密化过程示意图")
 
     稠密化过程对于稀疏矩阵B的每4个元素，在索引矩阵index中生成2个2位索引，每个索引分别指向对应非零元素的相对位置，具体规则可参考[稠密算法说明](../../../../../apis/simd_api/basic_api/cube_compute_isasi/mmad_compute/mmad_with_sparse.md)。稠密化过程生成的索引矩阵的数据类型为int2，索引矩阵在加载入Matmul前，需要拼成int8的数据类型。索引矩阵在一个int8的地址中的排布是逆序排布的，例如：索引矩阵1 2 0 1 0 2 1 0，在地址中的排布为1 0 2 1 0 1 2 0，其中1 0 2 1（对应索引矩阵前四位1 2 0 1）为一个int8，0 1 2 0（对应索引矩阵后四位0 2 1 0）为一个int8。
 
@@ -156,4 +156,4 @@ platforms: []
 
 ## 调用示例<a name="zh-cn_topic_0000002298767897_section15486294368"></a>
 
-Sparse Matmul场景的完整样例请参考[Sparse Matmul场景的算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_sparse)。
+Sparse Matmul场景的完整样例请参考[Sparse Matmul场景的算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_sparse)。

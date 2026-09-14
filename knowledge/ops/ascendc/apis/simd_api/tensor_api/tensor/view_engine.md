@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/tensor/view_engine.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -110,17 +110,18 @@ local_tensor<view_engine<Iterator>, LayoutT>
 
 using namespace asc::te;
 
-  constexpr int32_t size = 256;
-  __ubuf__ float data[size];
-  auto ptr = make_mem_ptr(data);
+constexpr int32_t size = 256;
+__ubuf__ float data[size];
+// data为__ubuf__ float类型数组。
+auto ptr = make_mem_ptr(data);
 
-  auto layout = make_layout(make_shape(2, 2), make_stride(2, 1));
-  auto tensor = make_tensor(ptr, layout);
+auto layout = make_layout(make_shape(2, 2), make_stride(2, 1));
+auto tensor = make_tensor(ptr, layout);
 
-  auto engine = tensor.engine();
-  auto begin = engine.begin();
+auto engine = tensor.engine();
+auto begin = engine.begin();
 
-  float a = begin[0];
-  float b = tensor[make_coord(1, 1)];
+float a = begin[0];
+float b = tensor[make_coord(1, 1)];
 
 ```

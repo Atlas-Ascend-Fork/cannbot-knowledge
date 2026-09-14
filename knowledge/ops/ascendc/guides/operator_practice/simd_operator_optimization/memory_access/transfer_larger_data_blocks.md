@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/memory_access/transfer_larger_data_blocks.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -24,7 +24,7 @@ platforms: []
 >测试数据与处理器型号相关，且实际测试时可能会存在略微抖动，具体带宽数值并不一定和下文的测试数据严格一致。
 
 **图1**  UB-\>GM方向不同单次搬运数据量下实际占用带宽的变化<a name="fig925755124312"></a><br>
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/ub_gm_bw.png "UB--GM方向不同单次搬运数据量下实际占用带宽的变化")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/ub_gm_bw.png "UB--GM方向不同单次搬运数据量下实际占用带宽的变化")
 
 **图2**  GM-\>UB方向不同单次搬运数据量下实际占用带宽的变化<a name="fig859712315453"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/gm_ub_bw.png "GM--UB方向不同单次搬运数据量下实际占用带宽的变化")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/gm_ub_bw.png "GM--UB方向不同单次搬运数据量下实际占用带宽的变化")

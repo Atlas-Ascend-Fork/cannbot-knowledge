@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/memory_model/memory_consistency.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -121,7 +121,7 @@ AI Core内部存在Scalar流水、MTE流水、Fixpipe流水，它们负责不同
 Scalar负责标量控制、地址计算、标量计算、Scalar访存以及发射其他流水指令等操作。Scalar流水内的GM访问需要按GM地址、访问路径以及DCache的Cache Line粒度区分：
 
 - **访问不同GM地址**：不同地址之间没有天然的数据依赖，无论访问是否经过DCache，硬件不保证这些访问的完成顺序或对其他观察者的可见顺序与代码顺序一致。例如先写`data`、后写`flag`时，不能仅依赖代码顺序推断其他流水、其他AI Core或Host侧一定先看到`data`、再看到`flag`。
-- **访问同一GM地址**：普通Scalar通过DCache访问同一GM地址时，同地址访问结果与程序序保持一致。虽然流水内同地址访问结果与程序序保持一致，但是其他流水或其他AI Core想要观察到该写入结果时，还需要按CacheLine处理DCache中的Dirty副本或旧副本，参考[DCache与GM的缓存一致性](cache_coherence.md#dcache与gm的缓存一致性)。
+- **访问同一GM地址**：普通Scalar通过DCache访问同一GM地址时，同地址访问结果与程序序保持一致。虽然流水内同地址访问结果与程序序保持一致，但是其他流水或其他AI Core想要观察到该写入结果时，还需要按Cache Line处理DCache中的Dirty副本或旧副本，参考[DCache与GM的缓存一致性](cache_coherence.md#dcache与gm的缓存一致性)。
 - **同一GM地址混用不同访问路径**：同一地址访问中如果混用经过DCache和不经过DCache的路径，硬件不保证最终结果一定符合代码顺序，需要由软件额外处理访问完成和Cache副本问题。例如Scalar经过DCache读写和Scalar原子操作混用，需要用户显式插入同步保证内存一致性。
 
 ##### MTE/Fixpipe流水
@@ -423,7 +423,7 @@ T3        Scalar.STORE_GM_DCache(flag) = 1
 
 ##### Case 3：前后访问都是不经过DCache的访问
 
-不经过DCache路径直接访问GM，不经过DCache，例如[asc_store_dev](../../../../apis/simd_api/c_api/scalar_compute/scalar_store/asc_store_dev.md)、[WriteGmByPassDCache](../../../../apis/simd_api/basic_api/scalar_compute/write_gm_by_pass_d_cache_isasi.md)、Scalar原子操作等接口。前后访问都不经过DCache时，无论访问同一地址还是不同地址，如果后序操作依赖前序访问已经完成，都需要用户插入DSB等待前序GM访问完成。
+不经过DCache路径直接访问GM，不经过DCache，例如[asc_store_dev](../../../../apis/simd_api/c_api/scalar_compute/scalar_store/asc_store_dev.md)、[WriteGmBypassDCache](../../../../apis/simd_api/basic_api/scalar_compute/write_gm_bypass_d_cache_isasi.md)、Scalar原子操作等接口。前后访问都不经过DCache时，无论访问同一地址还是不同地址，如果后序操作依赖前序访问已经完成，都需要用户插入DSB等待前序GM访问完成。
 
 同地址WAW场景中，如果期望最终结果以后一次写入为准，不能只依赖代码顺序：
 
@@ -570,7 +570,7 @@ T2        STORE ready = 1
 
 如果消费者访问GM时使用SIMT DCache，还需要同时结合SIMT DCache与GM的[缓存一致性](cache_coherence.md)要求处理旧副本。MEMBAR负责约束访问顺序，不负责自动失效消费者侧Cache副本。
 
- 
+
 #### 线程间访问
 
 SIMT的不同线程之间，不论访问是否为同一地址，硬件不自动保证线程间内存一致性。一个线程写入的数据，如果要被另一个线程读取，需要用户自行插入同步。

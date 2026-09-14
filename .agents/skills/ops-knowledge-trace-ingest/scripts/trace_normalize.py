@@ -51,12 +51,25 @@ ADAPTERS = ["trace_export", "generic", "markdown_transcript",
 READ_SUFFIXES = {".json", ".jsonl", ".ndjson", ".log", ".txt", ".md"}
 MAX_MEMBER_BYTES = 256 * 1024 * 1024
 
+# Share the credential-name grammar between text assignments and JSON keys.
+# Provider/business prefixes may contain words separated by underscores or
+# hyphens; the sensitive name must still end the key (not token_count, etc.).
+SECRET_NAME = (
+    r"(?:[\w-]*[_-])?(?:password|passwd|(?:access[_-]?|auth[_-]?|refresh[_-]?)?token|"
+    r"api[_-]?key|secret(?:[_-]?key)?)"
+)
 SECRET_PATTERNS = [
-    re.compile(r"(?i)(authorization\s*:\s*bearer\s+)[A-Za-z0-9._~+/=-]+"),
+    re.compile(r"(?i)((?<![\w-])[\"']?authorization[\"']?\s*[=:]\s*)"
+               r"(?:\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*')"),
+    re.compile(r"(?i)(authorization\s*:\s*(?:bearer|basic)\s+)[A-Za-z0-9._~+/=-]+"),
     re.compile(r"(?i)\bsk-[A-Za-z0-9_-]{12,}\b"),
     re.compile(r"(?i)\bAKIA[0-9A-Z]{16}\b"),
-    re.compile(r"(?i)((?:password|passwd|token|api[_-]?key|secret)\s*[=:]\s*)[^\s,;\"']+"),
+    re.compile(
+        rf"(?i)((?<![\w-])[\"']?{SECRET_NAME}[\"']?\s*[=:]\s*)"
+        r"(?:\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'|[^\s,;\"'<>]+)"
+    ),
 ]
+SECRET_KEY = re.compile(rf"(?i)^(?:{SECRET_NAME}|authorization)$")
 HOME_PATH = re.compile(r"(?<![A-Za-z0-9_])(/home/)[^/\s]+")
 
 FS_TOOL_HINTS = ("read", "write", "edit", "glob", "grep", "file", "patch", "ls")
@@ -274,6 +287,10 @@ def _redact(value):
     if isinstance(value, dict):
         out, count = {}, 0
         for key, item in value.items():
+            if isinstance(key, str) and SECRET_KEY.fullmatch(key) and item not in (None, "", "<redacted>"):
+                out[key] = "<redacted>"
+                count += 1
+                continue
             clean, found = _redact(item)
             out[key] = clean
             count += found

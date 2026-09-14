@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_optimization/instruction_optimization/atomic_instruction_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -31,8 +31,8 @@ platforms: []
 
 【样例介绍】本节以两个样例为载体说明上述优化方向：
 
-- [asc_atomic_add接口性能对比样例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/02_features/01_api_features/02_atomic_operation/atomic_add_perf/README.md)：包含16个场景、归为5组对照实验，量化内存层级、原子累加组织方式、是否使用返回值、同一地址上的竞争程度与目标地址的Sector分布对原子加性能的影响。每组对照仅改变一个属性，其余配置保持一致。
-- [Histogram原子操作性能调优样例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/03_instruction_optimizations/atomic_histogram/README.md)：对形状为[262144]的uint8_t字节流做直方图统计，输出256个桶的uint32_t计数结果。样例启动64个线程块、每个线程块2048个线程，通过对比“全部线程直接更新GM直方图”与“先在各线程块UB上统计再汇总至GM”两种实现，说明分层归约的优化效果。
+- [asc_atomic_add接口性能对比样例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/02_features/01_api_features/02_atomic_operation/atomic_add_perf/README.md)：包含16个场景、归为5组对照实验，量化内存层级、原子累加组织方式、是否使用返回值、同一地址上的竞争程度与目标地址的Sector分布对原子加性能的影响。每组对照仅改变一个属性，其余配置保持一致。
+- [Histogram原子操作性能调优样例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/03_instruction_optimizations/atomic_histogram/README.md)：对形状为[262144]的uint8_t字节流做直方图统计，输出256个桶的uint32_t计数结果。样例启动64个线程块、每个线程块2048个线程，通过对比“全部线程直接更新GM直方图”与“先在各线程块UB上统计再汇总至GM”两种实现，说明分层归约的优化效果。
 
 
 下文性能数据均使用msOpProf工具在Ascend 950PR产品上采集，指标为Task Duration（Task整体耗时，即算子端到端耗时）。
@@ -44,7 +44,7 @@ platforms: []
 
 **图 1**  GM全局计数示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/atomic_operation_gm_global_count.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/atomic_operation_gm_global_count.png)
 
 ```cpp
 __global__ __launch_bounds__(THREADS_PER_BLOCK) void histogram_gm_global(
@@ -68,7 +68,7 @@ __global__ __launch_bounds__(THREADS_PER_BLOCK) void histogram_gm_global(
 
 **图 2**  UB分块计数示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/atomic_operation_ub_block_local_count.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/atomic_operation_ub_block_local_count.png)
 
 ```cpp
 __global__ __launch_bounds__(THREADS_PER_BLOCK) void histogram_ub_block_local(
@@ -173,7 +173,7 @@ GM原子操作会经过L2 Cache层级，在L2侧完成“读—算—写”，�
 
 **图 3**  紧密排布与padding地址布局对比示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/atomic_operation_address_layout.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/atomic_operation_address_layout.png)
 
 下面以48个线程块、每个线程块256个线程、32个int32_t GM目标地址、每个地址上384个线程、每个线程执行1次原子加（共12288次原子加）的配置为例，通过函数入参`target_stride`控制地址布局，对比目标地址集中与分散两种情形。两种情形的目标地址数、每个地址上的线程数与原子加总次数完全一致，仅地址布局不同，因此可单独反映Sector分布的影响。
 

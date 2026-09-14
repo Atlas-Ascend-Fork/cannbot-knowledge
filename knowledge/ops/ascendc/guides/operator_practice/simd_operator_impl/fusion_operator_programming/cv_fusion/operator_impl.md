@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/fusion_operator_programming/cv_fusion/operator_impl.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -103,7 +103,7 @@ platforms: []
 
 进行算子的数据流分析：数据流向为在Cube核上完成Matmul计算后将数据搬运至Vector核进行LeakyRelu计算。根据上述数据流并结合融合算子的编程范式，规划并行的流水任务。如下图所示：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/add_op_47.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/add_op_47.png)
 
 1.  将输入数据从Global Memory搬运到Cube核。
 2.  进行Matmul内部的计算，计算公式和计算示意图如下：
@@ -111,22 +111,22 @@ platforms: []
     注：bias的shape为\[1, N\]，对A\*B结果矩阵的每一行都采用该bias进行偏置。
 
     **图1**  Matmul矩阵乘示意图<a name="zh-cn_topic_0000001644252364_fig194600231317"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mm_diag_48.png "Matmul矩阵乘示意图-48")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mm_diag_48.png "Matmul矩阵乘示意图-48")
 
 3.  将Matmul的计算结果搬运到Vector核。
 4.  进行Vector矢量计算，该样例中进行LeakyReLU计算。
 
     Leaky ReLU（带泄露线性整流函数）激活函数，是人工神经网络中一种常用的激活函数，其数学表达式和函数图像如下所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_formulaimage_0000002501251774.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_formulaimage_0000002501251774.png)
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002501411624.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002501411624.png)
 
 5.  将输出结果搬运到Global Memory。
 
 前三步的内容都封装在Matmul高阶API内，本样例中可以简化为3个stage。如下图所示：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/prog_paradigm.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/prog_paradigm.png)
 
 根据上述分析，明确实现过程中会使用到[Matmul高阶API](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/index.md)接口，[LeakyRelu Vector计算接口](../../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/leaky_relu.md)、[DataCopy](../../../../../apis/simd_api/basic_api/data_move_guide/overview/data_move_concept.md)、[EnQue](../../../../../apis/simd_api/basic_api/resource_management/t_que/en_que.md)、[DeQue](../../../../../apis/simd_api/basic_api/resource_management/t_que/de_que.md)接口。
 
@@ -139,13 +139,13 @@ Tiling策略的设计主要包括多核切分和核内切分策略。
 
 切分策略示意图如下，更多切分策略相关原理请参考[数据分块（Tiling）](../../matrix_advanced_api/basics.md)。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/prog_paradigm_49.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/prog_paradigm_49.png)
 
 ## 算子实现<a name="zh-cn_topic_0000001644252364_section770213024816"></a>
 
-在[矩阵编程章节](../../matrix_advanced_api/index.md)，我们得知Ascend C提供一组Matmul高阶API，封装了常用的切分和数据搬运、计算的算法逻辑，方便用户快速实现Matmul矩阵乘法的运算操作。融合算子中矩阵编程部分的实现与之类似，开发者在host侧通过调用API自动获取Tiling参数，该参数传递到kernel侧后，在初始化操作时传入，通过几个简单的API即可完成矩阵乘操作。再结合上文的融合算子的编程范式，融合算子实现的步骤如下。完整样例请参考[MatmulLeakyRelu](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/03_fusion_operation/matmul_leakyrelu_advanced_api)。
+在[矩阵编程章节](../../matrix_advanced_api/index.md)，我们得知Ascend C提供一组Matmul高阶API，封装了常用的切分和数据搬运、计算的算法逻辑，方便用户快速实现Matmul矩阵乘法的运算操作。融合算子中矩阵编程部分的实现与之类似，开发者在host侧通过调用API自动获取Tiling参数，该参数传递到kernel侧后，在初始化操作时传入，通过几个简单的API即可完成矩阵乘操作。再结合上文的融合算子的编程范式，融合算子实现的步骤如下。完整样例请参考[MatmulLeakyRelu](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/03_fusion_operation/matmul_leakyrelu_advanced_api)。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mm_flow_50.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mm_flow_50.png)
 
 kernel侧实现的代码框架如下，在完成Matmul对象的初始化、左矩阵A、右矩阵B、Bias的设置后，通过单次Iterate叠加while循环的方式完成后续的Matmul计算、LeakyRelu计算、CopyOut流程。
 
@@ -300,10 +300,10 @@ host侧实现GenerateTiling函数，在该函数中自动获取Tiling参数，�
 >    - 通过[ASCEND\_IS\_AIV和ASCEND\_IS\_AIC](../../../../programming_guide/language_extension/simd_builtin_keywords.md#li19530175294118)实现AIV和AIC代码之间的隔离。
 >    - 自行实现AIC和AIV核之间的同步：比如Matmul + LeakyRelu算子样例中，需要确保在AIC完成矩阵计算后，AIV再进行LeakyRelu的计算。
 >    - 使用高阶API Matmul时需要设置ASCENDC\_CUBE\_ONLY，表示仅在AIC侧调用Matmul API。
->    - 使用[设置核函数（Kernel）类型接口](../../../../../apis/simd_api/basic_api/kernel_tiling/set_kernel_type.md)设置核函数（Kernel）类型为KERNEL\_TYPE\_MIX\_xxx，同时启用AIV核和AIC核。
+>
+>    完整样例请参考[matmul_fused_manual样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_fused_manual)。
 >    ```
 >    #define ASCENDC_CUBE_ONLY // 指定Matmul运行在AIC上
->    KERNEL_TASK_TYPE_DEFAULT(KERNEL_TYPE_MIX_AIC_1_2);  // 设置核函数（Kernel）类型为KERNEL_TYPE_MIX_xxx
 >    if ASCEND_IS_AIC {
 >        ...
 >        // AIC核进行Matmul计算
@@ -315,4 +315,3 @@ host侧实现GenerateTiling函数，在该函数中自动获取Tiling参数，�
 >        // AIV核进行LeakyRelu计算
 >    } 
 >    ```
->    完整样例请参考[matmul_fused_manual样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_fused_manual)。

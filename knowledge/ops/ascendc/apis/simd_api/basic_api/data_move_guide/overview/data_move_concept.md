@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_move_guide/overview/data_move_concept.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -29,7 +29,7 @@ platforms: []
 
 **图 1**  基础连续搬运示意图  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/continuous_data_copy_diagram.png "基础连续搬运示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/continuous_data_copy_diagram.png "基础连续搬运示意图")
 
 ## 高维切分数据搬运（DataCopy高维切分）
 
@@ -43,11 +43,11 @@ platforms: []
 
 **图 2**  高维切分连续搬运示意图  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/continuous_data_copy_diagram.png "高维切分连续搬运示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/continuous_data_copy_diagram.png "高维切分连续搬运示意图")
 
 **图 3**  高维切分非连续搬运示意图  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/discontinuous_data_copy_diagram.png "高维切分非连续搬运示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/discontinuous_data_copy_diagram.png "高维切分非连续搬运示意图")
 
 ## 切片数据搬运（DataCopy切片）
 
@@ -65,7 +65,7 @@ platforms: []
 
 **图 4**  ND2NZ格式转换示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nd2nz_conversion_half.png "ND2NZ格式转换示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nd2nz_conversion_half.png "ND2NZ格式转换示意图")
 
 ## 随路量化激活搬运（FixPipe/DataCopy量化激活）
 

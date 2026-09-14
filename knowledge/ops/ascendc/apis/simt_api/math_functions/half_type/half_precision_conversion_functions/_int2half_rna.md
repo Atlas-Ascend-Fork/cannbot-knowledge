@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__int2half_rna.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_int2half\_rna
 
 ## 功能说明
+
+头文件路径为：`"simt_api/asc_fp16.h"`。
 
 遵循CAST\_ROUND模式，将int32类型数据转换为half类型数据，返回转换后的值。
 
@@ -53,19 +55,13 @@ inline half __int2half_rna(const int x)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/asc_fp16.h`头文件。
-
-```cpp
-#include "simt_api/asc_fp16.h"
-```
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     __global__ __launch_bounds__(1024) void kernel__int2half_rna(half* dst, int32_t* x)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -76,6 +72,8 @@ inline half __int2half_rna(const int x)
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel__int2half_rna(__gm__ half* dst, __gm__ int32_t* x)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;

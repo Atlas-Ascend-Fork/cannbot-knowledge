@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_permute_sel/asc_squeeze.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_permute_sel.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_squeeze
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_permute_sel.h"`。
 
 将`src`中被`mask`选择的有效元素作为返回值返回或依次复制到`dst`中。有效元素在计算结果中从低到高连续排列，剩余位置元素置为0。
 

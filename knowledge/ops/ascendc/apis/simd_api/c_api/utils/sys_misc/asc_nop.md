@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_misc/asc_nop.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/utils/sys_misc.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_nop
 
 ## 功能说明
+
+头文件路径为：`"c_api/utils/sys_misc.h"`。
 
 生成一条空操作指令，不执行实际计算。每调用一次阻塞一拍流水。
 

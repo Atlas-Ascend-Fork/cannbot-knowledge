@@ -11,14 +11,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__float22half2_rz.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
+source_headers:
+- include/simt_api/asc_fp16.h
 ---
 
 # \_\_float22half2\_rz
 
 ## 功能说明
+
+头文件路径为：`"simt_api/asc_fp16.h"`。
 
 将float2类型数据的两个分量遵循CAST\_TRUNC模式转换为半精度浮点数，返回转换后的half2类型数据。
 
@@ -53,15 +57,13 @@ inline half2 __float22half2_rz(const float2 x)
 
 无
 
-## 需要包含的头文件
-
-无
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     // 使用短向量可提升数据搬运效率
     __aicore__ void simt_float22half2_rz(float2* input, half2* output, uint32_t input_total_length)
     {
@@ -82,6 +84,8 @@ inline half2 __float22half2_rz(const float2 x)
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     // 使用短向量可提升数据搬运效率
     __simt_vf__ __launch_bounds__(1024) inline void simt_float22half2_rz(__gm__ float2* input, __gm__ half2* output, uint32_t input_total_length)
     {

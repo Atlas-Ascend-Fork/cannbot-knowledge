@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/aclnn_operator_development/invocation/single_operator_api_call.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -81,7 +81,7 @@ aclnnStatus aclnnXxx(void *workspace, uint64_t workspaceSize, aclOpExecutor *exe
 单算子API执行流程如下：
 
 **图1** 单算子API执行接口调用流程。
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/single_operator_api_execution_interface_call_flow.png "单算子API执行接口调用流程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/single_operator_api_execution_interface_call_flow.png "单算子API执行接口调用流程")
 
 ### 包含头文件并准备检查宏
 

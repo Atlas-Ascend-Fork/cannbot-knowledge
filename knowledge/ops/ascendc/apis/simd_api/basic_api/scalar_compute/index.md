@@ -8,5 +8,6 @@
 - [GetBitCount](get_bit_count.md)：统计uint64_t数值二进制表示中指定比特值（0或1）的出现次数。
 - [GetSFFValue](get_sff_value.md)：查找uint64_t数值二进制表示中从最低有效位开始的首个指定比特值位置，未找到则返回-1。
 - [Nop](nop.md)：通过输入延迟个数实现延迟若干个cycle。
-- [ReadGmByPassDCache](read_gm_by_pass_d_cache_isasi.md)：不经过DCache从GM地址读取数据。
-- [WriteGmByPassDCache](write_gm_by_pass_d_cache_isasi.md)：不经过DCache向GM地址写入数据，可避免多核Cache Line数据覆盖问题。
+
+- [ReadGmBypassDCache(ISASI)](read_gm_bypass_d_cache_isasi.md)：头文件路径为："basic_api/kernel_operator_scalar_intf.h"。
+- [WriteGmBypassDCache(ISASI)](write_gm_bypass_d_cache_isasi.md)：头文件路径为："basic_api/kernel_operator_scalar_intf.h"。

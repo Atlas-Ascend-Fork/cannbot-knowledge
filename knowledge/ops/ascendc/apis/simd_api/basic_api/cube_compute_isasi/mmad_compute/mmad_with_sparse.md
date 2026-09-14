@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/mmad_compute/MmadWithSparse.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
@@ -35,7 +35,7 @@ $$
 C = A \times B + C
 $$
 
-完整示例请参考：[MmadWithSparse样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_with_sparse)。
+完整示例请参考：[MmadWithSparse样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_with_sparse)。
 
 **表1** Sparse矩阵计算矩阵A、B、C解释说明
 
@@ -48,7 +48,7 @@ $$
 下面的图展示了Cube如何计算出其中一行和一列的内积：
 
 **图1** MmadWithSparse接口计算流程示意图
-![MmadWithSparse接口计算流程示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmadwithsparse_workflow_demo.png "MmadWithSparse接口计算流程示意图")
+![MmadWithSparse接口计算流程示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmadwithsparse_workflow_demo.png "MmadWithSparse接口计算流程示意图")
 
 其中矩阵A原始分形为\(16, 2\*C0\)，索引矩阵Index分形为\(C0，16\)，每一行矩阵A的数据会基于索引矩阵Index中对应的一列数据进行4选2，索引矩阵分形格式及生成方式请参考[4选2稀疏索引矩阵](../cube_compute_fractal_intro/aux_cube_fractal_format_details.md#4选2稀疏索引矩阵)，选择算法参考[矩阵A稀疏选择算法说明](#zh-cn_topic_0000002535726174_li1829819426378)；经过选择处理后的矩阵A分形变成\(16, C0\)，矩阵B原始分形为\(C0, 16\)，接下来会执行普通Mmad运算，即矩阵A中一行和矩阵B中一列完成内积运算得到结果矩阵C中对应一个元素。
 
@@ -74,7 +74,7 @@ $$
   | 2’b01 | 2’b00 | - | X/X | - | - |
 
   **图2** 矩阵A 4：2选择算法模型<a name="zh-cn_topic_0000002535726174_fig14223210123816"></a>
-  ![矩阵A-4-2选择算法模型](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/sparse_mmad_4select2.png "矩阵A-4-2选择算法模型")
+  ![矩阵A-4-2选择算法模型](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/sparse_mmad_4select2.png "矩阵A-4-2选择算法模型")
 
   [图2](#zh-cn_topic_0000002535726174_fig14223210123816)展示了一个uint8类型的索引元素对应选择8个原始矩阵A元素的算法模型，最后输出4个选择后的矩阵A元素。
 
@@ -149,7 +149,7 @@ __aicore__ inline void MmadWithSparse(const LocalTensor<T>& dst, const LocalTens
 
 ## 调用示例
 
-完整使用样例请参见[MmadWithSparse样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_with_sparse)。
+完整使用样例请参见[MmadWithSparse样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_with_sparse)。
 
 ```cpp
 AscendC::LocalTensor<int8_t> a1Local(AscendC::TPosition::A1, a1Addr, aSize);

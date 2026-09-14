@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_gm2l1_nd2nz/asc_copy_gm2l1_nd2nz_arch_3510.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_copy_gm2l1_nd2nz_arch_3510
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
 将数据从Global Memory搬运到L1 Buffer，并在搬运过程中将源端按N维连续排布的ND格式数据转换为L1 Buffer侧的Nz分形排布，使其满足后续矩阵计算对分形列连续性的要求。该接口也适用于卷积格式NHWC（ND）转换为NC1HWC0格式等转换场景。
 
@@ -31,20 +34,12 @@ source_headers:
 
 **图1** ND2Nz与DN2Zn示意图<a id="nd2nz_equivalent_conversion"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_gm2l1_nd2nz_copy.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_gm2l1_nd2nz_copy.png)
 
 ## 函数原型
 
 ```cpp
 __aicore__ inline void asc_copy_gm2l1_nd2nz(__cbuf__ <dtype>* dst,
-                                            __gm__ <dtype>* src,
-                                            uint64_t loop1_src_stride,
-                                            uint8_t l2_cache_ctl,
-                                            uint16_t n_value,
-                                            uint32_t d_value,
-                                            uint64_t loop4_src_stride,
-                                            bool enable_small_c0)
-__aicore__ inline void asc_copy_gm2l1_nd2nz_sync(__cbuf__ <dtype>* dst,
                                             __gm__ <dtype>* src,
                                             uint64_t loop1_src_stride,
                                             uint8_t l2_cache_ctl,
@@ -70,14 +65,6 @@ __aicore__ inline void asc_copy_gm2l1_nd2nz(__cbuf__ half* dst,
                                             uint32_t d_value,
                                             uint64_t loop4_src_stride,
                                             bool enable_small_c0)
-__aicore__ inline void asc_copy_gm2l1_nd2nz_sync(__cbuf__ <dtype>* dst,
-                                                 __gm__ <dtype>* src,
-                                                 uint64_t loop1_src_stride,
-                                                 uint8_t l2_cache_ctl,
-                                                 uint16_t n_value,
-                                                 uint32_t d_value,
-                                                 uint64_t loop4_src_stride,
-                                                 bool smallc0_en)
 ```
 
 ## 参数说明
@@ -108,7 +95,7 @@ ND到Nz的格式转换如[图2](#nd2nz_conversion)所示。
 
 **图2**  ND2Nz转换示意图<a id="nd2nz_conversion"></a>
 
-![ND2Nz格式转换后的数据排布](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_copy_gm2l1_nd2nz.png)
+![ND2Nz格式转换后的数据排布](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_copy_gm2l1_nd2nz.png)
 
 ## 返回值说明
 

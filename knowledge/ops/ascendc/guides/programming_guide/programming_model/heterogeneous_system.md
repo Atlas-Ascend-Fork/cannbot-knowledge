@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/heterogeneous_system.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -27,7 +27,7 @@ platforms: []
 
 
 **图1**  核函数（Kernel）调度示意图<a name="fig573916102285"></a><br>
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/kernel_sched_2.png" alt="核函数（Kernel）调度示意图" width="520px">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/kernel_sched_2.png" alt="核函数（Kernel）调度示意图" width="520px">
 
 
 >[!NOTE]说明

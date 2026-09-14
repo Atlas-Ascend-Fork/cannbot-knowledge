@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_load_aux_config/SetAippFunctions.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -32,25 +32,25 @@ source_headers:
 
         **图1** 常量填充模式（图片中间的绿色区域表示原始数据，其他为padding数据）<a name="fig56681157121916"></a>
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/constant_padding_mode.png "常量填充模式（图片中间的绿色区域表示原始数据——其他为padding数据）")
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/constant_padding_mode.png "常量填充模式（图片中间的绿色区域表示原始数据——其他为padding数据）")
 
     - 模式1：行列填充模式，padding区域各位置填充行/列上最邻近源图片位置的数据。
 
         **图2** 行列填充模式（图片中间的绿色区域表示原始数据，其他为padding数据）<a name="fig4239143712713"></a>
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/row_col_padding_mode.png "行列填充模式（图片中间的绿色区域表示原始数据——其他为padding数据）")
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/row_col_padding_mode.png "行列填充模式（图片中间的绿色区域表示原始数据——其他为padding数据）")
 
     - 模式2：块填充模式，按照padding的宽高，从源图片拷贝数据块进行padding区域填充。
 
         **图3** 块填充模式（图片中间的绿色区域表示原始数据，其他为padding数据）<a name="fig38821202817"></a>
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/block_padding_mode.png "块填充模式（图片中间的绿色区域表示原始数据——其他为padding数据）")
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/block_padding_mode.png "块填充模式（图片中间的绿色区域表示原始数据——其他为padding数据）")
 
     - 模式3：镜像块填充模式，按照padding的宽高，从源图片拷贝数据块的镜像进行padding区域填充。
 
         **图4** 镜像块填充模式（图片中间的绿色区域表示原始数据，其他为padding数据）<a name="fig14371141920261"></a>
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mirror_block_padding_mode.png "镜像块填充模式（图片中间的绿色区域表示原始数据——其他为padding数据）")
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mirror_block_padding_mode.png "镜像块填充模式（图片中间的绿色区域表示原始数据——其他为padding数据）")
 
 - **通道交换：** 将图片通道进行交换。
 
@@ -84,9 +84,9 @@ source_headers:
 
 - **色域转换：** RGB格式转换为YUV格式，或YUV格式转换为RGB格式。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000001938335310.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000001938335310.png)
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000001938176178.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000001938176178.png)
 
 ## 函数原型<a name="section620mcpsimp"></a>
 

@@ -10,16 +10,17 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_simt_hybrid_optimization/execution_control/thread_block_config.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
 # 线程块数量配置优化
 
-
 >[!NOTE]说明 
 >该性能优化建议适用于如下型号：
+     
 >-   Ascend 950PR/Ascend 950DT
+     
 
 
 【优先级】高
@@ -41,7 +42,7 @@ platforms: []
 
 此外，当每核实际处理的元素数小于2048时，线程数量应按每核实际处理的元素数分配，避免空转线程浪费性能。
 
-【样例介绍】以Gather算子为例，算子功能为根据索引张量从输入张量中采集对应位置的数据写入输出，计算公式为output\[i\]\[j\] = input\[index\[i\]\[j\]\]。完整样例请参考[线程块数量配置与vf调用优化样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_grid_dim_config)。
+【样例介绍】以Gather算子为例，算子功能为根据索引张量从输入张量中采集对应位置的数据写入输出，计算公式为output\[i\]\[j\] = input\[index\[i\]\[j\]\]。完整样例请参考[线程块数量配置与vf调用优化样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_grid_dim_config)。
 
 【反例】
 

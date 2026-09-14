@@ -14,7 +14,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import importlib
 import importlib.util
 import json
@@ -146,20 +145,6 @@ def read_utf8(path: Path) -> str:
     """Decode UTF-8 without universal-newline or end-of-file normalization."""
 
     return path.read_bytes().decode("utf-8")
-
-
-def archive_tree_sha256(root: Path) -> str:
-    digest = hashlib.sha256()
-    files = sorted(
-        (path for path in root.rglob("*") if path.is_file() and path.name != ".complete"),
-        key=lambda path: path.relative_to(root).as_posix(),
-    )
-    for path in files:
-        digest.update(path.relative_to(root).as_posix().encode("utf-8"))
-        digest.update(b"\0")
-        digest.update(hashlib.sha256(path.read_bytes()).digest())
-        digest.update(b"\0")
-    return digest.hexdigest()
 
 
 def platform_module():
@@ -826,22 +811,8 @@ def expected_cards(
     root: Path, source_id: str, stamp: str | None
 ) -> tuple[dict[Path, str], dict[str, object], set[Path]]:
     definition, mirror = mirror_config(root, source_id)
-    archive_root = (root / str(definition["root"])).resolve()
-    marker = archive_root / ".complete"
-    expected_markers = {
-        f"archive_sha256={definition['archive_sha256']}",
-        f"tree_sha256={definition['tree_sha256']}",
-    }
-    if not marker.is_file() or not expected_markers.issubset(
-        set(marker.read_text(encoding="utf-8").splitlines())
-    ):
-        raise ValueError(f"fixed archive is missing or stale: {archive_root}")
-    actual_tree_sha256 = archive_tree_sha256(archive_root)
-    if actual_tree_sha256 != definition["tree_sha256"]:
-        raise ValueError(
-            "fixed archive tree SHA-256 mismatch: "
-            f"expected={definition['tree_sha256']} actual={actual_tree_sha256}"
-        )
+    resources = importlib.import_module(f"{ingest.contract_package().__name__}.source_resources")
+    archive_root = resources.validate_archive(root, definition)
     definition = {**definition, "_archive_root": archive_root}
     source_root = (archive_root / str(mirror["source_root"])).resolve()
     load_repair_module().repair_tree(source_root, write=False)
@@ -948,7 +919,7 @@ def expected_cards(
         rendered[output] = candidate
     report = {
         "source_id": source_id,
-        "archive_sha256": definition["archive_sha256"],
+        "archive_url": definition["archive_url"],
         "upstream_revision": mirror["upstream_revision"],
         "source_documents": len(source_documents),
         "selected": len(sources),

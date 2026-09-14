@@ -11,14 +11,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/thread_block/group_index.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
+source_headers:
+- include/simt_api/cooperative_groups.h
 ---
 
 # group_index
 
 ## 功能说明
+
+头文件路径为：`"simt_api/cooperative_groups.h"`。
 
 获取当前线程所属的线程块在网格（grid）中的三维索引，返回值与内置变量`blockIdx`相同。
 
@@ -45,6 +49,8 @@ static dim3 group_index()
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/cooperative_groups.h"
+
     using namespace cooperative_groups;
     __global__ void simt_kernel(...)
     {
@@ -58,6 +64,8 @@ static dim3 group_index()
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/cooperative_groups.h"
+
     using namespace cooperative_groups;
     __simt_vf__ inline void simt_kernel(...)
     {

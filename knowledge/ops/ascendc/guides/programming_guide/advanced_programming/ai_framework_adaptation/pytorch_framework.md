@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/ai_framework_adaptation/pytorch_framework.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -23,7 +23,7 @@ platforms: []
 -   图模式调用：自定义算子在Pytorch图模式下的适配开发指导请参见 [《TorchNPU》](https://www.hiascend.com/document/detail/zh/Pytorch/latest/index/index.html)中的“TorchAir > 自定义算子入图”章节。
 
 **图1**  Pytorch框架部署方式<a name="fig1969201074516"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/pytorch_deploy.png "Pytorch框架部署方式")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/pytorch_deploy.png "Pytorch框架部署方式")
 
 **本节主要提供通过torch.library与Pybind注册自定义算子并实现PyTorch框架调用算子核函数（Kernel）程序的指导。**
 
@@ -34,7 +34,7 @@ Pybind适用于快速将C++函数暴露给Python，实现高效接口绑定。�
 
 ## torch.library<a name="section9528173218278"></a>
 
-下面代码以add\_custom（Add自定义算子为例）算子为例，介绍通过torch.library如何调用算子核函数（Kernel）程序，文档中仅介绍核心步骤，完整样例请参考[torch.library样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/00_framework/00_pytorch/torch_library)。
+下面代码以add\_custom（Add自定义算子为例）算子为例，介绍通过torch.library如何调用算子核函数（Kernel）程序，文档中仅介绍核心步骤，完整样例请参考[torch.library样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/00_framework/00_pytorch/torch_library)。
 
 1.  环境准备。
 
@@ -53,7 +53,7 @@ Pybind适用于快速将C++函数暴露给Python，实现高效接口绑定。�
     at::Tensor ascendc_add(const at::Tensor& x, const at::Tensor& y)
     {
         // 运行资源申请，通过c10_npu::getCurrentNPUStream()的函数获取当前NPU上的流
-        auto aclStream = c10_npu::getCurrentNPUStream().stream(false);
+        auto aclStream = c10_npu::getCurrentNPUStream().stream(true);
         // 分配Device侧输出内存
         at::Tensor z = at::empty_like(x);
         uint32_t numBlocks = 8;
@@ -94,7 +94,7 @@ Pybind适用于快速将C++函数暴露给Python，实现高效接口绑定。�
 
 ## Pybind<a name="section1788413437123"></a>
 
-下面代码以add\_custom算子为例，介绍通过Pybind方式实现Pytorch脚本中调用自定义算子的流程。文档中仅介绍核心步骤，完整样例请参考[Pybind样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/00_framework/00_pytorch/pybind)。
+下面代码以add\_custom算子为例，介绍通过Pybind方式实现Pytorch脚本中调用自定义算子的流程。文档中仅介绍核心步骤，完整样例请参考[Pybind样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/00_framework/00_pytorch/pybind)。
 
 1.  环境准备。
 
@@ -127,7 +127,7 @@ Pybind适用于快速将C++函数暴露给Python，实现高效接口绑定。�
     at::Tensor ascendc_add(const at::Tensor& x, const at::Tensor& y)
     {
         // 运行资源申请，通过c10_npu::getCurrentNPUStream()的函数获取当前NPU上的流
-        auto aclStream = c10_npu::getCurrentNPUStream().stream(false);
+        auto aclStream = c10_npu::getCurrentNPUStream().stream(true);
         // 分配Device侧输出内存
         at::Tensor z = at::empty_like(x);
         uint32_t numBlocks = 8;

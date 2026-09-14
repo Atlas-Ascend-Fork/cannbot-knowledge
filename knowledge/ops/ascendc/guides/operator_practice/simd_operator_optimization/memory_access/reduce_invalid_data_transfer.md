@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/memory_access/reduce_invalid_data_transfer.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -58,7 +58,7 @@ __aicore__ inline void CopyIn(){
 ```
 
 **图1**  Normal模式搬运<a name="fig1316440112511"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/norm_copy.png "Normal模式搬运")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/norm_copy.png "Normal模式搬运")
 
 如图所示，由于每块数据块为48B，非32B对齐，因此搬运每块数据块时需要插入16B大小的padding数据使得数据32B对齐，最终搬运192B大小的数据到UB，其中包含48B的无效数据。
 
@@ -92,7 +92,7 @@ __aicore__ inline void CopyIn(){
 ```
 
 **图2**  Compact模式搬运<a name="fig203951741467"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/compact_copy.png "Compact模式搬运")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/compact_copy.png "Compact模式搬运")
 
 根据Compact模式搬运的示意图，最终搬运了160B大小的数据，其中包含16B的无效数据。
 

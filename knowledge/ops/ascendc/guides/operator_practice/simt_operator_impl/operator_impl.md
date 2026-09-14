@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_impl/operator_impl.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -18,13 +18,13 @@ platforms: []
 
 本章节将以Gather类算子为例，介绍SIMT算子实现的基本流程，如下图所示：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/tik2_vec.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/tik2_vec.png)
 
 -   算子分析与核函数（Kernel）定义：明确算子的输入和输出，分析最大线程数的设置方案。明确算子核函数（Kernel）名、输入输出参数，确定动态参数空间大小，配置最大线程数。
 -   Host侧线程切分计算：根据输入数据的shape信息，计算和设置gridDim、blockDim等参数。
 -   核函数（Kernel）侧算子实现：实现单线程内的计算逻辑。
 
-下文将对上述步骤进行详细介绍。完整的算子实现请参考[gather算子实现样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/00_introduction/01_gather/general_gather)。
+下文将对上述步骤进行详细介绍。完整的算子实现请参考[gather算子实现样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/00_introduction/01_gather/general_gather)。
 
 ## 算子分析与核函数（Kernel）定义<a name="zh-cn_topic_0000002475260740_section725024573711"></a>
 

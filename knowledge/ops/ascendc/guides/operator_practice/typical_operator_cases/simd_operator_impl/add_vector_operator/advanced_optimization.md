@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/typical_operator_cases/simd_operator_impl/add_vector_operator/advanced_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -73,4 +73,4 @@ static constexpr uint32_t xAddrPongBC = MAX_DATA_COPY_LEN * sizeof(half) * 2;
 
 **最终结论**：Add算子经过入门→中级→高阶三级优化，端到端性能提升6711倍。当前瓶颈主要在搬运带宽本身，向量计算已接近理论极限。对于Ascend 950系列产品，Bank排列方式不同，无需Bank Conflict优化，Case 5即为最优版本。
 
-详细内容请参见[Add性能调优样例 Case 5-6](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/README.md#高阶性能打磨)。
+详细内容请参见[Add性能调优样例 Case 5-6](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance/README.md#高阶性能打磨)。

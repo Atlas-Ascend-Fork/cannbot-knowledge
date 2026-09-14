@@ -10,23 +10,24 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_simt_hybrid_optimization/instruction_optimization/fast_integer_division.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
 # 整数除法的快速算法<a name="ZH-CN_TOPIC_INTEGER_FAST_DIV"></a>
 
-
 >[!NOTE]说明 
 >该性能优化建议适用于如下型号：
+     
 >-   Ascend 950PR/Ascend 950DT
+     
 
 
 【优先级】低
 
 【描述】整数除法指令在AI处理器上相比乘法和移位，执行开销显著更高。当除数固定时，可以使用基于乘法和移位的快速除法算法，在SIMD中根据除数预计算乘法魔数magic和移位量shift，在SIMT并行计算中使用乘法和移位操作，得到与普通整数除法一致的结果，从而降低每次除法的执行开销。
 
-【样例介绍】以uint32类型整数除法算子为例，算子功能为将输入input的每个元素除以固定除数divisor，并将结果写入输出output。样例对比在SIMT中直接使用普通除法，以及针对固定除数预计算magic和shift后使用乘法和移位替代普通除法的性能差异。完整的算子实现代码请参考[SIMD与SIMT混合编程实现快速除法算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_integer_fast_div)。
+【样例介绍】以uint32类型整数除法算子为例，算子功能为将输入input的每个元素除以固定除数divisor，并将结果写入输出output。样例对比在SIMT中直接使用普通除法，以及针对固定除数预计算magic和shift后使用乘法和移位替代普通除法的性能差异。完整的算子实现代码请参考[SIMD与SIMT混合编程实现快速除法算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_integer_fast_div)。
 
 **表1**  样例规格
 

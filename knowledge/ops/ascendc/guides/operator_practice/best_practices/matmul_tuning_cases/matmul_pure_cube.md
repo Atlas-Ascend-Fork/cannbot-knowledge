@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/best_practices/matmul_tuning_cases/matmul_pure_cube.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -21,7 +21,7 @@ platforms: []
 本案例呈现了在矩阵乘算子场景中，开启Matmul高阶API的纯Cube模式对算子性能的提升效果。如下图所示，Matmul API默认使用MIX模式，即用户从AIV侧发起消息，通过消息通信框架中转消息后，在AIC侧执行Matmul计算。这套消息处理机制会带来额外的Scalar性能开销。相较于MIX模式，纯Cube模式可以直接跳过消息通信框架，完成Matmul计算，提升算子性能。
 
 **图1**  默认MIX模式的Matmul流程示意图<a name="fig0672118378"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mix_matmul.png "默认MIX模式的Matmul流程示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mix_matmul.png "默认MIX模式的Matmul流程示意图")
 
 -   开启纯Cube模式的适用场景
 
@@ -81,11 +81,11 @@ Tiling参数如下：
 
 -   优化前的Profiling数据如下，从C列的aic\_time数据可以看出，多个核中最大算子执行耗时为17.85us。从G列的aic\_scalar\_time数据可以看出，Scalar平均耗时为15.02us，性能瓶颈在Scalar流水。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002411013306.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002411013306.png)
 
 -   优化前的流水图如下，由于默认为MIX模式，每次Matmul计算均涉及消息通信框架对消息进行处理，Scalar流水重，性能开销较大，如下图红框所示。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002390760922.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002390760922.png)
 
 ## 设计优化方案<a name="section81265422311"></a>
 
@@ -123,9 +123,9 @@ Tiling参数如下：
 在没有矢量计算的算子场景下，可以跳过消息通信框架的机制，开启纯Cube模式完成Matmul计算，减少消息通信的性能开销，提升算子性能。
 
 **图2**  纯Cube模式的Matmul流程示意图<a name="fig20558182319127"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/cube_matmul.png "纯Cube模式的Matmul流程示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/cube_matmul.png "纯Cube模式的Matmul流程示意图")
 
-Matmul API开启纯Cube模式的完整样例请参考[纯Cube模式的Matmul样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul)。开启纯Cube模式的主要步骤如下：
+Matmul API开启纯Cube模式的完整样例请参考[纯Cube模式的Matmul样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul)。开启纯Cube模式的主要步骤如下：
 
 1.  核函数（Kernel）侧，在定义Matmul对象的代码中，包含matmul\_intf.h头文件前设置ASCENDC\_CUBE\_ONLY宏。
 
@@ -173,11 +173,11 @@ Matmul API开启纯Cube模式的完整样例请参考[纯Cube模式的Matmul样�
 
 -   优化后的Profiling数据如下，从C列的aic\_time数据来看，多个核中最大算子执行耗时为11.21us，较优化前的17.85us有较大提升。从G列的aic\_scalar\_time数据来看，Scalar平均耗时从优化前的15.02us降低至5.17us。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002411013940.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002411013940.png)
 
 -   优化后的流水图如下。对比优化前的流水图，红框所示位置的Scalar流水明显变稀疏。纯Cube模式相较于MIX模式，减少了对消息通信的处理，优化了整体Scalar性能开销。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002377887318.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002377887318.png)
 
 ## 总结<a name="section252011820413"></a>
 

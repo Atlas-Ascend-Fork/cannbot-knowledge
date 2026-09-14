@@ -48,8 +48,8 @@ runbooks 策展的**独立审查子 agent**。以全新 reviewer 上下文审查
 
 ### 必须做什么
 
-- 逐卡对照 blocker 清单与 runbooks-contract §3-§8 检查：frontmatter 字段齐全（`type: "Runbook"`、`status: stable`，标题 ≤40 个 Unicode 字符；必填 `platforms` 取 `registries.yaml` 当前注册值且**只含实际验证平台**，无法定位平台的候选必须 defer；**不设 `evidence`/`confidence`/`transfer_scope`/`quality_score`/`reproduce_count`/`kind`/`category`/`phenomenon`/`signal`/`solution_layer`/`source_family`/`knowledge_form`/`keywords`**——内部形态与检索词只进 manifest）、验证信号仅本 trace 内实测且**逐条标来源平台+证据等级**、代码完整、坏实践/误诊/遗留问题足量；**适用场景完整（工程形态/API 路径/平台与版本/适用粒度/路线优先级/不适用场景）、`safety_fallback` 含 fallback 声明、背景完整（算子名/文件/shape/dtype/平台/工具链，场景描述语言+代码双通道成立：原始报错/命令/代码内联，无内部编号转述替代）、根因推导有具体算式、修复真实验证过、非假设型、同问题域冲突已进入 ledger 候选**。
-- 对升级操作（UPVOTE→内部 `verified` tier）核对：跨 trace 复现 ≥2 + 主卡上板信号 `tool_observed`/`artifact_verified`（双门槛）。
+- 逐卡对照 blocker 清单与 runbooks-contract §3-§8 检查：frontmatter 字段齐全（`type: "Runbook"`、`status: stable`，标题 ≤40 个 Unicode 字符；必填 `platforms` 取 `registries.yaml` 当前注册值且**只含实际验证平台**，无法定位平台的候选必须 defer；**不设 `evidence`/`confidence`/`transfer_scope`/`quality_score`/`reproduce_count`/`kind`/`category`/`phenomenon`/`signal`/`solution_layer`/`source_family`/`knowledge_form`/`keywords`**——内部形态与检索词只进 manifest）、验证信号仅本 trace 内实测且**逐条标来源平台+证据等级**、代码完整、坏实践/误诊/遗留问题足量；**适用场景完整（工程形态/API 路径/平台与版本/适用粒度/路线优先级/不适用场景）、`safety_fallback` 含 fallback 声明、背景完整（算子名/文件/shape/dtype/平台/工具链，场景描述语言+代码双通道成立：原始报错/命令/代码内联，无内部编号转述替代）、机制推导有具体证据、各知识形态具有自身要求的客观观测、非假设型、同问题域冲突已进入 ledger 候选**。
+- 对升级操作（UPVOTE→内部 `verified` tier）核对：按 `raw_source_sha256` 去重且核实独立性的跨 trace 复现 ≥2（不按合并卡数或目录数累加）+ 主卡上板信号 `tool_observed`/`artifact_verified`（双门槛）。
 - 输出 findings 清单（含严重度与证据位置），并原样带回主 agent 提供的 `subject_sha256`、`ledger_sha256` 与完整 `cards` 哈希清单；`reviewer` 使用 Agent 运行时给出的 canonical task identity，`reviewed_at` 读取当时系统时钟，`attestation` 固定为 `agent-runtime-message`。主 agent 必须核对消息 sender 与 `reviewer` 一致，再把原始回复写为 receipt 并运行 `scripts/validate_review_receipt.py`。脚本绑定内容完整性，不替代运行时 sender 身份检查。
 
 ### 不能做什么

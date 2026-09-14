@@ -81,7 +81,7 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + Lint 与检索验证 + log
    │
    ▼ ④c 簇级门控与去重判定（LLM，curator subagent 分域并行）
    每簇：主卡选择 → 跨trace复现计数 → 对近邻库卡判定
-     new / upvote(ledger 内部 reproduce_count+=n) / merge(补字段) / covered / reject
+     new / upvote(按不同 raw 来源核验复现数) / merge(补字段) / covered / reject
    门控锁在簇主卡判（价值/防作弊/代码完整/验证信号）；成员卡只做确定性检查
    → 每域 pending ledger.json（.build/，不直接写库）
    │
@@ -98,7 +98,7 @@ knowledge/ops/ascendc/runbooks/** + batch ledger + Lint 与检索验证 + log
 
 **④a 确定性预聚类（必须 0 LLM）**
 - 特征：`type + phenomenon + solution_layer + signal 共享词 + 根因句字符 n-gram`；
-- 贪心聚类（相似度阈值并簇）；产出簇清单含**跨 trace 数**（这是批量 `reproduce_count` 的来源）；
+- 贪心聚类（相似度阈值并簇）；产出簇清单含按目录 trace_id 统计的 `cross_trace`（仅作候选统计；实际 `reproduce_count` 由 curator 核验原始来源并按 `raw_source_sha256` 去重）；
 - 细粒度已由 mine 保证（每候选一根因一知识形态），簇 = “同 knowledge_form + 同根因跨 trace/跨候选”聚合；不同形态不得自动聚为一个证据合同；
 - 预聚类保留的动机是**判定一致性与可审计性**（同根因候选一次判定、一次计数），不是省 token；漏并后果轻（同 nugget 落两次 → 下次 upgrade 合并），误并由 ④c 判定时拆出。
 

@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Tiling/v2_TilingData_deprecated.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -30,6 +30,7 @@ AI CPU启动下发通信任务前，需获取固定的通信配置，如[表1](#
 **表1**  v2版本HCCL TilingData参数说明
 
 <a name="table4835205712588"></a>
+
 | 参数名 | 描述 |
 | --- | --- |
 | version | uint32_t类型。用于区分TilingData版本。<br><br>v2版本的TilingData结构体中，version字段仅支持取值为2。<br><br>注意：该字段在v2版本TilingData中的位置，同v1版本的preparePosition字段。当该字段取值为2时，为v2版本的结构体，当取值为1时，为v1版本的结构体，请使用[Mc2Msg结构体](v1_tiling_data_deprecated.md#table4835205712588)。 |

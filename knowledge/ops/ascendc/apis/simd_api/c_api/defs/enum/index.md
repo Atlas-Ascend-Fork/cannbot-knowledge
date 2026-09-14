@@ -5,3 +5,5 @@
 - [asc_override_strategy](asc_override_strategy.md)：asc_override_strategy用于表示饱和控制策略，在调用asc_set_saturation_strategy和asc_get_saturation_strategy时使用。该策略影响CAST类全局饱和配置是否生效。
 - [asc_saturation_mode](asc_saturation_mode.md)：asc_saturation_mode用于表示饱和控制所作用的模式类型，在调用asc_set_saturation_flag和asc_get_saturation_flag时使用。
 - [asc_store_l2_cache_mode](asc_store_l2_cache_mode.md)：asc_store_l2_cache_mode用于表示数据从Unified Buffer（UB）搬运到GM时的L2 cache策略，可用于：
+
+- [asc_l13d_repeat_direction](asc_l13d_repeat_direction.md)：asc_l13d_repeat_direction用于表示3D img2col搬运的repeat迭代方向，作为asc_set_l13d_rpt和asc_set_l13d_rpt_b接口的repeat_direction参数类型。

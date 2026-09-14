@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/L1_L0A_B_memory_structure_intro.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -38,7 +38,7 @@ L1_ADDR[18:0] = {BANK[0:0], BANK_DEPTH[9:0], BG[2:0], BANK_WIDTH[4:0]}    // bit
 ```
 
 **图1** L1 Buffer内存结构图<a name="zh-cn_topic_0000002545385271_fig5383229131020"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/l1_memory_bank.png "L1内存结构图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/l1_memory_bank.png "L1内存结构图")
 
 ## L0A Buffer/L0B Buffer内存结构<a name="zh-cn_topic_0000002545385271_section6770135142516"></a>
 
@@ -54,4 +54,4 @@ L0B_ADDR[15:0] = { BANK_DEPTH[6:0], BANK_WIDTH[8:0] }
 ```
 
 **图2** L0A Buffer/L0B Buffer内存结构图<a name="zh-cn_topic_0000002545385271_fig2046019020496"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/l0al0b_memory_bank.png "L0A-B内存结构图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/l0al0b_memory_bank.png "L0A-B内存结构图")

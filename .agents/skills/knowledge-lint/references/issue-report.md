@@ -10,7 +10,7 @@
 4. 执行器、版本、Python、OS；涉及模型时记录完整模型标识和用途。
 5. 完整原始 Prompt/Query、触发命令、实际生效配置和 stdout/stderr，逐字保留。
 6. 涉及 agent/LLM 时保存 session、model request/response、tool calls 和生成 diff。
-7. 工具、检索和 agent 问题至少运行三次并记录 y 次中出现 x 次；确定性内容错误可说明无需重复运行。
+7. 工具、检索和 agent 问题优先汇总至少三次已有运行记录，并记录 y 次中出现 x 次；不足三次时如实记录样本数和缺口。仅在当前任务已授权且符合只读边界时补充复现；不因整理 Issue 自动回放原始 Prompt、构建、设备实验或有写入副作用的命令。确定性内容错误可说明无需重复运行。
 8. 受影响 Concept ID/path、section/anchor、status、platform、CANN version、sources 和 card SHA-256。
 9. 官方文档、固定 commit、源码路径、trace、日志、错误信号或建议 patch。
 

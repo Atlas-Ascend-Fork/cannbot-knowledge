@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TBuf/TBuf_intro.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -20,7 +20,7 @@ platforms: []
 
 TBuf继承自TQueBind父类，继承关系如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/enque-42.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/enque-42.png)
 
 TBuf占用的存储空间通过TPipe进行管理，您可以通过[InitBuffer](../t_pipe/init_buffer.md)接口为TBuf进行内存初始化操作，之后即可通过[Get](get.md)获取指定长度的Tensor参与计算。
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_compare_functions/__hmax.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -22,9 +22,11 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"simt_api/asc_fp16.h"`。
+
 获取两个输入数据中的最大值。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002533455019.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002533455019.png)
 
 ## 函数原型
 
@@ -63,19 +65,13 @@ inline half __hmax(half x, half y)
 
 无
 
-## 需要包含的头文件
-
-使用half类型接口需要包含`simt_api/asc_fp16.h`头文件。
-
-```cpp
-#include "simt_api/asc_fp16.h"
-```
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     __global__ __launch_bounds__(1024) void KernelMax(half* dst, half* x, half* y)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -86,6 +82,8 @@ inline half __hmax(half x, half y)
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void KernelMax(__gm__ half* dst, __gm__ half* x, __gm__ half* y)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;

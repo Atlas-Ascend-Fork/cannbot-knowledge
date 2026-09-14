@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopy_UBToUB_highdim_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -86,7 +86,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>&
     - dstGap = 0，目的操作数相邻数据块之间的间隔为0。
 
     **图1**  连续搬运示意图<a name="zh-cn_topic_0000002535088926_fig4621152141711"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/continuous_data_copy_diagram.png "连续搬运示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/continuous_data_copy_diagram.png "连续搬运示意图")
 
 - 示例2：非连续搬运
 
@@ -100,7 +100,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>&
     - dstGap = 2，目的操作数相邻数据块之间的间隔为2。
 
     **图2**  非连续搬运示意图<a name="zh-cn_topic_0000002535088926_fig422819202304"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/discontinuous_data_copy_diagram.png "非连续搬运示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/discontinuous_data_copy_diagram.png "非连续搬运示意图")
 
 ## 数据类型<a name="section4219135304818"></a>
 

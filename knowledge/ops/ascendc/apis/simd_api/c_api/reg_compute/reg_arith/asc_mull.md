@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_arith/asc_mull.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_arith.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_mull
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_arith.h"`。
 
 根据掩码将两个源矢量数据寄存器中的有效元素相乘，数据类型位宽为32位的元素相乘得到64位乘积，拆分为低32位与高32位分别写入两个目的矢量数据寄存器。掩码对应位置为1的元素参与计算，为0的元素在目的矢量数据寄存器中置零。计算公式如下：
 
@@ -37,7 +40,7 @@ $$
 
 **图 1**  asc_mull计算示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_mull.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_mull.png)
 
 ## 函数原型
 

@@ -1,6 +1,6 @@
 # Cube/CV 执行族提取闭包
 
-本参考只用于至少一个 Host/launcher 可达 Device 节点含 Cube/AIC 或 MIX_CV 的逻辑算子。只读取目标 route 命中的章节；一个 route 若跨族，必须把 Cube 节点与其它节点的交接边也写出来。只有 SIMT、NDDMA、通信、Hybrid 或多 Kernel 而没有 Cube/AIC/MIX_CV 时整体改用 VV Skill。
+本参考只用于至少一个 Host/launcher 可达 Device 节点含 Cube/AIC 或 MIX_CV 的逻辑算子。只读取目标 route 命中的章节；一个 route 若跨族，必须把 Cube 节点与其它节点的交接边也写出来。分流以目标范围内全部可达 Route 为单位；只有整个算子都没有 Cube/AIC/MIX_CV 时才改用 VV Skill，CV 算子中的纯非 Cube Route 仍在本卡闭合。
 
 ## 目录
 
@@ -107,7 +107,7 @@ GM A/B
 
 ## 5. 含 Cube 节点的多 Kernel 拓扑
 
-多 Kernel 不是执行族。只有 launch graph 至少一个可达节点含 Cube/AIC 或 MIX_CV 时才使用本节和 CV Skill；若节点只含 AIV/Vector、SIMT、NDDMA、非 Cube 通信/Hybrid，整体改用 VV Skill。
+多 Kernel 不是执行族。含 Cube/AIC 或 MIX_CV 的 Route 按本节记录节点与交接；同一 CV 算子的纯非 Cube 多 Kernel Route 也须记录以下节点、边和生命周期，按实际执行族使用对应章节，不因单条 Route 无 Cube 而改派 VV。
 
 为 launch graph 中每个节点记录：kernel、执行族、输入、输出、workspace slice、blockDim。为每条边记录：
 

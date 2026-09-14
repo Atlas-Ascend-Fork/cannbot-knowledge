@@ -8,7 +8,7 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # ----------------------------------------------------------------------------------------------------------
 
-"""Pinned Git source locations and read-only checkout validation."""
+"""Registered archive and pinned Git source locations and read-only validation."""
 
 from __future__ import annotations
 
@@ -18,6 +18,19 @@ import os
 import re
 import subprocess
 from urllib.parse import quote, unquote, urlsplit
+
+
+def validate_archive(root: Path, definition: dict) -> Path:
+    """Check acquisition completion and origin, without pinning rolling content."""
+    directory = root / definition["root"]
+    marker = directory / ".complete"
+    if (directory.resolve() != directory or not directory.is_dir()
+            or marker.is_symlink() or not marker.is_file()):
+        raise ValueError(f"restored documentation requires a regular .complete marker: {directory}")
+    expected = f"archive_url={definition['archive_url']}"
+    if expected not in marker.read_text(encoding="utf-8").splitlines():
+        raise ValueError(f"restored documentation archive URL does not match Registry: {directory}")
+    return directory
 
 
 @dataclass(frozen=True)

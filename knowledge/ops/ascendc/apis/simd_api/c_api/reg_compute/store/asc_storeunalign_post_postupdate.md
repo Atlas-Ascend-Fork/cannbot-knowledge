@@ -11,16 +11,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/store/asc_storeunalign_post_postupdate.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/store/storeunalign.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_storeunalign_post_postupdate
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/store/storeunalign.h"`。
 
 将非对齐寄存器中暂存的尾块写入Unified Buffer（UB），用于搬出[asc_storeunalign_postupdate立即数偏移搬出模式](asc_storeunalign_postupdate.md)产生的非对齐寄存器。启用Post Update模式在搬出后自动累加目的地址指针，便于硬件循环内连续多次调用时无需手动维护目的地址。搬出结束后，目的地址向后偏移立即数`offset`个元素。
 

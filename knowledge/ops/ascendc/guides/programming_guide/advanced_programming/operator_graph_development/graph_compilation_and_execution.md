@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/operator_graph_development/graph_compilation_and_execution.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -29,7 +29,7 @@ platforms: []
 
 ## 准备验证代码工程<a name="zh-cn_topic_0000001541959061_section2021523012501"></a>
 
-代码工程目录结构如下，您可以单击[LINK](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/99_acl_based/01_acl_invocation/aclop_invocation)，获取样例工程的完整样例：
+代码工程目录结构如下，您可以单击[LINK](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/99_acl_based/01_acl_invocation/aclop_invocation)，获取样例工程的完整样例：
 
 ```
 ├── aclop_invocation

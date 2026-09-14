@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/data_compression/Pack.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -28,7 +28,7 @@ source_headers:
 
 **图 1**  Pack示意图
 
-![Pack](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_pack_1.png)
+![Pack](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_pack_1.png)
 
 ## 函数原型<a name="section620mcpsimp"></a>
 
@@ -63,6 +63,7 @@ __simd_callee__ inline void Pack(S& dstReg, V& srcReg)
 ## 数据类型
 
 **表 3**  源操作数和目的操作数的数据类型对应表<a id="table3"></a>
+
 | T数据类型 | U数据类型 |
 | ------ | ------ |
 | uint8_t | int16_t |

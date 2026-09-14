@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/prototype_register_management/OpParamDef/FormatForBinQuery.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -94,7 +94,7 @@ OpParamDef算子定义，OpParamDef请参考[OpParamDef](index.md)。
     -   替换后第4列使用原来第2列的二进制，第1列和第2列使用原来第1列的二进制。第3列仍使用第3列的二进制。
     -   替换后，第1列和第2列完全一致，达成二进制复用的效果，算子总二进制会由原来的四个（bin1，bin2，bin3，bin4）缩减至现在的三个（bin1，bin2、bin3）。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/FormatForBinQuery.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/FormatForBinQuery.png)
 
 -   示例二
 

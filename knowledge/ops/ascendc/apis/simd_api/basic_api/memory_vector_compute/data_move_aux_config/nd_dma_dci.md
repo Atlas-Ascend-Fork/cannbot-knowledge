@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move_aux_config/NdDmaDci.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -46,7 +46,7 @@ __aicore__ inline void NdDmaDci()
 
 ## 调用示例<a name="section1227835243314"></a>
 
-完整算子用例请参考：[多维数据搬运样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2ub_nddma)。
+完整算子用例请参考：[多维数据搬运样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2ub_nddma)。
 
 以2D Padding场景为例，将GM上shape为[2, 8]的数据搬运至Unified Buffer（UB）并Padding为[4, 16]，左Padding 3，上Padding 1，右Padding 5，下Padding 1，Padding值填充为0。在调用[DataCopy（GMToUB多维数据搬运NDDMA）](../data_move/data_copy_gm_to_ub_nddma.md)前，需要先调用NdDmaDci刷新NDDMA DataCache。
 

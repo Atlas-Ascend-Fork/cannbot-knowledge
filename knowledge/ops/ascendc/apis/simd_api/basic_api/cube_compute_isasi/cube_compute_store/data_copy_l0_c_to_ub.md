@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/DataCopy_L0CToUB.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - 310p
 ---
@@ -110,7 +110,7 @@ platforms:
 
 **图1** sidStoreMode配置示意图<a id="fig5416115192414"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/sidstoremode_config.png "sidStoreMode配置示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/sidstoremode_config.png "sidStoreMode配置示意图")
 
 ## 数据类型<a id="section8664371012"></a>
 
@@ -129,6 +129,7 @@ platforms:
 
 ## 约束说明<a name="section633mcpsimp"></a>
 
+- 量化参数不能为inf/nan和非规格化数。
 - 开发者需要保证DataCopyEnhancedParams中的isRelu参数配置和量化系数deqValue/量化参数向量deqTensorAddr的ReLU标志位配置一致：都开启或都不开启。
 - 如果有随路精度转换，操作数的blockLen单位需要减半。
 

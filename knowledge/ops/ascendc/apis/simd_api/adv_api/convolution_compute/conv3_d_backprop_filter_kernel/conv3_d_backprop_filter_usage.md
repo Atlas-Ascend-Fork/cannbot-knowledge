@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/convolution_compute/Conv3DBackpropFilter_Kernel/Conv3DBackpropFilter_usage.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -23,17 +23,17 @@ Ascend C提供一组Conv3DBackpropFilter高阶API，便于用户快速实现卷�
 
 Conv3dBackpropFilter的计算公式为：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002067618970.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002067618970.png)
 
 -   X为卷积的特征矩阵Input。
 -   ∂L/∂Y为卷积正向损失函数对输出Y的梯度GradOutput，作为求反向传播误差∂L/∂W的输入，即卷积的输出反向GradOutput。
 -   ∂L/∂W为Weight权重的反向传播误差GradWeight。
 
 **图1**  卷积反向权重传播示意图<a name="fig1710410547569"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv_backward_weight_propagation.png "卷积反向权重传播示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv_backward_weight_propagation.png "卷积反向权重传播示意图")
 
 **图2**  卷积反向权重计算过程示意图<a name="fig25291917533"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv_backward_weight_compute.png "卷积反向权重计算过程示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv_backward_weight_compute.png "卷积反向权重计算过程示意图")
 
 核函数（Kernel）侧实现Conv3DBackpropFilter求解反向传播误差运算的步骤概括为：
 
@@ -93,6 +93,7 @@ Conv3dBackpropFilter的计算公式为：
     **表1**  ConvType说明
 
     <a name="table19081115275"></a>
+
     | 参数 | 说明 |
     | --- | --- |
     | POSITION | 内存逻辑位置。<br>    Input X矩阵可设置为TPosition::GM。<br>WeightSize可设置为TPosition::GM。<br>GradOutput矩阵可设置为TPosition::GM。<br>GradWeight矩阵可设置为TPosition::GM。 |
@@ -106,6 +107,7 @@ Conv3dBackpropFilter的计算公式为：
     | --- | --- | --- | --- | --- |
     | half | int32_t | half | float |  |
     | bfloat16_t | int32_t | bfloat16_t | float |  |
+
     
 
 2.  初始化操作。

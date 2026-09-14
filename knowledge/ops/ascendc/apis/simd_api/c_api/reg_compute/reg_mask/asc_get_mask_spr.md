@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_mask/asc_get_mask_spr.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_mask.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_get_mask_spr
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_mask.h"`。
 
 从SPR（Special Purpose Register）中读取mask值，并按数据类型格式化后返回。
 

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/debug_and_tuning/functional_debug/cpu_twin_debug.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -27,7 +27,7 @@ platforms: []
 在非昇腾设备上，开发者可以利用CPU仿真环境先行进行算子开发和测试，并在准备就绪后，利用昇腾设备进行加速计算。在[编译与运行](../../compilation_and_execution/index.md)章节，我们已经介绍了算子核函数（Kernel）程序NPU域的编译运行。相比于NPU域的算子运行逻辑，CPU域调试将算子核函数（Kernel）程序以Host程序的形式进行编译，此时算子核函数（Kernel）程序链接CPU调测库，执行编译生成的可执行文件，可以完成算子CPU域的运行验证。CPU侧的运行程序，通过GDB通用调试工具进行单步调试，可以精准验证程序执行流程是否符合预期。
 
 **图1**  CPU域和NPU域的核函数（Kernel）运行逻辑对比<a name="fig39851716019"></a><br>
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/cpu_npu.png "CPU域和NPU域的核函数（Kernel）运行逻辑对比")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/cpu_npu.png "CPU域和NPU域的核函数（Kernel）运行逻辑对比")
 
 推荐使用CMake编译方式，可在最小化修改的情况下快速开启CPU域孪生调试功能。
 

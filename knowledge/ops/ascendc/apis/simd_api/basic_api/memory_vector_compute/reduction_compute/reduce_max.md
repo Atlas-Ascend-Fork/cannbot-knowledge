@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute/ReduceMax.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -36,7 +36,7 @@ source_headers:
 
 **图1**  `ReduceMax`计算示意图<a id="fig1"></a>
 
-![ReduceMax计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ReduceMax_scale.png "ReduceMax计算示意图")
+![ReduceMax计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ReduceMax_scale.png "ReduceMax计算示意图")
 
 ## 函数原型
 
@@ -220,7 +220,7 @@ source_headers:
 
 ## 调用示例<a name="section107745237168"></a>
 
-详细示例请参考[ReduceMax样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/reduce_computation)。
+详细示例请参考[ReduceMax样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/reduce_computation)。
 
 - tensor高维切分计算样例-`mask`连续模式：
 

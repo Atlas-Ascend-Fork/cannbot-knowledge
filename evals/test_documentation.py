@@ -10,8 +10,10 @@
 
 from __future__ import annotations
 
-import hashlib
+import ast
 import json
+import os
+import tarfile
 import importlib.util
 import re
 import shutil
@@ -22,7 +24,6 @@ import unittest
 from argparse import ArgumentParser, _SubParsersAction
 from pathlib import Path
 from unittest import mock
-from urllib.parse import unquote
 
 import yaml
 
@@ -32,7 +33,11 @@ TAG_RE = re.compile(r"\b(?:task|topic|paradigm)(?:\.[a-z][a-z0-9_]*)+\b")
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from governance.contracts.knowledge import Contract, markdown_targets  # noqa: E402
+from governance.contracts.knowledge import (  # noqa: E402
+    Contract,
+    markdown_targets,
+    relative_markdown_links,
+)
 
 
 class DocumentationContractTests(unittest.TestCase):
@@ -52,6 +57,8 @@ class DocumentationContractTests(unittest.TestCase):
             self.root / "CLAUDE.md",
             self.root / "governance/specs",
             self.root / ".agents/skills",
+            self.root / "docs",
+            self.root / "recipes",
             self.root / "knowledge",
             self.root / "logs",
         ]
@@ -71,6 +78,7 @@ class DocumentationContractTests(unittest.TestCase):
             self.root / "CLAUDE.md",
             self.root / "governance/specs",
         ]
+        roots.extend((self.root / "docs", self.root / "recipes"))
         result: list[Path] = []
         for path in roots:
             if path.is_file():
@@ -91,15 +99,8 @@ class DocumentationContractTests(unittest.TestCase):
     def test_local_markdown_links_resolve(self) -> None:
         failures: list[str] = []
         for document in self.documentation_files():
-            text = document.read_text(encoding="utf-8")
-            for raw, is_image in markdown_targets(text):
-                if is_image:
-                    continue
-                target = raw.strip()
-                if not target or target.startswith(("#", "http://", "https://", "mailto:")):
-                    continue
-                relative = unquote(target.split("#", 1)[0])
-                resolved = (document.parent / relative).resolve()
+            bundle = self.root / "knowledge" if document.is_relative_to(self.root / "knowledge") else None
+            for target, resolved in relative_markdown_links(document, bundle):
                 if not resolved.exists():
                     failures.append(f"{document.relative_to(self.root)}: {target}")
         self.assertEqual([], failures)
@@ -113,12 +114,76 @@ class DocumentationContractTests(unittest.TestCase):
         ]
         self.assertEqual([], missing)
 
-    def test_api_search_recipe_uses_query_cli_contract(self) -> None:
-        recipe = (self.root / "recipes/api_search.md").read_text(encoding="utf-8")
-        self.assertIn("--technology ascendc", recipe)
-        self.assertIn("--type apis", recipe)
-        self.assertIn("--include-unlocated --status draft", recipe)
-        self.assertNotIn("--scope", recipe)
+    def test_local_link_check_uses_bundle_paths_only_within_knowledge(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            directory = root / "knowledge/ops/ascendc/apis"
+            directory.mkdir(parents=True)
+            (directory / "target.md").write_text("# Target\n", encoding="utf-8")
+            card = directory / "card.md"
+            card.write_text(
+                "[relative](target.md)\n[root](/ops/ascendc/apis/target.md)\n"
+                "[encoded](/ops/ascendc/apis/%74arget.md)\n",
+                encoding="utf-8",
+            )
+            readme = root / "README.md"
+            readme.write_text("[card](knowledge/ops/ascendc/apis/card.md)\n", encoding="utf-8")
+            with mock.patch.object(self, "root", root), mock.patch.object(
+                self, "documentation_files", return_value=[card, readme]
+            ):
+                self.test_local_markdown_links_resolve()
+                for document, target in (
+                    (card, "/ops/ascendc/apis/missing.md"),
+                    (readme, "/ops/ascendc/apis/target.md"),
+                ):
+                    with self.subTest(document=document.name):
+                        before = document.read_text(encoding="utf-8")
+                        document.write_text(before + f"[invalid]({target})\n", encoding="utf-8")
+                        with self.assertRaises(AssertionError):
+                            self.test_local_markdown_links_resolve()
+                        document.write_text(before, encoding="utf-8")
+
+    def test_readme_links_all_public_documentation(self) -> None:
+        readme = (self.root / "README.md").read_text(encoding="utf-8")
+        for directory in ("docs", "recipes"):
+            for document in sorted((self.root / directory).rglob("*.md")):
+                with self.subTest(document=document.relative_to(self.root)):
+                    self.assertIn(document.relative_to(self.root).as_posix(), readme)
+
+    def test_reviewed_model_python_examples_have_valid_syntax(self) -> None:
+        for relative in (
+            "knowledge/model/inference/concepts/models/sana_video.md",
+            "knowledge/model/inference/concepts/parallelism/ulysses.md",
+        ):
+            text = (self.root / relative).read_text(encoding="utf-8")
+            blocks = list(re.finditer(r"(?ms)^```python\n(.*?)^```", text))
+            self.assertTrue(blocks, relative)
+            for block in blocks:
+                line = text[:block.start(1)].count("\n") + 1
+                with self.subTest(card=relative, line=line):
+                    ast.parse(block.group(1), filename=f"{relative}:{line}")
+
+    def test_readme_concrete_knowledge_path_examples_exist(self) -> None:
+        readme = (self.root / "README.md").read_text(encoding="utf-8")
+        examples = re.findall(r"(?m)^knowledge/[^\n<>]*\.md$", readme)
+        self.assertTrue(examples)
+        for relative in examples:
+            with self.subTest(path=relative):
+                path = self.root / relative
+                self.assertTrue(path.is_file(), relative)
+                self.contract.derive_card_path(Path(relative))
+
+    def test_operator_templates_render_the_requested_cann_version(self) -> None:
+        for producer in ("ops-knowledge-vv-ingest", "ops-knowledge-cv-ingest"):
+            template = (
+                self.root / ".agents/skills" / producer / "templates/operator-template.md"
+            ).read_text(encoding="utf-8")
+            for version in ("8.5.0", "9.1.0"):
+                with self.subTest(producer=producer, version=version):
+                    rendered = template.replace("<CANN_VERSION>", version)
+                    frontmatter = rendered.split("```markdown\n---\n", 1)[1].split("\n---\n", 1)[0]
+                    metadata = yaml.safe_load(frontmatter)
+                    self.assertEqual([version], metadata["cann_versions"])
 
     def test_api_query_mode_requires_a_separate_unlocated_draft_fallback(self) -> None:
         skill = (
@@ -585,80 +650,92 @@ class DocumentationContractTests(unittest.TestCase):
                     failures.append(f"{document.relative_to(self.root)}: {token}")
         self.assertEqual([], failures)
 
-    def test_local_source_fetch_uses_fixed_archive_and_is_ignored(self) -> None:
-        script = (self.root / "get_resources.sh").read_text(encoding="utf-8")
-        ignored = (self.root / ".gitignore").read_text(encoding="utf-8").splitlines()
-        self.assertIn("cann-docs-raw/", ignored)
-        self.assertIn('${BASH_SOURCE[0]}', script)
-        self.assertIn("mktemp -d", script)
-        self.assertIn("EXPECTED_SHA256=", script)
-        self.assertIn('sha256sum "$TMP_TAR"', script)
-        self.assertIn('archive_sha256=$EXPECTED_SHA256', script)
-        self.assertIn("repair_published_code_links", script)
-        self.assertIn("repair_fixed_archive.py", script)
-        self.assertIn("Refusing to overwrite incomplete source directory", script)
-
-    def test_local_source_fetch_reuses_only_matching_archive_marker(self) -> None:
+    def test_document_archive_download_refresh_and_failure_preserve_cache(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             shutil.copy2(self.root / "get_resources.sh", root / "get_resources.sh")
+            registry = root / "governance/schemas/registries.yaml"
+            registry.parent.mkdir(parents=True)
+            registry.write_text("local_sources:\n  cann_docs_raw:\n    archive_url: https://example.invalid/current.tar.gz\n")
+            repair = root / ".agents/skills/knowledge-ingest/scripts/repair_fixed_archive.py"
+            repair.parent.mkdir(parents=True)
+            repair.write_text("raise SystemExit(0)\n")
+            source = root / "input/asc-devkit/docs/zh/example.md"
+            source.parent.mkdir(parents=True)
+            archive = root / "input.tar.gz"
+            def package(text):
+                source.write_text(text)
+                with tarfile.open(archive, "w:gz") as stream:
+                    stream.add(root / "input/asc-devkit", arcname="asc-devkit")
+            binary = root / "bin"
+            binary.mkdir()
+            curl = binary / "curl"
+            curl.write_text('#!/usr/bin/env bash\nset -eu\nwhile [[ "$1" != "-o" ]]; do shift; done\ncp "$TEST_DOCUMENT_ARCHIVE" "$2"\n')
+            curl.chmod(0o755)
+            env = {**os.environ, "PATH": str(binary) + os.pathsep + os.environ["PATH"],
+                   "TEST_DOCUMENT_ARCHIVE": str(archive)}
+            def fetch(*args):
+                return subprocess.run(["bash", str(root / "get_resources.sh"), "--docs", *args],
+                                      env=env, capture_output=True, text=True)
+            package("first publication\n")
+            result = fetch()
+            self.assertEqual(0, result.returncode, result.stderr)
+            restored = root / "cann-docs-raw/asc-devkit/docs/zh/example.md"
+            marker = root / "cann-docs-raw/.complete"
+            self.assertEqual("first publication\n", restored.read_text())
+            self.assertIn("archive_url=https://example.invalid/current.tar.gz", marker.read_text())
+            package("changed daily publication\n")
+            result = fetch()
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual("first publication\n", restored.read_text())
+            result = fetch("--refresh")
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual("changed daily publication\n", restored.read_text())
+            archive.write_bytes(b"broken archive")
+            result = fetch("--refresh")
+            self.assertNotEqual(0, result.returncode)
+            self.assertEqual("changed daily publication\n", restored.read_text())
+            marker.unlink()
+            result = fetch()
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("Refusing to overwrite incomplete", result.stderr)
+
+    def test_document_archive_reuses_legacy_marker_without_content_hash_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copy2(self.root / "get_resources.sh", root / "get_resources.sh")
+            registry = root / "governance/schemas/registries.yaml"
+            registry.parent.mkdir(parents=True)
+            registry.write_text("local_sources:\n  cann_docs_raw:\n    archive_url: https://example.invalid/current.tar.gz\n")
             source = root / "cann-docs-raw/docs/example.md"
             source.parent.mkdir(parents=True)
-            source.write_text("fixed source\n", encoding="utf-8")
-            archive_sha256 = "9bc4341ac90740121a20b0ab9d30c6020784bd5969a119e77ab9402a4e6b68c4"
-            tree_digest = hashlib.sha256()
-            tree_digest.update(b"docs/example.md\0")
-            tree_digest.update(hashlib.sha256(b"fixed source\n").digest())
-            tree_digest.update(b"\0")
-            tree_sha256 = tree_digest.hexdigest()
-            (source.parents[1] / ".complete").write_text(
-                f"archive_sha256={archive_sha256}\ntree_sha256={tree_sha256}\n",
-                encoding="utf-8",
-            )
-            registries = root / "governance/schemas/registries.yaml"
-            registries.parent.mkdir(parents=True)
-            registries.write_text(
-                "local_sources:\n"
-                "  cann_docs_raw:\n"
-                f"    archive_sha256: {archive_sha256}\n"
-                f"    tree_sha256: {tree_sha256}\n",
-                encoding="utf-8",
-            )
+            source.write_text("changed content\n")
+            marker = root / "cann-docs-raw/.complete"
+            marker.write_text("archive_sha256=old\ntree_sha256=old\n")
+            result = subprocess.run(["bash", str(root / "get_resources.sh"), "--docs"],
+                                    capture_output=True, text=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual("changed content\n", source.read_text())
+            self.assertIn("archive_url=https://example.invalid/current.tar.gz", marker.read_text())
+            self.assertNotIn("sha256", marker.read_text())
 
-            verified = subprocess.run(
-                ["bash", str(root / "get_resources.sh"), "--docs"],
-                check=False,
-                text=True,
-                capture_output=True,
-            )
-            self.assertEqual(0, verified.returncode, verified.stderr)
-            marker = (root / "cann-docs-raw/.complete").read_text(encoding="utf-8")
-            self.assertIn("archive_sha256=", marker)
-            self.assertIn("tree_sha256=", marker)
-
-            source.write_text("locally changed source\n", encoding="utf-8")
-            mutated = subprocess.run(
-                ["bash", str(root / "get_resources.sh"), "--docs"],
-                check=False,
-                text=True,
-                capture_output=True,
-            )
-            self.assertNotEqual(0, mutated.returncode)
-            self.assertIn("Extracted tree SHA-256 mismatch", mutated.stderr)
-            source.write_text("fixed source\n", encoding="utf-8")
-
-            (root / "cann-docs-raw/.complete").write_text(
-                "archive_sha256=" + "0" * 64 + "\n",
-                encoding="utf-8",
-            )
-            mismatched = subprocess.run(
-                ["bash", str(root / "get_resources.sh"), "--docs"],
-                check=False,
-                text=True,
-                capture_output=True,
-            )
-            self.assertNotEqual(0, mismatched.returncode)
-            self.assertIn("Refusing to overwrite incomplete source directory", mismatched.stderr)
+    def test_document_publisher_repairs_allow_changed_counts_but_reject_unknown_tokens(self) -> None:
+        module = self.load_module(self.root / ".agents/skills/knowledge-ingest/scripts/repair_fixed_archive.py", "review_repair")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            relative = "api/SIMD-API/tensor_api/tensor/tensor.md"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            prefix = module.UPSTREAM_BASE + str(Path(relative).parent) + "/"
+            source.write_text("# Example\n\n```cpp\n" + (prefix + "constexpr int x = 1;\n") * 43 + "```\n")
+            self.assertEqual(43, module.repair_tree(root, write=True))
+            self.assertEqual(0, module.repair_tree(root, write=False))
+            self.assertEqual(0, module.repair_tree(root, write=True))
+            source.write_text("# Example\n\n```cpp\n" + prefix + "UnknownToken x;\n```\n")
+            before = source.read_bytes()
+            with self.assertRaisesRegex(ValueError, "current-directory URLs"):
+                module.repair_tree(root, write=True)
+            self.assertEqual(before, source.read_bytes())
 
     def test_ingest_distinguishes_git_and_fixed_archive_reference(self) -> None:
         skill = (
@@ -679,12 +756,12 @@ class DocumentationContractTests(unittest.TestCase):
         spec = (self.root / "governance/specs/skills.md").read_text(encoding="utf-8")
 
         self.assertIn("Git Reference 批次", skill)
-        self.assertIn("固定归档批次不生成 inventory、ledger 或 verification receipt", onboarding)
-        self.assertIn("固定归档批次不生成 inventory、ledger 或 verification receipt", reference)
-        self.assertIn("固定归档不走本流程", incremental)
-        self.assertIn("固定归档的 archive SHA-256 推进", version)
-        self.assertIn("固定归档升级先保留旧摘要", version)
-        self.assertIn("固定归档批次以 Registry 中的 archive SHA-256 固定来源", spec)
+        self.assertIn("文档归档批次不生成 inventory、ledger 或 verification receipt", onboarding)
+        self.assertIn("文档归档批次不生成 inventory、ledger 或 verification receipt", reference)
+        self.assertIn("文档归档不走本流程", incremental)
+        self.assertIn("文档归档刷新后的结构与内容变更", version)
+        self.assertIn("文档归档刷新前先保留旧来源", version)
+        self.assertIn("文档归档批次按 Registry 的官方 URL 获取", spec)
 
     def test_documented_tags_are_registered(self) -> None:
         registered = set(self.registries["tags"])
@@ -868,6 +945,12 @@ class DocumentationContractTests(unittest.TestCase):
         )
         for name, parsers, docs_root in cases:
             supported: set[str] = set()
+            if name == "ingest":
+                resource_help = subprocess.run(
+                    ["bash", str(self.root / "get_resources.sh"), "--help"],
+                    check=True, capture_output=True, text=True,
+                )
+                supported.update(re.findall(r"--[a-z][a-z0-9-]*", resource_help.stdout))
             for index, (script, parser_factory) in enumerate(parsers):
                 module = self.load_module(script, f"documentation_{name}_{index}")
                 supported.update(self.parser_options(getattr(module, parser_factory)()))

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/aux_data_types/RegLayout.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -36,7 +36,7 @@ enum class RegLayout {
 
   <a id="fig1"></a>
 
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/src_dst_bitwidth_1to2.png "源操作数与目的操作数位宽比为1:2")
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/src_dst_bitwidth_1to2.png "源操作数与目的操作数位宽比为1:2")
 
 - 源操作数与目的操作数位宽比为2:1。
 
@@ -44,7 +44,7 @@ enum class RegLayout {
 
   <a id="fig2"></a>
 
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/src_dst_bitwidth_2to1.png "源操作数与目的操作数位宽比为2:1")
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/src_dst_bitwidth_2to1.png "源操作数与目的操作数位宽比为2:1")
 
 - 源操作数与目的操作数位宽比为1:4。
 
@@ -52,7 +52,7 @@ enum class RegLayout {
 
   <a id="fig3"></a>
 
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/src_dst_bitwidth_1to4.png "源操作数与目的操作数位宽比为1:4")
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/src_dst_bitwidth_1to4.png "源操作数与目的操作数位宽比为1:4")
 
 - 源操作数与目的操作数位宽比为4:1。
 
@@ -60,7 +60,7 @@ enum class RegLayout {
 
   <a id="fig4"></a>
 
-  ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/src_dst_bitwidth_4to1.png "源操作数与目的操作数位宽比为4:1")
+  ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/src_dst_bitwidth_4to1.png "源操作数与目的操作数位宽比为4:1")
 
 Cast在不同RegLayout取值下的数据排布伪代码如下，其中layout参数与枚举值的映射关系为：0对应RegLayout::ZERO，1对应RegLayout::ONE，2对应RegLayout::TWO，3对应RegLayout::THREE：
 ```python

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simt_operator_optimization/memory_access/dcache_access.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -26,7 +26,7 @@ SIMT编程模式下提供以下访存函数：
 - **`asc_ldca`**：加载数据时优先从DCache加载，适用于需要频繁访问的热点数据（如查找表），确保热点数据常驻DCache，减少从Global Memory重新加载的次数。
 - **`asc_stcg`**：存储数据时直接写入Global Memory，不经过DCache缓存，适用于写入GM后不会再从DCache读取的数据，避免输出数据占用DCache空间影响热点数据的缓存。
 
-【样例介绍】以[sin查表算子](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/cache_hint)为例，使用查表法计算sin值，通过线性插值提高精度。输入数据长度为65536（256KB），sin查找表长度为8192（32KB）。算法实现中，每个线程根据输入值计算查找表索引，根据索引从sin表中读取对应位置及其后续位置的数据，通过线性插值得到结果。其中每个输入数据仅访问一次，属于非热点数据；sin查找表会被反复访问，属于热点数据。
+【样例介绍】以[sin查表算子](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/cache_hint)为例，使用查表法计算sin值，通过线性插值提高精度。输入数据长度为65536（256KB），sin查找表长度为8192（32KB）。算法实现中，每个线程根据输入值计算查找表索引，根据索引从sin表中读取对应位置及其后续位置的数据，通过线性插值得到结果。其中每个输入数据仅访问一次，属于非热点数据；sin查找表会被反复访问，属于热点数据。
 
 【反例】所有数据使用默认方式加载，输入、输出和sin表数据共同竞争DCache空间。
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/GetMMConfig.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -55,6 +55,7 @@ __aicore__ inline constexpr MatmulConfig GetMMConfig(ArgTypes&&... args)
 **表3**  MatmulConfigMode参数说明
 
 <a name="table17837129144319"></a>
+
 | 参数 | 说明 |
 | --- | --- |
 | CONFIG_NORM | 表示设置MatmulConfig默认值为Norm模板 |
@@ -65,6 +66,7 @@ __aicore__ inline constexpr MatmulConfig GetMMConfig(ArgTypes&&... args)
 **表4**  MatmulShapeParams参数说明
 
 <a name="table16317184295116"></a>
+
 | 参数 | 数据类型 | 说明 |
 | --- | --- | --- |
 | singleCoreM | uint32_t | 单核内M轴shape大小，以元素为单位。 |
@@ -77,6 +79,7 @@ __aicore__ inline constexpr MatmulConfig GetMMConfig(ArgTypes&&... args)
 **表5**  MatmulQuantParams参数说明
 
 <a name="table8313111211573"></a>
+
 | 参数 | 数据类型 | 说明 |
 | --- | --- | --- |
 | isPerTensor | bool | A矩阵half类型输入且B矩阵int8_t类型输入场景，开启B矩阵量化时是否为per tensor。<br>true：per tensor量化。false：per channel量化。 |
@@ -85,6 +88,7 @@ __aicore__ inline constexpr MatmulConfig GetMMConfig(ArgTypes&&... args)
 **表6**  MatmulBatchParams参数说明
 
 <a name="table15129204644"></a>
+
 | 参数 | 数据类型 | 说明 |
 | --- | --- | --- |
 | isNBatch | bool | 是否多Batch输入多Batch输出。仅对BatchMatmul有效，开启多Batch后，仅支持Norm模板，且需调用[IterateNBatch](iterate_n_batch.md)实现多Batch输入多Batch输出。参数取值如下：<br>false：不开启多Batch（默认值）。<br>true：开启多Batch。 |
@@ -95,6 +99,7 @@ __aicore__ inline constexpr MatmulConfig GetMMConfig(ArgTypes&&... args)
 **表7**  MatmulFuncParams参数说明
 
 <a name="table66217141862"></a>
+
 | 参数 | 数据类型 | 说明 |
 | --- | --- | --- |
 | intrinsicsLimit | bool | 当左矩阵或右矩阵在单核上内轴（即尾轴）大于等于65535（元素个数）时，是否开启循环执行数据从Global Memory到L1 Buffer的搬入。例如，左矩阵A[M, K]，单核上的内轴数据singleCoreK大于65535，配置该参数为true后，API内部通过循环执行数据的搬入。参数取值如下：<br>false：当左矩阵或右矩阵在单核上内轴大于等于65535时，不开启循环执行数据的搬入（默认值）。<br>true：当左矩阵或右矩阵在单核上内轴大于等于65535时，开启循环执行数据的搬入。 |

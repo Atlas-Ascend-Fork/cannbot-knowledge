@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/intra_core_sync_overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -25,7 +25,7 @@ AI Core内部的执行单元（如MTE2搬运单元、Vector计算单元等）以
 针对[NPU架构2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)，硬件架构图如下，高亮部分展示了并行执行的计算单元和搬运单元。
 
 **图 1**  架构图<a name="zh-cn_topic_0000002542725361_fig11732135516285"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/atlas_a2_a3_architecture.png "Atlas_A2_A3_硬件架构图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/atlas_a2_a3_architecture.png "Atlas_A2_A3_硬件架构图")
 
 
 
@@ -34,7 +34,7 @@ AI Core内部的执行单元（如MTE2搬运单元、Vector计算单元等）以
 针对[NPU架构3510](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)，硬件架构图如下，高亮部分展示了并行执行的计算单元和搬运单元。
 
 **图 2**  架构图<a name="zh-cn_topic_0000002542725361_fig31512113433"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/npu_3510_hw_arch_sync.png "Ascend_950PR_950DT_硬件架构图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/npu_3510_hw_arch_sync.png "Ascend_950PR_950DT_硬件架构图")
 
 
 
@@ -44,11 +44,11 @@ AI Core内部的执行单元（如MTE2搬运单元、Vector计算单元等）以
 2. 进行计算；
 3. 然后再通过DMA执行单元将计算结果从Local Memory搬出到Global Memory。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/vector_compute_data_flow.png "Vector_计算_数据流示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/vector_compute_data_flow.png "Vector_计算_数据流示意图")
 
 四个执行单元Scalar、Vector、DMA（MTE2）、DMA(MTE3)并行执行，若访问同一片Local Memory，需要同步机制来控制它们的访问时序：保证先搬入Local Memory后再计算，计算完成后再搬出。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/intra_core_parallel_pipeline_execution_timing.png "intra_core_parallel_pipeline_execution_timing")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/intra_core_parallel_pipeline_execution_timing.png "intra_core_parallel_pipeline_execution_timing")
 
 ## 硬件流水类型<a name="zh-cn_topic_0000002542725361_section1272612276459"></a>
 
@@ -74,7 +74,7 @@ AI Core内部并行的指令流水类型和解释如下所示：
 对上述核内并行流水的同步控制分为两种：
 
 - 多流水同步：同一核内具有数据依赖的不同类型流水指令之间的同步。
-    [TQueSync](t_que_sync_template_params.md)类接口和[SetFlag/WaitFlag\(ISASI\)](set_flag_wait_flag_isasi.md)中提供的同步控制接口的区别在于，[SetFlag/WaitFlag\(ISASI\)](set_flag_wait_flag_isasi.md)中的接口标注为ISASI类别，不能保证跨硬件版本兼容；TQueSync类接口可以保证跨硬件版本兼容。
+    [TQueSync](t_que_sync.md)类接口和[SetFlag/WaitFlag\(ISASI\)](set_flag_wait_flag_isasi.md)中提供的同步控制接口的区别在于，[SetFlag/WaitFlag\(ISASI\)](set_flag_wait_flag_isasi.md)中的接口标注为ISASI类别，不能保证跨硬件版本兼容；TQueSync类接口可以保证跨硬件版本兼容。
     通过SetFlag/WaitFlag接口进行不同流水线间的同步控制。在SetFlag/WaitFlag的指令中，可以指定一对指令流水（源流水与目的流水）先后执行的关系，表示两个指令流水之间完成一组“锁”机制，其作用原理为：
     - SetFlag：当源流水的前序指令的所有读写操作都完成之后，当前指令开始执行，并将硬件中的对应标志位设置为1。
     - WaitFlag：当目的流水执行到该指令时，如果发现硬件中对应标志位为0，目的流水的后续指令将一直被阻塞；如果发现硬件中对应标志位为1，则将硬件中对应标志位设置为0，同时目的流水的后续指令开始执行。

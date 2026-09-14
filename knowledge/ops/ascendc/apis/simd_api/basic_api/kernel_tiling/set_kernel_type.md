@@ -11,17 +11,21 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/set_Kernel_type.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 - 310p
+source_headers:
+- include/utils/base/sys_macros.h
 ---
 
 # 设置核函数（Kernel）类型<a name="ZH-CN_TOPIC_0000001777592824"></a>
 
 ## 功能说明<a name="zh-cn_topic_0000001610027821_section212607105720"></a>
+
+头文件路径为：`"utils/base/sys_macros.h"`。
 
 用于用户自定义设置kernel类型，控制算子执行时只启动该类型的核，避免启动不需要工作的核，缩短核启动开销。
 

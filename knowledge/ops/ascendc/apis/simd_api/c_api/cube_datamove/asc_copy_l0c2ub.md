@@ -10,10 +10,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_l0c2ub.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
 ---
 
@@ -21,21 +22,23 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
+
 将矩阵计算结果从L0C Buffer搬运至Unified Buffer，搬运过程中可同步支持随路量化、随路激活、随路格式转换（Nz2ND/Nz2DN）等能力组合。
 
-下图展示了随路量化、随路ReLU、随路格式转换、随路通道拆分以及随路通道合并的有效组合、中间数据类型和数据路径。下图中的F32-\>F16与F32-\>BF16为Cast，其余为随路scalar/tensor量化模式。
+下图展示了随路量化、随路ReLU、随路格式转换、随路通道拆分以及随路通道合并的有效组合、中间数据类型和数据路径，通过连线颜色区分支持的场景组合。下图中的F32-\>F16与F32-\>BF16为Cast，其余为随路scalar/tensor量化模式。
 
 **图1** asc_copy_l0c2ub随路功能组合
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/C_API_L0C2UB_Function_Combination_950.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/C_API_L0C2UB_Function_Combination_950.png)
 
 本接口支持多种随路能力的组合，需通过配套接口预先配置量化参数、激活参数、通道参数等寄存器，再调用本接口完成搬运。
 
 - Nz2ND格式转换场景下，需通过[asc_set_l0c_copy_nz_para](asc_set_l0c_copy_nz_para.md)预先配置格式转换参数，并且需要搭配本接口`enable_nz2nd`使用；
 - Nz2DN格式转换场景下，需通过[asc_set_l0c_copy_nz_para](asc_set_l0c_copy_nz_para.md)、[asc_set_l0c_copy_channel_para](asc_set_l0c_copy_channel_para.md)预先配置格式转换参数，并且需要搭配本接口`enable_nz2dn`使用；
 - 随路scalar量化模式下，需通过[asc_set_l0c_copy_prequant](asc_set_l0c_copy_prequant.md)设置随路scalar量化参数，并且需要搭配本接口`quant_pre_mode`使用;
-- 随路tensor量化模式下，需通过[asc_set_l0c2gm_config](asc_set_l0c2gm_config.md)设置随路tensor量化使用tensor的起始地址，其中量化tensor的每个元素都代表一个量化参数，并且需要搭配本接口`quant_pre_mode`使用;
-- 随路激活模式下，需通过[asc_set_l0c2gm_relu_alpha](asc_set_l0c2gm_relu_alpha.md)、[asc_set_l0c2gm_lrelu_alpha](asc_set_l0c2gm_lrelu_alpha.md)预先配置ReLU/Leaky ReLU激活参数，并且需要搭配本接口`enable_clip_relu_pre`与`relu_pre_mode`使用；
+- 随路tensor量化模式下，需通过[asc_set_l0c_copy_config](asc_set_l0c_copy_config.md)设置随路tensor量化使用tensor的起始地址，其中量化tensor的每个元素都代表一个量化参数，并且需要搭配本接口`quant_pre_mode`使用;
+- 随路激活模式下，需通过[asc_set_l0c_copy_relu_alpha](asc_set_l0c_copy_relu_alpha.md)、[asc_set_l0c_copy_lrelu_alpha](asc_set_l0c_copy_lrelu_alpha.md)预先配置ReLU/Leaky ReLU激活参数，并且需要搭配本接口`enable_clip_relu_pre`与`relu_pre_mode`使用；
 
 `quant_pre_mode`量化模式参数支持的枚举值如下：
 
@@ -96,28 +99,6 @@ __aicore__ inline void asc_copy_l0c2ub(__ubuf__ <dst_dtype>* dst,
                                        bool c0_pad_en,
                                        bool broadcast_en,
                                        bool enable_nz2dn)
-__aicore__ inline void asc_copy_l0c2ub_sync(__ubuf__ <dst_dtype>* dst,
-                                            __cc__ <src_dtype>* src,
-                                            uint16_t n_size,
-                                            uint16_t m_size,
-                                            uint32_t dst_stride,
-                                            uint16_t src_stride,
-                                            uint8_t dual_dst_ctrl,
-                                            bool sub_blockid,
-                                            uint8_t enable_clip_relu_pre,
-                                            uint8_t unit_flag_mode,
-                                            uint64_t quant_pre_mode,
-                                            uint8_t relu_pre_mode,
-                                            bool enable_channel_split,
-                                            bool enable_nz2nd,
-                                            uint64_t quant_post,
-                                            uint8_t relu_post,
-                                            bool clip_relu_post,
-                                            uint8_t eltwise_op,
-                                            bool eltwise_antq_en,
-                                            bool c0_pad_en,
-                                            bool broadcast_en,
-                                            bool enable_nz2dn)
 ```
 
 ### dtype支持的数据类型
@@ -210,7 +191,7 @@ PIPE_FIX
 - src与dst dtype组合需与`quant_pre_mode`量化模式匹配，否则会导致搬运结果不符合预期。
 - `dual_dst_ctrl`仅支持在普通搬运模式（Nz2Nz）或Nz2ND搬运场景下使用，不支持其他随路功能场景。
 - `enable_channel_split`仅在输出dtype为`float`且输出为Nz格式时可设为true。
-- 量化与激活模式中使用的量化系数不可为INF/NaN和非规格化数，否则会导致量化激活结果错误。
+- 量化与激活模式中使用的量化系数不可为INF/NAN和非规格化数，否则会导致量化激活结果错误。
 - 开启Nz2DN转换时，需通过[asc_set_l0c_copy_channel_para](asc_set_l0c_copy_channel_para.md)预先配置源矩阵步长，且源矩阵步长不可为0，否则会导致搬运异常。
 - 开启Nz2DN转换时，仅当通过[asc_set_l0c_copy_channel_para](asc_set_l0c_copy_channel_para.md)配置源矩阵步长为1时，可同时开启UnitFlag功能。
 - `enable_clip_relu_pre`设为Clip ReLU（标量模式）时需搭配`relu_pre_mode`与量化功能一起使用。
@@ -289,7 +270,7 @@ __global__ __mix__(1, 2) void AscCopyL0c2ubKernel(__gm__ int8_t* a, __gm__ int8_
         asc_sync_block_wait(PIPE_MTE3, 0x8);
         asc_copy_ub2gm(output, output_ub, M, N * sizeof(int32_t),
             N * sizeof(int32_t), N * sizeof(int32_t));
-        asc_sync_pipe(PIPE_MTE3);
+        asc_sync_pipe(PIPE_ALL);
     }
 }
 

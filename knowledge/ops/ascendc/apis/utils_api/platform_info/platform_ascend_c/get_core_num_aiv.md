@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetCoreNumAiv.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -58,7 +58,9 @@ Ascend 950PR/Ascend 950DT，分离模式，返回Vector Core的核数
 
 ## 调用示例<a name="zh-cn_topic_0000001675101185_zh-cn_topic_0000001442758437_section320753512363"></a>
 
-```
+### 自定义算子工程
+
+```cpp
 ge::graphStatus TilingXXX(gert::TilingContext* context) {
     auto ascendcPlatform = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
     auto aicNum = ascendcPlatform.GetCoreNumAic();
@@ -69,6 +71,20 @@ ge::graphStatus TilingXXX(gert::TilingContext* context) {
 }
 ```
 
+### Kernel直调
+
+```cpp
+void GetInfoFun()
+{
+    auto* ascendcPlatform = platform_ascendc::PlatformAscendCManager::GetInstance();
+    if (ascendcPlatform == nullptr) {
+        return;
+    }
+    auto aicNum = ascendcPlatform->GetCoreNumAic();
+    auto aivNum = ascendcPlatform->GetCoreNumAiv();
+    // ... 根据aicNum和aivNum自行设计切分策略
+}
+```
 
 
 - [Im2colBackward 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/im2col_backward_950.md)

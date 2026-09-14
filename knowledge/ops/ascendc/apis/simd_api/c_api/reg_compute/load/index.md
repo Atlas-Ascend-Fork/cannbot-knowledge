@@ -26,3 +26,5 @@
 - [asc_loadunalign](asc_loadunalign.md)：从Unified Buffer（UB）中按dtype对齐的起始地址读取VL长度连续数据，并搬入矢量数据寄存器。本接口将asc_loadunalign_pre中的非对齐寄存器（32字节）中缓存的前置数据与从UB读取的后续数据拼接，得到VL长度数据并搬入矢量数据寄存器。连续搬入时，需要在每次调用前手动更新源地址。
 - [asc_loadunalign_postupdate](asc_loadunalign_postupdate.md)：从Unified Buffer（UB）中按dtype对齐的起始地址读取VL长度连续数据，并搬入矢量数据寄存器。本接口将asc_loadunalign_pre中的非对齐寄存器（32字节）中缓存的前置数据与从UB读取的后续数据拼接，得到VL长度数据并搬入矢量数据寄存器。搬入完成后，接口同步更新地址和非对齐寄存器。
 - [asc_loadunalign_pre](asc_loadunalign_pre.md)：本接口根据Unified Buffer（UB）中按dtype对齐的起始地址，初始化非对齐寄存器，作为后续非对齐搬入的前置缓存。该阶段仅完成非对齐寄存器初始化，不会将数据搬入矢量数据寄存器。
+
+- [Reg数据搬入概述](reg_load_overview.md)：Reg数据搬入接口用于将Unified Buffer（UB）中的数据搬入矢量数据寄存器、掩码寄存器或非对齐寄存器。接口均仅在AIV上生效，且需在Vector Function（__simd_vf__标记的函数）内调用。

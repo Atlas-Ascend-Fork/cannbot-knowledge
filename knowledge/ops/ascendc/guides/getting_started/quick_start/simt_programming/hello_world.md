@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/getting_started/quick_start/simt_programming/hello_world.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -18,7 +18,7 @@ platforms: []
 
 本入门示例基于Ascend C SIMT实现Hello World算子，带你快速上手实践，涵盖Device端核函数（Kernel）实现、Host端调用以及编译运行的完整流程，帮助开发者建立整体认知。
 
-开始前请参考[环境准备](../../environment_setup.md)安装所需的CANN软件包，完整样例请参考[hello\_world](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/00_introduction/00_quickstart/hello_world_simt/README.md)。
+开始前请参考[环境准备](../../environment_setup.md)安装所需的CANN软件包，完整样例请参考[hello\_world](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/00_introduction/00_quickstart/hello_world_simt/README.md)。
 
 - **Hello World功能介绍**：
  

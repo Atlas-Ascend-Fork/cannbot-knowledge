@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/cube_store_key_features/batch_copy.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -59,3 +59,7 @@ auto quant = make_tensor(make_mem_ptr(quant_addr), make_frame_layout<nd_ext_layo
 auto atom = make_copy(copy_l0c_to_gm{}).with(l0c_to_gm_params{});
 copy(atom, dst, l0c, quant);
 ```
+
+## 约束说明
+
+量化参数不能为inf/nan和非规格化数。

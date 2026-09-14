@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/memory_access/avoid_ub_bank_conflict/avoid_bank_conflict_npu_arch_3510.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -33,19 +33,19 @@ UB_ADDR[18:0] = {BANK_DEPTH[8:0], BANK[0], BG[2:0], BANK_WIDTH[4:0]}
 
 **图1**  bank结构示意图（图中箭头方向表示内存排布的顺序）<a name="fig873359165316"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/ub_950.png "950_UB内存结构图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/ub_950.png "950_UB内存结构图")
 
 3510架构使用低位编址，地址排布情况如图所示：
 
 **图2** 低位地址交织排布
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/low_interleave.png "低位交织地址排布")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/low_interleave.png "低位交织地址排布")
 
 每个bank可分为4个subbank，每个subbank宽度为8B，subbank仅在gather/scatter场景被感知，连续读写只感知到bank。
 
 **图3** subbank结构
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/subbank.png "subbank结构")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/subbank.png "subbank结构")
 
 ## bank冲突的典型场景<a name="section9689957379"></a>
 
@@ -296,9 +296,9 @@ UB_ADDR[18:0] = {BANK_DEPTH[8:0], BANK[0], BG[2:0], BANK_WIDTH[4:0]}
     </tr>
     <tr id="row14922142214585"><td class="cellrowborder" valign="top" width="6.813978389954251%" headers="mcps1.1.4.1.1 "><p id="p6922182210587"><a name="p6922182210587"></a><a name="p6922182210587"></a>示意图</p>
     </td>
-    <td class="cellrowborder" valign="top" width="42.6652389759564%" headers="mcps1.1.4.1.2 "><p id="p1273333434818"><a name="p1273333434818"></a><a name="p1273333434818"></a><a name="image47338343486"></a><a name="image47338343486"></a><span><img class="eddx" id="image47338343486" src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_pos_73.png"></span></p>
+    <td class="cellrowborder" valign="top" width="42.6652389759564%" headers="mcps1.1.4.1.2 "><p id="p1273333434818"><a name="p1273333434818"></a><a name="p1273333434818"></a><a name="image47338343486"></a><a name="image47338343486"></a><span><img class="eddx" id="image47338343486" src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_pos_73.png"></span></p>
     </td>
-    <td class="cellrowborder" valign="top" width="50.520782634089365%" headers="mcps1.1.4.1.3 "><p id="p1074101154916"><a name="p1074101154916"></a><a name="p1074101154916"></a><a name="image147416115491"></a><a name="image147416115491"></a><span><img class="eddx" id="image147416115491" src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_pos_74.png"></span></p>
+    <td class="cellrowborder" valign="top" width="50.520782634089365%" headers="mcps1.1.4.1.3 "><p id="p1074101154916"><a name="p1074101154916"></a><a name="p1074101154916"></a><a name="image147416115491"></a><a name="image147416115491"></a><span><img class="eddx" id="image147416115491" src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_pos_74.png"></span></p>
     </td>
     </tr>
     </tbody>

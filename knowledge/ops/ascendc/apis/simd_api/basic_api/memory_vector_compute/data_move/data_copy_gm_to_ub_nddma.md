@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopy_GMToUB_NDDMA.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -94,16 +94,16 @@ source_headers:
 以下以2维的例子介绍几个典型使用场景。
 
 **图1**  2D Padding场景<a name="fig10722115123919"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/2d_padding_scenario.png "2D-Padding场景")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/2d_padding_scenario.png "2D-Padding场景")
 
 **图2**  2D Transpose场景<a name="fig104451143104510"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/2d_transpose_scenario.png "2D-Transpose场景")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/2d_transpose_scenario.png "2D-Transpose场景")
 
 **图3**  2D BroadCast场景<a name="fig4654326132913"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/2d_broadcast_scenario.png "2D-BroadCast场景")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/2d_broadcast_scenario.png "2D-BroadCast场景")
 
 **图4**  2D Slice场景<a name="fig13061435132915"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/2d_slice_scenario.png "2D-Slice场景")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/2d_slice_scenario.png "2D-Slice场景")
 
 ## 数据类型
 
@@ -125,7 +125,7 @@ Ascend 950PR/Ascend 950DT支持的数据类型为：bool、int8_t、uint8_t、in
 
 - 当每层循环的dstStride为升序序列，则不同循环间的地址空间不能交织或者重叠。以一个2D Padding场景为例，loopSrcStride、loopDstStride第二个维度的stride值最小是3，数据3不能落在维度1的循环中。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nddma_padding_2d.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nddma_padding_2d.png)
 
 - 该接口通过NDDMA进行数据搬运，对应的NDDMA Cache大小为32KB，在使用DataCopy接口进行数据搬运前，需要使用NdDmaDci接口刷新缓存，否则多核场景下读写同一块Global Memory地址可能会导致部分核读取数据错误。
 
@@ -187,4 +187,4 @@ Ascend 950PR/Ascend 950DT支持的数据类型为：bool、int8_t、uint8_t、in
     AscendC::DataCopy<T, 2, dmaConfig>(xLocal, xGm, params);
     ```
 
-完整样例请参考：[多维数据搬运样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2ub_nddma)。
+完整样例请参考：[多维数据搬运样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_gm2ub_nddma)。

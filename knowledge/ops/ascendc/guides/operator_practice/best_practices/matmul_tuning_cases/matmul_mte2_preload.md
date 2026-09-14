@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/best_practices/matmul_tuning_cases/matmul_mte2_preload.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -80,12 +80,12 @@ platforms: []
 
 ## 分析主要瓶颈点<a name="section221431704714"></a>
 
--   优化前的流水图如下，M和K方向全载，因此A矩阵只搬运一次。由于N较大，B矩阵会搬运多次，可以看到单次MTE2间存在间隙。![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002394102925.png)
--   优化前的Profiling数据如下，aic\_time平均耗时30.88us。![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002394115169.png)
+-   优化前的流水图如下，M和K方向全载，因此A矩阵只搬运一次。由于N较大，B矩阵会搬运多次，可以看到单次MTE2间存在间隙。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002394102925.png)
+-   优化前的Profiling数据如下，aic\_time平均耗时30.88us。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002394115169.png)
 
 ## 设计优化方案<a name="section33901368431"></a>
 
-开启MTE2 Preload功能：在创建Matmul对象时，开启doMTE2Preload开关。开启MTE2 Preload的完整样例请参考[M方向预加载Matmul算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_preload)。具体步骤如下：
+开启MTE2 Preload功能：在创建Matmul对象时，开启doMTE2Preload开关。开启MTE2 Preload的完整样例请参考[M方向预加载Matmul算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_preload)。具体步骤如下：
 
 1.  配置MDL模板参数，将其中的doMTE2Preload参数设置为2，开启N方向Preload功能。
 
@@ -105,8 +105,8 @@ platforms: []
 
 ## 验证优化方案性能收益<a name="section19022397498"></a>
 
--   优化后的流水图如下，Tiling参数不变，可以看到，下一次计算使用的B矩阵数据提前加载，MTE2间的间隙缩短。![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002394160225.png)
--   优化后的Profiling数据如下，aic\_time平均耗时28.50us，较优化前的30.88us有所下降。![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/zh-cn_image_0000002394120757.png)
+-   优化后的流水图如下，Tiling参数不变，可以看到，下一次计算使用的B矩阵数据提前加载，MTE2间的间隙缩短。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002394160225.png)
+-   优化后的Profiling数据如下，aic\_time平均耗时28.50us，较优化前的30.88us有所下降。![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/zh-cn_image_0000002394120757.png)
 
 ## 总结<a name="section8281219125011"></a>
 

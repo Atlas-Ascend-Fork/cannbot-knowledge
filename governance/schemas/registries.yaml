@@ -116,11 +116,10 @@ local_sources:
     revisions:
       - be33d95bb755cedec3108f70805c1874d1792540
   cann_docs_raw:
-    description: 按固定归档校验和恢复的 Ascend C 官方文档
+    description: 从官方持续更新归档恢复的 Ascend C 文档
     root: cann-docs-raw
     fetch_script: get_resources.sh
-    archive_sha256: 753dcc2cc22f04de3805e8a56ef7a7b7373e5c69c85cf64e5f63bc24d716180d
-    tree_sha256: f98ebfd6bfcbab0f68ce08353bb182a21906a67c7fdef61aba022daa0ea8dc92
+    archive_url: https://ascend-ci.obs.cn-north-4.myhuaweicloud.com/package/doc/Ascend-cann-docs-examples.tar.gz
     mirror:
       source_root: asc-devkit/docs/zh
       api_roots: [api]
@@ -131,7 +130,7 @@ local_sources:
       api_operator_display_limit: 10
       omit_section_title_contains: [产品支持情况]
       upstream_repository: https://gitcode.com/cann/asc-devkit
-      upstream_revision: 885973fe9fd42a600e3551af9bc11a279e6f183b
+      upstream_revision: 639b2b5c1031188107d23d785d52b935f1b4f13b
       ambiguous_relation_symbols:
         - Alloc
         - Commit

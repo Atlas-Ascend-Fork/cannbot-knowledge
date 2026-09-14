@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/nextafterf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # nextafterf
 
 ## 功能说明
+
+头文件路径为：`"simt_api/math_functions.h"`。
 
 对于两个数据x、y：
 
@@ -57,19 +59,13 @@ inline float nextafterf(float x, float y)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/math_functions.h`头文件。
-
-```cpp
-#include "simt_api/math_functions.h"
-```
-
 ## 调用示例
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/math_functions.h"
+
     __global__ __launch_bounds__(256) void compute_nextafterf(float *result, const float *x, const float *y, uint32_t count)
     {
         const uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -83,6 +79,8 @@ inline float nextafterf(float x, float y)
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/math_functions.h"
+
     __simt_vf__ __launch_bounds__(256) inline void compute_nextafterf_vf(__gm__ float *result, __gm__ const float *x, __gm__ const float *y, uint32_t count)
     {
         const uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;

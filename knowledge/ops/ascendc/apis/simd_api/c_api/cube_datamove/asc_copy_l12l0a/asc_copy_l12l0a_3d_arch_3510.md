@@ -10,10 +10,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_l12l0a/asc_copy_l12l0a_3d_arch_3510.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
 ---
 
@@ -21,13 +22,15 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
+
 3D卷积数据搬运是用于将NC1HWC0格式的Feature Map完成Image to Column展开，然后再从展开后的二维矩阵中选取指定数据块搬入对应内存位置。见图1。
 
 搬运过程中是以512字节的数据分形为单位进行搬运的，此接口也可以用于普通矩阵计算所需的2D格式数据的搬运。如何使用此接口进行2D格式数据的搬运可以参考[关键特性说明](#l12l0a_3d_key_features)。支持从L1 Buffer到L0A Buffer的数据搬运。
 
 **图1** copyl12l0a_3d功能示意图<a id="l12l0a_3d_data_move"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_demo.png "copyl12l0a_3d功能示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_demo.png "copyl12l0a_3d功能示意图")
 
 3D img2col搬运模式下，Feature Map的属性描述（fm_w、fm_h及四周padding）需通过[asc_set_l13d_fmatrix](../asc_set_l13d_fmatrix.md)预先配置，填充值与填充模式需通过[asc_set_l12l0a_3d_padding](../asc_set_l12l0a_3d_padding.md)预先配置；如需使用repeat模式，repeat方向、次数与步长需通过[asc_set_l13d_rpt](../asc_set_l13d_rpt.md)预先配置。
 
@@ -55,23 +58,6 @@ __aicore__ inline void asc_copy_l12l0a(__ca__ <dtype>* dst,
                                        bool transpose,
                                        bool f_matrix_ctrl,
                                        uint16_t channel_size)
-__aicore__ inline void asc_copy_l12l0a_sync(__ca__ <dtype>* dst,
-                                            __cbuf__ <dtype>* src,
-                                            uint16_t k_extension,
-                                            uint16_t m_extension,
-                                            uint16_t k_start_pt,
-                                            uint16_t m_start_pt,
-                                            uint8_t stride_w,
-                                            uint8_t stride_h,
-                                            uint8_t filter_w,
-                                            uint8_t filter_h,
-                                            uint8_t dilation_filter_w,
-                                            uint8_t dilation_filter_h,
-                                            bool filter_size_w,
-                                            bool filter_size_h,
-                                            bool transpose,
-                                            bool f_matrix_ctrl,
-                                            uint16_t channel_size)
 ```
 
 #### dtype支持的数据类型
@@ -122,7 +108,7 @@ __aicore__ inline void asc_copy_l12l0a(__ca__ half* dst,
 | `filter_size_w` | 输入 | 是否在`filter_w`的基础上将卷积核width增加256个元素。<br>&nbsp;&nbsp;&bull; `true`：增加；<br>&nbsp;&nbsp;&bull; `false`：不增加。 |
 | `filter_size_h` | 输入 | 是否在`filter_h`的基础上将卷积核height增加256个元素。<br>&nbsp;&nbsp;&bull; `true`：增加；<br>&nbsp;&nbsp;&bull; `false`：不增加。 |
 | `transpose` | 输入 | 是否启用转置功能，对整个目标矩阵进行转置。<br>&nbsp;&nbsp;&bull; `false`：不开启转置；<br>&nbsp;&nbsp;&bull; `true`：开启转置。 |
-| `f_matrix_ctrl` | 输入 | 3D数据搬运Feature Map的属性描述寄存器组选择位，一般设置为`false`。<br>&nbsp;&nbsp;&bull; `true`：从右矩阵中获取Feature Map的属性描述，配合[asc_set_l13d_fmatrix_b](../asc_set_l13d_fmatrix_b.md)、[asc_set_l12l0b_3d_padding](../asc_set_l12l0_padding_val.md)、`asc_set_l13d_rpt_b`使用；<br>&nbsp;&nbsp;&bull; `false`：从左矩阵中获取FeatureMap的属性描述，配合[asc_set_l13d_fmatrix](../asc_set_l13d_fmatrix.md)、[asc_set_l12l0a_3d_padding](../asc_set_l12l0a_3d_padding.md)、[asc_set_l13d_rpt](../asc_set_l13d_rpt.md)使用。 |
+| `f_matrix_ctrl` | 输入 | 3D数据搬运Feature Map的属性描述寄存器组选择位，一般设置为`false`。<br>&nbsp;&nbsp;&bull; `true`：从右矩阵中获取Feature Map的属性描述，配合[asc_set_l13d_fmatrix_b](../asc_set_l13d_fmatrix_b.md)、[asc_set_l12l0b_3d_padding](../asc_set_l12l0b_3d_padding.md)、[asc_set_l13d_rpt_b](../asc_set_l13d_rpt_b.md)使用；<br>&nbsp;&nbsp;&bull; `false`：从左矩阵中获取FeatureMap的属性描述，配合[asc_set_l13d_fmatrix](../asc_set_l13d_fmatrix.md)、[asc_set_l12l0a_3d_padding](../asc_set_l12l0a_3d_padding.md)、[asc_set_l13d_rpt](../asc_set_l13d_rpt.md)使用。 |
 | `channel_size` | 输入 | 源操作数的通道数N。<br>对于b32类型，`channel_size`除8的余数应当为0或4，最大值可取为65532。<br>对于b16类型，`channel_size`除16的余数应当为0，4或8，最大值可取为65528。<br>对于b8类型，`channel_size`除32的余数应当为0，4，8或16，最大值可取为65520。 |
 
 ## 返回值说明
@@ -168,13 +154,13 @@ PIPE_MTE1
 
     **图2** feature map格式
 
-    ![ ](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/load3d_01.png "feature-map格式")
+    ![ ](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/load3d_01.png "feature-map格式")
 
 - 对应的filter的格式如下图：
 
     **图3** filter的格式
 
-    ![ ](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/load3d_02.png "filter的格式")
+    ![ ](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/load3d_02.png "filter的格式")
 
 其中n为filter的个数，可以看出维度排布为(Hk,Wk,Ci,n)，但是需要注意的是下图的格式还需要根据Mmad中B矩阵的格式转换。
 
@@ -182,7 +168,7 @@ PIPE_MTE1
 
 实际操作中，由于存储空间或者计算能力限制，我们通常会将整个卷积计算分块，一次只搬运并计算一小块数据。
 
-![ ](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/load3d_03.png "卷积计算分块")
+![ ](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/load3d_03.png "卷积计算分块")
 
 对于L0A Buffer中的feature map来说有两种方案，水平分块和垂直分块。分别对应[asc_set_l13d_rpt](../asc_set_l13d_rpt.md)参数中rpt_mode的0和1。
 
@@ -192,25 +178,25 @@ rpt_mode =0时，每次repeat会改变在filter窗口中读取数据点的位置
 
 **图5** rpt_mode = 0时的filter窗口
 
-![ ](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/load3d_04.png "rpt_mode-0-时的filter窗口")
+![ ](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/load3d_04.png "rpt_mode-0-时的filter窗口")
 
 rpt_mode =1的时候filter窗口中读取数据的位置保持不变，每个repeat在feature map中前进C0个元素。
 
 **图6** rpt_mode = 1时的filter窗口
 
-![ ](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/load3d_05.png "rpt_mode-1-时的filter窗口")
+![ ](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/load3d_05.png "rpt_mode-1-时的filter窗口")
 
 ### 使用3D卷积数据搬运完成矩阵计算所需2D格式数据的搬运
 
 对于NC1HWC0格式的数据，当N为1，卷积核width和height为1，padding为0，卷积核在源操作数width维度和height维度滑动的步长为1，卷积核width和height膨胀系数为1，此时经过image to column展开后的数据排布可以看成矩阵计算过程中L1 Buffer上的NZ分形排布，因此该场景下可以使用LoadData（卷积数据搬运）接口进行矩阵计算所需2D格式数据的搬运，示意图如下所示：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_3d22d_demo.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_3d22d_demo.png)
 
 #### 非转置场景搬运
 
 L1 Buffer上的分形排布就是L0A Buffer中所需的Nz分形排布，3D卷积搬运不会进行分形排布转换，如下b16类型场景的示意图所示：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b16_nontrans_950.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b16_nontrans_950.png)
 
 #### 转置场景搬运
 
@@ -220,19 +206,19 @@ L1 Buffer上的分形排布就是L0A Buffer中所需的Nz分形排布，3D卷积
 
     L1 Buffer->L0A Buffer通路下，转置场景下，2个连续的16×32的分形拼接为一个32×32的方块矩阵，再进行转置并拆分为2个16×32的分形，转置示意图如下：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b8_trans_950.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b8_trans_950.png)
 
 - 对于b16场景：每个分形大小是16×16。
 
     L1 Buffer->L0A Buffer通路下，转置场景下，除了每个分形矩阵自身会被转置，每个分形矩阵在整个二维特征图中的位置也会被转置，转置示意图如下：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b16_trans_950.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b16_trans_950.png)
 
 - 对于b32场景：每个分形大小是16×8。
 
     L1 Buffer->L0A Buffer通路下，转置场景示意图如下：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load3d_l1tol0a_b32_trans_950.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load3d_l1tol0a_b32_trans_950.png)
 
 ### Feature Map、Pad属性描述与Repeat Mode寄存器设置
 

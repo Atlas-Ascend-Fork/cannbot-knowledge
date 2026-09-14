@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/sort_and_merge_ISASI/MrgSort4.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - 310p
 - '910'
@@ -161,7 +161,7 @@ __aicore__ inline void MrgSort4(const LocalTensor<T>& dst, const MrgSortSrcList<
 
 ## 调用示例<a name="section642mcpsimp"></a>
 
-详细示例请参考[RegionProposalSort样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/region_proposal_sort)。
+详细示例请参考[RegionProposalSort样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/region_proposal_sort)。
 
 接口使用样例
 

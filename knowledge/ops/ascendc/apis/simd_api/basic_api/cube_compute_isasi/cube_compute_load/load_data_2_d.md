@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadData_2D.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -44,7 +44,7 @@ source_headers:
 - 对于b16数据类型，每个数据分形为一个16×16的矩阵。
 - 对于b32数据类型，每个数据分形在L0A Buffer中为一个16×8的矩阵，在L0B Buffer中为一个8×16的矩阵。
 
-实现原理可参考伪代码：[LoadData（2D矩阵搬运）伪代码](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0/scripts/load2d.py)。
+实现原理可参考伪代码：[LoadData（2D矩阵搬运）伪代码](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0/scripts/load2d.py)。
 
 ## 函数原型
 
@@ -159,7 +159,7 @@ Kirin 9030，支持数据类型为：half。
 
     dstGap为2：表示目的操作数上，前一个数据分形的尾地址与后一个数据分形的首地址之间间隔2个数据分形。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_noncontinuous.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_noncontinuous.png)
 
 - 从L1 Buffer搬运数据类型为float的6个数据分形到L0A Buffer，不开启转置
 
@@ -171,7 +171,7 @@ Kirin 9030，支持数据类型为：half。
 
     dstGap为2：表示目的操作数上，前一个数据分形的尾地址与后一个数据分形的首地址之间间隔2个数据分形。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_noncontinuous_float.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_noncontinuous_float.png)
 
 - 从L1 Buffer搬运数据类型为float的8个数据分形到L0B Buffer，不开启转置
 
@@ -183,7 +183,7 @@ Kirin 9030，支持数据类型为：half。
 
     dstGap为1：表示目的操作数上，前一个数据分形的尾地址与后一个数据分形的首地址之间间隔1个数据分形。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0b_noncontinuous_float.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0b_noncontinuous_float.png)
 
 ### 设置搬运起始位置
 
@@ -197,7 +197,7 @@ srcStride为2：表示源操作数上，前一个数据分形的首地址与后�
 
 dstGap为2：表示目的操作数上，前一个数据分形的尾地址与后一个数据分形的首地址之间间隔2个数据分形。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_set_start_pos.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_set_start_pos.png)
 
 ### 分形转置
 
@@ -213,7 +213,7 @@ dstGap为2：表示目的操作数上，前一个数据分形的尾地址与后�
 
     ifTranspose=1：表示开启转置。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_set_frac_trans_demo1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_set_frac_trans_demo1.png)
 
 - 从L1 Buffer搬运数据类型为half的6个数据分形到L0A Buffer，开启转置。
 
@@ -227,7 +227,7 @@ dstGap为2：表示目的操作数上，前一个数据分形的尾地址与后�
 
     ifTranspose=1：表示开启转置。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_set_frac_trans_demo2.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_set_frac_trans_demo2.png)
 
 ### 控制地址更新方式
 
@@ -243,7 +243,7 @@ srcStride为2：表示源操作数上，前一个数据分形的首地址与后�
 
 dstGap为2：表示目的操作数上，前一个数据分形的尾地址与后一个数据分形的首地址之间间隔2个数据分形。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_control_update_addr.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_control_update_addr.png)
 
 ## 调用示例
 
@@ -251,9 +251,9 @@ dstGap为2：表示目的操作数上，前一个数据分形的尾地址与后�
 
 搬运过程的数据排布变化示意图如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_nontrans.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_nontrans.png)
 
-示例代码片段如下，仅展示样例中的部分代码，完整示例请参考：[load_data_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
+示例代码片段如下，仅展示样例中的部分代码，完整示例请参考：[load_data_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
 
 ```cpp
 uint32_t dstOffset = CeilDivision(k, fractalShape[1]) * fractalSize;
@@ -273,9 +273,9 @@ for (int i = 0; i < CeilDivision(m, fractalShape[0]); ++i) {
 
 搬运过程的数据排布变化示意图如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2d_l12l0a_trans.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2d_l12l0a_trans.png)
 
-示例代码片段如下，仅展示样例中的部分代码，完整示例请参考：[load_data_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
+示例代码片段如下，仅展示样例中的部分代码，完整示例请参考：[load_data_l12l0样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_l12l0)。
 
 ```cpp
 uint32_t dstOffset = CeilDivision(k, fractalShape[0]) * fractalSize;

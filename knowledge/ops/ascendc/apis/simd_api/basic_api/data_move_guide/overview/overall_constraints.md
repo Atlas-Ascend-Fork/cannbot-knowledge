@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_move_guide/overview/overall_constraints.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -54,4 +54,4 @@ AscendC::DataCopy(src1Local, src1Global, srcDataSize);
 
 **图 1**  DataCopy的目的地址存在重叠<a name="fig333145263318"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_address_overlap_sync_diagram.png "DataCopy的目的地址存在重叠")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_address_overlap_sync_diagram.png "DataCopy的目的地址存在重叠")

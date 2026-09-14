@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/layout_hierarchical_representation.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -29,11 +29,11 @@ shape用于表达Tensor形状，stride则用于区分不同的排布方式。
 
 **图1** 行优先排布
 
-![行优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/row_major_layout.png)
+![行优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/row_major_layout.png)
 
 **图2** 列优先排布
 
-![列优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/column_major_layout.png)
+![列优先排布](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/column_major_layout.png)
 
 ## 层次化表述法
 
@@ -46,7 +46,7 @@ shape用于表达Tensor形状，stride则用于区分不同的排布方式。
 
 **图3** 层次化表述法
 
-![层次化表述法](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/hierarchical_representation.png "层次化表述法")
+![层次化表述法](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/hierarchical_representation.png "层次化表述法")
 
 图中展示了两层矩阵：内层矩阵为内部用灰色线包裹的矩阵，外层矩阵为将内层矩阵视为一个元素时，用黑色线包裹的矩阵。
 
@@ -77,7 +77,7 @@ stride = ((stride_row0, stride_row1), (stride_column0, stride_column1))
     ```
 
     **图4** NZ layout
-    ![NZ-格式](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nz_format.png)
+    ![NZ-格式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nz_format.png)
 
     下面是一个连续的NZ layout示例，其中c0_element =_32{} / sizeof(T)。
 
@@ -100,7 +100,7 @@ stride = ((stride_row0, stride_row1), (stride_column0, stride_column1))
     ```
 
     **图5** ZN layout
-    ![ZN-格式](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zn_fractals_of_half.png)
+    ![ZN-格式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zn_fractals_of_half.png)
 
     下面是一个连续的ZN layout示例，其中c0_element =_32{} / sizeof(T)。
 
@@ -121,7 +121,7 @@ stride = ((stride_row0, stride_row1), (stride_column0, stride_column1))
     ```
 
     **图6** DNExt layout
-    ![DNExt layout](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/column_major_layout.png)
+    ![DNExt layout](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/column_major_layout.png)
 
     下面是一个连续的DNExt layout示例。
 
@@ -142,7 +142,7 @@ stride = ((stride_row0, stride_row1), (stride_column0, stride_column1))
     ```
 
     **图7** NDExt layout
-    ![NDExt layout](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/row_major_layout.png)
+    ![NDExt layout](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/row_major_layout.png)
 
     下面是一个连续的NDExt layout示例。
 
@@ -299,12 +299,12 @@ stride = ((stride_row0, stride_row1), (stride_column0, stride_column1))
 MX scaleA要求在矩阵GM上按照ScaleAND layout或ScaleADN layout格式排布，在L1上需满足按行读取需求，即按照ZZ layout格式排布。如下图所示，若GM上scaleA矩阵为ScaleAND或者ScaleADN分形排布，搬运到L1后分形为ZZ排布。
 
 **图8** scaleA矩阵在不同位置上的排布格式
-![scaleA矩阵在不同位置上的排布格式](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scalea_matrix_layout.png)
+![scaleA矩阵在不同位置上的排布格式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scalea_matrix_layout.png)
 
 MX scaleB要求在矩阵GM上按照ScaleBND layout或ScaleBDN layout格式排布，在L1上需满足按列读取需求，即按照NN layout格式排布。如下图所示，若GM上scaleB矩阵为ScaleBND或者ScaleBDN分形排布，搬运到L1后分形为NN排布。
 
 **图9** scaleB矩阵在不同位置上的排布格式
-![scaleB矩阵在不同位置上的排布格式](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scaleb_matrix_layout.png)
+![scaleB矩阵在不同位置上的排布格式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scaleb_matrix_layout.png)
 
 ## 卷积特征图layout
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/data_filter/Select.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -34,14 +34,14 @@ source_headers:
 
 如下图样例，源操作数src0为Tensor，shape为\(2,16\)，数据类型为half，尾轴长度满足32字节对齐；源操作数src1为scalar，数据类型为half；maskTensor的数据类型为bool，为满足对齐要求shape为\(2,32\)，仅有图中蓝色部分的mask掩码生效，灰色部分不参与计算。输出目的操作数dstTensor如下图所示。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/nz_reduce_53.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/nz_reduce_53.png)
 
 ## 实现原理
 
 以float类型，ND格式，shape为\[m, k1\]的source输入Tensor，shape为\[m, k2\]的mask Tensor为例，描述Select高阶API内部算法框图，如下图所示。
 
 **图1**  Select算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/select_diagram.png "Select算法框图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/select_diagram.png "Select算法框图")
 
 计算过程分为如下几步，均在Vector上进行：
 
@@ -51,7 +51,7 @@ source_headers:
 4.  Select步骤：根据cmpmask的结果，选择srcTensor相应位置的值或者scalar值，输出Output。
 
 **图2**  Select算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/select_diagram_1.png "Select算法框图-54")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/select_diagram_1.png "Select算法框图-54")
 
 计算过程在Vector上进行，循环m次，每次对k1个元素进行如下操作：
 
@@ -118,7 +118,7 @@ struct SelectWithBytesMaskShapeInfo {
 
 ## 调用示例
 
-完整示例可以参考[Select样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/07_filter/select)。
+完整示例可以参考[Select样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/07_filter/select)。
 
 ```
 // dstLocal：结果数据

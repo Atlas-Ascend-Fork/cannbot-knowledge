@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/memory_model/cache_coherence.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -24,7 +24,7 @@ platforms: []
 
 Cache用于缓存后续可能重复访问的数据或指令，降低访问GM的开销。一次Cache加载通常不是只加载被访问的单个字节或单个变量，而是把该地址所在的一段连续数据作为一个整体加载到Cache中，这个整体称为Cache Line。
 
-Cache Line是Cache加载、失效、写回的最小操作粒度。例如访问GM内存时，会将GM里一个Cache Line长度内相邻的数据加载到L2 Cache缓存，利用空间局部性提高访问效率。Cache Line是硬件真正搬入、标记、替换和写回缓存数据的最小粒度，直接影响性能和一致性。[NPU架构版本2201](../../language_extension/simd_builtin_keywords.md)支持L2 Cache、DCache和ICache。本文讨论的通用Cache单元信息如下：
+Cache Line是Cache加载、失效、写回的最小操作粒度。例如访问GM内存时，会将GM里一个Cache Line长度内相邻的数据加载到L2 Cache缓存，利用空间局部性提高访问效率。Cache Line是硬件真正搬入、标记、替换和写回缓存数据的最小粒度，直接影响性能和一致性。[NPU架构版本2201](../../language_extension/simd_builtin_keywords.md)支持L2 Cache、DCache和ICache。本文讨论的通用Cache单元信息如下：<a name="cache_unit_info"></a>
 
 
 **NPU架构版本3510Cache单元信息**
@@ -40,6 +40,7 @@ Cache Line是Cache加载、失效、写回的最小操作粒度。例如访问GM
 
 
 
+
 **NPU架构版本2201Cache单元信息**
 
 | 存储单元 | 位置 | 数据一致性说明 | [NPU架构版本2201](../../language_extension/simd_builtin_keywords.md)Cache Line大小 | [NPU架构版本2201](../../language_extension/simd_builtin_keywords.md)Cache大小 |
@@ -49,6 +50,7 @@ Cache Line是Cache加载、失效、写回的最小操作粒度。例如访问GM
 | AIV ICache | Scalar取指缓存 | 只读，不考虑多个核之间的数据不一致问题 | 128B | 16KB |
 | AIC DCache | Scalar数据缓存 | 每个核独立缓存，需要考虑多个核之间的数据一致性问题 | 64B | 16KB |
 | AIV DCache | Scalar数据缓存 | 每个核独立缓存，需要考虑多个核之间的数据一致性问题 | 64B | 32KB |
+
 
 
 同一份数据可能同时存在于GM、L2 Cache、DCache等多个位置。对于每个核独立维护的Cache，同一地址或同一Cache Line可能在不同核内形成不同副本：
@@ -229,9 +231,9 @@ T6                                                Scalar.LOAD A -> 1
 
 - 生产者通过Scalar写GM后，如果消费者需要从GM或其他路径读取该数据，生产者需要执行DCCI（例如`asc_dcci_single`）把Dirty数据写回GM。
 - 消费者如果担心本核DCache中有旧副本，读取前需要执行DCCI使旧副本失效。
-- 如果算法本身不需要DCache缓存，可以使用[ReadGmByPassDCache](https://gitcode.com/cann/asc-devkit/tree/master/docs/zh/guide/programming_guide/api/SIMD-API/basic_api/scalar_compute/ReadGmByPassDCache_ISASI.md>)和[WriteGmByPassDCache](https://gitcode.com/cann/asc-devkit/tree/master/docs/zh/guide/programming_guide/api/SIMD-API/basic_api/scalar_compute/WriteGmByPassDCache_ISASI.md>)直接读写GM。
+- 如果算法本身不需要DCache缓存，可以使用[ReadGmBypassDCache](https://gitcode.com/cann/asc-devkit/tree/master/docs/zh/guide/programming_guide/api/SIMD-API/basic_api/scalar_compute/ReadGmBypassDCache_ISASI.md>)和[WriteGmBypassDCache](https://gitcode.com/cann/asc-devkit/tree/master/docs/zh/guide/programming_guide/api/SIMD-API/basic_api/scalar_compute/WriteGmBypassDCache_ISASI.md>)直接读写GM。
 
-还有一类问题来自Cache Line粒度。普通Scalar写后续以64B Cache Line为单位写回；多个核即使写的是同一条Cache Line中的不同字段，也可能在各自写回整条Cache Line时覆盖对方结果。此类场景可以通过让不同核操作的地址至少相隔Cache Line大小，或使用ReadGmByPassDCache和WriteGmByPassDCache降低风险。
+还有一类问题来自Cache Line粒度。普通Scalar写后续以64B Cache Line为单位写回；多个核即使写的是同一条Cache Line中的不同字段，也可能在各自写回整条Cache Line时覆盖对方结果。此类场景可以通过让不同核操作的地址至少相隔Cache Line大小，或使用ReadGmBypassDCache和WriteGmBypassDCache降低风险。
 
 
 #### Atomic访问导致的DCache缓存一致性
@@ -345,7 +347,7 @@ T4        Scalar.LOAD A -> 1
 
 Scalar写GM可以分为两类：
 - cache: 普通Scalar写通过DCache修改GM，例如直接写`__gm__`地址；
-- no cache: 不经过DCache，直接向GM发起写操作，例如`WriteGmByPassDCache`等。
+- no cache: 不经过DCache，直接向GM发起写操作，例如`WriteGmBypassDCache`等。
 
 按照访问顺序，常见需要软件维护一致性的场景可以分为RAW、WAW和WAR三类：
 
@@ -359,7 +361,7 @@ RAW（Read After Write）场景要求后序读操作读取到前序写操作产�
 
 下表列出同一AI Core内Scalar写GM之后、消费者读取GM完整的软件维护操作序列。假设生产者和消费者访问同一地址，每个单元格都是从写后处理到读前处理的完整操作序列。
 
-表中的cache表示经过cache的访问，no cache表示不经过cache的访问,`VF_SIMT`表示经过cache的SIMT线程函数，MTE2表示经过MTE2的读取操作，MTE2（cache）指[多维数据搬运NDDMA](../../../../apis/simd_api/c_api/vector_datamove/asc_ndim_copy_gm2ub.md)，MTE2.DCI指NDDMA Cache的[失效操作](../../../../apis/simd_api/basic_api/memory_vector_compute/data_move_aux_config/nd_dma_dci.md)或[asc_ndim_copy_dci](../../../../apis/appendix/release_notes/cann_9_1_0.md)。
+表中的cache表示经过cache的访问，no cache表示不经过cache的访问,`VF_SIMT`表示经过cache的SIMT线程函数，MTE2表示经过MTE2的读取操作，MTE2（cache）指[多维数据搬运NDDMA](../../../../apis/simd_api/c_api/vector_datamove/asc_ndim_copy_gm2ub.md)，MTE2.DCI指NDDMA Cache的[失效操作](../../../../apis/simd_api/basic_api/memory_vector_compute/data_move_aux_config/nd_dma_dci.md)或[asc_ndim_copy_dci](../../../../apis/simd_api/c_api/vector_datamove/asc_ndim_copy_dci.md)。
 
 | 后续读取方式（列，后发生）<br>╲<br>前序写入方式（行，先发生） | Scalar（cache） | Scalar（no cache） | VF_SIMT（cache） | VF_SIMT（no cache） | MTE2（cache） | MTE2（no cache） |
 | --- | --- | --- | --- | --- | --- | --- |

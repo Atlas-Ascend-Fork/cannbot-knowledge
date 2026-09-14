@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/key_features.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -41,7 +41,7 @@ Ascend C提供了[三层梯度化SIMD编程接口](../../../../../guides/program
 两种方式的使用约束和支持的同步类型分别在后续章节展开：[TPipe-TQue框架范式自动同步](#tpipe-tque-auto-sync)和[开启cce-auto-sync编译选项自动同步](#cce-compiler-auto-sync)。
 
 **图1**  自动同步决策树  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/auto_sync_decision_tree.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/auto_sync_decision_tree.png)
 
 ## 硬件保证的同步
 
@@ -111,7 +111,7 @@ TPipe-TQue框架编程范式的自动同步功能需满足以下前提条件方�
 
 以下反例展示了因未满足[使用约束](#tpipe-tque-auto-sync-constraints)而无法自动插入同步的典型场景。
 
-- 反例1：未使用TPipe-TQue框架编程范式。例如，将[基于TPipe-TQue框架编程范式的Add向量加法的样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/01_add/add_tpipe_tque)改写为基于[静态Tensor编程范式](../../../../../guides/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/static_tensor_programming.md)时，静态Tensor编程范式无法自动插入`MTE2_V`，并最终导致样例执行失败。
+- 反例1：未使用TPipe-TQue框架编程范式。例如，将[基于TPipe-TQue框架编程范式的Add向量加法的样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/01_add/add_tpipe_tque)改写为基于[静态Tensor编程范式](../../../../../guides/programming_guide/programming_model/ai_core_simd_programming/cpp_tensor_programming/static_tensor_programming.md)时，静态Tensor编程范式无法自动插入`MTE2_V`，并最终导致样例执行失败。
 
     ```cpp
     AscendC::LocalMemAllocator<AscendC::Hardware::UB> ubAllocator;
@@ -125,7 +125,7 @@ TPipe-TQue框架编程范式的自动同步功能需满足以下前提条件方�
     AscendC::Add(zLocal, xLocal, yLocal, blockLength);
     ```
 
-- 反例2：未正确使用EnQue/DeQue、AllocTensor/FreeTensor接口（由TPipe-TQue框架编程范式提供）。例如，在[基于TPipe-TQue框架编程范式的Add向量加法的样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/01_add/add_tpipe_tque)中，如果缺失了`xLocal = inQueueX.DeQue<float>()`会导致TPipe-TQue框架编程范式无法自动插入`MTE2_V`，并最终导致样例执行失败。
+- 反例2：未正确使用EnQue/DeQue、AllocTensor/FreeTensor接口（由TPipe-TQue框架编程范式提供）。例如，在[基于TPipe-TQue框架编程范式的Add向量加法的样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/01_add/add_tpipe_tque)中，如果缺失了`xLocal = inQueueX.DeQue<float>()`会导致TPipe-TQue框架编程范式无法自动插入`MTE2_V`，并最终导致样例执行失败。
 
     ```cpp
     // 使用DataCopy将输入从GM搬运到Unified Buffer（UB），并通过EnQue将LocalTensor入队，供后续计算阶段DeQue取用。
@@ -196,7 +196,7 @@ TPipe-TQue框架编程范式的自动同步功能需满足以下前提条件方�
 
 以下反例展示了因未满足[使用约束](#cce-compiler-auto-sync-constraints)而无法自动插入同步的典型场景。
 
-[基于指针的C语言编程的Add样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/00_introduction/01_add/c_api_async_add)中，操作x_local的第0个元素时直接通过指针访问。此时，毕昇编译器无法在PIPE_MTE2（asc_copy_gm2ub）与PIPE_S之间自动插入同步。
+[基于指针的C语言编程的Add样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/00_introduction/01_add/c_api_async_add)中，操作x_local的第0个元素时直接通过指针访问。此时，毕昇编译器无法在PIPE_MTE2（asc_copy_gm2ub）与PIPE_S之间自动插入同步。
 
 ```c
 __gm__ float* x_gm = x + block_idx * block_length;
@@ -228,7 +228,7 @@ asc_sync();
 
 ### NPU仿真模式指令日志
 
-TPipe-TQue框架编程范式插入的同步并没有单独的日志功能，但是开启NPU仿真模式后（设置编译选项`-DCMAKE_ASC_RUN_MODE=sim`，参考[编译运行](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/01_add/add_tpipe_tque/README.md#编译运行)），可以通过指令日志**同时查看**TPipe-TQue框架编程范式和毕昇编译器自动插入的同步指令信息。
+TPipe-TQue框架编程范式插入的同步并没有单独的日志功能，但是开启NPU仿真模式后（设置编译选项`-DCMAKE_ASC_RUN_MODE=sim`，参考[编译运行](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/01_add/add_tpipe_tque/README.md#编译运行)），可以通过指令日志**同时查看**TPipe-TQue框架编程范式和毕昇编译器自动插入的同步指令信息。
 
 基于TPipe-TQue框架编程范式的Add向量加法的样例中，开启NPU仿真模式后，在build目录下查看vector核0的指令日志（`core0.veccore0.instr_log.dump`）片段如下：
 

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/hardware_implementation/architecture_spec/npu_arch_2201.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -29,7 +29,7 @@ platforms: []
 
 如下图所示，本架构中AI Core分为AIC和AIV两个独立的核，分别用于矩阵计算和向量计算。AIC核与AIV核配比为1：2。每个核都有自己的Scalar单元，能独立加载自己的代码段。AIV与AIC之间通过Global Memory进行数据传递。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sep_arch_12.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sep_arch_12.png)
 
 ## 计算单元<a name="section8490181519513"></a>
 
@@ -120,7 +120,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
     -   通过Channel merge、Channel split可以实现分形大小的转换，保证输出到L1 Buffer/GM的分形满足诉求。
     -   NZ2ND数据格式转换。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fixpipe.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fixpipe.png)
 
 上图中，Channel merge支持S8、U8、S4和U4数据类型，而Channel split支持FP32数据类型。
 
@@ -130,7 +130,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 
     如下所示，目标数据类型为S8，M为32，N为48，首先将前2列16x16分形矩阵合并为一个16x32矩阵，然后将剩余的16x16分形矩阵直接移入L1 Buffer。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fixpipe_i8_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fixpipe_i8_1.png)
 
 -   Channel merge（S4和U4数据类型）
 
@@ -140,7 +140,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 
     在这种情况下，N的配置必须是64的倍数。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fixpipe_i4_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fixpipe_i4_1.png)
 
 -   FP32 Channel split：
 
@@ -148,7 +148,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 
     如下图所示，这里的目标数据类型是FP32，M是64，N是32，它将被拆分为16个16x8的分形。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fixpipe_f32_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fixpipe_f32_1.png)
 
 ## 指令序列深度<a name="section1073952984666"></a>
 
@@ -181,7 +181,7 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
 
     同步控制流程如下图所示：
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/core_sync_final_13.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/core_sync_final_13.png)
 
     上图中，ID1、ID2、ID3、ID4、ID5、ID6表示事件ID（EventID），每个EventID对应一块存储数据的搬运状态，确保数据操作的正确性和一致性。
 
@@ -206,11 +206,11 @@ Fixpipe是NPU将典型操作进行硬化的加速模块，位于AIC内部，配�
     -   模式1：AI Core内部，AIV核之间的同步控制。如果两个AIV核都运行了CrossCoreSetFlag，CrossCoreWaitFlag后续的指令才会执行。
     -   模式2：AI Core内部，AIC与AIV之间的同步控制。在AIC核执行CrossCoreSetFlag之后，两个AIV上CrossCoreWaitFlag后续的指令才会继续执行；两个AIV都执行CrossCoreSetFlag后，AIC上CrossCoreWaitFlag后续的指令才能执行。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/aicore.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/aicore.png)
 
     下面以模式2为例说明AIC与同一AI Core内AIV之间的同步过程：AIC将L0C的计算结果搬运到GM后，调用`CrossCoreSetFlag<0x2, PIPE_FIX>(ID1)`；两个AIV通过`CrossCoreWaitFlag<0x2>(ID1)`确保数据从L0C成功搬运到GM后，再将GM的数据搬运到UB。其中，`0x2`表示模式2，`PIPE_FIX`表示流水类型，`ID1`为同步标记ID。CrossCoreWaitFlag只显式传入modeId，未传入pipe模板参数。CrossCoreSetFlag之前PIPE_FIX流水的指令完成后，CrossCoreWaitFlag后续全部流水的指令才能执行，具体原因请参考[“默认值”](#cross_core_wait_flag_default_values)。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/inter_sync_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/inter_sync_1.png)
 
     [CrossCoreSetFlag](../../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md)和[CrossCoreWaitFlag](../../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)接口配合使用。使用时需传入核间同步的标记ID\(flagId\)，即上图中的ID1，每个ID对应一个初始值为0的计数器。执行CrossCoreSetFlag后ID对应的计数器增加1；执行CrossCoreWaitFlag时如果对应的计数器数值为0则阻塞不执行；如果对应的计数器大于0，则计数器减一，同时后续指令开始执行。flagId取值范围请参考[flagId取值范围说明](../../../../../apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi.md#flagId取值范围说明)。
 

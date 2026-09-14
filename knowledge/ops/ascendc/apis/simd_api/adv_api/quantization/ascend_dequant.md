@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/quantization/AscendDequant.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -37,11 +37,11 @@ source_headers:
 
 -   如下图示例中，srcTensor的数据类型为int32\_t，m = 4，n = 8，calCount = 4，表明srcTensor中每行进行反量化的元素个数为4，deqScale中的前4个数生效，后12个数不参与反量化计算；dstTensor的数据类型为bfloat16\_t，m = 4，n\_dst = 16 \(16 \* sizeof\(bfloat16\_t\) % 32 = 0\)。计算逻辑是srcTensor的每n个数为一行，对于每行中的前calCount个元素，该行srcTensor的第i个元素与deqScale的第i个元素进行相乘写入dstTensor对应行的第i个元素，dstTensor对应行的第calCount + 1个元素\~第n\_dst个元素均为不确定的值。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_image_0000002155016964.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000002155016964.png)
 
 -   如下示例中，srcTensor的数据类型为int32\_t，m = 4，n = 8， calCount = 4，表明srcTensor中每行进行反量化的元素个数为4；dstTensor的数据类型为float，m = 4，n\_dst = 8 \(8 \* sizeof\(float\) % 32 = 0\)。对于srcTensor每行中的前4个元素都和标量deqScale相乘并写入dstTensor中每行的对应位置。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_image_0000001819864122.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000001819864122.png)
 
 当用户将模板参数中的mode配置为**DEQUANT\_WITH\_SINGLE\_ROW**时：
 
@@ -55,29 +55,29 @@ source_headers:
 
 具体效果可看下图所示，传入的DequantParams为 \{1, 16, 8\}。因为dstT为float，所以calCount满足为8的倍数，在**DEQUANT\_WITH\_SINGLE\_ROW**模式下会将\{1, 2 \* 8, 8\}转换为 \{2, 8, 8\}进行计算。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_image_0000001820178290.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000001820178290.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_image_0000001866976705.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_image_0000001866976705.png)
 
 -   PER\_TOKEN反量化：srcTensor的每组token（token为n方向，共有m组token）中的元素共享一组deqscale参数，srcTensor为\[m, n\]时，deqscale为\[m, 1\]。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002105578933.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002105578933.png)
 
 -   PER\_GROUP反量化：这里定义group的计算方向为k方向，srcTensor在k方向上每groupSize个元素共享一组deqscale参数。srcTensor为\[m, n\]时，如果kDim=0，表示k是m方向，deqscale为\[\(m + groupSize - 1\) / groupSize, n\]；如果kDim=1，表示k是n方向，deqscale的shape为\[m，\(n + groupSize - 1\) / groupSize\]。
     -   kDim=0：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002069815092.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002069815092.png)
 
     -   kDim=1：
 
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002105655005.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002105655005.png)
 
 ## 实现原理
 
 以数据类型int32\_t，shape为\[m, n\]的输入srcTensor，数据类型scaleT，shape为\[n\]的输入deqScale和数据类型dstT，shape为\[m, n\]的输出dstTensor为例，描述AscendDequant高阶API内部算法框图，如下图所示。
 
 **图1**  AscendDequant内部算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascenddequant_diagram.png "AscendDequant内部算法框图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascenddequant_diagram.png "AscendDequant内部算法框图")
 
 计算过程分为如下几步，均在Vector上进行：
 
@@ -88,7 +88,7 @@ source_headers:
 PER\_TOKEN/PER\_GROUP场景下，输入srcTensor数据类型是int32\_t/float，此时内部算法框图如下所示。
 
 **图2**  AscendDequant PER\_TOKEN/PER\_GROUP内部算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascenddequant_per_token_per_group.png "AscendDequant-PER_TOKEN-PER_GROUP内部算法框图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascenddequant_per_token_per_group.png "AscendDequant-PER_TOKEN-PER_GROUP内部算法框图")
 
 PER\_TOKEN/PER\_GROUP场景的计算逻辑如下：
 

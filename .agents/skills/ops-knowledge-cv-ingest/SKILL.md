@@ -15,6 +15,8 @@ description: 从固定版本官方源码提取至少一个 Host/launcher 可达 
 
 Prompt 必须给出固定源码仓与 40 位 Commit、唯一逻辑算子、入口类型与符号、源码起始范围、目标平台、CANN 版本和独占最终文件列表。
 
+模板中的 `<CANN_VERSION>` 使用本任务指定且有固定来源依据的 CANN 版本，不沿用示例或其他任务的版本。输入与来源冲突时先报告缺口，不生成带错误版本范围的正式卡；模板平台标签只对应本次证据范围。
+
 | 入口类型 | 标题标签 | 最低闭包 |
 |---|---|---|
 | 公开 ACLNN/API | `ACLNN` | `source_closed` |
@@ -22,6 +24,8 @@ Prompt 必须给出固定源码仓与 40 位 Commit、唯一逻辑算子、入�
 | 直接调用 | `Direct Invoke` | `direct_implementation_closed` |
 
 入口类型由 Prompt 决定，不得补造。缺少必填输入时停止写入。
+
+写入前按 [路径 Spec](../../../governance/specs/paths.md#profile-附加层级)核对任务指定路径与入口语义：公开 ACLNN/API 的完整链路使用 `aclnn`，独立 Direct Invoke 使用 `direct`。当前 Registry 没有仅覆盖官方内部 Host/Tiling 的 call-mode；这类输入可报告源码分析与路径缺口，但必须 defer 最终卡写入，不得借用 `aclnn`、`direct` 或临时创建目录。闭包标签不替代路径准入；后续需先完成分类治理再落库。
 
 ## 开始前必须完整读取
 
@@ -308,6 +312,7 @@ dynamic_ub = SIMT launch 或 Tiling 实际值
 
 ## CV Route 闭包原则
 
+- VV/CV 分流以目标平台范围内全部可达 Route 的节点集合为准。整体存在 Cube/AIC 或 MIX_CV 节点时，纯 Vector、SIMT、NDDMA 或通信分支也由本 Skill 在同一卡中闭合；不得逐 Route 改派 producer 或补造 Cube 路径。
 - Route 只有在 selector、执行族、kernel 节点图、POD、内存布局、同步图、精度/tail 完全相同时才可合并。
 - 单 Kernel MIX 必须分别写 AIC 与 AIV 的任务图，并逐交接边记录 producer、memory/offset、shape/dtype/layout、consumer、同步、轮次和 lifetime。
 - 多 Kernel 必须列全节点和边；workspace 只写“存在”不算闭包。

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/SIMT_programming_intro/programming_model.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -26,7 +26,7 @@ SIMT编程模型采用分层的抽象线程组织结构，示意图如下所示�
 
 **图1**  线程结构示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/thread_structure.png "线程结构示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/thread_structure.png "线程结构示意图")
 
 **Thread（线程）**
 
@@ -88,7 +88,7 @@ Thread Block的线程数建议设置为32的整数倍。若线程数未满足该
 UB是同一线程块内所有线程均可访问的内存空间，位于每个AIV内部。UB内存空间总大小为256KB，参考[图2](#fig9500834165913)，按功能划分为四个主要区域，从低地址向高地址依次为静态内存、动态内存、预留空间、Data Cache。
 
 **图2**  UB内存分配图<a name="fig9500834165913"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ub_memory_allocation.png "UB内存分配图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ub_memory_allocation.png "UB内存分配图")
 
 ### UB内存空间说明
 

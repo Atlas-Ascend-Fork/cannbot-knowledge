@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_copy/asc_copy.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/reg_copy.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_copy
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/reg_copy.h"`。
 
 完成数据在寄存器间的搬运，支持以下三种模式：
 
@@ -138,11 +141,11 @@ __simd_callee__ inline void asc_copy(vector_bool& dst,
 
 **图1**  矢量寄存器复制到掩码寄存器（uint16_t）<a id="fig-maskgen-b16"></a>
 
-![矢量寄存器复制到掩码寄存器（uint16_t）](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/capi_copy_reg2mask_b16.png)
+![矢量寄存器复制到掩码寄存器（uint16_t）](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/capi_copy_reg2mask_b16.png)
 
 **图2**  矢量寄存器复制到掩码寄存器（uint32_t）<a id="fig-maskgen-b32"></a>
 
-![矢量寄存器复制到掩码寄存器（uint32_t）](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/capi_copy_reg2mask_b32.png)
+![矢量寄存器复制到掩码寄存器（uint32_t）](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/capi_copy_reg2mask_b32.png)
 
 ## 调用示例
 

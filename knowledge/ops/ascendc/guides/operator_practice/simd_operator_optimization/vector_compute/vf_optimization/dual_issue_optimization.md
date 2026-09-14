@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/vector_compute/vf_optimization/dual_issue_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -39,7 +39,7 @@ for (uint16_t i = 0; i < 16; ++i) { // VLoop-1
 ```
 
 **图1**  执行队列和指令的执行顺序<a name="fig695403454218"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/exec_order.png "执行队列和指令的执行顺序")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/exec_order.png "执行队列和指令的执行顺序")
 
 在编写算子时，开发者通常习惯于按“加载数据 → 处理计算 → 存储结果”的顺序来组织代码流程。这种写法在寄存器资源充足时运行良好，但一旦资源紧张，问题就会被放大。当多个计算指令之间会产生依赖关系，这些等待会堆积在执行队列中，导致后续指令无法及时发射。
 
@@ -101,6 +101,7 @@ for (uint16_t i = 0; i < 32; ++i) { // VLoop-2
 | :-- | :-- | :-- | :-- |
 | 手动展开VF循环 | / | &bull;自主可控；<br>&bull;能处理复杂循环或src/dst寄存器复用等场景； | &bull;代码复杂度高；|
 | 编译器自动展开 | #pragma unroll number （number表示展开层数）| &bull;代码复杂度低；| &bull;src/dst寄存器复用时无法展开。 |
+
 >[!NOTE]说明
 >
 > 循环展开通过消除指令依赖，提升指令双发能力来优化VF性能，需根据实际计算过程使用，不保证产生收益。展开时，若寄存器超出数量上限，可能会造成性能劣化或其他非预期行为。

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_layout_conversion/Transpose.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -281,7 +281,7 @@ dst_nchw = np.transpose(src_nhwc, axes=(0,3,1,2))
 
 ## 调用示例
 
-- 普通接口调用示例片段，完整片段请参考[Transpose类样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/transpose)场景一，该示例对\[16,16\]的half类型矩阵进行转置。
+- 普通接口调用示例片段，完整片段请参考[Transpose类样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/transpose)场景一，该示例对\[16,16\]的half类型矩阵进行转置。
 
   ```cpp
   // dstLocal：目的操作数tensor
@@ -359,7 +359,7 @@ dst_nchw = np.transpose(src_nhwc, axes=(0,3,1,2))
     239. 255.]]
   ```
 
-- 增强接口调用示例片段，完整代码请参考[Transpose类样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/transpose)场景二，完成half类型的\[N,C,H,W\]->\[N,H,W,C\]转置。
+- 增强接口调用示例片段，完整代码请参考[Transpose类样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/transpose)场景二，完成half类型的\[N,C,H,W\]->\[N,H,W,C\]转置。
 
   ```cpp
   AscendC::TransposeParamsExt transposeParams;

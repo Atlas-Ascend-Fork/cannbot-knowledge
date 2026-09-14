@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_copy/asc_mask.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/reg_copy.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_mask
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/reg_copy.h"`。
 
 将src中被mask筛选的有效元素复制到返回值对应位置，未被mask筛选的位置置为0（ZEROING模式），并通过函数返回值返回结果。支持以下两种模式：
 

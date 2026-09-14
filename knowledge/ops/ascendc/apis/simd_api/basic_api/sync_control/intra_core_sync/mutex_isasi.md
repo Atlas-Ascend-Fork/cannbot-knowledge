@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/Mutex_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -19,11 +19,11 @@ platforms: []
 
 Mutex用于核内异步流水指令之间的同步控制，其功能类似于传统CPU中的锁机制。通过先锁定再释放指定流水来完成流水间的同步依赖，锁定/解锁指定流水对应Lock/Unlock接口。
 
-- [Lock](lock.md)：根据MutexID获取Mutex，若Mutex已被锁定，将阻塞后续指定流水指令队列，直到当前流水的前序指令中对应MutexID的Mutex被[Unlock](unlock.md)。
+- [Lock](lock.md)：根据MutexID获取Mutex，若Mutex已被锁定，将阻塞指定流水上后续指令的执行，直到所有流水中具有相同MutexID的Mutex都已经被[Unlock](unlock.md)释放。
 - [Unlock](unlock.md)：直到当前流水的前序指令执行完成后，根据MutexID释放对应Mutex。
 
 **图 1**  Lock/UnLock接口<a name="fig58242463299"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/lock_unlock.png "Lock-UnLock接口")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/lock_unlock.png "Lock-UnLock接口")
 
 每个锁有固定的一个MutexID，在不同编程范式中，该ID的获取以及释放方式不同：
 
@@ -36,7 +36,7 @@ Mutex用于核内异步流水指令之间的同步控制，其功能类似于传
 - 可以使用更多的同步信号量。
 
 **图 2**  SetFlag/WaitFlag同步与Lock/Unlock同步代码差异<a name="fig27101823165111"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/setflag_waitflag_vs_lock_unlock_diff.png "SetFlag-WaitFlag同步与Lock-Unlock同步代码差异")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/setflag_waitflag_vs_lock_unlock_diff.png "SetFlag-WaitFlag同步与Lock-Unlock同步代码差异")
 
 Mutex类定义如下：
 

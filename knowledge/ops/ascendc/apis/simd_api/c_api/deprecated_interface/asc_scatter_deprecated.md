@@ -10,20 +10,24 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_scatter_deprecated.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
+source_headers:
+- include/c_api/reg_compute/scatter/ub_scatter.h
 ---
 
 # asc_scatter（废弃）
 
 ## 功能说明
 
+头文件路径为：`"c_api/reg_compute/scatter/ub_scatter.h"`。
+
 **该接口已废弃。请使用[asc_scatter](../reg_compute/scatter/asc_scatter.md)实现此功能。**
 
 该指令会根据索引值index将源操作数src中的元素分散到目的操作数dst中。分散过程如下图所示：
 
-![scatter功能说明](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/reg_scatter.png)
+![scatter功能说明](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/reg_scatter.png)
 
 ## 函数原型
 

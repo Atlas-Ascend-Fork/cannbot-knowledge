@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Tiling/HCCL_Tiling_constructor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -44,6 +44,7 @@ Mc2CcTilingConfig(const std::string& groupName, uint32_t opType, const std::stri
 **表2**  HcclCMDType参数说明
 
 <a name="table2469980529"></a>
+
 | 数据类型 | 说明 |
 | --- | --- |
 | HcclCMDType | 通信任务类型。HcclCMDType枚举类定义如下代码所示。 |

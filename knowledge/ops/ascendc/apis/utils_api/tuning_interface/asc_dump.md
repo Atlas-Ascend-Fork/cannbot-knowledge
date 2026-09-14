@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/tuning_interface/asc_dump.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -106,6 +106,7 @@ __simd_callee__ inline void asc_dump(__ubuf__ T* input, uint32_t desc, uint32_t 
 ## 参数说明
 
 **表1** 参数说明
+
 | 参数名 | 输入/输出 | 描述 |
 | --- | --- | --- |
 | T | 输入 | 待dump的数据类型。 |
@@ -132,7 +133,7 @@ __simd_callee__ inline void asc_dump(__ubuf__ T* input, uint32_t desc, uint32_t 
 ## 约束说明
 
 
--   针对Ascend 950PR/Ascend 950DT，在使用该接口打印L1 Buffer、BiasTable Buffer或Fixpipe Buffer数据时，HDK版本需要至少升级到25.7.0以上。
+-   针对Ascend 950PR/Ascend 950DT，在使用该接口打印L1 Buffer、BiasTable Buffer或Fixpipe Buffer数据时，HDK版本需要至少升级到25.7.RC1.6以上。
 
 
 -   针对Ascend 950PR/Ascend 950DT，打印Fixpipe Buffer中的Tensor信息场景：
@@ -144,6 +145,7 @@ __simd_callee__ inline void asc_dump(__ubuf__ T* input, uint32_t desc, uint32_t 
 -   SIMD场景下，单次调用本接口打印的数据总量不可超过打印大小限制，默认为30KB。使用时应注意，如果超出这个限制，则数据不会被打印。您可以通过acl.json中的`"simd_printf_fifo_size_per_core"`字段进行配置，配置范围最小为1KB，最大为64MB（可通过[aclInit](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/latest/API/runtimeapi/aclcppdevg_03_0022.html)接口调整）。当打印数据量较大时，建议增加缓存空间。pytorch调用和算子入图场景暂不支持该配置。
 
 
+-   SIMD VF场景下，使用`asc_dump_reg`或寄存器入参的`asc_dump`时，若`dump_size`超过一个矢量寄存器可容纳的元素数量，系统会将其自动截断为该寄存器可容纳的元素数量。
 -   SIMD VF场景下，每个AIV核在单次`asc_vf_call`执行期间使用2KB预留UB空间临时保存调测数据。同一次`asc_vf_call`中的`assert`、`ascendc_assert`、`printf`和`asc_dump`共享该空间。该空间中的数据传输完成后会被复用，因此上述接口产生的累计调测数据可以超过2KB。单条调测数据必须能完整保存在该空间中，否则该条数据不会打印。
 -   每次调用`simd_vf`的`asc_dump`时，除实际dump数据外，还会固定占用72字节的管理信息；实际dump数据需要按32字节向上对齐。
 -   SIMD VF场景下，`simd_printf_fifo_size_per_core`建议配置为3KB以上。配置过小且打印数据量较大时，部分调测数据不会被打印。

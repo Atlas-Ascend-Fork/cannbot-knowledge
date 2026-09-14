@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/typical_operator_cases/simd_operator_impl/matmul_matrix_operator/advanced_extreme_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -22,15 +22,15 @@ platforms: []
 
 | 编号 | 优化手段 | 等级 | 定位 |
 |------|---------|------|------|
-| 1 | [L1/L0双缓冲Ping-Pong布局](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#1-l1l0-双缓冲-ping-pong-布局) | 中级 | 流水线骨架 |
-| 2 | [细粒度流水同步](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#2-细粒度流水同步) | 中级 | 流水线骨架 |
-| 3 | [多核并行切分](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#3-多核并行切分) | 中级 | 并行策略 |
-| 4 | [DataCopyIn优先搬运B矩阵](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#4-datacopyin-优先搬运-b-矩阵) | 中级 | 调度策略 |
-| **5** | **[大包搬运](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#5-大包搬运)** | **高级** | **流水线骨架** |
-| **6** | **[LoadData3D替代LoadData2D](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#6-loaddata3d-替代-loaddata2d减少指令队列占用)** | **高级** | **指令队列优化** |
-| **7** | **[常量Tiling](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#7-常量-tiling)** | **高级** | **编译期优化** |
-| **8** | **[UnitFlag优化](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#8-unitflag-优化)** | **高级** | **MMAD-FIXPIPE流水重叠** |
-| **9** | **[L2Cache优化](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#9-l2cache-优化)** | **高级** | **MTE2带宽压榨** |
+| 1 | [L1/L0双缓冲Ping-Pong布局](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#1-l1l0-双缓冲-ping-pong-布局) | 中级 | 流水线骨架 |
+| 2 | [细粒度流水同步](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#2-细粒度流水同步) | 中级 | 流水线骨架 |
+| 3 | [多核并行切分](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#3-多核并行切分) | 中级 | 并行策略 |
+| 4 | [DataCopyIn优先搬运B矩阵](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#4-datacopyin-优先搬运-b-矩阵) | 中级 | 调度策略 |
+| **5** | **[大包搬运](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#5-大包搬运)** | **高级** | **流水线骨架** |
+| **6** | **[LoadData3D替代LoadData2D](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#6-loaddata3d-替代-loaddata2d减少指令队列占用)** | **高级** | **指令队列优化** |
+| **7** | **[常量Tiling](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#7-常量-tiling)** | **高级** | **编译期优化** |
+| **8** | **[UnitFlag优化](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#8-unitflag-优化)** | **高级** | **MMAD-FIXPIPE流水重叠** |
+| **9** | **[L2Cache优化](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#9-l2cache-优化)** | **高级** | **MTE2带宽压榨** |
 
 ## 从中级到高级
 
@@ -48,14 +48,14 @@ platforms: []
 
 ## 详细内容
 
-详细内容请参考 [Matmul 基础API最佳实践样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance)，其中高级极限打磨涵盖5个核心步骤：
+详细内容请参考 [Matmul 基础API最佳实践样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance)，其中高级极限打磨涵盖5个核心步骤：
 
-- 5、**[大包搬运](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#5-大包搬运)**：通过 `stepKa`/`stepKb` 参数将多个基本块打包为一次DataCopyIn，减少MTE2指令发射次数
-- 6、**[LoadData3D替代 LoadData2D](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#6-loaddata3d-替代-loaddata2d减少指令队列占用)**：使用 `LoadData3DParamsV2` 单条指令替代LoadData2D的多条循环发射，降低MTE1指令队列占用
-- 7、**[常量Tiling](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#7-常量-tiling)**：所有Tiling参数通过模板参数在编译期确定，消除运行时Scalar动态计算开销
-- 8、**[UnitFlag优化](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#8-unitflag-优化)**：开启UnitFlag实现MMAD-FIXPIPE 512B 粒度流水并行，Cube计算与结果写回重叠执行
-- 9、**[L2Cache优化](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#9-l2cache-优化)**：通过M轴分轮调度使B矩阵跨轮驻留 L2Cache，缓解MTE2带宽压力
+- 5、**[大包搬运](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#5-大包搬运)**：通过 `stepKa`/`stepKb` 参数将多个基本块打包为一次DataCopyIn，减少MTE2指令发射次数
+- 6、**[LoadData3D替代 LoadData2D](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#6-loaddata3d-替代-loaddata2d减少指令队列占用)**：使用 `LoadData3DParamsV2` 单条指令替代LoadData2D的多条循环发射，降低MTE1指令队列占用
+- 7、**[常量Tiling](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#7-常量-tiling)**：所有Tiling参数通过模板参数在编译期确定，消除运行时Scalar动态计算开销
+- 8、**[UnitFlag优化](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#8-unitflag-优化)**：开启UnitFlag实现MMAD-FIXPIPE 512B 粒度流水并行，Cube计算与结果写回重叠执行
+- 9、**[L2Cache优化](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#9-l2cache-优化)**：通过M轴分轮调度使B矩阵跨轮驻留 L2Cache，缓解MTE2带宽压力
 
 每步优化均包含原理说明与数据流向说明，并附有功能调试（printf、DumpTensor）与性能调试（msOpProf）方法说明。
 
-> **说明**：中级优化内容请参考 [中级性能优化](intermediate_optimization.md)，上述优化步骤5-9属于高级极限打磨范畴，建议在中级优化完成后逐步叠加。性能数据与理论分析详见README的 [性能数据分析](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#性能数据分析) 及 [理论性能分析](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#理论性能分析) 章节。
+> **说明**：中级优化内容请参考 [中级性能优化](intermediate_optimization.md)，上述优化步骤5-9属于高级极限打磨范畴，建议在中级优化完成后逐步叠加。性能数据与理论分析详见README的 [性能数据分析](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#性能数据分析) 及 [理论性能分析](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_basic_api_high_performance/README.md#理论性能分析) 章节。

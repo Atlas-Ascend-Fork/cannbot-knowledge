@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/tensor_transform/TransData.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -28,37 +28,37 @@ source_headers:
 
 本接口支持的数据格式转换场景包括以下四种，除维度顺序变换外，其中涉及到C轴和N轴的拆分，具体转换方式为，C轴拆分为C1轴、C0轴，N轴拆分为N1轴、N0轴。对于位宽为16的数据类型的数据，C0和N0固定为16，C1和N1的计算公式如下。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002355948405.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002355948405.png)
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002356028741.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002356028741.png)
 
 -   场景1：NCDHW -\> NDC1HWC0
 
     输入Tensor \{shape:\[N, C, D, H, W\]\}，输出Tensor \{shape:\[N, D, C/16, H, W, 16\]\}。请注意，C0实际上等于16，为便于展示，下图中C0被设定为2。
 
     **图1**  NCDHW格式转为NDC1HWC0格式示意图
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ncdhw_to_ndc1hwc0.png "NCDHW格式转为NDC1HWC0格式示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ncdhw_to_ndc1hwc0.png "NCDHW格式转为NDC1HWC0格式示意图")
 
 -   场景2：NDC1HWC0 -\> NCDHW
 
     输入Tensor \{shape:\[N, D, C/16, H, W, 16\]\}，输出Tensor \{shape:\[N, C, D, H, W\]\}。请注意，C0实际上等于16，为便于展示，下图中C0被设定为2。
 
     **图2**  NDC1HWC0格式转为NCDHW格式示意图
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ndc1hwc0_to_ncdhw.png "NDC1HWC0格式转为NCDHW格式示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ndc1hwc0_to_ncdhw.png "NDC1HWC0格式转为NCDHW格式示意图")
 
 -   场景3：NCDHW -\> FRACTAL\_Z\_3D
 
     输入Tensor \{shape:\[N, C, D, H, W\]\}，输出Tensor \{shape:\[D, C/16, H, W, N/16, 16, 16\]\}。请注意，C0和N0实际上等于16，为便于展示，下图中C0和N0被设定为2。
 
     **图3**  NCDHW格式转为FRACTAL\_Z\_3D格式示意图
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ncdhw_to_fractal_z_3d.png "NCDHW格式转为FRACTAL_Z_3D格式示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ncdhw_to_fractal_z_3d.png "NCDHW格式转为FRACTAL_Z_3D格式示意图")
 
 -   场景4：FRACTAL\_Z\_3D -\> NCDHW
 
     输入Tensor \{shape:\[D, C/16, H, W, N/16, 16, 16\]\}，输出Tensor \{shape:\[N, C, D, H, W\]\}。请注意，C0和N0实际上等于16，为便于展示，下图中C0和N0被设定为2。
 
     **图4**  FRACTAL\_Z\_3D格式转为NCDHW格式示意图
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/fractal_z_3d_to_ncdhw.png "FRACTAL_Z_3D格式转为NCDHW格式示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/fractal_z_3d_to_ncdhw.png "FRACTAL_Z_3D格式转为NCDHW格式示意图")
 
 ## 函数原型
 
@@ -150,7 +150,7 @@ params = {ncdhwLayout, fractalzLayout};
 
 ## 调用示例
 
-更多样例可参考[TransData样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/08_transpose/transdata)。
+更多样例可参考[TransData样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/08_transpose/transdata)。
 
 ```
 // dstLocal：输出Tensor

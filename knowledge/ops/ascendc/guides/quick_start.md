@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/quick_start.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -42,11 +42,11 @@ platforms: []
 
 1. 进入开源仓Gitcode页面，单击"`CANNLab > 云开发`"按钮，使用已认证过的华为云账号登录。若未注册或认证，请根据页面提示进行注册和认证。
 
-   <p align="center"><img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/figures/cloudIDE.png" alt="云平台" width="750px" height="90px"></p>
+   <p align="center"><img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/figures/cloudIDE.png" alt="云平台" width="750px" height="90px"></p>
 
 2. 根据页面提示创建NPU环境并配置规格，启动云开发环境后，单击"`连接 > WebIDE 或 Visual Studio Code`"进入一站式开发平台。开源项目的资源默认在`/mnt/workspace`目录下。
 
-   <p align="center"><img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/figures/webIDE.png" alt="云平台" width="1000px" height="150px"></p>
+   <p align="center"><img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/figures/webIDE.png" alt="云平台" width="1000px" height="150px"></p>
 
 > [!NOTE] 使用说明
 >
@@ -108,7 +108,7 @@ platforms: []
     | `--device /dev/davinci_manager` | 映射NPU设备管理接口 | - |
     | `--device /dev/devmm_svm` | 映射设备内存管理接口 | - |
     | `--device /dev/hisi_hdc` | 映射主机与设备间的通信接口 | - |
-    | `-v /usr/local/dcmi:/usr/local/dcmi` | 挂载设备容器管理接口（DCMI）相关工具和库 | - |
+    | `-v /usr/local/dcmi:/usr/local/dcmi` | 挂载设备控制管理接口（DCMI）相关工具和库 | - |
     | `-v /usr/local/bin/npu-smi:/usr/local/bin/npu-smi` | 挂载`npu-smi`工具 | 使容器内可以直接运行此命令来查询NPU状态和性能信息 |
     | `-v /usr/local/Ascend/driver/lib64/:/usr/local/Ascend/driver/lib64/` | 将宿主机的NPU驱动库映射到容器内 | - |
     | `-v /usr/local/Ascend/driver/version.info:/usr/local/Ascend/driver/version.info` | 挂载驱动版本信息文件 | - |
@@ -122,7 +122,7 @@ platforms: []
 
 对于有NPU设备的用户，推荐使用DevContainer进行生态开发者贡献。
 
-DevContainer基于VS Code Dev Containers，通过仓库内`.devcontainer`配置自动构建一致的容器化开发环境，内置`conda`、`Python`等开发工具链。与宿主机的NPU驱动共享设备访问，适合需要编译源码、运行UT、向本仓贡献代码的场景。详细说明请参考[`.devcontainer/README.md`](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/.devcontainer/README.md)。
+DevContainer基于VS Code Dev Containers，通过仓库内`.devcontainer`配置自动构建一致的容器化开发环境，内置`conda`、`Python`等开发工具链。与宿主机的NPU驱动共享设备访问，适合需要编译源码、运行UT、向本仓贡献代码的场景。详细说明请参考[`.devcontainer/README.md`](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/.devcontainer/README.md)。
 
 > [!NOTE] 使用说明
 > DevContainer仅挂载宿主机的NPU驱动（只读），**CANN toolkit和ops包需在容器启动后手动安装**，请参考[下载安装CANN包](#cann-install)。
@@ -158,7 +158,7 @@ CANN包分为CANN toolkit包和CANN ops包。
     ```
 
     > [!IMPORTANT] 安装说明
-    > [examples](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples)中部分算子样例的编译运行依赖本包，若想完整体验样例编译运行流程，建议安装此包。
+    > [examples](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples)中部分算子样例的编译运行依赖本包，若想完整体验样例编译运行流程，建议安装此包。
 
 | 参数 | 说明 |
 | :--- | :--- |
@@ -219,7 +219,7 @@ git clone https://gitcode.com/cann/asc-devkit.git
 > [!NOTE] 使用前须知
 > 如您使用**容器化技术**，容器中已为您安装好依赖，可跳过此步骤。
 
-以下为本开源仓源码编译和examples算子样例编译运行的基础依赖条件，您可参考仓库内[DevContainer Python依赖（以 Python 3.12 为例）](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/.devcontainer/requirements.txt)：
+以下为本开源仓源码编译和examples算子样例编译运行的基础依赖条件，您可参考仓库内[DevContainer Python依赖（以 Python 3.12 为例）](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/.devcontainer/requirements.txt)：
 
 - python >= 3.9.0
 - gcc >= 7.3.0 / g++ >= 7.3.0 (注意：要求gcc与g++版本一致)

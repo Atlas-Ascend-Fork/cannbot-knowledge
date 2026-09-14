@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/composite_compute/CastDequant.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -87,7 +87,7 @@ source_headers:
 |U|源操作数数据类型。<br> |
 |isSetMask|是否在接口内部设置mask。<br>&bull; true，表示在接口内部设置mask。<br>&bull; false，表示在接口外部设置mask，开发者需要使用[SetVectorMask](../mask_operations/set_vector_mask.md)接口设置mask值。这种模式下，接口入参中的mask值设置为占位符`MASK_PLACEHOLDER`，用于占位，无实际含义。|
 |isVecDeq|控制是否选择向量量化模式。<br>和`SetDeqScale`接口配合使用，当`SetDeqScale`接口传入Tensor时，isVecDeq必须为true。|
-|halfBlock|输出数据类型为b8时有效，用于指示输出元素存放在上半还是下半DataBlock。<br>halfBlock=true时，结果存放在下半DataBlock；halfBlock=false时，结果存放在上半DataBlock。<br>如下图所示，一个DataBlock大小的输入得到8个b8类型输出，当halfBlock为false时，这8个输出数据存放在上半DataBlock。<br>![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/halfblock_description.png)<br>若需要得到连续的目的操作数数据，可以通过将DataBlock分为奇偶块，调用两次接口分别处理奇偶块，奇数块的输出存放在下半DataBlock，偶数块输出存放在上半DataBlock。<br>![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/castdequant_continous.png) |
+|halfBlock|输出数据类型为b8时有效，用于指示输出元素存放在上半还是下半DataBlock。<br>halfBlock=true时，结果存放在下半DataBlock；halfBlock=false时，结果存放在上半DataBlock。<br>如下图所示，一个DataBlock大小的输入得到8个b8类型输出，当halfBlock为false时，这8个输出数据存放在上半DataBlock。<br>![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/halfblock_description.png)<br>若需要得到连续的目的操作数数据，可以通过将DataBlock分为奇偶块，调用两次接口分别处理奇偶块，奇数块的输出存放在下半DataBlock，偶数块输出存放在上半DataBlock。<br>![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/castdequant_continous.png) |
 
 **表**  参数说明
 
@@ -183,6 +183,7 @@ source_headers:
 - 该接口需要与`SetDeqScale`配合使用，使用关系映射表如下：
 
   **表**  CastDequant与SetDeqScale使用关系映射表
+
   |CastDequant使用场景|对应使用的SetDeqScale函数原型|
   |---|---|
   |输入类型为int16_t，关闭向量量化模式|<br>\_\_aicore\_\_ inline void SetDeqScale(float scale, int16_t offset, bool signMode)|
@@ -202,7 +203,7 @@ $$
 
 ## 调用示例<a name="section642mcpsimp"></a>
 
-完整的调用样例可参考[复合计算样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/element_wise_compound_compute)。
+完整的调用样例可参考[复合计算样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/element_wise_compound_compute)。
 
 - 高维切分计算接口样例-mask连续模式。
 

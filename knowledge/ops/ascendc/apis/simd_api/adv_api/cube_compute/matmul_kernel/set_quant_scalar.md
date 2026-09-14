@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetQuantScalar.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -65,6 +65,8 @@ __aicore__ inline void SetQuantScalar(const uint64_t quantScalar)
 无
 
 ## 约束说明
+
+量化参数不能为inf/nan和非规格化数。
 
 需与[SetDequantType](../matmul_tiling/set_dequant_type.md)保持一致。
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/data_filter/DropOut.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -72,7 +72,7 @@ source_headers:
 以float类型，ND格式，shape为\[srcM, srcN\]的SrcTensor，shape为\[maskM, maskN\]的MaskTensor，比特模式场景为例，描述Dropout高阶API内部算法框图，如下图所示。
 
 **图1**  Dropout算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/dropout_algorithm_diagram.png "Dropout算法框图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/dropout_algorithm_diagram.png "Dropout算法框图")
 
 计算过程分为如下几步，均在Vector上进行：
 
@@ -81,7 +81,7 @@ source_headers:
 3.  Muls步骤：将输出数据每个元素除以keepProb。
 
 **图2**  Dropout算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/dropout_algorithm_diagram_1.png "Dropout算法框图-55")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/dropout_algorithm_diagram_1.png "Dropout算法框图-55")
 
 计算过程在Vector上进行，循环srcM次，每次对srcN个元素进行如下操作：
 

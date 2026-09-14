@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: VAE Patch Parallel
-description: 多模态生成模型的 VAE Decoder 处理大尺寸（720p/1080p，视频还叠加时间维度）pixel 输出时显存与算力消耗巨大。VAE Patch Parallel 把 latent/pixel 张量沿 H、W 空间维度切分到多卡并行处理，搭配**卷积的边界交换**、**注意力的全局 K/V 聚合**、**上采样的边界扩展+裁剪** 三种针对性通信策略，使各卡局部结果最终拼接成完整输出。HunyuanVideo、HunyuanImage-3.0、Wan2.2-I2V 均使用此策略（脚本 `module/vae_patch_parallel.py` / `models/wan2.2-i2v/wan/vae_patch_parallel.py`）。
+description: VAE 编解码的空间并行：HunyuanImage-3.0 与 Wan2.2-I2V 使用 H/W 网格及按算子选择的通信；HunyuanVideo 使用沿宽度的 overlap-chunk decode。说明平台实现、切分范围与边界处理。
 tags:
 - task.design
 - topic.parallelism
@@ -13,8 +13,12 @@ sources:
   role: primary
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: supporting
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/wan2.2-i2v/wan/image2video.py
+  role: implementation
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/vae/vae_parallel.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-12T03:07:12Z'
 platforms:
 - agnostic
 ---
@@ -23,7 +27,7 @@ platforms:
 
 ## Summary
 
-多模态生成模型的 VAE Decoder 处理大尺寸（720p/1080p，视频还叠加时间维度）pixel 输出时显存与算力消耗巨大。共享实现 `module/vae_patch_parallel.py` 把 latent/pixel 张量沿 H、W 空间维度切分到多卡并行处理，搭配**卷积的边界交换**、**注意力的全局 K/V 聚合**、**上采样的边界扩展+裁剪** 三种针对性通信策略，使各卡局部结果最终拼接成完整输出。**HunyuanImage-3.0、Wan2.2-I2V** 均复用这份共享脚本（Wan2.2-I2V `from module.vae_patch_parallel import set_vae_patch_parallel, VAE_patch_parallel`，见 `image2video.py` L35/L145；钉定版仓库中并无独立的 `wan/vae_patch_parallel.py`，wan 文档正文笔误如此，代码不是）。**HunyuanVideo 是另一份实现**：用 `models/hunyuan-video/hyvideo/vae/vae_parallel.py` 的沿单一序列维 1D overlap-chunk decode（非 H/W 二维网格、非下述三策略，详见 Mechanism）。
+多模态生成模型的 VAE Decoder 处理大尺寸（720p/1080p，视频还叠加时间维度）pixel 输出时显存与算力消耗巨大。共享实现 `module/vae_patch_parallel.py` 把 latent/pixel 张量沿 H、W 空间维度切分到多卡并行处理，搭配**卷积的边界交换**、**注意力的全局 K/V 聚合**、**上采样的边界扩展+裁剪** 三种针对性通信策略，使各卡局部结果最终拼接成完整输出。**HunyuanImage-3.0、Wan2.2-I2V** 均复用这份共享脚本（Wan2.2-I2V `from module.vae_patch_parallel import set_vae_patch_parallel, VAE_patch_parallel`，见 `image2video.py` L35/L145；钉定版仓库中并无独立的 `wan/vae_patch_parallel.py`，wan 文档正文笔误如此，代码不是）。**HunyuanVideo 是另一份实现**：用 `models/hunyuan-video/hyvideo/vae/vae_parallel.py` 的沿宽度 W 的 1D overlap-chunk decode（非 H/W 二维网格、非下述三策略，详见 Mechanism）。
 
 ## Mechanism
 
@@ -65,22 +69,22 @@ flowchart TD
 
 ### HunyuanVideo：另一份实现（1D overlap-chunk decode）
 
-HunyuanVideo 不走上面的 H/W 网格三策略，而是用 `models/hunyuan-video/hyvideo/vae/vae_parallel.py`（`inference.py` L48 `from hyvideo.vae.vae_parallel import decode`）：沿单一序列维（`wid_size = z.shape[-1]`）做 1D 切分，`act_chunk_len = wid_size // world_size`，每个 chunk 两侧各加 `overlap_size` 补充相邻序列，本地 decode 后 `dist.all_gather(...)` 再 `torch.cat(..., dim=-1)` 拼接。
+HunyuanVideo 不走上面的 H/W 网格三策略，而是用 `models/hunyuan-video/hyvideo/vae/vae_parallel.py`（`inference.py` L48 `from hyvideo.vae.vae_parallel import decode`）：沿宽度 W（`wid_size = z.shape[-1]`）做 1D 切分，`act_chunk_len = wid_size // world_size`，每个 chunk 按左右边界补充最多 `overlap_size` 列相邻内容，本地 decode 后 `dist.all_gather(...)` 再 `torch.cat(..., dim=-1)` 拼接。
 
 > 源（HunyuanVideo 优化文档）：VAE 阶段涉及卷积操作，简单的 chunk 会导致边缘感受野不足（部分序列被切分到了相邻卡上），生成出来的视频有明显的拼接现象。为此，本样例为每张卡的序列做了补充，使其能够获得相邻设备卡上的部分序列信息。
 
 ## Applicable Scenarios
 
 - 大尺寸图像/视频生成（720p+，视频 5s+）
-- VAE Decoder（推理阶段不跑 Encoder）
+- VAE 的适用阶段按模型入口确认：Wan2.2-I2V 同时并行 Encoder 和 Decoder，HunyuanVideo 此实现只替换 decode
 - 多卡场景（一般与 DiT SP 使用相同的卡数，如 HunyuanVideo 的 `ulysses8` + VAE 8 卡）
 - Wan2.2-I2V：文档中明确为 **8 卡 VAE 并行**
 
 ## Configuration
 
 - 共享实现 `module/vae_patch_parallel.py`：HunyuanImage-3.0、Wan2.2-I2V 复用（Wan 经 `from module.vae_patch_parallel import ...` 引入，并无独立 `wan/vae_patch_parallel.py`）
-- HunyuanVideo 用另一份 `models/hunyuan-video/hyvideo/vae/vae_parallel.py`（沿序列 1D overlap-chunk decode）
-- 切分维度（H、W、T）由模型 VAE 具体结构决定
+- HunyuanVideo 用另一份 `models/hunyuan-video/hyvideo/vae/vae_parallel.py`（沿宽度 1D overlap-chunk decode）
+- 本页固定实现的切分维度：共享实现为 H/W 二维网格，HunyuanVideo 为宽度 W；不据此推断支持沿 T 切分
 - 零侵入接入：`VAE_patch_parallel` 上下文管理器在 `__enter__` 把 `F.conv2d/conv3d/interpolate/pad`（`_sub_F_func`）与 `F.scaled_dot_product_attention`（`_sub_FA`）临时 monkeypatch 成分布式版本，`__exit__` 还原各 `ori_*`，从而对原 VAE 代码无改动接入
 
 ## Constraints
@@ -91,7 +95,7 @@ HunyuanVideo 不走上面的 H/W 网格三策略，而是用 `models/hunyuan-vid
 
 ## Known Deployments
 
-- **HunyuanVideo**（沿序列 1D overlap-chunk decode，非 H/W 网格三策略）：VAE 并行 + mask 缓存 + 虚拟内存取消 offload，VAE 阶段从 133 s → 12.4 s（`ulysses8` 场景，speedup 10.74×）
+- **HunyuanVideo**（沿宽度 1D overlap-chunk decode，非 H/W 网格三策略）：VAE 并行 + mask 缓存 + 虚拟内存取消 offload，VAE 阶段从 133 s → 12.4 s（`ulysses8` 场景，speedup 10.74×）
 - **HunyuanImage-3.0**：VAE 并行 + CFG 并行组合
 - **Wan2.2-I2V**：8 卡 VAE 并行
 
@@ -102,7 +106,7 @@ HunyuanVideo 不走上面的 H/W 网格三策略，而是用 `models/hunyuan-vid
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/wan2.2-i2v/wan2.2-i2v_optimization.md) 8卡 VAE 并行
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`module/vae_patch_parallel.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/module/vae_patch_parallel.py)（共享实现：H/W 网格三策略 + stride≠1 channel-split/all_to_all + `VAE_patch_parallel` monkeypatch 上下文管理器；HunyuanImage-3.0、Wan2.2-I2V 复用）
 - [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/wan2.2-i2v/wan/image2video.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/wan2.2-i2v/wan/image2video.py) L35/L145 `from module.vae_patch_parallel import ...`（Wan 复用共享脚本，无独立 `wan/vae_patch_parallel.py`）
-- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hunyuan-video/hyvideo/vae/vae_parallel.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/vae/vae_parallel.py)（HunyuanVideo 专用：沿序列 1D overlap-chunk decode，`inference.py` L48 import decode）
+- [cann-recipes-infer](https://gitcode.com/cann/cann-recipes-infer/tree/2c45117d781ab9ab88dcb89a28ae30f5d2450399) — [`models/hunyuan-video/hyvideo/vae/vae_parallel.py`](https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/hunyuan-video/hyvideo/vae/vae_parallel.py)（HunyuanVideo 专用：沿宽度 1D overlap-chunk decode，`inference.py` L48 import decode）
 
 ## Links
 

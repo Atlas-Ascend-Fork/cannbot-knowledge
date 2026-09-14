@@ -11,10 +11,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/store/asc_storealign_pack_postupdate.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/store/storealign.h
 - include/c_api/asc_simd.h
 ---
 
@@ -22,12 +23,20 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/reg_compute/store/storealign.h"`。
+
 将矢量数据寄存器或掩码寄存器中的数据压缩搬出到Unified Buffer（UB），写入完成后启用Post Update模式自动累加目的地址指针，便于硬件循环内连续多次调用时无需手动维护目的地址。当源操作数为矢量数据寄存器时，`mask`用于指示参与搬出的元素，`mask`对应位置为1时，将有效元素的低半部分bit数据写入压缩后对应的目的位置。`mask`对应位置为0时，压缩后对应的目的位置保持原值。当源操作数为掩码寄存器时，每间隔1 bit丢弃1 bit，将保留的bit连续压缩存储到目的地址，掩码寄存器搬出场景不支持配置掩码。本接口在Vector Function（`__simd_vf__`标记的函数）内使用，目的操作数为UB地址。
 
 本接口提供以下两种功能模式：
 
 - **矢量数据寄存器搬出模式**：`offset`单位为元素。搬出完成后，目的地址累加`offset × sizeof(dtype)`字节。
 - **掩码寄存器搬出模式**：`offset`单位为字节。搬出完成后，目的地址累加`offset`字节。
+
+以**b32位宽压缩至b16位宽搬出**过程为例，示意图如下：
+
+**图1** 压缩搬出数据
+
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_store_pack.png)
 
 本接口仅在AIV上执行有效。
 
@@ -37,7 +46,7 @@ source_headers:
 
 ```c
 // 占位符形式
-__simd_callee__ inline void asc_storealign_pack_postupdate(__ubuf__ <dtype>*& dst_align32b,
+__simd_callee__ inline void asc_storealign_pack_postupdate(__ubuf__ <dtype>*& dst,
                                                            vector_<dtype> src,
                                                            int32_t offset,
                                                            vector_bool mask)
@@ -50,7 +59,7 @@ __simd_callee__ inline void asc_storealign_pack_postupdate(__ubuf__ <dtype>*& ds
 #### 函数原型典型示例
 
 ```c
-__simd_callee__ inline void asc_storealign_pack_postupdate(__ubuf__ uint32_t*& dst_align32b,
+__simd_callee__ inline void asc_storealign_pack_postupdate(__ubuf__ uint32_t*& dst,
                                                            vector_uint32_t src,
                                                            int32_t offset,
                                                            vector_bool mask)
@@ -86,8 +95,8 @@ __simd_callee__ inline void asc_storealign_pack_postupdate(__ubuf__ uint8_t*& ds
 
 | 参数名 | 输入/输出 | 描述 |
 |---|---|---|
-| dst_align32b | 输入/输出 | 目的操作数的起始地址，按指针引用传入。类型为`__ubuf__ <dtype>*&`，起始地址需32字节对齐。搬出完成后，该指针由硬件自动更新。 |
-| src | 输入 | 源操作数（矢量数据寄存器）。`dtype`须与`dst_align32b`一致。 |
+| dst | 输入/输出 | 目的操作数的起始地址，按指针引用传入。类型为`__ubuf__ <dtype>*&`，起始地址需32字节对齐。搬出完成后，该指针由硬件自动更新。 |
+| src | 输入 | 源操作数（矢量数据寄存器）。`dtype`须与`dst`一致。 |
 | offset | 输入 | 地址偏移量，类型为`int32_t`，单位为元素。接口执行后，目的地址累加`offset × sizeof(dtype)`字节。 |
 | mask | 输入 | 源操作数掩码（掩码寄存器），用于指示参与搬出的元素。对应位置为1时参与搬出，为0时不参与搬出。需通过掩码设置接口预先赋值后再传入。 |
 
@@ -118,10 +127,10 @@ __simd_callee__ inline void asc_storealign_pack_postupdate(__ubuf__ uint8_t*& ds
 
 ### 矢量数据寄存器压缩搬出场景
 
-- `dst_align32b`起始地址需32字节对齐。
+- `dst`起始地址需32字节对齐。
 - `mask`需通过掩码设置接口预先赋值后再传入。未赋值的掩码寄存器内容不确定，会导致有效元素位置错误。
 - `mask`比特位为1的源操作数元素参与搬出，并将低半部分bit数据写入压缩后对应的目的位置；为0的元素不参与搬出，压缩后对应的目的位置保持原值。
-- `offset`的单位为元素。Post Update后的`dst_align32b`新地址仍需32字节对齐，且本次写出范围和更新后的地址均需落在UB可用容量范围内。
+- `offset`的单位为元素。Post Update后的`dst`新地址仍需32字节对齐，且本次写出范围和更新后的地址均需落在UB可用容量范围内。
 
 ### 掩码寄存器压缩搬出场景
 

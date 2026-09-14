@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/DataCopy_L0CToL1.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -34,13 +34,13 @@ source_headers:
 
 **图1** L0C2L1流程图（[NPU架构版本2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）<a id="zh-cn_topic_0000002511188540_fig8956371257"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/L0C2L1_Function_Combination.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/L0C2L1_Function_Combination.png)
 
 
 
 **图2** L0C2L1流程图（[NPU架构版本3510](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）<a id="zh-cn_topic_0000002542828493_fig1828513492475"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/L0C2L1_Function_Combination_DataCopy_950.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/L0C2L1_Function_Combination_DataCopy_950.png)
 
 
 
@@ -117,12 +117,14 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
 
 
 
+
 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，DataCopy接口支持的数据类型组合如下：
 
 | 源矩阵（L0C Buffer） | 目的矩阵（L1 Buffer） |
 | ---------- | ---------- |
 | float | int8_t、uint8_t、half、bfloat16_t。 |
 | int32_t | int8_t、uint8_t、half。 |
+
 
 
 
@@ -135,12 +137,14 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
 
 
 
+
 针对Atlas 200I/500 A2 推理产品，DataCopy接口支持的数据类型组合如下：
 
 | 源矩阵（L0C Buffer） | 目的矩阵（L1 Buffer） |
 | ---------- | ---------- |
 | float | int8_t、uint8_t、half、bfloat16_t。 |
 | int32_t | int8_t、uint8_t、half。 |
+
 
 
 ## 返回值说明

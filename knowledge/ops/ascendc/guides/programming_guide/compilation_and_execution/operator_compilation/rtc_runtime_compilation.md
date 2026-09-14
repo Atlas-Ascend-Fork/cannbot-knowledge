@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/compilation_and_execution/operator_compilation/rtc_runtime_compilation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -34,7 +34,7 @@ RTC是Ascend C运行时编译库，通过[aclrtc](../../../../apis/utils_api/rtc
 4.  调用aclrtLaunchKernelWithArgsArray接口，在已创建的Stream上按参数数组方式启动对应算子的计算任务。无参数核函数（Kernel）可传入空参数数组；有参数核函数（Kernel）需保证参数数组元素按核函数（Kernel）入参顺序排列，且每个元素指向Host侧的参数值。
 5.  调用aclrtSynchronizeStream、aclrtBinaryUnLoad、aclrtDestroyStream、aclrtResetDevice、aclFinalize等接口完成同步和资源释放。
 
-如下样例演示了如何使用aclrtc接口编译并运行一个核函数（Kernel），该核函数（Kernel）中调用了printf进行打印。完整样例请参考[LINK](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/05_aclrtc/rtc_hello_world/README.md)。
+如下样例演示了如何使用aclrtc接口编译并运行一个核函数（Kernel），该核函数（Kernel）中调用了printf进行打印。完整样例请参考[LINK](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/05_aclrtc/rtc_hello_world/README.md)。
 
 
 ```c++
@@ -143,4 +143,4 @@ const char* manglingName = "";
 aclrtcGetLoweredName(prog, kernelNameExpr, &manglingName);
 ```
 
-完整样例请参考：[rtc_template_add](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/05_aclrtc/rtc_template_add/README.md)。
+完整样例请参考：[rtc_template_add](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/05_aclrtc/rtc_template_add/README.md)。

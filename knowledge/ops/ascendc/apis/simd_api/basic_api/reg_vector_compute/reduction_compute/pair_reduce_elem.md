@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reduction_compute/PairReduceElem.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -26,7 +26,7 @@ source_headers:
 
 将传入的srcReg中相邻两个数值相加，并将产生的结果保存在dstReg中的低位位置。
 
-![PairReduceElem示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_pair_reduce_elem.png)
+![PairReduceElem示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_pair_reduce_elem.png)
 
 ## 函数原型<a name="section620mcpsimp"></a>
 

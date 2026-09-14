@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_basic_api/coupled_mode.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -24,7 +24,7 @@ platforms: []
 Cube编程范式把算子的实现流程分为5个基本任务：CopyIn，Split，Compute，Aggregate，CopyOut。CopyIn负责搬入操作，Split负责数据切分操作，Compute负责矩阵指令计算操作，Aggregate负责数据汇聚操作，CopyOut负责搬出操作。
 
 **图1**  矩阵编程基本任务设计<a name="zh-cn_topic_0000002135641293_fig382344282315"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_task.png "矩阵编程基本任务设计")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_task.png "矩阵编程基本任务设计")
 
 具体任务之间的交互流程和流程图如下。
 
@@ -52,14 +52,14 @@ Cube编程范式把算子的实现流程分为5个基本任务：CopyIn，Split�
     2.  使用[DataCopy](../../../../apis/simd_api/basic_api/data_move_guide/gm_ub_data_move.md)接口将LocalTensor拷贝到GlobalTensor上。
 
 **图2**  矩阵编程Queue队列<a name="zh-cn_topic_0000002135641293_fig1561614192617"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_queue.png "矩阵编程Queue队列")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_queue.png "矩阵编程Queue队列")
 
 ## 开发流程<a name="zh-cn_topic_0000002135641293_section220853764417"></a>
 
 基于Ascend C方式实现矩阵算子的流程如下图所示。
 
 **图3**  矩阵算子实现流程<a name="zh-cn_topic_0000002135641293_zh-cn_topic_0000001463907248_fig11771195614212"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_op_impl.png "矩阵算子实现流程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_op_impl.png "矩阵算子实现流程")
 
 -   算子分析：分析算子的数学表达式、输入、输出以及计算逻辑的实现，明确需要调用的Ascend C接口。
 -   核函数（Kernel）定义：定义Ascend C算子入口函数。
@@ -184,7 +184,7 @@ extern "C" __global__ __aicore__ void matmul_custom(__gm__ uint8_t* a, __gm__ ui
 通过以上分析，得到Ascend C  Matmul算子的计算流程图和设计规格如下：
 
 **图4**  Matmul算子的计算流程图<a name="zh-cn_topic_0000002135641293_fig5645174474016"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mm_flow.png "Matmul算子的计算流程图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mm_flow.png "Matmul算子的计算流程图")
 
 **表1** Ascend C  Matmul算子设计规格
 
@@ -442,12 +442,12 @@ __aicore__ inline void Process()
 两次循环内，SplitB需要从inQueueB1中分别搬运两个part的b矩阵，Compute需要分别计算a矩阵和两个part b矩阵的乘法，Aggregate要分别搬运两个part的c矩阵，具体五个阶段数据流通示意图如下：
 
 **图5**  数据流通示意图<a name="zh-cn_topic_0000002135641293_fig203166439417"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/data_through.png "数据流通示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/data_through.png "数据流通示意图")
 
 切分b矩阵，可以实现一部分的并行，本样例的流水并行示意图如下：
 
 **图6**  并行示意图<a name="zh-cn_topic_0000002135641293_fig1620145114425"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/parallel.png "并行示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/parallel.png "并行示意图")
 
 1.  Stage1：CopyIn函数实现。
 
@@ -465,7 +465,7 @@ __aicore__ inline void Process()
         格式转换示意图如下，第一次循环搬运蓝色部分，第二次循环搬运绿色部分；图中width为32，占两个分形，height为32，占两个分形，一共搬运4个16\*16分形。
 
         **图7**  ND to NZ转换示意图<a name="zh-cn_topic_0000002135641293_zh-cn_topic_0000001464069644_fig155702534417"></a>  
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd_to_nz.png "ND-to-NZ转换示意图")
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd_to_nz.png "ND-to-NZ转换示意图")
 
         注意：上述ND到NZ的格式转换仅作为举例说明，开发者可根据实际情况选择合适的转换方式。
 
@@ -509,7 +509,7 @@ __aicore__ inline void Process()
         -   每次循环迭代源矩阵首地址偏移16\*16，目的矩阵首地址偏移16\*k。
 
         **图8**  NZ to ZZ格式转换示意图<a name="zh-cn_topic_0000002135641293_zh-cn_topic_0000001464069644_fig1046153194220"></a>  
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nz_to_zz.png "NZ-to-ZZ格式转换示意图")
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nz_to_zz.png "NZ-to-ZZ格式转换示意图")
 
     4.  使用[EnQue](../../../../apis/simd_api/basic_api/resource_management/t_que/en_que.md)将计算结果a2Local放入到L0A Buffer（A2）的Queue中。
 
@@ -558,7 +558,7 @@ __aicore__ inline void Process()
         -   每次循环迭代，源矩阵首地址需要偏移k\*n/2。
 
         **图9**  NZ to ZN格式转换示意图<a name="zh-cn_topic_0000002135641293_zh-cn_topic_0000001464069644_fig5456545436"></a>  
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nz_to_zn.png "NZ-to-ZN格式转换示意图")
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nz_to_zn.png "NZ-to-ZN格式转换示意图")
 
     4.  使用[EnQue](../../../../apis/simd_api/basic_api/resource_management/t_que/en_que.md)将计算结果b2Local放入到L0B Buffer（B2）的Queue中。
 
@@ -646,7 +646,7 @@ __aicore__ inline void Process()
         每次循环移动一个分形，搬运m\*16个数。DataCopy参数说明如下：
 
         -   blockCount设置为m，共搬运m次。
-        -   blockLen设置为2，DataCopy指令一次搬运2个block，每个block16个数。
+        -   blockLen设置为2，DataCopy指令一次搬运2个32字节的数据块，共16个数。
         -   srcStride设置为0，每两次搬运间没有间隙。
         -   dstStride设置为\(nBlocks - 1\) \* 2，每两次搬运间隔2个block。
         -   每次循环迭代，目的矩阵偏移16，源矩阵偏移m\*16。
@@ -654,7 +654,7 @@ __aicore__ inline void Process()
         格式转换示意图如下，第一次循环搬运蓝色部分数据，第二次循环搬运绿色部分数据。
 
         **图10**  NZ to ND格式转换示意图<a name="zh-cn_topic_0000002135641293_zh-cn_topic_0000001464069644_fig58491033114314"></a>  
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nz_to_nd.png "NZ-to-ND格式转换示意图")
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nz_to_nd.png "NZ-to-ND格式转换示意图")
 
     具体代码如下：
 

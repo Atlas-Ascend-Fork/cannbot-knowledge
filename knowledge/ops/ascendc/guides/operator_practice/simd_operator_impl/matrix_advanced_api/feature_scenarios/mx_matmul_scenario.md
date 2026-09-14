@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/mx_matmul_scenario.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -31,13 +31,14 @@ MX格式是一种块数据格式，若干个数据可以组成一个块（或者
 下图为MX格式的浮点数的数据结构，S、E和M分别用于表示浮点数的符号、指数和尾数字段的值。其中，共享缩放因子X是一个用于整个数据块的缩放比例因子，它决定了数据块中所有元素的动态范围。通过引入共享缩放因子，MX格式的数据能够在保持低位宽的同时，灵活地表示不同范围的数据。块大小k指的是组成一个数据块（或组）的低比特数据的数量。私有元素P<sub>i</sub>是指数据块中的每个低比特数据元素。这些元素经过缩放因子X的调整后，共同表示了一个高精度的浮点数或整数。
 
 **图1**  MX格式组成示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mx_format.png "MX格式组成示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mx_format.png "MX格式组成示意图")
 
 MX格式的数据类型包含多种，例如MXFP8、MXFP4、MXFP16、MXINT4等。下表列举了[MxMatmul场景](#zh-cn_topic_0000002270097206_section310824820358)（全称Microscaling Matmul）支持的数据类型。
 
 **表1**  MxMatmul支持MX格式的数据类型
 
 <a name="zh-cn_topic_0000002270097206_table5383144710452"></a>
+
 | 数据类型 | 私有元素数据类型 | 私有元素位宽（d） | 块大小(k) | 共享缩放因子数据类型 | 共享缩放因子位宽(w) |
 | --- | --- | --- | --- | --- | --- |
 | MXFP8 | fp8_e5m2_t | 8 | 32 | fp8_e8m0_t | 8 |
@@ -56,21 +57,21 @@ MxMatmul的计算公式为：C = \(scaleA ⊗ A\) \* \(scaleB ⊗ B\) + Bias，�
 -   Bias为矩阵乘偏置，形状为\[1, N\]。对\(scaleA ⊗ A\) \* \(scaleB ⊗ B\)结果矩阵的每一行都采用该Bias进行偏置。
 
 **图2**  MxMatmul矩阵乘示意图<a name="zh-cn_topic_0000002270097206_fig1942919398330"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mx_matmul.png "MxMatmul矩阵乘示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mx_matmul.png "MxMatmul矩阵乘示意图")
 
 矩阵A、scaleA、B、scaleB在不同位置中的排布格式分别如下图所示。
 
 **图3**  A矩阵在不同位置的排布格式  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/a_matrix_pos.png "A矩阵在不同位置的排布格式")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/a_matrix_pos.png "A矩阵在不同位置的排布格式")
 
 **图4**  B矩阵在不同位置的排布格式  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/b_matrix_pos.png "B矩阵在不同位置的排布格式")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/b_matrix_pos.png "B矩阵在不同位置的排布格式")
 
 **图5**  scaleA矩阵在不同位置的排布格式<a name="zh-cn_topic_0000002270097206_fig107863142019"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/scale_a_pos.png "scaleA矩阵在不同位置的排布格式")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/scale_a_pos.png "scaleA矩阵在不同位置的排布格式")
 
 **图6**  scaleB矩阵在不同位置的排布格式<a name="zh-cn_topic_0000002270097206_fig76682054103416"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/scale_b_pos.png "scaleB矩阵在不同位置的排布格式")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/scale_b_pos.png "scaleB矩阵在不同位置的排布格式")
 
 ## 使用场景
 
@@ -216,13 +217,14 @@ Host侧自动获取Tiling参数的关键步骤介绍如下：
     mm.End();
     ```
 
-更多完整的算子样例请参考[MxMatmul样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_mx)、[自定义输入来源的MxMatmul样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_mx_ub_tscm_nz)、[scale多倍缓存的MxMatmul样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_mx_scale_cache)。
+更多完整的算子样例请参考[MxMatmul样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_mx)、[自定义输入来源的MxMatmul样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_mx_ub_tscm_nz)、[scale多倍缓存的MxMatmul样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_mx_scale_cache)。
 
 ## 参数说明
 
 **表3**  MatmulTypeWithScale参数说明
 
 <a name="zh-cn_topic_0000002270097206_table14759942142014"></a>
+
 | 参数 | 说明 |
 | --- | --- |
 | POSITION | 左右矩阵的内存逻辑位置。<br><br>注意：A、B矩阵设置为TPosition::TSCM时，对应的Format仅支持CubeFormat::NZ。 |

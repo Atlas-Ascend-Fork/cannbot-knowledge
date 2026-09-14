@@ -10,10 +10,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_convert/asc_int322int64.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/reg_convert.h
 - include/c_api/asc_simd.h
 ---
 
@@ -21,7 +22,9 @@ source_headers:
 
 ## 功能说明
 
-根据`mask`将`src`中的每个`int32_t`类型元素转换为`int64_t`类型，结果写入`dst`。由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个`VL`大小的数据分为两部分，根据位置参数选择输入数据索引为奇数的位置或偶数的位置。伪代码如下：
+头文件路径为：`"c_api/reg_compute/reg_convert.h"`。
+
+根据`mask`将`src`中的每个`int32_t`类型元素转换为`int64_t`类型，结果写入`dst`。由于源操作数与目的操作数类型位宽比为1:2，读取数据时需要将一个`VL`大小的数据分为两部分，根据参数`src_pos`选择读取`src`索引为偶数的位置或奇数的位置。伪代码如下：
 
 ```python
 # 位置判断仅用于说明接口语义，实际位置参数为编译期常量。
@@ -36,6 +39,7 @@ def asc_int322int64(dst, src, mask, src_pos):
 ## 函数原型
 
 ```c
+// 通过引用参数输出结果
 __simd_callee__ inline void asc_int322int64(vector_int64_t& dst,
                                             vector_int32_t src,
                                             vector_bool mask,
@@ -43,6 +47,15 @@ __simd_callee__ inline void asc_int322int64(vector_int64_t& dst,
 
 __simd_callee__ inline void asc_int322int64(vector_int64_t& dst,
                                             vector_int32_t src,
+                                            vector_bool mask,
+                                            std::integral_constant<asc_position_mode, asc_position_mode::ODD> src_pos)
+
+// 通过函数返回值返回结果
+__simd_callee__ inline vector_int64_t asc_int322int64(vector_int32_t src,
+                                            vector_bool mask,
+                                            std::integral_constant<asc_position_mode, asc_position_mode::EVEN> src_pos)
+
+__simd_callee__ inline vector_int64_t asc_int322int64(vector_int32_t src,
                                             vector_bool mask,
                                             std::integral_constant<asc_position_mode, asc_position_mode::ODD> src_pos)
 ```
@@ -62,25 +75,27 @@ __simd_callee__ inline void asc_int322int64(vector_int64_t& dst,
 
 ## 返回值说明
 
-无
+- 通过引用参数输出结果的函数原型无返回值。
+- 通过函数返回值输出结果的函数原型返回计算结果，返回值类型与对应引用输出函数原型中`dst`参数的类型一致（去除引用）。
 
 ## 约束说明
 
+- 通过引用参数输出结果的函数原型在非AIV上调用时直接返回。
+- 通过函数返回值输出结果的函数原型在非AIV上调用时返回对应矢量类型的默认构造值。
 - `src`与`dst`的数据类型需要与函数原型匹配。
 - `mask`掩码位为0时，`dst`对应元素置0。
 
 ## 调用示例
 
-
-
-
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
+
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
+
 
 ```c
 #include <cstdint>
@@ -184,5 +199,3 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-
-

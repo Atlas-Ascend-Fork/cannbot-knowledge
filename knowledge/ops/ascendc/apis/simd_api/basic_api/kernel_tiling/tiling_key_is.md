@@ -11,18 +11,22 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/TILING_KEY_IS.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 - 310p
 - '910'
+source_headers:
+- include/utils/base/sys_macros.h
 ---
 
 # TILING\_KEY\_IS<a name="ZH-CN_TOPIC_0000001586995454"></a>
 
 ## 功能说明<a name="zh-cn_topic_0000001610027821_section212607105720"></a>
+
+头文件路径为：`"utils/base/sys_macros.h"`。
 
 在核函数（Kernel）中判断本次执行时的tiling\_key是否等于host侧运行时设置的某个key，从而标识tiling\_key==key的一条kernel分支。
 

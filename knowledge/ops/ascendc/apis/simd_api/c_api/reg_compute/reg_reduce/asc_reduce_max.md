@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_reduce/asc_reduce_max.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_reduce.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_reduce_max
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_reduce.h"`。
 
 根据`mask`对源操作数`src`进行归约最大值操作，得到归约结果。结果保存在`dst`的第0个元素，最大值在`src`中的索引原始位模式保存在`dst`的第1个元素，`dst`中的其他元素置0。如果存在多个最大值，则保留最小的索引。计算公式如下：
 
@@ -90,14 +93,15 @@ __simd_callee__ inline void asc_reduce_max(vector_int16_t& dst,
 
 ## 调用示例
 
-
 将以下代码保存为`example.asc`后，可通过`bisheng`命令编译运行。其中，`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
+
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
+
 
 ```cpp
 // 本例使用half类型演示归约结果"值+索引"的分别提取，
@@ -163,5 +167,3 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-
-

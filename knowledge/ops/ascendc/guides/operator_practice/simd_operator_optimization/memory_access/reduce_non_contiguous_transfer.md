@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/memory_access/reduce_non_contiguous_transfer.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -30,7 +30,7 @@ platforms: []
 
 【描述】DataCopyPad接口在Normal/Compact模式基础上，可以使用Loop模式搬运二维数据，假设我们希望以下图的方式搬运8个48B大小的数据块：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/copy_opt.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/copy_opt.png)
 
 【反例】调用多次搬运接口进行搬运（以DataCopyPad为例）
 
@@ -57,7 +57,7 @@ __aicore__ inline void CopyIn3(){
 ```
 
 **图1**  使用多次DataCopyPad接口进行搬运<a name="fig345313593314"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/dcpad_api.png "使用多次DataCopyPad接口进行搬运")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/dcpad_api.png "使用多次DataCopyPad接口进行搬运")
 
 【正例】使用Loop模式进行搬运
 
@@ -90,7 +90,7 @@ __aicore__ inline void CopyIn3(){
 ```
 
 **图2**  使用Loop模式进行搬运<a name="fig26533539233"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/loop_copy.png "使用Loop模式进行搬运")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/loop_copy.png "使用Loop模式进行搬运")
 
 【总结】当数据块之间需要插入不同大小Padding时，使用Loop模式搬运代替多次的DataCopyPad能够减少搬运指令的使用，提升性能。
 
@@ -99,12 +99,12 @@ __aicore__ inline void CopyIn3(){
 【描述】假设我们希望以下图的方式搬运2个8B大小的数据块：
 
 **图3**  搬运前后数据<a name="fig20466223158"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/copy_data.png "搬运前后数据")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/copy_data.png "搬运前后数据")
 
 【反例】使用多次DataCopyPad进行搬运
 
 **图4**  使用多次DataCopyPad进行搬运<a name="fig18188132522410"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/dcpad_copy.png "使用多次DataCopyPad进行搬运")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/dcpad_copy.png "使用多次DataCopyPad进行搬运")
 
 ```
 __aicore__ inline void CopyIn5(){
@@ -150,6 +150,6 @@ __aicore__ inline void CopyIn6(){
 ```
 
 **图5**  搬运前后数据<a name="fig284018179396"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/copy_data_56.png "搬运前后数据-56")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/copy_data_56.png "搬运前后数据-56")
 
 【总结】使用多维数据搬运在部分场景下能够减少搬运指令的条数，从而提升性能。

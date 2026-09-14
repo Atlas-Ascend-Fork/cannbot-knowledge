@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_set_l0c2gm_quant_post.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -20,6 +20,8 @@ source_headers:
 # asc_set_l0c2gm_quant_post
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
 对QUANT_POST寄存器中的值进行设置, QUANT_POST是一个64bit的寄存器，存储Fixpipe后处理阶段量化信息。
 其中各bit含义如下，其中各种量化模式的说明可见[asc_copy_l0c2l1](asc_copy_l0c2l1/asc_copy_l0c2l1_arch_3510.md)中对各种量化模式的说明：
@@ -60,7 +62,7 @@ PIPE_S
 
 ## 约束说明
 
-无
+量化参数不能为inf/nan和非规格化数。
 
 ## 调用示例
 ```cpp

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/index_compute/Arange.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -30,7 +30,7 @@ platforms:
 以float类型，ND格式，firstValue和diffValue输入Scalar为例，描述Arange高阶API内部算法框图，如下图所示。
 
 **图1**  Arange算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/arange_algorithm_diagram.png "Arange算法框图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/arange_algorithm_diagram.png "Arange算法框图")
 
 计算过程分为如下几步，均在Vector上进行：
 
@@ -86,7 +86,7 @@ __aicore__ inline void Arange(const LocalTensor<T>& dst, const T firstValue, con
 
 ## 调用示例
 
-完整样例请参考[Arange样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/06_index/arange)。
+完整样例请参考[Arange样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/06_index/arange)。
 
 ```
 // dst：输出Tensor

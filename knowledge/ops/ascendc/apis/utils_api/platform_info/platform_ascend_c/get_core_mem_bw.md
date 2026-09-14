@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetCoreMemBw.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -80,7 +80,9 @@ void GetCoreMemBw(const CoreMemType &memType, uint64_t &bwSize) const
 
 ## 调用示例<a name="zh-cn_topic_0000001597681768_zh-cn_topic_0000001391767420_section320753512363"></a>
 
-```
+### 自定义算子工程
+
+```cpp
 ge::graphStatus TilingXXX(gert::TilingContext* context) {
     auto ascendcPlatform = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
     uint64_t l2_bw;
@@ -90,3 +92,17 @@ ge::graphStatus TilingXXX(gert::TilingContext* context) {
 }
 ```
 
+### Kernel直调
+
+```cpp
+void GetInfoFun()
+{
+    auto* ascendcPlatform = platform_ascendc::PlatformAscendCManager::GetInstance();
+    if (ascendcPlatform == nullptr) {
+        return;
+    }
+    uint64_t l2Bw;
+    ascendcPlatform->GetCoreMemBw(platform_ascendc::CoreMemType::L2, l2Bw);
+    // ... 使用l2Bw
+}
+```

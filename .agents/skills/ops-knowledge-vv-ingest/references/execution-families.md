@@ -28,7 +28,7 @@ Host 代码中的书写顺序不自动等于 Device 可见性；必须定位实�
 
 ## Device 数据流
 
-每个 Route 必须闭合：
+每个 Route 先按真实节点的执行族选择闭包要求。下面的队列与 Vector 数据流只用于 AIV/Vector 节点；SIMT、NDDMA、通信或 Hybrid 节点使用后文对应章节，不强制补写并未使用的 Vector API 或队列：
 
 ```text
 GM input
@@ -38,7 +38,7 @@ GM input
   -> GM output
 ```
 
-多 Kernel 时，上述链路对每个节点分别闭合，并在节点之间显式插入 `GM/workspace edge + ordering + lifetime`，不得用“依次启动多个 Vector Kernel”代替。
+多 Kernel 时，每个节点按自身执行族分别闭合，并在节点之间显式插入 `GM/workspace edge + ordering + lifetime`，不得用“依次启动多个 Kernel”代替。
 
 逐阶段说明 core/tile/loop 地址公式、搬运元素数或字节数、`blockLen/srcStride/dstStride`、广播或拼接、输出有效范围和未写区域语义。
 
@@ -54,7 +54,7 @@ GM input
 
 ## Vector 参数、同步与尾块
 
-必须说明：
+本节仅用于实际执行 Vector 运算的节点；其他执行族仍须按对应章节闭合同步与尾块，不虚构 Vector 参数。必须说明：
 
 - Vector API 的 dst/src、dtype、repeat、repeat stride、mask 和 merge mode；
 - FP16/BF16/FP32 cast、累加、scale、round 的精确顺序；

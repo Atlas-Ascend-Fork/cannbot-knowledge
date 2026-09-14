@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Sana-Video
-description: Sana-Video 是 NVIDIA SANA 家族的视频生成模型，在 cann-recipes-infer 中作为轻量级多模态生成样例接入昇腾 NPU。相关优化集中在两类：**VAE 侧的 conv 改写**（1×1 conv2d 转 matmul、时序 conv2d 的 HW 轴调换）与 **通用融合算子适配**（npu_rms_norm / npu_rotary_mul / npu_fusion_attention）。优化逻辑全部以 monkey patch 方式落在 `models/sana-video/patches/npu_patches.py`，通过 `inference_video_scripts/` 下的脚本调用。此外提供 **MX 块级量化推理**（`quant_type` a8w8=MXFP8 / a4w4=MXFP4，QuantLinear / Conv-as-Linear，`patches/quant_module.py`）。
+description: Sana-Video 是 NVIDIA SANA 家族的视频生成模型，在 cann-recipes-infer 中作为轻量级多模态生成样例接入昇腾 NPU。相关优化集中在两类：**去噪网络的 conv 改写**（1×1 conv2d 转 matmul、时序 conv2d 的 HW 轴调换）与 **通用融合算子适配**（npu_rms_norm / npu_rotary_mul / npu_fusion_attention）。优化逻辑全部以 monkey patch 方式落在 `models/sana-video/patches/npu_patches.py`，通过 `inference_video_scripts/` 下的脚本调用。此外提供 **MX 块级量化推理**（`quant_type` a8w8=MXFP8 / a4w4=MXFP4，QuantLinear / Conv-as-Linear，`patches/quant_module.py`）。
 tags:
 - task.design
 - topic.model_architecture
@@ -13,22 +13,29 @@ sources:
   role: primary
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/sana-video/SANA-Video_optimization.md
   role: supporting
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/patches/npu_patches.py
+  role: implementation
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/models/sana-video/inference_video_scripts/inference_sana_video.py
+  role: implementation
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2c45117d781ab9ab88dcb89a28ae30f5d2450399/models/sana-video/README.md
+  role: supporting
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-27T12:23:11Z'
+updated_at: '2026-09-12T03:21:42Z'
 platforms:
 - a2
 - a3
+- '950'
 ---
 
 # Sana-Video
 
 ## Summary
 
-Sana-Video 是 NVIDIA SANA 家族的视频生成模型，在 cann-recipes-infer 中作为轻量级多模态生成样例接入昇腾 NPU。相关优化集中在两类：**VAE 侧的 conv 改写**（1×1 conv2d 转 matmul、时序 conv2d 的 HW 轴调换）与 **通用融合算子适配**（npu_rms_norm / npu_rotary_mul / npu_fusion_attention）。优化逻辑全部以 monkey patch 方式落在 `models/sana-video/patches/npu_patches.py`，通过 `inference_video_scripts/` 下的脚本调用。此外提供 **MX 块级量化推理**（`quant_type` a8w8=MXFP8 / a4w4=MXFP4，QuantLinear / Conv-as-Linear，`patches/quant_module.py`）。
+Sana-Video 是 NVIDIA SANA 家族的视频生成模型，在 cann-recipes-infer 中作为轻量级多模态生成样例接入昇腾 NPU。相关优化集中在两类：**去噪网络的 conv 改写**（1×1 conv2d 转 matmul、时序 conv2d 的 HW 轴调换）与 **通用融合算子适配**（npu_rms_norm / npu_rotary_mul / npu_fusion_attention）。优化逻辑全部以 monkey patch 方式落在 `models/sana-video/patches/npu_patches.py`，通过 `inference_video_scripts/` 下的脚本调用。此外提供 **MX 块级量化推理**（`quant_type` a8w8=MXFP8 / a4w4=MXFP4，QuantLinear / Conv-as-Linear，`patches/quant_module.py`）。
 
 ## Architecture And Serving Traits
 
-- 属于 DiT 范式的视频生成模型（见 [dit](../modules/dit.md)），但骨干较轻，Attention 序列远小于 HunyuanVideo；优化重心落在 VAE + 融合算子
+- 属于 DiT 范式的视频生成模型（见 [dit](../modules/dit.md)）；此处的卷积和融合算子 patch 面向去噪网络。推理脚本单独用 `get_vae` 创建 VAE，用 `build_model` 创建去噪模型，并对后者的 `model.blocks[*].mlp` 同步时序卷积权重
 - 主要文件：
  - `models/sana-video/patches/npu_patches.py` — 全部 NPU 适配 patch
  - `models/sana-video/inference_video_scripts/inference_sana_video.py` — 推理脚本，负责权重转换与 patch 应用
@@ -42,36 +49,36 @@ Sana-Video 是 NVIDIA SANA 家族的视频生成模型，在 cann-recipes-infer 
 
 ### 1×1 conv2d → matmul（`patch_conv1x1_matmul`）
 
-`patch_conv1x1_matmul` 对 `ConvLayer.forward` 加入 1×1 conv2d 的判断与转换逻辑。
+`patch_conv1x1_matmul` 对 `diffusion.model.nets.basic_modules.ConvLayer.forward` 加入 1×1 conv2d 的判断与转换逻辑。以下片段省略外层 dropout、norm 和 activation；矩阵乘法等价替换要求 `stride=1`、`padding=0`、`groups=1`，不能仅按 kernel_size 推广到任意卷积。具体性能收益应按输入、平台和实际算子实现测量。
 
 ```python
 if self.conv.kernel_size == (1, 1):
- B, Ci, H, W = x.shape
- Co, *_ = self.conv.weight.shape
- x_trans = x.view(B, Ci, -1).permute(0, 2, 1).contiguous()
- kernel_trans = self.conv.weight.view(Co, Ci)
- x = x_trans @ kernel_trans.T
- if self.conv.bias is not None:
- x += self.conv.bias
- x = x.permute(0, 2, 1).contiguous().view(B, Co, H, W)
+    B, Ci, H, W = x.shape
+    Co, *_ = self.conv.weight.shape
+    x_trans = x.view(B, Ci, -1).permute(0, 2, 1).contiguous()
+    kernel_trans = self.conv.weight.view(Co, Ci)
+    x = x_trans @ kernel_trans.T
+    if self.conv.bias is not None:
+        x += self.conv.bias
+    x = x.permute(0, 2, 1).contiguous().view(B, Co, H, W)
 else:
- x = self.conv(x)
+    x = self.conv(x)
 ```
 
-详见 [vae](../modules/vae.md)（Sana-Video 变体段）。
+推理入口将这些 patch 用于去噪网络，不能据此认定它们是 [VAE](../modules/vae.md) 优化。
 
 ### 时序 conv2d 的 HW 轴调换（`patch_temporal_conv_swap`）
 
-`patch_temporal_conv_swap` 对 `GLUMBConvTemp` 增加 `t_conv_swap` 并在 forward 中调用。
+`patch_temporal_conv_swap` 对 `GLUMBConvTemp` 增加 `t_conv_swap` 并在 forward 中调用：时间卷积核从第一轴换到第二轴，输入由 `[B, C, T, H*W]` 转为 `[B, C, H*W, T]`，输出再转回。这里交换的是卷积输入的两个空间轴，不是视频原始的 H 与 W。
 
 ```python
 self.t_conv_swap = nn.Conv2d(
- out_feature,
- out_feature,
- kernel_size=(1, t_kernel_size),
- stride=1,
- padding=(0, t_padding),
- bias=False,
+    out_feature,
+    out_feature,
+    kernel_size=(1, t_kernel_size),
+    stride=1,
+    padding=(0, t_padding),
+    bias=False,
 )
 
 x_reshaped = x.view(batch_size, time_steps, channels, height * width).permute(0, 2, 1, 3)
@@ -82,16 +89,16 @@ x_out = x_reshaped + self.t_conv_swap(x_reshaped.transpose(-1, -2)).transpose(-1
 
 ```python
 for block in model.blocks:
- block.mlp.t_conv_swap.weight = nn.Parameter(block.mlp.t_conv.weight.permute(0, 1, 3, 2))
+    block.mlp.t_conv_swap.weight = nn.Parameter(block.mlp.t_conv.weight.permute(0, 1, 3, 2))
 ```
 
 ### npu_rms_norm 算子适配（`patch_rms_norm`）
 
 ```python
 def forward(self, x):
- if _npu_available:
- return torch_npu.npu_rms_norm(x, self.weight, epsilon=self.eps)[0]
- return original_forward(self, x)
+    if _npu_available:
+        return torch_npu.npu_rms_norm(x, self.weight, epsilon=self.eps)[0]
+    return original_forward(self, x)
 ```
 
 [torch_npu.npu_rms_norm 文档](https://www.hiascend.com/document/detail/zh/Pytorch/710/apiref/torchnpuCustomsapi/context/%EF%BC%88beta%EF%BC%89torch_npu-npu_rms_norm.md)
@@ -100,15 +107,15 @@ def forward(self, x):
 
 ```python
 def apply_rotary_emb(hidden_states: torch.Tensor, freqs: torch.Tensor):
- if _npu_available:
- cos = freqs.real.unsqueeze(-1).expand(-1, -1, -1, -1, 2).flatten(-2)
- sin = freqs.imag.unsqueeze(-1).expand(-1, -1, -1, -1, 2).flatten(-2)
- x_out = torch_npu.npu_rotary_mul(hidden_states.permute(0, 1, 3, 2), cos, sin, "interleave")
- return x_out.permute(0, 1, 3, 2)
- else:
- x_rotated = torch.view_as_complex(hidden_states.permute(0, 1, 3, 2).to(torch.float64).unflatten(3, (-1, 2)))
- x_out = torch.view_as_real(x_rotated * freqs).flatten(3, 4).permute(0, 1, 3, 2)
- return x_out.type_as(hidden_states)
+    if _npu_available:
+        cos = freqs.real.unsqueeze(-1).expand(-1, -1, -1, -1, 2).flatten(-2)
+        sin = freqs.imag.unsqueeze(-1).expand(-1, -1, -1, -1, 2).flatten(-2)
+        x_out = torch_npu.npu_rotary_mul(hidden_states.permute(0, 1, 3, 2), cos, sin, "interleave")
+        return x_out.permute(0, 1, 3, 2)
+    else:
+        x_rotated = torch.view_as_complex(hidden_states.permute(0, 1, 3, 2).to(torch.float64).unflatten(3, (-1, 2)))
+        x_out = torch.view_as_real(x_rotated * freqs).flatten(3, 4).permute(0, 1, 3, 2)
+        return x_out.type_as(hidden_states)
 
 q_rotated = apply_rotary_emb(q, rotary_emb)
 k_rotated = apply_rotary_emb(k, rotary_emb)
@@ -118,24 +125,26 @@ k_rotated = apply_rotary_emb(k, rotary_emb)
 
 ```python
 if mask is not None and mask.ndim == 2:
- mask = (1 - mask.to(q.dtype)) * -10000.0
- mask = mask[:, None, None].repeat(1, self.num_heads, num_tokens, 1)
+    mask = (1 - mask.to(q.dtype)) * -10000.0
+    mask = mask[:, None, None].repeat(1, self.num_heads, num_tokens, 1)
 
 if _npu_available:
- bool_mask = None if mask is None else mask < -1000
- x = torch_npu.npu_fusion_attention(
- q, k, v,
- q.shape[1],
- input_layout="BNSD",
- pse=None,
- atten_mask=bool_mask,
- scale=1.0 / math.sqrt(q.shape[-1]),
- pre_tockens=2147483647,
- next_tockens=2147483647,
- keep_prob=1,
- )[0]
+    bool_mask = None if mask is None else mask < -1000
+    x = torch_npu.npu_fusion_attention(
+        q,
+        k,
+        v,
+        q.shape[1],
+        input_layout="BNSD",
+        pse=None,
+        atten_mask=bool_mask,
+        scale=1.0 / math.sqrt(q.shape[-1]),
+        pre_tockens=2147483647,
+        next_tockens=2147483647,
+        keep_prob=1,
+    )[0]
 else:
- x = F.scaled_dot_product_attention(q, k, v, attn_mask=mask, dropout_p=0.0, is_causal=False)
+    x = F.scaled_dot_product_attention(q, k, v, attn_mask=mask, dropout_p=0.0, is_causal=False)
 
 x = x.transpose(1, 2).contiguous()
 ```
@@ -194,5 +203,5 @@ README「性能数据」分两表，量化对比表标注于 **Atlas 950**（Atl
 
 ## Notes
 
-- **gap**：源文档未提供 benchmark / 精度数据；shipped config 均单卡（`world_size: 1`），但 README 说明可将 `world_size` 调大切单机多卡 DP（`mm_function.sh` 自动转为 `accelerate --num_processes`），SP / CFG 等并行优化未涉及
+- **gap**：优化说明未提供逐项消融或精度数据；模型 README 的整网性能数据见上表。shipped config 均单卡（`world_size: 1`），但 README 说明可将 `world_size` 调大切单机多卡 DP（`mm_function.sh` 自动转为 `accelerate --num_processes`），SP / CFG 等并行优化未涉及
 - **gap**：`GLUMBConvTemp` 的语义与 SANA 原始结构关系在源中未展开

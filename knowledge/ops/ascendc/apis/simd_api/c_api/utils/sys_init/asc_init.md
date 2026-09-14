@@ -11,18 +11,21 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_init/asc_init.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 source_headers:
+- include/c_api/utils/sys_init.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_init
 
 ## 功能说明
+
+头文件路径为：`"c_api/utils/sys_init.h"`。
 
 本接口将当前AI Core上可能由前序算子遗留的全局状态恢复为接口约定的初始状态，避免这些状态影响当前算子的计算结果。本接口仅初始化控制状态，不会清零Global Memory、Local Memory或用户数据。
 
@@ -43,6 +46,7 @@ source_headers:
 
 
 
+
 **表 2**  Atlas A3 训练系列产品/Atlas A3 推理系列产品初始化结果
 
 | 状态类别 | 初始化项       | 初始化后的状态                                                                                         |
@@ -54,6 +58,7 @@ source_headers:
 
 
 
+
 **表 3**  Atlas A2 训练系列产品/Atlas A2 推理系列产品初始化结果
 
 | 状态类别 | 初始化项       | 初始化后的状态                                                                                         |
@@ -62,6 +67,7 @@ source_headers:
 | AIV      | 原子累加状态   | 清空原子累加状态，后续数据搬运不执行原子累加。                                                         |
 | AIV      | `Mask`工作模式 | 设置为`Normal`模式。                                                                                   |
 | AIV      | `Mask`         | 高位`Mask`和低位`Mask`均设置为`0xffffffffffffffff`。在`Normal`模式下，单次迭代内的所有元素均参与计算。 |
+
 
 
 ## 函数原型

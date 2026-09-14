@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/compilation_and_execution/async_execution.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -33,7 +33,7 @@ platforms: []
   7. 资源释放：通过aclrtDestroyStream和aclrtResetDevice分别释放Stream、Device运行管理资源。
   8. 去初始化：aclFinalize。
 ```
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/npu_verify.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/npu_verify.png)
 
 在这个过程中我们提到了Stream创建与销毁，内存申请与拷贝，异步调用与同步等待。在本节的其余部分，我们将解释这些CANN Runtime的元素和对应的API。
 
@@ -63,11 +63,11 @@ CANN Runtime内置默认计算流，所有未显式指定计算流的运算操�
 为了能够更好的发挥CPU和AI处理器的硬件利用率，CANN Runtime遵循“下发即返回”的异步执行策略，使Host在提交H2D/D2H拷贝或核函数（Kernel）计算任务后立即继续执行后续逻辑，从而让主机侧调度、设备侧计算、主机与设备之间的数据传输尽可能重叠执行，隐藏传输和调度开销，提高端到端吞吐率。
 
 典型<<<\>\>\>异步调用的场景是：将主机与设备计算操作重叠执行，从而提升主机侧与设备侧计算资源利用率。
-![核函数（Kernel）异步调用](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/asynchronous_execution.png)
+![核函数（Kernel）异步调用](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/asynchronous_execution.png)
 
 
 同样地，将aclrtMemcpy替换成aclrtMemcpyAsync接口，可以实现主机与设备的内存传输与计算操作重叠执行，从而降低甚至消除内存传输带来的性能开销。
-![内存传输异步并发执行](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/asynchronous_execution_async.png)
+![内存传输异步并发执行](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/asynchronous_execution_async.png)
 
 
 

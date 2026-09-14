@@ -220,7 +220,7 @@ active Runbook 必须有支撑核心技术结论的**最小机制完整证据**�
 1. ledger/review receipt 必须记录**实际读取的归一化轨迹路径**、`raw_source_sha256`、`normalized_trace_sha256`、连续 sequence 与 coverage 校验结果。两个 SHA 属于不同命名空间，不得互相比对并据此拒绝。
 2. 每个结论在 `.build/` 的 manifest/reconstruction 中绑定与知识形态匹配的角色锚点；内部 trace id、SHA 和 sequence 不写入正式卡正文。
 3. curator/reviewer 必须逐字核对所有机制 artifact，并确认角色锚点落在有效 sequence 范围。
-4. 单条轨迹仍封顶 `single_run`；只有至少两条身份自洽、相互独立的轨迹复现同一结论，且每条都满足自身形态的客观信号，才可升级 `verified`。
+4. 单条轨迹仍封顶 `single_run`；只有至少两条身份自洽、相互独立的轨迹复现同一结论，且每条都满足自身形态的客观信号及 §5 的上板要求，才可升级 `verified`。以 `raw_source_sha256` 去重，同源草稿、目录副本或重复归一化只计一次；合并卡数和聚类 `cross_trace` 不直接作为复现数。确定性校验拒绝 `reproduce_count` 超过已核验不同 raw 来源数，独立性、逐轨迹证据和结论一致性由 reviewer 核实。
 
 内部形态的 trace 角色合同（manifest/ledger 内部）：
 

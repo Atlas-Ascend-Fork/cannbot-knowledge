@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_datamove/asc_set_ndim_pad_value.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/vector_datamove/vector_datamove.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_set_ndim_pad_value
 
 ## 功能说明
+
+头文件路径为：`"c_api/vector_datamove/vector_datamove.h"`。
 
 本接口用于设置[asc_ndim_copy_gm2ub](asc_ndim_copy_gm2ub.md)在常数填充模式下使用的填充值。当`padding_mode`设置为`true`时，后续调用`asc_ndim_copy_gm2ub`将使用该值填充搬运数据的边界区域。
 
@@ -71,7 +74,6 @@ PIPE_S
 ## 调用示例
 
 将以下代码保存为`example.asc`后，执行对应的编译运行命令。
-
 
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：

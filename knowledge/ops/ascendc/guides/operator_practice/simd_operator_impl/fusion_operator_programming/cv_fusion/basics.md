@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/fusion_operator_programming/cv_fusion/basics.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -26,14 +26,14 @@ platforms: []
 比如对于LLM大模型中最核心的一个融合算子Flash Attention，其核心实现如下图。图中的Matmul算子（Cube）、Scale算子（Vector）、Mask算子（Vector）、SoftMax算子（Vector）融合为一个大的算子Flash Attention。
 
 **图1**  Flash Attention核心实现<a name="zh-cn_topic_0000001644411628_fig980125772817"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/flash_attn.png "Flash-Attention核心实现")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/flash_attn.png "Flash-Attention核心实现")
 
 ## 使用场景和优势<a name="zh-cn_topic_0000001644411628_section162803512544"></a>
 
 针对有数据依赖的矢量算子和矩阵算子，可以通过融合算子编程的方式，将矢量算子和矩阵算子进行融合，通过一个算子核函数（Kernel）来承载，由此来获得性能上的收益。下图展示了独立矢量算子和矩阵算子、Mix融合算子的执行耗时对比，由此可以看出为什么开发Mix融合算子会带来性能上的收益。
 
 **图2**  独立矢量算子和矩阵算子、Mix融合算子的执行耗时对比<a name="zh-cn_topic_0000001644411628_fig141121413259"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mix_fusion_time.png "独立矢量算子和矩阵算子-Mix融合算子的执行耗时对比")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mix_fusion_time.png "独立矢量算子和矩阵算子-Mix融合算子的执行耗时对比")
 
 -   **独立的矢量算子和矩阵算子实现**：矩阵计算后的结果需要搬运到Global Memory上，然后由Global Memory搬运到Local Memory，再进行矢量算子的计算，计算和搬运都是串行执行，另外多个算子的调度执行，会增加算子的调度耗时。
 -   **融合算子的实现方法**：可以对数据进行切片，再通过流水的设计，使得矢量计算单元和矩阵计算单元实现并行计算；另外相比于不融合的单算子，减少了算子的调度耗时。
@@ -56,12 +56,12 @@ Ascend C提供**融合算子的编程范式**，方便开发者基于该范式�
 -   Cube的输出可以作为Vector的输入：GM/UB（CO2）-\>UB（VECIN）
 -   Vector的输出可以作为Cube的输入：UB（VECOUT）-\>L1 Buffer（A1）-\>L0A Buffer（A2）、UB（VECOUT）-\>L1 Buffer（B1）-\>L0B Buffer（B2）
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mat_pos_45.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mat_pos_45.png)
 
 基于Matmul高阶API的融合算子编程范式，对上述数据流简化表达如下：
 
 **图3**  融合算子编程范式<a name="zh-cn_topic_0000001644411628_fig321783243811"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fusion_paradigm_46.png "融合算子编程范式-46")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fusion_paradigm_46.png "融合算子编程范式-46")
 
 1.  初始化一个Matmul对象。
 2.  进行Matmul内部的计算。
@@ -69,7 +69,7 @@ Ascend C提供**融合算子的编程范式**，方便开发者基于该范式�
 4.  进行Vector矢量计算。
 5.  将输出结果搬运到Global Memory上。
 
-整个过程的示例代码如下（伪代码）。完整样例请参考[MatmulLeakyRelu](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/03_fusion_operation/matmul_leakyrelu_advanced_api)。
+整个过程的示例代码如下（伪代码）。完整样例请参考[MatmulLeakyRelu](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/03_fusion_operation/matmul_leakyrelu_advanced_api)。
 
 ```
 // kernel入口函数，mix场景，AIC:AIV=1:2

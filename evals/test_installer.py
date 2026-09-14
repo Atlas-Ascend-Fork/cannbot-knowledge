@@ -26,6 +26,41 @@ QUERY_RELATIVE = Path(".agents/skills/knowledge-query/scripts/knowledge_query.py
 
 
 class InstallerTests(unittest.TestCase):
+    def test_destination_parent_symlinks_cannot_leave_project(self) -> None:
+        for directory in (".cannbot", ".agents", ".claude"):
+            with self.subTest(directory=directory), tempfile.TemporaryDirectory() as temporary:
+                project = Path(temporary) / "project"
+                outside = Path(temporary) / "outside"
+                project.mkdir()
+                outside.mkdir()
+                (project / directory).symlink_to(outside, target_is_directory=True)
+                result = self.run_installer(project, "claude")
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertIn("destination parent leaves project", result.stderr)
+                self.assertEqual([], list(outside.iterdir()))
+                self.assertEqual([directory], [path.name for path in project.iterdir()])
+
+    def test_destination_parent_file_fails_before_any_installation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / ".cannbot").write_text("user content\n", encoding="utf-8")
+            result = self.run_installer(project, "agents")
+            self.assertEqual(2, result.returncode, result.stderr)
+            self.assertIn("not a directory", result.stderr)
+            self.assertEqual([".cannbot"], [path.name for path in project.iterdir()])
+            self.assertEqual("user content\n", (project / ".cannbot").read_text())
+
+    def test_prompt_replacement_preserves_existing_permissions(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            prompt = project / "AGENTS.md"
+            prompt.write_text("user rules\n", encoding="utf-8")
+            prompt.chmod(0o640)
+            result = self.run_installer(project, "agents")
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual(0o640, prompt.stat().st_mode & 0o777)
+            self.assertTrue(prompt.read_text().startswith("user rules\n"))
+
     def test_default_resource_preparation_precedes_project_mutations(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "repo"
@@ -221,7 +256,7 @@ class InstallerTests(unittest.TestCase):
             self.assertFalse((project / ".cannbot/knowledge.env").exists())
             self.assertEqual(prompt.read_text(encoding="utf-8"), original)
 
-    def test_installed_config_supports_a_copied_skill(self) -> None:
+    def test_copied_query_can_search_but_is_not_a_complete_installation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             result = self.run_installer(project, "agents", "consumer")
@@ -250,6 +285,13 @@ class InstallerTests(unittest.TestCase):
             )
             self.assertEqual(query.returncode, 0, query.stderr)
             self.assertEqual(json.loads(query.stdout)["count"], 0)
+            verify = subprocess.run(
+                [sys.executable, str(canonical / "scripts/knowledge_index.py"),
+                 "verify", "--level", "full"],
+                cwd=project, check=False, text=True, capture_output=True,
+            )
+            self.assertNotEqual(verify.returncode, 0)
+            self.assertIn("governance/contracts", verify.stderr)
 
     def test_install_is_idempotent_and_prompt_can_be_uninstalled(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

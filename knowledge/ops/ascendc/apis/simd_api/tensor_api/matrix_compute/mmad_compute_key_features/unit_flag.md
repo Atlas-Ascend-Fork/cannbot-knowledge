@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/mmad_compute_key_features/unit_flag.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/tensor_api/tensor.h
@@ -52,7 +52,7 @@ mmad和copy接口将unit_flag设置为`unit_flag_mode::enable_keep`或`unit_flag
 
 **图1**  mmad和Fixpipe同时沿M方向写/读
 
-![mmad-Fixpipe读写示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_unitflag.png)
+![mmad-Fixpipe读写示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_unitflag.png)
 
 ## 特性约束
 

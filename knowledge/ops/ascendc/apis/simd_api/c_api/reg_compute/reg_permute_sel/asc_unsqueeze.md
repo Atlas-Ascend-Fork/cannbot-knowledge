@@ -10,10 +10,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_permute_sel/asc_unsqueeze.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_permute_sel.h
 - include/c_api/asc_simd.h
 ---
 
@@ -21,13 +22,15 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/reg_compute/compute/reg_permute_sel.h"`。
+
 将dst中数据根据mask进行解压缩，或将解压缩结果通过函数返回值返回。解压缩方式：dst中第0个元素置为0，dst中的第i个元素等于mask中从第0个到第(i-1)个元素中1的数量。mask最高位被忽略，不参与统计。
 
 具体算法如图1所示，dst的首位为0。对于后续元素，与dst[i-1]对应的有效mask位为1时，dst[i]的值为dst[i-1] + 1；对应的有效mask位为0时，dst[i]的值为dst[i-1]。
 
 **图1** unsqueeze流程
 
-![unsqueeze流程](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_unsqueeze.png)
+![unsqueeze流程](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_unsqueeze.png)
 
 本接口为Reg矢量计算接口，仅在AIV上生效。
 

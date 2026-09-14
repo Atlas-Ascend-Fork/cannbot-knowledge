@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/vector_programming/multi_core_tiling/tail_block_even_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -18,11 +18,11 @@ platforms: []
 
 该场景中，完成主块分配后仍有剩余数据，但剩余数据无法继续按主块均匀分配到每个核。为了均衡利用多核计算能力，继续以DataBlock为最小单位将主块均分后剩余数据`mainTileRemainder`均衡分配到每个核，每个核分配到`tailBlockNumEachCore`个DataBlock的数据，且按DataBlock均分后无剩余。最终各核处理的数据量相同，核内除主块外还存在等长尾块。
 
-本场景样例的完整代码请参考[场景1：尾块均分](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/02_tiling_selector/vector_tiling_strategy/README.md#scenario1-main-tile-tail-block)。样例中固定使用8个核，主块长度`mainTileLength`为3200个`half`元素，数据整体长度为260096个`half`元素。数据平均分配到8个核上处理，每个核计算32512个元素；每个核内包含10个主块和512个元素的尾块。数据切分示意如下图所示。
+本场景样例的完整代码请参考[场景1：尾块均分](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/02_tiling_selector/vector_tiling_strategy/README.md#scenario1-main-tile-tail-block)。样例中固定使用8个核，主块长度`mainTileLength`为3200个`half`元素，数据整体长度为260096个`half`元素。数据平均分配到8个核上处理，每个核计算32512个元素；每个核内包含10个主块和512个元素的尾块。数据切分示意如下图所示。
 
 **图 1**  数据切分示意图
 
-![数据切分示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/tailblock_tiling.png "数据切分示意图")
+![数据切分示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/tailblock_tiling.png "数据切分示意图")
 
 与主块均分相比，本场景每个核内除主块外还存在尾块，因此Tiling参数在`blockLength`和`tileNum`基础上新增`lastTileLength`，用于记录尾块的元素数量。
 

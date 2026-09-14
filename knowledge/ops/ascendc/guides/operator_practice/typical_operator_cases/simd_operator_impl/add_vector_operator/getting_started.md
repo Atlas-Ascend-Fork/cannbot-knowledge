@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/typical_operator_cases/simd_operator_impl/add_vector_operator/getting_started.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -106,7 +106,7 @@ __vector__ __global__ void add_custom(__gm__ float* x, __gm__ float* y, __gm__ f
 | 3 | 双缓冲流水线并行 | 搬入、计算、搬出三个阶段严格串行执行，各硬件单元（MTE2/V/MTE3）无法同时工作 | 采用Ping-Pong双缓冲机制，使搬入、计算、搬出可并行执行，隐藏搬运延迟 |
 | 4 | L2 Cache bypass | Add输入数据只读取一次，但默认经过L2 Cache，增加了Cache污染 | 对流式访问数据设置L2 Cache bypass，减少不必要的Cache开销，提升搬运效率 |
 
-完整样例代码请参见[Add入门样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/00_introduction/01_add/add)。
+完整样例代码请参见[Add入门样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/00_introduction/01_add/add)。
 
 ## 功能调试
 
@@ -177,4 +177,4 @@ cat ./OPPROF_*/PipeUtilization.csv
 
 请参考 [《msOpProf用户指南》](https://gitcode.com/Ascend/msopprof/blob/master/docs/zh/user_guide/msopprof_user_guide.md)算子调优（msOpProf）中的内容。
 
-完整性能调优过程请参见[Add性能调优样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance)。
+完整性能调优过程请参见[Add性能调优样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/00_vector_compute/add_high_performance)。

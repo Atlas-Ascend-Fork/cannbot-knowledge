@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/mmad_compute_key_features/UnitFlag.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -51,7 +51,7 @@ Mmad和Fixpipe接口设置unitFlag值为2/3后，系统会启动单元标志位�
 
 **图1** Mmad和Fixpipe同时沿M方向写/读
 
-![Mmad和Fixpipe同时沿M方向写-读](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mmad_unitflag.png "Mmad和Fixpipe同时沿M方向写-读")
+![Mmad和Fixpipe同时沿M方向写-读](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mmad_unitflag.png "Mmad和Fixpipe同时沿M方向写-读")
 
 **特性约束：**
 
@@ -82,7 +82,9 @@ fixpipeParams.unitFlag = 3;
 AscendC::Fixpipe(cGM, c, fixpipeParams);
 ```
 
-开启与不开启unitFlag功能的完整示例：[UnitFlag示例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_unitflag)
+开启与不开启unitFlag功能的完整示例：[UnitFlag示例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/mmad_unitflag)
+
+注意，开启unitFlag功能不会提升Mmad和Fixpipe指令的性能，性能提升源自于Mmad和Fixpipe指令的细粒度并行，降低了同步延迟。下表展示了是否开启unitFlag功能对Mmad指令性能的影响，实测数据显示开启unitFlag功能对性能无影响。
 
 **表1** 性能示例说明（以输入数据类型half为例，无业务实测表示忽略指令的前后序操作，只考虑单指令性能，包含带宽延迟等开销）
 

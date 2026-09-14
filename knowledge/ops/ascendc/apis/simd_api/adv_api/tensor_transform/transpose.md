@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/tensor_transform/Transpose.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -34,7 +34,7 @@ source_headers:
 输出Tensor \{ shape:\[B, S, N, H/N\], origin\_shape:\[B, S, N, H/N\], format:"ND", origin\_format:"ND"\}
 
 **图1**  场景1数据排布变换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario1_layout_transform.png "场景1数据排布变换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario1_layout_transform.png "场景1数据排布变换")
 
 【场景2：NZ2NZ，1、2轴互换】
 
@@ -43,7 +43,7 @@ source_headers:
 输出Tensor \{ shape:\[B, S, H/N/16, N/16, 16, 16\], origin\_shape:\[B, S, N, H/N\], format:"NZ", origin\_format:"ND"\}
 
 **图2**  场景2数据排布变换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario2_layout_transform.png "场景2数据排布变换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario2_layout_transform.png "场景2数据排布变换")
 
 【场景3：NZ2NZ，尾轴切分】
 
@@ -52,7 +52,7 @@ source_headers:
 输出Tensor \{ shape:\[B, N, H/N/16, S / 16, 16, 16\], origin\_shape:\[B, N, S, H/N\], format:"NZ", origin\_format:"ND"\}
 
 **图3**  场景3数据排布变换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario3_layout_transform.png "场景3数据排布变换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario3_layout_transform.png "场景3数据排布变换")
 
 【场景4：NZ2ND，尾轴切分】
 
@@ -61,7 +61,7 @@ source_headers:
 输出Tensor \{ shape:\[B, N, S, H/N\], origin\_shape:\[B, N, S, H/N\], format:"ND", origin\_format:"ND"\}
 
 **图4**  场景4数据排布变换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario4_layout_transform.png "场景4数据排布变换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario4_layout_transform.png "场景4数据排布变换")
 
 【场景5：NZ2ND，尾轴合并】
 
@@ -70,7 +70,7 @@ source_headers:
 输出Tensor \{ shape:\[B, S, H\], origin\_shape:\[B, S, H\], format:"ND", origin\_format:"ND"\}
 
 **图5**  场景5数据排布变换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario5_layout_transform.png "场景5数据排布变换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario5_layout_transform.png "场景5数据排布变换")
 
 【场景6：NZ2NZ，尾轴合并】
 
@@ -79,49 +79,49 @@ source_headers:
 输出Tensor \{ shape:\[B, H/16, S/16, 16, 16\], origin\_shape:\[B, S, H\], format:"NZ", origin\_format:"ND"\}
 
 **图6**  场景6数据排布变换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario6_layout_transform.png "场景6数据排布变换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario6_layout_transform.png "场景6数据排布变换")
 
 【场景7：二维转置】
 
 支持在Unified Buffer（UB）上对二维Tensor进行转置，其中srcShape中的H、W均是16的整倍。
 
 **图7**  场景7数据排布变换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario7_layout_transform.png "场景7数据排布变换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario7_layout_transform.png "场景7数据排布变换")
 
 【场景13：二维转置或者三维的后两维转置】
 
 支持在UB上对二维Tensor进行转置或者对三维Tensor的最后两维进行转置，二维Tensor转置同场景7的数据排布变换。
 
 **图8**  场景13三维Tensor数据排布变换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario13_3d_tensor_transform.png "场景13三维Tensor数据排布变换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario13_3d_tensor_transform.png "场景13三维Tensor数据排布变换")
 
 【场景14：三维中的第一维和第二维互换】
 
 支持在UB上对三维Tensor中的第一维和第二维互换。
 
 **图9**  场景14三维Tensor的数据排布变换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario14_3d_tensor_transform.png "场景14三维Tensor的数据排布变换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario14_3d_tensor_transform.png "场景14三维Tensor的数据排布变换")
 
 【场景15：三维中的第一维和第三维互换】
 
 支持在UB上对三维Tensor中的第一维和第三维互换。
 
 **图10**  场景15三维Tensor的数据排布变换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario15_3d_tensor_transform.png "场景15三维Tensor的数据排布变换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario15_3d_tensor_transform.png "场景15三维Tensor的数据排布变换")
 
 【场景16：使用交织指令进行两维ND2NZ转置】
 
 支持在UB上使用[交织指令](../../basic_api/memory_vector_compute/data_rearrange_isasi/interleave.md)对二维ND Tensor转置为NZ。
 
 **图11**  场景16使用交织指令的ND2NZ转置  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario16_nd2nz_interleave_2.png "场景16使用交织指令的ND2NZ转置")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario16_nd2nz_interleave_2.png "场景16使用交织指令的ND2NZ转置")
 
 ## 实现原理
 
 对应Transpose的11种功能场景，每种功能场景的算法框图如图所示。
 
 **图12**  场景1：NZ2ND，1、2轴互换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario1_nz2nd_axis12_swap.png "场景1-NZ2ND-1-2轴互换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario1_nz2nd_axis12_swap.png "场景1-NZ2ND-1-2轴互换")
 
 计算过程分为如下几步：
 
@@ -131,7 +131,7 @@ source_headers:
 2.  第2次TransDataTo5HD步骤：将temp中S/16个16\*16的方形转置到dst中，在dst中是ND格式，来自同一个方形的连续2行数据在目的操作数上的地址偏移\(H/N\)\*N个元素，沿H方向的每2个方形的同一行数据在目的操作数上的地址偏移16个元素。
 
 **图13**  场景2：NZ2NZ，1、2轴互换  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario2_nz2nz_axis12_swap.png "场景2-NZ2NZ-1-2轴互换")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario2_nz2nz_axis12_swap.png "场景2-NZ2NZ-1-2轴互换")
 
 计算过程分为如下几步：
 
@@ -141,7 +141,7 @@ source_headers:
 2.  第2次TransDataTo5HD步骤：将temp中S/16个16\*16的方形转置到dst中，在dst中是NZ格式，来自同一个方形的连续2行数据在目的操作数上的地址偏移\(H/N\)\*N个元素，沿H方向的每2个方形的同一行数据在目的操作数上的地址偏移N\*16个元素。
 
 **图14**  场景3：NZ2NZ，尾轴切分  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario3_nz2nz_tail_split.png "场景3-NZ2NZ-尾轴切分")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario3_nz2nz_tail_split.png "场景3-NZ2NZ-尾轴切分")
 
 计算过程分为如下几步：
 
@@ -152,7 +152,7 @@ source_headers:
 3.  第2次TransDataTo5HD步骤：将temp2中的16\*S的方形转置到dst中，在dst中是NZ格式，来自同一个方形的连续2行数据在目的操作数上的地址偏移16个元素，沿H方向的每2个方形的同一行数据在目的操作数上的地址偏移S\*16个元素。
 
 **图15**  场景4：NZ2ND，尾轴切分  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario4_nz2nd_tail_split.png "场景4-NZ2ND-尾轴切分")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario4_nz2nd_tail_split.png "场景4-NZ2ND-尾轴切分")
 
 计算过程分为如下几步：
 
@@ -163,7 +163,7 @@ source_headers:
 3.  第2次TransDataTo5HD步骤：将temp2中的数据转置到dst中，在dst中是ND格式，来自同一个方形的连续2行数据在目的操作数上的地址偏移\(H/N+16-1\)/16\*16个元素，沿H方向的每2个方形的同一行数据在目的操作数上的地址偏移\(H/N+16-1\)/16\*16\*S个元素。
 
 **图16**  场景5：NZ2ND，尾轴合并  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario5_nz2nd_tail_merge.png "场景5-NZ2ND-尾轴合并")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario5_nz2nd_tail_merge.png "场景5-NZ2ND-尾轴合并")
 
 计算过程分为如下几步：
 
@@ -174,7 +174,7 @@ source_headers:
 3.  第2次TransDataTo5HD步骤：将temp2中的16\*S的方形转置到dst中，在dst中是ND格式，来自同一个方形的连续2行数据在目的操作数上的地址偏移\(H+16-1\)/16\*16个元素，沿H方向的每2个方形的同一行数据在目的操作数上的地址偏移H/N\*S个元素。
 
 **图17**  场景6：NZ2NZ，尾轴合并  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario6_nz2nz_tail_merge.png "场景6-NZ2NZ-尾轴合并")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario6_nz2nz_tail_merge.png "场景6-NZ2NZ-尾轴合并")
 
 计算过程分为如下几步：
 
@@ -185,14 +185,14 @@ source_headers:
 3.  第2次TransDataTo5HD步骤：将temp2中的16\*S的方形转置到dst中，在dst中是NZ格式，来自同一个方形的连续2行数据在目的操作数上的地址偏移16个元素，沿H方向的每2个方形的同一行数据在目的操作数上的地址偏移S\*16个元素。
 
 **图18**  场景7：二维转置  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario7_2d_transpose.png "场景7-二维转置")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario7_2d_transpose.png "场景7-二维转置")
 
 计算过程如下：
 
 1.  调用TransDataTo5HD，通过设置不同的源操作数地址序列和目的操作数地址序列，将\[H, W\]转置为\[W, H\]，src和dst均是ND格式。
 
 **图19**  场景13 : 二维转置或者三维的后两维转置  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario13_2d_3d_transpose.png "场景13-二维转置或者三维的后两维转置")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario13_2d_3d_transpose.png "场景13-二维转置或者三维的后两维转置")
 
 计算过程如下：
 
@@ -201,7 +201,7 @@ source_headers:
 场景14、场景15的转换过程和上述场景13中三维转置的转换过程基本一致，只是指定转置的维度不同。
 
 **图20**  场景16 ：使用交织指令进行两维ND2NZ转置  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/scenario16_nd2nz_interleave.png "场景16-使用交织指令进行两维ND2NZ转置")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/scenario16_nd2nz_interleave.png "场景16-使用交织指令进行两维ND2NZ转置")
 
 计算过程如下：
 
@@ -291,7 +291,7 @@ enum class TransposeType : uint8_t {
 
 输出Tensor \{ shape:\[B, S, N, H/N\], origin\_shape:\[B, S, N, H/N\], format:"ND", origin\_format:"ND"\}
 
-B=1，N=2, S=64, H/N=32，输入数据类型均为half。更多完整样例请参考[Transpose样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/08_transpose/transpose)。
+B=1，N=2, S=64, H/N=32，输入数据类型均为half。更多完整样例请参考[Transpose样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/08_transpose/transpose)。
 
 ```
 // dst：输出Tensor

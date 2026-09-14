@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_move_guide/overview/data_path.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -28,7 +28,7 @@ AI Core是昇腾处理器的核心计算单元，以[NPU架构版本2201](../../
 
 **图 1**  NPU架构版本2201下，AI Core硬件架构示意图  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/atlas_a2_a3_architecture.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/atlas_a2_a3_architecture.png)
 
 
 
@@ -41,7 +41,7 @@ AI Core是昇腾处理器的核心计算单元，以[NPU架构版本2201](../../
 
 **图 2**  NPU架构版本3510下，AI Core硬件架构示意图  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/npu_3510_hw_arch_sync.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/npu_3510_hw_arch_sync.png)
 
 
   > [!NOTE]说明

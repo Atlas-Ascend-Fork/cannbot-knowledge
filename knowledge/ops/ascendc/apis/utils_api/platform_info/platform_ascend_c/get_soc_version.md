@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetSocVersion.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -77,7 +77,9 @@ AI处理器的型号请通过如下方式获取：
 
 ## 调用示例<a name="zh-cn_topic_0000001664705472_zh-cn_topic_0000001442758437_section320753512363"></a>
 
-```
+### 自定义算子工程
+
+```cpp
 ge::graphStatus TilingXXX(gert::TilingContext* context) {
     auto ascendcPlatform = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
     auto socVersion = ascendcPlatform.GetSocVersion();
@@ -90,6 +92,22 @@ ge::graphStatus TilingXXX(gert::TilingContext* context) {
 }
 ```
 
+### Kernel直调
+
+```cpp
+void GetInfoFun()
+{
+    auto* ascendcPlatform = platform_ascendc::PlatformAscendCManager::GetInstance();
+    if (ascendcPlatform == nullptr) {
+        return;
+    }
+    auto socVersion = ascendcPlatform->GetSocVersion();
+    // ASCENDXXX请替换为实际的版本型号
+    if (socVersion == platform_ascendc::SocVersion::ASCENDXXX) {
+        // ...
+    }
+}
+```
 
 
 - [GroupNormSwish A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/group_norm_swish.md)

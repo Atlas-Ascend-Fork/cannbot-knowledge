@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_UBToL1_highdim_split.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -69,7 +69,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>&
 
 **图 1**  DataCopyParams结构体参数使用示意图<a id="fig_repeat_times_demo"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/repeat-times.png "DataCopyParams结构体参数使用示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/repeat-times.png "DataCopyParams结构体参数使用示意图")
 
 ## 数据类型
 
@@ -116,7 +116,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const LocalTensor<T>&
 
 
 
-- 针对Ascend 950PR/Ascend 950DT，在UB->L1 Buffer的数据搬运时，可以通过配置编译选项[ENABLE_CV_COMM_VIA_SSBUF](../../../../../guides/programming_guide/compilation_and_execution/operator_compilation/ai_core_operator_compilation.md#内置编译宏开关)来选择两种搬运通路，当ENABLE_CV_COMM_VIA_SSBUF配置为true时，使用SSBuffer进行通信，数据通过UB->L1 Buffer之间的硬件通道进行搬运（推荐），参考样例[硬通道搬运](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_ub2l1)；当ENABLE_CV_COMM_VIA_SSBUF为false时，数据搬运到L1 Buffer经过GM，该场景下需要借助Matmul高阶API进行注册操作。
+- 针对Ascend 950PR/Ascend 950DT，在UB->L1 Buffer的数据搬运时，可以通过配置编译选项[ENABLE_CV_COMM_VIA_SSBUF](../../../../../guides/programming_guide/compilation_and_execution/operator_compilation/ai_core_operator_compilation.md#内置编译宏开关)来选择两种搬运通路，当ENABLE_CV_COMM_VIA_SSBUF配置为true时，使用SSBuffer进行通信，数据通过UB->L1 Buffer之间的硬件通道进行搬运（推荐），参考样例[硬通道搬运](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_ub2l1)；当ENABLE_CV_COMM_VIA_SSBUF为false时，数据搬运到L1 Buffer经过GM，该场景下需要借助Matmul高阶API进行注册操作。
 
 
 ## 调用示例

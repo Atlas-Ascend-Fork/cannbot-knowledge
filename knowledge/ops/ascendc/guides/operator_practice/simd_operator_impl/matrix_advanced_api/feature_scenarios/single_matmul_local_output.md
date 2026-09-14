@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/single_matmul_local_output.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -23,10 +23,10 @@ platforms: []
 开启Partial Output功能后，调用Iterate接口不会进行K轴累加，只进行单次基本块计算。用户可以通过GetTensorC接口获取对应的单片数据，最后自行进行K轴上的累加。
 
 **图1**  未开启Partial Output功能计算示意图<a name="zh-cn_topic_0000002299615601_fig59018597286"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/no_partial_out.png "未开启Partial-Output功能计算示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/no_partial_out.png "未开启Partial-Output功能计算示意图")
 
 **图2**  开启Partial Output功能计算示意图<a name="zh-cn_topic_0000002299615601_fig990633219319"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/partial_out.png "开启Partial-Output功能计算示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/partial_out.png "开启Partial-Output功能计算示意图")
 
 ## 使用场景<a name="zh-cn_topic_0000002299615601_section118051016163613"></a>
 
@@ -40,7 +40,7 @@ platforms: []
 
 ## 调用示例<a name="zh-cn_topic_0000002299615601_section15486294368"></a>
 
-完整的算子样例请参考[开启Partial Output功能的算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_partial_output)。
+完整的算子样例请参考[开启Partial Output功能的算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_partial_output)。
 
 ```
 // 配置MDL模板，开启Partial Output

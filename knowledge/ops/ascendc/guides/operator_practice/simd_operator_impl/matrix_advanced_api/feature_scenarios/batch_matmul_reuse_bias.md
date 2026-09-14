@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/batch_matmul_reuse_bias.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -21,12 +21,12 @@ platforms: []
 在Batch Matmul场景中，Matmul API可以一次性计算出多个大小为singleCoreM \* singleCoreN的C矩阵。当Batch Matmul场景有Bias输入时，默认的Bias输入矩阵包含Batch轴，即Bias的大小为Batch \* N。通过开启Bias复用功能，当每个Batch计算使用的Bias数据相同时，只需输入一个不带Batch轴的Bias矩阵。Batch Matmul的Bias矩阵复用功能默认不启用，用户需要设置[MatmulConfig](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_config.md)中的isBiasBatch参数为false来开启此功能。
 
 **图1**  带有Batch轴的Bias计算示意图<a name="zh-cn_topic_0000002373911153_fig889710263325"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/batch_bias.png "带有Batch轴的Bias计算示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/batch_bias.png "带有Batch轴的Bias计算示意图")
 
 如上图所示，Batch Matmul中未复用Bias矩阵的场景，每计算出一个singleCoreM \* singleCoreN大小的C矩阵，都会与1 \* singleCoreN大小的Bias矩阵相加。若不同Batch的计算使用的Bias数据相同，则多Batch计算可以复用同一个Bias矩阵，如下图所示，此场景中调用[SetBias](../../../../../apis/simd_api/adv_api/cube_compute/matmul_kernel/set_bias.md)接口时，只需设置一个1 \* singleCoreN大小的Bias矩阵。
 
 **图2**  复用Bias计算示意图<a name="zh-cn_topic_0000002373911153_fig1485726153719"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/bias_reuse.png "复用Bias计算示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/bias_reuse.png "复用Bias计算示意图")
 
 ## 使用场景<a name="zh-cn_topic_0000002373911153_section1672510573541"></a>
 
@@ -38,7 +38,7 @@ A、B、C矩阵的Layout类型都为NORMAL时，不支持[batchMode](../../../..
 
 ## 调用示例<a name="zh-cn_topic_0000002373911153_section18018102212"></a>
 
-完整的算子样例请参考[BatchMatmul复用Bias算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/batch_matmul_bias_reuse)。
+完整的算子样例请参考[BatchMatmul复用Bias算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/batch_matmul_bias_reuse)。
 
 ```
 // 自定义MatmulConfig参数，将其中的isBiasBatch参数设置为false，开启BatchMatmul的Bias复用功能。

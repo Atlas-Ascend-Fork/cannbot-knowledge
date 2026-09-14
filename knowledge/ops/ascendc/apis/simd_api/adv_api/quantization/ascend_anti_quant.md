@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/quantization/AscendAntiQuant.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -48,7 +48,7 @@ source_headers:
 
 -   PER\_TOKEN场景（按token量化）
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002069677288.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002069677288.png)
 
 -   PER\_GROUP场景（按组量化）
 
@@ -85,16 +85,16 @@ source_headers:
 
         -   k为m方向，即公式中i轴为group的计算方向：（kDim=0同时isTranspose=False）或者（kDim=1同时isTranspose= True）
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002106594713.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002106594713.png)
 
         -   k为n方向，即公式中j轴为group的计算方向：（kDim=0同时isTranspose=True）或者（kDim=1同时isTranspose =False）
 
-            ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002106474749.png)
+            ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002106474749.png)
 
 ## 实现原理
 
 **图1**  AscendAntiQuant算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascendantiquant_diagram.png "AscendAntiQuant算法框图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascendantiquant_diagram.png "AscendAntiQuant算法框图")
 
 如上图所示，为AscendAntiQuant的典型场景算法框图，计算过程分为如下几步，均在Vector上进行：
 
@@ -103,7 +103,7 @@ source_headers:
 3.  计算scale：当scale为向量时做Mul计算，当scale为scalar时做Muls计算。
 
 **图2**  isTranspose为False且输出为bfloat16的AscendAntiQuant算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascendantiquant_no_transpose_bfloat16.png "isTranspose为False且输出为bfloat16的AscendAntiQuant算法框图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascendantiquant_no_transpose_bfloat16.png "isTranspose为False且输出为bfloat16的AscendAntiQuant算法框图")
 
 在Atlas A2 训练系列产品/Atlas A2 推理系列产品上，当输出为bfloat16时，计算过程分为如下几步：
 
@@ -115,7 +115,7 @@ source_headers:
 6.  dst精度转换：将tmp1转换为bf16类型。
 
 **图3**  AscendAntiQuant PER\_TOKEN/PER\_GROUP算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ascendantiquant_per_token_per_group.png "AscendAntiQuant-PER_TOKEN-PER_GROUP算法框图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ascendantiquant_per_token_per_group.png "AscendAntiQuant-PER_TOKEN-PER_GROUP算法框图")
 
 PER\_TOKEN/PER\_GROUP b8/float4场景的计算逻辑如下：
 

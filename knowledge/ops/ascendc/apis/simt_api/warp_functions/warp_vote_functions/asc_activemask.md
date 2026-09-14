@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/Warp_functions/Warp_vote_functions/asc_activemask.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # asc\_activemask
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_warp_functions.h"`。
 
 查看Warp内所有线程是否为活跃状态。
 
@@ -44,14 +46,6 @@ inline uint32_t asc_activemask()
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_warp_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_warp_functions.h"
-```
-
 ## 调用示例
 
 以下样例获取当前Warp中各个线程的活跃状态，并由Lane 0将结果写入GM。
@@ -59,6 +53,8 @@ inline uint32_t asc_activemask()
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_warp_functions.h"
+
     __global__ __launch_bounds__(1024) void KernelActiveMask(uint32_t* active_masks, uint64_t total_length)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -78,6 +74,8 @@ inline uint32_t asc_activemask()
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/device_warp_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void KernelActiveMask(
         __gm__ uint32_t* active_masks, uint64_t total_length)
     {

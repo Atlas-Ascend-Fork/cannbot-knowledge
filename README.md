@@ -1,6 +1,6 @@
 # cannbot-knowledge
 
-`cannbot-knowledge` 是 CANNBot 使用的知识库。它不把算子工程或模型代码作为知识正文提交，而是把经过整理、能够追溯到固定来源或卡内原始观测的工程知识保存成 Markdown 知识卡，例如：
+`cannbot-knowledge` 是 CANNBot 使用的知识库。它不把算子工程或模型代码作为知识正文提交，而是把经过整理、能够追溯到登记的文档来源、固定版本源码或卡内原始观测的工程知识保存成 Markdown 知识卡，例如：
 
 - 某个 CANN API 的语义和使用限制；
 - 某种算子 DSL 的编程模型；
@@ -17,16 +17,16 @@ CANNBot 通过本仓提供的 Skill 生产、检索和检查这些知识，从�
 
 ## 当前知识状态
 
-当前 `knowledge/` 共有 4,856 张知识卡，覆盖 Ascend C、Triton-Ascend、公共平台与模型场景：
+当前 `knowledge/` 共有 5,040 张知识卡，覆盖 Ascend C、Triton-Ascend、公共平台与模型场景：
 
-- 2,809 张 API 卡，其中 Ascend C 2,681 张、Triton 128 张；
+- 2,993 张 API 卡，其中 Ascend C 2,865 张、Triton 128 张；
 - 465 张 Guide 卡，其中 Ascend C 274 张、Triton 157 张、模型场景 34 张；
 - 611 张 Operator 卡，其中 559 张 ACLNN 全链路卡、52 张 Direct Invoke 卡；
 - 565 张 Runbook 卡，其中 Ascend C 459 张、Triton 12 张、模型场景 94 张；
 - 193 张 Concept 卡，其中公共平台 5 张、模型场景 188 张；
 - 202 张 Optimization 卡，其中 Triton 92 张、模型场景 110 张；
 - 11 张 Triton Example 卡；
-- Ascend C API/Guide 来源指向 Registry 登记的 `cann-docs-raw/` 固定归档，恢复时必须同时通过归档和最终内容树 SHA-256 校验；模型 Guide 来源固定到托管仓 40 位 Commit 和具体文件，Operator 来源固定到 CANN 官方 Git 仓 40 位 Commit 和具体文件。
+- Ascend C API/Guide 来源指向 Registry 登记的 `cann-docs-raw/` 文档归档，官方归档持续更新，恢复时不校验预登记的归档或内容树 SHA-256；模型 Guide 来源固定到托管仓 40 位 Commit 和具体文件，Operator 来源固定到 CANN 官方 Git 仓 40 位 Commit 和具体文件。
 
 上述数量是当前版本快照。Registry 中注册的所有 domain 根目录始终保留；`ops` 和 `model` 额外预建已注册 route，其他领域的下一层路径由领域维护者在首批真实知识落库时创建。只有 `index.md` 的结构入口不算正式知识卡，也不会出现在 Query 的实际覆盖统计中。“存在目录”不表示“已有知识”，实时数量以 Query `discover` 为准。
 
@@ -42,7 +42,7 @@ API 卡片通过普通 Markdown 链接引用算子知识。需要发现新引用
 
 图谱按需读取卡片之间的现有链接；API 引用建议单独按需执行，不作为知识入库或 CI 构图的前置步骤。
 
-文档恢复时，脚本校验固定归档 SHA-256 后恢复到 `cann-docs-raw/`，并以固定文件、token 和数量幂等修复该批发布器误扩展到代码围栏中的链接；即使完成标记匹配，复用前也会重新计算整个最终内容树的 SHA-256，其他已有目标失败关闭。官方 API/Guide 只为含独立技术事实的来源页建卡，README、发布占位、纯链接目录和接口清单由逐层 `index.md` 统一导航；保留页的“产品支持情况”先写入 Frontmatter `platforms` 再从正文省略，其余正文保持完整并修正失效链接，可通过普通 Markdown 链接导航到使用相关 API 的算子知识。
+文档恢复时，脚本从 Registry 登记的官方 URL 下载到 `cann-docs-raw/`，不校验归档或内容树 SHA-256；已完成的本地缓存默认复用，可通过 `bash get_resources.sh --docs --refresh` 获取当前文档。完成标记记录来源 URL 和本地准备时间；未完成的目录不会被覆盖。获取阶段只修复已知文件中的特定代码 token 链接，不固定修复次数。官方 API/Guide 只为含独立技术事实的来源页建卡，README、发布占位、纯链接目录和接口清单由逐层 `index.md` 统一导航；保留页的“产品支持情况”先写入 Frontmatter `platforms` 再从正文省略，其余正文保持完整并修正失效链接，可通过普通 Markdown 链接导航到使用相关 API 的算子知识。
 
 ## 这个仓库如何工作
 
@@ -71,7 +71,7 @@ API 卡片通过普通 Markdown 链接引用算子知识。需要发现新引用
 | `ascendc-api-knowledge-query` | 复用 Query 按硬件平台检索 Ascend C API，阅读全文并按需追踪相关卡片和本地 CANN 头文件 | 否 |
 | `knowledge-ingest` | 统一路由新来源、增量、版本升级和通用建卡，支持按需链接图谱 | 创建候选卡；构图只读正文，产物始终 ignored |
 | `knowledge-lint` | 检查目录、Frontmatter、来源、正文、导航和日志；整理 Issue 材料 | 否 |
-| `ops-knowledge-trace-ingest` | 从算子开发 trace 蒸馏 Runbook，并按当前 Schema、索引和Lint 和检索门禁收口 | 仓内使用；只写经审查的 Runbook、导航和日志 |
+| `ops-knowledge-trace-ingest` | 从算子开发 trace 蒸馏 Runbook，并按当前 Schema、导航、Lint 和检索门禁收口 | 仓内使用；只写经审查的 Runbook、导航和日志 |
 | `ops-knowledge-vv-ingest` | 从固定版本源码提取不含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
 | `ops-knowledge-cv-ingest` | 从固定版本源码提取含可达 Cube/AIC 或 MIX_CV 节点的完整 Operator 卡 | 只写任务指定的最终卡 |
 
@@ -86,7 +86,7 @@ knowledge/<领域>/<技术或作用域>/<路径 Profile>/<知识卡>.md
 例如，当前 API 卡可以采用分层主题目录：
 
 ```text
-knowledge/ops/ascendc/apis/basic_api/data_copy/datacopy.md
+knowledge/ops/ascendc/apis/utils_api/cpp_stdlib/math_functions/ceil_division.md
 ```
 
 其中：
@@ -94,8 +94,8 @@ knowledge/ops/ascendc/apis/basic_api/data_copy/datacopy.md
 - `ops` 表示算子领域；
 - `ascendc` 表示这条知识只适用于 Ascend C；
 - `apis` 是路径 Profile，表示它是一张 API 知识卡；
-- `basic_api/data_copy` 是便于浏览的主题 section；
-- bundle 内的 `ops/ascendc/apis/basic_api/data_copy/datacopy` 是 OKF Concept ID；移动卡片会改变该标识；
+- `utils_api/cpp_stdlib/math_functions` 是便于浏览的主题 section；
+- bundle 内的 `ops/ascendc/apis/utils_api/cpp_stdlib/math_functions/ceil_division` 是 OKF Concept ID；移动卡片会改变该标识；
 - Frontmatter `type: API` 是路径 Profile 的确定性投影，供 OKF consumer 读取。
 
 不同 DSL 的专属知识分开保存。只有确实不依赖某个 DSL 的结论才能进入 `shared/`；两种技术之间哪些内容可以复用、哪些必须重新推导，则写入 `shared/interoperability/`。
@@ -166,9 +166,11 @@ bash init.sh claude /path/to/project consumer
 bash init.sh agents /path/to/project contributor
 ```
 
-支持 `agents`、`codex`、`claude`、`opencode`、`trae`、`cursor` 和 `copilot`。安装器始终在目标项目的 `.agents/skills/` 创建规范链接，再按客户端创建适配链接；同时验证或构建只读检索索引、把知识根和安装 profile 写入项目级 `.cannbot/knowledge.env`，并向 `AGENTS.md` 或 `CLAUDE.md` 注入可卸载的托管使用入口。所有已知路径冲突和托管 marker 异常都在写入前失败，不复制知识正文，也不修改用户全局配置。
+支持 `agents`、`codex`、`claude`、`opencode`、`trae`、`cursor` 和 `copilot`。安装器始终在目标项目的 `.agents/skills/` 创建规范链接，再按客户端创建适配链接；同时验证或构建只读检索索引、把知识根和安装 profile 写入项目级 `.cannbot/knowledge.env`，并向 `AGENTS.md` 或 `CLAUDE.md` 注入可卸载的托管使用入口。文件及父目录冲突、父目录符号链接越界和托管 marker 异常都在写入前失败，不复制知识正文，也不修改用户全局配置。
 
-只刷新或移除托管入口时使用 `--prompt-action reinstall|uninstall`。`reinstall` 默认复用 `.cannbot/knowledge.env` 中记录的 profile；旧安装没有该字段时根据已安装的基础贡献 Skill 推导，也可以显式传 `consumer|contributor` 覆盖。复制安装 Skill 时，仍需在项目配置 `CANNBOT_KNOWLEDGE_ROOT` 或 `.cannbot/knowledge.env` 指向独立知识仓；Query 不在业务项目复制知识正文。
+只刷新或移除托管提示词时使用 `--prompt-action reinstall|uninstall`；这两个操作不增删 Skill 链接，也不更新安装 profile 配置。`reinstall` 默认复用 `.cannbot/knowledge.env` 中记录的 profile；旧安装没有该字段时根据已安装的基础贡献 Skill 推导。普通安装补齐所选模式的 Skill 并更新配置，但不删除之前模式留下的链接；从 contributor 改为 consumer 不会自动卸载贡献 Skill。
+
+当前支持由 `init.sh` 链接到完整知识仓的安装方式。Skill 脚本依赖同一 checkout 的 `governance/contracts/`，API 流程还依赖相邻 Query Skill；单独复制 Skill 目录并设置知识根不构成完整安装。配置只决定读取哪个知识仓，不补齐脚本依赖，也不复制知识正文。
 
 ## 贡献和检查
 
@@ -180,7 +182,7 @@ bash init.sh agents /path/to/project contributor
 bash check.sh
 ```
 
-该入口先恢复并校验登记资源，再执行知识 Lint、固定归档受控转换复验、Runbook 正文检查、检索回归、单元测试、Ruff 和 Shell 语法检查。官方 `LICENSE` 原文不参与通用差异空白检查；固定归档 API/Guide 只对保留的来源正文行豁免 Git 空白提示，Frontmatter 与追加的普通链接仍执行通用检查。图谱按需从卡片间现有链接生成，API 引用建议也按需执行，两者都不是入库门禁；CI 保留同一轻量链接构图入口。
+该入口先恢复并校验登记资源，再执行知识 Lint、文档归档受控转换复验、Runbook 正文检查、检索回归、单元测试、Ruff 和 Shell 语法检查。官方 `LICENSE` 原文不参与通用差异空白检查；文档归档 API/Guide 只对保留的来源正文行豁免 Git 空白提示，Frontmatter 与追加的普通链接仍执行通用检查。图谱按需从卡片间现有链接生成，API 引用建议也按需执行，两者都不是入库门禁；CI 保留同一轻量链接构图入口。
 
 ## 治理规范
 

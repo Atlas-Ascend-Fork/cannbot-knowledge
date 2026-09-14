@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/CalcTschNumBlocks.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -76,7 +76,9 @@ uint32_t CalcTschNumBlocks(uint32_t sliceNum, uint32_t aicCoreNum, uint32_t aivC
 
 ## 调用示例<a name="zh-cn_topic_0000001675021153_zh-cn_topic_0000001442758437_section320753512363"></a>
 
-```
+### 自定义算子工程
+
+```cpp
 ge::graphStatus TilingXXX(gert::TilingContext* context) {
     auto ascendcPlatform = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
     auto aicNum = ascendcPlatform.GetCoreNumAic();
@@ -88,3 +90,18 @@ ge::graphStatus TilingXXX(gert::TilingContext* context) {
 }
 ```
 
+### Kernel直调
+
+```cpp
+void GetInfoFun()
+{
+    auto* ascendcPlatform = platform_ascendc::PlatformAscendCManager::GetInstance();
+    if (ascendcPlatform == nullptr) {
+        return;
+    }
+    auto aicNum = ascendcPlatform->GetCoreNumAic();
+    auto aivNum = ascendcPlatform->GetCoreNumAiv();
+    auto blockNum = ascendcPlatform->CalcTschNumBlocks(aivNum, aicNum, aivNum);
+    // ... 根据blockNum自行设计切分策略
+}
+```

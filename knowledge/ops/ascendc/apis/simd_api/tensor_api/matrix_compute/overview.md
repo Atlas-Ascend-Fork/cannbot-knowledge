@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/overview.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -26,7 +26,7 @@ Tensor API针对矩阵计算编程模型提供了两类接口，分别承载Cube
 
 **图1**  普通矩阵基础计算流程图<a name="zh-cn_topic_0000002535567224_fig135639216483"></a>
 
-![普通矩阵基础计算流程图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/matrix_computation_workflow_tensor_api.png)
+![普通矩阵基础计算流程图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/matrix_computation_workflow_tensor_api.png)
 
 1. 通过`copy`接口将A、B原始矩阵的Global Memory数据搬运到L1 Buffer中（如果存在Bias/随路量化，则同样通过`copy`搬运到L1 Buffer中）。详细内容请参考[矩阵计算的搬入](cube_compute_load/index.md)。
 

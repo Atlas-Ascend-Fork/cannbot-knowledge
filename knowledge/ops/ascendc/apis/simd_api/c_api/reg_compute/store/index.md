@@ -10,8 +10,11 @@
 - [asc_storealign_pack_quarter](asc_storealign_pack_quarter.md)：将矢量数据寄存器中的数据压缩搬出到Unified Buffer（UB）。mask用于指示参与搬出的元素，mask对应位置为1时，将src中每个32bit的有效元素中低8bit数据写入压缩后对应的目的位置，mask对应位置为0时，压缩后对应的目的位置保持原值。本接口在Vector Function（__simd_vf__标记的函数）内使用，目的操作数为UB地址。
 - [asc_storealign_pack_quarter_postupdate](asc_storealign_pack_quarter_postupdate.md)：将矢量数据寄存器中的数据压缩搬出到Unified Buffer（UB），写入完成后启用Post Update模式自动累加目的地址指针，便于硬件循环内连续多次调用时无需手动维护目的地址。mask用于指示参与搬出的元素，mask对应位置为1时，将src中有效的32位元素中的低8bit数据写入压缩后对应的目的位置；mask对应位置为0时，对应元素不参与搬出，压缩后对应的目的位置保持原值。offset单位为元素。搬出完成后，目的地址累加offset × sizeof(dtype)字节。本接口在Vector Function（__simd_vf__标记的函数）内使用。
 - [asc_storealign_postupdate](asc_storealign_postupdate.md)：将矢量数据寄存器或掩码寄存器中的数据连续对齐搬出到Unified Buffer（UB），启用Post Update模式在搬出后自动累加目的地址指针，便于硬件循环内连续多次调用时无需手动维护目的地址。当源操作数为矢量数据寄存器时，单次搬出量为VL（256字节），支持配置掩码用于指示参与搬出的元素，掩码为1的元素写入目的地址，掩码为0的元素保留目的地址原数据。当源操作数为掩码寄存器时，单次搬出量为掩码寄存器长度（32字节），不支持配置掩码。搬运过程中数据格式与内容保持不变。本接口在Vector Function（__simd_vf__标记的函数）内使用，目的操作数为UB地址。
-- [asc_storealign (废弃)](asc_storealign_v5_deprecated.md)：该接口已废弃，请使用asc_storealign_postupdate实现此功能。
 - [asc_storeunalign](asc_storeunalign.md)：将矢量数据寄存器中的前count个元素连续搬出到非32字节对齐的Unified Buffer（UB）地址。unalign_reg 为非对齐寄存器，按引用传入并在本接口调用后被更新为本次搬出尾部数据，供下一次本接口或非对齐搬出收尾接口继续拼接使用。每次调用后，用户需手动更新目的操作数在UB中的地址。本接口在Vector Function（__simd_vf__ 标记的函数）内使用。
 - [asc_storeunalign_post](asc_storeunalign_post.md)：将非对齐寄存器中暂存的尾块写入Unified Buffer（UB），用于连续非对齐搬运收尾。本接口提供以下两种模式：
 - [asc_storeunalign_post_postupdate](asc_storeunalign_post_postupdate.md)：将非对齐寄存器中暂存的尾块写入Unified Buffer（UB），用于搬出asc_storeunalign_postupdate立即数偏移搬出模式产生的非对齐寄存器。启用Post Update模式在搬出后自动累加目的地址指针，便于硬件循环内连续多次调用时无需手动维护目的地址。搬出结束后，目的地址向后偏移立即数offset个元素。
 - [asc_storeunalign_postupdate](asc_storeunalign_postupdate.md)：将矢量数据寄存器或掩码寄存器中的数据连续搬出到非32字节对齐的Unified Buffer（UB）地址，启用Post Update模式在搬出后自动累加目的地址指针或地址寄存器，便于硬件循环内连续多次调用时无需手动维护目的地址。本接口在Vector Function（__simd_vf__ 标记的函数）内使用。
+
+- [asc_storealign_squeeze_status](asc_storealign_squeeze_status.md)：将asc_squeeze_and_storeunalign操作后保存在AR特殊寄存器中的有效数据长度写入Unified Buffer（UB）。调用无offset参数的重载时，写入dst；调用带offset参数的重载时，写入dst加字节偏移offset的位置。
+- [asc_storealign_squeeze_status_postupdate](asc_storealign_squeeze_status_postupdate.md)：将asc_squeeze_and_storeunalign操作后保存在AR特殊寄存器中的有效数据长度写入Unified Buffer（UB），并在写入后按字节偏移自动更新目的地址指针。该接口适用于在硬件循环中连续保存squeeze状态的场景。
+- [Reg数据搬出概述](reg_store_overview.md)：Reg数据搬出接口用于将矢量数据寄存器、掩码寄存器或非对齐寄存器中的数据写入Unified Buffer（UB）。接口在Vector Function（__simd_vf__标记的函数）内使用，仅在AIV上生效。

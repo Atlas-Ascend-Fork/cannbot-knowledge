@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/Warp_functions/Warp_vote_functions/asc_ballot.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # asc\_ballot
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_warp_functions.h"`。
 
 判断Warp中每个活跃线程的输入是否非零。
 
@@ -48,23 +50,17 @@ inline uint32_t asc_ballot(int32_t predicate)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_warp_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_warp_functions.h"
-```
-
 ## 调用示例
 
 以下样例通过掩码记录当前Warp内输入数据超过阈值的线程，并由Lane 0将掩码写入GM。
 
-完整样例请参考[Sobel边缘检测样例](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/02_features/01_api_features/03_warp_instruction/sobel_warp_shfl/README.md)。
+完整样例请参考[Sobel边缘检测样例](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/02_features/01_api_features/03_warp_instruction/sobel_warp_shfl/README.md)。
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_warp_functions.h"
+
     __global__ __launch_bounds__(1024) void KernelBallot(
         const float* input, uint32_t* selected_mask, uint64_t total_length, float threshold)
     {
@@ -85,6 +81,8 @@ inline uint32_t asc_ballot(int32_t predicate)
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/device_warp_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void KernelBallot(
         __gm__ const float* input, __gm__ uint32_t* selected_mask, uint64_t total_length, float threshold)
     {

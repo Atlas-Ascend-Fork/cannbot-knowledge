@@ -10,10 +10,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_fused/asc_exp_sub.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_fused.h
 - include/c_api/asc_simd.h
 ---
 
@@ -21,7 +22,9 @@ source_headers:
 
 ## 功能说明
 
-根据`mask`将`src0`与`src1`按元素相减，并计算以差值为指数的自然指数函数。
+头文件路径为：`"c_api/reg_compute/compute/reg_fused.h"`。
+
+根据`mask`将`src0`与`src1`按元素相减，并计算以差值为指数的自然指数函数，计算结果通过函数返回值返回或写入`dst`。
 
 - `asc_exp_sub`用于`float`类型输入。计算公式如下：
 
@@ -43,6 +46,12 @@ source_headers:
 - 用于处理`float`数据类型的源操作数。
 
   ```c
+  // 通过函数返回值返回结果
+  __simd_callee__ inline vector_float asc_exp_sub(vector_float src0,
+                                                  vector_float src1,
+                                                  vector_bool mask)
+
+  // 通过引用参数输出结果
   __simd_callee__ inline void asc_exp_sub(vector_float& dst,
                                           vector_float src0,
                                           vector_float src1,
@@ -52,20 +61,23 @@ source_headers:
 - 处理`half`数据类型的源操作数，支持读取偶数索引或奇数索引的源数据。
 
   ```c
-  __simd_callee__ inline void asc_exp_sub_half2float(
-      vector_float& dst,
-      vector_half src0,
-      vector_half src1,
-      vector_bool mask,
-      std::integral_constant<asc_position_mode, asc_position_mode::EVEN> src_pos)
+  // 通过函数返回值返回结果（占位符形式）
+  __simd_callee__ inline vector_float asc_exp_sub_half2float(vector_half src0,
+                                                             vector_half src1,
+                                                             vector_bool mask,
+                                                             std::integral_constant<asc_position_mode, <src_pos>> src_pos)
 
-  __simd_callee__ inline void asc_exp_sub_half2float(
-      vector_float& dst,
-      vector_half src0,
-      vector_half src1,
-      vector_bool mask,
-      std::integral_constant<asc_position_mode, asc_position_mode::ODD> src_pos)
+  // 通过引用参数输出结果（占位符形式）
+  __simd_callee__ inline void asc_exp_sub_half2float(vector_float& dst,
+                                                     vector_half src0,
+                                                     vector_half src1,
+                                                     vector_bool mask,
+                                                     std::integral_constant<asc_position_mode, <src_pos>> src_pos)
   ```
+
+  **占位符说明如下：**
+
+  - `<src_pos>`支持`ASC_POSITION_EVEN`和`ASC_POSITION_ODD`。
 
 ## 参数说明
 
@@ -83,23 +95,29 @@ source_headers:
 
 ## 返回值说明
 
-无
+- 通过引用参数输出结果的函数原型无返回值，计算结果写入`dst`。
+- 通过函数返回值输出结果的函数原型返回计算结果，返回值类型为`vector_float`。
 
 ## 约束说明
 
+- 通过引用参数输出结果的函数原型在非AIV上调用时直接返回。
+- 通过函数返回值输出结果的函数原型在非AIV上调用时返回对应矢量类型的默认构造值。
+- `mask`需通过掩码设置接口预先赋值后再传入，未赋值的掩码寄存器内容不确定，会导致有效元素位置错误。
+- `mask`掩码位为0时，结果对应元素置0。
 - 只有当输出数据类型位宽大于输入时，计算时才会有精度提升。
-
 
 
 ## 调用示例
 
 将以下代码保存为`example.asc`后，可通过`bisheng`命令编译运行。其中，`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[__NPU_ARCH__](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
 
+
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
+
 
 ```cpp
 #include <cmath>
@@ -140,14 +158,12 @@ __simd_vf__ inline void compute(__ubuf__ float* float_dst, __ubuf__ float* half_
     uint32_t count = FLOAT_COUNT;
     vector_bool mask = asc_update_mask_b32(count);
     vector_bool mask_b16 = asc_create_mask_b16(PAT_ALL);
-    vector_float float_result;
-    asc_exp_sub(float_result, float_src0_reg, float_src1_reg, mask);
+    vector_float float_result = asc_exp_sub(float_src0_reg, float_src1_reg, mask);
     vector_float half_even_result;
     asc_exp_sub_half2float(half_even_result, half_src0_reg, half_src1_reg, mask_b16,
         ASC_POSITION_EVEN);
-    vector_float half_odd_result;
-    asc_exp_sub_half2float(half_odd_result, half_src0_reg, half_src1_reg, mask_b16,
-        ASC_POSITION_ODD);
+    vector_float half_odd_result = asc_exp_sub_half2float(half_src0_reg, half_src1_reg,
+        mask_b16, ASC_POSITION_ODD);
 
     asc_storealign(float_dst, float_result, mask);
     asc_storealign(half_even_dst, half_even_result, mask);
@@ -263,6 +279,3 @@ int main()
     return passed ? 0 : 1;
 }
 ```
-
-
-

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/sync_and_memory_fence/memory_fence/asc_threadfence_block.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -20,6 +20,8 @@ source_headers:
 # asc\_threadfence\_block
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_sync_functions.h"`。
 
 在同一Thread Block内，多个线程共享256KB的Unified Buffer（UB），线程间也会存在数据竞争问题。
 
@@ -43,19 +45,13 @@ inline void asc_threadfence_block()
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_sync_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_sync_functions.h"
-```
-
 ## 调用示例
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_sync_functions.h"
+
     __global__ __launch_bounds__(1024) void kernel_thread_fence_block(float* dst, float* src)
     {
         if (threadIdx.x == 0) {
@@ -71,6 +67,8 @@ inline void asc_threadfence_block()
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/device_sync_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel_thread_fence_block(__gm__ float* dst, __gm__ float* src)
     {
         src[0] = src[0] + 1;

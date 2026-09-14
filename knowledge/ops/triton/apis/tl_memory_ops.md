@@ -11,7 +11,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Memory_Pointer_Ops/tl.load.md
   role: primary
 created_at: '2026-08-14T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-09-12T03:07:12Z'
 platforms: [a2, a3]
 
 ---
@@ -30,7 +30,7 @@ triton.language.load(pointer, mask=None, other=None, boundary_check=(),
 | 参数 | 说明 |
 |------|------|
 | `pointer` | 单指针 / 指针张量 / `make_block_ptr` 产出的块指针 |
-| `mask` | `mask[idx]` 为 False 时不读取。仅指针张量场景可传 |
+| `mask` | `mask[idx]` 为 False 时不读取。单指针可传标量 mask，指针张量可传可广播的 mask；block_ptr 不可传 |
 | `other` | mask 为 False 处的填充值，仅在 `mask != None` 时可传 |
 | `boundary_check` | 需边界检查的维度元组，仅 block_ptr 场景可传 |
 | `padding_option` | `""` / `"zero"` / `"nan"`，越界填充值；仅 `boundary_check` 非空时可传，当前部分场景支持不全，建议用 `mask`+`other` 替代 |

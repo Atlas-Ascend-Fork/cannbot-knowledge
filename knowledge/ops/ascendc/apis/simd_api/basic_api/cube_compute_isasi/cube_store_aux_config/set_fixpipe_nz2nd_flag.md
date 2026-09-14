@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_store_aux_config/SetFixpipeNz2ndFlag.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -64,6 +64,7 @@ Atlas 200I/500 A2 推理产品
 
 
 
+
 针对Ascend 950PR/Ascend 950DT：
 
 **表2** 参数说明
@@ -73,6 +74,7 @@ Atlas 200I/500 A2 推理产品
 | ndNum | 输入 | nd矩阵的数量，取值范围∈[1, 65535]。（[具体含义图示参见NZ2ND介绍特性章节](../cube_store_key_features/nz2_nd.md)） |
 | srcNdStride | 输入 | 以分形大小为单位的源步长，源相邻nz矩阵的偏移（头与头）。当ndNum配置为1时，srcNdStride配置为0即可，不生效。取值范围∈[0, 65535]，单位为C0_SIZE。 |
 | dstNdStride | 输入 | 目的相邻nd矩阵的偏移（头与头）。取值范围dstNdStride∈[1, 2^32-1]，单位为element元素。 |
+
 
 
 
@@ -92,6 +94,7 @@ Kirin 9030 处理器系列产品
 | dstNdStride | 输入 | 目的相邻nd矩阵的偏移（头与头）。取值范围dstNdStride∈[0, 65535]，单位为element元素。 |
 
 
+
 ## 数据类型
 
 参数的数据类型见[函数原型](#zh-cn_topic_0000002516209232_section620mcpsimp)。
@@ -106,7 +109,7 @@ Kirin 9030 处理器系列产品
 
 ## 调用示例<a id="section6461234123118"></a>
 
-完整示例可参考[data_copy_l0c2gm](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_l0c2gm)。
+完整示例可参考[data_copy_l0c2gm](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_l0c2gm)。
 
 ```cpp
 uint16_t ndNum = 2;

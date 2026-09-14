@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/spr/asc_set_saturation_flag.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -20,6 +20,8 @@ source_headers:
 # asc_set_saturation_flag
 
 ## 功能说明
+
+头文件路径为：`"c_api/spr/spr.h"`。
 
 按饱和模式类型设置对应饱和开关。`enable_sat`表示API语义上的“是否开启饱和”，接口内部会按模式处理不同语义。
 
@@ -87,4 +89,4 @@ asc_set_saturation_flag(asc_saturation_mode::CAST, old_cast_sat);
 asc_set_saturation_strategy(old_strategy);
 ```
 
-数据搬运与Reg cast模式可参考[Cast样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/03_c_api/02_reg_vector_compute/cast)。
+数据搬运与Reg cast模式可参考[Cast样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/03_c_api/02_reg_vector_compute/cast)。

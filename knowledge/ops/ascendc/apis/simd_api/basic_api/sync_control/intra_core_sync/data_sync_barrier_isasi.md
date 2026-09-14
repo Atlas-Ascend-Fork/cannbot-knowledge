@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/DataSyncBarrier_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -56,29 +56,29 @@ __aicore__ inline void DataSyncBarrier()
 ```cpp
     if (blockIdx == 0) {
         // 先写入被依赖数据，再通过DataSyncBarrier等待GM访问完成。
-        AscendC::WriteGmByPassDCache<T>(reinterpret_cast<__gm__ T *>(srcGm) + 1, DATA_VALUE);
+        AscendC::WriteGmBypassDCache<T>(reinterpret_cast<__gm__ T *>(srcGm) + 1, DATA_VALUE);
         // DataSyncBarrier<DDR>阻塞后续GM写，确保上一条GM写对其他核可见。
         AscendC::DataSyncBarrier<AscendC::MemDsbT::DDR>();
         // 最后写入同步标记，block 1读到该标记后即可安全读取srcGm[1]。
-        AscendC::WriteGmByPassDCache<T>(reinterpret_cast<__gm__ T *>(srcGm), SYNC_FLAG);
+        AscendC::WriteGmBypassDCache<T>(reinterpret_cast<__gm__ T *>(srcGm), SYNC_FLAG);
     }
 
     if (blockIdx == 1) {
         while (true) {
             __gm__ T *addr = const_cast<__gm__ T *>(srcGlobal.GetPhyAddr());
             // 轮询GM第0个元素，等待block 0写入同步标记。
-            T flagValue = AscendC::ReadGmByPassDCache<T>(addr);
+            T flagValue = AscendC::ReadGmBypassDCache<T>(addr);
             if (flagValue == SYNC_FLAG) {
                 // DataSyncBarrier保证同步标记之前的srcGm[1]写入已完成。
-                T dataValue = AscendC::ReadGmByPassDCache<T>(addr + 1);
-                AscendC::WriteGmByPassDCache<T>(reinterpret_cast<__gm__ T *>(dstGm), 2 * dataValue);
+                T dataValue = AscendC::ReadGmBypassDCache<T>(addr + 1);
+                AscendC::WriteGmBypassDCache<T>(reinterpret_cast<__gm__ T *>(dstGm), 2 * dataValue);
                 return;
             }
         }
     }
 ```
 
-完整样例请参考[DataSyncBarrier接口样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/data_sync_barrier)。
+完整样例请参考[DataSyncBarrier接口样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/data_sync_barrier)。
 
 
 - [DepthwiseConv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/depthwise_conv_2d_950.md)

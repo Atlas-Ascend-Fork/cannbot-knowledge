@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Tiling/v1_TilingData_deprecated.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -32,6 +32,7 @@ AI CPU启动下发通信任务前，需获取固定的通信配置[Mc2Msg](#tabl
 **表1**  Mc2Msg参数说明
 
 <a name="table4835205712588"></a>
+
 | 参数名 | 描述 |
 | --- | --- |
 | preparePosition | 设置服务端组装任务的方式，用户需要在Tiling中显式赋值，uint32_t类型，当前支持的取值如下：<br><br>1：AI CPU与AI Core通过通信任务机制实现消息传递和任务下发；由AI Core侧通过消息通知时设置为1，即算子中使用[HCCL](../hccl_kernel/index.md)时设置为1。 |

@@ -10,14 +10,14 @@
 |---|---|---|
 | `path` | P0 | domain-route、Profile、内容型 section、Operator/Runbook 附加层级和小写 snake_case 卡名合法 |
 | `profile` | P0 | YAML mapping 无重复 key；JSON Schema、公共/Profile 必选字段、非空标题摘要和路径到 OKF type 的映射一致；缺失与空白分别报告 |
-| `body` | P0 | 正文非空且围栏外至少有一个 H1；除 Registry 固定归档主来源的 API/Guide 受控转换可保留来源中的多个 H1 外，其余卡恰有一个 H1；摘要不含发布占位，正文无 Git 冲突标记或压平到单行的 Markdown 表格 |
+| `body` | P0 | 正文非空且围栏外至少有一个 H1；除 Registry 文档归档主来源的 API/Guide 受控转换可保留来源中的多个 H1 外，其余卡恰有一个 H1；摘要不含发布占位，正文无 Git 冲突标记或压平到单行的 Markdown 表格 |
 | `images` | P0 | Markdown/HTML 图片使用含 40 位 commit 和具体文件路径的 HTTPS Git raw URL，忽略代码中的伪图片 |
 | `tags` | P0 | 标签受控、无重复，且至少包含一个 task 和一个 topic |
-| `sources` | P0 | 非 draft 有来源；资源安全；Git 文件和目录固定到 40 位 commit，GitCode/GitHub PR/Issue 使用规范工作项 URL |
+| `sources` | P0 | 非 draft 且非 Runbook 的卡必须有来源；Runbook 允许空来源，轨迹证据由专用 producer 审查；资源安全；Git 文件和目录固定到 40 位 commit，GitCode/GitHub PR/Issue 使用规范工作项 URL |
 | `time` | P0 | 时间为有效 UTC 秒精度，且 `updated_at >= created_at` |
 | `trust` | P0 | `verified` actor 合法 |
-| `platforms` | P0 | 平台受控，`agnostic` 不混用，非 draft 范围非空；固定归档 Frontmatter 与恢复后的来源产品支持表、能力枚举或明确限定整卡/接口范围一致，配置为省略的产品支持章节不得残留在卡片正文；不把全为“不支持”或“实际功能不生效”的产品族加入检索范围，也不把架构演进、章节内局部能力或工作模式限制提升为整卡范围；没有可解析明确范围证据时必须为 `draft` 与空范围，不自动写 `agnostic` |
-| `lifecycle` | P0 | `replaced_by` 状态、目标和自引用合法 |
+| `platforms` | P0 | 非 Glossary 的平台字段必填、值受控，`agnostic` 不混用，非 draft 范围非空；Glossary 不使用该字段；文档归档 Frontmatter 与恢复后的来源产品支持表、能力枚举或明确限定整卡/接口范围一致，配置为省略的产品支持章节不得残留在卡片正文；不把全为“不支持”或“实际功能不生效”的产品族加入检索范围，也不把架构演进、章节内局部能力或工作模式限制提升为整卡范围；没有可解析明确范围证据时必须为 `draft` 与空范围，不自动写 `agnostic` |
+| `lifecycle` | P0 | `replaced_by` 使用规范 Concept ID，目标为 Bundle 内合法路径的现有非索引卡，拒绝自引用与符号链接越界 |
 | `interoperability` | P0 | source/target 是不同的已注册 technology |
 | `source_navigation` | P0 | strict 模式下，宽 tree 来源具有同 revision 的精确 blob 导航 |
 | `navigation` | P0 | Bundle 根、注册 route、逐层 index、缺失/空目录和重复导航合法；非结构目录至少含合法直接卡或合法子 index |

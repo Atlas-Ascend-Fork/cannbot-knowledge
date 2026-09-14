@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/matrix_compute/cube_store_key_features/int8_channel_merge.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -26,7 +26,7 @@ Int8 Channel Merge：当目标数据类型为`int8_t`，M为32，N为48时，硬
 
 **图1**  Int8 Channel Merge示意图
 
-![Int8 Channel Merge示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/Fixpipe_Int8_Channel_Merge.png)
+![Int8 Channel Merge示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/Fixpipe_Int8_Channel_Merge.png)
 
 ## 约束说明
 

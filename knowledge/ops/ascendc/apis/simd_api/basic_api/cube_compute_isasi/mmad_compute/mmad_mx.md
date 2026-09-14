@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/mmad_compute/MmadMx.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -33,7 +33,7 @@ MmadMx的计算公式为：C=(scaleA⊗A)*(scaleB⊗B)+Bias，“⊗”表示广
 - Bias为矩阵乘偏置，形状为[1,N]。对(scaleA⊗A)*(scaleB⊗B)结果矩阵的每一行都采用该Bias进行偏置。
 
 **图1** MmadMx接口矩阵乘分形示意图<a id="zh_cn_topic_mmadmx_section2_figure1"></a>
-![MmadMx接口矩阵乘分形示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mxmmad_demo_a5.png "MmadMx接口矩阵乘分形示意图")
+![MmadMx接口矩阵乘分形示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mxmmad_demo_a5.png "MmadMx接口矩阵乘分形示意图")
 
 **表1** 矩阵计算矩阵A、B、C解释说明
 
@@ -146,4 +146,4 @@ MmadMx的计算公式为：C=(scaleA⊗A)*(scaleB⊗B)+Bias，“⊗”表示广
 
 ## 调用示例
 
-完整使用样例请参考[MmadMx最佳实践](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_mxfp4_basic_api_high_performance)。
+完整使用样例请参考[MmadMx最佳实践](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/05_best_practices/01_matrix_compute/matmul_mxfp4_basic_api_high_performance)。

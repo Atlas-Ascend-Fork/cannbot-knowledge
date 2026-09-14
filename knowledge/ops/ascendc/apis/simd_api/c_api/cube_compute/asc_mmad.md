@@ -10,18 +10,21 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_compute/asc_mmad.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 source_headers:
+- include/c_api/cube_compute/cube_compute.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_mmad
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_compute/cube_compute.h"`。
 
 本接口是Ascend C面向昇腾AI芯片的矩阵乘加（Mmad）核心计算接口，专为高性能算子开发设计，封装了昇腾NPU硬件的矩阵乘加计算能力，广泛用于神经网络层（如全连接层、卷积层）、数值计算类算子的开发，其计算公式如下：
 
@@ -187,6 +190,7 @@ __aicore__ inline void asc_mmad(__cc__ float* c_matrix,
 
 
 
+
 **表** 参数说明（[NPU架构版本2201](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）
 
 | 参数名 | 输入/输出 | 描述 |
@@ -201,6 +205,7 @@ __aicore__ inline void asc_mmad(__cc__ float* c_matrix,
 | k_direction_align | 输入 | K方向对齐的核心功能是通过`k_direction_align`参数控制在使用float数据类型时，L0A Buffer和L0B Buffer矩阵在K方向上的对齐方式。<br>取值说明如下：<br>&nbsp;&nbsp;&bull; false：K方向对齐到`ceil(k / 8) * 8`。<br>&nbsp;&nbsp;&bull; true：K方向对齐到`ceil(k / 16) * 16`。 |
 | c_matrix_source | 输入 | 当参数`c_matrix_init_val`为false时，配置矩阵C的初始值来源。<br>&nbsp;&nbsp;&bull; false：矩阵C的初始值来源于L0C Buffer。<br>&nbsp;&nbsp;&bull; true：矩阵C的初始值来源于BiasTable Buffer。 |
 | c_matrix_init_val | 输入 | 配置是否将矩阵C的初始值设置为0。<br>&nbsp;&nbsp;&bull; true：将矩阵C的初始值设置为0，参数`c_matrix_source`不生效。<br>&nbsp;&nbsp;&bull; false：不执行清零操作，矩阵C的初始值由参数`c_matrix_source`配置。 |
+
 
 
 ## 返回值说明
@@ -246,7 +251,7 @@ PIPE_M
 
   - 开启UnitFlag时，矩阵乘加指令与对应矩阵搬出指令需同时开启UnitFlag。当希望同一块L0C Buffer内存空间能持续只被多条矩阵乘加指令或多条矩阵搬出指令操作时，除最后一条外的指令需将`unit_flag_mode`设置为`asc_unit_flag_mode::ENABLE_KEEP`，维持被操作内存空间的持续占用状态，最后一条指令设置为`asc_unit_flag_mode::ENABLE_UPDATE`，解除被占用状态。
   - 开启UnitFlag时，矩阵计算方向需与矩阵搬出读取顺序保持一致。矩阵搬出指令开启Nz2ND随路格式转换，或未进行随路格式转换但开启B8/B4量化并触发Channel Merge功能时，调用[asc_set_mmad_direction_n](asc_set_mmad_direction_n.md)；其他场景调用[asc_set_mmad_direction_m](asc_set_mmad_direction_m.md)。
-  - 开启UnitFlag时，建议矩阵乘加的计算数据量与矩阵搬出的数据量保持一致。两者不一致可能导致执行异常。需要清除UnitFlag产生的残留状态时，可调用[asc_set_l0c2gm_config](../cube_datamove/asc_set_l0c2gm_config.md)，并将`enable_unit_flag`设置为true，将L0C Buffer中所有内存块的单元标志位设置为0并关闭UnitFlag。
+  - 开启UnitFlag时，建议矩阵乘加的计算数据量与矩阵搬出的数据量保持一致。两者不一致可能导致执行异常。需要清除UnitFlag产生的残留状态时，可调用[asc_set_l0c_copy_config](../cube_datamove/asc_set_l0c_copy_config.md)，并将`enable_unit_flag`设置为true，将L0C Buffer中所有内存块的单元标志位设置为0并关闭UnitFlag。
 
 - 特殊值/边界值约束说明：
 
@@ -257,16 +262,17 @@ PIPE_M
 
   注意，应避免nan输入，否则可能会产生执行报错；整数类型仅支持饱和模式。
 
-
 ## 调用示例
 
 将代码保存为`example.asc`后，可通过`bisheng`命令编译运行，其中`--npu-arch`参数需根据实际产品型号指定对应的NPU架构，具体产品与NPU架构的映射关系请参考[\_\_NPU\_ARCH\_\_](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#npu-arch)。
+
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：
 
 ```bash
 bisheng example.asc -o main --npu-arch=dav-3510 && ./main
 ```
+
 
 以下调用示例代码仅Ascend 950PR/Ascend 950DT产品支持。
 
@@ -310,7 +316,7 @@ __global__ __cube__ void asc_mmad_kernel(__gm__ int8_t* a, __gm__ int8_t* b, __g
     asc_sync_wait(PIPE_M, PIPE_FIX, EVENT_ID0);
     asc_set_l0c_copy_nz_para(1, 0, 0);
     asc_copy_l0c2gm(output, c_l0, N, M, N, M, asc_store_l2_cache_mode::NORMAL_FIRST_VICTIM,
-        asc_unit_flag_mode::DISABLE, QuantMode_t::NoQuant, asc_relu_pre_mode::NONE, false, true, false, false);
+        asc_unit_flag_mode::DISABLE, asc_quant_mode::NoQuant, asc_relu_pre_mode::NONE, false, true, false, false);
     asc_sync_pipe(PIPE_ALL);
 }
 
@@ -374,5 +380,4 @@ int main()
 }
 ```
 
-更多场景使用样例请参考[asc_mmad样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/03_c_api/03_matrix_compute/mmad)。
-
+更多场景使用样例请参考[asc_mmad样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/03_c_api/03_matrix_compute/mmad)。

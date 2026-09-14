@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/enum/asc_load_l2_cache_mode.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -21,7 +21,7 @@ asc_load_l2_cache_mode用于表示数据从GM搬运到Unified Buffer（UB）时�
 - 向量搬运接口，例如[asc_copy_gm2ub_align](../../vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_3510.md)和[asc_ndim_copy_gm2ub](../../vector_datamove/asc_ndim_copy_gm2ub.md)。
 - 标量访存路径的load策略配置与查询，例如[asc_set_scalar_cache_mode](../../cache_ctrl/asc_set_scalar_cache_mode.md)和[asc_get_scalar_load_cache_mode](../../cache_ctrl/asc_get_scalar_load_cache_mode.md)。
 
-L2 Cache管理策略的影响可见[L2 Cache Mode最佳实践](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/02_simd_c_api/02_features/00_data_movement/00_set_l2_cache_mode/README.md)。
+L2 Cache管理策略的影响可见[L2 Cache Mode最佳实践](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/02_features/00_data_movement/00_set_l2_cache_mode/README.md)。
 
 ## 枚举类具体定义
 

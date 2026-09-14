@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/memory_access/vecin_vecout_reuse.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -106,6 +106,6 @@ template <typename ComputeT> class KernelExample {
 
 **图1**  aiv\_vec\_time优化前后对比<a name="fig74881227195511"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/fig_1.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/fig_1.png)
 
 如上图所示，将反例中DataCopy指令替换为TQueBind之后有明显优化。由于省略了数据从UB（VECIN）拷贝到UB（VECOUT）的步骤，aiv\_vec\_time几乎缩减为0。

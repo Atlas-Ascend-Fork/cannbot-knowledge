@@ -11,7 +11,7 @@
 - [通用说明和约束（C API）](general_description_and_constraints.md)：AI Core内外包含多级存储单元，各存储单元的主要用途如下：
 - [Reg矢量计算](reg_compute/index.md)：从Unified Buffer（UB）中按dtype对齐的起始地址读取VL长度数据，并通过函数返回值返回或写入目的矢量数据寄存器，搬运过程中数据格式和内容保持不变。连续搬入时，需要在每次调用前手动更新源地址。该接口为易用性接口，对性能有要求时可使用asc_loadunalign或asc_loadunalign_postupdate。
 - [标量计算](scalar_compute/index.md)：对一个64位无符号整数执行位清除操作，将bits中第idx位清零，其余位保持不变。返回修改后的64位无符号整数。
-- [特殊寄存器访问](spr/index.md)：该接口已废弃，请使用asc_get_squeeze_status实现此功能。
+- [特殊寄存器访问](spr/index.md)：读取CTRL寄存器（控制寄存器）特定比特位上的值。
 - [同步控制](sync/index.md)：用于AI Core内部异步流水线之间的同步，根据mutex_id获取Mutex，可按需阻塞指定流水线的执行。
 - [工具接口](utils/index.md)：本接口将当前AI Core上可能由前序算子遗留的全局状态恢复为接口约定的初始状态，避免这些状态影响当前算子的计算结果。本接口仅初始化控制状态，不会清零Global Memory、Local Memory或用户数据。
 - [Memory矢量计算](vector_compute/index.md)：按元素取绝对值，计算公式如下： $$ dst_i = |src_i| $$

@@ -2,7 +2,7 @@
 
 本模板是最终 `Operator` 卡的唯一结构。生成时替换全部 `<...>`，不得改名、增删或重排固定标题。入口类型由调用 Prompt 指定，Skill 不选择来源层。
 
-受控入口标签只有三种：公开 ACLNN/API 使用 `ACLNN`，官方内部 Host/Tiling 使用 `Host/Tiling`，直接调用使用 `Direct Invoke`。平台标签与 Frontmatter 必须一一对应：
+入口标签区分公开 ACLNN/API 的 `ACLNN`、官方内部入口的 `Host/Tiling` 和直接调用的 `Direct Invoke`。标签不定义存储路径；当前正式卡支持 `ACLNN` 和 `Direct Invoke`，Host/Tiling 独立入口没有已注册 call-mode，按主 Skill defer 写入。平台标签与 Frontmatter 必须一一对应：
 
 | 平台标签 | `platforms` |
 |---|---|
@@ -32,7 +32,7 @@ sources:
 created_at: "<UTC RFC3339 秒精度>"
 updated_at: "<UTC RFC3339 秒精度>"
 platforms: [<按平台标签填写>]
-cann_versions: ["9.1.0"]
+cann_versions: ["<CANN_VERSION>"]
 ---
 
 # <逻辑算子名> <平台标签> <入口标签> 算子知识

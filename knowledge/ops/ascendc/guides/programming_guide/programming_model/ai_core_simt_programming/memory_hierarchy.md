@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simt_programming/memory_hierarchy.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -32,7 +32,7 @@ SIMT线程可访问多种内存空间。下表汇总了SIMT编程中常见内存
 -   在访问性能方面，寄存器具有最高的访问速度；共享内存的访问效率优于全局内存。
 
 内存层级如下图所示：  
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/memory.png" width="50%">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/memory.png" width="50%">
 
 ## 全局内存（Global Memory）<a name="section8946131492119"></a>
 
@@ -95,7 +95,7 @@ __global__ void add_custom(float* x, float* y, float* z, uint64_t total_length)
 
 如下图所示，UB内存空间总大小为256KB。默认编译模式下，UB按功能划分为四个主要区域，从低地址到高地址依次为静态内存、动态内存、预留空间和Data Cache。由于这四类区域共享同一块UB内存，因此用户在配置共享内存大小时，应确保为Data Cache保留足够的空间（至少32KB），避免因可用空间不足导致校验报错。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/ub_alloc.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/ub_alloc.png)
 
 具体结构如下：
 

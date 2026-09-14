@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/library_api/basic_api/quick_reference/how_to_use_reduction_api.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -24,7 +24,7 @@ platforms: []
 -   ReducePairElem：对相邻两个（奇偶）元素进行归约操作，当前仅支持根据模板参数`ReduceType::SUM`求和，例如（a1, a2, a3, a4, a5, a6...），归约后结果为（a1+a2,  a3+a4,  a5+a6, ......）。
 
 **图1**  归约指令示意图<a name="zh-cn_topic_0000002267504648_fig16735034112710"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/Reduce_summary.png "归约指令示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/Reduce_summary.png "归约指令示意图")
 
 针对归约指令，和其他的基础API一样也提供了**tensor高维切分计算**接口，可充分发挥硬件优势，支持开发者控制指令的**迭代执行**和操作数的**地址间隔**，功能更加灵活。但具体参数的单位和约束与[基础API](../interface_classification/high_dim_split_api.md)略有不同，下文将对这些差异点进行介绍。
 

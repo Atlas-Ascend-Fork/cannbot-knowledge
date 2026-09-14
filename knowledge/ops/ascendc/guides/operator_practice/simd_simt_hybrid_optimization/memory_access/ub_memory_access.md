@@ -10,23 +10,24 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_simt_hybrid_optimization/memory_access/ub_memory_access.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
 # 使用Unified Buffer提升内存访问效率<a name="ZH-CN_TOPIC_0000002511242528"></a>
 
-
 >[!NOTE]说明 
 >该性能优化建议适用于如下型号：
+     
 >-   Ascend 950PR/Ascend 950DT
+     
 
 
 【优先级】高
 
 【描述】SIMT线程直接访问Global Memory时，访存请求会经过GM访问路径，数据搬运和线程计算耦合在同一段SIMT逻辑中，容易降低整体访存效率。当单次处理的数据量可放入最大可用Unified Buffer（UB）空间（256KB - 系统预留8KB - 最小Dcache 32KB）时，可以使用搬运接口将数据从Global Memory连续搬运到UB，使SIMT编程直接访问UB中的数据，从而提高内存访问效率，提升算子的整体性能。
 
-【样例介绍】以SIMD与SIMT混合编程方式实现的floor\_mod算子为例。该算子输入x和y的shape均为\[8192, 8192\]，数据类型为int32，输出z的shape为\[8192, 8192\]。完整样例请参考[SIMT与SIMD混合编程高性能优化样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_high_performance)。
+【样例介绍】以SIMD与SIMT混合编程方式实现的floor\_mod算子为例。该算子输入x和y的shape均为\[8192, 8192\]，数据类型为int32，输出z的shape为\[8192, 8192\]。完整样例请参考[SIMT与SIMD混合编程高性能优化样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_high_performance)。
 
 **表1**  样例规格
 

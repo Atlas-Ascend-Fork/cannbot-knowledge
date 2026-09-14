@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_store/DataCopy_L0CToGM.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -33,7 +33,7 @@ source_headers:
 
 **图1** L0C2GM流程图<a id="zh-cn_topic_0000002542828493_fig542810249417"></a>  
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/L0C2GM_Function_Combination.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/L0C2GM_Function_Combination.png)
 
 
 ## 函数原型<a id="zh-cn_topic_0000002542828493_section82039854412"></a>
@@ -159,7 +159,7 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
 ## 调用示例<a id="zh-cn_topic_0000002542828493_section088124295117"></a>
 
 
-- 示例一：Mmad含有矩阵乘偏置，左矩阵和右矩阵的数据类型为int8\_t，结果矩阵的数据类型为int32\_t。量化模式DEQF16，Scalar量化参数为2.0，将Mmad计算出的结果由int32\_t量化成half并搬出。DataCopy完整样例请参考[data_copy_l0c2gm](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_l0c2gm)。
+- 示例一：Mmad含有矩阵乘偏置，左矩阵和右矩阵的数据类型为int8\_t，结果矩阵的数据类型为int32\_t。量化模式DEQF16，Scalar量化参数为2.0，将Mmad计算出的结果由int32\_t量化成half并搬出。DataCopy完整样例请参考[data_copy_l0c2gm](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_l0c2gm)。
 
     ```cpp
     // Scalar量化，量化参数为2.0
@@ -180,7 +180,7 @@ DataCopy矩阵搬出接口支持多种随路能力的组合，需要设置不同
     AscendC::DataCopy(cGM, cLocal, intriParams);
     ```
 
-- 示例二：Mmad含有矩阵乘偏置，左矩阵和右矩阵的数据类型为int8\_t，结果矩阵的数据类型为int32\_t。量化模式VDEQF16，Tensor量化，将Mmad计算出的结果由int32\_t量化成half并搬出。DataCopy完整样例请参考[data_copy_l0c2gm](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_l0c2gm)。
+- 示例二：Mmad含有矩阵乘偏置，左矩阵和右矩阵的数据类型为int8\_t，结果矩阵的数据类型为int32\_t。量化模式VDEQF16，Tensor量化，将Mmad计算出的结果由int32\_t量化成half并搬出。DataCopy完整样例请参考[data_copy_l0c2gm](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_l0c2gm)。
 
     ```cpp
     // CeilAlign定义如下

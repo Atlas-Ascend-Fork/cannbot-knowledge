@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/aclnn_operator_development/design_and_implementation/host_tiling_implementation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -34,7 +34,7 @@ TilingFunc运行在Host侧。框架在核函数（Kernel）启动前调用Tiling
 
 Host侧Tiling的输入和输出如下图所示：
 
-![Tiling实现的输入输出](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/tiling_io.png "Tiling实现的输入输出")
+![Tiling实现的输入输出](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/tiling_io.png "Tiling实现的输入输出")
 
 图中，`TilingContext`是TilingFunc与框架之间的数据载体：TilingFunc从中读取输入输出shape、属性信息，并将`TilingData`、`numBlocks`、`TilingKey`和workspace大小等结果写回其中。
 

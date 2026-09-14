@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_core_sync/CrossCoreSetFlag_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -40,10 +40,10 @@ source_headers:
 
 > [!NOTE]说明
 > - 不同型号支持的模式不同，具体支持情况请参考[modeId支持的取值说明](#modeId支持的取值说明)。
-> - 每个模式的具体执行逻辑与细节可以参考[关键特性说明](key_features.md#ZH-CN_TOPIC_0000002586300741)。
+> - 每个模式的具体执行逻辑与细节可以参考[关键特性说明](key_features.md)。
 
 **图1**  同步控制模式示意图<a id="fig37581010773"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/block_subblock_relationship_3510.png "同步控制模式示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/block_subblock_relationship_3510.png "同步控制模式示意图")
 
 ## 函数原型<a id="section620mcpsimp"></a>
 
@@ -117,13 +117,13 @@ CrossCoreSetFlag的模板参数`modeId`和`pipe`均**没有默认值**，其取�
 
 ## 约束说明<a id="section633mcpsimp"></a>
 
-- 由于当核函数（Kernel）类型为KERNEL_TYPE_AIC_ONLY或KERNEL_TYPE_AIV_ONLY时，硬件不会开启调度模块，也就无法正常进行核间同步，因此不同的同步模式配置[核函数（Kernel）类型](../../kernel_tiling/set_kernel_type.md)或[函数修饰符](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#section1074418132518)的情况如下：
+- 由于当核函数（Kernel）类型为KERNEL_TYPE_AIC_ONLY或KERNEL_TYPE_AIV_ONLY时，硬件不会开启调度模块，也就无法正常进行核间同步，因此不同的同步模式配置[核函数（Kernel）类型](../../kernel_tiling/set_kernel_type.md)或[函数执行空间限定符](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md#函数执行空间限定符)的情况如下：
     - 在纯Vector/Cube场景下（模式0或模式1），建议设置核函数（Kernel）类型为KERNEL\_TYPE\_MIX\_AIV\_1\_0或KERNEL\_TYPE\_MIX\_AIC\_1\_0，其它支持的核函数（Kernel）类型请参考表3。
-    - 对于Vector和Cube混合场景（模式2和模式4），需根据AI Core中AIC和AIV的比例灵活配置核函数（Kernel）类型，不同模式支持的函数修饰符和核函数（Kernel）类型请参照表3。
+    - 对于Vector和Cube混合场景（模式2和模式4），需根据AI Core中AIC和AIV的比例灵活配置核函数（Kernel）类型，不同模式支持的函数执行空间限定符和核函数（Kernel）类型请参照表3。
 
         **表3**  模式与支持的核函数（Kernel）类型配置<a id="table3"></a>
 
-        | 模式 | 支持的函数修饰符 | 支持的核函数（Kernel）类型配置 |
+        | 模式 | 支持的函数执行空间限定符 | 支持的核函数（Kernel）类型配置 |
         | --- | --- | --- |
         | 0 | \_\_mix\_\_(0, 1)、\_\_mix\_\_(1, 0)、\_\_mix\_\_(1, 1)、\_\_mix\_\_(1, 2) | KERNEL\_TYPE\_MIX\_AIV\_1\_0、KERNEL\_TYPE\_MIX\_AIC\_1\_0、KERNEL\_TYPE\_MIX\_AIC\_1\_1、KERNEL\_TYPE\_MIX\_AIC\_1\_2 |
         | 1 | \_\_mix\_\_(1, 1)、\_\_mix\_\_(1, 2) | KERNEL\_TYPE\_MIX\_AIC\_1\_1、KERNEL\_TYPE\_MIX\_AIC\_1\_2 |
@@ -148,7 +148,7 @@ CrossCoreSetFlag的模板参数`modeId`和`pipe`均**没有默认值**，其取�
     
     - 针对Ascend 950PR/Ascend 950DT，核间同步的模式为模式4时，AIC有32个flagId，支持的取值范围为0-31，如果flagId的值超出该范围，则截取低5bit（例如，flagId=35时，截取后为3）；AIV有16个flagId，支持的取值范围为0-15，如果flagId的值超出该范围，则截取低4bit（例如，flagId=17时，截取后为1）。
     
-    - 每个flagId都对应一个计数器，当调用[CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)时，若计数器值为0则会阻塞后续指令下发，已下发指令可正常执行；当调度模块感知到所有参与同步的核（具体包含哪些核与设置的核间同步模式有关）完成（调用了CrossCoreSetFlag）同步后，会将与设置的flagId对应的计数器的值增加1。此时，计数器值为非0，阻塞解除，并且将对应计数器的值减去1进行还原。具体执行逻辑与细节可以参考[关键特性说明](key_features.md#ZH-CN_TOPIC_0000002586300741)。每一个计数器计数范围为0-15。如果调用CrossCoreSetFlag的次数超过15次，计数器的值超出该范围，则会异常报错，中断流程。
+    - 每个flagId都对应一个计数器，当调用[CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)时，若计数器值为0则会阻塞后续指令下发，已下发指令可正常执行；当调度模块感知到所有参与同步的核（具体包含哪些核与设置的核间同步模式有关）完成（调用了CrossCoreSetFlag）同步后，会将与设置的flagId对应的计数器的值增加1。此时，计数器值为非0，阻塞解除，并且将对应计数器的值减去1进行还原。具体执行逻辑与细节可以参考[关键特性说明](key_features.md)。每一个计数器计数范围为0-15。如果调用CrossCoreSetFlag的次数超过15次，计数器的值超出该范围，则会异常报错，中断流程。
 - 核间同步的模式为模式0、1、2时，同一个flagId用于不同核间同步模式的约束：
     - 同一核上，若同一个flagId需用于不同核间同步模式，须在模式切换前完成前一个模式的所有同步操作——即确保该flagId关联的所有CrossCoreSetFlag与配套CrossCoreWaitFlag调用均已执行完毕。
     - 对于不同的核，可以直接将同一flagId用于不同的核间同步模式，具体包括以下2种场景：
@@ -200,7 +200,7 @@ CrossCoreSetFlag的模板参数`modeId`和`pipe`均**没有默认值**，其取�
     }
 ```
 
-完整样例请参考[CrossCoreSetFlag和CrossCoreWaitFlag核间同步样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/cross_core_set_wait_flag)。
+完整样例请参考[CrossCoreSetFlag和CrossCoreWaitFlag核间同步样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/cross_core_set_wait_flag)。
 
 
 - [AddLora A2 ACLNN 算子知识](../../../../../operators/aclnn/math/math/add_lora.md)

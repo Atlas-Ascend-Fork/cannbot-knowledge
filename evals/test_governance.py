@@ -512,6 +512,43 @@ class RouteContractTests(unittest.TestCase):
             )
         )
 
+    def test_replacement_requires_a_canonical_bundle_concept(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "repo"
+            shutil.copytree(ROOT / "governance", root / "governance")
+            directory = root / "knowledge/ops/ascendc/apis"
+            directory.mkdir(parents=True)
+            for name in ("replacement.md", "index.md", "synthetic_api.md"):
+                (directory / name).write_text("# Fixture\n", encoding="utf-8")
+            outside = Path(temporary) / "outside.md"
+            outside.write_text("# Outside\n", encoding="utf-8")
+            (directory / "escape.md").symlink_to(outside)
+            (directory / "index_alias.md").symlink_to(directory / "index.md")
+            invalid = root / "knowledge/ops/unregistered/apis/replacement.md"
+            invalid.parent.mkdir(parents=True)
+            invalid.write_text("# Invalid route\n", encoding="utf-8")
+            contract = Contract(root)
+            cases = {
+                "ops/ascendc/apis/replacement": True,
+                "ops/ascendc/apis/index": False,
+                "ops/ascendc/apis/index_alias": False,
+                "ops/ascendc/apis/escape": False,
+                "ops/ascendc/apis/synthetic_api": False,
+                "ops/unregistered/apis/replacement": False,
+                "ops/ascendc/apis/./replacement": False,
+                "ops/ascendc/apis//replacement": False,
+            }
+            for replacement, accepted in cases.items():
+                with self.subTest(replacement=replacement):
+                    issues = contract.validate_card(
+                        Path("knowledge/ops/ascendc/apis/synthetic_api.md"),
+                        {**SYNTHETIC_API_METADATA, "status": "deprecated",
+                         "replaced_by": replacement},
+                        "# Synthetic API\n",
+                    )
+                    errors = [issue for issue in issues if issue.code == "status.replaced_by"]
+                    self.assertEqual(accepted, not errors, errors)
+
     def test_hierarchical_tag_and_local_source_are_accepted(self) -> None:
         relative = Path("knowledge/ops/ascendc/apis/basic_api/data_copy/synthetic_api.md")
         metadata = dict(SYNTHETIC_API_METADATA)
@@ -1073,6 +1110,24 @@ class IngestContractTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
 
 class LintBehaviorTests(unittest.TestCase):
+    def test_archive_registry_requires_https_url_without_pinned_hashes(self) -> None:
+        for update in ({"archive_url": "https://example.invalid/daily.tar.gz"},
+                       {"archive_url": "http://example.invalid/daily.tar.gz"},
+                       {"archive_url": ""}, {"archive_sha256": "a" * 64},
+                       {"tree_sha256": "b" * 64}):
+            with self.subTest(update=update), tempfile.TemporaryDirectory() as temporary:
+                root = self.make_root(temporary)
+                registry = root / "governance/schemas/registries.yaml"
+                import yaml
+                data = yaml.safe_load(registry.read_text())
+                data["local_sources"]["cann_docs_raw"].update(update)
+                registry.write_text(yaml.safe_dump(data, allow_unicode=True))
+                if update.get("archive_url", "").startswith("https://"):
+                    self.assertEqual(update["archive_url"], Contract(root).local_sources["cann_docs_raw"]["archive_url"])
+                else:
+                    with self.assertRaisesRegex(ValueError, "HTTPS archive_url"):
+                        Contract(root)
+
     def make_root(self, temporary: str) -> Path:
         root = Path(temporary)
         shutil.copytree(ROOT / "governance", root / "governance")
@@ -1489,10 +1544,9 @@ platforms: [a2]
             source_root = root / "cann-docs-raw"
             source_root.mkdir()
             source_definition = Contract(root).local_sources["cann_docs_raw"]
-            archive_sha256 = source_definition["archive_sha256"]
-            tree_sha256 = source_definition["tree_sha256"]
+            archive_url = source_definition["archive_url"]
             (source_root / ".complete").write_text(
-                f"archive_sha256={archive_sha256}\ntree_sha256={tree_sha256}\n",
+                f"archive_url={archive_url}\n",
                 encoding="utf-8",
             )
             (source_root / "source.md").write_text("# Source\n", encoding="utf-8")
@@ -1504,7 +1558,7 @@ platforms: [a2]
             source_root = root / "cann-docs-raw"
             source_root.mkdir()
             (source_root / ".complete").write_text(
-                "archive_sha256=wrong\n",
+                "archive_url=https://wrong.example/archive.tar.gz\n",
                 encoding="utf-8",
             )
             result = self.run_lint(

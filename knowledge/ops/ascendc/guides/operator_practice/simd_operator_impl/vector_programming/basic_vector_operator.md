@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/vector_programming/basic_vector_operator.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 基于Ascend C方式实现基础矢量算子核函数（Kernel）的流程如下图所示。
 
 **图1**  矢量算子核函数（Kernel）实现流程<a name="zh-cn_topic_0000002201157438_fig16061570280"></a><br>
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/vec_op_impl.png "矢量算子核函数（Kernel）实现流程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/vec_op_impl.png "矢量算子核函数（Kernel）实现流程")
 
 -   算子分析：分析算子的数学表达式、输入、输出以及计算逻辑的实现，明确需要调用的Ascend C接口。
 -   核函数（Kernel）定义：定义Ascend C算子入口函数。
@@ -42,7 +42,7 @@ platforms: []
     计算逻辑是：Ascend C提供的[矢量计算接口](../../../../apis/simd_api/basic_api/memory_vector_compute/basic_arithmetic/add.md)的操作元素都为[LocalTensor](../../../../apis/simd_api/basic_api/data_structures/local_tensor/index.md)，输入数据需要先从外部存储（Global Memory）搬运到Unified Buffer（UB），然后使用计算接口完成两个输入参数相加，得到最终结果，再搬出到外部存储上。Ascend C  Add算子的计算逻辑如下图所示。
 
     **图2**  算子计算逻辑<a name="zh-cn_topic_0000002201157438_zh-cn_topic_0000001464091780_fig18937134755411"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/op_logic.png "算子计算逻辑")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/op_logic.png "算子计算逻辑")
 
 2.  明确输入和输出。
     -   Add算子有两个输入：x与y；输出为z。
@@ -160,7 +160,7 @@ platforms: []
 -   任务间交互使用到的内存、临时变量的内存统一使用[Pipe内存管理对象](../../../../apis/simd_api/basic_api/resource_management/t_pipe/index.md)进行管理。
 
 **图3**  Add算子实现流程<a name="zh-cn_topic_0000002201157438_fig4134406304"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/add_op.png "Add算子实现流程")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/add_op.png "Add算子实现流程")
 
 算子类中主要实现上述流程，包含对外开放的初始化Init函数和核心处理函数Process，Process函数中会对上图中的三个基本任务进行调用；同时包括一些算子实现中会用到的私有成员，比如上图中的GlobalTensor（xGm、yGm、zGm）和UB（VECIN/VECOUT）队列等。KernelAdd算子类具体成员如下：
 

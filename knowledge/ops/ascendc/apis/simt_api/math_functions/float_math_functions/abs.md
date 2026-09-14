@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/abs.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -20,6 +20,8 @@ source_headers:
 # abs
 
 ## 功能说明
+
+头文件路径为：`"simt_api/math_functions.h"`。
 
 获取float类型输入数据的绝对值。
 
@@ -52,19 +54,13 @@ float abs(float x)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/math_functions.h`头文件。
-
-```cpp
-#include "simt_api/math_functions.h"
-```
-
 ## 调用示例
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/math_functions.h"
+
     __global__ __launch_bounds__(1024) void kernel_abs(float* dst, float* x, uint32_t input_total_length)
     {
         uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -78,6 +74,8 @@ float abs(float x)
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/math_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel_abs(__gm__ float* dst, __gm__ float* x, uint32_t input_total_length)
     {
         uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;

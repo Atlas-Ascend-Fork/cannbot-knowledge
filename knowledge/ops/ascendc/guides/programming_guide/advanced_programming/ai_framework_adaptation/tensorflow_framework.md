@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/ai_framework_adaptation/tensorflow_framework.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T04:40:44Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -25,7 +25,7 @@ platforms: []
 
 下图展示了完整的开发流程，具体步骤如下：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/copy.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/copy.png)
 
 1.  环境准备。
     1.  CANN软件安装请参考[环境准备](../../../getting_started/environment_setup.md)。
@@ -43,7 +43,7 @@ platforms: []
 3.  [算子入图（GE图）开发](../operator_graph_development/basic_development_flow.md)。算子入图场景下，需要提供shape推导等算子入图适配函数的实现。
 4.  TensorFlow框架适配插件开发。详细说明见[适配插件开发](#section1820291291414)。
 5.  编译部署。通过工程编译脚本完成算子的编译部署，分为[算子包编译](../aclnn_operator_development/compilation_and_deployment/basic_process.md)和[算子动态库编译](../aclnn_operator_development/compilation_and_deployment/dynamic_static_lib_compilation.md)两种方式。
-6.  TensorFlow框架算子调用。详细说明见[TensorFlow原生算子映射到CANN算子](#section6342138121512)和[TensorFlow自定义算子开发并映射到CANN算子](#section18276103563719)。完整样例请参考[LINK](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/00_framework/01_tensorflow)。
+6.  TensorFlow框架算子调用。详细说明见[TensorFlow原生算子映射到CANN算子](#section6342138121512)和[TensorFlow自定义算子开发并映射到CANN算子](#section18276103563719)。完整样例请参考[LINK](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/00_framework/01_tensorflow)。
 
 ## 适配插件开发<a name="section1820291291414"></a>
 

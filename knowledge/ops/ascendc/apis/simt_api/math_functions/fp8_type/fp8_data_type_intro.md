@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/fp8_type/fp8_data_type_intro.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -31,14 +31,14 @@ SIMT编程支持3种fp8数据类型，分别是float8\_e4m3\_t、float8\_e5m2\_t
     下图是一个fp8\_e4m3fn\_t类型的示例，其符号位占用1位，指数占用4位，尾数占用3位，表示的结果为 \(-1\)^1 × 2^-3 × 2^-6。
 
     **图1**  float8\_e4m3\_t示例图  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/float8_e4m3_t_example.png "float8_e4m3_t示例图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/float8_e4m3_t_example.png "float8_e4m3_t示例图")
 
 -   float8\_e5m2\_t
 
     下图是一个fp8\_e5m2\_t类型的示例，其符号位占用1位，指数占用5位，尾数占用2位，表示的结果为 \(-1\)^0 × \(2 - 0.25\) × 2^\(30 -15\)=1.75 × 2^15。
 
     **图2**  float8\_e5m2\_t示例图  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/float8_e5m2_t_example.png "float8_e5m2_t示例图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/float8_e5m2_t_example.png "float8_e5m2_t示例图")
 
 -   hifloat8\_t
 
@@ -47,8 +47,8 @@ SIMT编程支持3种fp8数据类型，分别是float8\_e4m3\_t、float8\_e5m2\_t
     hifloat8\_t类型根据点域的不同，有不同的编码方式，下面一一列出。
 
     **图3**  S、E、M在不同点域D值下的bit位分布  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/sem_bit_distribution.png "S-E-M在不同点域D值下的bit位分布-65")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/sem_bit_distribution.png "S-E-M在不同点域D值下的bit位分布-65")
 
     下图示例中，其符号位占用1位，指数占用2位，尾数占用3位，D字段为2比特b01，S<sub>v</sub>=1，E<sub>v</sub>=3，M<sub>v</sub>  = 2<sup>-1</sup>  + 2<sup>-2</sup>，表示的结果为14。下标v表示各部分的具体数值。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/hifloat8_binary.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/hifloat8_binary.png)

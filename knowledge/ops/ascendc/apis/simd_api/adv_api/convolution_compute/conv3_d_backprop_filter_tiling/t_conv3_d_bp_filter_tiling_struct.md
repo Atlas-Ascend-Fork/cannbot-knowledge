@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/convolution_compute/Conv3DBackpropFilter_Tiling/TConv3DBpFilterTiling_struct.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -25,6 +25,7 @@ TConv3DBpFilterTiling结构体包含Conv3dBackpropFilter算子规格信息及Til
 **表1**  TConv3DBpFilterTiling结构说明
 
 <a name="table1563162142915"></a>
+
 | 参数名称 | 说明 |
 | --- | --- |
 | batch | 输入GradOutput的Batch，单位元素。 |

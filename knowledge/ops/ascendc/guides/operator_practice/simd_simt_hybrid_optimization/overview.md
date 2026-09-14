@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_simt_hybrid_optimization/overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -59,7 +59,7 @@ AI Core上SIMD与SIMT混合编程结合了SIMD多数据并行计算能力与SIMT
 
   内存访问优化是最高优先级的优化方向。混合编程中的SIMT VF常用于处理离散访存、索引映射等不规则逻辑，内存访问优化的作用是在SIMT VF中利用访存合并减少无效GM访问，提高有效带宽和数据复用率。
 
-  SIMT编程中同一个Warp内的线程对GM的访问请求，如果落在同一个区域（sector）内，可以合并为同一个内存请求；在Ascend 950上，sector大小为128B。离散访问会使访问请求分散到多个sector范围，访存效率较低。优化时应优先调整线程与数据的映射关系，让同一个Warp内的线程尽量访问相近或连续的GM地址，提高带宽的有效利用率。对于SIMT VF中难以连续访问GM的离散数据场景，可以先通过MTE搬运接口将相关数据从GM搬运到Unified Buffer（UB）缓存，再在SIMT VF中访问UB数据，降低离散GM访问开销，从而提高带宽利用率。分析过程中还应关注Data Cache命中带来的读数据量变化，以及UB访问是否引入新的冲突。
+  SIMT编程中同一个Warp内的线程对GM的访问请求，如果落在同一个区域（sector）内，可以合并为同一个内存请求。离散访问会使访问请求分散到多个sector范围，访存效率较低。优化时应优先调整线程与数据的映射关系，让同一个Warp内的线程尽量访问相近或连续的GM地址，提高带宽的有效利用率。对于SIMT VF中难以连续访问GM的离散数据场景，可以先通过MTE搬运接口将相关数据从GM搬运到Unified Buffer（UB）缓存，再在SIMT VF中访问UB数据，降低离散GM访问开销，从而提高带宽利用率。分析过程中还应关注Data Cache命中带来的读数据量变化，以及UB访问是否引入新的冲突。
 
 - 执行控制优化
 
@@ -79,33 +79,33 @@ AI Core上SIMD与SIMT混合编程结合了SIMD多数据并行计算能力与SIMT
 
 | 优化建议 | 样例 |
 | --- | --- |
-| [通过SIMT实现分支判断](compute_optimization/simt_branch_judgment.md) | [simd_simt_high_performance](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_high_performance) |
+| [通过SIMT实现分支判断](compute_optimization/simt_branch_judgment.md) | [simd_simt_high_performance](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_high_performance) |
 
 表2 内存访问优化建议总览表
 
 | 优化建议 | 样例 |
 | --- | --- |
-| [使用Unified Buffer提升内存访问效率](memory_access/ub_memory_access.md) | [simd_simt_high_performance](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_high_performance) |
-| [访存合并](../simt_operator_optimization/memory_access/memory_access_merge.md) | [simd_simt_matrix_transpose](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_matrix_transpose) |
-| [避免UB的Bank冲突](../simt_operator_optimization/memory_access/avoid_ub_bank_conflict_simt.md) | [matrix_transpose_practice](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/matrix_transpose_practice) |
-| [DCache访问优化](../simt_operator_optimization/memory_access/dcache_access.md) | [cache_hint](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/cache_hint) |
-| [使用短向量类型提升效率](../simt_operator_optimization/memory_access/short_vector_efficiency.md) | [short_vector_add](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/short_vector_add) |
-| [通过类型对齐提升搬运效率](../simt_operator_optimization/memory_access/type_alignment_transfer.md) | [aligned_types](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/00_memory_optimizations/aligned_types) |
+| [使用Unified Buffer提升内存访问效率](memory_access/ub_memory_access.md) | [simd_simt_high_performance](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_high_performance) |
+| [访存合并](../simt_operator_optimization/memory_access/memory_access_merge.md) | [simd_simt_matrix_transpose](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_matrix_transpose) |
+| [避免UB的Bank冲突](../simt_operator_optimization/memory_access/avoid_ub_bank_conflict_simt.md) | [matrix_transpose_practice](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/matrix_transpose_practice) |
+| [DCache访问优化](../simt_operator_optimization/memory_access/dcache_access.md) | [cache_hint](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/cache_hint) |
+| [使用短向量类型提升效率](../simt_operator_optimization/memory_access/short_vector_efficiency.md) | [short_vector_add](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/short_vector_add) |
+| [通过类型对齐提升搬运效率](../simt_operator_optimization/memory_access/type_alignment_transfer.md) | [aligned_types](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/00_memory_optimizations/aligned_types) |
 
 表3 执行控制优化建议总览表
 
 | 优化建议 | 样例 |
 | --- | --- |
-| [线程块数量配置优化](execution_control/thread_block_config.md) | [simd_simt_grid_dim_config](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_grid_dim_config) |
+| [线程块数量配置优化](execution_control/thread_block_config.md) | [simd_simt_grid_dim_config](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_grid_dim_config) |
 
 表4 控制流优化建议总览表
 
 | 优化建议 | 样例 |
 | --- | --- |
-| [同一Warp内避免分支跳转](../simt_operator_optimization/control_flow/avoid_warp_branch.md) | [warp_divergence](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/03_simt_api/03_best_practices/02_control_flow/warp_divergence) |
+| [同一Warp内避免分支跳转](../simt_operator_optimization/control_flow/avoid_warp_branch.md) | [warp_divergence](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/03_simt_api/03_best_practices/02_control_flow/warp_divergence) |
 
 表5 指令优化建议总览表
 
 | 优化建议 | 样例 |
 | --- | --- |
-| [整数除法的快速算法](instruction_optimization/fast_integer_division.md) | [simd_simt_integer_fast_div](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_integer_fast_div) |
+| [整数除法的快速算法](instruction_optimization/fast_integer_division.md) | [simd_simt_integer_fast_div](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/02_best_practices/simd_simt_integer_fast_div) |

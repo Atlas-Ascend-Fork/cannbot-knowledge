@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/tiling_strategy/inter_core_load_balance.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -25,11 +25,11 @@ platforms: []
 【反例】
 
 **图1**  计算拖尾示意图<a name="fig26395321518"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/calc_tail.png "计算拖尾示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/calc_tail.png "计算拖尾示意图")
 
 【正例】
 
 针对上述切分策略，调整拖尾核的位置后可以达到全局负载最优，如[图2](#fig133658471154)所示。完成所有计算时，1到10核多一次数据块的计算，可以实现全局负载最优。
 
 **图2**  核间负载均衡示意图<a name="fig133658471154"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/core_load_balance.png "核间负载均衡示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/core_load_balance.png "核间负载均衡示意图")

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/tensor_transform/Broadcast.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -43,7 +43,7 @@ platforms:
 以float类型，ND格式，\[m, 1\]广播到\[m, k\]为例，描述Broadcast高阶API内部算法框图，如下图所示。
 
 **图1**  Broadcast算法框图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/broadcast_algorithm_diagram.png "Broadcast算法框图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/broadcast_algorithm_diagram.png "Broadcast算法框图")
 
 计算过程分为如下几步，均在Vector上进行：
 
@@ -142,6 +142,7 @@ platforms:
 **表5**  kernel侧tiling计算接口参数说明
 
 <a name="table5458981523"></a>
+
 | 参数名称 | 输入/输出 | 功能 |
 | --- | --- | --- |
 | rank | 输入 | 输入/输出tensor的维度数目，目前支持的取值为[1, 9]。 |

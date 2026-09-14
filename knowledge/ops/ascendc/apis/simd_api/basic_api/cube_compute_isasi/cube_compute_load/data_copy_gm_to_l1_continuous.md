@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_GMToL1_continuous.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -59,7 +59,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 
 **图1** 连续搬运示意图<a id="zh-cn_topic_0000002535739034_fig79455329161"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/continuous_data_copy_diagram.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/continuous_data_copy_diagram.png)
 
 ## 数据类型<a id="zh-cn_topic_0000002535739034_section4219135304818"></a>
 
@@ -103,7 +103,7 @@ __aicore__ inline void DataCopy(const LocalTensor<T>& dst, const GlobalTensor<T>
 - 调用连续搬运接口时，count * sizeof(T)需要32字节对齐，若未对齐，则搬运量会向下取整到32字节对齐。
 - 如果需要执行多个DataCopy指令，且DataCopy的目的地址存在重叠，需要通过调用[PipeBarrier\(ISASI\)](../../sync_control/intra_core_sync/pipe_barrier_isasi.md)来插入同步指令，保证多个DataCopy指令的串行化，防止出现异常数据。如下图左侧示意图，执行两个DataCopy指令，搬运的目的GM地址存在重叠，两条搬运指令之间需要通过调用PipeBarrier<PIPE\_MTE3\>\(\)添加MTE3搬出流水的同步；如下图右侧示意图所示，搬运的目的地址Unified Buffer（UB）存在重叠，两条搬运指令之间需要调用PipeBarrier<PIPE\_MTE2\>\(\)添加MTE2搬入流水的同步。
 
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/datacopy_constraints.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/datacopy_constraints.png)
 
 
 - 针对如下产品型号：

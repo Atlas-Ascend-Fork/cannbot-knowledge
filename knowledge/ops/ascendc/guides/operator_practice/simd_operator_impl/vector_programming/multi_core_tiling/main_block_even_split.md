@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/vector_programming/multi_core_tiling/main_block_even_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -20,9 +20,9 @@ platforms: []
 
 **图 1**  数据切分示意图
 
-![数据切分示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/maintile_even.png "数据切分示意图")
+![数据切分示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/maintile_even.png "数据切分示意图")
 
-本场景样例的完整代码请参考[场景0：主块均分](https://gitcode.com/cann/asc-devkit/blob/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/02_features/02_tiling_selector/vector_tiling_strategy/README.md#scenario0-main-tile-only)。样例中固定使用8个核，主块长度`mainTileLength`为3200个`half`元素，数据整体长度为256000个`half`元素。数据平均分配到8个核上处理，每个核计算32000个元素；每个核内共切分成10个主块，不涉及尾块和尾核处理。
+本场景样例的完整代码请参考[场景0：主块均分](https://gitcode.com/cann/asc-devkit/blob/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/02_features/02_tiling_selector/vector_tiling_strategy/README.md#scenario0-main-tile-only)。样例中固定使用8个核，主块长度`mainTileLength`为3200个`half`元素，数据整体长度为256000个`half`元素。数据平均分配到8个核上处理，每个核计算32000个元素；每个核内共切分成10个主块，不涉及尾块和尾核处理。
 
 ## Tiling实现
 

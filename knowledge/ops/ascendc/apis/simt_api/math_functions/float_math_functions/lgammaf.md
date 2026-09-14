@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/float_math_functions/lgammaf.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -22,9 +22,11 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"simt_api/math_functions.h"`。
+
 获取输入数据x伽马值的绝对值并求自然对数。
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002484776424.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002484776424.png)
 
 ## 函数原型
 
@@ -55,19 +57,13 @@ inline float lgammaf(float x)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/math_functions.h`头文件。
-
-```cpp
-#include "simt_api/math_functions.h"
-```
-
 ## 调用示例
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/math_functions.h"
+
     __global__ __launch_bounds__(256) void compute_lgammaf(float *result, const float *x, uint32_t count)
     {
         const uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -81,6 +77,8 @@ inline float lgammaf(float x)
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/math_functions.h"
+
     __simt_vf__ __launch_bounds__(256) inline void compute_lgammaf_vf(__gm__ float *result, __gm__ const float *x, uint32_t count)
     {
         const uint32_t idx = blockIdx.x * blockDim.x + threadIdx.x;

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/grid_group/grid_group_intro.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/simt_api/cooperative_groups.h
@@ -33,12 +33,6 @@ static unsigned long long num_blocks();
 static dim3 dim_blocks();
 static dim3 group_dim();
 static dim3 block_index();
-```
-
-## 需包含的头文件
-
-```cpp
-#include "simt_api/cooperative_groups.h"
 ```
 
 ## 约束说明

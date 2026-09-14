@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move_aux_config/SetLoopModePara.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -73,10 +73,10 @@ __aicore__ inline void SetLoopModePara(const LoopModeParams& loopParams, DataCop
 - 使用以上配置，调用SetLoopModePara再调用DataCopyPad就可以开启DataCopyPad的loop模式完成数据类型为int8\_t的数据块大小为384的数据搬运。详细图解如下：
 
 **图1**  源操作数搬运场景示例<a name="fig6671114911311"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/source_operand_transfer_scenario.png "源操作数搬运场景示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/source_operand_transfer_scenario.png "源操作数搬运场景示例")
 
 **图2**  目的操作数搬运场景示例<a name="fig226181311513"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/destination_operand_transfer_scenario.png "目的操作数搬运场景示例")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/destination_operand_transfer_scenario.png "目的操作数搬运场景示例")
 
 ## 返回值说明<a name="section640mcpsimp"></a>
 
@@ -164,7 +164,7 @@ __aicore__ inline void SetLoopModePara(const LoopModeParams& loopParams, DataCop
     AscendC::ResetLoopModePara(AscendC::DataCopyMVType::OUT_TO_UB);
     ```
 
-完整样例请参考[DataCopyPad样例场景4、5、6](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_pad_gm2ub_ub2gm)。
+完整样例请参考[DataCopyPad样例场景4、5、6](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_pad_gm2ub_ub2gm)。
 
 
 - [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)

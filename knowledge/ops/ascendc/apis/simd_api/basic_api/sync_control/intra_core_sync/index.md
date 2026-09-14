@@ -8,7 +8,7 @@
 - [Mutex(ISASI)](mutex_isasi.md)：Mutex用于核内异步流水指令之间的同步控制，其功能类似于传统CPU中的锁机制。通过先锁定再释放指定流水来完成流水间的同步依赖，锁定/解锁指定流水对应Lock/Unlock接口。
 - [PipeBarrier](pipe_barrier_isasi.md)：完成同一流水线内的同步控制，保证前序指令中所有数据的读写工作全部完成后，后序指令才能执行。
 - [ReleaseMutexID](release_mutex_id_isasi.md)：从框架释放一个MutexID，与AllocMutexID配合使用，防止MutexID耗尽。
-- [SetFlag/WaitFlag](set_flag_wait_flag.md)：同一核内不同流水线之间的同步指令，SetFlag设置硬件标志位，WaitFlag等待并清除标志位，用于具有数据依赖的不同流水指令间同步。
 - [SetFlag/WaitFlag](set_flag_wait_flag_isasi.md)：核内多流水间同步指令，SetFlag在源流水前序指令完成后设置硬件标志位，WaitFlag在目的流水等待标志位并清除，标注为ISASI类别，不保证跨硬件版本兼容。
-- [TQueSync](t_que_sync_template_params.md)：TQueSync类的模板参数，用于指定源流水和目标流水，目的流水等待源流水，配合SetFlag/WaitFlag实现跨硬件版本兼容的核内同步。
 - [Unlock](unlock.md)：当前流水的前序指令执行完成后，根据MutexID释放对应Mutex，需与Lock接口严格成对使用。
+
+- [TQueSync](t_que_sync.md)：头文件路径为："basic_api/kernel_operator_block_sync_intf.h"。

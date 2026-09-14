@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/reg_data_store/StoreAlign_continuous.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -44,7 +44,7 @@ RegTensor的模板参数regTrait支持RegTraitNumOne及RegTraitNumTwo，具体�
 
 **图 1**  数据搬出分布模式图示<a id="fig-storealign-dist"></a>
 
-![图1 数据搬出分布模式图示](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_storealign_1.png)
+![图1 数据搬出分布模式图示](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_storealign_1.png)
 
 连续对齐搬入/搬出的三类搬运接口在迭代内调用方式请参考：[关键特性说明](#关键特性说明)。
 
@@ -166,6 +166,7 @@ RegTensor的模板参数regTrait支持RegTraitNumOne及RegTraitNumTwo，具体�
 - 当RegTrait为RegTraitNumOne时，单搬出正常模式（DIST_NORM）下，若目的UB的剩余空间不足256B，需要配置mask，保证搬出的有效元素数据量不大于UB剩余空间，且UB剩余空间不得小于32B。
 - 单搬出模式：b64数据类型只支持StoreDist中的DIST_NORM和DIST_PACK_B64模式。
 - 当RegTensor模板参数RegTrait为RegTraitNumOne和RegTraitNumTwo时，支持情况如下：
+
     | RegTensor模板参数RegTrait取值 | 支持的接口 | 支持的数据类型 |
     |-----|-----|-----|
     | RegTraitNumOne | 所有单搬出接口和双搬出接口 | b8/b16/b32/b64 |
@@ -183,7 +184,7 @@ RegTensor的模板参数regTrait支持RegTraitNumOne及RegTraitNumTwo，具体�
 
 **图 2**  regTrait为RegTraitNumOne时的三类搬运模式调用方式<a id="fig-storealign-regtrait"></a>
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_loadstorealign.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_loadstorealign.png)
 
 ## 调用示例<a name="section5497339111410"></a>
 

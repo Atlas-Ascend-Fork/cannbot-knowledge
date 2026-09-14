@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_index/asc_arange.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_index.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_arange
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_index.h"`。
 
 以传入的`value`为起始值，生成递增/递减的索引，并将生成的索引保存在`dst`中，[Vector Length (VL)](../../defs/type/data_type_definition.md)表示矢量数据寄存器的位宽，`VL_T`表示该寄存器可存储的元素数量。算法逻辑表示如下：
 

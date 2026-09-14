@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/c_pointer_programming/reg_vector_computation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -75,7 +75,7 @@ Reg矢量执行单元、DMA单元和Aux Scalar虽属于不同的硬件执行单�
 
 **图1** SIMD Reg矢量执行关系
 
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_exec.png" title="Reg执行单元" style="zoom:80%;"/>
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_exec.png" title="Reg执行单元" style="zoom:80%;"/>
 
 ### 内存层级
 
@@ -83,7 +83,7 @@ AIV的内存层级如下：
 
 **图2** 内存层级关系
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_mem.png "Reg内存层级")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_mem.png "Reg内存层级")
 
 在如上的SIMD架构中，UB和寄存器均为每个AIV核内独享的存储空间。其中寄存器不支持从GM直接加载数据或者直接将数据写出到GM。当需要读取GM数据到寄存器时，必须先从GM搬运到UB，再将UB上的数据搬入到寄存器。当需要写出寄存器数据到GM时，必须先将寄存器上的数据搬出到UB上，再从UB搬运到GM。
 
@@ -105,7 +105,7 @@ AIV的内存层级如下：
 
 **图3** Regbase编程总体结构
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_model.png "Regbase编程模型总体结构")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_model.png "Regbase编程模型总体结构")
 
 ### VF函数与执行域
 
@@ -131,7 +131,7 @@ Reg矢量计算编程模型中`Load` -> `Compute`  ->`Store`的执行过程，�
 
 **图4** 函数标签调用关系
 
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_calculation_call_hierarchy.png" title="调用层级" style="zoom: 28%;"/>
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_calculation_call_hierarchy.png" title="调用层级" style="zoom: 28%;"/>
 
 一个完整的实现由外层`__aicore__`逻辑和内层`__simd_vf__`逻辑两部分组成：
 
@@ -325,7 +325,7 @@ asc_load(vreg1, ub_addr);
 
 **图5** 流水线同步示意
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sync_pipe_1.png "流水线同步")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sync_pipe_1.png "流水线同步")
 
 > 📌 **提示**：在`asc_vf_call`调用VF函数后，外层无需关注PIPE_V的Barrier；VF函数退出时，所有内部Reg矢量指令均已执行完成。
 
@@ -441,44 +441,44 @@ for (uint16_t i = 0; i < repeat_times; ++i) {
 
 **图6** 非对齐搬入预期
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_read_1.png "Reg非对齐读1")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_read_1.png "Reg非对齐读1")
 
 1. 先使用非对齐的UB地址初始化`vector_load_unalign`，会将UB地址截断到32B对齐地址32，再将一个DataBlock 32B数据搬入到`vector_load_unalign`.
 
    **图7**  初始化`vector_load_unalign`
 
-   ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_read_2.png "Reg非对齐读2")
+   ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_read_2.png "Reg非对齐读2")
 
 2. 调用`asc_loadunalign`搬运数据，从原非对齐UB地址向上对齐到32B后，搬入240B数据，与`vector_load_unalign`中的部分数据拼接成预期读入256B数据后，写入矢量数据寄存器。同时将`vector_load_unalign`内的数据更新为下一次读取UB地址非对齐对应的DataBlock 32B.
 
    **图8**  读入预期数据
 
-   ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_read_4.png "Reg非对齐读4")
+   ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_read_4.png "Reg非对齐读4")
 
 **非对齐搬出**由[`asc_storeunalign`](../../../../../apis/simd_api/c_api/reg_compute/store/asc_storeunalign.md)和[`asc_storeunalign_post`](../../../../../apis/simd_api/c_api/reg_compute/store/asc_storeunalign_post.md)组合完成：循环内使用`asc_storeunalign`搬运，循环结束后由`asc_storeunalign_post`将`vector_store_unalign`中的尾部数据搬出到UB。
 例如在[NPU架构版本3510](../../../language_extension/simd_builtin_keywords.md)，当想要搬出如下UB地址为48开始的512Bytes数据时：
 
 **图9** 非对齐搬出预期
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_write_0.png "Reg非对齐写0")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_write_0.png "Reg非对齐写0")
 
 1. 先使用`asc_storeunalign`，首次循环时：将尾部对齐到32B的长度为240B的矢量数据寄存器数据写入UB，同时将剩余的16B写入`vector_store_unalign`; 
 
    **图10** 第一次写出预期数据
 
-   ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_write_1.png "Reg非对齐写1")
+   ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_write_1.png "Reg非对齐写1")
 
 2. 当第二次循环时：将暂存在`vector_store_unalign`中的16B数据，与本次循环需要写出的矢量数据寄存器中的240B拼接成256B数据后，写出到UB。同时将本次循环中剩余的16B更新写入`vector_store_unalign`; 
 
    **图11** 第二次写出预期数据
 
-   ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_write_2.png "Reg非对齐写2")
+   ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_write_2.png "Reg非对齐写2")
 
 3. 调用`asc_storeunalign_post`将`vector_store_unalign`缓存中尚未写出的尾部数据刷回UB.
 
    **图12** 剩余数据写出
 
-   ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reg_write_3.png "Reg非对齐写3")
+   ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reg_write_3.png "Reg非对齐写3")
 
 推荐写法是把初始化和后处理放在循环外，循环体内只保留连续搬运和计算：
 

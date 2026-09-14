@@ -11,14 +11,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/thread_block_tile/shfl_xor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
+source_headers:
+- include/simt_api/cooperative_groups.h
 ---
 
 # shfl_xor
 
 ## 功能说明
+
+头文件路径为：`"simt_api/cooperative_groups.h"`。
 
 将当前线程的rank与`lane_mask`进行按位异或运算得到的rank，获取该rank的线程输入的`var`值。
 
@@ -52,11 +56,13 @@ T shfl_xor(T var, unsigned int lane_mask) const
 以4个线程为一组划分线程块，获取组内当前线程rank与`lane_mask`按位异或后对应rank线程输入的`var`值。
 
 **图1**  shfl_xor接口返回结果示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/thread_block_tile_shfl_xor.png "thread_block_tile_shfl_xor")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/thread_block_tile_shfl_xor.png "thread_block_tile_shfl_xor")
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/cooperative_groups.h"
+
     using namespace cooperative_groups;
     __global__ void simt_kernel(...)
     {
@@ -71,6 +77,8 @@ T shfl_xor(T var, unsigned int lane_mask) const
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/cooperative_groups.h"
+
     using namespace cooperative_groups;
     __simt_vf__ inline void simt_kernel(...)
     {

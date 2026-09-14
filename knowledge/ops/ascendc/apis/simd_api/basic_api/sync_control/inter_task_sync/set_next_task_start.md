@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_task_sync/SetNextTaskStart.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a3
@@ -37,7 +37,7 @@ SuperKernel是一种算子的二进制融合技术，与源码融合不同，它
 **开发者需要自行保证调用此接口后的指令不会与后序算子互相干扰而导致精度问题，推荐在整个算子最后一条搬运指令后调用此接口。**
 
 **图1**  通过SetNextTaskStart实现并行示意图<a name="fig37581010773"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/set_next_task_start_parallel_diagram.png "通过SetNextTaskStart实现并行示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/set_next_task_start_parallel_diagram.png "通过SetNextTaskStart实现并行示意图")
 
 ## 函数原型<a name="section620mcpsimp"></a>
 
@@ -126,7 +126,7 @@ AscendC::DataCopy(dstGlobal, dstLocal, TOTAL_LENGTH);
 AscendC::SetNextTaskStart();
 ```
 
-完整样例请参考[TaskSync样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/task_sync)。
+完整样例请参考[TaskSync样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/task_sync)。
 
 
 - [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)

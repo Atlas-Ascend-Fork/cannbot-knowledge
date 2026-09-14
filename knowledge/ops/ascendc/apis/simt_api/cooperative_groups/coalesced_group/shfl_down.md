@@ -11,14 +11,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/cooperative_groups/coalesced_group/shfl_down.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
+source_headers:
+- include/simt_api/cooperative_groups.h
 ---
 
 # shfl_down
 
 ## 功能说明
+
+头文件路径为：`"simt_api/cooperative_groups.h"`。
 
 获取`coalesced_group`组内当前线程向后偏移`delta`的线程的数据。
 
@@ -51,11 +55,13 @@ T shfl_down(T var, unsigned int delta) const
 示例代码中的条件分支将一个Warp中所有线程id是偶数的线程组成`coalesced_group`协作组，组内各线程`shfl_down`接口返回结果如下图所示。
 
 **图1**  shfl_down结果示意图  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/coalesced_group_shfl_down.png "shfl_down结果示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/coalesced_group_shfl_down.png "shfl_down结果示意图")
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/cooperative_groups.h"
+
     using namespace cooperative_groups;
     __global__ void simt_kernel(...)
     {
@@ -71,6 +77,8 @@ T shfl_down(T var, unsigned int delta) const
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/cooperative_groups.h"
+
     using namespace cooperative_groups;
     __simt_vf__ inline void simt_kernel(...)
     {

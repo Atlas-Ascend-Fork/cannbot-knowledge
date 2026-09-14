@@ -10,15 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_permute_sel/asc_squeeze.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
+source_headers:
+- include/c_api/vector_compute/compute/vector_permute_sel.h
 ---
 
 # asc_squeeze
 
 ## 功能说明
+
+头文件路径为：`"c_api/vector_compute/compute/vector_permute_sel.h"`。
 
 通过比较掩码src1，将src0中的向量压缩成更短的向量，存储到dst中。
 

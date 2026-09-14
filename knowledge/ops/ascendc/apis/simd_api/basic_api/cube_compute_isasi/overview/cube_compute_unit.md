@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/overview/cube_compute_unit.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -26,12 +26,12 @@ Cube计算单元专用于执行矩阵运算，直接访问的专用缓存如下�
 
 
 **图1** [NPU架构版本2201](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)矩阵计算单元架构图<a name="zh-cn_topic_0000002513373312_fig88330137205"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/architecture_of_cube_compute_unit_a2a3.png "矩阵计算单元架构图-A2A3")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/architecture_of_cube_compute_unit_a2a3.png "矩阵计算单元架构图-A2A3")
 
 
 
 **图2** [NPU架构版本3510](../../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)矩阵计算单元架构图<a name="zh-cn_topic_0000002513373312_fig1082103513519"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/npu_3510_hw_arch_cube.png "矩阵计算单元架构图-950")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/npu_3510_hw_arch_cube.png "矩阵计算单元架构图-950")
 
 
 矩阵计算关联的存储单元为：

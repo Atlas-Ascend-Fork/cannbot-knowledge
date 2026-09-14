@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/debug_interface/cpu_twin_debug/SetKernelMode.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -37,6 +37,7 @@ void SetKernelMode(KernelMode mode)
 ```
 
 ## 参数说明<a name="zh-cn_topic_0000001963639310_zh-cn_topic_0000001656094169_section158061867342"></a>
+
 | 参数名称 | 输入/输出 | 描述 |
 | ------ | ------ | ------ |
 | mode | 输入 | 内核模式，用于AIC/AIV/MIX算子的CPU调试。<br>enum class KernelMode {&#10;    MIX_MODE = 0,&#10;    AIC_MODE,&#10;    AIV_MODE&#10;}; |

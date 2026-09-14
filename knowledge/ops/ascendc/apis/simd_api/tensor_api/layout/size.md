@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/size.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -61,5 +61,5 @@ Is...必须为有效范围内的索引。
    using namespace asc::te;
 
   auto layout = make_layout(make_shape(10, 20), make_stride(1, 100));
-  auto size = size(layout); //size = 200
+  auto size_result = size(layout); // size_result = 200
   ```

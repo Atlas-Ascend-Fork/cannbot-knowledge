@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/LoadData_2D_V2.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -84,7 +84,7 @@ LoadData2DParamsV2结构体在不启用转置时，示意图如下，参数设�
 
 **图1** LoadData2DParamsV2结构体参数示例（以half数据类型，不启用转置为例）
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/loaddata2dparamsv2_half_no_transpose.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/loaddata2dparamsv2_half_no_transpose.png)
 
 ## 数据类型
 
@@ -121,7 +121,7 @@ $$
 
 **图2** 搬运起始位置示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_start_addr_demo.png "搬运起始位置示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_start_addr_demo.png "搬运起始位置示意图")
 
 ### 转置场景搬入
 
@@ -136,23 +136,23 @@ $$
 
 **图3** b4数据类型转置示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0_trans_b4.png "b4数据类型转置示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0_trans_b4.png "b4数据类型转置示意图")
 
 **图4** b8数据类型转置示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0_trans_b8.png "b8数据类型转置示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0_trans_b8.png "b8数据类型转置示意图")
 
 **图5** b16数据类型转置示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0_trans_b16.png "b16数据类型转置示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0_trans_b16.png "b16数据类型转置示意图")
 
 **图6** b32数据类型转置示意图
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/load2dv2_l12l0_trans_b32.png "b32数据类型转置示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/load2dv2_l12l0_trans_b32.png "b32数据类型转置示意图")
 
 ## 调用示例
 
-示例代码片段如下，仅展示样例中的部分代码，完整使用样例请参见[LoadData（2D矩阵搬运V2）样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_2dv2_l12l0)。
+示例代码片段如下，仅展示样例中的部分代码，完整使用样例请参见[LoadData（2D矩阵搬运V2）样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/03_matrix_compute/load_data_2dv2_l12l0)。
 
 ```cpp
 // LoadData: Nz -> Nz

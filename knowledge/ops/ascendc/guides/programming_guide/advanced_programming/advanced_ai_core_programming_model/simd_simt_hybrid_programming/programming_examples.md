@@ -10,13 +10,13 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/programming_examples.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
 # 编程示例<a name="ZH-CN_TOPIC_0000002563469531"></a>
 
-本节以[gather & adds混合编程样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/05_simd_simt_hybrid/00_introduction/simd_simt_gather_and_adds)为例，展示SIMD与SIMT混合编程的关键语法。
+本节以[gather & adds混合编程样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/05_simd_simt_hybrid/00_introduction/simd_simt_gather_and_adds)为例，展示SIMD与SIMT混合编程的关键语法。
 
 ## 场景说明<a name="zh-cn_topic_0000002563469531_section164411381518"></a>
 

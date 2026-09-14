@@ -8,3 +8,5 @@
 - [threadblock](thread_block/index.md)：获取当前线程所属线程块的线程配置，返回值与内置变量blockDim相同。
 - [threadblocktile](thread_block_tile/index.md)：判断thread_block_tile组内所有线程的输入是否均不为0。
 - [tiled_partition](tiled_partition.md)：将线程组划分为多个更小、固定大小的子组，提供模板和非模板版本，分别用于编译时和运行时确定划分大小，模板版本支持跨Warp。
+
+- [thread group](thread_group/index.md)：头文件路径为："simt_api/cooperative_groups.h"。

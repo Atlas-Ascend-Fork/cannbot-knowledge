@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/super_kernel/operator_adaptation.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -55,7 +55,7 @@ platforms: []
 
 Cache刷新机制示意图如下图所示：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/sk_dcci.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/sk_dcci.png)
 
 ## 核数获取接口约束
 
@@ -140,12 +140,12 @@ Cache刷新机制示意图如下图所示：
     - 调用`SetNextTaskStart`后的指令可以和后续其他的子核函数（Kernel）实现并行，提升整体性能。如[图1](#fig37581010773)所示，SuperKernel按序调用子核函数（Kernel），为保证子核函数（Kernel）之间数据互不干扰，会在子核函数（Kernel）间插入算子间同步进行保序，子核函数（Kernel）<sub>N-1</sub>调用该接口后，之后的指令会和后续子核函数（Kernel）<sub>N</sub>实现并行。
 
     **图1**  通过SetNextTaskStart实现并行示意图<a name="fig37581010773"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/set_next.png "通过SetNextTaskStart实现并行示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/set_next.png "通过SetNextTaskStart实现并行示意图")
 
     - 调用`WaitPreTaskEnd`前的指令可以和前序其他的子核函数（Kernel）实现并行，提升整体性能。如[图2](#fig99271836191110)所示，SuperKernel按序调用子核函数（Kernel），为保证子核函数（Kernel）之间数据互不干扰，会在子核函数（Kernel）间插入算子间同步进行保序，子核函数（Kernel）<sub>N+1</sub>调用该接口之前的指令会和前序子核函数（Kernel）<sub>N</sub>实现并行。
 
     **图2**  通过WaitPreTaskEnd实现并行示意图<a name="fig99271836191110"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/wait_pre.png "通过WaitPreTaskEnd实现并行示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/wait_pre.png "通过WaitPreTaskEnd实现并行示意图")
 
 - **二进制复用优化**
 

@@ -10,15 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_gather/asc_gather_datablock.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
+source_headers:
+- include/c_api/vector_compute/compute/vector_gather.h
 ---
 
 # asc_gather_datablock
 
 ## 功能说明
+
+头文件路径为：`"c_api/vector_compute/compute/vector_gather.h"`。
 
 给定一个输入的矢量和一个地址偏移矢量，根据偏移地址按照DataBlock的粒度将输入矢量收集到目的矢量中。
 
@@ -29,13 +33,6 @@ platforms:
   ```cpp
   __aicore__ inline void asc_gather_datablock(__ubuf__ uint16_t* dst, __ubuf__ uint16_t* src, __ubuf__ uint32_t* src_offset, uint16_t dst_repeat_stride, uint8_t dst_block_stride, uint8_t repeat)
   __aicore__ inline void asc_gather_datablock(__ubuf__ uint32_t* dst, __ubuf__ uint32_t* src, __ubuf__ uint32_t* src_offset, uint16_t dst_repeat_stride, uint8_t dst_block_stride, uint8_t repeat)
-  ```
-
-- 同步计算
-
-  ```cpp
-  __aicore__ inline void asc_gather_datablock_sync(__ubuf__ uint16_t* dst, __ubuf__ uint16_t* src, __ubuf__ uint32_t* src_offset, uint16_t dst_repeat_stride, uint8_t dst_block_stride, uint8_t repeat)
-  __aicore__ inline void asc_gather_datablock_sync(__ubuf__ uint32_t* dst, __ubuf__ uint32_t* src, __ubuf__ uint32_t* src_offset, uint16_t dst_repeat_stride, uint8_t dst_block_stride, uint8_t repeat)
   ```
 
 ## 参数说明
@@ -74,6 +71,6 @@ __ubuf__ uint32_t dst[total_length];
 __ubuf__ uint32_t src[total_length];
 asc_gather_datablock(dst, src, src_offset, 8, 1, 2);
 // src [1, 2, 3, ..., 126, 127, 128] 128个uint32_t类型数据
-// src_offset [0, 32, 64, ..., 416, 448, 480] 
+// src_offset [0, 32, 64, ..., 416, 448, 480]
 // dst [1, 2, 3, ..., 126, 127, 128]
 ```

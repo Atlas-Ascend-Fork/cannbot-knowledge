@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/compare_and_select/Squeeze.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -28,7 +28,7 @@ source_headers:
 
 **图1**  Squeeze计算示意图<a id="figure1"></a>
 
-![Squeeze计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/reg_squeeze.png)
+![Squeeze计算示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/reg_squeeze.png)
 
 特别地，当模板参数store取值为`GatherMaskMode::STORE_REG`时，`Squeeze`会将有效元素的总字节数存入[AR特殊寄存器](../../special_register_access/get_spr.md#table37531617424)。此时配合使用[连续非对齐搬出](../reg_data_store/store_un_align_continuous.md)的场景3接口（无需显式传入偏移量），`StoreUnAlign`会自动从AR寄存器读取有效字节数作为地址偏移，参考[调用示例](#调用示例)。
 

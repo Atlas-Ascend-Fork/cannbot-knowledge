@@ -16,7 +16,9 @@ DRAFT-*.md + manifest.json）。簇特征取自 manifest 候选的内部 taxonom
       "trace_ids": [...], "type": "...", "knowledge_form": "...", "phenomenon": "...", "solution_layer": "...",
       "signals": [...], "root_cause": "<根因句>", "cross_trace": <int>}], "unclustered": [...]}
 
-相似度 = 0.5*Jaccard(signal 词) + 0.5*Jaccard(根因 bigram)；阈值默认 0.35。
+同 knowledge_form 才比较：phenomenon 与 solution_layer 相同加 0.2，
+再加 0.4*Jaccard(signal 词) + 0.4*Jaccard(根因 bigram)；阈值默认 0.35。
+cross_trace 只统计 staging 目录的 trace_id；实际复现数须按已核验 raw 来源去重。
 漏并后果轻（同 nugget 落两次 → 下次 upgrade 合并）；误并由 curator 判定时拆出。
 """
 import argparse

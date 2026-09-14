@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_quant_dequant.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -23,12 +23,12 @@ platforms: []
 -   Matmul量化场景：Matmul计算时左矩阵A、右矩阵B为half或bfloat16\_t数据类型，输出C矩阵为int8\_t数据类型。该场景下，C矩阵的数据从L0C Buffer（CO1）搬出到Global Memory时，会执行量化操作，将最终结果量化为int8\_t类型，如下图所示。
 
     **图1**  Matmul量化场景示意图  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mm_quant.png "Matmul量化场景示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mm_quant.png "Matmul量化场景示意图")
 
 -   Matmul反量化场景：Matmul计算时左矩阵A、右矩阵B为int8\_t或int4b\_t数据类型，输出C矩阵为half数据类型，或者左矩阵A、右矩阵B为int8\_t数据类型，输出C矩阵为int8\_t数据类型。该场景下，C矩阵的数据从L0C Buffer（CO1）搬出到Global Memory时，会执行反量化操作，将最终结果反量化为对应的half类型或int8\_t类型，如下图所示。
 
     **图2**  Matmul反量化场景示意图  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mm_dequant.png "Matmul反量化场景示意图")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mm_dequant.png "Matmul反量化场景示意图")
 
 Matmul量化/反量化包含两种模式：同一系数的量化/反量化模式、向量的量化/反量化模式，开发者在算子Tiling侧调用[SetDequantType](../../../../../apis/simd_api/adv_api/cube_compute/matmul_tiling/set_dequant_type.md)接口设置量化或反量化模式，这两种模式的具体区别为：
 
@@ -49,6 +49,7 @@ Matmul量化/反量化包含两种模式：同一系数的量化/反量化模式
 **表2**  Matmul量化/反量化支持的数据类型
 
 <a name="zh-cn_topic_0000002298767893_table1996113269499"></a>
+
 | A矩阵 | B矩阵 | C矩阵 | 支持平台 |
 | --- | --- | --- | --- |
 | half | half | int8_t |  |
@@ -72,7 +73,7 @@ Matmul量化/反量化包含两种模式：同一系数的量化/反量化模式
 
 ## 调用示例
 
-完整的算子样例请参考[matmul\_quant样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_quant)。
+完整的算子样例请参考[matmul\_quant样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_quant)。
 
 -   Tiling实现
 

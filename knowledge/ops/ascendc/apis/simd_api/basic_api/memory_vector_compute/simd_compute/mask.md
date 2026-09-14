@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/SIMD_compute/mask.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -36,7 +36,7 @@ Mask（掩码）是Ascend C中用于控制数据元素是否参与计算的标�
 基于Tensor前n个数计算及高维切分接口的Mask应用机制如[图1掩码机制说明](#图1-掩码机制说明)所示。
 
 **图1**  掩码机制说明  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/mask_mechanism.png)<a id="图1-掩码机制说明"></a>
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/mask_mechanism.png)<a id="图1-掩码机制说明"></a>
 
 > [!NOTE]说明
 >
@@ -87,7 +87,7 @@ Mask操作的使用方式如下：
 用户需根据接口使用场景和参数配置正确选择掩码配置方式，如[图2 两种配置方式代码对比](#图2-两种配置方式代码对比)所示：
 
 **图2**  两种配置方式代码对比  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/two_config_comparison.png)<a id="图2-两种配置方式代码对比"></a>
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/two_config_comparison.png)<a id="图2-两种配置方式代码对比"></a>
 
 > [!CAUTION]注意：
 >
@@ -114,7 +114,7 @@ Mask操作的使用方式如下：
     如图3所示，采用Counter模式进行前n个数据计算，通过count参数指定参与计算的元素数量为128，接口内部会自动完成Mask的设置。
 
     **图3**  Counter模式进行前n个数据计算示例  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/counter_first_n_calc.png)<a id="图3-counter模式进行前n个数据计算示例"></a>
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/counter_first_n_calc.png)<a id="图3-counter模式进行前n个数据计算示例"></a>
 
 - **高维切分：连续计算**
 
@@ -135,7 +135,7 @@ Mask操作的使用方式如下：
     如图4所示，采用Counter模式下的高维切分连续计算接口，mask数组中仅低64bit有效，表示参与计算的元素总数为130。该模式接口内部的repeatTimes参数无效，系统根据mask值自动计算迭代次数。repeatParams参数配置表示DataBlock间存在间隔，迭代间连续。
 
     **图4**  Counter模式进行高维切分连续计算示例  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/counter_high_dim_continuous.png)<a id="图4-counter模式进行高维切分连续计算示例"></a>
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/counter_high_dim_continuous.png)<a id="图4-counter模式进行高维切分连续计算示例"></a>
 
 ### Normal模式
 
@@ -158,7 +158,7 @@ Mask操作的使用方式如下：
     如图5所示，采用Normal模式进行逐bit计算时，mask参数以位数组形式控制每个元素是否参与计算，详细展示了第一个DataBlock中元素的计算过程。repeatParams参数配置表示DataBlock间存在间隔，迭代间连续。
 
     **图5**  Normal模式高维切分逐bit计算示例  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/normal_high_dim_bitwise.png)<a id="图5-normal模式高维切分逐bit计算示例"></a>
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/normal_high_dim_bitwise.png)<a id="图5-normal模式高维切分逐bit计算示例"></a>
 
 - **高维切分：连续计算**
 
@@ -175,7 +175,7 @@ Mask操作的使用方式如下：
     如图6所示，采用Normal模式进行连续计算时，mask参数表示迭代内连续参与计算的元素数量为128。repeatParams参数配置表示DataBlock间存在间隔，迭代间连续。
 
     **图6**  Normal模式进行高维切分连续计算示例  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/normal_high_dim_continuous.png)<a id="图6-normal模式进行高维切分连续计算示例"></a>
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/normal_high_dim_continuous.png)<a id="图6-normal模式进行高维切分连续计算示例"></a>
 
 > [!NOTE]说明
 > 
@@ -202,7 +202,7 @@ Mask操作的使用方式如下：
     ```
 
     **图7**  接口外设置Mask，Counter模式前n个数据计算示例  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/external_counter_first_n.png)<a id="图7-接口外设置Mask-counter模式前n个数据计算示例"></a>
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/external_counter_first_n.png)<a id="图7-接口外设置Mask-counter模式前n个数据计算示例"></a>
 
 - **高维切分：连续计算**
 
@@ -223,7 +223,7 @@ Mask操作的使用方式如下：
     ```
 
     **图8**  接口外设置Mask，Counter模式连续计算示例  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/external_counter_continuous.png)<a id="图8-接口外设置Mask-counter模式连续计算示例"></a>
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/external_counter_continuous.png)<a id="图8-接口外设置Mask-counter模式连续计算示例"></a>
 
 ### Normal模式
 
@@ -247,7 +247,7 @@ Mask操作的使用方式如下：
     ```
 
     **图9**  接口外设置Mask，Normal模式高维切分逐bit计算示例  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/external_normal_bitwise.png)<a id="图9-接口外设置Mask-normal模式高维切分逐bit计算示例"></a>
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/external_normal_bitwise.png)<a id="图9-接口外设置Mask-normal模式高维切分逐bit计算示例"></a>
 
 - **高维切分：连续计算**
 
@@ -265,7 +265,7 @@ Mask操作的使用方式如下：
     ```
 
     **图10**  接口外设置Mask，Normal模式高维切分连续计算示例  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/external_normal_continuous.png)<a id="图10-接口外设置Mask-normal模式高维切分连续计算示例"></a>
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/external_normal_continuous.png)<a id="图10-接口外设置Mask-normal模式高维切分连续计算示例"></a>
 
 > [!NOTE]说明
 > 

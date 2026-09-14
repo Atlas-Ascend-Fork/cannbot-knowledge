@@ -23,27 +23,27 @@ from pathlib import Path
 
 UPSTREAM_BASE = "https://gitcode.com/cann/asc-devkit/tree/master/docs/zh/"
 FENCE_RE = re.compile(r"^[ \t]*(?P<fence>`{3,}|~{3,})")
-EXPECTED_REPAIRS: dict[str, dict[str, int]] = {
+REPAIR_TOKENS: dict[str, set[str]] = {
     "api/SIMD-API/basic_api/data_structures/GlobalTensor/GlobalTensor_intro.md": {
-        "const": 15,
+        "const",
     },
-    "api/SIMD-API/basic_api/data_structures/GlobalTensor/operator.md": {"const": 2},
+    "api/SIMD-API/basic_api/data_structures/GlobalTensor/operator.md": {"const"},
     "api/SIMD-API/basic_api/data_structures/LocalTensor/LocalTensor_intro.md": {
-        "const": 38,
+        "const",
     },
-    "api/SIMD-API/basic_api/data_structures/LocalTensor/operator.md": {"const": 2},
-    "api/SIMD-API/tensor_api/tensor/tensor.md": {"const": 58, "constexpr": 42},
+    "api/SIMD-API/basic_api/data_structures/LocalTensor/operator.md": {"const"},
+    "api/SIMD-API/tensor_api/tensor/tensor.md": {"const", "constexpr"},
     "guide/operator_practice/simd_operator_impl/fusion_operator_programming/"
-    "general_fusion/operator_impl.md": {"int64_t": 5},
+    "general_fusion/operator_impl.md": {"int64_t"},
     "guide/programming_guide/advanced_programming/ai_framework_adaptation/"
     "tensorflow_framework.md": {
-        "InferenceContext": 2,
-        "InferenceContext*": 1,
-        "InferenceContextPtr": 1,
+        "InferenceContext",
+        "InferenceContext*",
+        "InferenceContextPtr",
     },
     "guide/technical_appendix/cpp_standard_support/syntax_restrictions/features.md": {
-        "float": 3,
-        "float*": 2,
+        "float",
+        "float*",
     },
 }
 
@@ -109,21 +109,22 @@ def _current_directory_urls(text: str, relative: str) -> list[str]:
 
 
 def repair_tree(source_root: Path, *, write: bool) -> int:
-    """Repair the exact registered batch, or verify an already repaired tree."""
+    """Repair known file/token shapes regardless of the rolling archive counts."""
 
     source_root = source_root.resolve()
-    missing = [relative for relative in EXPECTED_REPAIRS if not (source_root / relative).is_file()]
-    if missing:
-        raise ValueError("fixed archive repair inputs are missing: " + ", ".join(missing))
+    if not source_root.is_dir():
+        raise ValueError(f"documentation source root is missing: {source_root}")
 
     transformed: dict[Path, bytes] = {}
     actual: dict[str, dict[str, int]] = {}
     remaining: list[str] = []
-    for relative, expected in EXPECTED_REPAIRS.items():
+    for relative, tokens in REPAIR_TOKENS.items():
         path = source_root / relative
+        if not path.is_file():
+            continue
         raw = path.read_bytes()
         text = raw.decode("utf-8")
-        repaired, counts = _repair_document(text, relative, set(expected))
+        repaired, counts = _repair_document(text, relative, tokens)
         actual[relative] = dict(counts)
         transformed[path] = repaired.encode("utf-8")
 
@@ -136,10 +137,6 @@ def repair_tree(source_root: Path, *, write: bool) -> int:
         )
 
     total = sum(sum(values.values()) for values in actual.values())
-    if total not in {0, sum(sum(values.values()) for values in EXPECTED_REPAIRS.values())}:
-        raise ValueError(f"fixed archive repairs are partial: expected={EXPECTED_REPAIRS} actual={actual}")
-    if total and actual != EXPECTED_REPAIRS:
-        raise ValueError(f"fixed archive repairs do not match the registered batch: expected={EXPECTED_REPAIRS} actual={actual}")
     if remaining:
         raise ValueError(
             "fixed archive still contains current-directory URLs inside code fences: "

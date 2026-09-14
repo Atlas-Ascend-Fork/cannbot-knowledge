@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/integer_math_functions/__mul_i32toi64.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -21,6 +21,8 @@ source_headers:
 # \_\_mul\_i32toi64
 
 ## 功能说明
+
+头文件路径为：`"simt_api/device_functions.h"`。
 
 计算输入32位整数x和y的乘积，返回64位结果。
 
@@ -51,19 +53,13 @@ unsigned long long __mul_i32toi64(unsigned int x, unsigned int y)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/device_functions.h`头文件。
-
-```cpp
-#include "simt_api/device_functions.h"
-```
-
 ## 调用示例
 
 -   SIMT编程场景：
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __global__ __launch_bounds__(1024) void KernelMul_i32toi64(long long* dst, int* x, int* y)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -72,6 +68,8 @@ unsigned long long __mul_i32toi64(unsigned int x, unsigned int y)
     ```
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __global__ __launch_bounds__(1024) void KernelMul_i32toi64(unsigned long long* dst, unsigned int* x, unsigned int* y)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -82,6 +80,8 @@ unsigned long long __mul_i32toi64(unsigned int x, unsigned int y)
 -   SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void KernelMul_i32toi64(__gm__ long long* dst, __gm__ int* x, __gm__ int* y)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -90,6 +90,8 @@ unsigned long long __mul_i32toi64(unsigned int x, unsigned int y)
     ```
 
     ```cpp
+    #include "simt_api/device_functions.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void KernelMul_i32toi64(__gm__ unsigned long long* dst, __gm__ unsigned int* x, __gm__ unsigned int* y)
     {
         int idx = threadIdx.x + blockIdx.x * blockDim.x;

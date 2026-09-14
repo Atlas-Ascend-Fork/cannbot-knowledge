@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__float2half2_rn.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
@@ -20,6 +20,8 @@ source_headers:
 # \_\_float2half2\_rn
 
 ## 功能说明
+
+头文件路径为：`"simt_api/asc_fp16.h"`。
 
 遵循CAST\_RINT模式，将float类型数据转换为half类型后复制到half2的两个分量，返回转换后的half2类型数据。
 
@@ -52,19 +54,13 @@ inline half2 __float2half2_rn(const float x)
 
 无
 
-## 需要包含的头文件
-
-使用该接口需要包含`simt_api/asc_fp16.h`头文件。
-
-```cpp
-#include "simt_api/asc_fp16.h"
-```
-
 ## 调用示例
 
 - SIMT编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     __global__ __launch_bounds__(1024) void kernel___float2half2_rn(half2* dst, float* x, uint32_t input_total_length)
     {
         uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -78,6 +74,8 @@ inline half2 __float2half2_rn(const float x)
 - SIMD与SIMT混合编程场景：
 
     ```cpp
+    #include "simt_api/asc_fp16.h"
+
     __simt_vf__ __launch_bounds__(1024) inline void kernel___float2half2_rn(__gm__ half2* dst, __gm__ float* x, uint32_t input_total_length)
     {
         uint32_t idx = threadIdx.x + blockIdx.x * blockDim.x;

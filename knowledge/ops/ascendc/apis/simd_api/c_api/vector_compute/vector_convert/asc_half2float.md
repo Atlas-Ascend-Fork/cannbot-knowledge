@@ -10,38 +10,36 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_convert/asc_half2float.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
+source_headers:
+- include/c_api/vector_compute/compute/vector_convert.h
 ---
 
 # asc_half2float
 
 ## 功能说明
 
+头文件路径为：`"c_api/vector_compute/compute/vector_convert.h"`。
+
 将half类型转化为float类型，无舍入模式。
 
 ## 函数原型
 
 * 前n个数据计算
-  
+
   ```cpp
   //在转换有精度损失时表示RINT舍入模式，不涉及精度损失时表示不舍入
   __aicore__ inline void asc_half2float(__ubuf__ float* dst, __ubuf__ half* src, uint32_t count)
   ```
+
 - 高维切分计算
-  
+
   ```cpp
   //在转换有精度损失时表示RINT舍入模式，不涉及精度损失时表示不舍入
   __aicore__ inline void asc_half2float(__ubuf__ float* dst, __ubuf__ half* src, uint8_t repeat, uint16_t dst_block_stride, uint16_t src_block_stride, uint16_t dst_repeat_stride, uint16_t src_repeat_stride)
-  ```
-
-- 同步计算
-  
-  ```cpp
-  //在转换有精度损失时表示RINT舍入模式，不涉及精度损失时表示不舍入
-  __aicore__ inline void asc_half2float_sync(__ubuf__ float* dst, __ubuf__ half* src, uint32_t count)
   ```
 
 ## 参数说明

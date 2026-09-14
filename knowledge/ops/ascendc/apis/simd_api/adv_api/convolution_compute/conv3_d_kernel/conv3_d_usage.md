@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/convolution_compute/Conv3D_Kernel/Conv3D_usage.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -19,7 +19,7 @@ platforms: []
 
 Ascend C提供一组Conv3D高阶API，方便用户快速实现3维卷积正向矩阵运算。3维正向卷积的示意图如[图1](#fig198021635102613)，其计算公式为：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/zh-cn_formulaimage_0000002359552057.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/zh-cn_formulaimage_0000002359552057.png)
 
 -   X为Conv3D卷积的特征矩阵Input。
 -   W为Conv3D卷积的权重矩阵Weight。
@@ -27,7 +27,7 @@ Ascend C提供一组Conv3D高阶API，方便用户快速实现3维卷积正向�
 -   Y为完成卷积及偏置操作之后的结果矩阵Output。
 
 **图1**  3维正向卷积示意图<a name="fig198021635102613"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv3d_forward_diagram.png "3维正向卷积示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv3d_forward_diagram.png "3维正向卷积示意图")
 
 > [!NOTE]说明
 >Cin为Input的输入通道大小Channel；Din为Input的Depth维度大小；Hin为Input的Height维度大小；Win为Input的Width维度大小；Cout为Weight、Output的输出通道大小；Dout为Output的Depth维度的大小；Hout为Output的Height维度大小；Wout为Output的Width维度大小；下文中提及的M维度，为卷积正向操作过程中的输入Input在img2col展开后的纵轴，数值上等于Hout \* Wout。
@@ -40,13 +40,13 @@ Ascend C提供一组Conv3D高阶API，方便用户快速实现3维卷积正向�
 -   Dilation代表卷积核三个维度上每个数据的间距，见[图4](#fig1015315044111)。
 
 **图2**  卷积3D正向Padding示意图<a name="fig16852164019363"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv3d_padding.png "卷积3D正向Padding示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv3d_padding.png "卷积3D正向Padding示意图")
 
 **图3**  卷积3D正向Stride示意图<a name="fig137769564018"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv3d_stride.png "卷积3D正向Stride示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv3d_stride.png "卷积3D正向Stride示意图")
 
 **图4**  卷积3D正向Dilation示意图<a name="fig1015315044111"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/conv3d_dilation.png "卷积3D正向Dilation示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/conv3d_dilation.png "卷积3D正向Dilation示意图")
 
 核函数（Kernel）侧实现Conv3D运算的步骤概括为：
 
@@ -130,6 +130,7 @@ Ascend C提供一组Conv3D高阶API，方便用户快速实现3维卷积正向�
     **表1**  ConvType说明
 
     <a name="table19081115275"></a>
+
     | 参数 | 说明 |
     | --- | --- |
     | TPosition | 内存逻辑位置。<br>    Input矩阵可设置为TPosition::GM。<br>Weight矩阵可设置为TPosition::GM。<br>Bias矩阵可设置为TPosition::GM。<br>Output矩阵可设置为TPosition::GM。 |
@@ -143,6 +144,7 @@ Ascend C提供一组Conv3D高阶API，方便用户快速实现3维卷积正向�
     | --- | --- | --- | --- | --- |
     | half | half | half | half |  |
     | bfloat16_t | bfloat16_t | float | bfloat16_t |  |
+
     
 
 2.  初始化操作。

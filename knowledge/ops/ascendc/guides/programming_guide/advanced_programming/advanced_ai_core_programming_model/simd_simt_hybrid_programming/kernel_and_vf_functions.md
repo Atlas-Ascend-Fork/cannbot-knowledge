@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/advanced_programming/advanced_ai_core_programming_model/simd_simt_hybrid_programming/kernel_and_vf_functions.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -21,6 +21,7 @@ SIMD与SIMT混合编程涉及多种类型的函数，它们之间遵循严格的
 SIMD与SIMT混合编程中涉及的函数类型如下表所示：
 
 <a name="zh-cn_topic_0000002571578013_table1818191292017"></a>
+
 | 修饰符 | 函数功能 | 调用方式 |
 | --- | --- | --- |
 | `__global__ __aicore__` | 算子入口，协调VF执行。若只有在AIV核内执行的SIMD与SIMT混合编程场景，可使用__global__ __vector__来标识只启动AIV核。 | Host侧通过`<<<...>>>`调用 |
@@ -40,7 +41,7 @@ SIMD与SIMT混合编程中涉及的函数类型如下表所示：
 - `__callee__`公共函数：可供VF内部调用的公共子函数。`__callee__`函数内只能调用`__callee__`函数。
 
 **图1** SIMD与SIMT混合编程函数调用层级  
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simt_call.png" title="SIMD与SIMT混合编程函数调用层级">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simt_call.png" title="SIMD与SIMT混合编程函数调用层级">
 
 ## 核函数（Kernel）的定义与执行配置<a name="zh-cn_topic_0000002571578013_section156822920311"></a>
 
@@ -53,6 +54,7 @@ __global__ __vector__ void kernel_name(__gm__ type* param1, __gm__ type* param2,
 关键修饰符说明如下：
 
 <a name="zh-cn_topic_0000002571578013_table4811406341"></a>
+
 | 修饰符 | 作用 | 必需性 |
 | --- | --- | --- |
 | `__global__` | 标识核函数（Kernel），表明可在Host侧通过`<<<...>>>`调用 | 必需 |
@@ -73,6 +75,7 @@ kernel_name<<<block_num, dyn_ub_size, stream>>>(args...);
 核函数（Kernel）调用符内的配置参数说明如下：
 
 <a name="zh-cn_topic_0000002571578013_table942016184315"></a>
+
 | 参数 | 类型 | 说明 | 约束 |
 | --- | --- | --- | --- |
 | `block_num` | `uint32_t` | 设置核函数（Kernel）启用的核数 | 取值范围[1, 65535] |
@@ -93,6 +96,7 @@ __simt_vf__ __launch_bounds__(MAX_THREAD_COUNT) inline void function_name(
 SIMT VF函数定义中的关键修饰符说明如下：
 
 <a name="zh-cn_topic_0000002571578013_table7661145014492"></a>
+
 | 修饰符 | 作用 |
 | --- | --- |
 | `__simt_vf__` | 函数标识符，标识SIMT VF函数 |

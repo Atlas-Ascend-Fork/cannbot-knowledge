@@ -11,10 +11,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/load/asc_loadalign_postupdate.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/load/loadalign.h
 - include/c_api/asc_simd.h
 ---
 
@@ -22,10 +23,16 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/reg_compute/load/loadalign.h"`。
+
 从Unified Buffer（UB）中32字节对齐的起始地址读取数据，并搬入矢量数据寄存器或掩码寄存器，搬运过程中数据格式和内容保持不变。接口采用Post Update模式，搬运完成后自动更新源地址指针。本接口提供两种功能模式：
 
 - **立即数偏移搬入模式**：从当前源地址搬入数据，搬入完成后按照指定步长自动更新源地址。
 - **非连续对齐搬入模式**：按照指定的数据块间隔，从当前源地址非连续搬入8个`DataBlock`，每个`DataBlock`的数据量为32字节。搬入完成后按照指定步长自动更新源地址。
+
+**图1** 立即数偏移搬入模式
+
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/capi_loadalign_norm.png)
 
 本接口仅在AIV上生效，非AIV调用直接返回。
 

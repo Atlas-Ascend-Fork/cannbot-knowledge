@@ -10,14 +10,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_int82int16_deprecated.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
+source_headers:
+- include/c_api/reg_compute/reg_convert.h
 ---
 
 # asc_int82int16（废弃）
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/reg_convert.h"`。
 
 **该接口通过接口后缀来控制目的操作数写入位置（仅包括源操作数、目的操作数、掩码寄存器三个参数）的原型已废弃，请使用[asc_int82int16](../reg_compute/reg_convert/asc_int82int16.md)的显式位置参数重载替代。**
 
@@ -56,7 +60,7 @@ __simd_callee__ inline void asc_int82int16_v2(vector_int16_t& dst, vector_int8_t
 
 ## 调用示例
 
- ```cpp
+```cpp
 vector_int16_t dst;
 vector_int8_t src;
 vector_bool mask = asc_create_mask_b8(PAT_ALL);

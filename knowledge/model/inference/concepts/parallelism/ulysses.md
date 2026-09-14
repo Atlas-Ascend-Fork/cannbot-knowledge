@@ -1,7 +1,7 @@
 ---
 type: Concept
 title: Ulysses Sequence Parallelism
-description: Ulysses 是面向**长序列多头注意力**的序列并行策略：在 attention 以外的部分沿 S（sequence）维度切分，在 attention 处通过一次 all-to-all 把切分维度从 S 换到 N（num_heads），attention 内部按 head 并行、attention 输出再 all-to-all 换回 S。相比于 Ring Attention 依赖 P2P 循环传 KV，Ulysses 用集合通信 all-to-all 实现，简单高效，是 HunyuanVideo / HunyuanImage-3.0 / Wan2.2-I2V 长序列 DiT 推理的首选序列并行。 cann-recipes-infer 在 `module/unified_sp/` 提供统一 SP 框架，支持 Ulysses / Ring / Hybrid（Ulysses × Ring）三种模式，并通过 **Ulysses Anything Attention (UAA)** 支持任意头数的灵活配置。
+description: Ulysses 是面向**长序列多头注意力**的序列并行策略：在 attention 以外的部分沿 S（sequence）维度切分，在 attention 处通过一次 all-to-all 把切分维度从 S 换到 N（num_heads），attention 内部按 head 并行、attention 输出再 all-to-all 换回 S。相比于 Ring Attention 依赖 P2P 循环传 KV，Ulysses 用集合通信 all-to-all 实现，简单高效，是 HunyuanVideo / HunyuanImage-3.0 / Wan2.2-I2V 长序列 DiT 推理的首选序列并行。 cann-recipes-infer 在 `module/unified_sp/` 提供统一 SP 框架，支持 Ulysses / Ring / Hybrid（Ulysses × Ring）三种模式，并通过 **Ulysses Anything Attention (UAA)** 在满足 padding 边界时支持头数不整除并行度的配置。
 tags:
 - task.design
 - topic.parallelism
@@ -13,8 +13,12 @@ sources:
   role: primary
 - resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/docs/models/hunyuan-video/hunyuan_video_optimization.md
   role: supporting
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/module/unified_sp/uaa.py
+  role: implementation
+- resource: https://gitcode.com/cann/cann-recipes-infer/blob/2f82d10467e6fe8dae81c97a2cdac78d733a6703/module/unified_sp/core.py
+  role: implementation
 created_at: '2026-04-14T00:00:00Z'
-updated_at: '2026-08-25T06:41:27Z'
+updated_at: '2026-09-12T03:21:42Z'
 platforms:
 - agnostic
 ---
@@ -25,7 +29,7 @@ platforms:
 
 Ulysses 是面向**长序列多头注意力**的序列并行策略：在 attention 以外的部分沿 S（sequence）维度切分，在 attention 处通过一次 all-to-all 把切分维度从 S 换到 N（num_heads），attention 内部按 head 并行、attention 输出再 all-to-all 换回 S。相比于 Ring Attention 依赖 P2P 循环传 KV，Ulysses 用集合通信 all-to-all 实现，简单高效，是 HunyuanVideo / HunyuanImage-3.0 / Wan2.2-I2V 长序列 DiT 推理的首选序列并行。
 
-cann-recipes-infer 在 `module/unified_sp/` 提供统一 SP 框架，支持 Ulysses / Ring / Hybrid（Ulysses × Ring）三种模式，并通过 **Ulysses Anything Attention (UAA)** 支持任意头数的灵活配置。
+cann-recipes-infer 在 `module/unified_sp/` 提供统一 SP 框架，支持 Ulysses / Ring / Hybrid（Ulysses × Ring）三种模式，并通过 **Ulysses Anything Attention (UAA)** 在满足 padding 边界时支持头数不整除并行度的配置。
 
 ## Mechanism
 
@@ -48,30 +52,28 @@ flowchart LR
 
 ### Ulysses Anything Attention (UAA)
 
-标准 Ulysses 要求 `num_heads % ulysses_degree == 0` 且视频尺寸满足 `H % 16 % ulysses_degree == 0` 或 `W % 16 % ulysses_degree == 0`，限制实际配置灵活性。UAA（`module/unified_sp/uaa.py`）通过动态 padding + per-rank 序列长度协商解除约束。
+标准 Ulysses 在该固定实现中检查 `num_heads % ulysses_degree == 0`。UAA（`module/unified_sp/uaa.py`）通过 head padding 和 per-rank 序列长度协商支持部分非整除配置；它不取消模型自身的图像预处理、VAE 或 patch 尺寸要求。来源优化文档中的 `H % 16 % ulysses_degree` 表达式不能作为一般的尺寸校验式：链式取模不等于按 patch 缩放后检查整除，具体约束应回到模型入口核对。
 
 核心填充逻辑：
 
 ```python
-# 来源：module/unified_sp/uaa.py _maybe_pad_qkv_head
+# _maybe_pad_qkv_head 的填充逻辑；x 的形状为 (b, s_local, h, d)
 def _maybe_pad_qkv_head(x: torch.Tensor, h: int, world_size: int) -> Tuple[torch.Tensor, int]:
- """Maybe pad the head dimension to be divisible by world_size."""
- h_pad = 0
- if h % world_size != 0:
- h_pad = world_size - (h % world_size)
- new_h_local = (h + h_pad) // world_size
- # 约束：填充头数必须小于每卡本地头数
- if h_pad >= new_h_local:
- raise ValueError(
- f"Padding head num {h_pad} should be less than new local head num {new_h_local}"
- )
- x = F.pad(x, (0, 0, 0, h_pad)).contiguous()
- return x, h_pad
+    h_pad = 0
+    if h % world_size != 0:
+        h_pad = world_size - (h % world_size)
+        new_h_local = (h + h_pad) // world_size
+        if h_pad >= new_h_local:
+            raise ValueError(
+                f"Padding head num {h_pad} should be less than new local head num {new_h_local}"
+            )
+        x = F.pad(x, (0, 0, 0, h_pad)).contiguous()
+    return x, h_pad
 ```
 
-仅最后一 rank 需要填充；填充头数必须小于每卡本地头数，否则退化为负优化。
+Q/K/V 在 all-to-all 前各自按完整 head 维填充；交换后只有最后一个 rank 的局部 head 分片含填充，`_maybe_unpad_qkv_head` 在该 rank 去除它。输出反向交换前，`_maybe_pad_o_head` 再仅为最后一个 rank 补齐。填充头数必须小于新的每卡 head 数，否则此实现抛出 `ValueError`，并非任意头数与并行度都可用。
 
-动态序列长度分配（视频尺寸约束解除）：
+动态序列长度分配（按各 rank 的实际序列长度通信）：
 
 ```python
 # 收集各 rank 的序列长度
@@ -83,7 +85,8 @@ x = fc.all_to_all_single(x, output_split_sizes, input_split_sizes, self.ulysses_
 示例：
 
 | 配置 | 头数 | 并行度 | 填充数 | 每卡头数 |
-|------|------|--------|--------|----------| | 标准 Ulysses | 24 | 8 | 0 | 3 |
+|------|------|--------|--------|----------|
+| 标准 Ulysses | 24 | 8 | 0 | 3 |
 | Ulysses Anything | 30 | 8 | 2 | 4 |
 | Ulysses Anything | 40 | 8 | 0 | 5 |
 
@@ -98,7 +101,7 @@ x = fc.all_to_all_single(x, output_split_sizes, input_split_sizes, self.ulysses_
 ## Configuration
 
 - HunyuanVideo：`ulysses5` / `ulysses8`，关键参数 `ulysses_degree`
-- 头数能整除并行度 → 开启标准 Ulysses；头数不整除或视频尺寸不对齐 → 开启 `ulysses_anything=True`
+- 头数及序列分片满足标准模式约束时可用标准 Ulysses；需要非整除 head 或非均匀序列分片时可设置 `ulysses_anything=True`，并检查上述 padding 边界及模型输入约束
 
 ```python
 # 开启 UAA
@@ -111,10 +114,10 @@ attn = UnifiedSPAttention(
 
 ## Constraints
 
-- 依赖 all-to-all 全量通信带宽，SP 规模扩大通信开销呈超线性
+- 依赖 all-to-all 通信；规模扩大后的开销取决于消息大小、拓扑和通信实现，需要实测，不能统一断言为超线性
 - `num_heads` 需可整除 SP（标准模式）；UAA 的填充头数需 < 每卡本地头数
 - attention 必须以 head 为独立计算单元（DiT / LLM 都满足）
-- 视频尺寸 / 序列长度在标准 Ulysses 下需 16 对齐，UAA 解除此限制
+- 模型输入尺寸、patch 与 VAE 的对齐限制仍由模型入口决定；UAA 处理通信分片的非均匀序列长度，不保证任意视频尺寸可运行
 
 ## Known Deployments
 

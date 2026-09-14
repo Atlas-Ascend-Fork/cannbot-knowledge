@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_fused/asc_deq_int322half.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
@@ -23,6 +23,8 @@ source_headers:
 # asc_deq_int322half
 
 ## 功能说明
+
+头文件路径为：`"c_api/vector_compute/compute/vector_fused.h"`。
 
 对输入的int32_t类型的数据按元素做量化并转换为half类型。计算公式如下：
 $$
@@ -42,12 +44,6 @@ $$
 
     ```cpp
     __aicore__ inline void asc_deq_int322half(__ubuf__ half* dst, __ubuf__ int32_t* src, uint8_t repeat, uint16_t dst_block_stride, uint16_t src_block_stride, uint8_t dst_repeat_stride, uint8_t src_repeat_stride)
-    ```
-
-- 同步计算
-
-    ```cpp
-    __aicore__ inline void asc_deq_int322half_sync(__ubuf__ half* dst, __ubuf__ int32_t* src, uint32_t count)
     ```
 
 ## 参数说明

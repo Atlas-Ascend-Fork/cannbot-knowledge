@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/cube_compute_load/DataCopy_L1ToFixpipe.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -30,7 +30,7 @@ DataCopy数据搬运支持将随路量化参数从L1 Buffer移动到Fixpipe Buff
 
 **图1** Fixpipe Buffer图示
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/fixpipe_buffer_02.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/fixpipe_buffer_02.png)
 
 ## 函数原型<a id="section_function_prototype"></a>
 
@@ -116,4 +116,4 @@ AscendC::DataCopy(fbTensor, quantAlphaTensor, dataCopyParams);
 AscendC::SetFixPipeConfig(fbTensor);
 ```
 
-完整示例请参考[DataCopy（L1->Fixpipe Buffer数据搬运）](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_l0c2gm)中场景2、4、6。
+完整示例请参考[DataCopy（L1->Fixpipe Buffer数据搬运）](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_l0c2gm)中场景2、4、6。

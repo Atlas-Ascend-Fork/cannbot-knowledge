@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/matrix_advanced_api/feature_scenarios/matmul_output_n_alignment.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -23,13 +23,13 @@ platforms: []
 以M=16，K=16，N=14，A、B矩阵数据类型为half的Matmul为具体示例，说明ND\_ALIGN输出功能。当配置C矩阵为ND格式并输出到Global Memory时，按照原始N方向大小非32字节对齐输出如[图1](#zh-cn_topic_0000002265055666_fig2311855162511)所示。当配置C矩阵为ND格式时，按照N方向32字节对齐输出如[图2](#zh-cn_topic_0000002265055666_fig25741012182719)所示，C矩阵的N方向最后两列由下一行的实际数据进行填充补齐，以实现N方向对齐到32字节并输出。当配置C矩阵为ND\_ALIGN格式时，Matmul API会在C矩阵的N方向上通过添加无效数据来填充最后两列，以确保N方向对齐至32字节并输出，如[图3](#zh-cn_topic_0000002265055666_fig4840114152818)所示。
 
 **图1**  ND格式C矩阵N方向非32字节对齐示意图<a name="zh-cn_topic_0000002265055666_fig2311855162511"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd_no_32.png "ND格式C矩阵N方向非32字节对齐示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd_no_32.png "ND格式C矩阵N方向非32字节对齐示意图")
 
 **图2**  ND格式C矩阵N方向32字节对齐示意图<a name="zh-cn_topic_0000002265055666_fig25741012182719"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd_32_align.png "ND格式C矩阵N方向32字节对齐示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd_32_align.png "ND格式C矩阵N方向32字节对齐示意图")
 
 **图3**  ND\_ALIGN格式C矩阵N方向32字节对齐示意图<a name="zh-cn_topic_0000002265055666_fig4840114152818"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/nd_align_32.png "ND_ALIGN格式C矩阵N方向32字节对齐示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/nd_align_32.png "ND_ALIGN格式C矩阵N方向32字节对齐示意图")
 
 ## 使用场景<a name="zh-cn_topic_0000002265055666_section118051016163613"></a>
 
@@ -41,7 +41,7 @@ Matmul计算中N方向非32字节对齐，输出C矩阵的N方向要求32字节�
 
 ## 调用示例<a name="zh-cn_topic_0000002265055666_section15486294368"></a>
 
-完整的算子样例请参考[matmul\_nd\_align算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_format_nd_align)。
+完整的算子样例请参考[matmul\_nd\_align算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/00_matmul/matmul_format_nd_align)。
 
 -   Tiling实现
 

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/vector_compute/low_latency_instruction.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -32,13 +32,13 @@ platforms: []
 假设输入数据的数据类型为float，shape为\(5, 256\)，下图展示了一行数据的执行过程：
 
 **图1**  二分累加方案示意图<a name="fig181871717152010"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/reduce_best_practice.png "二分累加方案示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/reduce_best_practice.png "二分累加方案示意图")
 
 将以上过程，针对每一行，各自执行，得到最终归约结果，即shape为\(m, k\)的数据，归约完成后，shape为\(m, 1\)。
 
 由于ReduceSum接口是由多种指令组合实现，通常来说，数据量较大，循环次数较多的场景，二分累加方案性能 \> ReduceRepeat单指令操作性能 \> ReduceSum接口性能。而小数据量或者特殊shape下的场景，需要拆分开来，依据指令执行时间和指令执行数目等条件，具体问题具体分析。
 
-下文给出了二分累加方案和归约类指令方案的核心代码片段和性能数据对比。完整样例请参考[ReduceCustom](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/reduce)。
+下文给出了二分累加方案和归约类指令方案的核心代码片段和性能数据对比。完整样例请参考[ReduceCustom](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/reduce)。
 
 【性能数据】
 
@@ -130,7 +130,7 @@ __aicore__ inline void ReduceRepeatSumImpl(const AscendC::LocalTensor<float>& ds
 
 通过分析单指令性能数据（开发者可以自行测试）可知：一次ReduceDataBlock操作加一次ReduceRepeat操作性能优于两次ReduceRepeat，同时也优于三次ReduceDataBlock的方案。
 
-下文给出了上面三种方式的核心代码片段和性能数据对比。完整样例请参考[ReduceCustom](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/reduce)。
+下文给出了上面三种方式的核心代码片段和性能数据对比。完整样例请参考[ReduceCustom](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/reduce)。
 
 【性能数据】
 

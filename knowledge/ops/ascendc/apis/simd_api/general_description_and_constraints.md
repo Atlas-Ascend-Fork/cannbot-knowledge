@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/general_description_and_constraints.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -44,6 +44,7 @@ Ascend C API的操作数通常为[GlobalTensor](basic_api/data_structures/global
 **表1**  TPosition与物理内存映射关系
 
 <a name="table07372185712"></a>
+
 | TPosition | 物理内存 |
 | --- | --- |
 | GM | Global Memory |
@@ -69,6 +70,7 @@ AI Core上的存储单元用于存储矢量计算、矩阵计算的源操作数�
 **表2**  不同存储单元的对齐要求
 
 <a name="table16278354141117"></a>
+
 | 存储单元 | 对齐要求 |
 | --- | --- |
 | Global Memory | 无对齐要求。 |
@@ -87,7 +89,7 @@ AI Core上的存储单元用于存储矢量计算、矩阵计算的源操作数�
 -   多次迭代间：不支持前序迭代的目的操作数与后序迭代的源操作数重叠。例如，第N次迭代的目的操作数是第N+1次的源操作数（如下图所示）。在这种情况下，第N次迭代可能会改写覆盖源操作数的数值，导致无法得到预期结果。特别地，对于部分双目计算类的API（Add、Sub、Mul、Max、Min、AddRelu、SubRelu），当数据类型为half、int32\_t、float时，支持前序迭代的目的操作数与后序迭代的源操作数重叠：仅针对目的操作数和第二个源操作数重叠的情况，且src1RepStride或者dstRepStride必须为0。
 
 **图1**  地址重叠示例（不支持）<a name="fig12654416181216"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/address_overlap_unsupported.png "地址重叠示例（不支持）")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/address_overlap_unsupported.png "地址重叠示例（不支持）")
 
 > [!NOTE]说明 
 >本节所述地址重叠通用约束适用于一般情况，API参考中如有额外特殊说明的，则以具体API中的说明为准。

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/abstract_hardware_architecture.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -25,7 +25,7 @@ AI Core的抽象硬件架构可以分为[**计算单元**](#section_compute_unit
 
 **图1**  抽象硬件架构（[NPU架构版本2201](../../language_extension/simd_builtin_keywords.md#npu-arch)）<a name="fig1095152043812"></a>
 
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/npu_2201_2.png" alt="抽象硬件架构" width="840px">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/npu_2201_2.png" alt="抽象硬件架构" width="840px">
 
 结合前述三类组件和[图1](#fig1095152043812)，一次算子执行可以理解为三类组件协同完成数据处理的过程：Host侧下发算子任务后，算子指令序列进入Device侧的AI Core；计算单元负责控制逻辑以及标量、矢量和矩阵计算，存储单元保存输入、输出和中间数据，搬运单元负责在不同存储层级之间转移数据。
 
@@ -38,6 +38,7 @@ AI Core中的计算单元主要包括Scalar、Vector和Cube三类。
 **表1** 计算单元
 
 <a name="zh-cn_topic_0000001588832845_table14884154362"></a>
+
 | 组件名称 | 组件功能 | 对应编程概念 |
 | --- | --- | --- |
 | Scalar | 执行地址计算、循环控制等标量计算工作，并把矢量计算、矩阵计算、数据搬运、同步指令发射给对应单元执行。 | 核函数（Kernel）中的控制逻辑、同步控制API。 |
@@ -53,7 +54,7 @@ AI Core中的计算单元主要包括Scalar、Vector和Cube三类。
 
 **图2**  SIMD-Reg矢量计算内存层级<a name="fig_simd_reg_memory_hierarchy"></a>
 
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simd_reg_2.png" alt="SIMD-Reg矢量计算内存层级" width="520px">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simd_reg_2.png" alt="SIMD-Reg矢量计算内存层级" width="520px">
 
 **DMA（Direct Memory Access）搬运单元**负责数据搬运，包括Global Memory和Local Memory之间的数据搬入、搬出，以及不同层级Local Memory之间的数据流转。常见搬运单元包括MTE1、MTE2、MTE3和FixPipe，具体介绍请参考[搬运单元](../../advanced_programming/hardware_implementation/basic_architecture.md#table288493152012)。
 
@@ -71,7 +72,7 @@ AI Core中的计算单元主要包括Scalar、Vector和Cube三类。
 
 **图3**  抽象硬件架构（[NPU架构版本3510](../../language_extension/simd_builtin_keywords.md#npu-arch)）<a name="fig10951520438120"></a>
 
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/npu_3510_2.png" alt="抽象硬件架构NPU架构版本3510" width="840px">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/npu_3510_2.png" alt="抽象硬件架构NPU架构版本3510" width="840px">
 
 与NPU架构版本2201相比，NPU架构版本3510的主要差异如下：
 

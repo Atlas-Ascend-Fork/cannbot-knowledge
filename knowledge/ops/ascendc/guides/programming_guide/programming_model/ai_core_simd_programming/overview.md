@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/programming_model/ai_core_simd_programming/overview.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -66,7 +66,7 @@ AI Core是昇腾NPU的基础核心计算单元，采用「控制单元\+异构�
 Ascend 950PR/Ascend 950DT新一代架构在传统UB缓存体系的基础上，开放寄存器（Register）可编程能力，构建出「Global Memory → UB → Register」的三级内存层级，衍生出两套适配不同性能诉求的矢量计算模式，实现通用场景与极致性能场景的全覆盖。其内存层级结构如下图所示：
 
 **图1**  SIMD Reg矢量计算内存层级  
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/simd_reg_2.png" alt="SIMD-Reg矢量计算内存层级" width="520px">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/simd_reg_2.png" alt="SIMD-Reg矢量计算内存层级" width="520px">
 
 基于全新三级内存架构，矢量计算分为通用的**Memory矢量计算**与高性能的**Reg矢量计算**：
 
@@ -108,7 +108,7 @@ Ascend C提供三层梯度化可编程接口，全层级均支持完整AI Core�
 
 开发者可结合自身编程习惯、项目开发效率诉求与性能优化场景，灵活选用对应层级接口完成算子开发。
 
-> 📌 **提示** Ascend C采用GlobalTensor、LocalTensor分别抽象全局内存与片上本地内存对应的Tensor/Tile。当前版本的LocalTensor不携带Layout内存布局信息，后续版本Tensor API中LocalTensor将原生支持Layout布局管理，具体发布节奏请参考[Ascend C DevKit仓](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/.)。
+> 📌 **提示** Ascend C采用GlobalTensor、LocalTensor分别抽象全局内存与片上本地内存对应的Tensor/Tile。当前版本的LocalTensor不携带Layout内存布局信息，后续版本Tensor API中LocalTensor将原生支持Layout布局管理，具体发布节奏请参考[Ascend C DevKit仓](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/.)。
 
 ## 小结
 本章系统梳理了AI Core算子从任务分发、硬件调度到代码落地的全链路技术体系：计算任务依托SPMD\+SIMD异构并行范式分发至多AI Core并行执行，再根据算子计算特性精准调度至Cube矩阵单元或Vector向量单元完成运算；开发者可结合自身编程习惯与业务场景，灵活选用多级C/C++编程接口，完成算子核函数（Kernel）的完整逻辑开发。

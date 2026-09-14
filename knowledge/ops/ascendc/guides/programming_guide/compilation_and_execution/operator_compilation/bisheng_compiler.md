@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/programming_guide/compilation_and_execution/operator_compilation/bisheng_compiler.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -34,6 +34,7 @@ platforms: []
 
 
 毕昇编译器支持的源码文件核头文件如下：
+
 | 文件扩展名 | 描述 | 内容 |
 |--|--|--|
 |.c| C源码文件 | Host-only代码 | 

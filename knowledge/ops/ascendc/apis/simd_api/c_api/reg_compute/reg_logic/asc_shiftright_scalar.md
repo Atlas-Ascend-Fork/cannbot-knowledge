@@ -10,16 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_logic/asc_shiftright_scalar.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/compute/reg_logic.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_shiftright_scalar
 
 ## 功能说明
+
+头文件路径为：`"c_api/reg_compute/compute/reg_logic.h"`。
 
 根据掩码对源操作数矢量数据寄存器中的元素执行右移，右移位数由标量立即数指定，并将结果通过函数返回值返回或写入目的操作数。掩码对应位置为1的元素参与计算，为0的元素在输出结果中置零。计算公式如下：
 

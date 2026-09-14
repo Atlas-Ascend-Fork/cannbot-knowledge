@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/vector_programming/unaligned_scenario.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -34,25 +34,25 @@ platforms: []
     当需要从Global拷贝11个half数值到Local时，为保证搬运的数据长度32字节对齐，使用DataCopy拷贝16个half（32B）数据到Local上，Local\[11\]\~Local\[15\]被写成无效数据-1。
 
     **图1**  非对齐搬入<a name="zh-cn_topic_0000001945665465_fig077582618576"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/unaligned_in.png "非对齐搬入")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/unaligned_in.png "非对齐搬入")
 
 -   **非对齐搬出**
 
     当需要从Local拷贝11个half数值到Global时，为保证搬运的数据长度32字节对齐，使用DataCopy拷贝16个half（32B）数据到Global上，Global\[11\]\~Global\[15\]被写成无效数据-1。
 
     **图2**  非对齐搬出<a name="zh-cn_topic_0000001945665465_fig926205085819"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/unaligned_out.png "非对齐搬出")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/unaligned_out.png "非对齐搬出")
 
 -   **矢量计算起始地址非32字节对齐的错误示例**
 
     矢量计算时需要保证起始地址32字节对齐，如下的示例中，从Local1\[7\]，即LocalTensor的第8个数开始计算，起始地址不满足32字节对齐，是错误示例。
 
     **图3**  矢量计算起始地址非32字节对齐的错误示例<a name="zh-cn_topic_0000001945665465_fig2226615174"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/vec_addr_err.png "矢量计算起始地址非32字节对齐的错误示例")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/vec_addr_err.png "矢量计算起始地址非32字节对齐的错误示例")
 
 ## 非对齐处理方案<a name="zh-cn_topic_0000001945665465_section423121219432"></a>
 
-DataCopyPad接口提供非对齐搬运的功能，如果基于该接口支持的产品开发算子（参见产品支持情况），则可以直接使用该接口解决非对齐场景下的搬运问题。使用DataCopyPad的完整示例请参考[DataCopyPad样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_pad_gm2ub_ub2gm)。
+DataCopyPad接口提供非对齐搬运的功能，如果基于该接口支持的产品开发算子（参见产品支持情况），则可以直接使用该接口解决非对齐场景下的搬运问题。使用DataCopyPad的完整示例请参考[DataCopyPad样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_pad_gm2ub_ub2gm)。
 
 部分型号不支持DataCopyPad接口，可以参考如下的搬运方案处理。
 
@@ -64,14 +64,14 @@ DataCopyPad接口提供非对齐搬运的功能，如果基于该接口支持的
 -   **冗余数据参与计算**。一般用于elewise计算场景，冗余数据即使参与计算，也不影响最终结果，如下图所示：
 
     **图4**  冗余数据参与计算<a name="zh-cn_topic_0000001945665465_fig1622416415109"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/redundant_calc.png "冗余数据参与计算")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/redundant_calc.png "冗余数据参与计算")
 
 
 
 -   **通过mask参数掩掉冗余数据**。一般用于轴归约计算等场景。如下图所示，为只对前4个half数据进行ReduceMin计算，可以通过设置mask参数的方法掩掉冗余数据：
 
     **图5**  使用mask掩掉脏数据<a name="zh-cn_topic_0000001945665465_fig1465824716196"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mask_dirty.png "使用mask掩掉脏数据")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mask_dirty.png "使用mask掩掉脏数据")
 
     示例片段如下：
     ```
@@ -83,7 +83,7 @@ DataCopyPad接口提供非对齐搬运的功能，如果基于该接口支持的
 -   **通过Duplicate逐行清零**。计算前，针对每一行数据，调用基础API [Duplicate](../../../../apis/simd_api/basic_api/memory_vector_compute/data_padding/duplicate.md)对冗余数据位置填充0值，通过设置mask值，控制仅后5个元素位置有效，将冗余数据填充为0，如下图所示：
 
     **图6**  通过Duplicate逐行清零<a name="zh-cn_topic_0000001945665465_fig698012297178"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/dup_clear.png "通过Duplicate逐行清零")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/dup_clear.png "通过Duplicate逐行清零")
 
     示例片段如下：
     ```
@@ -96,7 +96,7 @@ DataCopyPad接口提供非对齐搬运的功能，如果基于该接口支持的
 -   **通过Pad一次性清零**。计算前，针对多行数据，可以采用高阶API [Pad](../../../../apis/simd_api/adv_api/tensor_transform/pad.md)接口对冗余数据一次性清零。
 
     **图7**  通过Pad一次性清零<a name="zh-cn_topic_0000001945665465_fig181561339121716"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/pad_clear.png "通过Pad一次性清零")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/pad_clear.png "通过Pad一次性清零")
 
     示例片段如下：
     ```
@@ -109,7 +109,7 @@ DataCopyPad接口提供非对齐搬运的功能，如果基于该接口支持的
 -   **使用UnPad接口去除冗余数据后搬出**。待搬出的有效数据总长度满足32字节对齐时，可使用高阶API [UnPad](../../../../apis/simd_api/adv_api/tensor_transform/un_pad.md)接口去除冗余数据并完整搬出。如下图所示：
 
     **图8**  使用UnPad接口去除冗余数据后搬出<a name="zh-cn_topic_0000001945665465_fig20692195012173"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/unpad_copy.png "使用UnPad接口去除冗余数据后搬出")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/unpad_copy.png "使用UnPad接口去除冗余数据后搬出")
 
     示例片段如下：
     ```
@@ -122,7 +122,7 @@ DataCopyPad接口提供非对齐搬运的功能，如果基于该接口支持的
 -   **使用GatherMask收集有效数据后搬出**。待搬出的有效数据总长度大于等于32字节时，可使用[GatherMask](../../../../apis/simd_api/basic_api/memory_vector_compute/compare_and_select/gather_mask.md)重新收集有效数据，保证搬出的有效数据起始地址和数据长度32字节对齐。如下图所示：
 
     **图9**  使用GatherMask收集有效数据后搬出。<a name="zh-cn_topic_0000001945665465_fig1988535971719"></a>  
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/gather_mask.png "使用GatherMask收集有效数据后搬出")
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/gather_mask.png "使用GatherMask收集有效数据后搬出")
     
     示例片段如下：
     ```

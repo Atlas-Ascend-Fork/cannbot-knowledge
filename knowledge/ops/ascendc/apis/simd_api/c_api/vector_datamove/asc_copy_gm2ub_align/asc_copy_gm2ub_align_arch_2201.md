@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_2201.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
@@ -21,6 +21,8 @@ source_headers:
 # asc_copy_gm2ub_align
 
 ## 功能说明
+
+头文件路径为：`"c_api/vector_datamove/vector_datamove.h"`。
 
 提供数据非对齐搬运的功能，将数据从Global Memory (GM)搬运到Unified Buffer（UB），并支持8位/16位/32位数据类型搬运。
 
@@ -39,6 +41,8 @@ source_headers:
 
     - 手动填充：搬运前调用`asc_set_copy_pad_val`设置填充值。
     - 自动填充：不调用`asc_set_copy_pad_val`时，由硬件自动填充dummy假数据，dummy假数据的值为数据块的第一个元素的值。
+
+    循环搬运模式相关配置接口请参考[asc_set_gm2ub_loop_size](../asc_set_gm2ub_loop_size.md)、[asc_set_gm2ub_loop1_stride](../asc_set_gm2ub_loop1_stride.md)和[asc_set_gm2ub_loop2_stride](../asc_set_gm2ub_loop2_stride.md)。其中，`asc_set_gm2ub_loop_size`用于设置两层循环迭代次数，`asc_set_gm2ub_loop1_stride`和`asc_set_gm2ub_loop2_stride`分别用于设置内层循环`loop1`、外层循环`loop2`中相邻两次迭代的源操作数和目的操作数数据块起始地址偏移量。相关接口的产品支持情况以各接口文档为准。
 
 ## 函数原型
 
@@ -68,20 +72,6 @@ source_headers:
     __aicore__ inline void asc_copy_gm2ub_align(__ubuf__ int32_t* dst, __gm__ int32_t* src, uint16_t burst_count, uint32_t burst_len, uint8_t left_padding_num, uint8_t right_padding_num, uint32_t src_gap, uint32_t dst_gap)
     __aicore__ inline void asc_copy_gm2ub_align(__ubuf__ uint32_t* dst, __gm__ uint32_t* src, uint16_t burst_count, uint32_t burst_len, uint8_t left_padding_num, uint8_t right_padding_num, uint32_t src_gap, uint32_t dst_gap)
     __aicore__ inline void asc_copy_gm2ub_align(__ubuf__ float* dst, __gm__ float* src, uint16_t burst_count, uint32_t burst_len, uint8_t left_padding_num, uint8_t right_padding_num, uint32_t src_gap, uint32_t dst_gap)
-    ```
-
-- 同步计算
-
-    ```cpp
-    __aicore__ inline void asc_copy_gm2ub_align_sync(__ubuf__ int8_t* dst, __gm__ int8_t* src, uint32_t size)
-    __aicore__ inline void asc_copy_gm2ub_align_sync(__ubuf__ uint8_t* dst, __gm__ uint8_t* src, uint32_t size)
-    __aicore__ inline void asc_copy_gm2ub_align_sync(__ubuf__ int16_t* dst, __gm__ int16_t* src, uint32_t size)
-    __aicore__ inline void asc_copy_gm2ub_align_sync(__ubuf__ uint16_t* dst, __gm__ uint16_t* src, uint32_t size)
-    __aicore__ inline void asc_copy_gm2ub_align_sync(__ubuf__ half* dst, __gm__ half* src, uint32_t size)
-    __aicore__ inline void asc_copy_gm2ub_align_sync(__ubuf__ bfloat16_t* dst, __gm__ bfloat16_t* src, uint32_t size)
-    __aicore__ inline void asc_copy_gm2ub_align_sync(__ubuf__ int32_t* dst, __gm__ int32_t* src, uint32_t size)
-    __aicore__ inline void asc_copy_gm2ub_align_sync(__ubuf__ uint32_t* dst, __gm__ uint32_t* src, uint32_t size)
-    __aicore__ inline void asc_copy_gm2ub_align_sync(__ubuf__ float* dst, __gm__ float* src, uint32_t size)
     ```
 
 ## 参数说明
@@ -114,7 +104,6 @@ PIPE_MTE2
 - 当`burst_count`、`burst_len`中任意一个值为0时，该接口被视为NOP（空操作）。
 - 当`size`值为0时，该接口被视为NOP（空操作）。
 - 如果本指令与其他指令存在UB地址重叠，必须插入同步指令[asc_sync_notify](../../sync/asc_sync_notify.md)和[asc_sync_wait](../../sync/asc_sync_wait.md)，保证多个指令串行化，防止出现异常数据。
-- 同步计算包含同步等待。
 - `left_padding_num`、`right_padding_num`对应的填充数据大小均不能超过32字节。
 
 ## 调用示例

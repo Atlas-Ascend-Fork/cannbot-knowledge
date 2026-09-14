@@ -10,14 +10,18 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_compute/asc_enable_fp8.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
+source_headers:
+- include/c_api/cube_compute/cube_compute.h
 ---
 
 # asc_enable_fp8
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_compute/cube_compute.h"`。
 
 用于设置Mmad计算开启FP8模式。该接口会关闭HiF8模式（与[asc_enable_hif8](asc_enable_hif8.md)相反），开启该模式后L0A Buffer/L0B Buffer中的FP8数据在参与Mmad计算之前不会被转化为hifloat8_t类型数据。
 
@@ -55,10 +59,11 @@ uint16_t right_width = 16;  // N
 // 在 asc_mmad 前调用：以 FP8 格式参与矩阵运算（非 HiF8 转换路径）
 asc_enable_fp8();
 
-uint8_t unit_flag = 0;
+asc_unit_flag_mode unit_flag_mode = asc_unit_flag_mode::DISABLE;
 bool disable_gemv = false;
 bool c_matrix_source = false;
 bool c_matrix_init_val = true;
-asc_mmad_sync(c_matrix, a_matrix, b_matrix, left_height, n_dim, right_width,
-              unit_flag, disable_gemv, c_matrix_source, c_matrix_init_val);
+asc_mmad(c_matrix, a_matrix, b_matrix, left_height, n_dim, right_width,
+         unit_flag_mode, disable_gemv, c_matrix_source, c_matrix_init_val);
+asc_sync();
 ```

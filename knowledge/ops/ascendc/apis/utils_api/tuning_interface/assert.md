@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/tuning_interface/assert.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -66,14 +66,17 @@ ascendc_assert(expr, fmt, args...)
 
 ### SIMD编程场景
 
+- CPU域调试时，多参数调用仅检查断言条件，不打印`fmt`和`args`指定的自定义错误信息，行为与单参数调用相同。
 - 单次调用本接口打印的数据总量不可超过打印大小限制，默认为30KB。超出限制时，断言失败信息不会打印，但接口仍会触发异常。可以通过[aclInit接口](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/latest/API/runtimeapi/aclcppdevg_03_0022.html)中的`simd_printf_fifo_size_per_core`字段配置，配置范围为`[1KB,64MB]`。PyTorch调用和算子入图场景暂不支持该配置。
 
 ### SIMT VF编程场景
 
-不输出`fmt`和`args`指定的自定义错误信息。
+- 不支持CPU域调试。
+- 不输出`fmt`和`args`指定的自定义错误信息。
 
 ### SIMD VF编程场景
 
+- CPU域调试时，多参数调用仅检查断言条件，不打印`fmt`和`args`指定的自定义错误信息，行为与单参数调用相同。
 - `fmt`可以直接使用字符串字面量。使用字符串指针时，该指针必须指向UB中的字符串，示例如下：
 
     ```cpp

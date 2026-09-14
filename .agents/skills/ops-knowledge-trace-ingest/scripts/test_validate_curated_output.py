@@ -158,6 +158,53 @@ class ValidateCuratedOutputTest(unittest.TestCase):
             under_reproduced.stderr,
         )
 
+    def _add_trace(self, raw_sha):
+        directory = self.root / "normalized" / "trace2"
+        directory.mkdir()
+        trace = directory / "normalized_trace.jsonl"
+        trace.write_text('{"sequence":1,"run":2}\n{"sequence":2,"run":2}\n')
+        normalized_sha = hashlib.sha256(trace.read_bytes()).hexdigest()
+        (directory / "session_manifest.json").write_text(json.dumps({
+            "source": {"sha256": raw_sha}, "coverage": {"normalized_events": 2},
+        }))
+        entry = self.ledger_data["entries"][0]
+        snapshot = entry["evidence_audit"]["trace_snapshot"]
+        snapshot["normalized_trace_path"].append(str(trace.resolve()))
+        snapshot["raw_source_sha256"].append(raw_sha)
+        snapshot["normalized_trace_sha256"].append(normalized_sha)
+        for role, sequence in (("implementation", 1), ("validation", 2)):
+            snapshot["evidence_roles"][role].append(f"{normalized_sha[:12]}#{sequence}")
+        snapshot["mechanism_artifacts"][0]["anchors"].append(f"{normalized_sha[:12]}#1")
+        self._write_ledger()
+
+    def test_one_trace_cannot_claim_multiple_reproductions(self):
+        entry = self.ledger_data["entries"][0]
+        entry["reproduce_count"] = 2
+        for tier in ("single_run", "verified"):
+            with self.subTest(tier=tier):
+                entry["tier"] = tier
+                self._write_ledger()
+                result = self._run("--pre-review")
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("exceeds distinct raw sources", result.stderr)
+
+    def test_normalizing_one_raw_source_twice_does_not_add_reproductions(self):
+        self._add_trace(self.raw_sha)
+        entry = self.ledger_data["entries"][0]
+        entry.update(tier="verified", reproduce_count=2)
+        self._write_ledger()
+        result = self._run("--pre-review")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("exceeds distinct raw sources", result.stderr)
+
+    def test_distinct_raw_sources_allow_review_of_reproduced_claim(self):
+        self._add_trace("b" * 64)
+        entry = self.ledger_data["entries"][0]
+        entry.update(tier="verified", reproduce_count=2)
+        self._write_ledger()
+        result = self._run("--pre-review")
+        self.assertEqual(0, result.returncode, result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

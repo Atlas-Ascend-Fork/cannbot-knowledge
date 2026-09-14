@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_task_sync/WaitPreTaskEnd.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a3
@@ -37,7 +37,7 @@ SuperKernel是一种算子的二进制融合技术，与源码融合不同，它
 **开发者需要自行保证调用此接口前的指令不会与前序算子互相干扰而导致精度问题，推荐在整个算子第一条搬运指令前调用此接口。**
 
 **图1**  通过WaitPreTaskEnd实现并行示意图<a name="fig99271836191110"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/wait_pre_task_end_parallel_diagram.png "通过WaitPreTaskEnd实现并行示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/wait_pre_task_end_parallel_diagram.png "通过WaitPreTaskEnd实现并行示意图")
 
 ## 函数原型<a name="section620mcpsimp"></a>
 
@@ -83,7 +83,7 @@ AscendC::WaitFlag<AscendC::HardEvent::MTE2_V>(EVENT_ID0);
 AscendC::Add(dstLocal, src0Local, src1Local, TOTAL_LENGTH);
 ```
 
-完整样例请参考[TaskSync样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/task_sync)。
+完整样例请参考[TaskSync样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/05_sync_control/task_sync)。
 
 
 - [QuantMatmulReduceSumWeightNz A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/quant_matmul_reduce_sum_weight_nz.md)

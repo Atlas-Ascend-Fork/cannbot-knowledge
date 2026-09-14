@@ -2,7 +2,7 @@
 
 本模板是最终 `Operator` 卡的唯一结构。生成时替换全部 `<...>`，不得改名、增删或重排固定标题。入口类型由调用 Prompt 指定，Skill 不选择来源层。
 
-受控入口标签只有三种：公开 ACLNN/API 使用 `ACLNN`，官方内部 Host/Tiling 使用 `Host/Tiling`，直接调用使用 `Direct Invoke`。平台标签与 Frontmatter 必须一一对应：
+入口标签区分公开 ACLNN/API 的 `ACLNN`、官方内部入口的 `Host/Tiling` 和直接调用的 `Direct Invoke`。标签不定义存储路径；当前正式卡支持 `ACLNN` 和 `Direct Invoke`，Host/Tiling 独立入口没有已注册 call-mode，按主 Skill defer 写入。平台标签与 Frontmatter 必须一一对应：
 
 | 平台标签 | `platforms` |
 |---|---|
@@ -10,6 +10,8 @@
 | `A3` | `[a3]` |
 | `A2/A3` | `[a2, a3]` |
 | `950` | `["950"]` |
+
+CV 分流针对目标算子的全部可达 Route；整体至少有一个 Cube/AIC 或 MIX_CV 节点即可。某条 Route 没有 Cube 节点时仍保留在本卡，不补造 Cube 节点或拆交 VV；按该 Route 的真实执行族填写资源与同步。
 
 ```markdown
 ---
@@ -32,7 +34,7 @@ sources:
 created_at: "<UTC RFC3339 秒精度>"
 updated_at: "<UTC RFC3339 秒精度>"
 platforms: [<按平台标签填写>]
-cann_versions: ["9.1.0"]
+cann_versions: ["<CANN_VERSION>"]
 ---
 
 # <逻辑算子名> <平台标签> <入口标签> 算子知识
@@ -100,7 +102,7 @@ cann_versions: ["9.1.0"]
 
 | Route | key/selector | dtype/shape/platform 完整命中条件 | 执行族与 kernel 节点 | 实际模板/body | 内存与同步特征 | tail/fallback |
 |---|---|---|---|---|---|---|
-| R-001 <实现族名称> | <逐 key> | <源码谓词与优先级> | <至少一个 Cube/AIC 或 MIX_CV 节点 + 同图其它执行族 + 单/多 Kernel 节点图> | <完整实例与方法> | <workspace/L1/L0/UB/同步> | <尾块与失败去向> |
+| R-001 <实现族名称> | <逐 key> | <源码谓词与优先级> | <当前 Route 的实际执行族及单/多 Kernel 节点图；允许纯非 Cube 分支> | <完整实例与方法> | <workspace/L1/L0/UB/同步> | <尾块与失败去向> |
 
 ### 隐藏性能 Guard
 

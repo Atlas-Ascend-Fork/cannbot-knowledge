@@ -10,10 +10,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/ub_gather/asc_gather.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/reg_compute/gather/ub_gather.h
 - include/c_api/asc_simd.h
 ---
 
@@ -21,13 +22,15 @@ source_headers:
 
 ## 功能说明
 
+头文件路径为：`"c_api/reg_compute/gather/ub_gather.h"`。
+
 根据索引位置`index`将源操作数`src`按元素收集到目的操作数`dst`中。
 
 **UB源收集模式**：源操作数为UB地址，目的操作数为矢量数据寄存器。按`index`矢量寄存器中保存的逐元素索引，从UB中读取对应位置的元素写入`dst`对应位置，受`mask`掩码控制；`mask`比特位为0的位置对应`dst`位置写0。
 
 **图 1**  UB源收集模式
 
-![UB源收集模式](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_gather_ub.png)
+![UB源收集模式](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_gather_ub.png)
 
 ## 函数原型
 
@@ -126,7 +129,7 @@ __simd_callee__ inline vector_int16_t asc_gather(__ubuf__ int16_t* src,
 
 - 当`src`与`dst`数据类型一致，但是与`index`数据类型不一致时，数据写入`dst`索引为偶数的位置，奇数索引位置置零。例如`src`为`int8_t`数据类型，`index`为`uint16_t`数据类型时，适用场景如下图：
 
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/SIMD-API/c_api/figures/asc_gather_different_type.png)
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/SIMD-API/c_api/figures/asc_gather_different_type.png)
 
 ## 调用示例
 

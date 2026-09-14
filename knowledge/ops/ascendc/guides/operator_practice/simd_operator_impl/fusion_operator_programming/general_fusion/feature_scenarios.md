@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/fusion_operator_programming/general_fusion/feature_scenarios.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -36,7 +36,7 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品不支持通算融合算�
 
 
 **图1**  通信任务重执行机制<a name="zh-cn_topic_0000002400328453_fig774612491699"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/comm_reexec.png "通信任务重执行机制")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/comm_reexec.png "通信任务重执行机制")
 
 开启重执行的条件如下：
 

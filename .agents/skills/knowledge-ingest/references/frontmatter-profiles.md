@@ -45,7 +45,7 @@ Actor 使用 `human:<id>`、`process:<id>` 或 `<producer>/<version>`。不得�
 ## 创建脚本行为
 
 - `--tag`、`--source`、`--platform`、`--cann-version`、`--alias` 可重复。
-- `--source` 参数写入 OKF `sources[].resource`；第一项自动带 `role: primary`。来源可以是 HTTP(S)，也可以是位于 Registry 登记根目录、由固定归档获取流程提供的本地路径。
+- `--source` 参数写入 OKF `sources[].resource`；第一项自动带 `role: primary`。来源可以是 HTTP(S)，也可以是 Registry 登记的文档归档或固定提交 Git 本地路径。
 - `--verified-by` 与 `--verified-at` 必须同时出现，当前一次创建一个 event；多个 event 可在审阅后人工补充。
 - `--dry-run` 输出完整 Markdown，但不创建目录、卡片、索引或日志。
 - 非 dry-run 只创建不存在的卡片，不覆盖或更新已有文件。

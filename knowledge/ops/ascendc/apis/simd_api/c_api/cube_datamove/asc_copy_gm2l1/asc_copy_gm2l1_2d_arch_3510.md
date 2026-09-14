@@ -11,16 +11,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_gm2l1/asc_copy_gm2l1_2d_arch_3510.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 source_headers:
+- include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_copy_gm2l1_arch_3510（2D矩阵搬运模式）
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_datamove/cube_datamove.h"`。
 
 将数据从Global Memory搬运到L1 Buffer。以512字节的分形为单位，从GM中按行列方向的起始位置、步长切分提取多个分形矩阵搬运到L1 Buffer，搬运过程中不支持分形格式转换，用于矩阵计算所需的2D格式数据加载。
 
@@ -40,15 +43,6 @@ __aicore__ inline void asc_copy_gm2l1(__cbuf__ <dtype>* dst,
                                       uint16_t k_step,
                                       uint8_t decomp_mode,
                                       uint8_t l2_cache_ctl)
-__aicore__ inline void asc_copy_gm2l1_sync(__cbuf__ <dtype>* dst,
-                                           __gm__ <dtype>* src,
-                                           uint32_t m_start_position,
-                                           uint32_t k_start_position,
-                                           uint16_t dst_stride,
-                                           uint16_t m_step,
-                                           uint16_t k_step,
-                                           uint8_t decomp_mode,
-                                           uint8_t l2_cache_ctl)
 ```
 
 ### dtype支持的数据类型

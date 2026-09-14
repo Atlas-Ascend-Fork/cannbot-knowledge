@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Kernel/HCCL_template_params.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -38,6 +38,7 @@ class Hccl;
 **表1**  Hccl类模板参数说明
 
 <a name="hccl-template-params"></a>
+
 | 参数名称 | 描述 |
 | --- | --- |
 | serverType | 支持的服务端类型。HcclServerType枚举类型，取值如下。<br>HCCL_SERVER_TYPE_AICPU：AI CPU服务端。<br>HCCL_SERVER_TYPE_CCU：CCU服务端。<br>HCCL_SERVER_TYPE_END：预留参数，不支持使用。 |

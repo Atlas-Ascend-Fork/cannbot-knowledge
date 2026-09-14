@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/HCCL_communication/HCCL_Tiling/TilingData_struct.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -26,6 +26,7 @@ platforms: []
 **表1**  Mc2InitTiling参数说明
 
 <a name="table4835205712588"></a>
+
 | 参数名 | 描述 |
 | --- | --- |
 | reserved | 初始化通信任务配置。uint8_t*类型，支持最大长度64字节，该结构体仅支持通过接口[GetTiling](get_tiling.md)获取。 |
@@ -33,6 +34,7 @@ platforms: []
 **表2**  Mc2CcTiling参数说明
 
 <a name="table678914014562"></a>
+
 | 参数名 | 描述 |
 | --- | --- |
 | reserved | 各通信域中每个通信任务的参数配置。uint8_t*类型，支持最大长度280字节，该结构体仅支持通过接口[GetTiling](get_tiling.md)获取。注意，最多支持配置8个通信任务。 |

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/getting_started/ascend_c_overview_and_learning_path.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -28,7 +28,7 @@ CANN基于分层架构设计，实现了上层应用与底层硬件的无缝衔�
 
 为满足不同场景的诉求，Ascend C构建了从单指令抽象、单核公共算法到多核算子的多层级API体系，其总体逻辑架构如下：
 
-<img src="https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/architecture_ascendc.png" alt="架构图" width="1000px">
+<img src="https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/architecture_ascendc.png" alt="架构图" width="1000px">
 
 - **语言扩展层C API**：纯C接口，提供数组内存分配、基于指针的计算接口，延续业界熟悉的C编程体验，并完整开放芯片能力。
 - **基础API**：以单指令为抽象的C++类库，一般基于Tensor编程，并逐步通过Layout完善Tensor编程体验。

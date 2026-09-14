@@ -10,18 +10,21 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/scalar_compute/scalar_bit/asc_clear_nthbit.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
 source_headers:
+- include/c_api/scalar_compute/compute/scalar_bit.h
 - include/c_api/asc_simd.h
 ---
 
 # asc_clear_nthbit
 
 ## 功能说明
+
+头文件路径为：`"c_api/scalar_compute/compute/scalar_bit.h"`。
 
 对一个64位无符号整数执行位清除操作，将`bits`中第`idx`位清零，其余位保持不变。返回修改后的64位无符号整数。
 
@@ -58,7 +61,6 @@ PIPE_S
 ## 调用示例
 
 将以下代码保存为`example.asc`后，执行对应的编译运行命令。
-
 
 
 以Ascend 950PR/Ascend 950DT产品（对应NPU架构为`dav-3510`）为例，编译运行命令如下：

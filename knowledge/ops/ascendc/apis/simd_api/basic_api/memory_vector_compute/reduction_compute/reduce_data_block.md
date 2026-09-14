@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/reduction_compute/ReduceDataBlock.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
@@ -36,7 +36,7 @@ source_headers:
 
 **图1**  `ReduceDataBlock`归约示意图
 
-![ReduceDataBlock归约示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/ReduceDataBlock.png "ReduceDataBlock归约示意图")
+![ReduceDataBlock归约示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/ReduceDataBlock.png "ReduceDataBlock归约示意图")
 
 ## 函数原型
 
@@ -174,7 +174,7 @@ source_headers:
 
         **图2**  `ReduceDataBlock<ReduceType::SUM>`饱和模式数值溢出情况处理说明
 
-        ![ReduceDataBlock<ReduceType::SUM>饱和模式数值溢出情况处理说明](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/vcgadd_overflow.png "ReduceDataBlock<ReduceType::SUM>饱和模式数值溢出情况处理说明")
+        ![ReduceDataBlock<ReduceType::SUM>饱和模式数值溢出情况处理说明](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/vcgadd_overflow.png "ReduceDataBlock<ReduceType::SUM>饱和模式数值溢出情况处理说明")
 
 ## 关键特性说明
 
@@ -188,11 +188,11 @@ source_headers:
 
 **图3**  `ReduceDataBlock<ReduceType::SUM>`求和示意图
 
-![ReduceDataBlock<ReduceType::SUM>求和示意图](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/api/figures/vcgadd_binary_add.png "ReduceDataBlock<ReduceType::SUM>求和示意图")
+![ReduceDataBlock<ReduceType::SUM>求和示意图](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/api/figures/vcgadd_binary_add.png "ReduceDataBlock<ReduceType::SUM>求和示意图")
 
 ## 调用示例
 
-本样例中只展示`Compute`流程中的部分代码。更多样例可参考[ReduceDataBlock系列归约指令样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/reduce_data_block)。
+本样例中只展示`Compute`流程中的部分代码。更多样例可参考[ReduceDataBlock系列归约指令样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/01_memory_vector_compute/reduce_data_block)。
 
 - `ReduceDataBlock<ReduceType::MAX>`-tensor高维切分计算样例-`mask`连续模式：
 

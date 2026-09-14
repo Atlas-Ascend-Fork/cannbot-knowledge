@@ -17,3 +17,5 @@
 - [HcclTilingData](tiling_data_struct.md)：HCCL通信Tiling配置结构体，包含Mc2InitTiling和Mc2CcTiling，通过GetTiling接口返回，最多支持8个通信任务。
 - [v1版本TilingData（废弃）](v1_tiling_data_deprecated.md)：AI CPU启动下发通信任务前，需获取固定的通信配置Mc2Msg。在算子实现中，由Tiling组装通信配置项，通过配置固定参数和固定参数顺序的Tiling Data，将通信配置信息在调用AI CPU通信接口时传递给AI CPU。
 - [v2版本TilingData（废弃）](v2_tiling_data_deprecated.md)：AI CPU启动下发通信任务前，需获取固定的通信配置，如表1所示。在算子实现中，由Tiling组装通信配置项，通过配置固定参数和固定参数顺序的Tiling Data，将通信配置信息在调用AI CPU通信接口时传递给AI CPU。
+
+- [CheckOpResSufficient](check_op_res_sufficient.md)：根据输入的Tiling信息，对指定的通信算法所需资源进行预校验，返回检查结果。

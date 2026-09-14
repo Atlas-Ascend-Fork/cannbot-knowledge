@@ -10,16 +10,20 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/deprecated_interface/asc_mmad_deprecated.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - '950'
 - a2
 - a3
+source_headers:
+- include/c_api/cube_compute/cube_compute.h
 ---
 
 # asc_mmad（废弃）
 
 ## 功能说明
+
+头文件路径为：`"c_api/cube_compute/cube_compute.h"`。
 
 **入参`unit_flag`类型为`uint8_t`的`asc_mmad`接口以及`asc_mmad_sync`接口已废弃。请使用入参`unit_flag_mode`类型为`asc_unit_flag_mode`的[asc_mmad](../cube_compute/asc_mmad.md)接口替代；原同步功能请通过新接口和`asc_sync()`实现，具体请参见[asc_sync](../sync/asc_sync.md)。**
 
@@ -181,6 +185,7 @@ __aicore__ inline void asc_mmad(__cc__ float* c_matrix,
 
 
 
+
 **表** 参数说明（[NPU架构版本2201](../../../../guides/programming_guide/language_extension/simd_builtin_keywords.md)）
 
 | 参数名 | 输入/输出 | 描述 |
@@ -198,6 +203,7 @@ __aicore__ inline void asc_mmad(__cc__ float* c_matrix,
 | is_weight_offset | 输入 | 无效参数，用户无需关注，传入false即可。 |
 | c_matrix_source | 输入 | 当`c_matrix_init_val`为false时，配置矩阵C的初始值是否来自BiasTable Buffer。 |
 | c_matrix_init_val | 输入 | 配置是否将矩阵C的初始值设置为0。 |
+
 
 
 ## 返回值说明

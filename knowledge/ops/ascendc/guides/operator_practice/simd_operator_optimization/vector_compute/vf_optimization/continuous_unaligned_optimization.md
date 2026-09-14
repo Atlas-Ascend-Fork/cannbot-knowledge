@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_optimization/vector_compute/vf_optimization/continuous_unaligned_optimization.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -87,7 +87,7 @@ for (uint16_t i = 0; i < repeatTimes; ++i) {
 
         **图1**  非对齐数据搬入<a name="fig638414472320"></a>  
         
-        ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/unaligned_in_77.png)
+        ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/unaligned_in_77.png)
 
 -   **非对齐数据搬出**
 
@@ -100,7 +100,7 @@ for (uint16_t i = 0; i < repeatTimes; ++i) {
 
     **图2**  非对齐数据搬出（ureg为空）<a name="fig34750199610"></a>  
     
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/unaligned_out_0.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/unaligned_out_0.png)
 
     **场景二：ureg不为空**
 
@@ -109,7 +109,7 @@ for (uint16_t i = 0; i < repeatTimes; ++i) {
 
     **图3**  非对齐数据搬出（ureg不为空）<a name="fig579119300430"></a>  
     
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/unaligned_out_1.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/unaligned_out_1.png)
 
 -   **MaskReg连续非对齐数据搬出**
 
@@ -127,7 +127,7 @@ for (uint16_t i = 0; i < repeatTimes; ++i) {
 
     **图4**  MaskReg连续非对齐数据搬出<a name="fig18974124104813"></a>  
     
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/mask_reg_out.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/mask_reg_out.png)
 
 -   **连续非对齐搬入搬出示例**
 
@@ -164,4 +164,4 @@ for (uint16_t i = 0; i < repeatTimes; ++i) {
 
     **图5**  连续非对齐搬入搬出<a name="fig98921837195710"></a>  
     
-    ![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/unaligned_io.png)
+    ![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/unaligned_io.png)

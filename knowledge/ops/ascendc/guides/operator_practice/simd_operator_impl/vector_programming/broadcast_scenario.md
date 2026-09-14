@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/vector_programming/broadcast_scenario.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -21,7 +21,7 @@ platforms: []
 >[!NOTE]注意 
 >Broadcast机制通过扩展较小维度的数据，使得不同shape的输入能够进行运算，从而避免了显式的复制操作，提高了计算效率。数据进行Broadcast需满足：两个输入的维度个数相同，并且仅在某一个维度上的长度不同，某一个输入在此维度的长度为1。比如：shape为\(32, 8\)和 \(32, 1\)的两个输入可以进行Broadcast，因为它们都是二维，且第一个维度大小相等，而不相等的维度中第二个输入的维度为1，满足条件。
 
-本节中将使用[Broadcast](../../../../apis/simd_api/adv_api/tensor_transform/broadcast.md)接口，因此输入需满足该API相关约束。同时，由于硬件限制，该API的输入地址需满足32字节对齐。本节以输入维度为2、第二个轴（axis = 1）需要Broadcast为例进行说明。完整的样例代码请参见[输入Broadcast的Add算子样例](https://gitcode.com/cann/asc-devkit/tree/885973fe9fd42a600e3551af9bc11a279e6f183b/examples/01_simd_cpp_api/04_advanced_api/08_transpose/add_broadcast)。
+本节中将使用[Broadcast](../../../../apis/simd_api/adv_api/tensor_transform/broadcast.md)接口，因此输入需满足该API相关约束。同时，由于硬件限制，该API的输入地址需满足32字节对齐。本节以输入维度为2、第二个轴（axis = 1）需要Broadcast为例进行说明。完整的样例代码请参见[输入Broadcast的Add算子样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/04_advanced_api/08_transpose/add_broadcast)。
 
 ## Tiling实现<a name="zh-cn_topic_0000002201157446_section598962019342"></a>
 
@@ -32,7 +32,7 @@ platforms: []
 -   coef：表示Broadcast的输入需要扩维的倍数。例如，x shape为\(m, 1\)，y shape为\(m, n\)，则coef = n。如下图所示，图中相同颜色部分为单次计算的数据块。
 
 **图1**  axis=1时coef示意图<a name="zh-cn_topic_0000002201157446_fig202632320133"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/axis_coef.png "axis-1时coef示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/axis_coef.png "axis-1时coef示意图")
 
 Tiling结构体定义代码如下所示：
 

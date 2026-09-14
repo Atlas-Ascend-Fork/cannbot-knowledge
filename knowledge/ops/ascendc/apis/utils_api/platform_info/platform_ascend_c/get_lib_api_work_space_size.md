@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetLibApiWorkSpaceSize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -43,7 +43,9 @@ uint32_t GetLibApiWorkSpaceSize(void) const
 
 ## 调用示例<a name="zh-cn_topic_0000001663835704_zh-cn_topic_0000001391767420_section320753512363"></a>
 
-```
+### 自定义算子工程
+
+```cpp
 // 用户自定义的tiling函数
 static ge::graphStatus TilingFunc(gert::TilingContext* context)
 {
@@ -59,6 +61,19 @@ static ge::graphStatus TilingFunc(gert::TilingContext* context)
     size_t *currentWorkspace = context->GetWorkspaceSizes(1); // 通过框架获取workspace的指针，GetWorkspaceSizes入参为所需workspace的块数。当前限制使用一块。
     currentWorkspace[0] = usrSize + sysWorkspaceSize; // 设置总的workspace的数值大小，总的workspace空间由框架来申请并管理。
     ...
+}
+```
+
+### Kernel直调
+
+```cpp
+uint32_t GetSysWorkspaceSize()
+{
+    auto* ascendcPlatform = platform_ascendc::PlatformAscendCManager::GetInstance();
+    if (ascendcPlatform == nullptr) {
+        return std::numeric_limits<uint32_t>::max();
+    }
+    return ascendcPlatform->GetLibApiWorkSpaceSize();
 }
 ```
 

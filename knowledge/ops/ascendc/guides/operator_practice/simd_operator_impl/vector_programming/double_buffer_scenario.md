@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/guide/operator_practice/simd_operator_impl/vector_programming/double_buffer_scenario.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms: []
 ---
 
@@ -20,7 +20,7 @@ platforms: []
 因存在算子中多次搬入搬出数据的场景，为充分利用硬件资源，实现多流水并行，引入[DoubleBuffer](../../../technical_appendix/concepts_and_terms/performance_optimization/double_buffer.md)机制。[DoubleBuffer](../../../technical_appendix/concepts_and_terms/performance_optimization/double_buffer.md)是通过将输入数据分成大小相等的两块，充分利用AI Core的硬件资源，实现数据搬入、计算、数据搬出的并行执行方式。下面以“核间不均分，核内不均分”的样例为例，介绍算子中DoubleBuffer的实现。
 
 **图1**  DoubleBuffer数据切分示意图<a name="zh-cn_topic_0000002236197681_fig68713182104"></a>  
-![](https://raw.gitcode.com/cann/asc-devkit/raw/885973fe9fd42a600e3551af9bc11a279e6f183b/docs/zh/guide/figures/dbuf_split.png "DoubleBuffer数据切分示意图")
+![](https://raw.gitcode.com/cann/asc-devkit/raw/639b2b5c1031188107d23d785d52b935f1b4f13b/docs/zh/guide/figures/dbuf_split.png "DoubleBuffer数据切分示意图")
 
 ## Tiling实现<a name="zh-cn_topic_0000002236197681_section1967484164119"></a>
 

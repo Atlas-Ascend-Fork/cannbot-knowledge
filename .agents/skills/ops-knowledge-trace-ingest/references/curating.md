@@ -10,7 +10,7 @@
 
 设计借鉴：
 - 落盘 schema / 目录 / validator → [`references/runbooks-contract.md`](runbooks-contract.md)。
-- 独立审查 / ledger 终态 / 统一收口 → 源自 `ops-knowledge-trajectory-ingest` 的生命周期设计。
+- 独立审查 / ledger 终态 / 统一收口 → 由本 Skill 的 curator、reviewer 与主 agent 分工完成，见下文流程。
 
 ---
 
@@ -61,7 +61,7 @@ runbooks 是**算子开发知识库**：只收"Agent 编写/调试/优化 Ascend
 |------|------|------|------|
 | **ingest** | `ingest <草稿目录或manifest>` | 单条/少量 miner 草稿 | 落盘新卡（`single_run`）/ 增量合并 / reject；`reproduce_count=1` |
 | **upgrade** | `upgrade` | 扫 `knowledge/ops/ascendc/runbooks/` 全库 | 跨 trace 合并同 nugget → `reproduce_count` 累加 → 升内部 `verified` tier；按需补充正文链接；废弃卡 `replaced_by` |
-| **rebuild** | 用户明确授权清空重建 | 完整原始轨迹 inventory + 空 runbooks 库 | 不继承旧卡；按本轮 source SHA-256 聚类复现并全量重建 index/图谱/检索 |
+| **rebuild** | 用户明确授权清空重建 | 完整原始轨迹 inventory + 空 runbooks 库 | 不继承旧卡；按本轮 source SHA-256 聚类复现并全量重建目录导航与检索索引；图谱按需生成 |
 
 > **模式边界**：内部 `verified` tier 门槛 = 上板信号（`tool_observed`/`artifact_verified`）+ `reproduce_count≥2`，复现计数只在**跨 trace** 时才能涨。ingest 单条落盘只能 `single_run`；攒够一批后跑 upgrade 才能真正升级。rebuild 只改变库的初始状态（空库重建），不放松同一证据门槛。
 
@@ -75,25 +75,25 @@ runbooks 是**算子开发知识库**：只收"Agent 编写/调试/优化 Ascend
 ### 2. 门控（多锁适配，逐条过）
 | 锁 | 判定 | 不过的处理 |
 |----|------|-----------|
-| **实测锚定锁** | 候选须有客观信号（实测 Δ / 精度 N/M / 编译通过），即证据等级 `tool_observed`/`artifact_verified` | 仅 `agent_reported`/纯推断 → `inferred`，**不落库**，转 ledger/meta deferred |
-| **证据锁** | `## 验证信号` 有可核验的实测描述（自然语言 + 数值：哪次修改/轮次后得到什么结果）；manifest `evidence_anchors` 有 `sequence/event_type/raw_source/raw_record/raw_sha256` 结构化溯源记录（不要求写入卡正文） | 无实测描述或锚点缺失 → 降级 `inferred`，注明 reason |
-| **归因锁** | 增益可归到该轮单点改动 | 一轮混多改动 → 只记方向不记具体分值，或降级 |
-| **防作弊/复现锁** | STATE 单跑自评封顶 `single_run`；有标准化 `tasks_eval` 正 Δ 才算强信号 | 单跑自评 → 强制 `single_run`，不升内部 `verified` tier |
-| **防投机取巧锁** | 解决配方为"放宽容差/改测试/改期望/删用例/hw_compat 豁免"等**测试侧放松**且无代码侧实质修复（runbooks-contract HARD 16） | **reject**（reason=`shortcut_solution`），即使 trace 因此"通过"也不落库；只有明确写成坏实践负知识（`workflow_only`）的才放行 |
+| **实测锚定锁** | 候选须有与知识形态匹配的客观信号（探针输出、编译成功或失败、运行观测等），即证据等级 `tool_observed`/`artifact_verified` | 仅 `agent_reported`/纯推断 → `inferred`，**不落库**，转 ledger/meta deferred |
+| **证据锁** | `## 验证信号` 有可核验的实测描述（自然语言 + 原始观测：哪项探针、尝试或实现产生什么结果；不强制为正向数值）；manifest `evidence_anchors` 有 `sequence/event_type/raw_source/raw_record/raw_sha256` 结构化溯源记录（不要求写入卡正文） | 无实测描述或锚点缺失 → 降级 `inferred`，注明 reason |
+| **归因锁** | 观测可归到所声明的探针、尝试或实现；修复收益须归到该轮单点改动 | 一轮混多改动 → 只记方向不记具体分值，或降级 |
+| **防作弊/复现锁** | 单条轨迹的客观观测封顶 `single_run`，不以性能正增益代替各形态的证据合同 | 仅自评 → `inferred`；缺少跨轨迹复现与上板证据，不升内部 `verified` tier |
+| **防投机取巧锁** | 解决配方为"放宽容差/改测试/改期望/删用例/hw_compat 豁免"等**测试侧放松**且无代码侧实质修复（runbooks-contract §6「反投机取巧」） | **reject**（reason=`shortcut_solution`），即使 trace 因此"通过"也不落库；若客观证明其危害，可按明确 `banned` 的 `negative_result` 审查；`workflow_only` 始终只进 meta |
 | **知识价值锁** | 候选须满足四条价值判据：垂域绑定（AscendC/NPU/工具链特有行为）/ 非显然性（下个 agent 大概率踩坑）/ 可复用性（完整配方·代码·清单）/ 可验证性（本 trace 内实测锚定；workflow_only 从严）（runbooks-contract §0） | **reject**（reason=`low_value`/`domain_generic`/`process_only`/`unverifiable`）；agent 编排/工具定位等通用行为、纯流程描述、转写不完整闭环一律不落库 |
 | **相关性锁** | 候选必须与 **AscendC 算子开发**实质相关（判定标准见「相关性判定」小节） | **reject**（reason=`non_ascendc`）：通用软件工程坑（环境变量/锁文件/CMake 通用配置/文件权限）、工具操作步骤（msprof/dump/编译器具体操作）、agent 工作流与治理、评测 harness 脚本问题、文档格式问题一律不落库 |
 | **形态化机制证据锁** | `repair_recipe` 有完整因果单元 before/after；`diagnostic_rule` 有可执行 probe 与原始观测；`negative_result` 有可重建尝试、客观失败/回退和边界；`validated_pattern` 有完整实现与验证。核心 artifact 均正文内联、逐字可核 | 用单一“修后 AFTER”门槛拒绝非 repair，或机制 artifact 仅为示意片段 → 退回/defer |
 | **active 轨迹证据合同锁** | 每个 adopted claim 有实际 normalized 路径、raw/normalized 双 SHA、连续 coverage、与 `knowledge_form` 匹配的角色锚点、逐字机制 artifact、客观信号、双向 claim mapping 和单点归因（runbooks-contract §8.1 / Errorbook） | 缺任一必备项 → `defer/support`；仅缺 remote blob 不得 defer。fixed revision/blob 有则核验并优先，禁止伪造链接 |
 | **场景描述锁** | 候选必含**完整场景描述（语言+代码双通道，统一准入基准，runbooks-contract §0）**：`## 现象`/`## 适用场景` 用自然语言讲清"在做什么命令/哪个算子哪个文件/什么报错原文/当时代码状态"，禁内部编号（Task N/轮次）与"Agent 转述"代替原始输出；涉及代码的卡关键代码原样内联（runbooks-contract §0「统一准入基准」） | 缺场景或关键代码 → 退回 miner 补全或 reject（reason=`missing_scenario`） |
-| **验证信号锁** | `## 验证信号` 只含本 trace 内实测；"前序 LOG.md/issue 记载、本 trace 未复现"为 hearsay（HARD 18） | 含 hearsay → 从验证信号移除并降级 `inferred`，或 reject |
+| **验证信号锁** | `## 验证信号` 只含本 trace 内实测；"前序 LOG.md/issue 记载、本 trace 未复现"为 hearsay（runbooks-contract §6「验证信号禁 hearsay」） | 含 hearsay → 从验证信号移除并降级 `inferred`，或 reject |
 | **适用场景锁** | 候选必含 `## 适用场景`（工程形态/API 路径/验证过的平台与版本/适用粒度/路线优先级/明确不适用或未验证场景）；`safety_fallback` 卡必含 fallback 声明 | 缺段/缺关键项 → 退回 miner 补全或 reject（reason=`missing_scope`） |
 | **路线优先级锁** | 已标三档路线（recommended_fastpath/safety_fallback/banned）；独立 `negative_result` 可用 `banned` 成卡，其他正向形态中的 banned 只作坏实践 | 未标 → 退回补全；非 negative 卡把 banned 当推荐路线 → reject |
 | **平台严格锁** | frontmatter `platforms` 只含实际验证平台；推断平台在 `## 失效边界` 已标"未验证，推断可迁移"；`## 验证信号` 数字标来源平台 | platforms 含推断平台 → 退回移入失效边界；验证信号未标平台 → 退回补全 |
-| **相对代价锁** | 正文无绝对单跑分数（HARD 14）；相对性能代价成对出现并标参照路线+来源平台 | 绝对分数落正文 → 移除（provenance 只进 manifest）；相对代价孤值 → 退回补参照 |
+| **相对代价锁** | 正文无绝对单跑分数（runbooks-contract §6「跨算子禁止内容」）；相对性能代价成对出现并标参照路线+来源平台 | 绝对分数落正文 → 移除（provenance 只进 manifest）；相对代价孤值 → 退回补参照 |
 | **验证信号等级锁** | `## 验证信号` 每条信号标证据等级+来源平台；`agent_reported` 未混入验证信号 | 混入 → 移除并降级 `inferred` 或 reject |
 | **回归锁** | 落盘涉及已有"已验证"卡时，先回归检查旧基线仍成立 | 仍成立则不覆盖（条件分支/补充/标 superseded） |
 
-过门控的候选：有上板信号 → `single_run`（ingest 不升内部 `verified` tier，留给 upgrade）；无 → reject/deferred。
+过门控且满足对应形态客观证据的单轨迹候选可记 `single_run`，包括有真实失败输出的诊断或失败路线；仅 Agent 自述不落库。内部 `verified` tier 另按 runbooks-contract §5 检查独立复现与上板信号，不将升级门槛提前套给所有候选。
 
 ### 2.5 价值复核（miner skipped 清单对账）
 读 manifest 的 `skipped` 清单（reason：`domain_generic`/`no_domain_cause`/`process_only`/`unverifiable`/`shortcut`/`non_ascendc`/`missing_scenario`）：抽查每条 reason 与被剔除闭环是否相符；**漏网低价值草稿**（常识性/纯流程/转写截断）在本阶段直接 reject（reason=`low_value`）；skipped 与 reject 全部进 ledger/meta 报告。
@@ -104,7 +104,7 @@ runbooks 是**算子开发知识库**：只收"Agent 编写/调试/优化 Ascend
 | 情况 | 处理 |
 |------|------|
 | **新颖**（无同 nugget 卡） | 新建卡（见 §4 落盘） |
-| **同 nugget 已存在**（同 phenomenon+信号+根因） | **不重复 ADD** → UPVOTE：在 ledger/manifest 中令该 nugget 的内部 `reproduce_count+1`，把新增且已核验的信号合入 staged card 正文；ingest 阶段封顶 `single_run`，达 ≥2 留给 upgrade 升内部 `verified` tier |
+| **同 nugget 已存在**（同 phenomenon+信号+根因） | **不重复 ADD** → UPVOTE：在 ledger/manifest 中按已核验的不同 `raw_source_sha256` 更新该 nugget 的内部 `reproduce_count`（同源不增加），把新增且已核验的信号合入 staged card 正文；ingest 阶段封顶 `single_run`，达 ≥2 留给 upgrade 升内部 `verified` tier |
 | **同 nugget 但新卡有补充**（新失效边界/坏实践/误诊/设计决策/遗留问题/更完整代码） | **增量合并**进已有卡对应章节（就地 Edit），不新建 |
 | **被现有卡覆盖且无补充** | reject，ledger 记 `covered_by: <slug>` |
 | **候选是聚合卡（一根因一个根因闭环的卡内含多个独立根因）** | **先拆分再走上述判断**：按 §细粒度把各根因拆成独立卡分别判 nugget/合并/新建；禁止把聚合卡整张落盘 |
@@ -113,8 +113,8 @@ runbooks 是**算子开发知识库**：只收"Agent 编写/调试/优化 Ascend
 
 ### 4. 生成待审最终稿
 对新颖候选，先在 ignored 的 staged root 下生成最终路径 `<area>/<slug>.md`，审查通过前不写 `knowledge/`（area ∈ `compilation`/`runtime`/`precision`/`performance`/`validations`，按草稿内部四轨映射与内容判定）：
-- **文件名纯 slug**：从 title 生成英文 snake_case slug，无序号无 session 前缀；撞名加 `__<hash6>`。**无 `id` 字段**——slug 文件名即唯一标识。
-- **错误码进文件名（build 卡优先）**：若现象有关键错误码，在不破坏稳定 slug 的前提下嵌入错误码作为精确检索锚点；存量 kebab-case 路径不因格式治理重命名。
+- **文件名纯 slug**：从 title 生成英文 snake_case slug，无序号无 session 前缀；撞名加 `__<hash6>`。**无 `id` 字段**——Concept ID 是相对 `knowledge/` 去掉 `.md` 的完整路径；不同 area 的同名 slug 不是同一 Concept。
+- **错误码进文件名（build 卡优先）**：若现象有关键错误码，在不破坏稳定 slug 的前提下嵌入错误码作为精确检索锚点；新增或调整路径均遵守本仓 snake_case 和 Concept ID 规则。
 - **补 `description`**：确保非空（miner 已填则校验）。
 - **跨卡引用**：查重时发现有助于理解结论的卡片，可在 staged card 的技术叙述中直接链接并说明选用条件。ledger `related_suggestions` 仅为可选的待核对引用建议，不增加全库图谱流程。
 - **机制 artifact 核对**：按 `knowledge_form` 核对 repair before/after、diagnostic probe/observation、negative attempt/boundary 或 validated implementation/validation；核心代码/配置均正文内联且逐字可核，附件引用一律退回。
@@ -166,20 +166,20 @@ runbooks 是**算子开发知识库**：只收"Agent 编写/调试/优化 Ascend
 ## upgrade 模式流程（批量升级扫描）
 
 ### 1. 全库扫描聚类
-扫 `knowledge/ops/ascendc/runbooks/{compilation,runtime,precision,performance,validations}/` 全部卡，按 **同 `phenomenon` + `signal` 重叠 + 根因语义相似** 聚类成 nugget 簇。每簇 = 同一知识的多份独立复现。
+扫 `knowledge/ops/ascendc/runbooks/{compilation,runtime,precision,performance,validations}/` 全部卡，按 **同 `phenomenon` + `signal` 重叠 + 根因语义相似** 聚类成 nugget 簇。每簇只是一组同主题候选，是否为独立复现须继续核对来源和证据。
 
 ### 2. 合并 + 复现计数
 每簇选**质量最高 / 最早**的卡为主卡，其余：
 - 被合并卡设 `status: deprecated` 并写 `replaced_by: <主卡 Concept ID>`（保留文件，不删）；
-- 只在 ledger/manifest 中令主 nugget 的内部 `reproduce_count += 被合并卡数`，不得写知识卡 Frontmatter；
-- 主卡正文 `## 验证信号` append 各被合并卡的证据（R<n> + 信号 + 证据等级 + 来源 trace hash 脱敏）；
+- 收集主卡和被合并卡的原始轨迹证据，以 `raw_source_sha256` 去重并核实独立性及同一结论，重新计算 `reproduce_count`；同源多卡、重复目录或重复归一化不增加计数，缺少历史证据时不得补算或升级。计数只写 ledger/manifest；
+- 主卡正文 `## 验证信号` append 各被合并卡的证据（客观信号 + 证据等级 + 来源平台；trace ID、SHA 和内部轮次只留 ledger/manifest）；
 - 被合并卡独有的失效边界/坏实践/误诊/更完整代码 → 增量合并进主卡对应章节。
 
 ### 3. 升级内部 verified tier
-ledger/manifest 中主 nugget 的内部 `reproduce_count ≥ 2` 且证据等级 `tool_observed`/`artifact_verified`（`## 验证信号` 含上板信号：编译过/精度 N/M/实测 Δ）→ 判为内部 `verified` tier（tier 不落 frontmatter，见 §5）。仅 `agent_reported` 证据**不升该 tier**。缺上板信号或复现不足的保持 `single_run`。**回归锁**：升级前检查旧基线仍成立，矛盾则作条件分支不覆盖。
+ledger/manifest 中主 nugget 的内部 `reproduce_count ≥ 2` 且证据等级 `tool_observed`/`artifact_verified`（`## 验证信号` 含上板信号：目标设备运行、精度或性能观测；单独编译通过不等于上板）→ 判为内部 `verified` tier（tier 不落 frontmatter，见 §5）。仅 `agent_reported` 证据**不升该 tier**。缺上板信号或复现不足的保持 `single_run`。**回归锁**：升级前检查旧基线仍成立，矛盾则作条件分支不覆盖。
 
 ### 3.5 存量捷径卡治理
-upgrade 扫描时，检出解决配方为"测试侧放松"（放宽容差/改测试/改期望/删用例/hw_compat 豁免）且无代码侧实质修复的存量卡（HARD 16）：
+upgrade 扫描时，检出解决配方为"测试侧放松"（放宽容差/改测试/改期望/删用例/hw_compat 豁免）且无代码侧实质修复的存量卡（runbooks-contract §6「反投机取巧」）：
 - **不升级**（`reproduce_count` 不累加、不升内部 `verified` tier）；
 - ledger 记 `flagged: shortcut_solution`，并在 meta 报告列出待治理清单（转坏实践负知识 / superseded / 删除，需用户裁决）；
 
@@ -191,7 +191,7 @@ upgrade 扫描时，检出不过价值判据的存量卡（agent 编排/工具�
 upgrade 扫描发现**同一问题域出现更优/替代方案**（新轨迹证明旧卡是 fallback、被否方案或 banned）时：
 - **不建平行卡**：新结论优先**增量合并**进旧卡（`## 设计决策` 补"当前方案属哪档路线"、`## 坏实践` 内联被降级路线为负例、`## 适用场景` 修正路线标注、`## 失效边界` 补"未验证，推断可迁移"）；
 - **旧卡降置信度（downvote）**：`reproduce_count` 不因被否路线继续累加；ledger 记 `downvote: <slug>` + reason（`replaced_by_fastpath`/`route_downgraded_to_fallback`/`banned`），并在 staged card 正文说明选用条件，必要时链接冲突卡片；
-- **upgrade 不静默改内部已验证结论**：涉及旧卡降级时先回归检查旧基线认知来源，与 `knowledge-routing` 的“复现时更新置信度、不建重复卡”一致；`replaced_by` 仅在新方案完整覆盖旧卡且旧卡无独立价值时使用，并同时将 `status` 改为 `deprecated`（见核心纪律 5）。
+- **upgrade 不静默改内部已验证结论**：涉及旧卡降级时先回归检查旧基线认知来源，按本 Skill 的复现与合并规则更新；`replaced_by` 仅在新方案完整覆盖旧卡且旧卡无独立价值时使用，并同时将 `status` 改为 `deprecated`（见核心纪律 5）。
 
 ### 4. 按需补充跨卡引用
 查重或方案分析时发现有助于理解结论的已有卡片，可在 staged card 的相应正文添加普通 Markdown 链接，并说明适用范围或选用条件。无需为图谱扫描全库或额外判定关系；未采用的引用建议可留在 ledger，不影响入库。
@@ -228,9 +228,9 @@ upgrade 扫描发现**同一问题域出现更优/替代方案**（新轨迹证�
 ## 验证（离线单测）
 
 1. **ingest schema 合规**：落盘卡跑 runbooks-contract validator HARD=0（含必填 platforms、guide 卡完整性、代码完整、反投机取巧、验证信号禁 hearsay）。
-2. **门控有效**：无上板信号/仅 `agent_reported`/不过价值判据（常识性·纯流程·截断闭环）的候选被 reject/deferred，不落库；单跑自评封顶 `single_run`。
-3. **去重有效**：同 nugget 第二次落盘 → UPVOTE（`reproduce_count+1`），不重复新建。
-4. **upgrade 升级**：同 nugget ≥2 份且有上板信号 → 主卡升内部 `verified` tier，被合并卡 `replaced_by` 保留。
+2. **门控有效**：缺少对应形态的客观信号/仅 `agent_reported`/不过价值判据（常识性·纯流程·截断闭环）的候选被 reject/deferred，不落库；单轨迹客观观测封顶 `single_run`，仅自评保持 `inferred`。
+3. **去重有效**：同 nugget 的新增独立 raw 来源经核验后可增加复现数；同源多卡或重复归一化不增加计数，不重复新建。
+4. **upgrade 升级**：同 nugget 至少两份经核验的独立 raw 来源且有上板信号 → 主卡升内部 `verified` tier，被合并卡 `replaced_by` 保留。
 5. **链接有效**：已采用的普通正文链接能解析到 Bundle 内现有文件；没有相关链接的卡片不影响入库。
 6. **审查有效**：无实测信号 / 跨算子泄漏 / 环境误判为 kernel / **测试侧放松当正解** / **hearsay 进验证信号** / **before-after 仅示意** 的候选被 blocker 拦下。
 7. **无泄露**：落盘卡文件名/frontmatter/正文均无 session_id 与内部结构化锚点（source/raw record/sequence 只进 manifest）。

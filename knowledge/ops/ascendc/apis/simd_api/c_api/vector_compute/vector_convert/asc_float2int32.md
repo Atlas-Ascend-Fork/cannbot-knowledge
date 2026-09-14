@@ -10,15 +10,19 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_compute/vector_convert/asc_float2int32.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-12T03:09:26Z'
 platforms:
 - a2
 - a3
+source_headers:
+- include/c_api/vector_compute/compute/vector_convert.h
 ---
 
 # asc_float2int32
 
 ## 功能说明
+
+头文件路径为：`"c_api/vector_compute/compute/vector_convert.h"`。
 
 将float类型转化为int32_t类型，并支持多种舍入模式：
 
@@ -27,13 +31,12 @@ platforms:
 * FLOOR舍入模式：向负无穷舍入
 * CEIL舍入模式：向正无穷舍入
 * TRUNC舍入模式：向零舍入
-  
-  
+
 
 ## 函数原型
 
 * 前n个数据计算
-  
+
   ```cpp
   // RINT舍入模式
   __aicore__ inline void asc_float2int32_rn(__ubuf__ int32_t* dst, __ubuf__ float* src, uint32_t count)
@@ -48,7 +51,7 @@ platforms:
   ```
 
 - 高维切分计算
-  
+
   ```cpp
   // RINT舍入模式
   __aicore__ inline void asc_float2int32_rn(__ubuf__ int32_t* dst, __ubuf__ float* src, uint8_t repeat, uint16_t dst_block_stride, uint16_t src_block_stride, uint16_t dst_repeat_stride, uint16_t src_repeat_stride)
@@ -60,21 +63,6 @@ platforms:
   __aicore__ inline void asc_float2int32_ru(__ubuf__ int32_t* dst, __ubuf__ float* src, uint8_t repeat, uint16_t dst_block_stride, uint16_t src_block_stride, uint16_t dst_repeat_stride, uint16_t src_repeat_stride)
   // TRUNC舍入模式
   __aicore__ inline void asc_float2int32_rz(__ubuf__ int32_t* dst, __ubuf__ float* src, uint8_t repeat, uint16_t dst_block_stride, uint16_t src_block_stride, uint16_t dst_repeat_stride, uint16_t src_repeat_stride)
-  ```
-
-- 同步计算
-  
-  ```cpp
-  // RINT舍入模式
-  __aicore__ inline void asc_float2int32_rn_sync(__ubuf__ int32_t* dst, __ubuf__ float* src, uint32_t count)
-  // ROUND舍入模式
-  __aicore__ inline void asc_float2int32_rna_sync(__ubuf__ int32_t* dst, __ubuf__ float* src, uint32_t count)
-  // FLOOR舍入模式
-  __aicore__ inline void asc_float2int32_rd_sync(__ubuf__ int32_t* dst, __ubuf__ float* src, uint32_t count)
-  // CEIL舍入模式
-  __aicore__ inline void asc_float2int32_ru_sync(__ubuf__ int32_t* dst, __ubuf__ float* src, uint32_t count)
-  // TRUNC舍入模式
-  __aicore__ inline void asc_float2int32_rz_sync(__ubuf__ int32_t* dst, __ubuf__ float* src, uint32_t count)
   ```
 
 ## 参数说明
