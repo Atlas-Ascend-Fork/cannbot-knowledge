@@ -1,0 +1,65 @@
+# ----------------------------------------------------------------------------------------------------------
+# Copyright (c) 2026 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------------------------------------
+
+minimum_pre_commit_version: 4.0.0
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+
+repos:
+  # Use the CANN community GitCode mirrors also used by ops-nn.
+  - repo: https://gitcode.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # LICENSE is byte-for-byte governed. knowledge/ can contain preserved
+      # whitespace from official documentation mirrors, so neither is rewritten.
+      - id: trailing-whitespace
+        exclude: ^(?:LICENSE$|knowledge/)
+      - id: end-of-file-fixer
+        exclude: ^(?:LICENSE$|knowledge/)
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: check-symlinks
+
+  - repo: https://gitcode.com/gh_mirrors/ru/ruff-pre-commit
+    rev: v0.15.22
+    hooks:
+      # check.sh intentionally enforces linting without repository-wide formatting.
+      - id: ruff-check
+        files: ^(?:\.agents/skills/|governance/|evals/).+\.py$
+        args: [--output-format, concise]
+
+  - repo: local
+    hooks:
+      - id: shell-syntax
+        name: Check shell syntax
+        entry: bash -c 'for file do bash -n -- "$file" || exit $?; done' --
+        language: system
+        types: [shell]
+
+      - id: license-policy
+        name: Check CANN 2.0 license policy
+        entry: python3 -m unittest evals.test_format_check.LicenseComplianceTests
+        language: system
+        files: ^(?:LICENSE$|OAT\.xml$|[^/]+\.sh$|(?:governance|evals)/.*\.(?:py|ya?ml)$)
+        pass_filenames: false
+
+      - id: full-quality-gate
+        name: Run full repository quality gate
+        entry: bash check.sh
+        language: system
+        stages: [pre-push]
+        always_run: true
+        pass_filenames: false
+        require_serial: true
