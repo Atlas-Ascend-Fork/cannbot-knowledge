@@ -32,7 +32,9 @@ OKF 规定通用交换格式；CANNBot Profile 规定本仓允许哪些路径、
 
 例如 `knowledge/ops/ascendc/apis/datacopypad_gm_to_ub.md` 的 Concept ID 是 `ops/ascendc/apis/datacopypad_gm_to_ub`。
 
-Concept 间的本地 Markdown 链接必须解析到同一 `knowledge/` Bundle；索引也只能导航 Bundle 内文件。知识卡可额外链接 Registry 登记的固定提交本地源码文件（可带 `#L行号`），这类链接只是来源导航，不是 Concept Link，不生成源码节点或图谱边。其他 Bundle 外材料使用 HTTP(S) 来源，不用仓库相对路径把 Concept 绑定到治理设施。行内代码和代码围栏中的 Markdown-like 片段不构成 Link；列表容器缩进后的围栏同样按代码处理。
+Concept 间的本地 Markdown 链接必须解析到同一 `knowledge/` Bundle；索引也只能导航 Bundle 内文件。知识卡可额外链接 Registry 登记的固定提交本地源码文件（可带 `#L行号`），这类链接只是来源导航，不是 Concept Link，也不生成源码节点或图谱边。
+
+其他 Bundle 外材料使用 HTTP(S) 来源，不用仓库相对路径把 Concept 绑定到治理设施。行内代码和代码围栏中的 Markdown-like 片段不构成 Link；列表容器缩进后的围栏同样按代码处理。
 
 正文图片不形成 Concept Link 或图谱边，必须使用带 40 位 commit 和具体文件路径的 HTTPS Git raw URL；Lint 仅离线校验 URL 形状。
 
@@ -64,7 +66,7 @@ OKF 通用 consumer 应容忍未知 `type`、扩展字段、断链和缺失索�
 - Ingest 只生成 CANNBot Profile 接受的候选 Concept；
 - Query 在加载时拒绝不符合 CANNBot Profile 的卡片，不承诺读取任意第三方 OKF Bundle；
 - Lint 检查字段白名单、受控路径、索引完整性和链接可达性，严格程度高于 OKF 最小要求；
-- 本地图谱按需从 Concept 之间的普通 Markdown 链接生成，仅包含 Concept 节点和有向 `links_to` 边，包括 API 与算子卡片之间的链接；Index 只用于导航。构图不依赖关系判定缓存，不维护专用关系块，不回写 Concept，也不是入库门禁。图谱和可视化全部位于 ignored 的 `artifacts/graphs/`，不提交。
+- 本地图谱按需从 Concept 之间的普通 Markdown 链接生成，仅包含 Concept 节点和有向 `links_to` 边，包括 API 与算子卡片之间的链接；Index 只用于导航。构图不依赖关系判定缓存，不维护专用关系块，不回写 Concept，也不是入库门禁。图谱和可视化全部位于 Git 忽略的 `artifacts/graphs/`，不提交。
 
 这些限制是作者质量门禁，不应被描述成 OKF 对所有 consumer 的要求。
 

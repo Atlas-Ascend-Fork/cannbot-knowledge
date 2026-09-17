@@ -1,6 +1,6 @@
 # 知识库设计原则
 
-cannbot-knowledge 不只是一个 Markdown 文件夹。它希望把工程经验整理成可以查询、可以核对来源、也可以长期维护的知识。
+cannbot-knowledge 把工程经验整理成可查询、可追溯、可长期维护的 Markdown 知识卡，而不是简单堆放文档。
 
 下面介绍仓库最重要的设计原则。字段和路径的详细规则见[治理规范](../README.md#治理规范)。
 
@@ -16,7 +16,7 @@ cannbot-knowledge 不只是一个 Markdown 文件夹。它希望把工程经验�
 - `docs/` 保存说明文档；
 - `recipes/` 保存场景化操作指南。
 
-这样可以避免同一条技术知识散落在多个地方。查询工具也只需要从一个位置读取知识。
+这样可以避免同一条技术知识散落在多个位置，也让查询工具拥有唯一正文来源。
 
 ## 2. 知识既要方便人读，也要方便工具处理
 
@@ -82,13 +82,13 @@ Query 会先按平台和技术范围过滤，再返回最相关的知识卡。�
 | `ops-knowledge-vv-ingest` | 提取不含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 |
 | `ops-knowledge-cv-ingest` | 提取含可达 Cube/AIC 或 MIX_CV 节点的源码级 Operator 卡 |
 
-Query 和 Lint 保持只读。Ingest 可以创建候选卡；trace producer 只在本仓生产 Runbook；VV/CV 只写任务指定的最终 Operator 卡。三类生产能力都不会自动提交或发布。完整边界见 [Knowledge Skills](../governance/specs/skills.md)。
+Query 和 Lint 不修改知识正文。Ingest 可以创建候选卡；trace producer 只在本仓生产 Runbook；VV/CV 只写任务指定的最终 Operator 卡。三类生产能力都不会自动提交或发布。完整边界见 [Knowledge Skills](../governance/specs/skills.md)。
 
 ## 8. 索引和图谱都可以重新生成
 
 检索索引和本地图谱都是可重建的工具产物，默认不提交。图谱只把知识卡作为节点、卡片之间的普通 Markdown 链接作为有向边，API 与算子关联也来自这些链接；目录索引仍只承担导航。构图按需执行，不回写卡片、不依赖关系缓存，不是知识入库的必做步骤。源码扫描仅在需要 API 引用建议时单独执行，建议不会直接成为图谱边。
 
-贡献者仍需维护提交到 Git 的逐层 `index.md` 导航及其摘要；自动重建的是 ignored 的检索索引和图谱。目录导航、检索索引、图谱三者用途不同，不能用其中一个替代另外两个。
+贡献者仍需维护提交到 Git 的逐层 `index.md` 导航及其摘要；自动重建的是由 Git 忽略的检索索引和图谱。目录导航、检索索引、图谱三者用途不同，不能用其中一个替代另外两个。
 
 ## 需要记住的边界
 

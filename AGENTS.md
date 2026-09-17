@@ -71,7 +71,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 - 项目安装通过本仓安装器链接到完整 checkout，保持 Skill、相邻依赖和 `governance/contracts/` 同版本可用；配置知识根不等于支持独立复制 Skill 目录。
 - 治理、安装、检索与 CI 回归集中于 `evals/`；Ingest 通过全库确定性命令和仓库级回归验证，trace producer 保留其专用脚本回归。按需图谱与 CI 共用 Ingest 的同一链接构图实现。
 - 官方文档归档持续更新，不校验归档或内容树 SHA-256；完成标记记录来源 URL 与准备时间，刷新来源不自动更新知识卡。Git 源码继续固定到登记的 40 位 commit。
-- 安装器默认恢复登记的文档与固定版本源码，再准备 Query 索引；显式离线模式可以跳过资源获取，Query/Lint 本身不得自动联网。资源只放在 ignored 来源根，不执行上游源码或覆盖有本地修改的 checkout。
+- 统一安装入口是根目录 `install.sh`。远程执行时默认自动克隆或仅快进更新托管知识仓；更新已有托管仓前必须确认当前分支与请求分支一致，从已有本地知识仓执行时复用当前 checkout，不自动切换或更新当前分支。安装器按 `requirements.txt` 补齐缺失的 Python 运行依赖，随后默认恢复登记的文档归档与固定版本源码，再准备 Query 索引；显式离线模式可以跳过仓库更新和资源获取，且不要求本地 checkout 的 origin 匹配默认远端。Query/Lint 本身不得自动联网。资源只放在 ignored 来源根，不执行上游源码或覆盖有本地修改的 checkout。
 - Skill 保存生产、查询和治理知识的工作流、工具及必要的小型参考资料；可被复用的技术事实必须写入 `knowledge/`。Ingest 按需构图只读取现有链接，不回写知识正文。
 - `consumer` 和 `contributor` 是安装模式，不是路径 Profile、OKF `type` 或知识分类。
 - `ascendc-api-knowledge-query` 与 `knowledge-query` 一起安装，复用同一索引、平台识别和审计契约；API 头文件线索以已确认的 AscendC 包根解析，不能按知识仓根拼接或跨版本猜测。相关链接只帮助按需补齐证据，不要求遍历全部邻接卡片。

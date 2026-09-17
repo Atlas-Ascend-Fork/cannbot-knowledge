@@ -11,14 +11,14 @@
 from __future__ import annotations
 
 import ast
+import importlib.util
 import json
 import os
-import tarfile
-import importlib.util
 import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import unittest
 from argparse import ArgumentParser, _SubParsersAction
@@ -55,6 +55,7 @@ class DocumentationContractTests(unittest.TestCase):
             self.root / "CONTRIBUTING.md",
             self.root / "AGENTS.md",
             self.root / "CLAUDE.md",
+            self.root / "docs",
             self.root / "governance/specs",
             self.root / ".agents/skills",
             self.root / "docs",
@@ -76,6 +77,7 @@ class DocumentationContractTests(unittest.TestCase):
             self.root / "CONTRIBUTING.md",
             self.root / "AGENTS.md",
             self.root / "CLAUDE.md",
+            self.root / "docs",
             self.root / "governance/specs",
         ]
         roots.extend((self.root / "docs", self.root / "recipes"))
@@ -241,6 +243,32 @@ class DocumentationContractTests(unittest.TestCase):
         ]
         failures = [path.relative_to(self.root).as_posix() for path in documents if "安装 Profile" in path.read_text(encoding="utf-8")]
         self.assertEqual([], failures)
+
+    def test_installation_and_usage_have_one_documented_entry(self) -> None:
+        readme = (self.root / "README.md").read_text(encoding="utf-8")
+        guide = (self.root / "docs/installation_and_usage.md").read_text(encoding="utf-8")
+        self.assertIn("docs/installation_and_usage.md", readme)
+        self.assertNotIn("## 环境准备", readme)
+        self.assertNotIn("## 安装到项目", readme)
+        self.assertNotIn("## 使用知识库", readme)
+        for required in (
+            "install.sh",
+            "get_resources.sh",
+            ".cannbot/knowledge.env",
+            "knowledge-query",
+            "ascendc-api-knowledge-query",
+            "knowledge/common/platforms/concepts/ascend_910_95.md",
+        ):
+            self.assertIn(required, guide)
+        for client in ("codex", "claude", "opencode", "trae", "cursor", "copilot"):
+            self.assertIn(f"`{client}`", guide)
+        self.assertNotIn("支持 `agents`", guide)
+        self.assertNotIn("Linux 或 macOS", guide)
+        self.assertNotIn("| bash", guide)
+        self.assertIn('-o "$installer_file"', guide)
+        self.assertIn("自动按 `requirements.txt` 安装运行依赖", guide)
+        self.assertTrue((self.root / "install.sh").is_file())
+        self.assertFalse((self.root / "init.sh").exists())
 
     def test_knowledge_cards_use_okf_core_fields(self) -> None:
         root_index = (self.root / "knowledge/index.md").read_text(encoding="utf-8")
@@ -514,7 +542,7 @@ class DocumentationContractTests(unittest.TestCase):
             "AGENTS.md",
             "CONTRIBUTING.md",
             "docs/design_principles.md",
-            "docs/user_guide.md",
+            "docs/installation_and_usage.md",
             "governance/specs/skills.md",
         ):
             text = (self.root / relative).read_text(encoding="utf-8")
@@ -650,6 +678,21 @@ class DocumentationContractTests(unittest.TestCase):
                     failures.append(f"{document.relative_to(self.root)}: {token}")
         self.assertEqual([], failures)
 
+    def test_document_archive_fetch_is_portable_and_is_ignored(self) -> None:
+        script = (self.root / "get_resources.sh").read_text(encoding="utf-8")
+        ignored = (self.root / ".gitignore").read_text(encoding="utf-8").splitlines()
+        self.assertIn("cann-docs-raw/", ignored)
+        self.assertIn('${BASH_SOURCE[0]}', script)
+        self.assertIn("mktemp -d", script)
+        self.assertIn("archive_url", script)
+        self.assertIn("--refresh", script)
+        self.assertIn('PYTHON_BIN="${CANNBOT_PYTHON:-python3}"', script)
+        for non_portable_command in ("readarray", "sha256sum", "realpath"):
+            self.assertNotIn(non_portable_command, script)
+        self.assertIn("repair_published_code_links", script)
+        self.assertIn("repair_fixed_archive.py", script)
+        self.assertIn("Refusing to overwrite incomplete source directory", script)
+
     def test_document_archive_download_refresh_and_failure_preserve_cache(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -737,7 +780,7 @@ class DocumentationContractTests(unittest.TestCase):
                 module.repair_tree(root, write=True)
             self.assertEqual(before, source.read_bytes())
 
-    def test_ingest_distinguishes_git_and_fixed_archive_reference(self) -> None:
+    def test_ingest_distinguishes_git_and_document_archive_reference(self) -> None:
         skill = (
             self.root / ".agents/skills/knowledge-ingest/SKILL.md"
         ).read_text(encoding="utf-8")

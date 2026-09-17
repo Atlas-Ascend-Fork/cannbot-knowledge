@@ -30,7 +30,7 @@ python3 -m unittest discover -s evals -p 'test_*.py'
 python3 -m unittest discover -s .agents/skills/ops-knowledge-trace-ingest/scripts -p 'test_*.py'
 python3 .agents/skills/ops-knowledge-trace-ingest/scripts/field_notes_lint.py
 ruff check .agents/skills governance evals
-bash -n init.sh check.sh get_resources.sh
+bash -n install.sh check.sh get_resources.sh
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   python3 .agents/skills/knowledge-ingest/scripts/fixed_archive_docs.py \

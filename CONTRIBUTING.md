@@ -1,6 +1,6 @@
 # cannbot-knowledge 贡献指南
 
-本文只说明贡献流程和交付要求。字段、路径与受控值的完整定义由 `governance/` 维护，Skill 的内部命令与参数由各 Skill 自身文档维护，避免在多处复制同一规则。
+本文只说明贡献流程和交付要求。环境安装与 `contributor` 模式见[安装与使用指南](docs/installation_and_usage.md)；字段、路径与受控值的完整定义由 `governance/` 维护，Skill 的内部命令与参数由各 Skill 自身文档维护，避免在多处复制同一规则。
 
 ## 1. 规则从哪里读取
 
@@ -82,7 +82,9 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 
 ### 3.4 准备来源
 
-每张卡都必须填写 `sources`。轨迹沉淀的 `Runbook` 可以使用 `sources: []`，但正文必须保留与结论强度相匹配的触发、探针、原始观测和验证信号，且不能把中间整理仓或会话轨迹伪装成权威 resource；其它非 `draft` 卡至少有一个精确 `resource`。Git 来源固定到提交，文档来源优先使用稳定版本页。仓库相对来源必须位于 Registry 登记的本地来源根目录，并由登记的官方文档归档 URL 或 Git repository/40 位 commit 获取流程恢复；不能指向未登记根目录、工作区外部或包含路径穿越。性能、精度、平台限制、默认行为和经验性结论必须有与结论强度相匹配的证据。
+每张卡都必须填写 `sources`。轨迹沉淀的 `Runbook` 可以使用 `sources: []`，但正文必须保留与结论强度相匹配的触发、探针、原始观测和验证信号，且不能把中间整理仓或会话轨迹伪装成权威 resource；其他非 `draft` 卡至少有一个精确 `resource`。
+
+Git 来源固定到提交；普通文档来源优先使用稳定版本页，Registry 登记的滚动文档归档则使用其官方归档 URL。仓库相对来源必须位于 Registry 登记的本地来源根目录，并由登记的文档归档 URL 或 Git repository/40 位 commit 获取流程恢复；不能指向未登记根目录、工作区外部或包含路径穿越。性能、精度、平台限制、默认行为和经验性结论必须有与结论强度相匹配的证据。
 
 搜索摘要、PR 标题、聊天记录或模型记忆不能单独作为技术来源。来源角色、固定格式和人工审阅要求见 [Frontmatter 与证据](governance/specs/frontmatter.md)。
 
@@ -121,7 +123,7 @@ knowledge/<domain>/<technology-or-scope>/<profile>/<slug>.md
 - 新增、删除或移动卡片时，同步受影响的每一级 `index.md`；
 - 卡片移动时在同一变更中更新正文链接；Concept 与索引链接必须留在 `knowledge/` Bundle 内；知识卡可额外链接登记的固定提交本地源码文件作为证据导航，不生成源码 Concept；
 - 实质知识或治理变更记录到当天 `logs/`，纯排版和错别字修复不记录；
-- 图谱按需从知识卡之间的普通 Markdown 链接生成，包括 API 与算子卡片的关联。日常入库不构图、不做全库关系判定，不维护专用区块；没有链接的卡片也可入库。Index 仅提供导航，固定源码仅用于来源；图谱产物保存在 ignored 的 `artifacts/graphs/`。
+- 图谱按需从知识卡之间的普通 Markdown 链接生成，包括 API 与算子卡片的关联。日常入库不构图、不做全库关系判定，不维护专用区块；没有链接的卡片也可入库。Index 仅提供导航，固定源码仅用于来源；图谱产物保存在 Git 忽略的 `artifacts/graphs/`。
 
 ### 3.8 知识提交检查
 

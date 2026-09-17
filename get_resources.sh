@@ -13,9 +13,14 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+PYTHON_BIN="${CANNBOT_PYTHON:-python3}"
 RESOURCE_SCOPE="--all"
 REFRESH_DOCS=false
-usage() { echo "usage: get_resources.sh [--all|--docs|--code] [--refresh]"; }
+
+usage() {
+  echo "usage: get_resources.sh [--all|--docs|--code] [--refresh]"
+}
+
 for option in "$@"; do
   case "$option" in
     --all|--docs|--code) RESOURCE_SCOPE="$option" ;;
@@ -28,16 +33,35 @@ if [[ "$RESOURCE_SCOPE" == "--code" && "$REFRESH_DOCS" == "true" ]]; then
   echo "--refresh applies only to documentation" >&2
   exit 2
 fi
+command -v "$PYTHON_BIN" >/dev/null 2>&1 || {
+  echo "Missing Python interpreter: $PYTHON_BIN" >&2
+  exit 1
+}
 
 fetch_documents() (
+for required_command in curl tar mktemp; do
+  command -v "$required_command" >/dev/null 2>&1 || {
+    echo "Missing required command: $required_command" >&2
+    exit 1
+  }
+done
+
 TARGET_DIR="$SCRIPT_DIR/cann-docs-raw"
 REGISTRIES="$SCRIPT_DIR/governance/schemas/registries.yaml"
 REPAIR_SCRIPT="$SCRIPT_DIR/.agents/skills/knowledge-ingest/scripts/repair_fixed_archive.py"
-URL=$(python3 - "$REGISTRIES" <<'PYTHON'
+
+if [[ ! -f "$REGISTRIES" ]]; then
+  echo "Missing governance registry: $REGISTRIES" >&2
+  exit 1
+fi
+
+URL=$("$PYTHON_BIN" - "$REGISTRIES" <<'PYTHON'
 import re
 import sys
 from pathlib import Path
+
 import yaml
+
 source = yaml.safe_load(Path(sys.argv[1]).read_text(encoding="utf-8"))["local_sources"]["cann_docs_raw"]
 url = source.get("archive_url")
 if not isinstance(url, str) or not re.fullmatch(r"https://[^\s/?#@]+/[^\s#]+", url):
@@ -49,14 +73,21 @@ PYTHON
 repair_published_code_links() {
   local source_root="$1/asc-devkit/docs/zh"
   [[ -d "$source_root" ]] || return 0
-  python3 "$REPAIR_SCRIPT" sync --source-root "$source_root"
+  if [[ ! -f "$REPAIR_SCRIPT" ]]; then
+    echo "Missing fixed archive repair script: $REPAIR_SCRIPT" >&2
+    exit 1
+  fi
+  "$PYTHON_BIN" "$REPAIR_SCRIPT" sync --source-root "$source_root"
 }
+
 write_complete_marker() {
-  printf 'archive_url=%s\nprepared_at=%s\n' "$URL" "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" > "$1/.complete"
+  printf 'archive_url=%s\nprepared_at=%s\n' \
+    "$URL" "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" > "$1/.complete"
 }
 
 if [[ -e "$TARGET_DIR" || -L "$TARGET_DIR" ]]; then
-  if [[ -L "$TARGET_DIR" || ! -d "$TARGET_DIR" || -L "$TARGET_DIR/.complete" || ! -f "$TARGET_DIR/.complete" ]]; then
+  if [[ -L "$TARGET_DIR" || ! -d "$TARGET_DIR" || \
+        -L "$TARGET_DIR/.complete" || ! -f "$TARGET_DIR/.complete" ]]; then
     echo "Refusing to overwrite incomplete source directory: $TARGET_DIR" >&2
     exit 1
   fi
@@ -102,6 +133,6 @@ if [[ "$RESOURCE_SCOPE" != "--code" ]]; then
   fetch_documents
 fi
 if [[ "$RESOURCE_SCOPE" != "--docs" ]]; then
-  python3 "$SCRIPT_DIR/.agents/skills/knowledge-ingest/scripts/source_resources.py" \
+  "$PYTHON_BIN" "$SCRIPT_DIR/.agents/skills/knowledge-ingest/scripts/source_resources.py" \
     --knowledge-root "$SCRIPT_DIR" fetch
 fi

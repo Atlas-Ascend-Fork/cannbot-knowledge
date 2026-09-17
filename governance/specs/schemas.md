@@ -15,7 +15,9 @@
 
 同一规则只能有一个机器事实源：字段形状归 JSON Schema，字段组合和 `okf_type` 归 Profile，受控值归 Registry，依赖路径、其他字段或其他文件的关系归 Contract。
 
-顶层字段是否必选只由 `profiles.yaml` 的 `common_required` 与各 Profile `required` 声明；Frontmatter Schema 不重复顶层 `required`，但仍负责 `sources[].resource`、`verified.by/at` 等嵌套对象的必选字段。`title` 和 `description` 的字符串类型归 Schema，非空文本语义归 Profile 检查。Contract 直接消费这些声明，只保留现有的可加载性和 `okf_type` 基础检查，不增加 required/optional 重复、交叉或 Schema 字段名单等 Profile 声明自校验层。
+顶层字段是否必选只由 `profiles.yaml` 的 `common_required` 与各 Profile `required` 声明。Frontmatter Schema 不重复顶层 `required`，但仍负责 `sources[].resource`、`verified.by/at` 等嵌套对象的必选字段。`title` 和 `description` 的字符串类型归 Schema，非空文本语义归 Profile 检查。
+
+Contract 直接消费这些声明，只保留现有的可加载性和 `okf_type` 基础检查，不增加 required/optional 重复、交叉或 Schema 字段名单等 Profile 声明自校验层。
 
 ## Registry 分区
 
@@ -30,9 +32,13 @@
 | `platforms` | 卡片适用平台 ID | Frontmatter 校验和 platform 过滤 |
 | `tags` | task、topic、paradigm 三个维度的规范标签 | 标签校验、任务映射、过滤和召回 |
 
-`local_sources` 以 `kind: git` 声明固定源码资源，包含安全的仓库相对 `root`、可执行 `fetch_script`、规范 `repository` 和非空、去重、排序的 40 位 `revisions`；Git 根可多级组织，根之间必须唯一且无祖先/后代重叠，规范仓库身份也不能重复，不得使用知识或治理设施目录。无 `kind` 或 `kind: archive` 保持归档顶层根语义，要求 HTTPS `archive_url`，不登记或校验归档/内容树 SHA-256；Git 定义不能混入归档字段。Contract 共用完整来源根匹配、来源解析和 checkout 校验；源码不属于 Bundle，不形成图谱节点。离线缺根允许校验路径形状，根已存在时必须检查版本与文件。
+`local_sources` 以 `kind: git` 声明固定源码资源，包含安全的仓库相对 `root`、可执行 `fetch_script`、规范 `repository` 和非空、去重、排序的 40 位 `revisions`。Git 根可多级组织，根之间必须唯一且无祖先/后代重叠；规范仓库身份也不能重复，且不得使用知识或治理设施目录。
 
-文档归档 `mirror` 的转换策略同样由 Registry 声明。当前 `navigation_policy: index_only` 表示 README、发布占位、纯链接目录和接口清单不形成 Concept，来源链接改到最近的有效目录 `index.md`；`omit_section_title_contains` 声明只进入结构化元数据、不在知识正文重复保留的章节标题片段。`api_operator_display_limit` 是正整数，只限制按需 API 引用建议的展示数量，完整调用证据保存在 ignored 审计报告中，不限制现有正文链接或图谱边。同步器和 Lint 必须共同消费这些声明，不能各自维护隐藏例外。
+无 `kind` 或使用 `kind: archive` 时保持归档顶层根语义，要求 HTTPS `archive_url`，不登记或校验归档与内容树 SHA-256；Git 定义不能混入归档字段。Contract 共用完整来源根匹配、来源解析和 checkout 校验。源码不属于 Bundle，不形成图谱节点；离线缺根时只校验路径形状，根已存在时再检查版本与文件。
+
+文档归档 `mirror` 的转换策略同样由 Registry 声明。当前 `navigation_policy: index_only` 表示 README、发布占位、纯链接目录和接口清单不形成 Concept，来源链接改到最近的有效目录 `index.md`；`omit_section_title_contains` 声明只进入结构化元数据、不在知识正文重复保留的章节标题片段。
+
+`api_operator_display_limit` 是正整数，只限制按需 API 引用建议的展示数量。完整调用证据保存在由 Git 忽略的审计报告中，不限制现有正文链接或图谱边。同步器和 Lint 必须共同消费这些声明，不能各自维护隐藏例外。
 
 Contract 对 API/Guide 的归档镜像识别只采用 `primary` 来源；未声明 `role` 的旧来源保留原有匹配行为。显式标为 `supporting`、`example` 等非主来源的归档引用不把整张蒸馏卡变成镜像：卡片仍遵守普通正文约束，也不从辅助文档推导整卡平台。镜像可以保留原文多个 H1，但无 H1 仍失败。正文、平台和文档回归共同调用这一判定；实际镜像的来源绑定、正文保真和元数据仍由文档归档复验检查，不通过改写来源角色跳过复验。
 
@@ -60,7 +66,7 @@ technology 与 scope 的 ID 不得重叠；每个 route 必须声明允许出现
                               本地图谱构建前校验
 ```
 
-图谱复用同一 Contract 校验知识卡和正文链接，仅以 Concept 为节点、卡片间已有 Markdown 链接为有向 `links_to` 边；API 与算子关联也使用这些链接。Index 不进入图谱，不从目录或语义相似性推断边。构图按需执行，只在 ignored 的 `artifacts/graphs/` 写派生产物，不依赖判定缓存或回写知识卡。
+图谱复用同一 Contract 校验知识卡和正文链接，仅以 Concept 为节点、卡片间已有 Markdown 链接为有向 `links_to` 边；API 与算子关联也使用这些链接。Index 不进入图谱，不从目录或语义相似性推断边。构图按需执行，只在 Git 忽略的 `artifacts/graphs/` 写派生产物，不依赖判定缓存或回写知识卡。
 
 ## 为什么需要 Contract
 

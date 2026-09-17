@@ -14,7 +14,7 @@
 ## 不适用场景
 
 - 问题与 CANN 工程知识无关；
-- 目标是直接编写代码，而不是查询知识；
+- 任务只要求执行代码，不需要检索或引用知识；
 - 目标技术或平台完全不明确；
 - 索引不可用。
 
@@ -61,12 +61,12 @@
 
 - 索引缺失、损坏或过期：停止查询，报告索引不可用。
 - 技术或平台无法确认：请求补充信息。
-- 当前范围没有结果：按[用户指南](../docs/user_guide.md#没有结果时怎么办)检查索引、覆盖情况和查询条件。
+- 当前范围没有结果：按[安装与使用指南](../docs/installation_and_usage.md#没有结果时怎么办)检查索引、覆盖情况和查询条件。
 - 来源无法支持关键结论：说明证据不足。
 - 多张卡片在相同范围内互相冲突：保留冲突，不给出单一确定结论。
 
 ## 相关规则和延伸阅读
 
-- [知识库用户指南](../docs/user_guide.md)
+- [安装与使用指南](../docs/installation_and_usage.md)
 - [`knowledge-query` Skill](../.agents/skills/knowledge-query/SKILL.md)
 - [Frontmatter 与证据](../governance/specs/frontmatter.md)

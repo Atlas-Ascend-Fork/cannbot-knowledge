@@ -15,7 +15,7 @@ Frontmatter 保存检索、适用范围、生命周期和来源等结构化信�
 | `description` | 不打开正文也能理解的摘要 | 非空 |
 | `tags` | 工程任务和讨论主题 | 2–6 个、不可重复，至少一个 `task.*` 和一个 `topic.*` |
 | `status` | 生命周期和默认查询可见性 | `draft`、`stable` 或 `deprecated` |
-| `sources` | 可回到原文或证据的入口 | 数组；轨迹型 `Runbook` 可为空，其它非 `draft` 卡至少一项 |
+| `sources` | 可回到原文或证据的入口 | 数组；轨迹型 `Runbook` 可为空，其他非 `draft` 卡至少一项 |
 | `created_at` | 卡片首次形成时间 | UTC RFC 3339 秒精度，以 `Z` 结尾 |
 | `updated_at` | 最近一次实质变更时间 | 同上，且不得早于 `created_at` |
 
@@ -103,7 +103,8 @@ sources:
 - 除 `Runbook` 外，`stable` 和 `deprecated` 至少有一项来源，`draft` 可以使用 `sources: []`；
 - `resource` 接受 HTTP(S) URL 或已登记的本地来源；本地路径必须位于 Registry 登记的来源根目录中，不得是绝对路径、包含 `..`、反斜杠、查询参数或 fragment；Git 来源根可使用安全的多级相对路径，不能位于知识或治理设施目录中，也不能与其他来源根重叠；
 - GitCode、GitHub、Gitee、GitLab、Bitbucket 和 Codeberg 上的文件、目录和 raw 来源必须固定到 40 位 commit，分支名和裸仓库首页不通过；GitCode/GitHub PR 与 Issue 可以直接使用对应仓库的规范工作项 URL，不要求 commit；
-- Git 本地来源使用 `cann-ops-raw/ascendc/ops-nn/<40位commit>/<文件路径>` 等 Registry 登记路径，相对于知识仓根；四个算子仓统一放在 `cann-ops-raw/ascendc/<仓库名>/` 下。Registry 的 `repository` 与 `revisions` 保留远程来源和版本身份。统一获取入口按固定提交恢复，不跟随分支。正文源码链接相对于卡片目录，可带 `#L71` 或 `#L71-L80` 行号，仅作来源导航，不生成 Concept 或允许索引跳出 Bundle。已恢复 checkout 必须来源、提交、工作区一致，不能覆盖有本地修改的源码；原提交不存在的路径不得伪造或换版本，保留固定远程来源并报告缺口。
+- Git 本地来源使用 `cann-ops-raw/ascendc/ops-nn/<40位commit>/<文件路径>` 等 Registry 登记路径，相对于知识仓根；四个算子仓统一放在 `cann-ops-raw/ascendc/<仓库名>/` 下。Registry 的 `repository` 与 `revisions` 保留远程来源和版本身份，统一获取入口按固定提交恢复，不跟随分支；
+- 正文源码链接相对于卡片目录，可带 `#L71` 或 `#L71-L80` 行号，仅作来源导航，不生成 Concept，也不允许索引跳出 Bundle。已恢复 checkout 必须来源、提交和工作区一致；不能覆盖有本地修改的源码，也不能为原提交中不存在的路径伪造或替换版本，此时应保留固定远程来源并报告缺口；
 - 本地来源必须由仓库记录的获取流程提供；全库 Lint 要求获取脚本存在且可执行。当前 `cann-docs-raw/` 由 `get_resources.sh` 按 Registry 的 `archive_url` 恢复，并保持 Git 忽略；官方文档持续更新，不校验归档或内容树 SHA-256。本地根存在时，Lint 检查 `.complete` 的来源 URL 和被引用文件；
 - Lint 不联网，也不判断来源是否支持结论；本地根尚未恢复时只检查注册路径形状。
 
@@ -165,4 +166,4 @@ source_headers:
 - 文档归档 API 使用 `adv_api/`、`aicpu_api/`、`basic_api/`、`c_api/`、`simt_api/`、`tensor_api/`、`utils/` 下的公开 `.h` 路径，并统一补全 `include/` 前缀；路径不得含绝对路径、空段、`.`、`..` 或反斜杠。聚合兜底头（如 `kernel_operator.h`）不作为具体 API 的头文件定位信息。
 - 值优先来自源文档正文的「头文件路径为：」声明与 `#include "..."`。缺少明确路径时，可依据固定版本源码审阅补充；必须区分声明与调用、注释及同名符号，不能仅凭符号出现位置判定声明头文件。
 - 文档归档不含 `include/` 源码树。重复同步从文档重算显式路径；没有显式路径时，保留同一 `primary` 文档来源卡片中已有的合法补充，不猜测新路径。归档校验仅验证这些补充的格式和来源绑定，不声称重新扫描或证明源码声明；来源版本升级时须重新审阅补充路径，路径字符串未变也不能视为已验证新版本。
-- 需单独链接的库文件（`.so`/`.a`）信息后续落地，当前不在该字段表达。
+- `source_headers` 不表达需要单独链接的库文件（`.so`/`.a`）。

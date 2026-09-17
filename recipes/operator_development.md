@@ -18,7 +18,7 @@
 
 ## 前置条件与输入
 
-- Python 3.10 或更高版本，以及一个已存在的算子开发项目。
+- 已按安装指南准备好查询能力的算子开发项目。
 - 算子名、输入输出、数据类型、布局、形状范围、精度要求和性能目标。
 - 已确认的目标硬件、Ascend C 技术路线、ACLNN 或 Direct 调用方式。
 - 工程实际使用的 CANN 版本和验证入口；排障任务还需首发错误、日志和当前实现。
@@ -27,16 +27,7 @@
 
 ### 1. 安装到算子项目
 
-在知识仓安装运行依赖，再安装 consumer Skill：
-
-```bash
-git clone https://gitcode.com/cann/cannbot-knowledge.git
-cd cannbot-knowledge
-python3 -m pip install -r requirements.txt
-bash init.sh claude /path/to/operator-project consumer
-```
-
-客户端选择、离线安装和资源恢复见根 [README](../README.md#安装到项目)。安装器准备项目级 Skill 链接、配置、提示词及知识仓索引；目标项目路径必须已经存在。知识仓移动后需处理旧链接再重新安装，单独修改知识根变量不能修复失效的 Skill 链接。
+按照[安装与使用指南](../docs/installation_and_usage.md#安装)，以 `consumer` 模式把知识库安装到已有算子项目。客户端选择、离线选项和资源恢复均以该指南为准。知识仓移动后应重新运行安装器；单独修改知识根变量不能修复失效的 Skill 链接。
 
 ### 2. 确认覆盖并检索
 
@@ -69,18 +60,17 @@ Ascend C API 使用 ascendc-api-knowledge-query 核对。
 交付时报告知识依据、实际结果和未覆盖范围；来源不足或冲突时明确说明。
 ```
 
-### 4. 更新知识仓后重新准备索引
+### 4. 更新知识仓后刷新安装
 
-先保留本地未提交修改，确认分支，再更新并对同一项目重新运行安装器：
+从本地 checkout 安装时，先妥善处理未提交修改并确认分支，再更新仓库并对同一项目重新运行安装器：
 
 ```bash
 cd /path/to/cannbot-knowledge
 git pull --ff-only
-python3 -m pip install -r requirements.txt
-bash init.sh claude /path/to/operator-project consumer
+bash install.sh claude /path/to/operator-project consumer
 ```
 
-重新安装会准备索引并复用一致的链接。随后通过 Query 确认覆盖和目标查询正常；若来源与知识卡不一致导致准备失败，交由维护者按 Ingest 流程处理。资源下载成功或 Git 更新成功，都不代表查询索引已经可用。
+在线脚本或显式托管目录会在安全条件满足时自动快进，因此不需要手工执行上述 Git 更新。重新安装后，通过 Query 确认覆盖和目标查询正常；若来源与知识卡不一致导致准备失败，交由维护者按 Ingest 流程处理。资源下载或 Git 更新成功，都不代表查询索引已经可用。
 
 ## 预期产物
 
@@ -103,7 +93,7 @@ bash init.sh claude /path/to/operator-project consumer
 
 ## 延伸阅读
 
-- [用户指南](../docs/user_guide.md)
+- [安装与使用指南](../docs/installation_and_usage.md)
 - [形成可追溯回答](answer_with_evidence.md)
 - [使用知识库查询 API](api_search.md)
 - [贡献知识](contribute_knowledge.md)
