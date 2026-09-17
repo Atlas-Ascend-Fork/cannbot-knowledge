@@ -8,6 +8,7 @@
 - [全空输出用例不构成红基线：空张量比对短路恒过](empty_output_cases_cannot_form_red_baseline.md)：测试先行阶段，预期输出全为空张量（0 字节）的用例结构上必然 PASS——poison 跳过+读回跳过+比对 n==0 短路；红基线信号只能来自 kernel 必须写入的输出。
 - [GEIR 负向拒绝签名 — RunGraph rc=255 EZ9999](geir_negative_reject_rungraph_rc255_ez9999.md)：GEIR 图模式负向非法输入在图执行阶段以 PRECISION_STATUS: ERROR（RunGraph failed -1, EZ9999 Inner Error）真实拒绝且 Kernel 未执行；勿当框架故障，勿把 PASS/SKIP/INVALID/精度 FAIL 当拒绝。
 - [aclnn L2 负向须真实违约并锁错误码](l2_negative_true_violation_lock_error_code.md)：黑盒 ACLNN ST 的 L2 负向用例每行必须真实违反至少一条 proto 契约、remark 锁定期望 ACL 错误码；缺必选参数用 None 形状锁原始输入，不造派生量。
+- [arch22→arch35 移植与反向生成算子的 NPU 验证](npu_ut_validation.md)：先划真值边界（默认内容寻址的 KernelBench 风格 task/sidecar，a3_live 源侧实测为显式回退，反向以前向契约与解析梯度为准），再按 R0 构建来源证明到 R5 属性 oracle 的顺序逐项验证。
 - [OOM 插桩是编译期：release 套件 OOB=UNKNOWN 属预期](oom_debug_config_compile_time_instrumentation.md)：op_debug_config=oom 为编译期插桩，不能附在 -b release 上冒充已检测；OOB 证据须 -d true 动态编译套件单独产出，UNKNOWN 不得当 PASS，且要与 tiling 拒收型 UNKNOWN 区分。
 - [TilingContext 独立探针配方（builder 双坑）](optilingcontextbuilder_probe_deleted_copy_compileinfo.md)：用 gert::OpTilingContextBuilder 构造 standalone TilingContext 探针；Tensor 不可拷贝须传指针，Build 前必须喂 CompileInfo 否则得到空 context；附完整探针代码与编译链接命令。
 - [ST 红基线输出 poison 防 stub 巧合命中](st_red_baseline_poison_prefill_exact_zero.md)：接口桩 kernel 不写输出时，输出设备缓冲预填有限哨兵（fp32 3e30/fp16 30000/bf16 截断 3e30），防全零期望用例在红基线意外通过。

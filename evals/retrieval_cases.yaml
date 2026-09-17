@@ -322,7 +322,7 @@ cases:
     expected:
       - common/platforms/concepts/ascend_910b
   - id: common_platform_unmatched_terms_search
-    query: platform mapping
+    query: thermal throttling policy
     filters:
       domain: common
       technology: platforms
