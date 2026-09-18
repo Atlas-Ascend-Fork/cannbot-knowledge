@@ -189,3 +189,6 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscCeil：固定 reference 调用约束](../../../../../guides/regbase/asc_ceil_reference_contract.md)

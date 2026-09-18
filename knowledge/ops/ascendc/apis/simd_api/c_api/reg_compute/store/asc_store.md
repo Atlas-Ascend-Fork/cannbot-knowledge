@@ -235,3 +235,6 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscStore：固定 reference 调用约束](../../../../../guides/regbase/asc_store_reference_contract.md)

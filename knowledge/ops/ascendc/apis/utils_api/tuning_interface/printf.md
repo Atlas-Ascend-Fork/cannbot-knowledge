@@ -225,3 +225,6 @@ simt vf: d: (0, 1, 0), f: 3.140000, s: pass
 simt vf: d: (1, 1, 0), f: 3.140000, s: pass
 ......
 ```
+
+
+- [Printf：固定 reference 调用约束](../../../guides/diagnostics/ascendc_printf_reference_contract.md)

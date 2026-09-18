@@ -168,3 +168,6 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscLoad：固定 reference 调用约束](../../../../../guides/regbase/asc_load_reference_contract.md)

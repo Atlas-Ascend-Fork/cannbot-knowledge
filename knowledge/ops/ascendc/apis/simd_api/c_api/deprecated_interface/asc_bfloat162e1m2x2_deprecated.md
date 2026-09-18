@@ -109,3 +109,6 @@ vector_bool mask = asc_create_mask_b16(PAT_ALL);
 asc_loadalign(src, src_addr); // src_addr是外部输入的Unified Buffer（UB）内存空间地址。
 asc_bfloat162e1m2x2_rn(dst, src, mask);
 ```
+
+
+- [asc_bfloat162e1m2x2 (废弃)：固定 reference 调用约束](../../../../guides/regbase/asc_bfloat162e1m2x2_deprecated_reference_contract.md)

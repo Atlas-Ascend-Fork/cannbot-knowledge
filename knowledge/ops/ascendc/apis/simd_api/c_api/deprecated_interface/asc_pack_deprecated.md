@@ -77,3 +77,5 @@ vector_uint16_t src;
 asc_pack(dst, src);    // 将src的低8位写入dst的低半部分
 asc_pack_v2(dst, src);    // 将src的低8位写入dst的高半部分
 ```
+
+- [asc_pack (废弃)：固定 reference 调用约束](../../../../guides/regbase/asc_pack_deprecated_reference_contract.md)

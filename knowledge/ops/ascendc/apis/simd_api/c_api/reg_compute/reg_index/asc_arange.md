@@ -215,3 +215,6 @@ int main()
     return 0;
 }
 ```
+
+
+- [AscArange：固定 reference 调用约束](../../../../../guides/regbase/asc_arange_reference_contract.md)

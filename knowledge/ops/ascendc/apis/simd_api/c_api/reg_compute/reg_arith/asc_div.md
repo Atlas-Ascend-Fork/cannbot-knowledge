@@ -217,3 +217,6 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscDiv：固定 reference 调用约束](../../../../../guides/regbase/asc_div_reference_contract.md)

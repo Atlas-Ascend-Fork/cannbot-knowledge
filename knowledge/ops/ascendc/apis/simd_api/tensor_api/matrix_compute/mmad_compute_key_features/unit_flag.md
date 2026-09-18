@@ -106,3 +106,6 @@ copy(fixpipe_atom, gm, l0c);
 | 128 | 256 | 512 | Disable | 8 | 4156 | 4225 |
 | 128 | 128 | 512 | Enable | 8 | 2108 | 2172 |
 | 128 | 128 | 512 | Disable | 8 | 2108 | 2172 |
+
+
+- [UnitFlag：固定 reference 调用约束](../../../../../guides/blaze/tensor_api_unit_flag_reference_contract.md)

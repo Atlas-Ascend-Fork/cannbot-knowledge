@@ -188,3 +188,6 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscUpdateMask：固定 reference 调用约束](../../../../../guides/regbase/asc_update_mask_reference_contract.md)

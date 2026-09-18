@@ -227,3 +227,6 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscGather：固定 reference 调用约束](../../../../../guides/regbase/asc_gather_reference_contract.md)

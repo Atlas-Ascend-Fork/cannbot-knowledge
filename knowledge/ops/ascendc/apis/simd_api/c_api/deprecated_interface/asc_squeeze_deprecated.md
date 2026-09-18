@@ -80,3 +80,6 @@ asc_loadalign(src, src_addr); // src_addr是外部输入的Unified Buffer（UB�
 vector_int8_t dst;
 asc_squeeze_v2(dst, src, mask);
 ```
+
+
+- [AscSqueezeV2：固定 reference 调用约束](../../../../guides/regbase/asc_squeeze_deprecated_reference_contract.md)

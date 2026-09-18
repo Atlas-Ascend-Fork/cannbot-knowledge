@@ -110,3 +110,6 @@ fmt string 291
 fmt string 3.140000
 TEST 0xdfffd6fddd1c
 ```
+
+
+- [printf（AI CPU API）：固定 reference 调用约束](../../guides/diagnostics/aicpu_printf_reference_contract.md)

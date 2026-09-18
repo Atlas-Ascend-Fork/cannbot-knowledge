@@ -252,3 +252,6 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscDeintlv：固定 reference 调用约束](../../../../../guides/regbase/asc_deintlv_reference_contract.md)

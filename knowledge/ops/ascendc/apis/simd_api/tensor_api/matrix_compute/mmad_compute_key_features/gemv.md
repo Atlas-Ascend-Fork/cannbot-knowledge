@@ -115,3 +115,6 @@ __aicore__ inline void mmad_gemv_example(__gm__ half* a_gm, __gm__ half* b_gm, _
     mmad(atom, l0c, l0a_tensor, l0b);
 }
 ```
+
+
+- [基础APIGEMV：固定 reference 调用约束](../../../../../guides/blaze/tensor_api_gemv_reference_contract.md)

@@ -10,3 +10,41 @@
 - [快速开始](quick_start.md)：根据本地是否有NPU设备和使用目标选择对应的环境准备方式：
 - [AscendC SIMD Development Reference](simd_development_reference.md)：AscendC SIMD 开发参考，主张 arch35/A5 上多算子计算链默认走 Regbase MicroAPI 而非 Membase LocalTensor（后者每步 UB 往返加 PipeBarrier，实测拖累可达数十倍）；另含量化 kernel 常用 SIMD API 与 MXFP4 范式。
 - [technical appendix](technical_appendix/index.md)：AscendC::TPosition::A1代表设备上用于矩阵计算的逻辑内存，用于存放左矩阵，物理存储对应AI Core的L1 Buffer。
+
+- [regbase](regbase/index.md)：补全 API 汇总中的模板、有效 lane、分组归约和局部存储约束，区分候选目录与实现证据。
+
+- [blaze](blaze/index.md)：将 Block/Copy 的合法 base shape 与 Scheduler 的当前逻辑范围分开，按实际消费者校验 tiling、workspace 和融合后处理。
+- [catlass](catlass/index.md)：保存长度、布局、mask 和 MLA 语义，限制固定尺寸与通路结论。
+- [diagnostics](diagnostics/index.md)：固定 reference 的调用约束与版本边界。该接口实现AI CPU算子Kernel调试场景下的assert断言功能。 算子执行中，如果assert内部条件判断不为真，则输出assert条件、触发文件名、行号等信息。
+- [memory](memory/index.md)：修正以元素数冒充字节数的多处说明，保存不同类型的物理布局。
+- [moe](moe/index.md)：将特征、来源三元组、收发计数和量化 scale 按同一有效条目顺序关联，区分最大容量与本轮实际 token 数。
+- [reductions](reductions/index.md)：保留 TwoPass、Welford 与分组归约的适用条件。
+- [vector](vector/index.md)：补充向量标量分流、scope 搬运和重载身份，限制机械映射。
+
+- [layouts](layouts/index.md)：纠正BA/AB方向及Select极性，保留Softmax布局。
+- [shmem](shmem/index.md)：Blaze Heavy Kernel 覆盖与性能条件的来源实现、适用条件与审视结论。
+- [synchronization](synchronization/index.md)：用读写集合区分 RAW、WAR 和 WAW，说明额外缓冲与局部屏障的实际作用。
+- [torch extensions](torch_extensions/index.md)：对齐 ACLNN 参数、GE OpDef、PyTorch schema 与 Meta/图转换，避免将不同接口层的名称和顺序直接互换。
+
+- [communications](communications/index.md)：APACE AllGather 预触发与 scale 等待边界的来源实例与适用边界。
+- [matmul](matmul/index.md)：补齐 Iterate 与 IterateAll 的不同调用、workspace 单位及消费前完成边界。
+- [sorting](sorting/index.md)：保存小维度稀疏更新中按索引分组的机制，明确原始位置、跨块分组和累计顺序。
+
+- [simt](simt/index.md)：保留维度和数值语义映射，纠正 shuffle 参数及 VF 统一禁令。
+
+- [tiling](tiling/index.md)：保存多路径选择，纠正D为1直通和未执行Tiling的路径。
+
+- [environments](environments/index.md)：纠正设备修饰符和命名空间的误判，保存Tensor、队列及Mask操作边界。
+
+- [registration](registration/index.md)：核对 L2、L0、OpDef、图推导与 Kernel 的实际支持域，补足广播和空输入检查。
+
+- [attention](attention/index.md)：纠正设计中的二次除法，保存mask、分核和内存尺度条件。
+- [performance](performance/index.md)：APACE Host 参数接线与实际计时的来源实例与适用边界。
+
+- [pooling](pooling/index.md)：区分物理行距、有效尾部和特定快速路径的支持范围。
+
+- [data movement](data_movement/index.md)：保存多维搬运和MX物理行距，补齐参数状态与反向映射。
+
+- [testing](testing/index.md)：APACE 多rank启动与 context 复用范围的来源实例与适用边界。
+
+- [compilation](compilation/index.md)：APACE 构建根目录与版本化符号的来源实例与适用边界。

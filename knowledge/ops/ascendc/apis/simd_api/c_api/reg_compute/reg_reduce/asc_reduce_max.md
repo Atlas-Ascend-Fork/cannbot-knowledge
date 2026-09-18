@@ -167,3 +167,6 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscReduceMax：固定 reference 调用约束](../../../../../guides/regbase/asc_reduce_max_reference_contract.md)

@@ -195,3 +195,6 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscTrunc：固定 reference 调用约束](../../../../../guides/regbase/asc_trunc_reference_contract.md)

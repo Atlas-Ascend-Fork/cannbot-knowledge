@@ -93,3 +93,6 @@ assert(assertFlag == 12);
 [ASSERT]` assertFlag == 12 ' at /home/.../test.cpp:36
 ```
 
+
+
+- [assert（AI CPU API）：固定 reference 调用约束](../../guides/diagnostics/aicpu_assert_reference_contract.md)

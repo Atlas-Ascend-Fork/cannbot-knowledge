@@ -73,3 +73,6 @@ PIPE_V
 ## 调用示例
 
 见[地址寄存器调用示例](../defs/type/data_type_definition.md#example4)。
+
+
+- [asc_create_iter_reg (废弃)：固定 reference 调用约束](../../../../guides/regbase/asc_create_iter_reg_deprecated_reference_contract.md)

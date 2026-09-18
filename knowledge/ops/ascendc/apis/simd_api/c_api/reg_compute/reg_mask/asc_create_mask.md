@@ -173,3 +173,6 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscCreateMask：固定 reference 调用约束](../../../../../guides/regbase/asc_create_mask_reference_contract.md)

@@ -188,3 +188,7 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+
+- [AscSqueeze：固定 reference 调用约束](../../../../../guides/regbase/asc_squeeze_reference_contract.md)
+- [比较与选择：固定 reference 调用约束](../../../../../guides/regbase/compare_and_select_reference_contract.md)
