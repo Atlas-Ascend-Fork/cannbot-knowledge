@@ -1,6 +1,12 @@
 # cannbot-knowledge
 
-`cannbot-knowledge` 是 CANNBot 使用的知识库。它不把算子工程或模型代码作为知识正文提交，而是把经过整理、能够追溯到登记的文档来源、固定版本源码或卡内原始观测的工程知识保存成 Markdown 知识卡，例如：
+CANNBot 是 [CANN](https://hiascend.com/software/cann) 社区的 Infra 智能体层，用 Agent 完成 AscendC/PyPTO/TileLang/Triton 等各类语言的算子开发、模型迁移与推理优化，并延伸至图模式、Runtime 等更多 CANN 开发场景。
+
+本仓（cannbot-knowledge）是其知识仓，提供知识库检索货架；仓群还包括 [cannbot](https://gitcode.com/cann/cannbot)、[cannbot-skills](https://gitcode.com/cann/cannbot-skills)、[cannbot-dsl](https://gitcode.com/cann/cannbot-dsl)、[cann-bench](https://gitcode.com/cann/cann-bench)、[cannbot-sentry](https://gitcode.com/cann/cannbot-sentry) 等仓库，结构如下。
+
+![CANNBot 仓群结构](docs/figures/cannbot-repo-map.png)
+
+本仓不把算子工程或模型代码作为知识正文提交，而是把经过整理、能够追溯到登记的文档来源、固定版本源码或卡内原始观测的工程知识保存成 Markdown 知识卡，例如：
 
 - 某个 CANN API 的语义和使用限制；
 - 某种算子 DSL 的编程模型；
