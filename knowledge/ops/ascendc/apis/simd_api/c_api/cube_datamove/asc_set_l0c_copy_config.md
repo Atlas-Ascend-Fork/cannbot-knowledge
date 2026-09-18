@@ -10,9 +10,11 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_set_l0c_copy_config.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-09-17T12:29:57Z'
 platforms:
 - '950'
+- a2
+- a3
 source_headers:
 - include/c_api/cube_datamove/cube_datamove.h
 - include/c_api/asc_simd.h
