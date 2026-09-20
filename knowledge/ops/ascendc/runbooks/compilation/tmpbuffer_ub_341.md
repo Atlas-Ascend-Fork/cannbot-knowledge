@@ -75,9 +75,9 @@ errorStr: The address for VEC to access UB is out of bounds. subErrType: 0x4
 
 ## 验证信号
 
-- TTK 运行 nlast 用例：`error code = 341`，`errorStr: The address for VEC to access UB is out of bounds. subErrType: 0x4`，56 个 core 全报错（来源平台:950；证据等级:tool_observed）
-- tmpBuffer 分配 48480 bytes < 访问 58176 bytes（`ubFormer1=303` × `xLastAlign_=48` × `sizeof(float)` vs `xLastAlignB32_=40`），越界点 `i≈252`（来源平台:950；证据等级:artifact_verified，由 AIC_INFO tiling data 解码 + kernel 源码步长算式重建）
-- int32 输入时 `xLastAlign_ == xLastAlignB32_ = 40` 不触发该错误（来源平台:950；证据等级:artifact_verified，dtype 对齐算式反证）
+- TTK 运行 nlast 用例：`error code = 341`，`errorStr: The address for VEC to access UB is out of bounds. subErrType: 0x4`，56 个 core 全报错（来源平台：950；证据等级：tool_observed）
+- tmpBuffer 分配 48480 bytes < 访问 58176 bytes（`ubFormer1=303` × `xLastAlign_=48` × `sizeof(float)` vs `xLastAlignB32_=40`），越界点 `i≈252`（来源平台：950；证据等级：artifact_verified，由 AIC_INFO tiling data 解码 + kernel 源码步长算式重建）
+- int32 输入时 `xLastAlign_ == xLastAlignB32_ = 40` 不触发该错误（来源平台：950；证据等级：artifact_verified，dtype 对齐算式反证）
 
 ## 失效边界
 

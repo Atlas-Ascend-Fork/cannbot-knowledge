@@ -42,6 +42,6 @@ platforms: ["950"]
 
 来源：dequant_swiglu_quant 算子从 operators 直调工程迁移至 xpu_ops v2 框架的构建环节，Ascend950PR（dav-3510）硬件。
 
-- `NPU_ARCH=dav-2201` 全量构建返回 exit=2，编译失败（来源平台:950；证据等级:tool_observed）
-- `NPU_ARCH=dav-3510` clean rebuild 返回 exit=0，.so 含 dequant arch_3510 layer object（来源平台:950；证据等级:tool_observed）
-- `NPU_ARCH=dav-2201` 单算子 clean 构建返回 exit=0，.so 1.29MB，link 含 `arch_2201/dequant_swiglu_quant.cpp.o`（来源平台:950；证据等级:tool_observed）
+- `NPU_ARCH=dav-2201` 全量构建返回 exit=2，编译失败（来源平台：950；证据等级：tool_observed）
+- `NPU_ARCH=dav-3510` clean rebuild 返回 exit=0，.so 含 dequant arch_3510 layer object（来源平台：950；证据等级：tool_observed）
+- `NPU_ARCH=dav-2201` 单算子 clean 构建返回 exit=0，.so 1.29MB，link 含 `arch_2201/dequant_swiglu_quant.cpp.o`（来源平台：950；证据等级：tool_observed）

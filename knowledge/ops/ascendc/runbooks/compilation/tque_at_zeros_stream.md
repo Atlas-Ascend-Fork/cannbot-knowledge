@@ -60,10 +60,10 @@ aliases: ["DOUBLE_BUFFER"]
 
 本段只收本 trace 内 `tool_observed` 实测；agent 推断的机制假设不进此段。
 
-- TQue bufNum=1：12 failed / 50 passed（来源平台:950；证据等级:tool_observed）。
-- TQue 输入 double buffer（`inQueueKv_/inQueueSinCos_` bufNum=2）：12 failed（来源平台:950；证据等级:tool_observed）。
-- TQue 全 double（输入+输出都 bufNum=2）：62 failed，error 507035（UB crash）（来源平台:950；证据等级:tool_observed）。
-- TQue 重构后 BUGDIAG：`zero_rows=254244 hist_zr=0 new_zr=254244`，new 区零行数比 TBuf 版（202447）更大（来源平台:950；证据等级:tool_observed）。
+- TQue bufNum=1：12 failed / 50 passed（来源平台：950；证据等级：tool_observed）。
+- TQue 输入 double buffer（`inQueueKv_/inQueueSinCos_` bufNum=2）：12 failed（来源平台：950；证据等级：tool_observed）。
+- TQue 全 double（输入+输出都 bufNum=2）：62 failed，error 507035（UB crash）（来源平台：950；证据等级：tool_observed）。
+- TQue 重构后 BUGDIAG：`zero_rows=254244 hist_zr=0 new_zr=254244`，new 区零行数比 TBuf 版（202447）更大（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

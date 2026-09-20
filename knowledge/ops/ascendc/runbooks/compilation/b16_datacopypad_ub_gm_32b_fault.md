@@ -6,12 +6,12 @@ tags: [task.debugging, topic.alignment, topic.data_movement.memory_access, topic
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-17T01:47:15Z'
 platforms: ["950"]
 cann_versions: ["9.0.0-beta.2"]
 ---
-# b16 DataCopyPad UB→GM 源非 32B 对齐致硬件 fault
 
+# b16 DataCopyPad UB→GM 源非 32B 对齐致硬件 fault
 
 ## 现象
 
@@ -26,7 +26,7 @@ group 分支 kernel 的 3H 边界 clamp 修复后，11 条 ST 用例里只剩 G6
 - 验证过的平台与 CANN 版本：Ascend 950（dav_c220 对应 arch）+ CANN 9.0.0-beta.2。与 frontmatter `platforms` 一致。
 - 适用粒度：operator_family——凡是"归约结果落 UB 后按内部边界分段拷出 GM"的 b16 kernel 都可能踩；对齐元素数 = 32B/sizeof(D_T)（fp16/bf16:16，fp32:8）。
 - 路线优先级：recommended_fastpath（切分因子整除输出边界，源恒对齐）；搬运侧 patch（scratch 中转/分段 padding）为 banned（见坏实践）。
-- 明确不适用/未验证：fp32（elemSz=4，8 元素即 32B，FloorAlign(·,8) 已天然满足）本 trace 中未复现该崩溃；GM→UB 方向无此约束（workspace 搬入全程正常）；多 burst（blockCount=3 + srcStride）形态在 base 内核对非对齐 blockLen 稳定工作，机制差异未验证。
+- 明确不适用/未验证：fp32（elemSz=4，8 元素即 32B，FloorAlign(·,8) 已天然满足）本开发会话 中未复现该崩溃；GM→UB 方向无此约束（workspace 搬入全程正常）；多 burst（blockCount=3 + srcStride）形态在 base 内核对非对齐 blockLen 稳定工作，机制差异未验证。
 
 ## 根因
 
@@ -41,7 +41,7 @@ fp16/bf16 的 UB→GM `DataCopyPad`（blockCount=1）要求 UB 源地址 32B 对
 
 ## 判别方法
 
-无源码级调试器下的定位链（全部为本 trace 实测步骤，可复用为套路）：
+无源码级调试器下的定位链（全部为本开发会话 实测步骤，可复用为套路）：
 
 1. **阶段裁除**：临时把 Phase 2 整体 no-op → G6 由 ERROR 转 FAIL（不崩）→ 崩在 Phase 2。
 2. **替换可疑计算**：`ReduceSum isReuseSource=true→false` 仍崩；`ReduceSum` 换成 `Duplicate(cacheBuf[0], 0.0f, aLenUb)` 仍崩 → 与 ReduceSum 无关。
@@ -275,18 +275,18 @@ __aicore__ inline void ThnnFusedGruCellGradGroupKernel<D_T>::Phase2Process()
 
 ## 性能影响
 
-未测量：切分因子从 136 改为 3H 因数（如 G6 的 120）会改变 Phase 2 的 chunk 数与并行度，本 trace 未做两条切分路线的成对性能对比，采用本方案的性能代价未验证。
+未测量：切分因子从 136 改为 3H 因数（如 G6 的 120）会改变 Phase 2 的 chunk 数与并行度，本开发会话 未做两条切分路线的成对性能对比，采用本方案的性能代价未验证。
 
 ## 失效边界
 
 - 本修复依赖"输出边界 = 3H、总量 = 6H = 2×3H"的结构；若输出边界与总量没有倍数关系（如三路不等宽输出），"因子整除边界"不再适用，需回到多 burst（blockCount>1）或对齐分段方案。
-- 3H 无 ≤cap 的合用因数时循环会退化到小因子（chunk 数变多、并行度下降），极端时因子=1；本 trace 用例未触发（最小因子 48）。
+- 3H 无 ≤cap 的合用因数时循环会退化到小因子（chunk 数变多、并行度下降），极端时因子=1；本开发会话 用例未触发（最小因子 48）。
 - `blockLen 非 32B 对齐 + 源对齐`的安全性在最终版被全量 11/11 间接支持（aUbFactorP2=120 时 blockLen=240B 非对齐仍过），但轨迹内存在反例（见误诊第 2 条），未上升到机制结论；其他平台/后续 CANN 版本未验证，推断可迁移但未验证。
 - fp32 未复现该崩溃（8 元素天然 32B），bf16 与 fp16 同为 b16 路径（P6 bf16 最终通过）。
 
 ## 坏实践
 
-以下路线在本 trace 中全部实测失败或引入新缺陷，不要重复：
+以下路线在本开发会话 中全部实测失败或引入新缺陷，不要重复：
 
 - **scratch 中转**（banned）：
   ```cpp
@@ -313,3 +313,60 @@ __aicore__ inline void ThnnFusedGruCellGradGroupKernel<D_T>::Phase2Process()
 - `DataCopy` UB→UB 源对齐约束为排除法归因，未单独最小复现。
 - `Duplicate` 到非 32B 对齐 dst 是否必然 fault 未单独验证（agent 推断）。
 - Reg::Load / LoadUnAlign 非对齐读路线未实测（调查后放弃）；若未来必须从非对齐 UB 偏移读数据，这是待验证方向。
+
+## 复现增量：errcode 80 显式签名 + blockLen 澄清 + padded 行距布局修复路线
+
+另一独立轨迹并入两个不同分支（RoPE half-BSND 与 interleaved）的同根因实例，扩展三件事：
+
+**1. errcode 80 显式 plog 签名（dav-3510/CANN 9.2.0）**：本卡原实例（dav_c220/9.0.0-beta.2）表现为"无 kernel 报错、仅流同步失败"的静默 fault；新实例在 dav-3510 上有明确设备侧错误码：
+
+```
+The extend info: errcode:(80) errorStr: The MTE non-atomic instruction address is not aligned. subErrType: 0x4.
+```
+
+同一条 507035 下，80（MTE 非原子指令地址未对齐）/340（VEC 访 UB 未对齐）/95（MTE DDR 越界）对应完全不同的根因，先读 plog `errcode/errorStr` 再动手。
+
+**2. blockLen 不要求对齐的实测澄清（关闭本卡未决事项）**：本卡原轨迹内对 blockLen 的作用存在矛盾证据并按"源对齐、blockLen 尽量对齐"双约束处理。新实例给出直接证据：**约束仅在源地址，搬运长度 blockLen 任意字节可过**——D=2 fp32 用例 `blockLen=4B` 通过；`CopyUbufToGmAlignV2` 实现里 `dstStride310 = AlignUp(dstStride*32 + burstLength, 32)` 只约束块间步进，单块 blockCount=1 时只需源地址对齐。"blockLen 非 32B 对齐 + 源对齐"的安全性由全量用例间接支持，仍非机制级结论。
+
+**3. 修复路线二：padded 行距布局（paddedH=alignUp(H,16)）**：本卡原修复是"切分因子整除输出边界"；对逐行 CopyOut 形态（每行从 `o1[row*H]` 取源、`H×sizeof(T)` 非 32B 倍数时 row=1 即非对齐），更直接的修复是平面缓冲行距不用 H 而用 `paddedH = alignUp(H, 16)`（16 元素同时覆盖 fp32 的 8 元素/32B 与 fp16/bf16 的 16 元素/32B 粒度），使每行源偏移 `row × paddedH × sizeof(T)` 恒为 32B 倍数：
+
+```cpp
+    // Init 内：paddedH 与 UB 预算反推
+    const uint32_t H = td_->Dh;
+    paddedH_ = AlignUpU32(H, kAlignElems);   // kAlignElems = 16（32B 覆盖 fp32/fp16）
+    if (paddedH_ < 1) paddedH_ = 1;
+
+    const uint64_t usableUB = 196608ULL;     // usableUB ≈ 192KB
+    uint64_t bytesPerRow;
+    if constexpr (kIsFp32) {
+        bytesPerRow = 7ULL * paddedH_ * sizeof(ComputeT);          // 7 个 fp32 平面缓冲
+    } else {
+        bytesPerRow = 6ULL * paddedH_ * sizeof(T) + 7ULL * paddedH_ * sizeof(ComputeT);
+    }
+    myUbRows_ = static_cast<uint32_t>(usableUB / bytesPerRow);
+    if (myUbRows_ < 1) myUbRows_ = 1;
+```
+
+```cpp
+    // 逐行 CopyOut（padded 行距，src 恒 32B 对齐；blockLen 任意字节即可）
+    for (uint32_t row = 0; row < cnt; ++row) {
+        uint64_t gmOff = static_cast<uint64_t>(rowStart + row) * D;
+        int64_t ubOff = static_cast<int64_t>(row) * paddedH_;  // 32B-aligned
+        AscendC::DataCopyExtParams ext;
+        ext.blockCount = 1;
+        ext.blockLen = H * sizeof(T);    // blockLen 任意字节即可
+        ext.srcStride = 0;
+        ext.dstStride = 0;
+        AscendC::DataCopyPad(gm[static_cast<int64_t>(gmOff)], o1[ubOff], ext);
+        AscendC::DataCopyPad(gm[static_cast<int64_t>(gmOff + H)], o2[ubOff], ext);
+    }
+```
+
+padding 区（每行 `paddedH-H` 个元素）为垃圾值但不被 CopyOut，也不影响有效元素。interleaved 分支实例（同 trace 第二分支）进一步把该布局推广为 `paddedH/paddedD = PadUp(行元素数, 16)` 的通用多行平面布局：flat 紧排（cos/sin 搬到 `cosBuf[r*H]`、CopyOut 从 `out[row*D]` 取源）在 fp16 D<16/fp32 D<8 时除第 0 行外所有行基址都非 32B 对齐，形成"大 D 用例过、小 D 用例全挂 507035"的分化指纹；改 padded 布局后 507035 全部消失。配套细节：缓冲分配额外加 `kTailMargin=128` 元素余量，覆盖 `LoadAlign` 尾块按整寄存器（fp32 一次 64 元素）越读；计算链（DeInterleave/Muls/Mul/asc_vf_call）随之改 per-row 或 whole-chunk on `cnt*paddedH`。
+
+**独立 trace 新增验证信号**（两个分支、同 trace，均为 tool_observed）：
+
+- half 分支：修复前 ST 10/11 数值用例 507035，plog `errcode:(80) The MTE non-atomic instruction address is not aligned. subErrType: 0x4`；D=128 fp16 用例（128B 行距对齐）通过；paddedH=16 padded planar 后不再出现 80（该轮剩余 6/11 失败为 2D NDDMA 加载错位的纯精度问题，另卡；修复后 12/12 PASS）；D=2 fp32（blockLen=4B）通过证实 blockLen 不受约束（来源平台：950；证据等级：tool_observed）。
+- interleaved 分支：修复前 D=128 大 shape 用例通过、D=2/4/6 的 10 个数值用例全部 `ACL error 507035`（大 D 过小 D 挂分化指纹）；paddedH/paddedD 平面布局重写后 507035 全部消失，numeric 10/11 通过（唯一失败为交错重组两半互换的独立根因，另卡闭环）（来源平台：950；证据等级：tool_observed）。
+
+**独立 trace 扩展边界**：本卡原"GM→UB 方向无此约束"的观测限定于整缓冲、基址对齐的搬入；interleaved 分支的 flat 布局里 per-row NDDMA 搬入目的基址同样落在非 32B 偏移上（确切先触发的故障指令未逐条定位，行为级证据为布局前后 507035 翻转）——多行 UB 平面缓冲的搬运两侧基址都应按 padded 行距保证对齐。MTE2（GM→UB）目的侧对齐要求未单独最小复现（未验证）。

@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.data_movement.memory_access", "topic.memory"]
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-16T11:20:30Z"
 platforms: ["950"]
 ---
 
@@ -124,7 +124,7 @@ static __aicore__ inline float ReadScalarFloat(
 
 - 本结论仅在 Ascend950（CANN 1.0.0, 202602）fp32 实测。
 - a2/a3 平台：未验证，推断可迁移（AscendC 块模型跨平台同源，块长按 `sizeof(T)*8` 换算），但未实测，采用前需先在目标平台用单 float 标量 DataCopy 复现 507015 确认。
-- fp16（块长 16 元素 = 32B）、bf16、int64 等其他 dtype 的具体块长换算未在本 trace 实测，需按 `32 / sizeof(T)` 等价推导后在目标 dtype 单测验证。
+- fp16（块长 16 元素 = 32B）、bf16、int64 等其他 dtype 的具体块长换算未在本开发会话 实测，需按 `32 / sizeof(T)` 等价推导后在目标 dtype 单测验证。
 - 大 shape（B0-S6 [33,65]）的最终挂起机制未完全定位——SetValue 逐元素写慢 vs. PipeBarrier 死锁 vs. 24 核 ProcessU 协同，trace 内未给出确定性结论。
 
 ## 坏实践
@@ -143,3 +143,34 @@ static __aicore__ inline float ReadScalarFloat(
 - 设计 Kernel 时，凡单标量输入默认用 `GetValue` 读、`SetValue` 写，不走 DMA。
 - 凡数组走 `DataCopy`，host 侧 GM 分配字节数一律按 `32B`（fp32=8 元素）取整对齐，kernel 侧 count 同步取 8 倍数；尾块用 `DataCopyPad(isPad=true, rightPadding)` 显式补齐。
 - 评审 Kernel 实现时，对 `DataCopy(dst, src, count)` 中 `count < NUM_PER_BLK` 或 `alignedCount * sizeof(T) > GM 实际分配字节数` 的写法直接打回。
+
+## 后续增量（2026-09-16，并行策展批：SW>1 单元素 gather 垃圾值形态、GetValue/SetValue 修复路线与 CANN 9.2.0 复现）
+
+DepthwiseConv2d（Ascend950PR/arch35，CANN 9.2.0，与原卡 202602 版本不同代）迭代三联调补充第三种失效形态与修复路线：
+
+**1. 新失效形态（垃圾值而非静默旧值/507015）**：SW>1（列向跨步）分支用单元素 `DataCopyPad(xLocal[...], xGm_[...], DataCopyExtParams{1, sizeof(half), 0,0,0}, ...)` 把跨步输入列 gather 成连续行时，stride>1 用例全部失败且实际值为量级混乱的**垃圾值**（L0_002 stride=2 `MERE=8.06e+00, MARE=2.49e+02`；L1_024 实际=44.875 级异常大值；L1_032 bf16 实际=1.29e20 级垃圾）——fp16（blockLen=2B）、bf16（2B）、fp32（4B）三 dtype 均命中。这与原卡的"静默不搬（UB 残留旧值）"与"507015 报错"并列为本约束的第三种表现。
+
+**2. 修复路线（标量通路 + S→V 同步）**：逐元素 DMA 换成 `xGm_.GetValue(...)`（S 流水线标量读 GM）+ `xLocal.SetValue(...)`（S 流水线标量写 UB）——标量通路不走 MTE 块搬运，逐元素语义确定；换原语时必须同步补 S→V 屏障（SetValue 走 S 流水线，EnQue 只同步 MTE 侧，V 计算（如 Axpy）读 xLocal 需显式 `PipeBarrier<PIPE_ALL>()` 后再 `EnQue`）：
+
+```cpp
+    for (int64_t ow = owStart; ow < owEnd; ow++) {
+        int64_t iw = ow * SW_ + colOffset;
+        half xVal = xGm_.GetValue(xOffset + inRow * W_ + iw);
+        xLocal.SetValue(row * halfStride_ + ow, xVal);
+    }
+}
+// S→V 同步：SW>1 路径用 SetValue(S) 写 xLocal，Axpy(V) 读 xLocal
+// EnQue/DeQue 仅同步 MTE3→V，S→V 需显式 PipeBarrier
+PipeBarrier<PIPE_ALL>();
+xQueue_.EnQue(xLocal);
+```
+
+**3. 边界补充**：『blockLen<32B 行为未定义、DMA 最小传输单元 32B』仍是修复时的机制推断（未直接观测引擎行为），A/B 证据（换原语即翻转）只证明"该原语在此粒度不可用"；32B 对齐的块状 gather（把跨步列凑成 ≥32B 段搬）能否恢复 DMA 路径未验证。换原语后忘补 S→V 同步是本路线的伴生坑（坏实践）。
+
+**4. 验证信号（来源：该算子迭代三联调，Ascend950PR 上板 ST；WAW 修复已就位后单独验证本修复）**：
+
+- 修复前：stride>1 用例全失败——`L0_002 [FAIL] MERE=8.06e+00, MARE=2.49e+02`、L1_005 `MERE=7.55e+00, MARE=1.45e+03`、L1_024 实际=44.875、L1_032 实际=1.29e20 级垃圾（来源平台：950；证据等级：tool_observed）。
+- 修复后（仅换 GetValue/SetValue + S→V 屏障）：全部 stride 用例转 PASS——`L0_002`、`L1_024 [PASS] MERE=2.38e-07, MARE=6.88e-04`、`L1_025 (stride 1,2) PASS`、`L1_026 (stride 3,3) PASS`、`L1_027 (stride 4,4) PASS`、`L1_032 stride=2+dilation=2 bf16 PASS`、`L1_033 多batch+stride2 fp32 PASS`；全量 53 用例 49 通过（92.5%），仅剩 4 条与 strided 无关的 L2 参数校验用例（来源平台：950；证据等级：tool_observed）。
+- 归因隔离：同一轮 build 中 dilation 用例（SW=1 分支，未动）保持 PASS，仅 SW>1 用例翻转——改动唯一对应（来源平台：950；证据等级：tool_observed）。
+
+**5. 坏实践补充**：换成 `SetValue` 后忘了 S→V 同步——EnQue/DeQue 只覆盖 MTE 侧，S 流水线写入对后续 V 流水线读取同样存在可见性时序。

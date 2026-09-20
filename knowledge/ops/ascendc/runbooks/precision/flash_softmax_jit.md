@@ -52,5 +52,5 @@ aliases: ["online_softmax", "loop_carried_dependency"]
 
 ## 验证信号
 
-- 默认顺序配置（`unroll_list={1}`、`device_sched_mode=0`、不设 `cube_nbuffer_setting`）精度校验 `EXIT=0`、PRECISION 段无逐位置超阈项，基线通过（来源平台:950；证据等级:tool_observed）
-- `cube_nbuffer_setting={-1:2}`（与 `device_sched_mode=3` 同模式）精度校验输出固定位置 `误差=0.00048828` 超阈（阈值 `0.00041962`/`0.00046158`/`0.00042725`），精度失败（来源平台:950；证据等级:tool_observed）
+- 默认顺序配置（`unroll_list={1}`、`device_sched_mode=0`、不设 `cube_nbuffer_setting`）精度校验 `EXIT=0`、PRECISION 段无逐位置超阈项，基线通过（来源平台：950；证据等级：tool_observed）
+- `cube_nbuffer_setting={-1:2}`（与 `device_sched_mode=3` 同模式）精度校验输出固定位置 `误差=0.00048828` 超阈（阈值 `0.00041962`/`0.00046158`/`0.00042725`），精度失败（来源平台：950；证据等级：tool_observed）

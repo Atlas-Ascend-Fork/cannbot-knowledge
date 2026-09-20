@@ -36,9 +36,9 @@ aliases: ["ASCEND_CUSTOM_OPP_PATH"]
 
 ## 验证信号
 
-- aclnn C 测试 `aclnnAlltoAllMatmulApaceGetWorkspaceSize` 返回 `aclError:161001`（来源平台:950；证据等级:tool_observed）。
-- `NnopbaseGetExecutor("AlltoAllMatmulApace")` 返回 null（来源平台:950；证据等级:tool_observed）。
-- 多次重装自定义包、补齐 aclnn wrapper 签名、手工补 binary_info_config.json 后 161001 稳定复现（来源平台:950；证据等级:tool_observed）。
+- aclnn C 测试 `aclnnAlltoAllMatmulApaceGetWorkspaceSize` 返回 `aclError:161001`（来源平台：950；证据等级：tool_observed）。
+- `NnopbaseGetExecutor("AlltoAllMatmulApace")` 返回 null（来源平台：950；证据等级：tool_observed）。
+- 多次重装自定义包、补齐 aclnn wrapper 签名、手工补 binary_info_config.json 后 161001 稳定复现（来源平台：950；证据等级：tool_observed）。
 
 ## 误诊
 

@@ -41,10 +41,10 @@ source /home/developer/Ascend/cann-9.0.0-beta.2/set_env.sh && bash build.sh --op
 
 本段只收本 trace 内 tool_observed/artifact_verified 实测，agent 推断的机制假设不进此段。
 
-- 构建报 `use of undeclared identifier 'aclrtMemsetD32Async'`（`csrgeam2_host.cpp:61/72`）（来源平台:950；证据等级:tool_observed）
-- 符号替换后漏传 `stream` 再报 `no matching function for call to 'aclrtMemsetAsync'`（4 参数）（来源平台:950；证据等级:tool_observed）
-- `grep -A5 aclrtMemsetAsync acl_rt.h` 返回 5 参数签名 `(devPtr, maxCount, value, count, stream)`，`aclrtMemsetD32Async` 无命中（来源平台:950；证据等级:tool_observed）
-- 按判别迁移后重建成功 `[100%] Built target ops_sparse` / `csr2csc_ex2_test`，`build/libops_sparse.so` 生成（来源平台:950；证据等级:artifact_verified）
+- 构建报 `use of undeclared identifier 'aclrtMemsetD32Async'`（`csrgeam2_host.cpp:61/72`）（来源平台：950；证据等级：tool_observed）
+- 符号替换后漏传 `stream` 再报 `no matching function for call to 'aclrtMemsetAsync'`（4 参数）（来源平台：950；证据等级：tool_observed）
+- `grep -A5 aclrtMemsetAsync acl_rt.h` 返回 5 参数签名 `(devPtr, maxCount, value, count, stream)`，`aclrtMemsetD32Async` 无命中（来源平台：950；证据等级：tool_observed）
+- 按判别迁移后重建成功 `[100%] Built target ops_sparse` / `csr2csc_ex2_test`，`build/libops_sparse.so` 生成（来源平台：950；证据等级：artifact_verified）
 
 ## 失效边界
 

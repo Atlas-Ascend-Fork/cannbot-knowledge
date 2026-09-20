@@ -58,8 +58,8 @@ echo "EXIT=${PIPESTATUS[0]}"
 
 来源说明：本判别规则来自 ascend950 (dav-3510) 上一次 Triu 算子 kernel 编译会话；清缓存重编后 backend 阶段对全部 dtype 实例化一致报 `Div of bitwidth greater than 32 not supported`，据此定位为后端 64 位 div/mod 不支持。
 
-- `fatal error: error in backend: Div of bitwidth greater than 32 not supported` 在全 14 dtype 实例化复现（来源平台:950；证据等级:tool_observed）
-- 前端编译通过、错误仅出现在 backend codegen 阶段（来源平台:950；证据等级:tool_observed）
+- `fatal error: error in backend: Div of bitwidth greater than 32 not supported` 在全 14 dtype 实例化复现（来源平台：950；证据等级：tool_observed）
+- 前端编译通过、错误仅出现在 backend codegen 阶段（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

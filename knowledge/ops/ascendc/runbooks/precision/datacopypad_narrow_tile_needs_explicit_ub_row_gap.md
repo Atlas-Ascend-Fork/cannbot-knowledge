@@ -189,11 +189,11 @@ supports: `srcStride=ubGapBlocks` 让 scatter 从固定 `rowBytesT_` 的下一�
 
 来源说明：一次 AscendC Softmax 直调开发会话先在标准评测中定位两个窄尾 tile 失败，再同时修正 GM→UB 和 UB→GM 的 UB gap，真实重编译后运行定向 probes、原失败场景与完整评测。
 
-- 修复前标准正确性评测通过 18/20，两个窄尾 tile 场景失败，其中一个没有有效运行结果、另一个精度误差为 1.0（来源平台: 950；证据等级: tool_observed）。
-- 修复后，fp32 窄尾 probes 最坏 `max_err=1.192e-07`，fp16 为 `2.430e-04`，bf16 为 `1.952e-03`，全部通过（来源平台: 950；证据等级: tool_observed）。
-- 修复后的边界值窄尾 probe `max_err=8.139e-05` 且无 NaN（来源平台: 950；证据等级: tool_observed）。
-- 修复后的大输入 bf16 定向验证 `max_err=0.001953125`，无 NaN 且归约轴求和检查通过（来源平台: 950；证据等级: tool_observed）。
-- 完整标准评测由 18/20 提升到 20/20（来源平台: 950；证据等级: tool_observed）。
+- 修复前标准正确性评测通过 18/20，两个窄尾 tile 场景失败，其中一个没有有效运行结果、另一个精度误差为 1.0（来源平台：950；证据等级：tool_observed）。
+- 修复后，fp32 窄尾 probes 最坏 `max_err=1.192e-07`，fp16 为 `2.430e-04`，bf16 为 `1.952e-03`，全部通过（来源平台：950；证据等级：tool_observed）。
+- 修复后的边界值窄尾 probe `max_err=8.139e-05` 且无 NaN（来源平台：950；证据等级：tool_observed）。
+- 修复后的大输入 bf16 定向验证 `max_err=0.001953125`，无 NaN 且归约轴求和检查通过（来源平台：950；证据等级：tool_observed）。
+- 完整标准评测由 18/20 提升到 20/20（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

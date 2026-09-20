@@ -1,17 +1,17 @@
 ---
 type: "Runbook"
 title: aclnn ST 空张量用例接入：0 字节分配与拷贝守卫
-description: 为空张量分支（B==0 或 H==0）扩展 aclnn ST 桩——manifest 放行 0 维、输入按 32B 占位分配、0 字节 memcpy 跳过；0 维 aclCreateTensor 描述符与空输出比对短路均实测可用。
+description: 为空张量分支（B==0 或 H==0）扩展 aclnn ST 桩——manifest 放行 0 维、输入按 32B 占位分配、0 字节 memcpy 跳过；0 维 aclCreateTensor 描述符与空输出比对短路均实测可用。复现增量：自写 oracle 归约循环以非归约维乘积为边界时空乘积=1 致越界段错误（EXIT=139）的失败侧实证与 N==0 早退修复。 复现增量：Python 比较器侧同族守卫——对空 tensor 做 relative_errors.max() 直接 RuntimeError（numel()==0 需显式 dim），_compare_float/_compare_integer 入口须先 numel()==0 短路；Mock 模式 output=golden 拷贝会掩盖 Real 模式的空 vector 差异，同文件内 float/int 两条比对路径的边界行为必须一致。复现增量：跳过分配+全链路执行变体——size==0 跳过 aclrtMalloc/aclrtMemcpy、nullptr 地址照常 aclCreateTensor，空 Tensor 用例仍真实走 GetWorkspaceSize+aclnn 两段式（验证 host 侧 IsEmpty 快速返回），D2H 拷贝加 outBytes>0 守卫；aclrtFree(nullptr) 返回 ACL_SUCCESS 可无条件清理；ST Real 75/75。 复现增量：空 axes（全 reduce，nAxes=0）形态实测 aclrtMalloc(0) 报 ACL error 100000（补 未查证的确切错误码）；空 axes 的 CPU golden 须展开为全归约（否则 golden=1.0 假错）；第三独立轨迹复现 CreateAclTensor 无守卫 aclrtMalloc(0)——分配与拷贝守卫须成对（memcpy 有守卫而 malloc 没有）。复现增量：第四独立轨迹复现（scatter 算子空 tensor 用例 Real 失败/Mock 通过，全量 875/875 规模）＋ max(size,1) 一字节占位变体；空张量（shape 含 0）与空指针（预期错误码）是两类用例，占位而非 nullptr 以保住用例语义。
 tags: [task.testing, topic.implementation.memory_management, topic.implementation.api_layer.c_api]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-17T04:50:06Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
+cann_versions: ["9.0.0-beta.2", "9.1.0", "9.2.0"]
 ---
-# aclnn ST 空张量用例接入：0 字节分配与拷贝守卫
 
+# aclnn ST 空张量用例接入：0 字节分配与拷贝守卫
 
 ## 现象
 
@@ -49,7 +49,7 @@ oracle 侧（gen_st_oracle.py / golden.py）**零改动**：`torch.empty(0, H)` 
 
 ## 设计决策
 
-- **为何 32B 占位而不是照传 0 字节**：`aclrtMalloc` 传 0 的行为是实现定义（可能返回 null 或报错）；输出侧在正维度无 bias 用例上已验证过 32B 占位口径，输入侧直接沿用同一口径，占位字节不参与任何计算与比对。本 trace 未做"不占位"的 A/B 对照——守卫版全链路实测通过（诚实标注：占位的**必要性**是静态推理，**充分性**是实测）。
+- **为何 32B 占位而不是照传 0 字节**：`aclrtMalloc` 传 0 的行为是实现定义（可能返回 null 或报错）；输出侧在正维度无 bias 用例上已验证过 32B 占位口径，输入侧直接沿用同一口径，占位字节不参与任何计算与比对。本开发会话 未做"不占位"的 A/B 对照——守卫版全链路实测通过（诚实标注：占位的**必要性**是静态推理，**充分性**是实测）。
 - **为何 memcpy 用短路守卫而不是依赖 0 字节拷贝的良定义性**：空 `std::vector::data()` 可返回 nullptr，`aclrtMemcpy(dst, 0, nullptr, 0, ...)` 无必要冒险；守卫后 0 字节用例的 `ok` 语义保持"上载成功"。
 - **退出码为何不要求红基线分支全过**：测试先行流程下新分支 kernel 为桩、数值用例预期失败；退出码锚定"旧分支零回归 + 新分支用例已编入"（`stTotal2 > 0`），避免每次测试先行阶段 CI 假红。
 - **被放弃的方案**：在 kernel 桩里临时写零让用例全过——放弃，会污染红基线信号（见同域[全空输出用例不构成红基线卡](empty_output_cases_cannot_form_red_baseline.md)）；为空张量单独写一套精简 ST 桩——放弃，与既有 manifest 驱动机制重复且丢失同链路可比性。
@@ -58,7 +58,7 @@ oracle 侧（gen_st_oracle.py / golden.py）**零改动**：`torch.empty(0, H)` 
 
 - 工具链/环境：Ascend 950PR（arch35，coreNum=64、ub=253952）、CANN 9.0.0-beta.2、GCC 13.3.0、cmake 构建测试二进制。
 - 调用链：`aclnnThnnFusedGruCellGradGetWorkspaceSize → aclnnThnnFusedGruCellGrad` 两段式；vendor 包经 build.sh 安装至 `${ASCEND_OPP_PATH}/vendors/ThnnFusedGruCellGrad/`。
-- 相关文件（与事件流实际读/写一一对应，路径前缀 `/workspace/skills-dev-dev-1/plugins-official/ops-registry-invoke-glacier/`）：
+- 相关文件（与事件流实际读/写一一对应，路径前缀 算子仓仓库根（ops-registry-invoke 工程，以下为仓库内相对路径））：
   - `operators/ThnnFusedGruCellGrad_package/tests/aclnn/st_cases_branch2.json`（新建：12 条空张量用例 manifest）
   - `operators/ThnnFusedGruCellGrad_package/tests/aclnn/test_aclnn.cpp`（改造：LoadManifest 校验、RunStCase 输入分配/上载、main() 第三套件与退出码）
   - `operators/ThnnFusedGruCellGrad_package/tests/aclnn/run.sh`（改造：MANIFEST_B2、第三个 oracle 数据生成调用、test_aclnn 传参 argv[5..6]）
@@ -254,4 +254,527 @@ export LD_LIBRARY_PATH=${ASCEND_OPP_PATH}/vendors/ThnnFusedGruCellGrad/op_api/li
 
 - 会话早期曾怀疑"aclnn 框架层可能会拒绝空张量、所有用例会变成 frameworkError"——实测证伪：`GetWorkspaceSize` 接受含 0 维的描述符并正常路由空张量分支，12 用例零 frameworkError（该假设当时标注为待实测推断，实测后修正）。
 
+## 后续增量（2026-09-16，并行策展批：aclrtMalloc 0 字节失败侧实证、64B 占位变体）
 
+逐元素最大值算子（y=max(x1,x2)，声明支持空 Tensor）迭代三联调（Ascend950PR/arch35 + CANN 9.1.0，Real 模式 NPU 执行 + CPU golden 比对）补上原卡缺失的**失败侧证据**，并给出更简脚手架形态的同类守卫：
+
+**1. 失败侧实证（更新原卡失效边界第 2 条）**：原卡标注"`aclrtMalloc` 0 字节占位的必要性未做 A/B 实测（无失败侧证据）"。本次实测：`CreateAclTensor` 用 `byteSize = GetShapeSize(shape) * sizeof(T)` 直接调 `aclrtMalloc`，空张量 byteSize=0 时 `aclrtMalloc(deviceAddr, 0, ACL_MEM_MALLOC_HUGE_FIRST)` 返回非 ACL_SUCCESS，用例报 `创建 x1 tensor 失败` 判 FAIL——72 用例中仅 2 条空 Tensor 用例（L1-057 双空 float32、L1-058 x2空+广播 fp16）失败。**同用例 Mock 模式（CPU golden，无设备分配环节）通过、UT empty_tensor tiling 用例通过**——失败点在测试脚手架的设备分配环节，与算子的空张量语义无关。必要性在 CANN 9.1.0 上已从"静态推理"升级为"实测失败"。
+
+**2. 守卫变体（64B 最小对齐占位 + 跳过 0 字节 memcpy + 错误码日志）**：
+
+```cpp
+// after：空张量分配 64B 最小对齐 buffer，跳过 0 字节 memcpy（尾部 aclCreateTensor 不变）
+    size_t byteSize = static_cast<size_t>(GetShapeSize(shape)) * sizeof(T);
+    // aclrtMalloc 不支持 0 字节分配，空张量（含 0 维度）分配最小对齐 buffer（64B）。
+    // 算子对空张量不实际读写数据，仅需有效 device 地址。
+    size_t allocSize = (byteSize == 0) ? 64 : byteSize;
+    auto ret = aclrtMalloc(deviceAddr, allocSize, ACL_MEM_MALLOC_HUGE_FIRST);
+    if (ret != ACL_SUCCESS) {
+        LOG_PRINT("  aclrtMalloc 失败, ret=%d, byteSize=%zu", static_cast<int>(ret), byteSize);
+        return ret;
+    }
+
+    if (byteSize > 0) {
+        ret = aclrtMemcpy(*deviceAddr, allocSize, hostData.data(), byteSize, ACL_MEMCPY_HOST_TO_DEVICE);
+        if (ret != ACL_SUCCESS) {
+            aclrtFree(*deviceAddr);
+            return ret;
+        }
+    }
+```
+
+设计要点：64B 与设备分配对齐粒度一致（原卡用 32B 亦可，两者均为实测有效取值，非官方最小值）；`aclrtMemcpy` 的 destMax 用 `allocSize`、count 用 `byteSize`（容量 vs 拷贝量语义分离）；失败分支打印错误码与 byteSize，下次分配失败可一眼看到是否 0 字节。
+
+**3. 验证信号（来源：该算子迭代三 ST Real 全量运行，修复后同一测试二进制重编译重跑并保存完整日志）**：
+
+- 修复前：Real 首轮 70/72，L1-057/L1-058 报「创建 x1 tensor 失败」FAIL；同用例 Mock 模式通过（来源平台：950；证据等级：tool_observed）。
+- 修复后：Real 复跑 `L1-057 → [PASS] float32 空张量（0 元素）`、`L1-058 → [PASS] fp16 空张量（0 元素）`，全量 `总计: 72 通过: 72 失败: 0`，`ST EXIT_CODE=0`，日志汇总 72 个 PASS、0 FAIL（来源平台：950；证据等级：tool_observed）。
+- 后续测试工程师验收轮复跑 Real 72/72 可复现（来源平台：950；证据等级：tool_observed）。
+
+**4. 边界补充**：`aclrtMalloc` 对 0 字节请求的确切错误码与官方最小分配约束未查证（对复现非必需，64B 方案已稳定）；把空 Tensor 用例从 Real 测试集剔除/skip 以"通过"属测试侧放松（掩盖脚手架缺陷且丢失空张量上板验证，本轨迹未采用）。
+
+## 后续增量（2026-09-17，并行策展批：比对器 null 检查须放行 0 元素；跳过分配+早返回变体）
+
+两条独立轨迹补齐空张量用例接入的另外两个守卫点：
+
+**1. 比对器 null 检查在 size==0 之后短路（逐元素最大值算子轨迹，同 复现增量算子的下一轮修复）**：分配侧修好后，比对器仍把"空张量（size==0）"与"非法空指针"混为一谈——空 `std::vector` 的 `data()` 合法地返回 nullptr，而 null 检查先于 size==0 判定执行，0 元素比对被误判为非法输入（`[ERROR] null pointer input`，当轮 70/72）。机制链：`GetShapeSize([0,256])=0` → `GenTestDataByPattern` 返回空 vector → 空向量 `data()==nullptr`（C++ 标准允许）→ null 检查命中 → 误判 FAIL，而 size==0 根本无需解引用。
+
+```cpp
+// before：null 检查先于 size==0，空 vector 的 data()==nullptr 被误判
+bool CompareResults(DType dt, const double* golden, const double* actual, size_t size) {
+    if (golden == nullptr || actual == nullptr) {
+        LOG_PRINT("  [ERROR] null pointer input");
+        return false;
+    }
+    if (GetDTypeInfo(dt).isFloat) {
+        return CompareResultsFloat(dt, golden, actual, size);
+    }
+    return CompareResultsInt(dt, golden, actual, size);
+}
+
+// after：size==0 优先短路（空 tensor 视为通过，空 vector 的 data() 可能为 nullptr，但 size==0 时无需访问）
+bool CompareResults(DType dt, const double* golden, const double* actual, size_t size) {
+    // 空 tensor 优先判定（空 vector 的 data() 可能为 nullptr，但 size==0 时无需访问）
+    if (size == 0) {
+        DTypeInfo info = GetDTypeInfo(dt);
+        LOG_PRINT("  [PASS] %s 空张量（0 元素）", info.name);
+        return true;
+    }
+    if (golden == nullptr || actual == nullptr) {
+        LOG_PRINT("  [ERROR] null pointer input");
+        return false;
+    }
+    if (GetDTypeInfo(dt).isFloat) {
+        return CompareResultsFloat(dt, golden, actual, size);
+    }
+    return CompareResultsInt(dt, golden, actual, size);
+}
+```
+
+要点：短路放在比对器函数最前而不是调用方跳过比对（空张量语义属比对器职责，调用方逐处判空会漏）；保留 null 检查在 size>0 路径——非空张量的 nullptr 仍是真非法输入，不能因修空张量而放松非法检测。该比对器随后在 Real 模式（NPU 执行 + CPU golden 比对）全量 72/72 中复用，空张量用例在 NPU 上通过。
+
+**2. 跳过分配 + host 侧早返回变体（GCD 广播算子轨迹，整数 int16/int32/int64）**：与 32B/64B 占位路线相对，另一条已验证守卫是**完全不分配**——`CreateAclTensor` 在 size==0 时跳过 `aclrtMalloc/aclrtMemcpy`、deviceAddr 置 nullptr，仍用原始 shape 创建 `aclTensor` 描述（保留 0 维信息）；清理函数按指针判空不调 `aclrtFree`。`RunCaseReal` 计算 ny 后，ny==0 直接记 PASS 返回——由广播规则（任一输入 0 元素 ⇒ 输出 0 元素），该早返回同时覆盖全部空输入组合：
+
+```cpp
+// CreateAclTensor：0-size 跳过分配，deviceAddr 兜底 nullptr（verbatim 关键段）
+    size_t size = static_cast<size_t>(GetShapeSize(shape)) * sizeof(T);
+    *deviceAddr = nullptr;
+    // 空 tensor：aclrtMalloc(0) 会失败，跳过分配，仅创建 tensor 描述
+    if (size > 0) {
+        auto ret = aclrtMalloc(deviceAddr, size, ACL_MEM_MALLOC_HUGE_FIRST);
+        if (ret != ACL_SUCCESS) return ret;
+        ret = aclrtMemcpy(*deviceAddr, size, hostData.data(), size, ACL_MEMCPY_HOST_TO_DEVICE);
+        if (ret != ACL_SUCCESS) { aclrtFree(*deviceAddr); *deviceAddr = nullptr; return ret; }
+    }
+    auto strides = ComputeStrides(shape);
+    *tensor = aclCreateTensor(shape.data(), shape.size(), dataType, strides.data(), 0,
+                              aclFormat::ACL_FORMAT_ND, shape.data(), shape.size(),
+                              *deviceAddr == nullptr ? reinterpret_cast<void*>(0) : *deviceAddr);
+
+// RunCaseReal：ny==0 早返回（插在创建任何张量之前）
+    // 空 tensor：跳过 NPU 执行，直接判定 PASS（空 tensor 的 GCD 结果也是空）
+    if (ny == 0) {
+        LOG_PRINT("  [PASS] 空 tensor (ny=0, 跳过 NPU 执行)");
+        return true;
+    }
+```
+
+**两条路线的取舍**：占位分配路线（原卡 32B / 先前增量 64B）让空张量用例走完整 aclnn 调用链（0 维描述符被 GetWorkspaceSize 接受、空张量 tiling 路由被真实执行）；跳过分配+早返回路线完全不触碰 NPU 执行路径，更简但**kernel 的 totalLength=0/空分支未被真实执行**——需要覆盖 kernel 侧空张量行为时应采用占位路线，只关心"调用链不挂、用例不误报"时跳过路线即可。
+
+**3. 验证信号**：
+
+- 比对器短路修复（最大值算子轨迹）：修复后 Mock 全量 `总计: 72 通过: 72 失败: 0`，其中 `[Mock] L1-057: 空Tensor float32 双空 → [PASS] float32 空张量（0 元素）`、`L1-058 → PASS`；同轮自测"测试16: 空张量比对 (float32/int64)"、"测试24: 空 Tensor 广播"均 PASS；同一比对器随后在 Real 模式全量 72/72 中复用（来源平台：950；证据等级：tool_observed）。
+- 跳过分配+早返回（GCD 算子轨迹）：L0 回归 24/24 通过，其中 3 条空 tensor 用例输出 `[PASS] 空 tensor (ny=0, 跳过 NPU 执行)`；L1 回归 503/503 通过，含空 tensor 用例（来源平台：950；证据等级：tool_observed）。空张量用例首次失败的原始报错文本未保留在该轨迹记录中（发生于会话前段，失败事实按修复叙述记录，不作为实测信号；失败侧实测证据以 复现增量为准）。
+
+**4. 坏实践补充**：在调用方为空张量用例单独跳过比对（掩盖算子侧空张量行为是否被验证）；把 null 检查删除以"放过"空张量（放开真正的非法输入检测，属测试侧放松）。
+
+
+
+
+## 后续增量（2026-09-17，并行策展批：1 字节保底变体 + oracle 空输入早退 + CMP_EMPTY 比对档位，CANN 9.2.0）
+
+softmax 类算子 BenchHarnessSoftmax 的空 tensor 分支（任一维 size=0，tilingKey=2 Empty）aclnn ST（8 个 shape × fp16/fp32/bf16 共 24 条用例）补齐第三种守卫组合，并给出与原卡/上节不同的两个新守卫面：
+
+**1. 保底字节数的第三取值（1 字节）**：空 tensor 的 `bytes==0` 时 `allocBytes = bytes ? bytes : 1`——保底分配 1 字节使设备指针非空，tensor descriptor 仍携带真实（空）shape，保底字节永不被读写。与原卡 32B、上节 64B 并列，三者均为实测有效取值（非官方最小值），语义等价。
+
+```cpp
+    // ── device memory ──
+    // Allocate at least 1 byte so device pointers are non-null even for empty
+    // tensors (numel == 0, branch-2).  The tensor descriptor still carries the
+    // real (empty) shape, so this backing byte is never read or written.
+    size_t allocBytes = bytes ? bytes : 1;
+    void* devX = nullptr;
+    void* devOut = nullptr;
+    CHECK_ACL(aclrtMalloc(&devX, allocBytes, ACL_MEM_MALLOC_HUGE_FIRST));
+    CHECK_ACL(aclrtMalloc(&devOut, allocBytes, ACL_MEM_MALLOC_HUGE_FIRST));
+```
+
+**2. oracle 空输入早退（新守卫）**：参考实现在进入任何循环/rank 判定前先对空输入早退，`y` 保持空 vector——镜像 `torch.nn.functional.softmax` 对空输入返回同 shape 空 tensor 的行为，同时防住 EMPTY_R（reduceSize==0、outer>0）形态下归约循环的越界访问（早退为预防性守卫，本开发会话 无越界报错样本）：
+
+```cpp
+    int rank = static_cast<int>(shape.size());
+    y.assign(x.size(), 0.0f);
+
+    // Empty tensor (any axis size == 0): softmax returns a same-shape empty
+    // tensor, mirroring torch.nn.functional.softmax on empty input.  This guard
+    // also prevents OOB access when reduceSize == 0 but outer > 0 (the
+    // EMPTY_R sub-case of branch-2, where the reduce axis itself is 0).
+    if (x.empty()) {
+        return;
+    }
+```
+
+**3. CMP_EMPTY 显式比对档位（新守卫）**：为"0 元素比较集"定义显式枚举档位，与"逐位精确"区分语义；空用例的 pass = aclnn 框架 OK + 输出 numel==0（由 shape descriptor 保证），元素循环因 n==0 不执行：
+
+```cpp
+enum CmpMode {
+    CMP_RELATIVE,      // normal: rtol/atol per dtype
+    CMP_STRICT_EXACT,  // scalar/reduce=1/all-zero: y == g exactly (atol=0)
+    CMP_NAN_AWARE,     // NaN/+inf/-inf slices: isnan(y)==isnan(g), non-NaN relative
+    CMP_MIXED_INF,     // -inf+finite: -inf pos strict 0, finite relative
+    CMP_EMPTY          // empty tensor: 0-element set, no comparison
+};
+```
+
+**4. 用例矩阵设计**：同 shape 不同 dim 区分 EMPTY_A/EMPTY_R（`[0,4] dim=-1` 是 EMPTY_A，`[0,4] dim=0` 是 EMPTY_R），`[0,0]` 覆盖多 0 维优先级，高 rank 带 0 维覆盖合轴前判定；每 shape × 3 dtypes。
+
+### 复现增量验证信号
+
+- 测试可编译：tests/aclnn 目录 `cmake + make` 退出码 0；算子包 `./build.sh` 退出码 0（来源平台：host 构建；证据等级：tool_observed）。
+- 首次全量 `run.sh`：Branch-2（Empty，tilingKey=2）24/24 precision PASSED、24 aclnn-OK、0 aclnn-FAIL（5 EMPTY_A shape + 3 EMPTY_R shape × fp16/fp32/bf16，逐条 `[PASS]` 输出）；Branch-0 46/46、Branch-1 37/37 回归不退化；EXIT=0（来源平台：950；证据等级：tool_observed）。
+- oracle 独立性：静态核对 ref_softmax 不引用被测 aclnn 接口/ kernel 产物（无 import/调用命中）（来源平台：host 静态检查；证据等级：tool_observed）。
+
+### 复现增量边界
+
+- 0 字节 `aclrtMalloc` 的确切失败形态本开发会话 未实测（1 字节为预防性守卫）；oracle 越界触发路径亦未实测（早退为预防性守卫）——两守卫的必要性证据见原卡与上节（0 字节分配失败侧实证）。
+- 多输出、带 workspace、inplace 语义的算子：输出/中间 buffer 的保底分配须逐个补，本增量只示范输入+单输出。
+- 仅 950 + CANN 9.2.0 实测；其他平台未验证，推断可迁移。
+
+## 后续增量（2026-09-17，并行策展批：oracle 归约循环越界的失败侧实证——空乘积 1 机制）
+
+另一条 softmax 基准算子轨迹（opbuild 自定义算子包，Ascend 950 / CANN 9.1.0）补上 复现增量边界中缺失的 **oracle 越界触发路径实测**：为空 tensor 分支新增 13 个 `Kind::Empty` 用例（`[0,4]`、`[0]`、`[0,0,0]`、`[4,0,8] dim=1`、`[0,2097152]` × fp16/fp32/bf16）后，设备侧已做 `allocBytes=max(bytes,1)` 防护，首次跑 `run.sh` 仍在 host 侧测试进程内段错误：
+
+```
+./run.sh: line 32: 1032775 Segmentation fault      (core dumped) ./test_aclnn
+EXIT_CODE=139
+```
+
+**机制（空乘积陷阱）**：CPU golden oracle 把归约循环边界取为非归约维乘积（outerCount × innerSize），而非元素总数 N。以崩溃用例 `[0]` dim=-1 推导：rank=1、normDim=0、R=0、N=0，而 outerCount 与 innerSize 都是**空乘积 = 1**——循环体执行 1 次并读 `x[0]`，x 是空 vector，越界段错误。对照组解释失败面：`[0,4]` dim=-1 时 outerCount=shape[0]=0，循环一次都不执行（B3 三例因此 PASS，纯前导 0 维被 outerCount=0 掩盖）；`[4,0,8]` dim=1 时 outerCount=4、innerSize=8、R=0，循环执行 32 次读 `x[0]`——同样会崩（排在 `[0]` 之后未及执行）。**判别规律：只有"归约轴之前/之后还存在非 0 维"的空 shape 才触发。**
+
+**修复**（与复现增量的 `if (x.empty()) return;` 同型，早退放 `y.assign` 之后、归约循环之前——空输入的期望输出就是空 tensor，`y.assign(0, 0.0f)` 已产生空结果，早退只须绕过循环；用 N==0 而非 R==0 作入口判据，可同时覆盖"0 不在归约轴"的空 tensor）：
+
+```cpp
+    int64_t N = static_cast<int64_t>(x.size());
+    y.assign(N, 0.0f);
+
+    // 空 tensor（任一维==0 → N==0）：返回空 tensor（returns_empty）。
+    // 必须在归约循环之前返回——当 R=0 但 outerCount/innerSize > 0 时（如 [4,0,8] dim=1），
+    // 循环会执行并访问 x[base]，但 x 为空 → 越界崩溃。
+    if (N == 0) return;
+```
+
+**定位技巧**：段错误后用行缓冲直跑二进制（`stdbuf -oL -eL ./test_aclnn`）拿到崩溃前的最后一条 PASS，把崩溃定位到具体用例，再区分 host 进程崩溃（oracle/harness）与 device 侧异常（kernel）。
+
+### 复现增量验证信号
+
+- 崩溃复现：`run.sh` → Segmentation fault EXIT_CODE=139；行缓冲直跑：Branch-0 32/32 + Branch-1 17/17 + Branch-2 前 3 例（`[0,4]` 三 dtype）PASS 后于 `E0D1_fp16 [0]` 崩溃（来源平台：950；证据等级：tool_observed）。
+- 修复后：`run.sh` EXIT_CODE=0，Branch-2 13/13 全部 `PASS (returns_empty ok)`（含 `[0]`×3、`[0,0,0]`×3、`[4,0,8]`×3、`[0,2097152]`）（来源平台：950；证据等级：tool_observed）。
+- 回归：Branch-0 32/32 + Branch-1 17/17 不退化（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量边界
+
+- 结论绑定"自写 CPU oracle 以非归约维乘积做循环边界"的实现形态；若 oracle 用连续扁平下标 + N 边界（`for i < N`）则空输入天然不越界。
+- `aclrtMalloc(0)` 防护是防御性的（该轨迹崩溃源是 oracle，malloc(0) 崩溃证据见 复现增量）。
+- 初判怀疑方向（aclrtMalloc 1 字节分配与含 0 维 aclCreateTensor 的组合、或 aclnn/TilingFunc 对 rank-1 空 shape 的处理）均被行缓冲输出排除——设备侧调用均已返回，崩溃在 host 侧 oracle 循环。
+
+## 后续增量（2026-09-17，并行策展批：storageDims=nullptr 致 161001 陷阱 + L2 侧 totalElems==0 早退 + 1 元素保底变体，TensorList 场景）
+
+另一独立轨迹并入 TensorList 算子（Ascend950PR，CANN 9.1.0，Real 模式 65 用例含 0 元素边界：shape `[0]`、`[2,0,3]`、FP16 `[0]`）的实例，补上 0 元素链路的第四个守卫点：**aclCreateTensor 的 storageDims 形参**。
+
+**1. storageDims=nullptr 陷阱（新守卫面，区别于分配侧/比对器侧）**：测试侧给 0 元素张量兜底分配最小内存后（本实例为最小分配 1 个元素，与 32B/64B/1B 并列的又一实测有效取值），第二轮失败形态变为 L2 接口参数错（161001 = ACLNN_ERR_PARAM_INVALID）——`aclCreateTensor(dims, dimNum, dataType, strides, offset, format, storageDims, storageDimNum, deviceAddr)` 的 `storageDims` 在 `logicalSize == 0` 时被按 `logicalSize > 0` 分支传了 `nullptr`，构造出的张量描述符不完整，GetWorkspaceSize 路径按参数无效拒绝。**storageDims 必须始终给出（0 元素也应传 shape）**：
+
+```cpp
+    // 修复前：0 元素时 storageDims 传 nullptr → GetWorkspaceSize 161001
+    *tensor = aclCreateTensor(shape.data(), shape.size(), dataType, strides.data(),
+                              0, aclFormat::ACL_FORMAT_ND,
+                              (logicalSize > 0) ? shape.data() : nullptr,
+                              shape.size(), *deviceAddr);
+
+    // 修复后：始终传递 shape 作为 storageDims (含 0 元素)
+    *tensor = aclCreateTensor(shape.data(), shape.size(), dataType, strides.data(),
+                              0, aclFormat::ACL_FORMAT_ND,
+                              shape.data(),  // 始终传递 shape 作为 storageDims (含 0 元素)
+                              shape.size(), *deviceAddr);
+```
+
+配套的最小分配（本实例取 1 个元素，与本卡先前增量 的 64B、先前增量 的 1 字节语义等价）：
+
+```cpp
+    // 空 Tensor (0 元素): 分配最小 1 个元素, 避免 aclrtMalloc(0) 失败
+    size_t allocSize = static_cast<size_t>(physicalSize > 0 ? physicalSize : 1) * elemSize;
+```
+
+**2. 算子 L2 侧 totalElems==0 早退（op 侧守卫，与本卡先前增量 的测试侧 ny==0 早返回相对）**：全空 TensorList（所有张量元素总数为 0）时 `GetWorkspaceSize` 直接返回、不启动 Kernel——这是写在**算子 op_api**（而非测试脚手架）里的空输入分支，与本卡先前增量 测试侧早返回的取舍一致：早退时不触碰 launcher 对 0 元素 tensor 的行为（未验证），空输入没有可计算内容：
+
+```cpp
+    auto ret = CheckParams(x1, x2, x3, y);
+    CHECK_RET(ret == ACLNN_SUCCESS, ret);
+
+    // ========================================================================
+    // 空 Tensor 快速返回 (0 元素, DESIGN.md §5.3 边界处理)
+    // 当所有张量元素总数为 0 时, 无需启动 Kernel, 直接返回
+    // ========================================================================
+    uint64_t listLen = x1->Size();
+    int64_t totalElems = 0;
+    for (uint64_t i = 0; i < listLen; i++) {
+        totalElems += (*x1)[i]->GetViewShape().GetShapeSize();
+    }
+    if (totalElems == 0) {
+        *workspaceSize = 0;
+        uniqueExecutor.ReleaseTo(executor);
+        return ACLNN_SUCCESS;
+    }
+```
+
+早退以 x1 的元素总数为准（本算子约束 x1/x2/x3 同构）；"部分张量 0 元素、部分非 0"的混合场景按正常路径走，由 tiling/kernel 的既有 0 元素处理覆盖。含 0 元素语义的算子，L2 GetWorkspaceSize 一开始就写全空早退，不要等 161001 再补。
+
+### 复现增量验证信号
+
+- 第一轮（直接创建 0 元素 aclTensor，无最小分配）：3 条 0 元素用例（FP32 [0]、FP32 [2,0,3]、FP16 [0]）全部 `创建 x1[0] tensor 失败`（来源平台：950；证据等级：tool_observed）。
+- 第二轮（min-alloc 后，storageDims 仍传 nullptr）：`GetWorkspaceSize 失败: 161001`（来源平台：950；证据等级：tool_observed）。
+- 修复 storageDims（恒传 shape）后：161001 消失，第四轮 64/65、第五轮 65/65 = 100%（含全部 0 元素边界用例）（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量边界
+
+- storageDims 结论绑定 `aclCreateTensor` 的 C 接口契约（CANN 9.1.0 实测）；161001 在本实例表现为"描述符不完整被参数校验拒绝"，与复现增量的"分配侧 161001 失败侧实证"是相邻但不同的失败点（分配失败 vs 描述符被拒）。
+- 测试侧最小分配取值（1 元素）与 32B/64B/1B 均为实测有效、非官方最小值；非连续张量的 physicalSize 计算需按 strides 展开（本实例 `nonContiguous && logicalSize > 0` 分支）。
+- L2 早退绑定"全空 TensorList"语义；逐 tensor 部分为空的算子需按各自 spec 设计分支。
+
+## 后续增量（2026-09-17，并行策展批：Python 比对器空 tensor 短路 + Mock 掩盖 Real 的边界）
+
+StridedSlice 类算子（x_shape=[0] 空输出边界用例，Ascend950PR / CANN 9.1.0）的两套 ST 工程补齐空张量比对链路的 Python 侧守卫与两个判读边界：
+
+**1. Python 比对器的空 tensor 崩溃（与复现增量的 C++ 侧 null 检查同族）**：PyTorch ST 的空切片用例在比对器处直接崩溃（而非误判）：
+
+```text
+File ".../tests/st/torch/compare.py", line 62, in _compare_float
+    mare = relative_errors.max().item()
+RuntimeError: max(): Expected reduction dim to be specified for input.numel() == 0.
+```
+
+修复：`_compare_float` 入口先短路（`_compare_integer` 在 `torch.equal` 前同样加）：
+
+```python
+def _compare_float(golden: torch.Tensor, actual: torch.Tensor) -> bool:
+    """浮点精度比对，按 MERE/MARE 阈值判定"""
+    golden_f = golden.flatten().float()
+    actual_f = actual.flatten().float()
+
+    # 空 tensor 视为匹配
+    if golden_f.numel() == 0:
+        return True
+
+    # MERE/MARE: |actual - golden| / (|golden| + 1e-7)
+    relative_errors = (golden_f - actual_f).abs() / (golden_f.abs() + EPS)
+    mere = relative_errors.mean().item()
+    mare = relative_errors.max().item()
+```
+
+PyTorch 对 `numel()==0` 的 `max()` 要求显式 dim——Python 侧的空短路与 C++ 侧（复现增量的 size==0 先于 null 检查）是同一条铁律的两个语言面。
+
+**2. C++ 侧 float/int 路径一致性（缺陷信号）**：同文件里整数路径 `CompareResultsInt` 先判 `size==0` 再访问指针，浮点路径 `CompareResultsFloat` 却先判空指针——两条路径行为不一致本身就是缺陷信号。C++ Real 模式下空 `std::vector<T> npu_output(GetShapeSize(y_shape))` 的 `.data()` 返回 nullptr，null 检查先命中即误报 `[ERROR] null pointer input`；修复=把 `size==0` 短路提到判空之前（与整数路径一致，语义"空比较恒真"），before/after 形态与复现增量同构，此处补记触发场景：算子本身返回 `ACL_SUCCESS`、`CreateAclTensor` 对 size==0 已有 1 字节兜底、Mock 模式同用例通过——失败只在 Real 模式的比对器。
+
+**3. Mock 掩蔽 Real 的判读边界**：本例 Mock 模式同一空用例通过（Mock 的 `output = golden` 拷贝掩盖了 Real 的空 vector 差异）——Mock 通过不能替代 Real 验证，空 tensor 用例必须两种模式都跑。
+
+### 复现增量验证信号
+
+- C++ 修复前 Real ST：空 tensor 用例 FAIL（`[ERROR] null pointer input`），34 用例 33/34；Mock 模式同用例通过（来源平台：950；证据等级：tool_observed）
+- C++ 修复后重编译重跑：该用例输出 `[PASS] 空 tensor（0 元素），无需比对`，34/34 = 100%（来源平台：950；证据等级：tool_observed）
+- Python 修复前：空切片用例 `RuntimeError: max(): ... numel() == 0`，65 用例全量运行中断（来源平台：950；证据等级：tool_observed）
+- Python 修复后：65 用例全量跑完，空切片用例 PASS（来源平台：950；证据等级：tool_observed）
+
+### 复现增量边界
+
+- 只处理"输出为空属合法结果"的场景；算子对空输入本应返回错误码而未返回，是算子侧问题另论。
+- "golden 非空而 actual 为空"的 shape 不一致场景应由 shape 校验先拦截（未验证）。
+
+## 后续增量（2026-09-17，并行策展批：跳过分配+全链路执行变体与 aclrtFree(nullptr) 语义）
+
+bench_no_harness_sigmoid（Ascend950PR + CANN 9.1.0，ST Real 75 用例含 3 条空 Tensor）补上第三条已验证路线与两个配套事实：
+
+**1) 失败复现（与复现增量同款、另一独立轨迹）**：`CreateAclTensor` 对 `hostData.size()==0` 无条件调 `aclrtMalloc(deviceAddr, 0, ACL_MEM_MALLOC_HUGE_FIRST)` 返回非 ACL_SUCCESS，3 个空 Tensor 用例（fp32/fp16/bf16 各一，`shape_size=0`）全部报 `[FAIL] 创建 x tensor 失败`，非空用例全过——失败与 dtype 无关，问题在脚手架而非 kernel（host 侧 `GetWorkspaceSize` 已有 `IsEmpty()` 快速返回、kernel 侧 early-return、Mock 模式已通过）。
+
+**2) 跳过分配 + 全链路执行变体（与复现增量的"跳过+早返回"差异在**仍真实走 aclnn 调用链**）**：size==0 分支跳过 `aclrtMalloc/aclrtMemcpy`、`*deviceAddr = nullptr` 照常 `aclCreateTensor`（保留 0 维 shape 信息），空 Tensor 用例仍完整执行 `GetWorkspaceSize` + `aclnn` 两段式——**正是为了验证 host 侧 `IsEmpty()` 快速返回路径**（该用例的测试目的）；D2H 拷贝按 `outBytes > 0` 守卫：
+
+```cpp
+int CreateAclTensor(const std::vector<uint8_t>& hostData,
+                    const std::vector<int64_t>& shape,
+                    void** deviceAddr,
+                    aclDataType dataType,
+                    aclTensor** tensor) {
+    size_t size = hostData.size();
+
+    // 空 Tensor 特殊处理: 跳过设备内存分配 (aclrtMalloc(0) 会失败)
+    // Kernel 对空 Tensor 已有 early return 保护, 不会访问设备内存
+    if (size == 0) {
+        *deviceAddr = nullptr;
+        auto strides = ComputeStrides(shape);
+        *tensor = aclCreateTensor(shape.data(), shape.size(), dataType, strides.data(),
+                                   0, aclFormat::ACL_FORMAT_ND, shape.data(), shape.size(), *deviceAddr);
+        return ACL_SUCCESS;
+    }
+
+    auto ret = aclrtMalloc(deviceAddr, size, ACL_MEM_MALLOC_HUGE_FIRST);
+    if (ret != ACL_SUCCESS) return ret;
+
+    ret = aclrtMemcpy(*deviceAddr, size, hostData.data(), size, ACL_MEMCPY_HOST_TO_DEVICE);
+    if (ret != ACL_SUCCESS) {
+        aclrtFree(*deviceAddr);
+        return ret;
+    }
+
+    auto strides = ComputeStrides(shape);
+    *tensor = aclCreateTensor(shape.data(), shape.size(), dataType, strides.data(),
+                              0, aclFormat::ACL_FORMAT_ND, shape.data(), shape.size(), *deviceAddr);
+    return ACL_SUCCESS;
+}
+```
+
+```cpp
+    // 拷贝输出到 Host（outBytes==0 时跳过 D2H，空 vector/空地址不走 aclrtMemcpy）
+    size_t outBytes = static_cast<size_t>(shapeSize) * elemSize;
+    std::vector<uint8_t> npuOutputBytes(outBytes);
+    if (outBytes > 0) {
+        ret = aclrtMemcpy(npuOutputBytes.data(), outBytes, yDevAddr, outBytes,
+                          ACL_MEMCPY_DEVICE_TO_HOST);
+        if (ret != ACL_SUCCESS) { /* 原失败清理路径不变 */ }
+    }
+```
+
+**3) aclrtFree(nullptr) 语义**：按 ACL 文档返回 `ACL_SUCCESS`——清理路径 `aclrtFree(xDevAddr)` 对空 Tensor 无条件调用是安全的，无需按指针判空；`aclDestroyTensor` 对空 Tensor 描述符正常释放。
+
+**4) 路线取舍（三条已验证路线的定位）**：占位分配（原卡 32B / 先前增量 64B）与跳过+早返回之外，本变体"跳过分配 + 仍走全链路"适用于**必须真实执行 host 侧空 Tensor 快速返回/路由**的用例；算子 host 侧没有 `IsEmpty()` 快速返回（真的会给 kernel 派发任务）时，nullptr 设备地址会被 kernel 侧解引用——移植前先确认双侧 early return。
+
+### 复现增量验证信号
+
+- 修复前：ST Real 75 用例中 3 个空 Tensor 用例报 `创建 x tensor 失败`（fp32/fp16/bf16 各一）（来源平台：950；证据等级：tool_observed）
+- 修复后：ST Real 75/75 全过，空 Tensor 用例输出 `[PASS] 空 Tensor (0 元素)`（来源平台：950；证据等级：tool_observed）
+- 回归：同轮 UT 52/52 不受影响；后续验收轮 ST Real 复跑仍 75/75（来源平台：950；证据等级：tool_observed）
+
+### 复现增量边界
+
+- `aclrtMalloc(0)` 必失败的行为在 CANN 9.1.0 实测；其它版本若允许 0 字节分配，本修复仍然兼容（size==0 分支只是更早返回）。
+- 跳过分配的前提是算子 host/kernel 双侧对空 Tensor early return（本算子已确认）；否则 nullptr 会在 kernel 侧解引用。
+- 空 Tensor 用例只在 Mock 模式验证暴露不了本问题（Mock 不过 aclrt 路径）——与复现增量的"Mock 掩蔽 Real"边界同族，空 Tensor 用例必须 Real 模式跑。
+- 误诊提示：同一批空 Tensor 用例在更早 Mock 调试轮的失败（`CompareResults` 判空指针检查先于 size==0）是另一独立根因（复现增量已记录），与本增量的 `aclrtMalloc(0)` 不可互相替代。
+
+## 后续增量（2026-09-17，并行策展批：空 axes 形态 + aclrtMalloc(0) 确切错误码 100000 + 空 axes golden 全归约展开 + 分配/拷贝守卫须成对）
+
+两条独立轨迹（L2 范数 reduce 算子 ST，Ascend950 + CANN 9.1.0，16 例矩阵含全 reduce 用例；Mish 类激活算子 ST Real，Ascend950PR + CANN 9.1.0，12 例含 shape=(0) 空 tensor 用例）补齐四点：
+
+**1. aclrtMalloc(0) 的确切错误码（补 复现增量留空项）**：先前增量 边界曾标注"`aclrtMalloc` 对 0 字节请求的确切错误码未查证"。reduce 轨迹实测：全 reduce 用例（x=[1024]、axes=[]、keepdims=false）把 axes 建为 0 元素张量后，`nAxes=0 → axesBytesTotal=0`，`aclrtMalloc` 报 **ACL error 100000**（参数非法），错误行原文 `ACL error 100000 at .../tests/aclnn/test_aclnn.cpp:522: aclrtMalloc(&devAxes, axesBytesTotal, ACL_MEM_MALLOC_HUGE_FIRST)`——CHECK_ACL 打印错误并中止该用例，其余 15 例照常执行、该用例结果行直接缺失（用例在分配阶段中止，不是全量崩溃）。
+
+修复前（按元素数直接算字节数传给 aclrtMalloc）：
+
+```cpp
+    size_t axesBytesTotal = (size_t)tc.nAxes * elemSizeOf(tc.axesDt);   // nAxes=0 → 0
+    ...
+    CHECK_ACL(aclrtMalloc(&devAxes, axesBytesTotal, ACL_MEM_MALLOC_HUGE_FIRST));
+    CHECK_ACL(aclrtMemcpy(devAxes, axesBytesTotal, tc.axesRaw, axesBytesTotal,
+                          ACL_MEMCPY_HOST_TO_DEVICE));
+```
+
+修复后（本会话最终形态，含空张量创建；分配钳位 32B 与原卡口径同款，0 字节跳过 memcpy，空 axes 按 shape [0]、ndim=1 创建 aclTensor）：
+
+```cpp
+    size_t inBytesTotal  = (size_t)nIn  * elemSizeOf(tc.xDt);
+    size_t axesBytesTotal = (size_t)tc.nAxes * elemSizeOf(tc.axesDt);
+    size_t outBytesTotal = (size_t)nOut * elemSizeOf(tc.xDt);
+    // aclrtMalloc rejects size 0; when axes is empty (full reduce, nAxes==0)
+    // still allocate a minimal buffer so the (empty) axes tensor has a valid addr.
+    size_t axesAllocBytes = std::max(axesBytesTotal, (size_t)32);
+
+    // 2. Allocate device memory + copy input
+    void *devX = nullptr, *devAxes = nullptr, *devOut = nullptr;
+    CHECK_ACL(aclrtMalloc(&devX,    inBytesTotal,  ACL_MEM_MALLOC_HUGE_FIRST));
+    CHECK_ACL(aclrtMalloc(&devAxes, axesAllocBytes, ACL_MEM_MALLOC_HUGE_FIRST));
+    CHECK_ACL(aclrtMalloc(&devOut,  outBytesTotal,  ACL_MEM_MALLOC_HUGE_FIRST));
+    // Zero output so stub (no-write) gives deterministic zeros
+    CHECK_ACL(aclrtMemset(devOut, outBytesTotal, 0, outBytesTotal));
+    CHECK_ACL(aclrtMemcpy(devX, inBytesTotal, inBytes.data(), inBytesTotal,
+                          ACL_MEMCPY_HOST_TO_DEVICE));
+    if (axesBytesTotal > 0) {
+        CHECK_ACL(aclrtMemcpy(devAxes, axesBytesTotal, tc.axesRaw,
+                              axesBytesTotal, ACL_MEMCPY_HOST_TO_DEVICE));
+    }
+
+    // 3. Create tensors
+    aclTensor* x    = createDenseTensor(tc.inShape, tc.inRank, tc.xDt, devX);
+    // axes tensor: shape [nAxes] for non-empty, or [0] for full-reduce empty axes
+    int64_t axesShape1[1] = { (int64_t)tc.nAxes };
+    aclTensor* axes = createDenseTensor(axesShape1, 1, tc.axesDt, devAxes);
+```
+
+**2. 空 axes（值依赖 0 元素输入）是又一触发形态**：与前述 B==0/H==0 输入、TensorList 0 元素、`[0]` 形状并列——归约算子的 axes 张量本身可以是合法的 0 元素输入（nAxes=0 表示全归约）。分配守卫口径不变（钳位 + 0 字节拷贝跳过），空 axes 按 shape `[0]`、ndim=1 创建描述符。
+
+**3. 空 axes 的 golden 语义（新误诊面，区别于 先前增量 的 oracle 越界）**：分配修复后全 reduce 用例 golden 显示 1.000000（期望约 18932）——不是分配问题复发，而是自建 CPU golden 没把空 axes 展开为全归约（按设计语义"0 元素 axes = 对全部维度归约"展开后 golden=sqrt(Σi², i=1..1024)=18932.458984）。修一层 bug 后要用数值合理性复核下一层，别把新现象归回旧根因；测试侧 golden 必须同步实现空 axes 的全归约展开。
+
+**4. 分配/拷贝守卫须成对（Mish 轨迹，第三独立复现）**：CreateAclTensor 对 numel=0（shape=(0)）直接 `aclrtMalloc(dev, 0)` 返回非 SUCCESS，报 `[FAIL] 创建 x tensor 失败`（与 并行轨迹 同款失败形态、又一独立轨迹）。判别要点：该脚手架 `aclrtMemcpy` 已有 `size > 0` 保护、唯独 `aclrtMalloc` 没有——**分配与拷贝是两条独立路径，守卫必须成对补**。占位取 `sizeof(T)`（1 元素，与本卡先前增量 的 1 元素变体同款，与 32B/64B/1B 并列均为实测有效取值）：
+
+```cpp
+template<typename T>
+int CreateAclTensor(const std::vector<T>& hostData,
+                    const std::vector<int64_t>& shape,
+                    void** deviceAddr,
+                    aclDataType dataType,
+                    aclTensor** tensor) {
+    size_t size = static_cast<size_t>(GetShapeSize(shape)) * sizeof(T);
+
+    // 空 tensor(size==0)时 aclrtMalloc(0) 会失败，分配占位内存避免该问题；
+    // 占位内存不会被实际读写（aclrtMemcpy 有 size>0 保护，aclCreateTensor 用 numel=0 的 shape）。
+    size_t allocSize = (size > 0) ? size : sizeof(T);
+    auto ret = aclrtMalloc(deviceAddr, allocSize, ACL_MEM_MALLOC_HUGE_FIRST);
+    if (ret != ACL_SUCCESS) return ret;
+
+    if (size > 0) {
+        ret = aclrtMemcpy(*deviceAddr, size, hostData.data(), size, ACL_MEMCPY_HOST_TO_DEVICE);
+        if (ret != ACL_SUCCESS) { aclrtFree(*deviceAddr); return ret; }
+    }
+
+    auto strides = ComputeStrides(shape);
+    *tensor = aclCreateTensor(shape.data(), shape.size(), dataType, strides.data(),
+                              0, aclFormat::ACL_FORMAT_ND, shape.data(), shape.size(), *deviceAddr);
+    return ACL_SUCCESS;
+}
+```
+
+取舍：占位方案不动各用例的清理逻辑（`aclrtFree` 照常可调），改动最小；跳过分配方案需同步改所有 free 点（独立 trace 已证 `aclrtFree(nullptr)` 返回 ACL_SUCCESS，两条路线均可行）。
+
+### 复现增量验证信号
+
+- 修复前（reduce 轨迹）：全 reduce 用例结果行缺失，日志出现 `ACL error 100000 at test_aclnn.cpp:522: aclrtMalloc(&devAxes, axesBytesTotal, ACL_MEM_MALLOC_HUGE_FIRST)`，其余 15 例照常执行（来源平台：950；证据等级：tool_observed）。
+- 修复后（reduce 轨迹）：16 例全部执行、无 ACL error，全 reduce 用例结果行正常出现（该行 FAILED: exceeds rtol/atol 是 kernel stub 阶段的预期基线，分配问题已消除）（来源平台：950；证据等级：tool_observed）。
+- 修复前（Mish 轨迹）：ST Real 12 条中 L0_024（shape=(0)）报 `[FAIL] 创建 x tensor 失败`，其余 11 条通过（来源平台：950；证据等级：tool_observed）。
+- 修复后（Mish 轨迹）：ST Real 12/12 通过（含空 tensor 用例），CPU golden 自测 20/20；算子 op_api 层对空 tensor 返回 ACLNN_SUCCESS、workspaceSize=0、输出 numel=0 与 golden（空）比对直接通过（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量边界
+
+- 错误码 100000 绑定 CANN 9.1.0 实测（两条轨迹一致）；不同 ACL 版本对 size=0 的容忍度可能不同。
+- 空 axes 的语义（0 元素 axes 张量 = 对全部维度归约）是算子级约定，测试侧 golden 必须同步实现该展开（见增量第 3 点）。
+- 钳位取值 32B / sizeof(T) 均为实测有效（与 64B/1B/1 元素并列），非官方最小值；更小钳位值未测。
+
+## 后续增量（2026-09-17，并行策展批：第四独立轨迹复现 + max(size,1) 变体 + 空张量/空指针用例语义区分）
+
+scatter 类算子（bench_no_harness_scatter，Ascend950PR + CANN 9.1.0）的全 dtype ST 矩阵新增空 tensor 边界用例（CSV 外硬编码补充：`I3_BD_EMPTY_1D`：data shape `[0]`、indices `[0]`、dim=0、reduce=None；`I3_BD_EMPTY_2D`：data `[0,10]`、indices `[0,5]`）——第四条独立轨迹复现同一根因：Mock（CPU golden）模式两条通过（空张量按 0 元素直接判 PASS），Real 模式（真实调 aclnn 接口）两条都报 `[FAIL] 创建 data tensor 失败`。失败点在脚手架 `CreateAclTensor`：`size = numel * dtypeSize = 0` 直接传 `aclrtMalloc(dev, 0, ACL_MEM_MALLOC_HUGE_FIRST)` 不返回成功，函数在第一步就失败（与 并行轨迹/先前增量 同款形态、又一独立轨迹）。
+
+**1. 修复（max(size,1) 一字节占位变体 + 条件 memcpy，与本卡先前增量 的 1 字节 / 先前增量 的 sizeof(T) 同族）**：
+
+```cpp
+// ===== 修复后 =====
+size_t num_elems = static_cast<size_t>(GetShapeSize(shape));
+size_t size = num_elems * DTypeSize(dtype);
+// 空 tensor 时分配至少 1 字节 (aclrtMalloc(0) 可能失败)
+size_t alloc_size = std::max<size_t>(size, 1);
+
+auto ret = aclrtMalloc(deviceAddr, alloc_size, ACL_MEM_MALLOC_HUGE_FIRST);
+if (ret != ACL_SUCCESS) return ret;
+
+if (size > 0) {
+    ret = aclrtMemcpy(*deviceAddr, size, hostData.data(), size, ACL_MEMCPY_HOST_TO_DEVICE);
+    if (ret != ACL_SUCCESS) { aclrtFree(*deviceAddr); return ret; }
+}
+```
+
+要点：`aclCreateTensor` 仍用真实 shape/strides（shape 含 0 维），设备地址只需有效；`aclrtMemcpy` 仅在 `size > 0` 时执行（0 长度拷贝顺带规避，且 `hostData.data()` 对空 vector 可能为 nullptr）。
+
+**2. 占位而非 nullptr 的用例语义理由（新增设计决策）**：空 tensor（shape 含 0 维、元素数 0）与空指针（tensor/入参为 nullptr）是**两类用例**——本测试矩阵里另有一条"空指针异常"用例预期错误码 161001。若为空张量走"跳过分配传 nullptr"路线（并行轨迹 变体），会把"空张量合法退化"与"空指针非法输入"两类用例的设备地址形态混同，破坏各自断言语义；占位路线（本增量及原卡 32B）让两类用例在脚手架层天然可区分。选择跳过路线的既有前提（算子 host/kernel 双侧空张量早退）不变，此处补充第三个判据：测试矩阵中是否同时存在空指针类预期错误码用例。
+
+### 复现增量验证信号
+
+- 修复前：Real 模式 2 条空 tensor 用例（`I3_BD_EMPTY_1D/2D`）报 `创建 data tensor 失败`，Mock 模式同用例通过（来源平台：950；证据等级：tool_observed）。
+- 修复后：边界补充用例 11/11（含空 tensor 1D/2D）通过；全量 ST Real 875/875、Mock 875/875（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量边界
+
+- `aclrtMalloc(0)` 的确切返回码本轨迹未单独记录（以"失败"现象处理；错误码 100000 的实测见 复现增量，同为 950/CANN 9.1.0）。
+- 仅覆盖 host 侧脚手架；若算子 kernel 侧没有 numel==0 早退，空张量仍可能在 kernel 侧出问题（本算子已处理）。

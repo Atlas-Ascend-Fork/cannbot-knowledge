@@ -65,11 +65,11 @@ VLOOPv2 辅助复验（cannsim, full 入口 base 路径）确认 full 入口 e�
 
 本验证信号来自本 trace 内 coordinator 亲跑的 perf 门（msprof N=9 interleaved, 18 档）与 cannsim 复验，均为上板/模拟器实测，非开发者自报。
 
-- decode（bs=1）9/9 FAIL：full 入口相对 smalle slim TU +2.53%~+15.38%，中位 +8.13%，超 ≤+2% 判据（来源平台:950；证据等级:tool_observed）。
-- prefill（bs=4096）6/9 PASS；bf16 三档 FAIL（+8.66%~+10.33%）（来源平台:950；证据等级:tool_observed）。
-- 综合门禁结果 `GATE_RESULT: SOME_FAIL`（9 FAIL / 18）→ 保留 smalle slim TU（4→3）（来源平台:950；证据等级:artifact_verified）。
-- cannsim full 入口 e≤32 base 路径 VF 区 VLOOPv2 HEALTHY：SelectK1ReduceMax=2、InitIndices=4、ComputeValues=4、OutputTopKImpl=2，SCBZI=0、SJUMP=0（来源平台:950；证据等级:tool_observed）。
-- 前序去重阶段已证 full 与 smalle 输出 528/528 byte-exact（本门仅测性能入口选择，不引入数值风险）（来源平台:950；证据等级:artifact_verified）。
+- decode（bs=1）9/9 FAIL：full 入口相对 smalle slim TU +2.53%~+15.38%，中位 +8.13%，超 ≤+2% 判据（来源平台：950；证据等级：tool_observed）。
+- prefill（bs=4096）6/9 PASS；bf16 三档 FAIL（+8.66%~+10.33%）（来源平台：950；证据等级：tool_observed）。
+- 综合门禁结果 `GATE_RESULT: SOME_FAIL`（9 FAIL / 18）→ 保留 smalle slim TU（4→3）（来源平台：950；证据等级：artifact_verified）。
+- cannsim full 入口 e≤32 base 路径 VF 区 VLOOPv2 HEALTHY：SelectK1ReduceMax=2、InitIndices=4、ComputeValues=4、OutputTopKImpl=2，SCBZI=0、SJUMP=0（来源平台：950；证据等级：tool_observed）。
+- 前序去重阶段已证 full 与 smalle 输出 528/528 byte-exact（本门仅测性能入口选择，不引入数值风险）（来源平台：950；证据等级：artifact_verified）。
 
 ## 失效边界
 

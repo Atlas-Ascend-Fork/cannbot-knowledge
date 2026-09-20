@@ -1,13 +1,14 @@
 ---
 type: "Runbook"
 title: "逐元素 DataCopyPad 做 strided gather 输出全零"
-description: "把 DataCopyPad 降格为逐元素 strided gather（对 LocalTensor 切片 inTile[i] 以 ext{1,sizeof(T)} 搬单个 GM 元素）再 DataCopyPad(yGm, inTile) 写出，编译过无报错但输出全零；根因是 1-元素 DataCopyPad 未把 GM 值有效填入后续写出路径读取的那片 UB。判别方法：编译过+输出全 0 且 gather 循环出现 LocalTensor 切片+ext{1,sizeof(T)} 的 1-元素 DataCopyPad 即命中；元素级 GM 读写应改用 GlobalTensor.GetValue/SetValue。"
+description: "把 DataCopyPad 降格为逐元素 strided gather（对 LocalTensor 切片 inTile[i] 以 ext{1,sizeof(T)} 搬单个 GM 元素）再 DataCopyPad(yGm, inTile) 写出，编译过无报错但输出全零；根因是 1-元素 DataCopyPad 未把 GM 值有效填入后续写出路径读取的那片 UB。判别方法：编译过+输出全 0 且 gather 循环出现 LocalTensor 切片+ext{1,sizeof(T)} 的 1-元素 DataCopyPad 即命中；元素级 GM 读写应改用 GlobalTensor.GetValue/SetValue。R2：scatter（UB→GM）方向同族失败（数据错乱形态），双向对照定量确认。"
 tags: ["task.debugging", "topic.precision", "topic.data_movement.data_copy", "topic.compute.indexing"]
 status: stable
 sources: []
 created_at: "2026-08-18T08:54:47Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-16T11:11:42Z"
 platforms: ["950"]
+cann_versions: ["9.1.0"]
 ---
 
 # 逐元素 DataCopyPad 做 strided gather 输出全零
@@ -54,22 +55,27 @@ case 0 为 `3/4 mismatch`、case 2 为 `7/8 mismatch`、case 3 为 `127/128 mism
   3. 源地址是跨步/非连续 GM 偏移：`DataCopyPad(elem, xGm_[inputOffset], ext, pad)`，`inputOffset` 随 `batchIdx/diagIdx` 跨步变化；
   4. 末尾用一次整片 `DataCopyPad(yGm_[outStart], inTile, outExt)` 把 UB 写回 GM。
   判别时须同时核验"编译过 + 输出全 0"与上述 1-元素 `DataCopyPad` gather 代码模式同时出现；连续对齐块搬运（`blockLen`=多元素、整片 dst）不触发。可选确认：把 gather 循环改为 `T val = xGm_.GetValue(inputOffset); yGm_.SetValue(idx, val);` 后重跑——输出由全零转为匹配 golden 即锁定根因（该 after 信号，未作为独立条目入 `## 验证信号`）。
-- **观测（tool_observed，本 trace 实测 950）**：case 0 `output: [0. 0. 0. 0.]` vs `golden: [0. 7. 14. 21.]`、`Case 0: FAIL (3/4 mismatch)`，cases 0-4 全 mismatch（case 0 `3/4`、case 2 `7/8`、case 3 `127/128`）；case 7（`[16,32,48]`）逐元素 `DataCopyPad` 效率过低触发 `shell tool terminated command after exceeding timeout 120000 ms`。kernel 编译 `[100%] Built target`、无报错。
-- **解释（interpretation）**：`DataCopyPad` 是 GM↔UB 的块搬运 DMA，语义要求连续对齐块；以 1-元素 `blockLen` + `LocalTensor` 切片 dst 做元素级 strided gather 时，该逐元素 `DataCopyPad` 未把 GM 值有效填入后续写回路径读取的 UB（是切片视图语义还是 1-元素 `blockLen` 的最小搬运粒度/对齐要求所致，本 trace 未做 UB dump 探针，仅由输出全零反推），写回 GM 即全零。判别要点是"编译过 + 输出全 0 + gather 循环为 1-元素 `DataCopyPad` on `LocalTensor` 切片"三特征同时成立——它把"算式/数值错"与"搬运语义错"区分开：算式无误而搬运未落值。修复方向是 gather 用 `GlobalTensor.GetValue/SetValue` 元素级读写；`TQue`+`DataCopyPad` 若为 bisheng auto-derivate 类型推导所需，应放在不参与输出的 dummy 搬运上。
+- **观测（tool_observed，本开发会话实测 950）**：case 0 `output: [0. 0. 0. 0.]` vs `golden: [0. 7. 14. 21.]`、`Case 0: FAIL (3/4 mismatch)`，cases 0-4 全 mismatch（case 0 `3/4`、case 2 `7/8`、case 3 `127/128`）；case 7（`[16,32,48]`）逐元素 `DataCopyPad` 效率过低触发 `shell tool terminated command after exceeding timeout 120000 ms`。kernel 编译 `[100%] Built target`、无报错。
+- **解释（interpretation）**：`DataCopyPad` 是 GM↔UB 的块搬运 DMA，语义要求连续对齐块；以 1-元素 `blockLen` + `LocalTensor` 切片 dst 做元素级 strided gather 时，该逐元素 `DataCopyPad` 未把 GM 值有效填入后续写回路径读取的 UB（是切片视图语义还是 1-元素 `blockLen` 的最小搬运粒度/对齐要求所致，本开发会话未做 UB dump 探针，仅由输出全零反推），写回 GM 即全零。判别要点是"编译过 + 输出全 0 + gather 循环为 1-元素 `DataCopyPad` on `LocalTensor` 切片"三特征同时成立——它把"算式/数值错"与"搬运语义错"区分开：算式无误而搬运未落值。修复方向是 gather 用 `GlobalTensor.GetValue/SetValue` 元素级读写；`TQue`+`DataCopyPad` 若为 bisheng auto-derivate 类型推导所需，应放在不参与输出的 dummy 搬运上。
 
 ## 验证信号
 
-本卡验证来自 2026-08-11 在 Ascend950（dav-3510）+ CANN 9.1.0-beta.1 上 `matrix_diag_part` 直调工程的开发会话；以下均为该会话 tool_observed 实测。
+本卡验证来自 2026-08-11 在 Ascend950（dav-3510）+ CANN 9.1.0-beta.1 上 `matrix_diag_part` 直调工程的开发会话；以下均为该会话tool_observed 实测。
 
 - 修复前（逐元素 `DataCopyPad` strided gather）：case 0 `output: [0. 0. 0. 0.]` vs `golden: [0. 7. 14. 21.]`、`Case 0: FAIL (3/4 mismatch)`，cases 0-4 全 mismatch（case 2 `7/8`、case 3 `127/128`）（来源平台：950；证据等级：tool_observed）。
 - 修复前副作用：case 7（`[16,32,48]` 大批量）逐元素 `DataCopyPad` 效率过低触发 `shell tool terminated command after exceeding timeout 120000 ms`（来源平台：950；证据等级：tool_observed）。
 - kernel `make -j` 编译 `[100%] Built target`、能 launch、`aclrtSynchronizeStream` 返回、无报错，形态为编译过 + 输出全 0（来源平台：950；证据等级：tool_observed）。
 
+- 独立复现 R2（ROIAlign 算子 ST Real，CANN 9.1.0，fp32）：`blockCount=cLen, blockLen=sizeof(float)=4, srcStride=(H*W-1)*sizeof(float)` 的按通道 gather（GM→UB）与 `dstStride=(OH*OW-1)*sizeof(float)` 的 scatter（UB→GM）双向对照——两处 DataCopyPad 基线 MERE=7.479e+00（L0_001）/1.972e+01；仅换 CopyOut 为 SetValue 散射 MERE 仍 8.888（gather 仍在错）；两处均换 GetValue/SetValue 后 MERE=1.030e-04→复跑 7.321e-05，首次低于阈值 1.221e-04；把 CopyInCorners 换回 DataCopyPad 后 MERE 回弹 8.888——gather 与 scatter 两个方向的逐元素跨步 DataCopyPad 均产生错误数据（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R2 边界观测：同函数内 CopyInBox（blockCount=1、blockLen=20B 连续小段）DataCopyPad 实测无问题，换成 GetValue 前后结果不变——危险区是"blockLen<32B 且 stride≠0 的逐元素跨步"形态，小连续段不受影响；blockLen≥32B 的搬运未见异常（来源平台：950；证据等级：tool_observed）。
+
 ## 失效边界
 
-- 本判别与根因在 950（dav-3510 / arch35，CANN 9.1.0-beta.1）实测；a2/a3 未在本 trace 实测，**未验证，推断可迁移**（`GetValue/SetValue` 与 `DataCopyPad` 的语义是 Ascend C API 行为，推断跨架构一致，但需重测确认）。
+- 本判别与根因在 950（dav-3510 / arch35，CANN 9.1.0-beta.1）实测；a2/a3 未在本开发会话实测，**未验证，推断可迁移**（`GetValue/SetValue` 与 `DataCopyPad` 的语义是 Ascend C API 行为，推断跨架构一致，但需重测确认）。
 - 连续、对齐的大段 GM↔UB 搬运不适用本卡结论——其设计用途就是 `DataCopyPad`；本卡仅针对"把 `DataCopyPad` 降格成逐元素 strided gather"这一误用。
-- 逐元素 `DataCopyPad` 未有效填 UB 的机制级根因（切片视图语义 vs 1-元素 `blockLen` 的最小搬运粒度/对齐要求）本 trace 未做 UB dump 探针，仅由输出全零反推；`DataCopyPad` 对 1-元素 `blockLen` 的最小搬运粒度/对齐要求未在 trace 中查证。
+- 逐元素 `DataCopyPad` 未有效填 UB 的机制级根因（切片视图语义 vs 1-元素 `blockLen` 的最小搬运粒度/对齐要求）本开发会话未做 UB dump 探针，仅由输出全零反推；`DataCopyPad` 对 1-元素 `blockLen` 的最小搬运粒度/对齐要求未在 trace 中查证。
+- R2 扩展：scatter（UB→GM）方向同样不可靠——blockLen=4B + dstStride 大跨步的逐元素散射与 gather 方向同族失败（双向对照实验闭合）；R2 的失败形态是"数据错乱"（MERE 7~24）而非全零，判别以搬运代码形态（blockLen=sizeof(T)+stride≠0 的逐元素跨步循环）为准，不以输出形态为准。R2 的机制层硬件约束同样未验证，为行为级双向对照结论。
+- R2 场景的正式替代方案（gather 数据先连续化到临时 UB 再整块搬出 / 调整布局使 blockLen≥32B）未实施、未验证；GetValue/SetValue 回退只能保正确性，逐元素 GM 读写效率极低（每采样点 4×cLen 次 GetValue + 每输出点 cLen 次 SetValue），生产代码须重构搬运策略。
 
 ## 坏实践
 
@@ -77,10 +83,14 @@ case 0 为 `3/4 mismatch`、case 2 为 `7/8 mismatch`、case 3 为 `127/128 mism
 - 用 `inTile.SetValue(i, inTile.GetValue(i))` 自拷贝 no-op 来"补救"`DataCopyPad` 未填的 UB——无效。
 - 看到"编译过、能 launch、stream 同步返回"就排除搬运路径问题——本故障恰好是无报错静默全零。
 
+- R2 增补：把"换成 GetValue 后 MERE 仍高"直接解读为"搬运没问题"——另一方向的错误会掩盖改善，须做回退对照双向确认；跨通道/跨平面取单元素的搬运不要用 `blockLen<32B + 大 stride` 的 DataCopyPad 模式，优先改变数据布局让每次搬运 ≥1 个 32 字节块。
+
 ## 误诊
 
 - 失败形态是"全零"而非"部分值错"，故与算式/数值逻辑错无关；判别要点是 gather 路径的 1-元素 `DataCopyPad` 模式，不是对角线索引公式。
 - case 7 超时易被误判为"评测 harness 问题"，实为逐元素 `DataCopyPad` 路线对大 shape 的效率崩溃，是该误用的次生信号。
+
+- R2 增补：先入为主怀疑管线同步（EnQue/DeQue）与坐标计算会长时间无果——单向对照替换实验（一次只换一处搬运）才把问题钉在搬运层；stride 单位规则（GM 字节 vs UB 32B 块）逐项核对符合文档也不能排除——参数面无误而行为仍错，以对照实验为准。
 
 ## 预防
 

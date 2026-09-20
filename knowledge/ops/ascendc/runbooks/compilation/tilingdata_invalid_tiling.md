@@ -46,7 +46,7 @@ TilingData capacity 16384 < required 65576
 
 来源：一次 fused_bias_leaky_relu arch35 tiling 调试（Ascend950PR_9579，arch35/dav_c310，CANN 9.0.0）。
 
-- 追加标量向量（`ubFactor=8192`，struct+8192×2×4=65576 字节）并 `SetDataSize(sizeof(struct)+vecBytes)` 后，运行报 `INVALID_TILING`：`TilingData capacity 16384 < required 65576`；降到 2048×2×4+struct=16416 仍超 capacity 仍 `INVALID_TILING`（错误消息同时给 capacity 与 required 两侧数值，证明校验为 `DataSize>capacity`）（来源平台:950；证据等级: tool_observed）
+- 追加标量向量（`ubFactor=8192`，struct+8192×2×4=65576 字节）并 `SetDataSize(sizeof(struct)+vecBytes)` 后，运行报 `INVALID_TILING`：`TilingData capacity 16384 < required 65576`；降到 2048×2×4+struct=16416 仍超 capacity 仍 `INVALID_TILING`（错误消息同时给 capacity 与 required 两侧数值，证明校验为 `DataSize>capacity`）（来源平台：950；证据等级：tool_observed）
 
 ## 预防
 

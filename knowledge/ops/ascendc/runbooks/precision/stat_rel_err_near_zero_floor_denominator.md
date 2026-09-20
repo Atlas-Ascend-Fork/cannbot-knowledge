@@ -6,12 +6,12 @@ tags: [task.testing, topic.precision]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
 cann_versions: ["9.0.0-beta.2"]
 ---
-# 近零 golden 相对误差 — 分母改用 max(|g|, th)
 
+# 近零 golden 相对误差 — 分母改用 max(|g|, th)
 
 ## 现象
 
@@ -19,7 +19,7 @@ cann_versions: ["9.0.0-beta.2"]
 
 （注：本卡的验证视角是"该修复的语义不变性被本会话独立验证"；近零 golden 误判 FAIL 的原始失败样本发生在实现阶段会话，本会话未复现，见失效边界与遗留问题。）
 
-## 适用场景（必填 — 检索前的第一道滤网）
+## 适用场景
 
 - **工程形态**：算子仓流程的精度评测——golden/compare 钩子、TTK stat_rel_err 镜像口径的自研判定脚本；GEIR 图模式与 aclnn 通路通用。
 - **API 路径**：`docs/<Op>/develop/golden.py` 的 `_stat_judge(actual, golden, th, mare_budget, ...)`（stat_rel_err 镜像）；TTK `comparison/stat_rel_err.py` 的 mere<th、mare<10×th 默认口径；`_REL_FLOOR = 1e-7`（TTK FLOOR 镜像）。
@@ -103,6 +103,7 @@ cann_versions: ["9.0.0-beta.2"]
 - 仅验证镜像 TTK stat_rel_err 口径的自研钩子；TTK 原生 stat_rel_err 内部是否同样存在近零 floor 问题未观测。
 - bf16（th=2^-7≈0.0078）有公式级推导与 bf16 值级不变量用例支撑；fp16 及其他 dtype 的 th 具体取值未在会话中记录（推断同样满足 th≫1e-7 而适用，未验证）。
 - `max(|g|, th)` 在 |g|<th 区比旧式宽松（atol=th 口径）——这是设计意图（近零区 rel 无判别意义），但不适用于"必须在近零区保持严格相对误差语义"的场景。
+- 同族近零判定问题的其他取法与处置见各独立卡：[加式 eps 定标](additive_epsilon_calibration.md)、[官方小值域三段判定](official_small_value_branch_two_implementations.md)、[GroupNorm 混合分母](groupnorm_near_zero_hybrid_denominator_torch_compare.md)、[元素豁免与放宽反例](fp16_small_value_mare_exemption_posthoc_loosen.md)、[数据侧输入分布](grid_sampler_mixed_sign_cancellation_nonnegative_input.md)、[fp32 vs double 豁免界推导](fp32_kernel_double_golden_near_zero_floor_derivation.md)、[真实超标 banned](fp32_double_real_exceed_banned_epsilon_loosen.md)、[公式回退回归](comparator_max_denominator_formula_regression.md)、[bf16 量化极限](bf16_quantization_limit_three_signature_safety_fallback.md)、[双标杆单标杆](dual_benchmark_threshold_single_benchmark_fallback.md)、[近零兜底 epsilon](near_zero_bucket_epsilon_decoupled_from_threshold.md)、[Depthwise 打印指纹与示例侧落地](depthwise_small_value_print_identical_example_compare.md)。
 
 ## 坏实践
 
@@ -115,6 +116,6 @@ cann_versions: ["9.0.0-beta.2"]
 
 ## 未决事项
 
-- 构造 |g|<th 的近零用例，对拍新旧分母的实际 rel 数值，复现并量化"爆炸→稳定"的差异（原始失败样本未在本会话复现）。
+- 构造 |g|<th 的近零用例，对拍新旧分母的实际 rel 数值，复现并量化"爆炸→稳定"的差异（原始失败样本未在本会话复现；同族真实失败样本与修复闭环见 [近零兜底 epsilon 卡](near_zero_bucket_epsilon_decoupled_from_threshold.md)）。
 - fp16 及其他 dtype 的 th 取值与行为逐一验证。
 - `GEIR-KNOWN-BLOCKER` 提示串在 4.6 GB 正向日志中 grep 为 0 匹配——阻断钩子的提示落点（CSV error_info 或别处）未定位，不影响本卡结论但值得查清。

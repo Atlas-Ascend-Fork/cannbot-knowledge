@@ -78,10 +78,10 @@ platforms: ["950"]
 
 ## 验证信号
 
-- 运行可执行文件：`aclrtSynchronizeStream` 失败，错误码 `507015 = ACL_ERROR_RT_AICORE_EXCEPTION`（来源平台:950；证据等级:tool_observed）
-- plog：`sqe_type=0(aic)`，`errorStr: timeout or trap error. subErrType: 0x4`，所有核停在同一 PC `0x12004100205c`，`mte/l1 error info` 非零、`cube error info=0`（来源平台:950；证据等级:tool_observed，plog grep）
-- 修复 sync flag 后重跑仍 `507015`、同 PC `0x12004100205c`、全核 timeout（来源平台:950；证据等级:tool_observed，复发复现）
-- `gen_data.py`（M=18, E=32）走 `M<E` 分支，前 18 个 group 各 1 token、后 14 个为空，所有非空 group `M=1`（来源平台:950；证据等级:artifact_verified，gen_data.py 分支逻辑 + curM 推导）
+- 运行可执行文件：`aclrtSynchronizeStream` 失败，错误码 `507015 = ACL_ERROR_RT_AICORE_EXCEPTION`（来源平台：950；证据等级：tool_observed）
+- plog：`sqe_type=0(aic)`，`errorStr: timeout or trap error. subErrType: 0x4`，所有核停在同一 PC `0x12004100205c`，`mte/l1 error info` 非零、`cube error info=0`（来源平台：950；证据等级：tool_observed，plog grep）
+- 修复 sync flag 后重跑仍 `507015`、同 PC `0x12004100205c`、全核 timeout（来源平台：950；证据等级：tool_observed，复发复现）
+- `gen_data.py`（M=18, E=32）走 `M<E` 分支，前 18 个 group 各 1 token、后 14 个为空，所有非空 group `M=1`（来源平台：950；证据等级：artifact_verified，gen_data.py 分支逻辑 + curM 推导）
 
 ## 失效边界
 

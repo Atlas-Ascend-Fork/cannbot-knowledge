@@ -71,10 +71,10 @@ grep -E "\[DBG\]" /tmp/run.log /tmp/build.log
 
 ## 验证信号
 
-- smoke test 修复前全部返回 561002 失败，修复后 3/3 PASSED（exit 0）（来源平台:950；证据等级:tool_observed）
-- TilingUT 30/30 pass、无回归（来源平台:950；证据等级:tool_observed）
-- TilingPrepareForSoftplusV2Grad 在 npu_op_library 构建系统中 build 期和 runtime 期均未被调用（DBG fprintf 确认，日志无 `[DBG] TilingPrepareForSoftplusV2Grad CALLED`）（来源平台:950；证据等级:tool_observed）
-- GetCompileInfo 返回 null（DBG fprintf 确认 `compileInfo=(nil)`）（来源平台:950；证据等级:tool_observed）
+- smoke test 修复前全部返回 561002 失败，修复后 3/3 PASSED（exit 0）（来源平台：950；证据等级：tool_observed）
+- TilingUT 30/30 pass、无回归（来源平台：950；证据等级：tool_observed）
+- TilingPrepareForSoftplusV2Grad 在 npu_op_library 构建系统中 build 期和 runtime 期均未被调用（DBG fprintf 确认，日志无 `[DBG] TilingPrepareForSoftplusV2Grad CALLED`）（来源平台：950；证据等级：tool_observed）
+- GetCompileInfo 返回 null（DBG fprintf 确认 `compileInfo=(nil)`）（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

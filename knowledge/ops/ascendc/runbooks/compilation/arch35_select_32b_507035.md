@@ -49,8 +49,8 @@ platforms: ["950"]
 
 本卡验证信号来自 softplus_v2_grad 在 Ascend950PR（arch35/dav_c100）上的多轮 kernel 运行（同一开发轨迹）。
 
-- 分块 `Select(SEL_CHUNK=64)` 多块调用崩溃 `507035`（AIC runtime error），NPU 崩溃（来源平台:950；证据等级:tool_observed）。
-- n=64 单块通过、n>=128 多块崩溃，崩溃出现在第二块 mask 偏移起（来源平台:950；证据等级:tool_observed）。
+- 分块 `Select(SEL_CHUNK=64)` 多块调用崩溃 `507035`（AIC runtime error），NPU 崩溃（来源平台：950；证据等级：tool_observed）。
+- n=64 单块通过、n>=128 多块崩溃，崩溃出现在第二块 mask 偏移起（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

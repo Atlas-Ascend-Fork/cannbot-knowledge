@@ -113,9 +113,9 @@ __global__ __aicore__ __vector__ void gather_kernel(
 
 来源说明：本知识来自一次 Ascend950 Flash 算子开发中的首次远程链接失败、精确签名修复，以及修复后对同一 `.asc` 翻译单元的远程重新构建和 NPU pytest。
 
-- 修复前，`ld.lld` 对全部模板实例化报告 `auto derivate failed`，Bisheng 以链接退出码 1 失败（来源平台: 950；证据等级: tool_observed）；
-- 补 `__vector__` 后，构建输出出现 `[100%] Linking ASC shared library` 与 `[100%] Built target`（来源平台: 950；证据等级: tool_observed）；
-- 同一修复后产物在 NPU 上收集 66 项测试并全部通过（来源平台: 950；证据等级: tool_observed）。
+- 修复前，`ld.lld` 对全部模板实例化报告 `auto derivate failed`，Bisheng 以链接退出码 1 失败（来源平台：950；证据等级：tool_observed）；
+- 补 `__vector__` 后，构建输出出现 `[100%] Linking ASC shared library` 与 `[100%] Built target`（来源平台：950；证据等级：tool_observed）；
+- 同一修复后产物在 NPU 上收集 66 项测试并全部通过（来源平台：950；证据等级：tool_observed）。
 
 - 独立复现 R1：工具报告 [100%] Built target op_gather。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
 - 独立复现 R2：工具报告 [100%] Built target op_scatter。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。

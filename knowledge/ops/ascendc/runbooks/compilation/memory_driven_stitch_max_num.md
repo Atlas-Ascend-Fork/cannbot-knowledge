@@ -31,7 +31,7 @@ aliases: ["memory_driven_stitch"]
 **banned 路线：在已启用 memory-driven stitch 自动合图的算子上，于 JIT `runtime_options` 显式设 `stitch_function_max_num`（如 128）。**
 
 - **尝试**：`_part` 实现已由 memory-driven stitch 隐式决定 stitch 合图数；为追求进一步优化，照搬另一实现上正常的显式 `stitch_function_max_num=128` 写入 `runtime_options`。该 edit 的 tool_call 输入被 trace adapter 截断为 `_see below_`，verbatim before/after 未从 trace 恢复。
-- **客观失败**：运行该配置后 5 分钟无任何输出（正常 2-3 秒完成），shell tool 在 300000ms 超时后终止、无错误退出码，属编译/运行挂起（来源平台:950；证据等级:tool_observed）。
+- **客观失败**：运行该配置后 5 分钟无任何输出（正常 2-3 秒完成），shell tool 在 300000ms 超时后终止、无错误退出码，属编译/运行挂起（来源平台：950；证据等级：tool_observed）。
 - **边界**：仅验证了 memory-driven stitch + 显式 128 的冲突组合；未验证关闭 memory-driven stitch 后显式设值是否合法，未验证其他显式取值（如 256）在 memory-driven 模式下是否同样挂起。
 - **收敛**：memory-driven stitch 与显式 `stitch_function_max_num` 是两条互斥的合图决策路径——前者由编译器按 memory 自动决定 stitch 合图数，后者显式给定上限；二者同时存在时编译器在两条决策路径间无法收敛，导致编译阶段挂起（无错误输出、纯超时）。该机制属 agent 推断（编译器是否报 internal error 或死循环未追到机制层），故本卡以失败路线收敛、不发布为修复。回退该参数后运行恢复正常（该恢复信号为 agent reasoning，未作为 tool_result 捕获，不进 `## 验证信号`）。
 
@@ -39,7 +39,7 @@ aliases: ["memory_driven_stitch"]
 
 本段只收本 trace 内 tool_observed 实测，agent 推断的机制假设与口述恢复不进此段。
 
-- 在 memory-driven stitch 已启用的 `_part` 实现上显式设 `stitch_function_max_num=128` 运行 JIT，5 分钟无任何输出，shell tool 在 300000ms 超时后终止、无错误退出码（来源平台:950；证据等级:tool_observed）
+- 在 memory-driven stitch 已启用的 `_part` 实现上显式设 `stitch_function_max_num=128` 运行 JIT，5 分钟无任何输出，shell tool 在 300000ms 超时后终止、无错误退出码（来源平台：950；证据等级：tool_observed）
 
 ## 预防
 

@@ -44,7 +44,7 @@ platforms: ["950"]
       conv3dBackpropFilterV2Node->SetAttr("output_padding", convBpAttr.outputPadding);
   ```
 
-- **客观失败**：该修复的闭合证据（编译/UT 通过、图通路 runtime 复跑）未在 trace 中作为 tool_result 捕获（被 markdown_transcript adapter 截断为 `_see below_`），无 tool_observed 信号确认 EZ0009 被消除；且 EZ0009 groups 报错的真实根因（fusion pass transposed=true 时未交换 input/gradOutput）不受此修复触及（来源平台:950；证据等级:tool_observed）。
+- **客观失败**：该修复的闭合证据（编译/UT 通过、图通路 runtime 复跑）未在 trace 中作为 tool_result 捕获（被 markdown_transcript adapter 截断为 `_see below_`），无 tool_observed 信号确认 EZ0009 被消除；且 EZ0009 groups 报错的真实根因（fusion pass transposed=true 时未交换 input/gradOutput）不受此修复触及（来源平台：950；证据等级：tool_observed）。
 - **边界**：`SetAttr("output_padding", ...)` 只让框架把 `output_padding` 加入 runtime attrs、使 `GetAttrNum()` 与 PR 代码 `OUTPUT_PADDING_INDEX=8` 假设一致；它不解 groups 不匹配。把此修复当作 groups 报错修复是误诊，banned。
 - **收敛**：groups 报错的真正修复见 transposed 交换诊断（aclnn API 层 `CheckConvShapePlus` / `CalculateConv3DTransposeBackward` 存在该交换、fusion pass 缺失），不在本卡范围。
 
@@ -52,8 +52,8 @@ platforms: ["950"]
 
 本段只收本 trace 内 tool_observed 实测，agent 推断的机制假设不进此段。
 
-- 图通路运行时捕获 `EZ0009: x_channel / filter_channel != groups` 报错（来源平台:950；证据等级:tool_observed）
-- fusion pass 主文件 `conv3d_backprop_filter_to_v2_fusion_pass.cpp` 中 `SetAttr("output_padding", ...)` 的 edit before/after（oldString/newString）从 trace tool_call 逐字恢复（来源平台:950；证据等级:tool_observed）
+- 图通路运行时捕获 `EZ0009: x_channel / filter_channel != groups` 报错（来源平台：950；证据等级：tool_observed）
+- fusion pass 主文件 `conv3d_backprop_filter_to_v2_fusion_pass.cpp` 中 `SetAttr("output_padding", ...)` 的 edit before/after（oldString/newString）从 trace tool_call 逐字恢复（来源平台：950；证据等级：tool_observed）
 
 ## 根因
 

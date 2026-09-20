@@ -34,8 +34,8 @@ cann-bench 评测模式下完成 gather (IndexGather, L2) 算子开发后，运�
 
 ## 验证信号
 
-- cann-bench `run_evaluation.sh` 最终评测：19/20 通过，`level2/gather_20` `MERE=6.100056, MARE=68403.352561`，其余用例 MERE=0/MARE=0（来源平台:a2；证据等级:tool_observed）。
-- 小 shape NPU 复现（`x=[4,8,16], index=[4,4,16], dim=2`）：75% 元素不匹配，`max_diff=6.5`；`y[0,0,0]`（`index=6`）custom=`x[0,6,0]=96.0` 而期望 `x[0,0,6]=6.0`（来源平台:a2；证据等级:tool_observed）。
+- cann-bench `run_evaluation.sh` 最终评测：19/20 通过，`level2/gather_20` `MERE=6.100056, MARE=68403.352561`，其余用例 MERE=0/MARE=0（来源平台：a2；证据等级：tool_observed）。
+- 小 shape NPU 复现（`x=[4,8,16], index=[4,4,16], dim=2`）：75% 元素不匹配，`max_diff=6.5`；`y[0,0,0]`（`index=6`）custom=`x[0,6,0]=96.0` 而期望 `x[0,0,6]=6.0`（来源平台：a2；证据等级：tool_observed）。
 
 ## 失效边界
 

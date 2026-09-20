@@ -1,17 +1,17 @@
 ---
 type: "Runbook"
 title: OpDef SetTiling 与 IMPL_OP_OPTILING 二选一
-description: host 侧 tiling 注册双通道等价：样例 IMPL_OP_OPTILING 与契约 OpDef .SetTiling 二选一，并存有双重注册风险；SetTiling 跨文件绑定实测通过。
+description: host 侧 tiling 注册双通道等价：样例 IMPL_OP_OPTILING 与契约 OpDef .SetTiling 二选一；两级实验证实并存无冲突、IMPL_OP_OPTILING 可单独注册支撑 aclnn 两阶段路径，并补 TilingParse<CompileInfo> 编译期缓存平台信息 + 运行时兜底模式与默认 max_tiling_data_size=2048。
 tags: [task.implementation, topic.tiling]
 status: stable
 sources: []
-created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+created_at: "2026-09-09T11:49:41Z"
+updated_at: "2026-09-17T02:30:52Z"
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
+cann_versions: ["9.0.0-beta.2", "9.1.0"]
 ---
-# OpDef SetTiling 与 IMPL_OP_OPTILING 二选一
 
+# OpDef SetTiling 与 IMPL_OP_OPTILING 二选一
 
 ## 现象
 
@@ -38,7 +38,7 @@ this->AICore().SetTiling(optiling::TilingFunc).AddConfig("ascend950");
 - 验证过的平台与 CANN 版本：950（ascend950/arch35）+ CANN 9.0.0-beta.2。
 - 适用粒度：operator_family——所有从样例工程改写 OpDef/tiling 的自定义算子。
 - 路线优先级：recommended_fastpath（契约要求 OpDef 绑定时：SetTiling 通道 + 删 IMPL 行 + 跨文件前置声明绑定）。
-- 明确不适用 / 未验证：契约不约束注册通道时，纯样例式 IMPL 宏注册同样可用（本 trace 未单独实测该通道）；双通道并存的失败形态未实测；`IMPL_OP_INFERSHAPE` 通道未实测。
+- 明确不适用 / 未验证：契约不约束注册通道时，纯样例式 IMPL 宏注册同样可用（独立 trace 已实测该通道，见增量）；`IMPL_OP_INFERSHAPE` 通道未实测。
 
 ## 根因
 
@@ -177,8 +177,8 @@ ge::graphStatus TilingFunc(gert::TilingContext* context);
 
 ## 失效边界
 
-- 双通道并存（SetTiling + IMPL_OP_OPTILING 同时保留）的实际失败形态（编译错/链接错/运行断言/静默覆盖）未实测——本卡按"等价通道二选一"规避，不声称具体失败模式。
-- 纯 IMPL 宏通道（不动 OpDef）在本 trace 未跑通验证（仅样例在用）；契约不约束时不应默认它有问题。
+- 双通道并存（SetTiling + IMPL_OP_OPTILING 同时保留）的实际失败形态（编译错/链接错/运行断言/静默覆盖）未实测——本卡按"等价通道二选一"规避，不声称具体失败模式（复现增量已实测并存无冲突，见下）。
+- 纯 IMPL 宏通道（不动 OpDef）在本开发会话 未跑通验证（仅样例在用）；契约不约束时不应默认它有问题（复现增量已实测该通道可用，见下）。
 - InferShape/InferDataType 桩只验证了编译通过与链接；aclnn 直调通路是否实际触发图推理未单独验证。
 - 其他 CANN 版本的宏/API 形态未验证（推断可迁移，未验证）。
 
@@ -193,5 +193,107 @@ ge::graphStatus TilingFunc(gert::TilingContext* context);
 
 ## 未决事项
 
-- 优先项：实测双通道并存的失败形态（构建期报错还是运行期冲突），把"双重注册风险"从推断变成结论。
-- IMPL 宏通道与 SetTiling 通道在 aclnn 运行期的等价性可做一次对照实验（同算子两种通道各构建一次）。
+- ~~优先项：实测双通道并存的失败形态（构建期报错还是运行期冲突），把"双重注册风险"从推断变成结论。~~（复现增量已闭合：并存构建无冲突告警、smoke 9/9，见下。）
+- ~~IMPL 宏通道与 SetTiling 通道在 aclnn 运行期的等价性可做一次对照实验（同算子两种通道各构建一次）。~~（复现增量已闭合：删除 SetTiling 仅留 IMPL_OP_OPTILING 后两阶段路径完整走通，见下。）
+
+## 增量（两级实验闭合未决事项 + TilingParse<CompileInfo> 编译期缓存模式）
+
+另一独立轨迹并入 softplus_v2_grad（Ascend950PR，CANN 9.1.0，标准 ops_custom 构建管线：`npu_op_code_gen` + `npu_op_library(cust_optiling TILING ...)`）的实例。该工程模板用 OpDef `SetTiling` 链式注册，而设计要求 regbase 参考模式注册并带 `TilingParse<CompileInfo>`；`grep -rln "IMPL_OP_OPTILING"` 扫整个 CANN 安装的 `opp/built-in/op_impl/ai_core/tbe/impl/` **没有任何内置算子使用 IMPL_OP_OPTILING**（机制先例缺失，靠实验补）。
+
+**1. 两级实验（每级以 build 退出码 + smoke 9/9 dtype 组合为判据，可整体复用）**：
+
+- **共存实验**：OpDef 保留 `SetTiling` 的同时追加 `IMPL_OP_OPTILING(<Op>).Tiling(<stub TilingFunc>)` → `build_exit=0`，构建日志 grep `duplicate|already regist|conflict|redefin|multipl` 无命中；smoke `9/9 dtype combinations PASSED`。结论：两种注册在该构建管线**不冲突**——原卡"并存有双重注册风险"的推断被实测收窄为"并存无构建/冒烟期冲突"。
+- **单独实验**：删除 OpDef 的 `.SetTiling(...)`（仅留 `.AddConfig("ascend950")`），只留 `IMPL_OP_OPTILING(...).Tiling(...)` → `build_exit=0` 且 smoke 9/9——aclnn `GetWorkspaceSize → tiling → launch` 两阶段路径完整走通，IMPL_OP_OPTILING 单独注册即可支撑运行时 tiling。
+
+**2. 最终采用的模式（IMPL_OP_OPTILING 单独注册 + TilingParse 编译期缓存平台信息 + 运行时三级兜底，OpDef 只留形状/dtype 推导与 AddConfig）**：
+
+```cpp
+// CompileInfo: TilingParse 阶段从平台信息一次性捕获，运行时 TilingFunc 直接读取。
+struct SoftplusV2GradCompileInfo {
+    int64_t ubSize = 0;
+    int64_t coreNum = 1;
+};
+
+// TilingParse — 从平台信息填充 CompileInfo (ubSize / coreNumAiv)。
+static ge::graphStatus TilingPrepareForSoftplusV2Grad(gert::TilingParseContext* context)
+{
+    auto* ci = context->GetCompiledInfo<SoftplusV2GradCompileInfo>();
+    if (ci == nullptr) {
+        return ge::GRAPH_FAILED;
+    }
+    fe::PlatFormInfos* pf = context->GetPlatformInfo();
+    if (pf == nullptr) {
+        ci->ubSize = 256 * 1024;  // 256KB 兜底
+        ci->coreNum = 1;
+        return ge::GRAPH_SUCCESS;
+    }
+    platform_ascendc::PlatformAscendC plat(pf);
+    uint64_t ub = 0;
+    plat.GetCoreMemSize(platform_ascendc::CoreMemType::UB, ub);
+    ci->ubSize = (ub > 0) ? static_cast<int64_t>(ub) : (256 * 1024);
+    uint32_t aiv = plat.GetCoreNumAiv();
+    ci->coreNum = (aiv > 0) ? static_cast<int64_t>(aiv) : 1;
+    return ge::GRAPH_SUCCESS;
+}
+
+// Tiling 入口
+static ge::graphStatus TilingFuncSoftplusV2Grad(gert::TilingContext* context)
+{
+    SoftplusV2GradTiling tiling(context);
+    return tiling.RunTiling();
+}
+
+// Host 侧注册 — IMPL_OP_OPTILING(SoftplusV2Grad)
+IMPL_OP_OPTILING(SoftplusV2Grad)
+    .Tiling(optiling::TilingFuncSoftplusV2Grad)
+    .TilingParse<optiling::SoftplusV2GradCompileInfo>(optiling::TilingPrepareForSoftplusV2Grad);
+```
+
+TilingFunc 内读取平台信息的三级兜底链（CompileInfo 优先，`ctx_->GetPlatformInfo()` 次之，常量默认最后）：
+
+```cpp
+// 平台信息: 优先 CompileInfo (TilingParse), 兜底 GetPlatformInfo / 默认值
+const auto* ci = ctx_->GetCompileInfo<SoftplusV2GradCompileInfo>();
+if (ci != nullptr && ci->ubSize > 0 && ci->coreNum > 0) {
+    ub_size_ = ci->ubSize;
+    core_num_ = ci->coreNum;
+} else {
+    fe::PlatFormInfos* pf = ctx_->GetPlatformInfo();
+    if (pf != nullptr) {
+        platform_ascendc::PlatformAscendC plat(pf);
+        uint64_t ub = 0;
+        plat.GetCoreMemSize(platform_ascendc::CoreMemType::UB, ub);
+        ub_size_ = (static_cast<int64_t>(ub) > 0) ? static_cast<int64_t>(ub) : (256 * 1024);
+        uint32_t aiv = plat.GetCoreNumAiv();
+        core_num_ = (aiv > 0) ? static_cast<int64_t>(aiv) : 1;
+    } else {
+        ub_size_ = 256 * 1024;
+        core_num_ = 1;
+    }
+}
+```
+
+OpDef 侧去掉 `SetTiling`、只留 soc 配置（推导函数照常）：
+
+```cpp
+this->SetInferShape(ge::InferShape).SetInferDataType(ge::InferDataType);
+this->AICore()
+    .AddConfig("ascend950");
+// （原来的 .SetTiling(optiling::TilingFunc) 已删除，tiling 由 IMPL_OP_OPTILING 注册）
+```
+
+**3. 配套机制事实**：
+
+- `OpImplRegisterV2::Tiling(TilingKernelFunc tiling_func, size_t max_tiling_data_size = 2048)`——默认 2048 字节；超大 TilingData 结构需显式传 `max_tiling_data_size`（本例两档结构约 296/552 字节，默认够用，边界未触及）。
+- 函数签名兼容性：`TilingKernelFunc = UINT32 (*)(TilingContext *)`，`ge::graphStatus` 与 UINT32 兼容，沿用 `ge::graphStatus TilingFunc(gert::TilingContext*)` 写法即可（add_custom 样例同款）。
+- 注册器落库核验：tiling 库实际安装在 `${ASCEND_OPP_PATH}/vendors/<Op>/op_impl/ai_core/tbe/op_tiling/liboptiling.so`（不是直觉猜的 `op_impl/lib/libcust_optiling.so`）；`nm -D` 查不到这些符号（局部符号），要用 `objdump -t`——本例可见 `op_impl_register_optiling_SoftplusV2Grad`（IMPL_OP_OPTILING 静态注册器，.bss）、`TilingFuncSoftplusV2Grad`、`TilingPrepareForSoftplusV2Grad` 及公共 tiling 函数符号。
+- 若 tiling key 需按模板参数分档（dtype/rank 分支），host 侧配 `op_kernel/*_struct.h` 用 `ASCENDC_TPL_ARGS_DECL` + `ASCENDC_TPL_SEL` 声明，`SetTilingKey(GET_TPL_TILING_KEY(<BRANCH>))` 下发。
+
+**先前增量 验证信号**（softplus_v2_grad 开发会话，Ascend950PR + CANN 9.1.0）：
+
+- 共存实验：OpDef SetTiling + IMPL_OP_OPTILING 并存 → `build_exit=0`、无 duplicate/conflict 类警告、`==== Smoke summary: 9/9 dtype combinations PASSED ====`（来源平台：950；证据等级：tool_observed）。
+- 单独实验：删除 OpDef `.SetTiling(...)` 仅留 IMPL_OP_OPTILING → `build_exit=0`、smoke 9/9 PASSED（aclnn 两阶段调用完整走通）（来源平台：950；证据等级：tool_observed）。
+- 最终实现（真实 TilingFunc + TilingParse<CompileInfo> + GET_TPL_TILING_KEY）：`build_exit=0`、TilingUT `Summary: 27 / 27 PASSED`、smoke 9/9 PASSED（来源平台：950；证据等级：tool_observed）。
+- 注册器落库：`objdump -t liboptiling.so` 可见 `op_impl_register_optiling_SoftplusV2Grad`、`TilingFuncSoftplusV2Grad`、`TilingPrepareForSoftplusV2Grad`（来源平台：950；证据等级：tool_observed）。
+
+**先前增量 边界与坏实践**：结论绑定 CANN 9.1.0 标准 ops_custom 构建管线（built-in 在该版本均不用 IMPL_OP_OPTILING，机制归属可能随版本演进，跨版本前重跑两级实验）；"运行时执行的是 IMPL_OP_OPTILING 注册的 TilingFunc"为强间接证据（去掉 SetTiling 后两阶段路径完整工作 + 注册器/函数符号在库 + 真实 TilingFunc 下 UT/smoke 全流程执行），未用日志直接打印证明函数体执行，采用此模式时建议保留 GetPlatformInfo 兜底链以兼容注册路径差异；TilingData 结构超过 2048 字节时必须显式传 `max_tiling_data_size`（未验证）。坏实践补充：因"样例都用 SetTiling、built-in 都不用 IMPL_OP_OPTILING"就断定该宏不可用而绕开设计要求——先做最小实验再下结论；用 `nm -D` 查不到符号就断定"实现没编进去"（局部符号需 `objdump -t`，且 tiling 库路径在 `op_impl/ai_core/tbe/op_tiling/liboptiling.so`）。

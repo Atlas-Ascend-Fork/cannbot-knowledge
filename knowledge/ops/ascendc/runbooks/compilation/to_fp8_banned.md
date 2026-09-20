@@ -48,8 +48,8 @@ trace 内未找到可在多流下保活 `.to()` 的改法；最终采用规避�
 
 ## 验证信号
 
-- 多流 + `.to(FP8)` 路线：聚合 tool_result 报 `507035=1028`、`model run success=0`（来源平台:950；证据等级:tool_observed）。
-- 最终透传路线（`torch_npu.npu_rms_norm` / 原生 dynamic_block_quant 等）：`model run success`（来源平台:950；证据等级:tool_observed）。
+- 多流 + `.to(FP8)` 路线：聚合 tool_result 报 `507035=1028`、`model run success=0`（来源平台：950；证据等级：tool_observed）。
+- 最终透传路线（`torch_npu.npu_rms_norm` / 原生 dynamic_block_quant 等）：`model run success`（来源平台：950；证据等级：tool_observed）。
 
 ## 预防
 

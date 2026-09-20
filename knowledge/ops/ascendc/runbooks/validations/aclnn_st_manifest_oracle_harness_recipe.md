@@ -1,16 +1,16 @@
 ---
 type: "Runbook"
 title: manifest 驱动 aclnn ST 框架（独立 oracle）
-description: 自研 aclnn ST 三件套配方：用例 manifest + 独立 golden 生成器 + C++ 执行器；两端同源位流、确定性合成、红基线可验证。
+description: 自研 aclnn ST 三件套配方：用例 manifest + 独立 golden 生成器 + C++ 执行器；两端同源位流、确定性合成、红基线可验证。复现增量：绿基线（kernel 实现后）两轮全量 PASS + 逐位一致闭环补齐；NaN 逐点 isnan + rtol/atol 逐元素比对器；空张量 0 元素仍按最小 1 字节分配、描述符 shape 直通；fp16↔fp32 经 acl_base_rt.h 的 aclFloat16ToFloat/aclFloatToFloat16 链可达。
 tags: [task.testing, topic.implementation.api_layer.c_api]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-17T02:41:05Z'
 platforms: ["950"]
 ---
-# manifest 驱动 aclnn ST 框架（独立 oracle）
 
+# manifest 驱动 aclnn ST 框架（独立 oracle）
 
 ## 现象
 
@@ -28,7 +28,7 @@ platforms: ["950"]
 - 验证过的平台与 CANN 版本：Ascend950PR（npu-smi 25.7.rc1.6）+ CANN 9.0.0-beta.2 + torch 2.7.1+cpu（与 frontmatter `platforms` 严格一致）。
 - 适用粒度：`operator_family`——框架结构与算子无关（换算子改 manifest 的 op/api 名与 golden 路径即可）。
 - 路线优先级：`recommended_fastpath`（现成框架缺失时的标准自研路线；若上游补齐 aclnn_st_core.h 可评估替换）。
-- 明确不适用/未验证场景：TTK CSV 能直接表达的常规范围用例（走 whitebox/TTK 通道更省）；绿基线（kernel 实现）下的运行本 trace 未覆盖（红基线 trace）；INT 量化 dtype 用例（执行器 dtype 枚举未含）；多输入流并发的性能型 ST。
+- 明确不适用/未验证场景：TTK CSV 能直接表达的常规范围用例（走 whitebox/TTK 通道更省）；绿基线（kernel 实现）下的运行本开发会话 未覆盖（红基线 trace）；INT 量化 dtype 用例（执行器 dtype 枚举未含）；多输入流并发的性能型 ST。
 
 ## 解决配方
 
@@ -48,9 +48,9 @@ platforms: ["950"]
 - **为何数据进 `build/st_data`**：`run.sh` 每轮 `rm -rf build`，生成数据随之清理再重建——不引入 .gitignore 变更，也不留陈旧产物。
 - **为何 golden 用 importlib 动态加载**：golden.py 位于 docs/ 开发目录而非包内，且须与被测 kernel 源码级隔离（禁止自证）；`spec_from_file_location` 不依赖 sys.path 布局。TestSpec.golden 首参非 self（golden(grad_hy, storage, has_bias, *pure_outputs)），类上直调即可，无须实例化。
 - **为何 C++ 内嵌 JSON 解析器**：测试二进制不引第三方依赖；manifest 是自产数据文件，受限子集（对象/数组/字符串（含 \u 转义与代理对）/数字/字面量）足够。
-- **空输出 (0,) 的 32B 占位**：autogen aclnn 层（Nnopbase 框架码）的检查宏只查空指针、shape 直通；0 字节 `aclrtMalloc` 行为不明，占位分配 + 描述符 dims{0} 是稳妥路线（本 trace E04 实测通过）。比对侧 0 元素短路 PASS（TTK `_check_empty` 同语义）。
+- **空输出 (0,) 的 32B 占位**：autogen aclnn 层（Nnopbase 框架码）的检查宏只查空指针、shape 直通；0 字节 `aclrtMalloc` 行为不明，占位分配 + 描述符 dims{0} 是稳妥路线（本开发会话 E04 实测通过）。比对侧 0 元素短路 PASS（TTK `_check_empty` 同语义）。
 - **确定性双跑**：同输入连跑 2 次位级比对，作为每例的必检项——红基线阶段它在 stub 下平凡通过（两轮同为 poison），绿基线阶段才有区分力。
-- **TORCH_DEVICE_BACKEND_AUTOLOAD=0**（python 生成步骤）：env.sh 记载该变量用于"关 torch_npu autoload，避免 GE-init 抢占 vendor tiling 注册导致 561002"——本 trace 未复现 561002，属防御性沿用（来源：项目 env.sh，非本 trace 实测）。
+- **TORCH_DEVICE_BACKEND_AUTOLOAD=0**（python 生成步骤）：env.sh 记载该变量用于"关 torch_npu autoload，避免 GE-init 抢占 vendor tiling 注册导致 561002"——本开发会话 未复现 561002，属防御性沿用（来源：项目 env.sh，非本开发会话 实测）。
 - **golden 独立性红线**：golden.py 头注释明确竞品 oracle（torch.ops.aten...）只能在隔离子进程调用——aclnn 进程已初始化 aclrt，同进程调用会 SIGSEGV；生成器是独立进程，安全。
 - 被放弃的方案：直接复用 whitebox CSV（结构性用例、值级注入不可表达）；把用例硬编码进 C++（违反 manifest 驱动约定、不可审计）。
 - 当前方案属 `recommended_fastpath` 路线。
@@ -58,7 +58,7 @@ platforms: ["950"]
 ## 系统信息
 
 - 目录布局（算子仓内）：`operators/ThnnFusedGruCellGrad_package/tests/aclnn/{st_cases_branch0.json, gen_st_oracle.py, test_aclnn.cpp, run.sh, CMakeLists.txt}`；生成数据 `tests/aclnn/build/st_data/<case_id>/*.bin + meta.json`。
-- 独立 oracle：`docs/ThnnFusedGruCellGrad/develop/golden.py`（纯 torch/numpy TestSpec；本 trace 实测 sha256 前 16 位 b674160b54ea8f86）。
+- 独立 oracle：`docs/ThnnFusedGruCellGrad/develop/golden.py`（纯 torch/numpy TestSpec；本开发会话 实测 sha256 前 16 位 b674160b54ea8f86）。
 - 运行环境：Ascend950PR + CANN 9.0.0-beta.2；torch 2.7.1+cpu；宿主 x86_64。
 - 构建链：`operators/build.sh <pkg>` 只构建/安装算子包（vendor .run → `$ASCEND_OPP_PATH/vendors/...`）；**tests 不在包构建内**，由 `tests/aclnn/CMakeLists.txt` 独立 cmake/make，链接 `ascendcl`/`nnopbase`/`cust_opapi`，include 用安装后的 vendor op_api 头（`aclnn_thnn_fused_gru_cell_grad.h`）——测试验证的是安装产物而非源码树。
 - 运行期：`LD_LIBRARY_PATH=$ASCEND_OPP_PATH/vendors/<Vendor>/op_api/lib:$LD_LIBRARY_PATH`。
@@ -510,7 +510,7 @@ static bool RunStSuite(const std::string& manifestPath, const std::string& dataD
 - golden 接口耦合：`TestSpec.golden` 签名/类名变化需同步生成器；golden 文件移动需改 `--golden` 路径（meta.json 记录 golden sha256 前 16 位可供核对）。
 - stjson 是受限 JSON 子集（无注释、无尾逗号；支持 \u 转义与代理对）——manifest 须由工具生成或按 schema 手写。
 - 空输入张量（全 (0,) 输入的分支）未在框架中实测——本卡场景为空**输出**（占位 32B + dims{0}）；空输入分支的 ST 属另一分支任务，未验证。
-- 绿基线（kernel 实现后）下整套框架的过阈/门禁行为未在本 trace 验证（红基线 trace）。
+- 绿基线（kernel 实现后）下整套框架的过阈/门禁行为未在本开发会话 验证（红基线 trace）。
 - 确定性双跑在 stub 阶段平凡通过（两轮同为 poison），区分力要等绿基线。
 - 数据目录 `build/st_data` 随 `rm -rf build` 清理——审计需要历史数据时须另行归档（meta.json 已含再生成所需的全部种子信息，可确定性重建）。
 - 其他 NPU 平台/CANN 版本未实测，推断可迁移（框架仅依赖 aclnn 通用调用链与 host 侧 python/C++17）。
@@ -528,3 +528,59 @@ static bool RunStSuite(const std::string& manifestPath, const std::string& dataD
 - 同一调试段里 `./test_aclnn ... | head -60; echo "EXIT=$?"` 显示 EXIT=0——那是管道末位 `head` 的退出码，不是测试的（实际 255）；要看测试退出码须去管道或用 PIPESTATUS（通用 shell 坑）。
 
 
+
+## 后续增量（2026-09-17，并行策展批：绿基线闭环 + 逐点 NaN/rtol-atol 比对器 + 空张量最小分配）
+
+softplus_v2_grad 算子 Branch-1（full-load）的 aclnn ST（Ascend950 + CANN 9.1.0，同三件套形态：独立 torch golden 离线生成期望 .bin、manifest 驱动、C++ 直连两级接口）补齐原卡失效边界的"绿基线未验证"并给出三个工程细节：
+
+**1. 绿基线闭环（补齐"绿基线（kernel 实现后）下整套框架的过阈/门禁行为未验证"）**：kernel 桩（含哨兵预填）阶段 `run.sh` 端到端跑通、`total=15 PASSED=1 FAILED=14 ERROR=0`（仅空 tensor 用例合理通过）、退出码 1（红基线正确）；kernel 实现后**两次完整运行** `total=15 PASSED=15 FAILED=0 ERROR=0`、退出码 0，两次输出 `IDENTICAL bit-wise`——框架在绿基线下的过阈/确定性门禁行为实测成立。
+
+**2. 逐点比对器（NaN 语义 + rtol/atol）**：期望为 NaN 的元素要求 actual `isnan`（NaN 传播语义逐点对齐），否则 `|a-b| <= atol + rtol*|expected|`（零幅值点由 atol 兜底）：
+
+```cpp
+// 逐点比对：expected 为 NaN -> actual 必须 isnan（NaN 传播语义）；
+// 否则 |a-b| <= atol + rtol*|expected|（零幅值点用 atol）。返回不匹配元素数。
+static int64_t compareElementwise(const std::vector<float>& actual,
+                                  const std::vector<float>& expected,
+                                  double rtol, double atol,
+                                  int64_t printUpTo = 4) {
+    int64_t n = static_cast<int64_t>(expected.size());
+    int64_t mism = 0;
+    int64_t printed = 0;
+    for (int64_t i = 0; i < n; ++i) {
+        float e = expected[i];
+        float a = (i < static_cast<int64_t>(actual.size())) ? actual[i] : 0.0f;
+        bool ok;
+        if (std::isnan(e)) {
+            ok = std::isnan(a);                       // S1: NaN 逐点 isnan 对齐
+        } else {
+            double diff = std::fabs(static_cast<double>(a) - static_cast<double>(e));
+            double tol = atol + rtol * std::fabs(static_cast<double>(e));
+            ok = (diff <= tol);
+        }
+        if (!ok) {
+            ++mism;
+            if (printed < printUpTo) {
+                fprintf(stderr, "    [%ld] expected=%g actual=%g\n",
+                        static_cast<long>(i), e, a);
+                ++printed;
+            }
+        }
+    }
+    return mism;
+}
+```
+
+**3. 空张量最小分配**：0 元素用例仍 `malloc` 最小 1 字节避免空指针（`allocBytes = (bytes == 0) ? 1 : bytes`），tensor 描述符 shape 仍为声明的 0 元素 shape；比对侧 `n == 0` 短路通过（与原卡"空输出 32B 占位"同一原则的最小化变体）。fp16 原始字节转 float 用 `aclFloat16ToFloat(uint16_t)`（`aclFloat16` 即 `uint16_t`，经 `acl/acl.h → acl_rt.h → acl_base.h → acl_base_rt.h` 链可达，无须自写位级转换）。
+
+### 复现增量验证信号
+
+- 红基线（kernel 桩、含哨兵预填）：`./run.sh` 端到端跑通，`total=15 PASSED=1 FAILED=14 ERROR=0`，RUN_SH_EXIT=1（红基线预期非 0）（来源平台：950；证据等级：tool_observed）。
+- 绿基线：kernel 实现后两次完整运行均 `total=15 PASSED=15 FAILED=0 ERROR=0`、RUN1/RUN2 exit=0，两次输出 `IDENTICAL bit-wise`（来源平台：950；证据等级：tool_observed）。
+- 构建集成：算子包 `./build.sh` 退出 0；测试 cmake+make 编译通过（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量边界
+
+- 比对器语义是"逐元素 + NaN 传播 + rtol/atol"，不含逐位一致断言（逐位一致仅作为两次运行间的稳定性旁证）；要求 bit-exact 的算子需另加比较模式。
+- manifest+bin 方案要求期望可离线确定性生成；含随机性/不确定归约顺序的算子需固定种子并在 golden 侧复现同样归约。
+- fp16 容差与 fp32 两档是本算子设计选择，换算子需按精度预算重定。

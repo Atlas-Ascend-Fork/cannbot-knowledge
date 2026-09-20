@@ -1,12 +1,12 @@
 ---
 type: "Runbook"
 title: "empty分支SetBlockDim(0)与aUbFactor误式判别"
-description: "空 tensor 归约算子（EMPTY_A/EMPTY_R 分支）的 empty-branch TilingUT 0/14 全 FAILED；按 MISMATCH 字段分流——仅 blockDim mismatch 指向 EMPTY_A 的 SetBlockDim(0)（应为 max(usedCoreNum,1)=1），aLoopCntTotal/aUbFactor/usedCoreNum 全 mismatch 指向 EMPTY_R 的 aUbFactor=min(aTotal,maxSingleUb)（应为 min(maxSingleUb,CeilDiv(aTotal,coreNum))）；修正后 14/14。"
+description: "空 tensor 归约算子（EMPTY_A/EMPTY_R 分支）的 empty-branch TilingUT 0/14 全 FAILED；按 MISMATCH 字段分流——仅 blockDim mismatch 指向 EMPTY_A 的 SetBlockDim(0)（应为 max(usedCoreNum,1)=1），aLoopCntTotal/aUbFactor/usedCoreNum 全 mismatch 指向 EMPTY_R 的 aUbFactor=min(aTotal,maxSingleUb)（应为 min(maxSingleUb,CeilDiv(aTotal,coreNum))）；修正后 14/14。 R2（2026-09，CANN 9.1.0）：EMPTY_R 四约束完整公式 candidate=min(CeilDiv(aTotal,coreNum), 64KB/dtypeSize, aTotal)、不足 4KB 回退 4KB 粒度；字段重映射 axisNum=0/axisShape[0]=aTotal/cacheBufUbSize=0/postReduceUbSize=CeilAlign(aUbFactor×dtypeSize,blockSize)；含 FillEmptyTilingData/ComputeEmptyRSplit 完整实现与桩期单核降级坏实践。"
 tags: ["task.debugging", "topic.implementation.tiling", "topic.compute.reduction"]
 status: stable
 sources: []
 created_at: "2026-08-18T16:11:31Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-09-16T11:13:37Z'
 platforms: ["950"]
 ---
 
@@ -76,13 +76,156 @@ Test empty_r_multi_a            FAILED  [§2.5: 多 A 轴 aTotal=2*3=6, aUbFacto
 - EMPTY_R 多 A 轴 `aLoopCntTotal` 从 `act=1` → 与 `exp=aTotal(6/24/...)` 一致、`blockDim` 从 `act=1` → 与 `exp=aTotal` 一致（来源平台：950；证据等级：tool_observed）
 - empty-branch UT 修正 `HandleEmptyTensor` 两处公式后 14/14 PASS（`all 14 empty branch test cases passed`，全字段 mismatch 消失）（来源平台：950；证据等级：tool_observed）
 
+- （R2 增补，Ascend950PR + CANN 9.1.0，EMPTY 分支 TDD 闭环）实现前红基线：Branch-2 TilingUT 0/13（桩：cacheBufUbSize=16384 expected 0、usedCoreNum=1 expected 8、postReduceUbSize=0 expected 4096、aUbFactor=0 expected 1250/1024/16384/2048 逐字段点名）（来源平台：950；证据等级：tool_observed）。
+- （R2 增补）实现后：Branch-2 TilingUT 13/13 PASSED（含 4KB 回退、64KB 上限、部分核、fp16/bf16/int32 变体）（来源平台：950；证据等级：tool_observed）。
+- （R2 增补）回归：公共 TilingUT 19/19 + Branch-0 9/9 + Branch-1 9/9 无退化；整包 build.sh 退出 0、无 tiling struct 告警（来源平台：950；证据等级：tool_observed）。
+- （R2 增补）同 trace 后续 EMPTY kernel 入口接线后上板 aclnn ST 14/14 按位 0 通过（Branch-0 5/5、Branch-1 18/18 无退化）——空分类 tiling 的上板闭环（来源平台：950；证据等级：tool_observed）。
+
 ## 失效边界
 
 - 平台：仅 Ascend950（CANN 9.1.0）host-only TilingUT 实测；a3/a2 未验证，推断可迁移（`SetBlockDim` / `CeilDiv` 语义跨平台一致，但 `coreNum` / `ubSize` / `cacheLineSize` 平台常量需按目标平台取值）。
 - 适用边界：仅"沿轴归约 + 空 tensor 早退（EMPTY_A）/ 空 R 轴多核写 0（EMPTY_R）"类算子；非归约类算子的空 tensor 处理不适用。
-- 上板验证：本 trace 的 aclnn 真机测试在 stub kernel 阶段未跑通（361001 kernel-not-found），empty 分支的上板精度未在本 trace 验证。
+- 上板验证：本开发会话 的 aclnn 真机测试在 stub kernel 阶段未跑通（361001 kernel-not-found），empty 分支的上板精度未在本开发会话 验证。
+
+- （R2 增补）4KB/64KB 阈值是设计常量（非平台硬约束），dtype 越大可用粒度档越少；其他 NPU 架构未验证，机制推断可迁移。
+- （R2 增补）`empty_r_output_value=0` 是本算子（sqrt 空集）语义；其他 reduce（max 空域、带 empty_output_value 参数）填充值须按算子语义另定。
 
 ## 坏实践
 
 - 空 tensor 归约分支的 tiling 复用 normal 路径的 `min(aTotal, maxUb)` 直觉，而不对齐 DESIGN 的 `SetBlockDim(max(usedCoreNum,1))` 与"按核均摊"公式。
 - 把 empty-branch UT 的 `MISMATCH` 行误判为 oracle 错误（公共 `test_tiling` 的 empty-case oracle 曾匹配 buggy `SetBlockDim(0)`，把 stub 阶段的 buggy 输出当 red-baseline 固化）——oracle 必须按 DESIGN 公式生成期望值。
+
+- （R2 增补）桩阶段为"先让 kernel 能跑"把 EMPTY_R 压成单核并保留 normal 的 16KB cacheBuf——真实 kernel 会按 TilingData 字段当真执行。
+- （R2 增补）空 tensor 分支复用 normal 切分链再除零兜底——空轴进合轴/切分公式只会产生 0/0 与无意义字段，应在短路分类后完全走重映射路径。
+
+## 增补：四约束完整实现与字段重映射（R2，2026-09，CANN 9.1.0）
+
+同算子后续迭代给出 EMPTY_R 切分的完整公式与实现（本卡判别方法第 2 步公式的超集：在"按核均摊 + 64KB 单 buf 上限"外补 4KB 下界与 aTotal 上限）：
+
+- (a) aUbFactor × dtypeSize ≥ 4KB（防过度切分，不足时回退 4KB 粒度——宁可核少用满）；
+- (b) aUbFactor₀ = CeilDiv(aTotal, coreNum)（优先多核、负载均衡）；
+- (c) aUbFactor ≤ 64KB / dtypeSize（单 buf 上限）；
+- (d) aUbFactor ≤ aTotal（总量上限）。
+
+合成：`candidate = min(CeilDiv(aTotal,coreNum), 64KB/dtypeSize, aTotal)`；`candidate×dtypeSize < 4KB` 时取 `4KB/dtypeSize`（may underfill cores，有意权衡）。
+
+字段重映射（复用 normal 的 TilingData struct，不另建 struct）：`axisNum=0`（不进合轴）、EMPTY_A 全字段清零（`std::memset` 保证漏填字段确定性为 0）、EMPTY_R `axisShape[0]=aTotal`（合所有 A 轴）、`cacheBufUbSize=0`（不分配 cacheBuf——与 normal 固定 16KB 的关键差异）、`preReduceUbSize/tmpBufUbSize=0`、`postReduceUbSize=CeilAlign(aUbFactor×dtypeSize, blockSize)`（EMPTY_R 唯一 UB buffer）、`rGroupCnt=0`（empty 与 group 互斥）。
+
+终版实现（verbatim；常量与 helper 为同文件既有定义）：
+
+```cpp
+constexpr int64_t kFp32Bytes      = 4;   // sizeof(float)
+constexpr int64_t kNOut           = 1;   // single output y
+
+// §5.5.13 / DESIGN-BRANCH-2 §2.2 EMPTY_R multi-core split constants:
+constexpr int64_t kEmpty4KBLower   = 4096;          // (a) 4KB lower bound per core (avoid over-splitting)
+constexpr int64_t kEmpty64KBSingle = 64 * 1024;     // (c) single-buf 64KB cap (kMaxSingleUbBytes, only outBuf)
+
+// EMPTY short-circuit fill (§5.3.3 field remapping + DESIGN-BRANCH-2 §2 split).
+//   EMPTY_A → usedCoreNum=0 (full-core early exit), every split/buf field 0.
+//   EMPTY_R → Duplicate-0 fill over aTotal output elements: real multi-core
+//             split (§2.2 "4 constraints"); tmpBufUbSize=0 / preReduceUbSize=0 /
+//             cacheBufUbSize=0 (no preIn/tmp/cache allocation, §5.3.3).
+// =============================================================================
+int64_t ComputeATotal(const EuclideanNormCtx& ctx)
+{
+    int64_t aTotal = 1;
+    for (size_t i = 0; i < ctx.rawShape.size(); ++i) {
+        if (!ctx.rawIsReduce[i]) { aTotal *= ctx.rawShape[i]; }
+    }
+    return aTotal;
+}
+
+// §5.5.13 / DESIGN-BRANCH-2 §2.2 EMPTY_R multi-core split — "4 constraints":
+//   (a) aUbFactor × sizeof(D_T) ≥ 4KB           (avoid over-splitting)
+//   (b) aUbFactor₀ = CeilDiv(aTotal, coreNum)   (prefer multi-core, load balance)
+//   (c) aUbFactor ≤ 64KB / sizeof(D_T)          (single-buf 64KB cap)
+//   (d) aUbFactor ≤ aTotal                       (output total cap)
+//   combine: candidate = min(CeilDiv(aTotal,coreNum), 64KB/sizeof, aTotal);
+//            if candidate×sizeof < 4KB → fallback 4KB/sizeof (may underfill).
+// Fused aLoop multi-core balance (outerAProd=1, empty has no outer A) populates
+// ctx split fields; caller writes them into TilingData.
+void ComputeEmptyRSplit(EuclideanNormCtx& ctx)
+{
+    const int64_t aTotal   = ComputeATotal(ctx);
+    const int64_t cap64KB  = kEmpty64KBSingle / ctx.dtypeSize;
+    const int64_t lower4KB = kEmpty4KBLower   / ctx.dtypeSize;
+
+    int64_t candidate = std::min({CeilDivI64(aTotal, static_cast<int64_t>(ctx.coreNum)),
+                                  cap64KB, aTotal});
+    if (candidate * ctx.dtypeSize < kEmpty4KBLower) {
+        candidate = lower4KB;   // (a) 4KB fallback — may underfill cores
+    }
+    ctx.aUbFactor = candidate;
+
+    ctx.aSplitChunkCnt    = CeilDivI64(aTotal, ctx.aUbFactor);
+    ctx.aLoopCntTotal     = ctx.aSplitChunkCnt;   // outerAProd=1 (empty has no outer A)
+    ctx.aSmallCoreLoopCnt = ctx.aLoopCntTotal / static_cast<int64_t>(ctx.coreNum);   // floor
+    ctx.aBigCoreCnt       = static_cast<int32_t>(ctx.aLoopCntTotal % static_cast<int64_t>(ctx.coreNum));
+    ctx.aBigCoreLoopCnt   = ctx.aSmallCoreLoopCnt + (ctx.aBigCoreCnt > 0 ? 1 : 0);
+    ctx.usedCoreNum       = (ctx.aSmallCoreLoopCnt > 0) ? ctx.coreNum : ctx.aBigCoreCnt;
+    ctx.usedCoreNum       = std::max(ctx.usedCoreNum, 1);
+
+    // postReduceUbSize = CeilAlign(aUbFactor × sizeof(D_T), blockSize) — the only
+    // UB buffer EMPTY_R allocates (outBuf single path), §5.3.3 / §4.4.
+    ctx.postReduceUbSize  = CeilAlignI64(ctx.aUbFactor * ctx.dtypeSize, ctx.blockSize);
+}
+
+void FillEmptyTilingData(EuclideanNormTilingData* td, EuclideanNormCtx& ctx)
+{
+    // memset already zeroed TilingData; only the EMPTY-specific non-zero fields
+    // are set here. axisNum=0 → axisShape[1..8] / axisStride stay 0 from memset.
+    td->axisNum = 0;   // EMPTY skips PreprocessPattern (UT asserts axisNum==0).
+    if (ctx.emptyKind == EuclideanNormCtx::EmptyKind::EMPTY_A) {
+        // §2.1 EMPTY_A: full-core early exit. Every split/buf field stays 0.
+        td->axisShape[0]  = 0;
+        td->usedCoreNum   = 0;
+        ctx.usedCoreNum   = 0;
+    } else {
+        // §2.2 EMPTY_R: degenerate Duplicate-0 fill. Real multi-core split.
+        ComputeEmptyRSplit(ctx);
+        td->axisShape[0]     = ComputeATotal(ctx);   // §5.3.3: axisShape[0] = aTotal
+        td->aUbFactor        = ctx.aUbFactor;
+        td->aLoopCntTotal    = ctx.aLoopCntTotal;
+        td->aSplitChunkCnt   = ctx.aSplitChunkCnt;
+        td->aBigCoreLoopCnt  = ctx.aBigCoreLoopCnt;
+        td->aSmallCoreLoopCnt = ctx.aSmallCoreLoopCnt;
+        td->aBigCoreCnt      = ctx.aBigCoreCnt;
+        td->usedCoreNum      = ctx.usedCoreNum;
+        td->postReduceUbSize = ctx.postReduceUbSize;
+    }
+    // §5.3.3: EMPTY zeros cacheBufUbSize (no cacheBuf allocation; unlike
+    // normal/group which set kCacheBufBytes). preReduceUbSize / tmpBufUbSize
+    // stay 0 from memset (no preIn/tmp allocation, §5.3.3).
+    td->cacheBufUbSize = 0;
+}
+```
+
+桩期坏形态（修复前，verbatim——EMPTY_R 被强制单核 + cacheBufUbSize 沿用 normal 的 16KB 常量；多核 dispatch 与非零缓冲字段会被真实 kernel 当真，上板即错）：
+
+```cpp
+void FillEmptyTilingData(EuclideanNormTilingData* td, EuclideanNormCtx& ctx)
+{
+    // memset done by caller; here we only set the fields the public
+    // UT asserts on (key inputs: axisShape[0], usedCoreNum).
+    td->axisNum = 0;   // EMPTY skips PreprocessPattern (UT expects axisNum==0).
+    if (ctx.emptyKind == EuclideanNormCtx::EmptyKind::EMPTY_A) {
+        // EMPTY_A: full-core early exit.
+        td->axisShape[0]  = 0;
+        td->usedCoreNum   = 0;
+        ctx.usedCoreNum   = 0;
+    } else {
+        // EMPTY_R: degenerate Duplicate-0 fill over aTotal output elements.
+        const int64_t aTotal = ComputeATotal(ctx);
+        td->axisShape[0]  = aTotal;
+        // STUB-STAGE DOWNGRADE: real multi-core split lands in branch Task 30.
+        // Until then, force single-core launch so the stub kernel can run
+        // safely (the stub kernel cannot carry multi-core dispatch under a
+        // real tilingKey — it would segfault at runtime, regression on the
+        // aclnn smoke test). Public TilingUT only asserts usedCoreNum>=1.
+        td->usedCoreNum   = 1;
+        ctx.usedCoreNum   = 1;
+    }
+    td->cacheBufUbSize = kCacheBufBytes;
+}
+```

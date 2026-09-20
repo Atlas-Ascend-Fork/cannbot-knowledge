@@ -65,9 +65,9 @@ NPU function error: device error type 3, error code is 507035
 
 ## 验证信号
 
-- `ASCEND_LAUNCH_BLOCKING=1` 后崩溃前最后一次 kernel 打印为 `MoeInitRoutingGroupQuant`，错误码 `507035`（vector core exception），prefill+warmup+约 22 decode step 后偶发（来源平台:950；证据等级:tool_observed）
-- 两处 async→sync 重跑后错误码从 `507035` 变为 `507015`，但崩溃未消除（来源平台:950；证据等级:tool_observed；不构成根因闭环）
-- 缺陷存在于源码：`moe_init_routing_group_quant_torch.cpp` 函数末尾约第 156-158 行确为 `aclrtMemcpyAsync(... p1.expandedRowIdx.data() ... npuStream)`（来源平台:950；证据等级:artifact_verified）
+- `ASCEND_LAUNCH_BLOCKING=1` 后崩溃前最后一次 kernel 打印为 `MoeInitRoutingGroupQuant`，错误码 `507035`（vector core exception），prefill+warmup+约 22 decode step 后偶发（来源平台：950；证据等级：tool_observed）
+- 两处 async→sync 重跑后错误码从 `507035` 变为 `507015`，但崩溃未消除（来源平台：950；证据等级：tool_observed；不构成根因闭环）
+- 缺陷存在于源码：`moe_init_routing_group_quant_torch.cpp` 函数末尾约第 156-158 行确为 `aclrtMemcpyAsync(... p1.expandedRowIdx.data() ... npuStream)`（来源平台：950；证据等级：artifact_verified）
 
 ## 失效边界
 

@@ -55,8 +55,8 @@ Invalid L1/L0 relation: nL0=128, nL1=64, require nL0 <= nL1 && nL1 % nL0 == 0
 
 以下信号来自本次开发会话对 tile_config 调大的实际编译输出。
 
-- `pre_quant_cube_tile` k=512 → `CHECK FAILED: ErrCode: F0000C! Enum: ExternalError::INVALID_TILE, Invalid L1/L0 relation: kL0=512, kL1a=256, require kL0 <= kL1a && kL1a % kL0 == 0`（来源平台:950；证据等级:tool_observed）
-- 某 cube tile n=128 → `Invalid L1/L0 relation: nL0=128, nL1=64, require nL0 <= nL1 && nL1 % nL0 == 0`（来源平台:950；证据等级:tool_observed）
+- `pre_quant_cube_tile` k=512 → `CHECK FAILED: ErrCode: F0000C! Enum: ExternalError::INVALID_TILE, Invalid L1/L0 relation: kL0=512, kL1a=256, require kL0 <= kL1a && kL1a % kL0 == 0`（来源平台：950；证据等级：tool_observed）
+- 某 cube tile n=128 → `Invalid L1/L0 relation: nL0=128, nL1=64, require nL0 <= nL1 && nL1 % nL0 == 0`（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

@@ -46,8 +46,8 @@ platforms: ["a2"]
 
 ## 验证信号
 
-- blockLength 对齐 slice 版 cann-bench 评测：大 slice case（case 4，`totalSlices=1`）串行单核、耗时约 25× 慢于不对齐版 v1 多核路径（参照路线：v1 不对齐 blockLength 多核路径；来源平台:a2；证据等级:tool_observed）。
-- 同次评测 case 6（bf16）/case 8（fp32）亦 `totalSlices=1`、`numBlocks` 塌缩为 1，耗时退化约一个数量级（来源平台:a2；证据等级:tool_observed）。
+- blockLength 对齐 slice 版 cann-bench 评测：大 slice case（case 4，`totalSlices=1`）串行单核、耗时约 25× 慢于不对齐版 v1 多核路径（参照路线：v1 不对齐 blockLength 多核路径；来源平台：a2；证据等级：tool_observed）。
+- 同次评测 case 6（bf16）/case 8（fp32）亦 `totalSlices=1`、`numBlocks` 塌缩为 1，耗时退化约一个数量级（来源平台：a2；证据等级：tool_observed）。
 
 ## 失效边界
 

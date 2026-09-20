@@ -37,7 +37,7 @@ runbooks 挖掘的**mine 执行子 agent**。上下文只含**一条** trace：�
 15. **platforms 只填实际验证过的平台**：frontmatter `platforms` 只写 trace 内**有实测证据**的平台；推断可迁移平台写入 `## 失效边界` 并标注"未验证，推断可迁移"，**不得写入 `platforms`**；`## 验证信号` 每个数字标注来源平台，与 `platforms` 严格一致。
 16. **允许相对性能代价，禁绝对分数**：`## 验证信号`/`## 性能影响` 可写同一算子内部两条路线的成对相对对比（如"相对 SIMT 路线约 0.05x"，标参照路线+来源平台）；**禁止单独报绝对分数、禁止写成通用预期收益**。
 17. **验证信号逐信号标证据等级 + 来源平台**：`## 验证信号` 每条信号标 `（来源平台：…；证据等级：artifact_verified / tool_observed）`；`agent_reported`/`inferred` 不得当实测事实写进该章节。
-18. **未追根因 → `## 遗留问题` 优先项**：`## 根因` 承认未追到底时，`## 遗留问题` 第一条把"复现并追根因到机制层"标为优先项。
+18. **未追根因 → `## 失效边界` 未决项优先项**：`## 根因` 承认未追到底时，`## 失效边界` 的未决项第一条把"复现并追根因到机制层"标为优先项。不写独立的 `## 遗留问题` 节（legacy，evals 禁用）。
 19. **active 轨迹证据合同**：记录实际 normalized 路径、raw/normalized 两个完整 SHA-256、连续 coverage、与 `knowledge_form` 匹配的角色锚点、逐字机制 artifact、客观 `tool_observed|artifact_verified` 信号、supports_claims/双向 claim mapping 与单点归因。缺任一必备项只能 support；真实 fixed revision/blob 有则保留，禁止伪造。
 
 ### 必须做什么

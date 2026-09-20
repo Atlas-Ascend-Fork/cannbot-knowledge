@@ -53,7 +53,7 @@ B 类稀疏广播用例（首轴稀疏，如 `self=[1,N]` storage `[1,2N]` strid
 
 ## 验证信号
 
-- B 类 8 用例 baseline `schMode` 空、`us_median`=-1.0（GetWorkspaceSize 失败），fixed `schMode`=304、`us_median` 正值（成功）（来源平台:950；证据等级:tool_observed）
-- B 类 6 用例 fixed(304 `nddma_transpose_noLoop`)/baseline(转连续 `nddma_noLoop`/`nlast_ub_brc_r2`) 相对延迟比 0.41~0.44（来源平台:950；证据等级:tool_observed）
-- A 类 131 用例 SAME（±5%），4~6 条 SLOWER 为噪声，PR#380 tiling 优化无系统性回归（来源平台:950；证据等级:tool_observed）
-- schMode 分布：B 类 baseline schMode 空 / fixed schMode=304（模板 `nddma_transpose_noLoop`）；301=`nlast_nddma`，302=`nlast_ub_brc`，303=`last_transpose`，304=`nddma_transpose_noLoop`（来源平台:950；证据等级:tool_observed）
+- B 类 8 用例 baseline `schMode` 空、`us_median`=-1.0（GetWorkspaceSize 失败），fixed `schMode`=304、`us_median` 正值（成功）（来源平台：950；证据等级：tool_observed）
+- B 类 6 用例 fixed(304 `nddma_transpose_noLoop`)/baseline(转连续 `nddma_noLoop`/`nlast_ub_brc_r2`) 相对延迟比 0.41~0.44（来源平台：950；证据等级：tool_observed）
+- A 类 131 用例 SAME（±5%），4~6 条 SLOWER 为噪声，PR#380 tiling 优化无系统性回归（来源平台：950；证据等级：tool_observed）
+- schMode 分布：B 类 baseline schMode 空 / fixed schMode=304（模板 `nddma_transpose_noLoop`）；301=`nlast_nddma`，302=`nlast_ub_brc`，303=`last_transpose`，304=`nddma_transpose_noLoop`（来源平台：950；证据等级：tool_observed）

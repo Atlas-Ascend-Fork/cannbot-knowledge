@@ -197,10 +197,10 @@ static void build_offset_luts(const at::Tensor &x, const at::Tensor &index,
 
 这条知识来自 Ascend950 Gather 开发中“多维冒烟失败 → 逆序重建两个 LUT → 重建与全量 NPU 评测”的修复步骤。
 
-- 修复前：低维 case 报 `OK`，一个多维 `dim>0` case 报 `FAIL`，且前五个打印值相同（来源平台: 950；证据等级: tool_observed）；
-- 修复后：多维、四维、五维及多种 dtype 的定向 NPU 冒烟均报 `OK`（来源平台: 950；证据等级: tool_observed）；
-- 完整 pytest 汇总为 `217 passed`（来源平台: 950；证据等级: tool_observed）；
-- cann-bench 全量评测 `20/20` case 通过，浮点输出 `MERE=0`、`MARE=0`（来源平台: 950；证据等级: tool_observed）。
+- 修复前：低维 case 报 `OK`，一个多维 `dim>0` case 报 `FAIL`，且前五个打印值相同（来源平台：950；证据等级：tool_observed）；
+- 修复后：多维、四维、五维及多种 dtype 的定向 NPU 冒烟均报 `OK`（来源平台：950；证据等级：tool_observed）；
+- 完整 pytest 汇总为 `217 passed`（来源平台：950；证据等级：tool_observed）；
+- cann-bench 全量评测 `20/20` case 通过，浮点输出 `MERE=0`、`MARE=0`（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

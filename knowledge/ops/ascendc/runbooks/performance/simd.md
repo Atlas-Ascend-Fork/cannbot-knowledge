@@ -55,9 +55,9 @@ aliases: ["csr2coo"]
 
 ## 验证信号
 
-- 分布式（even）场景 scalar pipe ratio 0.88-0.90，4 个规模一致（来源平台:950；证据等级:tool_observed）
-- 超大行场景 scalar ratio 0.63、vec ratio 0.24，瓶颈形态切换（来源平台:950；证据等级:tool_observed）
-- kernel 时间与行数 m 线性正比、与 nnz 弱相关（来源平台:950；证据等级:tool_observed）
+- 分布式（even）场景 scalar pipe ratio 0.88-0.90，4 个规模一致（来源平台：950；证据等级：tool_observed）
+- 超大行场景 scalar ratio 0.63、vec ratio 0.24，瓶颈形态切换（来源平台：950；证据等级：tool_observed）
+- kernel 时间与行数 m 线性正比、与 nnz 弱相关（来源平台：950；证据等级：tool_observed）
 
 ## 设计决策
 

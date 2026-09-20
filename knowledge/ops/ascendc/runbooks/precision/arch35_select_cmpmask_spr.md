@@ -53,11 +53,11 @@ AscendC::Select<float, uint8_t>(bBx, bMask, bG, bThr,
 
 ## 验证信号
 
-- PyTorch ST baseline：578 用例，116 失败（来源平台:950；证据等级:tool_observed）
-- 典型 fail case 套件内：Golden=0.681152 Actual=0.340332 mismatch=16632/1204224（来源平台:950；证据等级:tool_observed）
-- 同一 case 单独跑（fresh process）：golden=0.500000 npu=0.500000 OK（来源平台:950；证据等级:tool_observed）
-- `--level L1` 单独 108 失败 vs `L0+L1` 全量 116 失败（差 8 例 = L0 污染）（来源平台:950；证据等级:tool_observed）
-- arch35 Select(VSEL_CMPMASK_SPR) 内部实现含 set_cmpmask → PipeBarrier<PIPE_V> → vsel 序列（来源平台:950；证据等级:artifact_verified）
+- PyTorch ST baseline：578 用例，116 失败（来源平台：950；证据等级：tool_observed）
+- 典型 fail case 套件内：Golden=0.681152 Actual=0.340332 mismatch=16632/1204224（来源平台：950；证据等级：tool_observed）
+- 同一 case 单独跑（fresh process）：golden=0.500000 npu=0.500000 OK（来源平台：950；证据等级：tool_observed）
+- `--level L1` 单独 108 失败 vs `L0+L1` 全量 116 失败（差 8 例 = L0 污染）（来源平台：950；证据等级：tool_observed）
+- arch35 Select(VSEL_CMPMASK_SPR) 内部实现含 set_cmpmask → PipeBarrier<PIPE_V> → vsel 序列（来源平台：950；证据等级：artifact_verified）
 
 ## 失效边界
 

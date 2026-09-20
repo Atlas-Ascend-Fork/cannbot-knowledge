@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.synchronization", "topic.implemen
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T00:58:06Z"
 platforms: ["950"]
 ---
 
@@ -24,7 +24,7 @@ platforms: ["950"]
 - API 路径：`Cast` / UB `DataCopy` → `TQue<VECOUT>` → `EnQue` / `DeQue` → `DataCopyPad`。
 - 验证过的平台与 CANN 版本：Ascend 950，CANN 9.0.1。
 - 适用粒度：`operator_family`，适用于把 VECCALC 结果或 Cast 结果跨流水交给 GM 搬出的 Vector kernel；具体 buffer 容量仍须按算子重新计算。
-- 路线优先级：`recommended_fastpath`。在本 trace 的候选中，这是唯一既通过正确性对拍又使用标准队列事件语义的路线；这里不宣称相对其它正确同步实现有通用性能收益。
+- 路线优先级：`recommended_fastpath`。在本开发会话的候选中，这是唯一既通过正确性对拍又使用标准队列事件语义的路线；这里不宣称相对其它正确同步实现有通用性能收益。
 - 不适用 / 未验证：结果本来就由一个完整 VECOUT 队列生命周期生产时不要重复套队列；A2、A3、不同 CANN 版本及显式 event/barrier 的替代实现未验证。
 
 ## 根因
@@ -133,7 +133,7 @@ platforms: ["950"]
 
 1. 选择 VECOUT `TQue`，因为它同时表达 buffer 所有权与 Vector→MTE3 的流水依赖，修复后代码仍可由正常 pipeline 调度。
 2. 放弃“直接从 VECCALC LocalTensor 搬到 GM”的路线：该路线已产生跨 dtype 的错位和未初始化索引。轨迹没有验证全流水 `PipeBarrier` 或手工 event 的替代方案，因此不把它们写成可选解法。
-3. 当前路线标为 `recommended_fastpath`：它是本 trace 中唯一验证正确的标准队列路线；由于没有两条正确路线的性能对比，不外推绝对收益或跨平台最优性。
+3. 当前路线标为 `recommended_fastpath`：它是本开发会话中唯一验证正确的标准队列路线；由于没有两条正确路线的性能对比，不外推绝对收益或跨平台最优性。
 
 ## 系统信息
 
@@ -153,12 +153,12 @@ platforms: ["950"]
 
 来源是一次 Ascend C 累积极值 kernel 直调开发中的设备对拍；修复前后的函数写入、构建输出和代表用例输出均在同一轨迹中可见。
 
-- 修复前，远程运行在多种 dtype 与轴向上均显示 values/indices 错位，indices 首元素出现未初始化样式的大整数（Ascend 950，证据等级: tool_observed）。
-- 加入 VECOUT 队列后远程构建成功（Ascend 950，证据等级: tool_observed）。
-- 同轮八个非 NaN 代表检查中，values 与 indices 均逐项匹配 golden，覆盖浮点、整数、平局和 Inf 语义（Ascend 950，证据等级: tool_observed）。
+- 修复前，远程运行在多种 dtype 与轴向上均显示 values/indices 错位，indices 首元素出现未初始化样式的大整数（来源平台：Ascend 950；证据等级：tool_observed）。
+- 加入 VECOUT 队列后远程构建成功（来源平台：Ascend 950；证据等级：tool_observed）。
+- 同轮八个非 NaN 代表检查中，values 与 indices 均逐项匹配 golden，覆盖浮点、整数、平局和 Inf 语义（来源平台：Ascend 950；证据等级：tool_observed）。
 
-- 独立复现 R1：把 vector 计算结果经 VECOUT EnQue/DeQue 后再交给 MTE3，七组非 NaN values/indices 对拍均为 True，Inf 用例也为 True；NaN 用例数值列表与 golden 一致且 indices_eq=True，仅普通相等比较因 NaN 返回 False（950，tool_observed）。
-- 独立复现 R2：避开把 VECIN tensor 直接作为 MTE3 输出源，改用 dataE.clone() 初始化并在 raw kernel 前同步后，构建成功，1D update/add/int32 与 2D dim0 定向输出均与 golden 一致（950，tool_observed）。
+- 独立复现 R1：把 vector 计算结果经 VECOUT EnQue/DeQue 后再交给 MTE3，七组非 NaN values/indices 对拍均为 True，Inf 用例也为 True；NaN 用例数值列表与 golden 一致且 indices_eq=True，仅普通相等比较因 NaN 返回 False（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R2：避开把 VECIN tensor 直接作为 MTE3 输出源，改用 dataE.clone() 初始化并在 raw kernel 前同步后，构建成功，1D update/add/int32 与 2D dim0 定向输出均与 golden 一致（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

@@ -38,9 +38,9 @@ matmul_reducescatter（MC2 通算融合，4P SHMEM ReduceScatter）的 AIV 侧 `
 
 ## 验证信号
 
-- 逐 rank 同步搬运时 `aiv_mte2_time` 占 T_comm 绝对主导（来源平台:a2；证据等级:tool_observed）
-- 三段注释法测得 `T_reduce` 相对 T_comm 约 3.4%，reduce vec 非瓶颈（来源平台:a2；证据等级:tool_observed）
-- 注释 `Cast`/`Add` 后 `aiv_vec_time=0.00`，交叉验证 vec 非瓶颈（来源平台:a2；证据等级:tool_observed）
+- 逐 rank 同步搬运时 `aiv_mte2_time` 占 T_comm 绝对主导（来源平台：a2；证据等级：tool_observed）
+- 三段注释法测得 `T_reduce` 相对 T_comm 约 3.4%，reduce vec 非瓶颈（来源平台：a2；证据等级：tool_observed）
+- 注释 `Cast`/`Add` 后 `aiv_vec_time=0.00`，交叉验证 vec 非瓶颈（来源平台：a2；证据等级：tool_observed）
 
 ## 失效边界
 

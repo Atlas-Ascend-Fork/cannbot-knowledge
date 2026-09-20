@@ -1,17 +1,17 @@
 ---
 type: "Runbook"
 title: b16常量零填充StoreAlign无需DIST_PACK_B32
-description: "AscendC Reg 级 VF 中 Reg::Duplicate 产出的 b16 寄存器用不带 StoreDist 的 StoreAlign 落 UB 即位级正确（常量 0 实测）；DIST_PACK_B32 是 Cast fp32→b16 输出（b16 驻留 fp32 lane）路径的打包需求，两者不可混用直觉。"
+description: "AscendC Reg 级 VF 中 Reg::Duplicate 产出的 b16 寄存器用不带 StoreDist 的 StoreAlign 落 UB 即位级正确（常量 0 实测）；DIST_PACK_B32 是 Cast fp32→b16 输出（b16 驻留 fp32 lane）路径的打包需求，两者不可混用直觉。R2（CANN 9.2.0）反向实验闭合：Cast b32→b16 后省略 DIST_PACK_B32 的典型症状为 fp16/bf16 output[0] 正确、elem 1 起全错（fp32 全对）；修复两条路——VF 外 UB 级 Cast(CAST_RINT) 或 StoreAlign<D_T, DIST_PACK_B32>。"
 tags: [task.implementation, topic.compute.elementwise.type_conversion, topic.precision, topic.implementation.api_layer.basic_api]
 status: stable
 sources: []
-created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+created_at: "2026-09-09T11:49:41Z"
+updated_at: "2026-09-17T03:25:37Z"
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
+cann_versions: ["9.0.0-beta.2", "9.2.0"]
 ---
-# b16常量零填充StoreAlign无需DIST_PACK_B32
 
+# b16常量零填充StoreAlign无需DIST_PACK_B32
 
 ## 现象
 
@@ -24,7 +24,7 @@ cann_versions: ["9.0.0-beta.2"]
 
 本卡给出判别规则与实测边界：**值的来源决定 store 形态**——`Reg::Duplicate` 直接以 `RegTensor<T>` 声明类型产出原生 T 域寄存器（b16 时 128 个元素打包占满 256B 寄存器），plain StoreAlign 按原生 T 连续落 UB；`Cast` 从 fp32 域转出的 b16 结果驻留 fp32 lane（每 32bit lane 存 1 个 b16），落 UB 前必须 DIST_PACK_B32 打包。
 
-## 适用场景（必填 — 检索前的第一道滤网）
+## 适用场景
 
 - **工程形态**：AscendC kernel 的寄存器级 VF 编程（`__simd_vf__` 实现体 + `asc_vf_call` 调用）；涉及 fp16/bf16 常量填充、初始化、清零路径，或 fp32→b16 缩位输出路径。
 - **API 路径**：`AscendC::Reg::RegTensor<T>` / `AscendC::Reg::Duplicate` / `AscendC::Reg::StoreAlign`（含 `StoreDist::DIST_PACK_B32` 模板参）/ `AscendC::Reg::Cast<D_T, float, kCastTraitF32ToB16>` / `AscendC::Reg::UpdateMask<T>`；头文件 `ascendc/include/basic_api/impl/common_types.h` 等 Reg API。
@@ -166,3 +166,43 @@ __simd_vf__ inline void GhxVfImpl(
 
 - 优先项：补一条**非零常量 + b16 多 rep（count > 128）**的位级用例，把"Duplicate→原生 b16 寄存器"的机制解释从推断升级为实测。
 - `DIST_PACK_B32` 加在 Duplicate 路径上的行为（仍正确/报错/位错）未测——若要给"盲目照抄"定性为硬错误，需该反向实验。
+
+## 后续增量（2026-09-17，并行策展批：R2——Cast 输出省略 DIST_PACK_B32 的反向实验闭合与两条修复配方）
+
+R2（softmax 类算子分支 kernel ST 精度调试，Ascend950/arch35/dav-3510，CANN 9.2.0）：本卡失效边界中悬置的"Cast 输出省略 DIST_PACK_B32 会位错"由本轨迹实测闭合。
+
+**症状签名（判别用）**：fp32 用例全部 PASS，fp16/bf16 用例 `PRECISION_FAIL (first fail @ elem 1)`——每个输出行第 0 个元素正确、第 1 个元素起全错；受影响为 fast path 小 shape 的全部 fp16/bf16 用例。kernel 收尾链为 VF 内 `Reg::Div` → `Reg::Cast<Tdst, Tsrc, kCastTraitB32ToB16>` → `Reg::StoreAlign(dstAddr, dstReg, aReg, mask)`（未带 StoreDist 模板参数，默认 dense 分布）。
+
+**修复配方 A——把收窄 cast 移出 VF，用 UB 级 API（一轮验证）**：VF 内只做 fp32 Div（同型实例化），VF 外 `AscendC::Cast(dstTensor, srcTensor, AscendC::RoundMode::CAST_RINT, cnt)` 完成布局正确的写回；fp16/bf16 失败点从 elem 1 移到 elem 3（残留为独立精度缺口），fp16_overflow 用例转 PASS。
+
+**修复配方 B——留在 VF 内但显式打包分布（SDK SimpleSoftMax 的 StoreIfNeedCast 同款，二轮重写验证）**：
+
+```cpp
+template <typename D_T>
+__simd_callee__ inline void StoreIfNeedCast(__ubuf__ D_T* dstUb,
+                                             AscendC::Reg::RegTensor<float>& srcReg,
+                                             AscendC::Reg::MaskReg& preg)
+{
+    if constexpr (sizeof(D_T) == 2) {
+        AscendC::Reg::RegTensor<D_T> tmpReg;
+        AscendC::Reg::Cast<D_T, float, kCastTraitF32ToB16>(tmpReg, srcReg, preg);
+        AscendC::Reg::StoreAlign<D_T, AscendC::Reg::StoreDist::DIST_PACK_B32>(dstUb, tmpReg, preg);
+    } else {
+        AscendC::Reg::StoreAlign<float, AscendC::Reg::StoreDist::DIST_NORM>(
+            reinterpret_cast<__ubuf__ float*>(dstUb), srcReg, preg);
+    }
+}
+```
+
+配方 B 后同型 elem-1 损坏不再出现；选择依据：A 把布局责任交给 UB 级 Cast（一步到位、易审计，多一次缓冲往返），B 保持 VF 融合但必须正确携带 StoreDist 且 CastTrait 在 VF 外定义为全局 constexpr。
+
+R2 验证信号（同一次 ST 精度调试，每轮改码后全量重跑）：
+
+- 修复前：fp16/bf16 fast-path 用例 `PRECISION_FAIL (first fail @ elem 1)`（fp32 全 PASS）（来源平台：950；证据等级：tool_observed）。
+- 配方 A 后：通过数 13/46 → 26/46，失败点从 elem 1 移到 elem 3，fp16_overflow 转 PASS（来源平台：950；证据等级：tool_observed）。
+- 配方 B 后：elem-1 模式消失，最终 29/46 precision PASSED、46 aclnn-OK、0 ACLNN_FAIL（残留失败为行内中段独立精度缺口，非本根因）（来源平台：950；证据等级：tool_observed）。
+
+R2 边界与坏实践补充：
+
+- `DIST_PACK_B32` 只适用于 b32 寄存器收窄 b16 的存储；反向（b16 源 LoadAlign 的对应 LoadDist）未测。配方 A 的 UB 级 `AscendC::Cast` 无 SatMode 参数（默认行为），输出值域超出 b16 的场景需另行评估。
+- 坏实践：`Reg::Cast` b32→b16 后直接 `StoreAlign`（不带 StoreDist）；看到 elem 1 起错先怀疑 CopyOut 的 DataCopyPad 参数或 tiling 行距——本例行距/搬运参数正确，错在 VF 内存储分布。

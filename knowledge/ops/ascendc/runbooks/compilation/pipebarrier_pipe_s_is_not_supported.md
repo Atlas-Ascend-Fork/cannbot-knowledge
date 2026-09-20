@@ -1,13 +1,14 @@
 ---
 type: "Runbook"
 title: "PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线"
-description: "dav-3510 编译器不接受 PIPE_S 作为 PipeBarrier 模板参数；移除该屏障并保留 UB 写后与 DMA 写后的有效同步。"
+description: "dav-3510 编译器不接受 PIPE_S 作为 PipeBarrier 模板参数；移除该屏障并保留 UB 写后与 DMA 写后的有效同步。R2（CANN 9.1.0）：静态断言形态复现，报错文本随版本变化。"
 tags: ["task.debugging", "topic.implementation.synchronization", "topic.implementation.pipeline"]
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-16T11:11:42Z"
 platforms: ["950"]
+cann_versions: ["9.0.1", "9.1.0"]
 ---
 
 # PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线
@@ -201,9 +202,11 @@ platforms: ["950"]
 
 验证来自 Ascend950 Flash 算子的实际构建与设备测试，不使用会话内部编号作为正文溯源：
 
-- 修复前：CANN 构建器定位到 `kernel_reg.h:85:22`，明确报告模板第一个参数范围必须为 `[4, 6]`（950，证据等级: tool_observed）；
-- 修复动作只删除 `PipeBarrier<PIPE_S>()`，随后同一算子构建成功（950，证据等级: tool_observed）；
-- overwrite、add、multiply 的针对性诊断均为零 mismatch，随后完整评测通过（950，证据等级: tool_observed）。
+- 修复前：CANN 构建器定位到 `kernel_reg.h:85:22`，明确报告模板第一个参数范围必须为 `[4, 6]`（来源平台：950；证据等级：tool_observed）；
+- 修复动作只删除 `PipeBarrier<PIPE_S>()`，随后同一算子构建成功（来源平台：950；证据等级：tool_observed）；
+- overwrite、add、multiply 的针对性诊断均为零 mismatch，随后完整评测通过（来源平台：950；证据等级：tool_observed）。
+
+- 独立复现 R2（conv3d 反传算子，Ascend950/DAV_3510，CANN 9.1.0）：为给"标量 SetValue 写 → MTE3 DataCopyPad 搬出"加显式同步，在输出 DataCopyPad 之前插入 `PipeBarrier<PIPE_S>()`，构建直接报 `$ASCEND_HOME_PATH/x86_64-linux/asc/impl/basic_api/kernel_reg.h:68:5: error: static assertion failed due to requirement '(pipe_t)0U != PIPE_S': PipeBarrier<PIPE_S> is not supported on current device!`（同一错误打印两次，随后连锁 ld.lld `cannot open ..._1.o` 链接失败——编译单元未产出目标文件所致）；同一文件 `PipeBarrier<PIPE_MTE2>()` 不受影响，仅删除 PIPE_S 行、保留 MTE2 屏障后 `Build completed successfully!`、BUILD EXIT: 0，修复后 ST Real 回归 4/5 通过（MERE=0.00e+00，剩余失败为同 shape attrs 缓存问题，与本卡无关）（来源平台：950；证据等级：tool_observed）。
 
 ## 预防
 
@@ -217,6 +220,9 @@ platforms: ["950"]
 - 本结论只在 950（Ascend950PR_957b / dav-3510）+ CANN 9.0.1 实测；A2/A3 以及其他 CANN 版本未验证；
 - 只覆盖这个 UB gather 函数的数据依赖，不能据此删除其他 kernel 的同步；
 - 若后续实现引入新的 Scalar/Vector producer-consumer 关系，必须重新分析屏障位置并重新上板验证。
+- R2 版本扩展：报错形态随 CANN 版本变化——9.0.1 报 `kernel_reg.h:85` 模板参数范围 `[4, 6]`；9.1.0 报 `kernel_reg.h:68` 静态断言（附 "is not supported on current device" 文本，随后连锁 ld.lld 链接失败）。两者都是 PIPE_S 被编译期拒绝，判别以 "PipeBarrier<PIPE_S> + 编译期拒绝" 为准，不以具体报错文本为准。
+- R2 场景补充：标量管（S pipe）在 ascend950 上无硬件 barrier——`SetValue` 等标量写运行在 S 管，试图用 `PipeBarrier<PIPE_S>` 同步标量写与后续 MTE3 搬运在编译期即被拒绝；如需显式同步改用事件旗标（SetFlag/WaitFlag）或 `PIPE_ALL` 类屏障（未实测，仅方向建议）。R2 中删除屏障后正确依赖的是该 kernel 单线程顺序标量循环的天然顺序；多管线并发（双缓冲、异步拷贝）结构下必须另行设计同步。
+- R2 的 `PIPE_V`/`PIPE_MTE3`/`PIPE_ALL` 在该平台的可用性未做受控逐一验证（管屏障矩阵未补全）。
 
 ## 坏实践
 
@@ -224,8 +230,12 @@ platforms: ["950"]
 - 因为一次构建通过就删除所有屏障，而不验证 MTE3 写回和 UB 复用之间的依赖；
 - 把 `PIPE_S` 在其他 API 中可见误当成它必然可用于 `PipeBarrier`。
 
+- R2 增补：为"保险"给所有管补屏障——S 管屏障在该平台直接编译失败，且未验证的同步点加屏障可能掩盖真实时序问题。
+
 ## 误诊
 
 - `PIPE_S` 出现在其他 API 或枚举上下文中，不代表它对 `PipeBarrier` 也是合法模板值；
 - 本次报错不是 `TQue` position、buffer 大小或尾块长度造成的；这些问题会给出不同的编译/运行信号；
 - “删掉编译不过的行”只是动作，根因是 API 对目标架构模板参数的约束，验证还必须覆盖实际数据依赖。
+
+- R2 增补：同期另一会话在源码写 `PipeBarrier<PIPE_V>`、构建却报 `PipeBarrier<PIPE_S>` 断言，曾被误读为"arch35 上 PIPE_V 映射到 PIPE_S"——实为并发会话向同一文件写入含显式 `PipeBarrier<PIPE_S>` 的版本导致报错归属不可靠；证据归属存疑时（并发文件回写干扰）只用有 grep 前后对照的受控闭环作数。

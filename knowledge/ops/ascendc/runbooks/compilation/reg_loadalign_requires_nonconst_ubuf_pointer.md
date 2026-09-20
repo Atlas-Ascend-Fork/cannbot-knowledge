@@ -1,13 +1,14 @@
 ---
 type: "Runbook"
 title: "Reg LoadAlign 不接受 const __ubuf__ 指针"
-description: "CANN 9.0.1 RegBase 的两参数 LoadAlign/StoreAlign 要求非 const UB 指针；const 会让 VF 封装与 asc_vf_call 编译失败。"
+description: "CANN 9.0.1/9.2.0 RegBase 的 LoadAlign/StoreAlign/asc_vf_call 链要求非 const __ubuf__ 指针；9.0.1 报 would lose const qualifier，9.2.0 变为不提 const 的深模板栈 static_assert 'T type is not correct!'。R5：Reg::Cast 同样拒绝 const 元素类型（no matching function for 'Cast'），9.2.0 下 static_assert 与 vlds 候选的 would lose const qualifier note 可同帧出现；SDK VF 签名（simple_softmax_impl.h）即为非 const 惯例。"
 tags: ["task.debugging", "topic.implementation.api_layer.simt_api", "topic.data_movement.memory_access"]
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T03:25:37Z"
 platforms: ["950"]
+cann_versions: ["9.0.1", "9.2.0"]
 ---
 
 # Reg LoadAlign 不接受 const __ubuf__ 指针
@@ -31,6 +32,7 @@ candidate function template not viable: 2nd argument ('const __ubuf__ __bf16 *')
 - 适用粒度：`platform_wide`，适用于同工具链 Reg VF 的 UB 指针签名；
 - 路线优先级：`recommended_fastpath`，表示唯一完成真实构建和上板验证的合法 ABI 写法；
 - 明确不适用 / 未验证场景：三参数/五参数 LoadAlign 重载、其他 CANN 版本与 A2/A3 未验证。
+- 诊断变体（独立复现 R4，BenchHarnessEngramGateFusion，CANN 9.2.0）：const `__ubuf__` 形参/实参（含 `(__ubuf__ const float*)ptr` 形式的实参转换）在同一根因下报深模板栈 `static assertion failed due to requirement 'Std::is_same_v<const float, AscendC::Reg::DefaultType> || Std::is_same_v<const float, float>': T type is not correct!`（`DataCopyImpl<const float, ...>`/`LoadAlign<const float, ...>` 实例化链），错误文本完全不提 const，比 9.0.1 的 `would lose const qualifier` 更易误导；修复同为全面去 const（VF 形参与 `asc_vf_call` 实参一并去掉）。
 
 ## 根因
 
@@ -359,19 +361,23 @@ __aicore__ inline void ComputeSoftmaxRow(
 
 来源是 softmax RegBase 三段 kernel 的真实构建循环；移除三个 VF 参数 const 后原始 LoadAlign 错误消失，包装边界继续明确报同一类型错误，补齐 `xAddr` 后最终合并修复完成构建与上板。
 
-- 远端最终构建输出 `[100%] Built target op_softmax`（950，证据等级: tool_observed）。
-- 终版 NPU pytest 输出 `98 passed, 6 skipped`（950，证据等级: tool_observed）。
-- 隔离修补后的 cann-bench 新进程在 `npu:2` 完成 20/20（950，证据等级: tool_observed）。
+- 远端最终构建输出 `[100%] Built target op_softmax`（来源平台：950；证据等级: tool_observed）。
+- 终版 NPU pytest 输出 `98 passed, 6 skipped`（来源平台：950；证据等级: tool_observed）。
+- 隔离修补后的 cann-bench 新进程在 `npu:2` 完成 20/20（来源平台：950；证据等级: tool_observed）。
 
-- 独立复现 R1：工具报告 [100%] Built target op_apply_rotary_pos_emb。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
-- 独立复现 R2：NPU/pytest 报告 59 passed。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
-- 独立复现 R3：工具报告 [100%] Built target op_softmax。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
+- 独立复现 R1：工具报告 [100%] Built target op_apply_rotary_pos_emb。该信号仅归属于本来源列出的精确编辑。（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R2：NPU/pytest 报告 59 passed。该信号仅归属于本来源列出的精确编辑。（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R3：工具报告 [100%] Built target op_softmax。该信号仅归属于本来源列出的精确编辑。（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R4（BenchHarnessEngramGateFusion，CANN 9.2.0）：修复前编译报 `static assertion failed ... 'T type is not correct!'`，实例化链指向 `AscendC::Reg::DataCopyImpl<const float, ...>` / `LoadAlign<const float, ...>`，`EXIT=1`（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R4（BenchHarnessEngramGateFusion，CANN 9.2.0）：VF 形参与 `asc_vf_call` 实参全面去 const 后该错误消失，编译推进到下一独立问题（AIV loop 标量指令）；非 const 签名保留至最终可编译版本，`bash build.sh` 输出 `SUCCESS`（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
 - 只验证 CANN 9.0.1 两参数 LoadAlign/StoreAlign 路径；带 stride/post-update 的其他重载需另查签名。
 - 去掉 const 只解决编译 ABI，不声明 kernel 可以写入这些输入区域。
 - 本修复与同轮其他编译修复合并后才获得最终成功构建，未做单变更隔离构建。
+- 版本边界扩展：9.0.1（`would lose const qualifier` 直指病因）与 9.2.0（`static_assert 'T type is not correct!'` 不提 const）两种错误形态均已实测；遇到 `T type is not correct!` 先查模板实参里的 const/类型别名再看别的。
+- 相邻卡片：[UpdateMask 引用参数拒绝 const 卡](updatemask_requires_mutable_uint32_lvalue.md)——同族『Reg API 实参 cv/值类别契约』：那卡是 `uint32_t&` 左值绑定，本卡是非 const `__ubuf__` 指针。[AscendC 标量类型误加命名空间卡](device_half_bfloat16_types_are_global.md)——同批首过编译的另一自诊断错误（`AscendC::bfloat16_t` 应为全局 `bfloat16_t`）。
 
 ## 坏实践
 
@@ -381,3 +387,19 @@ __aicore__ inline void ComputeSoftmaxRow(
 ## 误诊
 
 这不是 GM/UB 对齐、tail mask 或 Cast 精度问题；编译器在函数重载/包装参数匹配时已经失败。
+
+## 后续增量（2026-09-17，并行策展批：R5——BenchHarnessSoftmax 双轮复现；Reg::Cast 同受影响）
+
+R5（softmax 类算子 RegBase kernel，Ascend950/arch35，CANN 9.2.0，两轮独立开发复现）：
+
+- 第一轮（显式模板参数写法）：`__ubuf__ const float* srcUb` 形参触发 `error: no matching function for call to 'LoadAlign'` 与 `error: no matching function for call to 'Cast'`——**`Reg::Cast` 同样拒绝 const 元素类型**，不只 LoadAlign/StoreAlign。
+- 第二轮（SDK 风格写法，错误更指向本质）：`asc/impl/basic_api/reg_compute/dav_3510/kernel_reg_compute_datacopy_load_impl.h:53:5: error: static assertion failed due to requirement 'Std::is_same_v<const float, AscendC::Reg::DefaultType> || Std::is_same_v<const float, float>': T type is not correct!`（`LoadAlign<const float, ...>` 实例化链），同帧 note：`candidate function template not viable: 2nd argument ('__ubuf__ const float *') would lose const qualifier`（底层 `vlds` 内建候选）——即 9.2.0 下两种错误文本可同帧出现。
+- 同一函数内 `(__ubuf__ const float*)ptr` 形式的强转报 `casting 'float *' to type 'const __ubuf__ float *' is not allowed in aicore function`，去掉 const 强转即可。
+- 修复均为 VF 形参与 `asc_vf_call` 实参全面去 const（两轮各自闭环）。SDK 佐证：`simple_softmax_impl.h` 的 `SimpleSoftMaxGenericNDImpl` 签名即 `__ubuf__ T1* srcUb`（非 const），跟随 SDK 惯例。误诊提示：第一轮曾把 `no matching function` 误导向"显式模板参数写法错误"，先去掉 `<T, DIST_NORM>` 显式参数无效——真因是形参类型里的 const。
+
+R5 验证信号：
+
+- 第一轮去 const 后 `no matching function for call to 'LoadAlign'/'Cast'` 消失，build.sh 退出码 0（来源平台：950；证据等级：tool_observed）。
+- 第二轮 SDK 风格重写同样命中 `T type is not correct!` + `would lose const qualifier`，去 const 后该组错误消失、build SUCCESS（来源平台：950；证据等级：tool_observed）。
+
+R5 边界补充：`T type is not correct!` 断言还可能由其他非法元素类型（如结构体类型）触发，本卡只覆盖 const 修饰这一成因；`Reg::Cast` 的 CastTrait 模板参数另需静态存储期（见 [Reg::Cast 的 trait 需要静态存储期卡](reg_casttrait_requires_static_storage.md)）。

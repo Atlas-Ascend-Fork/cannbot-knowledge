@@ -33,8 +33,8 @@ aliases: ["scalar_bypass"]
 **banned 路线：在 arch35 RegBase 向量 kernel 中对 count==1 用 `LocalTensor::GetValue` / `SetValue` + 标量数学函数做 bypass，绕开 Compare+Select。**
 
 - **尝试**：在 `ComputeFp32Core` 内加 `if (count == 1)` 标量分支，用 GetValue 取标量、标量数学函数计算、SetValue 写回。先后试过用标量 `expf()` 与向量 `Exp` + GetValue/SetValue 组合两种写法。
-- **客观失败**：标量 bypass 后 Python ST 失败数远劣于 baseline，远劣于 `VSEL_TENSOR_TENSOR_MODE` 对照（来源平台:950；证据等级:tool_observed）。
-- **回退**：移除该 scalar bypass 后失败数恢复到 baseline 水平（来源平台:950；证据等级:tool_observed）。
+- **客观失败**：标量 bypass 后 Python ST 失败数远劣于 baseline，远劣于 `VSEL_TENSOR_TENSOR_MODE` 对照（来源平台：950；证据等级：tool_observed）。
+- **回退**：移除该 scalar bypass 后失败数恢复到 baseline 水平（来源平台：950；证据等级：tool_observed）。
 - **边界**：本配置（arch35 / Ascend950PR、count==1 标量分支、RegBase 向量 kernel）下该 bypass 路线 banned；机制层根因未追明（见 `## 根因`），不得以此卡暗示"已找到修复"。
 
 ## 根因
@@ -51,8 +51,8 @@ aliases: ["scalar_bypass"]
 
 本段只收本 trace 内 tool_observed 实测，agent 推断的机制假设不进此段。
 
-- 标量 GetValue/SetValue bypass 启用后 Python ST 失败数远劣于 baseline（53 失败），亦远劣于 `VSEL_TENSOR_TENSOR_MODE` 对照（52 失败）（来源平台:950；证据等级:tool_observed）
-- 移除该 scalar bypass 后失败数恢复到 baseline 水平（来源平台:950；证据等级:tool_observed）
+- 标量 GetValue/SetValue bypass 启用后 Python ST 失败数远劣于 baseline（53 失败），亦远劣于 `VSEL_TENSOR_TENSOR_MODE` 对照（52 失败）（来源平台：950；证据等级：tool_observed）
+- 移除该 scalar bypass 后失败数恢复到 baseline 水平（来源平台：950；证据等级：tool_observed）
 
 ## 坏实践
 

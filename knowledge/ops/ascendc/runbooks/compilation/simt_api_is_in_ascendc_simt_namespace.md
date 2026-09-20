@@ -215,10 +215,10 @@ __simt_vf__ __aicore__ LAUNCH_BOUND(GATHER_LAUNCH_BOUND) inline void GatherSimt(
 
 来源为一次 Ascend950 Gather direct-launch 开发会话：首次远程构建记录了名字查找错误，引入 `AscendC` 并完成同批独立编译修复后，远程 clean build、NPU 测试和最终评测均有工具输出。
 
-- 首次构建在 `Simt::GetThreadIdx/GetThreadNum` 处报告两条未声明标识符错误并以 gmake Error 2 退出（来源平台: 950；证据等级: tool_observed）。
-- 修复后构建输出 `[100%] Linking ASC shared library libop_gather.so` 与 `[100%] Built target op_gather`（来源平台: 950；证据等级: tool_observed）。
-- 最终 clean build 再次输出 `[100%] Built target op_gather`，随后 NPU 测试为 `141 passed, 42 skipped`（来源平台: 950；证据等级: tool_observed）。
-- cann-bench 全部 `20/20` 用例通过，输出为 exact match 或误差为零（来源平台: 950；证据等级: tool_observed）。
+- 首次构建在 `Simt::GetThreadIdx/GetThreadNum` 处报告两条未声明标识符错误并以 gmake Error 2 退出（来源平台：950；证据等级：tool_observed）。
+- 修复后构建输出 `[100%] Linking ASC shared library libop_gather.so` 与 `[100%] Built target op_gather`（来源平台：950；证据等级：tool_observed）。
+- 最终 clean build 再次输出 `[100%] Built target op_gather`，随后 NPU 测试为 `141 passed, 42 skipped`（来源平台：950；证据等级：tool_observed）。
+- cann-bench 全部 `20/20` 用例通过，输出为 exact match 或误差为零（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

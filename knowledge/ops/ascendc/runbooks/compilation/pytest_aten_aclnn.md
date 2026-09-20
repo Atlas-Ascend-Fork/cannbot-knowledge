@@ -107,9 +107,9 @@ grep -i "tilingKey\|SmoothL1\|smooth_l1" tilingkey_logs/plog-*.log
 
 ## 验证信号
 
-- 白盒 pytest `S6_test_smooth_l1_loss_grad.py` 第 124-127 行调用 `torch.ops.aten.smooth_l1_loss_backward(inputs["dout"], inputs["predict"], inputs["label"], 0, sigma)`，即走 aten 内置 dispatch 而非自定义 aclnn（来源平台:950；证据等级:artifact_verified）。
-- 参考算子 `relu6_d` 白盒 pytest `S6_test_relu6_d.py` 第 183 行调用 `torch.ops.ascend.aclnnRelu6D(x_npu, scale, out_npu)`，经 `tests/st/torch/build/libtorch_adapter.so` 注册到 `torch.ops.ascend` 命名空间，命中自定义 kernel；文件头第 4-6 行明确说明此通路（来源平台:950；证据等级:artifact_verified）。
-- 自定义算子已安装为 `smooth_l1_loss_grad_custom` vendor，`libcust_opapi.so` 存在于 `~/Ascend/cann/cann-9.0.0/vendors/smooth_l1_loss_grad_custom/op_api/lib/`（来源平台:950；证据等级:tool_observed）。
+- 白盒 pytest `S6_test_smooth_l1_loss_grad.py` 第 124-127 行调用 `torch.ops.aten.smooth_l1_loss_backward(inputs["dout"], inputs["predict"], inputs["label"], 0, sigma)`，即走 aten 内置 dispatch 而非自定义 aclnn（来源平台：950；证据等级：artifact_verified）。
+- 参考算子 `relu6_d` 白盒 pytest `S6_test_relu6_d.py` 第 183 行调用 `torch.ops.ascend.aclnnRelu6D(x_npu, scale, out_npu)`，经 `tests/st/torch/build/libtorch_adapter.so` 注册到 `torch.ops.ascend` 命名空间，命中自定义 kernel；文件头第 4-6 行明确说明此通路（来源平台：950；证据等级：artifact_verified）。
+- 自定义算子已安装为 `smooth_l1_loss_grad_custom` vendor，`libcust_opapi.so` 存在于 `~/Ascend/cann/cann-9.0.0/vendors/smooth_l1_loss_grad_custom/op_api/lib/`（来源平台：950；证据等级：tool_observed）。
 
 ## 性能影响
 

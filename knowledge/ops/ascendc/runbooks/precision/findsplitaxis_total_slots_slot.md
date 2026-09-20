@@ -80,5 +80,5 @@ bool FindSplitAxis(const std::vector<int64_t>& max_bro_shape,
 
 ## 验证信号
 
-- 代码检视 tool_result ISSUE-A 给出 per_buf_bytes 内外不一致：外层 25376、`FindSplitAxis` 内部 12672，bf16 `per_buf_elems` 外层 6344、内部 3168（来源平台:950；证据等级:tool_observed）
-- 缺陷代码逐字可核：`DoTilingAndSet<R>` 内 `FindSplitAxis(..., total_slots, ...)` 与 `FindSplitAxis` 签名/内部 `total_slots = phys_nodes * 2` 均取自 trace file_read 事件（来源平台:950；证据等级:artifact_verified）
+- 代码检视 tool_result ISSUE-A 给出 per_buf_bytes 内外不一致：外层 25376、`FindSplitAxis` 内部 12672，bf16 `per_buf_elems` 外层 6344、内部 3168（来源平台：950；证据等级：tool_observed）
+- 缺陷代码逐字可核：`DoTilingAndSet<R>` 内 `FindSplitAxis(..., total_slots, ...)` 与 `FindSplitAxis` 签名/内部 `total_slots = phys_nodes * 2` 均取自 trace file_read 事件（来源平台：950；证据等级：artifact_verified）

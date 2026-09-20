@@ -105,7 +105,7 @@ runbooks 是**算子开发知识库**：只收"Agent 编写/调试/优化 Ascend
 |------|------|
 | **新颖**（无同 nugget 卡） | 新建卡（见 §4 落盘） |
 | **同 nugget 已存在**（同 phenomenon+信号+根因） | **不重复 ADD** → UPVOTE：在 ledger/manifest 中按已核验的不同 `raw_source_sha256` 更新该 nugget 的内部 `reproduce_count`（同源不增加），把新增且已核验的信号合入 staged card 正文；ingest 阶段封顶 `single_run`，达 ≥2 留给 upgrade 升内部 `verified` tier |
-| **同 nugget 但新卡有补充**（新失效边界/坏实践/误诊/设计决策/遗留问题/更完整代码） | **增量合并**进已有卡对应章节（就地 Edit），不新建 |
+| **同 nugget 但新卡有补充**（新失效边界（含未决项）/坏实践/误诊/设计决策/更完整代码） | **增量合并**进已有卡对应章节（就地 Edit），不新建 |
 | **被现有卡覆盖且无补充** | reject，ledger 记 `covered_by: <slug>` |
 | **候选是聚合卡（一根因一个根因闭环的卡内含多个独立根因）** | **先拆分再走上述判断**：按 §细粒度把各根因拆成独立卡分别判 nugget/合并/新建；禁止把聚合卡整张落盘 |
 
@@ -118,7 +118,7 @@ runbooks 是**算子开发知识库**：只收"Agent 编写/调试/优化 Ascend
 - **补 `description`**：确保非空（miner 已填则校验）。
 - **跨卡引用**：查重时发现有助于理解结论的卡片，可在 staged card 的技术叙述中直接链接并说明选用条件。ledger `related_suggestions` 仅为可选的待核对引用建议，不增加全库图谱流程。
 - **机制 artifact 核对**：按 `knowledge_form` 核对 repair before/after、diagnostic probe/observation、negative attempt/boundary 或 validated implementation/validation；核心代码/配置均正文内联且逐字可核，附件引用一律退回。
-- **足量核查**：落盘前对照 runbooks-contract §8 维度表检查——`## 适用场景`、`## 设计决策`、`## 遗留问题` 与形态主章节；`repair_recipe` 核对 before/after 为完整因果单元，其他形态核对自身机制 artifact；guide 卡核对 `## 完整代码` 可执行；`## 验证信号` 核对无 hearsay、每条信号标来源平台+证据等级、`platforms` 只含实际验证平台。
+- **足量核查**：落盘前对照 runbooks-contract §8 维度表检查——`## 适用场景`、`## 设计决策`、`## 失效边界`（含未决项）与形态主章节；`repair_recipe` 核对 before/after 为完整因果单元，其他形态核对自身机制 artifact；guide 卡核对 `## 完整代码` 可执行；`## 验证信号` 核对无 hearsay、每条信号标来源平台+证据等级、`platforms` 只含实际验证平台。
 - **复现判定**：沿用草稿 manifest 的内部 `reproduce_count`（默认 1）；**不写卡 frontmatter**，frontmatter 也不设 `confidence`（tier 由复现数 + `## 验证信号` 判定，记 ledger/manifest，见 runbooks-contract §5）。
 - **迁移边界**：沿用草稿正文 `## 失效边界`（跨算子禁含常量/分数默认生效，见 runbooks-contract §11）。
 - **生命周期**：miner 草稿是 `status: draft`；进入 reviewer 的正式待发布稿必须改为 `status: stable`。无法满足 stable 合同的候选转 ledger `defer`，只留 `.build/` 草稿，不进入 staged cards。

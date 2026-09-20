@@ -170,10 +170,10 @@ static ge::graphStatus InferShapeForEuclideanNorm(gert::InferShapeContext* conte
 
 本卡信号来自一次 euclidean_norm 黑盒失败用例复现会话：用 standalone C++ 复现程序（链接 vendor `libcust_opapi.so`，`aclrtSetDevice(0)` 上板 Ascend950）跑 aclnn 路径并查询 `aclGetViewShape`，对照 TTK 黑盒全量结果与 TTK 比对源码。
 
-- `COMPILE OK`，`aclnnEuclideanNormGetWorkspaceSize ret=0`，算子成功执行并产出 device 输出（来源平台:950；证据等级:tool_observed）
-- 用例 A2（axes=[0]、CSV 风格错误 out shape (2,1,1,3,2,3)）：`aclGetViewShape` 返回 `repDims=2 1 1 3 2 3 (reportedCount=36)`，`SHAPE_MATCH=NO (providedCount=36 goldenCount=24)`（来源平台:950；证据等级:tool_observed）
-- TTK 黑盒 `full_run.log` 对 L1_237 打印 `GOLD: 36 vs 24` 与 `View Shape: ((1, 4, 1, 2, 3), (1,), (2, 1, 1, 3, 2, 3))`（来源平台:950；证据等级:tool_observed）
-- 黑盒执行报告统计 `total=621 pass=0 fail=621 skip=0`（L0:23 fail / L1:592 fail / L2:6 fail），`GATE: FAIL`（来源平台:950；证据等级:tool_observed）
+- `COMPILE OK`，`aclnnEuclideanNormGetWorkspaceSize ret=0`，算子成功执行并产出 device 输出（来源平台：950；证据等级：tool_observed）
+- 用例 A2（axes=[0]、CSV 风格错误 out shape (2,1,1,3,2,3)）：`aclGetViewShape` 返回 `repDims=2 1 1 3 2 3 (reportedCount=36)`，`SHAPE_MATCH=NO (providedCount=36 goldenCount=24)`（来源平台：950；证据等级：tool_observed）
+- TTK 黑盒 `full_run.log` 对 L1_237 打印 `GOLD: 36 vs 24` 与 `View Shape: ((1, 4, 1, 2, 3), (1,), (2, 1, 1, 3, 2, 3))`（来源平台：950；证据等级：tool_observed）
+- 黑盒执行报告统计 `total=621 pass=0 fail=621 skip=0`（L0:23 fail / L1:592 fail / L2:6 fail），`GATE: FAIL`（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

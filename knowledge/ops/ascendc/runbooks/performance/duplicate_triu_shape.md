@@ -54,12 +54,12 @@ aliases: ["mask_generation", "HardEvent", "event_flag"]
 
 ## 验证信号
 
-- Case 9（`[4,8,1024,1024]` float16）B1 ST FAILED，无错误码，其余 35 用例 PASS（来源平台:950；证据等级:tool_observed）
-- 路线 A（Duplicate 0 填充 + SetValue-1）后重跑，Case 9 仍 FAILED（来源平台:950；证据等级:tool_observed）
-- 路线 B（行级 Duplicate 弃用 SetValue）B1 由 35/36 跌至 1/36，已 revert（来源平台:950；证据等级:tool_observed）
-- 路线 C（GM mask + CrossCoreSetFlag）kernel hang，修复后 B1 跌至 7，已 revert（来源平台:950；证据等级:tool_observed）
-- 回退纯 SetValue 后 `timeout 120 ./run.sh`：Case 9 在 120s 内跑完但输出错误（correctness，非超时）（来源平台:950；证据等级:tool_observed）
-- 对照（独立路线）：`PipeBarrier<PIPE_ALL>()` 替换 per-tile event flag 后 B1 36/36 PASS、B0 16/16、TilingUT 95/95 无回归（来源平台:950；证据等级:tool_observed）
+- Case 9（`[4,8,1024,1024]` float16）B1 ST FAILED，无错误码，其余 35 用例 PASS（来源平台：950；证据等级：tool_observed）
+- 路线 A（Duplicate 0 填充 + SetValue-1）后重跑，Case 9 仍 FAILED（来源平台：950；证据等级：tool_observed）
+- 路线 B（行级 Duplicate 弃用 SetValue）B1 由 35/36 跌至 1/36，已 revert（来源平台：950；证据等级：tool_observed）
+- 路线 C（GM mask + CrossCoreSetFlag）kernel hang，修复后 B1 跌至 7，已 revert（来源平台：950；证据等级：tool_observed）
+- 回退纯 SetValue 后 `timeout 120 ./run.sh`：Case 9 在 120s 内跑完但输出错误（correctness，非超时）（来源平台：950；证据等级：tool_observed）
+- 对照（独立路线）：`PipeBarrier<PIPE_ALL>()` 替换 per-tile event flag 后 B1 36/36 PASS、B0 16/16、TilingUT 95/95 无回归（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

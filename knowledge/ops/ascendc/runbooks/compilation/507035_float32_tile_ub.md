@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.memory", "topic.tiling"]
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-09-17T01:47:15Z'
 platforms: ["950"]
 aliases: ["TPipe::InitBuffer"]
 ---
@@ -29,7 +29,7 @@ FAILED ...::test_masked_scale_operator[shape5-dtype_combo1] - RuntimeError: copy
 
 - **工程形态**：ops-direct-invoke-flash 核函数构建（直接 Launch，非 aclnn 算子仓），`__global__ __aicore__ __vector__` kernel + `AscendC::Reg` 向量计算。
 - **API 路径**：`AscendC::TQue<TPosition,DEPTH>` + `pipe_.InitBuffer(que, DEPTH, tileSize*sizeof(T))` + `AscendC::Reg::LoadAlign/Mul/Muls/StoreAlign`；`asc_vf_call<...>` 进 `__simd_vf__` 函数。
-- **验证平台与版本**：Ascend950PR_9579 / NpuArch dav-3510（CANN 9.1.0，tikcpp impl 路径 `/home/developer/Ascend/cann-9.1.0/x86_64-linux/tikcpp/tikcfw/impl/dav_3510/`）。仅此平台实测。
+- **验证平台与版本**：Ascend950PR_9579 / NpuArch dav-3510（CANN 9.1.0，tikcpp impl 路径 `/home/<user>/Ascend/cann-9.1.0/x86_64-linux/tikcpp/tikcfw/impl/dav_3510/`）。仅此平台实测。
 - **适用粒度**：`operator_family`——任何在 dav-3510 上用多 TQue + 双缓冲 + 大固定 tile 的元素级 elementwise Reg kernel 都可能踩同一 UB 超额。
 - **路线优先级**：`recommended_fastpath`——把 tile 纳入 UB 预算约束（见判别方法机制解释），从源头避免 507035。
 - **不适用/未验证场景**：a2/a3 未验证（推断可迁移，见失效边界）；非 dav-3510 平台的 UB 容量不同，算式需按目标平台重算。
@@ -59,7 +59,7 @@ constexpr static uint32_t FIXED_TILE_ELEMS = 4096;      // 探针：缩 tile 后
 - tile=4096 后 32 元素与 1M 元素用例均 OK，本地 `pytest tests/masked_scale/` `81 passed, 14 warnings in 19.22s`。
 - 官方评测 `run_evaluation.sh --operator MaskedScale` 精度 20/20 通过。
 
-**机制解释**：dav-3510 每核 UB 容量有限（本 trace 推算为 256 KiB）。该 kernel 的 UB 占用为：
+**机制解释**：dav-3510 每核 UB 容量有限（本开发会话推算为 256 KiB；同批另一卡的会话估值为约 192KB/196608 字节，两口径均为会话估算、超容结论在两值下均成立，见 [507035 group 统计全载超限卡](507035_group_stats_fullload_colsplit.md)）。该 kernel 的 UB 占用为：
 
 ```
 UB占用 = 队列数 × PIPELINE_DEPTH × FIXED_TILE_ELEMS × sizeof(元素)
@@ -100,3 +100,43 @@ agent 第一次命中 507035 时（kernel 含 `TBuf<VECCALC> tmpMaskFloat_` 用�
 ## 预防
 
 写多 TQue + 双缓冲 + 大固定 tile 的 elementwise Reg kernel 前，先代入 `Σ(队列数 × DEPTH × tileSize × sizeof(dtype)) ≤ 每核 UB` 选 tile；不要把 `copy_between_host_and_device_opapi`/507035 默认归因为 TBuf 生命周期或 D2H 拷贝，先用同环境已知正常算子（如 exp）排除硬件、再缩 tile 验证 UB 假设。
+
+## 复现增量：推导型 ubFormer 恰满报告容量变体 + 保守 cap 回退（机制未验证）
+
+另一独立轨迹并入 bessel_i1e 算子（ascend950/CANN 9.0.0-beta.2）的边界变体，与原实例（固定 tile 384KiB 明显超 256KiB）互补——本变体是 **tiling 按报告容量推导的 tile"恰好占满"报告值时崩溃**：
+
+- 现象：尾块越界修复（另卡）后，小/中 shape 用例完成，大 dim0 用例（98336/16.7M/32768）持续 `ACL error 507035`，且 `01_f32_normal_128x256` 随 tiling 参数漂移时而复现时而消失。
+- 判别事实：**崩溃与 Compute 内容无关**——把 Compute 换成 pass-through（CopyViaVF）或单条 `AscendC::Abs(yLocal, xLocal, c)` 都照样崩，崩溃用例集合一致；只与 dim0 量级相关（dim0<1024 全过）。tiling 推演：FP32 下 `ubFormer=12288`，`InitBuffer(queIn, 1, 12288*4)` + `InitBuffer(queOut, 1, 12288*4)` 共 98304 字节，**恰好等于按 96KB 口径报告的 UB 值，无任何余量**。
+- 工作假设（未验证）：tiling 用 `GetCoreMemSize(UB)` 报告的 ubSize 推导 ubFormer，而 InitBuffer 实际可用容量小于该值（或另有保留），双队列恰好占满推导值时溢出触发 507035；真实平台 UB 大小在该会话未打印，无法闭合算术。
+
+保守回退（safety_fallback，机制未追到根因）——多级防御 cap，核心是 1024 硬 cap：
+
+```cpp
+    // §5.2.2 UB 切分（统一字节量纲）
+    // Use a conservative ubSize cap - platform may report unrealistic values on simulator.
+    // Typical Ascend 950 UB is 96KB; cap at 256KB for headroom.
+    const int64_t safeUbSize = std::min(ubSize, static_cast<int64_t>(256 * 1024));
+    int64_t bufferDivisor = static_cast<int64_t>(bufferNum) * static_cast<int64_t>(elemBytes);
+    int64_t maxElemNum    = safeUbSize / bufferDivisor;
+    int64_t alignFactor   = UB_ALIGN_BYTES / static_cast<int64_t>(elemBytes);
+    out.ubFormer = AlignDown(maxElemNum, alignFactor);
+    if (out.ubFormer < 1) { out.ubFormer = alignFactor; }
+
+    // DataCopy blockLen is uint16_t → count * elemBytes <= 65535
+    const int64_t maxDcElements = 65535 / static_cast<int64_t>(elemBytes);
+    out.ubFormer = std::min(out.ubFormer, maxDcElements);
+
+    // Hard cap to prevent UB overflow on mis-reported platform info.
+    out.ubFormer = std::min(out.ubFormer, static_cast<int64_t>(1024));
+    out.ubFormer = std::min(out.ubFormer, out.blockFormer);
+```
+
+二分轨迹：12288 崩 → 8192 崩 → 1024 全过（真实可用上界介于 1024 与 8192 之间，未测定）。定位方法补充：用独立脚本复算 tiling 参数（dim0/coreNum/blockFormer/ubFormer/ubLoop/ubTail）并检查 queIn+queOut（含 depth）字节和与 UB 容量的关系；"崩溃只随 dim0 量级出现且与 Compute 内容无关"即可排除算术、锁定 tiling/内存布局。
+
+**独立 trace 新增验证信号**（均为 tool_observed）：
+
+- 修复前：0-C（dim0=98336）/0-E（dim0=16,777,216）/01（dim0=32768）持续 `ACL error 507035`；cap 8192 后 0-C/0-E/01 仍崩（来源平台：950；证据等级：tool_observed）。
+- 判别信号：pass-through 与 Abs-only 两种 Compute 下崩溃用例集合一致（0-C/0-E/01），证明与计算内容无关（来源平台：950；证据等级：tool_observed）。
+- 修复后（ubFormer cap 1024）：`ALL TESTS NOW COMPLETE (no crashes)`——14/14 用例完成（Abs-only 验证下输出 |x| 数值正确）（来源平台：950；证据等级：tool_observed）。
+
+**独立 trace 扩展边界与坏实践**：cap 1024 后全量完成只证明"该 cap 下无崩溃"，不能当作根因结论写入设计文档；采用代价为 UB tile 变小、Process 迭代次数增多（相对 12288 约 12 倍迭代，性能未测量），机制层修复（探明平台真实 UB 可用容量与 InitBuffer 实际分配规则）后应回退此 cap。坏实践补充：用 `GetCoreMemSize(UB)` 的返回值无余量地推导双队列 tile 尺寸（bufferNum 除数只算队列数与元素宽度，不留 headroom）。关联：该 cap 后续残留在共享 ComputeTiling 引发公式型 TilingUT 大面积回归（去 caps 又暴露 kernel 侧 19 buffer 超 UB 的独立缺陷），见库内"共享 Tiling 仿真 caps 致公式 UT 回归"与"每中间量全尺寸 TBuf 总量超 UB"卡。

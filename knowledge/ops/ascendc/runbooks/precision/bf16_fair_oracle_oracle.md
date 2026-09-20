@@ -172,7 +172,7 @@ A_bf16_rank7: fp32-oracle fails=2 maxdiff=5.4126e-03 | bf16-oracle(fair) fails=0
 
 ## 验证信号
 
-- ST 运行 tool_result：51/53 PASSED，bf16 rank7/rank8 在 4e-3 边缘失败（idx91 diff=5.413e-03、idx108 diff=5.510e-03），fp32/fp16 rank5-8 全 PASS，RUN_EXIT=0（来源平台:950；证据等级:tool_observed）
-- fair-oracle 探针 tool_result：`A_bf16_rank7: fp32-oracle fails=2 maxdiff=5.4126e-03 | bf16-oracle(fair) fails=0 maxdiff=0.0000e+00`——fp32-oracle fails 与测试失败完全一致，bf16-oracle(fair) fails=0 锁定 kernel 正确（来源平台:950；证据等级:tool_observed）
-- 探针脚本 `diag_fair_oracle.cpp` 逐字可核：从 trace bash 命令 heredoc（raw .md line 18613）恢复，standalone g++ -O2 编译即跑，复现测试 RNG + 双 oracle 比较（来源平台:950；证据等级:artifact_verified）
-- fair-oracle 输入对齐后 ST 全量回归 tool_result：53/53 PASSED，0 失败，无回归，无 crash、无 361001 错误，RUN_EXIT=0（来源平台:950；证据等级:tool_observed）
+- ST 运行 tool_result：51/53 PASSED，bf16 rank7/rank8 在 4e-3 边缘失败（idx91 diff=5.413e-03、idx108 diff=5.510e-03），fp32/fp16 rank5-8 全 PASS，RUN_EXIT=0（来源平台：950；证据等级：tool_observed）
+- fair-oracle 探针 tool_result：`A_bf16_rank7: fp32-oracle fails=2 maxdiff=5.4126e-03 | bf16-oracle(fair) fails=0 maxdiff=0.0000e+00`——fp32-oracle fails 与测试失败完全一致，bf16-oracle(fair) fails=0 锁定 kernel 正确（来源平台：950；证据等级：tool_observed）
+- 探针脚本 `diag_fair_oracle.cpp` 逐字可核：从 trace bash 命令 heredoc（raw .md line 18613）恢复，standalone g++ -O2 编译即跑，复现测试 RNG + 双 oracle 比较（来源平台：950；证据等级：artifact_verified）
+- fair-oracle 输入对齐后 ST 全量回归 tool_result：53/53 PASSED，0 失败，无回归，无 crash、无 361001 错误，RUN_EXIT=0（来源平台：950；证据等级：tool_observed）

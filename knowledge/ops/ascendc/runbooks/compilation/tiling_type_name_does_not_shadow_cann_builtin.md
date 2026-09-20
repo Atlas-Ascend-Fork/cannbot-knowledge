@@ -165,9 +165,9 @@ static RmsNormTileParams calc_rms_norm_tiling_params(int64_t numRow, int64_t num
 
 来源说明：这条知识来自一次 Ascend950 rms_norm 直调工程的远程编译修复；第二次构建明确暴露 CANN 同名类型，精确重命名后立即重建并继续执行真实 NPU 验证。
 
-- 重命名后的远程构建输出 `[100%] Built target op_rms_norm`，生成 `libop_rms_norm.so`（来源平台: 950；证据等级: tool_observed）；
-- 同一修复源码随后执行的 pytest 为 29 passed（来源平台: 950；证据等级: tool_observed）；
-- 同一修复源码随后执行的 cann-bench 正确性为 20/20 通过（来源平台: 950；证据等级: tool_observed）。
+- 重命名后的远程构建输出 `[100%] Built target op_rms_norm`，生成 `libop_rms_norm.so`（来源平台：950；证据等级：tool_observed）；
+- 同一修复源码随后执行的 pytest 为 29 passed（来源平台：950；证据等级：tool_observed）；
+- 同一修复源码随后执行的 cann-bench 正确性为 20/20 通过（来源平台：950；证据等级：tool_observed）。
 
 - 独立复现 R1：工具报告 [100%] Built target op_rms_norm。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
 - 独立复现 R2：工具报告 [100%] Built target op_rms_norm。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。

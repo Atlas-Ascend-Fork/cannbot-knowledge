@@ -1,17 +1,17 @@
 ---
 type: "Runbook"
 title: GetCoreNumAiv 实测≈56-57，group 路由分界 28
-description: host tiling 分支路由按运行时 GetCoreNumAiv() 而非平台 INI 核数整除判定；实机 group 进入分界 aLoopCntTotal≤28（coreNum/2，非按规格 64 核算的 32），用桩/实现不对称的二值边界探针实机定位。
+description: host tiling 分支路由按运行时 GetCoreNumAiv() 而非平台 INI 核数整除判定；实机 group 进入分界 aLoopCntTotal≤28（coreNum/2，非按规格 64 核算的 32），用桩/实现不对称的二值边界探针实机定位。 R2（2026-09，CANN 9.1.0/9.2.0）：路由触发还含 R 维条件（rLoopCntTotal>1，R 超单个 UB chunk，实测翻转点 R=512–1024）；设计矩阵/用例注释的静态 key 标注可与真机路由全不符——红基线意外 PASS＝用例被路由到已实现分支，覆盖计数必须按运行时路由，配哨兵探针实测。
 tags: [task.testing, topic.tiling, topic.architecture]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-16T11:13:37Z'
 platforms: ["950"]
 cann_versions: ["9.0.0-beta.2"]
 ---
-# GetCoreNumAiv 实测≈56-57，group 路由分界 28
 
+# GetCoreNumAiv 实测≈56-57，group 路由分界 28
 
 ## 现象
 
@@ -225,6 +225,11 @@ ge::graphStatus GetPlatformInfo(gert::TilingContext* context, ThnnFusedGruCellGr
 - 红基线：Branch-1 0/11 全 FAIL 且 mere/mare 达毒值量级（如 4.376e+33 / 1.330e+37）、ERROR=0、determinism OK——FAIL 确系"桩未写输出"而非框架错误，二值信号有效（来源平台：950；证据等级：tool_observed）
 - 构建退出码 0、目标 ascend950（来源平台：950；证据等级：tool_observed）
 
+- （R2 增补，Ascend950PR + CANN 9.1.0，EuclideanNorm group 分支 ST 设计）设计矩阵 8 个原始 shape 探针实测全部路由到已实现分支（key=0/1），无一命中 key=4；`[2,R,3] axes=[1]` R 扫描 R≤512 全 normal、R≥1024 全 group，翻转点在 512–1024 之间（来源平台：950；证据等级：tool_observed）。
+- （R2 增补）shape 适配后 7 个用例探针实测全部命中 key=4（G2 反向用例正确保持已实现路由）；ST 基线（kernel 未接线）Branch-4 0/8 全失败、dev 恒为 0x41 哨兵位型（证明用例确实走到 key=4）；kernel 接线后同 8 用例 8/8 PASSED（fp32 maxRel≤4.038e-07）（来源平台：950；证据等级：tool_observed）。
+- （R2 增补，softmax GroupTailA 红基线）`#421 groupa_copyout_p3 [64,4096,4] dim=1`（用例注释标注 key=4）stub 期三 dtype [PASS]、kernel 实现后仍 [PASS] 无变化；同期 31 条 key=4 用例 361001 失败——意外 PASS＝被运行时路由到已实现 key=1（来源平台：950；证据等级：tool_observed）。
+- （R2 增补）白盒产物字段佐证：group 用例 `dyn_tiling_key=4`、`dyn_block_dim=56` 可从 result.csv 直接读出（来源平台：950；证据等级：tool_observed）。
+
 ## 失效边界
 
 - 分界 28 是单机单会话实测，绑定该机器运行时 GetCoreNumAiv() 返回值；不同机器/CANN 版本/容器核隔离可能不同，迁移必须用本卡探针法重测。
@@ -233,10 +238,17 @@ ge::graphStatus GetPlatformInfo(gert::TilingContext* context, ThnnFusedGruCellGr
 - 前提 rLoopCntTotal ≥ 2：B 须使 R 不全驻（R 全驻 → rLoopCntTotal=1 → 恒 base，且触发扩 A 改变 aUbFactor）。
 - 未验证，推断可迁移：同机同 CANN 下其他用 GetCoreNumAiv() 做切分/分支判定的算子（核数漂移机制上是平台级现象，但未在其他算子实测）。
 
+- （R2 增补）R 维翻转点（≈1024）绑定该算子的 UB 因子推导与本机平台参数；跨算子/跨平台必须重扫，只能照搬方法不能照搬数值。
+- （R2 增补）探针判据依赖"已实现 vs stub"的输出差异；目标分支实现后信号消失，且两个分支都已实现时无法区分路由归属（需 tilingKey 级观测）。
+- （R2 增补）"路由到已实现 key"的结论由反证+触发公式推导支撑（强推断）；softmax `#421` 具体哪个条件不满足未与实测 tilingKey 对账闭合，以 dyn_tiling_key 实测为准。
+
 ## 坏实践
 
 - 按平台规格/INI 物理核数静态预判路由归属并直接定用例清单——本例被证伪的做法（会把 aLoop∈[29,32] 的用例错归 group）。
 - 设计期手算切分用文档典型值（64 核、256KB UB）不复算实机接口值（同类：rUbFactor 201→195）。
+
+- （R2 增补）照抄设计文档/评审矩阵的 shape 写多分支 ST 而不实测路由；按用例注释手写的"预期 key"统计分支覆盖——注释不经过运行时，coreNum/UB 预算变了路由就变。
+- （R2 增补）在 host 侧探针里花时间找 aclrt 运行时核数查询接口——该 CANN 版本的 aclrtGetDeviceCapability 枚举没有核数项。
 
 ## 误诊
 
@@ -244,4 +256,16 @@ ge::graphStatus GetPlatformInfo(gert::TilingContext* context, ThnnFusedGruCellGr
 - "运行日志 grep 到 2 处 ERROR 说明有框架错误"——实为汇总行 "ERROR=0" 字样。
 - 执行者报告的"GetCoreNumAiv()≈56-57"在本次验收前仅是其单方陈述；本卡的分界 28 为验收方独立探针实测反推（执行者口径已被复证，但前序日志本身不作为本卡证据）。
 
+## 增补：R 维触发、设计矩阵落空与红基线意外 PASS（R2，2026-09）
 
+两个不同算子（softmax 类 BenchHarnessSoftmax、归约 EuclideanNorm）独立复现同一规律：tilingKey 路由不只由 shape 模式决定，还依赖运行时平台参数（coreNum、ubSize 推出的 UB 因子），静态预期（设计文档用例矩阵、用例注释里的"预期 key"）与真机路由可以全部不符。
+
+**R 维触发条件**：group 触发除 A 侧判定（本卡 aLoopCntTotal ≤ coreNum/2；softmax 实例为 aLoopCntTotal < coreNum——公式随算子而异，运行时参数依赖不变）外还要求 `rLoopCntTotal > 1`——R 维超过单个 UB chunk（由 ubSize 推出的 rUbFactor 决定）。对 `[2,R,3] axes=[1]`（ARA、tail-A）扫 R：R≤512 全部路由 normal（key=0），R≥1024 全部路由 group（key=4），翻转点在 512–1024 之间；设计矩阵里的小 R（8/17/64）在一个 UB chunk 内（rLoopCntTotal=1）永不触发 group。
+
+**设计矩阵落空**：设计文档给的 8 个 group 用例 shape 在真机全部路由到已实现分支（key=0/1）——照抄写 ST 将永不执行目标分支，"全绿"毫无含金量。shape 适配原则（保持语义意图、放大触发维度）：`[2,3,4] ax=[1,2]`→`[2,1024,3] ax=[1]`（原形合轴后是 tail-R，改单轴归约+大 R）；`[1,64,1]`→`[1,4096,2]`（尾部 A 必须 >1，否则掉成 tail-R）；`[2,17,3]`→`[2,1045,3]`（保非对齐同时 R 超单 chunk）；反向用例（验证偶数 axisNum 不误触发）保留原样 DEFERRED。
+
+**红基线意外 PASS 的反证法**：no-op stub 不可能产出通过精度比对的输出——红基线（新分支 kernel 为 stub）中"本应失败却 PASS"的用例只可能是被运行时路由到了已实现分支；kernel 实现后该用例结果不变进一步确认与新增代码无关。红基线的"本分支期望通过数"必须按运行时路由统计，不能按用例注释分组。终极确认：TTK 白盒产物的 `dyn_tiling_key` 字段直接给出实际命中 key（group 用例 `dyn_block_dim=56` 即 coreNum 补满后的真实核数）。
+
+**独立哨兵路由探针**（aclnn 直连，与上文 manifest 探针同判据）：输出 buffer `aclrtMemset` 0xFF 哨兵 → 跑 `aclnn<Op>GetWorkspaceSize + aclnn<Op>` → 与独立 CPU golden 比对——匹配 ⇒ 路由到已实现分支；输出保持哨兵 ⇒ 路由到 stub 分支。判据无需读 tilingKey（aclnn 接口不暴露），顺带验证 golden 复刻正确性；独立编译（g++ 直链 op_api/libascendcl/libnnopbase），不入算子包。
+
+**host 侧运行时平台查询是死胡同**：`aclrtGetDeviceName` 不存在（编译错）；`aclrtGetDeviceCapability` 的 `aclrtDevFeatureType` 枚举仅 2 个 feature flag（TSCPU_TASK_UPDATE_SUPPORT_AIC_AIV=1、SYSTEM_MEMQ_EVENT_CROSS_DEV=21），查不到核数——ST oracle 改用与 TilingUT 一致的固定平台常数（coreNum=8、ubSize=253952），以探针实测路由互证。

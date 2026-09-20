@@ -38,8 +38,8 @@ aliases: ["mix_graph", "CV_path"]
 
 ## 验证信号
 
-- mix合图扩展到 V0+C1+V1+C2 后 AICore E2E 相对仅 V0+C1 配置约 1.37× 退化，且 workspace 需求约 465183KB 超 `max_workspace_kb=458752`（来源平台:950；证据等级:tool_observed）
-- C1 matmul 输出改 BF16 后报 `VectorErrorCode::ERR_PARAM_DTYPE_UNSUPPORTED`，运行失败（来源平台:950；证据等级:tool_observed）
+- mix合图扩展到 V0+C1+V1+C2 后 AICore E2E 相对仅 V0+C1 配置约 1.37× 退化，且 workspace 需求约 465183KB 超 `max_workspace_kb=458752`（来源平台：950；证据等级：tool_observed）
+- C1 matmul 输出改 BF16 后报 `VectorErrorCode::ERR_PARAM_DTYPE_UNSUPPORTED`，运行失败（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

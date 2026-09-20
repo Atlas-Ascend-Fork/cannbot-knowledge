@@ -65,8 +65,8 @@ platforms: ["950"]
 
 ## 验证信号
 
-- TQue 改造后批量 pytest 的 `[BUGDIAG]` tool_result：`zero_rows=254244 hist_zr=0 new_zr=254244`，全部 0 行在 new 区，hist 区全对（来源平台:950；证据等级:tool_observed）
-- 缺陷存在于源码：layer `.cpp` compute 输出分配处为 `allocate_xpu_zeros_like(kv_a_in, {totalLen, kv_lora_dim})` / `allocate_xpu_zeros_like(kv_a_in, {totalLen, qk_rope_dim})`（来源平台:950；证据等级:artifact_verified）
+- TQue 改造后批量 pytest 的 `[BUGDIAG]` tool_result：`zero_rows=254244 hist_zr=0 new_zr=254244`，全部 0 行在 new 区，hist 区全对（来源平台：950；证据等级：tool_observed）
+- 缺陷存在于源码：layer `.cpp` compute 输出分配处为 `allocate_xpu_zeros_like(kv_a_in, {totalLen, kv_lora_dim})` / `allocate_xpu_zeros_like(kv_a_in, {totalLen, qk_rope_dim})`（来源平台：950；证据等级：artifact_verified）
 
 ## 失效边界
 

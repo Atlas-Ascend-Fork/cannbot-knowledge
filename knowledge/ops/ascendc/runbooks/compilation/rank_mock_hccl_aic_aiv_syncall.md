@@ -30,7 +30,7 @@ atcoss `all_gather_quant_matmul` kernel 接口的 ST 初版采用 mock HCCL cont
 **banned 路线：单卡 + mock HCCL context（`MockHcclContextBuilder`，`windowsIn[]` 全指向同一 window 内存）启动 `BlockPrologueAllGather` 通算融合 kernel。**
 
 - 尝试：在 Ascend950 单卡上用只填 `windowsIn[]` 同址指针的最简 mock context 启动 `KERNEL_TYPE_MIX_AIC_1_2`（1 AIC : 2 AIV）的 `BlockPrologueAllGather` kernel。
-- 客观失败：kernel 执行超时无返回（来源平台:950；证据等级:tool_observed）。
+- 客观失败：kernel 执行超时无返回（来源平台：950；证据等级：tool_observed）。
 - 边界：该 mock 路线对 AIC+AIV SyncAll 配对的通算融合 kernel 是 banned 路线。用户明确指出环境有真实卡（4 卡 Ascend950），应改用真实多 rank HCCL（`HcclCommInitRootInfoConfig` + fork 多进程 + TCP 交换 rootInfo）。纯 AIV 或无 SyncAll 配对的 kernel 是否可用 mock 未验证。
 
 ## 根因
@@ -41,7 +41,7 @@ atcoss `all_gather_quant_matmul` kernel 是 `KERNEL_TYPE_MIX_AIC_1_2`（1 AIC : 
 
 ## 验证信号
 
-- 单 rank mock HCCL context 下 `<<<totalCores, nullptr, stream>>>` 启动 `BlockPrologueAllGather` kernel 后执行超时无返回（来源平台:950；证据等级:tool_observed）。
+- 单 rank mock HCCL context 下 `<<<totalCores, nullptr, stream>>>` 启动 `BlockPrologueAllGather` kernel 后执行超时无返回（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

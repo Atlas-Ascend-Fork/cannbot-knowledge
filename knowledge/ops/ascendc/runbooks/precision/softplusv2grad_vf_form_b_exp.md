@@ -59,11 +59,11 @@ AscendC::Reg::Select(resReg, gReg, prReg, maskReg);        // S10: res = mask ? 
 
 来源：本 trace 在 Ascend950（dav-3510 / arch35，CANN 9.0.0-beta.2）上对 `operators/SoftplusV2Grad_package/op_kernel/arch35/softplus_v2_grad_kernel.h` 的 VF 链跑 TTK 黑盒（numpy Form A golden_plugin）+ ST 回归；VF 链函数体作为 tool_result 完整逐字可核。
 
-- TTK 黑盒 golden_plugin 22 例 `mare` 超阈 46×–96×（bf16/fp16 大 threshold / grad=inf），`mere<1e-7` 仅 outlier 超阈，FAIL（来源平台:950；证据等级:tool_observed）
-- Form B→Form A 改写后 TTK 由 22 例 FAIL 降至 3 例（19 例转 PASS），538 PASS/3 FAIL（来源平台:950；证据等级:tool_observed）
-- ST（torch golden）72/72 回归不退化（Branch-0 43 + Branch-1 29，oracle 独立于被测 kernel）（来源平台:950；证据等级:tool_observed）
-- Form B `SoftplusGradVF<T>` 计算链（S5 `Exp(cbx)` 正向 exp）作为 tool_result 逐字可核，绑定 trace seq 2377（来源平台:950；证据等级:artifact_verified）
-- `asc_vf_call`(6 处) / `__simd_vf__`(3 处) 满足 dav-3510 连续 Vector 计算链硬要求（来源平台:950；证据等级:artifact_verified）
+- TTK 黑盒 golden_plugin 22 例 `mare` 超阈 46×–96×（bf16/fp16 大 threshold / grad=inf），`mere<1e-7` 仅 outlier 超阈，FAIL（来源平台：950；证据等级：tool_observed）
+- Form B→Form A 改写后 TTK 由 22 例 FAIL 降至 3 例（19 例转 PASS），538 PASS/3 FAIL（来源平台：950；证据等级：tool_observed）
+- ST（torch golden）72/72 回归不退化（Branch-0 43 + Branch-1 29，oracle 独立于被测 kernel）（来源平台：950；证据等级：tool_observed）
+- Form B `SoftplusGradVF<T>` 计算链（S5 `Exp(cbx)` 正向 exp）作为 tool_result 逐字可核，绑定 trace seq 2377（来源平台：950；证据等级：artifact_verified）
+- `asc_vf_call`(6 处) / `__simd_vf__`(3 处) 满足 dav-3510 连续 Vector 计算链硬要求（来源平台：950；证据等级：artifact_verified）
 
 ## 失效边界
 

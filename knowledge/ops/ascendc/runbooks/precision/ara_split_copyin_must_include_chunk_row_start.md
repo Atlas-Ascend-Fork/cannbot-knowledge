@@ -121,11 +121,11 @@ supports: `rowStart * A0_` 进入 GM 起点，允许每次 gather 读取当前 c
 
 来源说明：一次 AscendC Softmax 直调开发会话在真实重编译后先复现跨 chunk 错误，再修改 `CopyInBlock` 地址与四个调用点，并在 Ascend 950 上重新构建和运行三种 dtype probes。
 
-- 修复前，两个跨 chunk 随机输入 probe 的 `max_err` 分别达到 0.926 与 0.320，同时归约轴求和检查仍通过（来源平台: 950；证据等级: tool_observed）。
-- 修复后，fp32 probes 最坏 `max_err=1.192e-07` 且全部通过（来源平台: 950；证据等级: tool_observed）。
-- 修复后，fp16 probes 最坏 `max_err=2.384e-04` 且全部通过（来源平台: 950；证据等级: tool_observed）。
-- 修复后，bf16 probes 最坏 `max_err=1.838e-03` 且全部通过（来源平台: 950；证据等级: tool_observed）。
-- 修复后的 wheel 经 `build.sh --soc=ascend950 --install` 完成真实编译与安装（来源平台: 950；证据等级: tool_observed）。
+- 修复前，两个跨 chunk 随机输入 probe 的 `max_err` 分别达到 0.926 与 0.320，同时归约轴求和检查仍通过（来源平台：950；证据等级：tool_observed）。
+- 修复后，fp32 probes 最坏 `max_err=1.192e-07` 且全部通过（来源平台：950；证据等级：tool_observed）。
+- 修复后，fp16 probes 最坏 `max_err=2.384e-04` 且全部通过（来源平台：950；证据等级：tool_observed）。
+- 修复后，bf16 probes 最坏 `max_err=1.838e-03` 且全部通过（来源平台：950；证据等级：tool_observed）。
+- 修复后的 wheel 经 `build.sh --soc=ascend950 --install` 完成真实编译与安装（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

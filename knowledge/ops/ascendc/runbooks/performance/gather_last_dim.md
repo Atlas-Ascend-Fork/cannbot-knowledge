@@ -57,9 +57,9 @@ auto indexUint32 = (indexWork.to(torch::kInt64) * (int64_t)dtypeSize).to(torch::
 
 问题与验证来源：在 Ascend950 上对 Gather 算子跑 20-case 评测，读回评测报告 JSON（`gather_eval_20260623_063200.json`）的逐 case `op_times.device_kernels` 与 `accuracy` 字段得出下列相对占比与精度结论。
 
-- 精度 20/20 All Pass，所有 case `mismatch_count=0`、`max_diff=0.0`、`passed=true`（checker=`relative_error`）（来源平台:950；证据等级:artifact_verified）。
-- dim!=last 的 4 个慢 case 预处理（Transpose+Cast+Mul）占 case 总耗时 58-83%，kernel 占 17-41%（来源平台:950；证据等级:artifact_verified）。
-- dim!=last 慢 case 相对 baseline 路线约 0.51-0.93x；1D/last-dim case 相对 baseline 1.15-16.24x（来源平台:950；证据等级:artifact_verified）。
+- 精度 20/20 All Pass，所有 case `mismatch_count=0`、`max_diff=0.0`、`passed=true`（checker=`relative_error`）（来源平台：950；证据等级：artifact_verified）。
+- dim!=last 的 4 个慢 case 预处理（Transpose+Cast+Mul）占 case 总耗时 58-83%，kernel 占 17-41%（来源平台：950；证据等级：artifact_verified）。
+- dim!=last 慢 case 相对 baseline 路线约 0.51-0.93x；1D/last-dim case 相对 baseline 1.15-16.24x（来源平台：950；证据等级：artifact_verified）。
 
 ## 失效边界
 
@@ -73,4 +73,4 @@ auto indexUint32 = (indexWork.to(torch::kInt64) * (int64_t)dtypeSize).to(torch::
 
 ## 误诊
 
-- 早期曾把慢 case 归因为「UB buffer overflow 触发 slow path」与「单线程并行不足」，但 perf 报告 `op_times` 显示 dim!=last 慢 case 的 kernel 时间占比仅 17-41%，真正瓶颈是预处理 aclnn kernel，不是 kernel 内 UB/并行（来源平台:950；证据等级:artifact_verified）。
+- 早期曾把慢 case 归因为「UB buffer overflow 触发 slow path」与「单线程并行不足」，但 perf 报告 `op_times` 显示 dim!=last 慢 case 的 kernel 时间占比仅 17-41%，真正瓶颈是预处理 aclnn kernel，不是 kernel 内 UB/并行（来源平台：950；证据等级：artifact_verified）。

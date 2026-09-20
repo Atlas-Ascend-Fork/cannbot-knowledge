@@ -70,9 +70,9 @@ bisheng: error: clang frontend command failed due to signal (use -v to see invoc
 
 来源说明：本卡验证信号来自该算子在 Ascend950PR（dav-3510, CANN 9.1.0）开发会话中的 build 工具结果，均为 trace 内结构化捕获的 tool_result。
 
-- 单模板跨类型类编译时 bisheng 崩溃，输出 `Segmentation fault (core dumped)` + `clang frontend command failed due to signal`，无具体行号（来源平台:950；证据等级:tool_observed）。
-- 拆成两个类型各自一致的独立类后，同一 build 命令输出 `[100%] Built target xpu_ops_v2`，编译通过——确认根因是单实例内跨字宽类型并存，而非具体 API 或 UB 容量（来源平台:950；证据等级:tool_observed）。
-- 后续精度用例通过以本次编译通过为前提（同会话后续 turn 实测）（来源平台:950；证据等级:tool_observed）。
+- 单模板跨类型类编译时 bisheng 崩溃，输出 `Segmentation fault (core dumped)` + `clang frontend command failed due to signal`，无具体行号（来源平台：950；证据等级：tool_observed）。
+- 拆成两个类型各自一致的独立类后，同一 build 命令输出 `[100%] Built target xpu_ops_v2`，编译通过——确认根因是单实例内跨字宽类型并存，而非具体 API 或 UB 容量（来源平台：950；证据等级：tool_observed）。
+- 后续精度用例通过以本次编译通过为前提（同会话后续 turn 实测）（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

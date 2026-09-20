@@ -1,17 +1,17 @@
 ---
 type: "Runbook"
 title: TTK CSV attributes 需 Python 字面量，JSON 被拒
-description: TTK aclnn 黑盒执行的 CSV attributes 字段由 process_dict 以 eval 解析，JSON 布尔值 false/true 触发 ValueError；对合并执行 CSV 做 JSON→Python 字面量归一化后全量执行恢复。
+description: TTK aclnn 黑盒执行的 CSV attributes 字段由 process_dict 以 eval 解析，JSON 布尔值 false/true 触发 ValueError；对合并执行 CSV 做 JSON→Python 字面量归一化后全量执行恢复。 复现增量：生成源定位 ascendc-st-design 的 format_ttk_dict（json.dumps，重生成后必须重跑归一化）；int 形（maximize=0）可解析的判别信号；ast.literal_eval 解析 input_data_ranges（裸 nan/inf/±0 token）必报错与裸字符串替换 false→False 会误伤两条坏实践；第二轨迹全量 642/642 单元格解析通过、ttk aclnn --validate L0/L1/L2 全 valid。
 tags: [task.testing, topic.implementation.debugging]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-17T04:06:11Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
+cann_versions: ["9.0.0-beta.2", "9.2.0"]
 ---
-# TTK CSV attributes 需 Python 字面量，JSON 被拒
 
+# TTK CSV attributes 需 Python 字面量，JSON 被拒
 
 ## 现象
 
@@ -234,3 +234,36 @@ EOF
 - 本会话未发生实际误诊。记录一个易混点：同一次冒烟输出里 `Input testcase file is not a valid zip file, switch to normal csv mode...` 是 INFO 级的 zip→csv 双格式探测回退，属正常日志，勿与后面的 ValueError 混为一谈（来源平台：950；证据等级：tool_observed）。
 
 
+
+## 后续增量（2026-09-17，并行策展批：生成源定位 ascendc-st-design + ast.literal_eval 坏实践 + 第二轨迹全量信号）
+
+同形逐元素 AdamW 优化器算子（4 输入张量 + 7 个标量属性，含布尔属性 maximize）的黑盒 TTK 用例生成轨迹（Ascend 950 环境，CANN 9.2.0 安装 + TTK ops-test-kit 源码仓）在同一契约上补四点：
+
+**1. 生成源定位与"重生成必须重跑"边界**：本轨迹的 JSON 风格 attributes 来自 ascendc-st-design 技能 `generate_test_cases.py` 的 `format_ttk_dict`（用 `json.dumps` 序列化属性字典，双引号键 + 小写 `true`/`false`）。产物侧归一化（`repr(json.loads(cell))`，与原卡 json.loads→repr 同型、幂等——已是 Python 字面量的单元格 `json.loads` 失败被跳过）**每次重新生成用例后必须重跑**：生成器会再次输出 JSON 格式（本轨迹在重生成 L1 后重新归一化了全部新单元格）。
+
+**2. 判别信号（int 形可解析）**：`{"lr": 0.001, "maximize": 0}`（int 0）可被 `process_dict` 正常解析——失败只出现在小写布尔字面量 `true`/`false`，可据此快速分诊是格式问题还是脏数据。
+
+**3. 相邻坏实践（同契约的字段族）**：TTK CSV 各字段普遍是 Python 表达式语义——`input_data_ranges` 里的裸 `nan`/`inf`/`+0`/`-0` token 是 Python 名而非字面量，用 `ast.literal_eval` 解析必报 `ast.Name` 类错误（验收侧聚合脚本踩过）；解析这类字段要么复用 TTK 自己的 field_parser（内部 eval + 正则替换），要么用受控 `eval`，不要用 `ast.literal_eval`。
+
+**4. 归一化手段取舍**：用 `repr(json.loads(cell))` 而不是字符串替换 `false→False`——`json.loads` 保证只接受合法 JSON 且布尔保型（`type(r['maximize']) == bool` 已验证）；裸字符串替换在键名/字符串值含 `false` 子串时会误伤。
+
+配套探针（不依赖完整 TTK 执行，直接用 TTK 解析器验证格式，可纳入固定验收步骤）：
+
+```python
+import sys
+sys.path.insert(0, "<ops-test-kit 路径>")
+from ttk.core_modules.testcase_manager.field_parser import process_dict
+samples = ['{"lr": 0.001, "maximize": true}', "{'lr': 0.001, 'maximize': True}"]
+for s in samples:
+    try:
+        process_dict(s); print("OK  ->", s)
+    except Exception as e:
+        print("FAIL->", type(e).__name__, e)
+```
+
+### 复现增量验证信号
+
+- 修复前探针：3 个样本中 2 个含 JSON 小写布尔的全部 `ValueError: Invalid value ... for dict`，int 形 `{"lr": 0.001, "maximize": 0}` 解析通过（来源平台：950；证据等级：tool_observed）。
+- 归一化验证：`repr(json.loads(orig))` 后同一单元格解析 OK，`maximize` 类型为 `bool`（来源平台：950；证据等级：tool_observed）。
+- 全量归一化后：L0 21/21、L0 超规格 1/1、L1 567/567、L1 超规格 53/53 attributes 单元格经 TTK `process_dict` 解析通过，TOTAL 642/642（来源平台：950；证据等级：tool_observed）。
+- 最终校验：`ttk aclnn --validate` L0 20/20 valid、L1 586/586 valid、L2 5/5 valid（"All testcases passed validation"）（来源平台：950；证据等级：tool_observed）。

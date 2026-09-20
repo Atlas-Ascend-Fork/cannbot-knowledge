@@ -90,13 +90,13 @@ for fmt in [0, 2, 29]:   # NCHW, ND, FRACTAL_NZ
 
 本卡为 `negative_result`（尝试 + 客观失败 + 边界），按形态合同不强制 repair AFTER。以下为本 trace 内实测（来源平台：a2）：
 
-- 大 shape FP32 dim=1 间歇失败 signature 稳定：`(512,2048) FP32 dim=1` 失败时 `Bad rows=[192]`、`Total bad elements: 64 out of 524288`，符合物理布局错位特征而非精度逻辑错误（来源平台:a2；证据等级:tool_observed）。
-- 同 shape 连续重跑 5 次：前 1~2 次 `max_diff=3.5~39`（FAIL），后 3~4 次 `max_diff=0.00000143`（PASS），失败率约 2%（来源平台:a2；证据等级:tool_observed）。
-- 探针 B：`before/after data_ptr` 相同，`same data_ptr: True` —— `_npu_format_cast` 对已分配张量只改格式元数据、不触发物理重排（来源平台:a2；证据等级:tool_observed）。
-- 探针 C 同 shape 重跑，不同 seed/不同分配轮次下 `Format 0(NCHW): max_diff=3.15`、`Format 2(ND): max_diff=8.10`、`Format 29(FRACTAL_NZ): max_diff=6.21`，另一次同 shape 重跑 `ACL_FORMAT_ND(2): max_diff=3.67`、`ACL_FORMAT_NCHW(0): max_diff=0.00000143 PASS` —— 结果与 NPU 内存分配器当轮选的物理布局有关，与元数据标签不完全一致，故间歇（来源平台:a2；证据等级:tool_observed）。
-- 格式探测确认 NPU 对 2D+ 大张量可能分配 `FRACTAL_NZ(29)`，ACL_FORMAT 枚举 `NCHW=0, NHWC=1, ND=2, FRACTAL_NZ=29`（来源平台:a2；证据等级:tool_observed）。
-- 小 shape kernel 计算逻辑逐元素正确：`(8,8)` 等小 shape `max_diff=0.00000000`，手工 trace 输出与期望一致，排除 kernel 计算逻辑根因（来源平台:a2；证据等级:artifact_verified）。
-- 绕过 OpCommand 直接 stream launch 使失败率从约 2% 升至约 77%，反证 OpCommand 的 stream 编排部分掩盖而非根治 bug（来源平台:a2；证据等级:tool_observed）。
+- 大 shape FP32 dim=1 间歇失败 signature 稳定：`(512,2048) FP32 dim=1` 失败时 `Bad rows=[192]`、`Total bad elements: 64 out of 524288`，符合物理布局错位特征而非精度逻辑错误（来源平台：a2；证据等级：tool_observed）。
+- 同 shape 连续重跑 5 次：前 1~2 次 `max_diff=3.5~39`（FAIL），后 3~4 次 `max_diff=0.00000143`（PASS），失败率约 2%（来源平台：a2；证据等级：tool_observed）。
+- 探针 B：`before/after data_ptr` 相同，`same data_ptr: True` —— `_npu_format_cast` 对已分配张量只改格式元数据、不触发物理重排（来源平台：a2；证据等级：tool_observed）。
+- 探针 C 同 shape 重跑，不同 seed/不同分配轮次下 `Format 0(NCHW): max_diff=3.15`、`Format 2(ND): max_diff=8.10`、`Format 29(FRACTAL_NZ): max_diff=6.21`，另一次同 shape 重跑 `ACL_FORMAT_ND(2): max_diff=3.67`、`ACL_FORMAT_NCHW(0): max_diff=0.00000143 PASS` —— 结果与 NPU 内存分配器当轮选的物理布局有关，与元数据标签不完全一致，故间歇（来源平台：a2；证据等级：tool_observed）。
+- 格式探测确认 NPU 对 2D+ 大张量可能分配 `FRACTAL_NZ(29)`，ACL_FORMAT 枚举 `NCHW=0, NHWC=1, ND=2, FRACTAL_NZ=29`（来源平台：a2；证据等级：tool_observed）。
+- 小 shape kernel 计算逻辑逐元素正确：`(8,8)` 等小 shape `max_diff=0.00000000`，手工 trace 输出与期望一致，排除 kernel 计算逻辑根因（来源平台：a2；证据等级：artifact_verified）。
+- 绕过 OpCommand 直接 stream launch 使失败率从约 2% 升至约 77%，反证 OpCommand 的 stream 编排部分掩盖而非根治 bug（来源平台：a2；证据等级：tool_observed）。
 
 ## 失效边界
 

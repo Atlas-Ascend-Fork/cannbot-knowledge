@@ -1,12 +1,12 @@
 ---
 type: "Runbook"
 title: "TilingData 须 host 与 kernel 各定义一份"
-description: "新增 TilingData struct 只写进 kernel 侧 struct.h 时 host 编译报 does not name a type；须在 host 可见头内同 namespace 重新定义一份，字段与 kernel 侧逐字一致，仿 SIMT 双定义模式。"
+description: "新增 TilingData struct 只写进 kernel 侧 struct.h 时 host 编译报 does not name a type；须在 host 可见头内同 namespace 重新定义一份，字段与 kernel 侧逐字一致，仿 SIMT 双定义模式。该机制同样适用于常量：host tiling 引用仅 kernel 头定义的常量（如 BLOCK_BYTES）报 not declared，须在 host 侧 tiling 头自定义同语义常量。"
 tags: ["task.debugging", "topic.implementation.operator_registration", "topic.tiling"]
 status: stable
 sources: []
 created_at: "2026-08-18T08:28:30Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T00:58:06Z"
 platforms: ["950"]
 ---
 
@@ -31,7 +31,7 @@ platforms: ["950"]
 - **验证平台与 CANN 版本**：Ascend950（arch35），`bash build.sh --soc=ascend950 --ophost --noexec -j8`。
 - **适用粒度**：`operator_family`——任何"新 tiling 路径引入新 struct、且 struct 被同时用于 host tiling 计算与 kernel 计算"的算子都适用，不限于 pooling。
 - **路线优先级**：`recommended_fastpath`——host/kernel 双定义是既有 SIMT 路径的标准模式，新路径照做即可。
-- **不适用或未验证场景**：若新 struct 只在 kernel 侧使用、host 不 `GetTilingData` 它，则无需在 host 头定义；若能改公共 host 头 `pool3d_grad_struct_common.h` 也可只在那里定义一次（本 trace 该公共头跨算子共享、不能改）。a2/a3 未构建，未验证。
+- **不适用或未验证场景**：若新 struct 只在 kernel 侧使用、host 不 `GetTilingData` 它，则无需在 host 头定义；若能改公共 host 头 `pool3d_grad_struct_common.h` 也可只在那里定义一次（本开发会话 该公共头跨算子共享、不能改）。a2/a3 未构建，未验证。
 
 ## 根因
 
@@ -41,7 +41,45 @@ AscendC 算子的 TilingData struct 需要同时被两个编译器看到：
 
 kernel 侧 `max_pool3d_grad_struct.h` 含 kernel-only 构造，host 翻译单元不能 include 它。因此一个被 host 与 kernel 共用的 struct 必须**在两处分别定义**：一次在 host 可见的头（如 `pool3d_grad_struct_common.h` 或 host tiling 类头），一次在 kernel 可见的头（`max_pool3d_grad_struct.h`）。两边定义在同一 `namespace Pool3DGradNameSpace` 内、字段完全一致，靠**翻译单元隔离**避免重定义——host 翻译单元只看到 host 那份，kernel 翻译单元只看到 kernel 那份。
 
-既有 SIMT 路径正是此模式：`MaxPool3DGradSimtTilingData` 同时存在于 `pool3d_grad_struct_common.h`（host）与 `max_pool3d_grad_struct.h`（kernel）。本 trace 的新 struct 只写进了 kernel 那份，host 翻译单元看不到，`GetTilingData<MaxPool3DGradSeparableTilingData>` 模板实例化时 `T` 不是完整类型，遂报 `does not name a type`。
+既有 SIMT 路径正是此模式：`MaxPool3DGradSimtTilingData` 同时存在于 `pool3d_grad_struct_common.h`（host）与 `max_pool3d_grad_struct.h`（kernel）。本开发会话 的新 struct 只写进了 kernel 那份，host 翻译单元看不到，`GetTilingData<MaxPool3DGradSeparableTilingData>` 模板实例化时 `T` 不是完整类型，遂报 `does not name a type`。
+
+## 增量：常量的同机制复现（BLOCK_BYTES 未声明，独立 trace，GroupNorm 算子，Ascend950PR + CANN 9.1.0）
+
+同一"host/kernel 翻译单元隔离"机制对**常量**同样成立：op_host/arch35 的 TilingFunc 中用 `BLOCK_BYTES`（32B 对齐块常量）计算对齐粒度，而该常量只在 kernel 侧实现头 `op_kernel/arch35/<op>.h` 里定义（`constexpr uint32_t BLOCK_BYTES = 32;`），op_host 的 tiling.cpp 不包含 kernel 实现头（也不应包含——kernel 头依赖 `kernel_operator.h` 等 kernel 侧编译环境）。构建报：
+
+```
+/workspace/.../op_host/arch35/bench_no_harness_group_norm_tiling.cpp:85:29:
+  error: 'BLOCK_BYTES' was not declared in this scope
+   85 |     uint32_t elemPerBlock = BLOCK_BYTES / calcTypeSize; // 32/4 = 8
+```
+
+修复：在 host 侧 tiling 头补同语义常量（tiling.cpp 使用处不变）：
+
+```cpp
+namespace optiling {
+
+// 内存块大小 (字节)
+constexpr uint32_t BLOCK_BYTES = 32;
+```
+
+host tiling.cpp 中的使用处（保持不变，函数级节选自 TilingFunc 对齐计算段）：
+
+```cpp
+    // 5. 对齐计算 (中间计算用 fp32)
+    uint32_t typeSize = ge::GetSizeByDataType(dtype);
+    // 中间计算统一 fp32, 对齐按 fp32 计算
+    constexpr uint32_t calcTypeSize = 4; // sizeof(float)
+    uint32_t elemPerBlock = BLOCK_BYTES / calcTypeSize; // 32/4 = 8
+    uint64_t groupSizeAlign = AlignUp(static_cast<uint64_t>(groupSize), elemPerBlock);
+    uint64_t channelsPerGroupAlign = AlignUp(static_cast<uint64_t>(channelsPerGroup), elemPerBlock);
+```
+
+设计取舍：在 host 头"再定义一份"而不是把 kernel 头 include 进 host——kernel 实现头依赖 kernel 侧环境，host 编译单元引入会带来更多不可用符号；两个编译单元各自持有同名常量、以注释互指语义，是最小改动。备选（未采用）：host 侧用 `Ops::Base::GetUbBlockSize` 从平台信息动态取块大小。语义要点：该架构一个对齐块 32 字节，fp32（4B）时 8 元素/块；kernel 侧的 `FP32_ELEM_PER_BLOCK = BLOCK_BYTES / FP32_SIZE` 与 host 侧 `elemPerBlock` 必须同口径，否则 tiling 对齐值与 kernel buffer 布局错位。
+
+增量验证信号：
+
+- 修复前：`bash build.sh --soc=ascend950 -j8` host 编译报 `error: 'BLOCK_BYTES' was not declared in this scope`（tiling.cpp:85）（来源平台：950；证据等级：tool_observed）。
+- 修复后：同一命令重跑，host 侧编译通过（后续报错转移到 kernel 侧 `sqrtf`，属另一独立根因）；最终 kernel 3 个 `.o` 与 `custom_opp_ubuntu_x86_64.run` 包生成，`[INFO] Build completed successfully!`（来源平台：950；证据等级：tool_observed）。
 
 ## 判别方法
 
@@ -60,7 +98,7 @@ kernel 侧 `max_pool3d_grad_struct.h` 含 kernel-only 构造，host 翻译单元
 
 ## 预防
 
-- 新增 TilingData struct 时，同步在 host 可见头与 kernel 可见头**各定义一份**，字段顺序/类型逐字一致；优先放在算子既有的 host struct 汇总头（若该头非跨算子共享、可改）。若公共 host 头不可改（如本 trace 的 `pool3d_grad_struct_common.h` 被多算子共用），则把 host 那份定义放进新 tiling 类自己的 host 头。
+- 新增 TilingData struct 时，同步在 host 可见头与 kernel 可见头**各定义一份**，字段顺序/类型逐字一致；优先放在算子既有的 host struct 汇总头（若该头非跨算子共享、可改）。若公共 host 头不可改（如本开发会话 的 `pool3d_grad_struct_common.h` 被多算子共用），则把 host 那份定义放进新 tiling 类自己的 host 头。
 - host 头 include 列表里若出现 `#include "../../op_kernel/..."`，视为危险信号——kernel 头通常带 kernel-only 构造，host 翻译单元不能吃。
 - 用 `GetTilingData<T>()` 前，确认 `T` 在 host 翻译单元是完整类型（不只是前向声明）。
 
@@ -71,8 +109,8 @@ kernel 侧 `max_pool3d_grad_struct.h` 含 kernel-only 构造，host 翻译单元
 
 ## 验证信号
 
-- host 编译报 `'MaxPool3DGradSeparableTilingData' does not name a type` / `was not declared in this scope` / `no matching function for call to 'GetTilingData<<expression error>>()'`，指向 host tiling 类头的 `GetTilingData` 调用点（来源平台:950；证据等级:tool_observed）。
-- 改为 host 头内同 namespace 直接定义 struct、去掉对 kernel 侧 struct 头的 include 后，host 库构建成功：`[100%] Built target ophost_nn`（来源平台:950；证据等级:tool_observed）。
+- host 编译报 `'MaxPool3DGradSeparableTilingData' does not name a type` / `was not declared in this scope` / `no matching function for call to 'GetTilingData<<expression error>>()'`，指向 host tiling 类头的 `GetTilingData` 调用点（来源平台：950；证据等级：tool_observed）。
+- 改为 host 头内同 namespace 直接定义 struct、去掉对 kernel 侧 struct 头的 include 后，host 库构建成功：`[100%] Built target ophost_nn`（来源平台：950；证据等级：tool_observed）。
 
 未上板运行：本卡只证明"host 翻译单元可见 struct、host 库链接成功"，不证明运行正确性。
 

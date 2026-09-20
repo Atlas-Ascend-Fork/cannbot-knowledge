@@ -42,10 +42,10 @@ python3 test.py --lib ./build/libtorch_adapter.so
 
 ## 验证信号
 
-- 基线（VSEL_CMPMASK_SPR）：PyTorch ST 578 用例 116 失败，混合分支误选（来源平台:950；证据等级:tool_observed）
-- 改 MODE 为 VSEL_TENSOR_TENSOR_MODE（仅改 1 行常量）：PyTorch ST 575/578 通过（来源平台:950；证据等级:tool_observed）
-- C++ ST（`bash run.sh --real`）：57/57 通过（来源平台:950；证据等级:tool_observed）
-- L0 功能用例（`python3 test.py --level L0`）：51/51 通过（来源平台:950；证据等级:tool_observed）
+- 基线（VSEL_CMPMASK_SPR）：PyTorch ST 578 用例 116 失败，混合分支误选（来源平台：950；证据等级：tool_observed）
+- 改 MODE 为 VSEL_TENSOR_TENSOR_MODE（仅改 1 行常量）：PyTorch ST 575/578 通过（来源平台：950；证据等级：tool_observed）
+- C++ ST（`bash run.sh --real`）：57/57 通过（来源平台：950；证据等级：tool_observed）
+- L0 功能用例（`python3 test.py --level L0`）：51/51 通过（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

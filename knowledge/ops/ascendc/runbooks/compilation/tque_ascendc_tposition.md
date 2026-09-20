@@ -1,12 +1,12 @@
 ---
 type: "Runbook"
 title: "TQue 位置参数须用 AscendC::TPosition 枚举"
-description: "dav-3510/CANN 9.1.0 上用 ASCEND_TPOSITION_VECIN/VECOUT 宏声明 TQue 模板位置参数，编译报 use of undeclared identifier；判别后改用 AscendC::TPosition::VECIN/VECOUT 作用域枚举可消除该组错误。"
+description: "dav-3510/CANN 9.1.0 上用 ASCEND_TPOSITION_VECIN/VECOUT 宏声明 TQue 模板位置参数，编译报 use of undeclared identifier；判别后改用 AscendC::TPosition::VECIN/VECOUT 作用域枚举可消除该组错误。复现增量：TBuf 变体实测闭合——TBuf<VECCALC> 裸枚举成员名同样报 undeclared identifier，须写 TBuf<TPosition::VECCALC>（即使有 using namespace AscendC 也要完整限定）。"
 tags: ["task.debugging", "topic.implementation.api_layer.basic_api"]
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T04:17:42Z"
 platforms: ["950"]
 ---
 
@@ -47,5 +47,37 @@ build 以非零退出码（Error 2）结束。
 
 ## 失效边界
 
-- 仅 dav-3510 / CANN 9.1.0 实测；旧版 CANN 是否提供 `ASCEND_TPOSITION_*` 宏未在本 trace 验证，迁移到其他版本前以目标版本头文件为准。
-- 本卡只覆盖 TQue 位置参数命名；`TBuf<AscendC::TPosition::VECCALC>` 的位置参数是否同属该枚举未在本 trace 独立运行期验证。
+- 仅 dav-3510 / CANN 9.1.0 实测；旧版 CANN 是否提供 `ASCEND_TPOSITION_*` 宏未在本开发会话 验证，迁移到其他版本前以目标版本头文件为准。
+- 本卡只覆盖 TQue 位置参数命名；`TBuf<AscendC::TPosition::VECCALC>` 的位置参数是否同属该枚举未在本开发会话 独立运行期验证。
+
+## 后续增量（2026-09-17，并行策展批：TBuf 裸枚举成员名变体实测闭合）
+
+另一独立轨迹（Transpose 算子 kernel 由 TQue 改写为 TBuf 方案，Ascend950PR/arch35，CANN 9.1.0）闭合了上方失效边界的第二项：把缓冲区位置参数写成裸枚举成员名同样报 undeclared identifier，须完整限定。
+
+修复前（裸枚举成员名，编译失败）：
+
+```cpp
+private:
+    TPipe pipe;
+    TBuf<VECCALC> tmpBuf;
+```
+
+修复后（限定枚举名，编译通过）：
+
+```cpp
+private:
+    TPipe pipe;
+    TBuf<TPosition::VECCALC> tmpBuf;
+```
+
+根因与原卡同族：`VECCALC` 是 `TPosition` 枚举的成员，不在 kernel 代码的直接作用域内——**即使源文件里有 `using namespace AscendC;`，枚举成员仍需 `TPosition::` 前缀**。同文件 `TQue<QuePosition::VECIN, BUFFER_NUM>` 的带限定写法全程可编译——TQue 与 TBuf 的位置枚举暴露口径不同（`QuePosition`/`TPosition`），部分示例里 TQue 裸写 `VECIN` 的写法不能类推到 TBuf。
+
+### 复现增量验证信号
+
+- 修复前：`TBuf<VECCALC>` 声明使构建报 `transpose.h:39:10: error: use of undeclared identifier 'VECCALC'`（同错重复 5 次），gmake Error 2（来源平台：950；证据等级：tool_observed）。
+- 修复后：改为 `TBuf<TPosition::VECCALC>` 后 `Build completed successfully!`，.run 包生成、部署并进入 ST 运行（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量坏实践
+
+- 依照 `TQue<VECIN>` 的直觉（部分示例确实裸写 VECIN）类推到 TBuf 裸写 `VECCALC`——两个 API 的枚举暴露方式不一致，不能互推。
+- 报 `use of undeclared identifier` 且标识符全大写、形如位置名时，先查枚举限定而不是找 include。

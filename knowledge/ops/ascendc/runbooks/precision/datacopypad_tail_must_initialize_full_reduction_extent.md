@@ -181,9 +181,9 @@ __aicore__ inline void CopyIn(int64_t r)
 
 来源说明：这条知识来自 Ascend950 上一次 RMSNorm kernel 开发，先在真实 NPU 参数化测试中观察到小维集中失败，再修改 `KernelRmsNorm<T>::Init` 的对齐与补零公式，并用同一远端 helper 重新构建和测试。
 
-- 修复前 NPU pytest 为 20/29 通过，失败只集中于小归一化维，部分 `max_rel` 接近 1 且 BF16 出现 NaN（来源平台: 950；证据等级: tool_observed）。
-- 改为 dtype 感知 32B 对齐后，远端构建输出 `[100%] Built target op_rms_norm`，NPU pytest 为 29/29 通过（来源平台: 950；证据等级: tool_observed）。
-- 包含该修复的终版实现通过 cann-bench 20/20 case 精度评测，并在清理远端 build 目录后再次完成干净构建与 29/29 NPU pytest（来源平台: 950；证据等级: tool_observed）。
+- 修复前 NPU pytest 为 20/29 通过，失败只集中于小归一化维，部分 `max_rel` 接近 1 且 BF16 出现 NaN（来源平台：950；证据等级：tool_observed）。
+- 改为 dtype 感知 32B 对齐后，远端构建输出 `[100%] Built target op_rms_norm`，NPU pytest 为 29/29 通过（来源平台：950；证据等级：tool_observed）。
+- 包含该修复的终版实现通过 cann-bench 20/20 case 精度评测，并在清理远端 build 目录后再次完成干净构建与 29/29 NPU pytest（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

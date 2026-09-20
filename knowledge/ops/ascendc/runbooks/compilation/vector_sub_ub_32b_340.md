@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.alignment", "topic.data_movement.memory_access"]
 status: stable
 sources: []
 created_at: "2026-08-18T08:44:04Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-09-17T01:47:15Z'
 platforms: ["950"]
 ---
 
@@ -14,7 +14,7 @@ platforms: ["950"]
 
 ## 现象
 
-在 Ascend950 (arch35) 上为稀疏算子（aclsparseCsr2coo）做 Kernel 侧向量化重构（用 `AscendC::Sub`/`Subs` Level 2 接口替代循环内 `GetValue` 逐元素读）时，第一版向量化方案编译通过，但运行单测 `L0_4x4_z` 立即失败：gtest 报错误码 `507035`（AICore 错误）。查 plog 日志（`/root/ascend/log/debug/plog/plog-*.log`）得到精确报错：
+在 Ascend950 (arch35) 上为稀疏算子（aclsparseCsr2coo）做 Kernel 侧向量化重构（用 `AscendC::Sub`/`Subs` Level 2 接口替代循环内 `GetValue` 逐元素读）时，第一版向量化方案编译通过，但运行单测 `L0_4x4_z` 立即失败：gtest 报错误码 `507035`（AICore 错误）。查 plog 日志（`~/ascend/log/debug/plog/plog-*.log`）得到精确报错：
 
 ```
 errcode:(340) errorStr: The instruction access UB address is not aligned. subErrType: 0x4.
@@ -37,7 +37,7 @@ errcode:(340) errorStr: The instruction access UB address is not aligned. subErr
 
 **可执行探针**：
 
-1. 定位错误：grep plog 日志（`grep -iE "csr2coo|ERROR|aic.*error|507035|address" /root/ascend/log/debug/plog/plog-*.log`）取 `errcode` 与 `errorStr`，确认是否为 `340 The instruction access UB address is not aligned`。
+1. 定位错误：grep plog 日志（`grep -iE "csr2coo|ERROR|aic.*error|507035|address" ~/ascend/log/debug/plog/plog-*.log`）取 `errcode` 与 `errorStr`，确认是否为 `340 The instruction access UB address is not aligned`。
 2. 审查算术调用源：grep Kernel 代码中所有 `Sub(` / `Subs(` / `Add(` / `Adds(` / `Mul(` / `Muls(` 等 Vector 二元/标量算术 Level 2 调用，检查每个调用的 `src0` / `src1` / `dst` 是否为 `LocalTensor::operator[]` 的**非零偏移切片**（如 `rpLocal[1]`、`buf[2]`）。
 3. 算对齐：对每个非零偏移切片，计算 `offset × sizeof(T) mod 32`（int32_t 时 sizeof=4）；若结果 ≠ 0，则该切片起始地址 = TBuf 基址 + 非零偏移，不满足 32B 对齐，即为根因。确认 `TBuf`/`TQue` 的 `InitBuffer` 分配的基址本身 32B 对齐（`Get` / `GetWithOffset(…, 0)` 返回的起始地址对齐），问题只在 `operator[]` 偏移。
 4. 夹逼验证：把可疑 `Sub` 调用临时注释掉只留 `Subs`（或反向），重跑单测；若错误消失则确认是 `Sub` 的非对齐源触发。
@@ -64,12 +64,78 @@ errcode:(340) errorStr: The instruction access UB address is not aligned. subErr
 
 ## 验证信号
 
-- 运行 `L0_4x4_z` 单测：第一版 `Sub(rpLocal[1])` 方案失败，错误码 `507035`（AICore 错误）（来源平台:950；证据等级:tool_observed）
-- plog grep 命中 `errcode:(340) errorStr: The instruction access UB address is not aligned. subErrType: 0x4.`（来源平台:950；证据等级:tool_observed）
-- 改用两次 DataCopyPad 对齐方案后全部测试：`[==========] 55 tests from 2 test suites ran. (61159 ms total) [  PASSED  ] 55 tests.`（来源平台:950；证据等级:tool_observed）
+- 运行 `L0_4x4_z` 单测：第一版 `Sub(rpLocal[1])` 方案失败，错误码 `507035`（AICore 错误）（来源平台：950；证据等级：tool_observed）
+- plog grep 命中 `errcode:(340) errorStr: The instruction access UB address is not aligned. subErrType: 0x4.`（来源平台：950；证据等级：tool_observed）
+- 改用两次 DataCopyPad 对齐方案后全部测试：`[==========] 55 tests from 2 test suites ran. (61159 ms total) [  PASSED  ] 55 tests.`（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 
 - **a2 / a3 平台**：未验证，推断可迁移（Vector 指令 32B 对齐是 Ascend 系列共性约束，但具体错误码可能不同）；迁移时需重新跑全部测试确认。
 - **非 int32_t dtype**：对齐要求仍为 32B，偏移切片的非对齐条件变为 `offset × sizeof(T) mod 32 ≠ 0`；int16_t / half 偏移 1 个元素 = 2 字节，2 mod 32 ≠ 0 同样触发。
 - **Cube 管线**：本卡只覆盖 Vector 管线（Sub/Subs），Cube 管线对齐约束不在本卡范围。
+## 复现增量：三例同约束扩展（行内半区 Muls / 树归约 data[half] / 逐元素 Cast dst）
+
+本卡原判别方法覆盖"Sub/Subs 差分的 operator[] 非零偏移源"。另一独立轨迹并入三个不同 trace 的同根因实例，把约束面扩展到"任何向量 API 的非 32B 对齐源/目的子张量"：
+
+**实例一（RoPE rotate_half 行内半区偏移，dav-3510/CANN 9.2.0）**：interleaved 布局下逐行 `Muls(rhTensor[i*D], inTensor[i*D+H], -1, H)` 与 `Muls(rhTensor[i*D+H], inTensor[i*D], 1, H)`——后半起点偏移 `i*D+H` 元素在 fp32 H=2 时 ≡ 2 (mod 4)，永非 8 的倍数，逐行每次 Muls 都在非对齐地址上执行。通过/崩溃按 `H×sizeof(T)` 是否 32B 倍数精确分界（D=128 fp16 H=64→128B 通过；D=4/2/6 全崩）。修复为 planar 半区分解（利用 cos/sin tile 性质把 rotate_half 代数消解为两个连续平面缓冲的线性组合，向量 API 全部从 TBuf 基址出发）：
+
+```cpp
+    // 修复后（planar 半区分解 + flat 向量链，节选）
+    AscendC::Muls(ns, s, ComputeT(-1.0), static_cast<int32_t>(totalElems));   // ns = -sinH
+    AscendC::Mul(o1, q1, c, static_cast<int32_t>(totalElems));               // out1 = q1*c
+    uint16_t rep = static_cast<uint16_t>(CeilDivU32(totalElems, kVecLen));
+    asc_vf_call<MulAddVF<ComputeT>>(
+        (__ubuf__ ComputeT*)o1.GetPhyAddr(), (__ubuf__ ComputeT*)q2.GetPhyAddr(),
+        (__ubuf__ ComputeT*)ns.GetPhyAddr(), totalElems, kVecLen, rep);      // + q2*(-s)
+```
+
+该实例同时澄清：**Level 0（mask/repeatParams）跨步形式同样不豁免对齐约束**——约束针对访问地址本身；行 pad 到 32B 也只解决行起点不解决半区起点。
+
+**实例二（Max 树归约 data[half]，arch35/CANN 9.1.0）**：int32 AR 路径用 `Max<int32_t>(data, data, data[half], pairs)` 两两归并，`half = (n+1)/2` 逐轮折半——n=16→half=8（32B 对齐安全）→n=8→half=4（16B）→…→n=2→half=1（4B 偏移必错）。plog 566 处同码同 PC、多核同时报（系统性指令级问题，非数据相关）。修复为标量 GetValue 循环归约（逐元素读无对齐要求；每行归约结果只消费 1 次、chunk 长度千级，标量代价可忽略）：
+
+```cpp
+static __aicore__ inline int32_t ReduceMaxTreeInt32(
+    LocalTensor<int32_t>& data, uint32_t count)
+{
+    // Scalar GetValue-based reduction: avoids non-32B-aligned data[half] access
+    // in vectorized Max-tree (UB alignment error 340 on arch35).
+    int32_t maxVal = data.GetValue(0);
+    for (uint32_t i = 1; i < count; i++) {
+        int32_t val = data.GetValue(i);
+        if (val > maxVal) {
+            maxVal = val;
+        }
+    }
+    return maxVal;
+}
+```
+
+**实例三（逐元素 Cast 目的地址，arch35/CANN 9.1.0）**：FP16/BF16 none 模式逐元素 `Cast(outLocal[outBufIdx], floatSrc, RoundMode::CAST_ROUND, 1)`——目的地址随 `outBufIdx++` 递增，FP16 每元素 2 字节，写到奇数下标时目的地址仅 2 字节对齐，大 shape 必跨到非对齐下标触发 507035（错误组合画像：仅"窄 dtype + 逐元素输出 + 大 N"崩，同 shape 的 FP32/mean/sum 都过——FP32 SetValue 直写与单标量 OutputScalar 天然对齐）。修复为 FP32 累积缓冲 + 满批对齐 Cast（`outBatchSize = 32/sizeof(T)`，FP16 为 16，整批恰 32B 对齐，Cast 的 src/dst 都落在各自缓冲位置 0）：
+
+```cpp
+        // FP16/BF16: accumulate in float buffer, batch Cast when full
+        auto floatAccum = floatOutBuf.Get<float>();
+        floatAccum.SetValue(outBufIdx, lossVal);
+        ...
+        if (outBufIdx == outBatchSize_) {
+            // Cast float buffer → output buffer (both at position 0, 32B aligned)
+            Cast(outLocal, floatAccum, RoundMode::CAST_ROUND,
+                 static_cast<int32_t>(outBatchSize_));
+            // V → MTE3 sync (TBuf doesn't auto-sync)
+            event_t eventVToMTE3 = static_cast<event_t>(GetTPipePtr()->FetchEventID(HardEvent::V_MTE3));
+            SetFlag<HardEvent::V_MTE3>(eventVToMTE3);
+            WaitFlag<HardEvent::V_MTE3>(eventVToMTE3);
+            outCopyParams.blockLen = outBatchSize_ * sizeof(T);
+            DataCopyPad(outputGM[outOffset], outLocal, outCopyParams);
+            outOffset += outBatchSize_;
+            outBufIdx = 0;
+        }
+```
+
+**独立 trace 新增验证信号**（三个不同 trace，均为 tool_observed）：
+
+- RoPE 实例：修复前 ST 10/11 数值用例 `ACL error 507035`，plog `errcode:(340) The address for VEC to access UB is not aligned. subErrType: 0x4`、`Vector Core kernel execution failed, retCode=0x31`；唯一通过用例 D=128 fp16（H×sizeof=128B 对齐）；planar 分解后同套件不再出现 340（该轮剩余失败转为 MTE3 对齐问题，另卡；再修后 12/12 PASS）（来源平台：950；证据等级：tool_observed）。
+- 树归约实例：int32 AR 用例 100% 崩、float 用例不崩（走 ReduceMax Level 2 不经 Max 树）；plog 566 处 `error code = 340` 多核同一 PC；标量归约替换后 int32 AR 全部 bitwise-equal，ST 由 22/101 升至 75/101，最终 101/101（来源平台：950；证据等级：tool_observed）。
+- Cast 实例：仅"FP16/BF16 + none + 大 N"组合 507035（如 (1024,2048) FP16 none），同 shape FP32/mean/sum 全过；改批量 Cast 后同用例 PASS（MERE=1.79e-04 < 阈值 9.77e-04），全量 105/105 通过（来源平台：950；证据等级：tool_observed）。
+
+**独立 trace 扩展边界**：树归约这类"half 逐轮变化"的模式天然不安全（尾轮 half=1 必然非 8 倍数），直接标量收尾或按对齐块设计；dtype 对齐阈值按 `32/sizeof(T)` 换算（fp32=8、fp16/bf16=16、int32=8、int64=4）。逐元素 Cast 的"小 N 不崩"是概率性暴露（N 不足时写位置可能恰好全在对齐下标内），review 层面一律禁止 `Cast(可变下标目的地址, …, 1)` 形态。

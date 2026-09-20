@@ -97,9 +97,9 @@ Last mismatch: index 98
 
 ## 验证信号
 
-- 非对齐 shape dim0=100 FAILED (Max diff=0.66015625)、dim0=1000 FAILED (Max diff=2.857421875)、dim0=1 FAILED (Max diff=0.6572265625)、dim0=513 FAILED (Max diff=0.267639)、dim0=1025 FAILED (Max diff=0.559570)；32B 倍数字节量 shape（32/64/128/256/512/1024/2048/4096）全 PASSED（来源平台:a2；证据等级:tool_observed）
-- dim0=100 逐元素对比：index 96-99 被写成 0，前 96 元素正确，`100 - 96 = 4` 个元素 = 8 字节 = 200B − 192B 丢弃，首 mismatch=96 = `floor(200/32)*32/2`（来源平台:a2；证据等级:tool_observed）
-- 缺陷存在于源码：`op_kernel/relu_custom_kernel.asc` 的 `KernelRelu::CopyIn`/`KernelRelu::CopyOut` 用 `DataCopy(xLocal, xGm, count)` / `DataCopy(zGm, zLocal, count)`，`count` 为元素数、未传 `blockLen`（来源平台:a2；证据等级:artifact_verified）
+- 非对齐 shape dim0=100 FAILED (Max diff=0.66015625)、dim0=1000 FAILED (Max diff=2.857421875)、dim0=1 FAILED (Max diff=0.6572265625)、dim0=513 FAILED (Max diff=0.267639)、dim0=1025 FAILED (Max diff=0.559570)；32B 倍数字节量 shape（32/64/128/256/512/1024/2048/4096）全 PASSED（来源平台：a2；证据等级：tool_observed）
+- dim0=100 逐元素对比：index 96-99 被写成 0，前 96 元素正确，`100 - 96 = 4` 个元素 = 8 字节 = 200B − 192B 丢弃，首 mismatch=96 = `floor(200/32)*32/2`（来源平台：a2；证据等级：tool_observed）
+- 缺陷存在于源码：`op_kernel/relu_custom_kernel.asc` 的 `KernelRelu::CopyIn`/`KernelRelu::CopyOut` 用 `DataCopy(xLocal, xGm, count)` / `DataCopy(zGm, zLocal, count)`，`count` 为元素数、未传 `blockLen`（来源平台：a2；证据等级：artifact_verified）
 
 ## 失效边界
 

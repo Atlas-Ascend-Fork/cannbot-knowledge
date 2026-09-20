@@ -71,9 +71,9 @@ PyPTO decode 算子 perf-analyze 报告 AICore E2E 超目标，且同时满足�
 
 本段只收录本 trace 内 `tool_observed` / `artifact_verified` 信号；tile-shape 失败路线编辑原文被 redact（`_see below_`）、`device_sched_mode` 独立改善为 agent 自述，均不列入。
 
-- 基线 perf-analyze（seq 445）：平均核心利用率 93.25%、平均气泡率 4.05%、负载均衡度 98.61%、AICore E2E 897.45us、0 个性能瓶颈（来源平台:950；证据等级:tool_observed）
-- 内核源码（seq 272 file_read / seq 572 diff）`LOOP_L4_s2_SA` 声明 `unroll_list={1}`，`bn_per_batch=4`，4 次 s2 迭代串行展开（来源平台:950；证据等级:artifact_verified）
-- 并行化后 perf-analyze（seq 523）：平均核心利用率 97.17%、平均气泡率 1.20%、AICore E2E 323.33us、0 瓶颈——反向验证"串行迭代链为 E2E 主导"归因（来源平台:950；证据等级:tool_observed）
+- 基线 perf-analyze（seq 445）：平均核心利用率 93.25%、平均气泡率 4.05%、负载均衡度 98.61%、AICore E2E 897.45us、0 个性能瓶颈（来源平台：950；证据等级：tool_observed）
+- 内核源码（seq 272 file_read / seq 572 diff）`LOOP_L4_s2_SA` 声明 `unroll_list={1}`，`bn_per_batch=4`，4 次 s2 迭代串行展开（来源平台：950；证据等级：artifact_verified）
+- 并行化后 perf-analyze（seq 523）：平均核心利用率 97.17%、平均气泡率 1.20%、AICore E2E 323.33us、0 瓶颈——反向验证"串行迭代链为 E2E 主导"归因（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

@@ -238,10 +238,10 @@ at::Tensor scatter(const at::Tensor& data, int64_t dim,
 
 来源是在 Ascend 950 上对 Scatter 完整 pytest 的 shape 聚类定位：先确认全部失败只落在一个 shape 族，再修正 Host shape 契约与展开计数。
 
-- 修复前完整 pytest 为 `323 passed, 23 failed, 30 skipped`，23 个失败全部属于同一 shape 族的 dtype×reduce 组合（来源平台: 950；证据等级: tool_observed）。
-- 修复后该目标 shape 的定向测试 9/9 通过（来源平台: 950；证据等级: tool_observed）。
-- 修复后完整 pytest 为 `346 passed, 30 skipped`，无失败（来源平台: 950；证据等级: tool_observed）。
-- 后续标准评测 20/20 精度通过（来源平台: 950；证据等级: tool_observed）。
+- 修复前完整 pytest 为 `323 passed, 23 failed, 30 skipped`，23 个失败全部属于同一 shape 族的 dtype×reduce 组合（来源平台：950；证据等级：tool_observed）。
+- 修复后该目标 shape 的定向测试 9/9 通过（来源平台：950；证据等级：tool_observed）。
+- 修复后完整 pytest 为 `346 passed, 30 skipped`，无失败（来源平台：950；证据等级：tool_observed）。
+- 后续标准评测 20/20 精度通过（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

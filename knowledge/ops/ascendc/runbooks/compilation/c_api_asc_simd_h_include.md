@@ -138,10 +138,10 @@ target_compile_options(demo PRIVATE
 
 本卡验证信号仅取 trace 内 `tool_observed`/`artifact_verified` 事件，不含 agent 口述数值。
 
-- 编译报 `fatal error: 'instr_impl/npu_arch_3510/vector_datamove_impl/asc_set_gm2ub_pad_impl.h' file not found`，调用栈顶部为 `asc/include/c_api/asc_simd.h:44` → `vector_datamove.h:26` → `asc/impl/c_api/instr_impl/npu_arch_3510/vector_datamove_impl.h:50`（来源平台:950；证据等级: tool_observed）
-- CANN 目录结构 `asc -> x86_64-linux/asc`（符号链接），其下并列 `impl/` 与 `include/` 两子目录（来源平台:950；证据等级: tool_observed）
-- 官方 mmad 样例 `CMakeLists.txt` 使用 `include_directories("${ASCEND_HOME}/asc/")` 可编译含 `asc_simd.h` 的 `.asc`（来源平台:950；证据等级: artifact_verified）
-- 修正 include 配置后 `./demo` 运行 `EXIT CODE: 0`（编译/链接通过且可执行）（来源平台:950；证据等级: tool_observed）
+- 编译报 `fatal error: 'instr_impl/npu_arch_3510/vector_datamove_impl/asc_set_gm2ub_pad_impl.h' file not found`，调用栈顶部为 `asc/include/c_api/asc_simd.h:44` → `vector_datamove.h:26` → `asc/impl/c_api/instr_impl/npu_arch_3510/vector_datamove_impl.h:50`（来源平台：950；证据等级：tool_observed）
+- CANN 目录结构 `asc -> x86_64-linux/asc`（符号链接），其下并列 `impl/` 与 `include/` 两子目录（来源平台：950；证据等级：tool_observed）
+- 官方 mmad 样例 `CMakeLists.txt` 使用 `include_directories("${ASCEND_HOME}/asc/")` 可编译含 `asc_simd.h` 的 `.asc`（来源平台：950；证据等级：artifact_verified）
+- 修正 include 配置后 `./demo` 运行 `EXIT CODE: 0`（编译/链接通过且可执行）（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

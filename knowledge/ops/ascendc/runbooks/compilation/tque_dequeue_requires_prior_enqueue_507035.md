@@ -255,17 +255,17 @@ TQue 的 `DeQue` 是消费者动作，必须对应此前生产者对同一队列
 
 来源是一次 Ascend950 Flash kernel 的最终评测与大规模故障隔离；修复前后均通过远端 helper 在同一物理平台执行。
 
-- 修复前 cann-bench 首轮报告无 correctness pass，首个失败包含 `device error type 3, error code is 507035`（来源平台: 950；证据等级: tool_observed）。
-- 故障隔离中，大规模 float32 路径通过而大规模 fp16 路径失败，锁定 B16 专属 queue/Cast 分支（来源平台: 950；证据等级: tool_observed）。
-- 修复后构建目标成功，pytest 为 `52 passed`（来源平台: 950；证据等级: tool_observed）。
-- 修复后跨 fp16、bf16、fp32，half/interleaved 与两种布局的大规模探针及连续多调用探针全部输出 `OK`（来源平台: 950；证据等级: tool_observed）。
-- 修复后 cann-bench 20 个用例全部通过，失败数为 0（来源平台: 950；证据等级: tool_observed）。
+- 修复前 cann-bench 首轮报告无 correctness pass，首个失败包含 `device error type 3, error code is 507035`（来源平台：950；证据等级：tool_observed）。
+- 故障隔离中，大规模 float32 路径通过而大规模 fp16 路径失败，锁定 B16 专属 queue/Cast 分支（来源平台：950；证据等级：tool_observed）。
+- 修复后构建目标成功，pytest 为 `52 passed`（来源平台：950；证据等级：tool_observed）。
+- 修复后跨 fp16、bf16、fp32，half/interleaved 与两种布局的大规模探针及连续多调用探针全部输出 `OK`（来源平台：950；证据等级：tool_observed）。
+- 修复后 cann-bench 20 个用例全部通过，失败数为 0（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
 - 本配方针对“不同 dtype 分支生产不同队列，而共享消费者无条件 DeQue”的生命周期错误；正常成对的 TQue 不应改成 AllocTensor。
 - 507035 是上层汇总错误码，UB 越界、非法地址等其他根因也可能报同码；必须先用 dtype/规模对照确认本卡信号。
-- A2、A3 未验证，推断队列契约可迁移，但错误码和触发规模未验证（未验证，推断可迁移）。
+- A2、A3 未验证，推断队列契约可迁移，但错误码和触发规模未验证（推断可迁移）。
 
 ## 坏实践
 

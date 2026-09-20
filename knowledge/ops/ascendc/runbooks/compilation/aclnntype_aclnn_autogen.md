@@ -70,5 +70,5 @@ grep ACLNNTYPE op_host/CMakeLists.txt
 
 ## 验证信号
 
-- 链接错误 `multiple definition of 'aclnnSoftplusGradGetWorkspaceSize'` 与 `multiple definition of 'aclnnSoftplusGrad'` 在 `bash build.sh --pkg --ops=softplus_grad --soc=ascend950` 构建输出中观测到，两个翻译单元分别来自 `build/autogen/aclnn_softplus_grad.cpp.o` 与 `op_api/aclnn_softplus_grad.cpp.o`（来源平台:950；证据等级:tool_observed）
-- `mv op_api/aclnn_softplus_grad.cpp op_api/aclnn_softplus_grad.cpp.bak` 后重建 `bash build.sh --pkg` 链接通过，产出安装包 `cann-ops-nn-softplus_grad_nn_linux-x86_64.run`（来源平台:950；证据等级:tool_observed）
+- 链接错误 `multiple definition of 'aclnnSoftplusGradGetWorkspaceSize'` 与 `multiple definition of 'aclnnSoftplusGrad'` 在 `bash build.sh --pkg --ops=softplus_grad --soc=ascend950` 构建输出中观测到，两个翻译单元分别来自 `build/autogen/aclnn_softplus_grad.cpp.o` 与 `op_api/aclnn_softplus_grad.cpp.o`（来源平台：950；证据等级：tool_observed）
+- `mv op_api/aclnn_softplus_grad.cpp op_api/aclnn_softplus_grad.cpp.bak` 后重建 `bash build.sh --pkg` 链接通过，产出安装包 `cann-ops-nn-softplus_grad_nn_linux-x86_64.run`（来源平台：950；证据等级：tool_observed）

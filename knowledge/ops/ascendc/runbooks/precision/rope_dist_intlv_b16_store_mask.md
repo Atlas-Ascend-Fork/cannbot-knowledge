@@ -45,6 +45,6 @@ platforms: ["950"]
 
 来源：`rms_norm_rope_k_store_kv_cache` 算子 bs=64 精度联调，Ascend950（dav-3510，Ascend950PR V100）/ CANN 9.1.0。
 
-- bs=64 `k_rope_cache` 断言失败：NPU RoPE 输出呈"每隔一个元素为零"模式，golden 全非零、npu 多处 0.0000（来源平台:950；证据等级:tool_observed）
-- `debug_rope.py` 逐元素对比输出 `[27] golden=0.373047 npu=0.000000 FAIL` 等，零值 index 集合 {27, 30-31, 34-35, …, 62-63}，自 27 起每 4 元素 2 零（来源平台:950；证据等级:tool_observed）
-- `DoRope64` 前后加 `PipeBarrier<PIPE_V>()` 后零值仍持续，排除 V 流水线 race（来源平台:950；证据等级:tool_observed）
+- bs=64 `k_rope_cache` 断言失败：NPU RoPE 输出呈"每隔一个元素为零"模式，golden 全非零、npu 多处 0.0000（来源平台：950；证据等级：tool_observed）
+- `debug_rope.py` 逐元素对比输出 `[27] golden=0.373047 npu=0.000000 FAIL` 等，零值 index 集合 {27, 30-31, 34-35, …, 62-63}，自 27 起每 4 元素 2 零（来源平台：950；证据等级：tool_observed）
+- `DoRope64` 前后加 `PipeBarrier<PIPE_V>()` 后零值仍持续，排除 V 流水线 race（来源平台：950；证据等级：tool_observed）

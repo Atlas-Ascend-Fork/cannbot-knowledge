@@ -60,9 +60,9 @@ flat 多核切分把总元素数均匀分到 40 核，每核再按固定 tile �
 
 ## 验证信号
 
-- msprof `PipeUtilization`：`scalar_ratio` avg 45.75% / max 62.60% 主导，`vec_ratio` avg 8.79% / max 10.03% 极低（来源平台:a2；证据等级:artifact_verified）。
-- msprof `Memory`：GM→UB 带宽利用率 10.54%，avg MTE2 transfer 7.70KB（1064 instructions），L2Cache total_hit avg 0.2%（来源平台:a2；证据等级:artifact_verified）。
-- msprof `PipeUtilization` 核间：aiv_time max/min 差异 58.7%；SCALAR 子类 `mte2_stall` 占比最大、`vec_wait` 76.87%（来源平台:a2；证据等级:artifact_verified）。
+- msprof `PipeUtilization`：`scalar_ratio` avg 45.75% / max 62.60% 主导，`vec_ratio` avg 8.79% / max 10.03% 极低（来源平台：a2；证据等级：artifact_verified）。
+- msprof `Memory`：GM→UB 带宽利用率 10.54%，avg MTE2 transfer 7.70KB（1064 instructions），L2Cache total_hit avg 0.2%（来源平台：a2；证据等级：artifact_verified）。
+- msprof `PipeUtilization` 核间：aiv_time max/min 差异 58.7%；SCALAR 子类 `mte2_stall` 占比最大、`vec_wait` 76.87%（来源平台：a2；证据等级：artifact_verified）。
 
 ## 失效边界
 

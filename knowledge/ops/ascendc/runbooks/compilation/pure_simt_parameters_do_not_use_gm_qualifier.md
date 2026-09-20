@@ -183,9 +183,9 @@ void gather_kernel(const T *x, const I *index, T *y,
 
 本知识来自一次 Ascend950 纯 SIMT 索引搬运算子的编译修复；移除参数限定后该错误不再出现，后续修复独立的 Host 分发问题后完成构建与上板测试。
 
-- 远程构建输出 `[100%] Built target op_gather`（来源平台: 950；证据等级: tool_observed）；
-- 删除构建目录后重新构建，仍输出 `[100%] Built target op_gather`（来源平台: 950；证据等级: tool_observed）；
-- 完整 NPU pytest 输出 `36 passed`（来源平台: 950；证据等级: tool_observed）。
+- 远程构建输出 `[100%] Built target op_gather`（来源平台：950；证据等级：tool_observed）；
+- 删除构建目录后重新构建，仍输出 `[100%] Built target op_gather`（来源平台：950；证据等级：tool_observed）；
+- 完整 NPU pytest 输出 `36 passed`（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

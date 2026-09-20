@@ -105,9 +105,9 @@ DataCopyExtParams::blockCount 是 uint16_t；运行时 rows 为 uint32_t，列�
 
 验证来自同一次 Ascend950 Reg Kernel 开发：首次构建在两个 DMA 函数报窄化错误；加入显式转换后的下一次构建已越过这两个位置，随后完整构建、链接和真机测试均完成。
 
-- 修复后的下一次编译输出不再包含两处 `uint32_t` 到 `uint16_t` 的 narrowing 错误，而继续暴露后续独立的 Reg 枚举问题（来源平台: 950；证据等级: tool_observed）。
-- 清理后完整构建产出 `libop_rms_norm.so`，并报告 `Built target op_rms_norm`（来源平台: 950；证据等级: tool_observed）。
-- 真机 pytest 覆盖 fp16、fp32、bf16 及特殊值路径，共 43/43 通过（来源平台: 950；证据等级: tool_observed）。
+- 修复后的下一次编译输出不再包含两处 `uint32_t` 到 `uint16_t` 的 narrowing 错误，而继续暴露后续独立的 Reg 枚举问题（来源平台：950；证据等级：tool_observed）。
+- 清理后完整构建产出 `libop_rms_norm.so`，并报告 `Built target op_rms_norm`（来源平台：950；证据等级：tool_observed）。
+- 真机 pytest 覆盖 fp16、fp32、bf16 及特殊值路径，共 43/43 通过（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

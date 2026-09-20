@@ -1,13 +1,14 @@
 ---
 type: "Runbook"
 title: "RegBase VF __simd_vf__ 路线致 bisheng 编译崩溃"
-description: "Ascend950/arch35/CANN 9.1.0 下用 __simd_vf__ + AscendC::Reg::* + asc_vf_call 实现 VF 函数，bisheng 前端 SIGSEGV（exit 139）或后端 \"Do not know how to scalarize\"（exit 70）；该路线 banned，改用 AscendC::Add/Muls LocalTensor 路线。"
+description: "Ascend950/arch35/CANN 9.1.0 下用 __simd_vf__ + AscendC::Reg::* + asc_vf_call 实现 VF 函数，bisheng 前端 SIGSEGV（exit 139）或后端 \"Do not know how to scalarize\"（exit 70）；该路线 banned，改用 AscendC::Add/Muls LocalTensor 路线。R2（CANN 9.2.0）触发点隔离：ICE 由 VF 体内的运行期标量条件分支触发——去掉运行期 if（改为无条件计算/乘 0 恒等）后同一路线编译通过且 ST 21/21。"
 tags: ["task.debugging", "topic.programming_model.execution_unit.vector"]
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T03:25:37Z"
 platforms: ["950"]
+cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # RegBase VF __simd_vf__ 路线致 bisheng 编译崩溃
@@ -26,7 +27,7 @@ bisheng: error: clang frontend command failed with exit code 139 (use -v to see 
 2026-06-10T11:29:46+08:00 clang version 15.0.5 (clang-5c68a1cb1231 flang-5c68a1cb1231)
 Target: x86_64-unknown-linux-gnu
 Thread model: posix
-InstalledDir: /home/developer/Ascend/cann-9.1.0/bin
+InstalledDir: /home/<user>/Ascend/cann-9.1.0/bin
 bisheng: error: clang frontend command failed with exit code 139 (use -v to see invocation)
 ```
 
@@ -36,7 +37,7 @@ bisheng: error: clang frontend command failed with exit code 139 (use -v to see 
 
 - **工程形态**：kernel 直调（AscendC RegBase 路线，ACLNN 算子仓 `op_kernel/arch35/*.h`）。
 - **API 路径**：`AscendC::Reg::Add` / `AscendC::Reg::Muls` / `AscendC::Reg::RegTensor<T>` / `AscendC::asc_vf_call<funcPtr>` / `__simd_vf__` 属性。
-- **验证过的平台与 CANN 版本**：Ascend950（`ASCEND_COMPUTE_UNIT=ascend950`，架构 DAV_3510/arch35），CANN 9.1.0（bisheng clang 15.0.5，`/home/developer/Ascend/cann-9.1.0`）。build 目标 x86_64-linux（kernel binary 供 aclnn runtime 调用）。
+- **验证过的平台与 CANN 版本**：Ascend950（`ASCEND_COMPUTE_UNIT=ascend950`，架构 DAV_3510/arch35），CANN 9.1.0（bisheng clang 15.0.5，`/home/<user>/Ascend/cann-9.1.0`）。build 目标 x86_64-linux（kernel binary 供 aclnn runtime 调用）。
 - **适用粒度**：`platform_wide`（针对该 CANN/架构下所有 RegBase VF 路线 kernel）。
 - **路线优先级**：`banned`——RegBase VF `__simd_vf__` + `AscendC::Reg::*` 路线在本 CANN/架构组合下不可用；`safety_fallback` = kernel 侧基础向量 API `AscendC::Add`/`AscendC::Muls`（LocalTensor 参数）路线。
 - **不适用或未验证场景**：更高 CANN 版本（若 bisheng 修复了 VF 前端/ scalarize 后端）未验证；非 DAV_3510 架构（DAV_2201 等 MemBase 默认路线本就不走 RegBase）不适用。
@@ -161,6 +162,40 @@ grep -rn "__simd_vf__\|AscendC::Reg::\|asc_vf_call" operators/<pkg>/op_kernel/
 
 ## 系统信息
 
-- 工具链：CANN 9.1.0（`/home/developer/Ascend/cann-9.1.0`），bisheng clang 15.0.5（`cann-9.1.0/bin`），`asc_opc`/`ccec` kernel 编译器。
+- 工具链：CANN 9.1.0（`/home/<user>/Ascend/cann-9.1.0`），bisheng clang 15.0.5（`cann-9.1.0/bin`），`asc_opc`/`ccec` kernel 编译器。
 - 目标平台：Ascend950（`ASCEND_COMPUTE_UNIT=ascend950`），架构 DAV_3510 / arch35。
 - 相关文件：`operators/add_package/op_kernel/arch35/add_kernel.h`（AddVF 定义）、`operators/add_package/op_kernel/add_apt.cpp`（kernel 入口）、`operators/add_package/op_kernel/add_struct.h`、`operators/add_package/op_kernel/add_tiling_struct.h`、`operators/add_package/op_host/add_host.cpp`、`operators/build.sh`。
+
+## 后续增量（2026-09-17，并行策展批：R2——触发点隔离到 VF 体内运行期标量 if，路线内重写可编译通过）
+
+R2（AdamW 类逐元素算子，Ascend950/arch35，CANN 9.2.0，bisheng clang 15.0.5）：整条计算链放在一个 `__simd_vf__` 模板函数（经 `asc_vf_call` 调用）里，weight decay 项按语义写成运行期标量条件分支 `if (weightDecay != 0.0f) { AscendC::Reg::Muls<float>(...); AscendC::Reg::Add<float>(...); }`。三个 dtype 编译单元（fp32/fp16/bf16）全部报同一条 ICE：`bisheng: error: clang frontend command failed with exit code 139`（CompileStage.INFERCHANNEL），grep 首个 `error:` 只能找到 ICE 本身、无任何前置真实错误。
+
+**渐进加回二分（每步全清重建）定位触发点**：只保留 load/cast/store → 通过；逐组加回 m_t 计算、v_t、pre-loop Duplicate/Sub、bias correction Div、Sqrt/Adds/Div → 全部通过；仅加回 weight decay 的运行期 `if` 分支 + y 计算 → ICE 复现；仅去掉该 `if`（其余语句完全相同，无条件计算 decay 项）→ 编译通过。触发点被单条语句 A/B 归因到运行期标量 if（`if constexpr` dtype 分派全程在链内、不触发）。
+
+**路线内修复（推荐形态）——无条件计算，靠乘 0 恒等**：
+
+```cpp
+// 修复前（VF 内运行期标量 if 分支，触发 ICE 139）：
+if (weightDecay != 0.0f) {
+    AscendC::Reg::Muls<float>(regTWd, regVar, weightDecay, mask);  // λ·var
+    AscendC::Reg::Add<float>(regUpdate, regUpdate, regTWd, mask);   // update += λ·var
+}
+
+// 修复后（无条件计算；weightDecay==0 时 Muls(var,0)=0、Add(update,0)=update，数学等价于跳过）：
+AscendC::Reg::Muls<float>(regTWd, regVar, weightDecay, mask);
+AscendC::Reg::Add<float>(regUpdate, regUpdate, regTWd, mask);
+```
+
+- 等价性边界：`0 × finite = 0` 成立的前提是 `var` 为有限值；若算子允许"wd=0 且 var 含 NaN"，`0 × NaN = NaN` 与"跳过分支"不等价，此时应把条件外提到 `__aicore__` kernel 侧（按标量分支选择不同 VF 入口或传开关模板参数），而不是在 VF 体内写运行期 if。
+- 本增量修正本卡 9.1.0 结论的边界：9.1.0 的崩溃样本（上方失败代码）恰好也含运行期 `if (alpha == 1.0f)` 分支，当时未隔离该变量；9.2.0 实测证明"无运行期标量分支的 Reg VF 链"可编译并上板通过。遇 exit 139 先扫 VF 体内有无运行期 `if`/`switch`，再做最小复现二分；与 [arch35 RegBase VF 逐元素算子完整实现模式卡](arch35_regbase_vf_elementwise_pattern.md)（无运行期分支形态的完整骨架）互为印证。
+
+R2 验证信号（同一次 AdamW kernel 实现会话）：
+
+- 修复前：含运行期 if 的完整链构建报 `bisheng: error: clang frontend command failed with exit code 139`（CompileStage.INFERCHANNEL），三个 dtype 编译单元全崩、无前置 error:（来源平台：950；证据等级：tool_observed）。
+- 二分定位：渐进加回各计算组均编译 SUCCESS；仅加回 weight decay 的 `if` 分支 → ICE 复现；去掉 if（其余完全相同）→ SUCCESS（来源平台：950；证据等级：tool_observed）。
+- 修复后：最终版（无条件计算）构建 SUCCESS、EXIT 0；ST 上板 21/21 PASSED（含 weight_decay=0 与 NaN 语义用例）（来源平台：950；证据等级：tool_observed）。
+
+R2 失效边界与坏实践补充：
+
+- ICE 的编译器源码级机制（VF 代码生成哪一步 SIGSEGV）未追；结论是行为级单语句 A/B 隔离。跨 CANN 版本是否修复未验证（未验证，推断可迁移：避免 VF 内运行期分支总无坏处）。
+- 坏实践：为省两条向量指令在 `__simd_vf__` 体内写运行期标量 `if`/`switch`；看到 exit 139 就当作"编译器坏了"绕路重写整个 kernel（渐进加回可在几十分钟内隔离到单条语句）。

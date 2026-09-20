@@ -92,11 +92,11 @@ __global__ __aicore__ void <op>(
 
 本卡所有信号来自同一条开发轨迹（多 RANK 模板 ACLNN 算子大 RANK 档 kernel 调试），平台 Ascend950 + CANN cann-9.0.0-beta.2。
 
-- 修复前探针：`opParaSize=132` 对所有大 RANK kernel json 成立（来源平台:950；证据等级:tool_observed）。
-- 修复前症状：大 RANK 档 ST run.sh 全部计算用例输出全 NaN，输出保持预填 NaN 未被 kernel 覆写（来源平台:950；证据等级:tool_observed）。
-- 黑盒触发：TTK aclnn 全量跑出现 `errno[561002] NnopbaseExecutorTilingAndUpdateBinInfo(executor) failed`（来源平台:950；证据等级:tool_observed）——与 tiling struct 注册尺寸不足同类机制。
-- 误诊证据：尝试在两个 `if constexpr` 分支内各放 `REGISTER_TILING_DEFAULT` → opbuild 报 `Only one default tiling structure can be configured.`（来源平台:950；证据等级:tool_observed）。
-- 机制验证探针：取大档 struct 作 default 后 `opParaSize=228`（=220+8），足以容纳大档 struct，闭合"default struct 尺寸+8"推导（来源平台:950；证据等级:tool_observed）。
+- 修复前探针：`opParaSize=132` 对所有大 RANK kernel json 成立（来源平台：950；证据等级：tool_observed）。
+- 修复前症状：大 RANK 档 ST run.sh 全部计算用例输出全 NaN，输出保持预填 NaN 未被 kernel 覆写（来源平台：950；证据等级：tool_observed）。
+- 黑盒触发：TTK aclnn 全量跑出现 `errno[561002] NnopbaseExecutorTilingAndUpdateBinInfo(executor) failed`（来源平台：950；证据等级：tool_observed）——与 tiling struct 注册尺寸不足同类机制。
+- 误诊证据：尝试在两个 `if constexpr` 分支内各放 `REGISTER_TILING_DEFAULT` → opbuild 报 `Only one default tiling structure can be configured.`（来源平台：950；证据等级：tool_observed）。
+- 机制验证探针：取大档 struct 作 default 后 `opParaSize=228`（=220+8），足以容纳大档 struct，闭合"default struct 尺寸+8"推导（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

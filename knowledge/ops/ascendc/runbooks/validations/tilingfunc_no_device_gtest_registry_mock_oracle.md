@@ -1,17 +1,17 @@
 ---
 type: "Runbook"
 title: 自定义算子 TilingFunc 无设备 gtest 单测范式
-description: 对安装 run 包 op_host .so 里的 TilingFunc 做无 NPU 设备的 gtest 单测：gert 注册表解析被测函数 + mock PlatFormInfos 平台参数 + 手搓 TilingContext，期望值来自独立 oracle。
+description: 对安装 run 包 op_host .so 里的 TilingFunc 做无 NPU 设备的 gtest 单测：gert 注册表解析被测函数 + mock PlatFormInfos 平台参数 + 手搓 TilingContext，期望值来自独立 oracle。增量（CANN 9.1.0）：多分支 tilingKey UT 家族（branch-agnostic 切分 + 触发条件反推用例 shape + workspace 下界断言）；branch-agnostic 实现下新分支 tiling 零实现即被独立 oracle UT 交叉验证——"测试先行预期 0 通过被推翻"时的正确判读是 oracle 独立性 + 字段级断言强度，而非通过数本身。
 tags: [task.testing, topic.tiling]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-17T01:10:00Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
+cann_versions: ["9.0.0-beta.2", "9.1.0"]
 ---
-# 自定义算子 TilingFunc 无设备 gtest 单测范式
 
+# 自定义算子 TilingFunc 无设备 gtest 单测范式
 
 ## 现象
 
@@ -30,7 +30,7 @@ EXIT_CODE=0
 
 33/33 全通过，且日志里 grep 不到 `do not registe tiling struct` 隐藏警告与 `FAILED`。
 
-## 适用场景（必填 — 检索前的第一道滤网）
+## 适用场景
 
 - **工程形态**：ops-registry-invoke 算子仓开发（自定义算子 run 包）中 host 侧 tiling 的单元测试；不适用于 kernel 直调工程的核函数测试。
 - **API 路径**：`gert::OppSoDesc` / `gert::OpImplSpaceRegistryV2`（AddSoToRegistry + SetSpaceRegistry）/ `gert::DefaultOpImplSpaceRegistryV2::GetInstance().GetSpaceRegistry()->GetOpImpl(opType)->tiling` / `gert::OpTilingContextBuilder`（OpType / IONum / InputTensors / OutputTensors / CompileInfo / PlatformInfo / TilingData / Workspace / AppendAttr）/ `fe::PlatFormInfos::SetPlatformRes("SoCInfo"|"AICoreSpec"|"version")` + `SetCoreNumByCoreType` / `platform_ascendc::PlatformAscendC::GetLibApiWorkSpaceSize()` / `gert::TilingData::CreateCap`；构建侧 cmake + CPack（`--target binary` 聚合目标）。
@@ -430,3 +430,29 @@ protected:
 无证据——本卡来源会话是一次全通过的验收执行，未出现误诊-纠偏过程。
 
 
+
+
+## 后续增量（2026-09-17，并行策展批：多分支 tilingKey UT 家族与 branch-agnostic 零实现交叉验证，CANN 9.1.0）
+
+euclidean_norm 算子（多分支 tilingKey 位组合 `(isGroup<<2)|(isTailA<<1)|isTailR`，key=0/1/2/4/5）把本卡 harness 扩展为多分支 UT 家族，并补三个机制点：
+
+**1. 多分支 UT 家族与独立构建入口**：每分支一个 UT（`test_branch{0,1,2,4,5}_tiling.cpp`），`tests/tiling/CMakeLists.txt` 注册每个分支 UT target、`tests/tiling/run.sh` 顺序执行全部——注意算子包 `operators/build.sh` 只打包算子本体，**不构建 UT**（UT 有独立构建目录与入口）。
+
+**2. branch-agnostic 切分 → 新分支 tiling 零实现交叉验证**：group 切分实现为 branch-agnostic（ShouldUseGroup/ComputeGroupSplit/SetWorkspaceSize 只按 isGroup 分支、不按 isTailR），Group Tail-R 分支（key=5）tiling 无需新实现即被独立 oracle UT 交叉验证（8/8 首跑通过，同轮对 op_host tiling 代码零变更）。**"测试先行预期 0 通过"被 8/8 通过推翻时的正确判读**：判据是 oracle 独立性（grep 校验 oracle 体内无 `optiling::` 调用，命中只允许出现在注释）+ 全字段断言强度，而非通过数本身——"实现已被前一分支覆盖"与 oracle 独立性互证，不是测试失效。
+
+**3. 触发条件反推用例 shape**：设计文档字面 shape（如 R=4096）在真实 UB 容量下单块可装下（rLoopCntTotal=1）不触发 group 而路由到 normal 分支；用例 shape 必须按触发条件反推——group 触发需 `aLoopCntTotal ≤ coreNum/2 && rLoopCntTotal > 1`，选 totalA ≤ 2 且 R 足够深（R > r_i_max）的 shape 才真正命中目标 key。
+
+**4. workspace 下界断言变体**：本卡原方案断言 `ws[0] == sysWs + 期望 usrWs`（sysWs 用同一 mock 平台现算）；该算子 UT 改为下界断言 `ws[0] ≥ usrSize`（usrSize = rGroupCnt × aTotal × sizeof(float) 由 oracle 精确复算）——sysWorkspaceSize 随平台/版本变化，下界断言对平台相关部分稳健且仍锁住布局公式；两种口径按稳定性需求选择。另注：该算子 UT 被测 .so 取构建树产物（可执行文件同目录解析 `kOpHostSoName`），与本卡"只对安装树二次构建"的更严纪律不同——迁移时优先遵循本卡原方案（与部署形态一致）。
+
+### 复现增量验证信号
+
+- UT 执行：`==== Branch-5 Tiling UT summary: 8/8 cases PASSED (0 failed) ====`、run.sh EXIT=0（含 `[setup] loading op_host .so ... tiling kernel for 'EuclideanNorm' resolved` 加载链路）（来源平台：950（ascend950 构建产物，UT 纯宿主 x86 执行）；证据等级：tool_observed）。
+- 回归：同轮 public 19/19、Branch-0 9/9、Branch-1 9/9、Branch-2 13/13、Branch-4 8/8 全 PASSED（来源平台：950；证据等级：tool_observed）。
+- oracle 独立性：grep 校验 oracle 体内无 `optiling::Compute*` 调用（54 处命中全在注释/用例描述）（来源平台：950；证据等级：tool_observed）。
+- 分支确认：同轮 tiling 实现任务对 op_host tiling 代码零变更，Branch-5 tiling 仅靠本 UT 验收通过（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量边界
+
+- harness 机制依赖 `OpImplSpaceRegistryV2` 注册表加载（CANN 9.1.0 验证）；其他 CANN 版本的 host 注册机制变化需复验。
+- oracle 平台常量与目标 SoC 绑定（coreNum/ubSize/blockSize/cacheLineSize 按 DESIGN 手抄）；换 SoC 必须重取常量，否则 ShouldUseGroup 等分支判据失真。
+- "branch-agnostic 判断"来自 op_host 源码阅读（agent_reported），与 UT 8/8 + 零代码变更的 tool_observed 事实互相印证，不单独作为验证依据。

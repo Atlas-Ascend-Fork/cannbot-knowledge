@@ -61,8 +61,8 @@ CANN 9.2.0 的 `TBuf<TPosition>` 不暴露 `SetAddr`（L1/L0 的固定硬件地�
 
 ## 验证信号
 
-- 编译报 `error: no member named 'SetAddr' in 'AscendC::TBuf<AscendC::TPosition::VECCALC>'` 于 `buf.SetAddr(__cc__ T*, pingPong * HALF_L0C * sizeof(T));`，`8 errors generated.`（来源平台:950；证据等级:tool_observed）。
-- arch35 CANN 示例用 `TBuf<TPosition::A1> l1TBuf_;` 与 `Fixpipe(cGlobal_[fixedOffsetC + mloop * params.dstStride * M0 + nloop * N0], l0c_, params);`（来源平台:950；证据等级:tool_observed）。
+- 编译报 `error: no member named 'SetAddr' in 'AscendC::TBuf<AscendC::TPosition::VECCALC>'` 于 `buf.SetAddr(__cc__ T*, pingPong * HALF_L0C * sizeof(T));`，`8 errors generated.`（来源平台：950；证据等级：tool_observed）。
+- arch35 CANN 示例用 `TBuf<TPosition::A1> l1TBuf_;` 与 `Fixpipe(cGlobal_[fixedOffsetC + mloop * params.dstStride * M0 + nloop * N0], l0c_, params);`（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

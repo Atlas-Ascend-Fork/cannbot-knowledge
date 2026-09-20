@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.precision", "topic.implementation.masking", "top
 status: stable
 sources: []
 created_at: "2026-08-18T05:29:39Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-16T11:20:30Z"
 platforms: ["950"]
 ---
 
@@ -58,13 +58,13 @@ arch35 上 `Compare` 一次产生 cmpmask 的容量 = `ONE_REPEAT_ELE_NUM_FP32 =
 
 ## 验证信号
 
-- 边界实验：threshold≈0 时 count_padded=64 PASS、count_padded=128 FAIL、count_padded=256 FAIL，PASS/FAIL 边界恰在 64（来源平台:950；证据等级:tool_observed）。
-- 修复（Compare/Select 按 `ALIGN_ELEMENTS=64` 分块循环）后 PyTorch ST 通过数 498→565/581（来源平台:950；证据等级:tool_observed）。
-- 修复后 C++ ST 57/57 通过、无回归（来源平台:950；证据等级:tool_observed）。
+- 边界实验：threshold≈0 时 count_padded=64 PASS、count_padded=128 FAIL、count_padded=256 FAIL，PASS/FAIL 边界恰在 64（来源平台：950；证据等级：tool_observed）。
+- 修复（Compare/Select 按 `ALIGN_ELEMENTS=64` 分块循环）后 PyTorch ST 通过数 498→565/581（来源平台：950；证据等级：tool_observed）。
+- 修复后 C++ ST 57/57 通过、无回归（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
-- **平台**：本 trace 只在 Ascend950PR（`950`、arch35）实测。a2/a3（arch22/DAV_2201）的 `ONE_REPEAT_ELE_NUM` 可能不同，**未验证，推断可迁移**——迁移时须按目标 arch 重算 `256B/sizeof(elem)` 后再定块大小，不可直接照搬 64。
+- **平台**：本开发会话只在 Ascend950PR（`950`、arch35）实测。a2/a3（arch22/DAV_2201）的 `ONE_REPEAT_ELE_NUM` 可能不同，**未验证，推断可迁移**——迁移时须按目标 arch 重算 `256B/sizeof(elem)` 后再定块大小，不可直接照搬 64。
 - **dtype**：本卡只测 fp32（64 元素/块）。fp16/bf16 的块大小应为 `256B/2B=128`，int8 为 256——未实测，按算式推导。
 - **边界**：count 恒 ≤ 块大小的 kernel 不触发本 bug；不经 `VSEL_CMPMASK_SPR`（如用其他 SELMODE）的 Select 不适用本根因。
 
@@ -76,3 +76,35 @@ arch35 上 `Compare` 一次产生 cmpmask 的容量 = `ONE_REPEAT_ELE_NUM_FP32 =
 ## 误诊
 
 早期一度怀疑 Select 语义写反或 FTZ 把 threshold flush 到 0 导致 mask 翻转。但算式核验：threshold=-1.18e-38 即便 FTZ 成 0，对 bx=-0.5953 的 mask 仍是 false、与"取反"表现一致但解释不了 count=64 通过/128 失败的边界。真因是 cmpmask 单 repeat 容量 64，非语义反也非 FTZ（来源平台:950；证据等级:agent_reported——此为排除性推理，非实测信号）。
+
+## 后续增量（2026-09-16，并行策展批：256B 对齐断言与"比较计数对齐 + 掩码限扫"模式）
+
+argmax 算子（BenchNoHarnessArgMax，Ascend950PR/__NPU_ARCH__==3510，CANN 9.1.0）迭代二补上本约束族的**编译期硬性形态**与一种应对模式：
+
+**1. 256B 对齐断言（编译期约束，原卡"运行期残缺"的兄弟形态）**：`Compare`/`Compares` 在 3510/5102 上带有硬性对齐断言（`basic_api/impl/kernel_operator_vec_cmpsel_intf_impl.h`，verbatim）：
+
+```cpp
+#if defined(__NPU_ARCH__) && ((__NPU_ARCH__ == 3510) || (__NPU_ARCH__ == 5102))
+    ASCENDC_ASSERT(((count * sizeof(T3)) % ONE_REPEAT_BYTE_SIZE == 0),
+        {KERNEL_LOG(KERNEL_ERROR, "Failed to check count elements size in Compares, current size "
+        "is %u, should be an integer multiple of 256.", count * sizeof(T3));});
+#endif
+```
+
+即 `count * sizeof(T)` 必须是 256 的整数倍：int32/fp32 的 count 须为 64 的倍数，fp16/bf16 须 128 的倍数。带尾块（count 非 256B 整倍）直接按 chunkLen 调 Compare 会触发断言。
+
+**2. "比较计数对齐 + 掩码限扫"模式（Int32-AR EQ-mask argmax）**：把"比较用计数"与"有效数据长度"解耦——比较计数用 `rAlignCmp = CeilAlign(R, 64)`（int32；fp16/bf16 为 128），buffer 按 rAlignCmp 分配；DataCopyPad 只搬 chunkLen 个真实数据，`[chunkLen, rAlignCmp)` 区间是残留 garbage，garbage 参与 EQ 比较会在 mask 尾部产生随机置位；掩码消费端只扫前 chunkLen 位（`FindFirstSetBit(maskLocal, chunkLen)`），尾部 spurious bit 不进入结果：
+
+```cpp
+// EQ 掩码：比较计数用 256B 对齐的 rAlign_（host 侧 CeilAlign(R,64) 下发）
+Compares<int32_t, uint8_t>(maskLocal, inData, chunkMax, CMPMODE::EQ, rAlign_);
+PipeBarrier<PIPE_V>();
+// 掩码只扫有效 chunkLen 位：[chunkLen, rAlign_) 的 garbage 位不进入结果
+uint32_t chunkArgIdx = FindFirstSetBit(maskLocal, chunkLen);
+```
+
+选"计数对齐 + 掩码限扫"而不是"数据搬完再补零"：补零要额外一次向量写且引入 0 与 chunkMax 相等的假命中风险（chunkMax 本身可能就是 0）。选 `Compares`（张量 vs 标量）而不是 Compare + Duplicate 广播：省掉 rAlignCmp*4 的广播 UB，二者受同一 256B 断言约束。host tiling 须区分"搬运对齐（32B/8 元素 int32）"与"向量比较对齐（256B/64 元素 int32）"两个粒度，buffer 预算按更粗的算。
+
+**3. 与本卡核心发现的交汇边界（重要）**：本卡根因指出"Compare 一次产生的 cmpmask 有效位限 64（fp32/int32）"——因此上述模式中 **rAlignCmp 超过 64、且有效窗口 chunkLen 也超过 64 时，第 65+ 位的掩码可靠性没有保障**（本卡实测 128/256 均残缺）。该模式的 NPU 精度实测在后续联调会话完成（本卡增量验证止于编译 + UT 54/54，含 Int32-AR tiling 分支用例；构建 `[INFO] Build completed successfully!`、5 个 kernel binary、clean build 通过，均为 tool_observed）；若采用该模式且 R > 64，须先按本卡判别方法（count 边界实验）在目标用例上验证掩码超容行为，或直接按 64 分块循环 Compare/Compares。
+
+**4. 相邻提示**：同轨迹的向量化 `Max/Compare/Select` ARA 路径在 A0<64 时整体失败并回退标量（见库内「向量Compare/Select小A0结果错，改标量扫描」卡及其增量），设计带尾块的向量比较类方案时一并核对。

@@ -72,12 +72,12 @@ C++ 模拟三方法对比（支撑解释）：
 
 问题与验证来自一次 fused_bias_leaky_relu 的 Kernel TTK 调试会话（Ascend950PR_9579，CANN 9.0.0），探针前后均用 `python3 -m ttk kernel -d -c -b release --golden-mode Promote` 跑同一 CSV。
 
-- 修复前 FP32 正分支 38 ULP / 负分支 36 ULP，NPU 输出 0x4062460A（正确 0x40624630）（来源平台:950；证据等级:tool_observed）。
-- 探针 1：kernel 读到的 `tilingData->scale` 位模式 = 0x3FB504D5（应为 0x3FB504F3），`tilingData->negativeSlope` = 0x3E4CCCCD 全精度未截断（来源平台:950；证据等级:tool_observed）。
-- 探针 2：`*3` 标记后输出 10.6066 = 3.5355×3，确认 device binary 已更新（来源平台:950；证据等级:tool_observed）。
-- 探针 3：`uint32_t scaleBits` 字段同样截为 0x3FB504D5，排除 float 类型序列化假说（来源平台:950；证据等级:tool_observed）。
-- 探针 4：op-info JSON `attr_scale.defaultValue = "1.41421"`，`float("1.41421") = 0x3FB504D5` 与 kernel 读到的截断值一致；C++ 模拟 `stringstream` 默认输出 `"1.41421"`，`setprecision(9)` 输出 `"1.41421354"` 还原 0x3FB504F3（来源平台:950；证据等级:tool_observed）。
-- 同根因影响 fused_bias_leaky_relu_grad 内置算子（scale 经 `asc_vf_call` 作 float 参数还多一层截断风险），实测多分支 ULP 误差（来源平台:950；证据等级:tool_observed）。
+- 修复前 FP32 正分支 38 ULP / 负分支 36 ULP，NPU 输出 0x4062460A（正确 0x40624630）（来源平台：950；证据等级：tool_observed）。
+- 探针 1：kernel 读到的 `tilingData->scale` 位模式 = 0x3FB504D5（应为 0x3FB504F3），`tilingData->negativeSlope` = 0x3E4CCCCD 全精度未截断（来源平台：950；证据等级：tool_observed）。
+- 探针 2：`*3` 标记后输出 10.6066 = 3.5355×3，确认 device binary 已更新（来源平台：950；证据等级：tool_observed）。
+- 探针 3：`uint32_t scaleBits` 字段同样截为 0x3FB504D5，排除 float 类型序列化假说（来源平台：950；证据等级：tool_observed）。
+- 探针 4：op-info JSON `attr_scale.defaultValue = "1.41421"`，`float("1.41421") = 0x3FB504D5` 与 kernel 读到的截断值一致；C++ 模拟 `stringstream` 默认输出 `"1.41421"`，`setprecision(9)` 输出 `"1.41421354"` 还原 0x3FB504F3（来源平台：950；证据等级：tool_observed）。
+- 同根因影响 fused_bias_leaky_relu_grad 内置算子（scale 经 `asc_vf_call` 作 float 参数还多一层截断风险），实测多分支 ULP 误差（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

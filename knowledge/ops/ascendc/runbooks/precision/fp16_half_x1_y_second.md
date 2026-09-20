@@ -46,10 +46,10 @@ platforms: ["a2"]
 
 ## 验证信号
 
-- FP16 half max_diff=17.8 异常离群（前几元素正确、少数严重偏离）（来源平台:a2；证据等级:tool_observed）
-- FP32 half 同路径 max_diff=0（控制路径正常，排除 Cast 舍入/值域溢出）（来源平台:a2；证据等级:tool_observed）
-- D=8（D/2=4）用例触发向量核心异常（来源平台:a2；证据等级:tool_observed）
-- 重排读-写顺序后 FP32 max_diff=0 / FP16 max_diff=1.5e-2 / BF16 max_diff=6.25e-2，13 用例全 PASS（来源平台:a2；证据等级:tool_observed）
+- FP16 half max_diff=17.8 异常离群（前几元素正确、少数严重偏离）（来源平台：a2；证据等级：tool_observed）
+- FP32 half 同路径 max_diff=0（控制路径正常，排除 Cast 舍入/值域溢出）（来源平台：a2；证据等级：tool_observed）
+- D=8（D/2=4）用例触发向量核心异常（来源平台：a2；证据等级：tool_observed）
+- 重排读-写顺序后 FP32 max_diff=0 / FP16 max_diff=1.5e-2 / BF16 max_diff=6.25e-2，13 用例全 PASS（来源平台：a2；证据等级：tool_observed）
 
 ## 失效边界
 

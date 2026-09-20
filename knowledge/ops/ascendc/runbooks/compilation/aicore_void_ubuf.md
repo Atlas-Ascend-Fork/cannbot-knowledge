@@ -107,8 +107,8 @@ __aicore__ inline void masked_scale_reg_compute_b16(
 
 ## 验证信号
 
-- void* 路线 `bash build.sh` 报 `error: casting 'void *' to type '__ubuf__ float *' is not allowed in aicore function`（5 处）（来源平台:950；证据等级:tool_observed）
-- 改回 `const AscendC::LocalTensor<T>&` 形参后该组错误消失，编译推进到下一处错误，证明 void* 根因被该替代消除（来源平台:950；证据等级:tool_observed）
+- void* 路线 `bash build.sh` 报 `error: casting 'void *' to type '__ubuf__ float *' is not allowed in aicore function`（5 处）（来源平台：950；证据等级：tool_observed）
+- 改回 `const AscendC::LocalTensor<T>&` 形参后该组错误消失，编译推进到下一处错误，证明 void* 根因被该替代消除（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

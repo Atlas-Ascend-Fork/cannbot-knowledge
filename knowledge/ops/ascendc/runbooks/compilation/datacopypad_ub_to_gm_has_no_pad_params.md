@@ -258,10 +258,10 @@ __global__ __aicore__ void gather_kernel(GM_ADDR x, GM_ADDR index, GM_ADDR y,
 
 本知识来自一次 Ascend950 索引收集 kernel 的首次完整构建及随后的精确单行修复；构建、pytest、干净重建和 cann-bench 均由远程工具在目标平台执行。
 
-- 修复前编译器报告“requires 3 arguments, but 4 were provided”，并以 `18 errors generated` 终止（来源平台: 950；证据等级: tool_observed）；
-- 删除 store 的第四个 `padT` 实参后，构建输出 `Linking ASC shared library libop_gather.so` 与 `Built target op_gather`（来源平台: 950；证据等级: tool_observed）；
-- 修复后的实现通过 181 项 pytest；干净重建后再次通过 181 项 pytest（来源平台: 950；证据等级: tool_observed）；
-- 最终 cann-bench 的 Gather 用例通过 20/20（来源平台: 950；证据等级: tool_observed）。
+- 修复前编译器报告“requires 3 arguments, but 4 were provided”，并以 `18 errors generated` 终止（来源平台：950；证据等级：tool_observed）；
+- 删除 store 的第四个 `padT` 实参后，构建输出 `Linking ASC shared library libop_gather.so` 与 `Built target op_gather`（来源平台：950；证据等级：tool_observed）；
+- 修复后的实现通过 181 项 pytest；干净重建后再次通过 181 项 pytest（来源平台：950；证据等级：tool_observed）；
+- 最终 cann-bench 的 Gather 用例通过 20/20（来源平台：950；证据等级：tool_observed）。
 
 - 独立复现 R1：删除 UB→GM `DataCopyPad` 调用的第四个 padding 参数后，工具输出 `CMake build complete`、`Wheel package built successfully` 与 `Build complete`。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
 - 独立复现 R2：工具报告 [100%] Built target op_gather。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。

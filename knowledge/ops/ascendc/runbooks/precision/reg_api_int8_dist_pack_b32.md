@@ -46,6 +46,6 @@ platforms: ["950"]
 
 ## 验证信号
 
-- 修复前 debug stdout：`y[0]: [-13,0,17,0,14,0,-11,0,-24,0,-2,0,75,0,-7,0,32,0,6,0]`，参考 `[-13,17,14,-11,-24,-2,75,-7,32,6,...]`，`y mismatch 469/512 (91.6%)`，`max_diff=214`，呈交错零（来源平台:950；证据等级:tool_observed）
-- 修复后 debug stdout：`y mismatch 3/512 (0.6%)`，`max_diff=1`，`y[0]` 与参考逐元素一致（来源平台:950；证据等级:tool_observed）
-- kernel 编译通过、xOut/scaleOut 全对，仅 int8 输出 `y` 错位（来源平台:950；证据等级:tool_observed）
+- 修复前 debug stdout：`y[0]: [-13,0,17,0,14,0,-11,0,-24,0,-2,0,75,0,-7,0,32,0,6,0]`，参考 `[-13,17,14,-11,-24,-2,75,-7,32,6,...]`，`y mismatch 469/512 (91.6%)`，`max_diff=214`，呈交错零（来源平台：950；证据等级：tool_observed）
+- 修复后 debug stdout：`y mismatch 3/512 (0.6%)`，`max_diff=1`，`y[0]` 与参考逐元素一致（来源平台：950；证据等级：tool_observed）
+- kernel 编译通过、xOut/scaleOut 全对，仅 int8 输出 `y` 错位（来源平台：950；证据等级：tool_observed）

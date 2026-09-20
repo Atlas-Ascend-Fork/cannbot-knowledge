@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.tiling", "topic.memory"]
 status: stable
 sources: []
 created_at: "2026-08-15T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T01:47:15Z"
 platforms: ["950"]
 ---
 
@@ -171,6 +171,10 @@ after（修复后，trace event 959 的 file_read 原文）：
 - **未验证，推断可迁移**：a2/a3 平台未实测；同 tiling 范式（Queue double buffer + Cast TBuf 单份）的 FP16 element-wise 算子推断可迁移，但 UB 容量、`DOUBLE_BUFFER_THRESHOLD`、`BLOCK_ALIGN_BYTES` 在不同 arch 可能不同，迁移时需用目标 arch 的 `GetCoreMemSize(UB)` 与 kernel buffer 定义复核算式。
 - **不覆盖**：FP32 路径、single buffer 路径的正确性证明；Cast buffer 是否真为 TBuf 单份的 kernel 侧 verbatim 证据（event 707 read 被 redact）。
 
+**未决项**：
+
+- 【优先】完整 DoubleBuffer 配置（tiling `bufNum=2` + kernel 队列 depth=2）上板复验——该配置在另一独立 trace 的增量内未上板验证，启用时须重跑全量 ST。
+- `fblr_perf_fp16_18M` 残留的 golden dtype 不匹配（MARE 超阈）为另一独立问题，未在本卡闭环。
 ## 坏实践
 
 - 把 `bufferCount = totalBufNum * (useDoubleBuffer ? 2 : 1)` 当万能公式套到 FP16 Cast 通路——对 FP32 碰巧等价，对 FP16 既有「Queue 漏乘」又有「Cast 误乘」，掩盖性强。
@@ -178,4 +182,33 @@ after（修复后，trace event 959 的 file_read 原文）：
 
 ## 误诊
 
-本 trace 在定位本根因前曾长时间误诊为 `compile info not contain [_pattern]` / `INVALID_TILING`：因删除 `opp/vendors/customize` 目录破坏环境、以及 ops-nn `build.sh --ops=fused_bias_leaky_relu` 在 build 目录残留了 advance_step 的旧 `libcust_opmaster_rt2.0.so`（`FusedBiasLeakyRelu` count=0）所致。期间 agent 一度尝试修改公共 `asc_op_compile_base/asc_op_compiler/op_tiling.py` 注入 `_pattern`，被用户驳回「别的算子可以编译，不要修改公共代码」。真正解法是清理 build 目录残留 .so 后重编安装，与本次 UB 根因无关，记录于此供下个 agent 跳过该弯路。
+本开发会话 在定位本根因前曾长时间误诊为 `compile info not contain [_pattern]` / `INVALID_TILING`：因删除 `opp/vendors/customize` 目录破坏环境、以及 ops-nn `build.sh --ops=fused_bias_leaky_relu` 在 build 目录残留了 advance_step 的旧 `libcust_opmaster_rt2.0.so`（`FusedBiasLeakyRelu` count=0）所致。期间 agent 一度尝试修改公共 `asc_op_compile_base/asc_op_compiler/op_tiling.py` 注入 `_pattern`，被用户驳回「别的算子可以编译，不要修改公共代码」。真正解法是清理 build 目录残留 .so 后重编安装，与本次 UB 根因无关，记录于此供下个 agent 跳过该弯路。
+
+## 复现增量：argmax 实例——bufNum 作为 tiling 字段的多路径量纲公式 + 回退隔离
+
+另一独立轨迹并入 argmax 算子（arch35/CANN 9.1.0）的同根因实例：kernel 输入队列从单缓冲升级 DoubleBuffer（`BUFFER_NUM` 1→2、`TQue<VECIN, 1>` → `TQue<VECIN, 2>`）而 tiling 的 perElementBytes 不含 bufNum 因子时，`InitBuffer(inQueueX, BUFFER_NUM, ubFactorR_*dtypeSize)` 实际分配 = **BUFFER_NUM × ubFactorR × dtypeSize**，是预算的 2 倍——ST 失败数从 2 条暴涨到 16 条（14 条统一 `流同步失败: 507035`）。回退 `BUFFER_NUM=1/TQue depth=1` 后 14 条 507035 全部恢复（回退隔离证明失败随缓冲深度配置确定性地出现/消失）。
+
+修复模式（两侧量纲对齐，bufNum 从 `tiling->bufNum` 读入、与 kernel BUFFER_NUM 同源约定，避免两处魔法数）：
+
+```cpp
+uint64_t bufNum = static_cast<uint64_t>(tiling->bufNum);
+...
+// Float-AR / Int32-AR（Cast 路径）：
+uint64_t perElementBytes = needsCastToFloat ?
+    (bufNum * dtypeSize + computeDtypeSize) :
+    (bufNum * computeDtypeSize);
+// Int32-AR 树归约路径（含 cmp 掩码字节的保守式）：
+uint64_t perElementBytes = bufNum * computeDtypeSize + computeDtypeSize + 1;  // bufNum*4 + 4 + 1
+// Int64-AR：
+uint64_t perElementBytes = bufNum * dtypeSize;  // bufNum * 8
+```
+
+启用/修改队列深度前先写两侧量纲等式核对：`BUFFER_NUM × ubFactorR × dtypeSize + 固定缓冲 ≤ UB 预算`，其中 tiling 的 perElementBytes 必须含同一 bufNum；DoubleBuffer 变更单独成轮提交并跑全量 ST。止血可先回退单缓冲（safety_fallback，牺牲搬运/计算重叠的吞吐收益，未量化）。
+
+**独立 trace 新增验证信号**（均为 tool_observed）：
+
+- BUFFER_NUM=2 + 预算无 bufNum 时：ST 143/159，其中 14 条 `[FAIL] 流同步失败: 507035`（来源平台：950；证据等级：tool_observed）。
+- 回退 BUFFER_NUM/TQue depth=1 后：同批失败消失（156/159，仅剩已知 int64 框架路由 2 条 + tiling 桩大 R 1 条）（来源平台：950；证据等级：tool_observed）。
+- 补 bufNum 因子 + 修复 tiling 桩后（bufNum=1 下公式为恒等）：157/159 恢复（来源平台：950；证据等级：tool_observed）。
+
+**独立 trace 扩展边界**：`bufNum=2` + kernel depth=2 的完整 DoubleBuffer 配置在该轨迹内未上板验证（后续会话完成 UT 期望对齐后启用），启用时须重跑全量 ST；非 VECIN 队列（TBuf 固定缓冲）不涉及本口径。

@@ -72,7 +72,7 @@ __simd_vf__ inline void SigmoidGradVF(
 
 4. **对照 golden 分支语义**：torch `aten::softplus_backward` 的 oracle 显式分支 `if beta*x > threshold: return grad_output`（ratio=1 exactly），否则 `return grad_output * sigmoid(beta*x)`。若 kernel 未复现此分支，则非默认 θ 必然超差。
 
-**原始观测（tool_observed）**：默认 θ=20.0 baseline 41/41 PASS；加入 5 条非默认 θ 后未修复 kernel 41/46 PASS，5 条全挂（case00044 497/11760 mismatch, case00028 38784/69120 mismatch, case00031 6124/80640, case00027 3499/80640, case00046 358/11760）（来源平台:950；证据等级:tool_observed）。
+**原始观测（tool_observed）**：默认 θ=20.0 baseline 41/41 PASS；加入 5 条非默认 θ 后未修复 kernel 41/46 PASS，5 条全挂（case00044 497/11760 mismatch, case00028 38784/69120 mismatch, case00031 6124/80640, case00027 3499/80640, case00046 358/11760）（来源平台：950；证据等级：tool_observed）。
 
 **解释（root-cause interpretation）**：kernel 的 `SigmoidGradVF` 只计算 `ratio = 1/(1+e^{-z})`，从不处理 `z > θ` 的线性区（该区 golden `ratio=1`）。设计 §"除法改写" 声称线性区由 `exp(-z)` 在 fp32 下下溢为 0 隐式处理（分母→1→`grad/1=grad`），但该假设**仅对大 θ 成立**：θ=20 时 `exp(-20)≈2e-9 < fp32 ε≈1.2e-7`，分母精确舍入为 1.0。对小/负 θ，大量元素落入 `(θ, θ+18]` 的"近似但不等"区间，`exp(-z)` 不可忽略，分母≠1，`ratio` 偏离 1.0 超过容差。线性区误差 = `1 - 1/(1+exp(-z)) = exp(-z)/(1+exp(-z))`。这是根因解释，明确为 interpretation，非单点实测——实测闭环信号是分层失败 + 修复后全过（见验证信号），数值探针佐证但未单独隔离测量。
 
@@ -84,10 +84,10 @@ __simd_vf__ inline void SigmoidGradVF(
 
 ## 验证信号
 
-- 默认 θ=20.0 baseline 41/41 PASS（来源平台:950；证据等级:tool_observed）
-- 加 5 条非默认 θ 后未修复 kernel 41/46 PASS，5 条全挂（case00044 497/11760, case00028 38784/69120, case00031 6124/80640, case00027 3499/80640, case00046 358/11760）（来源平台:950；证据等级:tool_observed）
-- 插入 threshold 线性分支（CompareScalar+Select）后 46/46 PASS（来源平台:950；证据等级:tool_observed）
-- TilingUT 57/57 无回归（来源平台:950；证据等级:tool_observed）
+- 默认 θ=20.0 baseline 41/41 PASS（来源平台：950；证据等级：tool_observed）
+- 加 5 条非默认 θ 后未修复 kernel 41/46 PASS，5 条全挂（case00044 497/11760, case00028 38784/69120, case00031 6124/80640, case00027 3499/80640, case00046 358/11760）（来源平台：950；证据等级：tool_observed）
+- 插入 threshold 线性分支（CompareScalar+Select）后 46/46 PASS（来源平台：950；证据等级：tool_observed）
+- TilingUT 57/57 无回归（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

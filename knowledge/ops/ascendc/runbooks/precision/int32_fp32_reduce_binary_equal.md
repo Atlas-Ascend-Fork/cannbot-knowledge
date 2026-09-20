@@ -1,13 +1,14 @@
 ---
 type: "Runbook"
 title: "int32 fp32累加reduce binary_equal不可达"
-description: "int32 输入的 reduce 类算子内部 cast 到 fp32 累加，kernel 的 ReduceSum+bisection cache tree 与 golden 的 pairwise 折半是两棵不同 reduce 树；sum 超过 fp32 精确整数范围 2^24 时舍入路径不同致 1 ULP 差，cast 回 int32 后 bitwise 不一致，binary_equal 永不可达。"
+description: "int32 输入的 reduce 类算子内部 cast 到 fp32 累加，kernel 的 ReduceSum+bisection cache tree 与 golden 的 pairwise 折半是两棵不同 reduce 树；sum 超过 fp32 精确整数范围 2^24 时舍入路径不同致 1 ULP 差，cast 回 int32 后 bitwise 不一致，binary_equal 永不可达。R2（同算子 group tail-R 分支，CANN 9.1.0）：第二条出路——数据设计约束 n·v²≤2^24 使平方和 fp32 精确可表示，任意累加次序同值、bitwise 数学可达（SmallInt 1..8 循环模式 + host 侧预检探针）；并实测 CAST_TRUNC 把亚 ULP 差放大成 ±1 整数位差，device 可比 golden 更接近精确数学。"
 tags: ["task.debugging", "topic.precision", "topic.compute.reduction", "topic.compute.elementwise.type_conversion"]
 status: stable
 sources: []
 created_at: "2026-08-18T00:00:00Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T01:10:00Z"
 platforms: ["950"]
+cann_versions: ["9.1.0"]
 aliases: ["bisection_cache_tree"]
 ---
 
@@ -24,7 +25,7 @@ EuclideanNorm（L2 范数）算子黑盒 ACLNN ST 全量 507 条正向用例（T
 - **验证过的平台与 CANN 版本**：Ascend950（soc=Ascend950PR_9579，result.csv 的 soc 列）；CANN 版本未在 trace 内显式记录。
 - **适用粒度**：`operator_family`——对任何 int32 输入、内部用 fp32 累加的 reduce 类算子（L2/Norm/SumSqrt 等）用 `binary_equal` 验收均成立。
 - **路线优先级**：`banned`——「让 int32 fp32-累加 reduce 与不同 reduce 树的 golden 达成 bitwise 一致」是不可达路线；正确路线是在 spec 阶段把 int32 的 `numerical_tolerance` 从 `binary_equal` 改为 `atol`（如 `atol=1`），而非死磕 kernel reduce 顺序。
-- **不适用或未验证场景**：fp16/fp32/bf16 输入（本 trace 内 fp16/fp32 零失败，bf16 仅 mare 超差非 bitwise）；int64 累加路径未在本 trace 验证。
+- **不适用或未验证场景**：fp16/fp32/bf16 输入（本开发会话内 fp16/fp32 零失败，bf16 仅 mare 超差非 bitwise）；int64 累加路径未在本开发会话验证。
 
 ## 根因
 
@@ -68,14 +69,14 @@ kernel-developer 在 fix2/fix3 陷入精度调试死循环：反复改 kernel �
 
 ## 验证信号
 
-- 黑盒正向 507 条中 31 FAIL：int32 118 条中 29 失败（24.6%）、bf16 125 条中 2 失败（1.6%）、fp16 143 条 0 失败、fp32 121 条 0 失败。29/31 为 int32（27 bitwise + 2 NO_OUTPUT），2/31 为 bf16 NO_OUTPUT（来源平台:950；证据等级:tool_observed）
-- 27 条 int32 bitwise mismatch 的逐用例明细：`L0_037` shape `(345812,13)` axes `[0]` data_range `(-2147483648,-2147483648)` precision 0.0%；`L1_345` shape `(25,36,2,68200)` axes `[0,-3]` data_range `(-1000,-10)` precision 99.95%；`L1_175` data_range `(2147483647,2147483647)` precision 0.0% 等，`precision_metrics` 统一为 `{standard: binary_equal, pass: False, reason: bitwise mismatch}`（来源平台:950；证据等级:tool_observed）
-- fix2 修复后 31→2 FAIL（4 NO_OUTPUT 全部消除，27 int32 bitwise 收敛到 1 条 `L1_345`），残留 `L1_439` bf16 mare=0.00415 ≥ 阈值 0.00122 + `L1_345` int32 bitwise，用户在 fix3 取消（来源平台:950；证据等级:tool_observed）
+- 黑盒正向 507 条中 31 FAIL：int32 118 条中 29 失败（24.6%）、bf16 125 条中 2 失败（1.6%）、fp16 143 条 0 失败、fp32 121 条 0 失败。29/31 为 int32（27 bitwise + 2 NO_OUTPUT），2/31 为 bf16 NO_OUTPUT（来源平台：950；证据等级：tool_observed）
+- 27 条 int32 bitwise mismatch 的逐用例明细：`L0_037` shape `(345812,13)` axes `[0]` data_range `(-2147483648,-2147483648)` precision 0.0%；`L1_345` shape `(25,36,2,68200)` axes `[0,-3]` data_range `(-1000,-10)` precision 99.95%；`L1_175` data_range `(2147483647,2147483647)` precision 0.0% 等，`precision_metrics` 统一为 `{standard: binary_equal, pass: False, reason: bitwise mismatch}`（来源平台：950；证据等级：tool_observed）
+- fix2 修复后 31→2 FAIL（4 NO_OUTPUT 全部消除，27 int32 bitwise 收敛到 1 条 `L1_345`），残留 `L1_439` bf16 mare=0.00415 ≥ 阈值 0.00122 + `L1_345` int32 bitwise，用户在 fix3 取消（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 
-- a2/a3 平台未在本 trace 内实测——`AscendC::ReduceSum` 硬件指令的内部 reduce 顺序在不同 NPU 代际可能不同，`binary_equal` 不可达的结论推断一致（fp32 浮点结合律不成立是数学事实，与平台无关），未验证，推断可迁移。
-- int64 累加路径（若 kernel 改用 int64 累加再开方）未在本 trace 验证；理论上 int64 精确整数范围 `2^63` 远大于 `2^62`，可能达成 bitwise，但需 kernel 与 golden 同时改用 int64，不在本卡修复范围。
+- a2/a3 平台未在本开发会话内实测——`AscendC::ReduceSum` 硬件指令的内部 reduce 顺序在不同 NPU 代际可能不同，`binary_equal` 不可达的结论推断一致（fp32 浮点结合律不成立是数学事实，与平台无关），未验证，推断可迁移。
+- int64 累加路径（若 kernel 改用 int64 累加再开方）未在本开发会话验证；理论上 int64 精确整数范围 `2^63` 远大于 `2^62`，可能达成 bitwise，但需 kernel 与 golden 同时改用 int64，不在本卡修复范围。
 - 若 spec 把 int32 tolerance 改为 `atol=1`，本卡所述「不可达」前提即被正确解除，应改走 atol 验收路线。
 
 ## 坏实践
@@ -84,3 +85,28 @@ kernel-developer 在 fix2/fix3 陷入精度调试死循环：反复改 kernel �
 - 把 `accumulation_order: stable_in_axis` 当作 bitwise reproducible 的保证。
 - 修完代码不重跑原始验证命令（TTK 黑盒 `result.csv`），只跑 C++ 工程替代。
 - 精度问题不加载诊断 skill，凭自身推理反复改 kernel。
+
+
+## 独立复现 R2：数据约束 n·v² ≤ 2^24 使 bitwise 数学可达（group tail-R 分支，CANN 9.1.0）
+
+同算子（euclidean_norm）group tail-R 分支（Phase 1 各核局部 R 段 fp32 归约 + Phase 2 汇总 + sqrt + CAST_TRUNC）的 int32 逐位（atol=0）用例失败，根因与本卡同源（fp32 精确整数域 2^24），但给出了**不改 spec 容差的第二条出路——数据设计约束**：
+
+**失败与机制**：`[1,65536] axes=[-1] int32` 用例（数据为顺序整数 1..65536）报 `int32 bitwise mismatch (elem0 dev=9686441.000000 golden=9686442.000000)`。numpy 探针逐位复算：精确 sum(x²)=93,827,139,731,456（超 2^24 达 5,592,533 倍），sqrt=9686441.025，**CAST_TRUNC=9686441=device**（device 与精确数学一致）；golden 单遍线性 fp32 累加 sum 舍入到 9.382716e13（偏差 +2.03e7，约 23 ULP）→ 9686442；kernel 两段式累加 sum 舍入到 9.382714e13（数十 ULP）→ 9686441。两条路线各向相反方向舍入，精确 sqrt 距整数边界仅 0.975——截断把亚 ULP 差放大成 1 个整数的位级差异；逐位断言比较的是 fp32 舍入噪声而非 kernel 正确性，**device 反而是更精确的一方**。
+
+**数据设计约束（充分条件）**：n 个元素、值域上界 v 时 sum(x²) ≤ n·v² ≤ 2^24 则全部部分和与总和都 fp32 精确可表示，任意累加次序同值、bitwise 数学可达。本例 n=65536 → v ≤ 16，取 1..8 循环（sum(x²)=1,671,168 < 2^24；sqrt=1292.736… 非整数，仍真实覆盖 CAST_TRUNC 向零截断路径）。修复为新增 SmallInt 数据模式（`v = (double)((i % 8) + 1)`）并用于 int32 逐位用例；kernel 零改动、断言强度（atol=0/rtol=0）保持——这是修测试数据的数学前提缺陷，不是测试放松。
+
+**host 侧预检探针**（可直接复用）：
+
+```python
+import numpy as np
+x = np.arange(1, 65537, dtype=np.int32)            # 或任意待测数据
+exact = int(np.sum(x.astype(np.int64)**2))          # 精确平方和（int64 无舍入）
+print(f"sum of squares = {exact} (2^24 = {2**24}, exact-in-fp32: {exact <= 2**24})")
+```
+
+- 修复前：该用例 FAILED（dev=9686441 vs golden=9686442），同套件其余 7/8 通过（来源平台：950；证据等级：tool_observed）。
+- 探针：精确 CAST_TRUNC=9686441（=device）、fp32 线性累加=9686442（=golden）、两段式=9686441；sum 超 2^24 达 5,592,533 倍（来源平台：950 宿主侧复算；证据等级：tool_observed）。
+- 修复后：该分支 8/8 PASSED；回归 Branch-0 5/5、Branch-1 18/18、Branch-2 14/14、Branch-4 8/8、public TilingUT 19/19 完好（来源平台：950；证据等级：tool_observed）。
+- 新数据核验：`sum of squares = 1671168 (exact-in-fp32: True)`，sqrt=1292.736→CAST_TRUNC=1292（来源平台：950；证据等级：tool_observed）。
+
+**R2 边界**：n·v² ≤ 2^24 是充分条件（整数和精确可表示）；容差型断言（rtol/atol>0）不受此约束；golden/kernel 改用 fp64/Kahan 累加则约束解除（本算子 spec 定义为 fp32 累加）；fp16/bf16 输出走 CAST_RINT 同为位级断言、超精确域数据同样可能位漂（本会话因数据量级未触发，未实测失配）；平方和非整数时判据需改为"所有部分和与和均 fp32 可精确表示"。与本卡主结论的关系：spec 侧把 binary_equal 改 atol 是验收口径出路，数据约束是不改口径时让 bitwise 前提成立的测试设计出路——先做 host 侧精确复算再定责（device 可能比 golden 更准）。

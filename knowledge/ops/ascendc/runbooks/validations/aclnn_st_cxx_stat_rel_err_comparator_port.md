@@ -6,11 +6,11 @@ tags: [task.testing, topic.precision]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-17T00:58:06Z'
 platforms: ["950"]
 ---
-# aclnn ST 自研 TTK stat_rel_err 比较器
 
+# aclnn ST 自研 TTK stat_rel_err 比较器
 
 ## 现象
 
@@ -27,11 +27,11 @@ TTK 的 `stat_rel_err` 语义埋在 `/tmp/ops-test-kit/ttk/core_modules/comparis
 - 验证过的平台与 CANN 版本：Ascend950PR（npu-smi 25.7.rc1.6）+ CANN 9.0.0-beta.2（与 frontmatter `platforms` 严格一致；比较器为 host 侧纯 CPU 代码，其他平台未实测，推断可迁移见失效边界）。
 - 适用粒度（transfer_scope 最窄档）：`operator_family`——任意自定义算子的 aclnn ST 比较器（比对语义与算子无关，输入是两张位流）。
 - 路线优先级：`recommended_fastpath`（自研 ST 无法直接调 TTK python 框架时的标准做法）。
-- 明确不适用/未验证场景：直接跑 TTK 框架的场合（用 TTK 本体，不要复刻）；INT8/UINT8 等量化 dtype（`ElemToDouble` 只覆盖 fp32/fp16/bf16）；绿基线（kernel 已实现）下 mere/mare 过阈判 PASS 的路径本 trace 未实测（本 trace 为红基线，全部走 FAIL 分支）；TTK 其他 comparison 标准（cosine/binary/requant 等）不适用本卡语义。
+- 明确不适用/未验证场景：直接跑 TTK 框架的场合（用 TTK 本体，不要复刻）；INT8/UINT8 等量化 dtype（`ElemToDouble` 只覆盖 fp32/fp16/bf16）；绿基线（kernel 已实现）下 mere/mare 过阈判 PASS 的路径本开发会话 未实测（本开发会话 为红基线，全部走 FAIL 分支）；TTK 其他 comparison 标准（cosine/binary/requant 等）不适用本卡语义。
 
 ## 判别方法（TTK stat_rel_err 精确语义）
 
-从 TTK 源码（`ttk/core_modules/comparison/stat_rel_err.py`，本 trace 内逐字读取）提炼，写 C++ 前先对齐以下六条：
+从 TTK 源码（`ttk/core_modules/comparison/stat_rel_err.py`，本开发会话 内逐字读取）提炼，写 C++ 前先对齐以下六条：
 
 1. **rel_err 定义带 FLOOR**：`rel_err = |a−g| / (|g| + 1e-7)`。FLOOR=1e-7 是算法常量（源码注释明言"不是配置"），起 near-zero 保护作用：golden=0 时 `rel_err = |a| / 1e-7 = |a| × 1e7`，例如 actual=1e-12 → rel_err=1e-5，即 golden 为 0 处一个极小的非零偏差也会被放大到阈值量级。
 2. **NaN/Inf 位置匹配优先于数值**：两侧同 NaN → 匹配（NaN 无符号）；两侧同 Inf 且同号 → 匹配；其余任何 NaN/Inf 组合（含一侧 NaN 一侧有限、同 Inf 异号）→ `nan_inf_mismatch`，**整张量直接 FAIL**，mere/mare 不参与判定。
@@ -58,7 +58,7 @@ TTK 的 `stat_rel_err` 语义埋在 `/tmp/ops-test-kit/ttk/core_modules/comparis
 
 ## 完整代码
 
-`CompareTensor`（含 exact_zero 分支）与配套 `ElemToDouble`，verbatim 取自本 trace 的 `test_aclnn.cpp` 写入事件（fp16/bf16 位转 float 的 `Fp16BitsToFloat`/`Bf16BitsToFloat` 见同文件，另有专卡覆盖，此处为保证自包含一并内联）：
+`CompareTensor`（含 exact_zero 分支）与配套 `ElemToDouble`，verbatim 取自本开发会话 的 `test_aclnn.cpp` 写入事件（fp16/bf16 位转 float 的 `Fp16BitsToFloat`/`Bf16BitsToFloat` 见同文件，另有专卡覆盖，此处为保证自包含一并内联）：
 
 ```cpp
 struct OutCompare {
@@ -196,7 +196,7 @@ static double ElemToDouble(const uint8_t* p, StDtype dt)
 
 - 仅覆盖 fp32/fp16/bf16 三 dtype；INT/量化 dtype 需先扩展 `ElemToDouble`。
 - FLOOR=1e-7、MARE_RATIO=10 是所读 TTK 版本（ops-test-kit 当前 checkout）的源内常量；TTK 升级后须复核。
-- 绿基线（kernel 实现后）mere/mare 过阈判 PASS 的路径在本 trace 未执行（红基线全走 FAIL 分支）；采用前建议先用一条已知能过的 case 冒烟。
+- 绿基线（kernel 实现后）mere/mare 过阈判 PASS 的路径在本开发会话 未执行（红基线全走 FAIL 分支）；采用前建议先用一条已知能过的 case 冒烟。
 - `finiteCnt==0`（全一致非有限）判 PASS 沿袭 TTK；若项目要求"全 NaN 也算失败"需显式收紧。
 - 其他 NPU 平台未实测；比较器为 host 侧纯 CPU 代码，未验证，推断可迁移。
 - 浮点累加用 double（TTK numpy 用 promote 到 float32 以上），极端大数组下 mere 与 TTK 的浮点求和顺序差异理论上可达 ulp 级——判据在阈值边界贴边时可能分歧。
@@ -212,5 +212,18 @@ static double ElemToDouble(const uint8_t* p, StDtype dt)
 - 常见错误假设："stat_rel_err 就是 max relative error，单阈值 mare<th"。实际是双阈值 `mere<th 且 mare<10×th`，mean 与 max 同时受限。
 - "NaN 两侧都有 NaN 就算过"：只有**同位置**双侧 NaN 才匹配；actual 全 NaN 而 golden 局部 NaN 仍 FAIL（多余 NaN 位置计入 mismatch）。
 - "空 (0,) 输出会挂比较"：TTK 与本实现均短路 PASS，这是契约行为不是漏洞。
+
+## 增量：PyTorch 侧同口径移植（独立复现，逐元素 exp 类算子，Ascend950PR + CANN 9.1.0）
+
+同一套判定语义可原样移植到 PyTorch ST 工程的 `compare.py`（`tests/st/torch/`，torch_adapter.so 接入 NPU）：通过标准 `MERE < threshold 且 MARE < 10 × threshold`；阈值按 dtype 分档 `fp16 2^-10 / bf16 2^-7 / fp32、fp64 2^-13`（dtype 缺省回退 2^-13）；nan/±inf 不进统计、精确匹配（同 NaN、同号 Inf）否则直接 FAIL；空 tensor 优先短路 PASS；相对误差分母加 eps 防 golden=0 除零；失败时打印最大相对误差的全局下标与两侧数值便于定位。配套两点设计：
+
+- **golden 的精度策略对齐 kernel**：fp16/bf16 输入先升 fp32 计算完整链、最后转回原 dtype——与 kernel 内部"Cast 到 fp32 计算（CAST_NONE）、结果 CAST_RINT 回原 dtype"的路径一致，避免参考实现自身引入与 kernel 不同的舍入次序造成假失败（C++ 侧的位级做法见[ST golden 多 dtype 扩展卡](st_golden_multi_dtype_bits_rne.md)）。
+- 坏实践同本卡：把 inf/nan 混进相对误差统计（`(a-g)/(|g|+eps)` 对 inf/nan 得 nan，MERE 变 NaN 后比较结果不可预期，特殊值失败被吞掉）；golden 直接用输入 dtype 全程计算（fp16 中间舍入与 kernel 的 fp32 中间路径不一致）；只报一个 max_diff 不带阈值口径。
+
+增量验证信号：
+
+- golden 自测 19 用例 PASS（含 `exp(inf)=inf`、`exp(-inf)=0`、`exp(nan)=nan` 的 IEEE 754 传播验证）（来源平台：950（CPU golden 于 NPU 测试环境内执行）；证据等级：tool_observed）。
+- NPU 36/36 用例通过：fp16/bf16 用例 MERE/MARE 均为 0.00e+00（threshold 9.77e-04 / 7.81e-03），fp32 用例 MERE 在 1e-8 量级（threshold 1.22e-04）、MARE 在 1e-7 量级（10×threshold 内），特殊值输入用例（0/+0/-0/nan/inf/-inf）与空 tensor 用例均 PASS（来源平台：950；证据等级：tool_observed）。
+- 独立验收会话经 `run.sh --torch` 复跑 36/36 通过（来源平台：950；证据等级：tool_observed）。
 
 

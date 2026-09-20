@@ -1,16 +1,16 @@
 ---
 type: "Runbook"
 title: bias 归约 NaN/Inf 不匹配：±FLT_MAX 输入溢出非精度缺陷
-description: 黑盒极端 grad_hy 数据范围（±FLT_MAX/±bf16_max）下 fp32 batch 归约溢出，NaN/Inf 分类随求和顺序变化，比较器逐位检查 FAIL；有限位置达标即非 kernel 缺陷。
+description: 黑盒极端 grad_hy 数据范围（±FLT_MAX/±bf16_max）下 fp32 batch 归约溢出，NaN/Inf 分类随求和顺序变化，比较器逐位检查 FAIL；有限位置达标即非 kernel 缺陷。复现增量：RoPE 乘加结构同形态——golden 自溢出探针（has_nan/has_inf 判别式）+ 正常范围对照组。
 tags: [task.debugging, topic.precision, topic.compute.reduction]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-17T01:12:00Z'
 platforms: ["950"]
 ---
-# bias 归约 NaN/Inf 不匹配：±FLT_MAX 输入溢出非精度缺陷
 
+# bias 归约 NaN/Inf 不匹配：±FLT_MAX 输入溢出非精度缺陷
 
 ## 现象
 
@@ -21,7 +21,7 @@ platforms: ["950"]
 
 三路逐元素门梯度输出全部 PASS。黑盒 CSV 给这两条用例的 `input_data_ranges` 里 grad_hy 设的是全量程：L0_030 为 `((-3.4028235e+38, 3.4028235e+38), (-1, -0.01))`，L1_212 为 `((-3.38e+38, 3.38e+38), (0, 0.001))`——即 ±FLT_MAX / ±bf16 接近 max。单用例复现（`ttk aclnn --dump full --dump-format npy`）确认 FAIL 稳定复现，golden.py 比较钩子报 `NaN/Inf mismatch`。当时代码状态：kernel 与 golden 均为已通过 ST 与白盒验证的版本，本会话未改 kernel。
 
-## 适用场景（必填 — 检索前的第一道滤网）
+## 适用场景
 
 - **工程形态**：aclnn 黑盒精度执行（TTK aclnn 模式 + golden.py TestSpec `compare` 钩子）；ST 框架（test_aclnn.cpp）内建同款 NaN/Inf 逐位检查，理论同形态（其用例目前用受控范围未触发）。
 - **API 路径**：`python3 -m ttk aclnn -i <csv> -t <case> --plugin <golden.py> --dump full --dump-format npy`；比较器 `stat_rel_err` 语义（`mere<th`、`NaN 同位/Inf 同号` 逐位判定、th 表 fp32 2^-13 / fp16 2^-10 / bf16 2^-7、mare 预算 10×th 或 max(10×th, 10×noise)）。
@@ -237,3 +237,25 @@ def fp64_bias_truth(go64, st64):
 2. 更窄豁免方案（仅当双方均非有限时豁免分类分歧，保留一侧有限一侧非有限的 FAIL）未实施未验证——可在不掩盖真实 NaN 缺陷的前提下放行顺序差分类，值得做成对照实验。
 3. 黑盒 CSV 生成侧：±FLT_MAX 级输入范围是否应进精度统计主体（设计文档「域外采样仅作健壮性补充、不进精度统计主体」条款）未裁定；若裁定为域外，正确做法可能是范围收窄或该类用例单列，而非比较器豁免。
 4. kernel 归约拓扑（多核 partial+merge）与 golden torch sum 的求和序差异未做源码级核对（本卡归因依赖设计文档转述）。
+
+## 后续增量（2026-09-17，并行策展批：RoPE 乘加结构的 golden 自溢出探针与正常范围对照组）
+
+另一条独立轨迹（RoPE 类算子 BenchHarnessApplyRotaryPosEmb，TTK kernel 模式白盒 236 条，Ascend950PR_9579 / CANN 9.2.0）复现同一判读并补三点：
+
+**1) golden 自身溢出探针（第一步动作）**：极值 range（±3.3895e+38 / ±inf）用例的 NaN/Inf_mismatch FAIL，先取失败用例的输入 range 直接跑 golden 自身、检查输出的 has_nan/has_inf——`case00005 ranges: ((-3.3895e+38, 3.3895e+38), ...) → golden q_out: has_nan=True has_inf=True max=nan`。机制为乘加结构：|q|~3e38、|cos|~3e38 → fp32 内 `q*cos` ≈ 9e76 超 fp32 max → inf；随后 `q*cos + rotate_half(q)*sin` 出现 inf+(-inf)=NaN。golden 通路核验：插件输出与直接 torch golden 逐位一致（排除插件伪影）。
+
+**2) 判别式**：golden has_nan/has_inf 为 True 且输入 range 达 dtype 上限 → 双方同溢出下的比较语义问题，属预期行为；golden 干净而 kernel 有 NaN/Inf → 才指向 kernel 溢出缺陷。
+
+**3) 正常范围对照组**：同 dtype 正常 range 用例全部通过（range (-50,200)/(-0.1,0.2)/(-5,10) 的用例 PASS）——正常范围全过排除 golden/评测侧系统性问题，失败严格绑定极值 range。
+
+### 复现增量验证信号
+
+- 24 条 NaN/Inf_mismatch（bf16 12 + fp32 12）全部对应 ±3.3895e38 或 ±inf 极值 range；同 dtype 正常范围用例全部通过（来源平台：950；证据等级：tool_observed）。
+- 极值用例 golden 自身 has_nan=True、has_inf=True、max=nan（fp32 内乘积溢出→inf→inf+(-inf)=NaN）（来源平台：950；证据等级：tool_observed）。
+- golden 通路核验：插件输出与直接 torch golden 逐位一致（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量边界
+
+- 本增量覆盖"golden 同样溢出"的情形（乘积溢出 + 相消产生 NaN 的乘加结构）；golden 干净而 kernel NaN/Inf 时不适用（真缺陷线索）。
+- inf（无相消）单独出现时比较器的符号/位置语义未单独验证。
+- 是否应在用例设计层规避此类 range（TTK 白盒 size 扫描自动生成极值 range）属测试设计决策，本卡不裁定。

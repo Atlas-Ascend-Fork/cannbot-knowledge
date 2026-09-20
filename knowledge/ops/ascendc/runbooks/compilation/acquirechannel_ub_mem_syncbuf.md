@@ -57,8 +57,8 @@ platforms: ["950"]
 
 ## 验证信号
 
-- 修复前：qrun NPU 运行报 `AllocRegAndBuildChannels syncBuf failed`，4 rank 全失败，退出码 255，output 目录无 `npu_out.bin`（来源平台:950；证据等级:tool_observed）。
-- `AcquireChannel` 第 226-237 行 verbatim 代码确认 `linkProtocol == protocol` 精确匹配、不命中即 `return false`、无 fallback 分支（来源平台:950；证据等级:artifact_verified）。
+- 修复前：qrun NPU 运行报 `AllocRegAndBuildChannels syncBuf failed`，4 rank 全失败，退出码 255，output 目录无 `npu_out.bin`（来源平台：950；证据等级：tool_observed）。
+- `AcquireChannel` 第 226-237 行 verbatim 代码确认 `linkProtocol == protocol` 精确匹配、不命中即 `return false`、无 fallback 分支（来源平台：950；证据等级：artifact_verified）。
 
 ## 预防
 

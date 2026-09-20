@@ -6,8 +6,9 @@ tags: ["task.debugging", "topic.implementation.api_layer.basic_api", "topic.impl
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T04:15:00Z"
 platforms: ["950"]
+cann_versions: ["9.0.1", "9.2.0"]
 ---
 
 # GetTPipePtr 错加 AscendC 命名空间导致编译失败
@@ -396,8 +397,8 @@ __global__ __aicore__ void gather_kernel(
 
 修复后的首次 NPU 用例运行仍有两个与多维 row-major 分解顺序有关的独立精度失败；那是另一根因，不影响本卡“命名空间修复使编译通过”的闭环。
 
-- 独立复现 R1：工具报告 [100%] Built target op_cummin。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
-- 独立复现 R2：工具报告 [100%] Built target op_gather。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
+- 独立复现 R1：工具报告 [100%] Built target op_cummin。该信号仅归属于本来源列出的精确编辑。（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R2：工具报告 [100%] Built target op_gather。该信号仅归属于本来源列出的精确编辑。（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
@@ -412,3 +413,8 @@ __global__ __aicore__ void gather_kernel(
 ## 误诊
 
 修复后构建仍出现 host 侧 `GM_ADDR` 的 `cce_global attribute ignored` 警告，但构建目标成功生成；该警告不是本次名字查找失败的根因，不能用它解释修复前的三处硬错误。
+## 复现增量（R3 独立复现，upvote）
+
+- 独立复现 R3（RoPE 类算子 Branch-0 kernel，CANN 9.2.0，arch35 算子仓工程）：`./build.sh <pkg>` 三个 dtype 二进制（fp32/fp16/bf16）各报一次 `error: no member named 'GetTPipePtr' in namespace 'AscendC'; did you mean simply 'GetTPipePtr'?`（CompileStage.INFERCHANNEL 阶段），去掉 `AscendC::` 前缀后同命令构建成功、kernel 进入上板运行（来源平台：950；证据等级：tool_observed）。
+
+R3 复验补充：`PIPE_ALL`（PipeBarrier 模板参）同为全局符号——`AscendC::WaitFlag<AscendC::HardEvent::MTE2_V>(...)` 与 `AscendC::PipeBarrier<PIPE_ALL>()` 在同一 kernel 中混用是正常形态（事件枚举在 `AscendC::HardEvent` 内、屏障常量在全局，见 [PipeBarrier 的 PIPE_V 是全局枚举卡](pipebarrier_pipe_v_uses_global_enum.md) 与 [AscendC:: 前缀致全局符号编译失败卡](ascendc.md)）；该会话对 `GetBlockIdx/GetBlockNum` 全局归属的表述未经隔离验证，且 9.0.1 直调工程中 `AscendC::GetBlockIdx()` 可编译——符号归属以目标版本头文件声明为准。

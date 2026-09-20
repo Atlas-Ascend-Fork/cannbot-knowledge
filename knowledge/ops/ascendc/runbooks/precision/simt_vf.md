@@ -49,10 +49,10 @@ platforms: ["950"]
 
 ## 验证信号
 
-- 含局部数组（rowPtrStart[32]/rowPtrEnd[32] 动态索引）版本：csr2gebsr_test 全部参数化用例 FAIL，bsrColIndC/bsrValC 全零、bsrRowPtr 正确（来源平台:950；证据等级:tool_observed）
-- 二分定位：Fix1+Fix4 单测 PASSED；+Fix2 PASSED；+Fix3(局部数组缓存) FAIL；git checkout 原码 PASSED——局部数组动态索引为唯一元凶（来源平台:950；证据等级:tool_observed）
-- 移除局部数组、Pass1 直读 __gm__ csrRowPtrA 后：64/64 PASSED（37 参数化 + 26 异常 + 1 perf）（来源平台:950；证据等级:tool_observed）
-- before（含局部数组 buggy 版）git diff 与 after（移除局部数组版）文件读逐字可核（来源平台:950；证据等级:artifact_verified）
+- 含局部数组（rowPtrStart[32]/rowPtrEnd[32] 动态索引）版本：csr2gebsr_test 全部参数化用例 FAIL，bsrColIndC/bsrValC 全零、bsrRowPtr 正确（来源平台：950；证据等级：tool_observed）
+- 二分定位：Fix1+Fix4 单测 PASSED；+Fix2 PASSED；+Fix3(局部数组缓存) FAIL；git checkout 原码 PASSED——局部数组动态索引为唯一元凶（来源平台：950；证据等级：tool_observed）
+- 移除局部数组、Pass1 直读 __gm__ csrRowPtrA 后：64/64 PASSED（37 参数化 + 26 异常 + 1 perf）（来源平台：950；证据等级：tool_observed）
+- before（含局部数组 buggy 版）git diff 与 after（移除局部数组版）文件读逐字可核（来源平台：950；证据等级：artifact_verified）
 
 ## 失效边界
 

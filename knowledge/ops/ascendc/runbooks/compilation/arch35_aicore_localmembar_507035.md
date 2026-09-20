@@ -39,9 +39,9 @@ Reg::LocalMemBar<Reg::MemType::VEC_STORE, Reg::MemType::VEC_LOAD>();
 **banned 路线：在 `ComputeFp32Core`（`__aicore__ inline`）内 `Compare` 之后直接插入 `Reg::LocalMemBar<VEC_STORE, VEC_LOAD>()`，意图排空 count-based Compare 的 async-VF VEC_STORE 使后续 Select 的 VEC_LOAD 可见。**
 
 - **尝试**：两版独立代码（旧 4-buffer 代码、新 5-buffer 重排代码）均在 `Compare` 后插入上述 `Reg::LocalMemBar` 调用，重编重跑。
-- **客观失败**：运行时 507035 (AIV error)，两次独立代码版本均复现，kernel 执行失败（来源平台:950；证据等级:tool_observed）。
-- **边界**：`Reg::LocalMemBar` 声明为 `__simd_callee__`，要求调用点处于 `__simd_vf__` (VF) 调用上下文；从常规 `__aicore__` 函数直接调用违反调用约定，AIV 报 507035。该约束来自 CANN 头 `reg_compute/kernel_reg_compute_membar_intf_impl.h` 与 softmax regbase `SoftmaxFlashNDImpl`（`__simd_vf__ inline` 函数）在其内调用同一 API 的对照（来源平台:950；证据等级:artifact_verified）。故从 `__aicore__` 常规函数直接调 `Reg::LocalMemBar` 作为 count-based Compare→Select 隐患的最小 sync 修复，**banned**。
-- **对照**：repeat-based Compare (Level0) 内部带 `Reg::LocalMemBar<VEC_STORE, SCALAR_LOAD>`（读 cmpmask 进 `g_cmpMaskLow`），而 count-based Compare (Level2) 内部无 LocalMemBar——这正是 RAW 隐患成因（来源平台:950；证据等级:artifact_verified）。
+- **客观失败**：运行时 507035 (AIV error)，两次独立代码版本均复现，kernel 执行失败（来源平台：950；证据等级：tool_observed）。
+- **边界**：`Reg::LocalMemBar` 声明为 `__simd_callee__`，要求调用点处于 `__simd_vf__` (VF) 调用上下文；从常规 `__aicore__` 函数直接调用违反调用约定，AIV 报 507035。该约束来自 CANN 头 `reg_compute/kernel_reg_compute_membar_intf_impl.h` 与 softmax regbase `SoftmaxFlashNDImpl`（`__simd_vf__ inline` 函数）在其内调用同一 API 的对照（来源平台：950；证据等级：artifact_verified）。故从 `__aicore__` 常规函数直接调 `Reg::LocalMemBar` 作为 count-based Compare→Select 隐患的最小 sync 修复，**banned**。
+- **对照**：repeat-based Compare (Level0) 内部带 `Reg::LocalMemBar<VEC_STORE, SCALAR_LOAD>`（读 cmpmask 进 `g_cmpMaskLow`），而 count-based Compare (Level2) 内部无 LocalMemBar——这正是 RAW 隐患成因（来源平台：950；证据等级：artifact_verified）。
 
 唯一本 trace 实测可见的排空仍是 `LocalTensor::GetValue` 标量同步；正向方向是把整段算子（含 Compare/Select）包进 `__simd_vf__` Reg:: 融合体，在 VF 上下文内按需用 `Reg::LocalMemBar`，或令 mask 全程留 MaskReg 不做 UB 往返——均未在本 trace 完成（重写未完成即被回退）。
 
@@ -49,9 +49,9 @@ Reg::LocalMemBar<Reg::MemType::VEC_STORE, Reg::MemType::VEC_LOAD>();
 
 本段只收本 trace 内 tool_observed 实测与从 CANN 头源码逐字核对的结构事实（artifact_verified）；agent 推断的机制假设不进此段。
 
-- 从 `__aicore__` 常规函数调 `Reg::LocalMemBar<VEC_STORE,VEC_LOAD>` 触发 507035 (AIV error)，两次独立代码版本（旧 4-buffer、新 5-buffer 重排）重编重跑均复现（来源平台:950；证据等级:tool_observed）
-- `Reg::LocalMemBar` 声明为 `__simd_callee__`，softmax regbase `SoftmaxFlashNDImpl`（`__simd_vf__ inline` 函数）在其内调用同一 `Reg::LocalMemBar<VEC_STORE, VEC_LOAD>`（头 `reg_compute/kernel_reg_compute_membar_intf_impl.h`、`.../softmax/regbase/c310/softmax_flash_impl.h`）（来源平台:950；证据等级:artifact_verified）
-- count-based Compare (Level2) 内部无 `LocalMemBar`；repeat-based Compare (Level0) 内部带 `Reg::LocalMemBar<VEC_STORE, SCALAR_LOAD>`（头 `.../reg_compute/dav_c310/kernel_reg_compute_vec_cmpsel_impl.h`）（来源平台:950；证据等级:artifact_verified）
+- 从 `__aicore__` 常规函数调 `Reg::LocalMemBar<VEC_STORE,VEC_LOAD>` 触发 507035 (AIV error)，两次独立代码版本（旧 4-buffer、新 5-buffer 重排）重编重跑均复现（来源平台：950；证据等级：tool_observed）
+- `Reg::LocalMemBar` 声明为 `__simd_callee__`，softmax regbase `SoftmaxFlashNDImpl`（`__simd_vf__ inline` 函数）在其内调用同一 `Reg::LocalMemBar<VEC_STORE, VEC_LOAD>`（头 `reg_compute/kernel_reg_compute_membar_intf_impl.h`、`.../softmax/regbase/c310/softmax_flash_impl.h`）（来源平台：950；证据等级：artifact_verified）
+- count-based Compare (Level2) 内部无 `LocalMemBar`；repeat-based Compare (Level0) 内部带 `Reg::LocalMemBar<VEC_STORE, SCALAR_LOAD>`（头 `.../reg_compute/dav_c310/kernel_reg_compute_vec_cmpsel_impl.h`）（来源平台：950；证据等级：artifact_verified）
 
 ## 失效边界
 

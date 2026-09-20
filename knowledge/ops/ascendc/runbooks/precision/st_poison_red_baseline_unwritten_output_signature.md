@@ -1,17 +1,17 @@
 ---
 type: "Runbook"
 title: 红基线 mere~1e33＝poison 保持：stub 未写输出
-description: aclnn ST 每次调用前往输出缓冲预填有限毒值（fp32=3.0e30）；stub kernel 零 IO 早退使输出保持毒值，比对产生 1e30~1e37 量级 mere/mare、位级确定、nan_inf_mismatch=0 的特征真红签名。
+description: aclnn ST 每次调用前往输出缓冲预填有限毒值（fp32=3.0e30）；stub kernel 零 IO 早退使输出保持毒值，比对产生 1e30~1e37 量级 mere/mare、位级确定、nan_inf_mismatch=0 的特征真红签名。复现增量：无 poison 预填的 ST 形态签名——读回恒定常量垃圾（fp32/bf16 全 -nan、fp16 全 -131008）且逐元素全 mismatch + 接口冒烟全绿 = kernel 未执行计算/未写输出；冒烟只验证两阶段调用返回码，不构成数值正确性证据。
 tags: [task.testing, topic.precision, topic.implementation.debugging]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-17T04:15:00Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
+cann_versions: ["9.0.0-beta.2", "9.1.0"]
 ---
-# 红基线 mere~1e33＝poison 保持：stub 未写输出
 
+# 红基线 mere~1e33＝poison 保持：stub 未写输出
 
 ## 现象
 
@@ -209,3 +209,27 @@ for (int run = 0; run < 2 && ok; ++run) {
 ## 未决事项
 
 无未解决遗留：根因已追到机制层（调用方输出缓冲不被清零 + 毒值反巧合设计 + stub 零 IO），红基线为测试先行阶段的预期状态、无需修复；判读清单已闭环。
+
+## 复现增量：无 poison 预填形态的签名——恒定常量垃圾 + 冒烟全绿 = kernel 未写输出
+
+另一独立轨迹并入独立 trace（softplus_v2_grad，Ascend950PR + CANN 9.1.0，"host tiling 已实现、kernel 未实现"的接口桩阶段）的无预填变体：该 ST harness **不做 poison 预填**，输出缓冲保持 `aclrtMalloc` 分配时的原始内容。同一 stub kernel 下：
+
+- 接口冒烟（两阶段调用）`==== Smoke summary: 9/9 dtype combinations PASSED ====`——只验证 `aclnn<Op>GetWorkspaceSize` → `aclnn<Op>` → `aclrtSynchronizeStream` 全链返回码；
+- 数值比对 ST（48 用例）`==== ST summary: 0/48 PASSED, 48 FAILED ====`，读回**恒定常量**——fp32/bf16 输出全 `-nan`（`[MISMATCH] idx=0 actual=-nan expected=0.243513`）、fp16 输出全 `-131008`，所有用例所有元素 mismatch（大 shape 用例 102760448/102760448），expected 侧由宿主 oracle 计算且数值正常。
+
+判别要点（与主文 poison 签名互补）：**"所有元素同一常量 + 接口绿" = kernel 未执行计算/未写输出**——此时应去补 kernel 实现，而不是去调精度（容差、cast、累加顺序都不是问题所在）。冒烟的 PASS 判据只是两阶段调用返回码，不含任何数值校验，stub kernel 照样全绿；"smoke 通过"与"数值正确"是两个独立的验收维度。kernel 源码为接口桩的核验（本例 37 行文件只有 `InitSocState/REGISTER_TILING_DEFAULT/GET_TILING_DATA/PipeBarrier` 四行样板，无计算逻辑）可直接把判据钉死在 artifact 层。
+
+**独立 trace 新增验证信号**：
+
+- 同一 stub kernel 下冒烟 `9/9 dtype combinations PASSED`（来源平台：950；证据等级：tool_observed）。
+- 数值 ST 全量 mismatch：`actual=-nan`（fp32）、`actual=-131008`（fp16）、`102760448/102760448 mismatches`，`0/48 PASSED, 48 FAILED`（来源平台：950；证据等级：tool_observed）。
+- kernel 为接口桩：源文件全文仅四行框架样板、无计算逻辑（来源平台：950；证据等级：artifact_verified）。
+- 独立 oracle 正常：期望值由宿主公式计算，golden 脚本 numpy/torch 双路径一致（来源平台：950 宿主；证据等级：tool_observed）。
+
+**独立 trace 扩展边界**：
+
+- 判据是"**所有元素同一常量** + 接口绿"：若只有部分元素/部分用例 mismatch，或读回值非常量（随机垃圾、部分正确），说明 kernel 有执行但算错/写漏，本判据不适用。
+- 读回常量的具体值（-nan / -131008）随 dtype 与设备内存分配填充模式而变，不可把具体数值当跨平台判据；判据是"恒定常量"这一形态（与主文"毒值具体数值是本 harness 的设计选择"同边界）。"输出是 0xFF 填充所以读 -nan"的说法是会话内推测（agent_reported）：fp16 读回 -131008 的位级来源未验证，不要把填充细节当已证事实引用。
+- 输出语义本身含 NaN 的算子/用例（NaN 传播测试）需按位置判 `std::isnan`，不能把 NaN 出现直接当"未写输出"。
+- 坏实践增补：用 smoke 通过作为"算子数值正确"的验收依据（缺逐元素数值比对）；在 kernel 未实现阶段放宽数值容差试图让 ST"过"——测试侧放松掩盖真因（kernel 缺失），正确做法是承认 0/48 为测试先行基线；见到 -nan 就重装驱动/换设备——本形态与设备故障无关。
+- 遗留增补：fp16 读回常量 `-131008` 的位级来源（aclrtMalloc 分配后设备内存填充模式、fp16 位型解释链）未追，可用最小用例 dump 输出缓冲原始字节确认。

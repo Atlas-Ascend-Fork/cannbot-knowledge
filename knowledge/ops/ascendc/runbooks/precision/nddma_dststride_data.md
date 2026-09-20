@@ -42,9 +42,9 @@ NDDMA b32 多维 GM→UB 搬运后，2+ 实际维度 case 的 data 路径结果�
 
 ### 观测（observation）
 
-- GetValue 探针：2 维 `[2,3]` case `gmX_.GetValue(3)=x[1]`（应为 `x[3]`），偏移 2；1 维 `[8]` case `gmX_.GetValue(0..7)` 全部正确（来源平台:950；证据等级:tool_observed）。
-- NddmaDispatch 精确维度后：失败模式与 NDDMA RANK=4 模板完全一致，filler 维度假说不成立（来源平台:950；证据等级:tool_observed）。
-- mask 路径 int8 b8 NDDMA 实测选择正确，不受 b32 多维问题影响（来源平台:950；证据等级:tool_observed）。
+- GetValue 探针：2 维 `[2,3]` case `gmX_.GetValue(3)=x[1]`（应为 `x[3]`），偏移 2；1 维 `[8]` case `gmX_.GetValue(0..7)` 全部正确（来源平台：950；证据等级：tool_observed）。
+- NddmaDispatch 精确维度后：失败模式与 NDDMA RANK=4 模板完全一致，filler 维度假说不成立（来源平台：950；证据等级：tool_observed）。
+- mask 路径 int8 b8 NDDMA 实测选择正确，不受 b32 多维问题影响（来源平台：950；证据等级：tool_observed）。
 
 ### 解释（interpretation）
 
@@ -96,10 +96,10 @@ NDDMA `nddma_out_to_ub_b32` 在 `RANK=4` 模板（ND=4，含 filler 维度）下
 
 溯源：本卡证据取自 Ascend950PR MaskedFill 单迭代 ST 联调轨迹（GetValue 探针 + ST 运行 + NddmaDispatch 精确维度对比）。
 
-- ST 修复前多维 case data 路径偏移、通过率 9/16（1 维 case 全过、2+ 维 case 偏移）（来源平台:950；证据等级:tool_observed）
-- GetValue 探针：2 维 case `gmX_[3]=x[1]`（偏移 2），1 维 case `gmX_[0..7]` 全部正确（来源平台:950；证据等级:tool_observed）
-- NddmaDispatch 精确维度后失败模式不变，filler 维度假说不成立（来源平台:950；证据等级:tool_observed）
-- mask 路径 int8 b8 NDDMA 选择正确，不受 b32 多维问题影响（来源平台:950；证据等级:tool_observed）
+- ST 修复前多维 case data 路径偏移、通过率 9/16（1 维 case 全过、2+ 维 case 偏移）（来源平台：950；证据等级：tool_observed）
+- GetValue 探针：2 维 case `gmX_[3]=x[1]`（偏移 2），1 维 case `gmX_[0..7]` 全部正确（来源平台：950；证据等级：tool_observed）
+- NddmaDispatch 精确维度后失败模式不变，filler 维度假说不成立（来源平台：950；证据等级：tool_observed）
+- mask 路径 int8 b8 NDDMA 选择正确，不受 b32 多维问题影响（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

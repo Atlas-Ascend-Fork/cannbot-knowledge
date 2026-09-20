@@ -1,13 +1,14 @@
 ---
 type: "Runbook"
 title: "RegTensor 累加须用 Add 而非 Adds"
-description: "Reg Adds 的第三操作数是标量，归约结果寄存器参与累加时应改用寄存器对寄存器 Add。"
+description: "Reg Adds 的第三操作数是标量，归约结果寄存器参与累加时应改用寄存器对寄存器 Add。复现增量：Mins/Min 取极值实例同型复现（RegTensor 误传第三参报 SupportType/vmins 断言链），s 后缀配对规则定形——Mins/Maxs(dst,src,scalar) ↔ Min/Max(dst,src0,src1)，后缀 s 即标量第三参。"
 tags: ["task.debugging", "topic.implementation.api_layer.basic_api", "topic.compute.elementwise.arithmetic"]
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T05:05:01Z"
 platforms: ["950"]
+cann_versions: ["9.0.1", "9.1.0"]
 ---
 
 # RegTensor 累加须用 Add 而非 Adds
@@ -134,9 +135,9 @@ __simd_vf__ inline void reduce_sq_vf(__ubuf__ float *sumSqAddr, __ubuf__ float *
 
 本知识来自 Ascend 950 上一次 Reg 归约累加的编译联调，接口声明、错误链和修复后构建均由工具直接记录。
 
-- SDK 头文件输出 `Add(... srcReg1, mask)` 与 `Adds(... scalarValue, mask)` 两组签名（950，证据等级: tool_observed）；
-- 改为 `Add` 后下一次编译不再出现 `SupportType<RegTensor...>` 与 `no matching function for call to 'vadds'`，只剩独立的 Cast 错误（950，证据等级: tool_observed）；
-- 最终构建输出 `[100%] Built target op_rms_norm`（950，证据等级: artifact_verified）。
+- SDK 头文件输出 `Add(... srcReg1, mask)` 与 `Adds(... scalarValue, mask)` 两组签名（来源平台：950；证据等级：tool_observed）；
+- 改为 `Add` 后下一次编译不再出现 `SupportType<RegTensor...>` 与 `no matching function for call to 'vadds'`，只剩独立的 Cast 错误（来源平台：950；证据等级：tool_observed）；
+- 最终构建输出 `[100%] Built target op_rms_norm`（来源平台：950；证据等级：artifact_verified）。
 
 ## 失效边界
 
@@ -149,3 +150,72 @@ __simd_vf__ inline void reduce_sq_vf(__ubuf__ float *sumSqAddr, __ubuf__ float *
 ## 误诊
 
 静态断言中的“current device”容易让人误判为硬件不支持 float。实际不支持的是被错误推导为 `scalarValue` 的 `RegTensor` 类型，而不是 float 数据类型。
+
+## 增量（2026-09-17，先前增量 · Mins/Min 取极值实例：s 后缀配对规则扩族，TBE 算子仓链）
+
+独立复现（softplus_v2_grad 算子仓工程，Ascend 950/dav-3510 + CANN 9.1.0，`operators/build.sh <pkg>` → TBE opc 编译链；工程形态从主卡的 kernel 直调扩到算子仓 TBE 链）：把两分支稳定 sigmoid 重写为单 Exp 链时需要 `-|z| = Min(-z, z)`（两个 `RegTensor` 逐元素取小），VF 计算函数里写成：
+
+```cpp
+AscendC::Reg::Muls(t, z, -1.0f, mask);    // -z
+AscendC::Reg::Mins(t, t, z, mask);         // 想要 Mins(-z, z) = -|z|
+```
+
+`CompileStage.INFERCHANNEL` 阶段编译失败（BUILD_EXIT=2），错误链与主卡 Adds 形态完全同型，报错文本指向 `kernel_reg_compute_vec_binary_scalar_impl.h`（binary_scalar 实现）：
+
+```text
+[ERROR] TBE(830625,python3): ... [ascend950] SoftplusV2Grad_6d0871149064b3432a8936840fc6eba7 In file included from
+op_kernel/softplus_v2_grad_kernel.cpp:11:
+/home/<user>/Ascend/cann-9.1.0/x86_64-linux/asc/impl/basic_api/reg_compute/../../basic_api/reg_compute/dav_3510/kernel_reg_compute_vec_binary_scalar_impl.h:224:5: error: static assertion failed due to requirement 'SupportType<AscendC::Reg::RegTensor<float, AscendC::Reg::RegTraitNumOne>, unsigned char, signed char, unsigned short, short, unsigned int, int, half, float, __bf16, unsigned long, long>()': current scalarValue data type is not supported on current device!
+/home/<user>/Ascend/cann-9.1.0/x86_64-linux/asc/impl/basic_api/reg_compute/../../basic_api/reg_compute/dav_3510/kernel_reg_compute_vec_binary_scalar_impl.h:226:5: error: static assertion failed due to requirement 'AscendC::Std::is_convertible<AscendC::Reg::RegTensor<float, AscendC::Reg::RegTraitNumOne>, float>()': scalarValue data type could be converted to RegTensor data type
+kernel_reg_compute_vec_binary_scalar_impl.h:231:9: error: no matching function for call to 'vmins'
+3 errors generated.
+op_kernel/softplus_v2_grad_kernel.cpp:109:23: note: in instantiation of function template specialization 'AscendC::Reg::Mins<...RegTensor<float...>, ...RegTensor<float...>>' requested here
+Exception: An error occurred during compile phases of CompileStage.INFERCHANNEL
+```
+
+报错乍看像 fp32 在 dav_3510 上不支持或平台配置问题，实际被实例化的是 `Mins<..., RegTensor<float>, ..., RegTensor<float>>`——第三参被当成了标量。
+
+修复（仅一处符号 `Mins` → `Min`，注释同步更正；before/after verbatim，SoftplusV2GradVF 内稳定 sigmoid 单 Exp 链）：
+
+```cpp
+        // ---- before：编译失败点 ----
+        // ---- stable sigmoid via single Exp: e = exp(-|z|), s = 1/(1+e) ----
+        // -|z| = Mins(-z, z) ≤ 0  → exp arg always ≤ 0, e ∈ (0,1], no overflow
+        AscendC::Reg::Muls(t, z, -1.0f, mask);    // -z
+        AscendC::Reg::Mins(t, t, z, mask);         // Mins(-z, z) = -|z|   ← 编译失败点
+        AscendC::Reg::Exp(t, t, mask);              // e = exp(-|z|) ∈ (0,1]
+        AscendC::Reg::Adds(t, t, 1.0f, mask);       // 1 + e
+        AscendC::Reg::Div(sig, one, t, mask);       // s = 1/(1+e) = sig_pos
+        AscendC::Reg::Sub(sn, one, sig, mask);      // 1-s = sig_neg
+```
+
+```cpp
+        // ---- after：binary 族，编译通过 ----
+        // ---- stable sigmoid via single Exp: e = exp(-|z|), s = 1/(1+e) ----
+        // -|z| = Min(-z, z) ≤ 0  → exp arg always ≤ 0, e ∈ (0,1], no overflow
+        AscendC::Reg::Muls(t, z, -1.0f, mask);    // -z
+        AscendC::Reg::Min(t, t, z, mask);          // Min(-z, z) = -|z|   ← binary 族，编译通过
+        AscendC::Reg::Exp(t, t, mask);              // e = exp(-|z|) ∈ (0,1]
+        AscendC::Reg::Adds(t, t, 1.0f, mask);       // 1 + e
+        AscendC::Reg::Div(sig, one, t, mask);       // s = 1/(1+e) = sig_pos
+        AscendC::Reg::Sub(sn, one, sig, mask);      // 1-s = sig_neg
+```
+
+s 后缀配对规则（本增量把主卡 Add/Adds 结论推广到取极值族）：`Mins/Maxs(dst, src, scalar)` ↔ `Min/Max(dst, src0, src1)`；命名后缀 `s` 即“带 scalar”。`Adds/Muls` 同为 binary_scalar（链内 `Adds(t, t, 1.0f, mask)` 合法），不要把该族误推广到取极值上。
+
+### 复现增量验证信号
+
+- 修复前 `./build.sh softplus_v2_grad_package` 失败：`kernel_reg_compute_vec_binary_scalar_impl.h:224:5` 与 `226:5` 两条 static assertion（`SupportType<...>` / `is_convertible<RegTensor<float>, float>`）+ `231:9: error: no matching function for call to 'vmins'`，`CompileStage.INFERCHANNEL` 异常，`make: *** [Makefile:228: binary] Error 2`（来源平台：950；证据等级：tool_observed）。
+- 改为 `AscendC::Reg::Min(t, t, z, mask)` 后同命令构建成功：`Compile op info cfg successfully. Self-extractable archive "custom_opp_ubuntu_x86_64.run" successfully created`（来源平台：950；证据等级：tool_observed）。
+- 修复后全量 ST：`total=25 PASSED=25 FAILED=0 ERROR=0`（Branch-1 15/15、Branch-2 10/10），精度符合 DESIGN 阈值（fp32 rtol=atol=1e-5，fp16 rtol=atol=1e-3）（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量失效边界
+
+- 该单 Exp 优化对带宽受限的 2R+1W elementwise kernel 无带宽收益：实测优化前后带宽基本持平（计算版约为同链纯拷贝对照路线的九成余，来源平台：950；证据等级：tool_observed），计算已被 MTE 搬运完全隐藏；仅当 kernel 计算受限（超越函数密集、读写比低）时该链才有性能价值。
+- 结论限定 `AscendC::Reg` 命名空间（`basic_api/reg_compute`）在 dav_3510 上的签名语义；UB 层（非 Reg 命名空间）的 `AscendC::Min/Mins` 系列 LocalTensor 重载语义与 Cube/AIC 侧均未在本轨迹验证。
+- 未验证，推断可迁移：bf16/fp16 RegTensor 同样受此签名约束（同一模板头文件）。
+
+### 复现增量坏实践
+
+- 见到 "not supported on current device" 就怀疑芯片能力/dtype 白名单——本例设备与 dtype 完全正常，是参数种类（张量 vs 标量）不匹配，与主卡误诊条目一致。
+- 凭 UB 层 API 的命名直觉直接写 Reg 层调用——Reg 层 `Mins` 语义与 UB 层同名 API 的参数约定可能不同，写前先查 `kernel_reg_compute_vec_binary_scalar_intf.h`/`_impl.h`。

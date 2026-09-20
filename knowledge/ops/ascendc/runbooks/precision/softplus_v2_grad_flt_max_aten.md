@@ -60,8 +60,8 @@ aliases: ["intermediate_overflow", "stable_form"]
 
 以下信号来自本次开发会话在 Ascend950PR 上的 PyTorch ST / C++ ST 全量回归。
 
-- 修复 3 个 bug 后残留 7 个失败用例，其输入属性均为 `gradOutput=±FLT_MAX(3.4028235e+38)` 或 `threshold=858`，超出 spec `extreme_inputs` 范围（来源平台:950；证据等级:tool_observed）。
-- 同次回归 L0 51/51 PASS、C++ ST 57/57 PASS、全量 571/578（残留即本 7 例）（来源平台:950；证据等级:tool_observed）。
+- 修复 3 个 bug 后残留 7 个失败用例，其输入属性均为 `gradOutput=±FLT_MAX(3.4028235e+38)` 或 `threshold=858`，超出 spec `extreme_inputs` 范围（来源平台：950；证据等级：tool_observed）。
+- 同次回归 L0 51/51 PASS、C++ ST 57/57 PASS、全量 571/578（残留即本 7 例）（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

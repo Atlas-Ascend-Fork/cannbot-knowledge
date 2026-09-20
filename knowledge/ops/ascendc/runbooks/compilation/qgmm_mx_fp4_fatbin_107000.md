@@ -53,9 +53,9 @@ demangle 该 symbol 得 `qgmm_mx_kernel<uint8_t, uint8_t, AscendC::Te::NDExtLayo
 
 ## 验证信号
 
-- `[ERROR] [Bisheng] Get kernel function failure! ret 107000` + `Cannot find kernel by name _Z14qgmm_mx_kernelIhhN7AscendC2Te14NDExtLayoutPtnENS1_11NZLayoutPtnEEv...`（来源平台:950；证据等级:tool_observed）
-- 输出 `actual=0.0, mismatches=4035/4096`（kernel 未执行致全零，非精度逻辑问题）（来源平台:950；证据等级:tool_observed）
-- fatbin 注册 kernel 均为 FP8 变体（`u6__fp8e4m3`/`u6__fp8e5m2`），FP4（`hh`）变体缺失（来源平台:950；证据等级:tool_observed）
+- `[ERROR] [Bisheng] Get kernel function failure! ret 107000` + `Cannot find kernel by name _Z14qgmm_mx_kernelIhhN7AscendC2Te14NDExtLayoutPtnENS1_11NZLayoutPtnEEv...`（来源平台：950；证据等级：tool_observed）
+- 输出 `actual=0.0, mismatches=4035/4096`（kernel 未执行致全零，非精度逻辑问题）（来源平台：950；证据等级：tool_observed）
+- fatbin 注册 kernel 均为 FP8 变体（`u6__fp8e4m3`/`u6__fp8e5m2`），FP4（`hh`）变体缺失（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

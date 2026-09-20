@@ -1,13 +1,14 @@
 ---
 type: "Runbook"
 title: "TQue 输入未释放导致循环 AllocTensor 卡死"
-description: "循环内 DeQue 的输入 Tensor 未归还 TQue，耗尽队列 buffer 后后续 AllocTensor 无进展；消费完成立即 FreeTensor。"
+description: "循环内 DeQue 的输入 Tensor 未归还 TQue，耗尽队列 buffer 后后续 AllocTensor 无进展；消费完成立即 FreeTensor。复现增量：跨阶段持有 + 同队列二次 Alloc（复用为 int64 输出）同样永久阻塞（depth=1 队列槽位被占）；输入队列 buffer 按原 dtype 尺寸分配被大 dtype 复用会静默溢出——编码后立即释放 + 输出改直写 GM 修复。"
 tags: ["task.debugging", "topic.implementation.pipeline"]
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T04:15:00Z"
 platforms: ["950"]
+cann_versions: ["9.0.1", "9.1.0"]
 ---
 
 # TQue 输入未释放导致循环 AllocTensor 卡死
@@ -215,9 +216,9 @@ platforms: ["950"]
 
 本知识来自一次 Ascend 950PR 直调归约 kernel 的开发会话：先用定向上板探针复现循环规模增加后的无进展，再补齐输入队列 `FreeTensor`，最后执行同类探针与完整评测。
 
-- 修复前，探针只输出较小规模 fp16/fp32 的 `pass=True`，进入更长循环后 180 秒内没有后续输出并被停止（950 / CANN 9.0.1，证据等级: tool_observed）；
-- 修复后，同类探针对 fp16/fp32 的六组递增规模组合全部输出 `pass=True`，并返回 `ALL TESTS PASSED`（950 / CANN 9.0.1，证据等级: tool_observed）；
-- 最终 cann-bench 重新编译并完成 20/20 精度用例，未再出现该挂起（950 / CANN 9.0.1，证据等级: tool_observed）。
+- 修复前，探针只输出较小规模 fp16/fp32 的 `pass=True`，进入更长循环后 180 秒内没有后续输出并被停止（来源平台：950 / CANN 9.0.1；证据等级：tool_observed）；
+- 修复后，同类探针对 fp16/fp32 的六组递增规模组合全部输出 `pass=True`，并返回 `ALL TESTS PASSED`（来源平台：950 / CANN 9.0.1；证据等级：tool_observed）；
+- 最终 cann-bench 重新编译并完成 20/20 精度用例，未再出现该挂起（来源平台：950 / CANN 9.0.1；证据等级：tool_observed）。
 
 ## 失效边界
 
@@ -234,3 +235,57 @@ platforms: ["950"]
 ## 误诊
 
 开发过程中曾把规模增大后的无进展主要归因于逐行 `GetValue` 同步开销，并先引入跨行批量路径。后续定向探针显示：超过少量循环后稳定无进展，代码审计又发现输入侧唯一缺少 `FreeTensor`；补齐后同类探针立即全部完成。因此“标量同步慢”不能替代本卡的生命周期根因。
+## 复现增量：跨阶段持有 + 同队列二次 Alloc 死锁（return_inverse 路径挂起）
+
+另一独立轨迹并入独立 trace（去重算子，对标 `torch.unique`，Ascend950PR / arch35，CANN 9.1.0）的变体：`inputLocal` 从 `inputQueue_`（`pipe.InitBuffer(inputQueue_, 1, ubFactor_ * MAX_ELEM_SIZE)`，深度 1）分配后**直到函数结尾才释放**，而 `HAS_INVERSE` 分支中途又对同一个 `inputQueue_` 调用 `AllocTensor<int64_t>()` 分配 inverse 输出缓冲——深度 1 的队列槽位被占，第二次 `AllocTensor` 永久阻塞，kernel 挂死。与主文"循环遗漏 FreeTensor 耗尽 buffer"同根因（槽位不归还），形态差异是"单次 Process 内跨阶段持有 + 同队列换 dtype 二次 Alloc"。
+
+症状：编译安装通过、UT 35/35 通过后，ST Real 模式 `return_inverse=false` 的 16 个用例全部通过（不触发二次 Alloc），`return_inverse=true` 的首个用例（fp16 256 元素小 shape）即挂起——`EXIT_CODE=124`（300/600 秒超时被杀、无任何输出）。小 shape 毫秒级应完成的用例挂起是死锁类 bug 而非性能问题的判别信号；挂起精确绑定 return_inverse=true 路径。
+
+**并发第二个缺陷（同源）**：`inputQueue_` 的 buffer 按 `ubFactor_ * MAX_ELEM_SIZE` 分配（fp16 的 MAX_ELEM_SIZE=2 → 20928 字节），被复用为 `int64_t` inverse 输出时需要 `n * 8` 字节，fp16 下 n>2616 即溢出；`mergeBuf_` 同样按小元素尺寸分配，容纳 int64_t 数组同样不足——把输入 TQue 复用为其他 dtype 的输出缓冲：既埋死锁又埋 buffer 溢出。
+
+修复（三处，verbatim 关键段）：
+
+第一处——编码完成后立即释放 `inputQueue_`，让槽位在排序/去重阶段就可用：
+
+```cpp
+    auto keyLocal = keyBuf_.template Get<uint16_t>();
+    auto idxLocal = idxBuf_.template Get<int32_t>();
+    for (int64_t i = 0; i < n; i++) {
+        idxLocal.SetValue(i, static_cast<int32_t>(i));
+        EncodeElement(keyLocal, i, inputLocal, i);
+    }
+    // 编码完成后释放 inputQueue_，避免 HAS_INVERSE 路径复用时 TQue 死锁
+    inputQueue_.FreeTensor(inputLocal);
+```
+
+第二处——HAS_INVERSE 分支整体改为去重循环内直接标量写 GM inverse，删除对 `inputQueue_` 的复用（同时消除 int64_t buffer 溢出风险）：
+
+```cpp
+    if constexpr (HAS_INVERSE) {
+        for (int64_t i = 0; i < n; i++) {
+            bool isNew = !hasPrev || !KeyEqual(keyLocal, i, i - 1);
+            if (isNew) {
+                DecodeKey(yLocal, uniqueCount, keyLocal, i);
+                uniqueCount++;
+                hasPrev = true;
+            }
+            int32_t origIdx = idxLocal.GetValue(i);
+            // 直接标量写入 GM inverse（避免 UB buffer 大小不足）
+            outputGMInv_.SetValue(origIdx, static_cast<int64_t>(uniqueCount - 1));
+        }
+```
+
+第三处——删除函数末尾现在多余的释放（已在编码后释放过）。
+
+**独立 trace 新增验证信号**（去重算子联调，Ascend950PR + CANN 9.1.0）：
+
+- 修复前：`--scope=iter2` 首用例（fp16 256 元素 ri=true）挂起，`EXIT_CODE=124`；`--scope=all` 600s 超时无输出（来源平台：950；证据等级：tool_observed）。
+- 修复前对照：iter1（全部 ri=false）16/16 PASS——挂起精确绑定 return_inverse=true 路径（来源平台：950；证据等级：tool_observed）。
+- 修复后：iter1 16/16 无回归；iter2 34/40 通过（首用例 K/y/inverse 全对，剩余 6 失败均为大 shape 已知限制）；全量 121 用例 107 通过；UT 35/35 回归确认（来源平台：950；证据等级：tool_observed）。
+
+**独立 trace 扩展边界与坏实践增补**：
+
+- depth=1 的 TQue，`AllocTensor` 后必须保证**所有可能再次 Alloc 同一队列的路径执行前**已 `FreeTensor`；最稳的纪律是"数据用完立即释放，不要持有过阶段边界"。
+- 不要把输入 TQue 复用为其他 dtype 的输出缓冲：buffer 尺寸按原 dtype 的元素大小分配，换大 dtype（如 int64）会静默溢出。
+- inverse 直写 GM 的性能代价（n 较大时标量写慢于成块搬运）未量化；对超大 n 的性能敏感算子应改为独立 int64 TBuf + 成块搬运。
+- 测试范围只有 `ri=false` 时就认为 kernel 稳定——分支覆盖不足让死锁逃逸到联调阶段（ST 用例集须让 return_inverse=true/false、各 dtype、小/大 shape 交叉覆盖）。

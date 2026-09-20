@@ -282,10 +282,10 @@ __aicore__ inline void ProcessRow(int64_t row)
 
 来源是一次 Ascend950 Softmax last-axis 规约修复及连续上板验证：
 
-- `K=VL+1`、多 VL 与尾块 probe 的输出和均恢复为 `1.000000`，递增输入 max diff 为 `3.725e-09` 到 `5.960e-08`（来源平台: 950；证据等级: tool_observed）；
-- 完整 pytest `49/49 PASSED`（来源平台: 950；证据等级: tool_observed）；
-- 干净重建后再次 `49/49 PASSED`（来源平台: 950；证据等级: tool_observed）；
-- cann-bench 全部 20 个 case 精度通过、通过率 100%（来源平台: 950；证据等级: tool_observed）。
+- `K=VL+1`、多 VL 与尾块 probe 的输出和均恢复为 `1.000000`，递增输入 max diff 为 `3.725e-09` 到 `5.960e-08`（来源平台：950；证据等级：tool_observed）；
+- 完整 pytest `49/49 PASSED`（来源平台：950；证据等级：tool_observed）；
+- 干净重建后再次 `49/49 PASSED`（来源平台：950；证据等级：tool_observed）；
+- cann-bench 全部 20 个 case 精度通过、通过率 100%（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

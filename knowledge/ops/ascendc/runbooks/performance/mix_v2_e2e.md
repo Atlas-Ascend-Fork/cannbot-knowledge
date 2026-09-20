@@ -38,9 +38,9 @@ aliases: ["sparse_flash_attention_quant_d_950"]
 
 ## 验证信号
 
-- V2 入 Mix合图态 AICore profiling：Total Task Count 减半（2304→约 1536）、Utilization 升（67%→约 80%）、E2E 劣化约 1.13×、精度 28 误差点通过（来源平台:950；证据等级:tool_observed）
-- 最优对照态（V2 不入 Mix合图）AICore profiling：Total Task Count 2304、Utilization 67%、E2E 处于最优量级、精度 28 误差点通过（来源平台:950；证据等级:tool_observed）
-- V2 入 Mix合图态二次确认 run：Total Task Count、Utilization 与 E2E 与首次一致（来源平台:950；证据等级:tool_observed）
+- V2 入 Mix合图态 AICore profiling：Total Task Count 减半（2304→约 1536）、Utilization 升（67%→约 80%）、E2E 劣化约 1.13×、精度 28 误差点通过（来源平台：950；证据等级：tool_observed）
+- 最优对照态（V2 不入 Mix合图）AICore profiling：Total Task Count 2304、Utilization 67%、E2E 处于最优量级、精度 28 误差点通过（来源平台：950；证据等级：tool_observed）
+- V2 入 Mix合图态二次确认 run：Total Task Count、Utilization 与 E2E 与首次一致（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

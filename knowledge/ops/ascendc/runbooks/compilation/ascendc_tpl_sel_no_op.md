@@ -89,11 +89,11 @@ Ascend950 / CANN 9.1.0 上 `bash run.sh`（sourced CANN env）输出 `==== ST su
 
 来源：本次开发会话对 `euclidean_norm_package` 的 `build.sh` + `inspect_build.py` + `tests/aclnn/run.sh` 实测（Ascend950 / CANN 9.1.0）。
 
-- 修复前 `bash run.sh`：`==== ST summary: 73 pass / 0 fail / 7 skip / 0 err / 80 total ====`，7 skip 为 `b4_29_nan_fp32` / `b4_30_all_zero_fp32` / `b4_31_fp16_overflow` / `b4_32_pos_inf_fp32` / `b4_33_neg_inf_fp32` / `b4_34_nan_plus_inf_fp32` / `b4_35_negative_fp32`，逐条 `SKIP (no golden)`（来源平台:950；证据等级:tool_observed）
-- 修复前 kernel 入口 `euclidean_norm_apt.cpp` 为非模板 `extern "C"` + 运行时 if/else + 末尾 `AscendC::PipeBarrier<PIPE_ALL>()` fall-through no-op 兜底（before-state 代码以非 redacted 文件读取 tool_result 逐字保留）（来源平台:950；证据等级:tool_observed）
-- `tiling_struct.h` 修复前为 include shim 无 `ASCENDC_TPL_*` 宏；`CMakeLists.txt` 含 `npu_op_kernel_options(... OPTIONS "--tiling_key=0,1,2,3,4")` 手动注册；`op_host/euclidean_norm_def.cpp` 的 `TilingFunc`/`FillEmptyTilingData` 未调用 `SetTilingKey`（来源平台:950；证据等级:artifact_verified）
-- 对齐规范（模板化入口 + `ASCENDC_TPL_SEL` + host `SetTilingKey(GET_TPL_TILING_KEY)` + 删 `--tiling_key`）后 `bash run.sh`：`==== ST summary: 80 pass / 0 fail / 0 skip / 0 err / 80 total ====`，原 7 skip 全部转 pass（来源平台:950；证据等级:tool_observed）
-- 修复后 `inspect_build.py`：`dtype combinations: 3`、`.o files found: 3`、`Total sub-kernels: 15`、`✅ Pipeline status: COMPLETE (3/3 .o files)`，sub-kernel 数 = 外层 dtype(3) × 内层 `ASCENDC_TPL_SEL` 行数(5)（来源平台:950；证据等级:tool_observed）
+- 修复前 `bash run.sh`：`==== ST summary: 73 pass / 0 fail / 7 skip / 0 err / 80 total ====`，7 skip 为 `b4_29_nan_fp32` / `b4_30_all_zero_fp32` / `b4_31_fp16_overflow` / `b4_32_pos_inf_fp32` / `b4_33_neg_inf_fp32` / `b4_34_nan_plus_inf_fp32` / `b4_35_negative_fp32`，逐条 `SKIP (no golden)`（来源平台：950；证据等级：tool_observed）
+- 修复前 kernel 入口 `euclidean_norm_apt.cpp` 为非模板 `extern "C"` + 运行时 if/else + 末尾 `AscendC::PipeBarrier<PIPE_ALL>()` fall-through no-op 兜底（before-state 代码以非 redacted 文件读取 tool_result 逐字保留）（来源平台：950；证据等级：tool_observed）
+- `tiling_struct.h` 修复前为 include shim 无 `ASCENDC_TPL_*` 宏；`CMakeLists.txt` 含 `npu_op_kernel_options(... OPTIONS "--tiling_key=0,1,2,3,4")` 手动注册；`op_host/euclidean_norm_def.cpp` 的 `TilingFunc`/`FillEmptyTilingData` 未调用 `SetTilingKey`（来源平台：950；证据等级：artifact_verified）
+- 对齐规范（模板化入口 + `ASCENDC_TPL_SEL` + host `SetTilingKey(GET_TPL_TILING_KEY)` + 删 `--tiling_key`）后 `bash run.sh`：`==== ST summary: 80 pass / 0 fail / 0 skip / 0 err / 80 total ====`，原 7 skip 全部转 pass（来源平台：950；证据等级：tool_observed）
+- 修复后 `inspect_build.py`：`dtype combinations: 3`、`.o files found: 3`、`Total sub-kernels: 15`、`✅ Pipeline status: COMPLETE (3/3 .o files)`，sub-kernel 数 = 外层 dtype(3) × 内层 `ASCENDC_TPL_SEL` 行数(5)（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

@@ -53,8 +53,8 @@ padding 后构建通过（`BUILD_EXIT=0`、`MAKE_EXIT=0`）、kernel JSON `opPar
 
 ## 验证信号
 
-- padding 后 `BUILD_EXIT=0`、`MAKE_EXIT=0`、aclnn 运行 `EXIT=139`（Segfault 依旧，未变）（来源平台:950；证据等级:tool_observed）。
-- Task 27（commit 8519f1e0）aclnn 最小通路 exit 0 PASS、Task 28 后回归为 exit 139，回归窗口明确（来源平台:950；证据等级:tool_observed）。
+- padding 后 `BUILD_EXIT=0`、`MAKE_EXIT=0`、aclnn 运行 `EXIT=139`（Segfault 依旧，未变）（来源平台：950；证据等级：tool_observed）。
+- Task 27（commit 8519f1e0）aclnn 最小通路 exit 0 PASS、Task 28 后回归为 exit 139，回归窗口明确（来源平台：950；证据等级：tool_observed）。
 
 ## 坏实践
 

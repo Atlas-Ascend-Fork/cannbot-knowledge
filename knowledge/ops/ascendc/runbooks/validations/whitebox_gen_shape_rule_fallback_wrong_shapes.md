@@ -1,16 +1,16 @@
 ---
 type: "Runbook"
 title: "白盒生成输出形状全错：golden 探测静默回退 shape_rule"
-description: "白盒统一入口设 golden_path 后，golden 形状探测对 TestSpec 类 golden 不生效，output_shapes 静默落入 broadcast/placeholder 占位且 CSV 格式校验全过；改用 spec outputs[].shape_rule 并以 _shape_source 审计交付。"
+description: "白盒统一入口设 golden_path 后，golden 形状探测对 TestSpec 类 golden 不生效，output_shapes 静默落入 broadcast/placeholder 占位且 CSV 格式校验全过；改用 spec outputs[].shape_rule 并以 _shape_source 审计交付。复现增量：golden_path 的逐例子进程探测对 torch 实现 golden 必然失败（numpy probe 触发 .to() AttributeError）且每例 ~1s torch import 纯开销，全量结构目标（300+ 例）线性膨胀超时；输出形状可由 shape_rule 精确表达时置 design_facts.golden_path=null 跳过探测。"
 tags: [task.testing, topic.implementation.debugging]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-17T02:41:05Z'
 platforms: ["agnostic"]
 ---
-# 白盒生成输出形状全错：golden 探测静默回退 shape_rule
 
+# 白盒生成输出形状全错：golden 探测静默回退 shape_rule
 
 ## 现象
 
@@ -405,7 +405,7 @@ print('B=4,H=0,bias=true :', [tuple(np.asarray(o).shape) for o in outs])
 
 ## 失效边界
 
-- 本卡锚定 ascendc-whitebox-design 统一入口在 repo revision `cf5a9a8…` 的行为；其他 helper 版本未验证（未验证，推断可迁移）。
+- 本卡锚定 ascendc-whitebox-design 统一入口在 repo revision `cf5a9a8…` 的行为；其他 helper 版本未验证（推断可迁移）。
 - plain-function 形态 golden 的探测行为未验证（本例为 TestSpec 类形态）。
 - shape_rule 的 numpy_expr 求值命名空间已验证含输入张量与 attrs（has_bias）；更复杂的跨输出依赖未验证。
 - 生成的用例集目标为 950 kernel 模式，但本会话未上板执行（属下游白盒执行任务）——形状正确性为生成期+golden 探测双重核对，非执行期实测。
@@ -422,3 +422,27 @@ print('B=4,H=0,bias=true :', [tuple(np.asarray(o).shape) for o in outs])
 - "输出形状错是 op_name 命名（snake_case/CamelCase）问题"——无关：命名只影响运行期 golden 解析，不影响生成期形状推导（见配套的 TTK golden 解析诊断知识）。
 
 
+
+## 后续增量（2026-09-17，并行策展批：golden_path 逐例探测的成本维度与置 null 修复）
+
+RoPE 算子 interleaved 分支（宿主 x86_64 生成环境，无 NPU 参与）补齐本卡的两个未验证点并新增超时形态：
+
+**1. plain-function torch golden 的探测行为（补齐"plain-function 形态未验证"边界）**：torch 实现的 golden（内部 `.to(compute_dtype)` 等张量方法）同样**不可被探测**——引擎对每个用例 spawn 子进程 `infer_output_shapes_via_golden`：读 stdin JSON → `import golden` → 造 numpy zeros probe 入参 → 调 golden → 打印输出形状；probe 传入的是 numpy 数组，golden 内 `.to(compute_dtype)` 抛 AttributeError 被捕获后打印 "null" 退出——探测**必然失败并回退 shape_rule**。
+
+**2. 成本维度（新失败形态：全量结构目标超时）**：探测虽必然失败，成本照付——每次子进程 `import torch` 约 0.6s（实测 `torch 2.7.1+cpu in 0.6 s`），约 1s/例；opspec 的 attr values 收窄到本分支后结构目标恢复全量（约 324 个 rank-4 目标）时，`design-to-ttk` 在 120s shell 超时被杀、无任何输出（此前小规模 70 例可完成——耗时随用例数线性膨胀）。
+
+**3. 修复（golden_path=null）**：输出形状可由 opspec `outputs[].shape_rule` 精确表达（如 `queryOut.shape = query.shape`）时，`design_facts.json` 置 `"golden_path": null` 跳过逐例探测（golden 路径仍记入 `WORKFLOW_PROVENANCE.json` 的 `inputs.golden_path` 供下游执行侧算期望值）；缺省时输出形状依次回退 `spec/opspec outputs[].shape_rule` → 广播 → 首输入占位，期望值现算发生在下游 TTK 执行侧（golden 插件），与生成期 `golden_path` 无关——置 null 无信息损失。
+
+### 复现增量验证信号
+
+- golden_path 指向 torch golden + 全量结构目标：`design-to-ttk` 超过 120000ms 被 shell 终止、无输出（来源平台：宿主 x86_64 生成环境，无 NPU 参与（agnostic）；证据等级：tool_observed）。
+- `golden_path: null` 后同命令退出码 0，输出 `wrote 301 generated cases`，耗时数秒（来源平台：宿主 x86_64（agnostic）；证据等级：tool_observed）。
+- 生成的 `design_doc_cases.json` 中 301（终版 238）条用例 `_shape_source` 全部为 `shape_rule`、无 placeholder——形状信息无损失（来源平台：宿主 x86_64（agnostic）；证据等级：tool_observed）。
+- torch import 单次成本探针：`torch 2.7.1+cpu in 0.6 s`；324 例 × ~1s/例 ≈ 324-648s（来源平台：宿主 x86_64（agnostic）；证据等级：tool_observed）。
+
+### 复现增量边界与坏实践
+
+- 置 null 的前提是 `outputs[].shape_rule` 能**精确**表达输出形状；形状不显然（非显然的推导/广播归约形状）的算子仍须 golden 探测，应改用更大的执行超时而不是置 null。
+- 本增量只解决生成期探测成本；下游 TTK 执行侧的 golden 桥接（numpy↔torch）是另一独立问题，见 [TTK kernel模式torch golden的numpy桥接插件](ttk_kernel_golden_plugin_numpy_torch_bridge.md)。
+- 引擎若改为批量/缓存探测，本卡耗时结论过期；"每用例一个子进程"基于当前实现。
+- 坏实践增补：golden_path 指向 torch golden 却指望它给出输出形状（探测注定失败回退 shape_rule，白付每例约 1s 的 import 成本）；遇超时只加大 timeout 重跑（能跑完但浪费数分钟在注定失败的子进程上）。

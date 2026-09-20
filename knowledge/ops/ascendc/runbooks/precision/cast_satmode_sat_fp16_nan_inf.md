@@ -55,9 +55,9 @@ static constexpr Reg::CastTrait castTrait = {
 
 ## 验证信号
 
-- case08/09/10 在上述全部 castTrait 调参尝试后仍 FAIL，`actual=65504.000000 / 65536.000000`（来源平台:950；证据等级:tool_observed）。
-- `CastIntrinsicsImplVF` castTrait 硬编码 `Reg::SatMode::SAT`，来自 CANN 头文件 `asc/impl/basic_api/dav_3510/kernel_operator_vec_vconv_impl.h`（及 `reg_compute/dav_3510/kernel_reg_compute_vec_vconv_impl.h`）file_read（来源平台:950；证据等级:artifact_verified）。
-- ST 最终 8/11 PASSED，3 条 fp16 NaN/Inf/overflow 标记为硬件限制，未放宽测试容差（来源平台:950；证据等级:tool_observed）。
+- case08/09/10 在上述全部 castTrait 调参尝试后仍 FAIL，`actual=65504.000000 / 65536.000000`（来源平台：950；证据等级：tool_observed）。
+- `CastIntrinsicsImplVF` castTrait 硬编码 `Reg::SatMode::SAT`，来自 CANN 头文件 `asc/impl/basic_api/dav_3510/kernel_operator_vec_vconv_impl.h`（及 `reg_compute/dav_3510/kernel_reg_compute_vec_vconv_impl.h`）file_read（来源平台：950；证据等级：artifact_verified）。
+- ST 最终 8/11 PASSED，3 条 fp16 NaN/Inf/overflow 标记为硬件限制，未放宽测试容差（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

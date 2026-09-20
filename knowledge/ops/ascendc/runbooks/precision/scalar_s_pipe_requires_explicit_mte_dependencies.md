@@ -6,7 +6,7 @@ tags: ["task.debugging", "topic.implementation.synchronization", "topic.implemen
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-16T11:20:30Z"
 platforms: ["950"]
 ---
 
@@ -28,7 +28,7 @@ AssertionError: cummin values mismatch ... max diff=11.84765625
 - API 路径：`TPipe`、`TQue`/`TBuf`、`DataCopyPad`、`PipeBarrier<PIPE_ALL>()` 与 `__ubuf__` 指针；
 - 验证过的平台与 CANN 版本：950 / CANN 9.0.1；与 frontmatter `platforms` 一致；
 - 适用粒度：`operator_family`，适用于所有由标量 S pipe 直接消费 MTE2 结果或生产 MTE3 输入的 kernel；
-- 路线优先级：`safety_fallback`；**这是 fallback，性能不是最优，追求性能请用另一路线（见 ## 相关）。** 当前草稿不建相关链接，精细 HardEvent/向量化路线待 curator 对齐；
+- 路线优先级：`safety_fallback`；**这是 fallback，性能不是最优，追求性能请用另一路线（见 ## 后续增量的 HardEvent 精细路线，注意其紧循环失步限制）。**
 - 明确不适用：计算完全位于 Vector pipe 且由 TQue 正确管理的向量流水；未验证 Cube pipe、跨核同步和异步多 buffer 流水。
 
 ## 根因
@@ -250,13 +250,13 @@ path: `operators/cummin/cummin.asc`；symbols: `KernelCummin<T>::StoreOut`、`Ke
 
 本知识来自一次 Ascend C 前缀扫描 kernel 的首次上板失败与同步修复：同一源码在替换 buffer/sync 路径前后连续构建和复验。
 
-- 修复前首个 NPU 数据用例失败，结果全为同一错误常量且 `max diff=11.84765625`（950，证据等级: tool_observed）；
-- 修复后完整 NPU pytest `40/40` 通过（950，证据等级: tool_observed）；
-- 干净重建后再次得到 `40 passed`（950，证据等级: tool_observed）；
-- 最终 cann-bench `20/20` 通过，浮点 values 误差为 0，整数 values 与全部 indices 精确匹配（950，证据等级: tool_observed）。
+- 修复前首个 NPU 数据用例失败，结果全为同一错误常量且 `max diff=11.84765625`（来源平台：950；证据等级：tool_observed）；
+- 修复后完整 NPU pytest `40/40` 通过（来源平台：950；证据等级：tool_observed）；
+- 干净重建后再次得到 `40 passed`（来源平台：950；证据等级：tool_observed）；
+- 最终 cann-bench `20/20` 通过，浮点 values 误差为 0，整数 values 与全部 indices 精确匹配（来源平台：950；证据等级：tool_observed）。
 
-- 独立复现 R1：在标量读取前增加 MTE2→S 的 PIPE_ALL、标量写后增加 S→MTE3 的 PIPE_ALL 后，n=5/8/64/1024 四组 1D+d1 探针均 ok=True、det=True（950，tool_observed）。
-- 独立复现 R2：补齐 Scalar pipe 与 MTE 的显式依赖后，修后 NPU pytest 40/40 通过（950，tool_observed）。
+- 独立复现 R1：在标量读取前增加 MTE2→S 的 PIPE_ALL、标量写后增加 S→MTE3 的 PIPE_ALL 后，n=5/8/64/1024 四组 1D+d1 探针均 ok=True、det=True（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R2：补齐 Scalar pipe 与 MTE 的显式依赖后，修后 NPU pytest 40/40 通过（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
@@ -273,3 +273,36 @@ path: `operators/cummin/cummin.asc`；symbols: `KernelCummin<T>::StoreOut`、`Ke
 ## 误诊
 
 整段同一常量容易被误认为“最终累加值被广播”或“数值公式错误”；本例的判别点是计算逻辑未改、只修复跨管同步后全部精度用例恢复。
+
+## 后续增量（2026-09-16，并行策展批：HardEvent 精细路线实测、地址可见性与“标量写灌 TQue”错配两个新形态）
+
+两条独立轨迹（bench_no_harness_gather 与 cross entropy loss 类算子，均为 Ascend950PR/arch35、CANN 9.1.0）把原卡“未采用的候选：用 HardEvent 分别建立依赖”补成实测路线，并新增两个错配形态。本卡证据自此覆盖三个独立 trace。
+
+**1. HardEvent 精细同步路线实测（原卡候选转正）**：gather kernel 中 S pipe 的读写结果与它计算出的地址偏移对 MTE2/MTE3 默认不可见——表现为**输出首元素错值（2.0/7.0/11.0 等，超出输入值域）其余全 0**，且 `pipe_barrier<PIPE_ALL>` 包裹 GetValue/SetValue 后输出逐位不变（无效）。修复把数据搬运改 MTE2→32B 对齐 tempBuf→MTE3 双段，index 值仍由 S pipe `GetValue` 读取（批量 index 先 MTE2 搬入 UB、读前 `SetFlag/WaitFlag<HardEvent::MTE2_S>`），S pipe 算出的 srcOffset/outOffset 通过 `S_MTE2`/`S_MTE3` 事件对对 MTE 地址可见：
+
+```cpp
+            // S → MTE2 同步：确保 srcOffset（S pipe 计算）对 MTE2 可见
+            SetFlag<HardEvent::S_MTE2>(EVENT_ID0);
+            WaitFlag<HardEvent::S_MTE2>(EVENT_ID0);
+            DataCopyPad(tempLocal, xGm[srcOffset], elemParams, {true, 0, 0, 0});
+            // MTE2 → MTE3 同步
+            SetFlag<HardEvent::MTE2_MTE3>(EVENT_ID0);
+            WaitFlag<HardEvent::MTE2_MTE3>(EVENT_ID0);
+            // S → MTE3 同步：确保 outOffset（S pipe 计算）对 MTE3 可见
+            SetFlag<HardEvent::S_MTE3>(EVENT_ID0);
+            WaitFlag<HardEvent::S_MTE3>(EVENT_ID0);
+            DataCopyPad(yGm[outOffset], tempLocal, outParams);
+```
+
+判别探针：用 `Duplicate`（V pipe）填充常量 42 替换整个逐元素循环，输出全 42.0 即隔离故障到 S pipe（CopyOut/buffer/MTE3 路径正常）。机制锚点：`kernel_reg.h` 的 `static_assert(pipe != PIPE_S, "PipeBarrier<PIPE_S> is not supported on current device!")` 与 `kernel_event.h` 的 HardEvent 枚举存在性。**限制**：该事件对方案在紧凑长循环（数百元素）中会失步（约 32B 流水深度后），须改每迭代 `pipe_barrier(PIPE_ALL)`——见同批「紧循环 SetFlag 失步需逐迭代屏障」卡。
+
+**2. 新形态：标量写（SetValue）灌 VECIN TQue 的事件模型错配**：cross entropy loss kernel 的 ND gather 分支把 `AllocTensor` 取出的 VECIN 队列 tensor 用标量 `SetValue` 逐元素灌入收集结果，再 `EnQue/DeQue` 交给 V 计算——TQue 的 EnQue/DeQue 围绕“数据由 MTE2 搬运填入”设计（事件模型按 MTE2 生产者），标量写（头文件标注 `__inout_pipe__(S)`）不被覆盖，`DeQue` 返回时写入数据不保证对后续 V 计算（ReduceMax 等）可见。表现：`none` 模式输出恒等于 ln(C)（全 0 输入的解析值，即读到残留 0）；`mean`/`sum` 模式误差被聚合摊薄（如 MERE=2.55e-04 恰超阈值，差点放过）；2D 路径（MTE2 DataCopyPad 灌入）全部通过——失败按“数据来源分支”分桶是关键判别。修复：缓冲从 TQue 换 TBuf（去掉 EnQue/DeQue/FreeTensor），2D 路径 DataCopyPad 后手动补 `SetFlag/WaitFlag<HardEvent::MTE2_V>`，ND 路径标量写依赖同核流水自然有序（修后 22 用例全过证明足够；`V_V` 事件在该 arch 编译不可用）。
+
+**3. 判别方法补充**：遇到“首元素错值+其余全 0”先做 V pipe（Duplicate 常量）对照；遇到“输出恒为全 0 输入的解析值”先按数据来源分支分桶（MTE2 灌入 vs 标量写灌入）——两者分别指向 S×MTE 可见性与 TQue 事件模型错配。
+
+**4. 坏实践补充**：用 `mean`/`sum` 聚合用例当唯一验收口径——聚合会摊薄“读到未就绪数据”类错误，让回归漏网；给每个缓冲标注“生产者流水线”（MTE2 还是标量写）——MTE2 生产 → TQue 或 TBuf+MTE2→V 事件，标量写生产 → TBuf + 自然有序（或经实测可用的显式事件）。
+
+**5. 验证信号**：
+
+- gather 轨迹：修复前 8 用例数值错误（首元素错值、其余 0.0）+ 2 用例 507035，`pipe_barrier<PIPE_ALL>` 包裹无效（来源平台：950；证据等级：tool_observed）；Duplicate 对照输出全 42.0（来源平台：950；证据等级：tool_observed）；MTE 双段 + `MTE2_S` 同步（无 S→MTE 地址同步）3/10；补 `S_MTE2`/`S_MTE3` 后 9/10 bitwise=YES（剩余为紧循环深度问题，另卡）（来源平台：950；证据等级：tool_observed）。
+- cross entropy 轨迹：修复前全量 105 用例 81 通过/24 失败（22 个 rank 3~8 精度失败 + 2 个空 tensor 段错误），L1_024 输出恒为 ln(10)（来源平台：950；证据等级：tool_observed）；换 TBuf + MTE2_V 事件后 105/105 通过、UT 74/74 无回归，L1_020/L1_024 MERE=3.55e-08/3.31e-08，回归用例 L1_027 MERE=3.36e-07（来源平台：950；证据等级：tool_observed）。

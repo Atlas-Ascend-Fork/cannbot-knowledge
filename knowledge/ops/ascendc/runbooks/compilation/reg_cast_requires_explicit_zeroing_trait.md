@@ -1,13 +1,14 @@
 ---
 type: "Runbook"
 title: "Reg Cast 默认 UNKNOWN mask 被拒 — 显式 ZEROING"
-description: "dav-3510 Reg::Cast 的默认 CastTrait 使用 MaskMergeMode::UNKNOWN，设备实现静态断言只接受 ZEROING 或 MERGING，需传显式 trait。"
+description: "dav-3510 Reg::Cast 的默认 CastTrait 使用 MaskMergeMode::UNKNOWN，设备实现静态断言只接受 ZEROING 或 MERGING，需传显式 trait。R4（CANN 9.0.0-beta.2/dav_c310）：窄化方向 f322f16 的底层 vcvt 还要求 SatMode/RegLayout 映射合法——第 5 参只接受 RS_DISABLE/RS_ENABLE、第 6 参只接受 PART_EVEN/PART_ODD；模式枚举（CMPMODE/RoundMode/SatMode）在 AscendC 顶层而非 AscendC::Reg。"
 tags: ["task.debugging", "topic.compute.elementwise.type_conversion"]
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-17T03:25:37Z"
 platforms: ["950"]
+cann_versions: ["9.0.0-beta.2", "9.0.1"]
 ---
 
 # Reg Cast 默认 UNKNOWN mask 被拒 — 显式 ZEROING
@@ -44,7 +45,7 @@ CANN 9.0.1 的默认 `castTrait` 将 `MaskMergeMode` 置为 `UNKNOWN`，而 dav-
 
 ### before
 
-代码证据：revision 为本 trace 中“移除显式 trait 参数”后的完整重建快照；path `operators/rms_norm/rms_norm.asc`；symbol `rms_norm_vf<T>`；该函数 verbatim 支撑“所有低精度 Cast 使用默认 trait”。
+代码证据：revision 为本开发会话 中“移除显式 trait 参数”后的完整重建快照；path `operators/rms_norm/rms_norm.asc`；symbol `rms_norm_vf<T>`；该函数 verbatim 支撑“所有低精度 Cast 使用默认 trait”。
 
 ```cpp
 template <typename T>
@@ -236,7 +237,7 @@ __simd_vf__ inline void rms_norm_vf(__ubuf__ T *xAddr, __ubuf__ T *gAddr, __ubuf
 
 ## 性能影响
 
-本 trace 未隔离测量显式 trait 与默认 trait 的性能差异；默认 trait 无法编译，因而不存在可比较的运行路线。
+本开发会话 未隔离测量显式 trait 与默认 trait 的性能差异；默认 trait 无法编译，因而不存在可比较的运行路线。
 
 ## 预防
 
@@ -248,18 +249,18 @@ __simd_vf__ inline void rms_norm_vf(__ubuf__ T *xAddr, __ubuf__ T *gAddr, __ubuf
 
 来源为一次 Ascend950 Reg kernel 开发会话：省略 trait 后远程构建稳定触发 merge-mode 静态断言，恢复显式 ZEROING trait 后完成构建与上板测试。
 
-- 默认 trait 构建在 widening 与 narrowing 实现中都触发 `current Cast api only supported Mode ZEROING/MERGING`（来源平台: 950；证据等级: tool_observed）。
-- 显式传入 `rms_cast_traits::castWiden/castNarrow` 后，远程构建输出 `[100%] Built target op_rms_norm`（来源平台: 950；证据等级: tool_observed）。
-- 干净重建后 NPU pytest 输出 `39 passed`，完整评测集输出 `20/20` 通过，覆盖低精度转换路径（来源平台: 950；证据等级: tool_observed）。
+- 默认 trait 构建在 widening 与 narrowing 实现中都触发 `current Cast api only supported Mode ZEROING/MERGING`（来源平台：950；证据等级：tool_observed）。
+- 显式传入 `rms_cast_traits::castWiden/castNarrow` 后，远程构建输出 `[100%] Built target op_rms_norm`（来源平台：950；证据等级：tool_observed）。
+- 干净重建后 NPU pytest 输出 `39 passed`，完整评测集输出 `20/20` 通过，覆盖低精度转换路径（来源平台：950；证据等级：tool_observed）。
 
-- 独立复现 R1：工具报告 [100%] Built target op_rms_norm。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
-- 独立复现 R2：工具报告 [100%] Built target op_rms_norm。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
-- 独立复现 R3：工具报告 [100%] Built target op_cummin。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
+- 独立复现 R1：工具报告 [100%] Built target op_rms_norm。该信号仅归属于本来源列出的精确编辑。（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R2：工具报告 [100%] Built target op_rms_norm。该信号仅归属于本来源列出的精确编辑。（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R3：工具报告 [100%] Built target op_cummin。该信号仅归属于本来源列出的精确编辑。（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
 - `ZEROING` 适合本函数所有活跃 lane 都由 mask 定义、未命中 lane 不应保留旧值的路径；依赖旧寄存器值的算法应选择并验证 `MERGING`。
-- narrowing 的 `CAST_RINT` 是本 trace 验证过的舍入路线；改成其他 RoundMode 必须重新做精度验证。
+- narrowing 的 `CAST_RINT` 是本开发会话 验证过的舍入路线；改成其他 RoundMode 必须重新做精度验证。
 - A3/A2 未验证，推断可迁移但未验证，不写入 `platforms`。
 
 ## 坏实践
@@ -270,3 +271,34 @@ __simd_vf__ inline void rms_norm_vf(__ubuf__ T *xAddr, __ubuf__ T *gAddr, __ubuf
 ## 误诊
 
 “widening 是无损转换，所以默认 UNKNOWN 应可用”是错误假设：转换数值是否无损与 mask merge mode 是否为设备支持枚举是两个独立契约。
+
+## 后续增量（2026-09-17，并行策展批：R4——f322f16 vcvt 参数断言与枚举命名空间补充）
+
+R4（BesselI1e Branch-1 FP16 上溯 FP32 的 VF 计算链，ascend950/dav_c310 设备实现，CANN 9.0.0-beta.2）：默认 trait 除 merge-mode 断言外，还会在**窄化方向**触发底层 vcvt 的参数断言（由 `SatMode::UNKNOWN`/`RegLayout::UNKNOWN`(-1) 传入 `__VF_VCVTFF_RND_SAT_PART` 引起）：
+
+```text
+error: static assertion failed ...: The 5th argument of this vcvt (f322f16) can only be: RS_DISABLE, RS_ENABLE
+error: static assertion failed ...: The 6th argument of this vcvt (f322f16) can only be: PART_EVEN, PART_ODD
+```
+
+即 f322f16 方向要求 `SatMode` 映射到 RS_DISABLE/RS_ENABLE、`RegLayout` 映射到 PART_EVEN/PART_ODD，UNKNOWN 一律非法（widening 方向走 `__VF_VCVTFF_PART`，无 rnd/sat 断言）。本轨迹验证可用的完整显式 trait（f16↔f32 双向编译通过 + Cast 往返探针数值正确）：
+
+```cpp
+constexpr AscendC::Reg::CastTrait castZERO = {
+    AscendC::Reg::RegLayout::ZERO,
+    AscendC::Reg::SatMode::NO_SAT,
+    AscendC::Reg::MaskMergeMode::ZEROING,
+    AscendC::RoundMode::CAST_NONE
+};
+// 调用侧：Cast<float, T, castZERO>(t_x, srcF16, mask); Cast<T, float, castZERO>(dstF16, t_r, mask);
+```
+
+配套事实（同轮编译修复）：这些模式枚举（`CMPMODE`/`RoundMode`/`SatMode`）定义在 `AscendC` 顶层命名空间而非 `AscendC::Reg`，`using namespace AscendC::Reg` 不会引入它们——`Compares<float, CMPMODE::LE>` 报 `use of undeclared identifier 'CMPMODE'; did you mean 'AscendC::CMPMODE'`，`AscendC::Reg::RoundMode` 报 `no member named 'RoundMode' in namespace 'AscendC::Reg'`，须写 `AscendC::CMPMODE::LE`、`AscendC::RoundMode::CAST_NONE` 全限定（同族卡：[Reg CastTrait RoundMode 命名空间卡](casttrait_roundmode_is_in_ascendc.md)、[Reg Compare 的 CMPMODE 命名空间卡](reg_compare_cmpmode_is_in_ascendc.md)）。排查路径：报错栈指向 `dav_c310/kernel_reg_compute_vec_vconv_impl.h` 的 `CastImpl` 与 `__clang_cce_vector_intrinsics.h` 宏展开，据此对照 `kernel_reg_compute_utils.h` 的 CastTrait 枚举逐字段补全。
+
+R4 验证信号：
+
+- 修复前：`current Cast api only supported Mode ZEROING/MERGING on current device!`、`The 5th argument of this vcvt (f322f16) can only be: RS_DISABLE, RS_ENABLE`、`The 6th argument ... PART_EVEN, PART_ODD`（编译器输出原文）（来源平台：950；证据等级：tool_observed）。
+- 修复后：同一 VF 文件编译通过 INFERCHANNEL 阶段，全量构建成功（来源平台：950；证据等级：tool_observed）。
+- 功能探针：CastRoundtripVF（LoadAlign→Cast f16→f32→Cast f32→f16→StoreAlign）输出与输入一致；Cast→Abs 输出 |x|（来源平台：950；证据等级：tool_observed）。
+
+R4 边界补充：CastTrait 聚合初始化按 `{layoutMode, satMode, mrgMode, roundMode}` 声明序，写错顺序会得到难以理解的断言（本例因 `RegLayout::UNKNOWN` 漏改多费一轮编译）；`ZEROING` vs `MERGING`、`CAST_NONE` vs `CAST_RINT` 对掩码外 lane 数值与精度的影响未对比；bf16↔f32 的等价 trait 组合未验证。

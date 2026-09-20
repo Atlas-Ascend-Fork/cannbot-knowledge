@@ -117,7 +117,7 @@ fixed include（revision: `76b4eab`, path: `operators/gather/gather.asc`, line 4
 
 ## 性能影响
 
-最终混合 SIMT fallback 在同一任务、同一 950 平台上相对评测基线平均约 `0.02x`（来源平台: 950；证据等级: tool_observed）。这是成对的任务内路线代价，不是可迁移的通用性能预期。
+最终混合 SIMT fallback 在同一任务、同一 950 平台上相对评测基线平均约 `0.02x`（来源平台：950；证据等级：tool_observed）。这是成对的任务内路线代价，不是可迁移的通用性能预期。
 
 ## 预防
 
@@ -130,10 +130,10 @@ fixed include（revision: `76b4eab`, path: `operators/gather/gather.asc`, line 4
 
 来源说明：这条知识来自一次 Ascend950 Flash gather 直调工程的首次远程编译、CANN 头文件核对和修复后全链路验证。
 
-- 首次远程构建稳定报告 `use of undeclared identifier 'dim3'`，并提示唯一可见声明是 `cce::dim3`（来源平台: 950；证据等级: tool_observed）。
-- 远程读取 CANN 9.0.1 `simt_api/common_functions.h`，观察到 `using dim3 = cce::dim3` 与 `asc_vf_call(dim3 threadNums, Args&&...)` 的完整定义（来源平台: 950；证据等级: tool_observed）。
-- 最终远程构建完成 `Linking ASC shared library libop_gather.so` 与 `Built target op_gather`（来源平台: 950；证据等级: tool_observed）。
-- 修复后真机 pytest 为 50/50 通过，完整 cann-bench 为 20/20 通过且精度误差为零（来源平台: 950；证据等级: tool_observed）。
+- 首次远程构建稳定报告 `use of undeclared identifier 'dim3'`，并提示唯一可见声明是 `cce::dim3`（来源平台：950；证据等级：tool_observed）。
+- 远程读取 CANN 9.0.1 `simt_api/common_functions.h`，观察到 `using dim3 = cce::dim3` 与 `asc_vf_call(dim3 threadNums, Args&&...)` 的完整定义（来源平台：950；证据等级：tool_observed）。
+- 最终远程构建完成 `Linking ASC shared library libop_gather.so` 与 `Built target op_gather`（来源平台：950；证据等级：tool_observed）。
+- 修复后真机 pytest 为 50/50 通过，完整 cann-bench 为 20/20 通过且精度误差为零（来源平台：950；证据等级：tool_observed）。
 
 - 独立复现 R1：工具报告 [100%] Built target op_gather。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
 - 独立复现 R2：工具报告 [100%] Built target op_cummin。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。

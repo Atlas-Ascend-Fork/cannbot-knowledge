@@ -74,9 +74,9 @@ if constexpr (W_TYPE == WQGMM_FRACTAL_NZ &&
 
 ## 验证信号
 
-- ACLNN 运行返回 `561000`，日志 `BinaryGetFunctionByEntry failed, funcEntry=91308033` + `aclrtBinaryGetFunctionByEntry failed, kernel name: GroupedMatmul, tiling key: 91308033`（来源平台:950；证据等级:tool_observed）。
-- ascend950 config 未设 `jitCompile.flag`（310P 设 `static_false,dynamic_false`），`grep "jitCompile" grouped_matmul_def.cpp` 仅 310P 命中（来源平台:950；证据等级:tool_observed）。
-- 预编译 binary `.o` 列表无 `91308033`（来源平台:950；证据等级:tool_observed）。
+- ACLNN 运行返回 `561000`，日志 `BinaryGetFunctionByEntry failed, funcEntry=91308033` + `aclrtBinaryGetFunctionByEntry failed, kernel name: GroupedMatmul, tiling key: 91308033`（来源平台：950；证据等级：tool_observed）。
+- ascend950 config 未设 `jitCompile.flag`（310P 设 `static_false,dynamic_false`），`grep "jitCompile" grouped_matmul_def.cpp` 仅 310P 命中（来源平台：950；证据等级：tool_observed）。
+- 预编译 binary `.o` 列表无 `91308033`（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

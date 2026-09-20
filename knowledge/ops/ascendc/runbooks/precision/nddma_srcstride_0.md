@@ -45,9 +45,9 @@ Ascend950 `masked_fill` 算子 Broadcast 路线（mask_predicate 范式，Regbas
 
 ## 验证信号
 
-- ST Real 修复前 mask 广播用例部分不匹配：`mask=[1]` 标量 7/8 不匹配（唯一正确位置对应 `gmMask[0]`），`mask=[449,1,1]` 224/512 不匹配（来源平台:950；证据等级:tool_observed）
-- ST Real 修复前通过率 342/604，修复后提升至 560/604（来源平台:950；证据等级:tool_observed）
-- 穿刺场景 `mask=[1,3]`（最内层 srcStride=1，广播在外层）不触发本 bug，ST 通过（来源平台:950；证据等级:tool_observed）
+- ST Real 修复前 mask 广播用例部分不匹配：`mask=[1]` 标量 7/8 不匹配（唯一正确位置对应 `gmMask[0]`），`mask=[449,1,1]` 224/512 不匹配（来源平台：950；证据等级：tool_observed）
+- ST Real 修复前通过率 342/604，修复后提升至 560/604（来源平台：950；证据等级：tool_observed）
+- 穿刺场景 `mask=[1,3]`（最内层 srcStride=1，广播在外层）不触发本 bug，ST 通过（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

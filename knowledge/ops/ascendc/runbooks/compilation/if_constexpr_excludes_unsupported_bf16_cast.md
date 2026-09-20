@@ -317,8 +317,8 @@ at::Tensor scatter(const at::Tensor& data, int64_t dim, const at::Tensor& indice
 
 来源说明：该闭环来自 Ascend950 Flash 直调工程的一次 host dispatch 重构；同一 CANN 9.0.1 / BiSheng 工具链先观测到 BF16 cast 后端失败，随后只改变模板分发形态并重新构建。
 
-- 修复前构建出现 `fatal error: error in backend: not support bf16 type cast`，并由 BiSheng 以 exit code 70 退出（来源平台: 950；证据等级: tool_observed）。
-- 加入 `LAUNCH_UPDATE_ONLY`、将 BF16 更新分支改为只实例化 `MODE_UPDATE` 后，构建输出 `[100%] Built target op_scatter`（来源平台: 950；证据等级: tool_observed）。
+- 修复前构建出现 `fatal error: error in backend: not support bf16 type cast`，并由 BiSheng 以 exit code 70 退出（来源平台：950；证据等级：tool_observed）。
+- 加入 `LAUNCH_UPDATE_ONLY`、将 BF16 更新分支改为只实例化 `MODE_UPDATE` 后，构建输出 `[100%] Built target op_scatter`（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

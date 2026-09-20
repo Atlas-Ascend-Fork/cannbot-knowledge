@@ -40,9 +40,9 @@ aliases: ["aclnnTriu", "non_contiguous"]
 
 ## 验证信号
 
-- plog 打印 `errno[226808025]` "Parameter self ... is a non-contiguous tensor ... AutoContiguous() or IgnoreContiguous()"（来源平台:950；证据等级: tool_observed）
-- plog 打印 `errno[561000]` "NnopbaseExecutorRunWithWorkspace failed"（来源平台:950；证据等级: tool_observed）
-- 在 `Input("self")` 的 `OpParamDef` 链尾追加 `.AutoContiguous()` 后，非连续 view（transpose/slice）用例 ST 通过（来源平台:950；证据等级: tool_observed）
+- plog 打印 `errno[226808025]` "Parameter self ... is a non-contiguous tensor ... AutoContiguous() or IgnoreContiguous()"（来源平台：950；证据等级：tool_observed）
+- plog 打印 `errno[561000]` "NnopbaseExecutorRunWithWorkspace failed"（来源平台：950；证据等级：tool_observed）
+- 在 `Input("self")` 的 `OpParamDef` 链尾追加 `.AutoContiguous()` 后，非连续 view（transpose/slice）用例 ST 通过（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

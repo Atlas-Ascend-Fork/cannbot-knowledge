@@ -87,8 +87,8 @@ AscendC kernel 入口的「cce kernel func」由 `__aicore__` 标记。`ASCENDC_
 
 来源说明：本知识来自一次 QuantBatchMatMulV3 aclnn 搭建会话；构建命令 `cmake --build /tmp/qbmm_build --target all binary package` 实跑，core_ratio 编译错误为 verbatim tool_observed 输出；入口属性 edit 的 old/new 字符串逐字取自 trace 内 edit 事件。
 
-- `cmake --build` 末尾报 `op_kernel/quant_batch_mat_mul_v3.cpp:14:26: error: __attribute__((aic)), __attribute__((aiv)), bisheng::core_ratio attribute needs to appear with cce kernel func`，锚定 `#define ASCENDC_CUBE_ONLY` 下的 `__global__ __cube__` 入口（来源平台:a2；证据等级:tool_observed）
-- 入口属性 edit `__global__ __cube__ void quant_batch_mat_mul_v3` → `__global__ __aicore__ void quant_batch_mat_mul_v3`，oldString/newString 逐字取自 trace 内 edit 事件，`#define ASCENDC_CUBE_ONLY` 保留不变（来源平台:a2；证据等级:tool_observed）
+- `cmake --build` 末尾报 `op_kernel/quant_batch_mat_mul_v3.cpp:14:26: error: __attribute__((aic)), __attribute__((aiv)), bisheng::core_ratio attribute needs to appear with cce kernel func`，锚定 `#define ASCENDC_CUBE_ONLY` 下的 `__global__ __cube__` 入口（来源平台：a2；证据等级：tool_observed）
+- 入口属性 edit `__global__ __cube__ void quant_batch_mat_mul_v3` → `__global__ __aicore__ void quant_batch_mat_mul_v3`，oldString/newString 逐字取自 trace 内 edit 事件，`#define ASCENDC_CUBE_ONLY` 保留不变（来源平台：a2；证据等级：tool_observed）
 
 > 改 `__aicore__` 后的「构建成功」tool_result 因 markdown_transcript adapter 把多条 build 的 tool_result 重排/折叠，未在事件流逐字恢复；agent 的「Build succeeded」口述为 agent_reported，不进 `## 验证信号`。
 

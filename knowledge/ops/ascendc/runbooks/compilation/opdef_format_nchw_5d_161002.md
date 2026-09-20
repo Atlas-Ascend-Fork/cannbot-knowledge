@@ -71,8 +71,8 @@ tiling 不再持有 `format_` 成员、`TilingData` 不再含 `format` 字段、
 
 ## 验证信号
 
-- 修复前 rank8(5D) 用例逐行 `Test FAILED/R8-* (GetWorkspaceSize error 161002)`（来源平台:950；证据等级:tool_observed）。
-- 把测试侧也改成 FORMAT_NCHW 后 rank8 仍报 161002，证明根因不在测试侧格式（来源平台:950；证据等级:tool_observed）。
-- 改回 FORMAT_ND + 删除 `ValidateFormat`/`format_` 后，`./build.sh INTrainingReduceGrad_package` 输出 `SUCCESS`（来源平台:950；证据等级:tool_observed）。
-- tiling UT `15/15 cases PASSED`（含 5d_fp32 / 5d_fp16 / 4d_large / 4d_hw1 / empty / 各 reject case）（来源平台:950；证据等级:tool_observed）。
-- OpDef 终版 `Format({ge::FORMAT_ND, ge::FORMAT_ND})` 与 `ValidateShape`/`ComputeNumElements` 终版逐字从 file_read 恢复（来源平台:950；证据等级:artifact_verified）。
+- 修复前 rank8(5D) 用例逐行 `Test FAILED/R8-* (GetWorkspaceSize error 161002)`（来源平台：950；证据等级：tool_observed）。
+- 把测试侧也改成 FORMAT_NCHW 后 rank8 仍报 161002，证明根因不在测试侧格式（来源平台：950；证据等级：tool_observed）。
+- 改回 FORMAT_ND + 删除 `ValidateFormat`/`format_` 后，`./build.sh INTrainingReduceGrad_package` 输出 `SUCCESS`（来源平台：950；证据等级：tool_observed）。
+- tiling UT `15/15 cases PASSED`（含 5d_fp32 / 5d_fp16 / 4d_large / 4d_hw1 / empty / 各 reject case）（来源平台：950；证据等级：tool_observed）。
+- OpDef 终版 `Format({ge::FORMAT_ND, ge::FORMAT_ND})` 与 `ValidateShape`/`ComputeNumElements` 终版逐字从 file_read 恢复（来源平台：950；证据等级：artifact_verified）。

@@ -58,10 +58,10 @@ the dtype of x2Scale(scale) must be in dtype support list [DT_UINT64,DT_INT64,]
 
 ## 验证信号
 
-- 委托 V4 首次 ST 35/101 通过、66 个用例返回 161002（来源平台:950；证据等级:tool_observed）。
-- `ASCEND_SLOG_PRINT_TO_STDOUT=1` 探针输出 `x2Scale(scale) ... must be in dtype support list [DT_UINT64,DT_INT64,]`、checker `CheckL0c2outOrL0c2ubPertensorPerchannel4Int8Input`（来源平台:950；证据等级:tool_observed）。
-- 改用 V5 后同一 checker 同一约束仍触发 161002（来源平台:950；证据等级:tool_observed）。
-- 将 fp32 scale 转为 uint64 后 ST 升至 71/101，剩余 30 例为 bias/offset 约束（来源平台:950；证据等级:tool_observed）。
+- 委托 V4 首次 ST 35/101 通过、66 个用例返回 161002（来源平台：950；证据等级：tool_observed）。
+- `ASCEND_SLOG_PRINT_TO_STDOUT=1` 探针输出 `x2Scale(scale) ... must be in dtype support list [DT_UINT64,DT_INT64,]`、checker `CheckL0c2outOrL0c2ubPertensorPerchannel4Int8Input`（来源平台：950；证据等级：tool_observed）。
+- 改用 V5 后同一 checker 同一约束仍触发 161002（来源平台：950；证据等级：tool_observed）。
+- 将 fp32 scale 转为 uint64 后 ST 升至 71/101，剩余 30 例为 bias/offset 约束（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

@@ -1,17 +1,17 @@
 ---
 type: "Runbook"
 title: EZ9999 找不到 infer 回调 — 补 IMPL_OP 注册
-description: GEIR 图模式全量 EXEC_FAILURE：OpDef SetInferDataType 绑定不进运行时注册表；在注册单元补 IMPL_OP V2 注册后恢复。
+description: GEIR 图模式全量 EXEC_FAILURE：OpDef SetInferDataType 绑定不进运行时注册表；在注册单元补 IMPL_OP V2 注册后恢复。后续增量（）：IMPL_OP_INFERSHAPE 只注册 InferShape、OpDef(OP_ADD)/REG_OP-only 无推导注册三种同签名形态（ErrorNo 1343242270）；GEGetErrorMsgV2 失败分支探针；IGNORE_INFER_ERROR=1 示例级旁路（须构图 desc 自足，EZ9999 文本仍打印但非致命）与 vendor op_proto/op_tiling 库路径；输出 dtype 随首输入可用 .InferOutDataTypeSameWithFirstInput() 便捷修复。
 tags: [task.debugging, topic.implementation.operator_registration]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: '2026-09-17T01:58:00Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
+cann_versions: ["9.0.0-beta.2", "9.1.0"]
 ---
-# EZ9999 找不到 infer 回调 — 补 IMPL_OP 注册
 
+# EZ9999 找不到 infer 回调 — 补 IMPL_OP 注册
 
 ## 现象
 
@@ -250,6 +250,10 @@ IMPL_OP(ThnnFusedGruCellGrad)
 - "InferShape 经 OpDef 绑定即可被调起、InferDataType 必须走注册表"的两通路不对称性来自日志与头文件推断，CANN 内部实现源码未核；只缺 InferShape 注册的独立后果未验证。
 - 单跑结果（内部 single_run），跨算子/跨轨迹复现待 curator 判定。
 
+**未决项**：
+
+- 只缺 InferShape 注册（InferDataType 注册在）是否同样失败：未单独验证——可在下个算子上做对照实验（分别只注册其一）。
+- 该版本 CANN 中 OpDef `SetInferDataType` 存储的函数指针究竟被哪条通路消费：未追到 CANN 实现源码层；建议复现时用 `ltrace`/断点或读 `op_impl_space_registry_v2_impl.cc` 对应版本源码确认两通路边界。
 ## 坏实践
 
 - 只写函数 + OpDef 绑定就认为注册完成——`nm` 里有 `T ge::Infer*` 符号不代表运行时注册表有条目。
@@ -261,7 +265,116 @@ IMPL_OP(ThnnFusedGruCellGrad)
 - **误诊 1（环境残留）**：先发现 CANN OPP 全局目录 `.../opp/vendors/<OP>` 有旧版安装包，怀疑与 staging 冲突，执行 `uninstall.sh --quiet` 卸载后重跑——仍 0 PASS / 43 行 EXEC_FAILURE。残留安装不是根因；卸载这一步对问题无效。
 - **误诊 2（符号缺失）**：一度怀疑 InferDataType 没编进 .so——`nm` 推翻：函数符号是 `T`（已定义），缺的是 `op_impl_register_<OpType>` 静态注册对象。
 
-## 未决事项
+## 增量（IMPL_OP_INFERSHAPE 只注册 InferShape 的变体与 IGNORE_INFER_ERROR 旁路）
 
-- 只缺 InferShape 注册（InferDataType 注册在）是否同样失败：未单独验证——可在下个算子上做对照实验（分别只注册其一）。
-- 该版本 CANN 中 OpDef `SetInferDataType` 存储的函数指针究竟被哪条通路消费：未追到 CANN 实现源码层；建议复现时用 `ltrace`/断点或读 `op_impl_space_registry_v2_impl.cc` 对应版本源码确认两通路边界。
+两个独立算子会话补齐"同一错误签名、另一批注册形态"：
+
+**变体 1（IMPL_OP_INFERSHAPE 链只注册 InferShape）**：StridedSlice 类算子（Ascend950PR，CANN 9.1.0）的 `op_host` infershape 用 `IMPL_OP_INFERSHAPE(<Op>)` 注册链但只挂了 `InferShape`，GE IR 示例同样 `Run graph failed` 无细节；开日志后 GE 报 `shape_inference.cc:608 InferDtypeByRegisteredFuncOrRule ... Cannot find Node ... custom infer_datatype func`、`InferDataTypeOnCompile ... ret[-1]`、`infershape_pass.cc:122 Infer: ErrorNo: 1343242270`。符号探针：`nm -D libcust_opsproto_rt2.0.so` 只有 `GetInferShape`/`GetInferShapeRange` 未解析引用、没有 `GetInferDataType`——注册链上确实没挂 dtype 推导。修复（链尾补官方便捷注册，输出 dtype 恒等于第一输入的算子适用）：
+
+```cpp
+IMPL_OP_INFERSHAPE(BenchNoHarnessStridedSlice)
+    .InferShape(InferShape4BenchNoHarnessStridedSlice)
+    .InferOutDataTypeSameWithFirstInput();
+```
+
+重编重装后 GE IR 示例 `Run graph success`、输出与期望一致。边界：`InferOutDataTypeSameWithFirstInput()` 只适用于"输出 dtype == 第一输入 dtype"的算子；多输出或 dtype 变换算子（如 Cast）须手写 `InferDataType` 函数（`op_impl_registry.h` 的 `OpImplRegisterV2::InferDataType(InferDataTypeKernelFunc)` 通用入口）。
+
+**变体 2（OpDef(OP_ADD) 注册模式 + 示例级 IGNORE_INFER_ERROR 旁路）**：去重类算子（OpDef/`OP_ADD` + `IMPL_OP_INFERSHAPE` 注册）GE IR 示例报同一 EZ9999（`shape_inference.cc:602`）。可运行规避 = 把 vendor 的 op_proto/op_tiling 库目录加入 LD_LIBRARY_PATH 并设 `IGNORE_INFER_ERROR=1`，固化到 `examples/run.sh`（verbatim）：
+
+```bash
+# 图模式需要加载 op_proto 和 op_impl 库
+if [ "$EXAMPLE_MODE" = "graph" ]; then
+    for lib_dir in \
+        "${VENDOR_DIR}/op_proto/lib/linux/x86_64" \
+        "${VENDOR_DIR}/op_proto/lib/linux/aarch64" \
+        "${VENDOR_DIR}/op_impl/ai_core/tbe/op_tiling/lib/linux/x86_64" \
+        "${VENDOR_DIR}/op_impl/ai_core/tbe/op_tiling/lib/linux/aarch64"; do
+        if [ -d "${lib_dir}" ]; then
+            export LD_LIBRARY_PATH=${lib_dir}:${LD_LIBRARY_PATH}
+        fi
+    done
+    # 算子使用 OpDef 注册，GE 运行时 infertype pass 需要 IGNORE_INFER_ERROR=1 跳过显式 infertype 检查
+    export IGNORE_INFER_ERROR=1
+fi
+```
+
+注意：加了库路径后 EZ9999 错误信息仍会打印（注册模式不提供该注册），但 `IGNORE_INFER_ERROR=1` 使其变为非致命，图照常执行且结果正确；示例侧应显式给输出分配上限 shape，不依赖运行期推导。该旁路对全图生效，可能掩盖其他算子的真实推导缺陷，只适合示例/测试环境。
+
+**验证信号（复现增量）**：
+
+- 修复前（StridedSlice）：`Run graph failed` 无细节；开日志后 `shape_inference.cc:608 ... Cannot find Node stridedSlice1[...] custom infer_datatype func` + `ErrorNo: 1343242270`（来源平台：950；证据等级：tool_observed）。
+- 符号探针：修复前 `nm -D libcust_opsproto_rt2.0.so` 无 `GetInferDataType` 引用（来源平台：950；证据等级：tool_observed）。
+- 修复后（补 `.InferOutDataTypeSameWithFirstInput()` 并重编重装）：GE IR 示例 `Run graph success`，输出 shape/数值与期望一致（来源平台：950；证据等级：tool_observed）。
+- 规避后（unique，库路径 + IGNORE_INFER_ERROR=1）：图执行成功，输出 y（DT_INT32）/inverse（DT_INT64）正确、`Precision is ok`；EZ9999 仍打印但非致命（来源平台：950；证据等级：tool_observed）。
+- run.sh 固化后清理重建：aclnn 与图模式两示例均 PASS（来源平台：950；证据等级：tool_observed）。
+
+## 增量（GEGetErrorMsgV2 失败分支探针与构图 desc 自足前提）
+
+registry-invoke 工程（InferShape 注册在 op_host 侧、编译进 `libcust_opmaster_rt2.0.so`，op_proto 只有 REG_OP 骨架）的逐元素最大值算子 GE IR 示例：`RunGraph` 失败 `ret = -1` 且失败分支默认只打印一行 "Run graph failed"。**RunGraph 失败分支必须先补 `GEGetErrorMsgV2()`（可加 `GEGetWarningMsgV2()`）打印真实错误**（verbatim 探针）：
+
+```cpp
+    ret = session->RunGraph(graph_id, input, output);
+    if (ret != SUCCESS) {
+        printf("%s - ERROR - [XIR]: Run graph failed, ret = %d\n", GetTime().c_str(), ret);
+        ge::AscendString emsg = ge::GEGetErrorMsgV2();
+        printf("%s - ERROR - [XIR]: Error message: %s\n", GetTime().c_str(), emsg.GetString());
+        ge::AscendString wmsg = ge::GEGetWarningMsgV2();
+        printf("%s - ERROR - [XIR]: Warning message: %s\n", GetTime().c_str(), wmsg.GetString());
+        delete session;
+        GEFinalize();
+        return FAILED;
+    }
+```
+
+补打后取得完整 TraceBack（`Cannot find Node ... custom infer_datatype func ... You can ignore this validation by exporting IGNORE_INFER_ERROR=1 ...`）。排除"so 未加载"用 `ldd` 确认 vendor `libcust_opsproto_rt2.0.so` 依赖全可解析、`opp/vendors/config.ini` 的 `load_priority` 含本 vendor。处置 = 图模式运行脚本 `export IGNORE_INFER_ERROR=1`；**fallback 声明：仅当构图侧显式提供全部输入/输出 desc 时采用**（本示例即如此）——跳过校验后若构图 desc 有误，错误将延迟到执行期才暴露。
+
+**验证信号（复现增量）**：
+
+- 绕过前：`Run graph failed, ret = -1`，完整错误含 `Cannot find Node max1[...] custom infer_datatype func`（来源平台：950；证据等级：tool_observed）。
+- `IGNORE_INFER_ERROR=1` 下：`Session run ir compute graph success`，输出 max(1.0, 2.0)=2.0 正确，同时日志仍打印同一 EZ9999 信息但不再阻断（来源平台：950；证据等级：tool_observed）。
+- 写入 run.sh 后清理重建复跑图模式 PASS（来源平台：950；证据等级：tool_observed）。
+
+## 增量（REG_OP-only 模板算子形态与两分支判别）
+
+fp16/bf16→int8 量化类算子（op_graph 目录只有 `*_proto.h`（REG_OP）+ CMakeLists，无 graph_infer 实现）GE IR 示例同型失败。判别用两分支探针（verbatim）：
+
+```bash
+# 分支一：op_proto so 是否已安装且可加载
+find "${ASCEND_HOME_PATH}/opp/vendors/<vendor>/op_proto/" -type f
+# 输出含 .../op_proto/lib/linux/x86_64/libcust_opsproto_rt2.0.so  ← so 存在，排除缺库
+
+# 分支二：算子工程是否有图模式推导实现
+ls operators/<op>/op_graph/
+# 输出仅 *_proto.h  CMakeLists.txt  ← 只有 REG_OP 原型，无 graph_infer
+```
+
+so 存在 + 无 graph_infer 文件 → 定位为「缺少 infer_datatype 注册」而非「库没加载」。可运行配方 = run.sh 图模式分支加 op_proto 库路径 + `IGNORE_INFER_ERROR=1`（verbatim）：
+
+```bash
+# 图模式需要加载自定义算子 op_proto 库，并忽略 infer_dtype 检查（自定义算子无 graph_infer 注册）
+if [ "$EXAMPLE_MODE" = "graph" ]; then
+    VENDOR_PROTO_DIR="${ASCEND_HOME_PATH}/opp/vendors/${VENDOR_NAME}/op_proto/lib/linux/x86_64"
+    if [ ! -d "${VENDOR_PROTO_DIR}" ]; then
+        VENDOR_PROTO_DIR="${ASCEND_HOME_PATH}/opp/vendors/${VENDOR_NAME}/op_proto/lib/linux/aarch64"
+    fi
+    if [ -d "${VENDOR_PROTO_DIR}" ]; then
+        export LD_LIBRARY_PATH=${VENDOR_PROTO_DIR}:${LD_LIBRARY_PATH}
+    fi
+    export IGNORE_INFER_ERROR=1
+fi
+```
+
+单独加载 op_proto 库不解决（注册事实不变，须与 IGNORE_INFER_ERROR 联用）。根治路线（未实施，供接续）：在 op_graph 增加 `*_graph_infer.cpp` 注册 `INFER_SHAPE_AND_TYPE_FUNC_REG`（或等价 infer_datatype 函数 / IR T-derivation 标注）并进 CMakeLists 一起编译安装。参照模板 add_example 的 op_graph 同样只有 proto.h——该模板 lineage 的算子默认都没有图模式推导注册，进 GE 图模式都会触发同一错误。
+
+**验证信号（复现增量）**：
+
+- 修复前：`Run graph failed` 无详情；补 GEGetErrorMsgV2 后取得 `EZ9999 ... Cannot find Node dynamic_quant1[...] custom infer_datatype func ... [FUNC:InferDtypeByRegisteredFuncOrRule][FILE:shape_inference.cc][LINE:602]`（来源平台：950；证据等级：tool_observed）。
+- 排查观测：vendor op_proto so 已安装；op_graph 仅 proto.h + CMakeLists；模板 add_example 的 op_graph 同样无 graph_infer（来源平台：950；证据等级：tool_observed）。
+- 绕过后：`Session run ir compute graph success`，输出 dtype/shape 正确、`Precision is ok`；run.sh 固化后 `--graph` 全流程 PASS（来源平台：950；证据等级：tool_observed）。
+
+**增量合并后的失效边界补充（并行轨迹）**：
+
+- IGNORE_INFER_ERROR=1 旁路的前提是构图侧已显式设置全部输入/输出 desc（示例显式上限分配/显式 TensorDesc）；完全依赖 GE 运行期 shape 推导的调用方式未验证，多算子图上其他节点的真实推导错误也会被吞掉。
+- IGNORE_INFER_ERROR 的官方语义（仅 dtype 推断 or 全部 infer 失败）未查证文档；全局导出会掩盖所有算子的推导注册缺陷，不应写进产品构建脚本。
+- OpDef/REG_OP-only 注册与 GE infertype 注册联动的机制层解释未做源码级验证；实测确证的是"错误出现 + IGNORE_INFER_ERROR=1 后图执行正确"这一输入输出关系。
+- aarch64 安装未实测（脚本已按目录探测兼容）。

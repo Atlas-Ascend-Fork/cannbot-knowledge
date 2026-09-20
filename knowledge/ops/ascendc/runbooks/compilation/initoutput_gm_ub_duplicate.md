@@ -83,8 +83,8 @@ __out_pipe__(MTE3) void InitOutput(GlobalTensor<T> gmWorkspaceAddr, uint32_t siz
 
 来源：本次 `MhcPreSinkhornBackward` arch35 确定性 kernel 开发会话（Ascend950，CANN 9.0.0-beta.2，kernel 引入 `InitOutput` 后的构建）。
 
-- `bash build.sh --pkg --ops=mhc_pre_sinkhorn_backward --soc=ascend950` 报 `no known conversion from 'LocalTensor<float>' to 'GlobalTensor<float>' for 1st argument`，候选签名 `__out_pipe__(MTE3) void InitOutput(GlobalTensor<T> gmWorkspaceAddr, uint32_t size, T value)`（来源平台:950；证据等级: tool_observed）
-- `InitOutput` 候选签名本身（编译器 note，`cann-9.0.0-beta.2/aarch64-linux/asc/impl/basic_api/kernel_operator_common_intf_impl.h:110`）（来源平台:950；证据等级: artifact_verified）
+- `bash build.sh --pkg --ops=mhc_pre_sinkhorn_backward --soc=ascend950` 报 `no known conversion from 'LocalTensor<float>' to 'GlobalTensor<float>' for 1st argument`，候选签名 `__out_pipe__(MTE3) void InitOutput(GlobalTensor<T> gmWorkspaceAddr, uint32_t size, T value)`（来源平台：950；证据等级：tool_observed）
+- `InitOutput` 候选签名本身（编译器 note，`cann-9.0.0-beta.2/aarch64-linux/asc/impl/basic_api/kernel_operator_common_intf_impl.h:110`）（来源平台：950；证据等级：artifact_verified）
 
 ## 预防
 

@@ -1,13 +1,14 @@
 ---
 type: "Runbook"
 title: "DataCopyPad 加载缺少 Pad 参数导致编译失败"
-description: "dav-3510 的 GM 到 UB DataCopyPad 扩展重载需要第四个 Pad 参数，不能照搬 UB 到 GM 的三参数形式。"
+description: "dav-3510 的 GM 到 UB DataCopyPad 扩展重载需要第四个 Pad 参数，不能照搬 UB 到 GM 的三参数形式。R2：第 4 参类型是 DataCopyPadParams（非 DataCopyPadExtParams<T>），二者是不同结构体、不可隐式转换。"
 tags: ["task.debugging", "topic.data_movement.data_copy", "topic.implementation.api_layer.basic_api"]
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: "2026-09-16T11:11:42Z"
 platforms: ["950"]
+cann_versions: ["9.0.1", "9.1.0"]
 ---
 
 # DataCopyPad 加载缺少 Pad 参数导致编译失败
@@ -193,21 +194,27 @@ dav-3510 的 GM 到 UB 扩展重载签名要求 `DataCopyPadExtParams<T>`，而�
 
 这条知识来自一次 Ascend950 kernel 构建联调：编译器先在输入搬运处拒绝三参数调用，随后远端查询了 CANN 9.0.1 头文件中的加载/存储重载，补参后编译继续越过该错误，最终完整目标构建成功。
 
-- CANN 9.0.1 头文件探针显示 GM→UB 扩展重载为四参数，而 UB→GM 扩展重载为三参数（来源平台: 950；证据等级: tool_observed）；
-- 修复后 `libop_cummin.so` 链接成功并显示 `Built target op_cummin`（来源平台: 950；证据等级: tool_observed）；
-- 干净重建后测试套件全部通过，证明加载调用在实际模板分发和上板执行中可用（来源平台: 950；证据等级: tool_observed）。
+- CANN 9.0.1 头文件探针显示 GM→UB 扩展重载为四参数，而 UB→GM 扩展重载为三参数（来源平台：950；证据等级：tool_observed）；
+- 修复后 `libop_cummin.so` 链接成功并显示 `Built target op_cummin`（来源平台：950；证据等级：tool_observed）；
+- 干净重建后测试套件全部通过，证明加载调用在实际模板分发和上板执行中可用（来源平台：950；证据等级：tool_observed）。
+
+- 独立复现 R2（融合量化算子 CopyIn 三处调用点，CANN 9.1.0）：第 4 参误用 `DataCopyPadExtParams<D_T_X>` 报 `error: no matching function for call to 'DataCopyPad'`，附注 `no known conversion from 'DataCopyPadExtParams<half>' to 'const AscendC::DataCopyParams' for 4th argument`；CANN 头文件 `basic_api/kernel_struct_data_copy.h` 确认 `DataCopyPadParams`（isPad/leftPadding/rightPadding/paddingValue，paddingValue 为 uint64_t）与 `DataCopyPadExtParams<T>` 是两个独立结构体；仅换第 4 参类型为 `DataCopyPadParams padParams{false, 0, 0, 0}` 后 kernel 编译零报错、全工程构建产出两个 dtype 的 kernel 二进制与 custom_opp 包（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
 - 结论绑定 CANN 9.0.1 / dav-3510 的已观测重载集合；其他工具包版本必须重新查声明；
 - 这不是“所有 DataCopyPad 都要四参”的规则，UB→GM 方向在本版本仍是三参；
 - A2/A3 未验证，不写入 `platforms`，也不推断其签名相同。
+- R2 增补：GM→UB 四参重载有两个参数族——`DataCopyExtParams + DataCopyPadExtParams<T>`（本卡原形态）与 `DataCopyParams + DataCopyPadParams`；第 4 参类型必须与第 3 参配套（DataCopyPadParams 与 DataCopyPadExtParams<T> 是不同结构体、不可隐式转换），报错指纹即 `no known conversion ... for 4th argument` 注记。
+- R2 的 `DataCopyParams` 变体重载参数顺序不同，未逐一实测；padValue 非 0 的真填充场景未实测（R2 用例 isPad=false）。
 
 ## 坏实践
 
 - 看到同名 API 就假设 load/store 参数完全对称；
 - 为消除编译错误而随意增加 Pad 参数，却不核对第三参的参数族和长度单位；
 - 一次性改动 load/store 两个方向，掩盖真正缺参的调用点。
+
+- R2 增补：按名字相似度选 `DataCopyPadExtParams<T>` 当 padding 参数（与 `DataCopyParams` 配套的第 4 参应为 `DataCopyPadParams`）——编译期才发现；报 `no known conversion ... for 4th argument` 时直接改第 4 参类型即可，不必怀疑前 3 参。
 
 ## 误诊
 

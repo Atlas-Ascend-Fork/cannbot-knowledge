@@ -36,10 +36,10 @@ platforms: ["950"]
 
 ## 验证信号
 
-- `L1_018`/`L1_083`/`L1_281` 三例稳定失败：`grad=±FLT_MAX`、`z∈[-104,-87]`、`exp(z)` 为次正规数（`1.76e-40 < FLT_MIN=1.175e-38`），golden 保留次正规（`≈6e-2 = FLT_MAX × 1.76e-40`）、npu=0（FTZ）（来源平台: 950；证据等级: tool_observed）
-- 全量 PyTorch ST 终态 575/578（3 fail 为本硬件 FTZ 边界）（来源平台: 950；证据等级: tool_observed）
-- C++ ST 57/57 通过（C++ ST 用例不触发此极端组合）（来源平台: 950；证据等级: tool_observed）
-- L0 功能用例 51/51 通过（来源平台: 950；证据等级: tool_observed）
+- `L1_018`/`L1_083`/`L1_281` 三例稳定失败：`grad=±FLT_MAX`、`z∈[-104,-87]`、`exp(z)` 为次正规数（`1.76e-40 < FLT_MIN=1.175e-38`），golden 保留次正规（`≈6e-2 = FLT_MAX × 1.76e-40`）、npu=0（FTZ）（来源平台：950；证据等级：tool_observed）
+- 全量 PyTorch ST 终态 575/578（3 fail 为本硬件 FTZ 边界）（来源平台：950；证据等级：tool_observed）
+- C++ ST 57/57 通过（C++ ST 用例不触发此极端组合）（来源平台：950；证据等级：tool_observed）
+- L0 功能用例 51/51 通过（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

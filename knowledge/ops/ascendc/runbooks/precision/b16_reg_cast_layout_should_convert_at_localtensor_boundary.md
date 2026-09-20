@@ -123,13 +123,13 @@ __aicore__ inline void Compute(int64_t row)
 
 来源为一次 Ascend950 归约 kernel 的 b16 精度联调：
 
-- 错误 Reg Cast 路径下 fp16 `maxdiff` 为 `2.075e-01`、`1.248e-01`、`9.972e-03`，而 fp32 为 `1.118e-08`（来源平台: 950；证据等级: tool_observed）；
-- 改为 LocalTensor 边界 Cast 后，对齐长度的 fp16 `maxdiff=3.815e-06`，bf16 `maxdiff=3.052e-05`（来源平台: 950；证据等级: tool_observed）；
-- 后续完整 pytest 58/58 通过，含 fp16/bf16 与 NaN/Inf（来源平台: 950；证据等级: tool_observed）。
+- 错误 Reg Cast 路径下 fp16 `maxdiff` 为 `2.075e-01`、`1.248e-01`、`9.972e-03`，而 fp32 为 `1.118e-08`（来源平台：950；证据等级：tool_observed）；
+- 改为 LocalTensor 边界 Cast 后，对齐长度的 fp16 `maxdiff=3.815e-06`，bf16 `maxdiff=3.052e-05`（来源平台：950；证据等级：tool_observed）；
+- 后续完整 pytest 58/58 通过，含 fp16/bf16 与 NaN/Inf（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
-短于最小搬运粒度的 b16 行还需要独立的对齐/最小 Cast count 修复；非 VL fp32 UB 局部复制也不由本卡解决。A2/A3 未验证（未验证，推断可迁移）。
+短于最小搬运粒度的 b16 行还需要独立的对齐/最小 Cast count 修复；非 VL fp32 UB 局部复制也不由本卡解决。A2/A3 未验证（推断可迁移）。
 
 ## 坏实践
 

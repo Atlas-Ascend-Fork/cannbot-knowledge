@@ -54,6 +54,6 @@ GEIR ST 静态用例 T-S10（空 axes shape=[0]，输入 x shape=[2,3]，keep_di
 
 ## 验证信号
 
-- T-S10 `GRAPH-RUN mode=static` 报告 `value=FAIL`：`expected_shape=[] actual_shape=[2,3] expected_numel=1 actual_numel=6`，`GEIR-SUMMARY total=35 pass=34 fail=1`（来源平台:950；证据等级:tool_observed）。
-- `strings libopsproto.so` 与 `nm -D` 输出含 built-in `EuclideanNormInferShape`、`op_impl_register_infershape_EuclideanNorm` 符号，证明同名 built-in InferShape 已全局注册（来源平台:950；证据等级:tool_observed）。
-- T-S10 shape flow 日志：axes output shape=[0]，`[after_infer]` 节点 output shape=[2,3]、`origin shape is 6`（passthrough，未 reduce）（来源平台:950；证据等级:tool_observed）。
+- T-S10 `GRAPH-RUN mode=static` 报告 `value=FAIL`：`expected_shape=[] actual_shape=[2,3] expected_numel=1 actual_numel=6`，`GEIR-SUMMARY total=35 pass=34 fail=1`（来源平台：950；证据等级：tool_observed）。
+- `strings libopsproto.so` 与 `nm -D` 输出含 built-in `EuclideanNormInferShape`、`op_impl_register_infershape_EuclideanNorm` 符号，证明同名 built-in InferShape 已全局注册（来源平台：950；证据等级：tool_observed）。
+- T-S10 shape flow 日志：axes output shape=[0]，`[after_infer]` 节点 output shape=[2,3]、`origin shape is 6`（passthrough，未 reduce）（来源平台：950；证据等级：tool_observed）。

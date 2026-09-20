@@ -22,7 +22,7 @@
 5. **职责隔离**：门禁子 agent 与主 agent 各司其职，门禁只做相关性判定（§相关性预检），不参与挖掘。
 6. **证据等级如实判定**：区分 `tool_observed`（工具调用/命令输出/报错记录）与 `agent_reported`（只有 agent 消息声称）。**仅 `agent_reported` 的结论不得写进「## 验证信号」**；每条候选在 manifest 的 `evidence_anchors` 记录内部结构化溯源锚点（`sequence/event_type/raw_source/raw_record/raw_sha256`，不写卡正文，见 §字段映射）。
 7. **不堆轨迹原文**：正文叙述应蒸馏，核心机制 artifact 必须完整且 verbatim。`repair_recipe` 的代码/配置修复保留完整因果单元 before/after；其他形态按 runbooks-contract §8.1 保留实现、探针、命令或输出，不附无关外层代码。
-8. **足量提取（宁全勿缺）**：每条候选按 runbooks-contract §8 的**知识维度映射表**逐项对照——what worked（解决配方+验证信号）/ what failed（坏实践+before）/ root causes（根因）/ error-fix lessons（预防+误诊）/ reusable strategy（变量化配方）/ avoid（坏实践）/ next attempt（遗留问题）/ code design（设计决策）/ code（完整代码）——**有证据必写、缺证据标"无证据/未尝试"，不得静默留空**；trace 中出现的代码设计讨论（agent 为什么选某 tiling/buffer/API/template、备选方案、被放弃的设计）必须提取进 `## 设计决策`。
+8. **足量提取（宁全勿缺）**：每条候选按 runbooks-contract §8 的**知识维度映射表**逐项对照——what worked（解决配方+验证信号）/ what failed（坏实践+before）/ root causes（根因）/ error-fix lessons（预防+误诊）/ reusable strategy（变量化配方）/ avoid（坏实践）/ next attempt（失效边界·未决项）/ code design（设计决策）/ code（完整代码）——**有证据必写、缺证据标"无证据/未尝试"，不得静默留空**；trace 中出现的代码设计讨论（agent 为什么选某 tiling/buffer/API/template、备选方案、被放弃的设计）必须提取进 `## 设计决策`。
 9. **不臆造**：缺失的任务/环境/源码/评测信息记入 reconstruction 的 unknowns，不猜测补全。
 10. **机制证据优先**：代码写入事件、命令、工具输出和 probe 都可成为知识主源。先为相关文件建版本时间线，再按 `knowledge_form` 恢复最小完整机制单元；核心代码正文内联、verbatim，禁止 1–3 行示意或凭叙述重写。
 11. **反投机取巧**：测试侧放松不得作为 `repair_recipe`/`validated_pattern`。若轨迹客观证明其掩盖错误或造成回归，可产明确 `banned` 的 `negative_result`；否则只进坏实践/误诊或 reject。
@@ -38,7 +38,7 @@
 21. **platforms 只填实际验证过的平台**：frontmatter `platforms` 只写 trace 内**有实测证据**的平台（上板/编译可运行该平台）；推断可迁移的平台**不得写入 `platforms`**，写在正文 `## 失效边界` 并标注"未验证，推断可迁移"。`## 验证信号` 每个数字必须标注来源平台，与 `platforms` 严格一致（同平台才可并入同一结论）。
 22. **允许相对性能代价，禁绝对分数**：`## 验证信号` / `## 性能影响` 可写同一算子内部两条路线的**成对相对对比**（如"相对 SIMT 路线约 0.05x"），帮助判断"采用后性能会多差"；**禁止单独报绝对 score/latency/speedup、禁止写成通用预期收益**（HARD 约束 14 明细）。相对代价必须写明参照路线与来源平台；`safety_fallback` 卡必须保留该相对代价表述。
 23. **验证信号逐信号标证据等级 + 来源平台**：`## 验证信号` 每条信号标注 `（来源平台：…；证据等级：artifact_verified / tool_observed）`；`agent_reported`/`inferred` 不得当实测事实写进该章节，应进 `## 误诊` 并如实标注。
-24. **未追到根因的卡，根因深挖列为 `## 遗留问题` 优先项**：`## 根因` 承认未追到底（如"TilingParse 未填充 CompileInfo 的确切机制未验证"）时，`## 遗留问题` 第一条必须把"复现并追根因到机制层"标为**优先项**（给下个 agent 明确的接续点），不得只写笼统 TODO。
+24. **未追到根因的卡，根因深挖列为 `## 失效边界` 的未决项优先项**：`## 根因` 承认未追到底（如"TilingParse 未填充 CompileInfo 的确切机制未验证"）时，`## 失效边界` 的 **未决项** 第一条必须把"复现并追根因到机制层"标为**优先项**（给下个 agent 明确的接续点），不得只写笼统 TODO。不得写独立的 `## 遗留问题` 节（legacy，evals 禁用）。
 25. **active 轨迹证据合同前置收集**：每个 adopted claim 必须有实际 normalized 路径、raw/normalized 两个完整 SHA-256、连续 coverage、与 `knowledge_form` 匹配的角色锚点、逐字机制 artifact、客观信号、双向 claim mapping 与单点归因。缺失必备项时明确 `provenance_missing`，候选只能作为 support；真实 fixed revision/blob 有则保留并优先，禁止伪造。
 
 ---
@@ -254,7 +254,7 @@ Agent(references/subagents/ops-knowledge-trace-relevance-gate.md)
 - **备选与权衡**：讨论过但未采用的设计（如原子计数 vs 块循环、双缓冲 vs 单缓冲），以及放弃原因（同步开销/复杂度/收益不足）；
 - **被放弃/回退的代码**：`file_write` 回退轮次的内容是"坏实践"与"设计决策"的原始素材。
 
-> **遗留问题提取**：从"本卡未解决的遗留问题 / 未验证的替代设计 / 性能未达标时的下一测量点 / 遗留 TODO"中提取 `## 遗留问题`——给下个 agent 的接续点，有则必写，无则标"未尝试"。**未追到根因的卡，第一条必须是"复现并追根因到机制层"优先项**（纪律 24）。
+> **未决项提取**：从"本卡未解决的遗留问题 / 未验证的替代设计 / 性能未达标时的下一测量点 / 遗留 TODO"中提取 `## 失效边界` 的 **未决项** 条目——给下个 agent 的接续点，有则必写，无则标"未尝试"。**未追到根因的卡，第一条必须是"复现并追根因到机制层"优先项**（纪律 24）。不写独立的 `## 遗留问题` 节。
 
 > **精度/工程轨从 `verify_failed`/报错提取；性能轨从 STATE profiling 提取；方案轨从成功实现/工具流程提取**——提取方式不同，但统一为 `phenomenon` 检索键。
 
@@ -269,7 +269,7 @@ Agent(references/subagents/ops-knowledge-trace-relevance-gate.md)
 
 > 子 agent 目录缺失或 task_id 对不上时：记入 `reconstruction.json` 的 `limitations`，并降级为仅凭主 trace 可见信号作卡（证据等级上限 `inferred`，不产候选卡）。
 
-每条候选蒸馏 `症状 / 适用场景（必填：工程形态/API 路径/验证平台与版本/适用粒度/路线优先级/不适用场景）/ 根因（区别误诊）/ 配方（before·after）/ 系统信息 / 完整代码（guide 必填）/ 性能影响（有性能故事时）/ 预防 / 验证信号（逐信号标证据等级+来源平台）/ 失效边界（含"未验证，推断可迁移"标注）/ 坏实践 / 误诊（可选）/ 遗留问题（未追根因时优先项）`（对应 runbooks-contract §8 正文）。**`症状` 按纪律 15 场景还原（自然语言讲清"在做什么/看到什么报错/代码状态"，禁内部编号代替）；`配方` 按纪律 17 展示 before/after 实际代码形态（禁只给 commit id）；`适用场景` 按纪律 19-23（场景/路线/platforms/相对代价/证据等级）**；并判定 `solution_layer`（配方作用在哪层：kernel 切面 `tiling`/`kernel`/`multi_template`/`precision_strategy`，或流水线产物层 `spec`/`op_host`/`test`/`build_system`，guide 流程类用 `workflow`；按"改的文件"判定——`op_kernel/*.cpp` 归 kernel 切面，`op_host/*.cpp`/spec.yaml/测试脚本/CMake 归流水线层）。
+每条候选蒸馏 `症状 / 适用场景（必填：工程形态/API 路径/验证平台与版本/适用粒度/路线优先级/不适用场景）/ 根因（区别误诊）/ 配方（before·after）/ 系统信息 / 完整代码（guide 必填）/ 性能影响（有性能故事时）/ 预防 / 验证信号（逐信号标证据等级+来源平台）/ 失效边界（含"未验证，推断可迁移"标注与 **未决项**——未追根因时优先项）/ 坏实践 / 误诊（可选）`（对应 runbooks-contract §8 正文）。**`症状` 按纪律 15 场景还原（自然语言讲清"在做什么/看到什么报错/代码状态"，禁内部编号代替）；`配方` 按纪律 17 展示 before/after 实际代码形态（禁只给 commit id）；`适用场景` 按纪律 19-23（场景/路线/platforms/相对代价/证据等级）**；并判定 `solution_layer`（配方作用在哪层：kernel 切面 `tiling`/`kernel`/`multi_template`/`precision_strategy`，或流水线产物层 `spec`/`op_host`/`test`/`build_system`，guide 流程类用 `workflow`；按"改的文件"判定——`op_kernel/*.cpp` 归 kernel 切面，`op_host/*.cpp`/spec.yaml/测试脚本/CMake 归流水线层）。
 
 ---
 
@@ -294,7 +294,7 @@ Agent(references/subagents/ops-knowledge-trace-relevance-gate.md)
 | 正文 `## 性能影响` | 有性能故事时必填：同一算子内部两条路线的相对性能代价（如"相对 SIMT 路线约 0.05x"，标注参照路线+来源平台）；禁绝对分数、禁通用预期收益（纪律 22） |
 | 正文 `## 系统信息` / `## 完整代码` | 完整配方类 runbook 必填（guide 轨）；现象卡有完整可复用代码时也鼓励补全 |
 | 正文 `## 设计决策` | 完整配方类 runbook 必填；现象卡涉及设计取舍（tiling/buffer/API/template）时必填——**强制记录①为何选这套方案②放弃的候选及原因③当前方案属哪档路线**（纪律 9/§设计决策提取） |
-| 正文 `## 遗留问题` | 本卡未解决的遗留问题/接续方向；无则标"无"；**未追到根因的卡把根因深挖列为优先项**（纪律 24） |
+| 正文 `## 失效边界` 未决项 | 本卡未解决的遗留问题/接续方向（并入失效边界，不设独立节）；无则标"无"；**未追到根因的卡把根因深挖列为优先项**（纪律 24） |
 | 正文 `## 验证信号` 段首来源 | 验证信号段首先用自然语言写问题与验证来源（哪次开发会话/修复步骤/实测结果）；**不写内部结构化锚点**（锚点只进 manifest 的 evidence_anchors） |
 
 > **无 `id`/`resource` 字段**（见 runbooks-contract §3）：草稿唯一性由文件名 `DRAFT-<area>-<n>.md` 保证；正式 slug 文件名由 curator 落盘时定。
@@ -379,7 +379,7 @@ trace ──normalize──▶ 归一化事件流 ──▶ mine ──▶ recon
 5. **无泄露**：草稿卡 frontmatter/正文/文件名均无 session_id 与内部结构化锚点（source/raw record/sequence 只进 manifest）。
 6. **四轨覆盖**：精度/工程/性能/方案四类均扫到，无一缺席。
 7. **证据可溯（内部）**：manifest 每条候选的 `evidence_anchors` 均能在 normalized_trace.jsonl（或子 trace）按 sequence 找到，且 `raw_source/raw_record/raw_sha256` 与事件 provenance 一致；卡正文无内部锚点引用。
-8. **足量覆盖**：抽查每条候选对照 runbooks-contract §8 维度表，what worked/failed/root cause/lessons/strategy/avoid/code design/code 有证据即写、`## 遗留问题` 有接续即写、`## 设计决策` 有设计讨论即写——无静默留空。
+8. **足量覆盖**：抽查每条候选对照 runbooks-contract §8 维度表，what worked/failed/root cause/lessons/strategy/avoid/code design/code 有证据即写、`## 失效边界` 未决项有接续即写、`## 设计决策` 有设计讨论即写——无静默留空。
 9. **子 agent 覆盖**：`manifest.json` 候选集的 `evidence_anchors` 覆盖主 trace + 全部可解析子 trace；有子 trace 未扫时会列出 limitations。
 10. **门禁职责隔离**：门禁子 agent 只做相关性判定（§相关性预检），其调用记录无 runbooks 库读取、无挖掘行为。
 11. **代码完整（code-first）**：抽查每条涉及代码改动的候选——before/after 为**函数级完整代码块、正文内联**（无 1–3 行示意、无附件外置）；正文代码能在事件流中找到对应 `file_write`/`file_diff` 事件（`## 验证信号` 段首来源可溯）；guide 卡完整代码可执行。
@@ -391,4 +391,4 @@ trace ──normalize──▶ 归一化事件流 ──▶ mine ──▶ recon
 17. **platforms 严格**：frontmatter `platforms` 只含 trace 内实际验证平台；推断可迁移平台在 `## 失效边界` 标注"未验证，推断可迁移"，未混入 `platforms`。
 18. **相对代价纪律**：无绝对 score/latency/speedup 落卡正文（provenance 只进 manifest）；相对性能代价成对出现并标注参照路线与来源平台。
 18. **验证信号逐信号标注**：每条信号带来源平台 + 证据等级（`tool_observed`/`artifact_verified`）；`agent_reported` 未混入 `## 验证信号`。
-19. **未追根因 → 优先项**：`## 根因` 承认未追到底的卡，`## 遗留问题` 第一条有"复现并追根因到机制层"优先项。
+19. **未追根因 → 优先项**：`## 根因` 承认未追到底的卡，`## 失效边界` 未决项第一条有"复现并追根因到机制层"优先项。

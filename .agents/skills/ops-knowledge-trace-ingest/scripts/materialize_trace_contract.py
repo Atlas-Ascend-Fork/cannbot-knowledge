@@ -275,6 +275,26 @@ def augment_ledger(ledger_path: Path, mine_dirs, clusters_path=None, verified=Fa
         tid = p.parent.name
         return snap.get((tid, p.name))
 
+    def snapshot_complete(obj, form):
+        """Representative quality gate: form roles populated + artifacts valid."""
+        roles = obj.get("evidence_roles") or {}
+        if form not in ROLE_SETS:
+            return False
+        if any(not roles.get(role) for role in ROLE_SETS[form]):
+            return False
+        artifacts = obj.get("mechanism_artifacts") or []
+        if not artifacts:
+            return False
+        for artifact in artifacts:
+            if any(
+                not artifact.get(key)
+                for key in ("role", "kind", "path", "symbol_or_target", "reconstruction_method")
+            ):
+                return False
+            if not artifact.get("anchors"):
+                return False
+        return True
+
     for e in ledger.get("entries", []):
         cid = e.get("cluster")
         # set source_drafts to exact cluster member strings (relative) so coverage matches
@@ -285,13 +305,45 @@ def augment_ledger(ledger_path: Path, mine_dirs, clusters_path=None, verified=Fa
         if e.get("status") in {"published", "merged"}:
             audit = e.get("evidence_audit") or {"mode": "trace_snapshot", "result": "pending"}
             audit["mode"] = "trace_snapshot"
+            form = e.get("knowledge_form")
             found = None
+            source_tuples = []
+            seen_pairs = set()
             for d in (e.get("source_drafts") or []):
-                found = snapshot_for(d)
-                if found:
-                    break
+                s = snapshot_for(d)
+                if not s:
+                    continue
+                if found is None and snapshot_complete(s, form):
+                    found = s
+                for pp, rr, nn in zip(
+                    s.get("normalized_trace_path") or [],
+                    s.get("raw_source_sha256") or [],
+                    s.get("normalized_trace_sha256") or [],
+                ):
+                    key = (str(pp), str(rr), str(nn))
+                    if key not in seen_pairs:
+                        seen_pairs.add(key)
+                        source_tuples.append(key)
+            if found is None:
+                # fall back to the first draft with any snapshot
+                for d in (e.get("source_drafts") or []):
+                    found = snapshot_for(d)
+                    if found:
+                        break
             if found:
                 found = copy.deepcopy(found)
+                if source_tuples:
+                    base = list(
+                        zip(
+                            [str(x) for x in (found.get("normalized_trace_path") or [])],
+                            [str(x) for x in (found.get("raw_source_sha256") or [])],
+                            [str(x) for x in (found.get("normalized_trace_sha256") or [])],
+                        )
+                    )
+                    merged = list(dict.fromkeys(base + [t for t in source_tuples if t not in base]))
+                    found["normalized_trace_path"] = [t[0] for t in merged]
+                    found["raw_source_sha256"] = [t[1] for t in merged]
+                    found["normalized_trace_sha256"] = [t[2] for t in merged]
                 if verified:
                     for artifact in found.get("mechanism_artifacts") or []:
                         artifact["verbatim_verified"] = True

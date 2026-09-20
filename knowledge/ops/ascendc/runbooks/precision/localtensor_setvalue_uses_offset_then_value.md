@@ -187,8 +187,8 @@ platforms: ["950"]
 
 来源是一次 Ascend950 Reg kernel 开发会话中的 interleaved 精度修复；验证只采用修改实现后的原始测试输出。
 
-- 修复前独立 interleaved 探针观测 `maxdiff=290.91583251953125`，输出首行出现远离参考值的大数（来源平台: 950；证据等级: tool_observed）。
-- 修复后同一测试集合为 `51 passed, 1 failed`，唯一剩余失败是特殊 Inf 比较项；常规 half/interleaved、布局与 dtype 组合均未再报失败（来源平台: 950；证据等级: tool_observed）。
+- 修复前独立 interleaved 探针观测 `maxdiff=290.91583251953125`，输出首行出现远离参考值的大数（来源平台：950；证据等级：tool_observed）。
+- 修复后同一测试集合为 `51 passed, 1 failed`，唯一剩余失败是特殊 Inf 比较项；常规 half/interleaved、布局与 dtype 组合均未再报失败（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 

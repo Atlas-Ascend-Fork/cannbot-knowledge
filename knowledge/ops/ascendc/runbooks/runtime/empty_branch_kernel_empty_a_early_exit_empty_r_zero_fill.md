@@ -1,17 +1,17 @@
 ---
 type: "Runbook"
 title: 空batch归约kernel：bias零填充+全核早退配方
-description: reduction 算子 B==0 且 has_bias 时两路 bias 输出需零填充 6H 的完整 AscendC kernel 配方：Duplicate(0) 常量驻留 + 6 段 strided DataCopyPad + V_MTE3 单 crossing 同步；H==0 或 B==0 且无 bias 时全核早退。
+description: reduction 算子 B==0 且 has_bias 时两路 bias 输出需零填充 6H 的完整 AscendC kernel 配方：Duplicate(0) 常量驻留 + 6 段 strided DataCopyPad + V_MTE3 单 crossing 同步；H==0 或 B==0 且无 bias 时全核早退。复现增量：returns_empty 语义（softmax 类，输出 0 元素）的空分支退化为专用早退/空转壳——不声明 TQue/TBuf、不分配 UB、无跨核 SyncAll、无需填充 CopyOut；空分支 kernel 先按"空输出语义"在"填充值"与"no-op"之间分流。
 tags: [task.implementation, topic.compute.reduction, topic.data_movement.data_copy, topic.implementation.synchronization, topic.tiling, topic.implementation.pipeline]
 status: stable
 sources: []
 created_at: '2026-09-09T11:49:41Z'
-updated_at: '2026-09-09T11:49:41Z'
+updated_at: "2026-09-17T04:15:00Z"
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
+cann_versions: ["9.0.0-beta.2", "9.2.0"]
 ---
-# 空batch归约kernel：bias零填充+全核早退配方
 
+# 空batch归约kernel：bias零填充+全核早退配方
 
 ## 现象
 
@@ -19,7 +19,7 @@ cann_versions: ["9.0.0-beta.2"]
 
 本卡记录这个"没有输入数据、没有浮点计算"的 kernel 怎么写：输入 `grad_hy (0,H)`、`storage (0,5H)` 均为 0 元素，无任何 GM→UB 搬入；输出里门梯度 `(0,3H)`、`grad_hx (0,H)` 为空张量不写，只有两路 bias 共 6H 个 0 要写。实现后该分支 12 条 ST（含 fp16/bf16、H=1/2048/3000 切分边界）全部转绿。
 
-## 适用场景（必填 — 检索前的第一道滤网）
+## 适用场景
 
 - **工程形态**：ops-registry-invoke 算子仓开发（op_kernel/op_host 分离、tilingKey 多模板分发、aclnn ST 验证）；空张量/退化 shape 合法输入的 reduction 类算子。
 - **API 路径**：`AscendC::TBuf<TPosition::VECOUT>` + `TPipe::InitBuffer`；`GetTPipePtr()->FetchEventID(AscendC::HardEvent::V_MTE3)` + `SetFlag/WaitFlag`；`AscendC::DataCopyPad`（UB→GM 三参重载，不带 `DataCopyPadExtParams`）；`__simd_vf__` + `asc_vf_call` 寄存器级 VF（`AscendC::Reg::Duplicate/UpdateMask/StoreAlign`）。
@@ -277,3 +277,114 @@ host 侧契约（前序任务已落地、本卡 kernel 消费，摘录自 tiling
 - 曾担心 b16 下 `Reg::Duplicate` + 不带 StoreDist 的 `StoreAlign` 会写出交错数据（该疑虑已被实证否定：常量 0 填充路径 plain StoreAlign 实测位级正确）。
 
 
+
+## 复现增量：标量输出 reduction 的空输入负结果——不写输出 + 分配器不清零 + 测试侧清零属掩蔽
+
+另一独立轨迹并入 cross entropy loss 类算子（arch35/CANN 9.1.0）的空输入负结果，与本文"空 batch 求和必须显式写 0"的契约互为印证，并补充三条平台事实与一条掩蔽警告：
+
+**1. 分配器不清零（实测锚定）**：`aclrtMalloc` 分配的输出 buffer 不清零（批量跑读出前序用例残留 2.831522）；`executor->AllocTensor` 分配的张量同样不清零（L0 早返回路径实测同值残留）——注释里声称 "AllocTensor zero-initializes" 是错误的，这类框架内存语义必须实测确认，不能靠假设。
+
+**2. "单独跑通过"是内存初值巧合**：空 tensor (0,10)+mean 期望标量 0 的用例，单进程批量跑读出残留值（C++ ST `MERE=2.83e+07`、PyTorch 批量 `actual=-1.040762`）；新进程单跑通过（MERE=0.00e+00）只是新进程分配的输出内存恰好为零——分配器行为变化（复用脏页）即可复现失败，不可作为正确性依据。
+
+**3. kernel 空输入全路径崩溃（根因未追）**：去掉 aclnn 空输入早返回、走完整 Contiguous + L0 + kernel 路径（kernel 明明写了空输入分支）时，该用例 `流同步失败: 507035`（两次复现）；直调 L0（跳过 Contiguous）变体同样 507035；非空同族 shape 全部通过、空输入+none（不进 reduce 分支）通过。候选（均未验证）：`Init()` 对空输入的 GM 挂载（`SetGlobalBuffer` 0 元素）、tiling 对 mean 模式给出的 64 字节 workspace 的挂载逻辑。L0 层跳过 kernel 规避了崩溃，代价是输出未写（见下）。
+
+**4. 测试侧清零属掩蔽（banned）**：最终 ST 在输出张量创建函数里加 `aclrtMemset(*deviceAddr, total_bytes, 0, total_bytes)` 后 105/105 通过——但实现仍然不为空输入写输出，真实用户以空输入 mean 调用 aclnn 仍会得到未定义输出；PyTorch 验收以 `--isolate` 模式收尾同样是初值巧合。正确修复方向：让 kernel 的 `WritePartialToWorkspace(0.0f, 0)` + `MergeAndOutput()` 真正执行写出 0（先修空输入路径 507035），或在 aclnn 执行相位对空输入 mean/sum 显式向输出写 0，不要依赖分配器行为。
+
+**验证实践**：空输入期望常量类断言，先在测试里故意预填输出 buffer 非零（如 0xFF），验证算子真的写了输出——避免分配器行为把未写输出伪装成通过（与红基线 poison 预填同一原理）。
+
+**独立 trace 新增验证信号**（均为 tool_observed）：
+
+- C++ ST 单进程：空 tensor mean 用例 `MERE=2.83e+07, mismatch[0] golden=0.000000, actual=2.831522`；none+空输入用例跳过比对通过（来源平台：950；证据等级：tool_observed）。
+- L0 早返回 AllocTensor 路径：同用例仍 `MERE=2.83e+07`（actual=2.831522）——AllocTensor 不零初始化的直接证据（来源平台：950；证据等级：tool_observed）。
+- kernel 路径：同用例 `流同步失败: 507035`（两次复现）；直调 L0 变体同样 507035；非空同族 shape (16,10)/(32,100) 全部通过、空输入+none 通过（来源平台：950；证据等级：tool_observed）。
+- 测试侧 aclrtMemset 清零后：C++ ST 单进程 105/105（来源平台：950；证据等级：tool_observed）。
+- PyTorch 批量（同进程，输出未预清零）：同用例 `golden=0.000000, actual=-1.040762, MERE=1.04e+07`；单独运行该用例 PASS；`--isolate` 每用例独立子进程 105/105（来源平台：950；证据等级：tool_observed）。
+
+**独立 trace 扩展边界**：本增量限定"输出为标量常量的空输入场景"（mean/sum → 0）；空输入 + none（输出空张量）不受影响。kernel 空输入分支逻辑（写 0）在 507035 崩溃修复前无法上板验证；torch 分配器下输出内存零初始化概率、ViewCopy 对"无 kernel 写入的中间张量"的实际拷贝行为未拆解（未验证）。
+
+
+## 复现增量：returns_empty 语义的专用早退/空转壳——填充值 vs no-op 的分流判据
+
+另一独立轨迹并入 softmax 类算子（returns_empty 语义，Ascend950PR + CANN 9.2.0）空 tensor 分支的 kernel 侧配方，与本文"空 batch 求和必须显式写 0"构成完整的空分支分流判据：**写空 tensor 分支 kernel 前，先判定算子的空输出语义——输出非空且等于归约单位元（如 bias 的空和=0）→ 必须实现 Duplicate + CopyOut 填充路径（本文主配方）；输出本身为 0 元素（returns_empty）→ 早退/空转壳即可，填充路径是 no-op 应省略**。host tiling 侧的字段重映射（EMPTY_A 清零 + EMPTY_R chunk 切分）见 [空 tensor tiling：EMPTY_A 清零+EMPTY_R 重映射卡](../compilation/empty_tiling_returns_empty_field_remapping.md)。
+
+**分流语义的事实依据**：通用归约参考（reduce-empty-tensor）里 EMPTY_R 输出非空、每 entry 填 `Reducer::empty_r_output_value`，须 Duplicate + CopyOut；softmax 的 returns_empty 语义下输出元素数 = ∏(A 轴) × R 轴长度，任一维为 0 则输出 0 元素——填充路径是 no-op，照搬通用参考是白写还引入无用 buffer 依赖。
+
+**EMPTY_A / EMPTY_R 的 kernel 侧退化**：
+
+- **EMPTY_A**（任一非归约轴 size=0）：tiling 给 `usedCoreNum=0`，`GetBlockIdx() >= 0` 恒成立 → 全核（含 block 0）立即返回（与本文"SetBlockDim(1) + usedCoreNum=0"的早退表达一致）。
+- **EMPTY_R**（归约轴 size=0、所有 A 轴 > 0）：tiling 按 chunk 公式给 `usedCoreNum >= 1`，通过早退判定的核直接落到函数尾（空转）——softmax 输出为空，0 元素无可写。
+
+**专用早退壳类**（不声明任何 TQue/TBuf 成员、不分配 UB、无跨核 SyncAll，verbatim）：
+
+```cpp
+// ============================================================================
+// EmptyKernel<T> — Empty tensor degenerate path (tilingKey=2)
+// ============================================================================
+// 空 tensor 退化路径, 无 UB 计算链、无 CopyIn/Compute/CopyOut 三级流水、
+// 无跨核 SyncAll.  整个 kernel 退化为「早退 / 空转」.
+//   EMPTY_A (usedCoreNum=0): 全核早退 (blockIdx >= 0 恒成立).
+//   EMPTY_R (usedCoreNum>0): softmax 输出 shape = 输入 shape, R 轴=0 →
+//     输出元素数 = ∏(A) × 0 = 0 → 输出为空 tensor.  kernel 不分配任何 UB
+//     buffer, 不执行 DuplicateEmptyROutputVf / CopyOut (输出 0 元素 → no-op).
+//     通过早退判定的核空转.
+// 不声明 TQue / TBuf 成员.  无 Sync.  空 tensor 退化路径无 UB 计算链.
+// ============================================================================
+template <typename T>
+class BenchHarnessSoftmaxEmptyKernel {
+public:
+    __aicore__ inline void Init(GM_ADDR x, GM_ADDR y, GM_ADDR workspace,
+                                const BenchHarnessSoftmaxTilingData* td)
+    {
+        (void)x;
+        (void)y;
+        (void)workspace;
+        usedCoreNum_ = td->usedCoreNum;
+        // 不分配任何 TQue / TBuf (empty 模板无 buffer).
+    }
+
+    __aicore__ inline void Process()
+    {
+        // EMPTY_A: usedCoreNum_=0 → blockIdx >= 0 恒成立 → 全核早退.
+        // EMPTY_R: usedCoreNum_>0 → 通过早退判定的核空转 (softmax 输出 0 元素,
+        //   无可写 → 不执行 DuplicateEmptyROutputVf / CopyOut, no-op).
+        if (AscendC::GetBlockIdx() >= static_cast<int64_t>(usedCoreNum_)) return;
+        // softmax EMPTY_R: 输出元素数=0, 无 UB 计算链, 无 CopyOut (no-op).
+    }
+
+private:
+    int32_t usedCoreNum_ = 0;
+};
+```
+
+**分发切换**（apt 入口 `TILING_KEY_IS(2)` 分支，before/after verbatim）：
+
+```cpp
+    // before（复用普通模板早退：ST 已 24/24 通过，但普通模板 Init 仍按 tiling
+    // 字段走 TQue/TBuf 初始化路径，全 0 字段下依赖框架对 0 尺寸 buffer 的容错）
+    } else if (TILING_KEY_IS(2)) {
+        BenchHarnessSoftmaxKernel<DTYPE_X, true> kernel;
+        kernel.Init(x, y, workspace, &tilingData);
+        kernel.Process();
+    } else {
+
+    // after（分发到专用 EmptyKernel：结构上排除 UB 分配与同步）
+    } else if (TILING_KEY_IS(2)) {
+        BenchHarnessSoftmaxEmptyKernel<DTYPE_X> kernel;
+        kernel.Init(x, y, workspace, &tilingData);
+        kernel.Process();
+    } else {
+```
+
+**设计取舍**：复用普通模板早退与专用壳两方案 ST 实测均通过——重构是结构性/语义收敛（普通模板 Init 对全 0 tiling 字段的行为依赖框架对 0 尺寸 buffer 的容错，未实证），不是修错；专用壳同时把空分支从普通模板的 layout 维度中解耦。
+
+**独立 trace 新增验证信号**：
+
+- 重构前（tiling 短路已落地、空 tensor 分支复用普通模板早退）：空 tensor 分支 ST 24/24 precision PASSED（来源平台：950；证据等级：tool_observed）。
+- 重构后（专用 EmptyKernel + 分发切换）：构建退出码 0；全量 ST 107/107（全载分支 46/46、分块分支 37/37、空 tensor 分支 24/24 precision PASSED / aclnn-OK / 0 aclnn-FAIL）；run.sh 退出码 0（来源平台：950；证据等级：tool_observed）。
+
+**独立 trace 扩展边界**：
+
+- 输出非空的归约算子（空 R 轴须填 `empty_r_output_value`）：本增量的"EMPTY_R 空转"不成立，须回到本文主配方的 Duplicate + CopyOut 填充路径。
+- 若空分支未来需要 workspace 初始化、原子标记或跨核协同（如多核分片写元数据），专用壳不够用，未验证。
+- 普通模板在全 0 tiling 字段下 Init 的实际行为（0 尺寸 TQue/TBuf 是否报错）未实测——本增量以专用壳规避而非实证。
+- `GetBlockIdx() >= usedCoreNum_` 早退对 block 编号语义的依赖未在其他芯片验证（未验证，推断可迁移）。

@@ -214,10 +214,10 @@ inline int32_t AxisIsReduce(int32_t dim, bool fullReduce)
 
 来源说明：本卡的验证信号来自 Ascend950 上一次黑盒失败修复调查中的 repro 运行（test_repro.cpp）与 tiling 源码 file_read 事件，均为 trace 内结构化捕获的 tool_result。
 
-- 用例 A（`axes=[0]`、正确 out shape (4,1,2,3)=24）：`actual[0..7]=15.146 14.387 13.872 0.000 0.000 0.000 0.000 0.000`，kernel 只写 3 个非零值后补零（来源平台: 950；证据等级: tool_observed）。
-- 用例 C（`axes=[1]`、out shape (4,3)=12）：`actual[0..7]=15.146 14.387 13.872 16.842 16.775 16.217 17.825 17.540`，与 golden 一致、`SHAPE_MATCH=YES`（来源平台: 950；证据等级: tool_observed）。
-- `COMPILE OK` + `GetWorkspaceSize ret=0 ws=0`，算子在 Ascend950 上成功编译并执行（来源平台: 950；证据等级: tool_observed）。
-- tiling 源码 `AxisIsReduce` 与 `LoadAxesCount` 经 file_read 事件读取，内容如 `## 判别方法` 机制源 verbatim 所示（来源平台: 950；证据等级: artifact_verified）。
+- 用例 A（`axes=[0]`、正确 out shape (4,1,2,3)=24）：`actual[0..7]=15.146 14.387 13.872 0.000 0.000 0.000 0.000 0.000`，kernel 只写 3 个非零值后补零（来源平台：950；证据等级：tool_observed）。
+- 用例 C（`axes=[1]`、out shape (4,3)=12）：`actual[0..7]=15.146 14.387 13.872 16.842 16.775 16.217 17.825 17.540`，与 golden 一致、`SHAPE_MATCH=YES`（来源平台：950；证据等级：tool_observed）。
+- `COMPILE OK` + `GetWorkspaceSize ret=0 ws=0`，算子在 Ascend950 上成功编译并执行（来源平台：950；证据等级：tool_observed）。
+- tiling 源码 `AxisIsReduce` 与 `LoadAxesCount` 经 file_read 事件读取，内容如 `## 判别方法` 机制源 verbatim 所示（来源平台：950；证据等级：artifact_verified）。
 
 ## 失效边界
 

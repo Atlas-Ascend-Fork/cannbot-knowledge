@@ -47,10 +47,10 @@ platforms: ["950"]
 
 判别所依据的实测信号（来源平台：950）：
 
-- L0 51/51 通过、L1 115/578 失败，典型用例约 1.2% element mismatch（来源平台:950；证据等级:tool_observed）
-- 规模扫描：n=8/64/128 通过（0 mismatch）、n=129 起 2 mismatches、n>128 持续失败，失败间距约 64 fp32 元素（来源平台:950；证据等级:tool_observed）
-- 框架源码读取：dav_c100 Select 仅支持 `VSEL_CMPMASK_SPR`（其他模式 `ASCENDC_ASSERT false`）（来源平台:950；证据等级:tool_observed）
-- 框架源码读取：`VselImpl` repeatRounding 循环中 `sel` 指针不随 repeat 偏移，`dst`/`src0`/`src1` 均按 `dstOffsetCount` 偏移（来源平台:950；证据等级:tool_observed）
-- 判别后据此改用纯算术掩码折叠分支，L1 失败从 115/578 降至 58/578（57 个 mask 分支反转用例全部修复、0 回归）、C++ ST 57/57 通过，反证判别正确（来源平台:950；证据等级:tool_observed）
+- L0 51/51 通过、L1 115/578 失败，典型用例约 1.2% element mismatch（来源平台：950；证据等级：tool_observed）
+- 规模扫描：n=8/64/128 通过（0 mismatch）、n=129 起 2 mismatches、n>128 持续失败，失败间距约 64 fp32 元素（来源平台：950；证据等级：tool_observed）
+- 框架源码读取：dav_c100 Select 仅支持 `VSEL_CMPMASK_SPR`（其他模式 `ASCENDC_ASSERT false`）（来源平台：950；证据等级：tool_observed）
+- 框架源码读取：`VselImpl` repeatRounding 循环中 `sel` 指针不随 repeat 偏移，`dst`/`src0`/`src1` 均按 `dstOffsetCount` 偏移（来源平台：950；证据等级：tool_observed）
+- 判别后据此改用纯算术掩码折叠分支，L1 失败从 115/578 降至 58/578（57 个 mask 分支反转用例全部修复、0 回归）、C++ ST 57/57 通过，反证判别正确（来源平台：950；证据等级：tool_observed）
 
 剩余 58 个失败均为极端值边界用例（±FLT_MAX/inf/nan/subnormal threshold），在原始 baseline 同样失败，为独立问题，非本机制。

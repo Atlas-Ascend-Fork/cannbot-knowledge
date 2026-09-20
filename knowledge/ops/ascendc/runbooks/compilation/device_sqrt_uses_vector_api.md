@@ -1,12 +1,12 @@
 ---
 type: "Runbook"
 title: "bisheng 不接受 device 侧 sqrtf—改用向量 Sqrt"
-description: "device kernel 中直接调用 sqrtf 导致 bisheng 编译失败；改为 32B 对齐的向量 Sqrt 链并显式同步。"
+description: device kernel 中直接调用 sqrtf 导致 bisheng 编译失败；两条已验证路线：32B 对齐的向量 Sqrt 链 + 显式同步，与 SIMT 标量场景的 bisheng CCE 内建 sqrt（__builtin_cce_sqrtf 单条指令）。复现增量：TBE/opc 算子仓工具链形态报 use of undeclared identifier sqrtf（did you mean sqrt）——标量场景直接用 sqrt（double 版）+ static_cast 收回 float 即可编译通过，与内建路线同名同效。复现增量：GroupNorm（TBE 链，CANN 9.1.0）同型报错——编译器 note 直指 CCE 内建 float sqrt 声明，直接小写 sqrt 即过，无须 double 往返还原。
 tags: ["task.debugging", "topic.compute.elementwise.math_function", "topic.implementation.api_layer.basic_api"]
 status: stable
 sources: []
 created_at: "2026-08-14T03:13:06Z"
-updated_at: "2026-08-24T00:00:00Z"
+updated_at: '2026-09-17T05:05:01Z'
 platforms: ["950"]
 ---
 
@@ -23,7 +23,9 @@ platforms: ["950"]
 - 验证平台与版本：Ascend 950，活动 CANN toolkit 路径为 9.0.1。
 - 适用粒度：`operator_family`，适用于需要在 device kernel 中对归约标量做平方根/倒数的归一化与统计类算子。
 - 路线优先级：`recommended_fastpath`；这是本轨迹中唯一完成编译与全量精度验证的实现形态，不代表其他平台上的全局最优实现。
-- 不适用场景：Host 侧普通 C++ 可正常链接 libm 的代码；RegBase、SIMT 或其他平台工具链未验证。
+- 不适用场景：Host 侧普通 C++ 可正常链接 libm 的代码；RegBase 及其他平台工具链未验证；SIMT 标量场景已在 950/CANN 9.2.0 经 CCE 内建 sqrt 验证（见下方增量与验证信号）。
+- SIMT/标量路线（独立复现 R3，BenchHarnessEngramGateFusion，CANN 9.2.0）：`AscendC::Sqrt` 仅重载 LocalTensor 张量签名（3 参/5 参、返回 `void` 不能赋给 `float`），标量场景 no matching；可用入口是 bisheng CCE 内建头 `__clang_cce_aicore_functions.h` 的标量 `sqrt`（`CCE_INTRINSIC CALLEE_ATTR float sqrt(float in) { return __builtin_cce_sqrtf(in); }`）。
+- 选用条件（标量 vs 向量链）：开方作用在标量归约结果上（每行一次）时优先 CCE 内建 `sqrt`，免取向量链往返（`sed` 删 `<cmath>`、`sqrtf(`→`sqrt(`）；张量级开方仍直接用 `AscendC::Sqrt(LocalTensor, LocalTensor, count)` 向量 API。判别探针：`grep -rn "sqrt\b" <bisheng 安装目录>/lib/clang/15.0.5/include/__clang_cce*.h`，确认存在 `CCE_INTRINSIC`/`CALLEE_ATTR` 声明再用；glibc `<cmath>`/`math.h` 的声明是 `__host__`，一律不可在 `__aicore__` 调用。
 
 ## 根因
 
@@ -335,14 +337,19 @@ __global__ __aicore__ void rms_norm_kernel(
 - 改为向量计算链并完成同步/Host 参数配套后，远程 CMake 构建到 `_C` 目标成功（证据等级: tool_observed；来源平台: 950）。
 - 最终实现通过完整 20/20 精度用例，覆盖 fp32、fp16 与 bfloat16（证据等级: tool_observed；来源平台: 950）。
 
-- 独立复现 R1：工具报告 [100%] Built target _C。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
-- 独立复现 R2：工具报告 [100%] Built target op_rms_norm。该信号仅归属于本来源列出的精确编辑。（950，tool_observed）。
+- 独立复现 R1：工具报告 [100%] Built target _C。该信号仅归属于本来源列出的精确编辑。（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R2：工具报告 [100%] Built target op_rms_norm。该信号仅归属于本来源列出的精确编辑。（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R3（BenchHarnessEngramGateFusion，CANN 9.2.0）：`AscendC::Sqrt(scalar)` 报 `no matching function for call to 'Sqrt'` + `cannot initialize a variable of type 'float' with an rvalue of type 'void'`；`sqrtf` + `<cmath>` 报 `call to __host__ function from __aicore__ function`（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R3（BenchHarnessEngramGateFusion，CANN 9.2.0）：判别探针 grep 命中 `__clang_cce_aicore_functions.h:3517:CCE_INTRINSIC CALLEE_ATTR float sqrt(float in) { return __builtin_cce_sqrtf(in); }`（来源平台：950；证据等级：tool_observed）。
+- 独立复现 R3（BenchHarnessEngramGateFusion，CANN 9.2.0）：改为 CCE 内建 `sqrt`（删 `<cmath>`、`sqrtf(`→`sqrt(`）后开方相关错误消失、编译推进到下一独立问题，最终 `bash build.sh` 输出 `SUCCESS`（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
 - 只验证 Ascend 950 与本次活动 CANN 9.0.1 工具链；A2/A3 是否具有相同 `sqrtf` 限制未验证，推断可迁移但不得直接视为已验证。
 - `count=8` 是本实现对 32B fp32 工作区的代码形态，不应在其他 dtype/接口签名上机械照搬。
 - 其他数学函数不能仅凭本卡推断同样不可用，需分别查 API/编译验证。
+- SIMT/内建路线验证于 950 + CANN 9.2.0（bisheng clang 15.0.5）；内建头路径与版本强相关，跨版本需重新探针确认。只实测了 `sqrt`/`sqrtf`；exp/log 等其他函数按『先查内建头』判别方法推广，未逐一验证。kernel 头文件不要 `#include <cmath>`——host 数学头会持续引入 `__host__` 声明，其他调用点还会踩同类错误。
+- 相邻卡片：[__aicore__ 内 std::min/max 编译失败卡](aicore_avoid_host_std_minmax.md)——同族『host 标准库函数不能进 `__aicore__`』，min/max 用显式条件比较替代。[dav-2201 Rsqrt 精度不足卡](../precision/rsqrt_fast_approximation_use_sqrt_reciprocal.md)——开方可用之后的精度层问题：Rsqrt 近似偏差改用 Sqrt+标量倒数。
 
 ## 坏实践
 
@@ -352,3 +359,102 @@ __global__ __aicore__ void rms_norm_kernel(
 ## 误诊
 
 最初容易把报错理解成“缺少 `-lm`”；轨迹中的 device 编译上下文与后续 Ascend C API 修复表明，正确切入层是 kernel API 路径，不是通用链接参数。
+
+## 增量（2026-09-17，先前增量 · TBE/opc 算子仓工具链形态：sqrtf 未声明，标量 sqrt + 显式收回 float）
+
+另一独立轨迹并入第三条独立 trace（融合算子 bench_no_harness_add_rms_norm_dynamic_quant 的 RMSNorm 标量计算，Ascend950PR + CANN 9.1.0，`bash build.sh --soc=ascend950 -j8` 的 TBE 单算子编译链），补齐"错误形态 + 标量双精度路线"：
+
+**1. 错误形态（undeclared identifier + 编译器自荐 sqrt）**：`__aicore__` 设备代码的 reduce 标量推导里按主机 C 习惯写 `sqrtf`：
+
+```cpp
+    float rms = sqrtf(variance + epsilon_);
+```
+
+kernel 编译（TBE CompileStage.INFERCHANNEL）报：
+
+```
+op_kernel/arch35/bench_no_harness_add_rms_norm_dynamic_quant.h:247:17:
+error: use of undeclared identifier 'sqrtf'; did you mean 'sqrt'?
+1 error generated.
+```
+
+与 bisheng 直调路线的 `math.h` 宏展开错误形态不同：此处错误直指标识符未声明，且编译器提示的 `sqrt`（double 版）**实测可用**——float 实参传入 double 形参自动提升，结果需显式收回 float。
+
+**2. 修复（标量场景第三条路线，verbatim before/after）**：
+
+```cpp
+// before
+    float variance = sumSq * invN_;
+    float rms = sqrtf(variance + epsilon_);
+    float invRms = (rms > 0.0f) ? (1.0f / rms) : 0.0f;
+```
+
+```cpp
+// after
+    float variance = sumSq * invN_;
+    float rms = static_cast<float>(sqrt(variance + epsilon_));
+    float invRms = (rms > 0.0f) ? (1.0f / rms) : 0.0f;
+```
+
+选 `sqrt` + `static_cast<float>` 而不是手写位级平方根：与 golden 的 `std::sqrt`（double 语义、RNE 舍回 float）语义一致，精度路径最短；备选"把 RMS 也搬进向量 API（Sqrt LocalTensor）"被放弃——reduce 输出是单标量，为此再起一次向量调用不划算。该写法与本卡 R3（CCE 内建 `sqrt`）同名同效：SIMT/直调场景按内建头探针确认后用 `sqrt`，算子仓 TBE 场景直接按编译器提示换 `sqrt`。
+
+**3. 判别要点**：设备侧报 `use of undeclared identifier '<func>f'` 时直接按编译器提示换 `<func>`（double 版）并显式 `static_cast<float>`，不要去翻 math.h、也不要写 `f` 后缀单精度变体（logf/powf 等推断同不可用，未逐一实测）。
+
+### 复现增量验证信号
+
+- 修复前：kernel 编译报 `error: use of undeclared identifier 'sqrtf'; did you mean 'sqrt'?`（op_kernel/arch35 头 247 行，TBE CompileStage.INFERCHANNEL 失败）（来源平台：950；证据等级：tool_observed）。
+- 修复后：`sqrt` + `static_cast` 写入后重建，sqrtf 错误消失，编译推进到 DataCopyPad 参数检查阶段，最终全工程编译成功（来源平台：950；证据等级：tool_observed）。
+- 同会话对照：同 kernel 一直使用 `<cmath>` 的 `sqrt(variance + epsilon_)` 编译正常（同 trace 的 std::max 修复记录佐证），印证"sqrt 可用、sqrtf 不可用"的符号级差异（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量失效边界
+
+- float→double→float 的往返在极端值域（次正规边界）的舍入差异未逐位验证——本算子 golden 同为 double 路径，未见偏差。
+- 本卡限定设备侧（`__aicore__`）标量代码；host 侧 sqrtf 正常可用。
+- 未验证，推断可迁移：其它 AscendC 目标 SoC（910b 等）同一设备侧编译器族。
+
+## 增量（2026-09-17，先前增量 · TBE 链 GroupNorm 形态：note 直指 CCE 内建 float sqrt）
+
+独立复现（BenchNoHarnessGroupNorm 算子全载 kernel，Ascend950PR/arch35 + CANN 9.1.0，`bash build.sh --soc=ascend950 -j8` 的 TBE op 编译器 INFERCHANNEL 阶段）：按公式 `rstd = 1/sqrt(var + ε)` 计算标准差倒数时按 host 侧习惯写 `sqrtf`，kernel 编译报错原文：
+
+```text
+op_kernel/arch35/bench_no_harness_group_norm.h:208:25:
+  error: use of undeclared identifier 'sqrtf'; did you mean 'sqrt'?
+    208 |     float rstd = 1.0f / sqrtf(var + epsilon_);
+<bisheng 安装目录>/lib/clang/15.0.5/include/__clang_cce_aicore_functions.h:3519:33:
+  note: 'sqrt' declared here
+CCE_INTRINSIC CALLEE_ATTR float sqrt(float in) { return __builtin_cce_sqrtf(in); }
+```
+
+与本卡先前增量 形态同错误文本，但本开发会话 编译器 note 指向的声明是 **CCE 内建 float 版 `sqrt`**（而非经 host 头文件链可自动提升的 double 版）——直接改小写 `sqrt` 即可，无须 double 往返收窄。该开发会话 还实走了 R3 已记录的弯路：先改成 `AscendC::Sqrt(var + epsilon_)`（张量 Level2 API 误用于标量 float，错误方向），再依编译器 note 二次修正。
+
+修复（before/after verbatim，kernel ProcessOneGroup 内）：
+
+```cpp
+// before（libc 名字）
+    // Step 5: 标准差倒数 rstd = 1/sqrt(var + eps)
+    float rstd = 1.0f / sqrtf(var + epsilon_);
+```
+
+```cpp
+// 误诊中间态（张量 API 误用于标量，错误方向）
+    float rstd = 1.0f / AscendC::Sqrt(var + epsilon_);
+```
+
+```cpp
+// after（CCE 内建 sqrt，小写）
+    // Step 5: 标准差倒数 rstd = 1/sqrt(var + eps)
+    float rstd = 1.0f / sqrt(var + epsilon_);
+```
+
+判别补充：报错 note 指向的 `sqrt` 声明取决于该 TU 的包含链——本形态直指 `__clang_cce_aicore_functions.h` 的 CCE 内建 float 版（无须 static_cast）；先前增量 形态指向可自动提升的 double 版（结果需 `static_cast<float>` 收回）。两者同名同效，以当次编译器 note 为准，不要去翻 math.h、也不要写 `f` 后缀单精度变体。
+
+### 复现增量验证信号
+
+- 修复前：kernel 编译报 `error: use of undeclared identifier 'sqrtf'; did you mean 'sqrt'?`，TBE 编译框架层同时报 `Exception: An error occurred during compile phases of CompileStage.INFERCHANNEL`、`Op[BenchNoHarnessGroupNorm] of index[0] compile failed`、`.json not generated`（来源平台：950；证据等级：tool_observed）。
+- 修复后：同一命令重跑 `[INFO] Build completed successfully!`，3 个 kernel `.o`（BenchNoHarnessGroupNorm_*.o）与 `custom_opp_ubuntu_x86_64.run` 生成（来源平台：950；证据等级：tool_observed）。
+
+### 复现增量失效边界
+
+- 本形态与本卡先前增量 的 note 定位差异（CCE 内建 float 版 vs host 链 double 版）来自包含链差异，未做控制变量验证；处置一致——用编译器自荐的 `sqrt`，并按其形参类型决定是否显式收窄。
+- 仍只实测 `sqrt`/`sqrtf`；exp/log/pow 等其他数学函数按"先查内建头"判别方法推广，未逐一验证。
+- 误诊方向"以为 AscendC 命名空间下有标量封装"与 R3 一致：标量数学在 CCE 内建层（小写、无命名空间），`AscendC::Sqrt` 仅重载 LocalTensor 张量签名。

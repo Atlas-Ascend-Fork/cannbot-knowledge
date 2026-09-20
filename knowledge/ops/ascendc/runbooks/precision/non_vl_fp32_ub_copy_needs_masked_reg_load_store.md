@@ -117,13 +117,13 @@ __aicore__ inline __ubuf__ float *LoadRowFp32(int64_t off)
 
 来源为一次 Ascend950 fp32 非末轴规约的局部复制修复：
 
-- VL 整倍数场景 `maxdiff=2.24e-08/2.98e-08`，非整倍数场景为 `7.62e-01/1.69e+00/1.33e+00`（来源平台: 950；证据等级: tool_observed）；
-- 输入/输出/末轴输出统一改 masked Reg copy 后，多组非 VL 场景降到 `4.47e-08/5.96e-08/7.45e-09`（来源平台: 950；证据等级: tool_observed）；
-- 最终 pytest 58/58、cann-bench 20/20 通过（来源平台: 950；证据等级: tool_observed）。
+- VL 整倍数场景 `maxdiff=2.24e-08/2.98e-08`，非整倍数场景为 `7.62e-01/1.69e+00/1.33e+00`（来源平台：950；证据等级：tool_observed）；
+- 输入/输出/末轴输出统一改 masked Reg copy 后，多组非 VL 场景降到 `4.47e-08/5.96e-08/7.45e-09`（来源平台：950；证据等级：tool_observed）；
+- 最终 pytest 58/58、cann-bench 20/20 通过（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
-本结论来自 CANN 9.0.1 dav-3510 的特定 LocalTensor DataCopy 路径，不能外推为所有 DataCopy overload 的通用契约。A2/A3 未验证（未验证，推断可迁移）。
+本结论来自 CANN 9.0.1 dav-3510 的特定 LocalTensor DataCopy 路径，不能外推为所有 DataCopy overload 的通用契约。A2/A3 未验证（推断可迁移）。
 
 ## 坏实践
 

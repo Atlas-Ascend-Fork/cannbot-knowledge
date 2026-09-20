@@ -155,9 +155,9 @@ __simd_vf__ inline void softmax_expsum_vf(__ubuf__ float *sumSlot, __ubuf__ floa
 
 ## 验证信号
 
-这条知识来自一次 Ascend950 Softmax kernel 的真实上板修复。修复前同一测试矩阵为 55 passed、6 failed，多 chunk 失败的 `Max diff` 为 `0.414062~0.927876`；替换为临时 Reduce + lane-0 `Max/Add` 后，完整 NPU pytest 为 61 passed。（来源平台: 950；证据等级: tool_observed）
+这条知识来自一次 Ascend950 Softmax kernel 的真实上板修复。修复前同一测试矩阵为 55 passed、6 failed，多 chunk 失败的 `Max diff` 为 `0.414062~0.927876`；替换为临时 Reduce + lane-0 `Max/Add` 后，完整 NPU pytest 为 61 passed。（来源平台：950；证据等级：tool_observed）
 
-随后执行独立的全量 cann-bench 精度评测，全部 20 个 case 通过，覆盖 float16、float32、bfloat16 与末轴/非末轴路径。（来源平台: 950；证据等级: tool_observed）
+随后执行独立的全量 cann-bench 精度评测，全部 20 个 case 通过，覆盖 float16、float32、bfloat16 与末轴/非末轴路径。（来源平台：950；证据等级：tool_observed）
 
 ## 失效边界
 

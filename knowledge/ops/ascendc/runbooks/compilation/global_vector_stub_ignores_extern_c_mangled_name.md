@@ -95,5 +95,5 @@ extern void hardswish_kernel(uint32_t blockDim, void *l2Ctrl, aclrtStream stream
 ## 失效边界
 
 - aclnn 算子仓开发（ops-registry-invoke）走 `op_host` 注册 + `aclnn<Op>GetWorkspaceSize`/`aclnn<Op>` API 封装，符号导出路径不同，本判别规则不直接适用。
-- 950/a3 平台、其它 CANN 版本 ASC 编译器对 `extern "C"` + `__global__` 的处理未验证，未验证，推断可迁移（C++ mangling 是编译器通用行为，但具体 stub 生成策略需重验）。
+- 950/a3 平台、其它 CANN 版本 ASC 编译器对 `extern "C"` + `__global__` 的处理未验证，推断可迁移（C++ mangling 是编译器通用行为，但具体 stub 生成策略需重验）。
 - 本卡只覆盖 host-side stub 链接名问题；device 侧核函数内部的 `extern "C"` 语义不在本卡范围。

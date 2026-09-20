@@ -211,10 +211,10 @@ __aicore__ inline void ProcessOneTile(AscendC::TPipe &pipe,
 
 来源说明：Ascend950PR 上先以合法搬运宽度运行 float32 interleaved 探针，再仅交换 `DeInterleave` 的两个目标参数并干净重建。
 
-- 修复前 float32 interleaved `max_diff=9.220378875732422`（来源平台: 950；证据等级: tool_observed）；
-- 交换目标参数后相同路线 `max_diff=0.0`（来源平台: 950；证据等级: tool_observed）；
-- 后续完整 dtype/mode 组合探针中，float32 两条路线均为 `max_diff=0.0`，B16 路线也在各自精度阈值内（来源平台: 950；证据等级: tool_observed）；
-- 最终完整评测集 20/20 通过（来源平台: 950；证据等级: tool_observed）。
+- 修复前 float32 interleaved `max_diff=9.220378875732422`（来源平台：950；证据等级：tool_observed）；
+- 交换目标参数后相同路线 `max_diff=0.0`（来源平台：950；证据等级：tool_observed）；
+- 后续完整 dtype/mode 组合探针中，float32 两条路线均为 `max_diff=0.0`，B16 路线也在各自精度阈值内（来源平台：950；证据等级：tool_observed）；
+- 最终完整评测集 20/20 通过（来源平台：950；证据等级：tool_observed）。
 
 ## 失效边界
 
