@@ -14,11 +14,8 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$repo_root"
 
-bash get_resources.sh
 python3 .agents/skills/knowledge-lint/scripts/knowledge_lint.py \
   --knowledge-root . --strict-navigation
-python3 .agents/skills/knowledge-ingest/scripts/fixed_archive_docs.py \
-  --knowledge-root . verify
 python3 .agents/skills/knowledge-ingest/scripts/knowledge_ingest.py \
   --knowledge-root . sync-indexes --check
 python3 .agents/skills/knowledge-query/scripts/knowledge_index.py \

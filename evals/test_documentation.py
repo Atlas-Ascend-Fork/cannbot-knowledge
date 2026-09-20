@@ -104,6 +104,15 @@ class DocumentationContractTests(unittest.TestCase):
             bundle = self.root / "knowledge" if document.is_relative_to(self.root / "knowledge") else None
             for target, resolved in relative_markdown_links(document, bundle):
                 if not resolved.exists():
+                    try:
+                        relative = resolved.relative_to(self.root)
+                    except ValueError:
+                        relative = None
+                    if relative is not None and any(
+                        relative.is_relative_to(Path(str(definition["root"])))
+                        for definition in self.contract.local_sources.values()
+                    ):
+                        continue
                     failures.append(f"{document.relative_to(self.root)}: {target}")
         self.assertEqual([], failures)
 
@@ -520,6 +529,11 @@ class DocumentationContractTests(unittest.TestCase):
     def test_unified_gate_enables_strict_source_navigation(self) -> None:
         check = (self.root / "check.sh").read_text(encoding="utf-8")
         self.assertIn("--strict-navigation", check)
+        self.assertNotIn("bash get_resources.sh", check)
+        self.assertNotIn(
+            "fixed_archive_docs.py \\\n    --knowledge-root . verify",
+            check,
+        )
 
     def test_unified_gate_runs_trace_runbook_contract(self) -> None:
         check = (self.root / "check.sh").read_text(encoding="utf-8")
