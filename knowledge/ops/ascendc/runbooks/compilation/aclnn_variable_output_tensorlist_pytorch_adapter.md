@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:32:55Z'
 updated_at: '2026-09-17T03:26:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 变长 TensorList 输出 aclnn 的 PyTorch 适配

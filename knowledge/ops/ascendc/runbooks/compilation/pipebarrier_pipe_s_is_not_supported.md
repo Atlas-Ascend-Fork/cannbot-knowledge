@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:13:06Z"
 updated_at: "2026-09-16T11:11:42Z"
 platforms: ["950"]
-cann_versions: ["9.0.1", "9.1.0"]
 ---
 
 # PipeBarrier<PIPE_S> 编译失败 — 只保留目标架构支持的管线

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:24:03Z'
 updated_at: '2026-09-17T03:24:03Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 行切分 tiling UT 期望须含反推 blockDim 步

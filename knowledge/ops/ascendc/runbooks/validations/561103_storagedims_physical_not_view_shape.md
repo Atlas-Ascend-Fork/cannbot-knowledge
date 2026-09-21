@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:39:38Z'
 updated_at: '2026-09-17T01:39:38Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 561103 非连续输入：storageDims 须传物理 shape

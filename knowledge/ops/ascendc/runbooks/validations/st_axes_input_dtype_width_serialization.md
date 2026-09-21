@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:56:56Z'
 updated_at: '2026-09-17T00:56:56Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ST axes输入按目标dtype宽度逐元素序列化

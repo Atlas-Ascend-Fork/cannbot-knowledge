@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:24:39Z'
 updated_at: '2026-09-16T10:24:39Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # LD_PRELOAD libopapi 致 GE TBE 初始化失败

@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-14T12:14:53Z"
 updated_at: "2026-09-14T12:14:53Z"
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # MTE2占比高≠带宽bound：发射开销判别

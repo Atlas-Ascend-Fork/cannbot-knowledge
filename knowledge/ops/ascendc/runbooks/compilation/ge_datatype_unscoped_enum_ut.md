@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:24:39Z'
 updated_at: '2026-09-16T10:24:39Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # ge::DataType 为 unscoped 枚举勿手写副本

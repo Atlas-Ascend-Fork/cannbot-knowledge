@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:12:25Z'
 updated_at: '2026-09-17T04:12:25Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # Tensor operator[] 临时值不能绑定非 const 引用

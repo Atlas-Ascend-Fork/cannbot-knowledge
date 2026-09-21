@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:05:46Z'
 updated_at: '2026-09-17T04:05:46Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # Matmul 头路径 lib/matmul 不存在，应为 adv_api

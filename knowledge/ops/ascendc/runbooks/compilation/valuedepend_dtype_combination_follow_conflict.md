@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:17:47Z'
 updated_at: '2026-09-16T10:17:47Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ValueDepend 虚影 dtype 组合与 Follow 输出冲突

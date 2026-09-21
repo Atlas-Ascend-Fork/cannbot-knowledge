@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:56:56Z'
 updated_at: '2026-09-17T00:56:56Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # ST报告通过复测失败的四步分诊

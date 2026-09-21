@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:13:22Z'
 updated_at: '2026-09-17T04:13:22Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # GE 头文件多目录布局致 GEIR 示例编译失败

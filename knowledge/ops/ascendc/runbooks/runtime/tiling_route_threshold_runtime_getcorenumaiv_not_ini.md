@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-09T11:49:41Z'
 updated_at: '2026-09-16T11:13:37Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # GetCoreNumAiv 实测≈56-57，group 路由分界 28

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:30:14Z'
 updated_at: '2026-09-17T02:30:14Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # golden 参考精度不足：fp32 中间计算升 fp64

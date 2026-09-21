@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:48:42Z'
 updated_at: '2026-09-17T01:48:42Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # asc_vf_call VF内非对齐访存致507035

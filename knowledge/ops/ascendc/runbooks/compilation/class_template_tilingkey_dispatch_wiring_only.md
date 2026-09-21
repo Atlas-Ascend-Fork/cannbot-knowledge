@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:13:37Z'
 updated_at: '2026-09-17T00:14:22Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 模板 kernel + tilingKey 派发：分支启用只改 apt 接线

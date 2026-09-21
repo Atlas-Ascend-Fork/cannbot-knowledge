@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:13:06Z"
 updated_at: "2026-09-16T11:11:42Z"
 platforms: ["950"]
-cann_versions: ["9.0.1", "9.1.0"]
 ---
 
 # DataCopyPad 加载缺少 Pad 参数导致编译失败

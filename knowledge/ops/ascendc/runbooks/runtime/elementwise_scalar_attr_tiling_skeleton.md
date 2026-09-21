@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:20:34Z'
 updated_at: '2026-09-16T11:11:04Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 带标量属性 elementwise 算子 tiling 骨架配方

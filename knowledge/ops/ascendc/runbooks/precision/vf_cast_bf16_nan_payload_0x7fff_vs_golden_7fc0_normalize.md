@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T08:44:28Z'
 updated_at: '2026-09-14T08:44:28Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # bf16 输出 NaN 载荷 0x7FFF 需归一化为 0x7FC0

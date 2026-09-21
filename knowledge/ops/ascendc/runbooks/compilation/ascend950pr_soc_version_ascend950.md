@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:20:34Z'
 updated_at: '2026-09-17T05:27:53Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # Ascend950PR 的 soc_version 确认为 ascend950

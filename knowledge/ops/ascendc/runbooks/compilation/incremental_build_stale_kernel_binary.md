@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-14T12:18:28Z"
 updated_at: '2026-09-17T04:15:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # kernel头改动后增量编译沿用旧二进制

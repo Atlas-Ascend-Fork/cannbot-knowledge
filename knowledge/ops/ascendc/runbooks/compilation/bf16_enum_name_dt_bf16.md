@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:48:21Z'
 updated_at: '2026-09-17T05:27:53Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # bf16 枚举实名 DT_BF16：全称 DT_BFLOAT16 不存在

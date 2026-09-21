@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:49:13Z'
 updated_at: '2026-09-17T00:49:13Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # argmax NaN输出0或2^32：calIndex索引无效

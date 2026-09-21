@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-09T11:49:41Z'
 updated_at: '2026-09-09T11:49:41Z'
 platforms: ["950"]
-cann_versions: ["cann-9.0.0-beta.2"]
 ---
 # TPL 双 bool 模板入口与 sub-kernel 实例化验证
 

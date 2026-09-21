@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:11:04Z'
 updated_at: '2026-09-16T11:20:30Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # int64+AR 动态 shape aclnn 直调跳过自定义 tiling

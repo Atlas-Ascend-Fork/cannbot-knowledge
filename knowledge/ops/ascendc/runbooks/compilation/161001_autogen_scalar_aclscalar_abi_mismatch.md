@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:17:47Z'
 updated_at: '2026-09-17T05:27:53Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # autogen 安装头标量属性按值声明与库 aclScalar* ABI 不符

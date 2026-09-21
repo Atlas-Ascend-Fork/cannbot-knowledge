@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:11:06Z'
 updated_at: '2026-09-17T04:11:06Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 白盒非默认 mode 分支结构覆盖塌缩：mode_struct_k 恢复

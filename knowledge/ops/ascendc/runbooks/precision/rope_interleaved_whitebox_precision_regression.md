@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:49:13Z'
 updated_at: '2026-09-17T01:05:00Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # RoPE interleaved链白盒精度劣于half链

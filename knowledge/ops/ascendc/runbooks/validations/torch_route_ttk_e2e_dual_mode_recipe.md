@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:12:55Z'
 updated_at: '2026-09-14T12:12:55Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # TTK e2e 自定义 aclnn 算子 Torch 路由配方

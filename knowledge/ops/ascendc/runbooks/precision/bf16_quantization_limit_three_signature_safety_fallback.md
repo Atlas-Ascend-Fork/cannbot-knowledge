@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-20T11:36:00Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # bf16 量化极限的 MARE 略超阈三签名归类 — 阈值契约不可改时 safety_fallback 上报

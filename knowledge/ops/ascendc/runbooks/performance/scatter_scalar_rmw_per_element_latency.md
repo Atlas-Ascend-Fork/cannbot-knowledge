@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:15:40Z'
 updated_at: '2026-09-14T12:15:40Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # scatter 逐元素 RMW 实测偏离 MTE2 目标 4–5 量级

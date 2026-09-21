@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:58:06Z'
 updated_at: '2026-09-17T01:47:15Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # DataCopyPad blockLen uint16_t 窄化截断风险

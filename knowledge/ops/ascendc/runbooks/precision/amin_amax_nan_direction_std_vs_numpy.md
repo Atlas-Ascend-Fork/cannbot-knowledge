@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:50:52Z'
 updated_at: '2026-09-17T00:50:52Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # amin/amax NaN 传播方向：std 单侧 vs numpy 双向

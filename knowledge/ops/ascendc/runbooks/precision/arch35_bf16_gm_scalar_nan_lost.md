@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:48:21Z'
 updated_at: '2026-09-17T00:48:21Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # arch35 bf16 标量 GM 读写丢 nan 位模式

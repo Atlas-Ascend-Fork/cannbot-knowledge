@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:58:06Z'
 updated_at: '2026-09-17T00:58:06Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # dav-3510 混合 dtype 广播算子多核 kernel 骨架配方

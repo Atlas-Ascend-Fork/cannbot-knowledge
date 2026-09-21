@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:13:06Z"
 updated_at: "2026-09-17T04:15:00Z"
 platforms: ["950"]
-cann_versions: ["9.0.1", "9.2.0"]
 ---
 
 # GetTPipePtr 错加 AscendC 命名空间导致编译失败

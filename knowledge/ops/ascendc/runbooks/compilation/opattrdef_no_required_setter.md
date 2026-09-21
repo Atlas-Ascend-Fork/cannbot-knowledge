@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:21:59Z'
 updated_at: '2026-09-17T02:21:59Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # op_def 属性链写 Required() 编译失败

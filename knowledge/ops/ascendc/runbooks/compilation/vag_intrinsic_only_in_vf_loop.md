@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:18:56Z'
 updated_at: '2026-09-17T03:18:56Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # VAG intrinsic 只能在 VF 循环内使用

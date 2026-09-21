@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:30:52Z'
 updated_at: '2026-09-17T02:30:52Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # fork 隔离 35 例后驱动耗尽：分批父进程

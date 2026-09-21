@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:50:52Z'
 updated_at: '2026-09-17T00:50:52Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # ttk aclnn warmup 依赖 tbe→scipy 双路径

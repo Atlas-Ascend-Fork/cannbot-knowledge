@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-20T11:36:00Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # GroupNorm 归一化输出近零元素 — MARE/MERE 分离判别、混合分母与 torch 工程完整比对器

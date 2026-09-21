@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:13:06Z"
 updated_at: "2026-09-16T10:22:16Z"
 platforms: ["950"]
-cann_versions: ["9.0.1", "9.1.0"]
 ---
 
 # Reg CastTrait RoundMode 命名空间编译失败

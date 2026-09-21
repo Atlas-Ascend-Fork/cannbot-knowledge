@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:25:37Z'
 updated_at: '2026-09-17T03:25:37Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ReinterpretCast缺template关键字编译失败被旧二进制掩盖

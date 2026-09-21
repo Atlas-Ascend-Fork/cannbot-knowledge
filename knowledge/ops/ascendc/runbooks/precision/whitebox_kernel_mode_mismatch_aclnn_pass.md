@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:25:37Z'
 updated_at: '2026-09-17T03:25:37Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 白盒 kernel 模式精度失配与 ST 黑盒通过并存

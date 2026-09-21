@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:11:06Z'
 updated_at: '2026-09-17T04:11:06Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ST 塞 dummy 可选输入切换 kernel 路径，掩盖未测分支

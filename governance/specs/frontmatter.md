@@ -47,7 +47,7 @@ platforms: []
 | `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
 | `operators` | `Operator` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
 | `optimizations` | `Optimization` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
-| `runbooks` | `Runbook` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
+| `runbooks` | `Runbook` | `platforms` | `aliases`, `verified`, `replaced_by` |
 | `interoperability` | `Interoperability` | `platforms`, `source_technology`, `target_technology` | `cann_versions`, `verified`, `replaced_by` |
 | `glossaries` | `Glossary` | 无 | `aliases`, `verified`, `replaced_by` |
 
@@ -142,7 +142,7 @@ tags: [task.implementation, topic.data_movement, topic.alignment]
 
 - 除 `glossaries` 外都要求 `platforms`。平台无关写 `[agnostic]`，且不能与具体平台混用。
 - `platforms: []` 只允许 `draft`，表示范围尚未确认；不使用会随 Registry 变化而改变含义的 `[all]`。
-- `cann_versions` 只在证据支持明确版本边界时填写；缺失表示未声明，不表示兼容所有版本。
+- `cann_versions` 只在证据支持明确版本边界时填写；缺失表示未声明，不表示兼容所有版本。Runbook 不使用该字段（版本边界若确属结论一部分，写入正文失效边界）。
 - `source_technology` 和 `target_technology` 只用于 `Interoperability`，必须引用两个不同的已注册 technology。
 - `aliases` 只保存稳定检索名称，仅用于 Profile 明确允许的类型。
 - `created_at` 创建后保持不变；正文实质变化时更新 `updated_at`，纯格式调整不更新。

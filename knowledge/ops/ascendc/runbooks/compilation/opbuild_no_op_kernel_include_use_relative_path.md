@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:21:59Z'
 updated_at: '2026-09-17T02:21:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # opbuild 编译 op_host 不注入 op_kernel 头路径

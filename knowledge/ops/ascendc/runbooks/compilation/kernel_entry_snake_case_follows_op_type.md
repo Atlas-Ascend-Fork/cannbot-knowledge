@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:13:37Z'
 updated_at: '2026-09-17T05:27:53Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # kernel entry not implement — 入口须随算子名

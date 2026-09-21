@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:30:14Z'
 updated_at: '2026-09-17T02:30:14Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # MERE 过而 MARE 爆炸：golden 近零与精度模型不一致

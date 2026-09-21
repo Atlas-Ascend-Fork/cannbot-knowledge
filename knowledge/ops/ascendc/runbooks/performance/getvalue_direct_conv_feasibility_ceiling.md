@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:54:40Z'
 updated_at: '2026-09-17T00:54:40Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # GetValue标量直卷大shape超时：最大用例不可行

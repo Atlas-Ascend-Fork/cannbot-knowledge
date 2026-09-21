@@ -40,7 +40,7 @@ Query 是 CANNBot Profile 的专用、确定性 consumer，不修改知识正文
 
 Profile 过滤使用目录 ID，例如 `apis`；结果同时返回 OKF `type: API` 和 `profile: apis`。`platforms: []` 不能满足平台过滤，只有显式请求未定位 `draft` 卡时才能返回。精确 API 名在目标平台 `stable` 查询零命中时，调用方必须另发一次不带 platform、限定 `draft` 且显式包含未定位卡的查询；命中只能标为平台待核验候选，不能混入原平台结果或写进同一审计 receipt。Glossary 不携带平台字段，按平台中立术语处理。平台识别可在 `platforms` scope 中暂不传目标平台，其他搜索不得通过省略平台扩大范围。
 
-Query 当前不按 CANN 版本执行结构化过滤。卡片仍可记录 `cann_versions`，搜索结果仍可返回该字段；调用方读取正文后自行核对版本边界。
+Query 当前不按 CANN 版本执行结构化过滤。非 Runbook 卡片可记录 `cann_versions`，搜索结果仍可返回该字段；Runbook 卡不携带该字段，版本边界在正文失效边界。调用方读取正文后自行核对版本边界。
 
 文本评分按标题、摘要、`tags`/`aliases` 和正文递减加权，并使用 `verified` 事件派生信任层级：
 

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:21:59Z'
 updated_at: '2026-09-17T02:21:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # rank>8 张量 ACL 抛 length_error 崩溃整跑

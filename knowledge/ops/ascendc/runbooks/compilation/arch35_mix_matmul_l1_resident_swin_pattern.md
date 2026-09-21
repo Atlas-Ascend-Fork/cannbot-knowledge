@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:26:59Z'
 updated_at: '2026-09-17T03:26:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # arch35 MIX Matmul L1 常驻接入模式（swin 参考）

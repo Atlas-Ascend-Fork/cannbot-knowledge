@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-15T00:00:00Z"
 updated_at: "2026-09-17T03:25:37Z"
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # RegBase VF __simd_vf__ 路线致 bisheng 编译崩溃

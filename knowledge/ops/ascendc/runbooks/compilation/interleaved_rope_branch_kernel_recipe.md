@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:24:03Z'
 updated_at: '2026-09-17T03:24:03Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # interleaved RoPE 分支 kernel 完整实现配方

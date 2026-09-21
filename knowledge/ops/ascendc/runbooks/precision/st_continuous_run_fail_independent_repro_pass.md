@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:18:45Z'
 updated_at: '2026-09-17T02:14:14Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # ST 连续运行失败而独立 repro 全对的二分

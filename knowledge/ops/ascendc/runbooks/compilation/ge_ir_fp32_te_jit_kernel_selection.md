@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:48:53Z'
 updated_at: '2026-09-17T01:48:53Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # GE IR fp32 命中 te_ JIT 而非预编译 binary

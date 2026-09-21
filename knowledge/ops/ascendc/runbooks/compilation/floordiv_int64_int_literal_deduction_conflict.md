@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:29:17Z'
 updated_at: '2026-09-17T02:21:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # FloorDiv 混用 int64 与 int 字面量推导冲突

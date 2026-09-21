@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:20:34Z'
 updated_at: '2026-09-16T10:20:34Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # TensorList 非连续支持两条路线均失败已降级

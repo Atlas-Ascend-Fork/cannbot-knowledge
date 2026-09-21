@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:17:42Z'
 updated_at: '2026-09-17T04:17:42Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # Reg::Move 三参带 mask 且不接受 const

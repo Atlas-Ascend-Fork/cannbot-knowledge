@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:14:22Z'
 updated_at: '2026-09-17T00:14:22Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # 共享 tiling.h 宏范式 DT 宏冲突改纯 POD

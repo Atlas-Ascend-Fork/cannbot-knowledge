@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:18:45Z'
 updated_at: '2026-09-16T10:18:45Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 手改 kernel JSON int64Mode 无效且被重装覆盖

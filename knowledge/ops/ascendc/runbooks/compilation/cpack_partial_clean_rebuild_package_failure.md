@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:17:47Z'
 updated_at: '2026-09-16T10:17:47Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 部分清理重建后 CPack 打包失败须全清重建

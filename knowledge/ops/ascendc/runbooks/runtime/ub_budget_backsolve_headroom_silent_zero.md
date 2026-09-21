@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:20:30Z'
 updated_at: '2026-09-16T11:20:30Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # tiling UB 预算不留 headroom 输出全 0

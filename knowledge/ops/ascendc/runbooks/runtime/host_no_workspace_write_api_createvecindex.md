@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:30:52Z'
 updated_at: '2026-09-17T02:30:52Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # Host 预写 workspace 不可行：CreateVecIndex

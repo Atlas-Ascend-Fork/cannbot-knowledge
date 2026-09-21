@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:11:42Z'
 updated_at: '2026-09-16T11:11:42Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # arch35 MIX：AIC 跑 DataCopyPad 挂起加守卫

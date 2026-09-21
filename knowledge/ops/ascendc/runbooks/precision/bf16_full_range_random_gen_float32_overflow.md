@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:20:40Z'
 updated_at: '2026-09-17T02:20:40Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # bf16全量程随机生成float32溢出改double域收窄

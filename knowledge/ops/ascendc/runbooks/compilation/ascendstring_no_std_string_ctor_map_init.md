@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:21:59Z'
 updated_at: '2026-09-17T02:21:59Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # AscendString 不能从 std::string 隐式构造

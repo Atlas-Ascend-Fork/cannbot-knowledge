@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:22:16Z'
 updated_at: '2026-09-16T10:22:16Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ViewCopy/Contiguous 未声明：在 l0op 命名空间

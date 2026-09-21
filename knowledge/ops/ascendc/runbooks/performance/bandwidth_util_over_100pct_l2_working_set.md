@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:38:37Z'
 updated_at: '2026-09-17T00:38:37Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 中等 shape 带宽利用率超 100% — L2 命中假象

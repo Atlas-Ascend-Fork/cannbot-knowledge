@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:21:59Z'
 updated_at: '2026-09-17T02:21:59Z'
 platforms: ["950", "a2"]
-cann_versions: ["9.1.0"]
 ---
 
 # kernel 类成员裸 TBuf 须写 TBuf<> 空模板实参

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:29:17Z'
 updated_at: '2026-09-17T04:13:22Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # proto.h ATTR 无默认值须改 REQUIRED_ATTR

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-20T11:36:00Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 比较器重写后 max 分母公式回退复现失败 — 公式回退当回归 + 防回退用例

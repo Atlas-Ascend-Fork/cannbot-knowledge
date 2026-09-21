@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-17T02:24:35Z"
 updated_at: "2026-09-17T04:17:42Z"
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # Reduce sharedTmpBuffer 须与计算 dtype 一致

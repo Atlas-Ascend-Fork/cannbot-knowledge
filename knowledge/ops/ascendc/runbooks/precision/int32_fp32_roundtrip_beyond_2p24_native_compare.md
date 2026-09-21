@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:18:28Z'
 updated_at: '2026-09-14T12:18:28Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # int32经fp32中转丢精度，超2^24须原生比较

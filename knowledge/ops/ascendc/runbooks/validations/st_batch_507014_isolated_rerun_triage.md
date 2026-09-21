@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:26:59Z'
 updated_at: '2026-09-17T03:26:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ST 批跑 507014 偶发与状态连带：隔离重跑判别

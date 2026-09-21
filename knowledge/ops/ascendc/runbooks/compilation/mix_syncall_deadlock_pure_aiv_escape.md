@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:26:59Z'
 updated_at: '2026-09-17T03:26:59Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # MIX 循环内 SyncAll 挂死，去 Cube 化绕开

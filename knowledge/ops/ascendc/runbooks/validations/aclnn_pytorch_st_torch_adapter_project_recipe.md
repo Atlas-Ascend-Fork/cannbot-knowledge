@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:20:34Z'
 updated_at: '2026-09-17T03:26:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # aclnn 算子 PyTorch ST 接入工程五件套配方

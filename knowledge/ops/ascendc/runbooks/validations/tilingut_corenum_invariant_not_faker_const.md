@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:24:03Z'
 updated_at: '2026-09-17T03:24:03Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # TilingUT 核数断言写不变式勿硬编码 faker 值

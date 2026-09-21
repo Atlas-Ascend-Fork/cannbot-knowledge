@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:13:37Z'
 updated_at: '2026-09-16T11:13:37Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 二进制数少于TilingKey组合数不等于缺实例

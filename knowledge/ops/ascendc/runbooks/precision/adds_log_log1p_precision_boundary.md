@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:49:13Z'
 updated_at: '2026-09-17T02:41:05Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # Adds+Log实现log1p大负x精度边界：mish输出舍到0

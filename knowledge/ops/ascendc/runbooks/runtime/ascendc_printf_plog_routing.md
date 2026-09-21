@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T02:36:53Z'
 updated_at: '2026-09-14T02:36:53Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # AscendC PRINTF 路由：TTK 查 plog 且防流水线扰动

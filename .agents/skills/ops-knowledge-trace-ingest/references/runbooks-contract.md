@@ -42,7 +42,7 @@
 | 通用原则 | 遵守 `governance/specs/okf.md`/`paths.md` 的 snake_case、无序号、无嵌图和 index 只列本层；目录表达结构，tags 只表达问题主题与诊断线索 |
 | `resource` 溯源 | 按 `governance/specs/frontmatter.md` 来源规则处理；trace 摄入卡 `sources` 可空 `[]`，溯源在正文 `## 验证信号` 段首（§11） |
 | `description` | OKF 要求每卡有（index 列条目用），**必填非空** |
-| 扩展字段 | Runbook Profile 只使用公共必选字段（`frontmatter.schema.json`）与 Profile 可选字段（`cann_versions`/`aliases`/`verified`/`replaced_by`）。**不设 `evidence`/`confidence`/`transfer_scope`/`quality_score`，也不设 kind/category/phenomenon/signal/solution_layer/source_family/reproduce_count/knowledge_form/keywords**。证据强度由复现判定（内部 ledger/manifest）+ 正文 `## 验证信号` 派生，见 §5 |
+| 扩展字段 | Runbook Profile 只使用公共必选字段（`frontmatter.schema.json`）与 Profile 可选字段（`aliases`/`verified`/`replaced_by`）。**不设 `cann_versions`、`evidence`/`confidence`/`transfer_scope`/`quality_score`，也不设 kind/category/phenomenon/signal/solution_layer/source_family/reproduce_count/knowledge_form/keywords**。Runbook 不声明 CANN 版本字段（版本边界若确属结论的一部分，写入正文失效边界）。证据强度由复现判定（内部 ledger/manifest）+ 正文 `## 验证信号` 派生，见 §5 |
 | `type` 取值 | 由路径 Profile `runbooks` 决定为 `Runbook`；**不另设 `domain`/`kind`/`category` 字段**。四类挖掘轨（precision/build/perf/guide）是内部提取分类（manifest/ledger 内部 taxonomy），**不落卡 frontmatter**；落盘时按 area 选择 `runbooks/<area>/` 路径（`compilation`/`runtime`/`precision`/`performance`/`validations`） |
 
 ## 2. 目录结构
@@ -93,7 +93,6 @@ platforms: [950, a2]                    # 必填：只填实际验证过的平�
 | `sources` | string[]/object[] | ✅ | trace 摄入卡可空 `[]`；非空必须可核验（固定 commit/规范 URL/Registry 本地来源） |
 | `created_at` / `updated_at` | UTC iso8601 | ✅ | 秒级 `...Z` 格式 |
 | `platforms` | string[] | ✅ | 注册平台词表取值；**只填实际验证过的平台**；仅 draft 无法定位时可写 `[]`，stable/deprecated 不得为空 |
-| `cann_versions` | string[] | — | 可选 |
 | `aliases` | string[] | — | 可选 |
 | `verified` | object/object[] | — | 可选 OKF verification event；单事件为 `{by, at}` mapping，多事件为该 mapping 数组，不得写布尔值 |
 | `replaced_by` | string | — | 仅 `deprecated` 卡可设 |

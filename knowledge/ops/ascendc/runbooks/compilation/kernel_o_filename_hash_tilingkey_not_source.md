@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:17:47Z'
 updated_at: '2026-09-17T02:32:55Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # kernel .o 文件名 hash 不随源码变化，以 MD5 判重编

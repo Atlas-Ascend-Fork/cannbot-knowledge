@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-09T11:49:41Z"
 updated_at: "2026-09-17T02:30:52Z"
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.1.0"]
 ---
 
 # OpDef SetTiling 与 IMPL_OP_OPTILING 二选一

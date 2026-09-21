@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-14T12:14:53Z"
 updated_at: "2026-09-17T04:17:42Z"
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # 向量函数内HWLoop归纳变量必须uint16_t

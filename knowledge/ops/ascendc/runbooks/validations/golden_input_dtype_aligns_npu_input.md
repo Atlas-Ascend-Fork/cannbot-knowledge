@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:20:30Z'
 updated_at: '2026-09-17T02:30:14Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # ST golden 须用 dtype 转换后数据

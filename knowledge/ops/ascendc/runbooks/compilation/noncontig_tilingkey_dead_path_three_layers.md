@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:22:16Z'
 updated_at: '2026-09-16T10:22:16Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 非连续 TilingKey 死代码：三层连续化拦载

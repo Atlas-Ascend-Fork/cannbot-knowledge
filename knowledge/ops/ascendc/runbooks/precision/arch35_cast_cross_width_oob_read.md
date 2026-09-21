@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:51:56Z'
 updated_at: '2026-09-17T03:16:41Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # arch35 跨位宽 Cast 按较大位宽读源致错值

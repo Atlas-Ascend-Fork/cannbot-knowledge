@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:13:37Z'
 updated_at: '2026-09-16T11:13:37Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # GetBool 返回指针，隐式转 bool 致 hasInverse 恒 1

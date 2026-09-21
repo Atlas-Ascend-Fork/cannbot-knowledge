@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:50:06Z'
 updated_at: '2026-09-17T04:50:06Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # EleWise tiling 参数化切分与 stub 基线 UT 配方

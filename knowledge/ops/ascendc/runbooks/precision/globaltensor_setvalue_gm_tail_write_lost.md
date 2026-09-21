@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:11:42Z'
 updated_at: '2026-09-17T00:58:06Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # GlobalTensor::SetValue 写丢失，改 DataCopyPad

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:49:13Z'
 updated_at: '2026-09-17T00:49:13Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ST造BF16输入误取fp32低16位致MERE=0.149

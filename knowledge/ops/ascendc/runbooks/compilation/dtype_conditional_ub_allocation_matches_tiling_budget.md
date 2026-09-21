@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:54:37Z"
 updated_at: "2026-09-17T02:30:52Z"
 platforms: ["a3", "950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 按 dtype 分配 UB 必须匹配 tiling 预算

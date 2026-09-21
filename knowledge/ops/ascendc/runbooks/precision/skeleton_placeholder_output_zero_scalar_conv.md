@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:58:06Z'
 updated_at: '2026-09-17T00:58:06Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 骨架占位输出全 0：标量直算先打通正确性

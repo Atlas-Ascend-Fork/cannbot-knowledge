@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:54:37Z"
 updated_at: "2026-09-17T03:16:41Z"
 platforms: ["a3", "950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # bisheng 不支持 bf16 标量强转时用位布局精确提升到 fp32

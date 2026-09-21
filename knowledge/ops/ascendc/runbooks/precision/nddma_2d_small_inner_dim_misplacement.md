@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:47:15Z'
 updated_at: '2026-09-17T01:47:15Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 2D NDDMA 小内维落位错位致精度失配

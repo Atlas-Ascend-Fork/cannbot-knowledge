@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:48:21Z'
 updated_at: '2026-09-17T00:48:21Z'
 platforms: ["a2", "950"]
-cann_versions: ["9.1.0"]
 ---
 
 # Duplicate 支持类型分档：arch22 无 int8/int64

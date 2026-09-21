@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:08:02Z'
 updated_at: '2026-09-17T00:14:22Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # bf16 极值输入 ε=0 NaN/Inf 语义分歧未解

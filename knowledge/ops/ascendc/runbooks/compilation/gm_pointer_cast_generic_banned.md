@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:25:37Z'
 updated_at: '2026-09-17T03:25:37Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # CCE 禁止 __gm__ 指针转 void*，打印用 uint64_t

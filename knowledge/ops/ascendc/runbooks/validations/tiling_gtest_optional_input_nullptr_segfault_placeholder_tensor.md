@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T08:44:28Z'
 updated_at: '2026-09-17T03:24:03Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # TilingFunc直调UT传nullptr输入段错误

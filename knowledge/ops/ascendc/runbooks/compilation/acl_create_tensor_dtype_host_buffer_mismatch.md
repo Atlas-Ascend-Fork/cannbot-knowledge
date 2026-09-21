@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:58:00Z'
 updated_at: '2026-09-17T01:58:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # aclCreateTensor声明dtype与host数据不符—静默错值

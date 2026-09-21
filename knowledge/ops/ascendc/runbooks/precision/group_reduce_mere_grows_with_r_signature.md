@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:13:37Z'
 updated_at: '2026-09-17T02:30:14Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # fp32 GroupTailA mere 随归约长度 R 增长越阈

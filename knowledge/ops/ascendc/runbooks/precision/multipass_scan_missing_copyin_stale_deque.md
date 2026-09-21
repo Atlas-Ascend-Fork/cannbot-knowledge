@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:11:42Z'
 updated_at: '2026-09-16T11:11:42Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 多遍扫描漏 CopyInChunk，DeQue 读到残数据

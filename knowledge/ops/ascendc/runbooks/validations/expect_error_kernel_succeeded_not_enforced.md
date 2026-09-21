@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:49:13Z'
 updated_at: '2026-09-17T05:05:01Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.1.0"]
 ---
 
 # expectError但kernel成功：CANN不强制异常约束

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:48:42Z'
 updated_at: '2026-09-17T01:48:42Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # OP_CHECK条件反转误报161001

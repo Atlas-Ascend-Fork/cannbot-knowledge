@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:49:13Z'
 updated_at: '2026-09-17T00:49:13Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # FP16多步计算链误差累积超单步阈值：按步数×ULP预估

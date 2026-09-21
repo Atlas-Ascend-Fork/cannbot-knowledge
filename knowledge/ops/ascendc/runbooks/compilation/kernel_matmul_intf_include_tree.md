@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:05:46Z'
 updated_at: '2026-09-17T04:05:46Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # kernel Matmul 头在 ascendc 树且别名在 intf

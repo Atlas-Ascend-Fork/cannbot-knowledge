@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:41:27Z'
 updated_at: '2026-09-17T04:41:27Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # 上板精度二分定位：恒等搬运+离线数值复现

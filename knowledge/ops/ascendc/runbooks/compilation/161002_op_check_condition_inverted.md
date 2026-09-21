@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:17:47Z'
 updated_at: '2026-09-17T05:27:53Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # OP_CHECK 断言条件写反致 161002 拒合法输入

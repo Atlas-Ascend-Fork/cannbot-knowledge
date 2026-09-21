@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:15:00Z'
 updated_at: '2026-09-17T04:15:00Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 改kernel后bench复评须重跑适配并重生成op_plugin

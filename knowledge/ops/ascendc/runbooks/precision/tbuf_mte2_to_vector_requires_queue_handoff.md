@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:54:37Z"
 updated_at: "2026-09-17T00:58:06Z"
 platforms: ["a3", "950"]
-cann_versions: ["9.0.1", "9.1.0", "9.2.0"]
 ---
 
 # TBuf 跨 MTE2 与 Vector 须队列交接

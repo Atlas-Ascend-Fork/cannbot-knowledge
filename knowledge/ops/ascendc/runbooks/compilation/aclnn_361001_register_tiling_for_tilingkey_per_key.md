@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:23:14Z'
 updated_at: '2026-09-16T10:23:14Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 361001 非零 tilingKey 须逐 key 注册

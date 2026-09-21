@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:15:40Z'
 updated_at: '2026-09-14T12:15:40Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # L2 负向意外 PASS：合法输入误归类，非洗绿

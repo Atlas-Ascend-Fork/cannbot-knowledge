@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T02:36:53Z'
 updated_at: '2026-09-14T12:20:54Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 2 字节逐元素 GM RMW 大规模丢写判别（mare≈1）

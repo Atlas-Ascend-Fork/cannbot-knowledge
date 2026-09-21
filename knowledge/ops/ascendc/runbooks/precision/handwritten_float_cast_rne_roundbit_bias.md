@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-14T12:20:54Z"
 updated_at: "2026-09-14T12:20:54Z"
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 手写 fp32→fp16/bf16 舍入未实现 RNE 偏 1 ulp

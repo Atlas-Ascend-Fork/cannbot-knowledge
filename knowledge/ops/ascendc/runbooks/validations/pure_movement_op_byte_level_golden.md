@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:48:53Z'
 updated_at: '2026-09-17T01:48:53Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 纯搬运算子 ST 字节级 golden 与 bitwise 比对

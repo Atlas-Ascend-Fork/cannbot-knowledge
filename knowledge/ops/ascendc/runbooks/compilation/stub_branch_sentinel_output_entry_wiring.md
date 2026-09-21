@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:13:37Z'
 updated_at: '2026-09-17T00:14:22Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 输出恒为哨兵位型：入口分支stub未接线

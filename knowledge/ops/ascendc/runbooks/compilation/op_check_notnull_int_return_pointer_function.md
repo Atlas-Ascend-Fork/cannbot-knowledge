@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:50:47Z'
 updated_at: '2026-09-17T01:50:47Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # OP_CHECK_NOTNULL 内嵌 int 返回，指针函数编译错

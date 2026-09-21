@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:13:06Z"
 updated_at: "2026-09-17T03:25:37Z"
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.0.1"]
 ---
 
 # Reg Cast 默认 UNKNOWN mask 被拒 — 显式 ZEROING

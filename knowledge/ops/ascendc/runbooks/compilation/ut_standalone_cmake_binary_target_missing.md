@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:21:59Z'
 updated_at: '2026-09-17T02:21:59Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # UT 子目录单独 cmake 失败：依赖包级 binary 目标

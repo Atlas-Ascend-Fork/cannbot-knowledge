@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T08:44:28Z'
 updated_at: '2026-09-14T08:44:28Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # bf16算子MERE超阈但失配占比极低的归约顺序指纹

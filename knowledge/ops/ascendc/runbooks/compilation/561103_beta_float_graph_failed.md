@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-18T07:49:36Z"
 updated_at: "2026-09-17T00:49:13Z"
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 561103: beta 属性按 float 读致 GRAPH_FAILED

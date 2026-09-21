@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:24:39Z'
 updated_at: '2026-09-16T10:24:39Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # 共享只读 CANN 上 .run 安装权限失败重定向

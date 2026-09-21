@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:41:05Z'
 updated_at: '2026-09-17T04:15:00Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # fp32算子bit-exact仍败于fp64 golden比对

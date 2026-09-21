@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:23:52Z'
 updated_at: '2026-09-17T02:32:55Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # CommonOpExecutorRun 加销毁循环 double free

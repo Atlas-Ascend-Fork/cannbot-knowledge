@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-17T02:24:35Z"
 updated_at: "2026-09-17T05:27:53Z"
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # aclIntArray 无 At()，元素访问用下标

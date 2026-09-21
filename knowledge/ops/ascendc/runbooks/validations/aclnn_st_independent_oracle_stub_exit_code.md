@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:51:56Z'
 updated_at: '2026-09-17T00:51:56Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # aclnn ST 独立 oracle 分模式比对与 stub 退出码

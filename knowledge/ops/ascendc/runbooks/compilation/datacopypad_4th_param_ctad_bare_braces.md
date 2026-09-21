@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:08:02Z'
 updated_at: '2026-09-17T00:38:37Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # DataCopyPad 第4参类名 CTAD 失配

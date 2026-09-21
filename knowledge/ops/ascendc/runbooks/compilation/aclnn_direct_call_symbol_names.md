@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:48:21Z'
 updated_at: '2026-09-17T00:48:21Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # aclnn 直调符号望文生义三处编译失败

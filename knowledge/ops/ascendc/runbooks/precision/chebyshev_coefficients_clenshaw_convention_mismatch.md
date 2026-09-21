@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:37:43Z'
 updated_at: '2026-09-17T04:37:43Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # Chebyshev 系数与 Clenshaw 约定不符输出小 4 个量级

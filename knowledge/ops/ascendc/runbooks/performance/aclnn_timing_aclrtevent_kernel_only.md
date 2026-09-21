@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:30:52Z'
 updated_at: '2026-09-17T02:30:52Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # aclnn 带宽计时用事件法剔除 host 开销

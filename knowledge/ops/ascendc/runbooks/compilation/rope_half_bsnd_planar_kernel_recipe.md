@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:20:30Z'
 updated_at: '2026-09-17T01:10:00Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # RoPE half BSND kernel 平面分解实现

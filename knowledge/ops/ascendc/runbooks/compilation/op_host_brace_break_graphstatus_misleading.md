@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:16:41Z'
 updated_at: '2026-09-17T03:16:41Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # op_host 编辑破坏块结构报 graphStatus 误导错

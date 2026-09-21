@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:20:30Z'
 updated_at: '2026-09-17T02:41:05Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # vector API 整型缺位走标量 S 管线

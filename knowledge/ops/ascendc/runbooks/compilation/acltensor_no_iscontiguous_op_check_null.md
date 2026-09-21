@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:22:16Z'
 updated_at: '2026-09-17T01:50:47Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # aclTensor 无 IsContiguous 成员（CANN 9.1.0）

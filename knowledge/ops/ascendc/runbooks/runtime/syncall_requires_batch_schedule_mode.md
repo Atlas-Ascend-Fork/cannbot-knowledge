@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-14T12:20:54Z"
 updated_at: "2026-09-14T12:20:54Z"
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # SyncAll 须配 tiling SetScheduleMode 批调度

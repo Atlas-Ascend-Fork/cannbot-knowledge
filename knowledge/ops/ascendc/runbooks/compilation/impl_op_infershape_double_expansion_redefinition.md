@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:13:22Z'
 updated_at: '2026-09-17T04:13:22Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # IMPL_OP_INFERSHAPE 双展开重定义须链式注册

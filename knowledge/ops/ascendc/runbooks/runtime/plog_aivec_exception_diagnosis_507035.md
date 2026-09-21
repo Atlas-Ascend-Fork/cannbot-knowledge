@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:48:42Z'
 updated_at: '2026-09-17T03:26:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # 507035排障：plog定性+跳层二分+对账

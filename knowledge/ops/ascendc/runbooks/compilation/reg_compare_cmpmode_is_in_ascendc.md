@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:13:06Z"
 updated_at: "2026-09-17T02:21:59Z"
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.0.1"]
 ---
 
 # Reg Compare 的 CMPMODE 命名空间导致编译失败

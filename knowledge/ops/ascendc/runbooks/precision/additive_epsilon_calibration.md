@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-20T11:36:00Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 加式分母 |g|+eps 的 epsilon 定标 — 按 dtype、累加深度与输出分布

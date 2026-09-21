@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:48:21Z'
 updated_at: '2026-09-17T01:48:53Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # x86_64 主机 __fp16 不可用：按架构选 _Float16

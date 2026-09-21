@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:58:06Z'
 updated_at: '2026-09-17T01:05:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ST golden 多 dtype 扩展：位级转换与 RNE 量化镜像

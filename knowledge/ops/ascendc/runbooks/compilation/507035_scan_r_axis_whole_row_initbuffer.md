@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:18:28Z'
 updated_at: '2026-09-17T01:47:15Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 507035 AR-scan整行UB分配超248KB崩溃

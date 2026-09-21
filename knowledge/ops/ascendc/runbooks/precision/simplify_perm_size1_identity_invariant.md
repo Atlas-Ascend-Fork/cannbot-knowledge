@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:50:52Z'
 updated_at: '2026-09-17T00:50:52Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # perm 化简 size-1 强制 identity 破坏不变量误路由

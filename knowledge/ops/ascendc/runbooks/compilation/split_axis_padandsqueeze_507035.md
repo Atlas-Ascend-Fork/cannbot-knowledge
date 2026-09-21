@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-15T00:00:00Z"
 updated_at: "2026-09-17T01:42:07Z"
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # split.axis 未随 PadAndSqueeze 偏移致 507035

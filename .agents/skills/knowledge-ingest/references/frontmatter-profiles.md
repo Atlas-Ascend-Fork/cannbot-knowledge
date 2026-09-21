@@ -14,7 +14,7 @@
 | `guides` | `Guide` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
 | `operators` | `Operator` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
 | `optimizations` | `Optimization` | `platforms` | `cann_versions`, `verified`, `replaced_by` |
-| `runbooks` | `Runbook` | `platforms` | `cann_versions`, `aliases`, `verified`, `replaced_by` |
+| `runbooks` | `Runbook` | `platforms` | `aliases`, `verified`, `replaced_by` |
 | `interoperability` | `Interoperability` | `platforms`, `source_technology`, `target_technology` | `cann_versions`, `verified`, `replaced_by` |
 | `glossaries` | `Glossary` | 无 | `aliases`, `verified`, `replaced_by` |
 

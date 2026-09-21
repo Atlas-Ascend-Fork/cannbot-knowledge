@@ -49,7 +49,7 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 ## 4. 阅读与补证，而不是交付搜索摘要
 
 1. 先查看脚本返回的 `path` / `local_path`、`title` 和 `description`，由 Agent 决定哪些命中卡片值得继续阅读，不要求打开全部候选。对选中的卡片读取完整 Frontmatter 和正文；输出分页或截断时继续读到末尾。结果只返回最多两个 sources，完整来源必须回卡片读取。
-2. 核对目标平台、status、版本、约束、失效条件和当前 decision。`stable` 是生命周期；`verified` 派生的 trust tier 影响排序，不证明技术结论正确。Query 不按 CANN 版本过滤，有 `cann_versions` 也仍须读正文的具体限制。
+2. 核对目标平台、status、版本、约束、失效条件和当前 decision。`stable` 是生命周期；`verified` 派生的 trust tier 影响排序，不证明技术结论正确。Query 不按 CANN 版本过滤；Runbook 卡不携带 `cann_versions`（版本边界写入正文），其他类型卡可能有该字段，仍须读正文的具体限制。
 3. 全文读完后，由 Agent 根据当前需求决定是否查看相关内容或 include。正文足够时直接回答；需要参数/配套接口、机制、算子用法或失败经验时沿对应知识链接阅读，需要声明或实现信息时再看固定来源或 Ascend C `source_headers`。新卡片和头文件中的链接也可继续跟进，不限制为一跳，也不要求遍历全部链接。
 4. 知识库链接是有效入口，直接沿链接打开，不需要先运行链接检查。普通相对链接以当前卡目录解析，前导 `/` 的知识链接以 `knowledge/` Bundle 根解析，`#锚点` 指向当前卡；跳到 `index.md` 后按需选择真实卡。Agent 仍需判断新卡内容的平台、版本和适用性。链接及其说明不替代目标卡的证据；列出的算子不表示完整调用集合。
 5. 记录已读卡和未解决项以避免循环；读过的适用证据足够回答时停止。只看过的摘要、打不开的源码、未读头文件不能写成已核验。

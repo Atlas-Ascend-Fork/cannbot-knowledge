@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:12:55Z'
 updated_at: '2026-09-17T03:16:34Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # aclnn String 属性 char* 传 const 编译失败

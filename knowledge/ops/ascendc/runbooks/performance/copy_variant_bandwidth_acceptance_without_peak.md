@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:39:31Z'
 updated_at: '2026-09-17T04:39:31Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 无 HBM 峰值时用 copy-variant 对照判带宽达标

@@ -166,6 +166,11 @@ def create(args: argparse.Namespace) -> int:
     if args.verified_by:
         metadata["verified"] = {"by": args.verified_by, "at": args.verified_at}
     if args.cann_version:
+        if card_type == "runbooks":
+            raise ValueError(
+                "Runbook cards do not support --cann-version; "
+                "CANN version boundaries belong in the body, not frontmatter"
+            )
         metadata["cann_versions"] = args.cann_version
     if args.alias:
         metadata["aliases"] = args.alias

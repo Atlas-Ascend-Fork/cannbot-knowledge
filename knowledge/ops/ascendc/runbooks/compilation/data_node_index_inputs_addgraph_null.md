@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:13:22Z'
 updated_at: '2026-09-17T04:13:22Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # Data 节点缺 index 未收集致 AddGraph 失败

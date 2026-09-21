@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:54:40Z'
 updated_at: '2026-09-17T01:05:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # aclnn ST 大 shape 宿主 oracle 超时，同路径缩 shape

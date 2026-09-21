@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:25:37Z'
 updated_at: '2026-09-17T03:25:37Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # inf 输入 Newton 开方 inf/inf 传播 NaN 需早退

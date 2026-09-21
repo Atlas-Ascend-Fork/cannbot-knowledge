@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:50:52Z'
 updated_at: '2026-09-17T00:50:52Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # Two-Product split 遇 inf 产 NaN 破坏 inf 传播

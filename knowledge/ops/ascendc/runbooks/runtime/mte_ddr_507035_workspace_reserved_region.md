@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T02:36:53Z'
 updated_at: '2026-09-17T03:21:08Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 507035 MTE DDR 越界：workspace 须含 16MB 保留区

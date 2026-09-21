@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:05:46Z'
 updated_at: '2026-09-17T04:05:46Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # TCubeTiling 双定义：kernel 侧禁宿主类型与头

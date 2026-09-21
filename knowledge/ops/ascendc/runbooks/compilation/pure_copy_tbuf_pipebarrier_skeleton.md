@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:17:47Z'
 updated_at: '2026-09-16T10:17:47Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 纯搬运算子 TBuf+PipeBarrier 逐块搬运骨架

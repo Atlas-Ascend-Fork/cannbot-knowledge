@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:18:56Z'
 updated_at: '2026-09-17T03:18:56Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # PlatformAscendC 默认构造删除，须传平台指针

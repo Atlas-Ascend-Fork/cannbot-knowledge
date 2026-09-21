@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:23:52Z'
 updated_at: '2026-09-17T05:31:07Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 复制模板工程改名的四形态映射与五项门禁

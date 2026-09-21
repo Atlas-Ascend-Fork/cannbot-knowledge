@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:15:37Z'
 updated_at: '2026-09-17T00:48:21Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 单 kernel 多 TilingKey：dtype×策略模板整合配方

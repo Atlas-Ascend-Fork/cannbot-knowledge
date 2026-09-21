@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:18:45Z'
 updated_at: '2026-09-16T10:18:45Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # opbuild 静默失败：infershape 引非内联库符号

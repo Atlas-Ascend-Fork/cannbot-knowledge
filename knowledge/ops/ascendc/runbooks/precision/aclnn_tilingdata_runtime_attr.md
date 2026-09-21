@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-17T17:21:52Z"
 updated_at: "2026-09-17T02:32:55Z"
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.1.0"]
 aliases: ["repeat_cache"]
 ---
 

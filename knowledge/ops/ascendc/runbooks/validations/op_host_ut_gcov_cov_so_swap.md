@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:16:34Z'
 updated_at: '2026-09-17T03:16:34Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # op_host UT 覆盖率：给 dlopen 的 .so 插桩 gcov

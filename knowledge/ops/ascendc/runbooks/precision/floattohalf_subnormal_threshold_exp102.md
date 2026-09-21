@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T02:36:53Z'
 updated_at: '2026-09-17T03:25:37Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # FloatToHalf 次正规阈值漏 exp102 致 mare=0.373

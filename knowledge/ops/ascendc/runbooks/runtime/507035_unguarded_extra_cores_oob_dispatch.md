@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T08:44:28Z'
 updated_at: "2026-09-17T05:05:01Z"
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # 507035 崩溃：多核分发未拦截多余核越界

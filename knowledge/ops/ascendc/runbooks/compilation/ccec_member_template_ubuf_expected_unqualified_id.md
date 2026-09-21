@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T08:44:28Z'
 updated_at: '2026-09-14T08:44:28Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # __ubuf__模板成员辅助函数编译失败改宏

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:50:47Z'
 updated_at: '2026-09-17T01:50:47Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # CheckAttrs 误传 weight 致维度语义错读 161002

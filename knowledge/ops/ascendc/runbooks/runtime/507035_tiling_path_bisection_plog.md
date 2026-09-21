@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:42:07Z'
 updated_at: '2026-09-17T01:42:07Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 507035 超时排障法：强制 tiling 路径隔离 + plog 探针

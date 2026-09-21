@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:17:47Z'
 updated_at: '2026-09-16T10:17:47Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 自定义 aclnn 算子 PyTorch 接入 ST 测试工程配方

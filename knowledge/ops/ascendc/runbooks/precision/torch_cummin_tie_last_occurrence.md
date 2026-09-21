@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:18:28Z'
 updated_at: '2026-09-17T02:20:40Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # torch.cummin平局索引为last-occurrence

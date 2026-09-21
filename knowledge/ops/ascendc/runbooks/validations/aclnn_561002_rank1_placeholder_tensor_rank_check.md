@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T08:44:28Z'
 updated_at: '2026-09-17T01:50:47Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # ACLNN 561002：占位 1D 张量过不了 rank 校验

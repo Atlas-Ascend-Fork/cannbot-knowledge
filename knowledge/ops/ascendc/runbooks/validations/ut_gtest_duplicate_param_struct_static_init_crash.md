@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:24:03Z'
 updated_at: '2026-09-17T03:24:03Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # UT 多文件同名参数结构体致 gtest 静态初始化段错误

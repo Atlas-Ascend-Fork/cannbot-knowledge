@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:48:21Z'
 updated_at: '2026-09-17T00:48:21Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 旧算子包遮蔽工程模板致新 TilingKey 不识别

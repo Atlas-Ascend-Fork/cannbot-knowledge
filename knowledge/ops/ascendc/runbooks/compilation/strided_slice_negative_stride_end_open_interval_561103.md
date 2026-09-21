@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:51:00Z'
 updated_at: '2026-09-17T01:51:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 负步长 end 开区间致输出 shape 不符报 561103

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:21:59Z'
 updated_at: '2026-09-17T02:21:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # aclCreateTensorList 是两参签名，旧多参写法编译失败

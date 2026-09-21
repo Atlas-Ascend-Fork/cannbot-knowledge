@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:58:06Z'
 updated_at: '2026-09-17T00:58:06Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # golden 归约顺序与 kernel 不一致放大 near-zero MARE

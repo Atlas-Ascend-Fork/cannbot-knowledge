@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-18T05:31:13Z"
 updated_at: "2026-09-17T04:15:00Z"
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # aclnn_exclude 头文件自动生成覆盖源码致签名不符

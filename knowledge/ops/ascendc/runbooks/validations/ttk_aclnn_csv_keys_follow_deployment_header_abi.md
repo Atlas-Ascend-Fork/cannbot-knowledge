@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-09T11:49:41Z'
 updated_at: '2026-09-17T04:12:25Z'
 platforms: ["agnostic"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # aclnn CSV attributes 键用 ABI 名 hasBias

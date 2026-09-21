@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:38:37Z'
 updated_at: '2026-09-17T00:38:37Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 非连续输入 ST 构造：转置 stride 张量+gather golden

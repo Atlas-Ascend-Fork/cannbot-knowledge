@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:24:03Z'
 updated_at: '2026-09-17T03:24:03Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # tail-R 切分 rUbFactor 实切最内 R 才 FloorAlign

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:08:02Z'
 updated_at: '2026-09-17T05:31:07Z'
 platforms: ["950"]
-cann_versions: ["9.2.0", "9.1.0"]
 ---
 
 # fp16 次正规 1-ULP 差被 mare 放大判别

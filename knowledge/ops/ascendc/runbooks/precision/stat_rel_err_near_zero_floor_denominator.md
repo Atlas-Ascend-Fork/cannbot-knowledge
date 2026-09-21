@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-09T11:49:41Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # 近零 golden 相对误差 — 分母改用 max(|g|, th)

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:23:14Z'
 updated_at: '2026-09-17T01:51:00Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # E80003 属性 Python 类型须与 OpDef 逐例一致

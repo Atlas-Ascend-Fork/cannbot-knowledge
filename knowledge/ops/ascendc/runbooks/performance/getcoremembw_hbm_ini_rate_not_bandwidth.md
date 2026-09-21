@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:39:31Z'
 updated_at: '2026-09-17T04:39:31Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 950PR HBM 峰值判定：GetCoreMemBw=31 非带宽

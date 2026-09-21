@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:15:40Z'
 updated_at: '2026-09-14T12:15:40Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # GE SetAttr 字符串属性链接失败，改用 AttrValue

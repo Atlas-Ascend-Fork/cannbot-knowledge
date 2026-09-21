@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:32:55Z'
 updated_at: '2026-09-17T02:32:55Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # TilingData 改布局须重编 kernel 并清 kernel_meta

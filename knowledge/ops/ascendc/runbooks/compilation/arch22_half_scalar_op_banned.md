@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:18:56Z'
 updated_at: '2026-09-17T03:18:56Z'
 platforms: ["a2", "950"]
-cann_versions: ["9.1.0"]
 ---
 
 # arch22 禁 half 标量运算，NaN 检测须位级

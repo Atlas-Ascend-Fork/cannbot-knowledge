@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:42:07Z'
 updated_at: '2026-09-17T01:42:07Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 507035 全载超 UB：大 groupSize 分载三遍扫描

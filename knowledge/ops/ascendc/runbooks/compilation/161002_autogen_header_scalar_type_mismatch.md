@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:20:34Z'
 updated_at: '2026-09-16T10:20:34Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 安装头 scalar 类型与源码不符致堆破坏 161002

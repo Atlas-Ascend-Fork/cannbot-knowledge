@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:26:59Z'
 updated_at: '2026-09-17T03:26:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # REGIST_MATMUL_OBJ 须入口调用且首参传 &pipe

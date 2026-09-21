@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:51:00Z'
 updated_at: '2026-09-17T01:51:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # op_api UT 默认 device placement 无上下文误拒

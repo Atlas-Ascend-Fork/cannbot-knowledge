@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-15T00:00:00Z"
 updated_at: "2026-09-17T02:20:40Z"
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 aliases: ["pairwise_summation", "fp32_accumulation", "golden_oracle"]
 ---
 

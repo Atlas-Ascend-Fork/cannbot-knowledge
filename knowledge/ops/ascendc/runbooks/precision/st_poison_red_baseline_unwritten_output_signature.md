@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-09T11:49:41Z'
 updated_at: '2026-09-17T04:15:00Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.1.0"]
 ---
 
 # 红基线 mere~1e33＝poison 保持：stub 未写输出

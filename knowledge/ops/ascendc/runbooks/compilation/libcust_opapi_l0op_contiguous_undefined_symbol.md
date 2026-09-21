@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-14T12:18:28Z"
 updated_at: '2026-09-16T10:43:46Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # l0op::Contiguous未定义符号致安装校验失败

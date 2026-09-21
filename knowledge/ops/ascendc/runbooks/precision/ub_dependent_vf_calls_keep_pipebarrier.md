@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T08:44:28Z'
 updated_at: '2026-09-14T08:44:28Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 有数据依赖的 VF 调用间仍需 PipeBarrier

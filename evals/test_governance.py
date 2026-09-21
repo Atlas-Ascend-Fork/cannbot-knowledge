@@ -600,6 +600,28 @@ class RouteContractTests(unittest.TestCase):
         )
         self.assertEqual([], self.contract.validate_card(relative, metadata, "# Trajectory finding\n"))
 
+    def test_cann_versions_is_rejected_for_runbook_profile(self) -> None:
+        relative = Path("knowledge/ops/ascendc/runbooks/compilation/trajectory_finding.md")
+        metadata = dict(SYNTHETIC_API_METADATA)
+        metadata.update(
+            {
+                "type": "Runbook",
+                "title": "Trajectory finding",
+                "status": "stable",
+                "sources": [],
+                "cann_versions": ["9.1.0"],
+            }
+        )
+        issues = self.contract.validate_card(relative, metadata, "# Trajectory finding\n")
+        self.assertIn("frontmatter.extra", {issue.code for issue in issues})
+
+    def test_cann_versions_remains_allowed_for_non_runbook_profiles(self) -> None:
+        relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
+        metadata = dict(SYNTHETIC_API_METADATA)
+        metadata["cann_versions"] = ["9.1.0"]
+        issues = self.contract.validate_card(relative, metadata, "# Synthetic API\n")
+        self.assertNotIn("frontmatter.extra", {issue.code for issue in issues})
+
     def test_stable_non_runbook_still_requires_source(self) -> None:
         relative = Path("knowledge/ops/ascendc/apis/synthetic_api.md")
         metadata = dict(SYNTHETIC_API_METADATA)

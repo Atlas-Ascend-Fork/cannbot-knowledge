@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:50:47Z'
 updated_at: '2026-09-17T01:50:47Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # aclnn 返回裸 1：校验函数 bool 被当状态码

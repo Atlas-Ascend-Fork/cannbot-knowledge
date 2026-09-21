@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:04:16Z'
 updated_at: '2026-09-17T03:04:16Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # Round 的 sharedTmpBuffer 须为 uint8_t 视图

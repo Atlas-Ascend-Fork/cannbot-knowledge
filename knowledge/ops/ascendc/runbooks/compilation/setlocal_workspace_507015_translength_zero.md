@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:26:59Z'
 updated_at: '2026-09-17T03:26:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # SetLocalWorkspace 507015：transLength 恒 0

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:11:04Z'
 updated_at: '2026-09-16T11:11:04Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # TilingKey 声明与 kernel 模板四处签名须一致

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-09T11:49:41Z'
 updated_at: '2026-09-09T11:49:41Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 # fp16 aUbFactor 被 cacheBuf 钳制，路由随 B 翻转
 

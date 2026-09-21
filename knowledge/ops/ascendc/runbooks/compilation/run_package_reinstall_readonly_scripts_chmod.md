@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:12:55Z'
 updated_at: '2026-09-14T12:12:55Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # .run 重装只读 scripts 目录 rm 权限拒绝

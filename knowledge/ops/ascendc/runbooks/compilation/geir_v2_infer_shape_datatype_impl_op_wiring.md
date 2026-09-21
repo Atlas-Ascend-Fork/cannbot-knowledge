@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-09T11:49:41Z'
 updated_at: '2026-09-14T12:09:22Z'
 platforms: ["950"]
-cann_versions: ["cann-9.0.0-beta.2", "9.2.0"]
 ---
 # GEIR 图模式 V2 推理注册与构建接线配方
 

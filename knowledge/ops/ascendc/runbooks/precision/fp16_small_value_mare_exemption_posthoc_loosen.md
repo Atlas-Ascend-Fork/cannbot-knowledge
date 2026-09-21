@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-20T11:36:00Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # fp16 小值输出 MARE 假失败的两条边界 — 元素豁免 allAbsOk（正）与大 K 事后放宽（反例红线）

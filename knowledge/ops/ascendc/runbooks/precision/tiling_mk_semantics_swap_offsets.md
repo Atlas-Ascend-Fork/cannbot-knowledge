@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:15:00Z'
 updated_at: '2026-09-17T04:15:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # TK1 偏移未随 M/K 输出序语义同步致下标互换

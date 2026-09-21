@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-17T02:24:35Z"
 updated_at: '2026-09-17T04:17:42Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # UT 报 not found 算子：单目标 make 漏建 .so

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:42:07Z'
 updated_at: '2026-09-17T01:42:07Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 507035 小 innerSize：整块拷贝+对齐向量混合路径

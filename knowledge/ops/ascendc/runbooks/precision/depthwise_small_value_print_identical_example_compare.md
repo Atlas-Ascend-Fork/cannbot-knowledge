@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-20T11:36:00Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # Depthwise 卷积小值域假失败 — 期望==实际打印一致指纹、阈值 max(表值,10×th) 与示例侧 CompareResults 双示例落地

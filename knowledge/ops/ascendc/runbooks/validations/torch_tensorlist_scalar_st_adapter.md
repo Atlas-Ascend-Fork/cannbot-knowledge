@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:20:34Z'
 updated_at: '2026-09-17T02:41:05Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # PyTorch 接入 TensorList+scalar 算子 ST 工程

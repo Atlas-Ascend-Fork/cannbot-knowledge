@@ -46,7 +46,7 @@ profiles:
   runbooks:
     okf_type: Runbook
     required: [platforms]
-    optional: [cann_versions, aliases, verified, replaced_by]
+    optional: [aliases, verified, replaced_by]
   interoperability:
     okf_type: Interoperability
     required: [platforms, source_technology, target_technology]

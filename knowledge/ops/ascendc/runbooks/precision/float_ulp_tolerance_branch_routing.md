@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:11:04Z'
 updated_at: '2026-09-16T11:11:04Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # base=1.000001f 落入 |base-1|<1e-6 容差分支

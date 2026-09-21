@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:18:28Z'
 updated_at: '2026-09-14T12:18:28Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 561103 自定义aclnn非fp32调用环境相关失败

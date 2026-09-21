@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:17:42Z'
 updated_at: '2026-09-17T04:17:42Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # TTK result.csv 多状态列：聚合计数取错列

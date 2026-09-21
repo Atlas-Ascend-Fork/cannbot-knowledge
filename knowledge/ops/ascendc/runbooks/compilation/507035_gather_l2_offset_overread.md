@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:42:07Z'
 updated_at: '2026-09-17T01:42:07Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # Gather L2 整寄存器读 offset 越界致 507035

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:51:56Z'
 updated_at: '2026-09-17T01:58:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # x86 host fp16：探测 _Float16，兜底位级转换

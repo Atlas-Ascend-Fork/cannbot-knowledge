@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-20T11:36:00Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 官方小值域分支的两种比对器落地 — max(errorLimit,|golden|) FTZ 容忍型与固定 2^-16 绝对阈型

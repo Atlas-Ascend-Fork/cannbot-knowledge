@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:13:06Z"
 updated_at: "2026-09-17T04:15:00Z"
 platforms: ["950"]
-cann_versions: ["9.0.1", "9.1.0"]
 ---
 
 # TQue 输入未释放导致循环 AllocTensor 卡死

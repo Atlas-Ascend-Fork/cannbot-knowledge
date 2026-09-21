@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-09T11:49:41Z'
 updated_at: "2026-09-17T04:15:00Z"
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.2.0"]
 ---
 
 # 空batch归约kernel：bias零填充+全核早退配方

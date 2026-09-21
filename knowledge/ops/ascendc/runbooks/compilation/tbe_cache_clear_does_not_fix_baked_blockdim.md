@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:09:22Z'
 updated_at: '2026-09-14T12:09:22Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 清 TBE 编译缓存不修复 blockDim 固化

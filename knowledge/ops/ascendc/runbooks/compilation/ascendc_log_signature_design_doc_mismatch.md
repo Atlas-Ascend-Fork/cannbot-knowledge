@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:49:13Z'
 updated_at: '2026-09-17T03:18:56Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # AscendC Log签名与设计文档不符：按已装头文件核对

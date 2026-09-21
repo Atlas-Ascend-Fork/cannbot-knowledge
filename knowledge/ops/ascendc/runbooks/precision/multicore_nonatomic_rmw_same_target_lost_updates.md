@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-14T12:20:54Z"
 updated_at: "2026-09-14T12:20:54Z"
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 多核 scatter 同目标非原子 RMW 丢更新，改单核

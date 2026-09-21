@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:05:00Z'
 updated_at: '2026-09-17T01:12:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # TopK 整数 dtype 走 fp32 排序 Cast 通路配方

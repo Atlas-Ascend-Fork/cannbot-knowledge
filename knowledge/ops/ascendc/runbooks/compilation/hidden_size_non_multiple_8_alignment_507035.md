@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:48:42Z'
 updated_at: '2026-09-17T01:48:42Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 非对齐hiddenSize致507035需全链路8对齐

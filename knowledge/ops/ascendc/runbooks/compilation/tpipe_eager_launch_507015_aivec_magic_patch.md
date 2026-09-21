@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-14T12:14:53Z"
 updated_at: "2026-09-14T12:14:53Z"
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 直调TPipe kernel同步507015：AIVEC magic补丁

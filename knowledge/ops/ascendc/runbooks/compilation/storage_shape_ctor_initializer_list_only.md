@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:15:37Z'
 updated_at: '2026-09-17T03:24:03Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # UT 构造 StorageShape 须用 initializer_list

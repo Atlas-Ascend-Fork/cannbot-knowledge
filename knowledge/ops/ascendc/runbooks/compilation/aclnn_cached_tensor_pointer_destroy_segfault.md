@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:32:55Z'
 updated_at: '2026-09-17T02:32:55Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 同进程连跑 Segfault：勿销毁框架已缓存 tensor

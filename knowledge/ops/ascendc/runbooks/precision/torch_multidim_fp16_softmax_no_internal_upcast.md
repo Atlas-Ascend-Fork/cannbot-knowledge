@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:30:14Z'
 updated_at: '2026-09-17T02:30:14Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # fp16 1-ULP失配：torch多维softmax不升fp32

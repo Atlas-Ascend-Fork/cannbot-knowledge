@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:39:38Z'
 updated_at: '2026-09-17T04:11:06Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 561103 aclIntArray 布局误解致属性读取垃圾值

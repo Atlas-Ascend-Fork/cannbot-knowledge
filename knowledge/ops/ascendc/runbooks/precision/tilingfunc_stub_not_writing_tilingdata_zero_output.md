@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:14:22Z'
 updated_at: '2026-09-17T03:25:37Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.1.0"]
 ---
 
 # TilingFunc 未写 TilingData 致输出全 0

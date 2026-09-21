@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-09T11:49:41Z'
 updated_at: '2026-09-17T04:06:11Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.2.0"]
 ---
 
 # TTK CSV attributes 需 Python 字面量，JSON 被拒

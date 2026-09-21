@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-09T11:49:41Z'
 updated_at: '2026-09-09T11:49:41Z'
 platforms: ["950"]
-cann_versions: [cann-9.0.0-beta.2]
 ---
 # TilingData 结构体落地——类内初始化器与注册兼容
 

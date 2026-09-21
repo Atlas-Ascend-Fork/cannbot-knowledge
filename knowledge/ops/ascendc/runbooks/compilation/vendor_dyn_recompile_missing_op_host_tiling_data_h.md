@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:23:14Z'
 updated_at: '2026-09-16T10:23:14Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # vendor 缺 op_host 头致 DYN 重编译失败

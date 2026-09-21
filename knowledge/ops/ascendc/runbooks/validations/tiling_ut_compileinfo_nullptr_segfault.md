@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:05:00Z'
 updated_at: '2026-09-17T03:24:03Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # Tiling UT compileInfo 传 nullptr 段错误

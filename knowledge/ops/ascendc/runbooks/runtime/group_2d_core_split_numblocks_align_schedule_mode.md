@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-09T11:49:41Z"
 updated_at: "2026-09-16T11:08:02Z"
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.1.0"]
 ---
 
 # group 2D 分核：对齐 aLoop 与 SetScheduleMode

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:41:05Z'
 updated_at: '2026-09-17T02:41:05Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 整数gcd golden：INT_MIN回绕与无符号欧几里得

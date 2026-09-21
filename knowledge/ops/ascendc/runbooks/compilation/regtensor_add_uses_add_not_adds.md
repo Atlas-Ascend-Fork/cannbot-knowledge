@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-14T03:13:06Z"
 updated_at: "2026-09-17T05:05:01Z"
 platforms: ["950"]
-cann_versions: ["9.0.1", "9.1.0"]
 ---
 
 # RegTensor 累加须用 Add 而非 Adds

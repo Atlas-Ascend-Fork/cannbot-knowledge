@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:41:05Z'
 updated_at: '2026-09-17T02:41:05Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # golden三目求max对±0返回-0，需双零特判

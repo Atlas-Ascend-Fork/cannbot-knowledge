@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-17T02:24:35Z"
 updated_at: "2026-09-17T02:24:35Z"
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # op_host fwk 编译链拒 C++20 写法

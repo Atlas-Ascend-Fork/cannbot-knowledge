@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:13:37Z'
 updated_at: '2026-09-16T11:13:37Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # split-load 多 tile UB 循环 kernel 实现骨架

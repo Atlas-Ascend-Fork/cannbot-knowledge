@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-17T02:24:35Z"
 updated_at: "2026-09-17T02:24:35Z"
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # GET_TILING_DATA_WITH_STRUCT 限入口函数

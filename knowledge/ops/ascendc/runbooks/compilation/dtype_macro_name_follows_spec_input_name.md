@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-14T08:44:28Z"
 updated_at: "2026-09-17T03:16:41Z"
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # DTYPE_X 未定义：dtype 宏名随输入名生成

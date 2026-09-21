@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:39:31Z'
 updated_at: '2026-09-17T04:39:31Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ACL 事件计时 API 是 aclrtEventElapsedTime

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:51:00Z'
 updated_at: '2026-09-17T01:51:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 可选输入空指针合法，必选输出不可漏建 161001

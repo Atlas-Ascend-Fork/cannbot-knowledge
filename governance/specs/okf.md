@@ -55,7 +55,7 @@ Concept 间的本地 Markdown 链接必须解析到同一 `knowledge/` Bundle；
 | 根索引可声明 `okf_version` | 只有 `knowledge/index.md` 声明 `okf_version: "0.2"` |
 | Index 可选 | 本仓要求每个实际目录都有只列直接子项的索引和摘要 |
 
-`created_at`、`updated_at`、`platforms`、`cann_versions`、`source_headers`、`aliases`、`source_technology`、`target_technology`、`replaced_by` 和 `sources[].role` 是 CANNBot Profile 扩展。它们不重定义 OKF 核心字段，并且都有明确消费者。
+`created_at`、`updated_at`、`platforms`、`cann_versions`、`source_headers`、`aliases`、`source_technology`、`target_technology`、`replaced_by` 和 `sources[].role` 是 CANNBot Profile 扩展。它们不重定义 OKF 核心字段，并且都有明确消费者。其中 `cann_versions` 仅用于非 Runbook 卡，Runbook 不声明版本字段（版本边界写入正文失效边界）。
 
 本仓暂不使用 OKF 的 `generated`、`stale_after`、Bundle 内 `log.md`、`references/` 和 Attested Computation。没有可靠事实时不通过 Git 时间或经验规则补造这些字段。
 

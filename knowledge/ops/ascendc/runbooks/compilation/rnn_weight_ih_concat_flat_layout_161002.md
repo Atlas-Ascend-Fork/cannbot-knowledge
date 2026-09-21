@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:51:00Z'
 updated_at: '2026-09-17T01:51:00Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 多层 weight_ih 须 flat 无补零拼接防 161002

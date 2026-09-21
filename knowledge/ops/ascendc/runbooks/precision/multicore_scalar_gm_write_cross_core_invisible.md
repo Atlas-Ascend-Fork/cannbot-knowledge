@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:20:30Z'
 updated_at: '2026-09-17T02:32:55Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 多核 S 管线标量写跨核不可见

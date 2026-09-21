@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:50:47Z'
 updated_at: '2026-09-17T01:51:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # op_host 层 OP_CHECK 未定义须用 OP_CHECK_IF

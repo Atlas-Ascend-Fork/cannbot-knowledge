@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:06:11Z'
 updated_at: '2026-09-17T04:06:11Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ST 进程退出码 137：区分 host OOM 与 kernel 未完成

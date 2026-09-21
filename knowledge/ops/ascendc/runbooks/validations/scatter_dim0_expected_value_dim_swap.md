@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:50:52Z'
 updated_at: '2026-09-17T00:50:52Z'
 platforms: ["agnostic"]
-cann_versions: ["9.1.0"]
 ---
 
 # scatter dim=0 手写期望写反维度：值对调指纹

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:23:52Z'
 updated_at: '2026-09-17T04:13:22Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # GE 图模式 1343242270：缺 InferDataType 注册

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:20:34Z'
 updated_at: '2026-09-16T10:20:34Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ST 非连续 tensor 构造：padded 存储加 strides view

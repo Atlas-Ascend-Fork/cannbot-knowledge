@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:09:22Z'
 updated_at: '2026-09-14T12:09:22Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # TBE fusion 不扫自定义 vendor：三种修复均无效

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:08:02Z'
 updated_at: '2026-09-16T11:20:30Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # SetFlag/WaitFlag 是自由函数非 TPipe 成员

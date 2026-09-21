@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:50:06Z'
 updated_at: '2026-09-17T04:50:06Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # TilingData 注册：BEGIN_TILING_DATA_DEF 已废弃

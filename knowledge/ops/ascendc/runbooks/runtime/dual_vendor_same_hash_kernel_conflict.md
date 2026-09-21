@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:15:40Z'
 updated_at: '2026-09-14T12:15:40Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 多 vendor 同 hash kernel 冲突的检测与排除

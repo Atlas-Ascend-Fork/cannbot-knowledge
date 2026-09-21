@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:29:17Z'
 updated_at: '2026-09-16T10:29:17Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 561103 — vendor 未注册 load_priority 不被加载

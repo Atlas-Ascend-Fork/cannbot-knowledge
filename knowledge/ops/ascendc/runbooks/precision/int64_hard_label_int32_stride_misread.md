@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:49:13Z'
 updated_at: '2026-09-17T00:49:13Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 硬标签target固定按int32步长读取致精度全错

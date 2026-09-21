@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:56:56Z'
 updated_at: '2026-09-17T00:56:56Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # fp32→int32越界NPU饱和与numpy不一致

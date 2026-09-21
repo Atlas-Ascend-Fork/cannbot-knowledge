@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:49:13Z'
 updated_at: '2026-09-17T03:21:08Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # TTK aclnn golden插件输出位须按C签名序换算

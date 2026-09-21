@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:16:34Z'
 updated_at: '2026-09-17T03:24:03Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # StorageShape 需解包为 Shape 再用维度 API

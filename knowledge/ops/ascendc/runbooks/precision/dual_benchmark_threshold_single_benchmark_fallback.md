@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-20T11:36:00Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 2^-30 是双标杆比值标准阈值 — 单标杆保守用法对 fp32 舍入差过严的三前提 fallback

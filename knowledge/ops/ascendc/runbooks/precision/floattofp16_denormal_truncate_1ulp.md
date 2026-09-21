@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:54:40Z'
 updated_at: '2026-09-17T00:54:40Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # FloatToFp16 denormal 路径截断致 1-ULP 偏差

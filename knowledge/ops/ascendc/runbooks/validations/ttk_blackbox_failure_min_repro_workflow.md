@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:08:02Z'
 updated_at: '2026-09-16T11:08:02Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # TTK 黑盒失败最小复现：子集 CSV+dump

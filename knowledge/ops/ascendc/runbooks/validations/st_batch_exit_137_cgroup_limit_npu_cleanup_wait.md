@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:20:40Z'
 updated_at: '2026-09-17T02:20:40Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ST 批量 exit 137：容器 cgroup 限额与 NPU 清理等待

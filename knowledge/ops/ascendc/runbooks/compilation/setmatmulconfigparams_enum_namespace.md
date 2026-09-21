@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:24:39Z'
 updated_at: '2026-09-17T04:05:46Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # SetMatmulConfigParams 枚举需命名空间前缀

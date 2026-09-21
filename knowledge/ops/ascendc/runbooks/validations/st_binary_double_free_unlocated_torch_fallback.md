@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:23:14Z'
 updated_at: '2026-09-16T10:23:14Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # ST 二进制 double free 未定位改 torch 路线

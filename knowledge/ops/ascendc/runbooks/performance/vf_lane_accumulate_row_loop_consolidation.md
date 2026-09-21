@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-14T12:14:53Z"
 updated_at: "2026-09-14T12:14:53Z"
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # VF收拢与lane累加消除scalar共bound

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:15:00Z'
 updated_at: '2026-09-17T04:15:00Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # Adds 写输出队列张量挂起 — 改写 TBuf

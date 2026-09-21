@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:12:25Z'
 updated_at: '2026-09-17T04:12:25Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # 设备侧 kernel 编译不支持 lambda 调用

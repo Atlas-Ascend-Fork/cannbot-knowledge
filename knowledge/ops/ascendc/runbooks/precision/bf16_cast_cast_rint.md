@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-18T16:12:00Z"
 updated_at: "2026-09-17T01:58:00Z"
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # bf16 扩精度 Cast 误用 CAST_RINT 产垃圾值判别

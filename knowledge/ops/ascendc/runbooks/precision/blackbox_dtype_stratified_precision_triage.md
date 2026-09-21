@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:50:52Z'
 updated_at: '2026-09-17T00:50:52Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 黑盒 bf16-only 精度失败：dtype 分层判别

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:39:38Z'
 updated_at: '2026-09-17T01:39:38Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # OP_CHECK 第三参花括号逗号拆参致编译失败

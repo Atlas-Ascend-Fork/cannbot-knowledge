@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:22:16Z'
 updated_at: '2026-09-17T00:58:06Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # arch35 RegBase VF 逐元素算子完整实现模式

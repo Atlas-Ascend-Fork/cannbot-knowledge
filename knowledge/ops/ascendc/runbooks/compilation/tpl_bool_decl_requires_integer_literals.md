@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:05:00Z'
 updated_at: '2026-09-16T11:05:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # TPL_BOOL_DECL 取值须整型 0/1 非 false/true

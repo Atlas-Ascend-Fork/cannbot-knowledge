@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-15T00:00:00Z"
 updated_at: "2026-09-17T04:12:25Z"
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # __simd_vf__ if constexpr 致 hoisted 报错

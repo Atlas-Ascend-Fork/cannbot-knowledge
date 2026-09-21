@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:08:02Z'
 updated_at: '2026-09-16T11:08:02Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # arch35 SyncAll 无 HardEvent 模板形式

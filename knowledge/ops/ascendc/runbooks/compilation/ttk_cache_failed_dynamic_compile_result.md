@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:32:55Z'
 updated_at: '2026-09-17T02:32:55Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # TTK 缓存失败编译结果，修复后不重试

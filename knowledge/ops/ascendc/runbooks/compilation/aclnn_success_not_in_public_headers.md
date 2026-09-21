@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-17T02:24:35Z"
 updated_at: "2026-09-17T02:24:35Z"
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # ACLNN_SUCCESS 公开头未导出须自定义宏

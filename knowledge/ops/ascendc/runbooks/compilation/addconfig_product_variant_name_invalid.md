@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:24:39Z'
 updated_at: '2026-09-17T05:27:53Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2", "9.1.0"]
 ---
 
 # AddConfig 产品变体名致 SoC 未配置构建失败

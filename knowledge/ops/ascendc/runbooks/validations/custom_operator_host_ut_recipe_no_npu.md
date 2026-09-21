@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:23:14Z'
 updated_at: '2026-09-17T01:50:47Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 自定义算子 host 侧 UT 工程配方（无 NPU）

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:15:37Z'
 updated_at: '2026-09-16T11:15:37Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # upsample特化路径VECIN直拷GM致TilingKey=2全失败

@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-09-17T02:24:35Z"
 updated_at: "2026-09-17T02:24:35Z"
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 动态编译产物落 CWD，TTK 查根 kernel_meta

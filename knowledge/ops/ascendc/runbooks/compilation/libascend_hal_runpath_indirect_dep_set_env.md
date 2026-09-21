@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T03:21:08Z'
 updated_at: '2026-09-17T03:21:08Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # UT 缺 libascend_hal.so：source set_env.sh

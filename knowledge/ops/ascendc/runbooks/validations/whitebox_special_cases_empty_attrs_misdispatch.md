@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:14:22Z'
 updated_at: '2026-09-17T00:14:22Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 白盒 special 用例 attrs 空致误路由

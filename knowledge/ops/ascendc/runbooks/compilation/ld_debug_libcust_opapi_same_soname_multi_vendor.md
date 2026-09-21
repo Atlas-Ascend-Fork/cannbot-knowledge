@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:23:14Z'
 updated_at: '2026-09-16T10:23:14Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 多 vendor 同名 libcust_opapi 加载源判定

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:16:44Z'
 updated_at: '2026-09-14T12:16:44Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # ge.jit_compile=2图级闸门挡预编译复用

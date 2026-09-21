@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:30:14Z'
 updated_at: '2026-09-17T02:30:14Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 偏置校正 β^t 用 powf 单精度与 golden double 漂移

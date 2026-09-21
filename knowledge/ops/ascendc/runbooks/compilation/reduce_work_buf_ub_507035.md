@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-08-18T15:55:48Z'
 updated_at: '2026-09-17T01:48:42Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # Reduce work buf 额外占 UB 致 507035

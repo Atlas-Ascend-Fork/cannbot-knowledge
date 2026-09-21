@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-20T11:36:00Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 自建比较器近零兜底 epsilon 用独立魔法数与阈值脱节 — 灾难性消除产物仍走相对误差

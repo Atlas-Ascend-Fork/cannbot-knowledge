@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:17:47Z'
 updated_at: '2026-09-17T01:48:53Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ASCENDC_TPL 模板路由与 TilingKey 实测编码规则

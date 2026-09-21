@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:11:42Z'
 updated_at: '2026-09-17T00:58:06Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # kernel 垃圾值分层探针：常量写入→回读→向量拷贝→参数回显

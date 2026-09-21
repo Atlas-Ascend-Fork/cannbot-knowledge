@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T00:14:22Z'
 updated_at: '2026-09-17T02:41:05Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # fp32 常规值域 mare 跨分支同构未解

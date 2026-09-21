@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:15:40Z'
 updated_at: '2026-09-14T12:15:40Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # TTK kernel 模式不可用时 aclnn 采集 AiCore 实测耗时

@@ -8,7 +8,6 @@ sources: []
 created_at: "2026-08-15T00:00:00Z"
 updated_at: "2026-09-17T02:21:59Z"
 platforms: ["950", "a2"]
-cann_versions: ["8.5.0-beta.1", "9.1.0"]
 ---
 
 # GET_TILING_DATA 首参传类型名致变量遮蔽类型

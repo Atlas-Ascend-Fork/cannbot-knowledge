@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:22:16Z'
 updated_at: '2026-09-16T10:22:16Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # aclnn 显式 l0op::Contiguous 支持非连续输入

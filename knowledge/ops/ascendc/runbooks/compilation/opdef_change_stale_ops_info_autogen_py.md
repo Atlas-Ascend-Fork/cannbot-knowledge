@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:23:14Z'
 updated_at: '2026-09-16T10:23:14Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # OpDef 改动不生效：ops-info 与 autogen py 不刷新

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-14T12:09:22Z'
 updated_at: '2026-09-14T12:09:22Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # GE 图路径 TBE 动态编译 blockDim 固化致 EZ9999

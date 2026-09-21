@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:30:14Z'
 updated_at: '2026-09-17T02:30:14Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 比对阈值随 golden dtype 漂移：按算子输出 dtype 取阈

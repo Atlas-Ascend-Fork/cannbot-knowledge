@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T04:41:27Z'
 updated_at: '2026-09-17T04:41:27Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 黑盒CSV转ST清单：shape capping保rank广播

@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:21:59Z'
 updated_at: '2026-09-17T02:21:59Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # ACL 无 aclGetTensorAddr，D2H 直传 Malloc 指针

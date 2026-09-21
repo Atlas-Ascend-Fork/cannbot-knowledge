@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:47:15Z'
 updated_at: '2026-09-17T01:47:15Z'
 platforms: ["950"]
-cann_versions: ["9.0.0-beta.2"]
 ---
 
 # 共享 Tiling 仿真 caps 致公式 UT 大面积回归

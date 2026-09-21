@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T10:24:39Z'
 updated_at: '2026-09-16T10:24:39Z'
 platforms: ["950"]
-cann_versions: ["9.2.0"]
 ---
 
 # 重编未重装 vendors 旧 tiling 致 561103

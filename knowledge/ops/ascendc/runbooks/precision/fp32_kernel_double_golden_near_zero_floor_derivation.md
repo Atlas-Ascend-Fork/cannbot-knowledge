@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-20T11:36:00Z'
 updated_at: '2026-09-20T11:36:00Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # fp32 kernel 对 double golden 的近零豁免界须按精度模型推导 — eps 下限、abs_floor 校准与 mare_raw 双向验证

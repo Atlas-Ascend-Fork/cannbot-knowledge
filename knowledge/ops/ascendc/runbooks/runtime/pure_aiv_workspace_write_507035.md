@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:47:15Z'
 updated_at: '2026-09-17T01:47:15Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 纯 AIV 写 workspace 507035 errcode 95

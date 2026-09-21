@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T02:30:52Z'
 updated_at: '2026-09-17T03:21:08Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # aclDestroyTensorList 拥有成员勿重复销毁

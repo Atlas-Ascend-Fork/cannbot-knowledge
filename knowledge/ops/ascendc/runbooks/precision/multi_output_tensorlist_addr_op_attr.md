@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-17T01:50:47Z'
 updated_at: '2026-09-17T01:50:47Z'
 platforms: ["950"]
-cann_versions: ["9.1.0"]
 ---
 
 # 多输出 TensorList 地址经 op 属性传 kernel

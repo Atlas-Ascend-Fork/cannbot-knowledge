@@ -8,7 +8,6 @@ sources: []
 created_at: '2026-09-16T11:05:00Z'
 updated_at: '2026-09-17T00:48:21Z'
 platforms: ["950"]
-cann_versions: ["9.1.0", "9.2.0"]
 ---
 
 # TilingKey 编码为 dtype 枚举+mode×256
