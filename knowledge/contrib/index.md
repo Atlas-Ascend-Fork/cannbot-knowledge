@@ -1,3 +1,5 @@
-# 社区贡献的工程知识
+# 社区贡献知识
 
-社区贡献工程知识领域入口。具体 technology/scope 路径由领域维护者在首批真实知识落库时创建。
+本目录保存经过治理的社区贡献工程知识，按技术 route 与路径 Profile 组织。
+
+- [Ascend C](ascendc/index.md)：社区贡献的 Ascend C 知识。
