@@ -136,7 +136,13 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 
 ## 贡献和检查
 
-贡献知识前阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。它说明如何查重、选择路径、准备来源、编写知识卡、更新导航和提交 Skill 变更。
+贡献前阅读 [CONTRIBUTING.md](CONTRIBUTING.md)，按贡献类型准备材料：
+
+- **知识建设（缺陷修复除外）**：先提交 Issue，说明知识缺口、生产方法和预期效果；完成知识卡与效果验证后提交关联 PR，由 committer 检视后合入。
+- **公共组件新增、优化或主动行为调整（如检索 Skill，缺陷修复除外）**：遵循“扩展优先、保持兼容”，先提交 RFC，说明当前问题、修改必要性和接入方案；主动改变既有行为时补充影响、迁移与回退说明。完成 A/B test 和原有路径/新增能力验证后提交关联 PR，由 committer 检视后合入。
+- **缺陷修复与轻量修订**：知识错误、检索脚本 bug 等可直接提交 PR，无需前置 Issue/RFC 或完整 A/B 实验；提供修复依据与定向验证结果，满足适用检查并由 committer 检视后合入。纯排版、错别字和不改变组件行为的说明文档修订也适用；包含新增能力或主动流程调整时应拆分贡献。
+
+贡献指南提供可填写的 Issue、RFC、PR 正文，以及 A/B 实验和合入要求；写卡操作可参照[贡献知识](recipes/contribute_knowledge.md)。
 
 提交前运行：
 
@@ -144,7 +150,7 @@ Operator 卡按 `operators/<aclnn|direct>/<cv|math|nn|transformer>/<category>/<o
 bash check.sh
 ```
 
-该入口恢复并校验登记资源，再执行知识 Lint、归档复验、索引与检索回归、单元测试、Ruff 和 Shell 语法检查。图谱和 API 引用建议按需生成，不属于入库门禁。
+该入口执行知识 Lint、导航检查、索引与检索回归、单元测试、Ruff、Shell 语法及归档镜像差异检查，不主动获取或严格复验滚动官方来源。图谱和 API 引用建议按需生成，不属于入库门禁。
 
 ## 治理规范
 
