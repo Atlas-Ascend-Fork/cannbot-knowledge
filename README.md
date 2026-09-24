@@ -21,35 +21,6 @@ CANNBot 通过本仓提供的 Skill 生产、检索和检查这些知识，从�
 
 `knowledge/` 是本仓唯一且符合 OKF v0.2 的 Knowledge Bundle 根目录，其下所有卡片共享同一个 Concept ID 命名空间。`common/`、`ops/` 等只是 Bundle 内的分类，不是独立 Bundle；仓库根目录的 Skill、治理、测试和日志设施不属于 Bundle。详细边界见 [OKF Bundle 与 CANNBot Profile](governance/specs/okf.md)。
 
-## 当前知识状态
-
-当前 `knowledge/` 共有 5,040 张知识卡，覆盖 Ascend C、Triton-Ascend、公共平台与模型场景：
-
-- 2,993 张 API 卡，其中 Ascend C 2,865 张、Triton 128 张；
-- 465 张 Guide 卡，其中 Ascend C 274 张、Triton 157 张、模型场景 34 张；
-- 611 张 Operator 卡，其中 559 张 ACLNN 全链路卡、52 张 Direct Invoke 卡；
-- 565 张 Runbook 卡，其中 Ascend C 459 张、Triton 12 张、模型场景 94 张；
-- 193 张 Concept 卡，其中公共平台 5 张、模型场景 188 张；
-- 202 张 Optimization 卡，其中 Triton 92 张、模型场景 110 张；
-- 11 张 Triton Example 卡；
-- Ascend C API/Guide 来源指向 Registry 登记的 `cann-docs-raw/` 文档归档，官方归档持续更新，恢复时不校验预登记的归档或内容树 SHA-256；模型 Guide 来源固定到托管仓 40 位 Commit 和具体文件，Operator 来源固定到 CANN 官方 Git 仓 40 位 Commit 和具体文件。
-
-上述数量是当前版本快照。Registry 中注册的所有 domain 根目录始终保留；`ops` 和 `model` 额外预建已注册 route，其他领域的下一层路径随首批真实知识创建。只有 `index.md` 的结构入口不算正式知识卡，也不会出现在 Query 的覆盖统计中。“存在目录”不表示“已有知识”，实时数量以 Query 返回的实际覆盖为准。
-
-本地来源不提交到 Git。需要核对卡片证据时，在仓库根执行：
-
-```bash
-bash get_resources.sh
-```
-
-脚本默认恢复滚动更新的官方文档归档，以及 `ops-nn`、`ops-math`、`ops-transformer`、`ops-cv` 的固定提交源码；也可用 `--docs` 或 `--code` 只恢复一类资源。文档缓存默认复用，需要获取当前归档时使用 `bash get_resources.sh --docs --refresh`；源码复用前会校验提交、来源和工作区。两类资源都保持 Git 忽略，脚本不会覆盖不完整目录或带本地修改的源码。
-
-Operator 的本地 `sources` 使用相对于知识仓根的固定提交路径，缺失来源不会被自动替换成其他版本。官方 API/Guide 只为包含独立技术事实的来源页建卡，导航页由逐层 `index.md` 承载；“产品支持情况”转换为 Frontmatter `platforms`，其余保留正文按受控规则同步。
-
-完整来源和转换约束见 [Frontmatter 与证据](governance/specs/frontmatter.md)与 [Schema、Registry 与 Contract](governance/specs/schemas.md)。
-
-知识卡之间通过普通 Markdown 链接形成关系，图谱按需从这些链接生成。API 引用建议可以单独扫描固定源码，但建议不证明运行时可达性，也不会自动改写知识卡或成为入库前置步骤。
-
 ## 这个仓库如何工作
 
 ```text
