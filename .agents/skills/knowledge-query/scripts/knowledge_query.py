@@ -18,6 +18,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from retrieval.index import (  # noqa: E402
     IndexedCard,
+    index_tokenizer,
     literal_scores,
     load_cards,
     open_index,
@@ -379,7 +380,12 @@ def search_payload(
         raw_scores = literal_scores(connection, normalized_query)
     else:
         phrase_ids = phrase_matches(connection, normalized_query)
-        raw_scores = posting_scores(connection, query_tokens(args.query))
+        tokenizer = index_tokenizer(index_metadata)
+        raw_scores = posting_scores(
+            connection,
+            query_tokens(args.query, tokenizer=tokenizer),
+            tokenizer=tokenizer,
+        )
         for doc_id in phrase_ids:
             raw_scores[doc_id] = raw_scores.get(doc_id, 0.0) + 4.0
 

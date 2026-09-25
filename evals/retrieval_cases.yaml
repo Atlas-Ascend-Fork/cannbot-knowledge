@@ -155,7 +155,7 @@ cases:
       - ops/shared/concepts/shared_alignment_boundary
     expected_count: 1
   - id: empty_ascendc_search
-    query: definitely_absent_cannbot_probe_9f6a
+    query: qzxk_vwbr_hjdm_plqn
     filters:
       technology: ascendc
       platform: a2

@@ -6,6 +6,7 @@ import hashlib
 import importlib
 import importlib.util
 import json
+import math
 import os
 import re
 import sqlite3
@@ -19,8 +20,20 @@ from typing import Any, Iterable
 from .root import repository_state, sha256_file
 
 
-INDEX_VERSION = 3
+TOKENIZER_V3 = "v3"
+TOKENIZER_SUBWORD = "subword"
+TOKENIZERS = (TOKENIZER_V3, TOKENIZER_SUBWORD)
+DEFAULT_TOKENIZER = TOKENIZER_V3
+# v3: whole TOKEN_RE terms + CJK bigrams, uniform posting sum (master default).
+# v4: camel/separator pieces + get_ stem + BM25-style IDF; rebuild required.
+INDEX_VERSION_V3 = 3
+INDEX_VERSION_SUBWORD = 4
+INDEX_VERSION = INDEX_VERSION_V3
 INDEX_SCHEMA = "cannbot-knowledge-index.v1"
+_POSTING_FIELD_SQL = (
+    "4.0 * title_tf + 2.5 * description_tf + 2.0 * tags_tf"
+    " + 2.0 * aliases_tf + 0.5 * MIN(body_tf, 4)"
+)
 INDEX_RELATIVE_PATH = Path("artifacts/indexes/knowledge.sqlite3")
 TOKEN_RE = re.compile(r"[a-zA-Z0-9_+./:-]+|[\u4e00-\u9fff]{2,}")
 GOVERNANCE_INPUTS = (
@@ -79,7 +92,50 @@ def card_fingerprint(metadata: dict[str, Any], body: str) -> str:
     ).hexdigest()
 
 
-def token_counts(value: str) -> Counter[str]:
+# camel/分隔符子词切分: TOKEN_RE 的 ASCII token 把 "DataCopyPad"/"rms_norm"
+# 当作整体, 查询 "copy"/"rms norm" 打不中 posting; 先在保留大小写的原文上
+# 切出子词 (camel 边界 + _ / . : 等分隔符), 再小写化。全词 token 始终保留,
+# 子词只保留 ≥2 字符且含字母的片段 (排除 "950"/"9" 这类纯数字噪声)。
+_WORD_PIECE_RE = re.compile(r"[A-Z]+(?![a-z])|[A-Z][a-z0-9]*|[a-z0-9]+")
+_GET_PREFIX_RE = re.compile(r"^(?:[Gg]et[_./:-]|[Gg]et(?=[A-Z]))")
+
+
+def index_version_for(tokenizer: str) -> int:
+    if tokenizer == TOKENIZER_SUBWORD:
+        return INDEX_VERSION_SUBWORD
+    if tokenizer == TOKENIZER_V3:
+        return INDEX_VERSION_V3
+    raise ValueError(f"unknown tokenizer: {tokenizer}")
+
+
+def index_tokenizer(metadata: dict[str, Any] | None = None) -> str:
+    if not metadata:
+        return DEFAULT_TOKENIZER
+    value = metadata.get("tokenizer", TOKENIZER_V3)
+    if value not in TOKENIZERS:
+        raise ValueError(f"unknown tokenizer: {value}")
+    return str(value)
+
+
+def _accessor_stem(raw: str) -> str:
+    """Drop a leading get_/Get camel accessor without touching words like getting."""
+    match = _GET_PREFIX_RE.match(raw)
+    if match is None:
+        return raw
+    stem = raw[match.end() :]
+    return stem or raw
+
+
+def _word_pieces(raw: str) -> list[str]:
+    pieces: list[str] = []
+    for chunk in re.split(r"[^A-Za-z0-9]+", _accessor_stem(raw)):
+        for part in _WORD_PIECE_RE.findall(chunk):
+            if len(part) >= 2 and re.search(r"[A-Za-z]", part):
+                pieces.append(part.lower())
+    return pieces
+
+
+def _v3_token_counts(value: str) -> Counter[str]:
     result: Counter[str] = Counter()
     for token in TOKEN_RE.findall(value.lower()):
         result[token] += 1
@@ -89,8 +145,31 @@ def token_counts(value: str) -> Counter[str]:
     return result
 
 
-def query_tokens(value: str) -> list[str]:
-    return list(token_counts(value))
+def _subword_token_counts(value: str) -> Counter[str]:
+    result: Counter[str] = Counter()
+    # Tokenize before lowercasing so camelCase boundaries survive.
+    for raw in TOKEN_RE.findall(value):
+        token = raw.lower()
+        result[token] += 1
+        for piece in _word_pieces(raw):
+            if piece != token:
+                result[piece] += 1
+        if re.fullmatch(r"[\u4e00-\u9fff]{3,}", token):
+            for offset in range(len(token) - 1):
+                result[token[offset : offset + 2]] += 1
+    return result
+
+
+def token_counts(value: str, tokenizer: str = DEFAULT_TOKENIZER) -> Counter[str]:
+    if tokenizer == TOKENIZER_SUBWORD:
+        return _subword_token_counts(value)
+    if tokenizer == TOKENIZER_V3:
+        return _v3_token_counts(value)
+    raise ValueError(f"unknown tokenizer: {tokenizer}")
+
+
+def query_tokens(value: str, tokenizer: str = DEFAULT_TOKENIZER) -> list[str]:
+    return list(token_counts(value, tokenizer=tokenizer))
 
 
 def searchable_body(body: str) -> str:
@@ -192,7 +271,8 @@ def _create_schema(connection: sqlite3.Connection) -> None:
     )
 
 
-def build_index(root: Path) -> dict[str, Any]:
+def build_index(root: Path, tokenizer: str = DEFAULT_TOKENIZER) -> dict[str, Any]:
+    tokenizer = index_tokenizer({"tokenizer": tokenizer})
     root = root.resolve()
     contract, split_frontmatter = load_contract(root)
     destination = index_path(root)
@@ -276,11 +356,11 @@ def build_index(root: Path) -> dict[str, Any]:
                     ),
                 )
                 fields = (
-                    token_counts(title),
-                    token_counts(description),
-                    token_counts(tags),
-                    token_counts(aliases),
-                    token_counts(indexed_body),
+                    token_counts(title, tokenizer=tokenizer),
+                    token_counts(description, tokenizer=tokenizer),
+                    token_counts(tags, tokenizer=tokenizer),
+                    token_counts(aliases, tokenizer=tokenizer),
+                    token_counts(indexed_body, tokenizer=tokenizer),
                 )
                 all_terms = set().union(*(set(field) for field in fields))
                 connection.executemany(
@@ -295,7 +375,8 @@ def build_index(root: Path) -> dict[str, Any]:
 
             metadata = {
                 "schema_version": INDEX_SCHEMA,
-                "index_version": INDEX_VERSION,
+                "index_version": index_version_for(tokenizer),
+                "tokenizer": tokenizer,
                 "content_fingerprint": _fingerprint(content_entries),
                 "governance_fingerprint": governance_fingerprint(root),
                 "card_count": card_count,
@@ -312,14 +393,16 @@ def build_index(root: Path) -> dict[str, Any]:
             connection.commit()
         finally:
             connection.close()
-        with temporary.open("rb") as stream:
-            os.fsync(stream.fileno())
+        if os.name == "posix":
+            with temporary.open("rb") as stream:
+                os.fsync(stream.fileno())
         os.replace(temporary, destination)
-        directory_descriptor = os.open(destination.parent, os.O_RDONLY)
-        try:
-            os.fsync(directory_descriptor)
-        finally:
-            os.close(directory_descriptor)
+        if os.name == "posix":
+            directory_descriptor = os.open(destination.parent, os.O_RDONLY)
+            try:
+                os.fsync(directory_descriptor)
+            finally:
+                os.close(directory_descriptor)
         return metadata
     finally:
         try:
@@ -414,12 +497,13 @@ def _verify_query_tables(
                 f"knowledge index document differs from governed card: {relative}; rebuild the index"
             )
 
+        tokenizer = index_tokenizer(metadata)
         fields = (
-            token_counts(title),
-            token_counts(description),
-            token_counts(tags),
-            token_counts(aliases),
-            token_counts(indexed_body),
+            token_counts(title, tokenizer=tokenizer),
+            token_counts(description, tokenizer=tokenizer),
+            token_counts(tags, tokenizer=tokenizer),
+            token_counts(aliases, tokenizer=tokenizer),
+            token_counts(indexed_body, tokenizer=tokenizer),
         )
         all_terms = set().union(*(set(field) for field in fields))
         expected_postings = {
@@ -473,7 +557,8 @@ def _verify_connection(
         metadata = _read_meta(connection)
         if metadata.get("schema_version") != INDEX_SCHEMA:
             raise ValueError("knowledge index schema is unsupported; rebuild the index")
-        if metadata.get("index_version") != INDEX_VERSION:
+        tokenizer = index_tokenizer(metadata)
+        if metadata.get("index_version") != index_version_for(tokenizer):
             raise ValueError("knowledge index version is stale; rebuild the index")
         current_governance = governance_fingerprint(root)
         if metadata.get("governance_fingerprint") != current_governance:
@@ -592,21 +677,52 @@ def load_cards(connection: sqlite3.Connection) -> list[IndexedCard]:
 
 
 def posting_scores(
-    connection: sqlite3.Connection, terms: list[str]
+    connection: sqlite3.Connection,
+    terms: list[str],
+    tokenizer: str = DEFAULT_TOKENIZER,
 ) -> dict[int, float]:
+    """Score postings. v3 sums field weights; subword applies BM25-style IDF."""
     if not terms:
         return {}
-    placeholders = ",".join("?" for _ in terms)
+    tokenizer = index_tokenizer({"tokenizer": tokenizer})
+    unique = sorted(set(terms))
+    placeholders = ",".join("?" for _ in unique)
+    if tokenizer != TOKENIZER_SUBWORD:
+        rows = connection.execute(
+            f"""
+            SELECT doc_id,
+                   SUM({_POSTING_FIELD_SQL}) AS score
+            FROM postings WHERE term IN ({placeholders}) GROUP BY doc_id
+            """,
+            unique,
+        )
+        return {int(row["doc_id"]): float(row["score"]) for row in rows}
+
+    total = int(
+        connection.execute("SELECT COUNT(*) AS n FROM documents").fetchone()["n"]
+    )
     rows = connection.execute(
         f"""
-        SELECT doc_id,
-               SUM(4.0 * title_tf + 2.5 * description_tf + 2.0 * tags_tf
-                   + 2.0 * aliases_tf + 0.5 * MIN(body_tf, 4)) AS score
-        FROM postings WHERE term IN ({placeholders}) GROUP BY doc_id
+        SELECT p.doc_id AS doc_id,
+               {_POSTING_FIELD_SQL} AS s,
+               d.df AS df
+        FROM postings AS p
+        JOIN (
+            SELECT term, COUNT(DISTINCT doc_id) AS df
+            FROM postings WHERE term IN ({placeholders})
+            GROUP BY term
+        ) AS d ON d.term = p.term
+        WHERE p.term IN ({placeholders})
         """,
-        terms,
+        (*unique, *unique),
     )
-    return {int(row["doc_id"]): float(row["score"]) for row in rows}
+    scores: dict[int, float] = {}
+    for row in rows:
+        df = max(1, int(row["df"]))
+        weight = math.log(1.0 + (total - df + 0.5) / (df + 0.5))
+        doc_id = int(row["doc_id"])
+        scores[doc_id] = scores.get(doc_id, 0.0) + weight * float(row["s"])
+    return scores
 
 
 def literal_scores(connection: sqlite3.Connection, phrase: str) -> dict[int, float]:

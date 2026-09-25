@@ -486,6 +486,40 @@ class CardReadingTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual([[], []], [item["numbered_context"] for item in json.loads(result.stdout)["cards"]])
 
+    def test_outline_lists_body_headings_only_and_writes_nothing(self):
+        body = "# Intro\n\ntext\n\n## Details\n\n```python\n# not a heading\n```\n\n### Deep\n"
+        self.card.write_text("---\ntitle: Fixture\ntype: API\n---\n" + body, encoding="utf-8")
+        before = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.rglob("*") if p.is_file()}
+        page = resolver.outline_card(self.root, self.card)
+        rows = page.splitlines()
+        framing = json.loads(rows[0].removeprefix("CARD_OUTLINE "))
+        footer = json.loads(rows[-1].removeprefix("END_CARD_OUTLINE "))
+        entries = rows[1:-1]
+        self.assertEqual("Fixture", framing["title"])
+        self.assertEqual(15, framing["card_lines"])
+        self.assertEqual(5, framing["body_start_line"])
+        self.assertEqual(3, framing["headings"])
+        self.assertEqual(hashlib.sha256(self.card.read_bytes()).hexdigest(), framing["file_sha256"])
+        self.assertEqual(
+            [(5, "# Intro"), (9, "## Details"), (15, "### Deep")],
+            [(int(number), marker) for number, marker in (row.split("\t", 1) for row in entries)],
+        )
+        self.assertTrue(footer["outline_only"])
+        self.assertIn("read", footer["read_command"])
+        self.assertIn("读完全部页面", footer["adoption_rule"])
+        self.assertEqual(before, {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.rglob("*") if p.is_file()})
+
+    def test_outline_cli_rejects_navigation_and_outside_cards(self):
+        outside = self.root / "outside.md"
+        for card in (self.card.parent / "index.md", outside):
+            with self.subTest(card=card):
+                result = subprocess.run(
+                    [sys.executable, str(SCRIPT), "outline", "--knowledge-root", str(self.root), "--card", str(card)],
+                    cwd=self.root, text=True, capture_output=True, check=False,
+                )
+                self.assertEqual(2, result.returncode)
+                self.assertEqual("", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

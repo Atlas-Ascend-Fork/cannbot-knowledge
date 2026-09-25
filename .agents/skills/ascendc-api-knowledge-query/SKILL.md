@@ -49,6 +49,14 @@ python3 <api-skill-dir>/scripts/resolve_resources.py read --card "<选中 local_
 
 链接原样交给工具：普通相对路径以当前卡目录为基准，`/ops/...` 等前导 `/` 路径以 `knowledge/` Bundle 为基准，`#章节` 指向当前卡。解析复用治理 Contract，不把 Bundle 根相对路径当作主机绝对路径；同页锚点不产生新卡或新的已读证据，避免循环阅读。
 
+长卡可先取骨架再决定读法：
+
+```bash
+python3 <api-skill-dir>/scripts/resolve_resources.py outline --card "<选中 local_path>"
+```
+
+outline 返回正文标题、行号与总行数，只用于判断相关性和定位章节；它不提供正文内容，也不构成已读证据，采用本卡前仍须按上述规则全文读齐。
+
 ## 4. Agent 按问题缺口补证
 
 读完后决定是否继续；证据足够就停止检索，不遍历所有邻接。首次需要补充材料时读[资源解析与证据核对](references/evidence-check.md)，按需使用以下入口：

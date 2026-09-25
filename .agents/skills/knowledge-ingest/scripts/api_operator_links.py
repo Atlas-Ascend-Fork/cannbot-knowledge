@@ -29,7 +29,7 @@ from urllib.parse import quote
 import yaml
 
 
-FRONTMATTER_RE = re.compile(r"\A---\n(?P<metadata>.*?)\n---\n\n", re.DOTALL)
+FRONTMATTER_RE = re.compile(r"\A---\r?\n(?P<metadata>.*?)\r?\n---\r?\n\r?\n", re.DOTALL)
 IDENTIFIER_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_:]*\Z")
 TEMPLATE_ARGUMENTS = r"<(?:[^<>;()\n]|<[^<>;()\n]{0,400}>){0,400}>"
 TEMPLATE_ARGUMENTS_RE = re.compile(TEMPLATE_ARGUMENTS)
@@ -146,7 +146,7 @@ def read_utf8(path: Path) -> str:
 
 def split_card(path: Path, root: Path) -> Card:
     text = read_utf8(path)
-    if not text.startswith("---\n"):
+    if not text.startswith(("---\n", "---\r\n")):
         raise ValueError(f"missing frontmatter: {path.relative_to(root)}")
     framing = FRONTMATTER_RE.match(text)
     if framing is None:

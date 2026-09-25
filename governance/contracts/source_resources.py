@@ -105,11 +105,11 @@ def git_source(contract, resource: str) -> GitSource | None:
 def git_read(directory: Path, *args: str) -> str:
     result = subprocess.run(
         ["git", "--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "core.hooksPath=/dev/null", "-C", str(directory), *args],
-        text=True, capture_output=True, check=False,
+        text=True, encoding="utf-8", errors="replace", capture_output=True, check=False,
     )
     if result.returncode:
-        raise ValueError(f"Git source validation failed in {directory}: {result.stderr.strip()}")
-    return result.stdout.strip()
+        raise ValueError(f"Git source validation failed in {directory}: {(result.stderr or '').strip()}")
+    return (result.stdout or "").strip()
 
 
 def validate_checkout(root: Path, definition: dict, revision: str) -> Path:

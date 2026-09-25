@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import importlib
 import json
+import re
 from pathlib import Path
 import shlex
 import sys
@@ -23,6 +24,7 @@ from retrieval.root import local_markdown_link, resolve_root  # noqa: E402
 
 
 PAGE_CHAR_BUDGET = 10000
+HEADING_RE = re.compile(r"^(#{1,6})[ \t]+(.*?)[ \t]*$")
 
 
 def selected_card(root: Path, card: Path) -> Path:
@@ -106,6 +108,60 @@ def read_card_page(root: Path, card: Path, start_line: int = 1, expected_sha256:
         *selected,
         "END_CARD_PAGE " + json.dumps(footer),
         *progress,
+    ])
+
+
+def outline_card(root: Path, card: Path) -> str:
+    """Emit the heading skeleton of a selected card for triage, not adoption."""
+    root = root.resolve(strict=True)
+    card = selected_card(root, card)
+    if card.name == "index.md":
+        raise ValueError("index.md is navigation; select a knowledge card before using outline")
+    _, split_frontmatter = load_contract(root)
+    raw = card.read_bytes()
+    text = raw.decode("utf-8")
+    metadata, body = split_frontmatter(text)
+    title = (metadata or {}).get("title")
+    if not isinstance(title, str) or not title.strip():
+        title = card.stem
+    lines = text.splitlines()
+    normalized = "\n".join(lines)
+    if body:
+        body_start = normalized[: normalized.rfind(body)].count("\n") + 1
+    else:
+        body_start = len(lines) + 1
+    headings: list[tuple[int, int, str]] = []
+    fenced = False
+    for number in range(body_start, len(lines) + 1):
+        line = lines[number - 1]
+        if line.startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        match = HEADING_RE.match(line)
+        if match is not None:
+            headings.append((number, len(match.group(1)), match.group(2)))
+    bundle = root / "knowledge"
+    framing = {
+        "card": card.relative_to(bundle).as_posix(),
+        "file_sha256": hashlib.sha256(raw).hexdigest(),
+        "card_lines": len(lines), "title": title,
+        "body_start_line": body_start, "headings": len(headings),
+        "heading_style": "atx",
+    }
+    footer = {
+        "outline_only": True,
+        "read_command": shlex.join([
+            "python3", str(Path(__file__).resolve()), "read", "--knowledge-root", str(root),
+            "--card", str(card),
+        ]),
+        "adoption_rule": "outline 仅用于判断相关性和定位章节；采用本卡前仍须按 read 在同一指纹下连续读完全部页面。",
+    }
+    return "\n".join([
+        "CARD_OUTLINE " + json.dumps(framing, ensure_ascii=False),
+        *(f"{number}\t{'#' * level} {heading}" for number, level, heading in headings),
+        "END_CARD_OUTLINE " + json.dumps(footer, ensure_ascii=False),
     ])
 
 
@@ -260,6 +316,9 @@ def build_parser() -> argparse.ArgumentParser:
     read.add_argument("--link", help="read this exact Markdown link from --card instead of reconstructing its path")
     read.add_argument("--start-line", type=int, default=1)
     read.add_argument("--sha256", help="file_sha256 returned by the preceding page; required for continuation")
+    outline = commands.add_parser("outline", help="list the heading skeleton of a selected card for triage")
+    outline.add_argument("--knowledge-root")
+    outline.add_argument("--card", type=Path, required=True)
     compare = commands.add_parser("compare", help="compare a literal field across already fully read cards")
     compare.add_argument("--knowledge-root")
     compare.add_argument("--card", type=Path, action="append", required=True)
@@ -288,6 +347,8 @@ def main() -> int:
                     resolved = resolve_card_resource(root, card, args.link, source=False)
                     card = Path(resolved["absolute_path"])
                 result = read_card_page(root, card, args.start_line, args.sha256)
+            elif args.command == "outline":
+                result = outline_card(root, args.card)
             elif args.command == "compare":
                 result = compare_card_field(root, args.card, args.field)
             else:

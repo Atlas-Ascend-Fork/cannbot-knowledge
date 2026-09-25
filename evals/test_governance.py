@@ -1754,7 +1754,7 @@ class MigratedSkillContractTests(unittest.TestCase):
                 str(root),
                 "search",
                 "--query",
-                "definitely_absent_cannbot_probe_9f6a",
+                "qzxk_vwbr_hjdm_plqn",
                 "--technology",
                 "ascendc",
                 "--platform",

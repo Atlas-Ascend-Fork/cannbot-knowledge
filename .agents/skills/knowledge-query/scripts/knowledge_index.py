@@ -14,7 +14,13 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from retrieval.index import build_index, index_path, verify_index  # noqa: E402
+from retrieval.index import (  # noqa: E402
+    DEFAULT_TOKENIZER,
+    TOKENIZERS,
+    build_index,
+    index_path,
+    verify_index,
+)
 from retrieval.root import extract_knowledge_root, resolve_root  # noqa: E402
 
 
@@ -32,6 +38,12 @@ def parser() -> argparse.ArgumentParser:
     commands = result.add_subparsers(dest="command", required=True)
     build = commands.add_parser("build", allow_abbrev=False)
     build.add_argument("--json", action="store_true")
+    build.add_argument(
+        "--tokenizer",
+        choices=TOKENIZERS,
+        default=DEFAULT_TOKENIZER,
+        help="v3 keeps master retrieval; subword adds camel/separator pieces and IDF (index v4).",
+    )
     verify = commands.add_parser("verify", allow_abbrev=False)
     verify.add_argument("--level", choices=["quick", "full"], default="quick")
     verify.add_argument("--json", action="store_true")
@@ -44,7 +56,7 @@ def main(argv: list[str] | None = None) -> int:
         args = parser().parse_args(cleaned)
         root = resolve_root(explicit, __file__)
         if args.command == "build":
-            metadata = build_index(root)
+            metadata = build_index(root, tokenizer=args.tokenizer)
         else:
             metadata = verify_index(root, full=args.level == "full")
         payload = {
