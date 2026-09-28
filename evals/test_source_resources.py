@@ -52,7 +52,11 @@ class SourceResourceTests(unittest.TestCase):
         self.raw = "// AscendC::GetBlockIdx();\nint kernel() {\n  return AscendC::GetBlockIdx();\n}\n"
         (self.checkout / "kernel.h").write_text(self.raw)
         (self.checkout / "notes.md").write_text("# source notes\n")
-        self.git("add", "kernel.h", "notes.md")
+        (self.checkout / "src").mkdir()
+        (self.checkout / "src/Makefile").write_text("all:\n\t@true\n")
+        (self.checkout / "src/fake.h").mkdir()
+        (self.checkout / "src/fake.h/marker").write_text("tracked directory fixture\n")
+        self.git("add", "kernel.h", "notes.md", "src/Makefile", "src/fake.h/marker")
         self.git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "--quiet", "-m", "fixture")
         self.revision = self.git("rev-parse", "HEAD")
         destination = self.checkout.with_name(self.revision)
@@ -93,6 +97,21 @@ class SourceResourceTests(unittest.TestCase):
         if sources is None:
             sources = [f"cann-ops-raw/ascendc/ops-nn/{self.revision}/kernel.h"]
         return self.card(f"knowledge/ops/ascendc/operators/aclnn/{family}/fixture/op_{number}.md", body, title=f"Operator {number}", sources=sources)
+
+    def local_tree_navigation_issues(self, linked_path):
+        source = f"{self.definition['root']}/{self.revision}/src"
+        target = f"{self.definition['root']}/{self.revision}/{linked_path}"
+        target = os.path.relpath(self.root / target, self.root / "knowledge")
+        document = SimpleNamespace(
+            path=self.root / "knowledge/card.md",
+            metadata={"sources": [{"resource": source}]},
+            body=f"[source]({target})",
+        )
+        context = SimpleNamespace(strict_navigation=True)
+        checker = importlib.import_module(
+            f"{api_links.ingest.contract_package().__name__}.checks.source_navigation"
+        )
+        return checker.check(self.contract, document, context)
 
     def test_remote_variants_and_local_paths_keep_identical_revision(self):
         expected = f"cann-ops-raw/ascendc/ops-nn/{self.revision}/kernel.h"
@@ -182,6 +201,15 @@ class SourceResourceTests(unittest.TestCase):
         self.assertEqual([], restored_checks.check(self.contract, document, SimpleNamespace(checked_local_roots=set())))
         self.assertTrue(source_checks.is_safe_local_resource(self.contract, resource))
         self.assertFalse(source_checks.is_safe_local_resource(self.contract, resource.replace(self.revision, "a" * 40)))
+
+    def test_strict_navigation_uses_restored_file_types_for_local_sources(self):
+        self.assertEqual([], self.local_tree_navigation_issues("src/Makefile"))
+        issues = self.local_tree_navigation_issues("src/fake.h")
+        self.assertEqual(["source.navigation"], [issue.code for issue in issues])
+
+    def test_strict_navigation_skips_local_file_type_checks_when_checkout_is_offline(self):
+        (self.root / self.definition["root"]).rename(self.root / "offline-backup")
+        self.assertEqual([], self.local_tree_navigation_issues("src/Makefile"))
 
     def test_fetch_creates_nested_parents_without_following_ancestor_symlinks(self):
         definition = {**self.definition, "root": "new-raw/ascendc/ops-nn"}

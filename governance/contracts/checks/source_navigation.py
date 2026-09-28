@@ -55,15 +55,17 @@ def check(contract: Contract, document, context) -> list[Issue]:
             source = git_source(contract, resource)
             if source is None:
                 continue
+            if not source.checkout(contract.root).exists():
+                continue
             target = source.local_path(contract.root)
-            if not target.is_dir() and (target.exists() or "." in target.name):
+            if target.is_file() or not target.is_dir():
                 continue
             locations = [git_source(contract, candidate) for candidate in resources]
             locations.extend(local_source_link(contract, document.path, candidate) for candidate in body_links)
             if not any(
                 candidate is not None
                 and (candidate.root, candidate.revision) == (source.root, source.revision)
-                and "." in candidate.local_path(contract.root).name
+                and candidate.local_path(contract.root).is_file()
                 for candidate in locations
             ):
                 issues.append(Issue("source.navigation", "local tree source requires a same-repository, same-revision source file"))
