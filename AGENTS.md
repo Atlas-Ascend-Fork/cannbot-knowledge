@@ -57,6 +57,7 @@ Schema、Profile、Registry、Contract、Spec、Skill 或测试若互相矛盾�
 - 文件名使用小写 `snake_case`，自由主题的集合目录使用复数；Registry 控制的 Operator 源码分类保持其注册 ID。Registry 中注册的所有 domain 根目录必须保留 `index.md`；只有 `ops` 和 `model` 预建注册 route，其他领域的下一层目录随首张真实知识创建。
 - Operator 和 Runbook 只能使用 Registry 中声明的附加层级；`concepts`、`apis`、`examples`、`guides` 和 `optimizations` 可增加小写 `snake_case` 主题层级，其他路径 Profile 默认直接放卡片。
 - `index.md` 只存在于 `knowledge/`。每个目录都必须有一个索引，完整且无重复地列出直接子目录和直接知识卡，并为每项提供摘要；domain 根和 `ops`/`model` 预建 route 可只有 index，且不表示已有知识覆盖。
+- `index.md` 供人阅读：本次新增或修改的一级标题、导航项名称和摘要应以中文表述，API 名、芯片型号、代码符号和报错原文等必要技术标识保留原文。知识卡的 `title`、`description` 会成为索引新增条目的默认文案，新增或修改卡片时应写成中文可读的标题和摘要；确需保留英文原题时，在索引的显示名称和摘要中补足中文说明。
 - 只有 `knowledge/index.md` 声明 `okf_version: "0.2"`，其他索引不带 Frontmatter，所有索引均不参与知识检索。
 - Concept 间和索引中的本地 Markdown 链接必须解析到 `knowledge/` Bundle 内的现有文件；知识卡可另行链接 Registry 登记的固定提交本地源码，源码链接只用于来源导航。图谱按需从现有卡片链接生成，只包含 Concept 节点和有向 `links_to` 边，API 与算子关联也使用普通链接；Index 和源码不进入图谱。新增或更新知识不要求构图、关系候选、Agent 关系判定或缓存，也不维护专用关系块。图谱 JSON 和可视化只写入 ignored 的 `artifacts/graphs/`，构图不修改知识卡。
 - API→Operator 的现有链接作为普通正文保留。需要发现新的引用时，可按需扫描算子卡声明的固定提交源码并输出引用建议；不自动回写知识卡，不因没有建议或未运行扫描阻断入库。源码调用证据仍须区分语法直接调用与运行时可达性；图谱本身只消费最终正文中的链接，不扫描源码。

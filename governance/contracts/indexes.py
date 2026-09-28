@@ -48,16 +48,58 @@ def read_card_description(card_path: Path) -> tuple[str, str]:
     return title, description
 
 
+def _summary_card(directory: Path) -> Path | None:
+    """Return the directory's curated overview card when one exists."""
+    candidates = (directory / f"{directory.name}.md", directory / "overview.md")
+    for candidate in candidates:
+        if candidate.name != "index.md" and candidate.is_file():
+            return candidate
+    return None
+
+
 def summarize_subdir(directory: Path) -> str:
+    """Lead with a curated overview card, then describe the collection itself."""
     direct_cards = sorted(
         path for path in directory.glob("*.md") if path.name != "index.md"
     )
-    candidates = direct_cards or sorted(
+    descendants = sorted(
         path for path in directory.rglob("*.md") if path.name != "index.md"
     )
-    if candidates:
-        return read_card_description(candidates[0])[1]
-    return f"{directory.name.replace('_', ' ')} 导航。"
+    count = len(descendants)
+    if count == 0:
+        return f"{directory.name.replace('_', ' ')} 导航。"
+    if count == 1 and direct_cards:
+        return read_card_description(direct_cards[0])[1]
+    child_dirs = sorted(
+        {
+            path.relative_to(directory).parts[0]
+            for path in descendants
+            if path.parent != directory
+        }
+    )
+    if direct_cards:
+        summary_card = _summary_card(directory)
+        example_paths = [
+            path for path in direct_cards if path != summary_card
+        ][:3]
+        examples = [read_card_description(path)[0] for path in example_paths]
+        if summary_card is not None:
+            description = read_card_description(summary_card)[1]
+            if examples:
+                more = " 等" if count > len(examples) + 1 else ""
+                return (
+                    f"{description}（共 {count} 张知识卡："
+                    f"{'、'.join(examples)}{more}）"
+                )
+            spread = f"，分布在 {len(child_dirs)} 个子目录" if child_dirs else ""
+            return f"{description}（共 {count} 张知识卡{spread}）"
+        more = " 等" if count > len(examples) else ""
+        return f"共 {count} 张知识卡（如 {'、'.join(examples)}{more}）。"
+    shown = "、".join(child_dirs[:3])
+    more = " 等" if len(child_dirs) > 3 else ""
+    return (
+        f"共 {count} 张知识卡，分布在 {len(child_dirs)} 个子目录（{shown}{more}）。"
+    )
 
 
 def section_title(directory: Path) -> str:

@@ -38,6 +38,7 @@ from governance.contracts.checks.platforms import (  # noqa: E402
     fixed_archive_platforms,
 )
 from governance.contracts.checks import Document, RunContext, body  # noqa: E402
+from governance.contracts.indexes import summarize_subdir  # noqa: E402
 
 
 INGEST = ROOT / ".agents/skills/knowledge-ingest/scripts/knowledge_ingest.py"
@@ -1823,6 +1824,144 @@ This isolated fixture verifies strict source navigation.
             )
             self.assertEqual(result.returncode, 1)
             self.assertIn("source.navigation", result.stdout)
+
+
+class IndexSummaryTests(unittest.TestCase):
+    def write_card(self, root: Path, name: str, title: str, description: str) -> None:
+        (root / name).write_text(
+            f"---\ntitle: {title}\ndescription: {description}\n---\n\n# {title}\n",
+            encoding="utf-8",
+        )
+
+    def test_overview_card_description_leads_the_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "hybrid"
+            directory.mkdir()
+            self.write_card(
+                directory,
+                "overview.md",
+                "混合编程概述",
+                "以SIMD为主、SIMT为辅的混合编程模型。",
+            )
+            self.write_card(directory, "a.md", "抽象硬件架构", "架构描述。")
+            self.write_card(directory, "b.md", "核函数与VF函数", "核函数描述。")
+            self.write_card(directory, "c.md", "内存层级", "内存描述。")
+            self.write_card(directory, "d.md", "编程示例", "示例描述。")
+            self.assertEqual(
+                summarize_subdir(directory),
+                "以SIMD为主、SIMT为辅的混合编程模型。"
+                "（共 5 张知识卡：抽象硬件架构、核函数与VF函数、内存层级 等）",
+            )
+
+    def test_directory_named_card_takes_precedence_over_overview(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "matrix_compute"
+            directory.mkdir()
+            self.write_card(
+                directory,
+                "matrix_compute.md",
+                "矩阵计算",
+                "矩阵计算由数据搬入、mmad计算和结果搬出组成。",
+            )
+            self.write_card(directory, "overview.md", "概述", "详细描述请参考LINK。")
+            self.write_card(directory, "aux.md", "辅助配置", "辅助描述。")
+            self.assertEqual(
+                summarize_subdir(directory),
+                "矩阵计算由数据搬入、mmad计算和结果搬出组成。"
+                "（共 3 张知识卡：辅助配置、概述）",
+            )
+
+    def test_collection_summary_without_overview_card(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "family"
+            directory.mkdir()
+            self.write_card(directory, "a.md", "算子甲", "甲描述。")
+            self.write_card(directory, "b.md", "算子乙", "乙描述。")
+            self.assertEqual(
+                summarize_subdir(directory),
+                "共 2 张知识卡（如 算子甲、算子乙）。",
+            )
+
+    def test_single_card_directory_uses_its_description(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "solo"
+            directory.mkdir()
+            self.write_card(directory, "a.md", "唯一卡", "唯一描述。")
+            self.assertEqual(summarize_subdir(directory), "唯一描述。")
+
+    def test_recursive_count_includes_subdirectory_cards(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "mixed"
+            directory.mkdir()
+            self.write_card(directory, "a.md", "直接卡", "直接描述。")
+            nested = directory / "sub"
+            nested.mkdir()
+            self.write_card(nested, "x.md", "嵌套卡一", "嵌套描述一。")
+            self.write_card(nested, "y.md", "嵌套卡二", "嵌套描述二。")
+            self.assertEqual(
+                summarize_subdir(directory),
+                "共 3 张知识卡（如 直接卡 等）。",
+            )
+
+    def test_overview_with_only_nested_cards_reports_distribution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "guide"
+            directory.mkdir()
+            self.write_card(
+                directory, "overview.md", "指南概述", "本指南覆盖编译全流程。"
+            )
+            nested = directory / "chapter"
+            nested.mkdir()
+            self.write_card(nested, "x.md", "章节卡", "章节描述。")
+            self.assertEqual(
+                summarize_subdir(directory),
+                "本指南覆盖编译全流程。（共 2 张知识卡，分布在 1 个子目录）",
+            )
+
+    def test_nested_only_directory_reports_subdirectory_distribution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "hub"
+            directory.mkdir()
+            for name in ("sub1", "sub2"):
+                nested = directory / name
+                nested.mkdir()
+                self.write_card(nested, "x.md", f"{name}卡", f"{name}描述。")
+            self.assertEqual(
+                summarize_subdir(directory),
+                "共 2 张知识卡，分布在 2 个子目录（sub1、sub2）。",
+            )
+
+    def test_deep_nesting_counts_first_level_subdirectories_only(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "hub"
+            directory.mkdir()
+            first = directory / "a"
+            (first / "b").mkdir(parents=True)
+            second = directory / "c"
+            second.mkdir()
+            self.write_card(first, "y.md", "一级卡", "一级描述。")
+            self.write_card(first / "b", "x.md", "二级卡", "二级描述。")
+            self.write_card(second, "z.md", "另一卡", "另一描述。")
+            self.assertEqual(
+                summarize_subdir(directory),
+                "共 3 张知识卡，分布在 2 个子目录（a、c）。",
+            )
+
+    def test_deep_nesting_with_overview_counts_first_level_only(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / "guide"
+            directory.mkdir()
+            self.write_card(
+                directory, "overview.md", "指南概述", "本指南覆盖编译全流程。"
+            )
+            nested = directory / "chapter"
+            (nested / "section").mkdir(parents=True)
+            self.write_card(nested, "x.md", "章节卡", "章节描述。")
+            self.write_card(nested / "section", "y.md", "小节卡", "小节描述。")
+            self.assertEqual(
+                summarize_subdir(directory),
+                "本指南覆盖编译全流程。（共 3 张知识卡，分布在 1 个子目录）",
+            )
 
 
 if __name__ == "__main__":
