@@ -1,7 +1,7 @@
 # 内存访问
 
 - [避免同地址访问](avoid_same_address_access.md)：>该性能优化指导适用于如下产品型号：
-- [避免UB的bank冲突](avoid_ub_bank_conflict/index.md)：>该性能优化建议适用于如下产品型号：
+- [避免UB的bank冲突](avoid_ub_bank_conflict/index.md)：为了提高数据访问的效率和吞吐量，Unified Buffer采用了大小相等的内存模块（bank）结构设计。当多条读写指令同时访问Unified Buffer时，由于硬件资源的限制，这些指令不能同时执行，从而引发bank冲突。在这种情况下，指令需要排队等待资源，无法在一个指令周期内完成。（共 3 张知识卡：避免bank冲突（NPU架构版本2201）、避免bank冲突（NPU架构版本3510））
 - [EfficientTransferApi](efficient_transfer_api.md)：使用搬运API时应通过配置搬运控制参数实现连续或固定间隔搬运，避免使用for循环，提升搬运效率。
 - [GM地址尽量512B对齐](gm_address_512b_alignment.md)：【描述】由于AI处理器内部设计约束，从GM向Local Memory搬运数据时，保证GM地址512B对齐可以最有效的发挥出带宽的效率。如下图示例，展示了在512B对齐以及32B对齐情况下单核的带宽效率：搬运同等数据量，带宽差距最大的情况，32B对齐场景只能达到512B对齐场景的70%。
 - [设置合理的L2 CacheMode](l2_cache_mode_config.md)：>该性能优化指导适用于如下产品型号：

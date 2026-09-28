@@ -4,4 +4,4 @@
 - [基于全局掩码复用的计算性能优化](mask_reuse_optimization.md)：>该性能优化建议适用于如下产品型号：
 - [通过Unified Buffer融合实现连续vector计算](ub_fusion_vector_compute.md)：【描述】算子实现中涉及多次vector计算，且前一次计算输出是后一次计算输入的情况下，可将前一次计算输出暂存在UB（Unified Buffer）上直接作为下一次计算的输入，不需要将前一次的计算输出从UB搬运到GM后再从GM搬运到UB。这种UB Buffer融合的方式可以减少搬入搬出次数，实现连续vector计算，提升内存使用效率。数据流图对比如下：
 - [Vector算子灵活运用Counter模式](vector_counter_mode.md)：【描述】Normal模式下，通过迭代次数repeatTimes和掩码mask，控制Vector算子中矢量计算API的计算数据量；当用户想要指定API计算的总元素个数时，首先需要自行判断是否存在不同的主块和尾块，主块需要将mask设置为全部元素参与计算，并且计算主块所需迭代次数，然后根据尾块中剩余元素个数重置mask，再进行尾块的运算，在此过程中涉及大量Scalar计算。
-- [vf optimization](vf_optimization/index.md)：连续非对齐搬运场景的性能优化建议与接口介绍。
+- [vf optimization](vf_optimization/index.md)：共 4 张知识卡（如 连续非对齐场景优化、指令双发优化、VfFusionOptimization 等）。

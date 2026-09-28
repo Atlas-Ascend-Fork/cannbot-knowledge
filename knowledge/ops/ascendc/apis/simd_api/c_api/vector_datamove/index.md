@@ -1,10 +1,10 @@
 # 矢量数据搬运
 
 - [asc_copy](asc_copy.md)：将数据从Unified Buffer（UB）搬运到UB。支持高维切分。
-- [asccopygm2ub](asc_copy_gm2ub/index.md)：将数据从Global Memory (GM)搬运到Unified Buffer（UB）。
-- [asccopygm2ubalign](asc_copy_gm2ub_align/index.md)：提供数据非对齐搬运的功能，将数据从Global Memory (GM)搬运到Unified Buffer（UB），并支持8位/16位/32位数据类型搬运。
-- [asccopyub2gm](asc_copy_ub2gm/index.md)：将数据从Unified Buffer（UB）搬运到Global Memory (GM)。
-- [asccopyub2gmalign](asc_copy_ub2gm_align/index.md)：将数据从Unified Buffer（UB）搬运到Global Memory (GM)，支持8位/16位/32位分块拷贝操作。
+- [asccopygm2ub](asc_copy_gm2ub/index.md)：共 2 张知识卡（如 asc_copy_gm2ub、asc_copy_gm2ub）。
+- [asccopygm2ubalign](asc_copy_gm2ub_align/index.md)：共 2 张知识卡（如 asc_copy_gm2ub_align、asc_copy_gm2ub_align）。
+- [asccopyub2gm](asc_copy_ub2gm/index.md)：共 2 张知识卡（如 asc_copy_ub2gm、asc_copy_ub2gm）。
+- [asccopyub2gmalign](asc_copy_ub2gm_align/index.md)：共 2 张知识卡（如 asc_copy_ub2gm_align、asc_copy_ub2gm_align）。
 - [asc_copy_ub2l1](asc_copy_ub2l1.md)：提供数据搬运功能，将数据从Unified Buffer (UB)搬运到L1 Buffer。
 - [asc_copy_ub2ub](asc_copy_ub2ub.md)：将数据从Unified Buffer（UB）搬运到UB。
 - [asc_ndim_copy_gm2ub](asc_ndim_copy_gm2ub.md)：多维数据搬运接口，将数据从Global Memory (GM)搬运到Unified Buffer（UB）。相比于基础数据搬移接口，可以更加自由配置搬入的维度信息。 本功能最多能处理5个维度，每个维度都可以单独配置Stride，且支持随路Padding功能。相关配置参数有很多，需要通过不同的接口传入。

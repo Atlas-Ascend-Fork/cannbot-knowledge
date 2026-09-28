@@ -1,5 +1,5 @@
 # 矩阵计算
 
-- [获取Matmul计算所需空间](get_matmul_compute_space/index.md)：BatchMatmul Tiling调用GetTiling接口获取Tiling参数后，根据Tiling结构体信息获取L1 Buffer/Unified Buffer/L0C Buffer的使用大小。
-- [Matmul核函数（Kernel）侧接口](matmul_kernel/index.md)：获取Iterate接口异步计算的结果矩阵。该接口功能已被GetTensorC覆盖，建议直接使用GetTensorC异步接口。
-- [Matmul Tiling类](matmul_tiling/index.md)：设置Bias是否参与运算，设置的信息必须与Kernel侧保持一致。
+- [获取Matmul计算所需空间](get_matmul_compute_space/index.md)：共 6 张知识卡（如 BatchMatmulGetTmpBufSize、BatchMatmulGetTmpBufSizeV2、MatmulGetTmpBufSize 等）。
+- [Matmul核函数（Kernel）侧接口](matmul_kernel/index.md)：共 50 张知识卡（如 AsyncGetTensorC、ClearBias、DisableBias 等）。
+- [Matmul Tiling类](matmul_tiling/index.md)：共 40 张知识卡（如 EnableBias、EnableL1BankConflictOptimise、EnableMultiCoreSplitK 等）。

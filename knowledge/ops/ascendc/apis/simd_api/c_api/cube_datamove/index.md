@@ -2,23 +2,23 @@
 
 - [asc_copy_gm2l0a](asc_copy_gm2l0a.md)：将数据从GM搬运到L0A Buffer。
 - [asc_copy_gm2l0b](asc_copy_gm2l0b.md)：将矩阵数据从Global Memory搬运到L0B Buffer。
-- [asccopygm2l1](asc_copy_gm2l1/index.md)：将数据从Global Memory搬运到L1 Buffer。以512字节的分形为单位，从GM中按行列方向的起始位置、步长切分提取多个分形矩阵搬运到L1 Buffer，搬运过程中不支持分形格式转换，用于矩阵计算所需的2D格式数据加载。
+- [asccopygm2l1](asc_copy_gm2l1/index.md)：共 3 张知识卡（如 asc_copy_gm2l1_arch_3510（2D矩阵搬运模式）、asc_copy_gm2l1、asc_copy_gm2l1_arch_3510（高维切分数据搬运））。
 - [asc_copy_gm2l1_align](asc_copy_gm2l1_align.md)：对矩阵数据进行实时padding，完成padding后将数据从Global Memory搬运到L1 Buffer。需要与asc_set_gm2l1_loop_size、asc_set_gm2l1_loop1_stride、asc_set_gm2l1_loop2_stride和asc_set_gm2l1_pad配合使用。
 - [asc_copy_gm2l1_dn2nz](asc_copy_gm2l1_dn2nz.md)：将数据从Global Memory搬运到L1 Buffer，并在搬运过程中进行DN到Nz格式的转换，使其满足后续矩阵计算对分形列连续性的要求。
-- [asccopygm2l1nd2nz](asc_copy_gm2l1_nd2nz/index.md)：将数据从Global Memory (GM)搬运到Level 1 cache (L1)，支持在数据搬运时进行ND格式到NZ格式的转换。
-- [asccopyl0c2gm](asc_copy_l0c2gm/index.md)：矩阵计算完成后，对结果进行量化处理，之后将处理结果搬运到GM中。量化模式共分为9种，分别为： - NoQuant：不开启量化功能。 - F322F16：float量化成half。量化结果不支持INF_NAN模式。 - F322BF16：float量化成bfloat16_t。量化结果不支持INF_NAN模式。 - DEQF16：int32_t量化成half。量化结果不支持INF_NAN模式。 - VDEQF16：int32_t量化成half。量化结果不支持INF_NAN模式。 - QF322B8_PRE：float量化成uint8_t/int8_t。scalar量化。 - VQF322B8_PRE：float量化成uint8_t/int8_t。矢量量化。 - REQ8：int32_t量化成uint8_t/int8_t。scalar量化。 - VREQ8：int32_t量化成uint8_t/int8_t。矢量量化。
-- [asccopyl0c2l1](asc_copy_l0c2l1/index.md)：矩阵计算完成后，对结果进行量化处理，之后将处理结果搬运到L1 Buffer中。量化模式共分为9种，分别为： - NoQuant：不开启量化功能。 - DEQF16：int32_t量化成half。量化结果不支持INF_NAN模式。 - F322BF16：float量化成bfloat16_t。量化结果不支持INF_NAN模式。 - F322F16：float量化成half。量化结果不支持INF_NAN模式。 - QF322B8_PRE：float量化成uint8_t/int8_t。scalar量化。 - REQ8：int32_t量化成uint8_t/int8_t。scalar量化。 - VDEQF16：int32_t量化成half。量化结果不支持INF_NAN模式。 - VQF322B8_PRE：float量化成uint8_t/int8_t。矢量量化。 - VREQ8：int32_t量化成uint8_t/int8_t。矢量量化。
+- [asccopygm2l1nd2nz](asc_copy_gm2l1_nd2nz/index.md)：共 2 张知识卡（如 asc_copy_gm2l1_nd2nz、asc_copy_gm2l1_nd2nz_arch_3510）。
+- [asccopyl0c2gm](asc_copy_l0c2gm/index.md)：共 2 张知识卡（如 asc_copy_l0c2gm、asc_copy_l0c2gm_arch_3510）。
+- [asccopyl0c2l1](asc_copy_l0c2l1/index.md)：共 2 张知识卡（如 asc_copy_l0c2l1、asc_copy_l0c2l1）。
 - [asc_copy_l0c2ub](asc_copy_l0c2ub.md)：将矩阵计算结果从L0C Buffer搬运至Unified Buffer，搬运过程中可同步支持随路量化、随路激活、随路格式转换（Nz2ND/Nz2DN）等能力组合。
-- [asccopyl12bt](asc_copy_l12bt/index.md)：将数据从L1 Buffer搬运到BiasTable Buffer中，BiasTable Buffer用于存放矩阵计算中的Bias。
-- [asccopyl12fb](asc_copy_l12fb/index.md)：将数据从L1 Buffer搬运到Fixpipe Buffer中，Fixpipe Buffer用于存放量化参数。
+- [asccopyl12bt](asc_copy_l12bt/index.md)：共 2 张知识卡（如 asc_copy_l12bt、asc_copy_l12bt）。
+- [asccopyl12fb](asc_copy_l12fb/index.md)：共 2 张知识卡（如 asc_copy_l12fb、asc_copy_l12fb）。
 - [asc_copy_l12gm](asc_copy_l12gm.md)：将数据从L1 Buffer搬运到Global Memory。
-- [asccopyl12l0a](asc_copy_l12l0a/index.md)：负责完成矩阵计算所需的2D格式数据的搬运，搬运粒度为大小为512字节的数据分形，支持非转置与转置矩阵从L1 Buffer到L0A Buffer的数据搬运。
+- [asccopyl12l0a](asc_copy_l12l0a/index.md)：共 3 张知识卡（如 asc_copy_l12l0a_arch_3510（2D矩阵搬运）、asc_copy_l12l0a_arch_3510（3D矩阵搬运）、asc_copy_l12l0a）。
 - [asc_copy_l12l0a_mx](asc_copy_l12l0a_mx.md)：负责完成MX矩阵计算过程中所需的左矩阵对应的量化系数的搬运，数据通路为L1 Buffer->L0A_MX Buffer。其中左量化系数矩阵以32字节（固定数据类型为fp8_e8m0_t、分形大小为16×2的）的数据分形为单位进行搬运。
 - [asc_copy_l12l0a_trans](asc_copy_l12l0a_trans.md)：该接口实现带转置的2D格式数据从L1 Buffer到L0A Buffer的加载。
-- [asccopyl12l0b](asc_copy_l12l0b/index.md)：负责完成矩阵计算所需的2D格式数据的搬运，搬运粒度为大小为512字节的数据分形，支持非转置与转置矩阵从L1 Buffer到L0B buffer的数据搬运。
+- [asccopyl12l0b](asc_copy_l12l0b/index.md)：共 3 张知识卡（如 asc_copy_l12l0b_arch_3510（2D矩阵搬运）、asc_copy_l12l0b_arch_3510（3D矩阵搬运）、asc_copy_l12l0b）。
 - [asc_copy_l12l0b_mx](asc_copy_l12l0b_mx.md)：负责完成MX矩阵计算过程中所需的右矩阵对应的量化系数的搬运，数据通路为L1 Buffer->L0B_MX Buffer。其中右量化系数矩阵以32字节（固定数据类型为fp8_e8m0_t、分形大小为2×16的）的数据分形为单位进行搬运。
 - [asc_copy_l12l0b_sparse](asc_copy_l12l0b_sparse.md)：用于搬运存放在L1 Buffer里的512B大小的稠密权重矩阵到L0B Buffer里，同时读取128B大小的索引矩阵用于稠密矩阵的稀疏化。
-- [asccopyl12l0btrans](asc_copy_l12l0b_trans/index.md)：该接口实现带转置的2D格式数据从L1 Buffer到L0B Buffer的加载。
+- [asccopyl12l0btrans](asc_copy_l12l0b_trans/index.md)：共 2 张知识卡（如 asc_copy_l12l0b_trans、asc_copy_l12l0b_trans）。
 - [asc_copy_l12l0c](asc_copy_l12l0c.md)：将矩阵由L1 Buffer搬运到L0C Buffer中。该搬运支持的数据类型如下： - bfloat16_t->bfloat16_t - half->half - float->half - float->bfloat16_t - float->float - int32_t->int32_t - uint32_t->uint32_t
 - [asc_copy_l12ub](asc_copy_l12ub.md)：将数据从L1 Buffer搬运到Unified Buffer（UB）中。
 - [asc_fill_l0a](asc_fill_l0a.md)：将value的二进制值赋值给dst，对L0A Buffer的Local Memory进行初始化。

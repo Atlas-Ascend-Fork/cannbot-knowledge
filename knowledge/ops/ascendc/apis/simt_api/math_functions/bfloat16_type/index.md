@@ -1,9 +1,9 @@
 # bfloat16类型
 
-- [bfloat16类型算术函数](bfloat16_arithmetic_functions/index.md)：获取输入数据的绝对值。
-- [bfloat16类型比较函数](bfloat16_compare_functions/index.md)：比较两个bfloat16类型数据是否相等，相等时返回true。
-- [bfloat16类型数学库函数](bfloat16_math_functions/index.md)：获取大于或等于输入bfloat16_t数据的最小整数值。
-- [bfloat16类型精度转换函数](bfloat16_precision_conversion_functions/index.md)：将bfloat16x2的两个分量分别转换为float，并填充到float2后返回。
-- [bfloat16x2类型算术函数](bfloat16x2_arithmetic_functions/index.md)：计算输入bfloat16x2_t类型数据各分量的绝对值。
-- [bfloat16x2类型比较函数](bfloat16x2_compare_functions/index.md)：比较两个bfloat16x2_t类型数据的两个分量是否相等，当两个分量均相等时返回true。若任一输入的分量为nan，该分量的比较结果为true。
-- [bfloat16x2类型数学库函数](bfloat16x2_math_functions/index.md)：获取大于或等于输入数据各元素的最小整数值。
+- [bfloat16类型算术函数](bfloat16_arithmetic_functions/index.md)：共 8 张知识卡（如 __habs、__hadd、__hdiv 等）。
+- [bfloat16类型比较函数](bfloat16_compare_functions/index.md)：共 18 张知识卡（如 __heq、__hequ、__hge 等）。
+- [bfloat16类型数学库函数](bfloat16_math_functions/index.md)：共 16 张知识卡（如 Hceil、BFloat16数学函数hcos、BFloat16数学函数hexp 等）。
+- [bfloat16类型精度转换函数](bfloat16_precision_conversion_functions/index.md)：共 108 张知识卡（如 __bfloat1622float2、__bfloat162bfloat162、__bfloat162bfloat16_rd 等）。
+- [bfloat16x2类型算术函数](bfloat16x2_arithmetic_functions/index.md)：共 9 张知识卡（如 __habsx2、__haddx2、__hcmadd 等）。
+- [bfloat16x2类型比较函数](bfloat16x2_compare_functions/index.md)：共 41 张知识卡（如 __hbequx2、__hbeqx2、__hbgeux2 等）。
+- [bfloat16x2类型数学库函数](bfloat16x2_math_functions/index.md)：共 16 张知识卡（如 H2Ceil、H2Cos、H2Exp 等）。

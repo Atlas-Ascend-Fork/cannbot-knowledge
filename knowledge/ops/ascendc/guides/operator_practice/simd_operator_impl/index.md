@@ -1,7 +1,7 @@
 # SIMD算子实现
 
-- [融合算子编程](fusion_operator_programming/index.md)：>学习融合算子编程之前，请确保已经掌握矩阵编程相关知识。
-- [矩阵编程（高阶API）](matrix_advanced_api/index.md)：>本节内容为使用高阶API进行矩阵乘法的编程指导。使用高阶API进行实际的矩阵编程时，需要通过API参考确认接口支持的产品型号。
-- [matrix basic api](matrix_basic_api/index.md)：>本节内容为针对耦合模式，使用基础API进行矩阵乘法的编程指导。
+- [融合算子编程](fusion_operator_programming/index.md)：共 5 张知识卡，分布在 2 个子目录（cv_fusion、general_fusion）。
+- [矩阵编程（高阶API）](matrix_advanced_api/index.md)：共 17 张知识卡（如 SIMD算子实现基础知识、算子实现 等）。
+- [matrix basic api](matrix_basic_api/index.md)：共 2 张知识卡（如 SIMD算子实现耦合模式、SIMD算子实现分离模式）。
 - [SIMD算子实现概述](overview.md)：Ascend C的算子实现主要包含两个部分：
-- [矢量编程](vector_programming/index.md)：基于Ascend C方式实现基础矢量算子核函数的流程如下图所示。
+- [矢量编程](vector_programming/index.md)：本节将以Add算子为例，带您快速构建Ascend C矢量算子程序，并学习矢量算子开发的典型场景以及处理方式。涉及的场景包括：（共 11 张知识卡：基础矢量算子、Broadcast场景、DoubleBuffer场景 等）

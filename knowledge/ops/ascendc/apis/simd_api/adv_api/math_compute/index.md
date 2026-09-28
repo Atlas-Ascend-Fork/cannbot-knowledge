@@ -1,51 +1,51 @@
 # 数学计算
 
-- [Acos接口](acos_interface/index.md)：按元素做反余弦函数计算，输入值域需在-1到1范围内
-- [Acosh接口](acosh_interface/index.md)：按元素做双曲反余弦函数计算，输入值域需在1到65504范围内
-- [Asin接口](asin_interface/index.md)：按元素做反正弦函数计算，输入值域需在-1到1范围内
-- [Asinh接口](asinh_interface/index.md)：按元素做反双曲正弦函数计算，输入值域需在-65504到65504范围内
-- [Atan接口](atan_interface/index.md)：按元素做反正切运算，支持泰勒展开和多项式逼近两种算法配置
-- [Atanh接口](atanh_interface/index.md)：按元素做反双曲正切函数计算，输入值域需在指定区间内
-- [Axpy接口](axpy_interface/index.md)：源操作数各元素与标量求积后加到目的操作数对应元素，通过Muls和Add组合提升精度
-- [BitwiseAnd接口](bitwise_and_interface/index.md)：逐比特对两个输入进行与操作。 !
-- [BitwiseNot接口](bitwise_not_interface/index.md)：逐比特对输入进行取反。 !
-- [BitwiseOr接口](bitwise_or_interface/index.md)：逐比特对两个输入进行或操作。 !
-- [BitwiseXor接口](bitwise_xor_interface/index.md)：逐比特对两个输入进行异或操作。 !
-- [Ceil接口](ceil_interface/index.md)：获取大于或等于输入值的最小整数，即向正无穷方向取整
-- [Clamp接口](clamp_interface/index.md)：将输入中除nan值以外大于max的数替换为max，小于min的数替换为min，小于等于max和大于等于min的数保持不变，作为输出。当min大于max时，将除nan值外所有值替换为max。min和max可以为标量或LocalTensor。 ! !
-- [Cos接口](cos_interface/index.md)：按元素做余弦运算，支持多项式逼近和周期约减两种算法配置
-- [Cosh接口](cosh_interface/index.md)：按元素做双曲余弦函数计算
-- [CumSum接口](cum_sum_interface/index.md)：对输入二维张量按行或列进行累加和操作，输出每个位置及之前所有行或列元素的累加结果，支持逐行和Sklansky二分两种算法。
-- [Digamma接口](digamma_interface/index.md)：按元素计算x的gamma函数的对数导数
-- [Erf接口](erf_interface/index.md)：按元素做误差函数计算，也称为高斯误差函数
-- [Erfc接口](erfc_interface/index.md)：返回输入x的互补误差函数结果，积分区间为x到无穷大
-- [Exp接口](exp_interface/index.md)：按元素取自然指数，可选择是否使用泰勒展开公式进行计算
-- [Floor接口](floor_interface/index.md)：获取小于或等于x的最小整数值，即向负无穷取整
-- [Fma接口](fma_interface/index.md)：按元素计算两个输入相乘后与第三个输入相加的结果
-- [Fmod接口](fmod_interface/index.md)：按元素计算两个浮点数相除后的余数，Trunc为向零取整
-- [Frac接口](frac_interface/index.md)：按元素做取小数计算，返回输入数据的小数部分，支持half和float数据类型。
-- [Hypot接口](hypot_interface/index.md)：在host侧获取Hypot接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
+- [Acos接口](acos_interface/index.md)：共 3 张知识卡（如 Acos、GetAcosMaxMinTmpSize、GetAcosTmpBufferFactorSize）。
+- [Acosh接口](acosh_interface/index.md)：共 3 张知识卡（如 Acosh、GetAcoshMaxMinTmpSize、GetAcoshTmpBufferFactorSize）。
+- [Asin接口](asin_interface/index.md)：共 3 张知识卡（如 Asin、GetAsinMaxMinTmpSize、GetAsinTmpBufferFactorSize）。
+- [Asinh接口](asinh_interface/index.md)：共 3 张知识卡（如 Asinh、GetAsinhMaxMinTmpSize、GetAsinhTmpBufferFactorSize）。
+- [Atan接口](atan_interface/index.md)：共 3 张知识卡（如 Atan、GetAtanMaxMinTmpSize、GetAtanTmpBufferFactorSize）。
+- [Atanh接口](atanh_interface/index.md)：共 3 张知识卡（如 Atanh、GetAtanhMaxMinTmpSize、GetAtanhTmpBufferFactorSize）。
+- [Axpy接口](axpy_interface/index.md)：共 3 张知识卡（如 Axpy、GetAxpyMaxMinTmpSize、GetAxpyTmpBufferFactorSize）。
+- [BitwiseAnd接口](bitwise_and_interface/index.md)：共 3 张知识卡（如 BitwiseAnd、GetBitwiseAndMaxMinTmpSize、GetBitwiseAndTmpBufferFactorSize）。
+- [BitwiseNot接口](bitwise_not_interface/index.md)：共 3 张知识卡（如 BitwiseNot、GetBitwiseNotMaxMinTmpSize、GetBitwiseNotTmpBufferFactorSize）。
+- [BitwiseOr接口](bitwise_or_interface/index.md)：共 3 张知识卡（如 BitwiseOr、GetBitwiseOrMaxMinTmpSize、GetBitwiseOrTmpBufferFactorSize）。
+- [BitwiseXor接口](bitwise_xor_interface/index.md)：共 3 张知识卡（如 BitwiseXor、GetBitwiseXorMaxMinTmpSize、GetBitwiseXorTmpBufferFactorSize）。
+- [Ceil接口](ceil_interface/index.md)：共 3 张知识卡（如 Ceil、GetCeilMaxMinTmpSize、GetCeilTmpBufferFactorSize）。
+- [Clamp接口](clamp_interface/index.md)：共 5 张知识卡（如 Clamp（数学计算）、ClampMax、ClampMin 等）。
+- [Cos接口](cos_interface/index.md)：共 3 张知识卡（如 Cos、GetCosMaxMinTmpSize、GetCosTmpBufferFactorSize）。
+- [Cosh接口](cosh_interface/index.md)：共 3 张知识卡（如 Cosh、GetCoshMaxMinTmpSize、GetCoshTmpBufferFactorSize）。
+- [CumSum接口](cum_sum_interface/index.md)：共 2 张知识卡（如 CumSum、GetCumSumMaxMinTmpSize）。
+- [Digamma接口](digamma_interface/index.md)：共 3 张知识卡（如 Digamma、GetDigammaMaxMinTmpSize、GetDigammaTmpBufferFactorSize）。
+- [Erf接口](erf_interface/index.md)：共 3 张知识卡（如 Erf、GetErfMaxMinTmpSize、GetErfTmpBufferFactorSize）。
+- [Erfc接口](erfc_interface/index.md)：共 3 张知识卡（如 Erfc、GetErfcMaxMinTmpSize、GetErfcTmpBufferFactorSize）。
+- [Exp接口](exp_interface/index.md)：共 3 张知识卡（如 Exp、GetExpMaxMinTmpSize、GetExpTmpBufferFactorSize）。
+- [Floor接口](floor_interface/index.md)：共 3 张知识卡（如 Floor、GetFloorMaxMinTmpSize、GetFloorTmpBufferFactorSize）。
+- [Fma接口](fma_interface/index.md)：共 3 张知识卡（如 Fma、GetFmaMaxMinTmpSize、GetFmaTmpBufferFactorSize）。
+- [Fmod接口](fmod_interface/index.md)：共 3 张知识卡（如 Fmod、GetFmodMaxMinTmpSize、GetFmodTmpBufferFactorSize）。
+- [Frac接口](frac_interface/index.md)：共 3 张知识卡（如 Frac、GetFracMaxMinTmpSize、GetFracTmpBufferFactorSize）。
+- [Hypot接口](hypot_interface/index.md)：共 3 张知识卡（如 GetHypotMaxMinTmpSize、GetHypotTmpBufferFactorSize、Hypot）。
 - [IsFinite接口](is_finite_interface/index.md)：按元素判断输入浮点数是否非NAN、非±INF，输出结果为浮点数或布尔值，支持half、bfloat16_t、float数据类型。
-- [IsInf接口](is_inf_interface/index.md)：在host侧获取IsInf接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
-- [IsNan接口](is_nan_interface/index.md)：在host侧获取IsNan接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
-- [Lgamma接口](lgamma_interface/index.md)：在host侧获取Lgamma接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
-- [Log接口](log_interface/index.md)：Host侧接口，用于获取Log接口能完成计算所需最小的临时空间大小，此空间为预留空间，即需要保证预留有足够的物理空间，用于执行计算。
-- [LogicalAnd接口](logical_and_interface/index.md)：在host侧获取LogicalAnd接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。
-- [LogicalAnds接口](logical_ands_interface/index.md)：在host侧获取LogicalAnds接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
-- [LogicalNot接口](logical_not_interface/index.md)：在host侧获取LogicalNot接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。
-- [LogicalOr接口](logical_or_interface/index.md)：在host侧获取LogicalOr接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。
-- [LogicalOrs接口](logical_ors_interface/index.md)：在host侧获取LogicalOrs接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
-- [LogicalXor接口](logical_xor_interface/index.md)：在host侧获取LogicalXor接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。
+- [IsInf接口](is_inf_interface/index.md)：共 3 张知识卡（如 GetIsInfMaxMinTmpSize、GetIsInfTmpBufferFactorSize、IsInf）。
+- [IsNan接口](is_nan_interface/index.md)：共 3 张知识卡（如 GetIsNanMaxMinTmpSize、GetIsNanTmpBufferFactorSize、IsNan）。
+- [Lgamma接口](lgamma_interface/index.md)：共 3 张知识卡（如 GetLgammaMaxMinTmpSize、GetLgammaTmpBufferFactorSize、Lgamma）。
+- [Log接口](log_interface/index.md)：共 3 张知识卡（如 GetLogMaxMinTmpSize、GetLogTmpBufferFactorSize、Log）。
+- [LogicalAnd接口](logical_and_interface/index.md)：共 3 张知识卡（如 GetLogicalAndMaxMinTmpSize、GetLogicalAndTmpBufferFactorSize、LogicalAnd）。
+- [LogicalAnds接口](logical_ands_interface/index.md)：共 3 张知识卡（如 GetLogicalAndsMaxMinTmpSize、GetLogicalAndsTmpBufferFactorSize、LogicalAnds）。
+- [LogicalNot接口](logical_not_interface/index.md)：共 3 张知识卡（如 GetLogicalNotMaxMinTmpSize、GetLogicalNotTmpBufferFactorSize、LogicalNot）。
+- [LogicalOr接口](logical_or_interface/index.md)：共 3 张知识卡（如 GetLogicalOrMaxMinTmpSize、GetLogicalOrTmpBufferFactorSize、LogicalOr）。
+- [LogicalOrs接口](logical_ors_interface/index.md)：共 3 张知识卡（如 GetLogicalOrsMaxMinTmpSize、GetLogicalOrsTmpBufferFactorSize、LogicalOrs）。
+- [LogicalXor接口](logical_xor_interface/index.md)：共 3 张知识卡（如 GetLogicalXorMaxMinTmpSize、GetLogicalXorTmpBufferFactorSize、LogicalXor）。
 - [更多样例（数学计算）](more_examples.md)：下面的样例展示了数学库kernel侧API和Tiling API GetXxxMaxMinTmpSize的配套使用方法，具体流程如下：
-- [Power接口](power_interface/index.md)：在host侧获取Power接口所需的最大和最小临时空间大小，根据输入shape自动适配不同Power调用形式。
-- [Rint接口](rint_interface/index.md)：在host侧获取Rint接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
-- [Round接口](round_interface/index.md)：在host侧获取Round接口预留或申请临时空间的最大和最小值，用于Tiling参数传递
-- [Sign接口](sign_interface/index.md)：在host侧获取Sign接口计算所需最大和最小临时空间大小，供Tiling参数选择。
-- [SinCos接口](sin_cos_interface/index.md)：在host侧获取SinCos接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。
-- [Sin接口](sin_interface/index.md)：在host侧获取Sin接口计算所需最大和最小临时空间大小，供Tiling参数选择。
-- [Sinh接口](sinh_interface/index.md)：在host侧获取Sinh接口计算所需最大和最小临时空间大小，供Tiling参数选择。
-- [Tan接口](tan_interface/index.md)：在host侧获取Tan接口计算所需最大和最小临时空间大小，供Tiling参数选择。
-- [Tanh接口](tanh_interface/index.md)：在host侧获取Tanh接口计算所需最大和最小临时空间大小，供Tiling参数选择。
-- [Trunc接口](trunc_interface/index.md)：在host侧获取Trunc接口计算所需最大和最小临时空间大小，供Tiling参数选择。
-- [Where接口](where_interface/index.md)：在host侧获取Where接口所需的最大和最小临时空间大小，供开发者选择合适的Tiling参数传入kernel侧。
-- [Xor接口](xor_interface/index.md)：在host侧获取Xor接口计算所需最大和最小临时空间大小，供Tiling参数选择。
+- [Power接口](power_interface/index.md)：共 3 张知识卡（如 GetPowerMaxMinTmpSize、GetPowerTmpBufferFactorSize、Power（数学计算））。
+- [Rint接口](rint_interface/index.md)：共 3 张知识卡（如 GetRintMaxMinTmpSize、GetRintTmpBufferFactorSize、Rint）。
+- [Round接口](round_interface/index.md)：共 3 张知识卡（如 GetRoundMaxMinTmpSize、GetRoundTmpBufferFactorSize、Round）。
+- [Sign接口](sign_interface/index.md)：共 3 张知识卡（如 GetSignMaxMinTmpSize、GetSignTmpBufferFactorSize、Sign）。
+- [SinCos接口](sin_cos_interface/index.md)：共 3 张知识卡（如 GetSinCosMaxMinTmpSize、GetSinCosTmpBufferFactorSize、SinCos）。
+- [Sin接口](sin_interface/index.md)：共 3 张知识卡（如 GetSinMaxMinTmpSize、GetSinTmpBufferFactorSize、Sin）。
+- [Sinh接口](sinh_interface/index.md)：共 3 张知识卡（如 GetSinhMaxMinTmpSize、GetSinhTmpBufferFactorSize、Sinh）。
+- [Tan接口](tan_interface/index.md)：共 3 张知识卡（如 GetTanMaxMinTmpSize、GetTanTmpBufferFactorSize、Tan）。
+- [Tanh接口](tanh_interface/index.md)：共 3 张知识卡（如 GetTanhMaxMinTmpSize、GetTanhTmpBufferFactorSize、Tanh）。
+- [Trunc接口](trunc_interface/index.md)：共 3 张知识卡（如 GetTruncMaxMinTmpSize、GetTruncTmpBufferFactorSize、Trunc）。
+- [Where接口](where_interface/index.md)：共 3 张知识卡（如 GetWhereMaxMinTmpSize、GetWhereTmpBufferFactorSize、Where（数学计算））。
+- [Xor接口](xor_interface/index.md)：共 3 张知识卡（如 GetXorMaxMinTmpSize、GetXorTmpBufferFactorSize、Xor）。

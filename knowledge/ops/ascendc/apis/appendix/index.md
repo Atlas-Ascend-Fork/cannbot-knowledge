@@ -17,7 +17,7 @@
 - [Reg矢量计算接口精度标准汇总](reg_vector_compute_interface_precision_standard_summary.md)：本节汇总介绍了Reg矢量计算接口精度标准的情况，本节内容仅针对如下型号生效：
 - [Reg矢量计算接口软仿情况汇总](reg_vector_compute_interface_soft_simulation_summary.md)：本节汇总介绍了Reg矢量计算接口软仿数据类型的情况，本节内容仅针对如下型号生效：
 - [Reg矢量计算接口理论性能汇总](reg_vector_compute_interface_theoretical_perf_summary.md)：本节汇总介绍了Reg矢量计算接口的理论性能，本节内容仅针对如下型号生效：
-- [Release Notes](release_notes/index.md)：CANN 9.0.0首次面向Ascend 950PR/950DT提供试验性C语言扩展层SIMD API，覆盖数据搬运、标量操作、矩阵计算、同步控制等能力。
+- [Release Notes](release_notes/index.md)：共 2 张知识卡（如 Cann9ReleaseNotes、C API）。
 - [SIMT接口精度标准汇总](simt_interface_precision_standard_summary.md)：本节按照数据类型和接口类型对SIMT浮点计算接口进行精度标准的分类汇总。对于非软仿接口，给出对应硬件指令的精度标准；对于软仿接口，由于软仿程度较低且使用到的硬件指令较少，给出其所用硬件指令的综合性精度标准。
 - [SIMT接口软仿情况汇总](simt_interface_soft_simulation_summary.md)：本节按照SIMT API文档所在目录分级汇总各接口的软仿情况。
 - [Vector指令理论性能汇总](vector_instruction_theoretical_perf_summary.md)：本节汇总介绍了一些主要的Vector指令的理论性能，以下内容针对如下型号生效：
