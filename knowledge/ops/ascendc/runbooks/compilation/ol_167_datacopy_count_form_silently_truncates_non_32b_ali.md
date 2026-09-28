@@ -1,14 +1,14 @@
 ---
 type: Runbook
 title: "DataCopy `count` form silently truncates non-32B-aligned transfers — never paper over with host-side pad+narrow in pybind [V351+V220, ALL_MODES, data-movement-correctness + anti-cheat]"
-description: "applies_to: soc=Ascend950PR; cann=9.0.0; bisheng=15.0.5; op_class=all"
+description: "DataCopy 的 count 按 32B 向下取整，非对齐传输静默截断为零；禁用 host 侧 pad+narrow 糊墙（含三个 SoC 族证据）"
 tags: [task.debugging, topic.precision, topic.implementation.pipeline, topic.data_movement.data_copy, topic.data_movement, topic.compilation]
 status: stable
 sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/field-notes/build/ol-167-datacopy-count-form-silently-truncates-non-32b-ali.md
     role: primary
 created_at: "2026-08-30T16:00:00Z"
-updated_at: "2026-08-30T16:00:00Z"
+updated_at: "2026-09-23T00:00:00Z"
 platforms: ["950"]
 aliases: ["OL-167", "count"]
 ---
@@ -96,6 +96,7 @@ All three pass per-case precision verification because the trimmed prefix matche
 - elu (a3_to_a5_port, `509b512a`): TAIL_PAD_ELEMS + raw.narrow pattern; retracted under P149 2026-05-18 (commit 0fd72bff handover Appendix B).
 - clipped_swiglu (a3_to_a5_port): CPU offload of group_index; retracted under P149 2026-05-18.
 - User direction 2026-05-18 10:39Z: "the 'narrow(1, 0, out_row_bytes).contiguous()' in pybind11.cpp is business logics which should be placed into kernel. To do that you need to understand how to do data copy properly". Specifies the cheat must move OUT of pybind INTO kernel via DataCopyPad.
+
 
 ### Other instances (predicted)
 
