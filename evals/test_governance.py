@@ -311,7 +311,6 @@ class RouteContractTests(unittest.TestCase):
         self.assertEqual(expected | {"knowledge/ops/ascendc", "knowledge/ops/shared"}, actual)
         self.assertTrue(all((ROOT / path / "index.md").is_file() for path in expected))
         not_precreated = {
-            "knowledge/contrib/ascendc",
             "knowledge/common/toolchains",
             "knowledge/common/observability",
             "knowledge/common/glossaries",

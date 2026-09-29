@@ -19,9 +19,10 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from urllib.parse import unquote
+from unittest.mock import patch
 
 from evals.run_retrieval import run_cases
 
@@ -80,6 +81,143 @@ def run_index(root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
         text=True,
         capture_output=True,
     )
+
+
+class RetrievalCaseTests(unittest.TestCase):
+    def run_mocked_case(self, case, hits, returncode=0, *, quality=None, quality_gate=False):
+        output, errors = io.StringIO(), io.StringIO()
+        completed = subprocess.CompletedProcess(
+            [], returncode, json.dumps({"count": len(hits), "hits": hits}), "query failed"
+        )
+        with patch("evals.run_retrieval.subprocess.run", return_value=completed), \
+                patch("evals.run_retrieval.time.perf_counter", side_effect=[0.0, 1.0]), \
+                redirect_stdout(output), redirect_stderr(errors):
+            result = run_cases(
+                {"cases": [{"id": "fixture", "query": "query", **case}], "quality": quality or {}},
+                {"repository": ROOT}, quality_gate=quality_gate,
+            )
+        return result, output.getvalue(), errors.getvalue()
+
+    def test_alternatives_do_not_replace_other_required_evidence(self):
+        case = {"expected": ["c"], "expected_any": [["a", "b"]]}
+        for paths, expected_result, recall in ((["b", "c"], 0, "1.000"),
+                                                (["a", "b"], 1, "0.500"),
+                                                (["c"], 1, "0.500")):
+            with self.subTest(paths=paths):
+                hits = [{"path": path, "rank": rank} for rank, path in enumerate(paths, 1)]
+                result, output, _ = self.run_mocked_case(case, hits)
+                self.assertEqual(expected_result, result)
+                self.assertIn(f"recall@k={recall}", output)
+
+    def test_failed_query_stays_in_quality_denominator(self):
+        result, output, _ = self.run_mocked_case({"expected_any": [["a", "b"]]}, [], 2)
+        self.assertEqual(1, result)
+        self.assertIn("recall@k=0.000 MRR=0.000", output)
+
+    def test_scope_is_checked_even_when_expected_card_is_returned(self):
+        case = {"expected": ["a"], "filters": {"type": "apis", "platform": ["a2", "a3"]}}
+        for profile, platforms, expected_result in (
+            ("apis", ["a2", "a3"], 0), ("apis", ["agnostic"], 0),
+            ("runbooks", ["a2", "a3"], 1), ("apis", ["a2"], 1),
+        ):
+            with self.subTest(profile=profile, platforms=platforms):
+                result, _, _ = self.run_mocked_case(
+                    case, [{"path": "a", "rank": 1, "profile": profile, "platforms": platforms}]
+                )
+                self.assertEqual(expected_result, result)
+
+    def test_invalid_or_groups_are_not_vacuous_success(self):
+        for groups in ([[]], ["not-a-list"], [[""]]):
+            with self.subTest(groups=groups), self.assertRaisesRegex(ValueError, "nonempty"):
+                self.run_mocked_case({"expected_any": groups}, [])
+
+    def test_quality_gate_accepts_partial_recall_above_threshold_but_strict_mode_fails(self):
+        case = {"expected": ["c"], "expected_any": [["a", "b"]]}
+        quality = {"min_recall_at_k": 0.49, "min_mrr": 0.49}
+        hits = [{"path": "unrelated", "rank": 1}, {"path": "b", "rank": 2}]
+        for quality_gate, expected_result in ((False, 1), (True, 0)):
+            with self.subTest(quality_gate=quality_gate):
+                result, output, errors = self.run_mocked_case(
+                    case, hits, quality=quality, quality_gate=quality_gate,
+                )
+                self.assertEqual(expected_result, result)
+                self.assertIn("recall@k=0.500 MRR=0.500 p95=1000.0ms", output)
+                self.assertIn("MISS fixture:" if quality_gate else "FAIL fixture:", errors)
+                self.assertNotIn("PASS fixture", output)
+
+    def test_quality_gate_rejects_each_metric_at_or_below_target(self):
+        quality = {"min_recall_at_k": 0.49, "min_mrr": 0.49}
+        for key, value, metric in (
+            ("min_recall_at_k", 0.5, "recall@k"),
+            ("min_recall_at_k", 0.501, "recall@k"),
+            ("min_mrr", 0.5, "MRR"),
+            ("min_mrr", 0.501, "MRR"),
+        ):
+            with self.subTest(key=key):
+                result, _, errors = self.run_mocked_case(
+                    {"expected": ["a", "b"]}, [{"path": "a", "rank": 2}],
+                    quality={**quality, key: value}, quality_gate=True,
+                )
+                self.assertEqual(1, result)
+                self.assertIn(f"FAIL quality: {metric}", errors)
+                self.assertEqual(1, errors.count("FAIL quality:"))
+
+    def test_default_mode_keeps_inclusive_quality_thresholds(self):
+        result, _, errors = self.run_mocked_case(
+            {"expected": ["a"]}, [{"path": "a", "rank": 1}],
+            quality={"min_recall_at_k": 1.0, "min_mrr": 1.0},
+        )
+        self.assertEqual(0, result)
+        self.assertEqual("", errors)
+
+    def test_quality_gate_preserves_hard_contract_failures(self):
+        quality = {"min_recall_at_k": 0.49, "min_mrr": 0.49}
+        for assertion, hits, returncode in (
+            ({}, [], 2),
+            ({"expected_error": "platform is required"}, [], 2),
+            ({"expected_count": 0}, [{"path": "a", "rank": 1}], 0),
+            ({"excluded": ["b"]}, [{"path": "a", "rank": 1}, {"path": "b", "rank": 2}], 0),
+            ({"expected_fields": ["description"]}, [{"path": "a", "rank": 1}], 0),
+            ({"filters": {"platform": ["950"]}}, [{"path": "a", "rank": 1, "platforms": ["a2"]}], 0),
+            ({"filters": {"type": "apis"}}, [{"path": "a", "rank": 1, "profile": "runbooks"}], 0),
+        ):
+            with self.subTest(assertion=assertion, returncode=returncode):
+                result, _, errors = self.run_mocked_case(
+                    {"expected": ["a"], **assertion}, hits, returncode,
+                    quality=quality, quality_gate=True,
+                )
+                self.assertEqual(1, result)
+                self.assertIn("FAIL fixture:", errors)
+                self.assertNotIn("MISS fixture:", errors)
+
+    def test_quality_gate_rejects_missing_or_invalid_thresholds(self):
+        quality = {"min_recall_at_k": 0.5, "min_mrr": 0.5}
+        for key in quality:
+            invalid = (None, True, 0, -1, "0.5", float("nan"), float("inf"))
+            invalid += (1, 1.1)
+            for value in invalid:
+                with self.subTest(key=key, value=value), self.assertRaisesRegex(ValueError, key):
+                    self.run_mocked_case(
+                        {"expected": ["a"]}, [],
+                        quality={**quality, key: value}, quality_gate=True,
+                    )
+            with self.subTest(missing=key), self.assertRaisesRegex(ValueError, key):
+                self.run_mocked_case(
+                    {"expected": ["a"]}, [],
+                    quality={k: v for k, v in quality.items() if k != key}, quality_gate=True,
+                )
+
+    def test_quality_gate_rejects_no_positive_evidence_cases(self):
+        quality = {"min_recall_at_k": 0.5, "min_mrr": 0.5}
+        for cases in ([], [{"id": "empty", "query": "query", "expected_count": 0}]):
+            output, errors = io.StringIO(), io.StringIO()
+            completed = subprocess.CompletedProcess([], 0, '{"count": 0, "hits": []}', "")
+            with patch("evals.run_retrieval.subprocess.run", return_value=completed), \
+                    redirect_stdout(output), redirect_stderr(errors):
+                result = run_cases({"cases": cases, "quality": quality},
+                                   {"repository": ROOT}, quality_gate=True)
+            self.assertEqual(1, result)
+            self.assertIn("no positive evidence cases", errors.getvalue())
 
 
 class RetrievalIndexTests(unittest.TestCase):

@@ -29,6 +29,7 @@ The two rules are complementary, not contradictory: the question is whether NZ l
 
 **Concrete anchor**:
 ```python
+```
 
 **孪生卡 ol-647 合并的独有内容**（ol-647-allow-internal-format-true-reorders-within-the-i.md 已删除）：
 

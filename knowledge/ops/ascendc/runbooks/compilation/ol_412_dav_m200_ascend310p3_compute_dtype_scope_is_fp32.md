@@ -51,7 +51,7 @@ aliases: ["OL-412"]
             .PrecisionReduceFlag(true)
             .ExtendCfgInfo("opFile.value", "adaptive_avg_pool3d_apt");
         this->AICore().AddConfig("ascend950", aicore_config_950);
-        
+
         OpAICoreConfig ascend310p_config;
         ascend310p_config.Input("x")
             .ParamType(REQUIRED)

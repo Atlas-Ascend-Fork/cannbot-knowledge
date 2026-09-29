@@ -28,6 +28,7 @@ aliases: ["OL-542"]
 
 **Concrete anchor** (the load-bearing line is the per-call clone):
 ```python
+```
 
 **孪生卡 ol-646 合并的独有内容**（ol-646-in-place-cann-ops-aclnnapply-mutate-their-inputs.md 已删除）：
 

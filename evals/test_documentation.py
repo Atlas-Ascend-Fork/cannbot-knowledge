@@ -281,14 +281,22 @@ class DocumentationContractTests(unittest.TestCase):
 
     def test_knowledge_cards_use_okf_core_fields(self) -> None:
         root_index = (self.root / "knowledge/index.md").read_text(encoding="utf-8")
-        root_metadata = yaml.safe_load(root_index.split("---", 2)[1])
+        root_frame = re.match(r"\A---\n(?P<metadata>.*?)\n---\n", root_index, re.DOTALL)
+        self.assertIsNotNone(root_frame)
+        root_metadata = yaml.safe_load(root_frame.group("metadata"))
         self.assertEqual({"okf_version": "0.2"}, root_metadata)
 
         failures: list[str] = []
         for card in sorted((self.root / "knowledge").rglob("*.md")):
             if card.name == "index.md":
                 continue
-            metadata = yaml.safe_load(card.read_text(encoding="utf-8").split("---", 2)[1])
+            frame = re.match(
+                r"\A---\n(?P<metadata>.*?)\n---\n",
+                card.read_text(encoding="utf-8"),
+                re.DOTALL,
+            )
+            self.assertIsNotNone(frame, card)
+            metadata = yaml.safe_load(frame.group("metadata"))
             if not str(metadata.get("type", "")).strip():
                 failures.append(f"{card.relative_to(self.root)}: missing type")
             if metadata.get("status") not in {"draft", "stable", "deprecated"}:
@@ -617,9 +625,16 @@ class DocumentationContractTests(unittest.TestCase):
         )
         failures: list[str] = []
         for card in sorted((self.root / "knowledge").rglob("*.md")):
-            for number, line in enumerate(card.read_text(encoding="utf-8").splitlines(), start=1):
+            text = card.read_text(encoding="utf-8")
+            frame = re.match(r"\A---\n.*?\n---\n", text, re.DOTALL)
+            body = text[frame.end():] if frame else text
+            for number, line in enumerate(body.splitlines(), start=1):
+                # A valid link's target and a card's own filename are not prose
+                # references to a retired card suffix.
+                line = re.sub(r"\]\([^)]*\)", "]", line)
                 if stale.search(line):
-                    failures.append(f"{card.relative_to(self.root)}:{number}")
+                    offset = text[: frame.end()].count("\n") if frame else 0
+                    failures.append(f"{card.relative_to(self.root)}:{number + offset}")
         self.assertEqual([], failures)
 
     def test_skill_sources_do_not_contain_agent_vendor_metadata(self) -> None:

@@ -8,374 +8,1164 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # ----------------------------------------------------------------------------------------------------------
 
+# 32 条轨迹查询 + 38 个人工场景，固定 top5；source 保留轨迹定位信息。
+# expected 中每张卡都必须命中；expected_any 中每组至少命中一张，组间仍为 AND。
+# 期望为人工标注，未做独立复核；返回其他未标注候选不自动判负。
+# 这里只测试检索，不把参数错误、候选命中或缺口场景当作问答成功。
+
 quality:
-  min_recall_at_k: 1.0
-  min_mrr: 1.0
-  max_p95_ms: 1000
-
-synthetic_cards:
-  - path: knowledge/ops/ascendc/apis/synthetic_warp_copy.md
-    metadata:
-      type: API
-      title: SyntheticWarpCopy exact contract
-      description: Exact target for deterministic ranking and platform filtering.
-      tags: [task.lookup, topic.data_movement]
-      status: stable
-      sources:
-        - resource: https://example.com/reference/synthetic-warp-copy
-          role: primary
-      created_at: "2026-08-18T00:00:00Z"
-      updated_at: "2026-08-18T00:00:00Z"
-      platforms: [a2]
-    body: |
-      # SyntheticWarpCopy exact contract
-
-      This synthetic card is the exact API contract expected at rank one.
-  - path: knowledge/ops/ascendc/concepts/synthetic_copy_overview.md
-    metadata:
-      type: Concept
-      title: Synthetic copy contract overview
-      description: A weaker same-platform candidate used to exercise ranking.
-      tags: [task.lookup, topic.data_movement]
-      status: stable
-      sources:
-        - resource: https://example.com/reference/synthetic-copy-overview
-          role: primary
-      created_at: "2026-08-18T00:00:00Z"
-      updated_at: "2026-08-18T00:00:00Z"
-      platforms: [a2]
-    body: |
-      # Synthetic copy contract overview
-
-      SyntheticWarpCopy is mentioned as one generic data-movement example.
-  - path: knowledge/ops/triton/apis/synthetic_warp_copy.md
-    metadata:
-      type: API
-      title: SyntheticWarpCopy exact contract
-      description: Cross-DSL candidate that must not leak into Ascend C results.
-      tags: [task.lookup, topic.data_movement]
-      status: stable
-      sources:
-        - resource: https://example.com/reference/triton-synthetic-warp-copy
-          role: primary
-      created_at: "2026-08-18T00:00:00Z"
-      updated_at: "2026-08-18T00:00:00Z"
-      platforms: [a2]
-    body: |
-      # SyntheticWarpCopy exact contract
-
-      This fixture belongs only to the Triton route.
-  - path: knowledge/ops/ascendc/apis/synthetic_warp_copy_a3.md
-    metadata:
-      type: API
-      title: SyntheticWarpCopy exact contract
-      description: Wrong-platform candidate that must not leak into A2 results.
-      tags: [task.lookup, topic.data_movement]
-      status: stable
-      sources:
-        - resource: https://example.com/reference/a3-synthetic-warp-copy
-          role: primary
-      created_at: "2026-08-18T00:00:00Z"
-      updated_at: "2026-08-18T00:00:00Z"
-      platforms: [a3]
-    body: |
-      # SyntheticWarpCopy exact contract
-
-      This fixture belongs only to the A3 platform.
-  - path: knowledge/ops/ascendc/apis/synthetic_warp_copy_draft.md
-    metadata:
-      type: API
-      title: SyntheticWarpCopy exact contract
-      description: Draft candidate that must not leak into stable results.
-      tags: [task.lookup, topic.data_movement]
-      status: draft
-      sources: []
-      created_at: "2026-08-18T00:00:00Z"
-      updated_at: "2026-08-18T00:00:00Z"
-      platforms: [a2]
-    body: |
-      # SyntheticWarpCopy exact contract
-
-      This fixture verifies the default stable lifecycle boundary.
-  - path: knowledge/ops/shared/concepts/shared_alignment_boundary.md
-    metadata:
-      type: Concept
-      title: SharedAlignmentBoundary contract
-      description: Shared fixture returned only when shared expansion is explicit.
-      tags: [task.lookup, topic.alignment]
-      status: stable
-      sources:
-        - resource: https://example.com/reference/shared-alignment-boundary
-          role: primary
-      created_at: "2026-08-18T00:00:00Z"
-      updated_at: "2026-08-18T00:00:00Z"
-      platforms: [a2]
-    body: |
-      # SharedAlignmentBoundary contract
-
-      This fixture is intentionally independent of a single operator DSL.
-
+  # check.sh 的 quality-gate 严格要求 Recall@5 > 0.54、MRR > 0.45。
+  min_recall_at_k: 0.54
+  min_mrr: 0.45
 cases:
-  - id: synthetic_rank_and_scope
-    corpus: synthetic
-    query: SyntheticWarpCopy exact contract
-    filters:
-      technology: ascendc
-      platform: a2
-      status: stable
-    expected:
-      - ops/ascendc/apis/synthetic_warp_copy
-    excluded:
-      - ops/triton/apis/synthetic_warp_copy
-      - ops/ascendc/apis/synthetic_warp_copy_a3
-      - ops/ascendc/apis/synthetic_warp_copy_draft
-    expected_count: 2
-    expected_fields: [rank, card_sha256, card_lines, trust_tier, local_path]
-  - id: synthetic_cross_dsl_target
-    corpus: synthetic
-    query: SyntheticWarpCopy exact contract
-    filters:
-      technology: triton
-      platform: a2
-      status: stable
-    expected:
-      - ops/triton/apis/synthetic_warp_copy
-    excluded:
-      - ops/ascendc/apis/synthetic_warp_copy
-    expected_count: 1
-  - id: synthetic_explicit_shared
-    corpus: synthetic
-    query: SharedAlignmentBoundary
-    filters:
-      technology: ascendc
-      platform: a2
-      include_shared: true
-      status: stable
-    expected:
-      - ops/shared/concepts/shared_alignment_boundary
-    expected_count: 1
-  - id: empty_ascendc_search
-    query: qzxk_vwbr_hjdm_plqn
-    filters:
-      technology: ascendc
-      platform: a2
-      status: stable
-    expected_count: 0
-  - id: repository_ascendc_assert
-    query: assert AI CPU 断言
-    filters:
-      technology: ascendc
-      type: apis
-      platform: a2
-      status: stable
-      k: 3
-    expected:
-      - ops/ascendc/apis/ai_cpu_api/assert
-  - id: repository_tiling_key_exact_title
-    query: GET_TPL_TILING_KEY
-    filters:
-      technology: ascendc
-      type: apis
-      status: draft
-      include_unlocated: true
-      match: literal
-      k: 3
-    expected:
-      - ops/ascendc/apis/utils_api/tiling_template_programming/get_tpl_tiling_key
-  - id: exclude_unsupported_expf_from_a2
-    query: expf
-    filters:
-      technology: ascendc
-      type: apis
-      platform: a2
-      status: stable
-      match: literal
-      k: 10
-    excluded:
-      - ops/ascendc/apis/simt_api/math_functions/float_math_functions/expf
-  - id: repository_rtc_create_program_exact_title
-    query: aclrtcCreateProg
-    filters:
-      technology: ascendc
-      type: apis
-      platform: a2
-      status: stable
-      match: literal
-      k: 3
-    expected:
-      - ops/ascendc/apis/utils_api/rtc/aclrtc_create_prog
-  - id: repository_mc2_tuning_guide
-    query: MC²算子性能调优案例
-    filters:
-      technology: ascendc
-      type: guides
-      status: draft
-      include_unlocated: true
-      match: literal
-      k: 3
-    expected:
-      - ops/ascendc/guides/operator_practice/best_practices/mc_operator_tuning
-  - id: repository_gelu_950_operator
-    query: Gelu 950 Direct Invoke 算子知识
-    filters:
-      technology: ascendc
-      type: operators
-      platform: "950"
-      status: stable
-      match: literal
-      k: 3
-    expected:
-      - ops/ascendc/operators/direct/nn/activation/gelu_950
-  - id: repository_qwen3_next_general_concept_on_310p
-    query: Qwen3-Next
-    filters:
-      technology: inference
-      type: concepts
-      platform: 310p
-      status: stable
-      match: literal
-      k: 3
-    expected:
-      - model/inference/concepts/models/qwen3_next
-  - id: repository_qwen3_next_a3_deployment_guide
-    query: Qwen3-Next Atlas A3 推理部署与优化指南
-    filters:
-      technology: inference
-      type: guides
-      platform: a3
-      status: stable
-      match: literal
-      k: 3
-    expected:
-      - model/inference/guides/models/qwen3_next_atlas_a3_deployment
-  - id: exclude_qwen3_next_a3_deployment_from_310p
-    query: Qwen3-Next Atlas A3 推理部署与优化指南
-    filters:
-      technology: inference
-      type: guides
-      platform: 310p
-      status: stable
-      match: literal
-    expected_count: 0
-  - id: repository_hif8_training_on_950
-    query: HiF8（HiFloat8）8-bit 浮点格式与 V3 低精度预训练量化方案
-    filters:
-      technology: training
-      type: concepts
-      platform: "950"
-      status: stable
-      match: literal
-      k: 3
-    expected:
-      - model/training/concepts/quantization/hif8
-  - id: repository_action_chunking_on_310p
-    query: Action Chunking（动作分块 / ACT Transformer）
-    filters:
-      technology: embodied
-      type: concepts
-      platform: 310p
-      status: stable
-      match: literal
-      k: 3
-    expected:
-      - model/embodied/concepts/modules/action_chunking
-  - id: empty_triton_concepts_search
-    query: programming model
-    filters:
-      technology: triton
-      type: concepts
-      platform: a2
-      status: stable
-    expected_count: 0
-  - id: triton_memory_api_search
-    query: 内存操作 API（tl.load / tl.store / block_ptr）
-    filters:
-      domain: ops
-      technology: triton
-      type: apis
-      platform: a2
-      status: stable
-      match: literal
-      k: 3
-    expected:
-      - ops/triton/apis/tl_memory_ops
-  - id: triton_memory_api_excludes_unsupported_platform
-    query: 内存操作 API（tl.load / tl.store / block_ptr）
-    filters:
-      domain: ops
-      technology: triton
-      type: apis
-      platform: "950"
-      status: stable
-      match: literal
-    expected_count: 0
-  - id: common_platform_hardware_search
-    query: Ascend 910B2/910B3 硬件规格
-    filters:
-      domain: common
-      technology: platforms
-      type: concepts
-      platform: a2
-      status: stable
-      match: literal
-      k: 3
-    expected:
-      - common/platforms/concepts/ascend_910b
-  - id: common_platform_unmatched_terms_search
-    query: thermal throttling policy
-    filters:
-      domain: common
-      technology: platforms
-      type: concepts
-      platform: a2
-      status: stable
-    expected_count: 0
-  - id: reject_unknown_domain
-    query: target API
-    filters:
-      domain: unknown
-    expected_error: "unknown domain: unknown"
-  - id: reject_unknown_technology
-    query: target API
-    filters:
-      technology: unknown
-    expected_error: "unknown technology or scope: unknown"
-  - id: reject_unknown_platform
-    query: target API
-    filters:
-      platform: unknown
-    expected_error: "unknown platforms: unknown"
-  - id: reject_retired_a5_platform_id
-    query: target API
-    filters:
-      platform: a5
-    expected_error: "unknown platforms: a5"
-  - id: reject_unknown_tag
-    query: target API
-    filters:
-      tag: topic.unknown
-    expected_error: "unknown tags: topic.unknown"
-  - id: reject_unknown_source_technology
-    query: technology mapping
-    filters:
-      source_technology: unknown
-    expected_error: "unknown source technology: unknown"
-  - id: reject_missing_platform
-    query: target API
-    filters:
-      technology: ascendc
-    expected_error: "platform is required"
-  - id: reject_unlocated_stable
-    query: technology mapping
-    filters:
-      technology: shared
-      include_unlocated: true
-      status: stable
-    expected_error: "--include-unlocated requires --status draft or all"
-  - id: reject_shared_without_concrete_technology
-    query: shared behavior
-    filters:
-      domain: ops
-      platform: a2
-      include_shared: true
-    expected_error: "--include-shared requires a concrete technology"
+- id: trace_000
+  description: Host Tiling 的 workspace 大小应该如何设置？ SwishRmsnorm Host Tiling UT 已完成构建安装，当前查询未传目标平台参数。
+  source:
+    kind: trace
+    part_id: prt_08c127b99001xsEb1U4tbcD9yy
+    query_index: 0
+  query: SetWorkspaceSize sysWorkspaceSize workspace 大小 host tiling
+  filters:
+    domain: ops
+    technology: ascendc
+    type: guides
+    match: text
+    status: stable
+    k: 5
+  expected_error: platform is required
+- id: trace_010
+  description: Host Tiling 中 workspace 的大小与指针如何对应？ 前序查询因缺平台失败，现已从任务硬件信息及 Registry 确认目标 950。
+  source:
+    kind: trace
+    part_id: prt_08c139d93001lztRuPxDuljcZY
+    query_index: 0
+  query: GetWorkspaceSizes workspace
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    match: text
+    status: stable
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/resource_management/workspace/get_user_workspace
+  expected_any:
+  - - ops/ascendc/apis/simd_api/basic_api/resource_management/workspace/get_sys_work_space_ptr
+    - ops/ascendc/runbooks/runtime/mte_ddr_507035_workspace_reserved_region
+- id: trace_011
+  description: Tiling workspace 怎样计入系统预留区域？ 已确认 950。此前读取 REGISTER_NONE_TILING 的系统预留区故障记录；当前是注册式 Host Tiling
+    UT，需补查总预算，不能直接沿用另一 wrapper 的常量或偏移。
+  source:
+    kind: trace
+    part_id: prt_08c13f191001YpsfofhpEh31Hi
+    query_index: 0
+  query: TilingFunc workspace 系统 reserved GetLibApiWorkSpaceSize
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    match: text
+    status: stable
+    k: 5
+  expected_any:
+  - - ops/ascendc/apis/simd_api/basic_api/resource_management/workspace/get_sys_work_space_ptr
+    - ops/ascendc/runbooks/runtime/mte_ddr_507035_workspace_reserved_region
+- id: trace_018
+  description: Ascend950 的 AIV 核数从哪里读取？ 任务硬件信息显示 Ascend 950PR、arch 3510；上一条查询缺平台，此次填入 ascend950。
+  source:
+    kind: trace
+    part_id: prt_08b5ed3c0001MOiBirCCoQh6WE
+    query_index: 0
+  query: Ascend950 AIV vector core count
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - ascend950
+    match: text
+    status: stable
+    k: 5
+  expected_error: 'unknown platforms: ascend950'
+- id: trace_030
+  description: SquareSumV2 的注册 TilingFunc 与 TilingData 应如何接入 UT？这里只问通用接线步骤。 任务为 SquareSumV2 Host Tiling
+    UT，已读任务规格与通用测试指南，正在寻找注册与字段输出的参考。
+  source:
+    kind: trace
+    part_id: prt_0891dc17c0016MCqPO893JtfjE
+    query_index: 0
+  query: square_sum_v2 host TilingFunc TilingData tilingKey 注册实现
+  filters:
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/guides/operator_practice/host_tiling_ut
+- id: trace_032
+  description: 已查到 GET_TILING_DATA，但 SquareSumV2 的字段含义和 tiling 公式应从哪里确定，怎样组织独立校验？ 前序关于 SquareSumV2 的查询返回了
+    GET_TILING_DATA 等接口，仍需字段设计和公式层证据。
+  source:
+    kind: trace
+    part_id: prt_0890e16910010f6zT2bCkX5YlW
+    query_index: 0
+  query: TilingData struct 字段设计 切分公式 CeilDiv ubSize 字节量纲
+  filters:
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/guides/operator_practice/host_tiling_ut
+- id: trace_036
+  description: 负向 tiling UT 如何同时检查返回值和日志锚点？ SquareSumV2 测试开发中，需要建立非法输入的可解释拒绝断言。
+  source:
+    kind: trace
+    part_id: prt_088dbb2e3001G4vvHxgdGs1B4Y
+    query_index: 0
+  query: 负例断言 日志锚点 ExpectReject tiling 负向测试
+  filters:
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/guides/operator_practice/host_tiling_ut
+  expected_any:
+  - - ops/ascendc/runbooks/compilation/host_tiling_ut_infrastructure_failures
+    - ops/ascendc/guides/operator_practice/host_tiling_ut
+- id: trace_038
+  description: Host tiling 的 stub 红基线如何区分功能断言和空指针故障？ 正在为 SquareSumV2 建立测试先行的红基线，查询同时包含 nullptr guard 和
+    stub。
+  source:
+    kind: trace
+    part_id: prt_088d481d1001pFp15Y6H7OR2xT
+    query_index: 0
+  query: host tiling gtest nullptr guard red baseline stub TilingFunc
+  filters:
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/guides/operator_practice/host_tiling_ut
+  expected_any:
+  - - ops/ascendc/runbooks/compilation/host_tiling_ut_infrastructure_failures
+    - ops/ascendc/guides/operator_practice/host_tiling_ut
+- id: trace_043
+  description: 如何构造包含 IO、属性和编译信息的 TilingContext？ SquareSumV2 Host 测试需要建立 builder 调用链，尚需核对输入对象和 CompileInfo
+    生命周期。
+  source:
+    kind: trace
+    part_id: prt_088c4fa9b0014jKg1Zpseq32Uo
+    query_index: 0
+  query: TilingContext builder 构造 IO tensor attr compile info
+  filters:
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/guides/operator_practice/host_tiling_ut
+- id: trace_044
+  description: 平台 mock 的核数和 UB 大小怎样传到 tiling？ Host 测试的上下文构造已经开始，当前定向查询平台注入。
+  source:
+    kind: trace
+    part_id: prt_088c4ff5f001AB7dFH0kpUHXhJ
+    query_index: 0
+  query: 平台 mock 核数 UB size PlatformAscendC 测试
+  filters:
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected_any:
+  - - ops/ascendc/guides/operator_practice/host_tiling_ut
+    - ops/ascendc/runbooks/compilation/host_tiling_ut_infrastructure_failures
+- id: trace_046
+  description: 构建和加载 Host UT 时 ABI、安装库及 Registry 如何闭合？ 同一 UT 任务已查询 Context 和平台信息，当前查询范围转向 build_and_load。
+  source:
+    kind: trace
+    part_id: prt_088c53236001jXCkIlOjScRN4a
+    query_index: 0
+  query: build_and_load ABI 链接 安装库 registry dlopen gtest
+  filters:
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected_any:
+  - - ops/ascendc/guides/operator_practice/host_tiling_ut
+    - ops/ascendc/runbooks/compilation/host_tiling_ut_infrastructure_failures
+- id: trace_445
+  description: 多块搬入和写回时 stride、padding 与地址对齐如何区分？ 950 的 DepthwiseConv2D 开发，检索发生在查看 DMA 参数之后；需核对两方向的搬运合同。
+  source:
+    kind: trace
+    part_id: prt_05de768500018XPAuV2xrhCtHx
+    query_index: 0
+  query: DataCopyPad dstStride padding 32B alignment
+  filters:
+    technology: ascendc
+    status: stable
+    platform:
+    - '950'
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm
+- id: trace_500
+  description: AIV 两阶段归约应如何处理跨核同步的边界？ ForeachNorm 开发已读目标算子旧版卡，正在查 SyncAll 与分阶段归约参考。
+  source:
+    kind: trace
+    part_id: prt_05cb10f4b001gF0dMXLMSm5Goq
+    query_index: 0
+  query: SyncAll two stage reduction AIV
+  filters:
+    technology: ascendc
+    status: stable
+    platform:
+    - '950'
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/sync_control/inter_core_sync/sync_all
+- id: trace_502
+  description: 两阶段归约的 partial workspace 交接需要检查哪些初始化和跨核同步条件？ 同一 ForeachNorm 任务此前检索过 SyncAll；当前补查两阶段归约的
+    workspace 交接。
+  source:
+    kind: trace
+    part_id: prt_05cca77e7001EsUmOgoi7T9S4n
+    query_index: 0
+  query: 两阶段归约 partial workspace SyncAll stage reduce
+  filters:
+    technology: ascendc
+    status: stable
+    platform:
+    - '950'
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/precision/multitensor_min_uninitialized_partial_slot_zero
+  - ops/ascendc/apis/simd_api/basic_api/sync_control/inter_core_sync/sync_all
+- id: trace_508
+  description: 逐元素流水启用双缓冲时，队列与 tiling 如何配合？ 950 Exp 实现正在阅读 MicroAPI 和逐元素模板，查询 ping pong 与搬运流水。
+  source:
+    kind: trace
+    part_id: prt_05cbbe0af001AzDjO8l1UD0AmG
+    query_index: 0
+  query: elementwise tiling pipeline DataCopyPad ping pong
+  filters:
+    technology: ascendc
+    status: stable
+    platform:
+    - '950'
+    match: text
+    k: 5
+  expected_any:
+  - - ops/ascendc/apis/simd_api/basic_api/resource_management/t_pipe/init_buffer
+    - ops/ascendc/runbooks/performance/tque_depth1_bandwidth_double_buffer
+- id: trace_517
+  description: Direct Invoke 评测的精度阈值和采样条件如何核对？ GELU 任务正在调查本地精度计算与评测口径，尚未确认具体 evaluator 的所有规则。
+  source:
+    kind: trace
+    part_id: prt_05cc03718001Q0rrvwmfyI7wqE
+    query_index: 0
+  query: Direct Invoke 评测 校验 精度 阈值 采样
+  filters:
+    technology: ascendc
+    status: stable
+    platform:
+    - '950'
+    include_shared: true
+    match: text
+    k: 5
+  note: 仅断言本次检索的候选/过滤条件，不验证回答是否识别证据缺口。
+- id: trace_520
+  description: 逐元素尾块的 TQue、缓冲和搬运需要哪些证据？ 950 Mish 实现已读旧版目标卡和其他逐元素实现，当前补查队列和尾部搬运。
+  source:
+    kind: trace
+    part_id: prt_05cb1c6d2001pcNImTdRD6yM6m
+    query_index: 0
+  query: TQue InitBuffer DataCopyPad elementwise tail
+  filters:
+    technology: ascendc
+    status: stable
+    platform:
+    - '950'
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/resource_management/t_pipe/init_buffer
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm
+- id: manual_context_owner
+  description: 把 builder 返回的裸指针带出函数后，UT 偶尔崩溃，先查哪里？ Host 函数已注册；构造函数内部使用临时 vector 和属性对象。
+  source:
+    kind: manual
+  query: tiling context 临时对象 生命周期 裸指针
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected_any:
+  - - ops/ascendc/guides/operator_practice/host_tiling_ut
+    - ops/ascendc/runbooks/compilation/host_tiling_ut_infrastructure_failures
+- id: manual_context_null
+  description: 'PROBE: context is null，编译已通过，为什么没有其他报错？ gert::OpTilingContextBuilder，950，CANN 9.0.0-beta.2，尚未执行
+    TilingFunc。；探针配置为 2 输入、5 输出、1 个 bool 属性；尚未核查 CompileInfo 槽位和 owner。'
+  source:
+    kind: manual
+  query: OpTilingContextBuilder context null Build
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/validations/optilingcontextbuilder_probe_deleted_copy_compileinfo
+- id: manual_tensor_copy
+  description: 测试张量放进 initializer_list 后出现 deleted copy constructor。 gert::Tensor，950 Host UT；需要在修编译后仍保持对象有效。；CANN
+    9.0.0-beta.2，参考探针的版本边界。
+  source:
+    kind: manual
+  query: gert Tensor deleted copy constructor 生命周期
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/validations/optilingcontextbuilder_probe_deleted_copy_compileinfo
+- id: manual_registry_red
+  description: 所有负例都失败了，但函数指针是空的，这算红基线吗？ 注册式算子 Host UT，950；日志只有失败计数，尚无进入被测函数的证据。
+  source:
+    kind: manual
+  query: tiling 红基线 Registry 函数为空 全部失败
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/guides/operator_practice/host_tiling_ut
+  expected_any:
+  - - ops/ascendc/runbooks/compilation/host_tiling_ut_infrastructure_failures
+    - ops/ascendc/guides/operator_practice/host_tiling_ut
+- id: manual_platform_diff
+  description: 把核数从 8 改成 32，blockDim 完全不变，应先改公式吗？ 950 Host UT；选定 shape 按设计应跨越核数限制，UB 保持不变。
+  source:
+    kind: manual
+  query: platform mock coreNum 改变 输出不变
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected_any:
+  - - ops/ascendc/guides/operator_practice/host_tiling_ut
+    - ops/ascendc/runbooks/compilation/host_tiling_ut_infrastructure_failures
+- id: manual_oracle_independence
+  description: 直接调用被测切分 helper 生成 expected，UT 全绿能证明正确吗？ 950 注册式 Host Tiling，要求独立 oracle 和逐字段验证。
+  source:
+    kind: manual
+  query: tiling oracle 独立 helper expected 全通过
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/guides/operator_practice/host_tiling_ut
+- id: manual_abi_load
+  description: 编译和链接都过了，加载 op_host.so 却 undefined symbol，该看哪层？ 950 Host UT，需确认加载本轮隔离安装包并核对 ABI 与库依赖。
+  source:
+    kind: manual
+  query: Host UT dlopen undefined symbol ABI 安装库
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected_any:
+  - - ops/ascendc/guides/operator_practice/host_tiling_ut
+    - ops/ascendc/runbooks/compilation/host_tiling_ut_infrastructure_failures
+- id: manual_workspace_partition
+  description: Kernel 直调未开 HAVE_WORKSPACE，同时需要 Matmul 和自己的临时区。 目标 950；要明确系统区域由谁申请以及用户指针如何获取。
+  source:
+    kind: manual
+  query: workspace 系统 用户 指针 HAVE_WORKSPACE
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/resource_management/workspace/get_sys_work_space_ptr
+  - ops/ascendc/apis/simd_api/basic_api/resource_management/workspace/get_user_workspace
+- id: manual_copy_direction_in
+  description: 两张 DataCopyPad 同名卡，我需要从 GM 读入 UB 并指定填充值。 950；只判断搬入方向的参数重载，尚不需要写回方案。
+  source:
+    kind: manual
+  query: DataCopyPad GM UB 填充 paddingValue
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub
+- id: manual_copy_direction_out
+  description: 片上只剩 13 个 float 要写回全局内存，接口还需要 padParams 吗？ 950；源 UB 基址已对齐，目标只容纳有效输出。
+  source:
+    kind: manual
+  query: DataCopyPad UB GM 非对齐 写回
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm
+- id: manual_copy_roundtrip
+  description: 同一块非对齐数据搬入再写回，两边 stride 单位相同吗？ 950、DataCopyExtParams、Normal 模式，需分别核对 GM 和 UB。
+  source:
+    kind: manual
+  query: DataCopyPad srcStride dstStride 单位 往返
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm
+- id: manual_wrong_rows
+  description: 第一行永远正确，后面每行错位，加同步也没变化。 950、CANN 9.2.0，多块 DataCopyExtParams 搬运，需区分地址单位与竞态。
+  source:
+    kind: manual
+  query: DataCopyPad 第一行 正确 后续行 错位 stride
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/precision/v351_datacopypad_extparams_stride_byte_unit_001
+- id: manual_small_norm_nan
+  description: 大归一化维都过，小维才有 NaN，分配时至少给一个向量长度。 950，DataCopyPad 后沿对齐长度 ReduceSum，需核对初始化和实际读取范围。
+  source:
+    kind: manual
+  query: 小维 归一化 NaN padding ReduceSum
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/precision/datacopypad_tail_must_initialize_full_reduction_extent
+- id: manual_min_zero
+  description: 单张量 min(abs(x)) 正常，多张量却总是零，sum 同时正常。 人工给定前提：950 两阶段 min(abs(x))；输入绝对值均在 [0.25,8]，golden
+    为正；阶段二读取每个核的 partial，部分核没有任务。尚未确认所有槽位是否写过。
+  source:
+    kind: manual
+  query: 多张量 min 输出零 workspace partial
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/precision/multitensor_min_uninitialized_partial_slot_zero
+- id: manual_reduce_exception
+  description: sum/mean 多核时报 507035，none 多核和单核正常，怎么缩小范围？ 950、CANN 9.1.0，已知差异是 workspace 和跨核归并路径。
+  source:
+    kind: manual
+  query: 507035 reduce 多核 单核 正常 workspace 跨核归并
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/runtime/507035_syncall_multicore_reduce
+- id: manual_double_budget
+  description: 把队列深度改成 2 后还沿用原 tile 大小，为什么资源不够？ 人工给定代码：950 fp32 逐元素 2 读 1 写，三条 TQue 模板深度由 1 改 2，三个 InitBuffer(q,
+    1, tile*4) 也都改成 InitBuffer(q, 2, tile*4)；tile 为 8 的倍数，其他 buffer 不变，Host 仍按旧分配预算。
+  source:
+    kind: manual
+  query: TQue depth 2 InitBuffer UB tiling 预算
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected_any:
+  - - ops/ascendc/apis/simd_api/basic_api/resource_management/t_pipe/init_buffer
+    - ops/ascendc/runbooks/performance/tque_depth1_bandwidth_double_buffer
+- id: manual_perf_claim
+  description: 启用双缓冲后带宽只有五成，能承诺下一版一定达到八成吗？ 950、CANN 9.1.0，只有队列优化和 copy-only 对照，尚未定位剩余瓶颈。
+  source:
+    kind: manual
+  query: double buffer 带宽 80% 剩余 瓶颈
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  note: 仅断言本次检索的候选/过滤条件，不验证回答是否识别证据缺口。
+- id: manual_fp16_false_fail
+  description: max_diff 是 0.0039，大于 2^-10，为什么原来的 fp16 ST 却通过？ 950，浮点计算类输出，怀疑自验脚本和验收使用不同误差指标。
+  source:
+    kind: manual
+  query: fp16 max_diff 0.0039 2^-10 自验 ST 不一致
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/precision/absolute_diff_misused_as_relative_threshold
+- id: manual_unknown_platform
+  description: 拷贝到片上之后结果不对，应该用哪个 padding 重载？ 只有 Ascend C 和搬入方向信息；目标产品、SDK、dtype 均未提供。
+  source:
+    kind: manual
+  query: DataCopyPad padding
+  filters:
+    domain: ops
+    technology: ascendc
+    status: stable
+    match: text
+    k: 5
+  expected_error: platform is required
+- id: manual_universal_sync
+  description: 能证明所有 CANN 版本上 SyncAll 都不可用吗？ 950；手头只有一次多核归约失败记录，目标是跨版本的普遍结论。
+  source:
+    kind: manual
+  query: SyncAll 507035 所有版本 不可用
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/sync_control/inter_core_sync/sync_all
+- id: manual_gelu_unlocated
+  description: GELU exact 激活只在很负的 fp32 输入出错，提高近似精度仍不行，有什么数值机制值得排查？ 用户未指定平台；本次专门查未定位草稿，只寻找机制线索。
+  source:
+    kind: manual
+  query: GELU exact fp32 很负 输入 提高近似精度 仍失败
+  filters:
+    domain: ops
+    technology: ascendc
+    status: draft
+    include_unlocated: true
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/precision/gelu_negative_tail_erfc_avoids_cancellation
+- id: manual_draft_rows
+  description: 13 个 float 一行，补到 16 后第二行的 offset 应按哪个长度？ 独立的未定位草稿调查，需核对逻辑有效长度与物理行距。
+  source:
+    kind: manual
+  query: DataCopyPad 行距 13 16 padding
+  filters:
+    domain: ops
+    technology: ascendc
+    status: draft
+    include_unlocated: true
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/guides/data_movement/datacopypad_rows_and_padding
+- id: manual_deterministic_merge
+  description: 每核各有一份 partial，就能保证浮点输出逐位一致吗？ 正在读未定位草稿；还需判断初始化、发布与归并顺序。
+  source:
+    kind: manual
+  query: 每核 私有 partial 浮点 逐位一致
+  filters:
+    domain: ops
+    technology: ascendc
+    status: draft
+    include_unlocated: true
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/guides/reductions/deterministic_workspace_merge
+- id: manual_test_input_cast
+  description: 随机数转成 int8 后测试总通过，但负值路径根本没覆盖。 人工给定输入生成代码 x = np.random.rand(1024).astype(np.int8)，转换前分布为
+    [0,1)；要检查测试数据方法，不要求给出设备正确性结论。
+  source:
+    kind: manual
+  query: np.random.rand astype int8 随机 测试 负值 覆盖
+  filters:
+    domain: ops
+    technology: ascendc
+    status: draft
+    include_unlocated: true
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/guides/precision/error_metrics_and_represented_test_inputs
+- id: manual_broadcast_small_axis
+  description: 三维相除最后一维只有 16，跨轴广播为何向量化很差？ A2 Triton，shape (65536,128,16)/(1,128,1)，要找拆分思路。
+  source:
+    kind: manual
+  query: 三维 跨轴 broadcast 最后一维 小 向量化
+  filters:
+    domain: ops
+    technology: triton
+    platform:
+    - a2
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/triton/guides/constraints/case_elemwise_broadcast_3d
+- id: manual_broadcast_mixed
+  description: cross-axis broadcast W=16，有什么能增加 vector work 的拆分方式？ 人工场景：A3 Triton，三维除法输入 shape 为 (65536,128,16)/(1,128,1)，末维
+    W=16；只请求增加向量工作量的定性拆分思路，不要求实测加速比。
+  source:
+    kind: manual
+  query: cross axis broadcast W=16 vector work 拆分
+  filters:
+    domain: ops
+    technology: triton
+    platform:
+    - a3
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/triton/guides/constraints/case_elemwise_broadcast_3d
+- id: manual_amin_skinny
+  description: 只有 16 行却有很长的归约轴，多核大多空闲怎么办？ A2 Triton，矩阵 (16,262144)，求行最小值，需兼顾 UB 和原子竞争。
+  source:
+    kind: manual
+  query: amin 非reduce轴 很小 原子 UB 切分
+  filters:
+    domain: ops
+    technology: triton
+    platform:
+    - a2
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/triton/guides/constraints/case_reduction_amin_atomic
+- id: manual_amin_speed_claim
+  description: 能给出这个原子 min 方案在我机器上的确定加速倍数吗？ A3 Triton，只有设计案例，没有我的设备测量或输入分布。
+  source:
+    kind: manual
+  query: amin 原子操作 性能 提升 倍数
+  filters:
+    domain: ops
+    technology: triton
+    platform:
+    - a3
+    status: stable
+    match: text
+    k: 5
+  note: 仅断言本次检索的候选/过滤条件，不验证回答是否识别证据缺口。
+- id: manual_topk_tiles
+  description: 整行排序太慢，N 很大但 K 不大，有什么分块合并思路？ A2 Triton，排序维已经移到末维，还要控制每个 program 的 UB。
+  source:
+    kind: manual
+  query: TopK tile sort merge UB 多行
+  filters:
+    domain: ops
+    technology: triton
+    platform:
+    - a2
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/triton/guides/constraints/case_sort_topk
+- id: manual_topk_950_gap
+  description: 这套 Triton TopK 分块方案在 950 的支持和实测数据在哪里？ 目标 950，只接受平台已确认的稳定知识；不能把 A2/A3 案例直接外推。
+  source:
+    kind: manual
+  query: TopK tile sort merge
+  filters:
+    domain: ops
+    technology: triton
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  excluded:
+  - ops/triton/guides/constraints/case_sort_topk
+  note: 仅断言本次检索的候选/过滤条件，不验证回答是否识别证据缺口。
+- id: manual_platform_pair
+  description: 需要 A2 和 A3 都适用的非对齐搬入接口，单位和地址条件是什么？ 共同平台范围查询，两个 platform 是交集，限定 Ascend C。
+  source:
+    kind: manual
+  query: DataCopyPad 非对齐 搬入 地址 srcStride
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - a2
+    - a3
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub
+  excluded:
+  - ops/ascendc/runbooks/precision/datacopypad_tail_must_initialize_full_reduction_extent
+- id: manual_missing_api
+  description: 本仓是否有 WarpTeleportAsync 的稳定接口合同？ 人工合成不存在的精确符号 WarpTeleportAsync，用于稳定接口的零命中契约检查；不是来自真实用户代码的知识缺口。
+  source:
+    kind: manual
+  query: WarpTeleportAsync
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: literal
+    k: 5
+  expected_count: 0
+  note: 仅断言本次检索的候选/过滤条件，不验证回答是否识别证据缺口。
+- id: trace_v2_175
+  description: GetSoftMaxMaxTmpSize 的参数合同，以及它与 SoftMax 临时空间预留的关系是什么？ 950 SoftMax 开发；此前已阅读 SoftMax API，当前固定查询限定
+    stable API。
+  source:
+    kind: trace
+    part_id: prt_0a4d4d762001z9ZG8Yc08Aq6m2
+    query_index: 0
+  query: GetSoftMaxMaxTmpSize
+  filters:
+    domain: ops
+    technology: ascendc
+    type: apis
+    platform:
+    - '950'
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/adv_api/activation_functions/soft_max_interface/soft_max
+  note: 仅断言本次检索的候选/过滤条件，不验证回答是否识别证据缺口。
+- id: trace_v2_182
+  description: Scatter 冲突更新选择 SIMT AtomicAdd，应核对哪些接口和使用边界？ 950 Scatter 开发；此前返回过 Scalar AtomicAdd 候选，现定向查
+    SIMT，尚未提供实测吞吐。
+  source:
+    kind: trace
+    part_id: prt_0a4d4f2e8001FZlaHOur4YvLGb
+    query_index: 0
+  query: Simt AtomicAdd
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simt_api/atomic_operations/asc_atomic_add
+- id: trace_v2_203
+  description: 当前 C++ Reg API 文档如何描述 UpdateMask 的参数和尾块更新合同？ 950 Gather 开发；当前只查 API 合同，尚未提供目标 SDK 实测的计数行为。
+  source:
+    kind: trace
+    part_id: prt_0a4e0fee20016xKo8EaB7vcw9W
+    query_index: 1
+  query: UpdateMask
+  filters:
+    domain: ops
+    technology: ascendc
+    type: apis
+    platform:
+    - '950'
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/reg_vector_compute/register_data_types/mask_reg
+- id: trace_v2_209
+  description: torch cummin 的等值索引与 NaN 行为应怎样核对，避免参考实现与目标规格混淆？ 950 Cummin 开发；此前尝试本地 torch 探针因 ModuleNotFoundError
+    未运行成功，也查过源码文档；这里要求核对方法而非宣称本环境已实测。
+  source:
+    kind: trace
+    part_id: prt_0a4d7555100127BbBgCaGxVy4p
+    query_index: 1
+  query: torch cummin tie NaN indices
+  filters:
+    domain: ops
+    platform:
+    - '950'
+    match: text
+    status: stable
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/precision/torch_cummin_tie_last_occurrence
+- id: trace_v2_537
+  description: SIMT load 的缓存路径是什么，lane 的访存延迟能从现有资料确定吗？ 950 GridSampler3D 开发；已查看其他算子的 512 线程 SIMT 实现，没有本任务访存延迟实测。
+  source:
+    kind: trace
+    part_id: prt_05d741f150016BBOSyOc916Udt
+    query_index: 0
+  query: SIMT memory load latency lane
+  filters:
+    technology: ascendc
+    status: stable
+    platform:
+    - '950'
+    k: 5
+  expected:
+  - ops/ascendc/apis/simt_api/memory_access_functions/asc_ldca
+  note: 仅断言本次检索的候选/过滤条件，不验证回答是否识别证据缺口。
+- id: trace_v2_662
+  description: arch35 的 RegTensor 向量宽度和 mask 按 dtype 选择有效元素的关系是什么？ RoPE 实现前的寄存器模型查询；任务明确 950，query 包含
+    register width、mask、RegTensor。
+  source:
+    kind: trace
+    part_id: prt_04d3a7471001uCVZ6q4hAmdfYa
+    query_index: 0
+  query: vector register width mask RegTensor arch35
+  filters:
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/reg_vector_compute/register_data_types/mask_reg
+- id: manual_bufnum_metadata
+  description: 只把 TilingData.bufNum 改为 2，UT 全绿，可以认为双缓冲已开启吗？ 人工代码：950/CANN 9.1.0；kernel BUFFER_NUM=1，TQue<VECIN,1>，InitBuffer(q,BUFFER_NUM,bytes)，kernel
+    没有读取 tiling.bufNum；Host 预算已按 2 份计算。
+  source:
+    kind: manual
+  query: TilingData bufNum 2 UT 通过 kernel BUFFER_NUM 1
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected_any:
+  - - ops/ascendc/runbooks/compilation/bufnum_not_double_buffer_switch
+    - ops/ascendc/apis/simd_api/basic_api/resource_management/t_pipe/init_buffer
+- id: manual_broadcast_2d
+  description: 二维除法每行只有 16 个元素，广播输入所有行相同，怎么安排处理粒度？ 人工场景：A2 Triton，(131072,16)/(1,16)；没有第三维或跨轴广播，要求定性方案，不要求固定核数和延迟。
+  source:
+    kind: manual
+  query: 2D broadcast division 每行 16 共享输入 处理粒度
+  filters:
+    domain: ops
+    technology: triton
+    platform:
+    - a2
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/triton/runbooks/performance/elemwise_broadcast_2d
+- id: trace_v3_320
+  description: 多维切片搬入考虑 NDDMA：应使用哪个 DataCopy 参数结构，维度及 stride 的单位和约束是什么？ StridedSlice 开发，前序用户要求 --soc=ascend950；已查看其他算子的
+    Gather/Transpose 代码，当前改查多维 DMA 的参数合同。没有本任务搬运实测。
+  source:
+    kind: trace
+    part_id: prt_06858d67b001p6EVGYzpUMPzUd
+    query_index: 0
+  query: NDDMA MultiCopy DataCopy five dim descriptor stride element
+  filters:
+    platform:
+    - '950'
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_to_ub_nddma
+- id: trace_v3_322
+  description: MTE2 搬入后放 PIPE_V barrier、V 计算后放 PIPE_MTE3 barrier、写回后放 PIPE_MTE2 barrier，能保证复用 UB 的跨流水依赖吗？
+    950 QuantMatmul 设计审查；此前用户已明确给出这三处 PipeBarrier 及 MTE2→V→MTE3、MTE3→下一轮 MTE2 的访问关系，要求核对同步合同。尚无运行结论。
+  source:
+    kind: trace
+    part_id: prt_0680ea9e70017UUgyMq6jU8adZ
+    query_index: 0
+  query: PipeBarrier PIPE_MTE2 PIPE_MTE3 PIPE_V DataCopyPad cross pipe hazard
+  filters:
+    technology: ascendc
+    platform:
+    - '950'
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/sync_control/intra_core_sync/pipe_barrier_isasi
+  - ops/ascendc/apis/simd_api/basic_api/sync_control/intra_core_sync/set_flag_wait_flag_isasi
+- id: trace_v3_557
+  description: 950 上 fp16 vector max 的 NaN 传播语义是什么，现有文档能证明当前实现的左右操作数 NaN 行为吗？ Maximum 开发；此前在标作 cann-9.1.0
+    的 include 路径查找 NaN/vmax 说明未获得行为依据；没有运行左右单 NaN、双 NaN 的探针。目录名不作为组件版本实证。
+  source:
+    kind: trace
+    part_id: prt_05cea4482001whX67vksbu2Qds
+    query_index: 0
+  query: vmax NaN propagation semantics vector max fp16
+  filters:
+    technology: ascendc
+    status: stable
+    platform:
+    - '950'
+    k: 5
+  note: 仅断言本次检索的候选/过滤条件，不验证回答是否识别证据缺口。
+- id: trace_v3_610
+  description: MIX 的 AIC/AIV 核内协作如何选同步模式与参与核？950 上 Set/Wait 的 mode、pipe 和 flagId 参数是否可直接对称填写？ 950 MLA
+    开发；此前查看了 QUE_MAX_EVENT 与 Fixpipe L0C→UB 实现。当前检索 MIX 核间 flag 合同，不把核内 event 数量当成核间 flag 范围。
+  source:
+    kind: trace
+    part_id: prt_04d4bdb39001YFdqg1hlP2th5t
+    query_index: 0
+  query: MIX AIC AIV cross core sync flag intra block
+  filters:
+    technology: ascendc
+    status: stable
+    platform:
+    - '950'
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_set_flag_isasi
+  - ops/ascendc/apis/simd_api/basic_api/sync_control/inter_core_sync/cross_core_wait_flag_isasi
+- id: trace_v3_615
+  description: TopK 使用 SIMT 时，函数声明、启动线程维度和线程索引如何配合，怎样区分线程数与 AIV 任务划分？ 用户任务明确 950；此前读取其他算子的 __simt_vf__、LAUNCH_BOUND、blockDim.x/threadIdx.x
+    及 dim3 启动示例。查询保留原始 asc_vf_call 写法，只请求编程模型与核对方法，不要求保证这份 SDK 的所有启动拼写兼容。
+  source:
+    kind: trace
+    part_id: prt_04d3be7fd001eUZH8ireFMN5PV
+    query_index: 0
+  query: asc_vf_call SIMT 线程 blockDim AIV
+  filters:
+    technology: ascendc
+    status: stable
+    platform:
+    - '950'
+    k: 5
+  expected_any:
+  - - ops/ascendc/guides/cross_gen_migration_guide/l3_simt_optimization
+    - ops/ascendc/guides/cross_gen_migration_guide/l4_simt_optimization
+- id: trace_v3_629
+  description: GM→UB 的 DataCopyPad 对 GM/UB 起始地址有哪些对齐要求？不能把看到的 Tensor API 内部约束直接套用时，应如何选证据？ 950 QuantMatmul；此前实际读到
+    Tensor API 的 GM→UB 内部实现注释，涉及 ND/DN 布局的 UB 分配和 stride 对齐。当前定向查询 DataCopyPad，尚未确认两者为同一接口层。
+  source:
+    kind: trace
+    part_id: prt_04d778259001lQHQ3aU1SwMjPH
+    query_index: 0
+  query: DataCopyPad 32B 对齐 地址 约束
+  filters:
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub
+- id: trace_cube_matmul_entry
+  description: 950 QuantMatmul 开发中查找 Matmul 高阶 API 的入口，至少需定位对象创建与 A/B/C 类型的模板参数说明。
+    原查询限定 stable API，不能要求召回平台未定位的 draft 使用说明。
+  source:
+    kind: trace
+    part_id: prt_0cac2d9cc001fM8pnw1A5w4wMj
+    query_index: 0
+  query: MatMul
+  filters:
+    domain: ops
+    technology: ascendc
+    type: apis
+    platform:
+    - '950'
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_template_params
+  excluded:
+  - ops/ascendc/apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_usage
+  note: direct_invoke_cube 原始查询，原 k=8；按统一 Top5 评测。与独立 draft 补搜场景配对检查范围。
+- id: trace_cube_launch
+  description: 950 QuantMatmul 开发准备直接启动 Cube kernel，需检索核类型派发与 AIV 误执行 Cube API 的风险。
+    期望卡用于核对直调和算子仓形态的适用边界，不把 AIV 早退守卫当作通用修复。
+  source:
+    kind: trace
+    part_id: prt_0cad24e67001dLOps0OJlz5NGu
+    query_index: 0
+  query: direct invoke cube
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/compilation/cube_retcode_0x26_aiv_cube_api
+  note: direct_invoke_cube 原始查询，原 k=8；按统一 Top5 评测。轨迹已召回并读卡，保留为回归场景。
+- id: trace_cube_copy_out
+  description: 950 QuantMatmul 的 scale 打包阶段准备用 DataCopyPad 将 uint32 的高低字从 UB 交错写入 GM。
+    此次查 API 定义，需命中 UB→GM 重载及参数合同，GM→UB 定义不能替代。
+  source:
+    kind: trace
+    part_id: prt_0cade4f2e001Vtt0KfLI5fdN3e
+    query_index: 0
+  query: DataCopyPad
+  filters:
+    domain: ops
+    technology: ascendc
+    type: apis
+    platform:
+    - '950'
+    status: stable
+    match: literal
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm
+  note: direct_invoke_cube 原始查询及过滤条件。轨迹已召回该卡；后续读取不完整和错误推断不计作检索漏召回。
+- id: manual_cube_matmul_draft
+  description: 由轨迹 MatMul 查询衍生的独立补搜：查找包含对象创建、初始化和 Iterate 调用顺序的使用说明。
+    该卡为平台未定位的 draft，只作为待核验线索，不作为 950 正式支持的证据。
+  source:
+    kind: manual
+    part_id: prt_0cac2d9cc001fM8pnw1A5w4wMj
+  query: MatMul
+  filters:
+    domain: ops
+    technology: ascendc
+    type: apis
+    status: draft
+    include_unlocated: true
+    match: literal
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/adv_api/cube_compute/matmul_kernel/matmul_usage
+  note: 人工变体，保留原 query，单独改用 draft 和 include_unlocated；不是轨迹中实际执行过的查询。
+- id: manual_cube_quant_pack
+  description: 根据轨迹寻找 npu_trans_quant_param 的需求补写能力查询：950 INT8 Matmul 的逐列 scale 怎样转换为 uint64 量化向量，在哪里核对 FP19 打包约定？
+    需定位参数格式文档，不能仅召回量化算子的接口名称。
+  source:
+    kind: manual
+    part_id: prt_0cacfad7700161OqsDdVb0ss2F
+  query: trans quant param uint64 scale FP19
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/adv_api/cube_compute/matmul_kernel/set_quant_vector
+  note: 人工构造 query；原轨迹的 trans_quant_param 是 literal 零命中。这里只检索打包文档，位位置描述与公式的歧义仍需 SDK 补证。
+- id: manual_cube_interleave_copy
+  description: 根据轨迹中两次 UB→GM 搬运拼接 uint64 的方案补写查询：blockLen=4、srcStride=0、dstStride=4 时，UB 是否按 4 字节连续取数？
+    需核对 950 默认搬运模式的逐块 padding 和两侧 stride 单位，不能仅凭 stride=0 推断 UB 紧凑布局。
+  source:
+    kind: manual
+    part_id: prt_0cade751c001oj3S77CxDOdFjk
+  query: DataCopyPad blockLen 4 srcStride dstStride uint64 interleave
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm
+  note: 人工构造 query，要求召回该方向的参数定义；只提示逐元素 gather/scatter 风险的经验卡不足以确认完整字段合同。
+- id: manual_cube_platform_link
+  description: 根据轨迹 Host 探针的链接报错补写查询：PlatformAscendC 的 GetCoreNumAic/GetCoreNumAiv 等符号未定义时，怎样确认实现所在的库和链接依赖？
+    期望卡提供符号定位方法；其验证版本为 CANN 9.0.0-beta.2，不能直接保证轨迹中 9.1.0 的库布局相同。
+  source:
+    kind: manual
+    part_id: prt_0cb1ca5ac001zIluowENKQ3QbU
+  query: PlatformAscendC GetCoreNumAic undefined reference
+  filters:
+    domain: ops
+    technology: ascendc
+    platform:
+    - '950'
+    status: stable
+    match: text
+    k: 5
+  expected:
+  - ops/ascendc/runbooks/compilation/platformascendc_host_ut_link_static_tiling_api
+  note: 人工从实际 linker 输出构造 query，不是轨迹中的检索命令；仅评价诊断参考卡的召回。
