@@ -7,9 +7,11 @@ import argparse
 import concurrent.futures
 import json
 import math
+import os
 import re
 import signal
 import sys
+import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,12 +24,13 @@ except ModuleNotFoundError:  # pragma: no cover - Python < 3.11
 
 from content_protocol import (
     ContentProtocolError,
+    USAGE_KEYS,
     expected_exit_code,
     validate_page_results,
     validate_plan,
     validate_result,
 )
-from opencode_runner import OpenCodeError, ProcessRegistry, run_opencode
+from opencode_runner import OpenCodeError, ProcessRegistry, redact_text, run_opencode
 
 
 HERE = Path(__file__).resolve().parent
@@ -48,6 +51,7 @@ class CheckRule:
 class Settings:
     command: str
     model: str
+    model_id: str
     variant: str
     max_concurrency: int
     timeout_s: float
@@ -69,6 +73,23 @@ class SelectionPlan:
 class PageProtocolError(RuntimeError):
     kind = "protocol"
     retryable = True
+
+
+class UsageTotals:
+    """Accumulate reported usage from every attempt, including failed pages."""
+
+    def __init__(self) -> None:
+        self.tokens: dict[str, int | float] = dict.fromkeys(USAGE_KEYS, 0)
+        self.incomplete_attempts = 0
+        self._lock = threading.Lock()
+
+    def record(self, usage: dict[str, int | float] | None, complete: bool) -> None:
+        with self._lock:
+            if usage is not None:
+                for key in USAGE_KEYS:
+                    self.tokens[key] += usage[key]
+            if not complete:
+                self.incomplete_attempts += 1
 
 
 _CHECK_ID_RE = re.compile(r"[a-z][a-z0-9_]*\Z")
@@ -120,6 +141,7 @@ def load_config(
         {
             "command",
             "model",
+            "model_id",
             "variant",
             "model_env",
             "max_concurrency",
@@ -194,6 +216,7 @@ def load_config(
     settings = Settings(
         command=_text(command, "command"),
         model=_text(runner["model"], "model"),
+        model_id=_text(runner["model_id"], "model_id"),
         variant=_text(runner["variant"], "variant"),
         max_concurrency=max_concurrency,
         timeout_s=timeout_s,
@@ -333,10 +356,15 @@ def _check_page(
     settings: Settings,
     checks: list[CheckRule],
     processes: ProcessRegistry,
+    metrics: UsageTotals,
 ) -> dict[str, object]:
     prompt = build_prompt(settings.prompt, page, checks)
     started = time.monotonic()
+    page_usage: dict[str, int | float] = dict.fromkeys(USAGE_KEYS, 0)
     for attempt in range(settings.max_attempts):
+        attempt_started = time.monotonic()
+        response = None
+        failure = None
         print(
             f"ContentCheck: started {page} "
             f"attempt={attempt + 1}/{settings.max_attempts}",
@@ -349,6 +377,7 @@ def _check_page(
                 page=page,
                 prompt=prompt,
                 model=settings.model,
+                model_id=settings.model_id,
                 variant=settings.variant,
                 timeout_s=settings.timeout_s,
                 model_env=settings.model_env,
@@ -366,19 +395,39 @@ def _check_page(
                 )
             except ContentProtocolError as exc:
                 raise PageProtocolError(str(exc)) from exc
+            for violations in results.values():
+                for violation in violations:
+                    violation["msg"] = redact_text(
+                        str(violation["msg"]),
+                        tuple(os.environ.get(name, "") for name in settings.model_env),
+                    )
+        except (OpenCodeError, PageProtocolError) as exc:
+            failure = exc
+        usage = (
+            response.usage if response is not None else getattr(failure, "usage", None)
+        )
+        complete = response.usage_complete if response is not None else False
+        metrics.record(usage, complete)
+        if usage is not None:
+            for key in USAGE_KEYS:
+                page_usage[key] += usage[key]
+        print(
+            f"ContentCheck: attempt {attempt + 1} {page} "
+            f"elapsed_s={time.monotonic() - attempt_started:.3f} "
+            f"usage_complete={str(complete).lower()} "
+            f"{_usage_log(usage) if usage is not None else 'tokens=unavailable'}",
+            flush=True,
+        )
+        if failure is None:
             return {
                 "path": page,
                 "results": results,
-                "usage": response.usage,
+                "usage": page_usage,
                 "elapsed_s": round(time.monotonic() - started, 3),
             }
-        except (OpenCodeError, PageProtocolError) as exc:
-            if not exc.retryable or attempt + 1 == settings.max_attempts:
-                raise
-            print(
-                f"ContentCheck: retrying {page} reason={exc.kind}",
-                flush=True,
-            )
+        if not failure.retryable or attempt + 1 == settings.max_attempts:
+            raise failure
+        print(f"ContentCheck: retrying {page} reason={failure.kind}", flush=True)
     raise AssertionError("unreachable")
 
 
@@ -411,6 +460,13 @@ def _print_results(
     return 1 if counts["P0"] else 0
 
 
+def _usage_log(usage: dict[str, int | float]) -> str:
+    return " ".join(
+        f"tokens_{key}={int(value) if isinstance(value, float) and value.is_integer() else value}"
+        for key, value in usage.items()
+    )
+
+
 def run_content_check(
     *,
     repo_root: Path,
@@ -423,6 +479,7 @@ def run_content_check(
     errors: list[dict[str, str]] = []
 
     if plan.needs_model:
+        metrics = UsageTotals()
         workers = min(settings.max_concurrency, len(plan.selected))
         processes = ProcessRegistry()
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=workers)
@@ -435,7 +492,7 @@ def run_content_check(
         try:
             pending = {
                 executor.submit(
-                    _check_page, repo_root, page, settings, checks, processes
+                    _check_page, repo_root, page, settings, checks, processes, metrics
                 ): page
                 for page in plan.selected
             }
@@ -473,7 +530,11 @@ def run_content_check(
                         )
                     else:
                         pages.append(result)
-                        print(f"ContentCheck: completed {page}", flush=True)
+                        print(
+                            f"ContentCheck: completed {page} "
+                            f"elapsed_s={result['elapsed_s']}",
+                            flush=True,
+                        )
         except BaseException:
             processes.stop_all()
             for future in pending:
@@ -483,6 +544,15 @@ def run_content_check(
             raise
         else:
             executor.shutdown(wait=True)
+        finally:
+            print(
+                f"ContentCheck: finished completed={len(pages)} "
+                f"errors={len(errors)} elapsed_s={time.monotonic() - started:.3f} "
+                f"usage_complete={str(metrics.incomplete_attempts == 0).lower()} "
+                f"incomplete_attempts={metrics.incomplete_attempts} "
+                f"{_usage_log(metrics.tokens)}",
+                flush=True,
+            )
 
     pages.sort(key=lambda page: str(page["path"]))
     errors.sort(key=lambda error: error["path"])

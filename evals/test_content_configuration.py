@@ -18,6 +18,7 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
@@ -52,13 +53,27 @@ class ContentModelConfigurationTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.settings, cls.checks = core.load_config(CONFIG)
 
-    def test_model_uses_a_public_alias_and_secret_backed_id(self) -> None:
+    def test_model_uses_a_public_alias_and_cannbot_gateway(self) -> None:
         self.assertEqual("content-review/content-check", self.settings.model)
-        self.assertEqual(("BASE_URL", "AUTH_TOKEN", "MODEL"), self.settings.model_env)
+        self.assertEqual(
+            ("BASE_URL", "AUTH_TOKEN", "CANNBOT_VKEY"),
+            self.settings.model_env,
+        )
 
         config = json.loads(OPENCODE_CONFIG.read_text(encoding="utf-8"))
-        model = config["provider"]["content-review"]["models"]["content-check"]
-        self.assertEqual("{env:MODEL}", model["id"])
+        provider = config["provider"]["content-review"]
+        self.assertEqual("@ai-sdk/openai-compatible", provider["npm"])
+        self.assertEqual("{env:BASE_URL}", provider["options"]["baseURL"])
+        self.assertEqual("{env:AUTH_TOKEN}", provider["options"]["apiKey"])
+        self.assertEqual(
+            "{env:CANNBOT_VKEY}", provider["options"]["headers"]["x-api-vkey"]
+        )
+        model = provider["models"]["content-check"]
+        self.assertEqual("{env:CONTENT_CHECK_MODEL_ID}", model["id"])
+        self.assertEqual(
+            self.settings.variant,
+            model["variants"][self.settings.variant]["reasoningEffort"],
+        )
         self.assertNotIn("limit", model)
         self.assertEqual("deny", config["permission"]["webfetch"])
         prompt = (
@@ -69,7 +84,23 @@ class ContentModelConfigurationTests(unittest.TestCase):
         workflow = (
             ROOT / ".gitcode/workflows/cannbot-knowledge_actions.yml"
         ).read_text(encoding="utf-8")
-        self.assertIn("MODEL: ${{ secrets.MODEL }}", workflow)
+        self.assertNotIn("MODEL: ${{ secrets.MODEL }}", workflow)
+        self.assertIn("CANNBOT_VKEY: ${{ secrets.CANNBOT_VKEY }}", workflow)
+        with tempfile.TemporaryDirectory() as temporary:
+            credentials = {
+                "BASE_URL": "https://provider.invalid/v1",
+                "AUTH_TOKEN": "token-sentinel",
+                "CANNBOT_VKEY": "vkey-sentinel",
+            }
+            with mock.patch.dict(os.environ, credentials, clear=True):
+                env = opencode_runner.build_env(
+                    opencode_config=self.settings.opencode_config,
+                    model_id="alternate-model-id",
+                    model_env=self.settings.model_env,
+                    state_root=Path(temporary),
+                )
+            self.assertEqual("alternate-model-id", env["CONTENT_CHECK_MODEL_ID"])
+            self.assertNotIn("MODEL", env)
 
     def test_workflow_keeps_cann_contract_and_registered_runner_specs(self) -> None:
         workflow = (
@@ -94,10 +125,18 @@ class ContentModelConfigurationTests(unittest.TestCase):
             with mock.patch.dict(os.environ, {}, clear=True):
                 empty = core.build_selection_plan([], self.settings, True)
                 selected = [
-                    f"knowledge/domain/concepts/{index:02}.md"
+                    f"knowledge/domain/concepts/{index:03}.md"
                     for index in range(self.settings.max_changed_pages + 1)
                 ]
                 skipped = core.build_selection_plan(selected, self.settings, True)
+                at_limit = core.build_selection_plan(selected[:-1], self.settings, True)
+                self.assertTrue(at_limit.needs_model)
+                self.assertIsNone(at_limit.skip)
+                self.assertTrue(
+                    core.build_selection_plan(
+                        selected, self.settings, False
+                    ).needs_model
+                )
                 with mock.patch.object(core, "_check_page") as check_page:
                     empty_output = repo / "empty.json"
                     skip_output = repo / "skip.json"
@@ -125,7 +164,7 @@ class ContentModelConfigurationTests(unittest.TestCase):
             check_page.assert_not_called()
             self.assertIsNotNone(json.loads(skip_output.read_text())["skip"])
 
-    def test_missing_model_secret_is_a_non_retryable_page_error(self) -> None:
+    def test_missing_gateway_vkey_is_a_non_retryable_page_error(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             repo = Path(temporary)
             page = "knowledge/domain/concepts/example.md"
@@ -152,10 +191,137 @@ class ContentModelConfigurationTests(unittest.TestCase):
             self.assertEqual(2, exit_code)
             self.assertEqual([], result["pages"])
             self.assertEqual([page], [error["path"] for error in result["errors"]])
-            self.assertIn("MODEL", result["errors"][0]["message"])
+            self.assertIn("CANNBOT_VKEY", result["errors"][0]["message"])
             serialized = json.dumps(result, ensure_ascii=False)
             self.assertNotIn(environment["AUTH_TOKEN"], serialized)
             self.assertNotIn(environment["BASE_URL"], serialized)
+
+    def test_usage_includes_retries_failed_pages_and_marks_missing_counters(
+        self,
+    ) -> None:
+        good = json.dumps({check.id: [] for check in self.checks})
+
+        def response(text, count, complete=True):
+            usage = dict.fromkeys(protocol.USAGE_KEYS, 0)
+            usage["input"] = count
+            return opencode_runner.OpenCodeResult(text, usage, complete)
+
+        cases = (
+            ([response("bad JSON", 100), response(good, 7)], 0, 107, 0),
+            ([response("bad JSON", 100), response("bad JSON", 7)], 2, 107, 0),
+            ([response(good, 0, False)], 0, 0, 1),
+            ([opencode_runner.OpenCodeRuntimeError("HTTP 403")], 2, 0, 1),
+            (
+                [
+                    opencode_runner.OpenCodeRuntimeError(
+                        "HTTP 403", usage=response(good, 9).usage
+                    )
+                ],
+                2,
+                9,
+                1,
+            ),
+        )
+        for responses, expected_exit, tokens, incomplete in cases:
+            with self.subTest(tokens=tokens, incomplete=incomplete, exit=expected_exit):
+                with tempfile.TemporaryDirectory() as temporary:
+                    repo = Path(temporary)
+                    page = "knowledge/ops/ascendc/apis/example.md"
+                    target = repo / page
+                    target.parent.mkdir(parents=True)
+                    target.write_text("# Example\n", encoding="utf-8")
+                    output = repo / "result.json"
+                    log = io.StringIO()
+                    with (
+                        mock.patch.object(core, "run_opencode", side_effect=responses),
+                        redirect_stdout(log),
+                    ):
+                        exit_code = core.run_content_check(
+                            repo_root=repo,
+                            plan=core.build_selection_plan([page], self.settings, True),
+                            settings=replace(self.settings, max_attempts=2),
+                            checks=self.checks,
+                            output=output,
+                        )
+                    self.assertEqual(expected_exit, exit_code)
+                    total = next(
+                        line
+                        for line in log.getvalue().splitlines()
+                        if line.startswith("ContentCheck: finished")
+                    )
+                    self.assertIn(f"tokens_input={tokens} ", total)
+                    self.assertIn("elapsed_s=", total)
+                    self.assertIn(f"incomplete_attempts={incomplete} ", total)
+                    self.assertIn(
+                        f"usage_complete={str(incomplete == 0).lower()} ", total
+                    )
+                    pages = json.loads(output.read_text())["pages"]
+                    if pages:
+                        self.assertEqual(tokens, pages[0]["usage"]["input"])
+
+    def test_token_counters_keep_integer_precision(self) -> None:
+        for count in (1_234_567, 2**53 + 1):
+            with self.subTest(count=count):
+                events = [
+                    {"type": "step_finish", "part": {"tokens": {"input": count}}},
+                    {"type": "text", "part": {"text": "{}"}},
+                ]
+                result = opencode_runner.parse_events(
+                    "\n".join(map(json.dumps, events))
+                )
+                self.assertEqual(count, result.usage["input"])
+                self.assertIn(f"tokens_input={count} ", core._usage_log(result.usage))
+
+    def test_provider_errors_hide_raw_details_and_keep_partial_usage(self) -> None:
+        events = [
+            {"type": "step_finish", "part": {"tokens": {"input": 23}}},
+            {
+                "type": "error",
+                "error": {
+                    "name": "private-provider-name",
+                    "data": {"statusCode": 429, "message": "private-provider-detail"},
+                },
+            },
+        ]
+        with self.assertRaises(opencode_runner.OpenCodeRuntimeError) as raised:
+            opencode_runner.parse_events("\n".join(map(json.dumps, events)))
+        self.assertEqual("OpenCode 请求失败 (HTTP 429)", str(raised.exception))
+        self.assertTrue(raised.exception.retryable)
+        self.assertEqual(23, raised.exception.usage["input"])
+
+    def test_cli_failure_keeps_partial_usage_without_stderr(self) -> None:
+        event = json.dumps({"type": "step_finish", "part": {"tokens": {"input": 19}}})
+        for tail, expected_error, timeout in (
+            ("sys.exit(7)", opencode_runner.OpenCodeRuntimeError, 10),
+            ("time.sleep(30)", opencode_runner.OpenCodeTimeout, 3),
+        ):
+            with self.subTest(error=expected_error.__name__):
+                with tempfile.TemporaryDirectory() as temporary:
+                    repo = Path(temporary)
+                    executable = repo / "fake-opencode"
+                    executable.write_text(
+                        f"#!{sys.executable}\nimport sys, time\n"
+                        f"print({event!r}, flush=True)\n"
+                        "print('private-stderr-detail', file=sys.stderr, flush=True)\n"
+                        f"{tail}\n",
+                        encoding="utf-8",
+                    )
+                    executable.chmod(0o755)
+                    with self.assertRaises(expected_error) as raised:
+                        opencode_runner.run_opencode(
+                            command=str(executable),
+                            repo_root=repo,
+                            page="knowledge/example.md",
+                            prompt="check",
+                            model=self.settings.model,
+                            model_id=self.settings.model_id,
+                            variant=self.settings.variant,
+                            timeout_s=timeout,
+                            model_env=(),
+                            opencode_config=self.settings.opencode_config,
+                        )
+                    self.assertNotIn("private-stderr-detail", str(raised.exception))
+                    self.assertEqual(19, raised.exception.usage["input"])
 
     def test_final_model_text_is_redacted(self) -> None:
         secret = "model-secret-sentinel"
@@ -168,6 +334,35 @@ class ContentModelConfigurationTests(unittest.TestCase):
         result = opencode_runner.parse_events(event, redact=(secret,))
         self.assertNotIn(secret, result.text)
         self.assertIn("[redacted]", result.text)
+
+        results = {check.id: [] for check in self.checks}
+        results[self.checks[0].id] = [{"msg": secret, "line": 1}]
+        response = opencode_runner.OpenCodeResult(
+            json.dumps(results).replace(secret, r"\u006dodel-secret-sentinel"),
+            dict.fromkeys(protocol.USAGE_KEYS, 0),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            repo = Path(temporary)
+            page = "knowledge/ops/ascendc/apis/example.md"
+            target = repo / page
+            target.parent.mkdir(parents=True)
+            target.write_text("# Example\n", encoding="utf-8")
+            output = repo / "result.json"
+            log = io.StringIO()
+            with (
+                mock.patch.dict(os.environ, {"AUTH_TOKEN": secret}),
+                mock.patch.object(core, "run_opencode", return_value=response),
+                redirect_stdout(log),
+            ):
+                core.run_content_check(
+                    repo_root=repo,
+                    plan=core.build_selection_plan([page], self.settings, True),
+                    settings=self.settings,
+                    checks=self.checks,
+                    output=output,
+                )
+            self.assertNotIn(secret, log.getvalue() + output.read_text())
+            self.assertIn("[redacted]", log.getvalue())
 
     def test_summary_and_public_artifact_hide_model_metadata(self) -> None:
         plan = {

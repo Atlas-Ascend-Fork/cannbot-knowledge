@@ -165,7 +165,7 @@ stages:
               RESULT_DIR: ${{ runner.temp }}/knowledge-check/${{ atomgit.workflow_run_id }}/content
               BASE_URL: ${{ secrets.BASE_URL }}
               AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
-              MODEL: ${{ secrets.MODEL }}
+              CANNBOT_VKEY: ${{ secrets.CANNBOT_VKEY }}
             run: |
               bash .gitcode/scripts/knowledge_check.sh \
                 .gitcode/scripts/content_check.py \

@@ -5,21 +5,24 @@
   "autoupdate": false,
   "provider": {
     "content-review": {
-      "npm": "@ai-sdk/anthropic",
+      "npm": "@ai-sdk/openai-compatible",
       "name": "Content Review",
       "options": {
-        "baseURL": "{env:BASE_URL}/v1",
-        "authToken": "{env:AUTH_TOKEN}"
+        "baseURL": "{env:BASE_URL}",
+        "apiKey": "{env:AUTH_TOKEN}",
+        "headers": {
+          "x-api-vkey": "{env:CANNBOT_VKEY}"
+        }
       },
       "models": {
         "content-check": {
-          "id": "{env:MODEL}",
+          "id": "{env:CONTENT_CHECK_MODEL_ID}",
           "name": "Content Check",
           "reasoning": true,
           "tool_call": true,
           "variants": {
-            "medium": {
-              "effort": "medium"
+            "low": {
+              "reasoningEffort": "low"
             }
           }
         }

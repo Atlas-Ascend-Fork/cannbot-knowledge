@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import signal
 import subprocess
@@ -33,10 +34,22 @@ class OpenCodeError(RuntimeError):
     kind = "runner"
     retryable = False
 
+    def __init__(
+        self, message: str, *, usage: dict[str, int | float] | None = None
+    ) -> None:
+        super().__init__(message)
+        self.usage = usage
+
 
 class OpenCodeRuntimeError(OpenCodeError):
-    def __init__(self, message: str, *, retryable: bool = False) -> None:
-        super().__init__(message)
+    def __init__(
+        self,
+        message: str,
+        *,
+        retryable: bool = False,
+        usage: dict[str, int | float] | None = None,
+    ) -> None:
+        super().__init__(message, usage=usage)
         self.retryable = retryable
 
 
@@ -57,7 +70,8 @@ class OpenCodeIncompleteError(OpenCodeError):
 @dataclass(frozen=True)
 class OpenCodeResult:
     text: str
-    usage: dict[str, float]
+    usage: dict[str, int | float]
+    usage_complete: bool = True
 
 
 class ProcessRegistry:
@@ -87,34 +101,36 @@ class ProcessRegistry:
             _stop_process(process)
 
 
-def _number(value: object) -> float:
-    return float(value) if isinstance(value, (int, float)) else 0.0
+def _number(value: object) -> int | float:
+    if value is None:
+        return 0
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+        raise OpenCodeProtocolError("OpenCode token 计数无效")
+    if isinstance(value, float) and not math.isfinite(value):
+        raise OpenCodeProtocolError("OpenCode token 计数无效")
+    return value
 
 
 def _error_details(value: object) -> tuple[str, int | None]:
     if not isinstance(value, dict):
         return "OpenCode 请求失败", None
-    name = str(value.get("name") or "OpenCodeError")
     data = value.get("data")
     if not isinstance(data, dict):
-        return name, None
-    message = str(data.get("message") or "").strip()
+        return "OpenCode 请求失败", None
     raw_status = data.get("statusCode") or data.get("status")
     try:
         status = int(raw_status) if raw_status is not None else None
     except (TypeError, ValueError):
         status = None
-    detail = f"HTTP {status}" if status is not None else ""
-    if message:
-        detail = f"{detail}: {message}" if detail else message
-    return (f"{name}: {detail}" if detail else name), status
+    detail = f" (HTTP {status})" if status is not None else ""
+    return f"OpenCode 请求失败{detail}", status
 
 
 def _is_retryable_status(status: int | None) -> bool:
     return status == 429 or (status is not None and status >= 500)
 
 
-def _redact(text: str, values: tuple[str, ...]) -> str:
+def redact_text(text: str, values: tuple[str, ...]) -> str:
     for value in values:
         if value:
             text = text.replace(value, "[redacted]")
@@ -126,21 +142,27 @@ def parse_events(stdout: str, *, redact: tuple[str, ...] = ()) -> OpenCodeResult
     final_text = ""
     last_error: tuple[str, int | None] | None = None
     usage = {
-        "input": 0.0,
-        "output": 0.0,
-        "reasoning": 0.0,
-        "cache_read": 0.0,
-        "cache_write": 0.0,
+        "input": 0,
+        "output": 0,
+        "reasoning": 0,
+        "cache_read": 0,
+        "cache_write": 0,
     }
+    usage_seen = False
+    usage_complete = True
     for raw_line in stdout.splitlines():
         if not raw_line.strip():
             continue
         try:
             event = json.loads(raw_line)
         except json.JSONDecodeError as exc:
-            raise OpenCodeProtocolError("OpenCode 输出了非 JSONL 内容") from exc
+            raise OpenCodeProtocolError(
+                "OpenCode 输出了非 JSONL 内容", usage=usage if usage_seen else None
+            ) from exc
         if not isinstance(event, dict):
-            raise OpenCodeProtocolError("OpenCode JSONL 事件不是 object")
+            raise OpenCodeProtocolError(
+                "OpenCode JSONL 事件不是 object", usage=usage if usage_seen else None
+            )
 
         event_type = event.get("type")
         part = event.get("part")
@@ -151,30 +173,51 @@ def parse_events(stdout: str, *, redact: tuple[str, ...] = ()) -> OpenCodeResult
         elif event_type == "step_finish" and isinstance(part, dict):
             tokens = part.get("tokens")
             if not isinstance(tokens, dict):
+                usage_complete = False
                 continue
+            if tokens.get("input") is None or tokens.get("output") is None:
+                usage_complete = False
             cache = tokens.get("cache")
             cache = cache if isinstance(cache, dict) else {}
-            usage["input"] += _number(tokens.get("input"))
-            usage["output"] += _number(tokens.get("output"))
-            usage["reasoning"] += _number(tokens.get("reasoning"))
-            usage["cache_read"] += _number(cache.get("read"))
-            usage["cache_write"] += _number(cache.get("write"))
+            try:
+                counts = {
+                    "input": _number(tokens.get("input")),
+                    "output": _number(tokens.get("output")),
+                    "reasoning": _number(tokens.get("reasoning")),
+                    "cache_read": _number(cache.get("read")),
+                    "cache_write": _number(cache.get("write")),
+                }
+            except OpenCodeProtocolError as exc:
+                exc.usage = usage if usage_seen else None
+                raise
+            usage_seen = True
+            for key, value in counts.items():
+                usage[key] += value
         elif event_type == "error":
             last_error = _error_details(event.get("error"))
 
     if last_error:
         message, status = last_error
         raise OpenCodeRuntimeError(
-            _redact(message, redact), retryable=_is_retryable_status(status)
+            message,
+            retryable=_is_retryable_status(status),
+            usage=usage if usage_seen else None,
         )
     if not final_text:
-        raise OpenCodeIncompleteError("OpenCode 未返回最终文本")
-    return OpenCodeResult(text=_redact(final_text, redact), usage=usage)
+        raise OpenCodeIncompleteError(
+            "OpenCode 未返回最终文本", usage=usage if usage_seen else None
+        )
+    return OpenCodeResult(
+        text=redact_text(final_text, redact),
+        usage=usage,
+        usage_complete=usage_seen and usage_complete,
+    )
 
 
 def build_env(
     *,
     opencode_config: str,
+    model_id: str,
     model_env: tuple[str, ...],
     state_root: Path,
 ) -> dict[str, str]:
@@ -190,6 +233,7 @@ def build_env(
         {
             "HOME": os.fspath(state_root / "home"),
             "NO_COLOR": "1",
+            "CONTENT_CHECK_MODEL_ID": model_id,
             "OPENCODE_CONFIG_CONTENT": opencode_config,
             "OPENCODE_DISABLE_CLAUDE_CODE": "1",
             "OPENCODE_DISABLE_PROJECT_CONFIG": "1",
@@ -214,11 +258,6 @@ def _stop_process(process: subprocess.Popen[str]) -> None:
             pass
 
 
-def _stderr_detail(stderr: str, env: dict[str, str], model_env: tuple[str, ...]) -> str:
-    detail = _redact(stderr.strip(), tuple(env.get(name, "") for name in model_env))
-    return detail.splitlines()[-1][:1000] if detail else ""
-
-
 def run_opencode(
     *,
     command: str,
@@ -226,6 +265,7 @@ def run_opencode(
     page: str,
     prompt: str,
     model: str,
+    model_id: str,
     variant: str,
     timeout_s: float,
     model_env: tuple[str, ...],
@@ -252,9 +292,11 @@ def run_opencode(
     with tempfile.TemporaryDirectory(prefix="content-check-opencode-") as temporary:
         env = build_env(
             opencode_config=opencode_config,
+            model_id=model_id,
             model_env=model_env,
             state_root=Path(temporary),
         )
+        timed_out = False
         try:
             process = subprocess.Popen(
                 argv,
@@ -266,18 +308,18 @@ def run_opencode(
                 text=True,
                 start_new_session=True,
             )
-        except FileNotFoundError as exc:
-            raise OpenCodeError(f"找不到 OpenCode 可执行文件: {command}") from exc
+        except OSError:
+            raise OpenCodeError("无法启动 OpenCode 进程") from None
 
         if processes is not None:
             processes.add(process)
         try:
             try:
-                stdout, stderr = process.communicate(prompt, timeout=timeout_s)
-            except subprocess.TimeoutExpired as exc:
+                stdout, _ = process.communicate(prompt, timeout=timeout_s)
+            except subprocess.TimeoutExpired:
                 _stop_process(process)
-                process.communicate()
-                raise OpenCodeTimeout(f"OpenCode 页面检查超时({timeout_s:g}s)") from exc
+                stdout, _ = process.communicate()
+                timed_out = True
             except BaseException:
                 _stop_process(process)
                 process.communicate()
@@ -286,21 +328,20 @@ def run_opencode(
             if processes is not None:
                 processes.discard(process)
 
-    if process.returncode != 0:
-        if stdout.strip():
-            try:
-                parse_events(
-                    stdout,
-                    redact=tuple(env.get(name, "") for name in model_env),
-                )
-            except (OpenCodeIncompleteError, OpenCodeProtocolError):
-                pass
-        detail = _stderr_detail(stderr, env, model_env)
-        message = f"OpenCode 退出码 {process.returncode}"
-        if detail:
-            message = f"{message}: {detail}"
-        raise OpenCodeRuntimeError(message)
-    return parse_events(
-        stdout,
-        redact=tuple(env.get(name, "") for name in model_env),
-    )
+    try:
+        response = parse_events(
+            stdout, redact=tuple(env.get(name, "") for name in model_env)
+        )
+    except OpenCodeError as exc:
+        if not timed_out and (
+            not process.returncode or isinstance(exc, OpenCodeRuntimeError)
+        ):
+            raise
+        usage = exc.usage
+    else:
+        if not timed_out and not process.returncode:
+            return response
+        usage = response.usage
+    if timed_out:
+        raise OpenCodeTimeout(f"OpenCode 页面检查超时({timeout_s:g}s)", usage=usage)
+    raise OpenCodeRuntimeError(f"OpenCode 退出码 {process.returncode}", usage=usage)

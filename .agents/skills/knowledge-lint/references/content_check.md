@@ -6,7 +6,7 @@ Reviewer 只读取仓库快照，不发起网络请求；外部来源无法从�
 
 ## 检查项
 
-`content_check.toml` 是启用项、严重度、公开模型别名、凭据环境、并发、超时、重试和页面上限的事实源。模型 ID 由 `MODEL` 提供，端点与令牌由 `BASE_URL`、`AUTH_TOKEN` 提供；这些值只在实际启动 reviewer 时读取，不写入计划、结果或 Summary。`content_check_prompt.md` 定义 reviewer 的证据边界和页面 JSON 格式。
+`content_check.toml` 是启用项、严重度、公开模型别名、实际模型 ID、凭据环境、并发、超时、重试和页面上限的事实源；模型 ID 在启动时传给 OpenCode。`BASE_URL` 是带 `/v1` 的完整 OpenAI-compatible 端点，`AUTH_TOKEN` 是 API key，`CANNBOT_VKEY` 用于 `x-api-vkey` 请求头。凭据只在实际启动 reviewer 时读取，不写入计划、结果或 Summary。`content_check_prompt.md` 定义 reviewer 的证据边界和页面 JSON 格式。
 
 ## 页面协议
 
@@ -17,3 +17,5 @@ Reviewer 只读取仓库快照，不发起网络请求；外部来源无法从�
 `scripts/content_protocol.py` 严格校验选页计划、页面结果、核心汇总和退出码一致性。页面未完成进入 `errors`；仓库、选页或协议级故障进入 `runtime_error`，不计入未完成页数。
 
 Finding 展示前按 P0、P1、P2、页面路径、行号、检查 ID 和消息排序。页面级结果不允许缺项、多项、重复页面、非有限 usage 或与选页计划不一致的覆盖范围。
+
+运行日志记录每次尝试的耗时和 token 计数，批次汇总包含重试及失败调用已返回的计数。`usage_complete=false` 表示计数不完整，`tokens=unavailable` 表示该次调用没有返回计数；两者均不代表零消耗。输入、输出、推理和缓存计数分别保留，不相加作为计费总量。请求失败仅记录 HTTP 状态或进程退出码，不回显服务端响应正文、原始错误名称或 stderr。

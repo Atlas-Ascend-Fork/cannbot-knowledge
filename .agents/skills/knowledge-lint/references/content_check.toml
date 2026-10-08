@@ -1,15 +1,16 @@
 [runner]
 command = "opencode"
 model = "content-review/content-check"
-variant = "medium"
-model_env = ["BASE_URL", "AUTH_TOKEN", "MODEL"]
+model_id = "glm-5.3-flash"
+variant = "low"
+model_env = ["BASE_URL", "AUTH_TOKEN", "CANNBOT_VKEY"]
 max_concurrency = 3
 timeout_s = 600
 max_attempts = 2
 # 长页面检查期间定期输出存活进度，避免 Job 日志长时间无更新。
 progress_interval_s = 30
 # 仅限制 --changed-files 自动选页；--pages 显式页不受限。
-max_changed_pages = 12
+max_changed_pages = 120
 prompt = "content_check_prompt.md"
 opencode_config = "../scripts/opencode.json"
 
