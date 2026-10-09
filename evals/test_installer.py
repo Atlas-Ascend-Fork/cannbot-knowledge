@@ -246,6 +246,56 @@ class InstallerTests(unittest.TestCase):
             self.assertIn("ops-knowledge-cv-ingest", prompt)
             self.assertIn("### 贡献者附加流程", prompt)
 
+    def test_platform_option_is_persisted_and_preserved(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            installed = self.run_installer(
+                project, "codex", "consumer", "--platform", "a2"
+            )
+            self.assertEqual(0, installed.returncode, installed.stderr)
+            knowledge_env = project / ".cannbot/knowledge.env"
+            self.assertIn(
+                "export CANNBOT_KNOWLEDGE_PLATFORM=a2",
+                knowledge_env.read_text(encoding="utf-8"),
+            )
+            reinstalled = self.run_installer(project, "codex", "consumer")
+            self.assertEqual(0, reinstalled.returncode, reinstalled.stderr)
+            self.assertIn(
+                "export CANNBOT_KNOWLEDGE_PLATFORM=a2",
+                knowledge_env.read_text(encoding="utf-8"),
+            )
+
+    def test_invalid_platform_does_not_modify_existing_installation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            installed = self.run_installer(
+                project, "codex", "consumer", "--platform", "a2"
+            )
+            self.assertEqual(0, installed.returncode, installed.stderr)
+
+            def snapshot() -> dict[str, tuple[str, bytes | str]]:
+                entries: dict[str, tuple[str, bytes | str]] = {}
+                for path in sorted(project.rglob("*")):
+                    relative = str(path.relative_to(project))
+                    if path.is_symlink():
+                        entries[relative] = ("symlink", os.readlink(path))
+                    elif path.is_file():
+                        entries[relative] = ("file", path.read_bytes())
+                return entries
+
+            before = snapshot()
+            rejected = self.run_installer(
+                project, "codex", "consumer", "--platform", "a2_typo"
+            )
+            self.assertEqual(2, rejected.returncode)
+            self.assertIn("unknown platform: a2_typo", rejected.stderr)
+            self.assertEqual(before, snapshot())
+
+            empty = self.run_installer(project, "codex", "consumer", "--platform=")
+            self.assertEqual(2, empty.returncode)
+            self.assertIn("--platform requires a non-empty value", empty.stderr)
+            self.assertEqual(before, snapshot())
+
     def test_consumer_prompt_routes_to_installed_skill_sources(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)

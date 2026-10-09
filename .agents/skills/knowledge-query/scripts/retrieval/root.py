@@ -15,6 +15,7 @@ from urllib.parse import quote
 
 
 ENV_KEY = "CANNBOT_KNOWLEDGE_ROOT"
+PLATFORM_ENV_KEY = "CANNBOT_KNOWLEDGE_PLATFORM"
 
 
 def local_markdown_link(title: str, path: str | Path) -> str:
@@ -94,7 +95,7 @@ def extract_knowledge_root(argv: Iterable[str]) -> tuple[list[str], str | None]:
     return cleaned, roots[0] if roots else None
 
 
-def _project_env_value(path: Path) -> str | None:
+def _project_env_value(path: Path, key: str = ENV_KEY) -> str | None:
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except OSError as exc:
@@ -110,8 +111,23 @@ def _project_env_value(path: Path) -> str | None:
         if tokens and tokens[0] == "export":
             tokens = tokens[1:]
         for token in tokens:
-            if token.startswith(f"{ENV_KEY}="):
+            if token.startswith(f"{key}="):
                 return token.split("=", 1)[1]
+    return None
+
+
+def project_env_value(key: str) -> str | None:
+    """Return a project config value, preferring the process environment."""
+    configured = os.environ.get(key)
+    if configured:
+        return configured
+    for parent in (Path.cwd(), *Path.cwd().parents):
+        env_file = parent / ".cannbot" / "knowledge.env"
+        if env_file.is_file():
+            value = _project_env_value(env_file, key)
+            if value:
+                return value
+            break
     return None
 
 

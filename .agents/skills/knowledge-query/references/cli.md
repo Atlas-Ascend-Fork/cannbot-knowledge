@@ -62,12 +62,14 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 
 `--type` 过滤路径 Profile ID（如 `apis`），输出中的 `type` 是 OKF type（如 `API`）。`-k`、`--k`、`--limit` 等价。Search 默认输出 JSON；`--text` 供 Agent 或人工阅读精简候选：带本地 Markdown 链接的标题、路径、摘要和行数，不改变过滤与排序。普通问答选卡后阅读全文，采用该卡时可直接引用标题链接；状态、平台和复核事件回到正文核对。评分、信任层级及正式审计仍使用完整 JSON/receipt，不把文本输出当作审计载荷。
 
+安装器可把项目缺省平台写入 `.cannbot/knowledge.env` 的 `CANNBOT_KNOWLEDGE_PLATFORM`，也可直接在进程环境中设置同名变量。普通 search 省略 `--platform` 时使用该值；显式 `--platform` 优先。`discover`、平台识别查询和 `--include-unlocated` 不使用该回退。没有缺省平台时，普通 search 仍要求显式 `--platform`。
+
 ### 过滤与匹配
 
 - 重复的 tag 和 platform 使用 AND。
 - task 自动规范为 `task.*` 并校验 task 维度。
 - domain、route、platform、tag 和跨技术端点必须注册；Profile 必须受支持。
-- 普通搜索至少传一个 platform。`--technology platforms` 可在映射产品平台时不传；未定位 draft 使用 `--include-unlocated --status draft|all`，且不能同时传 platform。
+- 普通搜索必须有目标 platform，可显式传 `--platform`，或由 `CANNBOT_KNOWLEDGE_PLATFORM` 提供缺省值。`--technology platforms` 可在映射产品平台时不传；未定位 draft 使用 `--include-unlocated --status draft|all`，且不能同时传 platform。
 - `--include-shared` 只与具体 technology 一起使用，并只附加同领域 shared。
 - Search 当前不提供 CANN 版本过滤；版本字段仍可随命中返回，具体适用边界由正文核对。
 - `text` 对 title、description、tags/aliases 和正文加权；`literal` 要求完整查询串出现在这些字段中，并按精确标题、标题片段、摘要、正文的顺序降权。普通正文链接与其他正文一起进入索引，不按专用关系块标记排除内容。
@@ -77,7 +79,7 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
 
 `--receipt` 原子写入 schema、完整请求、canonical 请求指纹、知识仓状态、索引版本、语料/治理指纹、命中卡片指纹和原始结果。目标目录项必须不存在；已有文件、目录和符号链接（包括悬空链接）均拒绝，不沿目标链接创建其他文件。这一约定同时适用于 search、state 和 outcome receipt。审计流程的 `--decision` 使用稳定 ID，并把文件放在调用方实验目录。State 校验会重新计算请求指纹，要求每条 receipt 的平台集合与 state 目标完全相同，核对完整当前索引 provenance，并按原请求重放过滤、评分、排序和命中；ready receipt 绑定每个 search receipt 的文件 SHA-256，outcome 校验会再次确认这些文件未变化。
 
-每个命中包含 rank、score、Concept ID、绝对 `local_path`、正文行数、OKF type、Profile、trust tier、范围、生命周期、卡片 SHA-256 及最多两个 source。顶层 `results` 是规范字段，`hits` 是迁移兼容别名。退出码 `0` 包括零命中；非法过滤、索引陈旧、知识根不可用或 receipt 已存在时退出码为 `2`。
+每个命中包含 rank、score、Concept ID、绝对 `local_path`、正文行数、OKF type、Profile、trust tier、范围、生命周期、卡片 SHA-256 及最多两个 source。顶层 `results` 是规范字段，`hits` 是迁移兼容别名。退出码 `0` 包括零命中；非法过滤、索引陈旧、知识根不可用或 receipt 已存在时退出码为 `2`。失败时同一结构化 error JSON 同时写入 stdout 和 stderr，便于管道消费方发现参数或索引错误。
 
 `count` 仅表示本次返回的结果数，受 limit 限制；CLI 不返回全量匹配数。达到 limit 且目标定义仍未出现时，可扩大 k 或按问题细化，不能把前 k 项说成全部 API/全部调用者。
 

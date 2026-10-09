@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import os
 import shutil
 import sqlite3
 import subprocess
@@ -413,6 +414,100 @@ class RetrievalIndexTests(unittest.TestCase):
             )
             self.assertEqual(missing_platform.returncode, 2)
             self.assertIn("platform is required", missing_platform.stderr)
+            self.assertEqual(
+                json.loads(missing_platform.stdout), json.loads(missing_platform.stderr)
+            )
+
+            parse_error_cases = (
+                ([*command, "--platform"], "expected one argument"),
+                ([*command, "--limit", "oops"], "invalid int value"),
+                ([*command, "--status", "bogus"], "invalid choice"),
+                ([*command, "--unknown"], "unrecognized arguments"),
+            )
+            for invalid_command, expected_message in parse_error_cases:
+                with self.subTest(expected_message=expected_message):
+                    parsed = subprocess.run(
+                        invalid_command, check=False, text=True, capture_output=True
+                    )
+                    self.assertEqual(parsed.returncode, 2)
+                    stdout_payload = json.loads(parsed.stdout)
+                    stderr_payload = json.loads(parsed.stderr)
+                    self.assertEqual(stdout_payload, stderr_payload)
+                    self.assertEqual(
+                        "ValueError", stdout_payload["error"]["type"]
+                    )
+                    self.assertIn(expected_message, stdout_payload["error"]["message"])
+
+            root_help = subprocess.run(
+                [sys.executable, str(QUERY), "--help"],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(root_help.returncode, 0)
+            self.assertIn("usage:", root_help.stdout)
+            self.assertEqual("", root_help.stderr)
+            search_help = subprocess.run(
+                [sys.executable, str(QUERY), "search", "--help"],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(search_help.returncode, 0)
+            self.assertIn("usage:", search_help.stdout)
+            self.assertEqual("", search_help.stderr)
+
+    def test_search_uses_project_default_platform_and_explicit_override(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            work = Path(temporary)
+            root = work / "repository"
+            project = work / "project"
+            make_root(root)
+            project.mkdir()
+            (project / ".cannbot").mkdir()
+            (project / ".cannbot/knowledge.env").write_text(
+                f'export CANNBOT_KNOWLEDGE_ROOT="{root}"\n'
+                "export CANNBOT_KNOWLEDGE_PLATFORM=a2\n",
+                encoding="utf-8",
+            )
+            built = run_index(root, "build")
+            self.assertEqual(built.returncode, 0, built.stderr)
+            command = [
+                sys.executable,
+                str(QUERY),
+                "search",
+                "--query",
+                "Synthetic API",
+                "--technology",
+                "ascendc",
+            ]
+            environment = dict(os.environ)
+            environment.pop("CANNBOT_KNOWLEDGE_PLATFORM", None)
+            defaulted = subprocess.run(
+                command,
+                cwd=project,
+                env=environment,
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(defaulted.returncode, 0, defaulted.stderr)
+            default_payload = json.loads(defaulted.stdout)
+            self.assertEqual(["a2"], default_payload["request"]["platforms"])
+            self.assertEqual(1, default_payload["count"])
+
+            explicit = subprocess.run(
+                [*command, "--platform", "a3"],
+                cwd=project,
+                env=environment,
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(explicit.returncode, 0, explicit.stderr)
+            explicit_payload = json.loads(explicit.stdout)
+            self.assertEqual(["a3"], explicit_payload["request"]["platforms"])
+            self.assertEqual(0, explicit_payload["count"])
 
     def test_literal_search_prioritizes_title_and_includes_ordinary_links(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -596,7 +691,9 @@ class RetrievalIndexTests(unittest.TestCase):
                             [*command, *arguments, output_mode], check=False, text=True, capture_output=True,
                         )
                         self.assertEqual(result.returncode, 2, result.stderr)
-                        self.assertEqual("", result.stdout)
+                        self.assertEqual(
+                            json.loads(result.stdout), json.loads(result.stderr)
+                        )
             self.assertEqual(before, snapshot(), "Search must not mutate cards, governance or index")
 
     def test_text_citation_escapes_title_and_round_trips_special_root_path(self) -> None:

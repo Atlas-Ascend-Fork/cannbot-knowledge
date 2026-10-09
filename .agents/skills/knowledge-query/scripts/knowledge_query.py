@@ -31,6 +31,8 @@ from retrieval.root import (  # noqa: E402
     canonical_json_sha256,
     extract_knowledge_root,
     local_markdown_link,
+    PLATFORM_ENV_KEY,
+    project_env_value,
     repository_state,
     resolve_root,
 )
@@ -52,6 +54,13 @@ FILTER_FIELDS = (
     "target_technology",
     "status",
 )
+
+
+class QueryArgumentParser(argparse.ArgumentParser):
+    """Route CLI syntax errors through the query error contract."""
+
+    def error(self, message: str) -> None:
+        raise ValueError(message)
 
 
 def load_governance(root: Path) -> tuple[dict[str, object], set[str]]:
@@ -135,6 +144,20 @@ def validate_filters(registries: dict[str, object], args: argparse.Namespace) ->
             "platform is required; determine a target platform, use the platforms scope "
             "for identification, or explicitly request draft --include-unlocated cards"
         )
+
+
+def apply_default_platform(args: argparse.Namespace) -> None:
+    """Use the installed project platform only when search has no explicit one."""
+    if (
+        args.command != "search"
+        or args.platform
+        or args.include_unlocated
+        or args.technology == "platforms"
+    ):
+        return
+    configured = project_env_value(PLATFORM_ENV_KEY)
+    if configured:
+        args.platform = [configured]
 
 
 def matches(
@@ -508,14 +531,16 @@ def search(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    result = argparse.ArgumentParser(
+    result = QueryArgumentParser(
         prog="knowledge_query",
         allow_abbrev=False,
         description=__doc__,
         epilog="Global root option accepted anywhere: --knowledge-root PATH.",
     )
     result.add_argument("--knowledge-root", help=argparse.SUPPRESS)
-    commands = result.add_subparsers(dest="command", required=True)
+    commands = result.add_subparsers(
+        dest="command", required=True, parser_class=QueryArgumentParser
+    )
     discover_cmd = commands.add_parser("discover", allow_abbrev=False)
     discover_cmd.add_argument("--json", action="store_true")
     search_cmd = commands.add_parser("search", allow_abbrev=False)
@@ -552,6 +577,7 @@ def main(argv: list[str] | None = None) -> int:
         args = build_parser().parse_args(cleaned)
         if getattr(args, "limit", 1) < 1:
             raise ValueError("--limit must be greater than zero")
+        apply_default_platform(args)
         root = resolve_root(explicit, __file__)
         connection, index_metadata = open_index(
             root,
@@ -562,13 +588,12 @@ def main(argv: list[str] | None = None) -> int:
             return discover(root, cards, index_metadata, args)
         return search(root, cards, index_metadata, connection, args)
     except (OSError, ValueError, yaml.YAMLError) as exc:
-        print(
-            json.dumps(
-                {"error": {"type": exc.__class__.__name__, "message": str(exc)}},
-                ensure_ascii=False,
-            ),
-            file=sys.stderr,
+        error = json.dumps(
+            {"error": {"type": exc.__class__.__name__, "message": str(exc)}},
+            ensure_ascii=False,
         )
+        print(error)
+        print(error, file=sys.stderr)
         return 2
     finally:
         if connection is not None:

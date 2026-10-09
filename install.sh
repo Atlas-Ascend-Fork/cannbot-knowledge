@@ -57,6 +57,9 @@ Options:
                   Override the repository URL used for a managed clone.
   --repository-ref <branch>
                   Override the branch used for a managed clone (default: master).
+  --platform <platform>
+                  Set the default platform used by knowledge-query when a search
+                  omits --platform. Explicit search arguments still take precedence.
   --skip-repository-update
                   Reuse an existing --knowledge-root without fetching it. The
                   path must already be a valid knowledge repository.
@@ -364,13 +367,16 @@ remove_unselected_managed_skills() {
 write_project_env() {
   local target="$1"
   local profile="$2"
+  local platform="${3:-}"
   local tmp
   local root_replacement
   local profile_replacement
+  local platform_replacement=""
   local line
   local trimmed
   local root_found=0
   local profile_found=0
+  local platform_found=0
 
   if [[ -L "$target" || ( -e "$target" && ! -f "$target" ) ]]; then
     fail "refusing to overwrite non-regular config path: $target"
@@ -379,6 +385,9 @@ write_project_env() {
   tmp="$(mktemp "${target}.tmp.XXXXXX")"
   printf -v root_replacement 'export CANNBOT_KNOWLEDGE_ROOT=%q' "$KNOWLEDGE_ROOT"
   printf -v profile_replacement 'export CANNBOT_KNOWLEDGE_PROFILE=%q' "$profile"
+  if [[ -n "$platform" ]]; then
+    printf -v platform_replacement 'export CANNBOT_KNOWLEDGE_PLATFORM=%q' "$platform"
+  fi
   if [[ -f "$target" ]]; then
     while IFS= read -r line || [[ -n "$line" ]]; do
       trimmed="${line#"${line%%[![:space:]]*}"}"
@@ -392,6 +401,14 @@ write_project_env() {
           printf '%s\n' "$profile_replacement" >> "$tmp"
           profile_found=1
         fi
+      elif [[ "$trimmed" =~ ^(export[[:space:]]+)?CANNBOT_KNOWLEDGE_PLATFORM= ]]; then
+        if [[ -n "$platform" && "$platform_found" -eq 0 ]]; then
+          printf '%s\n' "$platform_replacement" >> "$tmp"
+          platform_found=1
+        elif [[ "$platform_found" -eq 0 ]]; then
+          printf '%s\n' "$line" >> "$tmp"
+          platform_found=1
+        fi
       else
         printf '%s\n' "$line" >> "$tmp"
       fi
@@ -399,6 +416,9 @@ write_project_env() {
   fi
   [[ "$root_found" -eq 1 ]] || printf '%s\n' "$root_replacement" >> "$tmp"
   [[ "$profile_found" -eq 1 ]] || printf '%s\n' "$profile_replacement" >> "$tmp"
+  if [[ -n "$platform" && "$platform_found" -eq 0 ]]; then
+    printf '%s\n' "$platform_replacement" >> "$tmp"
+  fi
   if [[ -f "$target" ]]; then
     "$PYTHON_BIN" - "$target" "$tmp" <<'PY'
 import os
@@ -448,7 +468,9 @@ generate_prompt() {
   cat <<'EOF'
 ## cannbot-knowledge 使用入口
 
-本项目已安装可检索、可溯源的 CANN 知识库。先按问题是否已经绑定唯一知识卡选择入口：
+本项目已安装可检索、可溯源的 CANN 知识库。若安装时配置了 `--platform <id>`，该值会写入
+`.cannbot/knowledge.env` 的 `CANNBOT_KNOWLEDGE_PLATFORM`，普通检索省略 `--platform` 时使用它；
+任务目标与该值不一致时显式传入目标平台。先按问题是否已经绑定唯一知识卡选择入口：
 
 | 当前问题 | 入口 |
 |---|---|
@@ -656,6 +678,8 @@ profile="consumer"
 profile_explicit="false"
 prompt_action=""
 skip_resources="false"
+knowledge_platform_input="${CANNBOT_KNOWLEDGE_PLATFORM:-}"
+knowledge_platform_explicit="false"
 knowledge_root_input="${CANNBOT_KNOWLEDGE_INSTALL_ROOT:-}"
 knowledge_root_explicit="false"
 skip_repository_update="false"
@@ -698,6 +722,17 @@ while [[ "$#" -gt 0 ]]; do
       REPOSITORY_REF="${1#--repository-ref=}"
       shift
       ;;
+    --platform)
+      [[ "$#" -ge 2 ]] || fail "--platform requires a value"
+      knowledge_platform_input="$2"
+      knowledge_platform_explicit="true"
+      shift 2
+      ;;
+    --platform=*)
+      knowledge_platform_input="${1#--platform=}"
+      knowledge_platform_explicit="true"
+      shift
+      ;;
     --skip-repository-update)
       skip_repository_update="true"
       shift
@@ -724,6 +759,12 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 [[ -n "$REPOSITORY_URL" ]] || fail "repository URL cannot be empty"
+if [[ "$knowledge_platform_explicit" == "true" && -z "$knowledge_platform_input" ]]; then
+  fail "--platform requires a non-empty value"
+fi
+if [[ -n "$knowledge_platform_input" && "$knowledge_platform_input" =~ [[:space:]] ]]; then
+  fail "platform must be a single registered platform id"
+fi
 if [[ "$knowledge_root_explicit" == "true" ]]; then
   [[ -n "$knowledge_root_input" ]] || fail "knowledge root cannot be empty"
 fi
@@ -854,6 +895,21 @@ preflight_destination "$knowledge_env"
 [[ -f "$KNOWLEDGE_ROOT/governance/schemas/registries.yaml" ]] || \
   fail "invalid knowledge root: $KNOWLEDGE_ROOT"
 [[ -f "$INDEX_TOOL" ]] || fail "missing index tool: $INDEX_TOOL"
+if [[ -n "$knowledge_platform_input" ]] && ! "$PYTHON_BIN" - \
+    "$KNOWLEDGE_ROOT/governance/schemas/registries.yaml" "$knowledge_platform_input" <<'PY'
+import sys
+from pathlib import Path
+
+import yaml
+
+registries = yaml.safe_load(Path(sys.argv[1]).read_text(encoding="utf-8"))
+platforms = registries.get("platforms") if isinstance(registries, dict) else None
+if not isinstance(platforms, dict) or sys.argv[2] not in platforms:
+    raise SystemExit(1)
+PY
+then
+  fail "unknown platform: $knowledge_platform_input"
+fi
 
 if [[ -L "$knowledge_env" || ( -e "$knowledge_env" && ! -f "$knowledge_env" ) ]]; then
   fail "refusing to overwrite non-regular config path: $knowledge_env"
@@ -897,7 +953,7 @@ for skill in "${skills[@]}"; do
     install_link "$canonical_path" "$adapter_root/$skill"
   fi
 done
-write_project_env "$knowledge_env" "$profile"
+write_project_env "$knowledge_env" "$profile" "$knowledge_platform_input"
 manage_prompt install "$prompt_file" "$profile" "$prompt_kind" "$KNOWLEDGE_ROOT" || \
   fail "prompt install failed"
 

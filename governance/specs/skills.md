@@ -37,10 +37,10 @@ Query 是 CANNBot Profile 的专用、确定性 consumer，不修改知识正文
 | task、`tags` | task 规范化为 `task.*`；多个条件使用 AND |
 | technology/scope | 默认只匹配所选 route 的专属卡 |
 | shared | 只有显式要求时附加所选技术同领域的 shared 卡，不放宽到其他 DSL |
-| platform | 普通搜索必须显式提供并包含全部目标平台；`agnostic` 卡可匹配任一已注册目标平台 |
+| platform | 普通搜索必须有目标平台；可显式提供，也可由项目 `.cannbot/knowledge.env` 的 `CANNBOT_KNOWLEDGE_PLATFORM` 提供缺省值，显式参数优先；`agnostic` 卡可匹配任一已注册目标平台 |
 | source/target technology | 精确匹配 `Interoperability` 端点 |
 
-Profile 过滤使用目录 ID，例如 `apis`；结果同时返回 OKF `type: API` 和 `profile: apis`。`platforms: []` 不能满足平台过滤，只有显式请求未定位 `draft` 卡时才能返回。精确 API 名在目标平台 `stable` 查询零命中时，调用方必须另发一次不带 platform、限定 `draft` 且显式包含未定位卡的查询；命中只能标为平台待核验候选，不能混入原平台结果或写进同一审计 receipt。Glossary 不携带平台字段，按平台中立术语处理。平台识别可在 `platforms` scope 中暂不传目标平台，其他搜索不得通过省略平台扩大范围。
+Profile 过滤使用目录 ID，例如 `apis`；结果同时返回 OKF `type: API` 和 `profile: apis`。`platforms: []` 不能满足平台过滤，只有显式请求未定位 `draft` 卡时才能返回。精确 API 名在目标平台 `stable` 查询零命中时，调用方必须另发一次不带 platform、限定 `draft` 且显式包含未定位卡的查询；命中只能标为平台待核验候选，不能混入原平台结果或写进同一审计 receipt。Glossary 不携带平台字段，按平台中立术语处理。平台识别可在 `platforms` scope 中暂不传目标平台，其他搜索不能在没有显式参数或项目缺省值时猜测平台。缺省平台不用于 `--include-unlocated` 或平台识别查询；没有缺省值时仍返回参数错误。
 
 Query 当前不按 CANN 版本执行结构化过滤。非 Runbook 卡片可记录 `cann_versions`，搜索结果仍可返回该字段；Runbook 卡不携带该字段，版本边界在正文失效边界。调用方读取正文后自行核对版本边界。
 
@@ -52,7 +52,7 @@ Query 当前不按 CANN 版本执行结构化过滤。非 Runbook 卡片可记�
 
 较低信任层级会降权，但不构成访问控制。Agent 先依据脚本返回的路径、title 和 description 选择候选，再打开选中卡片的 `local_path` 阅读完整正文、范围和来源；读完后由 Agent 决定是否沿有效链接继续阅读相关知识或 include，不要求读取全部命中及链接。零命中只说明当前条件下未召回，不证明技术能力不存在。
 
-搜索输出绑定 schema、完整请求、canonical 请求指纹、语料/治理指纹、仓库状态、行数和卡片 SHA-256。复杂任务按 decision 原子保存不可覆盖的 search receipt；随后冻结 retrieval state，要求每条 receipt 与 state 使用完全相同的目标平台集合，核对完整索引 provenance，并按原请求重放过滤、评分、排序和命中。
+搜索输出绑定 schema、完整请求、canonical 请求指纹、语料/治理指纹、仓库状态、行数和卡片 SHA-256。失败时结构化 error JSON 同时输出到 stdout 和 stderr，保证管道消费方可见。复杂任务按 decision 原子保存不可覆盖的 search receipt；随后冻结 retrieval state，要求每条 receipt 与 state 使用完全相同的目标平台集合，核对完整索引 provenance，并按原请求重放过滤、评分、排序和命中。
 
 全部 decision covered 后生成绑定各 search receipt 文件 SHA-256 的 ready receipt，再由 outcome manifest 将未被修改的检索链、目标平台实验及产物 SHA-256 绑定到原 decision。
 

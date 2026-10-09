@@ -64,7 +64,7 @@ bash install.sh claude /path/to/project consumer
 
 | 项目内路径 | 用途 |
 |---|---|
-| `.cannbot/knowledge.env` | 保存知识仓绝对路径和安装模式 |
+| `.cannbot/knowledge.env` | 保存知识仓绝对路径、安装模式和可选的 Query 缺省平台 |
 | `.agents/skills/<skill>` | 指向知识仓中对应 Skill 的符号链接 |
 | 下表中的客户端使用入口 | 写入带标记、可重复安装和移除的知识库使用说明 |
 
@@ -112,7 +112,7 @@ Skill 通过符号链接复用同一知识仓及其相邻依赖，安装器不�
 | Ascend C API 的契约、选型、相关卡片或本地头文件 | `ascendc-api-knowledge-query`，复用通用检索的索引和平台规则 |
 | 新增、更新或检查知识 | 使用 `contributor` 模式，参照[贡献知识](../recipes/contribute_knowledge.md) |
 
-查询时提供具体问题、目标技术和目标硬件平台；涉及版本差异或本机实现时，再提供 CANN 版本与组件包位置。平台或技术范围不明确时先补充信息。
+查询时提供具体问题、目标技术和目标硬件平台；也可以在安装时用 `--platform <id>` 把项目缺省平台写入 `.cannbot/knowledge.env`，让普通 Query 在省略 `--platform` 时使用该值。任务目标与缺省值不一致时显式传入目标平台；涉及版本差异或本机实现时，再提供 CANN 版本与组件包位置。平台或技术范围不明确时先补充信息。
 
 各入口都应依据选中卡片的完整正文作答，并核对平台、版本、生命周期和来源。标题、摘要或来源链接本身不构成已核验证据；详细方法见[形成可追溯回答](../recipes/answer_with_evidence.md)，检索与补证细节由对应 Skill 维护。
 
@@ -169,6 +169,15 @@ ACLNN 查询和完整算子实现分析使用 `knowledge-query`。更多场景�
 ```bash
 bash install.sh claude /path/to/project contributor
 ```
+
+为项目设置普通检索的缺省平台：
+
+```bash
+bash install.sh claude /path/to/project consumer --platform a2
+```
+
+安装器会把它写入 `.cannbot/knowledge.env` 的 `CANNBOT_KNOWLEDGE_PLATFORM`。显式的
+`knowledge-query --platform ...` 会覆盖该缺省值；未设置缺省平台时，普通 Query 继续要求显式平台。
 
 模式只决定安装器托管的可用 Skill，不改变知识卡内容或可信程度。从 `contributor` 改为 `consumer` 后重跑安装器，会移除本知识仓对应的贡献类 Skill 链接，并同步已有的托管客户端入口。
 

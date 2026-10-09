@@ -10,7 +10,7 @@ description: 检索 cannbot-knowledge 中受治理的 CANN、算子、图、模�
 ## 1. 定位任务与检索边界
 
 - 明确一个要回答的判断（decision），保留目标实体、准确 API 名或首发错误信号。复杂任务拆分判断，不把实现、调试和性能问题塞入一条 query。
-- 先确定**任务目标平台**，不是默认采用 Agent 所在机器。只有型号、SocVersion、架构宏或配置时，读取[平台识别](references/platform-identification.md)；存在歧义或冲突时先确认，不猜测或移除平台条件。
+- 先确定**任务目标平台**，不是默认采用 Agent 所在机器。只有型号、SocVersion、架构宏或配置时，读取[平台识别](references/platform-identification.md)；存在歧义或冲突时先确认，不猜测或移除平台条件。安装项目可在 `.cannbot/knowledge.env` 配置 `CANNBOT_KNOWLEDGE_PLATFORM` 作为缺省平台，省略 `--platform` 时由脚本回退到该值；任务目标与缺省值不一致时必须显式传 `--platform`。
 - 明确必要的 domain、technology 与路径 Profile。只增加已知且有助区分的过滤项，不为了“最窄”叠满 task/tag；多个 tag 和 platform 都是 AND。共同适用知识用多平台过滤，平台差异分开查询。
 - 首次进入一个知识仓时运行 `discover`，区分真实覆盖与注册/占位目录；同一轮任务、同一知识根且索引指纹未变时复用结果。它的各维度计数不证明某个组合已有覆盖。
 
@@ -41,6 +41,16 @@ python3 <skill-dir>/scripts/knowledge_query.py --knowledge-root <repo> search \
   --query "DataCopyPad" --domain ops --technology ascendc --type apis \
   --platform <confirmed-platform> --status stable --match literal -k 5
 ```
+
+配置了项目缺省平台后，普通 search 可以省略 `--platform`；显式平台始终优先：
+
+```bash
+python3 <skill-dir>/scripts/knowledge_query.py search \
+  --query "DataCopyPad" --domain ops --technology ascendc --type apis \
+  --status stable --match literal -k 5
+```
+
+没有显式平台且项目未配置 `CANNBOT_KNOWLEDGE_PLATFORM` 时，search 仍以结构化错误退出，不猜测平台。
 
 `literal` 匹配的是**完整查询串**，不是多个词的 AND；不要把 `DataCopyPad srcStride 非对齐` 当作一个必然存在的原文短语。`text` 按词法相关性排序，也不证明每个约束都满足。结果 `count` 是本次返回条数，受 k 限制，不是全库匹配总数。
 
