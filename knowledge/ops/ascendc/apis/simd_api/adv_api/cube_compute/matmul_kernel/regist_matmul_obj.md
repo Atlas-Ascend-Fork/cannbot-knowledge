@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/REGIST_MATMUL_OBJ.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms: []
 ---
 
@@ -75,3 +75,11 @@ mm.Init(&tiling);
 - [FlashAttentionUnpaddingScoreGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_unpadding_score_grad.md)
 - [UpsampleBilinear2dAABackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bilinear_2d_aa_backward.md)
 - [NsaSelectedAttention A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_selected_attention.md)
+
+## 配套 API 与常见组合
+
+- [Matmul使用说明](matmul_usage.md)
+- [MatmulConfig](matmul_config.md)
+- [GetMatmulApiTiling](get_matmul_api_tiling.md)
+- [Matmul 高阶替换与常驻回调坐标](../../../../../guides/matmul/high_level_replacement_and_resident_callbacks.md)
+- [双 Matmul 共享与卷积两级缓存模式](../../../../../guides/matmul/two_matmul_share_and_convolution_buffer_modes.md)

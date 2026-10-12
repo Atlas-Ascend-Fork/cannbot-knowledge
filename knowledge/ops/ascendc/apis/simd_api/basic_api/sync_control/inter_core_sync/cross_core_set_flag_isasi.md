@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_core_sync/CrossCoreSetFlag_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -213,3 +213,11 @@ CrossCoreSetFlag的模板参数`modeId`和`pipe`均**没有默认值**，其取�
 - [DualLevelQuantMatmulWeightNz 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/dual_level_quant_matmul_weight_nz_950.md)
 - [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)
 - [FusedLinearCrossEntropyLossGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/fused_linear_cross_entropy_loss_grad.md)
+
+## 配套 API 与常见组合
+
+- [CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)——同一 flagId 的核间同步配对：SetFlag 上报完成、WaitFlag 阻塞等待，卡片明文"必须配套使用否则未定义行为"，调用依赖加生命周期配对
+- [SyncAll](sync_all.md)
+- [WaitPreBlock](wait_pre_block.md)
+- [SetFlag/WaitFlag](../intra_core_sync/set_flag_wait_flag_isasi.md)
+- [GetUserWorkspace](../../resource_management/workspace/get_user_workspace.md)——AIC/AIV 混合核以 user workspace 为跨核共享数据通道（add_lora 实证 tmpGm_/mm2Gm_ 按 workSpace 偏移划分）

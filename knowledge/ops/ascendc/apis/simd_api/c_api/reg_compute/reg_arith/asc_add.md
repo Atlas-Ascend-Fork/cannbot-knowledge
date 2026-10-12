@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_arith/asc_add.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - '950'
 source_headers:
@@ -278,3 +278,10 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+## 配套 API 与常见组合
+
+- [asc_loadalign](../load/asc_loadalign.md)——操作数是矢量寄存器。示例先 asc_loadalign 把 UB 读入寄存器再 asc_add，不能直接传入 UB 指针
+- [asc_storealign](../store/asc_storealign.md)——结果寄存器由 asc_storealign 写回 UB。示例顺序为 loadalign、asc_add、storealign
+- [asc_copy_gm2ub_align](../../vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_3510.md)——示例用 asc_copy_gm2ub_align 把 GM 搬入 UB，再经 loadalign 进入寄存器；搬运结果不是 asc_add 的直接操作数
+- [asc_copy_ub2gm_align](../../vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_3510.md)——寄存器结果先由 storealign 写回 UB，再由 asc_copy_ub2gm_align 搬出 GM；asc_add 不直接写 UB

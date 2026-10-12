@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/GetTPipePtr.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -66,3 +66,8 @@ GetTPipePtr()->InitBuffer(outQueueZ, 2, this->tileLength * sizeof(float));
 - [FlashAttentionVarLenScore 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_var_len_score_950.md)
 - [CircularPad2dBackward A2/A3 ACLNN 算子知识](../../../../operators/aclnn/math/conversion/circular_pad_2d_backward.md)
 - [GeluQuant 950 ACLNN 算子知识](../../../../operators/aclnn/nn/activation/gelu_quant_950.md)
+
+## 配套 API 与常见组合
+
+- [FetchEventID](t_pipe/fetch_event_id.md)——FetchEventID 是 TPipe 成员接口，kernel 内经 GetTPipePtr() 调用，证据行即 GetTPipePtr()->FetchEventID 同一行代码
+- [SetFlag/WaitFlag](../sync_control/intra_core_sync/set_flag_wait_flag_isasi.md)——SetFlag 消费的 event_t 由 kernel 内标准惯用法 GetTPipePtr()->FetchEventID(HardEvent::V_S) 取得，证据为同一代码序列

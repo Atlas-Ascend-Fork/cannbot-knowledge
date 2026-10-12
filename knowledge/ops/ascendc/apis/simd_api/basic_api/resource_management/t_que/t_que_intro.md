@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQue/TQue_intro.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T10:12:59Z'
 platforms: []
 ---
 
@@ -195,3 +195,18 @@ AscendC::TQue<AscendC::TPosition::VECOUT, 1, &conf> outQueue;
 pipe.InitBuffer(inQueueX, 1, dataSize * sizeof(srcType));
 pipe.InitBuffer(outQueue, 1, dataSize * sizeof(int8_t));
 ```
+
+## 配套 API 与常见组合
+
+- [InitBuffer](../t_pipe/init_buffer.md)——TPipe::InitBuffer 在 TPipe 上为 TQue 分配内存（pipe.InitBuffer），与资源池上的同名接口不是同一调用对象
+- [AllocTensor](alloc_tensor.md)——AllocTensor 是 TQue 的成员接口，从 TQue 分配 tensor
+- [EnQue](en_que.md)
+- [DeQue](de_que.md)
+- [FreeTensor](free_tensor.md)——FreeTensor 是 TQue 的成员接口，向 TQue 归还 tensor
+- [TQueBind简介](../t_que_bind/t_que_bind_intro.md)
+- [Ascend C 缓冲所有权、流水交接与槽位布局](../../../../../guides/memory/buffer_ownership_and_slot_layout.md)
+- [双缓冲物理槽与常驻参数预算](../../../../../guides/memory/double_buffer_slot_counts_and_resident_parameters.md)
+- [TQueBind 复用中的内存收益与中间计算](../../../../../guides/memory/tquebind_reuse_and_intermediate_compute.md)
+- [InitBuffer](../t_buf_pool/init_buffer.md)——TBufPool::InitBuffer 的 que 参数即本卡 TQue；调用对象是资源池，不是 TPipe
+- [TPipe简介](../t_pipe/t_pipe_intro.md)——TQue 使用前需通过 InitBuffer 分配内存；可由 TPipe 或已初始化的 TBufPool 分配，具体约束见对应接口。
+- [TPosition](../../aux_data_structures/t_position.md)——TQue 模板声明必选 TPosition 位置参数（VECIN/VECOUT 决定队列方向），证据 A/B 两行实为同一条声明，TQue 卡正文已引用 TPosition

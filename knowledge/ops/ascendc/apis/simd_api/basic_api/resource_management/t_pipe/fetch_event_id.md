@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TPipe/FetchEventID.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -90,3 +90,8 @@ AscendC::WaitFlag<AscendC::HardEvent::V_S>(eventIdVToS);
 - [FlashAttentionScore 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)
 - [UpsampleBilinear2dAABackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bilinear_2d_aa_backward.md)
 - [CircularPad2dBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d_backward.md)
+
+## 配套 API 与常见组合
+
+- [GetTPipePtr](../get_t_pipe_ptr.md)——FetchEventID 是 TPipe 成员接口，kernel 内经 GetTPipePtr() 调用，证据行即 GetTPipePtr()->FetchEventID 同一行代码
+- [SetFlag/WaitFlag](../../sync_control/intra_core_sync/set_flag_wait_flag_isasi.md)——FetchEventID 返回的 TEventID 直接作为 SetFlag/WaitFlag 入参，卡片示例即此链

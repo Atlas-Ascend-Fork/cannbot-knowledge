@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/Tiling_template_programming/GET_TPL_TILING_KEY.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 source_headers:
 - include/utils/tiling/template_argument.h
@@ -110,3 +110,9 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
 - [ForeachAsin 950 ACLNN 算子知识](../../../operators/aclnn/nn/foreach/foreach_asin_950.md)
 - [FlashAttentionScoreGrad 950 ACLNN 算子知识](../../../operators/aclnn/transformer/attention/flash_attention_score_grad_950.md)
 - [BitwiseOrTensor 950 ACLNN 算子知识](../../../operators/aclnn/math/math/bitwise_or_tensor_950.md)
+
+## 配套 API 与常见组合
+
+- [REGISTER_TILING_DEFAULT](../../simd_api/basic_api/kernel_tiling/register_tiling_default.md)——Tiling 模板编程流程中 kernel 侧注册默认 tiling 结构体、host 侧用 GET_TPL_TILING_KEY 生成模板参数 TilingKey，缺一 TPL 不成立
+- [模板参数定义](template_params_definition.md)——GET_TPL_TILING_KEY 的可变参数必须与 ASCENDC_TPL_ARGS_DECL 定义的模板参数及顺序一一对应（卡片明文要求）
+- [GET_TILING_DATA_WITH_STRUCT](../../simd_api/basic_api/kernel_tiling/get_tiling_data_with_struct.md)——Tiling 模板编程两端契约：host 用 GET_TPL_TILING_KEY 由模板参数生成变体 TilingKey

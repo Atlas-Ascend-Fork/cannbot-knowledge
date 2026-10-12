@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/aux_data_types/RegLayout.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T02:36:08Z'
 platforms: []
 ---
 
@@ -95,3 +95,10 @@ def cast_b4_to_b16(src, dst, layout):
     dst[0:128:2] = src[2*layout    : 512 : 8].astype(np.int16)
     dst[1:128:2] = src[2*layout + 1: 512 : 8].astype(np.int16)
 ```
+
+## 配套 API 与常见组合
+
+- [MaskMergeMode](mask_merge_mode.md)——同一 CastTrait 的共同配置字段，位宽变化时与 MaskReg 联合决定 dst 排布（Cast 约束明文三者联合作用）
+- [SatMode](sat_mode.md)——CastTrait 共同配置字段（证据为同一初始化列表），P=1.00 完全伴随，组合即 950 类型转换的惯用配方
+- [MaskReg](../register_data_types/mask_reg.md)——RegLayout 的 mask 有效位规则按输入位宽定义（"mask每N位有效"），Cast 中二者联合决定转换结果
+- [RegTensor](../register_data_types/reg_tensor.md)——RegLayout 定义即"位宽小的元素在寄存器中的排布方式"，语义直接落在 RegTensor 上

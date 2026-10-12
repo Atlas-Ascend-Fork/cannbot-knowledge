@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/register_data_types/RegTensor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 source_headers:
@@ -118,3 +118,12 @@ template <typename T, const RegTrait& regTrait = RegTraitNumOne> struct RegTenso
         }
     }
     ```
+
+## 配套 API 与常见组合
+
+- [MaskReg](mask_reg.md)——Add/Cast 等矢量计算同时以 RegTensor 与 MaskReg 为操作数，且 MaskReg 宽度定义为 RegTensor 的 VL/8，语义互定义
+- [MaskMergeMode](../aux_data_types/mask_merge_mode.md)——MaskMergeMode 指定 dst RegTensor 中未被掩码选中元素的置零/保留行为，同一指令的模板参数与目的操作数
+- [RegLayout](../aux_data_types/reg_layout.md)——RegLayout 定义即"位宽小的元素在寄存器中的排布方式"，语义直接落在 RegTensor 上
+- [SatMode](../aux_data_types/sat_mode.md)——SatMode 配置 Cast 对 RegTensor 源/目的操作数转换的饱和行为，同一指令的范式构件
+- [GetCurNpuArch](../../../../utils_api/platform_info/platform_ascend_c/get_cur_npu_arch.md)——RegTensor 仅 950/Reg-base，host 侧以 GetCurNpuArch 返回的 NpuArch 门控 MicroAPI 路径选择
+- [PostLiteral](../aux_data_types/post_literal.md)——LoadAlign/StoreAlign 以 PostLiteral 为模板参数、RegTensor 为搬运操作数，同一指令签名的直接配套（RegTensor 卡与 MaskReg 卡示例均可证）

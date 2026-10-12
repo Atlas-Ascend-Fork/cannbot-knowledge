@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQueBind/TQueBind_intro.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms: []
 ---
 
@@ -180,3 +180,13 @@ template <TPosition src, TPosition dst, int32_t depth, auto mask = 0> class TQue
 </tr>
 </tbody>
 </table>
+
+## 配套 API 与常见组合
+
+- [InitBuffer](../t_pipe/init_buffer.md)
+- [AllocTensor](alloc_tensor.md)
+- [EnQue](en_que.md)
+- [DeQue](de_que.md)
+- [FreeTensor](free_tensor.md)
+- [TQueBind 复用中的内存收益与中间计算](../../../../../guides/memory/tquebind_reuse_and_intermediate_compute.md)
+- [Ascend C 缓冲所有权、流水交接与槽位布局](../../../../../guides/memory/buffer_ownership_and_slot_layout.md)

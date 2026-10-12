@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/SetFlag_WaitFlag_ISASI.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -117,3 +117,13 @@ AscendC::WaitFlag<AscendC::HardEvent::MTE2_V>(EVENT_ID0);
 AscendC::Maxs(tmpTensor1, src0Local, inputVal, tileLength);
 AscendC::Mins(tmpTensor2, src0Local, inputVal, tileLength);
 ```
+
+## 配套 API 与常见组合
+
+- [TQueSync](t_que_sync.md)
+- [CrossCoreSetFlag](../inter_core_sync/cross_core_set_flag_isasi.md)
+- [CrossCoreWaitFlag](../inter_core_sync/cross_core_wait_flag_isasi.md)
+- [TQueBind 复用中的内存收益与中间计算](../../../../../guides/memory/tquebind_reuse_and_intermediate_compute.md)
+- [GetTPipePtr](../../resource_management/get_t_pipe_ptr.md)——SetFlag 消费的 event_t 由 kernel 内标准惯用法 GetTPipePtr()->FetchEventID(HardEvent::V_S) 取得，证据为同一代码序列
+- [FetchEventID](../../resource_management/t_pipe/fetch_event_id.md)——FetchEventID 返回的 TEventID 直接作为 SetFlag/WaitFlag 入参，卡片示例即此链
+- [InitSocState](../../tool_interface/system_init/init_soc_state.md)——自管 eventID 的 SetFlag/WaitFlag 手动同步属静态Tensor编程（SetFlag 卡约束明文）

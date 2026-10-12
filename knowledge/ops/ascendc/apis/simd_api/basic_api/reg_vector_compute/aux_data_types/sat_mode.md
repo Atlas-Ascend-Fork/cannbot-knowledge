@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/aux_data_types/SatMode.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-10T02:36:08Z'
 platforms: []
 ---
 
@@ -28,3 +28,10 @@ enum class SatMode {
     SAT
 };
 ```
+
+## 配套 API 与常见组合
+
+- [MaskMergeMode](mask_merge_mode.md)——同一 CastTrait 初始化列表中的共同字段，配置同一条类型转换指令
+- [RegLayout](reg_layout.md)——CastTrait 共同配置字段（证据为同一初始化列表），P=1.00 完全伴随，组合即 950 类型转换的惯用配方
+- [MaskReg](../register_data_types/mask_reg.md)——Cast 调用的掩码入参与 trait.satMode 在同一条指令上共同配置
+- [RegTensor](../register_data_types/reg_tensor.md)——SatMode 配置 Cast 对 RegTensor 源/目的操作数转换的饱和行为，同一指令的范式构件

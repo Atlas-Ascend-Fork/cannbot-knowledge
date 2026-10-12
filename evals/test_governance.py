@@ -784,7 +784,7 @@ class FixedArchiveHeaderTests(unittest.TestCase):
                         text = module.render_card(metadata, "# Topic\n\nBody.  \n", managed)
                         path = root / f"knowledge/ops/ascendc/{profile}/{role or 'unroled'}.md"
                         path.parent.mkdir(parents=True, exist_ok=True)
-                        path.write_text(text, encoding="utf-8")
+                        path.write_text(text, encoding="utf-8", newline="\n")
                         is_mirror = role in (None, "primary")
                         if is_mirror:
                             expected.add(path)
@@ -831,6 +831,62 @@ class FixedArchiveHeaderTests(unittest.TestCase):
                 self.assertEqual(0, module.command(args))
                 mirror.write_text(guide_text, encoding="utf-8")
                 self.assertEqual(1, module.command(args))
+
+    def test_navigation_after_accepts_legacy_and_canonical_separators(self) -> None:
+        module = self.load_module()
+        nav_after = module._navigation_after
+        companion = f"\n\n{module.COMPANION_HEADING}\n\n"
+        plain_links = "- [Related](other.md)\n- [Guide](guide.md)\n"
+        noted_links = "- [Related](other.md)——两者在同一调用序列中成对出现\n"
+        with self.subTest("legacy plain link list after two-newline separator"):
+            source = "# Topic\n\nBody.\n"
+            legacy = source + "\n\n" + plain_links
+            self.assertEqual("- [Related](other.md)\n- [Guide](guide.md)",
+                             nav_after(source, legacy))
+        with self.subTest("legacy links then companion section after them"):
+            source = "```cpp\nCopy();\n```\n\n"
+            legacy = source + "\n" + plain_links.rstrip("\n") + companion + noted_links
+            self.assertIn(module.COMPANION_HEADING, nav_after(source, legacy))
+        with self.subTest("legacy two-newline separator with blank-line source tail"):
+            source = "# Topic\n\nBody.\n\n"
+            legacy = source + "\n\n" + plain_links
+            self.assertEqual("- [Related](other.md)\n- [Guide](guide.md)",
+                             nav_after(source, legacy))
+        with self.subTest("canonical separators from render_card keep working"):
+            companion_nav = f"{module.COMPANION_HEADING}\n\n{noted_links}"
+            for body, navigation in (
+                ("# Topic\n\nBody.\n\n", plain_links),
+                ("# Topic\n\nBody.\n", plain_links),
+                ("# Topic\n\nBody.", plain_links),
+                ("# Topic\n\nBody.\n\n", companion_nav),
+                ("# Topic\n\nBody.\n", companion_nav),
+            ):
+                with self.subTest(body_tail=body[-2:], noted="##" in navigation):
+                    rendered = module.render_card({}, body, navigation)
+                    framing = module.FRONTMATTER_RE.match(rendered)
+                    card_body = rendered[framing.end():]
+                    self.assertEqual(navigation.rstrip("\n"), nav_after(body, card_body))
+        with self.subTest("re-rendered navigation round-trips through the parser"):
+            source = "# Topic\n\nBody.\n"
+            legacy = source + "\n\n" + plain_links
+            navigation = nav_after(source, legacy)
+            rebuilt = module.render_card({}, source, navigation)
+            framing = module.FRONTMATTER_RE.match(rebuilt)
+            self.assertEqual(navigation, nav_after(source, rebuilt[framing.end():]))
+        with self.subTest("non-navigation additions are still rejected"):
+            source = "# Topic\n\nBody.\n"
+            for bad in (
+                "\n\nPlain text paragraph.\n",
+                "\n\n- [Related](other.md)\nExtra line.\n",
+                "\n\n\n\n- [Related](other.md)\n",
+                "\n",
+                "X- [Related](other.md)\n",
+                "\nX- [Related](other.md)\n",
+                "\n\nX- [Related](other.md)\n",
+            ):
+                with self.subTest(bad=bad):
+                    with self.assertRaises(ValueError):
+                        nav_after(source, source + bad)
 
     def test_api_headers_extracts_declared_and_include_paths(self) -> None:
         module = self.load_module()
@@ -899,14 +955,154 @@ class FixedArchiveHeaderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "probe.md"
             rendered = module.render_card(metadata, body, navigation)
-            path.write_text(rendered, encoding="utf-8")
+            path.write_text(rendered, encoding="utf-8", newline="\n")
             old, suffix = module.existing_card(path, body)
             self.assertEqual(metadata, old)
             self.assertEqual(navigation, suffix)
             self.assertEqual(rendered, module.render_card(old, body, suffix))
-            path.write_text(module.render_card(metadata, body, None) + "\nInjected claim.\n", encoding="utf-8")
+            path.write_text(
+                module.render_card(metadata, body, None) + "\nInjected claim.\n",
+                encoding="utf-8",
+                newline="\n",
+            )
             with self.assertRaisesRegex(ValueError, "ordinary trailing links"):
                 module.existing_card(path, body)
+
+    def test_companion_navigation_is_preserved_and_bounded(self) -> None:
+        module = self.load_module()
+        body = "# Probe\n\nFixed contract with source whitespace.  \n"
+        changed = "# Probe\n\nOfficial wording changed.\n"
+        note = "两个接口先后使用，后者消费前者的输出"
+        navigation = (
+            "- [Operator](operator.md)\n\n"
+            "## 配套 API 与常见组合\n\n"
+            f"- [Related](other.md)——{note}\n"
+            "- [Bare](bare.md)"
+        )
+        metadata = self.metadata(module, body=body)
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "probe.md"
+            rendered = module.render_card(metadata, body, navigation)
+            path.write_text(rendered, encoding="utf-8", newline="\n")
+            old, suffix = module.existing_card(path, body)
+            self.assertEqual(navigation, suffix)
+            self.assertEqual(rendered, module.render_card(old, body, suffix))
+            source, peeled = module.split_link_suffix(body + "\n" + navigation + "\n")
+            self.assertEqual(body, source)
+            self.assertEqual(navigation + "\n", peeled)
+            old, suffix = module.existing_card(path, changed)
+            self.assertEqual(navigation, suffix)
+
+            accepted = f"## 配套 API 与常见组合\n\n- [Related](other.md)——{'A' * 110}"
+            path.write_text(
+                module.render_card(metadata, body, accepted),
+                encoding="utf-8",
+                newline="\n",
+            )
+            _, suffix = module.existing_card(path, body)
+            self.assertEqual(accepted, suffix)
+
+            rejected = (
+                f"## 配套 API 与常见组合\n\n- [Related](other.md)——{'A' * 111}",
+                "## 配套 API 与常见组合\n\n- [Related](other.md)——见 [另一张](x.md)",
+                "## 配套 API 与常见组合\n\n- [Related](other.md)——",
+                "## 其他标题\n\n- [Related](other.md)",
+                "- [Related](other.md)——没有配套标题的机制说明",
+                "## 配套 API 与常见组合\n\n不是链接列表",
+            )
+            for addition in rejected:
+                path.write_text(
+                    module.render_card(metadata, body, addition),
+                    encoding="utf-8",
+                    newline="\n",
+                )
+                with self.assertRaisesRegex(ValueError, "ordinary trailing links"):
+                    module.existing_card(path, body)
+
+    def test_source_trailing_newline_stays_outside_companion_navigation(self) -> None:
+        module = self.load_module()
+        source = "# Probe\n\n返回值说明\n\n无\n"
+        navigation = (
+            "## 配套 API 与常见组合\n\n"
+            "- [SoftmaxGradFront](softmax_grad_front.md)——产出的 SoftMaxTiling 传入 kernel 侧 SoftmaxGradFront"
+        )
+        metadata = self.metadata(module, body=source)
+        rendered = module.render_card(metadata, source, navigation)
+        self.assertIn("无\n\n## 配套 API 与常见组合\n", rendered)
+        self.assertNotIn("无\n\n\n## 配套 API 与常见组合\n", rendered)
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "probe.md"
+            path.write_text(rendered, encoding="utf-8", newline="\n")
+            _, suffix = module.existing_card(path, source)
+            self.assertEqual(navigation, suffix)
+            self.assertEqual(rendered, module.render_card(metadata, source, suffix))
+            refreshed_source = "返回值说明\n\n有\n"
+            _, kept = module.existing_card(path, refreshed_source)
+            self.assertEqual(navigation, kept)
+            refreshed = module.render_card(metadata, refreshed_source, kept)
+            path.write_text(refreshed, encoding="utf-8", newline="\n")
+            _, again = module.existing_card(path, refreshed_source)
+            self.assertEqual(navigation, again)
+            self.assertEqual(refreshed, module.render_card(metadata, refreshed_source, again))
+            self.assertIn("有\n\n## 配套 API 与常见组合\n", refreshed)
+            blank_source = "# Probe\n\n段落。\n\n"
+            blank_navigation = "## 配套 API 与常见组合\n\n- [Related](other.md)——来源正文末尾已经有空行"
+            blank_rendered = module.render_card(metadata, blank_source, blank_navigation)
+            self.assertIn("段落。\n\n## 配套 API 与常见组合\n", blank_rendered)
+            self.assertNotIn("段落。\n\n\n## 配套 API 与常见组合\n", blank_rendered)
+            path.write_text(blank_rendered, encoding="utf-8", newline="\n")
+            _, blank_suffix = module.existing_card(path, blank_source)
+            self.assertEqual(blank_navigation, blank_suffix)
+
+        card = (
+            ROOT
+            / "knowledge/ops/ascendc/apis/simd_api/adv_api/activation_functions"
+            / "soft_max_interface/softmax_grad_tiling_interface.md"
+        )
+        text = card.read_bytes().decode("utf-8").replace("\r\n", "\n")
+        marker = "无\n\n## 配套 API 与常见组合\n"
+        self.assertIn(marker, text)
+        framing = module.FRONTMATTER_RE.match(text)
+        self.assertIsNotNone(framing)
+        source_end = text.index(marker) + len("无\n")
+        independent_source = text[framing.end() : source_end]
+        self.assertTrue(independent_source.endswith("无\n"))
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "softmax_grad_tiling_interface.md"
+            path.write_text(text, encoding="utf-8", newline="\n")
+            _, real_navigation = module.existing_card(path, independent_source)
+        self.assertIsNotNone(real_navigation)
+        self.assertTrue(real_navigation.startswith("## 配套 API 与常见组合\n"))
+        post = text[framing.end() :]
+        self.assertEqual(post, independent_source + "\n" + real_navigation + "\n")
+        frontmatter = yaml.safe_load(framing.group("metadata"))
+        replayed = module.render_card(frontmatter, independent_source, real_navigation)
+        replay_framing = module.FRONTMATTER_RE.match(replayed)
+        self.assertIsNotNone(replay_framing)
+        self.assertEqual(post, replayed[replay_framing.end() :])
+
+    def test_repository_companion_sections_match_mirror_navigation(self) -> None:
+        module = self.load_module()
+        found = 0
+        for path in (ROOT / "knowledge").rglob("*.md"):
+            text = path.read_bytes().decode("utf-8").replace("\r\n", "\n")
+            if "## 配套 API 与常见组合" not in text:
+                continue
+            framing = module.FRONTMATTER_RE.match(text)
+            self.assertIsNotNone(framing, path)
+            post = text[framing.end() :]
+            body, navigation = module.split_link_suffix(post)
+            self.assertIsNotNone(navigation, path)
+            self.assertIn("## 配套 API 与常见组合", navigation)
+            self.assertTrue(body.endswith("\n"), path)
+            self.assertFalse(navigation.startswith("\n"), path)
+            self.assertEqual(post, body + "\n" + navigation, path)
+            suffix = post[len(body) :]
+            self.assertTrue(suffix.startswith("\n"), path)
+            self.assertTrue(module._is_trailing_navigation(suffix[1:]), path)
+            self.assertEqual(navigation.rstrip("\n"), suffix[1:].rstrip("\n"), path)
+            found += 1
+        self.assertGreater(found, 0)
 
     def test_metadata_doc_headers_override_existing_enrichment(self) -> None:
         module = self.load_module()

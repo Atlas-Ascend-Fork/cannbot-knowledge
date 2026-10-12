@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/load/asc_loadalign.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - '950'
 source_headers:
@@ -332,3 +332,10 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+## 配套 API 与常见组合
+
+- [asc_storealign](../store/asc_storealign.md)——VF 内寄存器搬入/搬出闭环，单次均为 VL 且 32 字节对齐语义一致，两卡调用示例均成对使用，P(b|a)=1.00
+- [asc_get_vf_len](../../utils/sys_var/asc_get_vf_len.md)——loadalign 单次搬入 VL 字节，每轮元素数与地址步长由 asc_get_vf_len() 推导，get_vf_len 卡明示 VL 用于推导矢量循环每轮消耗
+- [asc_copy_gm2ub_align](../../vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_3510.md)——本卡 dav-3510 示例先 asc_copy_gm2ub_align 再 loadalign，对应平台同为 950 的 arch_3510
+- [asc_add](../reg_arith/asc_add.md)——寄存器 asc_add 的操作数由本接口从 UB 装入；该卡示例顺序为 loadalign、asc_add、storealign

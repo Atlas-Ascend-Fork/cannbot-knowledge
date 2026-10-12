@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_2201.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - a2
 - a3
@@ -111,3 +111,9 @@ constexpr uint64_t total_length = 128;
 __ubuf__ uint8_t src[total_length];
 asc_copy_ub2gm_align(dst, src, total_length * sizeof(uint8_t));
 ```
+
+## 配套 API 与常见组合
+
+- [asc_init](../../utils/sys_init/asc_init.md)——init 卡明示复位 GM↔UB 搬运循环次数与原子累加状态直接决定 copy 行为基线，卡片示例演示 init 复位原子模式后 ub2gm 变普通搬运
+- [asc_copy_gm2ub_align](../asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_2201.md)——算子数据流的搬入/回写闭环（MTE2 入、MTE3 出），P(b|a)=1.00，两侧对齐与 padding 语义成对互补
+- [asc_sync（同步）](../../sync/asc_sync.md)——异步UB→GM搬出发起后须asc_sync等待落盘方可结束kernel，abs.asc中两行相邻构成kernel末段确定步骤

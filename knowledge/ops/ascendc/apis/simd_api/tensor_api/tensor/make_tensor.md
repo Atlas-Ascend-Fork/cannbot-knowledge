@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/tensor/make_tensor.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms:
 - '950'
 source_headers:
@@ -74,3 +74,11 @@ __aicore__ inline constexpr auto make_tensor(const Iterator& iter, const Args&..
   // 示例3：使用指针和布局形状创建张量
   auto tensor2 = make_tensor(ptr, make_shape(32, 32), make_stride(32, 32));
   ```
+
+## 配套 API 与常见组合
+
+- [make_mem_ptr](make_mem_ptr.md)
+- [make_frame_layout](../layout/make_frame_layout.md)
+- [copy（Global Memory到Unified Buffer的数据搬运）](../reg_vector_compute/vector_compute_load/copy_gm_to_ub.md)
+- [copy（Unified Buffer到Global Memory的数据搬运）](../reg_vector_compute/vector_compute_store/copy_ub_to_gm.md)
+- [Algorithm](../algorithm.md)

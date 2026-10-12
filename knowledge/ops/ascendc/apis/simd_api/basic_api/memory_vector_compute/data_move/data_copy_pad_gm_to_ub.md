@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopyPad_GMToUB.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms:
 - '950'
 - a2
@@ -417,3 +417,12 @@ source_headers:
     ```
 
 完整样例请参考[DataCopyPad样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/01_simd_cpp_api/03_basic_api/00_data_movement/data_copy_pad_gm2ub_ub2gm)。
+
+## 配套 API 与常见组合
+
+- [GmUbDataMove](../../data_move_guide/gm_ub_data_move.md)
+- [DataCopy](data_copy_gm_and_ub_continuous.md)
+- [DataCopyPad](data_copy_pad_ub_to_gm.md)
+- [DataCopyPad 多行搬运的有效长度、padding 与物理行距](../../../../../guides/data_movement/datacopypad_rows_and_padding.md)
+- [DataCopyPad 的版本、重载与尾部真实范围](../../../../../guides/data_movement/datacopypad_versions_overloads_and_tail_extent.md)
+- [对齐单位、布局行距与填充值](../../../../../guides/memory/alignment_units_layout_stride_and_padding_values.md)

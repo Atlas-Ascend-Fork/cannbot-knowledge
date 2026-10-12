@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/cube_compute_ISASI/mmad_compute_aux_config/SetHF32Mode.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T02:36:08Z'
 platforms:
 - '950'
 - a2
@@ -57,3 +57,7 @@ AscendC::SetHF32Mode(HF32Mode::ENABLE); // 控制mmad计算时是否使用HF32�
 
 - [MhcPreSinkhorn A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_pre_sinkhorn.md)
 - [Conv2D 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/conv/conv_2d_950.md)
+
+## 配套 API 与常见组合
+
+- [SetHF32TransMode](set_hf32_trans_mode.md)——SetHF32TransMode 卡片明示"需先使用 SetHF32Mode 开启 HF32 取整模式"

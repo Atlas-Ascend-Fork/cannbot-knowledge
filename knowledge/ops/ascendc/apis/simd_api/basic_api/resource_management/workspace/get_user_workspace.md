@@ -12,7 +12,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/workspace/GetUserWorkspace.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-12T02:51:24Z'
 platforms:
 - '950'
 - a2
@@ -77,3 +77,9 @@ __aicore__ inline GM_ADDR GetUserWorkspace(GM_ADDR workspace)
 - [BlockSparseAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_950.md)
 - [Resize 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/resize_950.md)
 - [CircularPad3d A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_3d.md)
+
+## 配套 API 与常见组合
+
+- [SyncAll](../../sync_control/inter_core_sync/sync_all.md)——跨核协作中 GetUserWorkspace 提供各核写中间结果的共享工作区基址、SyncAll 在阶段间保证全核可见（rasterizer 两阶段实证，P(a|b)=0.70）
+- [CrossCoreSetFlag](../../sync_control/inter_core_sync/cross_core_set_flag_isasi.md)——AIC/AIV 混合核以 user workspace 为跨核共享数据通道，CrossCoreSetFlag 对其读写定序（add_lora 实证，P(a|b)=0.87）
+- [CrossCoreWaitFlag](../../sync_control/inter_core_sync/cross_core_wait_flag_isasi.md)——跨核流水的数据通道+同步通道配对：AIV/AIC 经 user workspace 交换中间结果（P(a|b)=0.87）

@@ -14,7 +14,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_l0c2gm/asc_copy_l0c2gm_arch_2201.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - a2
 - a3
@@ -108,3 +108,7 @@ bool nz2nd_en = false;
 asc_copy_l0c2gm(dst, src, n_size, m_size, dst_stride_dst_d, src_stride, unit_flag_mode, quant_pre, relu_pre, channel_split, nz2nd_en);
 asc_sync();
 ```
+
+## 配套 API 与常见组合
+
+- [AscMmad](../../cube_compute/asc_mmad.md)——mmad的L0C结果须经l0c2gm族搬回GM（l0c2gm卡自述"矩阵计算完成后…搬运到GM"），是cube算子确定的出流步骤，mmad与该卡共享a2/a3平台

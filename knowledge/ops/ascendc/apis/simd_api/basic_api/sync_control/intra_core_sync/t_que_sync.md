@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/intra_core_sync/TQueSync.md
   role: primary
 created_at: '2026-09-12T03:09:26Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms:
 - '950'
 - a2
@@ -126,3 +126,10 @@ sync.SetFlag(0);
 sync.WaitFlag(0);
 AscendC::DataCopy(dstGlobal, dstLocal, dataSize);
 ```
+
+## 配套 API 与常见组合
+
+- [SetFlag/WaitFlag](set_flag_wait_flag_isasi.md)
+- [EnQue](../../resource_management/t_que/en_que.md)
+- [DeQue](../../resource_management/t_que/de_que.md)
+- [TQueBind 复用中的内存收益与中间计算](../../../../../guides/memory/tquebind_reuse_and_intermediate_compute.md)

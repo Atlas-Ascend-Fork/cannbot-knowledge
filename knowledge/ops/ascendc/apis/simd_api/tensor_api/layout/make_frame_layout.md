@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/layout/make_frame_layout.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms:
 - '950'
 source_headers:
@@ -212,3 +212,11 @@ auto layout_nchw = make_frame_layout<nchw_layout_ptn>(n, c, h, w);
 auto layout_nhwc = make_frame_layout<nhwc_layout_ptn>(n, h, w, c);
 auto layout_nc1hwc0 = make_frame_layout<nc1hwc0_layout_ptn>(n, c1, h, w, c0);
 ```
+
+## 配套 API 与常见组合
+
+- [make_tensor](../tensor/make_tensor.md)
+- [make_mem_ptr](../tensor/make_mem_ptr.md)
+- [copy（Global Memory到Unified Buffer的数据搬运）](../reg_vector_compute/vector_compute_load/copy_gm_to_ub.md)
+- [copy（Unified Buffer到Global Memory的数据搬运）](../reg_vector_compute/vector_compute_store/copy_ub_to_gm.md)
+- [对齐单位、布局行距与填充值](../../../../guides/memory/alignment_units_layout_stride_and_padding_values.md)

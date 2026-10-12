@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/workspace/GetSysWorkSpacePtr.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -76,3 +76,7 @@ mm.End();
 - [LSTM A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/nn/rnn/lstm.md)
 - [NsaSelectedAttention A2 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/nsa_selected_attention.md)
 - [UpsampleBilinear2dAABackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bilinear_2d_aa_backward.md)
+
+## 配套 API 与常见组合
+
+- [TPipe简介](../t_pipe/t_pipe_intro.md)——两者共同作为 REGIST_MATMUL_OBJ(&pipe, GetSysWorkSpacePtr(), mm, &tiling) 同一注册语句的必需参数，两张卡的调用示例均固定成对出现，P(a|b)=1.00

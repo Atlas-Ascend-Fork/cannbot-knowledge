@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/tensor_api/reg_vector_compute/vector_compute_load/copy_gm_to_ub.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms:
 - '950'
 source_headers:
@@ -203,3 +203,12 @@ asc::te::copy(atom, dst, src, asc::te::make_coord(1, 0), asc::te::make_coord(2, 
 ```
 
 该区域包含2行，每行搬运32个`half`元素，因此接口推导出块数为2、单块长度为64字节。源、目的Tensor的行步长均为128字节，所以源步长和目的步长均为128字节，相邻数据块之间各有64字节间隔。
+
+## 配套 API 与常见组合
+
+- [copy（Unified Buffer到Global Memory的数据搬运）](../vector_compute_store/copy_ub_to_gm.md)
+- [make_tensor](../../tensor/make_tensor.md)
+- [make_mem_ptr](../../tensor/make_mem_ptr.md)
+- [make_frame_layout](../../layout/make_frame_layout.md)
+- [Algorithm](../../algorithm.md)
+- [对齐单位、布局行距与填充值](../../../../../guides/memory/alignment_units_layout_stride_and_padding_values.md)

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/aux_data_structures/TPosition.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 ---
 
@@ -148,3 +148,10 @@ TPosition枚举值的具体定义如下：
 </tr>
 </tbody>
 </table>
+
+## 配套 API 与常见组合
+
+- [SetBias](../../adv_api/convolution_compute/conv3_d_kernel/set_bias.md)——卷积使用 bias 时 tiling 侧必须 SetBiasType(TPosition::GM,...) 声明位置（conv2d/conv3d tiling 实证且有 bias 才调用）
+- [SetTensorA](../../adv_api/cube_compute/matmul_kernel/set_tensor_a.md)——SetTensorA 卡明示 LocalTensor 重载"支持的TPosition为TSCM/VECOUT"、GM 重载对应 MatmulType 的 TPosition::GM，位置配置决定操作数形态且须两侧一致
+- [SetTensorB](../../adv_api/cube_compute/matmul_kernel/set_tensor_b.md)——SetTensorB 卡明示 rightMatrix"支持的TPosition为TSCM/VECOUT"，bType 位置配置约束 B 操作数形态且须与 kernel 侧一致
+- [TQue简介](../resource_management/t_que/t_que_intro.md)——TQue 模板声明必选 TPosition 位置参数（VECIN/VECOUT 决定队列方向），证据 A/B 两行实为同一条声明，TQue 卡正文已引用 TPosition

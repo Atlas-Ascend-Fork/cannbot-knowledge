@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_var/asc_get_vf_len.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 source_headers:
@@ -120,3 +120,9 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+## 配套 API 与常见组合
+
+- [asc_storealign](../../reg_compute/store/asc_storealign.md)——storealign 卡明示单次搬出量为 VL(256字节)，循环步长与掩码元素数须由 asc_get_vf_len() 推导，参数派生依赖成立
+- [asc_loadalign](../../reg_compute/load/asc_loadalign.md)——loadalign 单次搬入 VL 字节，每轮元素数与地址步长由 asc_get_vf_len() 推导，get_vf_len 卡明示 VL 用于推导矢量循环每轮消耗
+- [asc_update_mask](../../reg_compute/reg_mask/asc_update_mask.md)——update_mask每轮减去的元素数即get_vf_len()/sizeof(dtype)，位宽模式须与dtype一致共同构成VL尾块循环，vf_len卡自述"常用于推导mask长度"

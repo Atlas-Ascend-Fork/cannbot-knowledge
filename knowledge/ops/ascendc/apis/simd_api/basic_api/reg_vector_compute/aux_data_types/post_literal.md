@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/aux_data_types/PostLiteral.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 ---
 
@@ -27,3 +27,8 @@ enum class PostLiteral {
     POST_MODE_UPDATE
 };
 ```
+
+## 配套 API 与常见组合
+
+- [MaskReg](../register_data_types/mask_reg.md)——reg 级搬运/存储指令族同一调用签名同时以 PostLiteral 为地址更新模板参数、MaskReg 为掩码实参（MaskReg 卡示例 `StoreAlign<T,
+- [RegTensor](../register_data_types/reg_tensor.md)——LoadAlign/StoreAlign 以 PostLiteral 为模板参数、RegTensor 为搬运操作数，同一指令签名的直接配套（RegTensor 卡与 MaskReg 卡示例均可证）

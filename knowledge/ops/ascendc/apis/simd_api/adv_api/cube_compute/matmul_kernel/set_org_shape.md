@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetOrgShape.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -108,3 +108,8 @@ __aicore__ inline void SetOrgShape(int orgM, int orgN, int orgKa, int orgKb, int
 - [UpsampleBilinear2dAABackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bilinear_2d_aa_backward.md)
 - [MhcPreSinkhorn A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_pre_sinkhorn.md)
 - [RotaryPositionEmbedding A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/rotary_position_embedding.md)
+
+## 配套 API 与常见组合
+
+- [SetTensorA](set_tensor_a.md)——matmul kernel 对象复用/MDL 模板场景须先 SetOrgShape 再绑定操作数：卡片约束明文"本接口需要在 SetTensorA、SetTensorB、SetBias 及 SetSingleShape
+- [SetTensorB](set_tensor_b.md)——SetTensorB 同在该卡前置约束列表与源码同对象序列中，org 形状与 B 操作数形状契约一致

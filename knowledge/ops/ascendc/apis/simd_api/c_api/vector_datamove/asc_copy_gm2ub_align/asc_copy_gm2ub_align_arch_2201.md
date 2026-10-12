@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_2201.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - a2
 - a3
@@ -114,3 +114,9 @@ constexpr uint64_t total_length = 128;
 __ubuf__ uint8_t dst[total_length];
 asc_copy_gm2ub_align(dst, src, total_length * sizeof(uint8_t));
 ```
+
+## 配套 API 与常见组合
+
+- [asc_copy_ub2gm_align](../asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_2201.md)——算子数据流的搬入/回写闭环（MTE2 入、MTE3 出），P(b|a)=1.00，两侧对齐与 padding 语义成对互补
+- [asc_init](../../utils/sys_init/asc_init.md)——init 卡表列明复位 GM→UB 与 UB→GM 搬运循环次数及原子累加状态，直接决定 gm2ub copy 行为，约束明示不调用可能导致精度错误
+- [asc_load_l2_cache_mode](../../defs/enum/asc_load_l2_cache_mode.md)——该枚举就是 asc_copy_gm2ub_align 的 l2CacheMode 参数类型（枚举卡正文已列出该搬运接口为消费者，c_api_simd_add 实证传参），参数契约直接成立

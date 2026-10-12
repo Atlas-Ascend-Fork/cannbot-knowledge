@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/Tiling_template_programming/template_params_definition.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 ---
 
@@ -327,3 +327,8 @@ C_FORMAT_FRACTAL_NZ_C0_8</pre>
 ## 约束说明<a name="zh-cn_topic_0000001867289945_zh-cn_topic_0000001389787297_section19165124931511"></a>
 
 对模板参数定义的取值进行修改或新增后，需要重新编译自定义算子包，不能再继续使用之前的算子二进制。
+
+## 配套 API 与常见组合
+
+- [GET_TPL_TILING_KEY](get_tpl_tiling_key.md)——GET_TPL_TILING_KEY 的可变参数必须与 ASCENDC_TPL_ARGS_DECL 定义的模板参数及顺序一一对应（卡片明文要求）
+- [REGISTER_TILING_DEFAULT](../../simd_api/basic_api/kernel_tiling/register_tiling_default.md)——模板参数组合的 tiling 结构体兜底"必须通过 REGISTER_TILING_DEFAULT 提供默认结构体"（模板参数定义卡明文）

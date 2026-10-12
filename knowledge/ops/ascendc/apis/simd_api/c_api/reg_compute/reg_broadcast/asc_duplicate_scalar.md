@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_broadcast/asc_duplicate_scalar.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T02:36:08Z'
 platforms:
 - '950'
 source_headers:
@@ -186,3 +186,7 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+## 配套 API 与常见组合
+
+- [asc_storealign](../store/asc_storealign.md)——duplicate_scalar 广播生成寄存器、storealign 将其对齐写回 UB

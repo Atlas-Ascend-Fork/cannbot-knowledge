@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/sort_operations/GetSortOffset.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 ---
 
@@ -60,3 +60,8 @@ AscendC::GetSortOffset<half>(128);
 - [Sort 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/sort_950.md)
 - [MoeTokenPermute A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/moe/moe_token_permute.md)
 - [MoeTokenPermuteWithRoutingMap 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/moe/moe_token_permute_with_routing_map_950.md)
+
+## 配套 API 与常见组合
+
+- [MrgSort](mrg_sort.md)——MrgSort 归并的各有序队列位于 Sort 格式（每元素 8 字节结构）数据中，源偏移 offsets_[] 由 GetSortOffset 计算，队列定位须与归并输入布局匹配（P(b|a)=1.0）
+- [GetSortLen](get_sort_len.md)——Sort 格式（8 字节结构）数据寻址的两半：GetSortLen 定长（blockLen/UB 内子表间距）、GetSortOffset 定位（workspace 源偏移）

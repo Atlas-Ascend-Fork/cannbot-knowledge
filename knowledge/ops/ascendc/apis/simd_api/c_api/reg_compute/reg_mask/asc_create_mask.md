@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_mask/asc_create_mask.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 source_headers:
@@ -176,3 +176,7 @@ int main()
 
 
 - [AscCreateMask：固定 reference 调用约束](../../../../../guides/regbase/asc_create_mask_reference_contract.md)
+
+## 配套 API 与常见组合
+
+- [asc_storealign](../store/asc_storealign.md)——asc_create_mask_b16(PAT_ALL)产出的all_mask直接作为asc_storealign的mask实参，满足其掩码预赋值强制约束

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendCManager.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -115,3 +115,7 @@ GetInfoFun() {
 
 - [ArgMax 950 Direct Invoke 算子知识](../../../operators/direct/math/math/arg_max_950.md)
 - [Sigmoid 950 Direct Invoke 算子知识](../../../operators/direct/nn/activation/sigmoid_950.md)
+
+## 配套 API 与常见组合
+
+- [GetSocVersion](platform_ascend_c/get_soc_version.md)——Kernel直调场景 GetSocVersion 只能经 PlatformAscendCManager::GetInstance() 取得平台对象后调用

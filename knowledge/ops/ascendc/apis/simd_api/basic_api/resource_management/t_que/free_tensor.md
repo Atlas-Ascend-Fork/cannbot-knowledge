@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQue/FreeTensor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - '950'
 - a2
@@ -111,3 +111,14 @@ que.FreeTensor<half>(tensor1);
 - [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)
 - [UpsampleBicubic2dAA A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bicubic_2d_aa.md)
 - [DiagFlat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/diag_flat.md)
+
+## 配套 API 与常见组合
+
+- [TQue简介](t_que_intro.md)——FreeTensor 是 TQue 的成员接口，向 TQue 归还 tensor
+- [AllocTensor](alloc_tensor.md)——官方文档明文 AllocTensor/FreeTensor 在切分资源池时必须成对匹配使用
+- [EnQue](en_que.md)
+- [DeQue](de_que.md)——消费侧相邻步骤 DeQue-使用-FreeTensor 归还
+- [InitBuffer](../t_pipe/init_buffer.md)——TPipe::InitBuffer 在 TPipe 上为队列分配内存（pipe.InitBuffer）
+- [Ascend C 缓冲所有权、流水交接与槽位布局](../../../../../guides/memory/buffer_ownership_and_slot_layout.md)
+- [InitBuffer](../t_buf_pool/init_buffer.md)——TBufPool::InitBuffer 分配的内存池接收 FreeTensor 归还的 tensor，调用对象是资源池
+- [TPipe简介](../t_pipe/t_pipe_intro.md)——FreeTensor 作用的队列内存池由 kernel 唯一 TPipe 统一管理，同一内存生命周期链（P(a|b)=1.00）

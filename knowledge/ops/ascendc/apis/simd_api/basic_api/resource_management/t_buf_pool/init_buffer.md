@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TBufPool/InitBuffer.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - '950'
 - a2
@@ -141,3 +141,12 @@ source_headers:
 - [MoeDistributeDispatch 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/moe_distribute_dispatch_950.md)
 - [NormRopeConcatGrad A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad.md)
 - [NormRopeConcatGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/norm_rope_concat_grad_950.md)
+
+## 配套 API 与常见组合
+
+- [InitBuffer](../t_pipe/init_buffer.md)——同名 TPipe::InitBuffer 在 TPipe 上调用（pipe.InitBuffer）。本卡是资源池接口，示例为 tbufPool.InitBuffer，且 TQue/TBuf 物理内存须与该池一致
+- [AllocTensor](../t_que/alloc_tensor.md)——AllocTensor 分配的 tensor 大小即 InitBuffer 设定的每块内存长度（AllocTensor 卡明文），未 InitBuffer 的队列无内存可分配
+- [FreeTensor](../t_que/free_tensor.md)——FreeTensor 归还的 tensor 回到 InitBuffer 为该队列分配的内存池，FreeTensor 卡配套节已列 InitBuffer
+- [TQue简介](../t_que/t_que_intro.md)——本卡 TBufPool::InitBuffer 的 que 参数即 TQue，调用对象是资源池
+- [DeQue](../t_que/de_que.md)——DeQue 收发所依赖的队列 Buffer 及内含同步事件由 InitBuffer 分配（TQue 卡明文 Buffer 存储 eventID）
+- [EnQue](../t_que/en_que.md)——EnQue 入队依赖 InitBuffer 分配的队列 Buffer 及其同步事件

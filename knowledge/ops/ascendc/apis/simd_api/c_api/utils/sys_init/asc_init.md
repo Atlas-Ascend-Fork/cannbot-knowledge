@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/utils/sys_init/asc_init.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T10:23:00Z'
 platforms:
 - '950'
 - a2
@@ -168,3 +168,10 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+## 配套 API 与常见组合
+
+- [asc_copy_ub2gm_align](../../vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_2201.md)——a2/a3 的 arch_2201：init 复位 GM↔UB 搬运循环次数与原子累加状态
+- [asc_copy_ub2gm_align](../../vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_3510.md)——950 的 arch_3510：同一复位对象，不要沿用 a2/a3 的 arch_2201 卡
+- [asc_copy_gm2ub_align](../../vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_2201.md)——a2/a3 的 arch_2201：init 复位 GM→UB 搬运循环次数及原子累加状态
+- [asc_copy_gm2ub_align](../../vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_3510.md)——950 的 arch_3510：同一复位对象，不要沿用 a2/a3 的 arch_2201 卡

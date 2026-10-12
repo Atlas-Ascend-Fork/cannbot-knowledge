@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TPipe/InitBuffer.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - '950'
 - a2
@@ -269,3 +269,14 @@ pipe.InitBuffer(buf, len);
 - [BlockSparseAttentionGrad 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_grad_950.md)
 - [ThreeInterpolateBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/three_interpolate_backward.md)
 - [ChunkCat 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/chunk_cat_950.md)
+
+## 配套 API 与常见组合
+
+- [InitBuffer](../t_buf_pool/init_buffer.md)——同名 TBufPool::InitBuffer 在子资源池上调用（tbufPool.InitBuffer），TQue/TBuf 物理内存须与该池一致，不是必须写在 TPipe 上
+- [TQue简介](../t_que/t_que_intro.md)
+- [AllocTensor](../t_que/alloc_tensor.md)
+- [EnQue](../t_que/en_que.md)
+- [DeQue](../t_que/de_que.md)
+- [FreeTensor](../t_que/free_tensor.md)
+- [TQueBind简介](../t_que_bind/t_que_bind_intro.md)
+- [双缓冲物理槽与常驻参数预算](../../../../../guides/memory/double_buffer_slot_counts_and_resident_parameters.md)

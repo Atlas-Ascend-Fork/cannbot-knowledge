@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/enum/asc_load_l2_cache_mode.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T10:23:00Z'
 platforms: []
 ---
 
@@ -48,3 +48,9 @@ enum class asc_load_l2_cache_mode : uint8_t {
 | NOTALLOC_KEEP | 不启用L2 Cache，每次都直接从GM中读取，并且保持已有Cache Line的状态不变。 |
 | NOTALLOC_CLEAN | 不启用L2 Cache，若L2 Cache中已有同地址缓存会被保留并标记为Clean，标记为Clean的Cache Line被移出L2 Cache时会被直接丢弃。 |
 | NOTALLOC_DROP | 不启用L2 Cache，若L2 Cache中已有同地址缓存，会被直接丢弃。 |
+
+## 配套 API 与常见组合
+
+- [asc_store_l2_cache_mode](asc_store_l2_cache_mode.md)——GM→UB 与 UB→GM 两方向对称的 L2 策略枚举，出入搬运调优成对决策且取值集不同（store 无 NOTALLOC_KEEP/DROP），对侧枚举有真实调优导航价值
+- [asc_copy_gm2ub_align](../../vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_2201.md)——a2/a3 的 arch_2201 以该枚举作为 l2CacheMode，参数契约只覆盖这一架构
+- [asc_copy_gm2ub_align](../../vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_3510.md)——950 的 arch_3510 参数表同样使用该枚举作为 l2_cache_mode

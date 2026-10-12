@@ -21,7 +21,7 @@ sources:
 - resource: https://gitcode.com/qq_41667743/cannbot-knowledge/blob/a70025d581ae45da8a93b4938b5ba19da6fa6f92/knowledge/ops/ascendc/guides/operator_practice/simd_operator_optimization/memory_access/vecin_vecout_reuse.md
   role: constraint
 created_at: '2026-09-11T01:44:57Z'
-updated_at: '2026-09-11T01:44:57Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms: []
 ---
 
@@ -38,3 +38,12 @@ TQueBind 按源和目的逻辑位置管理物理内存与相应同步。将 VECI
 EnQue/DeQue 传递句柄和队列状态，并不会因执行位置变化而自动产生一份“未修改副本”。需要定位谁实际写共享存储，何时发布以及何时使用。源 SetWaitFlag 的参数把事件类型也当作 ID，不应直接当成经过核对的 SDK 调用；FreeTensor 在源码 CopyOut 后也仍要依靠对应 API 合同保证异步消费者结束前不发生覆写。
 
 多条独立流可以分别采用绑定队列和其他缓冲配置，以把节省空间用于主 tile 或预取；只因存在多个 TQueBind 并不要求 SyncAll。验证别名允许性、输出布局、尾部 padding、不同 dtype、重复轮转及所有 consumers，比较总 UB 峰值、冗余复制和整体时延。
+
+## 配套 API 与常见组合
+
+- [TQueBind简介](../../apis/simd_api/basic_api/resource_management/t_que_bind/t_que_bind_intro.md)
+- [AllocTensor](../../apis/simd_api/basic_api/resource_management/t_que_bind/alloc_tensor.md)
+- [EnQue](../../apis/simd_api/basic_api/resource_management/t_que_bind/en_que.md)
+- [DeQue](../../apis/simd_api/basic_api/resource_management/t_que_bind/de_que.md)
+- [FreeTensor](../../apis/simd_api/basic_api/resource_management/t_que_bind/free_tensor.md)
+- [InitBuffer](../../apis/simd_api/basic_api/resource_management/t_pipe/init_buffer.md)

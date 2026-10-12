@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetBatchNum.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -70,3 +70,7 @@ mm1.SetBatchNum(batchA, batchB);
 // 多batch Matmul计算
 mm1.IterateBatch(gm_c, false, 0, false);
 ```
+
+## 配套 API 与常见组合
+
+- [IterateBatch](iterate_batch.md)——批量迭代依赖 SetBatchNum 配置的批数：SetBatchNum 卡示例即 SetBatchNum(batchA,batchB)→IterateBatch

@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_datamove/asc_copy_l12l0b/asc_copy_l12l0b_2d_arch_3510.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 source_headers:
@@ -271,3 +271,7 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+## 配套 API 与常见组合
+
+- [asc_copy_l12l0a_arch_3510（2D矩阵搬运）](../asc_copy_l12l0a/asc_copy_l12l0a_2d_arch_3510.md)——同一mmad的A/B双操作数装载对称对（l12l0a装A至L0A，l12l0b/transpose装B至L0B），l12l0a卡示例两者并列喂同一mmad，同为950平台

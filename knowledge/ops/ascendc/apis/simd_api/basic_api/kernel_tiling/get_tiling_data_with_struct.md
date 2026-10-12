@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/GET_TILING_DATA_WITH_STRUCT.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -107,3 +107,8 @@ extern "C" __global__ __aicore__ void add_custom(__gm__ uint8_t *x, __gm__ uint8
 - [FlashAttentionScore 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)
 - [UpsampleNearest3d 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_nearest_3d_950.md)
 - [Ceil 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/ceil_950.md)
+
+## 配套 API 与常见组合
+
+- [REGISTER_TILING_DEFAULT](register_tiling_default.md)——注册告知框架结构体类型供解析，GET_TILING_DATA_WITH_STRUCT 按同名结构体解析，类型必须一致（证据同名同文件）
+- [GET_TPL_TILING_KEY](../../../utils_api/tiling_template_programming/get_tpl_tiling_key.md)——Tiling 模板编程两端契约：host 用 GET_TPL_TILING_KEY 由模板参数生成变体 TilingKey

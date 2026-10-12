@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetTensorA.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -160,3 +160,9 @@ mm.SetTensorA(scalar_a, isTransposeA);
 - [grouped_matmul_finalize_routing A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing.md)
 - [MhcPreSinkhorn A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mhc/mhc_pre_sinkhorn.md)
 - [RotaryPositionEmbedding A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/posembedding/rotary_position_embedding.md)
+
+## 配套 API 与常见组合
+
+- [SetTensorB](set_tensor_b.md)——同一 matmul 对象的左/右矩阵绑定缺一不可，卡片调用示例即 SetTensorA+SetTensorB+IterateAll 连续序列，matmul 范式必要构件
+- [SetOrgShape](set_org_shape.md)——matmul kernel 对象复用/MDL 模板场景须先 SetOrgShape 再绑定操作数：卡片约束明文"本接口需要在 SetTensorA、SetTensorB、SetBias 及 SetSingleShape
+- [TPosition](../../../basic_api/aux_data_structures/t_position.md)——SetTensorA 卡明示 LocalTensor 重载"支持的TPosition为TSCM/VECOUT"、GM 重载对应 MatmulType 的 TPosition::GM，位置配置决定操作数形态且须两侧一致

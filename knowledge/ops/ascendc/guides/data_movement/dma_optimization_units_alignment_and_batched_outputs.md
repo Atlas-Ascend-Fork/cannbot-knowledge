@@ -12,7 +12,7 @@ sources:
 - resource: https://gitcode.com/cann/cannbot-skills/blob/502e3ed33f1440aa01bdc5a5bd396e4bf539c9ea/ops/ascendc-performance-best-practices/references/common/datacopy_optimization_design.md
   role: primary
 created_at: '2026-09-11T06:42:38Z'
-updated_at: '2026-09-11T06:42:38Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms: []
 ---
 
@@ -29,3 +29,10 @@ AlignUp(rawOffset,512)会跳过合法数据，且GlobalTensor<T>[offset]会再�
 Gather偏移表是字节地址、范围/位宽/源UB区域合法，若逻辑索引变化不能永久复用。source pre/post表内j循环不改变curOffset，实际每行重复同一地址；只有目标本就需要复制该值时合理，不是一般连续子矩阵提取。Scatter逐行DataCopy是DMA行写，并不等于向量Scatter；重复索引需要确定覆盖/累加语义，单纯批量化不提供原子性。
 
 非对齐padding进入ReduceSum可用0，Max需负无穷或有效mask，其他运算取其中性值；全零默认不能推广。验证位级往返、行列编码、不同dtype/stride/最后批和地址哨兵，再比较有效流量、事务与完整时延。
+
+## 配套 API 与常见组合
+
+- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_and_ub_continuous.md)
+- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_and_ub_highdim_split.md)
+- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)
+- [对齐单位、布局行距与填充值](../memory/alignment_units_layout_stride_and_padding_values.md)

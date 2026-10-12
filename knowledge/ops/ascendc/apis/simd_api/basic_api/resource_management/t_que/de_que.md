@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQue/DeQue.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - '950'
 - a2
@@ -163,3 +163,15 @@ que.FreeTensor<half>(tensor1);
 - [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)
 - [UpsampleBicubic2dAA A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bicubic_2d_aa.md)
 - [InplaceTril 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/inplace_tril_950.md)
+
+## 配套 API 与常见组合
+
+- [TQue简介](t_que_intro.md)
+- [AllocTensor](alloc_tensor.md)——同一队列上 tensor 的生产侧 AllocTensor 与消费侧 DeQue，构成 Alloc-EnQue-DeQue-Free 四步链的分配与取出
+- [EnQue](en_que.md)——官方文档明文 EnQue/DeQue 必须成对匹配使用：队列流水通信的生产/消费两端自动确保同步
+- [FreeTensor](free_tensor.md)——消费侧相邻步骤 DeQue-使用-FreeTensor 归还
+- [InitBuffer](../t_pipe/init_buffer.md)——TPipe::InitBuffer 在 TPipe 上为队列分配内存（pipe.InitBuffer）
+- [TQueBind 复用中的内存收益与中间计算](../../../../../guides/memory/tquebind_reuse_and_intermediate_compute.md)
+- [双缓冲物理槽与常驻参数预算](../../../../../guides/memory/double_buffer_slot_counts_and_resident_parameters.md)
+- [InitBuffer](../t_buf_pool/init_buffer.md)——TBufPool::InitBuffer 分配 DeQue 依赖的队列 Buffer 及其中同步事件；调用对象是资源池，不是 TPipe
+- [TPipe简介](../t_pipe/t_pipe_intro.md)——DeQue 依赖的队列内存与同步由 kernel 唯一 TPipe 统一管理（P(a|b)=1.00）

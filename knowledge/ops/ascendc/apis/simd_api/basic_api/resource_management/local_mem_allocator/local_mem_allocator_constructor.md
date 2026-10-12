@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/LocalMemAllocator/LocalMemAllocator_constructor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -72,3 +72,8 @@ MAX };</pre>
 ## 约束说明<a name="section633mcpsimp"></a>
 
 同一个物理位置的LocalMemAllocator对象，在算子生命周期内只能存在1个。
+
+## 配套 API 与常见组合
+
+- [Alloc](alloc.md)——Alloc 是 LocalMemAllocator 的成员接口且 pos 须匹配构造时指定的 Hardware 物理位置（Alloc 卡明文），P 双向 1.00
+- [InitSocState](../../tool_interface/system_init/init_soc_state.md)——构造 LocalMemAllocator 即进入静态Tensor编程，核入口必须 InitSocState，P(b|a)=1.00 全量成立

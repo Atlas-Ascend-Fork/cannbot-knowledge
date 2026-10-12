@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetTensorB.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -167,3 +167,9 @@ mm.SetTensorB(scalar_a, isTransposeB);
 - [grouped_matmul_add 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_add_950.md)
 - [grouped_matmul_finalize_routing A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/gmm/grouped_matmul_finalize_routing.md)
 - [GroupedMatMulAlltoAllv A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/mc2/grouped_mat_mul_allto_allv.md)
+
+## 配套 API 与常见组合
+
+- [SetTensorA](set_tensor_a.md)——同一 matmul 对象的左/右矩阵绑定缺一不可，卡片调用示例即 SetTensorA+SetTensorB+IterateAll 连续序列，matmul 范式必要构件
+- [SetOrgShape](set_org_shape.md)——SetTensorB 同在该卡前置约束列表与源码同对象序列中，org 形状与 B 操作数形状契约一致
+- [TPosition](../../../basic_api/aux_data_structures/t_position.md)——SetTensorB 卡明示 rightMatrix"支持的TPosition为TSCM/VECOUT"，bType 位置配置约束 B 操作数形态且须与 kernel 侧一致

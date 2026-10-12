@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/reg_mask/asc_update_mask.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 source_headers:
@@ -191,3 +191,8 @@ int main()
 
 
 - [AscUpdateMask：固定 reference 调用约束](../../../../../guides/regbase/asc_update_mask_reference_contract.md)
+
+## 配套 API 与常见组合
+
+- [asc_get_vf_len](../../utils/sys_var/asc_get_vf_len.md)——update_mask每轮减去的元素数即get_vf_len()/sizeof(dtype)，位宽模式须与dtype一致共同构成VL尾块循环，vf_len卡自述"常用于推导mask长度"
+- [asc_storealign](../store/asc_storealign.md)——storealign的mask参数必须由掩码设置接口预先赋值（卡内强制约束），证据中update_mask产出的mask直接传入storealign

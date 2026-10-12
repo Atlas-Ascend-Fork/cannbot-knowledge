@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/sync_control/inter_core_sync/SyncAll.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -170,3 +170,12 @@ AscendC::SyncAll(syncGlobal, workLocal);
 - [BlockSparseAttention 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/block_sparse_attention_950.md)
 - [UpsampleBicubic2dAA A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bicubic_2d_aa.md)
 - [MaskedSelect 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/masked_select_950.md)
+
+## 配套 API 与常见组合
+
+- [CrossCoreSetFlag](cross_core_set_flag_isasi.md)
+- [CrossCoreWaitFlag](cross_core_wait_flag_isasi.md)
+- [WaitPreBlock](wait_pre_block.md)
+- [NotifyNextBlock](notify_next_block.md)
+- [SetFlag/WaitFlag](../intra_core_sync/set_flag_wait_flag_isasi.md)
+- [GetUserWorkspace](../../resource_management/workspace/get_user_workspace.md)——跨核协作中 GetUserWorkspace 提供各核写中间结果的共享工作区基址、SyncAll 在阶段间保证全核可见（rasterizer.cpp:25-36 两阶段 userWS+SyncAll 实证

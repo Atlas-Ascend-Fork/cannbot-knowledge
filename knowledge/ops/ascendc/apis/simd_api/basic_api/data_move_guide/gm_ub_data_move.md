@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/data_move_guide/GM_UB_data_move.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms: []
 ---
 
@@ -281,3 +281,11 @@ src和dst分别为源操作数和目的操作数；dataCopyParams为DataCopyExtP
     __aicore__ inline void DataCopyPad(const GlobalTensor<T>& dst, const LocalTensor<T>& src, const DataCopyExtParams& dataCopyParams)
     ```
 
+## 配套 API 与常见组合
+
+- [DataCopy](../memory_vector_compute/data_move/data_copy_gm_and_ub_continuous.md)
+- [DataCopy](../memory_vector_compute/data_move/data_copy_gm_and_ub_highdim_split.md)
+- [DataCopyPad](../memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)
+- [DataCopyPad](../memory_vector_compute/data_move/data_copy_pad_ub_to_gm.md)
+- [DMA 优化单位、地址对齐与批量输出](../../../../guides/data_movement/dma_optimization_units_alignment_and_batched_outputs.md)
+- [对齐单位、布局行距与填充值](../../../../guides/memory/alignment_units_layout_stride_and_padding_values.md)

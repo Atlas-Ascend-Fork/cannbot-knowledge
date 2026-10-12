@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_3510.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - '950'
 source_headers:
@@ -256,3 +256,8 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+## 配套 API 与常见组合
+
+- [asc_loadalign](../../reg_compute/load/asc_loadalign.md)——950 的 asc_loadalign 示例先调用本接口把 GM 搬入 UB，再从该 UB 做对齐装入；两卡平台同为 950
+- [asc_add](../../reg_compute/reg_arith/asc_add.md)——950 寄存器 asc_add 的示例先用本接口把 GM 搬入 UB，再经 loadalign 进入寄存器；asc_add 不直接消费该 UB

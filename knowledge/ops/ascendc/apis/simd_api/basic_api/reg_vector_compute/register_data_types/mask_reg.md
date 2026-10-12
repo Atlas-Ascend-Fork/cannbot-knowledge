@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/reg_vector_compute/register_data_types/MaskReg.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 ---
@@ -308,3 +308,12 @@ for (uint16_t i = 0; i < 2; i++) {
     AscendC::Reg::StoreAlign<T, AscendC::Reg::PostLiteral::POST_MODE_UPDATE>(dst1Addr, srcReg, 0, mask1);
 }
 ```
+
+## 配套 API 与常见组合
+
+- [RegTensor](reg_tensor.md)——Add/Cast 等矢量计算同时以 RegTensor 与 MaskReg 为操作数，且 MaskReg 宽度定义为 RegTensor 的 VL/8，语义互定义
+- [MaskMergeMode](../aux_data_types/mask_merge_mode.md)——MaskMergeMode 的语义即定义 mask 未选中元素在 dst 的写入模式，Add 签名同时含 MaskMergeMode 模板参数与 MaskReg 入参
+- [RegLayout](../aux_data_types/reg_layout.md)——RegLayout 的 mask 有效位规则按输入位宽定义（"mask每N位有效"），Cast 中二者联合决定转换结果
+- [SatMode](../aux_data_types/sat_mode.md)——Cast 调用的掩码入参与 trait.satMode 在同一条指令上共同配置
+- [GetCurNpuArch](../../../../utils_api/platform_info/platform_ascend_c/get_cur_npu_arch.md)——MaskReg 仅 950/3510（Reg-base）可用
+- [PostLiteral](../aux_data_types/post_literal.md)——reg 级搬运/存储指令族同一调用签名同时以 PostLiteral 为地址更新模板参数、MaskReg 为掩码实参（MaskReg 卡示例 `StoreAlign<T,

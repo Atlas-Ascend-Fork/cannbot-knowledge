@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQueBind/DeQue.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms:
 - '950'
 - a2
@@ -136,3 +136,12 @@ non-inplace接口的返回值为从队列中取出的[LocalTensor](../../data_st
 - [InplaceFusedCausalConv1d 950 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/inplace_fused_causal_conv1d_950.md)
 - [UpsampleBicubic2dAA 950 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bicubic_2d_aa_950.md)
 - [CircularPad2dBackward A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/circular_pad_2d_backward.md)
+
+## 配套 API 与常见组合
+
+- [TQueBind简介](t_que_bind_intro.md)
+- [AllocTensor](alloc_tensor.md)
+- [EnQue](en_que.md)
+- [FreeTensor](free_tensor.md)
+- [InitBuffer](../t_pipe/init_buffer.md)
+- [TQueBind 复用中的内存收益与中间计算](../../../../../guides/memory/tquebind_reuse_and_intermediate_compute.md)

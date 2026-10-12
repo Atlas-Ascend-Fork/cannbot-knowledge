@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/sync/asc_sync_wait.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T10:23:00Z'
 platforms:
 - '950'
 - a2
@@ -86,3 +86,12 @@ PIPE_S
 ## 调用示例
 
 本接口需与[asc_sync_notify](asc_sync_notify.md)配对使用，调用示例请参考[asc_sync_notify](asc_sync_notify.md)中的“调用示例”章节。
+
+## 配套 API 与常见组合
+
+- [asc_copy_ub2gm_align](../vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_2201.md)——a2/a3 的 arch_2201：UB 地址重叠时必须与 asc_sync_notify 成对等待
+- [asc_copy_ub2gm_align](../vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_3510.md)——950 的 arch_3510：该卡同样要求 UB 地址重叠时与 asc_sync_notify 成对等待
+- [asc_copy_gm2ub_align](../vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_2201.md)——a2/a3 的 arch_2201：UB 地址重叠时必须与 asc_sync_notify 成对等待
+- [asc_copy_gm2ub_align](../vector_datamove/asc_copy_gm2ub_align/asc_copy_gm2ub_align_arch_3510.md)——950 的 arch_3510：该卡同样要求 UB 地址重叠时与 asc_sync_notify 成对等待
+- [asc_copy_gm2ub](../vector_datamove/asc_copy_gm2ub/asc_copy_gm2ub_arch_2201.md)——a2/a3 的 arch_2201：异步搬运的消费侧须经 wait 解除阻塞
+- [asc_copy_gm2ub](../vector_datamove/asc_copy_gm2ub/asc_copy_gm2ub_arch_3510.md)——950 的 arch_3510：UB 地址重叠时同样要求与 asc_sync_notify 成对等待

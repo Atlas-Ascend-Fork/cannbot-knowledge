@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/Tiling_data_structure_register/TilingData_struct_definition.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 ---
 
@@ -226,3 +226,7 @@ static void TilingAddInit(AddCustomTilingData *tiling, uint32_t numBlocks)
   arrPoint = tiling->mm.get_mmArr();              // 获取嵌套结构体通用数据类型数组mmArr
 }
 ```
+
+## 配套 API 与常见组合
+
+- [TilingData结构注册](tiling_data_struct_register.md)——REGISTER_TILING_DATA_CLASS 直接以 BEGIN_TILING_DATA_DEF 定义的类为第二参数，定义→注册是同一条 tiling 流程的确定步骤

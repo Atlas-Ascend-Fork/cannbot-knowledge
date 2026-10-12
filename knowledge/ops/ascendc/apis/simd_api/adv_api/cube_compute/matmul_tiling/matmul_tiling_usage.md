@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Tiling/Matmul_Tiling_usage.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms: []
 ---
 
@@ -161,3 +161,11 @@ Matmul Tiling API分为Matmul单核Tiling接口、多核Tiling接口和BatchMatm
     ```
     #include "lib/matmul/bmm_tiling.h"
     ```
+
+## 配套 API 与常见组合
+
+- [Matmul使用说明](../matmul_kernel/matmul_usage.md)
+- [MatmulConfig](../matmul_kernel/matmul_config.md)
+- [GetMatmulApiTiling](../matmul_kernel/get_matmul_api_tiling.md)
+- [Matmul 的 K 分段与部分和归约](../../../../../guides/matmul/k_partition_and_partial_sum_reduction.md)
+- [Matmul fallback 资源等式与评分单位](../../../../../guides/matmul/matmul_fallback_resource_equations_and_score_units.md)

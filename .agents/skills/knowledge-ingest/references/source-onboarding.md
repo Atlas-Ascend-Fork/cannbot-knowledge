@@ -38,7 +38,7 @@ python3 <skill-dir>/scripts/source_resources.py --knowledge-root <repo> \
 
 1. 从 Registry 读取 source ID 与 `archive_url`，运行登记的获取脚本并完整读取本批相关源文件。
 2. 先用 query 查重，再按语义实体决定 create、update、merge、deprecate 或 defer；Registry 明确登记的官方 API/Guide 由其受控转换策略筛除导航页和声明的冗余章节，其他材料不要按文件名机械建卡。
-3. 先完成一个中等复杂度实体，核对正文、平台、来源和边界后再扩大范围；文档归档转换还要验证导航页只落到 `index.md`，声明章节已省略，且其余正文只发生链接目标、Frontmatter 与可选的普通链接变化。
+3. 先完成一个中等复杂度实体，核对正文、平台、来源和边界后再扩大范围；文档归档转换还要验证导航页只落到 `index.md`，声明章节已省略，且其余正文只发生链接目标、Frontmatter 与可选的文末导航变化（普通链接，或「配套 API 与常见组合」小节）。
 4. 更新导航和当天日志；日志记录 source ID、来源 URL、本地准备时间、created/updated/deferred 数和关键裁决，再运行全库 lint 与目标 query。
 
 文档归档批次不生成 inventory、ledger 或 verification receipt，也不校验 SHA-256。默认复用已完成缓存；需要更新时运行 `bash get_resources.sh --docs --refresh`。刷新只替换本地来源，不更新知识卡；正文和平台差异需审阅后再通过镜像同步和知识验证收口。

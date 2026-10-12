@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/half_type/half_precision_conversion_functions/__half2float.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 source_headers:
@@ -104,3 +104,7 @@ inline float __half2float(const half x)
 - [ForeachCos 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cos_950.md)
 - [ForeachCosh 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_cosh_950.md)
 - [ForeachErfc 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_erfc_950.md)
+
+## 配套 API 与常见组合
+
+- [__float2half](_float2half.md)——foreach_acos 的 AcosCompute<half> 同一特化内 __half2float 下变换→acosf→__float2half 上变换回写，转换对生命周期配对，P(b|a)=1.00，缺一即类型断裂

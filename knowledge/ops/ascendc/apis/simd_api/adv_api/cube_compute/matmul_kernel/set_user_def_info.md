@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/SetUserDefInfo.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T02:36:08Z'
 platforms:
 - '950'
 - a2
@@ -75,3 +75,7 @@ mm.SetTensorA(gmA);
 mm.SetTensorB(gmB);
 mm.IterateAll();
 ```
+
+## 配套 API 与常见组合
+
+- [SetSelfDefineData](set_self_define_data.md)——同一 MatmulCallBackFunc 回调机制的配套传参通道

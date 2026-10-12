@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/Kernel-Tiling/REGISTER_TILING_DEFAULT.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -89,3 +89,9 @@ extern "C" __global__ __aicore__ void add_custom(__gm__ uint8_t *x, __gm__ uint8
 - [FlashAttentionScore 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/attention/flash_attention_score_950.md)
 - [UpsampleBicubic2dAAGrad 950 ACLNN 算子知识](../../../../operators/aclnn/cv/image/upsample_bicubic_2d_aa_grad_950.md)
 - [All 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/all_950.md)
+
+## 配套 API 与常见组合
+
+- [GET_TILING_DATA_WITH_STRUCT](get_tiling_data_with_struct.md)——注册告知框架结构体类型供解析，GET_TILING_DATA_WITH_STRUCT 按同名结构体解析，类型必须一致（证据同名同文件）
+- [GET_TPL_TILING_KEY](../../../utils_api/tiling_template_programming/get_tpl_tiling_key.md)——Tiling 模板编程流程中 kernel 侧注册默认 tiling 结构体、host 侧用 GET_TPL_TILING_KEY 生成模板参数 TilingKey，缺一 TPL 不成立
+- [模板参数定义](../../../utils_api/tiling_template_programming/template_params_definition.md)——模板参数组合的 tiling 结构体兜底"必须通过 REGISTER_TILING_DEFAULT 提供默认结构体"（模板参数定义卡明文）

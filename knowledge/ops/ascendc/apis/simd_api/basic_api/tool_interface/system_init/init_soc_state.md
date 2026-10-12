@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/tool_interface/system_init/InitSocState.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -139,3 +139,9 @@ __global__ __aicore__ void add_custom(GM_ADDR x, GM_ADDR y, GM_ADDR z)
 - [TransposeBatchMatMulWeightNZ 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/matmul/transpose_batch_mat_mul_weight_nz_950.md)
 - [FlatQuant 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/quant/flat_quant_950.md)
 - [GRU 950 Direct Invoke 算子知识](../../../../../operators/direct/nn/rnn/gru_950.md)
+
+## 配套 API 与常见组合
+
+- [Alloc](../../resource_management/local_mem_allocator/alloc.md)——LocalMemAllocator/Alloc 即静态Tensor编程范式的分配机制
+- [LocalMemAllocatorConstructor](../../resource_management/local_mem_allocator/local_mem_allocator_constructor.md)——构造 LocalMemAllocator 即进入静态Tensor编程，核入口必须 InitSocState，P(b|a)=1.00 全量成立
+- [SetFlag/WaitFlag](../../sync_control/intra_core_sync/set_flag_wait_flag_isasi.md)——自管 eventID 的 SetFlag/WaitFlag 手动同步属静态Tensor编程（SetFlag 卡约束明文）

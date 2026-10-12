@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/sync/asc_sync.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T10:23:00Z'
 platforms:
 - '950'
 - a2
@@ -144,3 +144,8 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+## 配套 API 与常见组合
+
+- [asc_copy_ub2gm_align](../vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_2201.md)——a2/a3 的 arch_2201：异步 UB→GM 搬出后须 asc_sync 等待落盘
+- [asc_copy_ub2gm_align](../vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_3510.md)——950 的 arch_3510：UB 地址重叠时该卡同样要求 notify/wait 串行化，不是 2201 卡

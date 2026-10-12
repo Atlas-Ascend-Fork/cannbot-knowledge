@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMT-API/math_functions/bfloat16_type/bfloat16_precision_conversion_functions/__bfloat162float.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 source_headers:
@@ -94,3 +94,7 @@ inline float __bfloat162float(const bfloat16_t x)
 - [ForeachDivList 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_div_list_950.md)
 - [ForeachErfc 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_erfc_950.md)
 - [ForeachMaximumList 950 ACLNN 算子知识](../../../../../operators/aclnn/nn/foreach/foreach_maximum_list_950.md)
+
+## 配套 API 与常见组合
+
+- [__float2bfloat16](_float2bfloat16.md)——AcosCompute<bfloat16_t> 同一特化内 bf16→fp32 计算→fp32→bf16 的输入/输出转换环，P(a|b)=1.00 佐证凡上变换必配下变换

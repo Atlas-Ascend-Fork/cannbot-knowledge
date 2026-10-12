@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQue/EnQue.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - '950'
 - a2
@@ -142,3 +142,14 @@ que.EnQue<AscendC::TPosition::GM, AscendC::TPosition::VECIN, half>(tensor1);// �
 - [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)
 - [UpsampleBicubic2dAA A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bicubic_2d_aa.md)
 - [DiagFlat A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/diag_flat.md)
+
+## 配套 API 与常见组合
+
+- [TQue简介](t_que_intro.md)
+- [AllocTensor](alloc_tensor.md)——生产侧相邻步骤 AllocTensor-填充-EnQue，为官方 TQue 示例的 canonical 顺序
+- [DeQue](de_que.md)——官方文档明文 EnQue/DeQue 必须成对匹配使用：队列流水通信的生产/消费两端自动确保同步
+- [FreeTensor](free_tensor.md)
+- [InitBuffer](../t_pipe/init_buffer.md)——TPipe::InitBuffer 在 TPipe 上为队列分配内存（pipe.InitBuffer）
+- [Ascend C 缓冲所有权、流水交接与槽位布局](../../../../../guides/memory/buffer_ownership_and_slot_layout.md)
+- [InitBuffer](../t_buf_pool/init_buffer.md)——TBufPool::InitBuffer 分配 EnQue 入队依赖的队列 Buffer；调用对象是资源池，不是 TPipe
+- [TPipe简介](../t_pipe/t_pipe_intro.md)——EnQue 依赖的队列内存与同步由 kernel 唯一 TPipe 统一管理（P(a|b)=1.00）

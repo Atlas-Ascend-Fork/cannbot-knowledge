@@ -27,15 +27,111 @@ from urllib.parse import quote, unquote
 import yaml
 
 
-LINK_LIST_RE = re.compile(r"(?:- \[[^\]\n]+\]\([^\n)]+\)[ \t]*\n?)+\Z")
+COMPANION_HEADING = "## 配套 API 与常见组合"
+COMPANION_NOTE_LIMIT = 110
+_LINK_ITEM_RE = re.compile(
+    r"- \[[^\]\n]+\]\([^\n)]+\)(?:\u2014\u2014(?P<note>[^\n]*))?[ \t]*"
+)
+_COMPANION_MARKER = f"\n\n{COMPANION_HEADING}\n\n"
+
+
+def _link_block(text: str, *, allow_notes: bool) -> bool:
+    """A contiguous list of ordinary links, optionally with one-line mechanism notes."""
+
+    if not text:
+        return False
+    for line in text.split("\n"):
+        match = _LINK_ITEM_RE.fullmatch(line)
+        if match is None:
+            return False
+        note = match.group("note")
+        if note is None:
+            continue
+        if (
+            not allow_notes
+            or not note.strip()
+            or len(note) > COMPANION_NOTE_LIMIT
+            or "](" in note
+        ):
+            return False
+    return True
+
+
+def _is_trailing_navigation(suffix: str) -> bool:
+    """Trailing mirror navigation: plain links and/or one companion section.
+
+    A companion section is the exact heading ``## 配套 API 与常见组合``, a blank
+    line, then links. Each of those links may append ``——`` and a single-line
+    mechanism note of at most 110 characters. The note cannot contain another
+    link. Notes are not allowed on links outside that section.
+    """
+
+    if suffix.endswith("\n"):
+        suffix = suffix[:-1]
+    if not suffix or suffix.endswith("\n"):
+        return False
+    heading = f"{COMPANION_HEADING}\n\n"
+    if suffix.startswith(heading):
+        return _link_block(suffix[len(heading) :], allow_notes=True)
+    plain, marker, combo = suffix.partition(_COMPANION_MARKER)
+    if marker:
+        return _link_block(plain, allow_notes=False) and _link_block(combo, allow_notes=True)
+    return _link_block(suffix, allow_notes=False)
 
 
 def split_link_suffix(text: str) -> tuple[str, str | None]:
-    """Separate an optional trailing list of ordinary links, without block markers."""
-    boundary = text.rfind("\n\n")
-    if boundary >= 0 and LINK_LIST_RE.fullmatch(text[boundary + 2:]):
-        return text[:boundary], text[boundary + 2:]
-    return text, None
+    """Separate optional trailing navigation without taking it from the source body.
+
+    A blank line separates the source from the navigation. The newline that ends
+    the source's last line stays in the source; only the extra newline is the
+    separator. ``无\\n\\n## 配套`` therefore splits into ``无\\n`` and the heading.
+    """
+
+    start = 0
+    while True:
+        boundary = text.find("\n\n", start)
+        if boundary < 0:
+            return text, None
+        suffix = text[boundary + 2 :]
+        if suffix and _is_trailing_navigation(suffix):
+            return text[: boundary + 1], suffix
+        start = boundary + 1
+
+
+def _navigation_after(source: str, card_body: str) -> str | None:
+    """Return trailing navigation when ``card_body`` is exactly ``source`` plus it.
+
+    ``None`` means ``source`` is not a prefix. The source text, including its
+    trailing newline, is never stripped. The separator between the source and
+    the navigation accepts both the canonical form chosen by
+    :func:`render_card` (which adapts to the source's own trailing newlines)
+    and the legacy form ``source + "\\n\\n" + navigation`` emitted by older
+    tools, so mirrors rendered before the companion-section format keep
+    round-tripping instead of being rejected as ordinary-link violations.
+    """
+
+    if not card_body.startswith(source):
+        return None
+    rest = card_body[len(source) :]
+    if not rest:
+        return ""
+    # A blank line may already sit at the end of the source. Do not require
+    # another one, and do not strip that trailing whitespace off the source.
+    # Separators between the source and the navigation vary by history: the
+    # canonical :func:`render_card` adapts to the source's own trailing
+    # newlines (0, 1, or 2 extra), while the legacy renderer always appended
+    # two. Try the candidate strips from fewest to most; every stripped
+    # character must itself be a newline so separator tolerance can never
+    # silently swallow source text such as a trailing ``X``. The navigation
+    # body itself is still validated strictly, so this only tolerates
+    # separator differences and never accepts source text as navigation.
+    for count in (0, 1, 2):
+        if rest[:count] != "\n" * count:
+            continue
+        candidate = rest[count:]
+        if candidate and _is_trailing_navigation(candidate):
+            return candidate.rstrip("\n")
+    raise ValueError("mirror additions must be ordinary trailing links")
 
 FRONTMATTER_RE = re.compile(r"\A---\n(?P<metadata>.*?)\n---\n\n", re.DOTALL)
 INLINE_LINK_RE = re.compile(r"(!?)\[(?:\\.|[^\]\\\n])*\]\(([^)\n]+)\)")
@@ -642,13 +738,14 @@ def existing_card(path: Path, expected_body: str | None = None) -> tuple[dict[st
     if expected_body is None:
         return metadata, None
     if body.startswith(expected_body):
-        suffix = body[len(expected_body):]
-        if not suffix:
-            return metadata, None
-        if suffix.startswith("\n\n") and LINK_LIST_RE.fullmatch(suffix[2:]):
-            return metadata, suffix[2:].rstrip("\n")
-        raise ValueError(f"mirror additions must be ordinary trailing links: {path}")
+        try:
+            navigation = _navigation_after(expected_body, body)
+        except ValueError as exc:
+            raise ValueError(f"{exc}: {path}") from exc
+        return metadata, navigation or None
     _, suffix = split_link_suffix(body)
+    if suffix is None and f"\n{COMPANION_HEADING}\n" in body:
+        raise ValueError(f"mirror additions must be ordinary trailing links: {path}")
     return metadata, suffix.rstrip("\n") if suffix is not None else None
 
 
@@ -779,7 +876,16 @@ def metadata_for(
 
 def render_card(metadata: dict[str, object], body: str, navigation: str | None) -> str:
     frontmatter = yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False).rstrip()
-    suffix = "" if navigation is None else "\n\n" + navigation + "\n"
+    if not navigation:
+        suffix = ""
+    else:
+        block = navigation if navigation.endswith("\n") else navigation + "\n"
+        if body.endswith("\n\n"):
+            suffix = block
+        elif body.endswith("\n"):
+            suffix = "\n" + block
+        else:
+            suffix = "\n\n" + block
     return f"---\n{frontmatter}\n---\n\n" + body + suffix
 
 

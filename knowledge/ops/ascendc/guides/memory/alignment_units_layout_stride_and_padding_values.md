@@ -14,7 +14,7 @@ sources:
 - resource: https://gitcode.com/cann/cannbot-skills/blob/502e3ed33f1440aa01bdc5a5bd396e4bf539c9ea/plugins-community/collaborative-agent-kernel-evolution/skills/cake-evo/references/meta_prompts/strategies/perf_10_vectorized_copy.md
   role: supporting
 created_at: '2026-09-11T06:15:28Z'
-updated_at: '2026-09-11T06:15:28Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms: []
 ---
 
@@ -33,3 +33,10 @@ LayerNorm rightPadding=rAlign-r需设定合法paddingValue，未初始化结构�
 BatchNorm SkipPadSubMean只对有效R0减mean，避免padding0变成-mean后污染平方和；repeat/stride字段范围与每行偏移都需匹配。源完整R0段直接传lineNum为repeat、尾段仅显示lineNum/255个满批，尚需处理lineNum超上限及余数，不能认为示例已覆盖全部大输入。后续归约仍须有效域和正确分母。
 
 严格按物理layout验证输入编码的行列号，往返搬运后再加入计算，检查有效区与padding分别符合合同。自动连续化只代表框架可能预先复制，不证明TensorList的裸Kernel接受任意stride；ReinterpretCast不执行数值转换，对齐本身也不授予原地宽化Cast合法性。
+
+## 配套 API 与常见组合
+
+- [DataCopy](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_gm_and_ub_continuous.md)
+- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)
+- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm.md)
+- [copy（Unified Buffer到Global Memory的数据搬运）](../../apis/simd_api/tensor_api/reg_vector_compute/vector_compute_store/copy_ub_to_gm.md)

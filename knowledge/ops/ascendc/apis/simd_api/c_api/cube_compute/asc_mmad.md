@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/cube_compute/asc_mmad.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T10:23:00Z'
 platforms:
 - '950'
 - a2
@@ -381,3 +381,9 @@ int main()
 ```
 
 更多场景使用样例请参考[asc_mmad样例](https://gitcode.com/cann/asc-devkit/tree/639b2b5c1031188107d23d785d52b935f1b4f13b/examples/02_simd_c_api/03_c_api/03_matrix_compute/mmad)。
+
+## 配套 API 与常见组合
+
+- [asc_copy_l0c2gm](../cube_datamove/asc_copy_l0c2gm/asc_copy_l0c2gm_arch_2201.md)——a2/a3 的 arch_2201：L0C 结果经该卡搬回 GM，与 mmad 的平台交集只到 a2/a3
+- [asc_copy_l0c2gm](../cube_datamove/asc_copy_l0c2gm/asc_copy_l0c2gm_arch_3510.md)——950 的 arch_3510：L0C→GM 出流用这张卡，不把 arch_2201 当成 950 路径
+- [asc_copy_l12l0a_arch_3510（2D矩阵搬运）](../cube_datamove/asc_copy_l12l0a/asc_copy_l12l0a_2d_arch_3510.md)——mmad的A操作数驻留L0A，由l12l0a从L1装载（l12l0a卡示例即装载a_l0后喂mmad并链接mmad样例），平台同为950

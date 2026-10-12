@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/sort_operations/GetSortLen.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 ---
 
@@ -64,3 +64,7 @@ AscendC::GetSortLen<half>(128);
 - [MoeInitRoutingV3 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/moe/moe_init_routing_950.md)
 - [MoeTokenPermute A2/A3 ACLNN 算子知识](../../../../operators/aclnn/transformer/moe/moe_token_permute.md)
 - [MoeTokenPermuteWithRoutingMap 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/moe/moe_token_permute_with_routing_map_950.md)
+
+## 配套 API 与常见组合
+
+- [GetSortOffset](get_sort_offset.md)——Sort 格式（8 字节结构）数据寻址的两半：GetSortLen 定长（blockLen/UB 内子表间距）、GetSortOffset 定位（workspace 源偏移）

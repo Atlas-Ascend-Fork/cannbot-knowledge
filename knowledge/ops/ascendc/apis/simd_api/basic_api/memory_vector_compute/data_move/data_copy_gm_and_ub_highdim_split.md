@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/memory_vector_compute/data_move/DataCopy_GMAndUB_highdim_split.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms:
 - '950'
 - a2
@@ -262,3 +262,12 @@ source_headers:
     输入数据dstLocal：[1 2 3 ... 512]
     输出数据dstGlobal：[1 2 3 ... 512]
     ```
+
+## 配套 API 与常见组合
+
+- [GmUbDataMove](../../data_move_guide/gm_ub_data_move.md)
+- [DataCopy](data_copy_gm_and_ub_continuous.md)
+- [DataCopyPad](data_copy_pad_gm_to_ub.md)
+- [DataCopyPad](data_copy_pad_ub_to_gm.md)
+- [ND/NZ 随路变换与块位置重排](../../../../../guides/data_movement/nd_nz_transform_and_block_placement.md)
+- [DMA 优化单位、地址对齐与批量输出](../../../../../guides/data_movement/dma_optimization_units_alignment_and_batched_outputs.md)

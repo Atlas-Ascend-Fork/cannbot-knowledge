@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/vector_datamove/asc_copy_gm2ub/asc_copy_gm2ub_arch_2201.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - a2
 - a3
@@ -76,3 +76,7 @@ constexpr uint64_t total_length = 128;
 __ubuf__ half dst[total_length];
 asc_copy_gm2ub(dst, src, total_length * sizeof(half));
 ```
+
+## 配套 API 与常见组合
+
+- [asc_copy_ub2gm](../asc_copy_ub2gm/asc_copy_ub2gm_arch_2201.md)——同一算子GM↔UB数据通路的镜像两端（入搬运-计算-出搬运），P(a|b)=1.00，证据中同批UB缓冲区首尾相接

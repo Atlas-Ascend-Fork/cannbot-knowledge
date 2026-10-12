@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/LocalMemAllocator/Alloc.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms:
 - '950'
 - a2
@@ -153,3 +153,8 @@ auto layoutMake = AscendC::MakeLayout(shape, stride);
 auto tensorTraitMake = AscendC::MakeTensorTrait<float, AscendC::TPosition::VECIN>(layoutMake);
 auto tensor3 = allocator.Alloc<decltype(tensorTraitMake)>();
 ```
+
+## 配套 API 与常见组合
+
+- [LocalMemAllocatorConstructor](local_mem_allocator_constructor.md)——Alloc 是 LocalMemAllocator 的成员接口且 pos 须匹配构造时指定的 Hardware 物理位置（Alloc 卡明文），P 双向 1.00
+- [InitSocState](../../tool_interface/system_init/init_soc_state.md)——LocalMemAllocator/Alloc 即静态Tensor编程范式的分配机制

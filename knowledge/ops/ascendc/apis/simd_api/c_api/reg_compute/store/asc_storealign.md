@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/reg_compute/store/asc_storealign.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - '950'
 source_headers:
@@ -380,3 +380,13 @@ int main()
     return passed ? 0 : 1;
 }
 ```
+
+## 配套 API 与常见组合
+
+- [asc_get_vf_len](../../utils/sys_var/asc_get_vf_len.md)——storealign 卡明示单次搬出量为 VL(256字节)，循环步长与掩码元素数须由 asc_get_vf_len() 推导，参数派生依赖成立
+- [asc_loadalign](../load/asc_loadalign.md)——VF 内寄存器搬入/搬出闭环，单次均为 VL 且 32 字节对齐语义一致，两卡调用示例均成对使用，P(b|a)=1.00
+- [asc_copy_ub2gm_align](../../vector_datamove/asc_copy_ub2gm_align/asc_copy_ub2gm_align_arch_3510.md)——本卡 dav-3510 示例在 storealign 写回 UB 后调用 asc_copy_ub2gm_align，对应平台同为 950 的 arch_3510
+- [asc_add](../reg_arith/asc_add.md)——寄存器 asc_add 的结果由本接口写回 UB；该卡示例在 asc_add 之后调用 storealign，不接收 UB 指针
+- [asc_update_mask](../reg_mask/asc_update_mask.md)——storealign的mask参数必须由掩码设置接口预先赋值（卡内强制约束），证据中update_mask产出的mask直接传入storealign
+- [asc_create_mask](../reg_mask/asc_create_mask.md)——asc_create_mask_b16(PAT_ALL)产出的all_mask直接作为asc_storealign的mask实参，满足其掩码预赋值强制约束
+- [asc_duplicate_scalar](../reg_broadcast/asc_duplicate_scalar.md)——duplicate_scalar 广播生成寄存器、storealign 将其对齐写回 UB

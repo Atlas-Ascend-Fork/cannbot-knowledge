@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetSocVersion.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -111,3 +111,7 @@ void GetInfoFun()
 
 
 - [GroupNormSwish A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/group_norm_swish.md)
+
+## 配套 API 与常见组合
+
+- [PlatformAscendCManager](../platform_ascend_c_manager.md)——Kernel直调场景 GetSocVersion 只能经 PlatformAscendCManager::GetInstance() 取得平台对象后调用

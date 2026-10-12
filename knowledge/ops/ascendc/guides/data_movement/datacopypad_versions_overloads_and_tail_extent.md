@@ -11,7 +11,7 @@ sources:
 - resource: https://gitcode.com/cann/cannbot-skills/blob/502e3ed33f1440aa01bdc5a5bd396e4bf539c9ea/plugins-community/ascendc-port-orchestrator/kb/target/ascendc/ERROR_CORRECTIONS.md
   role: primary
 created_at: '2026-09-14T04:24:48Z'
-updated_at: '2026-09-14T04:24:48Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms: []
 ---
 
@@ -28,3 +28,9 @@ Host 预填充可构成一种有条件的布局方案：输入、输出真实物
 来源 EC-22/23 同时含有“向上取整 count 即可”“后续写能自我修复”的建议，这些不能替代逐区域所有权与实际地址验证。多核重叠写、源尾部读取、count 小于对齐块以及行间 padding 均需单独处理；单核通过不唯一指向该类竞态。
 
 成功测试的范围也应保留：一个 8 字节 int64 UB→GM 写回成功，不证明所有打包类型、stride 和多块组合可用；若只有上游旧 guard 而没有目标 SDK 证据，不应据此禁用已存在的 API，也不应盲目删除所有 guard。按实际安装声明和边界测试选择可用路径，比较完整布局转换与内核成本。
+
+## 配套 API 与常见组合
+
+- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_gm_to_ub.md)
+- [DataCopyPad](../../apis/simd_api/basic_api/memory_vector_compute/data_move/data_copy_pad_ub_to_gm.md)
+- [GmUbDataMove](../../apis/simd_api/basic_api/data_move_guide/gm_ub_data_move.md)

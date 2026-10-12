@@ -33,7 +33,7 @@ Git ledger 使用：
 - `skip`：材料不产生可复用技术知识，写明理由。
 - `defer`：本批不处理、证据不足或依赖尚未迁移 producer，写明理由。
 
-按目标 Concept 聚合多份来源。融合后写一份自包含知识，不把每个 source 拼成独立章节。已有同概念卡使用 update/merge，不重复创建变体卡。Registry 文档归档中明确登记的官方 API/Guide 是受控例外：同步器只为含独立技术事实的页面建卡，README、发布占位、纯链接目录和接口清单等导航页改由对应目录 `index.md` 承载；保留页只删除 Registry 声明的冗余章节、改写失效链接，并在正文外增加 Frontmatter 与可选的普通知识卡链接。当前“产品支持情况”先用于生成 `platforms`，再从正文删除。
+按目标 Concept 聚合多份来源。融合后写一份自包含知识，不把每个 source 拼成独立章节。已有同概念卡使用 update/merge，不重复创建变体卡。Registry 文档归档中明确登记的官方 API/Guide 是受控例外：同步器只为含独立技术事实的页面建卡，README、发布占位、纯链接目录和接口清单等导航页改由对应目录 `index.md` 承载；保留页只删除 Registry 声明的冗余章节、改写失效链接，并在正文外增加 Frontmatter 与可选的文末导航（普通知识卡链接，或「配套 API 与常见组合」小节）。当前“产品支持情况”先用于生成 `platforms`，再从正文删除。
 
 对登记了 `mirror` 的文档归档执行：
 
@@ -44,7 +44,7 @@ python3 <skill-dir>/scripts/fixed_archive_docs.py --knowledge-root <repo> \
   sync --updated-at <UTC-second>
 ```
 
-需要发现 API 引用时可按[本地图谱](local-graphs.md)按需生成源码调用建议；该步骤不回写卡片或参与入库门禁。采用的关联使用普通 Markdown 链接，镜像正文之后可追加普通链接列表。源码恢复与既有来源等价本地化见[新来源接入](source-onboarding.md)。
+需要发现 API 引用时可按[本地图谱](local-graphs.md)按需生成源码调用建议；该步骤不回写卡片或参与入库门禁。采用的关联使用普通 Markdown 链接，镜像正文之后可追加普通链接列表，或在其后追加「配套 API 与常见组合」小节；机制说明的长度和内容边界见 AGENTS.md。源码恢复与既有来源等价本地化见[新来源接入](source-onboarding.md)。
 
 Source role 只使用当前 Schema：`primary`、`supporting`、`example`、`constraint`、`header`、`implementation`、`evidence`。Git 来源固定到 40 位 commit；关键代码结论优先使用精确 blob，而不是仓库根或宽 tree。
 

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/basic_api/resource_management/TQue/AllocTensor.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-08T03:31:04Z'
+updated_at: '2026-10-10T08:27:47Z'
 platforms:
 - '950'
 - a2
@@ -207,3 +207,15 @@ non-inplace接口返回值为LocalTensor对象，inplace接口没有返回值。
 - [ChunkGatedDeltaRule A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/transformer/attention/chunk_gated_delta_rule.md)
 - [UpsampleBicubic2dAA A2/A3 ACLNN 算子知识](../../../../../operators/aclnn/cv/image/upsample_bicubic_2d_aa.md)
 - [InplaceTril 950 ACLNN 算子知识](../../../../../operators/aclnn/math/conversion/inplace_tril_950.md)
+
+## 配套 API 与常见组合
+
+- [TQue简介](t_que_intro.md)——AllocTensor 是 TQue 的成员接口，从 TQue 分配 tensor
+- [InitBuffer](../t_pipe/init_buffer.md)——TPipe::InitBuffer 在 TPipe 上为队列分配内存（pipe.InitBuffer）
+- [EnQue](en_que.md)——生产侧相邻步骤 AllocTensor-填充-EnQue，为官方 TQue 示例的 canonical 顺序
+- [DeQue](de_que.md)——同一队列上 tensor 的生产侧 AllocTensor 与消费侧 DeQue，构成 Alloc-EnQue-DeQue-Free 四步链的分配与取出
+- [FreeTensor](free_tensor.md)——官方文档明文 AllocTensor/FreeTensor 在切分资源池时必须成对匹配使用
+- [Ascend C 缓冲所有权、流水交接与槽位布局](../../../../../guides/memory/buffer_ownership_and_slot_layout.md)
+- [双缓冲物理槽与常驻参数预算](../../../../../guides/memory/double_buffer_slot_counts_and_resident_parameters.md)
+- [InitBuffer](../t_buf_pool/init_buffer.md)——TBufPool::InitBuffer 设定每块内存长度，AllocTensor 按该长度分配；这不是 TPipe::InitBuffer
+- [TPipe简介](../t_pipe/t_pipe_intro.md)——AllocTensor 的内存源是 kernel 唯一 TPipe 经 InitBuffer 绑定的队列内存（P(a|b)=1.00），缺 TPipe 则队列范式不成立

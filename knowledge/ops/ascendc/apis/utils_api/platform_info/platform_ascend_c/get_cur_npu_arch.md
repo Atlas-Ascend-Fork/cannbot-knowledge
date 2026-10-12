@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/Utils-API/platform_info/PlatformAscendC/GetCurNpuArch.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 source_headers:
 - include/utils/tiling/platform/platform_ascendc.h
@@ -105,3 +105,8 @@ void GetInfoFun()
 - [LayerNormBackward A2/A3 ACLNN 算子知识](../../../../operators/aclnn/nn/norm/layer_norm_backward.md)
 - [MoeDistributeCombineTeardown 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/moe_distribute_combine_teardown_950.md)
 - [InplaceLerps 950 ACLNN 算子知识](../../../../operators/aclnn/math/math/inplace_lerps_950.md)
+
+## 配套 API 与常见组合
+
+- [MaskReg](../../../simd_api/basic_api/reg_vector_compute/register_data_types/mask_reg.md)——MaskReg 仅 950/3510（Reg-base）可用
+- [RegTensor](../../../simd_api/basic_api/reg_vector_compute/register_data_types/reg_tensor.md)——RegTensor 仅 950/Reg-base，host 侧以 GetCurNpuArch 返回的 NpuArch 门控 MicroAPI 路径选择

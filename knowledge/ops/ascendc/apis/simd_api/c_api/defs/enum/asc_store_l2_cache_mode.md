@@ -10,7 +10,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/c_api/defs/enum/asc_store_l2_cache_mode.md
   role: primary
 created_at: '2026-09-03T08:52:46Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-10T04:14:14Z'
 platforms: []
 ---
 
@@ -42,3 +42,7 @@ enum class asc_store_l2_cache_mode : uint8_t {
 | NORMAL_LAST_VICTIM | 启用L2 Cache，并且将分配的Cache Line标记为低替换优先级。 |
 | NORMAL_PERSISTENT | 启用L2 Cache。已存入L2 Cache中的数据可能被替换，若需确保特定数据始终保留在L2 Cache中，可采用驻留模式。<br>&bull; 注意，被标记为驻留模式的Cache Line只能被其他同样被标记为驻留模式的Cache Line替换。 |
 | NOTALLOC_CLEAN | 不启用L2 Cache，若L2 Cache中已有同地址缓存会被保留并标记为Clean，标记为Clean的Cache Line被移出L2 Cache时会被直接丢弃。 |
+
+## 配套 API 与常见组合
+
+- [asc_load_l2_cache_mode](asc_load_l2_cache_mode.md)——GM→UB 与 UB→GM 两方向对称的 L2 策略枚举，出入搬运调优成对决策且取值集不同（store 无 NOTALLOC_KEEP/DROP），对侧枚举有真实调优导航价值

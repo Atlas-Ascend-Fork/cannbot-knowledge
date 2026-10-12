@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/cube_compute/Matmul_Kernel/Matmul_usage.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-12T03:09:26Z'
+updated_at: '2026-09-30T01:53:56Z'
 platforms: []
 ---
 
@@ -284,3 +284,13 @@ Atlas A2 训练系列产品/Atlas A2 推理系列产品
 5.  重复2-4步骤，完成矩阵块a1 \* b1的计算；
 6.  数据从矩阵块co2搬到矩阵块C：DataCopy每次搬运一块singleCoreM \* singleCoreN的矩阵块co2到矩阵块C中；
 7.  重复1-6步骤，完成矩阵A \* B = C的计算。
+
+## 配套 API 与常见组合
+
+- [MatmulConfig](matmul_config.md)
+- [REGIST_MATMUL_OBJ](regist_matmul_obj.md)
+- [GetMatmulApiTiling](get_matmul_api_tiling.md)
+- [Matmul Tiling类使用说明](../matmul_tiling/matmul_tiling_usage.md)
+- [Matmul 高阶 API 的执行模式与 Host 契约](../../../../../guides/matmul/execution_mode_and_host_contracts.md)
+- [异步 Matmul 的结果空间与完成等待](../../../../../guides/matmul/async_result_buffers_and_completion.md)
+- [Matmul 基本块流量模型与输出对齐](../../../../../guides/matmul/base_block_traffic_model_and_alignment.md)
