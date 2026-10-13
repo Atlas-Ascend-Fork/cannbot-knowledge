@@ -1,10 +1,10 @@
 # cannbot-knowledge
 
-CANNBot 是 [CANN](https://hiascend.com/software/cann) 社区的 Infra 智能体层，用 Agent 完成 AscendC/PyPTO/TileLang/Triton 等各类语言的算子开发、模型迁移与推理优化，并延伸至图模式、Runtime 等更多 CANN 开发场景。
+CANN 领域知识库面向 [CANN](https://hiascend.com/software/cann) 社区，沉淀 AscendC/PyPTO/TileLang/Triton 等语言的算子开发、模型迁移、推理优化，以及图模式、Runtime 等开发场景中的可复用知识。知识库通过标准化知识卡、统一治理和检索能力，支持快速接入不同 Agent 框架。
 
-本仓（cannbot-knowledge）是其知识仓，提供知识库检索货架；仓群还包括 [cannbot](https://gitcode.com/cann/cannbot)、[cannbot-skills](https://gitcode.com/cann/cannbot-skills)、[cannbot-dsl](https://gitcode.com/cann/cannbot-dsl)、[cann-bench](https://gitcode.com/cann/cann-bench)、[cannbot-sentry](https://gitcode.com/cann/cannbot-sentry) 等仓库，结构如下。
+本仓（cannbot-knowledge）是独立维护的 CANN 领域知识仓，提供知识卡、来源治理和检索能力，可作为不同 Agent 框架的公共知识底座。知识库架构如下：
 
-![CANNBot 仓群结构](docs/figures/cannbot-repo-map.png)
+![CANN 知识库架构](docs/figures/cann-knowledge-architecture.png)
 
 本仓不把算子工程或模型代码作为知识正文提交，而是把经过整理、能够追溯到登记的文档来源、固定版本源码或卡内原始观测的工程知识保存成 Markdown 知识卡，例如：
 
@@ -13,7 +13,7 @@ CANNBot 是 [CANN](https://hiascend.com/software/cann) 社区的 Infra 智能体
 - 一个算子的设计、实现或优化方法；
 - 某类编译、运行、精度或性能问题的排查步骤。
 
-CANNBot 通过本仓提供的 Skill 生产、检索和检查这些知识，从而在回答问题或执行工程任务时复用经过治理、可以追溯来源的结论。
+各类 Agent 可通过本仓提供的 Skill 生产、检索和检查这些知识，从而在回答问题或执行工程任务时复用经过治理、可以追溯来源的结论。
 
 ## 设计参考
 
