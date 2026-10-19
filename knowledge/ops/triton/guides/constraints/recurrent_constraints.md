@@ -8,7 +8,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/index.md
   role: supporting
 created_at: '2026-08-12T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2]
 ---
 
@@ -21,8 +21,10 @@ platforms: [a2]
 
 本文档合并该类别算子的优化经验。按以下结构组织：
 - **§1 通用经验**：跨算子（LSTM/GRU/RNN）共有的递归工程约束，首次生成必须遵守
-- **§2 LSTM**（首个归档算子）/ **§3 GRU**（待归档）/ **§4 RNN**（待归档）
-- **§5 常见陷阱**（按算子分小节）
+- **§2 Layer 2: 类别级通用算法骨架**
+- **§3 Layer 3: 类别级公共关键代码**
+- **§4 常见陷阱**（按算子分小节）
+本类单算子：**LSTM**（已归档）/ **GRU** / **RNN**（待归档），其专属 Layer 1 约束见下方「算子级实现手册」。
 
 > ⚠️ **关键区分**：本类别的核心优化哲学是 **「host-loop 单步 kernel + 禁止 host 转置 + kernel 内 coalesced 加载」**。时间维递归必须在 host 侧串行；权重以原生布局传入，kernel 内通过 `tl.trans` 获得转置视图，禁止调用 `.t()`/`.transpose()`。
 > 首次归档算子：`1_LSTM`（单层 LSTM 前向，60-case 多 shape，ascend910b1）；归档时最佳几何平均 **13.3673x**。
@@ -82,15 +84,62 @@ platforms: [a2]
 
 ### R5 recurrent kernel 瓶颈是 scalar/address overhead，不是 cube 吞吐
 - **优化方向必须**是削减 K-loop 内的 load 条数与地址算术，**而非**放大 BLOCK_M/BLOCK_K 堆 cube。
-- **Why:** profiling 实测传统 fused recur kernel PipeUtilization = scalar ~45% / mte(load) ~29% / **cube(macc) 仅 ~7%**。根因是每个隐维 tile 在 K-loop 内对每个 gate 各做一次 strided load + 小-N dot，地址算术与 load 指令数爆炸，cube 空转。堆 BLOCK 实测普遍退化（§5.1：BLOCK_K=256→0.594x、BLOCK_BATCH=32→UB 溢出）。
+- **Why:** profiling 实测传统 fused recur kernel PipeUtilization = scalar ~45% / mte(load) ~29% / **cube(macc) 仅 ~7%**。根因是每个隐维 tile 在 K-loop 内对每个 gate 各做一次 strided load + 小-N dot，地址算术与 load 指令数爆炸，cube 空转。堆 BLOCK 实测普遍退化（§4.1：BLOCK_K=256→0.594x、BLOCK_BATCH=32→UB 溢出）。
 - **How to apply in host-loop design:** 把 recurrence 拆成独立 matmul + elementwise，让 matmul 走标准二维 coalesced load，elementwise 无 dot；避免在单个 kernel 内做 4-gate strided load 的复杂 K-loop。
 - 与 math-compute M4（UB 决定 tile）的差异：R5 强调瓶颈在地址/load 而非 cube 或纯 UB，优化杠杆是"简化 load"而非"调 tile 形状"。
 
 ---
 
-## §5 常见陷阱与避免方法
+## §2 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
 
-### §5.1 LSTM 陷阱
+递归类算子共享「**时间维串行 + 单 program 持全隐维 + 仅 batch 分核 + 双缓冲规避 RAW**」的类别级模板。
+逐算子 L2 变体见 `operator_playbooks`（LSTM / GRU / RNN）。
+
+### L2.1 唯一并行维 = batch（R1/R3）
+```python
+grid = (num_cores,)                       # 仅按 batch 分核
+# 每个 program：串行全部时间步 S × 全部隐维 tile，只处理自己的 BLOCK_BATCH 块
+```
+- **禁止**把时间维展平进 grid 跨 program 并行（递归 RAW）；**禁止**按隐维 tile 分核（递推归约要读全 H）。
+- 小 batch 并行度低是固有特性，非优化能解。
+
+### L2.2 内核骨架：时间循环 + 隐维 tile + 全 H 归约（R1/R2）
+```python
+for t in range(S):                          # 时间维串行
+    read_off  = (t % 2)       * stride_ws   # R4 双缓冲乒乓
+    write_off = ((t + 1) % 2) * stride_ws
+    for ht in range(num_hidden_tiles):       # 输出隐维 tile（同一 program 内）
+        for k in range(0, H, BLOCK_K):       # 内层读全 H 的 h_tile，同一 h_tile 复用于 G 个 gate
+            ... tl.dot(h_tile, w_hh) ...     # 避免 G× 重复 load h
+```
+
+### L2.3 host-loop 优先：拆 matmul + elementwise（R5）
+- recurrence 拆成独立 matmul（标准 2D coalesced load）+ elementwise（无 dot）；避免单 kernel 内 4-gate strided load 的复杂 K-loop。
+- 瓶颈是 scalar/address overhead 而非 cube 吞吐 → 优化削 load 条数与地址算术，**非**放大 BLOCK 堆 cube。
+
+---
+
+## §3 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+### L3.1 乒乓双缓冲工作区（R4）
+```python
+read_off  = (t % 2)       * stride_ws_s
+write_off = ((t + 1) % 2) * stride_ws_s
+```
+- 单缓冲 t 步写 h_t 与 t+1 步读同址 → RAW；双缓冲落到不同物理页。LSTM 建 `(2,B,H)` h+c 双状态各一组，GRU h 一组。
+
+### L3.2 全 H 归约 + 门复用
+- 外层 `for ht`（输出隐维 tile），内层 `for k` 读全 H，**同一 h_tile 复用于 G 个 gate 的 dot**（避免 G× duplicate load h）。
+- `W_hh` 为 `[H, G·H]`，每个输出 gate 维依赖全部输入隐维。
+
+### L3.3 防隐维分核 / 时间分核
+- 跨 program 切隐维 → 只算半段 h，下一步 W_hh 却读全段 → RAW；时间维跨 program 更甚。**只 batch 分核**。
+
+---
+
+## §4 常见陷阱与避免方法
+
+### §4.1 LSTM 陷阱
 
 | 陷阱 | 现象 | 正确做法 |
 | --- | --- | --- |

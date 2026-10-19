@@ -1,19 +1,16 @@
 ---
 type: Optimization
 title: MatMul 算子优化
-description: 以 fp16/bf16 为例（每个元素 2 字节）：。
 tags: [task.optimization, topic.data_movement.layout_transform, topic.implementation.masking, topic.compute.composite, topic.tiling, topic.compilation]
 status: stable
-sources:
-- resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Linear_Algebra_Ops/dot.md
-  role: primary
-- resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/03-matrix-multiplication.py
-  role: example
-created_at: '2026-08-13T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
 platforms: [a2]
+description: '**关键原则**: 充分发挥带宽，算子行宽为 512B 的整数倍。'
+sources:
+- resource: https://gitcode.com/cann/cannbot-skills/blob/bf861dda4e8c8d82cdd4d2ee9801a463c1f17263/ops/triton-op-coding/references/triton-ascend-matmul.md
+  role: primary
+created_at: '2026-08-13T00:00:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 ---
-
 # MatMul 算子优化
 
 > 适用于矩阵乘法及相关运算
@@ -135,8 +132,3 @@ class ModelNew(torch.nn.Module):
 - 使用 `grid=(num_cores,)` 固定启动核心数(如20个)
 - 每个核心通过 `for block_idx in range(pid, NUM_BLOCKS, num_cores)` 循环处理多个块
 - 不要使用 `grid=(NUM_BLOCKS_M * NUM_BLOCKS_N,)` 为每个块启动一个程序
-
-## 失效边界与不触发场景
-
-- **不触发**：算子不属于本范式时不适用。
-- **失效**：切换实现范式后本卡结论需重新判定。

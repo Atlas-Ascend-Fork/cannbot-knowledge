@@ -1,20 +1,16 @@
 ---
 type: Guide
 title: Reduce 算子优化
-description: 'def reduction_kernel(input_ptr, output_ptr, n_elements, BLOCK_SIZE:
-  tl.constexpr):。'
+description: '**基础归约**: sum, mean, max, min, prod **归一化**: softmax, logsoftmax, layernorm, batchnorm **统计**: variance, std'
 tags: [task.design, topic.precision, topic.compute.reduction, topic.implementation.masking, topic.tiling, topic.implementation.atomic]
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Reduction_Ops/sum.md
+- resource: https://gitcode.com/cann/cannbot-skills/blob/bf861dda4e8c8d82cdd4d2ee9801a463c1f17263/ops/triton-op-coding/references/triton-ascend-reduce.md
   role: primary
-- resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Reduction_Ops/reduce.md
-  role: supporting
 created_at: '2026-08-13T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2, a3]
 ---
-
 # Reduce 算子优化
 
 > 适用于需要聚合多个值的归约操作

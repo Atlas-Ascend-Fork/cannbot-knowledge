@@ -10,7 +10,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Indexing_Ops/gather.md
   role: primary
 created_at: '2026-08-31T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2]
 ---
 
@@ -105,9 +105,53 @@ gather/加权 prologue，不要按大 M GEMM 的直觉选 tl.dot 或拆 kernel�
 - **Why（实测）**：同代码 run-to-run 噪声带宽 ~±0.2 个 geomean 点（同代码两次 1.3956/1.4083，case 级漂移可达 0.82→2.01）。
 - **配套**：跨轮对比时先看两次 run 的自方差；profiler pipe-share 数值只作类型证据不作对比依据。
 
-## §3 常见陷阱与避免方法
+---
 
-### §3.1 通用陷阱（类别级）
+## §2 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
+
+Diffusion 嵌入类算子共享「**按计算阶段深度融合 + 共享 contraction 维 pass-merge + tensor 维度按仿射/tile 整域分档 + dtype 位级契约 constexpr 复现**」的类别级模板。
+骨架逐算子变体见 `operator_playbooks`（Flux *Time*step*Proj*Embedding 等）。
+
+### L2.1 按计算阶段深度融合（DE2：kernel 数 = 阶段数）
+- 把相邻计算阶段融合进同一 kernel，中间结果存 UB/寄存器，**不落地 GM**；融合边界以「段」为单位（**kernel 数 = 阶段数**）。
+- **禁止跨段生产者-消费者融合**（把上游输出改为在下游 kernel 内重算）：仅当下游对上游输出**只读一次**时才允许，否则上游计算量放大 N-tile 数倍（DE2 判据，实测 60/60 全劣化回退）。
+- host 侧按阶段拆 kernel；`forward()` 只做 shape 计算、分派、host 预计算（DE 无 torch 数值计算退化）。
+
+### L2.2 共享 contraction 维 pass-merge（DE4：单 K-loop 多累加器）
+- 多个共享同一 contraction 维（如 `[K]`）的 matmul 链，**用单个 `for k` 循环 + 多个累加器**一次遍历完成，避免多次重复读遍历。
+- **本类 skinny-M 全程禁 tl.dot，走向量外积-累加（DE1）**：
+```python
+acc_a = tl.zeros((...), tl.float32); acc_b = tl.zeros((...), tl.float32)
+for k in range(0, K, BLOCK_K):
+    a_tile = tl.load(...).to(tl.float32); w_tile = tl.load(...).to(tl.float32)
+    acc_a += tl.sum(a_tile[:, :, None] * w_tile[None, :, :], axis=1)   # DE1 向量外积，非 tl.dot
+    acc_b += ...
+```
+
+### L2.3 constexpr 入参静态化（dtype 位级契约，DE3）
+- 固定数值（如 timestep 计数、`MAX_HALF_D`、dtype 相关常量）声明 `tl.constexpr`，编译器编译期折叠，并保证逐位对齐参考实现。
+
+### L2.4 dimension 划分
+- tensor 维拆 block：`tl.arange` 连续维向量化；非连续/tile 整域维按分层 tile 处理（DE5/DE7 硬顶前置检查防 UB 溢出）。
+
+---
+
+## §3 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+### L3.1 向量外积替代 skinny-M dot（防 tl.dot 低效）
+- 维度较窄（skinny-M）时 `tl.dot` 微块利用率低，走向量外积 `x[:, None] * y[None, :]`（DE1）。
+
+### L3.2 UB 硬顶前置检查（DE7）
+- 分配大 tile 前先静态估算 UB 占用（`BLOCK_M*BLOCK_N*elem`, fp32 约 32768 元素/块），超限前置换成小 block；禁运行时才发现 UB overflow。
+
+### L3.3 no-op cast 剪除（DE6）
+- 相等 dtype 的 cast 直接剪掉，禁 kernel 内无意义类型转换。
+
+---
+
+## §4 常见陷阱与避免方法
+
+### §4.1 通用陷阱（类别级）
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
@@ -129,7 +173,7 @@ gather/加权 prologue，不要按大 M GEMM 的直觉选 tl.dot 或拆 kernel�
 | 用 profiler pipe-share 数值做轮间对比 | 同代码不同轮 share 漂移 >20% | share 只作类型证据，不作可比数值 |
 | msprof 全 case PROFILER_COLLECT_FAIL | hostname 特殊字符 → "Invalid input path" | DE9 sitecustomize shim（强制） |
 
-### §3.2 方法论（可迁移）
+### §4.2 方法论（可迁移）
 
 - **TTIR 检查法**：`~/.triton/cache/*/...ttir` 确认外积被 pattern-match 成 `tt.dot(tf32)` 属 lowering 结构性产物，源码层剪不掉。
 - **认证粒度律**：改动覆盖整个 B 段的 law → geomean 可认证；只碰 <10% case → noise-dominated 关门。

@@ -140,3 +140,27 @@ global_constraints.md（`../constraints/global_constraints.md`）。
 ## transformer_training（1 张）
 
 - [FusionAttention 算子（attention） 实现手册](transformer_training__fusionattention.md)：算子类别: attention（标准稠密 MHA / FlashAttentionScore）。
+
+- [Elemwise Broadcast 2D 设计走查](elemwise_broadcast_2d.md)：2D广播除法优化：小维度完整处理不切分（循环外加载复用），通过固定NUM_BLOCKS实现核间并行（40核），核内SUB_M控制粒度平衡UB利用率，适用于broadcast轴大但非broadcast轴小的2D场景
+- [Elemwise Broadcast 3D 设计走查](elemwise_broadcast_3d.md)：跨轴3D广播优化（最后一维很小）：采用两阶段kernel策略（先broadcast展开+reshape为2D，再标准多核处理）提升向量化效率，适用于跨轴broadcast且最后一维特别小（<20）导致向量化效果差的场景
+- [Elemwise Cast 设计走查](elemwise_cast.md)：大shape类型转换（int8→fp16）优化：通过二次切分（BLOCK_SIZE+TILE_SIZE）提高UB利用率，核数2048时性能最优，适用于shape较大（百万级元素）的elementwise类型转换场景
+- [Elemwise Concat 设计走查](elemwise_concat.md)：Slice+Concat融合算子优化：通过精确切片加载（只load需要部分）和索引计算拼接（避免cat指令）避免中间结果存储和多次内存访问，适用于多输入需要切片后拼接的融合算子场景
+- [Elemwise Zeros 设计走查](elemwise_zeros.md)：小shape张量创建（zeros/arange/full）优化：通过减少核数避免多核启动和调度开销，单核处理性能优于多核并行，适用于shape较小（千级元素）的elementwise创建张量场景
+- [Histogram Small Bins 设计走查](histogram_small_bins.md)：小 bins 直方图 / 小输出表规约类算子的草图设计：per-core 局部表 + 二次归约，避免全局原子竞争，输入展平、fp32 索引、动态核数
+- [Index Histogram 设计走查](index_histogram.md)：直方图统计（histogram）优化：预排序+二分查找降低算法复杂度（O(n×m)→O(n log n + m log n)，性能提升19倍），转换为float32调用Vec Core硬件加速排序，适用于大规模统计类操作（50万+元素）
+- [Index Put 设计走查](index_put.md)：索引赋值（index_put）优化：批量加载索引数据到UB后循环内通过get_element复用（避免重复访问全局内存），显著降低内存访问延迟，适用于需要在循环中多次访问同一片数据的不规则内存访问场景
+- [Matmul Swizzle2D 设计走查](matmul_swizzle2d.md)：大矩阵乘法Swizzle2D优化：固定核心数启动（grid=20而非所有块）+Swizzle2D块重排（GROUP_SIZE=4）提升缓存局部性，根据M/N比例自适应选择分组方向，适用于大规模矩阵乘法（千万级元素）的Ascend NPU场景
+- [Reduction Amax Large 设计走查](reduction_amax_large.md)：非reduce轴很小、reduce轴很大的归约优化：将reduce轴映射到多核（而非常规的非reduce轴），使用原子操作跨线程块归约，通过二次切分避免超UB，适用于极端shape比例（M<<N如16×262144）的归约场景
+- [Reduction Amax Medium 设计走查](reduction_amax_medium.md)：中等规模归约（amax）优化：计算重组（循环内累加、循环外归约）减少归约次数，grid=40等于核数时性能最优（25.73us），适用于非reduce轴中等、reduce轴较大（千万级元素）的2D归约场景
+- [Reduction Amax Small 设计走查](reduction_amax_small.md)：极小规模归约（amax）优化：单核处理（grid=1）优于多核并行（2.16us vs 3.51us），避免并行化带来的调度开销，适用于数据规模很小（<1000元素）的归约场景
+- [Reduction Amin Atomic 设计走查](reduction_amin_atomic.md)：原子操作归约（amin）优化：非reduce轴很小时将reduce轴映射多核，提供循环内/外两种原子操作方案（减少存储vs减少竞争），通过二次切分+计算重组提升性能，适用于M<<N（如16×262144）的极端shape比例场景
+- [Reduction Amin Large 设计走查](reduction_amin_large.md)：极大规模1D归约（amin）优化：二次切分避免超UB+计算重组减少归约次数，网格数接近AI Core数量（grid=32）、UB用满、无尾块时性能最优（9.61us），适用于极大规模1D数据（400万级元素）的全量归约场景
+- [Reduction Amin Medium 设计走查](reduction_amin_medium.md)：大规模2D归约（amin）reduce轴很大优化：在优先占满UB前提下为reduce轴分配较大切分尺寸（BLOCK_SIZE_N=16384最优），减少循环次数但需权衡单次迭代负载，适用于非reduce轴中等、reduce轴很大（50万级元素）的场景
+- [Reduction Amin Small 设计走查](reduction_amin_small.md)：中等规模1D归约（amin）优化：适中并行度（grid=8时最优2.21us），存在最优平衡点（过小导致单块负载过重、过大引入调度开销），适用于中等规模1D数据（6万级元素）的全量归约场景
+- [Reduction Mean Large 设计走查](reduction_mean_large.md)：大规模reduce最后根轴（mean）行二次切分优化：每个kernel计算多行减少线程块数量、kernel内二次切分避免超UB，grid=40且SUB切分不含尾块时性能最优（16.00us），尾块计算会显著降低性能，适用于非reduce轴中等、reduce轴较大的2D归约场景
+- [Reduction Mean Medium 设计走查](reduction_mean_medium.md)：中等规模reduce第一根轴（mean）优化：计算重组减少归约次数，网格规模略小于AI Core数量且避免尾块时性能最佳（grid=32最优9.98us），适用于reduce第一根轴、两轴均中等（百万级元素）的2D归约场景
+- [Reduction Prod Small 设计走查](reduction_prod_small.md)：小规模reduce第一根轴（prod）优化：使用自定义mul函数配合tl.reduce实现连乘（triton无prod接口），最优网格数明显小于AI Core数量（grid=16最优2.15us），过高并行度反而因调度开销降低性能，适用于shape较小（10万级元素）的reduce第一根轴场景
+- [Reduction Sum Fused 设计走查](reduction_sum_fused.md)：Reduction+Elementwise融合算子优化：先逐元素操作再归约，行二次切分+计算重组，grid=40且SUB切分不含尾块时性能最优（47.58us），融合优化逻辑以reduce为主，适用于需要先逐元素计算再reduce的融合场景
+- [Reduction Sum Large 设计走查](reduction_sum_large.md)：大规模归约（sum）非reduce轴很大优化：计算重组减少归约次数，在优先占满UB前提下为reduce轴分配较大切分尺寸（BLOCK_SIZE_N=1024最优685.65us），适用于非reduce轴非常大（6万+）、reduce轴中等（千级）的2D归约场景
+- [Reduction Weighted Swiglu 设计走查](reduction_weighted_swiglu.md)：3D融合算子（Weighted SwiGLU Backward）优化：Reshape降维将前两维合并简化并行策略，行二次切分避免超UB，在优先占满UB前提下为reduce轴分配较大切分尺寸，grid数较大时可能性能更优，适用于3D张量逐元素+reduce融合的场景
+- [Sort Topk 设计走查](sort_topk.md)：TopK 优化：目标维 permute 到末维后按行处理，每行切分为 <=4096 的 2 幂 tile，tile 内用 ext.sort 排序取 top-K，再用固定 next_pow2(2*K) 缓冲区合并，避免全局排序和选择排序

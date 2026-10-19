@@ -8,7 +8,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/index.md
   role: supporting
 created_at: '2026-08-12T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2, a3]
 ---
 
@@ -21,10 +21,10 @@ platforms: [a2, a3]
 
 本文档合并了三类张量变换算子的优化经验。按以下结构组织：
 - **§1 通用经验**：跨算子重复的工程约束（已提取，各算子章节不再重复）
-- **§2 Interpolate**（transformation-compute，计算密集）
-- **§3 Pad**（transformation-memory，搬运密集）
-- **§4 Repeat**（transformation-memory，搬运密集）
-- **§5 各算子常见陷阱**
+- **§2 Layer 2: 类别级通用算法骨架**
+- **§3 Layer 3: 类别级公共关键代码**
+- **§4 各算子常见陷阱**
+本类单算子：**Interpolate** / **Pad** / **Repeat**，其专属 Layer 1 约束见下方「算子级实现手册」。
 
 ---
 
@@ -131,9 +131,77 @@ platforms: [a2, a3]
 
 ---
 
-## §5 常见陷阱与避免方法
+## §2 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
 
-### §5.1 Interpolate 陷阱
+张量变换类算子都遵循「**host 多策略分派 → 按输出元素做负载均衡 → kernel 内做 1D 行/元素循环 + 坐标解码 → 连续访存写**」的类别级模板。
+两子类分道：**Compute 类**（Interpolate）关心采样权重与精度；**Memory 类**（Pad/Repeat）关心坐标解码开销与连续块。逐算子的 L2 变体见对应 `operator_playbooks/`。
+
+### L2.1 Host 多策略分派（G3：禁止单 kernel 统所有路径）
+- **必须**按 `(维度, 模式, 采样比例/是否整数倍)` 在 host `_route` 分派到特化 kernel，**通用 kernel 仅兜底**。
+- **Compute 子类**：整数倍上采样（reshape broadcast）≠ 整数倍下采样（strided load）≠ 通用采样（gather）；`bilinear+ac=False+0.5x` 退化为 2×2 avg pool。`align_corners` 决定坐标用 `scale*(i+0.5)-0.5` 还是 `scale*i`，影响入口分派。
+- **Memory 子类**：`constant` 模式先 `output.fill_(value)` 再 copy；非 constant（reflect/replicate/circular）用逐行边界映射；`torch.repeat`（多维外重复）走逐维度 outer×inner 连续块，`repeat_interleave`（单维逐元素）走展开——两 API 语义不同，分派先行区分。
+
+### L2.2 1D Grid + 负载均衡（G4/G6）
+```python
+# 按 OUTPUT 元素/行数（非输入）分配核数；grid 钳制到核数
+grid = (min(total_blocks, num_cores),)      # total_blocks 够小时可 2D grid
+# 均衡分配（差 ≤1）：blocks_per_core = total_blocks // num_cores ... 按 pid 分摊多出的余块
+# 每个 program 处理一段连续输出，内部做 row/w 循环
+```
+- **禁止** `grid = (total_blocks,)` 直接超出核数上限空跑。
+
+### L2.3 kernel 内坐标解码模板（所有张量变换的公共重心）
+```python
+# 行/块循环内：pid → (n,c,h) 解码（标量除法）
+# 逐元素坐标映射（Compute：采样坐标；Memory：输出→输入偏移）
+# 关键：除法/取余只对标量做，禁止对 tl.arange 向量做 %///（退化为标量循环）
+```
+- Compute：坐标 `src = scale*(i+0.5)-0.5`，`int(floor) + tl.where(src < y0_f, y0-1, y0)` 修正负 floor（G8），clamp 到 `[-1, D_in]`。
+- Memory：`reflect/replicate/circular` 边界映射先转 float32 比较再映射；`repeat` 的 `out_idx → in_idx` 用标量除法。
+
+### L2.4 连续访存优先
+- **`mode=='nearest'` 且整数倍**上采样用 `tl.reshape(vals,[N,1])*ones([1,r])` 复制像素（**仅 nearest**；`bilinear/bicubic` 无论是否整数倍都走 L3.4 gather）；下采样用 stride-2 连续 vector load；avg-pool 退化一次 contiguous load `2*BLOCK_W` + `reshape([BLOCK_W,2])` + `tl.sum`——**禁止**拆多次离散 strided load（无法 coalesce）。
+- `repeat` 保证 r 个副本在输出内存中紧邻（无跨步写）；从低维到高维逐维度处理。
+
+---
+
+## §3 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+以下片段在张量变换类算子中可复用；实现细节须重新设计，勿直接照搬。
+
+### L3.1 行预载用 pow2 constexpr（禁 dynamic-shape load）
+```python
+MAX_IN_W: tl.constexpr = triton.next_power_of_2(W_in)   # cap 4096
+r_offs = tl.arange(0, MAX_IN_W); r_mask = r_offs < W_in
+row0 = tl.load(in_ptr + base + y0*W_in + r_offs, mask=r_mask, other=0.0).to(tl.float32)
+```
+- `tl.arange(0, W_in)` 中 W_in 非 constexpr 会触发 dynamic-shape load，退化为标量循环（G2）。
+
+### L3.2 host 预计算坐标表（禁 kernel 内重算）
+```python
+# x 坐标对所有输出行相同：host 预算 x0/x1/xlambda 三张量表传入 kernel
+for i in range(W_out):
+    src = scale*(i+0.5)-0.5 if not ac else scale*i
+    x0_i = int(math.floor(src)); ... clamp;  x0[i]=x0_i; x1[i]=...; xlambda[i]=src-x0_i
+# kernel 内按 w_idx load 表，禁止每个 tile 重算 cast/floor/where 链（慢一个数量级）
+```
+- `align_corners=True` 坐标必须 host 用 `numpy.float32` 预算（PyTorch C++ 语义），低精度 + ac=True 用 NPU `vdiv` 计算 scale（G/CANN 与 CPU 除法有 ULP 差异）。
+
+### L3.3 整数倍 transform 的 reshape 技巧
+```python
+# 2x 上采样: [a,b,c] -> [a,a,b,b,c,c]
+vals = tl.reshape(vals, [BLOCK_IN, 1]) * tl.full([1, 2], 1.0, tl.float32)   # broadcast 复制
+```
+- 整数倍 transform 是 contiguous 计算，远快于 gather 随机访问；**该特化仅 `nearest` 模式适用**，其它模式整数倍也应走 L3.4 gather。
+
+### L3.4 通用采样用 gather（nearest 整数倍特化之外的全部路径）
+- `bilinear/bicubic` 全部 + `nearest` 非整数倍（除 L3.3/L2.4 的 nearest 整数倍特化）：先整行 load 到 UB（pow2），再 `tl.gather(row, x0, 0)` 按坐标取列；`bicubic` 权重用嵌套 `tl.where` 分段（**禁止 if**），`ac=True` 的 16 项用标量逐项累加 `val = val + w*pixel` 匹配 PyTorch 顺序（向量化改变累加顺序会 verify 失败）。
+
+---
+
+## §4 常见陷阱与避免方法
+
+### §4.1 Interpolate 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
@@ -153,7 +221,7 @@ platforms: [a2, a3]
 | forward 中调用 bare `min()` 或 tensor 方法 | `validate_triton_impl.py` Type-3 检查会把 `min(a, b)` 或 `self.xxx()` 视为 PyTorch fallback | `min(a, b)` 改为 `a if a < b else b`；`_precompute_*` 改为模块级函数而非类方法 |
 | profiler 失败误判为代码错误 | 部分大 shape 报 `RuntimeError: 无法从 profiler 提取有效时延数据` | 这是 CANN profiler 分辨率/环境限制，与代码正确性无关；verify 阶段 73/73 全部通过即可 |
 
-### §5.2 Pad 陷阱
+### §4.2 Pad 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
@@ -163,7 +231,7 @@ platforms: [a2, a3]
 | 整数坐标直接比较 | Triton Ascend 整数比较可能降级 | 转 float32 再比较 (L1.4/G8) |
 | 未 squeeze 前导维度 | 前导 size-1 维度浪费 grid | Host 侧先 squeeze (L1.3) |
 
-### §5.3 Repeat 陷阱
+### §4.3 Repeat 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
@@ -171,5 +239,5 @@ platforms: [a2, a3]
 | 输出跨步写 | slice 路径中同一份数据写到相距很远的输出位置 | 用 L2.1 outer×inner 路径，保证 r 个副本连续 |
 | Grid 并行度过低 | SLICES_PER_BLOCK=1 导致 block 数太少 | 用 2D grid 或按 core 数分发 (L3.2) |
 | 从高维到低维处理 | 中间张量变大，post_size 过大 | 用 L2.1 从低维到高维处理 |
-| 混淆 repeat_interleave 和 torch.repeat | 两者语义不同，优化策略不同 | 先判定算子类型，再选 L2.1 或 L2.3 (§4.0) |
+| 混淆 repeat_interleave 和 torch.repeat | 两者语义不同，优化策略不同 | 先判定算子类型，再选 L2.1 或 L2.3（Repeat 算子级手册 §4.0） |
 | `for r in range(repeats): store` 输出不连续 | constexpr 展开但地址跨步 | 确保输出地址连续，或用 reshape 代替 |

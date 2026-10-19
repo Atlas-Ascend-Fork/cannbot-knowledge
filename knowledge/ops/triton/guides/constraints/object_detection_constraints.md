@@ -8,7 +8,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/index.md
   role: supporting
 created_at: '2026-08-12T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2]
 ---
 
@@ -21,9 +21,10 @@ platforms: [a2]
 
 本文档合并了目标检测中两类核心算子的优化经验。按以下结构组织：
 - **§1 通用经验**：跨算子重复的工程约束（已提取，各算子章节不再重复）
-- **§2 NMS**（Non-Maximum Suppression，顺序算法 + 每轮 IoU 抑制）
-- **§3 IOU**（Intersection over Union，成对计算）
+- **§2 Layer 2: 类别级通用算法骨架**
+- **§3 Layer 3: 类别级公共关键代码**
 - **§4 各算子常见陷阱**
+本类单算子：**NMS** / **IOU**，其专属 Layer 1 约束见下方「算子级实现手册」。
 
 ---
 
@@ -45,7 +46,7 @@ platforms: [a2]
 > ⚠️ **关键区分**：NMS 属 **顺序算法类**（核心瓶颈是顺序 IoU 抑制循环中的 host-device 同步开销），IOU 属 **成对计算类**（核心瓶颈是离散逐元素访存无法利用 NPU 向量单元）。两类优化哲学相反，生成时**禁止混用经验**：
 > - 生成 NMS 时，**不要**套用 IOU 的纯 2D Tiling 思路（NMS 每轮只对单个 cur_box 做抑制）
 > - 生成 IOU 时，**不要**套用 NMS 的 chunked loop / device counter（IOU 无顺序依赖，单 kernel 即可完成）
-> - **通用复用点**：NMS 的 IoU 抑制阶段可直接复用 IOU 的 1D Grid + 交织循环骨架（见 §2 L1.1 与 §3 L1.2）
+> - **通用复用点**：NMS 的 IoU 抑制阶段可直接复用 IOU 的 1D Grid + 交织循环骨架（见 NMS 算子级手册 §2 L1.1 与 IOU 算子级手册 §3 L1.2）
 
 ---
 
@@ -104,6 +105,76 @@ platforms: [a2]
 - **必须**所有 kernel 调用附加 `multibuffer=True`。
 - **Why:** IoU/抑制 kernel 为访存密集型或计算密集型，`multibuffer=True` 让 Ascend runtime 重叠 host 侧 launch 开销与 device 侧 kernel 执行。
 - **How to apply:** 见各算子 L2 骨架中 kernel 调用末尾的 `multibuffer=True`。
+
+---
+
+## §2 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
+
+目标检测类算子共享 `1D Grid + 交织循环 + 成对计算骨架`。两个子类在**是否顺序依赖**处分道：
+**NMS** 是顺序算法（IoU 抑制在 kernel 外保留 Python 主循环 + 同步），**IOU** 是成对计算（无依赖，单 kernel 2D tiling）。
+逐算子 L2 变体见 `object_detection__nms.md` / `object_detection__iou.md`。
+
+### L2.1 Host 骨架：顺序依赖与否决定同步策略
+- **NMS（顺序）**：不要全 kernel 化。保留 Python 主循环驱动逐轮抑制，但用 **chunked loop**（一次 host 启动处理 CHUNK 个 cur_box，chunk 内抑制在 kernel 内 + device-side counter 完成）把 host↔device 同步次数从每轮一次降到 `N/CHUNK` 次。
+  ```python
+  # host：过滤 -> argsort 降序 -> chunked 主循环
+  for c_start in range(0, N, CHUNK):
+      nms_fused_kernel[grid](..., cur_start=c_start, ...)   # chunk 内多 cur_box 顺序抑制
+      num_selected = device_counter ...                     # 只在 CHUNK 边界读一次（必要时）
+      if num_selected >= max_output_size: break
+  ```
+- **IOU（成对，无顺序）**：单 kernel 一次完成，无 Python 主循环、无逐步同步。
+
+### L2.2 kernel 内 1D Grid + 交织循环（D5，两子类共用）
+```python
+pid = tl.program_id(0)
+num_blocks = tl.cdiv(remaining, BLOCK_N)     # 用 tl.cdiv，非 triton.cdiv（D2）
+num_cores = tl.num_programs(0)
+for block_idx in range(pid, num_blocks, num_cores):
+    ...
+```
+- **IOU 变体**：`gtboxes` 做 2D tile load + broadcast（`[N,4]` 与 `[M,4]` 按 `[None,:]`/`[:,None]` 扩维），消离散逐元素取 8 标量。
+- **NMS 变体**：`cur_box` 是单个标量，**load 一次 + broadcast**（勿在每个候选重复 load），其余候选集合走同款交织循环。
+
+### L2.3 成对 IoU 计算模板（NMS 抑制 / IOU 均复用）
+```python
+# 交集/并集/面积均为向量运算：
+inter = tl.maximum(0.0, min_x2 - max_x1) * tl.maximum(0.0, min_y2 - max_y1)
+union = area1 + area2 - inter     # area1 标量 broadcast / area2 向量
+iou  = inter / union              # 或 iof = inter / area1
+keep = iou > iou_threshold        # 布尔 -> suppressed 更新
+```
+
+---
+
+## §3 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+### L3.1 消除 host-device 同步的 NMS 组合拳（v2 突破 1.0x 的核心）
+| 手法 | 作用 |
+|------|------|
+| **fused kernel** | 过滤/抑制/更新在 kernel 内连续，Host 只见 kernel 启动 |
+| **device-side counter** | `suppressed` 用 int8 + OR 合并，计数在 device 侧原子或缓冲完成，host 不必逐步 `.item()` |
+| **chunked loop** | 同步次数从 N（每轮一次）降到 N/CHUNK |
+
+- 禁止每股轮 `.item()` 同步（v1 教训，卡 0.99x）。
+
+### L3.2 离散访存转 2D Tiling + Broadcast（IOU 核心）
+```python
+gtx1 = tl.load(gt_ptr + blk[:, None]*4 + 0)   # [BLOCK_M,1] 向量，勿逐元素 load
+gtx2 = tl.load(gt_ptr + blk[:, None]*4 + 2)
+dtx1 = tl.load(dt_ptr + tl.arange(0,BLOCK_N)[None,:]*4 + 0)  # [1,BLOCK_N]
+# broadcast 后向量计算 IoU，消 8 标量离散 load
+```
+- 注意广播维度匹配（`[None,:]` / `[:,None]`），否则 `Cannot make_shape_compatible`。
+
+### L3.3 Golden 替换原则（D3）
+- NPU 原生算子（`npu_nms_v4`/`npu_iou`）内部不透明、与标准算法有 ~1e-3 系统性差异 → verify/benchmark 用**纯 PyTorch 数学公式**作 golden，Triton 按标准算法实现天然匹配；**勿逆向工程原生算子**。
+
+### L3.4 grid 钳制 + multibuffer（D4/D6）
+```python
+grid_size = min(max(num_blocks, 1), VEC_CORE_NUM)
+kernel[(grid_size,)](..., multibuffer=True)
+```
 
 ---
 

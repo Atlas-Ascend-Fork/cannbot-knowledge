@@ -52,6 +52,9 @@
 - [`OPT-46` Triton-Ascend Interpolate 算子开发参考文档](coding_interpolate.md)：inv_scale_h = float(torch.tensor(H_in / H_out, dtype=torch.float32))。
 - [`OPT-47` MatMul 算子优化](coding_matmul.md)：以 fp16/bf16 为例（每个元素 2 字节）：。
 
+- [`OPT-48` Grouped MatMul（MoE 专家分组矩阵乘）Tile 合并优化经验](grouped_matmul_tile_merge.md)：grouped matmul + activation + quant 融合算子在 Triton-Ascend 上的 expert 对齐 tile、dot M 维合并、UB 上限锁死与二阶段归约约束。
+- [`OPT-49` Attention / MLA 类算子优化点库（Triton-Ascend）](mla_paged_attention_optimization.md)：MLA 类算子在 Triton-Ascend 上的瓶颈判别、仿射 store 修复、KV 共享与 split-KV、P_SPLIT 精度补偿。
+
 ---
 
 ## 与 SKILL.md 原优化点序号的对照

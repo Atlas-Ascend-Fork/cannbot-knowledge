@@ -8,7 +8,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Creation_Ops/cast.md
   role: primary
 created_at: '2026-08-12T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2, a3]
 ---
 
@@ -21,10 +21,10 @@ platforms: [a2, a3]
 
 本文档合并了**三类**量化算子的优化经验。按以下结构组织：
 - **§1 通用经验**：量化类算子跨算子重复的工程约束（已提取，各算子章节不再重复）
-- **§2 DynamicQuant**（reduction + element-wise 复合，per-token 动态量化）
-- **§3 SwigluQuant**（quantization-activation，SwiGLU 激活后量化）
-- **§4 WeightQuantBatchmatmul**（weight-quantized batch matrix multiplication，反量化+GEMM）
-- **§5 常见陷阱与避免方法**
+- **§2 Layer 2: 类别级通用算法骨架**
+- **§3 Layer 3: 类别级公共关键代码**
+- **§4 常见陷阱与避免方法**
+本类单算子：**DynamicQuant** / **SwigluQuant** / **WeightQuantBatchmatmul**，其专属 Layer 1 约束见下方「算子级实现手册」。
 
 ---
 
@@ -56,13 +56,13 @@ platforms: [a2, a3]
 > - 生成 SwigluQuant 时，**不要**套用 DynamicQuant 的 2-pass HBM 失败方向或 WeightQuantBatchmatmul 的 matmul tile 调参。
 > - 生成 WeightQuantBatchmatmul 时，**不要**套用 DynamicQuant 的 2-pass 策略（没有跨 pass 数据复用问题），也**不要**套用 SwigluQuant 的 scale division / INT4 打包技巧（本算子是反量化+GEMM，不是训练后量化）。
 
-> ⚠️ **架构限制特殊说明（破例归档）**：DynamicQuant 几何平均加速比仅 **0.3604x**，远低于归档阈值 1.0x 和用户目标 0.6x。**破例归档**作为"Triton DSL 架构限制典型案例"——大 K 场景必然 2-pass HBM，与 torch 单遍融合 kernel 存在结构性带宽劣势，是**已知不可优化**的场景。后续做其他 per-group quant 时，若大 K 慢于 torch，应首先排查 2-pass HBM（WeightQuantBatchmatmul 见 §4，不适用此结论）。
+> ⚠️ **架构限制特殊说明（破例归档）**：DynamicQuant 几何平均加速比仅 **0.3604x**，远低于归档阈值 1.0x 和用户目标 0.6x。**破例归档**作为"Triton DSL 架构限制典型案例"——大 K 场景必然 2-pass HBM，与 torch 单遍融合 kernel 存在结构性带宽劣势，是**已知不可优化**的场景。后续做其他 per-group quant 时，若大 K 慢于 torch，应首先排查 2-pass HBM（WeightQuantBatchmatmul 见其算子级手册 §4，不适用此结论）。
 
 ---
 
 ## §1 通用经验（跨算子，首次生成必须遵守）
 
-以下约束在 DynamicQuant、SwigluQuant、WeightQuantBatchmatmul 三类量化算子中均适用；WeightQuantBatchmatmul 的专用约束见 §4。
+以下约束在 DynamicQuant、SwigluQuant、WeightQuantBatchmatmul 三类量化算子中均适用；WeightQuantBatchmatmul 的专用约束见其算子级手册 §4。
 
 ### Q1 动态读取 Vector Core 数量，禁止硬编码
 - **必须**动态读取实际 Vector Core 数量，禁止硬编码 `num_cores=8` 或 `num_cores=48`。
@@ -103,9 +103,81 @@ platforms: [a2, a3]
 
 ---
 
-## §5 常见陷阱与避免方法
+## §2 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
 
-### §5.1 DynamicQuant 陷阱
+量化类算子虽分支为 DynamicQuant / SwigluQuant / WeightQuantBatchmatmul，但共享同一套**类别级模板**：
+host 多 kernel 分派 → 2D 扁平化 → 1D grid + 核内循环 → 标量/向量 scale 归约 → 饱和量化写。
+各算子只在「归约对象（max_abs vs max_row）」与「是否含 dot」两处分化。逐算子的 L2 变体见对应 `operator_playbooks/`。
+
+### L2.1 Host 分支决策树（多 kernel 分裂是量化类架构基础）
+- **必须**按决定性开关**分裂为多个专用 kernel**，禁止单 kernel 内部堆 `tl.where(mode, ...)` 分支。
+- 量化类常见分裂轴：`static/dynamic`（SwigluQuant）、`group/non-group`（WeightQuantBatchmatmul）、`smooth on/off`（DynamicQuant）。
+- `forward()` 只做 shape 归一化、2D 扁平化、contiguous、按轴 `if` 分派、启动 kernel——**不含任何 torch 计算**（Q6）。
+
+### L2.2 1D Grid + 核内织循环（唯一的稳定并行模式，Q2）
+```python
+grid = (min(triton.cdiv(rows, BLOCK_M), num_cores),)   # 钳制到实际 vector core
+# kernel 内：按行块或 tile 索引交织
+for tile_idx in range(pid, num_tiles, num_programs):
+    ...
+# 逐行（行数不多）用 rows_per_prog 分块：
+# start = pid * rows_per_prog; for row in range(start, min(start+rows_per_prog, rows)): ...
+```
+- **禁止** `grid = (rows,)`（行数大时远超核数全部排队）与多维 grid。
+
+### L2.3 规约→scale→量化三段式（所有量化路径的公共形态）
+1. **归约**：per-row（或 per-token）`max_abs = tl.max(tl.abs(swiglu/x), axis=1)`，fp32 累积。
+2. **scale**：写回 `scale_ptr[row]`，再以 **向量** load 一段 `max_vec` 求 `scale = int_scale / tl.maximum(max_vec, 1e-10)`——**禁止标量除法**（ULP 漂移，见 L3.2）。
+3. **量化**：`round-half-away → int32 clip → 饱和 cast`，细节见 Layer 3 L3.1/L3.3/L3.4。
+- 大 K / 长行走 2-pass HBM（pass1 归约、pass2 量化各读一遍）；小 K 单块融合省一次读。
+
+### L2.4 dequant 在 dot 关键路径与否决定分裂（仅 `matmul+quant`）
+- group 模式每个 K-block 必须落在单一 group（`BLOCK_K ≤ group_size` 且整除），用**标量** `g = k_start // group_size` 连续加载单行 scale/offset 并广播；**禁止** `offs_k // group_size` 向量做 2D gather。
+- 大 M / 大 N 且 dequant 在 dot 关键路径被每个 M-tile 重复时，解耦为「dequant workspace kernel + 纯 GEMM」；workspace 超 L2 时改 N-strip 逐段驻留 L2。
+
+---
+
+## §3 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+以下片段在量化类算子的多数量化写路径中可复用；实现细节（变量名/分块）须重新设计，勿直接照搬。
+
+### L3.1 手写 sigmoid（禁 `tl.sigmoid`）
+```python
+gate = x / (1.0 + tl.exp(-x))   # tl.sigmoid 在该后端有系统性数值偏差
+swiglu = gate * right
+```
+### L3.2 dynamic 模式的向量 scale division（防 off-by-1）
+```python
+# pass1 写 max_abs
+tl.store(scale_ptr + row, max_abs, mask=row_mask)
+# 全局内存重新 load 一段向量再除（标量除法 ULP 漂移 → nearbyint 后 off-by-1）
+max_vec  = tl.load(scale_ptr + start + tl.arange(0, BLOCK_ROWS), mask=..., other=1.0)
+scale_vec = int_scale / tl.maximum(max_vec, 1e-10)
+tl.store(scale_ptr + start + tl.arange(0, BLOCK_ROWS), scale_vec, mask=...)
+# pass2 读 row_scale 后 q = nearbyint(swiglu * row_scale)
+```
+### L3.3 round-half-away-from-zero + 饱和 cast（替代 tl.round / 手动 clamp）
+```python
+q = tl.where(q >= 0, q + 0.5, q - 0.5)                      # tl.round 是 round-half-to-even，语义不符
+q = tl.cast(q, tl.int8, overflow_mode='saturate')           # 硬件原生饱和，替代 maximum/minimum 手动 clamp
+# int32 阶段如需 clip：q.to(tl.int32); q = tl.maximum(q, clip_min); q = tl.minimum(q, clip_max)
+```
+### L3.4 INT4 打包（`torch.quint4x2` 布局，高位 odd、低位 even）
+```python
+q = tl.where(q >= 0, q + 0.5, q - 0.5).to(tl.int32)
+q = tl.minimum(tl.maximum(q, -8), 7)                 # INT4 显式裁剪，静态量化超界时防 8→-8 / -9→7 回绕（L3.3 的 saturate 只到 int8 [-128,127]，不能替代）
+q2 = tl.reshape(q, (BLOCK_COL // 2, 2)); q_even, q_odd = tl.split(q2)
+packed = ((q_odd & 0x0F) << 4 | (q_even & 0x0F)).to(tl.int8)
+```
+### L3.5 smooth / 标量 broadcast
+- 2D smooth `[BLOCK_M, BLOCK_N]`：`x_tile * smooth_tile[None, :]`（smooth 为 `[BLOCK_N]` 行向量）。
+- 标量 smooth/offset 边界合并进 `tl.load(..., mask=in_bounds, other=1.0)`；**2D 路径不可合并**（放大 fp32 live range 触发 UB overflow），保持 `tl.where(in_bounds, ...)`。
+
+---
+
+## §4 常见陷阱与避免方法
+
+### §4.1 DynamicQuant 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
@@ -123,7 +195,7 @@ platforms: [a2, a3]
 | 忽略 smooth_scales 分支 | 只写一个 kernel，用 `if smooth_ptr is None` 分支，导致 kernel 内有条件分支 | 分两个 kernel (`_fused_2d_kernel` 和 `_no_smooth`)，host 侧分派 (L2.1) |
 | 3D 输入处理不当 | 3D 输入 `[B, M, K]` 直接按 2D 处理，scale shape 错误 | `rows = b * m`，scale 输出为 `[B, M]` shape (L3.5) |
 
-### §5.2 SwigluQuant 陷阱
+### §4.2 SwigluQuant 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|

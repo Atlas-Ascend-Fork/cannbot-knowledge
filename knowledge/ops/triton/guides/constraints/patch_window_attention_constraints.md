@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/06-fused-attention.py
   role: example
 created_at: '2026-08-31T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2]
 ---
 
@@ -164,6 +164,60 @@ BQ=128 可用——不要因"多一份 epilogue tile 怕 UB"就主动降档（�
 同 stream 的 kernel 发射天然串行，`torch.npu.synchronize()` 逐 kernel 插入只增加 host 往返
 （实测删 19 处无任何功能差异，隔离计时下收益约 +0.3%，但为后续 launch 优化扫清障碍）。
 保留 weight 预处理后的至多一次。
+
+## §3 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
+
+卷积-块化窗口 transformer 类算子共享「conv 局部表示 + NCHW↔token 布局 + 小窗口 attention +
+FFN + 融合卷积」的分阶段骨架。逐算子 L2 变体见 `operator_playbooks`（MobileViT 系）。
+
+### L2.1 分阶段多 kernel 主骨架（一份 GEMM 变体覆盖全算子矩阵乘段）
+```
+x[b,c,h,w] (fp32 内部)
+ ├─ im2col → conv1 → conv2 → unfold            conv 局部表示 + 降维，im2col 走 NHWC 一次转置 + per-tap 拷贝
+ ├─ transformer × depth（每层 7 kernel，无 host sync）
+ │    LN → qkv GEMM → attention(按 n 分派) → out GEMM(+残差) → LN → ff1 → ff2(SiLU+残差)
+ ├─ fold → conv3 → im2col → conv4(两段链式)    尾部双输入融合卷积（L1.1/L1.5 链式写法）
+ └─ 输出 → NCHW permute（视图）
+```
+- conv / 投影全部走同一个 GEMM kernel 的 **constexpr 变体**（`HAS_BIAS / ADD_RESIDUAL / APPLY_SILU_A`）；
+  unfold/fold 只做 permute+reshape **视图，不物化**。
+- attention 的 grid = min(核数, 任务数)，任务 = (b, patch)，head 在 kernel 内循环。
+
+### L2.2 attention 按 n 分派判据（决定精确 vs online softmax）
+| 窗口规模 | 路径 | tile |
+|---|---|---|
+| np2(n) ≤ 128 | **KV 单块特化**（无 m/l 滚动、无 alpha、EVEN 时无边界 where） | BQ=128, BKV=np2(n)；n≤64 时 BQ=BKV=np2(n) |
+| n > 128 | 多块 flash（标准 online softmax，m 初始 -1e30） | BQ=128, BKV=128 |
+
+### L2.3 GEMM 配置档位（fp32 ieee）
+- plain / residual / silu 变体**同档** `BM=256 / BN=128 / BK=128`；BN/BK=256 均不可编或更慢。
+- LN 用 `BLOCK_M = max(4, 8192 // BLOCK_D)` 自适应；grid 收缩 `min(核数, cdiv(M,BM)·cdiv(N,BN))`。
+- 复合点积禁止双 B 指针单 kernel（L1.1，大 K 慢 134~181×）；im2col 物化 + plain GEMM 仍是当前最优结构（L1.3）。
+
+## §4 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+### L3.1 im2col 正解：NHWC 一次转置 + per-tap 纯拷贝
+```python
+srcn = src.permute(0, 2, 3, 1).contiguous()          # 全图一次 NHWC 转置
+xp = torch.zeros((b, h + 2*pad, w + 2*pad, c), ...)
+xp[:, pad:pad+h, pad:pad+w, :] = srcn
+for t in range(k * k):                                # 每 tap 连续 reshape 拷贝，无 per-tap permute
+    dst[:, :, t*c:(t+1)*c] = xp[:, di:di+h, dj:dj+w, :].reshape(b, h*w, c)
+```
+
+### L3.2 双输入融合卷积的两段链式（替代 host cat 与双 B 指针）
+- 第一段 GEMM 出 tmp（无 bias），第二段 `ADD_RESIDUAL` 在 epilogue 读 tmp 相加 + bias；
+  tmp 跨布局读取用独立 stride 参数（rs_m/rs_n）寻址，不在 host 侧再转置。
+
+### L3.3 GEMM 变体同档复用
+- bias / residual / silu 变体 epilogue 代价远小于降档损失：与 plain 同用 `BM=256/BK=128`；
+  唯一例外是 `APPLY_SILU_A` 在 K 循环内激活时多一份中间量，编译报 UB 溢出再单独降 BK。
+
+### L3.4 GEMM 吞吐诊断先问搬运还是计算
+- GEMM 卡在某 TFLOPS 时用 `op simulator` 采 per-instruction pipe 分布：**MTE2/MTE1 合计 >70% 而 CUBE <20%**
+  → 瓶颈是搬运未流水（MOV_OUT_TO_L1 ND2NZ + SET_FLAG 等待），调 BLOCK 无益，需掩盖搬运而非调 tile。
+
+---
 
 ## §5 Phase 4 优化点清单
 

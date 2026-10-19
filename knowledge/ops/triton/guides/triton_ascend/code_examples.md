@@ -1,25 +1,31 @@
 ---
 type: Guide
 title: Triton Ascend 完整代码示例
-description: 'def vector_add_kernel(a_ptr, b_ptr, c_ptr, n_elements, BLOCK_SIZE: tl.constexpr):。'
 tags: [task.implementation, topic.implementation.masking, topic.data_movement.memory_access, topic.compilation, topic.tiling, topic.compute.elementwise.arithmetic]
 status: stable
-sources:
-- resource: https://gitcode.com/Ascend/triton-ascend/tree/c22984baa55e1506eadd7c72955d9bf669b1c959/
-  role: primary
-- resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/README.md
-  role: supporting
-created_at: '2026-08-13T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
 platforms: [a2, a3]
+description: '本 Skill 包含完整的可运行示例代码，展示如何在 PyTorch 中使用 Triton Ascend 编写高性能 kernel。'
+sources:
+- resource: https://gitcode.com/cann/cannbot-skills/blob/bf861dda4e8c8d82cdd4d2ee9801a463c1f17263/ops/triton-op-coding/references/triton-ascend-examples.md
+  role: primary
+created_at: '2026-08-13T00:00:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 ---
+# Triton Ascend PyTorch 示例代码
 
-# Triton Ascend 完整代码示例
+本 Skill 包含完整的可运行示例代码，展示如何在 PyTorch 中使用 Triton Ascend 编写高性能 kernel。
 
-## 附录：完整代码示例
+## 示例列表
 
-### A.1 Vector Add（向量加法）
+### 1. Vector Add（向量加法）
+**文件**: `torch_vector_add.py` (需补充)
+**算子类型**: Element-wise
+**关键点**:
+- 最简单的 Triton kernel 示例
+- 一维索引和 mask
+- 标准五步模式
 
+**示例代码结构**:
 ```python
 @triton.jit
 def vector_add_kernel(a_ptr, b_ptr, c_ptr, n_elements, BLOCK_SIZE: tl.constexpr):
@@ -42,82 +48,45 @@ class ModelNew(torch.nn.Module):
         return c
 ```
 
-### A.2 Reduce 算子（块内归约 + 原子操作）
+### 2. MatMul（矩阵乘法）
+**文件**: `torch_matmul.py`
+**算子类型**: MatMul
+**关键点**:
+- 使用 `tl.dot` 进行矩阵乘法
+- 2D 索引计算
+- 简单的分块策略
 
+**核心代码**:
 ```python
 @triton.jit
-def reduction_kernel(input_ptr, output_ptr, n_elements, BLOCK_SIZE: tl.constexpr):
-    pid = tl.program_id(0)
-    offsets = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = offsets < n_elements
+def matmul_kernel(output_ptr, x_ptr, y_ptr,
+                  A: tl.constexpr, B: tl.constexpr, C: tl.constexpr, D: tl.constexpr):
+    aidx = tl.arange(0, A)
+    bidx = tl.arange(0, B)
+    cidx = tl.arange(0, C)
+    didx = tl.arange(0, D)
 
-    data = tl.load(input_ptr + offsets, mask=mask, other=0.0)
-    block_sum = tl.sum(data, axis=0)
-    tl.atomic_add(output_ptr, block_sum)
+    Xidx = bidx[:, None] * C + cidx[None, :]
+    Yidx = cidx[:, None] * D + didx[None, :]
+
+    X = tl.load(x_ptr + Xidx)
+    Y = tl.load(y_ptr + Yidx)
+
+    result = tl.dot(X, Y)
+
+    oidx = bidx[:, None] * D + didx[None, :]
+    tl.store(output_ptr + oidx, result)
 ```
 
-### A.3 MatMul（固定核心数启动）
+### 3. Layer Norm（层归一化）
+**文件**: `torch_layer_norm.py`
+**算子类型**: Reduce + Element-wise
+**关键点**:
+- 逐行处理
+- 均值和方差计算
+- 数值稳定性处理
 
-```python
-@triton.jit
-def matmul_kernel(
-    a_ptr, b_ptr, c_ptr,
-    M, N, K,
-    num_cores: tl.constexpr,
-    BLOCK_M: tl.constexpr,
-    BLOCK_N: tl.constexpr,
-    BLOCK_K: tl.constexpr,
-):
-    pid = tl.program_id(0)
-    NUM_BLOCKS_M = triton.cdiv(M, BLOCK_M)
-    NUM_BLOCKS_N = triton.cdiv(N, BLOCK_N)
-    NUM_BLOCKS = NUM_BLOCKS_M * NUM_BLOCKS_N
-
-    for block_idx in range(pid, NUM_BLOCKS, num_cores):
-        block_m = block_idx // NUM_BLOCKS_N
-        block_n = block_idx % NUM_BLOCKS_N
-
-        accumulator = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)
-
-        for k in range(0, K, BLOCK_K):
-            a_offset = (block_m * BLOCK_M + tl.arange(0, BLOCK_M))[:, None] * K + \
-                       (k + tl.arange(0, BLOCK_K))[None, :]
-            a_mask = (block_m * BLOCK_M + tl.arange(0, BLOCK_M))[:, None] < M
-            a = tl.load(a_ptr + a_offset, mask=a_mask, other=0.0)
-
-            b_offset = (k + tl.arange(0, BLOCK_K))[:, None] * N + \
-                       (block_n * BLOCK_N + tl.arange(0, BLOCK_N))[None, :]
-            b_mask = (block_n * BLOCK_N + tl.arange(0, BLOCK_N))[None, :] < N
-            b = tl.load(b_ptr + b_offset, mask=b_mask, other=0.0)
-
-            accumulator += tl.dot(a, b)
-
-        c_offset = (block_m * BLOCK_M + tl.arange(0, BLOCK_M))[:, None] * N + \
-                   (block_n * BLOCK_N + tl.arange(0, BLOCK_N))[None, :]
-        c_mask = ((block_m * BLOCK_M + tl.arange(0, BLOCK_M))[:, None] < M) & \
-                 ((block_n * BLOCK_N + tl.arange(0, BLOCK_N))[None, :] < N)
-        tl.store(c_ptr + c_offset, accumulator, mask=c_mask)
-
-class ModelNew(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, a, b):
-        M, K = a.shape
-        K2, N = b.shape
-        assert K == K2
-        c = torch.empty((M, N), device=a.device, dtype=a.dtype)
-
-        num_cores = 20
-        BLOCK_M, BLOCK_N, BLOCK_K = 128, 256, 256
-
-        matmul_kernel[(num_cores,)](a, b, c, M, N, K, num_cores,
-                                    BLOCK_M, BLOCK_N, BLOCK_K)
-        return c
-```
-
-### A.4 LayerNorm 核心逻辑（归一化）
-
+**核心逻辑**:
 ```python
 # 1. 计算均值
 mean = tl.sum(x, axis=0) / n_cols
@@ -127,7 +96,7 @@ x_centered = x - mean
 variance = tl.sum(x_centered * x_centered, axis=0) / n_cols
 
 # 3. 归一化
-variance = tl.maximum(variance, 0.0)
+variance = tl.maximum(variance, 0.0)  # 防止负数
 rstd = 1.0 / tl.sqrt(variance + eps)
 normalized = x_centered * rstd
 
@@ -135,47 +104,25 @@ normalized = x_centered * rstd
 output = normalized * weight + bias
 ```
 
-### A.5 Double Kernel（多内核调用）
+### 4. Double Kernel（双内核调用）
+**文件**: `torch_double_kernel.py`
+**算子类型**: 多 Kernel 组合
+**关键点**:
+- 展示如何在一个 forward 中调用多个 kernel
+- 中间结果处理
+- Kernel 之间的数据传递
 
+**示例结构**:
 ```python
 class ModelNew(torch.nn.Module):
     def forward(self, x):
+        # 第一个 kernel
         intermediate = torch.empty_like(x)
         kernel1[grid](x, intermediate, ...)
 
+        # 第二个 kernel
         output = torch.empty_like(x)
         kernel2[grid](intermediate, output, ...)
 
         return output
-```
-
-### A.6 完整 GELU 示例
-
-```python
-import triton
-import triton.language as tl
-import torch
-
-@triton.jit
-def triton_easy_kernel(in_ptr0, out_ptr0, NUMEL: tl.constexpr):
-    idx_block = tl.arange(0, NUMEL)
-    x = tl.load(in_ptr0 + idx_block)
-    ret = x * 0.5 * (1.0 + tl.erf(x / tl.sqrt(2.0)))
-    tl.store(out_ptr0 + idx_block, ret)
-
-@triton.jit
-def triton_better_kernel(in_ptr0, out_ptr0, xnumel, XBLOCK: tl.constexpr, XBLOCK_SUB: tl.constexpr):
-    xoffset = tl.program_id(0) * XBLOCK
-    for xoffset_sub in range(0, XBLOCK, XBLOCK_SUB):
-        x_index = xoffset + xoffset_sub + tl.arange(0, XBLOCK_SUB)[:]
-        xmask = x_index < xnumel
-        x = tl.load(in_ptr0 + x_index, xmask)
-        ret = x * 0.5 * (1.0 + tl.erf(x / tl.sqrt(2.0)))
-        tl.store(out_ptr0 + x_index, ret, xmask)
-
-# 调用示例
-ncore = 32
-xblock = 32768
-xblock_sub = 8192
-triton_better_kernel[ncore, 1, 1](x0, out1, x0.numel(), xblock, xblock_sub)
 ```

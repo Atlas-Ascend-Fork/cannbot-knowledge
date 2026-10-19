@@ -16,4 +16,5 @@
 - [Triton Ascend API 参考](api_reference.md)：def kernel_function(...):。
 - [Triton Ascend 完整代码示例](code_examples.md)：def vector_add_kernel(a_ptr, b_ptr, c_ptr, n_elements, BLOCK_SIZE: tl.constexpr):。
 - [Grid 启动限制与核心数查询](grid_launch_limits.md)：import triton.runtime.driver as driver。
-- [编程基础：核心概念与标准 Kernel 结构](programming_basics.md)：Triton Ascend 采用与 Triton GPU 类似的执行模型：。
+- [Triton Ascend 基础知识参考手册（全量）](programming_basics_full.md)：**canonical**；自 `cannbot-skills` `triton-ascend-fundamentals.md` verbatim 归档的全量版（编程基础 + API 参考 + Grid 策略 + 内存访问 + 性能优化）。
+- [编程基础：核心概念与标准 Kernel 结构](programming_basics.md)：`programming_basics_full.md` §1 的提炼摘要与导航入口，正文见全量卡。

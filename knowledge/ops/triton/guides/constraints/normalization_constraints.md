@@ -10,7 +10,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/05-layer-norm.py
   role: example
 created_at: '2026-08-12T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2, a3]
 ---
 
@@ -24,9 +24,10 @@ platforms: [a2, a3]
 本文档合并了两类正则化算子的优化经验。按以下结构组织：
 
 - **§1 通用经验**：跨算子重复的正则化工程约束（已提取，各算子章节不再重复）
-- **§2 GroupNormSwish**（norm-fused，前向融合归一化+激活）
-- **§3 AdaptiveInstanceNorm2DBackward**（norm-backward，反向多粒度归约）
+- **§2 Layer 2: 类别级通用算法骨架**
+- **§3 Layer 3: 类别级公共关键代码**
 - **§4 各算子常见陷阱**
+本类单算子：**GroupNormSwish** / **AdaptiveInstanceNorm2DBackward**，其专属 Layer 1 约束见下方「算子级实现手册」。
 
 > ℹ️ **与其他 template 的关系**：本文 §1 编号为 **N1-N6**（Normalization 专属）。tensor-transform 的 G1-G8（动态核数 / pow2 BLOCK / 多策略分派 / grid 钳制核数 / int32 索引 / 负载均衡公式 / contiguous / 坐标 float32 比较）、transformer-inference 的 T1-T6、math-compute 的 M1-M6 同样适用，但**不在本文重复**；生成时若涉及这些通用约束，请交叉引用对应 template，本文仅补充正则化类特有的新约束。
 
@@ -50,7 +51,7 @@ platforms: [a2, a3]
 > ⚠️ **关键区分**：GroupNormSwish 属 **前向融合**类（关心 reduce 与 elementwise 的单 kernel 融合，避免双 kernel launch 开销），AdaptiveInstanceNorm2DBackward 属 **反向多粒度**类（关心两类不同粒度归约的拆分与跨 tile 合并）。两类优化哲学**相反**，生成时**禁止混用经验**：
 > - 生成 GroupNormSwish 时，**不要**套用 AdaIN backward 的双 kernel 拆分思路（前向融合应优先单 kernel）
 > - 生成 AdaIN backward 时，**不要**套用 GroupNormSwish 的单 kernel fused 思路（反向两类粒度归约无法在单 kernel 内高效合并）
-> - 判定依据：算子是 `forward` 且输出含 mean/rstd 统计量 → 走 §2；算子是 `backward` 且同时输出 grad_input + grad_weight/grad_bias → 走 §3
+> - 判定依据：算子是 `forward` 且输出含 mean/rstd 统计量 → 走 GroupNormSwish 算子级手册；算子是 `backward` 且同时输出 grad_input + grad_weight/grad_bias → 走 AdaptiveInstanceNorm2DBackward 算子级手册
 
 ---
 
@@ -125,6 +126,71 @@ platforms: [a2, a3]
 - **必须**在 host 侧（`ModelNew.forward()` / grid 计算等）使用 `triton.cdiv` 或 Python 整数除法 `(a + b - 1) // b`。
 - **禁止**：在 kernel 内调用 `triton.cdiv`。
 - **Why:** `triton.cdiv` 在 JIT 函数中会导致 `ValueError: Did you forget to add @triton.jit ?`，编译期报错。
+
+---
+
+## §2 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
+
+正则化类算子都遵循「**fp32 统计归约 → mean/var/rstd → 仿射(+激活) → 反向多粒度归约**」的类别级模板。
+两子类分道：**forward 融合**（GroupNormSwish：单 kernel 内 reduce+apply，无中间 HBM）、**backward 多粒度**（AdaIN backward：reduce kernel 写 partial → apply kernel 读回合并）。逐算子 L2 变体见 `operator_playbooks`。
+
+### L2.1 归一化三段式（所有正则化算子的公共形态）
+```python
+# Pass 1 reduce：fp32 累加 sum / sq_sum（N1），得 mean/var/rstd/idf
+sum_acc = tl.zeros((...), tl.float32); sq_acc = tl.zeros((...), tl.float32)
+for block in ...:
+    x = tl.load(...).to(tl.float32)
+    sum_acc += tl.sum(x, axis=...); sq_acc += tl.sum(x*x, axis=...)
+mean = sum_acc / N; var = (sq_acc - sum_acc*sum_acc/N) / N; rstd = 1/sqrt(var+eps)
+# Pass 2 apply：用聚合统计量归一化（N2）
+x_norm = (x - mean) * rstd  # 或 (x-mean)*inv_std；按需乘 weight + bias + 激活
+```
+
+### L2.2 forward 融合 vs backward 双 kernel 的分派
+- **forward（GroupNormSwish）**：单 kernel fused —— reduce 循环 + apply 循环同 kernel，统计量存标量寄存器，**无中间 HBM 流量**。
+- **backward（AdaIN backward，多 tile 跨核归约）**：reduce kernel 写 partial sums（fp32 buffer，N4 atomic）→ apply kernel 读回全局统计后算 grad_input；`grad_weight/grad_bias` 按 per-channel 粒度累积。
+- **禁止**在单 tile 内直接算 grad_input（需全部 tile 的全局 s1/s2/s3 之和，单 tile 信息不全）。
+
+### L2.3 weight/bias 标量 load（N3）
+```python
+ch = d_start // D                     # 标量除法，整 block 在同一 channel
+w  = tl.load(weight_ptr + group_base + ch)   # 标量 load，勿向量化 channel 索引
+b  = tl.load(bias_ptr   + group_base + ch)
+x_norm = x_norm * w + b
+```
+- 前置：host 缩 BLOCK 保证 `BLOCK_SIZE ≤ D`；**禁止** `tl.arange // D` 向量化 channel 索引（scale 化）。
+
+### L2.4 反向跨 tile 归约（N4）
+- `tl.atomic_add(partial_s_ptr + pid_nc, s)` 累加到 per-(N,C)。外层做 loop over group/tile，核内做 loop over spatial。
+
+---
+
+## §3 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+### L3.1 fp32 统计归约保精度（N1）
+```python
+sum_acc = tl.zeros((), tl.float32); sq_acc = tl.zeros((), tl.float32)
+x = tl.load(...).to(tl.float32)
+sum_acc += tl.sum(x, axis=0); sq_acc += tl.sum(x*x, axis=0)
+```
+- 禁 fp16/bf16 直接累加（var 公式对累加顺序敏感；小 spatial 或数值近 0 时误差不可忽略）。
+
+### L3.2 reduce-then-apply 两阶段（N2）
+- 单 kernel fused：reduce 循环（读一遍算统计）→ apply 循环（再读一遍归一化），统计量存寄存器。
+- 双 kernel split：仅当统计量需跨 program 合并时用（反向多 tile），reduce 写 partial，apply 读回聚合结果。
+- **禁止**单 tile 内直接算反向 grad_input（依赖全局统计）。
+
+### L3.3 权重仿射 + 激活融合（forward）
+```python
+x_norm = (x - mean) * rstd
+x_norm = x_norm * w_scale + w_bias         # 标量 weight/bias broadcast
+out = x_norm * tl.sigmoid(x_norm) if swish else x_norm   # 激活融合（如需）
+```
+
+### L3.4 反向粒度拆分（backward）
+- `grad_input`：per-(N,C) 全局统计（fp32 完成）。
+- `grad_weight/grad_bias`：per-channel 粒度，独立 reduce（可用 `inv_std` 等中间量）。
+- 两类粒度归属不同 buffer，用 `tl.atomic_add` 合并跨 tile partial（N4）。
 
 ---
 

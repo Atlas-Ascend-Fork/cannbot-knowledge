@@ -11,7 +11,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/06-fused-attention.py
   role: example
 created_at: '2026-08-26T08:23:10Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2, a3]
 ---
 
@@ -96,7 +96,7 @@ miscompile（op50 实测 rowmap kernel 自身产出越界行号 qrow=4108 > 4095
 ② 终态更优解是 **constexpr 除数直接在 kernel 内解码**（零额外表与 launch，L1.3），
 host 表只作兜底。
 
-## Layer 1 设计约束（首次生成就要全部满足）
+## §2 Layer 1: 设计约束（首次生成就要全部满足）
 
 > 本节共 5 条（L1.1 ~ L1.5），全部在本类算子上实测。违反前两条的表现是
 > **"结构正确但 ~96-99% 元素错 1-2 ulp"**，违反后三条是 miscompile/编译崩溃——
@@ -171,9 +171,61 @@ host 表只作兜底。
     静默错值只会在 verify 里表现为 matched_ratio 断崖。
   - **How to apply:** 16 位 dense 取 `(BM, BN=64, BK=64)` 最快且可靠；任何 tile 档位改动后先跑 verify 再采信。
 
-## §2 证伪方向 / 常见陷阱
+## §3 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
 
-### §2.1 ⛔ 证伪方向要点（不要重跑）
+邻域展开类算子共享「展开物化显性浪费 → 每像素单次投影 + 按窗口 gather」的核心骨架。
+逐算子 L2 变体见 `operator_playbooks`（HaloAttention）。
+
+### L2.1 前向五阶段骨架（kernel 划分是参考不是教条）
+```
+阶段 A（可选） 布局连续化   X[b,C,HW] --纯搬运--> XT[b,HW,C']    NCHW channel 大步离散，token 化后 A 操作数行才连续（禁 host permute）；C'=C 向上对齐免 K 尾块
+阶段 B          融合投影     P = XT @ [Wq|Wkv]ᵀ                  q|kv 拼一张权重（预转置），每像素只投影一次；行序任意（自研 GEMM 顺序 K 累加对 M 布局不敏感）
+阶段 C          窗口取数     KV[nblk,(blk+2h)²,2inner] <- P      unfold 物化在此消除：窗口行号纯乘加推导；halo 越界行取 0 而非排除
+阶段 D          块局部 attn  O = softmax(QKᵀ·scale)V             S_kv≤256 恒单块单趟精确 softmax；softmax 按 L1.2 分 dtype 配方
+阶段 E          out 投影回写 y = O@Woutᵀ(+bias) --> NCHW         A=O 按参考 to_out 输入行序（块主序）落盘；fold 独立 Vector kernel
+```
+
+### L2.2 每像素单次投影优先（先算账再动手）
+- unfold 物化 `[b,c·S_kv,L]` 巨量拷贝 + halo 读放大 `R=(1+2halo/blk)²` 是显性浪费；
+  **先每像素 dense 投影一次再按窗口 gather**，把重复投影消到 1——这是与"窗口 gather GEMM"写法的分水岭。
+- 收益判据：`φ = 投影F / (投影F+attnF) > 80%`（本类常态）→ 主攻投影侧；`φ < 50%` → 主攻 gather/attention 侧。
+
+### L2.3 任务分解与 grid 规则
+- Vector 类阶段（转置/gather/fold）grid = `min(vector_core_num, tiles)` + 核内步长循环；
+  Cube 类阶段（投影 GEMM/attention）grid = `min(cube_core_num, ...)`；**两类的核数上限不同**，grid 分别取各自的 min。
+- 行/窗口号解码一律 constexpr 除数 + 纯乘法（`bh = work//NH; head = work-bh*NH`），禁用运行时标量除数。
+
+## §4 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+### L3.1 constexpr 除数解码 + 纯乘法行号（L1.3 完整形态）
+```python
+def _attn_kernel(..., NH: tl.constexpr, nhbnwb: tl.constexpr, nwb: tl.constexpr, ...):
+    bh = work // NH; head = work - bh * NH
+    b = bh // nhbnwb; brem = bh - b * nhbnwb
+    hb = brem // nwb;  wb_ = brem - hb * nwb
+    q_row = q_row0 + i1 * W + j1          # 纯乘加，兼顾解码安全 + L1.1 块主序
+```
+
+### L3.2 分 dtype softmax 舍入配方（对齐 aclnn 而非"算得更准"）
+```python
+sim = tl.dot(qs, kt, out_dtype=tl.float32).to(IN_DT).to(tl.float32)  # 舍入点③：bmm 输出物化在输入 dtype
+d = sim - tl.max(sim, axis=1)[:, None]
+if IN_DT == 1:                                                       # ⚠️ 仅 fp16，bf16/fp32 禁做
+    d = d.to(tl.float16).to(tl.float32)                             # (x−max) 落回输入 dtype
+p = (tl.exp(d) / row_sum).to(IN_DT)                                  # exp/sum/div 恒 fp32，输出落输入 dtype
+```
+
+### L3.3 C-pad 64 倍数 + 权重同步 pad
+- XT 通道维补零到 64 倍数、投影权重同步 pad → dense matmul K 循环无 masked 尾块（pad 列乘 0 恒 0），零风险顺手做。
+
+### L3.4 VEC/CUBE 双核数分流
+- 转置/gather/fold（Vector kernel）grid 用 `vector_core_num`；投影/attention（Cube kernel）用 `cube_core_num`；混用同一上限会让 Vector kernel 少拿一倍核。
+
+---
+
+## §5 证伪方向 / 常见陷阱
+
+### §5.1 ⛔ 证伪方向要点（不要重跑）
 
 | 方向 | 结果 |
 |---|---|
@@ -185,7 +237,7 @@ host 表只作兜底。
 | **merged 投影 weight-tile 转置 BN>64 / BN=256 / BK=128** | ⛔ 静默错值或 masked-B-tile padding 缺陷（L1.5） |
 | **按窗口重复投影（窗口直接进 GEMM A 操作数）** | ⛔ halo 重叠区读放大 R=(1+2h/blk)² 倍投影量；先每像素投影再 gather 严格更省 |
 
-### §2.2 陷阱表
+### §5.2 陷阱表
 
 | 现象 | 根因 | 处理 |
 |---|---|---|
@@ -198,7 +250,7 @@ host 表只作兜底。
 | host 重算链与参考输出不等 | debug 脚本自身 reshape 序错 | 先修 debug 脚本再怀疑 kernel |
 | `q*scale` 折进投影 epilogue 后 fp16 边界失败 | scale 非 2 的幂（仅当 dim_head≠64²ⁿ） | 非 2 幂 scale 改回独立乘法并落输入 dtype |
 
-### §2.3 证伪定位要点（"结构对但 1-2 ulp 全错"时）
+### §5.3 证伪定位要点（"结构对但 1-2 ulp 全错"时）
 
 1. **先看覆盖率**：`torch.empty` + 部分覆盖 = 未初始化内存（NaN 与精度判定同时触发，像"精度不够"实为覆盖不全）；
 2. **再看解码 miscompile**：~75% 均匀错 + 非确定 + 纯 store kernel 正常 ⇒ L1.3，不要去调精度；

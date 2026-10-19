@@ -13,7 +13,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/06-fused-attention.py
   role: example
 created_at: '2026-08-31T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2]
 ---
 
@@ -210,6 +210,58 @@ L1.2 两操作数同 dtype、L1.3 online softmax 滚动 rescale 三件套（m �
 L1.5 p 禁降输入 dtype、L1.6 host 禁 permute/contiguous/pad、L1.13 面积预算取上限 + 按 shape 收缩、
 L1.14 `propagate_nan=ALL` 按 MULTI_BLK 分档（多块开、单块关）、F1 KV padding 列显式 `where` 排除
 （ghost 列不进 softmax）、F2 掩码用有限极小值。
+
+## §3 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
+
+无投影位置/通道双分支类算子共享「conv 前置 + Q=K=V 的 softmax(Y·Yᵀ)·Y 双分支对偶 + 残差相加」的骨架。
+本类是**结构收益主导**（无投影段 GEMM 可吃），逐算子 L2 变体见 `operator_playbooks`（DAModule）。
+
+### L2.1 4 kernel + host 门控主骨架
+```
+host_prepare():  RNG 逐字复刻两分支 conv 权重（L1.4）+ 预重排 w9[k²,ci,co]
+kernel 1  conv3x3（implicit GEMM，TRANS_OUT: constexpr）:  k² 次移位 dot + halo masked load，全部 Cube；输出舍回 dtype_in；TRANS_OUT 交替产出 y_pos/y_ch 两次 launch
+kernel 2  路径 A online softmax（D≤256 or T>128）:          q_tile 常驻，standard rolling rescale；ADD_OUT 融合残差；统一 (b,c,n) stride store
+kernel 3+4  路径 B P 物化两阶段（D>256 且 T≤128）:          attn_smax（S+单趟 softmax→p_buf fp32）+ attn_pv（沿 D 分块补并行度）
+host 门控: 按分支独立判定路径（LA1.6），每分支 conv 1 次 + 路径 A 1 次 / 路径 B 2 次 launch
+```
+
+### L2.2 双路径分派判据（先查 (T,D) 组合再定路径）
+- 路径 A 的 UB 瓶颈在 `acc[BQ,BD]`；D>256 只在 T≤128 时出现（T·D 此消彼长），此时 `T×T≤128²` 的 P 可物化（fp32≤64KB）。
+- `D<=256 or T>128` → 路径 A（online 单 kernel）；否则 → 路径 B（P 物化两阶段）。**同一 case 两分支可走不同路径，按分支独立判定。**
+
+### L2.3 双分支统一物理布局
+- out 统一按 `(b,c,n)` 分配，stride 参数化吃两种分支：position（T=n,D=c）转置 store，channel（T=c,D=n）直 store——一套 kernel 吃两个分支，layout 统一肩负在 store 方向。
+
+## §4 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+### L3.1 ADD_OUT kernel 内融合残差相加（省一路 kernel + 一遍 out 流量）
+```python
+base = bi * CN + offs_q[:, None] * TOK_STRIDE + offs_d[None, :] * D_STRIDE  # position: 1/T | channel: D/1
+tl.store(out_ptr + base, ov, mask=msk)
+# ADD_OUT 时同一批地址先 load 相加（dtype_in add），避免第二遍 store/load out
+```
+
+### L3.2 非 fp32 输入的 PV 二段拆分（升精度异构 dot 禁令落地）
+```python
+p_hi = p.to(kt.dtype)                                        # 非 fp32：p∈[0,1] 拆 hi+lo，两次原生 dtype dot
+p_lo = (p - p_hi.to(tl.float32)).to(kt.dtype)
+acc = acc * alpha[:, None] + tl.dot(p_hi, kt).to(tl.float32) + tl.dot(p_lo, kt).to(tl.float32)
+# fp32 输入：参考本身就 fp32 算，原生 fp32 dot 保持，不拆（ELEM_IS_F32: tl.constexpr host 门控）
+```
+
+### L3.3 k×k conv implicit GEMM 配方（k² 移位 dot + halo mask，免 im2col）
+- 权重预重排 `[co,ci,k,k] → w9[k²,ci,co]` 连续（host `permute(2,3,1,0).reshape(kk,c,c)`）；bias 原样。
+- kernel 内 k² 次移位 `tl.dot` + halo masked load（`padding=k//2` 零填充语义），全部 Cube，无 im2col 物化。
+
+### L3.4 tile 预算本类收紧（esz-aware 双向收缩）
+- `_S_AREA = 8192`（BQ·BKV，kernel 内 ADD_OUT 使 FA 的 16384 预算失效）、`_UB_BUDGET = 96*1024`
+  （`BQ·BD·esz + BKV·BD·esz + BQ·BKV·4 + BQ·BD·4 ≤ 96K`，先收 BQ 到 16 再收 BKV 到 16）。
+
+### L3.5 host 预计算 scale + 路径 B Q=K=V 共享 load
+- scale（position `C**-0.5` / channel `N**-0.5`）fp32 标量 host 预计算传入，kernel 内零开销；
+- 路径 B 的 S = Σ_d dot(a[:,d], trans(a[:,d])) 中 a 被两侧复用，共享同一 load，免双份 Q/K 读。
+
+---
 
 ## §5 Phase 4 优化点清单
 

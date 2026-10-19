@@ -8,7 +8,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Indexing_Ops/gather.md
   role: primary
 created_at: '2026-08-12T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2, a3]
 ---
 
@@ -21,12 +21,10 @@ platforms: [a2, a3]
 
 本文档合并索引计算类算子的优化经验。按以下结构组织：
 - **§1 通用经验**：跨算子重复的工程约束（已提取，各算子章节不再重复）
-- **§2 Index / Gather**（index-read，按索引读取）
-- **§3 IndexPut / Scatter**（index-write，按索引写入/累加）
-- **§4 EmbeddingDenseBackward**（index-accumulate，按索引累加）
-- **§5 Sort / TopK**（index-sort，排序/选择）
-- **§6 常见陷阱**（按算子分小节）
-- **§7 参考算子列表**
+- **§2 Layer 2: 类别级通用算法骨架**
+- **§3 Layer 3: 类别级公共关键代码**
+- **§4 常见陷阱**（按算子分小节）
+本类单算子：**Index/Gather** / **IndexPut/Scatter** / **EmbeddingDenseBackward** / **Sort/TopK**，其专属 Layer 1 约束见下方「算子级实现手册」。
 
 ---
 
@@ -79,7 +77,7 @@ platforms: [a2, a3]
 - **必须**在 `ndim ≤ 4` 时，在 **host 侧**按 `dim=0/1/2/3` 启动独立 kernel 实例，将 `DIM`/`NDIM` 作为 `tl.constexpr` 传入。
 - **禁止**在 kernel 内用运行时 `for j in range(NDIM)` 解码坐标，或在 kernel 内保留运行时 `if dim == X` 分支。
 - **Why:** 运行时坐标解码会引入大量标量除法/取模、非合并访存，且无法使用 UB gather，典型加速比仅 0.05x~0.2x。
-- **How to apply:** 见 §2.1 L1.1、§3.1 L1.3、§4.1 L1.2。
+- **How to apply:** 见 Index/Gather 算子级手册 §2.1 L1.1、IndexPut/Scatter 算子级手册 §3.1 L1.3、EmbeddingDenseBackward 算子级手册 §4.1 L1.2。
 
 ### G4 索引/偏移数据类型
 
@@ -93,14 +91,14 @@ platforms: [a2, a3]
 - **必须**在连续输出段 `E ≥ 64/128` 时使用向量 `tl.atomic_add(ptr + arange, vals, mask=...)`。
 - **禁止**把 `tl.atomic_add` 放在 `for j in range(BLOCK_E)` 标量循环里，或用 `tl.get_element(..., [j])` 拆成标量后再 atomic_add。
 - **Why:** 向量 atomic 一次覆盖多个连续元素，原子数下降 1~2 个数量级；拆成标量会破坏 SIMD 并爆炸原子数。
-- **How to apply:** 见 §3.1 L1.2、§4.1 L1.1。
+- **How to apply:** 见 IndexPut/Scatter 算子级手册 §3.1 L1.2、EmbeddingDenseBackward 算子级手册 §4.1 L1.1。
 
 ### G6 精度保持
 
 - **必须**在 fp16/bf16 累加场景，分配 `torch.float32` 中间 buffer 进行 `atomic_add`，最后 cast 回原始 dtype。
 - **必须**在涉及 `scale_grad_by_freq` 等加权累加时，先用独立 O(N) 频数 kernel 统计，主 kernel 查表缩放，禁止二次扫描。
 - **Why:** fp16/bf16 `atomic_add` 直接累加会导致精度下降；频数统计与主累加分拆避免热循环内分支。
-- **How to apply:** 见 §4.1 L1.3。
+- **How to apply:** 见 EmbeddingDenseBackward 算子级手册 §4.1 L1.3。
 
 ### G7 Host 侧与拷贝
 
@@ -149,38 +147,95 @@ platforms: [a2, a3]
 
 ---
 
-## §6 常见陷阱与避免方法
+## §2 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
 
-### §6.1 Index / Gather 陷阱
+索引计算类算子按**读/写/排序**三分，共享「**并行轴对齐连续维 + 向量化读写/原子 + 维度 constexpr 特化**」的类别级模板。子类分道：
+**读类**（Index/Gather：UB 预载 + `tl.gather`）、**写累加类**（IndexPut/Scatter/EmbeddingDenseBackward：连续维向量 `atomic_add` + fp32 中间缓冲）、**排序选择类**（Sort/TopK/LightningIndexer：排序网络 + 选位结构）。
+逐算子 L2 变体见各算子 `operator_playbooks`（Index/Gather、IndexPut/Scatter、EmbeddingDenseBackward、Sort/TopK）。
+
+### L2.1 并行轴选择（G1：与连续访问对齐，非与最大 numel）
+- **读类**：沿 `outer`（输出外层）+ `index_len` 并行，每 program 沿 `trailing` 连续读写。
+- **写累加类**：`trailing/E` 短 → 按 `outer*index_len` 并行（输出位置并行）；`E ≥ 128` 宽 → 按 `index/N` 分块并行，每 program 对连续 E 维向量 atomic。
+- `index_len` 很小而 `outer*trailing` 很大时，用 2D grid 占满 vector cores。
+
+### L2.2 kernel 骨架：向量 index load + 连续维 SIMD
+```python
+offs = tl.arange(0, BLOCK_M); mask = offs < index_len
+idx  = tl.load(index_ptr + offs, mask=mask, other=0).to(tl.int32)   # 索引向量化 load（G2/G4）
+# 读类：沿非 last-dim 时评估转置；last-dim 用 UB 预载 ROW_SIZE(<UB) 后 tl.gather
+# 写累加类：连续 E 维向量 atomic
+tl.atomic_add(out_ptr + base + tl.arange(0, BLOCK_E), vals, mask=e_mask)
+```
+
+### L2.3 维度特化分发（G3：dim 作 constexpr）
+- `ndim ≤ 4` 时 host 侧按 `dim=0/1/2/3` 启动独立 kernel，`DIM/NDIM` 传 `tl.constexpr`。
+- **禁止** kernel 内运行时 `for j in range(NDIM)` 解码坐标或 `if dim == X` 分支（引入标量除/取模、非合并访存）。
+
+### L2.4 顺序结构（NMS 类顺序算法同理：勿全 kernel 化）
+- 需要跨 program 相关状态、有 host 依赖的 index-ordered 算子，保留 host 侧主循环 + device-side 计数，勿强塞单 kernel。
+
+---
+
+## §3 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+### L3.1 向量 atomic 替代标量循环（G5，写累加类核心）
+```python
+# E ≥ 64/128 连续输出段：向量 atomic（原子数降 1-2 数量级）
+tl.atomic_add(out_ptr + base + tl.arange(0, BLOCK_E), vals, mask=e_mask)
+# 禁止在 for j in range(BLOCK_E) 内逐元素 scalr atomic 或 get_element + atomic_add
+```
+### L3.2 fp32 中间缓冲保精度（G6）
+```python
+acc = torch.zeros(..., dtype=torch.float32, device=x.device)  # fp16/bf16 累加用 fp32
+... tl.atomic_add(acc_ptr + ..., vals) ...                     # 最后 cast 回原始 dtype
+```
+- `scale_grad_by_freq` 等加权：独立 O(N) 频数 kernel 统计 → 主 kernel 查表缩放，禁二次扫描。
+
+### L3.3 索引扁平偏移用 int64、取模用减法（G4）
+```python
+base = batch_offset * StrideB.to(tl.int64) + row*Stride + idx.to(tl.int32)  # 扁平偏移防溢出
+mod = x - (x // M) * M                                     # 禁 int64 上 %
+```
+### L3.4 边界/冲突处理为独立轻量 kernel（G9/G7）
+- `accumulate=False` + 重复索引 → last-write-wins（单 block 串行或两阶段）；越界读返 0、越界写加 mask。
+- `padding_idx` 排除位置用**独立后置 kernel** 清零，禁热循环内分支；可选 dummy tensor 替 `None` 指针。
+### L3.5 GPU 迁移检查口诀（G8）
+- kernel 内仍现 `num_warps`/`cache_modifier`、int64 下标、stride 欺骗 transpose、标量 atomic 内层循环 → **迁移未完成**。
+
+---
+
+## §4 常见陷阱与避免方法
+
+### §4.1 Index / Gather 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
-| Kernel 内运行时判断 `dim` | `if dim == 0:` 运行时变量 | Host 侧 `DIM=0` 作为 `tl.constexpr` 启动（§2.1 L1.1） |
-| Gather 用输入 shape 做循环边界 | `M = x.shape[:dim].prod()` | `M = index.shape[:dim].prod()`（§2.1 L1.3） |
-| 直接间接 gather 当作默认路径 | 所有 gather 都用 `x_ptr + idx_vals * stride` | 优先 UB preload + `tl.gather`，direct-indirect 仅 fallback（§2.1 L1.2） |
-| UB 预载尺寸超过容量 | 预载整行 `tl.load(x_ptr + row * dim_size + arange(0, dim_size))` 且 `dim_size > UB_LIMIT` | 先校验 `ROW_SIZE ≤ UB_LIMIT`，过大则分 `BLOCK_*` + `BLOCK_*_SUB`（§2.1 L1.4） |
-| 无条件 host 侧转置 | 未估算收益就 `.contiguous()` | 仅在 `gather_gain > 2 × transpose_cost` 时转置（§2.1 L1.5） |
+| Kernel 内运行时判断 `dim` | `if dim == 0:` 运行时变量 | Host 侧 `DIM=0` 作为 `tl.constexpr` 启动（Index/Gather 算子级手册 §2.1 L1.1） |
+| Gather 用输入 shape 做循环边界 | `M = x.shape[:dim].prod()` | `M = index.shape[:dim].prod()`（Index/Gather 算子级手册 §2.1 L1.3） |
+| 直接间接 gather 当作默认路径 | 所有 gather 都用 `x_ptr + idx_vals * stride` | 优先 UB preload + `tl.gather`，direct-indirect 仅 fallback（Index/Gather 算子级手册 §2.1 L1.2） |
+| UB 预载尺寸超过容量 | 预载整行 `tl.load(x_ptr + row * dim_size + arange(0, dim_size))` 且 `dim_size > UB_LIMIT` | 先校验 `ROW_SIZE ≤ UB_LIMIT`，过大则分 `BLOCK_*` + `BLOCK_*_SUB`（Index/Gather 算子级手册 §2.1 L1.4） |
+| 无条件 host 侧转置 | 未估算收益就 `.contiguous()` | 仅在 `gather_gain > 2 × transpose_cost` 时转置（Index/Gather 算子级手册 §2.1 L1.5） |
 
-### §6.2 IndexPut / Scatter 陷阱
-
-| 陷阱 | 原因 | 避免方法 |
-|------|------|---------|
-| 标量 atomic 内层循环 | 所有 scatter 都用标量 | 连续宽维度用向量 atomic（§3.1 L1.1） |
-| 运行时 ND 坐标解码 | `for j in range(NDIM)` 从 global buffer 读 shape/stride | `ndim ≤ 4` 编译期维度特化（§3.1 L1.3） |
-| `accumulate=False` 重复索引结果不稳定 | 多个 source 写入同一 target，顺序随机 | 实现 last-write-wins（§3.1 L1.4） |
-| 在热 scatter 循环内判断 padding | `if idx != padding_idx:` 每个元素 | 后置独立 zero kernel（§3.1 L1.5） |
-| 忽略索引越界 | 直接 `tl.load(x_ptr + idx * stride)` | 加 mask 与 `other=0`，必要时过滤（§3.1 L1.5） |
-
-### §6.3 EmbeddingDenseBackward 陷阱
+### §4.2 IndexPut / Scatter 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
-| 单 kernel 双重循环 | 对 `N` 和 `E` 做双重标量循环 | 拆分为 freq / scatter-add / padding-zero 三个 kernel（§4.1 L1.1） |
-| 向量 load 后拆标量 atomic | 用 `tl.get_element(..., [j])` 拆后再 `tl.atomic_add` | 直接构造向量地址并调用向量 `tl.atomic_add`（§4.1 L1.2） |
-| fp16/bf16 直接累加 | `tl.atomic_add` 累加 fp16/bf16 输出 | 分配 fp32 workspace，最后 cast 回原始 dtype（§4.1 L1.3） |
-| `padding_idx` 在热循环内清零 | 每个元素判断 `idx != padding_idx` | 独立 `padding_zero_kernel`（§4.1 L1.5） |
+| 标量 atomic 内层循环 | 所有 scatter 都用标量 | 连续宽维度用向量 atomic（IndexPut/Scatter 算子级手册 §3.1 L1.1） |
+| 运行时 ND 坐标解码 | `for j in range(NDIM)` 从 global buffer 读 shape/stride | `ndim ≤ 4` 编译期维度特化（IndexPut/Scatter 算子级手册 §3.1 L1.3） |
+| `accumulate=False` 重复索引结果不稳定 | 多个 source 写入同一 target，顺序随机 | 实现 last-write-wins（IndexPut/Scatter 算子级手册 §3.1 L1.4） |
+| 在热 scatter 循环内判断 padding | `if idx != padding_idx:` 每个元素 | 后置独立 zero kernel（IndexPut/Scatter 算子级手册 §3.1 L1.5） |
+| 忽略索引越界 | 直接 `tl.load(x_ptr + idx * stride)` | 加 mask 与 `other=0`，必要时过滤（IndexPut/Scatter 算子级手册 §3.1 L1.5） |
 
-### §6.4 通用跨算子陷阱
+### §4.3 EmbeddingDenseBackward 陷阱
+
+| 陷阱 | 原因 | 避免方法 |
+|------|------|---------|
+| 单 kernel 双重循环 | 对 `N` 和 `E` 做双重标量循环 | 拆分为 freq / scatter-add / padding-zero 三个 kernel（EmbeddingDenseBackward 算子级手册 §4.1 L1.1） |
+| 向量 load 后拆标量 atomic | 用 `tl.get_element(..., [j])` 拆后再 `tl.atomic_add` | 直接构造向量地址并调用向量 `tl.atomic_add`（EmbeddingDenseBackward 算子级手册 §4.1 L1.2） |
+| fp16/bf16 直接累加 | `tl.atomic_add` 累加 fp16/bf16 输出 | 分配 fp32 workspace，最后 cast 回原始 dtype（EmbeddingDenseBackward 算子级手册 §4.1 L1.3） |
+| `padding_idx` 在热循环内清零 | 每个元素判断 `idx != padding_idx` | 独立 `padding_zero_kernel`（EmbeddingDenseBackward 算子级手册 §4.1 L1.5） |
+
+### §4.4 通用跨算子陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|

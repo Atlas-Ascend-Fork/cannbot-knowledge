@@ -8,7 +8,7 @@ sources:
 - resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/index.md
   role: supporting
 created_at: '2026-08-12T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: [a2, a3]
 ---
 
@@ -21,14 +21,11 @@ platforms: [a2, a3]
 
 本文档合并了六类 Transformer 推理算子的优化经验。按以下结构组织：
 - **§1 通用经验**：跨算子重复的工程约束（已提取，各算子章节不再重复；与张量变换类共用的通用约束见 GC-1）
-- **§2 RotaryMul**（rotarymul，RoPE 旋转位置编码）
-- **§3 MoeComputeExpertTokens**（indexing-gather / counting，MoE 专家 token 计数 + 前缀和）
-- **§4 MoeGatingTopKSoftmax**（sort-topk，门控 softmax + 迭代 top-k）
-- **§5 AttentionSoftmaxWithSoftcappingAndDropout**（reduce，softcapping + 行级 softmax 融合）
-- **§6 LightningIndexer**（topk-index，decode 场景 top-k 索引）
-- **§7 SparseFlashAttention**（sparse-attention，MLA-absorb 稀疏 attention）
-- **§8 各算子常见陷阱**
-- **§9 相关记忆**
+- **§2 Layer 2: 类别级通用算法骨架**
+- **§3 Layer 3: 类别级公共关键代码**
+- **§4 各算子常见陷阱**
+- **§5 相关记忆**
+本类单算子：**RotaryMul** / **MoeComputeExpertTokens** / **MoeGatingTopKSoftmax** / **AttentionSoftmaxWithSoftcappingAndDropout** / **LightningIndexer** / **SparseFlashAttention**，其专属 Layer 1 约束见下方「算子级实现手册」。
 
 ---
 
@@ -105,9 +102,57 @@ platforms: [a2, a3]
 
 ---
 
-## §8 常见陷阱与避免方法
+## §2 Layer 2: 类别级通用算法骨架（跨算子抽象，首次生成就要写对）
 
-### §8.1 RotaryMul 陷阱
+Transformer 推理类算子共享「**grid 与 num_cores 严格匹配 → kernel 内 fp32 提升 → constexpr 常量化 → 需要时多 kernel 强制 GM round-trip**」的类别级模板。
+逐算子 L2 变体见 `operator_playbooks`（RotaryMul / AttentionSoftmax / MoeGatingTopKSoftmax / MoeComputeExpertTokens 等）。
+
+### L2.1 host 分派骨架
+```python
+grid_size = min(total_blocks, VEC_CORE_NUM)       # T1：grid 严格匹配核数
+kernel[(grid_size,)](..., num_cores=grid_size, ...)   # kernel 内依赖 num_cores 做循环 stride 时必须一致
+```
+- 与 G4 差异：本类 kernel 若用 `num_cores` 入参算循环 stride，`grid_size` 必须**严格相等**，不可只 "≤"。
+
+### L2.2 kernel 骨架：fp32 提升 + constexpr 常量 + 向量化
+```python
+@triton.jit
+def kern(x_ptr, out_ptr, N: tl.constexpr, K: tl.constexpr, D: tl.constexpr, BLOCK: tl.constexpr):
+    offs = tl.arange(0, D)                  # D 必须 constexpr（T4）
+    x = tl.load(x_ptr + ...).to(tl.float32) # fp16/bf16 升 fp32（T2）
+    ...                                     # 数值计算在 fp32
+    tl.store(out_ptr + ..., x.to(原 dtype)) # 存回前转回
+```
+- 所有进 `tl.arange` / 循环 `range()` 的变量 constexpr（含非 pow2 语义维 `num_expert`、`k`）。
+
+### L2.3 中间 dtype 舍入控制（T5）
+- 参考实现每子算子物化中间结果为输入 dtype 时，融合成单 fp32 计算会跳舍入 → 逐 bit 不匹配。
+- **拆分独立 kernel** 用 GM store+load 强制舍入（例：`tanh(x/30)*30` 拆 div/tanh/mul 三 kernel）；fp32 输入无舍入 loss 不必拆。
+
+---
+
+## §3 Layer 3: 类别级公共关键代码 / 技巧（可参考但不可复制结构）
+
+### L3.1 Uniform grid splitting 替代 naive 交织（避免 idle core）
+```python
+# naive: grid=num_cores + for b in range(pid, num_blocks, num_cores) ← num_blocks<num_cores 时空闲
+blocks_per_core = total_blocks // num_cores; rem = total_blocks % num_cores
+start = pid*blocks_per_core + min(pid, rem)
+count = blocks_per_core + (1 if pid < rem else 0)
+for b in range(start, start+count): ...
+```
+### L3.2 per-position + 向量化 D 维（防 flat-1D 标量退化）
+- 坐标分解用 per-position 标量 + `tl.arange` 向量化 D；**禁止** `d = offs % half_d; s = (offs//half_d) % S` 向量取模（scf.for 标量化）。验证：编译 IR 是否含大量 step-1 循环 + 标量 memref.load。
+### L3.3 fp32 中间精度 + GM 舍入点（T2/T5）
+- fp16/bf16 输入核内升 fp32 计算、存回前转回；需物化中间 dtype 的子算子拆独立 kernel 强制舍入。
+### L3.4 编译选项实测再启（T6）
+- `multibuffer`/`unit_flag` 含迭代标量循环的算子可能劣化；Phase 4 实测后再决定，勿默认开启。
+
+---
+
+## §4 常见陷阱与避免方法
+
+### §4.1 RotaryMul 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
@@ -117,7 +162,7 @@ platforms: [a2, a3]
 | fp16/bf16 精度不足 | kernel 内直接以 fp16 做乘加减，relative error 超标 | kernel 内升 fp32 计算，存回前转回原精度（T2/L1.4） |
 | Naive grid splitting 导致 idle core | `grid = (num_cores,)` + `for block in range(pid, num_blocks, num_cores)` 在 `num_blocks < num_cores` 时大量 core 空闲 | Uniform grid splitting（L2.2/L3.2）确保每个 core 处理连续且均匀的 block 范围 |
 
-### §8.2 MoeComputeExpertTokens 陷阱
+### §4.2 MoeComputeExpertTokens 陷阱
 
 | 陷阱 | 表现 | 避免方法 |
 |------|------|---------|
@@ -127,7 +172,7 @@ platforms: [a2, a3]
 | 动态 grid 计算 | 增加 host 侧开销、编译器优化受限 | grid 固定为 `(num_expert,)` 和 `(1,)`（L1.4） |
 | 跨 expert 循环计数 | 每个 block 做 64 次比较，指令膨胀 | grid 映射到 expert，每个 block 只比较一次（L1.3） |
 
-### §8.3 MoeGatingTopKSoftmax 陷阱
+### §4.3 MoeGatingTopKSoftmax 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
@@ -143,7 +188,7 @@ platforms: [a2, a3]
 | LLVM_ROOT 环境变量未设置导致编译失败 | `clang++: symbol lookup error: undefined symbol: _ZN4llvm24createAutotuningDumpPassEv` | 设置 `LLVM_ROOT` 指向包含完整 libLLVM-17.so 的路径 |
 | CANN 9.1.0 与 Triton 常量名不兼容 | `RT_LIMIT_TYPE_SIMT_WARP_STACK_SIZE` 在 CANN 9.1.0 中已重命名 | 修改 Triton 的 `npu_utils.cpp` 中的常量名为 `RT_LIMIT_TYPE_SIMT_DVG_WARP_STACK_SIZE`（一次性修复） |
 
-### §8.4 AttentionSoftmaxWithSoftcappingAndDropout 陷阱
+### §4.4 AttentionSoftmaxWithSoftcappingAndDropout 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
@@ -154,7 +199,7 @@ platforms: [a2, a3]
 | grid 远超核数导致串行调度 | 朴素模式 `grid = ceil(num_rows/ROW_TILE)`，num_rows=32768 时 grid=2048，远超 48 核，NPU 串行执行 | `grid_size = min(natural_blocks, num_cores)`，每个 program 循环处理多块（T1/L3.1） |
 | mask 元素污染归约 | padding 元素（load 时 other=0）参与 max/sum 导致结果错误 | max 前 `tl.where(mask, x, -inf)`，sum 前 `tl.where(mask, exp_val, 0.0)`（L1.4） |
 
-### §8.5 LightningIndexer 陷阱
+### §4.5 LightningIndexer 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
@@ -166,7 +211,7 @@ platforms: [a2, a3]
 | 等值淘汰错方向 | 必须淘汰 index 最大者 | §6 L1.3 |
 | PA_BSND device gather 默认启用 | 已验证无整体收益 | §6 L1.8 |
 
-### §8.6 SparseFlashAttention 陷阱
+### §4.6 SparseFlashAttention 陷阱
 
 | 陷阱 | 原因 | 避免方法 |
 |------|------|---------|
@@ -180,7 +225,7 @@ platforms: [a2, a3]
 
 ---
 
-## §9 相关记忆
+## §5 相关记忆
 
 - [[lightning-indexer-triton-gen]] — LightningIndexer 精度根因（tie-break + bf16 RNE）与历史优化路径
 - [[lightningindexer-hybrid-native-topk-reverted]] — LightningIndexer 作弊回退记录

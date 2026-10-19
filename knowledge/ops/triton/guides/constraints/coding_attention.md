@@ -1,19 +1,16 @@
 ---
 type: Guide
 title: Attention 算子优化
-description: 标准的 Scaled Dot-Product Attention:。
+description: 标准的 Scaled Dot-Product Attention
 tags: [task.design, topic.attention, topic.compute.normalization, topic.tiling, topic.precision, topic.implementation.masking]
 status: stable
 sources:
-- resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Math_Ops/softmax.md
+- resource: https://gitcode.com/cann/cannbot-skills/blob/bf861dda4e8c8d82cdd4d2ee9801a463c1f17263/ops/triton-op-coding/references/triton-ascend-attention.md
   role: primary
-- resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/third_party/ascend/tutorials/06-fused-attention.py
-  role: example
 created_at: '2026-08-13T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 platforms: ['950']
 ---
-
 # Attention 算子优化
 
 ## 标准 Attention 计算流程
@@ -118,3 +115,15 @@ acc = acc / l_i
 
 > ⚠️ 本文件上方示例里的 `tl.math.exp2(x * 1.44269504)` 是 GPU 侧常见写法；
 > 在 Ascend 上 `tl.exp` **本就走 exp2 路径**，实测该改写无收益（2.4547 vs 2.4701），不必刻意替换。
+
+## 含卷积（conv）的 attention：显式关闭 HF32
+
+ 适用：attention 变体的 Q 变换 / K、V 取数前插入卷积（2D/3D 卷积式局部特征提取、criss-cross 等 conv+softmax hybrid 结构），
+> 或任务文件的 torch 参考实现内部调用了 `torch.nn.Conv*` 的场景。
+1. **`torch.npu.conv.allow_hf32` 默认开启**，使 conv 走 HF32（High-Float32，尾数位削减）混合精度路径，输出相对 FP32 参考有可见误差。
+2. 只要任务链路中出现 conv，**必须显式设置 `torch.npu.conv.allow_hf32 = False`**（放在基准代码 `import` 之后、首次 conv 调用之前），否则 conv 的近似输出会传导进后续 Q/K/V 与 attention 计算，放大精度偏差导致验证失败。
+```python
+import torch_npu
+torch.npu.conv.allow_hf32 = False
+```
+3. 该开关是**全局属性**（类比 GPU 侧 TF32 开关），只作用于 torch_npu 的 conv 精度路径，不影响 `tl.dot` 内部精度——无需、也不应在 Triton kernel 内设置。

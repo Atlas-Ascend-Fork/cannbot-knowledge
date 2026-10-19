@@ -1,17 +1,16 @@
 ---
 type: Optimization
 title: Triton-Ascend Interpolate 算子开发参考文档
-description: inv_scale_h = float(torch.tensor(H_in / H_out, dtype=torch.float32))。
 tags: [task.optimization, topic.tiling, topic.compilation, topic.precision, topic.compute.indexing, topic.compute.normalization]
 status: stable
-sources:
-- resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/index.md
-  role: supporting
-created_at: '2026-08-13T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
 platforms: [a2, a3]
+description: '**PyTorch 正确公式：**'
+sources:
+- resource: https://gitcode.com/cann/cannbot-skills/blob/bf861dda4e8c8d82cdd4d2ee9801a463c1f17263/ops/triton-op-coding/references/triton-ascend-interpolate.md
+  role: primary
+created_at: '2026-08-13T00:00:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 ---
-
 # Triton-Ascend Interpolate 算子开发参考文档
 
 > 适用于 `interpolate` 算子及相关运算。
@@ -228,8 +227,3 @@ def interpolate_kernel(
 - [ ] 避免 Triton JIT 不支持的语法（`break`、`continue`、`float()` 等）
 - [ ] Ascend NPU 避免分散向量加载，使用标量循环
 - [ ] 多 shape 全量验证通过后再做性能优化
-
-## 失效边界与不触发场景
-
-- **不触发**：算子不属于本范式时不适用。
-- **失效**：切换实现范式后本卡结论需重新判定。

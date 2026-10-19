@@ -1,19 +1,16 @@
 ---
 type: Optimization
 title: Element-wise 算子优化
-description: 张量在内存中连续存储时，可用一维指针遍历，避免多维索引开销。
 tags: [task.optimization, topic.tiling, topic.implementation.masking, topic.data_movement.memory_access, topic.compute.elementwise.arithmetic, topic.compilation]
 status: stable
-sources:
-- resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Math_Ops/sigmoid.md
-  role: primary
-- resource: https://gitcode.com/Ascend/triton-ascend/blob/c22984baa55e1506eadd7c72955d9bf669b1c959/docs/zh/triton_api/Math_Ops/exp.md
-  role: supporting
-created_at: '2026-08-13T00:00:00Z'
-updated_at: '2026-09-08T09:05:00Z'
 platforms: [a2, a3]
+description: '**算术运算**: add, mul, div, sub, pow **激活函数**: relu, sigmoid, tanh, gelu, silu, swish **数学函数**: exp, log, sqrt, sin, cos, abs'
+sources:
+- resource: https://gitcode.com/cann/cannbot-skills/blob/bf861dda4e8c8d82cdd4d2ee9801a463c1f17263/ops/triton-op-coding/references/triton-ascend-elementwise.md
+  role: primary
+created_at: '2026-08-13T00:00:00Z'
+updated_at: '2026-10-14T00:00:00Z'
 ---
-
 # Element-wise 算子优化
 
 > 适用于逐元素独立计算的算子
@@ -131,8 +128,3 @@ x_grad计算出后，与input_grad相乘得output_grad。
 该优化点必须遵循！GELU的标杆中，无论输入的approximate的值是"none"还是"tanh"，其计算的数学公式均为：
 * result = x / (1 + e^(-1.5957691*0.044715(x/0.044715 + x^3)))
 一定要采取该计算公式实现算子
-
-## 失效边界与不触发场景
-
-- **不触发**：算子不属于本范式时不适用。
-- **失效**：切换实现范式后本卡结论需重新判定。
