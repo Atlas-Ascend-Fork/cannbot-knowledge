@@ -1,0 +1,56 @@
+# Triton 优化 Pattern 库
+
+触发条件式优化 pattern 卡库：每张卡包含适用条件、反例、代码/编译/性能信号、改写方法与应用后验证要点。950 专属 pattern（SIMT launch mode、950 编译链控制项）单独标注。
+
+- [代数恒等改写（Algebraic optimization (pure math reformulation)）](algebraic_optimization.md)：用数学恒等式与保语义改写削减冗余访存遍历、全量扫描与中间量，替换为可精确补偿的等价形式。
+- [摊销式中性 Padding 内部布局（Amortized Neutral-Padded Internal Layout）](amortized_neutral_padding_layout.md)：为内部张量引入 tile 对齐的物理维度与中性填充值，把一次性 padding 代价摊销到多次消费中。
+- [Attention 中间 Vector 工作削减（Attention Intermediate Vector Work Reduction）](attention_intermediate_vector_work_reduction.md)：缩短混合 attention kernel 中 Cube 生产者到 Vector 变换再到 Cube 消费者的串行路径，删除、共享或重塑中间 Vector 工作。
+- [Attention 在线 Softmax 融合（Attention Online Softmax Fusion）](attention_online_softmax_fusion.md)：把 QK、mask/softmax、PV 分阶段的 attention 合并为单 kernel 在线 softmax 递推，含 native-dtype 舍入复现的两遍形式。
+- [Attention 可见性 Mask 特化（Attention Visibility Mask Specialization）](attention_visibility_mask_specialization.md)：按可见性策略（causal/window/prefix/ragged/block-sparse）对 key tile 分类，从递推域中删除不可见与完全有效的 tile。
+- [同输入线性投影合并（Combine Linear Projections That Read the Same Input）](common_input_projection_packing.md)：把消费同一输入的兄弟仿射投影合并为一次更宽的收缩或共调度收缩，复用彼此的输入读取。
+- [编译与下降提示（Compiler And Lowering Hint Pattern）](compile_hint_adding.md)：kernel 结构稳定后，用编译提示传达指针数学无法安全推断的对齐与连续性事实，仅以证据保留。
+- [共享值算一次经 GM 分发（Compute Shared Values Once and Store Them in GM）](compute_once_share_via_gm.md)：在受支持的 kernel 边界把昂贵共享值计算一次写入 GM，消费者按需读取，替代各 program 重复计算。
+- [950 CV 编译项消融（Ascend 950 CV Compile-Option Ablation And Scheduling Controls）（950 专属）](cv_compile_option_ablation_950.md)：Ascend 950 编译链上独立消融 Cube/Vector 流水、HFusion 向量化、多缓冲深度与 UB 块参数等调度控制项。
+- [CV 中间 Tile 朝向（Cube-Vector Intermediate Tile Orientation）](cv_intermediate_tile_orientation.md)：为跨越 L0C 到 GM 供 Vector 消费的 Cube 中间矩形选择朝向，使其沿融合扫描轴构成规则 row-major tile。
+- [细粒度稀疏 Attention 稠密替代（Dense Substitution For Fine-Grained Sparse Attention）](dense_substitution_fine_grained_sparse_attention.md)：当逐行任意索引选取的 KV 占比足够高时，用带散射 mask 的稠密计算替代细粒度稀疏 attention 选取。
+- [离散访存 UB Staging（Discrete Memory Access Staging Pattern）](discrete_access_ub_staging.md)：先把连续区间整体搬入 UB，再用片上索引选取目标值，替代经离散索引直接读全局内存；固定通道 AoS 可转 SoA 连续读。
+- [手写循环改写 tl.dot Matmul（Dot Matmul Rewrite Pattern）](dot_matmul_rewrite.md)：把手写 matmul 或 K 归约热循环改写为规则分块的 tl.dot matmul，使 kernel 结构匹配 Ascend Triton 的下降路径。
+- [dot 操作数精度消融（Contract-Gated Dot Operand Precision Ablation）](dot_operand_precision_ablation.md)：在合约门控下独立消融 tl.dot 操作数的低精度形态，与累加器、递推、epilogue 和输出精度解耦评估。
+- [双 Vector 核并行（Dual Vector-Core Parallel Pattern）](dual_vector_core_parallel.md)：用 tl.parallel 让同一 AI Core 的两个 Vector 核同时执行任务，提高 Vector 侧并行度。
+- [引擎感知 Grid 调度（Engine-Aware Grid Scheduling）](engine_aware_grid_scheduling.md)：把单次 launch 内的逻辑工作映射为 program 顺序、紧凑活跃任务域、program batch、persistent 步进循环或有界串行轴。
+- [精确 Tile 无边界快路径（Exact-Tile No-Boundary Fast Path）](exact_tile_no_boundary_fast_path.md)：当派发期 shape 守卫能证明无尾 tile 时，把精确 tile 热路径从通用 masked kernel 中拆出，消除边界 mask 与控制分支。
+- [950 SIMT-only 离散访存（Ascend 950 SIMT-Only Discrete Access Pattern）（950 专属）](force_simt_only_discrete_access_950.md)：Ascend 950 上以 force_simt_only=True 启动离散访存 UB staging kernel，并重调 num_warps 与 grid 分解。
+- [GQA/MQA KV 共享行批处理（GQA/MQA KV-Shared Row Batching）](gqa_kv_shared_row_batching.md)：把共享同一 KV head 的独立 query 行批入同一 program，使只读 K/V tile 每份只加载一次。
+- [Grid 摊平与 UB 批量搬运（Grid Flattening And UB Buffering Pattern）](grid_flatten_and_ub_buffering.md)：把逻辑工作摊平到物理核并以更宽的 UB store 批量搬运小行传输，降低启动开销、提高单核工作密度。
+- [Hi/Lo 分裂 Matmul（Hi/Lo Split Matmul (Split2 / Split3)）](hilo_split_matmul.md)：用取整 fp16 高位与残差部分逼近 fp32 操作数，以两到三个原生 fp16 tl.dot 组合出 fp32 累加结果。
+- [Host 侧 Launch 合并（Host Launch Coalescing）](host_launch_coalescing.md)：把 Python/wrapper 循环对同一小 kernel 的重复 launch 合并为一次 device grid，由 program 自行解码段身份。
+- [隐式 Transpose 消除（Implicit Transpose Elimination Pattern）](implicit_transpose_elimination.md)：让操作数以 Cube 需要的物理布局进入 kernel，或把不可避免的转置放到最便宜的算子与路径上，消除编译器注入的布局变换。
+- [int8 tl.dot 与 int32 累加器（Int8 Dot With Int32 Accumulator）](int8_dot_int32_accumulator.md)：int8 量化 GEMM 默认采用 int32 累加的原生 int8 tl.dot，UB 不足时降级 tile 几何而非回退加宽操作数。
+- [删除中间布局拷贝（Avoid Intermediate Layout Copies）](intermediate_layout_copy_deletion.md)：删除仅为改变布局而分配填充的中间张量，由生产者直写目标布局或消费者以显式步长读取。
+- [中间量 UB 溢出分片（Intermediate UB Overflow）](intermediate_ub_overflow.md)：当中间张量与输入输出合计超出 UB 时，沿一轴以 extract_slice/insert_slice 分片处理，任意时刻仅一个分片存活。
+- [不变量预处理缓存（Invariant Preprocessing Cache）](invariant_preprocessing_cache.md)：在缓存身份、失效、所有权与容量合约下，跨算子调用复用纯预处理结果。
+- [Kernel 融合与值放置（Kernel Fusion And Value Placement）](kernel_fusion_and_value_placement.md)：当可共享计算或省去中间张量写回时合并算子；当分开能保住更快路径或边界时保持独立，并决定值的驻留位置。
+- [L2 条带容量 Tile 加宽（L2 Stripe-Capacity Tile Widening）](l2_stripe_capacity_tile_widening.md)：当 GEMM 类 kernel 每 program batch 的长轴操作数切片超出 L2 容量导致吞吐坍塌时，加宽 tile 降低重读次数。
+- [大 Tile 适配解锁（Large-Tile Fit Enabling）](large_tile_fit_enabling.md)：当有价值的大 tile 因额外临时量无法通过 UB 规划时，把等价不变量计算移到更小输入上，以配对实验解锁大 tile。
+- [活跃长度 Tiling（Live-Length Tiling）](live_length_tiling.md)：按各轴实际存活逻辑长度选择 tile 宽度，替代遗留最大值或一刀切 2 的幂规则，避免 masked 空车道主导工作量。
+- [逻辑布局 Tiling（Logical-Layout Tiling Pattern）](logical_layout_tiling.md)：当逻辑操作是仿射数据搬运时，用布局感知的多维 tile 取代标量密集的 1D 线性索引遍历。
+- [仅 Mask 仿射寻址（Mask-Only Affine Addressing）](mask_only_affine_addressing.md)：删除已带边界 mask 的访存指针表达式中的逐 lane 索引 clamp，保留原始仿射偏移，让谓词承担越界保护。
+- [归一化底数约定消融（Normalization Base Convention Ablation）](normalization_base_convention_ablation.md)：把自然底与 base-2 两套完整指数归一化实现作为整体约定消融，保持标量数学与向量路径语义一致。
+- [尾块重叠加载免 Mask（Overlap Tail Load for Idempotent Reductions）](overlap_tail_load_mask_free.md)：行/段幂等归约在 BLOCK < length ≤ 2·BLOCK 且不对齐时，重叠加载尾块并免 mask 合并计算。
+- [打包 Key 单次 Argmax 归约（Packed-Key Single Reduction for Extremum-with-Index）](packed_key_argmax_single_reduction.md)：把带首次出现位置的极值归约打包为单次 key 归约，或以 pair32/pair64 双归约规避慢的宽整数比较路径。
+- [Pad-Copy 行列 Tiling（Row–Column Tiling for Pad-Copy Kernels）](pad_copy_row_col_tiling.md)：把按 numel(out) 展平的 1D pad-copy kernel 改写为行列分块形式，减少逐元素坐标重建的标量开销。
+- [参差 Tile 提前返回（Ragged Tile Early Return）](ragged_tile_early_return.md)：当权威段元数据证明整个 program tile 落在有效矩形之外时，在 tile 内工作前提前返回。
+- [归约轴拆分与合并（Reduction Axis Split And Combine）](reduction_axis_split_combine.md)：当非归约维 grid 无法填满核数时，把归约轴拆分到多个 program，各自产出部分归约状态再由轻量 combine 合并。
+- [冗余循环工作删除（Redundant-Loop Work Deletion）](redundant_loop_work_deletion.md)：用按证明有用范围限界的循环取代全范围 tile 循环加内部有用性守卫，删除剩余无用 tile 的工作。
+- [重复 Gather 算一次（多重性补偿）（Repeated Gather Compute Once）](repeated_gather_compute_once.md)：当索引缓冲重复选取同一元素且下游为多重集语义时，按去重元素计算一次，再用精确代数补偿恢复多重性。
+- [结果 Tile 布局对齐（Result Tile Layout Alignment Pattern）](result_tile_layout_alignment.md)：让计算结果 tile 的轴序与输出内存布局对齐，避免 store 期转置退化为标量逐元素写入。
+- [标量时延陷阱消除（Scalar Latency Trap Removal Pattern）](scalar_latency_trap_removal.md)：移除阻塞 Vector 硬件利用率的标量化构造：多余标量控制流、循环携带指针递推、取模寻址、窄 mask 与向量路径上的 int64 运算。
+- [零散传输批量化（Scattered Transfer Batching）](scattered_transfer_batching.md)：索引搬运由零散小传输主导时，用 extract_slice/insert_slice 把可连续化的一侧批量化。
+- [Shift Mask-Reduce 改直读（Shift Mask-Reduce to Load）](shift_mask_reduce_to_load.md)：把 2D mask-and-reduce 构造的 shift/前驱路径改写为 base + arange - 1 的一维索引流直读。
+- [SIMT 窗口除数闭式（SIMT Window Divisor Formula）（950 专属）](simt_window_divisor_formula.md)：SIMT 路径上固定窗口归约的内层结构修复：按窗口边界推导除数闭式，替代全窗口 masked 计数。
+- [SIMT 窗口归约调参（SIMT Window Reduction Tuning）（950 专属）](simt_window_reduction_tuning.md)：每个输出点映射到仿射布局固定输入窗口的 kernel 在 SIMT 路径上的调参方法论与反模式表。
+- [编译器感知软件流水（Compiler-Aware Software Pipelining）](software_pipeline.md)：检查编译器生成的缓冲与搬运-计算协同，把手动 carry 或文本 prefetch 当作调度消融，仅在证据支持时保留。
+- [步长布局直接归约（Direct Strided-Layout Reduction Pattern）](strided_layout_reduction.md)：非末维单轴归约避免先做 movedim+contiguous 布局拷贝，对连续输入直接按步长访存归约。
+- [i64/i32 比较向量化（i64/i32 Comparison Optimization Pattern）](vec_cmp.md)：把显式整数比较密集逻辑改写为 Ascend NPU 上更向量友好的形式，尤其当标量化比较阻塞快速掩码或选择时。
+- [2D 窗口 UB Staging（2D Window UB Staging）](window_2d_ub_staging.md)：2D 采样 kernel（resize/gather-window/pooling 类）为每个输出点读多个重叠输入样本时，先整行 staging 进 UB 再片上取样。
+- [窗口长条 Gather（Window Slab Gather）](window_slab_gather.md)：沿最内连续空间维的固定窗口归约先加载一个 W_SLAB 长条，再从长条内片上 gather 各窗口，消除逐窗口重复读。
