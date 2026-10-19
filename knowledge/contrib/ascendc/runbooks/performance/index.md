@@ -1,0 +1,148 @@
+# 性能优化 Playbook
+
+进化策略的分步落地 SOP（原 evolution-strategies `references/playbooks/`，文件名小写化，正文已占位符化）。
+
+## Runbook
+
+- [A1 Playbook: FP32 Intermediate Computation (FP32 中间计算实操流程)](a1_fp32_intermediate.md)：本 Playbook 为**强制流程**。
+- [A2 Playbook: Welford 数值稳定均值/方差](a2_welford_algorithm.md)：本 Playbook 为**强制流程**。
+- [A3 Playbook: Rounding Mode 精度控制](a3_rounding_mode.md)：本 Playbook 为**强制流程**。
+- [A4 Playbook: SetFlag/WaitFlag 事件同步保证精度](a4_pipeline_barrier.md)：本 Playbook 为**强制流程**。
+- [A5 Playbook: Softmax 数值安全与特殊值处理](a5_softmax_stability.md)：本 Playbook 为**强制流程**。
+- [A6 Playbook: 高精度 rsqrt Newton-Raphson 迭代](a6_high_precision_rsqrt.md)：本 Playbook 为**强制流程**。
+- [A7 Playbook: 索引与边界安全处理](a7_index_boundary.md)：本 Playbook 为**强制流程**。
+- [A8 Playbook: 量化专用精度处理](a8_quant_precision.md)：本 Playbook 为**强制流程**。
+- [D1 Playbook: Mixed Precision Architecture (混合精度架构实操流程)](d1_mixed_precision.md)：本 Playbook 为**强制流程**。
+- [D2 Playbook: Template Kernel Type Dispatch (模板化内核类型分发)](d2_template_kernel.md)：本 Playbook 为**强制流程**。
+- [D3 Playbook: TilingKey 驱动类型分发](d3_tilingkey_dispatch.md)：本 Playbook 为**强制流程**。
+- [D4 Playbook: FP8/INT4 量化输出类型](d4_fp8_int4_conversion.md)：本 Playbook 为**强制流程**。
+- [D5 Playbook: BF16 & Platform-Specific Handling (BF16/多平台处理)](d5_bf16_special_handling.md)：本 Playbook 为**强制流程**。
+- [P1 Playbook: 双缓冲机制实操流程](p1_double_buffering.md)：本 Playbook 为**强制流程**。
+- [P10 Playbook: 向量化数据拷贝与合并短搬运](p10_vectorized_copy.md)：P10 把"多次小粒度 DMA"或"CompareScalar + 手动循环"替换为"一次向量化搬运 / Vector…
+- [P100 Playbook: GatherMask 替代逐元素 SetValue/GetValue](p100_gathermask_replacement.md)：P100 把从连续 tensor 中按固定间隔取元素重组数据（如 RoPE 奇偶分拆、解交织）的逐元素 `SetVal…
+- [P101 Playbook: GatherMask 替代 Host 侧列拆分](p101_gathermask_host_column_split.md)：本 Playbook 为**强制流程**。
+- [P102 Playbook: 标量/向量模拟矩阵运算 → MIX CV 融合重写实操流程](p102_scalar_matmul_to_cv_fusion_rewrite.md)：P102 把标量/Vector 模拟的矩阵运算架构级重写为 MIX CV 融合（Cube Mmad 承担 matmul…
+- [P104 Playbook: Matmul 多核切分扩展](p104_matmul_multi_core_tiling_expansion.md)：采纳 P104 策略的子 agent 必须逐步执行，每步填写/验证后才能进入下一步。
+- [P105 Playbook: Matmul L2 Cache Tile Sizing](p105_matmul_l2_cache_tile_sizing.md)：采纳 P105 策略的子 agent 必须逐步执行，每步填写/验证后才能进入下一步。
+- [P106 Playbook: Matmul Batch 合并到 M](p106_matmul_batch_merge_to_m.md)：采纳 P106 策略的子 agent 必须逐步执行，每步填写/验证后才能进入下一步。
+- [P107 Playbook: Matmul Serpentine 遍历](p107_matmul_serpentine_traversal.md)：采纳 P107 策略的子 agent 必须逐步执行，每步填写/验证后才能进入下一步。
+- [P109 Playbook: Reduction 多轴 Tiling 系统化设计](p109_reduction_multi_axis_tiling.md)：本 Playbook 指导子 agent 对 reduction 算子按 Ascend C Tiling 方法论进行多…
+- [P11 Playbook: Tail Block Handling (尾块与边界处理实操流程)](p11_tail_block_handling.md)：本 Playbook 为**强制流程**。
+- [P110 Playbook: Reduction UB 累加器复用](p110_reduction_ub_accumulator_reuse.md)：本 Playbook 指导子 agent 在 reduction 算子中利用 UB 作为累加器/合并 buffer，避…
+- [P111 Playbook: Sort 两级归并 Tiling](p111_sort_two_level_merge_tiling.md)：本 Playbook 指导子 agent 对 Sort / TopK 大数据量场景实现 Pattern C 两级归并。
+- [P112 Playbook: Elementwise 向量化 Tile 尺寸设计](p112_elementwise_vectorized_tile_sizing.md)：本 Playbook 指导子 agent 对 Elementwise 算子按 Ascend C Tiling 方法论优…
+- [P113 Playbook: Broadcast 对齐 Tiling 设计](p113_broadcast_aligned_tiling.md)：本 Playbook 指导子 agent 对 Broadcast 算子执行 DimensionCollapse、广播方…
+- [P114 Playbook: Transpose 多维对齐 Tiling 设计](p114_transpose_nd_tiling_with_alignment.md)：本 Playbook 指导子 agent 对 small-channel transpose 算子按 `[C, N]…
+- [P115 Playbook: FlashAttention Tiling 路由](p115_flashattention_tiling_routing.md)：本 Playbook 指导子 agent 对 FlashAttention 类算子按 Ascend C Tiling…
+- [P116 Playbook: GQA Grouped-M 头合并](p116_gqa_grouped_m_head_merge.md)：本 Playbook 指导子 agent 把 GQA decode 场景（Sq≤4）的逐头小 matmul 改写为 G…
+- [P117 Playbook: 双 BMM 链 MatmulApiTiling Host 配方](p117_matmul_api_tiling_host_recipe.md)：本 Playbook 指导子 agent 为 attention 类算子的 QK^T/PV 双 matmul 链在 h…
+- [P118 Playbook: Causal Mask 独立 AIV Kernel 并行预生成](p118_mask_precompute_parallel_aiv.md)：本 Playbook 指导子 agent 把 causal mask 从 attention 主路径剥离为独立 AIV…
+- [P119 Playbook: Two-Pass Softmax → Online Softmax 单遍改写](p119_two_pass_to_online_softmax.md)：本 Playbook 指导子 agent 把两遍（或逐 token）softmax attention 改写为 onl…
+- [P12 Playbook: Broadcast & Mask Operations (广播与掩码操作实操流程)](p12_broadcast_mask.md)：本 Playbook 为**强制流程**。
+- [P120 Playbook: FA 向量点积模拟 Matmul → Cube mmad 重写](p120_fa_vec_dot_to_cube_mmad.md)：本 Playbook 指导子 agent 把 attention 算子的 QK^T / PV 从 Vector 指令模…
+- [P121 Playbook: FA SplitFuse CV 流水拓扑（GM workspace 握手槽 + PRE_LAUNCH 预发射）](p121_fa_splitfuse_cv_pipeline.md)：本 Playbook 指导子 agent 把 FA 算子的 QK→softmax→PV→rescaleO 四阶段从串行…
+- [P122 Playbook: KV 堆叠大块化 + L1 容量自适应 Q/KV 划分](p122_kv_stack_large_tile_l1_adaptive.md)：本 Playbook 指导子 agent 把 FA 算子的 KV tile 从小块（≤128）堆叠为大块（512 基准…
+- [P123 Playbook: Causal/Sparse KV 范围跳过 + 边界 Tile Mask 特化](p123_causal_kv_skip_boundary_mask.md)：本 Playbook 指导子 agent 把 attention 算子的 causal/sparse mask 从"全…
+- [P124 Playbook: MLA nope+rope 拼接进单 GEMM K 维](p124_mla_nope_rope_concat_gemm_k.md)：本 Playbook 指导子 agent 把 MLA QK^T 的 nope/rope 两段独立计算合并为单 GEMM…
+- [P125 Playbook: 跨任务 Cube 预取](p125_cross_task_cube_prefetch.md)：本 Playbook 指导子 agent 在 CV 流水（P121 已实施）的多任务 kernel 上，把 QK 预发…
+- [P126 Playbook: GM Tiling 表驱动变长任务调度](p126_gm_tiling_table_task_schedule.md)：本 Playbook 指导子 agent 把 kernel 的"均匀切分 + 除法反解坐标"调度改为"host 生成…
+- [P127 Playbook: Conversion 模式特化路由落地 SOP](p127_conversion_pattern_specialization_routing.md)：把 layout-transform 算子从"通用 gather 主路径"改造为 R1→R5 模式特化路由。
+- [P128 Playbook: FP32-via-BF16 Hi/Lo 拆分 3-GEMM 落地 SOP](p128_fp32_via_bf16_hilo_3gemm.md)：完整实战记录与参数依据见 `optimizations/evolution_strategies/discovered/disc_x17.md`。
+- [P129 Playbook: Fused img2col LoadData3D 落地 SOP](p129_fused_img2col_loaddata3d.md)：完整实战记录见 `optimizations/evolution_strategies/discovered/disc_x18.md`。
+- [P130 Playbook: 1×1 Conv 翻转 GEMM 落地 SOP](p130_1x1conv_flipped_gemm.md)：完整实战记录见 `optimizations/evolution_strategies/discovered/disc_x19.md`。
+- [P131 Playbook: 权重 Repack LRU 缓存落地 SOP](p131_weight_repack_lru_cache.md)：纯 host 侧改动。
+- [P132 Playbook: 线性递归 chunk-scan 三阶段分解（块内预计算 / 块间状态扫描 / 输出投影）](p132_chunk_scan_three_stage_decomposition.md)：本 Playbook 指导子 agent 把无 softmax 的线性递归/SSM 算子从逐 token 串行递推改写…
+- [P133 Playbook: 块内预计算 AIC/AIV CV 流水（6-flag 定向握手）](p133_ssm_stage1_cv_pipeline.md)：本 Playbook 指导子 agent 把线性递归算子 Stage1 块内预计算从每级 SyncAll 改写为 AI…
+- [P134 Playbook: chunk-group 任务划分（group 间串行 + group 内多核并行）](p134_ssm_chunk_group_partitioning.md)：本 Playbook 指导子 agent 把线性递归算子的核分配从"全序列一次分核"改为 chunk-group 任务…
+- [P135 Playbook: delta-rule 矩阵求逆分治（对角向量前代 + 非对角 cube MM）](p135_delta_rule_inverse_divide_conquer.md)：本 Playbook 指导子 agent 把 delta-rule 算子的 C×C 矩阵求逆从整块串行改为对角前代 +…
+- [P136 Playbook: SSM 中间量 bf16 量化 + 状态 UB 常驻（head grouping）](p136_ssm_intermediate_bf16_quant.md)：本 Playbook 指导子 agent 把线性递归算子的中间量按 bf16 量化、状态 (Dv,Dk) UB 常驻…
+- [P137 Playbook: 稀疏 top-k Attention 的 workspace 紧凑化走 Cube](p137_sparse_topk_compact_gather_to_cube.md)：本 Playbook 为**强制流程**。
+- [P138 Playbook: host tiling L0 容量查询 + 自适应降维](p138_host_tiling_l0_capacity_guard.md)：本 Playbook 为**强制流程**。
+- [P139 Playbook: 多槽流水 workspace 全槽零初始化](p139_multi_slot_workspace_zero_init.md)：本 Playbook 为**强制流程**。
+- [P14 Playbook: CV 流水预发射实操流程](p14_cv_pipeline_preload.md)：P14 把 Cube+Vector 串行 `MM1 → Vec1 → MM2 → Vec2` 改造为 3 阶段交错流水…
+- [P140 Playbook: MLA（kvHeads=1）的 M-tile 放大到 qHeads](p140_mla_large_m_tile.md)：本 Playbook 为**强制流程**。
+- [P142 Playbook: Attention UB 常驻 O 累加器](p142_attention_ub_o_accumulator.md)：本 Playbook 为**强制流程**。
+- [P143 Playbook: Attention host 端 launch 合并 + per-shape tiling 缓存](p143_attention_host_launch_merge.md)：本 Playbook 为**强制流程**。
+- [P16 Playbook: Cost-Driven Core Partition](p16_cost_driven_core_partition.md)：本 Playbook 为**强制流程**。
+- [P17 Playbook: CV Parallel Block Sizing](p17_cv_parallel_block_sizing.md)：本 Playbook 为**强制流程**。
+- [P18 Playbook: L1 七缓冲常驻分区 (L1 7-Buffer Resident Partitioning)](p18_l1_7buf_resident_partition.md)：本 Playbook 为**强制流程**。
+- [P19 Playbook: 自定义多级 PingPong 双缓冲](p19_custom_pingpong_double_buffer.md)：本 Playbook 为**强制流程**。
+- [P2 Playbook: Adaptive Tiling 实操流程](p2_adaptive_tiling.md)：本 Playbook 为**强制流程**。
+- [P20 Playbook: 三缓冲轮转（BuffersPolicy3buff）](p20_triple_buffer_rotation.md)：本 Playbook 为**强制流程**。
+- [P21 Playbook: 二维矩阵缓冲策略 (Matrix2x2BufferPolicy)](p21_matrix2x2_buffer_policy.md)：本 Playbook 为**强制流程**。
+- [P22 Playbook: TQueBind 双向复用队列 (Bidirectional Queue Reuse)](p22_tquebind_bidirectional_reuse.md)：本 Playbook 为**强制流程**。
+- [P24 Playbook: ND↔NZ 格式转换搬运](p24_nd2nz_format_copy.md)：本 Playbook 为**强制流程**。
+- [P25 Playbook: DataCopyPad 带 Padding 的搬运](p25_datacopy_pad_alignment.md)：本 Playbook 为**强制流程**。
+- [P26 Playbook: Stride 搬运模式（转置与列提取）](p26_stride_fused_transpose.md)：本 Playbook 为**强制流程**。
+- [P28 Playbook: 自定义 HardEvent 生产者-消费者同步](p28_hardevent_producer_consumer.md)：本 Playbook 为**强制流程**。
+- [P29 Playbook: AIC-AIV CrossCore Sync](p29_crosscore_aic_aiv_sync.md)：本 Playbook 为**强制流程**。
+- [P3 Playbook: Small-D Multi-Row Merging (小D多行合并优化)](p3_small_d_optimization.md)：本 Playbook 为**强制流程**。
+- [P30 Playbook: PipeBarrier 密集插入的纯 Vector 同步](p30_dense_pipebarrier_vector.md)：本 Playbook 为**强制流程**。
+- [P32 Playbook: Scatter Block Update Stride 寻址](p32_scatter_block_stride.md)：本 Playbook 为**强制流程**。
+- [P33 Playbook: Gather 偏移表驱动提取](p33_gather_offset_table.md)：本 Playbook 为**强制流程**。
+- [P34 Playbook: Weight 常驻与预计算复用](p34_weight_load_once_reuse.md)：本 Playbook 为**强制流程**。
+- [P35 Playbook: TBuf 常驻中间累加器](p35_tbuf_resident_accumulator.md)：本 Playbook 为**强制流程**。
+- [P37 Playbook: 梯度累加器跨 batch 常驻](p37_grad_accumulator_cross_batch.md)：本 Playbook 为**强制流程**。
+- [P38 Playbook: Softmax 状态 Buffer 跨 S2 循环常驻](p38_softmax_state_resident.md)：本 Playbook 为**强制流程**。
+- [P4 Playbook: 多核负载均衡 (Multi-core Load Balancing)](p4_load_balance.md)：本 Playbook 为**强制流程**。
+- [P40 Playbook: Workspace 双缓冲中间结果常驻](p40_workspace_double_buffer.md)：本 Playbook 为**强制流程**。
+- [P41 Playbook: gamma/scale/offset 常驻 UB](p41_gamma_scale_resident.md)：本 Playbook 为**强制流程**。
+- [P43 Playbook: 反向梯度 4路PingPong 常驻与 Scatter-Add 延迟写回](p43_grad_pingpong_deferred_scatter.md)：本 Playbook 为**强制流程**。
+- [P44 Playbook: Transpose Buffer 常驻复用](p44_transpose_buffer_resident.md)：本 Playbook 为**强制流程**。
+- [P45 Playbook: 稀疏 Attention 离散块处理](p45_topk_index_cache_iterator.md)：本 Playbook 为**强制流程**。
+- [P46 Playbook: MatmulImpl 高阶矩阵乘 API](p46_matmulimpl_highlevel_api.md)：本 Playbook 为**强制流程**。
+- [P47 Playbook: 对角线块调度 (Diagonal Block Scheduling)](p47_diagonal_block_scheduling.md)：本 Playbook 为**强制流程**。
+- [P48 Playbook: 多量化模式编译期分发](p48_multi_quant_dispatch.md)：本 Playbook 为**强制流程**。
+- [P49 Playbook: 硬件加速反量化](p49_hw_dequantization.md)：本 Playbook 为**强制流程**。
+- [P5 Playbook: 流水线同步实操流程](p5_pipeline_sync.md)：P5 是把粗粒度 SyncAll / 隐式同步升级为**细粒度 HardEvent 同步**，从而消除流水空泡。
+- [P50 Playbook: SwiGLU 融合流水线](p50_swiglu_fusion.md)：本 Playbook 为**强制流程**。
+- [P51 Playbook: 动态 AIC/AIV 核配比](p51_dynamic_aic_aiv_ratio.md)：本 Playbook 为**强制流程**。
+- [P52 Playbook: L2 Cache Hint 优化](p52_l2_cache_hint.md)：本 Playbook 为**强制流程**。
+- [P53 Playbook: L1 Resident Reuse](p53_l1_resident_reuse.md)：本 Playbook 为**强制流程**。
+- [P54 Playbook: 头开销优化策略](p54_launch_overhead_optimization.md)：本 Playbook 为**强制流程**。
+- [P55 Playbook: BlockReduceMax 替代 DataCopy stride slice](p55_block_reduce_max_optimization.md)：P55 把"stride 模式 DataCopyPad 抽取元素"替换为"BlockReduceMax + 连续 Da…
+- [P56 Playbook: DataCopy UB2GM 合并输出](p56_datacopy_batch_output.md)：本 Playbook 为**强制流程**。
+- [P57 Playbook: FlashDecode G 分核归约](p57_flashdecode_g_partition.md)：本 Playbook 为**强制流程**。
+- [P58 Playbook: TND 负载均衡分核](p58_tnd_load_balance_partition.md)：本 Playbook 为**强制流程**。
+- [P59 Playbook: 输出 Transpose 融合](p59_output_transpose_fusion.md)：本 Playbook 为**强制流程**。
+- [P60 Playbook: KV NZ 格式优化](p60_kv_nz_format_optimization.md)：本 Playbook 为**强制流程**。
+- [P61 Playbook: L2 Cache 优化](p61_l2_cache_optimization.md)：本 Playbook 为**强制流程**。
+- [P63 Playbook: Iterate 异步接口](p63_iterate_async_interface.md)：本 Playbook 为**强制流程**。
+- [P64 Playbook: GM 地址冲突规避](p64_gm_address_conflict_avoidance.md)：本 Playbook 为**强制流程**。
+- [P65 Playbook: UB Bank 冲突规避](p65_ub_bank_conflict_avoidance.md)：本 Playbook 为**强制流程**。
+- [P66 Playbook: GM 地址 512B 对齐优化带宽](p66_gm_512b_alignment.md)：本 Playbook 为**强制流程**。
+- [P67 Playbook: Vector Counter 模式改造流程](p67_vector_counter_mode.md)：P67 把 Normal 模式下的"手算 repeatTimes + 主尾块分支"替换为 Counter 模式下的"总…
+- [P68 Playbook: 低延迟归约指令组合](p68_low_latency_reduction.md)：本 Playbook 为**强制流程**。
+- [P69 Playbook: UB 融合连续 Vector 计算](p69_ub_fused_vector_chain.md)：本 Playbook 为**强制流程**。
+- [P7 Playbook: 32B 对齐 + DataCopyPad 实操流程](p7_data_alignment.md)：本 Playbook 为**强制流程**。
+- [P70 Playbook: FixPipe Buffer 随路量化](p70_fp_buffer_inline_quant.md)：本 Playbook 为**强制流程**。
+- [P71 Playbook: Matmul IBShare L1 共享](p71_matmul_ibshare_l1.md)：本 Playbook 为**强制流程**。
+- [P72 Playbook: Matmul 多核切 K](p72_matmul_split_k.md)：本 Playbook 为**强制流程**。
+- [P73 Playbook: CV 并行 AIC:AIV 比例与多 Workspace 流水](p73_cv_parallel_aic_aiv_ratio.md)：本 Playbook 为**强制流程**。
+- [P74 Playbook: L2 Cache 选择性禁用](p74_selective_l2_cache_disable.md)：本 Playbook 为**强制流程**。
+- [P75 Playbook: Dual AIV M/S1 轴工作量分裂](p75_dual_aiv_workload_split.md)：本 Playbook 为**强制流程**。
+- [P76 Playbook: V_TEMPLATE KV 预合并 Workspace](p76_v_template_kv_premerge.md)：本 Playbook 为**强制流程**。
+- [P77 Playbook: L1 Chunk Iterator 稀疏块自适应聚合](p77_l1_chunk_iterator_sparse_aggregation.md)：本 Playbook 为**强制流程**。
+- [P78 Playbook: 片上缓存加速 Matmul](p78_onchip_cache_matmul_acceleration.md)：本 Playbook 为**强制流程**。
+- [P79 Playbook: Grad Cube2+Cube3 融合计算](p79_grad_cube23_fusion.md)：本 Playbook 为**强制流程**。
+- [P8 Playbook: UB Memory Partitioning (UB 内存分区管理)](p8_ub_memory_partitioning.md)：本 Playbook 为**强制流程**。
+- [P80 Playbook: Sink Token 流水线注入与 S2 块跳过](p80_sink_task_pipeline_injection.md)：本 Playbook 为**强制流程**。
+- [P81 Playbook: UB/TBuf 常驻 Buffer 复用](p81_resident_ub_tbuf_reuse.md)：本 Playbook 为**强制流程**。
+- [P83 Playbook: L1 常驻复用与多 Buffer 分区](p83_l1_resident_reuse_partition.md)：本 Playbook 为**强制流程**。
+- [P84 Playbook: Vector Compute Efficiency Patterns](p84_vector_compute_efficiency_patterns.md)：本 Playbook 为**强制流程**。
+- [P85 Playbook: On-Chip Buffer Zone Reuse](p85_on_chip_buffer_zone_reuse.md)：本 Playbook 为**强制流程**。
+- [P86 Playbook: Matmul 高阶 API 内部数据通路效率调优](p86_matmul_api_transport_efficiency_tun.md)：本 Playbook 为**强制流程**。
+- [P87 Playbook: Manual Mmad Pipeline Timing Control](p87_manual_mmad_pipeline_timing_control.md)：本 Playbook 为**强制流程**。
+- [P88 Playbook: Multi-Phase Compute Phase Decomposition](p88_multiphase_compute_phase_decomposit.md)：本 Playbook 为**强制流程**。
+- [P89 Playbook: UB 高阶 API 临时 Buffer 共享复用](p89_ub_api_temp_buffer_sharing.md)：本 Playbook 为**强制流程**。
+- [P9 Playbook: Deterministic Output via Workspace (确定性输出)](p9_deterministic_output.md)：本 Playbook 为**强制流程**。
+- [P90 Playbook: 条件性 PipeBarrier 基于矩阵规模](p90_conditional_pipebarrier.md)：本 Playbook 为**强制流程**。
+- [P91 Playbook: Softmax 梯度预计算独立阶段](p91_softmax_grad_precompute.md)：本 Playbook 为**强制流程**。
+- [P92 Playbook: Matmul 基本块计算访存比优化](p92_matmul_block_compute_ratio.md)：本 Playbook 为**强制流程**。
+- [P93 Playbook: Matmul K 轴错峰访问内存](p93_matmul_k_stagger_access.md)：本 Playbook 为**强制流程**。
+- [P94 Playbook: 标量归约向量化 (Scalar Reduction → Vector Reduce API)](p94_scalar_reduction_to_vector.md)：P94 把 kernel 中逐元素的标量归约循环（`for(i) sum += x[i]` / `for(i) if…
+- [P95 Playbook: 标量逐元素运算向量化 (Scalar Element-wise → Adds/Muls Vector Chain)](p95_scalar_elementwise_to_vector.md)：P95 把 kernel 中逐元素标量算术循环（`for(i) y[i] = f(x[i])`）替换为 AscendC…
+- [P96 Playbook: 硬件排序引擎替代标量排序/选择](p96_hardware_sort_replacement.md)：P96 把 kernel 中的标量排序（bubble sort、selection sort）或 top-k 选择算法…
+- [P97 Playbook: 零拷贝子张量切片 + 批量向量运算](p97_zero_copy_subtensor.md)：P97 用 `LocalTensor<T> view = tensor[offset]` 零拷贝切片替代逐元素标量 g…
+- [P98 Playbook: 混合标量/向量路径自适应调度](p98_hybrid_scalar_vector_dispatch.md)：P98 根据 per-tile workload 大小自动选择标量路径或向量路径，消除向量化在极小 workload…
+- [P99 Playbook: BroadCast + 批量向量运算替代逐行标量循环](p99_broadcast_batch_vector_ops.md)：P99 把小向量（如 `rstd[gRows]`）广播到大矩阵（`[gRows, D]`）后，用 1 条 `Mul`/…
