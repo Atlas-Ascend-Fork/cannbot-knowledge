@@ -34,7 +34,7 @@ aliases: ["EC-200"]
   ```
   A bare forward declaration (`struct X;`) is NOT sufficient where the header needs the complete type.
 - **Detection**: `unknown type name '<Op>TilingData'` pointing at an upstream `.h` line → the struct is defined too late; lift it into a header included before the offender.
-- **Evidence**: moe_init_routing_v2 (2026-08-10, Ascend310P3, CANN 9.0.0) Phase C iter 1 — `ext:moe_v2_init_routing_fullload.h:29 unknown type MoeInitRoutingV2TilingData`; fixed by moving tiling structs to `moe_init_routing_v2_tiling.h` included before the 220x headers. Failures-ledger: `iter 1 | compile | novel`.
+- **Evidence**: moe_init_routing_v2 (2026-08-10, Ascend310P3, CANN 9.0.0) Phase C iter 1 — 内部路径（不公开）moe_v2_init_routing_fullload.h:29 unknown type MoeInitRoutingV2TilingData`; fixed by moving tiling structs to `moe_init_routing_v2_tiling.h` included before the 220x headers. Failures-ledger: `iter 1 | compile | novel`.
 - **Cross-ref**: [`OL-77`](ol_77_gm_tiling_struct_cannot_be_copied_wholesale_must_s.md) (GM tiling struct field-by-field READ — kernel-side rule), [`OL-178`](ol_178_host_device_tiling_struct_layout_mismatch_from_mix.md) (host↔device tiling struct LAYOUT / `pragma pack`), [`EC-40`](ec_40_cube_tiling_host_pod_size_mismatch_tcubetiling_is.md) (cube tiling host POD size mismatch). This entry is the DEFINITION-ORDER / include-order rule, orthogonal to those. backend=ascendc.
 
 **孪生卡 ec-268 合并的独有内容**（ec-268-op-tilingdata-must-be-defined-before-any-header.md 已删除）：
@@ -44,3 +44,10 @@ aliases: ["EC-200"]
 > #include "moe_init_routing_v2_tiling.h" // before 220x headers
 
 > #include "op_kernel/moe_v2_init_routing_fullload.h" // references the struct
+
+## 适用场景
+
+- **工程形态**：报 `unknown type name '<Op>TilingData'` 说明 tiling 结构体定义太晚（在 .。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

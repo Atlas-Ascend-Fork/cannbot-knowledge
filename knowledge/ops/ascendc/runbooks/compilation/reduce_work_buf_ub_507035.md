@@ -6,8 +6,12 @@ tags: ["task.debugging", "topic.memory", "topic.compute.reduction"]
 status: stable
 sources: []
 created_at: '2026-08-18T15:55:48Z'
-updated_at: '2026-09-17T01:48:42Z'
+updated_at: '2026-10-10T00:00:00Z'
 platforms: ["950"]
+aliases:
+  - "InitBuffer 逐个累加字节 对照 UB 上限"
+  - "UB 预算超限 507035 kernel 启动后崩"
+  - "buffer 加多了 kernel 起不来"
 ---
 
 # Reduce work buf 额外占 UB 致 507035
@@ -126,3 +130,9 @@ __aicore__ inline void DoReduceMax()
 - 显式缓冲的最小安全尺寸公式未标定（本轨迹按 tile fp32 大小分配即够用）。
 - 坏实践：大 tile 场景沿用 4 参隐式分配写法（照抄小 tile 参考实现）；修复时"宁可加倍"地放大 tmpBuf——加倍直接挤爆 UB 预算，让原本正常的用例也崩溃（本轨迹实测回归，即本卡主体根因的又一实例）。
 - 4 参重载隐式 `PopStackBuffer` 的确切分配上限/失败机制未验证（未追到 runtime 实现层），建议最小复现标定崩溃的 tile 尺寸阈值。
+
+## 相关卡片
+
+- [PB-45 `TPipe::Reset()` 释放全局 `g_tpipeImpl` 事件池](pb_45_tpipe_reset_frees_the_global_g_tpipeimpl_event_poo.md)：同一方法（把 Init/InitBuffer 期的声明逐个累加，对照硬上限）作用在**事件 id**而非 UB 字节上；超限后**不报 507035 而是静默挂死**。症状是「加了一个 buffer 就卡死」时先读该卡，按本卡的 507035 思路查下去会查错方向。
+- [arch3510 事件池 QUE_MAX_EVENT=8 的事实锚点](../performance/tile_merged_dma_eliminate_mte2_issue_bound.md)：事件 id 侧的预算数字（每核每事件类型 8、每方向独立位图）只写在那张性能卡里；没有这个数就无法像本卡数 UB 字节一样数事件 id。
+- [TBuf Get 提前到搬运前致 kernel 间歇挂死](tbuf_get_before_copy_hangs_kernel.md)：同样是「改了 buffer 之后挂死」，但机理是 TPipe 时序而非预算耗尽；两者症状相同、处置相反，勿互相套用。

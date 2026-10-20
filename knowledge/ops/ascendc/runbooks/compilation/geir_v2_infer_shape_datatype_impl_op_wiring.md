@@ -22,7 +22,7 @@ platforms: ["950"]
 
 - 工程形态：aclnn 算子仓（ops-registry-invoke 流程）新算子/存量算子补 GEIR 图模式支持（V2 推理注册），保持 REG_OP/OP_DEF 冻结。
 - API 路径：`gert::InferShapeContext` / `gert::InferDataTypeContext`；`IMPL_OP(<Op>).InferShape(...).InferDataType(...)`（register/op_impl_registry.h，OpImplRegisterV2 通路）；OpDef `SetInferShape/SetInferDataType` 绑定；`graph/operator_reg.h` 的 REG_OP / TensorType / OP_END_FACTORY_REG；CMake `npu_op_library(cust_optiling TILING)` / `npu_op_library(cust_op_proto GRAPH)` / `npu_op_package_add`。
-- 验证过的平台与 CANN 版本：Ascend950（AddConfig("ascend950")）+ cann-9.0.0-beta.2；变体注册路径另在 Ascend950PR + CANN 9.2.0 验证（与 frontmatter `platforms`/`cann_versions` 一致）。
+- 验证过的平台与 CANN 版本：Ascend950（AddConfig("ascend950")）+ cann-9.0.0-beta.2；变体注册路径另在 Ascend950PR + CANN 9.2.0 验证（与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - 适用粒度（transfer_scope）：operator_family——多输出、输出 dtype 随首输入、含 Bool 属性控制可选输出维度的算子族（RNN/门控类融合反向最贴）；三件套变体适用于任何需要 V2 推理注册的自定义算子（换算子名即可复用）。
 - 路线优先级：recommended_fastpath（GEIR V2 接线的标准做法：双注册 + 按索引读属性 + 双目标编译；框架符号不可用时用自有回调三件套变体）。
 - 明确不适用/未验证场景：负向用例通路（本 trace 未跑到负向套件——首轮精度失败即退出，`expect_error` 类 tiling 拒收路径未验证；变体验收含 reject 1/1 但仅覆盖非法 dtype 一类）；动态 shape 套件（-d=true）与 binary 套件未完整执行——未验证场景；单输入单输出简单算子用本配方会冗余但无害；V1（IMPLEMT_COMMON_INFERFUNC）路径未启用；复杂 dtype 推导（输出 dtype 不等于某输入 dtype）需扩展回调，本配方未覆盖。

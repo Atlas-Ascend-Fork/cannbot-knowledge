@@ -6,7 +6,7 @@ tags: [task.debugging, topic.compilation]
 status: stable
 sources: []
 created_at: '2026-09-17T03:25:37Z'
-updated_at: '2026-09-17T03:25:37Z'
+updated_at: '2026-09-26T19:20:00Z'
 platforms: ["950"]
 ---
 
@@ -52,6 +52,34 @@ RuntimeError: Kernel Compilation Error: OpType <Op> Kernel File ...!
 - 适用粒度：platform_wide——`template` 关键字规则是 C++ 语言规则（全平台通用）；构建掩盖行为绑定该工程构建链。
 - 路线优先级：recommended_fastpath。
 - 明确不适用 / 未验证场景：非模板上下文中的 `ReinterpretCast`（不需要 template 关键字）；host 侧代码（g++ 编译，报错行为不同）。
+
+### 第二个成员的独立佐证（2026-09-26），并把本卡捆绑的两个机制分开
+
+本卡的 `platform_wide` 判断（`template` 关键字是 C++ 语言规则）由一个**不同模板类的不同成员**独立
+佐证：`MatmulImpl<AT, BT, CT, BIAS, MM_CFG>` 的实例上调用 `mm.IterateAll<true>(...)` 同样被拒，
+报文 `error: missing 'template' keyword prior to dependent template name`，改成
+`mm.template IterateAll<true>(...)` 后通过。环境：`Ascend950DT_9582` / CANN 9.1.0 / bisheng，
+`port_a3` 模式，run `3a2afc29-151c-4b91-90df-5f3ce7313dc3`，3-3 `MatmulBothTrans`。
+所以规则不限于 `GlobalTensor::ReinterpretCast`，也不限于 `.h` 头文件里的位模式读写路径。
+
+**更有用的一点是这个实例把本卡捆绑的两件事分开了**：该次编译**没有**出现"增量构建掩盖编译失败"
+——错误在首次构建即刻暴露、行号直指调用点，四轮空转的现象没有发生。也就是说本卡记录的两个机制
+是**可分离**的：
+
+- `template` 关键字缺失 = C++ 语言规则，平台无关、构建链无关；**只要编译器真的编到这段代码，就必然
+  立即报错**（这个限定是必要的，见下）；
+- "报 `Build completed successfully!` 却沿用陈旧 `.o`" = **该工程增量构建链的属性**，与前者无因果
+  关系，只是恰好在原始会话里同时出现并放大了诊断成本。
+
+**一处必要的限定（非作者评审指出；我原先写成了无条件的「总是立即报错」）**：两个机制**可区分**，但
+方向不对称——**陈旧产物掩盖能压制语法报错**。增量链若根本没重编那个 TU，编译器就没编到那段代码，
+语法错误自然不出现；这正是原始会话空转四轮的机制。准确说法：语法规则在**编译到该代码时**必然立即
+报错，而掩盖机制能让「编译到」这件事不发生。二者可以独立出现（本次实例只命中前者），但**不能**由
+「没看到语法报错」推出「没有语法错误」。
+
+对读者的操作含义：遇到 `dependent template name` 报错时**不要**先去查产物时间戳——直接加
+`template` 关键字。反过来，「改了代码但行为不变」——**包括预期中的报错没有出现**——才是核对时间戳 /
+`--make_clean` 的触发条件。本次为该分离提供了一个只命中前者、不命中后者的实例。
 
 ## 根因
 

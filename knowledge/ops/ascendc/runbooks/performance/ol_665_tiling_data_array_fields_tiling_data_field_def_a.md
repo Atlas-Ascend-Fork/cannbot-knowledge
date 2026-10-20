@@ -25,7 +25,14 @@ aliases: ["OL-665", "TILING_DATA_FIELD_DEF_ARR", get_field, set_field]
   tilingData.set_freq(freqArr);                              // copies all 256 entries
   // kernel (op_kernel/<op>.h)
   for (int64_t k = 0; k < half; ++k) freq.SetValue(k, tiling->freq[k]);   // plain array read, NOT get_freq()
-  Anchor: `target/ascendc/examples/fp32_sinusoidal_embedding_1d__opsmath/snippets.md` (declaration) + `target/ascendc/examples/fp32_sinusoidal_embedding_1d__opsmath/snippets.md` (fill + `set_freq`), `target/ascendc/examples/fp32_sinusoidal_embedding_1d__opsmath/snippets.md` (kernel read). The codegen that emits the C++ array field is the opc compiler's `ext:get_op_tiling.py:445`.
+  Anchor: `target/ascendc/examples/fp32_sinusoidal_embedding_1d__opsmath/snippets.md` (declaration) + `target/ascendc/examples/fp32_sinusoidal_embedding_1d__opsmath/snippets.md` (fill + `set_freq`), `target/ascendc/examples/fp32_sinusoidal_embedding_1d__opsmath/snippets.md` (kernel read). The codegen that emits the C++ array field is the opc compiler's 内部路径（不公开）get_op_tiling.py:445.
 - **Evidence**: fp32_sinusoidal_embedding_1d 310p (2026-08-27): first instance — the kernel-side read as `tiling->freq[k]` (array) rather than a `get_freq()` accessor was the load-bearing detail for carrying the host-precomputed fp64→fp32 freq table into the kernel.
 - **Other instances (predicted)**: any kernel carrying a host-precomputed table (freq/scale/bias/offset/lookup tables, per-dim constants) through `TILING_DATA_FIELD_DEF_ARR` — the getter-vs-array distinction and the full-length-copy zero-init rule apply to every ARR field regardless of dtype or content.
 - **Cross-ref**: P-P128 (the technique this mechanism enables — host-precompute dim-only fp64 tables and carry them via the tiling array), OL-657 (the numerics rule that motivates precomputing on the host in double). backend=ascendc.
+
+## 适用场景
+
+- **工程形态**：TILING_DATA_FIELD_DEF_ARR 数组字段在 kernel 侧生成的是数组成员直下标（不是 get/set 访问器）。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

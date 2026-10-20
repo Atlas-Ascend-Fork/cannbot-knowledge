@@ -1,24 +1,33 @@
 ---
 type: Runbook
-title: "When the active reference is non-deterministic, look for a docstring-embedded Python decomposed reference and use IT as math ground truth"
-description: "When the active reference is non-deterministic, look for a docstring-embedded Python decomposed reference and use IT as math ground truth"
+title: "Diagnose a non-deterministic active reference and propose decomposed truth under explicit acceptance authority"
+description: "Diagnose a non-deterministic active reference and propose decomposed truth under explicit acceptance authority"
 tags: [task.debugging, topic.precision, topic.implementation.pipeline, topic.programming_model.execution_unit.cube, topic.data_movement, topic.performance.analysis]
-status: stable
-sources:
-  - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/field-notes/precision/ol-89-when-the-active-reference-is-non-deterministic-loo.md
-    role: primary
+status: draft
+sources: []
 created_at: "2026-08-30T16:00:00Z"
-updated_at: "2026-09-16T07:35:48Z"
+updated_at: "2026-10-15T00:00:00Z"
 platforms: ["950"]
 aliases: ["OL-89"]
 ---
 
-# When the active reference is non-deterministic, look for a docstring-embedded Python decomposed reference and use IT as math ground truth
+> **来源说明（2026-10-15）**：本卡内容来自车队私有实测/推理，暂无可公开复核的原始出处；按社区评审要求降为 draft，待补可复核来源后回升。
+# Diagnose a non-deterministic active reference and propose decomposed truth under explicit acceptance authority
 
 > 原 OKF v1 卡号：**OL-89**。
 > 现象分类：precision_issue；观测置信度：single_run（单次观测）。
 > 触发信号：
 > - ANY of these
+
+## 冻结验收合同与重复性诊断边界
+
+重复运行同一原 forward、保存输入、参数 state、dtype 与 grader，记录所有输出和差异；如果输出不稳定，结果是一个**带具体病例/环境的诊断局限**。不能把 returned 的病例数当稳定 oracle，也不能据一次漂移宣告所有 torch_npu/CPU、全部 dtype 或整个算子不可解。CPU provider、随机状态和算法选择只是待检机制；未证明根因时不能写成 race/OOB。
+
+冻结输入/输出合同下，不裁输出、不零填参考、不换 oracle、不放宽阈值、不重新生成索引。替代 Python 分解、唯一索引生成或新的 reference 可作为分开的诊断/未应用提案；只有当前验收 authority 明确采用新合同时才能产生新资格链，旧数值账和来源保持。参见[替代 reference 权限](ol_89_when_the_active_reference_is_non_deterministic_loo.md)。
+
+后续观察边界：一次原 CPU grid_sample 固定50返回后，在5病例×3次未改 forward 复跑中，病例37/49的原首次输出→第1次复跑、第1次→第2次复跑均不通过原 grader，第2次→第3次复跑通过；其余3个被测病例0/3/5的这3次相邻比较均通过；另一次原 CPU roi_pooling 六次定向复跑在病例43/47不一致。两者没有新候选、编译或 NPU/P/Q，不能推断通用数值天花板或已证 int16 OOB。保留其原 dtype、输入及所有重复结果。没有测得冷消费的迭代节省。
+
+该5病例重复比较的团队私有保留记录不能匿名读取；已认证 Wiki clone 中以提交 `fc8acb1b2a11d55f4c6837a4fab26071fd68de55`、路径 `projects/torch-to-a5-mfu-56/evidence/POSTMERGE_KNOWLEDGE_STOP_20261010T0355Z/CPU_REPEAT_ORIGINAL_GRADER_COMPARISON.json`、blob `81a3e082a33f4f7be84bf38ff4d5470b715ac153`、SHA256 `39488cdb8ed5051d0038ae7f232edd7c8997094f057c44780d8df45187a23b5d` 复核（`git show <commit>:<path>`、`git rev-parse <commit>:<path>`、`sha256sum`）。0为原首次50输出，1..3为独立复跑；这是既有证据勘误，没有新运行，也不建立稳定 oracle。上游公开晋升前须替换该私有来源或改写此实测范围。
 
 ## 适用场景
 
@@ -44,10 +53,10 @@ aliases: ["OL-89"]
   ```
   If output lists a class docstring containing `def forward(...)` → there's a Python decomposed reference. Common pattern in NPUKernelBench: the Model class docstring shows the "PyTorch native implementation" while the active forward calls torch_npu.
 
-- **Action — use it**:
+- **Action — use it as a separate diagnostic; qualification needs current authority**:
   1. Extract the docstring's Python `forward()` body into a `ModelPyRef` class (probe template at `output/npukernelbench/src/kernels/12_KvRmsnormRopeCache/probes/python_ref_vs_cand.py`)
-  2. Run `cand_kernel(inputs)` and `pyref_model(inputs)` on the failing cases, compare with `atol=0.01` (tolerate fp32-order residual; the docstring ref runs in different fp order than the kernel)
-  3. If 100% PASS against pyref: the kernel is mathematically correct; the failures vs CANN ref are 100% CANN's bug (non-det / race / etc.)
+  2. Run `cand_kernel(inputs)` and `pyref_model(inputs)` on the failing cases, recording both the original grader and a separately named diagnostic comparator. The historical `atol=0.01` is not authority to alter a frozen threshold.
+  3. A pyref PASS establishes only that diagnostic comparison. A difference from the active reference alone does not prove all failures are CANN bugs, or establish the candidate's qualification under the original contract.
   4. Document this in archive as `python_ref_validation.md` (template at op#12)
   5. Update REPORT.md row to show DUAL precision data: "vs CANN ref X/N + vs Python math ground truth Y/N atol=0.01"
 
@@ -60,7 +69,7 @@ aliases: ["OL-89"]
   Require an audited CPU forward specification and derive every requested gradient from it. If no CPU truth exists, request one and keep the result scope-incomplete.
 
 - **Action — opgen mode with no explicit Python reference**:
-  Worker should refuse to ship if there's no math truth source. Either:
+  Worker should refuse to ship if there's no math truth source. Preserve the original outcome. As a separate proposal, either:
   - Implement a small Python decomposition manually (orchestrator may write `<op>_pyref.py` based on the formula in the source's docstring)
   - Request user provide one (escalate)
   - Document as scope-incomplete and DO NOT claim PASS based on a single-shot ref

@@ -8,8 +8,8 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p76-aligned-base-scratch-via-duplicate-0-scalar-setv.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
-platforms: []
+updated_at: "2026-09-19T13:26:04Z"
+platforms: ["950"]
 ---
 
 # Aligned-base scratch via `Duplicate(0) + scalar SetValue` for inline VEC reductions with unaligned index offsets
@@ -106,3 +106,9 @@ The scalar-fill is sequential per-AIV; `Duplicate` is deterministic; `Axpy` is s
 - **Axpy bit-FMA semantics** (catalog): the inner accumulation is single-round FMA bit-matching `fmaf`, so accuracy is `≤ 1 ULP per accumulation step` regardless of `Lo_pad` vs `Lo`.
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/platform_compat.md（P-P76，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）同号模式行复核：与 v1 卡同源同题，正文无新增技术内容；补录索引行元数据——domain: `platform_compat`；trigger: When an inline VEC reduction (`Axpy(acc, src[off], scalar, len)` or analogous) has a runtime index offset that's not 32B-aligned (e.g. conv `op_start = max(0, ceil_div(-base, stride))` is 1/2/3 for typical kernel_size+padding combos), the natural offset-Axpy formulation triggers UB-alignment crash error 340. Workaround: build an aligned-base tmp scratch by `Duplicate(tmp, T(0), len_pad)` then a scalar-loop `tmp.SetValue(op, src.GetValue(op*stride + base))` for the valid range, then `Axpy(acc, tmp, scalar, len_pad)` with all-aligned bases. Cost: ~`len_pad` scalar SetValues per (ic, kp) iteration — negligible on AIV vs the alignment-crash alternative. Combine with EC-23 output over-allocation pattern (pybind allocates `[B, *, len_pad]` instead of `[B, *, len]`, narrows on return). Validated op#6 ConvStandard1d (2026-04-29) — direct-VEC 1D conv via per-(batch, out_ch) AIV core. Likely-applicable to any inline reduction where the per-iter src offset is data-dependent and can be unaligned: 1D/2D/3D conv, 1D/2D pooling with stride>1, dilated patches.；优先级: HIGH。
+
+> 索引行原文：`| P-P76 | **Aligned-base scratch via `Duplicate(0) + scalar SetValue` for inline VEC reductions with unaligned index offsets** | platform_compat | When an inline VEC reduction (`Axpy(acc, src[off], scalar, len)` or analogous) has a runtime index offset that's not 32B-aligned (e.g. conv `op_start = max(0, ceil_div(-base, stride))` is 1/2/3 for typical kernel_size+padding combos), the natural offset-Axpy formulation triggers UB-alignment crash error 340. Workaround: build an **aligned-base tmp scratch** by `Duplicate(tmp, T(0), len_pad)` then a scalar-loop `tmp.SetValue(op, src.GetValue(op*stride + base))` for the valid range, then `Axpy(acc, tmp, scalar, len_pad)` with all-aligned bases. Cost: ~`len_pad` scalar SetValues per (ic, kp) iteration — negligible on AIV vs the alignment-crash alternative. Combine with EC-23 output over-allocation pattern (pybind allocates `[B, *, len_pad]` instead of `[B, *, len]`, narrows on return). Validated op#6 ConvStandard1d (2026-04-29) — direct-VEC 1D conv via per-(batch, out_ch) AIV core. Likely-applicable to any inline reduction where the per-iter src offset is data-dependent and can be unaligned: 1D/2D/3D conv, 1D/2D pooling with stride>1, dilated patches. | **HIGH** |`

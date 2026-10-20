@@ -1,16 +1,21 @@
 ---
 type: Runbook
 title: "`TPipe::Reset()` frees the GLOBAL `g_tpipeImpl` event pool + buffer cursor on arch35 — a multi-stage MIX kernel that calls `pipe_->Reset()` between stages CANNOT carry persistent cross-call sync state across the Reset boundary [V351/A5, mixed-mode-sync, TPipe-Reset, multi-stage]"
-description: "applies_to: soc=Ascend950PR (V351/A5); cann=9.1.T500; bisheng=n/a; arch=arch35; op_class=multi_stage_mix_aic_aiv; macro=KERNEL_TYPE_MIX_AIC_1_2"
+description: "applies_to: soc=Ascend950PR (V351/A5); cann=9.1.T500; bisheng=n/a; arch=arch35; op_class=multi_stage_mix_aic_aiv; macro=KERNEL_TYPE_MIX_AIC_1_2; 症状：在 Init/InitBuffer 期申请 event id，超出事件池后编译不报错、kernel 直接静默挂死（加了一个 buffer 就卡死）。注意标题里的 `TPipe::Reset()` 是触发器之一，不是前提：不调用 Reset 的 kernel 同样会因 Init 期事件 id 超额而静默挂死（容量面见相关卡片），读到本卡不要因为「我没调 Reset」就排除它。"
 tags: [task.debugging, topic.precision, topic.implementation.synchronization, topic.implementation.pipeline, topic.programming_model.execution_unit.cube, topic.programming_model.execution_unit.vector]
 status: stable
 sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/field-notes/build/pb-45-tpipe-reset-frees-the-global-g-tpipeimpl-event-poo.md
     role: primary
 created_at: "2026-07-09T16:00:00Z"
-updated_at: "2026-07-09T16:00:00Z"
+updated_at: "2026-10-10T00:00:00Z"
 platforms: ["950"]
-aliases: ["PB-45", "g_tpipeImpl"]
+aliases:
+  - "PB-45"
+  - "g_tpipeImpl"
+  - "Buffer::Init 申请 event id 静默挂死"
+  - "事件池耗尽 kernel 卡死 编译不报错"
+  - "silent hang at Init buffer event pool exhausted"
 ---
 
 # `TPipe::Reset()` frees the GLOBAL `g_tpipeImpl` event pool + buffer cursor on arch35 — a multi-stage MIX kernel that calls `pipe_->Reset()` between stages CANNOT carry persistent cross-call sync state across the Reset boundary [V351/A5, mixed-mode-sync, TPipe-Reset, multi-stage]
@@ -40,3 +45,9 @@ aliases: ["PB-45", "g_tpipeImpl"]
 - **Cross-reference**: PB-35 (the **V220** sibling — `event_t(0)` cube-internal sync collides with the cross-core flag chain; its "use IDs ≥4" fix was falsified on V220 and its V351 note covers only the **cross-core** handshake. PB-45 is the **V351 intra-AIC** counterpart and adds the *Reset/global-pool* root cause PB-35 lacks). PB-44 (the AIV_ONLY 107000 — its cross-ref already points here as the distinct `507015` mode). PB-34 (MatmulImpl + manual CrossCore deadlock, V220-only — confirmed NOT reproduced on A5: GDN light-port runs 122/122). OL-223 (the Reset-safe fix), OL-220 (the sibling GDN light-port build recipe), OL-197 (A5-valid 2D fractal load), OL-206 (prefer managed cross-core abstraction), cross_core_sync.md §4 (the cross-core-direction V351 RUNNABLE handshake).
 
 <!-- 迁移自 porter kb/target/ascendc/（PB-45，convert_family_to_okf.py，M1，整档忠实搬运）。confidence/severity/reproduce_count 未升格。 -->
+
+## 相关卡片
+
+- [事件 id 预算 QUE_MAX_EVENT=8：每 HardEvent 池、每核，超额不报错直接挂死](../runtime/que_max_event_budget_exhaustion_hangs.md)：本卡讲**生命周期**面（Reset 把池整个释放），那张卡讲**容量**面——池深 8、一个 `Buffer<>::Init()` 吃两个 id、池按 HardEvent 而非 BufferType 划分（L0A/L0B/C2 共用），以及超额后返回越界 id=8 的确切机制与改用 `AllocBuffer`+`GetTensor` 的修法。漏掉它就只能定性说"池被释放"，数不出第 9 个 `Buffer::Init()` 为什么必然越界，也会错过"没调 Reset 照样挂死"这一半。
+- [Reduce work buf 额外占 UB 致 507035](reduce_work_buf_ub_507035.md)：同族的**字节**预算形态与可直接套用的判别方法（逐 `InitBuffer` 累加对照上限）；该卡是症状检索的常见落点，但它的 507035 结论不适用于本卡的挂死。
+- [TBuf Get 提前到搬运前致 kernel 间歇挂死](tbuf_get_before_copy_hangs_kernel.md)：同症状、异机理（TPipe 时序）的排除项。

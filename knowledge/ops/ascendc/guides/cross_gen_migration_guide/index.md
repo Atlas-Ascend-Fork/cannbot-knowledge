@@ -13,3 +13,6 @@
 - [L4：SIMT 优化（多线程替代 Scatter/Gather）详细指南](l4_simt_optimization.md)：标为 L4 档的 SIMT 优化指南（内容与 L3 档同）：用最多 2048 线程直接访问 GM 取代 Scatter/Gather 的 UB 中转四步；含 __simt_vf__ + LAUNCH_BOUND 声明、线程索引与启动、Simt::AtomicAdd 与 __local_mem__ 读写 UB。
 - [L5：Register-based 重写（MicroAPI）详细指南](l5_register_based.md)：标为 L5 档的 Register-based MicroAPI 重写指南（内容与 L2 档同）：950 Vector Core 由 MemBase 转 RegBase，计算路径全部改写。含 MicroAPI 命名空间、寄存器向量长度、CastTrait 四要素与 SatMode 规则、溢出模式控制、量化 Pack 与非对齐 Store。
 - [ops-nn arch35 Artifact Layout](ops_nn_a5_artifact_layout.md)：arch22→arch35 移植后 ops-nn 仓每个算子必须产出的文件与 schema：op_host 的 _def.cpp（ASCEND950 OpAICoreConfig）、op_kernel 的 _apt.cpp 入口体、config/ascend950/ 下 binary.json 与 simplified_key.ini。
+
+- [Porting CUDA Benchmark Suites (BabelStream / STREAM / HPL-AI style)](porting_cuda_benchmark_suites.md)：CUDA benchmark 套件移植方法论：host C++ 按语义重写为 PyTorch harness（不逐字移植）、每个 kernel 独立 op-gen、真值来自 A100 CUDA 运行（含 nvcc 标志与 FMA 分组对齐）、case_gen 形状/分布覆盖矩阵强制。
+- [A3→A5 移植先看驻留量，不是先看算法](a3_to_a5_ub_residency_is_the_port_decision.md)：A3 内核常把整块数据设为 UB 常驻；A5 UB 仅约 248 KB，逐行移植会在大 case 上直接不可表示。判据与改法。

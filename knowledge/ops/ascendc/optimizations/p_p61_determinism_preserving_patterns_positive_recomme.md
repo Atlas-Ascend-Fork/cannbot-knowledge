@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p61-determinism-preserving-patterns-positive-recomme.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-09-19T13:26:04Z"
 platforms: ["950"]
 ---
 
@@ -197,3 +197,9 @@ Analyzer's task:
 - recurrent_gated_delta_rule kw-1 (2026-06-18, A5 Ascend950PR_957b / arch35, CANN 9.1.T500): **paged-state linear-attention / SSM recurrent decode is deterministic by construction** — each `(batch, head)` chain is processed end-to-end by one core; `final_state` slots are owned 1:1 by chains (`ssm_state_indices` select disjoint state blocks); no `SetAtomicAdd`. 30/30 bit-identical across a double-run. Extends P-P61.2 (single-core per-row dispatch) + P-P61.3 (pure-VEC, no atomics) to the paged-state recurrent-decode shape: per-chain end-to-end ownership + disjoint output slots is the determinism-by-construction invariant for linear-attention/SSM decode — no determinism analysis needed.
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/determinism.md（P-P61，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）同号模式行复核：与 v1 卡同源同题，正文无新增技术内容；补录索引行元数据——domain: `determinism`；trigger: Covers 3 groups: (a) 6 det-preserving positive patterns (hw Sort+canonical tie / single-core per-row / pure VEC no-atomic / queue depth=1 for observable outputs / explicit secondary sort / det reduction tree); (b) 5 det-breaking anti-patterns (concurrent atomicAdd / unordered multi-core merge / uninitialized scratch / data-dependent reduction order / missing pipe barrier); (c) orchestrator Phase O1.5 op-level determinism policy classification (required/best_effort/n/a, per reference semantics). Propagates as `DET_POLICY` in all agent briefs. Loaded by worker/probe/optimizer/researcher when policy != n/a.；优先级: CRITICAL。
+
+> 索引行原文：`| P-P61 | **Kernel runtime determinism — preserving patterns and anti-patterns** | determinism | Covers 3 groups: (a) 6 det-preserving positive patterns (hw Sort+canonical tie / single-core per-row / pure VEC no-atomic / queue depth=1 for observable outputs / explicit secondary sort / det reduction tree); (b) 5 det-breaking anti-patterns (concurrent atomicAdd / unordered multi-core merge / uninitialized scratch / data-dependent reduction order / missing pipe barrier); (c) orchestrator Phase O1.5 op-level determinism policy classification (required/best_effort/n/a, per reference semantics). Propagates as `DET_POLICY` in all agent briefs. Loaded by worker/probe/optimizer/researcher when policy != n/a. | **CRITICAL** |`

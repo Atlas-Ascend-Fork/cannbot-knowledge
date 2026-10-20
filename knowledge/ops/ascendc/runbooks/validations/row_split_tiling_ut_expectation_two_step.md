@@ -49,7 +49,7 @@ M=2 coreNum=32
 
 - 工程形态：算子仓开发（op_host TilingFunc）的 tiling UT 编写/评审；按行（M 维）切分的多核 tiling。
 - API 路径：host 侧 TilingFunc 的 blockDim/rowsPerCore/tailRows 计算；UT 侧 gert::TilingContextPara + ExecuteTestCase 期望值推导。
-- 验证过的平台与 CANN 版本：Ascend950PR（DAV_3510 / arch35，coreNum=32），CANN 9.1.0（与 frontmatter `platforms`/`cann_versions` 一致）。
+- 验证过的平台与 CANN 版本：Ascend950PR（DAV_3510 / arch35，coreNum=32），CANN 9.1.0（与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - 适用粒度：operator_family——任何按行切分的行并行 tiling 实现，不限于本算子。
 - 路线优先级：recommended_fastpath。
 - 明确不适用 / 未验证场景：按列切分（ColSplit）/混合切分的 blockDim 语义；coreNum 与 M 关系以外的 tiling 字段（NAlign/chunk 等）推导；其他核数的具体数值表需按公式重算。

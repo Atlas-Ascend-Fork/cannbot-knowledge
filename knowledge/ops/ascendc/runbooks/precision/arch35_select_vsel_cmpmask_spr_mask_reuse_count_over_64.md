@@ -23,7 +23,7 @@ platforms: ["950"]
 
 ## 适用场景
 
-- **工程形态**：kernel 实现（op_kernel/arch35/*.h），向量分支选择 `AscendC::Select` API。
+- **工程形态**：arch35 Select 模式0 VSEL_CMPMASK_SPR 的 selMask 有效位限 256/sizeof(T)=64。
 - **API 路径**：`AscendC::Select<T, uint8_t>(dst, selMask, src0, src1, SELMODE, count)`；arch35 上 `Select.md` 声明"arch35 仅支持 VSEL_CMPMASK_SPR 模式"，但实测模式0有 count>64 限制，模式2（VSEL_TENSOR_TENSOR_MODE）可用。
 - **验证平台与版本**：Ascend950PR（arch35/DAV_3510），CANN 9.0.0-beta.2。
 - **适用粒度**：`operator_family`（所有 arch35 上用 `Select` 做逐元素分支、count 可能 >64 的 kernel）。

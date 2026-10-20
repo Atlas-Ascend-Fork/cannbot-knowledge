@@ -34,7 +34,7 @@ Summary: 2 / 27 PASSED
 
 - 工程形态：AscendC 自定义算子 op_host 侧 tiling 的测试先行单元测试（ops-registry-invoke 类工程：先写 UT + 链接期 stub，后写真实实现；UT 为宿主侧纯函数单测，随 `./build.sh <op>_package` 一起编出）。
 - API 路径：自建 UT 可执行文件 + CMake 宏切换（`target_compile_definitions(<UT> PRIVATE <OP>_XXX_IMPLEMENTED)`）；被测函数为返回 bool/整型的纯 host tiling 函数。
-- 验证过的平台与 CANN 版本：Ascend950PR（包目标平台 ascend950，宿主侧执行），CANN 9.1.0（与 frontmatter `platforms`/`cann_versions` 一致）。
+- 验证过的平台与 CANN 版本：Ascend950PR（包目标平台 ascend950，宿主侧执行），CANN 9.1.0（与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - 适用粒度：operator_family——任何采用"stub + 宏切换"测试先行模式的 host 侧 tiling UT 都适用，与具体算子无关。
 - 路线优先级：recommended_fastpath（测试先行工作流正确性基线的必要保障，无额外成本）。
 - 明确不适用 / 未验证场景：返回类型只有单一取值域外的函数（如恒返回 -1 哨兵的整型函数，天然不会撞期望）；非测试先行（实现已存在）的 UT；设备侧 kernel 测试。

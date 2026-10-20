@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/fa-cross-core-sync-workspacequeue.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-09-19T14:06:00Z"
 platforms: [a3, "950"]
 ---
 
@@ -360,3 +360,14 @@ path clean, user-Mmad+hand-rolled-flags path deadlocks); §1 above (pipe-not-
 templatable literal-PIPE rule, which (C) follows).
 
 <!-- 迁移自 porter kb/target/ascendc/fa_class/cross_core_sync.md(整档忠实搬运,convert_docs_to_okf.py)。跨 op 参考/方法论知识,非机械家族。 -->
+
+## 更新 (2026-09-19)
+
+PR36 全量增量复核（批次 8）：语料候选卡 `ops/ascendc/guides/runbooks__field_notes__inferred__cand_fa_cv_1_ring_buffer_workspace_with_workspacequeue.md`（CAND-FA-CV-1，预演判 NEW）与本卡同 lesson（WorkspaceQueue 环形缓冲 + CrossCore flag 逐 tile 同步——本卡 §1 已含 cv-agent 同族完整实现与同步契约），不再单独建卡；补录该候选相对本卡的增量信息：
+
+- 触发条件（applies_to）：soc=Ascend910_9382 (V220)；cann=9.0.0；op_class=mixed_aic_aiv_fused_kernel_with_kv_iteration_and_prelaunch_overlap——混合 AIC/AIV 融合 kernel 有 ≥2 个阶段在 cube 与 vector 间交换 GM 中间结果，且阶段间需要 overlap（prelaunch 下一阶段）。
+- 环形深度规则：ring buffer depth = prelaunch + 1（如 prelaunch=2 → 3 槽位）。
+- 跨核 flag ID 配方：槽位索引化 flag（C→V 用 0x8+slot，V→C 用 0x10+slot）。
+- 检测规则：grep kernel .h 中 `CrossCoreSetFlag` + `DataCopy.*workspace`；flag ID 为手算且 workspace_s/p/o 裸地址可寻址（无 queue 抽象）→ 缺 WorkspaceQueue pattern。
+- a5_ops 差距记录：a5_ops FA（PR #146）用裸 `CrossCoreSetFlag<0x2, PIPE_FIX>(0x8+slot)` + 手工 GM 偏移，无 WorkspaceQueue 抽象与槽位生命周期管理。
+- 证据与边界：cv-agent `flash_attention_cube.h:32-34` + `workspace_queue.h` 完整实现；stock FA 16/16 PASS（A3/V220，独立原型 F10.A.1，2026-05-25）；V351/A5、a5_ops 61 用例 fixture 与对 CANN 基线 perf 未验证。主来源：私有沉淀仓@cb9c78c8 `src/skills/references/okf/runbooks/field-notes/inferred/cand-fa-cv-1-ring-buffer-workspace-with-workspacequeue.md`。

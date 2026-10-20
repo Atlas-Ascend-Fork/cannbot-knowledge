@@ -17,7 +17,7 @@ aliases: ["EC-297"]
 `verified_on: soc=Ascend310P3; cann=9.0.0 (27_MultiMaskAttentionAggregation kw-1 respawn, 2026-09-04)`
 `unverified_on: soc=Ascend950PR (351x) / Ascend910 (220x) — the clamp bound is lanes-per-repeat × blocks-per-repeat and was not measured on other SoCs`
 - **Symptom**: silent partial computation — no trap, no compile error. A masked/broadcast binary call such as `Mul(dst, src0, src1, calCount, repeatTime, BinaryRepeatParams(...))` with `calCount > 64` (fp32) computes only the FIRST 64 elements of every repeat's window. Downstream reductions then see a prefix of each row: an all-ones-mask probe returned `num[v] == sum_{n<64} p[v][n]` EXACTLY (prefixK=64 on every row). Shapes with N ≤ 64 PASS; every N > 64 case fails with a uniform-scale signature (a fraction N/64 of the masked mass missing) or, after per-shape amplification, garbage output.
-- **Root cause**: in the Level-0 MASK-COUNT overload `Op(dst, src0, src1, uint64 mask, uint8 repeatTime, BinaryRepeatParams)` (overload identity per `ext:kernel_operator_vec_binary_intf_impl.h`) the 4th argument is the PER-REPEAT element count, NOT a total. On dav-m200 a `vmul` repeat spans 8 blocks × 8 fp32 lanes = 64 elements; a count above that lane budget is silently clamped to the per-repeat window.
+- **Root cause**: in the Level-0 MASK-COUNT overload `Op(dst, src0, src1, uint64 mask, uint8 repeatTime, BinaryRepeatParams)` (overload identity per CANN 安装树内 kernel_operator_vec_binary_intf_impl.h) the 4th argument is the PER-REPEAT element count, NOT a total. On dav-m200 a `vmul` repeat spans 8 blocks × 8 fp32 lanes = 64 elements; a count above that lane budget is silently clamped to the per-repeat window.
 - **Fix**: chunk the long axis into ≤64-element segments per call (advance the mask-row base per chunk; `src1RepStride=0` still broadcasts the row operand across repeats), or use the plain Level-2 contiguous form `Op(dst, src0, src1, count)` which auto-loops (validated at count=4096). Anchor (`代码片段 27_MultiMaskAttentionAggregation/mmagg_kernel.h.snippet.h（见文末）`):
   ```cpp
   constexpr int64_t kColChunk = 64; // 8 blocks x 8 fp32 lanes per repeat
@@ -69,3 +69,10 @@ aliases: ["EC-297"]
         }
     }
 ```
+
+## 适用场景
+
+- **工程形态**：mask/broadcast 二元调用 `calCount > 64`(fp32) 时每个 repeat 窗口只算前 64 个元素。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

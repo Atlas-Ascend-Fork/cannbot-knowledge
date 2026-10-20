@@ -3,16 +3,15 @@ type: Runbook
 title: "SIMD performance optimization must not come at the cost of precision"
 description: "SIMD performance optimization must not come at the cost of precision"
 tags: [task.debugging, topic.precision, topic.programming_model.execution_model.simt, topic.data_movement]
-status: stable
-sources:
-  - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/field-notes/precision/ol-30-simd-performance-optimization-must-not-come-at-the.md
-    role: primary
+status: draft
+sources: []
 created_at: "2026-08-30T16:00:00Z"
-updated_at: "2026-09-16T07:35:48Z"
-platforms: [a3]
+updated_at: "2026-10-15T00:00:00Z"
+platforms: [a3, "950"]
 aliases: ["OL-30"]
 ---
 
+> **来源说明（2026-10-15）**：本卡内容来自车队私有实测/推理，暂无可公开复核的原始出处；按社区评审要求降为 draft，待补可复核来源后回升。
 # SIMD performance optimization must not come at the cost of precision
 
 > 原 OKF v1 卡号：**OL-30**。
@@ -40,3 +39,7 @@ aliases: ["OL-30"]
 - **Evidence**: MXFP4 SIMD V4 (2026-04-07), A3 hand-written SIMD precision bug analysis
 
 <!-- 迁移自 porter OPERATIONAL_KNOWLEDGE.md OL-30（category=process, trust_calibration，convert_ol_to_okf.py --faithful-fallback，B2 整档忠实搬运）。confidence/severity/reproduce_count 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓（不公开，pinned commit cb9c78c85ead3088398f3455051355349298b3cb）SIMT_VS_SIMD_DECISION.md#precision-constraint-ol30 节选卡同 lesson 复核：确认失败例（MXFP4 1024 元素共享 exponent、A3 手写 SIMD BATCH=512）与规则与本卡 Lesson/Hard rules 一致；补录其独有的安全反例——SG forward 为 per-token 计算、每个 token 独立，向量化不引入精度问题（同内容亦见 `../../concepts/simt_vs_simd_decision.md` 的 OL-30 小节）。platforms 依来源节选卡 frontmatter 声明补 950（[a3]→[a3, "950"]，批次 7 先例）。

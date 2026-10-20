@@ -18,7 +18,7 @@ platforms: ["950"]
 
 ## 适用场景
 
-- **工程形态**：ACLNN 算子仓开发（ops-registry-invoke），多分支 TPL kernel + host tiling。
+- **工程形态**：host ComputeTilingKey 用语义顺序值 (0/1/2/3/4) 与 ASCENDC_TPL GET_TPL_TILING_KEY 的位打包编码。
 - **API 路径**：`ASCENDC_TPL_ARGS_DECL` + `ASCENDC_TPL_SEL` + `GET_TPL_TILING_KEY`（`asc/include/tiling/template_argument.h`），host 侧 `gert::TilingContext::SetTilingKey`。
 - **验证过的平台与 CANN 版本**：Ascend 950 (dav-3510)，CANN 9.1.0。
 - **适用粒度**：`operator_family`（任何用 ASCENDC_TPL 多 bool 模板参数 + host ComputeTilingKey 的 Reduction 算子）。

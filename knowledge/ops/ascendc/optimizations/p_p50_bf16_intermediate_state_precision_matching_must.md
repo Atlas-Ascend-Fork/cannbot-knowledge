@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p50-bf16-intermediate-state-precision-matching-must.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-09-19T13:26:04Z"
 platforms: [a3, "950"]
 ---
 
@@ -61,3 +61,9 @@ WholeReduceSum(...);                           // → matches reference sum
 - ada_layer_norm Path A port kw-4 (2026-05-13, A3→A5): forward norm + affine post-modulation, reference `F.layer_norm(x, ...).to(native_dtype) * (1 + scale_native) + shift_native` — the `.to(native_dtype)` between normalize and post-mod is the load-bearing intermediate cast. Iter-1 kept everything in fp32 until final write (mathematically more accurate) → bf16 case 5 MARE=1240, 5 of 7 small-value outputs diverged because PyTorch's bf16 intermediate quantized them to zero. Iter-2 attempted intermediate cast bf16→fp32→continue-in-fp32 → made bf16 case 2 regress from PASS to FAIL (the extra round-trip rounds without fixing the post-mod dtype mismatch). Iter-4 fix: cast `ln` result to native, pre-compute `(1+scale_native)` once via `Adds(LocalTensor<native>, scale_native, native(1.0f), count)`, then native `Mul`/`Add` for the entire post-mod → 8/8 PASS, 4 cases bit-exact (MARE=0). Confirms P-P50 extends to **forward norm + affine post-modulation** patterns and to the **fp32 → native intermediate-cast** boundary (not just bf16↔bf16 mul-then-cast). Generalization: when reference inserts a `.to(native)` between two compute stages, replicate that exact cast in the kernel — do NOT keep the higher-precision intermediate.
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/precision.md（P-P50，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）同号模式行复核：与 v1 卡同源同题，正文无新增技术内容；补录索引行元数据——domain: `precision`；trigger: reference multiplies in bf16 then casts to fp32 for accumulation; kernel must mirror. [CPU-truth audit 2026-04-29: ✅ VALIDATED — co-occurs with CANN-pass ops 17_EmbeddingWithInitialLayernormBackward, 20_FusedRopeWithQkNormAndKvCacheUpdate. Do not downgrade.]；优先级: CRITICAL。
+
+> 索引行原文：`| P-P50 | bf16 intermediate precision matching (backward ops) | precision | reference multiplies in bf16 then casts to fp32 for accumulation; kernel must mirror. **[CPU-truth audit 2026-04-29: ✅ VALIDATED — co-occurs with CANN-pass ops 17_EmbeddingWithInitialLayernormBackward, 20_FusedRopeWithQkNormAndKvCacheUpdate. Do not downgrade.]** | **CRITICAL** |`

@@ -223,3 +223,6 @@
 - [reductions](reductions/index.md)：将长向量的求和组织成二叉折叠，明确非二次幂尾部、原地修改、归约顺序和性能验证的约束。
 - [matmul](matmul/index.md)：将满块和薄尾块的总范围重新分配给相同数量的tile，维护对齐、尾部正长度、GM前缀和及窗口成本边界。
 - [vector](vector/index.md)：从实际中间值写读、活跃状态和指令依赖评估融合及展开，保留尾部与数值等价条件。
+
+- [ReduceMin/ReduceMax calc_index=true 实现向量化 argmin/argmax](p_p252_reduce_calc_index_argmin_argmax.md)：用 ReduceMin/ReduceMax(calc_index=true) 并重解释编码索引位，得到向量化的 argmin/argmax，避免标量收尾循环。原 legacy 锚 P-P252（冲突 ID P-P62）。
+- [V220 上合并冗余的核内 V 管线 PipeBarrier](p_p253_coalesce_intra_pipe_v_barriers_v220.md)：在已验证的 V220（arch22）路径上合并冗余的核内 PipeBarrier<PIPE_V> 调用，同时保留每一个跨管线同步点。原 legacy 锚 P-P253（冲突 ID P-P92）。

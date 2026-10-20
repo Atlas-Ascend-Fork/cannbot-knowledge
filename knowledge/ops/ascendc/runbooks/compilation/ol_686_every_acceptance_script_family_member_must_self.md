@@ -27,10 +27,10 @@ split-brain signature: the precision leg is green while the perf leg crashes EVE
 profiled app in GE init (`ModuleNotFoundError: No module named 'tbe'` →
 `AclSetCompileopt(ACL_PRECISION_MODE)` error 500001). The failure reads like a
 perf-infra mystery; it is an env-contract bug in one family member.
-**Concrete anchor**: `ext:cannbot-skills/ops/ops-profiling/scripts/msprof_profile_run.sh`
+**Concrete anchor**: cannbot-skills 仓（公开）/ops/ops-profiling/scripts/msprof_profile_run.sh
 (the perf leg that did NOT self-source — fixed to source set_env.sh with the fallback
 chain, cannbot-skills commit 9bf6922d) vs its precision-leg sibling
-`ext:cannbot-skills/plugins-community/tilelang2ascendc-ops-generator/skills/tilelang2ascend-translator/scripts/evaluate_ascendc.sh`
+cannbot-skills 仓（公开）/plugins-community/tilelang2ascendc-ops-generator/skills/tilelang2ascend-translator/scripts/evaluate_ascendc.sh
 (which already self-sourced).
 **Evidence**: sort 310p (2026-08-18, first instance, kw-2/kw-3): the perf leg lost
 10/10 cases × ref+asc to the missing self-source while the precision leg passed the
@@ -62,3 +62,10 @@ _spec = importlib.util.spec_from_file_location("bm_profiler_canonical", _CANON)
 bm = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(bm)
 ```
+
+## 适用场景
+
+- **工程形态**：验收脚本家族的每个成员都必须自己 source CANN 环境。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

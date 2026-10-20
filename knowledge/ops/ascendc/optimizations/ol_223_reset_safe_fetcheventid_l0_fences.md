@@ -1,14 +1,14 @@
 ---
 type: Optimization
 title: "In a Reset-bearing multi-stage MIX cube kernel, drive cube-internal L0 pipe sync with Reset-safe dynamic back-to-back FetchEventID fences — NOT persistent Buffer<> credits, NOT hardcoded event ids"
-description: "Inside a Reset-bearing multi-stage MIX cube, drive cube-internal L0 fences with self-contained back-to-back FetchEventID Set+Wait — never persistent Buffer<> credits or hardcoded event ids."
+description: "OL-223 — inside a Reset-bearing multi-stage MIX cube, drive cube-internal L0 fences with self-contained back-to-back FetchEventID Set+Wait — never persistent Buffer<> credits or hardcoded event ids. 它防止的失败形态：持久 Buffer<> credit 或硬编码 event id 在 Reset 后与回收 id 撞车，表现为静默挂死或 507015。"
 tags: [task.optimization, topic.implementation.synchronization, topic.implementation.pipeline, topic.programming_model.execution_unit.cube, topic.data_movement, topic.memory]
 status: stable
 sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/ol-223-reset-safe-fetcheventid-l0-fences.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-10-10T00:00:00Z"
 platforms: ["950"]
 ---
 
@@ -47,3 +47,8 @@ __aicore__ inline void RbSetWaitFlag() {
 ```
 
 **Evidence**: GDN `chunk_gated_delta_rule` regbase (A5/V351 arch35, CANN 9.1.T500, 2026-06-16). Cross-ref: PB-45 (Reset frees the global event pool; hardcoded-id `507015` trap), OL-220 (the library `MatmulImpl` once-Init path where the `Buffer<>` credit model IS correct).
+
+## 相关卡片
+
+- [arch3510 事件池 QUE_MAX_EVENT=8 的事实锚点](../runbooks/performance/tile_merged_dma_eliminate_mte2_issue_bound.md)：本卡说「不要持久占用 event id」，**可用额度的数字**只写在那张性能卡里（每核每事件类型 8、每方向独立位图）；没有这个数就无法判断一次改动会不会越界。
+- [Reduce work buf 额外占 UB 致 507035](../runbooks/compilation/reduce_work_buf_ub_507035.md)：同族的字节预算形态，提供「逐个累加对照上限」的判别方法。

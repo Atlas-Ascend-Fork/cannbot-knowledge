@@ -13,3 +13,4 @@
 - [DMA 优化单位、地址对齐与批量输出](dma_optimization_units_alignment_and_batched_outputs.md)：保留搬运融合思路，纠正padding字段单位和向上移动数据起点。
 
 - [DataCopyPad 的版本、重载与尾部真实范围](datacopypad_versions_overloads_and_tail_extent.md)：结合同一来源的失败及后续成功记录限定 DataCopyPad 可用性，避免用填充 workaround 掩盖越界或改变布局。
+- [对齐补齐的通道被当作地址使用时是越界风险，不是数值风险](padding_lanes_used_as_addresses.md)：向量按 32B 对齐上取整后，补齐通道若作为 Gather 的偏移被解引用，读的是未初始化字节偏移，属越界访问而非算错。

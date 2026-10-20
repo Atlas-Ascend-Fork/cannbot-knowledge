@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/reference/porter/handbook/simt_vs_simd_decision.md
     role: primary
 created_at: "2026-08-05T14:23:52Z"
-updated_at: "2026-09-16T07:31:58Z"
+updated_at: "2026-09-19T18:01:00Z"
 platforms: ["950"]
 ---
 
@@ -172,3 +172,7 @@ Step 4: 计算是否可用 SIMD 向量指令表达?
 ## 相关卡片
 
 - [SIMD vs SIMT selection（P-P9 修订卡）](../optimizations/p_p9_simd_vs_simt_selection.md)：废弃「间接寻址 → SIMT」旧规则的 msprof 证据与 addressing layer / data layer 区分准则的原始出处。
+
+## 更新 (2026-09-19)
+
+私有沉淀仓（不公开，pinned commit cb9c78c85ead3088398f3455051355349298b3cb）`okf/runbooks/operator-optimization/` 下 SIMT_VS_SIMD_DECISION.md 的 8 张节选卡经逐张核读为本文对应小节的忠实摘录（同 lesson、无内容增量），按批次 7/9 先例不单独建卡，锚点对照：decision_tree → 本文 Decision Tree (完整版)；quick_decision_table → Quick Decision Table；case_sparse_gather_forward → Case 1；case_sparse_gather_backward_sorted → Case 2；case_mxfp4_quantization → Case 3；case_mxfp4_tile_wide_approx → Case 4；precision_constraint_ol30 → ⚠️ 精度约束 (OL-30) 小节（同 lesson 亦登记于 OL-30 卡，见其 2026-09-19 更新）；verification_discipline → Pattern P-P9 Summary 小节（其相对 v1 P-P9 卡的两处增量已补录至 p_p9_simd_vs_simt_selection.md）。

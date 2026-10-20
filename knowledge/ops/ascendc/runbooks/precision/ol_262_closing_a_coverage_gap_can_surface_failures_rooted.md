@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/field-notes/precision/ol-262-closing-a-coverage-gap-can-surface-failures-rooted.md
     role: primary
 created_at: "2026-08-30T16:00:00Z"
-updated_at: "2026-08-30T16:00:00Z"
+updated_at: "2026-10-10T02:49:37Z"
 platforms: [a3, "950"]
 aliases: ["OL-262"]
 ---
@@ -38,7 +38,7 @@ aliases: ["OL-262"]
 1. Confirm the failing cases exercise a branch the prior suite never hit (a coverage delta, NOT a regression of formerly-passing cases).
 2. Grep the kernel for the machinery the failing branch needs. If the kernel implements it correctly (e.g. always runs the full algorithm, no shortcut), the reference is the suspect.
 3. Trace the reference's branch condition. A common reference-bug shape: a **fallback that can never fire** because its guard is tautologically true against the values it was computed from (e.g. `if x <= k` where `x` was derived only from the first `k` elements → always true → the `else` full-recompute never runs).
-4. Fix the reference, re-synthesize truth, re-verify. Only if FAILs persist after the reference is corrected does the kernel become the suspect.
+4. Preserve the original reference/inputs/grader result and prepare a concrete reference-fix proposal. Re-synthesize truth only after the current acceptance authority adopts that changed contract, in a separate versioned chain. Candidate and reference remain independent hypotheses; a changed-reference PASS does not replace the original grade.
 
 **Reporting-honesty corollary (anti-pattern)**: reporting dtype coverage as "bf16 3/3 PASS" when every bf16 case ran the trivial path is an **overstatement of the validated surface** — the honest form is "bf16 3/3 (trivial-path only) → extended to bf16 N/N (trivial + complex)". Coverage that is trivially satisfiable certifies nothing about the complex path; label it as such.
 

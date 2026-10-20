@@ -43,7 +43,7 @@ EXIT_CODE=139，重跑稳定复现。当时代码状态：op_api 的 `aclnnBench
 
 - 工程形态：aclnn 自定义算子（op_api L2 实现层）+ C++ ST 全量回归（每用例独立 Create executor → Run → Destroy 的长循环，数百条以上用例）。
 - API 路径：`aclOpExecutor` / `CommonOpExecutorRun`（`opdev/op_executor.h`）、`UniqueExecutor::ReleaseTo`、`executor->AbandonCache / SetStream / UpdateTensorAddr / Run`、`aclDestroyAclOpExecutor`。
-- 验证过的平台与 CANN 版本：Ascend950PR，CANN 9.1.0（与 frontmatter `platforms`/`cann_versions` 一致）。
+- 验证过的平台与 CANN 版本：Ascend950PR，CANN 9.1.0（与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - 适用粒度：platform_wide——同一 CANN 版本下任何手动管理 executor 执行路径的 aclnn 实现，与具体算子无关。
 - 路线优先级：recommended_fastpath（有条件：先确认所用 CANN 版本的 `CommonOpExecutorRun` 是否存在 double free；若标准路线无问题，应优先标准路线，本卡是标准路线损坏时的规避配方）。
 - 明确不适用 / 未验证场景：使用标准 `CommonOpExecutorRun` 且无 double free 问题的 CANN 版本；单次/少量调用场景（本轨迹 L0 30 条以内未复现）；其他 CANN 版本与 NPU 架构未验证。

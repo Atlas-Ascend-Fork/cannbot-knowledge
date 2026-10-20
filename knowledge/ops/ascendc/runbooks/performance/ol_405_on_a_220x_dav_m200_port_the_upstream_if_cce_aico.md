@@ -36,7 +36,7 @@ top-level file ARE the intended port base.
 **Concrete anchor**: histogram_v2 310p `代码片段 histogram_v2/histogram_v2_kernel.core.snippet.h（见文末）`
 — ReduceYPart / ProcessBigBins ported from the upstream `< 220` branches (workspace scratch,
 gitignored). dav-m200 `SyncAll` is the SDK's `SoftSyncAllImpl` (per-block GM slots, ungated
-in `ext:kernel_operator_block_sync_intf.h`).
+in CANN 安装树内 kernel_operator_block_sync_intf.h).
 
 **Evidence**: histogram_v2 310p (2026-08-09, port_a3_to_a5 TARGET=310p, first instance): the
 `< 220` branch design ported nearly verbatim → 164/164 bit-exact vs kernel-semantics CPU
@@ -99,3 +99,10 @@ public:
         this->pipe->InitBuffer(this->y1Que, 1, (this->ubBinsLength + ALIGNED_NUM) * sizeof(int32_t));
         this->pipe->InitBuffer(this->syncQue, 1, SYNC_SLOT_BYTES * this->coreNum);
 ```
+
+## 适用场景
+
+- **工程形态**：220x→dav-m200 移植时，上游 #if __CCE_AICORE__ < 220 分支就是厂商自己的 200x 设计——设计前先读它们（含 tiling 常量与 workspace 布局）。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

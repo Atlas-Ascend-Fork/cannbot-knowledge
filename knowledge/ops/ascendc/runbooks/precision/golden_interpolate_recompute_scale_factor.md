@@ -6,11 +6,17 @@ tags: [task.testing, topic.precision]
 status: stable
 sources: []
 created_at: '2026-09-17T02:41:05Z'
-updated_at: '2026-09-17T02:41:05Z'
+updated_at: "2026-10-10T02:49:37Z"
 platforms: ["950"]
 ---
 
 # golden interpolate需显式recompute=True
+
+## 冻结原合同的适用边界
+
+下文 `recompute_scale_factor=True` 修复只适用于**权威需求明确要求先 floor 输出大小、再按 size 映射**的原案例。它不是所有 Torch interpolate 的默认修复。若当前验收合同是冻结原 Model.forward 的默认 scalar/list scale_factor 语义，保留该 forward、dtype、保存输入和 grader；不能改 recompute、转 size 或调整分布来获得通过。
+
+固定 scalar 反例：H=1399、scale_factor=1.5、Hout=2098，默认 non-align 比例2/3与 recompute/size 比例1399/2098不同。原 scalar合同必须使用其原比例；本卡历史 list实验不自动授权替换 scalar合同。独立 Torch v2.10.0 CPU固定50的后续验证支持这个合同区分，未给本卡旧配方补做上板资格。[Gather 历史配方的范围与缺陷](../compilation/gather_resize_bilinear_dav3510_recipe.md)。
 
 ## 现象
 

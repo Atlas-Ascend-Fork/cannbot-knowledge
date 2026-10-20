@@ -25,7 +25,7 @@ platforms: ["950"]
 
 - 工程形态：自定义算子仓 op_api 层（L0 `op_api/<op>.cpp` 与 L2 `op_api/aclnn_<op>.cpp`）参数检查代码编写；从内部仓/旧样例抄写校验写法时。
 - API 路径：`OP_CHECK` 定义于 `aclnn/opdev/op_log.h`（三参 `(cond, log_func, return_expr)`）；`OP_CHECK_NULL(param, retExpr)` 及 OP_CHECK_DTYPE_* 一族定义于 `aclnn_kernels/common/op_error_check.h`；opdev 头集合里的 `OP_CHECK_NOTNULL` 为单参宏；`OP_LOGE(errCode, fmt, ...)`（opdev 族，首参为错误码）。
-- 验证过的平台与 CANN 版本：Ascend950PR（arch35/DAV_3510），CANN 9.1.0 与 9.2.0（与 frontmatter `platforms`/`cann_versions` 一致）。
+- 验证过的平台与 CANN 版本：Ascend950PR（arch35/DAV_3510），CANN 9.1.0 与 9.2.0（与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - 适用粒度：platform_wide——宏定义与分层约定由 CANN 头文件/模板决定，与算子无关。
 - 路线优先级：recommended_fastpath（按层选宏 + 三段式 OP_CHECK + 手写判空兜底）。
 - 明确不适用 / 未验证场景：op_host 侧 `op_common/log/log.h` 宏族（OP_LOGE 首参为 context、OP_CHECK 已移除只剩 OP_CHECK_IF）是另一套形态，不适用本卡；include 了 `aclnn_kernels/common/op_error_check.h` 的编译单元可能有两参判空宏可用（本批未验证其存在与签名）；其他 CANN 版本宏集合可能变化，用前 grep。

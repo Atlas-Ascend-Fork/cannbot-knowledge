@@ -20,7 +20,7 @@ platforms: ["950"]
 
 - 工程形态：registry-invoke 自定义算子开发（op_kernel + op_host tiling + kernel 入口三件套），小规模数据（单块可整装进 UB）。
 - API 路径：AscendC `TQue<QuePosition::VECIN/VECOUT>`（AllocTensor/EnQue/DeQue/FreeTensor）、`TBuf<TPosition::VECCALC>`、`DataCopyPad` + `DataCopyParams`、`GET_TILING_DATA_WITH_STRUCT`/`REGISTER_TILING_DEFAULT`、tiling 侧 `ASCENDC_TPL_SEL_PARAM` 双 TilingKey（dtype × hasInverse）。
-- 验证过的平台与 CANN 版本：Ascend950PR + CANN 9.1.0（与 frontmatter `platforms`/`cann_versions` 一致）。
+- 验证过的平台与 CANN 版本：Ascend950PR + CANN 9.1.0（与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - 适用粒度：operator_family——"排序去重/按值分组"类算子的小规模路径（大规模需换 radix sort + 多核，见失效边界）。
 - 路线优先级：recommended_fastpath（小规模正确性优先路径；大规模场景此骨架只作 safety_fallback，须分块）。
 - 明确不适用 / 未验证场景：totalNum 超过单块 ubFactor 的分块/多核路径未实现（本骨架单块截断 `n = min(totalNum, ubFactor)`，超出部分静默丢）；fp16/bf16 等浮点 dtype 的 ±0/NaN 语义未在本阶段验证。

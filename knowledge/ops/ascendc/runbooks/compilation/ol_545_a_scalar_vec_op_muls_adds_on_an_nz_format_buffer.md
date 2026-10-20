@@ -23,7 +23,7 @@ aliases: ["OL-545"]
 - **Loaded by**: Generator/QA when a scalar/mask VEC op (Muls, Adds) touches an NZ-format UB buffer that is then read by a cube matmul
 - **Trigger**: a scalar VEC op (e.g. `Muls` scaling softmax scores by an attention-mask / scale) is applied to a UB buffer holding NZ-format data, and that buffer is then fed back into a cube matmul (BMM2: P@V). When the logical M (`actualM`, e.g. a tail query-block `Sq < 16`) is smaller than the NZ-padded M (`roundM = RoundUp(actualM, 16)`), the NZ block physically contains `roundM` rows.
 - **Principle**: the count argument to the scalar VEC op must be the FULL NZ-padded element count `roundM × roundSkv`, NOT the logical `actualM × roundSkv`. The cube consumes the whole NZ block (`roundM` rows); if the scalar op only covered `actualM` rows, rows `actualM..roundM` are left unscaled and the cube multiplies them into the output → silent precision failure (no error). Padding elements are zero / don't-care for a pure VEC consumer, but once a cube reads the block they MUST be scaled consistently with the valid rows. This is the NZ-layout analog of OL-221's ND-alignment rule — different layout, same "cover what the next stage physically reads" principle.
-- **Concrete anchor** (`ext:pfa_kernel.h`):
+- **Concrete anchor** (内部路径（不公开）pfa_kernel.h):
   ```cpp
   // NZ score block is [roundM, roundSkv]; scale ALL of it before BMM2 reads it.
   Muls(scoreUb, scoreUb, scale, roundM * roundSkv);   // NOT actualM * roundSkv
@@ -38,3 +38,10 @@ aliases: ["OL-545"]
 > // NZ score block is [roundM, roundSkv]; scale ALL of it before BMM2 reads it.
 
 > Muls(scoreUb, scoreUb, scale, roundM * roundSkv); // NOT actualM * roundSkv
+
+## 适用场景
+
+- **工程形态**：喂给 cube 的 NZ 格式 buffer 上的标量 VEC 算（Muls/Adds）必须覆盖整个 NZ 填充区（roundM×roundSkv）。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

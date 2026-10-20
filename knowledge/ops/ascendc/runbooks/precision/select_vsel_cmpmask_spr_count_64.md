@@ -23,7 +23,7 @@ platforms: ["950"]
 
 ## 适用场景
 
-- **工程形态**：AscendC Kernel 直调（op_kernel），arch35（Ascend950）vector `Select` API。
+- **工程形态**：arch35 Select 的 VSEL_CMPMASK_SPR 对 float 仅载首 repeat 的 selMask 并对所有 repeat 复用。
 - **API 路径**：`Select(dst, selMask, src0, src1, selMode, count)` 公共重载（经 `VselImpl`），`selMode` 取 `VSEL_CMPMASK_SPR`(mode 0) 或 `VSEL_TENSOR_TENSOR_MODE`(mode 2)；配套 `Compare<float, uint8_t>(bMask, bBx, bThr, GT, count)` 产掩码。
 - **验证过的平台与 CANN 版本**：Ascend950（arch35），CANN 9.0.0-beta.2（头文件 `cann-9.0.0-beta.2/x86_64-linux/asc/impl/basic_api/dav_c310/kernel_operator_vec_sel_impl.h`）。
 - **适用粒度**：`platform_wide`——所有 arch35 上对 count>repeatElm（float 为 64）的 `Select` 调用都受此 API 语义约束。

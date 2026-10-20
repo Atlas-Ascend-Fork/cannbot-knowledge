@@ -32,7 +32,7 @@ narrowing cast: int16→uint8 is `ASCENDC_REPORT_NOT_SUPPORT`, half→int16 exis
 CAST_RINT, int16→half only as CAST_NONE. Verify cast support at the SDK header level BEFORE
 coding the kernel, not at compile time (OL-130's lookup discipline).
 
-**Concrete anchor**: `ext:cann-9.0.0/aarch64-linux/asc/impl/basic_api/dav_m200/kernel_operator_vec_vconv_impl.h:175-215,307-345`
+**Concrete anchor**: CANN 安装树内 cann-9.0.0/aarch64-linux/asc/impl/basic_api/dav_m200/kernel_operator_vec_vconv_impl.h:175-215,307-345
 (the dav-m200 vconv support matrix; grep-able, per-SoC). Vendor-faithfulness note: the
 upstream fp32 path's per-int16-lane `& 0x7fff` after the int32 subtract carries a quirk
 (NaN ±0x7f808000, mantissa==0x00008000 exactly, misclassified as inf) — port it verbatim;
@@ -55,3 +55,10 @@ elementwise op ported to dav-m200 whose 220x algorithm computes predicates in in
 missing-cast twin — `Cast<float,int8_t>` two-step workaround), OL-80/OL-130 (API catalog +
 SDK-header lookup chain), P-P201 (the sibling skeleton this ports onto), OL-404 (audit the
 capture before relying on any NaN-semantics advisory). backend=ascendc.
+
+## 适用场景
+
+- **工程形态**：dav-m200 的 vconv 支持矩阵刚好凑齐 f32→f16→u8 谓词转换链。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

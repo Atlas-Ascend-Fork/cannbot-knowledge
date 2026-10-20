@@ -17,7 +17,7 @@ aliases: ["EC-209"]
 
 `applies_to: soc=all (bisheng CCE front-end language restriction on aicore code, observed on arch-200); cann=9.0.0; bisheng=CCE bundled with CANN 9.0.0 (exact version unrecorded — language-surface restriction, not codegen); op_class=any aicore kernel phase using inline lambdas`
 
-- **Error**: `ext:nonzero_kernel.h:335:28 note: candidate function not viable: call to [host] function from [aicore] function (lambda flushStream)` — lambdas carry a `[host]` attribute under bisheng and cannot be invoked from `[aicore]` code.
+- **Error**: 内部路径（不公开）nonzero_kernel.h:335:28 note: candidate function not viable: call to [host] function from [aicore] function (lambda flushStream)` — lambdas carry a `[host]` attribute under bisheng and cannot be invoked from `[aicore]` code.
 - **Fix**: convert the lambda to a named `__aicore__ inline` member function (`FlushStream(s, cap)`). Member-function scope also lets dependent-name template calls resolve with the explicit spelling `tile.template ReinterpretCast<half>()`, which the lambda body rejected (2 dependent-name errors in the same iter).
 - **Detection**: grep kernel headers for `[&](` / `[](` before first build — every hit inside an aicore phase is this EC.
 - **Evidence**: 22_Nonzero 310p build iter-1 (2026-08-15): lambda→`FlushStream` member fn + `.template` fix; next build PASS (`代码片段 22_Nonzero/nonzero_kernel.h.snippet.h（见文末）` — the shipped named member function; `22_Nonzero/failures_ledger.md` iter 1).
@@ -44,3 +44,10 @@ aliases: ["EC-209"]
                 for (int64_t t = 0; t < dLast_; t += NZ_TILE) {
                     const int32_t len = static_cast<int32_t>(
 ```
+
+## 适用场景
+
+- **工程形态**：bisheng 下 lambda 是 host-only。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

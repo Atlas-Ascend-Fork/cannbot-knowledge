@@ -18,7 +18,7 @@ platforms: []
 
 ## 适用场景
 
-- **工程形态**：kernel 直调，FP32 中间计算 + 动态量化，UB 上对 N 元素 FP32 tensor 做标量 clamp。
+- **工程形态**：AscendC count-based Max/Min(dst,src0,src1,count) 是逐元素比较。
 - **API 路径**：AscendC `Max/Min`（count-based Level 2 接口）、`Duplicate`、UB `TBuf` 复用。
 - **验证平台与版本**：ascend910b（dav-2201），CANN 9.0.0。不在注册平台集合 {950,a3,a2}，`platforms` 为空表。
 - **适用粒度**：`operator_family`（任何在 UB 上用标量做逐元素 clamp/比较广播的算子）。

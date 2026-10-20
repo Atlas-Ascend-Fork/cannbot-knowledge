@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p51-lift-nblk-to-runtime-aiv-count-for-v220-portabil.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-09-19T13:26:04Z"
 platforms: [a2, a3, "950"]
 ---
 
@@ -98,3 +98,7 @@ Where `y_a = torch.cumsum(x, dim=dim)` (direct CANN call) and `y_b = torch.cumsu
 See the discussion of TQue in U-P2 in unverified/candidates.md.
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/platform_compat.md（P-P51，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+同号异题提示：私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）的 P-P51 与 v1 卡同号不同题；该来源的 P-P51 已另立新卡 [runbooks/precision/native_dtype_scalar_coefficient_chain.md](../runbooks/precision/native_dtype_scalar_coefficient_chain.md)，引用 P-P51 时需按主题区分。

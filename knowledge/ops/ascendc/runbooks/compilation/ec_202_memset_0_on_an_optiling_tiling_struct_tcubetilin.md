@@ -28,7 +28,7 @@ aliases: ["EC-202"]
   //                    memset zeroes their vtable ptr → segfault in GetTiling.
   HostSwinTilingData td; std::memset(&td, 0, sizeof(td));   // ❌
   // RIGHT — standalone optiling vars; constructors set up the vtable.
-  optiling::TCubeTiling   qkTiling;   // ext:pybind11.cpp:89 (workspace kernel/pybind11.cpp)
+  optiling::TCubeTiling   qkTiling;   // 内部路径（不公开）pybind11.cpp:89 (workspace kernel/pybind11.cpp)
   optiling::TCubeTiling   pvTiling;   // :90
   optiling::SoftMaxTiling smTiling;   // :91
   qkBmm.GetTiling(qkTiling);          // :109 — virtual dispatch OK
@@ -43,4 +43,11 @@ aliases: ["EC-202"]
 
 > // RIGHT — standalone optiling vars; constructors set up the vtable.
 
-> optiling::TCubeTiling qkTiling; // ext:pybind11.cpp:89 (workspace kernel/pybind11.cpp)
+> optiling::TCubeTiling qkTiling; // 内部路径（不公开）pybind11.cpp:89 (workspace kernel/pybind11.cpp)
+
+## 适用场景
+
+- **工程形态**：对 optiling tiling 结构体（含 vtable）整体 `memset(0)` 会清空虚表指针，首次虚调用即。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

@@ -31,7 +31,7 @@ platforms: ["950"]
 
 - 工程形态：算子仓自定义算子开发（EleWise/逐元素范式），host 侧 TilingFunc 实现 + gtest TilingUT（测试先行，先红后绿）。
 - API 路径：`op_host/<op>_tiling_host.h/.cpp`（自建 tiling 接口层）、`op_kernel/<op>_tiling.h`（TilingData 结构体）、`context` 提供的 `availableCoreNum`/`ubSize` 等输入、`ge::DataType` dtype 分发；UT CMake 复用 `$ENV{ASCEND_HOME_PATH}/x86_64-linux/include`。
-- 验证过的平台与 CANN 版本：ascend950 构建目标包内 host 侧 UT（x86_64 编译执行），CANN 9.0.0-beta.2（与 frontmatter `platforms`、`cann_versions` 一致）。
+- 验证过的平台与 CANN 版本：ascend950 构建目标包内 host 侧 UT（x86_64 编译执行），CANN 9.0.0-beta.2（与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - 适用粒度：operator_family——所有"任意 rank 展平成 1D 后逐元素处理"的算子（一元/二元 Elementwise）的公共 tiling 层。
 - 路线优先级：recommended_fastpath。
 - 明确不适用 / 未验证场景：

@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p46-quantize-cast-chain-fp32-int8.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-09-19T13:26:04Z"
 platforms: ["950"]
 ---
 
@@ -49,3 +49,9 @@ Cast<int8, half>(int8, fp16);
 **Stop condition**: Cast chain differs when outputting int4 or fp8. fp8 (E4M3) uses Cast(RINT) directly from fp16.
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/reduction_quant.md（P-P46，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）同号模式行复核：与 v1 卡同源同题，正文无新增技术内容；补录索引行元数据——domain: `reduction_quant`；trigger: AscendC multi-step cast: RINT→NONE(SetDeqScale)→TRUNC；优先级: HIGH。
+
+> 索引行原文：`| P-P46 | Quantize cast chain (fp32→int8) | reduction_quant | AscendC multi-step cast: RINT→NONE(SetDeqScale)→TRUNC | HIGH |`

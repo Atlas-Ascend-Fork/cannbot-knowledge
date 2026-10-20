@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/reference/porter/toolchain/msprof_agent_guide.md
     role: primary
 created_at: "2026-08-05T14:23:52Z"
-updated_at: "2026-09-04T23:59:25Z"
+updated_at: "2026-09-19T18:01:00Z"
 platforms: ["950"]
 ---
 # msprof Agent 使用指南
@@ -278,3 +278,7 @@ $MSPROF --output=/tmp/msprof_detail --application='./benchmark' --aic-metrics=Pi
 | Pooling nblk sweep | nblk=56 vs 448 | bwd -28%, fwd +14% | 排序后不需要超订 |
 | SG forward xlarge | 同上 | vec_ratio=0.69, scalar_ratio=0.31 | 常驻核心分发 (E8-2, 1.86x) |
 | SG backward xlarge | 同上 | vec_ratio=0.989 | compute-bound, persistent 无效 |
+
+## 更新 (2026-09-19)
+
+私有沉淀仓（不公开，pinned commit cb9c78c85ead3088398f3455051355349298b3cb）`okf/runbooks/operator-optimization/` 下 MSPROF_AGENT_GUIDE.md 的 9 张节选卡经逐张核读为本文对应小节的忠实摘录（同 lesson、无内容增量），不单独建卡，锚点对照：tool_selection_system_vs_operator → §0；layered_reading_context_safe → §1-§3 分层读取；metrics_group_selection → §4；op_summary_metric_extraction → §4 / Level 2（op_summary 列号与动态表头）；optimization_workflow_loop → §5；run_command_template → §6 与 §9（2026-04-02 更新）；a5_container_limitations → §7 已知限制（A5 容器）；researcher_agent_deep_analysis → §8 aog-researcher 深度分析；bottleneck_lookup_table → §9 瓶颈判断速查表。

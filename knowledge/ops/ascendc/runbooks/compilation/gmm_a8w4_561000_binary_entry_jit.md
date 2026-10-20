@@ -38,7 +38,7 @@ aclnnGroupedMatmulWeightNz MxA8W4 multi test failed. ERROR: 561000
 
 ## 适用场景
 
-- **工程形态**：ACLNN 单算子调用（aclnnGroupedMatmulWeightNz），非 Kernel 直调、非 GEIR。
+- **工程形态**：GroupedMatmulWeightNz 新增 MX A8W4 Blaze tensor API dispatch 分支后。
 - **API 路径**：`aclnnGroupedMatmulWeightNzGetWorkspaceSize` / `aclnnGroupedMatmulWeightNz` → op_executor → `aclrtBinaryGetFunctionByEntry`（按 tiling key 查预编译 kernel binary）。
 - **验证平台与版本**：Ascend950（SoC ascend950），CANN 9.1.0，bisheng-compiler 9.1.0。
 - **适用粒度**：`operator_family`——GroupedMatmul 系列在 ascend950 注册时新增 dispatch 分支均会踩此坑。

@@ -8,8 +8,8 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p62-row-scalar-vec-multiply-avoiding-per-row-scalar.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
-platforms: []
+updated_at: "2026-09-19T13:26:04Z"
+platforms: ["950"]
 ---
 
 # Row-Scalar VEC Multiply — avoiding per-row scalar multiply on the Scalar pipe
@@ -79,3 +79,9 @@ Brcb path wins decisively; this pattern is exactly that path. Note: the probe us
 - Actual op#11 result: static audit found only 2 scalar Muls in the kernel (`as_scalar` + `dyn_scale`); the other per-row operations are already H-wide vector ops. Brcb has no room to fold; Kind-1 retrofit failed.
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/memory_access.md（P-P62，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）同号模式行复核：与 v1 卡同源同题，正文无新增技术内容；补录索引行元数据——domain: `memory_access`；trigger: Precondition: the kernel must have a multi-row parallel axis (R ≥ 8 rows batched per iter) to amortize. One `Brcb` fills a `[dealRowCount × 8]` UB tensor, then `Mul(dst, src0, src1Ub)` with `BinaryRepeatParams{src1BlkStride=0, src1RepStride=1}`. Standard CANN flash-attention RowMuls pattern. Measured (H=8 block-matched): Brcb 25.3× K_base; the "Muls flexible scalar position" variant does NOT bypass (0.97×, argument-order variant). Counter-example: op#11's single-row-per-iter kernel cannot be Kind-1 retrofitted (a single scalar Brcb becomes pure overhead); needs Kind-2 batch rewrite + UB compression to apply.；优先级: HIGH (applies to multi-row batch kernels)。
+
+> 索引行原文：`| P-P62 | **Row-Scalar VEC Multiply — per-row scalar multiplication that avoids the Scalar pipe** | memory_access | **Precondition: the kernel must have a multi-row parallel axis (R ≥ 8 rows batched per iter) to amortize.** One `Brcb` fills a `[dealRowCount × 8]` UB tensor, then `Mul(dst, src0, src1Ub)` with `BinaryRepeatParams{src1BlkStride=0, src1RepStride=1}`. Standard CANN flash-attention RowMuls pattern. Measured (H=8 block-matched): Brcb 25.3× K_base; the "Muls flexible scalar position" variant does NOT bypass (0.97×, argument-order variant). **Counter-example**: op#11's single-row-per-iter kernel cannot be Kind-1 retrofitted (a single scalar Brcb becomes pure overhead); needs Kind-2 batch rewrite + UB compression to apply. | HIGH (applies to multi-row batch kernels) |`

@@ -11,7 +11,7 @@ sources:
 - resource: cann-docs-raw/asc-devkit/docs/zh/api/SIMD-API/adv_api/tensor_transform/GetBroadCastMaxMinTmpSize.md
   role: primary
 created_at: '2026-08-18T14:51:00Z'
-updated_at: '2026-09-04T01:25:11Z'
+updated_at: '2026-10-09T01:49:46Z'
 platforms: []
 source_headers:
 - include/adv_api/pad/broadcast_tiling.h
@@ -72,3 +72,30 @@ AscendC::GetBroadCastMaxMinTmpSize(ascendcPlatform, srcShape, dstShape, 2, false
 
 - [MatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/matmul_all_reduce_950.md)
 - [QuantMatmulAllReduce 950 ACLNN 算子知识](../../../../operators/aclnn/transformer/mc2/quant_matmul_all_reduce_950.md)
+
+## 补充证据（2026-10-09，安装SDK声明与限定shape的scratch查询）
+
+本节记录一个版本/安装限定的接口差异，不替换上文归档来源。执行者将环境报告为CANN 9.1、目标Ascend950DT_9582；包版本元数据与安装前缀未独立核实，不能据此宣称所有9.1构建一致。适用依据是下列实际声明字节、目标及host-only探针。
+
+### 实际声明与调用类型
+
+归档原型、参数表及示例使用`AscendC::TensorShape`；本次读取的公共`broadcast_tiling.h`声明使用`const ge::Shape& srcShape`和`const ge::Shape& dstShape`。调用时先核实际CANN组件根及已安装声明；不要按知识卡所在目录解析`source_headers`，也不要无条件把归档类型套到另一版安装。此安装的host探针使用`tiling/pad/broadcast_tiling.h`；源码组件定位`include/adv_api/pad/broadcast_tiling.h`与安装host头布局需分别核实。
+
+最小调用片段（`platform`来自该安装的`PlatformAscendCManager::GetInstance("Ascend950DT_9582")`，其非空及链接成功已在本次探针核实）：
+
+```cpp
+uint32_t maxValue = 0, minValue = 0;
+AscendC::GetBroadCastMaxMinTmpSize(*platform,
+    ge::Shape({64, 1}), ge::Shape({64, 64}),
+    4, false, maxValue, minValue);
+```
+
+### 观测与失效边界
+
+该host-only探针成功运行的原始stdout为`max=0 min=0 UB=253952 SOC=4`。这只说明本次float、64×1→64×64、`isReuseSource=false`及目标平台对象的临时空间需求为0；最大/最小值含义沿用上文。`UB=253952`是总容量，不等于扣除已用buffer后的剩余空间。换shape、dtype、复用标志、接口形式、目标或SDK，应重新查询并结合全部buffer核容量；不能把这组0外推为Broadcast永不需要scratch。本探针未执行NPU性能计时，也不构成加速收益证明。
+
+### 可复核原始来源
+
+- 公共声明及许可（内部材料，不公开）。捕获中还包括弃用包装头，不能把整段捕获SHA冒充单个头SHA。
+- 实际头文件SHA记录（内部材料，不公开）：安装host头`include/tiling/pad/broadcast_tiling.h` SHA256为`021cbc401951ba475cf5ef112a4e54df4da0df048c3a3084acd1edef2a7d2b7e`。
+- 最小探针源（内部材料，不公开）与成功stdout（内部材料，不公开）。这是本次实测证据，归档主来源及其许可保留；未复制另一套优化模板。

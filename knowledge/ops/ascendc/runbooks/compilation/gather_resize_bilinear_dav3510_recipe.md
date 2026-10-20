@@ -6,11 +6,21 @@ tags: [task.implementation, topic.implementation]
 status: stable
 sources: []
 created_at: '2026-09-16T10:18:45Z'
-updated_at: '2026-09-16T10:18:45Z'
+updated_at: "2026-10-10T02:49:37Z"
 platforms: ["950"]
 ---
 
 # Gather 双线性插值 kernel — DAV_3510 编译级配方
+
+## 2026-10-10 静态复核：历史代码不能直接用于精度交付
+
+本卡保留的完整代码仅是原三 dtype **编译**记录，未经上板精度验证。后续逐函数复核发现以下具体反例，因此撤回将该代码按字面复制为精度配方的建议；Gather 编译事实本身不变。
+
+1. `tmpCalcBuf.Get<float>()` 重复取得的是同一地址。代码先将 floor(w) 的 scratch 改成 floor(w)+1，再计算 beta，令 w=0.25 时 beta=-0.75。按[既有 TBuf alias 修复](../precision/tbuf_repeated_get_alias_reorder.md)先算 beta/补权重，再覆盖 scratch，或保留独立 floor 缓冲。该机制已有卡，不新增重复结论。
+2. `h0 == h1` 分支跳过第二行的 load/Cast，却在 Gather 时读取第二行。两条 raw/converted 行必须都已初始化，或把两条读取一致地绑定到同一已初始化行。零权重不能消除非法/未初始化读，NaN*0 仍是 NaN。
+3. Host 示例的 `H_in/H_out` 比例适用于 size/recompute=True 合同。冻结 Torch 原 forward 若显式传 scalar scale_factor 且 recompute 未设，必须保留原标量倒数，不能为了匹配示例改 golden。H=1399、scale_factor=1.5、Hout=2098 时 1399/2098 与 2/3 不同。见[scale 合同边界](../precision/golden_interpolate_recompute_scale_factor.md)。align_corners=True 另按端点合同推导。
+
+验证边界：以上为对本卡完整代码的静态反例与固定 Torch v2.10.0 `UpSample.h` 的合同核对，不是对这段历史代码的新编译或设备复测。独立 WHITE 候选在原37 FP32/13 FP16、原50输入/CPU grader下全部通过，zero50拒绝；完整 Q 两段为0.7217120792620955/0.7836363486488493，均未达1.1。该结果仅证明独立候选的固定50范围；没有 isolated ablation、冷消费者或修复带来加速的证明。
 
 ## 现象
 
@@ -66,7 +76,7 @@ GM → DataCopyPad → UB(原 dtype 行 h0/h1) → Cast(fp32)
   - `op_host/bench_no_harness_resize_bilinear_def.cpp` / `..._infershape.cpp`、`op_api/`（L0/L2）、`op_graph/`、`CMakeLists.txt`×4、`build.sh`
 - API 事实（设计阶段文档核对）：Gather 的 `srcOffset` 为 `LocalTensor<uint32_t>`，单位字节，要求 src 元素位宽对齐、不越 UB；Gather 文档支持矩阵未列 DAV_3510（本卡以编译实测补证）。
 
-## 完整代码
+## 原编译轨迹代码（历史留存；含上述已识别缺陷）
 
 内核入口 `op_kernel/bench_no_harness_resize_bilinear_arch35.cpp`（终版完整）：
 

@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/reference/porter/precision/precision_standard_v2_1.md
     role: primary
 created_at: "2026-08-05T14:23:52Z"
-updated_at: "2026-09-16T07:31:58Z"
+updated_at: "2026-09-19T18:01:00Z"
 platforms: [a3, "950"]
 ---
 # AscendC 算子精度标准（CPU 真值口径）
@@ -180,3 +180,7 @@ platforms: [a3, "950"]
 - `DEGENERATE`：CPU 真值本身非有限或用例不具判别力；不得计入通过率。
 
 任何无法由 CPU 真值支撑的结论都必须保持未验证状态。
+
+## 更新 (2026-09-19)
+
+私有沉淀仓（不公开，pinned commit cb9c78c85ead3088398f3455051355349298b3cb）`okf/runbooks/operator-optimization/` 下 PRECISION_STANDARD_v2.1.md 的 12 张节选卡经逐张核读为本文对应小节的忠实摘录（同 lesson、无内容增量；a5_ops 副本节号与本文节号不同，按正文对齐），不单独建卡，锚点对照：operator_grading_l0_l1_l2（#1.2）→ §1.1；case_generation_rules（#2）→ §3；special_scenario_tests（#2.1）→ §3.2；outlier_noisy_distribution（#5.1.2）→ §3.1；execution_strategy_stress（#3）→ §4；category_error_metric_mapping（#4.1）→ §6；nonfloat_pass_standards（#4.2-4.4）→ §7.1；small_value_range_pass（#4.5.3）→ §7.2；inf_nan_pass_standard（#5.3.3）→ §7.3；random_gen_kstest_pass（#5.3.5）→ §7.4；bootstrap_ci_recheck（#4.5.2）→ §7.5；golden_benchmark_construction（#5.3.1）→ §2 真值构造（正文一致；标题「竞品对标优先，逐级降级备选」措辞对应 §6 单/双标杆与 §2 真值优先级）。

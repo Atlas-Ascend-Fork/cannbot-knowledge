@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: "V351 累加循环'Add(ubAcc,ubAcc,ubTmp) 后无屏障、下轮迭代 DataCopyPad 覆写 ubTmp'的 V→MTE2 跨迭代竞争 → 输出 run 间非确定（max_abs 可达 O(1)）；修复 = 循环末尾 PipeBarrier<PIPE_ALL>；诊断法 = 跨 run 确定性二分"
-description: "V351 累加循环'Add(ubAcc,ubAcc,ubTmp) 后无屏障、下轮迭代 DataCopyPad 覆写 ubTmp'的 V→MTE2 跨迭代竞争 → 输出 run 间非确定（max_abs 可达 O(1)）；修复 = 循环末尾 PipeBarrier<PIPE_ALL>；诊断法 = 跨 run 确定性二分. Applies: soc=Ascend950DT/950PR(V351/arch35); cann=9.2.0; mode=port_a3_to_a5; op_class=所有'循环内 GM 分块读入 UB 临时缓冲 + 向量累加'模式的 vector kernel（mean/sum fold、分块 reduce、多 tap 卷积累加）. Provenance: 42_CoTAttention case0 fp16 根因（2026-08-27 主线 kimi 会话，卡 3：fuse 位真模拟 → 跨 run 确定性二分 → 源码定位 → 修复实测全链 bit-exact）"
+description: "V351 累加循环'Add(ubAcc,ubAcc,ubTmp) 后无屏障、下轮迭代 DataCopyPad 覆写 ubTmp'的 V→MTE2 跨迭代竞争 → 输出 run 间非确定（max_abs 可达 O(1)）；修复 = 循环末尾 PipeBarrier<PIPE_ALL>；诊断法 = 跨 run 确定性二分. Applies: soc=Ascend950DT/950PR(V351/arch35); cann=9.2.0; mode=port_a3_to_a5; op_class=所有'循环内 GM 分块读入 UB 临时缓冲 + 向量累加'模式的 vector kernel（mean/sum fold、分块 reduce、多 tap 卷积累加）. Provenance: 42_CoTAttention case0 fp16 根因（2026-08-27 主线 the executor 会话，card 3：fuse 位真模拟 → 跨 run 确定性二分 → 源码定位 → 修复实测全链 bit-exact）"
 tags: [task.debugging, topic.precision, topic.implementation.synchronization, topic.programming_model.execution_unit.vector, topic.data_movement.data_copy, topic.data_movement]
 status: stable
 sources:
@@ -25,7 +25,7 @@ aliases: ["user-v351-loop-carried-v-mte2-accum-race-001"]
 
 ## 循环承载累加的 V→MTE2 竞争：输出非确定、通道半区指纹；修复 = 迭代末尾 PipeBarrier<PIPE_ALL>
 
-## 事实（42_CoTAttention MeanFoldCore，Ascend950DT + CANN 9.2.0，卡 3 全实测）
+## 事实（42_CoTAttention MeanFoldCore，Ascend950DT + CANN 9.2.0，card 3 全实测）
 - 病态模式（mean over 9 taps 的 gg 循环）：
   ```cpp
   for (gg = 0; gg < 9; ++gg) {

@@ -37,7 +37,7 @@ GetArgsInfo:tilingKey = 0, print 1 Times totalLen=(13*8), argsSize=104, schemMod
 
 - 工程形态：自定义算子 aclnn 开发（registry-invoke 流程），算子带 OPTIONAL 输出且运行时可能传 null。
 - API 路径：op 定义 `ParamType(OPTIONAL)` 输出 + 框架 `optionalOutputMode: "gen_placeholder"`（kernel config JSON）+ L2 `aclnnXxxGetWorkspaceSize` / L0 `ADD_TO_LAUNCHER_LIST_AICORE`。
-- 验证过的平台与 CANN 版本：Ascend950PR + CANN 9.1.0（与 frontmatter `platforms`/`cann_versions` 一致）。
+- 验证过的平台与 CANN 版本：Ascend950PR + CANN 9.1.0（与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - 适用粒度：platform_wide——所有在 CANN 9.x aclnn 框架下声明可选输出的自定义算子。
 - 路线优先级：recommended_fastpath（L2 层兜底，对上层调用方透明）。
 - 明确不适用 / 未验证场景：

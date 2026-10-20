@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: "V351 DataCopyPad 尾 tile 按 32B 上取整多读，读到的是下一行真实数据而非零区，污染真实输出列"
-description: "V351 DataCopyPad 尾 tile 按 32B 上取整多读，读到的是下一行真实数据而非零区，污染真实输出列. Applies: soc=Ascend950DT/950PR(V351/arch35); cann=9.2.0; mode=port_a3_to_a5; op_class=vector/attention 尾 tile 裁剪 + DataCopyPad 载入（im2col/sliding-window 类）. Provenance: 42_CoTAttention kw-23 翻案（2026-08-27，dsh 反演 + kimi dump 列剖面 + 主线 kimi 会话修复实测验证）"
+description: "V351 DataCopyPad 尾 tile 按 32B 上取整多读，读到的是下一行真实数据而非零区，污染真实输出列. Applies: soc=Ascend950DT/950PR(V351/arch35); cann=9.2.0; mode=port_a3_to_a5; op_class=vector/attention 尾 tile 裁剪 + DataCopyPad 载入（im2col/sliding-window 类）. Provenance: 42_CoTAttention kw-23 翻案（2026-08-27，dsh 反演 + the executor dump 列剖面 + 主线 the executor 会话修复实测验证）"
 tags: [task.debugging, topic.precision, topic.programming_model.execution_unit.vector, topic.data_movement.data_copy, topic.data_movement, topic.memory]
 status: stable
 sources:
@@ -45,7 +45,7 @@ aliases: ["user-v351-datacopypad-32b-roundup-oob-001"]
 
 ## 证据
 - 修复验证实验：cot-dsh-diag/work（kw-23+修复）阻塞模式 case1：xColTHi badcols real=0/pad=21（修复前 real=7）；最终 out 真实列 <1e-3 全清。
-- docs/cot-fp32-gemm-dsh-diag-20260827.md §3.4（机制反演，结论对但修复错）；docs/cot-fp32-gemm-kimi-diag-20260827.md §1 缺陷 2（dump 列剖面独立确认）。
+- docs/cot-fp32-gemm-dsh-diag-20260827.md §3.4（机制反演，结论对但修复错）；docs/cot-fp32-gemm-the executor-diag-20260827.md §1 缺陷 2（dump 列剖面独立确认）。
 
 ## 关联 KB
 - `v351-fp32-hilo-3mma-mte1-m-fence-001`（同算子的 fence 假设——已被证伪，见该条目）。

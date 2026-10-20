@@ -29,7 +29,7 @@ aliases: ["EC-19"]
 - **Root cause**: CANN `kernel_tiling.h` defines `PadTiling` in `AscendC::tiling` namespace and imports it via `using`. Custom struct with same name conflicts.
 - **Scope**: not Pad-specific — `kernel_tiling.h` defines a family in `AscendC::tiling` and imports it into scope; any outer struct reusing a built-in `<Name>Tiling` can become ambiguous.
 - **Fix**: use an op-qualified name such as `<OpName>KernelTiling` or `<OpName>OpTiling` rather than a bare built-in-family name.
-- **Evidence**: Pad V2 first build (2026-04-09); rms_norm on Ascend310P3 (2026-08-09) independently hit the same error for `RmsNormTiling` (built-in definition anchored at `ext:kernel_tiling.h:565`), compiled after renaming the custom type to `RmsNormKernelTiling`. This is a build-host fact, not a device-runtime claim.
+- **Evidence**: Pad V2 first build (2026-04-09); rms_norm on Ascend310P3 (2026-08-09) independently hit the same error for `RmsNormTiling` (built-in definition anchored at 内部路径（不公开）kernel_tiling.h:565), compiled after renaming the custom type to `RmsNormKernelTiling`. This is a build-host fact, not a device-runtime claim.
 
 <!-- 迁移自 porter kb/target/ascendc/（EC-19，convert_family_to_okf.py，M1，整档忠实搬运）。confidence/severity/reproduce_count 未升格。 -->
 

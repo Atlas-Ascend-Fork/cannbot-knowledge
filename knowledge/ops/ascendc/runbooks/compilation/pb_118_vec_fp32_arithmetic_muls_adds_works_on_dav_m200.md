@@ -20,7 +20,7 @@ aliases: ["PB-118"]
 `verified_on: soc=Ascend310P3 (dav-m200); cann=9.0.0 — runtime VEC probe, bit-exact`
 `unverified_on: soc=Ascend950PR, Ascend910 (fp32 VEC arithmetic functional — not dav-m200-specific)`
 
-VEC arithmetic on fp32 operands works bit-exact on dav-m200 — no need to force fp16-only accumulation. A probe (half→`Cast`→fp32, then `Muls(*,2.0f)`, `Adds(*,1.5f)`, identity-`Adds(*,0.0f)` on 256 fp32) is **bit-exact** (`max_err = 0.0`). The dav_m200 `Adds` signature lists float in `SupportType<T, half, float, int16_t, int32_t>`; the official 310P CANN kernel (`ext:incre_flash_attention_cube_310P_kvquant.h:1593`) runs `Muls` on an fp32 LocalTensor. ⚠ `Duplicate(dst, src_tensor, count)` has NO fp32 tensor form — `Duplicate` is scalar-fill only (`Duplicate(dst, scalar, count)`).
+VEC arithmetic on fp32 operands works bit-exact on dav-m200 — no need to force fp16-only accumulation. A probe (half→`Cast`→fp32, then `Muls(*,2.0f)`, `Adds(*,1.5f)`, identity-`Adds(*,0.0f)` on 256 fp32) is **bit-exact** (`max_err = 0.0`). The dav_m200 `Adds` signature lists float in `SupportType<T, half, float, int16_t, int32_t>`; the official 310P CANN kernel (内部路径（不公开）incre_flash_attention_cube_310P_kvquant.h:1593) runs `Muls` on an fp32 LocalTensor. ⚠ `Duplicate(dst, src_tensor, count)` has NO fp32 tensor form — `Duplicate` is scalar-fill only (`Duplicate(dst, scalar, count)`).
 
 **Working on dav-m200 (verified)**:
 | Operation | Result |
@@ -44,3 +44,10 @@ VEC arithmetic on fp32 operands works bit-exact on dav-m200 — no need to force
 **孪生卡 pb-171 合并的独有内容**（pb-171-vec-fp32-arithmetic-muls-adds-works-on-dav-m200.md 已删除）：
 
 > | `Cast<float,float>` (identity-width) | ❌ runtime NOT_SUPPORTED (see PB-187) — use the `Adds(dst, src, 0.0f)` identity row above for fp32 TQue↔TBuf staging |
+
+## 适用场景
+
+- **工程形态**：dav-m200 的 VEC fp32 算术（Muls/Adds）实测正常。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

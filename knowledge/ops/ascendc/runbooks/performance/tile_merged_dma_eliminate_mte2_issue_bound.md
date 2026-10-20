@@ -1,13 +1,17 @@
 ---
 type: "Runbook"
 title: "tile级合并DMA消除MTE2逐行发射bound"
-description: "逐行小片段（约 256B/行）GM↔UB 搬运使 MTE2 发射/描述符成为瓶颈（利用率 0.78）；base 路径加 host 门控连续快路：tile 级合并 DataCopyPad（单 tensor 单描述符）+ gamma UB 常驻 + x tile 复用 + 合并写回 + 双 MTE2_V 事件依赖解耦，同算子同协议相对原始基线 6.18x，精度 18/18 strict 通过。"
+description: "逐行小片段（约 256B/行）GM↔UB 搬运使 MTE2 发射/描述符成为瓶颈（利用率 0.78）；base 路径加 host 门控连续快路：tile 级合并 DataCopyPad（单 tensor 单描述符）+ gamma UB 常驻 + x tile 复用 + 合并写回 + 双 MTE2_V 事件依赖解耦，同算子同协议相对原始基线 6.18x，精度 18/18 strict 通过。 另记录本家族的预算常数：arch3510 事件池 QUE_MAX_EVENT=8、每方向独立位图（kernel_macros.h 按 __NPU_ARCH__ 分档，其余架构为 4），是「L1 buffer 数量上限 / event id 还能取几个」的事实锚点。"
 tags: ["task.optimization", "topic.data_movement.data_copy", "topic.implementation.tiling"]
 status: stable
 sources: []
 created_at: "2026-09-14T12:14:53Z"
-updated_at: "2026-09-14T12:14:53Z"
+updated_at: "2026-10-10T00:00:00Z"
 platforms: ["950"]
+aliases:
+  - "事件池池深 每方向独立位图 arch3510"
+  - "event id 数量上限 每核每方向"
+  - "event pool depth per core per direction"
 ---
 
 # tile级合并DMA消除MTE2逐行发射bound
@@ -291,3 +295,8 @@ int64_t SolveFastAu(int64_t aTotal, int64_t raAlign, int64_t coreNum,
 - 保持逐行 `DataCopyPad` 循环而指望靠增大 au 提升性能——描述符数随行数线性增长，发射 bound 不解除（本会话 host-only tiling 重平衡候选实测仅 1.79x，证明不解除搬运 bound 时核数翻倍收益有限，见 [host_tiling_magic_au_cap_ub_equation_rebalance](host_tiling_magic_au_cap_ub_equation_rebalance.md)）。
 - 用 5D ND-DMA（`NdDmaDci`）逐行拼小片段——直调单 TU 下还无法编译（见 [nd_dma_dci_single_tu_target_feature_split_build](../compilation/nd_dma_dci_single_tu_target_feature_split_build.md)），且发射开销同样存在。
 - 把 `WaitFlag(MTE2_V)` 放在所有搬入之后统一等待——丢掉 x 先行消费与 other 传输的重叠。
+
+## 相关卡片
+
+- [PB-45 `TPipe::Reset()` 释放全局 `g_tpipeImpl` 事件池](../compilation/pb_45_tpipe_reset_frees_the_global_g_tpipeimpl_event_poo.md)：本卡的 `QUE_MAX_EVENT=8` 是预算数字，该卡是**超出这个预算时的失败形态**——编译不报错、kernel 静默挂死，且 `TPipe::Reset()` 会释放整个全局池。只看本卡的数字而不知道越界后不报错，会把挂死误判成算法问题。
+- [OL-223 Reset-safe FetchEventID L0 fences](../../optimizations/ol_223_reset_safe_fetcheventid_l0_fences.md)：在池深受限且存在 Reset 时，取/还 event id 的正确写法。

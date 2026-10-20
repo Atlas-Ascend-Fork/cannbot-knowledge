@@ -21,7 +21,7 @@ sources:
 - resource: https://gitcode.com/cann/cannbot-skills/blob/502e3ed33f1440aa01bdc5a5bd396e4bf539c9ea/ops/ops-profiling/msopprof-visualization/references/environment-and-failure.md
   role: supporting
 created_at: '2026-09-11T04:58:58Z'
-updated_at: '2026-09-14T08:45:38Z'
+updated_at: '2026-10-08T14:20:00Z'
 platforms: []
 aliases:
 - PipeTimeline
@@ -88,3 +88,50 @@ Wait-Wait、Starvation、Transfer-Compute Gap、Sync Overhead是时间线候选�
 共享设备或锁故障的证据包括本次 npu-smi 状态、/proc/locks、Ascend `sink_file_mutex_*` 文件身份，以及相关 holder/waiter 的 PID、状态、wchan、父进程和 cwd。锁文件存在或进程等待本身不唯一证明死锁；要关联占用者、本次采集进程和时间。超时或父进程结束不证明所有后代进程及设备活动已经清理，残留可能影响下一次采集，诊断需保留结束方式与进程身份。
 
 上述补充为固定 reference 的合同与观测范围，未执行采集、权限修改或进程清理。
+
+## 补充证据（2026-10-08，DS §110/§113 集合通信 replay 实测）
+
+本节只补充一次实测观测，不修改上文任何结论，也不把本次倍率上升为通用定律。
+
+**观测绑定**（倍率只在此窗口内成立）：
+
+    工具    msopprof，CANN 9.1.0 厂商安装（未测其他构建）
+    算子    MegaMoE arch35（Ascend950DT），**两卡集合通信**算子
+    负载    H=7168，2*FFN=1024，topk=8，bs=512，epWorldSize=2
+    采集    --launch-count=3 --warm-up=2
+    样本    每个 replay 模式 4 次 capture
+    对照    A-A 空对照（同一 binary 两臂）+ 完全不挂 profiler 的时延 A/B
+
+**一、在集合通信算子上，上文的"replay 差异"在本次表现为换挡而非扰动**
+
+上文已指出「独立 replay 即使使用相同输入/制品也不是同一次时序记录」。本次实测中该差异的量级为：
+
+    profiled 总时长（vector1）   44 / 44 / 644 / 905 ms（同一臂 4 次）
+    真实不挂 profiler 的同形负载  约 1.4 ms
+    ⇒ 本次观测到的总时长相对未插桩值高出约 24x~628x，且呈**双峰**：
+       4 次中 2 次落在约 34~44 ms，2 次落在约 290~905 ms
+
+**同一臂重复之间即相差十几倍**，因此在本次窗口内，总时长及其派生比率无法承载臂间比较。
+⚠ 该倍率是**本次实测记录**，不是工具常数；双峰的成因未查明，故连本窗口内的量级也不可预测。
+⚠ 本节**不主张**"只有 work 时间可比"这一普遍结论；本次 work 时间仅被验证为**重复稳定**
+（臂内离散 0.8%），其数值未与任何非 profiler 来源交叉验证，故只有方向获得旁证。
+
+**二、`--replay-mode=kernel|application` 不是本次问题的调节旋钮**
+
+`msopprof --replay-mode` 在本次安装中默认 `kernel`。曾假设：重放单卡 kernel 而对端不同步
+会放大跨卡自旋等待。**该假设在跑之前被写成可证伪判据**（换 `application` 后总时长应塌向
+约 1.4 ms、rank 不对称应收向无 profiler 的约 1.2%），**实测结果为否**：
+
+    kernel       ctrl 44.09 / 44.14 / 644.15 / 904.62 ms
+    application  ctrl 44.31 / 44.51 / 554.44 / 745.18 ms
+
+两个分布形状一致，rank 不对称同为 2x~17x（无 profiler 时为 1.0005x~1.0122x）。
+⇒ 在本次窗口内，切换 replay 模式不改变该现象；**成因仍未确定**。
+（application 模式 4/4 首次成功、kernel 模式有 2 次失败，属可用性差异，非测量差异。）
+
+**三、让该差异现形的控制是 A-A 空对照**
+
+本次另一组实测中，仅比较 ctrl 与候选两臂时，`Memory` 组曾给出 -15.23% 的表观差异；补上
+**同一 binary 的 A-A 空对照**后，该差异的真值为 +0.06%——原差异来自单次 capture 中单个
+device 的异常抬高。⇒ 在用 profiler 判定任何臂间差异前，**A-A 空对照是必要控制**；
+仅有 A-B 两臂时，无法区分"效应"与"该指标在本窗口内的轮间波动"。

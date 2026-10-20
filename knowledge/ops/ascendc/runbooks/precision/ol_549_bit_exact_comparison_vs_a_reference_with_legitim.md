@@ -13,7 +13,7 @@ aliases: ["OL-549"]
 
 # bit-exact comparison vs a reference with legitimate NaN regions needs positional NaN-mask agreement + nan_to_n
 
-**OL-549** — **bit-exact comparison vs a reference with legitimate NaN regions needs positional NaN-mask agreement + `nan_to_num` bit-compare**: `torch.equal` alone fails on ANY NaN (manufactures a fake "0/N bit-exact"); an all-NaN fallback clause silently mis-grades MIXED NaN/finite outputs (~half-NaN reference with bit-identical finite parts fails BOTH arms and reads as a kernel bug when the predicate is the bug). soc=all, verifier/runner-side. 17_AdamW 310p 2026-08-15: fake 0/18 scare → corrected predicate (`代码片段 17_AdamW/pass_a_runner.py.snippet.py（见文末）`) → 13/18 + 605/645 bit-exact, residuals root-caused as hardware classes ([`PB-120`](../compilation/pb_120_dav_m200_vconv_accepts_only_a_per_direction_cast.md) saturation, [`OL-147`](ol_147_a5_subnormal_handling_via_lnconfig_algo_for_ln_sqr.md) FTZ). Cross-ref [`OL-109`](ol_109_two_tier_precision_verdict.md), [`OL-85`](ol_85_logic_first_precision_fix_anti_overfitting_anti_re.md), OL-548, [`PB-120`](../compilation/pb_120_dav_m200_vconv_accepts_only_a_per_direction_cast.md). backend=all.
+**OL-549** — **bit-exact comparison vs a reference with legitimate NaN regions needs positional NaN-mask agreement + `nan_to_num` bit-compare**: `torch.equal` alone fails on ANY NaN (manufactures a fake "0/N bit-exact"); an all-NaN fallback clause silently mis-grades MIXED NaN/finite outputs (~half-NaN reference with bit-identical finite parts fails BOTH arms and reads as a kernel bug when the predicate is the bug). soc=all, verifier/runner-side. 17_AdamW 310p 2026-08-15: fake 0/18 scare → corrected predicate (`代码片段 17_AdamW/pass_a_runner.py.snippet.py（文末附）`) → 13/18 + 605/645 bit-exact, residuals root-caused as hardware classes ([`PB-120`](../compilation/pb_120_dav_m200_vconv_accepts_only_a_per_direction_cast.md) saturation, [`OL-147`](ol_147_a5_subnormal_handling_via_lnconfig_algo_for_ln_sqr.md) FTZ). Cross-ref [`OL-109`](ol_109_two_tier_precision_verdict.md), [`OL-85`](ol_85_logic_first_precision_fix_anti_overfitting_anti_re.md), OL-548, [`PB-120`](../compilation/pb_120_dav_m200_vconv_accepts_only_a_per_direction_cast.md). backend=all.
 
 `applies_to: soc=all; cann=all; bisheng=n/a; op_class=all (verifier/runner-side)`
 <!-- applies_to_backend: all -->
@@ -71,3 +71,10 @@ def main(argv=None):
 
     for case_idx, inputs in enumerate(input_groups):
 ```
+
+## 适用场景
+
+- **工程形态**：参考输出合法含 NaN 时，位精确判定要拆成 NaN 掩码位置一致 + nan_to_num 后位比较；torch.equal 遇 NaN 永假会造假阴性。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

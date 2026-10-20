@@ -35,3 +35,5 @@
 - [APACE 入口 ABI 与 tiling 消费者](apace_entry_abi_and_tiling_consumers.md)：APACE 入口 ABI 与 tiling 消费者的来源实例与适用边界。
 - [APACE GET AllGather 设想与槽释放证明](apace_get_allgather_proposal_and_release_proof.md)：APACE GET AllGather 设想与槽释放证明的来源实例与适用边界。
 - [APACE ReduceScatter 轮次坐标与舍入点](apace_reduce_scatter_round_coordinates_and_rounding.md)：APACE ReduceScatter 轮次坐标与舍入点的来源实例与适用边界。
+
+- [MC2 Communication (compute-communication fusion) 域模式：HcclResource / CrossRankSync / Window RDMA / MakeGlobalTensor](mc2_communication_fusion_patterns.md)：MC2 多 rank 计算-通信融合 kernel 通信参考：HCCL context 生命周期、跨 rank 软屏障、window RDMA 与 GM 对齐标量 I/O（通信路径锁定 Path B1；内嵌 P-P110~P-P113 四个模式）。

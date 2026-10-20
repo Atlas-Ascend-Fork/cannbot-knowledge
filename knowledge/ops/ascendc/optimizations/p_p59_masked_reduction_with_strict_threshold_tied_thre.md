@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p59-masked-reduction-with-strict-threshold-tied-thre.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-09-19T13:26:04Z"
 platforms: ["950"]
 ---
 
@@ -164,3 +164,9 @@ Phase 1's 2-way merge is conditional by default (has an `if va >= vb` branch). T
 - EC-29 SortConfig device-side 2-field schema
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/precision.md（P-P59，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）同号模式行复核：与 v1 卡同源同题，正文无新增技术内容；补录索引行元数据——domain: `precision`；trigger: reference uses `v < threshold` STRICT mask + reduce → kept = count(v ≥ threshold) exceeds named k; fixed top-K/top-N buffer truncates the tied set; Layer 1 (buffer bump + global denom) / Layer 2 (three-layer per-column) / Layer 3 (full sort). Applies to: top_k_top_p, nucleus sampling, attention tail-drop, sparse gather with score filter, quantile-based masking；优先级: CRITICAL。
+
+> 索引行原文：`| P-P59 | **Masked reduction with strict-`<` threshold — tied-threshold buffer truncation** | precision | reference uses `v < threshold` STRICT mask + reduce → kept = count(v ≥ threshold) exceeds named k; fixed top-K/top-N buffer truncates the tied set; Layer 1 (buffer bump + global denom) / Layer 2 (three-layer per-column) / Layer 3 (full sort). Applies to: top_k_top_p, nucleus sampling, attention tail-drop, sparse gather with score filter, quantile-based masking | **CRITICAL** |`

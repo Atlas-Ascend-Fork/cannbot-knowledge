@@ -37,3 +37,5 @@
 - [assert（AI CPU API）：固定 reference 调用约束](aicpu_assert_reference_contract.md)：固定 reference 的调用约束与版本边界。该接口实现AI CPU算子Kernel调试场景下的assert断言功能。 算子执行中，如果assert内部条件判断不为真，则输出assert条件、触发文件名、行号等信息。
 - [printf（AI CPU API）：固定 reference 调用约束](aicpu_printf_reference_contract.md)：固定 reference 的调用约束与版本边界。该接口提供AI CPU算子Kernel调试场景下的格式化输出功能，默认将输出内容解析并打印在屏幕上。
 - [Printf：固定 reference 调用约束](ascendc_printf_reference_contract.md)：固定 reference 的调用约束与版本边界。SIMD和SIMT编程调试场景下提供格式化输出功能，在算子Kernel侧打印日志信息。
+
+- [参考实现的量化建模与器件不一致时，精度缺陷会记在算子头上](reference_quantisation_model_mismatch.md)：golden 用 HiFloat8 建模 P、器件用 MXFP8，造成一个随 s2 变化的假 dV 缺陷；给出四个判据：斜率而非距离、只随尾数变即看舍入网格、第三方基准裁决、改器件不读的输入。

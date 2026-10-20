@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/field-notes/precision/cube-manual-mmad-crossgen-001.md
     role: primary
 created_at: "2026-08-26T12:44:00Z"
-updated_at: "2026-08-26T12:44:00Z"
+updated_at: "2026-09-26T19:10:00Z"
 platforms: [a2, a3, "950"]
 aliases: ["cube-manual-mmad-crossgen-001"]
 ---
@@ -28,6 +28,36 @@ MatmulTransA（Ascend950DT + CANN 9.2.0 实测）：
 
 - A3 时代手写裸 cube 流水线（`*_manual.h`：逐 16x16 分形 `LoadData(ifTranspose=true)` + 裸 `Mmad`，硬编码 DAV_2201 的 L0A/L0B/L0C 分形布局）在 A5 上**当 tile 跨多个 M 分形（blockM≥2，M 维>16）时 L0A 转置错位、静默算错**（max_abs_diff 32~148，输出 std ~13）；blockM==1 时布局退化一致、碰巧正确。
 - 同一算子里的高层库 `MatmulImpl`（reserved==0，MDL scheduler）在 A5 上对 fp32/fp16/bf16 **全部 bit 级正确（diff=0.0）**。
+
+### 源码侧触发信号（generated bare-cube，不只是手写 `*_manual.h`）
+
+本卡原有的触发描述以**手写** `*_manual.h` 为主。实测还有一个同机制但源码长相完全不同的家族：
+**TileLang/catlass 生成的 bare-cube kernel**。它同样硬编码 DAV_2201 分形布局，但文件名里没有
+`manual`，所以按 `*_manual.h` 找不到。
+
+port_a3 worker 从 A3 源码入手时实际会撞到的 token（下列均在一份真实 A3 源里逐条核过）：
+
+| token | 出现位置（实例） |
+|---|---|
+| `CATLASS_ARCH` / `-DCATLASS_ARCH=2201` | `CMakeLists.txt`（实例 `:85`）、`op_kernel/*_common.h` 的 `#ifndef`/`#define`（实例 `mbt_common.h:19-20`） |
+| `CATLASS_DEVICE` | 生成的 kernel 头文件函数修饰（实例 `mbt_gen_kernel.h:43`） |
+| `tl::ascend::gemm_v0` | 生成 kernel 的裸 cube 调用点（实例 `mbt_gen_kernel.h:125`） |
+| `tl::ascend::copy_gm_to_l1` | 生成 kernel 的 L1 搬运点（实例 `mbt_gen_kernel.h:111`、`:116`） |
+| `BACKEND_HYBM` | 编译定义 |
+| vendored `tilelang-ascend` / `3rdparty/catlass` include 路径 | `CMakeLists.txt` |
+
+**为什么补这一段（可复核的检索测量，不是推测）**：在 k=14（消费者真实 k）下对本语料索引实测——
+
+- query `CATLASS_ARCH 2201` ⇒ `cube_manual_mmad_crossgen_001` 与 `OL-197` **两张都不在前 14**；
+- query `V220 manual per-fractal Mmad silently wrong on A5 arch35` ⇒
+  `cube_manual_mmad_crossgen_001` **rank 1**、`OL-197` **rank 6~7**，**两者均在前 10**。
+  （名次随语料状态漂移，所以单报一个名次是欠定的：本次测于语料 `7a2c3f31` 为 6；非作者评审在
+  `94f788bb` / `122f066c` 各配置下复现为 7，`ol_240` 占据第 6。前 10 这个结论在三个状态下都成立。）
+
+即这两张卡**按症状词可召回、按源码自带的宏 token 不可召回**。而 port_a3 的第一步恰恰是读
+`op_host/`/`op_kernel/` 源码，最自然的检索词就是源码里那个显眼的宏。这不是"没人找得到"——本次
+移植的 worker 确实用症状词命中了本卡并据此改了设计——而是**最自然的入口会漏**。补 token 只是
+让入口对齐，不改本卡任何结论、范围或动作规则。
 
 ## 适用场景
 

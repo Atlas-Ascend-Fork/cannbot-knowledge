@@ -24,9 +24,21 @@ platforms: ["950"]
 **Why it's precision-safe in fp32.** In IEEE-754 fp32 both `a/b` and `a*(1/b)` are correctly rounded — the intermediate `1/b` rounds once, each `a_i * (1/b)` rounds once, and each `a_i / b` also rounds once; the two sequences differ by at most 1 ULP. This is **fundamentally different from fp16**, where `1/b` loses 13+ bits of mantissa and `a*(1/b) ≠ a/b` is a real precision hazard.
 
 **Decision rule:**
-- **fp32 internal compute: MUST use `Muls(x, 1.0f/scalar)`.**
+- **fp32 internal compute: MUST use `Muls(x, 1.0f/scalar)`** — provided every
+  consumer of the result is **continuous**.
 - **fp16/bf16 internal compute: keep `Divs`.**
 - When in doubt: the first iteration may use `Divs` for safety; the optimizer converts to `Muls` behind a precision gate.
+
+**Scope precondition (added 2026-09-25, crop_and_resize counter-evidence).** The ≤1 ULP
+bound holds for the isolated transform. A **discontinuous or
+cancellation-prone consumer** can amplify that 1 ULP to full scale: result
+fed into `floor()`/`ceil()`/`round()`/comparison, or into near-equal-magnitude
+subtraction such as `y_ratio = in_y - floor(in_y)` — a 1-ULP input flip across
+an integer boundary changes the fractional part by ~1.0. Measured: a
+crop_and_resize fp32 kernel that applied the MUST rule verbatim produced
+exactly one failing case (case 48, matched_ratio 0.9831 < 0.99); reverting that leg to `Divs` restored 50/50. Before applying the
+MUST rule, trace the result's consumers: any floor/ceil/round/compare or
+near-equal subtraction → keep `Divs` on that leg.
 
 ### Concrete anchor
 ```cpp

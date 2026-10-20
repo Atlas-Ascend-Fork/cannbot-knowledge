@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p20-thread-utilization-rebalancing-thread-utilizatio.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-09-19T13:26:04Z"
 platforms: [a3, "950"]
 ---
 
@@ -103,3 +103,9 @@ inline void compute_pooling_params(int emb_dim, int thread_num,
 - **Generate both**: template for benchmark/specialization, runtime for production dispatch.
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/thread_utilization.md（P-P20，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）同号模式行复核：与 v1 卡同源同题，正文无新增技术内容；补录索引行元数据——domain: `thread_utilization`；trigger: multi-dim decomposition；优先级: HIGH。
+
+> 索引行原文：`| P-P20 | Thread Utilization (BRE=dim) | thread_utilization | multi-dim decomposition | HIGH |`

@@ -38,7 +38,7 @@ OpName:[aclnnBenchNoHarnessUnique_0] inverse must not be null when returnInverse
 
 - 工程形态：自定义算子 aclnn L2 API 开发（registry-invoke 算子仓流程），GetWorkspaceSize 阶段的参数校验。
 - API 路径：`aclnn_kernels/common/op_error_check.h` 的 `OP_CHECK` / `OP_CHECK_NULL` 宏，op_api 层自写的 CheckNotNull/CheckShape/CheckFormat 等静态检查函数。
-- 验证过的平台与 CANN 版本：Ascend950PR + CANN 9.1.0（与 frontmatter `platforms`/`cann_versions` 一致）。
+- 验证过的平台与 CANN 版本：Ascend950PR + CANN 9.1.0（与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - 适用粒度：platform_wide——凡使用 CANN `OP_CHECK` 宏写 host 侧参数检查的自定义算子都适用，与具体算子无关。
 - 路线优先级：recommended_fastpath。
 - 明确不适用 / 未验证场景：`OP_CHECK_NULL`（单指针判空宏）语义不受本卡影响；其他 CANN 版本上宏语义未验证（推断一致）。

@@ -27,7 +27,7 @@ op_kernel/arch35/bench_no_harness_grid_sampler_3d.h:232:31: error: use of undecl
 
 - 工程形态：AscendC kernel 开发（op_kernel/*.h/*.cpp，标量路径中的取整/钳位/取模计算）。
 - API 路径：kernel 内标量数学——无 AscendC 官方标量 floor/rint API 的场景；编译环境为 tikcpp/ccec（CANN 9.1.0）。
-- 验证过的平台与 CANN 版本：ascend950 kernel 编译通过并生成二进制（CANN 9.1.0）——与 frontmatter `platforms`/`cann_versions` 一致。
+- 验证过的平台与 CANN 版本：ascend950 kernel 编译通过并生成二进制（CANN 9.1.0）——与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准。
 - 适用粒度：platform_wide（编译环境行为，与算子无关）。
 - 路线优先级：recommended_fastpath。
 - 明确不适用 / 未验证场景：向量化的 Floor/Round 等 AscendC 向量 API（本卡为标量路径）；`__floorf` 等编译器内置路径（存在提示但未采用未验证）；其他 CANN 版本。

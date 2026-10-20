@@ -24,7 +24,7 @@ platforms: ["950"]
 
 - **工程形态**：算子仓开发（aclnn 二段式接口）需求/规格期的输入命名决策；任何从 aten 算子移植到 CANN 时的参数名冲突排查。
 - **API 路径**：aclnn 二段式接口（`aclnnXxxGetWorkspaceSize` + `aclnnXxx`）、`REG_OP` IR 定义、分 SoC 信息库、aten schema。
-- **验证过的平台与 CANN 版本**：Ascend 950PR 本机 + CANN 9.0.0-beta.2（aclnn 头与信息库均为该安装内的包级事实；与 frontmatter `platforms`/`cann_versions` 一致）。
+- **验证过的平台与 CANN 版本**：Ascend 950PR 本机 + CANN 9.0.0-beta.2（aclnn 头与信息库均为该安装内的包级事实；与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - **适用粒度（transfer_scope）**：`operator_family`（THNN fused cell 族的既成命名先例）；命名三查方法本身 `workflow_only` 可推广。
 - **路线优先级**：`recommended_fastpath`（需求期一次定名）。
 - **明确不适用/未验证场景**：非 aclnn 交付形态（如 Kernel 直调不走 aclnn 二段接口，无此冲突）；其他命名冲突类型（如与属性名、保留关键字的冲突）须另行排查。

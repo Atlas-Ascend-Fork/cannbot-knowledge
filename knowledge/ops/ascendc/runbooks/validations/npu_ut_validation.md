@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/reference/porter/toolchain/npu_ut_validation.md
     role: primary
 created_at: "2026-08-05T14:23:52Z"
-updated_at: "2026-09-04T23:59:25Z"
+updated_at: "2026-09-19T18:01:00Z"
 platforms: [a3, "950"]
 aliases:
   - NPU validation for generated arch22→arch35 and backward operators
@@ -99,3 +99,7 @@ aliases:
 - prior art（已安装目标源码、目标文件、元数据、分派记录、归档实验）仅供调研参考，不得计入来源证明链或真值权威。
 - 来源存疑的构建结果一律不可采信：删除构建产物、干净重建并复查 digest 后重新验证。
 - 对照失败或来源不明的异常探针不构成有效的拒绝证据。
+
+## 更新 (2026-09-19)
+
+私有沉淀仓（不公开，pinned commit cb9c78c85ead3088398f3455051355349298b3cb）`okf/runbooks/operator-optimization/` 下 NPU_UT_VALIDATION.md 的 11 张节选卡经逐张核读为本文对应小节的同 lesson 摘录（英文改写，无内容增量），不单独建卡，锚点对照：source_rebuild_overlay_override_proof → R0；gm_canary_oob_write → R1；device_exception_oob_read → R2；value_diff_cpu_reference → R3；dispatch_confirmation_probe → R4；attr_toggle_oracle → R5；verification_decision_order → 验证步骤判定顺序；installed_vs_scanned 与 cann_overlay_gotchas → 基本规则（digest 链 / 任务拥有、不 overlay 已安装算子树）；aclinit_500000_not_device_lock → 前置条件 §环境与运行时（正文一致；其标题级细节「aclInit 500000 报错并非设备锁」正文未展开，如实记录）；a3_recipes_are_template_on_a5 → 失效边界（每架构重跑门禁、不跨架构外推）。

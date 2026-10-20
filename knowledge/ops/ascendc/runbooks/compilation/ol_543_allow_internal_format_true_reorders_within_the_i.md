@@ -28,8 +28,6 @@ aliases: ["OL-543"]
 The two rules are complementary, not contradictory: the question is whether NZ layout is the *desired* state of the tensor (keep True) or an *undesired* reordering of a verify-reference (force False).
 
 **Concrete anchor**:
-```python
-```
 
 **孪生卡 ol-647 合并的独有内容**（ol-647-allow-internal-format-true-reorders-within-the-i.md 已删除）：
 
@@ -44,3 +42,10 @@ The two rules are complementary, not contradictory: the question is whether NZ l
 > **Other instances (predicted)**: any element-order-dependent op verified through torch_npu on a chip/format that applies NZ internal layout — rotations, even/odd interleaves, strided permutations; any capture harness that flips `allow_internal_format` globally and then verifies order-sensitive ops.
 
 > **Cross-ref**: PB-58 (the complement — cast silently degrades to ND when internal formats disabled; set True when you NEED NZ), PB-60 (another torch_npu-build ordering hazard on this box), [`OL-542`](ol_542_in_place_cann_ops_aclnnapply_mutate_their_inputs.md) (in-place capture pitfall on the same op).
+
+## 适用场景
+
+- **工程形态**：allow_internal_format=true 会在迭代内重排格式。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

@@ -1,7 +1,7 @@
 ---
 type: Runbook
 title: "V351 '读钳制 L=mS-S 触发 + PIPE_ALL 屏障 + 标量 SetValue 尾清零块' 执行即楔死设备（507035/errcode 264）；修复 = 加宽源缓冲使钳制永不触发"
-description: "V351 '读钳制 L=mS-S 触发 + PIPE_ALL 屏障 + 标量 SetValue 尾清零块' 执行即楔死设备（507035/errcode 264）；修复 = 加宽源缓冲使钳制永不触发. Applies: soc=Ascend950DT/950PR(V351/arch35); cann=9.2.0; mode=port_a3_to_a5; op_class=vector/attention im2col/sliding-window 类 DataCopyPad 行跨步读 + 尾清零. Provenance: 42_CoTAttention kw-28 前置诊断（2026-08-27 主线 kimi 会话，卡 3 逐 case 隔离 + 逐 launch 同步 + kernel 体二分 5 轮全实测）"
+description: "V351 '读钳制 L=mS-S 触发 + PIPE_ALL 屏障 + 标量 SetValue 尾清零块' 执行即楔死设备（507035/errcode 264）；修复 = 加宽源缓冲使钳制永不触发. Applies: soc=Ascend950DT/950PR(V351/arch35); cann=9.2.0; mode=port_a3_to_a5; op_class=vector/attention im2col/sliding-window 类 DataCopyPad 行跨步读 + 尾清零. Provenance: 42_CoTAttention kw-28 前置诊断（2026-08-27 主线 the executor 会话，card 3 逐 case 隔离 + 逐 launch 同步 + kernel 体二分 5 轮全实测）"
 tags: [task.debugging, topic.implementation.synchronization, topic.programming_model.execution_unit.vector, topic.data_movement.data_copy, topic.memory, topic.compilation]
 status: stable
 sources:
@@ -25,7 +25,7 @@ aliases: ["user-v351-datacopypad-clamp-lrnd-zeroing-trap-001"]
 
 ## 读钳制触发的 lRnd 尾清零块（PipeBarrier<PIPE_ALL> + 标量 SetValue 循环）在 dav_3510 上执行即楔死设备；正解 = 加宽源缓冲消除钳制条件
 
-## 事实（42_CoTAttention，Ascend950DT + CANN 9.2.0，卡 3 全实测）
+## 事实（42_CoTAttention，Ascend950DT + CANN 9.2.0，card 3 全实测）
 - 现象：7/50 case 确定性 507035（device error type 3，aivec errcode 264 "scalar access GM invalid"，其余核 "timeout or trap"），跨 fp16/bf16/fp32；形状触发（hw 大且尾 tile 落在正向 tap 区的形状）。
 - 定位链（可复用三板斧）：① 逐 case 子进程隔离探针锁定崩溃 case 集；② host 每个 launch 后插 `aclrtSynchronizeStream` 返回值检查（**host 侧 launch 后不查 sync 返回值时，故障归因会漂移到下一个 aclnn 算子**——本案 Slice/aclnn 背锅多时）锁定首个 kernel im2col；③ kernel 体内 `#ifdef` 二分（跳读/跳写/置空/跳清零块）钉死到唯一代码块。
 - 真凶块（上午尾 tile 修复引入）：
@@ -46,5 +46,5 @@ aliases: ["user-v351-datacopypad-clamp-lrnd-zeroing-trap-001"]
 
 ## 证据
 - a5-data/cot-dsh-diag/isolate42/：isolate42_result.json（7 崩溃 case）、case7_synccheck.log（首败=im2col sync）、case7_bisect_{skipread,skipboth,nozeroing,noA}.log（二分链）、widen_verify.{log,json}（修复 12/12）。
-- docs/cot-fp32-gemm-kimi-diag-20260827.md §9。
+- docs/cot-fp32-gemm-the executor-diag-20260827.md §9。
 - open question：清零块 trap 264 的微机制（PIPE_ALL+标量 UB 写组合为何 trap）未完全定性，修复路线是消除触发条件。

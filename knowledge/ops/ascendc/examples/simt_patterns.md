@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/reference/porter/handbook/simt_patterns.md
     role: primary
 created_at: "2026-08-05T14:23:52Z"
-updated_at: "2026-09-04T23:59:25Z"
+updated_at: "2026-09-19T18:01:00Z"
 platforms: ["950"]
 ---
 
@@ -425,3 +425,7 @@ DISPATCH_GROUP_SIZE(
 **注意**：使用 `DISPATCH_GROUP_SIZE` 的算子，其 `_vf` 函数需要额外添加 `GROUP_SIZE` 模板参数。
 
 相关：[hkv_patterns](hkv_patterns.md)（HKV 哈希表算子专属功能/性能范式）。
+
+## 更新 (2026-09-19)
+
+私有沉淀仓（不公开，pinned commit cb9c78c85ead3088398f3455051355349298b3cb）`okf/runbooks/operator-optimization/` 下 SIMT_PATTERNS.md 的 9 张节选卡经逐张核读为本文对应小节的忠实摘录（同 lesson、无内容增量），不单独建卡，锚点对照：vf_kernel_signature_modifiers 与 thread_num_selection → §1 函数签名规范；gm_pointer_passing_and_conversion → §2 全局内存参数（GM_ADDR）；atomic_lock_and_simt_api → §4 原子操作；null_pointer_guard → §5 空指针保护；kernel_header_scaffold → §6 完整头文件模板；reference_kernel_selection → §7 已完成参考 kernel 一览；cpp_dispatcher_template 与 dispatch_group_size_nesting → §8 .cpp Dispatcher 文件模板（§8.3 DISPATCH_GROUP_SIZE 嵌套顺序）。同族第 10 张节选 grid_stride_thread_index（§3 线程索引模式）不在本批处置范围（PR36 预演未判 NEW）。

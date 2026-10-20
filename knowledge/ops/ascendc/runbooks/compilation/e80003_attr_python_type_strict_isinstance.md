@@ -47,7 +47,7 @@ RuntimeError: ({'errCode': 'E80003', 'op_name': 'bench_harness_apply_adam_w', 'p
 
 - 工程形态：aclnn 自定义算子的 TTK kernel 模式白盒/精度测试（动态编译 dyn 路径），以及任何把属性按 Python 字面量传入算子动态编译入口的测试链路。
 - API 路径：TTK `python3 -m ttk kernel` → `op_interface._compile_op`（`op_func(*tensor_list, **op_kwargs)`）→ CANN `asc_op_compile_base/common/utils/para_check.py` 的 `@para_check.check_op_params` 装饰器；算子侧 OpDef `this->Attr(...).Int/.Float(...)` 与 arch 粘合层 `attrs->GetInt/GetFloat`；类型检查的期望值来自 vendor 安装目录的 autogen Python 装饰器（`$ASCEND_OPP_PATH/vendors/<V>/<V>_impl/dynamic/<op_snake>.py`）。
-- 验证过的平台与 CANN 版本：Ascend950PR（`--plat Ascend950PR_9579`），CANN 9.2.0（与 frontmatter `platforms`/`cann_versions` 一致）。
+- 验证过的平台与 CANN 版本：Ascend950PR（`--plat Ascend950PR_9579`），CANN 9.2.0（与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准）。
 - 适用粒度：platform_wide——机制由 CANN para_check 与 TTK 透传逻辑决定，与具体算子无关。
 - 路线优先级：recommended_fastpath（类型对齐是正解；改 CANN site-packages 放宽检查只是临时手段）。
 - 明确不适用 / 未验证场景：TTK aclnn（e2e）路径——该路径的 `param_plan.build_positional_args` 有 `coerce_value` 做 int/float 归一（静态读码确认，未实测）；aclnn C++ 侧传参（走 aclnn apis 的类型转换链，不经该 Python 装饰器）；不经过 para_check 的静态编译/二进制（bin）路径；其他 CANN 版本若引入类型宽容需重新验证。

@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p66-tquebind-vecin-vecout-1-for-in-place-ub-buffer-r.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-09-19T13:26:04Z"
 platforms: []
 ---
 
@@ -58,3 +58,7 @@ DataCopyPad(dstGm[offset], local, params);
 **Related to PB-17 (P-P65)**: PB-17 is the aggressive form — manually aliasing two named TBufs onto the same physical UB slot, which the framework does not manage. `TQueBind` is the framework-managed version with proper EnQue/DeQue protocol; **use it first**, only escalate to manual aliasing if `TQueBind` doesn't fit the access pattern.
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/memory_access.md（P-P66，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+同号异题提示：私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）的 P-P66 与 v1 卡同号不同题；该来源的 P-P66 已另立新卡 [runbooks/runtime/pybind_h_axis_alignment_padding_convention.md](../runbooks/runtime/pybind_h_axis_alignment_padding_convention.md)，引用 P-P66 时需按主题区分。

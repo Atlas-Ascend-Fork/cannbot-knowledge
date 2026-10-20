@@ -6,8 +6,11 @@ tags: [task.debugging, topic.memory, topic.implementation.synchronization]
 status: stable
 sources: []
 created_at: '2026-09-17T00:58:06Z'
-updated_at: '2026-09-17T00:58:06Z'
+updated_at: '2026-10-10T00:00:00Z'
 platforms: ["950"]
+aliases:
+  - "改动 buffer 之后 kernel 间歇挂死"
+  - "TBuf Get 顺序提前 挂死"
 ---
 
 # TBuf Get 提前到搬运前致 kernel 间歇挂死
@@ -212,3 +215,9 @@ L0_008 是纯连续用例（stride=1），与本次新增的非连续分支无�
 ## 误诊
 
 - 曾把修复后的 300 秒超时当作挂死复发；核对输出进度与单用例耗时后确认是套件总耗时超过超时阈值，非挂死（输出进度为 tool_observed）。
+
+## 相关卡片
+
+- [PB-45 `TPipe::Reset()` 释放全局 `g_tpipeImpl` 事件池](pb_45_tpipe_reset_frees_the_global_g_tpipeimpl_event_poo.md)：同样表现为改 buffer 后挂死，但根因是 Init 期事件 id 预算耗尽而非 Get 顺序；若按本卡调整 Get/DeQue 顺序无效，应转去数事件 id，而不是继续试同步点。
+- [arch3510 事件池 QUE_MAX_EVENT=8 的事实锚点](../performance/tile_merged_dma_eliminate_mte2_issue_bound.md)：判别「是不是超了预算」所需的数字（每核每事件类型 8，每方向独立位图）。
+- [Reduce work buf 额外占 UB 致 507035](reduce_work_buf_ub_507035.md)：同族的**字节**预算形态——超限时崩在启动后而非挂死，可用来反向确认本次是挂死而非越界。

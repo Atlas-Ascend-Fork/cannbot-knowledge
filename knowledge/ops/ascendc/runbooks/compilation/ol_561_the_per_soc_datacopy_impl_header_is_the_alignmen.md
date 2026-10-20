@@ -17,7 +17,7 @@ aliases: ["OL-561"]
 `verified_on: soc=Ascend310P3; cann=9.0.0 (22_HybridAttentionMaskPreparation kw-1, 2026-09-05 — SDK header read + 50/50 bit-exact device run)`
 `unverified_on: soc=Ascend950PR, Ascend910_V220 (their impl headers assert differently — apply the same read-the-header step there, not these exact values)`
 
-**Principle**: before designing around `DataCopy` alignment on a narrowed SoC, read the per-SoC impl header (`ext:impl/basic_api/dav_m200/kernel_operator_data_copy_impl.h`) — it encodes the real contract, and two of its three clauses are traps for 220x/351x intuition:
+**Principle**: before designing around `DataCopy` alignment on a narrowed SoC, read the per-SoC impl header (CANN 安装树内 impl/basic_api/dav_m200/kernel_operator_data_copy_impl.h) — it encodes the real contract, and two of its three clauses are traps for 220x/351x intuition:
 1. **UB-src address MUST be 32B-aligned** (asserted) — any UB staging buffer feeding a DataCopy must be allocated 32B-aligned.
 2. **GM dst has NO alignment assert** — odd/unaligned GM row starts are legal. This is the header-level confirmation of the 13_Cat overlapping-tail idiom (`代码片段 13_Cat/kernel.h.snippet.h（见文末）`): you may open a write at an arbitrary GM offset.
 3. **Unaligned counts are silently rounded DOWN** (a DataCopyCheck message only) — bytes past the rounding boundary are never written. Never rely on the rounding in either direction: quantize counts UP yourself and repair the tail (overlap-write the final aligned quantum), or make every count a whole 32B quantum by construction (PB-22 discipline).
@@ -49,3 +49,10 @@ constexpr int32_t CAT_TILE_F16 = 4096;   // 4096 * 2B = 8KB (need room for f32 b
                 // past the chunk boundary.
                 if (tail > 0 && chunk32 >= ALIGN) {
 ```
+
+## 适用场景
+
+- **工程形态**：per-SoC 的 DataCopy impl 头才是对齐/count 契约。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

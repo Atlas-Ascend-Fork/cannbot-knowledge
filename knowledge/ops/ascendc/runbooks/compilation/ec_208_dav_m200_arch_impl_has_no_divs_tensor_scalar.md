@@ -18,7 +18,7 @@ aliases: ["EC-208"]
 `applies_to: soc=Ascend310P3 (dav-m200, __CCE_AICORE__=200); cann=9.0.0; bisheng=n/a; op_class=all`
 `unverified_on: soc=Ascend950PR (a5 — Divs exists there, OL-80 catalog); soc=Ascend910_220x (Divs also absent per OL-127's checklist — different workaround era)`
 
-- **Error**: build-time — `Divs` has zero instantiations in the dav-m200 arch impl (`ext:asc/impl/basic_api/dav_m200/kernel_operator_vec_binary_scalar_impl.h`; `Muls`/`Adds` present, `Divs` absent), so any `Divs(dst, src, scalar, n)` fails to compile.
+- **Error**: build-time — `Divs` has zero instantiations in the dav-m200 arch impl (CANN 安装树内 asc/impl/basic_api/dav_m200/kernel_operator_vec_binary_scalar_impl.h; `Muls`/`Adds` present, `Divs` absent), so any `Divs(dst, src, scalar, n)` fails to compile.
 - **Fix**: broadcast the divisor into a UB tensor once, then tensor `Div`:
   ```cpp
   Duplicate(b2, dM1_, n);   // divisor constant → UB tensor
@@ -137,3 +137,10 @@ private:
 > - **Evidence**: 17_AdamW 310p build iter-1 (2026-08-15): 6× Divs → Duplicate+Div; fp32 path bit-exact vs the CPU chain (`17_AdamW/failures_ledger.md:9`). Prior art, same arch-gap class: celu 310p (reciprocal workaround — concedes 0–1 ULP; superseded by this fix pattern where bit-exactness matters); op#17 AdamW V220 port 2026-05-02 (OL-127's Divs row — reciprocal-in-pybind+`Muls` era).
 
 > - Cross-ref [`OL-127`](ol_127_cann_api_surface_shrinks_across_versions_check_api.md) (API surface shrinks across versions — the V220 Divs row this extends to arch-200x with a better workaround), OL-256 (reciprocal perf option, different scope), [`OL-80`](../precision/ol_80_api_existence_must_be_looked_up_in_the_catalog_nev.md) (API-catalog lookup discipline), [`EC-197`](ec_197_cann_9_0_0_dav_m200_vec_repeat_form_signatures_d.md) (dav-m200 signature-surface gap class). backend=ascendc.
+
+## 适用场景
+
+- **工程形态**：dav-m200 没有 `Divs`（张量÷标量）。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/reference/porter/handbook/roofline_model.md
     role: primary
 created_at: "2026-08-05T14:23:52Z"
-updated_at: "2026-09-04T23:59:25Z"
+updated_at: "2026-09-19T18:01:00Z"
 platforms: ["950"]
 ---
 
@@ -116,3 +116,7 @@ Example: prod_a (T=8192, K=4, H=256, fp32):
 If after an optimization:
 - The kernel is >60% of theoretical peak → consider stopping
 - Further improvement requires >2x reduction in data movement → may need algorithm redesign (escalate to human)
+
+## 更新 (2026-09-19)
+
+私有沉淀仓（不公开，pinned commit cb9c78c85ead3088398f3455051355349298b3cb）`okf/runbooks/operator-optimization/` 下 ROOFLINE_MODEL.md 的 6 张节选卡经逐张核读为本文对应小节的忠实摘录（同 lesson、无内容增量），不单独建卡，锚点对照：ridge_point_per_unit → Ridge Point（含 CUBE ridge ≈6.7× VEC ridge 陷阱）；operational_intensity → Operational Intensity Calculation；memory_bound_optimization_focus → Ridge Point 末段 SG kernels (OI<1) 优化方向三条；min_time_and_expert_reuse → Theoretical Performance Bounds（SG Forward min_time 与 expert-major reuse 例）；efficiency_target_bands → Using the Model §Setting Targets；early_stopping_criteria → §Early Stopping。

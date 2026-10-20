@@ -8,7 +8,7 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p75-manual-tbuf-pipeline-with-explicit-setflag-waitf.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
+updated_at: "2026-09-19T13:26:04Z"
 platforms: [a3, "950"]
 ---
 
@@ -105,3 +105,9 @@ Replace with the `SetFlag/WaitFlag<MTE2_V>` pair shown above.
 - **P-P28** (TQue<4> auto pipeline): when TQue is the right pick — TQue auto-rotation replaces the manual sync pattern when dataflow fits.
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/platform_compat.md（P-P75，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）同号模式行复核：与 v1 卡同源同题，正文无新增技术内容；补录索引行元数据——domain: `platform_compat`；trigger: TBuf-based VEC pipeline (DataCopy in → V compute → DataCopy out, looped) on V220-class chips MUST use explicit `SetFlag<HardEvent::MTE2_V>(eventId) + WaitFlag<HardEvent::MTE2_V>(eventId)` (and `V_MTE3` analogue) between stages — `PipeBarrier<PIPE_ALL>()` does NOT guarantee MTE2→V completion on TBuf and triggers silent crash 507015 (PB-21). Event IDs fetched once via `GetTPipePtr()->FetchEventID(...)` outside the loop and reused per iter. Decision rule for TBuf vs TQue lives in OL-94. Use TBuf when dataflow needs multi-buffer aliasing across phases (P-P65), persistent buffers across inner loops, or other constraints TQue's fixed depth can't express; otherwise prefer TQue auto-rotation (P-P28). Validated op#27 a3 V220 (5-iter rescue from 507015 crash); DS V4 worker session surfaced as the gap that prompted codification — weaker models default to TQue without an explicit decision table to consult. Anti-pattern: TBuf + `PipeBarrier<PIPE_ALL>()` (silent 507015 crash).；优先级: HIGH。
+
+> 索引行原文：`| P-P75 | **Manual TBuf pipeline with explicit `SetFlag/WaitFlag<MTE2_V>` event sync** | platform_compat | TBuf-based VEC pipeline (DataCopy in → V compute → DataCopy out, looped) on V220-class chips MUST use explicit `SetFlag<HardEvent::MTE2_V>(eventId) + WaitFlag<HardEvent::MTE2_V>(eventId)` (and `V_MTE3` analogue) between stages — `PipeBarrier<PIPE_ALL>()` does NOT guarantee MTE2→V completion on TBuf and triggers silent crash 507015 (PB-21). Event IDs fetched once via `GetTPipePtr()->FetchEventID(...)` outside the loop and reused per iter. Decision rule for TBuf vs TQue lives in OL-94. Use TBuf when dataflow needs multi-buffer aliasing across phases (P-P65), persistent buffers across inner loops, or other constraints TQue's fixed depth can't express; otherwise prefer TQue auto-rotation (P-P28). Validated op#27 a3 V220 (5-iter rescue from 507015 crash); DS V4 worker session surfaced as the gap that prompted codification — weaker models default to TQue without an explicit decision table to consult. **Anti-pattern**: TBuf + `PipeBarrier<PIPE_ALL>()` (silent 507015 crash). | **HIGH** |`

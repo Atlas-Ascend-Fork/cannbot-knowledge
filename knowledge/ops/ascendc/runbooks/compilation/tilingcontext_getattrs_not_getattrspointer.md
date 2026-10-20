@@ -41,7 +41,7 @@ error: expected primary-expression before 'bool'
 
 - 工程形态：算子仓式自定义算子开发（op_host TilingFunc，`IMPL_OP_OPTILING` 注册，CANN 9.1.0 exe_graph 新 tiling 框架）。
 - API 路径：`gert::TilingContext` 属性读取——`context->GetAttrs()` 返回 `const RuntimeAttrs*`，其上用 `GetInt(index)` / `GetBool(index)` / `GetAttrPointer<T>(index)`；相关头文件 `exe_graph/runtime/extended_kernel_context.h`、`exe_graph/runtime/runtime_attrs.h`、`exe_graph/runtime/tiling_context.h`。
-- 验证过的平台与 CANN 版本：ascend950 目标编译（Ascend950PR 开发机，CANN 9.1.0，x86_64 主机）——与 frontmatter `platforms`/`cann_versions` 一致。
+- 验证过的平台与 CANN 版本：ascend950 目标编译（Ascend950PR 开发机，CANN 9.1.0，x86_64 主机）——与 frontmatter `platforms` 一致；CANN 版本以正文实测记录为准。
 - 适用粒度：platform_wide（该 API 契约随 CANN 版本走，与具体算子无关）。
 - 路线优先级：recommended_fastpath。
 - 明确不适用 / 未验证场景：旧版（非 exe_graph）tiling 框架的 context API；其他 CANN 版本未逐一验证；`GetAttrPointer<T>` 模板路径本身存在但本卡未实测（修复直接改用 GetInt/GetBool）。

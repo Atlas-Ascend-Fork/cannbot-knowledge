@@ -19,7 +19,7 @@ aliases: ["EC-210"]
 
 - **Error**: no viable conversion from `at::Tensor` to `py::object` at the return sites of a wrapper declared `py::object run_X(...)` — needed when the function must return either a real tensor or an empty tensor built via a different path.
 - **Fix**: `return py::cast(t);` at every return site.
-- **Evidence**: 22_Nonzero 310p build iter-2 (2026-08-15): both return sites wrapped (pre-fix `ext:pybind11.cpp:87,183`), build PASS (`代码片段 22_Nonzero/pybind11.cpp.snippet.cpp（见文末）` — the shipped `py::cast` sites; `22_Nonzero/failures_ledger.md` iter 2).
+- **Evidence**: 22_Nonzero 310p build iter-2 (2026-08-15): both return sites wrapped (pre-fix 内部路径（不公开）pybind11.cpp:87,183), build PASS (`代码片段 22_Nonzero/pybind11.cpp.snippet.cpp（见文末）` — the shipped `py::cast` sites; `22_Nonzero/failures_ledger.md` iter 2).
 - **Other instances (predicted)**: any wrapper returning polymorphic results — `as_tuple` variants, empty-rank early-exits, optional auxiliary outputs.
 - Cross-ref [`OL-36`](../precision/ol_36_npukernelbench_pytorch_wrapper_is_cann_delegation.md) (pybind is metadata+alloc+launch only — a boundary typing detail of that layer). backend=ascendc.
 
@@ -43,3 +43,10 @@ aliases: ["EC-210"]
                 NZ_TABLE_CALL(nonzero_count_i32);
             } else {
 ```
+
+## 适用场景
+
+- **工程形态**：pybind 返回 `py::object` 时每个 return 点都要显式 `py::cast(t)`。。
+- **验证过的平台**：310p（以正文验证信号为准）。
+- **适用粒度**：`operator_family`——与该卡所述 API/机制/缺陷族相同的场景。
+- **不适用/未验证场景**：未在正文验证信号中列出的平台、dtype、shape 与该 API 变体；跨平台迁移须重新验证。

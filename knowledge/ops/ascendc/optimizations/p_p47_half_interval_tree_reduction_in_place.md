@@ -8,8 +8,8 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p47-half-interval-tree-reduction-in-place.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
-platforms: [a3]
+updated_at: "2026-09-19T13:26:04Z"
+platforms: [a3, "950"]
 ---
 
 # Half-Interval Tree Reduction (In-Place)
@@ -150,3 +150,9 @@ for (int32_t s = 0; s < S; ++s) {
 - **Need argmin/argmax**: use `ReduceMin/Max(calc_index=true)` (P-P62) instead; that's hardware support for index-tracking and avoids the scalar finish entirely.
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/reduction_quant.md（P-P47，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）同号模式行复核：与 v1 卡同源同题，正文无新增技术内容；补录索引行元数据——domain: `reduction_quant`；trigger: O(log₂ D) in-place fold reduction down to 64 elements → WholeReduce；优先级: HIGH。
+
+> 索引行原文：`| P-P47 | Half-interval tree reduction | reduction_quant | O(log₂ D) in-place fold reduction down to 64 elements → WholeReduce | HIGH |`

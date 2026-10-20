@@ -48,7 +48,7 @@
 - [手写 FA 缓冲与状态故障模式](fa_handcrafted_buffer_and_state_failures.md)：保留多任务覆盖和事件问题，修正共享UB与最终Max公式。
 - [FA 布局与 SeqLen 接口变体](fa_layout_and_seqlen_interface_variants.md)：区分BNSD、TND、分页格式和两类长度数组。
 - [FA 分页与量化操作数合同](fa_paged_and_quantized_operand_contract.md)：补齐物理Head偏移、尾页和反量化尺度。
-- [FA 性能采集范围与汇总口径](fa_performance_capture_scope_and_aggregation.md)：保存跨框架计时陷阱，修正公平下界与唯一测量方法的泛化。
+- [FA 性能采集范围与汇总口径](fa_performance_capture_scope_and_aggregation.md)：区分全 forward、Event 与 device task，按已声明完整段选择同源整版；防止有利窗拼接、汇总指标替换及归档指针漂移。
 - [FFA TensorList 前缀与组件合同](ffa_tensorlist_prefix_and_component_contract.md)：区分拼接KV和双KV对角模型，保存FD LSE与量化入口语义。
 - [Varlen L1 Carry 与 SameAB 约束](varlen_l1_carry_and_sameab_constraints.md)：保存驻留优化条件，修正跨batch无条件复用与容量常量。
 - [Varlen 任务前缀与 Sparse 边界](varlen_task_prefixes_and_sparse_bounds.md)：保存四类累计量、TND偏移与尾块双重约束。

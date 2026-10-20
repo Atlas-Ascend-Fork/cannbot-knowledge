@@ -8,8 +8,8 @@ sources:
   - resource: https://gitcode.com/cann/cannbot-skills/blob/bb96c9c595c7a8e96745d365291769dc48319c22/plugins-community/ascendc-port-orchestrator/kb/okf/runbooks/operator-optimization/p-p45-single-pass-ub-resident-dynamic-quantization.md
     role: primary
 created_at: "2026-07-12T16:00:00Z"
-updated_at: "2026-07-12T16:00:00Z"
-platforms: []
+updated_at: "2026-09-19T13:26:04Z"
+platforms: ["950"]
 ---
 
 # Single-Pass UB-Resident Dynamic Quantization
@@ -62,3 +62,9 @@ For D=8192 fp32: about 64KB * 2 = 128KB; 256KB UB is sufficient.
 **Stop condition**: When D * sizeof(float) * 2 > available UB space, the D dimension must be tiled (see OL-60 Slice-D workspace pattern).
 
 <!-- 迁移自 porter kb/target/ascendc/patterns/domains/reduction_quant.md（P-P45，convert_patterns_to_okf.py）。confidence 未升格。 -->
+
+## 更新 (2026-09-19)
+
+私有沉淀仓 PATTERN_INDEX.md（pinned commit cb9c78c85ead3088398f3455051355349298b3cb）同号模式行复核：与 v1 卡同源同题，正文无新增技术内容；补录索引行元数据——domain: `reduction_quant`；trigger: absmax+scale+quantize all in UB, avoid 2-pass HBM；优先级: CRITICAL。
+
+> 索引行原文：`| P-P45 | Single-pass UB-resident dynamic quantization | reduction_quant | absmax+scale+quantize all in UB, avoid 2-pass HBM | **CRITICAL** |`
